@@ -1,4 +1,4 @@
-import { Era, CivId, UnitKind, BuildingKind, Resources, MapType } from '../core/types';
+import { Era, CivId, Periodo, UnitKind, BuildingKind, Resources, MapType } from '../core/types';
 
 /** Punto del mundo. `ref` ancla al centro del jugador/enemigo; sin `ref` es absoluto. */
 export interface MissionPoint {
@@ -64,6 +64,10 @@ export interface MissionDef {
   historia: string;
   victoria: string;
   derrota: string;
+  /** Periodo histórico de la misión (resuelve fechas y civilizaciones coetáneas). */
+  periodo: Periodo;
+  /** Muestra el tutorial guiado paso a paso al comenzar (p. ej. la misión de Caral). */
+  tutorial?: boolean;
   civJugador: CivId;
   civEnemigo: CivId;
   mapa: { seed: number; tipo: MapType; tamano: number };

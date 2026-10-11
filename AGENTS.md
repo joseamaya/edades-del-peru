@@ -38,6 +38,10 @@ No hay `npm test` ni otros scripts fuera de `package.json`. `tsc` es estricto (`
   filtra los rivales válidos. No permitas enfrentar civs sin solapamiento temporal.
 - **Mapas por geografía**: `MapType = 'costa' | 'andes' | 'altiplano' | 'selva'` (generación en `Terrain.generate`).
 - `src/campaign/defs/campaign.ts` define las 9 campañas históricas; `src/campaign/Mission.ts` evalúa objetivos/triggers.
+- **Capa educativa**: `src/campaign/defs/educativo.ts` (prólogo + contexto/«¿Sabías que…?»/fuentes por misión, derivados de
+  `docs/historia/`), `src/campaign/Tutorial.ts` (tutorial guiado paso a paso, solo en misiones con `tutorial: true` y
+  sujeto a `settings.showHints`) y `src/ui/Codex.ts` (códice que bundlea los `docs/historia/**/*.md` reales vía
+  `import.meta.glob(..., { query: '?raw' })`). Cada misión declara `periodo` para resolver fechas/civs coetáneas.
 - `src/game/Economy.ts` centraliza la asignación de obreros (usada por el jugador y la IA).
 - **UI/inputs en `src/core/Game.ts` y `src/ui/HUD.ts`**: clic izq selecciona / arrastra = box-select
   (rectángulo `#ed-selbox`) · clic der = orden (el **botón derecho ya no panea**; el paneo es por bordes,

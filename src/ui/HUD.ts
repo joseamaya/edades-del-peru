@@ -6,13 +6,15 @@ import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../model/defs/bu
 import { UNIT_ARCHETYPES, getUnitStats, UNIT_INFO } from '../model/defs/units';
 import { TECHS, getTech } from '../model/defs/techs';
 import { ERA_DEFS } from '../model/defs/eras';
-import { PERIODOS } from '../model/defs/periodos';
+import { PERIODOS, getPeriodo } from '../model/defs/periodos';
 import { civsDePeriodo, getCiv } from '../model/defs/civs';
 import { RESOURCE_INFO, GameSettings } from '../core/Config';
 import { formatNumber } from '../util/math';
 import { MISSIONS, CAMPAIGN_TITLE, CAMPAIGN_SUBTITLE } from '../campaign/defs/campaign';
+import { PROLOGO, getEducativo } from '../campaign/defs/educativo';
 import type { MissionDef } from '../campaign/types';
 import { DamageNumbers } from './DamageNumbers';
+import { openCodex } from './Codex';
 import { bus } from '../core/EventBus';
 
 /** Edificios construibles por el jugador (lista única para todos los paneles). */
@@ -127,6 +129,47 @@ const CSS = /* css */ `
   .ed-primary:hover { filter: brightness(1.1); }
   .ed-ghostbtn { pointer-events: auto; background: transparent; border: 1px solid var(--line); color: var(--text); padding: 8px 18px; border-radius: 4px; cursor: pointer; font-size: 13px; margin: 4px; }
   .ed-ghostbtn:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* Briefing / contenido histórico */
+  .ed-panel .ed-hist { text-align: left; font-size: 13px; line-height: 1.55; color: var(--text); white-space: pre-line; margin: 8px 0 10px; }
+  .ed-meta { display: flex; flex-wrap: wrap; gap: 4px 16px; justify-content: center; margin: 6px 0 10px; font-size: 11px; color: var(--text-dim); }
+  .ed-meta b { color: var(--gold); }
+  .ed-sabias { text-align: left; font-size: 12px; line-height: 1.5; background: rgba(232,195,106,0.08); border-left: 3px solid var(--gold); padding: 8px 12px; border-radius: 4px; margin: 10px 0; }
+  .ed-fuentes { text-align: left; margin: 10px 0 4px; }
+  .ed-fuentes summary { cursor: pointer; color: var(--gold-dim); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
+  .ed-fuentes ul { margin: 8px 0 0; padding-left: 18px; }
+  .ed-fuentes li { font-size: 12px; color: var(--text-dim); line-height: 1.5; margin: 3px 0; }
+  .ed-fuentes a { color: var(--blue); }
+
+  /* Códice */
+  #ed-codex .ed-panel { width: min(780px, 94vw); max-height: 88vh; display: flex; flex-direction: column; }
+  .ed-codex-tabs { display: flex; gap: 6px; justify-content: center; margin: 2px 0 12px; flex-wrap: wrap; }
+  .ed-codex-tabs button { background: transparent; border: 1px solid var(--line); color: var(--text-dim); padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+  .ed-codex-tabs button.active { color: #14161a; background: var(--gold); border-color: var(--gold); font-weight: 700; }
+  .ed-codex-body { display: flex; gap: 14px; text-align: left; min-height: 300px; flex: 1; overflow: hidden; }
+  .ed-codex-nav { width: 190px; flex-shrink: 0; overflow-y: auto; border-right: 1px solid var(--line); padding-right: 10px; }
+  .ed-codex-nav button { display: block; width: 100%; text-align: left; background: transparent; border: none; color: var(--text-dim); padding: 6px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+  .ed-codex-nav button:hover { color: var(--gold); background: rgba(232,195,106,0.07); }
+  .ed-codex-nav button.active { color: var(--gold); background: rgba(232,195,106,0.12); }
+  .ed-codex-content { flex: 1; overflow-y: auto; padding-right: 4px; font-size: 13px; line-height: 1.6; color: var(--text); }
+  .ed-codex-content h3 { color: var(--gold); font-size: 17px; margin: 0 0 4px; }
+  .ed-codex-content h4 { color: var(--gold-dim); font-size: 13px; margin: 14px 0 4px; }
+  .ed-codex-content p { margin: 6px 0; }
+  .ed-codex-content ul { margin: 6px 0; padding-left: 18px; }
+  .ed-codex-content a { color: var(--blue); }
+  .ed-codex-content .md-h1 { font-size: 16px; color: var(--gold); margin: 10px 0 6px; }
+  .ed-codex-content .md-h2 { font-size: 14px; color: var(--gold-dim); margin: 12px 0 4px; }
+  .ed-codex-content .md-h3 { font-size: 13px; color: var(--text); margin: 10px 0 3px; }
+
+  /* Tutorial */
+  #ed-tutorial { position: absolute; top: 92px; left: 50%; transform: translateX(-50%); width: min(440px, 82vw); background: rgba(12,16,24,0.95); border: 1px solid var(--gold); border-radius: 6px; padding: 12px 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.6); display: none; pointer-events: auto; z-index: 5; }
+  #ed-tutorial.show { display: block; animation: toast-in 0.3s ease; }
+  #ed-tutorial .tut-head { display: flex; justify-content: space-between; align-items: center; font-size: 11px; letter-spacing: 2px; color: var(--gold-dim); text-transform: uppercase; }
+  #ed-tutorial .tut-step { font-size: 14px; color: var(--text); line-height: 1.5; margin: 8px 0 6px; }
+  #ed-tutorial .tut-actions { text-align: right; }
+  .ed-hint-pulse { animation: hint-pulse 1.1s ease-in-out infinite; outline: 2px solid var(--gold) !important; outline-offset: 2px; border-radius: 4px; }
+  @keyframes hint-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(232,195,106,0.55); } 50% { box-shadow: 0 0 0 9px rgba(232,195,106,0); } }
+
   #ed-help { position: absolute; right: 12px; bottom: 12px; font-size: 11px; color: var(--text-dim); background: rgba(10,12,16,0.7); padding: 8px 12px; border-radius: 4px; border: 1px solid rgba(232,195,106,0.15); max-width: 220px; line-height: 1.5; }
   #ed-cursor { position: absolute; width: 20px; height: 20px; pointer-events: none; }
   .ed-error { color: var(--red); font-size: 12px; margin-top: 8px; min-height: 16px; }
@@ -199,6 +242,9 @@ export class HUD {
   private cursorEl!: HTMLElement;
   private alertsEl!: HTMLElement;
   private alertPings: { x: number; z: number; until: number }[] = [];
+  private tutorialEl!: HTMLElement;
+  private tutorialStepEl!: HTMLElement;
+  private tutorialCountEl!: HTMLElement;
 
   constructor(game: Game) {
     this.game = game;
@@ -216,6 +262,7 @@ export class HUD {
     this.buildFps();
     this.buildObjectivesPanel();
     this.buildDialogue();
+    this.buildTutorial();
     this.buildHover();
     this.buildDamageCursor();
     this.buildAlerts();
@@ -448,6 +495,47 @@ export class HUD {
     this.dialogueEl.querySelector('.txt')!.textContent = texto;
     this.dialogueEl.classList.add('show');
     this.dialogueTimer = duracion;
+  }
+
+  private buildTutorial(): void {
+    this.tutorialEl = this.el('div', '');
+    this.tutorialEl.id = 'ed-tutorial';
+    this.tutorialEl.innerHTML = `<div class="tut-head"><span>🎓 Tutorial</span><span class="tut-count"></span></div><div class="tut-step"></div><div class="tut-actions"></div>`;
+    this.tutorialStepEl = this.tutorialEl.querySelector('.tut-step') as HTMLElement;
+    this.tutorialCountEl = this.tutorialEl.querySelector('.tut-count') as HTMLElement;
+  }
+
+  /** Muestra/actualiza el panel del tutorial. `onSkip` añade el botón de omitir. */
+  showTutorialStep(texto: string, index: number, total: number, onSkip?: () => void): void {
+    this.tutorialStepEl.textContent = texto;
+    this.tutorialCountEl.textContent = `Paso ${index + 1} / ${total}`;
+    const actions = this.tutorialEl.querySelector('.tut-actions') as HTMLElement;
+    actions.innerHTML = '';
+    if (onSkip) {
+      const skip = document.createElement('button');
+      skip.className = 'ed-ghostbtn';
+      skip.style.margin = '0';
+      skip.textContent = 'Omitir tutorial';
+      skip.addEventListener('click', onSkip);
+      actions.appendChild(skip);
+    }
+    this.tutorialEl.classList.add('show');
+  }
+
+  hideTutorial(): void {
+    this.tutorialEl.classList.remove('show');
+    this.clearHudHighlight();
+  }
+
+  /** Resalta (con pulso) un elemento del HUD durante el tutorial. */
+  highlightHud(selector: string): void {
+    this.clearHudHighlight();
+    const target = this.root.querySelector(selector);
+    if (target) target.classList.add('ed-hint-pulse');
+  }
+
+  clearHudHighlight(): void {
+    this.root.querySelectorAll('.ed-hint-pulse').forEach((el) => el.classList.remove('ed-hint-pulse'));
   }
 
   private refreshObjectives(): void {
@@ -1022,10 +1110,66 @@ export class HUD {
     });
     const campaignBtn = this.el('button', 'ed-ghostbtn', panel);
     campaignBtn.textContent = '📜 Campañas';
-    campaignBtn.addEventListener('click', () => this.showCampaignMenu());
+    campaignBtn.addEventListener('click', () => this.showCampaignIntro());
+    const codexBtn = this.el('button', 'ed-ghostbtn', panel);
+    codexBtn.textContent = '📖 Códice';
+    codexBtn.addEventListener('click', () => this.showCodex());
     const controlsBtn = this.el('button', 'ed-ghostbtn', panel);
     controlsBtn.textContent = '❓ Cómo jugar';
     controlsBtn.addEventListener('click', () => this.showControls());
+  }
+
+  /** Abre el códice/enciclopedia educativa (periodos, civilizaciones, campañas y dossiers). */
+  showCodex(): void {
+    this.clearOverlays();
+    this.setMenuOpen(true);
+    openCodex(this.root, () => this.showMainMenu());
+  }
+
+  /** Prólogo histórico de la campaña antes de la lista de misiones (estilo AoE). */
+  showCampaignIntro(): void {
+    this.clearOverlays();
+    this.setMenuOpen(true);
+    const seen = this.introSeen();
+    const ov = this.el('div', 'ed-overlay');
+    const panel = this.el('div', 'ed-panel', ov);
+    panel.style.maxWidth = '660px';
+    panel.innerHTML = `
+      <div style="font-size:12px;letter-spacing:3px;color:#a8883f">CAMPAÑA</div>
+      <h2>${CAMPAIGN_TITLE}</h2>
+      <div class="sub">${CAMPAIGN_SUBTITLE}</div>
+      <div class="ed-hist">${PROLOGO}</div>
+    `;
+    const row = this.el('div', 'row', panel);
+    const start = this.el('button', 'ed-primary', row);
+    start.textContent = '▶ Ver misiones';
+    start.addEventListener('click', () => {
+      this.markIntroSeen();
+      this.showCampaignMenu();
+    });
+    const codex = this.el('button', 'ed-ghostbtn', row);
+    codex.textContent = '📖 Códice';
+    codex.addEventListener('click', () => this.showCodex());
+    const back = this.el('button', 'ed-ghostbtn', panel);
+    back.textContent = seen ? '← Volver' : '← Volver al menú';
+    back.addEventListener('click', () => this.showMainMenu());
+    if (seen) start.textContent = '▶ Ver misiones';
+  }
+
+  private introSeen(): boolean {
+    try {
+      return localStorage.getItem('peru-campaign-intro') === '1';
+    } catch {
+      return false;
+    }
+  }
+
+  private markIntroSeen(): void {
+    try {
+      localStorage.setItem('peru-campaign-intro', '1');
+    } catch {
+      /* noop */
+    }
   }
 
   /** Panel de controles y conceptos básicos. */
@@ -1056,19 +1200,40 @@ export class HUD {
     back.addEventListener('click', () => this.showMainMenu());
   }
 
-  /** Briefing de misión antes de comenzar. */
+  /** Briefing de misión antes de comenzar (contexto histórico + objetivos + fuentes). */
   showBriefing(mis: MissionDef, onStart: () => void): void {
     this.game.loop.stop();
     if (!this.game.getPaused()) this.game.togglePause();
     this.clearOverlays();
     const ov = this.el('div', 'ed-overlay');
     const panel = this.el('div', 'ed-panel', ov);
-    panel.style.maxWidth = '640px';
+    panel.style.maxWidth = '680px';
+    const periodo = getPeriodo(mis.periodo);
+    const jugador = getCiv(mis.civJugador);
+    const enemigo = getCiv(mis.civEnemigo);
+    const geo: Record<string, string> = { costa: 'Costa / litoral', andes: 'Andes / sierra', altiplano: 'Altiplano', selva: 'Selva' };
+    const edu = getEducativo(mis.id);
+    const contexto = edu?.contexto
+      ? `<div class="ed-hist">${mis.historia}</div><div class="ed-hist"><b style="color:var(--gold)">Contexto histórico.</b> ${edu.contexto}</div>`
+      : `<div class="ed-hist">${mis.historia}</div>`;
+    const sabias = edu ? `<div class="ed-sabias">💡 <b>¿Sabías que…?</b> ${edu.sabiasQue}</div>` : '';
+    const fuentes = edu && edu.fuentes.length
+      ? `<details class="ed-fuentes"><summary>Fuentes históricas</summary><ul>${edu.fuentes
+          .map((f) => `<li>${f.url ? `<a href="${f.url}" target="_blank" rel="noopener">${f.texto}</a>` : f.texto}</li>`)
+          .join('')}</ul></details>`
+      : '';
     panel.innerHTML = `
       <div style="font-size:12px;letter-spacing:3px;color:#a8883f">${mis.subtitulo}</div>
       <h2>${mis.titulo}</h2>
-      <div class="sub" style="text-align:left;font-size:13px;line-height:1.55;white-space:pre-line;margin:10px 0 14px">${mis.historia}</div>
-      <div class="sub" style="text-align:left;font-size:12px;color:var(--text);line-height:1.7"><b style="color:var(--gold)">OBJETIVOS</b><br>${mis.objetivos.map((o) => '• ' + o.titulo).join('<br>')}</div>
+      <div class="ed-meta">
+        <span>Periodo: <b>${periodo.nombre}</b> (${periodo.fechas})</span>
+        <span>Geografía: <b>${geo[mis.mapa.tipo] ?? mis.mapa.tipo}</b></span>
+        <span>Bandos: <b>${jugador.nombre}</b> vs <b>${jugador.id === enemigo.id ? 'grupos rivales' : enemigo.nombre}</b></span>
+      </div>
+      ${contexto}
+      ${sabias}
+      <div class="sub" style="text-align:left;font-size:12px;color:var(--text);line-height:1.7;margin-bottom:10px"><b style="color:var(--gold)">OBJETIVOS</b><br>${mis.objetivos.map((o) => '• ' + o.titulo).join('<br>')}</div>
+      ${fuentes}
     `;
     const start = this.el('button', 'ed-primary', panel);
     start.textContent = '▶ COMENZAR MISIÓN';

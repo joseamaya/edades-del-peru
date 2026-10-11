@@ -1,4 +1,4 @@
-import { Era, CivId, UnitKind, BuildingKind } from '../../core/types';
+import { Era, CivId, Periodo, UnitKind, BuildingKind } from '../../core/types';
 import { MissionDef } from '../types';
 
 export const CAMPAIGN_TITLE = 'La Senda del Sol';
@@ -15,6 +15,8 @@ export const MISSIONS: MissionDef[] = [
     victoria:
       'Caral prospera durante siglos como centro de la civilización andina. Su legado guiará a las culturas del Perú durante milenios.',
     derrota: 'El valle queda en silencio. La primera ciudad de América no llega a consolidarse.',
+    periodo: Periodo.ARCAICO,
+    tutorial: true,
     civJugador: CivId.CARAL,
     civEnemigo: CivId.CARAL,
     mapa: { seed: 3000, tipo: 'costa', tamano: 128 },
@@ -46,6 +48,7 @@ export const MISSIONS: MissionDef[] = [
     victoria:
       'La influencia de Chavín se extiende por buena parte de los Andes centrales. Su arte y su culto marcan una época.',
     derrota: 'El oráculo pierde su prestigio y el centro ceremonial declina antes de tiempo.',
+    periodo: Periodo.HORIZONTE_TEMPRANO,
     civJugador: CivId.CHAVIN,
     civEnemigo: CivId.PARACAS,
     mapa: { seed: 900, tipo: 'andes', tamano: 128 },
@@ -77,6 +80,7 @@ export const MISSIONS: MissionDef[] = [
     victoria:
       'Moche impone su dominio sobre la costa norte. Sus huacas y su cerámica marcan el apogeo del Intermedio Temprano.',
     derrota: 'Los valles caen ante las incursiones de la sierra y el poder moche se desmorona.',
+    periodo: Periodo.INTERMEDIO_TEMPRANO,
     civJugador: CivId.MOCHE,
     civEnemigo: CivId.RECUAY,
     mapa: { seed: 400, tipo: 'costa', tamano: 128 },
@@ -113,6 +117,7 @@ export const MISSIONS: MissionDef[] = [
     victoria:
       'Wari consolida su esfera de influencia. El Horizonte Medio unifica buena parte de los Andes centrales.',
     derrota: 'La expansión wari se detiene y sus centros provinciales se pierden.',
+    periodo: Periodo.HORIZONTE_MEDIO,
     civJugador: CivId.WARI,
     civEnemigo: CivId.TIAHUANACO,
     mapa: { seed: 800, tipo: 'andes', tamano: 160 },
@@ -148,6 +153,7 @@ export const MISSIONS: MissionDef[] = [
     victoria:
       'Cusi Yupanqui vence en Yahuar Pampa y asume el poder como Pachacútec, el que transforma el mundo. Comienza el imperio.',
     derrota: 'El Cusco cae ante los chancas y el imperio no llega a nacer.',
+    periodo: Periodo.HORIZONTE_TARDIO,
     civJugador: CivId.INCA,
     civEnemigo: CivId.CHANCA,
     mapa: { seed: 1438, tipo: 'andes', tamano: 160 },
@@ -187,6 +193,7 @@ export const MISSIONS: MissionDef[] = [
     victoria:
       'Chan Chan capitula y Minchancaman es llevado al Cusco. El Tahuantinsuyo se extiende por toda la costa norte.',
     derrota: 'La resistencia chimú detiene al ejército inca y la costa norte permanece libre.',
+    periodo: Periodo.HORIZONTE_TARDIO,
     civJugador: CivId.INCA,
     civEnemigo: CivId.CHIMU,
     mapa: { seed: 1470, tipo: 'costa', tamano: 192 },
@@ -222,6 +229,7 @@ export const MISSIONS: MissionDef[] = [
     victoria:
       'El centro realista cae. La rebelión sacude el Virreinato y enciende el camino hacia la independencia.',
     derrota: 'La rebelión se ahoga en sangre. El Virreinato perdura una generación más.',
+    periodo: Periodo.VIRREINATO,
     civJugador: CivId.INCA,
     civEnemigo: CivId.REALISTAS,
     mapa: { seed: 1780, tipo: 'andes', tamano: 192 },
@@ -258,6 +266,7 @@ export const MISSIONS: MissionDef[] = [
     victoria:
       'La victoria sella la independencia del Perú. El poder español en el Perú llega a su fin.',
     derrota: 'La causa patriota se repliega y la independencia queda en suspenso.',
+    periodo: Periodo.INDEPENDENCIA,
     civJugador: CivId.PATRIOTAS,
     civEnemigo: CivId.REALISTAS,
     mapa: { seed: 1824, tipo: 'andes', tamano: 192 },
@@ -293,6 +302,7 @@ export const MISSIONS: MissionDef[] = [
     victoria:
       'La escuadra enemiga se retira y el puerto resiste. Como en Angamos, el ejemplo de Grau sostiene a la República.',
     derrota: 'El puerto cae y el monitor se pierde. La República entra en su hora más oscura.',
+    periodo: Periodo.REPUBLICA,
     civJugador: CivId.REPUBLICA,
     civEnemigo: CivId.CHILE,
     mapa: { seed: 1879, tipo: 'costa', tamano: 192 },

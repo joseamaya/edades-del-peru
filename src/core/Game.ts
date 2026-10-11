@@ -37,6 +37,7 @@ import { getUnitStats, getUnitModel, UNIT_INFO } from '../model/defs/units';
 import { getTech } from '../model/defs/techs';
 import { AudioEngine } from '../audio/AudioEngine';
 import { Mission } from '../campaign/Mission';
+import { Tutorial } from '../campaign/Tutorial';
 import { getMission } from '../campaign/defs/campaign';
 import type { MissionDef } from '../campaign/types';
 
@@ -66,6 +67,7 @@ export class Game {
   hud!: HUD;
   audio = new AudioEngine();
   mission: Mission | null = null;
+  tutorial: Tutorial | null = null;
   private unitContext!: UnitContext;
   economy!: Economy;
 
@@ -120,6 +122,7 @@ export class Game {
     this.initInput();
     this.initHUD();
     this.mission = mis ? new Mission(this, mis, (win) => this.missionEnd(win)) : null;
+    this.tutorial = mis && mis.tutorial && this.settings.showHints ? new Tutorial(this) : null;
     this.ai = mis && !mis.enemigo.activo ? null : new AI(this, 1);
     this.audio.setEra(this.players[0].era);
     this.initAudio();
@@ -1856,6 +1859,7 @@ export class Game {
     // misión de campaña: evaluar ANTES de limpiar muertos para que los
     // objetivos detecten entidades recién destruidas (destruir/proteger)
     this.mission?.update(d, t);
+    this.tutorial?.update(d);
 
     // limpia muertos
     this.cleanupDead();

@@ -57,6 +57,15 @@ Nueve escenarios históricos con datos exactos (fecha, lugar, bandos y comandant
 
 Ids de misión: `m1_caral`, `m2_chavin`, `m3_moche_recuay`, `m4_wari`, `m5_yahuar_pampa`, `m6_chimu_inca`, `m7_tupac_amaru`, `m8_independencia`, `m9_guerra_pacifico`.
 
+## Modo educativo
+
+El juego enseña historia mientras se juega:
+
+- **Prólogo de campaña**: al abrir *Campañas* se presenta la historia del Perú (de Caral a la República) antes de elegir escenario.
+- **Briefing histórico**: cada misión muestra periodo y fechas, geografía, bandos, contexto ampliado, un «¿Sabías que…?» y sus **fuentes** (plegables).
+- **Tutorial guiado**: la primera misión (Caral) enseña a seleccionar, construir y entrenar paso a paso (respetando el ajuste *Mostrar consejos*).
+- **Códice** (📖 en el menú): navegador de periodos, civilizaciones y campañas, con los **dossiers históricos** de [`docs/historia/`](./docs/historia/) y sus fuentes.
+
 ## Controles
 
 | Acción | Tecla / Ratón |
