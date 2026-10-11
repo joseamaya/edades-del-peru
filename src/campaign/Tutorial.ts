@@ -4,15 +4,15 @@ import { UnitKind, BuildingKind, OrderKind } from '../core/types';
 interface PasoTutorial {
   id: string;
   text: string;
-  /** Selector de un elemento del HUD a resaltar (opcional). */
+  /** HUD element selector to highlight (optional). */
   highlight?: string;
   check: (game: Game) => boolean;
 }
 
 /**
- * Tutorial guiado paso a paso para la primera campaña (Caral). Observa el estado del juego
- * y avanza cuando el jugador realiza cada acción. Es independiente de los objetivos de la
- * misión (no altera la condición de victoria) y respeta el ajuste «Mostrar consejos».
+ * Step-by-step guided tutorial for the first campaign (Caral). Observes the game state
+ * and advances when the player performs each action. It is independent of the mission
+ * objectives (it does not change the victory condition) and respects the «Mostrar consejos» setting.
  */
 export class Tutorial {
   private game: Game;
@@ -79,7 +79,7 @@ export class Tutorial {
     ];
   }
 
-  /** Avanza el tutorial; se muestra tras cerrarse el briefing y reanudarse la partida. */
+  /** Advance the tutorial; shown after the briefing closes and the match resumes. */
   update(dt: number): void {
     if (this.finished) return;
     if (!this.begun) {

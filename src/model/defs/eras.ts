@@ -4,7 +4,7 @@ export interface EraDef {
   id: Era;
   name: string;
   years: string;
-  /** Paleta de construcción de la era. */
+  /** Era construction palette. */
   palette: {
     primary: string;
     secondary: string;
@@ -15,9 +15,9 @@ export interface EraDef {
     detail: string;
   };
   description: string;
-  /** Coste en recursos para avanzar a la SIGUIENTE era. */
+  /** Resource cost to advance to the NEXT era. */
   advanceCost: { food: number; wood: number; silver: number; stone: number } | null;
-  /** Edificios necesarios (buildings count) para avanzar. */
+  /** Buildings required (count) to advance. */
   advanceRequiredBuildings: number;
 }
 

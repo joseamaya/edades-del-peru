@@ -1,7 +1,7 @@
 /**
- * Contenido educativo de la campaña. Todo el texto deriva de los dossiers de
- * `docs/historia/campanas/*.md` y cita sus fuentes; no se inventan hechos,
- * nombres ni fechas. Al añadir misiones nuevas, añade aquí su entrada.
+ * Campaign educational content. All text derives from the dossiers in
+ * `docs/historia/campanas/*.md` and cites its sources; facts, names and
+ * dates are not invented. When adding new missions, add their entry here.
  */
 
 export interface SourceRef {
@@ -10,14 +10,14 @@ export interface SourceRef {
 }
 
 export interface EducationalMission {
-  /** Contexto histórico ampliado, para el briefing previo a la misión. */
+  /** Expanded historical context, for the pre-mission briefing. */
   context: string;
-  /** Dato curioso y verificable que se muestra en el briefing. */
+  /** Verifiable fun fact shown in the briefing. */
   didYouKnow: string;
   sources: SourceRef[];
 }
 
-/** Prólogo que se muestra al abrir la campaña, antes de la lista de misiones. */
+/** Prologue shown when opening the campaign, before the mission list. */
 export const PROLOGUE =
   'En el Perú nació una de las primeras civilizaciones del mundo y la más antigua de América. ' +
   'Hace cinco mil años, en el valle de Supe, se levantó Caral, con sus pirámides, plazas y canales.\n' +

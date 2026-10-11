@@ -1,6 +1,6 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind, Resources, MapType } from '../core/types';
 
-/** Punto del mundo. `ref` ancla al centro del jugador/enemigo; sin `ref` es absoluto. */
+/** World point. `ref` anchors to the player/enemy center; without `ref` it is absolute. */
 export interface MissionPoint {
   ref?: 'jugador' | 'enemigo';
   dx: number;
@@ -52,7 +52,7 @@ export interface TriggerDef {
   id: string;
   condicion: TriggerCond;
   efectos: TriggerEffect[];
-  /** Si es true, el trigger puede volver a dispararse tras `cooldown` segundos. */
+  /** If true, the trigger can fire again after `cooldown` seconds. */
   repetir?: boolean;
   cooldown?: number;
 }
@@ -64,9 +64,9 @@ export interface MissionDef {
   history: string;
   victory: string;
   defeat: string;
-  /** Periodo histórico de la misión (resuelve fechas y civilizaciones coetáneas). */
+  /** Historical period of the mission (resolves dates and coetaneous civilizations). */
   period: HistoricalPeriod;
-  /** Muestra el tutorial guiado paso a paso al comenzar (p. ej. la misión de Caral). */
+  /** Show the step-by-step guided tutorial at start (e.g. the Caral mission). */
   tutorial?: boolean;
   playerCiv: CivId;
   enemyCiv: CivId;
@@ -78,7 +78,7 @@ export interface MissionDef {
     buildings?: { kind: BuildingKind; dx: number; dz: number; tag?: string }[];
     units?: { kind: UnitKind; dx: number; dz: number; tag?: string; count?: number }[];
   };
-  /** Etiqueta edificios existentes al comenzar (p. ej. el centro enemigo). */
+  /** Tag existing buildings at start (e.g. the enemy center). */
   mark?: { tag: string; kind: BuildingKind; owner: 0 | 1 }[];
   enemy: { active: boolean; difficulty: 'facil' | 'normal' | 'dificil' | 'legendario'; aggression: number };
   objectives: ObjectiveDef[];

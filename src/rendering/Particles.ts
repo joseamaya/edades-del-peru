@@ -18,9 +18,9 @@ type P = {
 };
 
 /**
- * Sistema de partículas por instanciación de points con atributos de
- * color/tamaño. Usado para humo, fuego, chispas, polvo, explosiones,
- * trazadoras y bengalas.
+ * Particle system via points instancing with color/size
+ * attributes. Used for smoke, fire, sparks, dust, explosions,
+ * tracers and flares.
  */
 export class Particles {
   private points: THREE.Points;
@@ -207,7 +207,7 @@ export class Particles {
       this.points.visible = true;
       this.upload();
     } else if (this.points.visible) {
-      // oculta y limpia una sola vez al vaciarse
+      // hide and clean up once when emptied
       this.points.visible = false;
       this.upload();
     }

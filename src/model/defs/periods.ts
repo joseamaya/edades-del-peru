@@ -1,16 +1,16 @@
 import { Era, MapType, HistoricalPeriod } from '../../core/types';
 
 /**
- * Periodos históricos jugables. `nivel` mapea al nivel tecnológico interno (Era 0-5) usado por
- * stats y modelos; las partidas son **bloqueadas por periodo** (sin modernización anacrónica).
+ * Playable historical periods. `level` maps to the internal tech level (Era 0-5) used by
+ * stats and models; matches are **period-locked** (no anachronistic modernization).
  */
 export interface PeriodDef {
   id: HistoricalPeriod;
   name: string;
   dates: string;
-  /** Nivel tecnológico interno (reutiliza los 6 sets de modelos/stats existentes). */
+  /** Internal tech level (reuses the 6 existing model/stat sets). */
   level: Era;
-  /** Mapa por defecto (puede sobreescribirse con la geografía de la civilización). */
+  /** Default map (can be overridden with the civilization's geography). */
   map: MapType;
 }
 

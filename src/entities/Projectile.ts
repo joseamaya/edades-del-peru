@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 /**
- * Proyectil balístico/trazador con arco parabólico, estela y daño en área.
+ * Ballistic/tracer projectile with a parabolic arc, trail and area damage.
  */
 export class Projectile {
   id = allocIdProj();
@@ -82,7 +82,7 @@ export class Projectile {
       return;
     }
 
-    // homing: re-apuntar al centro del objetivo si sigue vivo (flechas AoE2)
+    // homing: re-aim at the target center if it is still alive (AoE2 arrows)
     if (this.targetId !== undefined && this.getTargetPos && this.kind !== 'howitzer_shell' && this.kind !== 'nuclear') {
       const tp = this.getTargetPos();
       if (tp) {
@@ -105,7 +105,7 @@ export class Projectile {
     this.pos.addScaledVector(dir, step);
     this.travelled += step;
 
-    // arco parabólico
+    // parabolic arc
     if (this.arc > 0) {
       const t = Math.min(this.travelled / this.totalDist, 1);
       this.pos.y = this.startY + (this.target.y - this.startY) * t + this.arc * 8 * Math.sin(Math.PI * t);
@@ -117,7 +117,7 @@ export class Projectile {
       this.light.intensity = 2.5 + Math.random() * 1.5;
     }
 
-    // estela
+    // trail
     if (this.kind === 'tracer' || this.kind === 'bullet') {
       this.trailTimer -= dt;
       if (this.trailTimer <= 0) {
@@ -143,7 +143,7 @@ export class Projectile {
     this.dead = true;
     if (this.mesh) {
       this.scene.remove(this.mesh);
-      // geometría y material son compartidos por categoría: no se disponen aquí
+      // geometry and material are shared per category: not disposed here
       this.mesh = null;
     }
     if (this.light) {

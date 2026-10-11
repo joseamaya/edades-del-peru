@@ -1,11 +1,11 @@
 import * as THREE from 'three';
 
 /**
- * Texturas PBR generadas con IA (Cloudflare Workers AI) en WebP:
- *   - terreno:   `src/assets/texturas/terreno/{slot}_{diffuse|normal|roughness}.webp`
- *   - materiales: `src/assets/texturas/materiales/{mat}_{diffuse|normal|roughness}.webp`
- * Si faltan archivos, se devuelve null y el material procedural de siempre
- * actúa de fallback (funciona offline / sin assets).
+ * AI-generated PBR textures (Cloudflare Workers AI) in WebP:
+ *   - terrain:   `src/assets/texturas/terreno/{slot}_{diffuse|normal|roughness}.webp`
+ *   - materials: `src/assets/texturas/materiales/{mat}_{diffuse|normal|roughness}.webp`
+ * If files are missing, null is returned and the usual procedural material
+ * acts as a fallback (works offline / without assets).
  */
 const terrainMods = import.meta.glob('../assets/texturas/terreno/*_{diffuse,normal,roughness}.webp', {
   eager: true,

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Genera albedos de terreno con Cloudflare Workers AI (gratis, sin marca de agua).
+"""Generate terrain albedos with Cloudflare Workers AI (free, no watermark).
 
-Credenciales (una de las dos):
-  - variables de entorno CLOUDFLARE_ACCOUNT_ID y CLOUDFLARE_API_TOKEN
-  - archivo scripts/.cloudflare.json  { "accountId": "...", "apiToken": "..." }
+Credentials (either one):
+  - environment variables CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN
+  - file scripts/.cloudflare.json  { "accountId": "...", "apiToken": "..." }
 
-Uso:
-  python3 scripts/gen_texturas.py [--force]
+Usage:
+  python3 scripts/gen_textures.py [--force]
 
-Salida: scripts/_texturas_raw/{slot}_raw.png
+Output: scripts/_texturas_raw/{slot}_raw.png
 """
 import base64
 import json
@@ -21,7 +21,7 @@ import requests
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUT = ROOT / "scripts" / "_texturas_raw"
-PROMPTS_FILE = ROOT / "scripts" / "prompts_texturas.json"
+PROMPTS_FILE = ROOT / "scripts" / "prompts_textures.json"
 DEFAULT_MODEL = "@cf/black-forest-labs/flux-1-schnell"
 
 
@@ -35,7 +35,7 @@ def creds():
             acc = acc or d.get("accountId")
             tok = tok or d.get("apiToken")
     if not (acc and tok):
-        print("Faltan CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN (o scripts/.cloudflare.json)")
+        print("Missing CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN (or scripts/.cloudflare.json)")
         sys.exit(2)
     return acc, tok
 
@@ -55,7 +55,7 @@ def generate(prompt: str, model: str, acc: str, tok: str) -> bytes:
         result = data.get("result", {})
         b64 = result.get("image") if isinstance(result, dict) else result
         if not b64:
-            raise RuntimeError(f"respuesta sin imagen: {json.dumps(data)[:200]}")
+            raise RuntimeError(f"response without image: {json.dumps(data)[:200]}")
         return base64.b64decode(b64)
     return r.content
 
@@ -67,14 +67,14 @@ def main() -> None:
     model = prompts.get("model", model)
     OUT.mkdir(parents=True, exist_ok=True)
     acc, tok = creds()
-    print(f"modelo: {model}")
+    print(f"model: {model}")
     slots: dict[str, str] = {}
     slots.update(prompts.get("materials", {}))
     slots.update(prompts.get("materiales", {}))
     for slot, prompt in slots.items():
         raw = OUT / f"{slot}_raw.png"
         if raw.exists() and not force:
-            print(f"skip {slot} (ya existe)")
+            print(f"skip {slot} (already exists)")
             continue
         try:
             t = time.time()
@@ -84,7 +84,7 @@ def main() -> None:
         except Exception as e:  # noqa: BLE001
             print(f"FAIL {slot}: {type(e).__name__}: {str(e)[:240]}")
         time.sleep(1)
-    print("Listo. Ahora ejecuta: python3 scripts/post_texturas.py")
+    print("Done. Now run: python3 scripts/post_textures.py")
 
 
 if __name__ == "__main__":

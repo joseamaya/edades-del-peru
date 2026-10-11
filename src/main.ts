@@ -4,9 +4,9 @@ import { GameSettings, DEFAULT_SETTINGS } from './core/Config';
 import { BuildingKind, CivId, HistoricalPeriod } from './core/types';
 import { getBuildingStats } from './model/defs/buildings';
 import { CIVS, civsForPeriod } from './model/defs/civs';
-import { getPeriod } from './model/defs/periodos';
+import { getPeriod } from './model/defs/periods';
 
-/** Lee ajustes guardados o usa los predeterminados, validando cada campo. */
+/** Read saved settings or use the defaults, validating each field. */
 function loadSettings(): GameSettings {
   try {
     const raw = localStorage.getItem('peru-settings');
@@ -25,7 +25,7 @@ const DIFFICULTIES = ['facil', 'normal', 'dificil', 'legendario'];
 const TIMES_OF_DAY = ['mañana', 'mediodía', 'atardecer', 'noche'];
 const VICTORY_MODES = ['conquest', 'wonder'];
 
-/** Valida y normaliza un objeto de ajustes arbitrario. */
+/** Validate and normalize an arbitrary settings object. */
 function sanitizeSettings(raw: unknown): GameSettings {
   const s: GameSettings = { ...DEFAULT_SETTINGS };
   if (!raw || typeof raw !== 'object') return s;
@@ -48,9 +48,9 @@ function sanitizeSettings(raw: unknown): GameSettings {
   if (typeof r.rotateCamera === 'boolean') s.rotateCamera = r.rotateCamera;
   if (VICTORY_MODES.includes(r.victoryMode as string)) s.victoryMode = r.victoryMode as GameSettings['victoryMode'];
   if (typeof r.missionId === 'string' && r.missionId) s.missionId = r.missionId;
-  // el nivel tecnológico se deriva del periodo (partidas bloqueadas por periodo)
+  // the tech level is derived from the period (period-locked matches)
   s.startingEra = getPeriod(s.period).level;
-  // garantizar que las civs pertenezcan al periodo y que el rival sea distinto
+  // guarantee that the civs belong to the period and that the rival is different
   const disp = civsForPeriod(s.period);
   if (!disp.some((c) => c.id === s.civPlayer)) s.civPlayer = disp[0].id;
   if (s.civAI === s.civPlayer || !disp.some((c) => c.id === s.civAI)) {
@@ -99,7 +99,7 @@ function boot(): void {
     while (game.players[0].era < target && guard++ < 8) {
       const ok = game.advanceEra(0);
       if (!ok) {
-        // construir edificios de avance necesarios
+        // build the needed advancement buildings
         const center = [...game.buildings.values()].find((b) => b.kind === BuildingKind.CENTER && b.owner === 0);
         if (center) {
           const def = game.players[0].era;
@@ -130,7 +130,7 @@ function boot(): void {
   }
 }
 
-/** True si la URL pide entrar directo a la partida (depuración, ?play=1 o ?menu=0). */
+/** True if the URL asks to enter the match directly (debug, ?play=1 or ?menu=0). */
 function startsMatchDirectly(params: URLSearchParams): boolean {
   if (params.get('menu') === '0' || params.get('play') === '1') return true;
   return ['seed', 'era', 'mission', 'low', 'speed', 'fog'].some((k) => params.has(k));

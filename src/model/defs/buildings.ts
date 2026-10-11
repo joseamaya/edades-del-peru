@@ -7,7 +7,7 @@ export interface BuildingStats {
   los: number;
   cost: Resources;
   buildTime: number;
-  size: number; // footprint en unidades de grid
+  size: number; // footprint in grid units
   providesPop: number;
   isDropsite: boolean;
   garrisons: number;
@@ -31,7 +31,7 @@ export interface BuildingDef {
   isDropsite?: boolean;
   dropTypes?: Array<'food' | 'wood' | 'silver' | 'stone'>;
   providesPop?: number;
-  isUnique?: boolean; // solo 1
+  isUnique?: boolean; // only 1
 }
 
 const BASE: Resources = ZERO_RESOURCES;
@@ -298,7 +298,7 @@ const BASE_BUILDING_STATS: Record<BuildingKind, BuildingStats> = {
   wonder: { hp: 3000, armor: 4, los: 14, cost: cost({ wood: 400, silver: 300, stone: 400 }), buildTime: 200, size: 5, providesPop: 0, isDropsite: false, garrisons: 0 },
 };
 
-/** Stats finales de un edificio en una era dada. */
+/** Final stats of a building in a given era. */
 export function getBuildingStats(kind: BuildingKind, era: Era): BuildingStats {
   const base = BASE_BUILDING_STATS[kind];
   const mods = BUILDING_DEFS[kind].eraStats?.[era] ?? {};

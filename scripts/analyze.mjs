@@ -2,9 +2,9 @@ import { PNG } from 'pngjs';
 import fs from 'fs';
 
 /**
- * Analiza una captura para la revisión visual por subagentes.
- * Extrae métricas: luminancia, saturación, contraste, distribución de color,
- * presencia de agua/cielo, densidad de bordes y detalle.
+ * Analyze a screenshot for the subagent visual review.
+ * Extracts metrics: luminance, saturation, contrast, color distribution,
+ * presence of water/sky, edge density and detail.
  */
 const file = process.argv[2];
 const png = PNG.sync.read(fs.readFileSync(file));
@@ -44,7 +44,7 @@ for (let y = 0; y < height; y++) {
     satSum += s;
     bins.r += r; bins.g += g; bins.b += b;
     count++;
-    // regiones
+    // regions
     if (y < height * 0.16) skyPixels++;
     else if (y > height * 0.22) {
       if (s < 0.25 && l > 0.3 && l < 0.85 && b > r && b > g && (b - r) > 20) waterPixels++;
@@ -57,7 +57,7 @@ for (let y = 0; y < height; y++) {
   }
 }
 
-// contraste global
+// global contrast
 const mean = totalLum / count;
 let varSum = 0;
 for (let i = 0; i < lum.length; i++) {
@@ -66,7 +66,7 @@ for (let i = 0; i < lum.length; i++) {
 }
 contrast = Math.sqrt(varSum / count);
 
-// densidad de bordes (gradiente de luminancia)
+// edge density (luminance gradient)
 for (let y = 1; y < height - 1; y++) {
   for (let x = 1; x < width - 1; x++) {
     const i = y * width + x;

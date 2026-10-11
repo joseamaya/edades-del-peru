@@ -1,4 +1,4 @@
-/** Ruido de valor + FBM determinista en 2D/3D. */
+/** Value noise + deterministic FBM in 2D/3D. */
 
 const PERM = new Uint8Array(512);
 (function initPerm() {
@@ -89,7 +89,7 @@ export function noise3(x: number, y: number, z: number): number {
   );
 }
 
-/** Ruido fractal (FBM). octavas, lacunarity 2, gain 0.5. */
+/** Fractal noise (FBM). octaves, lacunarity 2, gain 0.5. */
 export function fbm2(x: number, y: number, octaves = 4, baseFreq = 1): number {
   let amp = 1;
   let freq = baseFreq;
@@ -104,7 +104,7 @@ export function fbm2(x: number, y: number, octaves = 4, baseFreq = 1): number {
   return sum / norm;
 }
 
-/** Ridged multifractal, útil para montañas. */
+/** Ridged multifractal, useful for mountains. */
 export function ridged2(x: number, y: number, octaves = 4): number {
   let sum = 0;
   let amp = 0.5;

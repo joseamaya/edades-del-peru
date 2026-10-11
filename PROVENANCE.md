@@ -6,8 +6,8 @@
 - **Slots**: `sand`, `dirt`, `grass`, `rock`, `snow` (historical materials: desert sand, Andean soil,
   ichu/straw, andesite rock, puna ground).
 - **Generation**: albedo with **Cloudflare Workers AI** (`@cf/black-forest-labs/flux-1-schnell`),
-  via `scripts/gen_texturas.py` (prompts in `scripts/prompts_texturas.json`).
-- **Post-processing**: `scripts/post_texturas.py` (tiling, Sobel normal, heuristic roughness).
+  via `scripts/gen_textures.py` (prompts in `scripts/prompts_textures.json`).
+- **Post-processing**: `scripts/post_textures.py` (tiling, Sobel normal, heuristic roughness).
 - **Usage**: project-owned assets. Check Cloudflare Workers AI terms and the model
   license for commercial use before distributing.
 

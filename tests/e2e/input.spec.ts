@@ -1,13 +1,13 @@
 import { test, expect } from '@playwright/test';
 
-/** Descarta el briefing inicial si está presente. */
+/** Dismiss the initial briefing if present. */
 async function startMission(page: import('@playwright/test').Page): Promise<void> {
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
   const start = page.getByRole('button', { name: /COMENZAR MISIÓN/ });
   if (await start.count()) await start.click();
 }
 
-test('un solo clic en la tarjeta de construir inicia la colocación', async ({ page }) => {
+test('a single click on the build card starts placement', async ({ page }) => {
   await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
   await startMission(page);
   await page.evaluate(() => {
@@ -23,10 +23,10 @@ test('un solo clic en la tarjeta de construir inicia la colocación', async ({ p
   expect(placing).toBe('house');
 });
 
-test('el clic en el suelo coloca el edificio previsualizado', async ({ page }) => {
+test('clicking the ground places the previewed building', async ({ page }) => {
   await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
   await startMission(page);
-  await page.waitForTimeout(300); // deja asentar la cámara antes de proyectar
+  await page.waitForTimeout(300); // let the camera settle before projecting
   const pick = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
@@ -35,7 +35,7 @@ test('el clic en el suelo coloca el edificio previsualizado', async ({ page }) =
     g.startPlacement('house');
     const W = window.innerWidth;
     const H = window.innerHeight;
-    // buscar un punto de pantalla sobre el canvas (no HUD) que sea colocable
+    // find a screen point over the canvas (not HUD) that is placeable
     for (let sy = H * 0.1; sy < H * 0.85; sy += 24) {
       for (let sx = W * 0.05; sx < W * 0.95; sx += 24) {
         if (document.elementFromPoint(sx, sy)?.tagName !== 'CANVAS') continue;
@@ -52,7 +52,7 @@ test('el clic en el suelo coloca el edificio previsualizado', async ({ page }) =
   expect(after).toBe(pick!.count + 1);
 });
 
-test('un solo clic en la tarjeta de entrenar encola la unidad', async ({ page }) => {
+test('a single click on the train card queues the unit', async ({ page }) => {
   await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
   await startMission(page);
   const id = await page.evaluate(() => {

@@ -9,7 +9,7 @@ let out = '';
 for (let y = 0; y < rows; y++) {
   let row = '';
   for (let x = 0; x < cols; x++) {
-    // promedio del bloque
+    // block average
     const x0 = Math.floor((x / cols) * width);
     const x1 = Math.floor(((x + 1) / cols) * width);
     const y0 = Math.floor((y / rows) * height);

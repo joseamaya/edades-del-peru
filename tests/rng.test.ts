@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { RNG, mulberry32, hashCode } from '../src/util/rng';
 
 describe('RNG', () => {
-  it('es determinista con la misma semilla', () => {
+  it('is deterministic with the same seed', () => {
     const a = new RNG(12345);
     const b = new RNG(12345);
     const seqA = Array.from({ length: 10 }, () => a.float());
@@ -10,7 +10,7 @@ describe('RNG', () => {
     expect(seqA).toEqual(seqB);
   });
 
-  it('float queda en [0,1)', () => {
+  it('float stays in [0,1)', () => {
     const r = new RNG(7);
     for (let i = 0; i < 1000; i++) {
       const v = r.float();
@@ -19,7 +19,7 @@ describe('RNG', () => {
     }
   });
 
-  it('range respeta los límites', () => {
+  it('range respects the bounds', () => {
     const r = new RNG(99);
     for (let i = 0; i < 1000; i++) {
       const v = r.range(-5, 5);
@@ -28,13 +28,13 @@ describe('RNG', () => {
     }
   });
 
-  it('mulberry32 coincide con RNG para la misma semilla', () => {
+  it('mulberry32 matches RNG for the same seed', () => {
     const f = mulberry32(42);
     const r = new RNG(42);
     expect(f()).toBe(r.float());
   });
 
-  it('hashCode es estable y no negativo', () => {
+  it('hashCode is stable and non-negative', () => {
     expect(hashCode('inca')).toBe(hashCode('inca'));
     expect(hashCode('inca')).toBeGreaterThanOrEqual(0);
   });

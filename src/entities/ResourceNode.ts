@@ -5,7 +5,7 @@ import { ResourceKey } from '../core/types';
 import { MaterialTex } from '../rendering/Textures';
 import { TreeInstances } from '../rendering/TreeInstances';
 
-// Cachés compartidos: geometrías y materiales reutilizados entre nodos (menos draw calls y GC).
+// Shared caches: geometries and materials reused between nodes (fewer draw calls and GC).
 const geoCache = new Map<string, THREE.BufferGeometry>();
 function cylGeo(rt: number, rb: number, h: number, seg: number): THREE.CylinderGeometry {
   const key = `cyl-${rt}-${rb}-${h}-${seg}`;

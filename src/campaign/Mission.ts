@@ -8,8 +8,8 @@ import { distance2D } from '../util/math';
 type ObjState = 'pendiente' | 'activo' | 'completed' | 'failed';
 
 /**
- * Controlador de misión: evalúa objetivos y triggers en cada frame,
- * genera oleadas/reforzamientos y declara victoria o derrota narrativa.
+ * Mission controller: evaluates objectives and triggers every frame,
+ * spawns waves/reinforcements and declares victory or narrative defeat.
  */
 export class Mission {
   def: MissionDef;
@@ -65,8 +65,8 @@ export class Mission {
   start(): void {
     if (this.started) return;
     this.started = true;
-    // recordar qué etiquetas existen al inicio para que objetivos/triggers que
-    // las referencian sigan siendo válidos aunque la entidad muera después
+    // remember which tags exist at start so that objectives/triggers that
+    // keep references valid even if the entity dies later
     for (const e of this.def.start.buildings ?? []) if (e.tag) this.spawnedCount.set(e.tag, 1);
     for (const u of this.def.start.units ?? []) if (u.tag) this.spawnedCount.set(u.tag, 1);
     for (const m of this.def.mark ?? []) this.spawnedCount.set(m.tag, 1);
@@ -75,7 +75,7 @@ export class Mission {
       if (b) b.tag = m.tag;
     }
     this.game.hud.showBriefing(this.def, () => {
-      // iniciar la partida
+      // start the match
       if (this.game.getPaused()) this.game.togglePause();
       this.game.loop.start();
       this.triggerDialogue(this.def.history.split('\n')[0] ?? 'Comienza la misión.', 4);
@@ -104,7 +104,7 @@ export class Mission {
     this.game.hud.showToast('✖ Objetivo fallado: ' + this.def.objectives.find((o) => o.id === id)?.title, 'danger');
   }
 
-  // --- objetivos ---
+  // --- objectives ---
 
   private evalObjectives(): void {
     for (const o of this.def.objectives) {
@@ -173,7 +173,7 @@ export class Mission {
       this.defeat();
       return;
     }
-    // 'proteger' es una guardia continua: cuenta como satisfecho mientras viva la entidad
+    // 'protect' is a continuous guard: counts as satisfied while the entity is alive
     const satisfied = (o: ObjectiveDef): boolean => {
       const st = this.objState.get(o.id);
       if (st === 'completed') return true;
@@ -237,13 +237,13 @@ export class Mission {
           const k = (this.game.rng.float() - 0.5) * (fx.radius ?? 6) * 2;
           const unit = this.game.spawnScriptedUnit(u.kind, fx.owner, p.x + jitter, p.z + k);
           if (fx.owner === 1) {
-            // las oleadas enemigas atacan un objetivo (base del jugador o la posición)
+            // enemy waves attack a target (the player base or the position)
             const t = fx.objective === 'position' ? p : this.baseCenter(0);
             unit.issueOrder({ kind: OrderKind.ATTACK_MOVE, target: { x: t.x, z: t.z } });
           }
         }
       }
-      // solo las oleadas que van a la base del jugador anuncian el peligro
+      // only waves heading to the player base announce the danger
       if (fx.type === 'wave' && (fx.objective === undefined || fx.objective === 'base')) {
         this.game.hud.showToast('⚠ ¡Oleada enemiga en camino!', 'warning');
       }
@@ -287,7 +287,7 @@ export class Mission {
     this.onEnd(false);
   }
 
-  /** Para HUD: estado de un objetivo por id. */
+  /** For HUD: state of an objective by id. */
   getObjectiveState(id: string): ObjState {
     return this.objState.get(id) ?? 'pendiente';
   }

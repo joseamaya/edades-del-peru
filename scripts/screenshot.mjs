@@ -3,8 +3,8 @@ import path from 'path';
 import { launchChromium, withViteServer, reviewDir } from './lib.mjs';
 
 /**
- * Captura pantallas del juego para la revisión visual por subagentes.
- * Uso: node scripts/screenshot.mjs [nombre] [--url=...] [--wait=ms] [--seed=...]
+ * Capture game screenshots for the subagent visual review.
+ * Usage: node scripts/screenshot.mjs [name] [--url=...] [--wait=ms] [--seed=...]
  */
 const name = process.argv[2] ?? 'default';
 const urlArg = process.argv.find((a) => a.startsWith('--url='));

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { fbm2, noise2 } from '../util/noise';
 import { RNG } from '../util/rng';
 
-/** Generador de texturas 100% procedurales vía Canvas2D. */
+/** 100% procedural texture generator via Canvas2D. */
 
 const cache = new Map<string, THREE.CanvasTexture>();
 
@@ -37,7 +37,7 @@ function addNoiseLayer(ctx: CanvasRenderingContext2D, size: number, rng: RNG, am
   ctx.putImageData(img, 0, 0);
 }
 
-/** Textura de hierba con parches y variación. */
+/** Grass texture with patches and variation. */
 function genGrass(): THREE.CanvasTexture {
   if (cache.has('grass')) return cache.get('grass')!;
   const size = 256;
@@ -65,7 +65,7 @@ function genGrass(): THREE.CanvasTexture {
   return canvasTexture(c, 'grass', true);
 }
 
-/** Textura de tierra. */
+/** Soil texture. */
 function genDirt(): THREE.CanvasTexture {
   if (cache.has('dirt')) return cache.get('dirt')!;
   const size = 256;
@@ -89,7 +89,7 @@ function genDirt(): THREE.CanvasTexture {
     }
   }
   ctx.putImageData(img, 0, 0);
-  // piedrecillas
+  // pebbles
   for (let k = 0; k < 140; k++) {
     const px = rng.int(2, size - 3);
     const py = rng.int(2, size - 3);

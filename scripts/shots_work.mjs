@@ -12,7 +12,7 @@ await page.goto(base + '/?seed=777&fog=0&low=1&play=1', { waitUntil: 'networkidl
 await page.waitForFunction(() => window.game !== undefined, null, { timeout: 30000 }).catch(() => {});
 await page.waitForTimeout(5000);
 
-// ordenar a un obrero que recolecte el nodo más cercano y acercar la cámara
+// order a worker to gather the nearest node and bring the camera closer
 await page.evaluate(() => {
   const g = window.game;
   const w = [...g.units.values()].find((u) => u.kind === 'worker' && u.owner === 0);
@@ -34,7 +34,7 @@ await page.waitForTimeout(4000);
 await page.screenshot({ path: path.join(outDir, 'work_gather.png') });
 console.log('work_gather', errors.length ? 'ERR:' + errors.slice(0, 2) : 'ok');
 
-// marcador de destino (círculo + punto central) tras una orden de mover
+// destination marker (circle + center dot) after a move order
 await page.evaluate(() => {
   const g = window.game;
   const w = [...g.units.values()].find((u) => u.kind === 'worker' && u.owner === 0);

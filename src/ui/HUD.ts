@@ -6,18 +6,18 @@ import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../model/defs/bu
 import { UNIT_ARCHETYPES, getUnitStats, UNIT_INFO } from '../model/defs/units';
 import { TECHS, getTech } from '../model/defs/techs';
 import { ERA_DEFS } from '../model/defs/eras';
-import { PERIODS, getPeriod } from '../model/defs/periodos';
+import { PERIODS, getPeriod } from '../model/defs/periods';
 import { civsForPeriod, getCiv } from '../model/defs/civs';
 import { RESOURCE_INFO, GameSettings } from '../core/Config';
 import { formatNumber } from '../util/math';
 import { MISSIONS, CAMPAIGN_TITLE, CAMPAIGN_SUBTITLE } from '../campaign/defs/campaign';
-import { PROLOGUE, getEducational } from '../campaign/defs/educativo';
+import { PROLOGUE, getEducational } from '../campaign/defs/educational';
 import type { MissionDef } from '../campaign/types';
 import { DamageNumbers } from './DamageNumbers';
 import { openCodex } from './Codex';
 import { bus } from '../core/EventBus';
 
-/** Edificios construibles por el jugador (lista única para todos los paneles). */
+/** Player-buildable buildings (single list for all panels). */
 const BUILDABLE_KINDS: BuildingKind[] = [
   BuildingKind.HOUSE,
   BuildingKind.FARM,
@@ -295,12 +295,12 @@ export class HUD {
     this.root.appendChild(this.alertsEl);
   }
 
-  /** Cifra de daño/cura flotante en un punto del mundo. */
+  /** Floating damage/heal number at a world point. */
   addDamageNumber(x: number, y: number, z: number, amount: number, kind: 'normal' | 'big' | 'heal' = 'normal'): void {
     this.damage.spawn(x, y, z, amount, kind);
   }
 
-  /** Cursor contextual: icono junto al ratón (null = cursor normal). */
+  /** Contextual cursor: icon next to the mouse (null = normal cursor). */
   setCursor(icon: string | null, x: number, y: number): void {
     if (!icon) {
       this.cursorEl.style.display = 'none';
@@ -312,7 +312,7 @@ export class HUD {
     this.cursorEl.style.top = y + 10 + 'px';
   }
 
-  /** Aviso clicable que centra la cámara; parpadea en el minimapa. */
+  /** Clickable alert that centers the camera; blinks on the minimap. */
   pushAlert(info: { icon: string; text: string; x: number; z: number; warn?: boolean }): void {
     const el = document.createElement('div');
     el.className = 'ed-alert' + (info.warn ? ' warn' : '');

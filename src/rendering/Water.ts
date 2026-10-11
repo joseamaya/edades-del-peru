@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 
 /**
- * Agua con olas Gerstner, fresnel, brillos del sol, espuma de costa
- * y reflexión especular. ShaderMaterial dedicado.
+ * Water with Gerstner waves, fresnel, sun glints, shore foam
+ * and specular reflection. Dedicated ShaderMaterial.
  */
 export class Water {
   mesh: THREE.Mesh;
@@ -20,8 +20,8 @@ export class Water {
     this.depthTexture.minFilter = THREE.LinearFilter;
     this.depthTexture.needsUpdate = true;
 
-    // En mapas costeros el agua se extiende más allá del mapa (mar/horizonte).
-    // En mapas interiores (andes/altiplano/selva) cubre solo el mapa (lagos y ríos).
+    // On coastal maps the water extends beyond the map (sea/horizon).
+    // On inland maps (andes/altiplano/jungle) it covers only the map (lakes and rivers).
     const span = inland ? size : size * 2.5;
     const geo = new THREE.PlaneGeometry(span, span, 200, 200);
     geo.rotateX(-Math.PI / 2);
@@ -139,7 +139,7 @@ export class Water {
     });
 
     this.mesh = new THREE.Mesh(geo, mat);
-    // el terreno está en coords 0..size; el plano debe alinearse con él
+    // the terrain is in 0..size coords; the plane must align with it
     this.mesh.position.set(size / 2, waterLevel, size / 2);
     scene.add(this.mesh);
   }
@@ -156,7 +156,7 @@ export class Water {
     this.uniforms.time.value = time;
   }
 
-  /** Altura del agua para la superficie en un punto del mapa. */
+  /** Water height for the surface at a map point. */
   getHeightAt(x: number, z: number): number {
     void x;
     void z;

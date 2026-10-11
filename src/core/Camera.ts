@@ -8,8 +8,8 @@ export interface CameraTarget {
 }
 
 /**
- * Cámara RTS: órbita sobre un punto del suelo con zoom, rotación Q/E,
- * paneo WASD/edge-scroll/arrastrar con botón medio, y seguimiento suavizado.
+ * RTS camera: orbits a ground point with zoom, Q/E rotation,
+ * WASD/edge-scroll/middle-drag panning, and smoothed follow.
  */
 export class RTSCamera {
   readonly camera: THREE.PerspectiveCamera;
@@ -59,7 +59,7 @@ export class RTSCamera {
     window.removeEventListener('mouseup', this.onMouseUp);
   }
 
-  /** Resuelve la entidad a seguir por id (unidades o edificios). */
+  /** Resolve the entity to follow by id (units or buildings). */
   setFollowResolver(fn: (id: number) => CameraTarget | null | undefined): void {
     this.followResolver = fn;
   }
@@ -114,7 +114,7 @@ export class RTSCamera {
     this.desiredTarget.z += -yawSin * dx - yawCos * dy;
   }
 
-  /** Paneo desde el input externo (p. ej. arrastre con botón derecho). */
+  /** Pan from external input (e.g. right-button drag). */
   panScreen(screenDx: number, screenDy: number): void {
     this.panBy(screenDx, screenDy);
   }
@@ -123,7 +123,7 @@ export class RTSCamera {
     return { x: this.desiredTarget.x, z: this.desiredTarget.z };
   }
 
-  /** Lleva la cámara hasta un punto del mapa. */
+  /** Move the camera to a map point. */
   moveTo(x: number, z: number, immediate = false): void {
     this.desiredTarget.x = x;
     this.desiredTarget.z = z;
@@ -153,7 +153,7 @@ export class RTSCamera {
     this.desiredZoom = clamp(h, this.minZoom, this.maxZoom);
   }
 
-  /** Habilita la rotación de cámara (Q/E). Off por defecto (cámara fija estilo SC2). */
+  /** Enable camera rotation (Q/E). Off by default (fixed camera, SC2 style). */
   setRotationEnabled(on: boolean): void {
     this.rotationEnabled = on;
   }
@@ -184,7 +184,7 @@ export class RTSCamera {
   private lastMouseY = 0;
   private hasMousePos = false;
 
-  /** Llamar en el input para seguir al ratón en bordes. */
+  /** Call in the input to follow the mouse at the edges. */
   updateMouse(x: number, y: number): void {
     this.lastMouseX = x;
     this.lastMouseY = y;
@@ -192,7 +192,7 @@ export class RTSCamera {
   }
 
   update(dt: number, time: number): void {
-    // Paneo con teclado
+    // Keyboard panning
     let kx = 0;
     let kz = 0;
     if (this.keys.has('w') || this.keys.has('arrowup')) kz -= 1;
@@ -209,7 +209,7 @@ export class RTSCamera {
 
     this.edgePan(dt);
 
-    // Seguir entidad
+    // Follow entity
     if (this.followId !== null && this.followResolver) {
       const ent = this.followResolver(this.followId);
       if (ent) {
@@ -231,7 +231,7 @@ export class RTSCamera {
     const px = this.target.x + sinY * horiz;
     const pz = this.target.z + cosY * horiz;
 
-    // Sacudida (shaking) para explosiones
+    // Shake for explosions
     let sx = 0;
     let sy = 0;
     if (this.shake > 0.001) {
@@ -245,17 +245,17 @@ export class RTSCamera {
     this.camera.lookAt(this.target.x, 0, this.target.z);
   }
 
-  /** Ángulo de visión para UI/minimapa. */
+  /** Viewing angle for UI/minimap. */
   getYaw(): number {
     return this.yaw;
   }
 
-  /** Distancia de zoom actual (para LOD). */
+  /** Current zoom distance (for LOD). */
   getZoom(): number {
     return this.zoom;
   }
 
-  /** Rectángulo aproximado del suelo visible (para el minimapa). */
+  /** Approximate rectangle of the visible ground (for the minimap). */
   getGroundRect(): { x: number; z: number; w: number; d: number } {
     const halfW = this.zoom * 0.55 * this.camera.aspect;
     const halfD = this.zoom * 0.62;

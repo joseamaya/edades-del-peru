@@ -1,12 +1,12 @@
-import { PERIODS } from '../model/defs/periodos';
+import { PERIODS } from '../model/defs/periods';
 import { CIVS, civsForPeriod } from '../model/defs/civs';
 import { MISSIONS } from '../campaign/defs/campaign';
-import { getEducational } from '../campaign/defs/educativo';
+import { getEducational } from '../campaign/defs/educational';
 
 /**
- * Códice/enciclopedia educativa. Reúne periodos, civilizaciones y campañas a partir de los
- * defs del juego, y muestra los **dossiers históricos reales** de `docs/historia/` (bundleados
- * como texto) para garantizar que lo mostrado coincide con las fuentes verificadas.
+ * Codex/educational encyclopedia. Gathers periods, civilizations and campaigns from the
+ * game defs, and shows the **real historical dossiers** in `docs/historia/` (bundled
+ * as text) to guarantee that what is shown matches the verified sources.
  */
 
 const DOSSIERS = import.meta.glob('../../docs/historia/**/*.md', {

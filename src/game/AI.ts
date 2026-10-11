@@ -13,8 +13,8 @@ import { Building } from '../entities/Building';
 import type { ResourceNode } from '../entities/ResourceNode';
 
 /**
- * IA oponente: macroeconomía (asigna obreros), micro de combate (focus fire,
- * retirada), construcción de edificios, avance de era y oleadas de ataque.
+ * Opponent AI: macroeconomy (assigns workers), combat micro (focus fire,
+ * retreat), building construction, era advancement and attack waves.
  */
 export class AI {
   private game: Game;
@@ -90,7 +90,7 @@ export class AI {
     const workers = this.myUnits().filter((u) => u.kind === UnitKind.WORKER);
     const busy = workers.filter((w) => w.orderQueue[0]?.kind === OrderKind.GATHER || w.orderQueue[0]?.kind === OrderKind.BUILD);
     const idle = workers.filter((w) => !w.isBusy());
-    // entrenar obreros si falta mano de obra
+    // train workers if labor is short
     const center = this.center();
     const desired = Math.min(6 + this.p.era * 2, 14);
     if (center && workers.length < desired && center.constructionComplete) {
@@ -103,7 +103,7 @@ export class AI {
         }
       }
     }
-    // asignar ociosos a recursos
+    // assign idle workers to resources
     for (const w of idle) {
       const node = this.chooseResourceNode(w);
       if (node) w.issueOrder({ kind: OrderKind.GATHER, entityId: node.id });
@@ -122,13 +122,13 @@ export class AI {
   private chooseResourceNode(w: Unit): ResourceNode | null {
     const nodes = [...this.game.resourceNodes.values()].filter((n) => !n.dead && !n.depleted);
     const p = this.p;
-    // las granjas propias completas cuentan como nodos de comida
+    // the player's complete farms count as food nodes
     for (const b of this.myBuildings()) {
       if (b.isFarm && b.constructionComplete && b.foodAmount > 0) {
         nodes.push({ id: b.id, pos: b.pos, amount: b.foodAmount, resource: 'food', farm: b } as any);
       }
     }
-    // decide recurso más necesario
+    // decide the most needed resource
     let bestRes: keyof Resources = 'food';
     let bestScore = Infinity;
     const workers = this.myUnits().filter((u) => u.kind === UnitKind.WORKER);
@@ -192,7 +192,7 @@ export class AI {
       buildPlan.push({ kind: BuildingKind.WONDER, cost: woodCost(BuildingKind.WONDER), priority: 30 });
     }
 
-    // construye el más prioritario que pueda pagar
+    // build the highest-priority one it can afford
     buildPlan.sort((a, b) => b.priority - a.priority || b.cost.wood - a.cost.wood);
     const constructing = myB.some((b) => !b.constructionComplete);
     if (!constructing) {
@@ -207,7 +207,7 @@ export class AI {
       }
     }
 
-    // producción militar según era
+    // military production per era
     this.trainMilitary();
   }
 
@@ -238,7 +238,7 @@ export class AI {
     const handle = { x, z, radius: stats.size * 0.6 };
     this.game.obstacleHandles.set(b.id, handle);
     this.game.pathfinder.addObstacle(handle);
-    // asignar obreros (priorizando a los que recolectan si hace falta)
+    // assign workers (prioritizing gatherers if needed)
     const gatherers = this.myUnits().filter((u) => u.kind === UnitKind.WORKER && u.orderQueue[0]?.kind === OrderKind.GATHER);
     const idlers = this.myUnits().filter((u) => u.kind === UnitKind.WORKER && !u.isBusy());
     const builders = [...idlers, ...gatherers].slice(0, 3);
@@ -268,7 +268,7 @@ export class AI {
     if (militaryCount < target && want.length > 0) {
       const bld = barracks ?? range ?? stable ?? factory;
       if (bld && bld.productionQueue.length < 2) {
-        // solo unidades entrenables en este edificio y con techs investigadas
+        // only units trainable in this building and with researched techs
         const def = BUILDING_DEFS[bld.kind];
         const trainable = want.filter((u) => {
           if (!def.trainable?.includes(u)) return false;
@@ -306,7 +306,7 @@ export class AI {
   }
 
   private advanceEraCheck(): void {
-    // Partidas bloqueadas por periodo: la IA no moderniza ni avanza de era.
+    // Period-locked matches: the AI neither modernizes nor advances era.
     if (this.game.settings.period !== undefined) return;
     const p = this.p;
     if (p.era >= Era.CONTEMPORARY) return;
@@ -318,7 +318,7 @@ export class AI {
   }
 
   private microCombat(dt: number): void {
-    // focus fire: atacar al objetivo con menor vida dentro de rango
+    // focus fire: attack the target with the lowest health within range
     const soldiers = this.myUnits().filter((u) => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT);
     for (const s of soldiers) {
       if (s.orderQueue[0]?.kind !== OrderKind.ATTACK) {

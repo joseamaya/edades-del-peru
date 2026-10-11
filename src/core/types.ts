@@ -26,7 +26,7 @@ export const ERA_COLORS: Record<Era, number> = {
 };
 
 export enum CivId {
-  // Prehispánicas
+  // Pre-Hispanic
   CARAL = 'caral',
   CHAVIN = 'chavin',
   PARACAS = 'paracas',
@@ -39,22 +39,22 @@ export enum CivId {
   CHINCHA = 'chincha',
   CHANCA = 'chanca',
   INCA = 'inca',
-  // Históricas (post-hispánicas)
+  // Historical (post-Hispanic)
   REALISTAS = 'realistas',
   PATRIOTAS = 'patriotas',
   REPUBLIC = 'republica',
   CHILE = 'chile',
 }
 
-/** Geografía base de una civilización: determina el tipo de mapa. */
+/** Base geography of a civilization: determines the map type. */
 export type Geography = 'coast' | 'andes' | 'altiplano';
 
-/** Tipos de mapa jugables. */
+/** Playable map types. */
 export type MapType = 'coast' | 'andes' | 'altiplano' | 'jungle';
 
 /**
- * Periodos históricos (partidas bloqueadas por periodo, sin modernización anacrónica).
- * `nivel` mapea al nivel tecnológico interno (0-5) usado por stats/modelos.
+ * Historical periods (period-locked matches, no anachronistic modernization).
+ * `level` maps to the internal tech level (0-5) used by stats/models.
  */
 export enum HistoricalPeriod {
   ARCHAIC = 0,
@@ -71,20 +71,20 @@ export enum HistoricalPeriod {
 
 export enum UnitKind {
   WORKER = 'worker',
-  SOLDIER = 'soldier', // infantería básica (milicia -> raso)
-  MUSKETEER = 'musketeer', // arquero básico (a distancia)
-  RIFLEMAN = 'rifleman', // arquero avanzado
-  SNIPER = 'sniper', // arquero de élite
-  HUSSAR = 'hussar', // caballería ligera
-  CAVALRY = 'cavalry', // caballería pesada / blindada
-  TANK = 'tank', // caballería de élite tardía
-  SCOUT = 'scout', // explorador ligero
-  ANTI_AIR = 'anti_air', // anti-aéreo / escaramuzador
-  ARTILLERY = 'artillery', // asedio a distancia larga
-  MORTAR = 'mortar', // asedio de área
-  COMMISSAR = 'commissar', // conversión (monje)
-  MECH = 'mec', // unidad única futurista
-  NUCLEAR = 'nuclear', // arma táctica de era atómica (área)
+  SOLDIER = 'soldier', // basic infantry (militia -> grunt)
+  MUSKETEER = 'musketeer', // basic archer (ranged)
+  RIFLEMAN = 'rifleman', // advanced archer
+  SNIPER = 'sniper', // elite archer
+  HUSSAR = 'hussar', // light cavalry
+  CAVALRY = 'cavalry', // heavy / armored cavalry
+  TANK = 'tank', // late elite cavalry
+  SCOUT = 'scout', // light scout
+  ANTI_AIR = 'anti_air', // anti-air / skirmisher
+  ARTILLERY = 'artillery', // long-range siege
+  MORTAR = 'mortar', // area siege
+  COMMISSAR = 'commissar', // conversion (monk)
+  MECH = 'mec', // unique futuristic unit
+  NUCLEAR = 'nuclear', // atomic-era tactical weapon (area)
 }
 
 export enum BuildingKind {
@@ -147,7 +147,7 @@ export interface PlayerState {
   populationUsed: number;
   populationCap: number;
   era: Era;
-  ageBuildings: number; // contador de edificios de avance
+  ageBuildings: number; // advancement building counter
   techs: Set<string>;
   alive: boolean;
   kills: number;
@@ -180,7 +180,7 @@ export interface EntityRef {
 
 type EmptyEvent = Record<string, never>;
 
-/** Catálogo de eventos del bus global (fuente de verdad para `bus`). */
+/** Catalog of global bus events (source of truth for `bus`). */
 export type GameEvents = {
   'game:ready': EmptyEvent;
   'game:end': { winner: number | null };

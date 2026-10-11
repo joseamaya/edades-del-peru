@@ -5,7 +5,7 @@ export type DamageClass = 'light' | 'heavy' | 'fortified';
 export type ProjectileKind = 'bullet' | 'rocket' | 'howitzer_shell' | 'laser' | 'rail' | 'nuclear' | 'tracer';
 
 export interface ModelSpec {
-  /** Tipo de modelo paramétrico. */
+  /** Parametric model type. */
   type: string;
   scale?: number;
   barrel?: number;
@@ -19,8 +19,8 @@ export interface UnitStats {
   heavyArmor: number;
   speed: number;
   los: number;
-  attackSpeed: number; // segundos entre ataques
-  area?: number; // radio de daño en área
+  attackSpeed: number; // seconds between attacks
+  area?: number; // area damage radius
   cost: Resources;
   trainTime: number;
   population: number;
@@ -33,13 +33,13 @@ export interface UnitArchetype {
   name: string;
   description: string;
   category: 'econ' | 'infantry' | 'ranged' | 'cavalry' | 'siege' | 'special' | 'unique';
-  /** Multiplicadores por era sobre las stats base. */
+  /** Multipliers per era over the base stats. */
   eraStats: Partial<Record<Era, { hp?: number; attack?: number; range?: number; speed?: number; los?: number; area?: number }>>;
-  /** Modelo por era (visual). */
+  /** Model per era (visual). */
   eraModel: Partial<Record<Era, ModelSpec>>;
-  /** Tecnologías requeridas para entrenar (además de la era). */
+  /** Technologies required to train (besides the era). */
   requiresTech?: string[];
-  /** ¿Necesita edificio de avance (castillo)? */
+  /** Does it need an advancement building (castle)? */
   requiresFortress?: boolean;
 }
 
@@ -367,7 +367,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
   },
 };
 
-/** Stats base por unidad (era VAPOR). */
+/** Base stats per unit (VAPOR era). */
 const BASE_STATS: Record<UnitKind, UnitStats> = {
   worker: {
     hp: 25, attack: 3, range: 0, lightArmor: 0, heavyArmor: 0,
@@ -446,7 +446,7 @@ const BASE_STATS: Record<UnitKind, UnitStats> = {
   },
 };
 
-/** Stats finales de un arquetipo en una era dada. */
+/** Final stats of an archetype in a given era. */
 export function getUnitStats(kind: UnitKind, era: Era): UnitStats {
   const base = BASE_STATS[kind];
   const mods = UNIT_ARCHETYPES[kind].eraStats[era] ?? {};
@@ -459,7 +459,7 @@ export function getUnitStats(kind: UnitKind, era: Era): UnitStats {
   return clone;
 }
 
-/** Modelo a usar para una unidad en una era. */
+/** Model to use for a unit in an era. */
 export function getUnitModel(kind: UnitKind, era: Era): ModelSpec {
   const m = UNIT_ARCHETYPES[kind].eraModel[era];
   if (m) return m;

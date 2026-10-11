@@ -8,7 +8,7 @@ import { mixHex } from '../util/math';
 import { MaterialTex } from '../rendering/Textures';
 import { getGeneratedMaterial } from '../rendering/Biomes';
 
-/** Tipos de textura procedural disponibles para los materiales. */
+/** Procedural texture types available for materials. */
 type TexKind = 'wood' | 'brick' | 'stone' | 'concrete' | 'metal' | 'metalDark' | 'metalWarm' | 'roof' | 'cloth' | 'textil' | 'leather' | 'scifi' | 'dirt';
 
 export interface BuildContext {
@@ -23,9 +23,9 @@ function cachedGeo<T extends THREE.BufferGeometry>(key: string, make: () => T): 
   return sharedGeo[key] as T;
 }
 
-/** Clones de texturas con repetición UV concreta, compartidos entre mallas. */
+/** Texture clones with a specific UV repeat, shared between meshes. */
 const texCloneCache = new Map<string, THREE.CanvasTexture>();
-/** Geometrías con AO horneado, memoizadas por uuid de la geometría origen. */
+/** Geometries with baked AO, memoized by the source geometry uuid. */
 const bakedGeoCache = new Map<string, THREE.BufferGeometry>();
 
 interface MatOpts {
@@ -37,15 +37,15 @@ interface MatOpts {
   opacity?: number;
   transparent?: boolean;
   flatShading?: boolean;
-  /** Textura procedural a aplicar sobre el color base. */
+  /** Procedural texture to apply over the base color. */
   tex?: TexKind;
-  /** Escala de repetición UV (1 = automática). */
+  /** UV repeat scale (1 = automatic). */
   texScale?: number;
-  /** Aplicar normal map sutil (por defecto sí cuando hay textura). */
+  /** Apply a subtle normal map (on by default when there is a texture). */
   normal?: boolean;
 }
 
-/** Ajustes PBR por tipo de textura (contraste intencionado). */
+/** PBR settings per texture type (intentional contrast). */
 const TEX_DEFAULTS: Record<TexKind, { roughness: number; metalness: number }> = {
   wood: { roughness: 0.92, metalness: 0 },
   brick: { roughness: 0.95, metalness: 0 },
@@ -62,7 +62,7 @@ const TEX_DEFAULTS: Record<TexKind, { roughness: number; metalness: number }> = 
   dirt: { roughness: 0.98, metalness: 0 },
 };
 
-/** Mapeo de tipo procedural -> material PBR generado con IA (si existe). */
+/** Mapping of procedural type -> AI-generated PBR material (if present). */
 const TEX_GEN: Partial<Record<TexKind, string>> = {
   wood: 'wood',
   roof: 'teja',
@@ -86,7 +86,7 @@ function mat(color: string, opts: MatOpts = {}): THREE.MeshStandardMaterial {
     const genKey = TEX_GEN[opts.tex];
     const gen = genKey ? getGeneratedMaterial(genKey) : null;
     if (gen) {
-      // material PBR generado con IA (madera/adobe/teja)
+      // AI-generated PBR material (wood/adobe/tile)
       m.map = gen.diffuse;
       if (opts.roughness === undefined) m.roughness = 0.9;
       if (opts.metalness === undefined) m.metalness = 0.02;
@@ -137,7 +137,7 @@ class Builder {
   box(w: number, h: number, d: number, color: string, o: PartOpts = {}): THREE.Mesh {
     const m = mat(color, o);
     if (o.tex) {
-      // repetición UV automática según tamaño de la cara (textura coherente)
+      // automatic UV repeat according to face size (coherent texture)
       const scale = o.texScale ?? 1;
       const rx = Math.max(1, Math.min(6, Math.round(Math.max(w, d) * 2.2) * scale));
       const ry = Math.max(1, Math.min(6, Math.round(h * 2.2) * scale));

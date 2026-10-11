@@ -6,23 +6,23 @@ export interface GameSettings {
   mapSeed: number;
   civPlayer: CivId;
   civAI: CivId;
-  /** Periodo histórico de la partida (partidas bloqueadas por periodo). */
+  /** Historical period of the match (period-locked matches). */
   period: HistoricalPeriod;
   difficulty: 'facil' | 'normal' | 'dificil' | 'legendario';
   startingEra: Era;
   populationCap: number;
-  gameSpeed: number; // multiplicador (0.5x-3x)
+  gameSpeed: number; // multiplier (0.5x-3x)
   timeOfDay: 'mañana' | 'mediodía' | 'atardecer' | 'noche';
   fogOfWar: boolean;
   soundEnabled: boolean;
   musicEnabled: boolean;
   showHints: boolean;
-  /** Efectos cinematográficos (SSAO, bloom, viñeta, aberración). Off = look clásico nítido. */
+  /** Cinematic effects (SSAO, bloom, vignette, aberration). Off = sharp classic look. */
   cinematic: boolean;
-  /** Permite rotar la cámara con Q/E (estilo AoE2 DE). Off = cámara fija como SC2. */
+  /** Allow rotating the camera with Q/E (AoE2 DE style). Off = fixed camera like SC2. */
   rotateCamera: boolean;
   victoryMode: 'conquest' | 'wonder';
-  /** Id de misión de campaña activa (undefined = escaramuza). */
+  /** Active campaign mission id (undefined = skirmish). */
   missionId?: string;
 }
 

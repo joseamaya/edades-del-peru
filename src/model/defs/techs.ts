@@ -20,7 +20,7 @@ export interface TechDef {
   minEra: Era;
   building: BuildingKind;
   effect: TechEffect;
-  /** Tecnologías que desbloquea (unidades o edificios) */
+  /** Technologies it unlocks (units or buildings) */
   unlocksUnits?: string[];
   requirements?: string[];
   icon?: string;

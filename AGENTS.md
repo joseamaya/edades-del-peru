@@ -28,22 +28,22 @@ There is no `npm test` or any script outside `package.json`. `tsc` is strict (`s
 - Entry: `index.html` -> `src/main.ts` -> `src/core/Game.ts` (hub wiring render, entities, AI/pathfinding/fog,
   campaign, HUD and audio).
 - **Temporal model**: `Era` (0-5) is the internal **tech level** (stats/models); `HistoricalPeriod` (0-9, in
-  `src/model/defs/periodos.ts`) is the **historical period** of the match. Matches are **locked by period** (no
+  `src/model/defs/periods.ts`) is the **historical period** of the match. Matches are **locked by period** (no
   anachronistic modernization): `settings.period` fixes `startingEra` and disables era advancement (HUD and AI).
 - Data is driven by defs in `src/model/defs/{periodos,eras,civs,units,buildings,techs}.ts`; models are generated
   procedurally in `src/model/ProceduralModel.ts` (no external assets).
 - **PBR terrain textures (AI-generated)**: `src/assets/texturas/terreno/{slot}_{diffuse|normal|roughness}.webp`
   (slots `sand/dirt/grass/rock/snow`), loaded by `src/rendering/Biomes.ts` via `import.meta.glob`. The terrain
   shader uses normal+roughness+specular when present and **falls back to the procedural material** if missing
-  (offline). Generated with `scripts/gen_texturas.py` (Cloudflare Workers AI, credentials in
-  `scripts/.cloudflare.json`, gitignored) + `scripts/post_texturas.py` (tiling/normal/roughness). See
+  (offline). Generated with `scripts/gen_textures.py` (Cloudflare Workers AI, credentials in
+  `scripts/.cloudflare.json`, gitignored) + `scripts/post_textures.py` (tiling/normal/roughness). See
   `PROVENANCE.md`.
 - **Coetaneous civilizations**: `civs.ts` gives each civ `periods` and `geography`; `civsDePeriodo(period)`
   filters valid rivals. Never match civs without temporal overlap.
 - **Maps by geography**: `MapType = 'coast' | 'andes' | 'altiplano' | 'jungle'` (generated in `Terrain.generate`).
 - `src/campaign/defs/campaign.ts` defines the 9 historical campaigns; `src/campaign/Mission.ts` evaluates
   objectives/triggers.
-- **Educational layer**: `src/campaign/defs/educativo.ts` (prologue + context/«¿Sabías que…?»/sources per mission,
+- **Educational layer**: `src/campaign/defs/educational.ts` (prologue + context/«¿Sabías que…?»/sources per mission,
   derived from `docs/historia/`), `src/campaign/Tutorial.ts` (step-by-step guided tutorial, only on missions with
   `tutorial: true` and gated by `settings.showHints`) and `src/ui/Codex.ts` (codex that bundles the real
   `docs/historia/**/*.md` via `import.meta.glob(..., { query: '?raw' })`). Each mission declares `period` to

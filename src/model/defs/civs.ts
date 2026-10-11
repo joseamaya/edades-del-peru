@@ -4,13 +4,13 @@ export interface CivDef {
   id: CivId;
   name: string;
   adjective: string;
-  /** Colores de equipo para unidades y banderas. */
+  /** Team colors for units and banners. */
   colors: { primary: string; secondary: string; accent: string };
-  /** Periodos históricos en los que existió la civilización. */
+  /** Historical periods in which the civilization existed. */
   periods: HistoricalPeriod[];
-  /** Geografía base (determina el tipo de mapa). */
+  /** Base geography (determines the map type). */
   geography: Geography;
-  /** Bonificaciones civiles (texto informativo). */
+  /** Civil bonuses (informational text). */
   bonuses: string[];
   description: string;
 }
@@ -182,7 +182,7 @@ export function getCiv(id: CivId): CivDef {
   return CIVS.find((c) => c.id === id)!;
 }
 
-/** Civilizaciones disponibles en un periodo (coetáneas). */
+/** Civilizations available in a period (coetaneous). */
 export function civsForPeriod(period: HistoricalPeriod): CivDef[] {
   return CIVS.filter((c) => c.periods.includes(period));
 }

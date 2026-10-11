@@ -17,8 +17,8 @@ interface NumberItem {
 }
 
 /**
- * Cifras de daño/cura flotantes. Son elementos DOM que se reproyectan cada
- * frame, así quedan anclados al punto del mundo aunque se mueva la cámara.
+ * Floating damage/heal numbers. They are DOM elements reprojected every
+ * frame, so they stay anchored to the world point even if the camera moves.
  */
 export class DamageNumbers {
   private pool: NumberItem[] = [];

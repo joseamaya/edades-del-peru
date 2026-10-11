@@ -41,11 +41,11 @@ export class Building {
   trainMultiplier = 1;
   foodAmount = 0;
   isFarm = false;
-  /** Etiqueta de misión (para objetivos/triggers). */
+  /** Mission tag (for objectives/triggers). */
   tag?: string;
   private smokeTimer = Math.random() * 1.5;
   private damageSmokeTimer = 0;
-  /** Materiales que eran opacos, para restaurarlos al terminar la construcción. */
+  /** Materials that were opaque, to restore them when construction finishes. */
   private constructionMats: THREE.MeshStandardMaterial[] | null = null;
 
   ctx: any;
@@ -87,12 +87,12 @@ export class Building {
     this.constructionProgress = 0;
     this.constructionComplete = false;
     this.view.group.visible = true;
-    // construccion semi-transparente
+    // semi-transparent construction
     this.setConstructionOpacity(0.45);
   }
 
   setConstructionOpacity(opacity: number): void {
-    // restaurar a opaco: devolver exactamente el estado original
+    // restore to opaque: return exactly the original state
     if (opacity >= 1) {
       if (this.constructionMats) {
         for (const mat of this.constructionMats) {
@@ -104,7 +104,7 @@ export class Building {
       }
       return;
     }
-    // atenuar solo los materiales que eran opacos (no ventanas/vidrio/brillo)
+    // fade only the materials that were opaque (not windows/glass/glow)
     if (!this.constructionMats) this.constructionMats = [];
     this.view.group.traverse((obj) => {
       const m = obj as THREE.Mesh;
@@ -122,7 +122,7 @@ export class Building {
     });
   }
 
-  /** Progreso de construcción por obreros. */
+  /** Construction progress by workers. */
   addBuildProgress(amount: number): void {
     if (this.constructionComplete) return;
     this.constructionProgress += amount;
@@ -162,7 +162,7 @@ export class Building {
     if (this.view.group.parent) this.view.group.parent.remove(this.view.group);
   }
 
-  /** Entrena una unidad (encola). */
+  /** Train a unit (queues it). */
   queueUnit(unit: UnitKind): boolean {
     if (!this.constructionComplete) return false;
     const def = BUILDING_DEFS[this.kind];
@@ -183,7 +183,7 @@ export class Building {
     return true;
   }
 
-  /** Inicia investigación de tecnología. */
+  /** Start researching a technology. */
   queueTech(techId: string): boolean {
     if (!this.constructionComplete) return false;
     const tech = getTech(techId);
@@ -209,7 +209,7 @@ export class Building {
     if (this.dead) return;
     this.attackCooldown = Math.max(0, this.attackCooldown - dt);
 
-    // humo ambiental de fábricas/fundiciones/refinerías (vida al mapa)
+    // ambient smoke from factories/smelters/refineries (map life)
     if (this.constructionComplete && (this.kind === BuildingKind.FACTORY || this.kind === BuildingKind.SMELTER || this.kind === BuildingKind.REFINERY || this.kind === BuildingKind.CENTER)) {
       this.smokeTimer -= dt;
       if (this.smokeTimer <= 0) {
@@ -229,7 +229,7 @@ export class Building {
       }
     }
 
-    // humo negro cuando el edificio está dañado (más denso a menos vida)
+    // black smoke when the building is damaged (denser at lower health)
     if (this.constructionComplete) {
       const dmgRatio = 1 - this.hp / this.maxHp;
       if (dmgRatio > 0.4) {
@@ -254,7 +254,7 @@ export class Building {
       }
     }
 
-    // producción (con multiplicador de entrenamiento del jugador)
+    // production (with the player's training multiplier)
     const p = this.ctx?.players?.find((x: any) => x.id === this.owner);
     const trainMult = 1 - (p?.bonus?.training ?? 0);
     for (let i = this.productionQueue.length - 1; i >= 0; i--) {
@@ -267,14 +267,14 @@ export class Building {
           if (ok) {
             this.productionQueue.splice(i, 1);
           } else {
-            // población llena: pausar la cola (estilo AoE2)
+            // population full: pause the queue (AoE2 style)
             item.progress = 1;
           }
         }
       }
     }
 
-    // investigación
+    // research
     for (let i = this.researchQueue.length - 1; i >= 0; i--) {
       const item = this.researchQueue[i];
       const tech = getTech(item.tech);
@@ -289,12 +289,12 @@ export class Building {
       }
     }
 
-    // ataque defensivo (fortalezas)
+    // defensive attack (fortresses)
     if (this.stats.attack && this.constructionComplete) {
       this.autoDefend(time);
     }
 
-    // reloj de maravilla
+    // wonder clock
     if (this.isWonder && this.constructionComplete) {
       this.wonderTimer += dt;
       this.ctx?.event('wonder:time', { owner: this.owner, time: this.wonderTimer });
@@ -319,7 +319,7 @@ export class Building {
     void time;
   }
 
-  /** Al avanzar de era, se remoderniza el edificio. */
+  /** When advancing era, the building is modernized. */
   modernize(era: Era, ctx: BuildContext): void {
     if (era === this.era) return;
     this.era = era;

@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { PNG } from 'pngjs';
 
-/** Lanza Chromium con SwiftShader (funciona sin GPU). Respeta CHROME_PATH. */
+/** Launch Chromium with SwiftShader (works without GPU). Respects CHROME_PATH. */
 export async function launchChromium() {
   const executablePath = process.env.CHROME_PATH || chromium.executablePath();
   return chromium.launch({
@@ -13,7 +13,7 @@ export async function launchChromium() {
   });
 }
 
-/** Arranca un servidor Vite en un puerto libre y devuelve base + cierre. */
+/** Start a Vite server on a free port and return base + close. */
 export async function withViteServer() {
   const server = await createServer({ server: { port: 0 } });
   await server.listen();

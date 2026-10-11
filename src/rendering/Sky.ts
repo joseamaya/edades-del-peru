@@ -2,8 +2,8 @@ import * as THREE from 'three';
 import { fbm2 } from '../util/noise';
 
 /**
- * Cielo procedural con dispersión atmosférica, disco solar con halo,
- * nubes volumétricas (capa de billboards con ruido) y ciclo día/noche.
+ * Procedural sky with atmospheric scattering, sun disk with halo,
+ * volumetric clouds (billboard layer with noise) and day/night cycle.
  */
 export class Sky {
   group = new THREE.Group();
@@ -18,7 +18,7 @@ export class Sky {
 
   sunDir = new THREE.Vector3(0.5, 0.7, 0.4).normalize();
   sunColor = new THREE.Color(0xfff2dd);
-  timeOfDay = 0.5; // 0 noche .. 1 día
+  timeOfDay = 0.5; // 0 night .. 1 day
 
   constructor(scene: THREE.Scene) {
     this.light = new THREE.DirectionalLight(0xffffff, 2.0);
@@ -230,13 +230,13 @@ export class Sky {
     return mesh;
   }
 
-  /** Configura la hora del día: 0=medianoche, 0.5=mediodía, 1=medianoche. */
+  /** Configure the time of day: 0=midnight, 0.5=noon, 1=midnight. */
   setTimeOfDay(t: number): void {
     this.timeOfDay = t;
   }
 
   update(time: number): void {
-    // El sol orbita con elevación máxima ~55° para iluminación lateral
+    // The sun orbits with a maximum elevation ~55° for lateral lighting
     const t = this.timeOfDay;
     const angle = (t - 0.25) * Math.PI * 2;
     const rawH = Math.sin(angle);
@@ -244,7 +244,7 @@ export class Sky {
     const sunA = Math.cos(angle) * 0.7 + 0.3;
     this.sunDir.set(sunA, Math.max(sunH, -0.3), 0.55).normalize();
 
-    // Diafragma de luz según hora
+    // Light aperture depending on time
     const day = smoothStepT(sunH, -0.12, 0.12);
     const dusk = 1 - Math.abs(day * 2 - 1) < 0.25 ? smoothStepT(Math.abs(sunH), 0, 0.18) : 0;
     const intensity = 1.7 + day * 0.9;
@@ -259,7 +259,7 @@ export class Sky {
     this.hemi.color.copy(this._cSkyDay);
     this.hemi.groundColor.copy(this._cGndDay);
 
-    // Cielo
+    // Sky
     const domeMat = this.dome.material as THREE.ShaderMaterial;
     domeMat.uniforms.sunDir.value.copy(this.sunDir);
     domeMat.uniforms.sunIntensity.value = 0.35 + day * 0.85 + dusk * 0.6;
@@ -269,7 +269,7 @@ export class Sky {
     domeMat.uniforms.topColor.value.copy(this._cTop);
     domeMat.uniforms.sunColor.value.setRGB(1, 0.5 + day * 0.4, 0.25 + day * 0.5);
 
-    // Sol / luna
+    // Sun / moon
     this._sunPos.copy(this.sunDir).multiplyScalar(4600);
     this.sunDisc.position.copy(this._sunPos);
     this.sunGlow.position.copy(this._sunPos);
@@ -283,7 +283,7 @@ export class Sky {
     this.stars.visible = day < 0.35;
     (this.stars.material as THREE.PointsMaterial).opacity = (1 - day) * (1 - dusk) * 0.9;
 
-    // Nubes
+    // Clouds
     const cloudMat = this.cloudLayer.material as THREE.ShaderMaterial;
     cloudMat.uniforms.time.value = time;
     cloudMat.uniforms.opacity.value = 0.15 + day * 0.5 + dusk * 0.1;
@@ -310,7 +310,7 @@ export class Sky {
     return this.hemi;
   }
 
-  /** Intensidad de día 0-1 (para partículas, cámara, etc.) */
+  /** Day intensity 0-1 (for particles, camera, etc.) */
   getDayFactor(): number {
     const h = Math.sin((this.timeOfDay - 0.25) * Math.PI * 2);
     return smoothStepT(h, -0.12, 0.12);

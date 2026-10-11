@@ -1,9 +1,9 @@
-/** Pathfinding A* sobre una rejilla con obstáculos estáticos. */
+/** A* pathfinding over a grid with static obstacles. */
 
 export interface PathGrid {
   cols: number;
   rows: number;
-  cell: number; // tamaño de celda en unidades de mundo
+  cell: number; // cell size in world units
   walkable: Uint8Array;
 }
 
@@ -18,7 +18,7 @@ const DIRS = [
   [1, 1], [1, -1], [-1, 1], [-1, -1],
 ];
 
-/** Montículo binario mínimo reutilizable (evita forEach O(n) por iteración). */
+/** Reusable min binary heap (avoids O(n) forEach per iteration). */
 class MinHeap {
   private idx: number[] = [];
   private key: number[] = [];
@@ -127,7 +127,7 @@ export class Pathfinder {
     for (const o of this.obstacles) this.rasterize(o);
   }
 
-  /** Marca celdas no transitables por pendiente o agua (llamar con altura del terreno). */
+  /** Mark cells non-traversable due to slope or water (call with terrain height). */
   bakeTerrain(heightFn: (x: number, z: number) => number, waterLevel: number): void {
     const { cols, cell } = this.grid;
     for (let z = 0; z < cols; z++) {
@@ -150,7 +150,7 @@ export class Pathfinder {
     return this.grid.walkable[z * cols + x] === 1;
   }
 
-  /** A* retornando waypoints en coordenadas de mundo (centros de celda). */
+  /** A* returning waypoints in world coordinates (cell centers). */
   pathfind(sx: number, sz: number, tx: number, tz: number): { x: number; z: number }[] {
     const { cols, cell } = this.grid;
     const start = { x: Math.floor(sx / cell), z: Math.floor(sz / cell) };
@@ -177,7 +177,7 @@ export class Pathfinder {
     const startIdx = start.z * cols + start.x;
     const goalIdx = goal.z * cols + goal.x;
 
-    // arrays reutilizados (sin asignaciones por llamada)
+    // reused arrays (no allocations per call)
     this.gScore.fill(Infinity);
     this.cameFrom.fill(-1);
     this.closed.fill(0);
@@ -206,7 +206,7 @@ export class Pathfinder {
         if (this.closed[ni] || this.grid.walkable[ni] === 0) continue;
         const diag = d >= 4;
         if (diag) {
-          // evita cortar esquinas entre obstáculos
+          // avoid cutting corners between obstacles
           const ax = bz * cols + nx;
           const az = nz * cols + bx;
           if (this.grid.walkable[ax] === 0 && this.grid.walkable[az] === 0) continue;
@@ -259,7 +259,7 @@ export class Pathfinder {
     return this.smooth(pts);
   }
 
-  /** Suaviza el camino eliminando puntos colineales. */
+  /** Smooth the path by removing collinear points. */
   private smooth(pts: { x: number; z: number }[]): { x: number; z: number }[] {
     if (pts.length <= 2) return pts;
     const out: { x: number; z: number }[] = [pts[0]];

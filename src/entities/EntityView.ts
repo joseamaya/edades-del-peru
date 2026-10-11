@@ -1,13 +1,13 @@
 import * as THREE from 'three';
 import { EntityRef } from '../core/types';
 
-/** Contador global de ids de entidad. */
+/** Global entity id counter. */
 let nextId = 1;
 export function allocId(): number {
   return nextId++;
 }
 
-/** Vista visual compartida: modelo + anillo de selección + barra de vida. */
+/** Shared visual view: model + selection ring + health bar. */
 export class EntityView {
   group: THREE.Group;
   private ring: THREE.Mesh | null = null;
@@ -26,7 +26,7 @@ export class EntityView {
     this.addBlobShadow(radius);
   }
 
-  /** Sombra de contacto tipo AoE2 (blob radial suave) bajo la entidad. */
+  /** AoE2-style contact shadow (soft radial blob) under the entity. */
   private addBlobShadow(radius: number): void {
     const canvas = document.createElement('canvas');
     canvas.width = canvas.height = 128;
@@ -79,7 +79,7 @@ export class EntityView {
     this.ring.visible = show;
   }
 
-  /** Anillo de selección con color de jugador. */
+  /** Selection ring with the player color. */
   showSelectionColor(show: boolean, color: THREE.Color, altitude = 0.06): void {
     if (!this.ring) {
       this.ring = new THREE.Mesh(
@@ -141,7 +141,7 @@ export class EntityView {
     if (this.healthBar) this.healthBar.visible = show;
   }
 
-  /** Anillo de radio de visión (debug/efecto). */
+  /** Vision-radius ring (debug/effect). */
   showLosRing(show: boolean, radius: number): void {
     if (!this.losRing) {
       this.losRing = new THREE.Mesh(
@@ -162,7 +162,7 @@ export class EntityView {
     }
   }
 
-  /** Libera los adjuntos (anillos, barra de vida, sombra) creados por la vista. */
+  /** Free the attachments (rings, health bar, shadow) created by the view. */
   dispose(): void {
     const blobMat = this.blobShadow?.material as THREE.MeshBasicMaterial | undefined;
     blobMat?.map?.dispose();
