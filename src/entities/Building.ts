@@ -155,7 +155,7 @@ export class Building {
       });
       this.ctx.particles.emit({
         x: this.pos.x, y: this.pos.y + 2, z: this.pos.z,
-        count: 24, color: 0x555555, kind: 'humo', speed: 1.5, life: 2.5, size: 4,
+        count: 24, color: 0x555555, kind: 'smoke', speed: 1.5, life: 2.5, size: 4,
       });
     }
     if (this.ctx?.event) this.ctx.event('building:died', { id: this.id, owner: this.owner, kind: this.kind });
@@ -220,7 +220,7 @@ export class Building {
           z: this.pos.z + (Math.random() - 0.5) * this.radius * 0.4,
           count: 1,
           color: 0x9a9a92,
-          kind: 'humo',
+          kind: 'smoke',
           speed: 0.6,
           life: 2.2,
           size: 1.6,
@@ -243,7 +243,7 @@ export class Building {
               z: this.pos.z + (Math.random() - 0.5) * this.radius,
               count: 1,
               color: dmgRatio > 0.7 ? 0x2a2a2a : 0x4a4a4a,
-              kind: 'humo',
+              kind: 'smoke',
               speed: 1.1,
               life: 1.8,
               size: 1.4,

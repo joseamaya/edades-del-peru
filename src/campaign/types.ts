@@ -2,7 +2,7 @@ import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind, Resources, MapTyp
 
 /** World point. `ref` anchors to the player/enemy center; without `ref` it is absolute. */
 export interface MissionPoint {
-  ref?: 'jugador' | 'enemigo';
+  ref?: 'player' | 'enemy';
   dx: number;
   dz: number;
 }
@@ -35,7 +35,7 @@ export interface ObjectiveDef {
 
 export type TriggerCond =
   | { type: 'time'; seconds: number }
-  | { type: 'objetivo'; objectiveId: string; state: 'activate' | 'completed' | 'failed' }
+  | { type: 'objective'; objectiveId: string; state: 'activate' | 'completed' | 'failed' }
   | { type: 'entity_dead'; entityTag: string }
   | { type: 'unit_near'; entityTag: string; pos: MissionPoint; radius: number };
 
@@ -43,17 +43,17 @@ export type TriggerEffect =
   | { type: 'wave'; owner: 0 | 1; units: { kind: UnitKind; count: number }[]; pos: MissionPoint; radius?: number; objective?: 'base' | 'position' }
   | { type: 'reinforce'; owner: 0 | 1; units: { kind: UnitKind; count: number }[]; pos: MissionPoint; radius?: number; objective?: 'base' | 'position' }
   | { type: 'dialogue'; text: string; duration?: number }
-  | { type: 'objetivo'; objectiveId: string; state: 'activate' | 'complete' | 'fail' }
+  | { type: 'objective'; objectiveId: string; state: 'activate' | 'complete' | 'fail' }
   | { type: 'camera'; pos: MissionPoint }
-  | { type: 'victoria' }
-  | { type: 'derrota'; text: string };
+  | { type: 'victory' }
+  | { type: 'defeat'; text: string };
 
 export interface TriggerDef {
   id: string;
-  condicion: TriggerCond;
-  efectos: TriggerEffect[];
+  condition: TriggerCond;
+  effects: TriggerEffect[];
   /** If true, the trigger can fire again after `cooldown` seconds. */
-  repetir?: boolean;
+  repeat?: boolean;
   cooldown?: number;
 }
 
@@ -71,7 +71,7 @@ export interface MissionDef {
   playerCiv: CivId;
   enemyCiv: CivId;
   map: { seed: number; type: MapType; size: number };
-  timeOfDay: 'mañana' | 'mediodía' | 'atardecer' | 'noche';
+  timeOfDay: 'morning' | 'noon' | 'dusk' | 'night';
   startingEra: Era;
   startingResources: Resources;
   start: {
@@ -80,7 +80,7 @@ export interface MissionDef {
   };
   /** Tag existing buildings at start (e.g. the enemy center). */
   mark?: { tag: string; kind: BuildingKind; owner: 0 | 1 }[];
-  enemy: { active: boolean; difficulty: 'facil' | 'normal' | 'dificil' | 'legendario'; aggression: number };
+  enemy: { active: boolean; difficulty: 'easy' | 'normal' | 'hard' | 'legendary'; aggression: number };
   objectives: ObjectiveDef[];
   triggers: TriggerDef[];
 }

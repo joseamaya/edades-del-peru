@@ -43,7 +43,7 @@ export class Mission {
   }
 
   private resolvePoint(p: MissionPoint): { x: number; z: number } {
-    const ref = p.ref === 'enemigo' ? this.baseCenter(1) : p.ref === 'jugador' ? this.baseCenter(0) : { x: 0, z: 0 };
+    const ref = p.ref === 'enemy' ? this.baseCenter(1) : p.ref === 'player' ? this.baseCenter(0) : { x: 0, z: 0 };
     return { x: ref.x + p.dx, z: ref.z + p.dz };
   }
 
@@ -196,22 +196,22 @@ export class Mission {
     for (const tr of this.def.triggers) {
       const last = this.lastFired.get(tr.id);
       if (this.fired.has(tr.id)) {
-        if (!tr.repetir) continue;
+        if (!tr.repeat) continue;
         if (last !== undefined && this.timer - last < (tr.cooldown ?? 2)) continue;
       }
-      if (this.evalCond(tr.condicion)) {
+      if (this.evalCond(tr.condition)) {
         this.fired.add(tr.id);
         this.lastFired.set(tr.id, this.timer);
-        for (const fx of tr.efectos) this.applyEffect(fx);
+        for (const fx of tr.effects) this.applyEffect(fx);
       }
     }
   }
 
-  private evalCond(c: TriggerDef['condicion']): boolean {
+  private evalCond(c: TriggerDef['condition']): boolean {
     switch (c.type) {
       case 'time':
         return this.timer >= c.seconds;
-      case 'objetivo': {
+      case 'objective': {
         const st = this.objState.get(c.objectiveId);
         return c.state === 'completed' ? st === 'completed' : c.state === 'failed' ? st === 'failed' : st === 'activo' || st === 'pendiente';
       }
@@ -230,7 +230,7 @@ export class Mission {
 
   private applyEffect(fx: TriggerEffect): void {
     if (fx.type === 'wave' || fx.type === 'reinforce') {
-      const p = this.resolvePoint(fx.pos ?? { dx: 0, dz: 0, ref: 'jugador' });
+      const p = this.resolvePoint(fx.pos ?? { dx: 0, dz: 0, ref: 'player' });
       for (const u of fx.units) {
         for (let i = 0; i < u.count; i++) {
           const jitter = (this.game.rng.float() - 0.5) * (fx.radius ?? 6) * 2;
@@ -253,7 +253,7 @@ export class Mission {
       case 'dialogue':
         this.triggerDialogue(fx.text, fx.duration ?? 5);
         break;
-      case 'objetivo':
+      case 'objective':
         this.objState.set(fx.objectiveId, fx.state === 'activate' ? 'activo' : fx.state === 'complete' ? 'completed' : 'failed');
         break;
       case 'camera': {
@@ -261,10 +261,10 @@ export class Mission {
         this.game.camera.focusOn(p.x, p.z);
         break;
       }
-      case 'victoria':
+      case 'victory':
         this.win();
         break;
-      case 'derrota':
+      case 'defeat':
         this.defeat(fx.text);
         break;
     }

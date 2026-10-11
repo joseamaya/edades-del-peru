@@ -8,11 +8,11 @@ export interface GameSettings {
   civAI: CivId;
   /** Historical period of the match (period-locked matches). */
   period: HistoricalPeriod;
-  difficulty: 'facil' | 'normal' | 'dificil' | 'legendario';
+  difficulty: 'easy' | 'normal' | 'hard' | 'legendary';
   startingEra: Era;
   populationCap: number;
   gameSpeed: number; // multiplier (0.5x-3x)
-  timeOfDay: 'mañana' | 'mediodía' | 'atardecer' | 'noche';
+  timeOfDay: 'morning' | 'noon' | 'dusk' | 'night';
   fogOfWar: boolean;
   soundEnabled: boolean;
   musicEnabled: boolean;
@@ -37,7 +37,7 @@ export const DEFAULT_SETTINGS: GameSettings = {
   startingEra: Era.REGIONAL_STATES,
   populationCap: 100,
   gameSpeed: 1,
-  timeOfDay: 'mediodía',
+  timeOfDay: 'noon',
   fogOfWar: true,
   soundEnabled: true,
   musicEnabled: true,
@@ -55,8 +55,8 @@ export const RESOURCE_INFO = {
 } as const;
 
 export const DIFFICULTY_MULT = {
-  facil: { econ: 0.85, aggression: 0.5, reaction: 1.4 },
+  easy: { econ: 0.85, aggression: 0.5, reaction: 1.4 },
   normal: { econ: 1.0, aggression: 1.0, reaction: 1.0 },
-  dificil: { econ: 1.15, aggression: 1.4, reaction: 0.7 },
-  legendario: { econ: 1.3, aggression: 1.8, reaction: 0.45 },
+  hard: { econ: 1.15, aggression: 1.4, reaction: 0.7 },
+  legendary: { econ: 1.3, aggression: 1.8, reaction: 0.45 },
 } as const;

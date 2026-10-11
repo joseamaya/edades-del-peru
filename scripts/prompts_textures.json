@@ -1,18 +1,18 @@
 {
   "model": "@cf/black-forest-labs/flux-1-schnell",
-  "materials": {
+  "terrain": {
     "sand": "seamless tileable texture of arid Peruvian coastal desert sand, fine golden-tan grains with subtle wind ripples and scattered grit, top-down view, evenly lit, no shadows, no objects, photorealistic PBR albedo, high detail",
     "dirt": "seamless tileable texture of dry packed earth soil from the Andean highlands, medium brown with small stones and faint cracks, top-down view, evenly lit, no shadows, no objects, photorealistic PBR albedo, high detail",
     "grass": "seamless tileable texture of dry golden Andean bunch grass (ichu), sparse greenish-brown tufts over dusty soil, top-down view, evenly lit, no shadows, photorealistic PBR albedo, high detail",
     "rock": "seamless tileable texture of grey volcanic andesite stone, rough speckled surface with subtle mineral grains, top-down view, evenly lit, no shadows, photorealistic PBR albedo, high detail",
     "snow": "seamless tileable texture of high-altitude puna ground, pale dry alpine soil with light frost and very sparse grass, top-down view, evenly lit, no shadows, photorealistic PBR albedo, high detail"
   },
-  "materiales": {
-    "arcilla": "seamless tileable texture of fired red clay ceramic surface, smooth terracotta with subtle mottling, evenly lit, photorealistic PBR albedo, high detail",
-    "barro": "seamless tileable texture of wet mud plaster surface, earthy brown clay daub with slight straw fibers, evenly lit, photorealistic PBR albedo, high detail",
+  "materials": {
+    "clay": "seamless tileable texture of fired red clay ceramic surface, smooth terracotta with subtle mottling, evenly lit, photorealistic PBR albedo, high detail",
+    "mud": "seamless tileable texture of wet mud plaster surface, earthy brown clay daub with slight straw fibers, evenly lit, photorealistic PBR albedo, high detail",
     "adobe": "seamless tileable texture of adobe mudbrick wall, sun-dried clay blocks with straw, warm tan-brown, evenly lit, photorealistic PBR albedo, high detail",
-    "teja": "seamless tileable texture of terracotta roof tiles, curved clay tiles in rows, weathered orange-brown, evenly lit, photorealistic PBR albedo, high detail",
-    "madera": "seamless tileable texture of weathered wooden planks, warm brown linear grain, slightly rough, evenly lit, photorealistic PBR albedo, high detail",
-    "textil": "seamless tileable texture of Andean woven textile, geometric stepped and striped pattern in red, ochre, indigo and cream, tight weave, evenly lit, photorealistic PBR albedo, high detail"
+    "tile": "seamless tileable texture of terracotta roof tiles, curved clay tiles in rows, weathered orange-brown, evenly lit, photorealistic PBR albedo, high detail",
+    "wood": "seamless tileable texture of weathered wooden planks, warm brown linear grain, slightly rough, evenly lit, photorealistic PBR albedo, high detail",
+    "textile": "seamless tileable texture of Andean woven textile, geometric stepped and striped pattern in red, ochre, indigo and cream, tight weave, evenly lit, photorealistic PBR albedo, high detail"
   }
 }

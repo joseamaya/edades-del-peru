@@ -47,7 +47,7 @@ const NODE_INFO: Record<ResourceNode['kind'], { name: string; icon: string }> = 
   well: { name: 'Pozo', icon: '🛢️' },
   hunt: { name: 'Caza', icon: '🦌' },
   fishing: { name: 'Banco de peces', icon: '🐟' },
-  baya: { name: 'Arbusto', icon: '🫐' },
+  berry: { name: 'Arbusto', icon: '🫐' },
 };
 
 export class Game {
@@ -183,7 +183,7 @@ export class Game {
   }
 
   private setTimeOfDay(mode: string): void {
-    const map: Record<string, number> = { 'mañana': 0.62, 'mediodía': 0.5, 'atardecer': 0.28, 'noche': 0.05 };
+    const map: Record<string, number> = { 'morning': 0.62, 'noon': 0.5, 'dusk': 0.28, 'night': 0.05 };
     this.sky.setTimeOfDay(map[mode] ?? 0.5);
   }
 
@@ -253,13 +253,13 @@ export class Game {
       const kind: ResourceNode['kind'] =
         h > 6 ? 'mine' :
         h > 3 ? rng.chance(0.6) ? 'mine' : 'tree' :
-        this.terrain.isBeach(x, z) ? rng.chance(0.5) ? 'well' : 'baya' :
+        this.terrain.isBeach(x, z) ? rng.chance(0.5) ? 'well' : 'berry' :
         rng.chance(0.45) ? 'tree' : rng.chance(0.3) ? 'mine' : 'well';
       const amount =
         kind === 'tree' ? rng.range(140, 220) :
         kind === 'mine' ? rng.range(300, 450) :
         kind === 'well' ? rng.range(250, 380) :
-        kind === 'baya' ? rng.range(120, 180) :
+        kind === 'berry' ? rng.range(120, 180) :
         rng.range(200, 300);
       const node = new ResourceNode(this.scene, kind, x, z, amount, this.settings.mapType, this.trees);
       node.pos.y = this.terrain.getHeight(x, z);
@@ -372,7 +372,7 @@ export class Game {
     const ma = rng.range(0, Math.PI * 2);
     place('mine', 400, Math.cos(ma) * 12, Math.sin(ma) * 12);
     // berries
-    place('baya', 150, rng.range(-6, 6), rng.range(9, 13));
+    place('berry', 150, rng.range(-6, 6), rng.range(9, 13));
     // well (if the era allows it)
     if (this.players[player].era >= Era.TAHUANTINSUYO) {
       const wa = rng.range(0, Math.PI * 2);
@@ -382,7 +382,7 @@ export class Game {
 
   private assignInitialWorkers(player: number, x: number, z: number): void {
     const workers = [...this.units.values()].filter((u) => u.owner === player && u.kind === UnitKind.WORKER);
-    const foods = [...this.resourceNodes.values()].filter((n) => n.resource === 'food' && n.kind === 'baya');
+    const foods = [...this.resourceNodes.values()].filter((n) => n.resource === 'food' && n.kind === 'berry');
     const woods = [...this.resourceNodes.values()].filter((n) => n.resource === 'wood');
     const steels = [...this.resourceNodes.values()].filter((n) => n.resource === 'silver');
     const nearest = (list: ResourceNode[], px: number, pz: number) =>
@@ -1404,10 +1404,10 @@ export class Game {
     this.hud?.addDamageNumber(target.pos.x, target.pos.y + dmgH, target.pos.z, final, final >= 40 ? 'big' : 'normal');
     // impact per hit (blood on units, dust/sparks on structures)
     if (target instanceof Unit) {
-      this.particles.emit({ x: target.pos.x, y: target.pos.y + 0.9, z: target.pos.z, count: 4, color: 0x7a1010, kind: 'polvo', speed: 1.5, life: 0.4, size: 0.7, grow: 0.3, gravity: 10, spread: 1.6 });
+      this.particles.emit({ x: target.pos.x, y: target.pos.y + 0.9, z: target.pos.z, count: 4, color: 0x7a1010, kind: 'dust', speed: 1.5, life: 0.4, size: 0.7, grow: 0.3, gravity: 10, spread: 1.6 });
     } else {
-      this.particles.emit({ x: target.pos.x, y: target.pos.y + 1.3, z: target.pos.z, count: 5, color: 0xcbb086, kind: 'polvo', speed: 1.2, life: 0.45, size: 0.9, grow: 1.0, gravity: 6, spread: 1.4 });
-      if (Math.random() < 0.5) this.particles.emit({ x: target.pos.x, y: target.pos.y + 1.4, z: target.pos.z, count: 2, color: 0xffaa55, kind: 'chispa', speed: 2, life: 0.25, size: 0.9, gravity: 8, spread: 1.5 });
+      this.particles.emit({ x: target.pos.x, y: target.pos.y + 1.3, z: target.pos.z, count: 5, color: 0xcbb086, kind: 'dust', speed: 1.2, life: 0.45, size: 0.9, grow: 1.0, gravity: 6, spread: 1.4 });
+      if (Math.random() < 0.5) this.particles.emit({ x: target.pos.x, y: target.pos.y + 1.4, z: target.pos.z, count: 2, color: 0xffaa55, kind: 'spark', speed: 2, life: 0.25, size: 0.9, gravity: 8, spread: 1.5 });
     }
     if (target.owner === 0) this.notifyUnderAttack(target);
     const owner = from?.owner ?? -1;
@@ -1478,7 +1478,7 @@ export class Game {
         this.resolveDamage(o.owner, t.id, o.damage * falloff, { owner: o.owner });
       }
       // explosion smoke
-      this.particles.emit({ x: impact.x, y: impact.y + 1, z: impact.z, count: 14, color: 0x997755, kind: 'humo', speed: 2, life: 1.8, size: 3 });
+      this.particles.emit({ x: impact.x, y: impact.y + 1, z: impact.z, count: 14, color: 0x997755, kind: 'smoke', speed: 2, life: 1.8, size: 3 });
       this.camera.addShake(0.5);
       bus.emit('fx:explosion', {});
     } else if (targetId !== undefined) {

@@ -275,7 +275,7 @@ export class Unit {
         x: this.pos.x, y: this.pos.y + 0.5, z: this.pos.z,
         count: this.radius > 0.7 ? 18 : 8,
         color: 0x887766,
-        kind: 'humo', speed: 1.2, life: 1.4, size: 2,
+        kind: 'smoke', speed: 1.2, life: 1.4, size: 2,
       });
       this.ctx.event('unit:died', { id: this.id, owner: this.owner, kind: this.kind });
     }
@@ -444,7 +444,7 @@ export class Unit {
         this.footstepTimer = 0.34;
         this.ctx.particles?.emit({
           x: this.pos.x, y: this.pos.y + 0.12, z: this.pos.z,
-          count: 1, color: 0xbfae8e, kind: 'polvo', speed: 0.5, life: 0.5, size: 1.0, grow: 1.7, spread: 0.5,
+          count: 1, color: 0xbfae8e, kind: 'dust', speed: 0.5, life: 0.5, size: 1.0, grow: 1.7, spread: 0.5,
         });
       }
     } else {
@@ -646,18 +646,10 @@ export class Unit {
   }
 
   private fireAt(target: any, time: number): void {
-    const kindMap: Record<string, string> = {
-      bala: 'bullet',
-      trazadora: 'tracer',
-      obús: 'obus',
-      laser: 'laser',
-      rail: 'rail',
-      nuclear: 'nuclear',
-    };
-    const pKind = kindMap[this.stats.projectile] ?? 'bullet';
+    const pKind = this.stats.projectile;
     const from = new THREE.Vector3(this.pos.x, this.pos.y + 0.8, this.pos.z);
     const to = new THREE.Vector3(target.pos.x, target.pos.y + 0.5, target.pos.z);
-    const arc = pKind === 'obus' || pKind === 'nuclear' ? 1 : 0;
+    const arc = pKind === 'howitzer_shell' || pKind === 'nuclear' ? 1 : 0;
     const speed = pKind === 'bullet' ? 40 : pKind === 'tracer' ? 60 : pKind === 'laser' ? 90 : pKind === 'rail' ? 130 : 28;
     this.ctx.spawnProjectile({
       from,
@@ -761,11 +753,11 @@ export class Unit {
       else this.ctx.event?.('fx:wood', {});
       // gather effect according to the resource
       if (node.resource === 'wood') {
-        this.ctx.particles?.emit({ x: node.pos.x, y: node.pos.y + 0.5, z: node.pos.z, count: 3, color: 0x8a6a3a, kind: 'chispa', speed: 0.7, life: 0.45, size: 0.9, spread: 0.6 });
+        this.ctx.particles?.emit({ x: node.pos.x, y: node.pos.y + 0.5, z: node.pos.z, count: 3, color: 0x8a6a3a, kind: 'spark', speed: 0.7, life: 0.45, size: 0.9, spread: 0.6 });
       } else if (node.resource === 'silver' || node.resource === 'stone') {
-        this.ctx.particles?.emit({ x: node.pos.x, y: node.pos.y + 0.5, z: node.pos.z, count: 3, color: 0xffd27a, kind: 'chispa', speed: 0.9, life: 0.35, size: 0.8, spread: 0.7 });
+        this.ctx.particles?.emit({ x: node.pos.x, y: node.pos.y + 0.5, z: node.pos.z, count: 3, color: 0xffd27a, kind: 'spark', speed: 0.9, life: 0.35, size: 0.8, spread: 0.7 });
       } else {
-        this.ctx.particles?.emit({ x: node.pos.x, y: node.pos.y + 0.5, z: node.pos.z, count: 2, color: 0x9bbf6a, kind: 'polvo', speed: 0.6, life: 0.5, size: 1.1 });
+        this.ctx.particles?.emit({ x: node.pos.x, y: node.pos.y + 0.5, z: node.pos.z, count: 2, color: 0x9bbf6a, kind: 'dust', speed: 0.6, life: 0.5, size: 1.1 });
       }
       if (this.carryCount() >= this.carryCapacity) {
         this.deliverOrder();
@@ -973,7 +965,7 @@ export class Unit {
     this.vel.multiplyScalar(Math.pow(0.05, dt));
     this.targetYaw = angleTo(this.pos.x, this.pos.z, target.pos.x, target.pos.z);
     this.convertProgress += dt / 5;
-    this.ctx.particles?.emit({ x: target.pos.x, y: target.pos.y + 1, z: target.pos.z, count: 1, color: 0x66ffaa, kind: 'bengala', speed: 0.2, life: 0.8, size: 1.4 });
+    this.ctx.particles?.emit({ x: target.pos.x, y: target.pos.y + 1, z: target.pos.z, count: 1, color: 0x66ffaa, kind: 'flare', speed: 0.2, life: 0.8, size: 1.4 });
     if (this.convertProgress >= 1) {
       // conversion
       const from = target.owner;

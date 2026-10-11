@@ -69,8 +69,8 @@ def main() -> None:
     acc, tok = creds()
     print(f"model: {model}")
     slots: dict[str, str] = {}
+    slots.update(prompts.get("terrain", {}))
     slots.update(prompts.get("materials", {}))
-    slots.update(prompts.get("materiales", {}))
     for slot, prompt in slots.items():
         raw = OUT / f"{slot}_raw.png"
         if raw.exists() and not force:

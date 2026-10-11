@@ -15,7 +15,7 @@ const DOSSIERS = import.meta.glob('../../docs/historia/**/*.md', {
   eager: true,
 }) as Record<string, string>;
 
-type Tab = 'periodos' | 'civs' | 'campanas' | 'dossiers';
+type Tab = 'periods' | 'civs' | 'campaigns' | 'dossiers';
 
 interface CodexItem {
   id: string;
@@ -167,9 +167,9 @@ function dossierTab(): CodexItem[] {
 }
 
 const TABS: { id: Tab; label: string; items: () => CodexItem[] }[] = [
-  { id: 'periodos', label: '🕰 Periodos', items: periodTab },
+  { id: 'periods', label: '🕰 Periodos', items: periodTab },
   { id: 'civs', label: '🏛 Civilizaciones', items: civTab },
-  { id: 'campanas', label: '📜 Campañas', items: campaignTab },
+  { id: 'campaigns', label: '📜 Campañas', items: campaignTab },
   { id: 'dossiers', label: '📖 Dossiers', items: dossierTab },
 ];
 
@@ -203,7 +203,7 @@ export function openCodex(root: HTMLElement, onClose: () => void): void {
   overlay.appendChild(panel);
   root.appendChild(overlay);
 
-  let currentTab: Tab = 'periodos';
+  let currentTab: Tab = 'periods';
   let selectedId: string | null = null;
 
   const renderTab = (): void => {

@@ -1141,7 +1141,7 @@ export class HUD {
         }),
       ),
     );
-    rows.appendChild(this.field('Dificultad', this.select(['facil', 'normal', 'dificil', 'legendario'] as const, { facil: 'Fácil', normal: 'Normal', dificil: 'Difícil', legendario: 'Legendario' }, this.game.settings.difficulty, (v) => (this.game.settings.difficulty = v))));
+    rows.appendChild(this.field('Dificultad', this.select(['easy', 'normal', 'hard', 'legendary'] as const, { easy: 'Fácil', normal: 'Normal', hard: 'Difícil', legendary: 'Legendario' }, this.game.settings.difficulty, (v) => (this.game.settings.difficulty = v))));
     const disponibles = civsForPeriod(this.game.settings.period);
     const civLabels: Record<string, string> = {};
     for (const c of disponibles) civLabels[c.id] = `${c.name} (${c.geography})`;
@@ -1170,7 +1170,7 @@ export class HUD {
     );
     const rows2 = this.el('div', 'row', panel);
     rows2.appendChild(this.field('Mapa', this.select(['coast', 'andes', 'altiplano', 'jungle'] as const, { costa: 'Costa / litoral', andes: 'Andes', altiplano: 'Altiplano', selva: 'Selva' }, this.game.settings.mapType, (v) => (this.game.settings.mapType = v))));
-    rows2.appendChild(this.field('Hora del día', this.select(['mañana', 'mediodía', 'atardecer', 'noche'] as const, { 'mañana': 'Mañana', 'mediodía': 'Mediodía', 'atardecer': 'Atardecer', 'noche': 'Noche' }, this.game.settings.timeOfDay, (v) => this.setTimeOfDay(v))));
+    rows2.appendChild(this.field('Hora del día', this.select(['morning', 'noon', 'dusk', 'night'] as const, { 'morning': 'Mañana', 'noon': 'Mediodía', 'dusk': 'Atardecer', 'night': 'Noche' }, this.game.settings.timeOfDay, (v) => this.setTimeOfDay(v))));
     rows2.appendChild(this.field('Victoria', this.select(['conquest', 'wonder'] as const, { conquest: 'Conquista', wonder: 'Huaca Sagrada' }, this.game.settings.victoryMode, (v) => (this.game.settings.victoryMode = v))));
     const startBtn = this.el('button', 'ed-primary', panel);
     startBtn.textContent = '▶ INICIAR ESCARAMUZA';
@@ -1381,7 +1381,7 @@ export class HUD {
 
   private setTimeOfDay(v: GameSettings['timeOfDay']): void {
     this.game.settings.timeOfDay = v;
-    const map: Record<string, number> = { 'mañana': 0.62, 'mediodía': 0.5, 'atardecer': 0.28, 'noche': 0.05 };
+    const map: Record<string, number> = { 'morning': 0.62, 'noon': 0.5, 'dusk': 0.28, 'night': 0.05 };
     this.game.sky.setTimeOfDay(map[v] ?? 0.5);
   }
 

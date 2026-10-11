@@ -9,7 +9,7 @@ import { MaterialTex } from '../rendering/Textures';
 import { getGeneratedMaterial } from '../rendering/Biomes';
 
 /** Procedural texture types available for materials. */
-type TexKind = 'wood' | 'brick' | 'stone' | 'concrete' | 'metal' | 'metalDark' | 'metalWarm' | 'roof' | 'cloth' | 'textil' | 'leather' | 'scifi' | 'dirt';
+type TexKind = 'wood' | 'brick' | 'stone' | 'concrete' | 'metal' | 'metalDark' | 'metalWarm' | 'roof' | 'cloth' | 'textile' | 'leather' | 'scifi' | 'dirt';
 
 export interface BuildContext {
   era: Era;
@@ -56,7 +56,7 @@ const TEX_DEFAULTS: Record<TexKind, { roughness: number; metalness: number }> = 
   metalWarm: { roughness: 0.4, metalness: 0.6 },
   roof: { roughness: 0.85, metalness: 0.05 },
   cloth: { roughness: 0.95, metalness: 0 },
-  textil: { roughness: 0.95, metalness: 0 },
+  textile: { roughness: 0.95, metalness: 0 },
   leather: { roughness: 0.8, metalness: 0 },
   scifi: { roughness: 0.35, metalness: 0.8 },
   dirt: { roughness: 0.98, metalness: 0 },
@@ -65,9 +65,9 @@ const TEX_DEFAULTS: Record<TexKind, { roughness: number; metalness: number }> = 
 /** Mapping of procedural type -> AI-generated PBR material (if present). */
 const TEX_GEN: Partial<Record<TexKind, string>> = {
   wood: 'wood',
-  roof: 'teja',
+  roof: 'tile',
   brick: 'adobe',
-  textil: 'textil',
+  textile: 'textile',
 };
 
 function mat(color: string, opts: MatOpts = {}): THREE.MeshStandardMaterial {
@@ -342,7 +342,7 @@ function getAttire(b: Builder, role: UnitRole): Attire {
     return {
       tunic: mixHex(col, sec, elite ? 0.25 : 0.5),
       accent: acc,
-      tex: 'textil',
+      tex: 'textile',
       leg: mixHex(col, '#3a2f26', 0.55),
       boot: false,
       cloak: role === 'melee' || elite,

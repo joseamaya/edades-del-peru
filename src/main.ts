@@ -21,8 +21,8 @@ const MAP_SIZES = [128, 192, 256];
 const MAP_TYPES = ['coast', 'andes', 'altiplano', 'jungle', 'continente', 'archipielago', 'lago', 'estepas'];
 const CIV_IDS = CIVS.map((c) => c.id) as string[];
 const PERIOD_IDS = Object.values(HistoricalPeriod).filter((v) => typeof v === 'number') as number[];
-const DIFFICULTIES = ['facil', 'normal', 'dificil', 'legendario'];
-const TIMES_OF_DAY = ['mañana', 'mediodía', 'atardecer', 'noche'];
+const DIFFICULTIES = ['easy', 'normal', 'hard', 'legendary'];
+const TIMES_OF_DAY = ['morning', 'noon', 'dusk', 'night'];
 const VICTORY_MODES = ['conquest', 'wonder'];
 
 /** Validate and normalize an arbitrary settings object. */

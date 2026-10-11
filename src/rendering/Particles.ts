@@ -146,30 +146,30 @@ export class Particles {
     life?: number;
     size?: number;
     grow?: number;
-    kind?: 'humo' | 'fuego' | 'chispa' | 'explosion' | 'polvo' | 'bengala';
+    kind?: 'smoke' | 'fire' | 'spark' | 'explosion' | 'dust' | 'flare';
     spread?: number;
     gravity?: number;
     emissive?: boolean;
   }): void {
     const count = opts.count ?? 1;
-    const kind = opts.kind ?? 'humo';
+    const kind = opts.kind ?? 'smoke';
     const kindVal =
-      kind === 'humo' ? 0 : kind === 'fuego' ? 1 : kind === 'chispa' ? 2 : kind === 'explosion' ? 3 : kind === 'polvo' ? 4 : 5;
+      kind === 'smoke' ? 0 : kind === 'fire' ? 1 : kind === 'spark' ? 2 : kind === 'explosion' ? 3 : kind === 'dust' ? 4 : 5;
     const baseColor = new THREE.Color(opts.color ?? 0xaaaaaa);
     for (let i = 0; i < count; i++) {
       const p = this.pool[this.cursor];
       this.cursor = (this.cursor + 1) % this.pool.length;
       p.active = true;
       p.kindVal = kindVal;
-      p.emissive = opts.emissive ?? (kind === 'fuego' || kind === 'explosion' || kind === 'bengala' || kind === 'chispa');
+      p.emissive = opts.emissive ?? (kind === 'fire' || kind === 'explosion' || kind === 'flare' || kind === 'spark');
       p.pos.set(opts.x, opts.y, opts.z);
       const spread = opts.spread ?? 1;
       p.vel.set(
         (this.rng.float() - 0.5) * spread,
-        opts.kind === 'humo' ? opts.speed ?? 1.2 : (this.rng.float() - 0.5) * spread,
+        opts.kind === 'smoke' ? opts.speed ?? 1.2 : (this.rng.float() - 0.5) * spread,
         (this.rng.float() - 0.5) * spread,
       );
-      if (kind === 'humo') {
+      if (kind === 'smoke') {
         p.vel.y = (opts.speed ?? 1.4) * (0.7 + this.rng.float() * 0.6);
         p.vel.x *= 0.3;
         p.vel.z *= 0.3;

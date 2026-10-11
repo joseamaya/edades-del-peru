@@ -20,22 +20,22 @@ export const MISSIONS: MissionDef[] = [
     playerCiv: CivId.CARAL,
     enemyCiv: CivId.CARAL,
     map: { seed: 3000, type: 'coast', size: 128 },
-    timeOfDay: 'mañana',
+    timeOfDay: 'morning',
     startingEra: Era.FORMATIVE,
     startingResources: { food: 200, wood: 400, silver: 150, stone: 80 },
     start: {
       units: [{ kind: UnitKind.SOLDIER, dx: -6, dz: 6, tag: 'autoridad', count: 1 }],
     },
-    enemy: { active: true, difficulty: 'facil', aggression: 0.4 },
+    enemy: { active: true, difficulty: 'easy', aggression: 0.4 },
     objectives: [
       { id: 'obj_food', kind: 'gather', resource: 'food', count: 300, title: 'Reúne 300 de comida' },
       { id: 'obj_survive', kind: 'survive', time: 360, title: 'Sostén el asentamiento 6 minutos' },
       { id: 'obj_autoridad', kind: 'protect', entityTag: 'autoridad', title: 'Mantén con vida a la autoridad de Caral' },
     ],
     triggers: [
-      { id: 't_dial_1', condicion: { type: 'time', seconds: 40 }, efectos: [{ type: 'dialogue', text: 'Autoridad: —El río Supe nos da vida. ¡Alzad los templos y tended los canales!' }] },
-      { id: 't_wave_1', condicion: { type: 'time', seconds: 140 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 3 }], pos: { ref: 'jugador', dx: 22, dz: 22 }, radius: 4 }, { type: 'dialogue', text: '¡Grupos rivales al noreste! ¡A las armas!' }] },
-      { id: 't_wave_2', condicion: { type: 'time', seconds: 260 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 4 }], pos: { ref: 'jugador', dx: -20, dz: 24 }, radius: 4 }] },
+      { id: 't_dial_1', condition: { type: 'time', seconds: 40 }, effects: [{ type: 'dialogue', text: 'Autoridad: —El río Supe nos da vida. ¡Alzad los templos y tended los canales!' }] },
+      { id: 't_wave_1', condition: { type: 'time', seconds: 140 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 3 }], pos: { ref: 'player', dx: 22, dz: 22 }, radius: 4 }, { type: 'dialogue', text: '¡Grupos rivales al noreste! ¡A las armas!' }] },
+      { id: 't_wave_2', condition: { type: 'time', seconds: 260 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 4 }], pos: { ref: 'player', dx: -20, dz: 24 }, radius: 4 }] },
     ],
   },
   {
@@ -52,22 +52,22 @@ export const MISSIONS: MissionDef[] = [
     playerCiv: CivId.CHAVIN,
     enemyCiv: CivId.PARACAS,
     map: { seed: 900, type: 'andes', size: 128 },
-    timeOfDay: 'mediodía',
+    timeOfDay: 'noon',
     startingEra: Era.REGIONAL_STATES,
     startingResources: { food: 500, wood: 500, silver: 150, stone: 60 },
     start: {
       units: [{ kind: UnitKind.SOLDIER, dx: -6, dz: 6, tag: 'oraculo', count: 1 }],
     },
-    enemy: { active: true, difficulty: 'facil', aggression: 0.5 },
+    enemy: { active: true, difficulty: 'easy', aggression: 0.5 },
     objectives: [
       { id: 'obj_ofrendas', kind: 'gather', resource: 'food', count: 400, title: 'Reúne ofrendas (400 de comida)' },
       { id: 'obj_survive', kind: 'survive', time: 420, title: 'Sostén el centro ceremonial 7 minutos' },
       { id: 'obj_oraculo', kind: 'protect', entityTag: 'oraculo', title: 'Mantén a salvo al guardián del oráculo' },
     ],
     triggers: [
-      { id: 't_dial_0', condicion: { type: 'time', seconds: 20 }, efectos: [{ type: 'dialogue', text: 'Sacerdote: —El oráculo exige ofrendas. ¡Atended a los peregrinos y defended el templo!' }] },
-      { id: 't_wave_1', condicion: { type: 'time', seconds: 150 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 4 }], pos: { ref: 'jugador', dx: 24, dz: -10 }, radius: 5 }] },
-      { id: 't_wave_2', condicion: { type: 'time', seconds: 300 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 5 }, { kind: UnitKind.MUSKETEER, count: 2 }], pos: { ref: 'jugador', dx: -18, dz: 22 }, radius: 6 }] },
+      { id: 't_dial_0', condition: { type: 'time', seconds: 20 }, effects: [{ type: 'dialogue', text: 'Sacerdote: —El oráculo exige ofrendas. ¡Atended a los peregrinos y defended el templo!' }] },
+      { id: 't_wave_1', condition: { type: 'time', seconds: 150 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 4 }], pos: { ref: 'player', dx: 24, dz: -10 }, radius: 5 }] },
+      { id: 't_wave_2', condition: { type: 'time', seconds: 300 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 5 }, { kind: UnitKind.MUSKETEER, count: 2 }], pos: { ref: 'player', dx: -18, dz: 22 }, radius: 6 }] },
     ],
   },
   {
@@ -84,7 +84,7 @@ export const MISSIONS: MissionDef[] = [
     playerCiv: CivId.MOCHE,
     enemyCiv: CivId.RECUAY,
     map: { seed: 400, type: 'coast', size: 128 },
-    timeOfDay: 'atardecer',
+    timeOfDay: 'dusk',
     startingEra: Era.REGIONAL_STATES,
     startingResources: { food: 700, wood: 600, silver: 200, stone: 200 },
     start: {
@@ -101,10 +101,10 @@ export const MISSIONS: MissionDef[] = [
       { id: 'obj_plata', kind: 'gather', resource: 'silver', count: 250, title: 'Reúne 250 de plata' },
     ],
     triggers: [
-      { id: 't_dial_0', condicion: { type: 'time', seconds: 10 }, efectos: [{ type: 'dialogue', text: 'Señor de Moche: —¡Las huacas son nuestro poder! ¡Formad en las plazas!' }] },
-      { id: 't_wave_1', condicion: { type: 'time', seconds: 80 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 5 }], pos: { ref: 'jugador', dx: 30, dz: 10 }, radius: 6 }] },
-      { id: 't_wave_2', condicion: { type: 'time', seconds: 200 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 4 }, { kind: UnitKind.HUSSAR, count: 2 }], pos: { ref: 'jugador', dx: -10, dz: 30 }, radius: 6 }, { type: 'dialogue', text: '¡Guerreros de la sierra por el oeste! ¡Reforzad el flanco!' }] },
-      { id: 't_wave_3', condicion: { type: 'time', seconds: 360 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 6 }], pos: { ref: 'jugador', dx: 28, dz: -12 }, radius: 6 }] },
+      { id: 't_dial_0', condition: { type: 'time', seconds: 10 }, effects: [{ type: 'dialogue', text: 'Señor de Moche: —¡Las huacas son nuestro poder! ¡Formad en las plazas!' }] },
+      { id: 't_wave_1', condition: { type: 'time', seconds: 80 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 5 }], pos: { ref: 'player', dx: 30, dz: 10 }, radius: 6 }] },
+      { id: 't_wave_2', condition: { type: 'time', seconds: 200 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 4 }, { kind: UnitKind.HUSSAR, count: 2 }], pos: { ref: 'player', dx: -10, dz: 30 }, radius: 6 }, { type: 'dialogue', text: '¡Guerreros de la sierra por el oeste! ¡Reforzad el flanco!' }] },
+      { id: 't_wave_3', condition: { type: 'time', seconds: 360 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 6 }], pos: { ref: 'player', dx: 28, dz: -12 }, radius: 6 }] },
     ],
   },
   {
@@ -121,7 +121,7 @@ export const MISSIONS: MissionDef[] = [
     playerCiv: CivId.WARI,
     enemyCiv: CivId.TIAHUANACO,
     map: { seed: 800, type: 'andes', size: 160 },
-    timeOfDay: 'mediodía',
+    timeOfDay: 'noon',
     startingEra: Era.TAHUANTINSUYO,
     startingResources: { food: 800, wood: 700, silver: 400, stone: 300 },
     start: {
@@ -138,9 +138,9 @@ export const MISSIONS: MissionDef[] = [
       { id: 'obj_destroy', kind: 'destroy', entityTag: 'centro_rival', title: 'Toma el centro rival del altiplano' },
     ],
     triggers: [
-      { id: 't_dial_0', condicion: { type: 'time', seconds: 20 }, efectos: [{ type: 'dialogue', text: 'Gobernante wari: —Nuestros caminos y andenes son la fuerza del imperio. ¡Adelante!' }] },
-      { id: 't_cam_1', condicion: { type: 'time', seconds: 60 }, efectos: [{ type: 'camera', pos: { ref: 'enemigo', dx: 0, dz: 0 } }] },
-      { id: 't_wave_1', condicion: { type: 'time', seconds: 220 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 6 }], pos: { ref: 'jugador', dx: 26, dz: 16 }, radius: 6 }] },
+      { id: 't_dial_0', condition: { type: 'time', seconds: 20 }, effects: [{ type: 'dialogue', text: 'Gobernante wari: —Nuestros caminos y andenes son la fuerza del imperio. ¡Adelante!' }] },
+      { id: 't_cam_1', condition: { type: 'time', seconds: 60 }, effects: [{ type: 'camera', pos: { ref: 'enemy', dx: 0, dz: 0 } }] },
+      { id: 't_wave_1', condition: { type: 'time', seconds: 220 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 6 }], pos: { ref: 'player', dx: 26, dz: 16 }, radius: 6 }] },
     ],
   },
   {
@@ -157,7 +157,7 @@ export const MISSIONS: MissionDef[] = [
     playerCiv: CivId.INCA,
     enemyCiv: CivId.CHANCA,
     map: { seed: 1438, type: 'andes', size: 160 },
-    timeOfDay: 'atardecer',
+    timeOfDay: 'dusk',
     startingEra: Era.TAHUANTINSUYO,
     startingResources: { food: 700, wood: 600, silver: 400, stone: 200 },
     start: {
@@ -171,16 +171,16 @@ export const MISSIONS: MissionDef[] = [
       { tag: 'cusco', kind: BuildingKind.CENTER, owner: 0 },
       { tag: 'centro_chanca', kind: BuildingKind.CENTER, owner: 1 },
     ],
-    enemy: { active: true, difficulty: 'dificil', aggression: 1.3 },
+    enemy: { active: true, difficulty: 'hard', aggression: 1.3 },
     objectives: [
       { id: 'obj_defend', kind: 'defend', entityTag: 'cusco', time: 480, title: 'Defiende el Cusco 8 minutos' },
       { id: 'obj_kill', kind: 'destroy', entityTag: 'centro_chanca', title: 'Destruye el campamento chanca' },
       { id: 'obj_cusi', kind: 'protect', entityTag: 'cusi_yupanqui', title: 'Mantén con vida a Cusi Yupanqui' },
     ],
     triggers: [
-      { id: 't_dial_0', condicion: { type: 'time', seconds: 15 }, efectos: [{ type: 'dialogue', text: 'Cusi Yupanqui: —Los chancas creen que huiremos como los nobles. ¡Aquí se defiende el Cusco!' }] },
-      { id: 't_wave_1', condicion: { type: 'time', seconds: 90 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 6 }], pos: { ref: 'jugador', dx: 28, dz: 12 }, radius: 6 }, { type: 'dialogue', text: '¡Anccu Hualloc ataca por el norte! ¡A las armas!' }] },
-      { id: 't_wave_2', condicion: { type: 'time', seconds: 200 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 5 }, { kind: UnitKind.HUSSAR, count: 2 }], pos: { ref: 'jugador', dx: -12, dz: 28 }, radius: 6 }] },
+      { id: 't_dial_0', condition: { type: 'time', seconds: 15 }, effects: [{ type: 'dialogue', text: 'Cusi Yupanqui: —Los chancas creen que huiremos como los nobles. ¡Aquí se defiende el Cusco!' }] },
+      { id: 't_wave_1', condition: { type: 'time', seconds: 90 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 6 }], pos: { ref: 'player', dx: 28, dz: 12 }, radius: 6 }, { type: 'dialogue', text: '¡Anccu Hualloc ataca por el norte! ¡A las armas!' }] },
+      { id: 't_wave_2', condition: { type: 'time', seconds: 200 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 5 }, { kind: UnitKind.HUSSAR, count: 2 }], pos: { ref: 'player', dx: -12, dz: 28 }, radius: 6 }] },
     ],
   },
   {
@@ -197,7 +197,7 @@ export const MISSIONS: MissionDef[] = [
     playerCiv: CivId.INCA,
     enemyCiv: CivId.CHIMU,
     map: { seed: 1470, type: 'coast', size: 192 },
-    timeOfDay: 'atardecer',
+    timeOfDay: 'dusk',
     startingEra: Era.TAHUANTINSUYO,
     startingResources: { food: 1000, wood: 700, silver: 900, stone: 400 },
     start: {
@@ -208,15 +208,15 @@ export const MISSIONS: MissionDef[] = [
       ],
     },
     mark: [{ tag: 'chan_chan', kind: BuildingKind.CENTER, owner: 1 }],
-    enemy: { active: true, difficulty: 'dificil', aggression: 1.2 },
+    enemy: { active: true, difficulty: 'hard', aggression: 1.2 },
     objectives: [
       { id: 'obj_kill', kind: 'destroy', entityTag: 'chan_chan', title: 'Toma Chan Chan' },
       { id: 'obj_hold', kind: 'survive', time: 600, title: 'Mantén tu campamento 10 minutos' },
     ],
     triggers: [
-      { id: 't_dial_0', condicion: { type: 'time', seconds: 20 }, efectos: [{ type: 'dialogue', text: 'Túpac Yupanqui: —Minchancaman no se someterá. Avanzad por los valles y cortadle el agua a Chan Chan.' }] },
-      { id: 't_cam_1', condicion: { type: 'time', seconds: 60 }, efectos: [{ type: 'camera', pos: { ref: 'enemigo', dx: 0, dz: 0 } }] },
-      { id: 't_wave_1', condicion: { type: 'time', seconds: 260 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 6 }, { kind: UnitKind.MUSKETEER, count: 3 }], pos: { ref: 'jugador', dx: 20, dz: 20 }, radius: 7 }, { type: 'dialogue', text: '¡Querrotumi contraataca desde Paramonga!' }] },
+      { id: 't_dial_0', condition: { type: 'time', seconds: 20 }, effects: [{ type: 'dialogue', text: 'Túpac Yupanqui: —Minchancaman no se someterá. Avanzad por los valles y cortadle el agua a Chan Chan.' }] },
+      { id: 't_cam_1', condition: { type: 'time', seconds: 60 }, effects: [{ type: 'camera', pos: { ref: 'enemy', dx: 0, dz: 0 } }] },
+      { id: 't_wave_1', condition: { type: 'time', seconds: 260 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 6 }, { kind: UnitKind.MUSKETEER, count: 3 }], pos: { ref: 'player', dx: 20, dz: 20 }, radius: 7 }, { type: 'dialogue', text: '¡Querrotumi contraataca desde Paramonga!' }] },
     ],
   },
   {
@@ -233,7 +233,7 @@ export const MISSIONS: MissionDef[] = [
     playerCiv: CivId.INCA,
     enemyCiv: CivId.REALISTAS,
     map: { seed: 1780, type: 'andes', size: 192 },
-    timeOfDay: 'atardecer',
+    timeOfDay: 'dusk',
     startingEra: Era.VICEROYALTY,
     startingResources: { food: 1000, wood: 700, silver: 900, stone: 400 },
     start: {
@@ -244,16 +244,16 @@ export const MISSIONS: MissionDef[] = [
       ],
     },
     mark: [{ tag: 'centro_realista', kind: BuildingKind.CENTER, owner: 1 }],
-    enemy: { active: true, difficulty: 'dificil', aggression: 1.3 },
+    enemy: { active: true, difficulty: 'hard', aggression: 1.3 },
     objectives: [
       { id: 'obj_kill', kind: 'destroy', entityTag: 'centro_realista', title: 'Toma el centro de mando realista' },
       { id: 'obj_hold', kind: 'survive', time: 600, title: 'Mantén el cuartel rebelde 10 minutos' },
       { id: 'obj_tupac', kind: 'protect', entityTag: 'tupac_amaru', title: 'Mantén con vida a Túpac Amaru II' },
     ],
     triggers: [
-      { id: 't_dial_0', condicion: { type: 'time', seconds: 20 }, efectos: [{ type: 'dialogue', text: 'Túpac Amaru II: —¡Por el Sol y por el Perú! Abolid la mita y el reparto. ¡Adelante!' }] },
-      { id: 't_cam_1', condicion: { type: 'time', seconds: 60 }, efectos: [{ type: 'camera', pos: { ref: 'enemigo', dx: 0, dz: 0 } }] },
-      { id: 't_wave_1', condicion: { type: 'time', seconds: 300 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 6 }, { kind: UnitKind.MUSKETEER, count: 3 }], pos: { ref: 'jugador', dx: 22, dz: 18 }, radius: 7 }, { type: 'dialogue', text: '¡Refuerzos realistas desde el Cusco!' }] },
+      { id: 't_dial_0', condition: { type: 'time', seconds: 20 }, effects: [{ type: 'dialogue', text: 'Túpac Amaru II: —¡Por el Sol y por el Perú! Abolid la mita y el reparto. ¡Adelante!' }] },
+      { id: 't_cam_1', condition: { type: 'time', seconds: 60 }, effects: [{ type: 'camera', pos: { ref: 'enemy', dx: 0, dz: 0 } }] },
+      { id: 't_wave_1', condition: { type: 'time', seconds: 300 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 6 }, { kind: UnitKind.MUSKETEER, count: 3 }], pos: { ref: 'player', dx: 22, dz: 18 }, radius: 7 }, { type: 'dialogue', text: '¡Refuerzos realistas desde el Cusco!' }] },
     ],
   },
   {
@@ -270,7 +270,7 @@ export const MISSIONS: MissionDef[] = [
     playerCiv: CivId.PATRIOTAS,
     enemyCiv: CivId.REALISTAS,
     map: { seed: 1824, type: 'andes', size: 192 },
-    timeOfDay: 'mañana',
+    timeOfDay: 'morning',
     startingEra: Era.REPUBLIC,
     startingResources: { food: 1200, wood: 800, silver: 1200, stone: 500 },
     start: {
@@ -281,15 +281,15 @@ export const MISSIONS: MissionDef[] = [
       ],
     },
     mark: [{ tag: 'centro_realista', kind: BuildingKind.CENTER, owner: 1 }],
-    enemy: { active: true, difficulty: 'dificil', aggression: 1.3 },
+    enemy: { active: true, difficulty: 'hard', aggression: 1.3 },
     objectives: [
       { id: 'obj_kill', kind: 'destroy', entityTag: 'centro_realista', title: 'Toma el centro realista' },
       { id: 'obj_hold', kind: 'survive', time: 600, title: 'Resiste hasta Ayacucho (10 minutos)' },
     ],
     triggers: [
-      { id: 't_dial_0', condicion: { type: 'time', seconds: 20 }, efectos: [{ type: 'dialogue', text: 'General patriota: —La independencia se gana en la sierra. ¡Avanzad sobre el centro realista!' }] },
-      { id: 't_cam_1', condicion: { type: 'time', seconds: 55 }, efectos: [{ type: 'camera', pos: { ref: 'enemigo', dx: 0, dz: 0 } }] },
-      { id: 't_wave_1', condicion: { type: 'time', seconds: 320 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 6 }, { kind: UnitKind.CAVALRY, count: 3 }], pos: { ref: 'jugador', dx: 24, dz: 16 }, radius: 7 }, { type: 'dialogue', text: '¡Contraataque realista! ¡Formad cuadro!' }] },
+      { id: 't_dial_0', condition: { type: 'time', seconds: 20 }, effects: [{ type: 'dialogue', text: 'General patriota: —La independencia se gana en la sierra. ¡Avanzad sobre el centro realista!' }] },
+      { id: 't_cam_1', condition: { type: 'time', seconds: 55 }, effects: [{ type: 'camera', pos: { ref: 'enemy', dx: 0, dz: 0 } }] },
+      { id: 't_wave_1', condition: { type: 'time', seconds: 320 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 6 }, { kind: UnitKind.CAVALRY, count: 3 }], pos: { ref: 'player', dx: 24, dz: 16 }, radius: 7 }, { type: 'dialogue', text: '¡Contraataque realista! ¡Formad cuadro!' }] },
     ],
   },
   {
@@ -306,7 +306,7 @@ export const MISSIONS: MissionDef[] = [
     playerCiv: CivId.REPUBLIC,
     enemyCiv: CivId.CHILE,
     map: { seed: 1879, type: 'coast', size: 192 },
-    timeOfDay: 'noche',
+    timeOfDay: 'night',
     startingEra: Era.REPUBLIC,
     startingResources: { food: 1500, wood: 800, silver: 1500, stone: 1200 },
     start: {
@@ -317,15 +317,15 @@ export const MISSIONS: MissionDef[] = [
       ],
     },
     mark: [{ tag: 'centro_enemigo', kind: BuildingKind.CENTER, owner: 1 }],
-    enemy: { active: true, difficulty: 'dificil', aggression: 1.4 },
+    enemy: { active: true, difficulty: 'hard', aggression: 1.4 },
     objectives: [
       { id: 'obj_puerto', kind: 'protect', entityTag: 'puerto', title: 'Protege el puerto y el monitor' },
       { id: 'obj_kill', kind: 'destroy', entityTag: 'centro_enemigo', title: 'Destruye el centro de mando enemigo' },
     ],
     triggers: [
-      { id: 't_dial_0', condicion: { type: 'time', seconds: 15 }, efectos: [{ type: 'dialogue', text: 'Miguel Grau: —El enemigo es superior, pero no pasará. ¡Tripulación, a vuestros puestos!' }] },
-      { id: 't_cam_1', condicion: { type: 'time', seconds: 45 }, efectos: [{ type: 'camera', pos: { ref: 'enemigo', dx: 0, dz: 0 } }] },
-      { id: 't_wave_1', condicion: { type: 'time', seconds: 240 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 4 }, { kind: UnitKind.RIFLEMAN, count: 3 }], pos: { ref: 'jugador', dx: 16, dz: 16 }, radius: 6 }, { type: 'dialogue', text: '¡Tropas de desembarco enemigas se dirigen al puerto!' }] },
+      { id: 't_dial_0', condition: { type: 'time', seconds: 15 }, effects: [{ type: 'dialogue', text: 'Miguel Grau: —El enemigo es superior, pero no pasará. ¡Tripulación, a vuestros puestos!' }] },
+      { id: 't_cam_1', condition: { type: 'time', seconds: 45 }, effects: [{ type: 'camera', pos: { ref: 'enemy', dx: 0, dz: 0 } }] },
+      { id: 't_wave_1', condition: { type: 'time', seconds: 240 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 4 }, { kind: UnitKind.RIFLEMAN, count: 3 }], pos: { ref: 'player', dx: 16, dz: 16 }, radius: 6 }, { type: 'dialogue', text: '¡Tropas de desembarco enemigas se dirigen al puerto!' }] },
     ],
   },
 ];

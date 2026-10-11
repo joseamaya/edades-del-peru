@@ -30,7 +30,7 @@ There is no `npm test` or any script outside `package.json`. `tsc` is strict (`s
 - **Temporal model**: `Era` (0-5) is the internal **tech level** (stats/models); `HistoricalPeriod` (0-9, in
   `src/model/defs/periods.ts`) is the **historical period** of the match. Matches are **locked by period** (no
   anachronistic modernization): `settings.period` fixes `startingEra` and disables era advancement (HUD and AI).
-- Data is driven by defs in `src/model/defs/{periodos,eras,civs,units,buildings,techs}.ts`; models are generated
+- Data is driven by defs in `src/model/defs/{periods,eras,civs,units,buildings,techs}.ts`; models are generated
   procedurally in `src/model/ProceduralModel.ts` (no external assets).
 - **PBR terrain textures (AI-generated)**: `src/assets/textures/terrain/{slot}_{diffuse|normal|roughness}.webp`
   (slots `sand/dirt/grass/rock/snow`), loaded by `src/rendering/Biomes.ts` via `import.meta.glob`. The terrain
@@ -38,7 +38,7 @@ There is no `npm test` or any script outside `package.json`. `tsc` is strict (`s
   (offline). Generated with `scripts/gen_textures.py` (Cloudflare Workers AI, credentials in
   `scripts/.cloudflare.json`, gitignored) + `scripts/post_textures.py` (tiling/normal/roughness). See
   `PROVENANCE.md`.
-- **Coetaneous civilizations**: `civs.ts` gives each civ `periods` and `geography`; `civsDePeriodo(period)`
+- **Coetaneous civilizations**: `civs.ts` gives each civ `periods` and `geography`; `civsForPeriod(period)`
   filters valid rivals. Never match civs without temporal overlap.
 - **Maps by geography**: `MapType = 'coast' | 'andes' | 'altiplano' | 'jungle'` (generated in `Terrain.generate`).
 - `src/campaign/defs/campaign.ts` defines the 9 historical campaigns; `src/campaign/Mission.ts` evaluates

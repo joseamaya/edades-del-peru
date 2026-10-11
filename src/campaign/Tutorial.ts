@@ -37,7 +37,7 @@ export class Tutorial {
     const buildBottom = '#ed-bottom';
     this.pasos = [
       {
-        id: 'seleccionar',
+        id: 'select',
         text: 'Selecciona a tus obreros: haz clic izquierdo sobre uno o arrastra un recuadro para seleccionar varios.',
         check: (g) => g.selectedUnits.some((id) => g.units.get(id)?.owner === 0 && g.units.get(id)?.kind === UnitKind.WORKER),
       },
@@ -58,7 +58,7 @@ export class Tutorial {
           this.base.barracks,
       },
       {
-        id: 'entrenar',
+        id: 'train',
         text: 'Selecciona la Casa del Guerrero y entrena un Guerrero para defender el asentamiento.',
         highlight: buildBottom,
         check: (g) =>
@@ -66,7 +66,7 @@ export class Tutorial {
           this.base.soldiers,
       },
       {
-        id: 'atacar',
+        id: 'attack',
         text: 'Selecciona tu ejército y da una orden: clic derecho para mover o atacar, Ctrl+clic derecho para atacar-mover.',
         check: (g) =>
           [...g.units.values()].some(

@@ -89,7 +89,7 @@ export class ResourceNode {
   dead = false;
   radius: number;
   view = new THREE.Group();
-  kind: 'tree' | 'mine' | 'well' | 'hunt' | 'fishing' | 'baya';
+  kind: 'tree' | 'mine' | 'well' | 'hunt' | 'fishing' | 'berry';
   growthTime = 0;
   private swaySeed: number;
   private scene: THREE.Scene;
@@ -123,7 +123,7 @@ export class ResourceNode {
         break;
       case 'hunt':
       case 'fishing':
-      case 'baya':
+      case 'berry':
         this.resource = 'food';
         this.radius = 0.7;
         break;
@@ -149,7 +149,7 @@ export class ResourceNode {
       case 'fishing':
         this.buildFish(rng);
         break;
-      case 'baya':
+      case 'berry':
         this.buildBush(rng);
         break;
     }
