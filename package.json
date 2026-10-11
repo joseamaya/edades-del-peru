@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Edades del Perú — RTS de historia peruana (Caral a hoy) en Three.js",
+  "description": "Edades del Perú — Peruvian history RTS (Caral to present) in Three.js",
   "license": "MIT",
   "author": "Miguel Amaya <miguel.amaya99@gmail.com>",
   "repository": {
@@ -20,8 +20,8 @@
     "typescript",
     "vite",
     "peru",
-    "historia",
-    "juego",
+    "history",
+    "game",
     "age-of-empires"
   ],
   "scripts": {

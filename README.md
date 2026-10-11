@@ -1,152 +1,172 @@
-# EDADES DEL PERÚ — RTS DE HISTORIA PERUANA
+# EDADES DEL PERÚ — PERUVIAN HISTORY RTS
 
-[![Licencia: MIT](https://img.shields.io/badge/Licencia-MIT-blue.svg)](./LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![CI](https://github.com/joseamaya/edades-del-peru/actions/workflows/ci.yml/badge.svg)](https://github.com/joseamaya/edades-del-peru/actions/workflows/ci.yml)
 
-Un estrategia en tiempo real estilo **Age of Empires II** que recorre la historia del Perú, de Caral al presente, construido en **Three.js** con assets 100% procedurales (texturas Canvas, modelos paramétricos, audio WebAudio). Toda la interfaz está en español y el contenido histórico es **verificable** (ver [`docs/historia/`](./docs/historia/)).
+An **Age of Empires II**-style real-time strategy game that walks through the history of Peru, from Caral to
+the present, built with **Three.js** and 100% procedural assets (Canvas textures, parametric models, WebAudio
+audio). The whole in-game interface is in Spanish and the historical content is **verifiable** (see
+[`docs/historia/`](./docs/historia/)).
 
-El juego es **históricamente exacto** en un punto clave: cada partida se juega en un **periodo histórico**, y solo pueden enfrentarse **civilizaciones coetáneas** (p. ej. Moche con Recuay, Chanca con Inca, nunca Moche con Chimú).
+The game is **historically accurate** on one key point: every match is played in a **historical period**, and
+only **coetaneous civilizations** can face each other (e.g. Moche with Recuay, Chanca with Inca, never Moche
+with Chimú).
 
-## Cómo ejecutar
+## How to run
 
-Requiere Node.js ≥ 20.19. El gestor de paquetes es **Yarn 1** (hay `yarn.lock`; no hay `package-lock.json`).
+Requires Node.js ≥ 20.19. The package manager is **Yarn 1** (`yarn.lock` exists; there is no
+`package-lock.json`).
 
 ```bash
 yarn install
-yarn dev          # desarrollo (http://localhost:5173)
-yarn build        # typecheck + build de producción (dist/)
-yarn preview      # servidor del build
+yarn dev          # development (http://localhost:5173)
+yarn build        # typecheck + production build (dist/)
+yarn preview      # serve the build
 yarn typecheck    # tsc --noEmit
 yarn lint         # ESLint
-yarn test         # tests unitarios (Vitest)
-yarn test:e2e     # smoke test E2E (Playwright, requiere `npx playwright install chromium`)
+yarn test         # unit tests (Vitest)
+yarn test:e2e     # E2E smoke test (Playwright, requires `npx playwright install chromium`)
 ```
 
-Para capturas automáticas del juego (usado en el bucle de revisión visual):
+For automatic screenshots of the game (used in the visual review loop):
 
 ```bash
-yarn shot nombre --seed=777 --wait=8000
+yarn shot name --seed=777 --wait=8000
 ```
 
-Parámetros de depuración por URL:
+Debug URL parameters:
 
-- `?play=1` — entra directo a la partida (sin menú); es lo que usan los scripts/E2E
-- `?menu=1` / `?menu=0` — fuerza mostrar u ocultar el menú principal
-- `?seed=777` — semilla del mapa
-- `?fog=0` — desactiva la niebla de guerra
-- `?low=1` — calidad baja (SwiftShader/software)
-- `?speed=3` — multiplicador de velocidad
-- `?era=N` — fuerza el nivel tecnológico N (0-5)
-- `?mission=ID` — inicia una misión de campaña (ver tabla abajo)
+- `?play=1` — go straight into the match (no menu); this is what scripts/E2E use
+- `?menu=1` / `?menu=0` — force showing or hiding the main menu
+- `?seed=777` — map seed
+- `?fog=0` — disable fog of war
+- `?low=1` — low quality (SwiftShader/software)
+- `?speed=3` — speed multiplier
+- `?era=N` — force tech level N (0-5)
+- `?mission=ID` — start a campaign mission (see the table below)
 
-## Campaña: La Senda del Sol
+## Campaign: La Senda del Sol
 
-Nueve escenarios históricos con datos exactos (fecha, lugar, bandos y comandantes reales). Cada dossier está en [`docs/historia/campanas/`](./docs/historia/campanas/).
+Nine historical scenarios with exact data (date, place, sides and real commanders). Each dossier is in
+[`docs/historia/campanas/`](./docs/historia/campanas/).
 
-| # | Misión | Fecha | Enfrentamiento |
+| # | Mission | Date | Confrontation |
 |---|---|---|---|
-| 1 | La Ciudad Sagrada | c. 3000 a.C. | Caral-Supe (Áspero / rivales del valle) |
-| 2 | El Oráculo de Chavín | c. 900–500 a.C. | Chavín vs Paracas |
-| 3 | La Frontera de los Valles | c. 300–600 d.C. | Moche vs Recuay |
-| 4 | El Horizonte Medio | c. 600–1000 d.C. | Wari vs Tiahuanaco |
+| 1 | La Ciudad Sagrada | c. 3000 BCE | Caral-Supe (Áspero / valley rivals) |
+| 2 | El Oráculo de Chavín | c. 900–500 BCE | Chavín vs Paracas |
+| 3 | La Frontera de los Valles | c. 300–600 CE | Moche vs Recuay |
+| 4 | El Horizonte Medio | c. 600–1000 CE | Wari vs Tiahuanaco |
 | 5 | Yahuar Pampa | 1438 | Cusi Yupanqui (Inca) vs Anccu Hualloc (Chanca) |
 | 6 | La Guerra del Norte | c. 1470 | Túpac Yupanqui (Inca) vs Minchancaman (Chimú) |
-| 7 | La Gran Rebelión | 1780–1781 | Túpac Amaru II vs Realistas |
-| 8 | La Independencia | 1821–1824 | Patriotas (San Martín, Bolívar, Sucre) vs Realistas |
-| 9 | El Caballero de los Mares | 1879–1883 | Miguel Grau y Bolognesi (Perú) vs Chile |
+| 7 | La Gran Rebelión | 1780–1781 | Túpac Amaru II vs Royalists |
+| 8 | La Independencia | 1821–1824 | Patriots (San Martín, Bolívar, Sucre) vs Royalists |
+| 9 | El Caballero de los Mares | 1879–1883 | Miguel Grau and Bolognesi (Peru) vs Chile |
 
-Ids de misión: `m1_caral`, `m2_chavin`, `m3_moche_recuay`, `m4_wari`, `m5_yahuar_pampa`, `m6_chimu_inca`, `m7_tupac_amaru`, `m8_independencia`, `m9_guerra_pacifico`.
+Mission ids: `m1_caral`, `m2_chavin`, `m3_moche_recuay`, `m4_wari`, `m5_yahuar_pampa`, `m6_chimu_inca`,
+`m7_tupac_amaru`, `m8_independencia`, `m9_guerra_pacifico`.
 
-## Modo educativo
+## Educational mode
 
-El juego enseña historia mientras se juega:
+The game teaches history while you play:
 
-- **Prólogo de campaña**: al abrir *Campañas* se presenta la historia del Perú (de Caral a la República) antes de elegir escenario.
-- **Briefing histórico**: cada misión muestra periodo y fechas, geografía, bandos, contexto ampliado, un «¿Sabías que…?» y sus **fuentes** (plegables).
-- **Tutorial guiado**: la primera misión (Caral) enseña a seleccionar, construir y entrenar paso a paso (respetando el ajuste *Mostrar consejos*).
-- **Códice** (📖 en el menú): navegador de periodos, civilizaciones y campañas, con los **dossiers históricos** de [`docs/historia/`](./docs/historia/) y sus fuentes.
+- **Campaign prologue**: opening *Campañas* presents the history of Peru (from Caral to the Republic) before
+  choosing a scenario.
+- **Historical briefing**: each mission shows period and dates, geography, sides, expanded context, a
+  «¿Sabías que…?» and its **sources** (collapsible).
+- **Guided tutorial**: the first mission (Caral) teaches selecting, building and training step by step
+  (respecting the *Mostrar consejos* setting).
+- **Codex** (📖 in the menu): a browser of periods, civilizations and campaigns, with the **historical dossiers**
+  from [`docs/historia/`](./docs/historia/) and their sources.
 
-## Controles
+## Controls
 
-| Acción | Tecla / Ratón |
+| Action | Key / Mouse |
 |---|---|
-| Seleccionar | Clic izquierdo / arrastrar caja |
-| Seleccionar todas del mismo tipo | Doble clic |
-| Todo el ejército | E |
-| Mover / ordenar | Botón derecho |
-| Atacar-mover | Ctrl + Botón derecho |
-| Encolar órdenes / rally point | Shift + Botón derecho |
-| Paneo | WASD / flechas / bordes / botón medio |
-| Zoom | Rueda · **Q/E** rotar · **F** seguir |
-| Última batalla | Espacio · **H** Plaza Mayor |
-| Construir andén / vivienda | G / V |
-| Pausa | P · **☰** menú |
+| Select | Left click / drag box |
+| Select all of the same type | Double click |
+| Entire army | E |
+| Move / order | Right button |
+| Attack-move | Ctrl + Right button |
+| Queue orders / rally point | Shift + Right button |
+| Pan | WASD / arrows / edges / middle button |
+| Zoom | Wheel · **Q/E** rotate · **F** follow |
+| Last battle | Space · **H** Plaza Mayor |
+| Build platform / dwelling | G / V |
+| Pause | P · **☰** menu |
 
-## Periodos históricos (10)
+## Historical periods (10)
 
-Partidas **bloqueadas por periodo** (sin modernización anacrónica). Cronología en [`docs/historia/periodizacion.md`](./docs/historia/periodizacion.md).
+Matches are **locked by period** (no anachronistic modernization). Chronology in
+[`docs/historia/periodizacion.md`](./docs/historia/periodizacion.md).
 
-| Periodo | Fechas | Civilizaciones |
+| Period | Dates | Civilizations |
 |---|---|---|
-| Arcaico Tardío | 3000–1800 a.C. | Caral-Supe |
-| Horizonte Temprano | 1200–200 a.C. | Chavín, Paracas |
-| Intermedio Temprano | 200 a.C.–600 d.C. | Moche, Nazca, Recuay, Tiahuanaco |
-| Horizonte Medio | 600–1000 d.C. | Wari, Tiahuanaco |
-| Intermedio Tardío | 1000–1476 d.C. | Chimú, Chincha, Chanca |
-| Horizonte Tardío | 1438–1533 d.C. | Inca |
-| Virreinato | 1542–1821 | Realistas |
-| Independencia | 1821–1824 | Patriotas, Realistas |
-| República | 1821–1900 | República del Perú, Chile |
-| Contemporáneo | 1900–hoy | República del Perú |
+| Late Archaic | 3000–1800 BCE | Caral-Supe |
+| Early Horizon | 1200–200 BCE | Chavín, Paracas |
+| Early Intermediate | 200 BCE–600 CE | Moche, Nazca, Recuay, Tiahuanaco |
+| Middle Horizon | 600–1000 CE | Wari, Tiahuanaco |
+| Late Intermediate | 1000–1476 CE | Chimú, Chincha, Chanca |
+| Late Horizon | 1438–1533 CE | Inca |
+| Viceroyalty | 1542–1821 | Royalists |
+| Independence | 1821–1824 | Patriots, Royalists |
+| Republic | 1821–1900 | Republic of Peru, Chile |
+| Contemporary | 1900–present | Republic of Peru |
 
-Solo se ofrecen como rivales las civilizaciones **coetáneas** (matriz en [`docs/historia/contemporaneidad.md`](./docs/historia/contemporaneidad.md)).
+Only **coetaneous** civilizations are offered as rivals (matrix in
+[`docs/historia/contemporaneidad.md`](./docs/historia/contemporaneidad.md)).
 
-## Recursos
+## Resources
 
-Comida · Madera · **Plata** (minas) · **Piedra** (canteras). Ciclo clásico: recolectar → entregar en el depósito (Troje/Aserradero/Platería/Cantera) → volver.
+Food · Wood · **Silver** (mines) · **Stone** (quarries). Classic cycle: gather -> deliver to the drop-off
+(Troje/Aserradero/Platería/Cantera) -> return.
 
-## Mapas por geografía
+## Maps by geography
 
-El terreno depende de la geografía de la civilización:
+Terrain depends on the civilization's geography:
 
-- **`costa`** — litoral desértico, valles y oasis (Caral-Supe, Paracas, Moche, Nazca, Chimú, Chincha, República, Chile).
-- **`andes`** — cordillera, quebradas y andenes (Chavín, Recuay, Wari, Chanca, Inca, Realistas, Patriotas).
-- **`altiplano`** — meseta del Titicaca (Tiahuanaco).
-- **`selva`** — ceja de selva (opcional).
+- **`coast`** — desert coastline, valleys and oases (Caral-Supe, Paracas, Moche, Nazca, Chimú, Chincha,
+  Republic, Chile).
+- **`andes`** — mountain range, ravines and terraces (Chavín, Recuay, Wari, Chanca, Inca, Royalists, Patriots).
+- **`altiplano`** — Lake Titicaca plateau (Tiahuanaco).
+- **`jungle`** — high jungle (optional).
 
-Detalle en [`docs/historia/mapas.md`](./docs/historia/mapas.md).
+Details in [`docs/historia/mapas.md`](./docs/historia/mapas.md).
 
-## Documentación histórica
+## Historical documentation
 
-Los dossiers de civilizaciones y campañas, con fechas, geografía, personajes y fuentes, están en [`docs/historia/`](./docs/historia/). Se evita inventar nombres: donde no hay registro histórico, se indica.
+The civilization and campaign dossiers, with dates, geography, characters and sources, are in
+[`docs/historia/`](./docs/historia/). Inventing names is avoided: where there is no historical record, it is
+stated.
 
-## Arquitectura
+## Architecture
 
 ```
-docs/historia/  Dossiers históricos (periodización, civilizaciones, campañas, fuentes)
+docs/historia/  Historical dossiers (periodization, civilizations, campaigns, sources)
 src/
-  core/        Motor: Game, Camera RTS, EventBus, GameLoop, Config, types (Era = nivel técnico, Periodo = histórico)
-  rendering/   Renderer, PostFX, Sky, Water, Terrain (costa/andes/altiplano), Particles, Texturas
-  model/       Defs de periodos, civs, unidades, edificios, tecnologías + generador paramétrico de modelos
-  entities/    Unidad, Edificio, Nodo de recurso, Proyectil, Vistas
-  campaign/    Motor de misiones (objetivos, triggers, oleadas) + 9 campañas históricas
-  game/        Pathfinding A*, Niebla de guerra, IA oponente, Economy (asignación de obreros)
-  ui/          HUD completo en español (menú por periodo)
-  audio/       AudioEngine procedural (WebAudio)
-  util/        RNG con semilla, ruido, matemáticas, helpers DOM
+  core/        Engine: Game, RTS Camera, EventBus, GameLoop, Config, types (Era = tech level, HistoricalPeriod = historical)
+  rendering/   Renderer, PostFX, Sky, Water, Terrain (coast/andes/altiplano), Particles, Textures
+  model/       Defs for periods, civs, units, buildings, techs + parametric model generator
+  entities/    Unit, Building, Resource node, Projectile, Views
+  campaign/    Mission engine (objectives, triggers, waves) + 9 historical campaigns
+  game/        A* pathfinding, Fog of war, Opponent AI, Economy (worker assignment)
+  ui/          Full Spanish HUD (menu by period)
+  audio/       Procedural AudioEngine (WebAudio)
+  util/        Seeded RNG, noise, math, DOM helpers
 ```
 
-## Nota histórica
+## Historical note
 
-Las fechas y culturas siguen la periodización arqueológica andina (Rowe, Lanning, Lumbreras). El juego es una obra de ficción estratégica: simplifica y abstrae la vida real de estas sociedades, pero **no inventa** nombres, fechas ni batallas. Fuentes en [`docs/historia/fuentes.md`](./docs/historia/fuentes.md).
+Dates and cultures follow the Andean archaeological periodization (Rowe, Lanning, Lumbreras). The game is a
+work of strategic fiction: it simplifies and abstracts the real life of these societies, but it **does not
+invent** names, dates or battles. Sources in [`docs/historia/fuentes.md`](./docs/historia/fuentes.md).
 
-## Contribuir
+## Contributing
 
-¿Quieres colaborar? Lee [`CONTRIBUTING.md`](./CONTRIBUTING.md): requisitos, comandos,
-convenciones de código y la regla de oro — **no inventar historia**. Los reportes de bugs e ideas
-van a <https://github.com/joseamaya/edades-del-peru/issues>.
+Want to help? Read [`CONTRIBUTING.md`](./CONTRIBUTING.md): requirements, commands, code conventions and the
+golden rule — **do not invent history**. Bug reports and ideas go to
+<https://github.com/joseamaya/edades-del-peru/issues>.
 
-## Licencia
+## License
 
-Distribuido bajo la licencia **MIT** — ver [`LICENSE`](./LICENSE). Los assets de texturas
-generados con IA y su procedencia se documentan en [`PROVENANCE.md`](./PROVENANCE.md).
+Distributed under the **MIT** license — see [`LICENSE`](./LICENSE). The AI-generated texture assets and their
+provenance are documented in [`PROVENANCE.md`](./PROVENANCE.md).

@@ -1,92 +1,93 @@
-# Cómo contribuir
+# Contributing
 
-¡Gracias por tu interés en **Edades del Perú**! Este es un RTS de historia peruana
-(Caral → presente) hecho con Three.js + Vite + TypeScript. Toda la interfaz, el dominio y
-los comentarios están en **español**: mantén ese idioma en el código que añadas.
+Thanks for your interest in **Edades del Perú**! This is a Peruvian history RTS
+(Caral → present) made with Three.js + Vite + TypeScript. The code, comments and docs are written in
+**English**; only the in-game interface (the text shown to the player) and the historical dossiers in
+`docs/historia/` stay in **Spanish**. Keep that split in what you add.
 
-## Requisitos
+## Requirements
 
 - Node.js ≥ 20.19
-- Yarn 1 (`yarn --version` → `1.22.x`). Hay `yarn.lock`; **no** generes `package-lock.json`.
+- Yarn 1 (`yarn --version` → `1.22.x`). `yarn.lock` exists; **do not** generate `package-lock.json`.
 
-## Poner en marcha
+## Getting started
 
 ```bash
 yarn install
 yarn dev          # http://localhost:5173
 ```
 
-La app muestra el **menú principal** por defecto. Para entrar directo a la partida usa `?play=1`.
+The app shows the **main menu** by default. To jump straight into the match use `?play=1`.
 
-## Comandos
+## Commands
 
-| Comando | Qué hace |
+| Command | What it does |
 |---|---|
-| `yarn dev` | Servidor de desarrollo (Vite). |
-| `yarn build` | Typecheck + build de producción en `dist/`. |
-| `yarn typecheck` | Solo `tsc --noEmit`. |
-| `yarn lint` | ESLint (debe quedar en **0 warnings**). |
-| `yarn format` | Prettier sobre `src/**/*.ts` y `scripts/**/*.mjs`. |
-| `yarn test` | Tests unitarios (Vitest). |
-| `yarn test:e2e` | Smoke E2E (Playwright). Requiere `npx playwright install chromium`. |
-| `yarn shot <nombre>` | Captura a `review/` para revisión visual. |
+| `yarn dev` | Development server (Vite). |
+| `yarn build` | Typecheck + production build in `dist/`. |
+| `yarn typecheck` | Only `tsc --noEmit`. |
+| `yarn lint` | ESLint (must stay at **0 warnings**). |
+| `yarn format` | Prettier over `src/**/*.ts` and `scripts/**/*.mjs`. |
+| `yarn test` | Unit tests (Vitest). |
+| `yarn test:e2e` | E2E smoke (Playwright). Requires `npx playwright install chromium`. |
+| `yarn shot <name>` | Screenshot into `review/` for visual review. |
 
-Antes de abrir un PR, ejecuta al menos:
+Before opening a PR, run at least:
 
 ```bash
 yarn typecheck && yarn lint && yarn test && yarn build
 ```
 
-## Arquitectura (resumen)
+## Architecture (summary)
 
 ```
 src/
-  core/        Motor: Game (hub), Camera RTS, EventBus, GameLoop, Config, types
-  rendering/   Renderer, PostFX, Sky, Water, Terrain, Particles, Biomes, Texturas
-  model/       Defs (periodos, civs, unidades, edificios, techs) + modelos paramétricos
-  entities/    Unidad, Edificio, Nodo de recurso, Proyectil, Vistas
-  campaign/    Motor de misiones + 9 campañas históricas
-  game/        Pathfinding A*, Niebla de guerra, IA, Economy
-  ui/          HUD completo en español
-  audio/       AudioEngine procedural (WebAudio)
-  util/        RNG con semilla, ruido, matemáticas, helpers DOM
+  core/        Engine: Game (hub), RTS Camera, EventBus, GameLoop, Config, types
+  rendering/   Renderer, PostFX, Sky, Water, Terrain, Particles, Biomes, Textures
+  model/       Defs (periods, civs, units, buildings, techs) + parametric models
+  entities/    Unit, Building, Resource node, Projectile, Views
+  campaign/    Mission engine + 9 historical campaigns
+  game/        A* pathfinding, Fog of war, AI, Economy
+  ui/          Full Spanish HUD
+  audio/       Procedural AudioEngine (WebAudio)
+  util/        Seeded RNG, noise, math, DOM helpers
 ```
 
-El detalle de subsistemas, controles y "trampas" del código está en [`AGENTS.md`](./AGENTS.md)
-y en el [`README.md`](./README.md).
+Details on subsystems, controls and code "traps" are in [`AGENTS.md`](./AGENTS.md) and
+[`README.md`](./README.md).
 
-## Historia (no inventar)
+## History (do not invent)
 
-- Toda la documentación histórica está en [`docs/historia/`](./docs/historia/).
-- **No inventes** nombres, fechas ni batallas. Si un dato no está atestiguado, indícalo.
-- Antes de tocar contenido histórico, consulta el dossier correspondiente y **añade la fuente**.
-- Atuendos/armas: spec en [`docs/historia/atuendos.md`](./docs/historia/atuendos.md).
-  Respeta la cronología: **sin armas de fuego, caballos, vehículos ni motores antes de 1532**, y
-  **sin sci-fi** en ninguna era.
+- All historical documentation is in [`docs/historia/`](./docs/historia/).
+- **Do not invent** names, dates or battles. If a datum is unattested, say so.
+- Before touching historical content, consult the matching dossier and **add the source**.
+- Outfits/weapons: spec in [`docs/historia/atuendos.md`](./docs/historia/atuendos.md).
+  Respect chronology: **no firearms, horses, vehicles or engines before 1532**, and
+  **no sci-fi** in any era.
 
-## Convenciones de código
+## Code conventions
 
-- **TypeScript estricto** (`strict`, `noUnusedLocals`, `noUnusedParameters`). Evita `any` nuevos
-  cuando exista un tipo; tipa los eventos del `EventBus` en `GameEvents` (`src/core/types.ts`).
-- **Sin comentarios** salvo cuando aporten contexto que el código no expresa por sí mismo.
-- Sigue el estilo existente: Prettier (comillas simples, 120 columnas, comas finales).
-- Reutiliza las utilidades existentes (`src/util/*`) y los defs dirigidos por datos
-  (`src/model/defs/*`) en lugar de introducir constantes duplicadas.
-- Geometrías/texturas de modelos son **compartidas y cacheadas**: no las dispongas a mano
-  (ver "Trampas del código" en `AGENTS.md`).
+- **Strict TypeScript** (`strict`, `noUnusedLocals`, `noUnusedParameters`). Avoid new `any` when a type
+  exists; type `EventBus` events in `GameEvents` (`src/core/types.ts`).
+- **No comments** unless they add context the code does not express by itself.
+- Follow the existing style: Prettier (single quotes, 120 columns, trailing commas).
+- Reuse the existing utilities (`src/util/*`) and the data-driven defs
+  (`src/model/defs/*`) instead of introducing duplicated constants.
+- Model geometries/textures are **shared and cached**: do not dispose them by hand
+  (see "Code traps" in `AGENTS.md`).
 
-## Flujo de trabajo
+## Workflow
 
-1. Crea una rama descriptiva: `feat/…`, `fix/…`, `docs/…`.
-2. Haz commits pequeños y con mensajes claros en imperativo.
-3. Asegúrate de que `typecheck`, `lint`, `test` y `build` pasan.
-4. Abre un Pull Request explicando **qué** y **por qué**, con capturas si cambia lo visual.
+1. Create a descriptive branch: `feat/…`, `fix/…`, `docs/…`.
+2. Make small commits with clear messages in the imperative.
+3. Make sure `typecheck`, `lint`, `test` and `build` pass.
+4. Open a Pull Request explaining **what** and **why**, with screenshots if it changes anything visual.
 
-## Reportar problemas
+## Reporting problems
 
-Abre un issue en <https://github.com/joseamaya/edades-del-peru/issues> indicando versión de Node,
-sistema operativo, pasos para reproducir y, si aplica, una captura a `review/`.
+Open an issue at <https://github.com/joseamaya/edades-del-peru/issues> stating the Node version,
+operating system, steps to reproduce and, if applicable, a screenshot in `review/`.
 
-## Licencia
+## License
 
-Al contribuir aceptas que tu aporte se distribuya bajo la licencia [MIT](./LICENSE) del proyecto.
+By contributing you accept that your contribution is distributed under the project's [MIT](./LICENSE) license.
