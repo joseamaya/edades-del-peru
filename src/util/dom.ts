@@ -1,4 +1,4 @@
-/** True si el evento proviene de un campo de texto editable (input/select/textarea). */
+/** True if the event comes from an editable text field (input/select/textarea). */
 export function isTypingTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   const tag = target.tagName;

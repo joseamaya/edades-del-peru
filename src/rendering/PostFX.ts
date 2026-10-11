@@ -37,8 +37,8 @@ const ChromaticAberrationShader = {
 };
 
 /**
- * Cadena de postprocesado AAA:
- * Render → SSAO → Bloom → Gamma/ColorGrade → Vinheta+Aberración → FXAA → Output.
+ * AAA post-processing chain:
+ * Render -> SSAO -> Bloom -> Gamma/ColorGrade -> Vignette+Aberration -> FXAA -> Output.
  */
 export class PostFX {
   composer: EffectComposer;
@@ -49,7 +49,7 @@ export class PostFX {
   private outputPass: OutputPass;
   private chromaticPass: ShaderPass;
 
-  /** Efectos cinematográficos (SSAO, bloom, viñeta, aberración). Off = look clásico nítido. */
+  /** Cinematic effects (SSAO, bloom, vignette, aberration). Off = sharp classic look. */
   cinematicEnabled = false;
   bloomEnabled = false;
   ssaoEnabled = false;
@@ -70,7 +70,7 @@ export class PostFX {
     this.bloomPass = new UnrealBloomPass(new THREE.Vector2(width, height), 0.35, 0.3, 0.85);
     this.composer.addPass(this.bloomPass);
 
-    // aberración cromática + vinheta en HDR (antes del OutputPass)
+    // chromatic aberration + vignette in HDR (before OutputPass)
     this.chromaticPass = new ShaderPass(ChromaticAberrationShader);
     this.chromaticPass.uniforms['amount'].value = 0.0008;
     this.composer.addPass(this.chromaticPass);
@@ -94,12 +94,12 @@ export class PostFX {
     (this.fxaaPass.uniforms['resolution'] as unknown as THREE.Vector2).set(1 / (width * pixelRatio), 1 / (height * pixelRatio));
   }
 
-  /** Ajusta la calidad de los efectos cinematográficos (no los activa). */
-  setQuality(level: 'alto' | 'medio' | 'bajo'): void {
-    if (level === 'alto') {
+  /** Adjust the cinematic effects quality (does not enable them). */
+  setQuality(level: 'high' | 'medium' | 'low'): void {
+    if (level === 'high') {
       this.ssaoPass.kernelRadius = 8;
       this.bloomPass.strength = 0.35;
-    } else if (level === 'medio') {
+    } else if (level === 'medium') {
       this.ssaoPass.kernelRadius = 4;
       this.bloomPass.strength = 0.28;
     } else {
@@ -107,7 +107,7 @@ export class PostFX {
     }
   }
 
-  /** Activa o desactiva todo el set de efectos cinematográficos. */
+  /** Enable or disable the whole cinematic effects set. */
   setCinematic(on: boolean): void {
     this.cinematicEnabled = on;
     this.ssaoEnabled = on;

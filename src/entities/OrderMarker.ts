@@ -18,8 +18,8 @@ interface Marker {
 }
 
 /**
- * Marcadores de orden (objetivo) en el suelo: un círculo que se expande con
- * un punto central, que aparece al dar una orden de movimiento/ataque/recolección.
+ * Ground order markers (target): a circle that expands with
+ * a center dot, shown when issuing a move/attack/gather order.
  */
 export class OrderMarkers {
   private ringGeo: THREE.RingGeometry;

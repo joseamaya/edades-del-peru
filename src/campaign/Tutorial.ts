@@ -3,16 +3,16 @@ import { UnitKind, BuildingKind, OrderKind } from '../core/types';
 
 interface PasoTutorial {
   id: string;
-  texto: string;
-  /** Selector de un elemento del HUD a resaltar (opcional). */
+  text: string;
+  /** HUD element selector to highlight (optional). */
   highlight?: string;
   check: (game: Game) => boolean;
 }
 
 /**
- * Tutorial guiado paso a paso para la primera campaña (Caral). Observa el estado del juego
- * y avanza cuando el jugador realiza cada acción. Es independiente de los objetivos de la
- * misión (no altera la condición de victoria) y respeta el ajuste «Mostrar consejos».
+ * Step-by-step guided tutorial for the first campaign (Caral). Observes the game state
+ * and advances when the player performs each action. It is independent of the mission
+ * objectives (it does not change the victory condition) and respects the «Mostrar consejos» setting.
  */
 export class Tutorial {
   private game: Game;
@@ -21,7 +21,7 @@ export class Tutorial {
   private begun = false;
   private finished = false;
   private delay = 0;
-  private readonly base: { viviendas: number; cuarteles: number; soldados: number };
+  private readonly base: { houses: number; barracks: number; soldiers: number };
 
   constructor(game: Game) {
     this.game = game;
@@ -30,44 +30,44 @@ export class Tutorial {
     const countU = (k: UnitKind): number =>
       [...game.units.values()].filter((u) => u.owner === 0 && u.kind === k && !u.dead).length;
     this.base = {
-      viviendas: countB(BuildingKind.VIVIENDA),
-      cuarteles: countB(BuildingKind.CUARTEL),
-      soldados: countU(UnitKind.SOLDADO),
+      houses: countB(BuildingKind.HOUSE),
+      barracks: countB(BuildingKind.BARRACKS),
+      soldiers: countU(UnitKind.SOLDIER),
     };
     const buildBottom = '#ed-bottom';
     this.pasos = [
       {
-        id: 'seleccionar',
-        texto: 'Selecciona a tus obreros: haz clic izquierdo sobre uno o arrastra un recuadro para seleccionar varios.',
-        check: (g) => g.selectedUnits.some((id) => g.units.get(id)?.owner === 0 && g.units.get(id)?.kind === UnitKind.OBRERO),
+        id: 'select',
+        text: 'Selecciona a tus obreros: haz clic izquierdo sobre uno o arrastra un recuadro para seleccionar varios.',
+        check: (g) => g.selectedUnits.some((id) => g.units.get(id)?.owner === 0 && g.units.get(id)?.kind === UnitKind.WORKER),
       },
       {
-        id: 'vivienda',
-        texto: 'Con obreros seleccionados, pulsa V (o el botón Vivienda) y haz clic en el suelo para construir una vivienda.',
+        id: 'house',
+        text: 'Con obreros seleccionados, pulsa V (o el botón Vivienda) y haz clic en el suelo para construir una vivienda.',
         highlight: buildBottom,
         check: (g) =>
-          [...g.buildings.values()].filter((b) => b.owner === 0 && b.kind === BuildingKind.VIVIENDA && !b.dead).length >
-          this.base.viviendas,
+          [...g.buildings.values()].filter((b) => b.owner === 0 && b.kind === BuildingKind.HOUSE && !b.dead).length >
+          this.base.houses,
       },
       {
-        id: 'cuartel',
-        texto: 'Ahora construye una Casa del Guerrero (Cuartel): te permitirá entrenar soldados.',
+        id: 'barracks',
+        text: 'Ahora construye una Casa del Guerrero (Cuartel): te permitirá entrenar soldados.',
         highlight: buildBottom,
         check: (g) =>
-          [...g.buildings.values()].filter((b) => b.owner === 0 && b.kind === BuildingKind.CUARTEL && !b.dead).length >
-          this.base.cuarteles,
+          [...g.buildings.values()].filter((b) => b.owner === 0 && b.kind === BuildingKind.BARRACKS && !b.dead).length >
+          this.base.barracks,
       },
       {
-        id: 'entrenar',
-        texto: 'Selecciona la Casa del Guerrero y entrena un Guerrero para defender el asentamiento.',
+        id: 'train',
+        text: 'Selecciona la Casa del Guerrero y entrena un Guerrero para defender el asentamiento.',
         highlight: buildBottom,
         check: (g) =>
-          [...g.units.values()].filter((u) => u.owner === 0 && u.kind === UnitKind.SOLDADO && !u.dead).length >
-          this.base.soldados,
+          [...g.units.values()].filter((u) => u.owner === 0 && u.kind === UnitKind.SOLDIER && !u.dead).length >
+          this.base.soldiers,
       },
       {
-        id: 'atacar',
-        texto: 'Selecciona tu ejército y da una orden: clic derecho para mover o atacar, Ctrl+clic derecho para atacar-mover.',
+        id: 'attack',
+        text: 'Selecciona tu ejército y da una orden: clic derecho para mover o atacar, Ctrl+clic derecho para atacar-mover.',
         check: (g) =>
           [...g.units.values()].some(
             (u) =>
@@ -79,7 +79,7 @@ export class Tutorial {
     ];
   }
 
-  /** Avanza el tutorial; se muestra tras cerrarse el briefing y reanudarse la partida. */
+  /** Advance the tutorial; shown after the briefing closes and the match resumes. */
   update(dt: number): void {
     if (this.finished) return;
     if (!this.begun) {
@@ -103,7 +103,7 @@ export class Tutorial {
 
   private show(): void {
     const paso = this.pasos[this.idx];
-    this.game.hud.showTutorialStep(paso.texto, this.idx, this.pasos.length, () => this.finish());
+    this.game.hud.showTutorialStep(paso.text, this.idx, this.pasos.length, () => this.finish());
     if (paso.highlight) this.game.hud.highlightHud(paso.highlight);
     else this.game.hud.clearHudHighlight();
   }

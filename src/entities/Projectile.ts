@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 /**
- * Proyectil balístico/trazador con arco parabólico, estela y daño en área.
+ * Ballistic/tracer projectile with a parabolic arc, trail and area damage.
  */
 export class Projectile {
   id = allocIdProj();
@@ -59,7 +59,7 @@ export class Projectile {
 
     this.buildMesh();
     if (this.mesh) scene.add(this.mesh);
-    if (opts.kind === 'obús' || opts.kind === 'rail') {
+    if (opts.kind === 'howitzer_shell' || opts.kind === 'rail') {
       this.light = new THREE.PointLight(0xff8844, 2.5, 12);
       scene.add(this.light);
     }
@@ -82,8 +82,8 @@ export class Projectile {
       return;
     }
 
-    // homing: re-apuntar al centro del objetivo si sigue vivo (flechas AoE2)
-    if (this.targetId !== undefined && this.getTargetPos && this.kind !== 'obús' && this.kind !== 'nuclear') {
+    // homing: re-aim at the target center if it is still alive (AoE2 arrows)
+    if (this.targetId !== undefined && this.getTargetPos && this.kind !== 'howitzer_shell' && this.kind !== 'nuclear') {
       const tp = this.getTargetPos();
       if (tp) {
         this._tmpTarget.copy(tp);
@@ -105,7 +105,7 @@ export class Projectile {
     this.pos.addScaledVector(dir, step);
     this.travelled += step;
 
-    // arco parabólico
+    // parabolic arc
     if (this.arc > 0) {
       const t = Math.min(this.travelled / this.totalDist, 1);
       this.pos.y = this.startY + (this.target.y - this.startY) * t + this.arc * 8 * Math.sin(Math.PI * t);
@@ -117,8 +117,8 @@ export class Projectile {
       this.light.intensity = 2.5 + Math.random() * 1.5;
     }
 
-    // estela
-    if (this.kind === 'trazadora' || this.kind === 'bala') {
+    // trail
+    if (this.kind === 'tracer' || this.kind === 'bullet') {
       this.trailTimer -= dt;
       if (this.trailTimer <= 0) {
         this.trailTimer = 0.02;
@@ -143,7 +143,7 @@ export class Projectile {
     this.dead = true;
     if (this.mesh) {
       this.scene.remove(this.mesh);
-      // geometría y material son compartidos por categoría: no se disponen aquí
+      // geometry and material are shared per category: not disposed here
       this.mesh = null;
     }
     if (this.light) {
@@ -157,8 +157,8 @@ type ProjectileCategory = 'laser' | 'tracer' | 'shell' | 'bullet';
 
 function projectileCategory(kind: string): ProjectileCategory {
   if (kind === 'laser' || kind === 'rail') return 'laser';
-  if (kind === 'trazadora') return 'tracer';
-  if (kind === 'obús' || kind === 'nuclear') return 'shell';
+  if (kind === 'tracer') return 'tracer';
+  if (kind === 'howitzer_shell' || kind === 'nuclear') return 'shell';
   return 'bullet';
 }
 

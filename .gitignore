@@ -14,9 +14,9 @@ playwright-report/
 .env.*
 *.tsbuildinfo
 .eslintcache
-# config de herramientas de agentes de IA (no forma parte del juego)
+# config for AI agent tooling (not part of the game)
 opencode.json
 skills-lock.json
-# credenciales locales de generación de texturas
+# local credentials for texture generation
 scripts/.cloudflare.json
-scripts/_texturas_raw/
+scripts/_textures_raw/

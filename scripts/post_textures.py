@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Post-proceso de los albedos generados:
-  - teselado (seamless) por mezcla de bordes
-  - derivación de mapa de normales (Sobel) y de rugosidad (heurística)
+"""Post-process the generated albedos:
+  - seamless tiling by edge blending
+  - normal map derivation (Sobel) and roughness (heuristic)
 
-Entrada:  scripts/_texturas_raw/{slot}_raw.png
-Salida:   src/assets/texturas/terreno/{slot}_{diffuse|normal|roughness}.webp     (slots de terreno)
-          src/assets/texturas/materiales/{slot}_{diffuse|normal|roughness}.webp  (resto)
+Input:  scripts/_textures_raw/{slot}_raw.png
+Output: src/assets/textures/terrain/{slot}_{diffuse|normal|roughness}.webp     (terrain slots)
+        src/assets/textures/materials/{slot}_{diffuse|normal|roughness}.webp  (the rest)
 
-Uso: python3 scripts/post_texturas.py
+Usage: python3 scripts/post_textures.py
 """
 import pathlib
 
@@ -15,9 +15,9 @@ import numpy as np
 from PIL import Image, ImageFilter
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-RAW = ROOT / "scripts" / "_texturas_raw"
-TER = ROOT / "src" / "assets" / "texturas" / "terreno"
-MAT = ROOT / "src" / "assets" / "texturas" / "materiales"
+RAW = ROOT / "scripts" / "_textures_raw"
+TER = ROOT / "src" / "assets" / "textures" / "terrain"
+MAT = ROOT / "src" / "assets" / "textures" / "materials"
 TERRAIN_SLOTS = {"sand", "dirt", "grass", "rock", "snow"}
 
 DIFFUSE_SIZE = 1024
@@ -26,7 +26,7 @@ BAND = 64
 
 
 def make_seamless(a: np.ndarray, band: int = BAND) -> np.ndarray:
-    """Mezcla los bordes opuestos para reducir costuras al teselar."""
+    """Blend opposite edges to reduce seams when tiling."""
     h, w, _ = a.shape
     out = a.copy()
     for i in range(band):
@@ -62,7 +62,7 @@ def roughness_from_detail(gray: np.ndarray) -> Image.Image:
 def process(slot: str) -> None:
     raw = RAW / f"{slot}_raw.png"
     if not raw.exists():
-        print(f"skip {slot} (sin albedo)")
+        print(f"skip {slot} (no albedo)")
         return
     dest = TER if slot in TERRAIN_SLOTS else MAT
     dest.mkdir(parents=True, exist_ok=True)
@@ -83,7 +83,7 @@ def process(slot: str) -> None:
 def main() -> None:
     slots = sorted({p.name[: -len("_raw.png")] for p in RAW.glob("*_raw.png")}) if RAW.exists() else []
     if not slots:
-        print("No hay *_raw.png en", RAW)
+        print("No *_raw.png in", RAW)
         return
     for slot in slots:
         process(slot)

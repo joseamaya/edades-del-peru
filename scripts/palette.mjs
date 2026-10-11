@@ -4,7 +4,7 @@ const file = process.argv[2];
 const png = PNG.sync.read(fs.readFileSync(file));
 const { width, height, data } = png;
 const buckets = {};
-// zona de base: 45% inferior
+// base zone: bottom 45%
 for (let y = Math.floor(height*0.45); y < height; y++) {
   for (let x = 0; x < width; x++) {
     const i = (y*width + x)*4;

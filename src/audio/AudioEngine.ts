@@ -1,8 +1,8 @@
 import { Era } from '../core/types';
 
 /**
- * Audio 100% procedural vía WebAudio: SFX sintetizados y música
- * generativa por era. Sin archivos externos.
+ * 100% procedural audio via WebAudio: synthesized SFX and generative
+ * music per era. No external files.
  */
 export class AudioEngine {
   private ctx: AudioContext | null = null;
@@ -96,7 +96,7 @@ export class AudioEngine {
     const t = this.now();
     if (t - this.lastShot < 0.08) return;
     this.lastShot = t;
-    // disparo: ruido de baja + crack
+    // shot: low noise + crack
     this.noise(0.18, 0.5, 900, 'lowpass');
     this.blip(160, 0.12, 'square', 0.25, 60);
   }
@@ -165,7 +165,7 @@ export class AudioEngine {
     this.blip(300, 0.3, 'sawtooth', 0.2, 60);
   }
 
-  // --- Música generativa ---
+  // --- Generative music ---
 
   startMusic(): void {
     if (!this.ctx || !this.musicEnabled) return;
@@ -183,25 +183,25 @@ export class AudioEngine {
     }, interval);
   }
 
-  /** Progresión armónica según era. */
+  /** Harmonic progression per era. */
   private playMusicNote(): void {
     if (!this.ctx || !this.musicGain) return;
-    // modos por era
+    // modes per era
     const scales: Record<number, number[]> = {
-      0: [220, 261.63, 293.66, 329.63, 392], // La menor (clásico)
+      0: [220, 261.63, 293.66, 329.63, 392], // The smallest (classic)
       1: [196, 246.94, 293.66, 369.99, 440],
-      2: [174.61, 220, 261.63, 311.13, 392], // marcial
+      2: [174.61, 220, 261.63, 311.13, 392], // martial
       3: [110, 164.81, 220, 261.63, 329.63],
       4: [130.81, 196, 246.94, 293.66, 392],
-      5: [98, 146.83, 220, 293.66, 440], // estelar
+      5: [98, 146.83, 220, 293.66, 440], // stellar
     };
     const scale = scales[Math.min(this.era, 5)] ?? scales[0];
     const root = scale[this.musicStep % 2 === 0 ? 0 : 1];
-    // bajo pulsante
+    // pulsing low
     const step = this.musicStep;
     const idx = step % scale.length;
     const freq = scale[idx];
-    // nota melódica ocasional
+    // occasional melodic note
     if (step % 2 === 0) {
       const o = this.ctx.createOscillator();
       const g = this.ctx.createGain();
@@ -216,7 +216,7 @@ export class AudioEngine {
       o.start(now);
       o.stop(now + 1.3);
     }
-    // bajo
+    // low
     const b = this.ctx.createOscillator();
     const bg = this.ctx.createGain();
     b.type = 'triangle';

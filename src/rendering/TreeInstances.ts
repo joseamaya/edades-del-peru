@@ -28,9 +28,9 @@ interface Slot {
 }
 
 /**
- * Instancing GPU de árboles: un InstancedMesh por material compartido (tronco y
- * copas por variante). Gestiona alta/baja, visibilidad (niebla/LOD), viento y
- * la caída al talar. El picking se resuelve por `instanceId` → entidad.
+ * GPU tree instancing: one InstancedMesh per shared material (trunk and
+ * canopies per variant). Handles spawn/despawn, visibility (fog/LOD), wind and
+ * falling on chop. Picking is resolved by `instanceId` -> entity.
  */
 export class TreeInstances {
   private trunkMesh: THREE.InstancedMesh;
@@ -71,7 +71,7 @@ export class TreeInstances {
       this.scene.add(mesh);
     }
 
-    // inicializar todas las matrices a cero
+    // initialize all matrices to zero
     for (let i = 0; i < MAX; i++) {
       this.slots.push({ used: false, id: -1, variant: 'broad', x: 0, y: 0, z: 0, rotY: 0, scale: 1, phase: 0, visible: false, fallTime: 0 });
       this.free.push(i);
@@ -117,7 +117,7 @@ export class TreeInstances {
     return merged;
   }
 
-  /** Reserva una instancia para un árbol. Devuelve el slot o -1 si está lleno. */
+  /** Reserve an instance for a tree. Returns the slot or -1 if full. */
   register(id: number, variant: TreeVariant, x: number, y: number, z: number, scale: number, rotY: number): number {
     const slot = this.free.pop();
     if (slot === undefined) return -1;
@@ -164,7 +164,7 @@ export class TreeInstances {
     return s && s.used ? s.id : -1;
   }
 
-  /** Intersección de rayos con los árboles; devuelve distancia e id de entidad. */
+  /** Ray intersection with trees; returns distance and entity id. */
   raycast(raycaster: THREE.Raycaster, out: { dist: number; id: number }[]): void {
     const meshes: THREE.Mesh[] = [this.trunkMesh, this.canopyMesh.broad, this.canopyMesh.needle, this.canopyMesh.frond];
     for (const mesh of meshes) {
@@ -194,7 +194,7 @@ export class TreeInstances {
     const fallAngle = s.fallTime > 0 ? Math.min(1.5708, s.fallTime * 1.4) : 0;
     this.baseMatrix(s, _m, fallAngle);
     this.trunkMesh.setMatrixAt(slot, _m);
-    // copa con viento (balanceo alrededor del eje Z en la base del árbol)
+    // canopy with wind (swaying around the Z axis at the tree base)
     const sway = Math.sin(this.time * 1.4 + s.phase) * this.windStrength;
     _euler.set(0, s.rotY, sway + fallAngle);
     _q2.setFromEuler(_euler);

@@ -1,45 +1,45 @@
 import { describe, it, expect } from 'vitest';
 import { MISSIONS } from '../src/campaign/defs/campaign';
-import { EDUCATIVO, PROLOGO, getEducativo } from '../src/campaign/defs/educativo';
-import { getPeriodo } from '../src/model/defs/periodos';
+import { EDUCATIONAL, PROLOGUE, getEducational } from '../src/campaign/defs/educational';
+import { getPeriod } from '../src/model/defs/periods';
 import { getCiv } from '../src/model/defs/civs';
 
-describe('contenido educativo de la campaña', () => {
-  it('el prólogo no está vacío', () => {
-    expect(PROLOGO.length).toBeGreaterThan(40);
+describe('campaign educational content', () => {
+  it('the prologue is not empty', () => {
+    expect(PROLOGUE.length).toBeGreaterThan(40);
   });
 
-  it('los ids de misión son únicos', () => {
+  it('mission ids are unique', () => {
     const ids = MISSIONS.map((m) => m.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('cada misión tiene contenido educativo con fuentes citadas', () => {
+  it('every mission has educational content with cited sources', () => {
     for (const mis of MISSIONS) {
-      const edu = getEducativo(mis.id);
-      expect(edu, `falta contenido educativo para ${mis.id}`).toBeDefined();
-      expect(edu!.contexto.length).toBeGreaterThan(20);
-      expect(edu!.sabiasQue.length).toBeGreaterThan(10);
-      expect(edu!.fuentes.length).toBeGreaterThan(0);
-      for (const f of edu!.fuentes) expect(f.texto.length).toBeGreaterThan(3);
+      const edu = getEducational(mis.id);
+      expect(edu, `missing educational content for ${mis.id}`).toBeDefined();
+      expect(edu!.context.length).toBeGreaterThan(20);
+      expect(edu!.didYouKnow.length).toBeGreaterThan(10);
+      expect(edu!.sources.length).toBeGreaterThan(0);
+      for (const f of edu!.sources) expect(f.text.length).toBeGreaterThan(3);
     }
   });
 
-  it('no hay entradas educativas huérfanas', () => {
-    for (const id of Object.keys(EDUCATIVO)) {
-      expect(MISSIONS.some((m) => m.id === id), `entrada sin misión: ${id}`).toBe(true);
+  it('there are no orphan educational entries', () => {
+    for (const id of Object.keys(EDUCATIONAL)) {
+      expect(MISSIONS.some((m) => m.id === id), `entry without a mission: ${id}`).toBe(true);
     }
   });
 
-  it('cada misión referencia un periodo y civilizaciones válidas', () => {
+  it('every mission references a valid period and civilizations', () => {
     for (const mis of MISSIONS) {
-      expect(getPeriodo(mis.periodo), `periodo inválido en ${mis.id}`).toBeDefined();
-      expect(getCiv(mis.civJugador).id).toBe(mis.civJugador);
-      expect(getCiv(mis.civEnemigo).id).toBe(mis.civEnemigo);
+      expect(getPeriod(mis.period), `invalid period in ${mis.id}`).toBeDefined();
+      expect(getCiv(mis.playerCiv).id).toBe(mis.playerCiv);
+      expect(getCiv(mis.enemyCiv).id).toBe(mis.enemyCiv);
     }
   });
 
-  it('la primera misión trae el tutorial guiado', () => {
+  it('the first mission brings the guided tutorial', () => {
     expect(MISSIONS[0].tutorial).toBe(true);
   });
 });

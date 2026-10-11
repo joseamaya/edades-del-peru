@@ -1,4 +1,4 @@
-/** Utilidades matemáticas y de color. */
+/** Math and color utilities. */
 
 export function clamp(v: number, min: number, max: number): number {
   return v < min ? min : v > max ? max : v;
@@ -23,7 +23,7 @@ export function distance2D(ax: number, az: number, bx: number, bz: number): numb
   return Math.sqrt(dx * dx + dz * dz);
 }
 
-/** Ángulo (rad) de a hacia b en XZ. */
+/** Angle (rad) from a to b in XZ. */
 export function angleTo(ax: number, az: number, bx: number, bz: number): number {
   return Math.atan2(bz - az, bx - ax);
 }
@@ -42,7 +42,7 @@ export function rgbToHex(r: number, g: number, b: number): string {
   return '#' + to2(r) + to2(g) + to2(b);
 }
 
-/** Mezcla dos colores hex. */
+/** Mix two hex colors. */
 export function mixHex(a: string, b: string, t: number): string {
   const ca = hexToRgb(a);
   const cb = hexToRgb(b);

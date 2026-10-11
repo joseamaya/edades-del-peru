@@ -1,4 +1,4 @@
-/** Utilidades de azar con semilla reproducible. */
+/** Seeded, reproducible random utilities. */
 
 export function mulberry32(seed: number): () => number {
   let a = seed >>> 0;
@@ -27,15 +27,15 @@ export class RNG {
   int(min: number, max: number): number {
     return Math.floor(this.range(min, max + 1));
   }
-  /** true con probabilidad p */
+  /** true with probability p */
   chance(p: number): boolean {
     return this.next() < p;
   }
-  /** elemento aleatorio */
+  /** random element */
   pick<T>(arr: readonly T[]): T {
     return arr[Math.floor(this.next() * arr.length)];
   }
-  /** -1 o 1 */
+  /** -1 or 1 */
   sign(): number {
     return this.next() < 0.5 ? -1 : 1;
   }

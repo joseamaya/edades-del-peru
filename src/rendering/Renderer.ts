@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { PostFX } from './PostFX';
 
-/** Configuración central del WebGLRenderer con sombras y tono ACES. */
+/** Central WebGLRenderer configuration with shadows and ACES tone. */
 export function createRenderer(): THREE.WebGLRenderer {
   const renderer = new THREE.WebGLRenderer({
     antialias: false,

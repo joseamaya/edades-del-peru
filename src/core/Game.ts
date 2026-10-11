@@ -41,13 +41,13 @@ import { Tutorial } from '../campaign/Tutorial';
 import { getMission } from '../campaign/defs/campaign';
 import type { MissionDef } from '../campaign/types';
 
-const NODE_INFO: Record<ResourceNode['kind'], { nombre: string; icono: string }> = {
-  arbol: { nombre: 'Árbol', icono: '🌳' },
-  mina: { nombre: 'Mina', icono: '⛏️' },
-  pozo: { nombre: 'Pozo', icono: '🛢️' },
-  caza: { nombre: 'Caza', icono: '🦌' },
-  pesca: { nombre: 'Banco de peces', icono: '🐟' },
-  baya: { nombre: 'Arbusto', icono: '🫐' },
+const NODE_INFO: Record<ResourceNode['kind'], { name: string; icon: string }> = {
+  tree: { name: 'Árbol', icon: '🌳' },
+  mine: { name: 'Mina', icon: '⛏️' },
+  well: { name: 'Pozo', icon: '🛢️' },
+  hunt: { name: 'Caza', icon: '🦌' },
+  fishing: { name: 'Banco de peces', icon: '🐟' },
+  berry: { name: 'Arbusto', icon: '🫐' },
 };
 
 export class Game {
@@ -72,9 +72,9 @@ export class Game {
   economy!: Economy;
 
   settings: GameSettings;
-  /** RNG determinista de la partida (derivado de la semilla del mapa). */
+  /** Deterministic match RNG (derived from the map seed). */
   readonly rng: RNG;
-  /** Fuerza un devicePixelRatio concreto (p. ej. modo bajo). */
+  /** Force a specific devicePixelRatio (e.g. low mode). */
   pixelRatioOverride: number | null = null;
   players: PlayerState[] = [];
   units = new Map<number, Unit>();
@@ -102,16 +102,16 @@ export class Game {
     this.settings = { ...DEFAULT_SETTINGS, ...settings };
     const mis = this.settings.missionId ? getMission(this.settings.missionId) : undefined;
     if (mis) {
-      // configuración fija de la misión sobreescribe la escaramuza
-      this.settings.civPlayer = mis.civJugador;
-      this.settings.civAI = mis.civEnemigo;
-      this.settings.startingEra = mis.eraInicial;
-      this.settings.mapSeed = mis.mapa.seed;
-      this.settings.mapType = mis.mapa.tipo;
-      this.settings.mapSize = mis.mapa.tamano;
-      this.settings.timeOfDay = mis.horaDia;
-      this.settings.difficulty = mis.enemigo.dificultad;
-      this.settings.victoryMode = 'conquista'; // la campaña no usa victoria por maravilla
+      // fixed mission configuration overrides the skirmish
+      this.settings.civPlayer = mis.playerCiv;
+      this.settings.civAI = mis.enemyCiv;
+      this.settings.startingEra = mis.startingEra;
+      this.settings.mapSeed = mis.map.seed;
+      this.settings.mapType = mis.map.type;
+      this.settings.mapSize = mis.map.size;
+      this.settings.timeOfDay = mis.timeOfDay;
+      this.settings.difficulty = mis.enemy.difficulty;
+      this.settings.victoryMode = 'conquest'; // the campaign does not use wonder victory
     }
     this.rng = new RNG((this.settings.mapSeed * 2654435761) >>> 0);
     this.initRenderer();
@@ -123,7 +123,7 @@ export class Game {
     this.initHUD();
     this.mission = mis ? new Mission(this, mis, (win) => this.missionEnd(win)) : null;
     this.tutorial = mis && mis.tutorial && this.settings.showHints ? new Tutorial(this) : null;
-    this.ai = mis && !mis.enemigo.activo ? null : new AI(this, 1);
+    this.ai = mis && !mis.enemy.active ? null : new AI(this, 1);
     this.audio.setEra(this.players[0].era);
     this.initAudio();
     if (mis) this.applyMissionSetup(mis);
@@ -168,10 +168,10 @@ export class Game {
     this.terrain.camera = this.camera.camera;
     this.scene.add(this.terrain.group);
     this.sky = new Sky(this.scene);
-    // Sin niebla atmosférica sobre el tablero: look clásico de RTS, nítido.
+    // No atmospheric fog over the board: classic RTS look, sharp.
     this.scene.fog = null;
     this.setTimeOfDay(s.timeOfDay);
-    this.water = new Water(this.scene, this.terrain.heightMap, s.mapSize, this.terrain.waterLevel, s.mapType !== 'costa');
+    this.water = new Water(this.scene, this.terrain.heightMap, s.mapSize, this.terrain.waterLevel, s.mapType !== 'coast');
     this.particles = new Particles(this.scene, 4096);
     this.markers = new OrderMarkers(this.scene);
     this.trees = new TreeInstances(this.scene);
@@ -183,7 +183,7 @@ export class Game {
   }
 
   private setTimeOfDay(mode: string): void {
-    const map: Record<string, number> = { 'mañana': 0.62, 'mediodía': 0.5, 'atardecer': 0.28, 'noche': 0.05 };
+    const map: Record<string, number> = { 'morning': 0.62, 'noon': 0.5, 'dusk': 0.28, 'night': 0.05 };
     this.sky.setTimeOfDay(map[mode] ?? 0.5);
   }
 
@@ -194,14 +194,14 @@ export class Game {
       const isAI = i === 1;
       this.players.push({
         id: i,
-        name: isAI ? civ.nombre + ' (IA)' : civ.nombre,
+        name: isAI ? civ.name + ' (IA)' : civ.name,
         civ: civ.id,
         team: i as Team,
         color: new THREE.Color(civ.colors.primary),
         colorHex: civ.colors.primary,
         isAI,
         difficulty: i === 1 ? 1 : 0,
-        resources: { comida: 250, madera: 220, acero: 100, energia: 50 },
+        resources: { food: 250, wood: 220, silver: 100, stone: 50 },
         populationUsed: 0,
         populationCap: this.settings.populationCap,
         era: this.settings.startingEra,
@@ -211,11 +211,11 @@ export class Game {
         kills: 0,
         totalLost: 0,
         wonderActive: false,
-        bonus: { ataque: 0, armadura: 0, recoleccion: {}, carry: 0, los: 0, rango: 0, velocidad: 0, entrenamiento: 0 },
+        bonus: { attack: 0, armor: 0, gathering: {}, carry: 0, los: 0, range: 0, speed: 0, training: 0 },
         stats: { created: 0, destroyed: 0, military: 0, econ: 0 },
       });
     }
-    // colocación de jugadores
+    // player placement
     const s = this.settings.mapSize;
     const rng = new RNG(this.settings.mapSeed + 7);
     const spots: [number, number][] = [];
@@ -235,7 +235,7 @@ export class Game {
     for (let i = 0; i < 2; i++) {
       this.spawnStartBase(i, spots[i][0], spots[i][1]);
     }
-    // cámara en el jugador
+    // camera on the player
     this.camera.moveTo(spots[0][0], spots[0][1], true);
   }
 
@@ -251,32 +251,32 @@ export class Game {
       if (this.terrain.isWater(x, z)) continue;
       const h = this.terrain.getHeight(x, z);
       const kind: ResourceNode['kind'] =
-        h > 6 ? 'mina' :
-        h > 3 ? rng.chance(0.6) ? 'mina' : 'arbol' :
-        this.terrain.isBeach(x, z) ? rng.chance(0.5) ? 'pozo' : 'baya' :
-        rng.chance(0.45) ? 'arbol' : rng.chance(0.3) ? 'mina' : 'pozo';
+        h > 6 ? 'mine' :
+        h > 3 ? rng.chance(0.6) ? 'mine' : 'tree' :
+        this.terrain.isBeach(x, z) ? rng.chance(0.5) ? 'well' : 'berry' :
+        rng.chance(0.45) ? 'tree' : rng.chance(0.3) ? 'mine' : 'well';
       const amount =
-        kind === 'arbol' ? rng.range(140, 220) :
-        kind === 'mina' ? rng.range(300, 450) :
-        kind === 'pozo' ? rng.range(250, 380) :
-        kind === 'baya' ? rng.range(120, 180) :
+        kind === 'tree' ? rng.range(140, 220) :
+        kind === 'mine' ? rng.range(300, 450) :
+        kind === 'well' ? rng.range(250, 380) :
+        kind === 'berry' ? rng.range(120, 180) :
         rng.range(200, 300);
       const node = new ResourceNode(this.scene, kind, x, z, amount, this.settings.mapType, this.trees);
       node.pos.y = this.terrain.getHeight(x, z);
       node.view.position.set(x, node.pos.y, z);
       node.placeTreeInstance(node.pos.y);
       this.resourceNodes.set(node.id, node);
-      const handle = { x, z, radius: kind === 'arbol' ? 0.5 : 1.1 };
+      const handle = { x, z, radius: kind === 'tree' ? 0.5 : 1.1 };
       this.obstacleHandles.set(node.id, handle);
       this.pathfinder.addObstacle(handle);
       placed++;
     }
-    // caza y pesca
+    // hunting and fishing
     for (let i = 0; i < 12; i++) {
       const x = rng.range(20, s.mapSize - 20);
       const z = rng.range(20, s.mapSize - 20);
       if (this.terrain.isWater(x, z)) continue;
-      const node = new ResourceNode(this.scene, 'caza', x, z, rng.range(120, 180), this.settings.mapType);
+      const node = new ResourceNode(this.scene, 'hunt', x, z, rng.range(120, 180), this.settings.mapType);
       node.pos.y = this.terrain.getHeight(x, z);
       node.view.position.set(x, node.pos.y, z);
       this.resourceNodes.set(node.id, node);
@@ -285,25 +285,25 @@ export class Game {
       const x = rng.range(20, s.mapSize - 20);
       const z = rng.range(20, s.mapSize - 20);
       if (!this.terrain.isWater(x, z)) continue;
-      const node = new ResourceNode(this.scene, 'pesca', x, z, rng.range(150, 220), this.settings.mapType);
+      const node = new ResourceNode(this.scene, 'fishing', x, z, rng.range(150, 220), this.settings.mapType);
       node.pos.y = 0;
       node.view.position.set(x, 0, z);
       this.resourceNodes.set(node.id, node);
     }
   }
 
-  /** Registra un edificio como obstáculo del pathfinding. */
+  /** Register a building as a pathfinding obstacle. */
   private registerObstacle(b: Building): void {
     const stats = getBuildingStats(b.kind, b.era);
-    const handle = { x: b.pos.x, z: b.pos.z, radius: stats.tamano * 0.6 };
+    const handle = { x: b.pos.x, z: b.pos.z, radius: stats.size * 0.6 };
     this.obstacleHandles.set(b.id, handle);
     this.pathfinder.addObstacle(handle);
   }
 
   private spawnStartBase(player: number, x: number, z: number): void {
     const ctx = this.makeBuildContext(player);
-    // centro
-    const center = new Building(BuildingKind.CENTRO, player, this.players[player].era, ctx);
+    // center
+    const center = new Building(BuildingKind.CENTER, player, this.players[player].era, ctx);
     center.pos.set(x, 0, z);
     center.pos.y = this.terrain.getHeight(x, z);
     center.attach(this.scene);
@@ -311,13 +311,13 @@ export class Game {
     center.addBuildProgress(9999);
     this.buildings.set(center.id, center);
     this.registerObstacle(center);
-    // viviendas iniciales
+    // starting dwellings
     const rng = new RNG(this.settings.mapSeed + player * 100);
     const dirs = [0, Math.PI / 3, Math.PI * 2 / 3];
     for (const d of dirs) {
       const hx = x + Math.cos(d) * 5.5;
       const hz = z + Math.sin(d) * 5.5;
-      const house = new Building(BuildingKind.VIVIENDA, player, this.players[player].era, ctx);
+      const house = new Building(BuildingKind.HOUSE, player, this.players[player].era, ctx);
       house.pos.set(hx, this.terrain.getHeight(hx, hz), hz);
       house.attach(this.scene);
       house.beginConstruction();
@@ -325,26 +325,26 @@ export class Game {
       this.buildings.set(house.id, house);
       this.registerObstacle(house);
     }
-    // recursos cercanos para empezar
+    // nearby resources to start
     this.spawnStartResources(player, x, z);
-    // obreros iniciales
+    // starting workers
     const workers = player === 0 ? 4 : 4;
     for (let i = 0; i < workers; i++) {
-      const unit = new Unit(UnitKind.OBRERO, player, this.players[player].era, ctx);
+      const unit = new Unit(UnitKind.WORKER, player, this.players[player].era, ctx);
       unit.pos.set(x + rng.range(-3, 3), this.terrain.getHeight(x + rng.range(-3, 3), z + rng.range(-3, 3)), z + rng.range(-3, 3));
       unit.setContext(this.unitContext);
       unit.attach(this.scene);
       this.units.set(unit.id, unit);
-      this.players[player].populationUsed += unit.stats.poblacion;
+      this.players[player].populationUsed += unit.stats.population;
     }
-    // explorador
-    const scout = new Unit(UnitKind.EXPLORADOR, player, this.players[player].era, ctx);
+    // scout
+    const scout = new Unit(UnitKind.SCOUT, player, this.players[player].era, ctx);
     scout.pos.set(x + 4, this.terrain.getHeight(x + 4, z + 4), z + 4);
     scout.setContext(this.unitContext);
     scout.attach(this.scene);
     this.units.set(scout.id, scout);
-    this.players[player].populationUsed += scout.stats.poblacion;
-    // auto-recolección
+    this.players[player].populationUsed += scout.stats.population;
+    // auto-gathering
     this.assignInitialWorkers(player, x, z);
   }
 
@@ -358,33 +358,33 @@ export class Game {
       node.view.position.set(nx, node.pos.y, nz);
       node.placeTreeInstance(node.pos.y);
       this.resourceNodes.set(node.id, node);
-      const handle = { x: nx, z: nz, radius: kind === 'arbol' ? 0.5 : 1.1 };
+      const handle = { x: nx, z: nz, radius: kind === 'tree' ? 0.5 : 1.1 };
       this.obstacleHandles.set(node.id, handle);
       this.pathfinder.addObstacle(handle);
     };
-    // árboles
+    // trees
     for (let i = 0; i < 10; i++) {
       const a = rng.range(0, Math.PI * 2);
       const r = rng.range(8, 13);
-      place('arbol', rng.range(140, 200), Math.cos(a) * r, Math.sin(a) * r);
+      place('tree', rng.range(140, 200), Math.cos(a) * r, Math.sin(a) * r);
     }
-    // mina de acero
+    // steel mine
     const ma = rng.range(0, Math.PI * 2);
-    place('mina', 400, Math.cos(ma) * 12, Math.sin(ma) * 12);
-    // bayas
-    place('baya', 150, rng.range(-6, 6), rng.range(9, 13));
-    // pozo (si era permite)
+    place('mine', 400, Math.cos(ma) * 12, Math.sin(ma) * 12);
+    // berries
+    place('berry', 150, rng.range(-6, 6), rng.range(9, 13));
+    // well (if the era allows it)
     if (this.players[player].era >= Era.TAHUANTINSUYO) {
       const wa = rng.range(0, Math.PI * 2);
-      place('pozo', 300, Math.cos(wa) * 14, Math.sin(wa) * 14);
+      place('well', 300, Math.cos(wa) * 14, Math.sin(wa) * 14);
     }
   }
 
   private assignInitialWorkers(player: number, x: number, z: number): void {
-    const workers = [...this.units.values()].filter((u) => u.owner === player && u.kind === UnitKind.OBRERO);
-    const foods = [...this.resourceNodes.values()].filter((n) => n.resource === 'comida' && n.kind === 'baya');
-    const woods = [...this.resourceNodes.values()].filter((n) => n.resource === 'madera');
-    const steels = [...this.resourceNodes.values()].filter((n) => n.resource === 'acero');
+    const workers = [...this.units.values()].filter((u) => u.owner === player && u.kind === UnitKind.WORKER);
+    const foods = [...this.resourceNodes.values()].filter((n) => n.resource === 'food' && n.kind === 'berry');
+    const woods = [...this.resourceNodes.values()].filter((n) => n.resource === 'wood');
+    const steels = [...this.resourceNodes.values()].filter((n) => n.resource === 'silver');
     const nearest = (list: ResourceNode[], px: number, pz: number) =>
       list.reduce((best, n) => (best ? (distance2D(px, pz, n.pos.x, n.pos.z) < distance2D(px, pz, best.pos.x, best.pos.z) ? n : best) : n), null as ResourceNode | null);
     const foodNode = nearest(foods, x, z);
@@ -405,14 +405,14 @@ export class Game {
     return { era: p.era, civ, playerColor: new THREE.Color(civ.colors.primary) };
   }
 
-  /** Centro de un jugador (su edificio principal) o el centro del mapa. */
+  /** Center of a player (its main building) or the map center. */
   playerCenter(owner: number): { x: number; z: number } {
-    const c = [...this.buildings.values()].find((b) => b.owner === owner && b.kind === BuildingKind.CENTRO && !b.dead);
+    const c = [...this.buildings.values()].find((b) => b.owner === owner && b.kind === BuildingKind.CENTER && !b.dead);
     if (c) return { x: c.pos.x, z: c.pos.z };
     return { x: this.settings.mapSize / 2, z: this.settings.mapSize / 2 };
   }
 
-  /** Busca la tierra firme más cercana a un punto (para spawns guionizados). */
+  /** Find the nearest solid land to a point (for scripted spawns). */
   findLandNear(x: number, z: number, radius = 16): { x: number; z: number } {
     if (!this.terrain.isWater(x, z) && !this.terrain.isBeach(x, z)) return { x, z };
     for (let r = 3; r <= radius; r += 3) {
@@ -427,7 +427,7 @@ export class Game {
     return { x: c.x, z: c.z };
   }
 
-  /** Crea una unidad guionizada (campaña). */
+  /** Create a scripted unit (campaign). */
   spawnScriptedUnit(kind: UnitKind, owner: number, x: number, z: number, tag?: string): Unit {
     const era = this.players[owner]?.era ?? this.settings.startingEra;
     const ctx = this.makeBuildContext(owner);
@@ -439,11 +439,11 @@ export class Game {
     if (tag) u.tag = tag;
     this.units.set(u.id, u);
     const p = this.players[owner];
-    if (p) p.populationUsed += u.stats.poblacion;
+    if (p) p.populationUsed += u.stats.population;
     return u;
   }
 
-  /** Crea un edificio guionizado (campaña), ya terminado. */
+  /** Create a scripted building (campaign), already finished. */
   spawnScriptedBuilding(kind: BuildingKind, owner: number, x: number, z: number, tag?: string): Building {
     const era = this.players[owner]?.era ?? this.settings.startingEra;
     const ctx = this.makeBuildContext(owner);
@@ -461,13 +461,13 @@ export class Game {
 
   private applyMissionSetup(mis: MissionDef): void {
     const p = this.players[0];
-    p.resources = { ...mis.recursosIniciales };
+    p.resources = { ...mis.startingResources };
     const c = this.playerCenter(0);
-    for (const e of mis.inicio.edificios ?? []) {
+    for (const e of mis.start.buildings ?? []) {
       this.spawnScriptedBuilding(e.kind, 0, c.x + e.dx, c.z + e.dz, e.tag);
     }
-    for (const u of mis.inicio.unidades ?? []) {
-      for (let i = 0; i < (u.cantidad ?? 1); i++) {
+    for (const u of mis.start.units ?? []) {
+      for (let i = 0; i < (u.count ?? 1); i++) {
         const jx = this.rng.range(-1.5, 1.5);
         const jz = this.rng.range(-1.5, 1.5);
         this.spawnScriptedUnit(u.kind, 0, c.x + u.dx + jx, c.z + u.dz + jz, u.tag);
@@ -482,7 +482,7 @@ export class Game {
     const mis = this.mission?.def;
     if (mis) {
       if (win) this.hud.saveCampaignProgress(mis.id);
-      this.hud.showVictory(win, mis.victoria, mis.derrota);
+      this.hud.showVictory(win, mis.victory, mis.defeat);
     } else {
       this.hud.showVictory(win);
     }
@@ -503,27 +503,27 @@ export class Game {
       }
     });
     bus.on('wonder:time', (e) => {
-      if (this.settings.victoryMode === 'maravilla' && e.time >= this.wonderReqTime) {
+      if (this.settings.victoryMode === 'wonder' && e.time >= this.wonderReqTime) {
         this.endGame(e.owner);
       }
     });
   }
 
-  /** Reinicia la partida con la configuración actual. */
+  /** Restart the match with the current configuration. */
   resetGame(): void {
     try {
       localStorage.setItem('peru-settings', JSON.stringify(this.settings));
     } catch {
       /* noop */
     }
-    // ?play=1 evita volver a mostrar el menú principal tras recargar
+    // ?play=1 avoids showing the main menu again after reloading
     const url = new URL(location.href);
     url.searchParams.set('play', '1');
     if (this.settings.missionId) url.searchParams.set('mission', this.settings.missionId);
     location.href = url.toString();
   }
 
-  /** Muestra la pantalla de victoria/derrota. */
+  /** Show the victory/defeat screen. */
   showVictory(winner: number): void {
     this.gameEnded = true;
     this.loop.stop();
@@ -557,18 +557,18 @@ export class Game {
     window.addEventListener('keyup', this.onKeyUp);
   }
 
-  // --- entrada ---
+  // --- input ---
 
   private screenToWorld(sx: number, sy: number): THREE.Vector3 | null {
     const ndc = new THREE.Vector2((sx / window.innerWidth) * 2 - 1, -(sy / window.innerHeight) * 2 + 1);
     this.raycaster.setFromCamera(ndc, this.camera.camera);
     const ray = this.raycaster.ray;
     const hit = new THREE.Vector3();
-    // primer tiro: plano y=0 (cota inferior del terreno)
+    // first shot: plane y=0 (lower bound of the terrain)
     if (!ray.intersectPlane(this.groundPlane, hit)) return null;
     const dir = ray.direction;
     if (Math.abs(dir.y) < 1e-4) return hit;
-    // refinado contra el heightfield: punto fijo muestreando la altura real
+    // refined against the heightfield: fixed point sampling the real height
     const size = this.settings.mapSize;
     const p = new THREE.Vector3();
     let t = ray.origin.distanceTo(hit);
@@ -592,8 +592,8 @@ export class Game {
       if (e.button === 0) {
         const wp = this.screenToWorld(e.clientX, e.clientY);
         if (wp) {
-          // recalcular con el punto real del clic (no confiar en el estado del mousemove)
-          const foot = getBuildingStats(this.placingBuilding.kind, this.players[0].era).tamano;
+          // recompute with the real click point (do not trust the mousemove state)
+          const foot = getBuildingStats(this.placingBuilding.kind, this.players[0].era).size;
           if (this.canPlace(wp.x, wp.z, foot)) this.commitPlacement(wp.x, wp.z);
           else this.updatePlacementGhost(wp.x, wp.z);
         }
@@ -625,7 +625,7 @@ export class Game {
       if (this.selectionStart) {
         if (!this.leftMoved) {
           this.selectAt(this.selectionStart.x, this.selectionStart.y);
-          // doble clic: seleccionar todas las unidades del mismo tipo
+          // double click: select all units of the same type
           const now = performance.now();
           if (now - this.lastClickTime < 320 && this.selectedUnits.length === 1) {
             const u = this.units.get(this.selectedUnits[0]);
@@ -659,14 +659,14 @@ export class Game {
         this.updatePlacementGhost(wp.x, wp.z);
       }
     }
-    // arrastre con botón izquierdo = rectángulo de selección
+    // left-button drag = selection rectangle
     if (this.leftDown && this.selectionStart) {
       const dx = e.clientX - this.selectionStart.x;
       const dy = e.clientY - this.selectionStart.y;
       if (!this.leftMoved && Math.abs(dx) + Math.abs(dy) > 4) this.leftMoved = true;
       if (this.leftMoved) this.hud?.showSelectionBox(this.selectionStart.x, this.selectionStart.y, e.clientX, e.clientY);
     }
-    // cursor + tooltip de hover
+    // cursor + hover tooltip
     if (!this.gameEnded && !this.placingBuilding) {
       const info = this.computeHover(e.clientX, e.clientY);
       const hasSel = this.selectedUnits.length > 0 || this.selectedBuilding !== null;
@@ -677,12 +677,12 @@ export class Game {
     }
   };
 
-  /** Icono de acción contextual según lo que hay bajo el cursor y la selección. */
+  /** Contextual action icon according to what is under the cursor and the selection. */
   private hoverAction(sx: number, sy: number): string | null {
     if (this.placingBuilding) return '🚧';
     const node = this.pickResource(sx, sy);
     if (node) {
-      const hasWorker = this.selectedUnits.some((id) => this.units.get(id)?.kind === UnitKind.OBRERO);
+      const hasWorker = this.selectedUnits.some((id) => this.units.get(id)?.kind === UnitKind.WORKER);
       return hasWorker ? '⛏️' : null;
     }
     const picked = this.pickAt(sx, sy);
@@ -691,29 +691,29 @@ export class Game {
     return null;
   }
 
-  /** Información de la entidad o recurso bajo el cursor (para el tooltip). */
-  private computeHover(sx: number, sy: number): { icono: string; titulo: string; detalle: string } | null {
+  /** Information about the entity or resource under the cursor (for the tooltip). */
+  private computeHover(sx: number, sy: number): { icon: string; title: string; detalle: string } | null {
     const node = this.pickResource(sx, sy);
     if (node) {
       const ni = NODE_INFO[node.kind];
-      return { icono: ni.icono, titulo: ni.nombre, detalle: `${Math.ceil(node.amount)} ${RESOURCE_INFO[node.resource].nombre}` };
+      return { icon: ni.icon, title: ni.name, detalle: `${Math.ceil(node.amount)} ${RESOURCE_INFO[node.resource].name}` };
     }
     const picked = this.pickAt(sx, sy);
     if (picked.unit) {
       const ui = UNIT_INFO[picked.unit.kind];
       const own = picked.unit.owner === 0 ? 'Tú' : this.players[picked.unit.owner]?.name ?? 'Enemigo';
-      return { icono: ui.icono, titulo: `${ui.nombre}`, detalle: `${own} · HP ${Math.ceil(picked.unit.hp)}/${Math.ceil(picked.unit.maxHp)}` };
+      return { icon: ui.icon, title: `${ui.name}`, detalle: `${own} · HP ${Math.ceil(picked.unit.hp)}/${Math.ceil(picked.unit.maxHp)}` };
     }
     if (picked.building) {
       const bi = BUILDING_INFO[picked.building.kind];
       const own = picked.building.owner === 0 ? 'Tú' : this.players[picked.building.owner]?.name ?? 'Enemigo';
-      const estado = picked.building.constructionComplete ? '' : ` · Construyendo ${Math.floor(picked.building.buildRatio * 100)}%`;
-      return { icono: bi.icono, titulo: bi.nombre, detalle: `${own} · HP ${Math.ceil(picked.building.hp)}/${Math.ceil(picked.building.maxHp)}${estado}` };
+      const state = picked.building.constructionComplete ? '' : ` · Construyendo ${Math.floor(picked.building.buildRatio * 100)}%`;
+      return { icon: bi.icon, title: bi.name, detalle: `${own} · HP ${Math.ceil(picked.building.hp)}/${Math.ceil(picked.building.maxHp)}${state}` };
     }
     return null;
   }
 
-  /** Proyecta un punto del mundo a coordenadas de pantalla. */
+  /** Project a world point to screen coordinates. */
   private projectToScreen(x: number, y: number, z: number): { x: number; y: number } {
     const v = this.tmpProject.set(x, y, z).project(this.camera.camera);
     return { x: (v.x * 0.5 + 0.5) * window.innerWidth, y: (-v.y * 0.5 + 0.5) * window.innerHeight };
@@ -723,14 +723,14 @@ export class Game {
   private static readonly BUILDING_PICK_PX = 24;
 
   /**
-   * Picking con tolerancia: primero raycast exacto y, si falla, la entidad más
-   * cercana al cursor en pantalla (soluciona el clic sobre unidades pequeñas/móviles).
+   * Tolerant picking: exact raycast first and, if it fails, the entity closest
+   * to the cursor on screen (fixes clicking on small/moving units).
    */
   private pickAt(sx: number, sy: number): { unit?: Unit; building?: Building } {
     const direct = this.pickEntity(sx, sy);
     if (direct.unit) return direct;
 
-    // unidad más cercana en pantalla (tolerancia para unidades pequeñas o tras edificios)
+    // closest unit on screen (tolerance for small units or behind buildings)
     let bestUnit: Unit | undefined;
     let bestUnitD = Game.UNIT_PICK_PX;
     for (const u of this.units.values()) {
@@ -752,7 +752,7 @@ export class Game {
     }
     if (direct.building) return direct;
 
-    // edificio más cercano en pantalla
+    // closest building on screen
     let bestBuilding: Building | undefined;
     let bestBuildingD = Game.BUILDING_PICK_PX;
     for (const b of this.buildings.values()) {
@@ -834,7 +834,7 @@ export class Game {
       const p = u.pos;
       const ndc = new THREE.Vector3().copy(p);
       void ndc;
-      // proyectar al screen
+      // project to screen
       const v = p.clone();
       const screen = v.project(this.camera.camera);
       const sx = (screen.x * 0.5 + 0.5) * window.innerWidth;
@@ -874,12 +874,12 @@ export class Game {
     const wp = this.screenToWorld(sx, sy);
     const target: OrderTarget = wp ? { x: wp.x, z: wp.z } : { x: this.mouse.x, z: this.mouse.y };
 
-    // clic en nodo de recurso -> recolectar
+    // click on a resource node -> gather
     const node = this.pickResource(sx, sy);
     if (node) {
       this.markOrder(target, 'gather');
       for (const u of units) {
-        if (u.kind === UnitKind.OBRERO) {
+        if (u.kind === UnitKind.WORKER) {
           u.issueOrder({ kind: OrderKind.GATHER, entityId: node.id }, !this.shiftQueue);
         } else {
           u.issueOrder({ kind: OrderKind.ATTACK_MOVE, target }, !this.shiftQueue);
@@ -889,10 +889,10 @@ export class Game {
     }
     if (picked.building) {
       const b = picked.building;
-      // granja: los obreros recolectan comida de ella (solo si está completa)
+      // farm: workers gather food from it (only if it is complete)
       if (b.owner === 0 && b.isFarm && b.constructionComplete && b.foodAmount > 0) {
         for (const u of units) {
-          if (u.kind === UnitKind.OBRERO) {
+          if (u.kind === UnitKind.WORKER) {
             u.issueOrder({ kind: OrderKind.GATHER, entityId: b.id }, !this.shiftQueue);
           } else {
             u.issueOrder({ kind: OrderKind.ATTACK_MOVE, target }, !this.shiftQueue);
@@ -902,19 +902,19 @@ export class Game {
         return;
       }
       if (b.owner !== 0) {
-        // atacar edificio enemigo
+        // attack an enemy building
         this.markOrder({ x: b.pos.x, z: b.pos.z }, 'attack');
         for (const u of units) {
           u.issueOrder({ kind: OrderKind.ATTACK, entityId: b.id }, !this.shiftQueue);
         }
       } else if (this.shiftQueue) {
-        // dar rally point
+        // set rally point
         this.setRallyPoint(b.id, target);
       } else {
         for (const u of units) {
-          if (u.kind === UnitKind.OBRERO && !b.constructionComplete) {
+          if (u.kind === UnitKind.WORKER && !b.constructionComplete) {
             u.issueOrder({ kind: OrderKind.BUILD, entityId: b.id }, !this.shiftQueue);
-          } else if (u.kind === UnitKind.OBRERO && b.isDropsite) {
+          } else if (u.kind === UnitKind.WORKER && b.isDropsite) {
             u.issueOrder({ kind: OrderKind.DELIVER, entityId: b.id }, !this.shiftQueue);
           } else if (b.garrisons > 0) {
             u.issueOrder({ kind: OrderKind.GARRISON, entityId: b.id }, !this.shiftQueue);
@@ -926,7 +926,7 @@ export class Game {
       return;
     }
     if (picked.unit && picked.unit.owner !== 0) {
-      // atacar unidad enemiga
+      // attack an enemy unit
       this.markOrder({ x: picked.unit.pos.x, z: picked.unit.pos.z }, 'attack');
       for (const u of units) {
         u.issueOrder({ kind: OrderKind.ATTACK, entityId: picked.unit.id }, !this.shiftQueue);
@@ -934,7 +934,7 @@ export class Game {
       return;
     }
     if (this.ctrlQueue) {
-      // atacar-mover
+      // attack-move
       this.markOrder(target, 'attack');
       for (const u of units) {
         u.issueOrder({ kind: OrderKind.ATTACK_MOVE, target }, !this.shiftQueue);
@@ -946,13 +946,13 @@ export class Game {
     this.audio.order();
   }
 
-  /** Marca visualmente el destino de una orden en el suelo. */
+  /** Visually mark the destination of an order on the ground. */
   private markOrder(target: OrderTarget, kind: 'move' | 'attack' | 'gather'): void {
     const y = this.terrain.getHeight(target.x, target.z);
     this.markers.spawn(target.x, y, target.z, kind);
   }
 
-  /** Orden de movimiento/ataque-mover a un punto del mundo (usado por el minimapa). */
+  /** Move/attack-move order to a world point (used by the minimap). */
   commandMoveToWorld(x: number, z: number, ctrlQueue = this.ctrlQueue, shiftQueue = this.shiftQueue): void {
     const units = this.selectedUnits.map((id) => this.units.get(id)).filter((u): u is Unit => !!u && !u.dead);
     if (units.length === 0) return;
@@ -967,7 +967,7 @@ export class Game {
     this.audio.order();
   }
 
-  /** Órdenes de movimiento en formación de línea (estilo AoE2). */
+  /** Line-formation movement orders (AoE2 style). */
   private issueMoveFormation(units: Unit[], target: OrderTarget): void {
     const n = units.length;
     const yaw = Math.atan2(target.z - units[0].pos.z, target.x - units[0].pos.x);
@@ -990,10 +990,10 @@ export class Game {
     this.raycaster.setFromCamera(ndc, this.camera.camera);
     let best: ResourceNode | null = null;
     let bestD = Infinity;
-    // nodos con malla propia (mina, pozo, caza, pesca, baya y árboles de reserva)
+    // nodes with their own mesh (mine, well, hunt, fishing, berry and reserve trees)
     const meshes: THREE.Object3D[] = [];
     for (const n of this.resourceNodes.values()) {
-      if (n.kind === 'arbol' && n.treeSlot >= 0) continue;
+      if (n.kind === 'tree' && n.treeSlot >= 0) continue;
       meshes.push(n.view);
     }
     const hits = this.raycaster.intersectObjects(meshes, true);
@@ -1011,9 +1011,9 @@ export class Game {
         }
         cur = cur.parent;
       }
-      if (best) break; // ordenado por distancia: el primero es el más cercano
+      if (best) break; // ordered by distance: the first is the closest
     }
-    // árboles instanciados
+    // instanced trees
     const treeHits: { dist: number; id: number }[] = [];
     this.trees.raycast(this.raycaster, treeHits);
     for (const th of treeHits) {
@@ -1034,24 +1034,24 @@ export class Game {
     }
   }
 
-  // --- construcción ---
+  // --- construction ---
 
   /**
-   * ¿Se puede construir este edificio en la partida actual? Tiene en cuenta la era
-   * (partidas bloqueadas por periodo) y la Huaca Sagrada, que depende del modo victoria
-   * y no de la era (para que la victoria por maravilla sea alcanzable en cualquier periodo).
+   * Can this building be constructed in the current match? It accounts for the era
+   * (period-locked matches) and the Sacred Huaca, which depends on the victory mode,
+   * not the era (so wonder victory is reachable in any period).
    */
   canBuildKind(kind: BuildingKind): boolean {
-    if (kind === BuildingKind.CENTRO) return false;
-    if (kind === BuildingKind.MARAVILLA) return this.settings.victoryMode === 'maravilla';
-    return this.players[0].era >= BUILDING_DEFS[kind].eraMinima;
+    if (kind === BuildingKind.CENTER) return false;
+    if (kind === BuildingKind.WONDER) return this.settings.victoryMode === 'wonder';
+    return this.players[0].era >= BUILDING_DEFS[kind].minEra;
   }
 
   startPlacement(kind: BuildingKind): void {
-    // estándar RTS: construir requiere obreros seleccionados
+    // RTS standard: building requires selected workers
     const hasWorker = this.selectedUnits.some((id) => {
       const u = this.units.get(id);
-      return !!u && !u.dead && u.kind === UnitKind.OBRERO;
+      return !!u && !u.dead && u.kind === UnitKind.WORKER;
     });
     if (!hasWorker) {
       this.hud.showToast('Selecciona obreros para construir', 'warning');
@@ -1070,7 +1070,7 @@ export class Game {
   private updatePlacementGhost(x: number, z: number): void {
     if (!this.placingBuilding) return;
     const stats = getBuildingStats(this.placingBuilding.kind, this.players[0].era);
-    const foot = stats.tamano;
+    const foot = stats.size;
     const y = this.terrain.getHeight(x, z);
     const valid = this.canPlace(x, z, foot);
     this.placingBuilding.valid = valid;
@@ -1085,7 +1085,7 @@ export class Game {
     });
   }
 
-  /** Busca un lugar libre cerca de un punto para construir. */
+  /** Find a free spot near a point to build. */
   findFreeSpot(x: number, z: number, foot: number): { x: number; z: number } | null {
     const rng = new RNG(Math.floor(x * 7 + z * 13));
     for (let i = 0; i < 60; i++) {
@@ -1120,7 +1120,7 @@ export class Game {
     if (!this.placingBuilding) return;
     const kind = this.placingBuilding.kind;
     const stats = getBuildingStats(kind, this.players[0].era);
-    if (!this.spendResource(0, stats.costo)) {
+    if (!this.spendResource(0, stats.cost)) {
       this.hud.showToast('Recursos insuficientes', 'error');
       this.cancelPlacement();
       return;
@@ -1133,10 +1133,10 @@ export class Game {
     this.buildings.set(b.id, b);
     this.registerObstacle(b);
     this.cancelPlacement();
-    // estándar RTS: construyen los obreros seleccionados (interrumpen su tarea)
+    // RTS standard: the selected workers build (they interrupt their task)
     const builders = this.selectedUnits
       .map((id) => this.units.get(id))
-      .filter((u): u is Unit => !!u && !u.dead && u.kind === UnitKind.OBRERO);
+      .filter((u): u is Unit => !!u && !u.dead && u.kind === UnitKind.WORKER);
     for (const u of builders) {
       u.issueOrder({ kind: OrderKind.BUILD, entityId: b.id }, true);
     }
@@ -1166,7 +1166,7 @@ export class Game {
     bus.emit('resources:changed', { player, resources: { ...p.resources } });
   }
 
-  /** Cancela un entrenamiento en cola y reembolsa su coste. */
+  /** Cancel a queued training and refund its cost. */
   cancelProduction(buildingId: number, index: number): void {
     const b = this.buildings.get(buildingId);
     if (!b || b.owner !== 0) return;
@@ -1174,11 +1174,11 @@ export class Game {
     if (!item) return;
     const stats = getUnitStats(item.unit, b.era);
     b.productionQueue.splice(index, 1);
-    this.addResource(b.owner, { ...ZERO_RESOURCES, ...stats.costo });
+    this.addResource(b.owner, { ...ZERO_RESOURCES, ...stats.cost });
     this.hud?.showToast('Entrenamiento cancelado', 'info');
   }
 
-  // --- teclado ---
+  // --- keyboard ---
 
   private onKeyDown = (e: KeyboardEvent): void => {
     if (isTypingTarget(e.target)) return;
@@ -1188,7 +1188,7 @@ export class Game {
       this.togglePause();
       return;
     }
-    // no procesar atajos de juego con un menú abierto o en pausa
+    // do not process game shortcuts with a menu open or while paused
     if (this.paused || this.hud.hasBlockingOverlay()) return;
     if (k === 'escape') {
       this.cancelPlacement();
@@ -1197,7 +1197,7 @@ export class Game {
       this.refreshSelectionVisuals();
       return;
     }
-    // grupos de control (Ctrl/Alt+n asignar, n recuperar, Shift+n añadir)
+    // control groups (Ctrl/Alt+n assign, n recall, Shift+n add)
     if (/^[1-9]$/.test(e.key)) {
       e.preventDefault();
       const n = Number(e.key);
@@ -1207,7 +1207,7 @@ export class Game {
       return;
     }
     if (k === 'h') {
-      const center = [...this.buildings.values()].find((b) => b.owner === 0 && b.kind === BuildingKind.CENTRO);
+      const center = [...this.buildings.values()].find((b) => b.owner === 0 && b.kind === BuildingKind.CENTER);
       if (center) this.camera.focusOn(center.pos.x, center.pos.z);
     }
     if (k === 'f') {
@@ -1223,10 +1223,10 @@ export class Game {
         if (ent) this.camera.focusOn(ent.pos.x, ent.pos.z);
       }
     }
-    // seleccionar todo el ejército (unidades de combate propias)
+    // select the whole army (own combat units)
     if (k === 'e') {
       const army = [...this.units.values()].filter(
-        (u) => u.owner === 0 && !u.dead && u.kind !== UnitKind.OBRERO,
+        (u) => u.owner === 0 && !u.dead && u.kind !== UnitKind.WORKER,
       );
       this.selectedUnits = army.map((u) => u.id);
       this.selectedBuilding = null;
@@ -1235,9 +1235,9 @@ export class Game {
       this.audio.select();
       return;
     }
-    // controles numéricos para paneles
-    if (k === 'g') this.startPlacement(BuildingKind.GRANJA);
-    if (k === 'v') this.startPlacement(BuildingKind.VIVIENDA);
+    // numeric controls for panels
+    if (k === 'g') this.startPlacement(BuildingKind.FARM);
+    if (k === 'v') this.startPlacement(BuildingKind.HOUSE);
   };
 
   private lastBattleEvent: number | null = null;
@@ -1299,7 +1299,7 @@ export class Game {
     return this.paused;
   }
 
-  // --- contexto UnitContext ---
+  // --- UnitContext context ---
 
   private ctxFor(): UnitContext {
     return {
@@ -1367,7 +1367,7 @@ export class Game {
     return out;
   }
 
-  /** Reconstruye el hash espacial de unidades (una vez por frame). */
+  /** Rebuild the unit spatial hash (once per frame). */
   private rebuildSpatial(): void {
     this.spatial.clear();
     const c = this.spatialCell;
@@ -1397,17 +1397,17 @@ export class Game {
   private resolveDamage(attackerId: number, targetId: number, damage: number, from: any): void {
     const target = this.units.get(targetId) ?? this.buildings.get(targetId);
     if (!target || target.dead) return;
-    const armor = target instanceof Unit ? target.stats.armaduraPesado * target.armorMultiplier : (target as Building).stats.armadura;
+    const armor = target instanceof Unit ? target.stats.heavyArmor * target.armorMultiplier : (target as Building).stats.armor;
     const final = Math.max(1, damage - armor);
     target.takeDamage(final, attackerId);
     const dmgH = target instanceof Unit ? 2.2 : 2.6;
     this.hud?.addDamageNumber(target.pos.x, target.pos.y + dmgH, target.pos.z, final, final >= 40 ? 'big' : 'normal');
-    // impacto por golpe (sangre en unidades, polvo/chispas en estructuras)
+    // impact per hit (blood on units, dust/sparks on structures)
     if (target instanceof Unit) {
-      this.particles.emit({ x: target.pos.x, y: target.pos.y + 0.9, z: target.pos.z, count: 4, color: 0x7a1010, kind: 'polvo', speed: 1.5, life: 0.4, size: 0.7, grow: 0.3, gravity: 10, spread: 1.6 });
+      this.particles.emit({ x: target.pos.x, y: target.pos.y + 0.9, z: target.pos.z, count: 4, color: 0x7a1010, kind: 'dust', speed: 1.5, life: 0.4, size: 0.7, grow: 0.3, gravity: 10, spread: 1.6 });
     } else {
-      this.particles.emit({ x: target.pos.x, y: target.pos.y + 1.3, z: target.pos.z, count: 5, color: 0xcbb086, kind: 'polvo', speed: 1.2, life: 0.45, size: 0.9, grow: 1.0, gravity: 6, spread: 1.4 });
-      if (Math.random() < 0.5) this.particles.emit({ x: target.pos.x, y: target.pos.y + 1.4, z: target.pos.z, count: 2, color: 0xffaa55, kind: 'chispa', speed: 2, life: 0.25, size: 0.9, gravity: 8, spread: 1.5 });
+      this.particles.emit({ x: target.pos.x, y: target.pos.y + 1.3, z: target.pos.z, count: 5, color: 0xcbb086, kind: 'dust', speed: 1.2, life: 0.45, size: 0.9, grow: 1.0, gravity: 6, spread: 1.4 });
+      if (Math.random() < 0.5) this.particles.emit({ x: target.pos.x, y: target.pos.y + 1.4, z: target.pos.z, count: 2, color: 0xffaa55, kind: 'spark', speed: 2, life: 0.25, size: 0.9, gravity: 8, spread: 1.5 });
     }
     if (target.owner === 0) this.notifyUnderAttack(target);
     const owner = from?.owner ?? -1;
@@ -1432,16 +1432,16 @@ export class Game {
     if (target instanceof Building) {
       if (now - this.lastBaseAlert > 4000) {
         this.lastBaseAlert = now;
-        bus.emit('alert', { icono: '🚨', texto: `¡${BUILDING_INFO[target.kind].nombre} atacada!`, x: target.pos.x, z: target.pos.z, warn: true });
+        bus.emit('alert', { icon: '🚨', text: `¡${BUILDING_INFO[target.kind].name} atacada!`, x: target.pos.x, z: target.pos.z, warn: true });
       }
     } else if (target.hp / target.maxHp < 0.5 && now - this.lastUnitAlert > 3000) {
       this.lastUnitAlert = now;
-      bus.emit('alert', { icono: '⚠️', texto: 'Unidad bajo ataque', x: target.pos.x, z: target.pos.z, warn: true });
+      bus.emit('alert', { icon: '⚠️', text: 'Unidad bajo ataque', x: target.pos.x, z: target.pos.z, warn: true });
     }
   }
 
   private spawnProjectile(o: any): void {
-    if (o.kind === 'obús' || o.kind === 'nuclear') bus.emit('fx:artillery', {});
+    if (o.kind === 'howitzer_shell' || o.kind === 'nuclear') bus.emit('fx:artillery', {});
     else if (o.kind === 'laser' || o.kind === 'rail') bus.emit('fx:laser', {});
     else bus.emit('fx:shot', {});
     const p = new Projectile(this.scene, {
@@ -1460,7 +1460,7 @@ export class Game {
   private applyProjectileDamage(o: any, targetId: number | undefined): void {
     const impact = o.target as THREE.Vector3;
     if (o.area && o.area > 0) {
-      // daño en área
+      // area damage
       const targets: { t: any; d: number }[] = [];
       for (const u of this.units.values()) {
         if (u.dead || u.owner === o.owner) continue;
@@ -1477,8 +1477,8 @@ export class Game {
         const falloff = 1 - d / o.area;
         this.resolveDamage(o.owner, t.id, o.damage * falloff, { owner: o.owner });
       }
-      // humo de la explosión
-      this.particles.emit({ x: impact.x, y: impact.y + 1, z: impact.z, count: 14, color: 0x997755, kind: 'humo', speed: 2, life: 1.8, size: 3 });
+      // explosion smoke
+      this.particles.emit({ x: impact.x, y: impact.y + 1, z: impact.z, count: 14, color: 0x997755, kind: 'smoke', speed: 2, life: 1.8, size: 3 });
       this.camera.addShake(0.5);
       bus.emit('fx:explosion', {});
     } else if (targetId !== undefined) {
@@ -1487,7 +1487,7 @@ export class Game {
         this.resolveDamage(o.owner, targetId, o.damage, { owner: o.owner });
       }
     } else {
-      // sin targetId: dañar al enemigo más cercano al punto de impacto
+      // no targetId: damage the enemy closest to the impact point
       let best: any = null;
       let bestD = Infinity;
       for (const u of this.units.values()) {
@@ -1513,7 +1513,7 @@ export class Game {
     }
   }
 
-  // --- spawn desde edificios ---
+  // --- spawn from buildings ---
 
   unitSpawn = (buildingId: number, unit: UnitKind, rally: OrderTarget, hasRally: boolean): boolean => {
     const b = this.buildings.get(buildingId);
@@ -1521,7 +1521,7 @@ export class Game {
     const player = b.owner;
     const p = this.players[player];
     const stats = getUnitStats(unit, p.era);
-    if (p.populationUsed + stats.poblacion > p.populationCap) {
+    if (p.populationUsed + stats.population > p.populationCap) {
       return false;
     }
     const ctx = this.makeBuildContext(player);
@@ -1534,13 +1534,13 @@ export class Game {
     this.applyPlayerBonuses(u, p);
     u.attach(this.scene);
     this.units.set(u.id, u);
-    p.populationUsed += stats.poblacion;
+    p.populationUsed += stats.population;
     p.stats.created++;
     if (hasRally) {
       u.issueOrder({ kind: OrderKind.MOVE, target: rally });
     }
-    // auto-recolección de obreros
-    if (unit === UnitKind.OBRERO && !hasRally) {
+    // worker auto-gathering
+    if (unit === UnitKind.WORKER && !hasRally) {
       this.economy.assignWorker(u.id);
     }
     return true;
@@ -1551,65 +1551,65 @@ export class Game {
     p.techs.add(techId);
     const tech = getTech(techId);
     if (tech) {
-      if (tech.efecto.ataqueMult) {
-        p.bonus.ataque += tech.efecto.ataqueMult;
-        this.applyAttackBonus(playerId, tech.efecto.ataqueMult);
+      if (tech.effect.attackMult) {
+        p.bonus.attack += tech.effect.attackMult;
+        this.applyAttackBonus(playerId, tech.effect.attackMult);
       }
-      if (tech.efecto.armaduraMult) {
-        p.bonus.armadura += tech.efecto.armaduraMult;
-        this.applyArmorBonus(playerId, tech.efecto.armaduraMult);
+      if (tech.effect.armorMult) {
+        p.bonus.armor += tech.effect.armorMult;
+        this.applyArmorBonus(playerId, tech.effect.armorMult);
       }
-      if (tech.efecto.recoleccionMult) {
+      if (tech.effect.gatheringMult) {
         for (const k of RESOURCE_KEYS) {
-          const v = tech.efecto.recoleccionMult[k];
+          const v = tech.effect.gatheringMult[k];
           if (v) {
-            p.bonus.recoleccion[k] = (p.bonus.recoleccion[k] ?? 0) + v;
+            p.bonus.gathering[k] = (p.bonus.gathering[k] ?? 0) + v;
             this.applyGatherBonus(playerId, k, v);
           }
         }
       }
-      if (tech.efecto.capacidadBonus) {
-        p.bonus.carry += tech.efecto.capacidadBonus;
+      if (tech.effect.capacityBonus) {
+        p.bonus.carry += tech.effect.capacityBonus;
         for (const u of this.units.values()) {
-          if (u.owner === playerId && u.kind === UnitKind.OBRERO) u.setCarryCapacity(u.maxCarry + tech.efecto.capacidadBonus);
+          if (u.owner === playerId && u.kind === UnitKind.WORKER) u.setCarryCapacity(u.maxCarry + tech.effect.capacityBonus);
         }
       }
-      if (tech.efecto.losBonus) {
-        p.bonus.los += tech.efecto.losBonus;
+      if (tech.effect.losBonus) {
+        p.bonus.los += tech.effect.losBonus;
         for (const u of this.units.values()) {
-          if (u.owner === playerId) u.stats.los += tech.efecto.losBonus;
+          if (u.owner === playerId) u.stats.los += tech.effect.losBonus;
         }
       }
-      if (tech.efecto.rangeBonus) {
-        p.bonus.rango += tech.efecto.rangeBonus;
+      if (tech.effect.rangeBonus) {
+        p.bonus.range += tech.effect.rangeBonus;
         for (const u of this.units.values()) {
-          if (u.owner === playerId && u.stats.rango > 0) u.stats.rango += tech.efecto.rangeBonus;
+          if (u.owner === playerId && u.stats.range > 0) u.stats.range += tech.effect.rangeBonus;
         }
       }
-      if (tech.efecto.velocidadBonus) {
-        p.bonus.velocidad += tech.efecto.velocidadBonus;
+      if (tech.effect.speedBonus) {
+        p.bonus.speed += tech.effect.speedBonus;
         for (const u of this.units.values()) {
-          if (u.owner === playerId) u.stats.velocidad += tech.efecto.velocidadBonus;
+          if (u.owner === playerId) u.stats.speed += tech.effect.speedBonus;
         }
       }
-      if (tech.efecto.precioDescuento) {
-        p.bonus.entrenamiento += tech.efecto.precioDescuento;
+      if (tech.effect.priceDiscount) {
+        p.bonus.training += tech.effect.priceDiscount;
       }
     }
-    this.hud.showToast(`Tecnología completada: ${tech?.nombre ?? techId}`, 'info');
+    this.hud.showToast(`Tecnología completada: ${tech?.name ?? techId}`, 'info');
   };
 
   private applyPlayerBonuses(u: Unit, p: PlayerState): void {
-    u.attackMultiplier += p.bonus.ataque;
-    u.armorMultiplier += p.bonus.armadura;
+    u.attackMultiplier += p.bonus.attack;
+    u.armorMultiplier += p.bonus.armor;
     for (const k of RESOURCE_KEYS) {
-      const v = p.bonus.recoleccion[k];
+      const v = p.bonus.gathering[k];
       if (v) u.gatherMultiplier += v;
     }
     if (p.bonus.carry) u.setCarryCapacity(u.maxCarry + p.bonus.carry);
     u.stats.los += p.bonus.los;
-    if (u.stats.rango > 0) u.stats.rango += p.bonus.rango;
-    u.stats.velocidad += p.bonus.velocidad;
+    if (u.stats.range > 0) u.stats.range += p.bonus.range;
+    u.stats.speed += p.bonus.speed;
   }
 
   private applyAttackBonus(playerId: number, mult: number): void {
@@ -1624,15 +1624,15 @@ export class Game {
   }
   private applyGatherBonus(playerId: number, _res: keyof Resources, mult: number): void {
     for (const u of this.units.values()) {
-      if (u.owner === playerId && u.kind === UnitKind.OBRERO) u.gatherMultiplier += mult;
+      if (u.owner === playerId && u.kind === UnitKind.WORKER) u.gatherMultiplier += mult;
     }
   }
 
-  // --- avance de era ---
+  // --- era advancement ---
 
   canAdvanceEra(player: number): { ok: boolean; reason?: string } {
     const p = this.players[player];
-    if (p.era >= Era.CONTEMPORANEO) return { ok: false, reason: 'Era máxima' };
+    if (p.era >= Era.CONTEMPORARY) return { ok: false, reason: 'Era máxima' };
     const def = ERA_DEFS[p.era];
     if (!def.advanceCost) return { ok: false, reason: 'Sin coste' };
     for (const k of RESOURCE_KEYS) {
@@ -1640,7 +1640,7 @@ export class Game {
         return { ok: false, reason: 'Recursos insuficientes' };
       }
     }
-    const count = [...this.buildings.values()].filter((b) => b.owner === player && b.constructionComplete && (b.kind === BuildingKind.CENTRO || b.kind === BuildingKind.FORTALEZA || b.kind === BuildingKind.MERCADO || b.kind === BuildingKind.INSTITUTO)).length;
+    const count = [...this.buildings.values()].filter((b) => b.owner === player && b.constructionComplete && (b.kind === BuildingKind.CENTER || b.kind === BuildingKind.FORTRESS || b.kind === BuildingKind.MARKET || b.kind === BuildingKind.INSTITUTE)).length;
     if (count < def.advanceRequiredBuildings) {
       return { ok: false, reason: `Necesitas ${def.advanceRequiredBuildings} edificio(s) de avance` };
     }
@@ -1658,16 +1658,16 @@ export class Game {
     for (const k of RESOURCE_KEYS) p.resources[k] -= def.advanceCost?.[k] ?? 0;
     p.era = (p.era + 1) as Era;
     bus.emit('player:era', { player, era: p.era });
-    // modernizar edificios
+    // modernize buildings
     const ctx = this.makeBuildContext(player);
     for (const b of this.buildings.values()) {
       if (b.owner === player) {
         b.modernize(p.era, ctx);
       }
     }
-    // modernizar unidades en el campo
+    // modernize units in the field
     this.modernizeUnits(player);
-    this.hud.showToast(`¡Avanzaste a la ${ERA_DEFS[p.era].nombre}!`, 'success');
+    this.hud.showToast(`¡Avanzaste a la ${ERA_DEFS[p.era].name}!`, 'success');
     this.audio.setEra(p.era);
     this.audio.eraAdvance();
     this.camera.addShake(0.4);
@@ -1682,7 +1682,7 @@ export class Game {
       u.stats = getUnitStats(u.kind, p.era);
       u.maxHp = u.stats.hp;
       if (u.hp > u.maxHp) u.hp = u.maxHp;
-      // reconstruir modelo
+      // rebuild model
       const old = u.view.group;
       const model = buildModel(getUnitModel(u.kind, p.era), ctx);
       model.position.copy(old.position);
@@ -1695,7 +1695,7 @@ export class Game {
       disposeModel(old);
       u.view = new EntityView(model, u.radius);
       u.findPivots(model);
-      // resetear multiplicadores antes de re-aplicar (evita doble conteo)
+      // reset multipliers before re-applying (avoids double counting)
       u.attackMultiplier = 1;
       u.armorMultiplier = 1;
       u.gatherMultiplier = 1;
@@ -1704,7 +1704,7 @@ export class Game {
     }
   }
 
-  // --- niebla de guerra ---
+  // --- fog of war ---
 
   private updateFow(): void {
     if (!this.settings.fogOfWar) return;
@@ -1716,7 +1716,7 @@ export class Game {
       if (b.owner !== 0 || b.dead) continue;
       this.fow.reveal(b.pos.x, b.pos.z, b.stats.los + 2);
     }
-    // ocultar entidades enemigas no visibles
+    // hide enemy entities that are not visible
     for (const u of this.units.values()) {
       if (u.owner === 0) continue;
       const vis = this.fow.isVisible(u.pos.x, u.pos.z) || !this.settings.fogOfWar;
@@ -1731,7 +1731,7 @@ export class Game {
     this.fow.decay();
   }
 
-  /** Oculta nodos de recurso lejanos (LOD) y no explorados. */
+  /** Hide distant and unexplored resource nodes (LOD). */
   private applyLod(): void {
     const t = this.camera.getTarget();
     const lod = this.camera.getZoom() * 1.2 + 40;
@@ -1745,7 +1745,7 @@ export class Game {
     }
   }
 
-  /** Activa/desactiva la niebla de guerra y refleja el cambio en el terreno. */
+  /** Enable/disable fog of war and reflect the change on the terrain. */
   setFogOfWar(on: boolean): void {
     this.settings.fogOfWar = on;
     this.fow.setEnabled(on);
@@ -1757,18 +1757,18 @@ export class Game {
     }
   }
 
-  // --- población ---
+  // --- population ---
 
   private updatePopulation(): void {
     for (const p of this.players) {
       let used = 0;
       for (const u of this.units.values()) {
         if (u.owner === p.id && !u.dead && u.garrisonedIn === null) {
-          used += u.stats.poblacion;
+          used += u.stats.population;
         }
       }
       p.populationUsed = used;
-      let cap = 3; // centro inicial
+      let cap = 3; // initial center
       for (const b of this.buildings.values()) {
         if (b.owner === p.id && b.constructionComplete) {
           cap += b.providesPop;
@@ -1778,15 +1778,15 @@ export class Game {
     }
   }
 
-  // --- victoria ---
+  // --- victory ---
 
   private checkVictory(): void {
     if (this.gameEnded) return;
-    // en campaña la victoria/derrota la decide la misión
+    // in campaign, victory/defeat is decided by the mission
     if (this.mission) return;
     for (const p of this.players) {
       if (!p.alive) continue;
-      const hasCenter = [...this.buildings.values()].some((b) => b.owner === p.id && b.kind === BuildingKind.CENTRO && !b.dead);
+      const hasCenter = [...this.buildings.values()].some((b) => b.owner === p.id && b.kind === BuildingKind.CENTER && !b.dead);
       if (!hasCenter) {
         p.alive = false;
         bus.emit('player:defeat', { player: p.id });
@@ -1806,7 +1806,7 @@ export class Game {
     bus.emit('game:end', { winner });
   }
 
-  // --- update principal ---
+  // --- main update ---
 
   private update(dt: number, t: number): void {
     if (this.paused) {
@@ -1821,7 +1821,7 @@ export class Game {
     this.water.update(t);
     this.terrain.setSunLight(this.sky.sunDir, this.sky.sunColor);
     this.terrain.update(t);
-    // sombras de nubes: atenúa el sol según densidad de nube cerca del sol
+    // cloud shadows: dim the sun according to cloud density near the sun
     const cs = cloudDensity(this.sky.sunDir.x * 900 + t * 3, this.sky.sunDir.z * 900) * 0.22;
     this.terrain.setCloudShadow(1 - cs);
     this.particles.update(d);
@@ -1831,24 +1831,24 @@ export class Game {
     this.camera.update(d, t);
     this.rebuildSpatial();
 
-    // unidades
+    // units
     for (const u of this.units.values()) {
       if (u.dead) continue;
       u.ctx = this.unitContext;
       u.update(d, t);
     }
-    // edificios
+    // buildings
     for (const b of this.buildings.values()) {
       if (b.dead) continue;
       b.ctx = this.unitContext;
       b.update(d, t);
     }
-    // recursos
+    // resources
     for (const n of this.resourceNodes.values()) {
       if (n.dead) continue;
       n.update(t);
     }
-    // proyectiles
+    // projectiles
     for (const p of this.projectiles) {
       p.update(d);
     }
@@ -1859,22 +1859,22 @@ export class Game {
     this.applyLod();
     this.updatePopulation();
 
-    // misión de campaña: evaluar ANTES de limpiar muertos para que los
-    // objetivos detecten entidades recién destruidas (destruir/proteger)
+    // campaign mission: evaluate BEFORE cleaning up dead so that
+    // objectives detect freshly destroyed entities (destroy/protect)
     this.mission?.update(d, t);
     this.tutorial?.update(d);
 
-    // limpia muertos
+    // clean up dead
     this.cleanupDead();
 
-    // Alerta de ataque a la base del jugador
+    // Alert of attack on the player base
     this.alertTimer -= d;
     if (this.alertTimer <= 0) {
       this.alertTimer = 3;
       this.checkBaseThreat();
     }
 
-    // IA
+    // AI
     this.ai?.update(d, t);
 
     this.checkVictory();
@@ -1917,7 +1917,7 @@ export class Game {
   private alerted = false;
 
   private checkBaseThreat(): void {
-    const center = [...this.buildings.values()].find((b) => b.owner === 0 && b.kind === BuildingKind.CENTRO && !b.dead);
+    const center = [...this.buildings.values()].find((b) => b.owner === 0 && b.kind === BuildingKind.CENTER && !b.dead);
     if (!center) {
       this.alerted = false;
       return;
@@ -1934,7 +1934,7 @@ export class Game {
     if (threat && !this.alerted) {
       this.alerted = true;
       this.audio.alarm();
-      bus.emit('alert', { icono: '🚨', texto: '¡Tu base está bajo ataque!', x: center.pos.x, z: center.pos.z, warn: true });
+      bus.emit('alert', { icon: '🚨', text: '¡Tu base está bajo ataque!', x: center.pos.x, z: center.pos.z, warn: true });
       this.camera.focusOn(center.pos.x, center.pos.z);
     } else if (!threat && this.alerted) {
       this.alerted = false;
@@ -1967,7 +1967,7 @@ export class Game {
     return this.selectedBuilding !== null ? this.buildings.get(this.selectedBuilding) ?? null : null;
   }
 
-  /** Reemplaza la selección de unidades por los ids dados (solo propias y vivas). */
+  /** Replace the unit selection with the given ids (only own and alive). */
   selectUnits(ids: number[]): void {
     const valid = ids.filter((id) => {
       const u = this.units.get(id);
@@ -2006,5 +2006,5 @@ export class Game {
 function buildModelForGhost(kind: BuildingKind, ctx: BuildContext): THREE.Group {
   const def = BUILDING_DEFS[kind];
   const modelType = Object.values(def.eraModel)[0];
-  return buildModel({ type: modelType?.type ?? 'centro_vapor' }, ctx);
+  return buildModel({ type: modelType?.type ?? 'center_steam' }, ctx);
 }

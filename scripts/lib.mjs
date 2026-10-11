@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { PNG } from 'pngjs';
 
-/** Lanza Chromium con SwiftShader (funciona sin GPU). Respeta CHROME_PATH. */
+/** Launch Chromium with SwiftShader (works without GPU). Respects CHROME_PATH. */
 export async function launchChromium() {
   const executablePath = process.env.CHROME_PATH || chromium.executablePath();
   return chromium.launch({
@@ -13,7 +13,7 @@ export async function launchChromium() {
   });
 }
 
-/** Arranca un servidor Vite en un puerto libre y devuelve base + cierre. */
+/** Start a Vite server on a free port and return base + close. */
 export async function withViteServer() {
   const server = await createServer({ server: { port: 0 } });
   await server.listen();
@@ -21,20 +21,20 @@ export async function withViteServer() {
   return { base, close: () => server.close() };
 }
 
-/** Directorio de salida de capturas (review/), creado si no existe. */
+/** Screenshot output directory (review/), created if missing. */
 export function reviewDir() {
   const dir = path.resolve('review');
   fs.mkdirSync(dir, { recursive: true });
   return dir;
 }
 
-/** Lee un PNG y devuelve sus datos crudos. */
+/** Read a PNG and return its raw data. */
 export function readPng(file) {
   const png = PNG.sync.read(fs.readFileSync(file));
   return { width: png.width, height: png.height, data: png.data };
 }
 
-/** Clasifica un color RGB en un carácter para las vistas ASCII. */
+/** Classify an RGB color into a character for ASCII views. */
 export function classify(r, g, b) {
   const l = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
   const mx = Math.max(r, g, b);

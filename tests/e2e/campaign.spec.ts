@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('muestra el prólogo histórico antes de la campaña', async ({ page }) => {
+test('shows the historical prologue before the campaign', async ({ page }) => {
   await page.goto('/');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
   await page.getByRole('button', { name: /Campañas/ }).click();
@@ -11,7 +11,7 @@ test('muestra el prólogo histórico antes de la campaña', async ({ page }) => 
   await expect(page.locator('.ed-overlay', { hasText: 'La Ciudad Sagrada' })).toBeVisible();
 });
 
-test('el briefing de la misión incluye contexto y fuentes', async ({ page }) => {
+test('the mission briefing includes context and sources', async ({ page }) => {
   await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
   const overlay = page.locator('.ed-overlay', { hasText: 'La Ciudad Sagrada' });
   await expect(overlay).toBeVisible({ timeout: 30_000 });
@@ -20,7 +20,7 @@ test('el briefing de la misión incluye contexto y fuentes', async ({ page }) =>
   await expect(overlay.getByText('Fuentes históricas')).toBeVisible();
 });
 
-test('el códice abre con periodos, civilizaciones y dossiers', async ({ page }) => {
+test('the codex opens with periods, civilizations and dossiers', async ({ page }) => {
   await page.goto('/');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
   await page.getByRole('button', { name: /Códice/ }).click();
@@ -33,7 +33,7 @@ test('el códice abre con periodos, civilizaciones y dossiers', async ({ page })
   await expect(codex.locator('.ed-codex-content')).toContainText('Fuentes');
 });
 
-test('el tutorial guía en la primera misión', async ({ page }) => {
+test('the tutorial guides in the first mission', async ({ page }) => {
   await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
   const overlay = page.locator('.ed-overlay', { hasText: 'La Ciudad Sagrada' });
   await expect(overlay).toBeVisible({ timeout: 30_000 });

@@ -10,12 +10,12 @@ for (const era of [0, 1, 2, 3, 4, 5]) {
   await page.goto(base + `/?seed=777&fog=0&low=1&era=${era}`, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => window.game !== undefined, null, { timeout: 30000 }).catch(() => {});
   await page.waitForTimeout(5000);
-  // colocar varias unidades y edificios para verlos bien
+  // place several units and buildings to see them well
   await page.evaluate(() => {
     const g = window.game;
     const UnitCtor = Object.getPrototypeOf([...g.units.values()][0]).constructor;
-    const c = [...g.buildings.values()].find((b) => b.kind === 'centro' && b.owner === 0).pos;
-    const kinds = ['obrero', 'soldado', 'mosquetero', 'husar'];
+    const c = [...g.buildings.values()].find((b) => b.kind === 'center' && b.owner === 0).pos;
+    const kinds = ['worker', 'soldier', 'musketeer', 'hussar'];
     kinds.forEach((k, i) => {
       const u = new UnitCtor(k, 0, g.players[0].era, g.makeBuildContext(0));
       u.pos.set(c.x + 6 + i * 2.2, g.terrain.getHeight(c.x + 6 + i * 2.2, c.z + 4), c.z + 4);

@@ -5,7 +5,7 @@ import { ResourceKey } from '../core/types';
 import { MaterialTex } from '../rendering/Textures';
 import { TreeInstances } from '../rendering/TreeInstances';
 
-// Cachés compartidos: geometrías y materiales reutilizados entre nodos (menos draw calls y GC).
+// Shared caches: geometries and materials reused between nodes (fewer draw calls and GC).
 const geoCache = new Map<string, THREE.BufferGeometry>();
 function cylGeo(rt: number, rb: number, h: number, seg: number): THREE.CylinderGeometry {
   const key = `cyl-${rt}-${rb}-${h}-${seg}`;
@@ -63,7 +63,7 @@ function mat(key: string, o: TexOpts = {}): THREE.MeshStandardMaterial {
   return m;
 }
 
-/** Libera geometrías y materiales compartidos (llamar al destruir la partida). */
+/** Free shared geometries and materials (call when destroying the match). */
 export function clearResourceCaches(): void {
   geoCache.forEach((g) => g.dispose());
   geoCache.clear();
@@ -74,11 +74,11 @@ export function clearResourceCaches(): void {
 type TreeVariant = 'broad' | 'needle' | 'frond';
 function variantForMap(mapType: string): TreeVariant {
   if (mapType === 'altiplano') return 'needle';
-  if (mapType === 'selva') return 'frond';
+  if (mapType === 'jungle') return 'frond';
   return 'broad';
 }
 
-/** Nodo de recurso: árbol, mina, pozo, caza o banco de pesca. */
+/** Resource node: tree, mine, well, hunt or fishing spot. */
 export class ResourceNode {
   id = allocId();
   pos = new THREE.Vector3();
@@ -89,7 +89,7 @@ export class ResourceNode {
   dead = false;
   radius: number;
   view = new THREE.Group();
-  kind: 'arbol' | 'mina' | 'pozo' | 'caza' | 'pesca' | 'baya';
+  kind: 'tree' | 'mine' | 'well' | 'hunt' | 'fishing' | 'berry';
   growthTime = 0;
   private swaySeed: number;
   private scene: THREE.Scene;
@@ -109,22 +109,22 @@ export class ResourceNode {
     this.amount = this.maxAmount = amount;
     this.swaySeed = Math.random() * Math.PI * 2;
     switch (kind) {
-      case 'arbol':
-        this.resource = 'madera';
+      case 'tree':
+        this.resource = 'wood';
         this.radius = 0.6;
         break;
-      case 'mina':
-        this.resource = 'acero';
+      case 'mine':
+        this.resource = 'silver';
         this.radius = 1.1;
         break;
-      case 'pozo':
-        this.resource = 'energia';
+      case 'well':
+        this.resource = 'stone';
         this.radius = 1.0;
         break;
-      case 'caza':
-      case 'pesca':
-      case 'baya':
-        this.resource = 'comida';
+      case 'hunt':
+      case 'fishing':
+      case 'berry':
+        this.resource = 'food';
         this.radius = 0.7;
         break;
     }
@@ -134,22 +134,22 @@ export class ResourceNode {
   private buildModel(): void {
     const rng = new RNG(Math.floor(this.pos.x * 7 + this.pos.z * 13));
     switch (this.kind) {
-      case 'arbol':
+      case 'tree':
         this.buildTree(rng);
         break;
-      case 'mina':
+      case 'mine':
         this.buildMine(rng);
         break;
-      case 'pozo':
+      case 'well':
         this.buildWell(rng);
         break;
-      case 'caza':
+      case 'hunt':
         this.buildHunt(rng);
         break;
-      case 'pesca':
+      case 'fishing':
         this.buildFish(rng);
         break;
-      case 'baya':
+      case 'berry':
         this.buildBush(rng);
         break;
     }
@@ -159,17 +159,17 @@ export class ResourceNode {
     this.scene.add(this.view);
   }
 
-  /** Registra la instancia del árbol una vez conocida su altura (y). */
+  /** Register the tree instance once its height (y) is known. */
   placeTreeInstance(y: number): void {
-    if (this.kind !== 'arbol' || !this.treeMgr || this.treeSlot >= 0) return;
+    if (this.kind !== 'tree' || !this.treeMgr || this.treeSlot >= 0) return;
     const scale = 0.85 + Math.random() * 0.35;
     const rotY = Math.random() * Math.PI * 2;
     this.treeSlot = this.treeMgr.register(this.id, this.treeVariant, this.pos.x, y, this.pos.z, scale, rotY);
   }
 
-  /** Visibilidad combinada (niebla + LOD) respetando el instancing de árboles. */
+  /** Combined visibility (fog + LOD) respecting tree instancing. */
   setVisibleEx(v: boolean): void {
-    if (this.kind === 'arbol' && this.treeMgr && this.treeSlot >= 0) {
+    if (this.kind === 'tree' && this.treeMgr && this.treeSlot >= 0) {
       this.treeMgr.setVisible(this.treeSlot, v);
     } else {
       this.view.visible = v;
@@ -183,7 +183,7 @@ export class ResourceNode {
     return mesh;
   }
 
-  /** Añade carteles de follaje cruzados (copas con alphaTest). */
+  /** Add crossed foliage billboards (canopies with alphaTest). */
   private addFoliage(parent: THREE.Object3D, rng: RNG, kind: 'broad' | 'needle' | 'frond' | 'bush', radius: number, height: number): void {
     const tex = MaterialTex.foliage(kind);
     const leafMat = mat('leaf-' + kind, { map: tex, alphaTest: 0.45, side: THREE.DoubleSide, roughness: 1, color: '#cfe0b0' });
@@ -198,7 +198,7 @@ export class ResourceNode {
       card.receiveShadow = false;
       parent.add(card);
     }
-    // cartel inclinado para dar volumen visto desde arriba
+    // tilted billboard to give volume seen from above
     const top = new THREE.Mesh(cardGeo(w * 0.9, h * 0.9), leafMat);
     top.rotation.x = -Math.PI / 2 + 0.35;
     top.position.y = h * 0.72;
@@ -209,7 +209,7 @@ export class ResourceNode {
 
   private buildTree(rng: RNG): void {
     const variant = variantForMap(this.mapType);
-    // Con gestor de instancing: solo se registra una instancia (sin mallado por árbol).
+    // With the instancing manager: only one instance is registered (no per-tree mesh).
     if (this.treeMgr) {
       this.treeVariant = variant;
       void rng;
@@ -224,7 +224,7 @@ export class ResourceNode {
     trunk.rotation.z = lean;
     this.add(trunk);
 
-    // ramas bajas
+    // low branches
     const branchMat = mat('bark-branch', { map: MaterialTex.bark(), color: '#9a7f5c', roughness: 0.95 });
     for (let i = 0; i < 2; i++) {
       const a = rng.range(0, Math.PI * 2);
@@ -351,15 +351,15 @@ export class ResourceNode {
     }
   }
 
-  /** Resta recurso; si se agota el árbol, lo derriba. */
+  /** Subtract resource; if the tree is depleted, fell it. */
   subtract(amount: number): void {
     if (this.depleted) return;
     this.amount -= amount;
     if (this.amount <= 0) {
       this.amount = 0;
       this.depleted = true;
-      if (this.kind === 'arbol') {
-        // caída
+      if (this.kind === 'tree') {
+        // fall
         if (this.treeMgr && this.treeSlot >= 0) {
           this.treeMgr.startFall(this.treeSlot);
           this.treeSlot = -1;
@@ -369,7 +369,7 @@ export class ResourceNode {
           this.view.position.y = -0.2;
           this.timers.push(setTimeout(() => this.remove(), 2000));
         }
-      } else if (this.kind === 'caza') {
+      } else if (this.kind === 'hunt') {
         this.view.rotation.x = Math.PI / 2;
         this.timers.push(setTimeout(() => this.remove(), 800));
       } else {
@@ -387,11 +387,11 @@ export class ResourceNode {
       this.treeMgr.unregister(this.treeSlot);
       this.treeSlot = -1;
     }
-    // geometrías y materiales son compartidos/cacheados: solo se quita de la escena.
+    // geometries and materials are shared/cached: only removed from the scene.
     this.scene.remove(this.view);
   }
 
-  /** Viento para árboles. */
+  /** Wind for trees. */
   update(time: number): void {
     if (this.swayParts.length === 0) return;
     const sway = Math.sin(time * 1.4 + this.swaySeed) * 0.02;

@@ -1,19 +1,19 @@
 import * as THREE from 'three';
 
 /**
- * Texturas PBR generadas con IA (Cloudflare Workers AI) en WebP:
- *   - terreno:   `src/assets/texturas/terreno/{slot}_{diffuse|normal|roughness}.webp`
- *   - materiales: `src/assets/texturas/materiales/{mat}_{diffuse|normal|roughness}.webp`
- * Si faltan archivos, se devuelve null y el material procedural de siempre
- * actúa de fallback (funciona offline / sin assets).
+ * AI-generated PBR textures (Cloudflare Workers AI) in WebP:
+ *   - terrain:   `src/assets/textures/terrain/{slot}_{diffuse|normal|roughness}.webp`
+ *   - materials: `src/assets/textures/materials/{mat}_{diffuse|normal|roughness}.webp`
+ * If files are missing, null is returned and the usual procedural material
+ * acts as a fallback (works offline / without assets).
  */
-const terrainMods = import.meta.glob('../assets/texturas/terreno/*_{diffuse,normal,roughness}.webp', {
+const terrainMods = import.meta.glob('../assets/textures/terrain/*_{diffuse,normal,roughness}.webp', {
   eager: true,
   query: '?url',
   import: 'default',
 }) as Record<string, string>;
 
-const materialMods = import.meta.glob('../assets/texturas/materiales/*_{diffuse,normal,roughness}.webp', {
+const materialMods = import.meta.glob('../assets/textures/materials/*_{diffuse,normal,roughness}.webp', {
   eager: true,
   query: '?url',
   import: 'default',
@@ -44,17 +44,17 @@ function load(mods: Record<string, string>, base: string, key: string, type: str
   return t;
 }
 
-/** Set PBR de terreno para un slot (grass/dirt/sand/rock/snow). */
+/** PBR terrain set for a slot (grass/dirt/sand/rock/snow). */
 export function getGroundPBR(slot: string): PbrSet | null {
-  const base = '../assets/texturas/terreno';
+  const base = '../assets/textures/terrain';
   const diffuse = load(terrainMods, base, slot, 'diffuse', true);
   if (!diffuse) return null;
   return { diffuse, normal: load(terrainMods, base, slot, 'normal', false), roughness: load(terrainMods, base, slot, 'roughness', false) };
 }
 
-/** Set PBR de material de modelado (madera, adobe, teja, arcilla, barro, textil). */
+/** PBR material set for modeling (wood, adobe, tile, clay, mud, textile). */
 export function getGeneratedMaterial(kind: string): PbrSet | null {
-  const base = '../assets/texturas/materiales';
+  const base = '../assets/textures/materials';
   const diffuse = load(materialMods, base, kind, 'diffuse', true);
   if (!diffuse) return null;
   return { diffuse, normal: load(materialMods, base, kind, 'normal', false), roughness: load(materialMods, base, kind, 'roughness', false) };

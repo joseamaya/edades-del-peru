@@ -3,8 +3,8 @@ import path from 'path';
 import { launchChromium, withViteServer, reviewDir } from './lib.mjs';
 
 /**
- * Captura pantallas del juego para la revisión visual por subagentes.
- * Uso: node scripts/screenshot.mjs [nombre] [--url=...] [--wait=ms] [--seed=...]
+ * Capture game screenshots for the subagent visual review.
+ * Usage: node scripts/screenshot.mjs [name] [--url=...] [--wait=ms] [--seed=...]
  */
 const name = process.argv[2] ?? 'default';
 const urlArg = process.argv.find((a) => a.startsWith('--url='));
@@ -32,7 +32,7 @@ async function main() {
   const url = urlArg ? urlArg.split('=')[1] : base + `/?seed=${seed}&fog=0&low=1`;
 
   await page.goto(url, { waitUntil: 'networkidle' });
-  // esperar a que el juego esté listo
+  // wait for the game to be ready
   await page.waitForFunction(() => (window).game !== undefined, null, { timeout: 30000 }).catch(() => {});
   await page.waitForTimeout(wait);
 

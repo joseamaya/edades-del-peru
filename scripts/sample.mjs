@@ -3,7 +3,7 @@ import fs from 'fs';
 const file = process.argv[2];
 const png = PNG.sync.read(fs.readFileSync(file));
 const { width, height, data } = png;
-// muestrear una rejilla 8x8 de píxeles promedio por bloque (solo mitad inferior donde está el edificio)
+// sample an 8x8 grid of pixels averaged per block (only the lower half where the building is)
 let out = '';
 for (let by = 0; by < 8; by++) {
   let row = '';

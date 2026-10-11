@@ -1,4 +1,4 @@
-/** Bucle principal con tiempo delta suavizado y escalado de velocidad de juego. */
+/** Main loop with smoothed delta time and game-speed scaling. */
 export class GameLoop {
   private running = false;
   private rafId = 0;
@@ -36,7 +36,7 @@ export class GameLoop {
         this.fpsTimer = 0;
       }
 
-      // Paso fijo lógico a 60Hz para determinismo
+      // Fixed logical step at 60Hz for determinism
       const step = 1 / 60;
       let iterations = 0;
       while (this.acc >= step && iterations < 8) {

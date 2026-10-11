@@ -4,30 +4,30 @@ import { UnitKind, OrderKind, Resources } from '../core/types';
 import { distance2D } from '../util/math';
 
 /**
- * Asignación de obreros a recursos. Centraliza la lógica que antes estaba
- * duplicada entre el jugador (auto-asignación) y la IA.
+ * Worker assignment to resources. Centralizes the logic that used to be
+ * duplicated between the player (auto-assignment) and the AI.
  */
 export class Economy {
   constructor(private game: Game) {}
 
-  /** Recurso más escaso según los obreros ya asignados y los recursos actuales. */
+  /** Scarcest resource according to already-assigned workers and current resources. */
   neededResource(owner: number): keyof Resources {
     const p = this.game.players[owner];
-    const counts: Record<string, number> = { comida: 0, madera: 0, acero: 0, energia: 0 };
+    const counts: Record<string, number> = { food: 0, wood: 0, silver: 0, stone: 0 };
     for (const w of this.game.units.values()) {
-      if (w.owner !== owner || w.kind !== UnitKind.OBRERO || !w.isGathering()) continue;
+      if (w.owner !== owner || w.kind !== UnitKind.WORKER || !w.isGathering()) continue;
       const node = w.orderQueue[0]?.entityId ? this.game.resourceNodes.get(w.orderQueue[0].entityId) : null;
       if (node) counts[node.resource]++;
     }
     const ratios: Record<string, number> = {
-      comida: p.resources.comida < 300 ? 2 : 1,
-      madera: p.resources.madera < 250 ? 2 : 1,
-      acero: p.resources.acero < 200 ? 2 : 1,
-      energia: p.resources.energia < 120 ? 2 : 1,
+      food: p.resources.food < 300 ? 2 : 1,
+      wood: p.resources.wood < 250 ? 2 : 1,
+      silver: p.resources.silver < 200 ? 2 : 1,
+      stone: p.resources.stone < 120 ? 2 : 1,
     };
-    let best: keyof Resources = 'comida';
+    let best: keyof Resources = 'food';
     let bestScore = Infinity;
-    for (const k of ['comida', 'madera', 'acero', 'energia'] as const) {
+    for (const k of ['food', 'wood', 'silver', 'stone'] as const) {
       if (!this.playerHasDropsite(owner, k)) continue;
       const score = counts[k] / ratios[k];
       if (score < bestScore) {
@@ -38,7 +38,7 @@ export class Economy {
     return best;
   }
 
-  /** True si el jugador tiene un depósito que acepta ese recurso. */
+  /** True if the player has a drop-off that accepts that resource. */
   playerHasDropsite(player: number, resource: keyof Resources): boolean {
     for (const b of this.game.buildings.values()) {
       if (b.owner !== player) continue;
@@ -48,7 +48,7 @@ export class Economy {
     return false;
   }
 
-  /** Nodo de recurso no agotado más cercano a un punto. */
+  /** Closest non-depleted resource node to a point. */
   findNearestNode(resource: keyof Resources, x: number, z: number): ResourceNode | null {
     let best: ResourceNode | null = null;
     let bestD = Infinity;
@@ -63,7 +63,7 @@ export class Economy {
     return best;
   }
 
-  /** Asigna un obrero ocioso al recurso más necesario (si hay nodo). */
+  /** Assign an idle worker to the most needed resource (if a node exists). */
   assignWorker(unitId: number): void {
     const u = this.game.units.get(unitId);
     if (!u) return;

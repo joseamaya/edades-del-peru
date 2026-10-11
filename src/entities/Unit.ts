@@ -7,7 +7,7 @@ import { allocId } from '../entities/EntityView';
 import { Order, OrderKind, OrderTarget } from '../core/types';
 import { angleTo, distance2D, clamp, lerp } from '../util/math';
 
-/** Contexto que Game proporciona a las unidades (evita dependencias circulares). */
+/** Context that Game provides to units (avoids circular dependencies). */
 export interface UnitContext {
   getHeight(x: number, z: number): number;
   findPath(sx: number, sz: number, tx: number, tz: number): { x: number; z: number }[];
@@ -32,12 +32,12 @@ export interface UnitContext {
 const MOVE_STOP_DIST = 0.6;
 const SEPARATION = 1.4;
 
-/** Color del bulto de carga del obrero según el recurso transportado. */
+/** Color of the worker's load bundle according to the carried resource. */
 const CARRY_COLORS: Record<keyof Resources, number> = {
-  comida: 0xc8a04a,
-  madera: 0x8a6a3a,
-  acero: 0x9aa2aa,
-  energia: 0x4ac6d8,
+  food: 0xc8a04a,
+  wood: 0x8a6a3a,
+  silver: 0x9aa2aa,
+  stone: 0x4ac6d8,
 };
 
 export class Unit {
@@ -56,7 +56,7 @@ export class Unit {
   dead = false;
   selected = false;
   radius = 0.42;
-  /** Etiqueta de misión (para objetivos/triggers). */
+  /** Mission tag (for objectives/triggers). */
   tag?: string;
 
   orderQueue: Order[] = [];
@@ -102,14 +102,14 @@ export class Unit {
     this.stats = getUnitStats(kind, era);
     this.hp = this.maxHp = this.stats.hp;
     const model = buildModel(getUnitModel(kind, era), ctx);
-    this.radius = this.stats.rango === 0 ? 0.45 : 0.5;
-    if (kind === UnitKind.TANQUE || kind === UnitKind.MEC) this.radius = 0.9;
-    if (kind === UnitKind.ARTILLERIA || kind === UnitKind.MORTERO || kind === UnitKind.NUCLEAR) this.radius = 0.8;
+    this.radius = this.stats.range === 0 ? 0.45 : 0.5;
+    if (kind === UnitKind.TANK || kind === UnitKind.MECH) this.radius = 0.9;
+    if (kind === UnitKind.ARTILLERY || kind === UnitKind.MORTAR || kind === UnitKind.NUCLEAR) this.radius = 0.8;
     this.view = new EntityView(model, this.radius);
     this.findPivots(model);
   }
 
-  /** Pivotes para animación. */
+  /** Pivots for animation. */
   findPivots(model: THREE.Group): void {
     this.gunPivot = this.turretPivot = this.legL = this.legR = this.armL = this.armR = this.headPivot = null;
     this.carryPivot = null;
@@ -160,7 +160,7 @@ export class Unit {
     this.view.group.position.copy(this.pos);
   }
 
-  /** Lleva la posición al terreno. */
+  /** Bring the position onto the terrain. */
   snapToGround(): void {
     this.pos.y = this.ctx.getHeight(this.pos.x, this.pos.z);
     this.view.setPosition(this.pos.x, this.pos.y, this.pos.z);
@@ -253,7 +253,7 @@ export class Unit {
     return this.orderQueue[0]?.kind === OrderKind.GATHER;
   }
 
-  /** ¿Está ejecutando una tarea manual (recolectar/construir) junto al objetivo? */
+  /** Is it running a manual task (gather/build) near the target? */
   private isWorking(): boolean {
     const k = this.orderQueue[0]?.kind;
     return (k === OrderKind.GATHER || k === OrderKind.BUILD) && this.walkCycle <= 0.01;
@@ -275,7 +275,7 @@ export class Unit {
         x: this.pos.x, y: this.pos.y + 0.5, z: this.pos.z,
         count: this.radius > 0.7 ? 18 : 8,
         color: 0x887766,
-        kind: 'humo', speed: 1.2, life: 1.4, size: 2,
+        kind: 'smoke', speed: 1.2, life: 1.4, size: 2,
       });
       this.ctx.event('unit:died', { id: this.id, owner: this.owner, kind: this.kind });
     }
@@ -286,10 +286,10 @@ export class Unit {
 
   getGatherRate(resource: keyof Resources): number {
     let base = 0.8;
-    if (resource === 'comida') base = 1.0;
-    if (resource === 'madera') base = 0.9;
-    if (resource === 'acero') base = 0.7;
-    if (resource === 'energia') base = 0.6;
+    if (resource === 'food') base = 1.0;
+    if (resource === 'wood') base = 0.9;
+    if (resource === 'silver') base = 0.7;
+    if (resource === 'stone') base = 0.6;
     return base * this.gatherMultiplier;
   }
 
@@ -308,16 +308,16 @@ export class Unit {
       this.autoAttack(dt, time);
     }
 
-    // movimiento
+    // movement
     this.updateMovement(dt);
 
-    // animaciones
+    // animations
     this.updateAnimation(dt, time);
     this.updateCarry();
 
     this.view.setPosition(this.pos.x, this.pos.y, this.pos.z);
     this.view.setRotationY(this.yaw);
-    // rebote de caminata/idle aplicado tras fijar la posición (no se sobrescribe)
+    // walk/idle bounce applied after fixing the position (not overwritten)
     this.view.group.position.y += this.bobY;
     this.view.updateHealth(this.hp / this.maxHp);
   }
@@ -328,12 +328,12 @@ export class Unit {
     this.walkCycle = 0;
   }
 
-  /** Auto-ataque de unidades militares ociosas (estilo AoE2). */
+  /** Auto-attack of idle military units (AoE2 style). */
   private autoAttack(dt: number, time: number): void {
     if (this.combatStance === 'pasivo') return;
-    if (this.kind === UnitKind.OBRERO || this.kind === UnitKind.EXPLORADOR) return;
+    if (this.kind === UnitKind.WORKER || this.kind === UnitKind.SCOUT) return;
     if (this.attackCooldown <= 0) {
-      const range = this.stats.rango > 0 ? this.stats.rango + 1 : this.stats.los + 1;
+      const range = this.stats.range > 0 ? this.stats.range + 1 : this.stats.los + 1;
       const enemy = this.ctx?.enemiesNear ? this.ctx.enemiesNear(this.pos.x, this.pos.z, range, this.owner)[0] : null;
       if (enemy) {
         this.issueOrder({ kind: OrderKind.ATTACK, entityId: enemy.id }, true);
@@ -381,7 +381,7 @@ export class Unit {
     }
   }
 
-  /** Descarta la orden actual e inicializa la siguiente (fix shift-queue). */
+  /** Drop the current order and start the next one (shift-queue fix). */
   private finishOrder(): void {
     this.orderQueue.shift();
     if (this.orderQueue.length > 0) {
@@ -394,7 +394,7 @@ export class Unit {
   }
 
   private updateMovement(dt: number): void {
-    // detección de atasco: si no avanza con un camino activo, re-rutear
+    // stuck detection: if it does not advance with an active path, re-route
     const moved = Math.hypot(this.pos.x - this.lastStuckX, this.pos.z - this.lastStuckZ);
     this.stuckTimer += dt;
     if (moved > 0.4) {
@@ -415,7 +415,7 @@ export class Unit {
     if (this.orderQueue.length === 0 || this.isGathering() && this.pathIdx >= this.path.length) {
       this.vel.multiplyScalar(Math.pow(0.0001, dt));
     }
-    // llega al waypoint
+    // reach the waypoint
     if (this.pathIdx < this.path.length) {
       const wp = this.path[this.pathIdx];
       const dx = wp.x - this.pos.x;
@@ -433,18 +433,18 @@ export class Unit {
     if (this.pathIdx < this.path.length) {
       const wp = this.path[this.pathIdx];
       this.targetYaw = angleTo(this.pos.x, this.pos.z, wp.x, wp.z);
-      // velocidad
-      const spd = this.stats.velocidad;
+      // speed
+      const spd = this.stats.speed;
       this.vel.x = Math.cos(this.targetYaw) * spd;
       this.vel.z = Math.sin(this.targetYaw) * spd;
       this.walkCycle += dt * spd;
-      // polvo de pisadas mientras camina
+      // footstep dust while walking
       this.footstepTimer -= dt;
       if (this.footstepTimer <= 0) {
         this.footstepTimer = 0.34;
         this.ctx.particles?.emit({
           x: this.pos.x, y: this.pos.y + 0.12, z: this.pos.z,
-          count: 1, color: 0xbfae8e, kind: 'polvo', speed: 0.5, life: 0.5, size: 1.0, grow: 1.7, spread: 0.5,
+          count: 1, color: 0xbfae8e, kind: 'dust', speed: 0.5, life: 0.5, size: 1.0, grow: 1.7, spread: 0.5,
         });
       }
     } else {
@@ -452,10 +452,10 @@ export class Unit {
       this.walkCycle = lerp(this.walkCycle, 0, dt * 6);
     }
 
-    // separación
+    // separation
     this.applySeparation(dt);
 
-    // integrar
+    // integrate
     this.pos.x += this.vel.x * dt;
     this.pos.z += this.vel.z * dt;
     const size = this.ctx.worldSize;
@@ -463,7 +463,7 @@ export class Unit {
     this.pos.z = clamp(this.pos.z, 2, size - 2);
     this.pos.y = this.ctx.getHeight(this.pos.x, this.pos.z) + 0.05;
 
-    // rotación suave
+    // smooth rotation
     let dy = this.targetYaw - this.yaw;
     while (dy > Math.PI) dy -= Math.PI * 2;
     while (dy < -Math.PI) dy += Math.PI * 2;
@@ -495,12 +495,12 @@ export class Unit {
     void dt;
     const walk = this.walkCycle;
     if (this.gunPivot) {
-      // retroceso sutil sobre la posición base del pivote
-      const recoil = this.attackCooldown > this.stats.velocidadAtaque - 0.12 ? -0.15 : 0;
+      // subtle recoil over the pivot base position
+      const recoil = this.attackCooldown > this.stats.attackSpeed - 0.12 ? -0.15 : 0;
       this.gunPivot.position.z = this.gunBaseZ + recoil;
     }
     if (this.turretPivot) {
-      // apuntar la torreta hacia el objetivo si existe
+      // aim the turret at the target if it exists
       let aimYaw = Math.sin(time * 0.6) * 0.05;
       if (this.targetEntityId !== null) {
         const target = this.ctx?.entitiesById?.get(this.targetEntityId) ?? this.ctx?.buildings?.get(this.targetEntityId);
@@ -510,8 +510,8 @@ export class Unit {
       }
       this.turretPivot.rotation.y = aimYaw;
     }
-    // ciclo de caminata procedimental con pivotes (brazos/piernas en contrafase)
-    // la fase deriva de la distancia recorrida (zancada ligada a la velocidad)
+    // procedural walk cycle with pivots (arms/legs in counterphase)
+    // the phase derives from the distance traveled (stride tied to speed)
     this.bobY = 0;
     if (walk > 0.01) {
       const phase = this.walkCycle * 3.2;
@@ -524,7 +524,7 @@ export class Unit {
       if (this.headPivot) this.headPivot.rotation.x = c * 0.05;
       this.bobY = Math.abs(s) * 0.045;
     } else if (this.isWorking()) {
-      // gesto de trabajo: golpe con la herramienta (hacha/pico)
+      // work gesture: strike with the tool (axe/pick)
       this.workAnim += dt;
       const chop = Math.abs(Math.sin(this.workAnim * 5.5));
       if (this.legL) this.legL.rotation.x = 0.12;
@@ -538,16 +538,16 @@ export class Unit {
       const idle = Math.sin(this.animationTime * 1.6);
       if (this.legL) this.legL.rotation.x = idle * 0.03;
       if (this.legR) this.legR.rotation.x = -idle * 0.03;
-      // brazos caen a posición neutra al estar parado
+      // arms fall to a neutral position when standing still
       if (this.armL) this.armL.rotation.x = idle * 0.02;
       if (this.armR) this.armR.rotation.x = idle * 0.02;
       if (this.headPivot) this.headPivot.rotation.x = idle * 0.02;
       this.bobY = idle * 0.014;
     }
-    // postura de ataque: brazo del arma apunta al objetivo cuando no se mueve
+    // attack stance: the weapon arm points at the target when not moving
     if (this.armR) {
       if (this.targetEntityId !== null && walk <= 0.01 && this.orderQueue[0]?.kind === OrderKind.ATTACK) {
-        const recoil = this.attackCooldown > this.stats.velocidadAtaque - 0.12 ? -0.25 : 0;
+        const recoil = this.attackCooldown > this.stats.attackSpeed - 0.12 ? -0.25 : 0;
         this.armR.rotation.x = -1.05 + recoil;
       } else if (this.gunPivot && walk <= 0.01 && this.orderQueue[0]?.kind === OrderKind.ATTACK) {
         this.armR.rotation.x = -0.9;
@@ -555,11 +555,11 @@ export class Unit {
     }
   }
 
-  // --- órdenes específicas ---
+  // --- specific orders ---
 
   private updateAttackMove(_order: Order, dt: number, time: number): void {
-    // busca enemigos a lo largo del camino
-    const enemies = this.ctx.unitsNear(this.pos.x, this.pos.z, this.stats.rango + 3);
+    // look for enemies along the path
+    const enemies = this.ctx.unitsNear(this.pos.x, this.pos.z, this.stats.range + 3);
     let best: Unit | null = null;
     let bestD = Infinity;
     for (const e of enemies) {
@@ -571,8 +571,8 @@ export class Unit {
         best = e;
       }
     }
-    if (best && bestD < this.stats.rango + 2) {
-      // entablar combate sin destruir la orden de ataque-mover
+    if (best && bestD < this.stats.range + 2) {
+      // engage combat without destroying the attack-move order
       this.targetEntityId = best.id;
       this.attackingTarget = true;
       this.updateAttack({ kind: OrderKind.ATTACK, entityId: best.id }, dt, time);
@@ -587,7 +587,7 @@ export class Unit {
     if (!target || target.dead || (target.hp !== undefined && target.hp <= 0)) {
       this.targetEntityId = null;
       if (this.attackingTarget) {
-        // reanudar la marcha del ataque-mover hacia su destino original
+        // resume the attack-move march toward its original destination
         this.attackingTarget = false;
         const am = this.orderQueue[0];
         if (am && am.kind === OrderKind.ATTACK_MOVE && am.target) {
@@ -602,17 +602,17 @@ export class Unit {
     const dx = tpos.x - this.pos.x;
     const dz = tpos.z - this.pos.z;
     const dist = Math.sqrt(dx * dx + dz * dz);
-    const range = this.stats.rango > 0 ? this.stats.rango + target.radius : 0.9 + target.radius;
+    const range = this.stats.range > 0 ? this.stats.range + target.radius : 0.9 + target.radius;
 
     if (dist > range * 1.15) {
-      // perseguir (con fallback de acercamiento directo si no hay camino)
+      // chase (with a direct-approach fallback if there is no path)
       if (this.repathTimer <= 0) {
         this.setPath(tpos.x, tpos.z);
         this.repathTimer = 0.8;
       }
       if (this.pathIdx >= this.path.length && this.path.length === 0) {
         this.targetYaw = angleTo(this.pos.x, this.pos.z, tpos.x, tpos.z);
-        const spd = this.stats.velocidad;
+        const spd = this.stats.speed;
         this.vel.x = Math.cos(this.targetYaw) * spd;
         this.vel.z = Math.sin(this.targetYaw) * spd;
         this.pos.x += this.vel.x * dt;
@@ -622,77 +622,69 @@ export class Unit {
       }
       this.targetYaw = angleTo(this.pos.x, this.pos.z, tpos.x, tpos.z);
     } else {
-      // detenerse limpio para disparar/golpear
+      // stop cleanly to shoot/strike
       this.path.length = 0;
       this.pathIdx = 0;
       this.vel.multiplyScalar(Math.pow(0.05, dt));
       this.targetYaw = angleTo(this.pos.x, this.pos.z, tpos.x, tpos.z);
-      if (this.stats.rango === 0) {
+      if (this.stats.range === 0) {
         this.attackTarget(target, time);
       } else if (this.attackCooldown <= 0) {
         this.fireAt(target, time);
-        this.attackCooldown = this.stats.velocidadAtaque;
+        this.attackCooldown = this.stats.attackSpeed;
       }
     }
   }
 
   private attackTarget(target: any, time: number): void {
     if (this.attackCooldown <= 0) {
-      const dmg = this.stats.ataque * this.attackMultiplier;
+      const dmg = this.stats.attack * this.attackMultiplier;
       this.ctx.resolveDamage(this.id, target.id, dmg, this);
-      this.attackCooldown = this.stats.velocidadAtaque;
+      this.attackCooldown = this.stats.attackSpeed;
     }
     void time;
   }
 
   private fireAt(target: any, time: number): void {
-    const kindMap: Record<string, string> = {
-      bala: 'bala',
-      trazadora: 'trazadora',
-      obús: 'obus',
-      laser: 'laser',
-      rail: 'rail',
-      nuclear: 'nuclear',
-    };
-    const pKind = kindMap[this.stats.proyectil] ?? 'bala';
+    const pKind = this.stats.projectile;
     const from = new THREE.Vector3(this.pos.x, this.pos.y + 0.8, this.pos.z);
     const to = new THREE.Vector3(target.pos.x, target.pos.y + 0.5, target.pos.z);
-    const arc = pKind === 'obus' || pKind === 'nuclear' ? 1 : 0;
-    const speed = pKind === 'bala' ? 40 : pKind === 'trazadora' ? 60 : pKind === 'laser' ? 90 : pKind === 'rail' ? 130 : 28;
+    const arc = pKind === 'howitzer_shell' || pKind === 'nuclear' ? 1 : 0;
+    const speed = pKind === 'bullet' ? 40 : pKind === 'tracer' ? 60 : pKind === 'laser' ? 90 : pKind === 'rail' ? 130 : 28;
     this.ctx.spawnProjectile({
       from,
       target: to,
       speed,
-      damage: this.stats.ataque * this.attackMultiplier,
+      damage: this.stats.attack * this.attackMultiplier,
       kind: pKind,
       owner: this.owner,
       area: this.stats.area,
       arc,
-      trail: pKind === 'trazadora' ? 'trazadora' : undefined,
+      trail: pKind === 'tracer' ? 'tracer' : undefined,
       targetId: target.id,
     });
-    // fogonazo en la boca del cañón (pivote del arma + largo del cañón, rotado con la unidad)
+    // muzzle flash at the cannon mouth (weapon pivot + barrel length, rotated with the unit)
     const muzzle = new THREE.Vector3(0.28, 0.9, 0.62).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.yaw);
     this.ctx.particles?.emit({ x: this.pos.x + muzzle.x, y: this.pos.y + muzzle.y, z: this.pos.z + muzzle.z, count: 4, color: 0xffcc66, kind: 'explosion', speed: 1.2, life: 0.12, size: 1.4 });
     void time;
   }
 
   private updateGather(order: Order, dt: number): void {
-    // si la carga está llena, entregar antes de seguir cosechando
+    // if the load is full, deliver before continuing to harvest
     if (this.carryCount() >= this.carryCapacity) {
       this.deliverOrder();
       return;
     }
-    // el objetivo puede ser un nodo de recurso o una granja (edificio)
+    // the target can be a resource node or a farm (building)
     let node: any = this.ctx.resourceNodes.get(order.entityId!);
     if ((!node || node.depleted || node.dead) && this.ctx.buildings.has(order.entityId!)) {
       const bld = this.ctx.buildings.get(order.entityId!);
       if (bld && !bld.dead && bld.constructionComplete && bld.isFarm && bld.foodAmount > 0) {
-        node = { pos: bld.pos, amount: bld.foodAmount, resource: 'comida', farm: bld };
+        node = { pos: bld.pos, amount: bld.foodAmount, resource: 'food', farm: bld };
       }
     }
     if (!node || node.dead) {
-      // objetivo inexistente o muerto: entregar la carga parcial si hay algo
+      // nonexistent or dead target: deliver the partial load if there is any
       if (this.carryCount() > 0) {
         this.deliverOrder();
       } else {
@@ -701,7 +693,7 @@ export class Unit {
       return;
     }
     if (node.amount !== undefined && node.amount <= 0) {
-      // objetivo agotado: eliminar el nodo real (o marcar la granja) y entregar
+      // depleted target: remove the real node (or mark the farm) and deliver
       if (node.farm) {
         node.farm.foodAmount = 0;
       } else if (typeof node.subtract === 'function') {
@@ -725,9 +717,9 @@ export class Unit {
         this.repathTimer = 0.9;
       }
       if (this.pathIdx >= this.path.length) {
-        // búsqueda directa hacia el nodo cuando no hay camino
+        // direct search toward the node when there is no path
         this.targetYaw = angleTo(this.pos.x, this.pos.z, node.pos.x, node.pos.z);
-        const spd = this.stats.velocidad;
+        const spd = this.stats.speed;
         this.vel.x = Math.cos(this.targetYaw) * spd;
         this.vel.z = Math.sin(this.targetYaw) * spd;
         this.pos.x += this.vel.x * dt;
@@ -756,16 +748,16 @@ export class Unit {
         node.amount -= amount;
       }
       this.gatherCarry[node.resource as keyof Resources] += amount;
-      if (node.resource === 'madera') this.ctx.event?.('fx:wood', {});
-      else if (node.resource === 'acero' || node.resource === 'energia') this.ctx.event?.('fx:mine', {});
+      if (node.resource === 'wood') this.ctx.event?.('fx:wood', {});
+      else if (node.resource === 'silver' || node.resource === 'stone') this.ctx.event?.('fx:mine', {});
       else this.ctx.event?.('fx:wood', {});
-      // efecto de recolección según el recurso
-      if (node.resource === 'madera') {
-        this.ctx.particles?.emit({ x: node.pos.x, y: node.pos.y + 0.5, z: node.pos.z, count: 3, color: 0x8a6a3a, kind: 'chispa', speed: 0.7, life: 0.45, size: 0.9, spread: 0.6 });
-      } else if (node.resource === 'acero' || node.resource === 'energia') {
-        this.ctx.particles?.emit({ x: node.pos.x, y: node.pos.y + 0.5, z: node.pos.z, count: 3, color: 0xffd27a, kind: 'chispa', speed: 0.9, life: 0.35, size: 0.8, spread: 0.7 });
+      // gather effect according to the resource
+      if (node.resource === 'wood') {
+        this.ctx.particles?.emit({ x: node.pos.x, y: node.pos.y + 0.5, z: node.pos.z, count: 3, color: 0x8a6a3a, kind: 'spark', speed: 0.7, life: 0.45, size: 0.9, spread: 0.6 });
+      } else if (node.resource === 'silver' || node.resource === 'stone') {
+        this.ctx.particles?.emit({ x: node.pos.x, y: node.pos.y + 0.5, z: node.pos.z, count: 3, color: 0xffd27a, kind: 'spark', speed: 0.9, life: 0.35, size: 0.8, spread: 0.7 });
       } else {
-        this.ctx.particles?.emit({ x: node.pos.x, y: node.pos.y + 0.5, z: node.pos.z, count: 2, color: 0x9bbf6a, kind: 'polvo', speed: 0.6, life: 0.5, size: 1.1 });
+        this.ctx.particles?.emit({ x: node.pos.x, y: node.pos.y + 0.5, z: node.pos.z, count: 2, color: 0x9bbf6a, kind: 'dust', speed: 0.6, life: 0.5, size: 1.1 });
       }
       if (this.carryCount() >= this.carryCapacity) {
         this.deliverOrder();
@@ -775,14 +767,14 @@ export class Unit {
 
   private carryCount(): number {
     return (
-      this.gatherCarry.comida +
-      this.gatherCarry.madera +
-      this.gatherCarry.acero +
-      this.gatherCarry.energia
+      this.gatherCarry.food +
+      this.gatherCarry.wood +
+      this.gatherCarry.silver +
+      this.gatherCarry.stone
     );
   }
 
-  /** Muestra/oculta el bulto de carga y lo colorea según el recurso. */
+  /** Show/hide the load bundle and color it according to the resource. */
   private updateCarry(): void {
     if (!this.carryPivot) return;
     const carrying = this.carryCount() > 0;
@@ -794,10 +786,10 @@ export class Unit {
   }
 
   private dominantResource(): keyof Resources {
-    if (this.gatherCarry.comida > 0) return 'comida';
-    if (this.gatherCarry.madera > 0) return 'madera';
-    if (this.gatherCarry.acero > 0) return 'acero';
-    return 'energia';
+    if (this.gatherCarry.food > 0) return 'food';
+    if (this.gatherCarry.wood > 0) return 'wood';
+    if (this.gatherCarry.silver > 0) return 'silver';
+    return 'stone';
   }
 
   private deliverOrder(): void {
@@ -809,7 +801,7 @@ export class Unit {
       this.setPath(dropsite.pos.x, dropsite.pos.z);
       this.currentResource = res;
     }
-    // sin dropsite: mantener la carga y quedarse en espera
+    // no dropsite: keep the load and stay waiting
   }
 
   private findDropsite(resource: keyof Resources): any | null {
@@ -830,15 +822,15 @@ export class Unit {
   private updateDeliver(order: Order, dt: number): void {
     const dropsite = this.ctx.buildings.get(order.entityId!);
     if (!dropsite || dropsite.dead) {
-      // dropsite destruido: re-buscar otro dropsite para la carga actual
-      const res = this.currentResource ?? 'comida';
+      // dropsite destroyed: re-find another dropsite for the current load
+      const res = this.currentResource ?? 'food';
       const alt = this.findDropsite(res);
       if (alt) {
         order.entityId = alt.id;
         this.setPath(alt.pos.x, alt.pos.z);
         return;
       }
-      // sin dropsite: mantener la carga y quedar en espera
+      // no dropsite: keep the load and wait
       this.vel.multiplyScalar(Math.pow(0.05, dt));
       return;
     }
@@ -852,7 +844,7 @@ export class Unit {
       }
       if (this.pathIdx >= this.path.length) {
         this.targetYaw = angleTo(this.pos.x, this.pos.z, dropsite.pos.x, dropsite.pos.z);
-        const spd = this.stats.velocidad;
+        const spd = this.stats.speed;
         this.vel.x = Math.cos(this.targetYaw) * spd;
         this.vel.z = Math.sin(this.targetYaw) * spd;
         this.pos.x += this.vel.x * dt;
@@ -862,9 +854,9 @@ export class Unit {
       return;
     }
     this.vel.multiplyScalar(Math.pow(0.05, dt));
-    // entrega
-    this.ctx.gather(dropsite.id, this.id, 0, this.currentResource ?? 'comida');
-    for (const k of ['comida', 'madera', 'acero', 'energia'] as const) {
+    // delivery
+    this.ctx.gather(dropsite.id, this.id, 0, this.currentResource ?? 'food');
+    for (const k of ['food', 'wood', 'silver', 'stone'] as const) {
       if (this.gatherCarry[k] > 0) {
         this.ctx.gather(dropsite.id, this.id, this.gatherCarry[k], k);
         this.gatherCarry[k] = 0;
@@ -890,7 +882,7 @@ export class Unit {
       }
       if (this.pathIdx >= this.path.length) {
         this.targetYaw = angleTo(this.pos.x, this.pos.z, bld.pos.x, bld.pos.z);
-        const spd = this.stats.velocidad;
+        const spd = this.stats.speed;
         this.vel.x = Math.cos(this.targetYaw) * spd;
         this.vel.z = Math.sin(this.targetYaw) * spd;
         this.pos.x += this.vel.x * dt;
@@ -927,7 +919,7 @@ export class Unit {
         this.view.group.visible = false;
         this.finishOrder();
       } else {
-        // edificio lleno: quedarse cerca en espera
+        // building full: stay nearby waiting
         this.vel.multiplyScalar(Math.pow(0.05, dt));
       }
     } else {
@@ -942,11 +934,11 @@ export class Unit {
     if (this.pathIdx >= this.path.length) {
       const first = this.orderQueue[0];
       if (first && first.target) {
-        // ping-pong entre origen y destino
+        // ping-pong between origin and destination
         const next = first.origin ?? { x: this.pos.x, z: this.pos.z };
         this.setPath(next.x, next.z);
         if (first.origin) {
-          // ya tenemos origen: alternar
+          // we already have the origin: toggle
           const tmp = first.origin;
           first.origin = { ...first.target };
           first.target = { ...tmp };
@@ -962,7 +954,7 @@ export class Unit {
       return;
     }
     const dist = distance2D(this.pos.x, this.pos.z, target.pos.x, target.pos.z);
-    if (dist > this.stats.rango) {
+    if (dist > this.stats.range) {
       if (this.repathTimer <= 0) {
         this.setPath(target.pos.x, target.pos.z);
         this.repathTimer = 0.6;
@@ -973,9 +965,9 @@ export class Unit {
     this.vel.multiplyScalar(Math.pow(0.05, dt));
     this.targetYaw = angleTo(this.pos.x, this.pos.z, target.pos.x, target.pos.z);
     this.convertProgress += dt / 5;
-    this.ctx.particles?.emit({ x: target.pos.x, y: target.pos.y + 1, z: target.pos.z, count: 1, color: 0x66ffaa, kind: 'bengala', speed: 0.2, life: 0.8, size: 1.4 });
+    this.ctx.particles?.emit({ x: target.pos.x, y: target.pos.y + 1, z: target.pos.z, count: 1, color: 0x66ffaa, kind: 'flare', speed: 0.2, life: 0.8, size: 1.4 });
     if (this.convertProgress >= 1) {
-      // conversión
+      // conversion
       const from = target.owner;
       target.owner = this.owner;
       target.team = this.team;

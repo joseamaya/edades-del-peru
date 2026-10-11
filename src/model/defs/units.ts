@@ -1,11 +1,11 @@
 import { Era, UnitKind, Resources, ZERO_RESOURCES } from '../../core/types';
 import { ERA_DEFS } from './eras';
 
-export type DamageClass = 'ligero' | 'pesado' | 'fortificado';
-export type ProjectileKind = 'bala' | 'cohete' | 'obús' | 'laser' | 'rail' | 'nuclear' | 'trazadora';
+export type DamageClass = 'light' | 'heavy' | 'fortified';
+export type ProjectileKind = 'bullet' | 'rocket' | 'howitzer_shell' | 'laser' | 'rail' | 'nuclear' | 'tracer';
 
 export interface ModelSpec {
-  /** Tipo de modelo paramétrico. */
+  /** Parametric model type. */
   type: string;
   scale?: number;
   barrel?: number;
@@ -13,34 +13,34 @@ export interface ModelSpec {
 
 export interface UnitStats {
   hp: number;
-  ataque: number;
-  rango: number;
-  armaduraLigero: number;
-  armaduraPesado: number;
-  velocidad: number;
+  attack: number;
+  range: number;
+  lightArmor: number;
+  heavyArmor: number;
+  speed: number;
   los: number;
-  velocidadAtaque: number; // segundos entre ataques
-  area?: number; // radio de daño en área
-  costo: Resources;
-  tiempoEntrenamiento: number;
-  poblacion: number;
-  tipoDano: DamageClass;
-  proyectil: ProjectileKind;
+  attackSpeed: number; // seconds between attacks
+  area?: number; // area damage radius
+  cost: Resources;
+  trainTime: number;
+  population: number;
+  damageType: DamageClass;
+  projectile: ProjectileKind;
 }
 
 export interface UnitArchetype {
   id: UnitKind;
-  nombre: string;
-  descripcion: string;
-  categoria: 'econ' | 'infanteria' | 'distancia' | 'caballeria' | 'asedio' | 'especial' | 'unico';
-  /** Multiplicadores por era sobre las stats base. */
-  eraStats: Partial<Record<Era, { hp?: number; ataque?: number; rango?: number; velocidad?: number; los?: number; area?: number }>>;
-  /** Modelo por era (visual). */
+  name: string;
+  description: string;
+  category: 'econ' | 'infantry' | 'ranged' | 'cavalry' | 'siege' | 'special' | 'unique';
+  /** Multipliers per era over the base stats. */
+  eraStats: Partial<Record<Era, { hp?: number; attack?: number; range?: number; speed?: number; los?: number; area?: number }>>;
+  /** Model per era (visual). */
   eraModel: Partial<Record<Era, ModelSpec>>;
-  /** Tecnologías requeridas para entrenar (además de la era). */
+  /** Technologies required to train (besides the era). */
   requiresTech?: string[];
-  /** ¿Necesita edificio de avance (castillo)? */
-  requiresFortaleza?: boolean;
+  /** Does it need an advancement building (castle)? */
+  requiresFortress?: boolean;
 }
 
 const BASE: Resources = ZERO_RESOURCES;
@@ -50,416 +50,416 @@ function cost(c: Partial<Resources>): Resources {
 }
 
 export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
-  obrero: {
-    id: UnitKind.OBRERO,
-    nombre: 'Obrero',
-    descripcion: 'Recolecta recursos, construye y repara. La base de toda economía.',
-    categoria: 'econ',
+  worker: {
+    id: UnitKind.WORKER,
+    name: 'Obrero',
+    description: 'Recolecta recursos, construye y repara. La base de toda economía.',
+    category: 'econ',
     eraStats: {
-      [Era.FORMATIVO]: { hp: 1, ataque: 1 },
-      [Era.ESTADOS_REGIONALES]: { hp: 1.1, ataque: 1.1 },
-      [Era.TAHUANTINSUYO]: { hp: 1.25, ataque: 1.2 },
-      [Era.VIRREINATO]: { hp: 1.4, ataque: 1.3 },
-      [Era.REPUBLICA]: { hp: 1.55, ataque: 1.4 },
-      [Era.CONTEMPORANEO]: { hp: 1.75, ataque: 1.5 },
+      [Era.FORMATIVE]: { hp: 1, attack: 1 },
+      [Era.REGIONAL_STATES]: { hp: 1.1, attack: 1.1 },
+      [Era.TAHUANTINSUYO]: { hp: 1.25, attack: 1.2 },
+      [Era.VICEROYALTY]: { hp: 1.4, attack: 1.3 },
+      [Era.REPUBLIC]: { hp: 1.55, attack: 1.4 },
+      [Era.CONTEMPORARY]: { hp: 1.75, attack: 1.5 },
     },
     eraModel: {
-      [Era.FORMATIVO]: { type: 'obrero', scale: 1 },
-      [Era.ESTADOS_REGIONALES]: { type: 'obrero', scale: 1 },
-      [Era.TAHUANTINSUYO]: { type: 'obrero', scale: 1.02 },
-      [Era.VIRREINATO]: { type: 'obrero', scale: 1.03 },
-      [Era.REPUBLICA]: { type: 'obrero', scale: 1.05 },
-      [Era.CONTEMPORANEO]: { type: 'obrero', scale: 1.08 },
+      [Era.FORMATIVE]: { type: 'worker', scale: 1 },
+      [Era.REGIONAL_STATES]: { type: 'worker', scale: 1 },
+      [Era.TAHUANTINSUYO]: { type: 'worker', scale: 1.02 },
+      [Era.VICEROYALTY]: { type: 'worker', scale: 1.03 },
+      [Era.REPUBLIC]: { type: 'worker', scale: 1.05 },
+      [Era.CONTEMPORARY]: { type: 'worker', scale: 1.08 },
     },
   },
-  soldado: {
-    id: UnitKind.SOLDADO,
-    nombre: 'Guerrero',
-    descripcion: 'Infantería básica con lanza y macana. Barata y numerosa.',
-    categoria: 'infanteria',
+  soldier: {
+    id: UnitKind.SOLDIER,
+    name: 'Guerrero',
+    description: 'Infantería básica con lanza y macana. Barata y numerosa.',
+    category: 'infantry',
     eraStats: {
-      [Era.FORMATIVO]: { hp: 1, ataque: 1 },
-      [Era.ESTADOS_REGIONALES]: { hp: 1.15, ataque: 1.25 },
-      [Era.TAHUANTINSUYO]: { hp: 1.4, ataque: 1.5 },
-      [Era.VIRREINATO]: { hp: 1.6, ataque: 1.8 },
-      [Era.REPUBLICA]: { hp: 1.85, ataque: 2.1 },
-      [Era.CONTEMPORANEO]: { hp: 2.2, ataque: 2.5 },
+      [Era.FORMATIVE]: { hp: 1, attack: 1 },
+      [Era.REGIONAL_STATES]: { hp: 1.15, attack: 1.25 },
+      [Era.TAHUANTINSUYO]: { hp: 1.4, attack: 1.5 },
+      [Era.VICEROYALTY]: { hp: 1.6, attack: 1.8 },
+      [Era.REPUBLIC]: { hp: 1.85, attack: 2.1 },
+      [Era.CONTEMPORARY]: { hp: 2.2, attack: 2.5 },
     },
     eraModel: {
-      [Era.FORMATIVO]: { type: 'soldado_raso', scale: 1 },
-      [Era.ESTADOS_REGIONALES]: { type: 'soldado_raso', scale: 1 },
-      [Era.TAHUANTINSUYO]: { type: 'soldado_moderno', scale: 1.02 },
-      [Era.VIRREINATO]: { type: 'soldado_moderno', scale: 1.04 },
-      [Era.REPUBLICA]: { type: 'soldado_elite', scale: 1.06 },
-      [Era.CONTEMPORANEO]: { type: 'soldado_elite', scale: 1.12 },
+      [Era.FORMATIVE]: { type: 'soldier_grunt', scale: 1 },
+      [Era.REGIONAL_STATES]: { type: 'soldier_grunt', scale: 1 },
+      [Era.TAHUANTINSUYO]: { type: 'soldier_modern', scale: 1.02 },
+      [Era.VICEROYALTY]: { type: 'soldier_modern', scale: 1.04 },
+      [Era.REPUBLIC]: { type: 'soldier_elite', scale: 1.06 },
+      [Era.CONTEMPORARY]: { type: 'soldier_elite', scale: 1.12 },
     },
   },
-  mosquetero: {
-    id: UnitKind.MOSQUETERO,
-    nombre: 'Hondero',
-    descripcion: 'Tirador con honda y boleadora. Buen daño a distancia en masa.',
-    categoria: 'distancia',
+  musketeer: {
+    id: UnitKind.MUSKETEER,
+    name: 'Hondero',
+    description: 'Tirador con honda y boleadora. Buen daño a distancia en masa.',
+    category: 'ranged',
     eraStats: {
-      [Era.FORMATIVO]: { hp: 1, ataque: 1 },
-      [Era.ESTADOS_REGIONALES]: { hp: 1.2, ataque: 1.3 },
-      [Era.TAHUANTINSUYO]: { hp: 1.45, ataque: 1.6 },
-      [Era.VIRREINATO]: { hp: 1.6, ataque: 1.9 },
-      [Era.REPUBLICA]: { hp: 1.8, ataque: 2.2 },
-      [Era.CONTEMPORANEO]: { hp: 2.1, ataque: 2.6 },
+      [Era.FORMATIVE]: { hp: 1, attack: 1 },
+      [Era.REGIONAL_STATES]: { hp: 1.2, attack: 1.3 },
+      [Era.TAHUANTINSUYO]: { hp: 1.45, attack: 1.6 },
+      [Era.VICEROYALTY]: { hp: 1.6, attack: 1.9 },
+      [Era.REPUBLIC]: { hp: 1.8, attack: 2.2 },
+      [Era.CONTEMPORARY]: { hp: 2.1, attack: 2.6 },
     },
     eraModel: {
-      [Era.FORMATIVO]: { type: 'mosquetero', scale: 1 },
-      [Era.ESTADOS_REGIONALES]: { type: 'mosquetero', scale: 1 },
-      [Era.TAHUANTINSUYO]: { type: 'mosquetero', scale: 1.02 },
-      [Era.VIRREINATO]: { type: 'riflero', scale: 1.03 },
-      [Era.REPUBLICA]: { type: 'fusil_avanzado', scale: 1.05 },
-      [Era.CONTEMPORANEO]: { type: 'fusil_avanzado', scale: 1.1 },
+      [Era.FORMATIVE]: { type: 'musketeer', scale: 1 },
+      [Era.REGIONAL_STATES]: { type: 'musketeer', scale: 1 },
+      [Era.TAHUANTINSUYO]: { type: 'musketeer', scale: 1.02 },
+      [Era.VICEROYALTY]: { type: 'veteran_rifleman', scale: 1.03 },
+      [Era.REPUBLIC]: { type: 'advanced_rifleman', scale: 1.05 },
+      [Era.CONTEMPORARY]: { type: 'advanced_rifleman', scale: 1.1 },
     },
   },
-  fusilero: {
-    id: UnitKind.FUSILERO,
-    nombre: 'Tirador de Élite',
-    descripcion: 'Tropas de élite con arco largo y cerbatana. Alta cadencia de fuego.',
-    categoria: 'distancia',
+  rifleman: {
+    id: UnitKind.RIFLEMAN,
+    name: 'Tirador de Élite',
+    description: 'Tropas de élite con arco largo y cerbatana. Alta cadencia de fuego.',
+    category: 'ranged',
     eraStats: {
-      [Era.FORMATIVO]: { hp: 1.2, ataque: 1.4, rango: 1.1 },
-      [Era.ESTADOS_REGIONALES]: { hp: 1.4, ataque: 1.6, rango: 1.15 },
-      [Era.TAHUANTINSUYO]: { hp: 1.7, ataque: 1.9, rango: 1.2 },
-      [Era.VIRREINATO]: { hp: 1.9, ataque: 2.2, rango: 1.25 },
-      [Era.REPUBLICA]: { hp: 2.1, ataque: 2.6, rango: 1.3 },
-      [Era.CONTEMPORANEO]: { hp: 2.4, ataque: 3.0, rango: 1.35 },
+      [Era.FORMATIVE]: { hp: 1.2, attack: 1.4, range: 1.1 },
+      [Era.REGIONAL_STATES]: { hp: 1.4, attack: 1.6, range: 1.15 },
+      [Era.TAHUANTINSUYO]: { hp: 1.7, attack: 1.9, range: 1.2 },
+      [Era.VICEROYALTY]: { hp: 1.9, attack: 2.2, range: 1.25 },
+      [Era.REPUBLIC]: { hp: 2.1, attack: 2.6, range: 1.3 },
+      [Era.CONTEMPORARY]: { hp: 2.4, attack: 3.0, range: 1.35 },
     },
     eraModel: {
-      [Era.FORMATIVO]: { type: 'fusilero', scale: 1 },
-      [Era.ESTADOS_REGIONALES]: { type: 'fusilero', scale: 1 },
-      [Era.TAHUANTINSUYO]: { type: 'fusilero', scale: 1.02 },
-      [Era.VIRREINATO]: { type: 'riflero', scale: 1.04 },
-      [Era.REPUBLICA]: { type: 'fusil_avanzado', scale: 1.06 },
-      [Era.CONTEMPORANEO]: { type: 'fusil_avanzado', scale: 1.12 },
+      [Era.FORMATIVE]: { type: 'rifleman', scale: 1 },
+      [Era.REGIONAL_STATES]: { type: 'rifleman', scale: 1 },
+      [Era.TAHUANTINSUYO]: { type: 'rifleman', scale: 1.02 },
+      [Era.VICEROYALTY]: { type: 'veteran_rifleman', scale: 1.04 },
+      [Era.REPUBLIC]: { type: 'advanced_rifleman', scale: 1.06 },
+      [Era.CONTEMPORARY]: { type: 'advanced_rifleman', scale: 1.12 },
     },
-    requiresTech: ['rifles_repetidos'],
+    requiresTech: ['bow_and_bolas'],
   },
-  francotirador: {
-    id: UnitKind.FRANCOTIRADOR,
-    nombre: 'Cazador',
-    descripcion: 'Cazador de largo alcance. Devastador contra oficiales y tropas.',
-    categoria: 'distancia',
+  sniper: {
+    id: UnitKind.SNIPER,
+    name: 'Cazador',
+    description: 'Cazador de largo alcance. Devastador contra oficiales y tropas.',
+    category: 'ranged',
     eraStats: {
-      [Era.FORMATIVO]: { hp: 0.9, ataque: 2.0, rango: 1.6 },
-      [Era.ESTADOS_REGIONALES]: { hp: 1.0, ataque: 2.3, rango: 1.7 },
-      [Era.TAHUANTINSUYO]: { hp: 1.15, ataque: 2.6, rango: 1.8 },
-      [Era.VIRREINATO]: { hp: 1.25, ataque: 3.0, rango: 1.9 },
-      [Era.REPUBLICA]: { hp: 1.4, ataque: 3.4, rango: 2.0 },
-      [Era.CONTEMPORANEO]: { hp: 1.55, ataque: 3.9, rango: 2.2 },
+      [Era.FORMATIVE]: { hp: 0.9, attack: 2.0, range: 1.6 },
+      [Era.REGIONAL_STATES]: { hp: 1.0, attack: 2.3, range: 1.7 },
+      [Era.TAHUANTINSUYO]: { hp: 1.15, attack: 2.6, range: 1.8 },
+      [Era.VICEROYALTY]: { hp: 1.25, attack: 3.0, range: 1.9 },
+      [Era.REPUBLIC]: { hp: 1.4, attack: 3.4, range: 2.0 },
+      [Era.CONTEMPORARY]: { hp: 1.55, attack: 3.9, range: 2.2 },
     },
     eraModel: {
-      [Era.FORMATIVO]: { type: 'fusilero', scale: 1.02 },
-      [Era.ESTADOS_REGIONALES]: { type: 'fusilero', scale: 1.03 },
-      [Era.TAHUANTINSUYO]: { type: 'fusilero', scale: 1.05 },
-      [Era.VIRREINATO]: { type: 'fusil_avanzado', scale: 1.06 },
-      [Era.REPUBLICA]: { type: 'fusil_avanzado', scale: 1.08 },
-      [Era.CONTEMPORANEO]: { type: 'fusil_avanzado', scale: 1.14 },
+      [Era.FORMATIVE]: { type: 'rifleman', scale: 1.02 },
+      [Era.REGIONAL_STATES]: { type: 'rifleman', scale: 1.03 },
+      [Era.TAHUANTINSUYO]: { type: 'rifleman', scale: 1.05 },
+      [Era.VICEROYALTY]: { type: 'advanced_rifleman', scale: 1.06 },
+      [Era.REPUBLIC]: { type: 'advanced_rifleman', scale: 1.08 },
+      [Era.CONTEMPORARY]: { type: 'advanced_rifleman', scale: 1.14 },
     },
-    requiresTech: ['francotiradores'],
+    requiresTech: ['hunters'],
   },
-  husar: {
-    id: UnitKind.HUSAR,
-    nombre: 'Jinete',
-    descripcion: 'Jinete ligero veloz. Perfecto para asaltar la economía y flanquear.',
-    categoria: 'caballeria',
+  hussar: {
+    id: UnitKind.HUSSAR,
+    name: 'Jinete',
+    description: 'Jinete ligero veloz. Perfecto para asaltar la economía y flanquear.',
+    category: 'cavalry',
     eraStats: {
-      [Era.FORMATIVO]: { hp: 1.2, ataque: 1.0, velocidad: 1.0 },
-      [Era.ESTADOS_REGIONALES]: { hp: 1.35, ataque: 1.3, velocidad: 1.05 },
-      [Era.TAHUANTINSUYO]: { hp: 1.6, ataque: 1.7, velocidad: 1.1 },
-      [Era.VIRREINATO]: { hp: 1.8, ataque: 2.0, velocidad: 1.15 },
-      [Era.REPUBLICA]: { hp: 2.0, ataque: 2.3, velocidad: 1.2 },
-      [Era.CONTEMPORANEO]: { hp: 2.3, ataque: 2.7, velocidad: 1.25 },
+      [Era.FORMATIVE]: { hp: 1.2, attack: 1.0, speed: 1.0 },
+      [Era.REGIONAL_STATES]: { hp: 1.35, attack: 1.3, speed: 1.05 },
+      [Era.TAHUANTINSUYO]: { hp: 1.6, attack: 1.7, speed: 1.1 },
+      [Era.VICEROYALTY]: { hp: 1.8, attack: 2.0, speed: 1.15 },
+      [Era.REPUBLIC]: { hp: 2.0, attack: 2.3, speed: 1.2 },
+      [Era.CONTEMPORARY]: { hp: 2.3, attack: 2.7, speed: 1.25 },
     },
     eraModel: {
-      [Era.VIRREINATO]: { type: 'husar', scale: 1.05 },
-      [Era.REPUBLICA]: { type: 'husar', scale: 1.1 },
-      [Era.CONTEMPORANEO]: { type: 'motocicleta', scale: 1.1 },
-    },
-  },
-  caballeria: {
-    id: UnitKind.CABALLERIA,
-    nombre: 'Caballería de Choque',
-    descripcion: 'Jinetes de choque. Golpean fuerte contra infantería y economía.',
-    categoria: 'caballeria',
-    eraStats: {
-      [Era.FORMATIVO]: { hp: 1.6, ataque: 1.2 },
-      [Era.ESTADOS_REGIONALES]: { hp: 1.8, ataque: 1.5 },
-      [Era.TAHUANTINSUYO]: { hp: 2.0, ataque: 1.9 },
-      [Era.VIRREINATO]: { hp: 2.2, ataque: 2.3 },
-      [Era.REPUBLICA]: { hp: 2.5, ataque: 2.7 },
-      [Era.CONTEMPORANEO]: { hp: 2.8, ataque: 3.1 },
-    },
-    eraModel: {
-      [Era.VIRREINATO]: { type: 'caballeria', scale: 1.15 },
-      [Era.REPUBLICA]: { type: 'caballeria', scale: 1.18 },
-      [Era.CONTEMPORANEO]: { type: 'tanque_moderno', scale: 1.2 },
-    },
-    requiresTech: ['caballeria_pesada'],
-  },
-  tanque: {
-    id: UnitKind.TANQUE,
-    nombre: 'Ariete Blindado',
-    descripcion: 'Blindaje pesado y cañón de gran calibre. El rey del campo de batalla.',
-    categoria: 'caballeria',
-    eraStats: {
-      [Era.FORMATIVO]: { hp: 2.2, ataque: 2.0, velocidad: 0.9 },
-      [Era.ESTADOS_REGIONALES]: { hp: 2.5, ataque: 2.4, velocidad: 0.95 },
-      [Era.TAHUANTINSUYO]: { hp: 2.8, ataque: 2.8, velocidad: 1.0 },
-      [Era.VIRREINATO]: { hp: 3.1, ataque: 3.2, velocidad: 1.05 },
-      [Era.REPUBLICA]: { hp: 3.4, ataque: 3.6, velocidad: 1.1 },
-      [Era.CONTEMPORANEO]: { hp: 3.8, ataque: 4.0, velocidad: 1.15 },
-    },
-    eraModel: {
-      [Era.CONTEMPORANEO]: { type: 'tanque_moderno', scale: 1.2 },
-    },
-    requiresTech: ['blindados_pesados'],
-  },
-  explorador: {
-    id: UnitKind.EXPLORADOR,
-    nombre: 'Chasqui',
-    descripcion: 'Mensajero veloz del Qhapaq Ñan. Ilumina el mapa con su visión.',
-    categoria: 'especial',
-    eraStats: {
-      [Era.FORMATIVO]: { hp: 0.8, ataque: 0.5, velocidad: 1.2, los: 1.3 },
-      [Era.ESTADOS_REGIONALES]: { hp: 0.9, ataque: 0.6, velocidad: 1.25, los: 1.35 },
-      [Era.TAHUANTINSUYO]: { hp: 1.0, ataque: 0.7, velocidad: 1.3, los: 1.4 },
-      [Era.VIRREINATO]: { hp: 1.1, ataque: 0.8, velocidad: 1.35, los: 1.45 },
-      [Era.REPUBLICA]: { hp: 1.2, ataque: 0.9, velocidad: 1.4, los: 1.5 },
-      [Era.CONTEMPORANEO]: { hp: 1.3, ataque: 1.0, velocidad: 1.5, los: 1.6 },
-    },
-    eraModel: {
-      [Era.FORMATIVO]: { type: 'soldado_raso', scale: 0.9 },
-      [Era.ESTADOS_REGIONALES]: { type: 'soldado_raso', scale: 0.9 },
-      [Era.TAHUANTINSUYO]: { type: 'soldado_raso', scale: 0.92 },
-      [Era.VIRREINATO]: { type: 'husar', scale: 0.98 },
-      [Era.REPUBLICA]: { type: 'husar', scale: 1.0 },
-      [Era.CONTEMPORANEO]: { type: 'motocicleta', scale: 1.05 },
+      [Era.VICEROYALTY]: { type: 'hussar', scale: 1.05 },
+      [Era.REPUBLIC]: { type: 'hussar', scale: 1.1 },
+      [Era.CONTEMPORARY]: { type: 'motorcycle', scale: 1.1 },
     },
   },
-  artillero_aa: {
-    id: UnitKind.ARTILLERO_AA,
-    nombre: 'Artillero Antiaéreo',
-    descripcion: 'Artillero de precisión: diezma unidades a distancia con fuego sostenido.',
-    categoria: 'distancia',
+  cavalry: {
+    id: UnitKind.CAVALRY,
+    name: 'Caballería de Choque',
+    description: 'Jinetes de choque. Golpean fuerte contra infantería y economía.',
+    category: 'cavalry',
     eraStats: {
-      [Era.FORMATIVO]: { hp: 1.0, ataque: 1.3, rango: 1.2 },
-      [Era.ESTADOS_REGIONALES]: { hp: 1.1, ataque: 1.5, rango: 1.25 },
-      [Era.TAHUANTINSUYO]: { hp: 1.25, ataque: 1.8, rango: 1.3 },
-      [Era.VIRREINATO]: { hp: 1.4, ataque: 2.1, rango: 1.35 },
-      [Era.REPUBLICA]: { hp: 1.55, ataque: 2.4, rango: 1.4 },
-      [Era.CONTEMPORANEO]: { hp: 1.7, ataque: 2.8, rango: 1.45 },
+      [Era.FORMATIVE]: { hp: 1.6, attack: 1.2 },
+      [Era.REGIONAL_STATES]: { hp: 1.8, attack: 1.5 },
+      [Era.TAHUANTINSUYO]: { hp: 2.0, attack: 1.9 },
+      [Era.VICEROYALTY]: { hp: 2.2, attack: 2.3 },
+      [Era.REPUBLIC]: { hp: 2.5, attack: 2.7 },
+      [Era.CONTEMPORARY]: { hp: 2.8, attack: 3.1 },
     },
     eraModel: {
-      [Era.FORMATIVO]: { type: 'mosquetero', scale: 1.02 },
-      [Era.ESTADOS_REGIONALES]: { type: 'mosquetero', scale: 1.03 },
-      [Era.TAHUANTINSUYO]: { type: 'mosquetero', scale: 1.05 },
-      [Era.VIRREINATO]: { type: 'riflero', scale: 1.06 },
-      [Era.REPUBLICA]: { type: 'riflero', scale: 1.08 },
-      [Era.CONTEMPORANEO]: { type: 'aa', scale: 1.1 },
+      [Era.VICEROYALTY]: { type: 'cavalry', scale: 1.15 },
+      [Era.REPUBLIC]: { type: 'cavalry', scale: 1.18 },
+      [Era.CONTEMPORARY]: { type: 'modern_tank', scale: 1.2 },
     },
-    requiresTech: ['defensa_antiaerea'],
+    requiresTech: ['shock_cavalry'],
   },
-  artilleria: {
-    id: UnitKind.ARTILLERIA,
-    nombre: 'Artillería de Asedio',
-    descripcion: 'Asedio de largo alcance. Destruye edificios y formaciones.',
-    categoria: 'asedio',
+  tank: {
+    id: UnitKind.TANK,
+    name: 'Ariete Blindado',
+    description: 'Blindaje pesado y cañón de gran calibre. El rey del campo de batalla.',
+    category: 'cavalry',
     eraStats: {
-      [Era.FORMATIVO]: { hp: 1.0, ataque: 3.0, rango: 2.4, velocidad: 0.55 },
-      [Era.ESTADOS_REGIONALES]: { hp: 1.1, ataque: 3.5, rango: 2.5, velocidad: 0.58 },
-      [Era.TAHUANTINSUYO]: { hp: 1.2, ataque: 4.0, rango: 2.6, velocidad: 0.6 },
-      [Era.VIRREINATO]: { hp: 1.3, ataque: 4.5, rango: 2.7, velocidad: 0.62 },
-      [Era.REPUBLICA]: { hp: 1.4, ataque: 5.0, rango: 2.8, velocidad: 0.64 },
-      [Era.CONTEMPORANEO]: { hp: 1.5, ataque: 5.5, rango: 3.0, velocidad: 0.66 },
+      [Era.FORMATIVE]: { hp: 2.2, attack: 2.0, speed: 0.9 },
+      [Era.REGIONAL_STATES]: { hp: 2.5, attack: 2.4, speed: 0.95 },
+      [Era.TAHUANTINSUYO]: { hp: 2.8, attack: 2.8, speed: 1.0 },
+      [Era.VICEROYALTY]: { hp: 3.1, attack: 3.2, speed: 1.05 },
+      [Era.REPUBLIC]: { hp: 3.4, attack: 3.6, speed: 1.1 },
+      [Era.CONTEMPORARY]: { hp: 3.8, attack: 4.0, speed: 1.15 },
     },
     eraModel: {
-      [Era.VIRREINATO]: { type: 'artilleria', scale: 1.08 },
-      [Era.REPUBLICA]: { type: 'howitzer', scale: 1.1 },
-      [Era.CONTEMPORANEO]: { type: 'howitzer', scale: 1.15 },
+      [Era.CONTEMPORARY]: { type: 'modern_tank', scale: 1.2 },
     },
-    requiresTech: ['obuses'],
+    requiresTech: ['heavy_armor'],
   },
-  mortero: {
-    id: UnitKind.MORTERO,
-    nombre: 'Mortero',
-    descripcion: 'Daño en área devastador. Ideal para aplastar formaciones.',
-    categoria: 'asedio',
+  scout: {
+    id: UnitKind.SCOUT,
+    name: 'Chasqui',
+    description: 'Mensajero veloz del Qhapaq Ñan. Ilumina el mapa con su visión.',
+    category: 'special',
     eraStats: {
-      [Era.FORMATIVO]: { hp: 0.9, ataque: 2.2, rango: 2.0, velocidad: 0.5, area: 3.5 },
-      [Era.ESTADOS_REGIONALES]: { hp: 1.0, ataque: 2.6, rango: 2.1, velocidad: 0.52, area: 3.6 },
-      [Era.TAHUANTINSUYO]: { hp: 1.1, ataque: 3.0, rango: 2.2, velocidad: 0.54, area: 3.7 },
-      [Era.VIRREINATO]: { hp: 1.2, ataque: 3.4, rango: 2.3, velocidad: 0.56, area: 3.8 },
-      [Era.REPUBLICA]: { hp: 1.3, ataque: 3.8, rango: 2.4, velocidad: 0.58, area: 4.0 },
-      [Era.CONTEMPORANEO]: { hp: 1.4, ataque: 4.2, rango: 2.5, velocidad: 0.6, area: 4.2 },
+      [Era.FORMATIVE]: { hp: 0.8, attack: 0.5, speed: 1.2, los: 1.3 },
+      [Era.REGIONAL_STATES]: { hp: 0.9, attack: 0.6, speed: 1.25, los: 1.35 },
+      [Era.TAHUANTINSUYO]: { hp: 1.0, attack: 0.7, speed: 1.3, los: 1.4 },
+      [Era.VICEROYALTY]: { hp: 1.1, attack: 0.8, speed: 1.35, los: 1.45 },
+      [Era.REPUBLIC]: { hp: 1.2, attack: 0.9, speed: 1.4, los: 1.5 },
+      [Era.CONTEMPORARY]: { hp: 1.3, attack: 1.0, speed: 1.5, los: 1.6 },
     },
     eraModel: {
-      [Era.VIRREINATO]: { type: 'mortero', scale: 1.06 },
-      [Era.REPUBLICA]: { type: 'mortero', scale: 1.08 },
-      [Era.CONTEMPORANEO]: { type: 'mortero', scale: 1.1 },
+      [Era.FORMATIVE]: { type: 'soldier_grunt', scale: 0.9 },
+      [Era.REGIONAL_STATES]: { type: 'soldier_grunt', scale: 0.9 },
+      [Era.TAHUANTINSUYO]: { type: 'soldier_grunt', scale: 0.92 },
+      [Era.VICEROYALTY]: { type: 'hussar', scale: 0.98 },
+      [Era.REPUBLIC]: { type: 'hussar', scale: 1.0 },
+      [Era.CONTEMPORARY]: { type: 'motorcycle', scale: 1.05 },
     },
-    requiresTech: ['morteros'],
   },
-  comisario: {
-    id: UnitKind.COMISARIO,
-    nombre: 'Amauta',
-    descripcion: 'Sabio andino que convierte unidades enemigas a tu causa con su palabra.',
-    categoria: 'especial',
+  anti_air: {
+    id: UnitKind.ANTI_AIR,
+    name: 'Artillero Antiaéreo',
+    description: 'Artillero de precisión: diezma unidades a distancia con fuego sostenido.',
+    category: 'ranged',
     eraStats: {
-      [Era.FORMATIVO]: { hp: 0.9, ataque: 0, rango: 2.0, velocidad: 0.75 },
-      [Era.ESTADOS_REGIONALES]: { hp: 1.0, ataque: 0, rango: 2.2, velocidad: 0.8 },
-      [Era.TAHUANTINSUYO]: { hp: 1.1, ataque: 0, rango: 2.4, velocidad: 0.85 },
-      [Era.VIRREINATO]: { hp: 1.2, ataque: 0, rango: 2.6, velocidad: 0.9 },
-      [Era.REPUBLICA]: { hp: 1.3, ataque: 0, rango: 2.8, velocidad: 0.95 },
-      [Era.CONTEMPORANEO]: { hp: 1.4, ataque: 0, rango: 3.0, velocidad: 1.0 },
+      [Era.FORMATIVE]: { hp: 1.0, attack: 1.3, range: 1.2 },
+      [Era.REGIONAL_STATES]: { hp: 1.1, attack: 1.5, range: 1.25 },
+      [Era.TAHUANTINSUYO]: { hp: 1.25, attack: 1.8, range: 1.3 },
+      [Era.VICEROYALTY]: { hp: 1.4, attack: 2.1, range: 1.35 },
+      [Era.REPUBLIC]: { hp: 1.55, attack: 2.4, range: 1.4 },
+      [Era.CONTEMPORARY]: { hp: 1.7, attack: 2.8, range: 1.45 },
     },
     eraModel: {
-      [Era.FORMATIVO]: { type: 'comisario', scale: 1 },
-      [Era.ESTADOS_REGIONALES]: { type: 'comisario', scale: 1 },
-      [Era.TAHUANTINSUYO]: { type: 'comisario', scale: 1.02 },
-      [Era.VIRREINATO]: { type: 'comisario', scale: 1.03 },
-      [Era.REPUBLICA]: { type: 'comisario', scale: 1.05 },
-      [Era.CONTEMPORANEO]: { type: 'comisario', scale: 1.08 },
+      [Era.FORMATIVE]: { type: 'musketeer', scale: 1.02 },
+      [Era.REGIONAL_STATES]: { type: 'musketeer', scale: 1.03 },
+      [Era.TAHUANTINSUYO]: { type: 'musketeer', scale: 1.05 },
+      [Era.VICEROYALTY]: { type: 'veteran_rifleman', scale: 1.06 },
+      [Era.REPUBLIC]: { type: 'veteran_rifleman', scale: 1.08 },
+      [Era.CONTEMPORARY]: { type: 'aa', scale: 1.1 },
     },
-    requiresTech: ['propaganda'],
+    requiresTech: ['anti_air_defense'],
+  },
+  artillery: {
+    id: UnitKind.ARTILLERY,
+    name: 'Artillería de Asedio',
+    description: 'Asedio de largo alcance. Destruye edificios y formaciones.',
+    category: 'siege',
+    eraStats: {
+      [Era.FORMATIVE]: { hp: 1.0, attack: 3.0, range: 2.4, speed: 0.55 },
+      [Era.REGIONAL_STATES]: { hp: 1.1, attack: 3.5, range: 2.5, speed: 0.58 },
+      [Era.TAHUANTINSUYO]: { hp: 1.2, attack: 4.0, range: 2.6, speed: 0.6 },
+      [Era.VICEROYALTY]: { hp: 1.3, attack: 4.5, range: 2.7, speed: 0.62 },
+      [Era.REPUBLIC]: { hp: 1.4, attack: 5.0, range: 2.8, speed: 0.64 },
+      [Era.CONTEMPORARY]: { hp: 1.5, attack: 5.5, range: 3.0, speed: 0.66 },
+    },
+    eraModel: {
+      [Era.VICEROYALTY]: { type: 'artillery', scale: 1.08 },
+      [Era.REPUBLIC]: { type: 'howitzer', scale: 1.1 },
+      [Era.CONTEMPORARY]: { type: 'howitzer', scale: 1.15 },
+    },
+    requiresTech: ['siege_engines'],
+  },
+  mortar: {
+    id: UnitKind.MORTAR,
+    name: 'Mortero',
+    description: 'Daño en área devastador. Ideal para aplastar formaciones.',
+    category: 'siege',
+    eraStats: {
+      [Era.FORMATIVE]: { hp: 0.9, attack: 2.2, range: 2.0, speed: 0.5, area: 3.5 },
+      [Era.REGIONAL_STATES]: { hp: 1.0, attack: 2.6, range: 2.1, speed: 0.52, area: 3.6 },
+      [Era.TAHUANTINSUYO]: { hp: 1.1, attack: 3.0, range: 2.2, speed: 0.54, area: 3.7 },
+      [Era.VICEROYALTY]: { hp: 1.2, attack: 3.4, range: 2.3, speed: 0.56, area: 3.8 },
+      [Era.REPUBLIC]: { hp: 1.3, attack: 3.8, range: 2.4, speed: 0.58, area: 4.0 },
+      [Era.CONTEMPORARY]: { hp: 1.4, attack: 4.2, range: 2.5, speed: 0.6, area: 4.2 },
+    },
+    eraModel: {
+      [Era.VICEROYALTY]: { type: 'mortar', scale: 1.06 },
+      [Era.REPUBLIC]: { type: 'mortar', scale: 1.08 },
+      [Era.CONTEMPORARY]: { type: 'mortar', scale: 1.1 },
+    },
+    requiresTech: ['siege_mortars'],
+  },
+  commissar: {
+    id: UnitKind.COMMISSAR,
+    name: 'Amauta',
+    description: 'Sabio andino que convierte unidades enemigas a tu causa con su palabra.',
+    category: 'special',
+    eraStats: {
+      [Era.FORMATIVE]: { hp: 0.9, attack: 0, range: 2.0, speed: 0.75 },
+      [Era.REGIONAL_STATES]: { hp: 1.0, attack: 0, range: 2.2, speed: 0.8 },
+      [Era.TAHUANTINSUYO]: { hp: 1.1, attack: 0, range: 2.4, speed: 0.85 },
+      [Era.VICEROYALTY]: { hp: 1.2, attack: 0, range: 2.6, speed: 0.9 },
+      [Era.REPUBLIC]: { hp: 1.3, attack: 0, range: 2.8, speed: 0.95 },
+      [Era.CONTEMPORARY]: { hp: 1.4, attack: 0, range: 3.0, speed: 1.0 },
+    },
+    eraModel: {
+      [Era.FORMATIVE]: { type: 'commissar', scale: 1 },
+      [Era.REGIONAL_STATES]: { type: 'commissar', scale: 1 },
+      [Era.TAHUANTINSUYO]: { type: 'commissar', scale: 1.02 },
+      [Era.VICEROYALTY]: { type: 'commissar', scale: 1.03 },
+      [Era.REPUBLIC]: { type: 'commissar', scale: 1.05 },
+      [Era.CONTEMPORARY]: { type: 'commissar', scale: 1.08 },
+    },
+    requiresTech: ['amauta_words'],
   },
   mec: {
-    id: UnitKind.MEC,
-    nombre: 'Guardián Blindado',
-    descripcion: 'Vehículo blindado de asalto. La unidad más poderosa del Perú contemporáneo.',
-    categoria: 'unico',
+    id: UnitKind.MECH,
+    name: 'Guardián Blindado',
+    description: 'Vehículo blindado de asalto. La unidad más poderosa del Perú contemporáneo.',
+    category: 'unique',
     eraStats: {
-      [Era.FORMATIVO]: { hp: 1, ataque: 1, rango: 1 },
-      [Era.ESTADOS_REGIONALES]: { hp: 1, ataque: 1, rango: 1 },
-      [Era.TAHUANTINSUYO]: { hp: 1, ataque: 1, rango: 1 },
-      [Era.VIRREINATO]: { hp: 1, ataque: 1, rango: 1 },
-      [Era.REPUBLICA]: { hp: 1.2, ataque: 1.2, rango: 1.1 },
-      [Era.CONTEMPORANEO]: { hp: 1.6, ataque: 1.6, rango: 1.2 },
+      [Era.FORMATIVE]: { hp: 1, attack: 1, range: 1 },
+      [Era.REGIONAL_STATES]: { hp: 1, attack: 1, range: 1 },
+      [Era.TAHUANTINSUYO]: { hp: 1, attack: 1, range: 1 },
+      [Era.VICEROYALTY]: { hp: 1, attack: 1, range: 1 },
+      [Era.REPUBLIC]: { hp: 1.2, attack: 1.2, range: 1.1 },
+      [Era.CONTEMPORARY]: { hp: 1.6, attack: 1.6, range: 1.2 },
     },
     eraModel: {
-      [Era.CONTEMPORANEO]: { type: 'tanque_moderno', scale: 1.35 },
+      [Era.CONTEMPORARY]: { type: 'modern_tank', scale: 1.35 },
     },
-    requiresTech: ['mecatronica'],
-    requiresFortaleza: true,
+    requiresTech: ['armored_engineering'],
+    requiresFortress: true,
   },
   nuclear: {
     id: UnitKind.NUCLEAR,
-    nombre: 'Artillería de Cohetes',
-    descripcion: 'Artillería de cohetes de largo alcance. Devastación en área masiva.',
-    categoria: 'asedio',
+    name: 'Artillería de Cohetes',
+    description: 'Artillería de cohetes de largo alcance. Devastación en área masiva.',
+    category: 'siege',
     eraStats: {
-      [Era.FORMATIVO]: { hp: 1, ataque: 1, rango: 1, velocidad: 0.4 },
-      [Era.ESTADOS_REGIONALES]: { hp: 1, ataque: 1, rango: 1, velocidad: 0.4 },
-      [Era.TAHUANTINSUYO]: { hp: 1, ataque: 1, rango: 1, velocidad: 0.4 },
-      [Era.VIRREINATO]: { hp: 1.1, ataque: 7.0, rango: 3.0, velocidad: 0.45, area: 7.0 },
-      [Era.REPUBLICA]: { hp: 1.2, ataque: 8.0, rango: 3.2, velocidad: 0.48, area: 7.5 },
-      [Era.CONTEMPORANEO]: { hp: 1.3, ataque: 9.0, rango: 3.4, velocidad: 0.5, area: 8.0 },
+      [Era.FORMATIVE]: { hp: 1, attack: 1, range: 1, speed: 0.4 },
+      [Era.REGIONAL_STATES]: { hp: 1, attack: 1, range: 1, speed: 0.4 },
+      [Era.TAHUANTINSUYO]: { hp: 1, attack: 1, range: 1, speed: 0.4 },
+      [Era.VICEROYALTY]: { hp: 1.1, attack: 7.0, range: 3.0, speed: 0.45, area: 7.0 },
+      [Era.REPUBLIC]: { hp: 1.2, attack: 8.0, range: 3.2, speed: 0.48, area: 7.5 },
+      [Era.CONTEMPORARY]: { hp: 1.3, attack: 9.0, range: 3.4, speed: 0.5, area: 8.0 },
     },
     eraModel: {
-      [Era.CONTEMPORANEO]: { type: 'howitzer', scale: 1.15 },
+      [Era.CONTEMPORARY]: { type: 'howitzer', scale: 1.15 },
     },
-    requiresTech: ['armas_atomicas'],
-    requiresFortaleza: true,
+    requiresTech: ['rocketry'],
+    requiresFortress: true,
   },
 };
 
-/** Stats base por unidad (era VAPOR). */
+/** Base stats per unit (VAPOR era). */
 const BASE_STATS: Record<UnitKind, UnitStats> = {
-  obrero: {
-    hp: 25, ataque: 3, rango: 0, armaduraLigero: 0, armaduraPesado: 0,
-    velocidad: 2.4, los: 4, velocidadAtaque: 1.5, costo: cost({ comida: 50, madera: 20 }), tiempoEntrenamiento: 15, poblacion: 1,
-    tipoDano: 'ligero', proyectil: 'bala',
+  worker: {
+    hp: 25, attack: 3, range: 0, lightArmor: 0, heavyArmor: 0,
+    speed: 2.4, los: 4, attackSpeed: 1.5, cost: cost({ food: 50, wood: 20 }), trainTime: 15, population: 1,
+    damageType: 'light', projectile: 'bullet',
   },
-  soldado: {
-    hp: 40, ataque: 5, rango: 0, armaduraLigero: 0, armaduraPesado: 0,
-    velocidad: 2.5, los: 5, velocidadAtaque: 1.5, costo: cost({ comida: 40, madera: 20 }), tiempoEntrenamiento: 21, poblacion: 1,
-    tipoDano: 'ligero', proyectil: 'bala',
+  soldier: {
+    hp: 40, attack: 5, range: 0, lightArmor: 0, heavyArmor: 0,
+    speed: 2.5, los: 5, attackSpeed: 1.5, cost: cost({ food: 40, wood: 20 }), trainTime: 21, population: 1,
+    damageType: 'light', projectile: 'bullet',
   },
-  mosquetero: {
-    hp: 35, ataque: 7, rango: 9, armaduraLigero: 0, armaduraPesado: 0,
-    velocidad: 2.4, los: 7, velocidadAtaque: 2.2, costo: cost({ comida: 35, acero: 25 }), tiempoEntrenamiento: 22, poblacion: 1,
-    tipoDano: 'pesado', proyectil: 'bala',
+  musketeer: {
+    hp: 35, attack: 7, range: 9, lightArmor: 0, heavyArmor: 0,
+    speed: 2.4, los: 7, attackSpeed: 2.2, cost: cost({ food: 35, silver: 25 }), trainTime: 22, population: 1,
+    damageType: 'heavy', projectile: 'bullet',
   },
-  fusilero: {
-    hp: 40, ataque: 8, rango: 10, armaduraLigero: 0, armaduraPesado: 0,
-    velocidad: 2.3, los: 8, velocidadAtaque: 1.8, costo: cost({ comida: 40, acero: 30 }), tiempoEntrenamiento: 25, poblacion: 1,
-    tipoDano: 'pesado', proyectil: 'trazadora',
+  rifleman: {
+    hp: 40, attack: 8, range: 10, lightArmor: 0, heavyArmor: 0,
+    speed: 2.3, los: 8, attackSpeed: 1.8, cost: cost({ food: 40, silver: 30 }), trainTime: 25, population: 1,
+    damageType: 'heavy', projectile: 'tracer',
   },
-  francotirador: {
-    hp: 30, ataque: 14, rango: 16, armaduraLigero: 0, armaduraPesado: 0,
-    velocidad: 2.2, los: 10, velocidadAtaque: 3.2, costo: cost({ comida: 45, acero: 40 }), tiempoEntrenamiento: 30, poblacion: 1,
-    tipoDano: 'pesado', proyectil: 'trazadora',
+  sniper: {
+    hp: 30, attack: 14, range: 16, lightArmor: 0, heavyArmor: 0,
+    speed: 2.2, los: 10, attackSpeed: 3.2, cost: cost({ food: 45, silver: 40 }), trainTime: 30, population: 1,
+    damageType: 'heavy', projectile: 'tracer',
   },
-  husar: {
-    hp: 50, ataque: 6, rango: 0, armaduraLigero: 1, armaduraPesado: 0,
-    velocidad: 4.2, los: 6, velocidadAtaque: 1.6, costo: cost({ comida: 50, madera: 25 }), tiempoEntrenamiento: 26, poblacion: 1,
-    tipoDano: 'ligero', proyectil: 'bala',
+  hussar: {
+    hp: 50, attack: 6, range: 0, lightArmor: 1, heavyArmor: 0,
+    speed: 4.2, los: 6, attackSpeed: 1.6, cost: cost({ food: 50, wood: 25 }), trainTime: 26, population: 1,
+    damageType: 'light', projectile: 'bullet',
   },
-  caballeria: {
-    hp: 70, ataque: 9, rango: 0, armaduraLigero: 2, armaduraPesado: 0,
-    velocidad: 3.6, los: 5, velocidadAtaque: 1.8, costo: cost({ comida: 60, acero: 40 }), tiempoEntrenamiento: 32, poblacion: 2,
-    tipoDano: 'pesado', proyectil: 'bala',
+  cavalry: {
+    hp: 70, attack: 9, range: 0, lightArmor: 2, heavyArmor: 0,
+    speed: 3.6, los: 5, attackSpeed: 1.8, cost: cost({ food: 60, silver: 40 }), trainTime: 32, population: 2,
+    damageType: 'heavy', projectile: 'bullet',
   },
-  tanque: {
-    hp: 120, ataque: 13, rango: 0, armaduraLigero: 3, armaduraPesado: 2,
-    velocidad: 3.0, los: 7, velocidadAtaque: 2.0, costo: cost({ acero: 90, energia: 40 }), tiempoEntrenamiento: 38, poblacion: 3,
-    tipoDano: 'pesado', proyectil: 'obús',
+  tank: {
+    hp: 120, attack: 13, range: 0, lightArmor: 3, heavyArmor: 2,
+    speed: 3.0, los: 7, attackSpeed: 2.0, cost: cost({ silver: 90, stone: 40 }), trainTime: 38, population: 3,
+    damageType: 'heavy', projectile: 'howitzer_shell',
   },
-  explorador: {
-    hp: 30, ataque: 3, rango: 0, armaduraLigero: 0, armaduraPesado: 0,
-    velocidad: 4.5, los: 8, velocidadAtaque: 1.5, costo: cost({ comida: 35, madera: 20 }), tiempoEntrenamiento: 20, poblacion: 1,
-    tipoDano: 'ligero', proyectil: 'bala',
+  scout: {
+    hp: 30, attack: 3, range: 0, lightArmor: 0, heavyArmor: 0,
+    speed: 4.5, los: 8, attackSpeed: 1.5, cost: cost({ food: 35, wood: 20 }), trainTime: 20, population: 1,
+    damageType: 'light', projectile: 'bullet',
   },
-  artillero_aa: {
-    hp: 35, ataque: 9, rango: 11, armaduraLigero: 0, armaduraPesado: 0,
-    velocidad: 2.3, los: 8, velocidadAtaque: 1.4, costo: cost({ comida: 35, acero: 30 }), tiempoEntrenamiento: 24, poblacion: 1,
-    tipoDano: 'ligero', proyectil: 'trazadora',
+  anti_air: {
+    hp: 35, attack: 9, range: 11, lightArmor: 0, heavyArmor: 0,
+    speed: 2.3, los: 8, attackSpeed: 1.4, cost: cost({ food: 35, silver: 30 }), trainTime: 24, population: 1,
+    damageType: 'light', projectile: 'tracer',
   },
-  artilleria: {
-    hp: 45, ataque: 30, rango: 20, armaduraLigero: 0, armaduraPesado: 1,
-    velocidad: 1.6, los: 10, velocidadAtaque: 5.0, area: 4.0, costo: cost({ acero: 120, madera: 60 }), tiempoEntrenamiento: 45, poblacion: 3,
-    tipoDano: 'fortificado', proyectil: 'obús',
+  artillery: {
+    hp: 45, attack: 30, range: 20, lightArmor: 0, heavyArmor: 1,
+    speed: 1.6, los: 10, attackSpeed: 5.0, area: 4.0, cost: cost({ silver: 120, wood: 60 }), trainTime: 45, population: 3,
+    damageType: 'fortified', projectile: 'howitzer_shell',
   },
-  mortero: {
-    hp: 40, ataque: 22, rango: 17, armaduraLigero: 0, armaduraPesado: 1,
-    velocidad: 1.5, los: 9, velocidadAtaque: 4.5, area: 3.6, costo: cost({ acero: 100, comida: 50 }), tiempoEntrenamiento: 40, poblacion: 2,
-    tipoDano: 'pesado', proyectil: 'obús',
+  mortar: {
+    hp: 40, attack: 22, range: 17, lightArmor: 0, heavyArmor: 1,
+    speed: 1.5, los: 9, attackSpeed: 4.5, area: 3.6, cost: cost({ silver: 100, food: 50 }), trainTime: 40, population: 2,
+    damageType: 'heavy', projectile: 'howitzer_shell',
   },
-  comisario: {
-    hp: 30, ataque: 0, rango: 8, armaduraLigero: 0, armaduraPesado: 0,
-    velocidad: 2.6, los: 8, velocidadAtaque: 6.0, costo: cost({ comida: 60, acero: 30 }), tiempoEntrenamiento: 45, poblacion: 1,
-    tipoDano: 'ligero', proyectil: 'bala',
+  commissar: {
+    hp: 30, attack: 0, range: 8, lightArmor: 0, heavyArmor: 0,
+    speed: 2.6, los: 8, attackSpeed: 6.0, cost: cost({ food: 60, silver: 30 }), trainTime: 45, population: 1,
+    damageType: 'light', projectile: 'bullet',
   },
   mec: {
-    hp: 160, ataque: 18, rango: 14, armaduraLigero: 3, armaduraPesado: 3,
-    velocidad: 3.2, los: 10, velocidadAtaque: 2.2, area: 2.5, costo: cost({ acero: 160, energia: 120 }), tiempoEntrenamiento: 55, poblacion: 4,
-    tipoDano: 'pesado', proyectil: 'rail',
+    hp: 160, attack: 18, range: 14, lightArmor: 3, heavyArmor: 3,
+    speed: 3.2, los: 10, attackSpeed: 2.2, area: 2.5, cost: cost({ silver: 160, stone: 120 }), trainTime: 55, population: 4,
+    damageType: 'heavy', projectile: 'rail',
   },
   nuclear: {
-    hp: 50, ataque: 60, rango: 22, armaduraLigero: 0, armaduraPesado: 1,
-    velocidad: 1.4, los: 12, velocidadAtaque: 9.0, area: 8.0, costo: cost({ acero: 200, energia: 150 }), tiempoEntrenamiento: 65, poblacion: 4,
-    tipoDano: 'fortificado', proyectil: 'nuclear',
+    hp: 50, attack: 60, range: 22, lightArmor: 0, heavyArmor: 1,
+    speed: 1.4, los: 12, attackSpeed: 9.0, area: 8.0, cost: cost({ silver: 200, stone: 150 }), trainTime: 65, population: 4,
+    damageType: 'fortified', projectile: 'nuclear',
   },
 };
 
-/** Stats finales de un arquetipo en una era dada. */
+/** Final stats of an archetype in a given era. */
 export function getUnitStats(kind: UnitKind, era: Era): UnitStats {
   const base = BASE_STATS[kind];
   const mods = UNIT_ARCHETYPES[kind].eraStats[era] ?? {};
   const clone: UnitStats = { ...base };
   if (mods.hp) clone.hp = base.hp * mods.hp;
-  if (mods.ataque) clone.ataque = base.ataque * mods.ataque;
-  if (mods.rango) clone.rango = base.rango * mods.rango;
-  if (mods.velocidad) clone.velocidad = base.velocidad * mods.velocidad;
-  clone.costo = { ...base.costo };
+  if (mods.attack) clone.attack = base.attack * mods.attack;
+  if (mods.range) clone.range = base.range * mods.range;
+  if (mods.speed) clone.speed = base.speed * mods.speed;
+  clone.cost = { ...base.cost };
   return clone;
 }
 
-/** Modelo a usar para una unidad en una era. */
+/** Model to use for a unit in an era. */
 export function getUnitModel(kind: UnitKind, era: Era): ModelSpec {
   const m = UNIT_ARCHETYPES[kind].eraModel[era];
   if (m) return m;
@@ -468,23 +468,23 @@ export function getUnitModel(kind: UnitKind, era: Era): ModelSpec {
     .map((e) => e.id)
     .reverse()
     .find((id) => anyEra[id]);
-  return anyEra[best ?? Era.FORMATIVO] ?? { type: 'soldado_raso' };
+  return anyEra[best ?? Era.FORMATIVE] ?? { type: 'soldier_grunt' };
 }
 
-export const UNIT_INFO: Record<UnitKind, { nombre: string; icono: string; categoria: string }> = {
-  obrero: { nombre: 'Obrero', icono: '⛏️', categoria: 'Economía' },
-  soldado: { nombre: 'Guerrero', icono: '🗡️', categoria: 'Infantería' },
-  mosquetero: { nombre: 'Hondero', icono: '🏹', categoria: 'Distancia' },
-  fusilero: { nombre: 'Tirador', icono: '🎯', categoria: 'Distancia' },
-  francotirador: { nombre: 'Cazador', icono: '🦅', categoria: 'Distancia' },
-  husar: { nombre: 'Jinete', icono: '🐎', categoria: 'Caballería' },
-  caballeria: { nombre: 'Caballería de Choque', icono: '🐎', categoria: 'Caballería' },
-  tanque: { nombre: 'Ariete Blindado', icono: '🛡️', categoria: 'Caballería' },
-  explorador: { nombre: 'Chasqui', icono: '🏃', categoria: 'Reconocimiento' },
-  artillero_aa: { nombre: 'Artillero Antiaéreo', icono: '🎯', categoria: 'Distancia' },
-  artilleria: { nombre: 'Artillería', icono: '💣', categoria: 'Asedio' },
-  mortero: { nombre: 'Mortero', icono: '💥', categoria: 'Asedio' },
-  comisario: { nombre: 'Amauta', icono: '🧙', categoria: 'Especial' },
-  mec: { nombre: 'Blindado de Asalto', icono: '🛡️', categoria: 'Élite' },
-  nuclear: { nombre: 'Artillería de Cohetes', icono: '🚀', categoria: 'Asedio' },
+export const UNIT_INFO: Record<UnitKind, { name: string; icon: string; category: string }> = {
+  worker: { name: 'Obrero', icon: '⛏️', category: 'Economía' },
+  soldier: { name: 'Guerrero', icon: '🗡️', category: 'Infantería' },
+  musketeer: { name: 'Hondero', icon: '🏹', category: 'Distancia' },
+  rifleman: { name: 'Tirador', icon: '🎯', category: 'Distancia' },
+  sniper: { name: 'Cazador', icon: '🦅', category: 'Distancia' },
+  hussar: { name: 'Jinete', icon: '🐎', category: 'Caballería' },
+  cavalry: { name: 'Caballería de Choque', icon: '🐎', category: 'Caballería' },
+  tank: { name: 'Ariete Blindado', icon: '🛡️', category: 'Caballería' },
+  scout: { name: 'Chasqui', icon: '🏃', category: 'Reconocimiento' },
+  anti_air: { name: 'Artillero Antiaéreo', icon: '🎯', category: 'Distancia' },
+  artillery: { name: 'Artillería', icon: '💣', category: 'Asedio' },
+  mortar: { name: 'Mortero', icon: '💥', category: 'Asedio' },
+  commissar: { name: 'Amauta', icon: '🧙', category: 'Especial' },
+  mec: { name: 'Blindado de Asalto', icon: '🛡️', category: 'Élite' },
+  nuclear: { name: 'Artillería de Cohetes', icon: '🚀', category: 'Asedio' },
 };

@@ -1,6 +1,6 @@
 import type { GameEvents } from './types';
 
-/** Bus de eventos tipado y global. */
+/** Typed and global event bus. */
 export class EventBus<T extends Record<string, unknown> = Record<string, any>> {
   private map = new Map<keyof T, Set<(payload: any) => void>>();
 

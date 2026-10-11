@@ -5,14 +5,14 @@ import { getGroundTextures, GroundTextures } from './Textures';
 import { getGroundPBR } from './Biomes';
 import { smoothstep } from '../util/math';
 
-// Colores scratch reutilizados en la generación de bioma (evita ~200k allocaciones).
+// Scratch colors reused in biome generation (avoids ~200k allocations).
 const _cBase = new THREE.Color();
 const _cDirt = new THREE.Color();
 const _cRock = new THREE.Color();
 const _cSnow = new THREE.Color();
 const _cSand = new THREE.Color();
 
-/** Textura 1x1 de relleno (normal neutra / rugosidad constante). */
+/** 1x1 filler texture (neutral normal / constant roughness). */
 function flatTex(r: number, g: number, b: number): THREE.DataTexture {
   const t = new THREE.DataTexture(new Uint8Array([r, g, b, 255]), 1, 1, THREE.RGBAFormat);
   t.needsUpdate = true;
@@ -21,13 +21,13 @@ function flatTex(r: number, g: number, b: number): THREE.DataTexture {
 }
 
 /**
- * Terreno procedural: heightmap FBM + montañas + ríos + playas.
- * Vertex colors de bioma (hierba/tierra/arena/roca/nieve) y shader
- * que añade detalle fractal, AO por pendiente y splatting de texturas.
+ * Procedural terrain: FBM heightmap + mountains + rivers + beaches.
+ * Biome vertex colors (grass/soil/sand/rock/snow) and a shader
+ * that adds fractal detail, slope-based AO and texture splatting.
  */
 export class Terrain {
   readonly size: number;
-  readonly resolution: number; // vértices por lado
+  readonly resolution: number; // vertices per side
   heightMap: Float32Array;
   moistureMap: Float32Array;
   waterLevel = 2.2;
@@ -37,9 +37,9 @@ export class Terrain {
   private textures: GroundTextures;
   private rng: RNG;
   private pbrExtra: THREE.Texture[] = [];
-  /** Aridez del bioma (0 húmedo .. 1 desértico); tiñe de arena y reduce vegetación. */
+  /** Biome aridity (0 humid .. 1 desert); tints sand and reduces vegetation. */
   private arid = 0;
-  /** Densidad de vegetación (0 seco .. 1 selva); tiñe de verde la hierba. */
+  /** Vegetation density (0 dry .. 1 jungle); tints the grass green. */
   private veg = 0;
 
   constructor(size: number, resolution: number, seed: number, mapType: string) {
@@ -47,8 +47,8 @@ export class Terrain {
     this.resolution = resolution;
     this.rng = new RNG(seed * 7919 + 17);
     this.textures = getGroundTextures();
-    this.arid = mapType === 'costa' ? 0.9 : mapType === 'estepas' ? 0.55 : mapType === 'altiplano' ? 0.35 : 0;
-    this.veg = mapType === 'selva' ? 1 : mapType === 'andes' ? 0.6 : mapType === 'altiplano' ? 0.15 : 0;
+    this.arid = mapType === 'coast' ? 0.9 : mapType === 'estepas' ? 0.55 : mapType === 'altiplano' ? 0.35 : 0;
+    this.veg = mapType === 'jungle' ? 1 : mapType === 'andes' ? 0.6 : mapType === 'altiplano' ? 0.15 : 0;
     this.heightMap = new Float32Array((resolution + 1) * (resolution + 1));
     this.moistureMap = new Float32Array((resolution + 1) * (resolution + 1));
     this.generate(mapType);
@@ -60,7 +60,7 @@ export class Terrain {
     return z * (this.resolution + 1) + x;
   }
 
-  /** Interpola la altura del terreno en coordenadas del mundo. */
+  /** Interpolate terrain height in world coordinates. */
   getHeight(wx: number, wz: number): number {
     const x = wx / this.size * this.resolution;
     const z = wz / this.size * this.resolution;
@@ -79,7 +79,7 @@ export class Terrain {
     return a + (b - a) * fz;
   }
 
-  /** ¿Punto es agua navegable? */
+  /** Is the point navigable water? */
   isWater(wx: number, wz: number): boolean {
     return this.getHeight(wx, wz) < this.waterLevel - 0.15;
   }
@@ -101,9 +101,9 @@ export class Terrain {
         const nx = x / (this.resolution / 2) - 1;
         const nz = z / (this.resolution / 2) - 1;
         const dist = Math.sqrt(nx * nx + nz * nz);
-        const border = Math.max(Math.abs(nx), Math.abs(nz)); // 0 centro → 1 borde
+        const border = Math.max(Math.abs(nx), Math.abs(nz)); // 0 center -> 1 edge
 
-        // Base continental con islas / lagos según tipo
+        // Continental base with islands / lakes depending on type
         let base: number;
         let mtnAmp = 15;
         if (mapType === 'archipielago') {
@@ -115,32 +115,32 @@ export class Terrain {
           base += smoothstep(0.62, 1.0, dist) * 0.5;
         } else if (mapType === 'estepas') {
           base = fbm2(nx * 1.0 + 7, nz * 1.0, 3) * 0.6 + 0.42;
-        } else if (mapType === 'costa') {
-          // litoral: tierra firme (valle) en todo el interior y mar en el marco del mapa
+        } else if (mapType === 'coast') {
+          // coastline: solid land (valley) throughout the interior and sea in the map frame
           base = fbm2(nx * 1.0 + 13, nz * 1.0, 4) * 0.16 + 0.74;
           base -= smoothstep(0.9, 1.02, border) * 1.0;
           mtnAmp = 5;
         } else if (mapType === 'altiplano') {
-          // meseta alta (puna) y relativamente plana; lagos tallados por ríos
+          // high plateau (puna) and relatively flat; lakes carved by rivers
           base = fbm2(nx * 0.9 + 21, nz * 0.9, 3) * 0.14 + 0.64;
           mtnAmp = 8;
-        } else if (mapType === 'selva') {
-          // ceja de selva: relieve medio, ríos
+        } else if (mapType === 'jungle') {
+          // high jungle: medium relief, rivers
           base = fbm2(nx * 1.1 + 31, nz * 1.1, 3) * 0.25 + 0.66;
           base -= smoothstep(0.92, 1.06, border) * 0.7;
           mtnAmp = 9;
         } else if (mapType === 'andes') {
-          // cordillera: valles a media altura y montañas en las cumbres
+          // mountain range: mid-height valleys and mountains at the summits
           base = fbm2(nx * 1.1 + 41, nz * 1.1, 4) * 0.24 + 0.64;
           mtnAmp = 16;
         } else {
-          // continente: masa de tierra principal con océano en bordes
+          // continent: main landmass with ocean at the edges
           base = fbm2(nx * 1.25 + 2, nz * 1.25, 5) * 0.38 + 0.62;
           base -= smoothstep(0.64, 1.04, dist) * 0.6;
           base += (noise2(nx * 3.1 + 9, nz * 3.1) - 0.5) * 0.12;
         }
 
-        // Montañas (se aplanan en el borde para evitar picos y artefactos)
+        // Mountains (flattened at the edge to avoid spikes and artifacts)
         const mtn = ridged2(nx * 1.7 + 11, nz * 1.7, 4);
         const mtnMask = smoothstep(0.45, 0.82, mtn);
         const edgeBlend = 1 - smoothstep(0.92, 1.06, border);
@@ -148,7 +148,7 @@ export class Terrain {
           base * 6.6 +
           Math.max(0, mtn - 0.52) * mtnAmp * mtnMask * edgeBlend;
 
-        // Suavizado de la orilla
+        // Shoreline smoothing
         const h = height;
         this.heightMap[this.idx(x, z)] = h;
         const moist = fbm2(nx * 2.2 + 40, nz * 2.2, 3) * 0.6 + fbm2(nx * 0.4 + 3, nz * 0.4, 2) * 0.4;
@@ -156,7 +156,7 @@ export class Terrain {
       }
     }
 
-    // Ríos: tallar con ruido direccional
+    // Rivers: carve with directional noise
     this.carveRivers();
   }
 
@@ -213,7 +213,7 @@ export class Terrain {
         uvs[i * 2] = wx * 0.1;
         uvs[i * 2 + 1] = wz * 0.1;
 
-        // Pendiente
+        // Slope
         const hx = this.heightMap[this.idx(Math.min(x + 1, this.resolution), z)];
         const hz = this.heightMap[this.idx(x, Math.min(z + 1, this.resolution))];
         const slope = Math.abs(h - hx) + Math.abs(h - hz);
@@ -389,16 +389,16 @@ export class Terrain {
         }
 
         void main() {
-          // detalle fractal local (dos octavas para romper la repetición)
+          // local fractal detail (two octaves to break repetition)
           float detail = fbm(vUv * 6.0 + vWorldPos.xz * 0.02);
           float detail2 = fbm(vUv * 15.0 - vWorldPos.xz * 0.04);
           vec3 col = vColor;
 
-          // pendiente real (normal hacia arriba)
+          // real slope (normal pointing up)
           float slope = 1.0 - clamp(vNormal.y, 0.0, 1.0);
 
-          // mezcla con texturas: hierba por defecto, arena solo en costa,
-          // roca en altura y en pendientes, nieve en cumbres, tierra en zonas secas
+          // blend with textures: grass by default, sand only on the coast,
+          // rock at height and on slopes, snow at summits, soil in dry areas
           float sandAmt = max(1.0 - smoothstep(waterLevel + 0.2, waterLevel + 1.8, vHeight), arid * (1.0 - smoothstep(6.0, 10.0, vHeight)));
           float rockAmt = clamp(smoothstep(4.5, 9.0, vHeight) * 0.7 + smoothstep(0.25, 0.6, slope) * 0.85, 0.0, 1.0);
           float snowAmt = smoothstep(11.0, 15.5, vHeight);
@@ -408,19 +408,19 @@ export class Terrain {
           ground = mix(ground, texture(sand, vUv * 3.0).rgb, clamp(sandAmt + arid * 0.45, 0.0, 1.0));
           ground = mix(ground, texture(rock, vUv * 2.6).rgb, rockAmt);
           ground = mix(ground, texture(snow, vUv * 2.2).rgb, snowAmt);
-          ground = (ground - 0.5) * 1.12 + 0.5; // contraste
+          ground = (ground - 0.5) * 1.12 + 0.5; // contrast
           col = mix(col, ground, 0.75);
-          // vegetación: tiñe de verde la hierba en biomas húmedos (selva/andes)
+          // vegetation: tints the grass green in humid biomes (jungle/andes)
           col = mix(col, col * vec3(0.68, 1.08, 0.52), veg * 0.8);
           col = mix(col, col * (0.84 + 0.32 * detail2), 0.35);
 
-          // AO por pendiente
+          // slope-based AO
           float slopeAO = 0.82 + 0.18 * (1.0 - smoothstep(0.0, 0.55, slope));
           col *= slopeAO;
-          // micro-variación
+          // micro-variation
           col *= 0.9 + 0.2 * detail;
 
-          // micro-relieve: normal analítica + mapas de normal PBR
+          // micro-relief: analytic normal + PBR normal maps
           vec3 N = normalize(vNormal);
           vec2 nu = vWorldPos.xz * 0.45;
           float nC = fbm(nu);
@@ -452,31 +452,31 @@ export class Terrain {
             ) / wsum;
           }
 
-          // iluminación direccional del sol + ambiente (relieve del terreno)
+          // directional sun lighting + ambient (terrain relief)
           N = normalize(N + vec3(bump.x, 0.0, bump.y));
           float ndl = max(dot(N, sunDir), 0.0);
           vec3 lit = col * (ambientColor + sunColor * ndl * cloudShadow * 1.15);
-          // brillo especular débil modulado por rugosidad
+          // weak specular highlight modulated by roughness
           vec3 V = normalize(cameraPos - vWorldPos);
           vec3 Hv = normalize(sunDir + V);
           float shin = mix(12.0, 90.0, 1.0 - clamp(rough, 0.0, 1.0));
           float spec = pow(max(dot(N, Hv), 0.0), shin) * (1.0 - clamp(rough, 0.0, 1.0)) * 0.22;
           lit += sunColor * spec * cloudShadow;
           lit *= 0.7 + 0.35 * ndl * cloudShadow;
-          // sombras direccionales recibidas (unidades y edificios)
+          // received directional shadows (units and buildings)
           #include <terrain_shadow_hook>
 
-          // niebla atmosférica (perspectiva aérea)
+          // atmospheric fog (aerial perspective)
           float dist = distance(cameraPos, vWorldPos);
           float fogAmt = 1.0 - exp(-fogDensity * fogDensity * dist * dist * 2.2);
 
-          // fundido del borde del mapa hacia el color de niebla
+          // map edge fade toward the fog color
           float halfSize = mapSize * 0.5;
           vec2 edge = vec2(abs(vWorldPos.x - halfSize), abs(vWorldPos.z - halfSize));
           float edgeAmt = smoothstep(mapSize * 0.47, mapSize * 0.5, max(edge.x, edge.y));
           vec3 outCol = mix(lit, fogColor, clamp(max(fogAmt, edgeAmt), 0.0, 0.30));
 
-          // niebla de guerra pegada al relieve: inexplorado negro, explorado atenuado, visible claro
+          // fog of war glued to the relief: unexplored black, explored dimmed, visible clear
           float fw = fowEnabled > 0.5 ? texture(fowMap, vWorldPos.xz / mapSize).r : 1.0;
           float explored = smoothstep(0.30, 0.65, fw);
           float visible = smoothstep(0.72, 0.95, fw);
@@ -491,7 +491,7 @@ export class Terrain {
 
     const mesh = new THREE.Mesh(geo, mat);
     mesh.receiveShadow = true;
-    // recibir sombras direccionales: muestreo manual del shadow map VSM
+    // receive directional shadows: manual sampling of the VSM shadow map
     (mat as any).shadowMap = true;
     mat.customProgramCacheKey = () => 'terrain-shadow-v5';
     mat.onBeforeCompile = (shader: any) => {
@@ -527,13 +527,13 @@ export class Terrain {
   }
 
   private biomeColor(h: number, slope: number, moist: number, waterLevel: number): THREE.Color {
-    // Arena cerca del agua
+    // Sand near the water
     if (h < waterLevel + 0.55) {
       _cBase.setRGB(0.78, 0.7, 0.5);
       _cBase.multiplyScalar(0.92 + Math.max(0, h - waterLevel) * 0.08);
       return _cBase;
     }
-    // Hierba: verde vibrante, más exuberante con humedad
+    // Grass: vibrant green, more lush with humidity
     const hue = 0.30 + (1 - moist) * 0.035;
     _cBase.setHSL(hue, 0.5 + moist * 0.18, 0.33 + moist * 0.1 + Math.min(0.05, h * 0.003));
     _cDirt.setHSL(0.08, 0.4, 0.36);
@@ -542,14 +542,14 @@ export class Terrain {
     _cSand.setHSL(0.1, 0.42, 0.6);
 
     _cBase.lerp(_cDirt, (1 - Math.min(1, moist * 1.8)) * 0.55);
-    // Desierto costero: desplaza a arena/tierra
+    // Coastal desert: shifts to sand/soil
     _cBase.lerp(_cSand, this.arid * 0.7);
     _cBase.lerp(_cRock, smoothstep(1.8, 4.5, slope));
     _cBase.lerp(_cSnow, smoothstep(9.5, 15, h));
     return _cBase;
   }
 
-  /** Coloca una semilla de árboles/props tras generar. */
+  /** Place a seed of trees/props after generating. */
   getTexture(): GroundTextures {
     return this.textures;
   }
@@ -578,7 +578,7 @@ export class Terrain {
     mat.uniforms.sunColor.value.copy(color);
   }
 
-  /** Conecta el mapa de niebla de guerra al shader del terreno. */
+  /** Connect the fog-of-war map to the terrain shader. */
   setFow(texture: THREE.Texture, enabled: boolean): void {
     const mat = this.mesh.material as THREE.ShaderMaterial;
     mat.uniforms.fowMap.value = texture;

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('restaura la opacidad del edificio al terminar la construcción', async ({ page }) => {
+test('restores building opacity when construction finishes', async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
 
@@ -35,13 +35,13 @@ test('restaura la opacidad del edificio al terminar la construcción', async ({ 
   expect(res.after.opaque).toBe(res.before.opaque);
 });
 
-test('el obrero tiene un pivote de carga oculto al inicio', async ({ page }) => {
+test('the worker has a hidden carry pivot at start', async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
 
   const info = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    const w = [...g.units.values()].find((u: any) => u.kind === 'obrero' && u.owner === 0);
+    const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
     if (!w) return null;
     let carry: any = null;
     w.view.group.traverse((o: any) => {
@@ -55,13 +55,13 @@ test('el obrero tiene un pivote de carga oculto al inicio', async ({ page }) => 
   expect(info!.visible).toBe(false);
 });
 
-test('el obrero anima el brazo al recolectar', async ({ page }) => {
+test('the worker animates the arm while gathering', async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
 
   const armed = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    const w = [...g.units.values()].find((u: any) => u.kind === 'obrero' && u.owner === 0);
+    const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
     const node = [...g.resourceNodes.values()][0];
     if (!w || !node || !w.armR) return false;
     const nx = node.pos.x + 1.5;
@@ -76,7 +76,7 @@ test('el obrero anima el brazo al recolectar', async ({ page }) => {
     await page.waitForTimeout(120);
     const r = await page.evaluate(() => {
       const g = (window as unknown as { game: any }).game;
-      const w = [...g.units.values()].find((u: any) => u.kind === 'obrero' && u.owner === 0);
+      const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
       return w?.armR ? w.armR.rotation.x.toFixed(3) : '0';
     });
     samples.add(r);
@@ -85,7 +85,7 @@ test('el obrero anima el brazo al recolectar', async ({ page }) => {
   expect(samples.size).toBeGreaterThan(3);
 });
 
-test('la orden de mover crea un marcador de destino', async ({ page }) => {
+test('the move order creates a destination marker', async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
 
@@ -98,7 +98,7 @@ test('la orden de mover crea un marcador de destino', async ({ page }) => {
   expect(count).toBeGreaterThan(0);
 });
 
-test('no permite colocar sin obreros seleccionados', async ({ page }) => {
+test('does not allow placing without selected workers', async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
 
@@ -107,14 +107,14 @@ test('no permite colocar sin obreros seleccionados', async ({ page }) => {
     g.selectedUnits = [];
     g.selectedBuilding = null;
     g.buildingMode = null;
-    g.startPlacement('vivienda');
+    g.startPlacement('house');
     return g.buildingMode;
   });
 
   expect(mode).toBeNull();
 });
 
-test('los obreros seleccionados construyen y completan la obra', async ({ page }) => {
+test('selected workers build and complete the structure', async ({ page }) => {
   test.setTimeout(120_000);
   await page.goto('/?seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
@@ -123,16 +123,16 @@ test('los obreros seleccionados construyen y completan la obra', async ({ page }
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     g.paused = false;
-    const w = [...g.units.values()].find((u: any) => u.kind === 'obrero' && u.owner === 0);
-    const center = [...g.buildings.values()].find((b: any) => b.kind === 'centro' && b.owner === 0);
+    const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
+    const center = [...g.buildings.values()].find((b: any) => b.kind === 'center' && b.owner === 0);
     const x = center.pos.x + 12;
     const z = center.pos.z + 6;
-    // acercar al obrero para que llegue rápido
+    // zoom to the worker so it arrives fast
     w.pos.set(x + 1, g.terrain.getHeight(x + 1, z + 1), z + 1);
     g.selectedUnits = [w.id];
     g.selectedBuilding = null;
     const beforeIds = new Set([...g.buildings.keys()]);
-    g.startPlacement('vivienda');
+    g.startPlacement('house');
     g.commitPlacement(x, z);
     const bld = [...g.buildings.values()].find((b: any) => !beforeIds.has(b.id));
     const queued = w.orderQueue.map((o: any) => o.kind);
@@ -157,13 +157,13 @@ test('los obreros seleccionados construyen y completan la obra', async ({ page }
   expect(out.ratio).toBe(1);
 });
 
-test('el minimapa emite una orden de mover al hacer clic derecho', async ({ page }) => {
+test('the minimap issues a move order on right click', async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
 
   const order = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    const w = [...g.units.values()].find((u: any) => u.kind === 'obrero' && u.owner === 0);
+    const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
     g.selectedUnits = [w.id];
     w.clearOrders();
     g.commandMoveToWorld(w.pos.x + 6, w.pos.z + 6);
@@ -173,7 +173,7 @@ test('el minimapa emite una orden de mover al hacer clic derecho', async ({ page
   expect(order).toContain('move');
 });
 
-test('el clic derecho aterriza la orden bajo el cursor en terreno elevado', async ({ page }) => {
+test('right click lands the order under the cursor on elevated terrain', async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
 
@@ -182,22 +182,22 @@ test('el clic derecho aterriza la orden bajo el cursor en terreno elevado', asyn
     const g = w.game;
     const size = g.settings.mapSize;
     const c = g.camera.getTarget();
-    const worker = [...g.units.values()].find((u: any) => u.kind === 'obrero' && u.owner === 0);
+    const worker = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
     for (let i = 0; i < 20000; i++) {
       const x = c.x + (Math.random() - 0.5) * 90;
       const z = c.z + (Math.random() - 0.5) * 90;
       if (x < 4 || z < 4 || x > size - 4 || z > size - 4) continue;
       const h = g.terrain.getHeight(x, z);
       if (h < 3) continue;
-      // evitar puntos tan cerca del obrero que la orden de mover se complete al instante
+      // avoid points so close to the worker that the move order completes instantly
       if (worker && Math.hypot(x - worker.pos.x, z - worker.pos.z) < 15) continue;
       const v = new w.THREE.Vector3(x, h, z).project(g.camera.camera);
       const sx = (v.x * 0.5 + 0.5) * w.innerWidth;
       const sy = (-v.y * 0.5 + 0.5) * w.innerHeight;
-      // mantener el clic lejos del HUD (topbar, panel inferior, minimapa, ayuda)
+      // keep the click away from the HUD (topbar, bottom panel, minimap, help)
       if (sx < w.innerWidth * 0.25 || sx > w.innerWidth * 0.75) continue;
       if (sy < w.innerHeight * 0.15 || sy > w.innerHeight * 0.55) continue;
-      // el punto debe caer sobre el canvas, no sobre un overlay del HUD
+      // the point must fall over the canvas, not over a HUD overlay
       if (document.elementFromPoint(sx, sy)?.tagName !== 'CANVAS') continue;
       return { x, z, h, sx, sy };
     }
@@ -207,7 +207,7 @@ test('el clic derecho aterriza la orden bajo el cursor en terreno elevado', asyn
 
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    const w = [...g.units.values()].find((u: any) => u.kind === 'obrero' && u.owner === 0);
+    const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
     g.selectedUnits = [w.id];
     w.clearOrders();
   });
@@ -215,7 +215,7 @@ test('el clic derecho aterriza la orden bajo el cursor en terreno elevado', asyn
   await page.waitForTimeout(150);
   const target = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    const w = [...g.units.values()].find((u: any) => u.kind === 'obrero' && u.owner === 0);
+    const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
     return w.orderQueue[0] ? w.orderQueue[0].target : null;
   });
   expect(target).not.toBeNull();
@@ -223,7 +223,7 @@ test('el clic derecho aterriza la orden bajo el cursor en terreno elevado', asyn
   expect(d).toBeLessThan(1.5);
 });
 
-test('la rotación de cámara está desactivada por defecto y se activa a voluntad', async ({ page }) => {
+test('camera rotation is off by default and can be enabled', async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
 
@@ -242,28 +242,28 @@ test('la rotación de cámara está desactivada por defecto y se activa a volunt
   expect(yawOn).not.toBeCloseTo(yaw0, 5);
 });
 
-test('la Huaca Sagrada es construible en cualquier periodo en modo maravilla', async ({ page }) => {
+test('the Sacred Huaca is buildable in any period in wonder mode', async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
 
   const r = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    g.settings.victoryMode = 'maravilla';
-    const inMaravilla = g.canBuildKind('maravilla');
-    g.settings.victoryMode = 'conquista';
-    const inConquista = g.canBuildKind('maravilla');
-    const canteraEnPeriodo = g.canBuildKind('refineria');
-    return { inMaravilla, inConquista, canteraEnPeriodo, era: g.players[0].era };
+    g.settings.victoryMode = 'wonder';
+    const inWonder = g.canBuildKind('wonder');
+    g.settings.victoryMode = 'conquest';
+    const inConquest = g.canBuildKind('wonder');
+    const quarryInPeriod = g.canBuildKind('refinery');
+    return { inWonder, inConquest, quarryInPeriod, era: g.players[0].era };
   });
 
-  expect(r.inMaravilla).toBe(true);
-  expect(r.inConquista).toBe(false);
-  // en un periodo temprano (era 1) la Cantera sigue bloqueada
+  expect(r.inWonder).toBe(true);
+  expect(r.inConquest).toBe(false);
+  // in an early period (era 1) the Quarry is still locked
   expect(r.era).toBeLessThan(2);
-  expect(r.canteraEnPeriodo).toBe(false);
+  expect(r.quarryInPeriod).toBe(false);
 });
 
-test('oculta Piedra y Cantera en periodos que no pueden obtenerlas', async ({ page }) => {
+test('hides Stone and Quarry in periods that cannot obtain them', async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
   await page.waitForTimeout(500);
@@ -272,10 +272,10 @@ test('oculta Piedra y Cantera en periodos que no pueden obtenerlas', async ({ pa
     const g = (window as unknown as { game: any }).game;
     return {
       era: g.players[0].era,
-      piedraDisplay: document.getElementById('ed-res-energia')?.style.display ?? '',
+      stoneDisplay: document.getElementById('ed-res-stone')?.style.display ?? '',
     };
   });
   expect(early.era).toBeLessThan(2);
-  expect(early.piedraDisplay).toBe('none');
+  expect(early.stoneDisplay).toBe('none');
 });
 

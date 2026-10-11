@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 
 /**
- * Niebla de guerra en rejilla. Estados: 0=inexplorado, 1=explorado, 2=visible.
- * La textura se aplica directamente en el shader del terreno (pegada al relieve);
- * esta clase solo mantiene la rejilla y expone la textura.
+ * Grid fog of war. States: 0=unexplored, 1=explored, 2=visible.
+ * The texture is applied directly in the terrain shader (glued to the relief);
+ * this class only keeps the grid and exposes the texture.
  */
 export class Fow {
   readonly size: number;
@@ -29,7 +29,7 @@ export class Fow {
     this.texture.needsUpdate = true;
   }
 
-  /** Convierte coordenadas de mundo a celda. */
+  /** Convert world coordinates to a cell. */
   private toCell(x: number, z: number): { x: number; z: number } {
     return {
       x: Math.max(0, Math.min(this.cells - 1, Math.floor(x / this.cell))),
@@ -37,7 +37,7 @@ export class Fow {
     };
   }
 
-  /** Revela un área circular de visión. */
+  /** Reveal a circular vision area. */
   reveal(cx: number, cz: number, radius: number): void {
     const { x, z } = this.toCell(cx, cz);
     const r = Math.ceil(radius / this.cell);
@@ -57,7 +57,7 @@ export class Fow {
     }
   }
 
-  /** Degrada visible -> explorado (llamar una vez por frame tras revelar). */
+  /** Degrade visible -> explored (call once per frame after revealing). */
   decay(): void {
     for (let i = 0; i < this.grid.length; i++) {
       if (this.grid[i] === 2) {
@@ -77,7 +77,7 @@ export class Fow {
     return this.grid[cz * this.cells + cx] >= 1;
   }
 
-  /** Sube la textura a la GPU solo si hubo cambios. */
+  /** Upload the texture to the GPU only if it changed. */
   upload(): void {
     if (!this.dirty) return;
     this.dirty = false;
@@ -85,7 +85,7 @@ export class Fow {
     for (let i = 0; i < this.grid.length; i++) {
       const v = this.grid[i];
       const o = i * 4;
-      // 0 = inexplorado, 150 = explorado, 255 = visible
+      // 0 = unexplored, 150 = explored, 255 = visible
       data[o] = v === 2 ? 255 : v === 1 ? 150 : 0;
       data[o + 1] = 0;
       data[o + 2] = 0;
@@ -98,7 +98,7 @@ export class Fow {
     this.enabled = enabled;
   }
 
-  /** Mantenido por compatibilidad: no hay mesh que mostrar/ocultar. */
+  /** Kept for compatibility: there is no mesh to show/hide. */
   setFogEnabled(enabled: boolean): void {
     this.enabled = enabled;
   }
