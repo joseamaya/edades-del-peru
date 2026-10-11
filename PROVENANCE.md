@@ -2,7 +2,7 @@
 
 ## AI-generated terrain textures
 
-- **Location**: `src/assets/texturas/terreno/{slot}_{diffuse|normal|roughness}.webp`
+- **Location**: `src/assets/textures/terrain/{slot}_{diffuse|normal|roughness}.webp`
 - **Slots**: `sand`, `dirt`, `grass`, `rock`, `snow` (historical materials: desert sand, Andean soil,
   ichu/straw, andesite rock, puna ground).
 - **Generation**: albedo with **Cloudflare Workers AI** (`@cf/black-forest-labs/flux-1-schnell`),

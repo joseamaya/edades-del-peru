@@ -389,16 +389,16 @@ export class Terrain {
         }
 
         void main() {
-          // detalle fractal local (dos octavas para romper la repetición)
+          // local fractal detail (two octaves to break repetition)
           float detail = fbm(vUv * 6.0 + vWorldPos.xz * 0.02);
           float detail2 = fbm(vUv * 15.0 - vWorldPos.xz * 0.04);
           vec3 col = vColor;
 
-          // pendiente real (normal hacia arriba)
+          // real slope (normal pointing up)
           float slope = 1.0 - clamp(vNormal.y, 0.0, 1.0);
 
-          // mezcla con texturas: hierba por defecto, arena solo en costa,
-          // roca en altura y en pendientes, nieve en cumbres, tierra en zonas secas
+          // blend with textures: grass by default, sand only on the coast,
+          // rock at height and on slopes, snow at summits, soil in dry areas
           float sandAmt = max(1.0 - smoothstep(waterLevel + 0.2, waterLevel + 1.8, vHeight), arid * (1.0 - smoothstep(6.0, 10.0, vHeight)));
           float rockAmt = clamp(smoothstep(4.5, 9.0, vHeight) * 0.7 + smoothstep(0.25, 0.6, slope) * 0.85, 0.0, 1.0);
           float snowAmt = smoothstep(11.0, 15.5, vHeight);
@@ -408,19 +408,19 @@ export class Terrain {
           ground = mix(ground, texture(sand, vUv * 3.0).rgb, clamp(sandAmt + arid * 0.45, 0.0, 1.0));
           ground = mix(ground, texture(rock, vUv * 2.6).rgb, rockAmt);
           ground = mix(ground, texture(snow, vUv * 2.2).rgb, snowAmt);
-          ground = (ground - 0.5) * 1.12 + 0.5; // contraste
+          ground = (ground - 0.5) * 1.12 + 0.5; // contrast
           col = mix(col, ground, 0.75);
-          // vegetación: tiñe de verde la hierba en biomas húmedos (selva/andes)
+          // vegetation: tints the grass green in humid biomes (jungle/andes)
           col = mix(col, col * vec3(0.68, 1.08, 0.52), veg * 0.8);
           col = mix(col, col * (0.84 + 0.32 * detail2), 0.35);
 
-          // AO por pendiente
+          // slope-based AO
           float slopeAO = 0.82 + 0.18 * (1.0 - smoothstep(0.0, 0.55, slope));
           col *= slopeAO;
-          // micro-variación
+          // micro-variation
           col *= 0.9 + 0.2 * detail;
 
-          // micro-relieve: normal analítica + mapas de normal PBR
+          // micro-relief: analytic normal + PBR normal maps
           vec3 N = normalize(vNormal);
           vec2 nu = vWorldPos.xz * 0.45;
           float nC = fbm(nu);
@@ -452,31 +452,31 @@ export class Terrain {
             ) / wsum;
           }
 
-          // iluminación direccional del sol + ambiente (relieve del terreno)
+          // directional sun lighting + ambient (terrain relief)
           N = normalize(N + vec3(bump.x, 0.0, bump.y));
           float ndl = max(dot(N, sunDir), 0.0);
           vec3 lit = col * (ambientColor + sunColor * ndl * cloudShadow * 1.15);
-          // brillo especular débil modulado por rugosidad
+          // weak specular highlight modulated by roughness
           vec3 V = normalize(cameraPos - vWorldPos);
           vec3 Hv = normalize(sunDir + V);
           float shin = mix(12.0, 90.0, 1.0 - clamp(rough, 0.0, 1.0));
           float spec = pow(max(dot(N, Hv), 0.0), shin) * (1.0 - clamp(rough, 0.0, 1.0)) * 0.22;
           lit += sunColor * spec * cloudShadow;
           lit *= 0.7 + 0.35 * ndl * cloudShadow;
-          // sombras direccionales recibidas (unidades y edificios)
+          // received directional shadows (units and buildings)
           #include <terrain_shadow_hook>
 
-          // niebla atmosférica (perspectiva aérea)
+          // atmospheric fog (aerial perspective)
           float dist = distance(cameraPos, vWorldPos);
           float fogAmt = 1.0 - exp(-fogDensity * fogDensity * dist * dist * 2.2);
 
-          // fundido del borde del mapa hacia el color de niebla
+          // map edge fade toward the fog color
           float halfSize = mapSize * 0.5;
           vec2 edge = vec2(abs(vWorldPos.x - halfSize), abs(vWorldPos.z - halfSize));
           float edgeAmt = smoothstep(mapSize * 0.47, mapSize * 0.5, max(edge.x, edge.y));
           vec3 outCol = mix(lit, fogColor, clamp(max(fogAmt, edgeAmt), 0.0, 0.30));
 
-          // niebla de guerra pegada al relieve: inexplorado negro, explorado atenuado, visible claro
+          // fog of war glued to the relief: unexplored black, explored dimmed, visible clear
           float fw = fowEnabled > 0.5 ? texture(fowMap, vWorldPos.xz / mapSize).r : 1.0;
           float explored = smoothstep(0.30, 0.65, fw);
           float visible = smoothstep(0.72, 0.95, fw);

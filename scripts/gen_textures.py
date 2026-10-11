@@ -8,7 +8,7 @@ Credentials (either one):
 Usage:
   python3 scripts/gen_textures.py [--force]
 
-Output: scripts/_texturas_raw/{slot}_raw.png
+Output: scripts/_textures_raw/{slot}_raw.png
 """
 import base64
 import json
@@ -20,7 +20,7 @@ import time
 import requests
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-OUT = ROOT / "scripts" / "_texturas_raw"
+OUT = ROOT / "scripts" / "_textures_raw"
 PROMPTS_FILE = ROOT / "scripts" / "prompts_textures.json"
 DEFAULT_MODEL = "@cf/black-forest-labs/flux-1-schnell"
 

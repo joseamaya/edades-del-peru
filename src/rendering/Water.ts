@@ -96,12 +96,12 @@ export class Water {
           vec3 V = normalize(cameraPosition - vWorldPos);
           float fresnel = pow(1.0 - max(dot(N, V), 0.0), 3.0);
 
-          // profundidad real desde el heightmap del terreno (el plano es 4x el mapa)
+          // real depth from the terrain heightmap (the plane is 4x the map)
           vec2 duv = (vUv - 0.5) * depthScale + 0.5;
           float inMap = step(0.0, duv.x) * step(duv.x, 1.0) * step(0.0, duv.y) * step(duv.y, 1.0);
           float landH = mix(0.0, texture2D(depthMap, clamp(duv, 0.0, 1.0)).r * 45.0, inMap);
           float depth = waterLevel - landH;
-          // no dibujar agua sobre tierra firme (evita cubrir el terreno)
+          // do not draw water over solid land (avoids covering the terrain)
           if (inMap > 0.5 && depth < 0.05) discard;
           float deep = smoothstep(0.4, 2.2, depth);
 
@@ -109,7 +109,7 @@ export class Water {
           vec3 base = mix(shallowColor, depthColor, deep);
           base *= 0.85 + 0.15 * ripple;
 
-          // iluminación
+          // lighting
           vec3 L = normalize(sunDir);
           float diff = max(dot(N, L), 0.0);
           vec3 H = normalize(L + V);
@@ -118,17 +118,17 @@ export class Water {
           col += sunColor * spec * isDay;
           col += sunColor * pow(max(dot(N, H), 0.0), 24.0) * 0.7 * isDay;
 
-          // espuma en costa (profundidad muy pequeña) y crestas de ola
+          // foam on the coast (very shallow depth) and wave crests
           float shoreFoam = (1.0 - smoothstep(0.15, 0.55, depth)) * 0.35;
           float waveFoam = smoothstep(0.55, 0.95, abs(vWave)) * 0.3;
           float foam = clamp(shoreFoam + waveFoam, 0.0, 1.0);
           col = mix(col, foamColor, foam * 0.55);
 
-          // fresnel hacia el color del cielo (atenuado para no blanquear el agua)
+          // fresnel toward the sky color (attenuated so it does not whiten the water)
           vec3 skyCol = mix(vec3(0.1, 0.15, 0.25), vec3(0.4, 0.58, 0.72), isDay);
           col = mix(col, skyCol, fresnel * 0.35);
 
-          // niebla por distancia (evita "pop" en el horizonte)
+          // distance fog (avoids "pop" on the horizon)
           float wdist = distance(cameraPosition, vWorldPos);
           float wfog = 1.0 - exp(-fogDensity * fogDensity * wdist * wdist * 2.2);
           col = mix(col, fogColor, clamp(wfog, 0.0, 0.9));

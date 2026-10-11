@@ -79,10 +79,10 @@ export class Sky {
           vec3 dir = normalize(vWorldPos);
           float h = clamp(dir.y, 0.0, 1.0);
           vec3 col = mix(horizonColor, topColor, pow(h, 0.55));
-          // mezcla de anaranjado cerca del horizonte (atardecer)
+          // orange blend near the horizon (sunset)
           float horizonBand = smoothstep(0.0, 0.06, dir.y) * (1.0 - smoothstep(0.06, 0.22, dir.y));
           col = mix(col, mix(vec3(1.0, 0.55, 0.3), horizonColor, 0.35), horizonBand * sunIntensity);
-          // anillo alrededor del sol
+          // halo around the sun
           float d = max(dot(dir, normalize(sunDir)), 0.0);
           col += sunColor * pow(d, 40.0) * 0.9 * sunIntensity;
           col += sunColor * pow(d, 6.0) * 0.25 * sunIntensity;
@@ -187,7 +187,7 @@ export class Sky {
         uniform vec3 color;
         uniform float opacity;
         varying vec2 vUv;
-        // ruido hash simple
+        // simple hash noise
         float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
         float noise(vec2 p) {
           vec2 i = floor(p);
@@ -217,7 +217,7 @@ export class Sky {
           float coverage = smoothstep(0.52, 0.68, n * 0.7 + n2 * 0.4);
           float edge = smoothstep(0.5, 0.75, d);
           float alpha = coverage * (1.0 - edge) * 0.9;
-          // sombreado suave dentro de la nube
+          // soft shading inside the cloud
           vec3 col = mix(color * 0.8, color, smoothstep(0.52, 0.85, n));
           gl_FragColor = vec4(col, alpha * opacity);
         }

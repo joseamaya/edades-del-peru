@@ -35,7 +35,7 @@ function inline(s: string): string {
   return t;
 }
 
-/** Renderizador de markdown mínimo y seguro (encabezados, listas, negrita, enlaces). */
+/** Minimal and safe markdown renderer (headings, lists, bold, links). */
 function mdToHtml(md: string): string {
   const out: string[] = [];
   let inList = false;
@@ -173,7 +173,7 @@ const TABS: { id: Tab; label: string; items: () => CodexItem[] }[] = [
   { id: 'dossiers', label: '📖 Dossiers', items: dossierTab },
 ];
 
-/** Abre el códice dentro de `root`. `onClose` vuelve al menú. */
+/** Open the codex inside `root`. `onClose` returns to the menu. */
 export function openCodex(root: HTMLElement, onClose: () => void): void {
   root.querySelector('#ed-codex')?.remove();
   const overlay = document.createElement('div');

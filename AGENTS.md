@@ -32,7 +32,7 @@ There is no `npm test` or any script outside `package.json`. `tsc` is strict (`s
   anachronistic modernization): `settings.period` fixes `startingEra` and disables era advancement (HUD and AI).
 - Data is driven by defs in `src/model/defs/{periodos,eras,civs,units,buildings,techs}.ts`; models are generated
   procedurally in `src/model/ProceduralModel.ts` (no external assets).
-- **PBR terrain textures (AI-generated)**: `src/assets/texturas/terreno/{slot}_{diffuse|normal|roughness}.webp`
+- **PBR terrain textures (AI-generated)**: `src/assets/textures/terrain/{slot}_{diffuse|normal|roughness}.webp`
   (slots `sand/dirt/grass/rock/snow`), loaded by `src/rendering/Biomes.ts` via `import.meta.glob`. The terrain
   shader uses normal+roughness+specular when present and **falls back to the procedural material** if missing
   (offline). Generated with `scripts/gen_textures.py` (Cloudflare Workers AI, credentials in

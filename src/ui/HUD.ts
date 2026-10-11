@@ -109,7 +109,7 @@ const CSS = /* css */ `
   .ed-toast.danger { background: rgba(60,10,10,0.97); border-color: var(--red); color: #ffb0b0; }
   @keyframes toast-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* Banner de era */
+  /* Era banner */
   #ed-era-banner { position: absolute; top: 38%; left: 50%; transform: translate(-50%,-50%); text-align: center; opacity: 0; pointer-events: none; }
   #ed-era-banner.show { animation: banner 3.2s ease; }
   #ed-era-banner .years { font-size: 15px; letter-spacing: 4px; color: var(--gold-dim); text-transform: uppercase; }
@@ -130,7 +130,7 @@ const CSS = /* css */ `
   .ed-ghostbtn { pointer-events: auto; background: transparent; border: 1px solid var(--line); color: var(--text); padding: 8px 18px; border-radius: 4px; cursor: pointer; font-size: 13px; margin: 4px; }
   .ed-ghostbtn:hover { border-color: var(--gold); color: var(--gold); }
 
-  /* Briefing / contenido histórico */
+  /* Briefing / historical content */
   .ed-panel .ed-hist { text-align: left; font-size: 13px; line-height: 1.55; color: var(--text); white-space: pre-line; margin: 8px 0 10px; }
   .ed-meta { display: flex; flex-wrap: wrap; gap: 4px 16px; justify-content: center; margin: 6px 0 10px; font-size: 11px; color: var(--text-dim); }
   .ed-meta b { color: var(--gold); }
@@ -141,7 +141,7 @@ const CSS = /* css */ `
   .ed-fuentes li { font-size: 12px; color: var(--text-dim); line-height: 1.5; margin: 3px 0; }
   .ed-fuentes a { color: var(--blue); }
 
-  /* Códice */
+  /* Codex */
   #ed-codex .ed-panel { width: min(780px, 94vw); max-height: 88vh; display: flex; flex-direction: column; }
   .ed-codex-tabs { display: flex; gap: 6px; justify-content: center; margin: 2px 0 12px; flex-wrap: wrap; }
   .ed-codex-tabs button { background: transparent; border: 1px solid var(--line); color: var(--text-dim); padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; }
@@ -174,7 +174,7 @@ const CSS = /* css */ `
   #ed-cursor { position: absolute; width: 20px; height: 20px; pointer-events: none; }
   .ed-error { color: var(--red); font-size: 12px; margin-top: 8px; min-height: 16px; }
   #ed-fps { position: absolute; top: 52px; right: 12px; font-size: 11px; color: var(--text-dim); background: rgba(0,0,0,0.4); padding: 2px 8px; border-radius: 3px; }
-  /* Oculta el HUD de juego mientras hay un menú modal abierto */
+  /* Hide the in-game HUD while a modal menu is open */
   #ui-root.menu-open .ed-topbar,
   #ui-root.menu-open #ed-bottom,
   #ui-root.menu-open #ed-minimap-wrap,
@@ -184,7 +184,7 @@ const CSS = /* css */ `
   .ed-keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; font-size: 13px; color: var(--text-dim); text-align: left; }
   .ed-keys b { color: var(--gold); font-weight: 700; }
 
-  /* Panel de objetivos (campaña) */
+  /* Objectives panel (campaign) */
   #ed-objectives { position: absolute; top: 56px; right: 12px; width: 240px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
   #ed-objectives h4 { margin: 0 0 8px; font-size: 12px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; }
   #ed-objectives .obj { display: flex; gap: 8px; align-items: flex-start; font-size: 12px; color: var(--text-dim); padding: 3px 0; line-height: 1.35; }
@@ -194,19 +194,19 @@ const CSS = /* css */ `
   #ed-objectives .obj.failed { color: var(--red); }
   #ed-objectives .obj.failed .mark { color: var(--red); }
 
-  /* Caja de diálogo del comandante */
+  /* Commander dialogue box */
   #ed-dialogue { position: absolute; left: 50%; bottom: 190px; transform: translateX(-50%); width: min(560px, 86vw); background: rgba(12,14,18,0.92); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 4px; padding: 10px 14px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
   #ed-dialogue.show { opacity: 1; }
   #ed-dialogue .who { font-size: 11px; letter-spacing: 1px; color: var(--gold); font-weight: 700; margin-bottom: 3px; }
   #ed-dialogue .txt { font-size: 13px; color: var(--text); line-height: 1.4; }
 
-  /* Tooltip de hover y rectángulo de selección */
+  /* Hover tooltip and selection rectangle */
   #ed-hover { position: absolute; pointer-events: none; z-index: 60; background: rgba(10,12,16,0.94); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 4px; padding: 6px 9px; font-size: 12px; color: var(--text); display: none; max-width: 240px; box-shadow: 0 4px 16px rgba(0,0,0,0.5); }
   #ed-hover .h-title { font-weight: 700; color: var(--gold); }
   #ed-hover .h-sub { color: var(--text-dim); margin-top: 2px; }
   #ed-selbox { position: absolute; pointer-events: none; z-index: 55; border: 1px solid rgba(106,208,106,0.9); background: rgba(106,208,106,0.12); display: none; }
 
-  /* Números de daño, cursor contextual y alertas */
+  /* Damage numbers, contextual cursor and alerts */
   #ed-dmg-layer { position: absolute; inset: 0; pointer-events: none; z-index: 58; overflow: hidden; }
   .ed-dmg { position: absolute; left: 0; top: 0; font-weight: 800; text-shadow: 0 1px 3px rgba(0,0,0,0.95); pointer-events: none; white-space: nowrap; will-change: transform, opacity; }
   #ed-cursor { position: absolute; pointer-events: none; z-index: 62; display: none; font-size: 22px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.85)); }
@@ -327,7 +327,7 @@ export class HUD {
     setTimeout(() => el.remove(), 9000);
   }
 
-  /** Muestra/oculta el tooltip de la entidad o recurso bajo el cursor. */
+  /** Show/hide the tooltip of the entity or resource under the cursor. */
   setHover(info: { icon: string; title: string; detalle: string } | null, x: number, y: number): void {
     if (!info) {
       this.hoverEl.style.display = 'none';
@@ -448,7 +448,7 @@ export class HUD {
       return { x: nx * s, z: ny * s };
     };
     this.minimapCanvas.addEventListener('contextmenu', (e) => e.preventDefault());
-    // clic/arrastre izq = mover el viewport; clic der = orden de mover
+    // left click/drag = move the viewport; right click = move order
     this.minimapCanvas.addEventListener('mousedown', (e) => {
       if (e.button === 2) {
         const w = toWorld(e.clientX, e.clientY);
@@ -490,7 +490,7 @@ export class HUD {
     this.dialogueEl.innerHTML = `<div class="who"></div><div class="txt"></div>`;
   }
 
-  /** Diálogo de personaje (comandante/narrador) con cierre automático. */
+  /** Character dialogue (commander/narrator) with auto-close. */
   showDialogue(name: string, text: string, duration = 5): void {
     this.dialogueEl.querySelector('.who')!.textContent = name;
     this.dialogueEl.querySelector('.txt')!.textContent = text;
@@ -506,7 +506,7 @@ export class HUD {
     this.tutorialCountEl = this.tutorialEl.querySelector('.tut-count') as HTMLElement;
   }
 
-  /** Muestra/actualiza el panel del tutorial. `onSkip` añade el botón de omitir. */
+  /** Show/update the tutorial panel. `onSkip` adds the skip button. */
   showTutorialStep(text: string, index: number, total: number, onSkip?: () => void): void {
     this.tutorialStepEl.textContent = text;
     this.tutorialCountEl.textContent = `Paso ${index + 1} / ${total}`;
@@ -528,7 +528,7 @@ export class HUD {
     this.clearHudHighlight();
   }
 
-  /** Resalta (con pulso) un elemento del HUD durante el tutorial. */
+  /** Highlight (with a pulse) a HUD element during the tutorial. */
   highlightHud(selector: string): void {
     this.clearHudHighlight();
     const target = this.root.querySelector(selector);
@@ -618,7 +618,7 @@ export class HUD {
     quit.addEventListener('click', () => this.abandonMatch());
   }
 
-  /** True si hay un menú modal abierto (distinto del panel de pausa). */
+  /** True if a modal menu is open (other than the pause panel). */
   hasBlockingOverlay(): boolean {
     return [...this.root.querySelectorAll('.ed-overlay')].some((o) => o.id !== 'ed-paused');
   }
@@ -653,7 +653,7 @@ export class HUD {
     });
   }
 
-  /** Abandonar partida (respeta la campaña activa). */
+  /** Leave the match (respects the active campaign). */
   abandonMatch(): void {
     if (this.game.mission) {
       (this.game as any).missionEnd(false);
@@ -663,7 +663,7 @@ export class HUD {
     }
   }
 
-  // --- paneles ---
+  // --- panels ---
 
   private setDesc(icon: string, title: string, subtitle: string): void {
     this.descEl.innerHTML = `<h3>${icon} ${title}</h3><div>${subtitle}</div>`;
@@ -680,7 +680,7 @@ export class HUD {
       card.classList.add('progress');
       card.innerHTML += `<div class="progbar" style="width:${Math.round(opts.progress * 100)}%"></div>`;
     }
-    // pointerdown (no click): el panel puede reconstruirse y perdería el click
+    // pointerdown (not click): the panel may rebuild and would lose the click
     if (!opts.disabled) {
       card.addEventListener('pointerdown', (e) => {
         if (e.button !== 0) return;
@@ -738,8 +738,8 @@ export class HUD {
   }
 
   /**
-   * Reconstruye el panel inferior solo si cambia su estructura. Evita recrear los nodos en
-   * cada tick (lo que hacía perder los clicks de las tarjetas) y el parpadeo.
+   * Rebuild the bottom panel only if its structure changed. Avoids recreating the nodes on
+   * every tick (which used to lose card clicks) and the flicker.
    */
   private renderBottomIfChanged(): void {
     const key = this.bottomSignature();
@@ -748,12 +748,12 @@ export class HUD {
     this.renderBottom();
   }
 
-  /** Firma barata del estado que afecta al panel inferior (selección, cola, era, recursos). */
+  /** Cheap signature of the state affecting the bottom panel (selection, queue, era, resources). */
   private bottomSignature(): string {
     const units = this.game.getSelectedUnits();
     const building = this.game.getSelectedBuilding();
     const p = this.game.players[0];
-    // bucket de recursos para refrescar la disponibilidad (afford) sin recrear cada frame
+    // resource bucket to refresh availability (afford) without recreating each frame
     const res = p ? RESOURCE_KEYS.map((k) => Math.floor(p.resources[k] / 25)).join(',') : '';
     const tail = '|e:' + (p?.era ?? 0) + '|res:' + res;
     if (units.length > 0) {
@@ -772,7 +772,7 @@ export class HUD {
     return 'idle' + tail;
   }
 
-  /** Actualiza en sitio las barras de progreso del panel inferior (sin recrear nodos). */
+  /** Update the bottom panel progress bars in place (without recreating nodes). */
   private updateBottomProgress(): void {
     const b = this.game.getSelectedBuilding();
     if (!b || b.owner !== 0) return;
@@ -798,9 +798,9 @@ export class HUD {
   private renderIdlePanel(): void {
     this.setDesc('⚙️', 'Comando', 'Selecciona unidades o edificios para dar órdenes. Usa el menú para construir.');
     this.clearGrid();
-    // construir rápido
+    // build fast
     for (const kind of [BuildingKind.CENTER, ...BUILDABLE_KINDS]) {
-      // ocultar los edificios no disponibles en el periodo (la Plaza Mayor se muestra deshabilitada)
+      // hide buildings unavailable in the period (the Plaza Mayor is shown disabled)
       if (kind !== BuildingKind.CENTER && !this.game.canBuildKind(kind)) continue;
       const stats = getBuildingStats(kind, this.game.players[0].era);
       const info = BUILDING_INFO[kind];
@@ -811,7 +811,7 @@ export class HUD {
         cat: kind === BuildingKind.FORTRESS || kind === BuildingKind.INSTITUTE ? 'advance' : 'econ',
       });
     }
-    // Partidas bloqueadas por periodo: no se avanza de era (sin modernización anacrónica).
+    // Period-locked matches: eras do not advance (no anachronistic modernization).
   }
 
   private renderUnitPanel(units: Unit[]): void {
@@ -819,7 +819,7 @@ export class HUD {
     const info = UNIT_INFO[first.kind];
     this.setDesc(info.icon, `${info.name} ×${units.length}`, this.unitDesc(first));
     this.clearGrid();
-    // resumen por tipo (clic = seleccionar solo ese tipo) — estilo AoE2
+    // summary by type (click = select only that type) — AoE2 style
     if (units.length > 1) {
       const groups = new Map<UnitKind, number>();
       for (const u of units) groups.set(u.kind, (groups.get(u.kind) ?? 0) + 1);
@@ -862,7 +862,7 @@ export class HUD {
       return;
     }
 
-    // cola de producción (clic en la tarjeta para cancelar)
+    // production queue (click the card to cancel)
     for (let i = 0; i < b.productionQueue.length; i++) {
       const item = b.productionQueue[i];
       const uInfo = UNIT_INFO[item.unit];
@@ -873,7 +873,7 @@ export class HUD {
       card.dataset.prodIdx = String(i);
     }
 
-    // entrenar unidades
+    // train units
     for (const unitKind of def.trainable ?? []) {
       const stats = getUnitStats(unitKind, b.era);
       const uInfo = UNIT_INFO[unitKind];
@@ -889,7 +889,7 @@ export class HUD {
       });
     }
 
-    // tecnologías (instituto)
+    // technologies (institute)
     const techs = TECHS.filter((t) => t.building === b.kind && t.minEra <= this.game.players[0].era && !this.game.players[0].techs.has(t.id) && (!t.requirements || t.requirements.every((r) => this.game.players[0].techs.has(r))));
     for (const t of techs) {
       const disabled = !this.canAfford(t.cost);
@@ -900,7 +900,7 @@ export class HUD {
       });
     }
 
-    // construir más (si es centro, vivienda, etc.)
+    // build more (if center, house, etc.)
     if (b.kind === BuildingKind.CENTER) {
       this.addCard('🏠', 'Vivienda', this.costText(getBuildingStats(BuildingKind.HOUSE, b.era).cost), () => this.game.startPlacement(BuildingKind.HOUSE), { cat: 'econ' });
       this.addCard('🌽', 'Granja', this.costText(getBuildingStats(BuildingKind.FARM, b.era).cost), () => this.game.startPlacement(BuildingKind.FARM), { cat: 'econ' });
@@ -932,7 +932,7 @@ export class HUD {
     }
     if (this.game.spendResource(0, stats.cost)) {
       if (!b.queueUnit(unit)) {
-        // devolver recursos si no se pudo encolar
+        // refund resources if it could not be queued
         this.game.addResource(0, stats.cost);
       }
     } else {
@@ -970,7 +970,7 @@ export class HUD {
     }
   }
 
-  // --- comandos ---
+  // --- commands ---
 
   private orderStop(): void {
     for (const u of this.game.getSelectedUnits()) {
@@ -1008,7 +1008,7 @@ export class HUD {
     }
   }
 
-  // --- minimapa ---
+  // --- minimap ---
 
   private minimapBg: HTMLCanvasElement | null = null;
   private minimapSeed = -1;
@@ -1021,7 +1021,7 @@ export class HUD {
     const fow = this.game.fow;
     const fogOn = this.game.settings.fogOfWar;
 
-    // fondo del terreno cacheado (solo se regenera si cambia la semilla)
+    // cached terrain background (only regenerated if the seed changes)
     if (!this.minimapBg || this.minimapSeed !== this.game.settings.mapSeed) {
       this.minimapSeed = this.game.settings.mapSeed;
       this.minimapBg = document.createElement('canvas');
@@ -1045,7 +1045,7 @@ export class HUD {
     }
     ctx.drawImage(this.minimapBg, 0, 0);
 
-    // niebla en el minimapa (zonas no exploradas en negro)
+    // fog on the minimap (unexplored areas in black)
     if (fogOn) {
       const step = 2;
       for (let y = 0; y < w; y += step) {
@@ -1057,14 +1057,14 @@ export class HUD {
       }
     }
 
-    // recursos
+    // resources
     for (const n of this.game.resourceNodes.values()) {
       if (n.dead) continue;
       if (fogOn && !fow.isExplored(n.pos.x, n.pos.z)) continue;
       ctx.fillStyle = n.resource === 'wood' ? '#3a7a2a' : n.resource === 'silver' ? '#b0b8c4' : n.resource === 'stone' ? '#e8b54a' : '#7a5a3a';
       ctx.fillRect((n.pos.x / s) * w, (n.pos.z / s) * w, 2, 2);
     }
-    // edificios
+    // buildings
     for (const b of this.game.buildings.values()) {
       if (b.dead) continue;
       const vis = !fogOn || fow.isExplored(b.pos.x, b.pos.z);
@@ -1073,7 +1073,7 @@ export class HUD {
       ctx.fillStyle = b.owner === 0 ? '#4a8a4a' : visibleNow ? '#c03a3a' : 'rgba(110,110,110,0.6)';
       ctx.fillRect((b.pos.x / s) * w - 1, (b.pos.z / s) * w - 1, 3, 3);
     }
-    // unidades: solo las propias y las enemigas visibles ahora
+    // units: only own ones and currently visible enemy ones
     for (const u of this.game.units.values()) {
       if (u.dead) continue;
       if (fogOn) {
@@ -1088,13 +1088,13 @@ export class HUD {
     }
     ctx.strokeStyle = 'rgba(255,255,255,0.5)';
     ctx.strokeRect(0, 0, w, w);
-    // rectángulo del viewport de la cámara
+    // camera viewport rectangle
     const rect = this.game.camera.getGroundRect();
     ctx.strokeStyle = 'rgba(255,255,255,0.85)';
     ctx.lineWidth = 1;
     ctx.strokeRect((rect.x / s) * w, (rect.z / s) * w, (rect.w / s) * w, (rect.d / s) * w);
     ctx.lineWidth = 1;
-    // pulsos de alerta (parpadeo)
+    // alert pulses (blink)
     if (this.alertPings.length) {
       const pulse = 0.5 + 0.5 * Math.sin(performance.now() * 0.012);
       for (const p of this.alertPings) {
@@ -1110,7 +1110,7 @@ export class HUD {
     }
   }
 
-  // --- menús ---
+  // --- menus ---
 
   showMainMenu(): void {
     this.game.loop.stop();
@@ -1191,14 +1191,14 @@ export class HUD {
     controlsBtn.addEventListener('click', () => this.showControls());
   }
 
-  /** Abre el códice/enciclopedia educativa (periodos, civilizaciones, campañas y dossiers). */
+  /** Open the educational codex/encyclopedia (periods, civilizations, campaigns and dossiers). */
   showCodex(): void {
     this.clearOverlays();
     this.setMenuOpen(true);
     openCodex(this.root, () => this.showMainMenu());
   }
 
-  /** Prólogo histórico de la campaña antes de la lista de misiones (estilo AoE). */
+  /** Historical campaign prologue before the mission list (AoE style). */
   showCampaignIntro(): void {
     this.clearOverlays();
     this.setMenuOpen(true);
@@ -1244,7 +1244,7 @@ export class HUD {
     }
   }
 
-  /** Panel de controles y conceptos básicos. */
+  /** Controls and basic concepts panel. */
   showControls(): void {
     this.clearOverlays();
     this.setMenuOpen(true);
@@ -1272,7 +1272,7 @@ export class HUD {
     back.addEventListener('click', () => this.showMainMenu());
   }
 
-  /** Briefing de misión antes de comenzar (contexto histórico + objetivos + fuentes). */
+  /** Mission briefing before starting (historical context + objectives + sources). */
   showBriefing(mis: MissionDef, onStart: () => void): void {
     this.game.loop.stop();
     if (!this.game.getPaused()) this.game.togglePause();
@@ -1315,7 +1315,7 @@ export class HUD {
     });
   }
 
-  /** Menú de selección de misión de campaña. */
+  /** Campaign mission selection menu. */
   showCampaignMenu(): void {
     this.clearOverlays();
     this.setMenuOpen(true);
@@ -1354,7 +1354,7 @@ export class HUD {
     back.addEventListener('click', () => this.showMainMenu());
   }
 
-  /** Progreso de campaña guardado (índice de la misión más avanzada). */
+  /** Saved campaign progress (index of the most advanced mission). */
   private campaignProgress(): number {
     try {
       const raw = localStorage.getItem('peru-campaign');
@@ -1367,7 +1367,7 @@ export class HUD {
     }
   }
 
-  /** Registra una misión como completada. */
+  /** Register a mission as completed. */
   saveCampaignProgress(id: string): void {
     const idx = MISSIONS.findIndex((m) => m.id === id);
     if (idx < 0) return;
@@ -1453,7 +1453,7 @@ export class HUD {
     this.root.querySelectorAll('.ed-overlay').forEach((e) => e.remove());
   }
 
-  /** Oculta el HUD de juego mientras hay un menú modal abierto. */
+  /** Hide the in-game HUD while a modal menu is open. */
   private setMenuOpen(v: boolean): void {
     this.root.classList.toggle('menu-open', v);
   }
@@ -1466,12 +1466,12 @@ export class HUD {
     this.damage.update(this.game.camera.camera, dt);
     const now = performance.now();
     if (this.alertPings.length) this.alertPings = this.alertPings.filter((p) => p.until > now);
-    // diálogo con cierre automático
+    // dialogue with auto-close
     if (this.dialogueTimer > 0) {
       this.dialogueTimer -= dt;
       if (this.dialogueTimer <= 0) this.dialogueEl.classList.remove('show');
     }
-    // panel de objetivos de campaña (tick compartido con el minimapa)
+    // campaign objectives panel (tick shared with the minimap)
     if (this.game.mission) {
       this.objPanelEl.style.display = 'block';
       if (this.updateAcc > 0.15) this.refreshObjectives();
@@ -1480,7 +1480,7 @@ export class HUD {
     }
     const p = this.game.players[0];
     if (p) {
-      // recursos
+      // resources
       for (const k of RESOURCE_KEYS) {
         const el = this.resEls[k];
         const val = Math.floor(p.resources[k]);
@@ -1488,7 +1488,7 @@ export class HUD {
         span.textContent = formatNumber(val);
         el.classList.toggle('res-low', val < 30);
       }
-      // ocultar recursos no disponibles en el periodo (p. ej. Piedra sin Cantera)
+      // hide resources unavailable in the period (e.g. Stone without a Quarry)
       this.resEls.stone.style.display = this.game.canBuildKind(BuildingKind.REFINERY) ? '' : 'none';
       this.popEl.querySelector('span')!.textContent = `${p.populationUsed}/${p.populationCap}`;
       const eraDef = ERA_DEFS[p.era];

@@ -3,9 +3,9 @@
   - seamless tiling by edge blending
   - normal map derivation (Sobel) and roughness (heuristic)
 
-Input:  scripts/_texturas_raw/{slot}_raw.png
-Output: src/assets/texturas/terreno/{slot}_{diffuse|normal|roughness}.webp     (terrain slots)
-        src/assets/texturas/materiales/{slot}_{diffuse|normal|roughness}.webp  (the rest)
+Input:  scripts/_textures_raw/{slot}_raw.png
+Output: src/assets/textures/terrain/{slot}_{diffuse|normal|roughness}.webp     (terrain slots)
+        src/assets/textures/materials/{slot}_{diffuse|normal|roughness}.webp  (the rest)
 
 Usage: python3 scripts/post_textures.py
 """
@@ -15,9 +15,9 @@ import numpy as np
 from PIL import Image, ImageFilter
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-RAW = ROOT / "scripts" / "_texturas_raw"
-TER = ROOT / "src" / "assets" / "texturas" / "terreno"
-MAT = ROOT / "src" / "assets" / "texturas" / "materiales"
+RAW = ROOT / "scripts" / "_textures_raw"
+TER = ROOT / "src" / "assets" / "textures" / "terrain"
+MAT = ROOT / "src" / "assets" / "textures" / "materials"
 TERRAIN_SLOTS = {"sand", "dirt", "grass", "rock", "snow"}
 
 DIFFUSE_SIZE = 1024

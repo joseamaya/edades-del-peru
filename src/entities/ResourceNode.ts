@@ -63,7 +63,7 @@ function mat(key: string, o: TexOpts = {}): THREE.MeshStandardMaterial {
   return m;
 }
 
-/** Libera geometrías y materiales compartidos (llamar al destruir la partida). */
+/** Free shared geometries and materials (call when destroying the match). */
 export function clearResourceCaches(): void {
   geoCache.forEach((g) => g.dispose());
   geoCache.clear();
@@ -78,7 +78,7 @@ function variantForMap(mapType: string): TreeVariant {
   return 'broad';
 }
 
-/** Nodo de recurso: árbol, mina, pozo, caza o banco de pesca. */
+/** Resource node: tree, mine, well, hunt or fishing spot. */
 export class ResourceNode {
   id = allocId();
   pos = new THREE.Vector3();
@@ -159,7 +159,7 @@ export class ResourceNode {
     this.scene.add(this.view);
   }
 
-  /** Registra la instancia del árbol una vez conocida su altura (y). */
+  /** Register the tree instance once its height (y) is known. */
   placeTreeInstance(y: number): void {
     if (this.kind !== 'tree' || !this.treeMgr || this.treeSlot >= 0) return;
     const scale = 0.85 + Math.random() * 0.35;
@@ -167,7 +167,7 @@ export class ResourceNode {
     this.treeSlot = this.treeMgr.register(this.id, this.treeVariant, this.pos.x, y, this.pos.z, scale, rotY);
   }
 
-  /** Visibilidad combinada (niebla + LOD) respetando el instancing de árboles. */
+  /** Combined visibility (fog + LOD) respecting tree instancing. */
   setVisibleEx(v: boolean): void {
     if (this.kind === 'tree' && this.treeMgr && this.treeSlot >= 0) {
       this.treeMgr.setVisible(this.treeSlot, v);
@@ -183,7 +183,7 @@ export class ResourceNode {
     return mesh;
   }
 
-  /** Añade carteles de follaje cruzados (copas con alphaTest). */
+  /** Add crossed foliage billboards (canopies with alphaTest). */
   private addFoliage(parent: THREE.Object3D, rng: RNG, kind: 'broad' | 'needle' | 'frond' | 'bush', radius: number, height: number): void {
     const tex = MaterialTex.foliage(kind);
     const leafMat = mat('leaf-' + kind, { map: tex, alphaTest: 0.45, side: THREE.DoubleSide, roughness: 1, color: '#cfe0b0' });
@@ -198,7 +198,7 @@ export class ResourceNode {
       card.receiveShadow = false;
       parent.add(card);
     }
-    // cartel inclinado para dar volumen visto desde arriba
+    // tilted billboard to give volume seen from above
     const top = new THREE.Mesh(cardGeo(w * 0.9, h * 0.9), leafMat);
     top.rotation.x = -Math.PI / 2 + 0.35;
     top.position.y = h * 0.72;
@@ -209,7 +209,7 @@ export class ResourceNode {
 
   private buildTree(rng: RNG): void {
     const variant = variantForMap(this.mapType);
-    // Con gestor de instancing: solo se registra una instancia (sin mallado por árbol).
+    // With the instancing manager: only one instance is registered (no per-tree mesh).
     if (this.treeMgr) {
       this.treeVariant = variant;
       void rng;
@@ -224,7 +224,7 @@ export class ResourceNode {
     trunk.rotation.z = lean;
     this.add(trunk);
 
-    // ramas bajas
+    // low branches
     const branchMat = mat('bark-branch', { map: MaterialTex.bark(), color: '#9a7f5c', roughness: 0.95 });
     for (let i = 0; i < 2; i++) {
       const a = rng.range(0, Math.PI * 2);
@@ -351,7 +351,7 @@ export class ResourceNode {
     }
   }
 
-  /** Resta recurso; si se agota el árbol, lo derriba. */
+  /** Subtract resource; if the tree is depleted, fell it. */
   subtract(amount: number): void {
     if (this.depleted) return;
     this.amount -= amount;
@@ -359,7 +359,7 @@ export class ResourceNode {
       this.amount = 0;
       this.depleted = true;
       if (this.kind === 'tree') {
-        // caída
+        // fall
         if (this.treeMgr && this.treeSlot >= 0) {
           this.treeMgr.startFall(this.treeSlot);
           this.treeSlot = -1;
@@ -387,11 +387,11 @@ export class ResourceNode {
       this.treeMgr.unregister(this.treeSlot);
       this.treeSlot = -1;
     }
-    // geometrías y materiales son compartidos/cacheados: solo se quita de la escena.
+    // geometries and materials are shared/cached: only removed from the scene.
     this.scene.remove(this.view);
   }
 
-  /** Viento para árboles. */
+  /** Wind for trees. */
   update(time: number): void {
     if (this.swayParts.length === 0) return;
     const sway = Math.sin(time * 1.4 + this.swaySeed) * 0.02;

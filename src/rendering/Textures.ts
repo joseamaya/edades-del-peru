@@ -103,7 +103,7 @@ function genDirt(): THREE.CanvasTexture {
   return canvasTexture(c, 'dirt', true);
 }
 
-/** Textura de arena. */
+/** Sand texture. */
 function genSand(): THREE.CanvasTexture {
   if (cache.has('sand')) return cache.get('sand')!;
   const size = 256;
@@ -127,7 +127,7 @@ function genSand(): THREE.CanvasTexture {
     }
   }
   ctx.putImageData(img, 0, 0);
-  // ondas de dunas
+  // dune ripples
   for (let y = 0; y < size; y += 3) {
     ctx.fillStyle = `rgba(0,0,0,${0.03 + 0.04 * Math.sin(y * 0.05)})`;
     ctx.fillRect(0, y, size, 1);
@@ -135,7 +135,7 @@ function genSand(): THREE.CanvasTexture {
   return canvasTexture(c, 'sand', true);
 }
 
-/** Textura de roca/montaña. */
+/** Rock/mountain texture. */
 function genRock(): THREE.CanvasTexture {
   if (cache.has('rock')) return cache.get('rock')!;
   const size = 256;
@@ -172,7 +172,7 @@ function genRock(): THREE.CanvasTexture {
   return canvasTexture(c, 'rock', true);
 }
 
-/** Textura de nieve. */
+/** Snow texture. */
 function genSnow(): THREE.CanvasTexture {
   if (cache.has('snow')) return cache.get('snow')!;
   const size = 256;
@@ -195,7 +195,7 @@ function genSnow(): THREE.CanvasTexture {
   return canvasTexture(c, 'snow', true);
 }
 
-/** Madera (para casas, carretas, troncos). */
+/** Wood (for houses, carts, logs). */
 function genWood(): THREE.CanvasTexture {
   if (cache.has('wood')) return cache.get('wood')!;
   const size = 256;
@@ -268,7 +268,7 @@ function genBrick(): THREE.CanvasTexture {
   return canvasTexture(c, 'brick', true);
 }
 
-/** Piedra de sillar. */
+/** Ashlar stone. */
 function genStone(): THREE.CanvasTexture {
   if (cache.has('stone')) return cache.get('stone')!;
   const size = 256;
@@ -317,7 +317,7 @@ function genMetal(base = '#8f98a3'): THREE.CanvasTexture {
     }
   }
   ctx.putImageData(img, 0, 0);
-  // remaches
+  // rivets
   for (let y = 12; y < size; y += 32) {
     for (let x = 12; x < size; x += 32) {
       const g = 60 + rng.int(0, 20);
@@ -334,7 +334,7 @@ function genMetal(base = '#8f98a3'): THREE.CanvasTexture {
   return canvasTexture(c, key, true);
 }
 
-/** Tejado de tejas (arcilla o pizarra). */
+/** Tile roof (clay or slate). */
 function genRoof(base = '#a84838'): THREE.CanvasTexture {
   const key = 'roof-' + base;
   if (cache.has(key)) return cache.get(key)!;
@@ -353,11 +353,11 @@ function genRoof(base = '#a84838'): THREE.CanvasTexture {
       const i = (y * size + x) * 4;
       const offset = row % 2 === 0 ? 0 : tileW / 2;
       const px = (x + offset) % tileW;
-      // sombra entre tejas
+      // shadow between tiles
       const edgeY = y % tileH;
       const edgeX = px;
       const seam = (edgeY > tileH - 3 || edgeX > tileW - 2) ? 0.78 : 1;
-      // curva de cada teja
+      // each tile's curve
       const curve = 1 - Math.abs(edgeX / tileW - 0.5) * 0.35;
       const n = fbm2(x * 0.06, y * 0.06, 3);
       const v = (0.86 + n * 0.2) * seam * curve;
@@ -375,7 +375,7 @@ function genRoof(base = '#a84838'): THREE.CanvasTexture {
   return canvasTexture(c, key, true);
 }
 
-/** Hormigón con juntas de panel. */
+/** Paneled concrete. */
 function genConcrete(): THREE.CanvasTexture {
   const key = 'concrete';
   if (cache.has(key)) return cache.get(key)!;
@@ -398,7 +398,7 @@ function genConcrete(): THREE.CanvasTexture {
     }
   }
   ctx.putImageData(img, 0, 0);
-  // juntas de panel (retícula de encofrado)
+  // panel joints (formwork grid)
   ctx.strokeStyle = 'rgba(40,42,46,0.5)';
   ctx.lineWidth = 2;
   for (let y = 32; y < size; y += 64) {
@@ -420,7 +420,7 @@ function genConcrete(): THREE.CanvasTexture {
   return canvasTexture(c, key, true);
 }
 
-/** Tela/uniforme con tejido sutil. */
+/** Cloth/uniform with subtle weave. */
 function genCloth(base = '#5a6a52'): THREE.CanvasTexture {
   const key = 'cloth-' + base;
   if (cache.has(key)) return cache.get(key)!;
@@ -444,7 +444,7 @@ function genCloth(base = '#5a6a52'): THREE.CanvasTexture {
     }
   }
   ctx.putImageData(img, 0, 0);
-  // pliegues tenues
+  // faint folds
   for (let k = 0; k < 14; k++) {
     ctx.strokeStyle = `rgba(0,0,0,${0.04 + rng.float() * 0.05})`;
     ctx.lineWidth = rng.float() * 2 + 0.5;
@@ -480,7 +480,7 @@ function genLeather(base = '#4a3626'): THREE.CanvasTexture {
     }
   }
   ctx.putImageData(img, 0, 0);
-  // costuras
+  // seams
   for (let k = 0; k < 6; k++) {
     const sy = rng.float() * size;
     ctx.strokeStyle = 'rgba(20,14,8,0.4)';
@@ -495,7 +495,7 @@ function genLeather(base = '#4a3626'): THREE.CanvasTexture {
   return canvasTexture(c, key, true);
 }
 
-/** Paneles futuristas (era estelar). */
+/** Futuristic panels (stellar era). */
 function genSciFi(): THREE.CanvasTexture {
   const key = 'scifi';
   if (cache.has(key)) return cache.get(key)!;
@@ -521,7 +521,7 @@ function genSciFi(): THREE.CanvasTexture {
   return canvasTexture(c, key, true);
 }
 
-/** Follaje con transparencia para copas tipo cartel (billboard + alphaTest). */
+/** Foliage with transparency for billboard canopies (billboard + alphaTest). */
 function genFoliage(kind: 'broad' | 'needle' | 'frond' | 'bush'): THREE.CanvasTexture {
   const key = 'foliage-' + kind;
   if (cache.has(key)) return cache.get(key)!;
@@ -589,7 +589,7 @@ function genFoliage(kind: 'broad' | 'needle' | 'frond' | 'bush'): THREE.CanvasTe
       const a = rng.float() * Math.PI * 2;
       const rr = Math.pow(rng.float(), 0.55) * size * (kind === 'bush' ? 0.34 : 0.46);
       const edge = rr / (size * 0.46);
-      if (rng.float() < edge * 0.35) continue; // silueta irregular
+      if (rng.float() < edge * 0.35) continue; // irregular silhouette
       const x = cx + Math.cos(a) * rr;
       const y = cy + Math.sin(a) * rr * 0.9;
       const rad = 6 + rng.float() * 11;
@@ -601,7 +601,7 @@ function genFoliage(kind: 'broad' | 'needle' | 'frond' | 'bush'): THREE.CanvasTe
   return canvasTexture(c, key, true);
 }
 
-/** Corteza de árbol (vertical, grisácea). */
+/** Tree bark (vertical, grayish). */
 function genBark(): THREE.CanvasTexture {
   if (cache.has('bark')) return cache.get('bark')!;
   const size = 128;
@@ -636,7 +636,7 @@ function genBark(): THREE.CanvasTexture {
   return canvasTexture(c, 'bark', true);
 }
 
-/** Pelaje de animal. */
+/** Animal fur. */
 function genHide(base = '#8a6a4a'): THREE.CanvasTexture {
   const key = 'hide-' + base;
   if (cache.has(key)) return cache.get(key)!;
@@ -672,7 +672,7 @@ function genHide(base = '#8a6a4a'): THREE.CanvasTexture {
 }
 
 
-/** Textura base neutra con color. */
+/** Neutral base texture with color. */
 function genFlat(color: string): THREE.CanvasTexture {
   const key = 'flat-' + color;
   if (cache.has(key)) return cache.get(key)!;
@@ -693,7 +693,7 @@ function genFlat(color: string): THREE.CanvasTexture {
   return canvasTexture(c, key, true);
 }
 
-/** Normal map procedural desde ruido (para materiales detallados). */
+/** Procedural normal map from noise (for detailed materials). */
 function genNormal(seed = 7, scale = 1): THREE.CanvasTexture {
   const key = 'normal-' + seed;
   if (cache.has(key)) return cache.get(key)!;

@@ -209,7 +209,7 @@ class Builder {
     return mesh;
   }
 
-  /** Pivote nombrado para animación. */
+  /** Named pivot for animation. */
   pivot(name: string): THREE.Group {
     const g = new THREE.Group();
     g.name = 'pivot:' + name;
@@ -217,7 +217,7 @@ class Builder {
     return g;
   }
 
-  /** Toro (arcos, aros, arcos de flecha). */
+  /** Torus (arches, rings, bow limbs). */
   torus(r: number, tube: number, arc: number, color: string, o: PartOpts = {}): THREE.Mesh {
     const m = mat(color, o);
     const geo = cachedGeo(`tor-${r}-${tube}-${arc}-${o.flatShading ? 1 : 0}`, () => {
@@ -237,7 +237,7 @@ class Builder {
     return mesh;
   }
 
-  /** Añade una pieza a un grupo padre específico (para pivotes animados). */
+  /** Add a piece to a specific parent group (for animated pivots). */
   boxIn(parent: THREE.Object3D, w: number, h: number, d: number, color: string, o: PartOpts = {}): THREE.Mesh {
     const m = this.box(w, h, d, color, o);
     parent.add(m);
@@ -259,7 +259,7 @@ class Builder {
     return m;
   }
 
-  /** Material cívico primario. */
+  /** Primary civic material. */
   get civPrimary(): string {
     return this.civ.colors.primary;
   }
@@ -269,7 +269,7 @@ class Builder {
   get civAccent(): string {
     return this.civ.colors.accent;
   }
-  /** Contexto de construcción (era y civilización). */
+  /** Build context (era and civilization). */
   get context(): BuildContext {
     return this.ctx;
   }
@@ -286,7 +286,7 @@ function eraPalette(era: Era, civ: CivDef) {
     primary: civ.colors.primary,
     secondary: civ.colors.secondary,
     accent: civ.colors.accent,
-    // paredes según era: claras y legibles
+    // walls per era: clear and readable
     wood: mixHex(p.primary, '#c8a878', 0.5),
     darkWood: mixHex(p.primary, '#6a4a28', 0.55),
     brick: mixHex(p.primary, '#b04030', 0.45),
@@ -303,7 +303,7 @@ function eraPalette(era: Era, civ: CivDef) {
 }
 
 // ---------------------------------------------------------------------------
-// Helpers por categoría
+// Helpers by category
 // ---------------------------------------------------------------------------
 
 type UnitRole = 'worker' | 'melee' | 'ranged' | 'elite' | 'mounted' | 'officer';
@@ -322,8 +322,8 @@ interface Attire {
 }
 
 /**
- * Perfil de atuendo histórico por civilización, era y rol de la unidad.
- * Basado en `docs/historia/atuendos.md` (con fuentes).
+ * Historical attire profile per civilization, era and unit role.
+ * Based on `docs/historia/atuendos.md` (with sources).
  */
 function getAttire(b: Builder, role: UnitRole): Attire {
   const civ = b.context.civ.id;
@@ -379,7 +379,7 @@ function addHumanoid(b: Builder, opts: {
   const limbTex = attire.tex;
   const bootCol = attire.boot ? '#2a2018' : '#241a12';
 
-  // piernas con pivotes (cadera a y=0.52): muslo + espinilla + pie
+  // legs with pivots (hip at y=0.52): thigh + shin + foot
   const legL = b.pivot('legL');
   legL.position.set(-0.1, 0.52, 0);
   const legR = b.pivot('legR');
@@ -389,10 +389,10 @@ function addHumanoid(b: Builder, opts: {
     b.boxIn(leg, 0.095, 0.24, 0.13, attire.leg, { y: -0.38, tex: limbTex, texScale: 2 });
     b.boxIn(leg, 0.12, attire.boot ? 0.12 : 0.07, 0.22, bootCol, { y: attire.boot ? -0.47 : -0.5, z: 0.03 });
   }
-  // pelvis / taparrabos
+  // pelvis / loincloth
   b.cyl(0.155, 0.13, 0.18, 10, metalArmor ? '#7a828a' : mixHex(attire.leg, '#2a241e', 0.4), { y: 0.55, tex: limbTex, texScale: 2 });
   b.box(0.34, 0.05, 0.24, '#2a2118', { y: 0.63 });
-  // torso entallado (abdomen + pecho)
+  // tapered torso (abdomen + chest)
   b.box(0.27, 0.2, 0.21, tunic, { y: 0.74, tex: limbTex, texScale: 2 });
   b.box(0.34, 0.28, 0.23, tunic, { y: 0.96, tex: limbTex, texScale: 2 });
   if (metalArmor) {
@@ -400,16 +400,16 @@ function addHumanoid(b: Builder, opts: {
     b.box(0.4, 0.08, 0.27, '#8a929a', { y: 1.08, tex: 'metal' });
   } else {
     b.box(0.08, 0.42, 0.25, attire.accent, { x: -0.02, y: 0.85, rz: 0.35 });
-    // manta/poncho andino para guerreros
+    // Andean cloak/poncho for warriors
     if (attire.cloak) {
       b.cyl(0.19, 0.25, 0.34, 12, tunic, { y: 0.8, tex: 'cloth', texScale: 2 });
       b.cyl(0.252, 0.252, 0.05, 12, attire.accent, { y: 0.66, tex: 'cloth' });
     }
   }
-  // hombros redondeados
+  // rounded shoulders
   b.sphere(0.075, metalArmor ? '#b8c0c8' : tunic, { x: -0.2, y: 1.06, tex: limbTex });
   b.sphere(0.075, metalArmor ? '#b8c0c8' : tunic, { x: 0.2, y: 1.06, tex: limbTex });
-  // brazos con pivotes (hombro a y=1.02): brazo + antebrazo + mano
+  // arms with pivots (shoulder at y=1.02): upper arm + forearm + hand
   const armL = b.pivot('armL');
   armL.position.set(-0.24, 1.02, 0);
   const armR = b.pivot('armR');
@@ -420,7 +420,7 @@ function addHumanoid(b: Builder, opts: {
     b.sphereIn(arm, 0.05, skin, { y: -0.47 });
   }
   b.boxIn(armR, 0.1, 0.07, 0.12, attire.accent, { y: -0.24 });
-  // herramienta de trabajo en la mano derecha (animable al recolectar/construir)
+  // work tool in the right hand (animatable while gathering/building)
   if (opts.tool) {
     const metal = '#8a929a';
     b.cylIn(armR, 0.022, 0.022, 0.44, 6, b.pal.darkWood, { y: -0.66, tex: 'wood' });
@@ -433,34 +433,34 @@ function addHumanoid(b: Builder, opts: {
       b.cylIn(armR, 0.03, 0, 0.11, 6, metal, { y: -0.86, z: -0.2, rx: Math.PI / 2 });
     }
   }
-  // escudo en el brazo izquierdo (guerreros cuerpo a cuerpo)
+  // shield on the left arm (melee warriors)
   if (opts.weapon === 'macana' || opts.weapon === 'spear' || opts.weapon === 'shield') {
     b.cylIn(armL, 0.16, 0.16, 0.035, 16, tunic, { x: -0.07, y: -0.3, rz: Math.PI / 2, tex: 'wood' });
     b.cylIn(armL, 0.05, 0.05, 0.05, 10, attire.accent, { x: -0.1, y: -0.3, rz: Math.PI / 2 });
   }
-  // cuello + cabeza (pivote a y=1.26)
+  // neck + head (pivot at y=1.26)
   b.cyl(0.045, 0.05, 0.09, 8, skin, { y: 1.15 });
   const head = b.pivot('head');
   head.position.set(0, 1.26, 0);
   b.sphereIn(head, 0.092, skin, { y: 0.02 });
   b.sphereIn(head, 0.018, skin, { x: -0.09, y: 0.02 });
   b.sphereIn(head, 0.018, skin, { x: 0.09, y: 0.02 });
-  // cara: ojos, nariz, boca
+  // face: eyes, nose, mouth
   b.boxIn(head, 0.022, 0.02, 0.02, '#241a12', { x: -0.032, y: 0.03, z: 0.082 });
   b.boxIn(head, 0.022, 0.02, 0.02, '#241a12', { x: 0.032, y: 0.03, z: 0.082 });
   b.boxIn(head, 0.016, 0.03, 0.025, skin, { y: 0.005, z: 0.088 });
   b.boxIn(head, 0.03, 0.008, 0.012, '#5a2a20', { y: -0.03, z: 0.086 });
-  // orejeras (insignia de élite andina)
+  // ear ornaments (Andean elite insignia)
   if (attire.earOrnaments) {
     b.cylIn(head, 0.028, 0.028, 0.02, 10, '#c8a040', { x: -0.1, y: 0.0, rz: Math.PI / 2, metalness: 0.7, roughness: 0.3 });
     b.cylIn(head, 0.028, 0.028, 0.02, 10, '#c8a040', { x: 0.1, y: 0.0, rz: Math.PI / 2, metalness: 0.7, roughness: 0.3 });
   }
-  // pintura facial (chanca)
+  // facial paint (chanca)
   if (attire.facepaint) {
     b.boxIn(head, 0.05, 0.012, 0.01, '#a03028', { x: -0.04, y: 0.01, z: 0.084 });
     b.boxIn(head, 0.05, 0.012, 0.01, '#a03028', { x: 0.04, y: 0.01, z: 0.084 });
   }
-  // pelo (gorro bajo el tocado)
+  // hair (cap under the headdress)
   b.sphereIn(head, 0.093, hair, { y: 0.05, z: -0.014 });
   addHeadgear(b, head, attire);
   if (opts.gadget) {
@@ -470,7 +470,7 @@ function addHumanoid(b: Builder, opts: {
     b.box(0.2, 0.28, 0.18, '#5a4a34', { x: 0, y: 0.86, z: -0.24, tex: 'leather' });
     b.box(0.22, 0.06, 0.2, '#3a2a1a', { x: 0, y: 1.0, z: -0.25 });
   }
-  // bulto de recursos transportado (visible solo mientras carga)
+  // carried resource bundle (visible only while carrying)
   if (opts.carry) {
     const carry = b.pivot('carry');
     carry.position.set(0, 0.92, -0.26);
@@ -478,17 +478,17 @@ function addHumanoid(b: Builder, opts: {
     b.boxIn(carry, 0.26, 0.05, 0.2, '#5a4630', { y: 0.14 });
     carry.visible = false;
   }
-  // capa para oficiales/élites
+  // cape for officers/elites
   if (opts.gadget || opts.weapon === 'sniper') {
     b.box(0.36, 0.5, 0.03, attire.accent, { x: 0, y: 0.9, z: -0.15, rx: -0.08 });
   }
-  // arma (pivote para animación de retroceso)
+  // weapon (pivot for recoil animation)
   const gun = b.pivot('gun');
   gun.position.set(0.26, 0.86, 0.22);
   addWeapon(b, gun, opts.weapon ?? 'none');
 }
 
-/** Armas y herramientas; las andinas (arco, honda, lanza, macana) y las de fuego. */
+/** Weapons and tools; Andean (bow, sling, spear, macana) and firearms. */
 function addWeapon(b: Builder, gun: THREE.Group, weapon: string): void {
   switch (weapon) {
     case 'rifle':
@@ -529,14 +529,14 @@ function addWeapon(b: Builder, gun: THREE.Group, weapon: string): void {
   }
 }
 
-/** Tocado histórico según el perfil de atuendo (civ/era). */
+/** Historical headwear according to the attire profile (civ/era). */
 function addHeadgear(b: Builder, head: THREE.Group, attire: Attire): void {
   const civ = b.context.civ.id;
   const fabric = b.civPrimary;
   const acc = attire.accent;
   switch (attire.head) {
     case 'llautu': {
-      // llawt'u (banda) + mascapaicha (borla roja), élite inca
+      // llawt'u (band) + mascapaicha (red tassel), Inca elite
       b.cylIn(head, 0.105, 0.105, 0.08, 12, fabric, { y: 0.08 });
       b.cylIn(head, 0.11, 0.1, 0.05, 12, acc, { y: 0.14 });
       b.boxIn(head, 0.03, 0.12, 0.03, '#b03028', { y: 0.2, z: 0.05 });
@@ -551,7 +551,7 @@ function addHeadgear(b: Builder, head: THREE.Group, attire: Attire): void {
       break;
     }
     case 'fourPoints': {
-      // gorro de cuatro puntas (altiplano)
+      // four-point hat (altiplano)
       b.cylIn(head, 0.11, 0.105, 0.07, 12, fabric, { y: 0.08 });
       b.boxIn(head, 0.2, 0.09, 0.2, fabric, { y: 0.16 });
       for (const sx of [-0.08, 0.08]) {
@@ -562,7 +562,7 @@ function addHeadgear(b: Builder, head: THREE.Group, attire: Attire): void {
       break;
     }
     case 'feathers': {
-      // tocado de plumas con banda (costa)
+      // feather headdress with a band (coast)
       b.cylIn(head, 0.105, 0.105, 0.07, 12, fabric, { y: 0.08 });
       b.boxIn(head, 0.22, 0.02, 0.22, acc, { y: 0.13 });
       for (let i = -2; i <= 2; i++) {
@@ -571,7 +571,7 @@ function addHeadgear(b: Builder, head: THREE.Group, attire: Attire): void {
       break;
     }
     case 'morion': {
-      // morrión colonial (metal) con cresta
+      // colonial morion (metal) with crest
       b.sphereIn(head, 0.105, '#8a929a', { y: 0.04, tex: 'metal' });
       b.cylIn(head, 0.11, 0.1, 0.06, 12, '#8a929a', { y: 0.11, tex: 'metal' });
       b.boxIn(head, 0.03, 0.14, 0.16, acc, { y: 0.2, z: 0.02 });
@@ -579,21 +579,21 @@ function addHeadgear(b: Builder, head: THREE.Group, attire: Attire): void {
       break;
     }
     case 'kepi': {
-      // kepí s. XIX con visera
+      // 19th-c. kepi with visor
       b.cylIn(head, 0.1, 0.1, 0.12, 12, attire.tunic, { y: 0.1, tex: 'cloth' });
       b.boxIn(head, 0.2, 0.02, 0.05, '#2a2a2a', { y: 0.05, z: 0.1 });
       b.boxIn(head, 0.06, 0.03, 0.01, acc, { y: 0.06, z: 0.105 });
       break;
     }
     case 'helmet': {
-      // casco moderno
+      // modern helmet
       b.sphereIn(head, 0.108, '#4a5540', { y: 0.03, tex: 'cloth' });
       b.cylIn(head, 0.112, 0.108, 0.05, 12, '#3e4636', { y: 0.1 });
       b.boxIn(head, 0.14, 0.05, 0.03, '#2a2a2a', { y: 0.02, z: 0.1 });
       break;
     }
     default: {
-      // cinta/gorro llano
+      // plain band/hat
       b.cylIn(head, 0.1, 0.1, 0.04, 12, fabric, { y: 0.08 });
       b.boxIn(head, 0.12, 0.02, 0.16, fabric, { y: 0.1 });
       break;
@@ -610,7 +610,7 @@ function addVehicleBody(b: Builder, hull: string, turret: string, opts: { treads
     b.cyl(0.16, 0.16, 1.5, 16, b.pal.darkMetal, { x: 0.44, y: 0.18, rx: Math.PI / 2 });
   }
   b.box(0.85, 0.4, 1.3, hull, { y: 0.55, metalness: 0.5, roughness: 0.45 });
-  // torreta como hija del pivote (gira)
+  // turret as a child of the pivot (rotates)
   b.boxIn(turretGroup, 0.6, 0.28, 0.8, turret, { y: 0.14, metalness: 0.6, roughness: 0.4 });
   const barrel = b.pivot('gun');
   barrel.position.set(0, 0.14, 0.5);
@@ -624,7 +624,7 @@ function addVehicleBody(b: Builder, hull: string, turret: string, opts: { treads
 }
 
 // ---------------------------------------------------------------------------
-// Constructores de unidades
+// Unit constructors
 // ---------------------------------------------------------------------------
 
 function buildInfantry(type: string, ctx: BuildContext): THREE.Group {
@@ -649,7 +649,7 @@ function buildInfantry(type: string, ctx: BuildContext): THREE.Group {
       b.box(0.58, 0.42, 0.4, '#d7e0e8', { y: 0.84, tex: 'scifi', texScale: 2 });
       b.box(0.3, 0.36, 0.26, b.pal.emissive, { y: 0.48, z: 0.26, emissive: b.pal.emissive, emissiveIntensity: 1.4 });
       b.box(0.42, 0.22, 0.34, b.civAccent, { y: 1.12, metalness: 0.4, emissive: b.pal.emissive, emissiveIntensity: 0.6 });
-      // hombrera-cañón ancho (silueta pesada distintiva)
+      // wide shoulder-cannon (distinctive heavy silhouette)
       b.cylIn(b.group, 0.16, 0.22, 0.9, 10, '#c4ccd4', { x: 0.34, y: 1.1, z: 0.1, rx: Math.PI / 2, tex: 'metal' });
       b.cylIn(b.group, 0.16, 0.22, 0.9, 10, '#c4ccd4', { x: -0.34, y: 1.1, z: 0.1, rx: Math.PI / 2, tex: 'metal' });
       b.sphere(0.08, b.pal.emissive, { y: 1.3, emissive: b.pal.emissive, emissiveIntensity: 2 });
@@ -708,7 +708,7 @@ function buildWorker(type: string, ctx: BuildContext): THREE.Group {
 
 function buildMounted(type: string, ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
-  // montura en un grupo elevado (patas + cuerpo + silla)
+  // mount in a raised group (legs + body + saddle)
   const mount = b.pivot('mount');
   mount.position.y = 0.42;
   b.boxIn(mount, 0.4, 0.6, 0.9, mixHex(b.civPrimary, '#3a2a18', 0.4), { y: 0.12, z: -0.1 });
@@ -717,7 +717,7 @@ function buildMounted(type: string, ctx: BuildContext): THREE.Group {
   b.boxIn(mount, 0.12, 0.5, 0.14, b.pal.darkMetal, { x: 0.2, y: -0.15, z: 0.25 });
   b.boxIn(mount, 0.12, 0.5, 0.14, b.pal.darkMetal, { x: -0.2, y: -0.15, z: -0.4 });
   b.boxIn(mount, 0.12, 0.5, 0.14, b.pal.darkMetal, { x: 0.2, y: -0.15, z: -0.4 });
-  // jinete encima de la silla (en un grupo elevado para no tocar la montura)
+  // rider on top of the saddle (in a raised group so as not to touch the mount)
   const before = b.group.children.length;
   addHumanoid(b, { role: 'mounted', helmet: type === 'cavalry', weapon: 'machete', armor: type === 'cavalry' ? 'metal' : 'cloth' });
   const rider = new THREE.Group();
@@ -761,7 +761,7 @@ function buildTank(type: string, ctx: BuildContext): THREE.Group {
   const scale = type.includes('liviano') ? 1 : type.includes('medium') ? 1.12 : type.includes('moderno') ? 1.2 : 1.3;
   b.group.scale.setScalar(scale);
   if (type.includes('fut')) {
-    // tanque levitador futurista con torreta animada
+    // futuristic levitating tank with an animated turret
     b.box(0.9, 0.35, 1.4, b.pal.metal, { y: 0.5, metalness: 0.7, roughness: 0.3 });
     b.box(0.9, 0.06, 1.5, b.pal.emissive, { y: 0.06, emissive: b.pal.emissive, emissiveIntensity: 1.6, transparent: true, opacity: 0.7 });
     const turret = b.pivot('turret');
@@ -781,14 +781,14 @@ function buildTank(type: string, ctx: BuildContext): THREE.Group {
 function buildAntiAir(type: string, ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
   const fut = type.includes('fut');
-  // chasis
+  // chassis
   if (!fut) {
     b.box(0.9, 0.34, 1.5, b.pal.darkMetal, { y: 0.22, metalness: 0.5 });
     b.cyl(0.16, 0.16, 1.5, 16, b.pal.darkMetal, { x: -0.44, y: 0.18, rx: Math.PI / 2 });
     b.cyl(0.16, 0.16, 1.5, 16, b.pal.darkMetal, { x: 0.44, y: 0.18, rx: Math.PI / 2 });
   }
   b.box(0.85, 0.4, 1.3, b.pal.darkMetal, { y: 0.55, metalness: 0.5 });
-  // torreta con los dos cañones AA como hijos
+  // turret with the two AA barrels as children
   const turret = b.pivot('turret');
   turret.position.set(0, 0.85, 0);
   b.boxIn(turret, 0.55, 0.26, 0.7, b.pal.metal, { y: 0.13, metalness: 0.6 });
@@ -797,7 +797,7 @@ function buildAntiAir(type: string, ctx: BuildContext): THREE.Group {
   b.cylIn(gun, 0.05, 0.05, 0.8, 8, b.pal.darkMetal, { y: 0.07, z: 0.4, rx: Math.PI / 2 });
   b.cylIn(gun, 0.05, 0.05, 0.8, 8, b.pal.darkMetal, { y: 0.2, z: 0.4, rx: Math.PI / 2 });
   turret.add(gun);
-  // antena
+  // antenna
   b.cylIn(turret, 0.01, 0.01, 0.5, 6, b.pal.metal, { y: 0.5, z: -0.2, metalness: 0.8 });
   b.sphereIn(turret, 0.04, b.pal.emissive, { y: 0.78, z: -0.2, emissive: b.pal.emissive, emissiveIntensity: 2 });
   return b.finish();
@@ -807,11 +807,11 @@ function buildCannon(type: string, ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
   const isRiel = type.includes('riel');
   const isHowitzer = type.includes('howitzer');
-  // cureña
+  // gun carriage
   b.cyl(0.55, 0.6, 0.5, 14, b.pal.darkWood, { y: 0.5, rx: Math.PI / 2 });
   b.cyl(0.28, 0.3, 0.5, 10, b.pal.darkMetal, { x: -0.4, y: 0.35, rx: Math.PI / 2 });
   b.cyl(0.28, 0.3, 0.5, 10, b.pal.darkMetal, { x: 0.4, y: 0.35, rx: Math.PI / 2 });
-  // arma sobre el pivote (apunta al objetivo)
+  // weapon on the pivot (aims at the target)
   const gun = b.pivot('gun');
   gun.position.set(0, 0.85, 0.2);
   if (isRiel) {
@@ -851,7 +851,7 @@ function buildCommisar(type: string, ctx: BuildContext): THREE.Group {
 function buildMech(ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
   const heavy = ctx.era >= Era.CONTEMPORARY;
-  // piernas
+  // legs
   b.box(0.5, 1.2, 0.6, b.pal.darkMetal, { x: -0.55, y: 0.6, metalness: 0.7 });
   b.box(0.5, 1.2, 0.6, b.pal.darkMetal, { x: 0.55, y: 0.6, metalness: 0.7 });
   b.box(0.6, 0.3, 0.7, b.pal.darkMetal, { x: -0.55, y: 1.35, metalness: 0.7 });
@@ -860,13 +860,13 @@ function buildMech(ctx: BuildContext): THREE.Group {
   b.box(1.4, 0.9, 0.8, b.pal.metal, { y: 1.9, metalness: 0.75, roughness: 0.3 });
   b.box(1.5, 0.3, 0.85, b.civAccent, { y: 1.55, metalness: 0.4 });
   b.box(0.6, 0.5, 0.2, b.pal.emissive, { y: 2.0, z: 0.45, emissive: b.pal.emissive, emissiveIntensity: 1.6, transparent: true, opacity: 0.85 });
-  // brazos
+  // arms
   const gun = b.pivot('gun');
   gun.position.set(0.85, 2.0, 0);
   b.boxIn(gun, 0.4, 1.1, 0.5, b.pal.darkMetal, { x: 0, y: -0.5, metalness: 0.7 });
   b.box(0.4, 0.4, 0.5, b.pal.darkMetal, { x: -0.85, y: 1.5, metalness: 0.7 });
   b.cylIn(gun, 0.18, 0.24, 1.6, 12, b.pal.darkMetal, { y: 0.4, z: 0.6, rx: Math.PI / 2, metalness: 0.8 });
-  // cabeza
+  // head
   b.box(0.5, 0.4, 0.5, b.pal.darkMetal, { y: 2.7, metalness: 0.7 });
   b.box(0.32, 0.12, 0.1, b.pal.emissive, { y: 2.72, z: 0.28, emissive: b.pal.emissive, emissiveIntensity: 2 });
   if (heavy) {
@@ -876,7 +876,7 @@ function buildMech(ctx: BuildContext): THREE.Group {
 }
 
 // ---------------------------------------------------------------------------
-// Constructores de edificios
+// Building constructors
 // ---------------------------------------------------------------------------
 
 function buildStructure(type: string, ctx: BuildContext): THREE.Group {
@@ -1106,7 +1106,7 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
   return b.finish();
 }
 
-/** Acento cívico: bandera con el color del jugador o emblema luminoso. */
+/** Civic accent: banner with the player color or a glowing emblem. */
 function addCivAccent(b: Builder, futuristic: boolean): void {
   if (futuristic) {
     b.cyl(0.03, 0.03, 2.4, 6, b.pal.darkMetal, { y: 3.4, x: -1.4, metalness: 0.8 });
@@ -1119,13 +1119,13 @@ function addCivAccent(b: Builder, futuristic: boolean): void {
   }
 }
 
-// --- piezas de edificios ---
+// --- building pieces ---
 
 function groundPad(b: Builder, size: number): void {
   b.box(size * 2.2, 0.14, size * 2.2, '#e9e0cd', { y: 0.07, roughness: 0.95, tex: 'dirt', texScale: 1.4 });
 }
 
-/** Ventanas con marco y cristal luminoso, en una cara de una caja de ancho `w`. */
+/** Windows with frame and glowing glass, on one face of a box of width `w`. */
 function addWindows(b: Builder, w: number, y: number, z: number, n: number, o: { span?: number; emissiveIntensity?: number } = {}): void {
   const span = o.span ?? 0.24;
   const frameCol = '#26211c';
@@ -1133,7 +1133,7 @@ function addWindows(b: Builder, w: number, y: number, z: number, n: number, o: {
     const x = (i - (n - 1) / 2) * w * span;
     b.box(w * 0.15, w * 0.2, w * 0.05, frameCol, { x, y, z });
     b.box(w * 0.09, w * 0.13, w * 0.06, b.pal.emissive, { x, y, z, emissive: b.pal.emissive, emissiveIntensity: o.emissiveIntensity ?? 1.5, transparent: true, opacity: 0.9 });
-    // repisa
+    // ledge
     b.box(w * 0.17, w * 0.03, w * 0.06, frameCol, { x, y: y - w * 0.12, z });
   }
 }
@@ -1142,34 +1142,34 @@ function buildHouse(b: Builder, size: number, grand: boolean): void {
   groundPad(b, size);
   const w = size;
   const wallTint = mixHex(b.pal.wood, '#ffffff', 0.52);
-  // muro principal con veta de madera
+  // main wall with a wood grain
   b.box(w * 0.92, w * 0.72, w * 0.92, wallTint, { y: w * 0.36, tex: 'wood' });
-  // esquineros / vigas verticales
+  // corner posts / vertical beams
   for (let i = -1; i <= 1; i++) {
     b.box(0.09, w * 0.78, 0.09, b.pal.darkWood, { x: i * w * 0.3, y: w * 0.37 });
   }
-  // zócalo
+  // plinth
   b.box(w * 0.96, w * 0.08, w * 0.96, b.pal.darkWood, { y: w * 0.05 });
-  // techo a dos aguas con tejas
+  // gable roof with tiles
   const roofTint = mixHex(b.pal.roof, '#ffffff', 0.58);
   b.box(w * 1.06, w * 0.16, w * 0.62, roofTint, { y: w * 0.82, z: w * 0.24, rx: 0.55, ry: Math.PI / 2, tex: 'roof' });
   b.box(w * 1.06, w * 0.16, w * 0.62, roofTint, { y: w * 0.82, z: -w * 0.24, rx: -0.55, ry: Math.PI / 2, tex: 'roof' });
   b.box(w * 1.08, w * 0.12, w * 0.24, roofTint, { y: w * 1.06, ry: Math.PI / 2, tex: 'roof' });
-  // alero frontal/trasero
+  // front/rear eave
   b.box(w * 1.06, 0.05, w * 0.16, b.pal.darkWood, { y: w * 0.72, z: w * 0.48 });
   b.box(w * 1.06, 0.05, w * 0.16, b.pal.darkWood, { y: w * 0.72, z: -w * 0.48 });
-  // ventanas frontales y traseras
+  // front and rear windows
   addWindows(b, w, w * 0.48, w * 0.47, grand ? 3 : 2);
   addWindows(b, w, w * 0.48, -w * 0.47, grand ? 2 : 1);
-  // chimenea de ladrillo
+  // brick chimney
   b.box(0.24, w * 0.62, 0.24, '#f2e9d8', { x: w * 0.26, y: w * 0.95, z: -w * 0.2, tex: 'brick' });
   b.box(0.3, 0.06, 0.3, b.pal.darkWood, { x: w * 0.26, y: w * 1.26, z: -w * 0.2 });
-  // puerta con marco
+  // door with frame
   b.box(0.36, w * 0.46, 0.06, b.pal.darkWood, { y: w * 0.21, z: w * 0.47 });
   b.box(0.42, 0.05, 0.07, b.pal.darkWood, { y: w * 0.45, z: w * 0.47 });
-  // peldaño
+  // step
   b.box(0.5, 0.06, 0.18, b.pal.darkWood, { y: 0.03, z: w * 0.5 });
-  // bandera
+  // banner
   b.cyl(0.02, 0.02, w * 0.5, 6, b.pal.darkWood, { y: w * 1.1, x: -w * 0.3, z: -w * 0.3 });
   b.box(0.3, 0.14, 0.02, b.civPrimary, { y: w * 1.2, x: -w * 0.14, z: -w * 0.3 });
 }
@@ -1179,22 +1179,22 @@ function buildCivic(b: Builder, size: number, matType: 'stone' | 'brick'): void 
   const wallTint = matType === 'stone' ? '#ece5d8' : '#f0e2d0';
   const w = size;
   b.box(w * 0.9, w * 0.6, w * 0.9, wallTint, { y: w * 0.3, tex: matType, roughness: 0.85 });
-  // columnas
+  // columns
   for (let i = 0; i < 4; i++) {
     b.cyl(0.08, 0.1, w * 0.55, 10, b.pal.stone, { x: (i - 1.5) * w * 0.28, y: w * 0.3, z: w * 0.42 });
   }
-  // frontón
+  // gable
   b.box(w * 1.0, 0.14, w * 0.42, b.pal.darkMetal, { y: w * 0.68, z: w * 0.28, ry: Math.PI / 2, tex: 'metalDark', texScale: 2 });
   b.box(w * 1.0, 0.14, w * 0.42, b.pal.darkMetal, { y: w * 0.68, z: -w * 0.28, ry: Math.PI / 2, tex: 'metalDark', texScale: 2 });
   b.box(w * 1.0, w * 0.4, 0.14, b.pal.darkMetal, { y: w * 0.86, ry: Math.PI / 4, tex: 'metalDark', texScale: 2 });
   b.box(0.18, w * 0.5, 0.18, b.pal.accent2, { y: w * 0.6, z: w * 0.45 });
-  // linterna / reloj
+  // lantern / clock
   b.box(0.3, 0.4, 0.2, b.pal.darkMetal, { y: w * 1.0, z: w * 0.45 });
   b.box(0.3, 0.1, 0.1, b.pal.emissive, { y: w * 1.05, z: w * 0.45, emissive: b.pal.emissive, emissiveIntensity: 1.5 });
   b.cyl(0.02, 0.02, w * 0.6, 6, b.pal.darkMetal, { y: w * 1.1, z: -w * 0.3 });
-  // puerta central con marco
+  // central door with frame
   b.box(0.3, w * 0.4, 0.06, b.pal.darkMetal, { y: w * 0.2, z: w * 0.46 });
-  // ventanas laterales
+  // side windows
   addWindows(b, w, w * 0.44, w * 0.46, 2, { span: 0.3 });
 }
 
@@ -1212,11 +1212,11 @@ function buildConcrete(b: Builder, size: number, tower: boolean, radar = false):
     b.cyl(0.05, 0.05, w * 0.6, 6, b.pal.darkMetal, { y: w * 0.7 });
     b.sphere(w * 0.3, b.pal.metal, { y: w * 1.0, metalness: 0.6, roughness: 0.3 });
   }
-  // ventanas iluminadas
+  // lit windows
   for (let i = 0; i < 3; i++) {
     b.box(0.2, 0.14, 0.05, b.pal.emissive, { x: (i - 1) * w * 0.24, y: w * 0.4, z: w * 0.47, emissive: b.pal.emissive, emissiveIntensity: 1.3, transparent: true, opacity: 0.9 });
   }
-  // puerta
+  // door
   b.box(0.32, w * 0.34, 0.06, b.pal.darkMetal, { y: w * 0.18, z: w * 0.47 });
 }
 
@@ -1225,9 +1225,9 @@ function buildModern(b: Builder, size: number, tower: boolean): void {
   const w = size;
   b.box(w * 0.94, w * 0.6, w * 0.94, mixHex(b.pal.metal, '#ffffff', 0.45), { y: w * 0.3, tex: 'metal', texScale: 2 });
   b.box(w * 0.96, w * 0.1, w * 0.96, b.pal.darkMetal, { y: w * 0.05, tex: 'metalDark' });
-  // fachada de cristal
+  // glass facade
   b.box(w * 0.86, w * 0.5, 0.06, b.civPrimary, { y: w * 0.32, z: w * 0.47, metalness: 0.7, roughness: 0.2, transparent: true, opacity: 0.6 });
-  // líneas de LED
+  // LED strips
   for (let i = 0; i < 4; i++) {
     b.box(w * 0.82, 0.04, 0.04, b.pal.emissive, { y: w * 0.22 + i * w * 0.12, z: w * 0.47, emissive: b.pal.emissive, emissiveIntensity: 1.6 });
   }
@@ -1239,7 +1239,7 @@ function buildModern(b: Builder, size: number, tower: boolean): void {
   }
   b.cyl(0.02, 0.02, w * 0.5, 6, b.pal.darkMetal, { y: w * 0.9, x: -w * 0.3 });
   b.box(w * 0.3, 0.14, 0.02, b.civPrimary, { y: w * 0.95, x: -w * 0.14 });
-  // entrada
+  // input
   b.box(0.36, w * 0.3, 0.06, b.pal.darkMetal, { y: w * 0.15, z: w * 0.47 });
 }
 
@@ -1247,10 +1247,10 @@ function buildFuturistic(b: Builder, size: number, tower: boolean): void {
   groundPad(b, size);
   const w = size;
   const panelTint = '#dbe4ec';
-  // base levitante con resplandor
+  // levitating base with glow
   b.box(w * 1.0, w * 0.16, w * 1.0, panelTint, { y: w * 0.16, tex: 'scifi' });
   b.box(w * 1.04, w * 0.05, w * 1.04, b.pal.emissive, { y: w * 0.05, emissive: b.pal.emissive, emissiveIntensity: 2, transparent: true, opacity: 0.8 });
-  // núcleo
+  // core
   b.box(w * 0.8, w * 0.5, w * 0.8, panelTint, { y: w * 0.5, tex: 'scifi' });
   b.box(w * 0.82, w * 0.08, w * 0.82, b.pal.accent2, { y: w * 0.5, metalness: 0.5 });
   b.box(w * 0.4, w * 0.3, w * 0.1, b.pal.emissive, { y: w * 0.55, z: w * 0.42, emissive: b.pal.emissive, emissiveIntensity: 2, transparent: true, opacity: 0.9 });
@@ -1271,7 +1271,7 @@ function buildBarracks(b: Builder, size: number, wallType: 'wood' | 'brick'): vo
   b.box(w * 1.0, w * 0.14, w * 0.44, roofTint, { y: w * 0.56, z: w * 0.16, rx: 0.55, ry: Math.PI / 2, tex: 'roof' });
   b.box(w * 1.0, w * 0.14, w * 0.44, roofTint, { y: w * 0.56, z: -w * 0.16, rx: -0.55, ry: Math.PI / 2, tex: 'roof' });
   b.box(w * 1.02, w * 0.1, w * 0.2, roofTint, { y: w * 0.74, ry: Math.PI / 2, tex: 'roof' });
-  // puerta ancha con marco
+  // wide door with frame
   b.box(0.4, w * 0.36, 0.07, b.pal.darkWood, { y: w * 0.16, z: w * 0.36 });
   b.box(0.46, 0.05, 0.08, b.pal.darkWood, { y: w * 0.35, z: w * 0.36 });
   b.box(0.08, 0.4, 0.08, b.pal.darkWood, { x: -0.26, y: w * 0.17, z: w * 0.36 });
@@ -1290,7 +1290,7 @@ function buildStable(b: Builder, size: number, wallType: 'wood' | 'brick'): void
   b.box(w * 1.02, w * 0.16, w * 0.5, roofTint, { y: w * 0.62, z: w * 0.2, rx: 0.55, ry: Math.PI / 2, tex: 'roof' });
   b.box(w * 1.02, w * 0.16, w * 0.5, roofTint, { y: w * 0.62, z: -w * 0.2, rx: -0.55, ry: Math.PI / 2, tex: 'roof' });
   b.box(w * 1.04, w * 0.12, w * 0.22, roofTint, { y: w * 0.8, ry: Math.PI / 2, tex: 'roof' });
-  // puertas anchas
+  // wide doors
   b.box(0.4, w * 0.3, 0.07, b.pal.darkWood, { x: -0.22, y: w * 0.16, z: w * 0.38 });
   b.box(0.4, w * 0.3, 0.07, b.pal.darkWood, { x: 0.22, y: w * 0.16, z: w * 0.38 });
   b.box(0.08, w * 0.34, 0.08, b.pal.darkWood, { x: -0.43, y: w * 0.17, z: w * 0.38 });
@@ -1304,7 +1304,7 @@ function buildMilitary(b: Builder, size: number, antenna: boolean): void {
   const w = size;
   b.box(w * 0.92, w * 0.5, w * 0.8, mixHex(b.pal.concrete, '#ffffff', 0.62), { y: w * 0.25, tex: 'concrete' });
   b.box(w * 0.98, w * 0.16, w * 0.9, b.pal.darkMetal, { y: w * 0.08, tex: 'metalDark' });
-  // torreta de esquina
+  // corner turret
   b.cyl(0.22, 0.28, w * 0.55, 10, mixHex(b.pal.concrete, '#ffffff', 0.62), { x: w * 0.34, y: w * 0.5, z: w * 0.32, tex: 'concrete' });
   b.cyl(0.1, 0.1, 0.06, 8, b.pal.emissive, { x: w * 0.34, y: w * 0.8, z: w * 0.32, emissive: b.pal.emissive, emissiveIntensity: 1.6 });
   if (antenna) {
@@ -1321,13 +1321,13 @@ function buildFactory(b: Builder, size: number, wallType: 'brick' | 'wood'): voi
   const w = size;
   const wallTint = wallType === 'brick' ? mixHex(b.pal.brick, '#ffffff', 0.5) : mixHex(b.pal.wood, '#ffffff', 0.5);
   b.box(w * 1.0, w * 0.55, w * 0.8, wallTint, { y: w * 0.28, tex: wallType });
-  // techo plano metálico
+  // flat metal roof
   b.box(w * 1.06, w * 0.1, w * 0.9, b.pal.darkMetal, { y: w * 0.55, tex: 'metalDark' });
-  // chimeneas
+  // chimneys
   for (let i = -1; i <= 1; i++) {
     b.cyl(0.1, 0.13, w * 0.8, 8, '#f0e2d0', { x: i * w * 0.26, y: w * 0.9, z: -w * 0.25, tex: 'brick' });
   }
-  // puerta
+  // door
   b.box(0.4, w * 0.34, 0.06, b.pal.darkMetal, { y: w * 0.18, z: w * 0.41, metalness: 0.5 });
   b.box(0.5, 0.1, 0.06, b.pal.emissive, { y: w * 0.5, z: w * 0.41, emissive: b.pal.emissive, emissiveIntensity: 1.2 });
   addWindows(b, w, w * 0.4, w * 0.41, 2, { span: 0.3 });
@@ -1337,30 +1337,30 @@ function buildFortress(b: Builder, size: number, matType: 'stone' | 'concrete'):
   groundPad(b, size);
   const w = size;
   const wallTint = matType === 'stone' ? mixHex(b.pal.stone, '#ffffff', 0.5) : mixHex(b.pal.concrete, '#ffffff', 0.62);
-  // torre central
+  // central tower
   b.cyl(w * 0.5, w * 0.62, w * 1.1, 16, wallTint, { y: w * 0.55, tex: matType, texScale: 2 });
   b.cyl(w * 0.56, w * 0.5, w * 0.16, 16, b.pal.darkMetal, { y: w * 1.1, tex: 'metalDark' });
-  // almenas
+  // battlements
   for (let i = 0; i < 10; i++) {
     const a = (i / 10) * Math.PI * 2;
     b.box(0.12, w * 0.16, 0.12, wallTint, { x: Math.cos(a) * w * 0.5, y: w * 1.16, z: Math.sin(a) * w * 0.5, tex: matType });
   }
-  // bastiones
+  // bastions
   for (let i = 0; i < 4; i++) {
     const a = (i / 4) * Math.PI * 2 + Math.PI / 4;
     b.cyl(0.24, 0.3, w * 0.7, 10, wallTint, { x: Math.cos(a) * w * 0.85, y: w * 0.35, z: Math.sin(a) * w * 0.85, tex: matType });
   }
-  // muros de conexión
+  // connecting walls
   b.box(w * 1.5, w * 0.45, w * 0.22, wallTint, { y: w * 0.22, z: w * 0.72, tex: matType });
   b.box(w * 1.5, w * 0.45, w * 0.22, wallTint, { y: w * 0.22, z: -w * 0.72, tex: matType });
   b.box(w * 0.22, w * 0.45, w * 1.5, wallTint, { x: w * 0.72, y: w * 0.22, tex: matType });
   b.box(w * 0.22, w * 0.45, w * 1.5, wallTint, { x: -w * 0.72, y: w * 0.22, tex: matType });
-  // troneras
+  // embrasures
   for (let i = -1; i <= 1; i++) {
     b.box(0.16, 0.1, 0.05, b.pal.darkMetal, { x: i * w * 0.3, y: w * 0.5, z: w * 0.83, metalness: 0.4 });
     b.box(0.16, 0.1, 0.05, b.pal.darkMetal, { x: i * w * 0.3, y: w * 0.5, z: -w * 0.83, metalness: 0.4 });
   }
-  // bandera
+  // banner
   b.cyl(0.02, 0.02, w * 0.7, 6, b.pal.darkWood, { y: w * 1.4 });
   b.box(w * 0.4, w * 0.2, 0.03, b.civPrimary, { y: w * 1.5, z: 0.2 });
   b.box(0.24, 0.1, 0.05, b.pal.emissive, { y: w * 1.08, x: w * 0.5, z: w * 0.5, emissive: b.pal.emissive, emissiveIntensity: 1.6 });
@@ -1371,16 +1371,16 @@ function buildMarket(b: Builder, size: number, wallType: 'wood' | 'brick'): void
   const w = size;
   const wallTint = wallType === 'wood' ? mixHex(b.pal.wood, '#ffffff', 0.5) : mixHex(b.pal.brick, '#ffffff', 0.5);
   b.box(w * 0.9, w * 0.4, w * 0.7, wallTint, { y: w * 0.2, tex: wallType });
-  // toldo de rayas
+  // striped awning
   b.box(w * 1.0, 0.1, w * 0.7, b.civPrimary, { y: w * 0.5, ry: Math.PI / 2, x: 0 });
   for (let i = 0; i < 6; i++) {
     b.box(w * 0.16, 0.11, w * 0.66, i % 2 === 0 ? b.civSecondary : b.civPrimary, { y: w * 0.5, x: (i - 2.5) * w * 0.16, ry: Math.PI / 2 });
   }
-  // postes
+  // posts
   for (let i = 0; i < 4; i++) {
     b.cyl(0.05, 0.05, w * 0.55, 8, b.pal.darkWood, { x: (i % 2 === 0 ? -1 : 1) * w * 0.4, y: w * 0.28, z: (i < 2 ? -1 : 1) * w * 0.3 });
   }
-  // mercancía
+  // merchandise
   b.box(0.3, 0.2, 0.3, '#efe6d2', { x: -0.25, y: w * 0.12, z: 0.1, tex: 'wood' });
   b.box(0.25, 0.25, 0.25, '#e0e6ec', { x: 0.2, y: w * 0.13, z: -0.15, tex: 'metal' });
 }
@@ -1394,29 +1394,29 @@ function buildDropsite(b: Builder, size: number, matType: 'wood' | 'brick' | 'st
   b.box(w * 0.95, w * 0.12, w * 0.42, roofTint, { y: w * 0.56, z: w * 0.15, rx: 0.55, ry: Math.PI / 2, tex: 'roof' });
   b.box(w * 0.95, w * 0.12, w * 0.42, roofTint, { y: w * 0.56, z: -w * 0.15, rx: -0.55, ry: Math.PI / 2, tex: 'roof' });
   b.box(w * 0.97, w * 0.1, w * 0.2, roofTint, { y: w * 0.72, ry: Math.PI / 2, tex: 'roof' });
-  // puerta
+  // door
   b.box(0.3, w * 0.34, 0.05, b.pal.darkWood, { y: w * 0.17, z: w * 0.36 });
   b.cyl(0.02, 0.02, w * 0.4, 6, b.pal.darkWood, { y: w * 0.7, x: -w * 0.28 });
-  // rampa de carga
+  // loading ramp
   b.box(w * 0.5, 0.06, 0.2, b.pal.darkWood, { y: 0.03, z: w * 0.38 });
 }
 
 function buildFarm(b: Builder): void {
   const w = 3.0;
   b.box(w * 0.7, 0.1, w * 0.7, '#e9e0cd', { y: 0.05, tex: 'dirt' });
-  // surcos
+  // furrows
   for (let i = -1; i <= 1; i++) {
     b.box(0.1, 0.04, w * 0.62, mixHex(b.pal.wood, '#4a6a2a', 0.5), { z: i * 0.35, y: 0.09 });
   }
   for (let i = -1; i <= 1; i++) {
     b.box(w * 0.62, 0.04, 0.1, mixHex(b.pal.wood, '#4a6a2a', 0.5), { x: i * 0.35, y: 0.09 });
   }
-  // brotes
+  // shoots
   b.cyl(0.04, 0.05, 0.24, 6, mixHex('#3a6a2a', b.pal.primary, 0.3), { x: -0.4, y: 0.18, z: 0.3 });
   b.cyl(0.04, 0.05, 0.24, 6, mixHex('#3a6a2a', b.pal.primary, 0.3), { x: 0.4, y: 0.18, z: -0.3 });
   b.cyl(0.04, 0.05, 0.24, 6, mixHex('#4a8a2a', b.pal.primary, 0.2), { x: 0.1, y: 0.2, z: 0.2 });
   b.cyl(0.04, 0.05, 0.24, 6, mixHex('#4a8a2a', b.pal.primary, 0.2), { x: -0.2, y: 0.2, z: -0.2 });
-  // vallado
+  // fencing
   const fence = '#8a6a42';
   for (const [fx, fz] of [[-w * 0.36, 0], [w * 0.36, 0], [0, -w * 0.36], [0, w * 0.36]] as const) {
     b.box(0.08, 0.34, 0.08, fence, { x: fx, y: 0.16, z: fz });
@@ -1428,7 +1428,7 @@ function buildFarmFut(b: Builder): void {
   const w = 3.0;
   b.box(w * 0.7, 0.1, w * 0.7, '#dbe4ec', { y: 0.06, tex: 'scifi' });
   b.box(w * 0.72, 0.04, w * 0.72, b.pal.emissive, { y: 0.03, emissive: b.pal.emissive, emissiveIntensity: 1.4, transparent: true, opacity: 0.7 });
-  // hileras de cultivos hidropónicos
+  // rows of hydroponic crops
   for (let i = -1; i <= 1; i++) {
     b.box(0.08, 0.14, w * 0.58, mixHex(b.pal.emissive, '#3a7a2a', 0.5), { z: i * 0.34, y: 0.14 });
   }
@@ -1437,9 +1437,9 @@ function buildFarmFut(b: Builder): void {
 function buildWonder(b: Builder): void {
   const w = 5.0;
   groundPad(b, w);
-  // columna central monumental
+  // monumental central column
   b.cyl(0.6, 0.8, w * 1.6, 16, b.pal.metal, { y: w * 0.8, metalness: 0.8, roughness: 0.3 });
-  // anillos flotantes
+  // floating rings
   for (let i = 0; i < 3; i++) {
     const r = new THREE.TorusGeometry(1.1 + i * 0.4, 0.08, 8, 32);
     const m = mat(b.pal.accent2, { metalness: 0.8, roughness: 0.3, emissive: b.pal.emissive, emissiveIntensity: 0.8 });
@@ -1450,7 +1450,7 @@ function buildWonder(b: Builder): void {
     ring.name = 'part';
     b.group.add(ring);
   }
-  // esfera de energía superior
+  // upper energy sphere
   const orb = b.sphere(0.5, b.pal.emissive, { y: w * 1.85, emissive: b.pal.emissive, emissiveIntensity: 2 });
   orb.name = 'part';
   b.sphere(0.7, b.pal.emissive, { y: w * 1.85, emissive: b.pal.emissive, emissiveIntensity: 0.7, transparent: true, opacity: 0.3 });
@@ -1461,7 +1461,7 @@ function buildWonder(b: Builder): void {
 
 // ---------------------------------------------------------------------------
 
-/** Construye un modelo paramétrico según el tipo. */
+/** Build a parametric model according to the type. */
 export function buildModel(spec: ModelSpec, ctx: BuildContext): THREE.Group {
   const { type, scale } = spec;
   let g: THREE.Group;
@@ -1484,7 +1484,7 @@ export function buildModel(spec: ModelSpec, ctx: BuildContext): THREE.Group {
   return g;
 }
 
-/** Hornea AO en los colores de vértice (oscuras la base), memoizado por geometría origen. */
+/** Bake AO into vertex colors (darkens the base), memoized by source geometry. */
 function bakeVertexAO(root: THREE.Object3D): void {
   root.updateMatrixWorld(true);
   root.traverse((obj) => {
@@ -1506,7 +1506,7 @@ function bakeVertexAO(root: THREE.Object3D): void {
         if (y > maxY) maxY = y;
       }
       const range = Math.max(0.001, maxY - minY);
-      // clonar geometría para no contaminar geometrías cacheadas compartidas
+      // clone geometry to avoid polluting shared cached geometries
       owned = geo.clone();
       const cols = new Float32Array(n * 3);
       for (let i = 0; i < n; i++) {
@@ -1526,8 +1526,8 @@ function bakeVertexAO(root: THREE.Object3D): void {
 }
 
 /**
- * Libera los materiales de un modelo. Las geometrías y texturas son compartidas
- * (caché global), por lo que NO se disponen aquí; se liberan con clearModelCaches().
+ * Free a model's materials. Geometries and textures are shared
+ * (global cache), so they are NOT disposed here; they are freed with clearModelCaches().
  */
 export function disposeModel(g: THREE.Group): void {
   g.traverse((obj) => {
@@ -1539,7 +1539,7 @@ export function disposeModel(g: THREE.Group): void {
   });
 }
 
-/** Libera todas las geometrías/texturas compartidas del generador de modelos. */
+/** Free all shared geometries/textures of the model generator. */
 export function clearModelCaches(): void {
   for (const k of Object.keys(sharedGeo)) {
     sharedGeo[k].dispose();

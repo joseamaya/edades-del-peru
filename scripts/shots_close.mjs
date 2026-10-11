@@ -10,7 +10,7 @@ for (const era of [0, 1, 2, 3, 4, 5]) {
   await page.goto(base + `/?seed=777&fog=0&low=1&era=${era}`, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => window.game !== undefined, null, { timeout: 30000 }).catch(() => {});
   await page.waitForTimeout(5000);
-  // colocar varias unidades y edificios para verlos bien
+  // place several units and buildings to see them well
   await page.evaluate(() => {
     const g = window.game;
     const UnitCtor = Object.getPrototypeOf([...g.units.values()][0]).constructor;

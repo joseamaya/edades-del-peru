@@ -69,21 +69,21 @@ export class Particles {
           vColor = aColor;
           vEmissive = aData.w;
           float t = aData.x;
-          // curva de alfa según tipo
+          // alpha curve depending on type
           float alpha;
           float kind = aData.y;
           float seed = aData.z;
-          if (kind < 0.5) { // humo: sube, crece, fade suave
+          if (kind < 0.5) { // smoke: rises, grows, soft fade
             alpha = (1.0 - t) * (0.45 + 0.2 * sin(seed * 40.0));
-          } else if (kind < 1.5) { // fuego
+          } else if (kind < 1.5) { // fire
             alpha = sin(t * 3.14159) * 0.95;
-          } else if (kind < 2.5) { // chispa
+          } else if (kind < 2.5) { // spark
             alpha = (1.0 - t);
-          } else if (kind < 3.5) { // explosión flash
+          } else if (kind < 3.5) { // flash explosion
             alpha = (1.0 - t) * (1.0 - t);
-          } else if (kind < 4.5) { // polvo
+          } else if (kind < 4.5) { // dust
             alpha = (1.0 - t) * 0.5;
-          } else { // bengala
+          } else { // flare
             alpha = 1.0;
           }
           vAlpha = alpha;
@@ -101,7 +101,7 @@ export class Particles {
           float d = length(uv);
           float soft = smoothstep(0.5, 0.05, d);
           if (vEmissive > 0.5) {
-            // sprite brillante con núcleo
+            // bright sprite with a core
             float core = smoothstep(0.18, 0.02, d);
             vec3 col = vColor + vec3(1.0, 0.95, 0.8) * core * 0.8;
             gl_FragColor = vec4(col, soft * vAlpha);
