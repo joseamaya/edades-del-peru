@@ -53,8 +53,9 @@ src/
   util/        Seeded RNG, noise, math, DOM helpers
 ```
 
-Details on subsystems, controls and code "traps" are in [`AGENTS.md`](./AGENTS.md) and
-[`README.md`](./README.md).
+Details on subsystems, controls and code "traps" are in
+[`docs/development.md`](./docs/development.md); the short agent-oriented orientation is in
+[`AGENTS.md`](./AGENTS.md).
 
 ## History (do not invent)
 
@@ -74,7 +75,7 @@ Details on subsystems, controls and code "traps" are in [`AGENTS.md`](./AGENTS.m
 - Reuse the existing utilities (`src/util/*`) and the data-driven defs
   (`src/model/defs/*`) instead of introducing duplicated constants.
 - Model geometries/textures are **shared and cached**: do not dispose them by hand
-  (see "Code traps" in `AGENTS.md`).
+  (see "Code traps" in [`docs/development.md`](./docs/development.md)).
 
 ## Workflow
 

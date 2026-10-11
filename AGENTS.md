@@ -1,137 +1,52 @@
 # AGENTS.md
 
-"Edades del Perú" — an Age of Empires II-style RTS that walks through the history of Peru (Caral to the
-present) in Three.js + Vite + TypeScript.
-
-**Language rule**: code (identifiers, comments, docs) is written in **English**. Only the text shown to the
-player (HUD, menus, tooltips, campaign narrative) and the history dossiers in `docs/historia/**` stay in
-**Spanish**. Historical proper nouns (civs, mission ids, place names) are data, not language — never translate
-them. Keep new code and docs in English.
+"Edades del Perú" — an Age of Empires II-style RTS through Peru's history (Caral to the present), built with
+Three.js + Vite + TypeScript. Player-facing docs are in [`README.md`](./README.md); contribution workflow in
+[`CONTRIBUTING.md`](./CONTRIBUTING.md); deep subsystem notes and code traps in
+[`docs/development.md`](./docs/development.md).
 
 ## Commands
 
-Package manager: **Yarn 1** (`yarn.lock` exists; there is no `package-lock.json`). Node >= 20.19 (CI uses 22).
+Package manager **Yarn 1** (`yarn.lock` exists — never create a `package-lock.json`). Node >= 20.19 (CI uses 22).
 
-- `yarn dev` — Vite server at http://localhost:5173
+- `yarn dev` — Vite at http://localhost:5173
 - `yarn build` — `tsc --noEmit && vite build` (dist/)
-- `yarn typecheck` — `tsc --noEmit` only
-- `yarn lint` / `yarn format` — ESLint / Prettier (Prettier only touches `src/**/*.ts` and `scripts/**/*.mjs`)
-- `yarn test` — unit tests (Vitest); `yarn test:e2e` — Playwright smoke (needs `npx playwright install chromium`)
+- `yarn typecheck` / `yarn lint` — `tsc --noEmit` / ESLint (also `yarn format` for Prettier)
+- `yarn test` — Vitest. Single file: `yarn test tests/rng.test.ts`; by name: `yarn test -t "…"`
+- `yarn test:e2e` — Playwright smoke (requires `npx playwright install chromium`)
 - `yarn shot <name> --seed=777 --wait=8000` — screenshot into `review/`
 
-There is no `npm test` or any script outside `package.json`. `tsc` is strict (`strict`, ES2022,
-`moduleResolution: bundler`). CI runs, in order, `typecheck && lint && test && build`; the repo is kept at
-**0 lint warnings**.
+Everything runs through `package.json`; there is no `npm test`. The CI gate, in order, is
+`yarn typecheck && yarn lint && yarn test && yarn build`, and the repo is kept at **0 lint warnings**.
 
-## Architecture
+## Conventions
 
-- Entry: `index.html` -> `src/main.ts` -> `src/core/Game.ts` (hub wiring render, entities, AI/pathfinding/fog,
-  campaign, HUD and audio).
-- **Temporal model**: `Era` (0-5) is the internal **tech level** (stats/models); `HistoricalPeriod` (0-9, in
-  `src/model/defs/periods.ts`) is the **historical period** of the match. Matches are **locked by period** (no
-  anachronistic modernization): `settings.period` fixes `startingEra` and disables era advancement (HUD and AI).
-- Data is driven by defs in `src/model/defs/{periods,eras,civs,units,buildings,techs}.ts`; models are generated
-  procedurally in `src/model/ProceduralModel.ts` (no external assets).
-- **PBR terrain textures (AI-generated)**: `src/assets/textures/terrain/{slot}_{diffuse|normal|roughness}.webp`
-  (slots `sand/dirt/grass/rock/snow`), loaded by `src/rendering/Biomes.ts` via `import.meta.glob`. The terrain
-  shader uses normal+roughness+specular when present and **falls back to the procedural material** if missing
-  (offline). Generated with `scripts/gen_textures.py` (Cloudflare Workers AI, credentials in
-  `scripts/.cloudflare.json`, gitignored) + `scripts/post_textures.py` (tiling/normal/roughness). See
-  `PROVENANCE.md`.
-- **Coetaneous civilizations**: `civs.ts` gives each civ `periods` and `geography`; `civsForPeriod(period)`
-  filters valid rivals. Never match civs without temporal overlap.
-- **Maps by geography**: `MapType = 'coast' | 'andes' | 'altiplano' | 'jungle'` (generated in `Terrain.generate`).
-- `src/campaign/defs/campaign.ts` defines the 9 historical campaigns; `src/campaign/Mission.ts` evaluates
-  objectives/triggers.
-- **Educational layer**: `src/campaign/defs/educational.ts` (prologue + context/«¿Sabías que…?»/sources per mission,
-  derived from `docs/historia/`), `src/campaign/Tutorial.ts` (step-by-step guided tutorial, only on missions with
-  `tutorial: true` and gated by `settings.showHints`) and `src/ui/Codex.ts` (codex that bundles the real
-  `docs/historia/**/*.md` via `import.meta.glob(..., { query: '?raw' })`). Each mission declares `period` to
-  resolve dates/coetaneous civs.
-- `src/game/Economy.ts` centralizes worker assignment (used by player and AI).
-- **UI/inputs in `src/core/Game.ts` and `src/ui/HUD.ts`**: left click selects / drag = box-select (rectangle
-  `#ed-selbox`) · right click = order (**right button no longer pans**; panning is by screen edges, WASD/arrows,
-  middle wheel, or dragging the **bottom-left minimap**). Minimap: drag = move viewport, right click = order
-  (`Game.commandMoveToWorld`). Optional camera rotation with Q/E (`settings.rotateCamera`, off = fixed camera).
-  Control groups (Ctrl/Alt+1-9 assign, 1-9 recall, Shift+1-9 add). Hover tooltip (`computeHover`) and
-  **contextual cursor** (`hoverAction`). Damage icons/numbers (`src/ui/DamageNumbers.ts`), clickable alerts that
-  pulse on the minimap (`pushAlert` + `alert` event), and order markers (`src/entities/OrderMarker.ts`).
-- **Construction (RTS standard)**: placing a building **requires selected workers** (`Game.startPlacement` warns
-  if none). Only those workers build: `commitPlacement` emits `issueOrder(BUILD, clear=true)` (the order
-  **interrupts** their current task) and **keeps the selection**. Do not reintroduce auto-assignment of builders:
-  with every worker gathering, none were ever free and builds stayed at 0%. The build gate is
-  `Game.canBuildKind` (era per period; the **Huaca Sagrada** depends on the victory mode, not the era, so
-  wonder victory is reachable in any period).
-- **External reference**: [VOIDSTRIKE](https://github.com/braedonsaunders/voidstrike) (MIT) is used only as
-  technique inspiration (damage numbers, instancing, culling); its code is neither sold nor copied.
+- **Language split**: code (identifiers, comments, docs) is **English**; only the text shown to the player
+  (HUD, menus, narrative) and `docs/historia/**` stay **Spanish**. Historical proper nouns (civs, mission ids,
+  place names) are data — never translate them.
+- Strict TS (`strict`, ES2022, `moduleResolution: bundler`). No comments unless they add context the code
+  cannot express. Prettier (single quotes, 120 cols) over `src/**/*.ts` and `scripts/**/*.mjs`.
+- Prefer the data-driven defs (`src/model/defs/*`) and existing `src/util/*` over new constants. Type `EventBus`
+  events in `GameEvents` (`src/core/types.ts`).
+- Keep DOM ids, URL params and `localStorage` keys (`peru-settings`, `peru-campaign`) stable, even if Spanish.
 - Import Three addons as `three/addons/...` (not `three/examples/jsm/...`).
-- Persistence in `localStorage`: `peru-settings` and `peru-campaign`.
 
-## History (do not invent)
+## Domain invariants (not obvious from names)
 
-- All historical documentation (periodization, civilizations, campaigns, sources) is in `docs/historia/`.
-- **Do not invent** names, dates or battles. If a datum is unattested, say so. Before touching historical
-  content, consult the matching dossier and add the source.
-- **Outfits/weapons/headdresses**: spec in `docs/historia/atuendos.md` (with sources). When mapping models in
-  `src/model/defs/units.ts` (`eraModel`) respect chronology: **no firearms, horses, vehicles or engines before
-  1532**, and **no sci-fi** in any era. Horses/arquebuses from VIRREINATO, armor and AA from CONTEMPORANEO.
+- **`Era` (0-5) is the internal tech level; `HistoricalPeriod` (0-9) is the match's historical period.** Matches
+  are **locked by period**: `period` fixes `startingEra` and disables era advancement. Do not conflate them.
+- Only **coetaneous** civilizations may face each other (`civsForPeriod`).
+- **History must not be invented**: no invented names, dates or battles; cite a source from `docs/historia/`.
+  Chronology constraint for models/units: **no firearms, horses, vehicles or engines before 1532**, and no
+  sci-fi in any era (outfit spec: `docs/historia/atuendos.md`).
 
-## Debugging / automation
+## Debug harness
 
-- `src/main.ts` exposes `window.game` (and `window.THREE`) for the console and scripts.
-- The app shows the **main menu by default**; enter the match directly with `?play=1` or any debug param.
-  `resetGame()` reloads with `?play=1`.
-- URL params: `?play=1`, `?menu=0/1`, `?seed=`, `?fog=0`, `?low=1`, `?speed=`, `?era=N`, `?mission=ID`.
-- Shared `scripts/lib.mjs` (`launchChromium`, `withViteServer`, `readPng`, `classify`). Scripts launch Vite on a
-  free port and Chromium with SwiftShader; they use `CHROME_PATH` or `chromium.executablePath()`. Run captures
-  with `?low=1`.
-- `review/` holds generated PNG/JSON (gitignored); do not edit them by hand.
+- `window.game` and `window.THREE` are exposed; the app opens the menu, so use `?play=1` (plus `?seed=`, `?fog=0`,
+  `?low=1`, `?speed=`, `?era=N`, `?mission=ID`) to enter a match directly.
+- `yarn shot` and the scripts write generated PNG/JSON to `review/` (gitignored) — never edit those by hand.
 
-## Code traps (learned the hard way)
+## See also
 
-- **Model geometries and textures are shared/cached** (`sharedGeo`, `bakedGeoCache`, `texCloneCache` in
-  `ProceduralModel.ts`). `disposeModel()` only frees materials; **do not** dispose geometries/textures by hand nor
-  reuse them by mutating `repeat`. To clear everything use `clearModelCaches()`.
-- **`UnitContext` is a single shared instance** created in the constructor (`Game.unitContext`). Do not rebuild it
-  per entity/frame.
-- **The unit spatial hash is rebuilt once per frame** (`Game.rebuildSpatial`). If you move units after that point,
-  `unitsNear`/`enemiesNear` can be stale.
-- **Game speed is applied only in `GameLoop`** (fixed step). Do not multiply `dt` by `speed` again in `Game.update`.
-- `ResourceNode.subtract()` is idempotent and depleted nodes are removed; do not decrement `amount` by hand.
-- **Ground picking**: `Game.screenToWorld` must refine against the heightfield (`Terrain.getHeight`) by fixed-point
-  iteration (starting from the `y=0` plane); using only the plane makes the order marker and the placement ghost
-  appear **offset** on elevated terrain (error grows with slope).
-- **The water plane must align with the terrain**: the terrain occupies `0..size` (not centered on the origin), so
-  `Water.mesh.position` goes at `(size/2, waterLevel, size/2)`; the shader discards water over land (`discard`
-  using the heightmap). Do not change this without checking map flooding.
-- **Default camera `zoom ≈ 34`** (not 62): at 62 units are tiny and impossible to select.
-- **Classic look by default**: no atmospheric fog (`scene.fog = null`), no SSAO/bloom/vignette -> sharp and
-  saturated (classic RTS style). `settings.cinematic` (toggle in Options) re-enables the set via
-  `PostFX.setCinematic`. Tone `NeutralToneMapping` + `exposure 1.0`. Do not re-enable fog or raise exposure
-  without checking that buildings are not washed out.
-- **The terrain shader samples the shadow map in VSM format by hand** (`Terrain.ts`): do not change
-  `renderer.shadowMap.type` or the `customProgramCacheKey`, or terrain shadows break.
-- **Terrain faces must point up**: in `Terrain.buildMesh` the indices go `(a,c,b)` and `(b,c,d)` (not `(a,b,c)`).
-  Inverting the winding makes faces point down: backface culling hides the terrain and the sky dome appears as if
-  it were the ground. Verify with a vertical `Raycaster` that hits the terrain.
-- **Fog of war is integrated into the terrain shader** (`Terrain.setFow` + `Fow.texture`), not as a separate mesh:
-  that keeps it glued to the relief. `Fow` only keeps the grid and the texture.
-- **Construction opacity** (`Building.setConstructionOpacity`): when fading you must store the materials that were
-  opaque and restore them to `transparent=false, opacity=1` when done. A guard like
-  `if (mat.transparent === false)` makes the restore a no-op and leaves **all** buildings semi-transparent
-  forever. Do not touch windows/glass/glow (already transparent by design).
-- **Contextual cursor** (`Game.hoverAction` + `HUD.setCursor`): the icon is an emoji drawn in a div (`#ed-cursor`)
-  that **hides the native cursor**. Do not return `'➡️'` for move (it always points the same way); return `null`
-  and let the destination marker (`OrderMarkers`) indicate the point.
-- **Trees by instancing** (`src/rendering/TreeInstances.ts`): `InstancedMesh` of trunk + canopies per variant;
-  picking is by `instanceId` (`TreeInstances.raycast` -> `pickResource`), visibility by `ResourceNode.setVisibleEx`
-  (fog+LOD) and falling on chop by `startFall`. If you add a tree without registering it in the manager, it will
-  not render.
-- `Game.destroy()` + `clearModelCaches()` + `clearResourceCaches()` + `clearTextureCache()` release a match; call
-  `destroy()` if you recreate the game without reloading the page.
-
-## Repo status
-
-- Git repository (single-package Vite app; no workspaces). `.gitignore` covers `dist/`, `review/`, generated tool
-  config and local AI credentials.
-- The README describes subsystems and controls; consult it before touching gameplay.
+[`README.md`](./README.md) · [`CONTRIBUTING.md`](./CONTRIBUTING.md) · [`docs/development.md`](./docs/development.md) ·
+[`docs/historia/`](./docs/historia/) · [`PROVENANCE.md`](./PROVENANCE.md)
