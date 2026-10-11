@@ -1,0 +1,1268 @@
+import type { Game } from '../core/Game';
+import type { Unit } from '../entities/Unit';
+import type { Building } from '../entities/Building';
+import { Era, BuildingKind, UnitKind, OrderKind, RESOURCE_KEYS, Resources, ERA_COLORS, Periodo } from '../core/types';
+import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../model/defs/buildings';
+import { UNIT_ARCHETYPES, getUnitStats, UNIT_INFO } from '../model/defs/units';
+import { TECHS, getTech } from '../model/defs/techs';
+import { ERA_DEFS } from '../model/defs/eras';
+import { PERIODOS } from '../model/defs/periodos';
+import { civsDePeriodo, getCiv } from '../model/defs/civs';
+import { RESOURCE_INFO, GameSettings } from '../core/Config';
+import { formatNumber } from '../util/math';
+import { MISSIONS, CAMPAIGN_TITLE, CAMPAIGN_SUBTITLE } from '../campaign/defs/campaign';
+import type { MissionDef } from '../campaign/types';
+import { DamageNumbers } from './DamageNumbers';
+import { bus } from '../core/EventBus';
+
+/** Edificios construibles por el jugador (lista única para todos los paneles). */
+const BUILDABLE_KINDS: BuildingKind[] = [
+  BuildingKind.VIVIENDA,
+  BuildingKind.GRANJA,
+  BuildingKind.MOLINO,
+  BuildingKind.MERCADO,
+  BuildingKind.CUARTEL,
+  BuildingKind.POLVORIN,
+  BuildingKind.GARAJE,
+  BuildingKind.FABRICA,
+  BuildingKind.SERRERIA,
+  BuildingKind.FUNDICION,
+  BuildingKind.REFINERIA,
+  BuildingKind.FORTALEZA,
+  BuildingKind.INSTITUTO,
+  BuildingKind.MARAVILLA,
+];
+
+const CSS = /* css */ `
+  :root {
+    --gold: #e8c36a;
+    --gold-dim: #a8883f;
+    --panel: rgba(20, 22, 26, 0.92);
+    --panel-2: rgba(30, 33, 40, 0.9);
+    --line: rgba(232, 195, 106, 0.28);
+    --text: #e8e6e1;
+    --text-dim: #a8a49a;
+    --green: #5fd08a;
+    --red: #e05a5a;
+    --blue: #5aa8e8;
+  }
+  #ui-root { position: fixed; inset: 0; pointer-events: none; z-index: 20; font-family: "Bahnschrift", "Arial Narrow", "Segoe UI", sans-serif; color: var(--text); user-select: none; }
+  #ui-root h1, #ui-root h2, #ui-root h3, .ed-logo { font-family: Georgia, "Times New Roman", serif; letter-spacing: 1px; }
+  #ui-root * { box-sizing: border-box; }
+  .ed-btn { pointer-events: auto; }
+  .ed-topbar { position: absolute; top: 0; left: 0; right: 0; height: 46px; display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: linear-gradient(180deg, rgba(12,14,18,0.96), rgba(12,14,18,0.82)); border-bottom: 1px solid var(--line); overflow: hidden; }
+  .ed-logo { font-weight: 700; font-size: 15px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; display: flex; align-items: center; gap: 8px; white-space: nowrap; flex-shrink: 0; }
+  .ed-logo svg { width: 22px; height: 22px; }
+  .ed-res { display: flex; align-items: center; gap: 5px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; padding: 3px 10px; font-size: 13px; font-weight: 600; min-width: 86px; flex-shrink: 0; }
+  .ed-res .res-icon { font-size: 14px; }
+  .ed-res .res-val { color: var(--text); }
+  .ed-res.res-low .res-val { color: var(--red); }
+  #ed-pop { display: flex; align-items: center; gap: 5px; font-size: 13px; white-space: nowrap; flex-shrink: 0; }
+  #ed-era { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gold); font-weight: 600; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 210px; flex-shrink: 1; }
+  #ed-era .era-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .ed-spacer { flex: 1 1 auto; min-width: 0; }
+  .ed-topbtn { pointer-events: auto; background: var(--panel-2); border: 1px solid var(--line); color: var(--text); border-radius: 4px; padding: 5px 10px; font-size: 12px; cursor: pointer; font-weight: 600; }
+  .ed-topbtn:hover { border-color: var(--gold); color: var(--gold); }
+  .ed-topbtn.active { border-color: var(--gold); color: var(--gold); background: rgba(232,195,106,0.12); }
+  #ed-speed { display: flex; align-items: center; gap: 2px; }
+  .speed-btn { pointer-events: auto; width: 26px; height: 26px; border-radius: 4px; border: 1px solid var(--line); background: var(--panel-2); color: var(--text); cursor: pointer; font-size: 12px; font-weight: 700; }
+  .speed-btn.active { background: var(--gold); color: #14161a; border-color: var(--gold); }
+
+  /* Minimapa */
+  #ed-minimap-wrap { position: absolute; left: 12px; bottom: 12px; width: 210px; height: 210px; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.5); }
+  #ed-minimap { width: 100%; height: 100%; display: block; cursor: crosshair; pointer-events: auto; }
+
+  /* Panel inferior */
+  #ed-bottom { position: absolute; left: 50%; transform: translateX(-50%); bottom: 12px; width: min(720px, 92vw); min-height: 150px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; pointer-events: auto; display: flex; flex-direction: column; box-shadow: 0 6px 30px rgba(0,0,0,0.55); overflow: hidden; }
+  #ed-bottom-header { padding: 6px 12px; font-size: 13px; font-weight: 700; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; background: rgba(232,195,106,0.06); }
+  #ed-bottom-body { padding: 8px; display: flex; gap: 8px; min-height: 100px; }
+  #ed-desc { flex: 1; font-size: 12px; color: var(--text-dim); line-height: 1.4; padding-right: 8px; }
+  #ed-desc h3 { margin: 0 0 4px; font-size: 15px; color: var(--text); }
+  .ed-grid { display: flex; flex-wrap: wrap; gap: 6px; max-width: 430px; }
+  .ed-card { pointer-events: auto; width: 66px; height: 66px; border-radius: 4px; border: 1px solid var(--line); background: var(--panel-2); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; font-size: 10px; text-align: center; position: relative; transition: border-color 0.12s, transform 0.06s; }
+  .ed-card:hover { border-color: var(--gold); transform: translateY(-1px); }
+  .ed-card .ic { font-size: 24px; line-height: 1; }
+  .ed-card .nm { color: var(--text); margin-top: 3px; font-weight: 600; }
+  .ed-card .cost { color: var(--text-dim); font-size: 9px; }
+  .ed-card.disabled { opacity: 0.35; cursor: not-allowed; }
+  .ed-card.afford { border-color: rgba(95,208,138,0.5); }
+  .ed-card.cat-econ { border-left: 3px solid #6aa85a; }
+  .ed-card.cat-mil { border-left: 3px solid #a85a5a; }
+  .ed-card.cat-avance { border-left: 3px solid var(--gold); }
+  .ed-card.cat-sel { border-left: 3px solid #5a9ad0; }
+  .ed-card.progress { border-color: var(--gold); }
+  .ed-card .progbar { position: absolute; bottom: 0; left: 0; height: 3px; background: var(--gold); width: 0%; }
+
+  .ed-group { display: flex; gap: 6px; margin-top: 6px; }
+  .ed-command { pointer-events: auto; border: 1px solid var(--line); background: var(--panel-2); color: var(--text); border-radius: 4px; padding: 5px 9px; font-size: 11px; cursor: pointer; font-weight: 600; }
+  .ed-command:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* Toast */
+  #ed-toasts { position: absolute; top: 56px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 6px; align-items: center; }
+  .ed-toast { padding: 8px 18px; border-radius: 4px; font-size: 13px; font-weight: 600; border: 1px solid; animation: toast-in 0.25s ease; box-shadow: 0 4px 18px rgba(0,0,0,0.4); }
+  .ed-toast.info { background: rgba(20,30,60,0.95); border-color: var(--blue); color: var(--text); }
+  .ed-toast.success { background: rgba(16,44,28,0.95); border-color: var(--green); color: var(--green); }
+  .ed-toast.warning { background: rgba(60,44,10,0.95); border-color: var(--gold); color: var(--gold); }
+  .ed-toast.error { background: rgba(60,16,16,0.95); border-color: var(--red); color: #ff9a9a; }
+  .ed-toast.danger { background: rgba(60,10,10,0.97); border-color: var(--red); color: #ffb0b0; }
+  @keyframes toast-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Banner de era */
+  #ed-era-banner { position: absolute; top: 38%; left: 50%; transform: translate(-50%,-50%); text-align: center; opacity: 0; pointer-events: none; }
+  #ed-era-banner.show { animation: banner 3.2s ease; }
+  #ed-era-banner .years { font-size: 15px; letter-spacing: 4px; color: var(--gold-dim); text-transform: uppercase; }
+  #ed-era-banner .name { font-size: 42px; font-weight: 800; color: var(--gold); text-shadow: 0 2px 20px rgba(232,195,106,0.5); letter-spacing: 2px; }
+  @keyframes banner { 0% { opacity: 0; transform: translate(-50%,-50%) scale(1.08); } 12% { opacity: 1; transform: translate(-50%,-50%) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%,-50%) scale(0.98); } }
+
+  /* Overlays */
+  .ed-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(6,8,12,0.82); backdrop-filter: blur(3px); pointer-events: auto; }
+  .ed-overlay.hidden { display: none; }
+  .ed-panel { width: min(520px, 92vw); background: linear-gradient(180deg, #16181d, #101216); border: 1px solid var(--line); border-radius: 8px; padding: 26px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.7); }
+  .ed-panel h2 { color: var(--gold); font-size: 26px; margin: 0 0 6px; letter-spacing: 1px; }
+  .ed-panel .sub { color: var(--text-dim); font-size: 13px; margin-bottom: 18px; }
+  .ed-panel .row { display: flex; gap: 10px; justify-content: center; margin: 8px 0; flex-wrap: wrap; }
+  .ed-field { display: flex; flex-direction: column; align-items: flex-start; font-size: 12px; color: var(--text-dim); gap: 3px; }
+  .ed-field select, .ed-field input { pointer-events: auto; background: #0a0c10; border: 1px solid var(--line); color: var(--text); padding: 6px 8px; border-radius: 4px; font-size: 13px; min-width: 150px; }
+  .ed-primary { pointer-events: auto; background: var(--gold); color: #14161a; border: none; padding: 10px 28px; font-size: 15px; font-weight: 800; border-radius: 4px; cursor: pointer; letter-spacing: 1px; }
+  .ed-primary:hover { filter: brightness(1.1); }
+  .ed-ghostbtn { pointer-events: auto; background: transparent; border: 1px solid var(--line); color: var(--text); padding: 8px 18px; border-radius: 4px; cursor: pointer; font-size: 13px; margin: 4px; }
+  .ed-ghostbtn:hover { border-color: var(--gold); color: var(--gold); }
+  #ed-help { position: absolute; right: 12px; bottom: 12px; font-size: 11px; color: var(--text-dim); background: rgba(10,12,16,0.7); padding: 8px 12px; border-radius: 4px; border: 1px solid rgba(232,195,106,0.15); max-width: 220px; line-height: 1.5; }
+  #ed-cursor { position: absolute; width: 20px; height: 20px; pointer-events: none; }
+  .ed-error { color: var(--red); font-size: 12px; margin-top: 8px; min-height: 16px; }
+  #ed-fps { position: absolute; top: 52px; right: 12px; font-size: 11px; color: var(--text-dim); background: rgba(0,0,0,0.4); padding: 2px 8px; border-radius: 3px; }
+  /* Oculta el HUD de juego mientras hay un menú modal abierto */
+  #ui-root.menu-open .ed-topbar,
+  #ui-root.menu-open #ed-bottom,
+  #ui-root.menu-open #ed-minimap-wrap,
+  #ui-root.menu-open #ed-help,
+  #ui-root.menu-open #ed-objectives,
+  #ui-root.menu-open #ed-fps { display: none; }
+  .ed-keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; font-size: 13px; color: var(--text-dim); text-align: left; }
+  .ed-keys b { color: var(--gold); font-weight: 700; }
+
+  /* Panel de objetivos (campaña) */
+  #ed-objectives { position: absolute; top: 56px; right: 12px; width: 240px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+  #ed-objectives h4 { margin: 0 0 8px; font-size: 12px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; }
+  #ed-objectives .obj { display: flex; gap: 8px; align-items: flex-start; font-size: 12px; color: var(--text-dim); padding: 3px 0; line-height: 1.35; }
+  #ed-objectives .obj .mark { min-width: 16px; text-align: center; color: var(--text-dim); }
+  #ed-objectives .obj.done { color: var(--green); }
+  #ed-objectives .obj.done .mark { color: var(--green); }
+  #ed-objectives .obj.failed { color: var(--red); }
+  #ed-objectives .obj.failed .mark { color: var(--red); }
+
+  /* Caja de diálogo del comandante */
+  #ed-dialogue { position: absolute; left: 50%; bottom: 190px; transform: translateX(-50%); width: min(560px, 86vw); background: rgba(12,14,18,0.92); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 4px; padding: 10px 14px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+  #ed-dialogue.show { opacity: 1; }
+  #ed-dialogue .who { font-size: 11px; letter-spacing: 1px; color: var(--gold); font-weight: 700; margin-bottom: 3px; }
+  #ed-dialogue .txt { font-size: 13px; color: var(--text); line-height: 1.4; }
+
+  /* Tooltip de hover y rectángulo de selección */
+  #ed-hover { position: absolute; pointer-events: none; z-index: 60; background: rgba(10,12,16,0.94); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 4px; padding: 6px 9px; font-size: 12px; color: var(--text); display: none; max-width: 240px; box-shadow: 0 4px 16px rgba(0,0,0,0.5); }
+  #ed-hover .h-title { font-weight: 700; color: var(--gold); }
+  #ed-hover .h-sub { color: var(--text-dim); margin-top: 2px; }
+  #ed-selbox { position: absolute; pointer-events: none; z-index: 55; border: 1px solid rgba(106,208,106,0.9); background: rgba(106,208,106,0.12); display: none; }
+
+  /* Números de daño, cursor contextual y alertas */
+  #ed-dmg-layer { position: absolute; inset: 0; pointer-events: none; z-index: 58; overflow: hidden; }
+  .ed-dmg { position: absolute; left: 0; top: 0; font-weight: 800; text-shadow: 0 1px 3px rgba(0,0,0,0.95); pointer-events: none; white-space: nowrap; will-change: transform, opacity; }
+  #ed-cursor { position: absolute; pointer-events: none; z-index: 62; display: none; font-size: 22px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.85)); }
+  #ed-alerts { position: absolute; top: 96px; right: 12px; width: 244px; display: flex; flex-direction: column; gap: 6px; z-index: 57; pointer-events: none; }
+  .ed-alert { pointer-events: auto; cursor: pointer; background: rgba(12,14,18,0.92); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 4px; padding: 6px 9px; font-size: 12px; color: var(--text); box-shadow: 0 4px 16px rgba(0,0,0,0.5); animation: alert-in 0.2s ease; }
+  .ed-alert.warn { border-left-color: var(--red); }
+  @keyframes alert-in { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }
+`;
+
+export class HUD {
+  game: Game;
+  private root: HTMLDivElement;
+  private resEls: Record<string, HTMLElement> = {} as any;
+  private popEl!: HTMLElement;
+  private eraEl!: HTMLElement;
+  private eraDot!: HTMLElement;
+  private bottomHeader!: HTMLElement;
+  private descEl!: HTMLElement;
+  private gridEl!: HTMLElement;
+  private commandsEl!: HTMLElement;
+  private toastsEl!: HTMLElement;
+  private minimapCanvas!: HTMLCanvasElement;
+  private minimapCtx!: CanvasRenderingContext2D;
+  private bannerEl!: HTMLElement;
+  private updateAcc = 0;
+  private objPanelEl!: HTMLElement;
+  private objListEl!: HTMLElement;
+  private dialogueEl!: HTMLElement;
+  private dialogueTimer = 0;
+  private hoverEl!: HTMLElement;
+  private selBoxEl!: HTMLElement;
+  private damage!: DamageNumbers;
+  private cursorEl!: HTMLElement;
+  private alertsEl!: HTMLElement;
+  private alertPings: { x: number; z: number; until: number }[] = [];
+
+  constructor(game: Game) {
+    this.game = game;
+    const style = document.createElement('style');
+    style.textContent = CSS;
+    document.head.appendChild(style);
+    this.root = document.getElementById('ui-root') as HTMLDivElement;
+    this.root.innerHTML = '';
+    this.buildTopBar();
+    this.buildBottom();
+    this.buildMinimap();
+    this.buildToasts();
+    this.buildEraBanner();
+    this.buildHelp();
+    this.buildFps();
+    this.buildObjectivesPanel();
+    this.buildDialogue();
+    this.buildHover();
+    this.buildDamageCursor();
+    this.buildAlerts();
+    bus.on('alert', (info) => this.pushAlert(info));
+  }
+
+  private buildHover(): void {
+    this.selBoxEl = document.createElement('div');
+    this.selBoxEl.id = 'ed-selbox';
+    this.root.appendChild(this.selBoxEl);
+    this.hoverEl = document.createElement('div');
+    this.hoverEl.id = 'ed-hover';
+    this.root.appendChild(this.hoverEl);
+  }
+
+  private buildDamageCursor(): void {
+    const layer = document.createElement('div');
+    layer.id = 'ed-dmg-layer';
+    this.root.appendChild(layer);
+    this.damage = new DamageNumbers(layer);
+    this.cursorEl = document.createElement('div');
+    this.cursorEl.id = 'ed-cursor';
+    this.root.appendChild(this.cursorEl);
+  }
+
+  private buildAlerts(): void {
+    this.alertsEl = document.createElement('div');
+    this.alertsEl.id = 'ed-alerts';
+    this.root.appendChild(this.alertsEl);
+  }
+
+  /** Cifra de daño/cura flotante en un punto del mundo. */
+  addDamageNumber(x: number, y: number, z: number, amount: number, kind: 'normal' | 'big' | 'heal' = 'normal'): void {
+    this.damage.spawn(x, y, z, amount, kind);
+  }
+
+  /** Cursor contextual: icono junto al ratón (null = cursor normal). */
+  setCursor(icon: string | null, x: number, y: number): void {
+    if (!icon) {
+      this.cursorEl.style.display = 'none';
+      return;
+    }
+    this.cursorEl.style.display = 'block';
+    this.cursorEl.textContent = icon;
+    this.cursorEl.style.left = x + 12 + 'px';
+    this.cursorEl.style.top = y + 10 + 'px';
+  }
+
+  /** Aviso clicable que centra la cámara; parpadea en el minimapa. */
+  pushAlert(info: { icono: string; texto: string; x: number; z: number; warn?: boolean }): void {
+    const el = document.createElement('div');
+    el.className = 'ed-alert' + (info.warn ? ' warn' : '');
+    el.innerHTML = `${info.icono} ${info.texto}`;
+    el.addEventListener('click', () => {
+      this.game.camera.focusOn(info.x, info.z);
+      el.remove();
+    });
+    this.alertsEl.prepend(el);
+    while (this.alertsEl.children.length > 5) this.alertsEl.lastChild?.remove();
+    this.alertPings.push({ x: info.x, z: info.z, until: performance.now() + 6000 });
+    setTimeout(() => el.remove(), 9000);
+  }
+
+  /** Muestra/oculta el tooltip de la entidad o recurso bajo el cursor. */
+  setHover(info: { icono: string; titulo: string; detalle: string } | null, x: number, y: number): void {
+    if (!info) {
+      this.hoverEl.style.display = 'none';
+      return;
+    }
+    this.hoverEl.style.display = 'block';
+    this.hoverEl.innerHTML = `<div class="h-title">${info.icono} ${info.titulo}</div><div class="h-sub">${info.detalle}</div>`;
+    const off = 16;
+    this.hoverEl.style.left = Math.min(x + off, window.innerWidth - 250) + 'px';
+    this.hoverEl.style.top = Math.min(y + off, window.innerHeight - 74) + 'px';
+  }
+
+  showSelectionBox(x1: number, y1: number, x2: number, y2: number): void {
+    this.selBoxEl.style.display = 'block';
+    this.selBoxEl.style.left = Math.min(x1, x2) + 'px';
+    this.selBoxEl.style.top = Math.min(y1, y2) + 'px';
+    this.selBoxEl.style.width = Math.abs(x2 - x1) + 'px';
+    this.selBoxEl.style.height = Math.abs(y2 - y1) + 'px';
+  }
+
+  hideSelectionBox(): void {
+    this.selBoxEl.style.display = 'none';
+  }
+
+  private el(tag: string, cls: string, parent?: HTMLElement): HTMLElement {
+    const e = document.createElement(tag);
+    e.className = cls;
+    (parent ?? this.root).appendChild(e);
+    return e;
+  }
+
+  private buildTopBar(): void {
+    const top = this.el('div', 'ed-topbar');
+    const logo = this.el('div', 'ed-logo');
+    logo.innerHTML = `<svg viewBox="0 0 32 32" fill="none"><path d="M16 3l2.6 7.8L26 13l-7.4 2.2L16 23l-2.6-7.8L6 13l7.4-2.2z" fill="#e8c36a"/><path d="M16 18v9M12 27h8" stroke="#e8c36a" stroke-width="1.6"/></svg> EDADES DEL PERÚ`;
+    top.appendChild(logo);
+    for (const k of RESOURCE_KEYS) {
+      const info = RESOURCE_INFO[k];
+      const res = this.el('div', 'ed-res');
+      res.id = 'ed-res-' + k;
+      res.innerHTML = `<span class="res-icon">${info.icono}</span><span class="res-val">0</span>`;
+      top.appendChild(res);
+      this.resEls[k] = res;
+    }
+    this.popEl = this.el('div', '');
+    this.popEl.id = 'ed-pop';
+    this.popEl.innerHTML = `👥 <span>0/0</span>`;
+    top.appendChild(this.popEl);
+    this.eraEl = this.el('div', '');
+    this.eraEl.id = 'ed-era';
+    this.eraDot = this.el('span', 'era-dot');
+    this.eraEl.appendChild(this.eraDot);
+    this.eraEl.appendChild(this.el('span', ''));
+    top.appendChild(this.eraEl);
+    top.appendChild(this.el('div', 'ed-spacer'));
+    const speed = this.el('div', '');
+    speed.id = 'ed-speed';
+    for (const s of [0.5, 1, 2, 3]) {
+      const btn = this.el('button', 'speed-btn') as HTMLButtonElement;
+      btn.textContent = s === 0.5 ? '½' : String(s) + '×';
+      btn.addEventListener('click', () => {
+        this.game.loop.speed = s;
+        this.refreshSpeed();
+      });
+      if (s === 1) btn.classList.add('active');
+      speed.appendChild(btn);
+    }
+    top.appendChild(speed);
+    const pauseBtn = this.el('button', 'ed-topbtn') as HTMLButtonElement;
+    pauseBtn.textContent = '⏸';
+    pauseBtn.title = 'Pausa (P)';
+    pauseBtn.addEventListener('click', () => this.game.togglePause());
+    top.appendChild(pauseBtn);
+    const menuBtn = this.el('button', 'ed-topbtn') as HTMLButtonElement;
+    menuBtn.textContent = '☰ Menú';
+    menuBtn.addEventListener('click', () => this.showPauseMenu());
+    top.appendChild(menuBtn);
+  }
+
+  private refreshSpeed(): void {
+    const btns = this.root.querySelectorAll<HTMLButtonElement>('#ed-speed .speed-btn');
+    btns.forEach((b) => b.classList.toggle('active', (b.textContent === '½' ? 0.5 : parseFloat(b.textContent!)) === this.game.loop.speed));
+  }
+
+  private buildBottom(): void {
+    const bottom = this.el('div', '');
+    bottom.id = 'ed-bottom';
+    this.bottomHeader = this.el('div', '');
+    this.bottomHeader.id = 'ed-bottom-header';
+    bottom.appendChild(this.bottomHeader);
+    const body = this.el('div', '');
+    body.id = 'ed-bottom-body';
+    this.descEl = this.el('div', '');
+    this.descEl.id = 'ed-desc';
+    body.appendChild(this.descEl);
+    this.gridEl = this.el('div', 'ed-grid');
+    body.appendChild(this.gridEl);
+    this.commandsEl = this.el('div', '');
+    this.commandsEl.id = 'ed-commands';
+    body.appendChild(this.commandsEl);
+    bottom.appendChild(body);
+  }
+
+  private buildMinimap(): void {
+    const wrap = this.el('div', '');
+    wrap.id = 'ed-minimap-wrap';
+    this.minimapCanvas = document.createElement('canvas');
+    this.minimapCanvas.id = 'ed-minimap';
+    this.minimapCanvas.width = 210;
+    this.minimapCanvas.height = 210;
+    wrap.appendChild(this.minimapCanvas);
+    this.minimapCtx = this.minimapCanvas.getContext('2d')!;
+    const toWorld = (cx: number, cy: number): { x: number; z: number } => {
+      const rect = this.minimapCanvas.getBoundingClientRect();
+      const nx = (cx - rect.left) / rect.width;
+      const ny = (cy - rect.top) / rect.height;
+      const s = this.game.settings.mapSize;
+      return { x: nx * s, z: ny * s };
+    };
+    this.minimapCanvas.addEventListener('contextmenu', (e) => e.preventDefault());
+    // clic/arrastre izq = mover el viewport; clic der = orden de mover
+    this.minimapCanvas.addEventListener('mousedown', (e) => {
+      if (e.button === 2) {
+        const w = toWorld(e.clientX, e.clientY);
+        this.game.commandMoveToWorld(w.x, w.z, e.ctrlKey || e.altKey);
+        return;
+      }
+      if (e.button !== 0) return;
+      const w = toWorld(e.clientX, e.clientY);
+      this.game.camera.moveTo(w.x, w.z, true);
+      const onMove = (ev: MouseEvent) => {
+        const p = toWorld(ev.clientX, ev.clientY);
+        this.game.camera.moveTo(p.x, p.z, true);
+      };
+      const onUp = () => {
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onUp);
+      };
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+    });
+  }
+
+  private buildToasts(): void {
+    this.toastsEl = this.el('div', '');
+    this.toastsEl.id = 'ed-toasts';
+  }
+
+  private buildObjectivesPanel(): void {
+    this.objPanelEl = this.el('div', '');
+    this.objPanelEl.id = 'ed-objectives';
+    this.objPanelEl.style.display = 'none';
+    this.objPanelEl.innerHTML = `<h4>🎯 Objetivos</h4>`;
+    this.objListEl = this.el('div', '', this.objPanelEl);
+  }
+
+  private buildDialogue(): void {
+    this.dialogueEl = this.el('div', '');
+    this.dialogueEl.id = 'ed-dialogue';
+    this.dialogueEl.innerHTML = `<div class="who"></div><div class="txt"></div>`;
+  }
+
+  /** Diálogo de personaje (comandante/narrador) con cierre automático. */
+  showDialogue(nombre: string, texto: string, duracion = 5): void {
+    this.dialogueEl.querySelector('.who')!.textContent = nombre;
+    this.dialogueEl.querySelector('.txt')!.textContent = texto;
+    this.dialogueEl.classList.add('show');
+    this.dialogueTimer = duracion;
+  }
+
+  private refreshObjectives(): void {
+    const mis = this.game.mission;
+    if (!mis) return;
+    this.objPanelEl.style.display = 'block';
+    const items = mis.activeObjectives;
+    this.objListEl.innerHTML = items
+      .map(({ def, state }) => {
+        const mark = state === 'completado' ? '✔' : state === 'fallado' ? '✖' : '○';
+        const cls = state === 'completado' ? 'done' : state === 'fallado' ? 'failed' : '';
+        return `<div class="obj ${cls}"><span class="mark">${mark}</span><span>${def.titulo}</span></div>`;
+      })
+      .join('');
+  }
+
+  private buildEraBanner(): void {
+    this.bannerEl = this.el('div', '');
+    this.bannerEl.id = 'ed-era-banner';
+    this.bannerEl.innerHTML = `<div class="years"></div><div class="name"></div>`;
+  }
+
+  private buildHelp(): void {
+    const help = this.el('div', '');
+    help.id = 'ed-help';
+    help.innerHTML = `<b>Atajos</b><br>Clic izq: seleccionar · arrastra: área<br>Clic der: orden · Ctrl+der: atacar-mover<br>Shift: cola/rally · Ctrl+1-9: grupo · 1-9: recuperar<br>Minimapa: arrastra para mover · clic der: orden<br>Rueda: zoom · Q/E: rotar (opcional) · H/F/G/V: edificios · P: pausa`;
+  }
+
+  private buildFps(): void {
+    const fps = this.el('div', '');
+    fps.id = 'ed-fps';
+    fps.textContent = '60 FPS';
+    this.fpsEl = fps;
+  }
+  private fpsEl!: HTMLElement;
+
+  showToast(msg: string, type: 'info' | 'success' | 'warning' | 'error' | 'danger' = 'info'): void {
+    const t = this.el('div', 'ed-toast ' + type);
+    t.textContent = msg;
+    this.toastsEl.appendChild(t);
+    setTimeout(() => {
+      t.style.transition = 'opacity 0.4s';
+      t.style.opacity = '0';
+      setTimeout(() => t.remove(), 400);
+    }, 2600);
+  }
+
+  showEraBanner(era: Era): void {
+    const def = ERA_DEFS[era];
+    this.bannerEl.querySelector('.years')!.textContent = def.anos;
+    this.bannerEl.querySelector('.name')!.textContent = def.nombre;
+    this.bannerEl.classList.remove('show');
+    void (this.bannerEl as HTMLElement).offsetWidth;
+    this.bannerEl.classList.add('show');
+  }
+
+  setPaused(p: boolean): void {
+    const existing = document.getElementById('ed-paused');
+    if (existing) existing.remove();
+    if (!p) return;
+    const ov = this.el('div', 'ed-overlay');
+    ov.id = 'ed-paused';
+    const panel = this.el('div', 'ed-panel', ov);
+    panel.innerHTML = `<h2 style="color:var(--gold)">⏸ PAUSA</h2><div class="sub">La partida está detenida</div>`;
+    const row = this.el('div', 'row', panel);
+    const resume = this.el('button', 'ed-primary', row);
+    resume.textContent = '▶ Reanudar';
+    resume.addEventListener('click', () => this.game.togglePause());
+    const settings = this.el('button', 'ed-ghostbtn', row);
+    settings.textContent = '⚙️ Opciones';
+    settings.addEventListener('click', () => this.showOptions());
+    const home = this.el('button', 'ed-ghostbtn', row);
+    home.textContent = '🏠 Menú principal';
+    home.addEventListener('click', () => {
+      location.href = location.pathname;
+    });
+    const quit = this.el('button', 'ed-ghostbtn', row);
+    quit.textContent = '🏳 Abandonar';
+    quit.addEventListener('click', () => this.abandonMatch());
+  }
+
+  /** True si hay un menú modal abierto (distinto del panel de pausa). */
+  hasBlockingOverlay(): boolean {
+    return [...this.root.querySelectorAll('.ed-overlay')].some((o) => o.id !== 'ed-paused');
+  }
+
+  showVictory(victory: boolean, winText?: string, loseText?: string): void {
+    this.game.loop.stop();
+    this.clearOverlays();
+    const ov = this.el('div', 'ed-overlay');
+    const panel = this.el('div', 'ed-panel', ov);
+    const p = this.game.players[0];
+    const title = victory ? '🏆 ¡VICTORIA!' : '💀 DERROTA';
+    const sub = winText && loseText
+      ? (victory ? winText : loseText)
+      : victory ? 'Tu imperio se alza sobre las ruinas del enemigo.' : 'Tu civilización ha caído ante el avance enemigo.';
+    panel.innerHTML = `
+      <h2 style="color:${victory ? 'var(--green)' : 'var(--red)'}">${title}</h2>
+      <div class="sub" style="white-space:pre-line;line-height:1.6">${sub}</div>
+      <div style="font-size:13px;color:var(--text-dim);line-height:1.7;margin-bottom:16px">
+        Bajas infligidas: <b>${p?.kills ?? 0}</b><br>
+        Unidades creadas: <b>${p?.stats.created ?? 0}</b><br>
+        Era alcanzada: <b>${p ? ERA_DEFS[p.era].nombre : '—'}</b>
+      </div>
+    `;
+    const row = this.el('div', 'row', panel);
+    const again = this.el('button', 'ed-primary', row);
+    again.textContent = '↻ Jugar de nuevo';
+    again.addEventListener('click', () => this.game.resetGame());
+    const menu = this.el('button', 'ed-ghostbtn', row);
+    menu.textContent = 'Menú principal';
+    menu.addEventListener('click', () => {
+      location.href = location.pathname + '?menu=1';
+    });
+  }
+
+  /** Abandonar partida (respeta la campaña activa). */
+  abandonMatch(): void {
+    if (this.game.mission) {
+      (this.game as any).missionEnd(false);
+    } else {
+      this.game.loop.stop();
+      this.showVictory(false);
+    }
+  }
+
+  // --- paneles ---
+
+  private setDesc(icon: string, title: string, subtitle: string): void {
+    this.descEl.innerHTML = `<h3>${icon} ${title}</h3><div>${subtitle}</div>`;
+  }
+
+  private clearGrid(): void {
+    this.gridEl.innerHTML = '';
+  }
+
+  private addCard(icon: string, name: string, costText: string, onClick: () => void, opts: { disabled?: boolean; afford?: boolean; cat?: string; progress?: number } = {}): void {
+    const card = this.el('div', 'ed-card' + (opts.disabled ? ' disabled' : '') + (opts.afford ? ' afford' : '') + (opts.cat ? ' cat-' + opts.cat : ''));
+    card.innerHTML = `<span class="ic">${icon}</span><span class="nm">${name}</span><span class="cost">${costText}</span>`;
+    if (opts.progress !== undefined) {
+      card.classList.add('progress');
+      card.innerHTML += `<div class="progbar" style="width:${Math.round(opts.progress * 100)}%"></div>`;
+    }
+    if (!opts.disabled) card.addEventListener('click', () => { this.game.audio.uiClick(); onClick(); });
+    this.gridEl.appendChild(card);
+  }
+
+  private addCommand(label: string, onClick: () => void, title = ''): void {
+    const btn = this.el('button', 'ed-command') as HTMLButtonElement;
+    btn.textContent = label;
+    btn.title = title;
+    btn.addEventListener('click', onClick);
+    this.commandsEl.appendChild(btn);
+  }
+
+  private costText(cost: Partial<Resources>): string {
+    const parts: string[] = [];
+    for (const k of RESOURCE_KEYS) {
+      if (cost[k] && cost[k]! > 0) parts.push(`${RESOURCE_INFO[k].icono}${cost[k]}`);
+    }
+    return parts.join(' ');
+  }
+
+  private canAfford(cost: Partial<Resources>): boolean {
+    const p = this.game.players[0];
+    for (const k of RESOURCE_KEYS) {
+      if (p.resources[k] < (cost[k] ?? 0)) return false;
+    }
+    return true;
+  }
+
+  private renderBottom(): void {
+    this.commandsEl.innerHTML = '';
+    const units = this.game.getSelectedUnits();
+    const building = this.game.getSelectedBuilding();
+
+    if (units.length > 0) {
+      this.renderUnitPanel(units);
+    } else if (building && building.owner === 0) {
+      this.renderBuildingPanel(building);
+    } else if (building && building.owner !== 0) {
+      this.setDesc('🏰', BUILDING_INFO[building.kind].nombre, `Base enemiga · HP ${Math.ceil(building.hp)}/${Math.ceil(building.maxHp)}`);
+      this.clearGrid();
+      this.addCommand('⚔️ Atacar', () => this.orderAttackBuilding(building.id));
+    } else {
+      this.renderIdlePanel();
+    }
+  }
+
+  private renderIdlePanel(): void {
+    this.setDesc('⚙️', 'Comando', 'Selecciona unidades o edificios para dar órdenes. Usa el menú para construir.');
+    this.clearGrid();
+    // construir rápido
+    for (const kind of [BuildingKind.CENTRO, ...BUILDABLE_KINDS]) {
+      // ocultar los edificios no disponibles en el periodo (la Plaza Mayor se muestra deshabilitada)
+      if (kind !== BuildingKind.CENTRO && !this.game.canBuildKind(kind)) continue;
+      const stats = getBuildingStats(kind, this.game.players[0].era);
+      const info = BUILDING_INFO[kind];
+      const disabled = !this.game.canBuildKind(kind);
+      this.addCard(info.icono, info.nombre, this.costText(stats.costo), () => this.game.startPlacement(kind), {
+        disabled,
+        afford: this.canAfford(stats.costo),
+        cat: kind === BuildingKind.FORTALEZA || kind === BuildingKind.INSTITUTO ? 'avance' : 'econ',
+      });
+    }
+    // Partidas bloqueadas por periodo: no se avanza de era (sin modernización anacrónica).
+  }
+
+  private renderUnitPanel(units: Unit[]): void {
+    const first = units[0];
+    const info = UNIT_INFO[first.kind];
+    this.setDesc(info.icono, `${info.nombre} ×${units.length}`, this.unitDesc(first));
+    this.clearGrid();
+    // resumen por tipo (clic = seleccionar solo ese tipo) — estilo AoE2
+    if (units.length > 1) {
+      const groups = new Map<UnitKind, number>();
+      for (const u of units) groups.set(u.kind, (groups.get(u.kind) ?? 0) + 1);
+      for (const [kind, count] of groups) {
+        const gi = UNIT_INFO[kind];
+        this.addCard(gi.icono, `${count}× ${gi.nombre}`, 'clic: filtrar', () => this.game.selectUnits(units.filter((u) => u.kind === kind).map((u) => u.id)), { cat: 'sel' });
+      }
+    }
+    if (units.length > 0 && units.every((u) => u.kind === UnitKind.OBRERO)) {
+      for (const kind of BUILDABLE_KINDS) {
+        if (!this.game.canBuildKind(kind)) continue;
+        const stats = getBuildingStats(kind, this.game.players[0].era);
+        const infoB = BUILDING_INFO[kind];
+        this.addCard(infoB.icono, infoB.nombre, this.costText(stats.costo), () => this.game.startPlacement(kind), {
+          afford: this.canAfford(stats.costo),
+          cat: 'econ',
+        });
+      }
+    }
+    this.addCommand('⛔ Detener', () => this.orderStop(), 'S');
+    this.addCommand('🦅 Atacar-mover', () => this.orderAttackMove(), 'Ctrl+botón derecho');
+    this.addCommand('🛡️ Defensivo', () => this.orderStance('defensivo'));
+    this.addCommand('⭕ Patrullar', () => this.orderPatrol());
+  }
+
+  private unitDesc(u: Unit): string {
+    const stats = u.stats;
+    return `HP ${Math.ceil(u.hp)}/${Math.ceil(u.maxHp)} · Daño ${stats.ataque} · Rango ${stats.rango} · Blindaje ${stats.armaduraPesado}`;
+  }
+
+  private renderBuildingPanel(b: Building): void {
+    const info = BUILDING_INFO[b.kind];
+    const def = BUILDING_DEFS[b.kind];
+    this.setDesc(info.icono, info.nombre, this.buildingDesc(b));
+    this.clearGrid();
+
+    if (!b.constructionComplete) {
+      this.addCard('🔨', 'En construcción', `${Math.round(b.buildRatio * 100)}%`, () => {}, { disabled: true, progress: b.buildRatio });
+      return;
+    }
+
+    // cola de producción (clic en la tarjeta para cancelar)
+    for (let i = 0; i < b.productionQueue.length; i++) {
+      const item = b.productionQueue[i];
+      const uInfo = UNIT_INFO[item.unit];
+      this.addCard(uInfo.icono, uInfo.nombre, `${Math.round(item.progress * 100)}% ✖`, () => this.game.cancelProduction(b.id, i), {
+        progress: item.progress,
+        cat: 'mil',
+      });
+    }
+
+    // entrenar unidades
+    for (const unitKind of def.trainable ?? []) {
+      const stats = getUnitStats(unitKind, b.era);
+      const uInfo = UNIT_INFO[unitKind];
+      const tech = UNIT_ARCHETYPES[unitKind].requiresTech?.[0];
+      const techOk = !tech || this.game.players[0].techs.has(tech);
+      const eraOk = !!UNIT_ARCHETYPES[unitKind].eraModel[this.game.players[0].era];
+      const fortOk = !UNIT_ARCHETYPES[unitKind].requiresFortaleza || b.kind === BuildingKind.FORTALEZA;
+      const disabled = !techOk || !eraOk || !fortOk || !this.canAfford(stats.costo);
+      this.addCard(uInfo.icono, uInfo.nombre, this.costText(stats.costo), () => this.trainUnit(b.id, unitKind), {
+        disabled,
+        afford: !disabled && this.canAfford(stats.costo),
+        cat: 'mil',
+      });
+    }
+
+    // tecnologías (instituto)
+    const techs = TECHS.filter((t) => t.edificio === b.kind && t.eraMinima <= this.game.players[0].era && !this.game.players[0].techs.has(t.id) && (!t.requisitos || t.requisitos.every((r) => this.game.players[0].techs.has(r))));
+    for (const t of techs) {
+      const disabled = !this.canAfford(t.costo);
+      this.addCard(t.icono ?? '📚', t.nombre, this.costText(t.costo), () => this.researchTech(b.id, t.id), {
+        disabled,
+        afford: !disabled,
+        cat: 'avance',
+      });
+    }
+
+    // construir más (si es centro, vivienda, etc.)
+    if (b.kind === BuildingKind.CENTRO) {
+      this.addCard('🏠', 'Vivienda', this.costText(getBuildingStats(BuildingKind.VIVIENDA, b.era).costo), () => this.game.startPlacement(BuildingKind.VIVIENDA), { cat: 'econ' });
+      this.addCard('🌽', 'Granja', this.costText(getBuildingStats(BuildingKind.GRANJA, b.era).costo), () => this.game.startPlacement(BuildingKind.GRANJA), { cat: 'econ' });
+    }
+
+    this.addCommand('📍 Punto de reunión', () => this.game.hud.showToast('Usa Shift+Botón derecho en el suelo', 'info'));
+    if (b.garrisonedIds.length > 0) {
+      this.addCommand(`🚪 Desembarcar (${b.garrisonedIds.length})`, () => this.ungarrison(b.id));
+    }
+  }
+
+  private buildingDesc(b: Building): string {
+    const stats = b.stats;
+    let s = `HP ${Math.ceil(b.hp)}/${Math.ceil(b.maxHp)} · Blindaje ${stats.armadura}`;
+    if (b.constructionComplete && b.productionQueue.length > 0) {
+      s += ` · Entrenando: ${UNIT_INFO[b.productionQueue[0].unit].nombre}`;
+    }
+    return s;
+  }
+
+  private trainUnit(buildingId: number, unit: UnitKind): void {
+    const b = this.game.buildings.get(buildingId);
+    if (!b) return;
+    const stats = getUnitStats(unit, b.era);
+    const p = this.game.players[0];
+    if (p.populationUsed + stats.poblacion > p.populationCap) {
+      this.showToast('Población máxima alcanzada', 'warning');
+      return;
+    }
+    if (this.game.spendResource(0, stats.costo)) {
+      if (!b.queueUnit(unit)) {
+        // devolver recursos si no se pudo encolar
+        this.game.addResource(0, stats.costo);
+      }
+    } else {
+      this.showToast('Recursos insuficientes', 'error');
+    }
+  }
+
+  private researchTech(buildingId: number, techId: string): void {
+    const b = this.game.buildings.get(buildingId);
+    if (!b) return;
+    const tech = getTech(techId);
+    if (!tech) return;
+    if (this.game.spendResource(0, tech.costo)) {
+      b.queueTech(techId);
+    } else {
+      this.showToast('Recursos insuficientes', 'error');
+    }
+  }
+
+  private ungarrison(buildingId: number): void {
+    const b = this.game.buildings.get(buildingId);
+    if (!b) return;
+    const ids = b.ungarrisonAll();
+    for (const id of ids) {
+      const u = this.game.units.get(id);
+      if (u) {
+        u.garrisonedIn = null;
+        u.view.group.visible = true;
+        const ang = Math.random() * Math.PI * 2;
+        const px = b.pos.x + Math.cos(ang) * (b.radius + 0.6);
+        const pz = b.pos.z + Math.sin(ang) * (b.radius + 0.6);
+        u.pos.set(px, this.game.terrain.getHeight(px, pz), pz);
+        u.snapToGround();
+      }
+    }
+  }
+
+  // --- comandos ---
+
+  private orderStop(): void {
+    for (const u of this.game.getSelectedUnits()) {
+      u.clearOrders();
+    }
+  }
+
+  private orderAttackMove(): void {
+    const units = this.game.getSelectedUnits();
+    if (units.length === 0) return;
+    const u = units[0];
+    const target = { x: u.pos.x + Math.cos(u.yaw) * 10, z: u.pos.z + Math.sin(u.yaw) * 10 };
+    for (const s of units) s.issueOrder({ kind: OrderKind.ATTACK_MOVE, target }, true);
+  }
+
+  private orderStance(stance: 'agresivo' | 'defensivo' | 'pasivo'): void {
+    for (const u of this.game.getSelectedUnits()) {
+      u.combatStance = stance;
+    }
+    this.showToast(`Postura: ${stance}`, 'info');
+  }
+
+  private orderPatrol(): void {
+    const units = this.game.getSelectedUnits();
+    if (units.length === 0) return;
+    for (const u of units) {
+      const target = { x: u.pos.x + Math.cos(u.yaw) * 14, z: u.pos.z + Math.sin(u.yaw) * 14 };
+      u.issueOrder({ kind: OrderKind.PATROL, target }, true);
+    }
+  }
+
+  private orderAttackBuilding(id: number): void {
+    for (const u of this.game.getSelectedUnits()) {
+      u.issueOrder({ kind: OrderKind.ATTACK, entityId: id }, true);
+    }
+  }
+
+  // --- minimapa ---
+
+  private minimapBg: HTMLCanvasElement | null = null;
+  private minimapSeed = -1;
+
+  private renderMinimap(): void {
+    const ctx = this.minimapCtx;
+    const s = this.game.settings.mapSize;
+    const w = 210;
+    const t = this.game.terrain;
+    const fow = this.game.fow;
+    const fogOn = this.game.settings.fogOfWar;
+
+    // fondo del terreno cacheado (solo se regenera si cambia la semilla)
+    if (!this.minimapBg || this.minimapSeed !== this.game.settings.mapSeed) {
+      this.minimapSeed = this.game.settings.mapSeed;
+      this.minimapBg = document.createElement('canvas');
+      this.minimapBg.width = this.minimapBg.height = w;
+      const bctx = this.minimapBg.getContext('2d')!;
+      for (let y = 0; y < w; y++) {
+        for (let x = 0; x < w; x++) {
+          const wx = (x / w) * s;
+          const wz = (y / w) * s;
+          const h = t.getHeight(wx, wz);
+          let c: string;
+          if (t.isWater(wx, wz)) c = 'rgba(30,80,120,0.9)';
+          else if (h > 9) c = 'rgba(150,145,140,0.95)';
+          else if (h > 5) c = 'rgba(110,120,90,0.95)';
+          else if (t.isBeach(wx, wz)) c = 'rgba(200,180,130,0.95)';
+          else c = 'rgba(90,120,70,0.95)';
+          bctx.fillStyle = c;
+          bctx.fillRect(x, y, 1, 1);
+        }
+      }
+    }
+    ctx.drawImage(this.minimapBg, 0, 0);
+
+    // niebla en el minimapa (zonas no exploradas en negro)
+    if (fogOn) {
+      const step = 2;
+      for (let y = 0; y < w; y += step) {
+        for (let x = 0; x < w; x += step) {
+          if (fow.isExplored((x / w) * s, (y / w) * s)) continue;
+          ctx.fillStyle = 'rgba(4,4,8,0.92)';
+          ctx.fillRect(x, y, step, step);
+        }
+      }
+    }
+
+    // recursos
+    for (const n of this.game.resourceNodes.values()) {
+      if (n.dead) continue;
+      if (fogOn && !fow.isExplored(n.pos.x, n.pos.z)) continue;
+      ctx.fillStyle = n.resource === 'madera' ? '#3a7a2a' : n.resource === 'acero' ? '#b0b8c4' : n.resource === 'energia' ? '#e8b54a' : '#7a5a3a';
+      ctx.fillRect((n.pos.x / s) * w, (n.pos.z / s) * w, 2, 2);
+    }
+    // edificios
+    for (const b of this.game.buildings.values()) {
+      if (b.dead) continue;
+      const vis = !fogOn || fow.isExplored(b.pos.x, b.pos.z);
+      if (!vis) continue;
+      const visibleNow = !fogOn || fow.isVisible(b.pos.x, b.pos.z);
+      ctx.fillStyle = b.owner === 0 ? '#4a8a4a' : visibleNow ? '#c03a3a' : 'rgba(110,110,110,0.6)';
+      ctx.fillRect((b.pos.x / s) * w - 1, (b.pos.z / s) * w - 1, 3, 3);
+    }
+    // unidades: solo las propias y las enemigas visibles ahora
+    for (const u of this.game.units.values()) {
+      if (u.dead) continue;
+      if (fogOn) {
+        if (u.owner === 0) {
+          if (!fow.isVisible(u.pos.x, u.pos.z)) continue;
+        } else if (!fow.isVisible(u.pos.x, u.pos.z)) {
+          continue;
+        }
+      }
+      ctx.fillStyle = u.owner === 0 ? '#6ad06a' : '#e05a5a';
+      ctx.fillRect((u.pos.x / s) * w - 0.5, (u.pos.z / s) * w - 0.5, 1.5, 1.5);
+    }
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+    ctx.strokeRect(0, 0, w, w);
+    // rectángulo del viewport de la cámara
+    const rect = this.game.camera.getGroundRect();
+    ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect((rect.x / s) * w, (rect.z / s) * w, (rect.w / s) * w, (rect.d / s) * w);
+    ctx.lineWidth = 1;
+    // pulsos de alerta (parpadeo)
+    if (this.alertPings.length) {
+      const pulse = 0.5 + 0.5 * Math.sin(performance.now() * 0.012);
+      for (const p of this.alertPings) {
+        const ax = (p.x / s) * w;
+        const az = (p.z / s) * w;
+        ctx.strokeStyle = `rgba(255,70,70,${0.35 + pulse * 0.55})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(ax, az, 5 + pulse * 3, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.lineWidth = 1;
+    }
+  }
+
+  // --- menús ---
+
+  showMainMenu(): void {
+    this.game.loop.stop();
+    this.clearOverlays();
+    this.setMenuOpen(true);
+    const ov = this.el('div', 'ed-overlay');
+    const panel = this.el('div', 'ed-panel', ov);
+    panel.innerHTML = `
+      <div style="font-size:12px;letter-spacing:4px;color:#a8883f">3000 a.C. — HOY</div>
+      <h2>EDADES DEL PERÚ</h2>
+      <div class="sub">Un estratega en tiempo real a través de cinco mil años de historia peruana</div>
+    `;
+    const rows = this.el('div', 'row', panel);
+    const periodoLabels: Record<string, string> = {};
+    for (const p of PERIODOS) periodoLabels[String(p.id)] = `${p.nombre} · ${p.fechas}`;
+    rows.appendChild(
+      this.field(
+        'Periodo histórico',
+        this.select(PERIODOS.map((p) => String(p.id)), periodoLabels, String(this.game.settings.periodo), (v) => {
+          this.game.settings.periodo = Number(v) as Periodo;
+          const disp = civsDePeriodo(this.game.settings.periodo);
+          if (!disp.some((c) => c.id === this.game.settings.civPlayer)) this.game.settings.civPlayer = disp[0].id;
+          let rival = disp.find((c) => c.id === this.game.settings.civAI && c.id !== this.game.settings.civPlayer);
+          if (!rival) rival = disp.find((c) => c.id !== this.game.settings.civPlayer) ?? disp[0];
+          this.game.settings.civAI = rival.id;
+          this.game.settings.mapType = getCiv(this.game.settings.civPlayer).geografia;
+          this.showMainMenu();
+        }),
+      ),
+    );
+    rows.appendChild(this.field('Dificultad', this.select(['facil', 'normal', 'dificil', 'legendario'] as const, { facil: 'Fácil', normal: 'Normal', dificil: 'Difícil', legendario: 'Legendario' }, this.game.settings.difficulty, (v) => (this.game.settings.difficulty = v))));
+    const disponibles = civsDePeriodo(this.game.settings.periodo);
+    const civLabels: Record<string, string> = {};
+    for (const c of disponibles) civLabels[c.id] = `${c.nombre} (${c.geografia})`;
+    rows.appendChild(
+      this.field(
+        'Tu civilización',
+        this.select(disponibles.map((c) => c.id), civLabels, this.game.settings.civPlayer, (v) => {
+          this.game.settings.civPlayer = v;
+          if (this.game.settings.civAI === this.game.settings.civPlayer) {
+            const alt = disponibles.find((c) => c.id !== v) ?? disponibles[0];
+            this.game.settings.civAI = alt.id;
+          }
+          this.game.settings.mapType = getCiv(v).geografia;
+          this.showMainMenu();
+        }),
+      ),
+    );
+    rows.appendChild(
+      this.field(
+        'Rival (contemporáneo)',
+        this.select(disponibles.map((c) => c.id), civLabels, this.game.settings.civAI, (v) => {
+          this.game.settings.civAI = v;
+          this.showMainMenu();
+        }),
+      ),
+    );
+    const rows2 = this.el('div', 'row', panel);
+    rows2.appendChild(this.field('Mapa', this.select(['costa', 'andes', 'altiplano', 'selva'] as const, { costa: 'Costa / litoral', andes: 'Andes', altiplano: 'Altiplano', selva: 'Selva' }, this.game.settings.mapType, (v) => (this.game.settings.mapType = v))));
+    rows2.appendChild(this.field('Hora del día', this.select(['mañana', 'mediodía', 'atardecer', 'noche'] as const, { 'mañana': 'Mañana', 'mediodía': 'Mediodía', 'atardecer': 'Atardecer', 'noche': 'Noche' }, this.game.settings.timeOfDay, (v) => this.setTimeOfDay(v))));
+    rows2.appendChild(this.field('Victoria', this.select(['conquista', 'maravilla'] as const, { conquista: 'Conquista', maravilla: 'Huaca Sagrada' }, this.game.settings.victoryMode, (v) => (this.game.settings.victoryMode = v))));
+    const startBtn = this.el('button', 'ed-primary', panel);
+    startBtn.textContent = '▶ INICIAR ESCARAMUZA';
+    startBtn.addEventListener('click', () => {
+      this.game.settings.missionId = undefined;
+      this.setMenuOpen(false);
+      this.clearOverlays();
+      this.game.resetGame();
+    });
+    const campaignBtn = this.el('button', 'ed-ghostbtn', panel);
+    campaignBtn.textContent = '📜 Campañas';
+    campaignBtn.addEventListener('click', () => this.showCampaignMenu());
+    const controlsBtn = this.el('button', 'ed-ghostbtn', panel);
+    controlsBtn.textContent = '❓ Cómo jugar';
+    controlsBtn.addEventListener('click', () => this.showControls());
+  }
+
+  /** Panel de controles y conceptos básicos. */
+  showControls(): void {
+    this.clearOverlays();
+    this.setMenuOpen(true);
+    const ov = this.el('div', 'ed-overlay');
+    const panel = this.el('div', 'ed-panel', ov);
+    panel.style.maxWidth = '620px';
+    panel.innerHTML = `<h2>CÓMO JUGAR</h2><div class="sub">Reúne recursos, construye, entrena un ejército y vence a tu rival.</div>`;
+    const keys = this.el('div', 'ed-keys', panel);
+    keys.innerHTML = `
+      <b>Clic izquierdo / arrastrar</b><span>Seleccionar unidad, edificio o caja de selección</span>
+      <b>Doble clic</b><span>Seleccionar todas las unidades del mismo tipo</span>
+      <b>E</b><span>Seleccionar todo tu ejército</span>
+      <b>Botón derecho</b><span>Mover · recolectar · atacar · construir (con obreros)</span>
+      <b>Ctrl + Botón derecho</b><span>Atacar-mover</span>
+      <b>Shift + Botón derecho</b><span>Encolar órdenes / fijar punto de reunión</span>
+      <b>G · V</b><span>Construir andén · vivienda</span>
+      <b>WASD / flechas / bordes</b><span>Mover la cámara</span>
+      <b>Rueda</b><span>Zoom · <b>Q/E</b> rotar · <b>F</b> seguir</span>
+      <b>H</b><span>Ir a la Plaza Mayor · <b>Espacio</b> última batalla</span>
+      <b>P</b><span>Pausa · <b>☰ Menú</b> opciones y salir</span>
+      <b>Meta</b><span>Destruye a tu rival o construye la Huaca Sagrada y protégela 5 min</span>
+    `;
+    const back = this.el('button', 'ed-primary', panel);
+    back.textContent = '← Volver';
+    back.addEventListener('click', () => this.showMainMenu());
+  }
+
+  /** Briefing de misión antes de comenzar. */
+  showBriefing(mis: MissionDef, onStart: () => void): void {
+    this.game.loop.stop();
+    if (!this.game.getPaused()) this.game.togglePause();
+    this.clearOverlays();
+    const ov = this.el('div', 'ed-overlay');
+    const panel = this.el('div', 'ed-panel', ov);
+    panel.style.maxWidth = '640px';
+    panel.innerHTML = `
+      <div style="font-size:12px;letter-spacing:3px;color:#a8883f">${mis.subtitulo}</div>
+      <h2>${mis.titulo}</h2>
+      <div class="sub" style="text-align:left;font-size:13px;line-height:1.55;white-space:pre-line;margin:10px 0 14px">${mis.historia}</div>
+      <div class="sub" style="text-align:left;font-size:12px;color:var(--text);line-height:1.7"><b style="color:var(--gold)">OBJETIVOS</b><br>${mis.objetivos.map((o) => '• ' + o.titulo).join('<br>')}</div>
+    `;
+    const start = this.el('button', 'ed-primary', panel);
+    start.textContent = '▶ COMENZAR MISIÓN';
+    start.addEventListener('click', () => {
+      this.clearOverlays();
+      onStart();
+    });
+  }
+
+  /** Menú de selección de misión de campaña. */
+  showCampaignMenu(): void {
+    this.clearOverlays();
+    this.setMenuOpen(true);
+    const ov = this.el('div', 'ed-overlay');
+    const panel = this.el('div', 'ed-panel', ov);
+    panel.style.maxWidth = '560px';
+    panel.innerHTML = `
+      <div style="font-size:12px;letter-spacing:3px;color:#a8883f">CAMPAÑA</div>
+      <h2>${CAMPAIGN_TITLE}</h2>
+      <div class="sub">${CAMPAIGN_SUBTITLE}</div>
+    `;
+    const progress = this.campaignProgress();
+    MISSIONS.forEach((mis, i) => {
+      const row = this.el('div', 'row', panel);
+      row.style.justifyContent = 'flex-start';
+      const btn = this.el('button', 'ed-ghostbtn', row) as HTMLButtonElement;
+      btn.style.flex = '1';
+      btn.textContent = `${i + 1}. ${mis.titulo} — ${mis.subtitulo}`;
+      const locked = i > progress;
+      if (locked) {
+        btn.disabled = true;
+        btn.classList.add('disabled');
+        btn.style.opacity = '0.4';
+        btn.textContent = `🔒 ${i + 1}. ${mis.titulo}`;
+        return;
+      }
+      btn.addEventListener('click', () => {
+        this.game.settings.missionId = mis.id;
+        this.setMenuOpen(false);
+        this.clearOverlays();
+        this.game.resetGame();
+      });
+    });
+    const back = this.el('button', 'ed-ghostbtn', panel);
+    back.textContent = '← Volver';
+    back.addEventListener('click', () => this.showMainMenu());
+  }
+
+  /** Progreso de campaña guardado (índice de la misión más avanzada). */
+  private campaignProgress(): number {
+    try {
+      const raw = localStorage.getItem('peru-campaign');
+      if (!raw) return 0;
+      const n = Number.parseInt(raw, 10);
+      if (!Number.isFinite(n)) return 0;
+      return Math.max(0, Math.min(MISSIONS.length - 1, n));
+    } catch {
+      return 0;
+    }
+  }
+
+  /** Registra una misión como completada. */
+  saveCampaignProgress(id: string): void {
+    const idx = MISSIONS.findIndex((m) => m.id === id);
+    if (idx < 0) return;
+    const next = Math.min(MISSIONS.length, Math.max(idx + 1, this.campaignProgress()));
+    try {
+      localStorage.setItem('peru-campaign', String(next));
+    } catch {
+      /* noop */
+    }
+  }
+
+  private setTimeOfDay(v: GameSettings['timeOfDay']): void {
+    this.game.settings.timeOfDay = v;
+    const map: Record<string, number> = { 'mañana': 0.62, 'mediodía': 0.5, 'atardecer': 0.28, 'noche': 0.05 };
+    this.game.sky.setTimeOfDay(map[v] ?? 0.5);
+  }
+
+  private showPauseMenu(): void {
+    if (!this.game.getPaused()) this.game.togglePause();
+    else this.setPaused(true);
+  }
+
+  private showOptions(): void {
+    this.clearOverlays();
+    const ov = this.el('div', 'ed-overlay');
+    const panel = this.el('div', 'ed-panel', ov);
+    panel.innerHTML = `<h2>OPCIONES</h2><div class="sub">Ajustes visuales y de sonido</div>`;
+    const row = this.el('div', 'row', panel);
+    const q = this.field('Calidad', this.select(['alto', 'medio', 'bajo'] as const, { alto: 'Alta (AAA)', medio: 'Media', bajo: 'Baja' }, 'alto', (v) => this.game.postfx.setQuality(v)));
+    row.appendChild(q);
+    const cine = this.el('div', 'ed-field', row);
+    cine.innerHTML = `<label>Efectos cinematográficos</label>`;
+    const cineBtn = this.el('button', 'ed-ghostbtn', cine);
+    cineBtn.textContent = this.game.settings.cinematic ? 'Activados' : 'Desactivados';
+    cineBtn.addEventListener('click', () => {
+      this.game.settings.cinematic = !this.game.settings.cinematic;
+      this.game.postfx.setCinematic(this.game.settings.cinematic);
+      cineBtn.textContent = this.game.settings.cinematic ? 'Activados' : 'Desactivados';
+    });
+    const rot = this.el('div', 'ed-field', row);
+    rot.innerHTML = `<label>Rotar cámara (Q/E)</label>`;
+    const rotBtn = this.el('button', 'ed-ghostbtn', rot);
+    rotBtn.textContent = this.game.settings.rotateCamera ? 'Activada' : 'Desactivada';
+    rotBtn.addEventListener('click', () => {
+      this.game.settings.rotateCamera = !this.game.settings.rotateCamera;
+      this.game.camera.setRotationEnabled(this.game.settings.rotateCamera);
+      rotBtn.textContent = this.game.settings.rotateCamera ? 'Activada' : 'Desactivada';
+    });
+    const fog = this.el('div', 'ed-field', row);
+    fog.innerHTML = `<label>Niebla de guerra</label>`;
+    const fogBtn = this.el('button', 'ed-ghostbtn', fog);
+    fogBtn.textContent = this.game.settings.fogOfWar ? 'Activada' : 'Desactivada';
+    fogBtn.addEventListener('click', () => {
+      this.game.setFogOfWar(!this.game.settings.fogOfWar);
+      fogBtn.textContent = this.game.settings.fogOfWar ? 'Activada' : 'Desactivada';
+    });
+    const back = this.el('button', 'ed-primary', panel);
+    back.textContent = 'Volver';
+    back.addEventListener('click', () => this.showPauseMenu());
+  }
+
+  private field(label: string, input: HTMLElement): HTMLElement {
+    const f = this.el('div', 'ed-field');
+    f.appendChild(this.el('label', '')).textContent = label;
+    f.appendChild(input);
+    return f;
+  }
+
+  private select<T extends string>(values: readonly T[], labels: Record<string, string>, value: T, onChange: (v: T) => void): HTMLSelectElement {
+    const sel = document.createElement('select');
+    for (const v of values) {
+      const opt = document.createElement('option');
+      opt.value = v;
+      opt.textContent = labels[v] ?? v;
+      sel.appendChild(opt);
+    }
+    sel.value = value;
+    sel.addEventListener('change', () => onChange(sel.value as T));
+    return sel;
+  }
+
+  private clearOverlays(): void {
+    this.root.querySelectorAll('.ed-overlay').forEach((e) => e.remove());
+  }
+
+  /** Oculta el HUD de juego mientras hay un menú modal abierto. */
+  private setMenuOpen(v: boolean): void {
+    this.root.classList.toggle('menu-open', v);
+  }
+
+  // --- update ---
+
+  update(dt: number, t: number): void {
+    void t;
+    this.updateAcc += dt;
+    this.damage.update(this.game.camera.camera, dt);
+    const now = performance.now();
+    if (this.alertPings.length) this.alertPings = this.alertPings.filter((p) => p.until > now);
+    // diálogo con cierre automático
+    if (this.dialogueTimer > 0) {
+      this.dialogueTimer -= dt;
+      if (this.dialogueTimer <= 0) this.dialogueEl.classList.remove('show');
+    }
+    // panel de objetivos de campaña (tick compartido con el minimapa)
+    if (this.game.mission) {
+      this.objPanelEl.style.display = 'block';
+      if (this.updateAcc > 0.15) this.refreshObjectives();
+    } else {
+      this.objPanelEl.style.display = 'none';
+    }
+    const p = this.game.players[0];
+    if (p) {
+      // recursos
+      for (const k of RESOURCE_KEYS) {
+        const el = this.resEls[k];
+        const val = Math.floor(p.resources[k]);
+        const span = el.querySelector('.res-val')!;
+        span.textContent = formatNumber(val);
+        el.classList.toggle('res-low', val < 30);
+      }
+      // ocultar recursos no disponibles en el periodo (p. ej. Piedra sin Cantera)
+      this.resEls.energia.style.display = this.game.canBuildKind(BuildingKind.REFINERIA) ? '' : 'none';
+      this.popEl.querySelector('span')!.textContent = `${p.populationUsed}/${p.populationCap}`;
+      const eraDef = ERA_DEFS[p.era];
+      this.eraEl.querySelector('span:last-child')!.textContent = `${eraDef.nombre} · ${eraDef.anos}`;
+      this.eraDot.style.background = `#${ERA_COLORS[p.era].toString(16).padStart(6, '0')}`;
+    }
+    if (this.updateAcc > 0.15) {
+      this.updateAcc = 0;
+      this.renderBottom();
+      this.renderMinimap();
+    }
+    this.fpsEl.textContent = `${this.game.loop.getFps()} FPS`;
+  }
+}

@@ -1,0 +1,115 @@
+# Atuendos, armamento y tocados (spec para modelado)
+
+Este documento reúne, con fuentes, la información de **vestimenta, armamento, protección y tocados**
+necesaria para modelar las unidades del juego. Es la **spec operativa** que usa
+`src/model/ProceduralModel.ts` (perfiles de atuendo) y `src/model/defs/units.ts` (qué modelo usa cada
+era). Donde un dato no está atestiguado se indica **«no documentado»**; no se inventa.
+
+> Regla (ver `AGENTS.md`): antes de tocar contenido histórico, consultar el dossier y **añadir la
+> fuente**. Los dossieres por civilización son históricos/geográficos y en general **no describen
+> atuendos**; por eso este documento consolida la evidencia.
+
+---
+
+## 1. General andino (todas las culturas prehispánicas)
+
+- **Arma ofensiva principal: la porra/maza (macana/club)**, de mango de madera y cabeza de madera,
+  piedra o metal, con formas de disco, estrella, roseta, cactus o cabeza zoomorfa. Fue el arma más
+  usada en el Perú antiguo, en guerra y en ceremonias. — Museo Larco, *Club Heads*.
+- **Hondas (huaraca)** y **porras** para los indios de la sierra; el **arco** era secundario en el
+  Perú andino (escasez de maderas), usado sobre todo por **auxiliares de la selva** en el ejército
+  inca; también **dardos con estólica (atlatl)**. — Métraux, *Weapons* (Handbook of South American
+  Indians, BAE Bull. 143), pp. 229–263.
+- **Defensa mejor desarrollada que en otras zonas: cascos y armadura acolchada** (real protección
+  contra hondas y dardos); **escudos (rodelas)** conocidos. — Métraux, *Weapons*.
+- **Prendas base**: **uncu/túnica** masculina tejida en tapiz (algodón + fibra de camélido) con
+  abertura central para la cabeza, **sobre un taparrabos**; telas finas (**cumbi**) reservadas a
+  élites y rituales; patrones de **tocapu** (motivos geométricos) y **ajedrezado con canesú rojo en V**
+  (asociado a jefes militares/mando). — LACMA, *The Andean Uncu*; Dumbarton Oaks, *All T'oqapu Tunic*;
+  The Met, *Tunic (Inca)*; NGA *Gold and the Incas*; Museo de América, *Uncu inca*.
+- **Tocado regio: llawt'u (llauto)**, banda/turbante de lana de vicuña con la franja frontal
+  **maskapaycha**. — Wikipedia, *Llawt'u* (fuente secundaria).
+- **Orejeras/orejones**: discos de metal (oro) como insignia de estatus (Moche, Wari, Chimú, Recuay…).
+
+## 2. Por civilización (marcas atestiguadas)
+
+- **Caral-Supe**: algodón (redes, textil). Atuendo militar: **no documentado**.
+- **Chavín**: iconografía felínica/antropomorfa. Atuendo: **no documentado**.
+- **Paracas**: **textilería fina** y **arte plumario** (plumas). Prendas concretas: **no documentado**.
+- **Moche**: guerreros con **cascos cónicos** de metal, **porra (club)** y **túnica con armadura de
+  espalda (backflap) trapezoidal**, **orejeras** (orejones), **taparrabos**, **honda** y **estólica
+  (atlatl)**; **escudo circular**. — Museo Larco, *Mochica Warrior Clothing* y catálogo; The Met,
+  *Ear flare frontal* y *Profile Warrior Ornament*.
+- **Nazca**: textilería; **cabezas trofeo** (práctica). Atuendo militar: **no documentado**.
+- **Recuay**: sociedades guerreras; **orejeras de oro** (Pashash). Prendas: **no documentado**.
+- **Wari**: escultura de **guerrero con orejeras y túnica de combate con "armadura" en pecho y
+  espalda unida por hombros** (disco pectoral). — Museo Larco, catálogo ML301403.
+- **Tiahuanaco**: uso del **arco** representado en textiles (según Métraux). Prendas: **no documentado**.
+- **Chimú**: **orfebrería**; **orejeras y máscaras** de metal; **tumi**. Prendas: **no documentado**.
+- **Chincha**: comercio; **no documentado** atuendo.
+- **Chanca**: **pintura facial** («se pintaban el rostro»). Prendas: **no documentado**.
+- **Inca**: ejército con **chasquis**; **uncu** (ajedrezado + canesú rojo, tocapu) sobre taparrabos,
+  tela cumbi; **llawt'u + maskapaycha** para el Sapa Inca; arco solo en auxiliares de selva. —
+  LACMA/Dumbarton Oaks/Met/Museo de América; Métraux.
+
+## 3. Colonial (Virreinato, 1532–1821)
+
+- **Tropas españolas (s. XVIII, Borbones)**: uniformes **azul con divisa encarnada** (chupa y casaca),
+  botón de plata; **dragones** (caballería) y **fusileros**; armamento de **fusil**, **arcabuz**,
+  sable, lanza y pistolas. Milicias de **naturales (indios), pardos y morenos** con uniformes
+  distintivos (blanco, etc.). — Sanz García, *Virreinato de Perú: organización militar y uniformidades
+  específicas* (INISEG); *Miniaturas Militares* (A. Cànovas).
+- **Soldado de cuera** (fronteras): **cuera** (abrigo de pieles sin mangas, hasta 7 capas) como
+  protección anti-flecha; chaqueta azul, divisa roja, gorra; armado con **fusil corto, pistolas, arco
+  y flechas, espada, lanza y escudo de piel**. — Wikipedia, *Soldado de cuera* (fuente secundaria).
+
+## 4. República / Guerra del Pacífico (s. XIX)
+
+- **Perú (1879)**: infantería con **guerrera/dormán azul** con vivos, botones con escudo peruano;
+  **fusil de retrocarga Comblain I (1873)** y **Peabody-Martini (1874)**; **kepí**. Caballería con
+  **carabina, lanza y sable**; artillería **Krupp**. — *La Guerra del Pacífico 1879–1884* (gdp1879),
+  informe de uniformología (Patricio Greve); *Militaria* — uniforme del Batallón «1.° de Ayacucho».
+- **Chile (1878–79)**: de parada: **morrión bajo azul negro** y **levita azul negra** con vivos
+  lacres, **pantalón garance**, **medias botas**; de diario: **kepí azul negro**; **fusil belga
+  Comblain II (1873)**, **bayoneta sable**. — Decreto de uniforme chileno 1878 (gdp1879);
+  *Uniformes de la Guerra del Pacífico II*.
+
+## 5. Perú contemporáneo (s. XX–XXI)
+
+- **Uniforme de campaña moderno** (pixelado/verde), **casco**, **fusil de asalto** y equipo ligero.
+  Referencia general de uniformidad militar contemporánea; **sin detalle de fuente específica en los
+  dossieres** (marcar como aproximación).
+
+---
+
+## 6. Tabla spec de atuendo por era/civ (para el código)
+
+| Era | Prenda | Tocado | Arma principal | Protección | Escudo |
+|---|---|---|---|---|---|
+| Formativo (Caral/Chavín) | taparrabos + manta simple | cinta de tela | porra/macana de piedra | — | — |
+| Estados Regionales (Moche/Nazca/Recuay/Tiahuanaco/Wari) | uncu/túnica con tocapu | casco cónico (metal) o diadema + orejeras | porra + lanza/honda | túnica acolchada, backflap (Moche), disco pectoral (Wari) | rodela |
+| Tahuantinsuyo (Inca/Chanca/Chimú/Chincha) | uncu ajedrezado + canesú rojo | llawt'u + maskapaycha (élite), diadema+orejeras | porra + honda (sierra); arco (aux. selva) | casco acolchado | rodela |
+| Virreinato (Realistas) | casaca/chupa azul, divisa roja | morrión/bicornio | fusil/arcabuz + sable/lanza | cuera (frontera) | — |
+| República (Patriotas/Guerra del Pacífico) | guerrera/dormán azul, pantalón | kepí (chacó en gala) | fusil Comblain/Peabody-Martini + bayoneta | — | — |
+| Contemporáneo (Perú) | uniforme de campaña | casco | fusil de asalto | chaleco | — |
+
+---
+
+## 7. Fuentes
+
+- Museo Larco — *Club Heads*: https://www.museolarco.org/en/exhibition/permanent-exhibition/online-exhibition/ritual-warfare-and-music/club-heads/
+- Museo Larco — *Mochica Warrior Clothing*: https://www.museolarco.org/en/exhibition/permanent-exhibition/online-exhibition/ritual-warfare-and-music/mochica-warrior-clothing/
+- Museo Larco — Catálogo (guerrero Wari ML301403; orejera Moche ML100849; guerrero Moche Lee ML301403).
+- The Met — *Ear flare frontal* (Moche): https://www.metmuseum.org/art/collection/search/309425
+- The Met — *Profile Warrior Ornament* (Moche): https://www.metmuseum.org/art/collection/search/315148
+- The Met — *Tunic* (Inca): https://www.metmuseum.org/art/collection/search/751901
+- Métraux, A. — *Weapons*, Handbook of South American Indians, BAE Bull. 143, vol. 5, pp. 229–263.
+- LACMA — *The Andean Uncu*: https://www.lacma.org/andean-uncu
+- Dumbarton Oaks — *All T'oqapu Tunic*: https://museum.doaks.org/objects-1/info/23071
+- Museo de América — *Uncu inca*: https://www.cultura.gob.es/museodeamerica/en/coleccion/america-prehispanica/uncu-inca.html
+- Wikipedia — *Llawt'u* (tocado inca; fuente secundaria).
+- Sanz García, J. — *Virreinato de Perú: organización militar y uniformidades específicas* (INISEG).
+- Cànovas, A. — *Miniaturas Militares* (Virreinato del Perú): http://miniaturasmilitaresalfonscanovas.blogspot.com/2011/10/el-virreinato-del-peru-y-la-capitania.html
+- Wikipedia — *Soldado de cuera* (fuente secundaria).
+- Saona, J. — *La Guerra del Pacífico 1879–1884* (gdp1879): uniforme chileno (decreto 1878), soldado peruano.
+- *Uniformes de la Guerra del Pacífico II* (armamento: Comblain, Peabody-Martini, Krupp).

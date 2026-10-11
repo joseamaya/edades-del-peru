@@ -1,0 +1,22 @@
+node_modules/
+dist/
+review/
+.agents/
+coverage/
+test-results/
+playwright-report/
+*.log
+.DS_Store
+.vite/
+.idea/
+.codegraph/
+.env
+.env.*
+*.tsbuildinfo
+.eslintcache
+# config de herramientas de agentes de IA (no forma parte del juego)
+opencode.json
+skills-lock.json
+# credenciales locales de generación de texturas
+scripts/.cloudflare.json
+scripts/_texturas_raw/

@@ -1,0 +1,64 @@
+{
+  "name": "edades-del-peru",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Edades del Perú — RTS de historia peruana (Caral a hoy) en Three.js",
+  "license": "MIT",
+  "author": "Miguel Amaya <miguel.amaya99@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joseamaya/edades-del-peru.git"
+  },
+  "homepage": "https://github.com/joseamaya/edades-del-peru#readme",
+  "bugs": {
+    "url": "https://github.com/joseamaya/edades-del-peru/issues"
+  },
+  "keywords": [
+    "rts",
+    "three.js",
+    "typescript",
+    "vite",
+    "peru",
+    "historia",
+    "juego",
+    "age-of-empires"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write \"src/**/*.ts\" \"scripts/**/*.mjs\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "shot": "node scripts/screenshot.mjs",
+    "shot:analyze": "node scripts/analyze.mjs",
+    "shot:ascii": "node scripts/ascii.mjs",
+    "shots:eras": "node scripts/shots_eras.mjs",
+    "shots:bld": "node scripts/shots_bld.mjs",
+    "shots:close": "node scripts/shots_close.mjs",
+    "shots:work": "node scripts/shots_work.mjs"
+  },
+  "engines": {
+    "node": ">=20.19"
+  },
+  "dependencies": {
+    "three": "^0.185.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.56.1",
+    "@types/three": "^0.185.3",
+    "eslint": "^10.12.0",
+    "pngjs": "^7.0.0",
+    "prettier": "^3.9.9",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.71.1",
+    "vite": "^7.0.4",
+    "vitest": "^5.0.3"
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+}

@@ -1,0 +1,1001 @@
+import * as THREE from 'three';
+import { Era, UnitKind, Resources, ZERO_RESOURCES, Team, GameEvents } from '../core/types';
+import { getUnitStats, getUnitModel, UnitStats } from '../model/defs/units';
+import { buildModel, BuildContext, disposeModel } from '../model/ProceduralModel';
+import { EntityView } from '../entities/EntityView';
+import { allocId } from '../entities/EntityView';
+import { Order, OrderKind, OrderTarget } from '../core/types';
+import { angleTo, distance2D, clamp, lerp } from '../util/math';
+
+/** Contexto que Game proporciona a las unidades (evita dependencias circulares). */
+export interface UnitContext {
+  getHeight(x: number, z: number): number;
+  findPath(sx: number, sz: number, tx: number, tz: number): { x: number; z: number }[];
+  unitsNear(x: number, z: number, radius: number): Unit[];
+  enemiesNear(x: number, z: number, radius: number, owner: number): Unit[];
+  entitiesById: Map<number, any>;
+  resourceNodes: Map<number, any>;
+  buildings: Map<number, any>;
+  resolveDamage(attackerId: number, targetId: number, damage: number, fromEntity: any): void;
+  spawnProjectile(opts: { from: THREE.Vector3; target: THREE.Vector3; speed: number; damage: number; kind: string; owner: number; area?: number; arc?: number; trail?: string; targetId?: number }): void;
+  particles: any;
+  players: { id: number; team: Team }[];
+  getPlayer(playerId: number): { id: number; team: Team };
+  event<K extends keyof GameEvents>(name: K, payload: GameEvents[K]): void;
+  isVisibleTo(player: number, x: number, z: number): boolean;
+  gather(nodeId: number, unitId: number, amount: number, resource: string): void;
+  worldSize: number;
+  unitSpawn(buildingId: number, unit: any, rally: OrderTarget, hasRally: boolean): boolean;
+  techComplete(playerId: number, techId: string): void;
+}
+
+const MOVE_STOP_DIST = 0.6;
+const SEPARATION = 1.4;
+
+/** Color del bulto de carga del obrero según el recurso transportado. */
+const CARRY_COLORS: Record<keyof Resources, number> = {
+  comida: 0xc8a04a,
+  madera: 0x8a6a3a,
+  acero: 0x9aa2aa,
+  energia: 0x4ac6d8,
+};
+
+export class Unit {
+  id = allocId();
+  owner: number;
+  kind: UnitKind;
+  era: Era;
+  stats: UnitStats;
+  pos = new THREE.Vector3();
+  vel = new THREE.Vector3();
+  yaw = Math.random() * Math.PI * 2;
+  targetYaw = this.yaw;
+  view: EntityView;
+  hp: number;
+  maxHp: number;
+  dead = false;
+  selected = false;
+  radius = 0.42;
+  /** Etiqueta de misión (para objetivos/triggers). */
+  tag?: string;
+
+  orderQueue: Order[] = [];
+  private path: { x: number; z: number }[] = [];
+  private pathIdx = 0;
+  private repathTimer = 0;
+
+  targetEntityId: number | null = null;
+  attackCooldown = 0;
+  gatherCarry: Resources = { ...ZERO_RESOURCES };
+  carryCapacity = 10;
+  private gatherTimer = 0;
+  private currentResource: keyof Resources | null = null;
+  private animationTime = Math.random() * 10;
+  private walkCycle = 0;
+  private workAnim = 0;
+  private footstepTimer = 0;
+  convertProgress = 0;
+  garrisonedIn: number | null = null;
+  isConstructing: number | null = null;
+  rallyPoint: OrderTarget | null = null;
+  combatStance: 'agresivo' | 'defensivo' | 'pasivo' = 'agresivo';
+  buildEfficiency = 1;
+  gatherMultiplier = 1;
+  attackMultiplier = 1;
+  armorMultiplier = 1;
+
+  private gunPivot: THREE.Group | null = null;
+  private turretPivot: THREE.Group | null = null;
+  private legL: THREE.Group | null = null;
+  private legR: THREE.Group | null = null;
+  private armL: THREE.Group | null = null;
+  private armR: THREE.Group | null = null;
+  private headPivot: THREE.Group | null = null;
+  private carryPivot: THREE.Group | null = null;
+  private carryMat: THREE.MeshStandardMaterial | null = null;
+  private bobY = 0;
+
+  constructor(kind: UnitKind, owner: number, era: Era, ctx: BuildContext) {
+    this.kind = kind;
+    this.owner = owner;
+    this.era = era;
+    this.stats = getUnitStats(kind, era);
+    this.hp = this.maxHp = this.stats.hp;
+    const model = buildModel(getUnitModel(kind, era), ctx);
+    this.radius = this.stats.rango === 0 ? 0.45 : 0.5;
+    if (kind === UnitKind.TANQUE || kind === UnitKind.MEC) this.radius = 0.9;
+    if (kind === UnitKind.ARTILLERIA || kind === UnitKind.MORTERO || kind === UnitKind.NUCLEAR) this.radius = 0.8;
+    this.view = new EntityView(model, this.radius);
+    this.findPivots(model);
+  }
+
+  /** Pivotes para animación. */
+  findPivots(model: THREE.Group): void {
+    this.gunPivot = this.turretPivot = this.legL = this.legR = this.armL = this.armR = this.headPivot = null;
+    this.carryPivot = null;
+    this.carryMat = null;
+    model.traverse((o) => {
+      if (o.name === 'pivot:gun') {
+        this.gunPivot = o as THREE.Group;
+        this.gunBaseZ = this.gunPivot.position.z;
+      }
+      if (o.name === 'pivot:turret') this.turretPivot = o as THREE.Group;
+      if (o.name === 'pivot:legL') this.legL = o as THREE.Group;
+      if (o.name === 'pivot:legR') this.legR = o as THREE.Group;
+      if (o.name === 'pivot:armL') this.armL = o as THREE.Group;
+      if (o.name === 'pivot:armR') this.armR = o as THREE.Group;
+      if (o.name === 'pivot:head') this.headPivot = o as THREE.Group;
+      if (o.name === 'pivot:carry') {
+        this.carryPivot = o as THREE.Group;
+        const mesh = this.carryPivot.children.find((c) => (c as THREE.Mesh).isMesh) as THREE.Mesh | undefined;
+        if (mesh) this.carryMat = mesh.material as THREE.MeshStandardMaterial;
+      }
+    });
+  }
+  private gunBaseZ = 0;
+  private attackingTarget = false;
+  private stuckTimer = 0;
+  private lastStuckX = 0;
+  private lastStuckZ = 0;
+
+  get team(): Team {
+    return this.ctx?.players.find((p) => p.id === this.owner)?.team ?? 0;
+  }
+
+  ctx!: UnitContext;
+
+  setContext(ctx: UnitContext): void {
+    this.ctx = ctx;
+  }
+
+  get posX(): number {
+    return this.pos.x;
+  }
+  get posZ(): number {
+    return this.pos.z;
+  }
+
+  attach(scene: THREE.Scene): void {
+    this.view.attachTo(scene);
+    this.view.group.position.copy(this.pos);
+  }
+
+  /** Lleva la posición al terreno. */
+  snapToGround(): void {
+    this.pos.y = this.ctx.getHeight(this.pos.x, this.pos.z);
+    this.view.setPosition(this.pos.x, this.pos.y, this.pos.z);
+  }
+
+  clearOrders(): void {
+    this.orderQueue.length = 0;
+    this.path.length = 0;
+    this.targetEntityId = null;
+    this.currentResource = null;
+    this.convertProgress = 0;
+    this.attackingTarget = false;
+  }
+
+  issueOrder(order: Order, clear = true): void {
+    if (clear) {
+      this.clearOrders();
+      this.orderQueue.push(order);
+    } else {
+      this.orderQueue.push(order);
+    }
+    this.startOrder();
+  }
+
+  private startOrder(): void {
+    const order = this.orderQueue[0];
+    if (!order) return;
+    switch (order.kind) {
+      case OrderKind.MOVE:
+        this.setPath(order.target!.x, order.target!.z);
+        break;
+      case OrderKind.ATTACK_MOVE:
+        this.setPath(order.target!.x, order.target!.z);
+        break;
+      case OrderKind.GATHER:
+        if (order.entityId !== undefined) this.setPathToEntity(order.entityId);
+        break;
+      case OrderKind.BUILD:
+        if (order.entityId !== undefined) this.setPathToEntity(order.entityId);
+        break;
+      case OrderKind.PATROL:
+        order.origin = { x: this.pos.x, z: this.pos.z };
+        this.setPath(order.target!.x, order.target!.z);
+        break;
+      case OrderKind.ATTACK:
+        this.targetEntityId = order.entityId ?? null;
+        break;
+      case OrderKind.CONVERT:
+        this.targetEntityId = order.entityId ?? null;
+        this.convertProgress = 0;
+        break;
+      case OrderKind.GARRISON:
+        if (order.entityId !== undefined) this.setPathToEntity(order.entityId);
+        break;
+      case OrderKind.DELIVER:
+        if (order.entityId !== undefined) this.setPathToEntity(order.entityId);
+        break;
+    }
+  }
+
+  setPath(tx: number, tz: number): void {
+    const pts = this.ctx.findPath(this.pos.x, this.pos.z, tx, tz);
+    this.path = pts;
+    this.pathIdx = 0;
+    if (pts.length > 1) {
+      this.advanceToNextWaypoint();
+    }
+  }
+
+  setPathToEntity(id: number): void {
+    const ent = this.ctx.entitiesById.get(id) ?? this.ctx.resourceNodes.get(id) ?? this.ctx.buildings.get(id);
+    if (ent) {
+      const targetPos = ent.pos ?? ent.view?.group?.position;
+      if (targetPos) this.setPath(targetPos.x, targetPos.z);
+    }
+  }
+
+  private advanceToNextWaypoint(): void {
+    if (this.pathIdx < this.path.length) {
+      const wp = this.path[this.pathIdx];
+      this.targetYaw = angleTo(this.pos.x, this.pos.z, wp.x, wp.z);
+    }
+  }
+
+  isBusy(): boolean {
+    return this.orderQueue.length > 0;
+  }
+
+  isGathering(): boolean {
+    return this.orderQueue[0]?.kind === OrderKind.GATHER;
+  }
+
+  /** ¿Está ejecutando una tarea manual (recolectar/construir) junto al objetivo? */
+  private isWorking(): boolean {
+    const k = this.orderQueue[0]?.kind;
+    return (k === OrderKind.GATHER || k === OrderKind.BUILD) && this.walkCycle <= 0.01;
+  }
+
+  takeDamage(dmg: number, _fromId?: number): void {
+    if (this.dead) return;
+    this.hp -= dmg;
+    if (this.hp <= 0) {
+      this.die();
+    }
+  }
+
+  die(): void {
+    if (this.dead) return;
+    this.dead = true;
+    if (this.ctx) {
+      this.ctx.particles?.emit({
+        x: this.pos.x, y: this.pos.y + 0.5, z: this.pos.z,
+        count: this.radius > 0.7 ? 18 : 8,
+        color: 0x887766,
+        kind: 'humo', speed: 1.2, life: 1.4, size: 2,
+      });
+      this.ctx.event('unit:died', { id: this.id, owner: this.owner, kind: this.kind });
+    }
+    if (this.view.group.parent) {
+      this.view.group.parent.remove(this.view.group);
+    }
+  }
+
+  getGatherRate(resource: keyof Resources): number {
+    let base = 0.8;
+    if (resource === 'comida') base = 1.0;
+    if (resource === 'madera') base = 0.9;
+    if (resource === 'acero') base = 0.7;
+    if (resource === 'energia') base = 0.6;
+    return base * this.gatherMultiplier;
+  }
+
+  update(dt: number, time: number): void {
+    this.animationTime += dt;
+    if (this.dead) return;
+    if (this.garrisonedIn !== null) return;
+
+    this.attackCooldown = Math.max(0, this.attackCooldown - dt);
+    this.repathTimer -= dt;
+
+    const order = this.orderQueue[0];
+    if (order) this.executeOrder(order, dt, time);
+    else {
+      this.updateIdle(dt);
+      this.autoAttack(dt, time);
+    }
+
+    // movimiento
+    this.updateMovement(dt);
+
+    // animaciones
+    this.updateAnimation(dt, time);
+    this.updateCarry();
+
+    this.view.setPosition(this.pos.x, this.pos.y, this.pos.z);
+    this.view.setRotationY(this.yaw);
+    // rebote de caminata/idle aplicado tras fijar la posición (no se sobrescribe)
+    this.view.group.position.y += this.bobY;
+    this.view.updateHealth(this.hp / this.maxHp);
+  }
+
+  private updateIdle(dt: number): void {
+    void dt;
+    this.vel.multiplyScalar(0);
+    this.walkCycle = 0;
+  }
+
+  /** Auto-ataque de unidades militares ociosas (estilo AoE2). */
+  private autoAttack(dt: number, time: number): void {
+    if (this.combatStance === 'pasivo') return;
+    if (this.kind === UnitKind.OBRERO || this.kind === UnitKind.EXPLORADOR) return;
+    if (this.attackCooldown <= 0) {
+      const range = this.stats.rango > 0 ? this.stats.rango + 1 : this.stats.los + 1;
+      const enemy = this.ctx?.enemiesNear ? this.ctx.enemiesNear(this.pos.x, this.pos.z, range, this.owner)[0] : null;
+      if (enemy) {
+        this.issueOrder({ kind: OrderKind.ATTACK, entityId: enemy.id }, true);
+        this.updateAttack(this.orderQueue[0], dt, time);
+      }
+    }
+  }
+
+  private executeOrder(order: Order, dt: number, time: number): void {
+    switch (order.kind) {
+      case OrderKind.MOVE:
+        if (this.isPathDone()) {
+          this.finishOrder();
+        }
+        break;
+      case OrderKind.ATTACK_MOVE:
+        this.updateAttackMove(order, dt, time);
+        break;
+      case OrderKind.ATTACK:
+        this.updateAttack(order, dt, time);
+        break;
+      case OrderKind.GATHER:
+        this.updateGather(order, dt);
+        break;
+      case OrderKind.BUILD:
+        this.updateBuild(order, dt);
+        break;
+      case OrderKind.CONSTRUCT:
+        this.updateConstruct(order, dt);
+        break;
+      case OrderKind.DELIVER:
+        this.updateDeliver(order, dt);
+        break;
+      case OrderKind.PATROL:
+        this.updatePatrol(dt);
+        break;
+      case OrderKind.GARRISON:
+        this.updateGarrison(order, dt);
+        break;
+      case OrderKind.CONVERT:
+        this.updateConvert(order, dt, time);
+        break;
+      default:
+        this.finishOrder();
+    }
+  }
+
+  /** Descarta la orden actual e inicializa la siguiente (fix shift-queue). */
+  private finishOrder(): void {
+    this.orderQueue.shift();
+    if (this.orderQueue.length > 0) {
+      this.startOrder();
+    }
+  }
+
+  private isPathDone(): boolean {
+    return this.pathIdx >= this.path.length;
+  }
+
+  private updateMovement(dt: number): void {
+    // detección de atasco: si no avanza con un camino activo, re-rutear
+    const moved = Math.hypot(this.pos.x - this.lastStuckX, this.pos.z - this.lastStuckZ);
+    this.stuckTimer += dt;
+    if (moved > 0.4) {
+      this.stuckTimer = 0;
+      this.lastStuckX = this.pos.x;
+      this.lastStuckZ = this.pos.z;
+    } else if (this.stuckTimer > 1.2 && this.path.length > 1 && this.orderQueue.length > 0) {
+      const o = this.orderQueue[0];
+      const target = o.target;
+      this.stuckTimer = 0;
+      if (target) {
+        this.setPath(target.x, target.z);
+      } else if (o.entityId !== undefined) {
+        this.setPathToEntity(o.entityId);
+      }
+    }
+
+    if (this.orderQueue.length === 0 || this.isGathering() && this.pathIdx >= this.path.length) {
+      this.vel.multiplyScalar(Math.pow(0.0001, dt));
+    }
+    // llega al waypoint
+    if (this.pathIdx < this.path.length) {
+      const wp = this.path[this.pathIdx];
+      const dx = wp.x - this.pos.x;
+      const dz = wp.z - this.pos.z;
+      const dist = Math.sqrt(dx * dx + dz * dz);
+      if (dist < MOVE_STOP_DIST) {
+        this.pathIdx++;
+        if (this.pathIdx < this.path.length) {
+          const nw = this.path[this.pathIdx];
+          this.targetYaw = angleTo(this.pos.x, this.pos.z, nw.x, nw.z);
+        }
+      }
+    }
+
+    if (this.pathIdx < this.path.length) {
+      const wp = this.path[this.pathIdx];
+      this.targetYaw = angleTo(this.pos.x, this.pos.z, wp.x, wp.z);
+      // velocidad
+      const spd = this.stats.velocidad;
+      this.vel.x = Math.cos(this.targetYaw) * spd;
+      this.vel.z = Math.sin(this.targetYaw) * spd;
+      this.walkCycle += dt * spd;
+      // polvo de pisadas mientras camina
+      this.footstepTimer -= dt;
+      if (this.footstepTimer <= 0) {
+        this.footstepTimer = 0.34;
+        this.ctx.particles?.emit({
+          x: this.pos.x, y: this.pos.y + 0.12, z: this.pos.z,
+          count: 1, color: 0xbfae8e, kind: 'polvo', speed: 0.5, life: 0.5, size: 1.0, grow: 1.7, spread: 0.5,
+        });
+      }
+    } else {
+      this.vel.multiplyScalar(Math.pow(0.02, dt));
+      this.walkCycle = lerp(this.walkCycle, 0, dt * 6);
+    }
+
+    // separación
+    this.applySeparation(dt);
+
+    // integrar
+    this.pos.x += this.vel.x * dt;
+    this.pos.z += this.vel.z * dt;
+    const size = this.ctx.worldSize;
+    this.pos.x = clamp(this.pos.x, 2, size - 2);
+    this.pos.z = clamp(this.pos.z, 2, size - 2);
+    this.pos.y = this.ctx.getHeight(this.pos.x, this.pos.z) + 0.05;
+
+    // rotación suave
+    let dy = this.targetYaw - this.yaw;
+    while (dy > Math.PI) dy -= Math.PI * 2;
+    while (dy < -Math.PI) dy += Math.PI * 2;
+    this.yaw += dy * Math.min(1, dt * 10);
+  }
+
+  private applySeparation(dt: number): void {
+    if (this.walkCycle <= 0.01) return;
+    const nearby = this.ctx.unitsNear(this.pos.x, this.pos.z, SEPARATION);
+    let fx = 0;
+    let fz = 0;
+    for (const u of nearby) {
+      if (u.id === this.id) continue;
+      if (u.garrisonedIn !== null) continue;
+      const dx = this.pos.x - u.pos.x;
+      const dz = this.pos.z - u.pos.z;
+      const d = Math.sqrt(dx * dx + dz * dz);
+      if (d < SEPARATION && d > 0.001) {
+        const f = (SEPARATION - d) / SEPARATION;
+        fx += (dx / d) * f;
+        fz += (dz / d) * f;
+      }
+    }
+    this.vel.x += fx * 4.5 * dt;
+    this.vel.z += fz * 4.5 * dt;
+  }
+
+  private updateAnimation(dt: number, time: number): void {
+    void dt;
+    const walk = this.walkCycle;
+    if (this.gunPivot) {
+      // retroceso sutil sobre la posición base del pivote
+      const recoil = this.attackCooldown > this.stats.velocidadAtaque - 0.12 ? -0.15 : 0;
+      this.gunPivot.position.z = this.gunBaseZ + recoil;
+    }
+    if (this.turretPivot) {
+      // apuntar la torreta hacia el objetivo si existe
+      let aimYaw = Math.sin(time * 0.6) * 0.05;
+      if (this.targetEntityId !== null) {
+        const target = this.ctx?.entitiesById?.get(this.targetEntityId) ?? this.ctx?.buildings?.get(this.targetEntityId);
+        if (target) {
+          aimYaw = angleTo(this.pos.x, this.pos.z, target.pos.x, target.pos.z) - this.yaw;
+        }
+      }
+      this.turretPivot.rotation.y = aimYaw;
+    }
+    // ciclo de caminata procedimental con pivotes (brazos/piernas en contrafase)
+    // la fase deriva de la distancia recorrida (zancada ligada a la velocidad)
+    this.bobY = 0;
+    if (walk > 0.01) {
+      const phase = this.walkCycle * 3.2;
+      const s = Math.sin(phase);
+      const c = Math.cos(phase);
+      if (this.legL) this.legL.rotation.x = s * 0.55;
+      if (this.legR) this.legR.rotation.x = -s * 0.55;
+      if (this.armL) this.armL.rotation.x = -s * 0.42;
+      if (this.armR) this.armR.rotation.x = s * 0.42;
+      if (this.headPivot) this.headPivot.rotation.x = c * 0.05;
+      this.bobY = Math.abs(s) * 0.045;
+    } else if (this.isWorking()) {
+      // gesto de trabajo: golpe con la herramienta (hacha/pico)
+      this.workAnim += dt;
+      const chop = Math.abs(Math.sin(this.workAnim * 5.5));
+      if (this.legL) this.legL.rotation.x = 0.12;
+      if (this.legR) this.legR.rotation.x = -0.12;
+      if (this.armR) this.armR.rotation.x = -0.15 - chop * 0.85;
+      if (this.armL) this.armL.rotation.x = -0.25 - chop * 0.15;
+      if (this.headPivot) this.headPivot.rotation.x = 0.14 + chop * 0.08;
+      this.bobY = -chop * 0.02;
+    } else {
+      this.workAnim = lerp(this.workAnim, 0, dt * 8);
+      const idle = Math.sin(this.animationTime * 1.6);
+      if (this.legL) this.legL.rotation.x = idle * 0.03;
+      if (this.legR) this.legR.rotation.x = -idle * 0.03;
+      // brazos caen a posición neutra al estar parado
+      if (this.armL) this.armL.rotation.x = idle * 0.02;
+      if (this.armR) this.armR.rotation.x = idle * 0.02;
+      if (this.headPivot) this.headPivot.rotation.x = idle * 0.02;
+      this.bobY = idle * 0.014;
+    }
+    // postura de ataque: brazo del arma apunta al objetivo cuando no se mueve
+    if (this.armR) {
+      if (this.targetEntityId !== null && walk <= 0.01 && this.orderQueue[0]?.kind === OrderKind.ATTACK) {
+        const recoil = this.attackCooldown > this.stats.velocidadAtaque - 0.12 ? -0.25 : 0;
+        this.armR.rotation.x = -1.05 + recoil;
+      } else if (this.gunPivot && walk <= 0.01 && this.orderQueue[0]?.kind === OrderKind.ATTACK) {
+        this.armR.rotation.x = -0.9;
+      }
+    }
+  }
+
+  // --- órdenes específicas ---
+
+  private updateAttackMove(_order: Order, dt: number, time: number): void {
+    // busca enemigos a lo largo del camino
+    const enemies = this.ctx.unitsNear(this.pos.x, this.pos.z, this.stats.rango + 3);
+    let best: Unit | null = null;
+    let bestD = Infinity;
+    for (const e of enemies) {
+      if (e.owner === this.owner) continue;
+      if (this.ctx.players.find((p) => p.id === e.owner)?.team === this.team) continue;
+      const d = distance2D(this.pos.x, this.pos.z, e.pos.x, e.pos.z);
+      if (d < bestD) {
+        bestD = d;
+        best = e;
+      }
+    }
+    if (best && bestD < this.stats.rango + 2) {
+      // entablar combate sin destruir la orden de ataque-mover
+      this.targetEntityId = best.id;
+      this.attackingTarget = true;
+      this.updateAttack({ kind: OrderKind.ATTACK, entityId: best.id }, dt, time);
+    } else if (this.isPathDone()) {
+      this.attackingTarget = false;
+      this.finishOrder();
+    }
+  }
+
+  private updateAttack(order: Order, dt: number, time: number): void {
+    const target = this.targetEntityId !== null ? (this.ctx.entitiesById.get(this.targetEntityId) ?? this.ctx.buildings.get(this.targetEntityId)) : null;
+    if (!target || target.dead || (target.hp !== undefined && target.hp <= 0)) {
+      this.targetEntityId = null;
+      if (this.attackingTarget) {
+        // reanudar la marcha del ataque-mover hacia su destino original
+        this.attackingTarget = false;
+        const am = this.orderQueue[0];
+        if (am && am.kind === OrderKind.ATTACK_MOVE && am.target) {
+          this.setPath(am.target.x, am.target.z);
+        }
+      } else if (order.kind === OrderKind.ATTACK) {
+        this.finishOrder();
+      }
+      return;
+    }
+    const tpos = target.pos;
+    const dx = tpos.x - this.pos.x;
+    const dz = tpos.z - this.pos.z;
+    const dist = Math.sqrt(dx * dx + dz * dz);
+    const range = this.stats.rango > 0 ? this.stats.rango + target.radius : 0.9 + target.radius;
+
+    if (dist > range * 1.15) {
+      // perseguir (con fallback de acercamiento directo si no hay camino)
+      if (this.repathTimer <= 0) {
+        this.setPath(tpos.x, tpos.z);
+        this.repathTimer = 0.8;
+      }
+      if (this.pathIdx >= this.path.length && this.path.length === 0) {
+        this.targetYaw = angleTo(this.pos.x, this.pos.z, tpos.x, tpos.z);
+        const spd = this.stats.velocidad;
+        this.vel.x = Math.cos(this.targetYaw) * spd;
+        this.vel.z = Math.sin(this.targetYaw) * spd;
+        this.pos.x += this.vel.x * dt;
+        this.pos.z += this.vel.z * dt;
+        this.pos.y = this.ctx.getHeight(this.pos.x, this.pos.z) + 0.05;
+        return;
+      }
+      this.targetYaw = angleTo(this.pos.x, this.pos.z, tpos.x, tpos.z);
+    } else {
+      // detenerse limpio para disparar/golpear
+      this.path.length = 0;
+      this.pathIdx = 0;
+      this.vel.multiplyScalar(Math.pow(0.05, dt));
+      this.targetYaw = angleTo(this.pos.x, this.pos.z, tpos.x, tpos.z);
+      if (this.stats.rango === 0) {
+        this.attackTarget(target, time);
+      } else if (this.attackCooldown <= 0) {
+        this.fireAt(target, time);
+        this.attackCooldown = this.stats.velocidadAtaque;
+      }
+    }
+  }
+
+  private attackTarget(target: any, time: number): void {
+    if (this.attackCooldown <= 0) {
+      const dmg = this.stats.ataque * this.attackMultiplier;
+      this.ctx.resolveDamage(this.id, target.id, dmg, this);
+      this.attackCooldown = this.stats.velocidadAtaque;
+    }
+    void time;
+  }
+
+  private fireAt(target: any, time: number): void {
+    const kindMap: Record<string, string> = {
+      bala: 'bala',
+      trazadora: 'trazadora',
+      obús: 'obus',
+      laser: 'laser',
+      rail: 'rail',
+      nuclear: 'nuclear',
+    };
+    const pKind = kindMap[this.stats.proyectil] ?? 'bala';
+    const from = new THREE.Vector3(this.pos.x, this.pos.y + 0.8, this.pos.z);
+    const to = new THREE.Vector3(target.pos.x, target.pos.y + 0.5, target.pos.z);
+    const arc = pKind === 'obus' || pKind === 'nuclear' ? 1 : 0;
+    const speed = pKind === 'bala' ? 40 : pKind === 'trazadora' ? 60 : pKind === 'laser' ? 90 : pKind === 'rail' ? 130 : 28;
+    this.ctx.spawnProjectile({
+      from,
+      target: to,
+      speed,
+      damage: this.stats.ataque * this.attackMultiplier,
+      kind: pKind,
+      owner: this.owner,
+      area: this.stats.area,
+      arc,
+      trail: pKind === 'trazadora' ? 'trazadora' : undefined,
+      targetId: target.id,
+    });
+    // fogonazo en la boca del cañón (pivote del arma + largo del cañón, rotado con la unidad)
+    const muzzle = new THREE.Vector3(0.28, 0.9, 0.62).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.yaw);
+    this.ctx.particles?.emit({ x: this.pos.x + muzzle.x, y: this.pos.y + muzzle.y, z: this.pos.z + muzzle.z, count: 4, color: 0xffcc66, kind: 'explosion', speed: 1.2, life: 0.12, size: 1.4 });
+    void time;
+  }
+
+  private updateGather(order: Order, dt: number): void {
+    // si la carga está llena, entregar antes de seguir cosechando
+    if (this.carryCount() >= this.carryCapacity) {
+      this.deliverOrder();
+      return;
+    }
+    // el objetivo puede ser un nodo de recurso o una granja (edificio)
+    let node: any = this.ctx.resourceNodes.get(order.entityId!);
+    if ((!node || node.depleted || node.dead) && this.ctx.buildings.has(order.entityId!)) {
+      const bld = this.ctx.buildings.get(order.entityId!);
+      if (bld && !bld.dead && bld.constructionComplete && bld.isFarm && bld.foodAmount > 0) {
+        node = { pos: bld.pos, amount: bld.foodAmount, resource: 'comida', farm: bld };
+      }
+    }
+    if (!node || node.dead) {
+      // objetivo inexistente o muerto: entregar la carga parcial si hay algo
+      if (this.carryCount() > 0) {
+        this.deliverOrder();
+      } else {
+        this.finishOrder();
+      }
+      return;
+    }
+    if (node.amount !== undefined && node.amount <= 0) {
+      // objetivo agotado: eliminar el nodo real (o marcar la granja) y entregar
+      if (node.farm) {
+        node.farm.foodAmount = 0;
+      } else if (typeof node.subtract === 'function') {
+        node.subtract(0);
+      }
+      if (this.carryCount() > 0) {
+        this.deliverOrder();
+      } else {
+        this.finishOrder();
+      }
+      return;
+    }
+    const dx = node.pos.x - this.pos.x;
+    const dz = node.pos.z - this.pos.z;
+    const dist = Math.sqrt(dx * dx + dz * dz);
+    const harvestRange = 2.8;
+
+    if (dist > harvestRange) {
+      if (this.pathIdx >= this.path.length && this.repathTimer <= 0) {
+        this.setPath(node.pos.x, node.pos.z);
+        this.repathTimer = 0.9;
+      }
+      if (this.pathIdx >= this.path.length) {
+        // búsqueda directa hacia el nodo cuando no hay camino
+        this.targetYaw = angleTo(this.pos.x, this.pos.z, node.pos.x, node.pos.z);
+        const spd = this.stats.velocidad;
+        this.vel.x = Math.cos(this.targetYaw) * spd;
+        this.vel.z = Math.sin(this.targetYaw) * spd;
+        this.pos.x += this.vel.x * dt;
+        this.pos.z += this.vel.z * dt;
+        this.pos.y = this.ctx.getHeight(this.pos.x, this.pos.z) + 0.05;
+      }
+      return;
+    }
+    this.vel.multiplyScalar(Math.pow(0.05, dt));
+    this.targetYaw = angleTo(this.pos.x, this.pos.z, node.pos.x, node.pos.z);
+
+    this.gatherTimer += dt;
+    const interval = 1.4;
+    if (this.gatherTimer >= interval) {
+      this.gatherTimer = 0;
+      if (!this.currentResource) this.currentResource = node.resource;
+      const rate = this.getGatherRate(node.resource as keyof Resources);
+      const amount = Math.min(rate, node.amount, this.carryCapacity - this.carryCount());
+      if (amount <= 0) return;
+      if (node.farm) {
+        node.amount -= amount;
+        node.farm.foodAmount = node.amount;
+      } else if (typeof node.subtract === 'function') {
+        node.subtract(amount);
+      } else {
+        node.amount -= amount;
+      }
+      this.gatherCarry[node.resource as keyof Resources] += amount;
+      if (node.resource === 'madera') this.ctx.event?.('fx:wood', {});
+      else if (node.resource === 'acero' || node.resource === 'energia') this.ctx.event?.('fx:mine', {});
+      else this.ctx.event?.('fx:wood', {});
+      // efecto de recolección según el recurso
+      if (node.resource === 'madera') {
+        this.ctx.particles?.emit({ x: node.pos.x, y: node.pos.y + 0.5, z: node.pos.z, count: 3, color: 0x8a6a3a, kind: 'chispa', speed: 0.7, life: 0.45, size: 0.9, spread: 0.6 });
+      } else if (node.resource === 'acero' || node.resource === 'energia') {
+        this.ctx.particles?.emit({ x: node.pos.x, y: node.pos.y + 0.5, z: node.pos.z, count: 3, color: 0xffd27a, kind: 'chispa', speed: 0.9, life: 0.35, size: 0.8, spread: 0.7 });
+      } else {
+        this.ctx.particles?.emit({ x: node.pos.x, y: node.pos.y + 0.5, z: node.pos.z, count: 2, color: 0x9bbf6a, kind: 'polvo', speed: 0.6, life: 0.5, size: 1.1 });
+      }
+      if (this.carryCount() >= this.carryCapacity) {
+        this.deliverOrder();
+      }
+    }
+  }
+
+  private carryCount(): number {
+    return (
+      this.gatherCarry.comida +
+      this.gatherCarry.madera +
+      this.gatherCarry.acero +
+      this.gatherCarry.energia
+    );
+  }
+
+  /** Muestra/oculta el bulto de carga y lo colorea según el recurso. */
+  private updateCarry(): void {
+    if (!this.carryPivot) return;
+    const carrying = this.carryCount() > 0;
+    this.carryPivot.visible = carrying;
+    if (carrying && this.carryMat) {
+      const res = this.currentResource ?? this.dominantResource();
+      this.carryMat.color.setHex(CARRY_COLORS[res]);
+    }
+  }
+
+  private dominantResource(): keyof Resources {
+    if (this.gatherCarry.comida > 0) return 'comida';
+    if (this.gatherCarry.madera > 0) return 'madera';
+    if (this.gatherCarry.acero > 0) return 'acero';
+    return 'energia';
+  }
+
+  private deliverOrder(): void {
+    const res = this.currentResource;
+    if (!res) return;
+    const dropsite = this.findDropsite(res);
+    if (dropsite) {
+      this.orderQueue.unshift({ kind: OrderKind.DELIVER, entityId: dropsite.id });
+      this.setPath(dropsite.pos.x, dropsite.pos.z);
+      this.currentResource = res;
+    }
+    // sin dropsite: mantener la carga y quedarse en espera
+  }
+
+  private findDropsite(resource: keyof Resources): any | null {
+    let best: any | null = null;
+    let bestD = Infinity;
+    for (const b of this.ctx.buildings.values()) {
+      if (b.owner !== this.owner) continue;
+      if (!b.isDropsite || !b.dropTypes?.includes(resource)) continue;
+      const d = distance2D(this.pos.x, this.pos.z, b.pos.x, b.pos.z);
+      if (d < bestD) {
+        bestD = d;
+        best = b;
+      }
+    }
+    return best;
+  }
+
+  private updateDeliver(order: Order, dt: number): void {
+    const dropsite = this.ctx.buildings.get(order.entityId!);
+    if (!dropsite || dropsite.dead) {
+      // dropsite destruido: re-buscar otro dropsite para la carga actual
+      const res = this.currentResource ?? 'comida';
+      const alt = this.findDropsite(res);
+      if (alt) {
+        order.entityId = alt.id;
+        this.setPath(alt.pos.x, alt.pos.z);
+        return;
+      }
+      // sin dropsite: mantener la carga y quedar en espera
+      this.vel.multiplyScalar(Math.pow(0.05, dt));
+      return;
+    }
+    const dx = dropsite.pos.x - this.pos.x;
+    const dz = dropsite.pos.z - this.pos.z;
+    const dist = Math.sqrt(dx * dx + dz * dz);
+    if (dist > 2.4) {
+      if (this.pathIdx >= this.path.length && this.repathTimer <= 0) {
+        this.setPath(dropsite.pos.x, dropsite.pos.z);
+        this.repathTimer = 0.8;
+      }
+      if (this.pathIdx >= this.path.length) {
+        this.targetYaw = angleTo(this.pos.x, this.pos.z, dropsite.pos.x, dropsite.pos.z);
+        const spd = this.stats.velocidad;
+        this.vel.x = Math.cos(this.targetYaw) * spd;
+        this.vel.z = Math.sin(this.targetYaw) * spd;
+        this.pos.x += this.vel.x * dt;
+        this.pos.z += this.vel.z * dt;
+        this.pos.y = this.ctx.getHeight(this.pos.x, this.pos.z) + 0.05;
+      }
+      return;
+    }
+    this.vel.multiplyScalar(Math.pow(0.05, dt));
+    // entrega
+    this.ctx.gather(dropsite.id, this.id, 0, this.currentResource ?? 'comida');
+    for (const k of ['comida', 'madera', 'acero', 'energia'] as const) {
+      if (this.gatherCarry[k] > 0) {
+        this.ctx.gather(dropsite.id, this.id, this.gatherCarry[k], k);
+        this.gatherCarry[k] = 0;
+      }
+    }
+    this.currentResource = null;
+    this.finishOrder();
+  }
+
+  private updateBuild(order: Order, dt: number): void {
+    const bld = this.ctx.buildings.get(order.entityId!);
+    if (!bld || bld.dead || bld.constructionComplete) {
+      this.finishOrder();
+      return;
+    }
+    const dx = bld.pos.x - this.pos.x;
+    const dz = bld.pos.z - this.pos.z;
+    const dist = Math.sqrt(dx * dx + dz * dz);
+    if (dist > bld.radius + 1.6) {
+      if (this.pathIdx >= this.path.length && this.repathTimer <= 0) {
+        this.setPath(bld.pos.x, bld.pos.z);
+        this.repathTimer = 0.7;
+      }
+      if (this.pathIdx >= this.path.length) {
+        this.targetYaw = angleTo(this.pos.x, this.pos.z, bld.pos.x, bld.pos.z);
+        const spd = this.stats.velocidad;
+        this.vel.x = Math.cos(this.targetYaw) * spd;
+        this.vel.z = Math.sin(this.targetYaw) * spd;
+        this.pos.x += this.vel.x * dt;
+        this.pos.z += this.vel.z * dt;
+        this.pos.y = this.ctx.getHeight(this.pos.x, this.pos.z) + 0.05;
+      }
+      return;
+    }
+    this.vel.multiplyScalar(Math.pow(0.05, dt));
+    bld.addBuildProgress(this.buildEfficiency * dt);
+    this.targetYaw = angleTo(this.pos.x, this.pos.z, bld.pos.x, bld.pos.z);
+  }
+
+  private updateConstruct(order: Order, dt: number): void {
+    void order;
+    void dt;
+    this.finishOrder();
+  }
+
+  private updateGarrison(order: Order, dt: number): void {
+    const bld = this.ctx.buildings.get(order.entityId!);
+    if (!bld || bld.dead) {
+      this.finishOrder();
+      return;
+    }
+    const dx = bld.pos.x - this.pos.x;
+    const dz = bld.pos.z - this.pos.z;
+    const dist = Math.sqrt(dx * dx + dz * dz);
+    if (dist < bld.radius + 0.4) {
+      const capacity = bld.stats?.garrisons ?? 0;
+      if (bld.garrisonedIds.length < capacity) {
+        bld.garrisonUnit(this.id, this.owner);
+        this.garrisonedIn = bld.id;
+        this.view.group.visible = false;
+        this.finishOrder();
+      } else {
+        // edificio lleno: quedarse cerca en espera
+        this.vel.multiplyScalar(Math.pow(0.05, dt));
+      }
+    } else {
+      if (this.repathTimer <= 0) {
+        this.setPath(bld.pos.x, bld.pos.z);
+        this.repathTimer = 0.6;
+      }
+    }
+  }
+
+  private updatePatrol(_dt: number): void {
+    if (this.pathIdx >= this.path.length) {
+      const first = this.orderQueue[0];
+      if (first && first.target) {
+        // ping-pong entre origen y destino
+        const next = first.origin ?? { x: this.pos.x, z: this.pos.z };
+        this.setPath(next.x, next.z);
+        if (first.origin) {
+          // ya tenemos origen: alternar
+          const tmp = first.origin;
+          first.origin = { ...first.target };
+          first.target = { ...tmp };
+        }
+      }
+    }
+  }
+
+  private updateConvert(_order: Order, dt: number, time: number): void {
+    const target = this.targetEntityId !== null ? this.ctx.entitiesById.get(this.targetEntityId) : null;
+    if (!target || target.dead) {
+      this.finishOrder();
+      return;
+    }
+    const dist = distance2D(this.pos.x, this.pos.z, target.pos.x, target.pos.z);
+    if (dist > this.stats.rango) {
+      if (this.repathTimer <= 0) {
+        this.setPath(target.pos.x, target.pos.z);
+        this.repathTimer = 0.6;
+      }
+      this.convertProgress = 0;
+      return;
+    }
+    this.vel.multiplyScalar(Math.pow(0.05, dt));
+    this.targetYaw = angleTo(this.pos.x, this.pos.z, target.pos.x, target.pos.z);
+    this.convertProgress += dt / 5;
+    this.ctx.particles?.emit({ x: target.pos.x, y: target.pos.y + 1, z: target.pos.z, count: 1, color: 0x66ffaa, kind: 'bengala', speed: 0.2, life: 0.8, size: 1.4 });
+    if (this.convertProgress >= 1) {
+      // conversión
+      const from = target.owner;
+      target.owner = this.owner;
+      target.team = this.team;
+      this.ctx.event('unit:converted', { id: target.id, from, to: this.owner });
+      this.finishOrder();
+    }
+    void time;
+  }
+
+  get maxCarry(): number {
+    return this.carryCapacity;
+  }
+
+  setCarryCapacity(v: number): void {
+    this.carryCapacity = v;
+  }
+
+  removeFromScene(): void {
+    if (this.view.group.parent) this.view.group.parent.remove(this.view.group);
+    this.view.dispose();
+    disposeModel(this.view.group);
+  }
+}
