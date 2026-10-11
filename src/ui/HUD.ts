@@ -232,6 +232,7 @@ export class HUD {
   private minimapCtx!: CanvasRenderingContext2D;
   private bannerEl!: HTMLElement;
   private updateAcc = 0;
+  private bottomKey = '';
   private objPanelEl!: HTMLElement;
   private objListEl!: HTMLElement;
   private dialogueEl!: HTMLElement;
@@ -672,22 +673,33 @@ export class HUD {
     this.gridEl.innerHTML = '';
   }
 
-  private addCard(icon: string, name: string, costText: string, onClick: () => void, opts: { disabled?: boolean; afford?: boolean; cat?: string; progress?: number } = {}): void {
+  private addCard(icon: string, name: string, costText: string, onClick: () => void, opts: { disabled?: boolean; afford?: boolean; cat?: string; progress?: number } = {}): HTMLElement {
     const card = this.el('div', 'ed-card' + (opts.disabled ? ' disabled' : '') + (opts.afford ? ' afford' : '') + (opts.cat ? ' cat-' + opts.cat : ''));
     card.innerHTML = `<span class="ic">${icon}</span><span class="nm">${name}</span><span class="cost">${costText}</span>`;
     if (opts.progress !== undefined) {
       card.classList.add('progress');
       card.innerHTML += `<div class="progbar" style="width:${Math.round(opts.progress * 100)}%"></div>`;
     }
-    if (!opts.disabled) card.addEventListener('click', () => { this.game.audio.uiClick(); onClick(); });
+    // pointerdown (no click): el panel puede reconstruirse y perdería el click
+    if (!opts.disabled) {
+      card.addEventListener('pointerdown', (e) => {
+        if (e.button !== 0) return;
+        this.game.audio.uiClick();
+        onClick();
+      });
+    }
     this.gridEl.appendChild(card);
+    return card;
   }
 
   private addCommand(label: string, onClick: () => void, title = ''): void {
     const btn = this.el('button', 'ed-command') as HTMLButtonElement;
     btn.textContent = label;
     btn.title = title;
-    btn.addEventListener('click', onClick);
+    btn.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      onClick();
+    });
     this.commandsEl.appendChild(btn);
   }
 
@@ -723,6 +735,64 @@ export class HUD {
     } else {
       this.renderIdlePanel();
     }
+  }
+
+  /**
+   * Reconstruye el panel inferior solo si cambia su estructura. Evita recrear los nodos en
+   * cada tick (lo que hacía perder los clicks de las tarjetas) y el parpadeo.
+   */
+  private renderBottomIfChanged(): void {
+    const key = this.bottomSignature();
+    if (key === this.bottomKey) return;
+    this.bottomKey = key;
+    this.renderBottom();
+  }
+
+  /** Firma barata del estado que afecta al panel inferior (selección, cola, era, recursos). */
+  private bottomSignature(): string {
+    const units = this.game.getSelectedUnits();
+    const building = this.game.getSelectedBuilding();
+    const p = this.game.players[0];
+    // bucket de recursos para refrescar la disponibilidad (afford) sin recrear cada frame
+    const res = p ? RESOURCE_KEYS.map((k) => Math.floor(p.resources[k] / 25)).join(',') : '';
+    const tail = '|e:' + (p?.era ?? 0) + '|res:' + res;
+    if (units.length > 0) {
+      const ids = units.map((u) => u.id).sort((a, b) => a - b).join(',');
+      return 'u:' + ids + tail;
+    }
+    if (building) {
+      if (building.owner !== 0) return 'enemy:' + building.id + tail;
+      return (
+        'b:' + building.id + ':' + (building.constructionComplete ? 1 : 0) +
+        ':q' + building.productionQueue.map((q) => q.unit).join(',') +
+        ':r' + building.researchQueue.map((q) => q.tech).join(',') +
+        tail
+      );
+    }
+    return 'idle' + tail;
+  }
+
+  /** Actualiza en sitio las barras de progreso del panel inferior (sin recrear nodos). */
+  private updateBottomProgress(): void {
+    const b = this.game.getSelectedBuilding();
+    if (!b || b.owner !== 0) return;
+    const buildBar = this.gridEl.querySelector('[data-build-card] .progbar') as HTMLElement | null;
+    if (buildBar) {
+      const pct = Math.round(b.buildRatio * 100);
+      buildBar.style.width = pct + '%';
+      const cost = buildBar.parentElement?.querySelector('.cost');
+      if (cost) cost.textContent = `${pct}%`;
+    }
+    this.gridEl.querySelectorAll('[data-prod-idx]').forEach((el) => {
+      const idx = Number((el as HTMLElement).dataset.prodIdx);
+      const item = b.productionQueue[idx];
+      if (!item) return;
+      const pct = Math.round(item.progress * 100);
+      const bar = el.querySelector('.progbar') as HTMLElement | null;
+      if (bar) bar.style.width = pct + '%';
+      const cost = el.querySelector('.cost');
+      if (cost) cost.textContent = `${pct}% ✖`;
+    });
   }
 
   private renderIdlePanel(): void {
@@ -787,7 +857,8 @@ export class HUD {
     this.clearGrid();
 
     if (!b.constructionComplete) {
-      this.addCard('🔨', 'En construcción', `${Math.round(b.buildRatio * 100)}%`, () => {}, { disabled: true, progress: b.buildRatio });
+      const buildCard = this.addCard('🔨', 'En construcción', `${Math.round(b.buildRatio * 100)}%`, () => {}, { disabled: true, progress: b.buildRatio });
+      buildCard.dataset.buildCard = '1';
       return;
     }
 
@@ -795,10 +866,11 @@ export class HUD {
     for (let i = 0; i < b.productionQueue.length; i++) {
       const item = b.productionQueue[i];
       const uInfo = UNIT_INFO[item.unit];
-      this.addCard(uInfo.icono, uInfo.nombre, `${Math.round(item.progress * 100)}% ✖`, () => this.game.cancelProduction(b.id, i), {
+      const card = this.addCard(uInfo.icono, uInfo.nombre, `${Math.round(item.progress * 100)}% ✖`, () => this.game.cancelProduction(b.id, i), {
         progress: item.progress,
         cat: 'mil',
       });
+      card.dataset.prodIdx = String(i);
     }
 
     // entrenar unidades
@@ -1425,7 +1497,8 @@ export class HUD {
     }
     if (this.updateAcc > 0.15) {
       this.updateAcc = 0;
-      this.renderBottom();
+      this.renderBottomIfChanged();
+      this.updateBottomProgress();
       this.renderMinimap();
     }
     this.fpsEl.textContent = `${this.game.loop.getFps()} FPS`;

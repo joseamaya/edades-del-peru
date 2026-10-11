@@ -591,8 +591,11 @@ export class Game {
     if (this.placingBuilding) {
       if (e.button === 0) {
         const wp = this.screenToWorld(e.clientX, e.clientY);
-        if (wp && this.placingBuilding.valid) {
-          this.commitPlacement(wp.x, wp.z);
+        if (wp) {
+          // recalcular con el punto real del clic (no confiar en el estado del mousemove)
+          const foot = getBuildingStats(this.placingBuilding.kind, this.players[0].era).tamano;
+          if (this.canPlace(wp.x, wp.z, foot)) this.commitPlacement(wp.x, wp.z);
+          else this.updatePlacementGhost(wp.x, wp.z);
         }
       } else if (e.button === 2) {
         this.cancelPlacement();
