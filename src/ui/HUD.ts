@@ -1,17 +1,17 @@
 import type { Game } from '../core/Game';
 import type { Unit } from '../entities/Unit';
 import type { Building } from '../entities/Building';
-import { Era, BuildingKind, UnitKind, OrderKind, RESOURCE_KEYS, Resources, ERA_COLORS, Periodo } from '../core/types';
+import { Era, BuildingKind, UnitKind, OrderKind, RESOURCE_KEYS, Resources, ERA_COLORS, HistoricalPeriod } from '../core/types';
 import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../model/defs/buildings';
 import { UNIT_ARCHETYPES, getUnitStats, UNIT_INFO } from '../model/defs/units';
 import { TECHS, getTech } from '../model/defs/techs';
 import { ERA_DEFS } from '../model/defs/eras';
-import { PERIODOS, getPeriodo } from '../model/defs/periodos';
-import { civsDePeriodo, getCiv } from '../model/defs/civs';
+import { PERIODS, getPeriod } from '../model/defs/periodos';
+import { civsForPeriod, getCiv } from '../model/defs/civs';
 import { RESOURCE_INFO, GameSettings } from '../core/Config';
 import { formatNumber } from '../util/math';
 import { MISSIONS, CAMPAIGN_TITLE, CAMPAIGN_SUBTITLE } from '../campaign/defs/campaign';
-import { PROLOGO, getEducativo } from '../campaign/defs/educativo';
+import { PROLOGUE, getEducational } from '../campaign/defs/educativo';
 import type { MissionDef } from '../campaign/types';
 import { DamageNumbers } from './DamageNumbers';
 import { openCodex } from './Codex';
@@ -19,20 +19,20 @@ import { bus } from '../core/EventBus';
 
 /** Edificios construibles por el jugador (lista única para todos los paneles). */
 const BUILDABLE_KINDS: BuildingKind[] = [
-  BuildingKind.VIVIENDA,
-  BuildingKind.GRANJA,
-  BuildingKind.MOLINO,
-  BuildingKind.MERCADO,
-  BuildingKind.CUARTEL,
-  BuildingKind.POLVORIN,
-  BuildingKind.GARAJE,
-  BuildingKind.FABRICA,
-  BuildingKind.SERRERIA,
-  BuildingKind.FUNDICION,
-  BuildingKind.REFINERIA,
-  BuildingKind.FORTALEZA,
-  BuildingKind.INSTITUTO,
-  BuildingKind.MARAVILLA,
+  BuildingKind.HOUSE,
+  BuildingKind.FARM,
+  BuildingKind.MILL,
+  BuildingKind.MARKET,
+  BuildingKind.BARRACKS,
+  BuildingKind.ARSENAL,
+  BuildingKind.STABLE,
+  BuildingKind.FACTORY,
+  BuildingKind.SAWMILL,
+  BuildingKind.SMELTER,
+  BuildingKind.REFINERY,
+  BuildingKind.FORTRESS,
+  BuildingKind.INSTITUTE,
+  BuildingKind.WONDER,
 ];
 
 const CSS = /* css */ `
@@ -313,10 +313,10 @@ export class HUD {
   }
 
   /** Aviso clicable que centra la cámara; parpadea en el minimapa. */
-  pushAlert(info: { icono: string; texto: string; x: number; z: number; warn?: boolean }): void {
+  pushAlert(info: { icon: string; text: string; x: number; z: number; warn?: boolean }): void {
     const el = document.createElement('div');
     el.className = 'ed-alert' + (info.warn ? ' warn' : '');
-    el.innerHTML = `${info.icono} ${info.texto}`;
+    el.innerHTML = `${info.icon} ${info.text}`;
     el.addEventListener('click', () => {
       this.game.camera.focusOn(info.x, info.z);
       el.remove();
@@ -328,13 +328,13 @@ export class HUD {
   }
 
   /** Muestra/oculta el tooltip de la entidad o recurso bajo el cursor. */
-  setHover(info: { icono: string; titulo: string; detalle: string } | null, x: number, y: number): void {
+  setHover(info: { icon: string; title: string; detalle: string } | null, x: number, y: number): void {
     if (!info) {
       this.hoverEl.style.display = 'none';
       return;
     }
     this.hoverEl.style.display = 'block';
-    this.hoverEl.innerHTML = `<div class="h-title">${info.icono} ${info.titulo}</div><div class="h-sub">${info.detalle}</div>`;
+    this.hoverEl.innerHTML = `<div class="h-title">${info.icon} ${info.title}</div><div class="h-sub">${info.detalle}</div>`;
     const off = 16;
     this.hoverEl.style.left = Math.min(x + off, window.innerWidth - 250) + 'px';
     this.hoverEl.style.top = Math.min(y + off, window.innerHeight - 74) + 'px';
@@ -368,7 +368,7 @@ export class HUD {
       const info = RESOURCE_INFO[k];
       const res = this.el('div', 'ed-res');
       res.id = 'ed-res-' + k;
-      res.innerHTML = `<span class="res-icon">${info.icono}</span><span class="res-val">0</span>`;
+      res.innerHTML = `<span class="res-icon">${info.icon}</span><span class="res-val">0</span>`;
       top.appendChild(res);
       this.resEls[k] = res;
     }
@@ -491,11 +491,11 @@ export class HUD {
   }
 
   /** Diálogo de personaje (comandante/narrador) con cierre automático. */
-  showDialogue(nombre: string, texto: string, duracion = 5): void {
-    this.dialogueEl.querySelector('.who')!.textContent = nombre;
-    this.dialogueEl.querySelector('.txt')!.textContent = texto;
+  showDialogue(name: string, text: string, duration = 5): void {
+    this.dialogueEl.querySelector('.who')!.textContent = name;
+    this.dialogueEl.querySelector('.txt')!.textContent = text;
     this.dialogueEl.classList.add('show');
-    this.dialogueTimer = duracion;
+    this.dialogueTimer = duration;
   }
 
   private buildTutorial(): void {
@@ -507,8 +507,8 @@ export class HUD {
   }
 
   /** Muestra/actualiza el panel del tutorial. `onSkip` añade el botón de omitir. */
-  showTutorialStep(texto: string, index: number, total: number, onSkip?: () => void): void {
-    this.tutorialStepEl.textContent = texto;
+  showTutorialStep(text: string, index: number, total: number, onSkip?: () => void): void {
+    this.tutorialStepEl.textContent = text;
     this.tutorialCountEl.textContent = `Paso ${index + 1} / ${total}`;
     const actions = this.tutorialEl.querySelector('.tut-actions') as HTMLElement;
     actions.innerHTML = '';
@@ -546,9 +546,9 @@ export class HUD {
     const items = mis.activeObjectives;
     this.objListEl.innerHTML = items
       .map(({ def, state }) => {
-        const mark = state === 'completado' ? '✔' : state === 'fallado' ? '✖' : '○';
-        const cls = state === 'completado' ? 'done' : state === 'fallado' ? 'failed' : '';
-        return `<div class="obj ${cls}"><span class="mark">${mark}</span><span>${def.titulo}</span></div>`;
+        const mark = state === 'completed' ? '✔' : state === 'failed' ? '✖' : '○';
+        const cls = state === 'completed' ? 'done' : state === 'failed' ? 'failed' : '';
+        return `<div class="obj ${cls}"><span class="mark">${mark}</span><span>${def.title}</span></div>`;
       })
       .join('');
   }
@@ -586,8 +586,8 @@ export class HUD {
 
   showEraBanner(era: Era): void {
     const def = ERA_DEFS[era];
-    this.bannerEl.querySelector('.years')!.textContent = def.anos;
-    this.bannerEl.querySelector('.name')!.textContent = def.nombre;
+    this.bannerEl.querySelector('.years')!.textContent = def.years;
+    this.bannerEl.querySelector('.name')!.textContent = def.name;
     this.bannerEl.classList.remove('show');
     void (this.bannerEl as HTMLElement).offsetWidth;
     this.bannerEl.classList.add('show');
@@ -639,7 +639,7 @@ export class HUD {
       <div style="font-size:13px;color:var(--text-dim);line-height:1.7;margin-bottom:16px">
         Bajas infligidas: <b>${p?.kills ?? 0}</b><br>
         Unidades creadas: <b>${p?.stats.created ?? 0}</b><br>
-        Era alcanzada: <b>${p ? ERA_DEFS[p.era].nombre : '—'}</b>
+        Era alcanzada: <b>${p ? ERA_DEFS[p.era].name : '—'}</b>
       </div>
     `;
     const row = this.el('div', 'row', panel);
@@ -706,7 +706,7 @@ export class HUD {
   private costText(cost: Partial<Resources>): string {
     const parts: string[] = [];
     for (const k of RESOURCE_KEYS) {
-      if (cost[k] && cost[k]! > 0) parts.push(`${RESOURCE_INFO[k].icono}${cost[k]}`);
+      if (cost[k] && cost[k]! > 0) parts.push(`${RESOURCE_INFO[k].icon}${cost[k]}`);
     }
     return parts.join(' ');
   }
@@ -729,7 +729,7 @@ export class HUD {
     } else if (building && building.owner === 0) {
       this.renderBuildingPanel(building);
     } else if (building && building.owner !== 0) {
-      this.setDesc('🏰', BUILDING_INFO[building.kind].nombre, `Base enemiga · HP ${Math.ceil(building.hp)}/${Math.ceil(building.maxHp)}`);
+      this.setDesc('🏰', BUILDING_INFO[building.kind].name, `Base enemiga · HP ${Math.ceil(building.hp)}/${Math.ceil(building.maxHp)}`);
       this.clearGrid();
       this.addCommand('⚔️ Atacar', () => this.orderAttackBuilding(building.id));
     } else {
@@ -799,16 +799,16 @@ export class HUD {
     this.setDesc('⚙️', 'Comando', 'Selecciona unidades o edificios para dar órdenes. Usa el menú para construir.');
     this.clearGrid();
     // construir rápido
-    for (const kind of [BuildingKind.CENTRO, ...BUILDABLE_KINDS]) {
+    for (const kind of [BuildingKind.CENTER, ...BUILDABLE_KINDS]) {
       // ocultar los edificios no disponibles en el periodo (la Plaza Mayor se muestra deshabilitada)
-      if (kind !== BuildingKind.CENTRO && !this.game.canBuildKind(kind)) continue;
+      if (kind !== BuildingKind.CENTER && !this.game.canBuildKind(kind)) continue;
       const stats = getBuildingStats(kind, this.game.players[0].era);
       const info = BUILDING_INFO[kind];
       const disabled = !this.game.canBuildKind(kind);
-      this.addCard(info.icono, info.nombre, this.costText(stats.costo), () => this.game.startPlacement(kind), {
+      this.addCard(info.icon, info.name, this.costText(stats.cost), () => this.game.startPlacement(kind), {
         disabled,
-        afford: this.canAfford(stats.costo),
-        cat: kind === BuildingKind.FORTALEZA || kind === BuildingKind.INSTITUTO ? 'avance' : 'econ',
+        afford: this.canAfford(stats.cost),
+        cat: kind === BuildingKind.FORTRESS || kind === BuildingKind.INSTITUTE ? 'advance' : 'econ',
       });
     }
     // Partidas bloqueadas por periodo: no se avanza de era (sin modernización anacrónica).
@@ -817,7 +817,7 @@ export class HUD {
   private renderUnitPanel(units: Unit[]): void {
     const first = units[0];
     const info = UNIT_INFO[first.kind];
-    this.setDesc(info.icono, `${info.nombre} ×${units.length}`, this.unitDesc(first));
+    this.setDesc(info.icon, `${info.name} ×${units.length}`, this.unitDesc(first));
     this.clearGrid();
     // resumen por tipo (clic = seleccionar solo ese tipo) — estilo AoE2
     if (units.length > 1) {
@@ -825,16 +825,16 @@ export class HUD {
       for (const u of units) groups.set(u.kind, (groups.get(u.kind) ?? 0) + 1);
       for (const [kind, count] of groups) {
         const gi = UNIT_INFO[kind];
-        this.addCard(gi.icono, `${count}× ${gi.nombre}`, 'clic: filtrar', () => this.game.selectUnits(units.filter((u) => u.kind === kind).map((u) => u.id)), { cat: 'sel' });
+        this.addCard(gi.icon, `${count}× ${gi.name}`, 'clic: filtrar', () => this.game.selectUnits(units.filter((u) => u.kind === kind).map((u) => u.id)), { cat: 'sel' });
       }
     }
-    if (units.length > 0 && units.every((u) => u.kind === UnitKind.OBRERO)) {
+    if (units.length > 0 && units.every((u) => u.kind === UnitKind.WORKER)) {
       for (const kind of BUILDABLE_KINDS) {
         if (!this.game.canBuildKind(kind)) continue;
         const stats = getBuildingStats(kind, this.game.players[0].era);
         const infoB = BUILDING_INFO[kind];
-        this.addCard(infoB.icono, infoB.nombre, this.costText(stats.costo), () => this.game.startPlacement(kind), {
-          afford: this.canAfford(stats.costo),
+        this.addCard(infoB.icon, infoB.name, this.costText(stats.cost), () => this.game.startPlacement(kind), {
+          afford: this.canAfford(stats.cost),
           cat: 'econ',
         });
       }
@@ -847,13 +847,13 @@ export class HUD {
 
   private unitDesc(u: Unit): string {
     const stats = u.stats;
-    return `HP ${Math.ceil(u.hp)}/${Math.ceil(u.maxHp)} · Daño ${stats.ataque} · Rango ${stats.rango} · Blindaje ${stats.armaduraPesado}`;
+    return `HP ${Math.ceil(u.hp)}/${Math.ceil(u.maxHp)} · Daño ${stats.attack} · Rango ${stats.range} · Blindaje ${stats.heavyArmor}`;
   }
 
   private renderBuildingPanel(b: Building): void {
     const info = BUILDING_INFO[b.kind];
     const def = BUILDING_DEFS[b.kind];
-    this.setDesc(info.icono, info.nombre, this.buildingDesc(b));
+    this.setDesc(info.icon, info.name, this.buildingDesc(b));
     this.clearGrid();
 
     if (!b.constructionComplete) {
@@ -866,7 +866,7 @@ export class HUD {
     for (let i = 0; i < b.productionQueue.length; i++) {
       const item = b.productionQueue[i];
       const uInfo = UNIT_INFO[item.unit];
-      const card = this.addCard(uInfo.icono, uInfo.nombre, `${Math.round(item.progress * 100)}% ✖`, () => this.game.cancelProduction(b.id, i), {
+      const card = this.addCard(uInfo.icon, uInfo.name, `${Math.round(item.progress * 100)}% ✖`, () => this.game.cancelProduction(b.id, i), {
         progress: item.progress,
         cat: 'mil',
       });
@@ -880,30 +880,30 @@ export class HUD {
       const tech = UNIT_ARCHETYPES[unitKind].requiresTech?.[0];
       const techOk = !tech || this.game.players[0].techs.has(tech);
       const eraOk = !!UNIT_ARCHETYPES[unitKind].eraModel[this.game.players[0].era];
-      const fortOk = !UNIT_ARCHETYPES[unitKind].requiresFortaleza || b.kind === BuildingKind.FORTALEZA;
-      const disabled = !techOk || !eraOk || !fortOk || !this.canAfford(stats.costo);
-      this.addCard(uInfo.icono, uInfo.nombre, this.costText(stats.costo), () => this.trainUnit(b.id, unitKind), {
+      const fortOk = !UNIT_ARCHETYPES[unitKind].requiresFortress || b.kind === BuildingKind.FORTRESS;
+      const disabled = !techOk || !eraOk || !fortOk || !this.canAfford(stats.cost);
+      this.addCard(uInfo.icon, uInfo.name, this.costText(stats.cost), () => this.trainUnit(b.id, unitKind), {
         disabled,
-        afford: !disabled && this.canAfford(stats.costo),
+        afford: !disabled && this.canAfford(stats.cost),
         cat: 'mil',
       });
     }
 
     // tecnologías (instituto)
-    const techs = TECHS.filter((t) => t.edificio === b.kind && t.eraMinima <= this.game.players[0].era && !this.game.players[0].techs.has(t.id) && (!t.requisitos || t.requisitos.every((r) => this.game.players[0].techs.has(r))));
+    const techs = TECHS.filter((t) => t.building === b.kind && t.minEra <= this.game.players[0].era && !this.game.players[0].techs.has(t.id) && (!t.requirements || t.requirements.every((r) => this.game.players[0].techs.has(r))));
     for (const t of techs) {
-      const disabled = !this.canAfford(t.costo);
-      this.addCard(t.icono ?? '📚', t.nombre, this.costText(t.costo), () => this.researchTech(b.id, t.id), {
+      const disabled = !this.canAfford(t.cost);
+      this.addCard(t.icon ?? '📚', t.name, this.costText(t.cost), () => this.researchTech(b.id, t.id), {
         disabled,
         afford: !disabled,
-        cat: 'avance',
+        cat: 'advance',
       });
     }
 
     // construir más (si es centro, vivienda, etc.)
-    if (b.kind === BuildingKind.CENTRO) {
-      this.addCard('🏠', 'Vivienda', this.costText(getBuildingStats(BuildingKind.VIVIENDA, b.era).costo), () => this.game.startPlacement(BuildingKind.VIVIENDA), { cat: 'econ' });
-      this.addCard('🌽', 'Granja', this.costText(getBuildingStats(BuildingKind.GRANJA, b.era).costo), () => this.game.startPlacement(BuildingKind.GRANJA), { cat: 'econ' });
+    if (b.kind === BuildingKind.CENTER) {
+      this.addCard('🏠', 'Vivienda', this.costText(getBuildingStats(BuildingKind.HOUSE, b.era).cost), () => this.game.startPlacement(BuildingKind.HOUSE), { cat: 'econ' });
+      this.addCard('🌽', 'Granja', this.costText(getBuildingStats(BuildingKind.FARM, b.era).cost), () => this.game.startPlacement(BuildingKind.FARM), { cat: 'econ' });
     }
 
     this.addCommand('📍 Punto de reunión', () => this.game.hud.showToast('Usa Shift+Botón derecho en el suelo', 'info'));
@@ -914,9 +914,9 @@ export class HUD {
 
   private buildingDesc(b: Building): string {
     const stats = b.stats;
-    let s = `HP ${Math.ceil(b.hp)}/${Math.ceil(b.maxHp)} · Blindaje ${stats.armadura}`;
+    let s = `HP ${Math.ceil(b.hp)}/${Math.ceil(b.maxHp)} · Blindaje ${stats.armor}`;
     if (b.constructionComplete && b.productionQueue.length > 0) {
-      s += ` · Entrenando: ${UNIT_INFO[b.productionQueue[0].unit].nombre}`;
+      s += ` · Entrenando: ${UNIT_INFO[b.productionQueue[0].unit].name}`;
     }
     return s;
   }
@@ -926,14 +926,14 @@ export class HUD {
     if (!b) return;
     const stats = getUnitStats(unit, b.era);
     const p = this.game.players[0];
-    if (p.populationUsed + stats.poblacion > p.populationCap) {
+    if (p.populationUsed + stats.population > p.populationCap) {
       this.showToast('Población máxima alcanzada', 'warning');
       return;
     }
-    if (this.game.spendResource(0, stats.costo)) {
+    if (this.game.spendResource(0, stats.cost)) {
       if (!b.queueUnit(unit)) {
         // devolver recursos si no se pudo encolar
-        this.game.addResource(0, stats.costo);
+        this.game.addResource(0, stats.cost);
       }
     } else {
       this.showToast('Recursos insuficientes', 'error');
@@ -945,7 +945,7 @@ export class HUD {
     if (!b) return;
     const tech = getTech(techId);
     if (!tech) return;
-    if (this.game.spendResource(0, tech.costo)) {
+    if (this.game.spendResource(0, tech.cost)) {
       b.queueTech(techId);
     } else {
       this.showToast('Recursos insuficientes', 'error');
@@ -1061,7 +1061,7 @@ export class HUD {
     for (const n of this.game.resourceNodes.values()) {
       if (n.dead) continue;
       if (fogOn && !fow.isExplored(n.pos.x, n.pos.z)) continue;
-      ctx.fillStyle = n.resource === 'madera' ? '#3a7a2a' : n.resource === 'acero' ? '#b0b8c4' : n.resource === 'energia' ? '#e8b54a' : '#7a5a3a';
+      ctx.fillStyle = n.resource === 'wood' ? '#3a7a2a' : n.resource === 'silver' ? '#b0b8c4' : n.resource === 'stone' ? '#e8b54a' : '#7a5a3a';
       ctx.fillRect((n.pos.x / s) * w, (n.pos.z / s) * w, 2, 2);
     }
     // edificios
@@ -1124,27 +1124,27 @@ export class HUD {
       <div class="sub">Un estratega en tiempo real a través de cinco mil años de historia peruana</div>
     `;
     const rows = this.el('div', 'row', panel);
-    const periodoLabels: Record<string, string> = {};
-    for (const p of PERIODOS) periodoLabels[String(p.id)] = `${p.nombre} · ${p.fechas}`;
+    const periodLabels: Record<string, string> = {};
+    for (const p of PERIODS) periodLabels[String(p.id)] = `${p.name} · ${p.dates}`;
     rows.appendChild(
       this.field(
         'Periodo histórico',
-        this.select(PERIODOS.map((p) => String(p.id)), periodoLabels, String(this.game.settings.periodo), (v) => {
-          this.game.settings.periodo = Number(v) as Periodo;
-          const disp = civsDePeriodo(this.game.settings.periodo);
+        this.select(PERIODS.map((p) => String(p.id)), periodLabels, String(this.game.settings.period), (v) => {
+          this.game.settings.period = Number(v) as HistoricalPeriod;
+          const disp = civsForPeriod(this.game.settings.period);
           if (!disp.some((c) => c.id === this.game.settings.civPlayer)) this.game.settings.civPlayer = disp[0].id;
           let rival = disp.find((c) => c.id === this.game.settings.civAI && c.id !== this.game.settings.civPlayer);
           if (!rival) rival = disp.find((c) => c.id !== this.game.settings.civPlayer) ?? disp[0];
           this.game.settings.civAI = rival.id;
-          this.game.settings.mapType = getCiv(this.game.settings.civPlayer).geografia;
+          this.game.settings.mapType = getCiv(this.game.settings.civPlayer).geography;
           this.showMainMenu();
         }),
       ),
     );
     rows.appendChild(this.field('Dificultad', this.select(['facil', 'normal', 'dificil', 'legendario'] as const, { facil: 'Fácil', normal: 'Normal', dificil: 'Difícil', legendario: 'Legendario' }, this.game.settings.difficulty, (v) => (this.game.settings.difficulty = v))));
-    const disponibles = civsDePeriodo(this.game.settings.periodo);
+    const disponibles = civsForPeriod(this.game.settings.period);
     const civLabels: Record<string, string> = {};
-    for (const c of disponibles) civLabels[c.id] = `${c.nombre} (${c.geografia})`;
+    for (const c of disponibles) civLabels[c.id] = `${c.name} (${c.geography})`;
     rows.appendChild(
       this.field(
         'Tu civilización',
@@ -1154,7 +1154,7 @@ export class HUD {
             const alt = disponibles.find((c) => c.id !== v) ?? disponibles[0];
             this.game.settings.civAI = alt.id;
           }
-          this.game.settings.mapType = getCiv(v).geografia;
+          this.game.settings.mapType = getCiv(v).geography;
           this.showMainMenu();
         }),
       ),
@@ -1169,9 +1169,9 @@ export class HUD {
       ),
     );
     const rows2 = this.el('div', 'row', panel);
-    rows2.appendChild(this.field('Mapa', this.select(['costa', 'andes', 'altiplano', 'selva'] as const, { costa: 'Costa / litoral', andes: 'Andes', altiplano: 'Altiplano', selva: 'Selva' }, this.game.settings.mapType, (v) => (this.game.settings.mapType = v))));
+    rows2.appendChild(this.field('Mapa', this.select(['coast', 'andes', 'altiplano', 'jungle'] as const, { costa: 'Costa / litoral', andes: 'Andes', altiplano: 'Altiplano', selva: 'Selva' }, this.game.settings.mapType, (v) => (this.game.settings.mapType = v))));
     rows2.appendChild(this.field('Hora del día', this.select(['mañana', 'mediodía', 'atardecer', 'noche'] as const, { 'mañana': 'Mañana', 'mediodía': 'Mediodía', 'atardecer': 'Atardecer', 'noche': 'Noche' }, this.game.settings.timeOfDay, (v) => this.setTimeOfDay(v))));
-    rows2.appendChild(this.field('Victoria', this.select(['conquista', 'maravilla'] as const, { conquista: 'Conquista', maravilla: 'Huaca Sagrada' }, this.game.settings.victoryMode, (v) => (this.game.settings.victoryMode = v))));
+    rows2.appendChild(this.field('Victoria', this.select(['conquest', 'wonder'] as const, { conquest: 'Conquista', wonder: 'Huaca Sagrada' }, this.game.settings.victoryMode, (v) => (this.game.settings.victoryMode = v))));
     const startBtn = this.el('button', 'ed-primary', panel);
     startBtn.textContent = '▶ INICIAR ESCARAMUZA';
     startBtn.addEventListener('click', () => {
@@ -1210,7 +1210,7 @@ export class HUD {
       <div style="font-size:12px;letter-spacing:3px;color:#a8883f">CAMPAÑA</div>
       <h2>${CAMPAIGN_TITLE}</h2>
       <div class="sub">${CAMPAIGN_SUBTITLE}</div>
-      <div class="ed-hist">${PROLOGO}</div>
+      <div class="ed-hist">${PROLOGUE}</div>
     `;
     const row = this.el('div', 'row', panel);
     const start = this.el('button', 'ed-primary', row);
@@ -1280,32 +1280,32 @@ export class HUD {
     const ov = this.el('div', 'ed-overlay');
     const panel = this.el('div', 'ed-panel', ov);
     panel.style.maxWidth = '680px';
-    const periodo = getPeriodo(mis.periodo);
-    const jugador = getCiv(mis.civJugador);
-    const enemigo = getCiv(mis.civEnemigo);
+    const period = getPeriod(mis.period);
+    const player = getCiv(mis.playerCiv);
+    const enemy = getCiv(mis.enemyCiv);
     const geo: Record<string, string> = { costa: 'Costa / litoral', andes: 'Andes / sierra', altiplano: 'Altiplano', selva: 'Selva' };
-    const edu = getEducativo(mis.id);
-    const contexto = edu?.contexto
-      ? `<div class="ed-hist">${mis.historia}</div><div class="ed-hist"><b style="color:var(--gold)">Contexto histórico.</b> ${edu.contexto}</div>`
-      : `<div class="ed-hist">${mis.historia}</div>`;
-    const sabias = edu ? `<div class="ed-sabias">💡 <b>¿Sabías que…?</b> ${edu.sabiasQue}</div>` : '';
-    const fuentes = edu && edu.fuentes.length
-      ? `<details class="ed-fuentes"><summary>Fuentes históricas</summary><ul>${edu.fuentes
-          .map((f) => `<li>${f.url ? `<a href="${f.url}" target="_blank" rel="noopener">${f.texto}</a>` : f.texto}</li>`)
+    const edu = getEducational(mis.id);
+    const context = edu?.context
+      ? `<div class="ed-hist">${mis.history}</div><div class="ed-hist"><b style="color:var(--gold)">Contexto histórico.</b> ${edu.context}</div>`
+      : `<div class="ed-hist">${mis.history}</div>`;
+    const funFact = edu ? `<div class="ed-sabias">💡 <b>¿Sabías que…?</b> ${edu.didYouKnow}</div>` : '';
+    const sources = edu && edu.sources.length
+      ? `<details class="ed-fuentes"><summary>Fuentes históricas</summary><ul>${edu.sources
+          .map((f) => `<li>${f.url ? `<a href="${f.url}" target="_blank" rel="noopener">${f.text}</a>` : f.text}</li>`)
           .join('')}</ul></details>`
       : '';
     panel.innerHTML = `
-      <div style="font-size:12px;letter-spacing:3px;color:#a8883f">${mis.subtitulo}</div>
-      <h2>${mis.titulo}</h2>
+      <div style="font-size:12px;letter-spacing:3px;color:#a8883f">${mis.subtitle}</div>
+      <h2>${mis.title}</h2>
       <div class="ed-meta">
-        <span>Periodo: <b>${periodo.nombre}</b> (${periodo.fechas})</span>
-        <span>Geografía: <b>${geo[mis.mapa.tipo] ?? mis.mapa.tipo}</b></span>
-        <span>Bandos: <b>${jugador.nombre}</b> vs <b>${jugador.id === enemigo.id ? 'grupos rivales' : enemigo.nombre}</b></span>
+        <span>Periodo: <b>${period.name}</b> (${period.dates})</span>
+        <span>Geografía: <b>${geo[mis.map.type] ?? mis.map.type}</b></span>
+        <span>Bandos: <b>${player.name}</b> vs <b>${player.id === enemy.id ? 'grupos rivales' : enemy.name}</b></span>
       </div>
-      ${contexto}
-      ${sabias}
-      <div class="sub" style="text-align:left;font-size:12px;color:var(--text);line-height:1.7;margin-bottom:10px"><b style="color:var(--gold)">OBJETIVOS</b><br>${mis.objetivos.map((o) => '• ' + o.titulo).join('<br>')}</div>
-      ${fuentes}
+      ${context}
+      ${funFact}
+      <div class="sub" style="text-align:left;font-size:12px;color:var(--text);line-height:1.7;margin-bottom:10px"><b style="color:var(--gold)">OBJETIVOS</b><br>${mis.objectives.map((o) => '• ' + o.title).join('<br>')}</div>
+      ${sources}
     `;
     const start = this.el('button', 'ed-primary', panel);
     start.textContent = '▶ COMENZAR MISIÓN';
@@ -1333,13 +1333,13 @@ export class HUD {
       row.style.justifyContent = 'flex-start';
       const btn = this.el('button', 'ed-ghostbtn', row) as HTMLButtonElement;
       btn.style.flex = '1';
-      btn.textContent = `${i + 1}. ${mis.titulo} — ${mis.subtitulo}`;
+      btn.textContent = `${i + 1}. ${mis.title} — ${mis.subtitle}`;
       const locked = i > progress;
       if (locked) {
         btn.disabled = true;
         btn.classList.add('disabled');
         btn.style.opacity = '0.4';
-        btn.textContent = `🔒 ${i + 1}. ${mis.titulo}`;
+        btn.textContent = `🔒 ${i + 1}. ${mis.title}`;
         return;
       }
       btn.addEventListener('click', () => {
@@ -1396,7 +1396,7 @@ export class HUD {
     const panel = this.el('div', 'ed-panel', ov);
     panel.innerHTML = `<h2>OPCIONES</h2><div class="sub">Ajustes visuales y de sonido</div>`;
     const row = this.el('div', 'row', panel);
-    const q = this.field('Calidad', this.select(['alto', 'medio', 'bajo'] as const, { alto: 'Alta (AAA)', medio: 'Media', bajo: 'Baja' }, 'alto', (v) => this.game.postfx.setQuality(v)));
+    const q = this.field('Calidad', this.select(['high', 'medium', 'low'] as const, { high: 'Alta (AAA)', medium: 'Media', low: 'Baja' }, 'high', (v) => this.game.postfx.setQuality(v)));
     row.appendChild(q);
     const cine = this.el('div', 'ed-field', row);
     cine.innerHTML = `<label>Efectos cinematográficos</label>`;
@@ -1489,10 +1489,10 @@ export class HUD {
         el.classList.toggle('res-low', val < 30);
       }
       // ocultar recursos no disponibles en el periodo (p. ej. Piedra sin Cantera)
-      this.resEls.energia.style.display = this.game.canBuildKind(BuildingKind.REFINERIA) ? '' : 'none';
+      this.resEls.stone.style.display = this.game.canBuildKind(BuildingKind.REFINERY) ? '' : 'none';
       this.popEl.querySelector('span')!.textContent = `${p.populationUsed}/${p.populationCap}`;
       const eraDef = ERA_DEFS[p.era];
-      this.eraEl.querySelector('span:last-child')!.textContent = `${eraDef.nombre} · ${eraDef.anos}`;
+      this.eraEl.querySelector('span:last-child')!.textContent = `${eraDef.name} · ${eraDef.years}`;
       this.eraDot.style.background = `#${ERA_COLORS[p.era].toString(16).padStart(6, '0')}`;
     }
     if (this.updateAcc > 0.15) {

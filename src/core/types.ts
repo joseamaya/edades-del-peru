@@ -1,28 +1,28 @@
 import * as THREE from 'three';
 
-export const RESOURCE_KEYS = ['comida', 'madera', 'acero', 'energia'] as const;
+export const RESOURCE_KEYS = ['food', 'wood', 'silver', 'stone'] as const;
 export type ResourceKey = (typeof RESOURCE_KEYS)[number];
 
 export type Resources = Record<ResourceKey, number>;
 
-export const ZERO_RESOURCES: Resources = { comida: 0, madera: 0, acero: 0, energia: 0 };
+export const ZERO_RESOURCES: Resources = { food: 0, wood: 0, silver: 0, stone: 0 };
 
 export enum Era {
-  FORMATIVO = 0,
-  ESTADOS_REGIONALES = 1,
+  FORMATIVE = 0,
+  REGIONAL_STATES = 1,
   TAHUANTINSUYO = 2,
-  VIRREINATO = 3,
-  REPUBLICA = 4,
-  CONTEMPORANEO = 5,
+  VICEROYALTY = 3,
+  REPUBLIC = 4,
+  CONTEMPORARY = 5,
 }
 
 export const ERA_COLORS: Record<Era, number> = {
-  [Era.FORMATIVO]: 0xb0885a,
-  [Era.ESTADOS_REGIONALES]: 0xa85a3a,
+  [Era.FORMATIVE]: 0xb0885a,
+  [Era.REGIONAL_STATES]: 0xa85a3a,
   [Era.TAHUANTINSUYO]: 0xc8a040,
-  [Era.VIRREINATO]: 0x7a5a8a,
-  [Era.REPUBLICA]: 0x3a6a7a,
-  [Era.CONTEMPORANEO]: 0x4a6a9a,
+  [Era.VICEROYALTY]: 0x7a5a8a,
+  [Era.REPUBLIC]: 0x3a6a7a,
+  [Era.CONTEMPORARY]: 0x4a6a9a,
 };
 
 export enum CivId {
@@ -42,67 +42,67 @@ export enum CivId {
   // Históricas (post-hispánicas)
   REALISTAS = 'realistas',
   PATRIOTAS = 'patriotas',
-  REPUBLICA = 'republica',
+  REPUBLIC = 'republica',
   CHILE = 'chile',
 }
 
 /** Geografía base de una civilización: determina el tipo de mapa. */
-export type Geografia = 'costa' | 'andes' | 'altiplano';
+export type Geography = 'coast' | 'andes' | 'altiplano';
 
 /** Tipos de mapa jugables. */
-export type MapType = 'costa' | 'andes' | 'altiplano' | 'selva';
+export type MapType = 'coast' | 'andes' | 'altiplano' | 'jungle';
 
 /**
  * Periodos históricos (partidas bloqueadas por periodo, sin modernización anacrónica).
  * `nivel` mapea al nivel tecnológico interno (0-5) usado por stats/modelos.
  */
-export enum Periodo {
-  ARCAICO = 0,
-  HORIZONTE_TEMPRANO = 1,
-  INTERMEDIO_TEMPRANO = 2,
-  HORIZONTE_MEDIO = 3,
-  INTERMEDIO_TARDIO = 4,
-  HORIZONTE_TARDIO = 5,
-  VIRREINATO = 6,
-  INDEPENDENCIA = 7,
-  REPUBLICA = 8,
-  CONTEMPORANEO = 9,
+export enum HistoricalPeriod {
+  ARCHAIC = 0,
+  EARLY_HORIZON = 1,
+  EARLY_INTERMEDIATE = 2,
+  MIDDLE_HORIZON = 3,
+  LATE_INTERMEDIATE = 4,
+  LATE_HORIZON = 5,
+  VICEROYALTY = 6,
+  INDEPENDENCE = 7,
+  REPUBLIC = 8,
+  CONTEMPORARY = 9,
 }
 
 export enum UnitKind {
-  OBRERO = 'obrero',
-  SOLDADO = 'soldado', // infantería básica (milicia -> raso)
-  MOSQUETERO = 'mosquetero', // arquero básico (a distancia)
-  FUSILERO = 'fusilero', // arquero avanzado
-  FRANCOTIRADOR = 'francotirador', // arquero de élite
-  HUSAR = 'husar', // caballería ligera
-  CABALLERIA = 'caballeria', // caballería pesada / blindada
-  TANQUE = 'tanque', // caballería de élite tardía
-  EXPLORADOR = 'explorador', // explorador ligero
-  ARTILLERO_AA = 'artillero_aa', // anti-aéreo / escaramuzador
-  ARTILLERIA = 'artilleria', // asedio a distancia larga
-  MORTERO = 'mortero', // asedio de área
-  COMISARIO = 'comisario', // conversión (monje)
-  MEC = 'mec', // unidad única futurista
+  WORKER = 'worker',
+  SOLDIER = 'soldier', // infantería básica (milicia -> raso)
+  MUSKETEER = 'musketeer', // arquero básico (a distancia)
+  RIFLEMAN = 'rifleman', // arquero avanzado
+  SNIPER = 'sniper', // arquero de élite
+  HUSSAR = 'hussar', // caballería ligera
+  CAVALRY = 'cavalry', // caballería pesada / blindada
+  TANK = 'tank', // caballería de élite tardía
+  SCOUT = 'scout', // explorador ligero
+  ANTI_AIR = 'anti_air', // anti-aéreo / escaramuzador
+  ARTILLERY = 'artillery', // asedio a distancia larga
+  MORTAR = 'mortar', // asedio de área
+  COMMISSAR = 'commissar', // conversión (monje)
+  MECH = 'mec', // unidad única futurista
   NUCLEAR = 'nuclear', // arma táctica de era atómica (área)
 }
 
 export enum BuildingKind {
-  CENTRO = 'centro',
-  VIVIENDA = 'vivienda',
-  MOLINO = 'molino',
-  SERRERIA = 'serreria',
-  FUNDICION = 'fundicion',
-  REFINERIA = 'refineria',
-  CUARTEL = 'cuartel',
-  POLVORIN = 'polvorin',
-  GARAJE = 'garaje',
-  FABRICA = 'fabrica',
-  FORTALEZA = 'fortaleza',
-  MERCADO = 'mercado',
-  INSTITUTO = 'instituto',
-  GRANJA = 'granja',
-  MARAVILLA = 'maravilla',
+  CENTER = 'center',
+  HOUSE = 'house',
+  MILL = 'mill',
+  SAWMILL = 'sawmill',
+  SMELTER = 'smelter',
+  REFINERY = 'refinery',
+  BARRACKS = 'barracks',
+  ARSENAL = 'arsenal',
+  STABLE = 'stable',
+  FACTORY = 'factory',
+  FORTRESS = 'fortress',
+  MARKET = 'market',
+  INSTITUTE = 'institute',
+  FARM = 'farm',
+  WONDER = 'wonder',
 }
 
 export interface OrderTarget {
@@ -154,14 +154,14 @@ export interface PlayerState {
   totalLost: number;
   wonderActive: boolean;
   bonus: {
-    ataque: number;
-    armadura: number;
-    recoleccion: Partial<Resources>;
+    attack: number;
+    armor: number;
+    gathering: Partial<Resources>;
     carry: number;
     los: number;
-    rango: number;
-    velocidad: number;
-    entrenamiento: number;
+    range: number;
+    speed: number;
+    training: number;
   };
   stats: { created: number; destroyed: number; military: number; econ: number };
 }
@@ -192,7 +192,7 @@ export type GameEvents = {
   'unit:converted': { id: number; from: number; to: number };
   'building:died': { id: number; owner: number; kind: string };
   'resources:changed': { player: number; resources: Resources };
-  alert: { icono: string; texto: string; x: number; z: number; warn?: boolean };
+  alert: { icon: string; text: string; x: number; z: number; warn?: boolean };
   'fx:shot': EmptyEvent;
   'fx:artillery': EmptyEvent;
   'fx:laser': EmptyEvent;

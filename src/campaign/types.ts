@@ -1,4 +1,4 @@
-import { Era, CivId, Periodo, UnitKind, BuildingKind, Resources, MapType } from '../core/types';
+import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind, Resources, MapType } from '../core/types';
 
 /** Punto del mundo. `ref` ancla al centro del jugador/enemigo; sin `ref` es absoluto. */
 export interface MissionPoint {
@@ -8,45 +8,45 @@ export interface MissionPoint {
 }
 
 export type ObjectiveKind =
-  | 'destruir'
-  | 'eliminar_todos'
-  | 'sobrevivir'
-  | 'alcanzar'
-  | 'defender'
-  | 'proteger'
-  | 'construir'
-  | 'recolectar'
-  | 'alcanzar_era';
+  | 'destroy'
+  | 'eliminate_all'
+  | 'survive'
+  | 'reach'
+  | 'defend'
+  | 'protect'
+  | 'build'
+  | 'gather'
+  | 'reach_era';
 
 export interface ObjectiveDef {
   id: string;
   kind: ObjectiveKind;
-  titulo: string;
-  cantidad?: number;
+  title: string;
+  count?: number;
   entityTag?: string;
   pos?: MissionPoint;
-  radio?: number;
+  radius?: number;
   time?: number;
   buildingKind?: BuildingKind;
   resource?: keyof Resources;
   era?: Era;
-  oculto?: boolean;
+  hidden?: boolean;
 }
 
 export type TriggerCond =
-  | { tipo: 'tiempo'; segundos: number }
-  | { tipo: 'objetivo'; objetivoId: string; estado: 'activar' | 'completado' | 'fallado' }
-  | { tipo: 'entidad_muerta'; entityTag: string }
-  | { tipo: 'unidad_cerca'; entityTag: string; pos: MissionPoint; radio: number };
+  | { type: 'time'; seconds: number }
+  | { type: 'objetivo'; objectiveId: string; state: 'activate' | 'completed' | 'failed' }
+  | { type: 'entity_dead'; entityTag: string }
+  | { type: 'unit_near'; entityTag: string; pos: MissionPoint; radius: number };
 
 export type TriggerEffect =
-  | { tipo: 'oleada'; owner: 0 | 1; unidades: { kind: UnitKind; cantidad: number }[]; pos: MissionPoint; radio?: number; objetivo?: 'base' | 'posicion' }
-  | { tipo: 'reforzar'; owner: 0 | 1; unidades: { kind: UnitKind; cantidad: number }[]; pos: MissionPoint; radio?: number; objetivo?: 'base' | 'posicion' }
-  | { tipo: 'dialogo'; texto: string; duracion?: number }
-  | { tipo: 'objetivo'; objetivoId: string; estado: 'activar' | 'completar' | 'fallar' }
-  | { tipo: 'camara'; pos: MissionPoint }
-  | { tipo: 'victoria' }
-  | { tipo: 'derrota'; texto: string };
+  | { type: 'wave'; owner: 0 | 1; units: { kind: UnitKind; count: number }[]; pos: MissionPoint; radius?: number; objective?: 'base' | 'position' }
+  | { type: 'reinforce'; owner: 0 | 1; units: { kind: UnitKind; count: number }[]; pos: MissionPoint; radius?: number; objective?: 'base' | 'position' }
+  | { type: 'dialogue'; text: string; duration?: number }
+  | { type: 'objetivo'; objectiveId: string; state: 'activate' | 'complete' | 'fail' }
+  | { type: 'camera'; pos: MissionPoint }
+  | { type: 'victoria' }
+  | { type: 'derrota'; text: string };
 
 export interface TriggerDef {
   id: string;
@@ -59,28 +59,28 @@ export interface TriggerDef {
 
 export interface MissionDef {
   id: string;
-  titulo: string;
-  subtitulo: string;
-  historia: string;
-  victoria: string;
-  derrota: string;
+  title: string;
+  subtitle: string;
+  history: string;
+  victory: string;
+  defeat: string;
   /** Periodo histórico de la misión (resuelve fechas y civilizaciones coetáneas). */
-  periodo: Periodo;
+  period: HistoricalPeriod;
   /** Muestra el tutorial guiado paso a paso al comenzar (p. ej. la misión de Caral). */
   tutorial?: boolean;
-  civJugador: CivId;
-  civEnemigo: CivId;
-  mapa: { seed: number; tipo: MapType; tamano: number };
-  horaDia: 'mañana' | 'mediodía' | 'atardecer' | 'noche';
-  eraInicial: Era;
-  recursosIniciales: Resources;
-  inicio: {
-    edificios?: { kind: BuildingKind; dx: number; dz: number; tag?: string }[];
-    unidades?: { kind: UnitKind; dx: number; dz: number; tag?: string; cantidad?: number }[];
+  playerCiv: CivId;
+  enemyCiv: CivId;
+  map: { seed: number; type: MapType; size: number };
+  timeOfDay: 'mañana' | 'mediodía' | 'atardecer' | 'noche';
+  startingEra: Era;
+  startingResources: Resources;
+  start: {
+    buildings?: { kind: BuildingKind; dx: number; dz: number; tag?: string }[];
+    units?: { kind: UnitKind; dx: number; dz: number; tag?: string; count?: number }[];
   };
   /** Etiqueta edificios existentes al comenzar (p. ej. el centro enemigo). */
-  marcar?: { tag: string; kind: BuildingKind; owner: 0 | 1 }[];
-  enemigo: { activo: boolean; dificultad: 'facil' | 'normal' | 'dificil' | 'legendario'; agresion: number };
-  objetivos: ObjectiveDef[];
+  mark?: { tag: string; kind: BuildingKind; owner: 0 | 1 }[];
+  enemy: { active: boolean; difficulty: 'facil' | 'normal' | 'dificil' | 'legendario'; aggression: number };
+  objectives: ObjectiveDef[];
   triggers: TriggerDef[];
 }

@@ -59,7 +59,7 @@ export class Projectile {
 
     this.buildMesh();
     if (this.mesh) scene.add(this.mesh);
-    if (opts.kind === 'obús' || opts.kind === 'rail') {
+    if (opts.kind === 'howitzer_shell' || opts.kind === 'rail') {
       this.light = new THREE.PointLight(0xff8844, 2.5, 12);
       scene.add(this.light);
     }
@@ -83,7 +83,7 @@ export class Projectile {
     }
 
     // homing: re-apuntar al centro del objetivo si sigue vivo (flechas AoE2)
-    if (this.targetId !== undefined && this.getTargetPos && this.kind !== 'obús' && this.kind !== 'nuclear') {
+    if (this.targetId !== undefined && this.getTargetPos && this.kind !== 'howitzer_shell' && this.kind !== 'nuclear') {
       const tp = this.getTargetPos();
       if (tp) {
         this._tmpTarget.copy(tp);
@@ -118,7 +118,7 @@ export class Projectile {
     }
 
     // estela
-    if (this.kind === 'trazadora' || this.kind === 'bala') {
+    if (this.kind === 'tracer' || this.kind === 'bullet') {
       this.trailTimer -= dt;
       if (this.trailTimer <= 0) {
         this.trailTimer = 0.02;
@@ -157,8 +157,8 @@ type ProjectileCategory = 'laser' | 'tracer' | 'shell' | 'bullet';
 
 function projectileCategory(kind: string): ProjectileCategory {
   if (kind === 'laser' || kind === 'rail') return 'laser';
-  if (kind === 'trazadora') return 'tracer';
-  if (kind === 'obús' || kind === 'nuclear') return 'shell';
+  if (kind === 'tracer') return 'tracer';
+  if (kind === 'howitzer_shell' || kind === 'nuclear') return 'shell';
   return 'bullet';
 }
 

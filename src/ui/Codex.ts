@@ -1,7 +1,7 @@
-import { PERIODOS } from '../model/defs/periodos';
-import { CIVS, civsDePeriodo } from '../model/defs/civs';
+import { PERIODS } from '../model/defs/periodos';
+import { CIVS, civsForPeriod } from '../model/defs/civs';
 import { MISSIONS } from '../campaign/defs/campaign';
-import { getEducativo } from '../campaign/defs/educativo';
+import { getEducational } from '../campaign/defs/educativo';
 
 /**
  * Códice/enciclopedia educativa. Reúne periodos, civilizaciones y campañas a partir de los
@@ -19,7 +19,7 @@ type Tab = 'periodos' | 'civs' | 'campanas' | 'dossiers';
 
 interface CodexItem {
   id: string;
-  titulo: string;
+  title: string;
   render: () => string;
 }
 
@@ -78,36 +78,36 @@ function prettyName(base: string): string {
   return base.replace(/[-_]/g, ' ').replace(/^\w/, (c) => c.toUpperCase());
 }
 
-function dossierGroups(): { grupo: string; items: { key: string; titulo: string }[] }[] {
-  const general: { key: string; titulo: string }[] = [];
-  const civs: { key: string; titulo: string }[] = [];
-  const campanas: { key: string; titulo: string }[] = [];
+function dossierGroups(): { group: string; items: { key: string; title: string }[] }[] {
+  const general: { key: string; title: string }[] = [];
+  const civs: { key: string; title: string }[] = [];
+  const campaigns: { key: string; title: string }[] = [];
   for (const key of Object.keys(DOSSIERS).sort()) {
     const base = key.split('/').pop()!.replace(/\.md$/, '');
-    const entry = { key, titulo: prettyName(base) };
+    const entry = { key, title: prettyName(base) };
     if (key.includes('/civilizaciones/')) civs.push(entry);
-    else if (key.includes('/campanas/')) campanas.push(entry);
+    else if (key.includes('/campanas/')) campaigns.push(entry);
     else general.push(entry);
   }
   return [
-    { grupo: 'General', items: general },
-    { grupo: 'Civilizaciones', items: civs },
-    { grupo: 'Campañas', items: campanas },
+    { group: 'General', items: general },
+    { group: 'Civilizaciones', items: civs },
+    { group: 'Campañas', items: campaigns },
   ];
 }
 
-function periodoTab(): CodexItem[] {
-  return PERIODOS.map((p) => ({
+function periodTab(): CodexItem[] {
+  return PERIODS.map((p) => ({
     id: String(p.id),
-    titulo: `${p.nombre} · ${p.fechas}`,
+    title: `${p.name} · ${p.dates}`,
     render: () => {
-      const disp = civsDePeriodo(p.id);
+      const disp = civsForPeriod(p.id);
       const lista = disp
-        .map((c) => `<li><b>${c.nombre}</b> (${c.geografia}) — ${c.descripcion}</li>`)
+        .map((c) => `<li><b>${c.name}</b> (${c.geography}) — ${c.description}</li>`)
         .join('');
       return `
-        <h3>${p.nombre}</h3>
-        <p><b>Fechas:</b> ${p.fechas} · <b>Mapa:</b> ${p.mapa}</p>
+        <h3>${p.name}</h3>
+        <p><b>Fechas:</b> ${p.dates} · <b>Mapa:</b> ${p.map}</p>
         <h4>Civilizaciones coetáneas</h4>
         <ul>${lista || '<li>—</li>'}</ul>
       `;
@@ -118,14 +118,14 @@ function periodoTab(): CodexItem[] {
 function civTab(): CodexItem[] {
   return CIVS.map((c) => ({
     id: c.id,
-    titulo: c.nombre,
+    title: c.name,
     render: () => {
-      const periodos = c.periodos.map((pid) => PERIODOS.find((p) => p.id === pid)?.nombre ?? String(pid)).join(', ');
+      const periods = c.periods.map((pid) => PERIODS.find((p) => p.id === pid)?.name ?? String(pid)).join(', ');
       const bonus = c.bonuses.map((b) => `<li>${b}</li>`).join('');
       return `
-        <h3>${c.nombre}</h3>
-        <p><b>Adjetivo:</b> ${c.adjetivo} · <b>Geografía:</b> ${c.geografia} · <b>Periodos:</b> ${periodos}</p>
-        <p>${c.descripcion}</p>
+        <h3>${c.name}</h3>
+        <p><b>Adjetivo:</b> ${c.adjective} · <b>Geografía:</b> ${c.geography} · <b>Periodos:</b> ${periods}</p>
+        <p>${c.description}</p>
         <h4>Bonificaciones</h4>
         <ul>${bonus || '<li>—</li>'}</ul>
       `;
@@ -133,24 +133,24 @@ function civTab(): CodexItem[] {
   }));
 }
 
-function campanaTab(): CodexItem[] {
+function campaignTab(): CodexItem[] {
   return MISSIONS.map((m) => ({
     id: m.id,
-    titulo: m.titulo,
+    title: m.title,
     render: () => {
-      const edu = getEducativo(m.id);
-      const fuentes = edu?.fuentes.length
-        ? `<h4>Fuentes</h4><ul>${edu.fuentes
-            .map((f) => `<li>${f.url ? `<a href="${f.url}" target="_blank" rel="noopener">${f.texto}</a>` : f.texto}</li>`)
+      const edu = getEducational(m.id);
+      const sources = edu?.sources.length
+        ? `<h4>Fuentes</h4><ul>${edu.sources
+            .map((f) => `<li>${f.url ? `<a href="${f.url}" target="_blank" rel="noopener">${f.text}</a>` : f.text}</li>`)
             .join('')}</ul>`
         : '';
       return `
-        <h3>${m.titulo}</h3>
-        <p><b>${m.subtitulo}</b></p>
-        <p>${m.historia.replace(/\n/g, '<br>')}</p>
-        ${edu ? `<p>${edu.contexto}</p>` : ''}
-        ${edu ? `<p>💡 <b>¿Sabías que…?</b> ${edu.sabiasQue}</p>` : ''}
-        ${fuentes}
+        <h3>${m.title}</h3>
+        <p><b>${m.subtitle}</b></p>
+        <p>${m.history.replace(/\n/g, '<br>')}</p>
+        ${edu ? `<p>${edu.context}</p>` : ''}
+        ${edu ? `<p>💡 <b>¿Sabías que…?</b> ${edu.didYouKnow}</p>` : ''}
+        ${sources}
       `;
     },
   }));
@@ -160,16 +160,16 @@ function dossierTab(): CodexItem[] {
   return dossierGroups().flatMap((g) =>
     g.items.map((it) => ({
       id: it.key,
-      titulo: it.titulo,
+      title: it.title,
       render: () => `<div class="md">${mdToHtml(DOSSIERS[it.key] ?? '')}</div>`,
     })),
   );
 }
 
 const TABS: { id: Tab; label: string; items: () => CodexItem[] }[] = [
-  { id: 'periodos', label: '🕰 Periodos', items: periodoTab },
+  { id: 'periodos', label: '🕰 Periodos', items: periodTab },
   { id: 'civs', label: '🏛 Civilizaciones', items: civTab },
-  { id: 'campanas', label: '📜 Campañas', items: campanaTab },
+  { id: 'campanas', label: '📜 Campañas', items: campaignTab },
   { id: 'dossiers', label: '📖 Dossiers', items: dossierTab },
 ];
 
@@ -213,7 +213,7 @@ export function openCodex(root: HTMLElement, onClose: () => void): void {
     nav.innerHTML = '';
     for (const it of items) {
       const btn = document.createElement('button');
-      btn.textContent = it.titulo;
+      btn.textContent = it.title;
       if (it.id === selectedId) btn.classList.add('active');
       btn.addEventListener('click', () => {
         selectedId = it.id;

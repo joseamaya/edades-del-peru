@@ -13,21 +13,21 @@ export class Economy {
   /** Recurso más escaso según los obreros ya asignados y los recursos actuales. */
   neededResource(owner: number): keyof Resources {
     const p = this.game.players[owner];
-    const counts: Record<string, number> = { comida: 0, madera: 0, acero: 0, energia: 0 };
+    const counts: Record<string, number> = { food: 0, wood: 0, silver: 0, stone: 0 };
     for (const w of this.game.units.values()) {
-      if (w.owner !== owner || w.kind !== UnitKind.OBRERO || !w.isGathering()) continue;
+      if (w.owner !== owner || w.kind !== UnitKind.WORKER || !w.isGathering()) continue;
       const node = w.orderQueue[0]?.entityId ? this.game.resourceNodes.get(w.orderQueue[0].entityId) : null;
       if (node) counts[node.resource]++;
     }
     const ratios: Record<string, number> = {
-      comida: p.resources.comida < 300 ? 2 : 1,
-      madera: p.resources.madera < 250 ? 2 : 1,
-      acero: p.resources.acero < 200 ? 2 : 1,
-      energia: p.resources.energia < 120 ? 2 : 1,
+      food: p.resources.food < 300 ? 2 : 1,
+      wood: p.resources.wood < 250 ? 2 : 1,
+      silver: p.resources.silver < 200 ? 2 : 1,
+      stone: p.resources.stone < 120 ? 2 : 1,
     };
-    let best: keyof Resources = 'comida';
+    let best: keyof Resources = 'food';
     let bestScore = Infinity;
-    for (const k of ['comida', 'madera', 'acero', 'energia'] as const) {
+    for (const k of ['food', 'wood', 'silver', 'stone'] as const) {
       if (!this.playerHasDropsite(owner, k)) continue;
       const score = counts[k] / ratios[k];
       if (score < bestScore) {

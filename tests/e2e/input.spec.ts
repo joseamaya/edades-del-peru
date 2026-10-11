@@ -12,7 +12,7 @@ test('un solo clic en la tarjeta de construir inicia la colocación', async ({ p
   await startMission(page);
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    const w = [...g.units.values()].find((u: any) => u.kind === 'obrero' && u.owner === 0);
+    const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
     g.selectedUnits = [w.id];
     g.selectedBuilding = null;
   });
@@ -20,7 +20,7 @@ test('un solo clic en la tarjeta de construir inicia la colocación', async ({ p
   await card.waitFor({ timeout: 5000 });
   await card.click();
   const placing = await page.evaluate(() => (window as unknown as { game: any }).game.placingBuilding?.kind ?? null);
-  expect(placing).toBe('vivienda');
+  expect(placing).toBe('house');
 });
 
 test('el clic en el suelo coloca el edificio previsualizado', async ({ page }) => {
@@ -29,10 +29,10 @@ test('el clic en el suelo coloca el edificio previsualizado', async ({ page }) =
   await page.waitForTimeout(300); // deja asentar la cámara antes de proyectar
   const pick = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    const w = [...g.units.values()].find((u: any) => u.kind === 'obrero' && u.owner === 0);
+    const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
     g.selectedUnits = [w.id];
     g.selectedBuilding = null;
-    g.startPlacement('vivienda');
+    g.startPlacement('house');
     const W = window.innerWidth;
     const H = window.innerHeight;
     // buscar un punto de pantalla sobre el canvas (no HUD) que sea colocable
@@ -57,11 +57,11 @@ test('un solo clic en la tarjeta de entrenar encola la unidad', async ({ page })
   await startMission(page);
   const id = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    const center = [...g.buildings.values()].find((b: any) => b.kind === 'centro' && b.owner === 0);
-    const cuartel = g.spawnScriptedBuilding('cuartel', 0, center.pos.x + 10, center.pos.z + 10);
+    const center = [...g.buildings.values()].find((b: any) => b.kind === 'center' && b.owner === 0);
+    const barracks = g.spawnScriptedBuilding('barracks', 0, center.pos.x + 10, center.pos.z + 10);
     g.selectedUnits = [];
-    g.selectedBuilding = cuartel.id;
-    return cuartel.id as number;
+    g.selectedBuilding = barracks.id;
+    return barracks.id as number;
   });
   const card = page.locator('.ed-card', { hasText: 'Guerrero' }).first();
   await card.waitFor({ timeout: 5000 });

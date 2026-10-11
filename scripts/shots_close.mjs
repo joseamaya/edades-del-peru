@@ -14,8 +14,8 @@ for (const era of [0, 1, 2, 3, 4, 5]) {
   await page.evaluate(() => {
     const g = window.game;
     const UnitCtor = Object.getPrototypeOf([...g.units.values()][0]).constructor;
-    const c = [...g.buildings.values()].find((b) => b.kind === 'centro' && b.owner === 0).pos;
-    const kinds = ['obrero', 'soldado', 'mosquetero', 'husar'];
+    const c = [...g.buildings.values()].find((b) => b.kind === 'center' && b.owner === 0).pos;
+    const kinds = ['worker', 'soldier', 'musketeer', 'hussar'];
     kinds.forEach((k, i) => {
       const u = new UnitCtor(k, 0, g.players[0].era, g.makeBuildContext(0));
       u.pos.set(c.x + 6 + i * 2.2, g.terrain.getHeight(c.x + 6 + i * 2.2, c.z + 4), c.z + 4);

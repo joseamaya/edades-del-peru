@@ -15,7 +15,7 @@ await page.waitForTimeout(5000);
 // ordenar a un obrero que recolecte el nodo más cercano y acercar la cámara
 await page.evaluate(() => {
   const g = window.game;
-  const w = [...g.units.values()].find((u) => u.kind === 'obrero' && u.owner === 0);
+  const w = [...g.units.values()].find((u) => u.kind === 'worker' && u.owner === 0);
   if (!w) return;
   let best = null;
   let bd = Infinity;
@@ -37,7 +37,7 @@ console.log('work_gather', errors.length ? 'ERR:' + errors.slice(0, 2) : 'ok');
 // marcador de destino (círculo + punto central) tras una orden de mover
 await page.evaluate(() => {
   const g = window.game;
-  const w = [...g.units.values()].find((u) => u.kind === 'obrero' && u.owner === 0);
+  const w = [...g.units.values()].find((u) => u.kind === 'worker' && u.owner === 0);
   const tx = w.pos.x + 4;
   const tz = w.pos.z + 3;
   g.markers.spawn(tx, g.terrain.getHeight(tx, tz), tz, 'move');

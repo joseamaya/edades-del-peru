@@ -41,13 +41,13 @@ import { Tutorial } from '../campaign/Tutorial';
 import { getMission } from '../campaign/defs/campaign';
 import type { MissionDef } from '../campaign/types';
 
-const NODE_INFO: Record<ResourceNode['kind'], { nombre: string; icono: string }> = {
-  arbol: { nombre: 'Árbol', icono: '🌳' },
-  mina: { nombre: 'Mina', icono: '⛏️' },
-  pozo: { nombre: 'Pozo', icono: '🛢️' },
-  caza: { nombre: 'Caza', icono: '🦌' },
-  pesca: { nombre: 'Banco de peces', icono: '🐟' },
-  baya: { nombre: 'Arbusto', icono: '🫐' },
+const NODE_INFO: Record<ResourceNode['kind'], { name: string; icon: string }> = {
+  tree: { name: 'Árbol', icon: '🌳' },
+  mine: { name: 'Mina', icon: '⛏️' },
+  well: { name: 'Pozo', icon: '🛢️' },
+  hunt: { name: 'Caza', icon: '🦌' },
+  fishing: { name: 'Banco de peces', icon: '🐟' },
+  baya: { name: 'Arbusto', icon: '🫐' },
 };
 
 export class Game {
@@ -103,15 +103,15 @@ export class Game {
     const mis = this.settings.missionId ? getMission(this.settings.missionId) : undefined;
     if (mis) {
       // configuración fija de la misión sobreescribe la escaramuza
-      this.settings.civPlayer = mis.civJugador;
-      this.settings.civAI = mis.civEnemigo;
-      this.settings.startingEra = mis.eraInicial;
-      this.settings.mapSeed = mis.mapa.seed;
-      this.settings.mapType = mis.mapa.tipo;
-      this.settings.mapSize = mis.mapa.tamano;
-      this.settings.timeOfDay = mis.horaDia;
-      this.settings.difficulty = mis.enemigo.dificultad;
-      this.settings.victoryMode = 'conquista'; // la campaña no usa victoria por maravilla
+      this.settings.civPlayer = mis.playerCiv;
+      this.settings.civAI = mis.enemyCiv;
+      this.settings.startingEra = mis.startingEra;
+      this.settings.mapSeed = mis.map.seed;
+      this.settings.mapType = mis.map.type;
+      this.settings.mapSize = mis.map.size;
+      this.settings.timeOfDay = mis.timeOfDay;
+      this.settings.difficulty = mis.enemy.difficulty;
+      this.settings.victoryMode = 'conquest'; // la campaña no usa victoria por maravilla
     }
     this.rng = new RNG((this.settings.mapSeed * 2654435761) >>> 0);
     this.initRenderer();
@@ -123,7 +123,7 @@ export class Game {
     this.initHUD();
     this.mission = mis ? new Mission(this, mis, (win) => this.missionEnd(win)) : null;
     this.tutorial = mis && mis.tutorial && this.settings.showHints ? new Tutorial(this) : null;
-    this.ai = mis && !mis.enemigo.activo ? null : new AI(this, 1);
+    this.ai = mis && !mis.enemy.active ? null : new AI(this, 1);
     this.audio.setEra(this.players[0].era);
     this.initAudio();
     if (mis) this.applyMissionSetup(mis);
@@ -171,7 +171,7 @@ export class Game {
     // Sin niebla atmosférica sobre el tablero: look clásico de RTS, nítido.
     this.scene.fog = null;
     this.setTimeOfDay(s.timeOfDay);
-    this.water = new Water(this.scene, this.terrain.heightMap, s.mapSize, this.terrain.waterLevel, s.mapType !== 'costa');
+    this.water = new Water(this.scene, this.terrain.heightMap, s.mapSize, this.terrain.waterLevel, s.mapType !== 'coast');
     this.particles = new Particles(this.scene, 4096);
     this.markers = new OrderMarkers(this.scene);
     this.trees = new TreeInstances(this.scene);
@@ -194,14 +194,14 @@ export class Game {
       const isAI = i === 1;
       this.players.push({
         id: i,
-        name: isAI ? civ.nombre + ' (IA)' : civ.nombre,
+        name: isAI ? civ.name + ' (IA)' : civ.name,
         civ: civ.id,
         team: i as Team,
         color: new THREE.Color(civ.colors.primary),
         colorHex: civ.colors.primary,
         isAI,
         difficulty: i === 1 ? 1 : 0,
-        resources: { comida: 250, madera: 220, acero: 100, energia: 50 },
+        resources: { food: 250, wood: 220, silver: 100, stone: 50 },
         populationUsed: 0,
         populationCap: this.settings.populationCap,
         era: this.settings.startingEra,
@@ -211,7 +211,7 @@ export class Game {
         kills: 0,
         totalLost: 0,
         wonderActive: false,
-        bonus: { ataque: 0, armadura: 0, recoleccion: {}, carry: 0, los: 0, rango: 0, velocidad: 0, entrenamiento: 0 },
+        bonus: { attack: 0, armor: 0, gathering: {}, carry: 0, los: 0, range: 0, speed: 0, training: 0 },
         stats: { created: 0, destroyed: 0, military: 0, econ: 0 },
       });
     }
@@ -251,14 +251,14 @@ export class Game {
       if (this.terrain.isWater(x, z)) continue;
       const h = this.terrain.getHeight(x, z);
       const kind: ResourceNode['kind'] =
-        h > 6 ? 'mina' :
-        h > 3 ? rng.chance(0.6) ? 'mina' : 'arbol' :
-        this.terrain.isBeach(x, z) ? rng.chance(0.5) ? 'pozo' : 'baya' :
-        rng.chance(0.45) ? 'arbol' : rng.chance(0.3) ? 'mina' : 'pozo';
+        h > 6 ? 'mine' :
+        h > 3 ? rng.chance(0.6) ? 'mine' : 'tree' :
+        this.terrain.isBeach(x, z) ? rng.chance(0.5) ? 'well' : 'baya' :
+        rng.chance(0.45) ? 'tree' : rng.chance(0.3) ? 'mine' : 'well';
       const amount =
-        kind === 'arbol' ? rng.range(140, 220) :
-        kind === 'mina' ? rng.range(300, 450) :
-        kind === 'pozo' ? rng.range(250, 380) :
+        kind === 'tree' ? rng.range(140, 220) :
+        kind === 'mine' ? rng.range(300, 450) :
+        kind === 'well' ? rng.range(250, 380) :
         kind === 'baya' ? rng.range(120, 180) :
         rng.range(200, 300);
       const node = new ResourceNode(this.scene, kind, x, z, amount, this.settings.mapType, this.trees);
@@ -266,7 +266,7 @@ export class Game {
       node.view.position.set(x, node.pos.y, z);
       node.placeTreeInstance(node.pos.y);
       this.resourceNodes.set(node.id, node);
-      const handle = { x, z, radius: kind === 'arbol' ? 0.5 : 1.1 };
+      const handle = { x, z, radius: kind === 'tree' ? 0.5 : 1.1 };
       this.obstacleHandles.set(node.id, handle);
       this.pathfinder.addObstacle(handle);
       placed++;
@@ -276,7 +276,7 @@ export class Game {
       const x = rng.range(20, s.mapSize - 20);
       const z = rng.range(20, s.mapSize - 20);
       if (this.terrain.isWater(x, z)) continue;
-      const node = new ResourceNode(this.scene, 'caza', x, z, rng.range(120, 180), this.settings.mapType);
+      const node = new ResourceNode(this.scene, 'hunt', x, z, rng.range(120, 180), this.settings.mapType);
       node.pos.y = this.terrain.getHeight(x, z);
       node.view.position.set(x, node.pos.y, z);
       this.resourceNodes.set(node.id, node);
@@ -285,7 +285,7 @@ export class Game {
       const x = rng.range(20, s.mapSize - 20);
       const z = rng.range(20, s.mapSize - 20);
       if (!this.terrain.isWater(x, z)) continue;
-      const node = new ResourceNode(this.scene, 'pesca', x, z, rng.range(150, 220), this.settings.mapType);
+      const node = new ResourceNode(this.scene, 'fishing', x, z, rng.range(150, 220), this.settings.mapType);
       node.pos.y = 0;
       node.view.position.set(x, 0, z);
       this.resourceNodes.set(node.id, node);
@@ -295,7 +295,7 @@ export class Game {
   /** Registra un edificio como obstáculo del pathfinding. */
   private registerObstacle(b: Building): void {
     const stats = getBuildingStats(b.kind, b.era);
-    const handle = { x: b.pos.x, z: b.pos.z, radius: stats.tamano * 0.6 };
+    const handle = { x: b.pos.x, z: b.pos.z, radius: stats.size * 0.6 };
     this.obstacleHandles.set(b.id, handle);
     this.pathfinder.addObstacle(handle);
   }
@@ -303,7 +303,7 @@ export class Game {
   private spawnStartBase(player: number, x: number, z: number): void {
     const ctx = this.makeBuildContext(player);
     // centro
-    const center = new Building(BuildingKind.CENTRO, player, this.players[player].era, ctx);
+    const center = new Building(BuildingKind.CENTER, player, this.players[player].era, ctx);
     center.pos.set(x, 0, z);
     center.pos.y = this.terrain.getHeight(x, z);
     center.attach(this.scene);
@@ -317,7 +317,7 @@ export class Game {
     for (const d of dirs) {
       const hx = x + Math.cos(d) * 5.5;
       const hz = z + Math.sin(d) * 5.5;
-      const house = new Building(BuildingKind.VIVIENDA, player, this.players[player].era, ctx);
+      const house = new Building(BuildingKind.HOUSE, player, this.players[player].era, ctx);
       house.pos.set(hx, this.terrain.getHeight(hx, hz), hz);
       house.attach(this.scene);
       house.beginConstruction();
@@ -330,20 +330,20 @@ export class Game {
     // obreros iniciales
     const workers = player === 0 ? 4 : 4;
     for (let i = 0; i < workers; i++) {
-      const unit = new Unit(UnitKind.OBRERO, player, this.players[player].era, ctx);
+      const unit = new Unit(UnitKind.WORKER, player, this.players[player].era, ctx);
       unit.pos.set(x + rng.range(-3, 3), this.terrain.getHeight(x + rng.range(-3, 3), z + rng.range(-3, 3)), z + rng.range(-3, 3));
       unit.setContext(this.unitContext);
       unit.attach(this.scene);
       this.units.set(unit.id, unit);
-      this.players[player].populationUsed += unit.stats.poblacion;
+      this.players[player].populationUsed += unit.stats.population;
     }
     // explorador
-    const scout = new Unit(UnitKind.EXPLORADOR, player, this.players[player].era, ctx);
+    const scout = new Unit(UnitKind.SCOUT, player, this.players[player].era, ctx);
     scout.pos.set(x + 4, this.terrain.getHeight(x + 4, z + 4), z + 4);
     scout.setContext(this.unitContext);
     scout.attach(this.scene);
     this.units.set(scout.id, scout);
-    this.players[player].populationUsed += scout.stats.poblacion;
+    this.players[player].populationUsed += scout.stats.population;
     // auto-recolección
     this.assignInitialWorkers(player, x, z);
   }
@@ -358,7 +358,7 @@ export class Game {
       node.view.position.set(nx, node.pos.y, nz);
       node.placeTreeInstance(node.pos.y);
       this.resourceNodes.set(node.id, node);
-      const handle = { x: nx, z: nz, radius: kind === 'arbol' ? 0.5 : 1.1 };
+      const handle = { x: nx, z: nz, radius: kind === 'tree' ? 0.5 : 1.1 };
       this.obstacleHandles.set(node.id, handle);
       this.pathfinder.addObstacle(handle);
     };
@@ -366,25 +366,25 @@ export class Game {
     for (let i = 0; i < 10; i++) {
       const a = rng.range(0, Math.PI * 2);
       const r = rng.range(8, 13);
-      place('arbol', rng.range(140, 200), Math.cos(a) * r, Math.sin(a) * r);
+      place('tree', rng.range(140, 200), Math.cos(a) * r, Math.sin(a) * r);
     }
     // mina de acero
     const ma = rng.range(0, Math.PI * 2);
-    place('mina', 400, Math.cos(ma) * 12, Math.sin(ma) * 12);
+    place('mine', 400, Math.cos(ma) * 12, Math.sin(ma) * 12);
     // bayas
     place('baya', 150, rng.range(-6, 6), rng.range(9, 13));
     // pozo (si era permite)
     if (this.players[player].era >= Era.TAHUANTINSUYO) {
       const wa = rng.range(0, Math.PI * 2);
-      place('pozo', 300, Math.cos(wa) * 14, Math.sin(wa) * 14);
+      place('well', 300, Math.cos(wa) * 14, Math.sin(wa) * 14);
     }
   }
 
   private assignInitialWorkers(player: number, x: number, z: number): void {
-    const workers = [...this.units.values()].filter((u) => u.owner === player && u.kind === UnitKind.OBRERO);
-    const foods = [...this.resourceNodes.values()].filter((n) => n.resource === 'comida' && n.kind === 'baya');
-    const woods = [...this.resourceNodes.values()].filter((n) => n.resource === 'madera');
-    const steels = [...this.resourceNodes.values()].filter((n) => n.resource === 'acero');
+    const workers = [...this.units.values()].filter((u) => u.owner === player && u.kind === UnitKind.WORKER);
+    const foods = [...this.resourceNodes.values()].filter((n) => n.resource === 'food' && n.kind === 'baya');
+    const woods = [...this.resourceNodes.values()].filter((n) => n.resource === 'wood');
+    const steels = [...this.resourceNodes.values()].filter((n) => n.resource === 'silver');
     const nearest = (list: ResourceNode[], px: number, pz: number) =>
       list.reduce((best, n) => (best ? (distance2D(px, pz, n.pos.x, n.pos.z) < distance2D(px, pz, best.pos.x, best.pos.z) ? n : best) : n), null as ResourceNode | null);
     const foodNode = nearest(foods, x, z);
@@ -407,7 +407,7 @@ export class Game {
 
   /** Centro de un jugador (su edificio principal) o el centro del mapa. */
   playerCenter(owner: number): { x: number; z: number } {
-    const c = [...this.buildings.values()].find((b) => b.owner === owner && b.kind === BuildingKind.CENTRO && !b.dead);
+    const c = [...this.buildings.values()].find((b) => b.owner === owner && b.kind === BuildingKind.CENTER && !b.dead);
     if (c) return { x: c.pos.x, z: c.pos.z };
     return { x: this.settings.mapSize / 2, z: this.settings.mapSize / 2 };
   }
@@ -439,7 +439,7 @@ export class Game {
     if (tag) u.tag = tag;
     this.units.set(u.id, u);
     const p = this.players[owner];
-    if (p) p.populationUsed += u.stats.poblacion;
+    if (p) p.populationUsed += u.stats.population;
     return u;
   }
 
@@ -461,13 +461,13 @@ export class Game {
 
   private applyMissionSetup(mis: MissionDef): void {
     const p = this.players[0];
-    p.resources = { ...mis.recursosIniciales };
+    p.resources = { ...mis.startingResources };
     const c = this.playerCenter(0);
-    for (const e of mis.inicio.edificios ?? []) {
+    for (const e of mis.start.buildings ?? []) {
       this.spawnScriptedBuilding(e.kind, 0, c.x + e.dx, c.z + e.dz, e.tag);
     }
-    for (const u of mis.inicio.unidades ?? []) {
-      for (let i = 0; i < (u.cantidad ?? 1); i++) {
+    for (const u of mis.start.units ?? []) {
+      for (let i = 0; i < (u.count ?? 1); i++) {
         const jx = this.rng.range(-1.5, 1.5);
         const jz = this.rng.range(-1.5, 1.5);
         this.spawnScriptedUnit(u.kind, 0, c.x + u.dx + jx, c.z + u.dz + jz, u.tag);
@@ -482,7 +482,7 @@ export class Game {
     const mis = this.mission?.def;
     if (mis) {
       if (win) this.hud.saveCampaignProgress(mis.id);
-      this.hud.showVictory(win, mis.victoria, mis.derrota);
+      this.hud.showVictory(win, mis.victory, mis.defeat);
     } else {
       this.hud.showVictory(win);
     }
@@ -503,7 +503,7 @@ export class Game {
       }
     });
     bus.on('wonder:time', (e) => {
-      if (this.settings.victoryMode === 'maravilla' && e.time >= this.wonderReqTime) {
+      if (this.settings.victoryMode === 'wonder' && e.time >= this.wonderReqTime) {
         this.endGame(e.owner);
       }
     });
@@ -593,7 +593,7 @@ export class Game {
         const wp = this.screenToWorld(e.clientX, e.clientY);
         if (wp) {
           // recalcular con el punto real del clic (no confiar en el estado del mousemove)
-          const foot = getBuildingStats(this.placingBuilding.kind, this.players[0].era).tamano;
+          const foot = getBuildingStats(this.placingBuilding.kind, this.players[0].era).size;
           if (this.canPlace(wp.x, wp.z, foot)) this.commitPlacement(wp.x, wp.z);
           else this.updatePlacementGhost(wp.x, wp.z);
         }
@@ -682,7 +682,7 @@ export class Game {
     if (this.placingBuilding) return '🚧';
     const node = this.pickResource(sx, sy);
     if (node) {
-      const hasWorker = this.selectedUnits.some((id) => this.units.get(id)?.kind === UnitKind.OBRERO);
+      const hasWorker = this.selectedUnits.some((id) => this.units.get(id)?.kind === UnitKind.WORKER);
       return hasWorker ? '⛏️' : null;
     }
     const picked = this.pickAt(sx, sy);
@@ -692,23 +692,23 @@ export class Game {
   }
 
   /** Información de la entidad o recurso bajo el cursor (para el tooltip). */
-  private computeHover(sx: number, sy: number): { icono: string; titulo: string; detalle: string } | null {
+  private computeHover(sx: number, sy: number): { icon: string; title: string; detalle: string } | null {
     const node = this.pickResource(sx, sy);
     if (node) {
       const ni = NODE_INFO[node.kind];
-      return { icono: ni.icono, titulo: ni.nombre, detalle: `${Math.ceil(node.amount)} ${RESOURCE_INFO[node.resource].nombre}` };
+      return { icon: ni.icon, title: ni.name, detalle: `${Math.ceil(node.amount)} ${RESOURCE_INFO[node.resource].name}` };
     }
     const picked = this.pickAt(sx, sy);
     if (picked.unit) {
       const ui = UNIT_INFO[picked.unit.kind];
       const own = picked.unit.owner === 0 ? 'Tú' : this.players[picked.unit.owner]?.name ?? 'Enemigo';
-      return { icono: ui.icono, titulo: `${ui.nombre}`, detalle: `${own} · HP ${Math.ceil(picked.unit.hp)}/${Math.ceil(picked.unit.maxHp)}` };
+      return { icon: ui.icon, title: `${ui.name}`, detalle: `${own} · HP ${Math.ceil(picked.unit.hp)}/${Math.ceil(picked.unit.maxHp)}` };
     }
     if (picked.building) {
       const bi = BUILDING_INFO[picked.building.kind];
       const own = picked.building.owner === 0 ? 'Tú' : this.players[picked.building.owner]?.name ?? 'Enemigo';
-      const estado = picked.building.constructionComplete ? '' : ` · Construyendo ${Math.floor(picked.building.buildRatio * 100)}%`;
-      return { icono: bi.icono, titulo: bi.nombre, detalle: `${own} · HP ${Math.ceil(picked.building.hp)}/${Math.ceil(picked.building.maxHp)}${estado}` };
+      const state = picked.building.constructionComplete ? '' : ` · Construyendo ${Math.floor(picked.building.buildRatio * 100)}%`;
+      return { icon: bi.icon, title: bi.name, detalle: `${own} · HP ${Math.ceil(picked.building.hp)}/${Math.ceil(picked.building.maxHp)}${state}` };
     }
     return null;
   }
@@ -879,7 +879,7 @@ export class Game {
     if (node) {
       this.markOrder(target, 'gather');
       for (const u of units) {
-        if (u.kind === UnitKind.OBRERO) {
+        if (u.kind === UnitKind.WORKER) {
           u.issueOrder({ kind: OrderKind.GATHER, entityId: node.id }, !this.shiftQueue);
         } else {
           u.issueOrder({ kind: OrderKind.ATTACK_MOVE, target }, !this.shiftQueue);
@@ -892,7 +892,7 @@ export class Game {
       // granja: los obreros recolectan comida de ella (solo si está completa)
       if (b.owner === 0 && b.isFarm && b.constructionComplete && b.foodAmount > 0) {
         for (const u of units) {
-          if (u.kind === UnitKind.OBRERO) {
+          if (u.kind === UnitKind.WORKER) {
             u.issueOrder({ kind: OrderKind.GATHER, entityId: b.id }, !this.shiftQueue);
           } else {
             u.issueOrder({ kind: OrderKind.ATTACK_MOVE, target }, !this.shiftQueue);
@@ -912,9 +912,9 @@ export class Game {
         this.setRallyPoint(b.id, target);
       } else {
         for (const u of units) {
-          if (u.kind === UnitKind.OBRERO && !b.constructionComplete) {
+          if (u.kind === UnitKind.WORKER && !b.constructionComplete) {
             u.issueOrder({ kind: OrderKind.BUILD, entityId: b.id }, !this.shiftQueue);
-          } else if (u.kind === UnitKind.OBRERO && b.isDropsite) {
+          } else if (u.kind === UnitKind.WORKER && b.isDropsite) {
             u.issueOrder({ kind: OrderKind.DELIVER, entityId: b.id }, !this.shiftQueue);
           } else if (b.garrisons > 0) {
             u.issueOrder({ kind: OrderKind.GARRISON, entityId: b.id }, !this.shiftQueue);
@@ -993,7 +993,7 @@ export class Game {
     // nodos con malla propia (mina, pozo, caza, pesca, baya y árboles de reserva)
     const meshes: THREE.Object3D[] = [];
     for (const n of this.resourceNodes.values()) {
-      if (n.kind === 'arbol' && n.treeSlot >= 0) continue;
+      if (n.kind === 'tree' && n.treeSlot >= 0) continue;
       meshes.push(n.view);
     }
     const hits = this.raycaster.intersectObjects(meshes, true);
@@ -1042,16 +1042,16 @@ export class Game {
    * y no de la era (para que la victoria por maravilla sea alcanzable en cualquier periodo).
    */
   canBuildKind(kind: BuildingKind): boolean {
-    if (kind === BuildingKind.CENTRO) return false;
-    if (kind === BuildingKind.MARAVILLA) return this.settings.victoryMode === 'maravilla';
-    return this.players[0].era >= BUILDING_DEFS[kind].eraMinima;
+    if (kind === BuildingKind.CENTER) return false;
+    if (kind === BuildingKind.WONDER) return this.settings.victoryMode === 'wonder';
+    return this.players[0].era >= BUILDING_DEFS[kind].minEra;
   }
 
   startPlacement(kind: BuildingKind): void {
     // estándar RTS: construir requiere obreros seleccionados
     const hasWorker = this.selectedUnits.some((id) => {
       const u = this.units.get(id);
-      return !!u && !u.dead && u.kind === UnitKind.OBRERO;
+      return !!u && !u.dead && u.kind === UnitKind.WORKER;
     });
     if (!hasWorker) {
       this.hud.showToast('Selecciona obreros para construir', 'warning');
@@ -1070,7 +1070,7 @@ export class Game {
   private updatePlacementGhost(x: number, z: number): void {
     if (!this.placingBuilding) return;
     const stats = getBuildingStats(this.placingBuilding.kind, this.players[0].era);
-    const foot = stats.tamano;
+    const foot = stats.size;
     const y = this.terrain.getHeight(x, z);
     const valid = this.canPlace(x, z, foot);
     this.placingBuilding.valid = valid;
@@ -1120,7 +1120,7 @@ export class Game {
     if (!this.placingBuilding) return;
     const kind = this.placingBuilding.kind;
     const stats = getBuildingStats(kind, this.players[0].era);
-    if (!this.spendResource(0, stats.costo)) {
+    if (!this.spendResource(0, stats.cost)) {
       this.hud.showToast('Recursos insuficientes', 'error');
       this.cancelPlacement();
       return;
@@ -1136,7 +1136,7 @@ export class Game {
     // estándar RTS: construyen los obreros seleccionados (interrumpen su tarea)
     const builders = this.selectedUnits
       .map((id) => this.units.get(id))
-      .filter((u): u is Unit => !!u && !u.dead && u.kind === UnitKind.OBRERO);
+      .filter((u): u is Unit => !!u && !u.dead && u.kind === UnitKind.WORKER);
     for (const u of builders) {
       u.issueOrder({ kind: OrderKind.BUILD, entityId: b.id }, true);
     }
@@ -1174,7 +1174,7 @@ export class Game {
     if (!item) return;
     const stats = getUnitStats(item.unit, b.era);
     b.productionQueue.splice(index, 1);
-    this.addResource(b.owner, { ...ZERO_RESOURCES, ...stats.costo });
+    this.addResource(b.owner, { ...ZERO_RESOURCES, ...stats.cost });
     this.hud?.showToast('Entrenamiento cancelado', 'info');
   }
 
@@ -1207,7 +1207,7 @@ export class Game {
       return;
     }
     if (k === 'h') {
-      const center = [...this.buildings.values()].find((b) => b.owner === 0 && b.kind === BuildingKind.CENTRO);
+      const center = [...this.buildings.values()].find((b) => b.owner === 0 && b.kind === BuildingKind.CENTER);
       if (center) this.camera.focusOn(center.pos.x, center.pos.z);
     }
     if (k === 'f') {
@@ -1226,7 +1226,7 @@ export class Game {
     // seleccionar todo el ejército (unidades de combate propias)
     if (k === 'e') {
       const army = [...this.units.values()].filter(
-        (u) => u.owner === 0 && !u.dead && u.kind !== UnitKind.OBRERO,
+        (u) => u.owner === 0 && !u.dead && u.kind !== UnitKind.WORKER,
       );
       this.selectedUnits = army.map((u) => u.id);
       this.selectedBuilding = null;
@@ -1236,8 +1236,8 @@ export class Game {
       return;
     }
     // controles numéricos para paneles
-    if (k === 'g') this.startPlacement(BuildingKind.GRANJA);
-    if (k === 'v') this.startPlacement(BuildingKind.VIVIENDA);
+    if (k === 'g') this.startPlacement(BuildingKind.FARM);
+    if (k === 'v') this.startPlacement(BuildingKind.HOUSE);
   };
 
   private lastBattleEvent: number | null = null;
@@ -1397,7 +1397,7 @@ export class Game {
   private resolveDamage(attackerId: number, targetId: number, damage: number, from: any): void {
     const target = this.units.get(targetId) ?? this.buildings.get(targetId);
     if (!target || target.dead) return;
-    const armor = target instanceof Unit ? target.stats.armaduraPesado * target.armorMultiplier : (target as Building).stats.armadura;
+    const armor = target instanceof Unit ? target.stats.heavyArmor * target.armorMultiplier : (target as Building).stats.armor;
     const final = Math.max(1, damage - armor);
     target.takeDamage(final, attackerId);
     const dmgH = target instanceof Unit ? 2.2 : 2.6;
@@ -1432,16 +1432,16 @@ export class Game {
     if (target instanceof Building) {
       if (now - this.lastBaseAlert > 4000) {
         this.lastBaseAlert = now;
-        bus.emit('alert', { icono: '🚨', texto: `¡${BUILDING_INFO[target.kind].nombre} atacada!`, x: target.pos.x, z: target.pos.z, warn: true });
+        bus.emit('alert', { icon: '🚨', text: `¡${BUILDING_INFO[target.kind].name} atacada!`, x: target.pos.x, z: target.pos.z, warn: true });
       }
     } else if (target.hp / target.maxHp < 0.5 && now - this.lastUnitAlert > 3000) {
       this.lastUnitAlert = now;
-      bus.emit('alert', { icono: '⚠️', texto: 'Unidad bajo ataque', x: target.pos.x, z: target.pos.z, warn: true });
+      bus.emit('alert', { icon: '⚠️', text: 'Unidad bajo ataque', x: target.pos.x, z: target.pos.z, warn: true });
     }
   }
 
   private spawnProjectile(o: any): void {
-    if (o.kind === 'obús' || o.kind === 'nuclear') bus.emit('fx:artillery', {});
+    if (o.kind === 'howitzer_shell' || o.kind === 'nuclear') bus.emit('fx:artillery', {});
     else if (o.kind === 'laser' || o.kind === 'rail') bus.emit('fx:laser', {});
     else bus.emit('fx:shot', {});
     const p = new Projectile(this.scene, {
@@ -1521,7 +1521,7 @@ export class Game {
     const player = b.owner;
     const p = this.players[player];
     const stats = getUnitStats(unit, p.era);
-    if (p.populationUsed + stats.poblacion > p.populationCap) {
+    if (p.populationUsed + stats.population > p.populationCap) {
       return false;
     }
     const ctx = this.makeBuildContext(player);
@@ -1534,13 +1534,13 @@ export class Game {
     this.applyPlayerBonuses(u, p);
     u.attach(this.scene);
     this.units.set(u.id, u);
-    p.populationUsed += stats.poblacion;
+    p.populationUsed += stats.population;
     p.stats.created++;
     if (hasRally) {
       u.issueOrder({ kind: OrderKind.MOVE, target: rally });
     }
     // auto-recolección de obreros
-    if (unit === UnitKind.OBRERO && !hasRally) {
+    if (unit === UnitKind.WORKER && !hasRally) {
       this.economy.assignWorker(u.id);
     }
     return true;
@@ -1551,65 +1551,65 @@ export class Game {
     p.techs.add(techId);
     const tech = getTech(techId);
     if (tech) {
-      if (tech.efecto.ataqueMult) {
-        p.bonus.ataque += tech.efecto.ataqueMult;
-        this.applyAttackBonus(playerId, tech.efecto.ataqueMult);
+      if (tech.effect.attackMult) {
+        p.bonus.attack += tech.effect.attackMult;
+        this.applyAttackBonus(playerId, tech.effect.attackMult);
       }
-      if (tech.efecto.armaduraMult) {
-        p.bonus.armadura += tech.efecto.armaduraMult;
-        this.applyArmorBonus(playerId, tech.efecto.armaduraMult);
+      if (tech.effect.armorMult) {
+        p.bonus.armor += tech.effect.armorMult;
+        this.applyArmorBonus(playerId, tech.effect.armorMult);
       }
-      if (tech.efecto.recoleccionMult) {
+      if (tech.effect.gatheringMult) {
         for (const k of RESOURCE_KEYS) {
-          const v = tech.efecto.recoleccionMult[k];
+          const v = tech.effect.gatheringMult[k];
           if (v) {
-            p.bonus.recoleccion[k] = (p.bonus.recoleccion[k] ?? 0) + v;
+            p.bonus.gathering[k] = (p.bonus.gathering[k] ?? 0) + v;
             this.applyGatherBonus(playerId, k, v);
           }
         }
       }
-      if (tech.efecto.capacidadBonus) {
-        p.bonus.carry += tech.efecto.capacidadBonus;
+      if (tech.effect.capacityBonus) {
+        p.bonus.carry += tech.effect.capacityBonus;
         for (const u of this.units.values()) {
-          if (u.owner === playerId && u.kind === UnitKind.OBRERO) u.setCarryCapacity(u.maxCarry + tech.efecto.capacidadBonus);
+          if (u.owner === playerId && u.kind === UnitKind.WORKER) u.setCarryCapacity(u.maxCarry + tech.effect.capacityBonus);
         }
       }
-      if (tech.efecto.losBonus) {
-        p.bonus.los += tech.efecto.losBonus;
+      if (tech.effect.losBonus) {
+        p.bonus.los += tech.effect.losBonus;
         for (const u of this.units.values()) {
-          if (u.owner === playerId) u.stats.los += tech.efecto.losBonus;
+          if (u.owner === playerId) u.stats.los += tech.effect.losBonus;
         }
       }
-      if (tech.efecto.rangeBonus) {
-        p.bonus.rango += tech.efecto.rangeBonus;
+      if (tech.effect.rangeBonus) {
+        p.bonus.range += tech.effect.rangeBonus;
         for (const u of this.units.values()) {
-          if (u.owner === playerId && u.stats.rango > 0) u.stats.rango += tech.efecto.rangeBonus;
+          if (u.owner === playerId && u.stats.range > 0) u.stats.range += tech.effect.rangeBonus;
         }
       }
-      if (tech.efecto.velocidadBonus) {
-        p.bonus.velocidad += tech.efecto.velocidadBonus;
+      if (tech.effect.speedBonus) {
+        p.bonus.speed += tech.effect.speedBonus;
         for (const u of this.units.values()) {
-          if (u.owner === playerId) u.stats.velocidad += tech.efecto.velocidadBonus;
+          if (u.owner === playerId) u.stats.speed += tech.effect.speedBonus;
         }
       }
-      if (tech.efecto.precioDescuento) {
-        p.bonus.entrenamiento += tech.efecto.precioDescuento;
+      if (tech.effect.priceDiscount) {
+        p.bonus.training += tech.effect.priceDiscount;
       }
     }
-    this.hud.showToast(`Tecnología completada: ${tech?.nombre ?? techId}`, 'info');
+    this.hud.showToast(`Tecnología completada: ${tech?.name ?? techId}`, 'info');
   };
 
   private applyPlayerBonuses(u: Unit, p: PlayerState): void {
-    u.attackMultiplier += p.bonus.ataque;
-    u.armorMultiplier += p.bonus.armadura;
+    u.attackMultiplier += p.bonus.attack;
+    u.armorMultiplier += p.bonus.armor;
     for (const k of RESOURCE_KEYS) {
-      const v = p.bonus.recoleccion[k];
+      const v = p.bonus.gathering[k];
       if (v) u.gatherMultiplier += v;
     }
     if (p.bonus.carry) u.setCarryCapacity(u.maxCarry + p.bonus.carry);
     u.stats.los += p.bonus.los;
-    if (u.stats.rango > 0) u.stats.rango += p.bonus.rango;
-    u.stats.velocidad += p.bonus.velocidad;
+    if (u.stats.range > 0) u.stats.range += p.bonus.range;
+    u.stats.speed += p.bonus.speed;
   }
 
   private applyAttackBonus(playerId: number, mult: number): void {
@@ -1624,7 +1624,7 @@ export class Game {
   }
   private applyGatherBonus(playerId: number, _res: keyof Resources, mult: number): void {
     for (const u of this.units.values()) {
-      if (u.owner === playerId && u.kind === UnitKind.OBRERO) u.gatherMultiplier += mult;
+      if (u.owner === playerId && u.kind === UnitKind.WORKER) u.gatherMultiplier += mult;
     }
   }
 
@@ -1632,7 +1632,7 @@ export class Game {
 
   canAdvanceEra(player: number): { ok: boolean; reason?: string } {
     const p = this.players[player];
-    if (p.era >= Era.CONTEMPORANEO) return { ok: false, reason: 'Era máxima' };
+    if (p.era >= Era.CONTEMPORARY) return { ok: false, reason: 'Era máxima' };
     const def = ERA_DEFS[p.era];
     if (!def.advanceCost) return { ok: false, reason: 'Sin coste' };
     for (const k of RESOURCE_KEYS) {
@@ -1640,7 +1640,7 @@ export class Game {
         return { ok: false, reason: 'Recursos insuficientes' };
       }
     }
-    const count = [...this.buildings.values()].filter((b) => b.owner === player && b.constructionComplete && (b.kind === BuildingKind.CENTRO || b.kind === BuildingKind.FORTALEZA || b.kind === BuildingKind.MERCADO || b.kind === BuildingKind.INSTITUTO)).length;
+    const count = [...this.buildings.values()].filter((b) => b.owner === player && b.constructionComplete && (b.kind === BuildingKind.CENTER || b.kind === BuildingKind.FORTRESS || b.kind === BuildingKind.MARKET || b.kind === BuildingKind.INSTITUTE)).length;
     if (count < def.advanceRequiredBuildings) {
       return { ok: false, reason: `Necesitas ${def.advanceRequiredBuildings} edificio(s) de avance` };
     }
@@ -1667,7 +1667,7 @@ export class Game {
     }
     // modernizar unidades en el campo
     this.modernizeUnits(player);
-    this.hud.showToast(`¡Avanzaste a la ${ERA_DEFS[p.era].nombre}!`, 'success');
+    this.hud.showToast(`¡Avanzaste a la ${ERA_DEFS[p.era].name}!`, 'success');
     this.audio.setEra(p.era);
     this.audio.eraAdvance();
     this.camera.addShake(0.4);
@@ -1764,7 +1764,7 @@ export class Game {
       let used = 0;
       for (const u of this.units.values()) {
         if (u.owner === p.id && !u.dead && u.garrisonedIn === null) {
-          used += u.stats.poblacion;
+          used += u.stats.population;
         }
       }
       p.populationUsed = used;
@@ -1786,7 +1786,7 @@ export class Game {
     if (this.mission) return;
     for (const p of this.players) {
       if (!p.alive) continue;
-      const hasCenter = [...this.buildings.values()].some((b) => b.owner === p.id && b.kind === BuildingKind.CENTRO && !b.dead);
+      const hasCenter = [...this.buildings.values()].some((b) => b.owner === p.id && b.kind === BuildingKind.CENTER && !b.dead);
       if (!hasCenter) {
         p.alive = false;
         bus.emit('player:defeat', { player: p.id });
@@ -1917,7 +1917,7 @@ export class Game {
   private alerted = false;
 
   private checkBaseThreat(): void {
-    const center = [...this.buildings.values()].find((b) => b.owner === 0 && b.kind === BuildingKind.CENTRO && !b.dead);
+    const center = [...this.buildings.values()].find((b) => b.owner === 0 && b.kind === BuildingKind.CENTER && !b.dead);
     if (!center) {
       this.alerted = false;
       return;
@@ -1934,7 +1934,7 @@ export class Game {
     if (threat && !this.alerted) {
       this.alerted = true;
       this.audio.alarm();
-      bus.emit('alert', { icono: '🚨', texto: '¡Tu base está bajo ataque!', x: center.pos.x, z: center.pos.z, warn: true });
+      bus.emit('alert', { icon: '🚨', text: '¡Tu base está bajo ataque!', x: center.pos.x, z: center.pos.z, warn: true });
       this.camera.focusOn(center.pos.x, center.pos.z);
     } else if (!threat && this.alerted) {
       this.alerted = false;
@@ -2006,5 +2006,5 @@ export class Game {
 function buildModelForGhost(kind: BuildingKind, ctx: BuildContext): THREE.Group {
   const def = BUILDING_DEFS[kind];
   const modelType = Object.values(def.eraModel)[0];
-  return buildModel({ type: modelType?.type ?? 'centro_vapor' }, ctx);
+  return buildModel({ type: modelType?.type ?? 'center_steam' }, ctx);
 }

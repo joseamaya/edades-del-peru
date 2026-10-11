@@ -41,7 +41,7 @@ test('el obrero tiene un pivote de carga oculto al inicio', async ({ page }) => 
 
   const info = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    const w = [...g.units.values()].find((u: any) => u.kind === 'obrero' && u.owner === 0);
+    const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
     if (!w) return null;
     let carry: any = null;
     w.view.group.traverse((o: any) => {
@@ -61,7 +61,7 @@ test('el obrero anima el brazo al recolectar', async ({ page }) => {
 
   const armed = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    const w = [...g.units.values()].find((u: any) => u.kind === 'obrero' && u.owner === 0);
+    const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
     const node = [...g.resourceNodes.values()][0];
     if (!w || !node || !w.armR) return false;
     const nx = node.pos.x + 1.5;
@@ -76,7 +76,7 @@ test('el obrero anima el brazo al recolectar', async ({ page }) => {
     await page.waitForTimeout(120);
     const r = await page.evaluate(() => {
       const g = (window as unknown as { game: any }).game;
-      const w = [...g.units.values()].find((u: any) => u.kind === 'obrero' && u.owner === 0);
+      const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
       return w?.armR ? w.armR.rotation.x.toFixed(3) : '0';
     });
     samples.add(r);
@@ -107,7 +107,7 @@ test('no permite colocar sin obreros seleccionados', async ({ page }) => {
     g.selectedUnits = [];
     g.selectedBuilding = null;
     g.buildingMode = null;
-    g.startPlacement('vivienda');
+    g.startPlacement('house');
     return g.buildingMode;
   });
 
@@ -123,8 +123,8 @@ test('los obreros seleccionados construyen y completan la obra', async ({ page }
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     g.paused = false;
-    const w = [...g.units.values()].find((u: any) => u.kind === 'obrero' && u.owner === 0);
-    const center = [...g.buildings.values()].find((b: any) => b.kind === 'centro' && b.owner === 0);
+    const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
+    const center = [...g.buildings.values()].find((b: any) => b.kind === 'center' && b.owner === 0);
     const x = center.pos.x + 12;
     const z = center.pos.z + 6;
     // acercar al obrero para que llegue rápido
@@ -132,7 +132,7 @@ test('los obreros seleccionados construyen y completan la obra', async ({ page }
     g.selectedUnits = [w.id];
     g.selectedBuilding = null;
     const beforeIds = new Set([...g.buildings.keys()]);
-    g.startPlacement('vivienda');
+    g.startPlacement('house');
     g.commitPlacement(x, z);
     const bld = [...g.buildings.values()].find((b: any) => !beforeIds.has(b.id));
     const queued = w.orderQueue.map((o: any) => o.kind);
@@ -163,7 +163,7 @@ test('el minimapa emite una orden de mover al hacer clic derecho', async ({ page
 
   const order = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    const w = [...g.units.values()].find((u: any) => u.kind === 'obrero' && u.owner === 0);
+    const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
     g.selectedUnits = [w.id];
     w.clearOrders();
     g.commandMoveToWorld(w.pos.x + 6, w.pos.z + 6);
@@ -182,7 +182,7 @@ test('el clic derecho aterriza la orden bajo el cursor en terreno elevado', asyn
     const g = w.game;
     const size = g.settings.mapSize;
     const c = g.camera.getTarget();
-    const worker = [...g.units.values()].find((u: any) => u.kind === 'obrero' && u.owner === 0);
+    const worker = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
     for (let i = 0; i < 20000; i++) {
       const x = c.x + (Math.random() - 0.5) * 90;
       const z = c.z + (Math.random() - 0.5) * 90;
@@ -207,7 +207,7 @@ test('el clic derecho aterriza la orden bajo el cursor en terreno elevado', asyn
 
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    const w = [...g.units.values()].find((u: any) => u.kind === 'obrero' && u.owner === 0);
+    const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
     g.selectedUnits = [w.id];
     w.clearOrders();
   });
@@ -215,7 +215,7 @@ test('el clic derecho aterriza la orden bajo el cursor en terreno elevado', asyn
   await page.waitForTimeout(150);
   const target = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    const w = [...g.units.values()].find((u: any) => u.kind === 'obrero' && u.owner === 0);
+    const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
     return w.orderQueue[0] ? w.orderQueue[0].target : null;
   });
   expect(target).not.toBeNull();
@@ -248,19 +248,19 @@ test('la Huaca Sagrada es construible en cualquier periodo en modo maravilla', a
 
   const r = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    g.settings.victoryMode = 'maravilla';
-    const inMaravilla = g.canBuildKind('maravilla');
-    g.settings.victoryMode = 'conquista';
-    const inConquista = g.canBuildKind('maravilla');
-    const canteraEnPeriodo = g.canBuildKind('refineria');
-    return { inMaravilla, inConquista, canteraEnPeriodo, era: g.players[0].era };
+    g.settings.victoryMode = 'wonder';
+    const inWonder = g.canBuildKind('wonder');
+    g.settings.victoryMode = 'conquest';
+    const inConquest = g.canBuildKind('wonder');
+    const quarryInPeriod = g.canBuildKind('refinery');
+    return { inWonder, inConquest, quarryInPeriod, era: g.players[0].era };
   });
 
-  expect(r.inMaravilla).toBe(true);
-  expect(r.inConquista).toBe(false);
+  expect(r.inWonder).toBe(true);
+  expect(r.inConquest).toBe(false);
   // en un periodo temprano (era 1) la Cantera sigue bloqueada
   expect(r.era).toBeLessThan(2);
-  expect(r.canteraEnPeriodo).toBe(false);
+  expect(r.quarryInPeriod).toBe(false);
 });
 
 test('oculta Piedra y Cantera en periodos que no pueden obtenerlas', async ({ page }) => {
@@ -272,10 +272,10 @@ test('oculta Piedra y Cantera en periodos que no pueden obtenerlas', async ({ pa
     const g = (window as unknown as { game: any }).game;
     return {
       era: g.players[0].era,
-      piedraDisplay: document.getElementById('ed-res-energia')?.style.display ?? '',
+      stoneDisplay: document.getElementById('ed-res-energia')?.style.display ?? '',
     };
   });
   expect(early.era).toBeLessThan(2);
-  expect(early.piedraDisplay).toBe('none');
+  expect(early.stoneDisplay).toBe('none');
 });
 

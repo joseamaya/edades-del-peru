@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { MISSIONS } from '../src/campaign/defs/campaign';
-import { EDUCATIVO, PROLOGO, getEducativo } from '../src/campaign/defs/educativo';
-import { getPeriodo } from '../src/model/defs/periodos';
+import { EDUCATIONAL, PROLOGUE, getEducational } from '../src/campaign/defs/educativo';
+import { getPeriod } from '../src/model/defs/periodos';
 import { getCiv } from '../src/model/defs/civs';
 
 describe('contenido educativo de la campaña', () => {
   it('el prólogo no está vacío', () => {
-    expect(PROLOGO.length).toBeGreaterThan(40);
+    expect(PROLOGUE.length).toBeGreaterThan(40);
   });
 
   it('los ids de misión son únicos', () => {
@@ -16,26 +16,26 @@ describe('contenido educativo de la campaña', () => {
 
   it('cada misión tiene contenido educativo con fuentes citadas', () => {
     for (const mis of MISSIONS) {
-      const edu = getEducativo(mis.id);
+      const edu = getEducational(mis.id);
       expect(edu, `falta contenido educativo para ${mis.id}`).toBeDefined();
-      expect(edu!.contexto.length).toBeGreaterThan(20);
-      expect(edu!.sabiasQue.length).toBeGreaterThan(10);
-      expect(edu!.fuentes.length).toBeGreaterThan(0);
-      for (const f of edu!.fuentes) expect(f.texto.length).toBeGreaterThan(3);
+      expect(edu!.context.length).toBeGreaterThan(20);
+      expect(edu!.didYouKnow.length).toBeGreaterThan(10);
+      expect(edu!.sources.length).toBeGreaterThan(0);
+      for (const f of edu!.sources) expect(f.text.length).toBeGreaterThan(3);
     }
   });
 
   it('no hay entradas educativas huérfanas', () => {
-    for (const id of Object.keys(EDUCATIVO)) {
+    for (const id of Object.keys(EDUCATIONAL)) {
       expect(MISSIONS.some((m) => m.id === id), `entrada sin misión: ${id}`).toBe(true);
     }
   });
 
   it('cada misión referencia un periodo y civilizaciones válidas', () => {
     for (const mis of MISSIONS) {
-      expect(getPeriodo(mis.periodo), `periodo inválido en ${mis.id}`).toBeDefined();
-      expect(getCiv(mis.civJugador).id).toBe(mis.civJugador);
-      expect(getCiv(mis.civEnemigo).id).toBe(mis.civEnemigo);
+      expect(getPeriod(mis.period), `periodo inválido en ${mis.id}`).toBeDefined();
+      expect(getCiv(mis.playerCiv).id).toBe(mis.playerCiv);
+      expect(getCiv(mis.enemyCiv).id).toBe(mis.enemyCiv);
     }
   });
 

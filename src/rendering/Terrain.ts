@@ -47,8 +47,8 @@ export class Terrain {
     this.resolution = resolution;
     this.rng = new RNG(seed * 7919 + 17);
     this.textures = getGroundTextures();
-    this.arid = mapType === 'costa' ? 0.9 : mapType === 'estepas' ? 0.55 : mapType === 'altiplano' ? 0.35 : 0;
-    this.veg = mapType === 'selva' ? 1 : mapType === 'andes' ? 0.6 : mapType === 'altiplano' ? 0.15 : 0;
+    this.arid = mapType === 'coast' ? 0.9 : mapType === 'estepas' ? 0.55 : mapType === 'altiplano' ? 0.35 : 0;
+    this.veg = mapType === 'jungle' ? 1 : mapType === 'andes' ? 0.6 : mapType === 'altiplano' ? 0.15 : 0;
     this.heightMap = new Float32Array((resolution + 1) * (resolution + 1));
     this.moistureMap = new Float32Array((resolution + 1) * (resolution + 1));
     this.generate(mapType);
@@ -115,7 +115,7 @@ export class Terrain {
           base += smoothstep(0.62, 1.0, dist) * 0.5;
         } else if (mapType === 'estepas') {
           base = fbm2(nx * 1.0 + 7, nz * 1.0, 3) * 0.6 + 0.42;
-        } else if (mapType === 'costa') {
+        } else if (mapType === 'coast') {
           // litoral: tierra firme (valle) en todo el interior y mar en el marco del mapa
           base = fbm2(nx * 1.0 + 13, nz * 1.0, 4) * 0.16 + 0.74;
           base -= smoothstep(0.9, 1.02, border) * 1.0;
@@ -124,7 +124,7 @@ export class Terrain {
           // meseta alta (puna) y relativamente plana; lagos tallados por ríos
           base = fbm2(nx * 0.9 + 21, nz * 0.9, 3) * 0.14 + 0.64;
           mtnAmp = 8;
-        } else if (mapType === 'selva') {
+        } else if (mapType === 'jungle') {
           // ceja de selva: relieve medio, ríos
           base = fbm2(nx * 1.1 + 31, nz * 1.1, 3) * 0.25 + 0.66;
           base -= smoothstep(0.92, 1.06, border) * 0.7;

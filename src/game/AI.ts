@@ -20,7 +20,7 @@ export class AI {
   private game: Game;
   private playerId: number;
   private rng: RNG;
-  private mult: { econ: number; agresion: number; reaction: number };
+  private mult: { econ: number; aggression: number; reaction: number };
   private attackTimer = 60;
   private defendTimer = 0;
   private economyTimer = 0;
@@ -54,7 +54,7 @@ export class AI {
       this.buildQueues();
     }
     if (this.attackTimer <= 0) {
-      this.attackTimer = this.rng.range(50, 95) / Math.max(0.4, this.mult.agresion);
+      this.attackTimer = this.rng.range(50, 95) / Math.max(0.4, this.mult.aggression);
       this.launchAttack();
     }
     this.combatTimer -= dt;
@@ -83,22 +83,22 @@ export class AI {
   }
 
   private center(): Building | null {
-    return this.myBuildings().find((b) => b.kind === BuildingKind.CENTRO) ?? null;
+    return this.myBuildings().find((b) => b.kind === BuildingKind.CENTER) ?? null;
   }
 
   private manageWorkers(): void {
-    const workers = this.myUnits().filter((u) => u.kind === UnitKind.OBRERO);
+    const workers = this.myUnits().filter((u) => u.kind === UnitKind.WORKER);
     const busy = workers.filter((w) => w.orderQueue[0]?.kind === OrderKind.GATHER || w.orderQueue[0]?.kind === OrderKind.BUILD);
     const idle = workers.filter((w) => !w.isBusy());
     // entrenar obreros si falta mano de obra
     const center = this.center();
     const desired = Math.min(6 + this.p.era * 2, 14);
     if (center && workers.length < desired && center.constructionComplete) {
-      if (this.canAfford({ comida: 50, madera: 20 })) {
+      if (this.canAfford({ food: 50, wood: 20 })) {
         const queued = center.productionQueue.length;
         if (queued === 0) {
-          if (this.game.spendResource(this.playerId, { comida: 50, madera: 20, acero: 0, energia: 0 })) {
-            center.queueUnit(UnitKind.OBRERO);
+          if (this.game.spendResource(this.playerId, { food: 50, wood: 20, silver: 0, stone: 0 })) {
+            center.queueUnit(UnitKind.WORKER);
           }
         }
       }
@@ -125,23 +125,23 @@ export class AI {
     // las granjas propias completas cuentan como nodos de comida
     for (const b of this.myBuildings()) {
       if (b.isFarm && b.constructionComplete && b.foodAmount > 0) {
-        nodes.push({ id: b.id, pos: b.pos, amount: b.foodAmount, resource: 'comida', farm: b } as any);
+        nodes.push({ id: b.id, pos: b.pos, amount: b.foodAmount, resource: 'food', farm: b } as any);
       }
     }
     // decide recurso más necesario
-    let bestRes: keyof Resources = 'comida';
+    let bestRes: keyof Resources = 'food';
     let bestScore = Infinity;
-    const workers = this.myUnits().filter((u) => u.kind === UnitKind.OBRERO);
-    const counts: Record<string, number> = { comida: 0, madera: 0, acero: 0, energia: 0 };
+    const workers = this.myUnits().filter((u) => u.kind === UnitKind.WORKER);
+    const counts: Record<string, number> = { food: 0, wood: 0, silver: 0, stone: 0 };
     for (const u of workers) {
       const n = u.orderQueue[0]?.entityId ? this.game.resourceNodes.get(u.orderQueue[0].entityId) : null;
       if (n) counts[n.resource]++;
     }
     const priority: Partial<Record<keyof Resources, number>> = {
-      comida: p.resources.comida < 350 ? 1.4 : 0.8,
-      madera: p.resources.madera < 300 ? 1.4 : 0.9,
-      acero: p.resources.acero < 250 ? 1.3 : 1.0,
-      energia: p.era >= Era.TAHUANTINSUYO && p.resources.energia < 200 ? 1.3 : 0.5,
+      food: p.resources.food < 350 ? 1.4 : 0.8,
+      wood: p.resources.wood < 300 ? 1.4 : 0.9,
+      silver: p.resources.silver < 250 ? 1.3 : 1.0,
+      stone: p.era >= Era.TAHUANTINSUYO && p.resources.stone < 200 ? 1.3 : 0.5,
     };
     for (const k of RESOURCE_KEYS) {
       const score = counts[k] / (priority[k] ?? 0.8);
@@ -172,28 +172,28 @@ export class AI {
     const countOf = (k: BuildingKind) => myB.filter((b) => b.kind === k).length;
 
     const buildPlan: { kind: BuildingKind; cost: Resources; priority: number }[] = [];
-    const woodCost = (k: BuildingKind) => getBuildingStats(k, p.era).costo;
+    const woodCost = (k: BuildingKind) => getBuildingStats(k, p.era).cost;
 
-    if (countOf(BuildingKind.VIVIENDA) < 3 + p.era) {
-      buildPlan.push({ kind: BuildingKind.VIVIENDA, cost: woodCost(BuildingKind.VIVIENDA), priority: 100 });
+    if (countOf(BuildingKind.HOUSE) < 3 + p.era) {
+      buildPlan.push({ kind: BuildingKind.HOUSE, cost: woodCost(BuildingKind.HOUSE), priority: 100 });
     }
-    if (!has(BuildingKind.MOLINO)) buildPlan.push({ kind: BuildingKind.MOLINO, cost: woodCost(BuildingKind.MOLINO), priority: 90 });
-    if (!has(BuildingKind.SERRERIA)) buildPlan.push({ kind: BuildingKind.SERRERIA, cost: woodCost(BuildingKind.SERRERIA), priority: 85 });
-    if (!has(BuildingKind.FUNDICION)) buildPlan.push({ kind: BuildingKind.FUNDICION, cost: woodCost(BuildingKind.FUNDICION), priority: 80 });
-    if (p.era >= Era.TAHUANTINSUYO && !has(BuildingKind.REFINERIA)) buildPlan.push({ kind: BuildingKind.REFINERIA, cost: woodCost(BuildingKind.REFINERIA), priority: 70 });
-    if (!has(BuildingKind.CUARTEL)) buildPlan.push({ kind: BuildingKind.CUARTEL, cost: woodCost(BuildingKind.CUARTEL), priority: 75 });
-    if (!has(BuildingKind.POLVORIN)) buildPlan.push({ kind: BuildingKind.POLVORIN, cost: woodCost(BuildingKind.POLVORIN), priority: 65 });
-    if (p.era >= Era.ESTADOS_REGIONALES && !has(BuildingKind.GARAJE)) buildPlan.push({ kind: BuildingKind.GARAJE, cost: woodCost(BuildingKind.GARAJE), priority: 60 });
-    if (p.era >= Era.ESTADOS_REGIONALES && !has(BuildingKind.FABRICA)) buildPlan.push({ kind: BuildingKind.FABRICA, cost: woodCost(BuildingKind.FABRICA), priority: 50 });
-    if (p.era >= Era.ESTADOS_REGIONALES && !has(BuildingKind.INSTITUTO)) buildPlan.push({ kind: BuildingKind.INSTITUTO, cost: woodCost(BuildingKind.INSTITUTO), priority: 55 });
-    if (p.era >= Era.ESTADOS_REGIONALES && !has(BuildingKind.FORTALEZA)) buildPlan.push({ kind: BuildingKind.FORTALEZA, cost: woodCost(BuildingKind.FORTALEZA), priority: 45 });
-    if (p.era >= Era.ESTADOS_REGIONALES && countOf(BuildingKind.GRANJA) < 4) buildPlan.push({ kind: BuildingKind.GRANJA, cost: woodCost(BuildingKind.GRANJA), priority: 40 });
-    if (p.era >= Era.CONTEMPORANEO && !has(BuildingKind.MARAVILLA) && this.game.settings.victoryMode === 'maravilla') {
-      buildPlan.push({ kind: BuildingKind.MARAVILLA, cost: woodCost(BuildingKind.MARAVILLA), priority: 30 });
+    if (!has(BuildingKind.MILL)) buildPlan.push({ kind: BuildingKind.MILL, cost: woodCost(BuildingKind.MILL), priority: 90 });
+    if (!has(BuildingKind.SAWMILL)) buildPlan.push({ kind: BuildingKind.SAWMILL, cost: woodCost(BuildingKind.SAWMILL), priority: 85 });
+    if (!has(BuildingKind.SMELTER)) buildPlan.push({ kind: BuildingKind.SMELTER, cost: woodCost(BuildingKind.SMELTER), priority: 80 });
+    if (p.era >= Era.TAHUANTINSUYO && !has(BuildingKind.REFINERY)) buildPlan.push({ kind: BuildingKind.REFINERY, cost: woodCost(BuildingKind.REFINERY), priority: 70 });
+    if (!has(BuildingKind.BARRACKS)) buildPlan.push({ kind: BuildingKind.BARRACKS, cost: woodCost(BuildingKind.BARRACKS), priority: 75 });
+    if (!has(BuildingKind.ARSENAL)) buildPlan.push({ kind: BuildingKind.ARSENAL, cost: woodCost(BuildingKind.ARSENAL), priority: 65 });
+    if (p.era >= Era.REGIONAL_STATES && !has(BuildingKind.STABLE)) buildPlan.push({ kind: BuildingKind.STABLE, cost: woodCost(BuildingKind.STABLE), priority: 60 });
+    if (p.era >= Era.REGIONAL_STATES && !has(BuildingKind.FACTORY)) buildPlan.push({ kind: BuildingKind.FACTORY, cost: woodCost(BuildingKind.FACTORY), priority: 50 });
+    if (p.era >= Era.REGIONAL_STATES && !has(BuildingKind.INSTITUTE)) buildPlan.push({ kind: BuildingKind.INSTITUTE, cost: woodCost(BuildingKind.INSTITUTE), priority: 55 });
+    if (p.era >= Era.REGIONAL_STATES && !has(BuildingKind.FORTRESS)) buildPlan.push({ kind: BuildingKind.FORTRESS, cost: woodCost(BuildingKind.FORTRESS), priority: 45 });
+    if (p.era >= Era.REGIONAL_STATES && countOf(BuildingKind.FARM) < 4) buildPlan.push({ kind: BuildingKind.FARM, cost: woodCost(BuildingKind.FARM), priority: 40 });
+    if (p.era >= Era.CONTEMPORARY && !has(BuildingKind.WONDER) && this.game.settings.victoryMode === 'wonder') {
+      buildPlan.push({ kind: BuildingKind.WONDER, cost: woodCost(BuildingKind.WONDER), priority: 30 });
     }
 
     // construye el más prioritario que pueda pagar
-    buildPlan.sort((a, b) => b.priority - a.priority || b.cost.madera - a.cost.madera);
+    buildPlan.sort((a, b) => b.priority - a.priority || b.cost.wood - a.cost.wood);
     const constructing = myB.some((b) => !b.constructionComplete);
     if (!constructing) {
       for (const plan of buildPlan) {
@@ -217,10 +217,10 @@ export class AI {
     const stats = getBuildingStats(kind, this.p.era);
     for (let i = 0; i < 40; i++) {
       const ang = this.rng.range(0, Math.PI * 2);
-      const r = this.rng.range(stats.tamano + 3, 12);
+      const r = this.rng.range(stats.size + 3, 12);
       const x = center.pos.x + Math.cos(ang) * r;
       const z = center.pos.z + Math.sin(ang) * r;
-      if (this.game.canPlace(x, z, stats.tamano)) return { x, z };
+      if (this.game.canPlace(x, z, stats.size)) return { x, z };
     }
     return null;
   }
@@ -228,19 +228,19 @@ export class AI {
   private placeAI(kind: BuildingKind, x: number, z: number): void {
     const p = this.p;
     const stats = getBuildingStats(kind, p.era);
-    if (!this.game.spendResource(this.playerId, stats.costo)) return;
+    if (!this.game.spendResource(this.playerId, stats.cost)) return;
     const ctx = this.game.makeBuildContext(this.playerId);
     const b = new Building(kind, this.playerId, p.era, ctx);
     b.pos.set(x, this.game.terrain.getHeight(x, z), z);
     b.attach(this.game.scene);
     b.beginConstruction();
     this.game.buildings.set(b.id, b);
-    const handle = { x, z, radius: stats.tamano * 0.6 };
+    const handle = { x, z, radius: stats.size * 0.6 };
     this.game.obstacleHandles.set(b.id, handle);
     this.game.pathfinder.addObstacle(handle);
     // asignar obreros (priorizando a los que recolectan si hace falta)
-    const gatherers = this.myUnits().filter((u) => u.kind === UnitKind.OBRERO && u.orderQueue[0]?.kind === OrderKind.GATHER);
-    const idlers = this.myUnits().filter((u) => u.kind === UnitKind.OBRERO && !u.isBusy());
+    const gatherers = this.myUnits().filter((u) => u.kind === UnitKind.WORKER && u.orderQueue[0]?.kind === OrderKind.GATHER);
+    const idlers = this.myUnits().filter((u) => u.kind === UnitKind.WORKER && !u.isBusy());
     const builders = [...idlers, ...gatherers].slice(0, 3);
     for (const w of builders) {
       w.issueOrder({ kind: OrderKind.BUILD, entityId: b.id }, true);
@@ -250,20 +250,20 @@ export class AI {
   private trainMilitary(): void {
     const p = this.p;
     const myB = this.myBuildings();
-    const barracks = myB.find((b) => b.kind === BuildingKind.CUARTEL && b.constructionComplete);
-    const range = myB.find((b) => b.kind === BuildingKind.POLVORIN && b.constructionComplete);
-    const stable = myB.find((b) => b.kind === BuildingKind.GARAJE && b.constructionComplete);
-    const factory = myB.find((b) => b.kind === BuildingKind.FABRICA && b.constructionComplete);
+    const barracks = myB.find((b) => b.kind === BuildingKind.BARRACKS && b.constructionComplete);
+    const range = myB.find((b) => b.kind === BuildingKind.ARSENAL && b.constructionComplete);
+    const stable = myB.find((b) => b.kind === BuildingKind.STABLE && b.constructionComplete);
+    const factory = myB.find((b) => b.kind === BuildingKind.FACTORY && b.constructionComplete);
 
-    const militaryCount = this.myUnits().filter((u) => u.kind !== UnitKind.OBRERO && u.kind !== UnitKind.EXPLORADOR).length;
+    const militaryCount = this.myUnits().filter((u) => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT).length;
     const target = 6 + p.era * 5;
 
     const want: UnitKind[] = [];
-    if (barracks && this.canAfford(getUnitStats(UnitKind.SOLDADO, p.era).costo)) want.push(UnitKind.SOLDADO);
-    if (range && p.era >= Era.ESTADOS_REGIONALES && this.canAfford(getUnitStats(UnitKind.FUSILERO, p.era).costo)) want.push(UnitKind.FUSILERO);
-    if (range && this.canAfford(getUnitStats(UnitKind.MOSQUETERO, p.era).costo)) want.push(UnitKind.MOSQUETERO);
-    if (stable && p.era >= Era.TAHUANTINSUYO && this.canAfford(getUnitStats(UnitKind.CABALLERIA, p.era).costo)) want.push(UnitKind.CABALLERIA);
-    if (factory && p.era >= Era.VIRREINATO && this.canAfford(getUnitStats(UnitKind.ARTILLERIA, p.era).costo)) want.push(UnitKind.ARTILLERIA);
+    if (barracks && this.canAfford(getUnitStats(UnitKind.SOLDIER, p.era).cost)) want.push(UnitKind.SOLDIER);
+    if (range && p.era >= Era.REGIONAL_STATES && this.canAfford(getUnitStats(UnitKind.RIFLEMAN, p.era).cost)) want.push(UnitKind.RIFLEMAN);
+    if (range && this.canAfford(getUnitStats(UnitKind.MUSKETEER, p.era).cost)) want.push(UnitKind.MUSKETEER);
+    if (stable && p.era >= Era.TAHUANTINSUYO && this.canAfford(getUnitStats(UnitKind.CAVALRY, p.era).cost)) want.push(UnitKind.CAVALRY);
+    if (factory && p.era >= Era.VICEROYALTY && this.canAfford(getUnitStats(UnitKind.ARTILLERY, p.era).cost)) want.push(UnitKind.ARTILLERY);
 
     if (militaryCount < target && want.length > 0) {
       const bld = barracks ?? range ?? stable ?? factory;
@@ -278,10 +278,10 @@ export class AI {
         if (trainable.length === 0) return;
         const unit = this.rng.pick(trainable);
         const stats = getUnitStats(unit, p.era);
-        if (this.canAfford(stats.costo)) {
-          if (this.game.spendResource(this.playerId, stats.costo)) {
+        if (this.canAfford(stats.cost)) {
+          if (this.game.spendResource(this.playerId, stats.cost)) {
             if (!bld.queueUnit(unit)) {
-              this.game.addResource(this.playerId, stats.costo);
+              this.game.addResource(this.playerId, stats.cost);
             }
           }
         }
@@ -292,12 +292,12 @@ export class AI {
   private researchCheck(): void {
     const p = this.p;
     for (const tech of TECHS) {
-      if (tech.eraMinima > p.era || p.techs.has(tech.id)) continue;
-      if (tech.requisitos && !tech.requisitos.every((r) => p.techs.has(r))) continue;
-      const bld = this.myBuildings().find((b) => b.kind === tech.edificio && b.constructionComplete);
+      if (tech.minEra > p.era || p.techs.has(tech.id)) continue;
+      if (tech.requirements && !tech.requirements.every((r) => p.techs.has(r))) continue;
+      const bld = this.myBuildings().find((b) => b.kind === tech.building && b.constructionComplete);
       if (!bld || bld.researchQueue.length > 0) continue;
-      if (this.canAfford(tech.costo)) {
-        if (this.game.spendResource(this.playerId, tech.costo)) {
+      if (this.canAfford(tech.cost)) {
+        if (this.game.spendResource(this.playerId, tech.cost)) {
           bld.queueTech(tech.id);
         }
         break;
@@ -307,9 +307,9 @@ export class AI {
 
   private advanceEraCheck(): void {
     // Partidas bloqueadas por periodo: la IA no moderniza ni avanza de era.
-    if (this.game.settings.periodo !== undefined) return;
+    if (this.game.settings.period !== undefined) return;
     const p = this.p;
-    if (p.era >= Era.CONTEMPORANEO) return;
+    if (p.era >= Era.CONTEMPORARY) return;
     const def = ERA_DEFS[p.era];
     const check = this.game.canAdvanceEra(this.playerId);
     if (check.ok && this.canAfford(def.advanceCost ?? {})) {
@@ -319,11 +319,11 @@ export class AI {
 
   private microCombat(dt: number): void {
     // focus fire: atacar al objetivo con menor vida dentro de rango
-    const soldiers = this.myUnits().filter((u) => u.kind !== UnitKind.OBRERO && u.kind !== UnitKind.EXPLORADOR);
+    const soldiers = this.myUnits().filter((u) => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT);
     for (const s of soldiers) {
       if (s.orderQueue[0]?.kind !== OrderKind.ATTACK) {
         const enemy = this.findEnemyInRange(s);
-        if (enemy && this.mult.agresion > 0.6) {
+        if (enemy && this.mult.aggression > 0.6) {
           s.issueOrder({ kind: OrderKind.ATTACK, entityId: enemy.id }, true);
         }
       }
@@ -334,7 +334,7 @@ export class AI {
   private findEnemyInRange(s: Unit): Unit | null {
     let best: Unit | null = null;
     let bestD = Infinity;
-    const range = s.stats.rango > 0 ? s.stats.rango * 1.2 : 8;
+    const range = s.stats.range > 0 ? s.stats.range * 1.2 : 8;
     const nearby = this.game.enemiesNear(s.pos.x, s.pos.z, range, this.playerId);
     for (const u of nearby) {
       const d = distance2D(s.pos.x, s.pos.z, u.pos.x, u.pos.z);
@@ -364,7 +364,7 @@ export class AI {
   }
 
   private launchAttack(): void {
-    const soldiers = this.myUnits().filter((u) => u.kind !== UnitKind.OBRERO && u.kind !== UnitKind.EXPLORADOR);
+    const soldiers = this.myUnits().filter((u) => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT);
     const threshold = 4 + this.p.era * 2;
     if (soldiers.length < threshold) return;
     const target = this.findEnemyCenter();

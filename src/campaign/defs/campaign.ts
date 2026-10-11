@@ -1,4 +1,4 @@
-import { Era, CivId, Periodo, UnitKind, BuildingKind } from '../../core/types';
+import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../core/types';
 import { MissionDef } from '../types';
 
 export const CAMPAIGN_TITLE = 'La Senda del Sol';
@@ -7,325 +7,325 @@ export const CAMPAIGN_SUBTITLE = 'Nueve escenarios de la historia del Perú, de 
 export const MISSIONS: MissionDef[] = [
   {
     id: 'm1_caral',
-    titulo: 'La Ciudad Sagrada',
-    subtitulo: 'Arcaico Tardío · c. 3000 a.C.',
-    historia:
+    title: 'La Ciudad Sagrada',
+    subtitle: 'Arcaico Tardío · c. 3000 a.C.',
+    history:
       'En el valle de Supe, entre el océano y los Andes, nace la primera ciudad de América. Caral se levanta con canales, plazas y pirámides.\n' +
       'Sostened el asentamiento, comerciad con el litoral de Áspero y defended el valle de los grupos rivales.',
-    victoria:
+    victory:
       'Caral prospera durante siglos como centro de la civilización andina. Su legado guiará a las culturas del Perú durante milenios.',
-    derrota: 'El valle queda en silencio. La primera ciudad de América no llega a consolidarse.',
-    periodo: Periodo.ARCAICO,
+    defeat: 'El valle queda en silencio. La primera ciudad de América no llega a consolidarse.',
+    period: HistoricalPeriod.ARCHAIC,
     tutorial: true,
-    civJugador: CivId.CARAL,
-    civEnemigo: CivId.CARAL,
-    mapa: { seed: 3000, tipo: 'costa', tamano: 128 },
-    horaDia: 'mañana',
-    eraInicial: Era.FORMATIVO,
-    recursosIniciales: { comida: 200, madera: 400, acero: 150, energia: 80 },
-    inicio: {
-      unidades: [{ kind: UnitKind.SOLDADO, dx: -6, dz: 6, tag: 'autoridad', cantidad: 1 }],
+    playerCiv: CivId.CARAL,
+    enemyCiv: CivId.CARAL,
+    map: { seed: 3000, type: 'coast', size: 128 },
+    timeOfDay: 'mañana',
+    startingEra: Era.FORMATIVE,
+    startingResources: { food: 200, wood: 400, silver: 150, stone: 80 },
+    start: {
+      units: [{ kind: UnitKind.SOLDIER, dx: -6, dz: 6, tag: 'autoridad', count: 1 }],
     },
-    enemigo: { activo: true, dificultad: 'facil', agresion: 0.4 },
-    objetivos: [
-      { id: 'obj_food', kind: 'recolectar', resource: 'comida', cantidad: 300, titulo: 'Reúne 300 de comida' },
-      { id: 'obj_survive', kind: 'sobrevivir', time: 360, titulo: 'Sostén el asentamiento 6 minutos' },
-      { id: 'obj_autoridad', kind: 'proteger', entityTag: 'autoridad', titulo: 'Mantén con vida a la autoridad de Caral' },
+    enemy: { active: true, difficulty: 'facil', aggression: 0.4 },
+    objectives: [
+      { id: 'obj_food', kind: 'gather', resource: 'food', count: 300, title: 'Reúne 300 de comida' },
+      { id: 'obj_survive', kind: 'survive', time: 360, title: 'Sostén el asentamiento 6 minutos' },
+      { id: 'obj_autoridad', kind: 'protect', entityTag: 'autoridad', title: 'Mantén con vida a la autoridad de Caral' },
     ],
     triggers: [
-      { id: 't_dial_1', condicion: { tipo: 'tiempo', segundos: 40 }, efectos: [{ tipo: 'dialogo', texto: 'Autoridad: —El río Supe nos da vida. ¡Alzad los templos y tended los canales!' }] },
-      { id: 't_wave_1', condicion: { tipo: 'tiempo', segundos: 140 }, efectos: [{ tipo: 'oleada', owner: 1, unidades: [{ kind: UnitKind.SOLDADO, cantidad: 3 }], pos: { ref: 'jugador', dx: 22, dz: 22 }, radio: 4 }, { tipo: 'dialogo', texto: '¡Grupos rivales al noreste! ¡A las armas!' }] },
-      { id: 't_wave_2', condicion: { tipo: 'tiempo', segundos: 260 }, efectos: [{ tipo: 'oleada', owner: 1, unidades: [{ kind: UnitKind.SOLDADO, cantidad: 4 }], pos: { ref: 'jugador', dx: -20, dz: 24 }, radio: 4 }] },
+      { id: 't_dial_1', condicion: { type: 'time', seconds: 40 }, efectos: [{ type: 'dialogue', text: 'Autoridad: —El río Supe nos da vida. ¡Alzad los templos y tended los canales!' }] },
+      { id: 't_wave_1', condicion: { type: 'time', seconds: 140 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 3 }], pos: { ref: 'jugador', dx: 22, dz: 22 }, radius: 4 }, { type: 'dialogue', text: '¡Grupos rivales al noreste! ¡A las armas!' }] },
+      { id: 't_wave_2', condicion: { type: 'time', seconds: 260 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 4 }], pos: { ref: 'jugador', dx: -20, dz: 24 }, radius: 4 }] },
     ],
   },
   {
     id: 'm2_chavin',
-    titulo: 'El Oráculo de Chavín',
-    subtitulo: 'Horizonte Temprano · c. 900–500 a.C.',
-    historia:
+    title: 'El Oráculo de Chavín',
+    subtitle: 'Horizonte Temprano · c. 900–500 a.C.',
+    history:
       'Chavín de Huántar, a 3180 msnm en el Callejón de Conchucos, es el gran centro ceremonial de los Andes. Peregrinos de lejos traen ofrendas al oráculo.\n' +
       'Sostened el culto frente a la competencia de la costa sur (Paracas) y conservad vuestra influencia.',
-    victoria:
+    victory:
       'La influencia de Chavín se extiende por buena parte de los Andes centrales. Su arte y su culto marcan una época.',
-    derrota: 'El oráculo pierde su prestigio y el centro ceremonial declina antes de tiempo.',
-    periodo: Periodo.HORIZONTE_TEMPRANO,
-    civJugador: CivId.CHAVIN,
-    civEnemigo: CivId.PARACAS,
-    mapa: { seed: 900, tipo: 'andes', tamano: 128 },
-    horaDia: 'mediodía',
-    eraInicial: Era.ESTADOS_REGIONALES,
-    recursosIniciales: { comida: 500, madera: 500, acero: 150, energia: 60 },
-    inicio: {
-      unidades: [{ kind: UnitKind.SOLDADO, dx: -6, dz: 6, tag: 'oraculo', cantidad: 1 }],
+    defeat: 'El oráculo pierde su prestigio y el centro ceremonial declina antes de tiempo.',
+    period: HistoricalPeriod.EARLY_HORIZON,
+    playerCiv: CivId.CHAVIN,
+    enemyCiv: CivId.PARACAS,
+    map: { seed: 900, type: 'andes', size: 128 },
+    timeOfDay: 'mediodía',
+    startingEra: Era.REGIONAL_STATES,
+    startingResources: { food: 500, wood: 500, silver: 150, stone: 60 },
+    start: {
+      units: [{ kind: UnitKind.SOLDIER, dx: -6, dz: 6, tag: 'oraculo', count: 1 }],
     },
-    enemigo: { activo: true, dificultad: 'facil', agresion: 0.5 },
-    objetivos: [
-      { id: 'obj_ofrendas', kind: 'recolectar', resource: 'comida', cantidad: 400, titulo: 'Reúne ofrendas (400 de comida)' },
-      { id: 'obj_survive', kind: 'sobrevivir', time: 420, titulo: 'Sostén el centro ceremonial 7 minutos' },
-      { id: 'obj_oraculo', kind: 'proteger', entityTag: 'oraculo', titulo: 'Mantén a salvo al guardián del oráculo' },
+    enemy: { active: true, difficulty: 'facil', aggression: 0.5 },
+    objectives: [
+      { id: 'obj_ofrendas', kind: 'gather', resource: 'food', count: 400, title: 'Reúne ofrendas (400 de comida)' },
+      { id: 'obj_survive', kind: 'survive', time: 420, title: 'Sostén el centro ceremonial 7 minutos' },
+      { id: 'obj_oraculo', kind: 'protect', entityTag: 'oraculo', title: 'Mantén a salvo al guardián del oráculo' },
     ],
     triggers: [
-      { id: 't_dial_0', condicion: { tipo: 'tiempo', segundos: 20 }, efectos: [{ tipo: 'dialogo', texto: 'Sacerdote: —El oráculo exige ofrendas. ¡Atended a los peregrinos y defended el templo!' }] },
-      { id: 't_wave_1', condicion: { tipo: 'tiempo', segundos: 150 }, efectos: [{ tipo: 'oleada', owner: 1, unidades: [{ kind: UnitKind.SOLDADO, cantidad: 4 }], pos: { ref: 'jugador', dx: 24, dz: -10 }, radio: 5 }] },
-      { id: 't_wave_2', condicion: { tipo: 'tiempo', segundos: 300 }, efectos: [{ tipo: 'oleada', owner: 1, unidades: [{ kind: UnitKind.SOLDADO, cantidad: 5 }, { kind: UnitKind.MOSQUETERO, cantidad: 2 }], pos: { ref: 'jugador', dx: -18, dz: 22 }, radio: 6 }] },
+      { id: 't_dial_0', condicion: { type: 'time', seconds: 20 }, efectos: [{ type: 'dialogue', text: 'Sacerdote: —El oráculo exige ofrendas. ¡Atended a los peregrinos y defended el templo!' }] },
+      { id: 't_wave_1', condicion: { type: 'time', seconds: 150 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 4 }], pos: { ref: 'jugador', dx: 24, dz: -10 }, radius: 5 }] },
+      { id: 't_wave_2', condicion: { type: 'time', seconds: 300 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 5 }, { kind: UnitKind.MUSKETEER, count: 2 }], pos: { ref: 'jugador', dx: -18, dz: 22 }, radius: 6 }] },
     ],
   },
   {
     id: 'm3_moche_recuay',
-    titulo: 'La Frontera de los Valles',
-    subtitulo: 'Intermedio Temprano · c. 300–600 d.C.',
-    historia:
+    title: 'La Frontera de los Valles',
+    subtitle: 'Intermedio Temprano · c. 300–600 d.C.',
+    history:
       'Los señores de Moche dominan los valles de Chicama, Moche y Virú. Desde el Callejón de Huaylas, los Recuay presionan la frontera.\n' +
       'Asegurad los valles y sus canales, y rechazad las incursiones desde la sierra.',
-    victoria:
+    victory:
       'Moche impone su dominio sobre la costa norte. Sus huacas y su cerámica marcan el apogeo del Intermedio Temprano.',
-    derrota: 'Los valles caen ante las incursiones de la sierra y el poder moche se desmorona.',
-    periodo: Periodo.INTERMEDIO_TEMPRANO,
-    civJugador: CivId.MOCHE,
-    civEnemigo: CivId.RECUAY,
-    mapa: { seed: 400, tipo: 'costa', tamano: 128 },
-    horaDia: 'atardecer',
-    eraInicial: Era.ESTADOS_REGIONALES,
-    recursosIniciales: { comida: 700, madera: 600, acero: 200, energia: 200 },
-    inicio: {
-      edificios: [{ kind: BuildingKind.FORTALEZA, dx: 18, dz: 0, tag: 'huacas' }],
-      unidades: [
-        { kind: UnitKind.SOLDADO, dx: 12, dz: 4, cantidad: 6 },
-        { kind: UnitKind.MOSQUETERO, dx: 10, dz: 10, cantidad: 4 },
+    defeat: 'Los valles caen ante las incursiones de la sierra y el poder moche se desmorona.',
+    period: HistoricalPeriod.EARLY_INTERMEDIATE,
+    playerCiv: CivId.MOCHE,
+    enemyCiv: CivId.RECUAY,
+    map: { seed: 400, type: 'coast', size: 128 },
+    timeOfDay: 'atardecer',
+    startingEra: Era.REGIONAL_STATES,
+    startingResources: { food: 700, wood: 600, silver: 200, stone: 200 },
+    start: {
+      buildings: [{ kind: BuildingKind.FORTRESS, dx: 18, dz: 0, tag: 'huacas' }],
+      units: [
+        { kind: UnitKind.SOLDIER, dx: 12, dz: 4, count: 6 },
+        { kind: UnitKind.MUSKETEER, dx: 10, dz: 10, count: 4 },
       ],
     },
-    marcar: [],
-    enemigo: { activo: true, dificultad: 'normal', agresion: 1 },
-    objetivos: [
-      { id: 'obj_huacas', kind: 'defender', entityTag: 'huacas', time: 480, titulo: 'Mantén las huacas 8 minutos' },
-      { id: 'obj_plata', kind: 'recolectar', resource: 'acero', cantidad: 250, titulo: 'Reúne 250 de plata' },
+    mark: [],
+    enemy: { active: true, difficulty: 'normal', aggression: 1 },
+    objectives: [
+      { id: 'obj_huacas', kind: 'defend', entityTag: 'huacas', time: 480, title: 'Mantén las huacas 8 minutos' },
+      { id: 'obj_plata', kind: 'gather', resource: 'silver', count: 250, title: 'Reúne 250 de plata' },
     ],
     triggers: [
-      { id: 't_dial_0', condicion: { tipo: 'tiempo', segundos: 10 }, efectos: [{ tipo: 'dialogo', texto: 'Señor de Moche: —¡Las huacas son nuestro poder! ¡Formad en las plazas!' }] },
-      { id: 't_wave_1', condicion: { tipo: 'tiempo', segundos: 80 }, efectos: [{ tipo: 'oleada', owner: 1, unidades: [{ kind: UnitKind.SOLDADO, cantidad: 5 }], pos: { ref: 'jugador', dx: 30, dz: 10 }, radio: 6 }] },
-      { id: 't_wave_2', condicion: { tipo: 'tiempo', segundos: 200 }, efectos: [{ tipo: 'oleada', owner: 1, unidades: [{ kind: UnitKind.SOLDADO, cantidad: 4 }, { kind: UnitKind.HUSAR, cantidad: 2 }], pos: { ref: 'jugador', dx: -10, dz: 30 }, radio: 6 }, { tipo: 'dialogo', texto: '¡Guerreros de la sierra por el oeste! ¡Reforzad el flanco!' }] },
-      { id: 't_wave_3', condicion: { tipo: 'tiempo', segundos: 360 }, efectos: [{ tipo: 'oleada', owner: 1, unidades: [{ kind: UnitKind.SOLDADO, cantidad: 6 }], pos: { ref: 'jugador', dx: 28, dz: -12 }, radio: 6 }] },
+      { id: 't_dial_0', condicion: { type: 'time', seconds: 10 }, efectos: [{ type: 'dialogue', text: 'Señor de Moche: —¡Las huacas son nuestro poder! ¡Formad en las plazas!' }] },
+      { id: 't_wave_1', condicion: { type: 'time', seconds: 80 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 5 }], pos: { ref: 'jugador', dx: 30, dz: 10 }, radius: 6 }] },
+      { id: 't_wave_2', condicion: { type: 'time', seconds: 200 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 4 }, { kind: UnitKind.HUSSAR, count: 2 }], pos: { ref: 'jugador', dx: -10, dz: 30 }, radius: 6 }, { type: 'dialogue', text: '¡Guerreros de la sierra por el oeste! ¡Reforzad el flanco!' }] },
+      { id: 't_wave_3', condicion: { type: 'time', seconds: 360 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 6 }], pos: { ref: 'jugador', dx: 28, dz: -12 }, radius: 6 }] },
     ],
   },
   {
     id: 'm4_wari',
-    titulo: 'El Horizonte Medio',
-    subtitulo: 'Horizonte Medio · c. 600–1000 d.C.',
-    historia:
+    title: 'El Horizonte Medio',
+    subtitle: 'Horizonte Medio · c. 600–1000 d.C.',
+    history:
       'Wari, desde Ayacucho, construye el primer imperio andino: ciudades planificadas, caminos y una religión estatal. Al sur, Tiahuanaco domina el altiplano.\n' +
       'Extiende la red de centros provinciales y asegura vuestros andenes frente a la esfera rival.',
-    victoria:
+    victory:
       'Wari consolida su esfera de influencia. El Horizonte Medio unifica buena parte de los Andes centrales.',
-    derrota: 'La expansión wari se detiene y sus centros provinciales se pierden.',
-    periodo: Periodo.HORIZONTE_MEDIO,
-    civJugador: CivId.WARI,
-    civEnemigo: CivId.TIAHUANACO,
-    mapa: { seed: 800, tipo: 'andes', tamano: 160 },
-    horaDia: 'mediodía',
-    eraInicial: Era.TAHUANTINSUYO,
-    recursosIniciales: { comida: 800, madera: 700, acero: 400, energia: 300 },
-    inicio: {
-      edificios: [{ kind: BuildingKind.CENTRO, dx: -12, dz: 0, tag: 'capital' }],
-      unidades: [
-        { kind: UnitKind.SOLDADO, dx: 6, dz: 4, cantidad: 6 },
-        { kind: UnitKind.MOSQUETERO, dx: 8, dz: 10, cantidad: 4 },
+    defeat: 'La expansión wari se detiene y sus centros provinciales se pierden.',
+    period: HistoricalPeriod.MIDDLE_HORIZON,
+    playerCiv: CivId.WARI,
+    enemyCiv: CivId.TIAHUANACO,
+    map: { seed: 800, type: 'andes', size: 160 },
+    timeOfDay: 'mediodía',
+    startingEra: Era.TAHUANTINSUYO,
+    startingResources: { food: 800, wood: 700, silver: 400, stone: 300 },
+    start: {
+      buildings: [{ kind: BuildingKind.CENTER, dx: -12, dz: 0, tag: 'capital' }],
+      units: [
+        { kind: UnitKind.SOLDIER, dx: 6, dz: 4, count: 6 },
+        { kind: UnitKind.MUSKETEER, dx: 8, dz: 10, count: 4 },
       ],
     },
-    marcar: [{ tag: 'centro_rival', kind: BuildingKind.CENTRO, owner: 1 }],
-    enemigo: { activo: true, dificultad: 'normal', agresion: 1 },
-    objetivos: [
-      { id: 'obj_capital', kind: 'proteger', entityTag: 'capital', titulo: 'Protege la capital wari' },
-      { id: 'obj_destroy', kind: 'destruir', entityTag: 'centro_rival', titulo: 'Toma el centro rival del altiplano' },
+    mark: [{ tag: 'centro_rival', kind: BuildingKind.CENTER, owner: 1 }],
+    enemy: { active: true, difficulty: 'normal', aggression: 1 },
+    objectives: [
+      { id: 'obj_capital', kind: 'protect', entityTag: 'capital', title: 'Protege la capital wari' },
+      { id: 'obj_destroy', kind: 'destroy', entityTag: 'centro_rival', title: 'Toma el centro rival del altiplano' },
     ],
     triggers: [
-      { id: 't_dial_0', condicion: { tipo: 'tiempo', segundos: 20 }, efectos: [{ tipo: 'dialogo', texto: 'Gobernante wari: —Nuestros caminos y andenes son la fuerza del imperio. ¡Adelante!' }] },
-      { id: 't_cam_1', condicion: { tipo: 'tiempo', segundos: 60 }, efectos: [{ tipo: 'camara', pos: { ref: 'enemigo', dx: 0, dz: 0 } }] },
-      { id: 't_wave_1', condicion: { tipo: 'tiempo', segundos: 220 }, efectos: [{ tipo: 'oleada', owner: 1, unidades: [{ kind: UnitKind.SOLDADO, cantidad: 6 }], pos: { ref: 'jugador', dx: 26, dz: 16 }, radio: 6 }] },
+      { id: 't_dial_0', condicion: { type: 'time', seconds: 20 }, efectos: [{ type: 'dialogue', text: 'Gobernante wari: —Nuestros caminos y andenes son la fuerza del imperio. ¡Adelante!' }] },
+      { id: 't_cam_1', condicion: { type: 'time', seconds: 60 }, efectos: [{ type: 'camera', pos: { ref: 'enemigo', dx: 0, dz: 0 } }] },
+      { id: 't_wave_1', condicion: { type: 'time', seconds: 220 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 6 }], pos: { ref: 'jugador', dx: 26, dz: 16 }, radius: 6 }] },
     ],
   },
   {
     id: 'm5_yahuar_pampa',
-    titulo: 'Yahuar Pampa',
-    subtitulo: 'Cusco · 1438',
-    historia:
+    title: 'Yahuar Pampa',
+    subtitle: 'Cusco · 1438',
+    history:
       'La confederación Chanca, al mando de Anccu Hualloc, marcha sobre el Cusco. El inca Viracocha y su heredero huyen; el príncipe Cusi Yupanqui organiza la defensa.\n' +
       'Resistid el asedio y repeled al ejército chanca. De esta batalla nacerá el Tahuantinsuyo.',
-    victoria:
+    victory:
       'Cusi Yupanqui vence en Yahuar Pampa y asume el poder como Pachacútec, el que transforma el mundo. Comienza el imperio.',
-    derrota: 'El Cusco cae ante los chancas y el imperio no llega a nacer.',
-    periodo: Periodo.HORIZONTE_TARDIO,
-    civJugador: CivId.INCA,
-    civEnemigo: CivId.CHANCA,
-    mapa: { seed: 1438, tipo: 'andes', tamano: 160 },
-    horaDia: 'atardecer',
-    eraInicial: Era.TAHUANTINSUYO,
-    recursosIniciales: { comida: 700, madera: 600, acero: 400, energia: 200 },
-    inicio: {
-      unidades: [
-        { kind: UnitKind.FUSILERO, dx: -8, dz: 8, tag: 'cusi_yupanqui', cantidad: 1 },
-        { kind: UnitKind.SOLDADO, dx: -6, dz: 10, cantidad: 6 },
-        { kind: UnitKind.ARTILLERO_AA, dx: -10, dz: 10, cantidad: 2 },
+    defeat: 'El Cusco cae ante los chancas y el imperio no llega a nacer.',
+    period: HistoricalPeriod.LATE_HORIZON,
+    playerCiv: CivId.INCA,
+    enemyCiv: CivId.CHANCA,
+    map: { seed: 1438, type: 'andes', size: 160 },
+    timeOfDay: 'atardecer',
+    startingEra: Era.TAHUANTINSUYO,
+    startingResources: { food: 700, wood: 600, silver: 400, stone: 200 },
+    start: {
+      units: [
+        { kind: UnitKind.RIFLEMAN, dx: -8, dz: 8, tag: 'cusi_yupanqui', count: 1 },
+        { kind: UnitKind.SOLDIER, dx: -6, dz: 10, count: 6 },
+        { kind: UnitKind.ANTI_AIR, dx: -10, dz: 10, count: 2 },
       ],
     },
-    marcar: [
-      { tag: 'cusco', kind: BuildingKind.CENTRO, owner: 0 },
-      { tag: 'centro_chanca', kind: BuildingKind.CENTRO, owner: 1 },
+    mark: [
+      { tag: 'cusco', kind: BuildingKind.CENTER, owner: 0 },
+      { tag: 'centro_chanca', kind: BuildingKind.CENTER, owner: 1 },
     ],
-    enemigo: { activo: true, dificultad: 'dificil', agresion: 1.3 },
-    objetivos: [
-      { id: 'obj_defend', kind: 'defender', entityTag: 'cusco', time: 480, titulo: 'Defiende el Cusco 8 minutos' },
-      { id: 'obj_kill', kind: 'destruir', entityTag: 'centro_chanca', titulo: 'Destruye el campamento chanca' },
-      { id: 'obj_cusi', kind: 'proteger', entityTag: 'cusi_yupanqui', titulo: 'Mantén con vida a Cusi Yupanqui' },
+    enemy: { active: true, difficulty: 'dificil', aggression: 1.3 },
+    objectives: [
+      { id: 'obj_defend', kind: 'defend', entityTag: 'cusco', time: 480, title: 'Defiende el Cusco 8 minutos' },
+      { id: 'obj_kill', kind: 'destroy', entityTag: 'centro_chanca', title: 'Destruye el campamento chanca' },
+      { id: 'obj_cusi', kind: 'protect', entityTag: 'cusi_yupanqui', title: 'Mantén con vida a Cusi Yupanqui' },
     ],
     triggers: [
-      { id: 't_dial_0', condicion: { tipo: 'tiempo', segundos: 15 }, efectos: [{ tipo: 'dialogo', texto: 'Cusi Yupanqui: —Los chancas creen que huiremos como los nobles. ¡Aquí se defiende el Cusco!' }] },
-      { id: 't_wave_1', condicion: { tipo: 'tiempo', segundos: 90 }, efectos: [{ tipo: 'oleada', owner: 1, unidades: [{ kind: UnitKind.SOLDADO, cantidad: 6 }], pos: { ref: 'jugador', dx: 28, dz: 12 }, radio: 6 }, { tipo: 'dialogo', texto: '¡Anccu Hualloc ataca por el norte! ¡A las armas!' }] },
-      { id: 't_wave_2', condicion: { tipo: 'tiempo', segundos: 200 }, efectos: [{ tipo: 'oleada', owner: 1, unidades: [{ kind: UnitKind.SOLDADO, cantidad: 5 }, { kind: UnitKind.HUSAR, cantidad: 2 }], pos: { ref: 'jugador', dx: -12, dz: 28 }, radio: 6 }] },
+      { id: 't_dial_0', condicion: { type: 'time', seconds: 15 }, efectos: [{ type: 'dialogue', text: 'Cusi Yupanqui: —Los chancas creen que huiremos como los nobles. ¡Aquí se defiende el Cusco!' }] },
+      { id: 't_wave_1', condicion: { type: 'time', seconds: 90 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 6 }], pos: { ref: 'jugador', dx: 28, dz: 12 }, radius: 6 }, { type: 'dialogue', text: '¡Anccu Hualloc ataca por el norte! ¡A las armas!' }] },
+      { id: 't_wave_2', condicion: { type: 'time', seconds: 200 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 5 }, { kind: UnitKind.HUSSAR, count: 2 }], pos: { ref: 'jugador', dx: -12, dz: 28 }, radius: 6 }] },
     ],
   },
   {
     id: 'm6_chimu_inca',
-    titulo: 'La Guerra del Norte',
-    subtitulo: 'Costa norte · c. 1470',
-    historia:
+    title: 'La Guerra del Norte',
+    subtitle: 'Costa norte · c. 1470',
+    history:
       'El Tahuantinsuyo ya domina el Collao, Cajamarca y la costa sur. Solo falta el poderoso Reino Chimú de Minchancaman.\n' +
       'Al mando del auqui Túpac Yupanqui, avanzad por Paramonga y el valle del Santa hasta Chan Chan.',
-    victoria:
+    victory:
       'Chan Chan capitula y Minchancaman es llevado al Cusco. El Tahuantinsuyo se extiende por toda la costa norte.',
-    derrota: 'La resistencia chimú detiene al ejército inca y la costa norte permanece libre.',
-    periodo: Periodo.HORIZONTE_TARDIO,
-    civJugador: CivId.INCA,
-    civEnemigo: CivId.CHIMU,
-    mapa: { seed: 1470, tipo: 'costa', tamano: 192 },
-    horaDia: 'atardecer',
-    eraInicial: Era.TAHUANTINSUYO,
-    recursosIniciales: { comida: 1000, madera: 700, acero: 900, energia: 400 },
-    inicio: {
-      unidades: [
-        { kind: UnitKind.TANQUE, dx: 10, dz: -4, cantidad: 2 },
-        { kind: UnitKind.ARTILLERIA, dx: 6, dz: 10, cantidad: 2 },
-        { kind: UnitKind.FUSILERO, dx: 4, dz: -6, cantidad: 4 },
+    defeat: 'La resistencia chimú detiene al ejército inca y la costa norte permanece libre.',
+    period: HistoricalPeriod.LATE_HORIZON,
+    playerCiv: CivId.INCA,
+    enemyCiv: CivId.CHIMU,
+    map: { seed: 1470, type: 'coast', size: 192 },
+    timeOfDay: 'atardecer',
+    startingEra: Era.TAHUANTINSUYO,
+    startingResources: { food: 1000, wood: 700, silver: 900, stone: 400 },
+    start: {
+      units: [
+        { kind: UnitKind.TANK, dx: 10, dz: -4, count: 2 },
+        { kind: UnitKind.ARTILLERY, dx: 6, dz: 10, count: 2 },
+        { kind: UnitKind.RIFLEMAN, dx: 4, dz: -6, count: 4 },
       ],
     },
-    marcar: [{ tag: 'chan_chan', kind: BuildingKind.CENTRO, owner: 1 }],
-    enemigo: { activo: true, dificultad: 'dificil', agresion: 1.2 },
-    objetivos: [
-      { id: 'obj_kill', kind: 'destruir', entityTag: 'chan_chan', titulo: 'Toma Chan Chan' },
-      { id: 'obj_hold', kind: 'sobrevivir', time: 600, titulo: 'Mantén tu campamento 10 minutos' },
+    mark: [{ tag: 'chan_chan', kind: BuildingKind.CENTER, owner: 1 }],
+    enemy: { active: true, difficulty: 'dificil', aggression: 1.2 },
+    objectives: [
+      { id: 'obj_kill', kind: 'destroy', entityTag: 'chan_chan', title: 'Toma Chan Chan' },
+      { id: 'obj_hold', kind: 'survive', time: 600, title: 'Mantén tu campamento 10 minutos' },
     ],
     triggers: [
-      { id: 't_dial_0', condicion: { tipo: 'tiempo', segundos: 20 }, efectos: [{ tipo: 'dialogo', texto: 'Túpac Yupanqui: —Minchancaman no se someterá. Avanzad por los valles y cortadle el agua a Chan Chan.' }] },
-      { id: 't_cam_1', condicion: { tipo: 'tiempo', segundos: 60 }, efectos: [{ tipo: 'camara', pos: { ref: 'enemigo', dx: 0, dz: 0 } }] },
-      { id: 't_wave_1', condicion: { tipo: 'tiempo', segundos: 260 }, efectos: [{ tipo: 'oleada', owner: 1, unidades: [{ kind: UnitKind.SOLDADO, cantidad: 6 }, { kind: UnitKind.MOSQUETERO, cantidad: 3 }], pos: { ref: 'jugador', dx: 20, dz: 20 }, radio: 7 }, { tipo: 'dialogo', texto: '¡Querrotumi contraataca desde Paramonga!' }] },
+      { id: 't_dial_0', condicion: { type: 'time', seconds: 20 }, efectos: [{ type: 'dialogue', text: 'Túpac Yupanqui: —Minchancaman no se someterá. Avanzad por los valles y cortadle el agua a Chan Chan.' }] },
+      { id: 't_cam_1', condicion: { type: 'time', seconds: 60 }, efectos: [{ type: 'camera', pos: { ref: 'enemigo', dx: 0, dz: 0 } }] },
+      { id: 't_wave_1', condicion: { type: 'time', seconds: 260 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 6 }, { kind: UnitKind.MUSKETEER, count: 3 }], pos: { ref: 'jugador', dx: 20, dz: 20 }, radius: 7 }, { type: 'dialogue', text: '¡Querrotumi contraataca desde Paramonga!' }] },
     ],
   },
   {
     id: 'm7_tupac_amaru',
-    titulo: 'La Gran Rebelión',
-    subtitulo: 'Virreinato · 1780–1781',
-    historia:
+    title: 'La Gran Rebelión',
+    subtitle: 'Virreinato · 1780–1781',
+    history:
       'José Gabriel Condorcanqui, Túpac Amaru II, se alza contra los abusos del Virreinato: la mita, el reparto y los obrajes. Micaela Bastidas organiza el avituallamiento.\n' +
       'Sostened la rebelión y tomad el centro de mando realista.',
-    victoria:
+    victory:
       'El centro realista cae. La rebelión sacude el Virreinato y enciende el camino hacia la independencia.',
-    derrota: 'La rebelión se ahoga en sangre. El Virreinato perdura una generación más.',
-    periodo: Periodo.VIRREINATO,
-    civJugador: CivId.INCA,
-    civEnemigo: CivId.REALISTAS,
-    mapa: { seed: 1780, tipo: 'andes', tamano: 192 },
-    horaDia: 'atardecer',
-    eraInicial: Era.VIRREINATO,
-    recursosIniciales: { comida: 1000, madera: 700, acero: 900, energia: 400 },
-    inicio: {
-      unidades: [
-        { kind: UnitKind.TANQUE, dx: 10, dz: -4, cantidad: 2 },
-        { kind: UnitKind.ARTILLERIA, dx: 6, dz: 10, cantidad: 2 },
-        { kind: UnitKind.FUSILERO, dx: 4, dz: -6, tag: 'tupac_amaru', cantidad: 1 },
+    defeat: 'La rebelión se ahoga en sangre. El Virreinato perdura una generación más.',
+    period: HistoricalPeriod.VICEROYALTY,
+    playerCiv: CivId.INCA,
+    enemyCiv: CivId.REALISTAS,
+    map: { seed: 1780, type: 'andes', size: 192 },
+    timeOfDay: 'atardecer',
+    startingEra: Era.VICEROYALTY,
+    startingResources: { food: 1000, wood: 700, silver: 900, stone: 400 },
+    start: {
+      units: [
+        { kind: UnitKind.TANK, dx: 10, dz: -4, count: 2 },
+        { kind: UnitKind.ARTILLERY, dx: 6, dz: 10, count: 2 },
+        { kind: UnitKind.RIFLEMAN, dx: 4, dz: -6, tag: 'tupac_amaru', count: 1 },
       ],
     },
-    marcar: [{ tag: 'centro_realista', kind: BuildingKind.CENTRO, owner: 1 }],
-    enemigo: { activo: true, dificultad: 'dificil', agresion: 1.3 },
-    objetivos: [
-      { id: 'obj_kill', kind: 'destruir', entityTag: 'centro_realista', titulo: 'Toma el centro de mando realista' },
-      { id: 'obj_hold', kind: 'sobrevivir', time: 600, titulo: 'Mantén el cuartel rebelde 10 minutos' },
-      { id: 'obj_tupac', kind: 'proteger', entityTag: 'tupac_amaru', titulo: 'Mantén con vida a Túpac Amaru II' },
+    mark: [{ tag: 'centro_realista', kind: BuildingKind.CENTER, owner: 1 }],
+    enemy: { active: true, difficulty: 'dificil', aggression: 1.3 },
+    objectives: [
+      { id: 'obj_kill', kind: 'destroy', entityTag: 'centro_realista', title: 'Toma el centro de mando realista' },
+      { id: 'obj_hold', kind: 'survive', time: 600, title: 'Mantén el cuartel rebelde 10 minutos' },
+      { id: 'obj_tupac', kind: 'protect', entityTag: 'tupac_amaru', title: 'Mantén con vida a Túpac Amaru II' },
     ],
     triggers: [
-      { id: 't_dial_0', condicion: { tipo: 'tiempo', segundos: 20 }, efectos: [{ tipo: 'dialogo', texto: 'Túpac Amaru II: —¡Por el Sol y por el Perú! Abolid la mita y el reparto. ¡Adelante!' }] },
-      { id: 't_cam_1', condicion: { tipo: 'tiempo', segundos: 60 }, efectos: [{ tipo: 'camara', pos: { ref: 'enemigo', dx: 0, dz: 0 } }] },
-      { id: 't_wave_1', condicion: { tipo: 'tiempo', segundos: 300 }, efectos: [{ tipo: 'oleada', owner: 1, unidades: [{ kind: UnitKind.SOLDADO, cantidad: 6 }, { kind: UnitKind.MOSQUETERO, cantidad: 3 }], pos: { ref: 'jugador', dx: 22, dz: 18 }, radio: 7 }, { tipo: 'dialogo', texto: '¡Refuerzos realistas desde el Cusco!' }] },
+      { id: 't_dial_0', condicion: { type: 'time', seconds: 20 }, efectos: [{ type: 'dialogue', text: 'Túpac Amaru II: —¡Por el Sol y por el Perú! Abolid la mita y el reparto. ¡Adelante!' }] },
+      { id: 't_cam_1', condicion: { type: 'time', seconds: 60 }, efectos: [{ type: 'camera', pos: { ref: 'enemigo', dx: 0, dz: 0 } }] },
+      { id: 't_wave_1', condicion: { type: 'time', seconds: 300 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 6 }, { kind: UnitKind.MUSKETEER, count: 3 }], pos: { ref: 'jugador', dx: 22, dz: 18 }, radius: 7 }, { type: 'dialogue', text: '¡Refuerzos realistas desde el Cusco!' }] },
     ],
   },
   {
     id: 'm8_independencia',
-    titulo: 'La Independencia',
-    subtitulo: 'Independencia · 1821–1824',
-    historia:
+    title: 'La Independencia',
+    subtitle: 'Independencia · 1821–1824',
+    history:
       'San Martín proclama la independencia en Lima en 1821. La campaña continúa en la sierra con Bolívar y Sucre contra los realistas.\n' +
       'Sellad la independencia: tomad el centro realista y resistid hasta Ayacucho.',
-    victoria:
+    victory:
       'La victoria sella la independencia del Perú. El poder español en el Perú llega a su fin.',
-    derrota: 'La causa patriota se repliega y la independencia queda en suspenso.',
-    periodo: Periodo.INDEPENDENCIA,
-    civJugador: CivId.PATRIOTAS,
-    civEnemigo: CivId.REALISTAS,
-    mapa: { seed: 1824, tipo: 'andes', tamano: 192 },
-    horaDia: 'mañana',
-    eraInicial: Era.REPUBLICA,
-    recursosIniciales: { comida: 1200, madera: 800, acero: 1200, energia: 500 },
-    inicio: {
-      unidades: [
-        { kind: UnitKind.FUSILERO, dx: 6, dz: -6, cantidad: 5 },
-        { kind: UnitKind.CABALLERIA, dx: 10, dz: -2, cantidad: 3 },
-        { kind: UnitKind.ARTILLERIA, dx: 4, dz: 8, cantidad: 2 },
+    defeat: 'La causa patriota se repliega y la independencia queda en suspenso.',
+    period: HistoricalPeriod.INDEPENDENCE,
+    playerCiv: CivId.PATRIOTAS,
+    enemyCiv: CivId.REALISTAS,
+    map: { seed: 1824, type: 'andes', size: 192 },
+    timeOfDay: 'mañana',
+    startingEra: Era.REPUBLIC,
+    startingResources: { food: 1200, wood: 800, silver: 1200, stone: 500 },
+    start: {
+      units: [
+        { kind: UnitKind.RIFLEMAN, dx: 6, dz: -6, count: 5 },
+        { kind: UnitKind.CAVALRY, dx: 10, dz: -2, count: 3 },
+        { kind: UnitKind.ARTILLERY, dx: 4, dz: 8, count: 2 },
       ],
     },
-    marcar: [{ tag: 'centro_realista', kind: BuildingKind.CENTRO, owner: 1 }],
-    enemigo: { activo: true, dificultad: 'dificil', agresion: 1.3 },
-    objetivos: [
-      { id: 'obj_kill', kind: 'destruir', entityTag: 'centro_realista', titulo: 'Toma el centro realista' },
-      { id: 'obj_hold', kind: 'sobrevivir', time: 600, titulo: 'Resiste hasta Ayacucho (10 minutos)' },
+    mark: [{ tag: 'centro_realista', kind: BuildingKind.CENTER, owner: 1 }],
+    enemy: { active: true, difficulty: 'dificil', aggression: 1.3 },
+    objectives: [
+      { id: 'obj_kill', kind: 'destroy', entityTag: 'centro_realista', title: 'Toma el centro realista' },
+      { id: 'obj_hold', kind: 'survive', time: 600, title: 'Resiste hasta Ayacucho (10 minutos)' },
     ],
     triggers: [
-      { id: 't_dial_0', condicion: { tipo: 'tiempo', segundos: 20 }, efectos: [{ tipo: 'dialogo', texto: 'General patriota: —La independencia se gana en la sierra. ¡Avanzad sobre el centro realista!' }] },
-      { id: 't_cam_1', condicion: { tipo: 'tiempo', segundos: 55 }, efectos: [{ tipo: 'camara', pos: { ref: 'enemigo', dx: 0, dz: 0 } }] },
-      { id: 't_wave_1', condicion: { tipo: 'tiempo', segundos: 320 }, efectos: [{ tipo: 'oleada', owner: 1, unidades: [{ kind: UnitKind.SOLDADO, cantidad: 6 }, { kind: UnitKind.CABALLERIA, cantidad: 3 }], pos: { ref: 'jugador', dx: 24, dz: 16 }, radio: 7 }, { tipo: 'dialogo', texto: '¡Contraataque realista! ¡Formad cuadro!' }] },
+      { id: 't_dial_0', condicion: { type: 'time', seconds: 20 }, efectos: [{ type: 'dialogue', text: 'General patriota: —La independencia se gana en la sierra. ¡Avanzad sobre el centro realista!' }] },
+      { id: 't_cam_1', condicion: { type: 'time', seconds: 55 }, efectos: [{ type: 'camera', pos: { ref: 'enemigo', dx: 0, dz: 0 } }] },
+      { id: 't_wave_1', condicion: { type: 'time', seconds: 320 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 6 }, { kind: UnitKind.CAVALRY, count: 3 }], pos: { ref: 'jugador', dx: 24, dz: 16 }, radius: 7 }, { type: 'dialogue', text: '¡Contraataque realista! ¡Formad cuadro!' }] },
     ],
   },
   {
     id: 'm9_guerra_pacifico',
-    titulo: 'El Caballero de los Mares',
-    subtitulo: 'Guerra del Pacífico · 1879–1883',
-    historia:
+    title: 'El Caballero de los Mares',
+    subtitle: 'Guerra del Pacífico · 1879–1883',
+    history:
       'La Guerra del Pacífico enfrenta al Perú con Chile. Al mando del monitor Huáscar, el almirante Miguel Grau detiene a una escuadra superior con audaces correrías.\n' +
       'Proteged el puerto y destruid el centro de mando enemigo antes de que caiga la noche.',
-    victoria:
+    victory:
       'La escuadra enemiga se retira y el puerto resiste. Como en Angamos, el ejemplo de Grau sostiene a la República.',
-    derrota: 'El puerto cae y el monitor se pierde. La República entra en su hora más oscura.',
-    periodo: Periodo.REPUBLICA,
-    civJugador: CivId.REPUBLICA,
-    civEnemigo: CivId.CHILE,
-    mapa: { seed: 1879, tipo: 'costa', tamano: 192 },
-    horaDia: 'noche',
-    eraInicial: Era.REPUBLICA,
-    recursosIniciales: { comida: 1500, madera: 800, acero: 1500, energia: 1200 },
-    inicio: {
-      edificios: [{ kind: BuildingKind.MARAVILLA, dx: -10, dz: -6, tag: 'puerto' }],
-      unidades: [
-        { kind: UnitKind.MEC, dx: 8, dz: 0, cantidad: 2 },
-        { kind: UnitKind.FUSILERO, dx: 4, dz: 8, cantidad: 4 },
+    defeat: 'El puerto cae y el monitor se pierde. La República entra en su hora más oscura.',
+    period: HistoricalPeriod.REPUBLIC,
+    playerCiv: CivId.REPUBLIC,
+    enemyCiv: CivId.CHILE,
+    map: { seed: 1879, type: 'coast', size: 192 },
+    timeOfDay: 'noche',
+    startingEra: Era.REPUBLIC,
+    startingResources: { food: 1500, wood: 800, silver: 1500, stone: 1200 },
+    start: {
+      buildings: [{ kind: BuildingKind.WONDER, dx: -10, dz: -6, tag: 'puerto' }],
+      units: [
+        { kind: UnitKind.MECH, dx: 8, dz: 0, count: 2 },
+        { kind: UnitKind.RIFLEMAN, dx: 4, dz: 8, count: 4 },
       ],
     },
-    marcar: [{ tag: 'centro_enemigo', kind: BuildingKind.CENTRO, owner: 1 }],
-    enemigo: { activo: true, dificultad: 'dificil', agresion: 1.4 },
-    objetivos: [
-      { id: 'obj_puerto', kind: 'proteger', entityTag: 'puerto', titulo: 'Protege el puerto y el monitor' },
-      { id: 'obj_kill', kind: 'destruir', entityTag: 'centro_enemigo', titulo: 'Destruye el centro de mando enemigo' },
+    mark: [{ tag: 'centro_enemigo', kind: BuildingKind.CENTER, owner: 1 }],
+    enemy: { active: true, difficulty: 'dificil', aggression: 1.4 },
+    objectives: [
+      { id: 'obj_puerto', kind: 'protect', entityTag: 'puerto', title: 'Protege el puerto y el monitor' },
+      { id: 'obj_kill', kind: 'destroy', entityTag: 'centro_enemigo', title: 'Destruye el centro de mando enemigo' },
     ],
     triggers: [
-      { id: 't_dial_0', condicion: { tipo: 'tiempo', segundos: 15 }, efectos: [{ tipo: 'dialogo', texto: 'Miguel Grau: —El enemigo es superior, pero no pasará. ¡Tripulación, a vuestros puestos!' }] },
-      { id: 't_cam_1', condicion: { tipo: 'tiempo', segundos: 45 }, efectos: [{ tipo: 'camara', pos: { ref: 'enemigo', dx: 0, dz: 0 } }] },
-      { id: 't_wave_1', condicion: { tipo: 'tiempo', segundos: 240 }, efectos: [{ tipo: 'oleada', owner: 1, unidades: [{ kind: UnitKind.SOLDADO, cantidad: 4 }, { kind: UnitKind.FUSILERO, cantidad: 3 }], pos: { ref: 'jugador', dx: 16, dz: 16 }, radio: 6 }, { tipo: 'dialogo', texto: '¡Tropas de desembarco enemigas se dirigen al puerto!' }] },
+      { id: 't_dial_0', condicion: { type: 'time', seconds: 15 }, efectos: [{ type: 'dialogue', text: 'Miguel Grau: —El enemigo es superior, pero no pasará. ¡Tripulación, a vuestros puestos!' }] },
+      { id: 't_cam_1', condicion: { type: 'time', seconds: 45 }, efectos: [{ type: 'camera', pos: { ref: 'enemigo', dx: 0, dz: 0 } }] },
+      { id: 't_wave_1', condicion: { type: 'time', seconds: 240 }, efectos: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 4 }, { kind: UnitKind.RIFLEMAN, count: 3 }], pos: { ref: 'jugador', dx: 16, dz: 16 }, radius: 6 }, { type: 'dialogue', text: '¡Tropas de desembarco enemigas se dirigen al puerto!' }] },
     ],
   },
 ];

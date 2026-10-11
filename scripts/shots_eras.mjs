@@ -14,7 +14,7 @@ for (const era of [0, 1, 2, 3, 4, 5]) {
   await page.waitForTimeout(6000);
   await page.evaluate(() => {
     const g = window.game;
-    const c = [...g.buildings.values()].find((b) => b.kind === 'centro' && b.owner === 0);
+    const c = [...g.buildings.values()].find((b) => b.kind === 'center' && b.owner === 0);
     if (c) {
       g.camera.moveTo(c.pos.x, c.pos.z, true);
       g.camera.setHeight(45);

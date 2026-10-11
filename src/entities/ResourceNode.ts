@@ -74,7 +74,7 @@ export function clearResourceCaches(): void {
 type TreeVariant = 'broad' | 'needle' | 'frond';
 function variantForMap(mapType: string): TreeVariant {
   if (mapType === 'altiplano') return 'needle';
-  if (mapType === 'selva') return 'frond';
+  if (mapType === 'jungle') return 'frond';
   return 'broad';
 }
 
@@ -89,7 +89,7 @@ export class ResourceNode {
   dead = false;
   radius: number;
   view = new THREE.Group();
-  kind: 'arbol' | 'mina' | 'pozo' | 'caza' | 'pesca' | 'baya';
+  kind: 'tree' | 'mine' | 'well' | 'hunt' | 'fishing' | 'baya';
   growthTime = 0;
   private swaySeed: number;
   private scene: THREE.Scene;
@@ -109,22 +109,22 @@ export class ResourceNode {
     this.amount = this.maxAmount = amount;
     this.swaySeed = Math.random() * Math.PI * 2;
     switch (kind) {
-      case 'arbol':
-        this.resource = 'madera';
+      case 'tree':
+        this.resource = 'wood';
         this.radius = 0.6;
         break;
-      case 'mina':
-        this.resource = 'acero';
+      case 'mine':
+        this.resource = 'silver';
         this.radius = 1.1;
         break;
-      case 'pozo':
-        this.resource = 'energia';
+      case 'well':
+        this.resource = 'stone';
         this.radius = 1.0;
         break;
-      case 'caza':
-      case 'pesca':
+      case 'hunt':
+      case 'fishing':
       case 'baya':
-        this.resource = 'comida';
+        this.resource = 'food';
         this.radius = 0.7;
         break;
     }
@@ -134,19 +134,19 @@ export class ResourceNode {
   private buildModel(): void {
     const rng = new RNG(Math.floor(this.pos.x * 7 + this.pos.z * 13));
     switch (this.kind) {
-      case 'arbol':
+      case 'tree':
         this.buildTree(rng);
         break;
-      case 'mina':
+      case 'mine':
         this.buildMine(rng);
         break;
-      case 'pozo':
+      case 'well':
         this.buildWell(rng);
         break;
-      case 'caza':
+      case 'hunt':
         this.buildHunt(rng);
         break;
-      case 'pesca':
+      case 'fishing':
         this.buildFish(rng);
         break;
       case 'baya':
@@ -161,7 +161,7 @@ export class ResourceNode {
 
   /** Registra la instancia del árbol una vez conocida su altura (y). */
   placeTreeInstance(y: number): void {
-    if (this.kind !== 'arbol' || !this.treeMgr || this.treeSlot >= 0) return;
+    if (this.kind !== 'tree' || !this.treeMgr || this.treeSlot >= 0) return;
     const scale = 0.85 + Math.random() * 0.35;
     const rotY = Math.random() * Math.PI * 2;
     this.treeSlot = this.treeMgr.register(this.id, this.treeVariant, this.pos.x, y, this.pos.z, scale, rotY);
@@ -169,7 +169,7 @@ export class ResourceNode {
 
   /** Visibilidad combinada (niebla + LOD) respetando el instancing de árboles. */
   setVisibleEx(v: boolean): void {
-    if (this.kind === 'arbol' && this.treeMgr && this.treeSlot >= 0) {
+    if (this.kind === 'tree' && this.treeMgr && this.treeSlot >= 0) {
       this.treeMgr.setVisible(this.treeSlot, v);
     } else {
       this.view.visible = v;
@@ -358,7 +358,7 @@ export class ResourceNode {
     if (this.amount <= 0) {
       this.amount = 0;
       this.depleted = true;
-      if (this.kind === 'arbol') {
+      if (this.kind === 'tree') {
         // caída
         if (this.treeMgr && this.treeSlot >= 0) {
           this.treeMgr.startFall(this.treeSlot);
@@ -369,7 +369,7 @@ export class ResourceNode {
           this.view.position.y = -0.2;
           this.timers.push(setTimeout(() => this.remove(), 2000));
         }
-      } else if (this.kind === 'caza') {
+      } else if (this.kind === 'hunt') {
         this.view.rotation.x = Math.PI / 2;
         this.timers.push(setTimeout(() => this.remove(), 800));
       } else {

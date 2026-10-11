@@ -1,4 +1,4 @@
-import { CivId, Era, MapType, Periodo } from './types';
+import { CivId, Era, MapType, HistoricalPeriod } from './types';
 
 export interface GameSettings {
   mapSize: number; // 256 | 192 | 128
@@ -7,7 +7,7 @@ export interface GameSettings {
   civPlayer: CivId;
   civAI: CivId;
   /** Periodo histórico de la partida (partidas bloqueadas por periodo). */
-  periodo: Periodo;
+  period: HistoricalPeriod;
   difficulty: 'facil' | 'normal' | 'dificil' | 'legendario';
   startingEra: Era;
   populationCap: number;
@@ -21,20 +21,20 @@ export interface GameSettings {
   cinematic: boolean;
   /** Permite rotar la cámara con Q/E (estilo AoE2 DE). Off = cámara fija como SC2. */
   rotateCamera: boolean;
-  victoryMode: 'conquista' | 'maravilla';
+  victoryMode: 'conquest' | 'wonder';
   /** Id de misión de campaña activa (undefined = escaramuza). */
   missionId?: string;
 }
 
 export const DEFAULT_SETTINGS: GameSettings = {
   mapSize: 192,
-  mapType: 'costa',
+  mapType: 'coast',
   mapSeed: Math.floor(Math.random() * 1e9),
   civPlayer: CivId.MOCHE,
   civAI: CivId.RECUAY,
-  periodo: Periodo.INTERMEDIO_TEMPRANO,
+  period: HistoricalPeriod.EARLY_INTERMEDIATE,
   difficulty: 'normal',
-  startingEra: Era.ESTADOS_REGIONALES,
+  startingEra: Era.REGIONAL_STATES,
   populationCap: 100,
   gameSpeed: 1,
   timeOfDay: 'mediodía',
@@ -44,19 +44,19 @@ export const DEFAULT_SETTINGS: GameSettings = {
   showHints: true,
   cinematic: false,
   rotateCamera: false,
-  victoryMode: 'conquista',
+  victoryMode: 'conquest',
 };
 
 export const RESOURCE_INFO = {
-  comida: { nombre: 'Comida', icono: '🌽', color: '#8fca7a' },
-  madera: { nombre: 'Madera', icono: '🪵', color: '#b58a5c' },
-  acero: { nombre: 'Plata', icono: '🥈', color: '#9aa7b5' },
-  energia: { nombre: 'Piedra', icono: '🪨', color: '#c8a878' },
+  food: { name: 'Comida', icon: '🌽', color: '#8fca7a' },
+  wood: { name: 'Madera', icon: '🪵', color: '#b58a5c' },
+  silver: { name: 'Plata', icon: '🥈', color: '#9aa7b5' },
+  stone: { name: 'Piedra', icon: '🪨', color: '#c8a878' },
 } as const;
 
 export const DIFFICULTY_MULT = {
-  facil: { econ: 0.85, agresion: 0.5, reaction: 1.4 },
-  normal: { econ: 1.0, agresion: 1.0, reaction: 1.0 },
-  dificil: { econ: 1.15, agresion: 1.4, reaction: 0.7 },
-  legendario: { econ: 1.3, agresion: 1.8, reaction: 0.45 },
+  facil: { econ: 0.85, aggression: 0.5, reaction: 1.4 },
+  normal: { econ: 1.0, aggression: 1.0, reaction: 1.0 },
+  dificil: { econ: 1.15, aggression: 1.4, reaction: 0.7 },
+  legendario: { econ: 1.3, aggression: 1.8, reaction: 0.45 },
 } as const;

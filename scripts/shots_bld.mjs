@@ -12,7 +12,7 @@ for (const era of [0, 5]) {
   await page.waitForTimeout(4000);
   await page.evaluate(() => {
     const g = window.game;
-    const b = [...g.buildings.values()].find((x) => x.kind === 'centro' && x.owner === 0);
+    const b = [...g.buildings.values()].find((x) => x.kind === 'center' && x.owner === 0);
     g.camera.moveTo(b.pos.x, b.pos.z, true);
     g.camera.setHeight(9);
   });

@@ -95,11 +95,11 @@ export class PostFX {
   }
 
   /** Ajusta la calidad de los efectos cinematográficos (no los activa). */
-  setQuality(level: 'alto' | 'medio' | 'bajo'): void {
-    if (level === 'alto') {
+  setQuality(level: 'high' | 'medium' | 'low'): void {
+    if (level === 'high') {
       this.ssaoPass.kernelRadius = 8;
       this.bloomPass.strength = 0.35;
-    } else if (level === 'medio') {
+    } else if (level === 'medium') {
       this.ssaoPass.kernelRadius = 4;
       this.bloomPass.strength = 0.28;
     } else {

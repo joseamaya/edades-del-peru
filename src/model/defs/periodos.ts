@@ -1,32 +1,32 @@
-import { Era, MapType, Periodo } from '../../core/types';
+import { Era, MapType, HistoricalPeriod } from '../../core/types';
 
 /**
  * Periodos históricos jugables. `nivel` mapea al nivel tecnológico interno (Era 0-5) usado por
  * stats y modelos; las partidas son **bloqueadas por periodo** (sin modernización anacrónica).
  */
-export interface PeriodoDef {
-  id: Periodo;
-  nombre: string;
-  fechas: string;
+export interface PeriodDef {
+  id: HistoricalPeriod;
+  name: string;
+  dates: string;
   /** Nivel tecnológico interno (reutiliza los 6 sets de modelos/stats existentes). */
-  nivel: Era;
+  level: Era;
   /** Mapa por defecto (puede sobreescribirse con la geografía de la civilización). */
-  mapa: MapType;
+  map: MapType;
 }
 
-export const PERIODOS: PeriodoDef[] = [
-  { id: Periodo.ARCAICO, nombre: 'Arcaico Tardío', fechas: '3000–1800 a.C.', nivel: Era.FORMATIVO, mapa: 'costa' },
-  { id: Periodo.HORIZONTE_TEMPRANO, nombre: 'Horizonte Temprano', fechas: '1200–200 a.C.', nivel: Era.ESTADOS_REGIONALES, mapa: 'andes' },
-  { id: Periodo.INTERMEDIO_TEMPRANO, nombre: 'Intermedio Temprano', fechas: '200 a.C.–600 d.C.', nivel: Era.ESTADOS_REGIONALES, mapa: 'costa' },
-  { id: Periodo.HORIZONTE_MEDIO, nombre: 'Horizonte Medio', fechas: '600–1000 d.C.', nivel: Era.TAHUANTINSUYO, mapa: 'andes' },
-  { id: Periodo.INTERMEDIO_TARDIO, nombre: 'Intermedio Tardío', fechas: '1000–1476 d.C.', nivel: Era.TAHUANTINSUYO, mapa: 'costa' },
-  { id: Periodo.HORIZONTE_TARDIO, nombre: 'Horizonte Tardío (Inca)', fechas: '1438–1533 d.C.', nivel: Era.TAHUANTINSUYO, mapa: 'andes' },
-  { id: Periodo.VIRREINATO, nombre: 'Virreinato del Perú', fechas: '1542–1821', nivel: Era.VIRREINATO, mapa: 'andes' },
-  { id: Periodo.INDEPENDENCIA, nombre: 'Independencia', fechas: '1821–1824', nivel: Era.REPUBLICA, mapa: 'andes' },
-  { id: Periodo.REPUBLICA, nombre: 'República', fechas: '1821–1900', nivel: Era.REPUBLICA, mapa: 'costa' },
-  { id: Periodo.CONTEMPORANEO, nombre: 'Perú Contemporáneo', fechas: '1900–hoy', nivel: Era.CONTEMPORANEO, mapa: 'costa' },
+export const PERIODS: PeriodDef[] = [
+  { id: HistoricalPeriod.ARCHAIC, name: 'Arcaico Tardío', dates: '3000–1800 a.C.', level: Era.FORMATIVE, map: 'coast' },
+  { id: HistoricalPeriod.EARLY_HORIZON, name: 'Horizonte Temprano', dates: '1200–200 a.C.', level: Era.REGIONAL_STATES, map: 'andes' },
+  { id: HistoricalPeriod.EARLY_INTERMEDIATE, name: 'Intermedio Temprano', dates: '200 a.C.–600 d.C.', level: Era.REGIONAL_STATES, map: 'coast' },
+  { id: HistoricalPeriod.MIDDLE_HORIZON, name: 'Horizonte Medio', dates: '600–1000 d.C.', level: Era.TAHUANTINSUYO, map: 'andes' },
+  { id: HistoricalPeriod.LATE_INTERMEDIATE, name: 'Intermedio Tardío', dates: '1000–1476 d.C.', level: Era.TAHUANTINSUYO, map: 'coast' },
+  { id: HistoricalPeriod.LATE_HORIZON, name: 'Horizonte Tardío (Inca)', dates: '1438–1533 d.C.', level: Era.TAHUANTINSUYO, map: 'andes' },
+  { id: HistoricalPeriod.VICEROYALTY, name: 'Virreinato del Perú', dates: '1542–1821', level: Era.VICEROYALTY, map: 'andes' },
+  { id: HistoricalPeriod.INDEPENDENCE, name: 'Independencia', dates: '1821–1824', level: Era.REPUBLIC, map: 'andes' },
+  { id: HistoricalPeriod.REPUBLIC, name: 'República', dates: '1821–1900', level: Era.REPUBLIC, map: 'coast' },
+  { id: HistoricalPeriod.CONTEMPORARY, name: 'Perú Contemporáneo', dates: '1900–hoy', level: Era.CONTEMPORARY, map: 'coast' },
 ];
 
-export function getPeriodo(id: Periodo): PeriodoDef {
-  return PERIODOS.find((p) => p.id === id)!;
+export function getPeriod(id: HistoricalPeriod): PeriodDef {
+  return PERIODS.find((p) => p.id === id)!;
 }

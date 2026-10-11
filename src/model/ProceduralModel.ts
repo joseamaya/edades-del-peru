@@ -64,7 +64,7 @@ const TEX_DEFAULTS: Record<TexKind, { roughness: number; metalness: number }> = 
 
 /** Mapeo de tipo procedural -> material PBR generado con IA (si existe). */
 const TEX_GEN: Partial<Record<TexKind, string>> = {
-  wood: 'madera',
+  wood: 'wood',
   roof: 'teja',
   brick: 'adobe',
   textil: 'textil',
@@ -314,10 +314,10 @@ interface Attire {
   tex: TexKind;
   leg: string;
   boot: boolean;
-  manta: boolean;
-  orejeras: boolean;
+  cloak: boolean;
+  earOrnaments: boolean;
   metal: boolean;
-  head: 'cinta' | 'llautu' | 'diadema' | 'cuatroPuntas' | 'plumas' | 'morion' | 'kepi' | 'casco' | 'none';
+  head: 'band' | 'llautu' | 'diadem' | 'fourPoints' | 'feathers' | 'morion' | 'kepi' | 'helmet' | 'none';
   facepaint: boolean;
 }
 
@@ -328,37 +328,37 @@ interface Attire {
 function getAttire(b: Builder, role: UnitRole): Attire {
   const civ = b.context.civ.id;
   const era = b.context.era;
-  const geo = b.context.civ.geografia;
+  const geo = b.context.civ.geography;
   const col = b.context.civ.colors.primary;
   const sec = b.context.civ.colors.secondary;
   const acc = b.context.civ.colors.accent;
   const elite = role === 'elite' || role === 'officer';
   if (era <= Era.TAHUANTINSUYO) {
     let head: Attire['head'];
-    if (civ === 'inca') head = elite ? 'llautu' : 'cinta';
-    else if (civ === 'tiahuanaco' || geo === 'altiplano') head = 'cuatroPuntas';
-    else if (geo === 'costa') head = elite ? 'plumas' : 'diadema';
-    else head = elite ? 'diadema' : 'cinta';
+    if (civ === 'inca') head = elite ? 'llautu' : 'band';
+    else if (civ === 'tiahuanaco' || geo === 'altiplano') head = 'fourPoints';
+    else if (geo === 'coast') head = elite ? 'feathers' : 'diadem';
+    else head = elite ? 'diadem' : 'band';
     return {
       tunic: mixHex(col, sec, elite ? 0.25 : 0.5),
       accent: acc,
       tex: 'textil',
       leg: mixHex(col, '#3a2f26', 0.55),
       boot: false,
-      manta: role === 'melee' || elite,
-      orejeras: elite,
+      cloak: role === 'melee' || elite,
+      earOrnaments: elite,
       metal: false,
       head,
       facepaint: civ === 'chanca',
     };
   }
-  if (era === Era.VIRREINATO) {
-    return { tunic: '#3a527a', accent: '#b03028', tex: 'cloth', leg: '#e8e0d0', boot: true, manta: false, orejeras: false, metal: role === 'mounted', head: 'morion', facepaint: false };
+  if (era === Era.VICEROYALTY) {
+    return { tunic: '#3a527a', accent: '#b03028', tex: 'cloth', leg: '#e8e0d0', boot: true, cloak: false, earOrnaments: false, metal: role === 'mounted', head: 'morion', facepaint: false };
   }
-  if (era === Era.REPUBLICA) {
-    return { tunic: '#33405a', accent: acc, tex: 'cloth', leg: '#5a5a62', boot: true, manta: false, orejeras: false, metal: false, head: 'kepi', facepaint: false };
+  if (era === Era.REPUBLIC) {
+    return { tunic: '#33405a', accent: acc, tex: 'cloth', leg: '#5a5a62', boot: true, cloak: false, earOrnaments: false, metal: false, head: 'kepi', facepaint: false };
   }
-  return { tunic: '#4a5540', accent: acc, tex: 'cloth', leg: '#3e4636', boot: true, manta: false, orejeras: false, metal: false, head: 'casco', facepaint: false };
+  return { tunic: '#4a5540', accent: acc, tex: 'cloth', leg: '#3e4636', boot: true, cloak: false, earOrnaments: false, metal: false, head: 'helmet', facepaint: false };
 }
 
 function addHumanoid(b: Builder, opts: {
@@ -368,7 +368,7 @@ function addHumanoid(b: Builder, opts: {
   weapon?: 'rifle' | 'musket' | 'sniper' | 'machete' | 'spear' | 'macana' | 'bow' | 'sling' | 'shield' | 'none';
   armor?: 'cloth' | 'metal' | 'power';
   gadget?: boolean;
-  tool?: 'hacha' | 'pico';
+  tool?: 'axe' | 'pick';
   carry?: boolean;
 }): void {
   const attire = getAttire(b, opts.role ?? 'melee');
@@ -401,7 +401,7 @@ function addHumanoid(b: Builder, opts: {
   } else {
     b.box(0.08, 0.42, 0.25, attire.accent, { x: -0.02, y: 0.85, rz: 0.35 });
     // manta/poncho andino para guerreros
-    if (attire.manta) {
+    if (attire.cloak) {
       b.cyl(0.19, 0.25, 0.34, 12, tunic, { y: 0.8, tex: 'cloth', texScale: 2 });
       b.cyl(0.252, 0.252, 0.05, 12, attire.accent, { y: 0.66, tex: 'cloth' });
     }
@@ -424,7 +424,7 @@ function addHumanoid(b: Builder, opts: {
   if (opts.tool) {
     const metal = '#8a929a';
     b.cylIn(armR, 0.022, 0.022, 0.44, 6, b.pal.darkWood, { y: -0.66, tex: 'wood' });
-    if (opts.tool === 'hacha') {
+    if (opts.tool === 'axe') {
       b.boxIn(armR, 0.06, 0.15, 0.13, metal, { y: -0.86, z: 0.045, rx: 0.2 });
       b.boxIn(armR, 0.04, 0.1, 0.16, '#c9d2da', { y: -0.86, z: 0.11 });
     } else {
@@ -451,7 +451,7 @@ function addHumanoid(b: Builder, opts: {
   b.boxIn(head, 0.016, 0.03, 0.025, skin, { y: 0.005, z: 0.088 });
   b.boxIn(head, 0.03, 0.008, 0.012, '#5a2a20', { y: -0.03, z: 0.086 });
   // orejeras (insignia de élite andina)
-  if (attire.orejeras) {
+  if (attire.earOrnaments) {
     b.cylIn(head, 0.028, 0.028, 0.02, 10, '#c8a040', { x: -0.1, y: 0.0, rz: Math.PI / 2, metalness: 0.7, roughness: 0.3 });
     b.cylIn(head, 0.028, 0.028, 0.02, 10, '#c8a040', { x: 0.1, y: 0.0, rz: Math.PI / 2, metalness: 0.7, roughness: 0.3 });
   }
@@ -542,7 +542,7 @@ function addHeadgear(b: Builder, head: THREE.Group, attire: Attire): void {
       b.boxIn(head, 0.03, 0.12, 0.03, '#b03028', { y: 0.2, z: 0.05 });
       break;
     }
-    case 'diadema': {
+    case 'diadem': {
       const crown = civ === 'chimu';
       const col = crown ? '#c8a040' : fabric;
       b.cylIn(head, 0.105, 0.105, crown ? 0.1 : 0.06, 12, col, { y: crown ? 0.09 : 0.08, metalness: crown ? 0.7 : 0, roughness: crown ? 0.35 : 0.8 });
@@ -550,7 +550,7 @@ function addHeadgear(b: Builder, head: THREE.Group, attire: Attire): void {
       if (!crown) b.boxIn(head, 0.04, 0.1, 0.03, acc, { y: 0.18, z: 0.04 });
       break;
     }
-    case 'cuatroPuntas': {
+    case 'fourPoints': {
       // gorro de cuatro puntas (altiplano)
       b.cylIn(head, 0.11, 0.105, 0.07, 12, fabric, { y: 0.08 });
       b.boxIn(head, 0.2, 0.09, 0.2, fabric, { y: 0.16 });
@@ -561,7 +561,7 @@ function addHeadgear(b: Builder, head: THREE.Group, attire: Attire): void {
       }
       break;
     }
-    case 'plumas': {
+    case 'feathers': {
       // tocado de plumas con banda (costa)
       b.cylIn(head, 0.105, 0.105, 0.07, 12, fabric, { y: 0.08 });
       b.boxIn(head, 0.22, 0.02, 0.22, acc, { y: 0.13 });
@@ -585,7 +585,7 @@ function addHeadgear(b: Builder, head: THREE.Group, attire: Attire): void {
       b.boxIn(head, 0.06, 0.03, 0.01, acc, { y: 0.06, z: 0.105 });
       break;
     }
-    case 'casco': {
+    case 'helmet': {
       // casco moderno
       b.sphereIn(head, 0.108, '#4a5540', { y: 0.03, tex: 'cloth' });
       b.cylIn(head, 0.112, 0.108, 0.05, 12, '#3e4636', { y: 0.1 });
@@ -630,13 +630,13 @@ function addVehicleBody(b: Builder, hull: string, turret: string, opts: { treads
 function buildInfantry(type: string, ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
   switch (type) {
-    case 'soldado_raso':
+    case 'soldier_grunt':
       addHumanoid(b, { role: 'melee', helmet: false, weapon: 'macana', armor: 'cloth' });
       break;
-    case 'soldado_moderno':
+    case 'soldier_modern':
       addHumanoid(b, { role: 'melee', helmet: true, weapon: 'spear', armor: 'cloth', backpack: true });
       break;
-    case 'soldado_elite':
+    case 'soldier_elite':
       addHumanoid(b, { role: 'elite', helmet: true, weapon: 'rifle', armor: 'metal', backpack: true, gadget: true });
       break;
     case 'power_armor':
@@ -644,7 +644,7 @@ function buildInfantry(type: string, ctx: BuildContext): THREE.Group {
       b.box(0.52, 0.4, 0.34, '#d7e0e8', { y: 0.82, tex: 'scifi', texScale: 2 });
       b.box(0.24, 0.3, 0.2, b.pal.emissive, { y: 0.55, z: 0.22, emissive: b.pal.emissive, emissiveIntensity: 1.2 });
       break;
-    case 'soldado_estelar':
+    case 'soldier_stellar':
       addHumanoid(b, { role: 'elite', helmet: true, weapon: 'none', armor: 'power', backpack: true, gadget: true });
       b.box(0.58, 0.42, 0.4, '#d7e0e8', { y: 0.84, tex: 'scifi', texScale: 2 });
       b.box(0.3, 0.36, 0.26, b.pal.emissive, { y: 0.48, z: 0.26, emissive: b.pal.emissive, emissiveIntensity: 1.4 });
@@ -662,26 +662,26 @@ function buildInfantry(type: string, ctx: BuildContext): THREE.Group {
 
 function buildRanged(type: string, ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
-  const isSniper = type === 'fusil_avanzado' || type === 'riflero';
+  const isSniper = type === 'advanced_rifleman' || type === 'veteran_rifleman';
   switch (type) {
-    case 'mosquetero':
+    case 'musketeer':
       addHumanoid(b, { role: 'ranged', helmet: false, weapon: 'sling', armor: 'cloth' });
       break;
-    case 'fusilero':
+    case 'rifleman':
       addHumanoid(b, { role: 'ranged', helmet: false, weapon: 'bow', armor: 'cloth' });
       break;
-    case 'riflero':
+    case 'veteran_rifleman':
       addHumanoid(b, { role: 'ranged', helmet: true, weapon: 'rifle', armor: 'metal', backpack: true });
       break;
-    case 'fusil_avanzado':
+    case 'advanced_rifleman':
       addHumanoid(b, { role: 'ranged', helmet: true, weapon: 'rifle', armor: 'metal', gadget: true });
       break;
-    case 'rifle_estelar':
+    case 'stellar_rifle':
       addHumanoid(b, { role: 'ranged', helmet: true, weapon: 'rifle', armor: 'metal', gadget: true });
       b.box(0.3, 0.06, 0.5, b.pal.emissive, { y: 0.5, z: 0.25, emissive: b.pal.emissive, emissiveIntensity: 1.5, transparent: true, opacity: 0.8 });
       b.box(0.16, 0.4, 0.3, b.pal.metal, { y: 1.0, metalness: 0.7, roughness: 0.3 });
       break;
-    case 'francotirador_estelar':
+    case 'sniper_stellar':
       addHumanoid(b, { role: 'elite', helmet: true, weapon: 'sniper', armor: 'power', backpack: true, gadget: true });
       b.box(0.52, 0.4, 0.34, '#d7e0e8', { y: 0.82, tex: 'scifi', texScale: 2 });
       b.box(0.16, 0.1, 1.0, b.pal.darkMetal, { x: 0.28, y: 1.0, z: 0.5, rz: Math.PI / 2, metalness: 0.85, roughness: 0.25 });
@@ -699,8 +699,8 @@ function buildRanged(type: string, ctx: BuildContext): THREE.Group {
 
 function buildWorker(type: string, ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
-  addHumanoid(b, { role: 'worker', weapon: 'none', armor: 'cloth', tool: 'hacha', carry: true });
-  if (type === 'obrero_fut') {
+  addHumanoid(b, { role: 'worker', weapon: 'none', armor: 'cloth', tool: 'axe', carry: true });
+  if (type === 'worker_future') {
     b.box(0.3, 0.3, 0.3, b.pal.emissive, { x: 0.4, y: 0.5, z: 0.1, emissive: b.pal.emissive, emissiveIntensity: 1.4, transparent: true, opacity: 0.35 });
   }
   return b.finish();
@@ -719,7 +719,7 @@ function buildMounted(type: string, ctx: BuildContext): THREE.Group {
   b.boxIn(mount, 0.12, 0.5, 0.14, b.pal.darkMetal, { x: 0.2, y: -0.15, z: -0.4 });
   // jinete encima de la silla (en un grupo elevado para no tocar la montura)
   const before = b.group.children.length;
-  addHumanoid(b, { role: 'mounted', helmet: type === 'caballeria', weapon: 'machete', armor: type === 'caballeria' ? 'metal' : 'cloth' });
+  addHumanoid(b, { role: 'mounted', helmet: type === 'cavalry', weapon: 'machete', armor: type === 'cavalry' ? 'metal' : 'cloth' });
   const rider = new THREE.Group();
   for (const child of b.group.children.splice(before)) rider.add(child);
   rider.position.y = 0.55;
@@ -758,7 +758,7 @@ function buildDrone(ctx: BuildContext): THREE.Group {
 
 function buildTank(type: string, ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
-  const scale = type.includes('liviano') ? 1 : type.includes('medio') ? 1.12 : type.includes('moderno') ? 1.2 : 1.3;
+  const scale = type.includes('liviano') ? 1 : type.includes('medium') ? 1.12 : type.includes('moderno') ? 1.2 : 1.3;
   b.group.scale.setScalar(scale);
   if (type.includes('fut')) {
     // tanque levitador futurista con torreta animada
@@ -850,7 +850,7 @@ function buildCommisar(type: string, ctx: BuildContext): THREE.Group {
 
 function buildMech(ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
-  const heavy = ctx.era >= Era.CONTEMPORANEO;
+  const heavy = ctx.era >= Era.CONTEMPORARY;
   // piernas
   b.box(0.5, 1.2, 0.6, b.pal.darkMetal, { x: -0.55, y: 0.6, metalness: 0.7 });
   b.box(0.5, 1.2, 0.6, b.pal.darkMetal, { x: 0.55, y: 0.6, metalness: 0.7 });
@@ -883,226 +883,226 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
   const era = ctx.era;
   switch (type) {
-    case 'centro_vapor':
+    case 'center_steam':
       buildHouse(b, 3.4, true);
       break;
-    case 'centro_imperial':
+    case 'center_imperial':
       buildCivic(b, 3.6, 'stone');
       break;
-    case 'centro_guerras':
+    case 'center_war':
       buildConcrete(b, 3.4, true);
       break;
-    case 'centro_atomica':
+    case 'center_atomic':
       buildConcrete(b, 3.6, true, true);
       break;
-    case 'centro_informacion':
+    case 'center_information':
       buildModern(b, 3.6, true);
       break;
-    case 'centro_estelar':
+    case 'center_stellar':
       buildFuturistic(b, 3.8, true);
       break;
 
-    case 'vivienda_vapor':
+    case 'house_steam':
       buildHouse(b, 1.8, false);
       break;
-    case 'vivienda_imperial':
+    case 'house_imperial':
       buildCivic(b, 1.9, 'stone');
       break;
-    case 'vivienda_guerras':
+    case 'house_war':
       buildConcrete(b, 1.9, false);
       break;
-    case 'vivienda_atomica':
+    case 'house_atomic':
       buildConcrete(b, 2.0, false, true);
       break;
-    case 'vivienda_informacion':
+    case 'house_information':
       buildModern(b, 2.0, false);
       break;
-    case 'vivienda_estelar':
+    case 'house_stellar':
       buildFuturistic(b, 2.1, false);
       break;
 
-    case 'molino_vapor':
+    case 'mill_steam':
       buildDropsite(b, 1.9, 'wood');
       break;
-    case 'molino_imperial':
+    case 'mill_imperial':
       buildDropsite(b, 2.0, 'brick');
       break;
-    case 'molino_moderno':
+    case 'mill_modern':
       buildConcrete(b, 2.0, false);
       break;
-    case 'planta_comida':
+    case 'plant_food':
       buildModern(b, 2.1, false);
       break;
 
-    case 'serreria_vapor':
+    case 'sawmill_steam':
       buildDropsite(b, 1.9, 'wood');
       break;
-    case 'serreria_imperial':
+    case 'sawmill_imperial':
       buildDropsite(b, 2.0, 'brick');
       break;
-    case 'serreria_moderna':
+    case 'sawmill_modern':
       buildConcrete(b, 2.0, false);
       break;
-    case 'planta_materiales':
+    case 'plant_materials':
       buildModern(b, 2.1, false);
       break;
 
-    case 'fundicion_vapor':
+    case 'smelter_steam':
       buildDropsite(b, 1.9, 'brick');
       break;
-    case 'fundicion_imperial':
+    case 'smelter_imperial':
       buildDropsite(b, 2.0, 'stone');
       break;
-    case 'fundicion_moderna':
+    case 'smelter_modern':
       buildConcrete(b, 2.1, false);
       break;
-    case 'planta_acero':
+    case 'plant_silver':
       buildModern(b, 2.2, false);
       break;
 
-    case 'refineria':
+    case 'refinery':
       buildConcrete(b, 2.2, false, true);
       break;
-    case 'planta_energia':
+    case 'plant_stone':
       buildModern(b, 2.3, true);
       break;
 
-    case 'cuartel_vapor':
+    case 'barracks_steam':
       buildBarracks(b, 2.6, 'wood');
       break;
-    case 'cuartel_imperial':
+    case 'barracks_imperial':
       buildBarracks(b, 2.7, 'brick');
       break;
-    case 'cuartel_guerras':
+    case 'barracks_war':
       buildMilitary(b, 2.7, false);
       break;
-    case 'cuartel_atomica':
+    case 'barracks_atomic':
       buildMilitary(b, 2.8, true);
       break;
-    case 'cuartel_informacion':
+    case 'barracks_information':
       buildModern(b, 2.8, false);
       break;
-    case 'cuartel_estelar':
+    case 'barracks_stellar':
       buildFuturistic(b, 2.9, false);
       break;
 
-    case 'polvorin_vapor':
+    case 'arsenal_steam':
       buildBarracks(b, 2.5, 'wood');
       break;
-    case 'polvorin_imperial':
+    case 'arsenal_imperial':
       buildBarracks(b, 2.6, 'brick');
       break;
-    case 'polvorin_guerras':
+    case 'arsenal_war':
       buildMilitary(b, 2.6, false);
       break;
-    case 'polvorin_atomica':
+    case 'arsenal_atomic':
       buildMilitary(b, 2.7, true);
       break;
-    case 'polvorin_informacion':
+    case 'arsenal_information':
       buildModern(b, 2.7, false);
       break;
-    case 'polvorin_estelar':
+    case 'arsenal_stellar':
       buildFuturistic(b, 2.8, false);
       break;
 
-    case 'garaje_vapor':
+    case 'stable_steam':
       buildStable(b, 2.7, 'wood');
       break;
-    case 'garaje_imperial':
+    case 'stable_imperial':
       buildStable(b, 2.8, 'brick');
       break;
-    case 'garaje_guerras':
+    case 'stable_war':
       buildMilitary(b, 2.8, false);
       break;
-    case 'garaje_atomica':
+    case 'stable_atomic':
       buildMilitary(b, 2.9, true);
       break;
-    case 'garaje_informacion':
+    case 'stable_information':
       buildModern(b, 2.9, false);
       break;
-    case 'garaje_estelar':
+    case 'stable_stellar':
       buildFuturistic(b, 3.0, false);
       break;
 
-    case 'fabrica_imperial':
+    case 'factory_imperial':
       buildFactory(b, 3.0, 'brick');
       break;
-    case 'fabrica_guerras':
+    case 'factory_war':
       buildMilitary(b, 3.0, false);
       break;
-    case 'fabrica_atomica':
+    case 'factory_atomic':
       buildMilitary(b, 3.1, true);
       break;
-    case 'fabrica_informacion':
+    case 'factory_information':
       buildModern(b, 3.1, true);
       break;
-    case 'fabrica_estelar':
+    case 'factory_stellar':
       buildFuturistic(b, 3.2, true);
       break;
 
-    case 'fortaleza_imperial':
+    case 'fortress_imperial':
       buildFortress(b, 3.4, 'stone');
       break;
-    case 'fortaleza_guerras':
+    case 'fortress_war':
       buildFortress(b, 3.4, 'concrete');
       break;
-    case 'fortaleza_atomica':
+    case 'fortress_atomic':
       buildFortress(b, 3.5, 'concrete');
       break;
-    case 'fortaleza_informacion':
+    case 'fortress_information':
       buildModern(b, 3.5, false);
       break;
-    case 'fortaleza_estelar':
+    case 'fortress_stellar':
       buildFuturistic(b, 3.6, false);
       break;
 
-    case 'mercado_vapor':
+    case 'market_steam':
       buildMarket(b, 2.6, 'wood');
       break;
-    case 'mercado_imperial':
+    case 'market_imperial':
       buildMarket(b, 2.7, 'brick');
       break;
-    case 'mercado_moderno':
+    case 'market_modern':
       buildConcrete(b, 2.7, false);
       break;
-    case 'bolsa_informacion':
+    case 'exchange_information':
       buildModern(b, 2.8, false);
       break;
-    case 'bolsa_estelar':
+    case 'exchange_stellar':
       buildFuturistic(b, 2.9, false);
       break;
 
-    case 'instituto_imperial':
+    case 'institute_imperial':
       buildCivic(b, 2.7, 'stone');
       break;
-    case 'instituto_guerras':
+    case 'institute_war':
       buildMilitary(b, 2.7, false);
       break;
-    case 'instituto_atomica':
+    case 'institute_atomic':
       buildMilitary(b, 2.8, true);
       break;
-    case 'instituto_informacion':
+    case 'institute_information':
       buildModern(b, 2.8, true);
       break;
-    case 'instituto_estelar':
+    case 'institute_stellar':
       buildFuturistic(b, 2.9, true);
       break;
 
-    case 'granja':
+    case 'farm':
       buildFarm(b);
       break;
-    case 'granja_fut':
+    case 'farm_future':
       buildFarmFut(b);
       break;
 
-    case 'maravilla':
+    case 'wonder':
       buildWonder(b);
       break;
 
     default:
       buildHouse(b, 2.5, false);
   }
-  addCivAccent(b, era >= Era.CONTEMPORANEO);
+  addCivAccent(b, era >= Era.CONTEMPORARY);
   return b.finish();
 }
 
@@ -1208,7 +1208,7 @@ function buildConcrete(b: Builder, size: number, tower: boolean, radar = false):
     b.box(w * 0.46, w * 0.12, w * 0.46, b.pal.darkMetal, { y: w * 1.25, tex: 'metalDark' });
   }
   if (radar) {
-    b.pivot('radar');
+    b.pivot('quipus_watchers');
     b.cyl(0.05, 0.05, w * 0.6, 6, b.pal.darkMetal, { y: w * 0.7 });
     b.sphere(w * 0.3, b.pal.metal, { y: w * 1.0, metalness: 0.6, roughness: 0.3 });
   }
@@ -1465,17 +1465,17 @@ function buildWonder(b: Builder): void {
 export function buildModel(spec: ModelSpec, ctx: BuildContext): THREE.Group {
   const { type, scale } = spec;
   let g: THREE.Group;
-  if (type.startsWith('obrero')) g = buildWorker(type, ctx);
-  else if (type.startsWith('soldado') || type === 'power_armor' || type === 'soldado_estelar') g = buildInfantry(type, ctx);
-  else if (type === 'mosquetero' || type === 'fusilero' || type === 'riflero' || type === 'fusil_avanzado' || type === 'rifle_estelar' || type === 'francotirador_estelar') g = buildRanged(type, ctx);
-  else if (type === 'husar' || type === 'caballeria') g = buildMounted(type, ctx);
-  else if (type === 'motocicleta') g = buildMotorcycle(ctx);
-  else if (type === 'dron_recon') g = buildDrone(ctx);
-  else if (type.startsWith('tanque')) g = buildTank(type, ctx);
+  if (type.startsWith('worker')) g = buildWorker(type, ctx);
+  else if (type.startsWith('soldier') || type === 'power_armor' || type === 'soldier_stellar') g = buildInfantry(type, ctx);
+  else if (type === 'musketeer' || type === 'rifleman' || type === 'veteran_rifleman' || type === 'advanced_rifleman' || type === 'stellar_rifle' || type === 'sniper_stellar') g = buildRanged(type, ctx);
+  else if (type === 'hussar' || type === 'cavalry') g = buildMounted(type, ctx);
+  else if (type === 'motorcycle') g = buildMotorcycle(ctx);
+  else if (type === 'recon_drone') g = buildDrone(ctx);
+  else if (type.startsWith('tank')) g = buildTank(type, ctx);
   else if (type.startsWith('aa')) g = buildAntiAir(type, ctx);
-  else if (type === 'canon' || type === 'artilleria' || type === 'howitzer' || type === 'artilleria_riel') g = buildCannon(type, ctx);
-  else if (type === 'mortero') g = buildMortar(ctx);
-  else if (type.startsWith('comisario')) g = buildCommisar(type, ctx);
+  else if (type === 'cannon' || type === 'artillery' || type === 'howitzer' || type === 'rail_artillery') g = buildCannon(type, ctx);
+  else if (type === 'mortar') g = buildMortar(ctx);
+  else if (type.startsWith('commissar')) g = buildCommisar(type, ctx);
   else if (type.startsWith('mech')) g = buildMech(ctx);
   else g = buildStructure(type, ctx);
 
