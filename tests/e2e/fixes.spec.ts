@@ -35,7 +35,7 @@ test('restores building opacity when construction finishes', async ({ page }) =>
   expect(res.after.opaque).toBe(res.before.opaque);
 });
 
-test('the worker has a hidden carry pivot at start', async ({ page }) => {
+test('the worker has a hidden carry pivot at start', { tag: '@smoke' }, async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
 
@@ -55,7 +55,7 @@ test('the worker has a hidden carry pivot at start', async ({ page }) => {
   expect(info!.visible).toBe(false);
 });
 
-test('the worker animates the arm while gathering', { tag: '@smoke' }, async ({ page }) => {
+test('the worker animates the arm while gathering', async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
 

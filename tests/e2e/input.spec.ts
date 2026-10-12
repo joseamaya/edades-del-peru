@@ -26,7 +26,7 @@ test('a single click on the build card starts placement', { tag: '@smoke' }, asy
   expect(placing).toBe('house');
 });
 
-test('clicking the ground places the previewed building', async ({ page }) => {
+test('clicking the ground places the previewed building', { tag: '@smoke' }, async ({ page }) => {
   await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
   await startMission(page);
   // wait for the mission world to be fully initialized

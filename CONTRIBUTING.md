@@ -42,8 +42,8 @@ yarn typecheck && yarn lint && yarn test && yarn build
 
 **CI:** the `build` job (typecheck/lint/unit/build) runs on every PR; the `e2e` workflow runs the
 `@smoke` subset on PRs and the **full** suite on `main`, and is skipped for docs-only PRs
-(`docs/**`, `**/*.md`, `.agents/**`, `review/**`). Tag a test `{ tag: '@smoke' }` only if it covers a
-core flow worth gating every PR on.
+(`**/*.md`, `.agents/**`). Tag a test `{ tag: '@smoke' }` only if it covers a core flow worth gating
+every PR on (keep the subset fast).
 
 ## Architecture (summary)
 
