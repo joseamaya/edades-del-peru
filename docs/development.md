@@ -128,8 +128,9 @@ for player-facing docs see [`README.md`](../README.md).
   shared `pickMaterial` on `EntityView.pickProxy`) when traversing a view to tint/fade. The placement ghost
   turns vertex colours back off (`buildModelForGhost`) so its tint stays a flat silhouette.
 - **Save/load (skirmish only)** (`src/game/SaveGame.ts` + `saveTypes.ts`): a versioned JSON snapshot in
-  `localStorage['peru-save']`. `Game.saveMatch()` writes it; `?load=1` boots a `Game` in load mode (the
-  `snapshot` constructor arg skips the default spawns and applies it). `toSave()/applySave()` live on
+  `localStorage['peru-save']`. `Game.saveMatch()` writes it (pause menu → **Guardar partida**); `?load=1` boots a
+  `Game` in load mode (the `snapshot` constructor arg skips the default spawns and applies it; the main menu shows
+  **Continuar partida** when a save exists). `toSave()/applySave()` live on
   `Unit`/`Building`/`ResourceNode`, so a new world-affecting field must be added there **and** to
   `saveTypes.ts`; ids are preserved with `EntityView.reserveIds`, the RNG with `RNG.getState/setState`, and the
   fog grid with `Fow.serialize/restore`. Bump `SAVE_VERSION` on any shape change. The AI is rebuilt fresh and

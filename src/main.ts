@@ -77,7 +77,8 @@ function floatParam(params: URLSearchParams, key: string, fallback: number): num
 
 function boot(): void {
   const params = new URLSearchParams(window.location.search);
-  const snapshot = params.get('load') === '1' ? loadFromStorage() : null;
+  const wantsLoad = params.get('load') === '1';
+  const snapshot = wantsLoad ? loadFromStorage() : null;
   const settings = snapshot ? { ...snapshot.settings } : loadSettings();
   if (!snapshot) {
     if (params.get('mission')) settings.missionId = params.get('mission')!;
@@ -127,7 +128,7 @@ function boot(): void {
       }
     }
   }
-  if (params.get('menu') === '1') {
+  if (params.get('menu') === '1' || (wantsLoad && !snapshot)) {
     game.hud.showMainMenu();
   } else if (!startsMatchDirectly(params)) {
     game.hud.showMainMenu();

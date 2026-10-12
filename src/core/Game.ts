@@ -549,9 +549,9 @@ export class Game {
     location.href = url.toString();
   }
 
-  /** Serialize the current match into the single save slot. */
-  saveMatch(): void {
-    saveToStorage(serializeGame(this));
+  /** Serialize the current match into the single save slot. Returns false if storage is unavailable. */
+  saveMatch(): boolean {
+    return saveToStorage(serializeGame(this));
   }
 
   /** Reload the page into the saved match (skirmish only). */
@@ -559,6 +559,7 @@ export class Game {
     const url = new URL(location.href);
     url.searchParams.set('load', '1');
     url.searchParams.delete('mission');
+    url.searchParams.delete('menu');
     location.href = url.toString();
   }
 
