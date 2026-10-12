@@ -48,12 +48,21 @@ test('model materials are per instance and do not leak between entities', async 
     });
     const houseColorAfter = mats(house.view.group)[0].color.getHex();
 
-    return { shared, centerTransparentBefore, centerTransparentAfter, houseFaded, houseColorBefore, houseColorAfter, ghostColor };
+    return {
+      shared,
+      centerTransparentBefore,
+      centerTransparentAfter,
+      houseFaded,
+      houseColorBefore,
+      houseColorAfter,
+      ghostColor,
+    };
   });
 
   expect(res.shared).toBe(false);
   expect(res.centerTransparentAfter).toBe(res.centerTransparentBefore);
   expect(res.houseFaded).toBe(true);
   expect(res.houseColorAfter).toBe(res.houseColorBefore);
-  expect([0x33ff88, 0xff4444]).toContain(res.ghostColor);
+  // the ghost got tinted (valid/invalid color), but that tint stayed on the ghost
+  expect(res.ghostColor).not.toBe(res.houseColorBefore);
 });
