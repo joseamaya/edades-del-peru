@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Era, UnitKind, BuildingKind, HistoricalPeriod } from '../src/core/types';
+import { Era, UnitKind, BuildingKind, HistoricalPeriod, CivId } from '../src/core/types';
 import { UNIT_ARCHETYPES, getUnitStats } from '../src/model/defs/units';
 import { BUILDING_DEFS, getBuildingStats } from '../src/model/defs/buildings';
 import { TECHS } from '../src/model/defs/techs';
@@ -115,6 +115,14 @@ describe('periods and civilizations', () => {
         expect(periods.has(pid), `${c.id} unknown period ${pid}`).toBe(true);
       }
     }
+  });
+
+  it('includes the coetaneous civilizations documented for P1 and P4', () => {
+    const ids = (p: HistoricalPeriod): CivId[] => civsForPeriod(p).map((c) => c.id);
+    expect(ids(HistoricalPeriod.EARLY_HORIZON)).toContain(CivId.CUPISNIQUE);
+    expect(ids(HistoricalPeriod.LATE_INTERMEDIATE)).toEqual(
+      expect.arrayContaining([CivId.COLLAS, CivId.HUANCA]),
+    );
   });
 });
 
