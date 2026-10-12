@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('boots without errors and exposes window.game', async ({ page }) => {
+test('boots without errors and exposes window.game', { tag: '@smoke' }, async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => {
@@ -34,7 +34,7 @@ test('shows the main menu by default', async ({ page }) => {
   await expect(page.getByRole('button', { name: /Cómo jugar/ })).toBeVisible();
 });
 
-test('selects a unit on click', async ({ page }) => {
+test('selects a unit on click', { tag: '@smoke' }, async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,

@@ -55,7 +55,7 @@ test('the worker has a hidden carry pivot at start', async ({ page }) => {
   expect(info!.visible).toBe(false);
 });
 
-test('the worker animates the arm while gathering', async ({ page }) => {
+test('the worker animates the arm while gathering', { tag: '@smoke' }, async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
 
@@ -279,7 +279,7 @@ test('hides Stone and Quarry in periods that cannot obtain them', async ({ page 
   expect(early.stoneDisplay).toBe('none');
 });
 
-test('the Amauta converts an enemy unit without throwing', async ({ page }) => {
+test('the Amauta converts an enemy unit without throwing', { tag: '@smoke' }, async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/?seed=777&fog=0&low=1');

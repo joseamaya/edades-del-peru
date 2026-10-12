@@ -5,7 +5,7 @@ import { test, expect } from '@playwright/test';
  * These assert that the resolved entity is still the one under the cursor, and
  * that empty space stays empty.
  */
-test('picking resolves units and buildings from their proxies', async ({ page }) => {
+test('picking resolves units and buildings from their proxies', { tag: '@smoke' }, async ({ page }) => {
   await page.goto('/?play=1&seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,

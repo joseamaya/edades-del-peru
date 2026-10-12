@@ -46,7 +46,7 @@ test('the tutorial guides in the first mission', async ({ page }) => {
   await expect(tutorial).toContainText('Paso 1 / 5');
 });
 
-test('the missions with corrected rosters boot with units and no errors', async ({ page }) => {
+test('the missions with corrected rosters boot with units and no errors', { tag: '@smoke' }, async ({ page }) => {
   test.setTimeout(180_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
