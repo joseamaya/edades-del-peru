@@ -250,6 +250,10 @@ export class RTSCamera {
     return this.yaw;
   }
 
+  setYaw(yaw: number): void {
+    this.yaw = yaw;
+  }
+
   /** Current zoom distance (for LOD). */
   getZoom(): number {
     return this.zoom;

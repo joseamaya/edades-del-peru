@@ -8,6 +8,7 @@ import { allocId } from './EntityView';
 import { getUnitStats } from '../model/defs/units';
 import { getTech } from '../model/defs/techs';
 import { clamp } from '../util/math';
+import type { BuildingSave } from '../game/saveTypes';
 
 export class Building {
   id = allocId();
@@ -373,6 +374,51 @@ export class Building {
     disposeModel(old);
     this.view = new EntityView(newModel, this.radius * 0.9, this);
     if (!this.constructionComplete) this.setConstructionOpacity(0.45);
+  }
+
+  /** Snapshot the gameplay state (used by save/load). */
+  toSave(): BuildingSave {
+    return {
+      id: this.id,
+      owner: this.owner,
+      kind: this.kind,
+      era: this.era,
+      pos: { x: this.pos.x, y: this.pos.y, z: this.pos.z },
+      yaw: this.yaw,
+      hp: this.hp,
+      constructionProgress: this.constructionProgress,
+      constructionComplete: this.constructionComplete,
+      productionQueue: this.productionQueue.map((q) => ({ ...q })),
+      researchQueue: this.researchQueue.map((q) => ({ ...q })),
+      garrisonedIds: [...this.garrisonedIds],
+      rallyPoint: { ...this.rallyPoint },
+      hasRallyPoint: this.hasRallyPoint,
+      attackCooldown: this.attackCooldown,
+      wonderTimer: this.wonderTimer,
+      foodAmount: this.foodAmount,
+      tag: this.tag,
+    };
+  }
+
+  applySave(s: BuildingSave): void {
+    this.id = s.id;
+    this.hp = s.hp;
+    this.pos.set(s.pos.x, s.pos.y, s.pos.z);
+    this.yaw = s.yaw;
+    this.productionQueue = s.productionQueue ?? [];
+    this.researchQueue = s.researchQueue ?? [];
+    this.garrisonedIds = s.garrisonedIds ?? [];
+    this.rallyPoint = s.rallyPoint ?? { x: 0, z: 0 };
+    this.hasRallyPoint = s.hasRallyPoint;
+    this.attackCooldown = s.attackCooldown;
+    this.wonderTimer = s.wonderTimer;
+    this.foodAmount = s.foodAmount;
+    if (s.tag) this.tag = s.tag;
+    this.constructionProgress = s.constructionProgress;
+    this.constructionComplete = s.constructionComplete;
+    this.setConstructionOpacity(this.constructionComplete ? 1 : 0.45);
+    this.view.setPosition(this.pos.x, this.pos.y, this.pos.z);
+    this.view.setRotationY(this.yaw);
   }
 
   removeFromScene(): void {

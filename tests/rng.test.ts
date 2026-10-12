@@ -34,6 +34,16 @@ describe('RNG', () => {
     expect(f()).toBe(r.float());
   });
 
+  it('getState/setState resumes the same sequence', () => {
+    const a = new RNG(123);
+    for (let i = 0; i < 5; i++) a.float();
+    const state = a.getState();
+    const expected = a.float();
+    const b = new RNG(1);
+    b.setState(state);
+    expect(b.float()).toBe(expected);
+  });
+
   it('hashCode is stable and non-negative', () => {
     expect(hashCode('inca')).toBe(hashCode('inca'));
     expect(hashCode('inca')).toBeGreaterThanOrEqual(0);

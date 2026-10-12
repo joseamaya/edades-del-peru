@@ -6,6 +6,7 @@ import { EntityView } from '../entities/EntityView';
 import { allocId } from '../entities/EntityView';
 import { Order, OrderKind, OrderTarget } from '../core/types';
 import { angleTo, distance2D, clamp, lerp } from '../util/math';
+import type { UnitSave } from '../game/saveTypes';
 
 /** Context that Game provides to units (avoids circular dependencies). */
 export interface UnitContext {
@@ -992,6 +993,61 @@ export class Unit {
 
   setCarryCapacity(v: number): void {
     this.carryCapacity = v;
+  }
+
+  /** Snapshot the gameplay state (used by save/load). */
+  toSave(): UnitSave {
+    return {
+      id: this.id,
+      owner: this.owner,
+      kind: this.kind,
+      era: this.era,
+      pos: { x: this.pos.x, y: this.pos.y, z: this.pos.z },
+      yaw: this.yaw,
+      hp: this.hp,
+      orders: this.orderQueue.map((o) => ({ ...o })),
+      targetEntityId: this.targetEntityId,
+      attackCooldown: this.attackCooldown,
+      gatherCarry: { ...this.gatherCarry },
+      carryCapacity: this.carryCapacity,
+      convertProgress: this.convertProgress,
+      garrisonedIn: this.garrisonedIn,
+      isConstructing: this.isConstructing,
+      rallyPoint: this.rallyPoint,
+      combatStance: this.combatStance,
+      buildEfficiency: this.buildEfficiency,
+      gatherMultiplier: this.gatherMultiplier,
+      attackMultiplier: this.attackMultiplier,
+      armorMultiplier: this.armorMultiplier,
+      tag: this.tag,
+    };
+  }
+
+  applySave(s: UnitSave): void {
+    this.id = s.id;
+    this.hp = s.hp;
+    this.pos.set(s.pos.x, s.pos.y, s.pos.z);
+    this.yaw = s.yaw;
+    this.targetYaw = s.yaw;
+    this.orderQueue = s.orders ?? [];
+    this.targetEntityId = s.targetEntityId;
+    this.attackCooldown = s.attackCooldown;
+    this.gatherCarry = { ...s.gatherCarry };
+    this.carryCapacity = s.carryCapacity;
+    this.convertProgress = s.convertProgress;
+    this.garrisonedIn = s.garrisonedIn;
+    this.isConstructing = s.isConstructing;
+    this.rallyPoint = s.rallyPoint;
+    this.combatStance = s.combatStance ?? 'agresivo';
+    this.buildEfficiency = s.buildEfficiency;
+    this.gatherMultiplier = s.gatherMultiplier;
+    this.attackMultiplier = s.attackMultiplier;
+    this.armorMultiplier = s.armorMultiplier;
+    if (s.tag) this.tag = s.tag;
+    this.view.setPosition(this.pos.x, this.pos.y, this.pos.z);
+    this.view.setRotationY(this.yaw);
+    this.view.group.visible = this.garrisonedIn === null;
+    this.view.updateHealth(this.hp / this.maxHp);
   }
 
   removeFromScene(): void {

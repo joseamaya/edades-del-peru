@@ -16,7 +16,7 @@ import { ResourceNode, clearResourceCaches } from '../entities/ResourceNode';
 import { OrderMarkers, MarkerKind } from '../entities/OrderMarker';
 import { TreeInstances } from '../rendering/TreeInstances';
 import { Projectile, updateProjectilePools } from '../entities/Projectile';
-import { EntityView } from '../entities/EntityView';
+import { EntityView, reserveIds } from '../entities/EntityView';
 import { AI } from '../game/AI';
 import { Economy } from '../game/Economy';
 import { HUD } from '../ui/HUD';
@@ -40,6 +40,8 @@ import { Mission } from '../campaign/Mission';
 import { Tutorial } from '../campaign/Tutorial';
 import { getMission } from '../campaign/defs/campaign';
 import type { MissionDef } from '../campaign/types';
+import { serializeGame, saveToStorage } from '../game/SaveGame';
+import type { SaveData } from '../game/saveTypes';
 
 const NODE_INFO: Record<ResourceNode['kind'], { name: string; icon: string }> = {
   tree: { name: 'Árbol', icon: '🌳' },
@@ -100,9 +102,11 @@ export class Game {
   private paused = false;
   private gameEnded = false;
   private wonderReqTime = 300;
+  private pendingSnapshot: SaveData | null = null;
 
-  constructor(settings: GameSettings) {
+  constructor(settings: GameSettings, snapshot: SaveData | null = null) {
     this.settings = { ...DEFAULT_SETTINGS, ...settings };
+    this.pendingSnapshot = snapshot;
     const mis = this.settings.missionId ? getMission(this.settings.missionId) : undefined;
     if (mis) {
       // fixed mission configuration overrides the skirmish
@@ -130,6 +134,7 @@ export class Game {
     this.audio.setEra(this.players[0].era);
     this.initAudio();
     if (mis) this.applyMissionSetup(mis);
+    if (this.pendingSnapshot) this.applySnapshot(this.pendingSnapshot);
     this.loop.onUpdate = (dt, t) => this.update(dt, t);
     this.loop.onRender = () => this.render();
     this.loop.start();
@@ -182,7 +187,7 @@ export class Game {
     this.terrain.setFow(this.fow.texture, s.fogOfWar);
     this.pathfinder = new Pathfinder(s.mapSize, 2);
     this.pathfinder.bakeTerrain((x, z) => this.terrain.getHeight(x, z), this.terrain.waterLevel);
-    this.spawnResources();
+    if (!this.pendingSnapshot) this.spawnResources();
   }
 
   private setTimeOfDay(mode: string): void {
@@ -228,6 +233,7 @@ export class Game {
         stats: { created: 0, destroyed: 0, military: 0, econ: 0 },
       });
     }
+    if (this.pendingSnapshot) return;
     // player placement
     const s = this.settings.mapSize;
     const rng = new RNG(this.settings.mapSeed + 7);
@@ -279,9 +285,7 @@ export class Game {
       node.view.position.set(x, node.pos.y, z);
       node.placeTreeInstance(node.pos.y);
       this.resourceNodes.set(node.id, node);
-      const handle = { x, z, radius: kind === 'tree' ? 0.5 : 1.1 };
-      this.obstacleHandles.set(node.id, handle);
-      this.pathfinder.addObstacle(handle);
+      this.registerResourceObstacle(node.id, x, z, kind);
       placed++;
     }
     // hunting and fishing
@@ -310,6 +314,14 @@ export class Game {
     const stats = getBuildingStats(b.kind, b.era);
     const handle = { x: b.pos.x, z: b.pos.z, radius: stats.size * 0.6 };
     this.obstacleHandles.set(b.id, handle);
+    this.pathfinder.addObstacle(handle);
+  }
+
+  /** Register a solid resource node as a pathfinding obstacle (animals/fish are not). */
+  private registerResourceObstacle(id: number, x: number, z: number, kind: ResourceNode['kind']): void {
+    if (kind === 'hunt' || kind === 'fishing') return;
+    const handle = { x, z, radius: kind === 'tree' ? 0.5 : 1.1 };
+    this.obstacleHandles.set(id, handle);
     this.pathfinder.addObstacle(handle);
   }
 
@@ -373,9 +385,7 @@ export class Game {
       node.view.position.set(nx, node.pos.y, nz);
       node.placeTreeInstance(node.pos.y);
       this.resourceNodes.set(node.id, node);
-      const handle = { x: nx, z: nz, radius: kind === 'tree' ? 0.5 : 1.1 };
-      this.obstacleHandles.set(node.id, handle);
-      this.pathfinder.addObstacle(handle);
+      this.registerResourceObstacle(node.id, nx, nz, kind);
     };
     // trees
     for (let i = 0; i < 10; i++) {
@@ -537,6 +547,79 @@ export class Game {
     url.searchParams.set('play', '1');
     if (this.settings.missionId) url.searchParams.set('mission', this.settings.missionId);
     location.href = url.toString();
+  }
+
+  /** Serialize the current match into the single save slot. */
+  saveMatch(): void {
+    saveToStorage(serializeGame(this));
+  }
+
+  /** Reload the page into the saved match (skirmish only). */
+  loadMatch(): void {
+    const url = new URL(location.href);
+    url.searchParams.set('load', '1');
+    url.searchParams.delete('mission');
+    location.href = url.toString();
+  }
+
+  /** Restore a snapshot into a freshly built game (load mode; no default spawns). */
+  private applySnapshot(data: SaveData): void {
+    this.rng.setState(data.rngState);
+
+    for (const ps of data.players) {
+      const p = this.players[ps.id];
+      if (!p) continue;
+      p.resources = { ...ps.resources };
+      p.populationUsed = ps.populationUsed;
+      p.era = ps.era;
+      p.ageBuildings = ps.ageBuildings;
+      p.techs = new Set(ps.techs);
+      p.alive = ps.alive;
+      p.kills = ps.kills;
+      p.totalLost = ps.totalLost;
+      p.wonderActive = ps.wonderActive;
+      p.stats = { ...ps.stats };
+      p.bonus = { ...ps.bonus, gathering: { ...ps.bonus.gathering } };
+    }
+
+    let maxId = 0;
+    for (const u of data.units) maxId = Math.max(maxId, u.id);
+    for (const b of data.buildings) maxId = Math.max(maxId, b.id);
+    for (const n of data.resourceNodes) maxId = Math.max(maxId, n.id);
+    reserveIds(maxId);
+
+    for (const ns of data.resourceNodes) {
+      const node = new ResourceNode(this.scene, ns.kind, ns.x, ns.z, ns.amount, this.settings.mapType, this.trees);
+      node.applySave(ns);
+      node.pos.y = ns.kind === 'fishing' ? 0 : this.terrain.getHeight(ns.x, ns.z);
+      node.view.position.set(ns.x, node.pos.y, ns.z);
+      node.placeTreeInstance(node.pos.y);
+      this.resourceNodes.set(node.id, node);
+      this.registerResourceObstacle(node.id, ns.x, ns.z, ns.kind);
+    }
+
+    for (const bs of data.buildings) {
+      const b = new Building(bs.kind, bs.owner, bs.era, this.makeBuildContext(bs.owner));
+      b.applySave(bs);
+      b.attach(this.scene);
+      this.buildings.set(b.id, b);
+      this.registerObstacle(b);
+    }
+
+    for (const us of data.units) {
+      const u = new Unit(us.kind, us.owner, us.era, this.makeBuildContext(us.owner));
+      u.setContext(this.unitContext);
+      this.applyPlayerBonuses(u, this.players[us.owner]);
+      u.applySave(us);
+      u.attach(this.scene);
+      this.units.set(u.id, u);
+    }
+
+    this.camera.moveTo(data.camera.x, data.camera.z, true);
+    this.camera.setHeight(data.camera.zoom);
+    this.camera.setYaw(data.camera.yaw);
+    this.fow.restore(data.fog);
+    this.audio.setEra(this.players[0].era);
   }
 
   /** Show the victory/defeat screen. */
