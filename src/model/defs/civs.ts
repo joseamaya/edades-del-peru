@@ -58,9 +58,9 @@ export const CIVS: CivDef[] = [
     colors: { primary: '#9a6a4a', secondary: '#d8c0a0', accent: '#3a5a6a' },
     periods: [HistoricalPeriod.EARLY_HORIZON],
     geography: 'coast',
-    bonuses: ['Adobe monumental (Huaca de los Reyes): edificios más resistentes', 'Cerámica ceremonial: economía más eficiente', 'Metalurgia temprana: plata +10%'],
-    effects: { armor: 0.1, gathering: { silver: 0.1 } },
-    description: 'Cultura formativa de la costa norte (1500–1000 a.C.), precursora y coetánea de Chavín, célebre por su arquitectura de adobe y su cerámica.',
+    bonuses: ['Adobe monumental (Huaca de los Reyes): edificios más resistentes', 'Cerámica ceremonial: economía más eficiente', 'Pesca y marisqueo: comida +10%'],
+    effects: { armor: 0.1, gathering: { food: 0.1 } },
+    description: 'Cultura formativa de la costa norte (c. 1500–1000 a.C.), precursora y coetánea de Chavín, célebre por su arquitectura de adobe y su cerámica.',
   },
   {
     id: CivId.MOCHE,
@@ -151,7 +151,7 @@ export const CIVS: CivDef[] = [
     description: 'La confederación guerrera de Andahuaylas que estuvo a punto de tomar el Cusco en 1438.',
   },
   {
-    id: CivId.COLLAS,
+    id: CivId.COLLAS_LUPACA,
     name: 'Señoríos Collas y Lupaca',
     adjective: 'colla',
     colors: { primary: '#5a6a8a', secondary: '#c8d0d8', accent: '#c8a040' },

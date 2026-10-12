@@ -36,6 +36,8 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
 - **Caral-Supe**: algodón (redes, textil). Atuendo militar: **no documentado**.
 - **Chavín**: iconografía felínica/antropomorfa. Atuendo: **no documentado**.
 - **Paracas**: **textilería fina** y **arte plumario** (plumas). Prendas concretas: **no documentado**.
+- **Cupisnique**: arquitectura de adobe y cerámica incisa (formativo de la costa norte). Atuendo: **no
+  documentado**.
 - **Moche**: guerreros con **cascos cónicos** de metal, **porra (club)** y **túnica con armadura de
   espalda (backflap) trapezoidal**, **orejeras** (orejones), **taparrabos**, **honda** y **estólica
   (atlatl)**; **escudo circular**. — Museo Larco, *Mochica Warrior Clothing* y catálogo; The Met,
@@ -48,6 +50,8 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
 - **Chimú**: **orfebrería**; **orejeras y máscaras** de metal; **tumi**. Prendas: **no documentado**.
 - **Chincha**: comercio; **no documentado** atuendo.
 - **Chanca**: **pintura facial** («se pintaban el rostro»). Prendas: **no documentado**.
+- **Collas/Lupaca**: señoríos aimaras del altiplano (ganadería, chullpas). Atuendo: **no documentado**.
+- **Huanca**: nación del valle del Mantaro. Atuendo: **no documentado**.
 - **Inca**: ejército con **chasquis**; **uncu** (ajedrezado + canesú rojo, tocapu) sobre taparrabos,
   tela cumbi; **llawt'u + maskapaycha** para el Sapa Inca; arco solo en auxiliares de selva. —
   LACMA/Dumbarton Oaks/Met/Museo de América; Métraux.

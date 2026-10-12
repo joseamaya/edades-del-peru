@@ -39,7 +39,7 @@ export enum CivId {
   CHIMU = 'chimu',
   CHINCHA = 'chincha',
   CHANCA = 'chanca',
-  COLLAS = 'collas',
+  COLLAS_LUPACA = 'collas_lupaca',
   HUANCA = 'huanca',
   INCA = 'inca',
   // Historical (post-Hispanic)

@@ -3,7 +3,7 @@
 - **Periodo**: Intermedio Tardío (P4), c. 1150–1477 d.C.
 - **Geografía**: **altiplano del Titicaca** (actual Puno y el altiplano peruano-boliviano), en torno al
   lago; puna de altura (por encima de los 3800 msnm).
-- **Núcleos**: los **reinos aimaras** del Collao. El señorío **Colla** en torno a **Hatun Colla** (cerca
+- **Núcleo**: los **reinos aimaras** del Collao. El señorío **Colla** en torno a **Hatun Colla** (cerca
   de Puno) y el señorío **Lupaca**, con centro en **Chucuito**. Junto a ellos, otros señoríos aimaras
   (Pacajes, Carangas, etc.).
 - **Economía**: **ganadería de camélidos** (llamas y alpacas) a gran escala, con rebaños de miles de

@@ -118,10 +118,14 @@ describe('periods and civilizations', () => {
   });
 
   it('includes the coetaneous civilizations documented for P1 and P4', () => {
+    const byId = new Map(CIVS.map((c) => [c.id, c]));
+    expect(byId.get(CivId.CUPISNIQUE)?.geography).toBe('coast');
+    expect(byId.get(CivId.COLLAS_LUPACA)?.geography).toBe('altiplano');
+    expect(byId.get(CivId.HUANCA)?.geography).toBe('andes');
     const ids = (p: HistoricalPeriod): CivId[] => civsForPeriod(p).map((c) => c.id);
     expect(ids(HistoricalPeriod.EARLY_HORIZON)).toContain(CivId.CUPISNIQUE);
     expect(ids(HistoricalPeriod.LATE_INTERMEDIATE)).toEqual(
-      expect.arrayContaining([CivId.COLLAS, CivId.HUANCA]),
+      expect.arrayContaining([CivId.COLLAS_LUPACA, CivId.HUANCA]),
     );
   });
 });
