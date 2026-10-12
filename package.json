@@ -34,6 +34,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "bench": "node scripts/bench.mjs",
     "shot": "node scripts/screenshot.mjs",
     "shot:analyze": "node scripts/analyze.mjs",
     "shot:ascii": "node scripts/ascii.mjs",

@@ -126,3 +126,26 @@ for player-facing docs see [`README.md`](../README.md).
   free port and Chromium with SwiftShader; they use `CHROME_PATH` or `chromium.executablePath()`. Run captures
   with `?low=1`.
 - `review/` holds generated PNG/JSON (gitignored); do not edit them by hand.
+
+## Performance benchmarks
+
+`yarn bench [--units=100,300,500,1000] [--seed=777] [--render-ms=3000]` boots a match in Chromium
+(SwiftShader) and, per scale, spawns N soldiers and measures: spawn/destroy time, simulation step time
+(`Game.update`), A* per call, target acquisition (`enemiesNear`) and, with the loop running, FPS and real
+scene draw calls/triangles (via the `window.__directRender` debug hook, which bypasses post-processing so
+`renderer.info` is meaningful). It writes `review/bench.json` and prints a table.
+
+Numbers are only comparable **on the same machine/browser** — treat them as relative signals, not targets.
+Reference run (this repo, 2-core container, `CHROME_PATH` SwiftShader, `?low=1`, seed 777):
+
+| units | spawn ms | sim ms/step | A* ms/call | target µs/call | draw calls | triangles | heap MB |
+|---|---|---|---|---|---|---|---|
+| 100 | 44 | 0.9 | 0.24 | 2.7 | ~8.8k | 2.8M | 55 |
+| 300 | 120 | 1.5 | 0.14 | 2.5 | ~25k | 7.3M | 77 |
+| 500 | 238 | 1.7 | 0.13 | 2.5 | ~40k | 11.6M | 88 |
+| 1000 | 408 | 4.1 | 0.11 | 2.7 | ~79k | 22.3M | 157 |
+
+Reading: the **simulation and pathfinding are cheap** (≈4 ms/step at 1000 units, well under the 16.6 ms
+budget; A* is sub-millisecond). The bottleneck is **draw calls** (~80 per unit — each unit is a group of
+many meshes, doubled by the shadow pass — with no instancing for units). Any raising of the unit ceiling
+should target that first, backed by this table.
