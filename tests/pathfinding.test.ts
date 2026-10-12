@@ -35,4 +35,13 @@ describe('Pathfinder', () => {
     expect(pf.isWalkable(30, 30)).toBe(false);
     expect(pf.isWalkable(70, 70)).toBe(true);
   });
+
+  it('reaches a goal sitting inside an obstacle (a building) instead of failing', () => {
+    const pf = new Pathfinder(100, 2);
+    pf.addObstacle({ x: 50, z: 50, radius: 3 });
+    const path = pf.pathfind(20, 20, 50, 50);
+    expect(path.length).toBeGreaterThan(0);
+    const last = path[path.length - 1];
+    expect(Math.hypot(last.x - 50, last.z - 50)).toBeLessThanOrEqual(8);
+  });
 });

@@ -134,6 +134,27 @@ export interface Order {
 
 export type Team = 0 | 1;
 
+/**
+ * Aggregated per-player bonuses (technologies + civilization). Additive fields are
+ * numeric modifiers: multipliers where noted (`attack`, `armor`, `speed`, `training`),
+ * flat amounts otherwise (`carry`, `los`, `range`, `population`). `gathering` values
+ * are additive multipliers per resource.
+ */
+export interface CivBonuses {
+  attack: number;
+  armor: number;
+  gathering: Partial<Resources>;
+  carry: number;
+  los: number;
+  range: number;
+  speed: number;
+  training: number;
+  population: number;
+}
+
+/** Numeric civilization bonuses (a partial set of player bonuses). */
+export type CivEffects = Partial<CivBonuses>;
+
 export interface PlayerState {
   id: number;
   name: string;
@@ -153,16 +174,7 @@ export interface PlayerState {
   kills: number;
   totalLost: number;
   wonderActive: boolean;
-  bonus: {
-    attack: number;
-    armor: number;
-    gathering: Partial<Resources>;
-    carry: number;
-    los: number;
-    range: number;
-    speed: number;
-    training: number;
-  };
+  bonus: CivBonuses;
   stats: { created: number; destroyed: number; military: number; econ: number };
 }
 

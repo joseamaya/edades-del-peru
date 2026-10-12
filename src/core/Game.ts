@@ -13,7 +13,7 @@ import { Pathfinder } from '../game/Pathfinding';
 import { Unit, UnitContext } from '../entities/Unit';
 import { Building } from '../entities/Building';
 import { ResourceNode, clearResourceCaches } from '../entities/ResourceNode';
-import { OrderMarkers } from '../entities/OrderMarker';
+import { OrderMarkers, MarkerKind } from '../entities/OrderMarker';
 import { TreeInstances } from '../rendering/TreeInstances';
 import { Projectile, updateProjectilePools } from '../entities/Projectile';
 import { EntityView } from '../entities/EntityView';
@@ -211,7 +211,17 @@ export class Game {
         kills: 0,
         totalLost: 0,
         wonderActive: false,
-        bonus: { attack: 0, armor: 0, gathering: {}, carry: 0, los: 0, range: 0, speed: 0, training: 0 },
+        bonus: {
+          attack: civ.effects?.attack ?? 0,
+          armor: civ.effects?.armor ?? 0,
+          gathering: { ...(civ.effects?.gathering ?? {}) },
+          carry: civ.effects?.carry ?? 0,
+          los: civ.effects?.los ?? 0,
+          range: civ.effects?.range ?? 0,
+          speed: civ.effects?.speed ?? 0,
+          training: civ.effects?.training ?? 0,
+          population: civ.effects?.population ?? 0,
+        },
         stats: { created: 0, destroyed: 0, military: 0, econ: 0 },
       });
     }
@@ -333,6 +343,7 @@ export class Game {
       const unit = new Unit(UnitKind.WORKER, player, this.players[player].era, ctx);
       unit.pos.set(x + rng.range(-3, 3), this.terrain.getHeight(x + rng.range(-3, 3), z + rng.range(-3, 3)), z + rng.range(-3, 3));
       unit.setContext(this.unitContext);
+      this.applyPlayerBonuses(unit, this.players[player]);
       unit.attach(this.scene);
       this.units.set(unit.id, unit);
       this.players[player].populationUsed += unit.stats.population;
@@ -341,6 +352,7 @@ export class Game {
     const scout = new Unit(UnitKind.SCOUT, player, this.players[player].era, ctx);
     scout.pos.set(x + 4, this.terrain.getHeight(x + 4, z + 4), z + 4);
     scout.setContext(this.unitContext);
+    this.applyPlayerBonuses(scout, this.players[player]);
     scout.attach(this.scene);
     this.units.set(scout.id, scout);
     this.players[player].populationUsed += scout.stats.population;
@@ -435,6 +447,7 @@ export class Game {
     const u = new Unit(kind, owner, era, ctx);
     u.pos.set(land.x, this.terrain.getHeight(land.x, land.z), land.z);
     u.setContext(this.unitContext);
+    if (this.players[owner]) this.applyPlayerBonuses(u, this.players[owner]);
     u.attach(this.scene);
     if (tag) u.tag = tag;
     this.units.set(u.id, u);
@@ -686,7 +699,11 @@ export class Game {
       return hasWorker ? '⛏️' : null;
     }
     const picked = this.pickAt(sx, sy);
-    if (picked.unit) return picked.unit.owner !== 0 ? '⚔️' : null;
+    if (picked.unit) {
+      if (picked.unit.owner === 0) return null;
+      const canConvert = this.selectedUnits.some((id) => this.units.get(id)?.kind === UnitKind.COMMISSAR);
+      return canConvert ? '🧙' : '⚔️';
+    }
     if (picked.building) return picked.building.owner !== 0 ? '⚔️' : '🏰';
     return null;
   }
@@ -926,10 +943,16 @@ export class Game {
       return;
     }
     if (picked.unit && picked.unit.owner !== 0) {
-      // attack an enemy unit
-      this.markOrder({ x: picked.unit.pos.x, z: picked.unit.pos.z }, 'attack');
+      const enemyId = picked.unit.id;
+      const target = { x: picked.unit.pos.x, z: picked.unit.pos.z };
+      const canConvert = units.some((u) => u.kind === UnitKind.COMMISSAR);
+      this.markOrder(target, canConvert ? 'convert' : 'attack');
       for (const u of units) {
-        u.issueOrder({ kind: OrderKind.ATTACK, entityId: picked.unit.id }, !this.shiftQueue);
+        if (canConvert && u.kind === UnitKind.COMMISSAR) {
+          u.issueOrder({ kind: OrderKind.CONVERT, entityId: enemyId }, !this.shiftQueue);
+        } else {
+          u.issueOrder({ kind: OrderKind.ATTACK, entityId: enemyId }, !this.shiftQueue);
+        }
       }
       return;
     }
@@ -947,7 +970,7 @@ export class Game {
   }
 
   /** Visually mark the destination of an order on the ground. */
-  private markOrder(target: OrderTarget, kind: 'move' | 'attack' | 'gather'): void {
+  private markOrder(target: OrderTarget, kind: MarkerKind): void {
     const y = this.terrain.getHeight(target.x, target.z);
     this.markers.spawn(target.x, y, target.z, kind);
   }
@@ -1774,7 +1797,8 @@ export class Game {
           cap += b.providesPop;
         }
       }
-      p.populationCap = Math.min(this.settings.populationCap, cap + 4);
+      // a civilization population bonus deliberately raises the match cap
+      p.populationCap = Math.min(this.settings.populationCap, cap + 4) + p.bonus.population;
     }
   }
 
@@ -1786,8 +1810,8 @@ export class Game {
     if (this.mission) return;
     for (const p of this.players) {
       if (!p.alive) continue;
-      const hasCenter = [...this.buildings.values()].some((b) => b.owner === p.id && b.kind === BuildingKind.CENTER && !b.dead);
-      if (!hasCenter) {
+      // conquest: a player is defeated only when no building of theirs remains
+      if (!this.hasBuildings(p.id)) {
         p.alive = false;
         bus.emit('player:defeat', { player: p.id });
         const other = this.players.find((q) => q.id !== p.id);
@@ -1798,6 +1822,14 @@ export class Game {
       }
     }
 
+  }
+
+  /** True if the player still owns at least one standing building. */
+  hasBuildings(player: number): boolean {
+    for (const b of this.buildings.values()) {
+      if (b.owner === player && !b.dead) return true;
+    }
+    return false;
   }
 
   private endGame(winner: number): void {

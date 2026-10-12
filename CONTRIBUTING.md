@@ -64,7 +64,8 @@ Details on subsystems, controls and code "traps" are in
 - Before touching historical content, consult the matching dossier and **add the source**.
 - Outfits/weapons: spec in [`docs/historia/atuendos.md`](./docs/historia/atuendos.md).
   Respect chronology: **no firearms, horses, vehicles or engines before 1532**, and
-  **no sci-fi** in any era.
+  **no sci-fi** in any era. Chronology is enforced by `tests/history.test.ts`: when adding a
+  post-1532 unit, set `UnitArchetype.minPeriod` in `src/model/defs/units.ts`.
 
 ## Code conventions
 

@@ -21,6 +21,11 @@ for player-facing docs see [`README.md`](../README.md).
   `PROVENANCE.md`.
 - **Coetaneous civilizations**: `civs.ts` gives each civ `periods` and `geography`; `civsForPeriod(period)`
   filters valid rivals.
+- **Civilization bonuses are real modifiers**: `CivDef.effects` (`CivEffects`) is seeded into `PlayerState.bonus`
+  at match start and flows through the same paths as techs (`Game.applyPlayerBonuses`, `training`, `population`).
+  `bonuses` is the player-facing text. Known simplification: effects apply globally (e.g. Moche's "infantry
+  attack" is a general attack bonus), not per unit category, and a few flavor bullets with no mechanic yet
+  (naval units, cheaper houses, building HP) are not modeled. Add effects for any new civ (tested in `defs.test.ts`).
 - **Maps by geography**: `MapType = 'coast' | 'andes' | 'altiplano' | 'jungle'` (generated in `Terrain.generate`).
 - `src/campaign/defs/campaign.ts` defines the 9 historical campaigns; `src/campaign/Mission.ts` evaluates
   objectives/triggers.
@@ -30,6 +35,19 @@ for player-facing docs see [`README.md`](../README.md).
   `docs/historia/**/*.md` via `import.meta.glob(..., { query: '?raw' })`). Each mission declares `period` to
   resolve dates/coetaneous civs.
 - `src/game/Economy.ts` centralizes worker assignment (used by player and AI).
+- **Chronology of units**: `UnitArchetype.minPeriod` (`src/model/defs/units.ts`) is the earliest historical
+  period a unit is plausible in (default Arcaico). `tests/history.test.ts` forbids any campaign — including
+  scripted waves/reinforcements — from spawning a unit before its `minPeriod` (no firearms, horses, vehicles
+  or engines before 1532). Normal production is gated independently by `eraModel` + `requiresTech` (e.g.
+  `cavalry` has no model before Viceroyalty and needs the `shock_cavalry` tech), so `minPeriod` governs the
+  scripted content that those gates do not cover.
+- **AI (`src/game/AI.ts`)**: macromanagement (workers, build plan, tech, waves) plus `defendEconomy`
+  (recalls idle military when an enemy nears any AI building/worker), `microCombat` retreat of badly wounded
+  units and `explore` (idle scouts patrol toward the enemy base). It only uses the same systems as the player
+  (`issueOrder`, `combatStance`); difficulty (`DIFFICULTY_MULT`) tunes decision cadence (`reaction`), macro
+  size (`econ`) and attack frequency (`aggression`) — **never a hidden resource/production bonus**. Known
+  limitation: the AI ignores fog of war (it reads all entities), because fog is currently visual only
+  (`isVisibleTo` is `() => true`); making it LOS-aware is a later milestone.
 - **UI/inputs in `src/core/Game.ts` and `src/ui/HUD.ts`**: left click selects / drag = box-select (rectangle
   `#ed-selbox`) · right click = order (**right button no longer pans**; panning is by screen edges, WASD/arrows,
   middle wheel, or dragging the **bottom-left minimap**). Minimap: drag = move viewport, right click = order
@@ -43,6 +61,9 @@ for player-facing docs see [`README.md`](../README.md).
   with every worker gathering, none were ever free and builds stayed at 0%. The build gate is
   `Game.canBuildKind` (era per period; the **Huaca Sagrada** depends on the victory mode, not the era, so
   wonder victory is reachable in any period).
+- **Victory/defeat (conquest)**: a player is defeated only when **no building of theirs remains** (`Game.hasBuildings`),
+  in both skirmish (`Game.checkVictory`) and campaign (`Mission.checkBaseLost`). Do not go back to "losing the
+  Plaza Mayor ends the match": a full base with army must survive the loss of its center.
 - **External reference**: [VOIDSTRIKE](https://github.com/braedonsaunders/voidstrike) (MIT) is used only as
   technique inspiration (damage numbers, instancing, culling); its code is neither sold nor copied.
 - Import Three addons as `three/addons/...` (not `three/examples/jsm/...`).
@@ -50,6 +71,10 @@ for player-facing docs see [`README.md`](../README.md).
 
 ## Code traps (learned the hard way)
 
+- **Pathfinding to a blocked goal** (`Pathfinder.pathfind`): a destination inside an obstacle (your own
+  building, a resource node) is not traversable. `nearestWalkable` alone is not enough — it can return an
+  isolated walkable pocket and A* then fails, silently dropping move-to-building orders. `pathfind` now accepts
+  any cell within `GOAL_PROXIMITY` of the original goal cell. Keep that when touching goal handling.
 - **Model geometries and textures are shared/cached** (`sharedGeo`, `bakedGeoCache`, `texCloneCache` in
   `ProceduralModel.ts`). `disposeModel()` only frees materials; **do not** dispose geometries/textures by hand nor
   reuse them by mutating `repeat`. To clear everything use `clearModelCaches()`.

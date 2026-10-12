@@ -1,11 +1,12 @@
 import * as THREE from 'three';
 
-type MarkerKind = 'move' | 'attack' | 'gather';
+export type MarkerKind = 'move' | 'attack' | 'gather' | 'convert';
 
 const COLORS: Record<MarkerKind, number> = {
   move: 0x6ad06a,
   attack: 0xff5252,
   gather: 0xffd24a,
+  convert: 0xb060ff,
 };
 
 interface Marker {

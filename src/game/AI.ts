@@ -14,19 +14,35 @@ import type { ResourceNode } from '../entities/ResourceNode';
 
 /**
  * Opponent AI: macroeconomy (assigns workers), combat micro (focus fire,
- * retreat), building construction, era advancement and attack waves.
+ * retreat), base defense, scouting, building construction, era advancement and
+ * attack waves. It only uses the same systems as the player (`issueOrder`,
+ * `combatStance`, `Economy`), so difficulty changes decision quality and
+ * reaction time — never a hidden resource/production advantage.
  */
+
+/** An enemy within this radius of any AI building or worker is a base threat. */
+const DEFEND_RADIUS = 26;
+/** Only defenders within this radius of the threat answer the call. */
+const DEFEND_RESPONSE = 32;
+/** Wounded below this HP ratio a defender far from home retreats. */
+const RETREAT_HP = 0.35;
+/** Do not bother retreating when already this close to the base. */
+const RETREAT_MIN_DIST = 18;
+/** Scouting fallback destination (map fraction) when no enemy building is known. */
+const EXPLORE_FALLBACK = { x: 0.8, z: 0.2 } as const;
+
 export class AI {
   private game: Game;
   private playerId: number;
   private rng: RNG;
   private mult: { econ: number; aggression: number; reaction: number };
   private attackTimer = 60;
-  private defendTimer = 0;
   private economyTimer = 0;
   private buildingTimer = 0;
   private researchTimer = 4;
   private combatTimer = 0;
+  private defenseTimer = 0;
+  private scoutTimer = 3;
   private announced = new Set<string>();
 
   constructor(game: Game, playerId: number) {
@@ -43,7 +59,8 @@ export class AI {
     this.economyTimer += dt;
     this.buildingTimer += dt;
     this.attackTimer -= dt;
-    this.defendTimer -= dt;
+    this.defenseTimer -= dt;
+    this.scoutTimer -= dt;
 
     if (this.economyTimer > 0.6) {
       this.economyTimer = 0;
@@ -53,14 +70,23 @@ export class AI {
       this.buildingTimer = 0;
       this.buildQueues();
     }
+    if (this.scoutTimer <= 0) {
+      this.scoutTimer = 6;
+      this.explore();
+    }
     if (this.attackTimer <= 0) {
       this.attackTimer = this.rng.range(50, 95) / Math.max(0.4, this.mult.aggression);
       this.launchAttack();
     }
+    // reaction time is a difficulty knob: lower = faster response
     this.combatTimer -= dt;
     if (this.combatTimer <= 0) {
-      this.combatTimer = 0.3;
-      this.microCombat(dt);
+      this.combatTimer = 0.3 * this.mult.reaction;
+      this.microCombat();
+    }
+    if (this.defenseTimer <= 0) {
+      this.defenseTimer = 0.4 * this.mult.reaction;
+      this.defendEconomy();
     }
     this.advanceEraCheck();
     this.researchTimer -= dt;
@@ -90,9 +116,8 @@ export class AI {
     const workers = this.myUnits().filter((u) => u.kind === UnitKind.WORKER);
     const busy = workers.filter((w) => w.orderQueue[0]?.kind === OrderKind.GATHER || w.orderQueue[0]?.kind === OrderKind.BUILD);
     const idle = workers.filter((w) => !w.isBusy());
-    // train workers if labor is short
     const center = this.center();
-    const desired = Math.min(6 + this.p.era * 2, 14);
+    const desired = Math.max(4, Math.round(Math.min(6 + this.p.era * 2, 14) * this.mult.econ));
     if (center && workers.length < desired && center.constructionComplete) {
       if (this.canAfford({ food: 50, wood: 20 })) {
         const queued = center.productionQueue.length;
@@ -317,10 +342,17 @@ export class AI {
     }
   }
 
-  private microCombat(dt: number): void {
-    // focus fire: attack the target with the lowest health within range
+  private microCombat(): void {
+    const base = this.center();
     const soldiers = this.myUnits().filter((u) => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT);
     for (const s of soldiers) {
+      if (base && s.hp / s.maxHp < RETREAT_HP) {
+        const distHome = distance2D(s.pos.x, s.pos.z, base.pos.x, base.pos.z);
+        if (distHome > RETREAT_MIN_DIST && s.orderQueue[0]?.kind !== OrderKind.MOVE) {
+          s.issueOrder({ kind: OrderKind.MOVE, target: { x: base.pos.x, z: base.pos.z } }, true);
+        }
+        continue;
+      }
       if (s.orderQueue[0]?.kind !== OrderKind.ATTACK) {
         const enemy = this.findEnemyInRange(s);
         if (enemy && this.mult.aggression > 0.6) {
@@ -328,7 +360,55 @@ export class AI {
         }
       }
     }
-    void dt;
+  }
+
+  /** Recall idle military to answer an enemy threatening the base or its workers. */
+  private defendEconomy(): void {
+    const threat = this.findThreat();
+    if (!threat) return;
+    const tx = threat.pos.x;
+    const tz = threat.pos.z;
+    for (const u of this.myUnits()) {
+      if (u.kind === UnitKind.WORKER || u.kind === UnitKind.SCOUT) continue;
+      const order = u.orderQueue[0]?.kind;
+      if (order === OrderKind.ATTACK || order === OrderKind.ATTACK_MOVE) continue;
+      if (distance2D(u.pos.x, u.pos.z, tx, tz) > DEFEND_RESPONSE) continue;
+      u.issueOrder({ kind: OrderKind.ATTACK, entityId: threat.id }, true);
+    }
+  }
+
+  /** Nearest enemy unit within DEFEND_RADIUS of any AI building or worker. */
+  private findThreat(): Unit | null {
+    const anchors: { x: number; z: number }[] = [];
+    for (const b of this.myBuildings()) anchors.push({ x: b.pos.x, z: b.pos.z });
+    for (const u of this.myUnits()) if (u.kind === UnitKind.WORKER) anchors.push({ x: u.pos.x, z: u.pos.z });
+    if (anchors.length === 0) return null;
+    let best: Unit | null = null;
+    let bestD = Infinity;
+    const team = this.p.team;
+    for (const e of this.game.units.values()) {
+      if (e.dead || e.owner === this.playerId) continue;
+      if (this.game.players[e.owner]?.team === team) continue;
+      for (const a of anchors) {
+        const d = distance2D(e.pos.x, e.pos.z, a.x, a.z);
+        if (d < DEFEND_RADIUS && d < bestD) {
+          bestD = d;
+          best = e;
+        }
+      }
+    }
+    return best;
+  }
+
+  /** Keep idle scouts patrolling toward the enemy base to reveal the map. */
+  private explore(): void {
+    const enemy = this.findEnemyCenter();
+    const size = this.game.settings.mapSize;
+    const target = enemy ? { x: enemy.pos.x, z: enemy.pos.z } : { x: size * EXPLORE_FALLBACK.x, z: size * EXPLORE_FALLBACK.z };
+    for (const u of this.myUnits()) {
+      if (u.kind !== UnitKind.SCOUT || u.isBusy()) continue;
+      u.issueOrder({ kind: OrderKind.PATROL, target }, true);
+    }
   }
 
   private findEnemyInRange(s: Unit): Unit | null {

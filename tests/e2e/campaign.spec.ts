@@ -38,8 +38,28 @@ test('the tutorial guides in the first mission', async ({ page }) => {
   const overlay = page.locator('.ed-overlay', { hasText: 'La Ciudad Sagrada' });
   await expect(overlay).toBeVisible({ timeout: 30_000 });
   await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+  await overlay.waitFor({ state: 'detached', timeout: 15_000 });
   const tutorial = page.locator('#ed-tutorial');
-  await expect(tutorial).toBeVisible({ timeout: 15_000 });
+  // the first step appears after ~1.2s of game time; be generous on slow runners
+  await expect(tutorial).toBeVisible({ timeout: 30_000 });
   await expect(tutorial).toContainText('Selecciona a tus obreros');
   await expect(tutorial).toContainText('Paso 1 / 5');
+});
+
+test('the missions with corrected rosters boot with units and no errors', async ({ page }) => {
+  test.setTimeout(180_000);
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const ids = ['m3_moche_recuay', 'm5_yahuar_pampa', 'm6_chimu_inca', 'm7_tupac_amaru', 'm9_guerra_pacifico'];
+  for (const id of ids) {
+    await page.goto(`/?mission=${id}&seed=777&fog=0&low=1`);
+    await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+    const info = await page.evaluate(() => {
+      const g = (window as unknown as { game: { units: Map<number, unknown>; buildings: Map<number, unknown> } }).game;
+      return { units: g.units.size, buildings: g.buildings.size };
+    });
+    expect(info.units, `${id} has no units`).toBeGreaterThan(0);
+    expect(info.buildings, `${id} has no buildings`).toBeGreaterThan(0);
+  }
+  expect(errors).toEqual([]);
 });

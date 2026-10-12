@@ -103,7 +103,7 @@ export const MISSIONS: MissionDef[] = [
     triggers: [
       { id: 't_dial_0', condition: { type: 'time', seconds: 10 }, effects: [{ type: 'dialogue', text: 'Señor de Moche: —¡Las huacas son nuestro poder! ¡Formad en las plazas!' }] },
       { id: 't_wave_1', condition: { type: 'time', seconds: 80 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 5 }], pos: { ref: 'player', dx: 30, dz: 10 }, radius: 6 }] },
-      { id: 't_wave_2', condition: { type: 'time', seconds: 200 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 4 }, { kind: UnitKind.HUSSAR, count: 2 }], pos: { ref: 'player', dx: -10, dz: 30 }, radius: 6 }, { type: 'dialogue', text: '¡Guerreros de la sierra por el oeste! ¡Reforzad el flanco!' }] },
+      { id: 't_wave_2', condition: { type: 'time', seconds: 200 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 4 }, { kind: UnitKind.MUSKETEER, count: 2 }], pos: { ref: 'player', dx: -10, dz: 30 }, radius: 6 }, { type: 'dialogue', text: '¡Guerreros de la sierra por el oeste! ¡Reforzad el flanco!' }] },
       { id: 't_wave_3', condition: { type: 'time', seconds: 360 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 6 }], pos: { ref: 'player', dx: 28, dz: -12 }, radius: 6 }] },
     ],
   },
@@ -164,7 +164,7 @@ export const MISSIONS: MissionDef[] = [
       units: [
         { kind: UnitKind.RIFLEMAN, dx: -8, dz: 8, tag: 'cusi_yupanqui', count: 1 },
         { kind: UnitKind.SOLDIER, dx: -6, dz: 10, count: 6 },
-        { kind: UnitKind.ANTI_AIR, dx: -10, dz: 10, count: 2 },
+        { kind: UnitKind.MUSKETEER, dx: -10, dz: 10, count: 2 },
       ],
     },
     mark: [
@@ -180,7 +180,7 @@ export const MISSIONS: MissionDef[] = [
     triggers: [
       { id: 't_dial_0', condition: { type: 'time', seconds: 15 }, effects: [{ type: 'dialogue', text: 'Cusi Yupanqui: —Los chancas creen que huiremos como los nobles. ¡Aquí se defiende el Cusco!' }] },
       { id: 't_wave_1', condition: { type: 'time', seconds: 90 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 6 }], pos: { ref: 'player', dx: 28, dz: 12 }, radius: 6 }, { type: 'dialogue', text: '¡Anccu Hualloc ataca por el norte! ¡A las armas!' }] },
-      { id: 't_wave_2', condition: { type: 'time', seconds: 200 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 5 }, { kind: UnitKind.HUSSAR, count: 2 }], pos: { ref: 'player', dx: -12, dz: 28 }, radius: 6 }] },
+      { id: 't_wave_2', condition: { type: 'time', seconds: 200 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 5 }, { kind: UnitKind.MUSKETEER, count: 2 }], pos: { ref: 'player', dx: -12, dz: 28 }, radius: 6 }] },
     ],
   },
   {
@@ -202,8 +202,8 @@ export const MISSIONS: MissionDef[] = [
     startingResources: { food: 1000, wood: 700, silver: 900, stone: 400 },
     start: {
       units: [
-        { kind: UnitKind.TANK, dx: 10, dz: -4, count: 2 },
-        { kind: UnitKind.ARTILLERY, dx: 6, dz: 10, count: 2 },
+        { kind: UnitKind.RIFLEMAN, dx: 10, dz: -4, count: 2 },
+        { kind: UnitKind.MUSKETEER, dx: 6, dz: 10, count: 2 },
         { kind: UnitKind.RIFLEMAN, dx: 4, dz: -6, count: 4 },
       ],
     },
@@ -238,7 +238,7 @@ export const MISSIONS: MissionDef[] = [
     startingResources: { food: 1000, wood: 700, silver: 900, stone: 400 },
     start: {
       units: [
-        { kind: UnitKind.TANK, dx: 10, dz: -4, count: 2 },
+        { kind: UnitKind.CAVALRY, dx: 10, dz: -4, count: 2 },
         { kind: UnitKind.ARTILLERY, dx: 6, dz: 10, count: 2 },
         { kind: UnitKind.RIFLEMAN, dx: 4, dz: -6, tag: 'tupac_amaru', count: 1 },
       ],
@@ -312,7 +312,7 @@ export const MISSIONS: MissionDef[] = [
     start: {
       buildings: [{ kind: BuildingKind.WONDER, dx: -10, dz: -6, tag: 'puerto' }],
       units: [
-        { kind: UnitKind.MECH, dx: 8, dz: 0, count: 2 },
+        { kind: UnitKind.CAVALRY, dx: 8, dz: 0, count: 2 },
         { kind: UnitKind.RIFLEMAN, dx: 4, dz: 8, count: 4 },
       ],
     },
