@@ -5,6 +5,7 @@ import { BuildingKind, CivId, HistoricalPeriod } from './core/types';
 import { getBuildingStats } from './model/defs/buildings';
 import { CIVS, civsForPeriod } from './model/defs/civs';
 import { getPeriod } from './model/defs/periods';
+import { loadFromStorage } from './game/SaveGame';
 
 /** Read saved settings or use the defaults, validating each field. */
 function loadSettings(): GameSettings {
@@ -76,11 +77,14 @@ function floatParam(params: URLSearchParams, key: string, fallback: number): num
 
 function boot(): void {
   const params = new URLSearchParams(window.location.search);
-  const settings = loadSettings();
-  if (params.get('mission')) settings.missionId = params.get('mission')!;
-  if (params.get('fog') === '0') settings.fogOfWar = false;
-  if (params.get('seed') !== null) settings.mapSeed = intParam(params, 'seed', settings.mapSeed);
-  const game = new Game(settings);
+  const snapshot = params.get('load') === '1' ? loadFromStorage() : null;
+  const settings = snapshot ? { ...snapshot.settings } : loadSettings();
+  if (!snapshot) {
+    if (params.get('mission')) settings.missionId = params.get('mission')!;
+    if (params.get('fog') === '0') settings.fogOfWar = false;
+    if (params.get('seed') !== null) settings.mapSeed = intParam(params, 'seed', settings.mapSeed);
+  }
+  const game = new Game(settings, snapshot);
   (window as any).game = game;
   (window as any).THREE = THREE;
   game.postfx.setCinematic(settings.cinematic);
@@ -92,7 +96,7 @@ function boot(): void {
     game.postfx.vignetteEnabled = false;
   }
   if (params.get('speed') !== null) game.loop.speed = Math.max(0.25, floatParam(params, 'speed', 1));
-  if (params.get('era') !== null && !settings.missionId) {
+  if (params.get('era') !== null && !settings.missionId && !snapshot) {
     const target = intParam(params, 'era', 0);
     game.players[0].resources = { food: 9999, wood: 9999, silver: 9999, stone: 9999 };
     let guard = 0;
@@ -132,7 +136,7 @@ function boot(): void {
 
 /** True if the URL asks to enter the match directly (debug, ?play=1 or ?menu=0). */
 function startsMatchDirectly(params: URLSearchParams): boolean {
-  if (params.get('menu') === '0' || params.get('play') === '1') return true;
+  if (params.get('menu') === '0' || params.get('play') === '1' || params.get('load') === '1') return true;
   return ['seed', 'era', 'mission', 'low', 'speed', 'fog'].some((k) => params.has(k));
 }
 

@@ -98,6 +98,24 @@ export class Fow {
     this.enabled = enabled;
   }
 
+  /** Serialize the explored/visible grid (base64) for save/load. */
+  serialize(): string {
+    let bin = '';
+    for (let i = 0; i < this.grid.length; i++) bin += String.fromCharCode(this.grid[i]);
+    return btoa(bin);
+  }
+
+  restore(data: string): void {
+    try {
+      const bin = atob(data);
+      if (bin.length !== this.grid.length) return;
+      for (let i = 0; i < bin.length; i++) this.grid[i] = bin.charCodeAt(i);
+      this.dirty = true;
+    } catch {
+      /* ignore malformed data */
+    }
+  }
+
   /** Kept for compatibility: there is no mesh to show/hide. */
   setFogEnabled(enabled: boolean): void {
     this.enabled = enabled;

@@ -4,6 +4,7 @@ import { RNG } from '../util/rng';
 import { ResourceKey } from '../core/types';
 import { MaterialTex } from '../rendering/Textures';
 import { TreeInstances } from '../rendering/TreeInstances';
+import type { ResourceNodeSave } from '../game/saveTypes';
 
 // Shared caches: geometries and materials reused between nodes (fewer draw calls and GC).
 const geoCache = new Map<string, THREE.BufferGeometry>();
@@ -376,6 +377,16 @@ export class ResourceNode {
         this.remove();
       }
     }
+  }
+
+  /** Snapshot the gameplay state (used by save/load). */
+  toSave(): ResourceNodeSave {
+    return { id: this.id, kind: this.kind, x: this.pos.x, z: this.pos.z, amount: this.amount };
+  }
+
+  applySave(s: ResourceNodeSave): void {
+    this.id = s.id;
+    this.amount = s.amount;
   }
 
   remove(): void {

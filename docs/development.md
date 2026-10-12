@@ -127,6 +127,13 @@ for player-facing docs see [`README.md`](../README.md).
   per instance — do not switch to shared materials without copy-on-write, and skip invisible meshes (e.g. the
   shared `pickMaterial` on `EntityView.pickProxy`) when traversing a view to tint/fade. The placement ghost
   turns vertex colours back off (`buildModelForGhost`) so its tint stays a flat silhouette.
+- **Save/load (skirmish only)** (`src/game/SaveGame.ts` + `saveTypes.ts`): a versioned JSON snapshot in
+  `localStorage['peru-save']`. `Game.saveMatch()` writes it; `?load=1` boots a `Game` in load mode (the
+  `snapshot` constructor arg skips the default spawns and applies it). `toSave()/applySave()` live on
+  `Unit`/`Building`/`ResourceNode`, so a new world-affecting field must be added there **and** to
+  `saveTypes.ts`; ids are preserved with `EntityView.reserveIds`, the RNG with `RNG.getState/setState`, and the
+  fog grid with `Fow.serialize/restore`. Bump `SAVE_VERSION` on any shape change. The AI is rebuilt fresh and
+  projectiles are not saved; **campaign missions are not supported yet** (scripted triggers keep state).
 - **Trees by instancing** (`src/rendering/TreeInstances.ts`): `InstancedMesh` of trunk + canopies per variant;
   picking is by `instanceId` (`TreeInstances.raycast` -> `pickResource`), visibility by `ResourceNode.setVisibleEx`
   (fog+LOD) and falling on chop by `startFall`. If you add a tree without registering it in the manager, it will
@@ -139,7 +146,7 @@ for player-facing docs see [`README.md`](../README.md).
 - `src/main.ts` exposes `window.game` (and `window.THREE`) for the console and scripts.
 - The app shows the **main menu by default**; enter the match directly with `?play=1` or any debug param.
   `resetGame()` reloads with `?play=1`.
-- URL params: `?play=1`, `?menu=0/1`, `?seed=`, `?fog=0`, `?low=1`, `?speed=`, `?era=N`, `?mission=ID`.
+- URL params: `?play=1`, `?menu=0/1`, `?load=1`, `?seed=`, `?fog=0`, `?low=1`, `?speed=`, `?era=N`, `?mission=ID`.
 - Shared `scripts/lib.mjs` (`launchChromium`, `withViteServer`, `readPng`, `classify`). Scripts launch Vite on a
   free port and Chromium with SwiftShader; they use `CHROME_PATH` or `chromium.executablePath()`. Run captures
   with `?low=1`.
