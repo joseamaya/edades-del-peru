@@ -47,7 +47,14 @@ for player-facing docs see [`README.md`](../README.md).
   (`issueOrder`, `combatStance`); difficulty (`DIFFICULTY_MULT`) tunes decision cadence (`reaction`), macro
   size (`econ`) and attack frequency (`aggression`) — **never a hidden resource/production bonus**. Known
   limitation: the AI ignores fog of war (it reads all entities), because fog is currently visual only
-  (`isVisibleTo` is `() => true`); making it LOS-aware is a later milestone.
+  (`isVisibleTo` is `() => true`); making it LOS-aware is a later milestone. The army is trained to an era-based
+  **mix** (`ARMY_MIX`) nudged to counter the enemy's composition (`armyWeights`). `Game.addAI(playerId)` attaches
+  an AI to any player, so `yarn sim` runs **AI-vs-AI** headless matches (seeds, winner, peak armies) as an AI
+  regression baseline. **Known limitation (revealed by `yarn sim`)**: in self-play both AIs starve for wood —
+  `chooseResourceNode` only counts workers on resource **nodes** in its balance, so workers on **farms** (food)
+  aren't counted, the AI thinks food is under-served, keeps sending workers to food, and wood income stalls; the
+  next AI milestone is the economy/aggression fix. Training is chronology-guarded (`unitMinPeriod` in
+  `Building.queueUnit`, the AI candidate filter and the HUD).
 - **UI/inputs in `src/core/Game.ts` and `src/ui/HUD.ts`**: left click selects / drag = box-select (rectangle
   `#ed-selbox`) · right click = order (**right button no longer pans**; panning is by screen edges, WASD/arrows,
   middle wheel, or dragging the **bottom-left minimap**). Minimap: drag = move viewport, right click = order

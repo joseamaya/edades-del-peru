@@ -139,7 +139,7 @@ export class Game {
     this.initHUD();
     this.mission = mis ? new Mission(this, mis, (win) => this.missionEnd(win)) : null;
     this.tutorial = mis && mis.tutorial && this.settings.showHints ? new Tutorial(this) : null;
-    this.ai = mis && !mis.enemy.active ? null : new AI(this, 1);
+    if (!mis || mis.enemy.active) this.addAI(1);
     this.audio.setEra(this.players[0].era);
     this.initAudio();
     if (mis && !this.pendingSnapshot) this.applyMissionSetup(mis);
@@ -600,6 +600,11 @@ export class Game {
     url.searchParams.delete('mission');
     url.searchParams.delete('menu');
     location.href = url.toString();
+  }
+
+  /** Attach an AI controller to a player (AI-vs-AI runs/tests). */
+  addAI(playerId: number): void {
+    this.ais.push(new AI(this, playerId));
   }
 
   /** Restore a snapshot into a freshly built game (load mode; no default spawns). */
@@ -1481,6 +1486,11 @@ export class Game {
     return this.paused;
   }
 
+  /** True once the match has been decided (victory/defeat). */
+  hasEnded(): boolean {
+    return this.gameEnded;
+  }
+
   // --- UnitContext context ---
 
   private ctxFor(): UnitContext {
@@ -1500,6 +1510,7 @@ export class Game {
       isVisibleTo: () => true,
       gather: (dropId, unitId, amount, resource) => this.deliverGather(dropId, unitId, amount, resource),
       worldSize: this.settings.mapSize,
+      period: this.settings.period,
       unitSpawn: this.unitSpawn,
       techComplete: this.techComplete,
       enemiesNear: (x, z, radius, owner) => this.enemiesNear(x, z, radius, owner),
@@ -2130,7 +2141,7 @@ export class Game {
     }
 
     // AI
-    this.ai?.update(d, t);
+    for (const ai of this.ais) ai.update(d, t);
 
     this.checkVictory();
 
@@ -2167,7 +2178,7 @@ export class Game {
     }
   }
 
-  private ai: AI | null = null;
+  private ais: AI[] = [];
   private alertTimer = 0;
   private alerted = false;
 

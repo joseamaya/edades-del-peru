@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { Era, UnitKind, Resources, ZERO_RESOURCES, Team, GameEvents } from '../core/types';
+import { Era, UnitKind, Resources, ZERO_RESOURCES, Team, GameEvents, HistoricalPeriod } from '../core/types';
 import { getUnitStats, getUnitModel, UnitStats } from '../model/defs/units';
 import { buildModel, BuildContext, disposeModel } from '../model/ProceduralModel';
 import { EntityView } from '../entities/EntityView';
@@ -37,6 +37,8 @@ export interface UnitContext {
   isVisibleTo(player: number, x: number, z: number): boolean;
   gather(nodeId: number, unitId: number, amount: number, resource: string): void;
   worldSize: number;
+  /** The match's historical period (for the chronology guard on training). */
+  period: HistoricalPeriod;
   unitSpawn(buildingId: number, unit: any, rally: OrderTarget, hasRally: boolean): boolean;
   techComplete(playerId: number, techId: string): void;
 }

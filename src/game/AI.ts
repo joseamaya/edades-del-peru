@@ -6,11 +6,13 @@ import { RNG } from '../util/rng';
 import { BUILDING_DEFS, getBuildingStats } from '../model/defs/buildings';
 import { UNIT_ARCHETYPES } from '../model/defs/units';
 import { getUnitStats } from '../model/defs/units';
+import { unitMinPeriod } from '../model/defs/units';
 import { ERA_DEFS } from '../model/defs/eras';
 import type { Game } from '../core/Game';
 import type { Unit } from '../entities/Unit';
 import { Building } from '../entities/Building';
 import type { ResourceNode } from '../entities/ResourceNode';
+import { CATEGORIES, UNIT_CATEGORY, armyWeightsFor, UnitCategory } from './aiComposition';
 
 /**
  * Opponent AI: macroeconomy (assigns workers), combat micro (focus fire,
@@ -253,9 +255,10 @@ export class AI {
     const center = this.center();
     if (!center) return null;
     const stats = getBuildingStats(kind, this.p.era);
-    for (let i = 0; i < 40; i++) {
+    // widen the ring beyond the starting resources so the base can keep growing
+    for (let i = 0; i < 60; i++) {
       const ang = this.rng.range(0, Math.PI * 2);
-      const r = this.rng.range(stats.size + 3, 12);
+      const r = this.rng.range(stats.size + 3, 24);
       const x = center.pos.x + Math.cos(ang) * r;
       const z = center.pos.z + Math.sin(ang) * r;
       if (this.game.canPlace(x, z, stats.size)) return { x, z };
@@ -289,47 +292,63 @@ export class AI {
 
   private trainMilitary(): void {
     const p = this.p;
-    const myB = this.myBuildings();
-    const barracks = myB.find((b) => b.kind === BuildingKind.BARRACKS && b.constructionComplete);
-    const range = myB.find((b) => b.kind === BuildingKind.ARSENAL && b.constructionComplete);
-    const stable = myB.find((b) => b.kind === BuildingKind.STABLE && b.constructionComplete);
-    const factory = myB.find((b) => b.kind === BuildingKind.FACTORY && b.constructionComplete);
-
-    const militaryCount = this.myUnits().filter((u) => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT).length;
+    const military = this.myUnits().filter((u) => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT);
     const target = 6 + p.era * 5;
+    if (military.length >= target) return;
 
-    const want: UnitKind[] = [];
-    if (barracks && this.canAfford(getUnitStats(UnitKind.SOLDIER, p.era).cost)) want.push(UnitKind.SOLDIER);
-    if (range && p.era >= Era.REGIONAL_STATES && this.canAfford(getUnitStats(UnitKind.RIFLEMAN, p.era).cost))
-      want.push(UnitKind.RIFLEMAN);
-    if (range && this.canAfford(getUnitStats(UnitKind.MUSKETEER, p.era).cost)) want.push(UnitKind.MUSKETEER);
-    if (stable && p.era >= Era.TAHUANTINSUYO && this.canAfford(getUnitStats(UnitKind.CAVALRY, p.era).cost))
-      want.push(UnitKind.CAVALRY);
-    if (factory && p.era >= Era.VICEROYALTY && this.canAfford(getUnitStats(UnitKind.ARTILLERY, p.era).cost))
-      want.push(UnitKind.ARTILLERY);
-
-    if (militaryCount < target && want.length > 0) {
-      const bld = barracks ?? range ?? stable ?? factory;
-      if (bld && bld.productionQueue.length < 2) {
-        // only units trainable in this building and with researched techs
-        const def = BUILDING_DEFS[bld.kind];
-        const trainable = want.filter((u) => {
-          if (!def.trainable?.includes(u)) return false;
-          const arch = UNIT_ARCHETYPES[u];
-          return !arch.requiresTech || arch.requiresTech.every((t) => p.techs.has(t));
-        });
-        if (trainable.length === 0) return;
-        const unit = this.rng.pick(trainable);
-        const stats = getUnitStats(unit, p.era);
-        if (this.canAfford(stats.cost)) {
-          if (this.game.spendResource(this.playerId, stats.cost)) {
-            if (!bld.queueUnit(unit)) {
-              this.game.addResource(this.playerId, stats.cost);
-            }
-          }
-        }
+    // units trainable right now: owned building + researched tech + affordable
+    const candidates: { unit: UnitKind; bld: Building; category: UnitCategory }[] = [];
+    for (const bld of this.myBuildings()) {
+      if (!bld.constructionComplete) continue;
+      for (const u of BUILDING_DEFS[bld.kind].trainable ?? []) {
+        const category = UNIT_CATEGORY[u];
+        if (!category) continue;
+        const arch = UNIT_ARCHETYPES[u];
+        if (arch.requiresTech && !arch.requiresTech.every((t) => p.techs.has(t))) continue;
+        if (unitMinPeriod(u) > this.game.settings.period) continue;
+        if (!this.canAfford(getUnitStats(u, p.era).cost)) continue;
+        candidates.push({ unit: u, bld, category });
       }
     }
+    if (candidates.length === 0) return;
+
+    // fill the biggest gap between the desired mix and the current army
+    const weights = this.armyWeights();
+    const totalWeight = CATEGORIES.reduce((s, k) => s + weights[k], 0) || 1;
+    const current: Record<UnitCategory, number> = { melee: 0, ranged: 0, cavalry: 0, siege: 0 };
+    for (const u of military) {
+      const c = UNIT_CATEGORY[u.kind];
+      if (c) current[c]++;
+    }
+
+    let best: { unit: UnitKind; bld: Building } | null = null;
+    let bestDeficit = -Infinity;
+    for (const c of candidates) {
+      const deficit = (weights[c.category] / totalWeight) * target - current[c.category];
+      if (deficit > bestDeficit) {
+        bestDeficit = deficit;
+        best = { unit: c.unit, bld: c.bld };
+      }
+    }
+    if (!best || best.bld.productionQueue.length >= 2) return;
+    const stats = getUnitStats(best.unit, p.era);
+    if (this.game.spendResource(this.playerId, stats.cost)) {
+      if (!best.bld.queueUnit(best.unit)) this.game.addResource(this.playerId, stats.cost);
+    }
+  }
+
+  /** Desired army mix for the era, nudged to counter the enemy's composition. */
+  private armyWeights(): Record<UnitCategory, number> {
+    const team = this.p.team;
+    const enemy = { melee: 0, ranged: 0, cavalry: 0 };
+    for (const u of this.game.units.values()) {
+      if (u.dead || u.owner === this.playerId || this.game.players[u.owner]?.team === team) continue;
+      const c = UNIT_CATEGORY[u.kind];
+      if (c === 'melee') enemy.melee++;
+      else if (c === 'ranged') enemy.ranged++;
+      else if (c === 'cavalry') enemy.cavalry++;
+    }
+    return armyWeightsFor(this.p.era, enemy);
   }
 
   private researchCheck(): void {

@@ -37,6 +37,7 @@
     "test:e2e": "playwright test",
     "test:e2e:smoke": "playwright test --grep @smoke",
     "bench": "node scripts/bench.mjs",
+    "sim": "node scripts/sim.mjs",
     "shot": "node scripts/screenshot.mjs",
     "shot:analyze": "node scripts/analyze.mjs",
     "shot:ascii": "node scripts/ascii.mjs",

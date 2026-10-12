@@ -30,6 +30,7 @@ The app shows the **main menu** by default. To jump straight into the match use 
 | `yarn format` | Prettier over `src/**/*.ts`, `scripts/**/*.mjs` and `tests/**/*.ts`. |
 | `yarn test` | Unit tests (Vitest). |
 | `yarn bench` | Entity-scale performance benchmark (writes `review/bench.json`). |
+| `yarn sim` | Headless AI-vs-AI match runner (AI regression baseline). |
 | `yarn test:e2e` | E2E suite (Playwright). Requires `npx playwright install chromium`. |
 | `yarn test:e2e:smoke` | Fast `@smoke` subset of the E2E suite (used on PRs). |
 | `yarn shot <name>` | Screenshot into `review/` for visual review. |
