@@ -15,6 +15,7 @@ Package manager **Yarn 1** (`yarn.lock` exists — never create a `package-lock.
 - `yarn test` — Vitest. Single file: `yarn test tests/rng.test.ts`; by name: `yarn test -t "…"`
 - `yarn test:e2e` — full Playwright suite; `yarn test:e2e:smoke` — `@smoke` subset (requires `npx playwright install chromium`)
 - `yarn shot <name> --seed=777 --wait=8000` — screenshot into `review/`
+- `yarn sim [--seeds=…] [--max=…]` — headless AI-vs-AI match runner (AI regression baseline)
 
 Everything runs through `package.json`; there is no `npm test`. The CI gate, in order, is
 `yarn typecheck && yarn lint && yarn format:check && yarn test && yarn build`, and the repo is kept at

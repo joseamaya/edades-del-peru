@@ -101,3 +101,29 @@ test('the AI sends its scout to explore', async ({ page }) => {
   });
   expect(order).toContain('patrol');
 });
+
+test('the AI trains a mixed army (melee + ranged)', async ({ page }) => {
+  await bootSkirmish(page);
+  const cats = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.addAI(0);
+    g.players[0].resources = { food: 9999, wood: 9999, silver: 9999, stone: 9999 };
+    const c = g.playerCenter(0);
+    g.spawnScriptedBuilding('barracks', 0, c.x + 12, c.z);
+    g.spawnScriptedBuilding('arsenal', 0, c.x - 12, c.z);
+    let t = 0;
+    for (let i = 0; i < 60 * 150; i++) {
+      g.update(1 / 60, t);
+      t += 1 / 60;
+    }
+    const out = new Set<string>();
+    for (const u of g.units.values()) {
+      if (u.owner !== 0 || u.dead) continue;
+      if (u.kind === 'soldier') out.add('melee');
+      if (u.kind === 'musketeer' || u.kind === 'rifleman') out.add('ranged');
+    }
+    return [...out];
+  });
+  expect(cats).toContain('melee');
+  expect(cats).toContain('ranged');
+});
