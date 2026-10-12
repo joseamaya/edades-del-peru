@@ -279,3 +279,189 @@ test('hides Stone and Quarry in periods that cannot obtain them', async ({ page 
   expect(early.stoneDisplay).toBe('none');
 });
 
+test('the Amauta converts an enemy unit without throwing', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/?seed=777&fog=0&low=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    g.paused = false;
+    g.players[1].alive = false; // freeze the AI so the enemy unit stays put
+    const c = g.camera.getTarget();
+    const amauta = g.spawnScriptedUnit('commissar', 0, c.x - 6, c.z);
+    const enemy = g.spawnScriptedUnit('soldier', 1, c.x, c.z);
+    amauta.clearOrders();
+    enemy.clearOrders();
+    amauta.issueOrder({ kind: 'convert', entityId: enemy.id }, true);
+    const before = enemy.owner;
+    let t = 0;
+    for (let i = 0; i < 1500 && enemy.owner === before; i++) {
+      t += 1 / 60;
+      g.update(1 / 60, t);
+    }
+    return { before, after: enemy.owner };
+  });
+
+  expect(out.before).toBe(1);
+  expect(out.after).toBe(0);
+  expect(errors).toEqual([]);
+});
+
+test('right-clicking an enemy with an Amauta selected issues a convert order', async ({ page }) => {
+  await page.goto('/?seed=777&fog=0&low=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+
+  // move the camera to a clear spot (no buildings or resources nearby)
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.players[1].alive = false; // freeze the AI
+    const c = g.camera.getTarget();
+    const size = g.settings.mapSize;
+    const dist = (ax: number, az: number, bx: number, bz: number) => Math.hypot(ax - bx, az - bz);
+    const buildings = [...g.buildings.values()];
+    const nodes = [...g.resourceNodes.values()];
+    for (let r = 26; r <= 70; r += 6) {
+      for (let a = 0; a < 16; a++) {
+        const ang = (a / 16) * Math.PI * 2;
+        const x = Math.max(14, Math.min(size - 14, c.x + Math.cos(ang) * r));
+        const z = Math.max(14, Math.min(size - 14, c.z + Math.sin(ang) * r));
+        if (buildings.some((b: any) => dist(x, z, b.pos.x, b.pos.z) < 10)) continue;
+        if (nodes.some((n: any) => dist(x, z, n.pos.x, n.pos.z) < 4)) continue;
+        g.camera.moveTo(x, z, true);
+        return;
+      }
+    }
+  });
+  await page.waitForTimeout(900); // let the camera settle
+
+  const info = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const c = g.camera.getTarget();
+    const amauta = g.spawnScriptedUnit('commissar', 0, c.x - 5, c.z);
+    const enemy = g.spawnScriptedUnit('soldier', 1, c.x, c.z);
+    amauta.clearOrders();
+    enemy.clearOrders();
+    g.selectedUnits = [amauta.id];
+    g.selectedBuilding = null;
+    const v = enemy.pos.clone();
+    v.y += 0.5;
+    const s = v.project(g.camera.camera);
+    return {
+      x: Math.round((s.x * 0.5 + 0.5) * window.innerWidth),
+      y: Math.round((-s.y * 0.5 + 0.5) * window.innerHeight),
+      aid: amauta.id,
+    };
+  });
+
+  await page.mouse.click(info.x, info.y, { button: 'right' });
+  await page.waitForTimeout(150);
+
+  const order = await page.evaluate((aid) => {
+    const g = (window as unknown as { game: any }).game;
+    return g.units.get(aid).orderQueue.map((o: any) => o.kind);
+  }, info.aid);
+  expect(order).toContain('convert');
+});
+
+test('conquest ends only when all enemy buildings are destroyed', async ({ page }) => {
+  await page.goto('/?seed=777&fog=0&low=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    g.paused = false;
+    const aiBuildings = () => [...g.buildings.values()].filter((b: any) => b.owner === 1 && !b.dead);
+    const center = aiBuildings().find((b: any) => b.kind === 'center');
+    center.takeDamage(1e9);
+    for (let i = 0; i < 3; i++) g.update(1 / 60, i / 60);
+    const afterCenter = { ended: !!g.gameEnded, alive: !!g.players[1].alive, remaining: aiBuildings().length };
+    for (const b of aiBuildings()) b.takeDamage(1e9);
+    for (let i = 0; i < 3; i++) g.update(1 / 60, i / 60);
+    const afterAll = { ended: !!g.gameEnded, alive: !!g.players[1].alive };
+    return { afterCenter, afterAll };
+  });
+
+  // losing the center alone must not end the match while other buildings stand
+  expect(out.afterCenter.remaining).toBeGreaterThan(0);
+  expect(out.afterCenter.ended).toBe(false);
+  expect(out.afterCenter.alive).toBe(true);
+  // destroying every building ends it
+  expect(out.afterAll.ended).toBe(true);
+  expect(out.afterAll.alive).toBe(false);
+});
+
+test('a campaign is not lost while the player still has buildings', async ({ page }) => {
+  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
+  const start = page.getByRole('button', { name: /COMENZAR MISIÓN/ });
+  await start.waitFor({ state: 'visible', timeout: 15_000 });
+  await start.click();
+  await start.waitFor({ state: 'detached', timeout: 15_000 });
+
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    g.paused = false;
+    const center = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center');
+    center.takeDamage(1e9);
+    for (let i = 0; i < 3; i++) g.update(1 / 60, i / 60);
+    return {
+      ended: !!g.mission.ended,
+      anyPlayerBuilding: [...g.buildings.values()].some((b: any) => b.owner === 0 && !b.dead),
+    };
+  });
+
+  expect(out.anyPlayerBuilding).toBe(true);
+  expect(out.ended).toBe(false);
+});
+
+test('civilization bonuses are applied to the player and its units', async ({ page }) => {
+  await page.goto('/?seed=777&fog=0&low=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    g.paused = false;
+    const p = g.players[0];
+    const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker');
+    const c = g.camera.getTarget();
+    const soldier = g.spawnScriptedUnit('soldier', 0, c.x, c.z);
+    return {
+      civ: p.civ,
+      attack: p.bonus.attack,
+      gather: Object.values(p.bonus.gathering).reduce((a: number, b) => a + (b ?? 0), 0),
+      soldierAttack: soldier.attackMultiplier,
+      workerGather: worker.gatherMultiplier,
+    };
+  });
+
+  // default skirmish civilization is Moche (attack + silver gathering)
+  expect(out.attack).toBeGreaterThan(0);
+  expect(out.soldierAttack).toBeCloseTo(1 + out.attack, 5);
+  expect(out.workerGather).toBeCloseTo(1 + out.gather, 5);
+});
+
+test('a civilization population bonus raises the population cap', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('peru-settings', JSON.stringify({ period: 3, civPlayer: 'wari', civAI: 'tiahuanaco' }));
+  });
+  await page.goto('/?seed=777&fog=0&low=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    g.paused = false;
+    for (let i = 0; i < 3; i++) g.update(1 / 60, i / 60);
+    return { civ: g.players[0].civ, popBonus: g.players[0].bonus.population, cap: g.players[0].populationCap };
+  });
+
+  expect(out.civ).toBe('wari');
+  expect(out.popBonus).toBe(10);
+  expect(out.cap).toBeGreaterThan(10);
+});
+

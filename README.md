@@ -87,6 +87,7 @@ The game teaches history while you play:
 | Entire army | E |
 | Move / order | Right button |
 | Attack-move | Ctrl + Right button |
+| Convert (Amauta) | Right-click an enemy unit |
 | Queue orders / rally point | Shift + Right button |
 | Pan | WASD / arrows / edges / middle button |
 | Zoom | Wheel · **Q/E** rotate · **F** follow |

@@ -4,7 +4,10 @@ import { test, expect } from '@playwright/test';
 async function startMission(page: import('@playwright/test').Page): Promise<void> {
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
   const start = page.getByRole('button', { name: /COMENZAR MISIÓN/ });
-  if (await start.count()) await start.click();
+  await start.waitFor({ state: 'visible', timeout: 15_000 });
+  await start.click();
+  // wait until the briefing overlay is fully gone before touching the world
+  await start.waitFor({ state: 'detached', timeout: 15_000 });
 }
 
 test('a single click on the build card starts placement', async ({ page }) => {
@@ -26,30 +29,59 @@ test('a single click on the build card starts placement', async ({ page }) => {
 test('clicking the ground places the previewed building', async ({ page }) => {
   await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
   await startMission(page);
-  await page.waitForTimeout(300); // let the camera settle before projecting
-  const pick = await page.evaluate(() => {
-    const g = (window as unknown as { game: any }).game;
-    const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
-    g.selectedUnits = [w.id];
+  // wait for the mission world to be fully initialized
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g && !!g.mission && g.buildings.size > 0 && g.players[0]?.resources?.food > 0;
+    },
+    null,
+    { timeout: 15_000 },
+  );
+
+  // Freeze the loop so the camera cannot drift, then pick a placeable point near the
+  // base and project it. The real click maps back to the same point deterministically.
+  const result = await page.evaluate(() => {
+    const w = window as unknown as { game: any; THREE: any; innerWidth: number; innerHeight: number };
+    const g = w.game;
+    g.paused = false;
+    g.loop.stop();
+    const center = [...g.buildings.values()].find((b: any) => b.kind === 'center' && b.owner === 0);
+    const worker = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
+    if (!center || !worker) return null;
+    // put the camera on the base and refresh matrices so projections are valid
+    g.camera.moveTo(center.pos.x, center.pos.z, true);
+    g.camera.update(0, performance.now() / 1000);
+    g.camera.camera.updateMatrixWorld(true);
+    g.selectedUnits = [worker.id];
     g.selectedBuilding = null;
     g.startPlacement('house');
-    const W = window.innerWidth;
-    const H = window.innerHeight;
-    // find a screen point over the canvas (not HUD) that is placeable
-    for (let sy = H * 0.1; sy < H * 0.85; sy += 24) {
-      for (let sx = W * 0.05; sx < W * 0.95; sx += 24) {
-        if (document.elementFromPoint(sx, sy)?.tagName !== 'CANVAS') continue;
+    let point: { sx: number; sy: number } | null = null;
+    for (let r = 4; r <= 14 && !point; r++) {
+      for (let a = 0; a < 24; a++) {
+        const ang = (a / 24) * Math.PI * 2;
+        const x = center.pos.x + Math.cos(ang) * r;
+        const z = center.pos.z + Math.sin(ang) * r;
+        if (!g.canPlace(x, z, 2)) continue;
+        const v = new w.THREE.Vector3(x, g.terrain.getHeight(x, z), z).project(g.camera.camera);
+        const sx = (v.x * 0.5 + 0.5) * w.innerWidth;
+        const sy = (-v.y * 0.5 + 0.5) * w.innerHeight;
+        if (sx < 8 || sx > w.innerWidth - 8 || sy < 8 || sy > w.innerHeight - 8) continue;
         const wp = g.screenToWorld(sx, sy);
         if (!wp || !g.canPlace(wp.x, wp.z, 2)) continue;
-        return { sx, sy, count: g.buildings.size as number };
+        point = { sx, sy };
+        break;
       }
     }
-    return null;
+    if (!point) return null;
+    return { sx: point.sx, sy: point.sy, before: g.buildings.size as number };
   });
-  expect(pick).not.toBeNull();
-  await page.mouse.click(pick!.sx, pick!.sy);
+
+  expect(result).not.toBeNull();
+  // the loop was frozen above, so the camera cannot drift between validation and click
+  await page.mouse.click(result!.sx, result!.sy);
   const after = await page.evaluate(() => (window as unknown as { game: any }).game.buildings.size);
-  expect(after).toBe(pick!.count + 1);
+  expect(after).toBe(result!.before + 1);
 });
 
 test('a single click on the train card queues the unit', async ({ page }) => {
