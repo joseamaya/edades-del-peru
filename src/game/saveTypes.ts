@@ -1,11 +1,17 @@
 import type { Order, OrderTarget, Resources, UnitKind, BuildingKind, Era, CivBonuses } from '../core/types';
 import type { GameSettings } from '../core/Config';
+import type { ObjState } from '../campaign/Mission';
 
-/** Bump when the snapshot shape changes; older saves are rejected. */
+/** Bump on a breaking snapshot change; adding optional fields is fine. */
 export const SAVE_VERSION = 1;
 
 export type ResourceKind = 'tree' | 'mine' | 'well' | 'hunt' | 'fishing' | 'berry';
 export type CombatStance = 'agresivo' | 'defensivo' | 'pasivo';
+export interface TutorialBase {
+  houses: number;
+  barracks: number;
+  soldiers: number;
+}
 
 export interface UnitSave {
   id: number;
@@ -80,7 +86,7 @@ export interface MissionSave {
   started: boolean;
   ended: boolean;
   timer: number;
-  objState: [string, string][];
+  objState: [string, ObjState][];
   fired: string[];
   lastFired: [string, number][];
   spawnedCount: [string, number][];
@@ -91,7 +97,7 @@ export interface TutorialSave {
   begun: boolean;
   finished: boolean;
   delay: number;
-  base: { houses: number; barracks: number; soldiers: number };
+  base: TutorialBase;
 }
 
 export interface SaveData {

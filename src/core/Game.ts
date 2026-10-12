@@ -549,12 +549,13 @@ export class Game {
     location.href = url.toString();
   }
 
-  /** Serialize the current match into the single save slot. Returns false if storage is unavailable. */
+  /** Serialize the current match into the single save slot. Returns false if unavailable or the match is over. */
   saveMatch(): boolean {
+    if (this.gameEnded) return false;
     return saveToStorage(serializeGame(this));
   }
 
-  /** Reload the page into the saved match (skirmish only). */
+  /** Reload the page into the saved match. */
   loadMatch(): void {
     const url = new URL(location.href);
     url.searchParams.set('load', '1');
@@ -622,7 +623,11 @@ export class Game {
     this.fow.restore(data.fog);
     this.audio.setEra(this.players[0].era);
 
-    if (data.mission && this.mission) this.mission.applySave(data.mission);
+    if (data.mission && this.mission) {
+      this.mission.applySave(data.mission);
+      // a save taken before the briefing: show it again so the mission can start
+      if (!data.mission.started) this.mission.start();
+    }
     if (data.tutorial && this.tutorial) this.tutorial.applySave(data.tutorial);
   }
 

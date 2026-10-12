@@ -1,6 +1,6 @@
 import type { Game } from '../core/Game';
 import { UnitKind, BuildingKind, OrderKind } from '../core/types';
-import type { TutorialSave } from '../game/saveTypes';
+import type { TutorialSave, TutorialBase } from '../game/saveTypes';
 
 interface PasoTutorial {
   id: string;
@@ -22,7 +22,7 @@ export class Tutorial {
   private begun = false;
   private finished = false;
   private delay = 0;
-  private base: { houses: number; barracks: number; soldiers: number };
+  private base: TutorialBase;
 
   constructor(game: Game) {
     this.game = game;

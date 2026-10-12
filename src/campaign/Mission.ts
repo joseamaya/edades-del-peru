@@ -6,7 +6,7 @@ import { OrderKind, BuildingKind } from '../core/types';
 import { distance2D } from '../util/math';
 import type { MissionSave } from '../game/saveTypes';
 
-type ObjState = 'pendiente' | 'activo' | 'completed' | 'failed';
+export type ObjState = 'pendiente' | 'activo' | 'completed' | 'failed';
 
 /**
  * Mission controller: evaluates objectives and triggers every frame,
@@ -309,7 +309,7 @@ export class Mission {
     this.started = s.started;
     this.ended = s.ended;
     this.timer = s.timer;
-    this.objState = new Map(s.objState as [string, ObjState][]);
+    this.objState = new Map(s.objState);
     this.fired = new Set(s.fired);
     this.lastFired = new Map(s.lastFired);
     this.spawnedCount = new Map(s.spawnedCount);

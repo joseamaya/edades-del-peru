@@ -134,8 +134,8 @@ for player-facing docs see [`README.md`](../README.md).
   `Unit`/`Building`/`ResourceNode` (and `Mission`/`Tutorial`), so a new world-affecting field must be added there
   **and** to `saveTypes.ts`; ids are preserved with `EntityView.reserveIds`, the RNG with `RNG.getState/setState`,
   and the fog grid with `Fow.serialize/restore`. In load mode the mission briefing is skipped and its state
-  (objectives/triggers/timer) is restored. Bump `SAVE_VERSION` on any shape change. The AI is rebuilt fresh and
-  projectiles are not saved.
+  (objectives/triggers/timer) is restored. Bump `SAVE_VERSION` on a breaking shape change (adding optional
+  fields is fine). The AI is rebuilt fresh and projectiles are not saved.
 - **Trees by instancing** (`src/rendering/TreeInstances.ts`): `InstancedMesh` of trunk + canopies per variant;
   picking is by `instanceId` (`TreeInstances.raycast` -> `pickResource`), visibility by `ResourceNode.setVisibleEx`
   (fog+LOD) and falling on chop by `startFall`. If you add a tree without registering it in the manager, it will
