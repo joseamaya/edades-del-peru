@@ -35,7 +35,8 @@ export const ERA_DEFS: EraDef[] = [
       emissiveIntensity: 0.5,
       detail: '#4a3520',
     },
-    description: 'Caral y Chavín: las primeras ciudades de América. Pirámides de piedra, plazas hundidas y canales de regadío.',
+    description:
+      'Caral y Chavín: las primeras ciudades de América. Pirámides de piedra, plazas hundidas y canales de regadío.',
     advanceCost: { food: 400, wood: 300, silver: 0, stone: 0 },
     advanceRequiredBuildings: 1,
   },

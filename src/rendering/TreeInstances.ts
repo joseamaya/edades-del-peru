@@ -49,7 +49,12 @@ export class TreeInstances {
       frond: this.buildCanopyGeo(3.4, 2.2, 3.7),
     };
 
-    const barkMat = new THREE.MeshStandardMaterial({ map: MaterialTex.bark(), normalMap: MaterialTex.normal(21), color: '#b59a78', roughness: 0.95 });
+    const barkMat = new THREE.MeshStandardMaterial({
+      map: MaterialTex.bark(),
+      normalMap: MaterialTex.normal(21),
+      color: '#b59a78',
+      roughness: 0.95,
+    });
     this.materials.push(barkMat);
     this.trunkMesh = new THREE.InstancedMesh(trunkGeo, barkMat, MAX);
     this.trunkMesh.castShadow = true;
@@ -60,7 +65,13 @@ export class TreeInstances {
 
     this.canopyMesh = {} as Record<TreeVariant, THREE.InstancedMesh>;
     for (const variant of ['broad', 'needle', 'frond'] as TreeVariant[]) {
-      const leafMat = new THREE.MeshStandardMaterial({ map: MaterialTex.foliage(variant), alphaTest: 0.45, side: THREE.DoubleSide, color: '#cfe0b0', roughness: 1 });
+      const leafMat = new THREE.MeshStandardMaterial({
+        map: MaterialTex.foliage(variant),
+        alphaTest: 0.45,
+        side: THREE.DoubleSide,
+        color: '#cfe0b0',
+        roughness: 1,
+      });
       this.materials.push(leafMat);
       const mesh = new THREE.InstancedMesh(canopyGeos[variant], leafMat, MAX);
       mesh.castShadow = true;
@@ -73,7 +84,19 @@ export class TreeInstances {
 
     // initialize all matrices to zero
     for (let i = 0; i < MAX; i++) {
-      this.slots.push({ used: false, id: -1, variant: 'broad', x: 0, y: 0, z: 0, rotY: 0, scale: 1, phase: 0, visible: false, fallTime: 0 });
+      this.slots.push({
+        used: false,
+        id: -1,
+        variant: 'broad',
+        x: 0,
+        y: 0,
+        z: 0,
+        rotY: 0,
+        scale: 1,
+        phase: 0,
+        visible: false,
+        fallTime: 0,
+      });
       this.free.push(i);
     }
     this.writeAll();

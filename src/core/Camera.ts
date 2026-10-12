@@ -107,7 +107,7 @@ export class RTSCamera {
   private panBy(screenDx: number, screenDy: number): void {
     const yawCos = Math.cos(-this.yaw);
     const yawSin = Math.sin(-this.yaw);
-    const world = this.zoom / this.camera.aspect * 0.0016;
+    const world = (this.zoom / this.camera.aspect) * 0.0016;
     const dx = screenDx * world;
     const dy = screenDy * world;
     this.desiredTarget.x += yawCos * dx - yawSin * dy;

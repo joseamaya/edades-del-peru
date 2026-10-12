@@ -29,19 +29,22 @@ export class Projectile {
   private _tmpTarget = new THREE.Vector3();
   private _toTarget = new THREE.Vector3();
 
-  constructor(scene: THREE.Scene, opts: {
-    from: THREE.Vector3;
-    target: THREE.Vector3;
-    speed: number;
-    damage: number;
-    kind: string;
-    owner: number;
-    area?: number;
-    arc?: number;
-    targetId?: number;
-    onHit?: (targetId: number | undefined) => void;
-    getTargetPos?: () => THREE.Vector3 | null;
-  }) {
+  constructor(
+    scene: THREE.Scene,
+    opts: {
+      from: THREE.Vector3;
+      target: THREE.Vector3;
+      speed: number;
+      damage: number;
+      kind: string;
+      owner: number;
+      area?: number;
+      arc?: number;
+      targetId?: number;
+      onHit?: (targetId: number | undefined) => void;
+      getTargetPos?: () => THREE.Vector3 | null;
+    },
+  ) {
     this.scene = scene;
     this.pos.copy(opts.from);
     this.target.copy(opts.target);

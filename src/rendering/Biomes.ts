@@ -28,7 +28,13 @@ export interface PbrSet {
 const loader = new THREE.TextureLoader();
 const cache = new Map<string, THREE.Texture | null>();
 
-function load(mods: Record<string, string>, base: string, key: string, type: string, color: boolean): THREE.Texture | null {
+function load(
+  mods: Record<string, string>,
+  base: string,
+  key: string,
+  type: string,
+  color: boolean,
+): THREE.Texture | null {
   const ck = `${key}_${type}`;
   if (cache.has(ck)) return cache.get(ck)!;
   const url = mods[`${base}/${key}_${type}.webp`];
@@ -49,7 +55,11 @@ export function getGroundPBR(slot: string): PbrSet | null {
   const base = '../assets/textures/terrain';
   const diffuse = load(terrainMods, base, slot, 'diffuse', true);
   if (!diffuse) return null;
-  return { diffuse, normal: load(terrainMods, base, slot, 'normal', false), roughness: load(terrainMods, base, slot, 'roughness', false) };
+  return {
+    diffuse,
+    normal: load(terrainMods, base, slot, 'normal', false),
+    roughness: load(terrainMods, base, slot, 'roughness', false),
+  };
 }
 
 /** PBR material set for modeling (wood, adobe, tile, clay, mud, textile). */
@@ -57,6 +67,9 @@ export function getGeneratedMaterial(kind: string): PbrSet | null {
   const base = '../assets/textures/materials';
   const diffuse = load(materialMods, base, kind, 'diffuse', true);
   if (!diffuse) return null;
-  return { diffuse, normal: load(materialMods, base, kind, 'normal', false), roughness: load(materialMods, base, kind, 'roughness', false) };
+  return {
+    diffuse,
+    normal: load(materialMods, base, kind, 'normal', false),
+    roughness: load(materialMods, base, kind, 'roughness', false),
+  };
 }
-

@@ -356,7 +356,7 @@ function genRoof(base = '#a84838'): THREE.CanvasTexture {
       // shadow between tiles
       const edgeY = y % tileH;
       const edgeX = px;
-      const seam = (edgeY > tileH - 3 || edgeX > tileW - 2) ? 0.78 : 1;
+      const seam = edgeY > tileH - 3 || edgeX > tileW - 2 ? 0.78 : 1;
       // each tile's curve
       const curve = 1 - Math.abs(edgeX / tileW - 0.5) * 0.35;
       const n = fbm2(x * 0.06, y * 0.06, 3);
@@ -670,7 +670,6 @@ function genHide(base = '#8a6a4a'): THREE.CanvasTexture {
   }
   return canvasTexture(c, key, true);
 }
-
 
 /** Neutral base texture with color. */
 function genFlat(color: string): THREE.CanvasTexture {

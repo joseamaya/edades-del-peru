@@ -104,10 +104,10 @@ Matches are **locked by period** (no anachronistic modernization). Chronology in
 | Period | Dates | Civilizations |
 |---|---|---|
 | Late Archaic | 3000–1800 BCE | Caral-Supe |
-| Early Horizon | 1200–200 BCE | Chavín, Paracas |
-| Early Intermediate | 200 BCE–600 CE | Moche, Nazca, Recuay, Tiahuanaco |
+| Early Horizon | 1200–200 BCE | Chavín, Paracas, Cupisnique |
+| Early Intermediate | 200 BCE–600 CE | Moche, Nazca, Recuay, Tiahuanaco, Paracas |
 | Middle Horizon | 600–1000 CE | Wari, Tiahuanaco |
-| Late Intermediate | 1000–1476 CE | Chimú, Chincha, Chanca |
+| Late Intermediate | 1000–1476 CE | Chimú, Chincha, Chanca, Collas/Lupaca, Huanca |
 | Late Horizon | 1438–1533 CE | Inca |
 | Viceroyalty | 1542–1821 | Royalists |
 | Independence | 1821–1824 | Patriots, Royalists |

@@ -154,7 +154,17 @@ export class Particles {
     const count = opts.count ?? 1;
     const kind = opts.kind ?? 'smoke';
     const kindVal =
-      kind === 'smoke' ? 0 : kind === 'fire' ? 1 : kind === 'spark' ? 2 : kind === 'explosion' ? 3 : kind === 'dust' ? 4 : 5;
+      kind === 'smoke'
+        ? 0
+        : kind === 'fire'
+          ? 1
+          : kind === 'spark'
+            ? 2
+            : kind === 'explosion'
+              ? 3
+              : kind === 'dust'
+                ? 4
+                : 5;
     const baseColor = new THREE.Color(opts.color ?? 0xaaaaaa);
     for (let i = 0; i < count; i++) {
       const p = this.pool[this.cursor];
@@ -166,7 +176,7 @@ export class Particles {
       const spread = opts.spread ?? 1;
       p.vel.set(
         (this.rng.float() - 0.5) * spread,
-        opts.kind === 'smoke' ? opts.speed ?? 1.2 : (this.rng.float() - 0.5) * spread,
+        opts.kind === 'smoke' ? (opts.speed ?? 1.2) : (this.rng.float() - 0.5) * spread,
         (this.rng.float() - 0.5) * spread,
       );
       if (kind === 'smoke') {

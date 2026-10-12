@@ -102,9 +102,7 @@ function periodTab(): CodexItem[] {
     title: `${p.name} · ${p.dates}`,
     render: () => {
       const disp = civsForPeriod(p.id);
-      const lista = disp
-        .map((c) => `<li><b>${c.name}</b> (${c.geography}) — ${c.description}</li>`)
-        .join('');
+      const lista = disp.map((c) => `<li><b>${c.name}</b> (${c.geography}) — ${c.description}</li>`).join('');
       return `
         <h3>${p.name}</h3>
         <p><b>Fechas:</b> ${p.dates} · <b>Mapa:</b> ${p.map}</p>
@@ -141,7 +139,9 @@ function campaignTab(): CodexItem[] {
       const edu = getEducational(m.id);
       const sources = edu?.sources.length
         ? `<h4>Fuentes</h4><ul>${edu.sources
-            .map((f) => `<li>${f.url ? `<a href="${f.url}" target="_blank" rel="noopener">${f.text}</a>` : f.text}</li>`)
+            .map(
+              (f) => `<li>${f.url ? `<a href="${f.url}" target="_blank" rel="noopener">${f.text}</a>` : f.text}</li>`,
+            )
             .join('')}</ul>`
         : '';
       return `

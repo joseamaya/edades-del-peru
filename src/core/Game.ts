@@ -21,8 +21,17 @@ import { AI } from '../game/AI';
 import { Economy } from '../game/Economy';
 import { HUD } from '../ui/HUD';
 import {
-  Era, Resources, ZERO_RESOURCES, PlayerState, CivId,
-  UnitKind, BuildingKind, OrderKind, OrderTarget, Team, RESOURCE_KEYS,
+  Era,
+  Resources,
+  ZERO_RESOURCES,
+  PlayerState,
+  CivId,
+  UnitKind,
+  BuildingKind,
+  OrderKind,
+  OrderTarget,
+  Team,
+  RESOURCE_KEYS,
 } from '../core/types';
 import { getCiv } from '../model/defs/civs';
 import { BuildContext, buildModel, disposeModel, clearModelCaches } from '../model/ProceduralModel';
@@ -179,7 +188,13 @@ export class Game {
     // No atmospheric fog over the board: classic RTS look, sharp.
     this.scene.fog = null;
     this.setTimeOfDay(s.timeOfDay);
-    this.water = new Water(this.scene, this.terrain.heightMap, s.mapSize, this.terrain.waterLevel, s.mapType !== 'coast');
+    this.water = new Water(
+      this.scene,
+      this.terrain.heightMap,
+      s.mapSize,
+      this.terrain.waterLevel,
+      s.mapType !== 'coast',
+    );
     this.particles = new Particles(this.scene, 4096);
     this.markers = new OrderMarkers(this.scene);
     this.trees = new TreeInstances(this.scene);
@@ -191,7 +206,7 @@ export class Game {
   }
 
   private setTimeOfDay(mode: string): void {
-    const map: Record<string, number> = { 'morning': 0.62, 'noon': 0.5, 'dusk': 0.28, 'night': 0.05 };
+    const map: Record<string, number> = { morning: 0.62, noon: 0.5, dusk: 0.28, night: 0.05 };
     this.sky.setTimeOfDay(map[mode] ?? 0.5);
   }
 
@@ -261,7 +276,7 @@ export class Game {
   private spawnResources(): void {
     const s = this.settings;
     const rng = new RNG(this.settings.mapSeed * 31 + 1);
-    const n = Math.floor(s.mapSize * s.mapSize / 1000);
+    const n = Math.floor((s.mapSize * s.mapSize) / 1000);
     let placed = 0;
     let guard = 0;
     while (placed < n && guard++ < n * 4) {
@@ -270,16 +285,31 @@ export class Game {
       if (this.terrain.isWater(x, z)) continue;
       const h = this.terrain.getHeight(x, z);
       const kind: ResourceNode['kind'] =
-        h > 6 ? 'mine' :
-        h > 3 ? rng.chance(0.6) ? 'mine' : 'tree' :
-        this.terrain.isBeach(x, z) ? rng.chance(0.5) ? 'well' : 'berry' :
-        rng.chance(0.45) ? 'tree' : rng.chance(0.3) ? 'mine' : 'well';
+        h > 6
+          ? 'mine'
+          : h > 3
+            ? rng.chance(0.6)
+              ? 'mine'
+              : 'tree'
+            : this.terrain.isBeach(x, z)
+              ? rng.chance(0.5)
+                ? 'well'
+                : 'berry'
+              : rng.chance(0.45)
+                ? 'tree'
+                : rng.chance(0.3)
+                  ? 'mine'
+                  : 'well';
       const amount =
-        kind === 'tree' ? rng.range(140, 220) :
-        kind === 'mine' ? rng.range(300, 450) :
-        kind === 'well' ? rng.range(250, 380) :
-        kind === 'berry' ? rng.range(120, 180) :
-        rng.range(200, 300);
+        kind === 'tree'
+          ? rng.range(140, 220)
+          : kind === 'mine'
+            ? rng.range(300, 450)
+            : kind === 'well'
+              ? rng.range(250, 380)
+              : kind === 'berry'
+                ? rng.range(120, 180)
+                : rng.range(200, 300);
       const node = new ResourceNode(this.scene, kind, x, z, amount, this.settings.mapType, this.trees);
       node.pos.y = this.terrain.getHeight(x, z);
       node.view.position.set(x, node.pos.y, z);
@@ -338,7 +368,7 @@ export class Game {
     this.registerObstacle(center);
     // starting dwellings
     const rng = new RNG(this.settings.mapSeed + player * 100);
-    const dirs = [0, Math.PI / 3, Math.PI * 2 / 3];
+    const dirs = [0, Math.PI / 3, (Math.PI * 2) / 3];
     for (const d of dirs) {
       const hx = x + Math.cos(d) * 5.5;
       const hz = z + Math.sin(d) * 5.5;
@@ -356,7 +386,11 @@ export class Game {
     const workers = player === 0 ? 4 : 4;
     for (let i = 0; i < workers; i++) {
       const unit = new Unit(UnitKind.WORKER, player, this.players[player].era, ctx);
-      unit.pos.set(x + rng.range(-3, 3), this.terrain.getHeight(x + rng.range(-3, 3), z + rng.range(-3, 3)), z + rng.range(-3, 3));
+      unit.pos.set(
+        x + rng.range(-3, 3),
+        this.terrain.getHeight(x + rng.range(-3, 3), z + rng.range(-3, 3)),
+        z + rng.range(-3, 3),
+      );
       unit.setContext(this.unitContext);
       this.applyPlayerBonuses(unit, this.players[player]);
       unit.attach(this.scene);
@@ -411,7 +445,11 @@ export class Game {
     const woods = [...this.resourceNodes.values()].filter((n) => n.resource === 'wood');
     const steels = [...this.resourceNodes.values()].filter((n) => n.resource === 'silver');
     const nearest = (list: ResourceNode[], px: number, pz: number) =>
-      list.reduce((best, n) => (best ? (distance2D(px, pz, n.pos.x, n.pos.z) < distance2D(px, pz, best.pos.x, best.pos.z) ? n : best) : n), null as ResourceNode | null);
+      list.reduce(
+        (best, n) =>
+          best ? (distance2D(px, pz, n.pos.x, n.pos.z) < distance2D(px, pz, best.pos.x, best.pos.z) ? n : best) : n,
+        null as ResourceNode | null,
+      );
     const foodNode = nearest(foods, x, z);
     const woodNode = nearest(woods, x, z);
     const steelNode = nearest(steels, x, z);
@@ -774,7 +812,8 @@ export class Game {
       const dx = e.clientX - this.selectionStart.x;
       const dy = e.clientY - this.selectionStart.y;
       if (!this.leftMoved && Math.abs(dx) + Math.abs(dy) > 4) this.leftMoved = true;
-      if (this.leftMoved) this.hud?.showSelectionBox(this.selectionStart.x, this.selectionStart.y, e.clientX, e.clientY);
+      if (this.leftMoved)
+        this.hud?.showSelectionBox(this.selectionStart.x, this.selectionStart.y, e.clientX, e.clientY);
     }
     // cursor + hover tooltip: one pick per frame, shared by the tooltip and the action icon
     if (!this.gameEnded && !this.placingBuilding) {
@@ -824,18 +863,32 @@ export class Game {
     if (picked.resource) {
       const node = picked.resource;
       const ni = NODE_INFO[node.kind];
-      return { icon: ni.icon, title: ni.name, detalle: `${Math.ceil(node.amount)} ${RESOURCE_INFO[node.resource].name}` };
+      return {
+        icon: ni.icon,
+        title: ni.name,
+        detalle: `${Math.ceil(node.amount)} ${RESOURCE_INFO[node.resource].name}`,
+      };
     }
     if (picked.unit) {
       const ui = UNIT_INFO[picked.unit.kind];
-      const own = picked.unit.owner === 0 ? 'Tú' : this.players[picked.unit.owner]?.name ?? 'Enemigo';
-      return { icon: ui.icon, title: `${ui.name}`, detalle: `${own} · HP ${Math.ceil(picked.unit.hp)}/${Math.ceil(picked.unit.maxHp)}` };
+      const own = picked.unit.owner === 0 ? 'Tú' : (this.players[picked.unit.owner]?.name ?? 'Enemigo');
+      return {
+        icon: ui.icon,
+        title: `${ui.name}`,
+        detalle: `${own} · HP ${Math.ceil(picked.unit.hp)}/${Math.ceil(picked.unit.maxHp)}`,
+      };
     }
     if (picked.building) {
       const bi = BUILDING_INFO[picked.building.kind];
-      const own = picked.building.owner === 0 ? 'Tú' : this.players[picked.building.owner]?.name ?? 'Enemigo';
-      const state = picked.building.constructionComplete ? '' : ` · Construyendo ${Math.floor(picked.building.buildRatio * 100)}%`;
-      return { icon: bi.icon, title: bi.name, detalle: `${own} · HP ${Math.ceil(picked.building.hp)}/${Math.ceil(picked.building.maxHp)}${state}` };
+      const own = picked.building.owner === 0 ? 'Tú' : (this.players[picked.building.owner]?.name ?? 'Enemigo');
+      const state = picked.building.constructionComplete
+        ? ''
+        : ` · Construyendo ${Math.floor(picked.building.buildRatio * 100)}%`;
+      return {
+        icon: bi.icon,
+        title: bi.name,
+        detalle: `${own} · HP ${Math.ceil(picked.building.hp)}/${Math.ceil(picked.building.maxHp)}${state}`,
+      };
     }
     return null;
   }
@@ -1126,7 +1179,10 @@ export class Game {
       while (cur) {
         let found: ResourceNode | null = null;
         for (const n of this.resourceNodes.values()) {
-          if (n.view === cur) { found = n; break; }
+          if (n.view === cur) {
+            found = n;
+            break;
+          }
         }
         if (found) {
           best = found;
@@ -1143,7 +1199,10 @@ export class Game {
     for (const th of treeHits) {
       if (th.dist < bestD) {
         const n = this.resourceNodes.get(th.id);
-        if (n) { bestD = th.dist; best = n; }
+        if (n) {
+          bestD = th.dist;
+          best = n;
+        }
       }
     }
     return best;
@@ -1222,7 +1281,8 @@ export class Game {
     return null;
   }
 
-  canPlace(x: number, z: number, foot: number): boolean {    const r = foot / 2;
+  canPlace(x: number, z: number, foot: number): boolean {
+    const r = foot / 2;
     if (this.terrain.isWater(x, z) || !this.terrain.isBuildable(x, z)) return false;
     for (let dx = -r; dx <= r; dx += 1.2) {
       for (let dz = -r; dz <= r; dz += 1.2) {
@@ -1349,9 +1409,7 @@ export class Game {
     }
     // select the whole army (own combat units)
     if (k === 'e') {
-      const army = [...this.units.values()].filter(
-        (u) => u.owner === 0 && !u.dead && u.kind !== UnitKind.WORKER,
-      );
+      const army = [...this.units.values()].filter((u) => u.owner === 0 && !u.dead && u.kind !== UnitKind.WORKER);
       this.selectedUnits = army.map((u) => u.id);
       this.selectedBuilding = null;
       this.refreshSelectionVisuals();
@@ -1521,17 +1579,57 @@ export class Game {
   private resolveDamage(attackerId: number, targetId: number, damage: number, from: any): void {
     const target = this.units.get(targetId) ?? this.buildings.get(targetId);
     if (!target || target.dead) return;
-    const armor = target instanceof Unit ? target.stats.heavyArmor * target.armorMultiplier : (target as Building).stats.armor;
+    const armor =
+      target instanceof Unit ? target.stats.heavyArmor * target.armorMultiplier : (target as Building).stats.armor;
     const final = Math.max(1, damage - armor);
     target.takeDamage(final, attackerId);
     const dmgH = target instanceof Unit ? 2.2 : 2.6;
     this.hud?.addDamageNumber(target.pos.x, target.pos.y + dmgH, target.pos.z, final, final >= 40 ? 'big' : 'normal');
     // impact per hit (blood on units, dust/sparks on structures)
     if (target instanceof Unit) {
-      this.particles.emit({ x: target.pos.x, y: target.pos.y + 0.9, z: target.pos.z, count: 4, color: 0x7a1010, kind: 'dust', speed: 1.5, life: 0.4, size: 0.7, grow: 0.3, gravity: 10, spread: 1.6 });
+      this.particles.emit({
+        x: target.pos.x,
+        y: target.pos.y + 0.9,
+        z: target.pos.z,
+        count: 4,
+        color: 0x7a1010,
+        kind: 'dust',
+        speed: 1.5,
+        life: 0.4,
+        size: 0.7,
+        grow: 0.3,
+        gravity: 10,
+        spread: 1.6,
+      });
     } else {
-      this.particles.emit({ x: target.pos.x, y: target.pos.y + 1.3, z: target.pos.z, count: 5, color: 0xcbb086, kind: 'dust', speed: 1.2, life: 0.45, size: 0.9, grow: 1.0, gravity: 6, spread: 1.4 });
-      if (Math.random() < 0.5) this.particles.emit({ x: target.pos.x, y: target.pos.y + 1.4, z: target.pos.z, count: 2, color: 0xffaa55, kind: 'spark', speed: 2, life: 0.25, size: 0.9, gravity: 8, spread: 1.5 });
+      this.particles.emit({
+        x: target.pos.x,
+        y: target.pos.y + 1.3,
+        z: target.pos.z,
+        count: 5,
+        color: 0xcbb086,
+        kind: 'dust',
+        speed: 1.2,
+        life: 0.45,
+        size: 0.9,
+        grow: 1.0,
+        gravity: 6,
+        spread: 1.4,
+      });
+      if (Math.random() < 0.5)
+        this.particles.emit({
+          x: target.pos.x,
+          y: target.pos.y + 1.4,
+          z: target.pos.z,
+          count: 2,
+          color: 0xffaa55,
+          kind: 'spark',
+          speed: 2,
+          life: 0.25,
+          size: 0.9,
+          gravity: 8,
+          spread: 1.5,
+        });
     }
     if (target.owner === 0) this.notifyUnderAttack(target);
     const owner = from?.owner ?? -1;
@@ -1556,7 +1654,13 @@ export class Game {
     if (target instanceof Building) {
       if (now - this.lastBaseAlert > 4000) {
         this.lastBaseAlert = now;
-        bus.emit('alert', { icon: '🚨', text: `¡${BUILDING_INFO[target.kind].name} atacada!`, x: target.pos.x, z: target.pos.z, warn: true });
+        bus.emit('alert', {
+          icon: '🚨',
+          text: `¡${BUILDING_INFO[target.kind].name} atacada!`,
+          x: target.pos.x,
+          z: target.pos.z,
+          warn: true,
+        });
       }
     } else if (target.hp / target.maxHp < 0.5 && now - this.lastUnitAlert > 3000) {
       this.lastUnitAlert = now;
@@ -1602,7 +1706,17 @@ export class Game {
         this.resolveDamage(o.owner, t.id, o.damage * falloff, { owner: o.owner });
       }
       // explosion smoke
-      this.particles.emit({ x: impact.x, y: impact.y + 1, z: impact.z, count: 14, color: 0x997755, kind: 'smoke', speed: 2, life: 1.8, size: 3 });
+      this.particles.emit({
+        x: impact.x,
+        y: impact.y + 1,
+        z: impact.z,
+        count: 14,
+        color: 0x997755,
+        kind: 'smoke',
+        speed: 2,
+        life: 1.8,
+        size: 3,
+      });
       this.camera.addShake(0.5);
       bus.emit('fx:explosion', {});
     } else if (targetId !== undefined) {
@@ -1695,7 +1809,8 @@ export class Game {
       if (tech.effect.capacityBonus) {
         p.bonus.carry += tech.effect.capacityBonus;
         for (const u of this.units.values()) {
-          if (u.owner === playerId && u.kind === UnitKind.WORKER) u.setCarryCapacity(u.maxCarry + tech.effect.capacityBonus);
+          if (u.owner === playerId && u.kind === UnitKind.WORKER)
+            u.setCarryCapacity(u.maxCarry + tech.effect.capacityBonus);
         }
       }
       if (tech.effect.losBonus) {
@@ -1764,7 +1879,15 @@ export class Game {
         return { ok: false, reason: 'Recursos insuficientes' };
       }
     }
-    const count = [...this.buildings.values()].filter((b) => b.owner === player && b.constructionComplete && (b.kind === BuildingKind.CENTER || b.kind === BuildingKind.FORTRESS || b.kind === BuildingKind.MARKET || b.kind === BuildingKind.INSTITUTE)).length;
+    const count = [...this.buildings.values()].filter(
+      (b) =>
+        b.owner === player &&
+        b.constructionComplete &&
+        (b.kind === BuildingKind.CENTER ||
+          b.kind === BuildingKind.FORTRESS ||
+          b.kind === BuildingKind.MARKET ||
+          b.kind === BuildingKind.INSTITUTE),
+    ).length;
     if (count < def.advanceRequiredBuildings) {
       return { ok: false, reason: `Necesitas ${def.advanceRequiredBuildings} edificio(s) de avance` };
     }
@@ -1922,7 +2045,6 @@ export class Game {
         return;
       }
     }
-
   }
 
   /** True if the player still owns at least one standing building. */
@@ -2067,7 +2189,13 @@ export class Game {
     if (threat && !this.alerted) {
       this.alerted = true;
       this.audio.alarm();
-      bus.emit('alert', { icon: '🚨', text: '¡Tu base está bajo ataque!', x: center.pos.x, z: center.pos.z, warn: true });
+      bus.emit('alert', {
+        icon: '🚨',
+        text: '¡Tu base está bajo ataque!',
+        x: center.pos.x,
+        z: center.pos.z,
+        warn: true,
+      });
       this.camera.focusOn(center.pos.x, center.pos.z);
     } else if (!threat && this.alerted) {
       this.alerted = false;
@@ -2097,7 +2225,7 @@ export class Game {
   }
 
   getSelectedBuilding(): Building | null {
-    return this.selectedBuilding !== null ? this.buildings.get(this.selectedBuilding) ?? null : null;
+    return this.selectedBuilding !== null ? (this.buildings.get(this.selectedBuilding) ?? null) : null;
   }
 
   /** Replace the unit selection with the given ids (only own and alive). */

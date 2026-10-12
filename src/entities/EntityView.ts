@@ -101,7 +101,13 @@ export class EntityView {
     if (!this.ring) {
       this.ring = new THREE.Mesh(
         new THREE.RingGeometry(this.radius * 0.82, this.radius * 1.12, 40),
-        new THREE.MeshBasicMaterial({ color: 0x33ff88, transparent: true, opacity: 0.65, side: THREE.DoubleSide, depthWrite: false }),
+        new THREE.MeshBasicMaterial({
+          color: 0x33ff88,
+          transparent: true,
+          opacity: 0.65,
+          side: THREE.DoubleSide,
+          depthWrite: false,
+        }),
       );
       this.ring.rotation.x = -Math.PI / 2;
       this.ring.position.y = 0.06;
@@ -178,7 +184,13 @@ export class EntityView {
     if (!this.losRing) {
       this.losRing = new THREE.Mesh(
         new THREE.RingGeometry(radius * 0.96, radius, 48),
-        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.12, side: THREE.DoubleSide, depthWrite: false }),
+        new THREE.MeshBasicMaterial({
+          color: 0xffffff,
+          transparent: true,
+          opacity: 0.12,
+          side: THREE.DoubleSide,
+          depthWrite: false,
+        }),
       );
       this.losRing.rotation.x = -Math.PI / 2;
       this.losRing.position.y = 0.03;

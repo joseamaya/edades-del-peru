@@ -28,13 +28,22 @@ export class OrderMarkers {
   private pool: Marker[] = [];
   private active: Marker[] = [];
 
-  constructor(private scene: THREE.Scene, size = 20) {
+  constructor(
+    private scene: THREE.Scene,
+    size = 20,
+  ) {
     this.ringGeo = new THREE.RingGeometry(0.55, 0.85, 32);
     this.ringGeo.rotateX(-Math.PI / 2);
     this.dotGeo = new THREE.CircleGeometry(0.14, 16);
     this.dotGeo.rotateX(-Math.PI / 2);
     for (let i = 0; i < size; i++) {
-      const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1, depthWrite: false, side: THREE.DoubleSide });
+      const mat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 1,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      });
       const ring = new THREE.Mesh(this.ringGeo, mat);
       ring.visible = false;
       ring.renderOrder = 5;

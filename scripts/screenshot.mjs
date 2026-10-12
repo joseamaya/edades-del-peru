@@ -30,7 +30,7 @@ async function main() {
 
   await page.goto(url, { waitUntil: 'networkidle' });
   // wait for the game to be ready
-  await page.waitForFunction(() => (window).game !== undefined, null, { timeout: 30000 }).catch(() => {});
+  await page.waitForFunction(() => window.game !== undefined, null, { timeout: 30000 }).catch(() => {});
   await page.waitForTimeout(wait);
 
   const files = [];
@@ -43,18 +43,20 @@ async function main() {
   }
 
   // eval state summary
-  const summary = await page.evaluate(() => {
-    const g = window.game;
-    if (!g) return 'no-game';
-    const p = g.players?.[0];
-    return {
-      era: p?.era ?? -1,
-      units: g.units?.size ?? 0,
-      buildings: g.buildings?.size ?? 0,
-      fps: g.loop?.getFps?.(),
-      res: p?.resources,
-    };
-  }).catch((e) => 'eval-error:' + e.message);
+  const summary = await page
+    .evaluate(() => {
+      const g = window.game;
+      if (!g) return 'no-game';
+      const p = g.players?.[0];
+      return {
+        era: p?.era ?? -1,
+        units: g.units?.size ?? 0,
+        buildings: g.buildings?.size ?? 0,
+        fps: g.loop?.getFps?.(),
+        res: p?.resources,
+      };
+    })
+    .catch((e) => 'eval-error:' + e.message);
 
   fs.writeFileSync(path.join(outDir, `${name}.json`), JSON.stringify({ summary, files, errors }, null, 2));
 

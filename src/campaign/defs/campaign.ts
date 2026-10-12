@@ -30,12 +30,48 @@ export const MISSIONS: MissionDef[] = [
     objectives: [
       { id: 'obj_food', kind: 'gather', resource: 'food', count: 300, title: 'Reúne 300 de comida' },
       { id: 'obj_survive', kind: 'survive', time: 360, title: 'Sostén el asentamiento 6 minutos' },
-      { id: 'obj_autoridad', kind: 'protect', entityTag: 'autoridad', title: 'Mantén con vida a la autoridad de Caral' },
+      {
+        id: 'obj_autoridad',
+        kind: 'protect',
+        entityTag: 'autoridad',
+        title: 'Mantén con vida a la autoridad de Caral',
+      },
     ],
     triggers: [
-      { id: 't_dial_1', condition: { type: 'time', seconds: 40 }, effects: [{ type: 'dialogue', text: 'Autoridad: —El río Supe nos da vida. ¡Alzad los templos y tended los canales!' }] },
-      { id: 't_wave_1', condition: { type: 'time', seconds: 140 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 3 }], pos: { ref: 'player', dx: 22, dz: 22 }, radius: 4 }, { type: 'dialogue', text: '¡Grupos rivales al noreste! ¡A las armas!' }] },
-      { id: 't_wave_2', condition: { type: 'time', seconds: 260 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 4 }], pos: { ref: 'player', dx: -20, dz: 24 }, radius: 4 }] },
+      {
+        id: 't_dial_1',
+        condition: { type: 'time', seconds: 40 },
+        effects: [
+          { type: 'dialogue', text: 'Autoridad: —El río Supe nos da vida. ¡Alzad los templos y tended los canales!' },
+        ],
+      },
+      {
+        id: 't_wave_1',
+        condition: { type: 'time', seconds: 140 },
+        effects: [
+          {
+            type: 'wave',
+            owner: 1,
+            units: [{ kind: UnitKind.SOLDIER, count: 3 }],
+            pos: { ref: 'player', dx: 22, dz: 22 },
+            radius: 4,
+          },
+          { type: 'dialogue', text: '¡Grupos rivales al noreste! ¡A las armas!' },
+        ],
+      },
+      {
+        id: 't_wave_2',
+        condition: { type: 'time', seconds: 260 },
+        effects: [
+          {
+            type: 'wave',
+            owner: 1,
+            units: [{ kind: UnitKind.SOLDIER, count: 4 }],
+            pos: { ref: 'player', dx: -20, dz: 24 },
+            radius: 4,
+          },
+        ],
+      },
     ],
   },
   {
@@ -65,9 +101,45 @@ export const MISSIONS: MissionDef[] = [
       { id: 'obj_oraculo', kind: 'protect', entityTag: 'oraculo', title: 'Mantén a salvo al guardián del oráculo' },
     ],
     triggers: [
-      { id: 't_dial_0', condition: { type: 'time', seconds: 20 }, effects: [{ type: 'dialogue', text: 'Sacerdote: —El oráculo exige ofrendas. ¡Atended a los peregrinos y defended el templo!' }] },
-      { id: 't_wave_1', condition: { type: 'time', seconds: 150 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 4 }], pos: { ref: 'player', dx: 24, dz: -10 }, radius: 5 }] },
-      { id: 't_wave_2', condition: { type: 'time', seconds: 300 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 5 }, { kind: UnitKind.MUSKETEER, count: 2 }], pos: { ref: 'player', dx: -18, dz: 22 }, radius: 6 }] },
+      {
+        id: 't_dial_0',
+        condition: { type: 'time', seconds: 20 },
+        effects: [
+          {
+            type: 'dialogue',
+            text: 'Sacerdote: —El oráculo exige ofrendas. ¡Atended a los peregrinos y defended el templo!',
+          },
+        ],
+      },
+      {
+        id: 't_wave_1',
+        condition: { type: 'time', seconds: 150 },
+        effects: [
+          {
+            type: 'wave',
+            owner: 1,
+            units: [{ kind: UnitKind.SOLDIER, count: 4 }],
+            pos: { ref: 'player', dx: 24, dz: -10 },
+            radius: 5,
+          },
+        ],
+      },
+      {
+        id: 't_wave_2',
+        condition: { type: 'time', seconds: 300 },
+        effects: [
+          {
+            type: 'wave',
+            owner: 1,
+            units: [
+              { kind: UnitKind.SOLDIER, count: 5 },
+              { kind: UnitKind.MUSKETEER, count: 2 },
+            ],
+            pos: { ref: 'player', dx: -18, dz: 22 },
+            radius: 6,
+          },
+        ],
+      },
     ],
   },
   {
@@ -101,10 +173,54 @@ export const MISSIONS: MissionDef[] = [
       { id: 'obj_plata', kind: 'gather', resource: 'silver', count: 250, title: 'Reúne 250 de plata' },
     ],
     triggers: [
-      { id: 't_dial_0', condition: { type: 'time', seconds: 10 }, effects: [{ type: 'dialogue', text: 'Señor de Moche: —¡Las huacas son nuestro poder! ¡Formad en las plazas!' }] },
-      { id: 't_wave_1', condition: { type: 'time', seconds: 80 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 5 }], pos: { ref: 'player', dx: 30, dz: 10 }, radius: 6 }] },
-      { id: 't_wave_2', condition: { type: 'time', seconds: 200 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 4 }, { kind: UnitKind.MUSKETEER, count: 2 }], pos: { ref: 'player', dx: -10, dz: 30 }, radius: 6 }, { type: 'dialogue', text: '¡Guerreros de la sierra por el oeste! ¡Reforzad el flanco!' }] },
-      { id: 't_wave_3', condition: { type: 'time', seconds: 360 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 6 }], pos: { ref: 'player', dx: 28, dz: -12 }, radius: 6 }] },
+      {
+        id: 't_dial_0',
+        condition: { type: 'time', seconds: 10 },
+        effects: [{ type: 'dialogue', text: 'Señor de Moche: —¡Las huacas son nuestro poder! ¡Formad en las plazas!' }],
+      },
+      {
+        id: 't_wave_1',
+        condition: { type: 'time', seconds: 80 },
+        effects: [
+          {
+            type: 'wave',
+            owner: 1,
+            units: [{ kind: UnitKind.SOLDIER, count: 5 }],
+            pos: { ref: 'player', dx: 30, dz: 10 },
+            radius: 6,
+          },
+        ],
+      },
+      {
+        id: 't_wave_2',
+        condition: { type: 'time', seconds: 200 },
+        effects: [
+          {
+            type: 'wave',
+            owner: 1,
+            units: [
+              { kind: UnitKind.SOLDIER, count: 4 },
+              { kind: UnitKind.MUSKETEER, count: 2 },
+            ],
+            pos: { ref: 'player', dx: -10, dz: 30 },
+            radius: 6,
+          },
+          { type: 'dialogue', text: '¡Guerreros de la sierra por el oeste! ¡Reforzad el flanco!' },
+        ],
+      },
+      {
+        id: 't_wave_3',
+        condition: { type: 'time', seconds: 360 },
+        effects: [
+          {
+            type: 'wave',
+            owner: 1,
+            units: [{ kind: UnitKind.SOLDIER, count: 6 }],
+            pos: { ref: 'player', dx: 28, dz: -12 },
+            radius: 6,
+          },
+        ],
+      },
     ],
   },
   {
@@ -114,8 +230,7 @@ export const MISSIONS: MissionDef[] = [
     history:
       'Wari, desde Ayacucho, construye el primer imperio andino: ciudades planificadas, caminos y una religión estatal. Al sur, Tiahuanaco domina el altiplano.\n' +
       'Extiende la red de centros provinciales y asegura vuestros andenes frente a la esfera rival.',
-    victory:
-      'Wari consolida su esfera de influencia. El Horizonte Medio unifica buena parte de los Andes centrales.',
+    victory: 'Wari consolida su esfera de influencia. El Horizonte Medio unifica buena parte de los Andes centrales.',
     defeat: 'La expansión wari se detiene y sus centros provinciales se pierden.',
     period: HistoricalPeriod.MIDDLE_HORIZON,
     playerCiv: CivId.WARI,
@@ -138,9 +253,34 @@ export const MISSIONS: MissionDef[] = [
       { id: 'obj_destroy', kind: 'destroy', entityTag: 'centro_rival', title: 'Toma el centro rival del altiplano' },
     ],
     triggers: [
-      { id: 't_dial_0', condition: { type: 'time', seconds: 20 }, effects: [{ type: 'dialogue', text: 'Gobernante wari: —Nuestros caminos y andenes son la fuerza del imperio. ¡Adelante!' }] },
-      { id: 't_cam_1', condition: { type: 'time', seconds: 60 }, effects: [{ type: 'camera', pos: { ref: 'enemy', dx: 0, dz: 0 } }] },
-      { id: 't_wave_1', condition: { type: 'time', seconds: 220 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 6 }], pos: { ref: 'player', dx: 26, dz: 16 }, radius: 6 }] },
+      {
+        id: 't_dial_0',
+        condition: { type: 'time', seconds: 20 },
+        effects: [
+          {
+            type: 'dialogue',
+            text: 'Gobernante wari: —Nuestros caminos y andenes son la fuerza del imperio. ¡Adelante!',
+          },
+        ],
+      },
+      {
+        id: 't_cam_1',
+        condition: { type: 'time', seconds: 60 },
+        effects: [{ type: 'camera', pos: { ref: 'enemy', dx: 0, dz: 0 } }],
+      },
+      {
+        id: 't_wave_1',
+        condition: { type: 'time', seconds: 220 },
+        effects: [
+          {
+            type: 'wave',
+            owner: 1,
+            units: [{ kind: UnitKind.SOLDIER, count: 6 }],
+            pos: { ref: 'player', dx: 26, dz: 16 },
+            radius: 6,
+          },
+        ],
+      },
     ],
   },
   {
@@ -178,9 +318,46 @@ export const MISSIONS: MissionDef[] = [
       { id: 'obj_cusi', kind: 'protect', entityTag: 'cusi_yupanqui', title: 'Mantén con vida a Cusi Yupanqui' },
     ],
     triggers: [
-      { id: 't_dial_0', condition: { type: 'time', seconds: 15 }, effects: [{ type: 'dialogue', text: 'Cusi Yupanqui: —Los chancas creen que huiremos como los nobles. ¡Aquí se defiende el Cusco!' }] },
-      { id: 't_wave_1', condition: { type: 'time', seconds: 90 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 6 }], pos: { ref: 'player', dx: 28, dz: 12 }, radius: 6 }, { type: 'dialogue', text: '¡Anccu Hualloc ataca por el norte! ¡A las armas!' }] },
-      { id: 't_wave_2', condition: { type: 'time', seconds: 200 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 5 }, { kind: UnitKind.MUSKETEER, count: 2 }], pos: { ref: 'player', dx: -12, dz: 28 }, radius: 6 }] },
+      {
+        id: 't_dial_0',
+        condition: { type: 'time', seconds: 15 },
+        effects: [
+          {
+            type: 'dialogue',
+            text: 'Cusi Yupanqui: —Los chancas creen que huiremos como los nobles. ¡Aquí se defiende el Cusco!',
+          },
+        ],
+      },
+      {
+        id: 't_wave_1',
+        condition: { type: 'time', seconds: 90 },
+        effects: [
+          {
+            type: 'wave',
+            owner: 1,
+            units: [{ kind: UnitKind.SOLDIER, count: 6 }],
+            pos: { ref: 'player', dx: 28, dz: 12 },
+            radius: 6,
+          },
+          { type: 'dialogue', text: '¡Anccu Hualloc ataca por el norte! ¡A las armas!' },
+        ],
+      },
+      {
+        id: 't_wave_2',
+        condition: { type: 'time', seconds: 200 },
+        effects: [
+          {
+            type: 'wave',
+            owner: 1,
+            units: [
+              { kind: UnitKind.SOLDIER, count: 5 },
+              { kind: UnitKind.MUSKETEER, count: 2 },
+            ],
+            pos: { ref: 'player', dx: -12, dz: 28 },
+            radius: 6,
+          },
+        ],
+      },
     ],
   },
   {
@@ -214,9 +391,38 @@ export const MISSIONS: MissionDef[] = [
       { id: 'obj_hold', kind: 'survive', time: 600, title: 'Mantén tu campamento 10 minutos' },
     ],
     triggers: [
-      { id: 't_dial_0', condition: { type: 'time', seconds: 20 }, effects: [{ type: 'dialogue', text: 'Túpac Yupanqui: —Minchancaman no se someterá. Avanzad por los valles y cortadle el agua a Chan Chan.' }] },
-      { id: 't_cam_1', condition: { type: 'time', seconds: 60 }, effects: [{ type: 'camera', pos: { ref: 'enemy', dx: 0, dz: 0 } }] },
-      { id: 't_wave_1', condition: { type: 'time', seconds: 260 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 6 }, { kind: UnitKind.MUSKETEER, count: 3 }], pos: { ref: 'player', dx: 20, dz: 20 }, radius: 7 }, { type: 'dialogue', text: '¡Querrotumi contraataca desde Paramonga!' }] },
+      {
+        id: 't_dial_0',
+        condition: { type: 'time', seconds: 20 },
+        effects: [
+          {
+            type: 'dialogue',
+            text: 'Túpac Yupanqui: —Minchancaman no se someterá. Avanzad por los valles y cortadle el agua a Chan Chan.',
+          },
+        ],
+      },
+      {
+        id: 't_cam_1',
+        condition: { type: 'time', seconds: 60 },
+        effects: [{ type: 'camera', pos: { ref: 'enemy', dx: 0, dz: 0 } }],
+      },
+      {
+        id: 't_wave_1',
+        condition: { type: 'time', seconds: 260 },
+        effects: [
+          {
+            type: 'wave',
+            owner: 1,
+            units: [
+              { kind: UnitKind.SOLDIER, count: 6 },
+              { kind: UnitKind.MUSKETEER, count: 3 },
+            ],
+            pos: { ref: 'player', dx: 20, dz: 20 },
+            radius: 7,
+          },
+          { type: 'dialogue', text: '¡Querrotumi contraataca desde Paramonga!' },
+        ],
+      },
     ],
   },
   {
@@ -226,8 +432,7 @@ export const MISSIONS: MissionDef[] = [
     history:
       'José Gabriel Condorcanqui, Túpac Amaru II, se alza contra los abusos del Virreinato: la mita, el reparto y los obrajes. Micaela Bastidas organiza el avituallamiento.\n' +
       'Sostened la rebelión y tomad el centro de mando realista.',
-    victory:
-      'El centro realista cae. La rebelión sacude el Virreinato y enciende el camino hacia la independencia.',
+    victory: 'El centro realista cae. La rebelión sacude el Virreinato y enciende el camino hacia la independencia.',
     defeat: 'La rebelión se ahoga en sangre. El Virreinato perdura una generación más.',
     period: HistoricalPeriod.VICEROYALTY,
     playerCiv: CivId.INCA,
@@ -251,9 +456,38 @@ export const MISSIONS: MissionDef[] = [
       { id: 'obj_tupac', kind: 'protect', entityTag: 'tupac_amaru', title: 'Mantén con vida a Túpac Amaru II' },
     ],
     triggers: [
-      { id: 't_dial_0', condition: { type: 'time', seconds: 20 }, effects: [{ type: 'dialogue', text: 'Túpac Amaru II: —¡Por el Sol y por el Perú! Abolid la mita y el reparto. ¡Adelante!' }] },
-      { id: 't_cam_1', condition: { type: 'time', seconds: 60 }, effects: [{ type: 'camera', pos: { ref: 'enemy', dx: 0, dz: 0 } }] },
-      { id: 't_wave_1', condition: { type: 'time', seconds: 300 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 6 }, { kind: UnitKind.MUSKETEER, count: 3 }], pos: { ref: 'player', dx: 22, dz: 18 }, radius: 7 }, { type: 'dialogue', text: '¡Refuerzos realistas desde el Cusco!' }] },
+      {
+        id: 't_dial_0',
+        condition: { type: 'time', seconds: 20 },
+        effects: [
+          {
+            type: 'dialogue',
+            text: 'Túpac Amaru II: —¡Por el Sol y por el Perú! Abolid la mita y el reparto. ¡Adelante!',
+          },
+        ],
+      },
+      {
+        id: 't_cam_1',
+        condition: { type: 'time', seconds: 60 },
+        effects: [{ type: 'camera', pos: { ref: 'enemy', dx: 0, dz: 0 } }],
+      },
+      {
+        id: 't_wave_1',
+        condition: { type: 'time', seconds: 300 },
+        effects: [
+          {
+            type: 'wave',
+            owner: 1,
+            units: [
+              { kind: UnitKind.SOLDIER, count: 6 },
+              { kind: UnitKind.MUSKETEER, count: 3 },
+            ],
+            pos: { ref: 'player', dx: 22, dz: 18 },
+            radius: 7,
+          },
+          { type: 'dialogue', text: '¡Refuerzos realistas desde el Cusco!' },
+        ],
+      },
     ],
   },
   {
@@ -263,8 +497,7 @@ export const MISSIONS: MissionDef[] = [
     history:
       'San Martín proclama la independencia en Lima en 1821. La campaña continúa en la sierra con Bolívar y Sucre contra los realistas.\n' +
       'Sellad la independencia: tomad el centro realista y resistid hasta Ayacucho.',
-    victory:
-      'La victoria sella la independencia del Perú. El poder español en el Perú llega a su fin.',
+    victory: 'La victoria sella la independencia del Perú. El poder español en el Perú llega a su fin.',
     defeat: 'La causa patriota se repliega y la independencia queda en suspenso.',
     period: HistoricalPeriod.INDEPENDENCE,
     playerCiv: CivId.PATRIOTAS,
@@ -287,9 +520,38 @@ export const MISSIONS: MissionDef[] = [
       { id: 'obj_hold', kind: 'survive', time: 600, title: 'Resiste hasta Ayacucho (10 minutos)' },
     ],
     triggers: [
-      { id: 't_dial_0', condition: { type: 'time', seconds: 20 }, effects: [{ type: 'dialogue', text: 'General patriota: —La independencia se gana en la sierra. ¡Avanzad sobre el centro realista!' }] },
-      { id: 't_cam_1', condition: { type: 'time', seconds: 55 }, effects: [{ type: 'camera', pos: { ref: 'enemy', dx: 0, dz: 0 } }] },
-      { id: 't_wave_1', condition: { type: 'time', seconds: 320 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 6 }, { kind: UnitKind.CAVALRY, count: 3 }], pos: { ref: 'player', dx: 24, dz: 16 }, radius: 7 }, { type: 'dialogue', text: '¡Contraataque realista! ¡Formad cuadro!' }] },
+      {
+        id: 't_dial_0',
+        condition: { type: 'time', seconds: 20 },
+        effects: [
+          {
+            type: 'dialogue',
+            text: 'General patriota: —La independencia se gana en la sierra. ¡Avanzad sobre el centro realista!',
+          },
+        ],
+      },
+      {
+        id: 't_cam_1',
+        condition: { type: 'time', seconds: 55 },
+        effects: [{ type: 'camera', pos: { ref: 'enemy', dx: 0, dz: 0 } }],
+      },
+      {
+        id: 't_wave_1',
+        condition: { type: 'time', seconds: 320 },
+        effects: [
+          {
+            type: 'wave',
+            owner: 1,
+            units: [
+              { kind: UnitKind.SOLDIER, count: 6 },
+              { kind: UnitKind.CAVALRY, count: 3 },
+            ],
+            pos: { ref: 'player', dx: 24, dz: 16 },
+            radius: 7,
+          },
+          { type: 'dialogue', text: '¡Contraataque realista! ¡Formad cuadro!' },
+        ],
+      },
     ],
   },
   {
@@ -323,9 +585,38 @@ export const MISSIONS: MissionDef[] = [
       { id: 'obj_kill', kind: 'destroy', entityTag: 'centro_enemigo', title: 'Destruye el centro de mando enemigo' },
     ],
     triggers: [
-      { id: 't_dial_0', condition: { type: 'time', seconds: 15 }, effects: [{ type: 'dialogue', text: 'Miguel Grau: —El enemigo es superior, pero no pasará. ¡Tripulación, a vuestros puestos!' }] },
-      { id: 't_cam_1', condition: { type: 'time', seconds: 45 }, effects: [{ type: 'camera', pos: { ref: 'enemy', dx: 0, dz: 0 } }] },
-      { id: 't_wave_1', condition: { type: 'time', seconds: 240 }, effects: [{ type: 'wave', owner: 1, units: [{ kind: UnitKind.SOLDIER, count: 4 }, { kind: UnitKind.RIFLEMAN, count: 3 }], pos: { ref: 'player', dx: 16, dz: 16 }, radius: 6 }, { type: 'dialogue', text: '¡Tropas de desembarco enemigas se dirigen al puerto!' }] },
+      {
+        id: 't_dial_0',
+        condition: { type: 'time', seconds: 15 },
+        effects: [
+          {
+            type: 'dialogue',
+            text: 'Miguel Grau: —El enemigo es superior, pero no pasará. ¡Tripulación, a vuestros puestos!',
+          },
+        ],
+      },
+      {
+        id: 't_cam_1',
+        condition: { type: 'time', seconds: 45 },
+        effects: [{ type: 'camera', pos: { ref: 'enemy', dx: 0, dz: 0 } }],
+      },
+      {
+        id: 't_wave_1',
+        condition: { type: 'time', seconds: 240 },
+        effects: [
+          {
+            type: 'wave',
+            owner: 1,
+            units: [
+              { kind: UnitKind.SOLDIER, count: 4 },
+              { kind: UnitKind.RIFLEMAN, count: 3 },
+            ],
+            pos: { ref: 'player', dx: 16, dz: 16 },
+            radius: 6,
+          },
+          { type: 'dialogue', text: '¡Tropas de desembarco enemigas se dirigen al puerto!' },
+        ],
+      },
     ],
   },
 ];

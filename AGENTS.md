@@ -11,13 +11,14 @@ Package manager **Yarn 1** (`yarn.lock` exists — never create a `package-lock.
 
 - `yarn dev` — Vite at http://localhost:5173
 - `yarn build` — `tsc --noEmit && vite build` (dist/)
-- `yarn typecheck` / `yarn lint` — `tsc --noEmit` / ESLint (also `yarn format` for Prettier)
+- `yarn typecheck` / `yarn lint` — `tsc --noEmit` / ESLint (also `yarn format` / `yarn format:check` for Prettier)
 - `yarn test` — Vitest. Single file: `yarn test tests/rng.test.ts`; by name: `yarn test -t "…"`
 - `yarn test:e2e` — full Playwright suite; `yarn test:e2e:smoke` — `@smoke` subset (requires `npx playwright install chromium`)
 - `yarn shot <name> --seed=777 --wait=8000` — screenshot into `review/`
 
 Everything runs through `package.json`; there is no `npm test`. The CI gate, in order, is
-`yarn typecheck && yarn lint && yarn test && yarn build`, and the repo is kept at **0 lint warnings**.
+`yarn typecheck && yarn lint && yarn format:check && yarn test && yarn build`, and the repo is kept at
+**0 lint warnings** and Prettier-clean.
 CI runs that `build` job on every PR, the `@smoke` E2E subset on PRs and the full E2E suite on `main`
 (the E2E workflow is skipped for docs-only PRs).
 
@@ -27,7 +28,8 @@ CI runs that `build` job on every PR, the `@smoke` E2E subset on PRs and the ful
   (HUD, menus, narrative) and `docs/historia/**` stay **Spanish**. Historical proper nouns (civs, mission ids,
   place names) are data — never translate them.
 - Strict TS (`strict`, ES2022, `moduleResolution: bundler`). No comments unless they add context the code
-  cannot express. Prettier (single quotes, 120 cols) over `src/**/*.ts` and `scripts/**/*.mjs`.
+  cannot express. Prettier (single quotes, 120 cols) over `src/**/*.ts`, `scripts/**/*.mjs`, `tests/**/*.ts`
+  and `*.config.{ts,js}`.
 - Prefer the data-driven defs (`src/model/defs/*`) and existing `src/util/*` over new constants. Type `EventBus`
   events in `GameEvents` (`src/core/types.ts`).
 - Keep DOM ids, URL params and `localStorage` keys (`peru-settings`, `peru-campaign`) stable, even if Spanish.

@@ -33,12 +33,19 @@ export class Mission {
 
   get activeObjectives(): { def: ObjectiveDef; state: ObjState }[] {
     return this.def.objectives
-      .filter((o) => this.objState.get(o.id) === 'activo' || this.objState.get(o.id) === 'completed' || this.objState.get(o.id) === 'failed')
+      .filter(
+        (o) =>
+          this.objState.get(o.id) === 'activo' ||
+          this.objState.get(o.id) === 'completed' ||
+          this.objState.get(o.id) === 'failed',
+      )
       .map((o) => ({ def: o, state: this.objState.get(o.id) as ObjState }));
   }
 
   private baseCenter(owner: number): { x: number; z: number } {
-    const c = [...this.game.buildings.values()].find((b) => b.owner === owner && b.kind === BuildingKind.CENTER && !b.dead);
+    const c = [...this.game.buildings.values()].find(
+      (b) => b.owner === owner && b.kind === BuildingKind.CENTER && !b.dead,
+    );
     if (c) return { x: c.pos.x, z: c.pos.z };
     return { x: this.game.settings.mapSize / 2, z: this.game.settings.mapSize / 2 };
   }
@@ -128,8 +135,12 @@ export class Mission {
         return this.countAlive(o.entityTag) === 0 ? 'win' : 'ok';
       }
       case 'eliminate_all': {
-        const enemyUnits = [...this.game.units.values()].filter((u) => u.owner !== 0 && !u.dead && this.game.players[u.owner]?.team !== this.game.players[0]?.team);
-        const enemyBlds = [...this.game.buildings.values()].filter((b) => b.owner !== 0 && !b.dead && this.game.players[b.owner]?.team !== this.game.players[0]?.team);
+        const enemyUnits = [...this.game.units.values()].filter(
+          (u) => u.owner !== 0 && !u.dead && this.game.players[u.owner]?.team !== this.game.players[0]?.team,
+        );
+        const enemyBlds = [...this.game.buildings.values()].filter(
+          (b) => b.owner !== 0 && !b.dead && this.game.players[b.owner]?.team !== this.game.players[0]?.team,
+        );
         return enemyUnits.length === 0 && enemyBlds.length === 0 ? 'win' : 'ok';
       }
       case 'survive':
@@ -154,7 +165,9 @@ export class Mission {
       }
       case 'build': {
         if (!o.buildingKind) return 'ok';
-        const n = [...this.game.buildings.values()].filter((b) => b.owner === 0 && b.kind === o.buildingKind && b.constructionComplete && !b.dead).length;
+        const n = [...this.game.buildings.values()].filter(
+          (b) => b.owner === 0 && b.kind === o.buildingKind && b.constructionComplete && !b.dead,
+        ).length;
         return n >= (o.count ?? 1) ? 'win' : 'ok';
       }
       case 'gather':
@@ -213,7 +226,11 @@ export class Mission {
         return this.timer >= c.seconds;
       case 'objective': {
         const st = this.objState.get(c.objectiveId);
-        return c.state === 'completed' ? st === 'completed' : c.state === 'failed' ? st === 'failed' : st === 'activo' || st === 'pendiente';
+        return c.state === 'completed'
+          ? st === 'completed'
+          : c.state === 'failed'
+            ? st === 'failed'
+            : st === 'activo' || st === 'pendiente';
       }
       case 'entity_dead':
         if (!c.entityTag) return false;
@@ -254,7 +271,10 @@ export class Mission {
         this.triggerDialogue(fx.text, fx.duration ?? 5);
         break;
       case 'objective':
-        this.objState.set(fx.objectiveId, fx.state === 'activate' ? 'activo' : fx.state === 'complete' ? 'completed' : 'failed');
+        this.objState.set(
+          fx.objectiveId,
+          fx.state === 'activate' ? 'activo' : fx.state === 'complete' ? 'completed' : 'failed',
+        );
         break;
       case 'camera': {
         const p = this.resolvePoint(fx.pos);

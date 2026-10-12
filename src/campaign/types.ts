@@ -8,15 +8,7 @@ export interface MissionPoint {
 }
 
 export type ObjectiveKind =
-  | 'destroy'
-  | 'eliminate_all'
-  | 'survive'
-  | 'reach'
-  | 'defend'
-  | 'protect'
-  | 'build'
-  | 'gather'
-  | 'reach_era';
+  'destroy' | 'eliminate_all' | 'survive' | 'reach' | 'defend' | 'protect' | 'build' | 'gather' | 'reach_era';
 
 export interface ObjectiveDef {
   id: string;
@@ -40,8 +32,22 @@ export type TriggerCond =
   | { type: 'unit_near'; entityTag: string; pos: MissionPoint; radius: number };
 
 export type TriggerEffect =
-  | { type: 'wave'; owner: 0 | 1; units: { kind: UnitKind; count: number }[]; pos: MissionPoint; radius?: number; objective?: 'base' | 'position' }
-  | { type: 'reinforce'; owner: 0 | 1; units: { kind: UnitKind; count: number }[]; pos: MissionPoint; radius?: number; objective?: 'base' | 'position' }
+  | {
+      type: 'wave';
+      owner: 0 | 1;
+      units: { kind: UnitKind; count: number }[];
+      pos: MissionPoint;
+      radius?: number;
+      objective?: 'base' | 'position';
+    }
+  | {
+      type: 'reinforce';
+      owner: 0 | 1;
+      units: { kind: UnitKind; count: number }[];
+      pos: MissionPoint;
+      radius?: number;
+      objective?: 'base' | 'position';
+    }
   | { type: 'dialogue'; text: string; duration?: number }
   | { type: 'objective'; objectiveId: string; state: 'activate' | 'complete' | 'fail' }
   | { type: 'camera'; pos: MissionPoint }

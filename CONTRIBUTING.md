@@ -27,7 +27,7 @@ The app shows the **main menu** by default. To jump straight into the match use 
 | `yarn build` | Typecheck + production build in `dist/`. |
 | `yarn typecheck` | Only `tsc --noEmit`. |
 | `yarn lint` | ESLint (must stay at **0 warnings**). |
-| `yarn format` | Prettier over `src/**/*.ts` and `scripts/**/*.mjs`. |
+| `yarn format` | Prettier over `src/**/*.ts`, `scripts/**/*.mjs` and `tests/**/*.ts`. |
 | `yarn test` | Unit tests (Vitest). |
 | `yarn bench` | Entity-scale performance benchmark (writes `review/bench.json`). |
 | `yarn test:e2e` | E2E suite (Playwright). Requires `npx playwright install chromium`. |
@@ -37,10 +37,10 @@ The app shows the **main menu** by default. To jump straight into the match use 
 Before opening a PR, run at least:
 
 ```bash
-yarn typecheck && yarn lint && yarn test && yarn build
+yarn typecheck && yarn lint && yarn format:check && yarn test && yarn build
 ```
 
-**CI:** the `build` job (typecheck/lint/unit/build) runs on every PR; the `e2e` workflow runs the
+**CI:** the `build` job (typecheck/lint/format/unit/build) runs on every PR; the `e2e` workflow runs the
 `@smoke` subset on PRs and the **full** suite on `main`, and is skipped for docs-only PRs
 (`**/*.md`, `.agents/**`). Tag a test `{ tag: '@smoke' }` only if it covers a core flow worth gating
 every PR on (keep the subset fast).

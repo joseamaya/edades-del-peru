@@ -87,7 +87,20 @@ async function measure(browser, base, n) {
     const pickMs = performance.now() - t;
 
     const memory = performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null;
-    return { spawnMs, pathMs, pathCalls, targetMs, targetCalls, pickMs, pickCalls, simMs, steps, heapDeltaMB, units: g.units.size, memory };
+    return {
+      spawnMs,
+      pathMs,
+      pathCalls,
+      targetMs,
+      targetCalls,
+      pickMs,
+      pickCalls,
+      simMs,
+      steps,
+      heapDeltaMB,
+      units: g.units.size,
+      memory,
+    };
   }, n);
 
   // render: zoom out to the max so most units are in view, then sample frame time

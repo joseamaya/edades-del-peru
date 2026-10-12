@@ -26,7 +26,16 @@ describe('unit definitions', () => {
     for (const kind of unitKinds) {
       for (const era of ERAS) {
         const s = getUnitStats(kind, era);
-        for (const key of ['hp', 'attack', 'range', 'speed', 'los', 'attackSpeed', 'trainTime', 'population'] as const) {
+        for (const key of [
+          'hp',
+          'attack',
+          'range',
+          'speed',
+          'los',
+          'attackSpeed',
+          'trainTime',
+          'population',
+        ] as const) {
           expect(Number.isFinite(s[key]), `${kind}@${era}.${key} not finite`).toBe(true);
           expect(s[key], `${kind}@${era}.${key} < 0`).toBeGreaterThanOrEqual(0);
         }

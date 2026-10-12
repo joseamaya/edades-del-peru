@@ -2,7 +2,9 @@ import { test, expect } from '@playwright/test';
 
 test('restores building opacity when construction finishes', async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
-  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
 
   const res = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -37,7 +39,9 @@ test('restores building opacity when construction finishes', async ({ page }) =>
 
 test('the worker has a hidden carry pivot at start', { tag: '@smoke' }, async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
-  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
 
   const info = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -57,7 +61,9 @@ test('the worker has a hidden carry pivot at start', { tag: '@smoke' }, async ({
 
 test('the worker animates the arm while gathering', async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
-  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
 
   const armed = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -87,7 +93,9 @@ test('the worker animates the arm while gathering', async ({ page }) => {
 
 test('the move order creates a destination marker', async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
-  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
 
   const count = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -100,7 +108,9 @@ test('the move order creates a destination marker', async ({ page }) => {
 
 test('does not allow placing without selected workers', async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
-  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
 
   const mode = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -117,7 +127,9 @@ test('does not allow placing without selected workers', async ({ page }) => {
 test('selected workers build and complete the structure', async ({ page }) => {
   test.setTimeout(120_000);
   await page.goto('/?seed=777&fog=0&low=1');
-  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
 
   const out = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -159,7 +171,9 @@ test('selected workers build and complete the structure', async ({ page }) => {
 
 test('the minimap issues a move order on right click', async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
-  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
 
   const order = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -175,7 +189,9 @@ test('the minimap issues a move order on right click', async ({ page }) => {
 
 test('right click lands the order under the cursor on elevated terrain', async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
-  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
 
   const info = await page.evaluate(() => {
     const w = window as unknown as { game: any; THREE: any; innerWidth: number; innerHeight: number };
@@ -225,7 +241,9 @@ test('right click lands the order under the cursor on elevated terrain', async (
 
 test('camera rotation is off by default and can be enabled', async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
-  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
 
   const yaw0 = await page.evaluate(() => (window as unknown as { game: any }).game.camera.getYaw());
   await page.keyboard.press('q');
@@ -244,7 +262,9 @@ test('camera rotation is off by default and can be enabled', async ({ page }) =>
 
 test('the Sacred Huaca is buildable in any period in wonder mode', async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
-  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
 
   const r = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -265,7 +285,9 @@ test('the Sacred Huaca is buildable in any period in wonder mode', async ({ page
 
 test('hides Stone and Quarry in periods that cannot obtain them', async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
-  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
   await page.waitForTimeout(500);
 
   const early = await page.evaluate(() => {
@@ -283,7 +305,9 @@ test('the Amauta converts an enemy unit without throwing', { tag: '@smoke' }, as
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/?seed=777&fog=0&low=1');
-  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
 
   const out = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -312,7 +336,9 @@ test('the Amauta converts an enemy unit without throwing', { tag: '@smoke' }, as
 
 test('right-clicking an enemy with an Amauta selected issues a convert order', async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
-  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
 
   // move the camera to a clear spot (no buildings or resources nearby)
   await page.evaluate(() => {
@@ -368,7 +394,9 @@ test('right-clicking an enemy with an Amauta selected issues a convert order', a
 
 test('conquest ends only when all enemy buildings are destroyed', async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
-  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
 
   const out = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -420,7 +448,9 @@ test('a campaign is not lost while the player still has buildings', async ({ pag
 
 test('civilization bonuses are applied to the player and its units', async ({ page }) => {
   await page.goto('/?seed=777&fog=0&low=1');
-  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
 
   const out = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -450,7 +480,9 @@ test('a civilization population bonus raises the population cap', async ({ page 
     localStorage.setItem('peru-settings', JSON.stringify({ period: 3, civPlayer: 'wari', civAI: 'tiahuanaco' }));
   });
   await page.goto('/?seed=777&fog=0&low=1');
-  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
 
   const out = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -464,4 +496,3 @@ test('a civilization population bonus raises the population cap', async ({ page 
   expect(out.popBonus).toBe(10);
   expect(out.cap).toBeGreaterThan(10);
 });
-

@@ -91,7 +91,10 @@ export class PostFX {
     this.composer.setSize(width, height);
     const pixelRatio = this.composer.renderer.getPixelRatio();
     this.ssaoPass.setSize(width * pixelRatio, height * pixelRatio);
-    (this.fxaaPass.uniforms['resolution'] as unknown as THREE.Vector2).set(1 / (width * pixelRatio), 1 / (height * pixelRatio));
+    (this.fxaaPass.uniforms['resolution'] as unknown as THREE.Vector2).set(
+      1 / (width * pixelRatio),
+      1 / (height * pixelRatio),
+    );
   }
 
   /** Adjust the cinematic effects quality (does not enable them). */
