@@ -28,6 +28,12 @@ export function reviewDir() {
   return dir;
 }
 
+/** Read a `--name=value` CLI argument, returning `fallback` when absent. */
+export function cliArg(name, fallback) {
+  const a = process.argv.find((v) => v.startsWith(`--${name}=`));
+  return a ? a.split('=')[1] : fallback;
+}
+
 /** Read a PNG and return its raw data. */
 export function readPng(file) {
   const png = PNG.sync.read(fs.readFileSync(file));

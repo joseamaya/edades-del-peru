@@ -29,6 +29,7 @@ The app shows the **main menu** by default. To jump straight into the match use 
 | `yarn lint` | ESLint (must stay at **0 warnings**). |
 | `yarn format` | Prettier over `src/**/*.ts` and `scripts/**/*.mjs`. |
 | `yarn test` | Unit tests (Vitest). |
+| `yarn bench` | Entity-scale performance benchmark (writes `review/bench.json`). |
 | `yarn test:e2e` | E2E smoke (Playwright). Requires `npx playwright install chromium`. |
 | `yarn shot <name>` | Screenshot into `review/` for visual review. |
 
