@@ -25,7 +25,10 @@ export class DamageNumbers {
   private active: NumberItem[] = [];
   private tmp = new THREE.Vector3();
 
-  constructor(private container: HTMLElement, private max = 40) {}
+  constructor(
+    private container: HTMLElement,
+    private max = 40,
+  ) {}
 
   private acquire(): NumberItem | null {
     const free = this.pool.find((p) => !p.active);

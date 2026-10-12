@@ -34,20 +34,25 @@ let totalLum = 0;
 for (let y = 0; y < height; y++) {
   for (let x = 0; x < width; x++) {
     const i = (y * width + x) * 4;
-    const r = data[i], g = data[i + 1], b = data[i + 2];
+    const r = data[i],
+      g = data[i + 1],
+      b = data[i + 2];
     const l = toLum(r, g, b) / 255;
     lum[y * width + x] = l;
     totalLum += l;
-    const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+    const mx = Math.max(r, g, b),
+      mn = Math.min(r, g, b);
     const s = mx === 0 ? 0 : (mx - mn) / mx;
     sat[y * width + x] = s;
     satSum += s;
-    bins.r += r; bins.g += g; bins.b += b;
+    bins.r += r;
+    bins.g += g;
+    bins.b += b;
     count++;
     // regions
     if (y < height * 0.16) skyPixels++;
     else if (y > height * 0.22) {
-      if (s < 0.25 && l > 0.3 && l < 0.85 && b > r && b > g && (b - r) > 20) waterPixels++;
+      if (s < 0.25 && l > 0.3 && l < 0.85 && b > r && b > g && b - r > 20) waterPixels++;
       terrainPixels++;
     }
     if (l < 0.22) darkPixels++;
@@ -82,23 +87,29 @@ const avg = (v) => v / count;
 const balance = avg(bins.r) - avg(bins.g);
 const blueShift = avg(bins.b) - avg(bins.g);
 
-console.log(JSON.stringify({
-  file,
-  dims: `${width}x${height}`,
-  metrics: {
-    luminanciaMedia: +(avg(bins.r) * 0.2126 + avg(bins.g) * 0.7152 + avg(bins.b) * 0.0722).toFixed(3),
-    brillo: +avg((bins.r + bins.g + bins.b) / 3).toFixed(1),
-    saturacionMedia: +(satSum / count).toFixed(3),
-    contraste: +contrast.toFixed(3),
-    densidadBordes: +(edgeDensity * 100).toFixed(2) + '%',
-    pctAgua: +((waterPixels / terrainPixels) * 100).toFixed(1) + '%',
-    pctCielo: +((skyPixels / count) * 100).toFixed(1) + '%',
-    pctOscuro: +((darkPixels / count) * 100).toFixed(1) + '%',
-    pctBrillante: +((brightPixels / count) * 100).toFixed(1) + '%',
-    pctCalido: +((warmPixels / count) * 100).toFixed(1) + '%',
-    pctVerde: +((greenPixels / count) * 100).toFixed(1) + '%',
-    balanceRojoVerde: +balance.toFixed(2),
-    desviacionAzul: +blueShift.toFixed(2),
-    canales: { r: +avg(bins.r).toFixed(1), g: +avg(bins.g).toFixed(1), b: +avg(bins.b).toFixed(1) },
-  },
-}, null, 2));
+console.log(
+  JSON.stringify(
+    {
+      file,
+      dims: `${width}x${height}`,
+      metrics: {
+        luminanciaMedia: +(avg(bins.r) * 0.2126 + avg(bins.g) * 0.7152 + avg(bins.b) * 0.0722).toFixed(3),
+        brillo: +avg((bins.r + bins.g + bins.b) / 3).toFixed(1),
+        saturacionMedia: +(satSum / count).toFixed(3),
+        contraste: +contrast.toFixed(3),
+        densidadBordes: +(edgeDensity * 100).toFixed(2) + '%',
+        pctAgua: +((waterPixels / terrainPixels) * 100).toFixed(1) + '%',
+        pctCielo: +((skyPixels / count) * 100).toFixed(1) + '%',
+        pctOscuro: +((darkPixels / count) * 100).toFixed(1) + '%',
+        pctBrillante: +((brightPixels / count) * 100).toFixed(1) + '%',
+        pctCalido: +((warmPixels / count) * 100).toFixed(1) + '%',
+        pctVerde: +((greenPixels / count) * 100).toFixed(1) + '%',
+        balanceRojoVerde: +balance.toFixed(2),
+        desviacionAzul: +blueShift.toFixed(2),
+        canales: { r: +avg(bins.r).toFixed(1), g: +avg(bins.g).toFixed(1), b: +avg(bins.b).toFixed(1) },
+      },
+    },
+    null,
+    2,
+  ),
+);

@@ -44,7 +44,8 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       'Chavín de Huántar, a 3180 msnm en el Callejón de Conchucos (Áncash), fue el gran centro ceremonial y ' +
       'de peregrinaje de los Andes. Su oráculo atraía ofrendas de lejos y su arte se difundió por buena parte ' +
       'de los Andes centrales. Fue una sociedad teocrática liderada por una casta sacerdotal.',
-    didYouKnow: 'No hay guerra directa documentada entre Chavín y Paracas: su emparejamiento en el juego es de coetaneidad.',
+    didYouKnow:
+      'No hay guerra directa documentada entre Chavín y Paracas: su emparejamiento en el juego es de coetaneidad.',
     sources: [
       { text: 'Wikipedia: Cultura chavín', url: 'https://es.wikipedia.org/wiki/Cultura_chav%C3%ADn' },
       { text: 'Wikipedia: Horizonte Temprano', url: 'https://es.wikipedia.org/wiki/Horizonte_Temprano' },
@@ -55,7 +56,8 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       'Moche dominó los valles de la costa norte (Chicama, Moche, Virú) mientras Recuay señoreaba el Callejón ' +
       'de Huaylas. Fueron coetáneos y mantuvieron interacciones de largo alcance con un componente bélico ' +
       'atestiguado: fortificaciones, intercambio de élite y piezas de filiación moche halladas en la sierra.',
-    didYouKnow: 'No hay una batalla única documentada Moche–Recuay, pero sí evidencia arqueológica de conflicto e intercambio.',
+    didYouKnow:
+      'No hay una batalla única documentada Moche–Recuay, pero sí evidencia arqueológica de conflicto e intercambio.',
     sources: [
       { text: 'PUCP: interacciones Moche–Recuay (revistas de arqueología).' },
       { text: 'Wikipedia: Cultura moche', url: 'https://es.wikipedia.org/wiki/Cultura_moche' },
@@ -66,7 +68,8 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       'Wari (núcleo en Ayacucho) y Tiahuanaco (altiplano del Titicaca) fueron dos grandes estados ' +
       'suprarregionales coetáneos que difundieron el culto al dios de los báculos. Wari extendió ciudades ' +
       'planificadas y caminos, y aseguró los andenes agrícolas. Ambos colapsan hacia 1000–1100 d.C.',
-    didYouKnow: 'No existe una guerra única documentada Wari–Tiahuanaco: su rivalidad fue de coetaneidad y competencia de influencia.',
+    didYouKnow:
+      'No existe una guerra única documentada Wari–Tiahuanaco: su rivalidad fue de coetaneidad y competencia de influencia.',
     sources: [
       { text: 'Wikipedia: Horizonte Medio', url: 'https://es.wikipedia.org/wiki/Horizonte_Medio' },
       { text: 'Wikipedia: Cultura wari', url: 'https://es.wikipedia.org/wiki/Cultura_wari' },
@@ -78,7 +81,8 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       'Cusco. El inca Viracocha y el heredero Inca Urco huyeron; el príncipe Cusi Yupanqui organizó la defensa ' +
       'y venció en Yahuar Pampa, en las proximidades del Cusco. Asumió el poder como Pachacútec e inició la ' +
       'expansión del Tahuantinsuyo.',
-    didYouKnow: 'Según las crónicas, los cusqueños resistieron con aliados y la leyenda de los pururaucas, «soldados de piedra».',
+    didYouKnow:
+      'Según las crónicas, los cusqueños resistieron con aliados y la leyenda de los pururaucas, «soldados de piedra».',
     sources: [
       { text: 'Wikipedia: Cultura chanca', url: 'https://es.wikipedia.org/wiki/Cultura_chanca' },
       { text: 'Betanzos, J. (1551). Suma y narración de los incas.' },
@@ -106,7 +110,10 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
     didYouKnow: 'Túpac Amaru II decretó la abolición de la esclavitud el 16 de noviembre de 1780.',
     sources: [
       { text: "O'Phelan Godoy, S. (2021). La gran rebelión de Túpac Amaru II." },
-      { text: 'Wikipedia: Rebelión de Túpac Amaru II', url: 'https://es.wikipedia.org/wiki/Rebeli%C3%B3n_de_T%C3%BApac_Amaru_II' },
+      {
+        text: 'Wikipedia: Rebelión de Túpac Amaru II',
+        url: 'https://es.wikipedia.org/wiki/Rebeli%C3%B3n_de_T%C3%BApac_Amaru_II',
+      },
     ],
   },
   m8_independencia: {
@@ -114,7 +121,8 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       'San Martín proclamó la independencia en Lima el 28 de julio de 1821. La campaña continuó en la sierra ' +
       'con Bolívar y Sucre: la batalla de Junín (6 de agosto de 1824) y la de Ayacucho (9 de diciembre de 1824) ' +
       'sellaron la independencia del Perú y el fin del poder español.',
-    didYouKnow: 'San Martín desembarcó en Paracas en 1820; la victoria militar la completaron Bolívar y Sucre en la sierra.',
+    didYouKnow:
+      'San Martín desembarcó en Paracas en 1820; la victoria militar la completaron Bolívar y Sucre en la sierra.',
     sources: [
       { text: 'Wikipedia: Independencia del Perú', url: 'https://es.wikipedia.org/wiki/Independencia_del_Per%C3%BA' },
       { text: 'Basadre, J. Historia de la República del Perú.' },
@@ -126,7 +134,8 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       'Chile. Al mando del monitor Huáscar, el almirante Miguel Grau contuvo con audaces correrías a una escuadra ' +
       'superior. Cayó en el combate de Angamos (8 de octubre de 1879). Francisco Bolognesi murió defendiendo ' +
       'Arica (7 de junio de 1880). Chile obtuvo el dominio del mar.',
-    didYouKnow: 'El monitor Huáscar, con Miguel Grau, libró una guerra de correrías que retrasó a una escuadra muy superior.',
+    didYouKnow:
+      'El monitor Huáscar, con Miguel Grau, libró una guerra de correrías que retrasó a una escuadra muy superior.',
     sources: [
       { text: 'Marina de Guerra del Perú: Combate de Angamos', url: 'https://marina.mil.pe/info/combate-de-angamos/' },
       { text: 'BBC Mundo (2022). Batalla de Angamos.' },

@@ -11,25 +11,37 @@ const geoCache = new Map<string, THREE.BufferGeometry>();
 function cylGeo(rt: number, rb: number, h: number, seg: number): THREE.CylinderGeometry {
   const key = `cyl-${rt}-${rb}-${h}-${seg}`;
   let g = geoCache.get(key) as THREE.CylinderGeometry | undefined;
-  if (!g) { g = new THREE.CylinderGeometry(rt, rb, h, seg); geoCache.set(key, g); }
+  if (!g) {
+    g = new THREE.CylinderGeometry(rt, rb, h, seg);
+    geoCache.set(key, g);
+  }
   return g;
 }
 function boxGeo(w: number, h: number, d: number): THREE.BoxGeometry {
   const key = `box-${w}-${h}-${d}`;
   let g = geoCache.get(key) as THREE.BoxGeometry | undefined;
-  if (!g) { g = new THREE.BoxGeometry(w, h, d); geoCache.set(key, g); }
+  if (!g) {
+    g = new THREE.BoxGeometry(w, h, d);
+    geoCache.set(key, g);
+  }
   return g;
 }
 function sphereGeo(r: number, seg = 10, rings = 8): THREE.SphereGeometry {
   const key = `sph-${r}-${seg}-${rings}`;
   let g = geoCache.get(key) as THREE.SphereGeometry | undefined;
-  if (!g) { g = new THREE.SphereGeometry(r, seg, rings); geoCache.set(key, g); }
+  if (!g) {
+    g = new THREE.SphereGeometry(r, seg, rings);
+    geoCache.set(key, g);
+  }
   return g;
 }
 function cardGeo(w: number, h: number): THREE.PlaneGeometry {
   const key = `card-${w}-${h}`;
   let g = geoCache.get(key) as THREE.PlaneGeometry | undefined;
-  if (!g) { g = new THREE.PlaneGeometry(w, h); geoCache.set(key, g); }
+  if (!g) {
+    g = new THREE.PlaneGeometry(w, h);
+    geoCache.set(key, g);
+  }
   return g;
 }
 
@@ -101,7 +113,15 @@ export class ResourceNode {
   treeSlot = -1;
   private treeVariant: TreeVariant = 'broad';
 
-  constructor(scene: THREE.Scene, kind: ResourceNode['kind'], x: number, z: number, amount: number, mapType = 'andes', treeMgr?: TreeInstances) {
+  constructor(
+    scene: THREE.Scene,
+    kind: ResourceNode['kind'],
+    x: number,
+    z: number,
+    amount: number,
+    mapType = 'andes',
+    treeMgr?: TreeInstances,
+  ) {
     this.scene = scene;
     this.kind = kind;
     this.mapType = mapType;
@@ -185,9 +205,21 @@ export class ResourceNode {
   }
 
   /** Add crossed foliage billboards (canopies with alphaTest). */
-  private addFoliage(parent: THREE.Object3D, rng: RNG, kind: 'broad' | 'needle' | 'frond' | 'bush', radius: number, height: number): void {
+  private addFoliage(
+    parent: THREE.Object3D,
+    rng: RNG,
+    kind: 'broad' | 'needle' | 'frond' | 'bush',
+    radius: number,
+    height: number,
+  ): void {
     const tex = MaterialTex.foliage(kind);
-    const leafMat = mat('leaf-' + kind, { map: tex, alphaTest: 0.45, side: THREE.DoubleSide, roughness: 1, color: '#cfe0b0' });
+    const leafMat = mat('leaf-' + kind, {
+      map: tex,
+      alphaTest: 0.45,
+      side: THREE.DoubleSide,
+      roughness: 1,
+      color: '#cfe0b0',
+    });
     const w = radius * 2.3;
     const h = height;
     const angles = kind === 'needle' ? [0, Math.PI / 3, (2 * Math.PI) / 3] : [0, Math.PI / 3, (2 * Math.PI) / 3];
@@ -219,7 +251,12 @@ export class ResourceNode {
     const h = variant === 'needle' ? 5 + rng.range(0, 2.5) : 3.8 + rng.range(0, 2.2);
     const lean = rng.range(-0.06, 0.06);
 
-    const barkMat = mat('bark', { map: MaterialTex.bark(), normalMap: MaterialTex.normal(21), color: '#b59a78', roughness: 0.95 });
+    const barkMat = mat('bark', {
+      map: MaterialTex.bark(),
+      normalMap: MaterialTex.normal(21),
+      color: '#b59a78',
+      roughness: 0.95,
+    });
     const trunk = new THREE.Mesh(cylGeo(0.13, 0.24, h, 8), barkMat);
     trunk.position.y = h / 2;
     trunk.rotation.z = lean;
@@ -241,14 +278,24 @@ export class ResourceNode {
     canopy.position.y = h * 0.86;
     canopy.rotation.z = lean;
     this.view.add(canopy);
-    const radius = variant === 'frond' ? 1.9 + rng.range(0, 0.5) : variant === 'needle' ? 1.5 + rng.range(0, 0.4) : 1.7 + rng.range(0, 0.7);
+    const radius =
+      variant === 'frond'
+        ? 1.9 + rng.range(0, 0.5)
+        : variant === 'needle'
+          ? 1.5 + rng.range(0, 0.4)
+          : 1.7 + rng.range(0, 0.7);
     const ch = variant === 'needle' ? radius * 2.1 : radius * 1.6;
     this.addFoliage(canopy, rng, variant, radius, ch);
     canopy.userData.sway = 1;
   }
 
   private buildMine(rng: RNG): void {
-    const rockMat = mat('rock-mine', { map: MaterialTex.stone(), normalMap: MaterialTex.normal(33), color: '#8f8a82', roughness: 0.95 });
+    const rockMat = mat('rock-mine', {
+      map: MaterialTex.stone(),
+      normalMap: MaterialTex.normal(33),
+      color: '#8f8a82',
+      roughness: 0.95,
+    });
     const oreMat = mat('ore-mine', { color: '#9aa7b5', metalness: 0.9, roughness: 0.35, emissive: 0x11161c });
     const n = 7;
     for (let i = 0; i < n; i++) {
@@ -292,7 +339,10 @@ export class ResourceNode {
     const light = new THREE.Mesh(cylGeo(0.06, 0.06, 0.08, 8), lampMat);
     light.position.set(0, 1.4, 0);
     this.add(light);
-    const pit = new THREE.Mesh(cylGeo(0.55, 0.6, 0.12, 12), mat('pit-well', { color: '#141414', metalness: 0.4, roughness: 0.6 }));
+    const pit = new THREE.Mesh(
+      cylGeo(0.55, 0.6, 0.12, 12),
+      mat('pit-well', { color: '#141414', metalness: 0.4, roughness: 0.6 }),
+    );
     pit.position.y = 0.06;
     this.add(pit);
   }
@@ -333,7 +383,13 @@ export class ResourceNode {
   }
 
   private buildBush(rng: RNG): void {
-    const leafMat = mat('leaf-bush', { map: MaterialTex.foliage('bush'), alphaTest: 0.45, side: THREE.DoubleSide, roughness: 1, color: '#cfe0b0' });
+    const leafMat = mat('leaf-bush', {
+      map: MaterialTex.foliage('bush'),
+      alphaTest: 0.45,
+      side: THREE.DoubleSide,
+      roughness: 1,
+      color: '#cfe0b0',
+    });
     const berryMat = mat('berry', { color: '#cc3333', roughness: 0.4 });
     const canopy = new THREE.Group();
     canopy.position.y = 0.35;

@@ -263,7 +263,10 @@ export class Sky {
     const domeMat = this.dome.material as THREE.ShaderMaterial;
     domeMat.uniforms.sunDir.value.copy(this.sunDir);
     domeMat.uniforms.sunIntensity.value = 0.35 + day * 0.85 + dusk * 0.6;
-    this._cHorizon.setHex(0xc8d9e8).lerp(this._cNightH, 1 - day).lerp(this._cDuskH, dusk * 0.8);
+    this._cHorizon
+      .setHex(0xc8d9e8)
+      .lerp(this._cNightH, 1 - day)
+      .lerp(this._cDuskH, dusk * 0.8);
     domeMat.uniforms.horizonColor.value.copy(this._cHorizon);
     this._cTop.setHex(0x0a1a4a).lerp(this._cTopDusk, dusk);
     domeMat.uniforms.topColor.value.copy(this._cTop);

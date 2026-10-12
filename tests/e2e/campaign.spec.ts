@@ -2,7 +2,9 @@ import { test, expect } from '@playwright/test';
 
 test('shows the historical prologue before the campaign', async ({ page }) => {
   await page.goto('/');
-  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
   await page.getByRole('button', { name: /Campañas/ }).click();
   const intro = page.locator('.ed-overlay', { hasText: 'La Senda del Sol' });
   await expect(intro).toBeVisible();
@@ -22,7 +24,9 @@ test('the mission briefing includes context and sources', { tag: '@smoke' }, asy
 
 test('the codex opens with periods, civilizations and dossiers', async ({ page }) => {
   await page.goto('/');
-  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
   await page.getByRole('button', { name: /Códice/ }).click();
   const codex = page.locator('#ed-codex');
   await expect(codex).toBeVisible();
@@ -53,7 +57,9 @@ test('the missions with corrected rosters boot with units and no errors', async 
   const ids = ['m3_moche_recuay', 'm5_yahuar_pampa', 'm6_chimu_inca', 'm7_tupac_amaru', 'm9_guerra_pacifico'];
   for (const id of ids) {
     await page.goto(`/?mission=${id}&seed=777&fog=0&low=1`);
-    await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+    await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+      timeout: 30_000,
+    });
     const info = await page.evaluate(() => {
       const g = (window as unknown as { game: { units: Map<number, unknown>; buildings: Map<number, unknown> } }).game;
       return { units: g.units.size, buildings: g.buildings.size };

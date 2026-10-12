@@ -1,7 +1,16 @@
 import type { Game } from '../core/Game';
 import type { Unit } from '../entities/Unit';
 import type { Building } from '../entities/Building';
-import { Era, BuildingKind, UnitKind, OrderKind, RESOURCE_KEYS, Resources, ERA_COLORS, HistoricalPeriod } from '../core/types';
+import {
+  Era,
+  BuildingKind,
+  UnitKind,
+  OrderKind,
+  RESOURCE_KEYS,
+  Resources,
+  ERA_COLORS,
+  HistoricalPeriod,
+} from '../core/types';
 import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../model/defs/buildings';
 import { UNIT_ARCHETYPES, getUnitStats, UNIT_INFO } from '../model/defs/units';
 import { TECHS, getTech } from '../model/defs/techs';
@@ -410,7 +419,9 @@ export class HUD {
 
   private refreshSpeed(): void {
     const btns = this.root.querySelectorAll<HTMLButtonElement>('#ed-speed .speed-btn');
-    btns.forEach((b) => b.classList.toggle('active', (b.textContent === '½' ? 0.5 : parseFloat(b.textContent!)) === this.game.loop.speed));
+    btns.forEach((b) =>
+      b.classList.toggle('active', (b.textContent === '½' ? 0.5 : parseFloat(b.textContent!)) === this.game.loop.speed),
+    );
   }
 
   private buildBottom(): void {
@@ -637,9 +648,14 @@ export class HUD {
     const panel = this.el('div', 'ed-panel', ov);
     const p = this.game.players[0];
     const title = victory ? '🏆 ¡VICTORIA!' : '💀 DERROTA';
-    const sub = winText && loseText
-      ? (victory ? winText : loseText)
-      : victory ? 'Tu imperio se alza sobre las ruinas del enemigo.' : 'Tu civilización ha caído ante el avance enemigo.';
+    const sub =
+      winText && loseText
+        ? victory
+          ? winText
+          : loseText
+        : victory
+          ? 'Tu imperio se alza sobre las ruinas del enemigo.'
+          : 'Tu civilización ha caído ante el avance enemigo.';
     panel.innerHTML = `
       <h2 style="color:${victory ? 'var(--green)' : 'var(--red)'}">${title}</h2>
       <div class="sub" style="white-space:pre-line;line-height:1.6">${sub}</div>
@@ -680,8 +696,20 @@ export class HUD {
     this.gridEl.innerHTML = '';
   }
 
-  private addCard(icon: string, name: string, costText: string, onClick: () => void, opts: { disabled?: boolean; afford?: boolean; cat?: string; progress?: number } = {}): HTMLElement {
-    const card = this.el('div', 'ed-card' + (opts.disabled ? ' disabled' : '') + (opts.afford ? ' afford' : '') + (opts.cat ? ' cat-' + opts.cat : ''));
+  private addCard(
+    icon: string,
+    name: string,
+    costText: string,
+    onClick: () => void,
+    opts: { disabled?: boolean; afford?: boolean; cat?: string; progress?: number } = {},
+  ): HTMLElement {
+    const card = this.el(
+      'div',
+      'ed-card' +
+        (opts.disabled ? ' disabled' : '') +
+        (opts.afford ? ' afford' : '') +
+        (opts.cat ? ' cat-' + opts.cat : ''),
+    );
     card.innerHTML = `<span class="ic">${icon}</span><span class="nm">${name}</span><span class="cost">${costText}</span>`;
     if (opts.progress !== undefined) {
       card.classList.add('progress');
@@ -736,7 +764,11 @@ export class HUD {
     } else if (building && building.owner === 0) {
       this.renderBuildingPanel(building);
     } else if (building && building.owner !== 0) {
-      this.setDesc('🏰', BUILDING_INFO[building.kind].name, `Base enemiga · HP ${Math.ceil(building.hp)}/${Math.ceil(building.maxHp)}`);
+      this.setDesc(
+        '🏰',
+        BUILDING_INFO[building.kind].name,
+        `Base enemiga · HP ${Math.ceil(building.hp)}/${Math.ceil(building.maxHp)}`,
+      );
       this.clearGrid();
       this.addCommand('⚔️ Atacar', () => this.orderAttackBuilding(building.id));
     } else {
@@ -764,15 +796,23 @@ export class HUD {
     const res = p ? RESOURCE_KEYS.map((k) => Math.floor(p.resources[k] / 25)).join(',') : '';
     const tail = '|e:' + (p?.era ?? 0) + '|res:' + res;
     if (units.length > 0) {
-      const ids = units.map((u) => u.id).sort((a, b) => a - b).join(',');
+      const ids = units
+        .map((u) => u.id)
+        .sort((a, b) => a - b)
+        .join(',');
       return 'u:' + ids + tail;
     }
     if (building) {
       if (building.owner !== 0) return 'enemy:' + building.id + tail;
       return (
-        'b:' + building.id + ':' + (building.constructionComplete ? 1 : 0) +
-        ':q' + building.productionQueue.map((q) => q.unit).join(',') +
-        ':r' + building.researchQueue.map((q) => q.tech).join(',') +
+        'b:' +
+        building.id +
+        ':' +
+        (building.constructionComplete ? 1 : 0) +
+        ':q' +
+        building.productionQueue.map((q) => q.unit).join(',') +
+        ':r' +
+        building.researchQueue.map((q) => q.tech).join(',') +
         tail
       );
     }
@@ -832,7 +872,13 @@ export class HUD {
       for (const u of units) groups.set(u.kind, (groups.get(u.kind) ?? 0) + 1);
       for (const [kind, count] of groups) {
         const gi = UNIT_INFO[kind];
-        this.addCard(gi.icon, `${count}× ${gi.name}`, 'clic: filtrar', () => this.game.selectUnits(units.filter((u) => u.kind === kind).map((u) => u.id)), { cat: 'sel' });
+        this.addCard(
+          gi.icon,
+          `${count}× ${gi.name}`,
+          'clic: filtrar',
+          () => this.game.selectUnits(units.filter((u) => u.kind === kind).map((u) => u.id)),
+          { cat: 'sel' },
+        );
       }
     }
     if (units.length > 0 && units.every((u) => u.kind === UnitKind.WORKER)) {
@@ -864,7 +910,10 @@ export class HUD {
     this.clearGrid();
 
     if (!b.constructionComplete) {
-      const buildCard = this.addCard('🔨', 'En construcción', `${Math.round(b.buildRatio * 100)}%`, () => {}, { disabled: true, progress: b.buildRatio });
+      const buildCard = this.addCard('🔨', 'En construcción', `${Math.round(b.buildRatio * 100)}%`, () => {}, {
+        disabled: true,
+        progress: b.buildRatio,
+      });
       buildCard.dataset.buildCard = '1';
       return;
     }
@@ -873,10 +922,16 @@ export class HUD {
     for (let i = 0; i < b.productionQueue.length; i++) {
       const item = b.productionQueue[i];
       const uInfo = UNIT_INFO[item.unit];
-      const card = this.addCard(uInfo.icon, uInfo.name, `${Math.round(item.progress * 100)}% ✖`, () => this.game.cancelProduction(b.id, i), {
-        progress: item.progress,
-        cat: 'mil',
-      });
+      const card = this.addCard(
+        uInfo.icon,
+        uInfo.name,
+        `${Math.round(item.progress * 100)}% ✖`,
+        () => this.game.cancelProduction(b.id, i),
+        {
+          progress: item.progress,
+          cat: 'mil',
+        },
+      );
       card.dataset.prodIdx = String(i);
     }
 
@@ -897,7 +952,13 @@ export class HUD {
     }
 
     // technologies (institute)
-    const techs = TECHS.filter((t) => t.building === b.kind && t.minEra <= this.game.players[0].era && !this.game.players[0].techs.has(t.id) && (!t.requirements || t.requirements.every((r) => this.game.players[0].techs.has(r))));
+    const techs = TECHS.filter(
+      (t) =>
+        t.building === b.kind &&
+        t.minEra <= this.game.players[0].era &&
+        !this.game.players[0].techs.has(t.id) &&
+        (!t.requirements || t.requirements.every((r) => this.game.players[0].techs.has(r))),
+    );
     for (const t of techs) {
       const disabled = !this.canAfford(t.cost);
       this.addCard(t.icon ?? '📚', t.name, this.costText(t.cost), () => this.researchTech(b.id, t.id), {
@@ -909,11 +970,25 @@ export class HUD {
 
     // build more (if center, house, etc.)
     if (b.kind === BuildingKind.CENTER) {
-      this.addCard('🏠', 'Vivienda', this.costText(getBuildingStats(BuildingKind.HOUSE, b.era).cost), () => this.game.startPlacement(BuildingKind.HOUSE), { cat: 'econ' });
-      this.addCard('🌽', 'Granja', this.costText(getBuildingStats(BuildingKind.FARM, b.era).cost), () => this.game.startPlacement(BuildingKind.FARM), { cat: 'econ' });
+      this.addCard(
+        '🏠',
+        'Vivienda',
+        this.costText(getBuildingStats(BuildingKind.HOUSE, b.era).cost),
+        () => this.game.startPlacement(BuildingKind.HOUSE),
+        { cat: 'econ' },
+      );
+      this.addCard(
+        '🌽',
+        'Granja',
+        this.costText(getBuildingStats(BuildingKind.FARM, b.era).cost),
+        () => this.game.startPlacement(BuildingKind.FARM),
+        { cat: 'econ' },
+      );
     }
 
-    this.addCommand('📍 Punto de reunión', () => this.game.hud.showToast('Usa Shift+Botón derecho en el suelo', 'info'));
+    this.addCommand('📍 Punto de reunión', () =>
+      this.game.hud.showToast('Usa Shift+Botón derecho en el suelo', 'info'),
+    );
     if (b.garrisonedIds.length > 0) {
       this.addCommand(`🚪 Desembarcar (${b.garrisonedIds.length})`, () => this.ungarrison(b.id));
     }
@@ -1068,7 +1143,14 @@ export class HUD {
     for (const n of this.game.resourceNodes.values()) {
       if (n.dead) continue;
       if (fogOn && !fow.isExplored(n.pos.x, n.pos.z)) continue;
-      ctx.fillStyle = n.resource === 'wood' ? '#3a7a2a' : n.resource === 'silver' ? '#b0b8c4' : n.resource === 'stone' ? '#e8b54a' : '#7a5a3a';
+      ctx.fillStyle =
+        n.resource === 'wood'
+          ? '#3a7a2a'
+          : n.resource === 'silver'
+            ? '#b0b8c4'
+            : n.resource === 'stone'
+              ? '#e8b54a'
+              : '#7a5a3a';
       ctx.fillRect((n.pos.x / s) * w, (n.pos.z / s) * w, 2, 2);
     }
     // buildings
@@ -1136,49 +1218,104 @@ export class HUD {
     rows.appendChild(
       this.field(
         'Periodo histórico',
-        this.select(PERIODS.map((p) => String(p.id)), periodLabels, String(this.game.settings.period), (v) => {
-          this.game.settings.period = Number(v) as HistoricalPeriod;
-          const disp = civsForPeriod(this.game.settings.period);
-          if (!disp.some((c) => c.id === this.game.settings.civPlayer)) this.game.settings.civPlayer = disp[0].id;
-          let rival = disp.find((c) => c.id === this.game.settings.civAI && c.id !== this.game.settings.civPlayer);
-          if (!rival) rival = disp.find((c) => c.id !== this.game.settings.civPlayer) ?? disp[0];
-          this.game.settings.civAI = rival.id;
-          this.game.settings.mapType = getCiv(this.game.settings.civPlayer).geography;
-          this.showMainMenu();
-        }),
+        this.select(
+          PERIODS.map((p) => String(p.id)),
+          periodLabels,
+          String(this.game.settings.period),
+          (v) => {
+            this.game.settings.period = Number(v) as HistoricalPeriod;
+            const disp = civsForPeriod(this.game.settings.period);
+            if (!disp.some((c) => c.id === this.game.settings.civPlayer)) this.game.settings.civPlayer = disp[0].id;
+            let rival = disp.find((c) => c.id === this.game.settings.civAI && c.id !== this.game.settings.civPlayer);
+            if (!rival) rival = disp.find((c) => c.id !== this.game.settings.civPlayer) ?? disp[0];
+            this.game.settings.civAI = rival.id;
+            this.game.settings.mapType = getCiv(this.game.settings.civPlayer).geography;
+            this.showMainMenu();
+          },
+        ),
       ),
     );
-    rows.appendChild(this.field('Dificultad', this.select(['easy', 'normal', 'hard', 'legendary'] as const, { easy: 'Fácil', normal: 'Normal', hard: 'Difícil', legendary: 'Legendario' }, this.game.settings.difficulty, (v) => (this.game.settings.difficulty = v))));
+    rows.appendChild(
+      this.field(
+        'Dificultad',
+        this.select(
+          ['easy', 'normal', 'hard', 'legendary'] as const,
+          { easy: 'Fácil', normal: 'Normal', hard: 'Difícil', legendary: 'Legendario' },
+          this.game.settings.difficulty,
+          (v) => (this.game.settings.difficulty = v),
+        ),
+      ),
+    );
     const disponibles = civsForPeriod(this.game.settings.period);
     const civLabels: Record<string, string> = {};
     for (const c of disponibles) civLabels[c.id] = `${c.name} (${c.geography})`;
     rows.appendChild(
       this.field(
         'Tu civilización',
-        this.select(disponibles.map((c) => c.id), civLabels, this.game.settings.civPlayer, (v) => {
-          this.game.settings.civPlayer = v;
-          if (this.game.settings.civAI === this.game.settings.civPlayer) {
-            const alt = disponibles.find((c) => c.id !== v) ?? disponibles[0];
-            this.game.settings.civAI = alt.id;
-          }
-          this.game.settings.mapType = getCiv(v).geography;
-          this.showMainMenu();
-        }),
+        this.select(
+          disponibles.map((c) => c.id),
+          civLabels,
+          this.game.settings.civPlayer,
+          (v) => {
+            this.game.settings.civPlayer = v;
+            if (this.game.settings.civAI === this.game.settings.civPlayer) {
+              const alt = disponibles.find((c) => c.id !== v) ?? disponibles[0];
+              this.game.settings.civAI = alt.id;
+            }
+            this.game.settings.mapType = getCiv(v).geography;
+            this.showMainMenu();
+          },
+        ),
       ),
     );
     rows.appendChild(
       this.field(
         'Rival (contemporáneo)',
-        this.select(disponibles.map((c) => c.id), civLabels, this.game.settings.civAI, (v) => {
-          this.game.settings.civAI = v;
-          this.showMainMenu();
-        }),
+        this.select(
+          disponibles.map((c) => c.id),
+          civLabels,
+          this.game.settings.civAI,
+          (v) => {
+            this.game.settings.civAI = v;
+            this.showMainMenu();
+          },
+        ),
       ),
     );
     const rows2 = this.el('div', 'row', panel);
-    rows2.appendChild(this.field('Mapa', this.select(['coast', 'andes', 'altiplano', 'jungle'] as const, { costa: 'Costa / litoral', andes: 'Andes', altiplano: 'Altiplano', selva: 'Selva' }, this.game.settings.mapType, (v) => (this.game.settings.mapType = v))));
-    rows2.appendChild(this.field('Hora del día', this.select(['morning', 'noon', 'dusk', 'night'] as const, { 'morning': 'Mañana', 'noon': 'Mediodía', 'dusk': 'Atardecer', 'night': 'Noche' }, this.game.settings.timeOfDay, (v) => this.setTimeOfDay(v))));
-    rows2.appendChild(this.field('Victoria', this.select(['conquest', 'wonder'] as const, { conquest: 'Conquista', wonder: 'Huaca Sagrada' }, this.game.settings.victoryMode, (v) => (this.game.settings.victoryMode = v))));
+    rows2.appendChild(
+      this.field(
+        'Mapa',
+        this.select(
+          ['coast', 'andes', 'altiplano', 'jungle'] as const,
+          { costa: 'Costa / litoral', andes: 'Andes', altiplano: 'Altiplano', selva: 'Selva' },
+          this.game.settings.mapType,
+          (v) => (this.game.settings.mapType = v),
+        ),
+      ),
+    );
+    rows2.appendChild(
+      this.field(
+        'Hora del día',
+        this.select(
+          ['morning', 'noon', 'dusk', 'night'] as const,
+          { morning: 'Mañana', noon: 'Mediodía', dusk: 'Atardecer', night: 'Noche' },
+          this.game.settings.timeOfDay,
+          (v) => this.setTimeOfDay(v),
+        ),
+      ),
+    );
+    rows2.appendChild(
+      this.field(
+        'Victoria',
+        this.select(
+          ['conquest', 'wonder'] as const,
+          { conquest: 'Conquista', wonder: 'Huaca Sagrada' },
+          this.game.settings.victoryMode,
+          (v) => (this.game.settings.victoryMode = v),
+        ),
+      ),
+    );
     if (hasSave()) {
       const continueBtn = this.el('button', 'ed-primary', panel);
       continueBtn.textContent = '▶ Continuar partida';
@@ -1299,17 +1436,25 @@ export class HUD {
     const period = getPeriod(mis.period);
     const player = getCiv(mis.playerCiv);
     const enemy = getCiv(mis.enemyCiv);
-    const geo: Record<string, string> = { costa: 'Costa / litoral', andes: 'Andes / sierra', altiplano: 'Altiplano', selva: 'Selva' };
+    const geo: Record<string, string> = {
+      costa: 'Costa / litoral',
+      andes: 'Andes / sierra',
+      altiplano: 'Altiplano',
+      selva: 'Selva',
+    };
     const edu = getEducational(mis.id);
     const context = edu?.context
       ? `<div class="ed-hist">${mis.history}</div><div class="ed-hist"><b style="color:var(--gold)">Contexto histórico.</b> ${edu.context}</div>`
       : `<div class="ed-hist">${mis.history}</div>`;
     const funFact = edu ? `<div class="ed-sabias">💡 <b>¿Sabías que…?</b> ${edu.didYouKnow}</div>` : '';
-    const sources = edu && edu.sources.length
-      ? `<details class="ed-fuentes"><summary>Fuentes históricas</summary><ul>${edu.sources
-          .map((f) => `<li>${f.url ? `<a href="${f.url}" target="_blank" rel="noopener">${f.text}</a>` : f.text}</li>`)
-          .join('')}</ul></details>`
-      : '';
+    const sources =
+      edu && edu.sources.length
+        ? `<details class="ed-fuentes"><summary>Fuentes históricas</summary><ul>${edu.sources
+            .map(
+              (f) => `<li>${f.url ? `<a href="${f.url}" target="_blank" rel="noopener">${f.text}</a>` : f.text}</li>`,
+            )
+            .join('')}</ul></details>`
+        : '';
     panel.innerHTML = `
       <div style="font-size:12px;letter-spacing:3px;color:#a8883f">${mis.subtitle}</div>
       <h2>${mis.title}</h2>
@@ -1397,7 +1542,7 @@ export class HUD {
 
   private setTimeOfDay(v: GameSettings['timeOfDay']): void {
     this.game.settings.timeOfDay = v;
-    const map: Record<string, number> = { 'morning': 0.62, 'noon': 0.5, 'dusk': 0.28, 'night': 0.05 };
+    const map: Record<string, number> = { morning: 0.62, noon: 0.5, dusk: 0.28, night: 0.05 };
     this.game.sky.setTimeOfDay(map[v] ?? 0.5);
   }
 
@@ -1412,7 +1557,15 @@ export class HUD {
     const panel = this.el('div', 'ed-panel', ov);
     panel.innerHTML = `<h2>OPCIONES</h2><div class="sub">Ajustes visuales y de sonido</div>`;
     const row = this.el('div', 'row', panel);
-    const q = this.field('Calidad', this.select(['high', 'medium', 'low'] as const, { high: 'Alta (AAA)', medium: 'Media', low: 'Baja' }, 'high', (v) => this.game.postfx.setQuality(v)));
+    const q = this.field(
+      'Calidad',
+      this.select(
+        ['high', 'medium', 'low'] as const,
+        { high: 'Alta (AAA)', medium: 'Media', low: 'Baja' },
+        'high',
+        (v) => this.game.postfx.setQuality(v),
+      ),
+    );
     row.appendChild(q);
     const cine = this.el('div', 'ed-field', row);
     cine.innerHTML = `<label>Efectos cinematográficos</label>`;
@@ -1452,7 +1605,12 @@ export class HUD {
     return f;
   }
 
-  private select<T extends string>(values: readonly T[], labels: Record<string, string>, value: T, onChange: (v: T) => void): HTMLSelectElement {
+  private select<T extends string>(
+    values: readonly T[],
+    labels: Record<string, string>,
+    value: T,
+    onChange: (v: T) => void,
+  ): HTMLSelectElement {
     const sel = document.createElement('select');
     for (const v of values) {
       const opt = document.createElement('option');

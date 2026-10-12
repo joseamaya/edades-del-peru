@@ -4,7 +4,9 @@ import { test, expect } from '@playwright/test';
  *  only actors are the ones each test spawns. */
 async function bootSkirmish(page: import('@playwright/test').Page): Promise<void> {
   await page.goto('/?seed=777&fog=0&low=1');
-  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();

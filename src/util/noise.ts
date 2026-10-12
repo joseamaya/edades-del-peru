@@ -49,7 +49,7 @@ export function noise2(x: number, y: number): number {
       lerp(grad2(PERM[a + 1], x, y - 1), grad2(PERM[b + 1], x - 1, y - 1), u),
       v,
     ) *
-    0.7071 +
+      0.7071 +
     0.5
   );
 }

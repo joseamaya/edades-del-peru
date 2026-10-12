@@ -27,7 +27,10 @@ describe('campaign educational content', () => {
 
   it('there are no orphan educational entries', () => {
     for (const id of Object.keys(EDUCATIONAL)) {
-      expect(MISSIONS.some((m) => m.id === id), `entry without a mission: ${id}`).toBe(true);
+      expect(
+        MISSIONS.some((m) => m.id === id),
+        `entry without a mission: ${id}`,
+      ).toBe(true);
     }
   });
 

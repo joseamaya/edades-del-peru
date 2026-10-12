@@ -114,7 +114,9 @@ export class AI {
 
   private manageWorkers(): void {
     const workers = this.myUnits().filter((u) => u.kind === UnitKind.WORKER);
-    const busy = workers.filter((w) => w.orderQueue[0]?.kind === OrderKind.GATHER || w.orderQueue[0]?.kind === OrderKind.BUILD);
+    const busy = workers.filter(
+      (w) => w.orderQueue[0]?.kind === OrderKind.GATHER || w.orderQueue[0]?.kind === OrderKind.BUILD,
+    );
     const idle = workers.filter((w) => !w.isBusy());
     const center = this.center();
     const desired = Math.max(4, Math.round(Math.min(6 + this.p.era * 2, 14) * this.mult.econ));
@@ -202,17 +204,28 @@ export class AI {
     if (countOf(BuildingKind.HOUSE) < 3 + p.era) {
       buildPlan.push({ kind: BuildingKind.HOUSE, cost: woodCost(BuildingKind.HOUSE), priority: 100 });
     }
-    if (!has(BuildingKind.MILL)) buildPlan.push({ kind: BuildingKind.MILL, cost: woodCost(BuildingKind.MILL), priority: 90 });
-    if (!has(BuildingKind.SAWMILL)) buildPlan.push({ kind: BuildingKind.SAWMILL, cost: woodCost(BuildingKind.SAWMILL), priority: 85 });
-    if (!has(BuildingKind.SMELTER)) buildPlan.push({ kind: BuildingKind.SMELTER, cost: woodCost(BuildingKind.SMELTER), priority: 80 });
-    if (p.era >= Era.TAHUANTINSUYO && !has(BuildingKind.REFINERY)) buildPlan.push({ kind: BuildingKind.REFINERY, cost: woodCost(BuildingKind.REFINERY), priority: 70 });
-    if (!has(BuildingKind.BARRACKS)) buildPlan.push({ kind: BuildingKind.BARRACKS, cost: woodCost(BuildingKind.BARRACKS), priority: 75 });
-    if (!has(BuildingKind.ARSENAL)) buildPlan.push({ kind: BuildingKind.ARSENAL, cost: woodCost(BuildingKind.ARSENAL), priority: 65 });
-    if (p.era >= Era.REGIONAL_STATES && !has(BuildingKind.STABLE)) buildPlan.push({ kind: BuildingKind.STABLE, cost: woodCost(BuildingKind.STABLE), priority: 60 });
-    if (p.era >= Era.REGIONAL_STATES && !has(BuildingKind.FACTORY)) buildPlan.push({ kind: BuildingKind.FACTORY, cost: woodCost(BuildingKind.FACTORY), priority: 50 });
-    if (p.era >= Era.REGIONAL_STATES && !has(BuildingKind.INSTITUTE)) buildPlan.push({ kind: BuildingKind.INSTITUTE, cost: woodCost(BuildingKind.INSTITUTE), priority: 55 });
-    if (p.era >= Era.REGIONAL_STATES && !has(BuildingKind.FORTRESS)) buildPlan.push({ kind: BuildingKind.FORTRESS, cost: woodCost(BuildingKind.FORTRESS), priority: 45 });
-    if (p.era >= Era.REGIONAL_STATES && countOf(BuildingKind.FARM) < 4) buildPlan.push({ kind: BuildingKind.FARM, cost: woodCost(BuildingKind.FARM), priority: 40 });
+    if (!has(BuildingKind.MILL))
+      buildPlan.push({ kind: BuildingKind.MILL, cost: woodCost(BuildingKind.MILL), priority: 90 });
+    if (!has(BuildingKind.SAWMILL))
+      buildPlan.push({ kind: BuildingKind.SAWMILL, cost: woodCost(BuildingKind.SAWMILL), priority: 85 });
+    if (!has(BuildingKind.SMELTER))
+      buildPlan.push({ kind: BuildingKind.SMELTER, cost: woodCost(BuildingKind.SMELTER), priority: 80 });
+    if (p.era >= Era.TAHUANTINSUYO && !has(BuildingKind.REFINERY))
+      buildPlan.push({ kind: BuildingKind.REFINERY, cost: woodCost(BuildingKind.REFINERY), priority: 70 });
+    if (!has(BuildingKind.BARRACKS))
+      buildPlan.push({ kind: BuildingKind.BARRACKS, cost: woodCost(BuildingKind.BARRACKS), priority: 75 });
+    if (!has(BuildingKind.ARSENAL))
+      buildPlan.push({ kind: BuildingKind.ARSENAL, cost: woodCost(BuildingKind.ARSENAL), priority: 65 });
+    if (p.era >= Era.REGIONAL_STATES && !has(BuildingKind.STABLE))
+      buildPlan.push({ kind: BuildingKind.STABLE, cost: woodCost(BuildingKind.STABLE), priority: 60 });
+    if (p.era >= Era.REGIONAL_STATES && !has(BuildingKind.FACTORY))
+      buildPlan.push({ kind: BuildingKind.FACTORY, cost: woodCost(BuildingKind.FACTORY), priority: 50 });
+    if (p.era >= Era.REGIONAL_STATES && !has(BuildingKind.INSTITUTE))
+      buildPlan.push({ kind: BuildingKind.INSTITUTE, cost: woodCost(BuildingKind.INSTITUTE), priority: 55 });
+    if (p.era >= Era.REGIONAL_STATES && !has(BuildingKind.FORTRESS))
+      buildPlan.push({ kind: BuildingKind.FORTRESS, cost: woodCost(BuildingKind.FORTRESS), priority: 45 });
+    if (p.era >= Era.REGIONAL_STATES && countOf(BuildingKind.FARM) < 4)
+      buildPlan.push({ kind: BuildingKind.FARM, cost: woodCost(BuildingKind.FARM), priority: 40 });
     if (p.era >= Era.CONTEMPORARY && !has(BuildingKind.WONDER) && this.game.settings.victoryMode === 'wonder') {
       buildPlan.push({ kind: BuildingKind.WONDER, cost: woodCost(BuildingKind.WONDER), priority: 30 });
     }
@@ -264,7 +277,9 @@ export class AI {
     this.game.obstacleHandles.set(b.id, handle);
     this.game.pathfinder.addObstacle(handle);
     // assign workers (prioritizing gatherers if needed)
-    const gatherers = this.myUnits().filter((u) => u.kind === UnitKind.WORKER && u.orderQueue[0]?.kind === OrderKind.GATHER);
+    const gatherers = this.myUnits().filter(
+      (u) => u.kind === UnitKind.WORKER && u.orderQueue[0]?.kind === OrderKind.GATHER,
+    );
     const idlers = this.myUnits().filter((u) => u.kind === UnitKind.WORKER && !u.isBusy());
     const builders = [...idlers, ...gatherers].slice(0, 3);
     for (const w of builders) {
@@ -285,10 +300,13 @@ export class AI {
 
     const want: UnitKind[] = [];
     if (barracks && this.canAfford(getUnitStats(UnitKind.SOLDIER, p.era).cost)) want.push(UnitKind.SOLDIER);
-    if (range && p.era >= Era.REGIONAL_STATES && this.canAfford(getUnitStats(UnitKind.RIFLEMAN, p.era).cost)) want.push(UnitKind.RIFLEMAN);
+    if (range && p.era >= Era.REGIONAL_STATES && this.canAfford(getUnitStats(UnitKind.RIFLEMAN, p.era).cost))
+      want.push(UnitKind.RIFLEMAN);
     if (range && this.canAfford(getUnitStats(UnitKind.MUSKETEER, p.era).cost)) want.push(UnitKind.MUSKETEER);
-    if (stable && p.era >= Era.TAHUANTINSUYO && this.canAfford(getUnitStats(UnitKind.CAVALRY, p.era).cost)) want.push(UnitKind.CAVALRY);
-    if (factory && p.era >= Era.VICEROYALTY && this.canAfford(getUnitStats(UnitKind.ARTILLERY, p.era).cost)) want.push(UnitKind.ARTILLERY);
+    if (stable && p.era >= Era.TAHUANTINSUYO && this.canAfford(getUnitStats(UnitKind.CAVALRY, p.era).cost))
+      want.push(UnitKind.CAVALRY);
+    if (factory && p.era >= Era.VICEROYALTY && this.canAfford(getUnitStats(UnitKind.ARTILLERY, p.era).cost))
+      want.push(UnitKind.ARTILLERY);
 
     if (militaryCount < target && want.length > 0) {
       const bld = barracks ?? range ?? stable ?? factory;
@@ -404,7 +422,9 @@ export class AI {
   private explore(): void {
     const enemy = this.findEnemyCenter();
     const size = this.game.settings.mapSize;
-    const target = enemy ? { x: enemy.pos.x, z: enemy.pos.z } : { x: size * EXPLORE_FALLBACK.x, z: size * EXPLORE_FALLBACK.z };
+    const target = enemy
+      ? { x: enemy.pos.x, z: enemy.pos.z }
+      : { x: size * EXPLORE_FALLBACK.x, z: size * EXPLORE_FALLBACK.z };
     for (const u of this.myUnits()) {
       if (u.kind !== UnitKind.SCOUT || u.isBusy()) continue;
       u.issueOrder({ kind: OrderKind.PATROL, target }, true);

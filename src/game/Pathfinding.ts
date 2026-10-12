@@ -14,8 +14,14 @@ export interface Obstacle {
 }
 
 const DIRS = [
-  [1, 0], [-1, 0], [0, 1], [0, -1],
-  [1, 1], [1, -1], [-1, 1], [-1, -1],
+  [1, 0],
+  [-1, 0],
+  [0, 1],
+  [0, -1],
+  [1, 1],
+  [1, -1],
+  [-1, 1],
+  [-1, -1],
 ];
 
 /** Chebyshev cell distance to an obstacle goal accepted as "arrived" (see pathfind). */

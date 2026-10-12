@@ -47,7 +47,11 @@ test('selects a unit on click', { tag: '@smoke' }, async ({ page }) => {
     const v = u.pos.clone();
     v.y += 0.4;
     const s = v.project(g.camera.camera);
-    return { x: Math.round((s.x * 0.5 + 0.5) * window.innerWidth), y: Math.round((-s.y * 0.5 + 0.5) * window.innerHeight), id: u.id };
+    return {
+      x: Math.round((s.x * 0.5 + 0.5) * window.innerWidth),
+      y: Math.round((-s.y * 0.5 + 0.5) * window.innerHeight),
+      id: u.id,
+    };
   });
   await page.mouse.move(pos.x, pos.y);
   await page.mouse.down();

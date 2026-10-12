@@ -2,7 +2,9 @@ import { test, expect } from '@playwright/test';
 
 /** Dismiss the initial briefing if present. */
 async function startMission(page: import('@playwright/test').Page): Promise<void> {
-  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, { timeout: 30_000 });
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
   const start = page.getByRole('button', { name: /COMENZAR MISIÓN/ });
   await start.waitFor({ state: 'visible', timeout: 15_000 });
   await start.click();
@@ -98,6 +100,9 @@ test('a single click on the train card queues the unit', { tag: '@smoke' }, asyn
   const card = page.locator('.ed-card', { hasText: 'Guerrero' }).first();
   await card.waitFor({ timeout: 20_000 });
   await card.click();
-  const queued = await page.evaluate((bid) => (window as unknown as { game: any }).game.buildings.get(bid).productionQueue.length, id);
+  const queued = await page.evaluate(
+    (bid) => (window as unknown as { game: any }).game.buildings.get(bid).productionQueue.length,
+    id,
+  );
   expect(queued).toBe(1);
 });

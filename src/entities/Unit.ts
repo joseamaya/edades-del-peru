@@ -18,7 +18,18 @@ export interface UnitContext {
   resourceNodes: Map<number, any>;
   buildings: Map<number, any>;
   resolveDamage(attackerId: number, targetId: number, damage: number, fromEntity: any): void;
-  spawnProjectile(opts: { from: THREE.Vector3; target: THREE.Vector3; speed: number; damage: number; kind: string; owner: number; area?: number; arc?: number; trail?: string; targetId?: number }): void;
+  spawnProjectile(opts: {
+    from: THREE.Vector3;
+    target: THREE.Vector3;
+    speed: number;
+    damage: number;
+    kind: string;
+    owner: number;
+    area?: number;
+    arc?: number;
+    trail?: string;
+    targetId?: number;
+  }): void;
   particles: any;
   players: { id: number; team: Team }[];
   getPlayer(playerId: number): { id: number; team: Team };
@@ -282,10 +293,15 @@ export class Unit {
     this.dead = true;
     if (this.ctx) {
       this.ctx.particles?.emit({
-        x: this.pos.x, y: this.pos.y + 0.5, z: this.pos.z,
+        x: this.pos.x,
+        y: this.pos.y + 0.5,
+        z: this.pos.z,
         count: this.radius > 0.7 ? 18 : 8,
         color: 0x887766,
-        kind: 'smoke', speed: 1.2, life: 1.4, size: 2,
+        kind: 'smoke',
+        speed: 1.2,
+        life: 1.4,
+        size: 2,
       });
       this.ctx.event('unit:died', { id: this.id, owner: this.owner, kind: this.kind });
     }
@@ -422,7 +438,7 @@ export class Unit {
       }
     }
 
-    if (this.orderQueue.length === 0 || this.isGathering() && this.pathIdx >= this.path.length) {
+    if (this.orderQueue.length === 0 || (this.isGathering() && this.pathIdx >= this.path.length)) {
       this.vel.multiplyScalar(Math.pow(0.0001, dt));
     }
     // reach the waypoint
@@ -453,8 +469,17 @@ export class Unit {
       if (this.footstepTimer <= 0) {
         this.footstepTimer = 0.34;
         this.ctx.particles?.emit({
-          x: this.pos.x, y: this.pos.y + 0.12, z: this.pos.z,
-          count: 1, color: 0xbfae8e, kind: 'dust', speed: 0.5, life: 0.5, size: 1.0, grow: 1.7, spread: 0.5,
+          x: this.pos.x,
+          y: this.pos.y + 0.12,
+          z: this.pos.z,
+          count: 1,
+          color: 0xbfae8e,
+          kind: 'dust',
+          speed: 0.5,
+          life: 0.5,
+          size: 1.0,
+          grow: 1.7,
+          spread: 0.5,
         });
       }
     } else {
@@ -513,7 +538,8 @@ export class Unit {
       // aim the turret at the target if it exists
       let aimYaw = Math.sin(time * 0.6) * 0.05;
       if (this.targetEntityId !== null) {
-        const target = this.ctx?.entitiesById?.get(this.targetEntityId) ?? this.ctx?.buildings?.get(this.targetEntityId);
+        const target =
+          this.ctx?.entitiesById?.get(this.targetEntityId) ?? this.ctx?.buildings?.get(this.targetEntityId);
         if (target) {
           aimYaw = angleTo(this.pos.x, this.pos.z, target.pos.x, target.pos.z) - this.yaw;
         }
@@ -593,7 +619,10 @@ export class Unit {
   }
 
   private updateAttack(order: Order, dt: number, time: number): void {
-    const target = this.targetEntityId !== null ? (this.ctx.entitiesById.get(this.targetEntityId) ?? this.ctx.buildings.get(this.targetEntityId)) : null;
+    const target =
+      this.targetEntityId !== null
+        ? (this.ctx.entitiesById.get(this.targetEntityId) ?? this.ctx.buildings.get(this.targetEntityId))
+        : null;
     if (!target || target.dead || (target.hp !== undefined && target.hp <= 0)) {
       this.targetEntityId = null;
       if (this.attackingTarget) {
@@ -660,7 +689,8 @@ export class Unit {
     const from = new THREE.Vector3(this.pos.x, this.pos.y + 0.8, this.pos.z);
     const to = new THREE.Vector3(target.pos.x, target.pos.y + 0.5, target.pos.z);
     const arc = pKind === 'howitzer_shell' || pKind === 'nuclear' ? 1 : 0;
-    const speed = pKind === 'bullet' ? 40 : pKind === 'tracer' ? 60 : pKind === 'laser' ? 90 : pKind === 'rail' ? 130 : 28;
+    const speed =
+      pKind === 'bullet' ? 40 : pKind === 'tracer' ? 60 : pKind === 'laser' ? 90 : pKind === 'rail' ? 130 : 28;
     this.ctx.spawnProjectile({
       from,
       target: to,
@@ -675,7 +705,17 @@ export class Unit {
     });
     // muzzle flash at the cannon mouth (weapon pivot + barrel length, rotated with the unit)
     const muzzle = new THREE.Vector3(0.28, 0.9, 0.62).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.yaw);
-    this.ctx.particles?.emit({ x: this.pos.x + muzzle.x, y: this.pos.y + muzzle.y, z: this.pos.z + muzzle.z, count: 4, color: 0xffcc66, kind: 'explosion', speed: 1.2, life: 0.12, size: 1.4 });
+    this.ctx.particles?.emit({
+      x: this.pos.x + muzzle.x,
+      y: this.pos.y + muzzle.y,
+      z: this.pos.z + muzzle.z,
+      count: 4,
+      color: 0xffcc66,
+      kind: 'explosion',
+      speed: 1.2,
+      life: 0.12,
+      size: 1.4,
+    });
     void time;
   }
 
@@ -763,11 +803,43 @@ export class Unit {
       else this.ctx.event?.('fx:wood', {});
       // gather effect according to the resource
       if (node.resource === 'wood') {
-        this.ctx.particles?.emit({ x: node.pos.x, y: node.pos.y + 0.5, z: node.pos.z, count: 3, color: 0x8a6a3a, kind: 'spark', speed: 0.7, life: 0.45, size: 0.9, spread: 0.6 });
+        this.ctx.particles?.emit({
+          x: node.pos.x,
+          y: node.pos.y + 0.5,
+          z: node.pos.z,
+          count: 3,
+          color: 0x8a6a3a,
+          kind: 'spark',
+          speed: 0.7,
+          life: 0.45,
+          size: 0.9,
+          spread: 0.6,
+        });
       } else if (node.resource === 'silver' || node.resource === 'stone') {
-        this.ctx.particles?.emit({ x: node.pos.x, y: node.pos.y + 0.5, z: node.pos.z, count: 3, color: 0xffd27a, kind: 'spark', speed: 0.9, life: 0.35, size: 0.8, spread: 0.7 });
+        this.ctx.particles?.emit({
+          x: node.pos.x,
+          y: node.pos.y + 0.5,
+          z: node.pos.z,
+          count: 3,
+          color: 0xffd27a,
+          kind: 'spark',
+          speed: 0.9,
+          life: 0.35,
+          size: 0.8,
+          spread: 0.7,
+        });
       } else {
-        this.ctx.particles?.emit({ x: node.pos.x, y: node.pos.y + 0.5, z: node.pos.z, count: 2, color: 0x9bbf6a, kind: 'dust', speed: 0.6, life: 0.5, size: 1.1 });
+        this.ctx.particles?.emit({
+          x: node.pos.x,
+          y: node.pos.y + 0.5,
+          z: node.pos.z,
+          count: 2,
+          color: 0x9bbf6a,
+          kind: 'dust',
+          speed: 0.6,
+          life: 0.5,
+          size: 1.1,
+        });
       }
       if (this.carryCount() >= this.carryCapacity) {
         this.deliverOrder();
@@ -776,12 +848,7 @@ export class Unit {
   }
 
   private carryCount(): number {
-    return (
-      this.gatherCarry.food +
-      this.gatherCarry.wood +
-      this.gatherCarry.silver +
-      this.gatherCarry.stone
-    );
+    return this.gatherCarry.food + this.gatherCarry.wood + this.gatherCarry.silver + this.gatherCarry.stone;
   }
 
   /** Show/hide the load bundle and color it according to the resource. */
@@ -975,7 +1042,17 @@ export class Unit {
     this.vel.multiplyScalar(Math.pow(0.05, dt));
     this.targetYaw = angleTo(this.pos.x, this.pos.z, target.pos.x, target.pos.z);
     this.convertProgress += dt / 5;
-    this.ctx.particles?.emit({ x: target.pos.x, y: target.pos.y + 1, z: target.pos.z, count: 1, color: 0x66ffaa, kind: 'flare', speed: 0.2, life: 0.8, size: 1.4 });
+    this.ctx.particles?.emit({
+      x: target.pos.x,
+      y: target.pos.y + 1,
+      z: target.pos.z,
+      count: 1,
+      color: 0x66ffaa,
+      kind: 'flare',
+      speed: 0.2,
+      life: 0.8,
+      size: 1.4,
+    });
     if (this.convertProgress >= 1) {
       // conversion: `team` is derived from `owner`, so reassigning owner is enough
       const from = target.owner;

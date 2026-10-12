@@ -62,8 +62,8 @@ export class Terrain {
 
   /** Interpolate terrain height in world coordinates. */
   getHeight(wx: number, wz: number): number {
-    const x = wx / this.size * this.resolution;
-    const z = wz / this.size * this.resolution;
+    const x = (wx / this.size) * this.resolution;
+    const z = (wz / this.size) * this.resolution;
     const x0 = Math.floor(x);
     const z0 = Math.floor(z);
     const x1 = Math.min(x0 + 1, this.resolution);
@@ -144,9 +144,7 @@ export class Terrain {
         const mtn = ridged2(nx * 1.7 + 11, nz * 1.7, 4);
         const mtnMask = smoothstep(0.45, 0.82, mtn);
         const edgeBlend = 1 - smoothstep(0.92, 1.06, border);
-        const height =
-          base * 6.6 +
-          Math.max(0, mtn - 0.52) * mtnAmp * mtnMask * edgeBlend;
+        const height = base * 6.6 + Math.max(0, mtn - 0.52) * mtnAmp * mtnMask * edgeBlend;
 
         // Shoreline smoothing
         const h = height;
@@ -534,7 +532,7 @@ export class Terrain {
       return _cBase;
     }
     // Grass: vibrant green, more lush with humidity
-    const hue = 0.30 + (1 - moist) * 0.035;
+    const hue = 0.3 + (1 - moist) * 0.035;
     _cBase.setHSL(hue, 0.5 + moist * 0.18, 0.33 + moist * 0.1 + Math.min(0.05, h * 0.003));
     _cDirt.setHSL(0.08, 0.4, 0.36);
     _cRock.setHSL(0.07, 0.1, 0.46);
