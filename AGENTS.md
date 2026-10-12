@@ -28,7 +28,8 @@ CI runs that `build` job on every PR, the `@smoke` E2E subset on PRs and the ful
   (HUD, menus, narrative) and `docs/historia/**` stay **Spanish**. Historical proper nouns (civs, mission ids,
   place names) are data — never translate them.
 - Strict TS (`strict`, ES2022, `moduleResolution: bundler`). No comments unless they add context the code
-  cannot express. Prettier (single quotes, 120 cols) over `src/**/*.ts` and `scripts/**/*.mjs`.
+  cannot express. Prettier (single quotes, 120 cols) over `src/**/*.ts`, `scripts/**/*.mjs`, `tests/**/*.ts`
+  and `*.config.{ts,js}`.
 - Prefer the data-driven defs (`src/model/defs/*`) and existing `src/util/*` over new constants. Type `EventBus`
   events in `GameEvents` (`src/core/types.ts`).
 - Keep DOM ids, URL params and `localStorage` keys (`peru-settings`, `peru-campaign`) stable, even if Spanish.
