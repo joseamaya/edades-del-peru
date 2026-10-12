@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { EntityRef } from '../core/types';
+import type { Unit } from './Unit';
+import type { Building } from './Building';
 
 /** Global entity id counter. */
 let nextId = 1;
@@ -21,22 +23,26 @@ export class EntityView {
   readonly pickProxy: THREE.Mesh;
   private static readonly pickMaterial = new THREE.MeshBasicMaterial();
 
-  constructor(model: THREE.Group, radius: number, owner?: object) {
+  constructor(model: THREE.Group, radius: number, owner: Unit | Building) {
     this.group = model;
     this.radius = radius;
     this.hpBg = new THREE.Mesh();
     this.hpFill = new THREE.Mesh();
     this.pickProxy = this.buildPickProxy(model, radius);
-    if (owner) this.pickProxy.userData.owner = owner;
+    this.pickProxy.userData.owner = owner;
     this.group.add(this.pickProxy);
+    this.pickProxy.updateWorldMatrix(true, false);
     this.addBlobShadow(radius);
   }
 
   private buildPickProxy(model: THREE.Group, radius: number): THREE.Mesh {
+    model.updateWorldMatrix(true, true);
     const box = new THREE.Box3().setFromObject(model);
     const size = new THREE.Vector3(radius * 2, radius * 2.4, radius * 2);
     const center = new THREE.Vector3(0, radius * 1.2, 0);
     if (!box.isEmpty()) {
+      // the bounds are world-space; bring them into the model's frame so the child proxy is not offset twice
+      box.applyMatrix4(new THREE.Matrix4().copy(model.matrixWorld).invert());
       box.getSize(size);
       box.getCenter(center);
     }

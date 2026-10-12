@@ -1725,7 +1725,7 @@ export class Game {
       }
       u.view.dispose();
       disposeModel(old);
-      u.view = new EntityView(model, u.radius);
+      u.view = new EntityView(model, u.radius, u);
       u.findPivots(model);
       // reset multipliers before re-applying (avoids double counting)
       u.attackMultiplier = 1;

@@ -112,9 +112,10 @@ for player-facing docs see [`README.md`](../README.md).
   `onMouseMove` schedules `Game.flushHover` (rAF) which calls `pickScene` once and feeds both the tooltip and the
   icon (do not re-pick inside `computeHover`/`hoverAction`).
 - **Picking is one proxy per entity** (`EntityView.pickProxy`): an invisible box the size of the model, tagged
-  `userData.owner`. `Game.pickEntity` raycasts the flat proxy list non-recursively and resolves the entity in
-  O(1); it does **not** walk the real meshes (~80 per unit). Anything that swaps a view (`Building.modernize`)
-  must pass `this` as the `EntityView` owner so the new proxy is re-tagged.
+  `userData.owner` (the `EntityView` owner argument is required). `Game.pickEntity` raycasts the flat proxy list
+  non-recursively and resolves the entity in O(1); it does **not** walk the real meshes (~80 per unit). The proxy
+  is built in the model's local frame, so anything that swaps a view (`Building.modernize`, `Game.modernizeUnits`)
+  must pass the entity as the owner so the new proxy is re-tagged and not offset.
 - **Trees by instancing** (`src/rendering/TreeInstances.ts`): `InstancedMesh` of trunk + canopies per variant;
   picking is by `instanceId` (`TreeInstances.raycast` -> `pickResource`), visibility by `ResourceNode.setVisibleEx`
   (fog+LOD) and falling on chop by `startFall`. If you add a tree without registering it in the manager, it will

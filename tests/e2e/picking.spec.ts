@@ -62,3 +62,57 @@ test('picking resolves units and buildings from their proxies', async ({ page })
   expect(res.pickedBuilding).toBe(res.buildingId);
   expect(res.emptySky).toBe(true);
 });
+
+test('unit pick proxies are re-tagged and placed correctly after a model rebuild (era advance)', async ({ page }) => {
+  await page.goto('/?play=1&seed=777&fog=0&low=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g && g.units.size > 0;
+    },
+    null,
+    { timeout: 15_000 },
+  );
+
+  const res = await page.evaluate(() => {
+    const w = window as unknown as { game: any; THREE: any; innerWidth: number; innerHeight: number };
+    const g = w.game;
+    g.loop.stop();
+    const unit = [...g.units.values()].find((u: any) => u.owner === 0 && !u.dead);
+    // rebuild the model the same way era advancement does
+    g.modernizeUnits(0);
+    // then move it clear of the base so no building occludes the direct ray
+    const land = g.findLandNear(unit.pos.x + 45, unit.pos.z + 45, 30);
+    unit.pos.set(land.x, g.terrain.getHeight(land.x, land.z), land.z);
+    unit.view.group.position.copy(unit.pos);
+    unit.view.group.updateMatrixWorld(true);
+
+    const proxy = unit.view.pickProxy;
+    const box = new w.THREE.Box3().setFromObject(proxy);
+    const c = box.getCenter(new w.THREE.Vector3());
+
+    g.camera.moveTo(unit.pos.x, unit.pos.z, true);
+    g.camera.update(0, performance.now() / 1000);
+    g.camera.camera.updateMatrixWorld(true);
+    const v = new w.THREE.Vector3(unit.pos.x, unit.pos.y + 0.4, unit.pos.z).project(g.camera.camera);
+    const sx = (v.x * 0.5 + 0.5) * w.innerWidth;
+    const sy = (-v.y * 0.5 + 0.5) * w.innerHeight;
+
+    return {
+      taggedForUnit: proxy?.userData?.owner === unit,
+      // a double-offset proxy would sit at ~2x the unit position
+      placementError: Math.hypot(c.x - unit.pos.x, c.z - unit.pos.z),
+      size: proxy.geometry.parameters.width as number,
+      directPick: g.pickEntity(sx, sy).unit?.id ?? null,
+      unitId: unit.id as number,
+    };
+  });
+
+  expect(res.taggedForUnit).toBe(true);
+  expect(res.placementError).toBeLessThan(1.5);
+  expect(res.size).toBeGreaterThan(0.2);
+  expect(res.directPick).toBe(res.unitId);
+});
