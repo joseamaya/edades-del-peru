@@ -133,12 +133,12 @@ export class Game {
     this.ai = mis && !mis.enemy.active ? null : new AI(this, 1);
     this.audio.setEra(this.players[0].era);
     this.initAudio();
-    if (mis) this.applyMissionSetup(mis);
+    if (mis && !this.pendingSnapshot) this.applyMissionSetup(mis);
     if (this.pendingSnapshot) this.applySnapshot(this.pendingSnapshot);
     this.loop.onUpdate = (dt, t) => this.update(dt, t);
     this.loop.onRender = () => this.render();
     this.loop.start();
-    if (mis) this.mission?.start();
+    if (mis && !this.pendingSnapshot) this.mission?.start();
     bus.emit('game:ready', {});
   }
 
@@ -549,12 +549,13 @@ export class Game {
     location.href = url.toString();
   }
 
-  /** Serialize the current match into the single save slot. Returns false if storage is unavailable. */
+  /** Serialize the current match into the single save slot. Returns false if unavailable or the match is over. */
   saveMatch(): boolean {
+    if (this.gameEnded) return false;
     return saveToStorage(serializeGame(this));
   }
 
-  /** Reload the page into the saved match (skirmish only). */
+  /** Reload the page into the saved match. */
   loadMatch(): void {
     const url = new URL(location.href);
     url.searchParams.set('load', '1');
@@ -621,6 +622,13 @@ export class Game {
     this.camera.setYaw(data.camera.yaw);
     this.fow.restore(data.fog);
     this.audio.setEra(this.players[0].era);
+
+    if (data.mission && this.mission) {
+      this.mission.applySave(data.mission);
+      // a save taken before the briefing: show it again so the mission can start
+      if (!data.mission.started) this.mission.start();
+    }
+    if (data.tutorial && this.tutorial) this.tutorial.applySave(data.tutorial);
   }
 
   /** Show the victory/defeat screen. */
