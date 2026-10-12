@@ -28,6 +28,8 @@ test('saves and loads a skirmish match', async ({ page }) => {
     worker.issueOrder({ kind: 'gather', entityId: node.id }, true);
     g.players[0].resources.food = 777;
     g.players[0].era = 2;
+    g.players[0].bonus.attack = 0.5;
+    g.players[0].bonus.gathering.food = 0.3;
     g.saveMatch();
     return {
       units: g.units.size,
@@ -35,6 +37,8 @@ test('saves and loads a skirmish match', async ({ page }) => {
       nodes: g.resourceNodes.size,
       food: g.players[0].resources.food,
       era: g.players[0].era,
+      bonusAttack: g.players[0].bonus.attack,
+      bonusFood: g.players[0].bonus.gathering.food,
       unitId: worker.id as number,
       nodeId: node.id as number,
       ux: worker.pos.x,
@@ -57,6 +61,8 @@ test('saves and loads a skirmish match', async ({ page }) => {
         nodes: g.resourceNodes.size,
         food: g.players[0].resources.food,
         era: g.players[0].era,
+        bonusAttack: g.players[0].bonus.attack,
+        bonusFood: g.players[0].bonus.gathering.food,
         ux: u?.pos.x ?? null,
         uz: u?.pos.z ?? null,
         orderKind: u?.orderQueue[0]?.kind ?? null,
@@ -71,6 +77,9 @@ test('saves and loads a skirmish match', async ({ page }) => {
   expect(after.nodes).toBe(before.nodes);
   expect(after.food).toBe(before.food);
   expect(after.era).toBe(before.era);
+  // researched bonuses survive (so units trained after load keep upgrades)
+  expect(after.bonusAttack).toBe(before.bonusAttack);
+  expect(after.bonusFood).toBe(before.bonusFood);
   // the unit and its order (referencing a resource node id) survive the round trip
   expect(after.orderKind).toBe('gather');
   expect(after.orderEntity).toBe(before.nodeId);

@@ -285,9 +285,7 @@ export class Game {
       node.view.position.set(x, node.pos.y, z);
       node.placeTreeInstance(node.pos.y);
       this.resourceNodes.set(node.id, node);
-      const handle = { x, z, radius: kind === 'tree' ? 0.5 : 1.1 };
-      this.obstacleHandles.set(node.id, handle);
-      this.pathfinder.addObstacle(handle);
+      this.registerResourceObstacle(node.id, x, z, kind);
       placed++;
     }
     // hunting and fishing
@@ -316,6 +314,14 @@ export class Game {
     const stats = getBuildingStats(b.kind, b.era);
     const handle = { x: b.pos.x, z: b.pos.z, radius: stats.size * 0.6 };
     this.obstacleHandles.set(b.id, handle);
+    this.pathfinder.addObstacle(handle);
+  }
+
+  /** Register a solid resource node as a pathfinding obstacle (animals/fish are not). */
+  private registerResourceObstacle(id: number, x: number, z: number, kind: ResourceNode['kind']): void {
+    if (kind === 'hunt' || kind === 'fishing') return;
+    const handle = { x, z, radius: kind === 'tree' ? 0.5 : 1.1 };
+    this.obstacleHandles.set(id, handle);
     this.pathfinder.addObstacle(handle);
   }
 
@@ -379,9 +385,7 @@ export class Game {
       node.view.position.set(nx, node.pos.y, nz);
       node.placeTreeInstance(node.pos.y);
       this.resourceNodes.set(node.id, node);
-      const handle = { x: nx, z: nz, radius: kind === 'tree' ? 0.5 : 1.1 };
-      this.obstacleHandles.set(node.id, handle);
-      this.pathfinder.addObstacle(handle);
+      this.registerResourceObstacle(node.id, nx, nz, kind);
     };
     // trees
     for (let i = 0; i < 10; i++) {
@@ -575,6 +579,7 @@ export class Game {
       p.totalLost = ps.totalLost;
       p.wonderActive = ps.wonderActive;
       p.stats = { ...ps.stats };
+      p.bonus = { ...ps.bonus, gathering: { ...ps.bonus.gathering } };
     }
 
     let maxId = 0;
@@ -584,23 +589,13 @@ export class Game {
     reserveIds(maxId);
 
     for (const ns of data.resourceNodes) {
-      const node = new ResourceNode(
-        this.scene,
-        ns.kind as ResourceNode['kind'],
-        ns.x,
-        ns.z,
-        ns.amount,
-        this.settings.mapType,
-        this.trees,
-      );
+      const node = new ResourceNode(this.scene, ns.kind, ns.x, ns.z, ns.amount, this.settings.mapType, this.trees);
       node.applySave(ns);
-      node.pos.y = this.terrain.getHeight(ns.x, ns.z);
+      node.pos.y = ns.kind === 'fishing' ? 0 : this.terrain.getHeight(ns.x, ns.z);
       node.view.position.set(ns.x, node.pos.y, ns.z);
       node.placeTreeInstance(node.pos.y);
       this.resourceNodes.set(node.id, node);
-      const handle = { x: ns.x, z: ns.z, radius: ns.kind === 'tree' ? 0.5 : 1.1 };
-      this.obstacleHandles.set(node.id, handle);
-      this.pathfinder.addObstacle(handle);
+      this.registerResourceObstacle(node.id, ns.x, ns.z, ns.kind);
     }
 
     for (const bs of data.buildings) {

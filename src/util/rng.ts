@@ -1,13 +1,20 @@
 /** Seeded, reproducible random utilities. */
 
+/** One mulberry32 step: returns the next state and value. */
+function mulberry32Step(state: number): { state: number; value: number } {
+  let a = state | 0;
+  a = (a + 0x6d2b79f5) | 0;
+  let t = Math.imul(a ^ (a >>> 15), 1 | a);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return { state: a, value: ((t ^ (t >>> 14)) >>> 0) / 4294967296 };
+}
+
 export function mulberry32(seed: number): () => number {
-  let a = seed >>> 0;
+  let state = seed >>> 0;
   return function () {
-    a |= 0;
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    const r = mulberry32Step(state);
+    state = r.state;
+    return r.value;
   };
 }
 
@@ -18,12 +25,9 @@ export class RNG {
   }
   /** [0,1) */
   float(): number {
-    let a = this.state | 0;
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    this.state = a;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    const r = mulberry32Step(this.state);
+    this.state = r.state;
+    return r.value;
   }
   /** Current internal state, for save/load. */
   getState(): number {

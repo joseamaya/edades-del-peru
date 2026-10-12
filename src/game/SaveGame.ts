@@ -8,7 +8,6 @@ const STORAGE_KEY = 'peru-save';
 function toPlayerSave(p: PlayerState): PlayerSave {
   return {
     id: p.id,
-    civ: p.civ,
     resources: { ...p.resources },
     populationUsed: p.populationUsed,
     era: p.era,
@@ -19,6 +18,7 @@ function toPlayerSave(p: PlayerState): PlayerSave {
     totalLost: p.totalLost,
     wonderActive: p.wonderActive,
     stats: { ...p.stats },
+    bonus: { ...p.bonus, gathering: { ...p.bonus.gathering } },
   };
 }
 
@@ -44,7 +44,11 @@ export function validateSave(raw: unknown): SaveData | null {
   if (!raw || typeof raw !== 'object') return null;
   const r = raw as Record<string, unknown>;
   if (r.version !== SAVE_VERSION) return null;
-  if (!r.settings || !Array.isArray(r.players) || !Array.isArray(r.units) || !Array.isArray(r.buildings)) return null;
+  if (!r.settings || typeof r.rngState !== 'number' || typeof r.fog !== 'string') return null;
+  const cam = r.camera as { x?: unknown; z?: unknown; zoom?: unknown; yaw?: unknown } | undefined;
+  if (!cam || typeof cam.x !== 'number' || typeof cam.z !== 'number') return null;
+  if (typeof cam.zoom !== 'number' || typeof cam.yaw !== 'number') return null;
+  if (!Array.isArray(r.players) || !Array.isArray(r.units) || !Array.isArray(r.buildings)) return null;
   if (!Array.isArray(r.resourceNodes)) return null;
   return raw as SaveData;
 }
@@ -63,21 +67,5 @@ export function loadFromStorage(): SaveData | null {
     return raw ? validateSave(JSON.parse(raw)) : null;
   } catch {
     return null;
-  }
-}
-
-export function hasSave(): boolean {
-  try {
-    return localStorage.getItem(STORAGE_KEY) !== null;
-  } catch {
-    return false;
-  }
-}
-
-export function clearSave(): void {
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-  } catch {
-    /* noop */
   }
 }

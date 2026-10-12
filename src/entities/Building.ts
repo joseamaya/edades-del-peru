@@ -393,6 +393,7 @@ export class Building {
       garrisonedIds: [...this.garrisonedIds],
       rallyPoint: { ...this.rallyPoint },
       hasRallyPoint: this.hasRallyPoint,
+      attackCooldown: this.attackCooldown,
       wonderTimer: this.wonderTimer,
       foodAmount: this.foodAmount,
       tag: this.tag,
@@ -409,6 +410,7 @@ export class Building {
     this.garrisonedIds = s.garrisonedIds ?? [];
     this.rallyPoint = s.rallyPoint ?? { x: 0, z: 0 };
     this.hasRallyPoint = s.hasRallyPoint;
+    this.attackCooldown = s.attackCooldown;
     this.wonderTimer = s.wonderTimer;
     this.foodAmount = s.foodAmount;
     if (s.tag) this.tag = s.tag;

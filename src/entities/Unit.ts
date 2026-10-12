@@ -1038,7 +1038,7 @@ export class Unit {
     this.garrisonedIn = s.garrisonedIn;
     this.isConstructing = s.isConstructing;
     this.rallyPoint = s.rallyPoint;
-    this.combatStance = (s.combatStance as Unit['combatStance']) ?? 'agresivo';
+    this.combatStance = s.combatStance ?? 'agresivo';
     this.buildEfficiency = s.buildEfficiency;
     this.gatherMultiplier = s.gatherMultiplier;
     this.attackMultiplier = s.attackMultiplier;

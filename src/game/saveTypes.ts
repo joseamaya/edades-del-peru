@@ -1,8 +1,11 @@
-import type { Order, OrderTarget, Resources, UnitKind, BuildingKind, Era, CivId } from '../core/types';
+import type { Order, OrderTarget, Resources, UnitKind, BuildingKind, Era, CivBonuses } from '../core/types';
 import type { GameSettings } from '../core/Config';
 
 /** Bump when the snapshot shape changes; older saves are rejected. */
 export const SAVE_VERSION = 1;
+
+export type ResourceKind = 'tree' | 'mine' | 'well' | 'hunt' | 'fishing' | 'berry';
+export type CombatStance = 'agresivo' | 'defensivo' | 'pasivo';
 
 export interface UnitSave {
   id: number;
@@ -21,7 +24,7 @@ export interface UnitSave {
   garrisonedIn: number | null;
   isConstructing: number | null;
   rallyPoint: OrderTarget | null;
-  combatStance: string;
+  combatStance: CombatStance;
   buildEfficiency: number;
   gatherMultiplier: number;
   attackMultiplier: number;
@@ -44,6 +47,7 @@ export interface BuildingSave {
   garrisonedIds: number[];
   rallyPoint: OrderTarget;
   hasRallyPoint: boolean;
+  attackCooldown: number;
   wonderTimer: number;
   foodAmount: number;
   tag?: string;
@@ -51,7 +55,7 @@ export interface BuildingSave {
 
 export interface ResourceNodeSave {
   id: number;
-  kind: string;
+  kind: ResourceKind;
   x: number;
   z: number;
   amount: number;
@@ -59,7 +63,6 @@ export interface ResourceNodeSave {
 
 export interface PlayerSave {
   id: number;
-  civ: CivId;
   resources: Resources;
   populationUsed: number;
   era: Era;
@@ -70,6 +73,7 @@ export interface PlayerSave {
   totalLost: number;
   wonderActive: boolean;
   stats: { created: number; destroyed: number; military: number; econ: number };
+  bonus: CivBonuses;
 }
 
 export interface SaveData {
