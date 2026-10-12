@@ -4,6 +4,7 @@ import type { Building } from '../entities/Building';
 import { MissionDef, ObjectiveDef, ObjectiveKind, TriggerDef, TriggerEffect, MissionPoint } from './types';
 import { OrderKind, BuildingKind } from '../core/types';
 import { distance2D } from '../util/math';
+import type { MissionSave } from '../game/saveTypes';
 
 type ObjState = 'pendiente' | 'activo' | 'completed' | 'failed';
 
@@ -289,5 +290,28 @@ export class Mission {
   /** For HUD: state of an objective by id. */
   getObjectiveState(id: string): ObjState {
     return this.objState.get(id) ?? 'pendiente';
+  }
+
+  /** Snapshot the mission state (used by save/load). */
+  toSave(): MissionSave {
+    return {
+      started: this.started,
+      ended: this.ended,
+      timer: this.timer,
+      objState: [...this.objState.entries()],
+      fired: [...this.fired],
+      lastFired: [...this.lastFired.entries()],
+      spawnedCount: [...this.spawnedCount.entries()],
+    };
+  }
+
+  applySave(s: MissionSave): void {
+    this.started = s.started;
+    this.ended = s.ended;
+    this.timer = s.timer;
+    this.objState = new Map(s.objState as [string, ObjState][]);
+    this.fired = new Set(s.fired);
+    this.lastFired = new Map(s.lastFired);
+    this.spawnedCount = new Map(s.spawnedCount);
   }
 }

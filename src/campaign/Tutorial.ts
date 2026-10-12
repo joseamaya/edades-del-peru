@@ -1,5 +1,6 @@
 import type { Game } from '../core/Game';
 import { UnitKind, BuildingKind, OrderKind } from '../core/types';
+import type { TutorialSave } from '../game/saveTypes';
 
 interface PasoTutorial {
   id: string;
@@ -21,7 +22,7 @@ export class Tutorial {
   private begun = false;
   private finished = false;
   private delay = 0;
-  private readonly base: { houses: number; barracks: number; soldiers: number };
+  private base: { houses: number; barracks: number; soldiers: number };
 
   constructor(game: Game) {
     this.game = game;
@@ -113,5 +114,18 @@ export class Tutorial {
     this.finished = true;
     this.game.hud.hideTutorial();
     this.game.hud.showToast('🎓 Tutorial completado. ¡Buena suerte, estratega!', 'success');
+  }
+
+  /** Snapshot the tutorial progress (used by save/load). */
+  toSave(): TutorialSave {
+    return { idx: this.idx, begun: this.begun, finished: this.finished, delay: this.delay, base: { ...this.base } };
+  }
+
+  applySave(s: TutorialSave): void {
+    this.idx = s.idx;
+    this.begun = s.begun;
+    this.finished = s.finished;
+    this.delay = s.delay;
+    this.base = { ...s.base };
   }
 }

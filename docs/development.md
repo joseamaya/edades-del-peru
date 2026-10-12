@@ -127,14 +127,15 @@ for player-facing docs see [`README.md`](../README.md).
   per instance — do not switch to shared materials without copy-on-write, and skip invisible meshes (e.g. the
   shared `pickMaterial` on `EntityView.pickProxy`) when traversing a view to tint/fade. The placement ghost
   turns vertex colours back off (`buildModelForGhost`) so its tint stays a flat silhouette.
-- **Save/load (skirmish only)** (`src/game/SaveGame.ts` + `saveTypes.ts`): a versioned JSON snapshot in
+- **Save/load** (`src/game/SaveGame.ts` + `saveTypes.ts`): a versioned JSON snapshot in
   `localStorage['peru-save']`. `Game.saveMatch()` writes it (pause menu → **Guardar partida**); `?load=1` boots a
   `Game` in load mode (the `snapshot` constructor arg skips the default spawns and applies it; the main menu shows
   **Continuar partida** when a save exists). `toSave()/applySave()` live on
-  `Unit`/`Building`/`ResourceNode`, so a new world-affecting field must be added there **and** to
-  `saveTypes.ts`; ids are preserved with `EntityView.reserveIds`, the RNG with `RNG.getState/setState`, and the
-  fog grid with `Fow.serialize/restore`. Bump `SAVE_VERSION` on any shape change. The AI is rebuilt fresh and
-  projectiles are not saved; **campaign missions are not supported yet** (scripted triggers keep state).
+  `Unit`/`Building`/`ResourceNode` (and `Mission`/`Tutorial`), so a new world-affecting field must be added there
+  **and** to `saveTypes.ts`; ids are preserved with `EntityView.reserveIds`, the RNG with `RNG.getState/setState`,
+  and the fog grid with `Fow.serialize/restore`. In load mode the mission briefing is skipped and its state
+  (objectives/triggers/timer) is restored. Bump `SAVE_VERSION` on any shape change. The AI is rebuilt fresh and
+  projectiles are not saved.
 - **Trees by instancing** (`src/rendering/TreeInstances.ts`): `InstancedMesh` of trunk + canopies per variant;
   picking is by `instanceId` (`TreeInstances.raycast` -> `pickResource`), visibility by `ResourceNode.setVisibleEx`
   (fog+LOD) and falling on chop by `startFall`. If you add a tree without registering it in the manager, it will

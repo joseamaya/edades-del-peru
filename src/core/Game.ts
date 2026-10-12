@@ -133,12 +133,12 @@ export class Game {
     this.ai = mis && !mis.enemy.active ? null : new AI(this, 1);
     this.audio.setEra(this.players[0].era);
     this.initAudio();
-    if (mis) this.applyMissionSetup(mis);
+    if (mis && !this.pendingSnapshot) this.applyMissionSetup(mis);
     if (this.pendingSnapshot) this.applySnapshot(this.pendingSnapshot);
     this.loop.onUpdate = (dt, t) => this.update(dt, t);
     this.loop.onRender = () => this.render();
     this.loop.start();
-    if (mis) this.mission?.start();
+    if (mis && !this.pendingSnapshot) this.mission?.start();
     bus.emit('game:ready', {});
   }
 
@@ -621,6 +621,9 @@ export class Game {
     this.camera.setYaw(data.camera.yaw);
     this.fow.restore(data.fog);
     this.audio.setEra(this.players[0].era);
+
+    if (data.mission && this.mission) this.mission.applySave(data.mission);
+    if (data.tutorial && this.tutorial) this.tutorial.applySave(data.tutorial);
   }
 
   /** Show the victory/defeat screen. */

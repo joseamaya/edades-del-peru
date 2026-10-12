@@ -76,6 +76,24 @@ export interface PlayerSave {
   bonus: CivBonuses;
 }
 
+export interface MissionSave {
+  started: boolean;
+  ended: boolean;
+  timer: number;
+  objState: [string, string][];
+  fired: string[];
+  lastFired: [string, number][];
+  spawnedCount: [string, number][];
+}
+
+export interface TutorialSave {
+  idx: number;
+  begun: boolean;
+  finished: boolean;
+  delay: number;
+  base: { houses: number; barracks: number; soldiers: number };
+}
+
 export interface SaveData {
   version: number;
   settings: GameSettings;
@@ -86,4 +104,6 @@ export interface SaveData {
   units: UnitSave[];
   buildings: BuildingSave[];
   resourceNodes: ResourceNodeSave[];
+  mission?: MissionSave;
+  tutorial?: TutorialSave;
 }

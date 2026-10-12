@@ -606,14 +606,12 @@ export class HUD {
     const resume = this.el('button', 'ed-primary', row);
     resume.textContent = '▶ Reanudar';
     resume.addEventListener('click', () => this.game.togglePause());
-    if (!this.game.settings.missionId) {
-      const save = this.el('button', 'ed-ghostbtn', row);
-      save.textContent = '💾 Guardar partida';
-      save.addEventListener('click', () => {
-        if (this.game.saveMatch()) this.showToast('Partida guardada', 'success');
-        else this.showToast('No se pudo guardar la partida', 'error');
-      });
-    }
+    const save = this.el('button', 'ed-ghostbtn', row);
+    save.textContent = '💾 Guardar partida';
+    save.addEventListener('click', () => {
+      if (this.game.saveMatch()) this.showToast('Partida guardada', 'success');
+      else this.showToast('No se pudo guardar la partida', 'error');
+    });
     const settings = this.el('button', 'ed-ghostbtn', row);
     settings.textContent = '⚙️ Opciones';
     settings.addEventListener('click', () => this.showOptions());
