@@ -16,6 +16,7 @@ import type { MissionDef } from '../campaign/types';
 import { DamageNumbers } from './DamageNumbers';
 import { openCodex } from './Codex';
 import { bus } from '../core/EventBus';
+import { hasSave } from '../game/SaveGame';
 
 /** Player-buildable buildings (single list for all panels). */
 const BUILDABLE_KINDS: BuildingKind[] = [
@@ -605,6 +606,14 @@ export class HUD {
     const resume = this.el('button', 'ed-primary', row);
     resume.textContent = '▶ Reanudar';
     resume.addEventListener('click', () => this.game.togglePause());
+    if (!this.game.settings.missionId) {
+      const save = this.el('button', 'ed-ghostbtn', row);
+      save.textContent = '💾 Guardar partida';
+      save.addEventListener('click', () => {
+        this.game.saveMatch();
+        this.showToast('Partida guardada', 'success');
+      });
+    }
     const settings = this.el('button', 'ed-ghostbtn', row);
     settings.textContent = '⚙️ Opciones';
     settings.addEventListener('click', () => this.showOptions());
@@ -1172,6 +1181,15 @@ export class HUD {
     rows2.appendChild(this.field('Mapa', this.select(['coast', 'andes', 'altiplano', 'jungle'] as const, { costa: 'Costa / litoral', andes: 'Andes', altiplano: 'Altiplano', selva: 'Selva' }, this.game.settings.mapType, (v) => (this.game.settings.mapType = v))));
     rows2.appendChild(this.field('Hora del día', this.select(['morning', 'noon', 'dusk', 'night'] as const, { 'morning': 'Mañana', 'noon': 'Mediodía', 'dusk': 'Atardecer', 'night': 'Noche' }, this.game.settings.timeOfDay, (v) => this.setTimeOfDay(v))));
     rows2.appendChild(this.field('Victoria', this.select(['conquest', 'wonder'] as const, { conquest: 'Conquista', wonder: 'Huaca Sagrada' }, this.game.settings.victoryMode, (v) => (this.game.settings.victoryMode = v))));
+    if (hasSave()) {
+      const cont = this.el('button', 'ed-primary', panel);
+      cont.textContent = '▶ Continuar partida';
+      cont.addEventListener('click', () => {
+        this.setMenuOpen(false);
+        this.clearOverlays();
+        this.game.loadMatch();
+      });
+    }
     const startBtn = this.el('button', 'ed-primary', panel);
     startBtn.textContent = '▶ INICIAR ESCARAMUZA';
     startBtn.addEventListener('click', () => {

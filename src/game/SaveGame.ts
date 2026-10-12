@@ -69,3 +69,13 @@ export function loadFromStorage(): SaveData | null {
     return null;
   }
 }
+
+/** True if a valid save of the current version exists. */
+export function hasSave(): boolean {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? validateSave(JSON.parse(raw)) !== null : false;
+  } catch {
+    return false;
+  }
+}
