@@ -25,7 +25,8 @@ yarn preview      # serve the build
 yarn typecheck    # tsc --noEmit
 yarn lint         # ESLint
 yarn test         # unit tests (Vitest)
-yarn test:e2e     # E2E smoke test (Playwright, requires `npx playwright install chromium`)
+yarn test:e2e     # full E2E suite (Playwright, requires `npx playwright install chromium`)
+yarn test:e2e:smoke  # fast @smoke subset (used on PRs)
 ```
 
 For automatic screenshots of the game (used in the visual review loop):

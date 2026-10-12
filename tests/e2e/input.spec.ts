@@ -10,7 +10,7 @@ async function startMission(page: import('@playwright/test').Page): Promise<void
   await start.waitFor({ state: 'detached', timeout: 15_000 });
 }
 
-test('a single click on the build card starts placement', async ({ page }) => {
+test('a single click on the build card starts placement', { tag: '@smoke' }, async ({ page }) => {
   await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
   await startMission(page);
   await page.evaluate(() => {
@@ -26,7 +26,7 @@ test('a single click on the build card starts placement', async ({ page }) => {
   expect(placing).toBe('house');
 });
 
-test('clicking the ground places the previewed building', async ({ page }) => {
+test('clicking the ground places the previewed building', { tag: '@smoke' }, async ({ page }) => {
   await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
   await startMission(page);
   // wait for the mission world to be fully initialized
@@ -84,7 +84,7 @@ test('clicking the ground places the previewed building', async ({ page }) => {
   expect(after).toBe(result!.before + 1);
 });
 
-test('a single click on the train card queues the unit', async ({ page }) => {
+test('a single click on the train card queues the unit', { tag: '@smoke' }, async ({ page }) => {
   await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
   await startMission(page);
   const id = await page.evaluate(() => {

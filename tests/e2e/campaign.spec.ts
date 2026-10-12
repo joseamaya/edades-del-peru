@@ -11,7 +11,7 @@ test('shows the historical prologue before the campaign', async ({ page }) => {
   await expect(page.locator('.ed-overlay', { hasText: 'La Ciudad Sagrada' })).toBeVisible();
 });
 
-test('the mission briefing includes context and sources', async ({ page }) => {
+test('the mission briefing includes context and sources', { tag: '@smoke' }, async ({ page }) => {
   await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
   const overlay = page.locator('.ed-overlay', { hasText: 'La Ciudad Sagrada' });
   await expect(overlay).toBeVisible({ timeout: 30_000 });

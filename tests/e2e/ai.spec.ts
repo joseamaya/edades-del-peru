@@ -19,7 +19,7 @@ async function bootSkirmish(page: import('@playwright/test').Page): Promise<void
   });
 }
 
-test('the AI recalls idle soldiers to defend its base', async ({ page }) => {
+test('the AI recalls idle soldiers to defend its base', { tag: '@smoke' }, async ({ page }) => {
   await bootSkirmish(page);
   const out = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;

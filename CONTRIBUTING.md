@@ -30,7 +30,8 @@ The app shows the **main menu** by default. To jump straight into the match use 
 | `yarn format` | Prettier over `src/**/*.ts` and `scripts/**/*.mjs`. |
 | `yarn test` | Unit tests (Vitest). |
 | `yarn bench` | Entity-scale performance benchmark (writes `review/bench.json`). |
-| `yarn test:e2e` | E2E smoke (Playwright). Requires `npx playwright install chromium`. |
+| `yarn test:e2e` | E2E suite (Playwright). Requires `npx playwright install chromium`. |
+| `yarn test:e2e:smoke` | Fast `@smoke` subset of the E2E suite (used on PRs). |
 | `yarn shot <name>` | Screenshot into `review/` for visual review. |
 
 Before opening a PR, run at least:
@@ -38,6 +39,11 @@ Before opening a PR, run at least:
 ```bash
 yarn typecheck && yarn lint && yarn test && yarn build
 ```
+
+**CI:** the `build` job (typecheck/lint/unit/build) runs on every PR; the `e2e` workflow runs the
+`@smoke` subset on PRs and the **full** suite on `main`, and is skipped for docs-only PRs
+(`**/*.md`, `.agents/**`). Tag a test `{ tag: '@smoke' }` only if it covers a core flow worth gating
+every PR on (keep the subset fast).
 
 ## Architecture (summary)
 
