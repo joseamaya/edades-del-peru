@@ -108,7 +108,7 @@ export class Building {
     if (!this.constructionMats) this.constructionMats = [];
     this.view.group.traverse((obj) => {
       const m = obj as THREE.Mesh;
-      if (!m.isMesh) return;
+      if (!m.isMesh || !m.visible) return;
       const mats = Array.isArray(m.material) ? m.material : [m.material];
       for (const raw of mats) {
         const mat = raw as THREE.MeshStandardMaterial;
@@ -150,12 +150,26 @@ export class Building {
     this.dead = true;
     if (this.ctx?.particles) {
       this.ctx.particles.emit({
-        x: this.pos.x, y: this.pos.y + 2, z: this.pos.z,
-        count: 30, color: 0xaa8866, kind: 'explosion', speed: 4, life: 1.5, size: 3,
+        x: this.pos.x,
+        y: this.pos.y + 2,
+        z: this.pos.z,
+        count: 30,
+        color: 0xaa8866,
+        kind: 'explosion',
+        speed: 4,
+        life: 1.5,
+        size: 3,
       });
       this.ctx.particles.emit({
-        x: this.pos.x, y: this.pos.y + 2, z: this.pos.z,
-        count: 24, color: 0x555555, kind: 'smoke', speed: 1.5, life: 2.5, size: 4,
+        x: this.pos.x,
+        y: this.pos.y + 2,
+        z: this.pos.z,
+        count: 24,
+        color: 0x555555,
+        kind: 'smoke',
+        speed: 1.5,
+        life: 2.5,
+        size: 4,
       });
     }
     if (this.ctx?.event) this.ctx.event('building:died', { id: this.id, owner: this.owner, kind: this.kind });
@@ -210,7 +224,13 @@ export class Building {
     this.attackCooldown = Math.max(0, this.attackCooldown - dt);
 
     // ambient smoke from factories/smelters/refineries (map life)
-    if (this.constructionComplete && (this.kind === BuildingKind.FACTORY || this.kind === BuildingKind.SMELTER || this.kind === BuildingKind.REFINERY || this.kind === BuildingKind.CENTER)) {
+    if (
+      this.constructionComplete &&
+      (this.kind === BuildingKind.FACTORY ||
+        this.kind === BuildingKind.SMELTER ||
+        this.kind === BuildingKind.REFINERY ||
+        this.kind === BuildingKind.CENTER)
+    ) {
       this.smokeTimer -= dt;
       if (this.smokeTimer <= 0) {
         this.smokeTimer = 0.35 + Math.random() * 0.3;
@@ -260,7 +280,7 @@ export class Building {
     for (let i = this.productionQueue.length - 1; i >= 0; i--) {
       const item = this.productionQueue[i];
       const stats = getUnitStats(item.unit, this.era);
-      item.progress += dt / stats.trainTime * this.trainMultiplier * trainMult;
+      item.progress += (dt / stats.trainTime) * this.trainMultiplier * trainMult;
       if (item.progress >= 1) {
         if (this.ctx?.unitSpawn) {
           const ok = this.ctx.unitSpawn(this.id, item.unit, this.rallyPoint, this.hasRallyPoint);
@@ -314,8 +334,26 @@ export class Building {
     this.attackCooldown = this.stats.attack.attackSpeed;
     const from = new THREE.Vector3(this.pos.x, this.pos.y + 3, this.pos.z);
     const to = new THREE.Vector3(target.pos.x, target.pos.y + 0.5, target.pos.z);
-    this.ctx?.spawnProjectile?.({ from, target: to, speed: 40, damage: this.stats.attack.attack, kind: 'bullet', owner: this.owner, targetId: target.id });
-    this.ctx?.particles?.emit?.({ x: this.pos.x, y: this.pos.y + 3, z: this.pos.z, count: 4, color: 0xffcc66, kind: 'explosion', speed: 1, life: 0.15, size: 1.2 });
+    this.ctx?.spawnProjectile?.({
+      from,
+      target: to,
+      speed: 40,
+      damage: this.stats.attack.attack,
+      kind: 'bullet',
+      owner: this.owner,
+      targetId: target.id,
+    });
+    this.ctx?.particles?.emit?.({
+      x: this.pos.x,
+      y: this.pos.y + 3,
+      z: this.pos.z,
+      count: 4,
+      color: 0xffcc66,
+      kind: 'explosion',
+      speed: 1,
+      life: 0.15,
+      size: 1.2,
+    });
     void time;
   }
 

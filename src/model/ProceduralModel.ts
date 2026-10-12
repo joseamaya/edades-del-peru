@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { CivDef } from './defs/civs';
 import { ModelSpec } from './defs/units';
 import { Era } from '../core/types';
@@ -9,7 +10,20 @@ import { MaterialTex } from '../rendering/Textures';
 import { getGeneratedMaterial } from '../rendering/Biomes';
 
 /** Procedural texture types available for materials. */
-type TexKind = 'wood' | 'brick' | 'stone' | 'concrete' | 'metal' | 'metalDark' | 'metalWarm' | 'roof' | 'cloth' | 'textile' | 'leather' | 'scifi' | 'dirt';
+type TexKind =
+  | 'wood'
+  | 'brick'
+  | 'stone'
+  | 'concrete'
+  | 'metal'
+  | 'metalDark'
+  | 'metalWarm'
+  | 'roof'
+  | 'cloth'
+  | 'textile'
+  | 'leather'
+  | 'scifi'
+  | 'dirt';
 
 export interface BuildContext {
   era: Era;
@@ -23,10 +37,10 @@ function cachedGeo<T extends THREE.BufferGeometry>(key: string, make: () => T): 
   return sharedGeo[key] as T;
 }
 
-/** Texture clones with a specific UV repeat, shared between meshes. */
-const texCloneCache = new Map<string, THREE.CanvasTexture>();
 /** Geometries with baked AO, memoized by the source geometry uuid. */
 const bakedGeoCache = new Map<string, THREE.BufferGeometry>();
+/** Materials shared by appearance (so equal parts can be merged into one draw). */
+const matCache = new Map<string, THREE.MeshStandardMaterial>();
 
 interface MatOpts {
   metalness?: number;
@@ -71,6 +85,9 @@ const TEX_GEN: Partial<Record<TexKind, string>> = {
 };
 
 function mat(color: string, opts: MatOpts = {}): THREE.MeshStandardMaterial {
+  const key = `${color}|${opts.metalness ?? ''}|${opts.roughness ?? ''}|${opts.emissive ?? ''}|${opts.emissiveIntensity ?? ''}|${opts.vertexColors ? 1 : 0}|${opts.opacity ?? ''}|${opts.transparent ? 1 : 0}|${opts.flatShading ? 1 : 0}|${opts.tex ?? ''}|${opts.normal ?? ''}`;
+  const cached = matCache.get(key);
+  if (cached) return cached;
   const m = new THREE.MeshStandardMaterial({
     color,
     metalness: opts.metalness ?? 0.15,
@@ -110,7 +127,16 @@ function mat(color: string, opts: MatOpts = {}): THREE.MeshStandardMaterial {
       }
     }
   }
+  matCache.set(key, m);
   return m;
+}
+
+/** Scale a geometry's UVs so a shared texture tiles (replaces per-texture clones). */
+function scaleUv(g: THREE.BufferGeometry, rx: number, ry: number): void {
+  const uv = g.getAttribute('uv') as THREE.BufferAttribute | undefined;
+  if (!uv) return;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * rx, uv.getY(i) * ry);
+  uv.needsUpdate = true;
 }
 
 interface PartOpts extends MatOpts {
@@ -136,28 +162,22 @@ class Builder {
 
   box(w: number, h: number, d: number, color: string, o: PartOpts = {}): THREE.Mesh {
     const m = mat(color, o);
+    // automatic UV repeat according to face size, baked into the geometry so the
+    // texture (and therefore the material) can be shared
+    let rx = 1;
+    let ry = 1;
+    let uvKey = '';
     if (o.tex) {
-      // automatic UV repeat according to face size (coherent texture)
       const scale = o.texScale ?? 1;
-      const rx = Math.max(1, Math.min(6, Math.round(Math.max(w, d) * 2.2) * scale));
-      const ry = Math.max(1, Math.min(6, Math.round(h * 2.2) * scale));
-      const key = `${o.tex}:${rx}:${ry}`;
-      let t = texCloneCache.get(key);
-      if (!t) {
-        t = (m.map as THREE.CanvasTexture).clone();
-        t.repeat.set(rx, ry);
-        t.needsUpdate = true;
-        texCloneCache.set(key, t);
-      }
-      m.map = t;
+      rx = Math.max(1, Math.min(6, Math.round(Math.max(w, d) * 2.2) * scale));
+      ry = Math.max(1, Math.min(6, Math.round(h * 2.2) * scale));
+      uvKey = `-${rx}x${ry}`;
     }
-    const geo = cachedGeo(`box-${w}-${h}-${d}-${o.flatShading ? 1 : 0}`, () => {
-      if (o.flatShading) {
-        const g = new THREE.BoxGeometry(w, h, d);
-        g.toNonIndexed();
-        return g;
-      }
-      return new RoundedBoxGeometry(w, h, d, 2, 0.045);
+    const geo = cachedGeo(`box-${w}-${h}-${d}-${o.flatShading ? 1 : 0}${uvKey}`, () => {
+      const g = o.flatShading ? new THREE.BoxGeometry(w, h, d) : new RoundedBoxGeometry(w, h, d, 2, 0.045);
+      if (o.flatShading) g.toNonIndexed();
+      if (uvKey) scaleUv(g, rx, ry);
+      return g;
     });
     const mesh = new THREE.Mesh(geo, m);
     mesh.position.set(o.x ?? 0, o.y ?? 0, o.z ?? 0);
@@ -243,7 +263,15 @@ class Builder {
     parent.add(m);
     return m;
   }
-  cylIn(parent: THREE.Object3D, rt: number, rb: number, h: number, seg: number, color: string, o: PartOpts = {}): THREE.Mesh {
+  cylIn(
+    parent: THREE.Object3D,
+    rt: number,
+    rb: number,
+    h: number,
+    seg: number,
+    color: string,
+    o: PartOpts = {},
+  ): THREE.Mesh {
     const m = this.cyl(rt, rb, h, seg, color, o);
     parent.add(m);
     return m;
@@ -353,24 +381,60 @@ function getAttire(b: Builder, role: UnitRole): Attire {
     };
   }
   if (era === Era.VICEROYALTY) {
-    return { tunic: '#3a527a', accent: '#b03028', tex: 'cloth', leg: '#e8e0d0', boot: true, cloak: false, earOrnaments: false, metal: role === 'mounted', head: 'morion', facepaint: false };
+    return {
+      tunic: '#3a527a',
+      accent: '#b03028',
+      tex: 'cloth',
+      leg: '#e8e0d0',
+      boot: true,
+      cloak: false,
+      earOrnaments: false,
+      metal: role === 'mounted',
+      head: 'morion',
+      facepaint: false,
+    };
   }
   if (era === Era.REPUBLIC) {
-    return { tunic: '#33405a', accent: acc, tex: 'cloth', leg: '#5a5a62', boot: true, cloak: false, earOrnaments: false, metal: false, head: 'kepi', facepaint: false };
+    return {
+      tunic: '#33405a',
+      accent: acc,
+      tex: 'cloth',
+      leg: '#5a5a62',
+      boot: true,
+      cloak: false,
+      earOrnaments: false,
+      metal: false,
+      head: 'kepi',
+      facepaint: false,
+    };
   }
-  return { tunic: '#4a5540', accent: acc, tex: 'cloth', leg: '#3e4636', boot: true, cloak: false, earOrnaments: false, metal: false, head: 'helmet', facepaint: false };
+  return {
+    tunic: '#4a5540',
+    accent: acc,
+    tex: 'cloth',
+    leg: '#3e4636',
+    boot: true,
+    cloak: false,
+    earOrnaments: false,
+    metal: false,
+    head: 'helmet',
+    facepaint: false,
+  };
 }
 
-function addHumanoid(b: Builder, opts: {
-  role?: UnitRole;
-  helmet?: boolean;
-  backpack?: boolean;
-  weapon?: 'rifle' | 'musket' | 'sniper' | 'machete' | 'spear' | 'macana' | 'bow' | 'sling' | 'shield' | 'none';
-  armor?: 'cloth' | 'metal' | 'power';
-  gadget?: boolean;
-  tool?: 'axe' | 'pick';
-  carry?: boolean;
-}): void {
+function addHumanoid(
+  b: Builder,
+  opts: {
+    role?: UnitRole;
+    helmet?: boolean;
+    backpack?: boolean;
+    weapon?: 'rifle' | 'musket' | 'sniper' | 'machete' | 'spear' | 'macana' | 'bow' | 'sling' | 'shield' | 'none';
+    armor?: 'cloth' | 'metal' | 'power';
+    gadget?: boolean;
+    tool?: 'axe' | 'pick';
+    carry?: boolean;
+  },
+): void {
   const attire = getAttire(b, opts.role ?? 'melee');
   const skin = '#d9a06a';
   const hair = '#2a1c12';
@@ -390,7 +454,11 @@ function addHumanoid(b: Builder, opts: {
     b.boxIn(leg, 0.12, attire.boot ? 0.12 : 0.07, 0.22, bootCol, { y: attire.boot ? -0.47 : -0.5, z: 0.03 });
   }
   // pelvis / loincloth
-  b.cyl(0.155, 0.13, 0.18, 10, metalArmor ? '#7a828a' : mixHex(attire.leg, '#2a241e', 0.4), { y: 0.55, tex: limbTex, texScale: 2 });
+  b.cyl(0.155, 0.13, 0.18, 10, metalArmor ? '#7a828a' : mixHex(attire.leg, '#2a241e', 0.4), {
+    y: 0.55,
+    tex: limbTex,
+    texScale: 2,
+  });
   b.box(0.34, 0.05, 0.24, '#2a2118', { y: 0.63 });
   // tapered torso (abdomen + chest)
   b.box(0.27, 0.2, 0.21, tunic, { y: 0.74, tex: limbTex, texScale: 2 });
@@ -452,8 +520,20 @@ function addHumanoid(b: Builder, opts: {
   b.boxIn(head, 0.03, 0.008, 0.012, '#5a2a20', { y: -0.03, z: 0.086 });
   // ear ornaments (Andean elite insignia)
   if (attire.earOrnaments) {
-    b.cylIn(head, 0.028, 0.028, 0.02, 10, '#c8a040', { x: -0.1, y: 0.0, rz: Math.PI / 2, metalness: 0.7, roughness: 0.3 });
-    b.cylIn(head, 0.028, 0.028, 0.02, 10, '#c8a040', { x: 0.1, y: 0.0, rz: Math.PI / 2, metalness: 0.7, roughness: 0.3 });
+    b.cylIn(head, 0.028, 0.028, 0.02, 10, '#c8a040', {
+      x: -0.1,
+      y: 0.0,
+      rz: Math.PI / 2,
+      metalness: 0.7,
+      roughness: 0.3,
+    });
+    b.cylIn(head, 0.028, 0.028, 0.02, 10, '#c8a040', {
+      x: 0.1,
+      y: 0.0,
+      rz: Math.PI / 2,
+      metalness: 0.7,
+      roughness: 0.3,
+    });
   }
   // facial paint (chanca)
   if (attire.facepaint) {
@@ -545,7 +625,11 @@ function addHeadgear(b: Builder, head: THREE.Group, attire: Attire): void {
     case 'diadem': {
       const crown = civ === 'chimu';
       const col = crown ? '#c8a040' : fabric;
-      b.cylIn(head, 0.105, 0.105, crown ? 0.1 : 0.06, 12, col, { y: crown ? 0.09 : 0.08, metalness: crown ? 0.7 : 0, roughness: crown ? 0.35 : 0.8 });
+      b.cylIn(head, 0.105, 0.105, crown ? 0.1 : 0.06, 12, col, {
+        y: crown ? 0.09 : 0.08,
+        metalness: crown ? 0.7 : 0,
+        roughness: crown ? 0.35 : 0.8,
+      });
       b.boxIn(head, 0.2, crown ? 0.1 : 0.04, 0.04, crown ? '#e0c060' : acc, { y: crown ? 0.2 : 0.12, z: 0.06 });
       if (!crown) b.boxIn(head, 0.04, 0.1, 0.03, acc, { y: 0.18, z: 0.04 });
       break;
@@ -601,7 +685,12 @@ function addHeadgear(b: Builder, head: THREE.Group, attire: Attire): void {
   }
 }
 
-function addVehicleBody(b: Builder, hull: string, turret: string, opts: { treads?: boolean; antenna?: boolean }): THREE.Group {
+function addVehicleBody(
+  b: Builder,
+  hull: string,
+  turret: string,
+  opts: { treads?: boolean; antenna?: boolean },
+): THREE.Group {
   const turretGroup = b.pivot('turret');
   turretGroup.position.set(0, 0.85, 0);
   if (opts.treads) {
@@ -648,7 +737,12 @@ function buildInfantry(type: string, ctx: BuildContext): THREE.Group {
       addHumanoid(b, { role: 'elite', helmet: true, weapon: 'none', armor: 'power', backpack: true, gadget: true });
       b.box(0.58, 0.42, 0.4, '#d7e0e8', { y: 0.84, tex: 'scifi', texScale: 2 });
       b.box(0.3, 0.36, 0.26, b.pal.emissive, { y: 0.48, z: 0.26, emissive: b.pal.emissive, emissiveIntensity: 1.4 });
-      b.box(0.42, 0.22, 0.34, b.civAccent, { y: 1.12, metalness: 0.4, emissive: b.pal.emissive, emissiveIntensity: 0.6 });
+      b.box(0.42, 0.22, 0.34, b.civAccent, {
+        y: 1.12,
+        metalness: 0.4,
+        emissive: b.pal.emissive,
+        emissiveIntensity: 0.6,
+      });
       // wide shoulder-cannon (distinctive heavy silhouette)
       b.cylIn(b.group, 0.16, 0.22, 0.9, 10, '#c4ccd4', { x: 0.34, y: 1.1, z: 0.1, rx: Math.PI / 2, tex: 'metal' });
       b.cylIn(b.group, 0.16, 0.22, 0.9, 10, '#c4ccd4', { x: -0.34, y: 1.1, z: 0.1, rx: Math.PI / 2, tex: 'metal' });
@@ -678,14 +772,35 @@ function buildRanged(type: string, ctx: BuildContext): THREE.Group {
       break;
     case 'stellar_rifle':
       addHumanoid(b, { role: 'ranged', helmet: true, weapon: 'rifle', armor: 'metal', gadget: true });
-      b.box(0.3, 0.06, 0.5, b.pal.emissive, { y: 0.5, z: 0.25, emissive: b.pal.emissive, emissiveIntensity: 1.5, transparent: true, opacity: 0.8 });
+      b.box(0.3, 0.06, 0.5, b.pal.emissive, {
+        y: 0.5,
+        z: 0.25,
+        emissive: b.pal.emissive,
+        emissiveIntensity: 1.5,
+        transparent: true,
+        opacity: 0.8,
+      });
       b.box(0.16, 0.4, 0.3, b.pal.metal, { y: 1.0, metalness: 0.7, roughness: 0.3 });
       break;
     case 'sniper_stellar':
       addHumanoid(b, { role: 'elite', helmet: true, weapon: 'sniper', armor: 'power', backpack: true, gadget: true });
       b.box(0.52, 0.4, 0.34, '#d7e0e8', { y: 0.82, tex: 'scifi', texScale: 2 });
-      b.box(0.16, 0.1, 1.0, b.pal.darkMetal, { x: 0.28, y: 1.0, z: 0.5, rz: Math.PI / 2, metalness: 0.85, roughness: 0.25 });
-      b.cyl(0.03, 0.03, 0.8, 8, b.pal.emissive, { x: 0.28, y: 1.0, z: 1.1, rx: Math.PI / 2, emissive: b.pal.emissive, emissiveIntensity: 2 });
+      b.box(0.16, 0.1, 1.0, b.pal.darkMetal, {
+        x: 0.28,
+        y: 1.0,
+        z: 0.5,
+        rz: Math.PI / 2,
+        metalness: 0.85,
+        roughness: 0.25,
+      });
+      b.cyl(0.03, 0.03, 0.8, 8, b.pal.emissive, {
+        x: 0.28,
+        y: 1.0,
+        z: 1.1,
+        rx: Math.PI / 2,
+        emissive: b.pal.emissive,
+        emissiveIntensity: 2,
+      });
       b.sphere(0.05, b.pal.emissive, { y: 1.28, x: 0.1, emissive: b.pal.emissive, emissiveIntensity: 2 });
       break;
     default:
@@ -701,7 +816,15 @@ function buildWorker(type: string, ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
   addHumanoid(b, { role: 'worker', weapon: 'none', armor: 'cloth', tool: 'axe', carry: true });
   if (type === 'worker_future') {
-    b.box(0.3, 0.3, 0.3, b.pal.emissive, { x: 0.4, y: 0.5, z: 0.1, emissive: b.pal.emissive, emissiveIntensity: 1.4, transparent: true, opacity: 0.35 });
+    b.box(0.3, 0.3, 0.3, b.pal.emissive, {
+      x: 0.4,
+      y: 0.5,
+      z: 0.1,
+      emissive: b.pal.emissive,
+      emissiveIntensity: 1.4,
+      transparent: true,
+      opacity: 0.35,
+    });
   }
   return b.finish();
 }
@@ -719,7 +842,12 @@ function buildMounted(type: string, ctx: BuildContext): THREE.Group {
   b.boxIn(mount, 0.12, 0.5, 0.14, b.pal.darkMetal, { x: 0.2, y: -0.15, z: -0.4 });
   // rider on top of the saddle (in a raised group so as not to touch the mount)
   const before = b.group.children.length;
-  addHumanoid(b, { role: 'mounted', helmet: type === 'cavalry', weapon: 'machete', armor: type === 'cavalry' ? 'metal' : 'cloth' });
+  addHumanoid(b, {
+    role: 'mounted',
+    helmet: type === 'cavalry',
+    weapon: 'machete',
+    armor: type === 'cavalry' ? 'metal' : 'cloth',
+  });
   const rider = new THREE.Group();
   for (const child of b.group.children.splice(before)) rider.add(child);
   rider.position.y = 0.55;
@@ -747,7 +875,13 @@ function buildDrone(ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
   b.cyl(0.6, 0.6, 0.18, 8, b.pal.metal, { y: 0.55, metalness: 0.6, roughness: 0.4 });
   b.cyl(0.35, 0.35, 0.1, 8, b.pal.darkMetal, { y: 0.63, metalness: 0.7 });
-  b.cyl(0.5, 0.5, 0.12, 8, b.pal.emissive, { y: 0.42, emissive: b.pal.emissive, emissiveIntensity: 1.2, transparent: true, opacity: 0.6 });
+  b.cyl(0.5, 0.5, 0.12, 8, b.pal.emissive, {
+    y: 0.42,
+    emissive: b.pal.emissive,
+    emissiveIntensity: 1.2,
+    transparent: true,
+    opacity: 0.6,
+  });
   for (let i = 0; i < 4; i++) {
     const a = (i / 4) * Math.PI * 2;
     b.cyl(0.06, 0.06, 0.04, 8, b.pal.darkMetal, { x: Math.cos(a) * 0.75, y: 0.7, z: Math.sin(a) * 0.75 });
@@ -763,7 +897,13 @@ function buildTank(type: string, ctx: BuildContext): THREE.Group {
   if (type.includes('fut')) {
     // futuristic levitating tank with an animated turret
     b.box(0.9, 0.35, 1.4, b.pal.metal, { y: 0.5, metalness: 0.7, roughness: 0.3 });
-    b.box(0.9, 0.06, 1.5, b.pal.emissive, { y: 0.06, emissive: b.pal.emissive, emissiveIntensity: 1.6, transparent: true, opacity: 0.7 });
+    b.box(0.9, 0.06, 1.5, b.pal.emissive, {
+      y: 0.06,
+      emissive: b.pal.emissive,
+      emissiveIntensity: 1.6,
+      transparent: true,
+      opacity: 0.7,
+    });
     const turret = b.pivot('turret');
     turret.position.set(0, 0.82, 0);
     b.boxIn(turret, 0.55, 0.3, 0.7, b.pal.darkMetal, { y: 0.15, metalness: 0.7 });
@@ -816,7 +956,14 @@ function buildCannon(type: string, ctx: BuildContext): THREE.Group {
   gun.position.set(0, 0.85, 0.2);
   if (isRiel) {
     b.boxIn(gun, 0.16, 0.2, 2.2, b.pal.darkMetal, { y: 0, z: 0.8, metalness: 0.85, roughness: 0.25 });
-    b.boxIn(gun, 0.3, 0.08, 2.4, b.pal.emissive, { y: -0.15, z: 0.85, emissive: b.pal.emissive, emissiveIntensity: 2, transparent: true, opacity: 0.8 });
+    b.boxIn(gun, 0.3, 0.08, 2.4, b.pal.emissive, {
+      y: -0.15,
+      z: 0.85,
+      emissive: b.pal.emissive,
+      emissiveIntensity: 2,
+      transparent: true,
+      opacity: 0.8,
+    });
   } else if (isHowitzer) {
     b.boxIn(gun, 0.22, 0.24, 1.8, b.pal.darkMetal, { y: 0, z: 0.6, metalness: 0.7 });
     b.boxIn(gun, 0.3, 0.2, 1.9, b.pal.darkMetal, { y: -0.18, z: 0.65, metalness: 0.7 });
@@ -859,7 +1006,14 @@ function buildMech(ctx: BuildContext): THREE.Group {
   // torso
   b.box(1.4, 0.9, 0.8, b.pal.metal, { y: 1.9, metalness: 0.75, roughness: 0.3 });
   b.box(1.5, 0.3, 0.85, b.civAccent, { y: 1.55, metalness: 0.4 });
-  b.box(0.6, 0.5, 0.2, b.pal.emissive, { y: 2.0, z: 0.45, emissive: b.pal.emissive, emissiveIntensity: 1.6, transparent: true, opacity: 0.85 });
+  b.box(0.6, 0.5, 0.2, b.pal.emissive, {
+    y: 2.0,
+    z: 0.45,
+    emissive: b.pal.emissive,
+    emissiveIntensity: 1.6,
+    transparent: true,
+    opacity: 0.85,
+  });
   // arms
   const gun = b.pivot('gun');
   gun.position.set(0.85, 2.0, 0);
@@ -1111,7 +1265,13 @@ function addCivAccent(b: Builder, futuristic: boolean): void {
   if (futuristic) {
     b.cyl(0.03, 0.03, 2.4, 6, b.pal.darkMetal, { y: 3.4, x: -1.4, metalness: 0.8 });
     b.sphere(0.14, b.pal.emissive, { y: 4.6, x: -1.4, emissive: b.pal.emissive, emissiveIntensity: 2.2 });
-    b.box(1.2, 0.12, 0.12, b.civAccent, { y: 2.6, x: 0.4, metalness: 0.6, emissive: b.pal.emissive, emissiveIntensity: 1.4 });
+    b.box(1.2, 0.12, 0.12, b.civAccent, {
+      y: 2.6,
+      x: 0.4,
+      metalness: 0.6,
+      emissive: b.pal.emissive,
+      emissiveIntensity: 1.4,
+    });
   } else {
     b.cyl(0.03, 0.03, 2.2, 6, b.pal.darkWood, { y: 3.0, x: -1.5, z: -0.4 });
     b.box(0.55, 0.22, 0.05, b.civPrimary, { y: 3.4, x: -1.2, z: -0.4, metalness: 0.4, roughness: 0.5 });
@@ -1126,13 +1286,28 @@ function groundPad(b: Builder, size: number): void {
 }
 
 /** Windows with frame and glowing glass, on one face of a box of width `w`. */
-function addWindows(b: Builder, w: number, y: number, z: number, n: number, o: { span?: number; emissiveIntensity?: number } = {}): void {
+function addWindows(
+  b: Builder,
+  w: number,
+  y: number,
+  z: number,
+  n: number,
+  o: { span?: number; emissiveIntensity?: number } = {},
+): void {
   const span = o.span ?? 0.24;
   const frameCol = '#26211c';
   for (let i = 0; i < n; i++) {
     const x = (i - (n - 1) / 2) * w * span;
     b.box(w * 0.15, w * 0.2, w * 0.05, frameCol, { x, y, z });
-    b.box(w * 0.09, w * 0.13, w * 0.06, b.pal.emissive, { x, y, z, emissive: b.pal.emissive, emissiveIntensity: o.emissiveIntensity ?? 1.5, transparent: true, opacity: 0.9 });
+    b.box(w * 0.09, w * 0.13, w * 0.06, b.pal.emissive, {
+      x,
+      y,
+      z,
+      emissive: b.pal.emissive,
+      emissiveIntensity: o.emissiveIntensity ?? 1.5,
+      transparent: true,
+      opacity: 0.9,
+    });
     // ledge
     b.box(w * 0.17, w * 0.03, w * 0.06, frameCol, { x, y: y - w * 0.12, z });
   }
@@ -1184,8 +1359,20 @@ function buildCivic(b: Builder, size: number, matType: 'stone' | 'brick'): void 
     b.cyl(0.08, 0.1, w * 0.55, 10, b.pal.stone, { x: (i - 1.5) * w * 0.28, y: w * 0.3, z: w * 0.42 });
   }
   // gable
-  b.box(w * 1.0, 0.14, w * 0.42, b.pal.darkMetal, { y: w * 0.68, z: w * 0.28, ry: Math.PI / 2, tex: 'metalDark', texScale: 2 });
-  b.box(w * 1.0, 0.14, w * 0.42, b.pal.darkMetal, { y: w * 0.68, z: -w * 0.28, ry: Math.PI / 2, tex: 'metalDark', texScale: 2 });
+  b.box(w * 1.0, 0.14, w * 0.42, b.pal.darkMetal, {
+    y: w * 0.68,
+    z: w * 0.28,
+    ry: Math.PI / 2,
+    tex: 'metalDark',
+    texScale: 2,
+  });
+  b.box(w * 1.0, 0.14, w * 0.42, b.pal.darkMetal, {
+    y: w * 0.68,
+    z: -w * 0.28,
+    ry: Math.PI / 2,
+    tex: 'metalDark',
+    texScale: 2,
+  });
   b.box(w * 1.0, w * 0.4, 0.14, b.pal.darkMetal, { y: w * 0.86, ry: Math.PI / 4, tex: 'metalDark', texScale: 2 });
   b.box(0.18, w * 0.5, 0.18, b.pal.accent2, { y: w * 0.6, z: w * 0.45 });
   // lantern / clock
@@ -1214,7 +1401,15 @@ function buildConcrete(b: Builder, size: number, tower: boolean, radar = false):
   }
   // lit windows
   for (let i = 0; i < 3; i++) {
-    b.box(0.2, 0.14, 0.05, b.pal.emissive, { x: (i - 1) * w * 0.24, y: w * 0.4, z: w * 0.47, emissive: b.pal.emissive, emissiveIntensity: 1.3, transparent: true, opacity: 0.9 });
+    b.box(0.2, 0.14, 0.05, b.pal.emissive, {
+      x: (i - 1) * w * 0.24,
+      y: w * 0.4,
+      z: w * 0.47,
+      emissive: b.pal.emissive,
+      emissiveIntensity: 1.3,
+      transparent: true,
+      opacity: 0.9,
+    });
   }
   // door
   b.box(0.32, w * 0.34, 0.06, b.pal.darkMetal, { y: w * 0.18, z: w * 0.47 });
@@ -1226,10 +1421,22 @@ function buildModern(b: Builder, size: number, tower: boolean): void {
   b.box(w * 0.94, w * 0.6, w * 0.94, mixHex(b.pal.metal, '#ffffff', 0.45), { y: w * 0.3, tex: 'metal', texScale: 2 });
   b.box(w * 0.96, w * 0.1, w * 0.96, b.pal.darkMetal, { y: w * 0.05, tex: 'metalDark' });
   // glass facade
-  b.box(w * 0.86, w * 0.5, 0.06, b.civPrimary, { y: w * 0.32, z: w * 0.47, metalness: 0.7, roughness: 0.2, transparent: true, opacity: 0.6 });
+  b.box(w * 0.86, w * 0.5, 0.06, b.civPrimary, {
+    y: w * 0.32,
+    z: w * 0.47,
+    metalness: 0.7,
+    roughness: 0.2,
+    transparent: true,
+    opacity: 0.6,
+  });
   // LED strips
   for (let i = 0; i < 4; i++) {
-    b.box(w * 0.82, 0.04, 0.04, b.pal.emissive, { y: w * 0.22 + i * w * 0.12, z: w * 0.47, emissive: b.pal.emissive, emissiveIntensity: 1.6 });
+    b.box(w * 0.82, 0.04, 0.04, b.pal.emissive, {
+      y: w * 0.22 + i * w * 0.12,
+      z: w * 0.47,
+      emissive: b.pal.emissive,
+      emissiveIntensity: 1.6,
+    });
   }
   if (tower) {
     b.box(w * 0.3, w * 0.9, w * 0.3, mixHex(b.pal.metal, '#ffffff', 0.45), { y: w * 1.05, tex: 'metal', texScale: 2 });
@@ -1249,15 +1456,34 @@ function buildFuturistic(b: Builder, size: number, tower: boolean): void {
   const panelTint = '#dbe4ec';
   // levitating base with glow
   b.box(w * 1.0, w * 0.16, w * 1.0, panelTint, { y: w * 0.16, tex: 'scifi' });
-  b.box(w * 1.04, w * 0.05, w * 1.04, b.pal.emissive, { y: w * 0.05, emissive: b.pal.emissive, emissiveIntensity: 2, transparent: true, opacity: 0.8 });
+  b.box(w * 1.04, w * 0.05, w * 1.04, b.pal.emissive, {
+    y: w * 0.05,
+    emissive: b.pal.emissive,
+    emissiveIntensity: 2,
+    transparent: true,
+    opacity: 0.8,
+  });
   // core
   b.box(w * 0.8, w * 0.5, w * 0.8, panelTint, { y: w * 0.5, tex: 'scifi' });
   b.box(w * 0.82, w * 0.08, w * 0.82, b.pal.accent2, { y: w * 0.5, metalness: 0.5 });
-  b.box(w * 0.4, w * 0.3, w * 0.1, b.pal.emissive, { y: w * 0.55, z: w * 0.42, emissive: b.pal.emissive, emissiveIntensity: 2, transparent: true, opacity: 0.9 });
+  b.box(w * 0.4, w * 0.3, w * 0.1, b.pal.emissive, {
+    y: w * 0.55,
+    z: w * 0.42,
+    emissive: b.pal.emissive,
+    emissiveIntensity: 2,
+    transparent: true,
+    opacity: 0.9,
+  });
   if (tower) {
     b.cyl(0.2, 0.28, w * 1.1, 12, '#dbe4ec', { y: w * 1.1, tex: 'scifi' });
     b.sphere(w * 0.3, b.pal.emissive, { y: w * 1.7, emissive: b.pal.emissive, emissiveIntensity: 1.8 });
-    b.sphere(w * 0.34, b.pal.emissive, { y: w * 1.7, emissive: b.pal.emissive, emissiveIntensity: 0.8, transparent: true, opacity: 0.35 });
+    b.sphere(w * 0.34, b.pal.emissive, {
+      y: w * 1.7,
+      emissive: b.pal.emissive,
+      emissiveIntensity: 0.8,
+      transparent: true,
+      opacity: 0.35,
+    });
   }
 }
 
@@ -1305,8 +1531,19 @@ function buildMilitary(b: Builder, size: number, antenna: boolean): void {
   b.box(w * 0.92, w * 0.5, w * 0.8, mixHex(b.pal.concrete, '#ffffff', 0.62), { y: w * 0.25, tex: 'concrete' });
   b.box(w * 0.98, w * 0.16, w * 0.9, b.pal.darkMetal, { y: w * 0.08, tex: 'metalDark' });
   // corner turret
-  b.cyl(0.22, 0.28, w * 0.55, 10, mixHex(b.pal.concrete, '#ffffff', 0.62), { x: w * 0.34, y: w * 0.5, z: w * 0.32, tex: 'concrete' });
-  b.cyl(0.1, 0.1, 0.06, 8, b.pal.emissive, { x: w * 0.34, y: w * 0.8, z: w * 0.32, emissive: b.pal.emissive, emissiveIntensity: 1.6 });
+  b.cyl(0.22, 0.28, w * 0.55, 10, mixHex(b.pal.concrete, '#ffffff', 0.62), {
+    x: w * 0.34,
+    y: w * 0.5,
+    z: w * 0.32,
+    tex: 'concrete',
+  });
+  b.cyl(0.1, 0.1, 0.06, 8, b.pal.emissive, {
+    x: w * 0.34,
+    y: w * 0.8,
+    z: w * 0.32,
+    emissive: b.pal.emissive,
+    emissiveIntensity: 1.6,
+  });
   if (antenna) {
     b.cyl(0.02, 0.02, w * 0.6, 6, b.pal.darkMetal, { y: w * 0.8, z: -w * 0.3 });
     b.sphere(0.06, b.pal.emissive, { y: w * 1.1, z: -w * 0.3, emissive: b.pal.emissive, emissiveIntensity: 2 });
@@ -1343,12 +1580,22 @@ function buildFortress(b: Builder, size: number, matType: 'stone' | 'concrete'):
   // battlements
   for (let i = 0; i < 10; i++) {
     const a = (i / 10) * Math.PI * 2;
-    b.box(0.12, w * 0.16, 0.12, wallTint, { x: Math.cos(a) * w * 0.5, y: w * 1.16, z: Math.sin(a) * w * 0.5, tex: matType });
+    b.box(0.12, w * 0.16, 0.12, wallTint, {
+      x: Math.cos(a) * w * 0.5,
+      y: w * 1.16,
+      z: Math.sin(a) * w * 0.5,
+      tex: matType,
+    });
   }
   // bastions
   for (let i = 0; i < 4; i++) {
     const a = (i / 4) * Math.PI * 2 + Math.PI / 4;
-    b.cyl(0.24, 0.3, w * 0.7, 10, wallTint, { x: Math.cos(a) * w * 0.85, y: w * 0.35, z: Math.sin(a) * w * 0.85, tex: matType });
+    b.cyl(0.24, 0.3, w * 0.7, 10, wallTint, {
+      x: Math.cos(a) * w * 0.85,
+      y: w * 0.35,
+      z: Math.sin(a) * w * 0.85,
+      tex: matType,
+    });
   }
   // connecting walls
   b.box(w * 1.5, w * 0.45, w * 0.22, wallTint, { y: w * 0.22, z: w * 0.72, tex: matType });
@@ -1363,7 +1610,13 @@ function buildFortress(b: Builder, size: number, matType: 'stone' | 'concrete'):
   // banner
   b.cyl(0.02, 0.02, w * 0.7, 6, b.pal.darkWood, { y: w * 1.4 });
   b.box(w * 0.4, w * 0.2, 0.03, b.civPrimary, { y: w * 1.5, z: 0.2 });
-  b.box(0.24, 0.1, 0.05, b.pal.emissive, { y: w * 1.08, x: w * 0.5, z: w * 0.5, emissive: b.pal.emissive, emissiveIntensity: 1.6 });
+  b.box(0.24, 0.1, 0.05, b.pal.emissive, {
+    y: w * 1.08,
+    x: w * 0.5,
+    z: w * 0.5,
+    emissive: b.pal.emissive,
+    emissiveIntensity: 1.6,
+  });
 }
 
 function buildMarket(b: Builder, size: number, wallType: 'wood' | 'brick'): void {
@@ -1374,11 +1627,19 @@ function buildMarket(b: Builder, size: number, wallType: 'wood' | 'brick'): void
   // striped awning
   b.box(w * 1.0, 0.1, w * 0.7, b.civPrimary, { y: w * 0.5, ry: Math.PI / 2, x: 0 });
   for (let i = 0; i < 6; i++) {
-    b.box(w * 0.16, 0.11, w * 0.66, i % 2 === 0 ? b.civSecondary : b.civPrimary, { y: w * 0.5, x: (i - 2.5) * w * 0.16, ry: Math.PI / 2 });
+    b.box(w * 0.16, 0.11, w * 0.66, i % 2 === 0 ? b.civSecondary : b.civPrimary, {
+      y: w * 0.5,
+      x: (i - 2.5) * w * 0.16,
+      ry: Math.PI / 2,
+    });
   }
   // posts
   for (let i = 0; i < 4; i++) {
-    b.cyl(0.05, 0.05, w * 0.55, 8, b.pal.darkWood, { x: (i % 2 === 0 ? -1 : 1) * w * 0.4, y: w * 0.28, z: (i < 2 ? -1 : 1) * w * 0.3 });
+    b.cyl(0.05, 0.05, w * 0.55, 8, b.pal.darkWood, {
+      x: (i % 2 === 0 ? -1 : 1) * w * 0.4,
+      y: w * 0.28,
+      z: (i < 2 ? -1 : 1) * w * 0.3,
+    });
   }
   // merchandise
   b.box(0.3, 0.2, 0.3, '#efe6d2', { x: -0.25, y: w * 0.12, z: 0.1, tex: 'wood' });
@@ -1388,7 +1649,12 @@ function buildMarket(b: Builder, size: number, wallType: 'wood' | 'brick'): void
 function buildDropsite(b: Builder, size: number, matType: 'wood' | 'brick' | 'stone'): void {
   groundPad(b, size);
   const w = size;
-  const wallTint = matType === 'wood' ? mixHex(b.pal.wood, '#ffffff', 0.5) : matType === 'brick' ? mixHex(b.pal.brick, '#ffffff', 0.5) : mixHex(b.pal.stone, '#ffffff', 0.5);
+  const wallTint =
+    matType === 'wood'
+      ? mixHex(b.pal.wood, '#ffffff', 0.5)
+      : matType === 'brick'
+        ? mixHex(b.pal.brick, '#ffffff', 0.5)
+        : mixHex(b.pal.stone, '#ffffff', 0.5);
   const roofTint = mixHex(b.pal.roof, '#ffffff', 0.58);
   b.box(w * 0.85, w * 0.5, w * 0.7, wallTint, { y: w * 0.25, tex: matType });
   b.box(w * 0.95, w * 0.12, w * 0.42, roofTint, { y: w * 0.56, z: w * 0.15, rx: 0.55, ry: Math.PI / 2, tex: 'roof' });
@@ -1418,7 +1684,12 @@ function buildFarm(b: Builder): void {
   b.cyl(0.04, 0.05, 0.24, 6, mixHex('#4a8a2a', b.pal.primary, 0.2), { x: -0.2, y: 0.2, z: -0.2 });
   // fencing
   const fence = '#8a6a42';
-  for (const [fx, fz] of [[-w * 0.36, 0], [w * 0.36, 0], [0, -w * 0.36], [0, w * 0.36]] as const) {
+  for (const [fx, fz] of [
+    [-w * 0.36, 0],
+    [w * 0.36, 0],
+    [0, -w * 0.36],
+    [0, w * 0.36],
+  ] as const) {
     b.box(0.08, 0.34, 0.08, fence, { x: fx, y: 0.16, z: fz });
     b.box(0.7, 0.05, 0.06, fence, { x: fx, y: 0.2, z: fz });
   }
@@ -1427,7 +1698,13 @@ function buildFarm(b: Builder): void {
 function buildFarmFut(b: Builder): void {
   const w = 3.0;
   b.box(w * 0.7, 0.1, w * 0.7, '#dbe4ec', { y: 0.06, tex: 'scifi' });
-  b.box(w * 0.72, 0.04, w * 0.72, b.pal.emissive, { y: 0.03, emissive: b.pal.emissive, emissiveIntensity: 1.4, transparent: true, opacity: 0.7 });
+  b.box(w * 0.72, 0.04, w * 0.72, b.pal.emissive, {
+    y: 0.03,
+    emissive: b.pal.emissive,
+    emissiveIntensity: 1.4,
+    transparent: true,
+    opacity: 0.7,
+  });
   // rows of hydroponic crops
   for (let i = -1; i <= 1; i++) {
     b.box(0.08, 0.14, w * 0.58, mixHex(b.pal.emissive, '#3a7a2a', 0.5), { z: i * 0.34, y: 0.14 });
@@ -1453,7 +1730,13 @@ function buildWonder(b: Builder): void {
   // upper energy sphere
   const orb = b.sphere(0.5, b.pal.emissive, { y: w * 1.85, emissive: b.pal.emissive, emissiveIntensity: 2 });
   orb.name = 'part';
-  b.sphere(0.7, b.pal.emissive, { y: w * 1.85, emissive: b.pal.emissive, emissiveIntensity: 0.7, transparent: true, opacity: 0.3 });
+  b.sphere(0.7, b.pal.emissive, {
+    y: w * 1.85,
+    emissive: b.pal.emissive,
+    emissiveIntensity: 0.7,
+    transparent: true,
+    opacity: 0.3,
+  });
   // pedestal
   b.cyl(1.4, 1.8, 0.5, 16, b.pal.darkMetal, { y: 0.25, metalness: 0.6 });
   b.cyl(1.9, 2.2, 0.3, 16, b.pal.darkMetal, { y: 0.15, metalness: 0.6 });
@@ -1461,19 +1744,49 @@ function buildWonder(b: Builder): void {
 
 // ---------------------------------------------------------------------------
 
-/** Build a parametric model according to the type. */
+/** Built model templates by signature (geometry is shared; materials are per instance). */
+const modelCache = new Map<string, THREE.Group>();
+
+/** Build a parametric model. Returns a clone that owns its materials (geometry is shared). */
 export function buildModel(spec: ModelSpec, ctx: BuildContext): THREE.Group {
+  const key = `${spec.type}|${spec.scale ?? 1}|${spec.barrel ?? ''}|${ctx.era}|${ctx.civ.id}`;
+  let template = modelCache.get(key);
+  if (!template) {
+    template = buildModelTemplate(spec, ctx);
+    modelCache.set(key, template);
+  }
+  const inst = template.clone();
+  inst.traverse((obj) => {
+    const mesh = obj as THREE.Mesh;
+    if (!mesh.isMesh) return;
+    if (Array.isArray(mesh.material)) mesh.material = mesh.material.map((m) => m.clone());
+    else if (mesh.material) mesh.material = mesh.material.clone();
+  });
+  return inst;
+}
+
+function buildModelTemplate(spec: ModelSpec, ctx: BuildContext): THREE.Group {
   const { type, scale } = spec;
   let g: THREE.Group;
   if (type.startsWith('worker')) g = buildWorker(type, ctx);
-  else if (type.startsWith('soldier') || type === 'power_armor' || type === 'soldier_stellar') g = buildInfantry(type, ctx);
-  else if (type === 'musketeer' || type === 'rifleman' || type === 'veteran_rifleman' || type === 'advanced_rifleman' || type === 'stellar_rifle' || type === 'sniper_stellar') g = buildRanged(type, ctx);
+  else if (type.startsWith('soldier') || type === 'power_armor' || type === 'soldier_stellar')
+    g = buildInfantry(type, ctx);
+  else if (
+    type === 'musketeer' ||
+    type === 'rifleman' ||
+    type === 'veteran_rifleman' ||
+    type === 'advanced_rifleman' ||
+    type === 'stellar_rifle' ||
+    type === 'sniper_stellar'
+  )
+    g = buildRanged(type, ctx);
   else if (type === 'hussar' || type === 'cavalry') g = buildMounted(type, ctx);
   else if (type === 'motorcycle') g = buildMotorcycle(ctx);
   else if (type === 'recon_drone') g = buildDrone(ctx);
   else if (type.startsWith('tank')) g = buildTank(type, ctx);
   else if (type.startsWith('aa')) g = buildAntiAir(type, ctx);
-  else if (type === 'cannon' || type === 'artillery' || type === 'howitzer' || type === 'rail_artillery') g = buildCannon(type, ctx);
+  else if (type === 'cannon' || type === 'artillery' || type === 'howitzer' || type === 'rail_artillery')
+    g = buildCannon(type, ctx);
   else if (type === 'mortar') g = buildMortar(ctx);
   else if (type.startsWith('commissar')) g = buildCommisar(type, ctx);
   else if (type.startsWith('mech')) g = buildMech(ctx);
@@ -1481,53 +1794,109 @@ export function buildModel(spec: ModelSpec, ctx: BuildContext): THREE.Group {
 
   if (scale) g.scale.setScalar(scale);
   bakeVertexAO(g);
+  mergeStaticParts(g);
   return g;
 }
 
 /** Bake AO into vertex colors (darkens the base), memoized by source geometry. */
+function aoGeometry(geo: THREE.BufferGeometry): THREE.BufferGeometry {
+  const owned = bakedGeoCache.get(geo.uuid);
+  if (owned) return owned;
+  const posAttr = geo.getAttribute('position');
+  const clone = geo.clone();
+  if (posAttr) {
+    const n = posAttr.count;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    for (let i = 0; i < n; i++) {
+      const y = posAttr.getY(i);
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+    }
+    const range = Math.max(0.001, maxY - minY);
+    const cols = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) {
+      const t = (posAttr.getY(i) - minY) / range;
+      const ao = 0.82 + 0.18 * t;
+      cols[i * 3] = ao;
+      cols[i * 3 + 1] = ao;
+      cols[i * 3 + 2] = ao;
+    }
+    clone.setAttribute('color', new THREE.BufferAttribute(cols, 3));
+  }
+  bakedGeoCache.set(geo.uuid, clone);
+  return clone;
+}
+
 function bakeVertexAO(root: THREE.Object3D): void {
   root.updateMatrixWorld(true);
   root.traverse((obj) => {
     const mesh = obj as THREE.Mesh;
-    if (!mesh.isMesh) return;
-    const geo = mesh.geometry;
+    if (!mesh.isMesh || !mesh.geometry.getAttribute('position')) return;
+    mesh.geometry = aoGeometry(mesh.geometry);
     const mat = mesh.material as THREE.MeshStandardMaterial;
-    if (mat.vertexColors) return;
-    const posAttr = geo.getAttribute('position');
-    if (!posAttr) return;
-    let owned = bakedGeoCache.get(geo.uuid);
-    if (!owned) {
-      const n = posAttr.count;
-      let minY = Infinity;
-      let maxY = -Infinity;
-      for (let i = 0; i < n; i++) {
-        const y = posAttr.getY(i);
-        if (y < minY) minY = y;
-        if (y > maxY) maxY = y;
-      }
-      const range = Math.max(0.001, maxY - minY);
-      // clone geometry to avoid polluting shared cached geometries
-      owned = geo.clone();
-      const cols = new Float32Array(n * 3);
-      for (let i = 0; i < n; i++) {
-        const t = (posAttr.getY(i) - minY) / range;
-        const ao = 0.82 + 0.18 * t;
-        cols[i * 3] = ao;
-        cols[i * 3 + 1] = ao;
-        cols[i * 3 + 2] = ao;
-      }
-      owned.setAttribute('color', new THREE.BufferAttribute(cols, 3));
-      bakedGeoCache.set(geo.uuid, owned);
+    if (!mat.vertexColors) {
+      mat.vertexColors = true;
+      mat.needsUpdate = true;
     }
-    mesh.geometry = owned;
-    mat.vertexColors = true;
-    mat.needsUpdate = true;
   });
 }
 
+/** Merge each container's static parts by material, keeping pivot groups intact. */
+function mergeStaticParts(container: THREE.Object3D): void {
+  const byMat = new Map<THREE.Material, THREE.Mesh[]>();
+  for (const child of container.children) {
+    const mesh = child as THREE.Mesh;
+    if (!mesh.isMesh || !mesh.visible || Array.isArray(mesh.material)) continue;
+    // keep transparent parts separate so their draw order stays per part
+    if ((mesh.material as THREE.Material).transparent) continue;
+    const group = byMat.get(mesh.material);
+    if (group) group.push(mesh);
+    else byMat.set(mesh.material, [mesh]);
+  }
+  for (const [material, meshes] of byMat) {
+    if (meshes.length < 2) continue;
+    const geos: THREE.BufferGeometry[] = [];
+    for (const mesh of meshes) {
+      mesh.updateMatrix();
+      let geo = mesh.geometry.clone();
+      if (geo.index) {
+        const flat = geo.toNonIndexed();
+        geo.dispose();
+        geo = flat;
+      }
+      ensureMergeAttrs(geo);
+      geo.applyMatrix4(mesh.matrix);
+      geos.push(geo);
+    }
+    const merged = mergeGeometries(geos, false);
+    for (const geo of geos) geo.dispose();
+    if (!merged) continue;
+    const out = new THREE.Mesh(merged, material);
+    out.castShadow = meshes[0].castShadow;
+    out.receiveShadow = meshes[0].receiveShadow;
+    out.name = 'part';
+    for (const mesh of meshes) mesh.removeFromParent();
+    container.add(out);
+  }
+  for (const child of [...container.children]) {
+    if ((child as THREE.Group).isGroup) mergeStaticParts(child);
+  }
+}
+
+/** Give a geometry the attributes the merge needs (position/normal/uv/color). */
+function ensureMergeAttrs(geo: THREE.BufferGeometry): void {
+  const count = geo.getAttribute('position')?.count ?? 0;
+  if (!geo.getAttribute('normal')) geo.computeVertexNormals();
+  if (!geo.getAttribute('uv')) geo.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(count * 2), 2));
+  if (!geo.getAttribute('color'))
+    geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(count * 3).fill(1), 3));
+}
+
 /**
- * Free a model's materials. Geometries and textures are shared
- * (global cache), so they are NOT disposed here; they are freed with clearModelCaches().
+ * Free a model instance's materials (each instance owns clones). Geometries are
+ * shared per template and textures are cached, so they are freed by
+ * clearModelCaches() and clearTextureCache() respectively.
  */
 export function disposeModel(g: THREE.Group): void {
   g.traverse((obj) => {
@@ -1539,14 +1908,21 @@ export function disposeModel(g: THREE.Group): void {
   });
 }
 
-/** Free all shared geometries/textures of the model generator. */
+/** Free all shared geometries/materials of the model generator (textures are separate). */
 export function clearModelCaches(): void {
   for (const k of Object.keys(sharedGeo)) {
     sharedGeo[k].dispose();
     delete sharedGeo[k];
   }
-  for (const g of bakedGeoCache.values()) g.dispose();
+  // template geometries (baked AO + merged) are the only owners of those buffers
+  for (const tpl of modelCache.values()) {
+    tpl.traverse((obj) => {
+      const mesh = obj as THREE.Mesh;
+      if (mesh.isMesh) mesh.geometry.dispose();
+    });
+  }
+  modelCache.clear();
   bakedGeoCache.clear();
-  for (const t of texCloneCache.values()) t.dispose();
-  texCloneCache.clear();
+  for (const m of matCache.values()) m.dispose();
+  matCache.clear();
 }
