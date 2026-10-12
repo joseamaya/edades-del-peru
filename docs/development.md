@@ -117,13 +117,15 @@ for player-facing docs see [`README.md`](../README.md).
   is built in the model's local frame, so anything that swaps a view (`Building.modernize`, `Game.modernizeUnits`)
   must pass the entity as the owner so the new proxy is re-tagged and not offset.
 - **Models are built once, cloned per instance** (`buildModel`): a template is cached by
-  `type|scale|era|civ`; `bakeVertexAO` + `mergeStaticParts` merge each container's static parts **by material**
-  (pivots stay separate so animation works), and the instance is a `clone()` with **per-instance materials**.
-  `mat()` shares materials by appearance (so equal parts merge) and box UV repeat is baked into the geometry
-  (not the texture). Because geometry is shared, anything that mutates a model material per instance (construction
-  fade, placement ghost tint, carry color) is safe **only** because materials are cloned per instance — do not
-  switch to shared materials without copy-on-write, and skip invisible meshes (e.g. the shared `pickMaterial` on
-  `EntityView.pickProxy`) when traversing a view to tint/fade.
+  `type|scale|barrel|era|civ`; `bakeVertexAO` bakes each part's **colour × AO into vertex colours** and
+  `mergeStaticParts` merges each container's static parts **by material** (pivots stay separate so animation
+  works); the instance is a `clone()` with **per-instance materials**. `mat()` keys only on the PBR params/texture
+  (colour is in the vertex colours), so parts that differ only by colour share one material and merge; box UV
+  repeat is baked into the geometry. Because geometry is shared, anything that mutates a model material per
+  instance (construction fade, placement ghost tint, carry colour) is safe **only** because materials are cloned
+  per instance — do not switch to shared materials without copy-on-write, and skip invisible meshes (e.g. the
+  shared `pickMaterial` on `EntityView.pickProxy`) when traversing a view to tint/fade. The placement ghost
+  turns vertex colours back off (`buildModelForGhost`) so its tint stays a flat silhouette.
 - **Trees by instancing** (`src/rendering/TreeInstances.ts`): `InstancedMesh` of trunk + canopies per variant;
   picking is by `instanceId` (`TreeInstances.raycast` -> `pickResource`), visibility by `ResourceNode.setVisibleEx`
   (fog+LOD) and falling on chop by `startFall`. If you add a tree without registering it in the manager, it will
@@ -156,14 +158,15 @@ Reference run (this repo, 2-core container, `CHROME_PATH` SwiftShader, `?low=1`,
 
 | units | spawn ms | sim ms/step | heap Δ/loop MB | A* ms/call | target µs/call | pick ms/call | frame ms (avg/p95) | draw calls | triangles | heap MB |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 100 | 35 | 0.5 | ~8 | 0.10 | 1.3 | 0.05 | ~694/1057 | ~6.2k | 2.8M | 55 |
-| 300 | 79 | 0.8 | ~5 | 0.11 | 1.3 | 0.13 | ~811/1410 | ~17.6k | 7.4M | 82 |
-| 500 | 137 | 1.1 | ~1 | 0.09 | 0.7 | 0.14 | ~1077/1817 | ~28.5k | 11.7M | 90 |
-| 1000 | 251 | 1.7 | ~24 | 0.16 | 1.0 | 0.28 | ~1759/2814 | ~56k | 22.8M | 139 |
+| 100 | 38 | 0.6 | ~6 | 0.11 | 1.3 | 0.05 | ~611/908 | ~3.9k | 2.8M | 53 |
+| 300 | 69 | 0.8 | ~12 | 0.10 | 0.8 | 0.12 | ~906/1314 | ~10.8k | 7.4M | 70 |
+| 500 | 99 | 1.0 | ~8 | 0.09 | 1.0 | 0.16 | ~937/1654 | ~17.3k | 11.7M | 91 |
+| 1000 | 190 | 1.7 | ~20 | 0.09 | 1.0 | 0.27 | ~1488/2557 | ~34k | 22.8M | 115 |
 
-Reading: the **simulation, pathfinding, target acquisition and picking are cheap** (≈0.5–1.7 ms/step up to 1000
+Reading: the **simulation, pathfinding, target acquisition and picking are cheap** (≈0.6–1.7 ms/step up to 1000
 units, well under the 16.6 ms budget; A* is ~0.1 ms and independent of unit count — that column is a map sample,
 not a scaling result; hover-picking is ~0.3 ms/call at 1000 after moving to one pick proxy per entity and a single
-resolve per frame). The remaining cost is **draw calls** (~56 per unit at 1000 — static parts merged by material,
-doubled by the shadow pass; units still have no instancing). Frame time is dominated by the software renderer, so
-use draw calls as the actionable signal; the next lever is instancing or the shadow pass, not the simulation.
+resolve per frame). Draw calls fell from ~81k to **~34k at 1000** (‑58%) after merging each model's static parts
+by material and baking part colours into vertex colours; ~34 per unit remains (the shadow pass roughly doubles
+them, and units still have no instancing). Frame time is dominated by the software renderer, so use draw calls as
+the actionable signal; the next lever is instancing or the shadow pass, not the simulation.

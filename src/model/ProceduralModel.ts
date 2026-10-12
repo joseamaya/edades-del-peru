@@ -47,7 +47,6 @@ interface MatOpts {
   roughness?: number;
   emissive?: number | string;
   emissiveIntensity?: number;
-  vertexColors?: boolean;
   opacity?: number;
   transparent?: boolean;
   flatShading?: boolean;
@@ -84,17 +83,22 @@ const TEX_GEN: Partial<Record<TexKind, string>> = {
   textile: 'textile',
 };
 
-function mat(color: string, opts: MatOpts = {}): THREE.MeshStandardMaterial {
-  const key = `${color}|${opts.metalness ?? ''}|${opts.roughness ?? ''}|${opts.emissive ?? ''}|${opts.emissiveIntensity ?? ''}|${opts.vertexColors ? 1 : 0}|${opts.opacity ?? ''}|${opts.transparent ? 1 : 0}|${opts.flatShading ? 1 : 0}|${opts.tex ?? ''}|${opts.normal ?? ''}`;
+/**
+ * Shared material for a set of parts. The part's own colour is baked into vertex
+ * colours (see `bakeVertexAO`), so `color` is not part of the key: parts that
+ * differ only by colour collapse into a single material and one merged mesh.
+ */
+function mat(opts: MatOpts = {}): THREE.MeshStandardMaterial {
+  const key = `${opts.metalness ?? ''}|${opts.roughness ?? ''}|${opts.emissive ?? ''}|${opts.emissiveIntensity ?? ''}|${opts.opacity ?? ''}|${opts.transparent ? 1 : 0}|${opts.flatShading ? 1 : 0}|${opts.tex ?? ''}|${opts.normal ?? ''}`;
   const cached = matCache.get(key);
   if (cached) return cached;
   const m = new THREE.MeshStandardMaterial({
-    color,
+    color: 0xffffff,
+    vertexColors: true,
     metalness: opts.metalness ?? 0.15,
     roughness: opts.roughness ?? 0.75,
     emissive: opts.emissive !== undefined ? opts.emissive : 0x000000,
     emissiveIntensity: opts.emissiveIntensity ?? 1,
-    vertexColors: opts.vertexColors ?? false,
     opacity: opts.opacity ?? 1,
     transparent: opts.transparent ?? false,
     flatShading: opts.flatShading ?? false,
@@ -161,7 +165,7 @@ class Builder {
   }
 
   box(w: number, h: number, d: number, color: string, o: PartOpts = {}): THREE.Mesh {
-    const m = mat(color, o);
+    const m = mat(o);
     // automatic UV repeat according to face size, baked into the geometry so the
     // texture (and therefore the material) can be shared
     let rx = 1;
@@ -180,6 +184,7 @@ class Builder {
       return g;
     });
     const mesh = new THREE.Mesh(geo, m);
+    mesh.userData.color = color;
     mesh.position.set(o.x ?? 0, o.y ?? 0, o.z ?? 0);
     if (o.ry) mesh.rotation.y = o.ry;
     if (o.rx) mesh.rotation.x = o.rx;
@@ -192,13 +197,14 @@ class Builder {
   }
 
   cyl(rt: number, rb: number, h: number, seg: number, color: string, o: PartOpts = {}): THREE.Mesh {
-    const m = mat(color, o);
+    const m = mat(o);
     const geo = cachedGeo(`cyl-${rt}-${rb}-${h}-${seg}-${o.flatShading ? 1 : 0}`, () => {
       const g = new THREE.CylinderGeometry(rt, rb, h, seg);
       if (o.flatShading) g.toNonIndexed();
       return g;
     });
     const mesh = new THREE.Mesh(geo, m);
+    mesh.userData.color = color;
     mesh.position.set(o.x ?? 0, o.y ?? 0, o.z ?? 0);
     if (o.ry) mesh.rotation.y = o.ry;
     if (o.rx) mesh.rotation.x = o.rx;
@@ -214,13 +220,14 @@ class Builder {
   }
 
   sphere(r: number, color: string, o: PartOpts = {}): THREE.Mesh {
-    const m = mat(color, o);
+    const m = mat(o);
     const geo = cachedGeo(`sph-${r}-${o.flatShading ? 1 : 0}`, () => {
       const g = new THREE.SphereGeometry(r, 18, 14);
       if (o.flatShading) g.toNonIndexed();
       return g;
     });
     const mesh = new THREE.Mesh(geo, m);
+    mesh.userData.color = color;
     mesh.position.set(o.x ?? 0, o.y ?? 0, o.z ?? 0);
     mesh.castShadow = true;
     mesh.receiveShadow = true;
@@ -239,13 +246,14 @@ class Builder {
 
   /** Torus (arches, rings, bow limbs). */
   torus(r: number, tube: number, arc: number, color: string, o: PartOpts = {}): THREE.Mesh {
-    const m = mat(color, o);
+    const m = mat(o);
     const geo = cachedGeo(`tor-${r}-${tube}-${arc}-${o.flatShading ? 1 : 0}`, () => {
       const g = new THREE.TorusGeometry(r, tube, 8, 20, arc);
       if (o.flatShading) g.toNonIndexed();
       return g;
     });
     const mesh = new THREE.Mesh(geo, m);
+    mesh.userData.color = color;
     mesh.position.set(o.x ?? 0, o.y ?? 0, o.z ?? 0);
     if (o.ry) mesh.rotation.y = o.ry;
     if (o.rx) mesh.rotation.x = o.rx;
@@ -1719,8 +1727,9 @@ function buildWonder(b: Builder): void {
   // floating rings
   for (let i = 0; i < 3; i++) {
     const r = new THREE.TorusGeometry(1.1 + i * 0.4, 0.08, 8, 32);
-    const m = mat(b.pal.accent2, { metalness: 0.8, roughness: 0.3, emissive: b.pal.emissive, emissiveIntensity: 0.8 });
+    const m = mat({ metalness: 0.8, roughness: 0.3, emissive: b.pal.emissive, emissiveIntensity: 0.8 });
     const ring = new THREE.Mesh(r, m);
+    ring.userData.color = b.pal.accent2;
     ring.position.y = w * 0.7 + i * 0.5;
     ring.rotation.x = Math.PI / 2 + 0.3;
     ring.castShadow = true;
@@ -1798,9 +1807,10 @@ function buildModelTemplate(spec: ModelSpec, ctx: BuildContext): THREE.Group {
   return g;
 }
 
-/** Bake AO into vertex colors (darkens the base), memoized by source geometry. */
-function aoGeometry(geo: THREE.BufferGeometry): THREE.BufferGeometry {
-  const owned = bakedGeoCache.get(geo.uuid);
+/** Bake the part colour times AO into vertex colours, memoized by source geometry + colour. */
+function aoGeometry(geo: THREE.BufferGeometry, color: string): THREE.BufferGeometry {
+  const key = `${geo.uuid}|${color}`;
+  const owned = bakedGeoCache.get(key);
   if (owned) return owned;
   const posAttr = geo.getAttribute('position');
   const clone = geo.clone();
@@ -1814,17 +1824,18 @@ function aoGeometry(geo: THREE.BufferGeometry): THREE.BufferGeometry {
       if (y > maxY) maxY = y;
     }
     const range = Math.max(0.001, maxY - minY);
+    const base = new THREE.Color(color);
     const cols = new Float32Array(n * 3);
     for (let i = 0; i < n; i++) {
       const t = (posAttr.getY(i) - minY) / range;
       const ao = 0.82 + 0.18 * t;
-      cols[i * 3] = ao;
-      cols[i * 3 + 1] = ao;
-      cols[i * 3 + 2] = ao;
+      cols[i * 3] = base.r * ao;
+      cols[i * 3 + 1] = base.g * ao;
+      cols[i * 3 + 2] = base.b * ao;
     }
     clone.setAttribute('color', new THREE.BufferAttribute(cols, 3));
   }
-  bakedGeoCache.set(geo.uuid, clone);
+  bakedGeoCache.set(key, clone);
   return clone;
 }
 
@@ -1833,12 +1844,8 @@ function bakeVertexAO(root: THREE.Object3D): void {
   root.traverse((obj) => {
     const mesh = obj as THREE.Mesh;
     if (!mesh.isMesh || !mesh.geometry.getAttribute('position')) return;
-    mesh.geometry = aoGeometry(mesh.geometry);
-    const mat = mesh.material as THREE.MeshStandardMaterial;
-    if (!mat.vertexColors) {
-      mat.vertexColors = true;
-      mat.needsUpdate = true;
-    }
+    const color = (mesh.userData.color as string | undefined) ?? '#ffffff';
+    mesh.geometry = aoGeometry(mesh.geometry, color);
   });
 }
 

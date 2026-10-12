@@ -2048,5 +2048,14 @@ export class Game {
 function buildModelForGhost(kind: BuildingKind, ctx: BuildContext): THREE.Group {
   const def = BUILDING_DEFS[kind];
   const modelType = Object.values(def.eraModel)[0];
-  return buildModel({ type: modelType?.type ?? 'center_steam' }, ctx);
+  const g = buildModel({ type: modelType?.type ?? 'center_steam' }, ctx);
+  // the ghost is a flat valid/invalid silhouette, so ignore the baked vertex colours
+  g.traverse((o) => {
+    const mesh = o as THREE.Mesh;
+    if (!mesh.isMesh) return;
+    const m = mesh.material as THREE.MeshStandardMaterial;
+    m.vertexColors = false;
+    m.needsUpdate = true;
+  });
+  return g;
 }
