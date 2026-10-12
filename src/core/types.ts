@@ -30,6 +30,7 @@ export enum CivId {
   CARAL = 'caral',
   CHAVIN = 'chavin',
   PARACAS = 'paracas',
+  CUPISNIQUE = 'cupisnique',
   MOCHE = 'moche',
   NAZCA = 'nazca',
   RECUAY = 'recuay',
@@ -38,6 +39,8 @@ export enum CivId {
   CHIMU = 'chimu',
   CHINCHA = 'chincha',
   CHANCA = 'chanca',
+  COLLAS_LUPACA = 'collas_lupaca',
+  HUANCA = 'huanca',
   INCA = 'inca',
   // Historical (post-Hispanic)
   REALISTAS = 'realistas',

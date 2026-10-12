@@ -32,7 +32,7 @@ emparejamientos permitidos.
 | P1 Horizonte Temprano | Chavín, Paracas, Cupisnique | Chavín ↔ Paracas (coetáneos; influencia y competencia regional) |
 | P2 Intermedio Temprano | Moche, Nazca, Recuay | **Moche ↔ Recuay** (interacción con componente bélico documentado) |
 | P3 Horizonte Medio | Wari, Tiahuanaco | **Wari ↔ Tiahuanaco** (coetáneos, esferas Norte/Sur) |
-| P4 Intermedio Tardío | Chimú, Chincha, Chanca, Collas/Lupaca, Huanca | Alianzas y guerras: Chancas+Pokras+Huancas↔Inca; Chimú↔Cuismancu; Chimú↔Chincha (rivalidad costera) |
+| P4 Intermedio Tardío | Chimú, Chincha, Chanca, Collas/Lupaca, Huanca | Alianzas y guerras: Chanca+Pokras↔Inca (1438, abre P5); **Huanca↔xauxas/yauyos** (rivalidad) y posterior sometimiento por el Inca; Chimú↔Cuismancu; Chimú↔Chincha (rivalidad costera) |
 | P5 Horizonte Tardío | Inca | **Inca ↔ Chanca (1438)**, **Inca ↔ Chimú (c. 1470)** |
 | P6 Virreinato | Realistas (España), Rebeldes | **Túpac Amaru II ↔ Realistas (1780–1781)** |
 | P7 Independencia | Patriotas, Realistas | **San Martín/Bolívar ↔ Realistas (1821–1824)** |

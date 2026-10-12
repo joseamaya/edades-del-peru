@@ -18,7 +18,7 @@ oficiales (Ministerio de Cultura, UNESCO, Marina de Guerra del Perú) y enciclop
 
 ## Chavín y Horizonte Temprano
 
-- Wikipedia: [Horizonte Temprano](https://es.wikipedia.org/wiki/Horizonte_Temprano), [Cultura chavín](https://es.wikipedia.org/wiki/Cultura_chav%C3%ADn).
+- Wikipedia: [Horizonte Temprano](https://es.wikipedia.org/wiki/Horizonte_Temprano), [Cultura chavín](https://es.wikipedia.org/wiki/Cultura_chav%C3%ADn), [Cultura Cupisnique](https://es.wikipedia.org/wiki/Cultura_cupisnique), [Huaca de los Reyes](https://es.wikipedia.org/wiki/Huaca_de_los_Reyes).
 - Museo Nacional de Arqueología / MinCultura: *Culturas precolombinas del Perú* (PDF).
 - Burger, R. *Chavín and the Origins of Andean Civilization*.
 
@@ -41,8 +41,8 @@ oficiales (Ministerio de Cultura, UNESCO, Marina de Guerra del Perú) y enciclop
 
 ## Intermedio Tardío: Chimú, Chincha, Chanca, Collas, Huanca
 
-- Wikipedia: [Intermedio Tardío](https://es.wikipedia.org/wiki/Intermedio_Tard%C3%ADo), [Cultura chanca](https://es.wikipedia.org/wiki/Cultura_chanca), [Cultura chincha](https://es.wikipedia.org/wiki/Cultura_chincha), [Cultura chimú](https://es.wikipedia.org/wiki/Cultura_chim%C3%BA).
-- Rostworowski, M. *Historia del Tahuantinsuyu* (comercio chincha y balsas).
+- Wikipedia: [Intermedio Tardío](https://es.wikipedia.org/wiki/Intermedio_Tard%C3%ADo), [Cultura chanca](https://es.wikipedia.org/wiki/Cultura_chanca), [Cultura chincha](https://es.wikipedia.org/wiki/Cultura_chincha), [Cultura chimú](https://es.wikipedia.org/wiki/Cultura_chim%C3%BA), [Reinos aimaras](https://es.wikipedia.org/wiki/Reinos_aimaras), [Lupaca](https://es.wikipedia.org/wiki/Lupaca), [Huancas](https://es.wikipedia.org/wiki/Huancas).
+- Rostworowski, M. *Historia del Tahuantinsuyu* (comercio chincha, balsas y señoríos del Collao).
 - Dalen Luna, P. *La problemática chanka* (análisis sociopolítico).
 
 ## Inca / Tahuantinsuyo
