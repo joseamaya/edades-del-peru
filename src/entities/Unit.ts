@@ -127,8 +127,17 @@ export class Unit {
       if (o.name === 'pivot:head') this.headPivot = o as THREE.Group;
       if (o.name === 'pivot:carry') {
         this.carryPivot = o as THREE.Group;
-        const mesh = this.carryPivot.children.find((c) => (c as THREE.Mesh).isMesh) as THREE.Mesh | undefined;
-        if (mesh) this.carryMat = mesh.material as THREE.MeshStandardMaterial;
+        // the bundle is tinted per carried resource, so it needs its own material
+        // (baked vertex colours would multiply the tint instead of replacing it)
+        for (const child of this.carryPivot.children) {
+          const mesh = child as THREE.Mesh;
+          if (!mesh.isMesh) continue;
+          const m = (mesh.material as THREE.MeshStandardMaterial).clone();
+          m.vertexColors = false;
+          m.needsUpdate = true;
+          mesh.material = m;
+          if (!this.carryMat) this.carryMat = m;
+        }
       }
     });
   }

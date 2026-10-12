@@ -37,7 +37,7 @@ function cachedGeo<T extends THREE.BufferGeometry>(key: string, make: () => T): 
   return sharedGeo[key] as T;
 }
 
-/** Geometries with baked AO, memoized by the source geometry uuid. */
+/** Geometries with baked colour × AO, memoized by source geometry uuid + part colour. */
 const bakedGeoCache = new Map<string, THREE.BufferGeometry>();
 /** Materials shared by appearance (so equal parts can be merged into one draw). */
 const matCache = new Map<string, THREE.MeshStandardMaterial>();

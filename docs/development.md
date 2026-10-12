@@ -121,7 +121,8 @@ for player-facing docs see [`README.md`](../README.md).
   `mergeStaticParts` merges each container's static parts **by material** (pivots stay separate so animation
   works); the instance is a `clone()` with **per-instance materials**. `mat()` keys only on the PBR params/texture
   (colour is in the vertex colours), so parts that differ only by colour share one material and merge; box UV
-  repeat is baked into the geometry. Because geometry is shared, anything that mutates a model material per
+  repeat is baked into the geometry. Model materials are `vertexColors: true`, so every mesh must carry a `color`
+  attribute (`bakeVertexAO` writes it) — a mesh without one renders black. Because geometry is shared, anything that mutates a model material per
   instance (construction fade, placement ghost tint, carry colour) is safe **only** because materials are cloned
   per instance — do not switch to shared materials without copy-on-write, and skip invisible meshes (e.g. the
   shared `pickMaterial` on `EntityView.pickProxy`) when traversing a view to tint/fade. The placement ghost
@@ -166,7 +167,8 @@ Reference run (this repo, 2-core container, `CHROME_PATH` SwiftShader, `?low=1`,
 Reading: the **simulation, pathfinding, target acquisition and picking are cheap** (≈0.6–1.7 ms/step up to 1000
 units, well under the 16.6 ms budget; A* is ~0.1 ms and independent of unit count — that column is a map sample,
 not a scaling result; hover-picking is ~0.3 ms/call at 1000 after moving to one pick proxy per entity and a single
-resolve per frame). Draw calls fell from ~81k to **~34k at 1000** (‑58%) after merging each model's static parts
-by material and baking part colours into vertex colours; ~34 per unit remains (the shadow pass roughly doubles
-them, and units still have no instancing). Frame time is dominated by the software renderer, so use draw calls as
-the actionable signal; the next lever is instancing or the shadow pass, not the simulation.
+resolve per frame). Draw calls at 1000 fell from the original **~81k baseline to ~34k** (‑58%; the previous
+merge step was ~56k, so this step is ‑39%), by merging each model's static parts by material and baking part
+colours into vertex colours. ~34 per unit remains (the shadow pass roughly doubles them, and units still have
+no instancing) — reaching ~15-20 needs **instancing** (or collapsing per-part PBR params), which is not done.
+Frame time is dominated by the software renderer, so use draw calls as the actionable signal.
