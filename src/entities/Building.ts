@@ -66,7 +66,7 @@ export class Building {
       this.foodAmount = 500 + this.era * 200;
     }
     const model = buildModel(getBuildingModel(kind, era), ctx);
-    this.view = new EntityView(model, this.radius * 0.9);
+    this.view = new EntityView(model, this.radius * 0.9, this);
     this.hp = this.maxHp = this.stats.hp;
   }
 
@@ -333,7 +333,7 @@ export class Building {
     }
     this.view.dispose();
     disposeModel(old);
-    this.view = new EntityView(newModel, this.radius * 0.9);
+    this.view = new EntityView(newModel, this.radius * 0.9, this);
     if (!this.constructionComplete) this.setConstructionOpacity(0.45);
   }
 

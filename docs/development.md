@@ -108,7 +108,14 @@ for player-facing docs see [`README.md`](../README.md).
   forever. Do not touch windows/glass/glow (already transparent by design).
 - **Contextual cursor** (`Game.hoverAction` + `HUD.setCursor`): the icon is an emoji drawn in a div (`#ed-cursor`)
   that **hides the native cursor**. Do not return `'➡️'` for move (it always points the same way); return `null`
-  and let the destination marker (`OrderMarkers`) indicate the point.
+  and let the destination marker (`OrderMarkers`) indicate the point. Hover resolves **once per frame**:
+  `onMouseMove` schedules `Game.flushHover` (rAF) which calls `pickScene` once and feeds both the tooltip and the
+  icon (do not re-pick inside `computeHover`/`hoverAction`).
+- **Picking is one proxy per entity** (`EntityView.pickProxy`): an invisible box the size of the model, tagged
+  `userData.owner` (the `EntityView` owner argument is required). `Game.pickEntity` raycasts the flat proxy list
+  non-recursively and resolves the entity in O(1); it does **not** walk the real meshes (~80 per unit). The proxy
+  is built in the model's local frame, so anything that swaps a view (`Building.modernize`, `Game.modernizeUnits`)
+  must pass the entity as the owner so the new proxy is re-tagged and not offset.
 - **Trees by instancing** (`src/rendering/TreeInstances.ts`): `InstancedMesh` of trunk + canopies per variant;
   picking is by `instanceId` (`TreeInstances.raycast` -> `pickResource`), visibility by `ResourceNode.setVisibleEx`
   (fog+LOD) and falling on chop by `startFall`. If you add a tree without registering it in the manager, it will
@@ -141,15 +148,14 @@ Reference run (this repo, 2-core container, `CHROME_PATH` SwiftShader, `?low=1`,
 
 | units | spawn ms | sim ms/step | heap Δ/loop MB | A* ms/call | target µs/call | pick ms/call | frame ms (avg/p95) | draw calls | triangles | heap MB |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 100 | 26 | 0.5 | ~9 | 0.12 | 1.5 | 0.3 | ~630/914 | ~8.8k | 2.8M | 55 |
-| 300 | 113 | 0.9 | ~16 | 0.12 | 0.5 | 1.0 | ~915/1514 | ~25k | 7.3M | 83 |
-| 500 | 157 | 1.1 | ~0 | 0.09 | 1.0 | 2.1 | ~1093/1375 | ~41k | 11.7M | 94 |
-| 1000 | 298 | 2.0 | ~26 | 0.13 | 0.7 | 5.2 | ~1510/1510 | ~79k | 22.3M | 137 |
+| 100 | 32 | 0.5 | ~10 | 0.11 | 1.5 | 0.06 | ~670/969 | ~8.8k | 2.8M | 57 |
+| 300 | 89 | 0.8 | ~17 | 0.11 | 0.7 | 0.09 | ~886/1493 | ~25k | 7.4M | 83 |
+| 500 | 178 | 1.1 | ~4 | 0.09 | 1.0 | 0.15 | ~1267/2037 | ~41k | 11.7M | 98 |
+| 1000 | 316 | 2.7 | ~30 | 0.10 | 0.8 | 0.33 | ~1937/2586 | ~81k | 22.8M | 166 |
 
-Reading: the **simulation, pathfinding and target acquisition are cheap** (≈0.5–2 ms/step up to 1000 units,
-well under the 16.6 ms budget; A* is ~0.1 ms and independent of unit count — the column is a map sample,
-not a scaling result). The bottlenecks are **draw calls** (~80 per unit — each unit is a group of many
-meshes, doubled by the shadow pass — with no instancing for units) and **hover picking** (~5 ms per call at
-1000, an O(N) raycast run on every `mousemove`). Frame time is dominated by the software renderer, so use
-draw calls + pick time as the actionable signals. Any raising of the unit ceiling should target those two
-first, backed by this table.
+Reading: the **simulation, pathfinding, target acquisition and picking are cheap** (≈0.5–2.7 ms/step up to 1000
+units, well under the 16.6 ms budget; A* is ~0.1 ms and independent of unit count — that column is a map sample,
+not a scaling result; hover-picking is ~0.3 ms/call at 1000 after moving to one pick proxy per entity and a single
+resolve per frame). The remaining bottleneck is **draw calls** (~80 per unit — each unit is a group of many
+meshes, doubled by the shadow pass — with no instancing for units). Frame time is dominated by the software
+renderer, so use draw calls as the actionable signal; raising the unit ceiling means cutting draw calls first.

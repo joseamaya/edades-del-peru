@@ -105,7 +105,7 @@ export class Unit {
     this.radius = this.stats.range === 0 ? 0.45 : 0.5;
     if (kind === UnitKind.TANK || kind === UnitKind.MECH) this.radius = 0.9;
     if (kind === UnitKind.ARTILLERY || kind === UnitKind.MORTAR || kind === UnitKind.NUCLEAR) this.radius = 0.8;
-    this.view = new EntityView(model, this.radius);
+    this.view = new EntityView(model, this.radius, this);
     this.findPivots(model);
   }
 

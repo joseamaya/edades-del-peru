@@ -50,6 +50,9 @@ const NODE_INFO: Record<ResourceNode['kind'], { name: string; icon: string }> = 
   berry: { name: 'Arbusto', icon: '🫐' },
 };
 
+/** What sits under a screen point: at most one resource/unit/building. */
+type PickResult = { resource: ResourceNode | null; unit?: Unit; building?: Building };
+
 export class Game {
   renderer!: THREE.WebGLRenderer;
   scene = new THREE.Scene();
@@ -661,6 +664,8 @@ export class Game {
     }
   };
   private lastClickTime = 0;
+  private hoverRaf = 0;
+  private pendingHover = new THREE.Vector2();
 
   private onMouseMove = (e: MouseEvent): void => {
     this.mouseScreen.set(e.clientX, e.clientY);
@@ -679,26 +684,40 @@ export class Game {
       if (!this.leftMoved && Math.abs(dx) + Math.abs(dy) > 4) this.leftMoved = true;
       if (this.leftMoved) this.hud?.showSelectionBox(this.selectionStart.x, this.selectionStart.y, e.clientX, e.clientY);
     }
-    // cursor + hover tooltip
+    // cursor + hover tooltip: one pick per frame, shared by the tooltip and the action icon
     if (!this.gameEnded && !this.placingBuilding) {
-      const info = this.computeHover(e.clientX, e.clientY);
-      const hasSel = this.selectedUnits.length > 0 || this.selectedBuilding !== null;
-      const icon = hasSel ? this.hoverAction(e.clientX, e.clientY) : null;
-      this.renderer.domElement.style.cursor = icon ? 'none' : info ? 'pointer' : 'default';
-      this.hud?.setHover(info, e.clientX, e.clientY);
-      this.hud?.setCursor(icon, e.clientX, e.clientY);
+      this.pendingHover.set(e.clientX, e.clientY);
+      if (this.hoverRaf === 0) this.hoverRaf = requestAnimationFrame(this.flushHover);
     }
   };
 
+  private flushHover = (): void => {
+    this.hoverRaf = 0;
+    if (this.gameEnded || this.placingBuilding) return;
+    const { x, y } = this.pendingHover;
+    const picked = this.pickScene(x, y);
+    const info = this.computeHover(picked);
+    const hasSel = this.selectedUnits.length > 0 || this.selectedBuilding !== null;
+    const icon = hasSel ? this.hoverAction(picked) : null;
+    this.renderer.domElement.style.cursor = icon ? 'none' : info ? 'pointer' : 'default';
+    this.hud?.setHover(info, x, y);
+    this.hud?.setCursor(icon, x, y);
+  };
+
+  /** Everything under the cursor, resolved once and reused by the tooltip and the action icon. */
+  private pickScene(sx: number, sy: number): PickResult {
+    const resource = this.pickResource(sx, sy);
+    if (resource) return { resource };
+    return { resource: null, ...this.pickAt(sx, sy) };
+  }
+
   /** Contextual action icon according to what is under the cursor and the selection. */
-  private hoverAction(sx: number, sy: number): string | null {
+  private hoverAction(picked: PickResult): string | null {
     if (this.placingBuilding) return '🚧';
-    const node = this.pickResource(sx, sy);
-    if (node) {
+    if (picked.resource) {
       const hasWorker = this.selectedUnits.some((id) => this.units.get(id)?.kind === UnitKind.WORKER);
       return hasWorker ? '⛏️' : null;
     }
-    const picked = this.pickAt(sx, sy);
     if (picked.unit) {
       if (picked.unit.owner === 0) return null;
       const canConvert = this.selectedUnits.some((id) => this.units.get(id)?.kind === UnitKind.COMMISSAR);
@@ -709,13 +728,12 @@ export class Game {
   }
 
   /** Information about the entity or resource under the cursor (for the tooltip). */
-  private computeHover(sx: number, sy: number): { icon: string; title: string; detalle: string } | null {
-    const node = this.pickResource(sx, sy);
-    if (node) {
+  private computeHover(picked: PickResult): { icon: string; title: string; detalle: string } | null {
+    if (picked.resource) {
+      const node = picked.resource;
       const ni = NODE_INFO[node.kind];
       return { icon: ni.icon, title: ni.name, detalle: `${Math.ceil(node.amount)} ${RESOURCE_INFO[node.resource].name}` };
     }
-    const picked = this.pickAt(sx, sy);
     if (picked.unit) {
       const ui = UNIT_INFO[picked.unit.kind];
       const own = picked.unit.owner === 0 ? 'Tú' : this.players[picked.unit.owner]?.name ?? 'Enemigo';
@@ -787,23 +805,14 @@ export class Game {
   private pickEntity(sx: number, sy: number): { unit?: Unit; building?: Building } {
     const ndc = new THREE.Vector2((sx / window.innerWidth) * 2 - 1, -(sy / window.innerHeight) * 2 + 1);
     this.raycaster.setFromCamera(ndc, this.camera.camera);
-    const meshes: THREE.Object3D[] = [];
-    for (const u of this.units.values()) meshes.push(u.view.group);
-    for (const b of this.buildings.values()) meshes.push(b.view.group);
-    const hits = this.raycaster.intersectObjects(meshes, true);
-    if (hits.length === 0) return {};
+    const proxies: THREE.Object3D[] = [];
+    for (const u of this.units.values()) if (!u.dead) proxies.push(u.view.pickProxy);
+    for (const b of this.buildings.values()) if (!b.dead) proxies.push(b.view.pickProxy);
+    const hits = this.raycaster.intersectObjects(proxies, false);
     for (const h of hits) {
-      const obj = h.object;
-      let cur: THREE.Object3D | null = obj;
-      while (cur) {
-        for (const u of this.units.values()) {
-          if (u.view.group === cur) return { unit: u };
-        }
-        for (const b of this.buildings.values()) {
-          if (b.view.group === cur) return { building: b };
-        }
-        cur = cur.parent;
-      }
+      const e = h.object.userData.owner;
+      if (e instanceof Unit) return { unit: e };
+      if (e instanceof Building) return { building: e };
     }
     return {};
   }
@@ -1716,7 +1725,7 @@ export class Game {
       }
       u.view.dispose();
       disposeModel(old);
-      u.view = new EntityView(model, u.radius);
+      u.view = new EntityView(model, u.radius, u);
       u.findPivots(model);
       // reset multipliers before re-applying (avoids double counting)
       u.attackMultiplier = 1;
@@ -2014,6 +2023,7 @@ export class Game {
 
   destroy(): void {
     this.loop.stop();
+    if (this.hoverRaf) cancelAnimationFrame(this.hoverRaf);
     this.camera.dispose();
     window.removeEventListener('resize', this.onResizeBound);
     const canvas = this.renderer.domElement;

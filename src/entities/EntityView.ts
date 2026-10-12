@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { EntityRef } from '../core/types';
+import type { Unit } from './Unit';
+import type { Building } from './Building';
 
 /** Global entity id counter. */
 let nextId = 1;
@@ -17,13 +19,38 @@ export class EntityView {
   private losRing: THREE.Mesh | null = null;
   private blobShadow: THREE.Mesh | null = null;
   readonly radius: number;
+  /** Invisible box standing in for the whole model in raycasts (one test per entity). */
+  readonly pickProxy: THREE.Mesh;
+  private static readonly pickMaterial = new THREE.MeshBasicMaterial();
 
-  constructor(model: THREE.Group, radius: number) {
+  constructor(model: THREE.Group, radius: number, owner: Unit | Building) {
     this.group = model;
     this.radius = radius;
     this.hpBg = new THREE.Mesh();
     this.hpFill = new THREE.Mesh();
+    this.pickProxy = this.buildPickProxy(model, radius);
+    this.pickProxy.userData.owner = owner;
+    this.group.add(this.pickProxy);
+    this.pickProxy.updateWorldMatrix(true, false);
     this.addBlobShadow(radius);
+  }
+
+  private buildPickProxy(model: THREE.Group, radius: number): THREE.Mesh {
+    model.updateWorldMatrix(true, true);
+    const box = new THREE.Box3().setFromObject(model);
+    const size = new THREE.Vector3(radius * 2, radius * 2.4, radius * 2);
+    const center = new THREE.Vector3(0, radius * 1.2, 0);
+    if (!box.isEmpty()) {
+      // the bounds are world-space; bring them into the model's frame so the child proxy is not offset twice
+      box.applyMatrix4(new THREE.Matrix4().copy(model.matrixWorld).invert());
+      box.getSize(size);
+      box.getCenter(center);
+    }
+    const geometry = new THREE.BoxGeometry(Math.max(size.x, 0.2), Math.max(size.y, 0.2), Math.max(size.z, 0.2));
+    geometry.translate(center.x, center.y, center.z);
+    const mesh = new THREE.Mesh(geometry, EntityView.pickMaterial);
+    mesh.visible = false;
+    return mesh;
   }
 
   /** AoE2-style contact shadow (soft radial blob) under the entity. */
@@ -179,6 +206,8 @@ export class EntityView {
     kill(this.losRing);
     kill(this.hpBg);
     kill(this.hpFill);
+    this.pickProxy.geometry.dispose();
+    this.pickProxy.removeFromParent();
     this.healthBar?.removeFromParent();
   }
 
