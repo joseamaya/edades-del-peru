@@ -1,19 +1,16 @@
 import fs from 'fs';
 import path from 'path';
-import { launchChromium, withViteServer, reviewDir } from './lib.mjs';
+import { launchChromium, withViteServer, reviewDir, cliArg } from './lib.mjs';
 
 /**
  * Capture game screenshots for the subagent visual review.
  * Usage: node scripts/screenshot.mjs [name] [--url=...] [--wait=ms] [--seed=...]
  */
 const name = process.argv[2] ?? 'default';
-const urlArg = process.argv.find((a) => a.startsWith('--url='));
-const waitArg = process.argv.find((a) => a.startsWith('--wait='));
-const seedArg = process.argv.find((a) => a.startsWith('--seed='));
-const shotsArg = process.argv.find((a) => a.startsWith('--shots='));
-const wait = waitArg ? parseInt(waitArg.split('=')[1]) : 6000;
-const seed = seedArg ? parseInt(seedArg.split('=')[1]) : 12345;
-const numShots = shotsArg ? parseInt(shotsArg.split('=')[1]) : 1;
+const urlArg = cliArg('url');
+const wait = parseInt(cliArg('wait', '6000'), 10);
+const seed = parseInt(cliArg('seed', '12345'), 10);
+const numShots = parseInt(cliArg('shots', '1'), 10);
 
 const outDir = reviewDir();
 
@@ -29,7 +26,7 @@ async function main() {
     if (m.type() === 'error') errors.push('CONSOLE: ' + m.text());
   });
 
-  const url = urlArg ? urlArg.split('=')[1] : base + `/?seed=${seed}&fog=0&low=1`;
+  const url = urlArg ?? base + `/?seed=${seed}&fog=0&low=1`;
 
   await page.goto(url, { waitUntil: 'networkidle' });
   // wait for the game to be ready

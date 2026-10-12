@@ -129,23 +129,27 @@ for player-facing docs see [`README.md`](../README.md).
 
 ## Performance benchmarks
 
-`yarn bench [--units=100,300,500,1000] [--seed=777] [--render-ms=3000]` boots a match in Chromium
+`yarn bench [--units=100,300,500,1000] [--seed=777]` boots a match in Chromium
 (SwiftShader) and, per scale, spawns N soldiers and measures: spawn/destroy time, simulation step time
-(`Game.update`), A* per call, target acquisition (`enemiesNear`) and, with the loop running, FPS and real
-scene draw calls/triangles (via the `window.__directRender` debug hook, which bypasses post-processing so
-`renderer.info` is meaningful). It writes `review/bench.json` and prints a table.
+(`Game.update`), heap delta during the sim loop, A* per call, target acquisition (`enemiesNear`) and
+hover-picking (`pickAt`), then — with the loop running and `window.__directRender` on (bypasses
+post-processing so `renderer.info` is meaningful) — FPS, frame time (avg/p95), long tasks and real scene
+draw calls/triangles. It writes `review/bench.json` and prints a table.
 
 Numbers are only comparable **on the same machine/browser** — treat them as relative signals, not targets.
 Reference run (this repo, 2-core container, `CHROME_PATH` SwiftShader, `?low=1`, seed 777):
 
-| units | spawn ms | sim ms/step | A* ms/call | target µs/call | draw calls | triangles | heap MB |
-|---|---|---|---|---|---|---|---|
-| 100 | 44 | 0.9 | 0.24 | 2.7 | ~8.8k | 2.8M | 55 |
-| 300 | 120 | 1.5 | 0.14 | 2.5 | ~25k | 7.3M | 77 |
-| 500 | 238 | 1.7 | 0.13 | 2.5 | ~40k | 11.6M | 88 |
-| 1000 | 408 | 4.1 | 0.11 | 2.7 | ~79k | 22.3M | 157 |
+| units | spawn ms | sim ms/step | heap Δ/loop MB | A* ms/call | target µs/call | pick ms/call | frame ms (avg/p95) | draw calls | triangles | heap MB |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 100 | 26 | 0.5 | ~9 | 0.12 | 1.5 | 0.3 | ~630/914 | ~8.8k | 2.8M | 55 |
+| 300 | 113 | 0.9 | ~16 | 0.12 | 0.5 | 1.0 | ~915/1514 | ~25k | 7.3M | 83 |
+| 500 | 157 | 1.1 | ~0 | 0.09 | 1.0 | 2.1 | ~1093/1375 | ~41k | 11.7M | 94 |
+| 1000 | 298 | 2.0 | ~26 | 0.13 | 0.7 | 5.2 | ~1510/1510 | ~79k | 22.3M | 137 |
 
-Reading: the **simulation and pathfinding are cheap** (≈4 ms/step at 1000 units, well under the 16.6 ms
-budget; A* is sub-millisecond). The bottleneck is **draw calls** (~80 per unit — each unit is a group of
-many meshes, doubled by the shadow pass — with no instancing for units). Any raising of the unit ceiling
-should target that first, backed by this table.
+Reading: the **simulation, pathfinding and target acquisition are cheap** (≈0.5–2 ms/step up to 1000 units,
+well under the 16.6 ms budget; A* is ~0.1 ms and independent of unit count — the column is a map sample,
+not a scaling result). The bottlenecks are **draw calls** (~80 per unit — each unit is a group of many
+meshes, doubled by the shadow pass — with no instancing for units) and **hover picking** (~5 ms per call at
+1000, an O(N) raycast run on every `mousemove`). Frame time is dominated by the software renderer, so use
+draw calls + pick time as the actionable signals. Any raising of the unit ceiling should target those two
+first, backed by this table.
