@@ -108,7 +108,7 @@ export class Building {
     if (!this.constructionMats) this.constructionMats = [];
     this.view.group.traverse((obj) => {
       const m = obj as THREE.Mesh;
-      if (!m.isMesh) return;
+      if (!m.isMesh || !m.visible) return;
       const mats = Array.isArray(m.material) ? m.material : [m.material];
       for (const raw of mats) {
         const mat = raw as THREE.MeshStandardMaterial;

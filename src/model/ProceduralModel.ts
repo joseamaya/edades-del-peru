@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { CivDef } from './defs/civs';
 import { ModelSpec } from './defs/units';
 import { Era } from '../core/types';
@@ -23,10 +24,10 @@ function cachedGeo<T extends THREE.BufferGeometry>(key: string, make: () => T): 
   return sharedGeo[key] as T;
 }
 
-/** Texture clones with a specific UV repeat, shared between meshes. */
-const texCloneCache = new Map<string, THREE.CanvasTexture>();
 /** Geometries with baked AO, memoized by the source geometry uuid. */
 const bakedGeoCache = new Map<string, THREE.BufferGeometry>();
+/** Materials shared by appearance (so equal parts can be merged into one draw). */
+const matCache = new Map<string, THREE.MeshStandardMaterial>();
 
 interface MatOpts {
   metalness?: number;
@@ -71,6 +72,9 @@ const TEX_GEN: Partial<Record<TexKind, string>> = {
 };
 
 function mat(color: string, opts: MatOpts = {}): THREE.MeshStandardMaterial {
+  const key = `${color}|${opts.metalness ?? ''}|${opts.roughness ?? ''}|${opts.emissive ?? ''}|${opts.emissiveIntensity ?? ''}|${opts.vertexColors ? 1 : 0}|${opts.opacity ?? ''}|${opts.transparent ? 1 : 0}|${opts.flatShading ? 1 : 0}|${opts.tex ?? ''}|${opts.normal ?? ''}`;
+  const cached = matCache.get(key);
+  if (cached) return cached;
   const m = new THREE.MeshStandardMaterial({
     color,
     metalness: opts.metalness ?? 0.15,
@@ -110,7 +114,16 @@ function mat(color: string, opts: MatOpts = {}): THREE.MeshStandardMaterial {
       }
     }
   }
+  matCache.set(key, m);
   return m;
+}
+
+/** Scale a geometry's UVs so a shared texture tiles (replaces per-texture clones). */
+function scaleUv(g: THREE.BufferGeometry, rx: number, ry: number): void {
+  const uv = g.getAttribute('uv') as THREE.BufferAttribute | undefined;
+  if (!uv) return;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * rx, uv.getY(i) * ry);
+  uv.needsUpdate = true;
 }
 
 interface PartOpts extends MatOpts {
@@ -136,28 +149,22 @@ class Builder {
 
   box(w: number, h: number, d: number, color: string, o: PartOpts = {}): THREE.Mesh {
     const m = mat(color, o);
+    // automatic UV repeat according to face size, baked into the geometry so the
+    // texture (and therefore the material) can be shared
+    let rx = 1;
+    let ry = 1;
+    let uvKey = '';
     if (o.tex) {
-      // automatic UV repeat according to face size (coherent texture)
       const scale = o.texScale ?? 1;
-      const rx = Math.max(1, Math.min(6, Math.round(Math.max(w, d) * 2.2) * scale));
-      const ry = Math.max(1, Math.min(6, Math.round(h * 2.2) * scale));
-      const key = `${o.tex}:${rx}:${ry}`;
-      let t = texCloneCache.get(key);
-      if (!t) {
-        t = (m.map as THREE.CanvasTexture).clone();
-        t.repeat.set(rx, ry);
-        t.needsUpdate = true;
-        texCloneCache.set(key, t);
-      }
-      m.map = t;
+      rx = Math.max(1, Math.min(6, Math.round(Math.max(w, d) * 2.2) * scale));
+      ry = Math.max(1, Math.min(6, Math.round(h * 2.2) * scale));
+      uvKey = `-${rx}x${ry}`;
     }
-    const geo = cachedGeo(`box-${w}-${h}-${d}-${o.flatShading ? 1 : 0}`, () => {
-      if (o.flatShading) {
-        const g = new THREE.BoxGeometry(w, h, d);
-        g.toNonIndexed();
-        return g;
-      }
-      return new RoundedBoxGeometry(w, h, d, 2, 0.045);
+    const geo = cachedGeo(`box-${w}-${h}-${d}-${o.flatShading ? 1 : 0}${uvKey}`, () => {
+      const g = o.flatShading ? new THREE.BoxGeometry(w, h, d) : new RoundedBoxGeometry(w, h, d, 2, 0.045);
+      if (o.flatShading) g.toNonIndexed();
+      if (uvKey) scaleUv(g, rx, ry);
+      return g;
     });
     const mesh = new THREE.Mesh(geo, m);
     mesh.position.set(o.x ?? 0, o.y ?? 0, o.z ?? 0);
@@ -1461,8 +1468,28 @@ function buildWonder(b: Builder): void {
 
 // ---------------------------------------------------------------------------
 
-/** Build a parametric model according to the type. */
+/** Built model templates by signature (geometry is shared; materials are per instance). */
+const modelCache = new Map<string, THREE.Group>();
+
+/** Build a parametric model. Returns a clone that owns its materials (geometry is shared). */
 export function buildModel(spec: ModelSpec, ctx: BuildContext): THREE.Group {
+  const key = `${spec.type}|${spec.scale ?? 1}|${ctx.era}|${ctx.civ.id}`;
+  let template = modelCache.get(key);
+  if (!template) {
+    template = buildModelTemplate(spec, ctx);
+    modelCache.set(key, template);
+  }
+  const inst = template.clone();
+  inst.traverse((obj) => {
+    const mesh = obj as THREE.Mesh;
+    if (!mesh.isMesh) return;
+    if (Array.isArray(mesh.material)) mesh.material = mesh.material.map((m) => m.clone());
+    else if (mesh.material) mesh.material = mesh.material.clone();
+  });
+  return inst;
+}
+
+function buildModelTemplate(spec: ModelSpec, ctx: BuildContext): THREE.Group {
   const { type, scale } = spec;
   let g: THREE.Group;
   if (type.startsWith('worker')) g = buildWorker(type, ctx);
@@ -1481,53 +1508,105 @@ export function buildModel(spec: ModelSpec, ctx: BuildContext): THREE.Group {
 
   if (scale) g.scale.setScalar(scale);
   bakeVertexAO(g);
+  mergeStaticParts(g);
   return g;
 }
 
 /** Bake AO into vertex colors (darkens the base), memoized by source geometry. */
+function aoGeometry(geo: THREE.BufferGeometry): THREE.BufferGeometry {
+  const owned = bakedGeoCache.get(geo.uuid);
+  if (owned) return owned;
+  const posAttr = geo.getAttribute('position');
+  const clone = geo.clone();
+  if (posAttr) {
+    const n = posAttr.count;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    for (let i = 0; i < n; i++) {
+      const y = posAttr.getY(i);
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+    }
+    const range = Math.max(0.001, maxY - minY);
+    const cols = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) {
+      const t = (posAttr.getY(i) - minY) / range;
+      const ao = 0.82 + 0.18 * t;
+      cols[i * 3] = ao;
+      cols[i * 3 + 1] = ao;
+      cols[i * 3 + 2] = ao;
+    }
+    clone.setAttribute('color', new THREE.BufferAttribute(cols, 3));
+  }
+  bakedGeoCache.set(geo.uuid, clone);
+  return clone;
+}
+
 function bakeVertexAO(root: THREE.Object3D): void {
   root.updateMatrixWorld(true);
   root.traverse((obj) => {
     const mesh = obj as THREE.Mesh;
-    if (!mesh.isMesh) return;
-    const geo = mesh.geometry;
+    if (!mesh.isMesh || !mesh.geometry.getAttribute('position')) return;
+    mesh.geometry = aoGeometry(mesh.geometry);
     const mat = mesh.material as THREE.MeshStandardMaterial;
-    if (mat.vertexColors) return;
-    const posAttr = geo.getAttribute('position');
-    if (!posAttr) return;
-    let owned = bakedGeoCache.get(geo.uuid);
-    if (!owned) {
-      const n = posAttr.count;
-      let minY = Infinity;
-      let maxY = -Infinity;
-      for (let i = 0; i < n; i++) {
-        const y = posAttr.getY(i);
-        if (y < minY) minY = y;
-        if (y > maxY) maxY = y;
-      }
-      const range = Math.max(0.001, maxY - minY);
-      // clone geometry to avoid polluting shared cached geometries
-      owned = geo.clone();
-      const cols = new Float32Array(n * 3);
-      for (let i = 0; i < n; i++) {
-        const t = (posAttr.getY(i) - minY) / range;
-        const ao = 0.82 + 0.18 * t;
-        cols[i * 3] = ao;
-        cols[i * 3 + 1] = ao;
-        cols[i * 3 + 2] = ao;
-      }
-      owned.setAttribute('color', new THREE.BufferAttribute(cols, 3));
-      bakedGeoCache.set(geo.uuid, owned);
+    if (!mat.vertexColors) {
+      mat.vertexColors = true;
+      mat.needsUpdate = true;
     }
-    mesh.geometry = owned;
-    mat.vertexColors = true;
-    mat.needsUpdate = true;
   });
 }
 
+/** Merge each container's static parts by material, keeping pivot groups intact. */
+function mergeStaticParts(container: THREE.Object3D): void {
+  const byMat = new Map<THREE.Material, THREE.Mesh[]>();
+  for (const child of container.children) {
+    const mesh = child as THREE.Mesh;
+    if (!mesh.isMesh || Array.isArray(mesh.material)) continue;
+    const group = byMat.get(mesh.material);
+    if (group) group.push(mesh);
+    else byMat.set(mesh.material, [mesh]);
+  }
+  for (const [material, meshes] of byMat) {
+    if (meshes.length < 2) continue;
+    const geos: THREE.BufferGeometry[] = [];
+    for (const mesh of meshes) {
+      mesh.updateMatrix();
+      let geo = mesh.geometry.clone();
+      if (geo.index) {
+        const flat = geo.toNonIndexed();
+        geo.dispose();
+        geo = flat;
+      }
+      ensureMergeAttrs(geo);
+      geo.applyMatrix4(mesh.matrix);
+      geos.push(geo);
+    }
+    const merged = mergeGeometries(geos, false);
+    for (const geo of geos) geo.dispose();
+    if (!merged) continue;
+    const out = new THREE.Mesh(merged, material);
+    out.castShadow = meshes[0].castShadow;
+    out.receiveShadow = meshes[0].receiveShadow;
+    out.name = 'part';
+    for (const mesh of meshes) mesh.removeFromParent();
+    container.add(out);
+  }
+  for (const child of [...container.children]) {
+    if ((child as THREE.Group).isGroup) mergeStaticParts(child);
+  }
+}
+
+/** Give a geometry the attributes the merge needs (position/normal/uv/color). */
+function ensureMergeAttrs(geo: THREE.BufferGeometry): void {
+  const count = geo.getAttribute('position')?.count ?? 0;
+  if (!geo.getAttribute('normal')) geo.computeVertexNormals();
+  if (!geo.getAttribute('uv')) geo.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(count * 2), 2));
+  if (!geo.getAttribute('color')) geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(count * 3).fill(1), 3));
+}
+
 /**
- * Free a model's materials. Geometries and textures are shared
- * (global cache), so they are NOT disposed here; they are freed with clearModelCaches().
+ * Free a model instance's materials. Geometries are shared (cached per template)
+ * and textures are cached, so they are freed with clearModelCaches() instead.
  */
 export function disposeModel(g: THREE.Group): void {
   g.traverse((obj) => {
@@ -1539,14 +1618,21 @@ export function disposeModel(g: THREE.Group): void {
   });
 }
 
-/** Free all shared geometries/textures of the model generator. */
+/** Free all shared geometries/materials/textures of the model generator. */
 export function clearModelCaches(): void {
   for (const k of Object.keys(sharedGeo)) {
     sharedGeo[k].dispose();
     delete sharedGeo[k];
   }
+  for (const tpl of modelCache.values()) {
+    tpl.traverse((obj) => {
+      const mesh = obj as THREE.Mesh;
+      if (mesh.isMesh) mesh.geometry.dispose();
+    });
+  }
+  modelCache.clear();
   for (const g of bakedGeoCache.values()) g.dispose();
   bakedGeoCache.clear();
-  for (const t of texCloneCache.values()) t.dispose();
-  texCloneCache.clear();
+  for (const m of matCache.values()) m.dispose();
+  matCache.clear();
 }
