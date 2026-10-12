@@ -26,6 +26,14 @@ test('model materials are per instance and do not leak between entities', async 
     const workers = [...g.units.values()].filter((u: any) => u.kind === 'worker' && u.owner === 0);
     const shared = workers.length >= 2 && mats(workers[0].view.group)[0] === mats(workers[1].view.group)[0];
 
+    // the carry bundle tints per resource, so its material must not use baked vertex colours
+    let carryPivot: any = null;
+    workers[0].view.group.traverse((o: any) => {
+      if (o.name === 'pivot:carry') carryPivot = o;
+    });
+    const carryMesh = carryPivot?.children.find((c: any) => c.isMesh);
+    const carryVertexColors = carryMesh ? carryMesh.material.vertexColors : null;
+
     const center = [...g.buildings.values()].find((b: any) => b.kind === 'center' && b.owner === 0);
     const centerTransparentBefore = mats(center.view.group).filter((m) => m.transparent === true).length;
 
@@ -50,6 +58,7 @@ test('model materials are per instance and do not leak between entities', async 
 
     return {
       shared,
+      carryVertexColors,
       centerTransparentBefore,
       centerTransparentAfter,
       houseFaded,
@@ -60,6 +69,7 @@ test('model materials are per instance and do not leak between entities', async 
   });
 
   expect(res.shared).toBe(false);
+  expect(res.carryVertexColors).toBe(false);
   expect(res.centerTransparentAfter).toBe(res.centerTransparentBefore);
   expect(res.houseFaded).toBe(true);
   expect(res.houseColorAfter).toBe(res.houseColorBefore);
