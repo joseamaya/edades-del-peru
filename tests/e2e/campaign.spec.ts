@@ -38,8 +38,10 @@ test('the tutorial guides in the first mission', async ({ page }) => {
   const overlay = page.locator('.ed-overlay', { hasText: 'La Ciudad Sagrada' });
   await expect(overlay).toBeVisible({ timeout: 30_000 });
   await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+  await overlay.waitFor({ state: 'detached', timeout: 15_000 });
   const tutorial = page.locator('#ed-tutorial');
-  await expect(tutorial).toBeVisible({ timeout: 15_000 });
+  // the first step appears after ~1.2s of game time; be generous on slow runners
+  await expect(tutorial).toBeVisible({ timeout: 30_000 });
   await expect(tutorial).toContainText('Selecciona a tus obreros');
   await expect(tutorial).toContainText('Paso 1 / 5');
 });
