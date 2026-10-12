@@ -184,8 +184,8 @@ export class Mission {
   }
 
   private checkBaseLost(): void {
-    const hasCenter = [...this.game.buildings.values()].some((b) => b.owner === 0 && b.kind === BuildingKind.CENTER && !b.dead);
-    if (!hasCenter) {
+    // conquest: the mission is lost only when no player building remains standing
+    if (!this.game.hasBuildings(0)) {
       this.defeat();
     }
   }

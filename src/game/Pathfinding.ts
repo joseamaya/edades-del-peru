@@ -18,6 +18,9 @@ const DIRS = [
   [1, 1], [1, -1], [-1, 1], [-1, -1],
 ];
 
+/** Chebyshev cell distance to an obstacle goal accepted as "arrived" (see pathfind). */
+const GOAL_PROXIMITY = 2;
+
 /** Reusable min binary heap (avoids O(n) forEach per iteration). */
 class MinHeap {
   private idx: number[] = [];
@@ -160,7 +163,13 @@ export class Pathfinder {
     goal.x = Math.max(0, Math.min(cols - 1, goal.x));
     goal.z = Math.max(0, Math.min(cols - 1, goal.z));
 
-    if (this.grid.walkable[goal.z * cols + goal.x] === 0) {
+    // A goal sitting on an obstacle (building, resource node) is not directly
+    // traversable: accept any cell within GOAL_PROXIMITY of it. Picking a single
+    // `nearestWalkable` cell is not enough — it can be an isolated pocket.
+    const destX = goal.x;
+    const destZ = goal.z;
+    const destWalkable = this.grid.walkable[goal.z * cols + goal.x] === 1;
+    if (!destWalkable) {
       const alt = this.nearestWalkable(goal.x, goal.z, 12);
       if (!alt) return [];
       goal.x = alt.x;
@@ -191,6 +200,13 @@ export class Pathfinder {
       if (this.closed[best]) continue;
       if (best === goalIdx) {
         return this.reconstruct(this.cameFrom, best, cell);
+      }
+      if (!destWalkable) {
+        const bx = best % cols;
+        const bz = (best - bx) / cols;
+        if (Math.max(Math.abs(bx - destX), Math.abs(bz - destZ)) <= GOAL_PROXIMITY) {
+          return this.reconstruct(this.cameFrom, best, cell);
+        }
       }
       this.closed[best] = 1;
 

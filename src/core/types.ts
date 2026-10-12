@@ -162,6 +162,7 @@ export interface PlayerState {
     range: number;
     speed: number;
     training: number;
+    population: number;
   };
   stats: { created: number; destroyed: number; military: number; econ: number };
 }

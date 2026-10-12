@@ -1,4 +1,4 @@
-import { Era, UnitKind, Resources, ZERO_RESOURCES } from '../../core/types';
+import { Era, UnitKind, Resources, ZERO_RESOURCES, HistoricalPeriod } from '../../core/types';
 import { ERA_DEFS } from './eras';
 
 export type DamageClass = 'light' | 'heavy' | 'fortified';
@@ -41,6 +41,12 @@ export interface UnitArchetype {
   requiresTech?: string[];
   /** Does it need an advancement building (castle)? */
   requiresFortress?: boolean;
+  /**
+   * Earliest historical period in which the unit is plausible. Enforces the
+   * chronology rule (no firearms, horses, vehicles or engines before 1532) for
+   * scripted content; the era stats models the tech level. Default: Arcaico.
+   */
+  minPeriod?: HistoricalPeriod;
 }
 
 const BASE: Resources = ZERO_RESOURCES;
@@ -141,6 +147,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
   },
   sniper: {
     id: UnitKind.SNIPER,
+    minPeriod: HistoricalPeriod.VICEROYALTY,
     name: 'Cazador',
     description: 'Cazador de largo alcance. Devastador contra oficiales y tropas.',
     category: 'ranged',
@@ -164,6 +171,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
   },
   hussar: {
     id: UnitKind.HUSSAR,
+    minPeriod: HistoricalPeriod.VICEROYALTY,
     name: 'Jinete',
     description: 'Jinete ligero veloz. Perfecto para asaltar la economía y flanquear.',
     category: 'cavalry',
@@ -183,6 +191,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
   },
   cavalry: {
     id: UnitKind.CAVALRY,
+    minPeriod: HistoricalPeriod.VICEROYALTY,
     name: 'Caballería de Choque',
     description: 'Jinetes de choque. Golpean fuerte contra infantería y economía.',
     category: 'cavalry',
@@ -203,6 +212,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
   },
   tank: {
     id: UnitKind.TANK,
+    minPeriod: HistoricalPeriod.CONTEMPORARY,
     name: 'Ariete Blindado',
     description: 'Blindaje pesado y cañón de gran calibre. El rey del campo de batalla.',
     category: 'cavalry',
@@ -243,6 +253,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
   },
   anti_air: {
     id: UnitKind.ANTI_AIR,
+    minPeriod: HistoricalPeriod.CONTEMPORARY,
     name: 'Artillero Antiaéreo',
     description: 'Artillero de precisión: diezma unidades a distancia con fuego sostenido.',
     category: 'ranged',
@@ -266,6 +277,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
   },
   artillery: {
     id: UnitKind.ARTILLERY,
+    minPeriod: HistoricalPeriod.VICEROYALTY,
     name: 'Artillería de Asedio',
     description: 'Asedio de largo alcance. Destruye edificios y formaciones.',
     category: 'siege',
@@ -286,6 +298,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
   },
   mortar: {
     id: UnitKind.MORTAR,
+    minPeriod: HistoricalPeriod.VICEROYALTY,
     name: 'Mortero',
     description: 'Daño en área devastador. Ideal para aplastar formaciones.',
     category: 'siege',
@@ -329,6 +342,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
   },
   mec: {
     id: UnitKind.MECH,
+    minPeriod: HistoricalPeriod.CONTEMPORARY,
     name: 'Guardián Blindado',
     description: 'Vehículo blindado de asalto. La unidad más poderosa del Perú contemporáneo.',
     category: 'unique',
@@ -348,6 +362,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
   },
   nuclear: {
     id: UnitKind.NUCLEAR,
+    minPeriod: HistoricalPeriod.CONTEMPORARY,
     name: 'Artillería de Cohetes',
     description: 'Artillería de cohetes de largo alcance. Devastación en área masiva.',
     category: 'siege',
@@ -457,6 +472,11 @@ export function getUnitStats(kind: UnitKind, era: Era): UnitStats {
   if (mods.speed) clone.speed = base.speed * mods.speed;
   clone.cost = { ...base.cost };
   return clone;
+}
+
+/** Earliest historical period in which a unit is plausible (chronology guard). */
+export function unitMinPeriod(kind: UnitKind): HistoricalPeriod {
+  return UNIT_ARCHETYPES[kind].minPeriod ?? HistoricalPeriod.ARCHAIC;
 }
 
 /** Model to use for a unit in an era. */

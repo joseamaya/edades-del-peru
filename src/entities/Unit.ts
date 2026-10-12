@@ -967,10 +967,10 @@ export class Unit {
     this.convertProgress += dt / 5;
     this.ctx.particles?.emit({ x: target.pos.x, y: target.pos.y + 1, z: target.pos.z, count: 1, color: 0x66ffaa, kind: 'flare', speed: 0.2, life: 0.8, size: 1.4 });
     if (this.convertProgress >= 1) {
-      // conversion
+      // conversion: `team` is derived from `owner`, so reassigning owner is enough
       const from = target.owner;
       target.owner = this.owner;
-      target.team = this.team;
+      target.clearOrders?.();
       this.ctx.event('unit:converted', { id: target.id, from, to: this.owner });
       this.finishOrder();
     }
