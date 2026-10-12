@@ -127,3 +127,26 @@ test('the AI trains a mixed army (melee + ranged)', async ({ page }) => {
   expect(cats).toContain('melee');
   expect(cats).toContain('ranged');
 });
+
+test('the AI attacks enemy buildings when it has an army', async ({ page }) => {
+  await bootSkirmish(page);
+  const attacking = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.addAI(0);
+    const enemy = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'center');
+    for (let i = 0; i < 8; i++) g.spawnScriptedUnit('soldier', 0, enemy.pos.x + 6 + i, enemy.pos.z);
+    let t = 0;
+    for (let i = 0; i < 60 * 70; i++) {
+      g.update(1 / 60, t);
+      t += 1 / 60;
+    }
+    const enemyBuildings = new Set(
+      [...g.buildings.values()].filter((b: any) => b.owner === 1 && !b.dead).map((b: any) => b.id),
+    );
+    return [...g.units.values()].filter(
+      (u: any) =>
+        u.owner === 0 && !u.dead && u.orderQueue[0]?.kind === 'attack' && enemyBuildings.has(u.orderQueue[0].entityId),
+    ).length;
+  });
+  expect(attacking).toBeGreaterThan(0);
+});
