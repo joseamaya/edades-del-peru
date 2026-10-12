@@ -53,11 +53,12 @@ export function validateSave(raw: unknown): SaveData | null {
   return raw as SaveData;
 }
 
-export function saveToStorage(data: SaveData): void {
+export function saveToStorage(data: SaveData): boolean {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    return true;
   } catch {
-    /* storage full or blocked */
+    return false;
   }
 }
 
@@ -70,12 +71,6 @@ export function loadFromStorage(): SaveData | null {
   }
 }
 
-/** True if a valid save of the current version exists. */
 export function hasSave(): boolean {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? validateSave(JSON.parse(raw)) !== null : false;
-  } catch {
-    return false;
-  }
+  return loadFromStorage() !== null;
 }

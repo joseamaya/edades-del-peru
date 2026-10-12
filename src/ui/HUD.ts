@@ -610,8 +610,8 @@ export class HUD {
       const save = this.el('button', 'ed-ghostbtn', row);
       save.textContent = '💾 Guardar partida';
       save.addEventListener('click', () => {
-        this.game.saveMatch();
-        this.showToast('Partida guardada', 'success');
+        if (this.game.saveMatch()) this.showToast('Partida guardada', 'success');
+        else this.showToast('No se pudo guardar la partida', 'error');
       });
     }
     const settings = this.el('button', 'ed-ghostbtn', row);
@@ -1182,9 +1182,9 @@ export class HUD {
     rows2.appendChild(this.field('Hora del día', this.select(['morning', 'noon', 'dusk', 'night'] as const, { 'morning': 'Mañana', 'noon': 'Mediodía', 'dusk': 'Atardecer', 'night': 'Noche' }, this.game.settings.timeOfDay, (v) => this.setTimeOfDay(v))));
     rows2.appendChild(this.field('Victoria', this.select(['conquest', 'wonder'] as const, { conquest: 'Conquista', wonder: 'Huaca Sagrada' }, this.game.settings.victoryMode, (v) => (this.game.settings.victoryMode = v))));
     if (hasSave()) {
-      const cont = this.el('button', 'ed-primary', panel);
-      cont.textContent = '▶ Continuar partida';
-      cont.addEventListener('click', () => {
+      const continueBtn = this.el('button', 'ed-primary', panel);
+      continueBtn.textContent = '▶ Continuar partida';
+      continueBtn.addEventListener('click', () => {
         this.setMenuOpen(false);
         this.clearOverlays();
         this.game.loadMatch();

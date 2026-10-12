@@ -89,13 +89,12 @@ test('saves and loads a skirmish match', async ({ page }) => {
   expect(Math.abs((after.uz as number) - before.uz)).toBeLessThan(2);
 });
 
-test('loading without a save starts a normal match', async ({ page }) => {
+test('loading without a save shows the main menu', async ({ page }) => {
   await page.goto('/?load=1&seed=777&fog=0&low=1');
-  await waitReady(page);
-  const info = await page.evaluate(() => {
-    const g = (window as unknown as { game: any }).game;
-    return { units: g.units.size, buildings: g.buildings.size };
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
   });
-  expect(info.units).toBeGreaterThan(0);
-  expect(info.buildings).toBeGreaterThan(0);
+  const menu = page.locator('.ed-overlay', { hasText: 'EDADES DEL PERÚ' });
+  await expect(menu).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole('button', { name: /INICIAR ESCARAMUZA/ })).toBeVisible();
 });

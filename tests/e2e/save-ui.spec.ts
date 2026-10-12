@@ -19,6 +19,11 @@ test('saves from the pause menu and resumes from the main menu', async ({ page }
   await waitReady(page);
 
   // pause (P) and save from the pause panel
+  const before = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    return { units: g.units.size, buildings: g.buildings.size };
+  });
   await page.keyboard.press('p');
   const save = page.getByRole('button', { name: /Guardar partida/ });
   await save.waitFor({ timeout: 10_000 });
@@ -32,4 +37,10 @@ test('saves from the pause menu and resumes from the main menu', async ({ page }
   await cont.click();
   await waitReady(page);
   expect(new URL(page.url()).searchParams.get('load')).toBe('1');
+  const after = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    return { units: g.units.size, buildings: g.buildings.size };
+  });
+  expect(after).toEqual(before);
 });
