@@ -6,6 +6,7 @@ import { buildModel, BuildContext, disposeModel } from '../model/ProceduralModel
 import { EntityView } from './EntityView';
 import { allocId } from './EntityView';
 import { getUnitStats } from '../model/defs/units';
+import { unitMinPeriod } from '../model/defs/units';
 import { getTech } from '../model/defs/techs';
 import { clamp } from '../util/math';
 import type { BuildingSave } from '../game/saveTypes';
@@ -191,6 +192,8 @@ export class Building {
         }
       }
     }
+    // chronology guard: no firearms/horses/etc. before their historical period
+    if (this.ctx?.period !== undefined && unitMinPeriod(unit) > this.ctx.period) return false;
     const stats = getUnitStats(unit, this.era);
     const player = this.ctx?.players?.find((p: any) => p.id === this.owner);
     if (player && player.populationUsed + stats.population > player.populationCap) return false;

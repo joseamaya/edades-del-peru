@@ -12,7 +12,7 @@ import {
   HistoricalPeriod,
 } from '../core/types';
 import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../model/defs/buildings';
-import { UNIT_ARCHETYPES, getUnitStats, UNIT_INFO } from '../model/defs/units';
+import { UNIT_ARCHETYPES, getUnitStats, UNIT_INFO, unitMinPeriod } from '../model/defs/units';
 import { TECHS, getTech } from '../model/defs/techs';
 import { ERA_DEFS } from '../model/defs/eras';
 import { PERIODS, getPeriod } from '../model/defs/periods';
@@ -942,8 +942,9 @@ export class HUD {
       const tech = UNIT_ARCHETYPES[unitKind].requiresTech?.[0];
       const techOk = !tech || this.game.players[0].techs.has(tech);
       const eraOk = !!UNIT_ARCHETYPES[unitKind].eraModel[this.game.players[0].era];
+      const periodOk = unitMinPeriod(unitKind) <= this.game.settings.period;
       const fortOk = !UNIT_ARCHETYPES[unitKind].requiresFortress || b.kind === BuildingKind.FORTRESS;
-      const disabled = !techOk || !eraOk || !fortOk || !this.canAfford(stats.cost);
+      const disabled = !techOk || !eraOk || !periodOk || !fortOk || !this.canAfford(stats.cost);
       this.addCard(uInfo.icon, uInfo.name, this.costText(stats.cost), () => this.trainUnit(b.id, unitKind), {
         disabled,
         afford: !disabled && this.canAfford(stats.cost),

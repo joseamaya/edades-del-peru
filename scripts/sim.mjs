@@ -3,7 +3,7 @@ import { launchChromium, withViteServer, cliArg } from './lib.mjs';
 /**
  * Headless AI-vs-AI match runner.
  *
- * Usage: node scripts/sim.mjs [--seeds=777,778,779] [--max=1200] [--speed=...]
+ * Usage: node scripts/sim.mjs [--seeds=777,778,779] [--max=1200]
  *
  * Boots a skirmish, attaches an AI to both players and fast-forwards the
  * simulation (no rendering) until a side is defeated or the time cap is hit.
@@ -64,23 +64,33 @@ async function run(browser, base, seed) {
   return { seed, errors, ...result };
 }
 
-const { base, close } = await withViteServer();
-const browser = await launchChromium();
-const rows = [];
-for (const seed of seeds) rows.push(await run(browser, base, seed));
-await browser.close();
-await close();
+async function main() {
+  const { base, close } = await withViteServer();
+  const browser = await launchChromium();
+  try {
+    const rows = [];
+    for (const seed of seeds) rows.push(await run(browser, base, seed));
 
-console.log('\nseed | winner | seconds | ended | peak army (P0/P1) | resources P0/P1');
-console.log('-----|--------|---------|-------|-------------------|---------------');
-for (const r of rows) {
-  console.log(
-    `${String(r.seed).padEnd(4)} | ${(r.winner ?? '—').toString().padEnd(6)} | ${String(r.seconds).padEnd(7)} | ${(r.ended ? 'yes' : 'no').padEnd(5)} | ${String(r.peak0).padStart(4)} / ${String(r.peak1).padEnd(4)}        | ${r.res0} / ${r.res1}`,
-  );
-  if (r.errors.length) console.log(`     ! page errors: ${r.errors.join(' | ')}`);
+    console.log('\nseed | winner | seconds | ended | peak army (P0/P1) | resources P0/P1');
+    console.log('-----|--------|---------|-------|-------------------|---------------');
+    for (const r of rows) {
+      console.log(
+        `${String(r.seed).padEnd(4)} | ${(r.winner ?? '—').toString().padEnd(6)} | ${String(r.seconds).padEnd(7)} | ${(r.ended ? 'yes' : 'no').padEnd(5)} | ${String(r.peak0).padStart(4)} / ${String(r.peak1).padEnd(4)}        | ${r.res0} / ${r.res1}`,
+      );
+      if (r.errors.length) console.log(`     ! page errors: ${r.errors.join(' | ')}`);
+    }
+
+    const wins = [0, 0, 0]; // [p0, p1, undecided]
+    for (const r of rows) wins[r.winner === 0 ? 0 : r.winner === 1 ? 1 : 2]++;
+    const avg = Math.round(rows.reduce((s, r) => s + r.seconds, 0) / rows.length);
+    console.log(`\nsummary: P0 wins ${wins[0]}, P1 wins ${wins[1]}, undecided ${wins[2]} · avg ${avg}s`);
+  } finally {
+    await browser.close();
+    await close();
+  }
 }
 
-const wins = [0, 0, 0]; // [p0, p1, timeout]
-for (const r of rows) wins[r.winner === 0 ? 0 : r.winner === 1 ? 1 : 2]++;
-const avg = Math.round(rows.reduce((s, r) => s + r.seconds, 0) / rows.length);
-console.log(`\nsummary: P0 wins ${wins[0]}, P1 wins ${wins[1]}, undecided ${wins[2]} · avg ${avg}s`);
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

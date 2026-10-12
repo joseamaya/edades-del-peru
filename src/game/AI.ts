@@ -6,11 +6,13 @@ import { RNG } from '../util/rng';
 import { BUILDING_DEFS, getBuildingStats } from '../model/defs/buildings';
 import { UNIT_ARCHETYPES } from '../model/defs/units';
 import { getUnitStats } from '../model/defs/units';
+import { unitMinPeriod } from '../model/defs/units';
 import { ERA_DEFS } from '../model/defs/eras';
 import type { Game } from '../core/Game';
 import type { Unit } from '../entities/Unit';
 import { Building } from '../entities/Building';
 import type { ResourceNode } from '../entities/ResourceNode';
+import { CATEGORIES, UNIT_CATEGORY, armyWeightsFor, UnitCategory } from './aiComposition';
 
 /**
  * Opponent AI: macroeconomy (assigns workers), combat micro (focus fire,
@@ -30,33 +32,6 @@ const RETREAT_HP = 0.35;
 const RETREAT_MIN_DIST = 18;
 /** Scouting fallback destination (map fraction) when no enemy building is known. */
 const EXPLORE_FALLBACK = { x: 0.8, z: 0.2 } as const;
-
-/** Combat roles used to shape the AI army composition. */
-type UnitCategory = 'melee' | 'ranged' | 'cavalry' | 'siege';
-const CATEGORIES: UnitCategory[] = ['melee', 'ranged', 'cavalry', 'siege'];
-const UNIT_CATEGORY: Partial<Record<UnitKind, UnitCategory>> = {
-  [UnitKind.SOLDIER]: 'melee',
-  [UnitKind.MECH]: 'melee',
-  [UnitKind.MUSKETEER]: 'ranged',
-  [UnitKind.RIFLEMAN]: 'ranged',
-  [UnitKind.SNIPER]: 'ranged',
-  [UnitKind.ANTI_AIR]: 'ranged',
-  [UnitKind.HUSSAR]: 'cavalry',
-  [UnitKind.CAVALRY]: 'cavalry',
-  [UnitKind.TANK]: 'cavalry',
-  [UnitKind.ARTILLERY]: 'siege',
-  [UnitKind.MORTAR]: 'siege',
-  [UnitKind.NUCLEAR]: 'siege',
-};
-/** Desired army mix per era (indexed by `Era`), before countering the enemy. */
-const ARMY_MIX: Record<UnitCategory, number>[] = [
-  { melee: 1, ranged: 0, cavalry: 0, siege: 0 },
-  { melee: 2, ranged: 1, cavalry: 0, siege: 0 },
-  { melee: 2, ranged: 1, cavalry: 0.5, siege: 0 },
-  { melee: 1, ranged: 2, cavalry: 1, siege: 0.5 },
-  { melee: 1, ranged: 2, cavalry: 1, siege: 0.5 },
-  { melee: 1, ranged: 2, cavalry: 1, siege: 1 },
-];
 
 export class AI {
   private game: Game;
@@ -330,6 +305,7 @@ export class AI {
         if (!category) continue;
         const arch = UNIT_ARCHETYPES[u];
         if (arch.requiresTech && !arch.requiresTech.every((t) => p.techs.has(t))) continue;
+        if (unitMinPeriod(u) > this.game.settings.period) continue;
         if (!this.canAfford(getUnitStats(u, p.era).cost)) continue;
         candidates.push({ unit: u, bld, category });
       }
@@ -363,22 +339,16 @@ export class AI {
 
   /** Desired army mix for the era, nudged to counter the enemy's composition. */
   private armyWeights(): Record<UnitCategory, number> {
-    const w = { ...ARMY_MIX[this.p.era] };
     const team = this.p.team;
-    let eMelee = 0;
-    let eRanged = 0;
-    let eCavalry = 0;
+    const enemy = { melee: 0, ranged: 0, cavalry: 0 };
     for (const u of this.game.units.values()) {
       if (u.dead || u.owner === this.playerId || this.game.players[u.owner]?.team === team) continue;
       const c = UNIT_CATEGORY[u.kind];
-      if (c === 'melee') eMelee++;
-      else if (c === 'ranged') eRanged++;
-      else if (c === 'cavalry') eCavalry++;
+      if (c === 'melee') enemy.melee++;
+      else if (c === 'ranged') enemy.ranged++;
+      else if (c === 'cavalry') enemy.cavalry++;
     }
-    if (eRanged > eMelee) w.cavalry += 0.5; // close the distance against shooters
-    if (eMelee > eRanged) w.ranged += 0.5; // shoot the melee
-    if (eCavalry > 0) w.melee += 0.5; // hold the line against cavalry
-    return w;
+    return armyWeightsFor(this.p.era, enemy);
   }
 
   private researchCheck(): void {

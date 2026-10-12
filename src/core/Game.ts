@@ -139,7 +139,7 @@ export class Game {
     this.initHUD();
     this.mission = mis ? new Mission(this, mis, (win) => this.missionEnd(win)) : null;
     this.tutorial = mis && mis.tutorial && this.settings.showHints ? new Tutorial(this) : null;
-    if (!(mis && !mis.enemy.active)) this.addAI(1);
+    if (!mis || mis.enemy.active) this.addAI(1);
     this.audio.setEra(this.players[0].era);
     this.initAudio();
     if (mis && !this.pendingSnapshot) this.applyMissionSetup(mis);
@@ -602,7 +602,7 @@ export class Game {
     location.href = url.toString();
   }
 
-  /** Attach an AI controller to a player (AI-vs-AI runs/tests; skirmish only). */
+  /** Attach an AI controller to a player (AI-vs-AI runs/tests). */
   addAI(playerId: number): void {
     this.ais.push(new AI(this, playerId));
   }
@@ -1510,6 +1510,7 @@ export class Game {
       isVisibleTo: () => true,
       gather: (dropId, unitId, amount, resource) => this.deliverGather(dropId, unitId, amount, resource),
       worldSize: this.settings.mapSize,
+      period: this.settings.period,
       unitSpawn: this.unitSpawn,
       techComplete: this.techComplete,
       enemiesNear: (x, z, radius, owner) => this.enemiesNear(x, z, radius, owner),
