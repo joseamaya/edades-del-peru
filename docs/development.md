@@ -24,7 +24,8 @@ for player-facing docs see [`README.md`](../README.md).
 - **Civilization bonuses are real modifiers**: `CivDef.effects` (`CivEffects`) is seeded into `PlayerState.bonus`
   at match start and flows through the same paths as techs (`Game.applyPlayerBonuses`, `training`, `population`).
   `bonuses` is the player-facing text. Known simplification: effects apply globally (e.g. Moche's "infantry
-  attack" is a general attack bonus), not per unit category. Add effects for any new civ (tested in `defs.test.ts`).
+  attack" is a general attack bonus), not per unit category, and a few flavor bullets with no mechanic yet
+  (naval units, cheaper houses, building HP) are not modeled. Add effects for any new civ (tested in `defs.test.ts`).
 - **Maps by geography**: `MapType = 'coast' | 'andes' | 'altiplano' | 'jungle'` (generated in `Terrain.generate`).
 - `src/campaign/defs/campaign.ts` defines the 9 historical campaigns; `src/campaign/Mission.ts` evaluates
   objectives/triggers.
@@ -37,12 +38,16 @@ for player-facing docs see [`README.md`](../README.md).
 - **Chronology of units**: `UnitArchetype.minPeriod` (`src/model/defs/units.ts`) is the earliest historical
   period a unit is plausible in (default Arcaico). `tests/history.test.ts` forbids any campaign — including
   scripted waves/reinforcements — from spawning a unit before its `minPeriod` (no firearms, horses, vehicles
-  or engines before 1532). The internal `Era` only models the tech level, so scripted content must pass this guard.
+  or engines before 1532). Normal production is gated independently by `eraModel` + `requiresTech` (e.g.
+  `cavalry` has no model before Viceroyalty and needs the `shock_cavalry` tech), so `minPeriod` governs the
+  scripted content that those gates do not cover.
 - **AI (`src/game/AI.ts`)**: macromanagement (workers, build plan, tech, waves) plus `defendEconomy`
   (recalls idle military when an enemy nears any AI building/worker), `microCombat` retreat of badly wounded
   units and `explore` (idle scouts patrol toward the enemy base). It only uses the same systems as the player
   (`issueOrder`, `combatStance`); difficulty (`DIFFICULTY_MULT`) tunes decision cadence (`reaction`), macro
-  size (`econ`) and attack frequency (`aggression`) — **never a hidden resource/production bonus**.
+  size (`econ`) and attack frequency (`aggression`) — **never a hidden resource/production bonus**. Known
+  limitation: the AI ignores fog of war (it reads all entities), because fog is currently visual only
+  (`isVisibleTo` is `() => true`); making it LOS-aware is a later milestone.
 - **UI/inputs in `src/core/Game.ts` and `src/ui/HUD.ts`**: left click selects / drag = box-select (rectangle
   `#ed-selbox`) · right click = order (**right button no longer pans**; panning is by screen edges, WASD/arrows,
   middle wheel, or dragging the **bottom-left minimap**). Minimap: drag = move viewport, right click = order

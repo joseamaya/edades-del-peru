@@ -1,24 +1,4 @@
-import { CivId, HistoricalPeriod, Geography, Resources } from '../../core/types';
-
-/**
- * Numeric civilization bonuses. They are seeded into the player's `bonus` at match
- * start and flow through the same paths as technologies (`Game.applyPlayerBonuses`),
- * so a bonus is a real gameplay modifier, not only text. Values are additive
- * multipliers (0.1 = +10%).
- */
-export interface CivEffects {
-  attack?: number;
-  armor?: number;
-  gathering?: Partial<Resources>;
-  carry?: number;
-  los?: number;
-  range?: number;
-  speed?: number;
-  /** Training speed bonus (added to `bonus.training`, used as `1 - training`). */
-  training?: number;
-  /** Extra population cap. */
-  population?: number;
-}
+import { CivId, HistoricalPeriod, Geography, CivEffects } from '../../core/types';
 
 export interface CivDef {
   id: CivId;

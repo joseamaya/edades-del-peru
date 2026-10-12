@@ -13,7 +13,7 @@ import { Pathfinder } from '../game/Pathfinding';
 import { Unit, UnitContext } from '../entities/Unit';
 import { Building } from '../entities/Building';
 import { ResourceNode, clearResourceCaches } from '../entities/ResourceNode';
-import { OrderMarkers } from '../entities/OrderMarker';
+import { OrderMarkers, MarkerKind } from '../entities/OrderMarker';
 import { TreeInstances } from '../rendering/TreeInstances';
 import { Projectile, updateProjectilePools } from '../entities/Projectile';
 import { EntityView } from '../entities/EntityView';
@@ -943,7 +943,6 @@ export class Game {
       return;
     }
     if (picked.unit && picked.unit.owner !== 0) {
-      // attack an enemy unit (Amauta converts it instead)
       const enemyId = picked.unit.id;
       const target = { x: picked.unit.pos.x, z: picked.unit.pos.z };
       const canConvert = units.some((u) => u.kind === UnitKind.COMMISSAR);
@@ -971,7 +970,7 @@ export class Game {
   }
 
   /** Visually mark the destination of an order on the ground. */
-  private markOrder(target: OrderTarget, kind: 'move' | 'attack' | 'gather' | 'convert'): void {
+  private markOrder(target: OrderTarget, kind: MarkerKind): void {
     const y = this.terrain.getHeight(target.x, target.z);
     this.markers.spawn(target.x, y, target.z, kind);
   }
@@ -1798,6 +1797,7 @@ export class Game {
           cap += b.providesPop;
         }
       }
+      // a civilization population bonus deliberately raises the match cap
       p.populationCap = Math.min(this.settings.populationCap, cap + 4) + p.bonus.population;
     }
   }

@@ -28,6 +28,8 @@ const DEFEND_RESPONSE = 32;
 const RETREAT_HP = 0.35;
 /** Do not bother retreating when already this close to the base. */
 const RETREAT_MIN_DIST = 18;
+/** Scouting fallback destination (map fraction) when no enemy building is known. */
+const EXPLORE_FALLBACK = { x: 0.8, z: 0.2 } as const;
 
 export class AI {
   private game: Game;
@@ -80,7 +82,7 @@ export class AI {
     this.combatTimer -= dt;
     if (this.combatTimer <= 0) {
       this.combatTimer = 0.3 * this.mult.reaction;
-      this.microCombat(dt);
+      this.microCombat();
     }
     if (this.defenseTimer <= 0) {
       this.defenseTimer = 0.4 * this.mult.reaction;
@@ -114,7 +116,6 @@ export class AI {
     const workers = this.myUnits().filter((u) => u.kind === UnitKind.WORKER);
     const busy = workers.filter((w) => w.orderQueue[0]?.kind === OrderKind.GATHER || w.orderQueue[0]?.kind === OrderKind.BUILD);
     const idle = workers.filter((w) => !w.isBusy());
-    // train workers if labor is short (difficulty scales how many it runs)
     const center = this.center();
     const desired = Math.max(4, Math.round(Math.min(6 + this.p.era * 2, 14) * this.mult.econ));
     if (center && workers.length < desired && center.constructionComplete) {
@@ -341,16 +342,13 @@ export class AI {
     }
   }
 
-  private microCombat(dt: number): void {
-    void dt;
+  private microCombat(): void {
     const base = this.center();
-    // soldiers: focus fire the nearest enemy in range, but pull badly wounded ones home
     const soldiers = this.myUnits().filter((u) => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT);
     for (const s of soldiers) {
       if (base && s.hp / s.maxHp < RETREAT_HP) {
         const distHome = distance2D(s.pos.x, s.pos.z, base.pos.x, base.pos.z);
-        const order = s.orderQueue[0]?.kind;
-        if (distHome > RETREAT_MIN_DIST && (order === OrderKind.ATTACK || order === OrderKind.ATTACK_MOVE)) {
+        if (distHome > RETREAT_MIN_DIST && s.orderQueue[0]?.kind !== OrderKind.MOVE) {
           s.issueOrder({ kind: OrderKind.MOVE, target: { x: base.pos.x, z: base.pos.z } }, true);
         }
         continue;
@@ -406,7 +404,7 @@ export class AI {
   private explore(): void {
     const enemy = this.findEnemyCenter();
     const size = this.game.settings.mapSize;
-    const target = enemy ? { x: enemy.pos.x, z: enemy.pos.z } : { x: size * 0.8, z: size * 0.2 };
+    const target = enemy ? { x: enemy.pos.x, z: enemy.pos.z } : { x: size * EXPLORE_FALLBACK.x, z: size * EXPLORE_FALLBACK.z };
     for (const u of this.myUnits()) {
       if (u.kind !== UnitKind.SCOUT || u.isBusy()) continue;
       u.issueOrder({ kind: OrderKind.PATROL, target }, true);

@@ -184,7 +184,6 @@ export class Mission {
   }
 
   private checkBaseLost(): void {
-    // conquest: the mission is lost only when no player building remains standing
     if (!this.game.hasBuildings(0)) {
       this.defeat();
     }

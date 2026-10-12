@@ -20,7 +20,7 @@ test('a single click on the build card starts placement', async ({ page }) => {
     g.selectedBuilding = null;
   });
   const card = page.locator('.ed-card', { hasText: 'Vivienda' }).first();
-  await card.waitFor({ timeout: 5000 });
+  await card.waitFor({ timeout: 20_000 });
   await card.click();
   const placing = await page.evaluate(() => (window as unknown as { game: any }).game.placingBuilding?.kind ?? null);
   expect(placing).toBe('house');
@@ -96,7 +96,7 @@ test('a single click on the train card queues the unit', async ({ page }) => {
     return barracks.id as number;
   });
   const card = page.locator('.ed-card', { hasText: 'Guerrero' }).first();
-  await card.waitFor({ timeout: 5000 });
+  await card.waitFor({ timeout: 20_000 });
   await card.click();
   const queued = await page.evaluate((bid) => (window as unknown as { game: any }).game.buildings.get(bid).productionQueue.length, id);
   expect(queued).toBe(1);

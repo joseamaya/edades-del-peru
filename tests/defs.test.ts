@@ -156,8 +156,9 @@ describe('civilization bonuses', () => {
     }
   });
 
-  it('most civilizations have real (playable) effects', () => {
-    const withEffects = CIVS.filter((c) => c.effects && Object.keys(c.effects).length > 0);
-    expect(withEffects.length).toBeGreaterThanOrEqual(12);
+  it('every civilization declares real (playable) effects', () => {
+    for (const c of CIVS) {
+      expect(c.effects && Object.keys(c.effects).length > 0, `${c.id} has no effects`).toBe(true);
+    }
   });
 });
