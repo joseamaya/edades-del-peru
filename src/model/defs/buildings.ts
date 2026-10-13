@@ -144,7 +144,7 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
   barracks: {
     id: BuildingKind.BARRACKS,
     name: 'Casa del Guerrero',
-    description: 'Entrena infantería y sabios (Amautas).',
+    description: 'Entrena infantería y conversores (Amauta, Misionero).',
     category: 'military',
     minEra: Era.FORMATIVE,
     trainable: [UnitKind.SOLDIER, UnitKind.COMMISSAR, UnitKind.MISSIONARY],

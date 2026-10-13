@@ -60,14 +60,20 @@ test('the Misionero converts an enemy unit', async ({ page }) => {
     missionary.clearOrders();
     enemy.clearOrders();
     missionary.issueOrder({ kind: 'convert', entityId: enemy.id }, true);
+    // the model must be the humanoid builder, not the structure fallback
+    let humanoid = false;
+    missionary.view.group.traverse((o: any) => {
+      if (o.name === 'pivot:legL') humanoid = true;
+    });
     const before = enemy.owner;
     let t = 0;
     for (let i = 0; i < 1500 && enemy.owner === before; i++) {
       t += 1 / 60;
       g.update(1 / 60, t);
     }
-    return { before, after: enemy.owner };
+    return { humanoid, before, after: enemy.owner };
   });
+  expect(out.humanoid).toBe(true);
   expect(out.before).toBe(1);
   expect(out.after).toBe(0);
 });

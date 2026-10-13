@@ -441,9 +441,10 @@ function addHumanoid(
     gadget?: boolean;
     tool?: 'axe' | 'pick';
     carry?: boolean;
+    attire?: Partial<Attire>;
   },
 ): void {
-  const attire = getAttire(b, opts.role ?? 'melee');
+  const attire = { ...getAttire(b, opts.role ?? 'melee'), ...opts.attire };
   const skin = '#d9a06a';
   const hair = '#2a1c12';
   const metalArmor = attire.metal;
@@ -1005,7 +1006,13 @@ function buildCommisar(type: string, ctx: BuildContext): THREE.Group {
 
 function buildMissionary(ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
-  addHumanoid(b, { role: 'officer', helmet: false, weapon: 'none', armor: 'cloth' });
+  // robed friar: brown habit, no military headwear
+  addHumanoid(b, {
+    role: 'officer',
+    weapon: 'none',
+    armor: 'cloth',
+    attire: { tunic: '#6b5236', accent: '#c8a040', tex: 'cloth', leg: '#5a4630', boot: false, head: 'none' },
+  });
   // cross held at the chest
   b.box(0.06, 0.46, 0.06, b.civAccent, { y: 1.0, z: 0.16 });
   b.box(0.24, 0.06, 0.06, b.civAccent, { y: 1.1, z: 0.16 });

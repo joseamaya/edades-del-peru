@@ -49,6 +49,8 @@ export interface UnitArchetype {
    * scripted content; the era stats models the tech level. Default: Arcaico.
    */
   minPeriod?: HistoricalPeriod;
+  /** Conversion unit (can convert enemy units). */
+  converter?: boolean;
 }
 
 const BASE: Resources = ZERO_RESOURCES;
@@ -341,6 +343,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
       [Era.CONTEMPORARY]: { type: 'commissar', scale: 1.08 },
     },
     requiresTech: ['amauta_words'],
+    converter: true,
   },
   missionary: {
     id: UnitKind.MISSIONARY,
@@ -362,6 +365,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
       [Era.CONTEMPORARY]: { type: 'missionary', scale: 1.06 },
     },
     requiresTech: ['evangelization'],
+    converter: true,
   },
   mec: {
     id: UnitKind.MECH,
@@ -673,7 +677,7 @@ export function unitMinPeriod(kind: UnitKind): HistoricalPeriod {
 
 /** Conversion units (Amauta, Misionero) can convert enemy units. */
 export function isConverter(kind: UnitKind): boolean {
-  return kind === UnitKind.COMMISSAR || kind === UnitKind.MISSIONARY;
+  return UNIT_ARCHETYPES[kind].converter === true;
 }
 
 /** Model to use for a unit in an era. */

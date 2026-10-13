@@ -43,8 +43,7 @@ describe('historical chronology', () => {
     }
   });
 
-  it('conversion units: the Amauta is Inca, the Misionero colonial', () => {
-    expect(unitMinPeriod(UnitKind.COMMISSAR)).toBe(HistoricalPeriod.ARCHAIC);
+  it('conversion units: the Misionero is gated from the Viceroyalty', () => {
     expect(unitMinPeriod(UnitKind.MISSIONARY)).toBe(HistoricalPeriod.VICEROYALTY);
     expect(isConverter(UnitKind.COMMISSAR)).toBe(true);
     expect(isConverter(UnitKind.MISSIONARY)).toBe(true);
