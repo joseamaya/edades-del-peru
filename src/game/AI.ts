@@ -39,6 +39,8 @@ const RAID_RADIUS = 24;
 const SIEGE_SELF_DEFENSE = 0.5;
 /** Engagement reach of a melee unit (no weapon range, so it uses its sight). */
 const MELEE_REACH = 8;
+/** Seconds the AI remembers an enemy unit after losing sight of it. */
+const MEMORY_TTL = 12;
 
 /** A combat unit (not a worker or scout). */
 const isSoldier = (u: Unit): boolean => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT;
@@ -60,6 +62,11 @@ export class AI {
   private defenseTimer = 0;
   private scoutTimer = 3;
   private announced = new Set<string>();
+  /** AI-local clock and perception memory (the AI only knows what it has seen). */
+  private aiTime = 0;
+  private visionTimer = 0;
+  private seenUnits = new Map<number, number>();
+  private seenBuildings = new Set<number>();
 
   constructor(game: Game, playerId: number, difficulty?: Difficulty) {
     this.game = game;
@@ -73,12 +80,18 @@ export class AI {
   update(dt: number, t: number): void {
     void t;
     if (this.game.players[this.playerId].alive === false) return;
+    this.aiTime += dt;
+    this.visionTimer += dt;
     this.economyTimer += dt;
     this.buildingTimer += dt;
     this.attackTimer -= dt;
     this.defenseTimer -= dt;
     this.scoutTimer -= dt;
 
+    if (this.visionTimer > 0.3) {
+      this.visionTimer = 0;
+      this.updatePerception();
+    }
     if (this.economyTimer > 0.6) {
       this.economyTimer = 0;
       this.manageWorkers();
@@ -508,7 +521,7 @@ export class AI {
     let best: Unit | null = null;
     let bestD = Infinity;
     for (const u of this.game.units.values()) {
-      if (!isSoldier(u) || !this.isEnemyUnit(u)) continue;
+      if (!isSoldier(u) || !this.isEnemyUnitKnown(u)) continue;
       const d = distance2D(cx, cz, u.pos.x, u.pos.z);
       if (d < bestD) {
         bestD = d;
@@ -557,10 +570,8 @@ export class AI {
     if (anchors.length === 0) return null;
     let best: Unit | null = null;
     let bestD = Infinity;
-    const team = this.p.team;
     for (const e of this.game.units.values()) {
-      if (e.dead || e.owner === this.playerId) continue;
-      if (this.game.players[e.owner]?.team === team) continue;
+      if (!this.isEnemyUnitKnown(e)) continue;
       for (const a of anchors) {
         const d = distance2D(e.pos.x, e.pos.z, a.x, a.z);
         if (d < DEFEND_RADIUS && d < bestD) {
@@ -572,13 +583,16 @@ export class AI {
     return best;
   }
 
-  /** Keep idle scouts patrolling toward the enemy base to reveal the map. */
+  /** Keep idle scouts sweeping toward the enemy base to reveal the map. */
   private explore(): void {
-    const enemy = this.findEnemyCenter();
+    const known = this.findEnemyCenter();
+    const c = this.center();
     const size = this.game.settings.mapSize;
-    const target = enemy
-      ? { x: enemy.pos.x, z: enemy.pos.z }
+    // bases spawn near the map centre on opposite sides, so sweep to the mirror point
+    const fallback = c
+      ? { x: size - c.pos.x, z: size - c.pos.z }
       : { x: size * EXPLORE_FALLBACK.x, z: size * EXPLORE_FALLBACK.z };
+    const target = known ? { x: known.pos.x, z: known.pos.z } : fallback;
     for (const u of this.myUnits()) {
       if (u.kind !== UnitKind.SCOUT || u.isBusy()) continue;
       u.issueOrder({ kind: OrderKind.PATROL, target }, true);
@@ -593,6 +607,37 @@ export class AI {
   /** A living unit owned by another team. */
   private isEnemyUnit(u: Unit): boolean {
     return !u.dead && u.owner !== this.playerId && this.game.players[u.owner]?.team !== this.p.team;
+  }
+
+  /**
+   * Perception: the AI only knows enemies it has seen (its units/buildings have
+   * line of sight). Enemy units are remembered for `MEMORY_TTL` seconds after
+   * losing sight; discovered buildings are remembered permanently (they do not
+   * move). This removes the old omniscient AI.
+   */
+  private updatePerception(): void {
+    const scan = (x: number, z: number, radius: number): void => {
+      for (const e of this.game.enemiesNear(x, z, radius, this.playerId)) this.seenUnits.set(e.id, this.aiTime);
+      for (const b of this.game.buildings.values()) {
+        if (!this.isEnemyBuilding(b)) continue;
+        if (distance2D(x, z, b.pos.x, b.pos.z) <= radius + b.radius) this.seenBuildings.add(b.id);
+      }
+    };
+    for (const u of this.myUnits()) scan(u.pos.x, u.pos.z, u.stats.los + 2);
+    for (const b of this.myBuildings()) scan(b.pos.x, b.pos.z, b.stats.los + 2);
+    for (const [id, last] of this.seenUnits) {
+      if (this.aiTime - last > MEMORY_TTL) this.seenUnits.delete(id);
+    }
+  }
+
+  /** An enemy unit the AI is currently aware of (seen within memory). */
+  private isEnemyUnitKnown(u: Unit): boolean {
+    return this.isEnemyUnit(u) && this.seenUnits.has(u.id);
+  }
+
+  /** An enemy building the AI has discovered. */
+  private isEnemyBuildingKnown(b: Building): boolean {
+    return this.isEnemyBuilding(b) && this.seenBuildings.has(b.id);
   }
 
   /** Is this attack-target id a living building (as opposed to a unit)? */
@@ -652,7 +697,7 @@ export class AI {
     const bx = center?.pos.x ?? this.game.settings.mapSize / 2;
     const bz = center?.pos.z ?? this.game.settings.mapSize / 2;
     for (const b of this.game.buildings.values()) {
-      if (!this.isEnemyBuilding(b)) continue;
+      if (!this.isEnemyBuildingKnown(b)) continue;
       const d = distance2D(bx, bz, b.pos.x, b.pos.z);
       if (d < bestD) {
         bestD = d;
@@ -687,7 +732,7 @@ export class AI {
     let nearest: Building | null = null;
     let nearestD = Infinity;
     for (const b of this.game.buildings.values()) {
-      if (!this.isEnemyBuilding(b)) continue;
+      if (!this.isEnemyBuildingKnown(b)) continue;
       if (b.kind === BuildingKind.CENTER) center = b;
       const d = distance2D(bx, bz, b.pos.x, b.pos.z);
       if (d < nearestD) {

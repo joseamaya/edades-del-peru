@@ -62,16 +62,18 @@ for player-facing docs see [`README.md`](../README.md).
   `src/game/aiProfiles.ts` decides *strategy* — economy/army size, attack threshold, tech eagerness
   (`techReserve`; only `easy` holds back), retreat threshold, raiding and advanced military. A profile only
   invests in non-essential buildings (institute/factory/fortress) once it has its core army (`armyBase`), so a
-  bigger economy becomes military strength instead of building sprawl. Known limitation: the AI ignores fog of
-  war (it reads all entities), because fog is currently visual only (`isVisibleTo` is `() => true`); making it
-  LOS-aware is a later milestone. The army is trained to an era-based **mix** (`ARMY_MIX`) nudged to counter the
-  enemy's composition (`armyWeights`). `Game.addAI(playerId, difficulty?)` attaches an AI to any player, so
-  `yarn sim [--difficulty=…]` runs **AI-vs-AI** headless matches (seeds, winner, peak armies); `--difficulty`
-  sets player 0's profile while player 1 stays on `normal`, so a run measures that profile against `normal`.
-  Baseline on the default seed set (`--max=1500`, player-0 wins / losses / undecided): `easy` 0/1/7,
-  `normal` 5/1/2, `hard` 2/2/4, `legendary` 2/3/3 — `easy` is clearly weakest; both AIs share the same micro,
-  so these counts are noisy (±1-2 games). The winner typically fields 6-12 units; before the build-plan fix the
-  AI often stalled at 0 wood and fielded no army at all.
+  bigger economy becomes military strength instead of building sprawl. **Perception is LOS-limited**: the AI only
+  knows enemies its units/buildings have line of sight to (`updatePerception`), remembering enemy units for
+  `MEMORY_TTL` (12 s) after losing sight and discovered buildings permanently; `findEnemyCenter`, `findAttackTarget`,
+  `focusTarget` and `findThreat` only consider known entities, and `explore` sweeps toward the mirror of the AI base
+  through the map centre until it finds the enemy. It is no longer omniscient. The army is trained to an era-based
+  **mix** (`ARMY_MIX`) nudged to counter the enemy's composition (`armyWeights`). `Game.addAI(playerId, difficulty?)`
+  attaches an AI to any player, so `yarn sim [--difficulty=…]` runs **AI-vs-AI** headless matches (seeds, winner,
+  peak armies); `--difficulty` sets player 0's profile while player 1 stays on `normal`, so a run measures that
+  profile against `normal`. Baseline on the default seed set (`--max=1500`, player-0 wins / losses / undecided):
+  `easy` 0/0/8, `normal` 3/2/3, `hard` 2/2/4, `legendary` 2/5/1 — `easy` is clearly weakest; both AIs share the
+  same micro, so these counts are noisy (±1-2 games). The winner typically fields 6-12 units; before the build-plan
+  fix the AI often stalled at 0 wood and fielded no army at all.
   Between `normal`/`hard`/`legendary` the attack **threshold** is the same — they differ by army size, economy
   and the `aggression` attack cadence. Economy: `chooseResourceNode` counts farm workers as food and the build
   plan prioritizes dropsites (sawmill/mill) before pop/farms, so the AI no longer starves for wood. Until the

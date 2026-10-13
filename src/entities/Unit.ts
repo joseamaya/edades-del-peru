@@ -44,7 +44,6 @@ export interface UnitContext {
   players: { id: number; team: Team }[];
   getPlayer(playerId: number): { id: number; team: Team };
   event<K extends keyof GameEvents>(name: K, payload: GameEvents[K]): void;
-  isVisibleTo(player: number, x: number, z: number): boolean;
   gather(nodeId: number, unitId: number, amount: number, resource: string): void;
   worldSize: number;
   /** The match's historical period (for the chronology guard on training). */

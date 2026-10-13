@@ -30,7 +30,7 @@ test('the AI recalls idle soldiers to defend its base', { tag: '@smoke' }, async
     const defender = g.spawnScriptedUnit('soldier', 1, aiCenter.pos.x + 3, aiCenter.pos.z);
     defender.clearOrders();
     defender.combatStance = 'pasivo';
-    const threat = g.spawnScriptedUnit('soldier', 0, aiCenter.pos.x + 20, aiCenter.pos.z);
+    const threat = g.spawnScriptedUnit('soldier', 0, aiCenter.pos.x + 10, aiCenter.pos.z);
     threat.clearOrders();
     threat.combatStance = 'pasivo';
     let t = 0;
@@ -43,6 +43,42 @@ test('the AI recalls idle soldiers to defend its base', { tag: '@smoke' }, async
   });
   expect(out.kind).toBe('attack');
   expect(out.target).toBe(out.threatId);
+});
+
+test('the LOS-aware AI only knows enemies it has seen', async ({ page }) => {
+  await bootSkirmish(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    g.paused = false;
+    g.players[1].alive = false;
+    for (const u of g.units.values()) if (u.owner === 1) u.die();
+    g.addAI(0);
+    const ai = g.ais[g.ais.length - 1]; // the just-added player-0 AI (player 1's is added in the constructor)
+    // an enemy in a far corner, away from every player unit/building
+    const spot = g.findLandNear(g.settings.mapSize - 15, g.settings.mapSize - 15);
+    const enemy = g.spawnScriptedUnit('soldier', 1, spot.x, spot.z);
+    enemy.combatStance = 'pasivo';
+    let t = 0;
+    for (let i = 0; i < 30; i++) {
+      g.update(1 / 60, t);
+      t += 1 / 60;
+    }
+    const before = ai.seenUnits.has(enemy.id);
+    // a player unit walks up to it (teleport next to the enemy; avoid water relocation)
+    const watcher = [...g.units.values()].find((u: any) => u.owner === 0 && !u.dead);
+    watcher.clearOrders();
+    watcher.pos.set(spot.x + 3, watcher.pos.y, spot.z);
+    watcher.snapToGround();
+    for (let i = 0; i < 30; i++) {
+      g.update(1 / 60, t);
+      t += 1 / 60;
+    }
+    const after = ai.seenUnits.has(enemy.id);
+    return { before, after };
+  });
+  expect(out.before).toBe(false);
+  expect(out.after).toBe(true);
 });
 
 test('the AI retreats a badly wounded soldier toward its base', async ({ page }) => {
@@ -206,15 +242,13 @@ test('the AI mops up remaining buildings once the enemy has no army', async ({ p
   const out = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     g.addAI(0);
-    // the enemy fields no soldiers, so the deployed army should march on its base
+    // the enemy fields no units at all, so the deployed army should march on its base
     for (const u of g.units.values()) {
-      if (u.owner === 1 && u.kind !== 'worker' && u.kind !== 'scout') u.die();
+      if (u.owner === 1) u.die();
     }
-    const center = (owner: number) =>
-      [...g.buildings.values()].find((b: any) => b.owner === owner && b.kind === 'center');
-    const p0 = center(0);
-    const p1 = center(1);
-    const soldier = g.spawnScriptedUnit('soldier', 0, (p0.pos.x + p1.pos.x) / 2, (p0.pos.z + p1.pos.z) / 2);
+    const p1 = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'center');
+    // deploy the soldier next to the enemy base so it discovers the center (LOS-aware AI)
+    const soldier = g.spawnScriptedUnit('soldier', 0, p1.pos.x + 6, p1.pos.z);
     soldier.clearOrders();
     let t = 0;
     for (let i = 0; i < 90; i++) {
@@ -222,10 +256,11 @@ test('the AI mops up remaining buildings once the enemy has no army', async ({ p
       g.update(1 / 60, t);
     }
     const order = soldier.orderQueue[0];
-    return { kind: order?.kind ?? null, target: order?.entityId ?? null, p1Center: p1.id };
+    const target = order?.entityId != null ? g.buildings.get(order.entityId) : null;
+    return { kind: order?.kind ?? null, targetOwner: target?.owner ?? null };
   });
   expect(out.kind).toBe('attack');
-  expect(out.target).toBe(out.p1Center);
+  expect(out.targetOwner).toBe(1);
 });
 
 test('the AI focus-fires on one enemy unit', async ({ page }) => {
