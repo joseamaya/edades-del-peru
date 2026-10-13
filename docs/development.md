@@ -196,7 +196,8 @@ for player-facing docs see [`README.md`](../README.md).
 - The app shows the **main menu by default**; enter the match directly with `?play=1` or any debug param.
   `resetGame()` reloads with `?play=1`.
 - URL params: `?play=1`, `?menu=0/1`, `?load=1`, `?replay=1`, `?seed=`, `?fog=0`, `?low=1`, `?speed=`, `?era=N`,
-  `?period=N`, `?mission=ID`, `?noloop=1` (do not auto-start the loop; tests drive fixed steps from step 0).
+  `?period=N`, `?mission=ID`, `?noloop=1` (do not auto-start the loop; tests drive fixed steps from step 0),
+  `?fps=1` (show the debug FPS overlay, hidden by default).
 - Shared `scripts/lib.mjs` (`launchChromium`, `withViteServer`, `readPng`, `classify`). Scripts launch Vite on a
   free port and Chromium with SwiftShader; they use `CHROME_PATH` or `chromium.executablePath()`. Run captures
   with `?low=1`.

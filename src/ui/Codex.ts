@@ -2,6 +2,7 @@ import { PERIODS } from '../model/defs/periods';
 import { CIVS, civsForPeriod } from '../model/defs/civs';
 import { MISSIONS } from '../campaign/defs/campaign';
 import { getEducational } from '../campaign/defs/educational';
+import { MAP_LABEL } from '../core/Config';
 
 /**
  * Codex/educational encyclopedia. Gathers periods, civilizations and campaigns from the
@@ -102,10 +103,12 @@ function periodTab(): CodexItem[] {
     title: `${p.name} · ${p.dates}`,
     render: () => {
       const disp = civsForPeriod(p.id);
-      const lista = disp.map((c) => `<li><b>${c.name}</b> (${c.geography}) — ${c.description}</li>`).join('');
+      const lista = disp
+        .map((c) => `<li><b>${c.name}</b> (${MAP_LABEL[c.geography]}) — ${c.description}</li>`)
+        .join('');
       return `
         <h3>${p.name}</h3>
-        <p><b>Fechas:</b> ${p.dates} · <b>Mapa:</b> ${p.map}</p>
+        <p><b>Fechas:</b> ${p.dates} · <b>Mapa:</b> ${MAP_LABEL[p.map]}</p>
         <h4>Civilizaciones coetáneas</h4>
         <ul>${lista || '<li>—</li>'}</ul>
       `;
@@ -122,7 +125,7 @@ function civTab(): CodexItem[] {
       const bonus = c.bonuses.map((b) => `<li>${b}</li>`).join('');
       return `
         <h3>${c.name}</h3>
-        <p><b>Adjetivo:</b> ${c.adjective} · <b>Geografía:</b> ${c.geography} · <b>Periodos:</b> ${periods}</p>
+        <p><b>Adjetivo:</b> ${c.adjective} · <b>Geografía:</b> ${MAP_LABEL[c.geography]} · <b>Periodos:</b> ${periods}</p>
         <p>${c.description}</p>
         <h4>Bonificaciones</h4>
         <ul>${bonus || '<li>—</li>'}</ul>

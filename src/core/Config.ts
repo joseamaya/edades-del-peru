@@ -56,6 +56,14 @@ export const RESOURCE_INFO = {
   stone: { name: 'Piedra', icon: '🪨', color: '#c8a878' },
 } as const;
 
+/** Player-facing names for the map / geography types. */
+export const MAP_LABEL: Record<MapType, string> = {
+  coast: 'Costa / litoral',
+  andes: 'Andes / sierra',
+  altiplano: 'Altiplano',
+  jungle: 'Selva',
+};
+
 export const DIFFICULTY_MULT = {
   easy: { aggression: 0.5, reaction: 1.4 },
   normal: { aggression: 1.0, reaction: 1.0 },

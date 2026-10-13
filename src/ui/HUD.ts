@@ -17,7 +17,7 @@ import { TECHS, techAvailable } from '../model/defs/techs';
 import { ERA_DEFS } from '../model/defs/eras';
 import { PERIODS, getPeriod } from '../model/defs/periods';
 import { civsForPeriod, getCiv } from '../model/defs/civs';
-import { RESOURCE_INFO, GameSettings } from '../core/Config';
+import { RESOURCE_INFO, MAP_LABEL, GameSettings } from '../core/Config';
 import { formatNumber } from '../util/math';
 import { MISSIONS, CAMPAIGN_TITLE, CAMPAIGN_SUBTITLE } from '../campaign/defs/campaign';
 import { PROLOGUE, getEducational } from '../campaign/defs/educational';
@@ -45,6 +45,11 @@ const BUILDABLE_KINDS: BuildingKind[] = [
   BuildingKind.INSTITUTE,
   BuildingKind.WONDER,
 ];
+
+/** Format a stat number without floating-point noise (e.g. 3.3000000000000003 -> 3.3). */
+function stat(n: number): string {
+  return Number.isInteger(n) ? String(n) : n.toFixed(1);
+}
 
 const CSS = /* css */ `
   :root {
@@ -582,6 +587,8 @@ export class HUD {
     const fps = this.el('div', '');
     fps.id = 'ed-fps';
     fps.textContent = '60 FPS';
+    // performance overlay is debug-only: enable with ?fps=1
+    fps.style.display = new URLSearchParams(location.search).get('fps') === '1' ? '' : 'none';
     this.fpsEl = fps;
   }
   private fpsEl!: HTMLElement;
@@ -903,7 +910,7 @@ export class HUD {
 
   private unitDesc(u: Unit): string {
     const stats = u.stats;
-    return `HP ${Math.ceil(u.hp)}/${Math.ceil(u.maxHp)} · Daño ${stats.attack} · Rango ${stats.range} · Blindaje ${stats.heavyArmor}`;
+    return `HP ${Math.ceil(u.hp)}/${Math.ceil(u.maxHp)} · Daño ${stat(stats.attack)} · Rango ${stat(stats.range)} · Blindaje ${stat(stats.heavyArmor)}`;
   }
 
   private renderBuildingPanel(b: Building): void {
@@ -1000,7 +1007,7 @@ export class HUD {
 
   private buildingDesc(b: Building): string {
     const stats = b.stats;
-    let s = `HP ${Math.ceil(b.hp)}/${Math.ceil(b.maxHp)} · Blindaje ${stats.armor}`;
+    let s = `HP ${Math.ceil(b.hp)}/${Math.ceil(b.maxHp)} · Blindaje ${stat(stats.armor)}`;
     if (b.constructionComplete && b.productionQueue.length > 0) {
       s += ` · Entrenando: ${UNIT_INFO[b.productionQueue[0].unit].name}`;
     }
@@ -1241,7 +1248,7 @@ export class HUD {
     );
     const disponibles = civsForPeriod(this.game.settings.period);
     const civLabels: Record<string, string> = {};
-    for (const c of disponibles) civLabels[c.id] = `${c.name} (${c.geography})`;
+    for (const c of disponibles) civLabels[c.id] = `${c.name} (${MAP_LABEL[c.geography]})`;
     rows.appendChild(
       this.field(
         'Tu civilización',
@@ -1281,7 +1288,7 @@ export class HUD {
         'Mapa',
         this.select(
           ['coast', 'andes', 'altiplano', 'jungle'] as const,
-          { costa: 'Costa / litoral', andes: 'Andes', altiplano: 'Altiplano', selva: 'Selva' },
+          MAP_LABEL,
           this.game.settings.mapType,
           (v) => (this.game.settings.mapType = v),
         ),
@@ -1438,12 +1445,6 @@ export class HUD {
     const period = getPeriod(mis.period);
     const player = getCiv(mis.playerCiv);
     const enemy = getCiv(mis.enemyCiv);
-    const geo: Record<string, string> = {
-      costa: 'Costa / litoral',
-      andes: 'Andes / sierra',
-      altiplano: 'Altiplano',
-      selva: 'Selva',
-    };
     const edu = getEducational(mis.id);
     const context = edu?.context
       ? `<div class="ed-hist">${mis.history}</div><div class="ed-hist"><b style="color:var(--gold)">Contexto histórico.</b> ${edu.context}</div>`
@@ -1462,7 +1463,7 @@ export class HUD {
       <h2>${mis.title}</h2>
       <div class="ed-meta">
         <span>Periodo: <b>${period.name}</b> (${period.dates})</span>
-        <span>Geografía: <b>${geo[mis.map.type] ?? mis.map.type}</b></span>
+        <span>Geografía: <b>${MAP_LABEL[mis.map.type]}</b></span>
         <span>Bandos: <b>${player.name}</b> vs <b>${player.id === enemy.id ? 'grupos rivales' : enemy.name}</b></span>
       </div>
       ${context}
@@ -1667,8 +1668,8 @@ export class HUD {
       // hide resources unavailable in the period (e.g. Stone without a Quarry)
       this.resEls.stone.style.display = this.game.canBuildKind(BuildingKind.REFINERY) ? '' : 'none';
       this.popEl.querySelector('span')!.textContent = `${p.populationUsed}/${p.populationCap}`;
-      const eraDef = ERA_DEFS[p.era];
-      this.eraEl.querySelector('span:last-child')!.textContent = `${eraDef.name} · ${eraDef.years}`;
+      const period = getPeriod(this.game.settings.period);
+      this.eraEl.querySelector('span:last-child')!.textContent = `${period.name} · ${period.dates}`;
       this.eraDot.style.background = `#${ERA_COLORS[p.era].toString(16).padStart(6, '0')}`;
     }
     if (this.updateAcc > 0.15) {
@@ -1677,6 +1678,6 @@ export class HUD {
       this.updateBottomProgress();
       this.renderMinimap();
     }
-    this.fpsEl.textContent = `${this.game.loop.getFps()} FPS`;
+    if (this.fpsEl.style.display !== 'none') this.fpsEl.textContent = `${this.game.loop.getFps()} FPS`;
   }
 }
