@@ -62,11 +62,12 @@ for player-facing docs see [`README.md`](../README.md).
   `yarn sim [--difficulty=…]` runs **AI-vs-AI** headless matches (seeds, winner, peak armies); `--difficulty`
   sets player 0's profile while player 1 stays on `normal`, so a run measures that profile against `normal`.
   Baseline on the default seed set (`--max=1500`, player-0 wins / losses / undecided): `easy` 0/1/7,
-  `normal` 4/3/1, `hard` 6/1/1, `legendary` 5/1/2 — `easy` is clearly weakest and `hard`/`legendary` both beat
-  `normal`; `normal` keeps the pre-profile baseline (7/8 matches end, avg ~1000 s; the winner typically fields
-  ~10-12 units). Between `normal`/`hard`/`legendary` the attack **threshold** is the same — they differ by army
-  size, economy and the `aggression` attack cadence. Economy: `chooseResourceNode` counts farm workers as food
-  and the build plan prioritizes dropsites (sawmill/mill) before pop/farms, so the AI no longer starves for wood.
+  `normal` 4/3/1, `hard` 4/2/2, `legendary` 4/1/3 — `easy` is clearly weakest and `hard`/`legendary` beat
+  `normal` on decided games; both AIs share the same micro, so these counts are noisy (±1-2 games) and `normal`
+  keeps the pre-profile baseline (7/8 matches end, avg ~1000 s; the winner typically fields ~10-12 units).
+  Between `normal`/`hard`/`legendary` the attack **threshold** is the same — they differ by army size, economy
+  and the `aggression` attack cadence. Economy: `chooseResourceNode` counts farm workers as food and the build
+  plan prioritizes dropsites (sawmill/mill) before pop/farms, so the AI no longer starves for wood.
   Aggression: `launchAttack` sends the **whole** army to destroy enemy **buildings** (center first). `microCombat`
   **focus-fires** (non-siege units converge on the enemy nearest the army's centre) and **siege** units bombard
   buildings from range — only self-defending against units that come close — instead of chasing them. It also

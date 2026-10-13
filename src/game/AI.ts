@@ -37,11 +37,13 @@ const PRESS_BUILDING_RADIUS = 18;
 const RAID_RADIUS = 24;
 /** Siege only defends itself against units closer than this fraction of its range. */
 const SIEGE_SELF_DEFENSE = 0.5;
+/** Engagement reach of a melee unit (no weapon range, so it uses its sight). */
+const MELEE_REACH = 8;
 
 /** A combat unit (not a worker or scout). */
 const isSoldier = (u: Unit): boolean => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT;
 
-/** A long-range siege unit (artillery/mortar/nuclear). */
+/** A long-range siege unit. */
 const isSiege = (kind: UnitKind): boolean => UNIT_CATEGORY[kind] === 'siege';
 
 export class AI {
@@ -426,13 +428,15 @@ export class AI {
         continue;
       }
       if (isSiege(s.kind)) {
-        // siege bombards buildings from range; it only fires at units that come close
+        const order = s.orderQueue[0];
+        // keep an in-flight building attack (march/bombard it) — don't override it
+        if (order?.kind === OrderKind.ATTACK && this.isBuildingTarget(order.entityId)) continue;
         const close = this.findEnemyInRange(s);
         if (close && distance2D(s.pos.x, s.pos.z, close.pos.x, close.pos.z) <= s.stats.range * SIEGE_SELF_DEFENSE) {
           s.issueOrder({ kind: OrderKind.ATTACK, entityId: close.id }, true);
           continue;
         }
-        const bld = this.findEnemyBuildingInRange(s, s.stats.range);
+        const bld = this.findEnemyBuildingInRange(s, Math.max(s.stats.range, PRESS_BUILDING_RADIUS));
         if (bld) {
           s.issueOrder({ kind: OrderKind.ATTACK, entityId: bld.id }, true);
           continue;
@@ -447,7 +451,6 @@ export class AI {
         this.focusFire(s, s.orderQueue[0], focus);
         continue;
       }
-      // focus fire: concentrate on one enemy unit when it is in range
       const enemy = this.findEnemyInRange(s);
       if (enemy) {
         const inFocus = focus && this.inReach(s, focus) ? focus : enemy;
@@ -475,15 +478,18 @@ export class AI {
 
   /** Enemy unit nearest to the AI army's centre (focus-fire target). */
   private focusTarget(soldiers: Unit[]): Unit | null {
-    if (soldiers.length === 0) return null;
     let cx = 0;
     let cz = 0;
+    let n = 0;
     for (const s of soldiers) {
+      if (isSiege(s.kind)) continue; // support sits behind the fighting line
       cx += s.pos.x;
       cz += s.pos.z;
+      n++;
     }
-    cx /= soldiers.length;
-    cz /= soldiers.length;
+    if (n === 0) return null;
+    cx /= n;
+    cz /= n;
     let best: Unit | null = null;
     let bestD = Infinity;
     for (const u of this.game.units.values()) {
@@ -499,7 +505,7 @@ export class AI {
 
   /** Can `s` attack `target` from where it stands (melee uses its sight radius). */
   private inReach(s: Unit, target: Unit): boolean {
-    const reach = s.stats.range > 0 ? s.stats.range : 8;
+    const reach = s.stats.range > 0 ? s.stats.range : MELEE_REACH;
     return distance2D(s.pos.x, s.pos.z, target.pos.x, target.pos.z) <= reach;
   }
 
@@ -508,6 +514,8 @@ export class AI {
     if (!focus || order.entityId === focus.id) return;
     const current = order.entityId !== undefined ? this.game.units.get(order.entityId) : undefined;
     if (!current || !isSoldier(current)) return; // keep building/worker attacks
+    const base = this.center();
+    if (base && distance2D(s.pos.x, s.pos.z, base.pos.x, base.pos.z) <= DEFEND_RADIUS) return; // stay on defense
     if (this.inReach(s, focus)) s.issueOrder({ kind: OrderKind.ATTACK, entityId: focus.id }, true);
   }
 
@@ -572,6 +580,11 @@ export class AI {
     return !u.dead && u.owner !== this.playerId && this.game.players[u.owner]?.team !== this.p.team;
   }
 
+  /** Is this attack-target id a living building (as opposed to a unit)? */
+  private isBuildingTarget(id: number | undefined): boolean {
+    return id !== undefined && this.game.buildings.get(id)?.dead === false;
+  }
+
   /** Nearest enemy building within `radius` of the unit (to press the attack). */
   private findEnemyBuildingInRange(s: Unit, radius: number): Building | null {
     let best: Building | null = null;
@@ -590,7 +603,7 @@ export class AI {
   private findEnemyInRange(s: Unit): Unit | null {
     let best: Unit | null = null;
     let bestD = Infinity;
-    const range = s.stats.range > 0 ? s.stats.range * 1.2 : 8;
+    const range = s.stats.range > 0 ? s.stats.range * 1.2 : MELEE_REACH;
     const nearby = this.game.enemiesNear(s.pos.x, s.pos.z, range, this.playerId);
     for (const u of nearby) {
       const d = distance2D(s.pos.x, s.pos.z, u.pos.x, u.pos.z);
