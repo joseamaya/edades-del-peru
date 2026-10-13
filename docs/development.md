@@ -62,15 +62,16 @@ for player-facing docs see [`README.md`](../README.md).
   `yarn sim [--difficulty=…]` runs **AI-vs-AI** headless matches (seeds, winner, peak armies); `--difficulty`
   sets player 0's profile while player 1 stays on `normal`, so a run measures that profile against `normal`.
   Baseline on the default seed set (`--max=1500`, player-0 wins / losses / undecided): `easy` 0/1/7,
-  `normal` 4/3/1, `hard` 5/1/2, `legendary` 5/1/2 — `easy` is clearly weakest and `hard`/`legendary` both beat
+  `normal` 4/3/1, `hard` 6/1/1, `legendary` 5/1/2 — `easy` is clearly weakest and `hard`/`legendary` both beat
   `normal`; `normal` keeps the pre-profile baseline (7/8 matches end, avg ~1000 s; the winner typically fields
   ~10-12 units). Between `normal`/`hard`/`legendary` the attack **threshold** is the same — they differ by army
   size, economy and the `aggression` attack cadence. Economy: `chooseResourceNode` counts farm workers as food
   and the build plan prioritizes dropsites (sawmill/mill) before pop/farms, so the AI no longer starves for wood.
-  Aggression: `launchAttack` sends the **whole** army to destroy enemy **buildings** (center first) and
-  `microCombat` presses nearby buildings (or raids workers, on `hard`+); when the enemy has **no soldiers left**
-  the deployed army marches on its base so a won match doesn't stall on leftover buildings. Training is
-  chronology-guarded (`unitMinPeriod` in
+  Aggression: `launchAttack` sends the **whole** army to destroy enemy **buildings** (center first). `microCombat`
+  **focus-fires** (non-siege units converge on the enemy nearest the army's centre) and **siege** units bombard
+  buildings from range — only self-defending against units that come close — instead of chasing them. It also
+  presses nearby buildings, raids workers (on `hard`+), and, when the enemy has **no soldiers left**, marches on
+  the base so a won match doesn't stall on leftover buildings. Training is chronology-guarded (`unitMinPeriod` in
   `Building.queueUnit`, the AI candidate filter and the HUD).
 - **UI/inputs in `src/core/Game.ts` and `src/ui/HUD.ts`**: left click selects / drag = box-select (rectangle
   `#ed-selbox`) · right click = order (**right button no longer pans**; panning is by screen edges, WASD/arrows,

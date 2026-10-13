@@ -201,3 +201,69 @@ test('the AI mops up remaining buildings once the enemy has no army', async ({ p
   expect(out.kind).toBe('attack');
   expect(out.target).toBe(out.p1Center);
 });
+
+test('the AI focus-fires on one enemy unit', async ({ page }) => {
+  await bootSkirmish(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.players[1].alive = false; // freeze the enemy AI
+    for (const u of g.units.values()) {
+      if (u.owner === 0 && u.kind !== 'worker' && u.kind !== 'scout') u.die();
+    }
+    g.addAI(0);
+    const soldiers = [
+      [100, 100],
+      [102, 100],
+      [104, 100],
+    ].map(([x, z]) => {
+      const u = g.spawnScriptedUnit('soldier', 0, x, z);
+      u.clearOrders();
+      return u;
+    });
+    // focus = enemy nearest the army centroid (102,100) -> e2 at (98,100)
+    const e1 = g.spawnScriptedUnit('soldier', 1, 108, 100);
+    e1.clearOrders();
+    e1.combatStance = 'pasivo';
+    const e2 = g.spawnScriptedUnit('soldier', 1, 98, 100);
+    e2.clearOrders();
+    e2.combatStance = 'pasivo';
+    let t = 0;
+    for (let i = 0; i < 120; i++) {
+      t += 1 / 60;
+      g.update(1 / 60, t);
+    }
+    return { focus: e2.id, targets: soldiers.map((s: any) => s.orderQueue[0]?.entityId ?? null) };
+  });
+  // the soldier whose nearest enemy is e1 still switches to the focus (e2)
+  expect(out.targets).toEqual([out.focus, out.focus, out.focus]);
+});
+
+test('AI siege bombards buildings instead of chasing units', async ({ page }) => {
+  await bootSkirmish(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.players[1].alive = false; // freeze the enemy AI
+    for (const u of g.units.values()) {
+      if (u.owner !== 0)
+        u.die(); // clear the enemy's own units
+      else if (u.kind !== 'worker' && u.kind !== 'scout') u.die();
+    }
+    g.addAI(0);
+    const p0 = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center');
+    const bx = p0.pos.x;
+    const bz = p0.pos.z;
+    const artillery = g.spawnScriptedUnit('artillery', 0, bx + 10, bz + 10);
+    artillery.clearOrders();
+    const building = g.spawnScriptedBuilding('barracks', 1, bx + 22, bz + 10); // near: bombarded
+    const distant = g.spawnScriptedUnit('soldier', 1, bx + 10, bz + 50); // far: no self-defense
+    distant.clearOrders();
+    distant.combatStance = 'pasivo';
+    let t = 0;
+    for (let i = 0; i < 120; i++) {
+      t += 1 / 60;
+      g.update(1 / 60, t);
+    }
+    return { building: building.id, unit: distant.id, target: artillery.orderQueue[0]?.entityId ?? null };
+  });
+  expect(out.target).toBe(out.building);
+});

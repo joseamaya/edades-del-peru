@@ -1,4 +1,4 @@
-import { Era, UnitKind, BuildingKind, OrderKind, Resources, RESOURCE_KEYS } from '../core/types';
+import { Era, UnitKind, BuildingKind, OrderKind, Order, Resources, RESOURCE_KEYS } from '../core/types';
 import { DIFFICULTY_MULT, type Difficulty } from '../core/Config';
 import { TECHS, techAvailable } from '../model/defs/techs';
 import { distance2D } from '../util/math';
@@ -35,9 +35,14 @@ const EXPLORE_FALLBACK = { x: 0.8, z: 0.2 } as const;
 const PRESS_BUILDING_RADIUS = 18;
 /** Radius within which a raiding soldier looks for an enemy worker. */
 const RAID_RADIUS = 24;
+/** Siege only defends itself against units closer than this fraction of its range. */
+const SIEGE_SELF_DEFENSE = 0.5;
 
 /** A combat unit (not a worker or scout). */
 const isSoldier = (u: Unit): boolean => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT;
+
+/** A long-range siege unit (artillery/mortar/nuclear). */
+const isSiege = (kind: UnitKind): boolean => UNIT_CATEGORY[kind] === 'siege';
 
 export class AI {
   private game: Game;
@@ -407,10 +412,12 @@ export class AI {
 
   private microCombat(): void {
     const base = this.center();
+    const soldiers = this.soldiers();
+    const focus = this.focusTarget(soldiers);
     // once the enemy has no soldiers left, the deployed army mops up its buildings
     const mopping = ![...this.game.units.values()].some((u) => isSoldier(u) && this.isEnemyUnit(u));
     let fallback: Building | null | undefined;
-    for (const s of this.soldiers()) {
+    for (const s of soldiers) {
       if (base && s.hp / s.maxHp < this.profile.retreatHp) {
         const distHome = distance2D(s.pos.x, s.pos.z, base.pos.x, base.pos.z);
         if (distHome > RETREAT_MIN_DIST && s.orderQueue[0]?.kind !== OrderKind.MOVE) {
@@ -418,10 +425,33 @@ export class AI {
         }
         continue;
       }
-      if (s.orderQueue[0]?.kind === OrderKind.ATTACK) continue;
+      if (isSiege(s.kind)) {
+        // siege bombards buildings from range; it only fires at units that come close
+        const close = this.findEnemyInRange(s);
+        if (close && distance2D(s.pos.x, s.pos.z, close.pos.x, close.pos.z) <= s.stats.range * SIEGE_SELF_DEFENSE) {
+          s.issueOrder({ kind: OrderKind.ATTACK, entityId: close.id }, true);
+          continue;
+        }
+        const bld = this.findEnemyBuildingInRange(s, s.stats.range);
+        if (bld) {
+          s.issueOrder({ kind: OrderKind.ATTACK, entityId: bld.id }, true);
+          continue;
+        }
+        if (mopping) {
+          if (fallback === undefined) fallback = this.findAttackTarget();
+          if (fallback) s.issueOrder({ kind: OrderKind.ATTACK, entityId: fallback.id }, true);
+        }
+        continue;
+      }
+      if (s.orderQueue[0]?.kind === OrderKind.ATTACK) {
+        this.focusFire(s, s.orderQueue[0], focus);
+        continue;
+      }
+      // focus fire: concentrate on one enemy unit when it is in range
       const enemy = this.findEnemyInRange(s);
       if (enemy) {
-        if (this.mult.aggression > 0.6) s.issueOrder({ kind: OrderKind.ATTACK, entityId: enemy.id }, true);
+        const inFocus = focus && this.inReach(s, focus) ? focus : enemy;
+        if (this.mult.aggression > 0.6) s.issueOrder({ kind: OrderKind.ATTACK, entityId: inFocus.id }, true);
         continue;
       }
       // no unit in range: raid an enemy worker, press a nearby building, else mop up
@@ -441,6 +471,44 @@ export class AI {
         if (fallback) s.issueOrder({ kind: OrderKind.ATTACK, entityId: fallback.id }, true);
       }
     }
+  }
+
+  /** Enemy unit nearest to the AI army's centre (focus-fire target). */
+  private focusTarget(soldiers: Unit[]): Unit | null {
+    if (soldiers.length === 0) return null;
+    let cx = 0;
+    let cz = 0;
+    for (const s of soldiers) {
+      cx += s.pos.x;
+      cz += s.pos.z;
+    }
+    cx /= soldiers.length;
+    cz /= soldiers.length;
+    let best: Unit | null = null;
+    let bestD = Infinity;
+    for (const u of this.game.units.values()) {
+      if (!isSoldier(u) || !this.isEnemyUnit(u)) continue;
+      const d = distance2D(cx, cz, u.pos.x, u.pos.z);
+      if (d < bestD) {
+        bestD = d;
+        best = u;
+      }
+    }
+    return best;
+  }
+
+  /** Can `s` attack `target` from where it stands (melee uses its sight radius). */
+  private inReach(s: Unit, target: Unit): boolean {
+    const reach = s.stats.range > 0 ? s.stats.range : 8;
+    return distance2D(s.pos.x, s.pos.z, target.pos.x, target.pos.z) <= reach;
+  }
+
+  /** Re-target a soldier already attacking a unit onto the focus target. */
+  private focusFire(s: Unit, order: Order, focus: Unit | null): void {
+    if (!focus || order.entityId === focus.id) return;
+    const current = order.entityId !== undefined ? this.game.units.get(order.entityId) : undefined;
+    if (!current || !isSoldier(current)) return; // keep building/worker attacks
+    if (this.inReach(s, focus)) s.issueOrder({ kind: OrderKind.ATTACK, entityId: focus.id }, true);
   }
 
   /** Recall idle military to answer an enemy threatening the base or its workers. */
