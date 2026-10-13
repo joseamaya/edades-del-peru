@@ -1571,32 +1571,33 @@ export class HUD {
       ),
     );
     row.appendChild(q);
-    const cine = this.el('div', 'ed-field', row);
-    cine.innerHTML = `<label>Efectos cinematográficos</label>`;
-    const cineBtn = this.el('button', 'ed-ghostbtn', cine);
-    cineBtn.textContent = this.game.settings.cinematic ? 'Activados' : 'Desactivados';
-    cineBtn.addEventListener('click', () => {
-      this.game.settings.cinematic = !this.game.settings.cinematic;
-      this.game.postfx.setCinematic(this.game.settings.cinematic);
-      cineBtn.textContent = this.game.settings.cinematic ? 'Activados' : 'Desactivados';
-    });
-    const rot = this.el('div', 'ed-field', row);
-    rot.innerHTML = `<label>Rotar cámara (Q/E)</label>`;
-    const rotBtn = this.el('button', 'ed-ghostbtn', rot);
-    rotBtn.textContent = this.game.settings.rotateCamera ? 'Activada' : 'Desactivada';
-    rotBtn.addEventListener('click', () => {
-      this.game.settings.rotateCamera = !this.game.settings.rotateCamera;
-      this.game.camera.setRotationEnabled(this.game.settings.rotateCamera);
-      rotBtn.textContent = this.game.settings.rotateCamera ? 'Activada' : 'Desactivada';
-    });
-    const fog = this.el('div', 'ed-field', row);
-    fog.innerHTML = `<label>Niebla de guerra</label>`;
-    const fogBtn = this.el('button', 'ed-ghostbtn', fog);
-    fogBtn.textContent = this.game.settings.fogOfWar ? 'Activada' : 'Desactivada';
-    fogBtn.addEventListener('click', () => {
-      this.game.setFogOfWar(!this.game.settings.fogOfWar);
-      fogBtn.textContent = this.game.settings.fogOfWar ? 'Activada' : 'Desactivada';
-    });
+    this.toggle(
+      row,
+      'Efectos cinematográficos',
+      ['Activados', 'Desactivados'],
+      () => this.game.settings.cinematic,
+      (v) => {
+        this.game.settings.cinematic = v;
+        this.game.postfx.setCinematic(v);
+      },
+    );
+    this.toggle(
+      row,
+      'Rotar cámara (Q/E)',
+      ['Activada', 'Desactivada'],
+      () => this.game.settings.rotateCamera,
+      (v) => {
+        this.game.settings.rotateCamera = v;
+        this.game.camera.setRotationEnabled(v);
+      },
+    );
+    this.toggle(
+      row,
+      'Niebla de guerra',
+      ['Activada', 'Desactivada'],
+      () => this.game.settings.fogOfWar,
+      (v) => this.game.setFogOfWar(v),
+    );
     this.toggle(
       row,
       'Sonido',
@@ -1646,15 +1647,15 @@ export class HUD {
     get: () => boolean,
     set: (v: boolean) => void,
   ): void {
-    const wrap = this.el('div', 'ed-field', parent);
-    wrap.innerHTML = `<label>${label}</label>`;
-    const btn = this.el('button', 'ed-ghostbtn', wrap);
+    const btn = document.createElement('button');
+    btn.className = 'ed-ghostbtn';
     const render = () => (btn.textContent = get() ? words[0] : words[1]);
     render();
     btn.addEventListener('click', () => {
       set(!get());
       render();
     });
+    parent.appendChild(this.field(label, btn));
   }
 
   private select<T extends string>(
