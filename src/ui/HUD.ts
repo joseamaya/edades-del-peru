@@ -17,8 +17,8 @@ import { TECHS, techAvailable } from '../model/defs/techs';
 import { ERA_DEFS } from '../model/defs/eras';
 import { PERIODS, getPeriod } from '../model/defs/periods';
 import { civsForPeriod, getCiv } from '../model/defs/civs';
-import { RESOURCE_INFO, GameSettings } from '../core/Config';
-import { formatNumber } from '../util/math';
+import { RESOURCE_INFO, MAP_LABEL, GameSettings } from '../core/Config';
+import { formatNumber, formatStat } from '../util/math';
 import { MISSIONS, CAMPAIGN_TITLE, CAMPAIGN_SUBTITLE } from '../campaign/defs/campaign';
 import { PROLOGUE, getEducational } from '../campaign/defs/educational';
 import type { MissionDef } from '../campaign/types';
@@ -582,9 +582,17 @@ export class HUD {
     const fps = this.el('div', '');
     fps.id = 'ed-fps';
     fps.textContent = '60 FPS';
+    fps.style.display = 'none';
     this.fpsEl = fps;
   }
   private fpsEl!: HTMLElement;
+  private showFps = false;
+
+  /** Debug performance overlay (enabled with `?fps=1`; see `main.ts`). */
+  setShowFps(on: boolean): void {
+    this.showFps = on;
+    this.fpsEl.style.display = on ? '' : 'none';
+  }
 
   showToast(msg: string, type: 'info' | 'success' | 'warning' | 'error' | 'danger' = 'info'): void {
     const t = this.el('div', 'ed-toast ' + type);
@@ -664,7 +672,7 @@ export class HUD {
       <div style="font-size:13px;color:var(--text-dim);line-height:1.7;margin-bottom:16px">
         Bajas infligidas: <b>${p?.kills ?? 0}</b><br>
         Unidades creadas: <b>${p?.stats.created ?? 0}</b><br>
-        Era alcanzada: <b>${p ? ERA_DEFS[p.era].name : '—'}</b>
+        Periodo: <b>${getPeriod(this.game.settings.period).name}</b>
       </div>
     `;
     const row = this.el('div', 'row', panel);
@@ -903,7 +911,7 @@ export class HUD {
 
   private unitDesc(u: Unit): string {
     const stats = u.stats;
-    return `HP ${Math.ceil(u.hp)}/${Math.ceil(u.maxHp)} · Daño ${stats.attack} · Rango ${stats.range} · Blindaje ${stats.heavyArmor}`;
+    return `HP ${Math.ceil(u.hp)}/${Math.ceil(u.maxHp)} · Daño ${formatStat(stats.attack)} · Rango ${formatStat(stats.range)} · Blindaje ${formatStat(stats.heavyArmor)}`;
   }
 
   private renderBuildingPanel(b: Building): void {
@@ -1000,7 +1008,7 @@ export class HUD {
 
   private buildingDesc(b: Building): string {
     const stats = b.stats;
-    let s = `HP ${Math.ceil(b.hp)}/${Math.ceil(b.maxHp)} · Blindaje ${stats.armor}`;
+    let s = `HP ${Math.ceil(b.hp)}/${Math.ceil(b.maxHp)} · Blindaje ${formatStat(stats.armor)}`;
     if (b.constructionComplete && b.productionQueue.length > 0) {
       s += ` · Entrenando: ${UNIT_INFO[b.productionQueue[0].unit].name}`;
     }
@@ -1241,7 +1249,7 @@ export class HUD {
     );
     const disponibles = civsForPeriod(this.game.settings.period);
     const civLabels: Record<string, string> = {};
-    for (const c of disponibles) civLabels[c.id] = `${c.name} (${c.geography})`;
+    for (const c of disponibles) civLabels[c.id] = `${c.name} (${MAP_LABEL[c.geography]})`;
     rows.appendChild(
       this.field(
         'Tu civilización',
@@ -1281,7 +1289,7 @@ export class HUD {
         'Mapa',
         this.select(
           ['coast', 'andes', 'altiplano', 'jungle'] as const,
-          { costa: 'Costa / litoral', andes: 'Andes', altiplano: 'Altiplano', selva: 'Selva' },
+          MAP_LABEL,
           this.game.settings.mapType,
           (v) => (this.game.settings.mapType = v),
         ),
@@ -1438,12 +1446,6 @@ export class HUD {
     const period = getPeriod(mis.period);
     const player = getCiv(mis.playerCiv);
     const enemy = getCiv(mis.enemyCiv);
-    const geo: Record<string, string> = {
-      costa: 'Costa / litoral',
-      andes: 'Andes / sierra',
-      altiplano: 'Altiplano',
-      selva: 'Selva',
-    };
     const edu = getEducational(mis.id);
     const context = edu?.context
       ? `<div class="ed-hist">${mis.history}</div><div class="ed-hist"><b style="color:var(--gold)">Contexto histórico.</b> ${edu.context}</div>`
@@ -1462,7 +1464,7 @@ export class HUD {
       <h2>${mis.title}</h2>
       <div class="ed-meta">
         <span>Periodo: <b>${period.name}</b> (${period.dates})</span>
-        <span>Geografía: <b>${geo[mis.map.type] ?? mis.map.type}</b></span>
+        <span>Geografía: <b>${MAP_LABEL[mis.map.type]}</b></span>
         <span>Bandos: <b>${player.name}</b> vs <b>${player.id === enemy.id ? 'grupos rivales' : enemy.name}</b></span>
       </div>
       ${context}
@@ -1569,32 +1571,62 @@ export class HUD {
       ),
     );
     row.appendChild(q);
-    const cine = this.el('div', 'ed-field', row);
-    cine.innerHTML = `<label>Efectos cinematográficos</label>`;
-    const cineBtn = this.el('button', 'ed-ghostbtn', cine);
-    cineBtn.textContent = this.game.settings.cinematic ? 'Activados' : 'Desactivados';
-    cineBtn.addEventListener('click', () => {
-      this.game.settings.cinematic = !this.game.settings.cinematic;
-      this.game.postfx.setCinematic(this.game.settings.cinematic);
-      cineBtn.textContent = this.game.settings.cinematic ? 'Activados' : 'Desactivados';
-    });
-    const rot = this.el('div', 'ed-field', row);
-    rot.innerHTML = `<label>Rotar cámara (Q/E)</label>`;
-    const rotBtn = this.el('button', 'ed-ghostbtn', rot);
-    rotBtn.textContent = this.game.settings.rotateCamera ? 'Activada' : 'Desactivada';
-    rotBtn.addEventListener('click', () => {
-      this.game.settings.rotateCamera = !this.game.settings.rotateCamera;
-      this.game.camera.setRotationEnabled(this.game.settings.rotateCamera);
-      rotBtn.textContent = this.game.settings.rotateCamera ? 'Activada' : 'Desactivada';
-    });
-    const fog = this.el('div', 'ed-field', row);
-    fog.innerHTML = `<label>Niebla de guerra</label>`;
-    const fogBtn = this.el('button', 'ed-ghostbtn', fog);
-    fogBtn.textContent = this.game.settings.fogOfWar ? 'Activada' : 'Desactivada';
-    fogBtn.addEventListener('click', () => {
-      this.game.setFogOfWar(!this.game.settings.fogOfWar);
-      fogBtn.textContent = this.game.settings.fogOfWar ? 'Activada' : 'Desactivada';
-    });
+    this.toggle(
+      row,
+      'Efectos cinematográficos',
+      ['Activados', 'Desactivados'],
+      () => this.game.settings.cinematic,
+      (v) => {
+        this.game.settings.cinematic = v;
+        this.game.postfx.setCinematic(v);
+      },
+    );
+    this.toggle(
+      row,
+      'Rotar cámara (Q/E)',
+      ['Activada', 'Desactivada'],
+      () => this.game.settings.rotateCamera,
+      (v) => {
+        this.game.settings.rotateCamera = v;
+        this.game.camera.setRotationEnabled(v);
+      },
+    );
+    this.toggle(
+      row,
+      'Niebla de guerra',
+      ['Activada', 'Desactivada'],
+      () => this.game.settings.fogOfWar,
+      (v) => this.game.setFogOfWar(v),
+    );
+    this.toggle(
+      row,
+      'Sonido',
+      ['Activado', 'Desactivado'],
+      () => this.game.settings.soundEnabled,
+      (v) => {
+        this.game.settings.soundEnabled = v;
+        this.game.audio.enabled = v;
+      },
+    );
+    this.toggle(
+      row,
+      'Música',
+      ['Activada', 'Desactivada'],
+      () => this.game.settings.musicEnabled,
+      (v) => {
+        this.game.settings.musicEnabled = v;
+        this.game.audio.musicEnabled = v;
+        if (v) this.game.audio.startMusic();
+        else this.game.audio.stopMusic();
+      },
+    );
+    this.toggle(
+      row,
+      'Consejos',
+      ['Activados', 'Desactivados'],
+      () => this.game.settings.showHints,
+      (v) => (this.game.settings.showHints = v),
+    );
     const back = this.el('button', 'ed-primary', panel);
     back.textContent = 'Volver';
     back.addEventListener('click', () => this.showPauseMenu());
@@ -1605,6 +1637,25 @@ export class HUD {
     f.appendChild(this.el('label', '')).textContent = label;
     f.appendChild(input);
     return f;
+  }
+
+  /** A labelled on/off button for a settings panel (`words` = [on, off]). */
+  private toggle(
+    parent: HTMLElement,
+    label: string,
+    words: [string, string],
+    get: () => boolean,
+    set: (v: boolean) => void,
+  ): void {
+    const btn = document.createElement('button');
+    btn.className = 'ed-ghostbtn';
+    const render = () => (btn.textContent = get() ? words[0] : words[1]);
+    render();
+    btn.addEventListener('click', () => {
+      set(!get());
+      render();
+    });
+    parent.appendChild(this.field(label, btn));
   }
 
   private select<T extends string>(
@@ -1667,8 +1718,8 @@ export class HUD {
       // hide resources unavailable in the period (e.g. Stone without a Quarry)
       this.resEls.stone.style.display = this.game.canBuildKind(BuildingKind.REFINERY) ? '' : 'none';
       this.popEl.querySelector('span')!.textContent = `${p.populationUsed}/${p.populationCap}`;
-      const eraDef = ERA_DEFS[p.era];
-      this.eraEl.querySelector('span:last-child')!.textContent = `${eraDef.name} · ${eraDef.years}`;
+      const period = getPeriod(this.game.settings.period);
+      this.eraEl.querySelector('span:last-child')!.textContent = `${period.name} · ${period.dates}`;
       this.eraDot.style.background = `#${ERA_COLORS[p.era].toString(16).padStart(6, '0')}`;
     }
     if (this.updateAcc > 0.15) {
@@ -1677,6 +1728,6 @@ export class HUD {
       this.updateBottomProgress();
       this.renderMinimap();
     }
-    this.fpsEl.textContent = `${this.game.loop.getFps()} FPS`;
+    if (this.showFps) this.fpsEl.textContent = `${this.game.loop.getFps()} FPS`;
   }
 }

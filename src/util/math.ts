@@ -62,3 +62,8 @@ export function formatNumber(n: number): string {
   if (n >= 10_000) return Math.round(n / 1000) + ' K';
   return String(Math.round(n));
 }
+
+/** Format a stat value without floating-point noise (3.3000000000000003 -> 3.3). */
+export function formatStat(n: number): string {
+  return Number.isInteger(n) ? String(n) : n.toFixed(1);
+}

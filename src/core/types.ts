@@ -142,9 +142,10 @@ export type Team = 0 | 1;
 
 /**
  * Aggregated per-player bonuses (technologies + civilization). Additive fields are
- * numeric modifiers: multipliers where noted (`attack`, `armor`, `speed`, `training`),
- * flat amounts otherwise (`carry`, `los`, `range`, `population`). `gathering` values
- * are additive multipliers per resource.
+ * numeric modifiers: multipliers where noted (`attack`, `speed`, `training`),
+ * flat amounts (`carry`, `los`, `range`, `population`). `armor` is a fractional
+ * reduction of incoming damage (0.1 = -10%, capped in `computeDamage`).
+ * `gathering` values are additive multipliers per resource.
  */
 export interface CivBonuses {
   attack: number;

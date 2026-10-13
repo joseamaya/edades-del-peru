@@ -61,7 +61,7 @@ export class AudioEngine {
   // --- SFX ---
 
   private blip(freq: number, dur: number, type: OscillatorType, vol: number, slideTo?: number): void {
-    if (!this.ctx || !this.sfxGain) return;
+    if (!this.ctx || !this.sfxGain || !this.enabled) return;
     const o = this.ctx.createOscillator();
     const g = this.ctx.createGain();
     o.type = type;
@@ -76,7 +76,7 @@ export class AudioEngine {
   }
 
   private noise(dur: number, vol: number, filterFreq: number, type: BiquadFilterType = 'lowpass'): void {
-    if (!this.ctx || !this.sfxGain || !this.noiseBuffer) return;
+    if (!this.ctx || !this.sfxGain || !this.noiseBuffer || !this.enabled) return;
     const src = this.ctx.createBufferSource();
     src.buffer = this.noiseBuffer;
     const f = this.ctx.createBiquadFilter();

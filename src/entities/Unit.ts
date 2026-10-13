@@ -9,7 +9,7 @@ import {
   HistoricalPeriod,
   CombatStance,
 } from '../core/types';
-import { getUnitStats, getUnitModel, UnitStats } from '../model/defs/units';
+import { getUnitStats, getUnitModel, UnitStats, DamageClass } from '../model/defs/units';
 import { buildModel, BuildContext, disposeModel } from '../model/ProceduralModel';
 import { EntityView } from '../entities/EntityView';
 import { allocId } from '../entities/EntityView';
@@ -26,7 +26,7 @@ export interface UnitContext {
   entitiesById: Map<number, any>;
   resourceNodes: Map<number, any>;
   buildings: Map<number, any>;
-  resolveDamage(attackerId: number, targetId: number, damage: number, fromEntity: any): void;
+  resolveDamage(attackerId: number, targetId: number, damage: number, fromEntity: any, damageType: DamageClass): void;
   spawnProjectile(opts: {
     from: THREE.Vector3;
     target: THREE.Vector3;
@@ -38,6 +38,7 @@ export interface UnitContext {
     arc?: number;
     trail?: string;
     targetId?: number;
+    damageType?: DamageClass;
   }): void;
   particles: any;
   players: { id: number; team: Team }[];
@@ -53,6 +54,8 @@ export interface UnitContext {
 }
 
 const MOVE_STOP_DIST = 0.6;
+/** Distance at which a plain move/attack-move order counts as arrived. */
+const MOVE_ARRIVAL_DIST = 1.2;
 const SEPARATION = 1.4;
 
 /** Color of the worker's load bundle according to the carried resource. */
@@ -382,9 +385,7 @@ export class Unit {
   private executeOrder(order: Order, dt: number, time: number): void {
     switch (order.kind) {
       case OrderKind.MOVE:
-        if (this.isPathDone()) {
-          this.finishOrder();
-        }
+        this.updateMove(order);
         break;
       case OrderKind.ATTACK_MOVE:
         this.updateAttackMove(order, dt, time);
@@ -604,7 +605,33 @@ export class Unit {
 
   // --- specific orders ---
 
-  private updateAttackMove(_order: Order, dt: number, time: number): void {
+  /**
+   * Plain move order. It must not complete while the unit is still far from its
+   * destination: a path can come back empty (a blocked start cell / an isolated
+   * pocket) and the unit would otherwise freeze where it stands. Re-path, and if
+   * there is still no route head straight for the target (movement integration is
+   * left to `updateMovement`, so it must not move the position here).
+   */
+  private updateMove(order: Order): void {
+    const t = order.target;
+    if (!this.isPathDone()) return;
+    if (!t || distance2D(this.pos.x, this.pos.z, t.x, t.z) <= MOVE_ARRIVAL_DIST) {
+      this.finishOrder();
+      return;
+    }
+    if (this.repathTimer <= 0) {
+      this.setPath(t.x, t.z);
+      this.repathTimer = 0.5;
+    }
+    if (this.isPathDone()) {
+      this.targetYaw = angleTo(this.pos.x, this.pos.z, t.x, t.z);
+      const spd = this.stats.speed;
+      this.vel.x = Math.cos(this.targetYaw) * spd;
+      this.vel.z = Math.sin(this.targetYaw) * spd;
+    }
+  }
+
+  private updateAttackMove(order: Order, dt: number, time: number): void {
     // look for enemies along the path
     const enemies = this.ctx.unitsNear(this.pos.x, this.pos.z, this.stats.range + 3);
     let best: Unit | null = null;
@@ -625,7 +652,8 @@ export class Unit {
       this.updateAttack({ kind: OrderKind.ATTACK, entityId: best.id }, dt, time);
     } else if (this.isPathDone()) {
       this.attackingTarget = false;
-      this.finishOrder();
+      // same no-freeze guarantee as a plain move when the route came back empty
+      this.updateMove(order);
     }
   }
 
@@ -689,7 +717,7 @@ export class Unit {
   private attackTarget(target: any, time: number): void {
     if (this.attackCooldown <= 0) {
       const dmg = this.stats.attack * this.attackMultiplier;
-      this.ctx.resolveDamage(this.id, target.id, dmg, this);
+      this.ctx.resolveDamage(this.id, target.id, dmg, this, this.stats.damageType);
       this.attackCooldown = this.stats.attackSpeed;
     }
     void time;
@@ -713,6 +741,7 @@ export class Unit {
       arc,
       trail: pKind === 'tracer' ? 'tracer' : undefined,
       targetId: target.id,
+      damageType: this.stats.damageType,
     });
     // muzzle flash at the cannon mouth (weapon pivot + barrel length, rotated with the unit)
     const muzzle = new THREE.Vector3(0.28, 0.9, 0.62).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.yaw);

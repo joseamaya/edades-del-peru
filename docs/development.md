@@ -26,6 +26,13 @@ for player-facing docs see [`README.md`](../README.md).
   `bonuses` is the player-facing text. Known simplification: effects apply globally (e.g. Moche's "infantry
   attack" is a general attack bonus), not per unit category, and a few flavor bullets with no mechanic yet
   (naval units, cheaper houses, building HP) are not modeled. Add effects for any new civ (tested in `defs.test.ts`).
+- **Damage & armor (`src/game/combat.ts`)**: the attacker's `damageType` (`light`/`heavy`/`fortified`) selects the
+  defender's armor — units use `lightArmor` vs `light` and `heavyArmor` vs `heavy`/`fortified`, and buildings use
+  their single `armor` for every attack type — and the civilization/tech `armor` bonus then reduces the remainder
+  as a fraction (`0.1` = -10%, capped at 80%). Damage never drops below 1. `computeDamage` is pure and unit-tested
+  in `tests/combat.test.ts`; `Game.resolveDamage` calls it — melee passes `stats.damageType`, and projectile spawns
+  carry it through `spawnProjectile` into `applyProjectileDamage`. The `Unit.armorMultiplier` field keeps its name
+  and save shape but now stores `1 + reduction` (no `SAVE_VERSION` bump), so `saveTypes` is unchanged.
 - **Maps by geography**: `MapType = 'coast' | 'andes' | 'altiplano' | 'jungle'` (generated in `Terrain.generate`).
 - `src/campaign/defs/campaign.ts` defines the 9 historical campaigns; `src/campaign/Mission.ts` evaluates
   objectives/triggers.
@@ -62,12 +69,14 @@ for player-facing docs see [`README.md`](../README.md).
   `yarn sim [--difficulty=…]` runs **AI-vs-AI** headless matches (seeds, winner, peak armies); `--difficulty`
   sets player 0's profile while player 1 stays on `normal`, so a run measures that profile against `normal`.
   Baseline on the default seed set (`--max=1500`, player-0 wins / losses / undecided): `easy` 0/1/7,
-  `normal` 4/3/1, `hard` 4/2/2, `legendary` 4/1/3 — `easy` is clearly weakest and `hard`/`legendary` beat
-  `normal` on decided games; both AIs share the same micro, so these counts are noisy (±1-2 games) and `normal`
-  keeps the pre-profile baseline (7/8 matches end, avg ~1000 s; the winner typically fields ~10-12 units).
+  `normal` 5/1/2, `hard` 2/2/4, `legendary` 2/3/3 — `easy` is clearly weakest; both AIs share the same micro,
+  so these counts are noisy (±1-2 games). The winner typically fields 6-12 units; before the build-plan fix the
+  AI often stalled at 0 wood and fielded no army at all.
   Between `normal`/`hard`/`legendary` the attack **threshold** is the same — they differ by army size, economy
   and the `aggression` attack cadence. Economy: `chooseResourceNode` counts farm workers as food and the build
-  plan prioritizes dropsites (sawmill/mill) before pop/farms, so the AI no longer starves for wood.
+  plan prioritizes dropsites (sawmill/mill) before pop/farms, so the AI no longer starves for wood. Until the
+  **barracks** exists the plan is restricted to essentials (sawmill/mill/barracks): otherwise the AI spends every
+  10 wood on a farm or house and never saves the 120 a barracks needs, so it fields no army for many minutes.
   Aggression: `launchAttack` sends the **whole** army to destroy enemy **buildings** (center first). `microCombat`
   **focus-fires** (non-siege units converge on the enemy nearest the army's centre) and **siege** units bombard
   buildings from range — only self-defending against units that come close — instead of chasing them. It also
@@ -101,6 +110,9 @@ for player-facing docs see [`README.md`](../README.md).
   building, a resource node) is not traversable. `nearestWalkable` alone is not enough — it can return an
   isolated walkable pocket and A* then fails, silently dropping move-to-building orders. `pathfind` now accepts
   any cell within `GOAL_PROXIMITY` of the original goal cell. Keep that when touching goal handling.
+  A move order must still cope with an empty route from a blocked **start** cell: `Unit.updateMove` (used by
+  MOVE and, on an empty path, ATTACK_MOVE) only completes within `MOVE_ARRIVAL_DIST` of the target and otherwise
+  re-paths or heads straight for it, so a unit never finishes its order and freezes far from the destination.
 - **Model geometries and textures are shared/cached** (`sharedGeo`, `bakedGeoCache`, `texCloneCache` in
   `ProceduralModel.ts`). `disposeModel()` only frees materials; **do not** dispose geometries/textures by hand nor
   reuse them by mutating `repeat`. To clear everything use `clearModelCaches()`.
@@ -184,7 +196,8 @@ for player-facing docs see [`README.md`](../README.md).
 - The app shows the **main menu by default**; enter the match directly with `?play=1` or any debug param.
   `resetGame()` reloads with `?play=1`.
 - URL params: `?play=1`, `?menu=0/1`, `?load=1`, `?replay=1`, `?seed=`, `?fog=0`, `?low=1`, `?speed=`, `?era=N`,
-  `?period=N`, `?mission=ID`, `?noloop=1` (do not auto-start the loop; tests drive fixed steps from step 0).
+  `?period=N`, `?mission=ID`, `?noloop=1` (do not auto-start the loop; tests drive fixed steps from step 0),
+  `?fps=1` (show the debug FPS overlay, hidden by default).
 - Shared `scripts/lib.mjs` (`launchChromium`, `withViteServer`, `readPng`, `classify`). Scripts launch Vite on a
   free port and Chromium with SwiftShader; they use `CHROME_PATH` or `chromium.executablePath()`. Run captures
   with `?low=1`.
