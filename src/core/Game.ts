@@ -1715,7 +1715,6 @@ export class Game {
       players: this.players,
       getPlayer: (id) => this.players[id],
       event: (name, payload) => bus.emit(name, payload),
-      isVisibleTo: () => true,
       gather: (dropId, unitId, amount, resource) => this.deliverGather(dropId, unitId, amount, resource),
       worldSize: this.settings.mapSize,
       period: this.settings.period,
