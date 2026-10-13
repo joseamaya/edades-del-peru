@@ -135,6 +135,8 @@ export interface Order {
   origin?: OrderTarget;
 }
 
+export type CombatStance = 'agresivo' | 'defensivo' | 'pasivo';
+
 export type Team = 0 | 1;
 
 /**

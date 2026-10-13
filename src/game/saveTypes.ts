@@ -1,4 +1,13 @@
-import type { Order, OrderTarget, Resources, UnitKind, BuildingKind, Era, CivBonuses } from '../core/types';
+import type {
+  Order,
+  OrderTarget,
+  Resources,
+  UnitKind,
+  BuildingKind,
+  Era,
+  CivBonuses,
+  CombatStance,
+} from '../core/types';
 import type { GameSettings } from '../core/Config';
 import type { ObjState } from '../campaign/Mission';
 
@@ -6,7 +15,6 @@ import type { ObjState } from '../campaign/Mission';
 export const SAVE_VERSION = 1;
 
 export type ResourceKind = 'tree' | 'mine' | 'well' | 'hunt' | 'fishing' | 'berry';
-export type CombatStance = 'agresivo' | 'defensivo' | 'pasivo';
 export interface TutorialBase {
   houses: number;
   barracks: number;

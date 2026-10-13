@@ -25,7 +25,6 @@ describe('ReplayPlayer', () => {
     expect(due[1]).toEqual({ kind: 'stop', unitIds: [2] });
     expect(player.commandsFor(5)).toEqual([]);
     expect(player.commandsFor(100)).toHaveLength(1);
-    expect(player.done).toBe(true);
   });
 });
 

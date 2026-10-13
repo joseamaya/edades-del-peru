@@ -41,7 +41,7 @@ import { clearTextureCache } from '../rendering/Textures';
 import { DEFAULT_SETTINGS, GameSettings, RESOURCE_INFO } from './Config';
 import { distance2D } from '../util/math';
 import { isTypingTarget } from '../util/dom';
-import { RNG } from '../util/rng';
+import { RNG, hashCode } from '../util/rng';
 import { ERA_DEFS } from '../model/defs/eras';
 import { BUILDING_DEFS, getBuildingStats, BUILDING_INFO } from '../model/defs/buildings';
 import { getUnitStats, getUnitModel, UNIT_INFO } from '../model/defs/units';
@@ -49,17 +49,17 @@ import { getTech } from '../model/defs/techs';
 import { AudioEngine } from '../audio/AudioEngine';
 import { Mission } from '../campaign/Mission';
 import { Tutorial } from '../campaign/Tutorial';
-import { PlayerCommand, Replay, ReplayPlayer, ReplayRecorder, saveReplay, stateHash } from '../game/replay';
+import { PlayerCommand, Replay, ReplayPlayer, ReplayRecorder, saveReplay } from '../game/replay';
+import { getMission } from '../campaign/defs/campaign';
+import type { MissionDef } from '../campaign/types';
+import { serializeGame, saveToStorage } from '../game/SaveGame';
+import type { SaveData } from '../game/saveTypes';
 
 /** When false the main loop does not auto-start, so tests can drive fixed steps from step 0. */
 let autoStart = true;
 export function setAutoStart(value: boolean): void {
   autoStart = value;
 }
-import { getMission } from '../campaign/defs/campaign';
-import type { MissionDef } from '../campaign/types';
-import { serializeGame, saveToStorage } from '../game/SaveGame';
-import type { SaveData } from '../game/saveTypes';
 
 const NODE_INFO: Record<ResourceNode['kind'], { name: string; icon: string }> = {
   tree: { name: 'Árbol', icon: '🌳' },
@@ -642,7 +642,50 @@ export class Game {
 
   /** A stable hash of the gameplay state (replay/determinism verification). */
   stateHash(): number {
-    return stateHash(this);
+    const units = [...this.units.values()]
+      .filter((u) => !u.dead)
+      .sort((a, b) => a.id - b.id)
+      .map((u) => [
+        u.id,
+        u.owner,
+        u.kind,
+        u.pos.x,
+        u.pos.z,
+        u.hp,
+        u.orderQueue.map((o) => [o.kind, o.entityId ?? null, o.target?.x ?? null, o.target?.z ?? null]),
+      ]);
+    const buildings = [...this.buildings.values()]
+      .filter((b) => !b.dead)
+      .sort((a, b) => a.id - b.id)
+      .map((b) => [
+        b.id,
+        b.owner,
+        b.kind,
+        b.pos.x,
+        b.pos.z,
+        b.hp,
+        b.constructionComplete,
+        b.constructionProgress,
+        b.productionQueue.map((q) => q.unit),
+        b.researchQueue,
+        b.foodAmount,
+      ]);
+    const nodes = [...this.resourceNodes.values()]
+      .filter((n) => !n.dead)
+      .sort((a, b) => a.id - b.id)
+      .map((n) => [n.id, n.amount, n.depleted]);
+    const players = this.players.map((p) => [
+      p.id,
+      p.era,
+      p.resources.food,
+      p.resources.wood,
+      p.resources.silver,
+      p.resources.stone,
+      p.populationUsed,
+      [...p.techs].sort(),
+      p.alive,
+    ]);
+    return hashCode(JSON.stringify({ units, buildings, nodes, players, rng: this.rng.getState() }));
   }
 
   /** The replay recorded so far (skirmish only), or null. */
@@ -1446,7 +1489,7 @@ export class Game {
     if (!this.placingBuilding) return;
     const kind = this.placingBuilding.kind;
     this.cancelPlacement();
-    const b = this.placeBuilding(kind, x, z);
+    const b = this.commandPlace(kind, x, z);
     if (!b) {
       this.hud.showToast('Recursos insuficientes', 'error');
       return;
@@ -1463,6 +1506,14 @@ export class Game {
         clear: true,
       });
     }
+  }
+
+  /** Place a building for player 0 through the command layer; returns the new building. */
+  private commandPlace(kind: BuildingKind, x: number, z: number): Building | null {
+    const before = new Set(this.buildings.keys());
+    if (!this.executeCommand({ kind: 'place', building: kind, x, z })) return null;
+    for (const [id, b] of this.buildings) if (!before.has(id)) return b;
+    return null;
   }
 
   private cancelPlacement(): void {
