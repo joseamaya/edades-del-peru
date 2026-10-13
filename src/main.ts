@@ -1,4 +1,4 @@
-import { Game } from './core/Game';
+import { Game, setAutoStart } from './core/Game';
 import * as THREE from 'three';
 import { GameSettings, DEFAULT_SETTINGS } from './core/Config';
 import { BuildingKind, CivId, HistoricalPeriod } from './core/types';
@@ -6,6 +6,7 @@ import { getBuildingStats } from './model/defs/buildings';
 import { CIVS, civsForPeriod } from './model/defs/civs';
 import { getPeriod } from './model/defs/periods';
 import { loadFromStorage } from './game/SaveGame';
+import { loadReplay } from './game/replay';
 
 /** Read saved settings or use the defaults, validating each field. */
 function loadSettings(): GameSettings {
@@ -78,16 +79,20 @@ function floatParam(params: URLSearchParams, key: string, fallback: number): num
 function boot(): void {
   const params = new URLSearchParams(window.location.search);
   const wantsLoad = params.get('load') === '1';
+  const wantsReplay = params.get('replay') === '1';
   const snapshot = wantsLoad ? loadFromStorage() : null;
-  const settings = snapshot ? { ...snapshot.settings } : loadSettings();
-  if (!snapshot) {
+  const replay = wantsReplay ? loadReplay() : null;
+  const settings = snapshot ? { ...snapshot.settings } : replay ? { ...replay.settings } : loadSettings();
+  if (!snapshot && !replay) {
     if (params.get('mission')) settings.missionId = params.get('mission')!;
     if (params.get('fog') === '0') settings.fogOfWar = false;
     if (params.get('seed') !== null) settings.mapSeed = intParam(params, 'seed', settings.mapSeed);
   }
-  const game = new Game(settings, snapshot);
+  if (params.get('noloop') === '1') setAutoStart(false);
+  const game = new Game(settings, snapshot, replay);
   (window as any).game = game;
   (window as any).THREE = THREE;
+  if (replay) game.hud.showToast('🎬 Repetición', 'info');
   game.postfx.setCinematic(settings.cinematic);
   if (params.get('low') === '1') {
     game.pixelRatioOverride = 1;
@@ -128,7 +133,7 @@ function boot(): void {
       }
     }
   }
-  if (params.get('menu') === '1' || (wantsLoad && !snapshot)) {
+  if (params.get('menu') === '1' || (wantsLoad && !snapshot) || (wantsReplay && !replay)) {
     game.hud.showMainMenu();
   } else if (!startsMatchDirectly(params)) {
     game.hud.showMainMenu();
@@ -137,7 +142,13 @@ function boot(): void {
 
 /** True if the URL asks to enter the match directly (debug, ?play=1 or ?menu=0). */
 function startsMatchDirectly(params: URLSearchParams): boolean {
-  if (params.get('menu') === '0' || params.get('play') === '1' || params.get('load') === '1') return true;
+  if (
+    params.get('menu') === '0' ||
+    params.get('play') === '1' ||
+    params.get('load') === '1' ||
+    params.get('replay') === '1'
+  )
+    return true;
   return ['seed', 'era', 'mission', 'low', 'speed', 'fog'].some((k) => params.has(k));
 }
 

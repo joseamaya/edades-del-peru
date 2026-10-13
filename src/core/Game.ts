@@ -30,6 +30,7 @@ import {
   UnitKind,
   BuildingKind,
   OrderKind,
+  Order,
   OrderTarget,
   Team,
   RESOURCE_KEYS,
@@ -48,6 +49,13 @@ import { getTech } from '../model/defs/techs';
 import { AudioEngine } from '../audio/AudioEngine';
 import { Mission } from '../campaign/Mission';
 import { Tutorial } from '../campaign/Tutorial';
+import { PlayerCommand, Replay, ReplayPlayer, ReplayRecorder, saveReplay, stateHash } from '../game/replay';
+
+/** When false the main loop does not auto-start, so tests can drive fixed steps from step 0. */
+let autoStart = true;
+export function setAutoStart(value: boolean): void {
+  autoStart = value;
+}
 import { getMission } from '../campaign/defs/campaign';
 import type { MissionDef } from '../campaign/types';
 import { serializeGame, saveToStorage } from '../game/SaveGame';
@@ -113,10 +121,15 @@ export class Game {
   private gameEnded = false;
   private wonderReqTime = 300;
   private pendingSnapshot: SaveData | null = null;
+  /** Simulation step counter (fixed 60Hz ticks), used to time recorded commands. */
+  stepCount = 0;
+  private recorder: ReplayRecorder | null = null;
+  private replay: ReplayPlayer | null = null;
 
-  constructor(settings: GameSettings, snapshot: SaveData | null = null) {
+  constructor(settings: GameSettings, snapshot: SaveData | null = null, replay: Replay | null = null) {
     this.settings = { ...DEFAULT_SETTINGS, ...settings };
     this.pendingSnapshot = snapshot;
+    this.replay = replay ? new ReplayPlayer(replay) : null;
     const mis = this.settings.missionId ? getMission(this.settings.missionId) : undefined;
     if (mis) {
       // fixed mission configuration overrides the skirmish
@@ -147,8 +160,10 @@ export class Game {
     if (this.pendingSnapshot) this.applySnapshot(this.pendingSnapshot);
     this.loop.onUpdate = (dt, t) => this.update(dt, t);
     this.loop.onRender = () => this.render();
-    this.loop.start();
+    if (autoStart) this.loop.start();
     if (mis && !this.pendingSnapshot) this.mission?.start();
+    // record skirmish matches (not replays or loaded saves) for the local player
+    if (!replay && !snapshot && !mis) this.recorder = new ReplayRecorder(this.settings);
     bus.emit('game:ready', {});
   }
 
@@ -601,6 +616,127 @@ export class Game {
     url.searchParams.delete('mission');
     url.searchParams.delete('menu');
     location.href = url.toString();
+  }
+
+  /** Reload the page into a recorded replay. */
+  loadReplayMatch(): void {
+    const url = new URL(location.href);
+    url.searchParams.set('replay', '1');
+    url.searchParams.delete('load');
+    url.searchParams.delete('mission');
+    url.searchParams.delete('menu');
+    location.href = url.toString();
+  }
+
+  /**
+   * Apply a player command, recording it for the replay when enabled. This is the
+   * single entry point for player intent, so a replay only has to feed the same
+   * commands back at the same steps.
+   */
+  executeCommand(cmd: PlayerCommand, record = true): boolean {
+    // no live input during playback: it would desync the replay
+    if (this.replay && record) return false;
+    if (record && this.recorder) this.recorder.record(this.stepCount, cmd);
+    return this.applyCommand(cmd);
+  }
+
+  /** A stable hash of the gameplay state (replay/determinism verification). */
+  stateHash(): number {
+    return stateHash(this);
+  }
+
+  /** The replay recorded so far (skirmish only), or null. */
+  exportReplay(): Replay | null {
+    return this.recorder ? this.recorder.toReplay() : null;
+  }
+
+  /** True while a replay is being played back. */
+  get replayActive(): boolean {
+    return this.replay !== null;
+  }
+
+  /** Route a single-unit order through the command layer (records it for replays). */
+  private orderUnit(u: Unit, order: Order, clear: boolean): void {
+    this.executeCommand({ kind: 'order', unitIds: [u.id], order, clear });
+  }
+
+  private applyCommand(cmd: PlayerCommand): boolean {
+    switch (cmd.kind) {
+      case 'order':
+        for (const id of cmd.unitIds) {
+          const u = this.units.get(id);
+          if (u && !u.dead) u.issueOrder(cmd.order, cmd.clear);
+        }
+        return true;
+      case 'stop':
+        for (const id of cmd.unitIds) this.units.get(id)?.clearOrders();
+        return true;
+      case 'stance':
+        for (const id of cmd.unitIds) {
+          const u = this.units.get(id);
+          if (u && !u.dead) u.combatStance = cmd.stance;
+        }
+        return true;
+      case 'place':
+        return this.placeBuilding(cmd.building, cmd.x, cmd.z) !== null;
+      case 'train':
+        return this.trainUnit(cmd.buildingId, cmd.unit);
+      case 'research':
+        return this.researchTech(cmd.buildingId, cmd.tech);
+      case 'cancel':
+        this.cancelProduction(cmd.buildingId, cmd.index);
+        return true;
+      case 'ungarrison':
+        return this.ungarrison(cmd.buildingId);
+      case 'rally':
+        this.setRallyPoint(cmd.buildingId, cmd.target);
+        return true;
+      case 'advanceEra':
+        return this.advanceEra(0);
+    }
+  }
+
+  /** Spend and create a building for player 0 (worker assignment is a separate order). */
+  private placeBuilding(kind: BuildingKind, x: number, z: number): Building | null {
+    const stats = getBuildingStats(kind, this.players[0].era);
+    if (!this.spendResource(0, stats.cost)) return null;
+    const ctx = this.makeBuildContext(0);
+    const b = new Building(kind, 0, this.players[0].era, ctx);
+    b.pos.set(x, this.terrain.getHeight(x, z), z);
+    b.attach(this.scene);
+    b.beginConstruction();
+    this.buildings.set(b.id, b);
+    this.registerObstacle(b);
+    return b;
+  }
+
+  /** Train a unit in a completed building of player 0. */
+  trainUnit(buildingId: number, unit: UnitKind): boolean {
+    const b = this.buildings.get(buildingId);
+    if (!b || b.dead || b.owner !== 0) return false;
+    const stats = getUnitStats(unit, b.era);
+    const p = this.players[0];
+    if (p.populationUsed + stats.population > p.populationCap) return false;
+    if (!this.spendResource(0, stats.cost)) return false;
+    if (!b.queueUnit(unit)) {
+      this.addResource(0, stats.cost);
+      return false;
+    }
+    return true;
+  }
+
+  /** Queue a technology in a building of player 0. */
+  researchTech(buildingId: number, techId: string): boolean {
+    const b = this.buildings.get(buildingId);
+    if (!b || b.dead || b.owner !== 0) return false;
+    const tech = getTech(techId);
+    if (!tech) return false;
+    if (!this.spendResource(0, tech.cost)) return false;
+    if (!b.queueTech(techId)) {
+      this.addResource(0, tech.cost);
+      return false;
+    }
+    return true;
   }
 
   /** Attach an AI controller to a player (AI-vs-AI runs/tests). */
@@ -1057,9 +1193,9 @@ export class Game {
       this.markOrder(target, 'gather');
       for (const u of units) {
         if (u.kind === UnitKind.WORKER) {
-          u.issueOrder({ kind: OrderKind.GATHER, entityId: node.id }, !this.shiftQueue);
+          this.orderUnit(u, { kind: OrderKind.GATHER, entityId: node.id }, !this.shiftQueue);
         } else {
-          u.issueOrder({ kind: OrderKind.ATTACK_MOVE, target }, !this.shiftQueue);
+          this.orderUnit(u, { kind: OrderKind.ATTACK_MOVE, target }, !this.shiftQueue);
         }
       }
       return;
@@ -1070,9 +1206,9 @@ export class Game {
       if (b.owner === 0 && b.isFarm && b.constructionComplete && b.foodAmount > 0) {
         for (const u of units) {
           if (u.kind === UnitKind.WORKER) {
-            u.issueOrder({ kind: OrderKind.GATHER, entityId: b.id }, !this.shiftQueue);
+            this.orderUnit(u, { kind: OrderKind.GATHER, entityId: b.id }, !this.shiftQueue);
           } else {
-            u.issueOrder({ kind: OrderKind.ATTACK_MOVE, target }, !this.shiftQueue);
+            this.orderUnit(u, { kind: OrderKind.ATTACK_MOVE, target }, !this.shiftQueue);
           }
         }
         this.audio.order();
@@ -1082,21 +1218,21 @@ export class Game {
         // attack an enemy building
         this.markOrder({ x: b.pos.x, z: b.pos.z }, 'attack');
         for (const u of units) {
-          u.issueOrder({ kind: OrderKind.ATTACK, entityId: b.id }, !this.shiftQueue);
+          this.orderUnit(u, { kind: OrderKind.ATTACK, entityId: b.id }, !this.shiftQueue);
         }
       } else if (this.shiftQueue) {
         // set rally point
-        this.setRallyPoint(b.id, target);
+        this.executeCommand({ kind: 'rally', buildingId: b.id, target });
       } else {
         for (const u of units) {
           if (u.kind === UnitKind.WORKER && !b.constructionComplete) {
-            u.issueOrder({ kind: OrderKind.BUILD, entityId: b.id }, !this.shiftQueue);
+            this.orderUnit(u, { kind: OrderKind.BUILD, entityId: b.id }, !this.shiftQueue);
           } else if (u.kind === UnitKind.WORKER && b.isDropsite) {
-            u.issueOrder({ kind: OrderKind.DELIVER, entityId: b.id }, !this.shiftQueue);
+            this.orderUnit(u, { kind: OrderKind.DELIVER, entityId: b.id }, !this.shiftQueue);
           } else if (b.garrisons > 0) {
-            u.issueOrder({ kind: OrderKind.GARRISON, entityId: b.id }, !this.shiftQueue);
+            this.orderUnit(u, { kind: OrderKind.GARRISON, entityId: b.id }, !this.shiftQueue);
           } else {
-            u.issueOrder({ kind: OrderKind.MOVE, target }, !this.shiftQueue);
+            this.orderUnit(u, { kind: OrderKind.MOVE, target }, !this.shiftQueue);
           }
         }
       }
@@ -1109,9 +1245,9 @@ export class Game {
       this.markOrder(target, canConvert ? 'convert' : 'attack');
       for (const u of units) {
         if (canConvert && u.kind === UnitKind.COMMISSAR) {
-          u.issueOrder({ kind: OrderKind.CONVERT, entityId: enemyId }, !this.shiftQueue);
+          this.orderUnit(u, { kind: OrderKind.CONVERT, entityId: enemyId }, !this.shiftQueue);
         } else {
-          u.issueOrder({ kind: OrderKind.ATTACK, entityId: enemyId }, !this.shiftQueue);
+          this.orderUnit(u, { kind: OrderKind.ATTACK, entityId: enemyId }, !this.shiftQueue);
         }
       }
       return;
@@ -1120,7 +1256,7 @@ export class Game {
       // attack-move
       this.markOrder(target, 'attack');
       for (const u of units) {
-        u.issueOrder({ kind: OrderKind.ATTACK_MOVE, target }, !this.shiftQueue);
+        this.orderUnit(u, { kind: OrderKind.ATTACK_MOVE, target }, !this.shiftQueue);
       }
     } else {
       this.markOrder(target, 'move');
@@ -1142,7 +1278,7 @@ export class Game {
     const target: OrderTarget = { x, z };
     if (ctrlQueue) {
       this.markOrder(target, 'attack');
-      for (const u of units) u.issueOrder({ kind: OrderKind.ATTACK_MOVE, target }, !shiftQueue);
+      for (const u of units) this.orderUnit(u, { kind: OrderKind.ATTACK_MOVE, target }, !shiftQueue);
     } else {
       this.markOrder(target, 'move');
       this.issueMoveFormation(units, target);
@@ -1164,7 +1300,7 @@ export class Game {
       idx++;
       const ox = Math.cos(yaw) * r * spacing - Math.sin(yaw) * c * spacing;
       const oz = Math.sin(yaw) * r * spacing + Math.cos(yaw) * c * spacing;
-      u.issueOrder({ kind: OrderKind.MOVE, target: { x: target.x + ox, z: target.z + oz } }, !this.shiftQueue);
+      this.orderUnit(u, { kind: OrderKind.MOVE, target: { x: target.x + ox, z: target.z + oz } }, !this.shiftQueue);
     }
   }
 
@@ -1309,26 +1445,23 @@ export class Game {
   private commitPlacement(x: number, z: number): void {
     if (!this.placingBuilding) return;
     const kind = this.placingBuilding.kind;
-    const stats = getBuildingStats(kind, this.players[0].era);
-    if (!this.spendResource(0, stats.cost)) {
+    this.cancelPlacement();
+    const b = this.placeBuilding(kind, x, z);
+    if (!b) {
       this.hud.showToast('Recursos insuficientes', 'error');
-      this.cancelPlacement();
       return;
     }
-    const ctx = this.makeBuildContext(0);
-    const b = new Building(kind, 0, this.players[0].era, ctx);
-    b.pos.set(x, this.terrain.getHeight(x, z), z);
-    b.attach(this.scene);
-    b.beginConstruction();
-    this.buildings.set(b.id, b);
-    this.registerObstacle(b);
-    this.cancelPlacement();
     // RTS standard: the selected workers build (they interrupt their task)
     const builders = this.selectedUnits
       .map((id) => this.units.get(id))
       .filter((u): u is Unit => !!u && !u.dead && u.kind === UnitKind.WORKER);
     for (const u of builders) {
-      u.issueOrder({ kind: OrderKind.BUILD, entityId: b.id }, true);
+      this.executeCommand({
+        kind: 'order',
+        unitIds: [u.id],
+        order: { kind: OrderKind.BUILD, entityId: b.id },
+        clear: true,
+      });
     }
   }
 
@@ -1366,6 +1499,25 @@ export class Game {
     b.productionQueue.splice(index, 1);
     this.addResource(b.owner, { ...ZERO_RESOURCES, ...stats.cost });
     this.hud?.showToast('Entrenamiento cancelado', 'info');
+  }
+
+  /** Release a building's garrisoned units around it (seeded exit positions). */
+  ungarrison(buildingId: number): boolean {
+    const b = this.buildings.get(buildingId);
+    if (!b || b.dead) return false;
+    const ids = b.ungarrisonAll();
+    for (const id of ids) {
+      const u = this.units.get(id);
+      if (!u) continue;
+      u.garrisonedIn = null;
+      u.view.group.visible = true;
+      const ang = this.rng.float() * Math.PI * 2;
+      const px = b.pos.x + Math.cos(ang) * (b.radius + 0.6);
+      const pz = b.pos.z + Math.sin(ang) * (b.radius + 0.6);
+      u.pos.set(px, this.terrain.getHeight(px, pz), pz);
+      u.snapToGround();
+    }
+    return true;
   }
 
   // --- keyboard ---
@@ -2070,7 +2222,20 @@ export class Game {
   private endGame(winner: number): void {
     if (this.gameEnded) return;
     this.gameEnded = true;
+    this.finishRecording();
     bus.emit('game:end', { winner });
+  }
+
+  /** Persist the recorded replay (called when the match ends). */
+  private finishRecording(): void {
+    if (!this.recorder) return;
+    saveReplay(this.recorder.toReplay());
+    this.recorder = null;
+  }
+
+  /** Save the current recording without clearing it (e.g. leaving a match early). */
+  saveRecording(): void {
+    if (this.recorder) saveReplay(this.recorder.toReplay());
   }
 
   // --- main update ---
@@ -2079,6 +2244,9 @@ export class Game {
     if (this.paused) {
       this.hud.update(dt, t);
       return;
+    }
+    if (this.replay) {
+      for (const cmd of this.replay.commandsFor(this.stepCount)) this.executeCommand(cmd, false);
     }
     const d = dt;
 
@@ -2147,6 +2315,7 @@ export class Game {
     this.checkVictory();
 
     this.hud.update(d, t);
+    this.stepCount++;
   }
 
   private cleanupDead(): void {
