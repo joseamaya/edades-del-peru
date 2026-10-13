@@ -41,6 +41,12 @@ for player-facing docs see [`README.md`](../README.md).
   or engines before 1532). Normal production is gated independently by `eraModel` + `requiresTech` (e.g.
   `cavalry` has no model before Viceroyalty and needs the `shock_cavalry` tech), so `minPeriod` governs the
   scripted content that those gates do not cover.
+- **Chronology/culture of techs**: `TechDef.periods` (`src/model/defs/techs.ts`) is the historical window a
+  technology belongs to (culture + chronology); when set it is authoritative, otherwise `minEra` applies.
+  `techAvailable(tech, period)` is enforced centrally in `Building.queueTech` (like the unit guard) plus the HUD
+  research panel and the AI, so a tech never appears for the wrong civilization or period (e.g. Inca *chasquis*
+  no longer leak into the Republic, colonial *obrajes* not before 1532). Windows are sourced in
+  [`docs/historia/tecnologias.md`](./historia/tecnologias.md).
 - **AI (`src/game/AI.ts`)**: macromanagement (workers, build plan, tech, waves) plus `defendEconomy`
   (recalls idle military when an enemy nears any AI building/worker), `microCombat` retreat of badly wounded
   units and `explore` (idle scouts patrol toward the enemy base). It only uses the same systems as the player
@@ -176,7 +182,7 @@ for player-facing docs see [`README.md`](../README.md).
 - The app shows the **main menu by default**; enter the match directly with `?play=1` or any debug param.
   `resetGame()` reloads with `?play=1`.
 - URL params: `?play=1`, `?menu=0/1`, `?load=1`, `?replay=1`, `?seed=`, `?fog=0`, `?low=1`, `?speed=`, `?era=N`,
-  `?mission=ID`, `?noloop=1` (do not auto-start the loop; tests drive fixed steps from step 0).
+  `?period=N`, `?mission=ID`, `?noloop=1` (do not auto-start the loop; tests drive fixed steps from step 0).
 - Shared `scripts/lib.mjs` (`launchChromium`, `withViteServer`, `readPng`, `classify`). Scripts launch Vite on a
   free port and Chromium with SwiftShader; they use `CHROME_PATH` or `chromium.executablePath()`. Run captures
   with `?low=1`.

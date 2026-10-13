@@ -1,6 +1,6 @@
 import { Era, UnitKind, BuildingKind, OrderKind, Resources, RESOURCE_KEYS } from '../core/types';
 import { DIFFICULTY_MULT, type Difficulty } from '../core/Config';
-import { TECHS } from '../model/defs/techs';
+import { TECHS, techAvailable } from '../model/defs/techs';
 import { distance2D } from '../util/math';
 import { RNG } from '../util/rng';
 import { BUILDING_DEFS, getBuildingStats } from '../model/defs/buildings';
@@ -380,7 +380,7 @@ export class AI {
   private researchCheck(): void {
     const p = this.p;
     for (const tech of TECHS) {
-      if (tech.minEra > p.era || p.techs.has(tech.id)) continue;
+      if (!techAvailable(tech, this.game.settings.period) || p.techs.has(tech.id)) continue;
       if (tech.requirements && !tech.requirements.every((r) => p.techs.has(r))) continue;
       const bld = this.myBuildings().find((b) => b.kind === tech.building && b.constructionComplete);
       if (!bld || bld.researchQueue.length > 0) continue;

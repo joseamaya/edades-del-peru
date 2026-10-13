@@ -13,7 +13,7 @@ import {
 } from '../core/types';
 import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../model/defs/buildings';
 import { UNIT_ARCHETYPES, getUnitStats, UNIT_INFO, unitMinPeriod } from '../model/defs/units';
-import { TECHS } from '../model/defs/techs';
+import { TECHS, techAvailable } from '../model/defs/techs';
 import { ERA_DEFS } from '../model/defs/eras';
 import { PERIODS, getPeriod } from '../model/defs/periods';
 import { civsForPeriod, getCiv } from '../model/defs/civs';
@@ -959,7 +959,7 @@ export class HUD {
     const techs = TECHS.filter(
       (t) =>
         t.building === b.kind &&
-        t.minEra <= this.game.players[0].era &&
+        techAvailable(t, this.game.settings.period) &&
         !this.game.players[0].techs.has(t.id) &&
         (!t.requirements || t.requirements.every((r) => this.game.players[0].techs.has(r))),
     );

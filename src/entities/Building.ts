@@ -7,7 +7,7 @@ import { EntityView } from './EntityView';
 import { allocId } from './EntityView';
 import { getUnitStats } from '../model/defs/units';
 import { unitMinPeriod } from '../model/defs/units';
-import { getTech } from '../model/defs/techs';
+import { getTech, techAvailable } from '../model/defs/techs';
 import { clamp } from '../util/math';
 import type { BuildingSave } from '../game/saveTypes';
 
@@ -207,6 +207,8 @@ export class Building {
     const tech = getTech(techId);
     if (!tech) return false;
     if (tech.building !== this.kind) return false;
+    // chronology/culture guard: no techs outside their historical window
+    if (this.ctx?.period !== undefined && !techAvailable(tech, this.ctx.period)) return false;
     this.researchQueue.push({ tech: techId, progress: 0, playerId: this.owner });
     return true;
   }

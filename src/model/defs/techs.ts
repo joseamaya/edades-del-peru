@@ -1,4 +1,5 @@
-import { BuildingKind, Era, Resources, ZERO_RESOURCES } from '../../core/types';
+import { BuildingKind, Era, HistoricalPeriod, Resources, ZERO_RESOURCES } from '../../core/types';
+import { getPeriod } from './periods';
 
 export interface TechEffect {
   attackMult?: number;
@@ -23,6 +24,11 @@ export interface TechDef {
   /** Technologies it unlocks (units or buildings) */
   unlocksUnits?: string[];
   requirements?: string[];
+  /**
+   * Historical periods in which the tech is plausible (culture/chronology
+   * window). When set it is authoritative; when omitted only `minEra` applies.
+   */
+  periods?: HistoricalPeriod[];
   icon?: string;
 }
 
@@ -52,6 +58,13 @@ export const TECHS: TechDef[] = [
     minEra: Era.FORMATIVE,
     building: BuildingKind.INSTITUTE,
     effect: { gatheringMult: { wood: 0.15, silver: 0.15 } },
+    periods: [
+      HistoricalPeriod.EARLY_HORIZON,
+      HistoricalPeriod.EARLY_INTERMEDIATE,
+      HistoricalPeriod.MIDDLE_HORIZON,
+      HistoricalPeriod.LATE_INTERMEDIATE,
+      HistoricalPeriod.LATE_HORIZON,
+    ],
     icon: '🧶',
   },
   {
@@ -107,9 +120,15 @@ export const TECHS: TechDef[] = [
     description: 'La producción se industrializa. Las unidades infligen un 15% más de daño.',
     cost: cost({ silver: 200, stone: 80 }),
     time: 60,
-    minEra: Era.TAHUANTINSUYO,
+    minEra: Era.VICEROYALTY,
     building: BuildingKind.INSTITUTE,
     effect: { attackMult: 0.15 },
+    periods: [
+      HistoricalPeriod.VICEROYALTY,
+      HistoricalPeriod.INDEPENDENCE,
+      HistoricalPeriod.REPUBLIC,
+      HistoricalPeriod.CONTEMPORARY,
+    ],
     icon: '🏭',
   },
   {
@@ -122,6 +141,7 @@ export const TECHS: TechDef[] = [
     building: BuildingKind.ARSENAL,
     effect: { rangeBonus: 1 },
     unlocksUnits: ['anti_air'],
+    periods: [HistoricalPeriod.CONTEMPORARY],
     icon: '🎯',
   },
   {
@@ -146,6 +166,7 @@ export const TECHS: TechDef[] = [
     building: BuildingKind.STABLE,
     effect: { armorMult: 0.15 },
     unlocksUnits: ['tank'],
+    periods: [HistoricalPeriod.CONTEMPORARY],
     icon: '🛡️',
   },
   {
@@ -158,6 +179,7 @@ export const TECHS: TechDef[] = [
     building: BuildingKind.FACTORY,
     effect: { attackMult: 0.2 },
     unlocksUnits: ['nuclear'],
+    periods: [HistoricalPeriod.CONTEMPORARY],
     icon: '🚀',
   },
   {
@@ -166,9 +188,10 @@ export const TECHS: TechDef[] = [
     description: 'Amplía la visión de todos los edificios y unidades.',
     cost: cost({ silver: 150, stone: 120 }),
     time: 60,
-    minEra: Era.VICEROYALTY,
+    minEra: Era.TAHUANTINSUYO,
     building: BuildingKind.INSTITUTE,
     effect: { losBonus: 2 },
+    periods: [HistoricalPeriod.MIDDLE_HORIZON, HistoricalPeriod.LATE_INTERMEDIATE, HistoricalPeriod.LATE_HORIZON],
     icon: '📡',
   },
   {
@@ -189,10 +212,11 @@ export const TECHS: TechDef[] = [
     description: 'Desbloquea al Amauta en la Casa del Guerrero.',
     cost: cost({ food: 150, silver: 100 }),
     time: 60,
-    minEra: Era.VICEROYALTY,
+    minEra: Era.TAHUANTINSUYO,
     building: BuildingKind.BARRACKS,
     effect: {},
     unlocksUnits: ['commissar'],
+    periods: [HistoricalPeriod.LATE_HORIZON],
     icon: '🧙',
   },
   {
@@ -201,9 +225,10 @@ export const TECHS: TechDef[] = [
     description: 'Los obreros cargan 5 recursos más por viaje.',
     cost: cost({ silver: 180, stone: 120 }),
     time: 60,
-    minEra: Era.REPUBLIC,
+    minEra: Era.TAHUANTINSUYO,
     building: BuildingKind.CENTER,
     effect: { capacityBonus: 5 },
+    periods: [HistoricalPeriod.LATE_HORIZON],
     icon: '🏃',
   },
   {
@@ -216,6 +241,7 @@ export const TECHS: TechDef[] = [
     building: BuildingKind.FORTRESS,
     effect: { attackMult: 0.2, armorMult: 0.2 },
     unlocksUnits: ['mec'],
+    periods: [HistoricalPeriod.CONTEMPORARY],
     icon: '🛡️',
   },
   {
@@ -227,6 +253,7 @@ export const TECHS: TechDef[] = [
     minEra: Era.CONTEMPORARY,
     building: BuildingKind.REFINERY,
     effect: { gatheringMult: { stone: 0.3 } },
+    periods: [HistoricalPeriod.CONTEMPORARY],
     icon: '⚡',
   },
   {
@@ -235,13 +262,23 @@ export const TECHS: TechDef[] = [
     description: 'Producción militar acelerada. Entrenamiento un 20% más rápido.',
     cost: cost({ silver: 140, food: 80 }),
     time: 50,
-    minEra: Era.TAHUANTINSUYO,
+    minEra: Era.REPUBLIC,
     building: BuildingKind.FACTORY,
     effect: { priceDiscount: 0.2 },
+    periods: [HistoricalPeriod.REPUBLIC, HistoricalPeriod.CONTEMPORARY],
     icon: '🔧',
   },
 ];
 
 export function getTech(id: string): TechDef | undefined {
   return TECHS.find((t) => t.id === id);
+}
+
+/**
+ * Whether a technology is plausible in a historical period. A declared
+ * `periods` window is authoritative; otherwise the `minEra` floor applies.
+ */
+export function techAvailable(tech: TechDef, period: HistoricalPeriod): boolean {
+  if (tech.periods) return tech.periods.includes(period);
+  return tech.minEra <= getPeriod(period).level;
 }
