@@ -14,7 +14,7 @@ import { launchChromium, withViteServer, cliArg } from './lib.mjs';
  */
 
 const DIFFICULTIES = ['easy', 'normal', 'hard', 'legendary'];
-const seeds = String(cliArg('seeds', '777,778,779'))
+const seeds = String(cliArg('seeds', '777,778,779,780,781,782,783,784'))
   .split(',')
   .map((n) => Number.parseInt(n, 10))
   .filter((n) => Number.isFinite(n));

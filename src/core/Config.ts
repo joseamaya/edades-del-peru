@@ -26,6 +26,8 @@ export interface GameSettings {
   missionId?: string;
 }
 
+export type Difficulty = GameSettings['difficulty'];
+
 export const DEFAULT_SETTINGS: GameSettings = {
   mapSize: 192,
   mapType: 'coast',

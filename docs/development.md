@@ -47,20 +47,24 @@ for player-facing docs see [`README.md`](../README.md).
   (`issueOrder`, `combatStance`) — **never a hidden resource/production bonus**. Difficulty is split in two:
   `DIFFICULTY_MULT` (Config) tunes the decision cadence (`reaction`) and attack frequency (`aggression`), and
   `src/game/aiProfiles.ts` decides *strategy* — economy/army size, attack threshold, tech eagerness
-  (`techReserve`), retreat threshold, raiding and advanced military. A profile only invests in non-essential
-  buildings once it has its core army (`armyBase`), so a bigger economy becomes military strength instead of
-  building sprawl. Known limitation: the AI ignores fog of war (it reads all entities), because fog is currently
-  visual only (`isVisibleTo` is `() => true`); making it LOS-aware is a later milestone. The army is trained to
-  an era-based **mix** (`ARMY_MIX`) nudged to counter the enemy's composition (`armyWeights`).
-  `Game.addAI(playerId, difficulty?)` attaches an AI to any player, so `yarn sim [--difficulty=…]` runs
-  **AI-vs-AI** headless matches (seeds, winner, peak armies); `--difficulty` sets player 0's profile while
-  player 1 stays on `normal`, so a run measures that profile against `normal`. Baseline on the default seed set
-  (player-0 wins / losses / undecided): `easy` 0/1/7, `normal` 3/4/1, `hard` 7/0/1, `legendary` 6/1/1 —
-  `normal` matches the pre-profile baseline (**7/8 matches end**, avg ~1000 s; the winner typically fields
-  ~10-12 units). Economy: `chooseResourceNode` counts farm workers as food and the build plan prioritizes
-  dropsites (sawmill/mill) before pop/farms, so the AI no longer starves for wood. Aggression: `launchAttack`
-  sends the **whole** army to destroy enemy **buildings** (center first) and `microCombat` presses nearby
-  buildings (or raids workers, on `hard`+). Training is chronology-guarded (`unitMinPeriod` in
+  (`techReserve`; only `easy` holds back), retreat threshold, raiding and advanced military. A profile only
+  invests in non-essential buildings (institute/factory/fortress) once it has its core army (`armyBase`), so a
+  bigger economy becomes military strength instead of building sprawl. Known limitation: the AI ignores fog of
+  war (it reads all entities), because fog is currently visual only (`isVisibleTo` is `() => true`); making it
+  LOS-aware is a later milestone. The army is trained to an era-based **mix** (`ARMY_MIX`) nudged to counter the
+  enemy's composition (`armyWeights`). `Game.addAI(playerId, difficulty?)` attaches an AI to any player, so
+  `yarn sim [--difficulty=…]` runs **AI-vs-AI** headless matches (seeds, winner, peak armies); `--difficulty`
+  sets player 0's profile while player 1 stays on `normal`, so a run measures that profile against `normal`.
+  Baseline on the default seed set (`--max=1500`, player-0 wins / losses / undecided): `easy` 0/1/7,
+  `normal` 4/3/1, `hard` 5/1/2, `legendary` 5/1/2 — `easy` is clearly weakest and `hard`/`legendary` both beat
+  `normal`; `normal` keeps the pre-profile baseline (7/8 matches end, avg ~1000 s; the winner typically fields
+  ~10-12 units). Between `normal`/`hard`/`legendary` the attack **threshold** is the same — they differ by army
+  size, economy and the `aggression` attack cadence. Economy: `chooseResourceNode` counts farm workers as food
+  and the build plan prioritizes dropsites (sawmill/mill) before pop/farms, so the AI no longer starves for wood.
+  Aggression: `launchAttack` sends the **whole** army to destroy enemy **buildings** (center first) and
+  `microCombat` presses nearby buildings (or raids workers, on `hard`+); when the enemy has **no soldiers left**
+  the deployed army marches on its base so a won match doesn't stall on leftover buildings. Training is
+  chronology-guarded (`unitMinPeriod` in
   `Building.queueUnit`, the AI candidate filter and the HUD).
 - **UI/inputs in `src/core/Game.ts` and `src/ui/HUD.ts`**: left click selects / drag = box-select (rectangle
   `#ed-selbox`) · right click = order (**right button no longer pans**; panning is by screen edges, WASD/arrows,

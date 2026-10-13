@@ -1,5 +1,5 @@
 import { Era, UnitKind, BuildingKind, OrderKind, Resources, RESOURCE_KEYS } from '../core/types';
-import { DIFFICULTY_MULT } from '../core/Config';
+import { DIFFICULTY_MULT, type Difficulty } from '../core/Config';
 import { TECHS } from '../model/defs/techs';
 import { distance2D } from '../util/math';
 import { RNG } from '../util/rng';
@@ -13,7 +13,7 @@ import type { Unit } from '../entities/Unit';
 import { Building } from '../entities/Building';
 import type { ResourceNode } from '../entities/ResourceNode';
 import { CATEGORIES, UNIT_CATEGORY, armyWeightsFor, UnitCategory } from './aiComposition';
-import { AIProfile, Difficulty, attackThreshold, armyTarget, profileFor, workerTarget } from './aiProfiles';
+import { AIProfile, attackThreshold, armyTarget, profileFor, workerTarget } from './aiProfiles';
 
 /**
  * Opponent AI: macroeconomy (assigns workers), combat micro (focus fire,
@@ -35,6 +35,9 @@ const EXPLORE_FALLBACK = { x: 0.8, z: 0.2 } as const;
 const PRESS_BUILDING_RADIUS = 18;
 /** Radius within which a raiding soldier looks for an enemy worker. */
 const RAID_RADIUS = 24;
+
+/** A combat unit (not a worker or scout). */
+const isSoldier = (u: Unit): boolean => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT;
 
 export class AI {
   private game: Game;
@@ -115,6 +118,10 @@ export class AI {
     return [...this.game.buildings.values()].filter((b) => b.owner === this.playerId && !b.dead);
   }
 
+  private soldiers(): Unit[] {
+    return this.myUnits().filter(isSoldier);
+  }
+
   private center(): Building | null {
     return this.myBuildings().find((b) => b.kind === BuildingKind.CENTER) ?? null;
   }
@@ -145,16 +152,8 @@ export class AI {
     void busy;
   }
 
-  private canAfford(cost: Partial<Resources>): boolean {
-    const p = this.p;
-    for (const k of RESOURCE_KEYS) {
-      if (p.resources[k] < (cost[k] ?? 0)) return false;
-    }
-    return true;
-  }
-
-  /** Afford the cost while keeping `reserve` of each resource untouched. */
-  private canAffordWithReserve(cost: Partial<Resources>, reserve: number): boolean {
+  /** Afford `cost` while keeping `reserve` of each resource untouched. */
+  private canAfford(cost: Partial<Resources>, reserve = 0): boolean {
     const p = this.p;
     for (const k of RESOURCE_KEYS) {
       if (p.resources[k] < (cost[k] ?? 0) + reserve) return false;
@@ -223,7 +222,7 @@ export class AI {
     const countOf = (k: BuildingKind) => myB.filter((b) => b.kind === k).length;
     // only invest in non-essential buildings once a core army exists, so the
     // economy turns into military strength instead of building sprawl
-    const soldiers = this.myUnits().filter((u) => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT).length;
+    const soldiers = this.soldiers().length;
     const secure = soldiers >= this.profile.armyBase;
 
     const buildPlan: { kind: BuildingKind; cost: Resources; priority: number }[] = [];
@@ -259,9 +258,8 @@ export class AI {
       buildPlan.push({ kind: BuildingKind.WONDER, cost: woodCost(BuildingKind.WONDER), priority: 30 });
     }
 
-    // keep incomplete builds staffed, then start a new one if under the cap
+    // start a new build if under the profile's concurrent-build cap
     const underConstruction = myB.filter((b) => !b.constructionComplete);
-    this.staffConstruction(underConstruction);
     buildPlan.sort((a, b) => b.priority - a.priority || b.cost.wood - a.cost.wood);
     if (underConstruction.length < this.profile.maxConcurrentBuilds) {
       for (const plan of buildPlan) {
@@ -318,25 +316,9 @@ export class AI {
     }
   }
 
-  /** Assign a small crew to any incomplete building that lost its builders. */
-  private staffConstruction(incomplete: Building[]): void {
-    for (const b of incomplete) {
-      const staffed = this.myUnits().some(
-        (u) =>
-          u.kind === UnitKind.WORKER && u.orderQueue[0]?.kind === OrderKind.BUILD && u.orderQueue[0].entityId === b.id,
-      );
-      if (staffed) continue;
-      const crew = this.myUnits()
-        .filter((u) => u.kind === UnitKind.WORKER && (!u.isBusy() || u.orderQueue[0]?.kind === OrderKind.GATHER))
-        .sort((a, c) => distance2D(a.pos.x, a.pos.z, b.pos.x, b.pos.z) - distance2D(c.pos.x, c.pos.z, b.pos.x, b.pos.z))
-        .slice(0, 2);
-      for (const w of crew) w.issueOrder({ kind: OrderKind.BUILD, entityId: b.id }, true);
-    }
-  }
-
   private trainMilitary(): void {
     const p = this.p;
-    const military = this.myUnits().filter((u) => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT);
+    const military = this.soldiers();
     const target = armyTarget(this.profile, p.era);
     if (military.length >= target) return;
 
@@ -402,7 +384,7 @@ export class AI {
       if (tech.requirements && !tech.requirements.every((r) => p.techs.has(r))) continue;
       const bld = this.myBuildings().find((b) => b.kind === tech.building && b.constructionComplete);
       if (!bld || bld.researchQueue.length > 0) continue;
-      if (this.canAffordWithReserve(tech.cost, this.profile.techReserve)) {
+      if (this.canAfford(tech.cost, this.profile.techReserve)) {
         if (this.game.spendResource(this.playerId, tech.cost)) {
           bld.queueTech(tech.id);
         }
@@ -425,8 +407,10 @@ export class AI {
 
   private microCombat(): void {
     const base = this.center();
-    const soldiers = this.myUnits().filter((u) => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT);
-    for (const s of soldiers) {
+    // once the enemy has no soldiers left, the deployed army mops up its buildings
+    const mopping = ![...this.game.units.values()].some((u) => isSoldier(u) && this.isEnemyUnit(u));
+    let fallback: Building | null | undefined;
+    for (const s of this.soldiers()) {
       if (base && s.hp / s.maxHp < this.profile.retreatHp) {
         const distHome = distance2D(s.pos.x, s.pos.z, base.pos.x, base.pos.z);
         if (distHome > RETREAT_MIN_DIST && s.orderQueue[0]?.kind !== OrderKind.MOVE) {
@@ -434,20 +418,27 @@ export class AI {
         }
         continue;
       }
-      if (s.orderQueue[0]?.kind !== OrderKind.ATTACK) {
-        const enemy = this.findEnemyInRange(s);
-        if (enemy) {
-          if (this.mult.aggression > 0.6) s.issueOrder({ kind: OrderKind.ATTACK, entityId: enemy.id }, true);
-        } else {
-          // no unit in range: raid an enemy worker if aggressive enough, else press a building
-          const raid = this.profile.raidEconomy ? this.findEnemyWorkerInRange(s, RAID_RADIUS) : null;
-          if (raid) {
-            s.issueOrder({ kind: OrderKind.ATTACK, entityId: raid.id }, true);
-          } else {
-            const b = this.findEnemyBuildingInRange(s, PRESS_BUILDING_RADIUS);
-            if (b) s.issueOrder({ kind: OrderKind.ATTACK, entityId: b.id }, true);
-          }
-        }
+      if (s.orderQueue[0]?.kind === OrderKind.ATTACK) continue;
+      const enemy = this.findEnemyInRange(s);
+      if (enemy) {
+        if (this.mult.aggression > 0.6) s.issueOrder({ kind: OrderKind.ATTACK, entityId: enemy.id }, true);
+        continue;
+      }
+      // no unit in range: raid an enemy worker, press a nearby building, else mop up
+      const raid = this.profile.raidEconomy ? this.findEnemyWorkerInRange(s, RAID_RADIUS) : null;
+      if (raid) {
+        s.issueOrder({ kind: OrderKind.ATTACK, entityId: raid.id }, true);
+        continue;
+      }
+      const near = this.findEnemyBuildingInRange(s, PRESS_BUILDING_RADIUS);
+      if (near) {
+        s.issueOrder({ kind: OrderKind.ATTACK, entityId: near.id }, true);
+        continue;
+      }
+      const distHome = base ? distance2D(s.pos.x, s.pos.z, base.pos.x, base.pos.z) : 0;
+      if (mopping && distHome > DEFEND_RADIUS) {
+        if (fallback === undefined) fallback = this.findAttackTarget();
+        if (fallback) s.issueOrder({ kind: OrderKind.ATTACK, entityId: fallback.id }, true);
       }
     }
   }
@@ -508,6 +499,11 @@ export class AI {
     return !b.dead && b.owner !== this.playerId && this.game.players[b.owner]?.team !== this.p.team;
   }
 
+  /** A living unit owned by another team. */
+  private isEnemyUnit(u: Unit): boolean {
+    return !u.dead && u.owner !== this.playerId && this.game.players[u.owner]?.team !== this.p.team;
+  }
+
   /** Nearest enemy building within `radius` of the unit (to press the attack). */
   private findEnemyBuildingInRange(s: Unit, radius: number): Building | null {
     let best: Building | null = null;
@@ -542,10 +538,8 @@ export class AI {
   private findEnemyWorkerInRange(s: Unit, radius: number): Unit | null {
     let best: Unit | null = null;
     let bestD = radius;
-    const team = this.p.team;
     for (const u of this.game.units.values()) {
-      if (u.dead || u.kind !== UnitKind.WORKER) continue;
-      if (u.owner === this.playerId || this.game.players[u.owner]?.team === team) continue;
+      if (u.kind !== UnitKind.WORKER || !this.isEnemyUnit(u)) continue;
       const d = distance2D(s.pos.x, s.pos.z, u.pos.x, u.pos.z);
       if (d < bestD) {
         bestD = d;
@@ -573,7 +567,7 @@ export class AI {
   }
 
   private launchAttack(): void {
-    const soldiers = this.myUnits().filter((u) => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT);
+    const soldiers = this.soldiers();
     const threshold = attackThreshold(this.profile, this.p.era);
     if (soldiers.length < threshold) return;
     const target = this.findAttackTarget();

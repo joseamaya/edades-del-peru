@@ -1,10 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import { Era } from '../src/core/types';
 import { ARMY_MIX, armyWeightsFor } from '../src/game/aiComposition';
-import { AI_PROFILES, Difficulty, armyTarget, attackThreshold, profileFor, workerTarget } from '../src/game/aiProfiles';
+import {
+  AI_PROFILES,
+  DIFFICULTIES,
+  armyTarget,
+  attackThreshold,
+  profileFor,
+  workerTarget,
+} from '../src/game/aiProfiles';
 
 const NO_ENEMY = { melee: 0, ranged: 0, cavalry: 0 };
-const DIFFICULTIES: Difficulty[] = ['easy', 'normal', 'hard', 'legendary'];
 
 describe('AI army composition', () => {
   it('counters a ranged-heavy enemy with more cavalry weight', () => {
@@ -38,20 +44,22 @@ describe('AI difficulty profiles', () => {
     expect(profileFor(undefined)).toBe(AI_PROFILES.normal);
   });
 
-  it('grows the economy, army and tech with difficulty', () => {
+  it('grows the economy and army with difficulty', () => {
     const era = Era.REGIONAL_STATES;
     const workers = DIFFICULTIES.map((d) => workerTarget(AI_PROFILES[d], era));
     const army = DIFFICULTIES.map((d) => armyTarget(AI_PROFILES[d], era));
-    expect(workers).toEqual([...workers].sort((a, b) => a - b));
-    expect(army).toEqual([...army].sort((a, b) => a - b));
-    expect(workers[0]).toBeLessThan(workers[workers.length - 1]);
-    expect(AI_PROFILES.easy.techReserve).toBeGreaterThan(AI_PROFILES.legendary.techReserve);
+    for (let i = 1; i < DIFFICULTIES.length; i++) {
+      expect(workers[i]).toBeGreaterThan(workers[i - 1]);
+      expect(army[i]).toBeGreaterThan(army[i - 1]);
+    }
   });
 
-  it('attacks sooner and retreats later on higher difficulty', () => {
+  it('attacks later, retreats earlier and builds fewer at once on easier difficulty', () => {
     const era = Era.REGIONAL_STATES;
-    expect(attackThreshold(AI_PROFILES.easy, era)).toBeGreaterThan(attackThreshold(AI_PROFILES.legendary, era));
+    expect(attackThreshold(AI_PROFILES.easy, era)).toBeGreaterThan(attackThreshold(AI_PROFILES.normal, era));
     expect(AI_PROFILES.easy.retreatHp).toBeGreaterThan(AI_PROFILES.legendary.retreatHp);
+    expect(AI_PROFILES.easy.maxConcurrentBuilds).toBeLessThan(AI_PROFILES.hard.maxConcurrentBuilds);
+    expect(AI_PROFILES.easy.techReserve).toBeGreaterThan(AI_PROFILES.hard.techReserve);
   });
 
   it('only the easier profiles skip advanced military and raiding', () => {

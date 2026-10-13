@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import type { Difficulty } from '../../src/core/Config';
 
 /** Boot a skirmish, stop the loop and move all human units to a far corner so the
  *  only actors are the ones each test spawns. */
@@ -150,22 +151,10 @@ test('the AI attacks enemy buildings when it has an army', async ({ page }) => {
 });
 
 test('a raiding AI (hard+) attacks enemy workers instead of buildings', async ({ page }) => {
-  const firstTarget = async (difficulty: string): Promise<string> => {
-    await page.goto('/?seed=777&fog=0&low=1');
-    await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
-      timeout: 30_000,
-    });
+  const firstTarget = async (difficulty: Difficulty): Promise<string> => {
+    await bootSkirmish(page);
     return page.evaluate((d) => {
       const g = (window as unknown as { game: any }).game;
-      g.loop.stop();
-      g.paused = false;
-      for (const u of g.units.values()) {
-        if (u.owner === 0) {
-          u.pos.set(4, g.terrain.getHeight(4, 4), 4);
-          u.clearOrders();
-          u.combatStance = 'pasivo';
-        }
-      }
       g.addAI(0, d);
       // enemy worker at 15 (beyond the soldier's attack range) and a building at 10
       const soldier = g.spawnScriptedUnit('soldier', 0, 100, 100);
@@ -184,4 +173,31 @@ test('a raiding AI (hard+) attacks enemy workers instead of buildings', async ({
   };
   expect(await firstTarget('normal')).toBe('building');
   expect(await firstTarget('hard')).toBe('worker');
+});
+
+test('the AI mops up remaining buildings once the enemy has no army', async ({ page }) => {
+  await bootSkirmish(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.addAI(0);
+    // the enemy fields no soldiers, so the deployed army should march on its base
+    for (const u of g.units.values()) {
+      if (u.owner === 1 && u.kind !== 'worker' && u.kind !== 'scout') u.die();
+    }
+    const center = (owner: number) =>
+      [...g.buildings.values()].find((b: any) => b.owner === owner && b.kind === 'center');
+    const p0 = center(0);
+    const p1 = center(1);
+    const soldier = g.spawnScriptedUnit('soldier', 0, (p0.pos.x + p1.pos.x) / 2, (p0.pos.z + p1.pos.z) / 2);
+    soldier.clearOrders();
+    let t = 0;
+    for (let i = 0; i < 90; i++) {
+      t += 1 / 60;
+      g.update(1 / 60, t);
+    }
+    const order = soldier.orderQueue[0];
+    return { kind: order?.kind ?? null, target: order?.entityId ?? null, p1Center: p1.id };
+  });
+  expect(out.kind).toBe('attack');
+  expect(out.target).toBe(out.p1Center);
 });

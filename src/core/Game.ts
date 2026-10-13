@@ -18,7 +18,7 @@ import { TreeInstances } from '../rendering/TreeInstances';
 import { Projectile, updateProjectilePools } from '../entities/Projectile';
 import { EntityView, reserveIds } from '../entities/EntityView';
 import { AI } from '../game/AI';
-import type { Difficulty } from '../game/aiProfiles';
+import type { Difficulty } from './Config';
 import { Economy } from '../game/Economy';
 import { HUD } from '../ui/HUD';
 import {

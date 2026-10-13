@@ -1,14 +1,15 @@
 import type { Era } from '../core/types';
+import type { Difficulty } from '../core/Config';
 
-/** The four difficulty levels, matching `GameSettings['difficulty']`. */
-export type Difficulty = 'easy' | 'normal' | 'hard' | 'legendary';
+/** The four difficulty levels, in ascending order. */
+export const DIFFICULTIES: Difficulty[] = ['easy', 'normal', 'hard', 'legendary'];
 
 /**
  * Strategic shape of an AI opponent. `DIFFICULTY_MULT` (Config) still tunes the
- * decision cadence (`reaction`), macro size (`econ`) and attack frequency
- * (`aggression`); this profile decides *what the AI tries to do*, so higher
- * difficulties play differently (bigger economy, more tech, coordinated waves,
- * raids) — never with a hidden resource or production bonus.
+ * decision cadence (`reaction`) and attack frequency (`aggression`); this profile
+ * decides *what the AI tries to do*, so higher difficulties play differently
+ * (bigger economy, more tech, coordinated waves, raids) — never with a hidden
+ * resource or production bonus.
  */
 export interface AIProfile {
   /** Worker target at era 0 and growth per era, capped, before the econ multiplier. */
@@ -75,7 +76,7 @@ export const AI_PROFILES: Record<Difficulty, AIProfile> = {
     attackThresholdBase: 4,
     attackThresholdPerEra: 2,
     maxConcurrentBuilds: 2,
-    techReserve: 40,
+    techReserve: 0,
     retreatHp: 0.3,
     raidEconomy: true,
     advancedMilitary: true,
