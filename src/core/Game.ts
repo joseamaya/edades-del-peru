@@ -18,6 +18,7 @@ import { TreeInstances } from '../rendering/TreeInstances';
 import { Projectile, updateProjectilePools } from '../entities/Projectile';
 import { EntityView, reserveIds } from '../entities/EntityView';
 import { AI } from '../game/AI';
+import { computeDamage, ArmorProfile } from '../game/combat';
 import type { Difficulty } from './Config';
 import { Economy } from '../game/Economy';
 import { HUD } from '../ui/HUD';
@@ -44,7 +45,7 @@ import { isTypingTarget } from '../util/dom';
 import { RNG, hashCode } from '../util/rng';
 import { ERA_DEFS } from '../model/defs/eras';
 import { BUILDING_DEFS, getBuildingStats, BUILDING_INFO } from '../model/defs/buildings';
-import { getUnitStats, getUnitModel, UNIT_INFO, isConverter } from '../model/defs/units';
+import { getUnitStats, getUnitModel, UNIT_INFO, isConverter, DamageClass } from '../model/defs/units';
 import { getTech } from '../model/defs/techs';
 import { AudioEngine } from '../audio/AudioEngine';
 import { Mission } from '../campaign/Mission';
@@ -1707,7 +1708,7 @@ export class Game {
       entitiesById: this.units,
       resourceNodes: this.resourceNodes,
       buildings: this.buildings,
-      resolveDamage: (a, t, d, from) => this.resolveDamage(a, t, d, from),
+      resolveDamage: (a, t, d, from, type) => this.resolveDamage(a, t, d, from, type),
       spawnProjectile: (o) => this.spawnProjectile(o),
       particles: this.particles,
       players: this.players,
@@ -1793,12 +1794,25 @@ export class Game {
     }
   }
 
-  private resolveDamage(attackerId: number, targetId: number, damage: number, from: any): void {
+  private resolveDamage(
+    attackerId: number,
+    targetId: number,
+    damage: number,
+    from: any,
+    damageType: DamageClass = 'heavy',
+  ): void {
     const target = this.units.get(targetId) ?? this.buildings.get(targetId);
     if (!target || target.dead) return;
-    const armor =
-      target instanceof Unit ? target.stats.heavyArmor * target.armorMultiplier : (target as Building).stats.armor;
-    const final = Math.max(1, damage - armor);
+    let armor: ArmorProfile;
+    let armorMult = 1;
+    if (target instanceof Unit) {
+      armor = { light: target.stats.lightArmor, heavy: target.stats.heavyArmor };
+      armorMult = target.armorMultiplier;
+    } else {
+      const a = (target as Building).stats.armor;
+      armor = { light: a, heavy: a, building: a };
+    }
+    const final = computeDamage(damage, damageType, armor, armorMult);
     target.takeDamage(final, attackerId);
     const dmgH = target instanceof Unit ? 2.2 : 2.6;
     this.hud?.addDamageNumber(target.pos.x, target.pos.y + dmgH, target.pos.z, final, final >= 40 ? 'big' : 'normal');
@@ -1920,7 +1934,7 @@ export class Game {
       }
       for (const { t, d } of targets) {
         const falloff = 1 - d / o.area;
-        this.resolveDamage(o.owner, t.id, o.damage * falloff, { owner: o.owner });
+        this.resolveDamage(o.owner, t.id, o.damage * falloff, { owner: o.owner }, o.damageType ?? 'heavy');
       }
       // explosion smoke
       this.particles.emit({
@@ -1939,7 +1953,7 @@ export class Game {
     } else if (targetId !== undefined) {
       const target = this.units.get(targetId) ?? this.buildings.get(targetId);
       if (target && !target.dead) {
-        this.resolveDamage(o.owner, targetId, o.damage, { owner: o.owner });
+        this.resolveDamage(o.owner, targetId, o.damage, { owner: o.owner }, o.damageType ?? 'heavy');
       }
     } else {
       // no targetId: damage the enemy closest to the impact point
@@ -1964,7 +1978,8 @@ export class Game {
           }
         }
       }
-      if (best && bestD < 3) this.resolveDamage(o.owner, best.id, o.damage, { owner: o.owner });
+      if (best && bestD < 3)
+        this.resolveDamage(o.owner, best.id, o.damage, { owner: o.owner }, o.damageType ?? 'heavy');
     }
   }
 

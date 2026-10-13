@@ -266,14 +266,21 @@ export class AI {
     }
 
     // start a new build if under the profile's concurrent-build cap
+    // Until the barracks exists, only build what feeds wood/food and the barracks
+    // itself. Otherwise the AI spends every 10 wood on a farm or a house and never
+    // accumulates the 120 a barracks needs, so it stalls for many minutes with no
+    // army. The full plan resumes once military production exists.
+    const hasBarracks = has(BuildingKind.BARRACKS);
+    const essentials = new Set([BuildingKind.SAWMILL, BuildingKind.MILL, BuildingKind.BARRACKS]);
+    const plan = hasBarracks ? buildPlan : buildPlan.filter((b) => essentials.has(b.kind));
     const underConstruction = myB.filter((b) => !b.constructionComplete);
-    buildPlan.sort((a, b) => b.priority - a.priority || b.cost.wood - a.cost.wood);
+    plan.sort((a, b) => b.priority - a.priority || b.cost.wood - a.cost.wood);
     if (underConstruction.length < this.profile.maxConcurrentBuilds) {
-      for (const plan of buildPlan) {
-        if (this.canAfford(plan.cost)) {
-          const spot = this.findBuildSpot(plan.kind);
+      for (const item of plan) {
+        if (this.canAfford(item.cost)) {
+          const spot = this.findBuildSpot(item.kind);
           if (spot) {
-            this.placeAI(plan.kind, spot.x, spot.z);
+            this.placeAI(item.kind, spot.x, spot.z);
             break;
           }
         }

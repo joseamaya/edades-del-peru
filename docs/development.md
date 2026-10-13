@@ -26,6 +26,12 @@ for player-facing docs see [`README.md`](../README.md).
   `bonuses` is the player-facing text. Known simplification: effects apply globally (e.g. Moche's "infantry
   attack" is a general attack bonus), not per unit category, and a few flavor bullets with no mechanic yet
   (naval units, cheaper houses, building HP) are not modeled. Add effects for any new civ (tested in `defs.test.ts`).
+- **Damage & armor (`src/game/combat.ts`)**: the attacker's `damageType` (`light`/`heavy`/`fortified`) selects the
+  defender's armor — units use `lightArmor`/`heavyArmor`, buildings use their single `armor` (fortified attacks) —
+  and the civilization/tech `armor` bonus then reduces the remainder as a fraction (`0.1` = -10%, capped at 80%).
+  `computeDamage` is pure and unit-tested in `tests/combat.test.ts`; `Game.resolveDamage` calls it (melee passes
+  `stats.damageType`, projectiles carry it through `spawnProjectile`). Damage never drops below 1. The
+  `Unit.armorMultiplier` field keeps its name but now stores `1 + reduction` (so `saveTypes` is unchanged).
 - **Maps by geography**: `MapType = 'coast' | 'andes' | 'altiplano' | 'jungle'` (generated in `Terrain.generate`).
 - `src/campaign/defs/campaign.ts` defines the 9 historical campaigns; `src/campaign/Mission.ts` evaluates
   objectives/triggers.
@@ -62,12 +68,14 @@ for player-facing docs see [`README.md`](../README.md).
   `yarn sim [--difficulty=…]` runs **AI-vs-AI** headless matches (seeds, winner, peak armies); `--difficulty`
   sets player 0's profile while player 1 stays on `normal`, so a run measures that profile against `normal`.
   Baseline on the default seed set (`--max=1500`, player-0 wins / losses / undecided): `easy` 0/1/7,
-  `normal` 4/3/1, `hard` 4/2/2, `legendary` 4/1/3 — `easy` is clearly weakest and `hard`/`legendary` beat
-  `normal` on decided games; both AIs share the same micro, so these counts are noisy (±1-2 games) and `normal`
-  keeps the pre-profile baseline (7/8 matches end, avg ~1000 s; the winner typically fields ~10-12 units).
+  `normal` 5/1/2, `hard` 2/2/4, `legendary` 2/3/3 — `easy` is clearly weakest; both AIs share the same micro,
+  so these counts are noisy (±1-2 games). The winner typically fields 6-12 units; before the build-plan fix the
+  AI often stalled at 0 wood and fielded no army at all.
   Between `normal`/`hard`/`legendary` the attack **threshold** is the same — they differ by army size, economy
   and the `aggression` attack cadence. Economy: `chooseResourceNode` counts farm workers as food and the build
-  plan prioritizes dropsites (sawmill/mill) before pop/farms, so the AI no longer starves for wood.
+  plan prioritizes dropsites (sawmill/mill) before pop/farms, so the AI no longer starves for wood. Until the
+  **barracks** exists the plan is restricted to essentials (sawmill/mill/barracks): otherwise the AI spends every
+  10 wood on a farm or house and never saves the 120 a barracks needs, so it fields no army for many minutes.
   Aggression: `launchAttack` sends the **whole** army to destroy enemy **buildings** (center first). `microCombat`
   **focus-fires** (non-siege units converge on the enemy nearest the army's centre) and **siege** units bombard
   buildings from range — only self-defending against units that come close — instead of chasing them. It also

@@ -103,6 +103,32 @@ test('the AI sends its scout to explore', async ({ page }) => {
   expect(order).toContain('patrol');
 });
 
+test('the AI builds a barracks and starts training soldiers in the opening', async ({ page }) => {
+  await page.goto('/?seed=777&fog=0&low=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    g.paused = false;
+    g.addAI(0);
+    let t = 0;
+    for (let i = 0; i < 60 * 360; i++) {
+      g.update(1 / 60, t);
+      t += 1 / 60;
+    }
+    const hasBarracks = [...g.buildings.values()].some((b: any) => b.owner === 0 && b.kind === 'barracks' && !b.dead);
+    const soldiers = [...g.units.values()].filter(
+      (u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker' && u.kind !== 'scout',
+    ).length;
+    return { hasBarracks, soldiers };
+  });
+  // before the fix the AI never accumulated the wood for a barracks and fielded nothing
+  expect(out.hasBarracks).toBe(true);
+  expect(out.soldiers).toBeGreaterThan(0);
+});
+
 test('the AI trains a mixed army (melee + ranged)', async ({ page }) => {
   await bootSkirmish(page);
   const cats = await page.evaluate(() => {
