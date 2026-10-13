@@ -201,3 +201,108 @@ test('the AI mops up remaining buildings once the enemy has no army', async ({ p
   expect(out.kind).toBe('attack');
   expect(out.target).toBe(out.p1Center);
 });
+
+test('the AI focus-fires on one enemy unit', async ({ page }) => {
+  await bootSkirmish(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.players[1].alive = false; // freeze the enemy AI
+    for (const u of g.units.values()) {
+      if (u.owner !== 0)
+        u.die(); // clear the enemy's own units (incl. workers)
+      else if (u.kind !== 'worker' && u.kind !== 'scout') u.die();
+    }
+    g.addAI(0);
+    // deploy near the enemy base so the units are away from home (focus fire active)
+    const p1 = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'center');
+    const bx = p1.pos.x;
+    const bz = p1.pos.z;
+    const soldiers = [
+      [bx - 8, bz],
+      [bx - 4, bz],
+      [bx, bz],
+    ].map(([x, z]) => {
+      const u = g.spawnScriptedUnit('soldier', 0, x, z);
+      u.clearOrders();
+      return u;
+    });
+    // focus = enemy nearest the army centroid (bx-4, bz) -> e2 at (bx-6, bz)
+    const e1 = g.spawnScriptedUnit('soldier', 1, bx + 2, bz);
+    e1.clearOrders();
+    e1.combatStance = 'pasivo';
+    const e2 = g.spawnScriptedUnit('soldier', 1, bx - 6, bz);
+    e2.clearOrders();
+    e2.combatStance = 'pasivo';
+    // the rightmost soldier starts attacking its nearest (e1) — focus fire must switch it to e2
+    soldiers[2].issueOrder({ kind: 'attack', entityId: e1.id }, true);
+    let t = 0;
+    for (let i = 0; i < 120; i++) {
+      t += 1 / 60;
+      g.update(1 / 60, t);
+    }
+    return { focus: e2.id, targets: soldiers.map((s: any) => s.orderQueue[0]?.entityId ?? null) };
+  });
+  expect(out.targets).toEqual([out.focus, out.focus, out.focus]);
+});
+
+test('AI siege bombards buildings instead of chasing units', async ({ page }) => {
+  await bootSkirmish(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.players[1].alive = false; // freeze the enemy AI
+    for (const u of g.units.values()) {
+      if (u.owner !== 0)
+        u.die(); // clear the enemy's own units
+      else if (u.kind !== 'worker' && u.kind !== 'scout') u.die();
+    }
+    g.addAI(0);
+    const p0 = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center');
+    const bx = p0.pos.x;
+    const bz = p0.pos.z + 4;
+    const artillery = g.spawnScriptedUnit('artillery', 0, bx, bz);
+    artillery.clearOrders();
+    const range = artillery.stats.range;
+    const building = g.spawnScriptedBuilding('barracks', 1, bx + range * 0.3, bz); // in range
+    const distant = g.spawnScriptedUnit('soldier', 1, bx, bz + range * 0.8); // beyond self-defense
+    distant.clearOrders();
+    distant.combatStance = 'pasivo';
+    let t = 0;
+    for (let i = 0; i < 120; i++) {
+      t += 1 / 60;
+      g.update(1 / 60, t);
+    }
+    return { building: building.id, unit: distant.id, target: artillery.orderQueue[0]?.entityId ?? null };
+  });
+  expect(out.target).toBe(out.building);
+});
+
+test('AI siege self-defends against a unit at close range', async ({ page }) => {
+  await bootSkirmish(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.players[1].alive = false;
+    for (const u of g.units.values()) {
+      if (u.owner !== 0) u.die();
+      else if (u.kind !== 'worker' && u.kind !== 'scout') u.die();
+    }
+    g.addAI(0);
+    const p0 = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center');
+    const bx = p0.pos.x;
+    const bz = p0.pos.z + 4;
+    const artillery = g.spawnScriptedUnit('artillery', 0, bx, bz);
+    artillery.clearOrders();
+    const range = artillery.stats.range;
+    g.spawnScriptedBuilding('barracks', 1, bx + range * 0.3, bz);
+    const close = g.spawnScriptedUnit('soldier', 1, bx, bz + range * 0.4); // within half range
+    close.clearOrders();
+    close.combatStance = 'pasivo';
+    // check the order before the artillery's first shell lands
+    let t = 0;
+    for (let i = 0; i < 3; i++) {
+      t += 1 / 60;
+      g.update(1 / 60, t);
+    }
+    return { unit: close.id, target: artillery.orderQueue[0]?.entityId ?? null };
+  });
+  expect(out.target).toBe(out.unit);
+});
