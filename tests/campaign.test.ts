@@ -45,4 +45,28 @@ describe('campaign educational content', () => {
   it('the first mission brings the guided tutorial', () => {
     expect(MISSIONS[0].tutorial).toBe(true);
   });
+
+  it('every objective and trigger entityTag is declared by a start/mark tag', () => {
+    for (const mis of MISSIONS) {
+      const declared = new Set<string>();
+      for (const u of mis.start.units ?? []) if (u.tag) declared.add(u.tag);
+      for (const b of mis.start.buildings ?? []) if (b.tag) declared.add(b.tag);
+      for (const m of mis.mark ?? []) declared.add(m.tag);
+      for (const o of mis.objectives) {
+        if (o.entityTag) {
+          expect(declared.has(o.entityTag), `${mis.id} objective ${o.id} references unknown tag ${o.entityTag}`).toBe(
+            true,
+          );
+        }
+      }
+      for (const t of mis.triggers) {
+        const c = t.condition;
+        if ((c.type === 'entity_dead' || c.type === 'unit_near') && c.entityTag) {
+          expect(declared.has(c.entityTag), `${mis.id} trigger ${t.id} references unknown tag ${c.entityTag}`).toBe(
+            true,
+          );
+        }
+      }
+    }
+  });
 });
