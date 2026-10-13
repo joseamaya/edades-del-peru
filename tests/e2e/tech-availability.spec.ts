@@ -36,3 +36,23 @@ test('Inca techs are available to the Inca, not to the Spanish', async ({ page }
   await boot(page, 6); // VICEROYALTY (Spain)
   expect(await queueTech(page, 'barracks', 'amauta_words')).toBe(false);
 });
+
+test('the research panel hides techs outside their window', async ({ page }) => {
+  await boot(page, 8); // REPUBLIC
+  const cards = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    const c = g.playerCenter(0);
+    const center = g.spawnScriptedBuilding('center', 0, c.x + 12, c.z);
+    g.players[0].resources = { food: 9999, wood: 9999, silver: 9999, stone: 9999 };
+    g.selectedUnits = [];
+    g.selectedBuilding = center.id;
+    // the HUD rebuilds the bottom panel every ~0.15 s
+    for (let i = 0; i < 20; i++) g.update(1 / 60, i / 60);
+    return [...document.querySelectorAll('.ed-grid .ed-card')].map((el) => el.textContent ?? '');
+  });
+  // Inca chasquis is not offered in the Republic...
+  expect(cards.some((t) => t.includes('Chasquis'))).toBe(false);
+  // ...but a generic CENTER tech is.
+  expect(cards.some((t) => t.includes('Canal de Regadío'))).toBe(true);
+});

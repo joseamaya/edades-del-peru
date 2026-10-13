@@ -41,8 +41,8 @@ for player-facing docs see [`README.md`](../README.md).
   or engines before 1532). Normal production is gated independently by `eraModel` + `requiresTech` (e.g.
   `cavalry` has no model before Viceroyalty and needs the `shock_cavalry` tech), so `minPeriod` governs the
   scripted content that those gates do not cover.
-- **Chronology/culture of techs**: `TechDef.periods` (`src/model/defs/techs.ts`) is the historical window a
-  technology belongs to (culture + chronology); when set it is authoritative, otherwise `minEra` applies.
+- **Chronology/culture of techs**: `TechDef.minPeriod` / `maxPeriod` (`src/model/defs/techs.ts`) is the
+  historical window a technology belongs to (like `UnitArchetype.minPeriod`, plus an optional ceiling).
   `techAvailable(tech, period)` is enforced centrally in `Building.queueTech` (like the unit guard) plus the HUD
   research panel and the AI, so a tech never appears for the wrong civilization or period (e.g. Inca *chasquis*
   no longer leak into the Republic, colonial *obrajes* not before 1532). Windows are sourced in

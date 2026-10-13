@@ -1,15 +1,15 @@
 # Tecnologías — ventana histórica
 
-Las tecnologías (`src/model/defs/techs.ts`) se limitan por **dos criterios**:
+Las tecnologías (`src/model/defs/techs.ts`) se limitan por una **ventana histórica**:
 
-- `minEra`: suelo de nivel tecnológico (se combina con la era del periodo).
-- `periods`: **ventana histórica** explícita (autoritativa cuando existe). Si falta, solo aplica `minEra`.
+- `minPeriod`: periodo más antiguo en que la tecnología es plausible (suelo).
+- `maxPeriod`: periodo más reciente (inclusive); si falta, aplica desde `minPeriod` en adelante.
 
 La comprobación vive en `techAvailable(tech, period)` y se aplica de forma central en `Building.queueTech`, en el
 panel de investigación del HUD y en la IA. Una tecnología solo existe dentro de su ventana: ni antes (cronología)
 ni después/otra cultura (ámbito).
 
-## Ventanas culturales / cronológicas
+## Ventanas con techo (`maxPeriod`)
 
 | Tecnología | Ventana | Motivo |
 |---|---|---|
@@ -17,13 +17,20 @@ ni después/otra cultura (ámbito).
 | Quipus y Vigías (`quipus_watchers`) | Horizonte Medio → Horizonte Tardío | Registro por quipus de tradición andina (Wari–Inca). |
 | Palabra del Amauta (`amauta_words`) | Horizonte Tardío | El *amauta* es un sabio/maestro inca. |
 | Chasquis Veloces (`swift_chasquis`) | Horizonte Tardío | Los *chasquis* son los correos del Estado inca. |
-| Obrajes y Talleres (`workshops`) | Virreinato → Contemporáneo | Los **obrajes** son talleres textiles coloniales (no existían antes de 1532). |
-| Producción en Serie (`mass_production`) | República → Contemporáneo | Producción industrial seriada (posterior a la Independencia). |
-| Caballería de Choque (`shock_cavalry`) | Virreinato → Contemporáneo | El caballo llega con la conquista (1532). |
-| Defensa Antiaérea / Blindajes Pesados / Cohetería / Ingeniería Blindada / Hidroeléctricas | Contemporáneo | Tecnología del siglo XX. |
 
-Las tecnologías **genéricas** (Canal de Regadío, Arco y Boleadora, Metalurgia de la Plata, Máquinas de Asedio,
-Morteros, Cazadores) no declaran ventana: dependen solo de su `minEra`.
+## Suelo por cronología (`minPeriod`)
+
+| Tecnología | Desde | Motivo |
+|---|---|---|
+| Canal de Regadío (`irrigation_canal`) | Arcaico Tardío | Riego y canales (Caral). |
+| Arco y Boleadora (`bow_and_bolas`) | Horizonte Temprano | Armamento de caza/guerra prehispánico. |
+| Metalurgia de la Plata (`silver_metallurgy`) | Horizonte Temprano | Metalurgia andina de la plata. |
+| Caballería de Choque (`shock_cavalry`) | Virreinato | El caballo llega con la conquista (1532). |
+| Máquinas de Asedio (`siege_engines`), Morteros (`siege_mortars`) | Virreinato | Asedio y pólvora tras 1532. |
+| Obrajes y Talleres (`workshops`) | Virreinato | Los **obrajes** son talleres textiles coloniales (no existían antes de 1532). |
+| Cazadores (`hunters`) | Virreinato | Cazadores de largo alcance con pólvora. |
+| Producción en Serie (`mass_production`) | República | Producción industrial seriada (posterior a la Independencia). |
+| Defensa Antiaérea, Blindajes Pesados, Cohetería, Ingeniería Blindada, Hidroeléctricas | Contemporáneo | Tecnología del siglo XX. |
 
 ## Nota de diseño (conversor)
 
@@ -36,7 +43,7 @@ adelante se quiere un conversor posterior (p. ej. un *misionero*), se añadirá 
 - Rowe, J. H. (1962) y Lumbreras, L. G.: periodización andina (Horizontes e Intermedios).
 - Quipu / chasqui / amauta: Garcilaso de la Vega, *Comentarios reales* (1609); Cieza de León, *Crónica del Perú*.
 - Textiles prehispánicos: Tello, J. C. (1929), *Antiguo Perú*; dossier [`civilizaciones/paracas.md`](./civilizaciones/paracas.md).
-- Obrajes coloniales y economía virreinal: Basadre, J., *Historia de la República del Perú*.
+- Obrajes coloniales: Wikipedia, [Obraje](https://es.wikipedia.org/wiki/Obraje); Assadourian, C. S., *El sistema de la economía colonial* (1982).
 - Caballo y ganadería colonial: dossier del Virreinato en [`fuentes.md`](./fuentes.md).
 
 Véase el listado completo en [`fuentes.md`](./fuentes.md).

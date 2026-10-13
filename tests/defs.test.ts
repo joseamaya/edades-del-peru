@@ -130,10 +130,12 @@ describe('technology definitions', () => {
       expect(techAvailable(byId.get(id)!, HistoricalPeriod.VICEROYALTY), `${id} leaked to the Viceroyalty`).toBe(false);
       expect(techAvailable(byId.get(id)!, HistoricalPeriod.REPUBLIC), `${id} leaked to the Republic`).toBe(false);
     }
-    // ...but are available to the Inca, and every declared window is non-empty.
+    // ...but are available to the Inca, and every window is well-formed.
     expect(techAvailable(byId.get('amauta_words')!, HistoricalPeriod.LATE_HORIZON)).toBe(true);
     for (const t of TECHS) {
-      if (t.periods) expect(t.periods.length, `${t.id} empty periods window`).toBeGreaterThan(0);
+      if (t.maxPeriod !== undefined) {
+        expect(t.maxPeriod, `${t.id} maxPeriod before minPeriod`).toBeGreaterThanOrEqual(t.minPeriod);
+      }
     }
   });
 
