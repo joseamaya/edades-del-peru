@@ -232,16 +232,26 @@ export class AI {
     const soldiers = this.soldiers().length;
     const secure = soldiers >= this.profile.armyBase;
 
-    const buildPlan: { kind: BuildingKind; cost: Resources; priority: number }[] = [];
+    const buildPlan: { kind: BuildingKind; cost: Resources; priority: number; essential?: boolean }[] = [];
     const woodCost = (k: BuildingKind) => getBuildingStats(k, p.era).cost;
 
     // economy income first (dropsites), then pop, military and the rest
     if (!has(BuildingKind.SAWMILL))
-      buildPlan.push({ kind: BuildingKind.SAWMILL, cost: woodCost(BuildingKind.SAWMILL), priority: 96 });
+      buildPlan.push({
+        kind: BuildingKind.SAWMILL,
+        cost: woodCost(BuildingKind.SAWMILL),
+        priority: 96,
+        essential: true,
+      });
     if (!has(BuildingKind.MILL))
-      buildPlan.push({ kind: BuildingKind.MILL, cost: woodCost(BuildingKind.MILL), priority: 94 });
+      buildPlan.push({ kind: BuildingKind.MILL, cost: woodCost(BuildingKind.MILL), priority: 94, essential: true });
     if (!has(BuildingKind.BARRACKS))
-      buildPlan.push({ kind: BuildingKind.BARRACKS, cost: woodCost(BuildingKind.BARRACKS), priority: 88 });
+      buildPlan.push({
+        kind: BuildingKind.BARRACKS,
+        cost: woodCost(BuildingKind.BARRACKS),
+        priority: 88,
+        essential: true,
+      });
     if (countOf(BuildingKind.HOUSE) < 3 + p.era) {
       buildPlan.push({ kind: BuildingKind.HOUSE, cost: woodCost(BuildingKind.HOUSE), priority: 85 });
     }
@@ -266,14 +276,19 @@ export class AI {
     }
 
     // start a new build if under the profile's concurrent-build cap
+    // Until the barracks exists, only build what feeds wood/food and the barracks
+    // itself. Otherwise the AI spends every 10 wood on a farm or a house and never
+    // accumulates the 120 a barracks needs, so it stalls for many minutes with no
+    // army. The full plan resumes once military production exists.
+    const plan = has(BuildingKind.BARRACKS) ? buildPlan : buildPlan.filter((b) => b.essential);
     const underConstruction = myB.filter((b) => !b.constructionComplete);
-    buildPlan.sort((a, b) => b.priority - a.priority || b.cost.wood - a.cost.wood);
+    plan.sort((a, b) => b.priority - a.priority || b.cost.wood - a.cost.wood);
     if (underConstruction.length < this.profile.maxConcurrentBuilds) {
-      for (const plan of buildPlan) {
-        if (this.canAfford(plan.cost)) {
-          const spot = this.findBuildSpot(plan.kind);
+      for (const item of plan) {
+        if (this.canAfford(item.cost)) {
+          const spot = this.findBuildSpot(item.kind);
           if (spot) {
-            this.placeAI(plan.kind, spot.x, spot.z);
+            this.placeAI(item.kind, spot.x, spot.z);
             break;
           }
         }

@@ -9,7 +9,7 @@ import {
   HistoricalPeriod,
   CombatStance,
 } from '../core/types';
-import { getUnitStats, getUnitModel, UnitStats } from '../model/defs/units';
+import { getUnitStats, getUnitModel, UnitStats, DamageClass } from '../model/defs/units';
 import { buildModel, BuildContext, disposeModel } from '../model/ProceduralModel';
 import { EntityView } from '../entities/EntityView';
 import { allocId } from '../entities/EntityView';
@@ -26,7 +26,7 @@ export interface UnitContext {
   entitiesById: Map<number, any>;
   resourceNodes: Map<number, any>;
   buildings: Map<number, any>;
-  resolveDamage(attackerId: number, targetId: number, damage: number, fromEntity: any): void;
+  resolveDamage(attackerId: number, targetId: number, damage: number, fromEntity: any, damageType: DamageClass): void;
   spawnProjectile(opts: {
     from: THREE.Vector3;
     target: THREE.Vector3;
@@ -38,6 +38,7 @@ export interface UnitContext {
     arc?: number;
     trail?: string;
     targetId?: number;
+    damageType?: DamageClass;
   }): void;
   particles: any;
   players: { id: number; team: Team }[];
@@ -689,7 +690,7 @@ export class Unit {
   private attackTarget(target: any, time: number): void {
     if (this.attackCooldown <= 0) {
       const dmg = this.stats.attack * this.attackMultiplier;
-      this.ctx.resolveDamage(this.id, target.id, dmg, this);
+      this.ctx.resolveDamage(this.id, target.id, dmg, this, this.stats.damageType);
       this.attackCooldown = this.stats.attackSpeed;
     }
     void time;
@@ -713,6 +714,7 @@ export class Unit {
       arc,
       trail: pKind === 'tracer' ? 'tracer' : undefined,
       targetId: target.id,
+      damageType: this.stats.damageType,
     });
     // muzzle flash at the cannon mouth (weapon pivot + barrel length, rotated with the unit)
     const muzzle = new THREE.Vector3(0.28, 0.9, 0.62).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.yaw);
