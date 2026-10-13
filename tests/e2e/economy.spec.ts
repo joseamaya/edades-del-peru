@@ -35,26 +35,56 @@ test(
         }
         return total;
       };
+      // isolate the exact worker/node under test: idle every P0 worker, then send the
+      // nearest one to the wood node closest to the player base (away from P1's base)
+      const center = g.playerCenter(0);
+      const workers = [...g.units.values()].filter((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead);
+      for (const w of workers) w.clearOrders();
+      const dist = (a: any, b: any) => Math.hypot(a.x - b.x, a.z - b.z);
+      const node = [...g.resourceNodes.values()]
+        .filter((n: any) => !n.dead && n.resource === 'wood')
+        .sort((a: any, b: any) => dist(a.pos, center) - dist(b.pos, center))[0];
+      const worker = workers.sort((a, b) => dist(a.pos, node.pos) - dist(b.pos, node.pos))[0];
+
+      // no unit is born during the window (a queue left by the AI before the freeze
+      // would complete inside the loop), so an unchanged unit count proves none died
+      for (const b of g.buildings.values()) {
+        b.productionQueue.length = 0;
+        b.researchQueue.length = 0;
+      }
       const before = totalWood();
       const bankBefore = p.resources.wood;
-      const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker');
-      const node = [...g.resourceNodes.values()].find((n: any) => !n.dead && n.resource === 'wood');
+      const aliveBefore = [...g.units.values()].filter((u: any) => !u.dead).length;
+      const nodeBefore = node.amount;
       worker.issueOrder({ kind: 'gather', entityId: node.id }, true);
       let t = 0;
       for (let i = 0; i < 60 * 60; i++) {
         g.update(1 / 60, t);
         t += 1 / 60;
       }
-      return { before, after: totalWood(), bankBefore, bankAfter: p.resources.wood };
+      const aliveAfter = [...g.units.values()].filter((u: any) => !u.dead).length;
+      return {
+        before,
+        after: totalWood(),
+        bankBefore,
+        bankAfter: p.resources.wood,
+        nodeBefore,
+        nodeAfter: node.dead ? 0 : node.amount,
+        aliveBefore,
+        aliveAfter,
+      };
     });
-    // the wood gathered into the banks is exactly what left the nodes (nothing created or lost)
+    // no unit died while carrying (which would leak its load outside the invariant)
+    expect(out.aliveAfter).toBe(out.aliveBefore);
+    // wood gathered into the banks is exactly what left the nodes (nothing created or lost)
     expect(out.after).toBeCloseTo(out.before, 3);
-    // and the loop is meaningful: the worker actually delivered something
+    // the ordered node was actually harvested and the worker delivered into the bank
+    expect(out.nodeAfter).toBeLessThan(out.nodeBefore);
     expect(out.bankAfter).toBeGreaterThan(out.bankBefore);
   },
 );
 
-test('cancelling a queued unit refunds its full cost', async ({ page }) => {
+test('cancelling a queued unit refunds its full cost', { tag: '@smoke' }, async ({ page }) => {
   await boot(page);
   const out = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -68,10 +98,8 @@ test('cancelling a queued unit refunds its full cost', async ({ page }) => {
     const cancelled = { ...g.players[0].resources };
     return { before, queued, cancelled, queueLength: barracks.productionQueue.length };
   });
-  // queuing spends the unit cost...
   expect(out.queued.food).toBeLessThan(out.before.food);
   expect(out.queued.wood).toBeLessThan(out.before.wood);
-  // ...and cancelling restores it exactly (no duplication, no loss)
   expect(out.cancelled).toEqual(out.before);
   expect(out.queueLength).toBe(0);
 });
