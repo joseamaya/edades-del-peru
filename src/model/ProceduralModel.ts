@@ -1003,6 +1003,15 @@ function buildCommisar(type: string, ctx: BuildContext): THREE.Group {
   return b.finish();
 }
 
+function buildMissionary(ctx: BuildContext): THREE.Group {
+  const b = new Builder(ctx);
+  addHumanoid(b, { role: 'officer', helmet: false, weapon: 'none', armor: 'cloth' });
+  // cross held at the chest
+  b.box(0.06, 0.46, 0.06, b.civAccent, { y: 1.0, z: 0.16 });
+  b.box(0.24, 0.06, 0.06, b.civAccent, { y: 1.1, z: 0.16 });
+  return b.finish();
+}
+
 function buildMech(ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
   const heavy = ctx.era >= Era.CONTEMPORARY;
@@ -1798,6 +1807,7 @@ function buildModelTemplate(spec: ModelSpec, ctx: BuildContext): THREE.Group {
     g = buildCannon(type, ctx);
   else if (type === 'mortar') g = buildMortar(ctx);
   else if (type.startsWith('commissar')) g = buildCommisar(type, ctx);
+  else if (type === 'missionary') g = buildMissionary(ctx);
   else if (type.startsWith('mech')) g = buildMech(ctx);
   else g = buildStructure(type, ctx);
 

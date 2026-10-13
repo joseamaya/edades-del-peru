@@ -84,6 +84,16 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
   Referencia general de uniformidad militar contemporánea; **sin detalle de fuente específica en los
   dossieres** (marcar como aproximación).
 
+## 5bis. Figuras religiosas (unidades de conversión)
+
+- **Amauta (Inca, Horizonte Tardío)**: sabio/maestro del Tahuantinsuyo (lengua, quipus, ritual). Sin
+  atuendo militar: **uncu/túnica** y **sin armas**. — Garcilaso de la Vega, *Comentarios reales* (1609);
+  Cieza de León, *Crónica del Perú*.
+- **Misionero (Virreinato en adelante)**: religiosos de las órdenes (dominicos, franciscanos, jesuitas)
+  en las **doctrinas** y **reducciones** de indios. **Hábito talar** (túnica larga), **cruz/rosario**,
+  **sin armas**. — Wikipedia, *Reducciones* / *Extirpación de idolatrías*; Duviols, *La destrucción de
+  las religiones andinas*.
+
 ---
 
 ## 6. Tabla spec de atuendo por era/civ (para el código)
@@ -115,5 +125,7 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
 - Sanz García, J. — *Virreinato de Perú: organización militar y uniformidades específicas* (INISEG).
 - Cànovas, A. — *Miniaturas Militares* (Virreinato del Perú): http://miniaturasmilitaresalfonscanovas.blogspot.com/2011/10/el-virreinato-del-peru-y-la-capitania.html
 - Wikipedia — *Soldado de cuera* (fuente secundaria).
-- Saona, J. — *La Guerra del Pacífico 1879–1884* (gdp1879): uniforme chileno (decreto 1878), soldado peruano.
 - *Uniformes de la Guerra del Pacífico II* (armamento: Comblain, Peabody-Martini, Krupp).
+- Saona, J. — *La Guerra del Pacífico 1879–1884* (gdp1879): uniforme chileno (decreto 1878), soldado peruano.
+- Garcilaso de la Vega, I. (1609) — *Comentarios reales de los incas*; Cieza de León, P. — *Crónica del Perú* (amauta).
+- Wikipedia — *Reducciones*, *Extirpación de idolatrías* (fuente secundaria); Duviols, P. — *La destrucción de las religiones andinas* (misioneros).

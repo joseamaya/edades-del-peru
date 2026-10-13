@@ -86,6 +86,7 @@ export enum UnitKind {
   ARTILLERY = 'artillery', // long-range siege
   MORTAR = 'mortar', // area siege
   COMMISSAR = 'commissar', // conversion (monk)
+  MISSIONARY = 'missionary', // conversion (colonial/republican)
   MECH = 'mec', // unique futuristic unit
   NUCLEAR = 'nuclear', // atomic-era tactical weapon (area)
 }

@@ -115,7 +115,14 @@ describe('technology definitions', () => {
       HistoricalPeriod.LATE_INTERMEDIATE,
       HistoricalPeriod.LATE_HORIZON,
     ];
-    for (const id of ['workshops', 'mass_production', 'shock_cavalry', 'siege_engines', 'siege_mortars']) {
+    for (const id of [
+      'workshops',
+      'mass_production',
+      'shock_cavalry',
+      'siege_engines',
+      'siege_mortars',
+      'evangelization',
+    ]) {
       const tech = TECHS.find((t) => t.id === id)!;
       for (const p of preColumbian) {
         expect(techAvailable(tech, p), `${id} available in pre-Columbian period ${p}`).toBe(false);
