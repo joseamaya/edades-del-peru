@@ -18,6 +18,7 @@ import { TreeInstances } from '../rendering/TreeInstances';
 import { Projectile, updateProjectilePools } from '../entities/Projectile';
 import { EntityView, reserveIds } from '../entities/EntityView';
 import { AI } from '../game/AI';
+import type { Difficulty } from './Config';
 import { Economy } from '../game/Economy';
 import { HUD } from '../ui/HUD';
 import {
@@ -603,8 +604,8 @@ export class Game {
   }
 
   /** Attach an AI controller to a player (AI-vs-AI runs/tests). */
-  addAI(playerId: number): void {
-    this.ais.push(new AI(this, playerId));
+  addAI(playerId: number, difficulty?: Difficulty): void {
+    this.ais.push(new AI(this, playerId, difficulty));
   }
 
   /** Restore a snapshot into a freshly built game (load mode; no default spawns). */

@@ -1,5 +1,5 @@
 import { Era, UnitKind, BuildingKind, OrderKind, Resources, RESOURCE_KEYS } from '../core/types';
-import { DIFFICULTY_MULT } from '../core/Config';
+import { DIFFICULTY_MULT, type Difficulty } from '../core/Config';
 import { TECHS } from '../model/defs/techs';
 import { distance2D } from '../util/math';
 import { RNG } from '../util/rng';
@@ -13,6 +13,7 @@ import type { Unit } from '../entities/Unit';
 import { Building } from '../entities/Building';
 import type { ResourceNode } from '../entities/ResourceNode';
 import { CATEGORIES, UNIT_CATEGORY, armyWeightsFor, UnitCategory } from './aiComposition';
+import { AIProfile, attackThreshold, armyTarget, profileFor, workerTarget } from './aiProfiles';
 
 /**
  * Opponent AI: macroeconomy (assigns workers), combat micro (focus fire,
@@ -26,20 +27,24 @@ import { CATEGORIES, UNIT_CATEGORY, armyWeightsFor, UnitCategory } from './aiCom
 const DEFEND_RADIUS = 26;
 /** Only defenders within this radius of the threat answer the call. */
 const DEFEND_RESPONSE = 32;
-/** Wounded below this HP ratio a defender far from home retreats. */
-const RETREAT_HP = 0.35;
 /** Do not bother retreating when already this close to the base. */
 const RETREAT_MIN_DIST = 18;
 /** Scouting fallback destination (map fraction) when no enemy building is known. */
 const EXPLORE_FALLBACK = { x: 0.8, z: 0.2 } as const;
 /** Radius within which an idle soldier will press a nearby enemy building. */
 const PRESS_BUILDING_RADIUS = 18;
+/** Radius within which a raiding soldier looks for an enemy worker. */
+const RAID_RADIUS = 24;
+
+/** A combat unit (not a worker or scout). */
+const isSoldier = (u: Unit): boolean => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT;
 
 export class AI {
   private game: Game;
   private playerId: number;
   private rng: RNG;
-  private mult: { econ: number; aggression: number; reaction: number };
+  private mult: { aggression: number; reaction: number };
+  private profile: AIProfile;
   private attackTimer = 60;
   private economyTimer = 0;
   private buildingTimer = 0;
@@ -49,11 +54,12 @@ export class AI {
   private scoutTimer = 3;
   private announced = new Set<string>();
 
-  constructor(game: Game, playerId: number) {
+  constructor(game: Game, playerId: number, difficulty?: Difficulty) {
     this.game = game;
     this.playerId = playerId;
-    const diff = (game.settings.difficulty ?? 'normal') as keyof typeof DIFFICULTY_MULT;
+    const diff = difficulty ?? game.settings.difficulty ?? 'normal';
     this.mult = DIFFICULTY_MULT[diff] ?? DIFFICULTY_MULT.normal;
+    this.profile = profileFor(diff);
     this.rng = new RNG(game.settings.mapSeed + playerId * 77);
   }
 
@@ -112,6 +118,10 @@ export class AI {
     return [...this.game.buildings.values()].filter((b) => b.owner === this.playerId && !b.dead);
   }
 
+  private soldiers(): Unit[] {
+    return this.myUnits().filter(isSoldier);
+  }
+
   private center(): Building | null {
     return this.myBuildings().find((b) => b.kind === BuildingKind.CENTER) ?? null;
   }
@@ -123,7 +133,7 @@ export class AI {
     );
     const idle = workers.filter((w) => !w.isBusy());
     const center = this.center();
-    const desired = Math.max(4, Math.round(Math.min(8 + this.p.era * 2, 16) * this.mult.econ));
+    const desired = workerTarget(this.profile, this.p.era);
     if (center && workers.length < desired && center.constructionComplete) {
       if (this.canAfford({ food: 50, wood: 20 })) {
         const queued = center.productionQueue.length;
@@ -142,10 +152,11 @@ export class AI {
     void busy;
   }
 
-  private canAfford(cost: Partial<Resources>): boolean {
+  /** Afford `cost` while keeping `reserve` of each resource untouched. */
+  private canAfford(cost: Partial<Resources>, reserve = 0): boolean {
     const p = this.p;
     for (const k of RESOURCE_KEYS) {
-      if (p.resources[k] < (cost[k] ?? 0)) return false;
+      if (p.resources[k] < (cost[k] ?? 0) + reserve) return false;
     }
     return true;
   }
@@ -209,6 +220,10 @@ export class AI {
     if (!center) return;
     const has = (k: BuildingKind) => myB.some((b) => b.kind === k && b.constructionComplete);
     const countOf = (k: BuildingKind) => myB.filter((b) => b.kind === k).length;
+    // only invest in non-essential buildings once a core army exists, so the
+    // economy turns into military strength instead of building sprawl
+    const soldiers = this.soldiers().length;
+    const secure = soldiers >= this.profile.armyBase;
 
     const buildPlan: { kind: BuildingKind; cost: Resources; priority: number }[] = [];
     const woodCost = (k: BuildingKind) => getBuildingStats(k, p.era).cost;
@@ -227,26 +242,26 @@ export class AI {
       buildPlan.push({ kind: BuildingKind.SMELTER, cost: woodCost(BuildingKind.SMELTER), priority: 80 });
     if (p.era >= Era.TAHUANTINSUYO && !has(BuildingKind.REFINERY))
       buildPlan.push({ kind: BuildingKind.REFINERY, cost: woodCost(BuildingKind.REFINERY), priority: 70 });
-    if (!has(BuildingKind.ARSENAL))
+    if (this.profile.advancedMilitary && !has(BuildingKind.ARSENAL))
       buildPlan.push({ kind: BuildingKind.ARSENAL, cost: woodCost(BuildingKind.ARSENAL), priority: 68 });
-    if (p.era >= Era.REGIONAL_STATES && !has(BuildingKind.STABLE))
+    if (this.profile.advancedMilitary && p.era >= Era.REGIONAL_STATES && !has(BuildingKind.STABLE))
       buildPlan.push({ kind: BuildingKind.STABLE, cost: woodCost(BuildingKind.STABLE), priority: 62 });
     if (p.era >= Era.REGIONAL_STATES && countOf(BuildingKind.FARM) < 4)
       buildPlan.push({ kind: BuildingKind.FARM, cost: woodCost(BuildingKind.FARM), priority: 50 });
-    if (p.era >= Era.REGIONAL_STATES && !has(BuildingKind.INSTITUTE))
+    if (secure && p.era >= Era.REGIONAL_STATES && !has(BuildingKind.INSTITUTE))
       buildPlan.push({ kind: BuildingKind.INSTITUTE, cost: woodCost(BuildingKind.INSTITUTE), priority: 46 });
-    if (p.era >= Era.REGIONAL_STATES && !has(BuildingKind.FACTORY))
+    if (secure && p.era >= Era.REGIONAL_STATES && !has(BuildingKind.FACTORY))
       buildPlan.push({ kind: BuildingKind.FACTORY, cost: woodCost(BuildingKind.FACTORY), priority: 44 });
-    if (p.era >= Era.REGIONAL_STATES && !has(BuildingKind.FORTRESS))
+    if (secure && p.era >= Era.REGIONAL_STATES && !has(BuildingKind.FORTRESS))
       buildPlan.push({ kind: BuildingKind.FORTRESS, cost: woodCost(BuildingKind.FORTRESS), priority: 42 });
     if (p.era >= Era.CONTEMPORARY && !has(BuildingKind.WONDER) && this.game.settings.victoryMode === 'wonder') {
       buildPlan.push({ kind: BuildingKind.WONDER, cost: woodCost(BuildingKind.WONDER), priority: 30 });
     }
 
-    // build the highest-priority one it can afford
+    // start a new build if under the profile's concurrent-build cap
+    const underConstruction = myB.filter((b) => !b.constructionComplete);
     buildPlan.sort((a, b) => b.priority - a.priority || b.cost.wood - a.cost.wood);
-    const constructing = myB.some((b) => !b.constructionComplete);
-    if (!constructing) {
+    if (underConstruction.length < this.profile.maxConcurrentBuilds) {
       for (const plan of buildPlan) {
         if (this.canAfford(plan.cost)) {
           const spot = this.findBuildSpot(plan.kind);
@@ -303,8 +318,8 @@ export class AI {
 
   private trainMilitary(): void {
     const p = this.p;
-    const military = this.myUnits().filter((u) => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT);
-    const target = 6 + p.era * 5;
+    const military = this.soldiers();
+    const target = armyTarget(this.profile, p.era);
     if (military.length >= target) return;
 
     // units trainable right now: owned building + researched tech + affordable
@@ -369,7 +384,7 @@ export class AI {
       if (tech.requirements && !tech.requirements.every((r) => p.techs.has(r))) continue;
       const bld = this.myBuildings().find((b) => b.kind === tech.building && b.constructionComplete);
       if (!bld || bld.researchQueue.length > 0) continue;
-      if (this.canAfford(tech.cost)) {
+      if (this.canAfford(tech.cost, this.profile.techReserve)) {
         if (this.game.spendResource(this.playerId, tech.cost)) {
           bld.queueTech(tech.id);
         }
@@ -392,24 +407,38 @@ export class AI {
 
   private microCombat(): void {
     const base = this.center();
-    const soldiers = this.myUnits().filter((u) => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT);
-    for (const s of soldiers) {
-      if (base && s.hp / s.maxHp < RETREAT_HP) {
+    // once the enemy has no soldiers left, the deployed army mops up its buildings
+    const mopping = ![...this.game.units.values()].some((u) => isSoldier(u) && this.isEnemyUnit(u));
+    let fallback: Building | null | undefined;
+    for (const s of this.soldiers()) {
+      if (base && s.hp / s.maxHp < this.profile.retreatHp) {
         const distHome = distance2D(s.pos.x, s.pos.z, base.pos.x, base.pos.z);
         if (distHome > RETREAT_MIN_DIST && s.orderQueue[0]?.kind !== OrderKind.MOVE) {
           s.issueOrder({ kind: OrderKind.MOVE, target: { x: base.pos.x, z: base.pos.z } }, true);
         }
         continue;
       }
-      if (s.orderQueue[0]?.kind !== OrderKind.ATTACK) {
-        const enemy = this.findEnemyInRange(s);
-        if (enemy) {
-          if (this.mult.aggression > 0.6) s.issueOrder({ kind: OrderKind.ATTACK, entityId: enemy.id }, true);
-        } else {
-          // no unit in range: press the attack on a nearby enemy building
-          const b = this.findEnemyBuildingInRange(s, PRESS_BUILDING_RADIUS);
-          if (b) s.issueOrder({ kind: OrderKind.ATTACK, entityId: b.id }, true);
-        }
+      if (s.orderQueue[0]?.kind === OrderKind.ATTACK) continue;
+      const enemy = this.findEnemyInRange(s);
+      if (enemy) {
+        if (this.mult.aggression > 0.6) s.issueOrder({ kind: OrderKind.ATTACK, entityId: enemy.id }, true);
+        continue;
+      }
+      // no unit in range: raid an enemy worker, press a nearby building, else mop up
+      const raid = this.profile.raidEconomy ? this.findEnemyWorkerInRange(s, RAID_RADIUS) : null;
+      if (raid) {
+        s.issueOrder({ kind: OrderKind.ATTACK, entityId: raid.id }, true);
+        continue;
+      }
+      const near = this.findEnemyBuildingInRange(s, PRESS_BUILDING_RADIUS);
+      if (near) {
+        s.issueOrder({ kind: OrderKind.ATTACK, entityId: near.id }, true);
+        continue;
+      }
+      const distHome = base ? distance2D(s.pos.x, s.pos.z, base.pos.x, base.pos.z) : 0;
+      if (mopping && distHome > DEFEND_RADIUS) {
+        if (fallback === undefined) fallback = this.findAttackTarget();
+        if (fallback) s.issueOrder({ kind: OrderKind.ATTACK, entityId: fallback.id }, true);
       }
     }
   }
@@ -470,6 +499,11 @@ export class AI {
     return !b.dead && b.owner !== this.playerId && this.game.players[b.owner]?.team !== this.p.team;
   }
 
+  /** A living unit owned by another team. */
+  private isEnemyUnit(u: Unit): boolean {
+    return !u.dead && u.owner !== this.playerId && this.game.players[u.owner]?.team !== this.p.team;
+  }
+
   /** Nearest enemy building within `radius` of the unit (to press the attack). */
   private findEnemyBuildingInRange(s: Unit, radius: number): Building | null {
     let best: Building | null = null;
@@ -500,6 +534,21 @@ export class AI {
     return best;
   }
 
+  /** Nearest enemy worker within `radius` of the unit (raiding). */
+  private findEnemyWorkerInRange(s: Unit, radius: number): Unit | null {
+    let best: Unit | null = null;
+    let bestD = radius;
+    for (const u of this.game.units.values()) {
+      if (u.kind !== UnitKind.WORKER || !this.isEnemyUnit(u)) continue;
+      const d = distance2D(s.pos.x, s.pos.z, u.pos.x, u.pos.z);
+      if (d < bestD) {
+        bestD = d;
+        best = u;
+      }
+    }
+    return best;
+  }
+
   private findEnemyCenter(): Building | null {
     let best: Building | null = null;
     let bestD = Infinity;
@@ -518,8 +567,8 @@ export class AI {
   }
 
   private launchAttack(): void {
-    const soldiers = this.myUnits().filter((u) => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT);
-    const threshold = 4 + this.p.era * 2;
+    const soldiers = this.soldiers();
+    const threshold = attackThreshold(this.profile, this.p.era);
     if (soldiers.length < threshold) return;
     const target = this.findAttackTarget();
     if (!target) return;
