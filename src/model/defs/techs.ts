@@ -202,6 +202,18 @@ export const TECHS: TechDef[] = [
     icon: '🧙',
   },
   {
+    id: 'evangelization',
+    name: 'Evangelización',
+    description: 'Desbloquea al Misionero en la Casa del Guerrero.',
+    cost: cost({ food: 150, silver: 120 }),
+    time: 60,
+    minPeriod: HistoricalPeriod.VICEROYALTY,
+    building: BuildingKind.BARRACKS,
+    effect: {},
+    unlocksUnits: ['missionary'],
+    icon: '⛪',
+  },
+  {
     id: 'swift_chasquis',
     name: 'Chasquis Veloces',
     description: 'Los obreros cargan 5 recursos más por viaje.',

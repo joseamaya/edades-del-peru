@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { UnitKind, HistoricalPeriod } from '../src/core/types';
 import { MISSIONS } from '../src/campaign/defs/campaign';
-import { UNIT_ARCHETYPES, unitMinPeriod } from '../src/model/defs/units';
+import { UNIT_ARCHETYPES, unitMinPeriod, isConverter } from '../src/model/defs/units';
 import { getPeriod } from '../src/model/defs/periods';
 
 /** Every unit kind that a mission spawns (starting army + scripted waves/reinforcements). */
@@ -41,6 +41,13 @@ describe('historical chronology', () => {
     for (const kind of ['tank', 'anti_air', 'mec', 'nuclear'] as UnitKind[]) {
       expect(unitMinPeriod(kind)).toBe(HistoricalPeriod.CONTEMPORARY);
     }
+  });
+
+  it('conversion units: the Misionero is gated from the Viceroyalty', () => {
+    expect(unitMinPeriod(UnitKind.MISSIONARY)).toBe(HistoricalPeriod.VICEROYALTY);
+    expect(isConverter(UnitKind.COMMISSAR)).toBe(true);
+    expect(isConverter(UnitKind.MISSIONARY)).toBe(true);
+    expect(isConverter(UnitKind.SOLDIER)).toBe(false);
   });
 
   it('every scripted unit kind exists in the archetypes', () => {

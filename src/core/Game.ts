@@ -44,7 +44,7 @@ import { isTypingTarget } from '../util/dom';
 import { RNG, hashCode } from '../util/rng';
 import { ERA_DEFS } from '../model/defs/eras';
 import { BUILDING_DEFS, getBuildingStats, BUILDING_INFO } from '../model/defs/buildings';
-import { getUnitStats, getUnitModel, UNIT_INFO } from '../model/defs/units';
+import { getUnitStats, getUnitModel, UNIT_INFO, isConverter } from '../model/defs/units';
 import { getTech } from '../model/defs/techs';
 import { AudioEngine } from '../audio/AudioEngine';
 import { Mission } from '../campaign/Mission';
@@ -1036,8 +1036,10 @@ export class Game {
     }
     if (picked.unit) {
       if (picked.unit.owner === 0) return null;
-      const canConvert = this.selectedUnits.some((id) => this.units.get(id)?.kind === UnitKind.COMMISSAR);
-      return canConvert ? '🧙' : '⚔️';
+      const converter = this.selectedUnits
+        .map((id) => this.units.get(id))
+        .find((u): u is Unit => !!u && !u.dead && isConverter(u.kind));
+      return converter ? UNIT_INFO[converter.kind].icon : '⚔️';
     }
     if (picked.building) return picked.building.owner !== 0 ? '⚔️' : '🏰';
     return null;
@@ -1284,10 +1286,10 @@ export class Game {
     if (picked.unit && picked.unit.owner !== 0) {
       const enemyId = picked.unit.id;
       const target = { x: picked.unit.pos.x, z: picked.unit.pos.z };
-      const canConvert = units.some((u) => u.kind === UnitKind.COMMISSAR);
+      const canConvert = units.some((u) => isConverter(u.kind));
       this.markOrder(target, canConvert ? 'convert' : 'attack');
       for (const u of units) {
-        if (canConvert && u.kind === UnitKind.COMMISSAR) {
+        if (canConvert && isConverter(u.kind)) {
           this.orderUnit(u, { kind: OrderKind.CONVERT, entityId: enemyId }, !this.shiftQueue);
         } else {
           this.orderUnit(u, { kind: OrderKind.ATTACK, entityId: enemyId }, !this.shiftQueue);

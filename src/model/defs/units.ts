@@ -49,6 +49,8 @@ export interface UnitArchetype {
    * scripted content; the era stats models the tech level. Default: Arcaico.
    */
   minPeriod?: HistoricalPeriod;
+  /** Conversion unit (can convert enemy units). */
+  converter?: boolean;
 }
 
 const BASE: Resources = ZERO_RESOURCES;
@@ -341,6 +343,29 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
       [Era.CONTEMPORARY]: { type: 'commissar', scale: 1.08 },
     },
     requiresTech: ['amauta_words'],
+    converter: true,
+  },
+  missionary: {
+    id: UnitKind.MISSIONARY,
+    minPeriod: HistoricalPeriod.VICEROYALTY,
+    name: 'Misionero',
+    description: 'Religioso que convierte unidades enemigas a tu causa con su prédica.',
+    category: 'special',
+    eraStats: {
+      [Era.FORMATIVE]: { hp: 1, attack: 0, range: 1, speed: 1 },
+      [Era.REGIONAL_STATES]: { hp: 1, attack: 0, range: 1, speed: 1 },
+      [Era.TAHUANTINSUYO]: { hp: 1, attack: 0, range: 1, speed: 1 },
+      [Era.VICEROYALTY]: { hp: 1, attack: 0, range: 1, speed: 1 },
+      [Era.REPUBLIC]: { hp: 1.1, attack: 0, range: 1.05, speed: 1.05 },
+      [Era.CONTEMPORARY]: { hp: 1.2, attack: 0, range: 1.1, speed: 1.1 },
+    },
+    eraModel: {
+      [Era.VICEROYALTY]: { type: 'missionary', scale: 1 },
+      [Era.REPUBLIC]: { type: 'missionary', scale: 1.03 },
+      [Era.CONTEMPORARY]: { type: 'missionary', scale: 1.06 },
+    },
+    requiresTech: ['evangelization'],
+    converter: true,
   },
   mec: {
     id: UnitKind.MECH,
@@ -583,6 +608,21 @@ const BASE_STATS: Record<UnitKind, UnitStats> = {
     damageType: 'light',
     projectile: 'bullet',
   },
+  missionary: {
+    hp: 30,
+    attack: 0,
+    range: 8,
+    lightArmor: 0,
+    heavyArmor: 0,
+    speed: 2.6,
+    los: 8,
+    attackSpeed: 6.0,
+    cost: cost({ food: 60, silver: 40 }),
+    trainTime: 45,
+    population: 1,
+    damageType: 'light',
+    projectile: 'bullet',
+  },
   mec: {
     hp: 160,
     attack: 18,
@@ -635,6 +675,11 @@ export function unitMinPeriod(kind: UnitKind): HistoricalPeriod {
   return UNIT_ARCHETYPES[kind].minPeriod ?? HistoricalPeriod.ARCHAIC;
 }
 
+/** Conversion units (Amauta, Misionero) can convert enemy units. */
+export function isConverter(kind: UnitKind): boolean {
+  return UNIT_ARCHETYPES[kind].converter === true;
+}
+
 /** Model to use for a unit in an era. */
 export function getUnitModel(kind: UnitKind, era: Era): ModelSpec {
   const m = UNIT_ARCHETYPES[kind].eraModel[era];
@@ -661,6 +706,7 @@ export const UNIT_INFO: Record<UnitKind, { name: string; icon: string; category:
   artillery: { name: 'Artillería', icon: '💣', category: 'Asedio' },
   mortar: { name: 'Mortero', icon: '💥', category: 'Asedio' },
   commissar: { name: 'Amauta', icon: '🧙', category: 'Especial' },
+  missionary: { name: 'Misionero', icon: '⛪', category: 'Especial' },
   mec: { name: 'Blindado de Asalto', icon: '🛡️', category: 'Élite' },
   nuclear: { name: 'Artillería de Cohetes', icon: '🚀', category: 'Asedio' },
 };

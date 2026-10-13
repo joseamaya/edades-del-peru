@@ -29,14 +29,15 @@ ni después/otra cultura (ámbito).
 | Máquinas de Asedio (`siege_engines`), Morteros (`siege_mortars`) | Virreinato | Asedio y pólvora tras 1532. |
 | Obrajes y Talleres (`workshops`) | Virreinato | Los **obrajes** son talleres textiles coloniales (no existían antes de 1532). |
 | Cazadores (`hunters`) | Virreinato | Cazadores de largo alcance con pólvora. |
+| Evangelización (`evangelization`) | Virreinato | Doctrinas y misiones: desbloquea al **Misionero** (conversor colonial). |
 | Producción en Serie (`mass_production`) | República | Producción industrial seriada (posterior a la Independencia). |
 | Defensa Antiaérea, Blindajes Pesados, Cohetería, Ingeniería Blindada, Hidroeléctricas | Contemporáneo | Tecnología del siglo XX. |
 
-## Nota de diseño (conversor)
+## Nota de diseño (conversores)
 
-`amauta_words` desbloquea al `commissar` (unidad de conversión). Al ceñirlo al Horizonte Tardío (inca), los
-periodos coloniales y republicanos quedan **sin unidad de conversión**. Se acepta como decisión histórica; si más
-adelante se quiere un conversor posterior (p. ej. un *misionero*), se añadirá como contenido aparte con su fuente.
+La conversión de unidades la dan dos unidades culturalmente acotadas: el **Amauta** (`amauta_words`, inca,
+Horizonte Tardío) y el **Misionero** (`evangelization`, colonial/republicano, Virreinato en adelante). Así cada
+época con acceso a un conversor lo tiene con la figura histórica que le corresponde.
 
 ## Fuentes
 
