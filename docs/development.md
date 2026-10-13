@@ -50,8 +50,8 @@ for player-facing docs see [`README.md`](../README.md).
   (`isVisibleTo` is `() => true`); making it LOS-aware is a later milestone. The army is trained to an era-based
   **mix** (`ARMY_MIX`) nudged to counter the enemy's composition (`armyWeights`). `Game.addAI(playerId)` attaches
   an AI to any player, so `yarn sim` runs **AI-vs-AI** headless matches (seeds, winner, peak armies) as an AI
-  regression baseline (reference: with the default seed set, **~7/8 matches end**, avg ~1050 s of sim, both sides
-  field ~10-12 units). Economy: `chooseResourceNode` counts farm workers as food and the build plan prioritizes
+  regression baseline (with the default seed set, **~7/8 matches end**, avg ~1000 s of sim; the winner typically
+  fields ~10-12 units). Economy: `chooseResourceNode` counts farm workers as food and the build plan prioritizes
   dropsites (sawmill/mill) before pop/farms, so the AI no longer starves for wood. Aggression: `launchAttack`
   sends the **whole** army to destroy enemy **buildings** (center first) and `microCombat` presses nearby
   buildings. Training is chronology-guarded (`unitMinPeriod` in `Building.queueUnit`, the AI candidate filter and

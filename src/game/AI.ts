@@ -32,6 +32,8 @@ const RETREAT_HP = 0.35;
 const RETREAT_MIN_DIST = 18;
 /** Scouting fallback destination (map fraction) when no enemy building is known. */
 const EXPLORE_FALLBACK = { x: 0.8, z: 0.2 } as const;
+/** Radius within which an idle soldier will press a nearby enemy building. */
+const PRESS_BUILDING_RADIUS = 18;
 
 export class AI {
   private game: Game;
@@ -170,9 +172,9 @@ export class AI {
         counts[n.resource]++;
         continue;
       }
-      // workers on a farm gather food (not a resource node, but still food income)
+      // workers on a completed farm gather food (not a resource node, but still food income)
       const b = this.game.buildings.get(id);
-      if (b?.isFarm) counts.food++;
+      if (b?.isFarm && b.constructionComplete && b.foodAmount > 0) counts.food++;
     }
     const priority: Partial<Record<keyof Resources, number>> = {
       food: p.resources.food < 350 ? 1.4 : 0.8,
@@ -401,11 +403,11 @@ export class AI {
       }
       if (s.orderQueue[0]?.kind !== OrderKind.ATTACK) {
         const enemy = this.findEnemyInRange(s);
-        if (enemy && this.mult.aggression > 0.6) {
-          s.issueOrder({ kind: OrderKind.ATTACK, entityId: enemy.id }, true);
+        if (enemy) {
+          if (this.mult.aggression > 0.6) s.issueOrder({ kind: OrderKind.ATTACK, entityId: enemy.id }, true);
         } else {
           // no unit in range: press the attack on a nearby enemy building
-          const b = this.findEnemyBuildingInRange(s, 18);
+          const b = this.findEnemyBuildingInRange(s, PRESS_BUILDING_RADIUS);
           if (b) s.issueOrder({ kind: OrderKind.ATTACK, entityId: b.id }, true);
         }
       }
@@ -463,13 +465,17 @@ export class AI {
     }
   }
 
+  /** A living building owned by another team. */
+  private isEnemyBuilding(b: Building): boolean {
+    return !b.dead && b.owner !== this.playerId && this.game.players[b.owner]?.team !== this.p.team;
+  }
+
   /** Nearest enemy building within `radius` of the unit (to press the attack). */
   private findEnemyBuildingInRange(s: Unit, radius: number): Building | null {
     let best: Building | null = null;
     let bestD = radius;
-    const team = this.p.team;
     for (const b of this.game.buildings.values()) {
-      if (b.dead || b.owner === this.playerId || this.game.players[b.owner]?.team === team) continue;
+      if (!this.isEnemyBuilding(b)) continue;
       const d = distance2D(s.pos.x, s.pos.z, b.pos.x, b.pos.z);
       if (d < bestD) {
         bestD = d;
@@ -501,7 +507,7 @@ export class AI {
     const bx = center?.pos.x ?? this.game.settings.mapSize / 2;
     const bz = center?.pos.z ?? this.game.settings.mapSize / 2;
     for (const b of this.game.buildings.values()) {
-      if (b.owner === this.playerId || b.dead) continue;
+      if (!this.isEnemyBuilding(b)) continue;
       const d = distance2D(bx, bz, b.pos.x, b.pos.z);
       if (d < bestD) {
         bestD = d;
@@ -529,17 +535,21 @@ export class AI {
 
   /** Enemy building to focus: the center first, else the nearest one to our base. */
   private findAttackTarget(): Building | null {
-    const team = this.p.team;
-    const enemy = [...this.game.buildings.values()].filter(
-      (b) => !b.dead && b.owner !== this.playerId && this.game.players[b.owner]?.team !== team,
-    );
-    if (enemy.length === 0) return null;
-    const center = enemy.find((b) => b.kind === BuildingKind.CENTER);
-    if (center) return center;
     const base = this.center();
     const bx = base?.pos.x ?? this.game.settings.mapSize / 2;
     const bz = base?.pos.z ?? this.game.settings.mapSize / 2;
-    enemy.sort((a, b) => distance2D(bx, bz, a.pos.x, a.pos.z) - distance2D(bx, bz, b.pos.x, b.pos.z));
-    return enemy[0];
+    let center: Building | null = null;
+    let nearest: Building | null = null;
+    let nearestD = Infinity;
+    for (const b of this.game.buildings.values()) {
+      if (!this.isEnemyBuilding(b)) continue;
+      if (b.kind === BuildingKind.CENTER) center = b;
+      const d = distance2D(bx, bz, b.pos.x, b.pos.z);
+      if (d < nearestD) {
+        nearestD = d;
+        nearest = b;
+      }
+    }
+    return center ?? nearest;
   }
 }
