@@ -1597,6 +1597,35 @@ export class HUD {
       this.game.setFogOfWar(!this.game.settings.fogOfWar);
       fogBtn.textContent = this.game.settings.fogOfWar ? 'Activada' : 'Desactivada';
     });
+    this.toggle(
+      row,
+      'Sonido',
+      ['Activado', 'Desactivado'],
+      () => this.game.settings.soundEnabled,
+      (v) => {
+        this.game.settings.soundEnabled = v;
+        this.game.audio.enabled = v;
+      },
+    );
+    this.toggle(
+      row,
+      'Música',
+      ['Activada', 'Desactivada'],
+      () => this.game.settings.musicEnabled,
+      (v) => {
+        this.game.settings.musicEnabled = v;
+        this.game.audio.musicEnabled = v;
+        if (v) this.game.audio.startMusic();
+        else this.game.audio.stopMusic();
+      },
+    );
+    this.toggle(
+      row,
+      'Consejos',
+      ['Activados', 'Desactivados'],
+      () => this.game.settings.showHints,
+      (v) => (this.game.settings.showHints = v),
+    );
     const back = this.el('button', 'ed-primary', panel);
     back.textContent = 'Volver';
     back.addEventListener('click', () => this.showPauseMenu());
@@ -1607,6 +1636,25 @@ export class HUD {
     f.appendChild(this.el('label', '')).textContent = label;
     f.appendChild(input);
     return f;
+  }
+
+  /** A labelled on/off button for a settings panel (`words` = [on, off]). */
+  private toggle(
+    parent: HTMLElement,
+    label: string,
+    words: [string, string],
+    get: () => boolean,
+    set: (v: boolean) => void,
+  ): void {
+    const wrap = this.el('div', 'ed-field', parent);
+    wrap.innerHTML = `<label>${label}</label>`;
+    const btn = this.el('button', 'ed-ghostbtn', wrap);
+    const render = () => (btn.textContent = get() ? words[0] : words[1]);
+    render();
+    btn.addEventListener('click', () => {
+      set(!get());
+      render();
+    });
   }
 
   private select<T extends string>(

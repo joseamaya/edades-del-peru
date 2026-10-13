@@ -863,6 +863,8 @@ export class Game {
   }
 
   private initAudio(): void {
+    this.audio.enabled = this.settings.soundEnabled;
+    this.audio.musicEnabled = this.settings.musicEnabled;
     const enable = () => {
       this.audio.init();
       this.audio.resume();
