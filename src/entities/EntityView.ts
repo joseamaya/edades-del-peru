@@ -14,6 +14,10 @@ export function reserveIds(maxId: number): void {
   if (maxId >= nextId) nextId = maxId + 1;
 }
 
+/** How far above a unit's model the health bar floats. */
+const HEALTH_BAR_LIFT = 1.2;
+const _tmpQuat = new THREE.Quaternion();
+
 /** Shared visual view: model + selection ring + health bar. */
 export class EntityView {
   group: THREE.Group;
@@ -144,24 +148,25 @@ export class EntityView {
       this.healthBar = new THREE.Group();
       const w = this.radius * 1.5;
       const h = 0.16;
+      const y = this.radius * 1.6 + HEALTH_BAR_LIFT;
       this.hpBg = new THREE.Mesh(
         new THREE.PlaneGeometry(w, h),
         new THREE.MeshBasicMaterial({ color: 0x1a1a1a, transparent: true, opacity: 0.75, depthWrite: false }),
       );
-      this.hpBg.position.y = this.radius * 1.6 + 1.2;
+      this.hpBg.position.y = y;
       this.healthBar.add(this.hpBg);
       this.hpFill = new THREE.Mesh(
         new THREE.PlaneGeometry(w - 0.05, h - 0.05),
         new THREE.MeshBasicMaterial({ color: 0x44cc44, transparent: true, opacity: 0.95, depthWrite: false }),
       );
-      this.hpFill.position.y = this.radius * 1.6 + 1.2;
+      this.hpFill.position.y = y;
       this.hpFill.position.z = 0.01;
       this.hpFill.renderOrder = 4;
       this.hpBg.renderOrder = 4;
       this.healthBar.add(this.hpFill);
       this.group.add(this.healthBar);
     }
-    // tint the bar frame with the owner colour: a strong team cue above the unit
+    // team cue: darken the owner colour for the bar frame
     (this.hpBg.material as THREE.MeshBasicMaterial).color.copy(ownerColor).multiplyScalar(0.35);
     this.healthBar.visible = show;
   }
@@ -176,15 +181,12 @@ export class EntityView {
     (this.hpFill.material as THREE.MeshBasicMaterial).color.setRGB(r, g, 0.15);
   }
 
-  showHealthAlways(show: boolean): void {
-    if (this.healthBar) this.healthBar.visible = show;
-  }
-
   /** Orient the health bar toward the camera (units rotate with yaw, so without
    *  this the bar turns edge-on and disappears). */
   faceHealthBar(cameraQuaternion: THREE.Quaternion): void {
     if (!this.healthBar) return;
-    this.healthBar.quaternion.copy(this.group.quaternion).invert().multiply(cameraQuaternion);
+    const world = this.group.getWorldQuaternion(_tmpQuat).invert();
+    this.healthBar.quaternion.copy(world).multiply(cameraQuaternion);
   }
 
   /** Vision-radius ring (debug/effect). */

@@ -1218,7 +1218,6 @@ export class Game {
       u.selected = sel;
       const p = this.players[u.owner];
       u.view.showSelectionColor(sel, p.color);
-      if (sel) u.view.showHealthBar(true, p.color);
     }
     for (const b of this.buildings.values()) {
       const sel = this.selectedBuilding === b.id;
@@ -2343,8 +2342,8 @@ export class Game {
       // show a health bar for selected or damaged units (all owners): makes fights
       // and wounded enemies readable without hovering
       u.view.showHealthBar(u.selected || u.hp < u.maxHp, this.players[u.owner].color);
-      u.view.faceHealthBar(this.camera.camera.quaternion);
       u.update(d, t);
+      u.view.faceHealthBar(this.camera.camera.quaternion);
     }
     // buildings
     for (const b of this.buildings.values()) {
