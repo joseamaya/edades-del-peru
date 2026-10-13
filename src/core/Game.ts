@@ -1918,6 +1918,7 @@ export class Game {
 
   private applyProjectileDamage(o: any, targetId: number | undefined): void {
     const impact = o.target as THREE.Vector3;
+    const damageType: DamageClass = o.damageType ?? 'heavy';
     if (o.area && o.area > 0) {
       // area damage
       const targets: { t: any; d: number }[] = [];
@@ -1934,7 +1935,7 @@ export class Game {
       }
       for (const { t, d } of targets) {
         const falloff = 1 - d / o.area;
-        this.resolveDamage(o.owner, t.id, o.damage * falloff, { owner: o.owner }, o.damageType ?? 'heavy');
+        this.resolveDamage(o.owner, t.id, o.damage * falloff, { owner: o.owner }, damageType);
       }
       // explosion smoke
       this.particles.emit({
@@ -1953,7 +1954,7 @@ export class Game {
     } else if (targetId !== undefined) {
       const target = this.units.get(targetId) ?? this.buildings.get(targetId);
       if (target && !target.dead) {
-        this.resolveDamage(o.owner, targetId, o.damage, { owner: o.owner }, o.damageType ?? 'heavy');
+        this.resolveDamage(o.owner, targetId, o.damage, { owner: o.owner }, damageType);
       }
     } else {
       // no targetId: damage the enemy closest to the impact point
@@ -1978,8 +1979,7 @@ export class Game {
           }
         }
       }
-      if (best && bestD < 3)
-        this.resolveDamage(o.owner, best.id, o.damage, { owner: o.owner }, o.damageType ?? 'heavy');
+      if (best && bestD < 3) this.resolveDamage(o.owner, best.id, o.damage, { owner: o.owner }, damageType);
     }
   }
 

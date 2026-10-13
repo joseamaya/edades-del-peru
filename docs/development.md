@@ -27,11 +27,12 @@ for player-facing docs see [`README.md`](../README.md).
   attack" is a general attack bonus), not per unit category, and a few flavor bullets with no mechanic yet
   (naval units, cheaper houses, building HP) are not modeled. Add effects for any new civ (tested in `defs.test.ts`).
 - **Damage & armor (`src/game/combat.ts`)**: the attacker's `damageType` (`light`/`heavy`/`fortified`) selects the
-  defender's armor — units use `lightArmor`/`heavyArmor`, buildings use their single `armor` (fortified attacks) —
-  and the civilization/tech `armor` bonus then reduces the remainder as a fraction (`0.1` = -10%, capped at 80%).
-  `computeDamage` is pure and unit-tested in `tests/combat.test.ts`; `Game.resolveDamage` calls it (melee passes
-  `stats.damageType`, projectiles carry it through `spawnProjectile`). Damage never drops below 1. The
-  `Unit.armorMultiplier` field keeps its name but now stores `1 + reduction` (so `saveTypes` is unchanged).
+  defender's armor — units use `lightArmor` vs `light` and `heavyArmor` vs `heavy`/`fortified`, and buildings use
+  their single `armor` for every attack type — and the civilization/tech `armor` bonus then reduces the remainder
+  as a fraction (`0.1` = -10%, capped at 80%). Damage never drops below 1. `computeDamage` is pure and unit-tested
+  in `tests/combat.test.ts`; `Game.resolveDamage` calls it — melee passes `stats.damageType`, and projectile spawns
+  carry it through `spawnProjectile` into `applyProjectileDamage`. The `Unit.armorMultiplier` field keeps its name
+  and save shape but now stores `1 + reduction` (no `SAVE_VERSION` bump), so `saveTypes` is unchanged.
 - **Maps by geography**: `MapType = 'coast' | 'andes' | 'altiplano' | 'jungle'` (generated in `Terrain.generate`).
 - `src/campaign/defs/campaign.ts` defines the 9 historical campaigns; `src/campaign/Mission.ts` evaluates
   objectives/triggers.

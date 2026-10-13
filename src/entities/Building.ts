@@ -347,7 +347,6 @@ export class Building {
       kind: 'bullet',
       owner: this.owner,
       targetId: target.id,
-      damageType: 'heavy',
     });
     this.ctx?.particles?.emit?.({
       x: this.pos.x,
