@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { Era, UnitKind, BuildingKind, HistoricalPeriod, CivId } from '../src/core/types';
 import { UNIT_ARCHETYPES, getUnitStats } from '../src/model/defs/units';
 import { BUILDING_DEFS, getBuildingStats } from '../src/model/defs/buildings';
-import { TECHS } from '../src/model/defs/techs';
+import { TECHS, techAvailable } from '../src/model/defs/techs';
 import { ERA_DEFS } from '../src/model/defs/eras';
 import { PERIODS, getPeriod } from '../src/model/defs/periods';
 import { CIVS, civsForPeriod } from '../src/model/defs/civs';
@@ -103,6 +103,48 @@ describe('technology definitions', () => {
         expect(techIds.has(req), `${t.id} requires unknown tech ${req}`).toBe(true);
       }
       expectValidCost(t.cost, `tech ${t.id}`);
+    }
+  });
+
+  it('scopes techs to their historical periods (no colonial/industrial tech before 1532)', () => {
+    const preColumbian = [
+      HistoricalPeriod.ARCHAIC,
+      HistoricalPeriod.EARLY_HORIZON,
+      HistoricalPeriod.EARLY_INTERMEDIATE,
+      HistoricalPeriod.MIDDLE_HORIZON,
+      HistoricalPeriod.LATE_INTERMEDIATE,
+      HistoricalPeriod.LATE_HORIZON,
+    ];
+    for (const id of ['workshops', 'mass_production', 'shock_cavalry', 'siege_engines', 'siege_mortars']) {
+      const tech = TECHS.find((t) => t.id === id)!;
+      for (const p of preColumbian) {
+        expect(techAvailable(tech, p), `${id} available in pre-Columbian period ${p}`).toBe(false);
+      }
+    }
+  });
+
+  it('keeps culture-specific techs in their own window', () => {
+    const byId = new Map(TECHS.map((t) => [t.id, t]));
+    // Inca techs are not available to the Spanish/Republic...
+    for (const id of ['quipus_watchers', 'amauta_words', 'swift_chasquis']) {
+      expect(techAvailable(byId.get(id)!, HistoricalPeriod.VICEROYALTY), `${id} leaked to the Viceroyalty`).toBe(false);
+      expect(techAvailable(byId.get(id)!, HistoricalPeriod.REPUBLIC), `${id} leaked to the Republic`).toBe(false);
+    }
+    // ...but are available to the Inca, and every window is well-formed.
+    expect(techAvailable(byId.get('amauta_words')!, HistoricalPeriod.LATE_HORIZON)).toBe(true);
+    for (const t of TECHS) {
+      if (t.maxPeriod !== undefined) {
+        expect(t.maxPeriod, `${t.id} maxPeriod before minPeriod`).toBeGreaterThanOrEqual(t.minPeriod);
+      }
+    }
+  });
+
+  it('offers every tech in at least one period', () => {
+    for (const t of TECHS) {
+      expect(
+        PERIODS.some((p) => techAvailable(t, p.id)),
+        `${t.id} is never available`,
+      ).toBe(true);
     }
   });
 });

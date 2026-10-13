@@ -87,6 +87,10 @@ function boot(): void {
     if (params.get('mission')) settings.missionId = params.get('mission')!;
     if (params.get('fog') === '0') settings.fogOfWar = false;
     if (params.get('seed') !== null) settings.mapSeed = intParam(params, 'seed', settings.mapSeed);
+    if (params.get('period') !== null) {
+      settings.period = intParam(params, 'period', settings.period) as HistoricalPeriod;
+      Object.assign(settings, sanitizeSettings(settings));
+    }
   }
   if (params.get('noloop') === '1') setAutoStart(false);
   const game = new Game(settings, snapshot, replay);
@@ -149,7 +153,7 @@ function startsMatchDirectly(params: URLSearchParams): boolean {
     params.get('replay') === '1'
   )
     return true;
-  return ['seed', 'era', 'mission', 'low', 'speed', 'fog'].some((k) => params.has(k));
+  return ['seed', 'era', 'mission', 'low', 'speed', 'fog', 'period'].some((k) => params.has(k));
 }
 
 if (document.readyState === 'loading') {
