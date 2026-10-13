@@ -2340,6 +2340,10 @@ export class Game {
     for (const u of this.units.values()) {
       if (u.dead) continue;
       u.ctx = this.unitContext;
+      // show a health bar for selected or damaged units (all owners): makes fights
+      // and wounded enemies readable without hovering
+      u.view.showHealthBar(u.selected || u.hp < u.maxHp, this.players[u.owner].color);
+      u.view.faceHealthBar(this.camera.camera.quaternion);
       u.update(d, t);
     }
     // buildings

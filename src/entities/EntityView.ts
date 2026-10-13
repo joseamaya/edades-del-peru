@@ -148,21 +148,22 @@ export class EntityView {
         new THREE.PlaneGeometry(w, h),
         new THREE.MeshBasicMaterial({ color: 0x1a1a1a, transparent: true, opacity: 0.75, depthWrite: false }),
       );
-      this.hpBg.position.y = this.radius * 1.6;
+      this.hpBg.position.y = this.radius * 1.6 + 1.2;
       this.healthBar.add(this.hpBg);
       this.hpFill = new THREE.Mesh(
         new THREE.PlaneGeometry(w - 0.05, h - 0.05),
         new THREE.MeshBasicMaterial({ color: 0x44cc44, transparent: true, opacity: 0.95, depthWrite: false }),
       );
-      this.hpFill.position.y = this.radius * 1.6;
+      this.hpFill.position.y = this.radius * 1.6 + 1.2;
       this.hpFill.position.z = 0.01;
       this.hpFill.renderOrder = 4;
       this.hpBg.renderOrder = 4;
       this.healthBar.add(this.hpFill);
       this.group.add(this.healthBar);
     }
+    // tint the bar frame with the owner colour: a strong team cue above the unit
+    (this.hpBg.material as THREE.MeshBasicMaterial).color.copy(ownerColor).multiplyScalar(0.35);
     this.healthBar.visible = show;
-    void ownerColor;
   }
 
   updateHealth(ratio: number): void {
@@ -177,6 +178,13 @@ export class EntityView {
 
   showHealthAlways(show: boolean): void {
     if (this.healthBar) this.healthBar.visible = show;
+  }
+
+  /** Orient the health bar toward the camera (units rotate with yaw, so without
+   *  this the bar turns edge-on and disappears). */
+  faceHealthBar(cameraQuaternion: THREE.Quaternion): void {
+    if (!this.healthBar) return;
+    this.healthBar.quaternion.copy(this.group.quaternion).invert().multiply(cameraQuaternion);
   }
 
   /** Vision-radius ring (debug/effect). */
