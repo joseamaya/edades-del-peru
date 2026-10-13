@@ -110,6 +110,9 @@ for player-facing docs see [`README.md`](../README.md).
   building, a resource node) is not traversable. `nearestWalkable` alone is not enough — it can return an
   isolated walkable pocket and A* then fails, silently dropping move-to-building orders. `pathfind` now accepts
   any cell within `GOAL_PROXIMITY` of the original goal cell. Keep that when touching goal handling.
+  A move order must still cope with an empty route from a blocked **start** cell: `Unit.updateMove` (used by
+  MOVE and, on an empty path, ATTACK_MOVE) only completes within `MOVE_ARRIVAL_DIST` of the target and otherwise
+  re-paths or heads straight for it, so a unit never finishes its order and freezes far from the destination.
 - **Model geometries and textures are shared/cached** (`sharedGeo`, `bakedGeoCache`, `texCloneCache` in
   `ProceduralModel.ts`). `disposeModel()` only frees materials; **do not** dispose geometries/textures by hand nor
   reuse them by mutating `repeat`. To clear everything use `clearModelCaches()`.

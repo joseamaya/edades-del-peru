@@ -54,6 +54,8 @@ export interface UnitContext {
 }
 
 const MOVE_STOP_DIST = 0.6;
+/** Distance at which a plain move/attack-move order counts as arrived. */
+const MOVE_ARRIVAL_DIST = 1.2;
 const SEPARATION = 1.4;
 
 /** Color of the worker's load bundle according to the carried resource. */
@@ -170,8 +172,6 @@ export class Unit {
   private stuckTimer = 0;
   private lastStuckX = 0;
   private lastStuckZ = 0;
-  /** While > 0 the unit ignores unit-unit separation, to break a deadlock. */
-  private ghostTimer = 0;
 
   get team(): Team {
     return this.ctx?.players.find((p) => p.id === this.owner)?.team ?? 0;
@@ -385,7 +385,7 @@ export class Unit {
   private executeOrder(order: Order, dt: number, time: number): void {
     switch (order.kind) {
       case OrderKind.MOVE:
-        this.updateMove(order, dt);
+        this.updateMove(order);
         break;
       case OrderKind.ATTACK_MOVE:
         this.updateAttackMove(order, dt, time);
@@ -432,7 +432,6 @@ export class Unit {
   }
 
   private updateMovement(dt: number): void {
-    this.ghostTimer = Math.max(0, this.ghostTimer - dt);
     // stuck detection: if it does not advance with an active path, re-route
     const moved = Math.hypot(this.pos.x - this.lastStuckX, this.pos.z - this.lastStuckZ);
     this.stuckTimer += dt;
@@ -440,15 +439,10 @@ export class Unit {
       this.stuckTimer = 0;
       this.lastStuckX = this.pos.x;
       this.lastStuckZ = this.pos.z;
-      this.ghostTimer = 0;
     } else if (this.stuckTimer > 1.2 && this.path.length > 1 && this.orderQueue.length > 0) {
       const o = this.orderQueue[0];
       const target = o.target;
       this.stuckTimer = 0;
-      if (o.kind === OrderKind.MOVE || o.kind === OrderKind.ATTACK_MOVE) {
-        // boxed in by other units: ignore separation briefly so it can squeeze out
-        this.ghostTimer = 1.0;
-      }
       if (target) {
         this.setPath(target.x, target.z);
       } else if (o.entityId !== undefined) {
@@ -524,7 +518,7 @@ export class Unit {
   }
 
   private applySeparation(dt: number): void {
-    if (this.walkCycle <= 0.01 || this.ghostTimer > 0) return;
+    if (this.walkCycle <= 0.01) return;
     const nearby = this.ctx.unitsNear(this.pos.x, this.pos.z, SEPARATION);
     let fx = 0;
     let fz = 0;
@@ -615,12 +609,13 @@ export class Unit {
    * Plain move order. It must not complete while the unit is still far from its
    * destination: a path can come back empty (a blocked start cell / an isolated
    * pocket) and the unit would otherwise freeze where it stands. Re-path, and if
-   * there is still no route head straight for the target.
+   * there is still no route head straight for the target (movement integration is
+   * left to `updateMovement`, so it must not move the position here).
    */
-  private updateMove(order: Order, dt: number): void {
+  private updateMove(order: Order): void {
     const t = order.target;
     if (!this.isPathDone()) return;
-    if (!t || distance2D(this.pos.x, this.pos.z, t.x, t.z) <= MOVE_STOP_DIST * 2) {
+    if (!t || distance2D(this.pos.x, this.pos.z, t.x, t.z) <= MOVE_ARRIVAL_DIST) {
       this.finishOrder();
       return;
     }
@@ -631,15 +626,12 @@ export class Unit {
     if (this.isPathDone()) {
       this.targetYaw = angleTo(this.pos.x, this.pos.z, t.x, t.z);
       const spd = this.stats.speed;
-      this.vel.set(Math.cos(this.targetYaw) * spd, 0, Math.sin(this.targetYaw) * spd);
-      this.pos.x += this.vel.x * dt;
-      this.pos.z += this.vel.z * dt;
-      this.pos.y = this.ctx.getHeight(this.pos.x, this.pos.z) + 0.05;
-      this.walkCycle += dt * spd;
+      this.vel.x = Math.cos(this.targetYaw) * spd;
+      this.vel.z = Math.sin(this.targetYaw) * spd;
     }
   }
 
-  private updateAttackMove(_order: Order, dt: number, time: number): void {
+  private updateAttackMove(order: Order, dt: number, time: number): void {
     // look for enemies along the path
     const enemies = this.ctx.unitsNear(this.pos.x, this.pos.z, this.stats.range + 3);
     let best: Unit | null = null;
@@ -660,7 +652,8 @@ export class Unit {
       this.updateAttack({ kind: OrderKind.ATTACK, entityId: best.id }, dt, time);
     } else if (this.isPathDone()) {
       this.attackingTarget = false;
-      this.finishOrder();
+      // same no-freeze guarantee as a plain move when the route came back empty
+      this.updateMove(order);
     }
   }
 
