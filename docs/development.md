@@ -44,18 +44,24 @@ for player-facing docs see [`README.md`](../README.md).
 - **AI (`src/game/AI.ts`)**: macromanagement (workers, build plan, tech, waves) plus `defendEconomy`
   (recalls idle military when an enemy nears any AI building/worker), `microCombat` retreat of badly wounded
   units and `explore` (idle scouts patrol toward the enemy base). It only uses the same systems as the player
-  (`issueOrder`, `combatStance`); difficulty (`DIFFICULTY_MULT`) tunes decision cadence (`reaction`), macro
-  size (`econ`) and attack frequency (`aggression`) — **never a hidden resource/production bonus**. Known
-  limitation: the AI ignores fog of war (it reads all entities), because fog is currently visual only
-  (`isVisibleTo` is `() => true`); making it LOS-aware is a later milestone. The army is trained to an era-based
-  **mix** (`ARMY_MIX`) nudged to counter the enemy's composition (`armyWeights`). `Game.addAI(playerId)` attaches
-  an AI to any player, so `yarn sim` runs **AI-vs-AI** headless matches (seeds, winner, peak armies) as an AI
-  regression baseline (with the default seed set, **~7/8 matches end**, avg ~1000 s of sim; the winner typically
-  fields ~10-12 units). Economy: `chooseResourceNode` counts farm workers as food and the build plan prioritizes
+  (`issueOrder`, `combatStance`) — **never a hidden resource/production bonus**. Difficulty is split in two:
+  `DIFFICULTY_MULT` (Config) tunes the decision cadence (`reaction`) and attack frequency (`aggression`), and
+  `src/game/aiProfiles.ts` decides *strategy* — economy/army size, attack threshold, tech eagerness
+  (`techReserve`), retreat threshold, raiding and advanced military. A profile only invests in non-essential
+  buildings once it has its core army (`armyBase`), so a bigger economy becomes military strength instead of
+  building sprawl. Known limitation: the AI ignores fog of war (it reads all entities), because fog is currently
+  visual only (`isVisibleTo` is `() => true`); making it LOS-aware is a later milestone. The army is trained to
+  an era-based **mix** (`ARMY_MIX`) nudged to counter the enemy's composition (`armyWeights`).
+  `Game.addAI(playerId, difficulty?)` attaches an AI to any player, so `yarn sim [--difficulty=…]` runs
+  **AI-vs-AI** headless matches (seeds, winner, peak armies); `--difficulty` sets player 0's profile while
+  player 1 stays on `normal`, so a run measures that profile against `normal`. Baseline on the default seed set
+  (player-0 wins / losses / undecided): `easy` 0/1/7, `normal` 3/4/1, `hard` 7/0/1, `legendary` 6/1/1 —
+  `normal` matches the pre-profile baseline (**7/8 matches end**, avg ~1000 s; the winner typically fields
+  ~10-12 units). Economy: `chooseResourceNode` counts farm workers as food and the build plan prioritizes
   dropsites (sawmill/mill) before pop/farms, so the AI no longer starves for wood. Aggression: `launchAttack`
   sends the **whole** army to destroy enemy **buildings** (center first) and `microCombat` presses nearby
-  buildings. Training is chronology-guarded (`unitMinPeriod` in `Building.queueUnit`, the AI candidate filter and
-  the HUD).
+  buildings (or raids workers, on `hard`+). Training is chronology-guarded (`unitMinPeriod` in
+  `Building.queueUnit`, the AI candidate filter and the HUD).
 - **UI/inputs in `src/core/Game.ts` and `src/ui/HUD.ts`**: left click selects / drag = box-select (rectangle
   `#ed-selbox`) · right click = order (**right button no longer pans**; panning is by screen edges, WASD/arrows,
   middle wheel, or dragging the **bottom-left minimap**). Minimap: drag = move viewport, right click = order

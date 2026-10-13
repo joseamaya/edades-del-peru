@@ -148,3 +148,40 @@ test('the AI attacks enemy buildings when it has an army', async ({ page }) => {
   });
   expect(onCenter).toBeGreaterThan(0);
 });
+
+test('a raiding AI (hard+) attacks enemy workers instead of buildings', async ({ page }) => {
+  const firstTarget = async (difficulty: string): Promise<string> => {
+    await page.goto('/?seed=777&fog=0&low=1');
+    await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+      timeout: 30_000,
+    });
+    return page.evaluate((d) => {
+      const g = (window as unknown as { game: any }).game;
+      g.loop.stop();
+      g.paused = false;
+      for (const u of g.units.values()) {
+        if (u.owner === 0) {
+          u.pos.set(4, g.terrain.getHeight(4, 4), 4);
+          u.clearOrders();
+          u.combatStance = 'pasivo';
+        }
+      }
+      g.addAI(0, d);
+      // enemy worker at 15 (beyond the soldier's attack range) and a building at 10
+      const soldier = g.spawnScriptedUnit('soldier', 0, 100, 100);
+      soldier.clearOrders();
+      const worker = g.spawnScriptedUnit('worker', 1, 115, 100);
+      worker.clearOrders();
+      const building = g.spawnScriptedBuilding('barracks', 1, 110, 100);
+      let t = 0;
+      for (let i = 0; i < 90; i++) {
+        t += 1 / 60;
+        g.update(1 / 60, t);
+      }
+      const id = soldier.orderQueue[0]?.entityId;
+      return id === worker.id ? 'worker' : id === building.id ? 'building' : 'none';
+    }, difficulty);
+  };
+  expect(await firstTarget('normal')).toBe('building');
+  expect(await firstTarget('hard')).toBe('worker');
+});

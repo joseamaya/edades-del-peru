@@ -55,8 +55,8 @@ export const RESOURCE_INFO = {
 } as const;
 
 export const DIFFICULTY_MULT = {
-  easy: { econ: 0.85, aggression: 0.5, reaction: 1.4 },
-  normal: { econ: 1.0, aggression: 1.0, reaction: 1.0 },
-  hard: { econ: 1.15, aggression: 1.4, reaction: 0.7 },
-  legendary: { econ: 1.3, aggression: 1.8, reaction: 0.45 },
+  easy: { aggression: 0.5, reaction: 1.4 },
+  normal: { aggression: 1.0, reaction: 1.0 },
+  hard: { aggression: 1.4, reaction: 0.7 },
+  legendary: { aggression: 1.8, reaction: 0.45 },
 } as const;
