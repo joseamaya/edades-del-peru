@@ -41,6 +41,8 @@ const SIEGE_SELF_DEFENSE = 0.5;
 const MELEE_REACH = 8;
 /** Seconds the AI remembers an enemy unit after losing sight of it. */
 const MEMORY_TTL = 12;
+/** Sight padding over `stats.los` (matches the player's fog reveal). */
+const VISION_PAD = 2;
 
 /** A combat unit (not a worker or scout). */
 const isSoldier = (u: Unit): boolean => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT;
@@ -62,9 +64,8 @@ export class AI {
   private defenseTimer = 0;
   private scoutTimer = 3;
   private announced = new Set<string>();
-  /** AI-local clock and perception memory (the AI only knows what it has seen). */
-  private aiTime = 0;
-  private visionTimer = 0;
+  /** Perception memory: the AI only knows what it has seen. */
+  private lastPerception = -1;
   private seenUnits = new Map<number, number>();
   private seenBuildings = new Set<number>();
 
@@ -78,19 +79,16 @@ export class AI {
   }
 
   update(dt: number, t: number): void {
-    void t;
     if (this.game.players[this.playerId].alive === false) return;
-    this.aiTime += dt;
-    this.visionTimer += dt;
     this.economyTimer += dt;
     this.buildingTimer += dt;
     this.attackTimer -= dt;
     this.defenseTimer -= dt;
     this.scoutTimer -= dt;
 
-    if (this.visionTimer > 0.3) {
-      this.visionTimer = 0;
-      this.updatePerception();
+    if (t - this.lastPerception > 0.3) {
+      this.lastPerception = t;
+      this.updatePerception(t);
     }
     if (this.economyTimer > 0.6) {
       this.economyTimer = 0;
@@ -400,10 +398,9 @@ export class AI {
 
   /** Desired army mix for the era, nudged to counter the enemy's composition. */
   private armyWeights(): Record<UnitCategory, number> {
-    const team = this.p.team;
     const enemy = { melee: 0, ranged: 0, cavalry: 0 };
     for (const u of this.game.units.values()) {
-      if (u.dead || u.owner === this.playerId || this.game.players[u.owner]?.team === team) continue;
+      if (!this.isEnemyUnitKnown(u)) continue;
       const c = UNIT_CATEGORY[u.kind];
       if (c === 'melee') enemy.melee++;
       else if (c === 'ranged') enemy.ranged++;
@@ -445,7 +442,7 @@ export class AI {
     const soldiers = this.soldiers();
     const focus = this.focusTarget(soldiers);
     // once the enemy has no soldiers left, the deployed army mops up its buildings
-    const mopping = ![...this.game.units.values()].some((u) => isSoldier(u) && this.isEnemyUnit(u));
+    const mopping = ![...this.game.units.values()].some((u) => isSoldier(u) && this.isEnemyUnitKnown(u));
     let fallback: Building | null | undefined;
     for (const s of soldiers) {
       if (base && s.hp / s.maxHp < this.profile.retreatHp) {
@@ -615,18 +612,18 @@ export class AI {
    * losing sight; discovered buildings are remembered permanently (they do not
    * move). This removes the old omniscient AI.
    */
-  private updatePerception(): void {
+  private updatePerception(now: number): void {
     const scan = (x: number, z: number, radius: number): void => {
-      for (const e of this.game.enemiesNear(x, z, radius, this.playerId)) this.seenUnits.set(e.id, this.aiTime);
+      for (const e of this.game.enemiesNear(x, z, radius, this.playerId)) this.seenUnits.set(e.id, now);
       for (const b of this.game.buildings.values()) {
         if (!this.isEnemyBuilding(b)) continue;
         if (distance2D(x, z, b.pos.x, b.pos.z) <= radius + b.radius) this.seenBuildings.add(b.id);
       }
     };
-    for (const u of this.myUnits()) scan(u.pos.x, u.pos.z, u.stats.los + 2);
-    for (const b of this.myBuildings()) scan(b.pos.x, b.pos.z, b.stats.los + 2);
+    for (const u of this.myUnits()) scan(u.pos.x, u.pos.z, u.stats.los + VISION_PAD);
+    for (const b of this.myBuildings()) scan(b.pos.x, b.pos.z, b.stats.los + VISION_PAD);
     for (const [id, last] of this.seenUnits) {
-      if (this.aiTime - last > MEMORY_TTL) this.seenUnits.delete(id);
+      if (now - last > MEMORY_TTL) this.seenUnits.delete(id);
     }
   }
 

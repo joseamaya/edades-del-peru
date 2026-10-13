@@ -242,11 +242,14 @@ test('the AI mops up remaining buildings once the enemy has no army', async ({ p
   const out = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     g.addAI(0);
-    // the enemy fields no units at all, so the deployed army should march on its base
+    // the enemy fields no units and only its center, so the army should focus it
     for (const u of g.units.values()) {
       if (u.owner === 1) u.die();
     }
     const p1 = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'center');
+    for (const b of g.buildings.values()) {
+      if (b.owner === 1 && b.kind !== 'center') b.die();
+    }
     // deploy the soldier next to the enemy base so it discovers the center (LOS-aware AI)
     const soldier = g.spawnScriptedUnit('soldier', 0, p1.pos.x + 6, p1.pos.z);
     soldier.clearOrders();
@@ -256,11 +259,10 @@ test('the AI mops up remaining buildings once the enemy has no army', async ({ p
       g.update(1 / 60, t);
     }
     const order = soldier.orderQueue[0];
-    const target = order?.entityId != null ? g.buildings.get(order.entityId) : null;
-    return { kind: order?.kind ?? null, targetOwner: target?.owner ?? null };
+    return { kind: order?.kind ?? null, target: order?.entityId ?? null, p1Center: p1.id };
   });
   expect(out.kind).toBe('attack');
-  expect(out.targetOwner).toBe(1);
+  expect(out.target).toBe(out.p1Center);
 });
 
 test('the AI focus-fires on one enemy unit', async ({ page }) => {
