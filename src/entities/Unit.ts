@@ -1,5 +1,14 @@
 import * as THREE from 'three';
-import { Era, UnitKind, Resources, ZERO_RESOURCES, Team, GameEvents, HistoricalPeriod } from '../core/types';
+import {
+  Era,
+  UnitKind,
+  Resources,
+  ZERO_RESOURCES,
+  Team,
+  GameEvents,
+  HistoricalPeriod,
+  CombatStance,
+} from '../core/types';
 import { getUnitStats, getUnitModel, UnitStats } from '../model/defs/units';
 import { buildModel, BuildContext, disposeModel } from '../model/ProceduralModel';
 import { EntityView } from '../entities/EntityView';
@@ -92,7 +101,7 @@ export class Unit {
   garrisonedIn: number | null = null;
   isConstructing: number | null = null;
   rallyPoint: OrderTarget | null = null;
-  combatStance: 'agresivo' | 'defensivo' | 'pasivo' = 'agresivo';
+  combatStance: CombatStance = 'agresivo';
   buildEfficiency = 1;
   gatherMultiplier = 1;
   attackMultiplier = 1;

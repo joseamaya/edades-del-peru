@@ -154,6 +154,15 @@ for player-facing docs see [`README.md`](../README.md).
   and the fog grid with `Fow.serialize/restore`. In load mode the mission briefing is skipped and its state
   (objectives/triggers/timer) is restored. Bump `SAVE_VERSION` on a breaking shape change (adding optional
   fields is fine). The AI is rebuilt fresh and projectiles are not saved.
+- **Determinism & replays** (`src/game/replay.ts`): the simulation is deterministic — map/AI/spawns use the seeded
+  `RNG`, the loop runs fixed 60 Hz steps, and `Math.random` is only used for cosmetics. A replay records the
+  match **settings** (seed, civs, period, difficulty, victory mode) plus the player's **commands** stamped with
+  the simulation step; `ReplayPlayer` feeds them back at the same steps, so re-running the seed reproduces the
+  match (`Game.stateHash()` proves it). All player intent funnels through `Game.executeCommand(cmd)` — the single
+  apply+record seam; route new player actions through it or they won't be captured (live input is ignored during
+  playback). Skirmish matches are recorded automatically; the replay is saved to `localStorage['peru-replay']` on
+  match end (or when leaving a match) and played with `?replay=1` (main menu → **Ver última repetición**). Bump
+  `REPLAY_VERSION` when the command schema or the simulation changes in a breaking way.
 - **Trees by instancing** (`src/rendering/TreeInstances.ts`): `InstancedMesh` of trunk + canopies per variant;
   picking is by `instanceId` (`TreeInstances.raycast` -> `pickResource`), visibility by `ResourceNode.setVisibleEx`
   (fog+LOD) and falling on chop by `startFall`. If you add a tree without registering it in the manager, it will
@@ -166,7 +175,8 @@ for player-facing docs see [`README.md`](../README.md).
 - `src/main.ts` exposes `window.game` (and `window.THREE`) for the console and scripts.
 - The app shows the **main menu by default**; enter the match directly with `?play=1` or any debug param.
   `resetGame()` reloads with `?play=1`.
-- URL params: `?play=1`, `?menu=0/1`, `?load=1`, `?seed=`, `?fog=0`, `?low=1`, `?speed=`, `?era=N`, `?mission=ID`.
+- URL params: `?play=1`, `?menu=0/1`, `?load=1`, `?replay=1`, `?seed=`, `?fog=0`, `?low=1`, `?speed=`, `?era=N`,
+  `?mission=ID`, `?noloop=1` (do not auto-start the loop; tests drive fixed steps from step 0).
 - Shared `scripts/lib.mjs` (`launchChromium`, `withViteServer`, `readPng`, `classify`). Scripts launch Vite on a
   free port and Chromium with SwiftShader; they use `CHROME_PATH` or `chromium.executablePath()`. Run captures
   with `?low=1`.

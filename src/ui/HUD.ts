@@ -13,7 +13,7 @@ import {
 } from '../core/types';
 import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../model/defs/buildings';
 import { UNIT_ARCHETYPES, getUnitStats, UNIT_INFO, unitMinPeriod } from '../model/defs/units';
-import { TECHS, getTech } from '../model/defs/techs';
+import { TECHS } from '../model/defs/techs';
 import { ERA_DEFS } from '../model/defs/eras';
 import { PERIODS, getPeriod } from '../model/defs/periods';
 import { civsForPeriod, getCiv } from '../model/defs/civs';
@@ -26,6 +26,7 @@ import { DamageNumbers } from './DamageNumbers';
 import { openCodex } from './Codex';
 import { bus } from '../core/EventBus';
 import { hasSave } from '../game/SaveGame';
+import { hasReplay } from '../game/replay';
 
 /** Player-buildable buildings (single list for all panels). */
 const BUILDABLE_KINDS: BuildingKind[] = [
@@ -629,6 +630,7 @@ export class HUD {
     const home = this.el('button', 'ed-ghostbtn', row);
     home.textContent = '🏠 Menú principal';
     home.addEventListener('click', () => {
+      this.game.saveRecording();
       location.href = location.pathname;
     });
     const quit = this.el('button', 'ed-ghostbtn', row);
@@ -678,6 +680,7 @@ export class HUD {
 
   /** Leave the match (respects the active campaign). */
   abandonMatch(): void {
+    this.game.saveRecording();
     if (this.game.mission) {
       (this.game as any).missionEnd(false);
     } else {
@@ -926,7 +929,7 @@ export class HUD {
         uInfo.icon,
         uInfo.name,
         `${Math.round(item.progress * 100)}% ✖`,
-        () => this.game.cancelProduction(b.id, i),
+        () => this.game.executeCommand({ kind: 'cancel', buildingId: b.id, index: i }),
         {
           progress: item.progress,
           cat: 'mil',
@@ -1013,52 +1016,26 @@ export class HUD {
       this.showToast('Población máxima alcanzada', 'warning');
       return;
     }
-    if (this.game.spendResource(0, stats.cost)) {
-      if (!b.queueUnit(unit)) {
-        // refund resources if it could not be queued
-        this.game.addResource(0, stats.cost);
-      }
-    } else {
+    if (!this.game.executeCommand({ kind: 'train', buildingId, unit })) {
       this.showToast('Recursos insuficientes', 'error');
     }
   }
 
   private researchTech(buildingId: number, techId: string): void {
-    const b = this.game.buildings.get(buildingId);
-    if (!b) return;
-    const tech = getTech(techId);
-    if (!tech) return;
-    if (this.game.spendResource(0, tech.cost)) {
-      b.queueTech(techId);
-    } else {
+    if (!this.game.executeCommand({ kind: 'research', buildingId, tech: techId })) {
       this.showToast('Recursos insuficientes', 'error');
     }
   }
 
   private ungarrison(buildingId: number): void {
-    const b = this.game.buildings.get(buildingId);
-    if (!b) return;
-    const ids = b.ungarrisonAll();
-    for (const id of ids) {
-      const u = this.game.units.get(id);
-      if (u) {
-        u.garrisonedIn = null;
-        u.view.group.visible = true;
-        const ang = Math.random() * Math.PI * 2;
-        const px = b.pos.x + Math.cos(ang) * (b.radius + 0.6);
-        const pz = b.pos.z + Math.sin(ang) * (b.radius + 0.6);
-        u.pos.set(px, this.game.terrain.getHeight(px, pz), pz);
-        u.snapToGround();
-      }
-    }
+    this.game.executeCommand({ kind: 'ungarrison', buildingId });
   }
 
   // --- commands ---
 
   private orderStop(): void {
-    for (const u of this.game.getSelectedUnits()) {
-      u.clearOrders();
-    }
+    const ids = this.game.getSelectedUnits().map((u) => u.id);
+    if (ids.length) this.game.executeCommand({ kind: 'stop', unitIds: ids });
   }
 
   private orderAttackMove(): void {
@@ -1066,13 +1043,17 @@ export class HUD {
     if (units.length === 0) return;
     const u = units[0];
     const target = { x: u.pos.x + Math.cos(u.yaw) * 10, z: u.pos.z + Math.sin(u.yaw) * 10 };
-    for (const s of units) s.issueOrder({ kind: OrderKind.ATTACK_MOVE, target }, true);
+    this.game.executeCommand({
+      kind: 'order',
+      unitIds: units.map((s) => s.id),
+      order: { kind: OrderKind.ATTACK_MOVE, target },
+      clear: true,
+    });
   }
 
   private orderStance(stance: 'agresivo' | 'defensivo' | 'pasivo'): void {
-    for (const u of this.game.getSelectedUnits()) {
-      u.combatStance = stance;
-    }
+    const ids = this.game.getSelectedUnits().map((u) => u.id);
+    if (ids.length) this.game.executeCommand({ kind: 'stance', unitIds: ids, stance });
     this.showToast(`Postura: ${stance}`, 'info');
   }
 
@@ -1081,13 +1062,24 @@ export class HUD {
     if (units.length === 0) return;
     for (const u of units) {
       const target = { x: u.pos.x + Math.cos(u.yaw) * 14, z: u.pos.z + Math.sin(u.yaw) * 14 };
-      u.issueOrder({ kind: OrderKind.PATROL, target }, true);
+      this.game.executeCommand({
+        kind: 'order',
+        unitIds: [u.id],
+        order: { kind: OrderKind.PATROL, target },
+        clear: true,
+      });
     }
   }
 
   private orderAttackBuilding(id: number): void {
-    for (const u of this.game.getSelectedUnits()) {
-      u.issueOrder({ kind: OrderKind.ATTACK, entityId: id }, true);
+    const ids = this.game.getSelectedUnits().map((u) => u.id);
+    if (ids.length) {
+      this.game.executeCommand({
+        kind: 'order',
+        unitIds: ids,
+        order: { kind: OrderKind.ATTACK, entityId: id },
+        clear: true,
+      });
     }
   }
 
@@ -1324,6 +1316,15 @@ export class HUD {
         this.setMenuOpen(false);
         this.clearOverlays();
         this.game.loadMatch();
+      });
+    }
+    if (hasReplay()) {
+      const replayBtn = this.el('button', 'ed-ghostbtn', panel);
+      replayBtn.textContent = '🎬 Ver última repetición';
+      replayBtn.addEventListener('click', () => {
+        this.setMenuOpen(false);
+        this.clearOverlays();
+        this.game.loadReplayMatch();
       });
     }
     const startBtn = this.el('button', 'ed-primary', panel);
