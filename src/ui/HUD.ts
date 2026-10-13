@@ -18,7 +18,7 @@ import { ERA_DEFS } from '../model/defs/eras';
 import { PERIODS, getPeriod } from '../model/defs/periods';
 import { civsForPeriod, getCiv } from '../model/defs/civs';
 import { RESOURCE_INFO, MAP_LABEL, GameSettings } from '../core/Config';
-import { formatNumber } from '../util/math';
+import { formatNumber, formatStat } from '../util/math';
 import { MISSIONS, CAMPAIGN_TITLE, CAMPAIGN_SUBTITLE } from '../campaign/defs/campaign';
 import { PROLOGUE, getEducational } from '../campaign/defs/educational';
 import type { MissionDef } from '../campaign/types';
@@ -45,11 +45,6 @@ const BUILDABLE_KINDS: BuildingKind[] = [
   BuildingKind.INSTITUTE,
   BuildingKind.WONDER,
 ];
-
-/** Format a stat number without floating-point noise (e.g. 3.3000000000000003 -> 3.3). */
-function stat(n: number): string {
-  return Number.isInteger(n) ? String(n) : n.toFixed(1);
-}
 
 const CSS = /* css */ `
   :root {
@@ -587,11 +582,17 @@ export class HUD {
     const fps = this.el('div', '');
     fps.id = 'ed-fps';
     fps.textContent = '60 FPS';
-    // performance overlay is debug-only: enable with ?fps=1
-    fps.style.display = new URLSearchParams(location.search).get('fps') === '1' ? '' : 'none';
+    fps.style.display = 'none';
     this.fpsEl = fps;
   }
   private fpsEl!: HTMLElement;
+  private showFps = false;
+
+  /** Debug performance overlay (enabled with `?fps=1`; see `main.ts`). */
+  setShowFps(on: boolean): void {
+    this.showFps = on;
+    this.fpsEl.style.display = on ? '' : 'none';
+  }
 
   showToast(msg: string, type: 'info' | 'success' | 'warning' | 'error' | 'danger' = 'info'): void {
     const t = this.el('div', 'ed-toast ' + type);
@@ -671,7 +672,7 @@ export class HUD {
       <div style="font-size:13px;color:var(--text-dim);line-height:1.7;margin-bottom:16px">
         Bajas infligidas: <b>${p?.kills ?? 0}</b><br>
         Unidades creadas: <b>${p?.stats.created ?? 0}</b><br>
-        Era alcanzada: <b>${p ? ERA_DEFS[p.era].name : '—'}</b>
+        Periodo: <b>${getPeriod(this.game.settings.period).name}</b>
       </div>
     `;
     const row = this.el('div', 'row', panel);
@@ -910,7 +911,7 @@ export class HUD {
 
   private unitDesc(u: Unit): string {
     const stats = u.stats;
-    return `HP ${Math.ceil(u.hp)}/${Math.ceil(u.maxHp)} · Daño ${stat(stats.attack)} · Rango ${stat(stats.range)} · Blindaje ${stat(stats.heavyArmor)}`;
+    return `HP ${Math.ceil(u.hp)}/${Math.ceil(u.maxHp)} · Daño ${formatStat(stats.attack)} · Rango ${formatStat(stats.range)} · Blindaje ${formatStat(stats.heavyArmor)}`;
   }
 
   private renderBuildingPanel(b: Building): void {
@@ -1007,7 +1008,7 @@ export class HUD {
 
   private buildingDesc(b: Building): string {
     const stats = b.stats;
-    let s = `HP ${Math.ceil(b.hp)}/${Math.ceil(b.maxHp)} · Blindaje ${stat(stats.armor)}`;
+    let s = `HP ${Math.ceil(b.hp)}/${Math.ceil(b.maxHp)} · Blindaje ${formatStat(stats.armor)}`;
     if (b.constructionComplete && b.productionQueue.length > 0) {
       s += ` · Entrenando: ${UNIT_INFO[b.productionQueue[0].unit].name}`;
     }
@@ -1678,6 +1679,6 @@ export class HUD {
       this.updateBottomProgress();
       this.renderMinimap();
     }
-    if (this.fpsEl.style.display !== 'none') this.fpsEl.textContent = `${this.game.loop.getFps()} FPS`;
+    if (this.showFps) this.fpsEl.textContent = `${this.game.loop.getFps()} FPS`;
   }
 }

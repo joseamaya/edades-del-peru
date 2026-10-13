@@ -96,6 +96,7 @@ function boot(): void {
   const game = new Game(settings, snapshot, replay);
   (window as any).game = game;
   (window as any).THREE = THREE;
+  if (params.get('fps') === '1') game.hud.setShowFps(true);
   if (replay) game.hud.showToast('🎬 Repetición', 'info');
   game.postfx.setCinematic(settings.cinematic);
   if (params.get('low') === '1') {
