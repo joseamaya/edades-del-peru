@@ -479,6 +479,29 @@ export function getBuildingModel(kind: BuildingKind, era: Era): ModelSpec {
   return anyEra[best] ?? { type: 'center_steam' };
 }
 
+export interface BuildingOverride {
+  name?: string;
+  description?: string;
+  category?: BuildingDef['category'];
+  /** Absolute base stats (hp, armor, los, cost, size, ...). */
+  stats?: Partial<BuildingStats>;
+  eraStats?: BuildingDef['eraStats'];
+}
+
+/** Apply a validated mod override to a building (mutates the defs in place). */
+export function overrideBuilding(id: BuildingKind, o: BuildingOverride): void {
+  const def = BUILDING_DEFS[id];
+  if (!def) return;
+  if (o.name !== undefined) {
+    def.name = o.name;
+    BUILDING_INFO[id] = { ...BUILDING_INFO[id], name: o.name };
+  }
+  if (o.description !== undefined) def.description = o.description;
+  if (o.category !== undefined) def.category = o.category;
+  if (o.stats) BASE_BUILDING_STATS[id] = { ...BASE_BUILDING_STATS[id], ...o.stats };
+  if (o.eraStats) def.eraStats = { ...def.eraStats, ...o.eraStats };
+}
+
 export const BUILDING_INFO: Record<BuildingKind, { name: string; icon: string; category: string }> = {
   center: { name: 'Plaza Mayor', icon: '🏛️', category: 'Centro' },
   house: { name: 'Vivienda', icon: '🏠', category: 'Economía' },

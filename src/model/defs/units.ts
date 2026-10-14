@@ -692,6 +692,30 @@ export function getUnitModel(kind: UnitKind, era: Era): ModelSpec {
   return anyEra[best ?? Era.FORMATIVE] ?? { type: 'soldier_grunt' };
 }
 
+export interface UnitOverride {
+  name?: string;
+  description?: string;
+  category?: UnitArchetype['category'];
+  /** Absolute base stats (hp, attack, range, cost, ...). */
+  stats?: Partial<UnitStats>;
+  /** Per-era multipliers over the base stats. */
+  eraStats?: UnitArchetype['eraStats'];
+}
+
+/** Apply a validated mod override to a unit (mutates the defs in place). */
+export function overrideUnit(id: UnitKind, o: UnitOverride): void {
+  const arch = UNIT_ARCHETYPES[id];
+  if (!arch) return;
+  if (o.name !== undefined) {
+    arch.name = o.name;
+    UNIT_INFO[id] = { ...UNIT_INFO[id], name: o.name };
+  }
+  if (o.description !== undefined) arch.description = o.description;
+  if (o.category !== undefined) arch.category = o.category;
+  if (o.stats) BASE_STATS[id] = { ...BASE_STATS[id], ...o.stats };
+  if (o.eraStats) arch.eraStats = { ...arch.eraStats, ...o.eraStats };
+}
+
 export const UNIT_INFO: Record<UnitKind, { name: string; icon: string; category: string }> = {
   worker: { name: 'Obrero', icon: '⛏️', category: 'Economía' },
   soldier: { name: 'Guerrero', icon: '🗡️', category: 'Infantería' },

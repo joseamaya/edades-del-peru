@@ -45,6 +45,7 @@ Debug URL parameters:
 - `?speed=3` — speed multiplier
 - `?era=N` — force tech level N (0-5)
 - `?mission=ID` — start a campaign mission (see the table below)
+- `?mod=ID` — load data mod(s) from `public/mods/` (comma-separated; see [`docs/modding/`](./docs/modding/))
 
 ## Campaign: La Senda del Sol
 
