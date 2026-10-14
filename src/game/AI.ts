@@ -263,7 +263,10 @@ export class AI {
         priority: 88,
         essential: true,
       });
-    if (countOf(BuildingKind.HOUSE) < 3 + p.era) {
+    // Enough houses for the workers + army this profile wants. A flat count
+    // leaves higher-difficulty profiles stuck at the population cap.
+    const desiredPop = workerTarget(this.profile, p.era) + armyTarget(this.profile, p.era) + 4;
+    if (countOf(BuildingKind.HOUSE) < Math.ceil(desiredPop / 5)) {
       buildPlan.push({ kind: BuildingKind.HOUSE, cost: woodCost(BuildingKind.HOUSE), priority: 85 });
     }
     if (!has(BuildingKind.SMELTER))
