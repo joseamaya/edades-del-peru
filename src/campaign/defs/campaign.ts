@@ -606,6 +606,7 @@ export const MISSIONS: MissionDef[] = [
     start: {
       buildings: [{ kind: BuildingKind.WONDER, dx: -10, dz: -6, tag: 'puerto' }],
       units: [
+        { kind: UnitKind.RIFLEMAN, dx: 6, dz: 2, count: 1, tag: 'grau' },
         { kind: UnitKind.CAVALRY, dx: 8, dz: 0, count: 2 },
         { kind: UnitKind.RIFLEMAN, dx: 4, dz: 8, count: 4 },
       ],
@@ -615,6 +616,15 @@ export const MISSIONS: MissionDef[] = [
     objectives: [
       { id: 'obj_puerto', kind: 'protect', entityTag: 'puerto', title: 'Protege el puerto y el monitor' },
       { id: 'obj_kill', kind: 'destroy', entityTag: 'centro_enemigo', title: 'Destruye el centro de mando enemigo' },
+      {
+        id: 'obj_correria',
+        kind: 'reach',
+        entityTag: 'grau',
+        pos: { ref: 'enemy', dx: -14, dz: 0 },
+        radius: 8,
+        title: 'Lleva a Grau en correría hasta la escuadra enemiga',
+      },
+      { id: 'obj_grau', kind: 'protect', entityTag: 'grau', title: 'Mantén con vida a Miguel Grau' },
     ],
     triggers: [
       {
@@ -647,6 +657,16 @@ export const MISSIONS: MissionDef[] = [
             radius: 6,
           },
           { type: 'dialogue', text: '¡Tropas de desembarco enemigas se dirigen al puerto!' },
+        ],
+      },
+      {
+        id: 't_correria',
+        condition: { type: 'unit_near', entityTag: 'grau', pos: { ref: 'enemy', dx: -14, dz: 0 }, radius: 8 },
+        effects: [
+          {
+            type: 'dialogue',
+            text: 'Miguel Grau: —¡Ahí está la escuadra! Una correría más y el puerto respira.',
+          },
         ],
       },
     ],
