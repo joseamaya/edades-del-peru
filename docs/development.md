@@ -69,16 +69,17 @@ for player-facing docs see [`README.md`](../README.md).
   through the map centre until it finds the enemy. It is no longer omniscient. (Local combat micro still reacts to
   enemies near a unit, exactly like the player's own units.) The army is trained to an era-based
   **mix** (`ARMY_MIX`) nudged to counter the enemy's composition (`armyWeights`). `Game.addAI(playerId, difficulty?)`
-  attaches an AI to any player, so `yarn sim [--difficulty=…]` runs **AI-vs-AI** headless matches (seeds, winner,
-  peak armies); `--difficulty` sets player 0's profile while player 1 stays on `normal`, so a run measures that
-  profile against `normal`. The runner drives fixed 1/60 steps with `?noloop=1` (no real-time warm-up), so it is
+  attaches an AI to any player, so `yarn sim [--difficulty=…] [--p1=…]` runs **AI-vs-AI** headless matches (seeds,
+  winner, peak armies); `--difficulty`/`--p1` set each seat's profile (default `normal`), so a run measures one
+  profile against another. The runner drives fixed 1/60 steps with `?noloop=1` (no real-time warm-up), so it is
   **deterministic per seed** and usable as a regression signal. Baseline on the default seed set (`--max=1500`,
-  player-0 wins / losses / undecided): `easy` 0/2/6, `normal` 4/0/4, `hard` 1/4/3, `legendary` 0/3/5. Player 0
-  has a positional edge (`normal` vs `normal` wins 4/0), so read each row against that reference: `easy` is
-  clearly weakest, but `hard`/`legendary` currently finish **below** `normal`. Committing to an attack is
-  net-negative in the current combat model (wounded attackers retreat home alone and die), so profiles that mass
-  and attack more lose more — the difficulty separation needs a strategy/combat pass, not a profile tune. The
-  winner typically fields 6-12 units; before the build-plan fix the AI often stalled at 0 wood and fielded no army.
+  player-0 wins / losses / undecided): `easy` 0/1/7, `normal` 4/2/2, `hard` 1/5/2, `legendary` 0/4/4. Player 0
+  has a positional edge, so read each row against the `normal` mirror, not 50%. **The AI-vs-AI win-rate is not a
+  usable difficulty yardstick** (seat bias + stalemate-prone + tiny decisive sample) and the profiles are not
+  ordered by it — see [`ai-difficulty.md`](./ai-difficulty.md) for the full investigation, the population-cap bug
+  it found (now fixed by scaling houses to the desired population), and the recommended next steps (a player-side
+  benchmark, then an attack-commitment strategy). The winner typically fields 6-12 units; before the build-plan
+  fix the AI often stalled at 0 wood and fielded no army.
   Between `normal`/`hard`/`legendary` the attack **threshold** is the same — they differ by army size, economy
   and the `aggression` attack cadence. Economy: `chooseResourceNode` counts farm workers as food and the build
   plan prioritizes dropsites (sawmill/mill) before pop/farms, so the AI no longer starves for wood. Until the

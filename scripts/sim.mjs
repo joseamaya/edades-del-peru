@@ -3,15 +3,17 @@ import { launchChromium, withViteServer, cliArg } from './lib.mjs';
 /**
  * Headless AI-vs-AI match runner.
  *
- * Usage: node scripts/sim.mjs [--seeds=777,778,779] [--max=1200] [--difficulty=hard]
+ * Usage: node scripts/sim.mjs [--seeds=777,778,779] [--max=1200] [--difficulty=hard] [--p1=legendary]
  *
  * Boots a skirmish, attaches an AI to both players and fast-forwards the
  * simulation (no rendering) until a side is defeated or the time cap is hit.
- * `--difficulty` sets player 0's AI profile; player 1 stays on the default
- * (`normal`), so a run measures that profile against `normal`. Prints a per-seed
- * table and a summary. Deterministic per seed: `?noloop=1` keeps the real-time
- * loop from advancing the world before the fixed-step loop takes over (the AI
- * uses a seeded RNG), so it is a reliable baseline/regression signal.
+ * `--difficulty` sets player 0's AI profile and `--p1` player 1's (default
+ * `normal`), so a run measures one profile against another. To remove the
+ * player-0 positional bias, measure a difficulty in both seats (`--difficulty=D
+ * --p1=normal` and `--difficulty=normal --p1=D`) and add the wins. Prints a
+ * per-seed table and a summary. Deterministic per seed: `?noloop=1` keeps the
+ * real-time loop from advancing the world before the fixed-step loop takes over
+ * (the AI uses a seeded RNG), so it is a reliable baseline/regression signal.
  */
 
 const DIFFICULTIES = ['easy', 'normal', 'hard', 'legendary'];
@@ -21,9 +23,12 @@ const seeds = String(cliArg('seeds', '777,778,779,780,781,782,783,784'))
   .filter((n) => Number.isFinite(n));
 const maxSeconds = Number.parseInt(cliArg('max', '1200'), 10);
 const difficulty = String(cliArg('difficulty', 'normal'));
-if (!DIFFICULTIES.includes(difficulty)) {
-  console.error(`unknown difficulty "${difficulty}" (use ${DIFFICULTIES.join('|')})`);
-  process.exit(1);
+const p1Difficulty = String(cliArg('p1', 'normal'));
+for (const d of [difficulty, p1Difficulty]) {
+  if (!DIFFICULTIES.includes(d)) {
+    console.error(`unknown difficulty "${d}" (use ${DIFFICULTIES.join('|')})`);
+    process.exit(1);
+  }
 }
 
 async function run(browser, base, seed) {
@@ -35,11 +40,14 @@ async function run(browser, base, seed) {
   await page.waitForFunction(() => window.game !== undefined, null, { timeout: 60_000 });
 
   const result = await page.evaluate(
-    ({ cap, diff }) => {
+    ({ cap, diff, diff1 }) => {
       const g = window.game;
       g.loop.stop();
       g.paused = false;
+      // set both seats' difficulty (the constructor only adds a default AI for P1)
+      g.ais.length = 0;
       g.addAI(0, diff);
+      g.addAI(1, diff1);
       const dt = 1 / 60;
       const maxSteps = Math.floor(cap / dt);
       const peak = [0, 0];
@@ -68,7 +76,7 @@ async function run(browser, base, seed) {
         res1: g.players[1].resources.food + g.players[1].resources.wood + g.players[1].resources.silver,
       };
     },
-    { cap: maxSeconds, diff: difficulty },
+    { cap: maxSeconds, diff: difficulty, diff1: p1Difficulty },
   );
 
   await context.close();
@@ -95,7 +103,7 @@ async function main() {
     for (const r of rows) wins[r.winner === 0 ? 0 : r.winner === 1 ? 1 : 2]++;
     const avg = Math.round(rows.reduce((s, r) => s + r.seconds, 0) / rows.length);
     console.log(
-      `\nsummary (P0=${difficulty} vs P1=normal): P0 wins ${wins[0]}, P1 wins ${wins[1]}, undecided ${wins[2]} · avg ${avg}s`,
+      `\nsummary (P0=${difficulty} vs P1=${p1Difficulty}): P0 wins ${wins[0]}, P1 wins ${wins[1]}, undecided ${wins[2]} · avg ${avg}s`,
     );
   } finally {
     await browser.close();
