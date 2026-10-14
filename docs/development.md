@@ -71,12 +71,14 @@ for player-facing docs see [`README.md`](../README.md).
   **mix** (`ARMY_MIX`) nudged to counter the enemy's composition (`armyWeights`). `Game.addAI(playerId, difficulty?)`
   attaches an AI to any player, so `yarn sim [--difficulty=…]` runs **AI-vs-AI** headless matches (seeds, winner,
   peak armies); `--difficulty` sets player 0's profile while player 1 stays on `normal`, so a run measures that
-  profile against `normal`. Baseline on the default seed set (`--max=1500`, player-0 wins / losses / undecided):
-  `easy` 0/0/8, `normal` 4/1/3, `hard` 1/3/4, `legendary` 1/6/1 — `easy` is clearly weakest; both AIs share the
-  same micro, so these counts are noisy (±1-2 games). Known follow-up: with LOS-limited perception the higher
-  aggression of `hard`/`legendary` backfires (they commit before scouting), so their separation from `normal`
-  needs a balance pass. The winner typically fields 6-12 units; before the build-plan fix the AI often stalled at
-  0 wood and fielded no army at all.
+  profile against `normal`. The runner drives fixed 1/60 steps with `?noloop=1` (no real-time warm-up), so it is
+  **deterministic per seed** and usable as a regression signal. Baseline on the default seed set (`--max=1500`,
+  player-0 wins / losses / undecided): `easy` 0/2/6, `normal` 4/0/4, `hard` 1/4/3, `legendary` 0/3/5. Player 0
+  has a positional edge (`normal` vs `normal` wins 4/0), so read each row against that reference: `easy` is
+  clearly weakest, but `hard`/`legendary` currently finish **below** `normal`. Committing to an attack is
+  net-negative in the current combat model (wounded attackers retreat home alone and die), so profiles that mass
+  and attack more lose more — the difficulty separation needs a strategy/combat pass, not a profile tune. The
+  winner typically fields 6-12 units; before the build-plan fix the AI often stalled at 0 wood and fielded no army.
   Between `normal`/`hard`/`legendary` the attack **threshold** is the same — they differ by army size, economy
   and the `aggression` attack cadence. Economy: `chooseResourceNode` counts farm workers as food and the build
   plan prioritizes dropsites (sawmill/mill) before pop/farms, so the AI no longer starves for wood. Until the

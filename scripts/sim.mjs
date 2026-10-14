@@ -9,8 +9,9 @@ import { launchChromium, withViteServer, cliArg } from './lib.mjs';
  * simulation (no rendering) until a side is defeated or the time cap is hit.
  * `--difficulty` sets player 0's AI profile; player 1 stays on the default
  * (`normal`), so a run measures that profile against `normal`. Prints a per-seed
- * table and a summary. Deterministic per seed (the AI uses a seeded RNG); use it
- * as a baseline/regression signal for AI changes.
+ * table and a summary. Deterministic per seed: `?noloop=1` keeps the real-time
+ * loop from advancing the world before the fixed-step loop takes over (the AI
+ * uses a seeded RNG), so it is a reliable baseline/regression signal.
  */
 
 const DIFFICULTIES = ['easy', 'normal', 'hard', 'legendary'];
@@ -30,9 +31,8 @@ async function run(browser, base, seed) {
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto(`${base}/?play=1&seed=${seed}&low=1&fog=0`, { waitUntil: 'networkidle' });
+  await page.goto(`${base}/?play=1&seed=${seed}&low=1&fog=0&noloop=1`, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => window.game !== undefined, null, { timeout: 60_000 });
-  await page.waitForTimeout(1200);
 
   const result = await page.evaluate(
     ({ cap, diff }) => {
