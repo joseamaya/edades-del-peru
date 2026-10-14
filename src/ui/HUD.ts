@@ -234,6 +234,7 @@ export class HUD {
   private popEl!: HTMLElement;
   private eraEl!: HTMLElement;
   private eraDot!: HTMLElement;
+  private bottomEl!: HTMLElement;
   private bottomHeader!: HTMLElement;
   private descEl!: HTMLElement;
   private gridEl!: HTMLElement;
@@ -428,6 +429,9 @@ export class HUD {
   private buildBottom(): void {
     const bottom = this.el('div', '');
     bottom.id = 'ed-bottom';
+    // the command panel only appears with a selection (0 A.D.-style)
+    bottom.style.display = 'none';
+    this.bottomEl = bottom;
     this.bottomHeader = this.el('div', '');
     this.bottomHeader.id = 'ed-bottom-header';
     bottom.appendChild(this.bottomHeader);
@@ -792,9 +796,15 @@ export class HUD {
   }
 
   private renderBottom(): void {
-    this.commandsEl.innerHTML = '';
     const units = this.game.getSelectedUnits();
     const building = this.game.getSelectedBuilding();
+    // the command panel only appears with a selection (0 A.D.-style)
+    if (units.length === 0 && !building) {
+      this.bottomEl.style.display = 'none';
+      return;
+    }
+    this.bottomEl.style.display = '';
+    this.commandsEl.innerHTML = '';
 
     if (units.length > 0) {
       this.renderUnitPanel(units);
@@ -808,8 +818,6 @@ export class HUD {
       );
       this.clearGrid();
       this.addCommand('⚔️ Atacar', () => this.orderAttackBuilding(building.id));
-    } else {
-      this.renderIdlePanel();
     }
   }
 
@@ -877,25 +885,6 @@ export class HUD {
       const cost = el.querySelector('.cost');
       if (cost) cost.textContent = `${pct}% ✖`;
     });
-  }
-
-  private renderIdlePanel(): void {
-    this.setDesc('⚙️', 'Comando', 'Selecciona unidades o edificios para dar órdenes. Usa el menú para construir.');
-    this.clearGrid();
-    // build fast
-    for (const kind of [BuildingKind.CENTER, ...BUILDABLE_KINDS]) {
-      // hide buildings unavailable in the period (the Plaza Mayor is shown disabled)
-      if (kind !== BuildingKind.CENTER && !this.game.canBuildKind(kind)) continue;
-      const stats = getBuildingStats(kind, this.game.players[0].era);
-      const info = BUILDING_INFO[kind];
-      const disabled = !this.game.canBuildKind(kind);
-      this.addCard(info.icon, info.name, this.costText(stats.cost), () => this.game.startPlacement(kind), {
-        disabled,
-        afford: this.canAfford(stats.cost),
-        cat: kind === BuildingKind.FORTRESS || kind === BuildingKind.INSTITUTE ? 'advance' : 'econ',
-      });
-    }
-    // Period-locked matches: eras do not advance (no anachronistic modernization).
   }
 
   private renderUnitPanel(units: Unit[]): void {
