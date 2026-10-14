@@ -79,8 +79,20 @@ for (const mis of MISSIONS) {
               const have = [...g.buildings.values()].filter(
                 (b: any) => b.owner === 0 && b.kind === o.buildingKind && b.constructionComplete && !b.dead,
               ).length;
-              const c = centerOf(0);
-              for (let k = have; k < need; k++) g.spawnScriptedBuilding(o.buildingKind, 0, c.x + 6 + k * 2, c.z + 6);
+              // a location-scoped build (expansion) must stand at the target point
+              let bx: number;
+              let bz: number;
+              if (o.pos) {
+                const base =
+                  o.pos.ref === 'enemy' ? centerOf(1) : o.pos.ref === 'player' ? centerOf(0) : { x: 0, z: 0 };
+                bx = base.x + o.pos.dx;
+                bz = base.z + o.pos.dz;
+              } else {
+                const c = centerOf(0);
+                bx = c.x + 6;
+                bz = c.z + 6;
+              }
+              for (let k = have; k < need; k++) g.spawnScriptedBuilding(o.buildingKind, 0, bx + k * 2, bz);
               break;
             }
             default:

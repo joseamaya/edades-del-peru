@@ -167,8 +167,15 @@ export class Mission {
       }
       case 'build': {
         if (!o.buildingKind) return 'ok';
+        // with `pos`, the building must stand near that point (expansion/outpost)
+        const tp = o.pos ? this.resolvePoint(o.pos) : null;
         const n = [...this.game.buildings.values()].filter(
-          (b) => b.owner === 0 && b.kind === o.buildingKind && b.constructionComplete && !b.dead,
+          (b) =>
+            b.owner === 0 &&
+            b.kind === o.buildingKind &&
+            b.constructionComplete &&
+            !b.dead &&
+            (!tp || distance2D(b.pos.x, b.pos.z, tp.x, tp.z) < (o.radius ?? 12)),
         ).length;
         return n >= (o.count ?? 1) ? 'win' : 'ok';
       }

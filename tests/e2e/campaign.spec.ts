@@ -86,3 +86,34 @@ test('a mission roster restriction blocks disallowed units', async ({ page }) =>
   expect(out.artillery).toBe(false);
   expect(out.soldier).toBe(true);
 });
+
+test('the expansion objective needs the building at the frontier', async ({ page }) => {
+  await page.goto('/?mission=m4_wari&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    const m = g.mission;
+    const o = m.def.objectives.find((x: any) => x.id === 'obj_centro');
+    const centerOf = (owner: number): { x: number; z: number } => {
+      const c = [...g.buildings.values()].find((b: any) => b.owner === owner && b.kind === 'center' && !b.dead);
+      return c ? { x: c.pos.x, z: c.pos.z } : { x: g.settings.mapSize / 2, z: g.settings.mapSize / 2 };
+    };
+    const base = o.pos.ref === 'enemy' ? centerOf(1) : centerOf(0);
+    const tp = { x: base.x + o.pos.dx, z: base.z + o.pos.dz };
+    const home = centerOf(0);
+    // a market at home does not satisfy the frontier objective
+    g.spawnScriptedBuilding('market', 0, home.x + 8, home.z + 8);
+    m.update(0.1, 0);
+    const atHome = m.getObjectiveState('obj_centro');
+    // one at the frontier does
+    g.spawnScriptedBuilding('market', 0, tp.x, tp.z);
+    m.update(0.1, 0);
+    const atFrontier = m.getObjectiveState('obj_centro');
+    return { atHome, atFrontier };
+  });
+  expect(out.atHome).not.toBe('completed');
+  expect(out.atFrontier).toBe('completed');
+});
