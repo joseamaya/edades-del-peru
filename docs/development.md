@@ -69,9 +69,10 @@ for player-facing docs see [`README.md`](../README.md).
   through the map centre until it finds the enemy. It is no longer omniscient. (Local combat micro still reacts to
   enemies near a unit, exactly like the player's own units.) The army is trained to an era-based
   **mix** (`ARMY_MIX`) nudged to counter the enemy's composition (`armyWeights`). `Game.addAI(playerId, difficulty?)`
-  attaches an AI to any player, so `yarn sim [--difficulty=…] [--p1=…]` runs **AI-vs-AI** headless matches (seeds,
-  winner, peak armies); `--difficulty`/`--p1` set each seat's profile (default `normal`), so a run measures one
-  profile against another. The runner drives fixed 1/60 steps with `?noloop=1` (no real-time warm-up), so it is
+  attaches an AI to any player, so `yarn sim [--difficulty=…] [--p1=…] [--player=scripted]` runs **AI-vs-AI**
+  headless matches (seeds, winner, peak armies); `--difficulty`/`--p1` set each seat's profile (default
+  `normal`) and `--player=scripted` runs the `ScriptedPlayer` bot as player 0 (the player-side difficulty
+  benchmark), so a run measures one profile against another. The runner drives fixed 1/60 steps with `?noloop=1` (no real-time warm-up), so it is
   **deterministic per seed** and usable as a regression signal. Baseline on the default seed set (`--max=1500`,
   player-0 wins / losses / undecided): `easy` 0/1/7, `normal` 4/2/2, `hard` 1/5/2, `legendary` 0/4/4. Player 0
   has a positional edge, so read each row against the `normal` mirror, not 50%. **The AI-vs-AI win-rate is not a

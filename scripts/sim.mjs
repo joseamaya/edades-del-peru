@@ -24,6 +24,12 @@ const seeds = String(cliArg('seeds', '777,778,779,780,781,782,783,784'))
 const maxSeconds = Number.parseInt(cliArg('max', '1200'), 10);
 const difficulty = String(cliArg('difficulty', 'normal'));
 const p1Difficulty = String(cliArg('p1', 'normal'));
+// `--player=scripted` runs the greedy ScriptedPlayer bot as player 0 instead of an AI
+const player = String(cliArg('player', 'ai'));
+if (!['ai', 'scripted'].includes(player)) {
+  console.error(`unknown player "${player}" (use ai|scripted)`);
+  process.exit(1);
+}
 for (const d of [difficulty, p1Difficulty]) {
   if (!DIFFICULTIES.includes(d)) {
     console.error(`unknown difficulty "${d}" (use ${DIFFICULTIES.join('|')})`);
@@ -40,13 +46,14 @@ async function run(browser, base, seed) {
   await page.waitForFunction(() => window.game !== undefined, null, { timeout: 60_000 });
 
   const result = await page.evaluate(
-    ({ cap, diff, diff1 }) => {
+    ({ cap, diff, diff1, mode }) => {
       const g = window.game;
       g.loop.stop();
       g.paused = false;
-      // set both seats' difficulty (the constructor only adds a default AI for P1)
+      // set both seats (the constructor only adds a default AI for P1)
       g.ais.length = 0;
-      g.addAI(0, diff);
+      const bot = mode === 'scripted' ? new window.ScriptedPlayer(g, 0) : null;
+      if (!bot) g.addAI(0, diff);
       g.addAI(1, diff1);
       const dt = 1 / 60;
       const maxSteps = Math.floor(cap / dt);
@@ -56,6 +63,7 @@ async function run(browser, base, seed) {
         [...g.units.values()].filter((u) => u.owner === owner && !u.dead && u.kind !== 'worker' && u.kind !== 'scout')
           .length;
       for (let i = 0; i < maxSteps; i++) {
+        if (bot) bot.update(dt);
         g.update(dt, t);
         t += dt;
         if (i % 600 === 0) {
@@ -66,17 +74,29 @@ async function run(browser, base, seed) {
       }
       const alive = (owner) => [...g.buildings.values()].some((b) => b.owner === owner && !b.dead);
       const winner = alive(0) && !alive(1) ? 0 : alive(1) && !alive(0) ? 1 : null;
+      const count = {};
+      for (const b of g.buildings.values()) if (b.owner === 0 && !b.dead) count[b.kind] = (count[b.kind] ?? 0) + 1;
+      const workers = [...g.units.values()].filter((u) => u.owner === 0 && !u.dead && u.kind === 'worker').length;
+      const enemyBlds = [...g.buildings.values()].filter((b) => b.owner === 1 && !b.dead).length;
+      const enemyHp = [...g.buildings.values()]
+        .filter((b) => b.owner === 1 && !b.dead)
+        .map((b) => `${b.kind}:${Math.round(b.hp)}`)
+        .join(',');
+      const botAtk = [...g.units.values()].filter(
+        (u) => u.owner === 0 && !u.dead && u.orderQueue[0]?.kind === 'attack',
+      ).length;
       return {
         seconds: Math.round(t),
         ended: g.hasEnded(),
         winner,
+        info: `pop ${g.players[0].populationUsed}/${g.players[0].populationCap} workers ${workers} atk ${botAtk} enemyBlds ${enemyBlds} [${enemyHp}] ${JSON.stringify(count)}`,
         peak0: peak[0],
         peak1: peak[1],
         res0: g.players[0].resources.food + g.players[0].resources.wood + g.players[0].resources.silver,
         res1: g.players[1].resources.food + g.players[1].resources.wood + g.players[1].resources.silver,
       };
     },
-    { cap: maxSeconds, diff: difficulty, diff1: p1Difficulty },
+    { cap: maxSeconds, diff: difficulty, diff1: p1Difficulty, mode: player },
   );
 
   await context.close();
@@ -97,13 +117,14 @@ async function main() {
         `${String(r.seed).padEnd(4)} | ${(r.winner ?? '—').toString().padEnd(6)} | ${String(r.seconds).padEnd(7)} | ${(r.ended ? 'yes' : 'no').padEnd(5)} | ${String(r.peak0).padStart(4)} / ${String(r.peak1).padEnd(4)}        | ${r.res0} / ${r.res1}`,
       );
       if (r.errors.length) console.log(`     ! page errors: ${r.errors.join(' | ')}`);
+      if (player === 'scripted') console.log(`     ${r.info}`);
     }
 
     const wins = [0, 0, 0]; // [p0, p1, undecided]
     for (const r of rows) wins[r.winner === 0 ? 0 : r.winner === 1 ? 1 : 2]++;
     const avg = Math.round(rows.reduce((s, r) => s + r.seconds, 0) / rows.length);
     console.log(
-      `\nsummary (P0=${difficulty} vs P1=${p1Difficulty}): P0 wins ${wins[0]}, P1 wins ${wins[1]}, undecided ${wins[2]} · avg ${avg}s`,
+      `\nsummary (P0=${player === 'scripted' ? 'scripted-player' : difficulty} vs P1=${p1Difficulty}): P0 wins ${wins[0]}, P1 wins ${wins[1]}, undecided ${wins[2]} · avg ${avg}s`,
     );
   } finally {
     await browser.close();

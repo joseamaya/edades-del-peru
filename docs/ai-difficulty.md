@@ -53,11 +53,33 @@ committing to an attack is a net loss, so profiles that mass and attack more los
 economy/army/timing/guard changes *how much* the AI commits, not *whether committing is good*. To make the
 ordering monotone, the AI must be able to convert its (real) economic/army advantage into wins.
 
+## Player-side benchmark (the useful yardstick)
+
+Because the AI-vs-AI mirror is confounded, difficulty is measured from the **player's** side with
+`ScriptedPlayer` (`src/game/ScriptedPlayer.ts`): a deterministic, non-cheating greedy bot that drives player 0
+through the same `PlayerCommand` API a human uses (gather with a balanced resource mix, build up to two
+barracks, train ~12 workers and ~16 soldiers, then attack the enemy base). It uses no god-mode, no direct state
+edits and no RNG.
+
+`yarn sim --player=scripted --p1=<difficulty> --max=2400` plays the bot against each difficulty. A **stronger
+AI beats the bot more often**, which is the metric:
+
+| difficulty | AI wins vs the bot |
+|---|---|
+| `easy` | 0 |
+| `normal` | 5 |
+| `hard` | 4 |
+| `legendary` | 7 |
+
+This is **roughly monotonic from the player side** (`easy` clearly weakest, `legendary` clearly strongest,
+`normal`/`hard` within noise) — unlike the AI-vs-AI mirror, which put `hard`/`legendary` *below* `normal`. The
+bot is deliberately simple, so it only finishes a game on the easiest difficulty; the metric is therefore "how
+often the AI beats it", not "how often the bot wins".
+
 ## Recommended next steps
 
-1. **A player-side benchmark.** The difficulty a *human* feels is what matters; an AI-vs-AI mirror is a
-   confounded proxy. Add a scripted "player" (a fixed sequence of orders that wins a skirmish) and measure each
-   difficulty against it — this is the yardstick the AI should be tuned on.
+1. **Tune against the player-side benchmark.** With a working yardstick, adjust the profiles / attack strategy
+   so the AI-wins column is monotone and separated (target `easy` ≪ `normal` < `hard` < `legendary`).
 2. **Attack-commitment AI strategy.** Make a committed assault viable and coordinated (attack as a group, keep
    a guard, fight the units that shoot you, retreat as a group), so a bigger economy/army actually wins. This
    is a design change with its own measurement, not a constant tweak.
@@ -66,4 +88,6 @@ ordering monotone, the AI must be able to convert its (real) economic/army advan
 
 ## Tooling
 
-`scripts/sim.mjs --p1=<difficulty>` sets player 1's profile so a difficulty can be measured in both seats.
+- `scripts/sim.mjs --p1=<difficulty>` sets player 1's profile so a difficulty can be measured in both seats.
+- `scripts/sim.mjs --player=scripted` runs the `ScriptedPlayer` bot as player 0 (the player-side benchmark).
+

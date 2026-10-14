@@ -8,6 +8,7 @@ import { getPeriod } from './model/defs/periods';
 import { loadFromStorage } from './game/SaveGame';
 import { loadReplay } from './game/replay';
 import { loadMods, ModLoadResult } from './game/Mods';
+import { ScriptedPlayer } from './game/ScriptedPlayer';
 
 /** Read saved settings or use the defaults, validating each field. */
 function loadSettings(): GameSettings {
@@ -114,6 +115,7 @@ async function boot(): Promise<void> {
   const game = new Game(settings, snapshot, replay);
   (window as any).game = game;
   (window as any).THREE = THREE;
+  (window as any).ScriptedPlayer = ScriptedPlayer;
   if (params.get('fps') === '1') game.hud.setShowFps(true);
   if (replay) game.hud.showToast('🎬 Repetición', 'info');
   game.postfx.setCinematic(settings.cinematic);
