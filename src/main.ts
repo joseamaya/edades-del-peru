@@ -7,6 +7,7 @@ import { CIVS, civsForPeriod } from './model/defs/civs';
 import { getPeriod } from './model/defs/periods';
 import { loadFromStorage } from './game/SaveGame';
 import { loadReplay } from './game/replay';
+import { loadMods, ModLoadResult } from './game/Mods';
 
 /** Read saved settings or use the defaults, validating each field. */
 function loadSettings(): GameSettings {
@@ -50,6 +51,7 @@ function sanitizeSettings(raw: unknown): GameSettings {
   if (typeof r.rotateCamera === 'boolean') s.rotateCamera = r.rotateCamera;
   if (VICTORY_MODES.includes(r.victoryMode as string)) s.victoryMode = r.victoryMode as GameSettings['victoryMode'];
   if (typeof r.missionId === 'string' && r.missionId) s.missionId = r.missionId;
+  if (Array.isArray(r.activeMods)) s.activeMods = r.activeMods.filter((x): x is string => typeof x === 'string');
   // the tech level is derived from the period (period-locked matches)
   s.startingEra = getPeriod(s.period).level;
   // guarantee that the civs belong to the period and that the rival is different
@@ -76,7 +78,7 @@ function floatParam(params: URLSearchParams, key: string, fallback: number): num
   return Number.isFinite(n) ? n : fallback;
 }
 
-function boot(): void {
+async function boot(): Promise<void> {
   const params = new URLSearchParams(window.location.search);
   const wantsLoad = params.get('load') === '1';
   const wantsReplay = params.get('replay') === '1';
@@ -92,6 +94,22 @@ function boot(): void {
       Object.assign(settings, sanitizeSettings(settings));
     }
   }
+  // mods are data patches over the defs: load them before building the game
+  const modParam = params.get('mod');
+  const activeMods = modParam
+    ? modParam
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : (settings.activeMods ?? []);
+  let modResult: ModLoadResult = { loaded: [], errors: [] };
+  if (activeMods.length) {
+    const result = await loadMods(activeMods);
+    settings.activeMods = result.loaded;
+    for (const err of result.errors) console.warn('[mods]', err);
+    modResult = result;
+  }
+  (window as unknown as { __mods?: unknown }).__mods = modResult;
   if (params.get('noloop') === '1') setAutoStart(false);
   const game = new Game(settings, snapshot, replay);
   (window as any).game = game;
@@ -158,7 +176,7 @@ function startsMatchDirectly(params: URLSearchParams): boolean {
 }
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', boot);
+  document.addEventListener('DOMContentLoaded', () => void boot().catch((e) => console.error(e)));
 } else {
-  boot();
+  void boot().catch((e) => console.error(e));
 }

@@ -333,3 +333,9 @@ export function getCiv(id: CivId): CivDef {
 export function civsForPeriod(period: HistoricalPeriod): CivDef[] {
   return CIVS.filter((c) => c.periods.includes(period));
 }
+
+/** Apply a validated mod override to a civilization (mutates the defs in place). */
+export function overrideCiv(id: CivId, o: Partial<CivDef>): void {
+  const c = CIVS.find((x) => x.id === id);
+  if (c) Object.assign(c, o);
+}

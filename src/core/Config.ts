@@ -22,6 +22,8 @@ export interface GameSettings {
   /** Allow rotating the camera with Q/E (AoE2 DE style). Off = fixed camera like SC2. */
   rotateCamera: boolean;
   victoryMode: 'conquest' | 'wonder';
+  /** Mod ids loaded at boot (data patches over the defs); later ones win. */
+  activeMods: string[];
   /** Active campaign mission id (undefined = skirmish). */
   missionId?: string;
 }
@@ -47,6 +49,7 @@ export const DEFAULT_SETTINGS: GameSettings = {
   cinematic: false,
   rotateCamera: false,
   victoryMode: 'conquest',
+  activeMods: [],
 };
 
 export const RESOURCE_INFO = {

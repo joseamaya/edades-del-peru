@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "Ejemplo: instrucción de formación",
+  "description": "Mod de ejemplo. Refuerza al guerrero, añade una tecnología y reafirma la identidad visual de los Moche.",
+  "units": [
+    {
+      "id": "soldier",
+      "stats": { "hp": 55, "attack": 6 }
+    }
+  ],
+  "techs": [
+    {
+      "id": "example_drill",
+      "name": "Instrucción de formación",
+      "description": "Tecnología de ejemplo: mejora el ataque de tu ejército.",
+      "cost": { "food": 100, "silver": 50 },
+      "time": 30,
+      "minPeriod": 0,
+      "building": "barracks",
+      "effect": { "attackMult": 0.1 },
+      "icon": "🎯"
+    }
+  ],
+  "civs": [
+    {
+      "id": "moche",
+      "visual": { "arch": "coastal-adobe", "emblem": "fret" }
+    }
+  ]
+}

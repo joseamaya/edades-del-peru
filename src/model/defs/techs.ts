@@ -270,3 +270,13 @@ export function techAvailable(tech: TechDef, period: HistoricalPeriod): boolean 
   if (period < tech.minPeriod) return false;
   return tech.maxPeriod === undefined || period <= tech.maxPeriod;
 }
+
+/**
+ * Apply a validated mod override: merge into an existing tech by id, or append a
+ * new one. New techs are safe because `TechDef.id` is a free string.
+ */
+export function overrideTech(def: Partial<TechDef> & { id: string }): void {
+  const i = TECHS.findIndex((t) => t.id === def.id);
+  if (i >= 0) TECHS[i] = { ...TECHS[i], ...def } as TechDef;
+  else TECHS.push(def as TechDef);
+}
