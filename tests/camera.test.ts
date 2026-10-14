@@ -134,3 +134,49 @@ describe('vector helpers', () => {
     expect(normalize2D(0, 0)).toEqual({ x: 0, y: 0 });
   });
 });
+
+// The camera sits at `target + (sin yaw, cos yaw)*horiz` and looks at the target,
+// so its ground basis is forward=(-sin, -cos) and right=(cos, -sin). Panning must
+// follow that basis — the regression that made WASD/edge move sideways.
+describe('pan direction matches the camera basis', () => {
+  type V = { x: number; y: number };
+  const forward = (yaw: number): V => ({ x: -Math.sin(yaw), y: -Math.cos(yaw) });
+  const right = (yaw: number): V => ({ x: Math.cos(yaw), y: -Math.sin(yaw) });
+  const dot = (a: V, b: V): number => a.x * b.x + a.y * b.y;
+  const expectVec = (a: V, b: V): void => {
+    expect(a.x).toBeCloseTo(b.x, 6);
+    expect(a.y).toBeCloseTo(b.y, 6);
+  };
+  const key = (k: string, yaw: number): V => {
+    const v = keyPanVector([k]);
+    return rotateToWorld(v.x, v.y, yaw);
+  };
+
+  it('at yaw=0, W moves north (-z) and D moves east (+x)', () => {
+    expectVec(key('w', 0), { x: 0, y: -1 });
+    expectVec(key('s', 0), { x: 0, y: 1 });
+    expectVec(key('a', 0), { x: -1, y: 0 });
+    expectVec(key('d', 0), { x: 1, y: 0 });
+  });
+
+  for (const yaw of [0, Math.PI / 4, 1.2, -0.5]) {
+    it(`W/A/S/D follow the camera basis at yaw=${yaw.toFixed(2)}`, () => {
+      const f = forward(yaw);
+      const r = right(yaw);
+      expectVec(key('w', yaw), f);
+      expectVec(key('s', yaw), { x: -f.x, y: -f.y });
+      expectVec(key('d', yaw), r);
+      expectVec(key('a', yaw), { x: -r.x, y: -r.y });
+    });
+  }
+
+  it('edge at the bottom pans toward the bottom of the screen', () => {
+    for (const yaw of [0, Math.PI / 4, 1.2]) {
+      const v = edgeVector(400, 600, rect, 36); // bottom edge -> (0, +1)
+      const w = rotateToWorld(v.x, v.y, yaw);
+      // mostly backward (-forward), not sideways
+      expect(dot(w, forward(yaw))).toBeLessThan(-0.9);
+      expect(Math.abs(dot(w, right(yaw)))).toBeLessThan(0.05);
+    }
+  });
+});

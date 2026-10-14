@@ -38,6 +38,8 @@ export class RTSCamera {
   private rotationEnabled = false;
   /** While true (a blocking menu/modal is open) panning is suppressed. */
   private uiCaptured = false;
+  /** While true (the pointer is over a HUD control) edge scrolling is suppressed. */
+  private pointerOverUi = false;
 
   private mapSize: number;
   private viewportH: number;
@@ -95,6 +97,11 @@ export class RTSCamera {
   /** Suppress panning while a blocking UI (menu/modal/codex) is open. */
   setUiCaptured(on: boolean): void {
     this.uiCaptured = on;
+  }
+
+  /** Suppress edge scrolling while the pointer is over a HUD control (0 A.D.-style). */
+  setPointerOverUi(on: boolean): void {
+    this.pointerOverUi = on;
   }
 
   private onKeyDown = (e: KeyboardEvent): void => {
@@ -190,7 +197,7 @@ export class RTSCamera {
   }
 
   private edgePan(dt: number): void {
-    if (!this.edgeScroll || this.dragging || this.uiCaptured) return;
+    if (!this.edgeScroll || this.dragging || this.uiCaptured || this.pointerOverUi) return;
     if (!this.hasMousePos) return;
     const rect = this.canvas.getBoundingClientRect();
     const ev = edgeVector(this.lastMouseX, this.lastMouseY, rect, CAMERA_CONFIG.edgeZone);

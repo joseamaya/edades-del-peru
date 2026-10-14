@@ -662,7 +662,19 @@ export class HUD {
 
   /** True if a modal menu is open (other than the pause panel). */
   hasBlockingOverlay(): boolean {
-    return [...this.root.querySelectorAll('.ed-overlay')].some((o) => o.id !== 'ed-paused');
+    return [...this.root.querySelectorAll('.ed-overlay')].some(
+      (o) => o.id !== 'ed-paused' && !o.classList.contains('hidden'),
+    );
+  }
+
+  /**
+   * True if the pointer is over a HUD control (not the game view). `#ui-root` is
+   * `pointer-events:none` and only real controls set `auto`, so any element under
+   * the cursor that lives in the HUD is a control (0 A.D.-style edge guard).
+   */
+  isPointerOverUi(x: number, y: number): boolean {
+    const el = document.elementFromPoint(x, y);
+    return !!el && this.root.contains(el);
   }
 
   showVictory(victory: boolean, winText?: string, loseText?: string): void {

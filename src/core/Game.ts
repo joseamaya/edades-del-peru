@@ -923,6 +923,15 @@ export class Game {
     return p;
   }
 
+  /**
+   * True if the pointer is over a HUD control. `#ui-root` is `pointer-events:none`
+   * and only real controls set `auto`, so `elementFromPoint` returning anything but
+   * the canvas means a control is under the cursor (0 A.D.-style edge guard).
+   */
+  private isPointerOverUi(): boolean {
+    return this.hud.isPointerOverUi(this.mouseScreen.x, this.mouseScreen.y);
+  }
+
   private onMouseDown = (e: MouseEvent): void => {
     if (this.gameEnded) return;
     if (this.placingBuilding) {
@@ -2336,6 +2345,8 @@ export class Game {
 
     // a blocking menu/modal suppresses camera panning (edge/keyboard/drag)
     this.camera.setUiCaptured(this.hud.hasBlockingOverlay());
+    // edge scrolling is off while the pointer is over a HUD control
+    this.camera.setPointerOverUi(this.isPointerOverUi());
     this.camera.update(d, t);
     this.rebuildSpatial();
 
