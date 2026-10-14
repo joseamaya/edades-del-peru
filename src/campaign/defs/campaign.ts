@@ -251,6 +251,13 @@ export const MISSIONS: MissionDef[] = [
     objectives: [
       { id: 'obj_capital', kind: 'protect', entityTag: 'capital', title: 'Protege la capital wari' },
       { id: 'obj_destroy', kind: 'destroy', entityTag: 'centro_rival', title: 'Toma el centro rival del altiplano' },
+      {
+        id: 'obj_centro',
+        kind: 'build',
+        buildingKind: BuildingKind.MARKET,
+        count: 1,
+        title: 'Funda un centro provincial',
+      },
     ],
     triggers: [
       {
@@ -379,7 +386,8 @@ export const MISSIONS: MissionDef[] = [
     startingResources: { food: 1000, wood: 700, silver: 900, stone: 400 },
     start: {
       units: [
-        { kind: UnitKind.RIFLEMAN, dx: 10, dz: -4, count: 2 },
+        { kind: UnitKind.RIFLEMAN, dx: 10, dz: -4, count: 1, tag: 'tupac_yupanqui' },
+        { kind: UnitKind.RIFLEMAN, dx: 12, dz: -8, count: 1 },
         { kind: UnitKind.MUSKETEER, dx: 6, dz: 10, count: 2 },
         { kind: UnitKind.RIFLEMAN, dx: 4, dz: -6, count: 4 },
       ],
@@ -389,6 +397,20 @@ export const MISSIONS: MissionDef[] = [
     objectives: [
       { id: 'obj_kill', kind: 'destroy', entityTag: 'chan_chan', title: 'Toma Chan Chan' },
       { id: 'obj_hold', kind: 'survive', time: 600, title: 'Mantén tu campamento 10 minutos' },
+      {
+        id: 'obj_avanzar',
+        kind: 'reach',
+        entityTag: 'tupac_yupanqui',
+        pos: { ref: 'enemy', dx: -18, dz: 0 },
+        radius: 8,
+        title: 'Avanzad hasta Paramonga',
+      },
+      {
+        id: 'obj_comandante',
+        kind: 'protect',
+        entityTag: 'tupac_yupanqui',
+        title: 'Mantén con vida a Túpac Yupanqui',
+      },
     ],
     triggers: [
       {
@@ -421,6 +443,16 @@ export const MISSIONS: MissionDef[] = [
             radius: 7,
           },
           { type: 'dialogue', text: '¡Querrotumi contraataca desde Paramonga!' },
+        ],
+      },
+      {
+        id: 't_paramonga',
+        condition: { type: 'unit_near', entityTag: 'tupac_yupanqui', pos: { ref: 'enemy', dx: -18, dz: 0 }, radius: 8 },
+        effects: [
+          {
+            type: 'dialogue',
+            text: 'Túpac Yupanqui: —¡Paramonga ha caído! Avanzad por el valle del Santa hacia Chan Chan.',
+          },
         ],
       },
     ],
