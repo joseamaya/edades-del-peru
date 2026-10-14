@@ -69,3 +69,20 @@ test('the missions with corrected rosters boot with units and no errors', async 
   }
   expect(errors).toEqual([]);
 });
+
+test('a mission roster restriction blocks disallowed units', async ({ page }) => {
+  await page.goto('/?mission=m9_guerra_pacifico&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    const c = g.playerCenter(0);
+    const b = g.spawnScriptedBuilding('barracks', 0, c.x + 6, c.z + 6);
+    // the naval mission has no siege train, but infantry is allowed
+    return { artillery: g.trainUnit(b.id, 'artillery'), soldier: g.trainUnit(b.id, 'soldier') };
+  });
+  expect(out.artillery).toBe(false);
+  expect(out.soldier).toBe(true);
+});

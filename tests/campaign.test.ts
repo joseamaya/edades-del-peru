@@ -3,6 +3,7 @@ import { MISSIONS } from '../src/campaign/defs/campaign';
 import { EDUCATIONAL, PROLOGUE, getEducational } from '../src/campaign/defs/educational';
 import { getPeriod } from '../src/model/defs/periods';
 import { getCiv } from '../src/model/defs/civs';
+import { UnitKind } from '../src/core/types';
 
 describe('campaign educational content', () => {
   it('the prologue is not empty', () => {
@@ -53,6 +54,19 @@ describe('campaign educational content', () => {
     expect(kinds.has('reach')).toBe(true);
     expect(kinds.has('build')).toBe(true);
     expect(kinds.size).toBeGreaterThanOrEqual(7);
+  });
+
+  it('a mission roster restriction only lists valid units and keeps workers', () => {
+    const kinds = new Set<string>(Object.values(UnitKind));
+    for (const mis of MISSIONS) {
+      if (!mis.allowedUnits) continue;
+      for (const u of mis.allowedUnits) expect(kinds.has(u), `${mis.id} allows unknown unit ${u}`).toBe(true);
+      expect(mis.allowedUnits.includes(UnitKind.WORKER), `${mis.id} restriction excludes workers`).toBe(true);
+    }
+    // the naval mission has no siege train
+    const naval = MISSIONS.find((m) => m.id === 'm9_guerra_pacifico')!;
+    expect(naval.allowedUnits).toBeDefined();
+    expect(naval.allowedUnits!.includes(UnitKind.ARTILLERY)).toBe(false);
   });
 
   it('every objective and trigger entityTag is declared by a start/mark tag', () => {

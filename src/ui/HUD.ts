@@ -947,7 +947,9 @@ export class HUD {
     }
 
     // train units
+    const allowedUnits = this.game.mission?.def.allowedUnits;
     for (const unitKind of def.trainable ?? []) {
+      if (allowedUnits && !allowedUnits.includes(unitKind)) continue;
       const stats = getUnitStats(unitKind, b.era);
       const uInfo = UNIT_INFO[unitKind];
       const tech = UNIT_ARCHETYPES[unitKind].requiresTech?.[0];
