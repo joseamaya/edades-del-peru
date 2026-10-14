@@ -93,6 +93,7 @@ export interface PlayerSave {
 export interface MissionSave {
   started: boolean;
   ended: boolean;
+  won: boolean | null;
   timer: number;
   objState: [string, ObjState][];
   fired: string[];
