@@ -83,11 +83,15 @@ export function keyPanVector(keys: Iterable<string>): Vec2 {
   return normalize2D(x, y);
 }
 
-/** Rotate a screen-space delta (dx, dz) into world XZ by the camera yaw. */
+/**
+ * Rotate a screen-space delta (dx, dz; +dz = down) into world XZ by the camera
+ * yaw. This is a rotation by `-yaw`: pressing "up" moves the target along the
+ * camera's forward ground direction, "right" along its right vector.
+ */
 export function rotateToWorld(dx: number, dz: number, yaw: number): Vec2 {
-  const c = Math.cos(-yaw);
-  const s = Math.sin(-yaw);
-  return { x: c * dx - s * dz, y: -s * dx - c * dz };
+  const c = Math.cos(yaw);
+  const s = Math.sin(yaw);
+  return { x: c * dx + s * dz, y: -s * dx + c * dz };
 }
 
 /** World units per pixel at the target plane (geometric, not a magic factor). */

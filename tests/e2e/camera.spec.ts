@@ -13,10 +13,11 @@ test('edge scrolling pans the camera toward the border', { tag: '@smoke' }, asyn
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
+    // pointer at the left edge, over the game view
+    g.renderer.domElement.dispatchEvent(new MouseEvent('mousemove', { clientX: 2, clientY: 300, bubbles: true }));
     // start from the middle so the bounds clamp does not mask the pan
     g.camera.moveTo(g.settings.mapSize / 2, g.settings.mapSize / 2, true);
     const t0 = g.camera.getTarget();
-    g.camera.updateMouse(2, 300); // pointer at the left edge
     for (let i = 0; i < 30; i++) g.update(1 / 60, i / 60);
     const t1 = g.camera.getTarget();
     return Math.hypot(t1.x - t0.x, t1.z - t0.z) > 0.5;
@@ -87,4 +88,50 @@ test('dispose removes the camera input listeners', async ({ page }) => {
   });
   expect(out.movedBefore).toBeGreaterThan(0.5);
   expect(out.movedAfter).toBe(0);
+});
+
+test('W pans the camera toward the top of the screen', async ({ page }) => {
+  await bootMatch(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    g.camera.moveTo(g.settings.mapSize / 2, g.settings.mapSize / 2, true);
+    const yaw = g.camera.getYaw();
+    const forward = { x: -Math.sin(yaw), y: -Math.cos(yaw) };
+    const t0 = g.camera.getTarget();
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'w' }));
+    for (let i = 0; i < 30; i++) g.update(1 / 60, i / 60);
+    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'w' }));
+    const t1 = g.camera.getTarget();
+    const dx = t1.x - t0.x;
+    const dz = t1.z - t0.z;
+    const len = Math.hypot(dx, dz);
+    const along = dx * forward.x + dz * forward.y;
+    return { len, ratio: len > 0 ? along / len : 0 };
+  });
+  expect(out.len).toBeGreaterThan(0.5);
+  // almost entirely along the camera's forward direction (not sideways)
+  expect(out.ratio).toBeGreaterThan(0.95);
+});
+
+test('edge scrolling is suppressed while the pointer is over a HUD control', async ({ page }) => {
+  await bootMatch(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    // pointer over the bottom-left minimap (a HUD control near the corner)
+    g.renderer.domElement.dispatchEvent(
+      new MouseEvent('mousemove', { clientX: 100, clientY: window.innerHeight - 100, bubbles: true }),
+    );
+    const overUi = g.hud.isPointerOverUi(g.mouseScreen.x, g.mouseScreen.y);
+    g.camera.moveTo(g.settings.mapSize / 2, g.settings.mapSize / 2, true);
+    const t0 = g.camera.getTarget();
+    for (let i = 0; i < 30; i++) g.update(1 / 60, i / 60);
+    const t1 = g.camera.getTarget();
+    return { overUi, moved: Math.hypot(t1.x - t0.x, t1.z - t0.z) };
+  });
+  expect(out.overUi).toBe(true);
+  expect(out.moved).toBe(0);
 });
