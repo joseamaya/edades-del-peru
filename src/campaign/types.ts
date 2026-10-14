@@ -87,6 +87,11 @@ export interface MissionDef {
   /** Tag existing buildings at start (e.g. the enemy center). */
   mark?: { tag: string; kind: BuildingKind; owner: 0 | 1 }[];
   enemy: { active: boolean; difficulty: 'easy' | 'normal' | 'hard' | 'legendary'; aggression: number };
+  /**
+   * If set, the player can only train these units (a scenario restriction, e.g.
+   * a naval campaign with no siege train). Omit for the full roster.
+   */
+  allowedUnits?: UnitKind[];
   objectives: ObjectiveDef[];
   triggers: TriggerDef[];
 }

@@ -613,6 +613,17 @@ export const MISSIONS: MissionDef[] = [
     },
     mark: [{ tag: 'centro_enemigo', kind: BuildingKind.CENTER, owner: 1 }],
     enemy: { active: true, difficulty: 'hard', aggression: 1.4 },
+    // a naval/coastal campaign: the Republic has no siege train
+    allowedUnits: [
+      UnitKind.WORKER,
+      UnitKind.SOLDIER,
+      UnitKind.MUSKETEER,
+      UnitKind.RIFLEMAN,
+      UnitKind.SNIPER,
+      UnitKind.HUSSAR,
+      UnitKind.CAVALRY,
+      UnitKind.SCOUT,
+    ],
     objectives: [
       { id: 'obj_puerto', kind: 'protect', entityTag: 'puerto', title: 'Protege el puerto y el monitor' },
       { id: 'obj_kill', kind: 'destroy', entityTag: 'centro_enemigo', title: 'Destruye el centro de mando enemigo' },

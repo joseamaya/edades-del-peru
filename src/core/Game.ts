@@ -758,6 +758,9 @@ export class Game {
   trainUnit(buildingId: number, unit: UnitKind): boolean {
     const b = this.buildings.get(buildingId);
     if (!b || b.dead || b.owner !== 0) return false;
+    // a mission can restrict the roster (e.g. no siege train in a naval campaign)
+    const allowed = this.mission?.def.allowedUnits;
+    if (allowed && !allowed.includes(unit)) return false;
     const stats = getUnitStats(unit, b.era);
     const p = this.players[0];
     if (p.populationUsed + stats.population > p.populationCap) return false;
