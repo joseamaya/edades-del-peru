@@ -46,6 +46,15 @@ describe('campaign educational content', () => {
     expect(MISSIONS[0].tutorial).toBe(true);
   });
 
+  it('uses varied mechanics, not only defend/survive/destroy', () => {
+    const kinds = new Set<string>();
+    for (const mis of MISSIONS) for (const o of mis.objectives) kinds.add(o.kind);
+    // the campaign introduces exploration (reach) and settlement (build)
+    expect(kinds.has('reach')).toBe(true);
+    expect(kinds.has('build')).toBe(true);
+    expect(kinds.size).toBeGreaterThanOrEqual(7);
+  });
+
   it('every objective and trigger entityTag is declared by a start/mark tag', () => {
     for (const mis of MISSIONS) {
       const declared = new Set<string>();
