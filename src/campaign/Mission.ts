@@ -191,19 +191,33 @@ export class Mission {
   private checkAllComplete(): void {
     const objs = this.def.objectives;
     if (objs.length === 0) return;
-    const failed = objs.find((o) => this.objState.get(o.id) === 'failed');
-    if (failed) {
-      this.defeat();
-      return;
-    }
+    const state = (o: ObjectiveDef): ObjState => this.objState.get(o.id) ?? 'pendiente';
     // 'protect' is a continuous guard: counts as satisfied while the entity is alive
     const satisfied = (o: ObjectiveDef): boolean => {
-      const st = this.objState.get(o.id);
+      const st = state(o);
       if (st === 'completed') return true;
       if (st === 'activo' && o.kind === 'protect' && o.entityTag) return this.countAlive(o.entityTag) > 0;
       return false;
     };
-    if (objs.every(satisfied)) this.win();
+
+    // objectives sharing a `group` are alternatives: satisfying any one wins the
+    // group. A failed required objective — or a group whose every branch failed —
+    // ends the mission.
+    const groups = new Map<string, ObjectiveDef[]>();
+    for (const o of objs) {
+      if (!o.group) continue;
+      const g = groups.get(o.group) ?? [];
+      g.push(o);
+      groups.set(o.group, g);
+    }
+    if (objs.some((o) => !o.group && state(o) === 'failed')) return this.defeat();
+    for (const g of groups.values()) {
+      if (g.every((o) => state(o) === 'failed')) return this.defeat();
+    }
+
+    const groupsOk = [...groups.values()].every((g) => g.some(satisfied));
+    const looseOk = objs.filter((o) => !o.group).every(satisfied);
+    if (groupsOk && looseOk) this.win();
   }
 
   private checkBaseLost(): void {
