@@ -492,8 +492,20 @@ export const MISSIONS: MissionDef[] = [
     mark: [{ tag: 'centro_realista', kind: BuildingKind.CENTER, owner: 1 }],
     enemy: { active: true, difficulty: 'hard', aggression: 1.3 },
     objectives: [
-      { id: 'obj_kill', kind: 'destroy', entityTag: 'centro_realista', title: 'Toma el centro de mando realista' },
-      { id: 'obj_hold', kind: 'survive', time: 600, title: 'Mantén el cuartel rebelde 10 minutos' },
+      {
+        id: 'obj_asaltar',
+        kind: 'destroy',
+        entityTag: 'centro_realista',
+        group: 'victoria',
+        title: 'Asalta el Cuzco: toma el centro de mando realista',
+      },
+      {
+        id: 'obj_resistir',
+        kind: 'survive',
+        time: 600,
+        group: 'victoria',
+        title: 'Resiste el cerco: sostén el cuartel 10 minutos',
+      },
       { id: 'obj_tupac', kind: 'protect', entityTag: 'tupac_amaru', title: 'Mantén con vida a Túpac Amaru II' },
     ],
     triggers: [
@@ -503,7 +515,7 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'Túpac Amaru II: —¡Por el Sol y por el Perú! Abolid la mita y el reparto. ¡Adelante!',
+            text: 'Túpac Amaru II: —El Cuzco está a la vista. Podemos asaltarlo de inmediato o cercarlo hasta quebrarlo. ¡Vos decidís!',
           },
         ],
       },

@@ -117,3 +117,42 @@ test('the expansion objective needs the building at the frontier', async ({ page
   expect(out.atHome).not.toBe('completed');
   expect(out.atFrontier).toBe('completed');
 });
+
+test('a strategic choice wins through either branch', async ({ page }) => {
+  const boot = async () => {
+    await page.goto('/?mission=m7_tupac_amaru&seed=777&fog=0&low=1&noloop=1');
+    await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+      timeout: 30_000,
+    });
+  };
+
+  // branch A — assault: destroy the realista command post
+  await boot();
+  const assault = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const before = g.mission.won as boolean | null;
+    for (const b of g.buildings.values()) if (b.owner !== 0 && b.tag === 'centro_realista') b.die();
+    g.update(1 / 60, 0);
+    return { before, after: g.mission.won as boolean | null };
+  });
+  expect(assault.before).not.toBe(true);
+  expect(assault.after).toBe(true);
+
+  // branch B — siege: hold out until the clock expires
+  await boot();
+  const siege = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
+    const dt = 1 / 60;
+    for (let i = 0; i < Math.ceil(620 / dt) && !m.ended; i++) {
+      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
+      m.update(dt, i * dt);
+    }
+    return m.won as boolean | null;
+  });
+  expect(siege).toBe(true);
+});

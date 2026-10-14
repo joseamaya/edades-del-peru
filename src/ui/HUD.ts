@@ -557,13 +557,27 @@ export class HUD {
     if (!mis) return;
     this.objPanelEl.style.display = 'block';
     const items = mis.activeObjectives;
+    const titles = this.objectiveTitles(items.map(({ def }) => def));
     this.objListEl.innerHTML = items
-      .map(({ def, state }) => {
+      .map(({ state }, i) => {
         const mark = state === 'completed' ? '✔' : state === 'failed' ? '✖' : '○';
         const cls = state === 'completed' ? 'done' : state === 'failed' ? 'failed' : '';
-        return `<div class="obj ${cls}"><span class="mark">${mark}</span><span>${def.title}</span></div>`;
+        return `<div class="obj ${cls}"><span class="mark">${mark}</span><span>${titles[i]}</span></div>`;
       })
       .join('');
+  }
+
+  /** Titles with a leading "o" for alternatives (objectives sharing a group). */
+  private objectiveTitles(objs: { title: string; group?: string }[]): string[] {
+    const seen = new Set<string>();
+    return objs.map((o) => {
+      let t = o.title;
+      if (o.group) {
+        if (seen.has(o.group)) t = 'o ' + t;
+        seen.add(o.group);
+      }
+      return t;
+    });
   }
 
   private buildEraBanner(): void {
@@ -1471,7 +1485,11 @@ export class HUD {
       </div>
       ${context}
       ${funFact}
-      <div class="sub" style="text-align:left;font-size:12px;color:var(--text);line-height:1.7;margin-bottom:10px"><b style="color:var(--gold)">OBJETIVOS</b><br>${mis.objectives.map((o) => '• ' + o.title).join('<br>')}</div>
+      <div class="sub" style="text-align:left;font-size:12px;color:var(--text);line-height:1.7;margin-bottom:10px"><b style="color:var(--gold)">OBJETIVOS</b><br>${this.objectiveTitles(
+        mis.objectives,
+      )
+        .map((t) => '• ' + t)
+        .join('<br>')}</div>
       ${sources}
     `;
     const start = this.el('button', 'ed-primary', panel);

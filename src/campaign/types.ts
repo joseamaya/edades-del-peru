@@ -25,6 +25,12 @@ export interface ObjectiveDef {
   resource?: keyof Resources;
   era?: Era;
   hidden?: boolean;
+  /**
+   * Objectives sharing a group are alternatives: the group is satisfied when
+   * any member is (a strategic choice, e.g. assault *or* besiege). Omit for a
+   * required objective.
+   */
+  group?: string;
 }
 
 export type TriggerCond =

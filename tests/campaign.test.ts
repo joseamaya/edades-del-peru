@@ -81,6 +81,24 @@ describe('campaign educational content', () => {
     expect(expand.radius ?? 0).toBeGreaterThan(0);
   });
 
+  it('offers a strategic choice: a mission wins through alternative branches', () => {
+    const amaru = MISSIONS.find((m) => m.id === 'm7_tupac_amaru')!;
+    const group = amaru.objectives.filter((o) => o.group === 'victoria');
+    expect(group.length).toBeGreaterThanOrEqual(2);
+    // a real choice: the branches are different kinds of objective
+    expect(new Set(group.map((o) => o.kind)).size).toBeGreaterThanOrEqual(2);
+    // and at least one objective stays required (the leader must survive)
+    expect(amaru.objectives.some((o) => !o.group)).toBe(true);
+  });
+
+  it('every objective group is a real choice (at least two members)', () => {
+    const counts = new Map<string, number>();
+    for (const mis of MISSIONS) {
+      for (const o of mis.objectives) if (o.group) counts.set(o.group, (counts.get(o.group) ?? 0) + 1);
+    }
+    for (const [g, n] of counts) expect(n, `group ${g} has only ${n} objective(s)`).toBeGreaterThanOrEqual(2);
+  });
+
   it('every objective and trigger entityTag is declared by a start/mark tag', () => {
     for (const mis of MISSIONS) {
       const declared = new Set<string>();
