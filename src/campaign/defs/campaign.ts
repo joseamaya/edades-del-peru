@@ -238,7 +238,7 @@ export const MISSIONS: MissionDef[] = [
     map: { seed: 800, type: 'andes', size: 160 },
     timeOfDay: 'noon',
     startingEra: Era.TAHUANTINSUYO,
-    startingResources: { food: 800, wood: 700, silver: 400, stone: 300 },
+    startingResources: { food: 350, wood: 160, silver: 60, stone: 40 },
     start: {
       buildings: [{ kind: BuildingKind.CENTER, dx: -12, dz: 0, tag: 'capital' }],
       units: [
@@ -250,13 +250,22 @@ export const MISSIONS: MissionDef[] = [
     enemy: { active: true, difficulty: 'normal', aggression: 1 },
     objectives: [
       { id: 'obj_capital', kind: 'protect', entityTag: 'capital', title: 'Protege la capital wari' },
+      {
+        id: 'obj_suministros',
+        kind: 'gather',
+        resource: 'food',
+        count: 600,
+        title: 'Reúne suministros para la expansión (600 de comida)',
+      },
       { id: 'obj_destroy', kind: 'destroy', entityTag: 'centro_rival', title: 'Toma el centro rival del altiplano' },
       {
         id: 'obj_centro',
         kind: 'build',
         buildingKind: BuildingKind.MARKET,
         count: 1,
-        title: 'Funda un centro provincial',
+        pos: { ref: 'enemy', dx: -30, dz: 0 },
+        radius: 16,
+        title: 'Funda un centro provincial en la frontera',
       },
     ],
     triggers: [
@@ -266,7 +275,7 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'Gobernante wari: —Nuestros caminos y andenes son la fuerza del imperio. ¡Adelante!',
+            text: 'Gobernante wari: —La despensa está corta, pero nuestros caminos no. Reunid suministros y fundad un centro provincial en la frontera.',
           },
         ],
       },

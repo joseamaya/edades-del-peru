@@ -16,7 +16,9 @@ export interface ObjectiveDef {
   title: string;
   count?: number;
   entityTag?: string;
+  /** Anchor for `reach`, or the required location for a `build` (expansion/outpost). */
   pos?: MissionPoint;
+  /** Radius around `pos` for `reach`/`build`. */
   radius?: number;
   time?: number;
   buildingKind?: BuildingKind;

@@ -69,6 +69,18 @@ describe('campaign educational content', () => {
     expect(naval.allowedUnits!.includes(UnitKind.ARTILLERY)).toBe(false);
   });
 
+  it('scales the opening economy: a scarcity mission forces expansion', () => {
+    const wari = MISSIONS.find((m) => m.id === 'm4_wari')!;
+    // a lean start, well below the campaign's richer openers
+    expect(wari.startingResources.food).toBeLessThan(500);
+    // gathering is a stated goal, not merely implied by the low start
+    expect(wari.objectives.some((o) => o.kind === 'gather')).toBe(true);
+    // an expansion objective: a provincial center founded at the frontier
+    const expand = wari.objectives.find((o) => o.kind === 'build')!;
+    expect(expand.pos, 'expansion build has no location').toBeDefined();
+    expect(expand.radius ?? 0).toBeGreaterThan(0);
+  });
+
   it('every objective and trigger entityTag is declared by a start/mark tag', () => {
     for (const mis of MISSIONS) {
       const declared = new Set<string>();
