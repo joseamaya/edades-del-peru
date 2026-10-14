@@ -18,6 +18,7 @@ en lugar de inventarlo.
 - [`contemporaneidad.md`](./contemporaneidad.md) — matriz de civilizaciones coetáneas (qué emparejamientos son válidos).
 - [`mapas.md`](./mapas.md) — criterios geográficos por civilización (costa, sierra, altiplano).
 - [`atuendos.md`](./atuendos.md) — vestimenta, armamento, protección y tocados (spec de modelado).
+- [`arquitectura.md`](./arquitectura.md) — estilos constructivos y emblemas por civilización (spec de modelado).
 - [`tecnologias.md`](./tecnologias.md) — ventana histórica de las tecnologías (cronología y ámbito cultural).
 - [`fuentes.md`](./fuentes.md) — bibliografía y fuentes por dossier.
 - [`civilizaciones/`](./civilizaciones/) — un dossier por civilización/facción.

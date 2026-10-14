@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { CivDef } from './defs/civs';
+import { CivDef, ArchStyle, EmblemId } from './defs/civs';
 import { ModelSpec } from './defs/units';
 import { Era } from '../core/types';
 import { ERA_DEFS } from './defs/eras';
@@ -305,6 +305,18 @@ class Builder {
   get civAccent(): string {
     return this.civ.colors.accent;
   }
+  /** Architectural style of the owner civilization. */
+  get style(): ArchStyle {
+    return this.civ.visual.arch;
+  }
+  /** Banner/shield emblem of the owner civilization. */
+  get emblem(): EmblemId {
+    return this.civ.visual.emblem;
+  }
+  /** True for pre-Hispanic Andean styles in a pre-1532 era (they use Andean architecture). */
+  get isAndean(): boolean {
+    return this.ctx.era <= Era.TAHUANTINSUYO && this.style !== 'colonial' && this.style !== 'republican';
+  }
   /** Build context (era and civilization). */
   get context(): BuildContext {
     return this.ctx;
@@ -514,6 +526,7 @@ function addHumanoid(
   if (opts.weapon === 'macana' || opts.weapon === 'spear' || opts.weapon === 'shield') {
     b.cylIn(armL, 0.16, 0.16, 0.035, 16, tunic, { x: -0.07, y: -0.3, rz: Math.PI / 2, tex: 'wood' });
     b.cylIn(armL, 0.05, 0.05, 0.05, 10, attire.accent, { x: -0.1, y: -0.3, rz: Math.PI / 2 });
+    shieldEmblem(b, armL);
   }
   // neck + head (pivot at y=1.26)
   b.cyl(0.045, 0.05, 0.09, 8, skin, { y: 1.15 });
@@ -1286,6 +1299,7 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
 
 /** Civic accent: banner with the player color or a glowing emblem. */
 function addCivAccent(b: Builder, futuristic: boolean): void {
+  if (b.isAndean) return; // Andean buildings carry their own banner + emblem
   if (futuristic) {
     b.cyl(0.03, 0.03, 2.4, 6, b.pal.darkMetal, { y: 3.4, x: -1.4, metalness: 0.8 });
     b.sphere(0.14, b.pal.emissive, { y: 4.6, x: -1.4, emissive: b.pal.emissive, emissiveIntensity: 2.2 });
@@ -1337,7 +1351,312 @@ function addWindows(
   }
 }
 
+// ---------------------------------------------------------------------------
+// Andean (pre-Hispanic) architecture. Style-driven so rival civilizations read
+// as different at a glance (a Caral base is not a European cottage).
+// Sources: docs/historia/arquitectura.md.
+// ---------------------------------------------------------------------------
+
+/** Wall colour for the civ's Andean style (adobe / stone / polished masonry). */
+function andeanWall(b: Builder): string {
+  const p = b.pal.primary;
+  if (b.style === 'coastal-adobe') return mixHex(p, '#c8a878', 0.72);
+  if (b.style === 'altiplano-stone') return mixHex(p, '#b4aca0', 0.78);
+  return mixHex(p, '#a89e8c', 0.72); // andean-masonry / highland-terraced
+}
+
+function andeanTex(b: Builder): TexKind {
+  return b.style === 'coastal-adobe' ? 'brick' : 'stone';
+}
+
+function andeanStone(b: Builder): string {
+  return mixHex(b.pal.primary, '#9c9182', 0.8);
+}
+
+/** Thatch colour (straw) shared by the Andean roofs. */
+function andeanThatch(b: Builder): string {
+  return mixHex('#c9a94e', b.pal.primary, 0.22);
+}
+
+/** Stepped stone platform (the Andean "huaca" base). */
+function andeanPlatform(b: Builder, w: number, tiers: number): void {
+  const stone = andeanStone(b);
+  for (let i = 0; i < tiers; i++) {
+    const t = w * (1.24 - i * 0.08);
+    b.box(t, w * 0.14, t, stone, { y: w * 0.07 + i * w * 0.14, tex: 'stone' });
+  }
+}
+
+/** Thatch gable roof. */
+function andeanThatchRoof(b: Builder, w: number, y: number): void {
+  const thatch = andeanThatch(b);
+  const o = { ry: Math.PI / 2, tex: 'dirt' as TexKind, texScale: 2 };
+  b.box(w * 1.08, w * 0.1, w * 0.6, thatch, { y, z: w * 0.24, rx: 0.6, ...o });
+  b.box(w * 1.08, w * 0.1, w * 0.6, thatch, { y, z: -w * 0.24, rx: -0.6, ...o });
+  b.box(w * 1.1, w * 0.09, w * 0.18, thatch, { y: y + w * 0.2, ...o });
+}
+
+/** Recessed wall niches (Andean masonry / altiplano). */
+function andeanNiches(b: Builder, w: number, tex: TexKind): void {
+  const dark = mixHex(b.pal.primary, '#3a332a', 0.6);
+  for (let i = -1; i <= 1; i++) {
+    b.box(w * 0.14, w * 0.3, 0.06, dark, { x: i * w * 0.28, y: w * 0.42, z: w * 0.46, tex });
+  }
+}
+
+/** Painted frieze band (coastal adobe — Moche/Chimú reliefs). */
+function andeanFrieze(b: Builder, w: number): void {
+  b.box(w * 0.96, w * 0.1, w * 0.96, b.civAccent, { y: w * 0.66 });
+  for (let i = -1; i <= 1; i++) {
+    b.box(w * 0.1, w * 0.1, 0.04, b.civSecondary, { x: i * w * 0.26, y: w * 0.66, z: w * 0.49 });
+  }
+}
+
+/** Frontal staircase (stepped). */
+function andeanStair(b: Builder, w: number, steps: number): void {
+  const stone = andeanStone(b);
+  for (let i = 0; i < steps; i++) {
+    b.box(w * 0.34, w * 0.08, w * 0.14, stone, { y: w * 0.04 + i * w * 0.08, z: w * (0.5 + i * 0.07), tex: 'stone' });
+  }
+}
+
+/** A stone watchtower (chullpa-like). */
+function andeanTower(b: Builder, w: number, x: number, z: number): void {
+  const stone = andeanStone(b);
+  b.cyl(w * 0.16, w * 0.2, w * 0.9, 8, stone, { x, y: w * 0.45, z, tex: 'stone' });
+  b.cyl(w * 0.2, w * 0.16, w * 0.12, 8, b.pal.darkMetal, { x, y: w * 0.95, z });
+}
+
+/** Civ banner: pole + cloth + the civ's emblem glyph. */
+function andeanBanner(b: Builder, x: number, y: number, z: number, size: number): void {
+  b.cyl(0.02, 0.02, size, 6, b.pal.darkWood, { x, y: y + size * 0.5, z });
+  b.box(size * 0.5, size * 0.34, 0.02, b.civPrimary, { x: x + size * 0.24, y: y + size * 0.78, z });
+  addEmblem(b, x + size * 0.24, y + size * 0.78, z + 0.03, size * 0.34);
+}
+
+/** The civ's procedural emblem, drawn as a small glyph facing +Z. */
+function addEmblem(b: Builder, x: number, y: number, z: number, s: number): void {
+  const c = b.civAccent;
+  const c2 = b.civSecondary;
+  const dark = mixHex(b.civPrimary, '#20180f', 0.5);
+  switch (b.emblem) {
+    case 'sun':
+      b.cyl(s * 0.28, s * 0.28, 0.03, 12, c, { x, y, z, rx: Math.PI / 2 });
+      for (let i = 0; i < 8; i++) {
+        const a = (i / 8) * Math.PI * 2;
+        b.box(s * 0.1, s * 0.08, 0.03, c2, { x: x + Math.cos(a) * s * 0.42, y: y + Math.sin(a) * s * 0.42, z, rz: a });
+      }
+      break;
+    case 'feline':
+      b.box(s * 0.5, s * 0.42, 0.03, c, { x, y, z });
+      b.box(s * 0.12, s * 0.14, 0.04, c, { x: x - s * 0.2, y: y + s * 0.3, z });
+      b.box(s * 0.12, s * 0.14, 0.04, c, { x: x + s * 0.2, y: y + s * 0.3, z });
+      b.box(s * 0.12, s * 0.1, 0.05, dark, { x: x - s * 0.12, y, z: z + 0.02 });
+      b.box(s * 0.12, s * 0.1, 0.05, dark, { x: x + s * 0.12, y, z: z + 0.02 });
+      break;
+    case 'fret':
+      for (let i = 0; i < 4; i++) {
+        b.box(s * 0.16, s * 0.16, 0.03, c, { x: x - s * 0.3 + i * s * 0.22, y: y + (i % 2 ? 1 : -1) * s * 0.14, z });
+      }
+      b.box(s * 0.7, s * 0.1, 0.03, c2, { x, y: y - s * 0.32, z });
+      break;
+    case 'staff':
+      b.box(s * 0.1, s * 0.8, 0.03, c2, { x, y, z });
+      b.box(s * 0.34, s * 0.34, 0.03, c, { x, y: y + s * 0.34, z });
+      b.box(s * 0.12, s * 0.12, 0.04, dark, { x: x - s * 0.09, y: y + s * 0.34, z: z + 0.02 });
+      b.box(s * 0.12, s * 0.12, 0.04, dark, { x: x + s * 0.09, y: y + s * 0.34, z: z + 0.02 });
+      break;
+    case 'condor':
+      b.box(s * 0.14, s * 0.5, 0.03, c, { x, y, z });
+      b.box(s * 0.5, s * 0.16, 0.03, c2, { x: x - s * 0.3, y: y + s * 0.16, z, rz: 0.3 });
+      b.box(s * 0.5, s * 0.16, 0.03, c2, { x: x + s * 0.3, y: y + s * 0.16, z, rz: -0.3 });
+      b.box(s * 0.12, s * 0.12, 0.04, c, { x, y: y + s * 0.3, z });
+      break;
+    case 'wave':
+      for (let i = 0; i < 3; i++) {
+        b.box(s * 0.3, s * 0.08, 0.03, i % 2 ? c2 : c, { x, y: y - s * 0.2 + i * s * 0.2, z, rz: 0.4 });
+        b.box(s * 0.3, s * 0.08, 0.03, i % 2 ? c : c2, { x: x + s * 0.28, y: y - s * 0.2 + i * s * 0.2, z, rz: -0.4 });
+      }
+      break;
+    case 'geometric':
+      b.box(s * 0.44, s * 0.44, 0.03, c, { x, y, z, rz: Math.PI / 4 });
+      b.box(s * 0.18, s * 0.18, 0.04, c2, { x, y, z: z + 0.02, rz: Math.PI / 4 });
+      break;
+    case 'cross':
+      b.box(s * 0.12, s * 0.6, 0.03, c, { x, y, z });
+      b.box(s * 0.44, s * 0.12, 0.03, c, { x, y: y + s * 0.12, z });
+      break;
+    case 'sunburst':
+      b.cyl(s * 0.22, s * 0.22, 0.03, 10, c, { x, y, z, rx: Math.PI / 2 });
+      for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2;
+        b.box(s * 0.08, s * 0.2, 0.03, c2, { x: x + Math.cos(a) * s * 0.4, y: y + Math.sin(a) * s * 0.4, z, rz: a });
+      }
+      break;
+    case 'shield':
+      b.box(s * 0.5, s * 0.42, 0.03, c, { x, y: y + s * 0.1, z });
+      b.cone(s * 0.25, s * 0.3, 4, c, { x, y: y - s * 0.2, z, rz: Math.PI });
+      b.box(s * 0.06, s * 0.5, 0.04, c2, { x, y, z: z + 0.02 });
+      b.box(s * 0.4, s * 0.06, 0.04, c2, { x, y: y + s * 0.12, z: z + 0.02 });
+      break;
+  }
+}
+
+/** A small civ emblem on a warrior's shield (drawn in the arm's local frame). */
+function shieldEmblem(b: Builder, parent: THREE.Object3D): void {
+  const c = b.civAccent;
+  const c2 = b.civSecondary;
+  const x = -0.095;
+  const y = -0.3;
+  const em = b.emblem;
+  if (em === 'sun' || em === 'sunburst') {
+    b.cylIn(parent, 0.05, 0.05, 0.02, 10, c, { x, y, rz: Math.PI / 2 });
+    for (let i = 0; i < 4; i++) {
+      const a = (i / 4) * Math.PI * 2;
+      b.boxIn(parent, 0.02, 0.02, 0.02, c2, { x, y: y + Math.cos(a) * 0.07, z: Math.sin(a) * 0.07 });
+    }
+  } else if (em === 'cross' || em === 'shield') {
+    b.boxIn(parent, 0.02, 0.12, 0.02, c, { x, y });
+    b.boxIn(parent, 0.02, 0.02, 0.1, c, { x, y: y + 0.02 });
+  } else if (em === 'geometric' || em === 'fret' || em === 'wave') {
+    b.boxIn(parent, 0.02, 0.08, 0.08, c, { x, y, rx: Math.PI / 4 });
+    b.boxIn(parent, 0.02, 0.03, 0.03, c2, { x: x - 0.01, y });
+  } else {
+    b.boxIn(parent, 0.02, 0.06, 0.1, c, { x, y });
+    b.boxIn(parent, 0.02, 0.025, 0.025, c2, { x: x - 0.01, y: y + 0.02, z: -0.03 });
+    b.boxIn(parent, 0.02, 0.025, 0.025, c2, { x: x - 0.01, y: y + 0.02, z: 0.03 });
+  }
+}
+
+interface AndeanOpts {
+  size: number;
+  tiers?: number;
+  roof?: 'thatch' | 'flat' | 'shrine';
+  niches?: boolean;
+  frieze?: boolean;
+  tower?: boolean;
+  stair?: boolean;
+  banner?: boolean;
+}
+
+/** Parameterized Andean building: stepped base + adobe/stone walls + roof. */
+function buildAndeanStructure(b: Builder, o: AndeanOpts): void {
+  const w = o.size;
+  const wall = andeanWall(b);
+  const tex = andeanTex(b);
+  const tiers = o.tiers ?? 1;
+  b.box(w * 1.5, 0.12, w * 1.5, mixHex(b.pal.primary, '#cbbfa4', 0.7), { y: 0.06, tex: 'dirt', texScale: 1.4 });
+  andeanPlatform(b, w, tiers);
+  const baseY = tiers * w * 0.14;
+  b.box(w * 0.9, w * 0.62, w * 0.9, wall, { y: baseY + w * 0.31, tex });
+  if (b.style === 'andean-masonry' || b.style === 'altiplano-stone') {
+    const pil = mixHex(b.pal.primary, '#8f8676', 0.8);
+    for (let i = -1; i <= 1; i += 2) {
+      b.box(0.12, w * 0.66, 0.12, pil, { x: i * w * 0.44, y: baseY + w * 0.33, z: w * 0.44, tex });
+      b.box(0.12, w * 0.66, 0.12, pil, { x: i * w * 0.44, y: baseY + w * 0.33, z: -w * 0.44, tex });
+    }
+  }
+  const dark = mixHex(b.pal.primary, '#2a2318', 0.55);
+  b.box(w * 0.26, w * 0.4, 0.06, dark, { y: baseY + w * 0.2, z: w * 0.46 });
+  b.box(w * 0.36, w * 0.08, 0.07, mixHex(b.pal.primary, '#6a5f4a', 0.6), { y: baseY + w * 0.42, z: w * 0.46 });
+  if (o.niches) andeanNiches(b, w, tex);
+  if (o.frieze) andeanFrieze(b, w);
+  const roofY = baseY + w * 0.72;
+  if (o.roof === 'flat') {
+    b.box(w * 1.0, w * 0.12, w * 1.0, andeanStone(b), { y: roofY, tex });
+    for (let i = -1; i <= 1; i += 2)
+      b.box(w * 0.12, w * 0.18, w * 1.0, wall, { x: i * w * 0.46, y: roofY + w * 0.1, tex });
+  } else if (o.roof === 'shrine') {
+    andeanThatchRoof(b, w * 0.7, roofY + w * 0.05);
+    b.box(w * 0.4, w * 0.34, w * 0.4, wall, { y: roofY + w * 0.2, tex });
+    b.box(w * 0.16, w * 0.16, 0.06, dark, { y: roofY + w * 0.18, z: w * 0.2 });
+  } else {
+    andeanThatchRoof(b, w, roofY);
+  }
+  if (o.tower) andeanTower(b, w, -w * 0.5, -w * 0.5);
+  if (o.stair) andeanStair(b, w, tiers + 2);
+  if (o.banner) andeanBanner(b, w * 0.5, baseY + w * 0.6, -w * 0.4, w * 0.9);
+}
+
+function buildAndeanHouse(b: Builder, size: number, grand: boolean): void {
+  buildAndeanStructure(b, {
+    size,
+    tiers: grand ? 2 : 1,
+    roof: 'thatch',
+    niches: b.style === 'andean-masonry' || b.style === 'altiplano-stone',
+    frieze: b.style === 'coastal-adobe',
+    stair: grand,
+    banner: true,
+  });
+}
+
+function buildAndeanCivic(b: Builder, size: number, tower: boolean): void {
+  buildAndeanStructure(b, {
+    size,
+    tiers: 3,
+    roof: 'shrine',
+    niches: b.style !== 'coastal-adobe',
+    frieze: b.style === 'coastal-adobe',
+    tower,
+    stair: true,
+    banner: true,
+  });
+}
+
+function buildAndeanMilitary(b: Builder, size: number, tower: boolean): void {
+  buildAndeanStructure(b, {
+    size,
+    tiers: 1,
+    roof: 'flat',
+    frieze: b.style === 'coastal-adobe',
+    niches: b.style === 'andean-masonry',
+    tower,
+    banner: true,
+  });
+}
+
+function buildAndeanFortress(b: Builder, size: number): void {
+  buildAndeanStructure(b, {
+    size,
+    tiers: 2,
+    roof: 'flat',
+    tower: true,
+    stair: true,
+    niches: b.style !== 'coastal-adobe',
+    banner: true,
+  });
+}
+
+function buildAndeanFarm(b: Builder): void {
+  const w = 3.0;
+  const terraced = b.style === 'highland-terraced' || b.style === 'altiplano-stone';
+  b.box(w * 0.78, 0.1, w * 0.78, mixHex(b.pal.primary, '#7a6a3a', 0.6), { y: 0.05, tex: 'dirt' });
+  if (terraced) {
+    const stone = andeanStone(b);
+    for (let i = -1; i <= 1; i++) {
+      b.box(w * 0.72, 0.16, 0.08, stone, { z: i * 0.28, y: 0.12, tex: 'stone' });
+      b.box(w * 0.66, 0.06, 0.2, mixHex('#4a6a2a', b.pal.primary, 0.4), { z: i * 0.28, y: 0.16 });
+    }
+  } else {
+    for (let i = -1; i <= 1; i++) {
+      b.box(w * 0.62, 0.04, 0.08, mixHex(b.pal.primary, '#3a6a8a', 0.5), { z: i * 0.32, y: 0.09 });
+    }
+    b.cyl(0.04, 0.05, 0.24, 6, mixHex('#3a6a2a', b.pal.primary, 0.3), { x: -0.4, y: 0.18, z: 0.3 });
+    b.cyl(0.04, 0.05, 0.24, 6, mixHex('#4a8a2a', b.pal.primary, 0.2), { x: 0.3, y: 0.2, z: -0.2 });
+  }
+}
+
+function buildAndeanMarket(b: Builder, size: number): void {
+  buildAndeanStructure(b, { size, tiers: 0, roof: 'thatch', frieze: true, banner: true });
+  b.box(size * 1.0, 0.1, size * 0.7, b.civPrimary, { y: size * 0.5, ry: Math.PI / 2 });
+  b.box(0.3, 0.2, 0.3, '#efe6d2', { x: -0.25, y: size * 0.12, z: 0.1, tex: 'wood' });
+}
+
 function buildHouse(b: Builder, size: number, grand: boolean): void {
+  if (b.isAndean) {
+    buildAndeanHouse(b, size, grand);
+    return;
+  }
   groundPad(b, size);
   const w = size;
   const wallTint = mixHex(b.pal.wood, '#ffffff', 0.52);
@@ -1374,6 +1693,10 @@ function buildHouse(b: Builder, size: number, grand: boolean): void {
 }
 
 function buildCivic(b: Builder, size: number, matType: 'stone' | 'brick'): void {
+  if (b.isAndean) {
+    buildAndeanCivic(b, size, false);
+    return;
+  }
   groundPad(b, size);
   const wallTint = matType === 'stone' ? '#ece5d8' : '#f0e2d0';
   const w = size;
@@ -1410,6 +1733,10 @@ function buildCivic(b: Builder, size: number, matType: 'stone' | 'brick'): void 
 }
 
 function buildConcrete(b: Builder, size: number, tower: boolean, radar = false): void {
+  if (b.isAndean) {
+    buildAndeanCivic(b, size, tower);
+    return;
+  }
   groundPad(b, size);
   const w = size;
   b.box(w * 0.92, w * 0.55, w * 0.92, mixHex(b.pal.concrete, '#ffffff', 0.62), { y: w * 0.28, tex: 'concrete' });
@@ -1512,6 +1839,10 @@ function buildFuturistic(b: Builder, size: number, tower: boolean): void {
 }
 
 function buildBarracks(b: Builder, size: number, wallType: 'wood' | 'brick'): void {
+  if (b.isAndean) {
+    buildAndeanMilitary(b, size, false);
+    return;
+  }
   groundPad(b, size);
   const w = size;
   const wallTint = wallType === 'wood' ? mixHex(b.pal.wood, '#ffffff', 0.5) : mixHex(b.pal.brick, '#ffffff', 0.5);
@@ -1531,6 +1862,10 @@ function buildBarracks(b: Builder, size: number, wallType: 'wood' | 'brick'): vo
 }
 
 function buildStable(b: Builder, size: number, wallType: 'wood' | 'brick'): void {
+  if (b.isAndean) {
+    buildAndeanMilitary(b, size, false);
+    return;
+  }
   groundPad(b, size);
   const w = size;
   const wallTint = wallType === 'wood' ? mixHex(b.pal.wood, '#ffffff', 0.5) : mixHex(b.pal.brick, '#ffffff', 0.5);
@@ -1550,6 +1885,10 @@ function buildStable(b: Builder, size: number, wallType: 'wood' | 'brick'): void
 }
 
 function buildMilitary(b: Builder, size: number, antenna: boolean): void {
+  if (b.isAndean) {
+    buildAndeanMilitary(b, size, antenna);
+    return;
+  }
   groundPad(b, size);
   const w = size;
   b.box(w * 0.92, w * 0.5, w * 0.8, mixHex(b.pal.concrete, '#ffffff', 0.62), { y: w * 0.25, tex: 'concrete' });
@@ -1578,6 +1917,10 @@ function buildMilitary(b: Builder, size: number, antenna: boolean): void {
 }
 
 function buildFactory(b: Builder, size: number, wallType: 'brick' | 'wood'): void {
+  if (b.isAndean) {
+    buildAndeanStructure(b, { size, tiers: 1, roof: 'flat', banner: true });
+    return;
+  }
   groundPad(b, size);
   const w = size;
   const wallTint = wallType === 'brick' ? mixHex(b.pal.brick, '#ffffff', 0.5) : mixHex(b.pal.wood, '#ffffff', 0.5);
@@ -1595,6 +1938,10 @@ function buildFactory(b: Builder, size: number, wallType: 'brick' | 'wood'): voi
 }
 
 function buildFortress(b: Builder, size: number, matType: 'stone' | 'concrete'): void {
+  if (b.isAndean) {
+    buildAndeanFortress(b, size);
+    return;
+  }
   groundPad(b, size);
   const w = size;
   const wallTint = matType === 'stone' ? mixHex(b.pal.stone, '#ffffff', 0.5) : mixHex(b.pal.concrete, '#ffffff', 0.62);
@@ -1644,6 +1991,10 @@ function buildFortress(b: Builder, size: number, matType: 'stone' | 'concrete'):
 }
 
 function buildMarket(b: Builder, size: number, wallType: 'wood' | 'brick'): void {
+  if (b.isAndean) {
+    buildAndeanMarket(b, size);
+    return;
+  }
   groundPad(b, size);
   const w = size;
   const wallTint = wallType === 'wood' ? mixHex(b.pal.wood, '#ffffff', 0.5) : mixHex(b.pal.brick, '#ffffff', 0.5);
@@ -1671,6 +2022,10 @@ function buildMarket(b: Builder, size: number, wallType: 'wood' | 'brick'): void
 }
 
 function buildDropsite(b: Builder, size: number, matType: 'wood' | 'brick' | 'stone'): void {
+  if (b.isAndean) {
+    buildAndeanStructure(b, { size, tiers: 0, roof: 'thatch', frieze: b.style === 'coastal-adobe', banner: true });
+    return;
+  }
   groundPad(b, size);
   const w = size;
   const wallTint =
@@ -1692,6 +2047,10 @@ function buildDropsite(b: Builder, size: number, matType: 'wood' | 'brick' | 'st
 }
 
 function buildFarm(b: Builder): void {
+  if (b.isAndean) {
+    buildAndeanFarm(b);
+    return;
+  }
   const w = 3.0;
   b.box(w * 0.7, 0.1, w * 0.7, '#e9e0cd', { y: 0.05, tex: 'dirt' });
   // furrows

@@ -1,5 +1,23 @@
 import { CivId, HistoricalPeriod, Geography, CivEffects } from '../../core/types';
 
+/**
+ * Architectural style family. Pre-Hispanic civs use one of the Andean styles;
+ * the post-1532 civs use the colonial/republican look. Drives
+ * `ProceduralModel` so rival civilizations read as different at a glance.
+ * Sources: `docs/historia/arquitectura.md`.
+ */
+export type ArchStyle =
+  'coastal-adobe' | 'andean-masonry' | 'altiplano-stone' | 'highland-terraced' | 'colonial' | 'republican';
+
+/** Procedural banner/shield emblem (a historically grounded glyph per civ). */
+export type EmblemId =
+  'wave' | 'feline' | 'fret' | 'geometric' | 'staff' | 'condor' | 'sun' | 'cross' | 'sunburst' | 'shield';
+
+export interface CivVisual {
+  arch: ArchStyle;
+  emblem: EmblemId;
+}
+
 export interface CivDef {
   id: CivId;
   name: string;
@@ -14,12 +32,15 @@ export interface CivDef {
   bonuses: string[];
   /** Numeric effects of those bonuses (applied in play). */
   effects?: CivEffects;
+  /** Visual identity (architecture style + banner emblem). */
+  visual: CivVisual;
   description: string;
 }
 
 export const CIVS: CivDef[] = [
   {
     id: CivId.CARAL,
+    visual: { arch: 'coastal-adobe', emblem: 'wave' },
     name: 'Caral-Supe',
     adjective: 'caralino',
     colors: { primary: '#b0885a', secondary: '#d8c8a0', accent: '#8a6a3a' },
@@ -36,6 +57,7 @@ export const CIVS: CivDef[] = [
   },
   {
     id: CivId.CHAVIN,
+    visual: { arch: 'andean-masonry', emblem: 'feline' },
     name: 'Chavín',
     adjective: 'chavín',
     colors: { primary: '#6a6a72', secondary: '#c8c2b4', accent: '#8a7a5a' },
@@ -52,6 +74,7 @@ export const CIVS: CivDef[] = [
   },
   {
     id: CivId.PARACAS,
+    visual: { arch: 'coastal-adobe', emblem: 'geometric' },
     name: 'Paracas',
     adjective: 'paraqueño',
     colors: { primary: '#8a3a3a', secondary: '#e8d0a0', accent: '#3a6a8a' },
@@ -64,6 +87,7 @@ export const CIVS: CivDef[] = [
   },
   {
     id: CivId.CUPISNIQUE,
+    visual: { arch: 'coastal-adobe', emblem: 'fret' },
     name: 'Cupisnique',
     adjective: 'cupisnique',
     colors: { primary: '#9a6a4a', secondary: '#d8c0a0', accent: '#3a5a6a' },
@@ -80,6 +104,7 @@ export const CIVS: CivDef[] = [
   },
   {
     id: CivId.MOCHE,
+    visual: { arch: 'coastal-adobe', emblem: 'fret' },
     name: 'Cultura Moche',
     adjective: 'moche',
     colors: { primary: '#a83a2a', secondary: '#e8d0a0', accent: '#d8a040' },
@@ -96,6 +121,7 @@ export const CIVS: CivDef[] = [
   },
   {
     id: CivId.NAZCA,
+    visual: { arch: 'coastal-adobe', emblem: 'wave' },
     name: 'Cultura Nazca',
     adjective: 'nazca',
     colors: { primary: '#b0603a', secondary: '#d8b088', accent: '#3a6a9a' },
@@ -112,6 +138,7 @@ export const CIVS: CivDef[] = [
   },
   {
     id: CivId.RECUAY,
+    visual: { arch: 'highland-terraced', emblem: 'geometric' },
     name: 'Cultura Recuay',
     adjective: 'recuay',
     colors: { primary: '#7a6a4a', secondary: '#d8c8a0', accent: '#a85a2a' },
@@ -128,6 +155,7 @@ export const CIVS: CivDef[] = [
   },
   {
     id: CivId.WARI,
+    visual: { arch: 'andean-masonry', emblem: 'staff' },
     name: 'Imperio Wari',
     adjective: 'wari',
     colors: { primary: '#8a5a2a', secondary: '#d8b06a', accent: '#3a3a3a' },
@@ -144,6 +172,7 @@ export const CIVS: CivDef[] = [
   },
   {
     id: CivId.TIAHUANACO,
+    visual: { arch: 'altiplano-stone', emblem: 'staff' },
     name: 'Tiahuanaco',
     adjective: 'tiahuanacota',
     colors: { primary: '#6a7a8a', secondary: '#c8d0d8', accent: '#c8a040' },
@@ -156,6 +185,7 @@ export const CIVS: CivDef[] = [
   },
   {
     id: CivId.CHIMU,
+    visual: { arch: 'coastal-adobe', emblem: 'wave' },
     name: 'Reino Chimú',
     adjective: 'chimú',
     colors: { primary: '#1f6f6f', secondary: '#d8c8a0', accent: '#c8a040' },
@@ -168,6 +198,7 @@ export const CIVS: CivDef[] = [
   },
   {
     id: CivId.CHINCHA,
+    visual: { arch: 'coastal-adobe', emblem: 'wave' },
     name: 'Señorío de Chincha',
     adjective: 'chincha',
     colors: { primary: '#8a7a3a', secondary: '#e0d0a0', accent: '#2a6a6a' },
@@ -180,6 +211,7 @@ export const CIVS: CivDef[] = [
   },
   {
     id: CivId.CHANCA,
+    visual: { arch: 'highland-terraced', emblem: 'condor' },
     name: 'Confederación Chanca',
     adjective: 'chanca',
     colors: { primary: '#7a3a2a', secondary: '#c8a888', accent: '#d8a040' },
@@ -191,6 +223,7 @@ export const CIVS: CivDef[] = [
   },
   {
     id: CivId.COLLAS_LUPACA,
+    visual: { arch: 'altiplano-stone', emblem: 'geometric' },
     name: 'Señoríos Collas y Lupaca',
     adjective: 'colla',
     colors: { primary: '#5a6a8a', secondary: '#c8d0d8', accent: '#c8a040' },
@@ -207,6 +240,7 @@ export const CIVS: CivDef[] = [
   },
   {
     id: CivId.HUANCA,
+    visual: { arch: 'highland-terraced', emblem: 'geometric' },
     name: 'Nación Huanca',
     adjective: 'huanca',
     colors: { primary: '#7a5a3a', secondary: '#d8c0a0', accent: '#b04030' },
@@ -223,6 +257,7 @@ export const CIVS: CivDef[] = [
   },
   {
     id: CivId.INCA,
+    visual: { arch: 'andean-masonry', emblem: 'sun' },
     name: 'Tahuantinsuyo',
     adjective: 'inca',
     colors: { primary: '#c8a040', secondary: '#b03028', accent: '#f0d060' },
@@ -238,6 +273,7 @@ export const CIVS: CivDef[] = [
   },
   {
     id: CivId.REALISTAS,
+    visual: { arch: 'colonial', emblem: 'cross' },
     name: 'Realistas (España)',
     adjective: 'realista',
     colors: { primary: '#8a2a2a', secondary: '#d8c8a0', accent: '#c8a040' },
@@ -253,6 +289,7 @@ export const CIVS: CivDef[] = [
   },
   {
     id: CivId.PATRIOTAS,
+    visual: { arch: 'republican', emblem: 'sunburst' },
     name: 'Patriotas',
     adjective: 'patriota',
     colors: { primary: '#2a4a8a', secondary: '#e8e0d0', accent: '#c8a040' },
@@ -264,6 +301,7 @@ export const CIVS: CivDef[] = [
   },
   {
     id: CivId.REPUBLIC,
+    visual: { arch: 'republican', emblem: 'shield' },
     name: 'República del Perú',
     adjective: 'peruano',
     colors: { primary: '#b03030', secondary: '#e8e8e8', accent: '#c8a040' },
@@ -275,6 +313,7 @@ export const CIVS: CivDef[] = [
   },
   {
     id: CivId.CHILE,
+    visual: { arch: 'republican', emblem: 'shield' },
     name: 'Chile',
     adjective: 'chileno',
     colors: { primary: '#1f3a6a', secondary: '#e8e8e8', accent: '#c8302a' },
