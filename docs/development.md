@@ -94,11 +94,20 @@ for player-facing docs see [`README.md`](../README.md).
   `Building.queueUnit`, the AI candidate filter and the HUD).
 - **UI/inputs in `src/core/Game.ts` and `src/ui/HUD.ts`**: left click selects / drag = box-select (rectangle
   `#ed-selbox`) · right click = order (**right button no longer pans**; panning is by screen edges, WASD/arrows,
-  middle wheel, or dragging the **bottom-left minimap**). Minimap: drag = move viewport, right click = order
+  middle-mouse drag, or dragging the **bottom-left minimap**). Minimap: drag = move viewport, right click = order
   (`Game.commandMoveToWorld`). Optional camera rotation with Q/E (`settings.rotateCamera`, off = fixed camera).
   Control groups (Ctrl/Alt+1-9 assign, 1-9 recall, Shift+1-9 add). Hover tooltip (`computeHover`) and
   **contextual cursor** (`hoverAction`). Damage icons/numbers (`src/ui/DamageNumbers.ts`), clickable alerts that
   pulse on the minimap (`pushAlert` + `alert` event), and order markers (`src/entities/OrderMarker.ts`).
+- **Camera panning (`src/core/Camera.ts` + `src/core/cameraMath.ts`)**: the canvas fills the window
+  (`Renderer.setSize(innerWidth, innerHeight)`), so the viewport is the window. Edge scrolling is **progressive**
+  (0 at the zone edge, ±1 at the border) and every pan vector is **normalized** (a diagonal is not faster than an
+  axis); middle-drag uses a **geometric** world-per-pixel (`2·tan(fov/2)·zoom/viewportH`) with the "grab the map"
+  metaphor (the content follows the cursor). Inputs only move `desiredTarget`; `update` damps toward it. The target
+  is **clamped** so the visible rectangle stays near the terrain (`boundsMargin`), and panning is suppressed while
+  **paused** (the loop skips `camera.update`) or while a **blocking overlay** is open
+  (`camera.setUiCaptured(hud.hasBlockingOverlay())`). Tuning lives in `CAMERA_CONFIG`; the pure math is unit-tested
+  (`tests/camera.test.ts`), the wiring in `tests/e2e/camera.spec.ts`.
 - **Construction (RTS standard)**: placing a building **requires selected workers** (`Game.startPlacement` warns
   if none). Only those workers build: `commitPlacement` emits `issueOrder(BUILD, clear=true)` (the order
   **interrupts** their current task) and **keeps the selection**. Do not reintroduce auto-assignment of builders:

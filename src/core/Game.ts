@@ -170,7 +170,7 @@ export class Game {
 
   private initRenderer(): void {
     this.renderer = createRenderer();
-    this.camera = new RTSCamera(this.renderer.domElement);
+    this.camera = new RTSCamera(this.renderer.domElement, this.settings.mapSize);
     this.camera.setRotationEnabled(this.settings.rotateCamera);
     this.camera.setFollowResolver((id) => {
       const e = this.units.get(id) ?? this.buildings.get(id);
@@ -2334,6 +2334,8 @@ export class Game {
     this.markers.update(d);
     this.trees.update(d);
 
+    // a blocking menu/modal suppresses camera panning (edge/keyboard/drag)
+    this.camera.setUiCaptured(this.hud.hasBlockingOverlay());
     this.camera.update(d, t);
     this.rebuildSpatial();
 
