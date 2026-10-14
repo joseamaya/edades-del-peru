@@ -15,6 +15,8 @@ export type ObjState = 'pendiente' | 'activo' | 'completed' | 'failed';
 export class Mission {
   def: MissionDef;
   ended = false;
+  /** Result once `ended` is true: `true` won, `false` lost, `null` still running. */
+  won: boolean | null = null;
   private game: Game;
   private timer = 0;
   private started = false;
@@ -297,12 +299,14 @@ export class Mission {
   private win(): void {
     if (this.ended) return;
     this.ended = true;
+    this.won = true;
     this.onEnd(true);
   }
 
   private defeat(text?: string): void {
     if (this.ended) return;
     this.ended = true;
+    this.won = false;
     if (text) this.game.hud.showDialogue('Comandante', text, 4);
     this.onEnd(false);
   }
@@ -317,6 +321,7 @@ export class Mission {
     return {
       started: this.started,
       ended: this.ended,
+      won: this.won,
       timer: this.timer,
       objState: [...this.objState.entries()],
       fired: [...this.fired],
@@ -328,6 +333,7 @@ export class Mission {
   applySave(s: MissionSave): void {
     this.started = s.started;
     this.ended = s.ended;
+    this.won = s.won ?? null;
     this.timer = s.timer;
     this.objState = new Map(s.objState);
     this.fired = new Set(s.fired);
