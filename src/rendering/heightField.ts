@@ -6,11 +6,21 @@ import type { HistoricalMapProfile } from '../model/defs/profiles';
 export interface HeightField {
   heightMap: Float32Array;
   moistureMap: Float32Array;
+  /** Strength of agricultural terracing (andenes) per cell, 0 (none) .. ~0.55 (full shelf). */
+  terraceMap: Float32Array;
   waterLevel: number;
 }
 
 /** Vertical scale of the base heightfield (before mountains). */
 const HEIGHT_SCALE = 6.6;
+
+/** Vertical spacing between terraced shelves (world units). */
+const TERRACE_STEP = 0.8;
+/** Per-cell height delta band where terraces can form: below is too flat, above is a cliff. */
+const TERRACE_MIN_DELTA = 0.12;
+const TERRACE_MAX_DELTA = 2.6;
+/** How much of the way to a flat shelf a terraced cell is pulled (keeps a slight slope). */
+const TERRACE_FLATTEN = 0.55;
 
 /**
  * Deterministic heightfield generation driven by a `HistoricalMapProfile`. Pure
@@ -48,7 +58,46 @@ export function generateHeightField(resolution: number, seed: number, profile: H
   }
 
   carveRivers(heightMap, n, profile, new RNG(seed * 7919 + 17));
-  return { heightMap, moistureMap, waterLevel: profile.water.level };
+  const terraceMap = carveTerraces(heightMap, n, profile, seed);
+  return { heightMap, moistureMap, terraceMap, waterLevel: profile.water.level };
+}
+
+/**
+ * Carve agricultural terraces (andenes) into moderate slopes, gated by the
+ * profile's `terraceChance` and a coherent noise mask so they form patchy zones
+ * (not per-cell noise). Writes a strength map consumed by the farm yield and the
+ * terrain tint; the heightfield is pulled toward flat shelves so it reads as
+ * stepped. Deterministic: same seed + profile -> same map.
+ */
+function carveTerraces(heightMap: Float32Array, n: number, profile: HistoricalMapProfile, seed: number): Float32Array {
+  const terraceMap = new Float32Array(n * n);
+  const chance = profile.terrain.terraceChance;
+  if (chance <= 0) return terraceMap;
+  const waterLevel = profile.water.level;
+  const res = n - 1;
+  const offset = new RNG(seed * 65537 + 23).range(0, 100);
+  const orig = heightMap.slice();
+  for (let z = 0; z < n; z++) {
+    for (let x = 0; x < n; x++) {
+      const i = z * n + x;
+      const h = orig[i];
+      if (h <= waterLevel + 1.2) continue;
+      const hR = orig[z * n + Math.min(x + 1, n - 1)];
+      const hD = orig[Math.min(z + 1, n - 1) * n + x];
+      const delta = Math.max(Math.abs(h - hR), Math.abs(h - hD));
+      if (delta < TERRACE_MIN_DELTA || delta > TERRACE_MAX_DELTA) continue;
+      const nx = x / (res / 2) - 1;
+      const nz = z / (res / 2) - 1;
+      if (Math.max(Math.abs(nx), Math.abs(nz)) > 0.93) continue;
+      if (fbm2(nx * 1.6 + offset, nz * 1.6, 3) < 1 - chance) continue;
+      const shelf = Math.round(h / TERRACE_STEP) * TERRACE_STEP;
+      const strength = (1 - Math.abs(h - shelf) / (TERRACE_STEP / 2)) * TERRACE_FLATTEN;
+      if (strength <= 0) continue;
+      heightMap[i] = h + (shelf - h) * strength;
+      terraceMap[i] = strength;
+    }
+  }
+  return terraceMap;
 }
 
 /** Carve rivers with directional noise, dropping the terrain toward the water level. */

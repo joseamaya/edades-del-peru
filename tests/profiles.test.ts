@@ -22,7 +22,7 @@ import { CivId, Era, HistoricalPeriod, MapType } from '../src/core/types';
 
 const REGIONS = Object.keys(MAP_PROFILES) as GeographicRegion[];
 const MAP_TYPES: MapType[] = ['coast', 'andes', 'altiplano', 'jungle'];
-const WALLS: WallMaterial[] = ['adobe', 'fieldstone', 'cut-stone', 'megalithic', 'wood', 'brick', 'concrete', 'metal'];
+const WALLS: WallMaterial[] = ['adobe', 'fieldstone', 'cut-stone', 'megalithic', 'brick', 'concrete', 'metal'];
 const ROOFS: RoofMaterial[] = ['thatch', 'flat-stone', 'tile', 'flat-metal'];
 const FOUNDATIONS: FoundationKind[] = ['platform', 'terrace', 'plinth', 'none'];
 

@@ -15,6 +15,11 @@ function maxOf(a: Float32Array): number {
   for (let i = 0; i < a.length; i++) if (a[i] > m) m = a[i];
   return m;
 }
+function countNonZero(a: Float32Array): number {
+  let c = 0;
+  for (let i = 0; i < a.length; i++) if (a[i] > 0) c++;
+  return c;
+}
 
 describe('deterministic height field', () => {
   it('produces the same map for the same seed and profile', () => {
@@ -23,6 +28,7 @@ describe('deterministic height field', () => {
     expect(a.heightMap.length).toBe(b.heightMap.length);
     expect(hash(a.heightMap)).toBe(hash(b.heightMap));
     expect(hash(a.moistureMap)).toBe(hash(b.moistureMap));
+    expect(hash(a.terraceMap)).toBe(hash(b.terraceMap));
   });
 
   it('a different seed produces a different map', () => {
@@ -46,5 +52,25 @@ describe('deterministic height field', () => {
   it('carries the profile water level', () => {
     const f = generateHeightField(64, 777, MAP_PROFILES.altiplano);
     expect(f.waterLevel).toBe(MAP_PROFILES.altiplano.water.level);
+  });
+
+  it('carves more terracing (andenes) where the profile allows it', () => {
+    const andes = generateHeightField(96, 777, MAP_PROFILES.high_andes);
+    const jungle = generateHeightField(96, 777, MAP_PROFILES.amazon);
+    // the high Andes terraces its slopes; the jungle barely does (terraceChance 0.05)
+    expect(countNonZero(andes.terraceMap)).toBeGreaterThan(0);
+    expect(countNonZero(jungle.terraceMap)).toBeLessThan(countNonZero(andes.terraceMap) / 4);
+  });
+
+  it('carves no terraces when terraceChance is zero', () => {
+    const flat = { ...MAP_PROFILES.high_andes, terrain: { ...MAP_PROFILES.high_andes.terrain, terraceChance: 0 } };
+    expect(countNonZero(generateHeightField(96, 777, flat).terraceMap)).toBe(0);
+  });
+
+  it('never terraces below the waterline', () => {
+    const f = generateHeightField(96, 777, MAP_PROFILES.high_andes);
+    for (let i = 0; i < f.terraceMap.length; i++) {
+      if (f.terraceMap[i] > 0) expect(f.heightMap[i]).toBeGreaterThan(f.waterLevel);
+    }
   });
 });

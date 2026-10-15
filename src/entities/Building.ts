@@ -11,6 +11,9 @@ import { getTech, techAvailable } from '../model/defs/techs';
 import { clamp } from '../util/math';
 import type { BuildingSave } from '../game/saveTypes';
 
+/** Extra food on a fully terraced (andén) cell: a gameplay abstraction of terrace agriculture. */
+const TERRACE_YIELD_BONUS = 0.8;
+
 export class Building {
   id = allocId();
   owner: number;
@@ -74,6 +77,12 @@ export class Building {
 
   get team(): Team {
     return this.ctx?.players?.find((p: any) => p.id === this.owner)?.team ?? 0;
+  }
+
+  /** Scale the farm's food reserve by the terracing (andenes) strength under it. */
+  applyTerraceYield(terrace: number): void {
+    if (!this.isFarm || terrace <= 0) return;
+    this.foodAmount = Math.round(this.foodAmount * (1 + TERRACE_YIELD_BONUS * terrace));
   }
 
   setContext(ctx: any): void {

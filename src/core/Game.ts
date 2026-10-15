@@ -649,6 +649,7 @@ export class Game {
     const land = this.findLandNear(x, z, 26);
     const b = new Building(kind, owner, era, ctx);
     b.pos.set(land.x, this.terrain.getHeight(land.x, land.z), land.z);
+    this.applyTerrainFarmYield(b);
     b.attach(this.scene);
     b.beginConstruction();
     b.addBuildProgress(9999);
@@ -865,11 +866,21 @@ export class Game {
     const ctx = this.makeBuildContext(0);
     const b = new Building(kind, 0, this.players[0].era, ctx);
     b.pos.set(x, this.terrain.getHeight(x, z), z);
+    this.applyTerrainFarmYield(b);
     b.attach(this.scene);
     b.beginConstruction();
     this.buildings.set(b.id, b);
     this.registerObstacle(b);
     return b;
+  }
+
+  /**
+   * Scale a farm's food reserve by the terracing (andenes) under it. Terraces are
+   * generated in `heightField` from the region profile; this is the gameplay hook
+   * that makes agriculture adapt to the terrain. Deterministic, so replay/save safe.
+   */
+  applyTerrainFarmYield(b: Building): void {
+    b.applyTerraceYield(this.terrain.getTerrace(b.pos.x, b.pos.z));
   }
 
   /** Train a unit in a completed building of player 0. */

@@ -335,6 +335,7 @@ export class AI {
     const ctx = this.game.makeBuildContext(this.playerId);
     const b = new Building(kind, this.playerId, p.era, ctx);
     b.pos.set(x, this.game.terrain.getHeight(x, z), z);
+    this.game.applyTerrainFarmYield(b);
     b.attach(this.game.scene);
     b.beginConstruction();
     this.game.buildings.set(b.id, b);
