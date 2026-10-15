@@ -65,8 +65,9 @@ for player-facing docs see [`README.md`](../README.md).
 - **Landmarks (visual only)**: `Game.mapProfile.landmark` (from `landmarkForCiv(civ, period)` — period-gated and
   region-gated: see `resolveMapProfile`) drives `Game.spawnLandmark()`, which builds a cached template via
   `buildLandmarkModel` (`ProceduralModel.ts`, keyed by `landmark|civ|era`) with the landmark's own
-  civilization/era. One landmark per civilization family (Caral, Chavín, Moche, Wari, Tiahuanaco, Chimú, Inca,
-  colonial, republican); sources/status in `src/model/defs/landmarks.ts`. Placement is deterministic
+  civilization/era. One landmark per civilization (17 total: Caral, Chavín, Cupisnique, Paracas, Moche, Nazca,
+  Wari, Tiahuanaco, Chimú, Chincha, Chanca, Collas/Lupaca, Huanca, Inca, colonial, Patriotas, República;
+  Recuay and Chile have none); sources/status in `src/model/defs/landmarks.ts`. Placement is deterministic
   (`RNG(mapSeed*131+11)` on a 0.3–0.42·size ring, skipping water/beach/steep cells and player bases/resources)
   and adds a plain `THREE.Group` named `landmark` to the scene (no entity, no pathfinding obstacle). Freed in
   `Game.destroy()`; templates are freed by `clearModelCaches()`. Verified by `tests/e2e/landmarks.spec.ts`.

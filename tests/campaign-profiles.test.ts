@@ -69,6 +69,7 @@ describe('campaign map profiles', () => {
       'm3_moche_recuay',
       'm4_wari',
       'm5_yahuar_pampa',
+      'm8_independencia',
       'm9_guerra_pacifico',
     ]);
   });

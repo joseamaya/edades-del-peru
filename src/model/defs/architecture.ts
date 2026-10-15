@@ -75,14 +75,26 @@ const CIV_ARCH: Partial<Record<CivId, Partial<ArchBase>>> = {
     monumentalTiers: 3,
     ornament: { niches: true, megalithBlocks: true },
   },
+  // Cupisnique: early north-coast adobe huacas with modelled friezes and stone heads
+  [CivId.CUPISNIQUE]: { monumentalTiers: 3, ornament: { frieze: true, megalithBlocks: true } },
+  // Paracas: coastal adobe with funerary textiles
+  [CivId.PARACAS]: { monumentalTiers: 2, ornament: { tapestry: true } },
   // Moche huacas (e.g. Huaca del Sol) tower over the earlier coastal platforms
   [CivId.MOCHE]: { monumentalTiers: 3 },
+  // Nazca: low adobe ceremonial mounds (Cahuachi)
+  [CivId.NAZCA]: { monumentalTiers: 1, ornament: {} },
   // Wari: planned stone compounds
   [CivId.WARI]: { wall: 'fieldstone', roof: 'thatch', monumentalTiers: 3, ornament: { niches: true } },
   // Tiahuanaco: taller megalithic platforms (Akapana-like) than the generic altiplano base
   [CivId.TIAHUANACO]: { monumentalTiers: 4 },
   // Chimú: large walled adobe citadels with painted friezes
   [CivId.CHIMU]: { monumentalTiers: 3, ornament: { frieze: true } },
+  // Chincha: lower adobe ceremonial complex (La Centinela)
+  [CivId.CHINCHA]: { monumentalTiers: 2 },
+  // Chanca: hilltop stone fortresses
+  [CivId.CHANCA]: { wall: 'fieldstone', roof: 'flat-stone', foundation: 'terrace', monumentalTiers: 2, ornament: {} },
+  // Collas/Lupaca: funerary towers (chullpas), simpler than Tiahuanaco
+  [CivId.COLLAS_LUPACA]: { monumentalTiers: 2, ornament: { megalithBlocks: true } },
   [CivId.INCA]: {
     wall: 'cut-stone',
     roof: 'thatch',
@@ -95,10 +107,16 @@ const CIV_ARCH: Partial<Record<CivId, Partial<ArchBase>>> = {
 const CIV_ARCH_SOURCE: Partial<Record<CivId, string>> = {
   [CivId.CARAL]: 'docs/historia/civilizaciones/caral.md',
   [CivId.CHAVIN]: 'docs/historia/civilizaciones/chavin.md',
+  [CivId.CUPISNIQUE]: 'docs/historia/civilizaciones/cupisnique.md',
+  [CivId.PARACAS]: 'docs/historia/civilizaciones/paracas.md',
   [CivId.MOCHE]: 'docs/historia/civilizaciones/moche.md',
+  [CivId.NAZCA]: 'docs/historia/civilizaciones/nazca.md',
   [CivId.WARI]: 'docs/historia/civilizaciones/wari.md',
   [CivId.TIAHUANACO]: 'docs/historia/civilizaciones/tiahuanaco.md',
   [CivId.CHIMU]: 'docs/historia/civilizaciones/chimu.md',
+  [CivId.CHINCHA]: 'docs/historia/civilizaciones/chincha.md',
+  [CivId.CHANCA]: 'docs/historia/civilizaciones/chanca.md',
+  [CivId.COLLAS_LUPACA]: 'docs/historia/civilizaciones/collas_lupaca.md',
   [CivId.INCA]: 'docs/historia/civilizaciones/inca.md',
 };
 
