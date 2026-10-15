@@ -19,7 +19,12 @@ for (const [name, mission] of MISSIONS) {
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(base + `/?mission=${mission}&fog=0&low=1`, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => window.game !== undefined, null, { timeout: 30000 }).catch(() => {});
-  await page.waitForTimeout(2500);
+  // the mission briefing pauses the match; start it so the camera can move
+  await page
+    .locator('.ed-primary', { hasText: 'COMENZAR' })
+    .click({ timeout: 3000 })
+    .catch(() => {});
+  await page.waitForTimeout(3000);
   await page.evaluate(() => {
     const g = window.game;
     const c = [...g.buildings.values()].find((b) => b.owner === 0 && b.kind === 'center');
@@ -30,6 +35,17 @@ for (const [name, mission] of MISSIONS) {
   });
   await page.waitForTimeout(1500);
   await page.screenshot({ path: path.join(outDir, `civ_${name}.png`) });
+  const hasLandmark = await page.evaluate(() => {
+    const g = window.game;
+    if (!g.landmark) return false;
+    g.camera.moveTo(g.landmark.position.x, g.landmark.position.z, true);
+    g.camera.setHeight(16);
+    return true;
+  });
+  if (hasLandmark) {
+    await page.waitForTimeout(1200);
+    await page.screenshot({ path: path.join(outDir, `landmark_${name}.png`) });
+  }
   console.log(`civ_${name}`, errors.length ? 'ERR:' + errors.slice(0, 2) : 'ok');
   await context.close();
 }

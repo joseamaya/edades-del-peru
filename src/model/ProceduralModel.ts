@@ -6,6 +6,7 @@ import { ModelSpec } from './defs/units';
 import { Era } from '../core/types';
 import { ERA_DEFS } from './defs/eras';
 import type { HistoricalArchitectureProfile } from './defs/architecture';
+import type { LandmarkId } from './defs/landmarks';
 import { mixHex } from '../util/math';
 import { MaterialTex } from '../rendering/Textures';
 import { getGeneratedMaterial } from '../rendering/Biomes';
@@ -2207,9 +2208,98 @@ function buildWonder(b: Builder): void {
 }
 
 // ---------------------------------------------------------------------------
+// Landmarks (visual only). Historically grounded abstractions; sources in
+// `LANDMARKS` (`src/model/defs/landmarks.ts`).
+// ---------------------------------------------------------------------------
+
+/** Caral: a stepped earth platform beside a sunken circular plaza. */
+function buildCaralLandmark(b: Builder): void {
+  const earth = mixHex(b.pal.primary, '#c8a878', 0.72);
+  const stone = mixHex(b.pal.primary, '#b8a888', 0.7);
+  const w = 5;
+  for (let i = 0; i < 3; i++) {
+    const t = w * (1.2 - i * 0.18);
+    b.box(t, 0.5, t, earth, { y: 0.25 + i * 0.5, tex: 'dirt', flatShading: true });
+  }
+  b.box(w * 0.42, 0.7, w * 0.42, earth, { y: 1.85, tex: 'brick' });
+  b.box(w * 0.3, 0.3, w * 0.3, stone, { y: 2.35, tex: 'stone' });
+  const r = w * 0.62;
+  const cx = w * 1.4;
+  b.cyl(r, r, 0.3, 28, stone, { x: cx, y: 0.15, tex: 'stone', flatShading: true });
+  b.cyl(r * 0.84, r * 0.84, 0.36, 28, mixHex(b.pal.primary, '#8a7a5a', 0.5), {
+    x: cx,
+    y: 0.17,
+    flatShading: true,
+  });
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    b.box(0.4, 0.5, 0.4, stone, { x: cx + Math.cos(a) * r, y: 0.4, z: Math.sin(a) * r, tex: 'stone' });
+  }
+}
+
+/** Moche: a tall stepped adobe huaca with a painted frieze and a ramp. */
+function buildMocheLandmark(b: Builder): void {
+  const adobe = andeanWall(b);
+  const w = 6.5;
+  const tiers = 4;
+  for (let i = 0; i < tiers; i++) {
+    const t = w * (1.26 - i * 0.15);
+    b.box(t, 0.62, t, mixHex(adobe, '#ffffff', i * 0.04), { y: 0.31 + i * 0.62, tex: 'brick' });
+  }
+  const baseY = tiers * 0.62;
+  b.box(w * 0.5, 0.72, w * 0.5, adobe, { y: baseY + 0.36, tex: 'brick' });
+  // painted frieze band on the front face
+  b.box(w * 1.0, 0.34, 0.08, b.civAccent, { y: baseY * 0.5, z: w * 0.62 });
+  for (let i = -2; i <= 2; i++) {
+    b.box(0.32, 0.3, 0.06, b.civSecondary, { x: i * w * 0.18, y: baseY * 0.5, z: w * 0.63 });
+  }
+  // access ramp
+  for (let i = 0; i < 5; i++) {
+    b.box(1.0, 0.14, w * 0.5, adobe, { y: 0.07 + i * 0.13, z: w * 0.68 + i * 0.26, tex: 'brick' });
+  }
+}
+
+/** Inca: a cut-stone ushnu platform with a central seat and a stairway. */
+function buildIncaLandmark(b: Builder): void {
+  const stone = andeanStone(b);
+  const w = 6;
+  for (let i = 0; i < 3; i++) {
+    const t = w * (1.16 - i * 0.16);
+    b.box(t, 0.52, t, stone, { y: 0.26 + i * 0.52, tex: 'stone' });
+  }
+  const baseY = 3 * 0.52;
+  b.box(0.9, 1.4, 0.9, stone, { y: baseY + 0.7, tex: 'stone' });
+  b.box(1.3, 0.3, 1.3, mixHex(b.pal.primary, '#c8a040', 0.55), { y: baseY + 1.5, tex: 'stone' });
+  for (let i = 0; i < 4; i++) {
+    b.box(1.5, 0.15, 0.44, stone, { y: 0.08 + i * 0.15, z: w * 0.52 + i * 0.24, tex: 'stone' });
+  }
+}
+
+function buildLandmarkStructure(type: LandmarkId, ctx: BuildContext): THREE.Group {
+  const b = new Builder(ctx);
+  if (type === 'caral_ceremonial') buildCaralLandmark(b);
+  else if (type === 'moche_huaca') buildMocheLandmark(b);
+  else buildIncaLandmark(b);
+  return b.finish();
+}
+
+// ---------------------------------------------------------------------------
 
 /** Built model templates by signature (geometry is shared; materials are per instance). */
 const modelCache = new Map<string, THREE.Group>();
+const landmarkCache = new Map<string, THREE.Group>();
+
+/** Clone a template; the instance owns its materials (geometry stays shared). */
+function instantiateTemplate(template: THREE.Group): THREE.Group {
+  const inst = template.clone();
+  inst.traverse((obj) => {
+    const mesh = obj as THREE.Mesh;
+    if (!mesh.isMesh) return;
+    if (Array.isArray(mesh.material)) mesh.material = mesh.material.map((m) => m.clone());
+    else if (mesh.material) mesh.material = mesh.material.clone();
+  });
+  return inst;
+}
 
 /** Build a parametric model. Returns a clone that owns its materials (geometry is shared). */
 export function buildModel(spec: ModelSpec, ctx: BuildContext): THREE.Group {
@@ -2219,14 +2309,20 @@ export function buildModel(spec: ModelSpec, ctx: BuildContext): THREE.Group {
     template = buildModelTemplate(spec, ctx);
     modelCache.set(key, template);
   }
-  const inst = template.clone();
-  inst.traverse((obj) => {
-    const mesh = obj as THREE.Mesh;
-    if (!mesh.isMesh) return;
-    if (Array.isArray(mesh.material)) mesh.material = mesh.material.map((m) => m.clone());
-    else if (mesh.material) mesh.material = mesh.material.clone();
-  });
-  return inst;
+  return instantiateTemplate(template);
+}
+
+/** Build a landmark model (visual only). Cached by landmark/civ/era like `buildModel`. */
+export function buildLandmarkModel(id: LandmarkId, ctx: BuildContext): THREE.Group {
+  const key = `${id}|${ctx.era}|${ctx.civ.id}`;
+  let template = landmarkCache.get(key);
+  if (!template) {
+    template = buildLandmarkStructure(id, ctx);
+    bakeVertexAO(template);
+    mergeStaticParts(template);
+    landmarkCache.set(key, template);
+  }
+  return instantiateTemplate(template);
 }
 
 function buildModelTemplate(spec: ModelSpec, ctx: BuildContext): THREE.Group {
@@ -2378,13 +2474,14 @@ export function clearModelCaches(): void {
     delete sharedGeo[k];
   }
   // template geometries (baked AO + merged) are the only owners of those buffers
-  for (const tpl of modelCache.values()) {
+  for (const tpl of [...modelCache.values(), ...landmarkCache.values()]) {
     tpl.traverse((obj) => {
       const mesh = obj as THREE.Mesh;
       if (mesh.isMesh) mesh.geometry.dispose();
     });
   }
   modelCache.clear();
+  landmarkCache.clear();
   bakedGeoCache.clear();
   for (const m of matCache.values()) m.dispose();
   matCache.clear();
