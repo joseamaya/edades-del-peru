@@ -1,4 +1,5 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind, Resources, MapType } from '../core/types';
+import type { GeographicRegion } from '../model/defs/profiles';
 
 /** World point. `ref` anchors to the player/enemy center; without `ref` it is absolute. */
 export interface MissionPoint {
@@ -85,6 +86,12 @@ export interface MissionDef {
   playerCiv: CivId;
   enemyCiv: CivId;
   map: { seed: number; type: MapType; size: number };
+  /**
+   * Explicit geographic region of the map, when the scenario's geography differs
+   * from the player civilization's (e.g. the Inca campaigning on the Chimú north
+   * coast). Left undefined, it is derived from the civilization.
+   */
+  region?: GeographicRegion;
   timeOfDay: 'morning' | 'noon' | 'dusk' | 'night';
   startingEra: Era;
   startingResources: Resources;
