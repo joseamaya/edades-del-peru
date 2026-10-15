@@ -1,9 +1,9 @@
 import * as THREE from 'three';
-import { fbm2, noise2, ridged2 } from '../util/noise';
-import { RNG } from '../util/rng';
 import { getGroundTextures, GroundTextures } from './Textures';
 import { getGroundPBR } from './Biomes';
 import { smoothstep } from '../util/math';
+import { generateHeightField } from './heightField';
+import type { HistoricalMapProfile } from '../model/defs/profiles';
 
 // Scratch colors reused in biome generation (avoids ~200k allocations).
 const _cBase = new THREE.Color();
@@ -35,23 +35,24 @@ export class Terrain {
   group = new THREE.Group();
 
   private textures: GroundTextures;
-  private rng: RNG;
   private pbrExtra: THREE.Texture[] = [];
+  private profile: HistoricalMapProfile;
   /** Biome aridity (0 humid .. 1 desert); tints sand and reduces vegetation. */
   private arid = 0;
   /** Vegetation density (0 dry .. 1 jungle); tints the grass green. */
   private veg = 0;
 
-  constructor(size: number, resolution: number, seed: number, mapType: string) {
+  constructor(size: number, resolution: number, seed: number, profile: HistoricalMapProfile) {
     this.size = size;
     this.resolution = resolution;
-    this.rng = new RNG(seed * 7919 + 17);
+    this.profile = profile;
     this.textures = getGroundTextures();
-    this.arid = mapType === 'coast' ? 0.9 : mapType === 'estepas' ? 0.55 : mapType === 'altiplano' ? 0.35 : 0;
-    this.veg = mapType === 'jungle' ? 1 : mapType === 'andes' ? 0.6 : mapType === 'altiplano' ? 0.15 : 0;
-    this.heightMap = new Float32Array((resolution + 1) * (resolution + 1));
-    this.moistureMap = new Float32Array((resolution + 1) * (resolution + 1));
-    this.generate(mapType);
+    this.arid = profile.climate.aridity;
+    this.veg = profile.vegetation.density;
+    const field = generateHeightField(resolution, seed, profile);
+    this.heightMap = field.heightMap;
+    this.moistureMap = field.moistureMap;
+    this.waterLevel = field.waterLevel;
     this.mesh = this.buildMesh();
     this.group.add(this.mesh);
   }
@@ -92,103 +93,6 @@ export class Terrain {
   isBuildable(wx: number, wz: number): boolean {
     const h = this.getHeight(wx, wz);
     return h > this.waterLevel + 0.4;
-  }
-
-  private generate(mapType: string): void {
-    const n = this.resolution + 1;
-    for (let z = 0; z < n; z++) {
-      for (let x = 0; x < n; x++) {
-        const nx = x / (this.resolution / 2) - 1;
-        const nz = z / (this.resolution / 2) - 1;
-        const dist = Math.sqrt(nx * nx + nz * nz);
-        const border = Math.max(Math.abs(nx), Math.abs(nz)); // 0 center -> 1 edge
-
-        // Continental base with islands / lakes depending on type
-        let base: number;
-        let mtnAmp = 15;
-        if (mapType === 'archipielago') {
-          base = fbm2(nx * 1.6 + 5, nz * 1.6, 4);
-          const ring = Math.sin(dist * Math.PI * 3.2) * 0.16;
-          base = base * 0.72 + ring + 0.24;
-        } else if (mapType === 'lago') {
-          base = fbm2(nx * 1.4 + 3, nz * 1.4, 4) * 0.85 + 0.32;
-          base += smoothstep(0.62, 1.0, dist) * 0.5;
-        } else if (mapType === 'estepas') {
-          base = fbm2(nx * 1.0 + 7, nz * 1.0, 3) * 0.6 + 0.42;
-        } else if (mapType === 'coast') {
-          // coastline: solid land (valley) throughout the interior and sea in the map frame
-          base = fbm2(nx * 1.0 + 13, nz * 1.0, 4) * 0.16 + 0.74;
-          base -= smoothstep(0.9, 1.02, border) * 1.0;
-          mtnAmp = 5;
-        } else if (mapType === 'altiplano') {
-          // high plateau (puna) and relatively flat; lakes carved by rivers
-          base = fbm2(nx * 0.9 + 21, nz * 0.9, 3) * 0.14 + 0.64;
-          mtnAmp = 8;
-        } else if (mapType === 'jungle') {
-          // high jungle: medium relief, rivers
-          base = fbm2(nx * 1.1 + 31, nz * 1.1, 3) * 0.25 + 0.66;
-          base -= smoothstep(0.92, 1.06, border) * 0.7;
-          mtnAmp = 9;
-        } else if (mapType === 'andes') {
-          // mountain range: mid-height valleys and mountains at the summits
-          base = fbm2(nx * 1.1 + 41, nz * 1.1, 4) * 0.24 + 0.64;
-          mtnAmp = 16;
-        } else {
-          // continent: main landmass with ocean at the edges
-          base = fbm2(nx * 1.25 + 2, nz * 1.25, 5) * 0.38 + 0.62;
-          base -= smoothstep(0.64, 1.04, dist) * 0.6;
-          base += (noise2(nx * 3.1 + 9, nz * 3.1) - 0.5) * 0.12;
-        }
-
-        // Mountains (flattened at the edge to avoid spikes and artifacts)
-        const mtn = ridged2(nx * 1.7 + 11, nz * 1.7, 4);
-        const mtnMask = smoothstep(0.45, 0.82, mtn);
-        const edgeBlend = 1 - smoothstep(0.92, 1.06, border);
-        const height = base * 6.6 + Math.max(0, mtn - 0.52) * mtnAmp * mtnMask * edgeBlend;
-
-        // Shoreline smoothing
-        const h = height;
-        this.heightMap[this.idx(x, z)] = h;
-        const moist = fbm2(nx * 2.2 + 40, nz * 2.2, 3) * 0.6 + fbm2(nx * 0.4 + 3, nz * 0.4, 2) * 0.4;
-        this.moistureMap[this.idx(x, z)] = moist * (1 - this.arid * 0.72);
-      }
-    }
-
-    // Rivers: carve with directional noise
-    this.carveRivers();
-  }
-
-  private carveRivers(): void {
-    const n = this.resolution + 1;
-    const riverCount = 2;
-    for (let r = 0; r < riverCount; r++) {
-      const startX = this.rng.int(0, n - 1);
-      const endX = this.rng.int(0, n - 1);
-      let cx = startX;
-      let cz = 0;
-      let wander = this.rng.range(-1, 1);
-      while (cz < n) {
-        wander += this.rng.range(-0.5, 0.5);
-        wander = Math.max(-2.4, Math.min(2.4, wander));
-        const width = 1.6;
-        for (let dx = -Math.ceil(width * 2); dx <= Math.ceil(width * 2); dx++) {
-          for (let dz = 0; dz < 3; dz++) {
-            const x = Math.round(cx + dx + (endX - cx) * (cz / n));
-            const z = Math.min(cz + dz, n - 1);
-            if (x < 0 || x >= n) continue;
-            const d = Math.abs(dx);
-            const drop = (1 - d / (width * 2)) * 3.4;
-            const i = this.idx(x, z);
-            if (this.heightMap[i] > this.waterLevel - 0.4) {
-              this.heightMap[i] = Math.max(this.waterLevel - 0.6 - drop * 0.6, this.heightMap[i] - drop);
-            }
-          }
-        }
-        cz += this.rng.int(2, 4);
-        cx += wander;
-        cx = Math.max(2, Math.min(n - 3, cx));
-      }
-    }
   }
 
   private buildMesh(): THREE.Mesh {
@@ -289,6 +193,7 @@ export class Terrain {
         fowEnabled: { value: 0 },
         arid: { value: this.arid },
         veg: { value: this.veg },
+        snowLine: { value: this.profile.elevation.snowLine },
       },
       vertexShader: /* glsl */ `
         attribute vec3 color;
@@ -349,6 +254,7 @@ export class Terrain {
         uniform sampler2D fowMap;
         uniform float fowEnabled;
         uniform float arid;
+        uniform float snowLine;
         varying vec3 vColor;
         varying vec3 vWorldPos;
         varying vec2 vUv;
@@ -399,7 +305,7 @@ export class Terrain {
           // rock at height and on slopes, snow at summits, soil in dry areas
           float sandAmt = max(1.0 - smoothstep(waterLevel + 0.2, waterLevel + 1.8, vHeight), arid * (1.0 - smoothstep(6.0, 10.0, vHeight)));
           float rockAmt = clamp(smoothstep(4.5, 9.0, vHeight) * 0.7 + smoothstep(0.25, 0.6, slope) * 0.85, 0.0, 1.0);
-          float snowAmt = smoothstep(11.0, 15.5, vHeight);
+          float snowAmt = smoothstep(snowLine - 4.0, snowLine + 0.5, vHeight);
           float dirtAmt = (1.0 - smoothstep(0.6, 2.8, vHeight)) * 0.4;
           vec3 ground = texture(grass, vUv * 2.0).rgb;
           ground = mix(ground, texture(dirt, vUv * 2.4 + 3.0).rgb, max(dirtAmt, arid * 0.4));
@@ -543,7 +449,7 @@ export class Terrain {
     // Coastal desert: shifts to sand/soil
     _cBase.lerp(_cSand, this.arid * 0.7);
     _cBase.lerp(_cRock, smoothstep(1.8, 4.5, slope));
-    _cBase.lerp(_cSnow, smoothstep(9.5, 15, h));
+    _cBase.lerp(_cSnow, smoothstep(this.profile.elevation.snowLine - 5.5, this.profile.elevation.snowLine, h));
     return _cBase;
   }
 

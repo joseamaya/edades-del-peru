@@ -73,3 +73,7 @@ La región de cada civilización sigue este dossier (regiones deducidas de la ta
 Los valores son **abstracciones jugables** de los rasgos documentados (no reconstrucciones), y cada perfil cita
 su fuente. La semilla + el perfil deben seguir siendo deterministas.
 
+La generación del terreno (`src/rendering/heightField.ts`) es una función pura de `seed + perfil`
+(`generateHeightField`), verificada en `tests/terrain.test.ts`: la misma semilla y perfil producen el mismo mapa.
+`Terrain`, `Water`, los recursos y la vegetación consumen el perfil; añadir una región nueva solo requiere datos.
+

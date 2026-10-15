@@ -56,8 +56,6 @@ export interface HistoricalMapProfile {
     moisture: number;
     /** 0 cold .. 1 hot. */
     temperature: number;
-    /** Vegetation tint strength in the terrain shader. */
-    vegTint: number;
   };
   water: {
     level: number;
@@ -194,7 +192,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     baseMapType: 'coast',
     terrain: { ...COAST_TERRAIN, soil: 'sandy', terraceChance: 0.15 },
     elevation: { snowLine: 20 },
-    climate: { aridity: 0.92, moisture: 0.28, temperature: 0.82, vegTint: 0.06 },
+    climate: { aridity: 0.92, moisture: 0.28, temperature: 0.82 },
     water: { level: WATER_LEVEL, inland: false, wetland: true },
     vegetation: { density: 0.06, variants: { broad: 1 } },
     resources: { tree: 0.3, mine: 0.4, well: 0.2, berry: 0.15, hunt: 12, fishing: 8 },
@@ -208,7 +206,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     baseMapType: 'coast',
     terrain: { ...COAST_TERRAIN, soil: 'loam', terraceChance: 0.2 },
     elevation: { snowLine: 20 },
-    climate: { aridity: 0.82, moisture: 0.35, temperature: 0.8, vegTint: 0.12 },
+    climate: { aridity: 0.82, moisture: 0.35, temperature: 0.8 },
     water: { level: WATER_LEVEL, inland: false, wetland: true },
     vegetation: { density: 0.12, variants: { broad: 1 } },
     resources: { tree: 0.4, mine: 0.12, well: 0.28, berry: 0.25, hunt: 12, fishing: 8 },
@@ -222,7 +220,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     baseMapType: 'coast',
     terrain: { ...COAST_TERRAIN, soil: 'sandy', terraceChance: 0.1 },
     elevation: { snowLine: 20 },
-    climate: { aridity: 0.95, moisture: 0.22, temperature: 0.85, vegTint: 0.04 },
+    climate: { aridity: 0.95, moisture: 0.22, temperature: 0.85 },
     water: { level: WATER_LEVEL, inland: false, wetland: false },
     vegetation: { density: 0.04, variants: { broad: 1 } },
     resources: { tree: 0.25, mine: 0.45, well: 0.15, berry: 0.1, hunt: 8, fishing: 10 },
@@ -236,7 +234,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     baseMapType: 'andes',
     terrain: { ...ANDES_TERRAIN, soil: 'loam', terraceChance: 0.45 },
     elevation: { snowLine: 15 },
-    climate: { aridity: 0.1, moisture: 0.75, temperature: 0.45, vegTint: 0.55 },
+    climate: { aridity: 0.1, moisture: 0.75, temperature: 0.45 },
     water: { level: WATER_LEVEL, inland: true, wetland: false },
     vegetation: { density: 0.55, variants: { broad: 0.7, needle: 0.3 } },
     resources: { tree: 0.45, mine: 0.35, well: 0.2, berry: 0.2, hunt: 14, fishing: 0 },
@@ -250,7 +248,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     baseMapType: 'andes',
     terrain: { ...ANDES_TERRAIN, soil: 'rocky', baseBias: 0.62, mtnAmp: 17, terraceChance: 0.7 },
     elevation: { snowLine: 13 },
-    climate: { aridity: 0.15, moisture: 0.6, temperature: 0.3, vegTint: 0.5 },
+    climate: { aridity: 0.15, moisture: 0.6, temperature: 0.3 },
     water: { level: WATER_LEVEL, inland: true, wetland: false },
     vegetation: { density: 0.5, variants: { broad: 0.5, needle: 0.5 } },
     resources: { tree: 0.4, mine: 0.4, well: 0.25, berry: 0.15, hunt: 12, fishing: 0 },
@@ -264,7 +262,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     baseMapType: 'altiplano',
     terrain: { ...ALTIPLANO_TERRAIN, soil: 'peaty', terraceChance: 0.35 },
     elevation: { snowLine: 14 },
-    climate: { aridity: 0.4, moisture: 0.5, temperature: 0.25, vegTint: 0.15 },
+    climate: { aridity: 0.4, moisture: 0.5, temperature: 0.25 },
     water: { level: WATER_LEVEL, inland: true, wetland: true },
     vegetation: { density: 0.15, variants: { needle: 0.7, broad: 0.3 } },
     resources: { tree: 0.1, mine: 0.3, well: 0.4, berry: 0.15, hunt: 16, fishing: 6 },
@@ -278,7 +276,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     baseMapType: 'jungle',
     terrain: { ...JUNGLE_TERRAIN, soil: 'clay', terraceChance: 0.05 },
     elevation: { snowLine: 22 },
-    climate: { aridity: 0, moisture: 1, temperature: 0.95, vegTint: 1 },
+    climate: { aridity: 0, moisture: 1, temperature: 0.95 },
     water: { level: WATER_LEVEL, inland: true, wetland: true },
     vegetation: { density: 1, variants: { frond: 0.7, broad: 0.3 } },
     resources: { tree: 0.7, mine: 0.1, well: 0.15, berry: 0.25, hunt: 10, fishing: 8 },

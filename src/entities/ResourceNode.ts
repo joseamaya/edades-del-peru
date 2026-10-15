@@ -85,6 +85,8 @@ export function clearResourceCaches(): void {
 }
 
 type TreeVariant = 'broad' | 'needle' | 'frond';
+type TreeVariants = Partial<Record<TreeVariant, number>>;
+const TREE_VARIANTS: TreeVariant[] = ['broad', 'needle', 'frond'];
 function variantForMap(mapType: string): TreeVariant {
   if (mapType === 'altiplano') return 'needle';
   if (mapType === 'jungle') return 'frond';
@@ -110,6 +112,7 @@ export class ResourceNode {
   private swayParts: THREE.Object3D[] = [];
   private mapType: string;
   private treeMgr?: TreeInstances;
+  private treeVariants?: TreeVariants;
   treeSlot = -1;
   private treeVariant: TreeVariant = 'broad';
 
@@ -121,11 +124,13 @@ export class ResourceNode {
     amount: number,
     mapType = 'andes',
     treeMgr?: TreeInstances,
+    treeVariants?: TreeVariants,
   ) {
     this.scene = scene;
     this.kind = kind;
     this.mapType = mapType;
     this.treeMgr = treeMgr;
+    this.treeVariants = treeVariants;
     this.pos.set(x, 0, z);
     this.amount = this.maxAmount = amount;
     this.swaySeed = Math.random() * Math.PI * 2;
@@ -240,8 +245,23 @@ export class ResourceNode {
     parent.add(top);
   }
 
+  /** Pick a tree variant from the map profile's vegetation weights (seedable). */
+  private pickTreeVariant(rng: RNG): TreeVariant {
+    const v = this.treeVariants;
+    if (!v) return variantForMap(this.mapType);
+    let total = 0;
+    for (const k of TREE_VARIANTS) total += Math.max(0, v[k] ?? 0);
+    if (total <= 0) return variantForMap(this.mapType);
+    let r = rng.range(0, total);
+    for (const k of TREE_VARIANTS) {
+      r -= Math.max(0, v[k] ?? 0);
+      if (r <= 0) return k;
+    }
+    return TREE_VARIANTS[0];
+  }
+
   private buildTree(rng: RNG): void {
-    const variant = variantForMap(this.mapType);
+    const variant = this.pickTreeVariant(rng);
     // With the instancing manager: only one instance is registered (no per-tree mesh).
     if (this.treeMgr) {
       this.treeVariant = variant;
