@@ -139,6 +139,14 @@ describe('campaign educational content', () => {
         ).toBe(true);
       }
     }
+    // the documented bonus goals are present
+    expect(MISSIONS.find((m) => m.id === 'm2_chavin')!.objectives.some((o) => o.id === 'bonus_ofrenda_mayor')).toBe(
+      true,
+    );
+    expect(MISSIONS.find((m) => m.id === 'm3_moche_recuay')!.objectives.some((o) => o.id === 'bonus_intercambio')).toBe(
+      true,
+    );
+    expect(MISSIONS.find((m) => m.id === 'm4_wari')!.objectives.some((o) => o.id === 'bonus_red')).toBe(true);
   });
 
   it('every objective and trigger entityTag is declared by a start/mark tag', () => {

@@ -270,7 +270,7 @@ export const MISSIONS: MissionDef[] = [
         buildingKind: BuildingKind.MARKET,
         count: 2,
         optional: true,
-        title: 'Extiende la red: funda un segundo centro provincial',
+        title: 'Amplía la red: levanta un segundo centro',
       },
     ],
     triggers: [
