@@ -304,8 +304,8 @@ export class Game {
 
   /**
    * Place the map's historical landmark (visual only, deterministic). It is built
-   * with the landmark's own civilization/era so a coastal scenario of the Inca
-   * still shows the donor culture's structure.
+   * with the landmark's own civilization/era, and only when the resolved map
+   * region fits the landmark (see `resolveMapProfile`).
    */
   private spawnLandmark(): void {
     const id = this.mapProfile.landmark;
@@ -321,18 +321,31 @@ export class Game {
     };
     const size = this.settings.mapSize;
     const rng = new RNG(this.settings.mapSeed * 131 + 11);
+    const clearOf = (px: number, pz: number, radius: number): boolean => {
+      for (const b of this.buildings.values()) if (Math.hypot(b.pos.x - px, b.pos.z - pz) < radius) return false;
+      for (const n of this.resourceNodes.values()) if (Math.hypot(n.pos.x - px, n.pos.z - pz) < radius) return false;
+      return true;
+    };
     let x = size / 2;
     let z = size / 2;
-    for (let i = 0; i < 60; i++) {
+    let found = false;
+    for (let i = 0; i < 80; i++) {
       const a = rng.range(0, Math.PI * 2);
       const r = rng.range(0.3, 0.42) * size;
       const px = size / 2 + Math.cos(a) * r;
       const pz = size / 2 + Math.sin(a) * r;
       if (this.terrain.isWater(px, pz) || this.terrain.isBeach(px, pz)) continue;
       if (this.terrain.getSlope(px, pz) > 0.4) continue;
+      if (!clearOf(px, pz, 7)) continue;
       x = px;
       z = pz;
+      found = true;
       break;
+    }
+    if (!found) {
+      const safe = this.findLandNear(size / 2, size / 2, Math.floor(size * 0.42));
+      x = safe.x;
+      z = safe.z;
     }
     const model = buildLandmarkModel(id, ctx);
     model.position.set(x, this.terrain.getHeight(x, z), z);

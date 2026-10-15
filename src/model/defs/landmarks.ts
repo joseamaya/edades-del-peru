@@ -47,7 +47,7 @@ export const LANDMARKS: Record<LandmarkId, LandmarkDef> = {
     period: HistoricalPeriod.LATE_HORIZON,
     region: 'high_andes',
     status: 'abstraction',
-    source: 'docs/historia/civilizaciones/inca.md (plaza y ushnu; reconstrucción abstracta)',
+    source: 'docs/historia/civilizaciones/inca.md (Arquitectura ceremonial: ushnu; Wikipedia: Ushnu)',
   },
 };
 

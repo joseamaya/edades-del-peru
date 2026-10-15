@@ -1,7 +1,7 @@
 import { CivId, Geography, HistoricalPeriod, MapType } from '../../core/types';
 import { getCiv } from './civs';
 import { getPeriod } from './periods';
-import { landmarkForCiv, type LandmarkId } from './landmarks';
+import { landmarkForCiv, LANDMARKS, type LandmarkId } from './landmarks';
 import { archProfileFor, type HistoricalArchitectureProfile } from './architecture';
 
 /**
@@ -319,10 +319,12 @@ export function resolveMapProfile(opts: {
   region?: GeographicRegion;
 }): HistoricalMapProfile {
   const region = resolveRegion(opts);
+  const landmark = landmarkForCiv(opts.civ, opts.period);
+  const landmarkFits = landmark !== null && regionDefaultMap(LANDMARKS[landmark].region) === regionDefaultMap(region);
   return {
     ...MAP_PROFILES[region],
     baseMapType: regionDefaultMap(region),
-    landmark: landmarkForCiv(opts.civ, opts.period),
+    landmark: landmarkFits ? landmark : null,
   };
 }
 

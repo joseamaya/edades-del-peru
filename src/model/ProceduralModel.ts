@@ -2277,9 +2277,21 @@ function buildIncaLandmark(b: Builder): void {
 
 function buildLandmarkStructure(type: LandmarkId, ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
-  if (type === 'caral_ceremonial') buildCaralLandmark(b);
-  else if (type === 'moche_huaca') buildMocheLandmark(b);
-  else buildIncaLandmark(b);
+  switch (type) {
+    case 'caral_ceremonial':
+      buildCaralLandmark(b);
+      break;
+    case 'moche_huaca':
+      buildMocheLandmark(b);
+      break;
+    case 'inca_ushnu':
+      buildIncaLandmark(b);
+      break;
+    default: {
+      const exhaustive: never = type;
+      throw new Error(`unknown landmark: ${String(exhaustive)}`);
+    }
+  }
   return b.finish();
 }
 
