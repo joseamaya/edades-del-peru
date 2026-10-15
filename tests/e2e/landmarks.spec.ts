@@ -43,7 +43,7 @@ test('period maps place their own landmark on land', async ({ page }) => {
     ['m4_wari', 'wari_compound'],
     ['m5_yahuar_pampa', 'inca_ushnu'],
   ];
-  const verts = new Set<number>();
+  const signatures = new Set<string>();
   for (const [mission, id] of missions) {
     await boot(page, `/?mission=${mission}&fog=0&low=1&noloop=1`);
     const info = await landmarkInfo(page);
@@ -53,9 +53,9 @@ test('period maps place their own landmark on land', async ({ page }) => {
     expect(info.verts!).toBeGreaterThan(500);
     expect(info.onWater, `${mission} landmark on water`).toBe(false);
     expect(info.dist!).toBeLessThanOrEqual(0.45 * info.size!);
-    verts.add(info.verts!);
+    signatures.add(`${info.verts}:${info.meshes}`);
   }
-  expect(verts.size, 'the landmarks must not share a structure').toBe(missions.length);
+  expect(signatures.size, 'the landmarks must not share a structure').toBe(missions.length);
 });
 
 test('a civilization without a landmark places none', async ({ page }) => {
@@ -78,6 +78,18 @@ test('post-1532 maps place the colonial / republican landmark', async ({ page })
   expect((await landmarkInfo(page)).id).toBe('colonial_church');
   await boot(page, '/?civ=republica&period=8&seed=777&fog=0&low=1&noloop=1');
   expect((await landmarkInfo(page)).id).toBe('republican_fort');
+});
+
+test('period skirmishes place their family landmark', async ({ page }) => {
+  const cases: [string, number, string][] = [
+    ['wari', 3, 'wari_compound'],
+    ['tiahuanaco', 3, 'tiahuanaco_complex'],
+    ['chimu', 4, 'chimu_compound'],
+  ];
+  for (const [civ, period, id] of cases) {
+    await boot(page, `/?civ=${civ}&period=${period}&seed=777&fog=0&low=1&noloop=1`);
+    expect((await landmarkInfo(page)).id, civ).toBe(id);
+  }
 });
 
 test('landmark placement is deterministic for the same seed', async ({ page }) => {

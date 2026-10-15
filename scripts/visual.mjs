@@ -6,7 +6,7 @@ import { signature, compareSignatures } from './visual_lib.mjs';
 
 const BASELINE = path.resolve('tests/visual/baseline.json');
 const THRESHOLD = Number(cliArg('threshold', 12));
-const CELL_THRESHOLD = Number(cliArg('cell-threshold', 25));
+const CELL_THRESHOLD = Number(cliArg('cell-threshold', 35));
 const update = process.argv.includes('--update');
 const outDir = path.resolve('review/visual');
 

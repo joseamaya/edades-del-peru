@@ -79,6 +79,8 @@ const CIV_ARCH: Partial<Record<CivId, Partial<ArchBase>>> = {
   [CivId.MOCHE]: { monumentalTiers: 3 },
   // Wari: planned stone compounds
   [CivId.WARI]: { wall: 'fieldstone', roof: 'thatch', monumentalTiers: 3, ornament: { niches: true } },
+  // Tiahuanaco: taller megalithic platforms (Akapana-like) than the generic altiplano base
+  [CivId.TIAHUANACO]: { monumentalTiers: 4 },
   // Chimú: large walled adobe citadels with painted friezes
   [CivId.CHIMU]: { monumentalTiers: 3, ornament: { frieze: true } },
   [CivId.INCA]: {

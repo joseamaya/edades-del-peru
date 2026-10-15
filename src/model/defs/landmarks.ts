@@ -96,7 +96,7 @@ export const LANDMARKS: Record<LandmarkId, LandmarkDef> = {
   },
   colonial_church: {
     id: 'colonial_church',
-    name: 'Iglesia y plaza colonial',
+    name: 'Iglesia colonial',
     civ: CivId.REALISTAS,
     period: HistoricalPeriod.VICEROYALTY,
     region: 'andean_valley',
@@ -108,7 +108,7 @@ export const LANDMARKS: Record<LandmarkId, LandmarkDef> = {
     name: 'Fortificación portuaria',
     civ: CivId.REPUBLIC,
     period: HistoricalPeriod.REPUBLIC,
-    region: 'central_coast',
+    region: 'south_coast',
     status: 'abstraction',
     source: 'docs/historia/civilizaciones/republica.md (defensa del puerto; Guerra del Pacífico)',
   },

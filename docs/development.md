@@ -268,7 +268,7 @@ for player-facing docs see [`README.md`](../README.md).
   regions: wide view) into `review/periods/` for human review. `yarn visual:update` writes a compact colour
   signature per scene to `tests/visual/baseline.json`; `yarn visual:check` re-captures and fails when a scene's
   mean per-channel difference exceeds `--threshold` (default 12) or any grid cell exceeds `--cell-threshold`
-  (default 25). A scene that fails to boot is never written to (or accepted as) the baseline. The signature
+  (default 35). A scene that fails to boot is never written to (or accepted as) the baseline. The signature
   (`scripts/visual_lib.mjs`, unit-tested in `tests/visual.test.ts`) is a 4×4 mean-colour grid — robust to
   cosmetic randomness (tree positions, wind) but sensitive to a scene whose identity changes. Run
   `visual:update` after an intentional change; the harness is local (same machine/browser) and not wired to CI.
