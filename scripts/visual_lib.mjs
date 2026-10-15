@@ -42,18 +42,28 @@ export function signature(png, grid = 4) {
 
 /** Mean per-channel L1 distance (0..255) between two signatures. */
 export function compareSignatures(a, b) {
+  if (a.grid !== b.grid || a.cells.length !== b.cells.length) {
+    return { score: Infinity, worst: Infinity };
+  }
   let sum = 0;
   let count = 0;
-  const cells = Math.min(a.cells.length, b.cells.length);
-  for (let i = 0; i < cells; i++) {
+  let worstCell = 0;
+  for (let i = 0; i < a.cells.length; i++) {
+    let cell = 0;
     for (let k = 0; k < 3; k++) {
-      sum += Math.abs(a.cells[i][k] - b.cells[i][k]);
+      const d = Math.abs(a.cells[i][k] - b.cells[i][k]);
+      sum += d;
+      cell += d;
       count++;
     }
+    worstCell = Math.max(worstCell, cell / 3);
   }
+  let mean = 0;
   for (let k = 0; k < 3; k++) {
-    sum += Math.abs(a.mean[k] - b.mean[k]);
+    const d = Math.abs(a.mean[k] - b.mean[k]);
+    sum += d;
+    mean += d;
     count++;
   }
-  return { score: count ? sum / count : 0 };
+  return { score: count ? sum / count : 0, worst: Math.max(worstCell, mean / 3) };
 }

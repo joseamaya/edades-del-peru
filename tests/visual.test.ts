@@ -15,7 +15,9 @@ function solid(w: number, h: number, [r, g, b]: [number, number, number]) {
 describe('visual signature', () => {
   it('scores identical images as zero', () => {
     const a = signature(solid(8, 8, [10, 20, 30]));
-    expect(compareSignatures(a, a).score).toBe(0);
+    const { score, worst } = compareSignatures(a, a);
+    expect(score).toBe(0);
+    expect(worst).toBe(0);
   });
 
   it('detects a fully different image', () => {
@@ -24,7 +26,7 @@ describe('visual signature', () => {
     expect(compareSignatures(a, b).score).toBeGreaterThan(50);
   });
 
-  it('catches a local change via the grid (not just the global mean)', () => {
+  it('catches a localized change via the worst cell (not just the global mean)', () => {
     const base = solid(8, 8, [100, 100, 100]);
     const changed = solid(8, 8, [100, 100, 100]);
     for (let y = 0; y < 4; y++) {
@@ -35,7 +37,9 @@ describe('visual signature', () => {
         changed.data[i + 2] = 250;
       }
     }
-    const score = compareSignatures(signature(base), signature(changed)).score;
+    const { score, worst } = compareSignatures(signature(base), signature(changed));
+    // a quarter of the frame changes: the global mean shifts little, the worst cell a lot
     expect(score).toBeGreaterThan(3);
+    expect(worst).toBeGreaterThan(50);
   });
 });
