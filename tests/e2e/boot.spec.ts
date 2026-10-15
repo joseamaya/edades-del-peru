@@ -63,3 +63,19 @@ test('selects a unit on click', { tag: '@smoke' }, async ({ page }) => {
   });
   expect(selected.length).toBeGreaterThan(0);
 });
+
+test('the render canvas fills the viewport (no body-margin offset)', { tag: '@smoke' }, async ({ page }) => {
+  await page.goto('/?play=1&seed=777&fog=0&low=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  const rect = await page.evaluate(() => {
+    const c = (window as unknown as { game: any }).game.renderer.domElement as HTMLCanvasElement;
+    const r = c.getBoundingClientRect();
+    return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, w: window.innerWidth, h: window.innerHeight };
+  });
+  expect(rect.left).toBe(0);
+  expect(rect.top).toBe(0);
+  expect(rect.right).toBeCloseTo(rect.w, 0);
+  expect(rect.bottom).toBeCloseTo(rect.h, 0);
+});
