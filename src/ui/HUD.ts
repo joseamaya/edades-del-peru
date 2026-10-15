@@ -1513,14 +1513,13 @@ export class HUD {
     panel.style.maxWidth = '560px';
     // `progress` is the number of completed missions (and the index of the next one)
     const progress = this.campaignProgress();
-    const completed = Math.min(progress, MISSIONS.length);
     panel.innerHTML = `
       <div style="font-size:12px;letter-spacing:3px;color:#a8883f">CAMPAÑA</div>
       <h2>${CAMPAIGN_TITLE}</h2>
       <div class="sub">${CAMPAIGN_SUBTITLE}</div>
-      <div class="sub" style="color:var(--gold)">${completed} / ${MISSIONS.length} misiones completadas</div>
+      <div class="sub" style="color:var(--gold)">${progress} / ${MISSIONS.length} misiones completadas</div>
     `;
-    const open = (id: string): void => {
+    const startMission = (id: string): void => {
       this.game.settings.missionId = id;
       this.setMenuOpen(false);
       this.clearOverlays();
@@ -1541,12 +1540,12 @@ export class HUD {
       const done = i < progress;
       btn.textContent = `${done ? '✓' : '▶'} ${i + 1}. ${mis.title} — ${mis.subtitle}`;
       if (done) btn.style.color = 'var(--gold)';
-      btn.addEventListener('click', () => open(mis.id));
+      btn.addEventListener('click', () => startMission(mis.id));
     });
     if (progress < MISSIONS.length) {
-      const cont = this.el('button', 'ed-primary', panel);
-      cont.textContent = '▶ Continuar campaña';
-      cont.addEventListener('click', () => open(MISSIONS[progress].id));
+      const continueButton = this.el('button', 'ed-primary', panel);
+      continueButton.textContent = '▶ Continuar campaña';
+      continueButton.addEventListener('click', () => startMission(MISSIONS[progress].id));
     } else {
       const doneMsg = this.el('div', 'sub', panel);
       doneMsg.style.color = 'var(--gold)';

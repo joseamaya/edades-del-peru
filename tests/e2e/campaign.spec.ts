@@ -174,12 +174,34 @@ test('the campaign menu shows completion progress and can continue', async ({ pa
   await expect(menu).toContainText('✓ 1. La Ciudad Sagrada');
   await expect(menu).toContainText('▶ 3.');
   await expect(menu).toContainText('🔒 4.');
-  await expect(menu.getByRole('button', { name: /Continuar campaña/ })).toBeVisible();
+  // "continue" opens the next uncompleted mission (mission 3)
+  await menu.getByRole('button', { name: /Continuar campaña/ }).click();
+  await page.waitForURL(/mission=m3_moche_recuay/, { timeout: 15_000 });
+});
+
+test('the campaign menu shows a completed campaign', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('peru-campaign', '9'));
+  await page.goto('/');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  await page.getByRole('button', { name: /Campañas/ }).click();
+  await page
+    .locator('.ed-overlay', { hasText: 'La Senda del Sol' })
+    .getByRole('button', { name: /Ver misiones/ })
+    .click();
+  const menu = page.locator('.ed-overlay', { hasText: 'CAMPAÑA' });
+  await expect(menu).toContainText('9 / 9 misiones completadas');
+  await expect(menu).toContainText('🏆 Campaña completada');
+  await expect(menu.getByRole('button', { name: /Continuar campaña/ })).toHaveCount(0);
 });
 
 test('a peaceful mission briefing shows no rival side', async ({ page }) => {
-  await page.goto('/?mission=m2_chavin&seed=777&fog=0&low=1');
-  const overlay = page.locator('.ed-overlay', { hasText: 'El Oráculo de Chavín' });
-  await expect(overlay).toBeVisible({ timeout: 30_000 });
-  await expect(overlay).toContainText('sin enfrentamiento documentado');
+  for (const mission of ['m1_caral', 'm2_chavin', 'm4_wari']) {
+    await page.goto(`/?mission=${mission}&seed=777&fog=0&low=1`);
+    const overlay = page.locator('.ed-overlay').filter({ hasText: 'OBJETIVOS' });
+    await expect(overlay).toBeVisible({ timeout: 30_000 });
+    await expect(overlay).toContainText('Bandos:');
+    await expect(overlay).toContainText('sin enfrentamiento documentado');
+  }
 });
