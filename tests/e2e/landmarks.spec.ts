@@ -97,6 +97,7 @@ test('period skirmishes place their family landmark', async ({ page }) => {
     ['patriotas', 7, 'patriotas_camp'],
     ['chile', 8, 'chile_apostadero'],
   ];
+  const signatures = new Set<string>();
   for (const [civ, period, id] of cases) {
     await boot(page, `/?civ=${civ}&period=${period}&seed=777&fog=0&low=1&noloop=1`);
     const info = await landmarkInfo(page);
@@ -104,7 +105,9 @@ test('period skirmishes place their family landmark', async ({ page }) => {
     expect(info.present, civ).toBe(true);
     expect(info.meshes!, civ).toBeGreaterThan(0);
     expect(info.onWater, `${civ} landmark on water`).toBe(false);
+    signatures.add(`${info.verts}:${info.meshes}`);
   }
+  expect(signatures.size, 'the landmarks must not share a structure').toBe(cases.length);
 });
 
 test('landmark placement is deterministic for the same seed', async ({ page }) => {

@@ -16,7 +16,7 @@ function scene(name, { civ, period, view = 'close', map }) {
  * params force the civilization/geography (see `main.ts`).
  */
 export const SCENES = [
-  // one close-up per historical period (player base)
+  // one close-up per PRP period (player base)
   scene('caral', { civ: 'caral', period: 0 }),
   scene('chavin', { civ: 'chavin', period: 1 }),
   scene('moche', { civ: 'moche', period: 2 }),

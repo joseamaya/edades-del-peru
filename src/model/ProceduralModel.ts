@@ -1400,6 +1400,11 @@ function andeanStone(b: Builder): string {
   return mixHex(b.pal.primary, '#9c9182', 0.8);
 }
 
+/** Republican concrete facade colour + texture, shared by the republican builders. */
+function concreteWall(b: Builder): { wall: string; tex: TexKind } {
+  return { wall: mixHex(b.pal.concrete, '#ffffff', 0.6), tex: facadeTex(b, 'concrete') };
+}
+
 /** Thatch colour (straw) shared by the Andean roofs. */
 function andeanThatch(b: Builder): string {
   return mixHex('#c9a94e', b.pal.primary, 0.22);
@@ -2381,8 +2386,7 @@ function buildColonialChurch(b: Builder): void {
 /** Republican: a port fort with battlements, a corner bastion and a flag. */
 function buildRepublicanFort(b: Builder): void {
   // the republican landmark always resolves the republican (concrete) look
-  const wall = mixHex(b.pal.concrete, '#ffffff', 0.6);
-  const tex = facadeTex(b, 'concrete');
+  const { wall, tex } = concreteWall(b);
   const w = 7;
   const h = 1.6;
   enclosure(b, w, h, 0.6, wall, tex);
@@ -2536,8 +2540,7 @@ function buildRecuayPashash(b: Builder): void {
 
 /** Chile: a naval station (dry dock) with a moored ironclad. */
 function buildChileApostadero(b: Builder): void {
-  const wall = mixHex(b.pal.concrete, '#ffffff', 0.6);
-  const tex = facadeTex(b, 'concrete');
+  const { wall, tex } = concreteWall(b);
   const hull = mixHex(b.civPrimary, '#3a3a3a', 0.4);
   const steel = mixHex(b.civPrimary, '#20242a', 0.45);
   const w = 7;
@@ -2552,8 +2555,8 @@ function buildChileApostadero(b: Builder): void {
   b.cyl(0.72, 0.78, 0.5, 12, steel, { y: 1.05, z: -w * 0.1, tex: 'metal' });
   b.box(0.14, 0.14, 1.5, b.pal.darkMetal, { y: 1.12, z: -w * 0.1 + 0.7 });
   // funnels
-  for (const z of [-0.1, 0.35]) {
-    b.cyl(0.22, 0.26, 1.1, 8, steel, { y: 1.35, z: w * z, tex: 'metal' });
+  for (const zFrac of [-0.1, 0.35]) {
+    b.cyl(0.22, 0.26, 1.1, 8, steel, { y: 1.35, z: w * zFrac, tex: 'metal' });
   }
   // mast with the national flag
   b.cyl(0.04, 0.04, 1.8, 6, b.pal.darkWood, { y: 1.7, x: -w * 0.16, z: -w * 0.28 });
