@@ -35,13 +35,16 @@ for player-facing docs see [`README.md`](../README.md).
   and save shape but now stores `1 + reduction` (no `SAVE_VERSION` bump), so `saveTypes` is unchanged.
 - **Maps by geography**: `MapType = 'coast' | 'andes' | 'altiplano' | 'jungle'` (generated in `Terrain.generate`).
 - **Historical world profiles (data layer)**: `src/model/defs/profiles.ts` defines `GeographicRegion` (finer than
-  `MapType`) and `HistoricalMapProfile` (terrain/climate/water/vegetation/resources/atmosphere/landmark), with
-  `resolveMapProfile({ period, civ, mapType, region? })` and `profileForMapType`. `src/model/defs/architecture.ts`
+  `MapType`) and `HistoricalMapProfile` (terrain+soil/climate+aridity/moisture/temperature/water/vegetation/
+  resources/atmosphere/landmark), with `resolveMapProfile({ period, civ, mapType, region? })` and
+  `resolveWorldProfile(...)` (map + architecture) and `profileForMapType`. `src/model/defs/architecture.ts`
   defines `HistoricalArchitectureProfile` (wall/roof/foundation/ornament) via `archProfileFor(civ, period)`,
   extending the existing `CivVisual`/`ArchStyle` layer (after 1532 the era governs the look, as in
-  `Builder.isAndean`). `src/model/defs/landmarks.ts` holds the visual-only `LandmarkId` registry with sources.
-  These are pure data + resolvers; the generator consumes them in later phases (terrain/vegetation/resources then,
-  then the model builder). Guarded by `tests/profiles.test.ts`.
+  `Builder.isAndean`). `src/model/defs/landmarks.ts` holds the visual-only `LandmarkId` registry with sources
+  and status (`documented`/`plausible`/`abstraction`); `landmarkForCiv(civ, period)` only applies inside the
+  landmark's own period (no anachronistic landmark). The region drives the fine terrain identity; `mapType` is
+  the coarse playable family (matches `regionDefaultMap(region)`). These are pure data + resolvers; the
+  generator consumes them in later phases. Guarded by `tests/profiles.test.ts`.
 - `src/campaign/defs/campaign.ts` defines the 9 historical campaigns; `src/campaign/Mission.ts` evaluates
   objectives/triggers.
 - **Educational layer**: `src/campaign/defs/educational.ts` (prologue + context/«¿Sabías que…?»/sources per mission,

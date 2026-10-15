@@ -1,6 +1,7 @@
 import { CivId, Geography, HistoricalPeriod, MapType } from '../../core/types';
 import { getCiv } from './civs';
 import { landmarkForCiv, type LandmarkId } from './landmarks';
+import { archProfileFor, type HistoricalArchitectureProfile } from './architecture';
 
 /**
  * Geographic region of a map. Finer than `MapType` (which stays as the playable
@@ -8,6 +9,8 @@ import { landmarkForCiv, type LandmarkId } from './landmarks';
  */
 export type GeographicRegion =
   'north_coast' | 'central_coast' | 'south_coast' | 'andean_valley' | 'high_andes' | 'altiplano' | 'amazon';
+
+export type SoilKind = 'sandy' | 'loam' | 'clay' | 'peaty' | 'rocky';
 
 export interface ResourceProfile {
   /** Relative weight of each gatherable node (tree/mine/well/berry). */
@@ -27,9 +30,10 @@ export interface ResourceProfile {
 export interface HistoricalMapProfile {
   id: string;
   region: GeographicRegion;
-  /** Terrain family used by `Terrain.generate` (overridden by the match's map type). */
+  /** Playable terrain family (matches the region's default map). */
   baseMapType: MapType;
   terrain: {
+    soil: SoilKind;
     fbmScale: number;
     fbmOctaves: number;
     fbmOffset: number;
@@ -50,6 +54,8 @@ export interface HistoricalMapProfile {
     aridity: number;
     /** 0 dry .. 1 humid. */
     moisture: number;
+    /** 0 cold .. 1 hot. */
+    temperature: number;
     /** Vegetation tint strength in the terrain shader. */
     vegTint: number;
   };
@@ -73,6 +79,22 @@ export interface HistoricalMapProfile {
   provenance: string;
 }
 
+/** The resolved visual world: natural map plus the architecture of the civilization. */
+export interface WorldProfile {
+  map: HistoricalMapProfile;
+  architecture: HistoricalArchitectureProfile;
+}
+
+/** Sea/lake level shared by every map (matches `Terrain.waterLevel`). */
+export const WATER_LEVEL = 2.2;
+
+const MAPTYPE_REGION: Record<MapType, GeographicRegion> = {
+  coast: 'central_coast',
+  andes: 'andean_valley',
+  altiplano: 'altiplano',
+  jungle: 'amazon',
+};
+
 const REGION_MAP: Record<GeographicRegion, MapType> = {
   north_coast: 'coast',
   central_coast: 'coast',
@@ -84,9 +106,9 @@ const REGION_MAP: Record<GeographicRegion, MapType> = {
 };
 
 const GEOGRAPHY_REGION: Record<Geography, GeographicRegion> = {
-  coast: 'central_coast',
-  andes: 'andean_valley',
-  altiplano: 'altiplano',
+  coast: MAPTYPE_REGION.coast,
+  andes: MAPTYPE_REGION.andes,
+  altiplano: MAPTYPE_REGION.altiplano,
 };
 
 /** Documented region of a civilization (from `docs/historia/mapas.md`). */
@@ -114,16 +136,7 @@ export function regionForCiv(id: CivId): GeographicRegion {
 }
 
 export function regionForMapType(mapType: MapType): GeographicRegion {
-  switch (mapType) {
-    case 'coast':
-      return 'central_coast';
-    case 'andes':
-      return 'andean_valley';
-    case 'altiplano':
-      return 'altiplano';
-    case 'jungle':
-      return 'amazon';
-  }
+  return MAPTYPE_REGION[mapType];
 }
 
 const COAST_TERRAIN = {
@@ -179,10 +192,10 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     id: 'north_coast',
     region: 'north_coast',
     baseMapType: 'coast',
-    terrain: { ...COAST_TERRAIN, terraceChance: 0.15 },
+    terrain: { ...COAST_TERRAIN, soil: 'sandy', terraceChance: 0.15 },
     elevation: { snowLine: 20 },
-    climate: { aridity: 0.92, moisture: 0.28, vegTint: 0.06 },
-    water: { level: 2.2, inland: false, wetland: true },
+    climate: { aridity: 0.92, moisture: 0.28, temperature: 0.82, vegTint: 0.06 },
+    water: { level: WATER_LEVEL, inland: false, wetland: true },
     vegetation: { density: 0.06, variants: { broad: 1 } },
     resources: { tree: 0.3, mine: 0.4, well: 0.2, berry: 0.15, hunt: 12, fishing: 8 },
     atmosphere: { fogDensity: 0.015, sunWarmth: 1.05, skyTint: '#dfe4d8' },
@@ -193,10 +206,10 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     id: 'central_coast',
     region: 'central_coast',
     baseMapType: 'coast',
-    terrain: { ...COAST_TERRAIN, terraceChance: 0.2 },
+    terrain: { ...COAST_TERRAIN, soil: 'loam', terraceChance: 0.2 },
     elevation: { snowLine: 20 },
-    climate: { aridity: 0.82, moisture: 0.35, vegTint: 0.12 },
-    water: { level: 2.2, inland: false, wetland: true },
+    climate: { aridity: 0.82, moisture: 0.35, temperature: 0.8, vegTint: 0.12 },
+    water: { level: WATER_LEVEL, inland: false, wetland: true },
     vegetation: { density: 0.12, variants: { broad: 1 } },
     resources: { tree: 0.4, mine: 0.12, well: 0.28, berry: 0.25, hunt: 12, fishing: 8 },
     atmosphere: { fogDensity: 0.02, sunWarmth: 1.0, skyTint: '#e2e6dc' },
@@ -207,10 +220,10 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     id: 'south_coast',
     region: 'south_coast',
     baseMapType: 'coast',
-    terrain: { ...COAST_TERRAIN, terraceChance: 0.1 },
+    terrain: { ...COAST_TERRAIN, soil: 'sandy', terraceChance: 0.1 },
     elevation: { snowLine: 20 },
-    climate: { aridity: 0.95, moisture: 0.22, vegTint: 0.04 },
-    water: { level: 2.2, inland: false, wetland: false },
+    climate: { aridity: 0.95, moisture: 0.22, temperature: 0.85, vegTint: 0.04 },
+    water: { level: WATER_LEVEL, inland: false, wetland: false },
     vegetation: { density: 0.04, variants: { broad: 1 } },
     resources: { tree: 0.25, mine: 0.45, well: 0.15, berry: 0.1, hunt: 8, fishing: 10 },
     atmosphere: { fogDensity: 0.012, sunWarmth: 1.08, skyTint: '#e6e2d6' },
@@ -221,10 +234,10 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     id: 'andean_valley',
     region: 'andean_valley',
     baseMapType: 'andes',
-    terrain: { ...ANDES_TERRAIN, terraceChance: 0.45 },
+    terrain: { ...ANDES_TERRAIN, soil: 'loam', terraceChance: 0.45 },
     elevation: { snowLine: 15 },
-    climate: { aridity: 0.1, moisture: 0.75, vegTint: 0.55 },
-    water: { level: 2.2, inland: true, wetland: false },
+    climate: { aridity: 0.1, moisture: 0.75, temperature: 0.45, vegTint: 0.55 },
+    water: { level: WATER_LEVEL, inland: true, wetland: false },
     vegetation: { density: 0.55, variants: { broad: 0.7, needle: 0.3 } },
     resources: { tree: 0.45, mine: 0.35, well: 0.2, berry: 0.2, hunt: 14, fishing: 0 },
     atmosphere: { fogDensity: 0.025, sunWarmth: 0.95, skyTint: '#cdd8d2' },
@@ -235,10 +248,10 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     id: 'high_andes',
     region: 'high_andes',
     baseMapType: 'andes',
-    terrain: { ...ANDES_TERRAIN, baseBias: 0.62, mtnAmp: 17, terraceChance: 0.7 },
+    terrain: { ...ANDES_TERRAIN, soil: 'rocky', baseBias: 0.62, mtnAmp: 17, terraceChance: 0.7 },
     elevation: { snowLine: 13 },
-    climate: { aridity: 0.15, moisture: 0.6, vegTint: 0.5 },
-    water: { level: 2.2, inland: true, wetland: false },
+    climate: { aridity: 0.15, moisture: 0.6, temperature: 0.3, vegTint: 0.5 },
+    water: { level: WATER_LEVEL, inland: true, wetland: false },
     vegetation: { density: 0.5, variants: { broad: 0.5, needle: 0.5 } },
     resources: { tree: 0.4, mine: 0.4, well: 0.25, berry: 0.15, hunt: 12, fishing: 0 },
     atmosphere: { fogDensity: 0.028, sunWarmth: 0.98, skyTint: '#c8d4d8' },
@@ -249,10 +262,10 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     id: 'altiplano',
     region: 'altiplano',
     baseMapType: 'altiplano',
-    terrain: { ...ALTIPLANO_TERRAIN, terraceChance: 0.35 },
+    terrain: { ...ALTIPLANO_TERRAIN, soil: 'peaty', terraceChance: 0.35 },
     elevation: { snowLine: 14 },
-    climate: { aridity: 0.4, moisture: 0.5, vegTint: 0.15 },
-    water: { level: 2.2, inland: true, wetland: true },
+    climate: { aridity: 0.4, moisture: 0.5, temperature: 0.25, vegTint: 0.15 },
+    water: { level: WATER_LEVEL, inland: true, wetland: true },
     vegetation: { density: 0.15, variants: { needle: 0.7, broad: 0.3 } },
     resources: { tree: 0.1, mine: 0.3, well: 0.4, berry: 0.15, hunt: 16, fishing: 6 },
     atmosphere: { fogDensity: 0.022, sunWarmth: 0.9, skyTint: '#d2dadf' },
@@ -263,10 +276,10 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     id: 'amazon',
     region: 'amazon',
     baseMapType: 'jungle',
-    terrain: { ...JUNGLE_TERRAIN, terraceChance: 0.05 },
+    terrain: { ...JUNGLE_TERRAIN, soil: 'clay', terraceChance: 0.05 },
     elevation: { snowLine: 22 },
-    climate: { aridity: 0, moisture: 1, vegTint: 1 },
-    water: { level: 2.2, inland: true, wetland: true },
+    climate: { aridity: 0, moisture: 1, temperature: 0.95, vegTint: 1 },
+    water: { level: WATER_LEVEL, inland: true, wetland: true },
     vegetation: { density: 1, variants: { frond: 0.7, broad: 0.3 } },
     resources: { tree: 0.7, mine: 0.1, well: 0.15, berry: 0.25, hunt: 10, fishing: 8 },
     atmosphere: { fogDensity: 0.04, sunWarmth: 0.92, skyTint: '#c4d2be' },
@@ -280,9 +293,10 @@ export function profileForMapType(mapType: MapType): HistoricalMapProfile {
 }
 
 /**
- * Resolve the visual world profile from `HistoricalPeriod + GeographicRegion +
- * Civilization + MapType`. `mapType` fixes the terrain family; the region refines
- * climate, vegetation, resources and atmosphere; the civilization supplies the landmark.
+ * Resolve the natural map profile from `HistoricalPeriod + GeographicRegion +
+ * Civilization + MapType`. The region (explicit, else derived from the civ) drives
+ * the fine terrain/climate/vegetation/resources; `mapType` is the coarse playable
+ * family and matches the region's default. The period gates the landmark.
  */
 export function resolveMapProfile(opts: {
   period: HistoricalPeriod;
@@ -290,13 +304,26 @@ export function resolveMapProfile(opts: {
   mapType: MapType;
   region?: GeographicRegion;
 }): HistoricalMapProfile {
-  // `period` is part of the composition key; the natural identity is region-driven today
-  // (period-specific environment and landmarks arrive in a later phase).
-  const region = opts.region ?? regionForCiv(opts.civ);
-  const base = MAP_PROFILES[region] ?? profileForMapType(opts.mapType);
+  const identityRegion = opts.region ?? regionForCiv(opts.civ);
   return {
-    ...base,
+    ...MAP_PROFILES[identityRegion],
     baseMapType: opts.mapType,
-    landmark: landmarkForCiv(opts.civ) ?? base.landmark,
+    landmark: landmarkForCiv(opts.civ, opts.period),
+  };
+}
+
+/**
+ * Resolve the full visual world (natural map + civilization architecture) from
+ * `HistoricalPeriod + GeographicRegion + Civilization + MapType`.
+ */
+export function resolveWorldProfile(opts: {
+  period: HistoricalPeriod;
+  civ: CivId;
+  mapType: MapType;
+  region?: GeographicRegion;
+}): WorldProfile {
+  return {
+    map: resolveMapProfile(opts),
+    architecture: archProfileFor(opts.civ, opts.period),
   };
 }

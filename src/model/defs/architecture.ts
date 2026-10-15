@@ -6,7 +6,7 @@ import { landmarkForCiv, type LandmarkId } from './landmarks';
 export type WallMaterial =
   'adobe' | 'fieldstone' | 'cut-stone' | 'megalithic' | 'wood' | 'brick' | 'concrete' | 'metal';
 
-export type RoofMaterial = 'thatch' | 'flat-stone' | 'tile' | 'flat-metal' | 'dome';
+export type RoofMaterial = 'thatch' | 'flat-stone' | 'tile' | 'flat-metal';
 
 export type FoundationKind = 'platform' | 'terrace' | 'plinth' | 'none';
 
@@ -53,8 +53,8 @@ const STYLE_BASES: Record<ArchStyle, ArchBase> = {
 
 /** Per-civilization overrides for the slice (they keep the same `ArchStyle`). */
 const CIV_ARCH: Partial<Record<CivId, Partial<ArchBase>>> = {
-  [CivId.CARAL]: { wall: 'adobe', roof: 'thatch', foundation: 'platform', ornament: {} },
-  [CivId.MOCHE]: { wall: 'adobe', roof: 'thatch', foundation: 'platform', ornament: { frieze: true } },
+  // Caral's monumental compounds have no painted frieze (that is a Moche/Chimú trait)
+  [CivId.CARAL]: { ornament: {} },
   [CivId.INCA]: {
     wall: 'cut-stone',
     roof: 'thatch',
@@ -96,7 +96,7 @@ export function archProfileFor(civId: CivId, period: HistoricalPeriod): Historic
     ...base,
     ...(override ?? {}),
     ornament: override?.ornament ?? base.ornament,
-    landmark: landmarkForCiv(civId),
+    landmark: landmarkForCiv(civId, period),
     provenance: CIV_ARCH_SOURCE[civId] ?? 'docs/historia/arquitectura.md',
   };
   PROFILE_CACHE.set(key, profile);

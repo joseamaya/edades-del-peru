@@ -46,7 +46,7 @@ export const LANDMARKS: Record<LandmarkId, LandmarkDef> = {
     civ: CivId.INCA,
     period: HistoricalPeriod.LATE_HORIZON,
     region: 'high_andes',
-    status: 'documented',
+    status: 'abstraction',
     source: 'docs/historia/civilizaciones/inca.md (plaza y ushnu; reconstrucción abstracta)',
   },
 };
@@ -58,6 +58,13 @@ export const CIV_LANDMARK: Partial<Record<CivId, LandmarkId>> = {
   [CivId.INCA]: 'inca_ushnu',
 };
 
-export function landmarkForCiv(id: CivId): LandmarkId | null {
-  return CIV_LANDMARK[id] ?? null;
+/**
+ * Landmark of a civilization in a period. It only applies in the landmark's own
+ * period, so a culture played outside it (e.g. the Inca in the Viceroyalty) does
+ * not carry an anachronistic landmark.
+ */
+export function landmarkForCiv(id: CivId, period: HistoricalPeriod): LandmarkId | null {
+  const landmark = CIV_LANDMARK[id];
+  if (!landmark) return null;
+  return LANDMARKS[landmark].period === period ? landmark : null;
 }

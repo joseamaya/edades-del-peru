@@ -52,8 +52,11 @@ Se definen tres grandes biomas jugables (más un cuarto opcional), con parámetr
 La identidad del mapa es **data-driven** (`src/model/defs/profiles.ts`). La geografía se descompone en una
 `GeographicRegion` (más fina que el `MapType` jugable): `north_coast`, `central_coast`, `south_coast`,
 `andean_valley`, `high_andes`, `altiplano`, `amazon`. Cada región define un `HistoricalMapProfile`
-(terreno, clima, agua/humedales, vegetación, recursos, atmósfera y landmark) y se resuelve con
-`resolveMapProfile({ period, civ, mapType, region? })`.
+(suelo, terreno, clima con aridez/humedad/temperatura, agua/humedales, vegetación, recursos, atmósfera y
+landmark) y se resuelve con `resolveMapProfile({ period, civ, mapType, region? })`. La región manda en la
+identidad fina del terreno; el `mapType` es la familia gruesa (coincide con `regionDefaultMap(region)`).
+`resolveWorldProfile(...)` devuelve además la arquitectura de la civilización. El landmark solo se asigna
+dentro de su propio periodo (una cultura jugada después no arrastra un landmark anacrónico).
 
 La región de cada civilización sigue este dossier (regiones deducidas de la tabla de arriba):
 
