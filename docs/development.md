@@ -51,7 +51,9 @@ for player-facing docs see [`README.md`](../README.md).
   generation is pure and lives in `src/rendering/heightField.ts` (`generateHeightField(resolution, seed, profile)`,
   no THREE), so `tests/terrain.test.ts` pins determinism (same seed+profile → same map; different seed/profile →
   different map) without a DOM. Adding a region/profile does not touch the generator: only the data in
-  `profiles.ts`. `atmosphere` is carried but not yet applied (classic no-fog look is preserved).
+  `profiles.ts`. The region `atmosphere` is applied (Phase 9): `Game.applyAtmosphere` feeds `skyTint`/`fogDensity`
+  to the sky, terrain and water as a distance-bounded aerial perspective and `sunWarmth` to the sun; `scene.fog`
+  stays null (classic sharp look, buildings undimmed).
 - **Architecture profile in the model (Phase 4)**: `BuildContext.arch` (`Game.makeBuildContext` →
   `archProfileFor(civ, era)`) drives `ProceduralModel`'s Andean builders (`wall`/`roof`/`foundation`/
   `ornament`/`monumentalTiers`) instead of `Builder.style` booleans; new modules are `andeanTerraceBase`,

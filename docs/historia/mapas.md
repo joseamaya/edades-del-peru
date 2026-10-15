@@ -56,7 +56,9 @@ La identidad del mapa es **data-driven** (`src/model/defs/profiles.ts`). La geog
 landmark) y se resuelve con `resolveMapProfile({ period, civ, mapType, region? })`. La región manda en la
 identidad fina del terreno; el `mapType` es la familia gruesa (coincide con `regionDefaultMap(region)`).
 `resolveWorldProfile(...)` devuelve además la arquitectura de la civilización. El landmark solo se asigna
-dentro de su propio periodo (una cultura jugada después no arrastra un landmark anacrónico).
+dentro de su propio periodo (una cultura jugada después no arrastra un landmark anacrónico). La **atmósfera**
+de la región se aplica como perspectiva aérea (`skyTint`/`fogDensity` en terreno y agua, `sunWarmth` en el sol);
+el `scene.fog` sigue desactivado (look clásico nítido).
 
 La región de cada civilización sigue este dossier (regiones deducidas de la tabla de arriba):
 

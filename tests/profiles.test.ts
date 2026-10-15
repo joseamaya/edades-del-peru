@@ -39,7 +39,16 @@ describe('historical map profiles', () => {
       expect(p.climate.temperature).toBeGreaterThanOrEqual(0);
       expect(p.climate.temperature).toBeLessThanOrEqual(1);
       expect(p.terrain.soil, `${region} soil`).toBeTruthy();
+      // atmosphere feeds the terrain/water aerial perspective directly (few 1e-3)
+      expect(p.atmosphere.fogDensity, `${region} fogDensity`).toBeGreaterThanOrEqual(0);
+      expect(p.atmosphere.fogDensity, `${region} fogDensity`).toBeLessThanOrEqual(0.005);
+      expect(p.atmosphere.skyTint, `${region} skyTint`).toMatch(/^#[0-9a-f]{6}$/i);
+      expect(p.atmosphere.sunWarmth).toBeGreaterThan(0);
     }
+  });
+
+  it('gives the humid Amazon a hazier atmosphere than the clear high Andes', () => {
+    expect(MAP_PROFILES.amazon.atmosphere.fogDensity).toBeGreaterThan(MAP_PROFILES.high_andes.atmosphere.fogDensity);
   });
 
   it('maps every civilization to a region consistent with its geography', () => {

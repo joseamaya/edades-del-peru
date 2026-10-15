@@ -152,6 +152,12 @@ export class Water {
     this.uniforms.isDay.value = day;
   }
 
+  /** Region atmosphere: fog colour + aerial-perspective density for the water. */
+  setFog(color: string, density: number): void {
+    (this.uniforms.fogColor.value as THREE.Color).set(color);
+    this.uniforms.fogDensity.value = density;
+  }
+
   update(time: number): void {
     this.uniforms.time.value = time;
   }

@@ -232,6 +232,7 @@ export class Game {
       this.mapProfile.water.level,
       this.mapProfile.water.inland,
     );
+    this.applyAtmosphere();
     this.particles = new Particles(this.scene, 4096);
     this.markers = new OrderMarkers(this.scene);
     this.trees = new TreeInstances(this.scene);
@@ -245,6 +246,20 @@ export class Game {
   private setTimeOfDay(mode: string): void {
     const map: Record<string, number> = { morning: 0.62, noon: 0.5, dusk: 0.28, night: 0.05 };
     this.sky.setTimeOfDay(map[mode] ?? 0.5);
+  }
+
+  /**
+   * Apply the region's atmosphere (`HistoricalMapProfile.atmosphere`): the sky
+   * tint/haze/sun-warmth plus the terrain/water aerial perspective. `scene.fog`
+   * stays null; the effect is distance-bounded and buildings are not dimmed.
+   */
+  private applyAtmosphere(): void {
+    const a = this.mapProfile.atmosphere;
+    const tint = new THREE.Color(a.skyTint);
+    this.terrain.setFogColor(tint);
+    this.terrain.setFogDensity(a.fogDensity);
+    this.water.setFog(a.skyTint, a.fogDensity);
+    this.sky.setAtmosphere(a.skyTint, a.sunWarmth);
   }
 
   private initPlayers(): void {
@@ -2443,7 +2458,7 @@ export class Game {
     this.water.setSunDir(this.sky.sunDir);
     this.water.setDayFactor(this.sky.getDayFactor());
     this.water.update(t);
-    this.terrain.setSunLight(this.sky.sunDir, this.sky.sunColor);
+    this.terrain.setSunLight(this.sky.sunDir, this.sky.getSunColor());
     this.terrain.update(t);
     // cloud shadows: dim the sun according to cloud density near the sun
     const cs = cloudDensity(this.sky.sunDir.x * 900 + t * 3, this.sky.sunDir.z * 900) * 0.22;
