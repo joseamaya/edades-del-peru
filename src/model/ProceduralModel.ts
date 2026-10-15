@@ -2275,17 +2275,169 @@ function buildIncaLandmark(b: Builder): void {
   }
 }
 
+/** Chavín: a stepped stone temple with tenon heads beside a sunken plaza. */
+function buildChavinTemple(b: Builder): void {
+  const stone = mixHex(b.pal.primary, '#8f8676', 0.78);
+  const dark = mixHex(b.pal.primary, '#2a2318', 0.5);
+  const w = 6;
+  for (let i = 0; i < 3; i++) {
+    const t = w * (1.18 - i * 0.16);
+    b.box(t, 0.55, t, stone, { y: 0.28 + i * 0.55, tex: 'stone' });
+  }
+  const baseY = 3 * 0.55;
+  b.box(w * 0.5, 0.9, w * 0.5, stone, { y: baseY + 0.45, tex: 'stone' });
+  for (let i = -2; i <= 2; i++) {
+    b.box(0.34, 0.34, 0.5, stone, { x: i * w * 0.16, y: baseY + 0.1, z: w * 0.5, tex: 'stone' });
+  }
+  const r = w * 0.7;
+  const cx = w * 1.35;
+  b.cyl(r, r, 0.3, 24, stone, { x: cx, y: 0.15, tex: 'stone', flatShading: true });
+  b.cyl(r * 0.8, r * 0.8, 0.36, 24, dark, { x: cx, y: 0.17, flatShading: true });
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2;
+    b.box(0.4, 0.6, 0.4, stone, { x: cx + Math.cos(a) * r, y: 0.45, z: Math.sin(a) * r, tex: 'stone' });
+  }
+}
+
+/** Wari: a walled urban compound with a gated front and a central platform. */
+function buildWariCompound(b: Builder): void {
+  const wall = andeanWall(b);
+  const stone = andeanStone(b);
+  const w = 8;
+  const h = 1.1;
+  b.box(w, h, 0.4, wall, { y: h / 2, z: w / 2, tex: 'stone' });
+  b.box(w, h, 0.4, wall, { y: h / 2, z: -w / 2, tex: 'stone' });
+  b.box(0.4, h, w, wall, { x: w / 2, y: h / 2, tex: 'stone' });
+  b.box(0.4, h, w, wall, { x: -w / 2, y: h / 2, tex: 'stone' });
+  b.box(0.5, h * 1.25, 0.5, stone, { x: -0.9, y: h * 0.62, z: w / 2, tex: 'stone' });
+  b.box(0.5, h * 1.25, 0.5, stone, { x: 0.9, y: h * 0.62, z: w / 2, tex: 'stone' });
+  b.box(1.6, 0.5, w * 0.4, stone, { y: h + 0.25, z: 0, tex: 'stone' });
+  b.box(w * 0.28, 0.8, w * 0.28, wall, { y: h + 0.9, tex: 'stone' });
+}
+
+/** Tiahuanaco: a megalithic platform with a monolith doorway and a sunken patio. */
+function buildTiahuanacoComplex(b: Builder): void {
+  const stone = mixHex(b.pal.primary, '#c2baae', 0.82);
+  const w = 7;
+  for (let i = 0; i < 3; i++) {
+    const t = w * (1.2 - i * 0.16);
+    b.box(t, 0.6, t, stone, { y: 0.3 + i * 0.6, tex: 'stone' });
+  }
+  const baseY = 3 * 0.6;
+  b.box(0.5, 1.6, 0.4, stone, { x: -0.6, y: baseY + 0.8, tex: 'stone' });
+  b.box(0.5, 1.6, 0.4, stone, { x: 0.6, y: baseY + 0.8, tex: 'stone' });
+  b.box(1.8, 0.4, 0.5, stone, { y: baseY + 1.8, tex: 'stone' });
+  for (const [sx, sz] of [
+    [-1, -1],
+    [1, -1],
+    [-1, 1],
+    [1, 1],
+  ] as const) {
+    b.box(w * 0.24, w * 0.4, w * 0.24, stone, {
+      x: sx * w * 0.5,
+      y: baseY * 0.4,
+      z: sz * w * 0.5,
+      tex: 'stone',
+    });
+  }
+  const r = w * 0.62;
+  const cx = w * 1.5;
+  b.cyl(r, r, 0.3, 28, stone, { x: cx, y: 0.15, tex: 'stone', flatShading: true });
+  b.cyl(r * 0.8, r * 0.8, 0.34, 28, mixHex(b.pal.primary, '#8a8478', 0.6), {
+    x: cx,
+    y: 0.17,
+    flatShading: true,
+  });
+}
+
+/** Chimú: a large adobe walled enclosure with a painted frieze and inner platform. */
+function buildChimuCompound(b: Builder): void {
+  const adobe = andeanWall(b);
+  const w = 8.5;
+  const h = 1.6;
+  b.box(w, h, 0.5, adobe, { y: h / 2, z: w / 2, tex: 'brick' });
+  b.box(w, h, 0.5, adobe, { y: h / 2, z: -w / 2, tex: 'brick' });
+  b.box(0.5, h, w, adobe, { x: w / 2, y: h / 2, tex: 'brick' });
+  b.box(0.5, h, w, adobe, { x: -w / 2, y: h / 2, tex: 'brick' });
+  b.box(w * 0.9, 0.3, 0.1, b.civAccent, { y: h * 0.72, z: w / 2 + 0.05 });
+  for (let i = 0; i < 3; i++) {
+    const t = w * (0.5 - i * 0.1);
+    b.box(t, 0.4, t, adobe, { y: 0.2 + i * 0.4, tex: 'brick' });
+  }
+  for (let i = 0; i < 4; i++) {
+    b.box(1.0, 0.12, w * 0.3, adobe, { y: 0.06 + i * 0.12, z: w * 0.36 + i * 0.2, tex: 'brick' });
+  }
+}
+
+/** Colonial: a church with a tile roof, an arched door and a bell tower. */
+function buildColonialChurch(b: Builder): void {
+  const wall = mixHex(b.pal.brick, '#ffffff', 0.5);
+  const roof = mixHex(b.pal.roof, '#ffffff', 0.5);
+  const tex = facadeTex(b, 'brick');
+  const w = 5;
+  b.box(w * 0.8, w * 0.7, w * 1.5, wall, { y: w * 0.35, tex });
+  b.box(w * 0.9, w * 0.14, w * 0.85, roof, { y: w * 0.78, z: w * 0.42, rx: 0.6, tex: 'roof' });
+  b.box(w * 0.9, w * 0.14, w * 0.85, roof, { y: w * 0.78, z: -w * 0.42, rx: -0.6, tex: 'roof' });
+  b.box(w * 0.36, w * 1.4, w * 0.36, wall, { x: -w * 0.5, y: w * 0.7, z: -w * 0.6, tex });
+  b.box(w * 0.42, 0.16, w * 0.42, roof, { x: -w * 0.5, y: w * 1.45, z: -w * 0.6, tex: 'roof' });
+  b.box(0.06, 0.4, 0.06, '#c8a040', { x: -w * 0.5, y: w * 1.7, z: -w * 0.6 });
+  b.box(0.06, 0.06, 0.4, '#c8a040', { x: -w * 0.5, y: w * 1.62, z: -w * 0.6 });
+  b.cyl(w * 0.18, w * 0.18, 0.12, 14, mixHex(b.pal.primary, '#2a2318', 0.5), {
+    x: 0,
+    y: w * 0.45,
+    z: w * 0.75,
+    rx: Math.PI / 2,
+  });
+}
+
+/** Republican: a port fort with battlements, a corner bastion and a flag. */
+function buildRepublicanFort(b: Builder): void {
+  const wall = b.arch.wall === 'concrete' ? mixHex(b.pal.concrete, '#ffffff', 0.6) : andeanStone(b);
+  const tex = facadeTex(b, 'concrete');
+  const w = 7;
+  const h = 1.6;
+  b.box(w, h, 0.6, wall, { y: h / 2, z: w / 2, tex });
+  b.box(w, h, 0.6, wall, { y: h / 2, z: -w / 2, tex });
+  b.box(0.6, h, w, wall, { x: w / 2, y: h / 2, tex });
+  b.box(0.6, h, w, wall, { x: -w / 2, y: h / 2, tex });
+  for (let i = -2; i <= 2; i++) {
+    b.box(0.32, 0.34, 0.32, wall, { x: i * w * 0.18, y: h + 0.17, z: w / 2, tex });
+    b.box(0.32, 0.34, 0.32, wall, { x: i * w * 0.18, y: h + 0.17, z: -w / 2, tex });
+  }
+  b.cyl(w * 0.16, w * 0.2, 1.9, 12, wall, { x: w / 2, y: 0.95, z: w / 2, tex });
+  b.cyl(0.04, 0.04, 1.4, 6, b.pal.darkWood, { y: w * 0.5, x: -w / 2, z: -w / 2 });
+  b.box(0.6, 0.3, 0.05, b.civPrimary, { y: w * 0.5 + 0.5, x: -w / 2 + 0.3, z: -w / 2 });
+}
+
 function buildLandmarkStructure(type: LandmarkId, ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
   switch (type) {
     case 'caral_ceremonial':
       buildCaralLandmark(b);
       break;
+    case 'chavin_temple':
+      buildChavinTemple(b);
+      break;
     case 'moche_huaca':
       buildMocheLandmark(b);
       break;
+    case 'wari_compound':
+      buildWariCompound(b);
+      break;
+    case 'tiahuanaco_complex':
+      buildTiahuanacoComplex(b);
+      break;
+    case 'chimu_compound':
+      buildChimuCompound(b);
+      break;
     case 'inca_ushnu':
       buildIncaLandmark(b);
+      break;
+    case 'colonial_church':
+      buildColonialChurch(b);
+      break;
+    case 'republican_fort':
+      buildRepublicanFort(b);
       break;
     default: {
       const exhaustive: never = type;

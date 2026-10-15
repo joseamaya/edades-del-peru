@@ -8,7 +8,16 @@ import type { GeographicRegion } from './profiles';
  * reading ('plausible') and a gameplay abstraction ('abstraction').
  * Sources: `docs/historia/` dossiers.
  */
-export type LandmarkId = 'caral_ceremonial' | 'moche_huaca' | 'inca_ushnu';
+export type LandmarkId =
+  | 'caral_ceremonial'
+  | 'chavin_temple'
+  | 'moche_huaca'
+  | 'wari_compound'
+  | 'tiahuanaco_complex'
+  | 'chimu_compound'
+  | 'inca_ushnu'
+  | 'colonial_church'
+  | 'republican_fort';
 
 export interface LandmarkDef {
   id: LandmarkId;
@@ -31,6 +40,15 @@ export const LANDMARKS: Record<LandmarkId, LandmarkDef> = {
     source:
       'docs/historia/civilizaciones/caral.md (UNESCO: Ciudad Sagrada de Caral-Supe, whc.unesco.org/en/list/1269/)',
   },
+  chavin_temple: {
+    id: 'chavin_temple',
+    name: 'Templo / plaza ceremonial',
+    civ: CivId.CHAVIN,
+    period: HistoricalPeriod.EARLY_HORIZON,
+    region: 'andean_valley',
+    status: 'documented',
+    source: 'docs/historia/civilizaciones/chavin.md (Chavín de Huántar, centro ceremonial; cabezas clavas)',
+  },
   moche_huaca: {
     id: 'moche_huaca',
     name: 'Huaca (plataforma ceremonial)',
@@ -39,6 +57,33 @@ export const LANDMARKS: Record<LandmarkId, LandmarkDef> = {
     region: 'north_coast',
     status: 'documented',
     source: 'docs/historia/civilizaciones/moche.md (Huacas del Sol y de la Luna)',
+  },
+  wari_compound: {
+    id: 'wari_compound',
+    name: 'Complejo urbano amurallado',
+    civ: CivId.WARI,
+    period: HistoricalPeriod.MIDDLE_HORIZON,
+    region: 'high_andes',
+    status: 'documented',
+    source: 'docs/historia/civilizaciones/wari.md (centros provinciales planificados)',
+  },
+  tiahuanaco_complex: {
+    id: 'tiahuanaco_complex',
+    name: 'Complejo monumental megalítico',
+    civ: CivId.TIAHUANACO,
+    period: HistoricalPeriod.MIDDLE_HORIZON,
+    region: 'altiplano',
+    status: 'documented',
+    source: 'docs/historia/civilizaciones/tiahuanaco.md (arquitectura monumental; Puerta del Sol, monolitos)',
+  },
+  chimu_compound: {
+    id: 'chimu_compound',
+    name: 'Ciudadela de adobe (recinto amurallado)',
+    civ: CivId.CHIMU,
+    period: HistoricalPeriod.LATE_INTERMEDIATE,
+    region: 'north_coast',
+    status: 'documented',
+    source: 'docs/historia/civilizaciones/chimu.md (Chan Chan, ciudadelas; UNESCO)',
   },
   inca_ushnu: {
     id: 'inca_ushnu',
@@ -49,13 +94,37 @@ export const LANDMARKS: Record<LandmarkId, LandmarkDef> = {
     status: 'abstraction',
     source: 'docs/historia/civilizaciones/inca.md (Arquitectura ceremonial: ushnu; Wikipedia: Ushnu)',
   },
+  colonial_church: {
+    id: 'colonial_church',
+    name: 'Iglesia y plaza colonial',
+    civ: CivId.REALISTAS,
+    period: HistoricalPeriod.VICEROYALTY,
+    region: 'andean_valley',
+    status: 'abstraction',
+    source: 'docs/historia/arquitectura.md (colonial: iglesias, campanario, cubierta de teja)',
+  },
+  republican_fort: {
+    id: 'republican_fort',
+    name: 'Fortificación portuaria',
+    civ: CivId.REPUBLIC,
+    period: HistoricalPeriod.REPUBLIC,
+    region: 'central_coast',
+    status: 'abstraction',
+    source: 'docs/historia/civilizaciones/republica.md (defensa del puerto; Guerra del Pacífico)',
+  },
 };
 
-/** Landmark that stands for a civilization (slice: Caral, Moche, Inca). */
+/** Landmark that stands for a civilization. */
 export const CIV_LANDMARK: Partial<Record<CivId, LandmarkId>> = {
   [CivId.CARAL]: 'caral_ceremonial',
+  [CivId.CHAVIN]: 'chavin_temple',
   [CivId.MOCHE]: 'moche_huaca',
+  [CivId.WARI]: 'wari_compound',
+  [CivId.TIAHUANACO]: 'tiahuanaco_complex',
+  [CivId.CHIMU]: 'chimu_compound',
   [CivId.INCA]: 'inca_ushnu',
+  [CivId.REALISTAS]: 'colonial_church',
+  [CivId.REPUBLIC]: 'republican_fort',
 };
 
 /**

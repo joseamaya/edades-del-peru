@@ -63,12 +63,24 @@ const STYLE_BASES: Record<ArchStyle, ArchBase> = {
   republican: { wall: 'concrete', roof: 'flat-metal', foundation: 'plinth', monumentalTiers: 1, ornament: {} },
 };
 
-/** Per-civilization overrides for the slice (they keep the same `ArchStyle`). */
+/** Per-civilization overrides (they keep the same `ArchStyle`). */
 const CIV_ARCH: Partial<Record<CivId, Partial<ArchBase>>> = {
   // Caral's monumental compounds have no painted frieze (that is a Moche/Chimú trait)
   [CivId.CARAL]: { ornament: {}, monumentalTiers: 2 },
+  // Chavín: carved stone temple with tenon heads and large blocks
+  [CivId.CHAVIN]: {
+    wall: 'fieldstone',
+    roof: 'flat-stone',
+    foundation: 'platform',
+    monumentalTiers: 3,
+    ornament: { niches: true, megalithBlocks: true },
+  },
   // Moche huacas (e.g. Huaca del Sol) tower over the earlier coastal platforms
   [CivId.MOCHE]: { monumentalTiers: 3 },
+  // Wari: planned stone compounds
+  [CivId.WARI]: { wall: 'fieldstone', roof: 'thatch', monumentalTiers: 3, ornament: { niches: true } },
+  // Chimú: large walled adobe citadels with painted friezes
+  [CivId.CHIMU]: { monumentalTiers: 3, ornament: { frieze: true } },
   [CivId.INCA]: {
     wall: 'cut-stone',
     roof: 'thatch',
@@ -80,7 +92,11 @@ const CIV_ARCH: Partial<Record<CivId, Partial<ArchBase>>> = {
 
 const CIV_ARCH_SOURCE: Partial<Record<CivId, string>> = {
   [CivId.CARAL]: 'docs/historia/civilizaciones/caral.md',
+  [CivId.CHAVIN]: 'docs/historia/civilizaciones/chavin.md',
   [CivId.MOCHE]: 'docs/historia/civilizaciones/moche.md',
+  [CivId.WARI]: 'docs/historia/civilizaciones/wari.md',
+  [CivId.TIAHUANACO]: 'docs/historia/civilizaciones/tiahuanaco.md',
+  [CivId.CHIMU]: 'docs/historia/civilizaciones/chimu.md',
   [CivId.INCA]: 'docs/historia/civilizaciones/inca.md',
 };
 
