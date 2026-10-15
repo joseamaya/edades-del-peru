@@ -87,9 +87,9 @@ export interface MissionDef {
   enemyCiv: CivId;
   map: { seed: number; type: MapType; size: number };
   /**
-   * Explicit geographic region of the map (else derived from the civilization).
-   * Lets a scenario carry the *scriven* region rather than the player's (e.g. the
-   * Inca campaigning on the Chimú north coast, m6).
+   * Explicit geographic region of the map, when the scenario's geography differs
+   * from the player civilization's (e.g. the Inca campaigning on the Chimú north
+   * coast). Left undefined, it is derived from the civilization.
    */
   region?: GeographicRegion;
   timeOfDay: 'morning' | 'noon' | 'dusk' | 'night';

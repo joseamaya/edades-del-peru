@@ -43,7 +43,7 @@ import { getPeriod } from '../model/defs/periods';
 import { BuildContext, buildModel, buildLandmarkModel, disposeModel, clearModelCaches } from '../model/ProceduralModel';
 import { clearTextureCache } from '../rendering/Textures';
 import { DEFAULT_SETTINGS, GameSettings, RESOURCE_INFO, CAMERA_SPEED_SCALE } from './Config';
-import { resolveMapProfile, type HistoricalMapProfile } from '../model/defs/profiles';
+import { resolveMapProfile, type HistoricalMapProfile, type GeographicRegion } from '../model/defs/profiles';
 import { distance2D } from '../util/math';
 import { isTypingTarget } from '../util/dom';
 import { RNG, hashCode, weightedPick } from '../util/rng';
@@ -88,6 +88,8 @@ export class Game {
   water!: Water;
   /** Resolved visual world profile for this match (map identity + resources). */
   mapProfile!: HistoricalMapProfile;
+  /** Explicit map region of the current mission, if any. */
+  private missionRegion?: GeographicRegion;
   /** Decorative historical landmark of the map (visual only), if any. */
   landmark: THREE.Group | null = null;
   particles!: Particles;
@@ -153,6 +155,7 @@ export class Game {
       this.settings.difficulty = mis.enemy.difficulty;
       this.settings.victoryMode = 'conquest'; // the campaign does not use wonder victory
     }
+    this.missionRegion = mis?.region;
     this.rng = new RNG((this.settings.mapSeed * 2654435761) >>> 0);
     this.initRenderer();
     this.initWorld();
@@ -209,12 +212,11 @@ export class Game {
   private initWorld(): void {
     const s = this.settings;
     const terrainRes = s.mapSize <= 128 ? 192 : s.mapSize <= 192 ? 256 : 320;
-    const mis = s.missionId ? getMission(s.missionId) : undefined;
     this.mapProfile = resolveMapProfile({
       period: s.period,
       civ: s.civPlayer,
       mapType: s.mapType,
-      region: mis?.region,
+      region: this.missionRegion,
     });
     this.terrain = new Terrain(s.mapSize, terrainRes, s.mapSeed, this.mapProfile);
     this.terrain.camera = this.camera.camera;
