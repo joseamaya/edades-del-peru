@@ -43,7 +43,7 @@ import { DEFAULT_SETTINGS, GameSettings, RESOURCE_INFO, CAMERA_SPEED_SCALE } fro
 import { resolveMapProfile, type HistoricalMapProfile } from '../model/defs/profiles';
 import { distance2D } from '../util/math';
 import { isTypingTarget } from '../util/dom';
-import { RNG, hashCode } from '../util/rng';
+import { RNG, hashCode, weightedPick } from '../util/rng';
 import { ERA_DEFS } from '../model/defs/eras';
 import { BUILDING_DEFS, getBuildingStats, BUILDING_INFO } from '../model/defs/buildings';
 import { getUnitStats, getUnitModel, UNIT_INFO, isConverter, DamageClass } from '../model/defs/units';
@@ -74,18 +74,6 @@ const NODE_INFO: Record<ResourceNode['kind'], { name: string; icon: string }> = 
 
 /** What sits under a screen point: at most one resource/unit/building. */
 type PickResult = { resource: ResourceNode | null; unit?: Unit; building?: Building };
-
-/** Deterministic weighted pick (weights may be any non-negative numbers). */
-function weightedPick<T>(rng: RNG, options: Array<[T, number]>): T {
-  let total = 0;
-  for (const [, w] of options) total += Math.max(0, w);
-  let r = rng.range(0, total);
-  for (const [value, w] of options) {
-    r -= Math.max(0, w);
-    if (r <= 0) return value;
-  }
-  return options[options.length - 1][0];
-}
 
 export class Game {
   renderer!: THREE.WebGLRenderer;
@@ -362,19 +350,21 @@ export class Game {
     }
   }
 
-  /** Geography-driven resource pick: profile weights, gated by height and beach. */
+  /** Geography-driven resource pick: profile weights, gated by height, beach, moisture and slope. */
   private pickResourceKind(rng: RNG, x: number, z: number, h: number): ResourceNode['kind'] {
     const w = this.mapProfile.resources;
     const beach = this.terrain.isBeach(x, z);
     const high = h > 6;
     const mid = h > 3;
+    const moist = this.terrain.getMoisture(x, z);
+    const slope = this.terrain.getSlope(x, z);
     const options: Array<[ResourceNode['kind'], number]> = [
-      ['mine', w.mine * (high ? 2.5 : mid ? 1.5 : 0.5)],
-      ['tree', w.tree * (high ? 0.3 : 1)],
-      ['well', w.well * (beach ? 1.6 : 0.8)],
-      ['berry', w.berry * (beach ? 1.2 : 0.7)],
+      ['mine', w.mine * (high ? 2.5 : mid ? 1.5 : 0.5) * (0.6 + slope * 1.4)],
+      ['tree', w.tree * (high ? 0.3 : 1) * (0.4 + moist)],
+      ['well', w.well * (beach ? 1.6 : 0.8) * (0.7 + slope * 0.8)],
+      ['berry', w.berry * (beach ? 1.2 : 0.7) * (0.5 + moist)],
     ];
-    return weightedPick(rng, options);
+    return weightedPick(rng, options) ?? 'tree';
   }
 
   /** Register a building as a pathfinding obstacle. */

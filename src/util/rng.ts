@@ -72,3 +72,16 @@ export function hashCode(str: string): number {
   }
   return h >>> 0;
 }
+
+/** Deterministic weighted pick over `[value, weight]` entries (weights >= 0). */
+export function weightedPick<T>(rng: RNG, entries: ReadonlyArray<[T, number]>): T | null {
+  let total = 0;
+  for (const [, w] of entries) total += Math.max(0, w);
+  if (total <= 0) return null;
+  let r = rng.range(0, total);
+  for (const [value, w] of entries) {
+    r -= Math.max(0, w);
+    if (r <= 0) return value;
+  }
+  return entries[entries.length - 1][0];
+}

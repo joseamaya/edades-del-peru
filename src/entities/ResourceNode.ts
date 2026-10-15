@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import { allocId } from './EntityView';
-import { RNG } from '../util/rng';
+import { RNG, weightedPick } from '../util/rng';
 import { ResourceKey } from '../core/types';
 import { MaterialTex } from '../rendering/Textures';
-import { TreeInstances } from '../rendering/TreeInstances';
+import { TreeInstances, type TreeVariant } from '../rendering/TreeInstances';
 import type { ResourceNodeSave } from '../game/saveTypes';
 
 // Shared caches: geometries and materials reused between nodes (fewer draw calls and GC).
@@ -84,7 +84,6 @@ export function clearResourceCaches(): void {
   matCache.clear();
 }
 
-type TreeVariant = 'broad' | 'needle' | 'frond';
 type TreeVariants = Partial<Record<TreeVariant, number>>;
 const TREE_VARIANTS: TreeVariant[] = ['broad', 'needle', 'frond'];
 function variantForMap(mapType: string): TreeVariant {
@@ -249,15 +248,8 @@ export class ResourceNode {
   private pickTreeVariant(rng: RNG): TreeVariant {
     const v = this.treeVariants;
     if (!v) return variantForMap(this.mapType);
-    let total = 0;
-    for (const k of TREE_VARIANTS) total += Math.max(0, v[k] ?? 0);
-    if (total <= 0) return variantForMap(this.mapType);
-    let r = rng.range(0, total);
-    for (const k of TREE_VARIANTS) {
-      r -= Math.max(0, v[k] ?? 0);
-      if (r <= 0) return k;
-    }
-    return TREE_VARIANTS[0];
+    const entries = TREE_VARIANTS.map((k) => [k, v[k] ?? 0] as [TreeVariant, number]);
+    return weightedPick(rng, entries) ?? variantForMap(this.mapType);
   }
 
   private buildTree(rng: RNG): void {

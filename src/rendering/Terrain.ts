@@ -95,6 +95,33 @@ export class Terrain {
     return h > this.waterLevel + 0.4;
   }
 
+  /** Interpolated moisture (0 dry .. 1 humid) at world coordinates. */
+  getMoisture(wx: number, wz: number): number {
+    const x = (wx / this.size) * this.resolution;
+    const z = (wz / this.size) * this.resolution;
+    const x0 = Math.floor(x);
+    const z0 = Math.floor(z);
+    const x1 = Math.min(x0 + 1, this.resolution);
+    const z1 = Math.min(z0 + 1, this.resolution);
+    const fx = x - x0;
+    const fz = z - z0;
+    const m00 = this.moistureMap[this.idx(x0, z0)];
+    const m10 = this.moistureMap[this.idx(x1, z0)];
+    const m01 = this.moistureMap[this.idx(x0, z1)];
+    const m11 = this.moistureMap[this.idx(x1, z1)];
+    const a = m00 + (m10 - m00) * fx;
+    const b = m01 + (m11 - m01) * fx;
+    return a + (b - a) * fz;
+  }
+
+  /** Approximate slope magnitude (0 flat .. 1 steep) from the heightfield. */
+  getSlope(wx: number, wz: number): number {
+    const d = 2;
+    const hx = this.getHeight(wx + d, wz) - this.getHeight(wx - d, wz);
+    const hz = this.getHeight(wx, wz + d) - this.getHeight(wx, wz - d);
+    return Math.min(1, (Math.hypot(hx, hz) / (2 * d)) * 0.5);
+  }
+
   private buildMesh(): THREE.Mesh {
     const n = this.resolution + 1;
     const positions = new Float32Array(n * n * 3);
@@ -194,6 +221,7 @@ export class Terrain {
         arid: { value: this.arid },
         veg: { value: this.veg },
         snowLine: { value: this.profile.elevation.snowLine },
+        temperature: { value: this.profile.climate.temperature },
       },
       vertexShader: /* glsl */ `
         attribute vec3 color;
@@ -255,6 +283,7 @@ export class Terrain {
         uniform float fowEnabled;
         uniform float arid;
         uniform float snowLine;
+        uniform float temperature;
         varying vec3 vColor;
         varying vec3 vWorldPos;
         varying vec2 vUv;
@@ -316,6 +345,10 @@ export class Terrain {
           col = mix(col, ground, 0.75);
           // vegetation: tints the grass green in humid biomes (jungle/andes)
           col = mix(col, col * vec3(0.68, 1.08, 0.52), veg * 0.8);
+          // temperature: cool regions read bluish, hot regions warmer
+          float tempTint = clamp(abs(temperature - 0.5) * 0.6, 0.0, 0.3);
+          vec3 tempColor = temperature < 0.5 ? vec3(0.86, 0.94, 1.06) : vec3(1.06, 0.98, 0.86);
+          col = mix(col, col * tempColor, tempTint);
           col = mix(col, col * (0.84 + 0.32 * detail2), 0.35);
 
           // slope-based AO

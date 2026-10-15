@@ -12,6 +12,9 @@ export type GeographicRegion =
 
 export type SoilKind = 'sandy' | 'loam' | 'clay' | 'peaty' | 'rocky';
 
+/** Tree/foliage variant (shared with the instancing manager). */
+export type TreeVariant = 'broad' | 'needle' | 'frond';
+
 export interface ResourceProfile {
   /** Relative weight of each gatherable node (tree/mine/well/berry). */
   tree: number;
@@ -65,7 +68,7 @@ export interface HistoricalMapProfile {
   };
   vegetation: {
     density: number;
-    variants: Partial<Record<'broad' | 'needle' | 'frond', number>>;
+    variants: Partial<Record<TreeVariant, number>>;
   };
   resources: ResourceProfile;
   atmosphere: {
@@ -291,10 +294,22 @@ export function profileForMapType(mapType: MapType): HistoricalMapProfile {
 }
 
 /**
+ * Region used for a match. An explicit region wins; otherwise the civilization's
+ * region is used when it matches the map type (e.g. Moche on a coast map →
+ * north_coast), and the map type's default region otherwise (e.g. the Inca
+ * fighting on a coastal scenario → central_coast, not the high Andes). This keeps
+ * the map selector and the campaign's `map.type` authoritative over the terrain.
+ */
+function resolveRegion(opts: { civ: CivId; mapType: MapType; region?: GeographicRegion }): GeographicRegion {
+  if (opts.region) return opts.region;
+  const civRegion = regionForCiv(opts.civ);
+  return regionDefaultMap(civRegion) === opts.mapType ? civRegion : regionForMapType(opts.mapType);
+}
+
+/**
  * Resolve the natural map profile from `HistoricalPeriod + GeographicRegion +
- * Civilization + MapType`. The region (explicit, else derived from the civ) drives
- * the fine terrain/climate/vegetation/resources; `mapType` is the coarse playable
- * family and matches the region's default. The period gates the landmark.
+ * Civilization + MapType`. The region (map type + civ) drives terrain, climate,
+ * vegetation and resources; the period gates the landmark.
  */
 export function resolveMapProfile(opts: {
   period: HistoricalPeriod;
@@ -302,10 +317,10 @@ export function resolveMapProfile(opts: {
   mapType: MapType;
   region?: GeographicRegion;
 }): HistoricalMapProfile {
-  const identityRegion = opts.region ?? regionForCiv(opts.civ);
+  const region = resolveRegion(opts);
   return {
-    ...MAP_PROFILES[identityRegion],
-    baseMapType: opts.mapType,
+    ...MAP_PROFILES[region],
+    baseMapType: regionDefaultMap(region),
     landmark: landmarkForCiv(opts.civ, opts.period),
   };
 }

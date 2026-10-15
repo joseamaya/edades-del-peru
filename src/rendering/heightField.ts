@@ -23,6 +23,7 @@ export function generateHeightField(resolution: number, seed: number, profile: H
   const moistureMap = new Float32Array(n * n);
   const t = profile.terrain;
   const aridity = profile.climate.aridity;
+  const moisture = profile.climate.moisture;
 
   for (let z = 0; z < n; z++) {
     for (let x = 0; x < n; x++) {
@@ -42,7 +43,7 @@ export function generateHeightField(resolution: number, seed: number, profile: H
       const i = z * n + x;
       heightMap[i] = height;
       const moist = fbm2(nx * 2.2 + 40, nz * 2.2, 3) * 0.6 + fbm2(nx * 0.4 + 3, nz * 0.4, 2) * 0.4;
-      moistureMap[i] = moist * (1 - aridity * 0.72);
+      moistureMap[i] = moist * (1 - aridity * 0.72) * (0.6 + moisture * 0.4);
     }
   }
 

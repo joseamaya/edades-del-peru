@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { MaterialTex } from './Textures';
+import type { TreeVariant } from '../model/defs/profiles';
 
-export type TreeVariant = 'broad' | 'needle' | 'frond';
+export type { TreeVariant };
 
 const MAX = 700;
 const ZERO = new THREE.Matrix4().makeScale(0, 0, 0);

@@ -12,7 +12,7 @@ import type { GameSettings } from '../core/Config';
 import type { ObjState } from '../campaign/Mission';
 
 /** Bump on a breaking snapshot change; adding optional fields is fine. */
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 export type ResourceKind = 'tree' | 'mine' | 'well' | 'hunt' | 'fishing' | 'berry';
 export interface TutorialBase {

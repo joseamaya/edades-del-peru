@@ -78,6 +78,22 @@ describe('historical map profiles', () => {
     expect(p.terrain).toEqual(MAP_PROFILES.central_coast.terrain);
   });
 
+  it('lets the map type override an incompatible civilization region', () => {
+    // the Inca fighting on a coastal scenario (m6) must stay a coast, not the high Andes
+    const p = resolveMapProfile({ period: HistoricalPeriod.LATE_HORIZON, civ: CivId.INCA, mapType: 'coast' });
+    expect(p.region).toBe('central_coast');
+    expect(p.baseMapType).toBe('coast');
+    expect(p.water.inland).toBe(false);
+    // the HUD map selector stays authoritative over the terrain family
+    const alt = resolveMapProfile({
+      period: HistoricalPeriod.EARLY_INTERMEDIATE,
+      civ: CivId.MOCHE,
+      mapType: 'altiplano',
+    });
+    expect(alt.region).toBe('altiplano');
+    expect(alt.baseMapType).toBe('altiplano');
+  });
+
   it('falls back to the map type region when no civilization is given', () => {
     const p = profileForMapType('jungle');
     expect(p.region).toBe('amazon');
