@@ -75,6 +75,9 @@ const NODE_INFO: Record<ResourceNode['kind'], { name: string; icon: string }> = 
   berry: { name: 'Arbusto', icon: '🫐' },
 };
 
+/** Extra farm yield on a fully terraced (andén) cell: a gameplay abstraction of terrace agriculture. */
+const FARM_TERRACE_BONUS = 0.8;
+
 /** What sits under a screen point: at most one resource/unit/building. */
 type PickResult = { resource: ResourceNode | null; unit?: Unit; building?: Building };
 
@@ -649,6 +652,7 @@ export class Game {
     const land = this.findLandNear(x, z, 26);
     const b = new Building(kind, owner, era, ctx);
     b.pos.set(land.x, this.terrain.getHeight(land.x, land.z), land.z);
+    this.applyTerrainFarmYield(b);
     b.attach(this.scene);
     b.beginConstruction();
     b.addBuildProgress(9999);
@@ -865,11 +869,24 @@ export class Game {
     const ctx = this.makeBuildContext(0);
     const b = new Building(kind, 0, this.players[0].era, ctx);
     b.pos.set(x, this.terrain.getHeight(x, z), z);
+    this.applyTerrainFarmYield(b);
     b.attach(this.scene);
     b.beginConstruction();
     this.buildings.set(b.id, b);
     this.registerObstacle(b);
     return b;
+  }
+
+  /**
+   * Scale a farm's food reserve by the terracing (andenes) under it. Terraces are
+   * generated in `heightField` from the region profile; this is the gameplay hook
+   * that makes agriculture adapt to the terrain. Deterministic, so replay/save safe.
+   */
+  applyTerrainFarmYield(b: Building): void {
+    if (!b.isFarm) return;
+    const terrace = this.terrain.getTerrace(b.pos.x, b.pos.z);
+    if (terrace <= 0) return;
+    b.foodAmount = Math.round(b.foodAmount * (1 + FARM_TERRACE_BONUS * terrace));
   }
 
   /** Train a unit in a completed building of player 0. */

@@ -2,7 +2,8 @@
 
 Deep reference for working on Edades del Perú: subsystem details, hard-won code
 traps and the debug harness. For the short orientation see [`AGENTS.md`](../AGENTS.md);
-for player-facing docs see [`README.md`](../README.md).
+for player-facing docs see [`README.md`](../README.md); for art direction see
+[`docs/design/visual-language.md`](./design/visual-language.md).
 
 ## Architecture
 
@@ -54,6 +55,13 @@ for player-facing docs see [`README.md`](../README.md).
   `profiles.ts`. The region `atmosphere` is applied (Phase 9): `Game.applyAtmosphere` feeds `skyTint`/`fogDensity`
   to the sky, terrain and water as a distance-bounded aerial perspective and `sunWarmth` to the sun; `scene.fog`
   stays null (classic sharp look, buildings undimmed).
+- **Andenes (agricultural terracing)**: `profile.terrain.terraceChance` is no longer dead data — `carveTerraces`
+  (`src/rendering/heightField.ts`) pulls moderate slopes toward flat shelves (gated by a coherent noise mask so
+  terraces form patchy zones) and writes a `terraceMap` strength (0..~0.55). `Terrain` exposes it via
+  `getTerrace(wx, wz)` and tints terraced ground as cultivated; the gameplay hook is
+  `Game.applyTerrainFarmYield` (called from every farm placement path: player, AI, scripts), which scales a
+  farm's `foodAmount` by `1 + FARM_TERRACE_BONUS * terrace`. Deterministic (own RNG derived from the seed), so
+  replay/save safe (`foodAmount` is already in `stateHash` and `saveTypes`). Guarded by `tests/terrain.test.ts`.
 - **Architecture profile in the model (Phase 4)**: `BuildContext.arch` (`Game.makeBuildContext` →
   `archProfileFor(civ, era)`) drives `ProceduralModel`'s Andean builders (`wall`/`roof`/`foundation`/
   `ornament`/`monumentalTiers`) instead of `Builder.style` booleans; new modules are `andeanTerraceBase`,

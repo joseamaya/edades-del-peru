@@ -79,3 +79,9 @@ La generación del terreno (`src/rendering/heightField.ts`) es una función pura
 (`generateHeightField`), verificada en `tests/terrain.test.ts`: la misma semilla y perfil producen el mismo mapa.
 `Terrain`, `Water`, los recursos y la vegetación consumen el perfil; añadir una región nueva solo requiere datos.
 
+Los **andenes** (terrazas agrícolas) se generan a partir de `terrain.terraceChance`: `carveTerraces` escalona las
+laderas moderadas (más probables en `high_andes`/`andean_valley`, casi ausentes en `amazon`) y produce un mapa de
+fuerza de terraza que `Terrain.getTerrace` expone. Una granja sobre terreno aterrazado rinde más comida
+(`Game.applyTerrainFarmYield`, hasta +44%) — una **abstracción jugable** de la agricultura en andenes, no una
+reconstrucción.
+

@@ -11,6 +11,7 @@ const _cDirt = new THREE.Color();
 const _cRock = new THREE.Color();
 const _cSnow = new THREE.Color();
 const _cSand = new THREE.Color();
+const _cTerraced = new THREE.Color();
 
 /** 1x1 filler texture (neutral normal / constant roughness). */
 function flatTex(r: number, g: number, b: number): THREE.DataTexture {
@@ -30,6 +31,8 @@ export class Terrain {
   readonly resolution: number; // vertices per side
   heightMap: Float32Array;
   moistureMap: Float32Array;
+  /** Agricultural terracing strength per vertex (0 none .. ~0.55 shelf), for farm yield. */
+  terraceMap: Float32Array;
   waterLevel = 2.2;
   mesh: THREE.Mesh;
   group = new THREE.Group();
@@ -52,6 +55,7 @@ export class Terrain {
     const field = generateHeightField(resolution, seed, profile);
     this.heightMap = field.heightMap;
     this.moistureMap = field.moistureMap;
+    this.terraceMap = field.terraceMap;
     this.waterLevel = field.waterLevel;
     this.mesh = this.buildMesh();
     this.group.add(this.mesh);
@@ -114,6 +118,25 @@ export class Terrain {
     return a + (b - a) * fz;
   }
 
+  /** Interpolated agricultural terracing strength (0 none .. ~0.55 shelf). */
+  getTerrace(wx: number, wz: number): number {
+    const x = (wx / this.size) * this.resolution;
+    const z = (wz / this.size) * this.resolution;
+    const x0 = Math.floor(x);
+    const z0 = Math.floor(z);
+    const x1 = Math.min(x0 + 1, this.resolution);
+    const z1 = Math.min(z0 + 1, this.resolution);
+    const fx = x - x0;
+    const fz = z - z0;
+    const t00 = this.terraceMap[this.idx(x0, z0)];
+    const t10 = this.terraceMap[this.idx(x1, z0)];
+    const t01 = this.terraceMap[this.idx(x0, z1)];
+    const t11 = this.terraceMap[this.idx(x1, z1)];
+    const a = t00 + (t10 - t00) * fx;
+    const b = t01 + (t11 - t01) * fx;
+    return a + (b - a) * fz;
+  }
+
   /** Approximate slope magnitude (0 flat .. 1 steep) from the heightfield. */
   getSlope(wx: number, wz: number): number {
     const d = 2;
@@ -149,6 +172,12 @@ export class Terrain {
 
         const moist = this.moistureMap[i];
         const col = this.biomeColor(h, slope, moist, waterLevel);
+        // terraced ground (andenes) reads as cultivated: a subtle warm ochre tint
+        const terrace = this.terraceMap[i];
+        if (terrace > 0) {
+          _cTerraced.setHSL(0.11, 0.42, 0.46);
+          col.lerp(_cTerraced, Math.min(0.28, terrace * 0.5));
+        }
         colors[i * 3] = col.r;
         colors[i * 3 + 1] = col.g;
         colors[i * 3 + 2] = col.b;
