@@ -73,6 +73,7 @@ export interface HistoricalMapProfile {
   };
   resources: ResourceProfile;
   atmosphere: {
+    /** Aerial-perspective density fed to the terrain/water shaders (~1e-3; 0 = crystal clear). */
     fogDensity: number;
     sunWarmth: number;
     skyTint: string;
@@ -200,7 +201,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     water: { level: WATER_LEVEL, inland: false, wetland: true },
     vegetation: { density: 0.06, variants: { broad: 1 } },
     resources: { tree: 0.3, mine: 0.4, well: 0.2, berry: 0.15, hunt: 12, fishing: 8 },
-    atmosphere: { fogDensity: 0.015, sunWarmth: 1.05, skyTint: '#dfe4d8' },
+    atmosphere: { fogDensity: 0.0016, sunWarmth: 1.05, skyTint: '#dfe4d8' },
     landmark: null,
     provenance: 'docs/historia/mapas.md (Moche: Chicama-Moche-Virú; Chimú: Chan Chan)',
   },
@@ -214,7 +215,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     water: { level: WATER_LEVEL, inland: false, wetland: true },
     vegetation: { density: 0.12, variants: { broad: 1 } },
     resources: { tree: 0.4, mine: 0.12, well: 0.28, berry: 0.25, hunt: 12, fishing: 8 },
-    atmosphere: { fogDensity: 0.02, sunWarmth: 1.0, skyTint: '#e2e6dc' },
+    atmosphere: { fogDensity: 0.0018, sunWarmth: 1.0, skyTint: '#e2e6dc' },
     landmark: null,
     provenance: 'docs/historia/mapas.md (Caral-Supe: valle de Supe y Áspero)',
   },
@@ -228,7 +229,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     water: { level: WATER_LEVEL, inland: false, wetland: false },
     vegetation: { density: 0.04, variants: { broad: 1 } },
     resources: { tree: 0.25, mine: 0.45, well: 0.15, berry: 0.1, hunt: 8, fishing: 10 },
-    atmosphere: { fogDensity: 0.012, sunWarmth: 1.08, skyTint: '#e6e2d6' },
+    atmosphere: { fogDensity: 0.0012, sunWarmth: 1.08, skyTint: '#e6e2d6' },
     landmark: null,
     provenance: 'docs/historia/mapas.md (Paracas, Nazca, Chincha: costa desértica sur)',
   },
@@ -242,7 +243,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     water: { level: WATER_LEVEL, inland: true, wetland: false },
     vegetation: { density: 0.55, variants: { broad: 0.7, needle: 0.3 } },
     resources: { tree: 0.45, mine: 0.35, well: 0.2, berry: 0.2, hunt: 14, fishing: 0 },
-    atmosphere: { fogDensity: 0.025, sunWarmth: 0.95, skyTint: '#cdd8d2' },
+    atmosphere: { fogDensity: 0.002, sunWarmth: 0.95, skyTint: '#cdd8d2' },
     landmark: null,
     provenance: 'docs/historia/mapas.md (Chavín: Callejón de Conchucos; Recuay: Callejón de Huaylas)',
   },
@@ -256,7 +257,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     water: { level: WATER_LEVEL, inland: true, wetland: false },
     vegetation: { density: 0.5, variants: { broad: 0.5, needle: 0.5 } },
     resources: { tree: 0.4, mine: 0.4, well: 0.25, berry: 0.15, hunt: 12, fishing: 0 },
-    atmosphere: { fogDensity: 0.028, sunWarmth: 0.98, skyTint: '#c8d4d8' },
+    atmosphere: { fogDensity: 0.0008, sunWarmth: 0.98, skyTint: '#c8d4d8' },
     landmark: null,
     provenance: 'docs/historia/mapas.md (Inca: Cusco/Urubamba; Wari: Ayacucho; Chanca: Andahuaylas)',
   },
@@ -270,7 +271,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     water: { level: WATER_LEVEL, inland: true, wetland: true },
     vegetation: { density: 0.15, variants: { needle: 0.7, broad: 0.3 } },
     resources: { tree: 0.1, mine: 0.3, well: 0.4, berry: 0.15, hunt: 16, fishing: 6 },
-    atmosphere: { fogDensity: 0.022, sunWarmth: 0.9, skyTint: '#d2dadf' },
+    atmosphere: { fogDensity: 0.0015, sunWarmth: 0.9, skyTint: '#d2dadf' },
     landmark: null,
     provenance: 'docs/historia/mapas.md (Tiahuanaco, Collas/Lupaca: meseta del Titicaca)',
   },
@@ -284,7 +285,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     water: { level: WATER_LEVEL, inland: true, wetland: true },
     vegetation: { density: 1, variants: { frond: 0.7, broad: 0.3 } },
     resources: { tree: 0.7, mine: 0.1, well: 0.15, berry: 0.25, hunt: 10, fishing: 8 },
-    atmosphere: { fogDensity: 0.04, sunWarmth: 0.92, skyTint: '#c4d2be' },
+    atmosphere: { fogDensity: 0.0035, sunWarmth: 0.92, skyTint: '#c4d2be' },
     landmark: null,
     provenance: 'docs/historia/mapas.md (selva alta: ceja de selva / amazonía)',
   },

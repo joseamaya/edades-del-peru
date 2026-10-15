@@ -232,6 +232,7 @@ export class Game {
       this.mapProfile.water.level,
       this.mapProfile.water.inland,
     );
+    this.applyAtmosphere();
     this.particles = new Particles(this.scene, 4096);
     this.markers = new OrderMarkers(this.scene);
     this.trees = new TreeInstances(this.scene);
@@ -245,6 +246,20 @@ export class Game {
   private setTimeOfDay(mode: string): void {
     const map: Record<string, number> = { morning: 0.62, noon: 0.5, dusk: 0.28, night: 0.05 };
     this.sky.setTimeOfDay(map[mode] ?? 0.5);
+  }
+
+  /**
+   * Apply the region's atmosphere (`HistoricalMapProfile.atmosphere`): the sky
+   * tint/haze/sun-warmth plus the terrain/water aerial perspective. `scene.fog`
+   * stays null; the effect is distance-bounded and buildings are not dimmed.
+   */
+  private applyAtmosphere(): void {
+    const a = this.mapProfile.atmosphere;
+    const tint = new THREE.Color(a.skyTint);
+    this.terrain.setFogColor(tint);
+    this.terrain.setFogDensity(a.fogDensity);
+    this.water.setFog(a.skyTint, a.fogDensity);
+    this.sky.setAtmosphere(a.skyTint, a.fogDensity, a.sunWarmth);
   }
 
   private initPlayers(): void {

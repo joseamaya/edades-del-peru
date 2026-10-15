@@ -39,6 +39,11 @@ describe('historical map profiles', () => {
       expect(p.climate.temperature).toBeGreaterThanOrEqual(0);
       expect(p.climate.temperature).toBeLessThanOrEqual(1);
       expect(p.terrain.soil, `${region} soil`).toBeTruthy();
+      // atmosphere feeds the terrain/water aerial perspective directly (few 1e-3)
+      expect(p.atmosphere.fogDensity, `${region} fogDensity`).toBeGreaterThanOrEqual(0);
+      expect(p.atmosphere.fogDensity, `${region} fogDensity`).toBeLessThanOrEqual(0.005);
+      expect(p.atmosphere.skyTint, `${region} skyTint`).toMatch(/^#[0-9a-f]{6}$/i);
+      expect(p.atmosphere.sunWarmth).toBeGreaterThan(0);
     }
   });
 

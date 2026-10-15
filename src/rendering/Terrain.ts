@@ -509,6 +509,12 @@ export class Terrain {
     mat.uniforms.fogColor.value.copy(color);
   }
 
+  /** Aerial-perspective density (0 = off; region atmosphere). */
+  setFogDensity(density: number): void {
+    const mat = this.mesh.material as THREE.ShaderMaterial;
+    mat.uniforms.fogDensity.value = density;
+  }
+
   setSunLight(sunDir: THREE.Vector3, color: THREE.Color): void {
     const mat = this.mesh.material as THREE.ShaderMaterial;
     mat.uniforms.sunDir.value.copy(sunDir);
