@@ -61,9 +61,16 @@ describe('campaign map profiles', () => {
     }
   });
 
-  it('only the slice missions place a landmark', () => {
+  it('places a landmark on the missions whose culture has one for the region', () => {
     const withLandmark = MISSIONS.filter((mis) => resolve(mis).landmark).map((m) => m.id);
-    expect(withLandmark).toEqual(['m1_caral', 'm3_moche_recuay', 'm5_yahuar_pampa']);
+    expect(withLandmark).toEqual([
+      'm1_caral',
+      'm2_chavin',
+      'm3_moche_recuay',
+      'm4_wari',
+      'm5_yahuar_pampa',
+      'm9_guerra_pacifico',
+    ]);
   });
 
   it('keeps the Inca campaign on the Chimú north coast (m6)', () => {

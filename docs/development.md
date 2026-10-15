@@ -60,11 +60,13 @@ for player-facing docs see [`README.md`](../README.md).
   use — so a debug `?era=N` or an era advance stays coherent. The mission constructor now also copies
   `mis.period` into `settings.period` (missions declare their historical period). Verified structurally by
   `tests/e2e/civ-visuals.spec.ts` and visually with `yarn shots:civs`.
-- **Landmarks (Phase 5, visual only)**: `Game.mapProfile.landmark` (from `landmarkForCiv(civ, period)`, so
-  period-gated) drives `Game.spawnLandmark()`, which builds a cached template via `buildLandmarkModel`
-  (`ProceduralModel.ts`, keyed by `landmark|civ|era`) with the landmark's own civilization/era. Placement is
-  deterministic (`RNG(mapSeed*131+11)` on a 0.3–0.42·size ring, skipping water/beach/steep cells) and adds a
-  plain `THREE.Group` named `landmark` to the scene (no entity, no pathfinding obstacle). Freed in
+- **Landmarks (visual only)**: `Game.mapProfile.landmark` (from `landmarkForCiv(civ, period)` — period-gated and
+  region-gated: see `resolveMapProfile`) drives `Game.spawnLandmark()`, which builds a cached template via
+  `buildLandmarkModel` (`ProceduralModel.ts`, keyed by `landmark|civ|era`) with the landmark's own
+  civilization/era. One landmark per civilization family (Caral, Chavín, Moche, Wari, Tiahuanaco, Chimú, Inca,
+  colonial, republican); sources/status in `src/model/defs/landmarks.ts`. Placement is deterministic
+  (`RNG(mapSeed*131+11)` on a 0.3–0.42·size ring, skipping water/beach/steep cells and player bases/resources)
+  and adds a plain `THREE.Group` named `landmark` to the scene (no entity, no pathfinding obstacle). Freed in
   `Game.destroy()`; templates are freed by `clearModelCaches()`. Verified by `tests/e2e/landmarks.spec.ts`.
 - `src/campaign/defs/campaign.ts` defines the 9 historical campaigns; `src/campaign/Mission.ts` evaluates
   objectives/triggers. Each mission also declares an optional `region` (`MissionDef`), fed into
@@ -266,7 +268,7 @@ for player-facing docs see [`README.md`](../README.md).
   regions: wide view) into `review/periods/` for human review. `yarn visual:update` writes a compact colour
   signature per scene to `tests/visual/baseline.json`; `yarn visual:check` re-captures and fails when a scene's
   mean per-channel difference exceeds `--threshold` (default 12) or any grid cell exceeds `--cell-threshold`
-  (default 25). A scene that fails to boot is never written to (or accepted as) the baseline. The signature
+  (default 35). A scene that fails to boot is never written to (or accepted as) the baseline. The signature
   (`scripts/visual_lib.mjs`, unit-tested in `tests/visual.test.ts`) is a 4×4 mean-colour grid — robust to
   cosmetic randomness (tree positions, wind) but sensitive to a scene whose identity changes. Run
   `visual:update` after an intentional change; the harness is local (same machine/browser) and not wired to CI.

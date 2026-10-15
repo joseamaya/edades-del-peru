@@ -35,30 +35,31 @@ function landmarkInfo(page: Page) {
   });
 }
 
-test('each slice map places its own landmark on land', async ({ page }) => {
-  await boot(page, '/?mission=m1_caral&fog=0&low=1&noloop=1');
-  const caral = await landmarkInfo(page);
-  await boot(page, '/?mission=m3_moche_recuay&fog=0&low=1&noloop=1');
-  const moche = await landmarkInfo(page);
-  await boot(page, '/?mission=m5_yahuar_pampa&fog=0&low=1&noloop=1');
-  const inca = await landmarkInfo(page);
-
-  expect(caral.id).toBe('caral_ceremonial');
-  expect(moche.id).toBe('moche_huaca');
-  expect(inca.id).toBe('inca_ushnu');
-  for (const l of [caral, moche, inca]) {
-    expect(l.present).toBe(true);
-    expect(l.meshes).toBeGreaterThan(0);
-    expect(l.verts).toBeGreaterThan(500);
-    expect(l.onWater, 'landmark must not sit on water').toBe(false);
-    expect(l.dist!).toBeLessThanOrEqual(0.45 * l.size!);
+test('period maps place their own landmark on land', async ({ page }) => {
+  const missions: [string, string][] = [
+    ['m1_caral', 'caral_ceremonial'],
+    ['m2_chavin', 'chavin_temple'],
+    ['m3_moche_recuay', 'moche_huaca'],
+    ['m4_wari', 'wari_compound'],
+    ['m5_yahuar_pampa', 'inca_ushnu'],
+  ];
+  const signatures = new Set<string>();
+  for (const [mission, id] of missions) {
+    await boot(page, `/?mission=${mission}&fog=0&low=1&noloop=1`);
+    const info = await landmarkInfo(page);
+    expect(info.id, mission).toBe(id);
+    expect(info.present).toBe(true);
+    expect(info.meshes!).toBeGreaterThan(0);
+    expect(info.verts!).toBeGreaterThan(500);
+    expect(info.onWater, `${mission} landmark on water`).toBe(false);
+    expect(info.dist!).toBeLessThanOrEqual(0.45 * info.size!);
+    signatures.add(`${info.verts}:${info.meshes}`);
   }
-  const keys = new Set([`${caral.verts}`, `${moche.verts}`, `${inca.verts}`]);
-  expect(keys.size, 'the three landmarks must not share a structure').toBe(3);
+  expect(signatures.size, 'the landmarks must not share a structure').toBe(missions.length);
 });
 
-test('a culture without a landmark places none', async ({ page }) => {
-  await boot(page, '/?mission=m2_chavin&fog=0&low=1&noloop=1');
+test('a civilization without a landmark places none', async ({ page }) => {
+  await boot(page, '/?mission=m8_independencia&fog=0&low=1&noloop=1');
   const info = await landmarkInfo(page);
   expect(info.present).toBe(false);
   expect(info.id).toBeNull();
@@ -70,6 +71,25 @@ test('an incompatible map region drops the landmark', async ({ page }) => {
   const info = await landmarkInfo(page);
   expect(info.present).toBe(false);
   expect(info.id).toBeNull();
+});
+
+test('post-1532 maps place the colonial / republican landmark', async ({ page }) => {
+  await boot(page, '/?civ=realistas&period=6&seed=777&fog=0&low=1&noloop=1');
+  expect((await landmarkInfo(page)).id).toBe('colonial_church');
+  await boot(page, '/?civ=republica&period=8&seed=777&fog=0&low=1&noloop=1');
+  expect((await landmarkInfo(page)).id).toBe('republican_fort');
+});
+
+test('period skirmishes place their family landmark', async ({ page }) => {
+  const cases: [string, number, string][] = [
+    ['wari', 3, 'wari_compound'],
+    ['tiahuanaco', 3, 'tiahuanaco_complex'],
+    ['chimu', 4, 'chimu_compound'],
+  ];
+  for (const [civ, period, id] of cases) {
+    await boot(page, `/?civ=${civ}&period=${period}&seed=777&fog=0&low=1&noloop=1`);
+    expect((await landmarkInfo(page)).id, civ).toBe(id);
+  }
 });
 
 test('landmark placement is deterministic for the same seed', async ({ page }) => {

@@ -2212,29 +2212,42 @@ function buildWonder(b: Builder): void {
 // `LANDMARKS` (`src/model/defs/landmarks.ts`).
 // ---------------------------------------------------------------------------
 
+/** Stepped platform shared by the monumental landmarks; returns the top height. */
+function tieredPlatform(b: Builder, w: number, tiers: number, tierH: number, color: string, tex: TexKind): number {
+  for (let i = 0; i < tiers; i++) {
+    const t = w * (1.2 - i * 0.16);
+    b.box(t, tierH, t, color, { y: tierH / 2 + i * tierH, tex });
+  }
+  return tiers * tierH;
+}
+
+/** Four walls forming a rectangular enclosure (open corners are hidden by the walls). */
+function enclosure(b: Builder, w: number, h: number, thickness: number, color: string, tex: TexKind): void {
+  b.box(w, h, thickness, color, { y: h / 2, z: w / 2, tex });
+  b.box(w, h, thickness, color, { y: h / 2, z: -w / 2, tex });
+  b.box(thickness, h, w, color, { x: w / 2, y: h / 2, tex });
+  b.box(thickness, h, w, color, { x: -w / 2, y: h / 2, tex });
+}
+
+/** Sunken circular plaza: outer ring, darker floor and upright stones. */
+function ringPlaza(b: Builder, cx: number, r: number, stone: string, floor: string, blocks: number): void {
+  b.cyl(r, r, 0.3, 28, stone, { x: cx, y: 0.15, tex: 'stone', flatShading: true });
+  b.cyl(r * 0.82, r * 0.82, 0.34, 28, floor, { x: cx, y: 0.17, flatShading: true });
+  for (let i = 0; i < blocks; i++) {
+    const a = (i / blocks) * Math.PI * 2;
+    b.box(0.4, 0.55, 0.4, stone, { x: cx + Math.cos(a) * r, y: 0.42, z: Math.sin(a) * r, tex: 'stone' });
+  }
+}
+
 /** Caral: a stepped earth platform beside a sunken circular plaza. */
 function buildCaralLandmark(b: Builder): void {
   const earth = mixHex(b.pal.primary, '#c8a878', 0.72);
   const stone = mixHex(b.pal.primary, '#b8a888', 0.7);
   const w = 5;
-  for (let i = 0; i < 3; i++) {
-    const t = w * (1.2 - i * 0.18);
-    b.box(t, 0.5, t, earth, { y: 0.25 + i * 0.5, tex: 'dirt', flatShading: true });
-  }
-  b.box(w * 0.42, 0.7, w * 0.42, earth, { y: 1.85, tex: 'brick' });
-  b.box(w * 0.3, 0.3, w * 0.3, stone, { y: 2.35, tex: 'stone' });
-  const r = w * 0.62;
-  const cx = w * 1.4;
-  b.cyl(r, r, 0.3, 28, stone, { x: cx, y: 0.15, tex: 'stone', flatShading: true });
-  b.cyl(r * 0.84, r * 0.84, 0.36, 28, mixHex(b.pal.primary, '#8a7a5a', 0.5), {
-    x: cx,
-    y: 0.17,
-    flatShading: true,
-  });
-  for (let i = 0; i < 12; i++) {
-    const a = (i / 12) * Math.PI * 2;
-    b.box(0.4, 0.5, 0.4, stone, { x: cx + Math.cos(a) * r, y: 0.4, z: Math.sin(a) * r, tex: 'stone' });
-  }
+  const baseY = tieredPlatform(b, w, 3, 0.5, earth, 'dirt');
+  b.box(w * 0.42, 0.7, w * 0.42, earth, { y: baseY + 0.35, tex: 'brick' });
+  b.box(w * 0.3, 0.3, w * 0.3, stone, { y: baseY + 0.85, tex: 'stone' });
+  ringPlaza(b, w * 1.4, w * 0.62, stone, mixHex(b.pal.primary, '#8a7a5a', 0.5), 12);
 }
 
 /** Moche: a tall stepped adobe huaca with a painted frieze and a ramp. */
@@ -2263,16 +2276,111 @@ function buildMocheLandmark(b: Builder): void {
 function buildIncaLandmark(b: Builder): void {
   const stone = andeanStone(b);
   const w = 6;
-  for (let i = 0; i < 3; i++) {
-    const t = w * (1.16 - i * 0.16);
-    b.box(t, 0.52, t, stone, { y: 0.26 + i * 0.52, tex: 'stone' });
-  }
-  const baseY = 3 * 0.52;
+  const baseY = tieredPlatform(b, w, 3, 0.52, stone, 'stone');
   b.box(0.9, 1.4, 0.9, stone, { y: baseY + 0.7, tex: 'stone' });
   b.box(1.3, 0.3, 1.3, mixHex(b.pal.primary, '#c8a040', 0.55), { y: baseY + 1.5, tex: 'stone' });
   for (let i = 0; i < 4; i++) {
     b.box(1.5, 0.15, 0.44, stone, { y: 0.08 + i * 0.15, z: w * 0.52 + i * 0.24, tex: 'stone' });
   }
+}
+
+/** Chavín: a stepped stone temple with tenon heads beside a sunken plaza. */
+function buildChavinTemple(b: Builder): void {
+  const stone = mixHex(b.pal.primary, '#8f8676', 0.78);
+  const dark = mixHex(b.pal.primary, '#2a2318', 0.5);
+  const w = 6;
+  const baseY = tieredPlatform(b, w, 3, 0.55, stone, 'stone');
+  b.box(w * 0.5, 0.9, w * 0.5, stone, { y: baseY + 0.45, tex: 'stone' });
+  for (let i = -2; i <= 2; i++) {
+    b.box(0.34, 0.34, 0.5, stone, { x: i * w * 0.16, y: baseY + 0.1, z: w * 0.5, tex: 'stone' });
+  }
+  ringPlaza(b, w * 1.35, w * 0.7, stone, dark, 8);
+}
+
+/** Wari: a walled urban compound with a gated front and a central platform. */
+function buildWariCompound(b: Builder): void {
+  const wall = andeanWall(b);
+  const stone = andeanStone(b);
+  const w = 8;
+  const h = 1.1;
+  enclosure(b, w, h, 0.4, wall, 'stone');
+  b.box(0.5, h * 1.25, 0.5, stone, { x: -0.9, y: h * 0.62, z: w / 2, tex: 'stone' });
+  b.box(0.5, h * 1.25, 0.5, stone, { x: 0.9, y: h * 0.62, z: w / 2, tex: 'stone' });
+  b.box(1.6, 0.5, w * 0.4, stone, { y: h + 0.25, z: 0, tex: 'stone' });
+  b.box(w * 0.28, 0.8, w * 0.28, wall, { y: h + 0.9, tex: 'stone' });
+}
+
+/** Tiahuanaco: a megalithic platform with a monolith doorway and a sunken patio. */
+function buildTiahuanacoComplex(b: Builder): void {
+  const stone = mixHex(b.pal.primary, '#c2baae', 0.82);
+  const w = 7;
+  const baseY = tieredPlatform(b, w, 3, 0.6, stone, 'stone');
+  b.box(0.5, 1.6, 0.4, stone, { x: -0.6, y: baseY + 0.8, tex: 'stone' });
+  b.box(0.5, 1.6, 0.4, stone, { x: 0.6, y: baseY + 0.8, tex: 'stone' });
+  b.box(1.8, 0.4, 0.5, stone, { y: baseY + 1.8, tex: 'stone' });
+  for (const [sx, sz] of [
+    [-1, -1],
+    [1, -1],
+    [-1, 1],
+    [1, 1],
+  ] as const) {
+    b.box(w * 0.24, w * 0.4, w * 0.24, stone, { x: sx * w * 0.5, y: baseY * 0.4, z: sz * w * 0.5, tex: 'stone' });
+  }
+  ringPlaza(b, w * 1.5, w * 0.62, stone, mixHex(b.pal.primary, '#8a8478', 0.6), 0);
+}
+
+/** Chimú: a large adobe walled enclosure with a painted frieze and inner platform. */
+function buildChimuCompound(b: Builder): void {
+  const adobe = andeanWall(b);
+  const w = 8.5;
+  const h = 1.6;
+  enclosure(b, w, h, 0.5, adobe, 'brick');
+  b.box(w * 0.9, 0.3, 0.1, b.civAccent, { y: h * 0.72, z: w / 2 + 0.05 });
+  for (let i = 0; i < 3; i++) {
+    const t = w * (0.5 - i * 0.1);
+    b.box(t, 0.4, t, adobe, { y: 0.2 + i * 0.4, tex: 'brick' });
+  }
+  for (let i = 0; i < 4; i++) {
+    b.box(1.0, 0.12, w * 0.3, adobe, { y: 0.06 + i * 0.12, z: w * 0.36 + i * 0.2, tex: 'brick' });
+  }
+}
+
+/** Colonial: a church with a tile roof, an arched door and a bell tower. */
+function buildColonialChurch(b: Builder): void {
+  const wall = mixHex(b.pal.brick, '#ffffff', 0.5);
+  const roof = mixHex(b.pal.roof, '#ffffff', 0.5);
+  const tex = facadeTex(b, 'brick');
+  const w = 5;
+  b.box(w * 0.8, w * 0.7, w * 1.5, wall, { y: w * 0.35, tex });
+  b.box(w * 0.9, w * 0.14, w * 0.85, roof, { y: w * 0.78, z: w * 0.42, rx: 0.6, tex: 'roof' });
+  b.box(w * 0.9, w * 0.14, w * 0.85, roof, { y: w * 0.78, z: -w * 0.42, rx: -0.6, tex: 'roof' });
+  b.box(w * 0.36, w * 1.4, w * 0.36, wall, { x: -w * 0.5, y: w * 0.7, z: -w * 0.6, tex });
+  b.box(w * 0.42, 0.16, w * 0.42, roof, { x: -w * 0.5, y: w * 1.45, z: -w * 0.6, tex: 'roof' });
+  b.box(0.06, 0.4, 0.06, '#c8a040', { x: -w * 0.5, y: w * 1.7, z: -w * 0.6 });
+  b.box(0.06, 0.06, 0.4, '#c8a040', { x: -w * 0.5, y: w * 1.62, z: -w * 0.6 });
+  b.cyl(w * 0.18, w * 0.18, 0.12, 14, mixHex(b.pal.primary, '#2a2318', 0.5), {
+    x: 0,
+    y: w * 0.45,
+    z: w * 0.75,
+    rx: Math.PI / 2,
+  });
+}
+
+/** Republican: a port fort with battlements, a corner bastion and a flag. */
+function buildRepublicanFort(b: Builder): void {
+  // the republican landmark always resolves the republican (concrete) look
+  const wall = mixHex(b.pal.concrete, '#ffffff', 0.6);
+  const tex = facadeTex(b, 'concrete');
+  const w = 7;
+  const h = 1.6;
+  enclosure(b, w, h, 0.6, wall, tex);
+  for (let i = -2; i <= 2; i++) {
+    b.box(0.32, 0.34, 0.32, wall, { x: i * w * 0.18, y: h + 0.17, z: w / 2, tex });
+    b.box(0.32, 0.34, 0.32, wall, { x: i * w * 0.18, y: h + 0.17, z: -w / 2, tex });
+  }
+  b.cyl(w * 0.16, w * 0.2, 1.9, 12, wall, { x: w / 2, y: 0.95, z: w / 2, tex });
+  b.cyl(0.04, 0.04, 1.4, 6, b.pal.darkWood, { y: w * 0.5, x: -w / 2, z: -w / 2 });
+  b.box(0.6, 0.3, 0.05, b.civPrimary, { y: w * 0.5 + 0.5, x: -w / 2 + 0.3, z: -w / 2 });
 }
 
 function buildLandmarkStructure(type: LandmarkId, ctx: BuildContext): THREE.Group {
@@ -2281,11 +2389,29 @@ function buildLandmarkStructure(type: LandmarkId, ctx: BuildContext): THREE.Grou
     case 'caral_ceremonial':
       buildCaralLandmark(b);
       break;
+    case 'chavin_temple':
+      buildChavinTemple(b);
+      break;
     case 'moche_huaca':
       buildMocheLandmark(b);
       break;
+    case 'wari_compound':
+      buildWariCompound(b);
+      break;
+    case 'tiahuanaco_complex':
+      buildTiahuanacoComplex(b);
+      break;
+    case 'chimu_compound':
+      buildChimuCompound(b);
+      break;
     case 'inca_ushnu':
       buildIncaLandmark(b);
+      break;
+    case 'colonial_church':
+      buildColonialChurch(b);
+      break;
+    case 'republican_fort':
+      buildRepublicanFort(b);
       break;
     default: {
       const exhaustive: never = type;
