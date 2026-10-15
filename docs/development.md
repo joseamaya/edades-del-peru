@@ -65,9 +65,9 @@ for player-facing docs see [`README.md`](../README.md).
 - **Landmarks (visual only)**: `Game.mapProfile.landmark` (from `landmarkForCiv(civ, period)` — period-gated and
   region-gated: see `resolveMapProfile`) drives `Game.spawnLandmark()`, which builds a cached template via
   `buildLandmarkModel` (`ProceduralModel.ts`, keyed by `landmark|civ|era`) with the landmark's own
-  civilization/era. One landmark per civilization (17 total: Caral, Chavín, Cupisnique, Paracas, Moche, Nazca,
-  Wari, Tiahuanaco, Chimú, Chincha, Chanca, Collas/Lupaca, Huanca, Inca, colonial, Patriotas, República;
-  Recuay and Chile have none); sources/status in `src/model/defs/landmarks.ts`. Placement is deterministic
+  civilization/era. One landmark per civilization (19 total: Caral, Chavín, Cupisnique, Paracas, Moche, Nazca,
+  Recuay, Wari, Tiahuanaco, Chimú, Chincha, Chanca, Collas/Lupaca, Huanca, Inca, colonial, Patriotas, República,
+  Chile); sources/status in `src/model/defs/landmarks.ts`. Placement is deterministic
   (`RNG(mapSeed*131+11)` on a 0.3–0.42·size ring, skipping water/beach/steep cells and player bases/resources)
   and adds a plain `THREE.Group` named `landmark` to the scene (no entity, no pathfinding obstacle). Freed in
   `Game.destroy()`; templates are freed by `clearModelCaches()`. Verified by `tests/e2e/landmarks.spec.ts`.
@@ -266,9 +266,10 @@ for player-facing docs see [`README.md`](../README.md).
   free port and Chromium with SwiftShader; they use `CHROME_PATH` or `chromium.executablePath()`. Run captures
   with `?low=1`.
 - `review/` holds generated PNG/JSON (gitignored); do not edit them by hand.
-- **Visual regression** (`scripts/visual.mjs` + `scripts/scenes.mjs`): `yarn shots:periods` captures the 13
-  representative scenes (the nine periods named in the PRP: close-up of the player base; and four geographic
-  regions: wide view) into `review/periods/` for human review. `yarn visual:update` writes a compact colour
+- **Visual regression** (`scripts/visual.mjs` + `scripts/scenes.mjs`): `yarn shots:periods` captures the 21
+  representative scenes (the nine periods named in the PRP and the remaining civilization families: close-up of
+  the player base; and four geographic regions: wide view) into `review/periods/` for human review.
+  `yarn visual:update` writes a compact colour
   signature per scene to `tests/visual/baseline.json`; `yarn visual:check` re-captures and fails when a scene's
   mean per-channel difference exceeds `--threshold` (default 12) or any grid cell exceeds `--cell-threshold`
   (default 35). A scene that fails to boot is never written to (or accepted as) the baseline. The signature
