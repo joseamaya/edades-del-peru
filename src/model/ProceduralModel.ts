@@ -2180,36 +2180,26 @@ function buildFarmFut(b: Builder): void {
   }
 }
 
+/** "Huaca Sagrada": a monumental stepped Andean platform (victory monument). */
 function buildWonder(b: Builder): void {
-  const w = 5.0;
+  const stone = mixHex(b.pal.primary, '#b8ac96', 0.72);
+  const head = mixHex(b.pal.primary, '#4a4238', 0.55);
+  const w = 7;
   groundPad(b, w);
-  // monumental central column
-  b.cyl(0.6, 0.8, w * 1.6, 16, b.pal.metal, { y: w * 0.8, metalness: 0.8, roughness: 0.3 });
-  // floating rings
-  for (let i = 0; i < 3; i++) {
-    const r = new THREE.TorusGeometry(1.1 + i * 0.4, 0.08, 8, 32);
-    const m = mat({ metalness: 0.8, roughness: 0.3, emissive: b.pal.emissive, emissiveIntensity: 0.8 });
-    const ring = new THREE.Mesh(r, m);
-    ring.userData.color = b.pal.accent2;
-    ring.position.y = w * 0.7 + i * 0.5;
-    ring.rotation.x = Math.PI / 2 + 0.3;
-    ring.castShadow = true;
-    ring.name = 'part';
-    b.group.add(ring);
+  const baseY = tieredPlatform(b, w, 5, 0.62, stone, 'stone');
+  // top shrine
+  b.box(w * 0.32, 0.8, w * 0.32, stone, { y: baseY + 0.4, tex: 'stone' });
+  b.box(w * 0.2, 0.45, w * 0.2, b.civAccent, { y: baseY + 1.0, tex: 'stone' });
+  // tenon heads protruding from the front faces of the lower tiers
+  for (const [half, y] of [
+    [w * 0.6, 0.31],
+    [w * 0.52, 0.93],
+    [w * 0.44, 1.55],
+  ] as const) {
+    for (let i = -2; i <= 2; i++) {
+      b.box(0.4, 0.4, 0.55, head, { x: i * w * 0.15, y, z: half + 0.1, tex: 'stone' });
+    }
   }
-  // upper energy sphere
-  const orb = b.sphere(0.5, b.pal.emissive, { y: w * 1.85, emissive: b.pal.emissive, emissiveIntensity: 2 });
-  orb.name = 'part';
-  b.sphere(0.7, b.pal.emissive, {
-    y: w * 1.85,
-    emissive: b.pal.emissive,
-    emissiveIntensity: 0.7,
-    transparent: true,
-    opacity: 0.3,
-  });
-  // pedestal
-  b.cyl(1.4, 1.8, 0.5, 16, b.pal.darkMetal, { y: 0.25, metalness: 0.6 });
-  b.cyl(1.9, 2.2, 0.3, 16, b.pal.darkMetal, { y: 0.15, metalness: 0.6 });
 }
 
 // ---------------------------------------------------------------------------
