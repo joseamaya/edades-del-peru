@@ -89,8 +89,8 @@ Wari y Tiahuanaco; el **felino** lo es de Chavín; el **Inti** del Estado inca.
   con frisos), Paracas (necrópolis con fardos), Moche (huaca escalonada con friso y rampa), Nazca (geoglifo y
   líneas), Wari (complejo amurallado), Tiahuanaco (plataforma megalítica + Puerta del Sol + patio hundido), Chimú
   (ciudadela de adobe), Chincha (complejo de La Centinela), Chanca (pucará de altura), Collas/Lupaca (chullpas),
-  Huanca (centro de ayllu), Inca (ushnu de piedra), colonial (iglesia con campanario), Patriotas (campamento) y
-  República (fortificación portuaria).
+  Huanca (centro de ayllu), Recuay (centro fortificado con estelas), Inca (ushnu de piedra), colonial (iglesia con
+  campanario), Patriotas (campamento), República (fortificación portuaria) y Chile (apostadero naval con blindado).
 - **Aplicación**: `ProceduralModel.ts` construye los edificios con el perfil del `BuildContext`
   (`ctx.arch`): `buildAndeanStructure` elige el muro/textura (`arch.wall`), la fundación
   (`arch.foundation`: plataforma escalonada, terraza, plinto), la cubierta (`arch.roof`) y los ornamentos

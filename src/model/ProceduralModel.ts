@@ -2515,6 +2515,51 @@ function buildPatriotasCamp(b: Builder): void {
   b.box(0.7, 0.35, 0.05, b.civPrimary, { y: 2.5, x: -w / 2 + 0.35 });
 }
 
+/** Recuay: a walled highland centre with carved stone stelae (Pashash-like). */
+function buildRecuayPashash(b: Builder): void {
+  const stone = andeanStone(b);
+  const wall = andeanWall(b);
+  const w = 7;
+  enclosure(b, w, 1.0, 0.45, wall, 'stone');
+  const baseY = tieredPlatform(b, w * 0.5, 2, 0.6, stone, 'stone');
+  for (const [x, z] of [
+    [-1.3, -1.3],
+    [1.3, -1.3],
+    [-1.3, 1.3],
+    [1.3, 1.3],
+  ] as const) {
+    b.box(0.45, 1.4, 0.3, stone, { x, y: 0.7, z, tex: 'stone' });
+  }
+  b.cyl(0.42, 0.52, 1.8, 10, stone, { y: baseY + 0.9, tex: 'stone' });
+  b.sphere(0.3, mixHex(b.civAccent, '#8a7a5a', 0.4), { y: baseY + 1.85 });
+}
+
+/** Chile: a naval station (dry dock) with a moored ironclad. */
+function buildChileApostadero(b: Builder): void {
+  const wall = mixHex(b.pal.concrete, '#ffffff', 0.6);
+  const tex = facadeTex(b, 'concrete');
+  const hull = mixHex(b.civPrimary, '#3a3a3a', 0.4);
+  const steel = mixHex(b.civPrimary, '#20242a', 0.45);
+  const w = 7;
+  // quay walls of the naval station
+  enclosure(b, w, 1.1, 0.55, wall, tex);
+  // dry-dock basin
+  b.box(w * 0.62, 0.18, w * 0.74, mixHex(b.pal.concrete, '#2a3a4a', 0.5), { y: 0.09, tex });
+  // ironclad hull moored in the dock, with a raised bow
+  b.box(w * 0.36, 0.7, w * 0.72, hull, { y: 0.53, tex: 'metal' });
+  b.box(w * 0.3, 0.45, w * 0.14, hull, { y: 0.5, z: w * 0.4, tex: 'metal' });
+  // rotating turret with a gun barrel
+  b.cyl(0.72, 0.78, 0.5, 12, steel, { y: 1.05, z: -w * 0.1, tex: 'metal' });
+  b.box(0.14, 0.14, 1.5, b.pal.darkMetal, { y: 1.12, z: -w * 0.1 + 0.7 });
+  // funnels
+  for (const z of [-0.1, 0.35]) {
+    b.cyl(0.22, 0.26, 1.1, 8, steel, { y: 1.35, z: w * z, tex: 'metal' });
+  }
+  // mast with the national flag
+  b.cyl(0.04, 0.04, 1.8, 6, b.pal.darkWood, { y: 1.7, x: -w * 0.16, z: -w * 0.28 });
+  b.box(0.7, 0.35, 0.05, b.civAccent, { y: 2.35, x: -w * 0.16 + 0.35, z: -w * 0.28 });
+}
+
 function buildLandmarkStructure(type: LandmarkId, ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
   switch (type) {
@@ -2557,6 +2602,9 @@ function buildLandmarkStructure(type: LandmarkId, ctx: BuildContext): THREE.Grou
     case 'huanca_center':
       buildHuancaCenter(b);
       break;
+    case 'recuay_pashash':
+      buildRecuayPashash(b);
+      break;
     case 'inca_ushnu':
       buildIncaLandmark(b);
       break;
@@ -2568,6 +2616,9 @@ function buildLandmarkStructure(type: LandmarkId, ctx: BuildContext): THREE.Grou
       break;
     case 'republican_fort':
       buildRepublicanFort(b);
+      break;
+    case 'chile_apostadero':
+      buildChileApostadero(b);
       break;
     default: {
       const exhaustive: never = type;

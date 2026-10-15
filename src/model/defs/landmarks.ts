@@ -22,10 +22,12 @@ export type LandmarkId =
   | 'chanca_fortress'
   | 'collas_chullpa'
   | 'huanca_center'
+  | 'recuay_pashash'
   | 'inca_ushnu'
   | 'colonial_church'
   | 'patriotas_camp'
-  | 'republican_fort';
+  | 'republican_fort'
+  | 'chile_apostadero';
 
 export interface LandmarkDef {
   id: LandmarkId;
@@ -183,6 +185,15 @@ export const LANDMARKS: Record<LandmarkId, LandmarkDef> = {
     status: 'abstraction',
     source: 'docs/historia/civilizaciones/huanca.md (Hatun Xauxa; confederación de ayllus)',
   },
+  recuay_pashash: {
+    id: 'recuay_pashash',
+    name: 'Centro fortificado de Pashash',
+    civ: CivId.RECUAY,
+    period: HistoricalPeriod.EARLY_INTERMEDIATE,
+    region: 'high_andes',
+    status: 'plausible',
+    source: 'docs/historia/civilizaciones/recuay.md (Pashash y Chinchawas; escultura lítica y fortificaciones)',
+  },
   patriotas_camp: {
     id: 'patriotas_camp',
     name: 'Campamento patriota',
@@ -191,6 +202,15 @@ export const LANDMARKS: Record<LandmarkId, LandmarkDef> = {
     region: 'andean_valley',
     status: 'abstraction',
     source: 'docs/historia/civilizaciones/patriotas.md (campañas de la sierra; montoneras)',
+  },
+  chile_apostadero: {
+    id: 'chile_apostadero',
+    name: 'Apostadero naval con blindado',
+    civ: CivId.CHILE,
+    period: HistoricalPeriod.REPUBLIC,
+    region: 'south_coast',
+    status: 'plausible',
+    source: 'docs/historia/civilizaciones/chile.md (escuadra blindada: Cochrane, Esmeralda; Guerra del Pacífico)',
   },
 };
 
@@ -209,10 +229,12 @@ export const CIV_LANDMARK: Partial<Record<CivId, LandmarkId>> = {
   [CivId.CHANCA]: 'chanca_fortress',
   [CivId.COLLAS_LUPACA]: 'collas_chullpa',
   [CivId.HUANCA]: 'huanca_center',
+  [CivId.RECUAY]: 'recuay_pashash',
   [CivId.INCA]: 'inca_ushnu',
   [CivId.REALISTAS]: 'colonial_church',
   [CivId.PATRIOTAS]: 'patriotas_camp',
   [CivId.REPUBLIC]: 'republican_fort',
+  [CivId.CHILE]: 'chile_apostadero',
 };
 
 /**
