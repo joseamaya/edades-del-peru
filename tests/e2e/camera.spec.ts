@@ -135,3 +135,25 @@ test('edge scrolling is suppressed while the pointer is over a HUD control', asy
   expect(out.overUi).toBe(true);
   expect(out.moved).toBe(0);
 });
+
+test('the camera speed scale changes keyboard pan distance', async ({ page }) => {
+  await bootMatch(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const pan = (scale: number): number => {
+      g.camera.moveTo(g.settings.mapSize / 2, g.settings.mapSize / 2, true);
+      g.camera.setSpeedScale(scale);
+      const t0 = g.camera.getTarget();
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'w' }));
+      for (let i = 0; i < 20; i++) g.update(1 / 60, i / 60);
+      window.dispatchEvent(new KeyboardEvent('keyup', { key: 'w' }));
+      const t1 = g.camera.getTarget();
+      return Math.hypot(t1.x - t0.x, t1.z - t0.z);
+    };
+    return { slow: pan(0.5), normal: pan(1), fast: pan(1.5) };
+  });
+  expect(out.normal).toBeGreaterThan(out.slow);
+  expect(out.fast).toBeGreaterThan(out.normal);
+});

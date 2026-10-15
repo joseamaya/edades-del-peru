@@ -39,7 +39,7 @@ import {
 import { getCiv } from '../model/defs/civs';
 import { BuildContext, buildModel, disposeModel, clearModelCaches } from '../model/ProceduralModel';
 import { clearTextureCache } from '../rendering/Textures';
-import { DEFAULT_SETTINGS, GameSettings, RESOURCE_INFO } from './Config';
+import { DEFAULT_SETTINGS, GameSettings, RESOURCE_INFO, CAMERA_SPEED_SCALE } from './Config';
 import { distance2D } from '../util/math';
 import { isTypingTarget } from '../util/dom';
 import { RNG, hashCode } from '../util/rng';
@@ -172,6 +172,7 @@ export class Game {
     this.renderer = createRenderer();
     this.camera = new RTSCamera(this.renderer.domElement, this.settings.mapSize);
     this.camera.setRotationEnabled(this.settings.rotateCamera);
+    this.camera.setSpeedScale(CAMERA_SPEED_SCALE[this.settings.cameraSpeed]);
     this.camera.setFollowResolver((id) => {
       const e = this.units.get(id) ?? this.buildings.get(id);
       return e ? { x: e.pos.x, z: e.pos.z } : null;

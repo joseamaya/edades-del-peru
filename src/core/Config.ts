@@ -21,6 +21,8 @@ export interface GameSettings {
   cinematic: boolean;
   /** Allow rotating the camera with Q/E (AoE2 DE style). Off = fixed camera like SC2. */
   rotateCamera: boolean;
+  /** Camera pan speed preset (keyboard + edge scroll). */
+  cameraSpeed: 'slow' | 'normal' | 'fast';
   victoryMode: 'conquest' | 'wonder';
   /** Mod ids loaded at boot (data patches over the defs); later ones win. */
   activeMods: string[];
@@ -48,6 +50,7 @@ export const DEFAULT_SETTINGS: GameSettings = {
   showHints: true,
   cinematic: false,
   rotateCamera: false,
+  cameraSpeed: 'normal',
   victoryMode: 'conquest',
   activeMods: [],
 };
@@ -73,3 +76,10 @@ export const DIFFICULTY_MULT = {
   hard: { aggression: 1.4, reaction: 0.7 },
   legendary: { aggression: 1.8, reaction: 0.45 },
 } as const;
+
+/** Camera pan-speed presets (keyboard + edge scroll), applied to the base speed. */
+export const CAMERA_SPEED_SCALE: Record<GameSettings['cameraSpeed'], number> = {
+  slow: 0.7,
+  normal: 1,
+  fast: 1.5,
+};

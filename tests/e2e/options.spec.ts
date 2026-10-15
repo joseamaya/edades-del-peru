@@ -47,3 +47,32 @@ test('the Options panel toggles sound, music and hints', async ({ page }) => {
   expect(out.after).toEqual(['Desactivado', 'Desactivada', 'Desactivados']);
   expect(out.state).toEqual({ sound: false, music: false, hints: false, audio: false });
 });
+
+test('the Options panel changes the camera speed preset', async ({ page }) => {
+  await page.goto('/?play=1&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    g.hud.showPauseMenu();
+    const optionsBtn = [...document.querySelectorAll('button')].find((b) => /Opciones/.test(b.textContent ?? ''));
+    if (!optionsBtn) throw new Error('options button not found');
+    optionsBtn.click();
+    const sel = [...document.querySelectorAll('.ed-field')]
+      .find((f) => f.querySelector('label')?.textContent === 'Velocidad de cámara')
+      ?.querySelector('select') as HTMLSelectElement | null;
+    if (!sel) throw new Error('camera speed select not found');
+    const options = [...sel.options].map((o) => o.textContent);
+    sel.value = 'fast';
+    sel.dispatchEvent(new Event('change'));
+    const afterFast = g.settings.cameraSpeed;
+    sel.value = 'slow';
+    sel.dispatchEvent(new Event('change'));
+    return { options, afterFast, afterSlow: g.settings.cameraSpeed };
+  });
+  expect(out.options).toEqual(['Baja', 'Normal', 'Alta']);
+  expect(out.afterFast).toBe('fast');
+  expect(out.afterSlow).toBe('slow');
+});

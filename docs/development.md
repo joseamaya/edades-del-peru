@@ -111,7 +111,8 @@ for player-facing docs see [`README.md`](../README.md).
   `camera.update`) or while a **blocking overlay** is open (`camera.setUiCaptured`); **edge scrolling is also off
   while the pointer is over a HUD control** (`hud.isPointerOverUi` — `#ui-root` is `pointer-events:none`, only real
   controls set `auto`). Tuning lives in `CAMERA_CONFIG`; the pure math is unit-tested (`tests/camera.test.ts`), the
-  wiring in `tests/e2e/camera.spec.ts`.
+  wiring in `tests/e2e/camera.spec.ts`. The **camera speed** option (Baja/Normal/Alta, `settings.cameraSpeed` →
+  `CAMERA_SPEED_SCALE`) scales the keyboard/edge speed only (the middle-drag is direct manipulation).
 - **Construction (RTS standard)**: placing a building **requires selected workers** (`Game.startPlacement` warns
   if none). Only those workers build: `commitPlacement` emits `issueOrder(BUILD, clear=true)` (the order
   **interrupts** their current task) and **keeps the selection**. Do not reintroduce auto-assignment of builders:
