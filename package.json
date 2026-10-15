@@ -44,7 +44,8 @@
     "shots:eras": "node scripts/shots_eras.mjs",
     "shots:bld": "node scripts/shots_bld.mjs",
     "shots:close": "node scripts/shots_close.mjs",
-    "shots:work": "node scripts/shots_work.mjs"
+    "shots:work": "node scripts/shots_work.mjs",
+    "shots:civs": "node scripts/shots_civs.mjs"
   },
   "engines": {
     "node": ">=20.19"

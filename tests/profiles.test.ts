@@ -140,7 +140,7 @@ describe('historical architecture profiles', () => {
   it('resolves a valid profile for every civilization in every period it plays in', () => {
     for (const civ of CIVS) {
       for (const period of civ.periods) {
-        const p = archProfileFor(civ.id, period);
+        const p = archProfileFor(civ.id, getPeriod(period).level);
         expect(WALLS, `${civ.id} @ ${period} wall`).toContain(p.wall);
         expect(ROOFS, `${civ.id} @ ${period} roof`).toContain(p.roof);
         expect(FOUNDATIONS, `${civ.id} @ ${period} foundation`).toContain(p.foundation);
@@ -153,34 +153,40 @@ describe('historical architecture profiles', () => {
     for (const civ of CIVS) {
       for (const period of civ.periods) {
         const level = getPeriod(period).level;
-        const p = archProfileFor(civ.id, period);
+        const p = archProfileFor(civ.id, level);
         const modern = p.style === 'colonial' || p.style === 'republican';
         expect(modern, `${civ.id} @ ${period} (level ${level})`).toBe(level >= Era.VICEROYALTY);
       }
     }
   });
 
-  it('separates the Caral / Moche / Inca slice by material, ornament and landmark', () => {
-    const caral = archProfileFor(CivId.CARAL, HistoricalPeriod.ARCHAIC);
-    const moche = archProfileFor(CivId.MOCHE, HistoricalPeriod.EARLY_INTERMEDIATE);
-    const inca = archProfileFor(CivId.INCA, HistoricalPeriod.LATE_HORIZON);
+  it('separates the Caral / Moche / Inca slice by material, ornament and height', () => {
+    const caral = archProfileFor(CivId.CARAL, Era.FORMATIVE);
+    const moche = archProfileFor(CivId.MOCHE, Era.REGIONAL_STATES);
+    const inca = archProfileFor(CivId.INCA, Era.TAHUANTINSUYO);
     // Caral (plain earth platform) vs Moche (painted frieze) differ in ornament, not colour
     expect(caral.ornament.frieze ?? false).toBe(false);
     expect(moche.ornament.frieze).toBe(true);
-    expect(caral.landmark).not.toBe(moche.landmark);
     // Inca is a different material family (cut stone, terraced)
     expect(inca.wall).toBe('cut-stone');
     expect(inca.foundation).toBe('terrace');
     expect(inca.ornament.niches).toBe(true);
     expect(new Set([caral.wall, moche.wall, inca.wall]).size).toBeGreaterThanOrEqual(2);
+    // monumental platforms rise over time: Moche huacas > Caral mounds
+    expect(moche.monumentalTiers).toBeGreaterThan(caral.monumentalTiers);
+    expect(inca.monumentalTiers).toBeGreaterThan(1);
+  });
+
+  it('uses a single-tier base for the post-1532 colonial/republican look', () => {
+    expect(archProfileFor(CivId.REALISTAS, Era.VICEROYALTY).monumentalTiers).toBe(1);
+    expect(archProfileFor(CivId.REPUBLIC, Era.REPUBLIC).monumentalTiers).toBe(1);
   });
 
   it('an Andean civilization played in the Viceroyalty adopts the colonial look', () => {
-    const p = archProfileFor(CivId.INCA, HistoricalPeriod.VICEROYALTY);
+    const p = archProfileFor(CivId.INCA, Era.VICEROYALTY);
     expect(p.style).toBe('colonial');
     expect(p.wall).toBe('brick');
     expect(p.foundation).toBe('plinth');
-    expect(p.landmark).toBeNull();
   });
 });
 

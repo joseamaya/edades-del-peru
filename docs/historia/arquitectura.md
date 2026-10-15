@@ -75,16 +75,21 @@ Wari y Tiahuanaco; el **felino** lo es de Chavín; el **Inti** del Estado inca.
 ## 3. Implementación
 
 - **Datos**: `CivDef.visual = { arch, emblem }` en `src/model/defs/civs.ts`. La identidad material se detalla en
-  `src/model/defs/architecture.ts` (`HistoricalArchitectureProfile` + `archProfileFor(civ, period)`): nombra muro
-  (`adobe`, `fieldstone`, `cut-stone`, `megalithic`…), cubierta, fundación y ornamentos por civilización (slice:
-  Caral, Moche, Inca), sobre el mismo `ArchStyle`. Los landmarks viven en `src/model/defs/landmarks.ts`
-  (solo visuales, con fuente y estado `documented|plausible|abstraction`); su landmark solo se aplica dentro de
-  su propio periodo (`landmarkForCiv(civ, period)`), de modo que una cultura jugada más tarde (p. ej. el Inca en
-  el Virreinato) adopta la arquitectura de la era y no arrastra un landmark anacrónico.
-- **Aplicación**: `ProceduralModel.ts` construye los edificios prehispánicos con
-  `buildAndeanStructure` (plataforma escalonada + muros de adobe/piedra + techo de paja/plano + nichos,
-  frisos, escalinatas, torre) según `Builder.style`, y añade el `emblem` en el estandarte
-  (`andeanBanner`/`addEmblem`).
+  `src/model/defs/architecture.ts` (`HistoricalArchitectureProfile` + `archProfileFor(civ, era)`): nombra muro
+  (`adobe`, `fieldstone`, `cut-stone`, `megalithic`…), cubierta, fundación, ornamentos y `monumentalTiers` por
+  civilización (slice: Caral, Moche, Inca), sobre el mismo `ArchStyle`. Se indexa por `Era` (coincide con la
+  caché del modelo y con `Builder.isAndean`); tras 1532 la era manda (colonial/republicano). Los landmarks viven
+  en `src/model/defs/landmarks.ts` y se adjuntan desde el perfil de mapa (solo visuales, con fuente y estado
+  `documented|plausible|abstraction`); su landmark solo se aplica dentro de su propio periodo
+  (`landmarkForCiv(civ, period)`), de modo que una cultura jugada más tarde (p. ej. el Inca en el Virreinato)
+  adopta la arquitectura de la era y no arrastra un landmark anacrónico.
+- **Aplicación**: `ProceduralModel.ts` construye los edificios con el perfil del `BuildContext`
+  (`ctx.arch`): `buildAndeanStructure` elige el muro/textura (`arch.wall`), la fundación
+  (`arch.foundation`: plataforma escalonada, terraza, plinto), la cubierta (`arch.roof`) y los ornamentos
+  (`arch.ornament`: nichos, frisos, bloques ciclópeos, textiles), y usa `arch.monumentalTiers` para la altura
+  de los edificios monumentales (huacas moche más altas que las plataformas Caral). Los constructores
+  colonial/republicano toman el material de fachada de `arch.wall` (`facadeTex`). El `emblem` sigue en el
+  estandarte (`andeanBanner`/`addEmblem`).
 - **Regla de era**: `Builder.isAndean` exige `era ≤ TAHUANTINSUYO` **y** un estilo andino; en el
   Virreinato en adelante se usa la arquitectura de la era (colonial/moderna).
 - **Verificación**: `tests/model.test.ts` (cobertura de estilos/emblemas) y

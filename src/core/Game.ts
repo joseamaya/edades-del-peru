@@ -37,6 +37,7 @@ import {
   RESOURCE_KEYS,
 } from '../core/types';
 import { getCiv } from '../model/defs/civs';
+import { archProfileFor } from '../model/defs/architecture';
 import { BuildContext, buildModel, disposeModel, clearModelCaches } from '../model/ProceduralModel';
 import { clearTextureCache } from '../rendering/Textures';
 import { DEFAULT_SETTINGS, GameSettings, RESOURCE_INFO, CAMERA_SPEED_SCALE } from './Config';
@@ -139,6 +140,7 @@ export class Game {
       // fixed mission configuration overrides the skirmish
       this.settings.civPlayer = mis.playerCiv;
       this.settings.civAI = mis.enemyCiv;
+      this.settings.period = mis.period;
       this.settings.startingEra = mis.startingEra;
       this.settings.mapSeed = mis.map.seed;
       this.settings.mapType = mis.map.type;
@@ -502,7 +504,12 @@ export class Game {
   makeBuildContext(player: number): BuildContext {
     const p = this.players[player];
     const civ = getCiv(p.civ);
-    return { era: p.era, civ, playerColor: new THREE.Color(civ.colors.primary) };
+    return {
+      era: p.era,
+      civ,
+      playerColor: new THREE.Color(civ.colors.primary),
+      arch: archProfileFor(civ.id, p.era),
+    };
   }
 
   /** Center of a player (its main building) or the map center. */
