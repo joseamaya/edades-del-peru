@@ -35,8 +35,29 @@ Add an optional `culturalLandscape` to `HistoricalMapProfile` (keeps the field
 optional so existing profiles and mods stay valid):
 
 ```ts
-export type LandscapeFeature = 'road' | 'canal' | 'terrace' | 'field' | 'plaza' | 'wall' | 'corral';
+export type LandscapeFeature =
+  | 'road'
+  | 'path'
+  | 'canal'
+  | 'terrace'
+  | 'field'
+  | 'plaza'
+  | 'courtyard'
+  | 'platform'
+  | 'ceremonial'
+  | 'wall'
+  | 'fortification'
+  | 'bridge'
+  | 'corral';
+```
 
+This covers the full PRP §8 vocabulary; some entries are composed variants rather
+than new geometry: `path` is a narrow `road`, `courtyard` is a `plaza` with a
+partial `wall`, `ceremonial` is a `platform` + sunken `plaza`, and
+`fortification` is a heavy `wall` (the hilltop form of the `chanca_fortress`
+landmark). `bridge` is the only feature that spans water.
+
+```ts
 export interface LandscapeRule {
   feature: LandscapeFeature;
   /** 0 = absent .. 1 = dominant. Scales density/length. */

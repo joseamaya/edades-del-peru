@@ -59,7 +59,12 @@ describe('deterministic height field', () => {
     const jungle = generateHeightField(96, 777, MAP_PROFILES.amazon);
     // the high Andes terraces its slopes; the jungle barely does (terraceChance 0.05)
     expect(countNonZero(andes.terraceMap)).toBeGreaterThan(0);
-    expect(countNonZero(andes.terraceMap)).toBeGreaterThan(countNonZero(jungle.terraceMap));
+    expect(countNonZero(jungle.terraceMap)).toBeLessThan(countNonZero(andes.terraceMap) / 4);
+  });
+
+  it('carves no terraces when terraceChance is zero', () => {
+    const flat = { ...MAP_PROFILES.high_andes, terrain: { ...MAP_PROFILES.high_andes.terrain, terraceChance: 0 } };
+    expect(countNonZero(generateHeightField(96, 777, flat).terraceMap)).toBe(0);
   });
 
   it('never terraces below the waterline', () => {

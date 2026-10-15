@@ -105,6 +105,7 @@ fret, wave, condor, tocapu, cross, sunburst, shield). Source table in
 | `brick` | wall | colonial facade (`facadeTex` → `brick`) |
 | `concrete` | wall | republican facade (`concreteWall`) |
 | `metal` | wall | republican `metal` facade |
+| `wood` | post / beam | structural posts, lintels and colonial *quincha* (texture `wood`); **not** a `WallMaterial`, so it never appears in `arch.wall` |
 | `thatch` | roof | `andeanThatchRoof` (straw `#c9a94e` mixed with the civ colour) |
 | `flat-stone` | roof | altiplano flat roof |
 | `tile` / `flat-metal` | roof | colonial tile / republican steel |

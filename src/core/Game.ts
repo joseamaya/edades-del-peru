@@ -75,9 +75,6 @@ const NODE_INFO: Record<ResourceNode['kind'], { name: string; icon: string }> = 
   berry: { name: 'Arbusto', icon: '🫐' },
 };
 
-/** Extra farm yield on a fully terraced (andén) cell: a gameplay abstraction of terrace agriculture. */
-const FARM_TERRACE_BONUS = 0.8;
-
 /** What sits under a screen point: at most one resource/unit/building. */
 type PickResult = { resource: ResourceNode | null; unit?: Unit; building?: Building };
 
@@ -883,10 +880,7 @@ export class Game {
    * that makes agriculture adapt to the terrain. Deterministic, so replay/save safe.
    */
   applyTerrainFarmYield(b: Building): void {
-    if (!b.isFarm) return;
-    const terrace = this.terrain.getTerrace(b.pos.x, b.pos.z);
-    if (terrace <= 0) return;
-    b.foodAmount = Math.round(b.foodAmount * (1 + FARM_TERRACE_BONUS * terrace));
+    b.applyTerraceYield(this.terrain.getTerrace(b.pos.x, b.pos.z));
   }
 
   /** Train a unit in a completed building of player 0. */

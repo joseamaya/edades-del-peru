@@ -65,8 +65,8 @@ export class Terrain {
     return z * (this.resolution + 1) + x;
   }
 
-  /** Interpolate terrain height in world coordinates. */
-  getHeight(wx: number, wz: number): number {
+  /** Bilinear sample of a per-vertex map at world coordinates. */
+  private sampleMap(map: Float32Array, wx: number, wz: number): number {
     const x = (wx / this.size) * this.resolution;
     const z = (wz / this.size) * this.resolution;
     const x0 = Math.floor(x);
@@ -75,13 +75,18 @@ export class Terrain {
     const z1 = Math.min(z0 + 1, this.resolution);
     const fx = x - x0;
     const fz = z - z0;
-    const h00 = this.heightMap[this.idx(x0, z0)];
-    const h10 = this.heightMap[this.idx(x1, z0)];
-    const h01 = this.heightMap[this.idx(x0, z1)];
-    const h11 = this.heightMap[this.idx(x1, z1)];
+    const h00 = map[this.idx(x0, z0)];
+    const h10 = map[this.idx(x1, z0)];
+    const h01 = map[this.idx(x0, z1)];
+    const h11 = map[this.idx(x1, z1)];
     const a = h00 + (h10 - h00) * fx;
     const b = h01 + (h11 - h01) * fx;
     return a + (b - a) * fz;
+  }
+
+  /** Interpolate terrain height in world coordinates. */
+  getHeight(wx: number, wz: number): number {
+    return this.sampleMap(this.heightMap, wx, wz);
   }
 
   /** Is the point navigable water? */
@@ -101,40 +106,12 @@ export class Terrain {
 
   /** Interpolated moisture (0 dry .. 1 humid) at world coordinates. */
   getMoisture(wx: number, wz: number): number {
-    const x = (wx / this.size) * this.resolution;
-    const z = (wz / this.size) * this.resolution;
-    const x0 = Math.floor(x);
-    const z0 = Math.floor(z);
-    const x1 = Math.min(x0 + 1, this.resolution);
-    const z1 = Math.min(z0 + 1, this.resolution);
-    const fx = x - x0;
-    const fz = z - z0;
-    const m00 = this.moistureMap[this.idx(x0, z0)];
-    const m10 = this.moistureMap[this.idx(x1, z0)];
-    const m01 = this.moistureMap[this.idx(x0, z1)];
-    const m11 = this.moistureMap[this.idx(x1, z1)];
-    const a = m00 + (m10 - m00) * fx;
-    const b = m01 + (m11 - m01) * fx;
-    return a + (b - a) * fz;
+    return this.sampleMap(this.moistureMap, wx, wz);
   }
 
   /** Interpolated agricultural terracing strength (0 none .. ~0.55 shelf). */
   getTerrace(wx: number, wz: number): number {
-    const x = (wx / this.size) * this.resolution;
-    const z = (wz / this.size) * this.resolution;
-    const x0 = Math.floor(x);
-    const z0 = Math.floor(z);
-    const x1 = Math.min(x0 + 1, this.resolution);
-    const z1 = Math.min(z0 + 1, this.resolution);
-    const fx = x - x0;
-    const fz = z - z0;
-    const t00 = this.terraceMap[this.idx(x0, z0)];
-    const t10 = this.terraceMap[this.idx(x1, z0)];
-    const t01 = this.terraceMap[this.idx(x0, z1)];
-    const t11 = this.terraceMap[this.idx(x1, z1)];
-    const a = t00 + (t10 - t00) * fx;
-    const b = t01 + (t11 - t01) * fx;
-    return a + (b - a) * fz;
+    return this.sampleMap(this.terraceMap, wx, wz);
   }
 
   /** Approximate slope magnitude (0 flat .. 1 steep) from the heightfield. */
@@ -172,11 +149,10 @@ export class Terrain {
 
         const moist = this.moistureMap[i];
         const col = this.biomeColor(h, slope, moist, waterLevel);
-        // terraced ground (andenes) reads as cultivated: a subtle warm ochre tint
         const terrace = this.terraceMap[i];
         if (terrace > 0) {
           _cTerraced.setHSL(0.11, 0.42, 0.46);
-          col.lerp(_cTerraced, Math.min(0.28, terrace * 0.5));
+          col.lerp(_cTerraced, terrace * 0.5);
         }
         colors[i * 3] = col.r;
         colors[i * 3 + 1] = col.g;
