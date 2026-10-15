@@ -50,24 +50,27 @@ export class Tutorial {
         text: 'Con obreros seleccionados, pulsa V (o el botón Vivienda) y haz clic en el suelo para construir una vivienda.',
         highlight: buildBottom,
         check: (g) =>
-          [...g.buildings.values()].filter((b) => b.owner === 0 && b.kind === BuildingKind.HOUSE && !b.dead).length >
-          this.base.houses,
+          [...g.buildings.values()].filter(
+            (b) => b.owner === 0 && b.kind === BuildingKind.HOUSE && b.constructionComplete && !b.dead,
+          ).length > this.base.houses,
       },
       {
         id: 'farm',
-        text: 'Pulsa G (o el botón Granja) para ordenar la agricultura del valle. Caral vive de la tierra y del mar.',
+        text: 'Pulsa G (o el botón Andén) para ordenar la agricultura del valle. Caral vive de la tierra y del mar.',
         highlight: buildBottom,
         check: (g) =>
-          [...g.buildings.values()].filter((b) => b.owner === 0 && b.kind === BuildingKind.FARM && !b.dead).length >
-          (this.base.farms ?? 0),
+          [...g.buildings.values()].filter(
+            (b) => b.owner === 0 && b.kind === BuildingKind.FARM && b.constructionComplete && !b.dead,
+          ).length > (this.base.farms ?? 0),
       },
       {
         id: 'market',
         text: 'Con obreros seleccionados, construye un Mercado desde el panel para comerciar con Áspero.',
         highlight: buildBottom,
         check: (g) =>
-          [...g.buildings.values()].filter((b) => b.owner === 0 && b.kind === BuildingKind.MARKET && !b.dead).length >
-          (this.base.markets ?? 0),
+          [...g.buildings.values()].filter(
+            (b) => b.owner === 0 && b.kind === BuildingKind.MARKET && b.constructionComplete && !b.dead,
+          ).length > (this.base.markets ?? 0),
       },
       {
         id: 'explore',

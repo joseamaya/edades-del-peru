@@ -3,7 +3,7 @@ import { MISSIONS } from '../src/campaign/defs/campaign';
 import { EDUCATIONAL, PROLOGUE, getEducational } from '../src/campaign/defs/educational';
 import { getPeriod } from '../src/model/defs/periods';
 import { getCiv } from '../src/model/defs/civs';
-import { UnitKind } from '../src/core/types';
+import { UnitKind, BuildingKind } from '../src/core/types';
 
 describe('campaign educational content', () => {
   it('the prologue is not empty', () => {
@@ -51,6 +51,12 @@ describe('campaign educational content', () => {
     const caral = MISSIONS[0];
     expect(caral.id).toBe('m1_caral');
     expect(caral.enemy.active).toBe(false);
+    // no starting combat units
+    for (const u of caral.start.units ?? []) expect(u.kind, 'm1 starts with a combat unit').toBe(UnitKind.WORKER);
+    // no pre-spawned building that a `build` objective would auto-satisfy
+    const preBuilt = (caral.start.buildings ?? []).map((b) => b.kind);
+    expect(preBuilt).not.toContain(BuildingKind.FARM);
+    expect(preBuilt).not.toContain(BuildingKind.MARKET);
     // no scripted combat waves/reinforcements
     for (const t of caral.triggers) {
       for (const fx of t.effects) expect(['wave', 'reinforce'], `${t.id}`).not.toContain(fx.type);

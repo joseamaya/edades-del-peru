@@ -38,7 +38,7 @@ export const MISSIONS: MissionDef[] = [
         kind: 'build',
         buildingKind: BuildingKind.FARM,
         count: 1,
-        title: 'Ordena la agricultura (construye una granja)',
+        title: 'Ordena la agricultura del valle (tecla G)',
       },
       {
         id: 'obj_comercio',
@@ -56,7 +56,7 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'Autoridad: —El río Supe nos da vida. Alzad los templos, tended los canales y guardad la armonía del valle.',
+            text: 'El río Supe nos da vida. Alzad los templos, tended los canales y guardad la armonía del valle.',
           },
         ],
       },
@@ -66,7 +66,7 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'Vecinos de Áspero traen pescado y conchas; a cambio, el valle ofrece algodón y mates. La ciudad sagrada crece sin guerras.',
+            text: 'Vecinos de Áspero traen pescado y conchas del litoral; a cambio, el valle ofrece algodón y calabaza. La ciudad sagrada crece sin guerras.',
           },
         ],
       },
