@@ -8,10 +8,10 @@
 - **Contexto histórico**: dos grandes estados suprarregionales coetáneos (esferas Norte/Sur) que difundieron
   el culto al **dios de los báculos**; Wari se expandió hacia la costa norte (contacto/competencia con el
   Moche tardío).
-- **Objetivos históricos (adaptados)**:
-  1. Extender la red de centros provinciales y caminos.
+- **Objetivos históricos (adaptados al juego)**:
+  1. Reunir suministros y extender la red de **centros provinciales** y caminos.
   2. Asegurar los **andenes** y la producción agrícola.
-  3. Imponer/defender la esfera de influencia frente a Tiahuanaco.
+  3. Sostener la esfera de influencia frente a Tiahuanaco (**sin guerra documentada**).
 - **Mapa**: `andes` / `altiplano`.
 - **Desenlace documentado**: ambos estados colapsan hacia el 1000–1100 d.C., dando paso al Intermedio Tardío.
 - **Nota**: **no hay una guerra única documentada** Wari–Tiahuanaco; el emparejamiento es de coetaneidad.

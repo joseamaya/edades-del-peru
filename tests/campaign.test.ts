@@ -48,7 +48,7 @@ describe('campaign educational content', () => {
   });
 
   it('the coetaneous missions are construction scenarios (no documented war)', () => {
-    const peaceful = ['m1_caral', 'm2_chavin'];
+    const peaceful = ['m1_caral', 'm2_chavin', 'm4_wari'];
     for (const id of peaceful) {
       const mis = MISSIONS.find((m) => m.id === id)!;
       expect(mis.enemy.active, `${id} has an active enemy`).toBe(false);

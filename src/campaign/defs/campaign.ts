@@ -218,7 +218,7 @@ export const MISSIONS: MissionDef[] = [
     subtitle: 'Horizonte Medio · c. 600–1000 d.C.',
     history:
       'Wari, desde Ayacucho, construye el primer imperio andino: ciudades planificadas, caminos y una religión estatal. Al sur, Tiahuanaco domina el altiplano.\n' +
-      'Extiende la red de centros provinciales y asegura vuestros andenes frente a la esfera rival.',
+      'No hay una guerra única documentada: tu arma es la red de centros y caminos. Extiéndela y asegura los andenes frente a la influencia rival.',
     victory: 'Wari consolida su esfera de influencia. El Horizonte Medio unifica buena parte de los Andes centrales.',
     defeat: 'La expansión wari se detiene y sus centros provinciales se pierden.',
     period: HistoricalPeriod.MIDDLE_HORIZON,
@@ -228,17 +228,9 @@ export const MISSIONS: MissionDef[] = [
     timeOfDay: 'noon',
     startingEra: Era.TAHUANTINSUYO,
     startingResources: { food: 350, wood: 160, silver: 60, stone: 40 },
-    start: {
-      buildings: [{ kind: BuildingKind.CENTER, dx: -12, dz: 0, tag: 'capital' }],
-      units: [
-        { kind: UnitKind.SOLDIER, dx: 6, dz: 4, count: 6 },
-        { kind: UnitKind.MUSKETEER, dx: 8, dz: 10, count: 4 },
-      ],
-    },
-    mark: [{ tag: 'centro_rival', kind: BuildingKind.CENTER, owner: 1 }],
-    enemy: { active: true, difficulty: 'normal', aggression: 1 },
+    start: {},
+    enemy: { active: false, difficulty: 'normal', aggression: 0 },
     objectives: [
-      { id: 'obj_capital', kind: 'protect', entityTag: 'capital', title: 'Protege la capital wari' },
       {
         id: 'obj_suministros',
         kind: 'gather',
@@ -246,16 +238,16 @@ export const MISSIONS: MissionDef[] = [
         count: 600,
         title: 'Reúne suministros para la expansión (600 de comida)',
       },
-      { id: 'obj_destroy', kind: 'destroy', entityTag: 'centro_rival', title: 'Toma el centro rival del altiplano' },
       {
         id: 'obj_centro',
         kind: 'build',
         buildingKind: BuildingKind.MARKET,
         count: 1,
-        pos: { ref: 'enemy', dx: -30, dz: 0 },
+        pos: { ref: 'player', dx: 38, dz: 0 },
         radius: 16,
         title: 'Funda un centro provincial en la frontera',
       },
+      { id: 'obj_sostener', kind: 'survive', time: 480, title: 'Sostén la esfera wari 8 minutos' },
     ],
     triggers: [
       {
@@ -264,25 +256,17 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'Gobernante wari: —La despensa está corta, pero nuestros caminos no. Reunid suministros y fundad un centro provincial en la frontera.',
+            text: 'La despensa está corta, pero nuestros caminos no. Reunid suministros y fundad un centro provincial en la frontera.',
           },
         ],
       },
       {
-        id: 't_cam_1',
-        condition: { type: 'time', seconds: 60 },
-        effects: [{ type: 'camera', pos: { ref: 'enemy', dx: 0, dz: 0 } }],
-      },
-      {
-        id: 't_wave_1',
-        condition: { type: 'time', seconds: 220 },
+        id: 't_dial_1',
+        condition: { type: 'time', seconds: 200 },
         effects: [
           {
-            type: 'wave',
-            owner: 1,
-            units: [{ kind: UnitKind.SOLDIER, count: 6 }],
-            pos: { ref: 'player', dx: 26, dz: 16 },
-            radius: 6,
+            type: 'dialogue',
+            text: 'En el altiplano, Tiahuanaco difunde el mismo culto del dios de los báculos: dos estados coetáneos que compiten por influencia, no por ejércitos.',
           },
         ],
       },
