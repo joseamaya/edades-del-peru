@@ -9,6 +9,7 @@ import {
   rotateToWorld,
   worldPerPixel,
 } from '../src/core/cameraMath';
+import { CAMERA_SPEED_SCALE } from '../src/core/Config';
 
 const rect = { left: 0, top: 0, right: 800, bottom: 600 };
 const mag = (v: { x: number; y: number }): number => Math.hypot(v.x, v.y);
@@ -132,6 +133,14 @@ describe('vector helpers', () => {
     expect(mag(v)).toBeCloseTo(1, 6);
     expect(v.x).toBeCloseTo(0.6, 6);
     expect(normalize2D(0, 0)).toEqual({ x: 0, y: 0 });
+  });
+});
+
+describe('camera speed presets', () => {
+  it('are ordered slow < normal < fast, with normal = 1', () => {
+    expect(CAMERA_SPEED_SCALE.slow).toBeLessThan(CAMERA_SPEED_SCALE.normal);
+    expect(CAMERA_SPEED_SCALE.normal).toBeLessThan(CAMERA_SPEED_SCALE.fast);
+    expect(CAMERA_SPEED_SCALE.normal).toBe(1);
   });
 });
 

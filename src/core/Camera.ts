@@ -40,6 +40,8 @@ export class RTSCamera {
   private uiCaptured = false;
   /** While true (the pointer is over a HUD control) edge scrolling is suppressed. */
   private pointerOverUi = false;
+  /** Multiplier for keyboard/edge pan speed (user setting). */
+  private speedScale = 1;
 
   private mapSize: number;
   private viewportH: number;
@@ -102,6 +104,11 @@ export class RTSCamera {
   /** Suppress edge scrolling while the pointer is over a HUD control (0 A.D.-style). */
   setPointerOverUi(on: boolean): void {
     this.pointerOverUi = on;
+  }
+
+  /** Scale keyboard/edge pan speed (the middle-drag is direct manipulation). */
+  setSpeedScale(scale: number): void {
+    this.speedScale = scale;
   }
 
   private onKeyDown = (e: KeyboardEvent): void => {
@@ -203,7 +210,7 @@ export class RTSCamera {
     const ev = edgeVector(this.lastMouseX, this.lastMouseY, rect, CAMERA_CONFIG.edgeZone);
     if (ev.x === 0 && ev.y === 0) return;
     const w = rotateToWorld(ev.x, ev.y, this.yaw);
-    const speed = this.zoom * CAMERA_CONFIG.edgeSpeed;
+    const speed = this.zoom * CAMERA_CONFIG.edgeSpeed * this.speedScale;
     this.desiredTarget.x += w.x * speed * dt;
     this.desiredTarget.z += w.y * speed * dt;
   }
@@ -224,7 +231,7 @@ export class RTSCamera {
     const kv = keyPanVector(this.keys);
     if (kv.x === 0 && kv.y === 0) return;
     const w = rotateToWorld(kv.x, kv.y, this.yaw);
-    const speed = this.zoom * CAMERA_CONFIG.keySpeed;
+    const speed = this.zoom * CAMERA_CONFIG.keySpeed * this.speedScale;
     this.desiredTarget.x += w.x * speed * dt;
     this.desiredTarget.z += w.y * speed * dt;
   }

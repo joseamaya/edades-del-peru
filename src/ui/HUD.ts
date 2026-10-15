@@ -17,7 +17,7 @@ import { TECHS, techAvailable } from '../model/defs/techs';
 import { ERA_DEFS } from '../model/defs/eras';
 import { PERIODS, getPeriod } from '../model/defs/periods';
 import { civsForPeriod, getCiv } from '../model/defs/civs';
-import { RESOURCE_INFO, MAP_LABEL, GameSettings } from '../core/Config';
+import { RESOURCE_INFO, MAP_LABEL, GameSettings, CAMERA_SPEED_SCALE } from '../core/Config';
 import { formatNumber, formatStat } from '../util/math';
 import { MISSIONS, CAMPAIGN_TITLE, CAMPAIGN_SUBTITLE } from '../campaign/defs/campaign';
 import { PROLOGUE, getEducational } from '../campaign/defs/educational';
@@ -1611,6 +1611,20 @@ export class HUD {
         this.game.settings.rotateCamera = v;
         this.game.camera.setRotationEnabled(v);
       },
+    );
+    row.appendChild(
+      this.field(
+        'Velocidad de cámara',
+        this.select(
+          ['slow', 'normal', 'fast'] as const,
+          { slow: 'Baja', normal: 'Normal', fast: 'Alta' },
+          this.game.settings.cameraSpeed,
+          (v) => {
+            this.game.settings.cameraSpeed = v;
+            this.game.camera.setSpeedScale(CAMERA_SPEED_SCALE[v]);
+          },
+        ),
+      ),
     );
     this.toggle(
       row,

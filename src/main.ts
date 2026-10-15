@@ -50,6 +50,9 @@ function sanitizeSettings(raw: unknown): GameSettings {
   if (typeof r.showHints === 'boolean') s.showHints = r.showHints;
   if (typeof r.cinematic === 'boolean') s.cinematic = r.cinematic;
   if (typeof r.rotateCamera === 'boolean') s.rotateCamera = r.rotateCamera;
+  if (['slow', 'normal', 'fast'].includes(r.cameraSpeed as string)) {
+    s.cameraSpeed = r.cameraSpeed as GameSettings['cameraSpeed'];
+  }
   if (VICTORY_MODES.includes(r.victoryMode as string)) s.victoryMode = r.victoryMode as GameSettings['victoryMode'];
   if (typeof r.missionId === 'string' && r.missionId) s.missionId = r.missionId;
   if (Array.isArray(r.activeMods)) s.activeMods = r.activeMods.filter((x): x is string => typeof x === 'string');
