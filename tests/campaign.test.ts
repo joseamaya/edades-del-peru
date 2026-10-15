@@ -47,6 +47,20 @@ describe('campaign educational content', () => {
     expect(MISSIONS[0].tutorial).toBe(true);
   });
 
+  it('the first mission is a peaceful construction scenario (Caral had no documented war)', () => {
+    const caral = MISSIONS[0];
+    expect(caral.id).toBe('m1_caral');
+    expect(caral.enemy.active).toBe(false);
+    // no scripted combat waves/reinforcements
+    for (const t of caral.triggers) {
+      for (const fx of t.effects) expect(['wave', 'reinforce'], `${t.id}`).not.toContain(fx.type);
+    }
+    // objectives are construction / economy / survival only
+    for (const o of caral.objectives) expect(['gather', 'build', 'survive'], o.id).toContain(o.kind);
+    // it teaches building the civilization
+    expect(caral.objectives.some((o) => o.kind === 'build')).toBe(true);
+  });
+
   it('uses varied mechanics, not only defend/survive/destroy', () => {
     const kinds = new Set<string>();
     for (const mis of MISSIONS) for (const o of mis.objectives) kinds.add(o.kind);

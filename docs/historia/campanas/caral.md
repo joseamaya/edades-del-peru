@@ -10,13 +10,15 @@
   formó en el área norcentral mediante una economía pesquero-agraria complementaria, canales de riego y
   una ideología religiosa cohesionadora.
 - **Objetivos históricos (adaptados al juego)**:
-  1. Fundar y sostener el asentamiento (comida y madera).
-  2. Comerciar con **Áspero** (pesca del litoral).
-  3. Sobrevivir a los intentos rivales por el valle.
+  1. Reunir materiales y **construir la ciudad** (viviendas, tierras de cultivo).
+  2. Ordenar la **agricultura** y el almacenamiento en el valle.
+  3. Comerciar con **Áspero** (pesca e intercambio del litoral).
+  4. **Sostener** el asentamiento en el tiempo.
 - **Mapa**: `costa` — valle del Supe, humedales, litoral y pampa desértica.
 - **Desenlace documentado**: Caral funcionó durante casi un milenio (3000–1800 a.C.) y fue abandonada por
   causas aún debatidas (posibles terremotos / El Niño).
-- **Nota**: **no hay guerra documentada**; el escenario es de construcción y supervivencia.
+- **Nota**: **no hay guerra documentada**; el escenario es de construcción, comercio y supervivencia. La
+  presión del valle es ambiental (sequías / El Niño, sismos), no un ejército rival.
 
 ## Fuentes
 
