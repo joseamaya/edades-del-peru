@@ -52,6 +52,8 @@ describe('campaign educational content', () => {
     for (const id of peaceful) {
       const mis = MISSIONS.find((m) => m.id === id)!;
       expect(mis.enemy.active, `${id} has an active enemy`).toBe(false);
+      // no marked rival base (the enemy was removed, not merely disabled)
+      expect(mis.mark ?? [], `${id} still marks a rival`).toEqual([]);
       // no starting combat units
       for (const u of mis.start.units ?? []) expect(u.kind, `${id} starts with a combat unit`).toBe(UnitKind.WORKER);
       // no pre-spawned building that a `build` objective would auto-satisfy

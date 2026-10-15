@@ -229,7 +229,7 @@ export const MISSIONS: MissionDef[] = [
     startingEra: Era.TAHUANTINSUYO,
     startingResources: { food: 350, wood: 160, silver: 60, stone: 40 },
     start: {},
-    enemy: { active: false, difficulty: 'normal', aggression: 0 },
+    enemy: { active: false, difficulty: 'easy', aggression: 0 },
     objectives: [
       {
         id: 'obj_suministros',
