@@ -97,7 +97,11 @@ test('period skirmishes place their family landmark', async ({ page }) => {
   ];
   for (const [civ, period, id] of cases) {
     await boot(page, `/?civ=${civ}&period=${period}&seed=777&fog=0&low=1&noloop=1`);
-    expect((await landmarkInfo(page)).id, civ).toBe(id);
+    const info = await landmarkInfo(page);
+    expect(info.id, civ).toBe(id);
+    expect(info.present, civ).toBe(true);
+    expect(info.meshes!, civ).toBeGreaterThan(0);
+    expect(info.onWater, `${civ} landmark on water`).toBe(false);
   }
 });
 

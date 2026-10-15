@@ -135,7 +135,7 @@ export const LANDMARKS: Record<LandmarkId, LandmarkDef> = {
     civ: CivId.PARACAS,
     period: HistoricalPeriod.EARLY_HORIZON,
     region: 'south_coast',
-    status: 'abstraction',
+    status: 'documented',
     source: 'docs/historia/civilizaciones/paracas.md (Cerro Colorado; fardos funerarios y textiles)',
   },
   nazca_geoglyph: {

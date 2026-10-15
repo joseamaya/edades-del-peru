@@ -2239,6 +2239,24 @@ function ringPlaza(b: Builder, cx: number, r: number, stone: string, floor: stri
   }
 }
 
+/** Painted frieze band shared by the adobe huacas (with optional modelled notches). */
+function huacaFrieze(b: Builder, w: number, y: number, notches: boolean): void {
+  b.box(w * 1.0, 0.34, 0.08, b.civAccent, { y, z: w * 0.62 });
+  if (notches) {
+    for (let i = -2; i <= 2; i++) {
+      b.box(0.32, 0.3, 0.06, b.civSecondary, { x: i * w * 0.18, y, z: w * 0.63 });
+    }
+  }
+}
+
+/** Access ramp shared by the adobe huacas/citadels. */
+function adobeRamp(b: Builder, w: number): void {
+  const adobe = andeanWall(b);
+  for (let i = 0; i < 4; i++) {
+    b.box(1.0, 0.12, w * 0.3, adobe, { y: 0.06 + i * 0.12, z: w * 0.36 + i * 0.2, tex: 'brick' });
+  }
+}
+
 /** Caral: a stepped earth platform beside a sunken circular plaza. */
 function buildCaralLandmark(b: Builder): void {
   const earth = mixHex(b.pal.primary, '#c8a878', 0.72);
@@ -2261,11 +2279,7 @@ function buildMocheLandmark(b: Builder): void {
   }
   const baseY = tiers * 0.62;
   b.box(w * 0.5, 0.72, w * 0.5, adobe, { y: baseY + 0.36, tex: 'brick' });
-  // painted frieze band on the front face
-  b.box(w * 1.0, 0.34, 0.08, b.civAccent, { y: baseY * 0.5, z: w * 0.62 });
-  for (let i = -2; i <= 2; i++) {
-    b.box(0.32, 0.3, 0.06, b.civSecondary, { x: i * w * 0.18, y: baseY * 0.5, z: w * 0.63 });
-  }
+  huacaFrieze(b, w, baseY * 0.5, true);
   // access ramp
   for (let i = 0; i < 5; i++) {
     b.box(1.0, 0.14, w * 0.5, adobe, { y: 0.07 + i * 0.13, z: w * 0.68 + i * 0.26, tex: 'brick' });
@@ -2340,9 +2354,7 @@ function buildChimuCompound(b: Builder): void {
     const t = w * (0.5 - i * 0.1);
     b.box(t, 0.4, t, adobe, { y: 0.2 + i * 0.4, tex: 'brick' });
   }
-  for (let i = 0; i < 4; i++) {
-    b.box(1.0, 0.12, w * 0.3, adobe, { y: 0.06 + i * 0.12, z: w * 0.36 + i * 0.2, tex: 'brick' });
-  }
+  adobeRamp(b, w);
 }
 
 /** Colonial: a church with a tile roof, an arched door and a bell tower. */
@@ -2389,10 +2401,7 @@ function buildCupisniqueHuaca(b: Builder): void {
   const w = 6;
   const baseY = tieredPlatform(b, w, 3, 0.55, adobe, 'brick');
   b.box(w * 0.5, 0.7, w * 0.5, adobe, { y: baseY + 0.35, tex: 'brick' });
-  b.box(w * 0.95, 0.3, 0.1, b.civAccent, { y: baseY * 0.5, z: w * 0.66 });
-  for (let i = -2; i <= 2; i++) {
-    b.box(0.3, 0.26, 0.06, b.civSecondary, { x: i * w * 0.18, y: baseY * 0.5, z: w * 0.67 });
-  }
+  huacaFrieze(b, w, baseY * 0.5, true);
 }
 
 /** Paracas: a low funerary enclosure with wrapped bundles. */
@@ -2435,10 +2444,8 @@ function buildChinchaComplex(b: Builder): void {
   const w = 7;
   const baseY = tieredPlatform(b, w, 3, 0.6, adobe, 'brick');
   b.box(w * 0.5, 0.8, w * 0.5, adobe, { y: baseY + 0.4, tex: 'brick' });
-  b.box(w * 0.95, 0.3, 0.1, b.civAccent, { y: baseY * 0.5, z: w * 0.66 });
-  for (let i = 0; i < 4; i++) {
-    b.box(1.0, 0.12, w * 0.3, adobe, { y: 0.06 + i * 0.12, z: w * 0.36 + i * 0.2, tex: 'brick' });
-  }
+  huacaFrieze(b, w, baseY * 0.5, false);
+  adobeRamp(b, w);
 }
 
 /** Chanca: a hilltop stone fortress (pucará) with corner towers. */
