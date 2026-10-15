@@ -67,7 +67,10 @@ for player-facing docs see [`README.md`](../README.md).
   plain `THREE.Group` named `landmark` to the scene (no entity, no pathfinding obstacle). Freed in
   `Game.destroy()`; templates are freed by `clearModelCaches()`. Verified by `tests/e2e/landmarks.spec.ts`.
 - `src/campaign/defs/campaign.ts` defines the 9 historical campaigns; `src/campaign/Mission.ts` evaluates
-  objectives/triggers.
+  objectives/triggers. Each mission also declares an optional `region` (`MissionDef`), fed into
+  `resolveMapProfile` so a scenario carries its own geography rather than the player's (e.g. m6 = the Inca on the
+  Chimú `north_coast`). Campaign fichas in [`docs/historia/fichas_campana.md`](./historia/fichas_campana.md),
+  validated by `tests/campaign-profiles.test.ts`.
 - **Educational layer**: `src/campaign/defs/educational.ts` (prologue + context/«¿Sabías que…?»/sources per mission,
   derived from `docs/historia/`), `src/campaign/Tutorial.ts` (step-by-step guided tutorial, only on missions with
   `tutorial: true` and gated by `settings.showHints`) and `src/ui/Codex.ts` (codex that bundles the real

@@ -209,7 +209,13 @@ export class Game {
   private initWorld(): void {
     const s = this.settings;
     const terrainRes = s.mapSize <= 128 ? 192 : s.mapSize <= 192 ? 256 : 320;
-    this.mapProfile = resolveMapProfile({ period: s.period, civ: s.civPlayer, mapType: s.mapType });
+    const mis = s.missionId ? getMission(s.missionId) : undefined;
+    this.mapProfile = resolveMapProfile({
+      period: s.period,
+      civ: s.civPlayer,
+      mapType: s.mapType,
+      region: mis?.region,
+    });
     this.terrain = new Terrain(s.mapSize, terrainRes, s.mapSeed, this.mapProfile);
     this.terrain.camera = this.camera.camera;
     this.scene.add(this.terrain.group);
