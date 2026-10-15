@@ -45,6 +45,13 @@ for player-facing docs see [`README.md`](../README.md).
   landmark's own period (no anachronistic landmark). The region drives the fine terrain identity; `mapType` is
   the coarse playable family (matches `regionDefaultMap(region)`). These are pure data + resolvers; the
   generator consumes them in later phases. Guarded by `tests/profiles.test.ts`.
+- **Profile-driven generation (Phase 3)**: `Game.initWorld` resolves `resolveMapProfile({ period, civ, mapType })`
+  once into `Game.mapProfile` and feeds it to `Terrain` (which now takes a `HistoricalMapProfile`, not a `MapType`
+  string), `Water` (`profile.water.level`/`inland`), the resource spawner and the tree variants. The heightmap
+  generation is pure and lives in `src/rendering/heightField.ts` (`generateHeightField(resolution, seed, profile)`,
+  no THREE), so `tests/terrain.test.ts` pins determinism (same seed+profile → same map; different seed/profile →
+  different map) without a DOM. Adding a region/profile does not touch the generator: only the data in
+  `profiles.ts`. `atmosphere` is carried but not yet applied (classic no-fog look is preserved).
 - `src/campaign/defs/campaign.ts` defines the 9 historical campaigns; `src/campaign/Mission.ts` evaluates
   objectives/triggers.
 - **Educational layer**: `src/campaign/defs/educational.ts` (prologue + context/«¿Sabías que…?»/sources per mission,

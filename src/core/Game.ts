@@ -40,9 +40,10 @@ import { getCiv } from '../model/defs/civs';
 import { BuildContext, buildModel, disposeModel, clearModelCaches } from '../model/ProceduralModel';
 import { clearTextureCache } from '../rendering/Textures';
 import { DEFAULT_SETTINGS, GameSettings, RESOURCE_INFO, CAMERA_SPEED_SCALE } from './Config';
+import { resolveMapProfile, type HistoricalMapProfile } from '../model/defs/profiles';
 import { distance2D } from '../util/math';
 import { isTypingTarget } from '../util/dom';
-import { RNG, hashCode } from '../util/rng';
+import { RNG, hashCode, weightedPick } from '../util/rng';
 import { ERA_DEFS } from '../model/defs/eras';
 import { BUILDING_DEFS, getBuildingStats, BUILDING_INFO } from '../model/defs/buildings';
 import { getUnitStats, getUnitModel, UNIT_INFO, isConverter, DamageClass } from '../model/defs/units';
@@ -82,6 +83,8 @@ export class Game {
   sky!: Sky;
   terrain!: Terrain;
   water!: Water;
+  /** Resolved visual world profile for this match (map identity + resources). */
+  mapProfile!: HistoricalMapProfile;
   particles!: Particles;
   fow!: Fow;
   pathfinder!: Pathfinder;
@@ -199,7 +202,8 @@ export class Game {
   private initWorld(): void {
     const s = this.settings;
     const terrainRes = s.mapSize <= 128 ? 192 : s.mapSize <= 192 ? 256 : 320;
-    this.terrain = new Terrain(s.mapSize, terrainRes, s.mapSeed, s.mapType);
+    this.mapProfile = resolveMapProfile({ period: s.period, civ: s.civPlayer, mapType: s.mapType });
+    this.terrain = new Terrain(s.mapSize, terrainRes, s.mapSeed, this.mapProfile);
     this.terrain.camera = this.camera.camera;
     this.scene.add(this.terrain.group);
     this.sky = new Sky(this.scene);
@@ -210,8 +214,8 @@ export class Game {
       this.scene,
       this.terrain.heightMap,
       s.mapSize,
-      this.terrain.waterLevel,
-      s.mapType !== 'coast',
+      this.mapProfile.water.level,
+      this.mapProfile.water.inland,
     );
     this.particles = new Particles(this.scene, 4096);
     this.markers = new OrderMarkers(this.scene);
@@ -294,6 +298,8 @@ export class Game {
   private spawnResources(): void {
     const s = this.settings;
     const rng = new RNG(this.settings.mapSeed * 31 + 1);
+    const mapType = this.mapProfile.baseMapType;
+    const variants = this.mapProfile.vegetation.variants;
     const n = Math.floor((s.mapSize * s.mapSize) / 1000);
     let placed = 0;
     let guard = 0;
@@ -302,22 +308,7 @@ export class Game {
       const z = rng.range(15, s.mapSize - 15);
       if (this.terrain.isWater(x, z)) continue;
       const h = this.terrain.getHeight(x, z);
-      const kind: ResourceNode['kind'] =
-        h > 6
-          ? 'mine'
-          : h > 3
-            ? rng.chance(0.6)
-              ? 'mine'
-              : 'tree'
-            : this.terrain.isBeach(x, z)
-              ? rng.chance(0.5)
-                ? 'well'
-                : 'berry'
-              : rng.chance(0.45)
-                ? 'tree'
-                : rng.chance(0.3)
-                  ? 'mine'
-                  : 'well';
+      const kind = this.pickResourceKind(rng, x, z, h);
       const amount =
         kind === 'tree'
           ? rng.range(140, 220)
@@ -328,7 +319,7 @@ export class Game {
               : kind === 'berry'
                 ? rng.range(120, 180)
                 : rng.range(200, 300);
-      const node = new ResourceNode(this.scene, kind, x, z, amount, this.settings.mapType, this.trees);
+      const node = new ResourceNode(this.scene, kind, x, z, amount, mapType, this.trees, variants);
       node.pos.y = this.terrain.getHeight(x, z);
       node.view.position.set(x, node.pos.y, z);
       node.placeTreeInstance(node.pos.y);
@@ -336,25 +327,44 @@ export class Game {
       this.registerResourceObstacle(node.id, x, z, kind);
       placed++;
     }
-    // hunting and fishing
-    for (let i = 0; i < 12; i++) {
+    // hunting and fishing (counts from the profile)
+    const huntCount = Math.max(4, Math.round(this.mapProfile.resources.hunt));
+    for (let i = 0; i < huntCount; i++) {
       const x = rng.range(20, s.mapSize - 20);
       const z = rng.range(20, s.mapSize - 20);
       if (this.terrain.isWater(x, z)) continue;
-      const node = new ResourceNode(this.scene, 'hunt', x, z, rng.range(120, 180), this.settings.mapType);
+      const node = new ResourceNode(this.scene, 'hunt', x, z, rng.range(120, 180), mapType, undefined, variants);
       node.pos.y = this.terrain.getHeight(x, z);
       node.view.position.set(x, node.pos.y, z);
       this.resourceNodes.set(node.id, node);
     }
-    for (let i = 0; i < 8; i++) {
+    const fishingCount = Math.round(this.mapProfile.resources.fishing);
+    for (let i = 0; i < fishingCount; i++) {
       const x = rng.range(20, s.mapSize - 20);
       const z = rng.range(20, s.mapSize - 20);
       if (!this.terrain.isWater(x, z)) continue;
-      const node = new ResourceNode(this.scene, 'fishing', x, z, rng.range(150, 220), this.settings.mapType);
+      const node = new ResourceNode(this.scene, 'fishing', x, z, rng.range(150, 220), mapType);
       node.pos.y = 0;
       node.view.position.set(x, 0, z);
       this.resourceNodes.set(node.id, node);
     }
+  }
+
+  /** Geography-driven resource pick: profile weights, gated by height, beach, moisture and slope. */
+  private pickResourceKind(rng: RNG, x: number, z: number, h: number): ResourceNode['kind'] {
+    const w = this.mapProfile.resources;
+    const beach = this.terrain.isBeach(x, z);
+    const high = h > 6;
+    const mid = h > 3;
+    const moist = this.terrain.getMoisture(x, z);
+    const slope = this.terrain.getSlope(x, z);
+    const options: Array<[ResourceNode['kind'], number]> = [
+      ['mine', w.mine * (high ? 2.5 : mid ? 1.5 : 0.5) * (0.6 + slope * 1.4)],
+      ['tree', w.tree * (high ? 0.3 : 1) * (0.4 + moist)],
+      ['well', w.well * (beach ? 1.6 : 0.8) * (0.7 + slope * 0.8)],
+      ['berry', w.berry * (beach ? 1.2 : 0.7) * (0.5 + moist)],
+    ];
+    return weightedPick(rng, options) ?? 'tree';
   }
 
   /** Register a building as a pathfinding obstacle. */
@@ -432,7 +442,16 @@ export class Game {
     const place = (kind: ResourceNode['kind'], amount: number, dx: number, dz: number) => {
       const nx = x + dx;
       const nz = z + dz;
-      const node = new ResourceNode(this.scene, kind, nx, nz, amount, this.settings.mapType, this.trees);
+      const node = new ResourceNode(
+        this.scene,
+        kind,
+        nx,
+        nz,
+        amount,
+        this.mapProfile.baseMapType,
+        this.trees,
+        this.mapProfile.vegetation.variants,
+      );
       node.pos.y = this.terrain.getHeight(nx, nz);
       node.view.position.set(nx, node.pos.y, nz);
       node.placeTreeInstance(node.pos.y);
@@ -819,7 +838,16 @@ export class Game {
     reserveIds(maxId);
 
     for (const ns of data.resourceNodes) {
-      const node = new ResourceNode(this.scene, ns.kind, ns.x, ns.z, ns.amount, this.settings.mapType, this.trees);
+      const node = new ResourceNode(
+        this.scene,
+        ns.kind,
+        ns.x,
+        ns.z,
+        ns.amount,
+        this.mapProfile.baseMapType,
+        this.trees,
+        this.mapProfile.vegetation.variants,
+      );
       node.applySave(ns);
       node.pos.y = ns.kind === 'fishing' ? 0 : this.terrain.getHeight(ns.x, ns.z);
       node.view.position.set(ns.x, node.pos.y, ns.z);

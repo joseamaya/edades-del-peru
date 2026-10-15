@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import { allocId } from './EntityView';
-import { RNG } from '../util/rng';
+import { RNG, weightedPick } from '../util/rng';
 import { ResourceKey } from '../core/types';
 import { MaterialTex } from '../rendering/Textures';
-import { TreeInstances } from '../rendering/TreeInstances';
+import { TreeInstances, type TreeVariant } from '../rendering/TreeInstances';
 import type { ResourceNodeSave } from '../game/saveTypes';
 
 // Shared caches: geometries and materials reused between nodes (fewer draw calls and GC).
@@ -84,7 +84,8 @@ export function clearResourceCaches(): void {
   matCache.clear();
 }
 
-type TreeVariant = 'broad' | 'needle' | 'frond';
+type TreeVariants = Partial<Record<TreeVariant, number>>;
+const TREE_VARIANTS: TreeVariant[] = ['broad', 'needle', 'frond'];
 function variantForMap(mapType: string): TreeVariant {
   if (mapType === 'altiplano') return 'needle';
   if (mapType === 'jungle') return 'frond';
@@ -110,6 +111,7 @@ export class ResourceNode {
   private swayParts: THREE.Object3D[] = [];
   private mapType: string;
   private treeMgr?: TreeInstances;
+  private treeVariants?: TreeVariants;
   treeSlot = -1;
   private treeVariant: TreeVariant = 'broad';
 
@@ -121,11 +123,13 @@ export class ResourceNode {
     amount: number,
     mapType = 'andes',
     treeMgr?: TreeInstances,
+    treeVariants?: TreeVariants,
   ) {
     this.scene = scene;
     this.kind = kind;
     this.mapType = mapType;
     this.treeMgr = treeMgr;
+    this.treeVariants = treeVariants;
     this.pos.set(x, 0, z);
     this.amount = this.maxAmount = amount;
     this.swaySeed = Math.random() * Math.PI * 2;
@@ -240,8 +244,16 @@ export class ResourceNode {
     parent.add(top);
   }
 
+  /** Pick a tree variant from the map profile's vegetation weights (seedable). */
+  private pickTreeVariant(rng: RNG): TreeVariant {
+    const v = this.treeVariants;
+    if (!v) return variantForMap(this.mapType);
+    const entries = TREE_VARIANTS.map((k) => [k, v[k] ?? 0] as [TreeVariant, number]);
+    return weightedPick(rng, entries) ?? variantForMap(this.mapType);
+  }
+
   private buildTree(rng: RNG): void {
-    const variant = variantForMap(this.mapType);
+    const variant = this.pickTreeVariant(rng);
     // With the instancing manager: only one instance is registered (no per-tree mesh).
     if (this.treeMgr) {
       this.treeVariant = variant;
