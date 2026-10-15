@@ -47,7 +47,7 @@ describe('campaign educational content', () => {
     expect(MISSIONS[0].tutorial).toBe(true);
   });
 
-  it('the coetaneity missions are construction scenarios (no documented war)', () => {
+  it('the coetaneous missions are construction scenarios (no documented war)', () => {
     const peaceful = ['m1_caral', 'm2_chavin'];
     for (const id of peaceful) {
       const mis = MISSIONS.find((m) => m.id === id)!;
@@ -64,8 +64,7 @@ describe('campaign educational content', () => {
         for (const fx of t.effects) expect(['wave', 'reinforce'], `${id}/${t.id}`).not.toContain(fx.type);
       }
       // non-combat objectives only, and it teaches building
-      for (const o of mis.objectives)
-        expect(['gather', 'build', 'survive', 'reach'], `${id}/${o.id}`).toContain(o.kind);
+      for (const o of mis.objectives) expect(['gather', 'build', 'survive'], `${id}/${o.id}`).toContain(o.kind);
       expect(
         mis.objectives.some((o) => o.kind === 'build'),
         `${id} teaches building`,
