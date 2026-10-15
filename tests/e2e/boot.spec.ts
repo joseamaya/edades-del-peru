@@ -39,21 +39,45 @@ test('selects a unit on click', { tag: '@smoke' }, async ({ page }) => {
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });
-  await page.waitForTimeout(4000);
-  await page.evaluate(() => (window as unknown as { game: { loop: { stop: () => void } } }).game.loop.stop());
-  const pos = await page.evaluate(() => {
+  // Centre the view on the player's base, as the visual harness does: otherwise the
+  // units' screen position (and whether a HUD panel covers them) depends on how far
+  // the camera happened to pan before the loop was stopped — flaky under CI load.
+  const center = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    const u = [...g.units.values()].find((x: any) => x.owner === 0);
-    const v = u.pos.clone();
-    v.y += 0.4;
-    const s = v.project(g.camera.camera);
-    return {
-      x: Math.round((s.x * 0.5 + 0.5) * window.innerWidth),
-      y: Math.round((-s.y * 0.5 + 0.5) * window.innerHeight),
-      id: u.id,
-    };
+    const c = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center');
+    if (c) g.camera.moveTo(c.pos.x, c.pos.z, true);
+    return { x: window.innerWidth / 2, y: window.innerHeight / 2 };
   });
-  await page.mouse.move(pos.x, pos.y);
+  await page.mouse.move(center.x, center.y);
+  await page.waitForTimeout(600);
+  // Pick a unit whose projection lands on the canvas. HUD controls have
+  // `pointer-events: auto`, so a point over them never reaches the canvas; `#ui-root`
+  // is `pointer-events: none`, so `elementFromPoint` returns the canvas exactly when
+  // nothing is in the way — the same test the game's edge guard uses.
+  const pickUnit = () => {
+    const g = (window as unknown as { game: any }).game;
+    if (!g) return null;
+    const canvas = g.renderer.domElement as HTMLCanvasElement;
+    for (const u of g.units.values() as Iterable<any>) {
+      if (u.owner !== 0 || u.dead) continue;
+      const v = u.pos.clone();
+      v.y += 0.4;
+      const s = v.project(g.camera.camera);
+      if (!Number.isFinite(s.x) || !Number.isFinite(s.y)) continue;
+      const x = Math.round((s.x * 0.5 + 0.5) * window.innerWidth);
+      const y = Math.round((-s.y * 0.5 + 0.5) * window.innerHeight);
+      if (x < 0 || y < 0 || x >= window.innerWidth || y >= window.innerHeight) continue;
+      if (document.elementFromPoint(x, y) !== canvas) continue;
+      return { x, y, id: u.id as number };
+    }
+    return null;
+  };
+  await page.waitForFunction(pickUnit, null, { timeout: 15_000 });
+  // freeze the simulation so the clicked unit cannot move between projection and click
+  await page.evaluate(() => (window as unknown as { game: { loop: { stop: () => void } } }).game.loop.stop());
+  const pos = await page.evaluate(pickUnit);
+  expect(pos, 'no unoccluded player unit to click').not.toBeNull();
+  await page.mouse.move(pos!.x, pos!.y);
   await page.mouse.down();
   await page.mouse.up();
   await page.waitForTimeout(200);
@@ -61,7 +85,7 @@ test('selects a unit on click', { tag: '@smoke' }, async ({ page }) => {
     const g = (window as unknown as { game: any }).game;
     return [...g.selectedUnits] as number[];
   });
-  expect(selected.length).toBeGreaterThan(0);
+  expect(selected).toContain(pos!.id);
 });
 
 test('the render canvas fills the viewport (no body-margin offset)', { tag: '@smoke' }, async ({ page }) => {
