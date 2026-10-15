@@ -156,3 +156,52 @@ test('a strategic choice wins through either branch', async ({ page }) => {
   });
   expect(siege).toBe(true);
 });
+
+test('the campaign menu shows completion progress and can continue', async ({ page }) => {
+  // two missions already completed
+  await page.addInitScript(() => localStorage.setItem('peru-campaign', '2'));
+  await page.goto('/');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  await page.getByRole('button', { name: /Campañas/ }).click();
+  await page
+    .locator('.ed-overlay', { hasText: 'La Senda del Sol' })
+    .getByRole('button', { name: /Ver misiones/ })
+    .click();
+  const menu = page.locator('.ed-overlay', { hasText: 'CAMPAÑA' });
+  await expect(menu).toContainText('2 / 9 misiones completadas');
+  await expect(menu).toContainText('✓ 1. La Ciudad Sagrada');
+  await expect(menu).toContainText('▶ 3.');
+  await expect(menu).toContainText('🔒 4.');
+  // "continue" opens the next uncompleted mission (mission 3)
+  await menu.getByRole('button', { name: /Continuar campaña/ }).click();
+  await page.waitForURL(/mission=m3_moche_recuay/, { timeout: 15_000 });
+});
+
+test('the campaign menu shows a completed campaign', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('peru-campaign', '9'));
+  await page.goto('/');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  await page.getByRole('button', { name: /Campañas/ }).click();
+  await page
+    .locator('.ed-overlay', { hasText: 'La Senda del Sol' })
+    .getByRole('button', { name: /Ver misiones/ })
+    .click();
+  const menu = page.locator('.ed-overlay', { hasText: 'CAMPAÑA' });
+  await expect(menu).toContainText('9 / 9 misiones completadas');
+  await expect(menu).toContainText('🏆 Campaña completada');
+  await expect(menu.getByRole('button', { name: /Continuar campaña/ })).toHaveCount(0);
+});
+
+test('a peaceful mission briefing shows no rival side', async ({ page }) => {
+  for (const mission of ['m1_caral', 'm2_chavin', 'm4_wari']) {
+    await page.goto(`/?mission=${mission}&seed=777&fog=0&low=1`);
+    const overlay = page.locator('.ed-overlay').filter({ hasText: 'OBJETIVOS' });
+    await expect(overlay).toBeVisible({ timeout: 30_000 });
+    await expect(overlay).toContainText('Bandos:');
+    await expect(overlay).toContainText('sin enfrentamiento documentado');
+  }
+});
