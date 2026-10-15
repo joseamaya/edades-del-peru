@@ -4,11 +4,12 @@
 [![CI](https://github.com/joseamaya/edades-del-peru/actions/workflows/ci.yml/badge.svg)](https://github.com/joseamaya/edades-del-peru/actions/workflows/ci.yml)
 
 An **Age of Empires II**-style real-time strategy game that walks through the history of Peru, from Caral to
-the present, built with **Three.js** and 100% procedural assets (Canvas textures, parametric models, WebAudio
-audio). The whole in-game interface is in Spanish and the historical content is **verifiable** (see
-[`docs/historia/`](./docs/historia/)).
+the present, built with **Three.js** and procedural generation (Canvas textures, parametric models, WebAudio
+audio), plus a small set of AI-generated terrain and material textures (see [`PROVENANCE.md`](./PROVENANCE.md)).
+The whole in-game interface is in Spanish and the historical content is **historically grounded** and verifiable
+(see [`docs/historia/`](./docs/historia/)).
 
-The game is **historically accurate** on one key point: every match is played in a **historical period**, and
+The game is **historically grounded** on one key point: every match is played in a **historical period**, and
 only **coetaneous civilizations** can face each other (e.g. Moche with Recuay, Chanca with Inca, never Moche
 with Chimú).
 
@@ -27,6 +28,8 @@ yarn lint         # ESLint
 yarn test         # unit tests (Vitest)
 yarn test:e2e     # full E2E suite (Playwright, requires `npx playwright install chromium`)
 yarn test:e2e:smoke  # fast @smoke subset (used on PRs)
+yarn visual:update   # refresh the visual-regression baseline after an intentional look change
+yarn visual:check    # re-capture the representative scenes and fail on regressions
 ```
 
 For automatic screenshots of the game (used in the visual review loop):
@@ -133,7 +136,9 @@ Terrain depends on the civilization's geography:
 - **`altiplano`** — Lake Titicaca plateau (Tiahuanaco).
 - **`jungle`** — high jungle (optional).
 
-Details in [`docs/historia/mapas.md`](./docs/historia/mapas.md).
+Details in [`docs/historia/mapas.md`](./docs/historia/mapas.md); the visual language
+(terrain, architecture, materials, vegetation, colour) in
+[`docs/design/visual-language.md`](./docs/design/visual-language.md).
 
 ## Historical documentation
 
