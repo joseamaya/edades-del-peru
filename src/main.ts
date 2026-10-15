@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { GameSettings, DEFAULT_SETTINGS } from './core/Config';
 import { BuildingKind, CivId, HistoricalPeriod } from './core/types';
 import { getBuildingStats } from './model/defs/buildings';
-import { CIVS, civsForPeriod } from './model/defs/civs';
+import { CIVS, civsForPeriod, getCiv } from './model/defs/civs';
 import { getPeriod } from './model/defs/periods';
 import { loadFromStorage } from './game/SaveGame';
 import { loadReplay } from './game/replay';
@@ -97,6 +97,15 @@ async function boot(): Promise<void> {
       settings.period = intParam(params, 'period', settings.period) as HistoricalPeriod;
       Object.assign(settings, sanitizeSettings(settings));
     }
+    // debug harness: force the civilization (and its geography) for visual review
+    const civParam = params.get('civ');
+    if (civParam && CIV_IDS.includes(civParam)) {
+      settings.civPlayer = civParam as CivId;
+      Object.assign(settings, sanitizeSettings(settings));
+      if (params.get('map') === null) settings.mapType = getCiv(settings.civPlayer).geography;
+    }
+    const mapParam = params.get('map');
+    if (mapParam && MAP_TYPES.includes(mapParam)) settings.mapType = mapParam as GameSettings['mapType'];
   }
   // mods are data patches over the defs: load them before building the game
   const modParam = params.get('mod');
@@ -177,7 +186,7 @@ function startsMatchDirectly(params: URLSearchParams): boolean {
     params.get('replay') === '1'
   )
     return true;
-  return ['seed', 'era', 'mission', 'low', 'speed', 'fog', 'period'].some((k) => params.has(k));
+  return ['seed', 'era', 'mission', 'low', 'speed', 'fog', 'period', 'civ', 'map'].some((k) => params.has(k));
 }
 
 if (document.readyState === 'loading') {

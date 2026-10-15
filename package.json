@@ -45,7 +45,10 @@
     "shots:bld": "node scripts/shots_bld.mjs",
     "shots:close": "node scripts/shots_close.mjs",
     "shots:work": "node scripts/shots_work.mjs",
-    "shots:civs": "node scripts/shots_civs.mjs"
+    "shots:civs": "node scripts/shots_civs.mjs",
+    "shots:periods": "node scripts/shots_periods.mjs",
+    "visual:update": "node scripts/visual.mjs --update",
+    "visual:check": "node scripts/visual.mjs"
   },
   "engines": {
     "node": ">=20.19"

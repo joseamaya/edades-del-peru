@@ -34,6 +34,9 @@ The app shows the **main menu** by default. To jump straight into the match use 
 | `yarn test:e2e` | E2E suite (Playwright). Requires `npx playwright install chromium`. |
 | `yarn test:e2e:smoke` | Fast `@smoke` subset of the E2E suite (used on PRs). |
 | `yarn shot <name>` | Screenshot into `review/` for visual review. |
+| `yarn shots:periods` | Capture the period/region snapshots into `review/periods/`. |
+| `yarn visual:check` | Re-capture and fail if a period/region scene drifts from the baseline. |
+| `yarn visual:update` | Refresh the visual baseline (`tests/visual/baseline.json`) after an intentional change. |
 
 Before opening a PR, run at least:
 

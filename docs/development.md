@@ -255,11 +255,21 @@ for player-facing docs see [`README.md`](../README.md).
   `resetGame()` reloads with `?play=1`.
 - URL params: `?play=1`, `?menu=0/1`, `?load=1`, `?replay=1`, `?seed=`, `?fog=0`, `?low=1`, `?speed=`, `?era=N`,
   `?period=N`, `?mission=ID`, `?noloop=1` (do not auto-start the loop; tests drive fixed steps from step 0),
-  `?fps=1` (show the debug FPS overlay, hidden by default).
+  `?fps=1` (show the debug FPS overlay, hidden by default), `?civ=ID` (force the player civilization; with
+  `?period=N` it drives the geography) and `?map=TYPE` (force the map type).
 - Shared `scripts/lib.mjs` (`launchChromium`, `withViteServer`, `readPng`, `classify`). Scripts launch Vite on a
   free port and Chromium with SwiftShader; they use `CHROME_PATH` or `chromium.executablePath()`. Run captures
   with `?low=1`.
 - `review/` holds generated PNG/JSON (gitignored); do not edit them by hand.
+- **Visual regression** (`scripts/visual.mjs` + `scripts/scenes.mjs`): `yarn shots:periods` captures the 13
+  representative scenes (the nine periods named in the PRP: close-up of the player base; and four geographic
+  regions: wide view) into `review/periods/` for human review. `yarn visual:update` writes a compact colour
+  signature per scene to `tests/visual/baseline.json`; `yarn visual:check` re-captures and fails when a scene's
+  mean per-channel difference exceeds `--threshold` (default 12) or any grid cell exceeds `--cell-threshold`
+  (default 25). A scene that fails to boot is never written to (or accepted as) the baseline. The signature
+  (`scripts/visual_lib.mjs`, unit-tested in `tests/visual.test.ts`) is a 4×4 mean-colour grid — robust to
+  cosmetic randomness (tree positions, wind) but sensitive to a scene whose identity changes. Run
+  `visual:update` after an intentional change; the harness is local (same machine/browser) and not wired to CI.
 
 ## Performance benchmarks
 
