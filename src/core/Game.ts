@@ -38,7 +38,9 @@ import {
 } from '../core/types';
 import { getCiv } from '../model/defs/civs';
 import { archProfileFor } from '../model/defs/architecture';
-import { BuildContext, buildModel, disposeModel, clearModelCaches } from '../model/ProceduralModel';
+import { LANDMARKS } from '../model/defs/landmarks';
+import { getPeriod } from '../model/defs/periods';
+import { BuildContext, buildModel, buildLandmarkModel, disposeModel, clearModelCaches } from '../model/ProceduralModel';
 import { clearTextureCache } from '../rendering/Textures';
 import { DEFAULT_SETTINGS, GameSettings, RESOURCE_INFO, CAMERA_SPEED_SCALE } from './Config';
 import { resolveMapProfile, type HistoricalMapProfile } from '../model/defs/profiles';
@@ -86,6 +88,8 @@ export class Game {
   water!: Water;
   /** Resolved visual world profile for this match (map identity + resources). */
   mapProfile!: HistoricalMapProfile;
+  /** Decorative historical landmark of the map (visual only), if any. */
+  landmark: THREE.Group | null = null;
   particles!: Particles;
   fow!: Fow;
   pathfinder!: Pathfinder;
@@ -155,6 +159,7 @@ export class Game {
     this.unitContext = this.ctxFor();
     this.economy = new Economy(this);
     this.initPlayers();
+    this.spawnLandmark();
     this.initInput();
     this.initHUD();
     this.mission = mis ? new Mission(this, mis, (win) => this.missionEnd(win)) : null;
@@ -295,6 +300,66 @@ export class Game {
     }
     // camera on the player
     this.camera.moveTo(spots[0][0], spots[0][1], true);
+  }
+
+  /**
+   * Place the map's historical landmark (visual only, deterministic). It is built
+   * with the landmark's own civilization/era, and only when the resolved map
+   * region fits the landmark (see `resolveMapProfile`).
+   */
+  private spawnLandmark(): void {
+    const id = this.mapProfile.landmark;
+    if (!id) return;
+    const def = LANDMARKS[id];
+    const civ = getCiv(def.civ);
+    const era = getPeriod(def.period).level;
+    const ctx: BuildContext = {
+      era,
+      civ,
+      playerColor: new THREE.Color(civ.colors.primary),
+      arch: archProfileFor(civ.id, era),
+    };
+    const size = this.settings.mapSize;
+    const rng = new RNG(this.settings.mapSeed * 131 + 11);
+    const clearOf = (px: number, pz: number, radius: number): boolean => {
+      for (const b of this.buildings.values()) if (Math.hypot(b.pos.x - px, b.pos.z - pz) < radius) return false;
+      for (const n of this.resourceNodes.values()) if (Math.hypot(n.pos.x - px, n.pos.z - pz) < radius) return false;
+      return true;
+    };
+    let x = size / 2;
+    let z = size / 2;
+    let found = false;
+    for (let i = 0; i < 80; i++) {
+      const a = rng.range(0, Math.PI * 2);
+      const r = rng.range(0.3, 0.42) * size;
+      const px = size / 2 + Math.cos(a) * r;
+      const pz = size / 2 + Math.sin(a) * r;
+      if (this.terrain.isWater(px, pz) || this.terrain.isBeach(px, pz)) continue;
+      if (this.terrain.getSlope(px, pz) > 0.4) continue;
+      if (!clearOf(px, pz, 7)) continue;
+      x = px;
+      z = pz;
+      found = true;
+      break;
+    }
+    if (!found) {
+      const safe = this.findLandNear(size / 2, size / 2, Math.floor(size * 0.42));
+      x = safe.x;
+      z = safe.z;
+    }
+    const model = buildLandmarkModel(id, ctx);
+    model.position.set(x, this.terrain.getHeight(x, z), z);
+    model.rotation.y = rng.range(0, Math.PI * 2);
+    model.name = 'landmark';
+    model.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (mesh.isMesh) {
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+      }
+    });
+    this.landmark = model;
+    this.scene.add(model);
   }
 
   private spawnResources(): void {
@@ -2560,6 +2625,11 @@ export class Game {
     this.particles.dispose();
     this.markers.dispose();
     this.trees.dispose();
+    if (this.landmark) {
+      this.scene.remove(this.landmark);
+      disposeModel(this.landmark);
+      this.landmark = null;
+    }
     this.fow.dispose();
     this.postfx.dispose();
     clearModelCaches();

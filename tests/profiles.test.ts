@@ -127,6 +127,13 @@ describe('historical map profiles', () => {
     expect(generic.landmark).toBeNull();
   });
 
+  it('drops the landmark when the map region does not fit it', () => {
+    // the Inca conquering a coastal scenario: a high-Andes ushnu does not belong on the coast
+    const p = resolveMapProfile({ period: HistoricalPeriod.LATE_HORIZON, civ: CivId.INCA, mapType: 'coast' });
+    expect(p.region).toBe('central_coast');
+    expect(p.landmark).toBeNull();
+  });
+
   it('composes the natural map with the civilization architecture', () => {
     const world = resolveWorldProfile({ period: HistoricalPeriod.LATE_HORIZON, civ: CivId.INCA, mapType: 'andes' });
     expect(world.map.region).toBe('high_andes');

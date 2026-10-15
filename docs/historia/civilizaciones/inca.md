@@ -10,6 +10,8 @@
   (Chinchaysuyo, Antisuyo, Collasuyo, Contisuyo); administración decimal y **quipus**.
 - **Tecnología**: **mampostería** de piedra pulida, **Qhapaq Ñan** (red vial de ~40 000 km), puentes
   colgantes, andenes y canales.
+- **Arquitectura ceremonial**: plataformas de piedra (**ushnu**) en las plazas, usadas como trono y lugar de
+  culto solar (p. ej. en el Haukaypata del Cusco).
 - **Militar**: ejército imperial; **chasquis**; guerra ritual.
 - **Personajes**: **Pachacútec** (Cusi Yupanqui, 1438–1471), **Túpac Yupanqui** (1471–1493),
   **Huayna Cápac** (1493–1527), **Huáscar** y **Atahualpa** (guerra civil 1529–1532).
@@ -19,6 +21,6 @@
 
 ## Fuentes
 
-- Wikipedia: [Imperio incaico](https://es.wikipedia.org/wiki/Imperio_incaico), [Pachacútec](https://es.wikipedia.org/wiki/Pachacutec), [Guerra chimú-inca](https://es.wikipedia.org/wiki/Guerra_chim%C3%BA-inca).
+- Wikipedia: [Imperio incaico](https://es.wikipedia.org/wiki/Imperio_incaico), [Pachacútec](https://es.wikipedia.org/wiki/Pachacutec), [Guerra chimú-inca](https://es.wikipedia.org/wiki/Guerra_chim%C3%BA-inca), [Ushnu](https://es.wikipedia.org/wiki/Ushnu).
 - Betanzos, J. (1551). *Suma y narración de los incas*.
 - Cieza de León, P. *Crónica del Perú*.

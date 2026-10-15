@@ -82,7 +82,9 @@ Wari y Tiahuanaco; el **felino** lo es de Chavín; el **Inti** del Estado inca.
   en `src/model/defs/landmarks.ts` y se adjuntan desde el perfil de mapa (solo visuales, con fuente y estado
   `documented|plausible|abstraction`); su landmark solo se aplica dentro de su propio periodo
   (`landmarkForCiv(civ, period)`), de modo que una cultura jugada más tarde (p. ej. el Inca en el Virreinato)
-  adopta la arquitectura de la era y no arrastra un landmark anacrónico.
+  adopta la arquitectura de la era y no arrastra un landmark anacrónico. El landmark del mapa se coloca de forma
+  determinista como modelo decorativo (`Game.spawnLandmark` → `buildLandmarkModel`): Caral (plataforma + plaza
+  circular hundida), Moche (huaca escalonada con friso y rampa) e Inca (ushnu de piedra con asiento y escalinata).
 - **Aplicación**: `ProceduralModel.ts` construye los edificios con el perfil del `BuildContext`
   (`ctx.arch`): `buildAndeanStructure` elige el muro/textura (`arch.wall`), la fundación
   (`arch.foundation`: plataforma escalonada, terraza, plinto), la cubierta (`arch.roof`) y los ornamentos

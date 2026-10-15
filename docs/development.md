@@ -60,6 +60,12 @@ for player-facing docs see [`README.md`](../README.md).
   use — so a debug `?era=N` or an era advance stays coherent. The mission constructor now also copies
   `mis.period` into `settings.period` (missions declare their historical period). Verified structurally by
   `tests/e2e/civ-visuals.spec.ts` and visually with `yarn shots:civs`.
+- **Landmarks (Phase 5, visual only)**: `Game.mapProfile.landmark` (from `landmarkForCiv(civ, period)`, so
+  period-gated) drives `Game.spawnLandmark()`, which builds a cached template via `buildLandmarkModel`
+  (`ProceduralModel.ts`, keyed by `landmark|civ|era`) with the landmark's own civilization/era. Placement is
+  deterministic (`RNG(mapSeed*131+11)` on a 0.3–0.42·size ring, skipping water/beach/steep cells) and adds a
+  plain `THREE.Group` named `landmark` to the scene (no entity, no pathfinding obstacle). Freed in
+  `Game.destroy()`; templates are freed by `clearModelCaches()`. Verified by `tests/e2e/landmarks.spec.ts`.
 - `src/campaign/defs/campaign.ts` defines the 9 historical campaigns; `src/campaign/Mission.ts` evaluates
   objectives/triggers.
 - **Educational layer**: `src/campaign/defs/educational.ts` (prologue + context/«¿Sabías que…?»/sources per mission,
