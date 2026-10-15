@@ -3,7 +3,7 @@ import { MISSIONS } from '../src/campaign/defs/campaign';
 import { EDUCATIONAL, PROLOGUE, getEducational } from '../src/campaign/defs/educational';
 import { getPeriod } from '../src/model/defs/periods';
 import { getCiv } from '../src/model/defs/civs';
-import { UnitKind, BuildingKind } from '../src/core/types';
+import { UnitKind } from '../src/core/types';
 
 describe('campaign educational content', () => {
   it('the prologue is not empty', () => {
@@ -47,24 +47,30 @@ describe('campaign educational content', () => {
     expect(MISSIONS[0].tutorial).toBe(true);
   });
 
-  it('the first mission is a peaceful construction scenario (Caral had no documented war)', () => {
-    const caral = MISSIONS[0];
-    expect(caral.id).toBe('m1_caral');
-    expect(caral.enemy.active).toBe(false);
-    // no starting combat units
-    for (const u of caral.start.units ?? []) expect(u.kind, 'm1 starts with a combat unit').toBe(UnitKind.WORKER);
-    // no pre-spawned building that a `build` objective would auto-satisfy
-    const preBuilt = (caral.start.buildings ?? []).map((b) => b.kind);
-    expect(preBuilt).not.toContain(BuildingKind.FARM);
-    expect(preBuilt).not.toContain(BuildingKind.MARKET);
-    // no scripted combat waves/reinforcements
-    for (const t of caral.triggers) {
-      for (const fx of t.effects) expect(['wave', 'reinforce'], `${t.id}`).not.toContain(fx.type);
+  it('the coetaneity missions are construction scenarios (no documented war)', () => {
+    const peaceful = ['m1_caral', 'm2_chavin'];
+    for (const id of peaceful) {
+      const mis = MISSIONS.find((m) => m.id === id)!;
+      expect(mis.enemy.active, `${id} has an active enemy`).toBe(false);
+      // no starting combat units
+      for (const u of mis.start.units ?? []) expect(u.kind, `${id} starts with a combat unit`).toBe(UnitKind.WORKER);
+      // no pre-spawned building that a `build` objective would auto-satisfy
+      const preBuilt = (mis.start.buildings ?? []).map((b) => b.kind);
+      for (const o of mis.objectives) {
+        if (o.kind === 'build' && o.buildingKind) expect(preBuilt, `${id}/${o.id}`).not.toContain(o.buildingKind);
+      }
+      // no scripted combat waves/reinforcements
+      for (const t of mis.triggers) {
+        for (const fx of t.effects) expect(['wave', 'reinforce'], `${id}/${t.id}`).not.toContain(fx.type);
+      }
+      // non-combat objectives only, and it teaches building
+      for (const o of mis.objectives)
+        expect(['gather', 'build', 'survive', 'reach'], `${id}/${o.id}`).toContain(o.kind);
+      expect(
+        mis.objectives.some((o) => o.kind === 'build'),
+        `${id} teaches building`,
+      ).toBe(true);
     }
-    // objectives are construction / economy / survival only
-    for (const o of caral.objectives) expect(['gather', 'build', 'survive'], o.id).toContain(o.kind);
-    // it teaches building the civilization
-    expect(caral.objectives.some((o) => o.kind === 'build')).toBe(true);
   });
 
   it('uses varied mechanics, not only defend/survive/destroy', () => {

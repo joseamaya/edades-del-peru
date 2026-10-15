@@ -78,7 +78,7 @@ export const MISSIONS: MissionDef[] = [
     subtitle: 'Horizonte Temprano · c. 900–500 a.C.',
     history:
       'Chavín de Huántar, a 3180 msnm en el Callejón de Conchucos, es el gran centro ceremonial de los Andes. Peregrinos de lejos traen ofrendas al oráculo.\n' +
-      'Sostened el culto frente a la competencia de la costa sur (Paracas) y conservad vuestra influencia.',
+      'No hay guerra documentada: tu poder es el prestigio del culto. Reúne ofrendas, atiende la feria del templo y sostén el centro ceremonial.',
     victory:
       'La influencia de Chavín se extiende por buena parte de los Andes centrales. Su arte y su culto marcan una época.',
     defeat: 'El oráculo pierde su prestigio y el centro ceremonial declina antes de tiempo.',
@@ -88,15 +88,25 @@ export const MISSIONS: MissionDef[] = [
     map: { seed: 900, type: 'andes', size: 128 },
     timeOfDay: 'noon',
     startingEra: Era.REGIONAL_STATES,
-    startingResources: { food: 500, wood: 500, silver: 150, stone: 60 },
-    start: {
-      units: [{ kind: UnitKind.SOLDIER, dx: -6, dz: 6, tag: 'oraculo', count: 1 }],
-    },
-    enemy: { active: true, difficulty: 'easy', aggression: 0.5 },
+    startingResources: { food: 250, wood: 500, silver: 150, stone: 60 },
+    start: {},
+    enemy: { active: false, difficulty: 'easy', aggression: 0 },
     objectives: [
-      { id: 'obj_ofrendas', kind: 'gather', resource: 'food', count: 400, title: 'Reúne ofrendas (400 de comida)' },
-      { id: 'obj_survive', kind: 'survive', time: 420, title: 'Sostén el centro ceremonial 7 minutos' },
-      { id: 'obj_oraculo', kind: 'protect', entityTag: 'oraculo', title: 'Mantén a salvo al guardián del oráculo' },
+      {
+        id: 'obj_ofrendas',
+        kind: 'gather',
+        resource: 'food',
+        count: 400,
+        title: 'Reúne ofrendas de peregrinaje (400 de comida)',
+      },
+      {
+        id: 'obj_feria',
+        kind: 'build',
+        buildingKind: BuildingKind.MARKET,
+        count: 1,
+        title: 'Atiende la feria del templo (construye un mercado)',
+      },
+      { id: 'obj_sostener', kind: 'survive', time: 420, title: 'Sostén el centro ceremonial 7 minutos' },
     ],
     triggers: [
       {
@@ -105,36 +115,17 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'Sacerdote: —El oráculo exige ofrendas. ¡Atended a los peregrinos y defended el templo!',
+            text: 'El oráculo de Chavín atrae peregrinos de lejos. Traed ofrendas y sostened el culto.',
           },
         ],
       },
       {
-        id: 't_wave_1',
-        condition: { type: 'time', seconds: 150 },
+        id: 't_dial_1',
+        condition: { type: 'time', seconds: 180 },
         effects: [
           {
-            type: 'wave',
-            owner: 1,
-            units: [{ kind: UnitKind.SOLDIER, count: 4 }],
-            pos: { ref: 'player', dx: 24, dz: -10 },
-            radius: 5,
-          },
-        ],
-      },
-      {
-        id: 't_wave_2',
-        condition: { type: 'time', seconds: 300 },
-        effects: [
-          {
-            type: 'wave',
-            owner: 1,
-            units: [
-              { kind: UnitKind.SOLDIER, count: 5 },
-              { kind: UnitKind.MUSKETEER, count: 2 },
-            ],
-            pos: { ref: 'player', dx: -18, dz: 22 },
-            radius: 6,
+            type: 'dialogue',
+            text: 'Mientras Chavín reúne a los Andes, en la costa sur florece Paracas: culturas coetáneas, sin guerra entre ellas.',
           },
         ],
       },
