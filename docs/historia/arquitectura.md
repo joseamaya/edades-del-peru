@@ -100,6 +100,10 @@ Wari y Tiahuanaco; el **felino** lo es de Chavín; el **Inti** del Estado inca.
   estandarte (`andeanBanner`/`addEmblem`).
 - **Regla de era**: `Builder.isAndean` exige `era ≤ TAHUANTINSUYO` **y** un estilo andino; en el
   Virreinato en adelante se usa la arquitectura de la era (colonial/moderna).
+- **Maravilla (`WONDER`, «Huaca Sagrada»)**: se modela como una **huaca andina escalonada** genérica
+  (plataformas, santuario superior y cabezas clavas como **motivo andino abstracto**, no exclusivo de
+  Chavín). El WONDER es construible en **cualquier era** en modo maravilla, así que su modelo es
+  era-agnóstico (no cambia con la era).
 - **Verificación**: `tests/model.test.ts` (cobertura de estilos/emblemas) y
   `tests/e2e/civ-visuals.spec.ts` (dos civilizaciones coetáneas construyen modelos distintos). Revisión
   visual manual con `yarn shot`.
