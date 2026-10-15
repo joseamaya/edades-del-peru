@@ -229,12 +229,21 @@ describe('historical landmarks', () => {
     expect(landmarkForCiv(CivId.NAZCA, HistoricalPeriod.EARLY_INTERMEDIATE)).toBe('nazca_geoglyph');
     expect(landmarkForCiv(CivId.CHANCA, HistoricalPeriod.LATE_INTERMEDIATE)).toBe('chanca_fortress');
     expect(landmarkForCiv(CivId.INCA, HistoricalPeriod.LATE_HORIZON)).toBe('inca_ushnu');
-    // a civilization with no landmark (Recuay)
-    expect(landmarkForCiv(CivId.RECUAY, HistoricalPeriod.EARLY_INTERMEDIATE)).toBeNull();
+    expect(landmarkForCiv(CivId.RECUAY, HistoricalPeriod.EARLY_INTERMEDIATE)).toBe('recuay_pashash');
+    expect(landmarkForCiv(CivId.CHILE, HistoricalPeriod.REPUBLIC)).toBe('chile_apostadero');
+  });
+
+  it('gives every civilization a landmark in one of its periods', () => {
+    for (const civ of CIVS) {
+      const found = civ.periods.some((period) => landmarkForCiv(civ.id, period) !== null);
+      expect(found, `${civ.id} has no landmark in any of its periods`).toBe(true);
+    }
   });
 
   it('does not carry an anachronistic landmark outside its period', () => {
     // the Inca lived on into the Viceroyalty, but the ushnu landmark does not
     expect(landmarkForCiv(CivId.INCA, HistoricalPeriod.VICEROYALTY)).toBeNull();
+    // Recuay only plays the Early Intermediate; its centre does not reach the Late Intermediate
+    expect(landmarkForCiv(CivId.RECUAY, HistoricalPeriod.LATE_INTERMEDIATE)).toBeNull();
   });
 });

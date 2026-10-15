@@ -58,9 +58,9 @@ test('period maps place their own landmark on land', async ({ page }) => {
   expect(signatures.size, 'the landmarks must not share a structure').toBe(missions.length);
 });
 
-test('a civilization without a landmark places none', async ({ page }) => {
-  // Recuay has no landmark
-  await boot(page, '/?civ=recuay&period=2&seed=777&fog=0&low=1&noloop=1');
+test('a civilization outside its landmark period places none', async ({ page }) => {
+  // the Realistas' colonial church belongs to the Viceroyalty; in the Independence period it is dropped
+  await boot(page, '/?civ=realistas&period=7&seed=777&fog=0&low=1&noloop=1');
   const info = await landmarkInfo(page);
   expect(info.present).toBe(false);
   expect(info.id).toBeNull();
@@ -93,8 +93,11 @@ test('period skirmishes place their family landmark', async ({ page }) => {
     ['chanca', 4, 'chanca_fortress'],
     ['collas_lupaca', 4, 'collas_chullpa'],
     ['huanca', 4, 'huanca_center'],
+    ['recuay', 2, 'recuay_pashash'],
     ['patriotas', 7, 'patriotas_camp'],
+    ['chile', 8, 'chile_apostadero'],
   ];
+  const signatures = new Set<string>();
   for (const [civ, period, id] of cases) {
     await boot(page, `/?civ=${civ}&period=${period}&seed=777&fog=0&low=1&noloop=1`);
     const info = await landmarkInfo(page);
@@ -102,7 +105,9 @@ test('period skirmishes place their family landmark', async ({ page }) => {
     expect(info.present, civ).toBe(true);
     expect(info.meshes!, civ).toBeGreaterThan(0);
     expect(info.onWater, `${civ} landmark on water`).toBe(false);
+    signatures.add(`${info.verts}:${info.meshes}`);
   }
+  expect(signatures.size, 'the landmarks must not share a structure').toBe(cases.length);
 });
 
 test('landmark placement is deterministic for the same seed', async ({ page }) => {

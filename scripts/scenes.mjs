@@ -11,11 +11,12 @@ function scene(name, { civ, period, view = 'close', map }) {
 
 /**
  * Representative scenes for the visual review: the nine periods named in the PRP
- * (architecture close-up of the player base) and four geographic regions (wide
- * terrain view). The `civ`/`map` debug params force the civilization/geography
- * (see `main.ts`).
+ * and the remaining civilization families (architecture close-up of the player
+ * base), plus four geographic regions (wide terrain view). The `civ`/`map` debug
+ * params force the civilization/geography (see `main.ts`).
  */
 export const SCENES = [
+  // one close-up per PRP period (player base)
   scene('caral', { civ: 'caral', period: 0 }),
   scene('chavin', { civ: 'chavin', period: 1 }),
   scene('moche', { civ: 'moche', period: 2 }),
@@ -25,6 +26,16 @@ export const SCENES = [
   scene('inca', { civ: 'inca', period: 5 }),
   scene('viceroyalty', { civ: 'realistas', period: 6 }),
   scene('republic', { civ: 'republica', period: 8 }),
+  // the remaining civilization families (their own landmark/architecture identity)
+  scene('cupisnique', { civ: 'cupisnique', period: 1 }),
+  scene('paracas', { civ: 'paracas', period: 1 }),
+  scene('nazca', { civ: 'nazca', period: 2 }),
+  scene('chincha', { civ: 'chincha', period: 4 }),
+  scene('chanca', { civ: 'chanca', period: 4 }),
+  scene('collas_lupaca', { civ: 'collas_lupaca', period: 4 }),
+  scene('huanca', { civ: 'huanca', period: 4 }),
+  scene('patriotas', { civ: 'patriotas', period: 7 }),
+  // four geographic regions (wide terrain view)
   scene('region_coast', { civ: 'caral', period: 0, view: 'wide' }),
   scene('region_andes', { civ: 'inca', period: 5, view: 'wide' }),
   scene('region_altiplano', { civ: 'tiahuanaco', period: 3, view: 'wide' }),
