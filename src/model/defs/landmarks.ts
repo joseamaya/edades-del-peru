@@ -11,12 +11,20 @@ import type { GeographicRegion } from './profiles';
 export type LandmarkId =
   | 'caral_ceremonial'
   | 'chavin_temple'
+  | 'cupisnique_huaca'
+  | 'paracas_necropolis'
   | 'moche_huaca'
+  | 'nazca_geoglyph'
   | 'wari_compound'
   | 'tiahuanaco_complex'
   | 'chimu_compound'
+  | 'chincha_complex'
+  | 'chanca_fortress'
+  | 'collas_chullpa'
+  | 'huanca_center'
   | 'inca_ushnu'
   | 'colonial_church'
+  | 'patriotas_camp'
   | 'republican_fort';
 
 export interface LandmarkDef {
@@ -112,18 +120,98 @@ export const LANDMARKS: Record<LandmarkId, LandmarkDef> = {
     status: 'abstraction',
     source: 'docs/historia/civilizaciones/republica.md (defensa del puerto; Guerra del Pacífico)',
   },
+  cupisnique_huaca: {
+    id: 'cupisnique_huaca',
+    name: 'Huaca de adobe con frisos',
+    civ: CivId.CUPISNIQUE,
+    period: HistoricalPeriod.EARLY_HORIZON,
+    region: 'north_coast',
+    status: 'documented',
+    source: 'docs/historia/civilizaciones/cupisnique.md (Huaca de los Reyes, Caballo Muerto)',
+  },
+  paracas_necropolis: {
+    id: 'paracas_necropolis',
+    name: 'Necrópolis con fardos funerarios',
+    civ: CivId.PARACAS,
+    period: HistoricalPeriod.EARLY_HORIZON,
+    region: 'south_coast',
+    status: 'abstraction',
+    source: 'docs/historia/civilizaciones/paracas.md (Cerro Colorado; fardos funerarios y textiles)',
+  },
+  nazca_geoglyph: {
+    id: 'nazca_geoglyph',
+    name: 'Geoglifo y líneas de la pampa',
+    civ: CivId.NAZCA,
+    period: HistoricalPeriod.EARLY_INTERMEDIATE,
+    region: 'south_coast',
+    status: 'documented',
+    source: 'docs/historia/civilizaciones/nazca.md (Líneas y geoglifos; UNESCO whc.unesco.org/en/list/700/)',
+  },
+  chincha_complex: {
+    id: 'chincha_complex',
+    name: 'Complejo de La Centinela',
+    civ: CivId.CHINCHA,
+    period: HistoricalPeriod.LATE_INTERMEDIATE,
+    region: 'south_coast',
+    status: 'documented',
+    source: 'docs/historia/civilizaciones/chincha.md (La Centinela y Tambo de Mora)',
+  },
+  chanca_fortress: {
+    id: 'chanca_fortress',
+    name: 'Pucará de altura',
+    civ: CivId.CHANCA,
+    period: HistoricalPeriod.LATE_INTERMEDIATE,
+    region: 'high_andes',
+    status: 'documented',
+    source: 'docs/historia/civilizaciones/chanca.md (Huaman Karpa; asentamientos en cimas de cerros)',
+  },
+  collas_chullpa: {
+    id: 'collas_chullpa',
+    name: 'Torres funerarias (chullpas)',
+    civ: CivId.COLLAS_LUPACA,
+    period: HistoricalPeriod.LATE_INTERMEDIATE,
+    region: 'altiplano',
+    status: 'documented',
+    source: 'docs/historia/civilizaciones/collas_lupaca.md (chullpas; señoríos aimaras del Collao)',
+  },
+  huanca_center: {
+    id: 'huanca_center',
+    name: 'Centro de ayllu (Hatun Xauxa)',
+    civ: CivId.HUANCA,
+    period: HistoricalPeriod.LATE_INTERMEDIATE,
+    region: 'andean_valley',
+    status: 'abstraction',
+    source: 'docs/historia/civilizaciones/huanca.md (Hatun Xauxa; confederación de ayllus)',
+  },
+  patriotas_camp: {
+    id: 'patriotas_camp',
+    name: 'Campamento patriota',
+    civ: CivId.PATRIOTAS,
+    period: HistoricalPeriod.INDEPENDENCE,
+    region: 'andean_valley',
+    status: 'abstraction',
+    source: 'docs/historia/civilizaciones/patriotas.md (campañas de la sierra; montoneras)',
+  },
 };
 
 /** Landmark that stands for a civilization. */
 export const CIV_LANDMARK: Partial<Record<CivId, LandmarkId>> = {
   [CivId.CARAL]: 'caral_ceremonial',
   [CivId.CHAVIN]: 'chavin_temple',
+  [CivId.CUPISNIQUE]: 'cupisnique_huaca',
+  [CivId.PARACAS]: 'paracas_necropolis',
   [CivId.MOCHE]: 'moche_huaca',
+  [CivId.NAZCA]: 'nazca_geoglyph',
   [CivId.WARI]: 'wari_compound',
   [CivId.TIAHUANACO]: 'tiahuanaco_complex',
   [CivId.CHIMU]: 'chimu_compound',
+  [CivId.CHINCHA]: 'chincha_complex',
+  [CivId.CHANCA]: 'chanca_fortress',
+  [CivId.COLLAS_LUPACA]: 'collas_chullpa',
+  [CivId.HUANCA]: 'huanca_center',
   [CivId.INCA]: 'inca_ushnu',
   [CivId.REALISTAS]: 'colonial_church',
+  [CivId.PATRIOTAS]: 'patriotas_camp',
   [CivId.REPUBLIC]: 'republican_fort',
 };
 

@@ -59,7 +59,8 @@ test('period maps place their own landmark on land', async ({ page }) => {
 });
 
 test('a civilization without a landmark places none', async ({ page }) => {
-  await boot(page, '/?mission=m8_independencia&fog=0&low=1&noloop=1');
+  // Recuay has no landmark
+  await boot(page, '/?civ=recuay&period=2&seed=777&fog=0&low=1&noloop=1');
   const info = await landmarkInfo(page);
   expect(info.present).toBe(false);
   expect(info.id).toBeNull();
@@ -82,9 +83,17 @@ test('post-1532 maps place the colonial / republican landmark', async ({ page })
 
 test('period skirmishes place their family landmark', async ({ page }) => {
   const cases: [string, number, string][] = [
+    ['cupisnique', 1, 'cupisnique_huaca'],
+    ['paracas', 1, 'paracas_necropolis'],
+    ['nazca', 2, 'nazca_geoglyph'],
     ['wari', 3, 'wari_compound'],
     ['tiahuanaco', 3, 'tiahuanaco_complex'],
     ['chimu', 4, 'chimu_compound'],
+    ['chincha', 4, 'chincha_complex'],
+    ['chanca', 4, 'chanca_fortress'],
+    ['collas_lupaca', 4, 'collas_chullpa'],
+    ['huanca', 4, 'huanca_center'],
+    ['patriotas', 7, 'patriotas_camp'],
   ];
   for (const [civ, period, id] of cases) {
     await boot(page, `/?civ=${civ}&period=${period}&seed=777&fog=0&low=1&noloop=1`);

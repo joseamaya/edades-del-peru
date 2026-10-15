@@ -223,11 +223,14 @@ describe('historical landmarks', () => {
     expect(statuses.has('abstraction') || statuses.has('plausible')).toBe(true);
   });
 
-  it('maps the slice civilizations to their landmark within their period', () => {
+  it('maps each civilization to its landmark within its period', () => {
     expect(landmarkForCiv(CivId.CARAL, HistoricalPeriod.ARCHAIC)).toBe('caral_ceremonial');
     expect(landmarkForCiv(CivId.MOCHE, HistoricalPeriod.EARLY_INTERMEDIATE)).toBe('moche_huaca');
+    expect(landmarkForCiv(CivId.NAZCA, HistoricalPeriod.EARLY_INTERMEDIATE)).toBe('nazca_geoglyph');
+    expect(landmarkForCiv(CivId.CHANCA, HistoricalPeriod.LATE_INTERMEDIATE)).toBe('chanca_fortress');
     expect(landmarkForCiv(CivId.INCA, HistoricalPeriod.LATE_HORIZON)).toBe('inca_ushnu');
-    expect(landmarkForCiv(CivId.NAZCA, HistoricalPeriod.EARLY_INTERMEDIATE)).toBeNull();
+    // a civilization with no landmark (Recuay)
+    expect(landmarkForCiv(CivId.RECUAY, HistoricalPeriod.EARLY_INTERMEDIATE)).toBeNull();
   });
 
   it('does not carry an anachronistic landmark outside its period', () => {
