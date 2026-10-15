@@ -1,10 +1,7 @@
-import { CivId, Era, HistoricalPeriod } from '../../core/types';
+import { CivId, Era } from '../../core/types';
 import { ArchStyle, getCiv } from './civs';
-import { getPeriod } from './periods';
-import { landmarkForCiv, type LandmarkId } from './landmarks';
 
-export type WallMaterial =
-  'adobe' | 'fieldstone' | 'cut-stone' | 'megalithic' | 'wood' | 'brick' | 'concrete' | 'metal';
+export type WallMaterial = 'adobe' | 'fieldstone' | 'cut-stone' | 'megalithic' | 'brick' | 'concrete' | 'metal';
 
 export type RoofMaterial = 'thatch' | 'flat-stone' | 'tile' | 'flat-metal';
 
@@ -18,10 +15,11 @@ export interface ArchitectureOrnament {
 }
 
 /**
- * Historical architectural identity of a civilization in a period. Extends the
+ * Historical architectural identity of a civilization at a tech level. Extends the
  * existing `CivVisual`/`ArchStyle` layer (same styles) by naming its materials,
  * roof, foundation and ornaments, so buildings read as different cultures rather
- * than a recolour. Consumed by `ProceduralModel` (Phase 4).
+ * than a recolour. Keyed by `Era` so it matches the model cache key. Consumed by
+ * `ProceduralModel` (Phase 4). Landmarks belong to the map profile (`profiles.ts`).
  */
 export interface HistoricalArchitectureProfile {
   id: string;
@@ -32,11 +30,10 @@ export interface HistoricalArchitectureProfile {
   /** Height (platform tiers) of monumental buildings; huacas rise above early mounds. */
   monumentalTiers: number;
   ornament: ArchitectureOrnament;
-  landmark: LandmarkId | null;
   provenance: string;
 }
 
-type ArchBase = Omit<HistoricalArchitectureProfile, 'id' | 'style' | 'landmark' | 'provenance'>;
+type ArchBase = Omit<HistoricalArchitectureProfile, 'id' | 'style' | 'provenance'>;
 
 /** Defaults per architectural style (from `docs/historia/arquitectura.md`). */
 const STYLE_BASES: Record<ArchStyle, ArchBase> = {
@@ -61,13 +58,7 @@ const STYLE_BASES: Record<ArchStyle, ArchBase> = {
     monumentalTiers: 3,
     ornament: { megalithBlocks: true, niches: true },
   },
-  'highland-terraced': {
-    wall: 'fieldstone',
-    roof: 'thatch',
-    foundation: 'terrace',
-    monumentalTiers: 2,
-    ornament: { niches: true },
-  },
+  'highland-terraced': { wall: 'fieldstone', roof: 'thatch', foundation: 'terrace', monumentalTiers: 2, ornament: {} },
   colonial: { wall: 'brick', roof: 'tile', foundation: 'plinth', monumentalTiers: 1, ornament: {} },
   republican: { wall: 'concrete', roof: 'flat-metal', foundation: 'plinth', monumentalTiers: 1, ornament: {} },
 };
@@ -96,19 +87,19 @@ const CIV_ARCH_SOURCE: Partial<Record<CivId, string>> = {
 const PROFILE_CACHE = new Map<string, HistoricalArchitectureProfile>();
 
 /**
- * Architectural profile for a civilization in a period. After 1532 the era
- * governs the look (colonial/republican), matching `Builder.isAndean` in the
- * model generator; the civilization's own style only applies pre-Hispanic.
+ * Architectural profile for a civilization at a tech level. After 1532 (`era >=
+ * VICEROYALTY`) the era governs the look (colonial/republican), matching
+ * `Builder.isAndean` in the model generator; the civilization's own style only
+ * applies pre-Hispanic. Keyed by `Era`, which is what the model cache and
+ * `Builder.isAndean` use.
  */
-export function archProfileFor(civId: CivId, period: HistoricalPeriod): HistoricalArchitectureProfile {
-  const key = `${civId}|${period}`;
+export function archProfileFor(civId: CivId, era: Era): HistoricalArchitectureProfile {
+  const key = `${civId}|${era}`;
   const cached = PROFILE_CACHE.get(key);
   if (cached) return cached;
 
   const civ = getCiv(civId);
-  const level = getPeriod(period).level;
-  const style: ArchStyle =
-    level >= Era.REPUBLIC ? 'republican' : level >= Era.VICEROYALTY ? 'colonial' : civ.visual.arch;
+  const style: ArchStyle = era >= Era.REPUBLIC ? 'republican' : era >= Era.VICEROYALTY ? 'colonial' : civ.visual.arch;
 
   const useCivOverride = style === civ.visual.arch;
   const override = useCivOverride ? CIV_ARCH[civId] : undefined;
@@ -120,7 +111,6 @@ export function archProfileFor(civId: CivId, period: HistoricalPeriod): Historic
     ...base,
     ...(override ?? {}),
     ornament: override?.ornament ?? base.ornament,
-    landmark: landmarkForCiv(civId, period),
     provenance: CIV_ARCH_SOURCE[civId] ?? 'docs/historia/arquitectura.md',
   };
   PROFILE_CACHE.set(key, profile);

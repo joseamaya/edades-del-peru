@@ -140,6 +140,7 @@ export class Game {
       // fixed mission configuration overrides the skirmish
       this.settings.civPlayer = mis.playerCiv;
       this.settings.civAI = mis.enemyCiv;
+      this.settings.period = mis.period;
       this.settings.startingEra = mis.startingEra;
       this.settings.mapSeed = mis.map.seed;
       this.settings.mapType = mis.map.type;
@@ -507,7 +508,7 @@ export class Game {
       era: p.era,
       civ,
       playerColor: new THREE.Color(civ.colors.primary),
-      arch: archProfileFor(civ.id, this.settings.period),
+      arch: archProfileFor(civ.id, p.era),
     };
   }
 

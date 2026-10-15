@@ -1,5 +1,6 @@
 import { CivId, Geography, HistoricalPeriod, MapType } from '../../core/types';
 import { getCiv } from './civs';
+import { getPeriod } from './periods';
 import { landmarkForCiv, type LandmarkId } from './landmarks';
 import { archProfileFor, type HistoricalArchitectureProfile } from './architecture';
 
@@ -337,6 +338,6 @@ export function resolveWorldProfile(opts: {
 }): WorldProfile {
   return {
     map: resolveMapProfile(opts),
-    architecture: archProfileFor(opts.civ, opts.period),
+    architecture: archProfileFor(opts.civ, getPeriod(opts.period).level),
   };
 }

@@ -1364,37 +1364,21 @@ function addWindows(
 // Sources: docs/historia/arquitectura.md.
 // ---------------------------------------------------------------------------
 
-/** Wall colour for the civ's architecture profile (earth / stone / masonry / brick…). */
+/** Wall colour for the civ's Andean architecture profile (earth / stone / masonry). */
 function andeanWall(b: Builder): string {
   const p = b.pal.primary;
   switch (b.arch.wall) {
-    case 'adobe':
-      return mixHex(p, '#c8a878', 0.72);
-    case 'wood':
-      return mixHex(p, '#c8a878', 0.5);
     case 'megalithic':
       return mixHex(p, '#b4aca0', 0.78);
-    case 'brick':
-      return mixHex(p, '#c88a6a', 0.6);
-    case 'concrete':
-      return mixHex(p, '#b0b6bc', 0.58);
-    case 'metal':
-      return mixHex(p, '#c0c8d0', 0.6);
+    case 'adobe':
+      return mixHex(p, '#c8a878', 0.72);
     default:
       return mixHex(p, '#a89e8c', 0.72); // fieldstone / cut-stone
   }
 }
 
 function andeanTex(b: Builder): TexKind {
-  switch (b.arch.wall) {
-    case 'adobe':
-    case 'brick':
-      return 'brick';
-    case 'wood':
-      return 'wood';
-    default:
-      return 'stone';
-  }
+  return b.arch.wall === 'adobe' ? 'brick' : 'stone';
 }
 
 /** Facade texture from the architecture profile for the colonial/republican builders. */
@@ -1406,8 +1390,6 @@ function facadeTex(b: Builder, fallback: TexKind): TexKind {
       return 'concrete';
     case 'metal':
       return 'metal';
-    case 'wood':
-      return 'wood';
     default:
       return fallback;
   }
