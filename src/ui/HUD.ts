@@ -1468,6 +1468,9 @@ export class HUD {
       ? `<div class="ed-hist">${mis.history}</div><div class="ed-hist"><b style="color:var(--gold)">Contexto histórico.</b> ${edu.context}</div>`
       : `<div class="ed-hist">${mis.history}</div>`;
     const funFact = edu ? `<div class="ed-sabias">💡 <b>¿Sabías que…?</b> ${edu.didYouKnow}</div>` : '';
+    const sides = mis.enemy.active
+      ? `<span>Bandos: <b>${player.name}</b> vs <b>${player.id === enemy.id ? 'grupos rivales' : enemy.name}</b></span>`
+      : `<span>Bandos: <b>${player.name}</b> (sin enfrentamiento documentado)</span>`;
     const sources =
       edu && edu.sources.length
         ? `<details class="ed-fuentes"><summary>Fuentes históricas</summary><ul>${edu.sources
@@ -1482,7 +1485,7 @@ export class HUD {
       <div class="ed-meta">
         <span>Periodo: <b>${period.name}</b> (${period.dates})</span>
         <span>Geografía: <b>${MAP_LABEL[mis.map.type]}</b></span>
-        <span>Bandos: <b>${player.name}</b> vs <b>${player.id === enemy.id ? 'grupos rivales' : enemy.name}</b></span>
+        ${sides}
       </div>
       ${context}
       ${funFact}
@@ -1508,46 +1511,60 @@ export class HUD {
     const ov = this.el('div', 'ed-overlay');
     const panel = this.el('div', 'ed-panel', ov);
     panel.style.maxWidth = '560px';
+    // `progress` is the number of completed missions (and the index of the next one)
+    const progress = this.campaignProgress();
+    const completed = Math.min(progress, MISSIONS.length);
     panel.innerHTML = `
       <div style="font-size:12px;letter-spacing:3px;color:#a8883f">CAMPAÑA</div>
       <h2>${CAMPAIGN_TITLE}</h2>
       <div class="sub">${CAMPAIGN_SUBTITLE}</div>
+      <div class="sub" style="color:var(--gold)">${completed} / ${MISSIONS.length} misiones completadas</div>
     `;
-    const progress = this.campaignProgress();
+    const open = (id: string): void => {
+      this.game.settings.missionId = id;
+      this.setMenuOpen(false);
+      this.clearOverlays();
+      this.game.resetGame();
+    };
     MISSIONS.forEach((mis, i) => {
       const row = this.el('div', 'row', panel);
       row.style.justifyContent = 'flex-start';
       const btn = this.el('button', 'ed-ghostbtn', row) as HTMLButtonElement;
       btn.style.flex = '1';
-      btn.textContent = `${i + 1}. ${mis.title} — ${mis.subtitle}`;
-      const locked = i > progress;
-      if (locked) {
+      if (i > progress) {
         btn.disabled = true;
         btn.classList.add('disabled');
         btn.style.opacity = '0.4';
         btn.textContent = `🔒 ${i + 1}. ${mis.title}`;
         return;
       }
-      btn.addEventListener('click', () => {
-        this.game.settings.missionId = mis.id;
-        this.setMenuOpen(false);
-        this.clearOverlays();
-        this.game.resetGame();
-      });
+      const done = i < progress;
+      btn.textContent = `${done ? '✓' : '▶'} ${i + 1}. ${mis.title} — ${mis.subtitle}`;
+      if (done) btn.style.color = 'var(--gold)';
+      btn.addEventListener('click', () => open(mis.id));
     });
+    if (progress < MISSIONS.length) {
+      const cont = this.el('button', 'ed-primary', panel);
+      cont.textContent = '▶ Continuar campaña';
+      cont.addEventListener('click', () => open(MISSIONS[progress].id));
+    } else {
+      const doneMsg = this.el('div', 'sub', panel);
+      doneMsg.style.color = 'var(--gold)';
+      doneMsg.textContent = '🏆 Campaña completada. Puedes rejugar cualquier misión.';
+    }
     const back = this.el('button', 'ed-ghostbtn', panel);
     back.textContent = '← Volver';
     back.addEventListener('click', () => this.showMainMenu());
   }
 
-  /** Saved campaign progress (index of the most advanced mission). */
+  /** Saved campaign progress: number of completed missions (index of the next one). */
   private campaignProgress(): number {
     try {
       const raw = localStorage.getItem('peru-campaign');
       if (!raw) return 0;
       const n = Number.parseInt(raw, 10);
       if (!Number.isFinite(n)) return 0;
-      return Math.max(0, Math.min(MISSIONS.length - 1, n));
+      return Math.max(0, Math.min(MISSIONS.length, n));
     } catch {
       return 0;
     }

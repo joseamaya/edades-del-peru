@@ -156,3 +156,30 @@ test('a strategic choice wins through either branch', async ({ page }) => {
   });
   expect(siege).toBe(true);
 });
+
+test('the campaign menu shows completion progress and can continue', async ({ page }) => {
+  // two missions already completed
+  await page.addInitScript(() => localStorage.setItem('peru-campaign', '2'));
+  await page.goto('/');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  await page.getByRole('button', { name: /Campañas/ }).click();
+  await page
+    .locator('.ed-overlay', { hasText: 'La Senda del Sol' })
+    .getByRole('button', { name: /Ver misiones/ })
+    .click();
+  const menu = page.locator('.ed-overlay', { hasText: 'CAMPAÑA' });
+  await expect(menu).toContainText('2 / 9 misiones completadas');
+  await expect(menu).toContainText('✓ 1. La Ciudad Sagrada');
+  await expect(menu).toContainText('▶ 3.');
+  await expect(menu).toContainText('🔒 4.');
+  await expect(menu.getByRole('button', { name: /Continuar campaña/ })).toBeVisible();
+});
+
+test('a peaceful mission briefing shows no rival side', async ({ page }) => {
+  await page.goto('/?mission=m2_chavin&seed=777&fog=0&low=1');
+  const overlay = page.locator('.ed-overlay', { hasText: 'El Oráculo de Chavín' });
+  await expect(overlay).toBeVisible({ timeout: 30_000 });
+  await expect(overlay).toContainText('sin enfrentamiento documentado');
+});
