@@ -32,6 +32,11 @@ export interface ObjectiveDef {
    * required objective.
    */
   group?: string;
+  /**
+   * A bonus objective: it is evaluated and can be completed, but it never gates
+   * victory nor causes defeat when failed.
+   */
+  optional?: boolean;
 }
 
 export type TriggerCond =

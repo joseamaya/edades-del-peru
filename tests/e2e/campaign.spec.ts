@@ -205,3 +205,41 @@ test('a peaceful mission briefing shows no rival side', async ({ page }) => {
     await expect(overlay).toContainText('sin enfrentamiento documentado');
   }
 });
+
+test('a bonus objective does not gate victory', async ({ page }) => {
+  await page.goto('/?mission=m2_chavin&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const m = g.mission;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const dt = 1 / 60;
+    let t = 0;
+    for (let i = 0; i < Math.ceil(440 / dt) && !m.ended; i++) {
+      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
+      for (const b of g.buildings.values()) if (b.owner === 0 && !b.dead) b.hp = b.maxHp;
+      // satisfy the required gather (400) but stay below the bonus (700)
+      g.players[0].resources.food = 400;
+      const have = [...g.buildings.values()].filter(
+        (b: any) => b.owner === 0 && b.kind === 'market' && b.constructionComplete && !b.dead,
+      ).length;
+      if (have < 1) {
+        const c = g.playerCenter(0);
+        g.spawnScriptedBuilding('market', 0, c.x + 6, c.z + 6);
+      }
+      g.update(dt, t);
+      t += dt;
+    }
+    return {
+      won: m.won as boolean | null,
+      required: m.getObjectiveState('obj_ofrendas') as string,
+      bonus: m.getObjectiveState('bonus_ofrenda_mayor') as string,
+    };
+  });
+  expect(out.required).toBe('completed');
+  expect(out.bonus).not.toBe('completed');
+  expect(out.won).toBe(true);
+});

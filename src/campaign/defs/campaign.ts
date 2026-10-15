@@ -107,6 +107,14 @@ export const MISSIONS: MissionDef[] = [
         title: 'Atiende la feria del templo (construye un mercado)',
       },
       { id: 'obj_sostener', kind: 'survive', time: 420, title: 'Sostén el centro ceremonial 7 minutos' },
+      {
+        id: 'bonus_ofrenda_mayor',
+        kind: 'gather',
+        resource: 'food',
+        count: 700,
+        optional: true,
+        title: 'Ofrenda mayor: reúne 700 de comida',
+      },
     ],
     triggers: [
       {
@@ -160,6 +168,14 @@ export const MISSIONS: MissionDef[] = [
     objectives: [
       { id: 'obj_huacas', kind: 'defend', entityTag: 'huacas', time: 480, title: 'Mantén las huacas 8 minutos' },
       { id: 'obj_plata', kind: 'gather', resource: 'silver', count: 250, title: 'Reúne 250 de plata' },
+      {
+        id: 'bonus_intercambio',
+        kind: 'gather',
+        resource: 'silver',
+        count: 400,
+        optional: true,
+        title: 'Intercambio de élite: reúne 400 de plata',
+      },
     ],
     triggers: [
       {
@@ -248,6 +264,14 @@ export const MISSIONS: MissionDef[] = [
         title: 'Funda un centro provincial en la frontera',
       },
       { id: 'obj_sostener', kind: 'survive', time: 480, title: 'Sostén la esfera wari 8 minutos' },
+      {
+        id: 'bonus_red',
+        kind: 'build',
+        buildingKind: BuildingKind.MARKET,
+        count: 2,
+        optional: true,
+        title: 'Extiende la red: funda un segundo centro provincial',
+      },
     ],
     triggers: [
       {

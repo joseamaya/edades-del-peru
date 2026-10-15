@@ -571,8 +571,8 @@ export class HUD {
       .join('');
   }
 
-  /** Titles with a leading "o" for alternatives (objectives sharing a group). */
-  private objectiveTitles(objs: { title: string; group?: string }[]): string[] {
+  /** Titles with a leading "o" for alternatives and a suffix for bonus objectives. */
+  private objectiveTitles(objs: { title: string; group?: string; optional?: boolean }[]): string[] {
     const seen = new Set<string>();
     return objs.map((o) => {
       let t = o.title;
@@ -580,6 +580,7 @@ export class HUD {
         if (seen.has(o.group)) t = 'o ' + t;
         seen.add(o.group);
       }
+      if (o.optional) t += ' (opcional)';
       return t;
     });
   }
