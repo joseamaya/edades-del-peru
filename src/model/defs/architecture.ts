@@ -29,6 +29,8 @@ export interface HistoricalArchitectureProfile {
   wall: WallMaterial;
   roof: RoofMaterial;
   foundation: FoundationKind;
+  /** Height (platform tiers) of monumental buildings; huacas rise above early mounds. */
+  monumentalTiers: number;
   ornament: ArchitectureOrnament;
   landmark: LandmarkId | null;
   provenance: string;
@@ -38,27 +40,49 @@ type ArchBase = Omit<HistoricalArchitectureProfile, 'id' | 'style' | 'landmark' 
 
 /** Defaults per architectural style (from `docs/historia/arquitectura.md`). */
 const STYLE_BASES: Record<ArchStyle, ArchBase> = {
-  'coastal-adobe': { wall: 'adobe', roof: 'thatch', foundation: 'platform', ornament: { frieze: true } },
-  'andean-masonry': { wall: 'cut-stone', roof: 'thatch', foundation: 'platform', ornament: { niches: true } },
+  'coastal-adobe': {
+    wall: 'adobe',
+    roof: 'thatch',
+    foundation: 'platform',
+    monumentalTiers: 2,
+    ornament: { frieze: true },
+  },
+  'andean-masonry': {
+    wall: 'cut-stone',
+    roof: 'thatch',
+    foundation: 'platform',
+    monumentalTiers: 3,
+    ornament: { niches: true },
+  },
   'altiplano-stone': {
     wall: 'megalithic',
     roof: 'flat-stone',
     foundation: 'platform',
+    monumentalTiers: 3,
     ornament: { megalithBlocks: true, niches: true },
   },
-  'highland-terraced': { wall: 'fieldstone', roof: 'thatch', foundation: 'terrace', ornament: { niches: true } },
-  colonial: { wall: 'brick', roof: 'tile', foundation: 'plinth', ornament: {} },
-  republican: { wall: 'concrete', roof: 'flat-metal', foundation: 'plinth', ornament: {} },
+  'highland-terraced': {
+    wall: 'fieldstone',
+    roof: 'thatch',
+    foundation: 'terrace',
+    monumentalTiers: 2,
+    ornament: { niches: true },
+  },
+  colonial: { wall: 'brick', roof: 'tile', foundation: 'plinth', monumentalTiers: 1, ornament: {} },
+  republican: { wall: 'concrete', roof: 'flat-metal', foundation: 'plinth', monumentalTiers: 1, ornament: {} },
 };
 
 /** Per-civilization overrides for the slice (they keep the same `ArchStyle`). */
 const CIV_ARCH: Partial<Record<CivId, Partial<ArchBase>>> = {
   // Caral's monumental compounds have no painted frieze (that is a Moche/Chimú trait)
-  [CivId.CARAL]: { ornament: {} },
+  [CivId.CARAL]: { ornament: {}, monumentalTiers: 2 },
+  // Moche huacas (e.g. Huaca del Sol) tower over the earlier coastal platforms
+  [CivId.MOCHE]: { monumentalTiers: 3 },
   [CivId.INCA]: {
     wall: 'cut-stone',
     roof: 'thatch',
     foundation: 'terrace',
+    monumentalTiers: 3,
     ornament: { niches: true, tapestry: true },
   },
 };

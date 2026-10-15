@@ -52,6 +52,13 @@ for player-facing docs see [`README.md`](../README.md).
   no THREE), so `tests/terrain.test.ts` pins determinism (same seed+profile → same map; different seed/profile →
   different map) without a DOM. Adding a region/profile does not touch the generator: only the data in
   `profiles.ts`. `atmosphere` is carried but not yet applied (classic no-fog look is preserved).
+- **Architecture profile in the model (Phase 4)**: `BuildContext.arch` (`Game.makeBuildContext` →
+  `archProfileFor(civ, period)`) drives `ProceduralModel`'s Andean builders (`wall`/`roof`/`foundation`/
+  `ornament`/`monumentalTiers`) instead of `Builder.style` booleans; new modules are `andeanTerraceBase`,
+  `andeanMegaliths` and `andeanTapestries`, and the colonial/republican builders pick their facade texture via
+  `facadeTex`. The model cache key (`type|scale|barrel|era|civ`) needs no change because `archProfileFor` is a
+  function of `(civ, era)`. Verified structurally by `tests/e2e/civ-visuals.spec.ts` and visually with
+  `yarn shots:civs`.
 - `src/campaign/defs/campaign.ts` defines the 9 historical campaigns; `src/campaign/Mission.ts` evaluates
   objectives/triggers.
 - **Educational layer**: `src/campaign/defs/educational.ts` (prologue + context/«¿Sabías que…?»/sources per mission,

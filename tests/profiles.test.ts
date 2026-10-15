@@ -173,6 +173,14 @@ describe('historical architecture profiles', () => {
     expect(inca.foundation).toBe('terrace');
     expect(inca.ornament.niches).toBe(true);
     expect(new Set([caral.wall, moche.wall, inca.wall]).size).toBeGreaterThanOrEqual(2);
+    // monumental platforms rise over time: Moche huacas > Caral mounds
+    expect(moche.monumentalTiers).toBeGreaterThan(caral.monumentalTiers);
+    expect(inca.monumentalTiers).toBeGreaterThan(1);
+  });
+
+  it('uses a single-tier base for the post-1532 colonial/republican look', () => {
+    expect(archProfileFor(CivId.REALISTAS, HistoricalPeriod.VICEROYALTY).monumentalTiers).toBe(1);
+    expect(archProfileFor(CivId.REPUBLIC, HistoricalPeriod.REPUBLIC).monumentalTiers).toBe(1);
   });
 
   it('an Andean civilization played in the Viceroyalty adopts the colonial look', () => {

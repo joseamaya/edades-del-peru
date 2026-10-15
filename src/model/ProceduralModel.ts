@@ -5,6 +5,7 @@ import { CivDef, ArchStyle, EmblemId } from './defs/civs';
 import { ModelSpec } from './defs/units';
 import { Era } from '../core/types';
 import { ERA_DEFS } from './defs/eras';
+import type { HistoricalArchitectureProfile } from './defs/architecture';
 import { mixHex } from '../util/math';
 import { MaterialTex } from '../rendering/Textures';
 import { getGeneratedMaterial } from '../rendering/Biomes';
@@ -29,6 +30,8 @@ export interface BuildContext {
   era: Era;
   civ: CivDef;
   playerColor: THREE.Color;
+  /** Historical architecture profile of `civ` in this period (drives materials/structure). */
+  arch: HistoricalArchitectureProfile;
 }
 
 const sharedGeo: Record<string, THREE.BufferGeometry> = {};
@@ -308,6 +311,10 @@ class Builder {
   /** Architectural style of the owner civilization. */
   get style(): ArchStyle {
     return this.civ.visual.arch;
+  }
+  /** Historical architecture profile (materials, structure, ornaments). */
+  get arch(): HistoricalArchitectureProfile {
+    return this.ctx.arch;
   }
   /** Banner/shield emblem of the owner civilization. */
   get emblem(): EmblemId {
@@ -1357,16 +1364,53 @@ function addWindows(
 // Sources: docs/historia/arquitectura.md.
 // ---------------------------------------------------------------------------
 
-/** Wall colour for the civ's Andean style (adobe / stone / polished masonry). */
+/** Wall colour for the civ's architecture profile (earth / stone / masonry / brick…). */
 function andeanWall(b: Builder): string {
   const p = b.pal.primary;
-  if (b.style === 'coastal-adobe') return mixHex(p, '#c8a878', 0.72);
-  if (b.style === 'altiplano-stone') return mixHex(p, '#b4aca0', 0.78);
-  return mixHex(p, '#a89e8c', 0.72); // andean-masonry / highland-terraced
+  switch (b.arch.wall) {
+    case 'adobe':
+      return mixHex(p, '#c8a878', 0.72);
+    case 'wood':
+      return mixHex(p, '#c8a878', 0.5);
+    case 'megalithic':
+      return mixHex(p, '#b4aca0', 0.78);
+    case 'brick':
+      return mixHex(p, '#c88a6a', 0.6);
+    case 'concrete':
+      return mixHex(p, '#b0b6bc', 0.58);
+    case 'metal':
+      return mixHex(p, '#c0c8d0', 0.6);
+    default:
+      return mixHex(p, '#a89e8c', 0.72); // fieldstone / cut-stone
+  }
 }
 
 function andeanTex(b: Builder): TexKind {
-  return b.style === 'coastal-adobe' ? 'brick' : 'stone';
+  switch (b.arch.wall) {
+    case 'adobe':
+    case 'brick':
+      return 'brick';
+    case 'wood':
+      return 'wood';
+    default:
+      return 'stone';
+  }
+}
+
+/** Facade texture from the architecture profile for the colonial/republican builders. */
+function facadeTex(b: Builder, fallback: TexKind): TexKind {
+  switch (b.arch.wall) {
+    case 'brick':
+      return 'brick';
+    case 'concrete':
+      return 'concrete';
+    case 'metal':
+      return 'metal';
+    case 'wood':
+      return 'wood';
+    default:
+      return fallback;
+  }
 }
 
 function andeanStone(b: Builder): string {
@@ -1384,6 +1428,67 @@ function andeanPlatform(b: Builder, w: number, tiers: number): void {
   for (let i = 0; i < tiers; i++) {
     const t = w * (1.24 - i * 0.08);
     b.box(t, w * 0.14, t, stone, { y: w * 0.07 + i * w * 0.14, tex: 'stone' });
+  }
+}
+
+/** Terraced base (stepped retaining walls with flat surfaces) — highland / Inca. */
+function andeanTerraceBase(b: Builder, w: number, tiers: number): number {
+  const stone = andeanStone(b);
+  const wall = andeanWall(b);
+  const tex = andeanTex(b);
+  const h = w * 0.14;
+  let y = 0;
+  for (let i = 0; i < tiers; i++) {
+    const t = w * (1.3 - i * 0.1);
+    b.box(t, h, t, stone, { y: y + h / 2, tex: 'stone' });
+    b.box(t * 0.84, h * 0.32, t * 0.84, wall, { y: y + h * 0.68, tex });
+    y += h;
+  }
+  return y;
+}
+
+/** Base chosen by the architecture profile; returns the height of the platform top. */
+function andeanFoundation(b: Builder, w: number, tiers: number): number {
+  switch (b.arch.foundation) {
+    case 'none':
+      return 0;
+    case 'plinth':
+      b.box(w * 1.06, w * 0.1, w * 1.06, andeanStone(b), { y: w * 0.05, tex: 'stone' });
+      return w * 0.1;
+    case 'terrace':
+      return andeanTerraceBase(b, w, tiers);
+    default:
+      andeanPlatform(b, w, tiers);
+      return tiers * w * 0.14;
+  }
+}
+
+/** Cyclopean corner blocks (altiplano megalithic style). */
+function andeanMegaliths(b: Builder, w: number, baseY: number): void {
+  const stone = mixHex(b.pal.primary, '#c2baae', 0.82);
+  for (const [sx, sz] of [
+    [-1, -1],
+    [1, -1],
+    [-1, 1],
+    [1, 1],
+  ] as const) {
+    b.box(w * 0.22, w * 0.34, w * 0.22, stone, {
+      x: sx * w * 0.5,
+      y: baseY + w * 0.17,
+      z: sz * w * 0.5,
+      tex: 'stone',
+    });
+  }
+}
+
+/** Hanging textile bands (Inca tapestries). */
+function andeanTapestries(b: Builder, w: number, baseY: number): void {
+  for (let i = -1; i <= 1; i++) {
+    b.box(w * 0.16, w * 0.3, 0.05, i % 2 ? b.civSecondary : b.civAccent, {
+      x: i * w * 0.3,
+      y: baseY + w * 0.3,
+      z: w * 0.48,
+    });
   }
 }
 
@@ -1532,24 +1637,22 @@ interface AndeanOpts {
   size: number;
   tiers?: number;
   roof?: 'thatch' | 'flat' | 'shrine';
-  niches?: boolean;
-  frieze?: boolean;
   tower?: boolean;
   stair?: boolean;
   banner?: boolean;
 }
 
-/** Parameterized Andean building: stepped base + adobe/stone walls + roof. */
+/** Parameterized Andean building: base + walls + roof, materials/ornament from the arch profile. */
 function buildAndeanStructure(b: Builder, o: AndeanOpts): void {
   const w = o.size;
   const wall = andeanWall(b);
   const tex = andeanTex(b);
   const tiers = o.tiers ?? 1;
   b.box(w * 1.5, 0.12, w * 1.5, mixHex(b.pal.primary, '#cbbfa4', 0.7), { y: 0.06, tex: 'dirt', texScale: 1.4 });
-  andeanPlatform(b, w, tiers);
-  const baseY = tiers * w * 0.14;
+  const baseY = andeanFoundation(b, w, tiers);
   b.box(w * 0.9, w * 0.62, w * 0.9, wall, { y: baseY + w * 0.31, tex });
-  if (b.style === 'andean-masonry' || b.style === 'altiplano-stone') {
+  const masonry = b.arch.wall === 'cut-stone' || b.arch.wall === 'megalithic' || b.arch.wall === 'fieldstone';
+  if (masonry) {
     const pil = mixHex(b.pal.primary, '#8f8676', 0.8);
     for (let i = -1; i <= 1; i += 2) {
       b.box(0.12, w * 0.66, 0.12, pil, { x: i * w * 0.44, y: baseY + w * 0.33, z: w * 0.44, tex });
@@ -1559,14 +1662,18 @@ function buildAndeanStructure(b: Builder, o: AndeanOpts): void {
   const dark = mixHex(b.pal.primary, '#2a2318', 0.55);
   b.box(w * 0.26, w * 0.4, 0.06, dark, { y: baseY + w * 0.2, z: w * 0.46 });
   b.box(w * 0.36, w * 0.08, 0.07, mixHex(b.pal.primary, '#6a5f4a', 0.6), { y: baseY + w * 0.42, z: w * 0.46 });
-  if (o.niches) andeanNiches(b, w, tex);
-  if (o.frieze) andeanFrieze(b, w);
+  if (b.arch.ornament.niches) andeanNiches(b, w, tex);
+  if (b.arch.ornament.frieze) andeanFrieze(b, w);
+  if (b.arch.ornament.megalithBlocks) andeanMegaliths(b, w, baseY);
+  if (b.arch.ornament.tapestry) andeanTapestries(b, w, baseY);
   const roofY = baseY + w * 0.72;
-  if (o.roof === 'flat') {
+  let roof = o.roof ?? 'thatch';
+  if (roof !== 'shrine' && b.arch.roof === 'flat-stone') roof = 'flat';
+  if (roof === 'flat') {
     b.box(w * 1.0, w * 0.12, w * 1.0, andeanStone(b), { y: roofY, tex });
     for (let i = -1; i <= 1; i += 2)
       b.box(w * 0.12, w * 0.18, w * 1.0, wall, { x: i * w * 0.46, y: roofY + w * 0.1, tex });
-  } else if (o.roof === 'shrine') {
+  } else if (roof === 'shrine') {
     andeanThatchRoof(b, w * 0.7, roofY + w * 0.05);
     b.box(w * 0.4, w * 0.34, w * 0.4, wall, { y: roofY + w * 0.2, tex });
     b.box(w * 0.16, w * 0.16, 0.06, dark, { y: roofY + w * 0.18, z: w * 0.2 });
@@ -1579,24 +1686,14 @@ function buildAndeanStructure(b: Builder, o: AndeanOpts): void {
 }
 
 function buildAndeanHouse(b: Builder, size: number, grand: boolean): void {
-  buildAndeanStructure(b, {
-    size,
-    tiers: grand ? 2 : 1,
-    roof: 'thatch',
-    niches: b.style === 'andean-masonry' || b.style === 'altiplano-stone',
-    frieze: b.style === 'coastal-adobe',
-    stair: grand,
-    banner: true,
-  });
+  buildAndeanStructure(b, { size, tiers: grand ? 2 : 1, roof: 'thatch', stair: grand, banner: true });
 }
 
 function buildAndeanCivic(b: Builder, size: number, tower: boolean): void {
   buildAndeanStructure(b, {
     size,
-    tiers: 3,
+    tiers: b.arch.monumentalTiers,
     roof: 'shrine',
-    niches: b.style !== 'coastal-adobe',
-    frieze: b.style === 'coastal-adobe',
     tower,
     stair: true,
     banner: true,
@@ -1604,32 +1701,23 @@ function buildAndeanCivic(b: Builder, size: number, tower: boolean): void {
 }
 
 function buildAndeanMilitary(b: Builder, size: number, tower: boolean): void {
-  buildAndeanStructure(b, {
-    size,
-    tiers: 1,
-    roof: 'flat',
-    frieze: b.style === 'coastal-adobe',
-    niches: b.style === 'andean-masonry',
-    tower,
-    banner: true,
-  });
+  buildAndeanStructure(b, { size, tiers: 1, roof: 'flat', tower, banner: true });
 }
 
 function buildAndeanFortress(b: Builder, size: number): void {
   buildAndeanStructure(b, {
     size,
-    tiers: 2,
+    tiers: Math.max(2, b.arch.monumentalTiers - 1),
     roof: 'flat',
     tower: true,
     stair: true,
-    niches: b.style !== 'coastal-adobe',
     banner: true,
   });
 }
 
 function buildAndeanFarm(b: Builder): void {
   const w = 3.0;
-  const terraced = b.style === 'highland-terraced' || b.style === 'altiplano-stone';
+  const terraced = b.arch.foundation === 'terrace';
   b.box(w * 0.78, 0.1, w * 0.78, mixHex(b.pal.primary, '#7a6a3a', 0.6), { y: 0.05, tex: 'dirt' });
   if (terraced) {
     const stone = andeanStone(b);
@@ -1647,7 +1735,7 @@ function buildAndeanFarm(b: Builder): void {
 }
 
 function buildAndeanMarket(b: Builder, size: number): void {
-  buildAndeanStructure(b, { size, tiers: 0, roof: 'thatch', frieze: true, banner: true });
+  buildAndeanStructure(b, { size, tiers: 0, roof: 'thatch', banner: true });
   b.box(size * 1.0, 0.1, size * 0.7, b.civPrimary, { y: size * 0.5, ry: Math.PI / 2 });
   b.box(0.3, 0.2, 0.3, '#efe6d2', { x: -0.25, y: size * 0.12, z: 0.1, tex: 'wood' });
 }
@@ -1661,7 +1749,7 @@ function buildHouse(b: Builder, size: number, grand: boolean): void {
   const w = size;
   const wallTint = mixHex(b.pal.wood, '#ffffff', 0.52);
   // main wall with a wood grain
-  b.box(w * 0.92, w * 0.72, w * 0.92, wallTint, { y: w * 0.36, tex: 'wood' });
+  b.box(w * 0.92, w * 0.72, w * 0.92, wallTint, { y: w * 0.36, tex: facadeTex(b, 'wood') });
   // corner posts / vertical beams
   for (let i = -1; i <= 1; i++) {
     b.box(0.09, w * 0.78, 0.09, b.pal.darkWood, { x: i * w * 0.3, y: w * 0.37 });
@@ -1700,7 +1788,7 @@ function buildCivic(b: Builder, size: number, matType: 'stone' | 'brick'): void 
   groundPad(b, size);
   const wallTint = matType === 'stone' ? '#ece5d8' : '#f0e2d0';
   const w = size;
-  b.box(w * 0.9, w * 0.6, w * 0.9, wallTint, { y: w * 0.3, tex: matType, roughness: 0.85 });
+  b.box(w * 0.9, w * 0.6, w * 0.9, wallTint, { y: w * 0.3, tex: facadeTex(b, matType), roughness: 0.85 });
   // columns
   for (let i = 0; i < 4; i++) {
     b.cyl(0.08, 0.1, w * 0.55, 10, b.pal.stone, { x: (i - 1.5) * w * 0.28, y: w * 0.3, z: w * 0.42 });
@@ -1739,7 +1827,10 @@ function buildConcrete(b: Builder, size: number, tower: boolean, radar = false):
   }
   groundPad(b, size);
   const w = size;
-  b.box(w * 0.92, w * 0.55, w * 0.92, mixHex(b.pal.concrete, '#ffffff', 0.62), { y: w * 0.28, tex: 'concrete' });
+  b.box(w * 0.92, w * 0.55, w * 0.92, mixHex(b.pal.concrete, '#ffffff', 0.62), {
+    y: w * 0.28,
+    tex: facadeTex(b, 'concrete'),
+  });
   b.box(w * 0.98, w * 0.18, w * 0.98, b.pal.darkMetal, { y: w * 0.09, tex: 'metalDark' });
   if (tower) {
     b.box(w * 0.4, w * 0.7, w * 0.4, mixHex(b.pal.concrete, '#ffffff', 0.62), { y: w * 0.9, tex: 'concrete' });
@@ -1769,7 +1860,11 @@ function buildConcrete(b: Builder, size: number, tower: boolean, radar = false):
 function buildModern(b: Builder, size: number, tower: boolean): void {
   groundPad(b, size);
   const w = size;
-  b.box(w * 0.94, w * 0.6, w * 0.94, mixHex(b.pal.metal, '#ffffff', 0.45), { y: w * 0.3, tex: 'metal', texScale: 2 });
+  b.box(w * 0.94, w * 0.6, w * 0.94, mixHex(b.pal.metal, '#ffffff', 0.45), {
+    y: w * 0.3,
+    tex: facadeTex(b, 'metal'),
+    texScale: 2,
+  });
   b.box(w * 0.96, w * 0.1, w * 0.96, b.pal.darkMetal, { y: w * 0.05, tex: 'metalDark' });
   // glass facade
   b.box(w * 0.86, w * 0.5, 0.06, b.civPrimary, {
@@ -1847,7 +1942,7 @@ function buildBarracks(b: Builder, size: number, wallType: 'wood' | 'brick'): vo
   const w = size;
   const wallTint = wallType === 'wood' ? mixHex(b.pal.wood, '#ffffff', 0.5) : mixHex(b.pal.brick, '#ffffff', 0.5);
   const roofTint = mixHex(b.pal.roof, '#ffffff', 0.58);
-  b.box(w * 0.9, w * 0.5, w * 0.7, wallTint, { y: w * 0.25, tex: wallType });
+  b.box(w * 0.9, w * 0.5, w * 0.7, wallTint, { y: w * 0.25, tex: facadeTex(b, wallType) });
   b.box(w * 0.94, w * 0.07, w * 0.74, b.pal.darkWood, { y: w * 0.04 });
   b.box(w * 1.0, w * 0.14, w * 0.44, roofTint, { y: w * 0.56, z: w * 0.16, rx: 0.55, ry: Math.PI / 2, tex: 'roof' });
   b.box(w * 1.0, w * 0.14, w * 0.44, roofTint, { y: w * 0.56, z: -w * 0.16, rx: -0.55, ry: Math.PI / 2, tex: 'roof' });
@@ -1870,7 +1965,7 @@ function buildStable(b: Builder, size: number, wallType: 'wood' | 'brick'): void
   const w = size;
   const wallTint = wallType === 'wood' ? mixHex(b.pal.wood, '#ffffff', 0.5) : mixHex(b.pal.brick, '#ffffff', 0.5);
   const roofTint = mixHex(b.pal.roof, '#ffffff', 0.58);
-  b.box(w * 0.9, w * 0.55, w * 0.75, wallTint, { y: w * 0.28, tex: wallType });
+  b.box(w * 0.9, w * 0.55, w * 0.75, wallTint, { y: w * 0.28, tex: facadeTex(b, wallType) });
   b.box(w * 0.94, w * 0.07, w * 0.79, b.pal.darkWood, { y: w * 0.05 });
   b.box(w * 1.02, w * 0.16, w * 0.5, roofTint, { y: w * 0.62, z: w * 0.2, rx: 0.55, ry: Math.PI / 2, tex: 'roof' });
   b.box(w * 1.02, w * 0.16, w * 0.5, roofTint, { y: w * 0.62, z: -w * 0.2, rx: -0.55, ry: Math.PI / 2, tex: 'roof' });
@@ -1891,7 +1986,10 @@ function buildMilitary(b: Builder, size: number, antenna: boolean): void {
   }
   groundPad(b, size);
   const w = size;
-  b.box(w * 0.92, w * 0.5, w * 0.8, mixHex(b.pal.concrete, '#ffffff', 0.62), { y: w * 0.25, tex: 'concrete' });
+  b.box(w * 0.92, w * 0.5, w * 0.8, mixHex(b.pal.concrete, '#ffffff', 0.62), {
+    y: w * 0.25,
+    tex: facadeTex(b, 'concrete'),
+  });
   b.box(w * 0.98, w * 0.16, w * 0.9, b.pal.darkMetal, { y: w * 0.08, tex: 'metalDark' });
   // corner turret
   b.cyl(0.22, 0.28, w * 0.55, 10, mixHex(b.pal.concrete, '#ffffff', 0.62), {
@@ -1924,7 +2022,7 @@ function buildFactory(b: Builder, size: number, wallType: 'brick' | 'wood'): voi
   groundPad(b, size);
   const w = size;
   const wallTint = wallType === 'brick' ? mixHex(b.pal.brick, '#ffffff', 0.5) : mixHex(b.pal.wood, '#ffffff', 0.5);
-  b.box(w * 1.0, w * 0.55, w * 0.8, wallTint, { y: w * 0.28, tex: wallType });
+  b.box(w * 1.0, w * 0.55, w * 0.8, wallTint, { y: w * 0.28, tex: facadeTex(b, wallType) });
   // flat metal roof
   b.box(w * 1.06, w * 0.1, w * 0.9, b.pal.darkMetal, { y: w * 0.55, tex: 'metalDark' });
   // chimneys
@@ -1946,7 +2044,7 @@ function buildFortress(b: Builder, size: number, matType: 'stone' | 'concrete'):
   const w = size;
   const wallTint = matType === 'stone' ? mixHex(b.pal.stone, '#ffffff', 0.5) : mixHex(b.pal.concrete, '#ffffff', 0.62);
   // central tower
-  b.cyl(w * 0.5, w * 0.62, w * 1.1, 16, wallTint, { y: w * 0.55, tex: matType, texScale: 2 });
+  b.cyl(w * 0.5, w * 0.62, w * 1.1, 16, wallTint, { y: w * 0.55, tex: facadeTex(b, matType), texScale: 2 });
   b.cyl(w * 0.56, w * 0.5, w * 0.16, 16, b.pal.darkMetal, { y: w * 1.1, tex: 'metalDark' });
   // battlements
   for (let i = 0; i < 10; i++) {
@@ -1955,7 +2053,7 @@ function buildFortress(b: Builder, size: number, matType: 'stone' | 'concrete'):
       x: Math.cos(a) * w * 0.5,
       y: w * 1.16,
       z: Math.sin(a) * w * 0.5,
-      tex: matType,
+      tex: facadeTex(b, matType),
     });
   }
   // bastions
@@ -1965,14 +2063,14 @@ function buildFortress(b: Builder, size: number, matType: 'stone' | 'concrete'):
       x: Math.cos(a) * w * 0.85,
       y: w * 0.35,
       z: Math.sin(a) * w * 0.85,
-      tex: matType,
+      tex: facadeTex(b, matType),
     });
   }
   // connecting walls
-  b.box(w * 1.5, w * 0.45, w * 0.22, wallTint, { y: w * 0.22, z: w * 0.72, tex: matType });
-  b.box(w * 1.5, w * 0.45, w * 0.22, wallTint, { y: w * 0.22, z: -w * 0.72, tex: matType });
-  b.box(w * 0.22, w * 0.45, w * 1.5, wallTint, { x: w * 0.72, y: w * 0.22, tex: matType });
-  b.box(w * 0.22, w * 0.45, w * 1.5, wallTint, { x: -w * 0.72, y: w * 0.22, tex: matType });
+  b.box(w * 1.5, w * 0.45, w * 0.22, wallTint, { y: w * 0.22, z: w * 0.72, tex: facadeTex(b, matType) });
+  b.box(w * 1.5, w * 0.45, w * 0.22, wallTint, { y: w * 0.22, z: -w * 0.72, tex: facadeTex(b, matType) });
+  b.box(w * 0.22, w * 0.45, w * 1.5, wallTint, { x: w * 0.72, y: w * 0.22, tex: facadeTex(b, matType) });
+  b.box(w * 0.22, w * 0.45, w * 1.5, wallTint, { x: -w * 0.72, y: w * 0.22, tex: facadeTex(b, matType) });
   // embrasures
   for (let i = -1; i <= 1; i++) {
     b.box(0.16, 0.1, 0.05, b.pal.darkMetal, { x: i * w * 0.3, y: w * 0.5, z: w * 0.83, metalness: 0.4 });
@@ -1998,7 +2096,7 @@ function buildMarket(b: Builder, size: number, wallType: 'wood' | 'brick'): void
   groundPad(b, size);
   const w = size;
   const wallTint = wallType === 'wood' ? mixHex(b.pal.wood, '#ffffff', 0.5) : mixHex(b.pal.brick, '#ffffff', 0.5);
-  b.box(w * 0.9, w * 0.4, w * 0.7, wallTint, { y: w * 0.2, tex: wallType });
+  b.box(w * 0.9, w * 0.4, w * 0.7, wallTint, { y: w * 0.2, tex: facadeTex(b, wallType) });
   // striped awning
   b.box(w * 1.0, 0.1, w * 0.7, b.civPrimary, { y: w * 0.5, ry: Math.PI / 2, x: 0 });
   for (let i = 0; i < 6; i++) {
@@ -2023,7 +2121,7 @@ function buildMarket(b: Builder, size: number, wallType: 'wood' | 'brick'): void
 
 function buildDropsite(b: Builder, size: number, matType: 'wood' | 'brick' | 'stone'): void {
   if (b.isAndean) {
-    buildAndeanStructure(b, { size, tiers: 0, roof: 'thatch', frieze: b.style === 'coastal-adobe', banner: true });
+    buildAndeanStructure(b, { size, tiers: 0, roof: 'thatch', banner: true });
     return;
   }
   groundPad(b, size);
@@ -2035,7 +2133,7 @@ function buildDropsite(b: Builder, size: number, matType: 'wood' | 'brick' | 'st
         ? mixHex(b.pal.brick, '#ffffff', 0.5)
         : mixHex(b.pal.stone, '#ffffff', 0.5);
   const roofTint = mixHex(b.pal.roof, '#ffffff', 0.58);
-  b.box(w * 0.85, w * 0.5, w * 0.7, wallTint, { y: w * 0.25, tex: matType });
+  b.box(w * 0.85, w * 0.5, w * 0.7, wallTint, { y: w * 0.25, tex: facadeTex(b, matType) });
   b.box(w * 0.95, w * 0.12, w * 0.42, roofTint, { y: w * 0.56, z: w * 0.15, rx: 0.55, ry: Math.PI / 2, tex: 'roof' });
   b.box(w * 0.95, w * 0.12, w * 0.42, roofTint, { y: w * 0.56, z: -w * 0.15, rx: -0.55, ry: Math.PI / 2, tex: 'roof' });
   b.box(w * 0.97, w * 0.1, w * 0.2, roofTint, { y: w * 0.72, ry: Math.PI / 2, tex: 'roof' });
