@@ -8,10 +8,10 @@
   sacerdotal. No se inventan personajes.
 - **Contexto histórico**: Chavín de Huántar fue un centro ceremonial y de peregrinaje (oráculo) cuya
   influencia artística y religiosa se difundió por buena parte de los Andes centrales.
-- **Objetivos históricos (adaptados)**:
+- **Objetivos históricos (adaptados al juego)**:
   1. Reunir tributos y ofrendas de peregrinaje (**spondylus**, obsidiana).
-  2. Sostener el centro ceremonial frente a la competencia regional.
-  3. Mantener la influencia cultural.
+  2. Atender la feria y los tributos del templo (intercambio).
+  3. Sostener el centro ceremonial frente a la competencia regional (**sin guerra**).
 - **Mapa**: `andes` — quebradas y centro ceremonial.
 - **Desenlace documentado**: Chavín declina hacia el 500–200 a.C.; su influencia se fragmenta y da paso a
   las culturas regionales del Intermedio Temprano.
