@@ -275,6 +275,11 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
     minEra: Era.CONTEMPORARY,
     isWonder: true,
     eraModel: {
+      [Era.FORMATIVE]: { type: 'wonder', scale: 1 },
+      [Era.REGIONAL_STATES]: { type: 'wonder', scale: 1 },
+      [Era.TAHUANTINSUYO]: { type: 'wonder', scale: 1 },
+      [Era.VICEROYALTY]: { type: 'wonder', scale: 1 },
+      [Era.REPUBLIC]: { type: 'wonder', scale: 1 },
       [Era.CONTEMPORARY]: { type: 'wonder', scale: 1 },
     },
   },

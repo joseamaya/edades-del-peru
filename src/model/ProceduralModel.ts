@@ -1301,7 +1301,8 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
     default:
       buildHouse(b, 2.5, false);
   }
-  addCivAccent(b, era >= Era.CONTEMPORARY);
+  // the wonder is a self-contained monument (no civic banner/glowing accent)
+  if (type !== 'wonder') addCivAccent(b, era >= Era.CONTEMPORARY);
   return b.finish();
 }
 
@@ -2185,20 +2186,15 @@ function buildWonder(b: Builder): void {
   const stone = mixHex(b.pal.primary, '#b8ac96', 0.72);
   const head = mixHex(b.pal.primary, '#4a4238', 0.55);
   const w = 7;
+  const tierH = 0.62;
   groundPad(b, w);
-  const baseY = tieredPlatform(b, w, 5, 0.62, stone, 'stone');
+  const baseY = tieredPlatform(b, w, 5, tierH, stone, 'stone');
   // top shrine
   b.box(w * 0.32, 0.8, w * 0.32, stone, { y: baseY + 0.4, tex: 'stone' });
   b.box(w * 0.2, 0.45, w * 0.2, b.civAccent, { y: baseY + 1.0, tex: 'stone' });
   // tenon heads protruding from the front faces of the lower tiers
-  for (const [half, y] of [
-    [w * 0.6, 0.31],
-    [w * 0.52, 0.93],
-    [w * 0.44, 1.55],
-  ] as const) {
-    for (let i = -2; i <= 2; i++) {
-      b.box(0.4, 0.4, 0.55, head, { x: i * w * 0.15, y, z: half + 0.1, tex: 'stone' });
-    }
+  for (let i = 0; i < 3; i++) {
+    tenonHeadRow(b, head, tierH * i + tierH / 2, tierSize(w, i) / 2 + 0.1, w * 0.15);
   }
 }
 
@@ -2207,10 +2203,20 @@ function buildWonder(b: Builder): void {
 // `LANDMARKS` (`src/model/defs/landmarks.ts`).
 // ---------------------------------------------------------------------------
 
+/** Width of tier `i` of a stepped platform (shared by `tieredPlatform` and its ornaments). */
+function tierSize(w: number, i: number): number {
+  return w * (1.2 - i * 0.16);
+}
+
+/** A row of five tenon heads (cabezas clavas) along a front face. */
+function tenonHeadRow(b: Builder, color: string, y: number, z: number, spacing: number): void {
+  for (let i = -2; i <= 2; i++) b.box(0.34, 0.34, 0.5, color, { x: i * spacing, y, z, tex: 'stone' });
+}
+
 /** Stepped platform shared by the monumental landmarks; returns the top height. */
 function tieredPlatform(b: Builder, w: number, tiers: number, tierH: number, color: string, tex: TexKind): number {
   for (let i = 0; i < tiers; i++) {
-    const t = w * (1.2 - i * 0.16);
+    const t = tierSize(w, i);
     b.box(t, tierH, t, color, { y: tierH / 2 + i * tierH, tex });
   }
   return tiers * tierH;
@@ -2300,9 +2306,7 @@ function buildChavinTemple(b: Builder): void {
   const w = 6;
   const baseY = tieredPlatform(b, w, 3, 0.55, stone, 'stone');
   b.box(w * 0.5, 0.9, w * 0.5, stone, { y: baseY + 0.45, tex: 'stone' });
-  for (let i = -2; i <= 2; i++) {
-    b.box(0.34, 0.34, 0.5, stone, { x: i * w * 0.16, y: baseY + 0.1, z: w * 0.5, tex: 'stone' });
-  }
+  tenonHeadRow(b, stone, baseY + 0.1, w * 0.5, w * 0.16);
   ringPlaza(b, w * 1.35, w * 0.7, stone, dark, 8);
 }
 
