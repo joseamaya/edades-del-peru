@@ -199,24 +199,26 @@ export class Mission {
       if (st === 'activo' && o.kind === 'protect' && o.entityTag) return this.countAlive(o.entityTag) > 0;
       return false;
     };
+    // bonus objectives never gate victory and never cause defeat
+    const optional = (o: ObjectiveDef): boolean => o.optional === true;
 
     // objectives sharing a `group` are alternatives: satisfying any one wins the
     // group. A failed required objective — or a group whose every branch failed —
     // ends the mission.
     const groups = new Map<string, ObjectiveDef[]>();
     for (const o of objs) {
-      if (!o.group) continue;
+      if (!o.group || optional(o)) continue;
       const g = groups.get(o.group) ?? [];
       g.push(o);
       groups.set(o.group, g);
     }
-    if (objs.some((o) => !o.group && state(o) === 'failed')) return this.defeat();
+    if (objs.some((o) => !optional(o) && !o.group && state(o) === 'failed')) return this.defeat();
     for (const g of groups.values()) {
       if (g.every((o) => state(o) === 'failed')) return this.defeat();
     }
 
     const groupsOk = [...groups.values()].every((g) => g.some(satisfied));
-    const looseOk = objs.filter((o) => !o.group).every(satisfied);
+    const looseOk = objs.filter((o) => !optional(o) && !o.group).every(satisfied);
     if (groupsOk && looseOk) this.win();
   }
 

@@ -126,6 +126,29 @@ describe('campaign educational content', () => {
     for (const [g, n] of counts) expect(n, `group ${g} has only ${n} objective(s)`).toBeGreaterThanOrEqual(2);
   });
 
+  it('bonus objectives are optional and never the only goal', () => {
+    const withBonus = MISSIONS.filter((m) => m.objectives.some((o) => o.optional));
+    expect(withBonus.length, 'no mission has a bonus objective').toBeGreaterThanOrEqual(1);
+    for (const mis of MISSIONS) {
+      const bonus = mis.objectives.filter((o) => o.optional);
+      for (const o of bonus) expect(o.group, `${mis.id}/${o.id} bonus is in a strategic group`).toBeUndefined();
+      if (bonus.length) {
+        expect(
+          mis.objectives.some((o) => !o.optional),
+          `${mis.id} has only optional objectives`,
+        ).toBe(true);
+      }
+    }
+    // the documented bonus goals are present
+    expect(MISSIONS.find((m) => m.id === 'm2_chavin')!.objectives.some((o) => o.id === 'bonus_ofrenda_mayor')).toBe(
+      true,
+    );
+    expect(MISSIONS.find((m) => m.id === 'm3_moche_recuay')!.objectives.some((o) => o.id === 'bonus_intercambio')).toBe(
+      true,
+    );
+    expect(MISSIONS.find((m) => m.id === 'm4_wari')!.objectives.some((o) => o.id === 'bonus_red')).toBe(true);
+  });
+
   it('every objective and trigger entityTag is declared by a start/mark tag', () => {
     for (const mis of MISSIONS) {
       const declared = new Set<string>();
