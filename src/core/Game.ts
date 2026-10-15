@@ -259,7 +259,7 @@ export class Game {
     this.terrain.setFogColor(tint);
     this.terrain.setFogDensity(a.fogDensity);
     this.water.setFog(a.skyTint, a.fogDensity);
-    this.sky.setAtmosphere(a.skyTint, a.fogDensity, a.sunWarmth);
+    this.sky.setAtmosphere(a.skyTint, a.sunWarmth);
   }
 
   private initPlayers(): void {
@@ -2458,7 +2458,7 @@ export class Game {
     this.water.setSunDir(this.sky.sunDir);
     this.water.setDayFactor(this.sky.getDayFactor());
     this.water.update(t);
-    this.terrain.setSunLight(this.sky.sunDir, this.sky.sunColor);
+    this.terrain.setSunLight(this.sky.sunDir, this.sky.getSunColor());
     this.terrain.update(t);
     // cloud shadows: dim the sun according to cloud density near the sun
     const cs = cloudDensity(this.sky.sunDir.x * 900 + t * 3, this.sky.sunDir.z * 900) * 0.22;

@@ -19,9 +19,8 @@ export class Sky {
   sunDir = new THREE.Vector3(0.5, 0.7, 0.4).normalize();
   sunColor = new THREE.Color(0xfff2dd);
   timeOfDay = 0.5; // 0 night .. 1 day
-  /** Region atmosphere: horizon tint, aerial haze (0 clear .. ) and sun warmth. */
+  /** Region atmosphere: horizon tint and sun warmth (1 = neutral). */
   private atmTint = new THREE.Color(0xffffff);
-  private haze = 0;
   private warmth = 1;
 
   constructor(scene: THREE.Scene) {
@@ -240,14 +239,13 @@ export class Sky {
   }
 
   /**
-   * Region atmosphere (from `HistoricalMapProfile.atmosphere`): tints the horizon,
-   * thickens the clouds with the haze and warms/cools the sun. The terrain and
-   * water apply `skyTint`/`haze` as their own aerial perspective; `scene.fog`
-   * stays null (classic sharp look).
+   * Region atmosphere (from `HistoricalMapProfile.atmosphere`): tints the horizon
+   * and warm/cools the sun by hue (not brightness). The terrain and water apply
+   * `skyTint`/`fogDensity` as their own aerial perspective; `scene.fog` stays null
+   * (classic sharp look).
    */
-  setAtmosphere(skyTint: string, haze: number, warmth: number): void {
+  setAtmosphere(skyTint: string, warmth: number): void {
     this.atmTint.set(skyTint);
-    this.haze = haze;
     this.warmth = warmth;
   }
 
@@ -265,10 +263,13 @@ export class Sky {
     const dusk = 1 - Math.abs(day * 2 - 1) < 0.25 ? smoothStepT(Math.abs(sunH), 0, 0.18) : 0;
     const intensity = 1.7 + day * 0.9;
     this.light.intensity = intensity;
-    this.light.color
-      .copy(this.sunColor)
-      .multiplyScalar(this.warmth)
-      .lerp(this._cWarm, (1 - day) * 0.5);
+    // sun warmth shifts the hue (not the brightness): warm → amber, cool → blue
+    const w = this.warmth - 1;
+    this._cSunTint.setRGB(1, 1, 1);
+    if (w > 0) this._cSunTint.setRGB(1, 1 - Math.min(0.3, w * 1.5), 1 - Math.min(0.5, w * 3));
+    else if (w < 0) this._cSunTint.setRGB(1 + Math.min(0.15, -w * 1.2), 1 + Math.min(0.08, -w * 0.6), 1);
+    this._cSunLit.copy(this.sunColor).multiply(this._cSunTint);
+    this.light.color.copy(this._cSunLit).lerp(this._cWarm, (1 - day) * 0.5);
     this.light.position.copy(this.sunDir).multiplyScalar(500);
     this.light.target.position.set(0, 0, 0);
 
@@ -288,9 +289,9 @@ export class Sky {
       .lerp(this._cDuskH, dusk * 0.8)
       .multiply(this.atmTint);
     domeMat.uniforms.horizonColor.value.copy(this._cHorizon);
-    this._cTop.setHex(0x0a1a4a).lerp(this._cTopDusk, dusk);
+    this._cTop.setHex(0x0a1a4a).lerp(this._cTopDusk, dusk).multiply(this.atmTint);
     domeMat.uniforms.topColor.value.copy(this._cTop);
-    domeMat.uniforms.sunColor.value.setRGB(1, 0.5 + day * 0.4, 0.25 + day * 0.5).multiplyScalar(this.warmth);
+    domeMat.uniforms.sunColor.value.setRGB(1, 0.5 + day * 0.4, 0.25 + day * 0.5).multiply(this._cSunTint);
 
     // Sun / moon
     this._sunPos.copy(this.sunDir).multiplyScalar(4600);
@@ -309,7 +310,7 @@ export class Sky {
     // Clouds
     const cloudMat = this.cloudLayer.material as THREE.ShaderMaterial;
     cloudMat.uniforms.time.value = time;
-    cloudMat.uniforms.opacity.value = (0.15 + day * 0.5 + dusk * 0.1) * (1 + this.haze * 50);
+    cloudMat.uniforms.opacity.value = 0.15 + day * 0.5 + dusk * 0.1;
     cloudMat.uniforms.color.value.setRGB(0.85 + day * 0.15, 0.9 + day * 0.1, 1);
     this.cloudLayer.rotation.z = time * 0.0015;
   }
@@ -325,9 +326,15 @@ export class Sky {
   private _cTop = new THREE.Color(0x0a1a4a);
   private _cTopDusk = new THREE.Color(0x3a1a5a);
   private _sunPos = new THREE.Vector3();
+  private _cSunTint = new THREE.Color(0xffffff);
+  private _cSunLit = new THREE.Color(0xfff2dd);
 
   getSunLight(): THREE.DirectionalLight {
     return this.light;
+  }
+  /** Region-tinted sun colour, for the terrain/water shaders. */
+  getSunColor(): THREE.Color {
+    return this._cSunLit;
   }
   getHemi(): THREE.HemisphereLight {
     return this.hemi;

@@ -47,6 +47,10 @@ describe('historical map profiles', () => {
     }
   });
 
+  it('gives the humid Amazon a hazier atmosphere than the clear high Andes', () => {
+    expect(MAP_PROFILES.amazon.atmosphere.fogDensity).toBeGreaterThan(MAP_PROFILES.high_andes.atmosphere.fogDensity);
+  });
+
   it('maps every civilization to a region consistent with its geography', () => {
     for (const civ of CIVS) {
       const region = regionForCiv(civ.id);

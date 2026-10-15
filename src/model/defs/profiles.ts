@@ -285,7 +285,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     water: { level: WATER_LEVEL, inland: true, wetland: true },
     vegetation: { density: 1, variants: { frond: 0.7, broad: 0.3 } },
     resources: { tree: 0.7, mine: 0.1, well: 0.15, berry: 0.25, hunt: 10, fishing: 8 },
-    atmosphere: { fogDensity: 0.0035, sunWarmth: 0.92, skyTint: '#c4d2be' },
+    atmosphere: { fogDensity: 0.0028, sunWarmth: 0.92, skyTint: '#c4d2be' },
     landmark: null,
     provenance: 'docs/historia/mapas.md (selva alta: ceja de selva / amazonía)',
   },
