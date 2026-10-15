@@ -74,7 +74,11 @@ Wari y Tiahuanaco; el **felino** lo es de Chavín; el **Inti** del Estado inca.
 
 ## 3. Implementación
 
-- **Datos**: `CivDef.visual = { arch, emblem }` en `src/model/defs/civs.ts`.
+- **Datos**: `CivDef.visual = { arch, emblem }` en `src/model/defs/civs.ts`. La identidad material se detalla en
+  `src/model/defs/architecture.ts` (`HistoricalArchitectureProfile` + `archProfileFor(civ, period)`): nombra muro
+  (`adobe`, `fieldstone`, `cut-stone`, `megalithic`…), cubierta, fundación y ornamentos por civilización (slice:
+  Caral, Moche, Inca), sobre el mismo `ArchStyle`. Los landmarks viven en `src/model/defs/landmarks.ts`
+  (solo visuales, con fuente y estado `documented|plausible|abstraction`).
 - **Aplicación**: `ProceduralModel.ts` construye los edificios prehispánicos con
   `buildAndeanStructure` (plataforma escalonada + muros de adobe/piedra + techo de paja/plano + nichos,
   frisos, escalinatas, torre) según `Builder.style`, y añade el `emblem` en el estandarte

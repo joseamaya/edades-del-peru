@@ -46,3 +46,27 @@ Se definen tres grandes biomas jugables (más un cuarto opcional), con parámetr
 - Shady Solís, R. (PEACS): valle de Supe y Áspero.
 - UNESCO: [Ciudad Sagrada de Caral-Supe](https://whc.unesco.org/en/list/1269/), [Chan Chan](https://whc.unesco.org/en/list/366/).
 - Seguridad alimentaria andina: waru-warus de Tiahuanaco; andenes incas.
+
+## Perfiles históricos de mundo (implementación)
+
+La identidad del mapa es **data-driven** (`src/model/defs/profiles.ts`). La geografía se descompone en una
+`GeographicRegion` (más fina que el `MapType` jugable): `north_coast`, `central_coast`, `south_coast`,
+`andean_valley`, `high_andes`, `altiplano`, `amazon`. Cada región define un `HistoricalMapProfile`
+(terreno, clima, agua/humedales, vegetación, recursos, atmósfera y landmark) y se resuelve con
+`resolveMapProfile({ period, civ, mapType, region? })`.
+
+La región de cada civilización sigue este dossier (regiones deducidas de la tabla de arriba):
+
+| Región | Civilizaciones |
+|---|---|
+| `north_coast` | Cupisnique, Moche, Chimú |
+| `central_coast` | Caral-Supe |
+| `south_coast` | Paracas, Nazca, Chincha |
+| `andean_valley` | Chavín, Recuay, Huanca (por defecto de `andes`) |
+| `high_andes` | Wari, Chanca, Inca |
+| `altiplano` | Tiahuanaco, Collas/Lupaca |
+| `amazon` | escenarios de selva |
+
+Los valores son **abstracciones jugables** de los rasgos documentados (no reconstrucciones), y cada perfil cita
+su fuente. La semilla + el perfil deben seguir siendo deterministas.
+
