@@ -11,7 +11,7 @@ export const MISSIONS: MissionDef[] = [
     subtitle: 'Arcaico Tardío · c. 3000 a.C.',
     history:
       'En el valle de Supe, entre el océano y los Andes, nace la primera ciudad de América. Caral se levanta con canales, plazas y pirámides.\n' +
-      'Sostened el asentamiento, comerciad con el litoral de Áspero y defended el valle de los grupos rivales.',
+      'Sin guerra documentada, su poder es la construcción, el trueque con el litoral y la religión. Alza la ciudad sagrada y sostenla.',
     victory:
       'Caral prospera durante siglos como centro de la civilización andina. Su legado guiará a las culturas del Perú durante milenios.',
     defeat: 'El valle queda en silencio. La primera ciudad de América no llega a consolidarse.',
@@ -22,53 +22,51 @@ export const MISSIONS: MissionDef[] = [
     map: { seed: 3000, type: 'coast', size: 128 },
     timeOfDay: 'morning',
     startingEra: Era.FORMATIVE,
-    startingResources: { food: 200, wood: 400, silver: 150, stone: 80 },
-    start: {
-      units: [{ kind: UnitKind.SOLDIER, dx: -6, dz: 6, tag: 'autoridad', count: 1 }],
-    },
-    enemy: { active: true, difficulty: 'easy', aggression: 0.4 },
+    startingResources: { food: 250, wood: 120, silver: 150, stone: 80 },
+    start: {},
+    enemy: { active: false, difficulty: 'easy', aggression: 0 },
     objectives: [
-      { id: 'obj_food', kind: 'gather', resource: 'food', count: 300, title: 'Reúne 300 de comida' },
-      { id: 'obj_survive', kind: 'survive', time: 360, title: 'Sostén el asentamiento 6 minutos' },
       {
-        id: 'obj_autoridad',
-        kind: 'protect',
-        entityTag: 'autoridad',
-        title: 'Mantén con vida a la autoridad de Caral',
+        id: 'obj_madera',
+        kind: 'gather',
+        resource: 'wood',
+        count: 200,
+        title: 'Reúne 200 de madera para las pirámides',
       },
+      {
+        id: 'obj_agricultura',
+        kind: 'build',
+        buildingKind: BuildingKind.FARM,
+        count: 1,
+        title: 'Ordena la agricultura del valle (tecla G)',
+      },
+      {
+        id: 'obj_comercio',
+        kind: 'build',
+        buildingKind: BuildingKind.MARKET,
+        count: 1,
+        title: 'Comercia con Áspero (construye un mercado)',
+      },
+      { id: 'obj_sostener', kind: 'survive', time: 300, title: 'Sostén el asentamiento 5 minutos' },
     ],
     triggers: [
       {
         id: 't_dial_1',
-        condition: { type: 'time', seconds: 40 },
-        effects: [
-          { type: 'dialogue', text: 'Autoridad: —El río Supe nos da vida. ¡Alzad los templos y tended los canales!' },
-        ],
-      },
-      {
-        id: 't_wave_1',
-        condition: { type: 'time', seconds: 140 },
+        condition: { type: 'time', seconds: 20 },
         effects: [
           {
-            type: 'wave',
-            owner: 1,
-            units: [{ kind: UnitKind.SOLDIER, count: 3 }],
-            pos: { ref: 'player', dx: 22, dz: 22 },
-            radius: 4,
+            type: 'dialogue',
+            text: 'El río Supe nos da vida. Alzad los templos, tended los canales y guardad la armonía del valle.',
           },
-          { type: 'dialogue', text: '¡Grupos rivales al noreste! ¡A las armas!' },
         ],
       },
       {
-        id: 't_wave_2',
-        condition: { type: 'time', seconds: 260 },
+        id: 't_dial_2',
+        condition: { type: 'time', seconds: 150 },
         effects: [
           {
-            type: 'wave',
-            owner: 1,
-            units: [{ kind: UnitKind.SOLDIER, count: 4 }],
-            pos: { ref: 'player', dx: -20, dz: 24 },
-            radius: 4,
+            type: 'dialogue',
+            text: 'Vecinos de Áspero traen pescado y conchas del litoral; a cambio, el valle ofrece algodón y calabaza. La ciudad sagrada crece sin guerras.',
           },
         ],
       },

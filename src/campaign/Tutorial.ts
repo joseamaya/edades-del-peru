@@ -34,6 +34,8 @@ export class Tutorial {
       houses: countB(BuildingKind.HOUSE),
       barracks: countB(BuildingKind.BARRACKS),
       soldiers: countU(UnitKind.SOLDIER),
+      farms: countB(BuildingKind.FARM),
+      markets: countB(BuildingKind.MARKET),
     };
     const buildBottom = '#ed-bottom';
     this.pasos = [
@@ -48,34 +50,34 @@ export class Tutorial {
         text: 'Con obreros seleccionados, pulsa V (o el botón Vivienda) y haz clic en el suelo para construir una vivienda.',
         highlight: buildBottom,
         check: (g) =>
-          [...g.buildings.values()].filter((b) => b.owner === 0 && b.kind === BuildingKind.HOUSE && !b.dead).length >
-          this.base.houses,
+          [...g.buildings.values()].filter(
+            (b) => b.owner === 0 && b.kind === BuildingKind.HOUSE && b.constructionComplete && !b.dead,
+          ).length > this.base.houses,
       },
       {
-        id: 'barracks',
-        text: 'Ahora construye una Casa del Guerrero (Cuartel): te permitirá entrenar soldados.',
+        id: 'farm',
+        text: 'Pulsa G (o el botón Andén) para ordenar la agricultura del valle. Caral vive de la tierra y del mar.',
         highlight: buildBottom,
         check: (g) =>
-          [...g.buildings.values()].filter((b) => b.owner === 0 && b.kind === BuildingKind.BARRACKS && !b.dead).length >
-          this.base.barracks,
+          [...g.buildings.values()].filter(
+            (b) => b.owner === 0 && b.kind === BuildingKind.FARM && b.constructionComplete && !b.dead,
+          ).length > (this.base.farms ?? 0),
       },
       {
-        id: 'train',
-        text: 'Selecciona la Casa del Guerrero y entrena un Guerrero para defender el asentamiento.',
+        id: 'market',
+        text: 'Con obreros seleccionados, construye un Mercado desde el panel para comerciar con Áspero.',
         highlight: buildBottom,
         check: (g) =>
-          [...g.units.values()].filter((u) => u.owner === 0 && u.kind === UnitKind.SOLDIER && !u.dead).length >
-          this.base.soldiers,
+          [...g.buildings.values()].filter(
+            (b) => b.owner === 0 && b.kind === BuildingKind.MARKET && b.constructionComplete && !b.dead,
+          ).length > (this.base.markets ?? 0),
       },
       {
-        id: 'attack',
-        text: 'Selecciona tu ejército y da una orden: clic derecho para mover o atacar, Ctrl+clic derecho para atacar-mover.',
+        id: 'explore',
+        text: 'Selecciona tu explorador y haz clic derecho hacia el litoral para abrir las rutas de trueque.',
         check: (g) =>
           [...g.units.values()].some(
-            (u) =>
-              u.owner === 0 &&
-              !u.dead &&
-              (u.orderQueue[0]?.kind === OrderKind.ATTACK || u.orderQueue[0]?.kind === OrderKind.ATTACK_MOVE),
+            (u) => u.owner === 0 && !u.dead && u.kind === UnitKind.SCOUT && u.orderQueue[0]?.kind === OrderKind.MOVE,
           ),
       },
     ];
@@ -127,6 +129,6 @@ export class Tutorial {
     this.begun = s.begun;
     this.finished = s.finished;
     this.delay = s.delay;
-    this.base = { ...s.base };
+    this.base = { ...s.base, farms: s.base.farms ?? 0, markets: s.base.markets ?? 0 };
   }
 }

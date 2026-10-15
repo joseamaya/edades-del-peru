@@ -131,6 +131,8 @@ export class Game {
   private paused = false;
   private gameEnded = false;
   private wonderReqTime = 300;
+  /** Whether player 1 has an active opponent (skirmish, or a mission with an enemy). */
+  private readonly enemyActive: boolean;
   private pendingSnapshot: SaveData | null = null;
   /** Simulation step counter (fixed 60Hz ticks), used to time recorded commands. */
   stepCount = 0;
@@ -156,6 +158,7 @@ export class Game {
       this.settings.victoryMode = 'conquest'; // the campaign does not use wonder victory
     }
     this.missionRegion = mis?.region;
+    this.enemyActive = !mis || mis.enemy.active;
     this.rng = new RNG((this.settings.mapSeed * 2654435761) >>> 0);
     this.initRenderer();
     this.initWorld();
@@ -318,7 +321,7 @@ export class Game {
       } while ((!this.terrain.isBuildable(x, z) || this.terrain.isWater(x, z)) && attempts < 200);
       spots.push([x, z]);
     }
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < (this.enemyActive ? 2 : 1); i++) {
       this.spawnStartBase(i, spots[i][0], spots[i][1]);
     }
     // camera on the player

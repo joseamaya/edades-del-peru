@@ -19,6 +19,8 @@ export interface TutorialBase {
   houses: number;
   barracks: number;
   soldiers: number;
+  farms?: number;
+  markets?: number;
 }
 
 export interface UnitSave {
