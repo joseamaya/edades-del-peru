@@ -56,7 +56,15 @@ describe('settlement planner', () => {
     expect(centroidX(hill)).toBeLessThan(anchor.x);
   });
 
-  it('falls back to a fixed ring when nothing near the anchor is walkable', () => {
+  it('scans outward for valid land when the nominal ring is too steep', () => {
+    const dist = (x: number, z: number) => Math.hypot(x - anchor.x, z - anchor.z);
+    const steep: SettlementQuery = { ...world, getSlope: (x, z) => (dist(x, z) < 7 ? 0.8 : 0.1) };
+    const spots = planSettlement({ shape: 'grid', seed: 5, anchor, count: 3 }, steep);
+    expect(spots).toHaveLength(3);
+    for (const s of spots) expect(steep.getSlope(s.x, s.z)).toBeLessThanOrEqual(0.35);
+  });
+
+  it('keeps its nominal ring on an all-water map (degenerate)', () => {
     const flooded: SettlementQuery = { ...world, isWater: () => true, isBuildable: () => false };
     expect(planSettlement({ shape: 'riverside', seed: 5, anchor, count: 3 }, flooded)).toHaveLength(3);
   });

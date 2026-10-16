@@ -506,7 +506,7 @@ export class Game {
     const rng = new RNG(this.settings.mapSeed + player * 100);
     const shape = this.mapProfile.culturalLandscape?.settlementShape ?? 'dispersed';
     const spots = planSettlement(
-      { shape, seed: this.settings.mapSeed + player * 100, anchor: { x, z }, count: 3 },
+      { shape, seed: this.settings.mapSeed * 131 + player * 100 + 1, anchor: { x, z }, count: 3 },
       this.terrain,
     );
     for (const spot of spots) {

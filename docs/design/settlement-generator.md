@@ -13,45 +13,37 @@ still do not.
 
 ## Contract
 
-Pure, deterministic function (no `THREE`, like `generateHeightField`):
+Pure, deterministic function (no `THREE`, like `generateHeightField`). The
+**implemented** slice (dwellings of the starting base) is:
 
 ```ts
 export interface SettlementRequest {
-  civ: CivId;
-  period: HistoricalPeriod;
-  map: HistoricalMapProfile;   // resolved via resolveMapProfile
+  shape: SettlementShape;      // riverside | hilltop | dispersed | grid
   seed: number;
+  anchor: { x: number; z: number };
+  count: number;
 }
 
-export interface SettlementPlacement {
-  kind: BuildingKind;
+export interface SettlementSpot {
   x: number;
   z: number;
-  /** Optional facing, for oriented rows (dwellings along a street). */
   yaw: number;
 }
 
+export function planSettlement(req: SettlementRequest, q: SettlementQuery): SettlementSpot[];
+```
+
+The `SettlementQuery` interface (shared `TerrainQuery` + `getHeight`/`getMoisture`)
+keeps the planner testable headless with a fake terrain. The eventual full plan —
+the still-deferred steps below — is:
+
+```ts
 export interface SettlementPlan {
   center: SettlementPlacement;
   placements: SettlementPlacement[];   // dwellings, farms, dropsites…
   roads: { from: { x: number; z: number }; to: { x: number; z: number } }[];
 }
-
-export function generateSettlement(
-  req: SettlementRequest,
-  query: {
-    isBuildable(x: number, z: number): boolean;
-    isWater(x: number, z: number): boolean;
-    getSlope(x: number, z: number): number;
-    getMoisture(x: number, z: number): number;
-    getTerrace(x: number, z: number): number;
-    height(x: number, z: number): number;
-  },
-): SettlementPlan;
 ```
-
-The `query` is an interface, so the generator is testable headless (no DOM) with a
-fake terrain — the same trick that makes `heightField` unit-testable.
 
 ## Algorithm (spatial logic, not random scatter)
 

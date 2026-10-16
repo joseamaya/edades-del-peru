@@ -1,11 +1,9 @@
 import { RNG } from '../../util/rng';
 import type { SettlementShape } from './landscape';
+import type { TerrainQuery } from './terrainQuery';
 
 /** Terrain queries the settlement planner needs (satisfied by `Terrain`; fake in tests). */
-export interface SettlementQuery {
-  isWater(x: number, z: number): boolean;
-  isBuildable(x: number, z: number): boolean;
-  getSlope(x: number, z: number): number;
+export interface SettlementQuery extends TerrainQuery {
   getHeight(x: number, z: number): number;
   getMoisture(x: number, z: number): number;
 }
@@ -28,6 +26,11 @@ export interface SettlementRequest {
 const RING_RADIUS = 5.5;
 /** Minimum distance between two dwellings (their obstacles must not merge). */
 const MIN_SEP = 3.5;
+/** Steepest ground a dwelling may sit on. */
+const SLOPE_LIMIT = 0.35;
+/** A dwelling may be nudged out to this radius before the fallback scan takes over. */
+const MAX_RADIUS = 14;
+const SEARCH_ATTEMPTS = 16;
 
 /**
  * Deterministic layout of a starting settlement's dwellings around an anchor,
@@ -35,7 +38,8 @@ const MIN_SEP = 3.5;
  * `hilltop` one toward high ground, and `dispersed`/`grid` fan differently. Pure
  * (no THREE) so it is unit-testable headless; same request -> same plan. A
  * dwelling is nudged around the ring when its spot is water, unbuildable, steep
- * or across a river; if nothing fits it falls back to its nominal ring slot.
+ * or across a river; if the whole ring fails it scans outward for valid land, and
+ * only as a last resort (an all-water map) keeps its nominal ring slot.
  */
 export function planSettlement(req: SettlementRequest, q: SettlementQuery): SettlementSpot[] {
   const rng = new RNG((req.seed * 40503 + 7) >>> 0);
@@ -46,32 +50,59 @@ export function planSettlement(req: SettlementRequest, q: SettlementQuery): Sett
   for (let i = 0; i < req.count; i++) {
     const pref = bias + (i - (req.count - 1) / 2) * spacing;
     let spot: SettlementSpot | null = null;
-    for (let a = 0; a < 16; a++) {
+    for (let a = 0; a < SEARCH_ATTEMPTS; a++) {
       const ang = a === 0 ? pref + rng.range(-0.1, 0.1) : pref + rng.range(-1, 1) * step;
-      const x = req.anchor.x + Math.cos(ang) * RING_RADIUS;
-      const z = req.anchor.z + Math.sin(ang) * RING_RADIUS;
-      if (q.isWater(x, z) || !q.isBuildable(x, z) || q.getSlope(x, z) > 0.35) continue;
-      // a dwelling across a river would be unreachable, and conquest needs every building razed
-      if (crossesWater(req.anchor, x, z, q)) continue;
-      if (out.some((s) => (s.x - x) ** 2 + (s.z - z) ** 2 < MIN_SEP ** 2)) continue;
-      spot = { x, z, yaw: ang };
-      break;
-    }
-    if (!spot) {
-      spot = {
-        x: req.anchor.x + Math.cos(pref) * RING_RADIUS,
-        z: req.anchor.z + Math.sin(pref) * RING_RADIUS,
-        yaw: pref,
+      const candidate = {
+        x: req.anchor.x + Math.cos(ang) * RING_RADIUS,
+        z: req.anchor.z + Math.sin(ang) * RING_RADIUS,
       };
+      if (isFree(candidate, req.anchor, q, out)) {
+        spot = { ...candidate, yaw: ang };
+        break;
+      }
     }
+    spot ??= findNearbyValid(req.anchor, q, out) ?? nominal(req.anchor, pref);
     out.push(spot);
   }
   return out;
 }
 
+/** A spot is free when it is buildable, dry, gentle, not cut off and clear of the others. */
+function isFree(
+  p: { x: number; z: number },
+  anchor: { x: number; z: number },
+  q: SettlementQuery,
+  taken: SettlementSpot[],
+): boolean {
+  if (q.isWater(p.x, p.z) || !q.isBuildable(p.x, p.z) || q.getSlope(p.x, p.z) > SLOPE_LIMIT) return false;
+  // a dwelling across a river would be unreachable, and conquest needs every building razed
+  if (crossesWater(anchor, p.x, p.z, q)) return false;
+  return !taken.some((s) => (s.x - p.x) ** 2 + (s.z - p.z) ** 2 < MIN_SEP ** 2);
+}
+
+/** Deterministic outward scan for valid land when the nominal ring is all water/unbuildable. */
+function findNearbyValid(
+  anchor: { x: number; z: number },
+  q: SettlementQuery,
+  taken: SettlementSpot[],
+): SettlementSpot | null {
+  for (let r = RING_RADIUS + 1.5; r <= MAX_RADIUS; r += 1.5) {
+    for (let i = 0; i < 12; i++) {
+      const ang = (i / 12) * Math.PI * 2;
+      const p = { x: anchor.x + Math.cos(ang) * r, z: anchor.z + Math.sin(ang) * r };
+      if (isFree(p, anchor, q, taken)) return { ...p, yaw: ang };
+    }
+  }
+  return null;
+}
+
+function nominal(anchor: { x: number; z: number }, ang: number): SettlementSpot {
+  return { x: anchor.x + Math.cos(ang) * RING_RADIUS, z: anchor.z + Math.sin(ang) * RING_RADIUS, yaw: ang };
+}
+
 /** True if the straight segment from the anchor to (x, z) crosses water. */
 function crossesWater(anchor: { x: number; z: number }, x: number, z: number, q: SettlementQuery): boolean {
-  const steps = 6;
+  const steps = 8;
   for (let i = 1; i < steps; i++) {
     const t = i / steps;
     if (q.isWater(anchor.x + (x - anchor.x) * t, anchor.z + (z - anchor.z) * t)) return true;
