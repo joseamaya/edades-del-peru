@@ -7,11 +7,13 @@ import { test, expect, Page } from '@playwright/test';
  * campaign tests do not cover.
  */
 async function runSkirmish(page: Page, clustered: boolean) {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/?play=1&seed=777&fog=0&low=1&noloop=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });
-  return page.evaluate((cluster: boolean) => {
+  const out = await page.evaluate((cluster: boolean) => {
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
@@ -65,17 +67,16 @@ async function runSkirmish(page: Page, clustered: boolean) {
     }
     return { spawned, ended: g.hasEnded(), p1alive: g.players[1].alive as boolean };
   }, clustered);
+  return { ...out, errors };
 }
 
 test('a skirmish can be won by destroying the enemy base', async ({ page }) => {
   test.setTimeout(120_000);
-  const errors: string[] = [];
-  page.on('pageerror', (e) => errors.push(e.message));
   const out = await runSkirmish(page, false);
   expect(out.spawned).toBeGreaterThan(0);
   expect(out.ended, 'the skirmish never ended').toBe(true);
   expect(out.p1alive, 'the enemy was not defeated').toBe(false);
-  expect(errors).toEqual([]);
+  expect(out.errors).toEqual([]);
 });
 
 test('a clustered army also razes the base (attack-chase fallback)', async ({ page }) => {
@@ -85,4 +86,5 @@ test('a clustered army also razes the base (attack-chase fallback)', async ({ pa
   // and never reach the survivors when the path stopped a couple of cells short
   expect(out.ended, 'the clustered army never finished the base').toBe(true);
   expect(out.p1alive).toBe(false);
+  expect(out.errors).toEqual([]);
 });

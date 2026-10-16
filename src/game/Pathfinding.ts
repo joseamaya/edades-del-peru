@@ -144,6 +144,7 @@ export class Pathfinder {
   /** Mark cells non-traversable due to slope or water (call with terrain height). */
   bakeTerrain(heightFn: (x: number, z: number) => number, waterLevel: number): void {
     const { cols, cell } = this.grid;
+    this.grid.walkable.fill(1);
     for (let z = 0; z < cols; z++) {
       for (let x = 0; x < cols; x++) {
         const wx = x * cell + cell / 2;
@@ -154,7 +155,9 @@ export class Pathfinder {
         }
       }
     }
+    // snapshot the terrain-only mask, then re-apply the obstacles on top (idempotent)
     this.terrainBlocked = this.grid.walkable.slice();
+    for (const o of this.obstacles) this.rasterize(o);
   }
 
   isWalkable(wx: number, wz: number): boolean {
