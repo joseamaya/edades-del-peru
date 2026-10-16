@@ -26,6 +26,9 @@ export interface LandscapeRule {
   weight: number;
 }
 
+/** How a settlement clusters relative to its terrain. */
+export type SettlementShape = 'riverside' | 'hilltop' | 'dispersed' | 'grid';
+
 /**
  * Cultural identity of a map: which features a region tends to carry and how its
  * settlement clusters. Modifies the existing generator (like `HistoricalMapProfile`);
@@ -34,7 +37,7 @@ export interface LandscapeRule {
  */
 export interface CulturalLandscapeProfile {
   features: LandscapeRule[];
-  settlementShape: 'riverside' | 'hilltop' | 'dispersed' | 'grid';
+  settlementShape: SettlementShape;
   provenance: string;
 }
 

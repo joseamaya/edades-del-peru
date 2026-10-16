@@ -1,55 +1,49 @@
 # Settlement generator — design proposal
 
-Status: **proposal, not implemented.** Today a skirmish base is a center plus
-three dwellings on a fixed ring, and campaign buildings are placed by hand with
-`dx/dz` offsets (`MissionDef.start`, see
+Status: **partially implemented.** Phases 1–3 (a terrain-aware dwelling layout for
+the starting base) are live in `src/model/defs/settlementPlan.ts`, wired in
+`Game.spawnStartBase`. The full plan below (roads, farms, dropsites, defense) and
+the gameplay coupling remain future work.
+
+Today a skirmish base is a center plus three dwellings on a fixed ring, and
+campaign buildings are placed by hand with `dx/dz` offsets (`MissionDef.start`, see
 [`src/core/Game.ts`](../../src/core/Game.ts) `spawnStartBase` / `applyMissionSetup`).
-Neither reads the terrain, so bases never sit *in* the geography. This proposes a
-`SettlementGenerator` that lays out a starting base from the terrain and the
-historical profile, so a Moche base hugs a fertile valley and an Inca base
-terraces a slope.
+The dwellings now read the terrain through `planSettlement`; crops/roads/dropsites
+still do not.
 
 ## Contract
 
-Pure, deterministic function (no `THREE`, like `generateHeightField`):
+Pure, deterministic function (no `THREE`, like `generateHeightField`). The
+**implemented** slice (dwellings of the starting base) is:
 
 ```ts
 export interface SettlementRequest {
-  civ: CivId;
-  period: HistoricalPeriod;
-  map: HistoricalMapProfile;   // resolved via resolveMapProfile
+  shape: SettlementShape;      // riverside | hilltop | dispersed | grid
   seed: number;
+  anchor: { x: number; z: number };
+  count: number;
 }
 
-export interface SettlementPlacement {
-  kind: BuildingKind;
+export interface SettlementSpot {
   x: number;
   z: number;
-  /** Optional facing, for oriented rows (dwellings along a street). */
   yaw: number;
 }
 
+export function planSettlement(req: SettlementRequest, q: SettlementQuery): SettlementSpot[];
+```
+
+The `SettlementQuery` interface (shared `TerrainQuery` + `getHeight`/`getMoisture`)
+keeps the planner testable headless with a fake terrain. The eventual full plan —
+the still-deferred steps below — is:
+
+```ts
 export interface SettlementPlan {
   center: SettlementPlacement;
   placements: SettlementPlacement[];   // dwellings, farms, dropsites…
   roads: { from: { x: number; z: number }; to: { x: number; z: number } }[];
 }
-
-export function generateSettlement(
-  req: SettlementRequest,
-  query: {
-    isBuildable(x: number, z: number): boolean;
-    isWater(x: number, z: number): boolean;
-    getSlope(x: number, z: number): number;
-    getMoisture(x: number, z: number): number;
-    getTerrace(x: number, z: number): number;
-    height(x: number, z: number): number;
-  },
-): SettlementPlan;
 ```
-
-The `query` is an interface, so the generator is testable headless (no DOM) with a
-fake terrain — the same trick that makes `heightField` unit-testable.
 
 ## Algorithm (spatial logic, not random scatter)
 

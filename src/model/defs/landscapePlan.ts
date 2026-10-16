@@ -1,12 +1,11 @@
 import { RNG } from '../../util/rng';
 import { landscapeWeight, type CulturalLandscapeProfile, type LandscapeFeature } from './landscape';
+import type { TerrainQuery } from './terrainQuery';
 
 /** Terrain queries the planner needs (satisfied by `Terrain`; fake in tests). */
-export interface LandscapeQuery {
+export interface LandscapeQuery extends TerrainQuery {
+  /** Map side length in world units. */
   size: number;
-  isWater(x: number, z: number): boolean;
-  isBuildable(x: number, z: number): boolean;
-  getSlope(x: number, z: number): number;
   /** Agricultural terracing strength (0..~0.55). */
   getTerrace(x: number, z: number): number;
   /** Canal strength (0..1) carved into the terrain. */
