@@ -83,9 +83,10 @@ Los **andenes** (terrazas agrícolas) se generan a partir de `terrain.terraceCha
 laderas moderadas (más probables en `high_andes`/`andean_valley`, casi ausentes en `amazon`) y produce un mapa de
 fuerza de terraza que `Terrain.getTerrace` expone. El **rendimiento de una granja depende del terreno**
 (`Game.applyTerrainFarmYield` → `farmYieldMultiplier`): sube con el andén, con la humedad del suelo y con un
-**canal de riego** cerca (≤ 2.5 unidades) — hasta ×2.8. Es una **abstracción jugable** de la agricultura adaptada
-al terreno (andenes, valles fértiles, riego), no una reconstrucción; premia colocar granjas en un valle fértil o
-junto a una acequia.
+**canal de riego** a ≤ 2.5 unidades (hasta ×2.44). Es una **abstracción jugable** de la agricultura adaptada al
+terreno (andenes, valles fértiles, riego), no una reconstrucción; premia colocar granjas en un valle fértil o
+junto a una acequia. **Fuente de la abstracción**: los andenes y las acequias descritos en este mismo documento
+(véase también [`civilizaciones/inca.md`](./civilizaciones/inca.md)); el mapeo a rendimiento es del juego.
 
 El **paisaje cultural** (canales, campos, caminos, senderos, andenes/muros, corrales, plazas) es una capa nueva
 (`src/model/defs/landscape.ts` + `src/rendering/CulturalLandscape.ts`, spec en

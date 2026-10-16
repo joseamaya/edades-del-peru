@@ -62,11 +62,11 @@ for player-facing docs see [`README.md`](../README.md); for art direction see
 - **Farm yield from the terrain (§7 geography as mechanic)**: `Game.applyTerrainFarmYield` (called from every
   farm placement path: player, AI, scripts) scales a farm's `foodAmount` by
   `farmYieldMultiplier({ terrace, moisture, canal })` (`src/model/defs/farmYield.ts`, pure/unit-tested): the
-  ground under the farm — andenes, fertile moist soil, and an irrigation canal within reach
-  (`Game.nearbyCanal`, ≤ 2.5 units) — raise its yield (up to ×2.8). This rewards placing farms in a fertile
-  valley / beside a canal, and makes the carved canals matter. Deterministic (own RNG derived from the seed), so
-  replay/save safe (`foodAmount` is already in `stateHash` and `saveTypes`). Guarded by `tests/terrain.test.ts`
-  and `tests/farm-yield.test.ts`.
+  ground under the farm — andenes, fertile moist soil, and an irrigation canal within reach (`nearbyCanal`,
+  `CANAL_REACH` = 2.5 units) — raise its yield (up to ×2.44 on generated terrain). This rewards placing farms in
+  a fertile valley / beside a canal, and makes the carved canals matter. Pure and deterministic (no RNG), so
+  replay/save safe (`foodAmount` is already in `stateHash` and `saveTypes`). Guarded by
+  `tests/farm-yield.test.ts`; the terrace/canal maps it reads are pinned by `tests/terrain.test.ts`.
 - **Architecture profile in the model (Phase 4)**: `BuildContext.arch` (`Game.makeBuildContext` →
   `archProfileFor(civ, era)`) drives `ProceduralModel`'s Andean builders (`wall`/`roof`/`foundation`/
   `ornament`/`monumentalTiers`) instead of `Builder.style` booleans; new modules are `andeanTerraceBase`,
