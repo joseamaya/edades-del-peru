@@ -34,6 +34,9 @@ for player-facing docs see [`README.md`](../README.md); for art direction see
   in `tests/combat.test.ts`; `Game.resolveDamage` calls it — melee passes `stats.damageType`, and projectile spawns
   carry it through `spawnProjectile` into `applyProjectileDamage`. The `Unit.armorMultiplier` field keeps its name
   and save shape but now stores `1 + reduction` (no `SAVE_VERSION` bump), so `saveTypes` is unchanged.
+  **Height advantage (§7)**: a unit attacking from higher ground deals more and uphill less, via the pure
+  `elevationDamageMultiplier(attackerY, targetY)` (±25% cap), applied in `Game.resolveDamage` only when the
+  attacker has a position (melee; projectiles pass `{ owner }`). Units only, not buildings.
 - **Maps by geography**: `MapType = 'coast' | 'andes' | 'altiplano' | 'jungle'` (generated in `Terrain.generate`).
 - **Historical world profiles (data layer)**: `src/model/defs/profiles.ts` defines `GeographicRegion` (finer than
   `MapType`) and `HistoricalMapProfile` (terrain+soil/climate+aridity/moisture/temperature/water/vegetation/

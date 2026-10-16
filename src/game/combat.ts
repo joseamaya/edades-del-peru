@@ -31,3 +31,18 @@ export function computeDamage(damage: number, damageType: DamageClass, armor: Ar
   const bonus = clamp(armorMult - 1, 0, ARMOR_BONUS_CAP);
   return Math.max(1, (damage - base) * (1 - bonus));
 }
+
+/** Damage bonus/penalty per unit of height advantage. */
+export const ELEVATION_BONUS_PER_UNIT = 0.03;
+/** Upper bound on the height-advantage damage change (either direction). */
+export const ELEVATION_BONUS_CAP = 0.25;
+
+/**
+ * Height advantage (PRP §7): a unit attacking from higher ground deals more
+ * damage, one attacking uphill less, clamped to ±25%. Pure and bounded, so it is
+ * deterministic and unit-testable.
+ */
+export function elevationDamageMultiplier(attackerY: number, targetY: number): number {
+  if (!Number.isFinite(attackerY) || !Number.isFinite(targetY)) return 1;
+  return clamp(1 + (attackerY - targetY) * ELEVATION_BONUS_PER_UNIT, 1 - ELEVATION_BONUS_CAP, 1 + ELEVATION_BONUS_CAP);
+}
