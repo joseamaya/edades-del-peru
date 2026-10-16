@@ -1040,40 +1040,6 @@ function buildMissionary(ctx: BuildContext): THREE.Group {
   return b.finish();
 }
 
-function buildMech(ctx: BuildContext): THREE.Group {
-  const b = new Builder(ctx);
-  const heavy = ctx.era >= Era.CONTEMPORARY;
-  // legs
-  b.box(0.5, 1.2, 0.6, b.pal.darkMetal, { x: -0.55, y: 0.6, metalness: 0.7 });
-  b.box(0.5, 1.2, 0.6, b.pal.darkMetal, { x: 0.55, y: 0.6, metalness: 0.7 });
-  b.box(0.6, 0.3, 0.7, b.pal.darkMetal, { x: -0.55, y: 1.35, metalness: 0.7 });
-  b.box(0.6, 0.3, 0.7, b.pal.darkMetal, { x: 0.55, y: 1.35, metalness: 0.7 });
-  // torso
-  b.box(1.4, 0.9, 0.8, b.pal.metal, { y: 1.9, metalness: 0.75, roughness: 0.3 });
-  b.box(1.5, 0.3, 0.85, b.civAccent, { y: 1.55, metalness: 0.4 });
-  b.box(0.6, 0.5, 0.2, b.pal.emissive, {
-    y: 2.0,
-    z: 0.45,
-    emissive: b.pal.emissive,
-    emissiveIntensity: 1.6,
-    transparent: true,
-    opacity: 0.85,
-  });
-  // arms
-  const gun = b.pivot('gun');
-  gun.position.set(0.85, 2.0, 0);
-  b.boxIn(gun, 0.4, 1.1, 0.5, b.pal.darkMetal, { x: 0, y: -0.5, metalness: 0.7 });
-  b.box(0.4, 0.4, 0.5, b.pal.darkMetal, { x: -0.85, y: 1.5, metalness: 0.7 });
-  b.cylIn(gun, 0.18, 0.24, 1.6, 12, b.pal.darkMetal, { y: 0.4, z: 0.6, rx: Math.PI / 2, metalness: 0.8 });
-  // head
-  b.box(0.5, 0.4, 0.5, b.pal.darkMetal, { y: 2.7, metalness: 0.7 });
-  b.box(0.32, 0.12, 0.1, b.pal.emissive, { y: 2.72, z: 0.28, emissive: b.pal.emissive, emissiveIntensity: 2 });
-  if (heavy) {
-    b.boxIn(gun, 0.3, 0.3, 1.2, b.pal.metal, { x: -0.5, y: 0.5, z: 0.1, metalness: 0.7 });
-  }
-  return b.finish();
-}
-
 // ---------------------------------------------------------------------------
 // Building constructors
 // ---------------------------------------------------------------------------
@@ -2692,7 +2658,6 @@ function buildModelTemplate(spec: ModelSpec, ctx: BuildContext): THREE.Group {
   else if (type === 'mortar') g = buildMortar(ctx);
   else if (type.startsWith('commissar')) g = buildCommisar(type, ctx);
   else if (type === 'missionary') g = buildMissionary(ctx);
-  else if (type.startsWith('mech')) g = buildMech(ctx);
   else g = buildStructure(type, ctx);
 
   if (scale) g.scale.setScalar(scale);

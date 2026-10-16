@@ -275,13 +275,13 @@ export class AI {
       buildPlan.push({ kind: BuildingKind.REFINERY, cost: woodCost(BuildingKind.REFINERY), priority: 70 });
     if (this.profile.advancedMilitary && !has(BuildingKind.ARSENAL))
       buildPlan.push({ kind: BuildingKind.ARSENAL, cost: woodCost(BuildingKind.ARSENAL), priority: 68 });
-    if (this.profile.advancedMilitary && p.era >= Era.REGIONAL_STATES && !has(BuildingKind.STABLE))
+    if (this.profile.advancedMilitary && p.era >= Era.VICEROYALTY && !has(BuildingKind.STABLE))
       buildPlan.push({ kind: BuildingKind.STABLE, cost: woodCost(BuildingKind.STABLE), priority: 62 });
     if (p.era >= Era.REGIONAL_STATES && countOf(BuildingKind.FARM) < 4)
       buildPlan.push({ kind: BuildingKind.FARM, cost: woodCost(BuildingKind.FARM), priority: 50 });
     if (secure && p.era >= Era.REGIONAL_STATES && !has(BuildingKind.INSTITUTE))
       buildPlan.push({ kind: BuildingKind.INSTITUTE, cost: woodCost(BuildingKind.INSTITUTE), priority: 46 });
-    if (secure && p.era >= Era.REGIONAL_STATES && !has(BuildingKind.FACTORY))
+    if (secure && p.era >= Era.VICEROYALTY && !has(BuildingKind.FACTORY))
       buildPlan.push({ kind: BuildingKind.FACTORY, cost: woodCost(BuildingKind.FACTORY), priority: 44 });
     if (secure && p.era >= Era.REGIONAL_STATES && !has(BuildingKind.FORTRESS))
       buildPlan.push({ kind: BuildingKind.FORTRESS, cost: woodCost(BuildingKind.FORTRESS), priority: 42 });

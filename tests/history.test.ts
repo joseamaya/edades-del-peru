@@ -38,7 +38,7 @@ describe('historical chronology', () => {
       expect(unitMinPeriod(kind)).toBe(HistoricalPeriod.VICEROYALTY);
     }
     // vehicles, aircraft and rockets are contemporary (20th century)
-    for (const kind of ['tank', 'anti_air', 'mec', 'nuclear'] as UnitKind[]) {
+    for (const kind of ['tank', 'anti_air', 'nuclear'] as UnitKind[]) {
       expect(unitMinPeriod(kind)).toBe(HistoricalPeriod.CONTEMPORARY);
     }
   });

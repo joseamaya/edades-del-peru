@@ -178,7 +178,7 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
     name: 'Establo',
     description: 'Entrena jinetes, caballería y exploradores.',
     category: 'military',
-    minEra: Era.FORMATIVE,
+    minEra: Era.VICEROYALTY,
     trainable: [UnitKind.HUSSAR, UnitKind.CAVALRY, UnitKind.TANK, UnitKind.SCOUT],
     eraModel: {
       [Era.FORMATIVE]: { type: 'stable_steam', scale: 1 },
@@ -194,7 +194,7 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
     name: 'Taller de Artillería',
     description: 'Produce artillería, morteros y arsenal pesado.',
     category: 'military',
-    minEra: Era.REGIONAL_STATES,
+    minEra: Era.VICEROYALTY,
     trainable: [UnitKind.ARTILLERY, UnitKind.MORTAR, UnitKind.NUCLEAR],
     eraModel: {
       [Era.REGIONAL_STATES]: { type: 'factory_imperial', scale: 1 },
@@ -210,7 +210,6 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
     description: 'Fortaleza defensiva con guarnición y unidades de élite. Necesaria para avanzar de era.',
     category: 'defense',
     minEra: Era.REGIONAL_STATES,
-    trainable: [UnitKind.MECH],
     garrisons: 20,
     eraModel: {
       [Era.REGIONAL_STATES]: { type: 'fortress_imperial', scale: 1 },
@@ -272,7 +271,8 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
     name: 'Huaca Sagrada',
     description: 'Tu monumento de victoria. Si permanece en pie 5 minutos, ganas.',
     category: 'special',
-    minEra: Era.CONTEMPORARY,
+    // buildable in any era in wonder mode (Game.canBuildKind ignores minEra for the wonder)
+    minEra: Era.FORMATIVE,
     isWonder: true,
     eraModel: {
       [Era.FORMATIVE]: { type: 'wonder', scale: 1 },
