@@ -26,7 +26,7 @@ Sources: the code under `src/`, the tests under `tests/`, the scripts under
 | Existing tests pass | done | `yarn test` |
 | Relevant new tests added | done | profiles/terrain/landscape/settlement/combat/farm-yield + e2e |
 | Comparable screenshots exist | done | `scripts/visual.mjs` + `scenes.mjs` (25 scenes), `tests/visual/baseline.json` |
-| No significant performance regression | done | `scripts/bench.mjs`; landscape budget assertion still **pending** |
+| No significant performance regression | **partial** | `scripts/bench.mjs` shows draw calls / sim time flat, but the landscape draw-call budget assertion is still pending |
 | Historical docs updated | done | `docs/historia/mapas.md`, `arquitectura.md` |
 | `PROVENANCE.md` updated | done | `PROVENANCE.md` |
 | README has no misleading claims | done | PR #54 (dropped "100% procedural" / absolute accuracy) |
@@ -55,9 +55,9 @@ Classification of the 15 `BuildingKind`s (`types.ts:94`, defs in
 | `smelter` | Platería | economy | historically appropriate | silver working (Andean metallurgy) |
 | `refinery` | Cantera | economy | historically appropriate | stone quarry, `minEra TAHUANTINSUYO` |
 | `barracks` | Casa del Guerrero | military | historically appropriate | trains Amauta / Misionero (era-gated) |
-| `arsenal` | Arsenal | military | **anachronistic availability** | `minEra FORMATIVE` but trains firearms (Musketeer/Rifleman/Sniper); the units are chronology-gated, the building/name is not |
-| `stable` | Establo | military | **anachronistic availability** | `minEra FORMATIVE` with a horse name/icon/description; horses are forbidden before 1532 (units are gated to `VICEROYALTY`) |
-| `factory` | Taller de Artillería | military | **anachronistic availability** | `minEra REGIONAL_STATES` but trains artillery/mortar/nuclear; units are gated |
+| `arsenal` | Arsenal | military | generic but acceptable | `minEra FORMATIVE`; trains Hondero (sling), Tirador, Cazador (`VICEROYALTY`) and Artillero Antiaéreo (`CONTEMPORARY`) — ranged, not firearms. The modern "Arsenal" name is reused across eras |
+| `stable` | Establo | military | **anachronistic availability** | `minEra FORMATIVE` with a horse name/icon; Jinete and Caballería are gated to `VICEROYALTY`, Ariete Blindado to `CONTEMPORARY`, and Chasqui (the pre-Hispanic scout) has no gate — the building's horse identity is anachronistic before 1532 |
+| `factory` | Taller de Artillería | military | **anachronistic availability** | `minEra REGIONAL_STATES` but trains Artillería/Mortero (`VICEROYALTY`) and Cohetes (`CONTEMPORARY`); the units are chronology-gated, the building is not |
 | `fortress` | Pucará | defense | historically appropriate | Andean hillfort; **trains `MECH` (sci-fi) — see below** |
 | `market` | Mercado | economy | historically appropriate | exchange/trade (Chincha) |
 | `institute` | Yachaywasi | advance | visually inconsistent | an Inca "house of learning" name reused unchanged in the Viceroyalty/Republic |
@@ -67,11 +67,14 @@ Classification of the 15 `BuildingKind`s (`types.ts:94`, defs in
 **Model naming (not a defect):** the `eraModel.type` strings keep a generic
 `steam/imperial/atomic/information/stellar` (and `plant_*` / `exchange_*`) naming
 from the original skeleton. Visual identity is driven by the architecture profile,
-so these are *generic but acceptable*; renaming them is cosmetic.
+so these are *generic but acceptable*. Some names are **sci-fi-flavoured**
+(`*_stellar`, `farm_future`); they are model identifiers only, but should be
+reviewed against the "no sci-fi in any era" invariant.
 
-**Recommended follow-ups** (not in this PR): gate `stable`/`arsenal`/`factory` to
-their real periods (or give them era-appropriate names/models, e.g. a pre-1532
-caravan/corral for `stable`), and align the `wonder` `minEra` field.
+**Recommended follow-ups** (not in this PR): gate `stable`/`factory` to their real
+periods (or give them era-appropriate names/models, e.g. a pre-1532 caravan/corral
+for `stable`), consider a per-era label for `arsenal`, and align the `wonder`
+`minEra` field.
 
 ## Adjacent flag: science-fiction units
 
@@ -79,11 +82,13 @@ caravan/corral for `stable`), and align the `wonder` `minEra` field.
 
 | UnitKind | Comment | Trainable from | `minPeriod` | Verdict |
 |---|---|---|---|---|
-| `MECH` (`'mec'`) | "unique futuristic unit" | `fortress` (tech `mec`) | `CONTEMPORARY` | **sci-fi** — violates the invariant; recommend removing or re-theming |
-| `NUCLEAR` | "atomic-era tactical weapon (area)" | `factory` (tech `cohetería`) | `CONTEMPORARY` | real-world nuclear (1945+) fits `CONTEMPORARY`; acceptable, flagged for review |
+| `MECH` (`'mec'`, "Guardián Blindado") | "unique futuristic unit" | `fortress` (tech `armored_engineering`) | `CONTEMPORARY` | **sci-fi** — violates the invariant; recommend removing or re-theming |
+| `NUCLEAR` ("Artillería de Cohetes") | "atomic-era tactical weapon (area)" | `factory` (tech `rocketry`) | `CONTEMPORARY` | real-world rocket artillery fits `CONTEMPORARY`; acceptable, flagged for review |
 
-Projectile kinds `laser` and `rail` exist only in the mod schema
-(`src/game/mods/schema.ts`), not in the base game. Recorded here for completeness.
+Projectile kinds `bullet`, `rocket`, `howitzer_shell`, `laser`, `rail`, `nuclear`
+and `tracer` are declared in the **base** game (`ModelSpec.projectile`); `MECH`
+fires `rail` and `NUCLEAR` fires `nuclear`. `laser` is declared but unused by any
+base-game unit (the mod schema also lists it). Recorded for completeness.
 
 ## Non-goals
 
