@@ -26,12 +26,11 @@ test('a skirmish can be won by destroying the enemy base', async ({ page }) => {
 
     let spawned = 0;
     for (let i = 0; i < 16; i++) {
-      const u = g.spawnScriptedUnit(
-        'soldier',
-        0,
-        enemyCenter.pos.x + 8 + (i % 4),
-        enemyCenter.pos.z + 6 + Math.floor(i / 4),
-      );
+      // spread the army around the base on valid land: a tight cluster can wedge
+      // itself against the ruins and never reach the survivors
+      const a = (i / 16) * Math.PI * 2;
+      const p = g.findLandNear(enemyCenter.pos.x + Math.cos(a) * 9, enemyCenter.pos.z + Math.sin(a) * 9);
+      const u = g.spawnScriptedUnit('soldier', 0, p.x, p.z);
       u.issueOrder({ kind: 'attack', entityId: enemyCenter.id }, true);
       spawned++;
     }

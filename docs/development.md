@@ -90,6 +90,14 @@ for player-facing docs see [`README.md`](../README.md); for art direction see
   of draw calls) and `Game.spawnCulturalLandscape()` adds the `landscape` group next to the landmark. Deterministic
   from `seed + profile` and visual only (no entities, no gameplay, not saved — regenerated on load); disposed in
   `Game.destroy()`. Verified by `tests/e2e/landscape.spec.ts`.
+- **Settlement layout (starting base)**: `Game.spawnStartBase` lays out the starting dwellings with
+  `planSettlement` (`src/model/defs/settlementPlan.ts`), a **pure** planner (no THREE, unit-tested in
+  `tests/settlement.test.ts`). It keeps a compact ring around the anchor, leaned toward the terrain-facing
+  azimuth (`settlementShape`: riverside → water/moisture, hilltop → height), with dwellings kept apart (so the
+  base cannot seal itself off), on buildable/dry/non-steep ground and on the anchor's side of any river (so the
+  base is never cut off). Deterministic from the base seed. Guarded by `tests/e2e/ai.spec.ts` and
+  `tests/e2e/skirmish-winnable.spec.ts` (both spawn/observe robustly rather than assuming the exact legacy
+  ring).
 - `src/campaign/defs/campaign.ts` defines the 9 historical campaigns; `src/campaign/Mission.ts` evaluates
   objectives/triggers. Each mission also declares an optional `region` (`MissionDef`), fed into
   `resolveMapProfile` so a scenario carries its own geography rather than the player's (e.g. m6 = the Inca on the

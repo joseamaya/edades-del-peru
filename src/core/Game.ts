@@ -45,6 +45,7 @@ import { BuildContext, buildModel, buildLandmarkModel, disposeModel, clearModelC
 import { clearTextureCache } from '../rendering/Textures';
 import { DEFAULT_SETTINGS, GameSettings, RESOURCE_INFO, CAMERA_SPEED_SCALE } from './Config';
 import { resolveMapProfile, type HistoricalMapProfile, type GeographicRegion } from '../model/defs/profiles';
+import { planSettlement } from '../model/defs/settlementPlan';
 import { distance2D } from '../util/math';
 import { isTypingTarget } from '../util/dom';
 import { RNG, hashCode, weightedPick } from '../util/rng';
@@ -501,14 +502,16 @@ export class Game {
     center.addBuildProgress(9999);
     this.buildings.set(center.id, center);
     this.registerObstacle(center);
-    // starting dwellings
+    // starting dwellings: laid out by the terrain-aware settlement planner
     const rng = new RNG(this.settings.mapSeed + player * 100);
-    const dirs = [0, Math.PI / 3, (Math.PI * 2) / 3];
-    for (const d of dirs) {
-      const hx = x + Math.cos(d) * 5.5;
-      const hz = z + Math.sin(d) * 5.5;
+    const shape = this.mapProfile.culturalLandscape?.settlementShape ?? 'dispersed';
+    const spots = planSettlement(
+      { shape, seed: this.settings.mapSeed + player * 100, anchor: { x, z }, count: 3 },
+      this.terrain,
+    );
+    for (const spot of spots) {
       const house = new Building(BuildingKind.HOUSE, player, this.players[player].era, ctx);
-      house.pos.set(hx, this.terrain.getHeight(hx, hz), hz);
+      house.pos.set(spot.x, this.terrain.getHeight(spot.x, spot.z), spot.z);
       house.attach(this.scene);
       house.beginConstruction();
       house.addBuildProgress(9999);

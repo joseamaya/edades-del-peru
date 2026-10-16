@@ -1,13 +1,15 @@
 # Settlement generator — design proposal
 
-Status: **proposal, not implemented.** Today a skirmish base is a center plus
-three dwellings on a fixed ring, and campaign buildings are placed by hand with
-`dx/dz` offsets (`MissionDef.start`, see
+Status: **partially implemented.** Phases 1–3 (a terrain-aware dwelling layout for
+the starting base) are live in `src/model/defs/settlementPlan.ts`, wired in
+`Game.spawnStartBase`. The full plan below (roads, farms, dropsites, defense) and
+the gameplay coupling remain future work.
+
+Today a skirmish base is a center plus three dwellings on a fixed ring, and
+campaign buildings are placed by hand with `dx/dz` offsets (`MissionDef.start`, see
 [`src/core/Game.ts`](../../src/core/Game.ts) `spawnStartBase` / `applyMissionSetup`).
-Neither reads the terrain, so bases never sit *in* the geography. This proposes a
-`SettlementGenerator` that lays out a starting base from the terrain and the
-historical profile, so a Moche base hugs a fertile valley and an Inca base
-terraces a slope.
+The dwellings now read the terrain through `planSettlement`; crops/roads/dropsites
+still do not.
 
 ## Contract
 
