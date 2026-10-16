@@ -80,16 +80,16 @@ for player-facing docs see [`README.md`](../README.md); for art direction see
   and adds a plain `THREE.Group` named `landmark` to the scene (no entity, no pathfinding obstacle). Freed in
   `Game.destroy()`; templates are freed by `clearModelCaches()`. Verified by `tests/e2e/landmarks.spec.ts`.
 - **Cultural landscape (visual only)**: `HistoricalMapProfile.culturalLandscape`
-  (`src/model/defs/landscape.ts`) names the features a region tends to carry (canal, field, road, plaza…; coast
-  slice for now, other regions empty until later phases). `carveCanals` (`src/rendering/heightField.ts`) cuts
-  shallow irrigation ditches keeping the bed above the waterline (so they are not pathfinding walls or flooding
-  sources) and writes a `canalMap`; `Terrain.getCanal` exposes it. `planCulturalLandscape`
-  (`src/model/defs/landscapePlan.ts`) is a **pure** planner (no THREE, unit-tested in `tests/landscape.test.ts`)
-  that places the features on buildable, flat land; `CulturalLandscape` (`src/rendering/CulturalLandscape.ts`)
-  merges them per feature into a few meshes (a handful of draw calls) and `Game.spawnCulturalLandscape()` adds the
-  `landscape` group next to the landmark. Deterministic from `seed + profile` and visual only (no entities, no
-  gameplay, not saved — regenerated on load); disposed in `Game.destroy()`. Verified by
-  `tests/e2e/landscape.spec.ts`.
+  (`src/model/defs/landscape.ts`) names the features each region carries (canal, field, road, path, terrace,
+  wall, corral, plaza — coast irrigation vs Andean terracing vs altiplano corrals). `carveCanals`
+  (`src/rendering/heightField.ts`) cuts shallow irrigation ditches keeping the bed above the waterline (so they
+  are not pathfinding walls or flooding sources) and writes a `canalMap`; `Terrain.getCanal` exposes it.
+  `planCulturalLandscape` (`src/model/defs/landscapePlan.ts`) is a **pure** planner (no THREE, unit-tested in
+  `tests/landscape.test.ts`) that places the features on buildable, flat land, scaled by `settlementShape`;
+  `CulturalLandscape` (`src/rendering/CulturalLandscape.ts`) merges them per feature into a few meshes (a handful
+  of draw calls) and `Game.spawnCulturalLandscape()` adds the `landscape` group next to the landmark. Deterministic
+  from `seed + profile` and visual only (no entities, no gameplay, not saved — regenerated on load); disposed in
+  `Game.destroy()`. Verified by `tests/e2e/landscape.spec.ts`.
 - `src/campaign/defs/campaign.ts` defines the 9 historical campaigns; `src/campaign/Mission.ts` evaluates
   objectives/triggers. Each mission also declares an optional `region` (`MissionDef`), fed into
   `resolveMapProfile` so a scenario carries its own geography rather than the player's (e.g. m6 = the Inca on the

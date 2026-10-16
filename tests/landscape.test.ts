@@ -1,16 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import { LANDSCAPE, landscapeWeight, type LandscapeFeature } from '../src/model/defs/landscape';
-import { planCulturalLandscape, type LandscapeQuery } from '../src/model/defs/landscapePlan';
+import { planCulturalLandscape, RENDERED_FEATURES, type LandscapeQuery } from '../src/model/defs/landscapePlan';
 import { MAP_PROFILES, type GeographicRegion } from '../src/model/defs/profiles';
 
 const REGIONS = Object.keys(LANDSCAPE) as GeographicRegion[];
 
-/** Flat, dry, buildable world with a canal strip around x = 50. */
+/** Flat, dry, buildable world with a canal strip around x = 50 and terraces at x < 20. */
 const flat: LandscapeQuery = {
   size: 100,
   isWater: () => false,
   isBuildable: () => true,
   getSlope: () => 0.1,
+  getTerrace: (x) => (x < 20 ? 0.5 : 0),
   getCanal: (x) => (x > 48 && x < 52 ? 1 : 0),
 };
 
@@ -32,11 +33,18 @@ describe('cultural landscape data', () => {
     }
   });
 
-  it('gives the coast slice canals and fields, and the jungle none yet', () => {
+  it('gives the coast irrigation features', () => {
     expect(landscapeWeight(LANDSCAPE.north_coast, 'canal')).toBeGreaterThan(0);
     expect(landscapeWeight(LANDSCAPE.central_coast, 'canal')).toBeGreaterThan(0);
     expect(landscapeWeight(LANDSCAPE.central_coast, 'plaza')).toBeGreaterThan(0);
-    expect(LANDSCAPE.amazon.features).toHaveLength(0);
+  });
+
+  it('fills every region with a plausible feature set', () => {
+    expect(landscapeWeight(LANDSCAPE.high_andes, 'terrace')).toBeGreaterThan(0);
+    expect(landscapeWeight(LANDSCAPE.andean_valley, 'terrace')).toBeGreaterThan(0);
+    expect(landscapeWeight(LANDSCAPE.altiplano, 'corral')).toBeGreaterThan(0);
+    expect(landscapeWeight(LANDSCAPE.amazon, 'path')).toBeGreaterThan(0);
+    for (const region of REGIONS) expect(LANDSCAPE[region].features.length).toBeGreaterThan(0);
   });
 });
 
@@ -53,22 +61,38 @@ describe('cultural landscape plan', () => {
     expect(a).not.toEqual(b);
   });
 
-  it('plans the coast features and nothing for a region without features', () => {
-    const coast = planCulturalLandscape(LANDSCAPE.north_coast, 7, flat);
-    const kinds = new Set(coast.map((p) => p.feature));
-    expect(kinds.has('plaza')).toBe(true);
-    expect(kinds.has('canal')).toBe(true);
-    expect(coast.length).toBeGreaterThan(0);
-    expect(planCulturalLandscape(LANDSCAPE.amazon, 7, flat)).toHaveLength(0);
+  it('plans each region a distinct feature set', () => {
+    const kinds = (region: GeographicRegion) =>
+      new Set(planCulturalLandscape(LANDSCAPE[region], 7, flat).map((p) => p.feature));
+    expect(kinds('north_coast').has('canal')).toBe(true);
+    expect(kinds('north_coast').has('plaza')).toBe(true);
+    expect(kinds('south_coast').has('road')).toBe(true);
+    expect(kinds('andean_valley').has('terrace')).toBe(true);
+    expect(kinds('high_andes').has('terrace')).toBe(true);
+    expect(kinds('high_andes').has('wall')).toBe(true);
+    expect(kinds('altiplano').has('corral')).toBe(true);
+    expect(kinds('amazon').has('path')).toBe(true);
+  });
+
+  it('never draws a feature the region does not list', () => {
+    for (const region of REGIONS) {
+      const listed = new Set(LANDSCAPE[region].features.map((f) => f.feature));
+      for (const p of planCulturalLandscape(LANDSCAPE[region], 7, flat)) {
+        expect(listed.has(p.feature), `${region} drew unlisted ${p.feature}`).toBe(true);
+      }
+    }
   });
 
   it('only emits implemented features and places everything on buildable land', () => {
-    const implemented = new Set<LandscapeFeature>(['plaza', 'road', 'field', 'canal']);
-    const plan = planCulturalLandscape(LANDSCAPE.central_coast, 7, flat);
-    for (const p of plan) {
-      expect(implemented.has(p.feature), p.feature).toBe(true);
-      expect(flat.isBuildable(p.x, p.z)).toBe(true);
-      expect(flat.isWater(p.x, p.z)).toBe(false);
+    const implemented = new Set<LandscapeFeature>(RENDERED_FEATURES);
+    for (const region of REGIONS) {
+      const plan = planCulturalLandscape(LANDSCAPE[region], 7, flat);
+      expect(plan.length, region).toBeGreaterThan(0);
+      for (const p of plan) {
+        expect(implemented.has(p.feature), p.feature).toBe(true);
+        expect(flat.isBuildable(p.x, p.z)).toBe(true);
+        expect(flat.isWater(p.x, p.z)).toBe(false);
+      }
     }
   });
 
