@@ -197,25 +197,28 @@ test('right click lands the order under the cursor on elevated terrain', async (
     const w = window as unknown as { game: any; THREE: any; innerWidth: number; innerHeight: number };
     const g = w.game;
     const size = g.settings.mapSize;
-    const c = g.camera.getTarget();
     const worker = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
-    for (let i = 0; i < 20000; i++) {
-      const x = c.x + (Math.random() - 0.5) * 90;
-      const z = c.z + (Math.random() - 0.5) * 90;
-      if (x < 4 || z < 4 || x > size - 4 || z > size - 4) continue;
-      const h = g.terrain.getHeight(x, z);
-      if (h < 3) continue;
-      // avoid points so close to the worker that the move order completes instantly
-      if (worker && Math.hypot(x - worker.pos.x, z - worker.pos.z) < 15) continue;
-      const v = new w.THREE.Vector3(x, h, z).project(g.camera.camera);
-      const sx = (v.x * 0.5 + 0.5) * w.innerWidth;
-      const sy = (-v.y * 0.5 + 0.5) * w.innerHeight;
-      // keep the click away from the HUD (topbar, bottom panel, minimap, help)
-      if (sx < w.innerWidth * 0.25 || sx > w.innerWidth * 0.75) continue;
-      if (sy < w.innerHeight * 0.15 || sy > w.innerHeight * 0.55) continue;
-      // the point must fall over the canvas, not over a HUD overlay
-      if (document.elementFromPoint(sx, sy)?.tagName !== 'CANVAS') continue;
-      return { x, z, h, sx, sy };
+    // deterministic scan for an elevated, almost-flat, on-screen cell: random
+    // points made the cursor-vs-order distance flaky (a steep cell diverges)
+    for (let gx = 12; gx < size - 12; gx += 3) {
+      for (let gz = 12; gz < size - 12; gz += 3) {
+        const x = gx;
+        const z = gz;
+        const h = g.terrain.getHeight(x, z);
+        if (h < 3) continue;
+        if (g.terrain.getSlope(x, z) > 0.1) continue;
+        // avoid points so close to the worker that the move order completes instantly
+        if (worker && Math.hypot(x - worker.pos.x, z - worker.pos.z) < 15) continue;
+        const v = new w.THREE.Vector3(x, h, z).project(g.camera.camera);
+        const sx = (v.x * 0.5 + 0.5) * w.innerWidth;
+        const sy = (-v.y * 0.5 + 0.5) * w.innerHeight;
+        // keep the click away from the HUD (topbar, bottom panel, minimap, help)
+        if (sx < w.innerWidth * 0.25 || sx > w.innerWidth * 0.75) continue;
+        if (sy < w.innerHeight * 0.15 || sy > w.innerHeight * 0.55) continue;
+        // the point must fall over the canvas, not over a HUD overlay
+        if (document.elementFromPoint(sx, sy)?.tagName !== 'CANVAS') continue;
+        return { x, z, h, sx, sy };
+      }
     }
     return null;
   });

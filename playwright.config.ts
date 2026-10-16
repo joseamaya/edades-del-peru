@@ -2,7 +2,8 @@ import { defineConfig } from '@playwright/test';
 
 // Local runs can parallelize (set PW_WORKERS to override); CI keeps a single
 // worker because the software WebGL (SwiftShader) runners are CPU-bound.
-const workers = process.env.CI ? 1 : Number(process.env.PW_WORKERS ?? 2);
+const localWorkers = Number(process.env.PW_WORKERS);
+const workers = process.env.CI ? 1 : Number.isFinite(localWorkers) && localWorkers > 0 ? localWorkers : 2;
 
 export default defineConfig({
   testDir: './tests/e2e',
