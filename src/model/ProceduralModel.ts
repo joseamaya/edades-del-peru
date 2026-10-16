@@ -24,7 +24,6 @@ type TexKind =
   | 'cloth'
   | 'textile'
   | 'leather'
-  | 'scifi'
   | 'dirt';
 
 export interface BuildContext {
@@ -75,7 +74,6 @@ const TEX_DEFAULTS: Record<TexKind, { roughness: number; metalness: number }> = 
   cloth: { roughness: 0.95, metalness: 0 },
   textile: { roughness: 0.95, metalness: 0 },
   leather: { roughness: 0.8, metalness: 0 },
-  scifi: { roughness: 0.35, metalness: 0.8 },
   dirt: { roughness: 0.98, metalness: 0 },
 };
 
@@ -457,7 +455,7 @@ function addHumanoid(
     helmet?: boolean;
     backpack?: boolean;
     weapon?: 'rifle' | 'musket' | 'sniper' | 'machete' | 'spear' | 'macana' | 'bow' | 'sling' | 'shield' | 'none';
-    armor?: 'cloth' | 'metal' | 'power';
+    armor?: 'cloth' | 'metal';
     gadget?: boolean;
     tool?: 'axe' | 'pick';
     carry?: boolean;
@@ -758,26 +756,6 @@ function buildInfantry(type: string, ctx: BuildContext): THREE.Group {
     case 'soldier_elite':
       addHumanoid(b, { role: 'elite', helmet: true, weapon: 'rifle', armor: 'metal', backpack: true, gadget: true });
       break;
-    case 'power_armor':
-      addHumanoid(b, { role: 'elite', helmet: true, weapon: 'sniper', armor: 'power', backpack: true, gadget: true });
-      b.box(0.52, 0.4, 0.34, '#d7e0e8', { y: 0.82, tex: 'scifi', texScale: 2 });
-      b.box(0.24, 0.3, 0.2, b.pal.emissive, { y: 0.55, z: 0.22, emissive: b.pal.emissive, emissiveIntensity: 1.2 });
-      break;
-    case 'soldier_stellar':
-      addHumanoid(b, { role: 'elite', helmet: true, weapon: 'none', armor: 'power', backpack: true, gadget: true });
-      b.box(0.58, 0.42, 0.4, '#d7e0e8', { y: 0.84, tex: 'scifi', texScale: 2 });
-      b.box(0.3, 0.36, 0.26, b.pal.emissive, { y: 0.48, z: 0.26, emissive: b.pal.emissive, emissiveIntensity: 1.4 });
-      b.box(0.42, 0.22, 0.34, b.civAccent, {
-        y: 1.12,
-        metalness: 0.4,
-        emissive: b.pal.emissive,
-        emissiveIntensity: 0.6,
-      });
-      // wide shoulder-cannon (distinctive heavy silhouette)
-      b.cylIn(b.group, 0.16, 0.22, 0.9, 10, '#c4ccd4', { x: 0.34, y: 1.1, z: 0.1, rx: Math.PI / 2, tex: 'metal' });
-      b.cylIn(b.group, 0.16, 0.22, 0.9, 10, '#c4ccd4', { x: -0.34, y: 1.1, z: 0.1, rx: Math.PI / 2, tex: 'metal' });
-      b.sphere(0.08, b.pal.emissive, { y: 1.3, emissive: b.pal.emissive, emissiveIntensity: 2 });
-      break;
     default:
       addHumanoid(b, { role: 'melee', helmet: false, weapon: 'rifle', armor: 'cloth' });
   }
@@ -800,39 +778,6 @@ function buildRanged(type: string, ctx: BuildContext): THREE.Group {
     case 'advanced_rifleman':
       addHumanoid(b, { role: 'ranged', helmet: true, weapon: 'rifle', armor: 'metal', gadget: true });
       break;
-    case 'stellar_rifle':
-      addHumanoid(b, { role: 'ranged', helmet: true, weapon: 'rifle', armor: 'metal', gadget: true });
-      b.box(0.3, 0.06, 0.5, b.pal.emissive, {
-        y: 0.5,
-        z: 0.25,
-        emissive: b.pal.emissive,
-        emissiveIntensity: 1.5,
-        transparent: true,
-        opacity: 0.8,
-      });
-      b.box(0.16, 0.4, 0.3, b.pal.metal, { y: 1.0, metalness: 0.7, roughness: 0.3 });
-      break;
-    case 'sniper_stellar':
-      addHumanoid(b, { role: 'elite', helmet: true, weapon: 'sniper', armor: 'power', backpack: true, gadget: true });
-      b.box(0.52, 0.4, 0.34, '#d7e0e8', { y: 0.82, tex: 'scifi', texScale: 2 });
-      b.box(0.16, 0.1, 1.0, b.pal.darkMetal, {
-        x: 0.28,
-        y: 1.0,
-        z: 0.5,
-        rz: Math.PI / 2,
-        metalness: 0.85,
-        roughness: 0.25,
-      });
-      b.cyl(0.03, 0.03, 0.8, 8, b.pal.emissive, {
-        x: 0.28,
-        y: 1.0,
-        z: 1.1,
-        rx: Math.PI / 2,
-        emissive: b.pal.emissive,
-        emissiveIntensity: 2,
-      });
-      b.sphere(0.05, b.pal.emissive, { y: 1.28, x: 0.1, emissive: b.pal.emissive, emissiveIntensity: 2 });
-      break;
     default:
       addHumanoid(b, { role: 'ranged', weapon: 'rifle' });
   }
@@ -842,20 +787,9 @@ function buildRanged(type: string, ctx: BuildContext): THREE.Group {
   return b.finish();
 }
 
-function buildWorker(type: string, ctx: BuildContext): THREE.Group {
+function buildWorker(ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
   addHumanoid(b, { role: 'worker', weapon: 'none', armor: 'cloth', tool: 'axe', carry: true });
-  if (type === 'worker_future') {
-    b.box(0.3, 0.3, 0.3, b.pal.emissive, {
-      x: 0.4,
-      y: 0.5,
-      z: 0.1,
-      emissive: b.pal.emissive,
-      emissiveIntensity: 1.4,
-      transparent: true,
-      opacity: 0.35,
-    });
-  }
   return b.finish();
 }
 
@@ -924,39 +858,16 @@ function buildTank(type: string, ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
   const scale = type.includes('liviano') ? 1 : type.includes('medium') ? 1.12 : type.includes('moderno') ? 1.2 : 1.3;
   b.group.scale.setScalar(scale);
-  if (type.includes('fut')) {
-    // futuristic levitating tank with an animated turret
-    b.box(0.9, 0.35, 1.4, b.pal.metal, { y: 0.5, metalness: 0.7, roughness: 0.3 });
-    b.box(0.9, 0.06, 1.5, b.pal.emissive, {
-      y: 0.06,
-      emissive: b.pal.emissive,
-      emissiveIntensity: 1.6,
-      transparent: true,
-      opacity: 0.7,
-    });
-    const turret = b.pivot('turret');
-    turret.position.set(0, 0.82, 0);
-    b.boxIn(turret, 0.55, 0.3, 0.7, b.pal.darkMetal, { y: 0.15, metalness: 0.7 });
-    const gun = b.pivot('gun');
-    gun.position.set(0, 0.15, 0.35);
-    b.cylIn(gun, 0.1, 0.14, 1.1, 10, b.pal.darkMetal, { y: 0, z: 0.55, rx: Math.PI / 2, metalness: 0.8 });
-    turret.add(gun);
-    b.sphere(0.08, b.pal.emissive, { y: 1.05, x: -0.2, emissive: b.pal.emissive, emissiveIntensity: 2 });
-  } else {
-    addVehicleBody(b, b.pal.darkMetal, b.pal.metal, { treads: true, antenna: true });
-  }
+  addVehicleBody(b, b.pal.darkMetal, b.pal.metal, { treads: true, antenna: true });
   return b.finish();
 }
 
-function buildAntiAir(type: string, ctx: BuildContext): THREE.Group {
+function buildAntiAir(ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
-  const fut = type.includes('fut');
   // chassis
-  if (!fut) {
-    b.box(0.9, 0.34, 1.5, b.pal.darkMetal, { y: 0.22, metalness: 0.5 });
-    b.cyl(0.16, 0.16, 1.5, 16, b.pal.darkMetal, { x: -0.44, y: 0.18, rx: Math.PI / 2 });
-    b.cyl(0.16, 0.16, 1.5, 16, b.pal.darkMetal, { x: 0.44, y: 0.18, rx: Math.PI / 2 });
-  }
+  b.box(0.9, 0.34, 1.5, b.pal.darkMetal, { y: 0.22, metalness: 0.5 });
+  b.cyl(0.16, 0.16, 1.5, 16, b.pal.darkMetal, { x: -0.44, y: 0.18, rx: Math.PI / 2 });
+  b.cyl(0.16, 0.16, 1.5, 16, b.pal.darkMetal, { x: 0.44, y: 0.18, rx: Math.PI / 2 });
   b.box(0.85, 0.4, 1.3, b.pal.darkMetal, { y: 0.55, metalness: 0.5 });
   // turret with the two AA barrels as children
   const turret = b.pivot('turret');
@@ -975,7 +886,6 @@ function buildAntiAir(type: string, ctx: BuildContext): THREE.Group {
 
 function buildCannon(type: string, ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
-  const isRiel = type.includes('riel');
   const isHowitzer = type.includes('howitzer');
   // gun carriage
   b.cyl(0.55, 0.6, 0.5, 14, b.pal.darkWood, { y: 0.5, rx: Math.PI / 2 });
@@ -984,17 +894,7 @@ function buildCannon(type: string, ctx: BuildContext): THREE.Group {
   // weapon on the pivot (aims at the target)
   const gun = b.pivot('gun');
   gun.position.set(0, 0.85, 0.2);
-  if (isRiel) {
-    b.boxIn(gun, 0.16, 0.2, 2.2, b.pal.darkMetal, { y: 0, z: 0.8, metalness: 0.85, roughness: 0.25 });
-    b.boxIn(gun, 0.3, 0.08, 2.4, b.pal.emissive, {
-      y: -0.15,
-      z: 0.85,
-      emissive: b.pal.emissive,
-      emissiveIntensity: 2,
-      transparent: true,
-      opacity: 0.8,
-    });
-  } else if (isHowitzer) {
+  if (isHowitzer) {
     b.boxIn(gun, 0.22, 0.24, 1.8, b.pal.darkMetal, { y: 0, z: 0.6, metalness: 0.7 });
     b.boxIn(gun, 0.3, 0.2, 1.9, b.pal.darkMetal, { y: -0.18, z: 0.65, metalness: 0.7 });
   } else {
@@ -1014,14 +914,10 @@ function buildMortar(ctx: BuildContext): THREE.Group {
   return b.finish();
 }
 
-function buildCommisar(type: string, ctx: BuildContext): THREE.Group {
+function buildCommisar(ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
-  const fut = type.includes('fut');
-  addHumanoid(b, { role: 'officer', helmet: true, weapon: 'none', armor: fut ? 'power' : 'cloth', backpack: true });
+  addHumanoid(b, { role: 'officer', helmet: true, weapon: 'none', armor: 'cloth', backpack: true });
   b.box(0.2, 0.28, 0.1, b.civAccent, { y: 0.6, x: 0.3 });
-  if (fut) {
-    b.sphere(0.07, b.pal.emissive, { y: 1.5, emissive: b.pal.emissive, emissiveIntensity: 2 });
-  }
   return b.finish();
 }
 
@@ -1046,7 +942,6 @@ function buildMissionary(ctx: BuildContext): THREE.Group {
 
 function buildStructure(type: string, ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
-  const era = ctx.era;
   switch (type) {
     case 'center_steam':
       buildHouse(b, 3.4, true);
@@ -1063,8 +958,8 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
     case 'center_information':
       buildModern(b, 3.6, true);
       break;
-    case 'center_stellar':
-      buildFuturistic(b, 3.8, true);
+    case 'center_modern':
+      buildModern(b, 3.8, true);
       break;
 
     case 'house_steam':
@@ -1082,8 +977,8 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
     case 'house_information':
       buildModern(b, 2.0, false);
       break;
-    case 'house_stellar':
-      buildFuturistic(b, 2.1, false);
+    case 'house_modern':
+      buildModern(b, 2.1, false);
       break;
 
     case 'mill_steam':
@@ -1147,8 +1042,8 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
     case 'barracks_information':
       buildModern(b, 2.8, false);
       break;
-    case 'barracks_stellar':
-      buildFuturistic(b, 2.9, false);
+    case 'barracks_modern':
+      buildModern(b, 2.9, false);
       break;
 
     case 'arsenal_steam':
@@ -1166,8 +1061,8 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
     case 'arsenal_information':
       buildModern(b, 2.7, false);
       break;
-    case 'arsenal_stellar':
-      buildFuturistic(b, 2.8, false);
+    case 'arsenal_modern':
+      buildModern(b, 2.8, false);
       break;
 
     case 'stable_steam':
@@ -1185,8 +1080,8 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
     case 'stable_information':
       buildModern(b, 2.9, false);
       break;
-    case 'stable_stellar':
-      buildFuturistic(b, 3.0, false);
+    case 'stable_modern':
+      buildModern(b, 3.0, false);
       break;
 
     case 'factory_imperial':
@@ -1201,8 +1096,8 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
     case 'factory_information':
       buildModern(b, 3.1, true);
       break;
-    case 'factory_stellar':
-      buildFuturistic(b, 3.2, true);
+    case 'factory_modern':
+      buildModern(b, 3.2, true);
       break;
 
     case 'fortress_imperial':
@@ -1217,8 +1112,8 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
     case 'fortress_information':
       buildModern(b, 3.5, false);
       break;
-    case 'fortress_stellar':
-      buildFuturistic(b, 3.6, false);
+    case 'fortress_modern':
+      buildModern(b, 3.6, false);
       break;
 
     case 'market_steam':
@@ -1233,8 +1128,8 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
     case 'exchange_information':
       buildModern(b, 2.8, false);
       break;
-    case 'exchange_stellar':
-      buildFuturistic(b, 2.9, false);
+    case 'exchange_modern':
+      buildModern(b, 2.9, false);
       break;
 
     case 'institute_imperial':
@@ -1249,15 +1144,12 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
     case 'institute_information':
       buildModern(b, 2.8, true);
       break;
-    case 'institute_stellar':
-      buildFuturistic(b, 2.9, true);
+    case 'institute_modern':
+      buildModern(b, 2.9, true);
       break;
 
     case 'farm':
       buildFarm(b);
-      break;
-    case 'farm_future':
-      buildFarmFut(b);
       break;
 
     case 'wonder':
@@ -1268,28 +1160,16 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
       buildHouse(b, 2.5, false);
   }
   // the wonder is a self-contained monument (no civic banner/glowing accent)
-  if (type !== 'wonder') addCivAccent(b, era >= Era.CONTEMPORARY);
+  if (type !== 'wonder') addCivAccent(b);
   return b.finish();
 }
 
-/** Civic accent: banner with the player color or a glowing emblem. */
-function addCivAccent(b: Builder, futuristic: boolean): void {
+/** Civic accent: a banner with the player color. */
+function addCivAccent(b: Builder): void {
   if (b.isAndean) return; // Andean buildings carry their own banner + emblem
-  if (futuristic) {
-    b.cyl(0.03, 0.03, 2.4, 6, b.pal.darkMetal, { y: 3.4, x: -1.4, metalness: 0.8 });
-    b.sphere(0.14, b.pal.emissive, { y: 4.6, x: -1.4, emissive: b.pal.emissive, emissiveIntensity: 2.2 });
-    b.box(1.2, 0.12, 0.12, b.civAccent, {
-      y: 2.6,
-      x: 0.4,
-      metalness: 0.6,
-      emissive: b.pal.emissive,
-      emissiveIntensity: 1.4,
-    });
-  } else {
-    b.cyl(0.03, 0.03, 2.2, 6, b.pal.darkWood, { y: 3.0, x: -1.5, z: -0.4 });
-    b.box(0.55, 0.22, 0.05, b.civPrimary, { y: 3.4, x: -1.2, z: -0.4, metalness: 0.4, roughness: 0.5 });
-    b.box(0.2, 0.22, 0.05, b.civAccent, { y: 3.4, x: -1.45, z: -0.4, metalness: 0.4 });
-  }
+  b.cyl(0.03, 0.03, 2.2, 6, b.pal.darkWood, { y: 3.0, x: -1.5, z: -0.4 });
+  b.box(0.55, 0.22, 0.05, b.civPrimary, { y: 3.4, x: -1.2, z: -0.4, metalness: 0.4, roughness: 0.5 });
+  b.box(0.2, 0.22, 0.05, b.civAccent, { y: 3.4, x: -1.45, z: -0.4, metalness: 0.4 });
 }
 
 // --- building pieces ---
@@ -1851,43 +1731,6 @@ function buildModern(b: Builder, size: number, tower: boolean): void {
   b.box(0.36, w * 0.3, 0.06, b.pal.darkMetal, { y: w * 0.15, z: w * 0.47 });
 }
 
-function buildFuturistic(b: Builder, size: number, tower: boolean): void {
-  groundPad(b, size);
-  const w = size;
-  const panelTint = '#dbe4ec';
-  // levitating base with glow
-  b.box(w * 1.0, w * 0.16, w * 1.0, panelTint, { y: w * 0.16, tex: 'scifi' });
-  b.box(w * 1.04, w * 0.05, w * 1.04, b.pal.emissive, {
-    y: w * 0.05,
-    emissive: b.pal.emissive,
-    emissiveIntensity: 2,
-    transparent: true,
-    opacity: 0.8,
-  });
-  // core
-  b.box(w * 0.8, w * 0.5, w * 0.8, panelTint, { y: w * 0.5, tex: 'scifi' });
-  b.box(w * 0.82, w * 0.08, w * 0.82, b.pal.accent2, { y: w * 0.5, metalness: 0.5 });
-  b.box(w * 0.4, w * 0.3, w * 0.1, b.pal.emissive, {
-    y: w * 0.55,
-    z: w * 0.42,
-    emissive: b.pal.emissive,
-    emissiveIntensity: 2,
-    transparent: true,
-    opacity: 0.9,
-  });
-  if (tower) {
-    b.cyl(0.2, 0.28, w * 1.1, 12, '#dbe4ec', { y: w * 1.1, tex: 'scifi' });
-    b.sphere(w * 0.3, b.pal.emissive, { y: w * 1.7, emissive: b.pal.emissive, emissiveIntensity: 1.8 });
-    b.sphere(w * 0.34, b.pal.emissive, {
-      y: w * 1.7,
-      emissive: b.pal.emissive,
-      emissiveIntensity: 0.8,
-      transparent: true,
-      opacity: 0.35,
-    });
-  }
-}
-
 function buildBarracks(b: Builder, size: number, wallType: 'wood' | 'brick'): void {
   if (b.isAndean) {
     buildAndeanMilitary(b, size, false);
@@ -2128,22 +1971,6 @@ function buildFarm(b: Builder): void {
   ] as const) {
     b.box(0.08, 0.34, 0.08, fence, { x: fx, y: 0.16, z: fz });
     b.box(0.7, 0.05, 0.06, fence, { x: fx, y: 0.2, z: fz });
-  }
-}
-
-function buildFarmFut(b: Builder): void {
-  const w = 3.0;
-  b.box(w * 0.7, 0.1, w * 0.7, '#dbe4ec', { y: 0.06, tex: 'scifi' });
-  b.box(w * 0.72, 0.04, w * 0.72, b.pal.emissive, {
-    y: 0.03,
-    emissive: b.pal.emissive,
-    emissiveIntensity: 1.4,
-    transparent: true,
-    opacity: 0.7,
-  });
-  // rows of hydroponic crops
-  for (let i = -1; i <= 1; i++) {
-    b.box(0.08, 0.14, w * 0.58, mixHex(b.pal.emissive, '#3a7a2a', 0.5), { z: i * 0.34, y: 0.14 });
   }
 }
 
@@ -2636,27 +2463,18 @@ export function buildLandmarkModel(id: LandmarkId, ctx: BuildContext): THREE.Gro
 function buildModelTemplate(spec: ModelSpec, ctx: BuildContext): THREE.Group {
   const { type, scale } = spec;
   let g: THREE.Group;
-  if (type.startsWith('worker')) g = buildWorker(type, ctx);
-  else if (type.startsWith('soldier') || type === 'power_armor' || type === 'soldier_stellar')
-    g = buildInfantry(type, ctx);
-  else if (
-    type === 'musketeer' ||
-    type === 'rifleman' ||
-    type === 'veteran_rifleman' ||
-    type === 'advanced_rifleman' ||
-    type === 'stellar_rifle' ||
-    type === 'sniper_stellar'
-  )
+  if (type.startsWith('worker')) g = buildWorker(ctx);
+  else if (type.startsWith('soldier')) g = buildInfantry(type, ctx);
+  else if (type === 'musketeer' || type === 'rifleman' || type === 'veteran_rifleman' || type === 'advanced_rifleman')
     g = buildRanged(type, ctx);
   else if (type === 'hussar' || type === 'cavalry') g = buildMounted(type, ctx);
   else if (type === 'motorcycle') g = buildMotorcycle(ctx);
   else if (type === 'recon_drone') g = buildDrone(ctx);
   else if (type.startsWith('tank')) g = buildTank(type, ctx);
-  else if (type.startsWith('aa')) g = buildAntiAir(type, ctx);
-  else if (type === 'cannon' || type === 'artillery' || type === 'howitzer' || type === 'rail_artillery')
-    g = buildCannon(type, ctx);
+  else if (type.startsWith('aa')) g = buildAntiAir(ctx);
+  else if (type === 'cannon' || type === 'artillery' || type === 'howitzer') g = buildCannon(type, ctx);
   else if (type === 'mortar') g = buildMortar(ctx);
-  else if (type.startsWith('commissar')) g = buildCommisar(type, ctx);
+  else if (type.startsWith('commissar')) g = buildCommisar(ctx);
   else if (type === 'missionary') g = buildMissionary(ctx);
   else g = buildStructure(type, ctx);
 

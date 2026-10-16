@@ -495,32 +495,6 @@ function genLeather(base = '#4a3626'): THREE.CanvasTexture {
   return canvasTexture(c, key, true);
 }
 
-/** Futuristic panels (stellar era). */
-function genSciFi(): THREE.CanvasTexture {
-  const key = 'scifi';
-  if (cache.has(key)) return cache.get(key)!;
-  const size = 256;
-  const [c, ctx] = makeCanvas(size);
-  ctx.fillStyle = '#2a2f3a';
-  ctx.fillRect(0, 0, size, size);
-  for (let y = 0; y < size; y += 32) {
-    ctx.strokeStyle = `rgba(120,220,255,${0.16 + 0.08 * Math.sin(y * 0.2)})`;
-    ctx.lineWidth = 1.2;
-    ctx.beginPath();
-    ctx.moveTo(0, y + 16);
-    ctx.lineTo(size, y + 16);
-    ctx.stroke();
-  }
-  for (let x = 0; x < size; x += 32) {
-    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-    ctx.beginPath();
-    ctx.moveTo(x + 16, 0);
-    ctx.lineTo(x + 16, size);
-    ctx.stroke();
-  }
-  return canvasTexture(c, key, true);
-}
-
 /** Foliage with transparency for billboard canopies (billboard + alphaTest). */
 function genFoliage(kind: 'broad' | 'needle' | 'frond' | 'bush'): THREE.CanvasTexture {
   const key = 'foliage-' + kind;
@@ -757,7 +731,6 @@ export const MaterialTex = {
   textile: (base?: string) => genCloth(base),
   leather: () => genLeather(),
   dirt: () => genDirt(),
-  scifi: () => genSciFi(),
   foliage: (kind: 'broad' | 'needle' | 'frond' | 'bush') => genFoliage(kind),
   bark: () => genBark(),
   hide: (base?: string) => genHide(base),

@@ -48,7 +48,7 @@ Classification of the 15 `BuildingKind`s (`types.ts:94`, defs in
 
 | BuildingKind | In-game name | Category | Classification | Notes |
 |---|---|---|---|---|
-| `center` | Plaza Mayor | economy | generic but acceptable | per-era `eraModel` names are legacy (`center_steam/imperial/atomic/information/stellar`); identity comes from the architecture profile |
+| `center` | Plaza Mayor | economy | generic but acceptable | per-era `eraModel` names are legacy (`center_steam/imperial/atomic/information/modern`); identity comes from the architecture profile |
 | `house` | Vivienda | economy | generic but acceptable | same legacy naming |
 | `mill` | Troje | economy | historically appropriate | food storehouse (pre-Hispanic *troje*) |
 | `sawmill` | Aserradero | economy | generic but acceptable | modern name for the wood drop-off; modelled with the era's architecture |
@@ -64,12 +64,12 @@ Classification of the 15 `BuildingKind`s (`types.ts:94`, defs in
 | `farm` | Andén | economy | historically appropriate | terraced agriculture; same pre-modern model across eras |
 | `wonder` | Huaca Sagrada | special | appropriate | era-agnostic stepped huaca (fixed in #53); `minEra` is a dead field (`Game.canBuildKind` allows it in any era in wonder mode) and now reads `FORMATIVE` to match |
 
-**Model naming (not a defect):** the `eraModel.type` strings keep a generic
-`steam/imperial/atomic/information/stellar` (and `plant_*` / `exchange_*`) naming
-from the original skeleton. Visual identity is driven by the architecture profile,
-so these are *generic but acceptable*. Some names are **sci-fi-flavoured**
-(`*_stellar`, `farm_future`); they are model identifiers only, but should be
-reviewed against the "no sci-fi in any era" invariant.
+**Model naming / sci-fi (resolved):** the `eraModel.type` strings keep a generic
+`steam/imperial/atomic/information` naming from the original skeleton — *generic
+but acceptable* (visual identity comes from the architecture profile). The
+sci-fi-flavoured ones (`*_stellar`, `farm_future`, plus the dead `*_stellar`
+unit models and the `scifi` texture) have been **removed**: the Contemporary era
+now uses the modern (`buildModern`) models, so no era renders sci-fi.
 
 **Recommended follow-ups** (not in this PR): give `stable`/`factory` era-appropriate
 names/models (e.g. a pre-1532 caravan/corral for `stable`) if they are ever reopened

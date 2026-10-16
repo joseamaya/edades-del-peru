@@ -52,7 +52,7 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
       [Era.TAHUANTINSUYO]: { type: 'center_war', scale: 1.02 },
       [Era.VICEROYALTY]: { type: 'center_atomic', scale: 1.04 },
       [Era.REPUBLIC]: { type: 'center_information', scale: 1.06 },
-      [Era.CONTEMPORARY]: { type: 'center_stellar', scale: 1.1 },
+      [Era.CONTEMPORARY]: { type: 'center_modern', scale: 1.1 },
     },
     trainable: [UnitKind.WORKER, UnitKind.SCOUT],
     isDropsite: true,
@@ -72,7 +72,7 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
       [Era.TAHUANTINSUYO]: { type: 'house_war', scale: 1.02 },
       [Era.VICEROYALTY]: { type: 'house_atomic', scale: 1.03 },
       [Era.REPUBLIC]: { type: 'house_information', scale: 1.05 },
-      [Era.CONTEMPORARY]: { type: 'house_stellar', scale: 1.08 },
+      [Era.CONTEMPORARY]: { type: 'house_modern', scale: 1.08 },
     },
   },
   mill: {
@@ -154,7 +154,7 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
       [Era.TAHUANTINSUYO]: { type: 'barracks_war', scale: 1.02 },
       [Era.VICEROYALTY]: { type: 'barracks_atomic', scale: 1.03 },
       [Era.REPUBLIC]: { type: 'barracks_information', scale: 1.05 },
-      [Era.CONTEMPORARY]: { type: 'barracks_stellar', scale: 1.08 },
+      [Era.CONTEMPORARY]: { type: 'barracks_modern', scale: 1.08 },
     },
   },
   arsenal: {
@@ -170,7 +170,7 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
       [Era.TAHUANTINSUYO]: { type: 'arsenal_war', scale: 1.02 },
       [Era.VICEROYALTY]: { type: 'arsenal_atomic', scale: 1.03 },
       [Era.REPUBLIC]: { type: 'arsenal_information', scale: 1.05 },
-      [Era.CONTEMPORARY]: { type: 'arsenal_stellar', scale: 1.08 },
+      [Era.CONTEMPORARY]: { type: 'arsenal_modern', scale: 1.08 },
     },
   },
   stable: {
@@ -186,7 +186,7 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
       [Era.TAHUANTINSUYO]: { type: 'stable_war', scale: 1.02 },
       [Era.VICEROYALTY]: { type: 'stable_atomic', scale: 1.03 },
       [Era.REPUBLIC]: { type: 'stable_information', scale: 1.05 },
-      [Era.CONTEMPORARY]: { type: 'stable_stellar', scale: 1.08 },
+      [Era.CONTEMPORARY]: { type: 'stable_modern', scale: 1.08 },
     },
   },
   factory: {
@@ -201,7 +201,7 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
       [Era.TAHUANTINSUYO]: { type: 'factory_war', scale: 1.02 },
       [Era.VICEROYALTY]: { type: 'factory_atomic', scale: 1.04 },
       [Era.REPUBLIC]: { type: 'factory_information', scale: 1.06 },
-      [Era.CONTEMPORARY]: { type: 'factory_stellar', scale: 1.1 },
+      [Era.CONTEMPORARY]: { type: 'factory_modern', scale: 1.1 },
     },
   },
   fortress: {
@@ -216,7 +216,7 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
       [Era.TAHUANTINSUYO]: { type: 'fortress_war', scale: 1.02 },
       [Era.VICEROYALTY]: { type: 'fortress_atomic', scale: 1.04 },
       [Era.REPUBLIC]: { type: 'fortress_information', scale: 1.06 },
-      [Era.CONTEMPORARY]: { type: 'fortress_stellar', scale: 1.1 },
+      [Era.CONTEMPORARY]: { type: 'fortress_modern', scale: 1.1 },
     },
   },
   market: {
@@ -233,7 +233,7 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
       [Era.TAHUANTINSUYO]: { type: 'market_modern', scale: 1.02 },
       [Era.VICEROYALTY]: { type: 'market_modern', scale: 1.03 },
       [Era.REPUBLIC]: { type: 'exchange_information', scale: 1.05 },
-      [Era.CONTEMPORARY]: { type: 'exchange_stellar', scale: 1.07 },
+      [Era.CONTEMPORARY]: { type: 'exchange_modern', scale: 1.07 },
     },
   },
   institute: {
@@ -248,7 +248,7 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
       [Era.TAHUANTINSUYO]: { type: 'institute_war', scale: 1.02 },
       [Era.VICEROYALTY]: { type: 'institute_atomic', scale: 1.04 },
       [Era.REPUBLIC]: { type: 'institute_information', scale: 1.06 },
-      [Era.CONTEMPORARY]: { type: 'institute_stellar', scale: 1.1 },
+      [Era.CONTEMPORARY]: { type: 'institute_modern', scale: 1.1 },
     },
   },
   farm: {
@@ -262,8 +262,8 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
       [Era.REGIONAL_STATES]: { type: 'farm', scale: 1 },
       [Era.TAHUANTINSUYO]: { type: 'farm', scale: 1.02 },
       [Era.VICEROYALTY]: { type: 'farm', scale: 1.03 },
-      [Era.REPUBLIC]: { type: 'farm_future', scale: 1.05 },
-      [Era.CONTEMPORARY]: { type: 'farm_future', scale: 1.06 },
+      [Era.REPUBLIC]: { type: 'farm', scale: 1.05 },
+      [Era.CONTEMPORARY]: { type: 'farm', scale: 1.06 },
     },
   },
   wonder: {
