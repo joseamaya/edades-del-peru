@@ -38,7 +38,7 @@ Sources: the code under `src/`, the tests under `tests/`, the scripts under
 - **SettlementGenerator full plan**: roads, starting farms/dropsites and defense (`docs/design/settlement-generator.md`).
 - **§7 (optional)**: slope-based movement cost and bridges (mountains/rivers/valleys/height already shape play).
 - **Building audit follow-ups** (§12): resolved — `stable`/`factory` gated to `VICEROYALTY`, `wonder.minEra` aligned; see below.
-- **Unit-crowding pathfinding**: a tight cluster ordered onto a target can wedge against a destroyed building's ruins (surfaced while testing the settlement layout).
+- ~~Unit-crowding pathfinding~~: fixed — `Pathfinder.rebuild` keeps the terrain mask and `Unit.updateAttack` closes in when its route is exhausted; a clustered army now razes the base (`tests/e2e/skirmish-winnable.spec.ts`).
 - ~~Science-fiction unit~~: `UnitKind.MECH` removed (see below).
 
 ## Building audit (§12)

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
 /**
  * A skirmish must be winnable by force: a player army ordered onto the enemy
@@ -6,15 +6,12 @@ import { test, expect } from '@playwright/test';
  * condition (and that the player's own base survives the enemy AI), which the
  * campaign tests do not cover.
  */
-test('a skirmish can be won by destroying the enemy base', async ({ page }) => {
-  test.setTimeout(120_000);
-  const errors: string[] = [];
-  page.on('pageerror', (e) => errors.push(e.message));
+async function runSkirmish(page: Page, clustered: boolean) {
   await page.goto('/?play=1&seed=777&fog=0&low=1&noloop=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });
-  const out = await page.evaluate(() => {
+  return page.evaluate((cluster: boolean) => {
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
@@ -26,16 +23,14 @@ test('a skirmish can be won by destroying the enemy base', async ({ page }) => {
 
     let spawned = 0;
     for (let i = 0; i < 16; i++) {
-      // spread the army around the base on valid land: a tight cluster can wedge
-      // itself against the ruins and never reach the survivors. spawnScriptedUnit
-      // snaps the requested point onto the nearest walkable cell.
-      const a = (i / 16) * Math.PI * 2;
-      const u = g.spawnScriptedUnit(
-        'soldier',
-        0,
-        enemyCenter.pos.x + Math.cos(a) * 9,
-        enemyCenter.pos.z + Math.sin(a) * 9,
-      );
+      // clustered: the original tight blob (exercises the attack-chase fallback
+      // when a building's goal cell is not walkable); spread: around the base.
+      const x = cluster ? enemyCenter.pos.x + 8 + (i % 4) : enemyCenter.pos.x + Math.cos((i / 16) * Math.PI * 2) * 9;
+      const z = cluster
+        ? enemyCenter.pos.z + 6 + Math.floor(i / 4)
+        : enemyCenter.pos.z + Math.sin((i / 16) * Math.PI * 2) * 9;
+      // spawnScriptedUnit snaps the requested point onto the nearest walkable cell
+      const u = g.spawnScriptedUnit('soldier', 0, x, z);
       u.issueOrder({ kind: 'attack', entityId: enemyCenter.id }, true);
       spawned++;
     }
@@ -69,9 +64,25 @@ test('a skirmish can be won by destroying the enemy base', async ({ page }) => {
       t += dt;
     }
     return { spawned, ended: g.hasEnded(), p1alive: g.players[1].alive as boolean };
-  });
+  }, clustered);
+}
+
+test('a skirmish can be won by destroying the enemy base', async ({ page }) => {
+  test.setTimeout(120_000);
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const out = await runSkirmish(page, false);
   expect(out.spawned).toBeGreaterThan(0);
   expect(out.ended, 'the skirmish never ended').toBe(true);
   expect(out.p1alive, 'the enemy was not defeated').toBe(false);
   expect(errors).toEqual([]);
+});
+
+test('a clustered army also razes the base (attack-chase fallback)', async ({ page }) => {
+  test.setTimeout(120_000);
+  const out = await runSkirmish(page, true);
+  // a tight blob used to wedge against a building whose goal cell is not walkable
+  // and never reach the survivors when the path stopped a couple of cells short
+  expect(out.ended, 'the clustered army never finished the base').toBe(true);
+  expect(out.p1alive).toBe(false);
 });

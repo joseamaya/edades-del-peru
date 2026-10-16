@@ -687,7 +687,9 @@ export class Unit {
         this.setPath(tpos.x, tpos.z);
         this.repathTimer = 0.8;
       }
-      if (this.pathIdx >= this.path.length && this.path.length === 0) {
+      if (this.pathIdx >= this.path.length) {
+        // route exhausted but still out of range (a building's goal cell is not
+        // walkable, so the path can stop a couple of cells short): close in directly
         this.targetYaw = angleTo(this.pos.x, this.pos.z, tpos.x, tpos.z);
         const spd = this.stats.speed;
         this.vel.x = Math.cos(this.targetYaw) * spd;

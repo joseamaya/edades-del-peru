@@ -93,6 +93,8 @@ export class Pathfinder {
   private gScore: Float64Array;
   private cameFrom: Int32Array;
   private closed: Uint8Array;
+  /** Terrain-only blockage (water/steep), kept so `rebuild` does not lose it. */
+  private terrainBlocked: Uint8Array | null = null;
 
   constructor(size: number, cellSize: number) {
     const cols = Math.ceil(size / cellSize);
@@ -132,7 +134,10 @@ export class Pathfinder {
   }
 
   private rebuild(): void {
-    this.grid.walkable.fill(1);
+    // restore the terrain mask first: filling with 1 would otherwise turn water
+    // (baked non-walkable) back into walkable whenever an obstacle is removed
+    if (this.terrainBlocked) this.grid.walkable.set(this.terrainBlocked);
+    else this.grid.walkable.fill(1);
     for (const o of this.obstacles) this.rasterize(o);
   }
 
@@ -149,6 +154,7 @@ export class Pathfinder {
         }
       }
     }
+    this.terrainBlocked = this.grid.walkable.slice();
   }
 
   isWalkable(wx: number, wz: number): boolean {
