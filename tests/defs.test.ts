@@ -102,6 +102,16 @@ describe('building definitions', () => {
       expect(info?.category, `${kind} info category`).toBeTruthy();
     }
   });
+
+  it('keeps horses and artillery (stable/factory) out of the pre-Columbian eras', () => {
+    // no horses, firearms or engines before 1532 (AGENTS domain invariant)
+    expect(BUILDING_DEFS[BuildingKind.STABLE].minEra).toBe(Era.VICEROYALTY);
+    expect(BUILDING_DEFS[BuildingKind.FACTORY].minEra).toBe(Era.VICEROYALTY);
+  });
+
+  it('keeps the scout (Chasqui) trainable before 1532, at the center', () => {
+    expect(BUILDING_DEFS[BuildingKind.CENTER].trainable).toContain(UnitKind.SCOUT);
+  });
 });
 
 describe('technology definitions', () => {

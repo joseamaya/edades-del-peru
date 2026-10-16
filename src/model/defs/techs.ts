@@ -228,13 +228,12 @@ export const TECHS: TechDef[] = [
   {
     id: 'armored_engineering',
     name: 'Ingeniería Blindada',
-    description: 'Desbloquea al Guardián Blindado en el Pucará.',
+    description: 'Refuerza el ataque y la armadura de tus tropas.',
     cost: cost({ silver: 300, stone: 250 }),
     time: 90,
     minPeriod: HistoricalPeriod.CONTEMPORARY,
     building: BuildingKind.FORTRESS,
     effect: { attackMult: 0.2, armorMult: 0.2 },
-    unlocksUnits: ['mec'],
     icon: '🛡️',
   },
   {
