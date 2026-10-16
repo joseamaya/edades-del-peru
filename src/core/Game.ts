@@ -5,6 +5,7 @@ import { PostFX } from '../rendering/PostFX';
 import { Sky, cloudDensity } from '../rendering/Sky';
 import { Terrain } from '../rendering/Terrain';
 import { Water } from '../rendering/Water';
+import { CulturalLandscape } from '../rendering/CulturalLandscape';
 import { Particles } from '../rendering/Particles';
 import { RTSCamera } from './Camera';
 import { GameLoop } from './GameLoop';
@@ -92,6 +93,8 @@ export class Game {
   private missionRegion?: GeographicRegion;
   /** Decorative historical landmark of the map (visual only), if any. */
   landmark: THREE.Group | null = null;
+  /** Cultural landscape (roads, fields, plazas, canals); visual only. */
+  landscape: CulturalLandscape | null = null;
   particles!: Particles;
   fow!: Fow;
   pathfinder!: Pathfinder;
@@ -166,6 +169,7 @@ export class Game {
     this.economy = new Economy(this);
     this.initPlayers();
     this.spawnLandmark();
+    this.spawnCulturalLandscape();
     this.initInput();
     this.initHUD();
     this.mission = mis ? new Mission(this, mis, (win) => this.missionEnd(win)) : null;
@@ -386,6 +390,16 @@ export class Game {
     });
     this.landmark = model;
     this.scene.add(model);
+  }
+
+  /**
+   * Place the map's cultural landscape (roads, fields, plazas, canals; visual
+   * only, deterministic). Derived from `seed + profile`, so it is regenerated on
+   * load and never saved (like the terrain and the landmark).
+   */
+  private spawnCulturalLandscape(): void {
+    this.landscape = new CulturalLandscape(this.terrain, this.mapProfile, this.settings.mapSeed);
+    this.scene.add(this.landscape.group);
   }
 
   private spawnResources(): void {
@@ -2666,6 +2680,11 @@ export class Game {
       this.scene.remove(this.landmark);
       disposeModel(this.landmark);
       this.landmark = null;
+    }
+    if (this.landscape) {
+      this.scene.remove(this.landscape.group);
+      this.landscape.dispose();
+      this.landscape = null;
     }
     this.fow.dispose();
     this.postfx.dispose();
