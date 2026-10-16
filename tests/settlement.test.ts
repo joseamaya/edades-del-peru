@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { planSettlement, type SettlementQuery } from '../src/model/defs/settlementPlan';
+import { planSettlement, planSettlementSite, type SettlementQuery } from '../src/model/defs/settlementPlan';
 import type { SettlementShape } from '../src/model/defs/landscape';
 
 const anchor = { x: 50, z: 50 };
@@ -67,5 +67,72 @@ describe('settlement planner', () => {
   it('keeps its nominal ring on an all-water map (degenerate)', () => {
     const flooded: SettlementQuery = { ...world, isWater: () => true, isBuildable: () => false };
     expect(planSettlement({ shape: 'riverside', seed: 5, anchor, count: 3 }, flooded)).toHaveLength(3);
+  });
+});
+
+describe('settlement site planner', () => {
+  const req = { shape: 'riverside' as SettlementShape, seed: 5, anchor, count: 3 };
+
+  it('agrees with `planSettlement` on the dwellings', () => {
+    const site = planSettlementSite(req, world);
+    expect(site.dwellings).toEqual(planSettlement(req, world));
+  });
+
+  it('is deterministic: same request yields the same plan', () => {
+    expect(planSettlementSite(req, world)).toEqual(planSettlementSite(req, world));
+  });
+
+  it('places dwellings, fields and roads on buildable, dry ground', () => {
+    const plan = planSettlementSite(req, world);
+    expect(plan.center).toEqual(anchor);
+    expect(plan.dwellings).toHaveLength(3);
+    expect(plan.fields.length).toBeGreaterThan(0);
+    for (const f of plan.fields) {
+      expect(world.isWater(f.x, f.z)).toBe(false);
+      expect(world.isBuildable(f.x, f.z)).toBe(true);
+      expect(f.size).toBeGreaterThanOrEqual(3);
+      expect(f.size).toBeLessThanOrEqual(5);
+    }
+    for (const r of plan.roads) {
+      expect(world.isWater(r.from.x, r.from.z)).toBe(false);
+      expect(world.isBuildable(r.to.x, r.to.z)).toBe(true);
+    }
+  });
+
+  it('connects the center to every dwelling with a road', () => {
+    const plan = planSettlementSite(req, world);
+    for (const d of plan.dwellings) {
+      expect(
+        plan.roads.some((r) => r.to.x === d.x && r.to.z === d.z && r.from.x === anchor.x && r.from.z === anchor.z),
+      ).toBe(true);
+    }
+  });
+
+  it('lays fields on the fertile side of the map', () => {
+    // `world` is more humid east of x=55; the fields must follow the moisture
+    const plan = planSettlementSite({ ...req, shape: 'dispersed' }, world);
+    const cx = plan.fields.reduce((s, f) => s + f.x, 0) / plan.fields.length;
+    expect(cx).toBeGreaterThan(anchor.x);
+  });
+
+  it('works with a query that has no terrace/canal probes', () => {
+    const plain: SettlementQuery = {
+      isWater: () => false,
+      isBuildable: () => true,
+      getSlope: () => 0.1,
+      getHeight: () => 5,
+      getMoisture: () => 0.9,
+    };
+    const plan = planSettlementSite({ ...req, shape: 'grid' }, plain);
+    expect(plan.dwellings).toHaveLength(3);
+    expect(plan.fields.length).toBeGreaterThan(0);
+  });
+
+  it('keeps its nominal ring and skips fields on an all-water map', () => {
+    const flooded: SettlementQuery = { ...world, isWater: () => true, isBuildable: () => false };
+    const plan = planSettlementSite(req, flooded);
+    expect(plan.dwellings).toHaveLength(3);
+    expect(plan.fields).toHaveLength(0);
+    expect(plan.roads).toHaveLength(0);
   });
 });
