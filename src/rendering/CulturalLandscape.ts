@@ -2,13 +2,10 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { Terrain } from './Terrain';
 import type { HistoricalMapProfile } from '../model/defs/profiles';
-import { planCulturalLandscape, type LandscapeQuery } from '../model/defs/landscapePlan';
+import { planCulturalLandscape, RENDERED_FEATURES, type LandscapeQuery } from '../model/defs/landscapePlan';
 import type { LandscapeFeature } from '../model/defs/landscape';
 
-/** Features the renderer knows how to draw. */
-const FEATURES = ['plaza', 'field', 'road', 'path', 'canal', 'terrace', 'wall', 'corral'] as const;
-
-/** Vertical offset above the terrain (half-height for the solid modules, a small lift for the flats). */
+/** Vertical offset above the terrain (half-height for the walls, a small lift for the flats). */
 const OFFSET: Partial<Record<LandscapeFeature, number>> = {
   plaza: 0.06,
   road: 0.04,
@@ -64,7 +61,7 @@ export class CulturalLandscape {
       wall: new THREE.MeshStandardMaterial({ color: '#8c7f6e', roughness: 0.9 }),
       corral: new THREE.MeshStandardMaterial({ color: '#7d6f5c', roughness: 1 }),
     };
-    for (const feature of FEATURES) {
+    for (const feature of RENDERED_FEATURES) {
       const parts = buckets[feature];
       if (!parts?.length) continue;
       const merged = mergeGeometries(parts, false);

@@ -72,7 +72,7 @@ export const LANDSCAPE: Record<GeographicRegion, CulturalLandscapeProfile> = {
       { feature: 'road', weight: 0.4 },
     ],
     settlementShape: 'dispersed',
-    provenance: 'docs/historia/mapas.md (Paracas/Nazca/Chincha: valles y pampa)',
+    provenance: 'docs/historia/mapas.md (costa desértica sur: valles y pampa; abstracción: red de caminos)',
   },
   andean_valley: {
     features: [
@@ -82,7 +82,7 @@ export const LANDSCAPE: Record<GeographicRegion, CulturalLandscapeProfile> = {
       { feature: 'wall', weight: 0.3 },
     ],
     settlementShape: 'riverside',
-    provenance: 'docs/historia/mapas.md (Chavín/Recuay/Huanca: andenes y valle)',
+    provenance: 'docs/historia/mapas.md (Chavín/Recuay/Huanca: andenes y valle; abstracción: muros)',
   },
   high_andes: {
     features: [
@@ -92,7 +92,7 @@ export const LANDSCAPE: Record<GeographicRegion, CulturalLandscapeProfile> = {
       { feature: 'plaza', weight: 0.5 },
     ],
     settlementShape: 'hilltop',
-    provenance: 'docs/historia/mapas.md (Inca/Wari/Chanca: andenes, Qhapaq Ñan, pucarás)',
+    provenance: 'docs/historia/mapas.md (Inca/Wari/Chanca: andenes y red vial; abstracción: muros y plazas)',
   },
   altiplano: {
     features: [
@@ -110,7 +110,7 @@ export const LANDSCAPE: Record<GeographicRegion, CulturalLandscapeProfile> = {
       { feature: 'path', weight: 0.2 },
     ],
     settlementShape: 'dispersed',
-    provenance: 'docs/historia/mapas.md (selva alta: cultivos y senderos)',
+    provenance: 'docs/historia/mapas.md (selva alta: ríos y bosque húmedo; abstracción: cultivos y senderos)',
   },
 };
 

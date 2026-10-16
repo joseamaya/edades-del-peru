@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { LANDSCAPE, landscapeWeight, type LandscapeFeature } from '../src/model/defs/landscape';
-import { planCulturalLandscape, type LandscapeQuery } from '../src/model/defs/landscapePlan';
+import { planCulturalLandscape, RENDERED_FEATURES, type LandscapeQuery } from '../src/model/defs/landscapePlan';
 import { MAP_PROFILES, type GeographicRegion } from '../src/model/defs/profiles';
 
 const REGIONS = Object.keys(LANDSCAPE) as GeographicRegion[];
@@ -66,23 +66,25 @@ describe('cultural landscape plan', () => {
       new Set(planCulturalLandscape(LANDSCAPE[region], 7, flat).map((p) => p.feature));
     expect(kinds('north_coast').has('canal')).toBe(true);
     expect(kinds('north_coast').has('plaza')).toBe(true);
+    expect(kinds('south_coast').has('road')).toBe(true);
+    expect(kinds('andean_valley').has('terrace')).toBe(true);
     expect(kinds('high_andes').has('terrace')).toBe(true);
     expect(kinds('high_andes').has('wall')).toBe(true);
     expect(kinds('altiplano').has('corral')).toBe(true);
     expect(kinds('amazon').has('path')).toBe(true);
   });
 
+  it('never draws a feature the region does not list', () => {
+    for (const region of REGIONS) {
+      const listed = new Set(LANDSCAPE[region].features.map((f) => f.feature));
+      for (const p of planCulturalLandscape(LANDSCAPE[region], 7, flat)) {
+        expect(listed.has(p.feature), `${region} drew unlisted ${p.feature}`).toBe(true);
+      }
+    }
+  });
+
   it('only emits implemented features and places everything on buildable land', () => {
-    const implemented = new Set<LandscapeFeature>([
-      'plaza',
-      'field',
-      'road',
-      'path',
-      'canal',
-      'terrace',
-      'wall',
-      'corral',
-    ]);
+    const implemented = new Set<LandscapeFeature>(RENDERED_FEATURES);
     for (const region of REGIONS) {
       const plan = planCulturalLandscape(LANDSCAPE[region], 7, flat);
       expect(plan.length, region).toBeGreaterThan(0);
