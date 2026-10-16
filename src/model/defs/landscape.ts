@@ -39,9 +39,11 @@ export interface CulturalLandscapeProfile {
 }
 
 /**
- * Region defaults. This iteration implements the coast (Moche / Caral) slice —
- * canal, field, road and plaza; the remaining regions are filled in later phases
- * (their `features` stay empty so nothing is drawn there yet).
+ * Region defaults. `terrace`/`wall` are rendered as retaining modules on the
+ * andenes, `corral` as a low ring and `path` as a narrow road; the coast also has
+ * literature-carved `canal`. Feature sets differ per region so the landscape reads
+ * differently by geography (coast irrigation vs Andean terracing vs altiplano
+ * corrals). Visual only for now (no gameplay effect).
  */
 export const LANDSCAPE: Record<GeographicRegion, CulturalLandscapeProfile> = {
   north_coast: {
@@ -65,29 +67,50 @@ export const LANDSCAPE: Record<GeographicRegion, CulturalLandscapeProfile> = {
     provenance: 'docs/historia/civilizaciones/caral.md (canales de riego; plazas)',
   },
   south_coast: {
-    features: [],
+    features: [
+      { feature: 'field', weight: 0.5 },
+      { feature: 'road', weight: 0.4 },
+    ],
     settlementShape: 'dispersed',
-    provenance: 'docs/historia/mapas.md (Paracas/Nazca/Chincha)',
+    provenance: 'docs/historia/mapas.md (Paracas/Nazca/Chincha: valles y pampa)',
   },
   andean_valley: {
-    features: [],
+    features: [
+      { feature: 'terrace', weight: 0.7 },
+      { feature: 'field', weight: 0.5 },
+      { feature: 'road', weight: 0.6 },
+      { feature: 'wall', weight: 0.3 },
+    ],
     settlementShape: 'riverside',
-    provenance: 'docs/historia/mapas.md (Chavín/Recuay/Huanca)',
+    provenance: 'docs/historia/mapas.md (Chavín/Recuay/Huanca: andenes y valle)',
   },
   high_andes: {
-    features: [],
+    features: [
+      { feature: 'terrace', weight: 0.9 },
+      { feature: 'road', weight: 0.7 },
+      { feature: 'wall', weight: 0.4 },
+      { feature: 'plaza', weight: 0.5 },
+    ],
     settlementShape: 'hilltop',
-    provenance: 'docs/historia/mapas.md (Inca/Wari/Chanca)',
+    provenance: 'docs/historia/mapas.md (Inca/Wari/Chanca: andenes, Qhapaq Ñan, pucarás)',
   },
   altiplano: {
-    features: [],
+    features: [
+      { feature: 'terrace', weight: 0.4 },
+      { feature: 'field', weight: 0.5 },
+      { feature: 'corral', weight: 0.4 },
+      { feature: 'plaza', weight: 0.5 },
+    ],
     settlementShape: 'dispersed',
-    provenance: 'docs/historia/mapas.md (Tiahuanaco/Collas)',
+    provenance: 'docs/historia/mapas.md (Tiahuanaco/Collas: camellones y ganadería)',
   },
   amazon: {
-    features: [],
+    features: [
+      { feature: 'field', weight: 0.3 },
+      { feature: 'path', weight: 0.2 },
+    ],
     settlementShape: 'dispersed',
-    provenance: 'docs/historia/mapas.md (selva alta)',
+    provenance: 'docs/historia/mapas.md (selva alta: cultivos y senderos)',
   },
 };
 

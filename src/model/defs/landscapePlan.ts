@@ -7,6 +7,8 @@ export interface LandscapeQuery {
   isWater(x: number, z: number): boolean;
   isBuildable(x: number, z: number): boolean;
   getSlope(x: number, z: number): number;
+  /** Agricultural terracing strength (0..~0.55). */
+  getTerrace(x: number, z: number): number;
   /** Canal strength (0..1) carved into the terrain. */
   getCanal(x: number, z: number): number;
 }
@@ -71,6 +73,50 @@ export function planCulturalLandscape(
         const z = hub.z + Math.sin(a) * (len * (i / steps));
         if (!q.isBuildable(x, z) || q.isWater(x, z)) continue;
         out.push({ feature: 'road', x, z, yaw: a, size: 2 });
+      }
+    }
+  }
+
+  const path = landscapeWeight(profile, 'path');
+  if (path > 0) {
+    const spokes = 1 + Math.round(path * 2);
+    for (let s = 0; s < spokes; s++) {
+      const a = (s / spokes) * Math.PI * 2 + rng.range(-0.2, 0.2);
+      const len = rng.range(0.15, 0.3) * q.size * spread;
+      const steps = Math.max(3, Math.round(len / 3));
+      for (let i = 1; i <= steps; i++) {
+        const x = hub.x + Math.cos(a) * (len * (i / steps));
+        const z = hub.z + Math.sin(a) * (len * (i / steps));
+        if (!q.isBuildable(x, z) || q.isWater(x, z)) continue;
+        out.push({ feature: 'path', x, z, yaw: a, size: 1.4 });
+      }
+    }
+  }
+
+  const wall = landscapeWeight(profile, 'wall');
+  for (let i = 0; i < Math.round(2 + wall * 4); i++) {
+    const a = rng.range(0, Math.PI * 2);
+    const r = rng.range(5, 12);
+    const x = hub.x + Math.cos(a) * r;
+    const z = hub.z + Math.sin(a) * r;
+    if (!q.isBuildable(x, z) || q.isWater(x, z) || q.getSlope(x, z) > 0.35) continue;
+    out.push({ feature: 'wall', x, z, yaw: a, size: 3 });
+  }
+
+  const corral = landscapeWeight(profile, 'corral');
+  for (let i = 0; i < Math.round(corral * 3); i++) {
+    const a = rng.range(0, Math.PI * 2);
+    const r = rng.range(6, 14) * spread;
+    const x = hub.x + Math.cos(a) * r;
+    const z = hub.z + Math.sin(a) * r;
+    if (!q.isBuildable(x, z) || q.isWater(x, z) || q.getSlope(x, z) > 0.4) continue;
+    out.push({ feature: 'corral', x, z, yaw: 0, size: 4 + corral * 2 });
+  }
+
+  if (landscapeWeight(profile, 'terrace') > 0) {
+    for (let z = 3; z < q.size - 3; z += 3) {
+      for (let x = 3; x < q.size - 3; x += 3) {
+        if (q.getTerrace(x, z) > 0.3) out.push({ feature: 'terrace', x, z, yaw: 0, size: 2.4 });
       }
     }
   }

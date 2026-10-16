@@ -38,12 +38,23 @@ test('a coastal map carries its cultural landscape', async ({ page }) => {
   expect(s.names).toContain('plaza');
 });
 
-test('a region without landscape features draws none', async ({ page }) => {
-  // the jungle has no cultural-landscape features yet (moche forced onto a jungle map)
+test('the high Andes carry terraces and the altiplano corrals', async ({ page }) => {
+  await boot(page, '/?civ=inca&period=5&seed=777&fog=0&low=1&noloop=1');
+  const andes = await landscapeSig(page);
+  expect(andes.present).toBe(true);
+  expect(andes.names).toContain('terrace');
+
+  await boot(page, '/?civ=tiahuanaco&period=3&seed=777&fog=0&low=1&noloop=1');
+  const altiplano = await landscapeSig(page);
+  expect(altiplano.names).toContain('corral');
+});
+
+test('a jungle map carries its own (lighter) landscape', async ({ page }) => {
   await boot(page, '/?civ=moche&period=2&map=jungle&seed=777&fog=0&low=1&noloop=1');
   const s = await landscapeSig(page);
   expect(s.present).toBe(true);
-  expect(s.meshes).toBe(0);
+  expect(s.meshes).toBeGreaterThan(0);
+  expect(s.names.some((n) => n === 'field' || n === 'path')).toBe(true);
 });
 
 test('landscape placement is deterministic for the same seed', async ({ page }) => {

@@ -1,10 +1,10 @@
 # Cultural landscape — design proposal
 
-Status: **partially implemented.** Phases 1–3 for the coast slice (canal, field,
-road, plaza) are live in `src/model/defs/landscape.ts`,
-`src/model/defs/landscapePlan.ts` and `src/rendering/CulturalLandscape.ts`. The
-other regions (their `features` are still empty) and the gameplay hook (phase 4)
-remain as described below.
+Status: **implemented (visual), gameplay hook pending.** Phases 1–3 and 5 (all
+regions) are live: `src/model/defs/landscape.ts`, `src/model/defs/landscapePlan.ts`
+and `src/rendering/CulturalLandscape.ts`. Features rendered: plaza, field, road,
+path, canal, terrace, wall, corral. The gameplay hook (phase 4) remains as
+described below.
 
 This document describes how to add a `CulturalLandscape` layer to Edades del Perú.
 It extends the existing `HistoricalMapProfile`
@@ -150,11 +150,11 @@ terrain shader can dim a canal bed via a per-vertex mask (same pattern as
 ## Phased plan
 
 1. **Data + types** (`culturalLandscape` in profiles, resolver + tests). ✅
-2. **One feature, one region**: canals + fields on `north_coast` (Moche slice). ✅ (coast slice: canal, field, road, plaza)
+2. **One feature, one region**: canals + fields on `north_coast` (Moche slice). ✅
 3. **Rendering batcher** and the visual-regression scene. ✅ (`CulturalLandscape`, `landscape_*` scenes)
 4. **Gameplay hook**: fields/canals nudge nearby farm yield (reuse
    `applyTerrainFarmYield`). ⏳
-5. **Generalize** to the remaining regions; add the bench budget assertion. ⏳
+5. **Generalize** to the remaining regions; add the bench budget assertion. ✅ regions / ⏳ bench budget assertion
 
 ## Acceptance criteria
 
