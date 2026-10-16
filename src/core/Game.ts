@@ -45,7 +45,8 @@ import { BuildContext, buildModel, buildLandmarkModel, disposeModel, clearModelC
 import { clearTextureCache } from '../rendering/Textures';
 import { DEFAULT_SETTINGS, GameSettings, RESOURCE_INFO, CAMERA_SPEED_SCALE } from './Config';
 import { resolveMapProfile, type HistoricalMapProfile, type GeographicRegion } from '../model/defs/profiles';
-import { planSettlement } from '../model/defs/settlementPlan';
+import { planSettlementSite } from '../model/defs/settlementPlan';
+import { SettlementOverlay } from '../rendering/SettlementOverlay';
 import { farmYieldMultiplier, nearbyCanal } from '../model/defs/farmYield';
 import { distance2D } from '../util/math';
 import { isTypingTarget } from '../util/dom';
@@ -97,6 +98,8 @@ export class Game {
   landmark: THREE.Group | null = null;
   /** Cultural landscape (roads, fields, plazas, canals); visual only. */
   landscape: CulturalLandscape | null = null;
+  /** Per-base settlement overlays (planned fields/roads); visual only. */
+  settlements: SettlementOverlay[] = [];
   particles!: Particles;
   fow!: Fow;
   pathfinder!: Pathfinder;
@@ -503,14 +506,14 @@ export class Game {
     center.addBuildProgress(9999);
     this.buildings.set(center.id, center);
     this.registerObstacle(center);
-    // starting dwellings: laid out by the terrain-aware settlement planner
+    // starting dwellings + visual fields/roads, laid out by the terrain-aware planner
     const rng = new RNG(this.settings.mapSeed + player * 100);
     const shape = this.mapProfile.culturalLandscape?.settlementShape ?? 'dispersed';
-    const spots = planSettlement(
+    const plan = planSettlementSite(
       { shape, seed: this.settings.mapSeed * 131 + player * 100 + 1, anchor: { x, z }, count: 3 },
       this.terrain,
     );
-    for (const spot of spots) {
+    for (const spot of plan.dwellings) {
       const house = new Building(BuildingKind.HOUSE, player, this.players[player].era, ctx);
       house.pos.set(spot.x, this.terrain.getHeight(spot.x, spot.z), spot.z);
       house.attach(this.scene);
@@ -519,6 +522,9 @@ export class Game {
       this.buildings.set(house.id, house);
       this.registerObstacle(house);
     }
+    const overlay = new SettlementOverlay(plan, this.terrain);
+    this.scene.add(overlay.group);
+    this.settlements.push(overlay);
     // nearby resources to start
     this.spawnStartResources(player, x, z);
     // starting workers
@@ -2698,6 +2704,8 @@ export class Game {
       this.landscape.dispose();
       this.landscape = null;
     }
+    for (const overlay of this.settlements) overlay.dispose();
+    this.settlements = [];
     this.fow.dispose();
     this.postfx.dispose();
     clearModelCaches();

@@ -61,8 +61,6 @@ const FIELD_RADIUS_MAX = 11;
 const FIELD_COUNT = 3;
 /** Candidate scan step for fields (world units). */
 const FIELD_SCAN_STEP = 2;
-/** A field needs at least this fertility score (moisture + terrace/canal). */
-const FIELD_MIN_SCORE = 0.6;
 /** Steepest ground a field may sit on. */
 const FIELD_SLOPE_LIMIT = 0.3;
 /** Minimum distance between fields and from a dwelling. */
@@ -129,8 +127,9 @@ function planDwellings(req: SettlementRequest, q: SettlementQuery, rng: RNG): Se
 /**
  * Fields on the most fertile, gentle, reachable ground around the center: a
  * deterministic candidate scan scored by moisture (+ terrace and canal when the
- * query offers them), pick greedily but keep the fields apart and off the
- * dwellings. Only the field size comes from `rng`.
+ * query offers them), then the highest scores are picked greedily but kept apart
+ * and off the dwellings. The most fertile available cells are used, so a dry map
+ * still gets its best ground. Only the field size comes from `rng`.
  */
 function planFields(
   center: { x: number; z: number },
@@ -145,7 +144,6 @@ function planFields(
       if (d < FIELD_RADIUS_MIN || d > FIELD_RADIUS_MAX) continue;
       if (q.isWater(x, z) || !q.isBuildable(x, z) || q.getSlope(x, z) > FIELD_SLOPE_LIMIT) continue;
       const score = fieldScore(q, x, z);
-      if (score < FIELD_MIN_SCORE) continue;
       if (crossesWater(center, x, z, q)) continue;
       candidates.push({ x, z, score });
     }
