@@ -44,4 +44,18 @@ describe('Pathfinder', () => {
     const last = path[path.length - 1];
     expect(Math.hypot(last.x - 50, last.z - 50)).toBeLessThanOrEqual(8);
   });
+
+  it('keeps terrain (water) blocked after an obstacle is removed', () => {
+    const pf = new Pathfinder(100, 2);
+    // a "sea" for x < 20 (height 0 below the water line), land elsewhere
+    pf.bakeTerrain((x) => (x < 20 ? 0 : 10), 5);
+    expect(pf.isWalkable(10, 50)).toBe(false);
+    expect(pf.isWalkable(50, 50)).toBe(true);
+    const o = { x: 80, z: 50, radius: 3 };
+    pf.addObstacle(o);
+    pf.removeObstacle(o);
+    // removing an obstacle must not turn the sea back into walkable ground
+    expect(pf.isWalkable(10, 50)).toBe(false);
+    expect(pf.isWalkable(50, 50)).toBe(true);
+  });
 });

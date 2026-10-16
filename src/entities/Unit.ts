@@ -687,14 +687,14 @@ export class Unit {
         this.setPath(tpos.x, tpos.z);
         this.repathTimer = 0.8;
       }
-      if (this.pathIdx >= this.path.length && this.path.length === 0) {
+      if (this.pathIdx >= this.path.length) {
+        // route exhausted but still out of range (a building's goal cell is not
+        // walkable, so the path can stop a couple of cells short): head straight in.
+        // Movement integration is left to `updateMovement` (do not move pos here).
         this.targetYaw = angleTo(this.pos.x, this.pos.z, tpos.x, tpos.z);
         const spd = this.stats.speed;
         this.vel.x = Math.cos(this.targetYaw) * spd;
         this.vel.z = Math.sin(this.targetYaw) * spd;
-        this.pos.x += this.vel.x * dt;
-        this.pos.z += this.vel.z * dt;
-        this.pos.y = this.ctx.getHeight(this.pos.x, this.pos.z) + 0.05;
         return;
       }
       this.targetYaw = angleTo(this.pos.x, this.pos.z, tpos.x, tpos.z);
