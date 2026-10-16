@@ -26,6 +26,7 @@ export const SCENES = [
   scene('inca', { civ: 'inca', period: 5 }),
   scene('viceroyalty', { civ: 'realistas', period: 6 }),
   scene('republic', { civ: 'republica', period: 8 }),
+  scene('contemporary', { civ: 'republica', period: 9 }),
   // the remaining civilization families (their own landmark/architecture identity)
   scene('cupisnique', { civ: 'cupisnique', period: 1 }),
   scene('paracas', { civ: 'paracas', period: 1 }),
