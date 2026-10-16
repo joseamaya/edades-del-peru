@@ -157,3 +157,5 @@ material and ornament** as well (guarded by
   cultural-landscape layer (roads, canals, fields, plazas).
 - [`settlement-generator.md`](./settlement-generator.md) — design proposal for a
   terrain-aware settlement layout generator.
+- [`prp-status.md`](./prp-status.md) — the PRP Definition of Done checklist and the
+  building audit.

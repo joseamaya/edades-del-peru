@@ -3,7 +3,9 @@
 Deep reference for working on Edades del Perú: subsystem details, hard-won code
 traps and the debug harness. For the short orientation see [`AGENTS.md`](../AGENTS.md);
 for player-facing docs see [`README.md`](../README.md); for art direction see
-[`docs/design/visual-language.md`](./design/visual-language.md).
+[`docs/design/visual-language.md`](./design/visual-language.md); for the PRP
+Definition of Done and the building audit see
+[`docs/design/prp-status.md`](./design/prp-status.md).
 
 ## Architecture
 

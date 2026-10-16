@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Era, UnitKind, BuildingKind, HistoricalPeriod, CivId } from '../src/core/types';
 import { UNIT_ARCHETYPES, getUnitStats } from '../src/model/defs/units';
-import { BUILDING_DEFS, getBuildingStats } from '../src/model/defs/buildings';
+import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../src/model/defs/buildings';
 import { TECHS, techAvailable } from '../src/model/defs/techs';
 import { ERA_DEFS } from '../src/model/defs/eras';
 import { PERIODS, getPeriod } from '../src/model/defs/periods';
@@ -86,6 +86,20 @@ describe('building definitions', () => {
     for (const kind of buildingKinds) {
       const def = BUILDING_DEFS[kind];
       if (def.isDropsite) expect((def.dropTypes ?? []).length).toBeGreaterThan(0);
+    }
+  });
+
+  it('every building kind is documented and modelled', () => {
+    for (const kind of buildingKinds) {
+      const def = BUILDING_DEFS[kind];
+      expect(def.id, `${kind} id`).toBe(kind);
+      expect(def.name.length, `${kind} name`).toBeGreaterThan(0);
+      expect(def.description.length, `${kind} description`).toBeGreaterThan(0);
+      expect(Object.keys(def.eraModel).length, `${kind} eraModel`).toBeGreaterThan(0);
+      const info = BUILDING_INFO[kind];
+      expect(info?.name, `${kind} info name`).toBeTruthy();
+      expect(info?.icon, `${kind} info icon`).toBeTruthy();
+      expect(info?.category, `${kind} info category`).toBeTruthy();
     }
   });
 });
