@@ -26,7 +26,7 @@ Sources: the code under `src/`, the tests under `tests/`, the scripts under
 | Existing tests pass | done | `yarn test` |
 | Relevant new tests added | done | profiles/terrain/landscape/settlement/combat/farm-yield + e2e |
 | Comparable screenshots exist | done | `scripts/visual.mjs` + `scenes.mjs` (25 scenes), `tests/visual/baseline.json` |
-| No significant performance regression | **partial** | `scripts/bench.mjs` shows draw calls / sim time flat, but the landscape draw-call budget assertion is still pending |
+| No significant performance regression | done | `scripts/bench.mjs` shows draw calls / sim time flat and now asserts the landscape's draw-call budget (`LANDSCAPE_DRAW_CALL_BUDGET`, ≤150) |
 | Historical docs updated | done | `docs/historia/mapas.md`, `arquitectura.md` |
 | `PROVENANCE.md` updated | done | `PROVENANCE.md` |
 | README has no misleading claims | done | PR #54 (dropped "100% procedural" / absolute accuracy) |
@@ -34,7 +34,6 @@ Sources: the code under `src/`, the tests under `tests/`, the scripts under
 
 ### Remaining work
 
-- **Cultural-landscape phase 5**: assert the landscape's draw-call budget in `scripts/bench.mjs`.
 - **SettlementGenerator full plan**: roads, starting farms/dropsites and defense (`docs/design/settlement-generator.md`).
 - **§7 (optional)**: slope-based movement cost and bridges (mountains/rivers/valleys/height already shape play).
 - **Building audit follow-ups** (§12): resolved — `stable`/`factory` gated to `VICEROYALTY`, `wonder.minEra` aligned; see below.

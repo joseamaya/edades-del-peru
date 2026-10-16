@@ -344,7 +344,10 @@ Match the cost of verification to the change (the full gate is in `AGENTS.md`):
 (`Game.update`), heap delta during the sim loop, A* per call, target acquisition (`enemiesNear`) and
 hover-picking (`pickAt`), then — with the loop running and `window.__directRender` on (bypasses
 post-processing so `renderer.info` is meaningful) — FPS, frame time (avg/p95), long tasks and real scene
-draw calls/triangles. It writes `review/bench.json` and prints a table.
+draw calls/triangles. It also isolates the cultural landscape's draw calls (the layer rendered visible
+vs hidden) and **fails** (`exit ≠ 0`) when they exceed the budget in
+[`docs/design/cultural-landscape.md`](design/cultural-landscape.md) (`LANDSCAPE_DRAW_CALL_BUDGET`). It
+writes `review/bench.json` and prints a table.
 
 Numbers are only comparable **on the same machine/browser** — treat them as relative signals, not targets.
 Reference run (this repo, 2-core container, `CHROME_PATH` SwiftShader, `?low=1`, seed 777):

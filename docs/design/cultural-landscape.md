@@ -1,10 +1,11 @@
 # Cultural landscape — design proposal
 
-Status: **implemented (visual), gameplay hook pending.** Phases 1–3 and 5 (all
-regions) are live: `src/model/defs/landscape.ts`, `src/model/defs/landscapePlan.ts`
-and `src/rendering/CulturalLandscape.ts`. Features rendered: plaza, field, road,
-path, canal, terrace, wall, corral. The gameplay hook (phase 4) remains as
-described below.
+Status: **implemented (visual + gameplay).** All phases are live:
+`src/model/defs/landscape.ts`, `src/model/defs/landscapePlan.ts` and
+`src/rendering/CulturalLandscape.ts`. Features rendered: plaza, field, road, path,
+canal, terrace, wall, corral. The gameplay hook (phase 4) feeds farm yield through
+nearby canals/terraces (`farmYield.ts`), and phase 5 asserts the layer's draw-call
+budget in `scripts/bench.mjs`.
 
 This document describes how to add a `CulturalLandscape` layer to Edades del Perú.
 It extends the existing `HistoricalMapProfile`
@@ -153,13 +154,13 @@ terrain shader can dim a canal bed via a per-vertex mask (same pattern as
 2. **One feature, one region**: canals + fields on `north_coast` (Moche slice). ✅
 3. **Rendering batcher** and the visual-regression scene. ✅ (`CulturalLandscape`, `landscape_*` scenes)
 4. **Gameplay hook**: fields/canals nudge nearby farm yield (reuse
-   `applyTerrainFarmYield`). ⏳
-5. **Generalize** to the remaining regions; add the bench budget assertion. ✅ regions / ⏳ bench budget assertion
+   `applyTerrainFarmYield`). ✅
+5. **Generalize** to the remaining regions; add the bench budget assertion. ✅ regions + bench budget assertion
 
 ## Acceptance criteria
 
-- [ ] `seed + profile` → same landscape (unit test).
-- [ ] North-coast, high-Andes and altiplano read differently **beyond** colour.
-- [ ] No measurable regression in `yarn bench` draw calls / frame time.
-- [ ] No new historical claim without a `docs/historia/` source.
-- [ ] `yarn typecheck && yarn lint && yarn format:check && yarn test && yarn build` + E2E green.
+- [x] `seed + profile` → same landscape (unit test).
+- [x] North-coast, high-Andes and altiplano read differently **beyond** colour.
+- [x] No measurable regression in `yarn bench` draw calls / frame time (budget asserted).
+- [x] No new historical claim without a `docs/historia/` source.
+- [x] `yarn typecheck && yarn lint && yarn format:check && yarn test && yarn build` + E2E green.
