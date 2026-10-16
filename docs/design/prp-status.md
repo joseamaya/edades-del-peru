@@ -56,9 +56,9 @@ Classification of the 15 `BuildingKind`s (`types.ts:94`, defs in
 | `refinery` | Cantera | economy | historically appropriate | stone quarry, `minEra TAHUANTINSUYO` |
 | `barracks` | Casa del Guerrero | military | historically appropriate | trains Amauta / Misionero (era-gated) |
 | `arsenal` | Arsenal | military | generic but acceptable | `minEra FORMATIVE`; trains Hondero (sling), Tirador, Cazador (`VICEROYALTY`) and Artillero Antiaéreo (`CONTEMPORARY`) — ranged, not firearms. The modern "Arsenal" name is reused across eras |
-| `stable` | Establo | military | appropriate (gated) | `minEra VICEROYALTY`; Jinete/Caballería (`VICEROYALTY`), Ariete (`CONTEMPORARY`), Chasqui (ungated) — no horses before 1532 |
+| `stable` | Establo | military | appropriate (gated) | `minEra VICEROYALTY`; Jinete/Caballería (`VICEROYALTY`), Ariete (`CONTEMPORARY`) — no horses before 1532. The pre-Hispanic Chasqui is trainable at the `center` instead |
 | `factory` | Taller de Artillería | military | appropriate (gated) | `minEra VICEROYALTY`; Artillería/Mortero (`VICEROYALTY`), Cohetes (`CONTEMPORARY`) |
-| `fortress` | Pucará | defense | historically appropriate | Andean hillfort; **trains `MECH` (sci-fi) — see below** |
+| `fortress` | Pucará | defense | historically appropriate | Andean hillfort (defensive; no unit training after the sci-fi `MECH` was removed) |
 | `market` | Mercado | economy | historically appropriate | exchange/trade (Chincha) |
 | `institute` | Yachaywasi | advance | visually inconsistent | an Inca "house of learning" name reused unchanged in the Viceroyalty/Republic |
 | `farm` | Andén | economy | historically appropriate | terraced agriculture; same pre-modern model across eras |
@@ -85,9 +85,9 @@ before 1532, and consider a per-era label for `arsenal`.
 | `NUCLEAR` ("Artillería de Cohetes") | "atomic-era tactical weapon (area)" | kept — real-world rocket artillery fits `CONTEMPORARY` |
 
 Projectile kinds `bullet`, `rocket`, `howitzer_shell`, `laser`, `rail`, `nuclear`
-and `tracer` are declared in the **base** game (`ModelSpec.projectile`); `MECH`
-fires `rail` and `NUCLEAR` fires `nuclear`. `laser` is declared but unused by any
-base-game unit (the mod schema also lists it). Recorded for completeness.
+and `tracer` are declared in the **base** game (`ModelSpec.projectile`); `NUCLEAR`
+fires `nuclear`. With `MECH` removed, `rail` and `laser` are declared but unused by
+any base-game unit (the mod schema also lists them). Recorded for completeness.
 
 ## Non-goals
 

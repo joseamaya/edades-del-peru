@@ -108,6 +108,10 @@ describe('building definitions', () => {
     expect(BUILDING_DEFS[BuildingKind.STABLE].minEra).toBe(Era.VICEROYALTY);
     expect(BUILDING_DEFS[BuildingKind.FACTORY].minEra).toBe(Era.VICEROYALTY);
   });
+
+  it('keeps the scout (Chasqui) trainable before 1532, at the center', () => {
+    expect(BUILDING_DEFS[BuildingKind.CENTER].trainable).toContain(UnitKind.SCOUT);
+  });
 });
 
 describe('technology definitions', () => {

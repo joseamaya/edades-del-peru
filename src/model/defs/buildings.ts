@@ -54,7 +54,7 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
       [Era.REPUBLIC]: { type: 'center_information', scale: 1.06 },
       [Era.CONTEMPORARY]: { type: 'center_stellar', scale: 1.1 },
     },
-    trainable: [UnitKind.WORKER],
+    trainable: [UnitKind.WORKER, UnitKind.SCOUT],
     isDropsite: true,
     dropTypes: ['food', 'wood', 'silver', 'stone'],
     garrisons: 15,
