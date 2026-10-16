@@ -2,12 +2,15 @@ import { fbm2, ridged2 } from '../util/noise';
 import { RNG } from '../util/rng';
 import { smoothstep } from '../util/math';
 import type { HistoricalMapProfile } from '../model/defs/profiles';
+import { landscapeWeight } from '../model/defs/landscape';
 
 export interface HeightField {
   heightMap: Float32Array;
   moistureMap: Float32Array;
   /** Strength of agricultural terracing (andenes) per cell, 0 (none) .. ~0.55 (full shelf). */
   terraceMap: Float32Array;
+  /** Strength of irrigation canals per cell (0 none .. 1 centre), for the water ribbon. */
+  canalMap: Float32Array;
   waterLevel: number;
 }
 
@@ -21,6 +24,9 @@ const TERRACE_MIN_DELTA = 0.12;
 const TERRACE_MAX_DELTA = 2.6;
 /** How much of the way to a flat shelf a terraced cell is pulled (keeps a slight slope). */
 const TERRACE_FLATTEN = 0.55;
+
+/** Irrigation canal cut depth (world units); the bed never drops below the waterline. */
+const CANAL_DEPTH = 1.2;
 
 /**
  * Deterministic heightfield generation driven by a `HistoricalMapProfile`. Pure
@@ -59,7 +65,8 @@ export function generateHeightField(resolution: number, seed: number, profile: H
 
   carveRivers(heightMap, n, profile, new RNG(seed * 7919 + 17));
   const terraceMap = carveTerraces(heightMap, n, profile, seed);
-  return { heightMap, moistureMap, terraceMap, waterLevel: profile.water.level };
+  const canalMap = carveCanals(heightMap, n, profile, seed);
+  return { heightMap, moistureMap, terraceMap, canalMap, waterLevel: profile.water.level };
 }
 
 /**
@@ -131,4 +138,49 @@ function carveRivers(heightMap: Float32Array, n: number, profile: HistoricalMapP
       cx = Math.max(2, Math.min(n - 3, cx));
     }
   }
+}
+
+/**
+ * Carve shallow irrigation canals (region cultural landscape). The bed is kept
+ * **above** the waterline so a canal is a visual ditch, not a pathfinding wall or
+ * a flooding source; the water ribbon is drawn separately. Deterministic from
+ * `seed + profile`; writes a per-cell strength for the renderer.
+ */
+function carveCanals(heightMap: Float32Array, n: number, profile: HistoricalMapProfile, seed: number): Float32Array {
+  const canalMap = new Float32Array(n * n);
+  const weight = landscapeWeight(profile.culturalLandscape, 'canal');
+  if (weight <= 0) return canalMap;
+  const waterLevel = profile.water.level;
+  const rng = new RNG((seed * 2246822519 + 53) >>> 0);
+  const width = 1.6;
+  const count = 1 + Math.round(weight * 2);
+  for (let c = 0; c < count; c++) {
+    let cx = rng.int(0, n - 1);
+    let cz = 0;
+    let wander = rng.range(-1, 1);
+    while (cz < n) {
+      wander += rng.range(-0.5, 0.5);
+      wander = Math.max(-2.4, Math.min(2.4, wander));
+      for (let dx = -Math.ceil(width); dx <= Math.ceil(width); dx++) {
+        for (let dz = 0; dz < 3; dz++) {
+          const x = Math.round(cx + dx);
+          const z = Math.min(cz + dz, n - 1);
+          if (x < 0 || x >= n) continue;
+          const d = Math.abs(dx);
+          const strength = 1 - d / (width + 0.5);
+          if (strength <= 0) continue;
+          const i = z * n + x;
+          const bed = Math.max(waterLevel + 0.5, heightMap[i] - CANAL_DEPTH * strength);
+          if (bed < heightMap[i]) {
+            heightMap[i] = bed;
+            if (strength > canalMap[i]) canalMap[i] = strength;
+          }
+        }
+      }
+      cz += rng.int(2, 4);
+      cx += wander;
+      cx = Math.max(2, Math.min(n - 3, cx));
+    }
+  }
+  return canalMap;
 }

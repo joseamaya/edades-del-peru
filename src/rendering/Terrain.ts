@@ -12,6 +12,7 @@ const _cRock = new THREE.Color();
 const _cSnow = new THREE.Color();
 const _cSand = new THREE.Color();
 const _cTerraced = new THREE.Color();
+const _cCanalBed = new THREE.Color();
 
 /** 1x1 filler texture (neutral normal / constant roughness). */
 function flatTex(r: number, g: number, b: number): THREE.DataTexture {
@@ -33,6 +34,8 @@ export class Terrain {
   moistureMap: Float32Array;
   /** Agricultural terracing strength per vertex (0 none .. ~0.55 shelf), for farm yield. */
   terraceMap: Float32Array;
+  /** Irrigation canal strength per vertex (0 none .. 1 centre), for the water ribbon. */
+  canalMap: Float32Array;
   waterLevel = 2.2;
   mesh: THREE.Mesh;
   group = new THREE.Group();
@@ -56,6 +59,7 @@ export class Terrain {
     this.heightMap = field.heightMap;
     this.moistureMap = field.moistureMap;
     this.terraceMap = field.terraceMap;
+    this.canalMap = field.canalMap;
     this.waterLevel = field.waterLevel;
     this.mesh = this.buildMesh();
     this.group.add(this.mesh);
@@ -114,6 +118,11 @@ export class Terrain {
     return this.sampleMap(this.terraceMap, wx, wz);
   }
 
+  /** Interpolated irrigation canal strength (0 none .. 1 centre). */
+  getCanal(wx: number, wz: number): number {
+    return this.sampleMap(this.canalMap, wx, wz);
+  }
+
   /** Approximate slope magnitude (0 flat .. 1 steep) from the heightfield. */
   getSlope(wx: number, wz: number): number {
     const d = 2;
@@ -153,6 +162,11 @@ export class Terrain {
         if (terrace > 0) {
           _cTerraced.setHSL(0.11, 0.42, 0.46);
           col.lerp(_cTerraced, terrace * 0.5);
+        }
+        const canal = this.canalMap[i];
+        if (canal > 0) {
+          _cCanalBed.setHSL(0.09, 0.35, 0.28);
+          col.lerp(_cCanalBed, canal * 0.55);
         }
         colors[i * 3] = col.r;
         colors[i * 3 + 1] = col.g;

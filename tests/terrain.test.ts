@@ -29,6 +29,7 @@ describe('deterministic height field', () => {
     expect(hash(a.heightMap)).toBe(hash(b.heightMap));
     expect(hash(a.moistureMap)).toBe(hash(b.moistureMap));
     expect(hash(a.terraceMap)).toBe(hash(b.terraceMap));
+    expect(hash(a.canalMap)).toBe(hash(b.canalMap));
   });
 
   it('a different seed produces a different map', () => {
@@ -65,6 +66,20 @@ describe('deterministic height field', () => {
   it('carves no terraces when terraceChance is zero', () => {
     const flat = { ...MAP_PROFILES.high_andes, terrain: { ...MAP_PROFILES.high_andes.terrain, terraceChance: 0 } };
     expect(countNonZero(generateHeightField(96, 777, flat).terraceMap)).toBe(0);
+  });
+
+  it('carves canals only where the cultural landscape asks for them', () => {
+    const coast = generateHeightField(96, 777, MAP_PROFILES.central_coast); // canal weight 0.7
+    const amazon = generateHeightField(96, 777, MAP_PROFILES.amazon); // no canal feature
+    expect(countNonZero(coast.canalMap)).toBeGreaterThan(0);
+    expect(countNonZero(amazon.canalMap)).toBe(0);
+  });
+
+  it('keeps every canal bed above the waterline', () => {
+    const f = generateHeightField(128, 777, MAP_PROFILES.north_coast);
+    for (let i = 0; i < f.canalMap.length; i++) {
+      if (f.canalMap[i] > 0) expect(f.heightMap[i]).toBeGreaterThan(f.waterLevel);
+    }
   });
 
   it('never terraces below the waterline', () => {

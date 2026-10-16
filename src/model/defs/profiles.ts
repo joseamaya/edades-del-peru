@@ -3,6 +3,7 @@ import { getCiv } from './civs';
 import { getPeriod } from './periods';
 import { landmarkForCiv, LANDMARKS, type LandmarkId } from './landmarks';
 import { archProfileFor, type HistoricalArchitectureProfile } from './architecture';
+import { LANDSCAPE, type CulturalLandscapeProfile } from './landscape';
 
 /**
  * Geographic region of a map. Finer than `MapType` (which stays as the playable
@@ -79,6 +80,8 @@ export interface HistoricalMapProfile {
     skyTint: string;
   };
   landmark: LandmarkId | null;
+  /** Cultural features (roads, canals, fields…); see `docs/design/cultural-landscape.md`. */
+  culturalLandscape: CulturalLandscapeProfile;
   provenance: string;
 }
 
@@ -203,6 +206,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     resources: { tree: 0.3, mine: 0.4, well: 0.2, berry: 0.15, hunt: 12, fishing: 8 },
     atmosphere: { fogDensity: 0.0016, sunWarmth: 1.05, skyTint: '#dfe4d8' },
     landmark: null,
+    culturalLandscape: LANDSCAPE.north_coast,
     provenance: 'docs/historia/mapas.md (Moche: Chicama-Moche-Virú; Chimú: Chan Chan)',
   },
   central_coast: {
@@ -217,6 +221,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     resources: { tree: 0.4, mine: 0.12, well: 0.28, berry: 0.25, hunt: 12, fishing: 8 },
     atmosphere: { fogDensity: 0.0018, sunWarmth: 1.0, skyTint: '#e2e6dc' },
     landmark: null,
+    culturalLandscape: LANDSCAPE.central_coast,
     provenance: 'docs/historia/mapas.md (Caral-Supe: valle de Supe y Áspero)',
   },
   south_coast: {
@@ -231,6 +236,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     resources: { tree: 0.25, mine: 0.45, well: 0.15, berry: 0.1, hunt: 8, fishing: 10 },
     atmosphere: { fogDensity: 0.0012, sunWarmth: 1.08, skyTint: '#e6e2d6' },
     landmark: null,
+    culturalLandscape: LANDSCAPE.south_coast,
     provenance: 'docs/historia/mapas.md (Paracas, Nazca, Chincha: costa desértica sur)',
   },
   andean_valley: {
@@ -245,6 +251,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     resources: { tree: 0.45, mine: 0.35, well: 0.2, berry: 0.2, hunt: 14, fishing: 0 },
     atmosphere: { fogDensity: 0.002, sunWarmth: 0.95, skyTint: '#cdd8d2' },
     landmark: null,
+    culturalLandscape: LANDSCAPE.andean_valley,
     provenance: 'docs/historia/mapas.md (Chavín: Callejón de Conchucos; Recuay: Callejón de Huaylas)',
   },
   high_andes: {
@@ -259,6 +266,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     resources: { tree: 0.4, mine: 0.4, well: 0.25, berry: 0.15, hunt: 12, fishing: 0 },
     atmosphere: { fogDensity: 0.0008, sunWarmth: 0.98, skyTint: '#c8d4d8' },
     landmark: null,
+    culturalLandscape: LANDSCAPE.high_andes,
     provenance: 'docs/historia/mapas.md (Inca: Cusco/Urubamba; Wari: Ayacucho; Chanca: Andahuaylas)',
   },
   altiplano: {
@@ -273,6 +281,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     resources: { tree: 0.1, mine: 0.3, well: 0.4, berry: 0.15, hunt: 16, fishing: 6 },
     atmosphere: { fogDensity: 0.0015, sunWarmth: 0.9, skyTint: '#d2dadf' },
     landmark: null,
+    culturalLandscape: LANDSCAPE.altiplano,
     provenance: 'docs/historia/mapas.md (Tiahuanaco, Collas/Lupaca: meseta del Titicaca)',
   },
   amazon: {
@@ -287,6 +296,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     resources: { tree: 0.7, mine: 0.1, well: 0.15, berry: 0.25, hunt: 10, fishing: 8 },
     atmosphere: { fogDensity: 0.0028, sunWarmth: 0.92, skyTint: '#c4d2be' },
     landmark: null,
+    culturalLandscape: LANDSCAPE.amazon,
     provenance: 'docs/historia/mapas.md (selva alta: ceja de selva / amazonía)',
   },
 };
