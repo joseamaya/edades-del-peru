@@ -1,4 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
+import { RENDERED_FEATURES } from '../../src/model/defs/landscapePlan';
 
 async function boot(page: Page, url: string): Promise<void> {
   await page.goto(url);
@@ -66,4 +67,12 @@ test('landscape placement is deterministic for the same seed', async ({ page }) 
   const b = await sample();
   expect(b.meshes).toBe(a.meshes);
   expect(b.verts).toBe(a.verts);
+});
+
+test('the landscape stays merged into at most one mesh per feature', async ({ page }) => {
+  await boot(page, '/?civ=moche&period=2&seed=777&fog=0&low=1&noloop=1');
+  const s = await landscapeSig(page);
+  // the layer merges each feature into one mesh, so its draw calls stay low;
+  // guards against un-merging (a mesh per road/field segment) creeping back in
+  expect(s.meshes).toBeLessThanOrEqual(RENDERED_FEATURES.length);
 });

@@ -22,6 +22,10 @@ const scales = String(cliArg('units', '100,300,500,1000'))
   .filter((n) => Number.isFinite(n) && n > 0);
 const seed = Number.parseInt(cliArg('seed', '777'), 10);
 
+// The cultural landscape must stay a handful of draw calls: the layer merges each
+// feature into one mesh. Budget from docs/design/cultural-landscape.md.
+const LANDSCAPE_DRAW_CALL_BUDGET = 150;
+
 async function measure(browser, base, n) {
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
@@ -155,6 +159,28 @@ async function measure(browser, base, n) {
     };
   });
 
+  // isolate the cultural landscape's draw calls: render once with the layer
+  // visible and once hidden, at max zoom so every mesh is in view
+  const landscape = await page.evaluate(() => {
+    const g = window.game;
+    const group = g.landscape && g.landscape.group;
+    g.loop.stop();
+    window.__directRender = true;
+    g.camera.setHeight(1e9);
+    const sample = () => {
+      g.renderer.render(g.scene, g.camera.camera);
+      return { calls: g.renderer.info.render.calls, tris: g.renderer.info.render.triangles };
+    };
+    const shown = sample();
+    if (group) group.visible = false;
+    const hidden = sample();
+    if (group) group.visible = true;
+    return {
+      landscapeCalls: shown.calls - hidden.calls,
+      landscapeTris: shown.tris - hidden.tris,
+    };
+  });
+
   const destroyMs = await page.evaluate(() => {
     const g = window.game;
     g.loop.stop();
@@ -169,7 +195,7 @@ async function measure(browser, base, n) {
   });
 
   await context.close();
-  return { n, ...sim, ...frame, ...render, destroyMs, errors };
+  return { n, ...sim, ...frame, ...render, ...landscape, destroyMs, errors };
 }
 
 async function main() {
@@ -211,6 +237,23 @@ async function main() {
       ].join(' | '),
     );
   }
+  const worst = rows.reduce((a, r) => (r.landscapeCalls > a.landscapeCalls ? r : a), rows[0]);
+  console.log(
+    `\nlandscape: ${worst.landscapeCalls} draw calls (${worst.landscapeTris} tris), budget ${LANDSCAPE_DRAW_CALL_BUDGET}`,
+  );
+  const missing = rows.filter((r) => !(r.landscapeCalls > 0));
+  const over = rows.filter((r) => r.landscapeCalls > LANDSCAPE_DRAW_CALL_BUDGET);
+  if (missing.length) {
+    console.error(`landscape layer not drawn (0 draw calls) at ${missing.map((r) => r.n).join(', ')} units`);
+    process.exitCode = 1;
+  }
+  if (over.length) {
+    console.error(
+      `landscape draw-call budget exceeded: ${over.map((r) => `${r.landscapeCalls} @ ${r.n} units`).join(', ')}`,
+    );
+    process.exitCode = 1;
+  }
+
   const errs = rows.flatMap((r) => r.errors);
   if (errs.length) console.log('\npage errors:', errs);
   console.log('\nwrote review/bench.json');
