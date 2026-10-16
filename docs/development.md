@@ -58,10 +58,15 @@ for player-facing docs see [`README.md`](../README.md); for art direction see
 - **Andenes (agricultural terracing)**: `profile.terrain.terraceChance` is no longer dead data — `carveTerraces`
   (`src/rendering/heightField.ts`) pulls moderate slopes toward flat shelves (gated by a coherent noise mask so
   terraces form patchy zones) and writes a `terraceMap` strength (0..~0.55). `Terrain` exposes it via
-  `getTerrace(wx, wz)` and tints terraced ground as cultivated; the gameplay hook is
-  `Game.applyTerrainFarmYield` (called from every farm placement path: player, AI, scripts), which scales a
-  farm's `foodAmount` by `1 + FARM_TERRACE_BONUS * terrace`. Deterministic (own RNG derived from the seed), so
-  replay/save safe (`foodAmount` is already in `stateHash` and `saveTypes`). Guarded by `tests/terrain.test.ts`.
+  `getTerrace(wx, wz)` and tints terraced ground as cultivated.
+- **Farm yield from the terrain (§7 geography as mechanic)**: `Game.applyTerrainFarmYield` (called from every
+  farm placement path: player, AI, scripts) scales a farm's `foodAmount` by
+  `farmYieldMultiplier({ terrace, moisture, canal })` (`src/model/defs/farmYield.ts`, pure/unit-tested): the
+  ground under the farm — andenes, fertile moist soil, and an irrigation canal within reach
+  (`Game.nearbyCanal`, ≤ 2.5 units) — raise its yield (up to ×2.8). This rewards placing farms in a fertile
+  valley / beside a canal, and makes the carved canals matter. Deterministic (own RNG derived from the seed), so
+  replay/save safe (`foodAmount` is already in `stateHash` and `saveTypes`). Guarded by `tests/terrain.test.ts`
+  and `tests/farm-yield.test.ts`.
 - **Architecture profile in the model (Phase 4)**: `BuildContext.arch` (`Game.makeBuildContext` →
   `archProfileFor(civ, era)`) drives `ProceduralModel`'s Andean builders (`wall`/`roof`/`foundation`/
   `ornament`/`monumentalTiers`) instead of `Builder.style` booleans; new modules are `andeanTerraceBase`,

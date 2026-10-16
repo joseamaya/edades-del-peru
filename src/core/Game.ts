@@ -46,6 +46,7 @@ import { clearTextureCache } from '../rendering/Textures';
 import { DEFAULT_SETTINGS, GameSettings, RESOURCE_INFO, CAMERA_SPEED_SCALE } from './Config';
 import { resolveMapProfile, type HistoricalMapProfile, type GeographicRegion } from '../model/defs/profiles';
 import { planSettlement } from '../model/defs/settlementPlan';
+import { farmYieldMultiplier } from '../model/defs/farmYield';
 import { distance2D } from '../util/math';
 import { isTypingTarget } from '../util/dom';
 import { RNG, hashCode, weightedPick } from '../util/rng';
@@ -892,12 +893,35 @@ export class Game {
   }
 
   /**
-   * Scale a farm's food reserve by the terracing (andenes) under it. Terraces are
-   * generated in `heightField` from the region profile; this is the gameplay hook
-   * that makes agriculture adapt to the terrain. Deterministic, so replay/save safe.
+   * Scale a farm's food reserve by the terrain under it: terracing (andenes),
+   * soil moisture and nearby irrigation. Deterministic, so replay/save safe.
    */
   applyTerrainFarmYield(b: Building): void {
-    b.applyTerraceYield(this.terrain.getTerrace(b.pos.x, b.pos.z));
+    if (!b.isFarm) return;
+    const x = b.pos.x;
+    const z = b.pos.z;
+    b.applyTerrainYield(
+      farmYieldMultiplier({
+        terrace: this.terrain.getTerrace(x, z),
+        moisture: this.terrain.getMoisture(x, z),
+        canal: this.nearbyCanal(x, z),
+      }),
+    );
+  }
+
+  /** Strongest irrigation canal within a farm's reach (a canal just beside it still waters it). */
+  private nearbyCanal(x: number, z: number): number {
+    let best = this.terrain.getCanal(x, z);
+    const reach = 2.5;
+    for (const [dx, dz] of [
+      [reach, 0],
+      [-reach, 0],
+      [0, reach],
+      [0, -reach],
+    ] as const) {
+      best = Math.max(best, this.terrain.getCanal(x + dx, z + dz));
+    }
+    return best;
   }
 
   /** Train a unit in a completed building of player 0. */
