@@ -85,3 +85,10 @@ fuerza de terraza que `Terrain.getTerrace` expone. Una granja sobre terreno ater
 (`Game.applyTerrainFarmYield`, hasta +44%) — una **abstracción jugable** de la agricultura en andenes, no una
 reconstrucción.
 
+El **paisaje cultural** (canales, campos, caminos, plazas) es una capa nueva (`src/model/defs/landscape.ts` +
+`src/rendering/CulturalLandscape.ts`, spec en [`docs/design/cultural-landscape.md`](../design/cultural-landscape.md)).
+En esta fase cubre la **costa** (Moche/Caral): `carveCanals` talla acequias superficiales (siempre por encima del
+nivel del agua, para no bloquear el pathfinding) y `planCulturalLandscape` coloca los elementos de forma
+determinista sobre terreno edificable. Es **solo visual** (como los landmarks): no añade entidades ni efectos de
+juego. Las demás regiones quedan para fases siguientes.
+

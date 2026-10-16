@@ -40,6 +40,8 @@ export const SCENES = [
   scene('region_andes', { civ: 'inca', period: 5, view: 'wide' }),
   scene('region_altiplano', { civ: 'tiahuanaco', period: 3, view: 'wide' }),
   scene('region_amazon', { civ: 'moche', period: 2, view: 'wide', map: 'jungle' }),
+  scene('landscape_moche', { civ: 'moche', period: 2, view: 'wide' }),
+  scene('landscape_caral', { civ: 'caral', period: 0, view: 'wide' }),
 ];
 
 /** Capture every scene into `outDir` as `<name>.png`; returns capture results. */

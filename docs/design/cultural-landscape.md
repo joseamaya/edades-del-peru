@@ -1,9 +1,15 @@
 # Cultural landscape — design proposal
 
-Status: **proposal, not implemented.** This document describes how to add a
-`CulturalLandscape` layer to Edades del Perú. It extends the existing
-`HistoricalMapProfile` ([`src/model/defs/profiles.ts`](../../src/model/defs/profiles.ts))
-— it does **not** introduce a parallel map system.
+Status: **partially implemented.** Phases 1–3 for the coast slice (canal, field,
+road, plaza) are live in `src/model/defs/landscape.ts`,
+`src/model/defs/landscapePlan.ts` and `src/rendering/CulturalLandscape.ts`. The
+other regions (their `features` are still empty) and the gameplay hook (phase 4)
+remain as described below.
+
+This document describes how to add a `CulturalLandscape` layer to Edades del Perú.
+It extends the existing `HistoricalMapProfile`
+([`src/model/defs/profiles.ts`](../../src/model/defs/profiles.ts)) — it does **not**
+introduce a parallel map system.
 
 Today the natural world is per-region (`terrain`, `climate`, `water`,
 `vegetation`, `resources`, `atmosphere`) and the *human* elements are limited to
@@ -77,7 +83,7 @@ Region defaults (grounded, to validate per civ):
 | Region | Features (weight) | Shape | Grounding |
 |---|---|---|---|
 | `north_coast` | canal, field, road, plaza | riverside | Moche/Chimú irrigation + Chan Chan |
-| `central_coast` | canal, field, plaza | riverside | Caral-Supe canals and plazas |
+| `central_coast` | canal, field, road, plaza | riverside | Caral-Supe canals and plazas |
 | `south_coast` | field, road | dispersed | Paracas/Nazca pampa, puquios |
 | `andean_valley` | terrace, road, field, wall | riverside | Chavín/Wari/Inca terraces, Huaylas |
 | `high_andes` | terrace, road, plaza, wall | hilltop | Inca andenes, Qhapaq Ñan, pucarás |
@@ -143,12 +149,12 @@ terrain shader can dim a canal bed via a per-vertex mask (same pattern as
 
 ## Phased plan
 
-1. **Data + types** (`culturalLandscape` in profiles, resolver + tests).
-2. **One feature, one region**: canals + fields on `north_coast` (Moche slice).
-3. **Rendering batcher** and the visual-regression scene.
+1. **Data + types** (`culturalLandscape` in profiles, resolver + tests). ✅
+2. **One feature, one region**: canals + fields on `north_coast` (Moche slice). ✅ (coast slice: canal, field, road, plaza)
+3. **Rendering batcher** and the visual-regression scene. ✅ (`CulturalLandscape`, `landscape_*` scenes)
 4. **Gameplay hook**: fields/canals nudge nearby farm yield (reuse
-   `applyTerrainFarmYield`).
-5. **Generalize** to the remaining regions; add the bench budget assertion.
+   `applyTerrainFarmYield`). ⏳
+5. **Generalize** to the remaining regions; add the bench budget assertion. ⏳
 
 ## Acceptance criteria
 
