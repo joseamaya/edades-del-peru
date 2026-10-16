@@ -1,15 +1,21 @@
 # Settlement generator — design proposal
 
-Status: **partially implemented.** Phases 1–3 (a terrain-aware dwelling layout for
-the starting base) are live in `src/model/defs/settlementPlan.ts`, wired in
-`Game.spawnStartBase`. The full plan below (roads, farms, dropsites, defense) and
-the gameplay coupling remain future work.
+Status: **design done, layout planner live.** The pure, terrain-aware layout — the
+dwellings of the starting base and now the full `SettlementPlan` (center, fields
+and roads) — is implemented in `src/model/defs/settlementPlan.ts`
+(`planSettlement` / `planSettlementSite`). The dwellings are wired in
+`Game.spawnStartBase`; rendering and gameplay of the fields/roads (PR-3) remain.
+
+Decisions for the remaining slice: **fields and roads are layout data only**
+(rendered visually like the cultural landscape — no `BuildingKind.FARM`, no
+economy change); **dropsites and defense are deferred** (there is no dropsite
+`BuildingKind`); **campaigns stay opt-in** (the default keeps the explicit `dx/dz`).
 
 Today a skirmish base is a center plus three dwellings on a fixed ring, and
 campaign buildings are placed by hand with `dx/dz` offsets (`MissionDef.start`, see
 [`src/core/Game.ts`](../../src/core/Game.ts) `spawnStartBase` / `applyMissionSetup`).
-The dwellings now read the terrain through `planSettlement`; crops/roads/dropsites
-still do not.
+The dwellings read the terrain through `planSettlement`; `planSettlementSite` plans
+the fields and roads; rendering them is the next step.
 
 ## Contract
 
@@ -33,14 +39,17 @@ export interface SettlementSpot {
 export function planSettlement(req: SettlementRequest, q: SettlementQuery): SettlementSpot[];
 ```
 
-The `SettlementQuery` interface (shared `TerrainQuery` + `getHeight`/`getMoisture`)
-keeps the planner testable headless with a fake terrain. The eventual full plan —
-the still-deferred steps below — is:
+The `SettlementQuery` interface (shared `TerrainQuery` + `getHeight`/`getMoisture`,
+plus optional `getTerrace`/`getCanal`) keeps the planner testable headless with a
+fake terrain. `planSettlement` returns just the dwellings; the **full plan** is:
 
 ```ts
+export function planSettlementSite(req: SettlementRequest, q: SettlementQuery): SettlementPlan;
+
 export interface SettlementPlan {
-  center: SettlementPlacement;
-  placements: SettlementPlacement[];   // dwellings, farms, dropsites…
+  center: { x: number; z: number };
+  dwellings: SettlementSpot[];
+  fields: SettlementField[];            // { x, z, yaw, size } — layout only (visual)
   roads: { from: { x: number; z: number }; to: { x: number; z: number } }[];
 }
 ```
@@ -100,14 +109,16 @@ All angles/offsets come from a dedicated `RNG(seed * k + c)` stream.
    trivial "fixed ring" implementation (pure refactor, no behavior change).
 2. Implement `riverside` for `north_coast`/`central_coast` (Moche/Caral slice).
 3. Implement `hilltop` for `high_andes` (Inca slice).
-4. Unit-test determinism + terrain validity with a fake query.
-5. Wire `spawnStartBase` to the plan; keep the fallback.
+4. Unit-test determinism + terrain validity with a fake query. ✅
+5. Full pure planner: center + dwellings + fields + roads (`planSettlementSite`). ✅
+6. Wire `spawnStartBase` to the plan and render the fields/roads; keep the fallback. ⏳
 
 ## Acceptance criteria
 
-- [ ] Same request → same plan (unit test, no DOM).
+- [x] Same request → same plan (unit test, no DOM).
 - [ ] A north-coast base sits by the valley and an Andean base on the slope
       (asserted structurally in E2E).
-- [ ] No base ever spawns on water/unbuildable ground (fallback covers failure).
+- [x] Every placement is validated on buildable, dry, gentle ground; the degenerate
+      all-water map keeps the nominal ring (documented fallback).
 - [ ] Existing campaigns unchanged (they opt out by default).
 - [ ] `yarn typecheck && yarn lint && yarn format:check && yarn test && yarn build` + E2E green.
