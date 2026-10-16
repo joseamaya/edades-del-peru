@@ -108,11 +108,44 @@ describe('settlement site planner', () => {
     }
   });
 
+  it('routes a road from the center to every field', () => {
+    const plan = planSettlementSite(req, world);
+    for (const f of plan.fields) {
+      expect(
+        plan.roads.some((r) => r.to.x === f.x && r.to.z === f.z && r.from.x === anchor.x && r.from.z === anchor.z),
+      ).toBe(true);
+    }
+  });
+
   it('lays fields on the fertile side of the map', () => {
     // `world` is more humid east of x=55; the fields must follow the moisture
     const plan = planSettlementSite({ ...req, shape: 'dispersed' }, world);
     const cx = plan.fields.reduce((s, f) => s + f.x, 0) / plan.fields.length;
     expect(cx).toBeGreaterThan(anchor.x);
+  });
+
+  it('pulls fields toward terraces and canals, not only moisture', () => {
+    // dry everywhere, but terraces + a canal lie to the west
+    const watered: SettlementQuery = {
+      isWater: () => false,
+      isBuildable: () => true,
+      getSlope: () => 0.1,
+      getHeight: () => 5,
+      getMoisture: () => 0.2,
+      getTerrace: (x) => (x < anchor.x ? 0.6 : 0),
+      getCanal: (x) => (x < anchor.x ? 0.6 : 0),
+    };
+    const plan = planSettlementSite({ ...req, shape: 'dispersed' }, watered);
+    expect(plan.fields.length).toBeGreaterThan(0);
+    const cx = plan.fields.reduce((s, f) => s + f.x, 0) / plan.fields.length;
+    expect(cx).toBeLessThan(anchor.x);
+  });
+
+  it('avoids steep ground for fields', () => {
+    const steepEast: SettlementQuery = { ...world, getSlope: (x) => (x >= 59 ? 0.5 : 0.1) };
+    const plan = planSettlementSite({ ...req, shape: 'dispersed' }, steepEast);
+    expect(plan.fields.length).toBeGreaterThan(0);
+    for (const f of plan.fields) expect(steepEast.getSlope(f.x, f.z)).toBeLessThanOrEqual(0.3);
   });
 
   it('works with a query that has no terrace/canal probes', () => {

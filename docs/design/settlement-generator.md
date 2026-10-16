@@ -118,6 +118,7 @@ All angles/offsets come from a dedicated `RNG(seed * k + c)` stream.
 - [x] Same request → same plan (unit test, no DOM).
 - [ ] A north-coast base sits by the valley and an Andean base on the slope
       (asserted structurally in E2E).
-- [x] No placement ever falls on water/unbuildable ground (fallback covers failure).
+- [x] Every placement is validated on buildable, dry, gentle ground; the degenerate
+      all-water map keeps the nominal ring (documented fallback).
 - [ ] Existing campaigns unchanged (they opt out by default).
 - [ ] `yarn typecheck && yarn lint && yarn format:check && yarn test && yarn build` + E2E green.

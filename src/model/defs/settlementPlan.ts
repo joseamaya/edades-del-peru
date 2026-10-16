@@ -82,7 +82,7 @@ const ROAD_MIN_LEN = 1.2;
  * only as a last resort (an all-water map) keeps its nominal ring slot.
  */
 export function planSettlement(req: SettlementRequest, q: SettlementQuery): SettlementSpot[] {
-  return planSettlementSite(req, q).dwellings;
+  return planDwellings(req, q, new RNG((req.seed * 40503 + 7) >>> 0));
 }
 
 /**
@@ -198,7 +198,7 @@ function isFree(
   if (q.isWater(p.x, p.z) || !q.isBuildable(p.x, p.z) || q.getSlope(p.x, p.z) > SLOPE_LIMIT) return false;
   // a dwelling across a river would be unreachable, and conquest needs every building razed
   if (crossesWater(anchor, p.x, p.z, q)) return false;
-  return !taken.some((s) => (s.x - p.x) ** 2 + (s.z - p.z) ** 2 < MIN_SEP ** 2);
+  return !taken.some((s) => dist2(s, p) < MIN_SEP ** 2);
 }
 
 /** Deterministic outward scan for valid land when the nominal ring is all water/unbuildable. */
