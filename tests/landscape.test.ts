@@ -11,8 +11,6 @@ const flat: LandscapeQuery = {
   isWater: () => false,
   isBuildable: () => true,
   getSlope: () => 0.1,
-  getMoisture: () => 0.5,
-  getTerrace: () => 0,
   getCanal: (x) => (x > 48 && x < 52 ? 1 : 0),
 };
 

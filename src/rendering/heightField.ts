@@ -148,6 +148,7 @@ function carveRivers(heightMap: Float32Array, n: number, profile: HistoricalMapP
  */
 function carveCanals(heightMap: Float32Array, n: number, profile: HistoricalMapProfile, seed: number): Float32Array {
   const canalMap = new Float32Array(n * n);
+  if (!profile.culturalLandscape) return canalMap;
   const weight = landscapeWeight(profile.culturalLandscape, 'canal');
   if (weight <= 0) return canalMap;
   const waterLevel = profile.water.level;

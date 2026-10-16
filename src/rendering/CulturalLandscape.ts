@@ -5,8 +5,11 @@ import type { HistoricalMapProfile } from '../model/defs/profiles';
 import { planCulturalLandscape, type LandscapeQuery } from '../model/defs/landscapePlan';
 import type { LandscapeFeature } from '../model/defs/landscape';
 
+/** Features the renderer knows how to draw in this phase. */
+const FEATURES = ['plaza', 'field', 'road', 'canal'] as const;
+
 /** Vertical offsets above the terrain so features do not z-fight with the ground. */
-const LIFT: Record<string, number> = { plaza: 0.06, road: 0.04, field: 0.04, canal: 0.08 };
+const LIFT: Partial<Record<LandscapeFeature, number>> = { plaza: 0.06, road: 0.04, field: 0.04, canal: 0.08 };
 
 /**
  * Static, deterministic cultural landscape (roads, fields, plazas, canals) drawn
@@ -20,44 +23,45 @@ export class CulturalLandscape {
   private materials: THREE.Material[] = [];
 
   constructor(terrain: Terrain, profile: HistoricalMapProfile, seed: number) {
+    this.group.name = 'landscape';
+    const landscape = profile.culturalLandscape;
+    if (!landscape) return;
+
     const q: LandscapeQuery = {
       size: terrain.size,
       isWater: (x, z) => terrain.isWater(x, z),
       isBuildable: (x, z) => terrain.isBuildable(x, z),
       getSlope: (x, z) => terrain.getSlope(x, z),
-      getMoisture: (x, z) => terrain.getMoisture(x, z),
-      getTerrace: (x, z) => terrain.getTerrace(x, z),
       getCanal: (x, z) => terrain.getCanal(x, z),
     };
-    const placements = planCulturalLandscape(profile.culturalLandscape, seed, q);
 
-    const buckets: Record<string, THREE.BufferGeometry[]> = { plaza: [], field: [], road: [], canal: [] };
-    for (const p of placements) {
+    const buckets: Partial<Record<LandscapeFeature, THREE.BufferGeometry[]>> = {};
+    for (const p of planCulturalLandscape(landscape, seed, q)) {
       const y = terrain.getHeight(p.x, p.z) + (LIFT[p.feature] ?? 0.04);
       const geo = featureGeometry(p.feature, p.size, p.yaw);
       geo.translate(p.x, y, p.z);
-      buckets[p.feature]?.push(geo);
+      (buckets[p.feature] ??= []).push(geo);
     }
 
-    const materials: Record<string, THREE.MeshStandardMaterial> = {
+    const materials: Partial<Record<LandscapeFeature, THREE.MeshStandardMaterial>> = {
       plaza: new THREE.MeshStandardMaterial({ color: '#9c9182', roughness: 0.9 }),
       field: new THREE.MeshStandardMaterial({ color: '#6f8f3a', roughness: 1 }),
       road: new THREE.MeshStandardMaterial({ color: '#8a6a44', roughness: 1 }),
       canal: new THREE.MeshStandardMaterial({ color: '#1a8a9a', roughness: 0.2, transparent: true, opacity: 0.72 }),
     };
-    for (const feature of ['plaza', 'field', 'road', 'canal'] as const) {
+    for (const feature of FEATURES) {
       const parts = buckets[feature];
-      if (!parts.length) continue;
+      if (!parts?.length) continue;
       const merged = mergeGeometries(parts, false);
       parts.forEach((g) => g.dispose());
       if (!merged) continue;
-      const mesh = new THREE.Mesh(merged, materials[feature]);
+      const material = materials[feature]!;
+      const mesh = new THREE.Mesh(merged, material);
       mesh.name = feature;
       mesh.receiveShadow = true;
       this.group.add(mesh);
-      this.materials.push(materials[feature]);
+      this.materials.push(material);
     }
-    this.group.name = 'landscape';
   }
 
   dispose(): void {

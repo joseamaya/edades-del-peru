@@ -80,8 +80,8 @@ export interface HistoricalMapProfile {
     skyTint: string;
   };
   landmark: LandmarkId | null;
-  /** Cultural features (roads, canals, fields…); see `docs/design/cultural-landscape.md`. */
-  culturalLandscape: CulturalLandscapeProfile;
+  /** Cultural features (roads, canals, fields…); see `docs/design/cultural-landscape.md`. Optional for mods. */
+  culturalLandscape?: CulturalLandscapeProfile;
   provenance: string;
 }
 

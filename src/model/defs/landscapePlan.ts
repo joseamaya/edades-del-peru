@@ -7,9 +7,6 @@ export interface LandscapeQuery {
   isWater(x: number, z: number): boolean;
   isBuildable(x: number, z: number): boolean;
   getSlope(x: number, z: number): number;
-  getMoisture(x: number, z: number): number;
-  /** Agricultural terracing strength (0..~0.55). */
-  getTerrace(x: number, z: number): number;
   /** Canal strength (0..1) carved into the terrain. */
   getCanal(x: number, z: number): number;
 }
@@ -22,9 +19,6 @@ export interface LandscapePlacement {
   /** Footprint size in world units. */
   size: number;
 }
-
-/** Features the renderer knows how to draw in this phase. */
-const IMPLEMENTED = new Set<LandscapeFeature>(['plaza', 'road', 'field', 'canal']);
 
 /**
  * Deterministic plan of the cultural landscape for a map: where each implemented
@@ -39,6 +33,8 @@ export function planCulturalLandscape(
   const rng = new RNG((seed * 2246822519 + 101) >>> 0);
   const out: LandscapePlacement[] = [];
   const center = q.size / 2;
+  // how far features spread from the hub, per settlement shape
+  const spread = profile.settlementShape === 'dispersed' ? 1.3 : profile.settlementShape === 'grid' ? 0.8 : 1;
 
   const plaza = landscapeWeight(profile, 'plaza');
   let hub = { x: center, z: center };
@@ -55,7 +51,7 @@ export function planCulturalLandscape(
     const count = Math.round(2 + field * 5);
     for (let i = 0; i < count; i++) {
       const a = rng.range(0, Math.PI * 2);
-      const r = rng.range(6, 16 + field * 10);
+      const r = rng.range(6, (16 + field * 10) * spread);
       const x = hub.x + Math.cos(a) * r;
       const z = hub.z + Math.sin(a) * r;
       if (!q.isBuildable(x, z) || q.isWater(x, z) || q.getSlope(x, z) > 0.3) continue;
@@ -68,7 +64,7 @@ export function planCulturalLandscape(
     const spokes = 2 + Math.round(road * 2);
     for (let s = 0; s < spokes; s++) {
       const a = (s / spokes) * Math.PI * 2 + rng.range(-0.2, 0.2);
-      const len = rng.range(0.25, 0.42) * q.size;
+      const len = rng.range(0.25, 0.42) * q.size * spread;
       const steps = Math.max(3, Math.round(len / 4));
       for (let i = 1; i <= steps; i++) {
         const x = hub.x + Math.cos(a) * (len * (i / steps));
@@ -87,7 +83,7 @@ export function planCulturalLandscape(
     }
   }
 
-  return out.filter((p) => IMPLEMENTED.has(p.feature));
+  return out;
 }
 
 /** A flat, buildable spot in a ring around `center`, with a deterministic grid fallback. */

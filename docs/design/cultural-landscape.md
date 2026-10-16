@@ -83,7 +83,7 @@ Region defaults (grounded, to validate per civ):
 | Region | Features (weight) | Shape | Grounding |
 |---|---|---|---|
 | `north_coast` | canal, field, road, plaza | riverside | Moche/Chimú irrigation + Chan Chan |
-| `central_coast` | canal, field, plaza | riverside | Caral-Supe canals and plazas |
+| `central_coast` | canal, field, road, plaza | riverside | Caral-Supe canals and plazas |
 | `south_coast` | field, road | dispersed | Paracas/Nazca pampa, puquios |
 | `andean_valley` | terrace, road, field, wall | riverside | Chavín/Wari/Inca terraces, Huaylas |
 | `high_andes` | terrace, road, plaza, wall | hilltop | Inca andenes, Qhapaq Ñan, pucarás |

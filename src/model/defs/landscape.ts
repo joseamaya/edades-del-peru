@@ -58,10 +58,11 @@ export const LANDSCAPE: Record<GeographicRegion, CulturalLandscapeProfile> = {
     features: [
       { feature: 'canal', weight: 0.7 },
       { feature: 'field', weight: 0.7 },
+      { feature: 'road', weight: 0.4 },
       { feature: 'plaza', weight: 0.5 },
     ],
     settlementShape: 'riverside',
-    provenance: 'docs/historia/mapas.md (Caral-Supe: canales de regadío y plazas)',
+    provenance: 'docs/historia/civilizaciones/caral.md (canales de riego; plazas)',
   },
   south_coast: {
     features: [],
@@ -89,10 +90,6 @@ export const LANDSCAPE: Record<GeographicRegion, CulturalLandscapeProfile> = {
     provenance: 'docs/historia/mapas.md (selva alta)',
   },
 };
-
-export function landscapeForRegion(region: GeographicRegion): CulturalLandscapeProfile {
-  return LANDSCAPE[region];
-}
 
 export function landscapeWeight(profile: CulturalLandscapeProfile, feature: LandscapeFeature): number {
   return profile.features.find((f) => f.feature === feature)?.weight ?? 0;
