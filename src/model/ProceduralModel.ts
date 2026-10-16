@@ -455,7 +455,7 @@ function addHumanoid(
     helmet?: boolean;
     backpack?: boolean;
     weapon?: 'rifle' | 'musket' | 'sniper' | 'machete' | 'spear' | 'macana' | 'bow' | 'sling' | 'shield' | 'none';
-    armor?: 'cloth' | 'metal' | 'power';
+    armor?: 'cloth' | 'metal';
     gadget?: boolean;
     tool?: 'axe' | 'pick';
     carry?: boolean;
@@ -858,39 +858,16 @@ function buildTank(type: string, ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
   const scale = type.includes('liviano') ? 1 : type.includes('medium') ? 1.12 : type.includes('moderno') ? 1.2 : 1.3;
   b.group.scale.setScalar(scale);
-  if (type.includes('fut')) {
-    // futuristic levitating tank with an animated turret
-    b.box(0.9, 0.35, 1.4, b.pal.metal, { y: 0.5, metalness: 0.7, roughness: 0.3 });
-    b.box(0.9, 0.06, 1.5, b.pal.emissive, {
-      y: 0.06,
-      emissive: b.pal.emissive,
-      emissiveIntensity: 1.6,
-      transparent: true,
-      opacity: 0.7,
-    });
-    const turret = b.pivot('turret');
-    turret.position.set(0, 0.82, 0);
-    b.boxIn(turret, 0.55, 0.3, 0.7, b.pal.darkMetal, { y: 0.15, metalness: 0.7 });
-    const gun = b.pivot('gun');
-    gun.position.set(0, 0.15, 0.35);
-    b.cylIn(gun, 0.1, 0.14, 1.1, 10, b.pal.darkMetal, { y: 0, z: 0.55, rx: Math.PI / 2, metalness: 0.8 });
-    turret.add(gun);
-    b.sphere(0.08, b.pal.emissive, { y: 1.05, x: -0.2, emissive: b.pal.emissive, emissiveIntensity: 2 });
-  } else {
-    addVehicleBody(b, b.pal.darkMetal, b.pal.metal, { treads: true, antenna: true });
-  }
+  addVehicleBody(b, b.pal.darkMetal, b.pal.metal, { treads: true, antenna: true });
   return b.finish();
 }
 
-function buildAntiAir(type: string, ctx: BuildContext): THREE.Group {
+function buildAntiAir(ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
-  const fut = type.includes('fut');
   // chassis
-  if (!fut) {
-    b.box(0.9, 0.34, 1.5, b.pal.darkMetal, { y: 0.22, metalness: 0.5 });
-    b.cyl(0.16, 0.16, 1.5, 16, b.pal.darkMetal, { x: -0.44, y: 0.18, rx: Math.PI / 2 });
-    b.cyl(0.16, 0.16, 1.5, 16, b.pal.darkMetal, { x: 0.44, y: 0.18, rx: Math.PI / 2 });
-  }
+  b.box(0.9, 0.34, 1.5, b.pal.darkMetal, { y: 0.22, metalness: 0.5 });
+  b.cyl(0.16, 0.16, 1.5, 16, b.pal.darkMetal, { x: -0.44, y: 0.18, rx: Math.PI / 2 });
+  b.cyl(0.16, 0.16, 1.5, 16, b.pal.darkMetal, { x: 0.44, y: 0.18, rx: Math.PI / 2 });
   b.box(0.85, 0.4, 1.3, b.pal.darkMetal, { y: 0.55, metalness: 0.5 });
   // turret with the two AA barrels as children
   const turret = b.pivot('turret');
@@ -909,7 +886,6 @@ function buildAntiAir(type: string, ctx: BuildContext): THREE.Group {
 
 function buildCannon(type: string, ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
-  const isRiel = type.includes('riel');
   const isHowitzer = type.includes('howitzer');
   // gun carriage
   b.cyl(0.55, 0.6, 0.5, 14, b.pal.darkWood, { y: 0.5, rx: Math.PI / 2 });
@@ -918,17 +894,7 @@ function buildCannon(type: string, ctx: BuildContext): THREE.Group {
   // weapon on the pivot (aims at the target)
   const gun = b.pivot('gun');
   gun.position.set(0, 0.85, 0.2);
-  if (isRiel) {
-    b.boxIn(gun, 0.16, 0.2, 2.2, b.pal.darkMetal, { y: 0, z: 0.8, metalness: 0.85, roughness: 0.25 });
-    b.boxIn(gun, 0.3, 0.08, 2.4, b.pal.emissive, {
-      y: -0.15,
-      z: 0.85,
-      emissive: b.pal.emissive,
-      emissiveIntensity: 2,
-      transparent: true,
-      opacity: 0.8,
-    });
-  } else if (isHowitzer) {
+  if (isHowitzer) {
     b.boxIn(gun, 0.22, 0.24, 1.8, b.pal.darkMetal, { y: 0, z: 0.6, metalness: 0.7 });
     b.boxIn(gun, 0.3, 0.2, 1.9, b.pal.darkMetal, { y: -0.18, z: 0.65, metalness: 0.7 });
   } else {
@@ -948,14 +914,10 @@ function buildMortar(ctx: BuildContext): THREE.Group {
   return b.finish();
 }
 
-function buildCommisar(type: string, ctx: BuildContext): THREE.Group {
+function buildCommisar(ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
-  const fut = type.includes('fut');
-  addHumanoid(b, { role: 'officer', helmet: true, weapon: 'none', armor: fut ? 'power' : 'cloth', backpack: true });
+  addHumanoid(b, { role: 'officer', helmet: true, weapon: 'none', armor: 'cloth', backpack: true });
   b.box(0.2, 0.28, 0.1, b.civAccent, { y: 0.6, x: 0.3 });
-  if (fut) {
-    b.sphere(0.07, b.pal.emissive, { y: 1.5, emissive: b.pal.emissive, emissiveIntensity: 2 });
-  }
   return b.finish();
 }
 
@@ -2509,11 +2471,10 @@ function buildModelTemplate(spec: ModelSpec, ctx: BuildContext): THREE.Group {
   else if (type === 'motorcycle') g = buildMotorcycle(ctx);
   else if (type === 'recon_drone') g = buildDrone(ctx);
   else if (type.startsWith('tank')) g = buildTank(type, ctx);
-  else if (type.startsWith('aa')) g = buildAntiAir(type, ctx);
-  else if (type === 'cannon' || type === 'artillery' || type === 'howitzer' || type === 'rail_artillery')
-    g = buildCannon(type, ctx);
+  else if (type.startsWith('aa')) g = buildAntiAir(ctx);
+  else if (type === 'cannon' || type === 'artillery' || type === 'howitzer') g = buildCannon(type, ctx);
   else if (type === 'mortar') g = buildMortar(ctx);
-  else if (type.startsWith('commissar')) g = buildCommisar(type, ctx);
+  else if (type.startsWith('commissar')) g = buildCommisar(ctx);
   else if (type === 'missionary') g = buildMissionary(ctx);
   else g = buildStructure(type, ctx);
 

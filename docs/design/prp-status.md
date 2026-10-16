@@ -48,7 +48,7 @@ Classification of the 15 `BuildingKind`s (`types.ts:94`, defs in
 
 | BuildingKind | In-game name | Category | Classification | Notes |
 |---|---|---|---|---|
-| `center` | Plaza Mayor | economy | generic but acceptable | per-era `eraModel` names are legacy (`center_steam/imperial/atomic/information/stellar`); identity comes from the architecture profile |
+| `center` | Plaza Mayor | economy | generic but acceptable | per-era `eraModel` names are legacy (`center_steam/imperial/atomic/information/modern`); identity comes from the architecture profile |
 | `house` | Vivienda | economy | generic but acceptable | same legacy naming |
 | `mill` | Troje | economy | historically appropriate | food storehouse (pre-Hispanic *troje*) |
 | `sawmill` | Aserradero | economy | generic but acceptable | modern name for the wood drop-off; modelled with the era's architecture |
