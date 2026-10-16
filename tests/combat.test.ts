@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { ARMOR_BONUS_CAP, armorForType, computeDamage } from '../src/game/combat';
+import {
+  ARMOR_BONUS_CAP,
+  ELEVATION_BONUS_CAP,
+  armorForType,
+  computeDamage,
+  elevationDamageMultiplier,
+} from '../src/game/combat';
 
 const INFANTRY = { light: 0, heavy: 0 };
 const HUSSAR = { light: 1, heavy: 0 };
@@ -57,5 +63,25 @@ describe('computeDamage', () => {
   it('ignores a missing/neutral armor multiplier', () => {
     expect(computeDamage(10, 'heavy', INFANTRY)).toBe(10);
     expect(computeDamage(10, 'heavy', INFANTRY, 1)).toBe(10);
+  });
+});
+
+describe('elevationDamageMultiplier', () => {
+  it('boosts downhill attacks and penalizes uphill ones', () => {
+    expect(elevationDamageMultiplier(10, 0)).toBeGreaterThan(1);
+    expect(elevationDamageMultiplier(0, 10)).toBeLessThan(1);
+    expect(elevationDamageMultiplier(5, 5)).toBe(1);
+  });
+
+  it('clamps the height advantage and ignores flat or invalid input', () => {
+    expect(elevationDamageMultiplier(1000, 0)).toBeCloseTo(1 + ELEVATION_BONUS_CAP, 6);
+    expect(elevationDamageMultiplier(0, 1000)).toBeCloseTo(1 - ELEVATION_BONUS_CAP, 6);
+    expect(elevationDamageMultiplier(NaN, 0)).toBe(1);
+  });
+
+  it('caps at real terrain scale (a few world units of height)', () => {
+    // the highest generated terrain is ~15 units, so a ~9-unit advantage already caps
+    expect(elevationDamageMultiplier(12, 0)).toBe(1 + ELEVATION_BONUS_CAP);
+    expect(elevationDamageMultiplier(0, 12)).toBe(1 - ELEVATION_BONUS_CAP);
   });
 });

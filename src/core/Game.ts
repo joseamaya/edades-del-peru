@@ -19,7 +19,7 @@ import { TreeInstances } from '../rendering/TreeInstances';
 import { Projectile, updateProjectilePools } from '../entities/Projectile';
 import { EntityView, reserveIds } from '../entities/EntityView';
 import { AI } from '../game/AI';
-import { computeDamage, ArmorProfile } from '../game/combat';
+import { computeDamage, elevationDamageMultiplier, ArmorProfile } from '../game/combat';
 import type { Difficulty } from './Config';
 import { Economy } from '../game/Economy';
 import { HUD } from '../ui/HUD';
@@ -1987,7 +1987,8 @@ export class Game {
       const a = (target as Building).stats.armor;
       armor = { light: a, heavy: a, building: a };
     }
-    const final = computeDamage(damage, damageType, armor, armorMult);
+    const elevated = target instanceof Unit && from?.pos ? elevationDamageMultiplier(from.pos.y, target.pos.y) : 1;
+    const final = Math.max(1, computeDamage(damage, damageType, armor, armorMult) * elevated);
     target.takeDamage(final, attackerId);
     const dmgH = target instanceof Unit ? 2.2 : 2.6;
     this.hud?.addDamageNumber(target.pos.x, target.pos.y + dmgH, target.pos.z, final, final >= 40 ? 'big' : 'normal');
