@@ -47,13 +47,16 @@ export const SCENES = [
   scene('landscape_altiplano', { civ: 'tiahuanaco', period: 3, view: 'wide' }),
 ];
 
-/** Capture every scene into `outDir` as `<name>.png`; returns capture results. */
-export async function captureScenes(outDir) {
+/** Capture scenes into `outDir` as `<name>.png`; returns capture results. Pass
+ * `only` (scene names) to capture a subset for a quick check. */
+export async function captureScenes(outDir, only = []) {
   fs.mkdirSync(outDir, { recursive: true });
   const { base, close } = await withViteServer();
   const browser = await launchChromium();
   const results = [];
-  for (const scene of SCENES) {
+  const want = new Set(only);
+  const scenes = want.size ? SCENES.filter((s) => want.has(s.name)) : SCENES;
+  for (const scene of scenes) {
     const context = await browser.newContext({ viewport: { width: 1200, height: 800 } });
     const page = await context.newPage();
     const errors = [];

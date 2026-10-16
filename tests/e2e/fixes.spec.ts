@@ -228,7 +228,16 @@ test('right click lands the order under the cursor on elevated terrain', async (
     w.clearOrders();
   });
   await page.mouse.click(info!.sx, info!.sy, { button: 'right' });
-  await page.waitForTimeout(150);
+  // wait for the order to be issued rather than a fixed delay (flaky under load)
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game: any }).game;
+      const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
+      return !!(w && w.orderQueue[0] && w.orderQueue[0].target);
+    },
+    null,
+    { timeout: 5000 },
+  );
   const target = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
