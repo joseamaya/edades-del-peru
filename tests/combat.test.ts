@@ -78,4 +78,10 @@ describe('elevationDamageMultiplier', () => {
     expect(elevationDamageMultiplier(0, 1000)).toBeCloseTo(1 - ELEVATION_BONUS_CAP, 6);
     expect(elevationDamageMultiplier(NaN, 0)).toBe(1);
   });
+
+  it('caps at real terrain scale (a few world units of height)', () => {
+    // the highest generated terrain is ~15 units, so a ~9-unit advantage already caps
+    expect(elevationDamageMultiplier(12, 0)).toBe(1 + ELEVATION_BONUS_CAP);
+    expect(elevationDamageMultiplier(0, 12)).toBe(1 - ELEVATION_BONUS_CAP);
+  });
 });

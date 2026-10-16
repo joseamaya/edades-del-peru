@@ -1987,9 +1987,8 @@ export class Game {
       const a = (target as Building).stats.armor;
       armor = { light: a, heavy: a, building: a };
     }
-    // height advantage (PRP §7): attacking from higher ground hits harder, uphill weaker
     const elevated = target instanceof Unit && from?.pos ? elevationDamageMultiplier(from.pos.y, target.pos.y) : 1;
-    const final = computeDamage(damage * elevated, damageType, armor, armorMult);
+    const final = Math.max(1, computeDamage(damage, damageType, armor, armorMult) * elevated);
     target.takeDamage(final, attackerId);
     const dmgH = target instanceof Unit ? 2.2 : 2.6;
     this.hud?.addDamageNumber(target.pos.x, target.pos.y + dmgH, target.pos.z, final, final >= 40 ? 'big' : 'normal');
