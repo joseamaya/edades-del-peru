@@ -1,10 +1,15 @@
 import { defineConfig } from '@playwright/test';
 
+// Local runs can parallelize (set PW_WORKERS to override); CI keeps a single
+// worker because the software WebGL (SwiftShader) runners are CPU-bound.
+const localWorkers = Number(process.env.PW_WORKERS);
+const workers = process.env.CI ? 1 : Number.isFinite(localWorkers) && localWorkers > 0 ? localWorkers : 2;
+
 export default defineConfig({
   testDir: './tests/e2e',
   timeout: 90_000,
   fullyParallel: false,
-  workers: 1,
+  workers,
   // CI runners are slower (software WebGL); one retry covers genuine environment flakes
   retries: process.env.CI ? 1 : 0,
   reporter: [['list']],

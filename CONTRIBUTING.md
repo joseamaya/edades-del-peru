@@ -29,6 +29,7 @@ The app shows the **main menu** by default. To jump straight into the match use 
 | `yarn lint` | ESLint (must stay at **0 warnings**). |
 | `yarn format` | Prettier over `src/**/*.ts`, `scripts/**/*.mjs` and `tests/**/*.ts`. |
 | `yarn test` | Unit tests (Vitest). |
+| `yarn verify:fast` | Quick gate: `typecheck + lint + format:check + test + build` (~10 s). |
 | `yarn bench` | Entity-scale performance benchmark (writes `review/bench.json`). |
 | `yarn sim` | Headless AI-vs-AI match runner (AI regression baseline). |
 | `yarn test:e2e` | E2E suite (Playwright). Requires `npx playwright install chromium`. |

@@ -7,10 +7,22 @@ import { signature, compareSignatures } from './visual_lib.mjs';
 const BASELINE = path.resolve('tests/visual/baseline.json');
 const THRESHOLD = Number(cliArg('threshold', 12));
 const CELL_THRESHOLD = Number(cliArg('cell-threshold', 35));
+const only = cliArg('only', '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
 const update = process.argv.includes('--update');
 const outDir = path.resolve('review/visual');
 
-const results = await captureScenes(outDir);
+// an unknown scene name would silently capture nothing and "pass"; fail loudly
+const known = SCENES.map((s) => s.name);
+const unknown = only.filter((n) => !known.includes(n));
+if (unknown.length) {
+  console.error(`[visual] unknown scene(s): ${unknown.join(', ')}\n[visual] known: ${known.join(', ')}`);
+  process.exit(1);
+}
+
+const results = await captureScenes(outDir, only);
 // A scene that failed to boot or has no center is not a valid capture: never
 // let it become (or stand in for) a baseline.
 const invalid = results.filter((r) => !r.ok || r.errors.length);
@@ -21,11 +33,13 @@ if (update) {
     console.error(`[visual] refusing to write baseline (${invalid.length} invalid scene(s)); see ${outDir}`);
     process.exit(1);
   }
-  const current = {};
+  // a partial update (--only) must not drop the other scenes from the baseline;
+  // a full update rebuilds it from scratch (so removed scenes do not linger)
+  const current = only.length && fs.existsSync(BASELINE) ? JSON.parse(fs.readFileSync(BASELINE, 'utf8')) : {};
   for (const r of results) current[r.name] = signature(readPng(r.file));
   fs.mkdirSync(path.dirname(BASELINE), { recursive: true });
   fs.writeFileSync(BASELINE, JSON.stringify(current, null, 2) + '\n');
-  console.log(`[visual] baseline written: ${BASELINE} (${SCENES.length} scenes)`);
+  console.log(`[visual] baseline written: ${BASELINE} (${results.length} scene(s) updated)`);
   process.exit(0);
 }
 
@@ -34,8 +48,10 @@ if (!fs.existsSync(BASELINE)) {
   process.exit(1);
 }
 const baseline = JSON.parse(fs.readFileSync(BASELINE, 'utf8'));
+const want = new Set(only);
+const scenes = want.size ? SCENES.filter((s) => want.has(s.name)) : SCENES;
 let regressions = 0;
-for (const scene of SCENES) {
+for (const scene of scenes) {
   const b = baseline[scene.name];
   const r = results.find((x) => x.name === scene.name);
   if (!b || !r?.ok) {

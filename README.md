@@ -26,6 +26,7 @@ yarn preview      # serve the build
 yarn typecheck    # tsc --noEmit
 yarn lint         # ESLint
 yarn test         # unit tests (Vitest)
+yarn verify:fast  # quick gate: typecheck + lint + format + unit tests + build
 yarn test:e2e     # full E2E suite (Playwright, requires `npx playwright install chromium`)
 yarn test:e2e:smoke  # fast @smoke subset (used on PRs)
 yarn visual:update   # refresh the visual-regression baseline after an intentional look change

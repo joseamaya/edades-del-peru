@@ -34,6 +34,7 @@
     "format:check": "prettier --check \"src/**/*.ts\" \"scripts/**/*.mjs\" \"tests/**/*.ts\" \"*.config.{ts,js}\"",
     "test": "vitest run",
     "test:watch": "vitest",
+    "verify:fast": "yarn typecheck && yarn lint && yarn format:check && yarn test && yarn build",
     "test:e2e": "playwright test",
     "test:e2e:smoke": "playwright test --grep @smoke",
     "bench": "node scripts/bench.mjs",

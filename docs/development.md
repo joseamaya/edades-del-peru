@@ -321,6 +321,21 @@ Definition of Done and the building audit see
   (`scripts/visual_lib.mjs`, unit-tested in `tests/visual.test.ts`) is a 4×4 mean-colour grid — robust to
   cosmetic randomness (tree positions, wind) but sensitive to a scene whose identity changes. Run
   `visual:update` after an intentional change; the harness is local (same machine/browser) and not wired to CI.
+  Pass `--only=caral,contemporary` to capture just those scenes for a quick check (~30 s instead of minutes);
+  a partial `visual:update --only=…` **merges** into the baseline (it does not drop the other scenes).
+
+## Verification tiers
+
+Match the cost of verification to the change (the full gate is in `AGENTS.md`):
+
+- **Every change** — `yarn verify:fast` (~10 s): `typecheck && lint && format:check && test && build`.
+- **Runtime / gameplay / recipe change** — targeted e2e specs (`yarn test:e2e tests/e2e/<area>.spec.ts`) and
+  `yarn sim` (AI regression); `yarn test:e2e:smoke` for the fast `@smoke` subset.
+- **Before merge** — the full `yarn test:e2e` once; `yarn visual:update` **only if the change is visual**
+  (otherwise `yarn visual:check`); `yarn bench` if it is performance-sensitive.
+- **CI** owns the full e2e on `main` (`@smoke` on PRs) — no need to run it locally after every edit.
+- **E2E parallelism**: local runs default to 2 workers (`PW_WORKERS=n` to override); CI stays on 1 (the
+  software-WebGL runners are CPU-bound). This roughly halves the local suite (~7.5 min vs ~12 min).
 
 ## Performance benchmarks
 
