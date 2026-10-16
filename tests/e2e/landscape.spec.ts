@@ -69,10 +69,10 @@ test('landscape placement is deterministic for the same seed', async ({ page }) 
   expect(b.verts).toBe(a.verts);
 });
 
-test('the landscape stays merged into a handful of draw calls', async ({ page }) => {
+test('the landscape stays merged into at most one mesh per feature', async ({ page }) => {
   await boot(page, '/?civ=moche&period=2&seed=777&fog=0&low=1&noloop=1');
   const s = await landscapeSig(page);
-  // one merged mesh per rendered feature = the layer's colour-pass draw calls;
+  // the layer merges each feature into one mesh, so its draw calls stay low;
   // guards against un-merging (a mesh per road/field segment) creeping back in
   expect(s.meshes).toBeLessThanOrEqual(RENDERED_FEATURES.length);
 });

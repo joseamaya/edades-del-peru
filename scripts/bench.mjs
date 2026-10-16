@@ -178,7 +178,6 @@ async function measure(browser, base, n) {
     return {
       landscapeCalls: shown.calls - hidden.calls,
       landscapeTris: shown.tris - hidden.tris,
-      sceneCalls: shown.calls,
     };
   });
 
@@ -242,7 +241,12 @@ async function main() {
   console.log(
     `\nlandscape: ${worst.landscapeCalls} draw calls (${worst.landscapeTris} tris), budget ${LANDSCAPE_DRAW_CALL_BUDGET}`,
   );
+  const missing = rows.filter((r) => !(r.landscapeCalls > 0));
   const over = rows.filter((r) => r.landscapeCalls > LANDSCAPE_DRAW_CALL_BUDGET);
+  if (missing.length) {
+    console.error(`landscape layer not drawn (0 draw calls) at ${missing.map((r) => r.n).join(', ')} units`);
+    process.exitCode = 1;
+  }
   if (over.length) {
     console.error(
       `landscape draw-call budget exceeded: ${over.map((r) => `${r.landscapeCalls} @ ${r.n} units`).join(', ')}`,
