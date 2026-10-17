@@ -20,3 +20,4 @@ skills-lock.json
 # local credentials for texture generation
 scripts/.cloudflare.json
 scripts/_textures_raw/
+scripts/_refs/

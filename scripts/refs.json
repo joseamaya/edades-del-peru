@@ -1,0 +1,23 @@
+{
+  "textile_inca": {
+    "file": "textile_inca.png",
+    "image": "https://images.metmuseum.org/CRDImages/ao/original/DP244273.jpg",
+    "url": "https://www.metmuseum.org/art/collection/search/313152",
+    "license": "Public Domain",
+    "credit": "The Metropolitan Museum of Art"
+  },
+  "textile_wari": {
+    "file": "textile_wari.png",
+    "image": "https://images.metmuseum.org/CRDImages/ao/original/DP237313.jpg",
+    "url": "https://www.metmuseum.org/art/collection/search/314355",
+    "license": "Public Domain",
+    "credit": "The Metropolitan Museum of Art"
+  },
+  "textile_nazca": {
+    "file": "textile_nazca.png",
+    "image": "https://images.metmuseum.org/CRDImages/ao/original/DT829.jpg",
+    "url": "https://www.metmuseum.org/art/collection/search/307975",
+    "license": "Public Domain",
+    "credit": "The Metropolitan Museum of Art"
+  }
+}

@@ -4,6 +4,20 @@ import type { Terrain } from './Terrain';
 import type { HistoricalMapProfile } from '../model/defs/profiles';
 import { planCulturalLandscape, RENDERED_FEATURES, type LandscapeQuery } from '../model/defs/landscapePlan';
 import type { LandscapeFeature } from '../model/defs/landscape';
+import { applyGeneratedPbr } from './Biomes';
+import { scaleUv, GROUND_TILE } from '../util/uv';
+
+/** AI-generated ground/landscape material slot per feature (see `prompts_textures.json`). */
+const LANDSCAPE_SLOT: Partial<Record<LandscapeFeature, string>> = {
+  plaza: 'ground_plaza',
+  field: 'ground_field',
+  road: 'ground_road',
+  path: 'ground_path',
+  canal: 'ground_canal',
+  terrace: 'terrace_face',
+  wall: 'wall_drystone',
+  corral: 'corral_brush',
+};
 
 /** Vertical offset above the terrain (half-height for the walls, a small lift for the flats). */
 const OFFSET: Partial<Record<LandscapeFeature, number>> = {
@@ -47,6 +61,8 @@ export class CulturalLandscape {
     for (const p of planCulturalLandscape(landscape, seed, q)) {
       const y = terrain.getHeight(p.x, p.z) + (OFFSET[p.feature] ?? 0.04);
       const geo = featureGeometry(p.feature, p.size, p.yaw);
+      const r = Math.max(1, p.size / GROUND_TILE);
+      scaleUv(geo, r, r);
       geo.translate(p.x, y, p.z);
       (buckets[p.feature] ??= []).push(geo);
     }
@@ -68,6 +84,8 @@ export class CulturalLandscape {
       parts.forEach((g) => g.dispose());
       if (!merged) continue;
       const material = materials[feature]!;
+      const slot = LANDSCAPE_SLOT[feature];
+      if (slot) applyGeneratedPbr(material, slot);
       const mesh = new THREE.Mesh(merged, material);
       mesh.name = feature;
       mesh.receiveShadow = true;

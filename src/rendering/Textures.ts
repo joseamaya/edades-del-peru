@@ -293,6 +293,30 @@ function genStone(): THREE.CanvasTexture {
   return canvasTexture(c, 'stone', true);
 }
 
+/** Bundled straw thatch (Andean ichu roofs). */
+function genThatch(): THREE.CanvasTexture {
+  if (cache.has('thatch')) return cache.get('thatch')!;
+  const size = 256;
+  const [c, ctx] = makeCanvas(size);
+  ctx.fillStyle = '#b9973f';
+  ctx.fillRect(0, 0, size, size);
+  const rng = new RNG(141);
+  for (let i = 0; i < 560; i++) {
+    const x = rng.float() * size;
+    const y = rng.float() * size;
+    const len = 8 + rng.float() * 22;
+    const ang = Math.PI / 2 + (rng.float() - 0.5) * 0.55;
+    const shade = 0.7 + rng.float() * 0.42;
+    ctx.strokeStyle = `rgba(${Math.round(192 * shade)},${Math.round(158 * shade)},${Math.round(74 * shade)},0.7)`;
+    ctx.lineWidth = 1 + rng.float();
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + Math.cos(ang) * len, y + Math.sin(ang) * len);
+    ctx.stroke();
+  }
+  return canvasTexture(c, 'thatch', true);
+}
+
 /** Metal (acerado industrial). */
 function genMetal(base = '#8f98a3'): THREE.CanvasTexture {
   const key = 'metal-' + base;
@@ -731,6 +755,21 @@ export const MaterialTex = {
   textile: (base?: string) => genCloth(base),
   leather: () => genLeather(),
   dirt: () => genDirt(),
+  adobe: () => genBrick(),
+  cutstone: () => genStone(),
+  megalith: () => genStone(),
+  fieldstone: () => genStone(),
+  thatch: () => genThatch(),
+  flatstone: () => genStone(),
+  flatmetal: () => genMetal('#7d848c'),
+  textile_inca: (base?: string) => genCloth(base),
+  textile_wari: (base?: string) => genCloth(base),
+  textile_tiahuanaco: (base?: string) => genCloth(base),
+  textile_moche: (base?: string) => genCloth(base),
+  textile_chavin: (base?: string) => genCloth(base),
+  textile_paracas: (base?: string) => genCloth(base),
+  textile_nazca: (base?: string) => genCloth(base),
+  textile_chimu: (base?: string) => genCloth(base),
   foliage: (kind: 'broad' | 'needle' | 'frond' | 'bush') => genFoliage(kind),
   bark: () => genBark(),
   hide: (base?: string) => genHide(base),

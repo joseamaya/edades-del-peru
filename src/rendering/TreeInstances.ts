@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { MaterialTex } from './Textures';
+import { applyGeneratedPbr } from './Biomes';
 import type { TreeVariant } from '../model/defs/profiles';
 
 export type { TreeVariant };
@@ -56,6 +57,7 @@ export class TreeInstances {
       color: '#b59a78',
       roughness: 0.95,
     });
+    applyGeneratedPbr(barkMat, 'bark', { tint: '#cbb59a' });
     this.materials.push(barkMat);
     this.trunkMesh = new THREE.InstancedMesh(trunkGeo, barkMat, MAX);
     this.trunkMesh.castShadow = true;

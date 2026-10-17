@@ -3,6 +3,7 @@ import { allocId } from './EntityView';
 import { RNG, weightedPick } from '../util/rng';
 import { ResourceKey } from '../core/types';
 import { MaterialTex } from '../rendering/Textures';
+import { applyGeneratedPbr } from '../rendering/Biomes';
 import { TreeInstances, type TreeVariant } from '../rendering/TreeInstances';
 import type { ResourceNodeSave } from '../game/saveTypes';
 
@@ -269,6 +270,7 @@ export class ResourceNode {
       color: '#b59a78',
       roughness: 0.95,
     });
+    applyGeneratedPbr(barkMat, 'bark', { tint: '#cbb59a' });
     const trunk = new THREE.Mesh(cylGeo(0.13, 0.24, h, 8), barkMat);
     trunk.position.y = h / 2;
     trunk.rotation.z = lean;
@@ -308,6 +310,7 @@ export class ResourceNode {
       color: '#8f8a82',
       roughness: 0.95,
     });
+    applyGeneratedPbr(rockMat, 'resource_rock');
     const oreMat = mat('ore-mine', { color: '#9aa7b5', metalness: 0.9, roughness: 0.35, emissive: 0x11161c });
     const n = 7;
     for (let i = 0; i < n; i++) {
@@ -331,6 +334,7 @@ export class ResourceNode {
   private buildWell(rng: RNG): void {
     const metalMat = mat('metal-well', { map: MaterialTex.metal(), color: '#9aa4ae', metalness: 0.6, roughness: 0.5 });
     const woodMat = mat('wood-well', { map: MaterialTex.wood(), color: '#a88a5e', roughness: 0.9 });
+    applyGeneratedPbr(woodMat, 'wood', { tint: '#c8a878' });
     void rng;
     const base = new THREE.Mesh(cylGeo(0.7, 0.85, 0.35, 12), metalMat);
     base.position.y = 0.18;

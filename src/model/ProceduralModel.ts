@@ -5,9 +5,10 @@ import { CivDef, ArchStyle, EmblemId } from './defs/civs';
 import { ModelSpec } from './defs/units';
 import { Era } from '../core/types';
 import { ERA_DEFS } from './defs/eras';
-import type { HistoricalArchitectureProfile } from './defs/architecture';
+import type { HistoricalArchitectureProfile, WallMaterial, RoofMaterial } from './defs/architecture';
 import type { LandmarkId } from './defs/landmarks';
 import { mixHex } from '../util/math';
+import { scaleUv } from '../util/uv';
 import { MaterialTex } from '../rendering/Textures';
 import { getGeneratedMaterial } from '../rendering/Biomes';
 
@@ -24,7 +25,24 @@ type TexKind =
   | 'cloth'
   | 'textile'
   | 'leather'
-  | 'dirt';
+  | 'dirt'
+  // building materials (walls / foundations / roofs), by architectural style
+  | 'adobe'
+  | 'cutstone'
+  | 'megalith'
+  | 'fieldstone'
+  | 'thatch'
+  | 'flatstone'
+  | 'flatmetal'
+  // historical Andean textiles (uncu patterns), per civilization
+  | 'textile_inca'
+  | 'textile_wari'
+  | 'textile_tiahuanaco'
+  | 'textile_moche'
+  | 'textile_chavin'
+  | 'textile_paracas'
+  | 'textile_nazca'
+  | 'textile_chimu';
 
 export interface BuildContext {
   era: Era;
@@ -75,14 +93,45 @@ const TEX_DEFAULTS: Record<TexKind, { roughness: number; metalness: number }> = 
   textile: { roughness: 0.95, metalness: 0 },
   leather: { roughness: 0.8, metalness: 0 },
   dirt: { roughness: 0.98, metalness: 0 },
+  adobe: { roughness: 0.95, metalness: 0 },
+  cutstone: { roughness: 0.9, metalness: 0.05 },
+  megalith: { roughness: 0.95, metalness: 0.05 },
+  fieldstone: { roughness: 0.95, metalness: 0.03 },
+  thatch: { roughness: 0.98, metalness: 0 },
+  flatstone: { roughness: 0.92, metalness: 0.03 },
+  flatmetal: { roughness: 0.45, metalness: 0.6 },
+  textile_inca: { roughness: 0.95, metalness: 0 },
+  textile_wari: { roughness: 0.95, metalness: 0 },
+  textile_tiahuanaco: { roughness: 0.95, metalness: 0 },
+  textile_moche: { roughness: 0.95, metalness: 0 },
+  textile_chavin: { roughness: 0.95, metalness: 0 },
+  textile_paracas: { roughness: 0.95, metalness: 0 },
+  textile_nazca: { roughness: 0.95, metalness: 0 },
+  textile_chimu: { roughness: 0.95, metalness: 0 },
 };
 
 /** Mapping of procedural type -> AI-generated PBR material (if present). */
 const TEX_GEN: Partial<Record<TexKind, string>> = {
   wood: 'wood',
   roof: 'tile',
-  brick: 'adobe',
+  adobe: 'wall_adobe',
+  brick: 'wall_brick',
+  cutstone: 'wall_cutstone',
+  megalith: 'wall_megalith',
+  fieldstone: 'wall_fieldstone',
+  concrete: 'wall_concrete',
+  thatch: 'roof_thatch',
+  flatstone: 'roof_flatstone',
+  flatmetal: 'roof_flatmetal',
   textile: 'textile',
+  textile_inca: 'textile_inca',
+  textile_wari: 'textile_wari',
+  textile_tiahuanaco: 'textile_tiahuanaco',
+  textile_moche: 'textile_moche',
+  textile_chavin: 'textile_chavin',
+  textile_paracas: 'textile_paracas',
+  textile_nazca: 'textile_nazca',
+  textile_chimu: 'textile_chimu',
 };
 
 /**
@@ -135,14 +184,6 @@ function mat(opts: MatOpts = {}): THREE.MeshStandardMaterial {
   }
   matCache.set(key, m);
   return m;
-}
-
-/** Scale a geometry's UVs so a shared texture tiles (replaces per-texture clones). */
-function scaleUv(g: THREE.BufferGeometry, rx: number, ry: number): void {
-  const uv = g.getAttribute('uv') as THREE.BufferAttribute | undefined;
-  if (!uv) return;
-  for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * rx, uv.getY(i) * ry);
-  uv.needsUpdate = true;
 }
 
 interface PartOpts extends MatOpts {
@@ -375,6 +416,18 @@ interface Attire {
   facepaint: boolean;
 }
 
+/** Attested Andean textile (uncu) pattern per civilization; others use the generic weave. */
+const CIV_TEXTILE: Record<string, TexKind> = {
+  inca: 'textile_inca',
+  wari: 'textile_wari',
+  tiahuanaco: 'textile_tiahuanaco',
+  moche: 'textile_moche',
+  chavin: 'textile_chavin',
+  paracas: 'textile_paracas',
+  nazca: 'textile_nazca',
+  chimu: 'textile_chimu',
+};
+
 /**
  * Historical attire profile per civilization, era and unit role.
  * Based on `docs/historia/atuendos.md` (with sources).
@@ -396,7 +449,7 @@ function getAttire(b: Builder, role: UnitRole): Attire {
     return {
       tunic: mixHex(col, sec, elite ? 0.25 : 0.5),
       accent: acc,
-      tex: 'textile',
+      tex: CIV_TEXTILE[civ] ?? 'textile',
       leg: mixHex(col, '#3a2f26', 0.55),
       boot: false,
       cloak: role === 'melee' || elite,
@@ -1225,22 +1278,42 @@ function andeanWall(b: Builder): string {
   }
 }
 
+/** Architecture wall material -> model texture kind (data-driven, one place). */
+const WALL_TEX: Record<WallMaterial, TexKind> = {
+  adobe: 'adobe',
+  fieldstone: 'fieldstone',
+  'cut-stone': 'cutstone',
+  megalithic: 'megalith',
+  brick: 'brick',
+  concrete: 'concrete',
+  metal: 'metal',
+};
+
+/** Architecture roof material -> model texture kind. */
+const ROOF_TEX: Record<RoofMaterial, TexKind> = {
+  thatch: 'thatch',
+  'flat-stone': 'flatstone',
+  tile: 'roof',
+  'flat-metal': 'flatmetal',
+};
+
 function andeanTex(b: Builder): TexKind {
-  return b.arch.wall === 'adobe' ? 'brick' : 'stone';
+  return WALL_TEX[b.arch.wall];
+}
+
+/** Foundation texture: terraces are always fieldstone, else the wall material. */
+function foundationTex(b: Builder): TexKind {
+  return b.arch.foundation === 'terrace' ? 'fieldstone' : andeanTex(b);
 }
 
 /** Facade texture from the architecture profile for the colonial/republican builders. */
 function facadeTex(b: Builder, fallback: TexKind): TexKind {
-  switch (b.arch.wall) {
-    case 'brick':
-      return 'brick';
-    case 'concrete':
-      return 'concrete';
-    case 'metal':
-      return 'metal';
-    default:
-      return fallback;
-  }
+  return WALL_TEX[b.arch.wall] ?? fallback;
+}
+
+/** Roof texture from the architecture profile (thatch / flat-stone / tile / flat-metal). */
+function roofTex(b: Builder, fallback: TexKind): TexKind {
+  return ROOF_TEX[b.arch.roof] ?? fallback;
 }
 
 function andeanStone(b: Builder): string {
@@ -1260,9 +1333,10 @@ function andeanThatch(b: Builder): string {
 /** Stepped stone platform (the Andean "huaca" base). */
 function andeanPlatform(b: Builder, w: number, tiers: number): void {
   const stone = andeanStone(b);
+  const tex = foundationTex(b);
   for (let i = 0; i < tiers; i++) {
     const t = w * (1.24 - i * 0.08);
-    b.box(t, w * 0.14, t, stone, { y: w * 0.07 + i * w * 0.14, tex: 'stone' });
+    b.box(t, w * 0.14, t, stone, { y: w * 0.07 + i * w * 0.14, tex });
   }
 }
 
@@ -1275,7 +1349,7 @@ function andeanTerraceBase(b: Builder, w: number, tiers: number): number {
   let y = 0;
   for (let i = 0; i < tiers; i++) {
     const t = w * (1.3 - i * 0.1);
-    b.box(t, h, t, stone, { y: y + h / 2, tex: 'stone' });
+    b.box(t, h, t, stone, { y: y + h / 2, tex: 'fieldstone' });
     b.box(t * 0.84, h * 0.32, t * 0.84, wall, { y: y + h * 0.68, tex });
     y += h;
   }
@@ -1288,7 +1362,7 @@ function andeanFoundation(b: Builder, w: number, tiers: number): number {
     case 'none':
       return 0;
     case 'plinth':
-      b.box(w * 1.06, w * 0.1, w * 1.06, andeanStone(b), { y: w * 0.05, tex: 'stone' });
+      b.box(w * 1.06, w * 0.1, w * 1.06, andeanStone(b), { y: w * 0.05, tex: foundationTex(b) });
       return w * 0.1;
     case 'terrace':
       return andeanTerraceBase(b, w, tiers);
@@ -1311,7 +1385,7 @@ function andeanMegaliths(b: Builder, w: number, baseY: number): void {
       x: sx * w * 0.5,
       y: baseY + w * 0.17,
       z: sz * w * 0.5,
-      tex: 'stone',
+      tex: andeanTex(b),
     });
   }
 }
@@ -1330,7 +1404,7 @@ function andeanTapestries(b: Builder, w: number, baseY: number): void {
 /** Thatch gable roof. */
 function andeanThatchRoof(b: Builder, w: number, y: number): void {
   const thatch = andeanThatch(b);
-  const o = { ry: Math.PI / 2, tex: 'dirt' as TexKind, texScale: 2 };
+  const o = { ry: Math.PI / 2, tex: 'thatch' as TexKind, texScale: 2 };
   b.box(w * 1.08, w * 0.1, w * 0.6, thatch, { y, z: w * 0.24, rx: 0.6, ...o });
   b.box(w * 1.08, w * 0.1, w * 0.6, thatch, { y, z: -w * 0.24, rx: -0.6, ...o });
   b.box(w * 1.1, w * 0.09, w * 0.18, thatch, { y: y + w * 0.2, ...o });
@@ -1356,14 +1430,18 @@ function andeanFrieze(b: Builder, w: number): void {
 function andeanStair(b: Builder, w: number, steps: number): void {
   const stone = andeanStone(b);
   for (let i = 0; i < steps; i++) {
-    b.box(w * 0.34, w * 0.08, w * 0.14, stone, { y: w * 0.04 + i * w * 0.08, z: w * (0.5 + i * 0.07), tex: 'stone' });
+    b.box(w * 0.34, w * 0.08, w * 0.14, stone, {
+      y: w * 0.04 + i * w * 0.08,
+      z: w * (0.5 + i * 0.07),
+      tex: andeanTex(b),
+    });
   }
 }
 
 /** A stone watchtower (chullpa-like). */
 function andeanTower(b: Builder, w: number, x: number, z: number): void {
   const stone = andeanStone(b);
-  b.cyl(w * 0.16, w * 0.2, w * 0.9, 8, stone, { x, y: w * 0.45, z, tex: 'stone' });
+  b.cyl(w * 0.16, w * 0.2, w * 0.9, 8, stone, { x, y: w * 0.45, z, tex: andeanTex(b) });
   b.cyl(w * 0.2, w * 0.16, w * 0.12, 8, b.pal.darkMetal, { x, y: w * 0.95, z });
 }
 
@@ -1505,7 +1583,10 @@ function buildAndeanStructure(b: Builder, o: AndeanOpts): void {
   let roof = o.roof ?? 'thatch';
   if (roof !== 'shrine' && b.arch.roof === 'flat-stone') roof = 'flat';
   if (roof === 'flat') {
-    b.box(w * 1.0, w * 0.12, w * 1.0, andeanStone(b), { y: roofY, tex });
+    b.box(w * 1.0, w * 0.12, w * 1.0, andeanStone(b), {
+      y: roofY,
+      tex: b.arch.roof === 'flat-stone' ? 'flatstone' : andeanTex(b),
+    });
     for (let i = -1; i <= 1; i += 2)
       b.box(w * 0.12, w * 0.18, w * 1.0, wall, { x: i * w * 0.46, y: roofY + w * 0.1, tex });
   } else if (roof === 'shrine') {
@@ -1593,9 +1674,21 @@ function buildHouse(b: Builder, size: number, grand: boolean): void {
   b.box(w * 0.96, w * 0.08, w * 0.96, b.pal.darkWood, { y: w * 0.05 });
   // gable roof with tiles
   const roofTint = mixHex(b.pal.roof, '#ffffff', 0.58);
-  b.box(w * 1.06, w * 0.16, w * 0.62, roofTint, { y: w * 0.82, z: w * 0.24, rx: 0.55, ry: Math.PI / 2, tex: 'roof' });
-  b.box(w * 1.06, w * 0.16, w * 0.62, roofTint, { y: w * 0.82, z: -w * 0.24, rx: -0.55, ry: Math.PI / 2, tex: 'roof' });
-  b.box(w * 1.08, w * 0.12, w * 0.24, roofTint, { y: w * 1.06, ry: Math.PI / 2, tex: 'roof' });
+  b.box(w * 1.06, w * 0.16, w * 0.62, roofTint, {
+    y: w * 0.82,
+    z: w * 0.24,
+    rx: 0.55,
+    ry: Math.PI / 2,
+    tex: roofTex(b, 'roof'),
+  });
+  b.box(w * 1.06, w * 0.16, w * 0.62, roofTint, {
+    y: w * 0.82,
+    z: -w * 0.24,
+    rx: -0.55,
+    ry: Math.PI / 2,
+    tex: roofTex(b, 'roof'),
+  });
+  b.box(w * 1.08, w * 0.12, w * 0.24, roofTint, { y: w * 1.06, ry: Math.PI / 2, tex: roofTex(b, 'roof') });
   // front/rear eave
   b.box(w * 1.06, 0.05, w * 0.16, b.pal.darkWood, { y: w * 0.72, z: w * 0.48 });
   b.box(w * 1.06, 0.05, w * 0.16, b.pal.darkWood, { y: w * 0.72, z: -w * 0.48 });
@@ -1742,9 +1835,21 @@ function buildBarracks(b: Builder, size: number, wallType: 'wood' | 'brick'): vo
   const roofTint = mixHex(b.pal.roof, '#ffffff', 0.58);
   b.box(w * 0.9, w * 0.5, w * 0.7, wallTint, { y: w * 0.25, tex: facadeTex(b, wallType) });
   b.box(w * 0.94, w * 0.07, w * 0.74, b.pal.darkWood, { y: w * 0.04 });
-  b.box(w * 1.0, w * 0.14, w * 0.44, roofTint, { y: w * 0.56, z: w * 0.16, rx: 0.55, ry: Math.PI / 2, tex: 'roof' });
-  b.box(w * 1.0, w * 0.14, w * 0.44, roofTint, { y: w * 0.56, z: -w * 0.16, rx: -0.55, ry: Math.PI / 2, tex: 'roof' });
-  b.box(w * 1.02, w * 0.1, w * 0.2, roofTint, { y: w * 0.74, ry: Math.PI / 2, tex: 'roof' });
+  b.box(w * 1.0, w * 0.14, w * 0.44, roofTint, {
+    y: w * 0.56,
+    z: w * 0.16,
+    rx: 0.55,
+    ry: Math.PI / 2,
+    tex: roofTex(b, 'roof'),
+  });
+  b.box(w * 1.0, w * 0.14, w * 0.44, roofTint, {
+    y: w * 0.56,
+    z: -w * 0.16,
+    rx: -0.55,
+    ry: Math.PI / 2,
+    tex: roofTex(b, 'roof'),
+  });
+  b.box(w * 1.02, w * 0.1, w * 0.2, roofTint, { y: w * 0.74, ry: Math.PI / 2, tex: roofTex(b, 'roof') });
   // wide door with frame
   b.box(0.4, w * 0.36, 0.07, b.pal.darkWood, { y: w * 0.16, z: w * 0.36 });
   b.box(0.46, 0.05, 0.08, b.pal.darkWood, { y: w * 0.35, z: w * 0.36 });
@@ -1765,9 +1870,21 @@ function buildStable(b: Builder, size: number, wallType: 'wood' | 'brick'): void
   const roofTint = mixHex(b.pal.roof, '#ffffff', 0.58);
   b.box(w * 0.9, w * 0.55, w * 0.75, wallTint, { y: w * 0.28, tex: facadeTex(b, wallType) });
   b.box(w * 0.94, w * 0.07, w * 0.79, b.pal.darkWood, { y: w * 0.05 });
-  b.box(w * 1.02, w * 0.16, w * 0.5, roofTint, { y: w * 0.62, z: w * 0.2, rx: 0.55, ry: Math.PI / 2, tex: 'roof' });
-  b.box(w * 1.02, w * 0.16, w * 0.5, roofTint, { y: w * 0.62, z: -w * 0.2, rx: -0.55, ry: Math.PI / 2, tex: 'roof' });
-  b.box(w * 1.04, w * 0.12, w * 0.22, roofTint, { y: w * 0.8, ry: Math.PI / 2, tex: 'roof' });
+  b.box(w * 1.02, w * 0.16, w * 0.5, roofTint, {
+    y: w * 0.62,
+    z: w * 0.2,
+    rx: 0.55,
+    ry: Math.PI / 2,
+    tex: roofTex(b, 'roof'),
+  });
+  b.box(w * 1.02, w * 0.16, w * 0.5, roofTint, {
+    y: w * 0.62,
+    z: -w * 0.2,
+    rx: -0.55,
+    ry: Math.PI / 2,
+    tex: roofTex(b, 'roof'),
+  });
+  b.box(w * 1.04, w * 0.12, w * 0.22, roofTint, { y: w * 0.8, ry: Math.PI / 2, tex: roofTex(b, 'roof') });
   // wide doors
   b.box(0.4, w * 0.3, 0.07, b.pal.darkWood, { x: -0.22, y: w * 0.16, z: w * 0.38 });
   b.box(0.4, w * 0.3, 0.07, b.pal.darkWood, { x: 0.22, y: w * 0.16, z: w * 0.38 });
@@ -1932,9 +2049,21 @@ function buildDropsite(b: Builder, size: number, matType: 'wood' | 'brick' | 'st
         : mixHex(b.pal.stone, '#ffffff', 0.5);
   const roofTint = mixHex(b.pal.roof, '#ffffff', 0.58);
   b.box(w * 0.85, w * 0.5, w * 0.7, wallTint, { y: w * 0.25, tex: facadeTex(b, matType) });
-  b.box(w * 0.95, w * 0.12, w * 0.42, roofTint, { y: w * 0.56, z: w * 0.15, rx: 0.55, ry: Math.PI / 2, tex: 'roof' });
-  b.box(w * 0.95, w * 0.12, w * 0.42, roofTint, { y: w * 0.56, z: -w * 0.15, rx: -0.55, ry: Math.PI / 2, tex: 'roof' });
-  b.box(w * 0.97, w * 0.1, w * 0.2, roofTint, { y: w * 0.72, ry: Math.PI / 2, tex: 'roof' });
+  b.box(w * 0.95, w * 0.12, w * 0.42, roofTint, {
+    y: w * 0.56,
+    z: w * 0.15,
+    rx: 0.55,
+    ry: Math.PI / 2,
+    tex: roofTex(b, 'roof'),
+  });
+  b.box(w * 0.95, w * 0.12, w * 0.42, roofTint, {
+    y: w * 0.56,
+    z: -w * 0.15,
+    rx: -0.55,
+    ry: Math.PI / 2,
+    tex: roofTex(b, 'roof'),
+  });
+  b.box(w * 0.97, w * 0.1, w * 0.2, roofTint, { y: w * 0.72, ry: Math.PI / 2, tex: roofTex(b, 'roof') });
   // door
   b.box(0.3, w * 0.34, 0.05, b.pal.darkWood, { y: w * 0.17, z: w * 0.36 });
   b.cyl(0.02, 0.02, w * 0.4, 6, b.pal.darkWood, { y: w * 0.7, x: -w * 0.28 });

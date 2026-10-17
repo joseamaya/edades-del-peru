@@ -73,3 +73,34 @@ export function getGeneratedMaterial(kind: string): PbrSet | null {
     roughness: load(materialMods, base, kind, 'roughness', false),
   };
 }
+
+/**
+ * Overlay the AI-generated PBR set for `slot` onto an existing standard material
+ * (map + normal + roughness). `tint` multiplies the albedo (default white, the
+ * true generated colour). Returns `false` and leaves the material untouched when
+ * the slot has no generated assets, so callers keep their procedural/colour
+ * fallback (offline / no assets). The generated textures use
+ * `MirroredRepeatWrapping`, so callers must bake the UV repeat into the geometry
+ * (do not mutate the shared texture's `repeat`).
+ */
+export function applyGeneratedPbr(
+  material: THREE.MeshStandardMaterial,
+  slot: string,
+  opts: { tint?: THREE.ColorRepresentation; normalScale?: number } = {},
+): boolean {
+  const gen = getGeneratedMaterial(slot);
+  if (!gen) return false;
+  material.map = gen.diffuse;
+  material.color.set(opts.tint ?? 0xffffff);
+  const ns = opts.normalScale ?? 0.8;
+  if (gen.normal) {
+    material.normalMap = gen.normal;
+    material.normalScale = new THREE.Vector2(ns, ns);
+  }
+  if (gen.roughness) {
+    material.roughnessMap = gen.roughness;
+    material.roughness = 1;
+  }
+  material.needsUpdate = true;
+  return true;
+}
