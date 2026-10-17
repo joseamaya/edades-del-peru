@@ -27,6 +27,15 @@ const DIRS = [
 /** Chebyshev cell distance to an obstacle goal accepted as "arrived" (see pathfind). */
 const GOAL_PROXIMITY = 2;
 
+/**
+ * Steepest terrain a unit may traverse (0 flat .. 1 cliff, same scale as
+ * `Terrain.getSlope`). Cells above it are baked non-walkable, so units cannot
+ * cross mountains/cliffs; `Game.canPlace` uses the same limit so anything
+ * buildable stays reachable. Measured on the shipped maps, only the steepest
+ * ~0.4–3.6% of land cells exceed it (valleys/terraces are well below).
+ */
+export const MAX_WALKABLE_SLOPE = 0.5;
+
 /** Reusable min binary heap (avoids O(n) forEach per iteration). */
 class MinHeap {
   private idx: number[] = [];
@@ -141,7 +150,7 @@ export class Pathfinder {
     for (const o of this.obstacles) this.rasterize(o);
   }
 
-  /** Mark cells non-traversable due to slope or water (call with terrain height). */
+  /** Mark cells non-traversable due to water or too-steep terrain (call with terrain height). */
   bakeTerrain(heightFn: (x: number, z: number) => number, waterLevel: number): void {
     const { cols, cell } = this.grid;
     this.grid.walkable.fill(1);
@@ -150,7 +159,11 @@ export class Pathfinder {
         const wx = x * cell + cell / 2;
         const wz = z * cell + cell / 2;
         const h = heightFn(wx, wz);
-        if (h < waterLevel + 0.35) {
+        // slope from neighbour samples, same scale as Terrain.getSlope
+        const hx = heightFn(wx + cell, wz) - heightFn(wx - cell, wz);
+        const hz = heightFn(wx, wz + cell) - heightFn(wx, wz - cell);
+        const slope = Math.min(1, (Math.hypot(hx, hz) / (2 * cell)) * 0.5);
+        if (h < waterLevel + 0.35 || slope > MAX_WALKABLE_SLOPE) {
           this.grid.walkable[z * cols + x] = 0;
         }
       }

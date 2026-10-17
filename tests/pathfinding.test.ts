@@ -76,4 +76,28 @@ describe('Pathfinder', () => {
       { x: 5, z: 5 },
     ]);
   });
+
+  it('bakes too-steep terrain non-walkable but keeps gentle slopes', () => {
+    const pf = new Pathfinder(40, 2);
+    // gentle (gradient 0.2 -> slope 0.1) for x < 30, a cliff (gradient 5) beyond
+    pf.bakeTerrain((x) => (x < 30 ? x * 0.2 : x * 5), 0);
+    expect(pf.isWalkable(10, 20)).toBe(true);
+    expect(pf.isWalkable(35, 20)).toBe(false);
+  });
+
+  it('keeps flat terrain walkable', () => {
+    const pf = new Pathfinder(40, 2);
+    pf.bakeTerrain(() => 10, 0);
+    expect(pf.isWalkable(20, 20)).toBe(true);
+  });
+
+  it('keeps steep terrain blocked after an obstacle is removed', () => {
+    const pf = new Pathfinder(40, 2);
+    pf.bakeTerrain((x) => (x < 30 ? x * 0.2 : x * 5), 0);
+    const o = { x: 10, z: 20, radius: 3 };
+    pf.addObstacle(o);
+    pf.removeObstacle(o);
+    expect(pf.isWalkable(35, 20)).toBe(false);
+    expect(pf.isWalkable(10, 20)).toBe(true);
+  });
 });
