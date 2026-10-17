@@ -2,9 +2,15 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { Terrain } from './Terrain';
 import type { HistoricalMapProfile } from '../model/defs/profiles';
-import { planCulturalLandscape, RENDERED_FEATURES, type LandscapeQuery } from '../model/defs/landscapePlan';
+import {
+  planCulturalLandscape,
+  RENDERED_FEATURES,
+  type LandscapePlacement,
+  type LandscapeQuery,
+} from '../model/defs/landscapePlan';
 import type { LandscapeFeature } from '../model/defs/landscape';
 import { applyGeneratedPbr } from './Biomes';
+import { buildRibbon } from './ribbon';
 import { scaleUv, GROUND_TILE } from '../util/uv';
 
 /** AI-generated ground/landscape material slot per feature (see `prompts_textures.json`). */
@@ -31,13 +37,19 @@ const OFFSET: Partial<Record<LandscapeFeature, number>> = {
   corral: 0.1,
 };
 
+/** Ribbon width for the chained features (roads/paths) and the canal. */
+const CHAIN_WIDTH: Partial<Record<LandscapeFeature, number>> = { road: 1.8, path: 1.0 };
+const CANAL_WIDTH = 1.6;
+
 /**
  * Static, deterministic cultural landscape (roads, fields, plazas, canals,
  * terraces, walls, corrals, paths) drawn from
  * `HistoricalMapProfile.culturalLandscape`. Geometry is planned by the pure
  * `planCulturalLandscape` and merged per feature into a few meshes, so the whole
- * layer costs only a handful of draw calls. Visual only (like the landmark): no
- * entities, no pathfinding obstacles, no gameplay effect.
+ * layer costs only a handful of draw calls. Roads, paths and canals are built as
+ * continuous ribbons along their polyline (following the relief); canals follow
+ * the carved ditches (`Terrain.getCanalPaths`). Visual only (like the landmark):
+ * no entities, no pathfinding obstacles, no gameplay effect.
  */
 export class CulturalLandscape {
   readonly group = new THREE.Group();
@@ -56,18 +68,39 @@ export class CulturalLandscape {
       isBuildable: (x, z) => terrain.isBuildable(x, z),
       getSlope: (x, z) => terrain.getSlope(x, z),
       getTerrace: (x, z) => terrain.getTerrace(x, z),
-      getCanal: (x, z) => terrain.getCanal(x, z),
     };
 
     const buckets: Partial<Record<LandscapeFeature, THREE.BufferGeometry[]>> = {};
+    const chains: Partial<Record<LandscapeFeature, Map<number, LandscapePlacement[]>>> = {};
     for (const p of planCulturalLandscape(landscape, seed, q)) {
-      const y = terrain.getHeight(p.x, p.z) + (OFFSET[p.feature] ?? 0.04);
-      const geo = featureGeometry(p.feature, p.size, p.yaw);
-      const r = Math.max(1, p.size / GROUND_TILE);
-      scaleUv(geo, r, r);
-      geo.translate(p.x, y, p.z);
-      (buckets[p.feature] ??= []).push(geo);
+      if (p.chain === undefined) {
+        const y = terrain.getHeight(p.x, p.z) + (OFFSET[p.feature] ?? 0.04);
+        const geo = featureGeometry(p.feature, p.size, p.yaw);
+        const r = Math.max(1, p.size / GROUND_TILE);
+        scaleUv(geo, r, r);
+        geo.translate(p.x, y, p.z);
+        (buckets[p.feature] ??= []).push(geo);
+      } else {
+        const byChain = (chains[p.feature] ??= new Map());
+        const samples = byChain.get(p.chain);
+        if (samples) samples.push(p);
+        else byChain.set(p.chain, [p]);
+      }
     }
+
+    for (const feature of RENDERED_FEATURES) {
+      const width = CHAIN_WIDTH[feature];
+      const byChain = chains[feature];
+      if (!width || !byChain) continue;
+      const off = OFFSET[feature] ?? 0.04;
+      for (const samples of byChain.values()) {
+        const pts = samples.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).map((p) => ({ x: p.x, z: p.z }));
+        pushRibbon(buckets, feature, pts, width, terrain, off);
+      }
+    }
+
+    const canalOffset = OFFSET.canal ?? 0.08;
+    for (const path of terrain.getCanalPaths()) pushRibbon(buckets, 'canal', path, CANAL_WIDTH, terrain, canalOffset);
 
     const materials: Partial<Record<LandscapeFeature, THREE.MeshStandardMaterial>> = {
       plaza: new THREE.MeshStandardMaterial({ color: '#9c9182', roughness: 0.9 }),
@@ -107,7 +140,22 @@ export class CulturalLandscape {
   }
 }
 
-/** Geometry for a feature; flat features lie in the XZ plane. */
+/** Build a ribbon for `points` and add it to the feature bucket. */
+function pushRibbon(
+  buckets: Partial<Record<LandscapeFeature, THREE.BufferGeometry[]>>,
+  feature: LandscapeFeature,
+  points: { x: number; z: number }[],
+  width: number,
+  terrain: Terrain,
+  offset: number,
+): void {
+  const geo = buildRibbon(points, width, (x, z) => terrain.getHeight(x, z) + offset);
+  if (!geo) return;
+  scaleUv(geo, 1 / GROUND_TILE, 1 / GROUND_TILE);
+  (buckets[feature] ??= []).push(geo);
+}
+
+/** Geometry for a point feature; flat features lie in the XZ plane. */
 function featureGeometry(feature: LandscapeFeature, size: number, yaw: number): THREE.BufferGeometry {
   if (feature === 'plaza') {
     return new THREE.CircleGeometry(size / 2, 16).rotateX(-Math.PI / 2);
@@ -121,6 +169,5 @@ function featureGeometry(feature: LandscapeFeature, size: number, yaw: number): 
   if (feature === 'corral') {
     return new THREE.TorusGeometry(size / 2, 0.18, 6, 16).rotateX(-Math.PI / 2);
   }
-  const depth = feature === 'road' ? size * 0.6 : feature === 'path' ? size * 0.5 : size;
-  return new THREE.PlaneGeometry(size, depth).rotateX(-Math.PI / 2).rotateY(yaw);
+  return new THREE.PlaneGeometry(size, size).rotateX(-Math.PI / 2).rotateY(yaw);
 }

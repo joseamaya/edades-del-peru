@@ -11,6 +11,8 @@ export interface HeightField {
   terraceMap: Float32Array;
   /** Strength of irrigation canals per cell (0 none .. 1 centre), for the water ribbon. */
   canalMap: Float32Array;
+  /** Irrigation canal centre-lines (cell coordinates), the source of truth for the canal ribbon. */
+  canalPaths: { x: number; z: number }[][];
   waterLevel: number;
 }
 
@@ -65,8 +67,8 @@ export function generateHeightField(resolution: number, seed: number, profile: H
 
   carveRivers(heightMap, n, profile, new RNG(seed * 7919 + 17));
   const terraceMap = carveTerraces(heightMap, n, profile, seed);
-  const canalMap = carveCanals(heightMap, n, profile, seed);
-  return { heightMap, moistureMap, terraceMap, canalMap, waterLevel: profile.water.level };
+  const { canalMap, canalPaths } = carveCanals(heightMap, n, profile, seed);
+  return { heightMap, moistureMap, terraceMap, canalMap, canalPaths, waterLevel: profile.water.level };
 }
 
 /**
@@ -143,23 +145,32 @@ function carveRivers(heightMap: Float32Array, n: number, profile: HistoricalMapP
 /**
  * Carve shallow irrigation canals (region cultural landscape). The bed is kept
  * **above** the waterline so a canal is a visual ditch, not a pathfinding wall or
- * a flooding source; the water ribbon is drawn separately. Deterministic from
- * `seed + profile`; writes a per-cell strength for the renderer.
+ * a flooding source; the water ribbon follows the returned centre-lines.
+ * Deterministic from `seed + profile`; writes a per-cell strength for the
+ * renderer.
  */
-function carveCanals(heightMap: Float32Array, n: number, profile: HistoricalMapProfile, seed: number): Float32Array {
+function carveCanals(
+  heightMap: Float32Array,
+  n: number,
+  profile: HistoricalMapProfile,
+  seed: number,
+): { canalMap: Float32Array; canalPaths: { x: number; z: number }[][] } {
   const canalMap = new Float32Array(n * n);
-  if (!profile.culturalLandscape) return canalMap;
+  const canalPaths: { x: number; z: number }[][] = [];
+  if (!profile.culturalLandscape) return { canalMap, canalPaths };
   const weight = landscapeWeight(profile.culturalLandscape, 'canal');
-  if (weight <= 0) return canalMap;
+  if (weight <= 0) return { canalMap, canalPaths };
   const waterLevel = profile.water.level;
   const rng = new RNG((seed * 2246822519 + 53) >>> 0);
   const width = 1.6;
   const count = 1 + Math.round(weight * 2);
   for (let c = 0; c < count; c++) {
+    const path: { x: number; z: number }[] = [];
     let cx = rng.int(0, n - 1);
     let cz = 0;
     let wander = rng.range(-1, 1);
     while (cz < n) {
+      path.push({ x: cx, z: cz });
       wander += rng.range(-0.5, 0.5);
       wander = Math.max(-2.4, Math.min(2.4, wander));
       for (let dx = -Math.ceil(width); dx <= Math.ceil(width); dx++) {
@@ -182,6 +193,7 @@ function carveCanals(heightMap: Float32Array, n: number, profile: HistoricalMapP
       cx += wander;
       cx = Math.max(2, Math.min(n - 3, cx));
     }
+    canalPaths.push(path);
   }
-  return canalMap;
+  return { canalMap, canalPaths };
 }

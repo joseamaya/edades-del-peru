@@ -8,8 +8,6 @@ export interface LandscapeQuery extends TerrainQuery {
   size: number;
   /** Agricultural terracing strength (0..~0.55). */
   getTerrace(x: number, z: number): number;
-  /** Canal strength (0..1) carved into the terrain. */
-  getCanal(x: number, z: number): number;
 }
 
 export interface LandscapePlacement {
@@ -19,6 +17,10 @@ export interface LandscapePlacement {
   yaw: number;
   /** Footprint size in world units. */
   size: number;
+  /** For chained features (road/path): which polyline this sample belongs to. */
+  chain?: number;
+  /** For chained features (road/path): the sample order along the polyline. */
+  order?: number;
 }
 
 /** Features the renderer knows how to draw in this phase (single source of truth). */
@@ -110,18 +112,14 @@ export function planCulturalLandscape(
     }
   }
 
-  if (landscapeWeight(profile, 'canal') > 0) {
-    for (let z = 3; z < q.size - 3; z += 2) {
-      for (let x = 3; x < q.size - 3; x += 2) {
-        if (q.getCanal(x, z) > 0) out.push({ feature: 'canal', x, z, yaw: 0, size: 3 });
-      }
-    }
-  }
-
   return out;
 }
 
-/** Push a road/path as `spokes` radial lines of tiles from the hub. */
+/**
+ * Push a road/path as `spokes` radial polylines from the hub. Each sample carries
+ * its `chain` (spoke) and `order`, so the renderer can build one continuous ribbon
+ * per spoke (see `buildRibbon`) instead of leaving gaps between tiles.
+ */
 function pushSpokes(
   out: LandscapePlacement[],
   q: LandscapeQuery,
@@ -139,11 +137,12 @@ function pushSpokes(
     const a = (s / spokes) * Math.PI * 2 + rng.range(-0.2, 0.2);
     const len = rng.range(minLen, maxLen) * q.size * spread;
     const steps = Math.max(3, Math.round(len / stepLen));
+    let order = 0;
     for (let i = 1; i <= steps; i++) {
       const x = hub.x + Math.cos(a) * (len * (i / steps));
       const z = hub.z + Math.sin(a) * (len * (i / steps));
       if (!q.isBuildable(x, z) || q.isWater(x, z)) continue;
-      out.push({ feature, x, z, yaw: a, size });
+      out.push({ feature, x, z, yaw: a, size, chain: s, order: order++ });
     }
   }
 }

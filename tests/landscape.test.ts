@@ -5,14 +5,13 @@ import { MAP_PROFILES, type GeographicRegion } from '../src/model/defs/profiles'
 
 const REGIONS = Object.keys(LANDSCAPE) as GeographicRegion[];
 
-/** Flat, dry, buildable world with a canal strip around x = 50 and terraces at x < 20. */
+/** Flat, dry, buildable world with terraces at x < 20. */
 const flat: LandscapeQuery = {
   size: 100,
   isWater: () => false,
   isBuildable: () => true,
   getSlope: () => 0.1,
   getTerrace: (x) => (x < 20 ? 0.5 : 0),
-  getCanal: (x) => (x > 48 && x < 52 ? 1 : 0),
 };
 
 describe('cultural landscape data', () => {
@@ -64,7 +63,7 @@ describe('cultural landscape plan', () => {
   it('plans each region a distinct feature set', () => {
     const kinds = (region: GeographicRegion) =>
       new Set(planCulturalLandscape(LANDSCAPE[region], 7, flat).map((p) => p.feature));
-    expect(kinds('north_coast').has('canal')).toBe(true);
+    expect(kinds('north_coast').has('road')).toBe(true);
     expect(kinds('north_coast').has('plaza')).toBe(true);
     expect(kinds('south_coast').has('road')).toBe(true);
     expect(kinds('andean_valley').has('terrace')).toBe(true);
@@ -96,10 +95,21 @@ describe('cultural landscape plan', () => {
     }
   });
 
-  it('places canals on the carved canal mask', () => {
+  it('emits roads and paths as ordered, gap-free chains', () => {
     const plan = planCulturalLandscape(LANDSCAPE.north_coast, 7, flat);
-    const canals = plan.filter((p) => p.feature === 'canal');
-    expect(canals.length).toBeGreaterThan(0);
-    for (const c of canals) expect(flat.getCanal(c.x, c.z)).toBeGreaterThan(0);
+    const chained = plan.filter((p) => p.feature === 'road' || p.feature === 'path');
+    expect(chained.length).toBeGreaterThan(0);
+    const byChain = new Map<string, typeof chained>();
+    for (const p of chained) {
+      expect(p.chain, 'chained sample needs a chain id').toBeTypeOf('number');
+      expect(p.order, 'chained sample needs an order').toBeTypeOf('number');
+      const key = `${p.feature}:${p.chain}`;
+      (byChain.get(key) ?? byChain.set(key, []).get(key)!).push(p);
+    }
+    for (const [key, samples] of byChain) {
+      const orders = samples.map((s) => s.order!).sort((a, b) => a - b);
+      // contiguous from 0: no dropped sample in the middle (which would leave a gap)
+      expect(orders, key).toEqual(orders.map((_, i) => i));
+    }
   });
 });
