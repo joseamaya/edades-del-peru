@@ -83,7 +83,7 @@ Region defaults (`LANDSCAPE` in `src/model/defs/landscape.ts`, each with its
 | `andean_valley` | terrace, road, field, wall | riverside | Chavín/Wari/Inca terraces, Huaylas |
 | `high_andes` | terrace, road, plaza, wall | hilltop | Inca andenes, Qhapaq Ñan, pucarás |
 | `altiplano` | terrace, field, corral, plaza | dispersed | Tiahuanaco waru-warus, chullpas |
-| `amazon` | field (low), road (low) | dispersed | high-jungle gardens |
+| `amazon` | field (low), path (low) | dispersed | high-jungle gardens |
 
 `terrace` is also implemented as terrain (`terraceChance` → `carveTerraces` in
 [`src/rendering/heightField.ts`](../../src/rendering/heightField.ts)); the profile
@@ -97,9 +97,9 @@ same placements. `CulturalLandscape`
 ([`src/rendering/CulturalLandscape.ts`](../../src/rendering/CulturalLandscape.ts))
 turns each placement into a primitive (a plaza is a disc, a road/path/canal a flat
 plane, a wall/terrace a low box, a corral a ring) and **merges every feature into a
-single mesh**, so the whole layer costs at most `RENDERED_FEATURES.length` draw
-calls. Placement uses its own `RNG(seed * k + c)`, so the **simulation RNG is never
-touched** (replay safety).
+single mesh**, so the whole layer is at most one mesh per drawable feature
+(`RENDERED_FEATURES.length` meshes). Placement uses its own `RNG(seed * k + c)`, so
+the **simulation RNG is never touched** (replay safety).
 
 Materials are plain `MeshStandardMaterial` tinted per feature and, when the AI
 assets exist, overlaid with generated PBR via `applyGeneratedPbr`
@@ -126,20 +126,37 @@ exposes it via `getCanal`.
 
 - Pure function of `seed + profile`, verified by `tests/landscape.test.ts`
   (same input → same feature set; the analogue of `tests/terrain.test.ts`).
-- Budget: the layer draws at most one mesh per rendered feature. `scripts/bench.mjs`
+- Budget: the layer draws at most one mesh per drawable feature. `scripts/bench.mjs`
   isolates the layer's draw calls (render once with the group visible and once
   hidden, at max zoom so every mesh is in view) and asserts
-  `drawCalls <= 2 * meshes`, derived from the measured layer rather than a magic
-  number. The factor 2 is three's `VSMShadowMap`: it renders every shadow
-  **receiver** into the shadow map as well, and every landscape mesh sets
-  `receiveShadow`, so each merged mesh costs one main-pass plus one shadow-pass
-  draw. Numbers are only comparable on the same machine/browser; `bench.json`
-  records the OS/CPU/browser so runs can be compared (see
-  [`docs/development.md`](../development.md) §Performance).
+  `drawCalls <= CulturalLandscape.featureBudget * 2`, where `featureBudget` is
+  `RENDERED_FEATURES.length` — the same bound the E2E asserts in
+  `tests/e2e/landscape.spec.ts`. Basing the budget on the declared vocabulary (not
+  on the measured mesh count) makes it non-circular: un-merging a road/path into
+  per-segment meshes exceeds the budget and fails. The factor 2 is three's
+  `VSMShadowMap`: it renders every shadow **receiver** into the shadow map as well,
+  and every landscape mesh sets `receiveShadow`, so each merged mesh costs one
+  main-pass plus one shadow-pass draw. Numbers are only comparable on the same
+  machine/browser; `bench.json` records the OS/CPU/Node so runs can be compared
+  (see [`docs/development.md`](../development.md) §Performance).
 
-## Known limitations / confirmed defects
+## Known limitations
 
-These are open defects tracked as issues; the layer is otherwise functional.
+By design, not defects:
+
+- **Visual only.** The layer adds no entities, no pathfinding obstacles and no
+  gameplay effect. Only the farm-yield hook (canals/terraces) reads it.
+- **Not every vocabulary feature is drawn.** Only `RENDERED_FEATURES` (plaza, field,
+  road, path, canal, terrace, wall, corral) get geometry; `courtyard`, `platform`,
+  `ceremonial`, `fortification` and `bridge` are declared but composed from the
+  drawn set or unimplemented.
+- **Abstraction, not reconstruction.** Feature kinds are plausible readings of
+  documented traits, not archaeological reconstructions (see the `provenance` of
+  each region).
+
+## Confirmed defects
+
+Open defects tracked as issues:
 
 - **Fog of War is not applied** to the cultural landscape, the settlement overlays
   or the landmark. Fog lives only in the terrain shader and in per-entity

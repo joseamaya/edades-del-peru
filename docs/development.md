@@ -360,8 +360,9 @@ Match the cost of verification to the change (the full gate is in `AGENTS.md`):
 hover-picking (`pickAt`), then — with the loop running and `window.__directRender` on (bypasses
 post-processing so `renderer.info` is meaningful) — FPS, frame time (avg/p95), long tasks and real scene
 draw calls/triangles. It also isolates the cultural landscape's draw calls (the layer rendered visible
-vs hidden) and **fails** (`exit ≠ 0`) when they exceed the budget in
-[`docs/design/cultural-landscape.md`](design/cultural-landscape.md) (`LANDSCAPE_DRAW_CALL_BUDGET`). It
+vs hidden) and **fails** (`exit ≠ 0`) when they exceed
+`2 × CulturalLandscape.featureBudget` (one merged mesh per drawable feature, times the
+VSM main+shadow passes; see [`docs/design/cultural-landscape.md`](design/cultural-landscape.md)). It
 writes `review/bench.json` and prints a table.
 
 Numbers are only comparable **on the same machine/browser** — treat them as relative signals, not targets.

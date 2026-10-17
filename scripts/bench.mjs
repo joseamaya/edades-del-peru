@@ -24,14 +24,15 @@ const scales = String(cliArg('units', '100,300,500,1000'))
 const seed = Number.parseInt(cliArg('seed', '777'), 10);
 
 // The cultural landscape merges each feature into a single mesh, so its draw-call
-// cost scales with the number of feature meshes in the scene, not with the number
-// of segments. Under VSMShadowMap three also renders every shadow *receiver* into
-// the shadow map (three.module.js: `object.castShadow || (object.receiveShadow &&
-// type === VSMShadowMap)`), and every landscape mesh sets `receiveShadow`, so each
-// merged mesh costs 2 draw calls (main pass + shadow pass). The budget is derived
-// from the measured layer instead of a magic number, so it cannot drift from the
-// merged-geometry strategy nor contradict the E2E assertion
-// (`tests/e2e/landscape.spec.ts`, meshes <= RENDERED_FEATURES.length).
+// cost scales with the declared feature vocabulary, not with the number of
+// segments. The budget is `CulturalLandscape.featureBudget * 2`:
+//   - one mesh per drawable feature (`RENDERED_FEATURES.length`, the same bound the
+//     E2E asserts in `tests/e2e/landscape.spec.ts`), so un-merging a road/path
+//     into per-segment meshes exceeds it and fails;
+//   - under VSMShadowMap three also renders every shadow *receiver* into the shadow
+//     map (`object.castShadow || (object.receiveShadow && type === VSMShadowMap)`),
+//     and every landscape mesh sets `receiveShadow`, so each merged mesh costs one
+//     main-pass plus one shadow-pass draw.
 const LANDSCAPE_DRAW_CALLS_PER_MESH = 2;
 
 async function measure(browser, base, n) {
@@ -187,6 +188,7 @@ async function measure(browser, base, n) {
       landscapeCalls: shown.calls - hidden.calls,
       landscapeTris: shown.tris - hidden.tris,
       landscapeMeshes: group ? group.children.length : 0,
+      landscapeFeatureBudget: (g.landscape && g.landscape.featureBudget) || 0,
     };
   });
 
@@ -258,7 +260,7 @@ async function main() {
     );
   }
   const worst = rows.reduce((a, r) => (r.landscapeCalls > a.landscapeCalls ? r : a), rows[0]);
-  const budgetOf = (r) => r.landscapeMeshes * LANDSCAPE_DRAW_CALLS_PER_MESH;
+  const budgetOf = (r) => r.landscapeFeatureBudget * LANDSCAPE_DRAW_CALLS_PER_MESH;
   console.log(
     `\nlandscape: ${worst.landscapeCalls} draw calls (${worst.landscapeTris} tris, ${worst.landscapeMeshes} meshes), budget <= ${budgetOf(worst)}`,
   );
