@@ -534,6 +534,7 @@ export class Game {
     for (let i = 0; i < workers; i++) {
       const unit = new Unit(UnitKind.WORKER, player, this.players[player].era, ctx);
       // sample the height at the worker's actual position, not at fresh random coords
+      // (the scout and spawnResources already reuse matching coords; no other spawn had this)
       const ux = x + rng.range(-3, 3);
       const uz = z + rng.range(-3, 3);
       unit.pos.set(ux, this.terrain.getHeight(ux, uz), uz);
