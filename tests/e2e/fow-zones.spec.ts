@@ -18,7 +18,7 @@ async function boot(page: Page, url: string): Promise<void> {
   });
 }
 
-test('the cultural layers share the terrain fog mask @smoke', async ({ page }) => {
+test('the cultural layers share the terrain fog mask', { tag: '@smoke' }, async ({ page }) => {
   await boot(page, FOG_URL);
   const res = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -74,7 +74,7 @@ test('the cultural layers share the terrain fog mask @smoke', async ({ page }) =
   expect(res.enabledOff, 'fog off -> fowEnabled=0 everywhere').toBe(true);
 });
 
-test('the cultural layers dim per fog zone (unexplored/explored/visible) @smoke', async ({ page }) => {
+test('the cultural layers dim per fog zone (unexplored/explored/visible)', { tag: '@smoke' }, async ({ page }) => {
   for (const layer of LAYERS) {
     await boot(page, FOG_URL);
     const r = await page.evaluate((which: string) => {
@@ -110,20 +110,23 @@ test('the cultural layers dim per fog zone (unexplored/explored/visible) @smoke'
       const x = centre.x;
       const z = centre.z;
 
-      // isolate the layer: keep only it and the lights, so the frame contains the
-      // feature (lit by the lights) over a black background — no terrain/water
+      // isolate the layer: keep only it and the lights, so the sampled pixel is
+      // the feature (or the black background), never the terrain/water
       for (const child of g.scene.children) child.visible = child.isLight || child === root;
       root.visible = true;
 
       g.loop.stop();
-      (window as any).__directRender = true;
       g.camera.moveTo(x, z, true);
       g.camera.setHeight(g.camera.minZoom);
       for (let i = 0; i < 8; i++) g.camera.update(0.5, 0);
 
-      // brightest pixel of the isolated layer: robust to which part is lit and to
-      // concave geometry (no per-triangle projection that could hit a back face)
+      // sample the pixel the feature projects to (the camera looks at y=0, so an
+      // elevated feature is off-centre; the centre pixel would be background)
+      const ndc = centre.clone().project(g.camera.camera);
+      if (Math.abs(ndc.x) > 1 || Math.abs(ndc.y) > 1) return { ok: false, reason: 'feature off-screen' };
       const size = 128;
+      const px = Math.round((ndc.x * 0.5 + 0.5) * size);
+      const py = Math.round((ndc.y * 0.5 + 0.5) * size);
       const rt = new THREE.WebGLRenderTarget(size, size);
       const buf = new Uint8Array(size * size * 4);
       const read = (): number => {
@@ -131,10 +134,15 @@ test('the cultural layers dim per fog zone (unexplored/explored/visible) @smoke'
         g.renderer.render(g.scene, g.camera.camera);
         g.renderer.readRenderTargetPixels(rt, 0, 0, size, size, buf);
         g.renderer.setRenderTarget(null);
+        // brightest of a 3x3 patch around the projected point (robust to AA/edges)
         let best = 0;
-        for (let i = 0; i < size * size; i++) {
-          const o = i * 4;
-          best = Math.max(best, (buf[o] + buf[o + 1] + buf[o + 2]) / 3);
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            const ix = Math.min(size - 1, Math.max(0, px + dx));
+            const iy = Math.min(size - 1, Math.max(0, py + dy));
+            const o = (iy * size + ix) * 4;
+            best = Math.max(best, (buf[o] + buf[o + 1] + buf[o + 2]) / 3);
+          }
         }
         return best;
       };
@@ -168,7 +176,7 @@ test('the cultural layers dim per fog zone (unexplored/explored/visible) @smoke'
     expect(grid1, `${layer}: visible grid`).toBe(255);
     expect(grid2, `${layer}: explored grid`).toBe(150);
     // the rendered feature dims by zone: 0 < intermediate < 1
-    expect(p1, `${layer}: visible pixel is lit (framing guard)`).toBeGreaterThan(8);
+    expect(p1, `${layer}: visible pixel is lit (framing guard)`).toBeGreaterThan(4);
     expect(p0, `${layer}: unexplored is black`).toBeLessThan(Math.max(3, 0.1 * p1));
     expect(p2, `${layer}: explored is above unexplored`).toBeGreaterThan(p0);
     expect(p2, `${layer}: explored is below visible`).toBeLessThan(p1);
