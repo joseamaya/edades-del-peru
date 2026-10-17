@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { MaterialTex } from './Textures';
+import { getGeneratedMaterial } from './Biomes';
 import type { TreeVariant } from '../model/defs/profiles';
 
 export type { TreeVariant };
@@ -50,10 +51,11 @@ export class TreeInstances {
       frond: this.buildCanopyGeo(3.4, 2.2, 3.7),
     };
 
+    const barkGen = getGeneratedMaterial('bark');
     const barkMat = new THREE.MeshStandardMaterial({
-      map: MaterialTex.bark(),
-      normalMap: MaterialTex.normal(21),
-      color: '#b59a78',
+      map: barkGen?.diffuse ?? MaterialTex.bark(),
+      normalMap: barkGen?.normal ?? MaterialTex.normal(21),
+      color: barkGen ? '#cbb59a' : '#b59a78',
       roughness: 0.95,
     });
     this.materials.push(barkMat);

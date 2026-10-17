@@ -29,7 +29,7 @@ REFS = ROOT / "scripts" / "_refs"
 PROMPTS_FILE = ROOT / "scripts" / "prompts_textures.json"
 REFS_FILE = ROOT / "scripts" / "refs.json"
 DEFAULT_MODEL = "@cf/black-forest-labs/flux-1-schnell"
-SECTIONS = ("terrain", "materials", "buildings", "textiles")
+SECTIONS = ("terrain", "materials", "buildings", "textiles", "landscape")
 PARAM_KEYS = ("steps", "guidance", "width", "height", "seed")
 MAX_REF_SIDE = 512
 KLEIN_STEP = 4
@@ -98,6 +98,23 @@ def download_refs() -> None:
         time.sleep(1)
 
 
+def _post(url: str, headers: dict, *, json_body=None, files=None, tries: int = 4) -> requests.Response:
+    """POST with backoff; abort early on the Workers AI daily neuron quota."""
+    last = None
+    for i in range(tries):
+        r = requests.post(url, headers=headers, json=json_body, files=files, timeout=300)
+        if r.status_code == 429 and "daily free allocation" in r.text:
+            raise RuntimeError("Cloudflare Workers AI daily neuron quota exhausted; retry after the daily reset")
+        if r.status_code not in (429, 500, 502, 503, 504):
+            return r
+        last = r
+        retry_after = r.headers.get("retry-after", "")
+        delay = int(retry_after) if retry_after.isdigit() else min(60, 5 * (2**i))
+        print(f"     retry {i + 1}/{tries} after HTTP {r.status_code} ({delay}s)")
+        time.sleep(delay)
+    return last
+
+
 def generate(prompt: str, model: str, acc: str, tok: str, params: dict) -> bytes:
     url = f"https://api.cloudflare.com/client/v4/accounts/{acc}/ai/run/{model}"
     headers = {"Authorization": f"Bearer {tok}"}
@@ -116,12 +133,12 @@ def generate(prompt: str, model: str, acc: str, tok: str, params: dict) -> bytes
             files["seed"] = (None, str(params["seed"]))
         for i, ref in enumerate(ref_paths(params)):
             files[f"input_image_{i}"] = (ref.name, resize_ref(ref), "image/png")
-        r = requests.post(url, headers=headers, files=files, timeout=300)
+        r = _post(url, headers, files=files)
     else:
         body = {"prompt": prompt, "steps": params.get("steps", KLEIN_STEP)}
         if params.get("seed") is not None:
             body["seed"] = params["seed"]
-        r = requests.post(url, headers=headers, json=body, timeout=300)
+        r = _post(url, headers, json_body=body)
     r.raise_for_status()
     ctype = r.headers.get("content-type", "")
     if "application/json" in ctype:

@@ -21,6 +21,11 @@
   `textile_wari`, `textile_tiahuanaco`, `textile_moche`, `textile_chavin`, `textile_paracas`,
   `textile_nazca`, `textile_chimu`. Civilizations with no attested pattern fall back to the generic
   `textile` weave (see `docs/historia/atuendos.md`).
+- **Landscape** (`materials/`): `ground_field`, `ground_road`, `ground_path`, `ground_plaza`,
+  `ground_canal`, `terrace_face`, `wall_drystone`, `corral_brush` (cultural-landscape features and the
+  starting site), plus `resource_rock` (ore rocks) and `bark` (tree trunks). Applied by
+  `CulturalLandscape`, `SettlementOverlay`, `ResourceNode` and `TreeInstances` via `applyGeneratedPbr`
+  (falls back to their colour material when absent).
 
 Textures are optional: `src/rendering/Biomes.ts` falls back to the procedural Canvas material when a
 slot is absent (offline / without assets).

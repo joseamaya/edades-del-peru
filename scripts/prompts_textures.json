@@ -49,5 +49,17 @@
       "refs": ["textile_nazca.png"]
     },
     "textile_chimu": "seamless tileable Andean textile with Chimu felines and feather motifs in ochre, red and cream, evenly lit, photorealistic PBR albedo, high detail"
+  },
+  "landscape": {
+    "ground_field": "seamless tileable texture of a tilled Andean crop field, dark brown soil with straight furrows and small green maize and potato shoots, top-down view, evenly lit, photorealistic PBR albedo, high detail",
+    "ground_road": "seamless tileable texture of a compacted dirt road, packed brown earth with faint cart ruts and small stones, top-down view, evenly lit, photorealistic PBR albedo, high detail",
+    "ground_path": "seamless tileable texture of a narrow worn footpath, packed lighter earth with scattered grit and faint footprints, top-down view, evenly lit, photorealistic PBR albedo, high detail",
+    "ground_plaza": "seamless tileable texture of an ancient Andean plaza floor, flat fitted grey andesite stone slabs with tight joints and dust, top-down view, evenly lit, photorealistic PBR albedo, high detail",
+    "ground_canal": "seamless tileable texture of a wet irrigation canal bed, dark silt and small smooth stones with a thin water film, top-down view, evenly lit, photorealistic PBR albedo, high detail",
+    "terrace_face": "seamless tileable texture of the retaining face of an Andean agricultural terrace, stacked rough fieldstone wall with dry earth and sparse grass, evenly lit, photorealistic PBR albedo, high detail",
+    "wall_drystone": "seamless tileable texture of a dry-stone Andean field wall, irregular grey stones stacked without mortar, evenly lit, photorealistic PBR albedo, high detail",
+    "corral_brush": "seamless tileable texture of a woven brush livestock fence, dry branches and twigs tightly bound, warm brown, evenly lit, photorealistic PBR albedo, high detail",
+    "resource_rock": "seamless tileable texture of mineral-bearing Andean rock, grey andesite with metallic silver-grey ore veins, evenly lit, photorealistic PBR albedo, high detail",
+    "bark": "seamless tileable texture of tree bark, rough brown vertical ridges and crevices, evenly lit, photorealistic PBR albedo, high detail"
   }
 }

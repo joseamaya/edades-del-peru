@@ -2,10 +2,23 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { Terrain } from './Terrain';
 import type { SettlementPlan, SettlementField, SettlementRoad } from '../model/defs/settlementPlan';
+import { applyGeneratedPbr } from './Biomes';
 
 const ROAD_WIDTH = 1.4;
 /** Small lift above the terrain so the flat quads do not z-fight with the ground. */
 const OFFSET = 0.06;
+/** World units covered by one tile of the generated ground texture. */
+const TILE = 4;
+
+/** Scale a geometry's UVs so a shared generated texture tiles by world size. */
+function tileUv(g: THREE.BufferGeometry, rx: number, ry: number): THREE.BufferGeometry {
+  const uv = g.getAttribute('uv') as THREE.BufferAttribute | undefined;
+  if (uv) {
+    for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * rx, uv.getY(i) * ry);
+    uv.needsUpdate = true;
+  }
+  return g;
+}
 
 /**
  * Visual-only overlay of a planned starting settlement: its fields and the roads
@@ -23,15 +36,19 @@ export class SettlementOverlay {
     terrain: Terrain,
   ) {
     this.group.name = 'settlement';
+    const roadMat = new THREE.MeshStandardMaterial({ color: '#8a6a44', roughness: 1 });
+    const fieldMat = new THREE.MeshStandardMaterial({ color: '#6f8f3a', roughness: 1 });
+    applyGeneratedPbr(roadMat, 'ground_road');
+    applyGeneratedPbr(fieldMat, 'ground_field');
     this.add(
       'roads',
       plan.roads.map((r) => roadGeometry(r, terrain)),
-      new THREE.MeshStandardMaterial({ color: '#8a6a44', roughness: 1 }),
+      roadMat,
     );
     this.add(
       'fields',
       plan.fields.map((f) => fieldGeometry(f, terrain)),
-      new THREE.MeshStandardMaterial({ color: '#6f8f3a', roughness: 1 }),
+      fieldMat,
     );
   }
 
@@ -64,7 +81,7 @@ function roadGeometry(road: SettlementRoad, terrain: Terrain): THREE.BufferGeome
   const len = Math.hypot(to.x - from.x, to.z - from.z);
   const y = maxHeight(terrain, from.x, from.z, to.x, to.z) + OFFSET;
   const angle = Math.atan2(to.z - from.z, to.x - from.x);
-  return new THREE.PlaneGeometry(len, ROAD_WIDTH)
+  return tileUv(new THREE.PlaneGeometry(len, ROAD_WIDTH), len / TILE, ROAD_WIDTH / TILE)
     .rotateX(-Math.PI / 2)
     .rotateY(-angle)
     .translate((from.x + to.x) / 2, y, (from.z + to.z) / 2);
@@ -82,7 +99,7 @@ function fieldGeometry(field: SettlementField, terrain: Terrain): THREE.BufferGe
   ]) {
     y = Math.max(y, terrain.getHeight(field.x + dx, field.z + dz));
   }
-  return new THREE.PlaneGeometry(field.size, field.size)
+  return tileUv(new THREE.PlaneGeometry(field.size, field.size), field.size / TILE, field.size / TILE)
     .rotateX(-Math.PI / 2)
     .rotateY(-field.yaw)
     .translate(field.x, y + OFFSET, field.z);
