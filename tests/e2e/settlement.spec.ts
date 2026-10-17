@@ -84,3 +84,18 @@ test('the settlement overlay is regenerated on load', async ({ page }) => {
   expect(s.count).toBeGreaterThan(0);
   expect(s.fields.length).toBeGreaterThan(0);
 });
+
+test('initial workers start on the ground at their own position', async ({ page }) => {
+  // irregular (high-Andes) terrain makes a mismatched height sample obvious
+  await boot(page, '/?civ=inca&period=5&seed=777&fog=0&low=1&noloop=1');
+  const worst = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    let worst = 0;
+    for (const u of g.units.values()) {
+      if (u.owner !== 0 || u.kind !== 'worker') continue;
+      worst = Math.max(worst, Math.abs(u.pos.y - g.terrain.getHeight(u.pos.x, u.pos.z)));
+    }
+    return worst;
+  });
+  expect(worst).toBeLessThan(0.01);
+});

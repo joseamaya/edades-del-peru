@@ -533,11 +533,10 @@ export class Game {
     const workers = player === 0 ? 4 : 4;
     for (let i = 0; i < workers; i++) {
       const unit = new Unit(UnitKind.WORKER, player, this.players[player].era, ctx);
-      unit.pos.set(
-        x + rng.range(-3, 3),
-        this.terrain.getHeight(x + rng.range(-3, 3), z + rng.range(-3, 3)),
-        z + rng.range(-3, 3),
-      );
+      // sample the height at the worker's actual position, not at fresh random coords
+      const ux = x + rng.range(-3, 3);
+      const uz = z + rng.range(-3, 3);
+      unit.pos.set(ux, this.terrain.getHeight(ux, uz), uz);
       unit.setContext(this.unitContext);
       this.applyPlayerBonuses(unit, this.players[player]);
       unit.attach(this.scene);
