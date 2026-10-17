@@ -19,7 +19,7 @@ Sources: the code under `src/`, the tests under `tests/`, the scripts under
 | Architecture really changes per civilization | done | `architecture.ts` (`archProfileFor`, `CIV_ARCH`), consumed by `ProceduralModel.ts` |
 | Caral / Moche / Inca have their own identity | done | `tests/profiles.test.ts`, `tests/e2e/civ-visuals.spec.ts`, `scenes.mjs` |
 | Significant landmarks exist | done | 19 landmarks with source + status (`landmarks.ts`), `spawnLandmark` |
-| Settlements have spatial logic | **partial** | `planSettlementSite` plans center + dwellings + fields + roads from the terrain (`settlementPlan.ts`, pure); fields/roads are not yet rendered and dropsites/defense are deferred |
+| Settlements have spatial logic | done | `planSettlementSite` plans center + dwellings + fields + roads from the terrain (`settlementPlan.ts`, pure), wired in `Game.spawnStartBase` and rendered by `SettlementOverlay`; dropsites/defense are deferred extras |
 | Generation is deterministic | done | `heightField.ts` is pure; `tests/terrain.test.ts`; own RNGs |
 | Maps are still procedural | done | FBM/rivers/terraces/canals (`heightField.ts`) |
 | Existing campaigns work | done | `tests/e2e/campaign-*.spec.ts` |
@@ -34,7 +34,7 @@ Sources: the code under `src/`, the tests under `tests/`, the scripts under
 
 ### Remaining work
 
-- **SettlementGenerator**: render the planned fields/roads in `spawnStartBase` (the pure planner `planSettlementSite` is done); dropsites and defense later (`docs/design/settlement-generator.md`).
+- **SettlementGenerator extras**: dropsites and defense (`docs/design/settlement-generator.md`); the layout core is done.
 - **§7 (optional)**: slope-based movement cost and bridges (mountains/rivers/valleys/height already shape play).
 - **Building audit follow-ups** (§12): resolved — `stable`/`factory` gated to `VICEROYALTY`, `wonder.minEra` aligned; see below.
 - ~~Unit-crowding pathfinding~~: fixed — `Pathfinder.rebuild` keeps the terrain mask and `Unit.updateAttack` closes in when its route is exhausted; a clustered army now razes the base (`tests/e2e/skirmish-winnable.spec.ts`).

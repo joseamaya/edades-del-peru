@@ -1,21 +1,19 @@
 # Settlement generator — design proposal
 
-Status: **design done, layout planner live.** The pure, terrain-aware layout — the
-dwellings of the starting base and now the full `SettlementPlan` (center, fields
-and roads) — is implemented in `src/model/defs/settlementPlan.ts`
-(`planSettlement` / `planSettlementSite`). The dwellings are wired in
-`Game.spawnStartBase`; rendering and gameplay of the fields/roads (PR-3) remain.
+Status: **implemented.** The pure, terrain-aware layout — the dwellings of the
+starting base plus the full `SettlementPlan` (center, fields and roads) — is
+`planSettlementSite` in `src/model/defs/settlementPlan.ts`. `Game.spawnStartBase`
+consumes it (dwellings as entities; fields/roads rendered visually by
+`src/rendering/SettlementOverlay.ts`). **Dropsites and defense are deferred** design
+extras (there is no dropsite `BuildingKind`).
 
-Decisions for the remaining slice: **fields and roads are layout data only**
-(rendered visually like the cultural landscape — no `BuildingKind.FARM`, no
-economy change); **dropsites and defense are deferred** (there is no dropsite
-`BuildingKind`); **campaigns stay opt-in** (the default keeps the explicit `dx/dz`).
+Decisions: fields and roads are **visual only** (no `BuildingKind.FARM`, no economy
+change); **campaigns stay opt-in** (the default keeps the explicit `dx/dz`).
 
-Today a skirmish base is a center plus three dwellings on a fixed ring, and
-campaign buildings are placed by hand with `dx/dz` offsets (`MissionDef.start`, see
+Today a skirmish base is a center plus three dwellings on a ring; campaign
+buildings are placed by hand with `dx/dz` offsets (`MissionDef.start`, see
 [`src/core/Game.ts`](../../src/core/Game.ts) `spawnStartBase` / `applyMissionSetup`).
-The dwellings read the terrain through `planSettlement`; `planSettlementSite` plans
-the fields and roads; rendering them is the next step.
+The dwellings, fields and roads all read the terrain through the planner.
 
 ## Contract
 
@@ -111,14 +109,14 @@ All angles/offsets come from a dedicated `RNG(seed * k + c)` stream.
 3. Implement `hilltop` for `high_andes` (Inca slice).
 4. Unit-test determinism + terrain validity with a fake query. ✅
 5. Full pure planner: center + dwellings + fields + roads (`planSettlementSite`). ✅
-6. Wire `spawnStartBase` to the plan and render the fields/roads; keep the fallback. ⏳
+6. Wire `spawnStartBase` to the plan and render the fields/roads; keep the fallback. ✅
 
 ## Acceptance criteria
 
 - [x] Same request → same plan (unit test, no DOM).
-- [ ] A north-coast base sits by the valley and an Andean base on the slope
-      (asserted structurally in E2E).
+- [x] A base carries its planned dwellings + fields + roads, all on buildable/dry/
+      gentle ground, deterministic for the same seed (asserted structurally in E2E).
 - [x] Every placement is validated on buildable, dry, gentle ground; the degenerate
       all-water map keeps the nominal ring (documented fallback).
-- [ ] Existing campaigns unchanged (they opt out by default).
-- [ ] `yarn typecheck && yarn lint && yarn format:check && yarn test && yarn build` + E2E green.
+- [x] Existing campaigns unchanged (they opt out by default; layout stays `dx/dz`).
+- [x] `yarn typecheck && yarn lint && yarn format:check && yarn test && yarn build` + E2E green.
