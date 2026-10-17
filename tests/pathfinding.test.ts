@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Pathfinder } from '../src/game/Pathfinding';
+import { terrainSlope } from '../src/util/math';
 
 describe('Pathfinder', () => {
   it('finds a path between two free points', () => {
@@ -75,5 +76,52 @@ describe('Pathfinder', () => {
       { x: 3, z: 3 },
       { x: 5, z: 5 },
     ]);
+  });
+
+  it('bakes too-steep terrain non-walkable but keeps gentle slopes', () => {
+    const pf = new Pathfinder(40, 2);
+    // gentle (gradient 0.2 -> slope 0.1) for x < 30, a cliff (gradient 5) beyond
+    pf.bakeTerrain((x) => (x < 30 ? x * 0.2 : x * 5), 0);
+    expect(pf.isWalkable(10, 20)).toBe(true);
+    expect(pf.isWalkable(35, 20)).toBe(false);
+  });
+
+  it('keeps flat terrain walkable', () => {
+    const pf = new Pathfinder(40, 2);
+    pf.bakeTerrain(() => 10, 0);
+    expect(pf.isWalkable(20, 20)).toBe(true);
+  });
+
+  it('keeps steep terrain blocked after an obstacle is removed', () => {
+    const pf = new Pathfinder(40, 2);
+    pf.bakeTerrain((x) => (x < 30 ? x * 0.2 : x * 5), 0);
+    const o = { x: 10, z: 20, radius: 3 };
+    pf.addObstacle(o);
+    pf.removeObstacle(o);
+    expect(pf.isWalkable(35, 20)).toBe(false);
+    expect(pf.isWalkable(10, 20)).toBe(true);
+  });
+
+  it('blocks crossing a solid cliff and keeps a gap passable', () => {
+    // a solid cliff wall across the map: no route (with the old water-only rule
+    // the flat wall interior was walkable and a straight path crossed it)
+    const solid = new Pathfinder(80, 2);
+    solid.bakeTerrain((x) => (x > 28 && x < 34 ? 100 : 10), 0);
+    expect(solid.pathfind(10, 40, 60, 40)).toEqual([]);
+
+    // the same wall with a wide gap: a valid route still exists through it
+    const gapped = new Pathfinder(80, 2);
+    gapped.bakeTerrain((x, z) => (x > 28 && x < 34 && !(z > 5 && z < 20) ? 100 : 10), 0);
+    expect(gapped.pathfind(10, 40, 60, 40).length).toBeGreaterThan(0);
+  });
+});
+
+describe('terrainSlope', () => {
+  it('is flat, gentle and cliff on the expected scales', () => {
+    expect(terrainSlope(() => 10, 20, 20, 2)).toBe(0);
+    // gradient 0.2 -> slope 0.1
+    expect(terrainSlope((x) => x * 0.2, 20, 20, 2)).toBeCloseTo(0.1, 6);
+    // gradient 5 -> clamped to 1
+    expect(terrainSlope((x) => x * 5, 20, 20, 2)).toBe(1);
   });
 });

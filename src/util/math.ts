@@ -23,6 +23,17 @@ export function distance2D(ax: number, az: number, bx: number, bz: number): numb
   return Math.sqrt(dx * dx + dz * dz);
 }
 
+/**
+ * Terrain slope magnitude (0 flat .. 1 cliff) from neighbour height samples at
+ * distance `d`. Shared by `Terrain.getSlope` and `Pathfinder.bakeTerrain` so the
+ * walkable-slope rule cannot drift between them.
+ */
+export function terrainSlope(heightFn: (x: number, z: number) => number, x: number, z: number, d: number): number {
+  const hx = heightFn(x + d, z) - heightFn(x - d, z);
+  const hz = heightFn(x, z + d) - heightFn(x, z - d);
+  return Math.min(1, (Math.hypot(hx, hz) / (2 * d)) * 0.5);
+}
+
 /** Angle (rad) from a to b in XZ. */
 export function angleTo(ax: number, az: number, bx: number, bz: number): number {
   return Math.atan2(bz - az, bx - ax);

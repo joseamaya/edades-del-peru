@@ -11,7 +11,7 @@ import { RTSCamera } from './Camera';
 import { GameLoop } from './GameLoop';
 import { Fow } from '../game/Fow';
 import { applyFowToObject, createFowUniforms } from '../rendering/FowMaterial';
-import { Pathfinder } from '../game/Pathfinding';
+import { Pathfinder, MAX_WALKABLE_SLOPE } from '../game/Pathfinding';
 import { Unit, UnitContext } from '../entities/Unit';
 import { Building } from '../entities/Building';
 import { ResourceNode, clearResourceCaches } from '../entities/ResourceNode';
@@ -1681,6 +1681,8 @@ export class Game {
   canPlace(x: number, z: number, foot: number): boolean {
     const r = foot / 2;
     if (this.terrain.isWater(x, z) || !this.terrain.isBuildable(x, z)) return false;
+    // keep placement on ground units can reach (same slope limit as the nav mesh)
+    if (this.terrain.getSlope(x, z) > MAX_WALKABLE_SLOPE) return false;
     for (let dx = -r; dx <= r; dx += 1.2) {
       for (let dz = -r; dz <= r; dz += 1.2) {
         if (this.terrain.isWater(x + dx, z + dz)) return false;
