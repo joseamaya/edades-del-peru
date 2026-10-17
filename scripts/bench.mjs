@@ -1,4 +1,5 @@
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { launchChromium, withViteServer, reviewDir, cliArg } from './lib.mjs';
 
@@ -22,9 +23,17 @@ const scales = String(cliArg('units', '100,300,500,1000'))
   .filter((n) => Number.isFinite(n) && n > 0);
 const seed = Number.parseInt(cliArg('seed', '777'), 10);
 
-// The cultural landscape must stay a handful of draw calls: the layer merges each
-// feature into one mesh. Budget from docs/design/cultural-landscape.md.
-const LANDSCAPE_DRAW_CALL_BUDGET = 150;
+// The cultural landscape merges each feature into a single mesh, so its draw-call
+// cost scales with the declared feature vocabulary, not with the number of
+// segments. The budget is `CulturalLandscape.featureBudget * 2`:
+//   - one mesh per drawable feature (`RENDERED_FEATURES.length`, the same bound the
+//     E2E asserts in `tests/e2e/landscape.spec.ts`), so un-merging a road/path
+//     into per-segment meshes exceeds it and fails;
+//   - under VSMShadowMap three also renders every shadow *receiver* into the shadow
+//     map (`object.castShadow || (object.receiveShadow && type === VSMShadowMap)`),
+//     and every landscape mesh sets `receiveShadow`, so each merged mesh costs one
+//     main-pass plus one shadow-pass draw.
+const LANDSCAPE_DRAW_CALLS_PER_MESH = 2;
 
 async function measure(browser, base, n) {
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
@@ -178,6 +187,8 @@ async function measure(browser, base, n) {
     return {
       landscapeCalls: shown.calls - hidden.calls,
       landscapeTris: shown.tris - hidden.tris,
+      landscapeMeshes: group ? group.children.length : 0,
+      landscapeFeatureBudget: (g.landscape && g.landscape.featureBudget) || 0,
     };
   });
 
@@ -211,7 +222,18 @@ async function main() {
   await browser.close();
   await close();
 
-  const out = { env: { seed, viewport: '1280x800' }, rows, date: new Date().toISOString() };
+  const out = {
+    env: {
+      seed,
+      viewport: '1280x800',
+      node: process.version,
+      platform: process.platform,
+      arch: process.arch,
+      cpu: os.cpus()[0]?.model ?? 'unknown',
+    },
+    rows,
+    date: new Date().toISOString(),
+  };
   fs.writeFileSync(path.join(reviewDir(), 'bench.json'), JSON.stringify(out, null, 2));
 
   console.log(
@@ -238,18 +260,19 @@ async function main() {
     );
   }
   const worst = rows.reduce((a, r) => (r.landscapeCalls > a.landscapeCalls ? r : a), rows[0]);
+  const budgetOf = (r) => r.landscapeFeatureBudget * LANDSCAPE_DRAW_CALLS_PER_MESH;
   console.log(
-    `\nlandscape: ${worst.landscapeCalls} draw calls (${worst.landscapeTris} tris), budget ${LANDSCAPE_DRAW_CALL_BUDGET}`,
+    `\nlandscape: ${worst.landscapeCalls} draw calls (${worst.landscapeTris} tris, ${worst.landscapeMeshes} meshes), budget <= ${budgetOf(worst)}`,
   );
   const missing = rows.filter((r) => !(r.landscapeCalls > 0));
-  const over = rows.filter((r) => r.landscapeCalls > LANDSCAPE_DRAW_CALL_BUDGET);
+  const over = rows.filter((r) => r.landscapeCalls > budgetOf(r));
   if (missing.length) {
     console.error(`landscape layer not drawn (0 draw calls) at ${missing.map((r) => r.n).join(', ')} units`);
     process.exitCode = 1;
   }
   if (over.length) {
     console.error(
-      `landscape draw-call budget exceeded: ${over.map((r) => `${r.landscapeCalls} @ ${r.n} units`).join(', ')}`,
+      `landscape draw-call budget exceeded: ${over.map((r) => `${r.landscapeCalls} @ ${r.n} units (budget ${budgetOf(r)})`).join(', ')}`,
     );
     process.exitCode = 1;
   }

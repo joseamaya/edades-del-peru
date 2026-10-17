@@ -41,6 +41,8 @@ const OFFSET: Partial<Record<LandscapeFeature, number>> = {
  */
 export class CulturalLandscape {
   readonly group = new THREE.Group();
+  /** Worst-case mesh count: one merged mesh per drawable feature (the E2E/bench guard). */
+  readonly featureBudget = RENDERED_FEATURES.length;
   private materials: THREE.Material[] = [];
 
   constructor(terrain: Terrain, profile: HistoricalMapProfile, seed: number) {
