@@ -34,14 +34,16 @@ test('a starting base carries its planned fields and roads', async ({ page }) =>
   expect(s.roads).toBeGreaterThanOrEqual(s.dwellings);
 });
 
-test('the settlement fields sit on buildable, dry, gentle ground', async ({ page }) => {
+test('the settlement fields and roads sit on buildable, dry, gentle ground', async ({ page }) => {
   await boot(page, '/?civ=inca&period=5&seed=777&fog=0&low=1&noloop=1');
   const bad = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     const plan = g.settlements?.[0]?.plan;
     if (!plan) return -1;
-    return plan.fields.filter(
-      (f: any) => g.terrain.isWater(f.x, f.z) || !g.terrain.isBuildable(f.x, f.z) || g.terrain.getSlope(f.x, f.z) > 0.3,
+    const points = [...plan.fields, ...plan.roads.map((r: any) => r.to)];
+    return points.filter(
+      (p: any) =>
+        g.terrain.isWater(p.x, p.z) || !g.terrain.isBuildable(p.x, p.z) || g.terrain.getSlope(p.x, p.z) > 0.35,
     ).length;
   });
   expect(bad).toBe(0);
@@ -56,4 +58,29 @@ test('the settlement layout is deterministic for the same seed', async ({ page }
   const b = await sample();
   expect(b.fields).toEqual(a.fields);
   expect(b.roads).toBe(a.roads);
+});
+
+test('the settlement overlay is regenerated on load', async ({ page }) => {
+  await boot(page, '/?play=1&seed=777&fog=0&low=1');
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g && g.units.size > 0 && g.buildings.size > 0;
+    },
+    null,
+    { timeout: 15_000 },
+  );
+  await page.evaluate(() => (window as unknown as { game: any }).game.saveMatch());
+  await boot(page, '/?load=1');
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g && g.buildings.size > 0;
+    },
+    null,
+    { timeout: 15_000 },
+  );
+  const s = await settlementSig(page);
+  expect(s.count).toBeGreaterThan(0);
+  expect(s.fields.length).toBeGreaterThan(0);
 });

@@ -70,13 +70,22 @@ function roadGeometry(road: SettlementRoad, terrain: Terrain): THREE.BufferGeome
     .translate((from.x + to.x) / 2, y, (from.z + to.z) / 2);
 }
 
-/** A flat field quad at the planned spot. */
+/** A flat field quad at the planned spot, lifted to clear the highest corner. */
 function fieldGeometry(field: SettlementField, terrain: Terrain): THREE.BufferGeometry {
-  const y = terrain.getHeight(field.x, field.z) + OFFSET;
+  const h = field.size / 2;
+  let y = terrain.getHeight(field.x, field.z);
+  for (const [dx, dz] of [
+    [-h, -h],
+    [h, -h],
+    [-h, h],
+    [h, h],
+  ]) {
+    y = Math.max(y, terrain.getHeight(field.x + dx, field.z + dz));
+  }
   return new THREE.PlaneGeometry(field.size, field.size)
     .rotateX(-Math.PI / 2)
     .rotateY(-field.yaw)
-    .translate(field.x, y, field.z);
+    .translate(field.x, y + OFFSET, field.z);
 }
 
 function maxHeight(terrain: Terrain, x0: number, z0: number, x1: number, z1: number): number {

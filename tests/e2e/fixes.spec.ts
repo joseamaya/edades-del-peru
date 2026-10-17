@@ -200,9 +200,7 @@ test('right click lands the order under the cursor on elevated terrain', async (
     // `screenToWorld` at click time derives its ray from the camera matrices; make
     // sure they are current now (they can be stale before the first render, which
     // made the cursor-vs-order distance blow up under load)
-    const cam = g.camera.camera;
-    cam.updateMatrixWorld();
-    cam.matrixWorldInverse.copy(cam.matrixWorld).invert();
+    g.camera.camera.updateMatrixWorld();
     const worker = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
     // deterministic scan for an elevated, almost-flat, on-screen cell: random
     // points made the cursor-vs-order distance flaky (a steep cell diverges)
