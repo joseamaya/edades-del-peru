@@ -24,7 +24,24 @@ type TexKind =
   | 'cloth'
   | 'textile'
   | 'leather'
-  | 'dirt';
+  | 'dirt'
+  // building materials (walls / foundations / roofs), by architectural style
+  | 'adobe'
+  | 'cutstone'
+  | 'megalith'
+  | 'fieldstone'
+  | 'thatch'
+  | 'flatstone'
+  | 'flatmetal'
+  // historical Andean textiles (uncu patterns), per civilization
+  | 'textile_inca'
+  | 'textile_wari'
+  | 'textile_tiahuanaco'
+  | 'textile_moche'
+  | 'textile_chavin'
+  | 'textile_paracas'
+  | 'textile_nazca'
+  | 'textile_chimu';
 
 export interface BuildContext {
   era: Era;
@@ -75,14 +92,45 @@ const TEX_DEFAULTS: Record<TexKind, { roughness: number; metalness: number }> = 
   textile: { roughness: 0.95, metalness: 0 },
   leather: { roughness: 0.8, metalness: 0 },
   dirt: { roughness: 0.98, metalness: 0 },
+  adobe: { roughness: 0.95, metalness: 0 },
+  cutstone: { roughness: 0.9, metalness: 0.05 },
+  megalith: { roughness: 0.95, metalness: 0.05 },
+  fieldstone: { roughness: 0.95, metalness: 0.03 },
+  thatch: { roughness: 0.98, metalness: 0 },
+  flatstone: { roughness: 0.92, metalness: 0.03 },
+  flatmetal: { roughness: 0.45, metalness: 0.6 },
+  textile_inca: { roughness: 0.95, metalness: 0 },
+  textile_wari: { roughness: 0.95, metalness: 0 },
+  textile_tiahuanaco: { roughness: 0.95, metalness: 0 },
+  textile_moche: { roughness: 0.95, metalness: 0 },
+  textile_chavin: { roughness: 0.95, metalness: 0 },
+  textile_paracas: { roughness: 0.95, metalness: 0 },
+  textile_nazca: { roughness: 0.95, metalness: 0 },
+  textile_chimu: { roughness: 0.95, metalness: 0 },
 };
 
 /** Mapping of procedural type -> AI-generated PBR material (if present). */
 const TEX_GEN: Partial<Record<TexKind, string>> = {
   wood: 'wood',
   roof: 'tile',
-  brick: 'adobe',
+  adobe: 'wall_adobe',
+  brick: 'wall_brick',
+  cutstone: 'wall_cutstone',
+  megalith: 'wall_megalith',
+  fieldstone: 'wall_fieldstone',
+  concrete: 'wall_concrete',
+  thatch: 'roof_thatch',
+  flatstone: 'roof_flatstone',
+  flatmetal: 'roof_flatmetal',
   textile: 'textile',
+  textile_inca: 'textile_inca',
+  textile_wari: 'textile_wari',
+  textile_tiahuanaco: 'textile_tiahuanaco',
+  textile_moche: 'textile_moche',
+  textile_chavin: 'textile_chavin',
+  textile_paracas: 'textile_paracas',
+  textile_nazca: 'textile_nazca',
+  textile_chimu: 'textile_chimu',
 };
 
 /**
@@ -375,6 +423,18 @@ interface Attire {
   facepaint: boolean;
 }
 
+/** Attested Andean textile (uncu) pattern per civilization; others use the generic weave. */
+const CIV_TEXTILE: Record<string, TexKind> = {
+  inca: 'textile_inca',
+  wari: 'textile_wari',
+  tiahuanaco: 'textile_tiahuanaco',
+  moche: 'textile_moche',
+  chavin: 'textile_chavin',
+  paracas: 'textile_paracas',
+  nazca: 'textile_nazca',
+  chimu: 'textile_chimu',
+};
+
 /**
  * Historical attire profile per civilization, era and unit role.
  * Based on `docs/historia/atuendos.md` (with sources).
@@ -396,7 +456,7 @@ function getAttire(b: Builder, role: UnitRole): Attire {
     return {
       tunic: mixHex(col, sec, elite ? 0.25 : 0.5),
       accent: acc,
-      tex: 'textile',
+      tex: CIV_TEXTILE[civ] ?? 'textile',
       leg: mixHex(col, '#3a2f26', 0.55),
       boot: false,
       cloak: role === 'melee' || elite,
@@ -1226,7 +1286,30 @@ function andeanWall(b: Builder): string {
 }
 
 function andeanTex(b: Builder): TexKind {
-  return b.arch.wall === 'adobe' ? 'brick' : 'stone';
+  switch (b.arch.wall) {
+    case 'adobe':
+      return 'adobe';
+    case 'fieldstone':
+      return 'fieldstone';
+    case 'megalithic':
+      return 'megalith';
+    case 'cut-stone':
+      return 'cutstone';
+    default:
+      return 'stone';
+  }
+}
+
+/** Foundation texture from the architecture profile (platform / terrace / plinth). */
+function foundationTex(b: Builder): TexKind {
+  switch (b.arch.foundation) {
+    case 'plinth':
+      return b.arch.wall === 'concrete' ? 'concrete' : 'brick';
+    case 'terrace':
+      return 'fieldstone';
+    default:
+      return andeanTex(b);
+  }
 }
 
 /** Facade texture from the architecture profile for the colonial/republican builders. */
@@ -1260,9 +1343,10 @@ function andeanThatch(b: Builder): string {
 /** Stepped stone platform (the Andean "huaca" base). */
 function andeanPlatform(b: Builder, w: number, tiers: number): void {
   const stone = andeanStone(b);
+  const tex = foundationTex(b);
   for (let i = 0; i < tiers; i++) {
     const t = w * (1.24 - i * 0.08);
-    b.box(t, w * 0.14, t, stone, { y: w * 0.07 + i * w * 0.14, tex: 'stone' });
+    b.box(t, w * 0.14, t, stone, { y: w * 0.07 + i * w * 0.14, tex });
   }
 }
 
@@ -1275,7 +1359,7 @@ function andeanTerraceBase(b: Builder, w: number, tiers: number): number {
   let y = 0;
   for (let i = 0; i < tiers; i++) {
     const t = w * (1.3 - i * 0.1);
-    b.box(t, h, t, stone, { y: y + h / 2, tex: 'stone' });
+    b.box(t, h, t, stone, { y: y + h / 2, tex: 'fieldstone' });
     b.box(t * 0.84, h * 0.32, t * 0.84, wall, { y: y + h * 0.68, tex });
     y += h;
   }
@@ -1288,7 +1372,7 @@ function andeanFoundation(b: Builder, w: number, tiers: number): number {
     case 'none':
       return 0;
     case 'plinth':
-      b.box(w * 1.06, w * 0.1, w * 1.06, andeanStone(b), { y: w * 0.05, tex: 'stone' });
+      b.box(w * 1.06, w * 0.1, w * 1.06, andeanStone(b), { y: w * 0.05, tex: foundationTex(b) });
       return w * 0.1;
     case 'terrace':
       return andeanTerraceBase(b, w, tiers);
@@ -1311,7 +1395,7 @@ function andeanMegaliths(b: Builder, w: number, baseY: number): void {
       x: sx * w * 0.5,
       y: baseY + w * 0.17,
       z: sz * w * 0.5,
-      tex: 'stone',
+      tex: andeanTex(b),
     });
   }
 }
@@ -1330,7 +1414,7 @@ function andeanTapestries(b: Builder, w: number, baseY: number): void {
 /** Thatch gable roof. */
 function andeanThatchRoof(b: Builder, w: number, y: number): void {
   const thatch = andeanThatch(b);
-  const o = { ry: Math.PI / 2, tex: 'dirt' as TexKind, texScale: 2 };
+  const o = { ry: Math.PI / 2, tex: 'thatch' as TexKind, texScale: 2 };
   b.box(w * 1.08, w * 0.1, w * 0.6, thatch, { y, z: w * 0.24, rx: 0.6, ...o });
   b.box(w * 1.08, w * 0.1, w * 0.6, thatch, { y, z: -w * 0.24, rx: -0.6, ...o });
   b.box(w * 1.1, w * 0.09, w * 0.18, thatch, { y: y + w * 0.2, ...o });
@@ -1356,14 +1440,18 @@ function andeanFrieze(b: Builder, w: number): void {
 function andeanStair(b: Builder, w: number, steps: number): void {
   const stone = andeanStone(b);
   for (let i = 0; i < steps; i++) {
-    b.box(w * 0.34, w * 0.08, w * 0.14, stone, { y: w * 0.04 + i * w * 0.08, z: w * (0.5 + i * 0.07), tex: 'stone' });
+    b.box(w * 0.34, w * 0.08, w * 0.14, stone, {
+      y: w * 0.04 + i * w * 0.08,
+      z: w * (0.5 + i * 0.07),
+      tex: andeanTex(b),
+    });
   }
 }
 
 /** A stone watchtower (chullpa-like). */
 function andeanTower(b: Builder, w: number, x: number, z: number): void {
   const stone = andeanStone(b);
-  b.cyl(w * 0.16, w * 0.2, w * 0.9, 8, stone, { x, y: w * 0.45, z, tex: 'stone' });
+  b.cyl(w * 0.16, w * 0.2, w * 0.9, 8, stone, { x, y: w * 0.45, z, tex: andeanTex(b) });
   b.cyl(w * 0.2, w * 0.16, w * 0.12, 8, b.pal.darkMetal, { x, y: w * 0.95, z });
 }
 
@@ -1505,7 +1593,10 @@ function buildAndeanStructure(b: Builder, o: AndeanOpts): void {
   let roof = o.roof ?? 'thatch';
   if (roof !== 'shrine' && b.arch.roof === 'flat-stone') roof = 'flat';
   if (roof === 'flat') {
-    b.box(w * 1.0, w * 0.12, w * 1.0, andeanStone(b), { y: roofY, tex });
+    b.box(w * 1.0, w * 0.12, w * 1.0, andeanStone(b), {
+      y: roofY,
+      tex: b.arch.roof === 'flat-stone' ? 'flatstone' : andeanTex(b),
+    });
     for (let i = -1; i <= 1; i += 2)
       b.box(w * 0.12, w * 0.18, w * 1.0, wall, { x: i * w * 0.46, y: roofY + w * 0.1, tex });
   } else if (roof === 'shrine') {
