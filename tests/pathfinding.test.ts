@@ -58,4 +58,37 @@ describe('Pathfinder', () => {
     expect(pf.isWalkable(10, 50)).toBe(false);
     expect(pf.isWalkable(50, 50)).toBe(true);
   });
+
+  it('does not cut a corner blocked by a single lateral cell', () => {
+    const pf = new Pathfinder(20, 2);
+    const cols = pf.grid.cols;
+    // start cell (1,1) -> goal cell (2,2); only the (2,1) lateral cell is blocked
+    pf.grid.walkable[1 * cols + 2] = 0;
+    const path = pf.pathfind(3, 3, 5, 5);
+    // the single diagonal step is disallowed, so the route must go around it
+    expect(path.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('keeps the diagonal when both lateral cells are free', () => {
+    const pf = new Pathfinder(20, 2);
+    const path = pf.pathfind(3, 3, 5, 5);
+    expect(path).toEqual([
+      { x: 3, z: 3 },
+      { x: 5, z: 5 },
+    ]);
+  });
+
+  it('routes around an L-shaped obstacle without crossing it', () => {
+    const pf = new Pathfinder(40, 2);
+    const cols = pf.grid.cols;
+    const idx = (x: number, z: number) => z * cols + x;
+    for (let z = 2; z <= 6; z++) pf.grid.walkable[idx(4, z)] = 0;
+    for (let x = 4; x <= 8; x++) pf.grid.walkable[idx(x, 6)] = 0;
+    const path = pf.pathfind(2 * 2 + 1, 4 * 2 + 1, 7 * 2 + 1, 4 * 2 + 1);
+    expect(path.length).toBeGreaterThan(0);
+    // every waypoint stays on walkable ground
+    for (const p of path) {
+      expect(pf.grid.walkable[Math.floor(p.z / 2) * cols + Math.floor(p.x / 2)]).toBe(1);
+    }
+  });
 });

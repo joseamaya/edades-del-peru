@@ -237,10 +237,11 @@ export class Pathfinder {
         if (this.closed[ni] || this.grid.walkable[ni] === 0) continue;
         const diag = d >= 4;
         if (diag) {
-          // avoid cutting corners between obstacles
+          // no corner cutting: reject the diagonal if EITHER orthogonal cell is
+          // blocked, so a unit cannot slip through a one-cell corner gap
           const ax = bz * cols + nx;
           const az = nz * cols + bx;
-          if (this.grid.walkable[ax] === 0 && this.grid.walkable[az] === 0) continue;
+          if (this.grid.walkable[ax] === 0 || this.grid.walkable[az] === 0) continue;
         }
         const cost = g + (diag ? 1.4142 : 1);
         if (cost < this.gScore[ni]) {
