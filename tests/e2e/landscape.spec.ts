@@ -76,3 +76,24 @@ test('the landscape stays merged into at most one mesh per feature', async ({ pa
   // guards against un-merging (a mesh per road/field segment) creeping back in
   expect(s.meshes).toBeLessThanOrEqual(RENDERED_FEATURES.length);
 });
+
+test('the landscape samples the fog-of-war grid (issue #70)', async ({ page }) => {
+  await boot(page, '/?civ=moche&period=2&seed=777&low=1&noloop=1');
+  const fog = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const read = () => {
+      const mesh = g.landscape.group.children[0];
+      const u = mesh?.material?.userData?.fow;
+      return { wired: !!u, enabled: u?.fowEnabled?.value, map: !!u?.fowMap?.value };
+    };
+    const on = read();
+    g.setFogOfWar(false);
+    const off = read();
+    g.setFogOfWar(true);
+    return { on, off };
+  });
+  expect(fog.on.wired).toBe(true);
+  expect(fog.on.enabled).toBe(1);
+  expect(fog.on.map).toBe(true);
+  expect(fog.off.enabled).toBe(0);
+});
