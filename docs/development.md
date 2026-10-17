@@ -100,7 +100,9 @@ Definition of Done and the building audit see
   Chile); sources/status in `src/model/defs/landmarks.ts`. Placement is deterministic
   (`RNG(mapSeed*131+11)` on a 0.3–0.42·size ring, skipping water/beach/steep cells and player bases/resources)
   and adds a plain `THREE.Group` named `landmark` to the scene (no entity, no pathfinding obstacle). Freed in
-  `Game.destroy()`; templates are freed by `clearModelCaches()`. Verified by `tests/e2e/landmarks.spec.ts`.
+  `Game.destroy()`; templates are freed by `clearModelCaches()`. The masonry surfaces reuse the civilization's
+  wall material (`andeanTex` → `WALL_TEX`, so AI-generated `wall_*` when present), not a fixed stone.
+  Verified by `tests/e2e/landmarks.spec.ts`.
 - **Cultural landscape (visual only)**: `HistoricalMapProfile.culturalLandscape`
   (`src/model/defs/landscape.ts`) names the features each region carries (canal, field, road, path, terrace,
   wall, corral, plaza — coast irrigation vs Andean terracing vs altiplano corrals). `carveCanals`

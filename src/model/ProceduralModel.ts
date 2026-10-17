@@ -1638,7 +1638,7 @@ function buildAndeanFarm(b: Builder): void {
   if (terraced) {
     const stone = andeanStone(b);
     for (let i = -1; i <= 1; i++) {
-      b.box(w * 0.72, 0.16, 0.08, stone, { z: i * 0.28, y: 0.12, tex: 'stone' });
+      b.box(w * 0.72, 0.16, 0.08, stone, { z: i * 0.28, y: 0.12, tex: andeanTex(b) });
       b.box(w * 0.66, 0.06, 0.2, mixHex('#4a6a2a', b.pal.primary, 0.4), { z: i * 0.28, y: 0.16 });
     }
   } else {
@@ -2110,10 +2110,10 @@ function buildWonder(b: Builder): void {
   const w = 7;
   const tierH = 0.62;
   groundPad(b, w);
-  const baseY = tieredPlatform(b, w, 5, tierH, stone, 'stone');
+  const baseY = tieredPlatform(b, w, 5, tierH, stone, andeanTex(b));
   // top shrine
-  b.box(w * 0.32, 0.8, w * 0.32, stone, { y: baseY + 0.4, tex: 'stone' });
-  b.box(w * 0.2, 0.45, w * 0.2, b.civAccent, { y: baseY + 1.0, tex: 'stone' });
+  b.box(w * 0.32, 0.8, w * 0.32, stone, { y: baseY + 0.4, tex: andeanTex(b) });
+  b.box(w * 0.2, 0.45, w * 0.2, b.civAccent, { y: baseY + 1.0, tex: andeanTex(b) });
   // tenon heads protruding from the front faces of the lower tiers
   for (let i = 0; i < 3; i++) {
     tenonHeadRow(b, head, tierH * i + tierH / 2, tierSize(w, i) / 2 + 0.1, w * 0.15);
@@ -2132,7 +2132,7 @@ function tierSize(w: number, i: number): number {
 
 /** A row of five tenon heads (cabezas clavas) along a front face. */
 function tenonHeadRow(b: Builder, color: string, y: number, z: number, spacing: number): void {
-  for (let i = -2; i <= 2; i++) b.box(0.34, 0.34, 0.5, color, { x: i * spacing, y, z, tex: 'stone' });
+  for (let i = -2; i <= 2; i++) b.box(0.34, 0.34, 0.5, color, { x: i * spacing, y, z, tex: andeanTex(b) });
 }
 
 /** Stepped platform shared by the monumental landmarks; returns the top height. */
@@ -2154,11 +2154,11 @@ function enclosure(b: Builder, w: number, h: number, thickness: number, color: s
 
 /** Sunken circular plaza: outer ring, darker floor and upright stones. */
 function ringPlaza(b: Builder, cx: number, r: number, stone: string, floor: string, blocks: number): void {
-  b.cyl(r, r, 0.3, 28, stone, { x: cx, y: 0.15, tex: 'stone', flatShading: true });
+  b.cyl(r, r, 0.3, 28, stone, { x: cx, y: 0.15, tex: andeanTex(b), flatShading: true });
   b.cyl(r * 0.82, r * 0.82, 0.34, 28, floor, { x: cx, y: 0.17, flatShading: true });
   for (let i = 0; i < blocks; i++) {
     const a = (i / blocks) * Math.PI * 2;
-    b.box(0.4, 0.55, 0.4, stone, { x: cx + Math.cos(a) * r, y: 0.42, z: Math.sin(a) * r, tex: 'stone' });
+    b.box(0.4, 0.55, 0.4, stone, { x: cx + Math.cos(a) * r, y: 0.42, z: Math.sin(a) * r, tex: andeanTex(b) });
   }
 }
 
@@ -2187,7 +2187,7 @@ function buildCaralLandmark(b: Builder): void {
   const w = 5;
   const baseY = tieredPlatform(b, w, 3, 0.5, earth, 'dirt');
   b.box(w * 0.42, 0.7, w * 0.42, earth, { y: baseY + 0.35, tex: 'brick' });
-  b.box(w * 0.3, 0.3, w * 0.3, stone, { y: baseY + 0.85, tex: 'stone' });
+  b.box(w * 0.3, 0.3, w * 0.3, stone, { y: baseY + 0.85, tex: andeanTex(b) });
   ringPlaza(b, w * 1.4, w * 0.62, stone, mixHex(b.pal.primary, '#8a7a5a', 0.5), 12);
 }
 
@@ -2213,11 +2213,11 @@ function buildMocheLandmark(b: Builder): void {
 function buildIncaLandmark(b: Builder): void {
   const stone = andeanStone(b);
   const w = 6;
-  const baseY = tieredPlatform(b, w, 3, 0.52, stone, 'stone');
-  b.box(0.9, 1.4, 0.9, stone, { y: baseY + 0.7, tex: 'stone' });
-  b.box(1.3, 0.3, 1.3, mixHex(b.pal.primary, '#c8a040', 0.55), { y: baseY + 1.5, tex: 'stone' });
+  const baseY = tieredPlatform(b, w, 3, 0.52, stone, andeanTex(b));
+  b.box(0.9, 1.4, 0.9, stone, { y: baseY + 0.7, tex: andeanTex(b) });
+  b.box(1.3, 0.3, 1.3, mixHex(b.pal.primary, '#c8a040', 0.55), { y: baseY + 1.5, tex: andeanTex(b) });
   for (let i = 0; i < 4; i++) {
-    b.box(1.5, 0.15, 0.44, stone, { y: 0.08 + i * 0.15, z: w * 0.52 + i * 0.24, tex: 'stone' });
+    b.box(1.5, 0.15, 0.44, stone, { y: 0.08 + i * 0.15, z: w * 0.52 + i * 0.24, tex: andeanTex(b) });
   }
 }
 
@@ -2226,8 +2226,8 @@ function buildChavinTemple(b: Builder): void {
   const stone = mixHex(b.pal.primary, '#8f8676', 0.78);
   const dark = mixHex(b.pal.primary, '#2a2318', 0.5);
   const w = 6;
-  const baseY = tieredPlatform(b, w, 3, 0.55, stone, 'stone');
-  b.box(w * 0.5, 0.9, w * 0.5, stone, { y: baseY + 0.45, tex: 'stone' });
+  const baseY = tieredPlatform(b, w, 3, 0.55, stone, andeanTex(b));
+  b.box(w * 0.5, 0.9, w * 0.5, stone, { y: baseY + 0.45, tex: andeanTex(b) });
   tenonHeadRow(b, stone, baseY + 0.1, w * 0.5, w * 0.16);
   ringPlaza(b, w * 1.35, w * 0.7, stone, dark, 8);
 }
@@ -2238,28 +2238,28 @@ function buildWariCompound(b: Builder): void {
   const stone = andeanStone(b);
   const w = 8;
   const h = 1.1;
-  enclosure(b, w, h, 0.4, wall, 'stone');
-  b.box(0.5, h * 1.25, 0.5, stone, { x: -0.9, y: h * 0.62, z: w / 2, tex: 'stone' });
-  b.box(0.5, h * 1.25, 0.5, stone, { x: 0.9, y: h * 0.62, z: w / 2, tex: 'stone' });
-  b.box(1.6, 0.5, w * 0.4, stone, { y: h + 0.25, z: 0, tex: 'stone' });
-  b.box(w * 0.28, 0.8, w * 0.28, wall, { y: h + 0.9, tex: 'stone' });
+  enclosure(b, w, h, 0.4, wall, andeanTex(b));
+  b.box(0.5, h * 1.25, 0.5, stone, { x: -0.9, y: h * 0.62, z: w / 2, tex: andeanTex(b) });
+  b.box(0.5, h * 1.25, 0.5, stone, { x: 0.9, y: h * 0.62, z: w / 2, tex: andeanTex(b) });
+  b.box(1.6, 0.5, w * 0.4, stone, { y: h + 0.25, z: 0, tex: andeanTex(b) });
+  b.box(w * 0.28, 0.8, w * 0.28, wall, { y: h + 0.9, tex: andeanTex(b) });
 }
 
 /** Tiahuanaco: a megalithic platform with a monolith doorway and a sunken patio. */
 function buildTiahuanacoComplex(b: Builder): void {
   const stone = mixHex(b.pal.primary, '#c2baae', 0.82);
   const w = 7;
-  const baseY = tieredPlatform(b, w, 3, 0.6, stone, 'stone');
-  b.box(0.5, 1.6, 0.4, stone, { x: -0.6, y: baseY + 0.8, tex: 'stone' });
-  b.box(0.5, 1.6, 0.4, stone, { x: 0.6, y: baseY + 0.8, tex: 'stone' });
-  b.box(1.8, 0.4, 0.5, stone, { y: baseY + 1.8, tex: 'stone' });
+  const baseY = tieredPlatform(b, w, 3, 0.6, stone, andeanTex(b));
+  b.box(0.5, 1.6, 0.4, stone, { x: -0.6, y: baseY + 0.8, tex: andeanTex(b) });
+  b.box(0.5, 1.6, 0.4, stone, { x: 0.6, y: baseY + 0.8, tex: andeanTex(b) });
+  b.box(1.8, 0.4, 0.5, stone, { y: baseY + 1.8, tex: andeanTex(b) });
   for (const [sx, sz] of [
     [-1, -1],
     [1, -1],
     [-1, 1],
     [1, 1],
   ] as const) {
-    b.box(w * 0.24, w * 0.4, w * 0.24, stone, { x: sx * w * 0.5, y: baseY * 0.4, z: sz * w * 0.5, tex: 'stone' });
+    b.box(w * 0.24, w * 0.4, w * 0.24, stone, { x: sx * w * 0.5, y: baseY * 0.4, z: sz * w * 0.5, tex: andeanTex(b) });
   }
   ringPlaza(b, w * 1.5, w * 0.62, stone, mixHex(b.pal.primary, '#8a8478', 0.6), 0);
 }
@@ -2269,7 +2269,7 @@ function buildChimuCompound(b: Builder): void {
   const adobe = andeanWall(b);
   const w = 8.5;
   const h = 1.6;
-  enclosure(b, w, h, 0.5, adobe, 'brick');
+  enclosure(b, w, h, 0.5, adobe, andeanTex(b));
   b.box(w * 0.9, 0.3, 0.1, b.civAccent, { y: h * 0.72, z: w / 2 + 0.05 });
   for (let i = 0; i < 3; i++) {
     const t = w * (0.5 - i * 0.1);
@@ -2319,7 +2319,7 @@ function buildRepublicanFort(b: Builder): void {
 function buildCupisniqueHuaca(b: Builder): void {
   const adobe = andeanWall(b);
   const w = 6;
-  const baseY = tieredPlatform(b, w, 3, 0.55, adobe, 'brick');
+  const baseY = tieredPlatform(b, w, 3, 0.55, adobe, andeanTex(b));
   b.box(w * 0.5, 0.7, w * 0.5, adobe, { y: baseY + 0.35, tex: 'brick' });
   huacaFrieze(b, w, baseY * 0.5, true);
 }
@@ -2328,7 +2328,7 @@ function buildCupisniqueHuaca(b: Builder): void {
 function buildParacasNecropolis(b: Builder): void {
   const stone = mixHex(b.pal.primary, '#b8a888', 0.7);
   const w = 6;
-  enclosure(b, w, 0.8, 0.35, stone, 'stone');
+  enclosure(b, w, 0.8, 0.35, stone, andeanTex(b));
   const n = 5;
   for (let i = 0; i < n; i++) {
     const x = (i - (n - 1) / 2) * 0.7;
@@ -2349,12 +2349,12 @@ function buildNazcaGeoglyph(b: Builder): void {
       z: Math.sin(a) * r,
       y: 0.06,
       rx: a,
-      tex: 'stone',
+      tex: andeanTex(b),
       flatShading: true,
     });
   }
   for (let i = 0; i < 10; i++) {
-    b.box(0.5, 0.12, 5, dark, { x: -8, z: -2.5 + i * 0.55, y: 0.06, tex: 'stone' });
+    b.box(0.5, 0.12, 5, dark, { x: -8, z: -2.5 + i * 0.55, y: 0.06, tex: andeanTex(b) });
   }
 }
 
@@ -2362,7 +2362,7 @@ function buildNazcaGeoglyph(b: Builder): void {
 function buildChinchaComplex(b: Builder): void {
   const adobe = andeanWall(b);
   const w = 7;
-  const baseY = tieredPlatform(b, w, 3, 0.6, adobe, 'brick');
+  const baseY = tieredPlatform(b, w, 3, 0.6, adobe, andeanTex(b));
   b.box(w * 0.5, 0.8, w * 0.5, adobe, { y: baseY + 0.4, tex: 'brick' });
   huacaFrieze(b, w, baseY * 0.5, false);
   adobeRamp(b, w);
@@ -2373,16 +2373,16 @@ function buildChancaFortress(b: Builder): void {
   const wall = andeanWall(b);
   const stone = andeanStone(b);
   const w = 7;
-  enclosure(b, w, 1.4, 0.5, wall, 'stone');
+  enclosure(b, w, 1.4, 0.5, wall, andeanTex(b));
   for (const [sx, sz] of [
     [-1, -1],
     [1, -1],
     [-1, 1],
     [1, 1],
   ] as const) {
-    b.cyl(0.5, 0.6, 2.0, 8, stone, { x: (sx * w) / 2, y: 1.0, z: (sz * w) / 2, tex: 'stone' });
+    b.cyl(0.5, 0.6, 2.0, 8, stone, { x: (sx * w) / 2, y: 1.0, z: (sz * w) / 2, tex: andeanTex(b) });
   }
-  b.box(1.6, 1.8, 0.4, stone, { y: 0.9, z: w / 2, tex: 'stone' });
+  b.box(1.6, 1.8, 0.4, stone, { y: 0.9, z: w / 2, tex: andeanTex(b) });
 }
 
 /** Collas/Lupaca: a cluster of funerary towers (chullpas). */
@@ -2397,7 +2397,7 @@ function buildCollasChullpa(b: Builder): void {
     [-1.5, 3],
     [1.5, 3],
   ] as const) {
-    b.cyl(w * 0.5, w * 0.62, w * 1.7, 8, stone, { x, y: w * 0.85, z, tex: 'stone' });
+    b.cyl(w * 0.5, w * 0.62, w * 1.7, 8, stone, { x, y: w * 0.85, z, tex: andeanTex(b) });
     b.cyl(w * 0.5, w * 0.5, 0.2, 8, mixHex(b.pal.primary, '#8a8478', 0.6), { x, y: w * 1.7 + 0.1, z });
     b.box(0.5, 0.7, 0.1, dark, { x, y: w * 1.0, z: z + w * 0.6 });
   }
@@ -2409,7 +2409,7 @@ function buildHuancaCenter(b: Builder): void {
   const house = mixHex(b.pal.primary, '#c8a878', 0.7);
   const thatch = mixHex('#c9a94e', b.pal.primary, 0.22);
   const w = 8;
-  enclosure(b, w, 0.9, 0.4, wall, 'stone');
+  enclosure(b, w, 0.9, 0.4, wall, andeanTex(b));
   for (const [x, z] of [
     [-2, -1],
     [2, -1],
@@ -2440,17 +2440,17 @@ function buildRecuayPashash(b: Builder): void {
   const stone = andeanStone(b);
   const wall = andeanWall(b);
   const w = 7;
-  enclosure(b, w, 1.0, 0.45, wall, 'stone');
-  const baseY = tieredPlatform(b, w * 0.5, 2, 0.6, stone, 'stone');
+  enclosure(b, w, 1.0, 0.45, wall, andeanTex(b));
+  const baseY = tieredPlatform(b, w * 0.5, 2, 0.6, stone, andeanTex(b));
   for (const [x, z] of [
     [-1.3, -1.3],
     [1.3, -1.3],
     [-1.3, 1.3],
     [1.3, 1.3],
   ] as const) {
-    b.box(0.45, 1.4, 0.3, stone, { x, y: 0.7, z, tex: 'stone' });
+    b.box(0.45, 1.4, 0.3, stone, { x, y: 0.7, z, tex: andeanTex(b) });
   }
-  b.cyl(0.42, 0.52, 1.8, 10, stone, { y: baseY + 0.9, tex: 'stone' });
+  b.cyl(0.42, 0.52, 1.8, 10, stone, { y: baseY + 0.9, tex: andeanTex(b) });
   b.sphere(0.3, mixHex(b.civAccent, '#8a7a5a', 0.4), { y: baseY + 1.85 });
 }
 
