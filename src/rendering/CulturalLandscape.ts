@@ -5,9 +5,7 @@ import type { HistoricalMapProfile } from '../model/defs/profiles';
 import { planCulturalLandscape, RENDERED_FEATURES, type LandscapeQuery } from '../model/defs/landscapePlan';
 import type { LandscapeFeature } from '../model/defs/landscape';
 import { applyGeneratedPbr } from './Biomes';
-
-/** World units covered by one tile of the generated ground texture. */
-const TILE = 4;
+import { scaleUv, GROUND_TILE } from '../util/uv';
 
 /** AI-generated ground/landscape material slot per feature (see `prompts_textures.json`). */
 const LANDSCAPE_SLOT: Partial<Record<LandscapeFeature, string>> = {
@@ -32,17 +30,6 @@ const OFFSET: Partial<Record<LandscapeFeature, number>> = {
   terrace: 0.6,
   corral: 0.1,
 };
-
-/** Scale a geometry's UVs so a shared generated texture tiles by world size. */
-function tileUv(g: THREE.BufferGeometry, size: number): THREE.BufferGeometry {
-  const uv = g.getAttribute('uv') as THREE.BufferAttribute | undefined;
-  if (uv) {
-    const r = Math.max(1, size / TILE);
-    for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * r, uv.getY(i) * r);
-    uv.needsUpdate = true;
-  }
-  return g;
-}
 
 /**
  * Static, deterministic cultural landscape (roads, fields, plazas, canals,
@@ -73,7 +60,9 @@ export class CulturalLandscape {
     const buckets: Partial<Record<LandscapeFeature, THREE.BufferGeometry[]>> = {};
     for (const p of planCulturalLandscape(landscape, seed, q)) {
       const y = terrain.getHeight(p.x, p.z) + (OFFSET[p.feature] ?? 0.04);
-      const geo = tileUv(featureGeometry(p.feature, p.size, p.yaw), p.size);
+      const geo = featureGeometry(p.feature, p.size, p.yaw);
+      const r = Math.max(1, p.size / GROUND_TILE);
+      scaleUv(geo, r, r);
       geo.translate(p.x, y, p.z);
       (buckets[p.feature] ??= []).push(geo);
     }

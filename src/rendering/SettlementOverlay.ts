@@ -3,22 +3,11 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { Terrain } from './Terrain';
 import type { SettlementPlan, SettlementField, SettlementRoad } from '../model/defs/settlementPlan';
 import { applyGeneratedPbr } from './Biomes';
+import { scaleUv, GROUND_TILE } from '../util/uv';
 
 const ROAD_WIDTH = 1.4;
 /** Small lift above the terrain so the flat quads do not z-fight with the ground. */
 const OFFSET = 0.06;
-/** World units covered by one tile of the generated ground texture. */
-const TILE = 4;
-
-/** Scale a geometry's UVs so a shared generated texture tiles by world size. */
-function tileUv(g: THREE.BufferGeometry, rx: number, ry: number): THREE.BufferGeometry {
-  const uv = g.getAttribute('uv') as THREE.BufferAttribute | undefined;
-  if (uv) {
-    for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * rx, uv.getY(i) * ry);
-    uv.needsUpdate = true;
-  }
-  return g;
-}
 
 /**
  * Visual-only overlay of a planned starting settlement: its fields and the roads
@@ -81,7 +70,9 @@ function roadGeometry(road: SettlementRoad, terrain: Terrain): THREE.BufferGeome
   const len = Math.hypot(to.x - from.x, to.z - from.z);
   const y = maxHeight(terrain, from.x, from.z, to.x, to.z) + OFFSET;
   const angle = Math.atan2(to.z - from.z, to.x - from.x);
-  return tileUv(new THREE.PlaneGeometry(len, ROAD_WIDTH), len / TILE, ROAD_WIDTH / TILE)
+  const geo = new THREE.PlaneGeometry(len, ROAD_WIDTH);
+  scaleUv(geo, Math.max(1, len / GROUND_TILE), Math.max(1, ROAD_WIDTH / GROUND_TILE));
+  return geo
     .rotateX(-Math.PI / 2)
     .rotateY(-angle)
     .translate((from.x + to.x) / 2, y, (from.z + to.z) / 2);
@@ -99,7 +90,10 @@ function fieldGeometry(field: SettlementField, terrain: Terrain): THREE.BufferGe
   ]) {
     y = Math.max(y, terrain.getHeight(field.x + dx, field.z + dz));
   }
-  return tileUv(new THREE.PlaneGeometry(field.size, field.size), field.size / TILE, field.size / TILE)
+  const geo = new THREE.PlaneGeometry(field.size, field.size);
+  const r = Math.max(1, field.size / GROUND_TILE);
+  scaleUv(geo, r, r);
+  return geo
     .rotateX(-Math.PI / 2)
     .rotateY(-field.yaw)
     .translate(field.x, y + OFFSET, field.z);

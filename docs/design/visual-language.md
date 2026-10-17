@@ -115,7 +115,14 @@ walls and roofs stay recognisable per culture without becoming a flat recolour.
 Texture slots are generated in `src/rendering/Textures.ts` (`MaterialTex`) and
 the AI-generated PBR set is loaded by `src/rendering/Biomes.ts` (falling back to
 the procedural material when the assets are absent — see
-[`PROVENANCE.md`](../../PROVENANCE.md)).
+[`PROVENANCE.md`](../../PROVENANCE.md)). The per-style wall/roof material becomes a
+generated slot via `WALL_TEX`/`ROOF_TEX` (`ProceduralModel.ts`): `adobe→wall_adobe`,
+`cut-stone→wall_cutstone`, `megalithic→wall_megalith`, `fieldstone→wall_fieldstone`,
+`brick→wall_brick`, `concrete→wall_concrete`; `thatch→roof_thatch`,
+`flat-stone→roof_flatstone`, `tile→tile`, `flat-metal→roof_flatmetal`. The
+cultural landscape (fields, roads, plaza, canals, terraces, walls, corrals) and
+the resource/tree materials likewise overlay generated slots via
+`applyGeneratedPbr` (`Biomes.ts`).
 
 ## Vegetation
 

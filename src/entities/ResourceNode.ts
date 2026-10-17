@@ -3,7 +3,7 @@ import { allocId } from './EntityView';
 import { RNG, weightedPick } from '../util/rng';
 import { ResourceKey } from '../core/types';
 import { MaterialTex } from '../rendering/Textures';
-import { getGeneratedMaterial } from '../rendering/Biomes';
+import { applyGeneratedPbr } from '../rendering/Biomes';
 import { TreeInstances, type TreeVariant } from '../rendering/TreeInstances';
 import type { ResourceNodeSave } from '../game/saveTypes';
 
@@ -264,13 +264,13 @@ export class ResourceNode {
     const h = variant === 'needle' ? 5 + rng.range(0, 2.5) : 3.8 + rng.range(0, 2.2);
     const lean = rng.range(-0.06, 0.06);
 
-    const barkGen = getGeneratedMaterial('bark');
     const barkMat = mat('bark', {
-      map: barkGen?.diffuse ?? MaterialTex.bark(),
-      normalMap: barkGen?.normal ?? MaterialTex.normal(21),
-      color: barkGen ? '#cbb59a' : '#b59a78',
+      map: MaterialTex.bark(),
+      normalMap: MaterialTex.normal(21),
+      color: '#b59a78',
       roughness: 0.95,
     });
+    applyGeneratedPbr(barkMat, 'bark', { tint: '#cbb59a' });
     const trunk = new THREE.Mesh(cylGeo(0.13, 0.24, h, 8), barkMat);
     trunk.position.y = h / 2;
     trunk.rotation.z = lean;
@@ -304,13 +304,13 @@ export class ResourceNode {
   }
 
   private buildMine(rng: RNG): void {
-    const rockGen = getGeneratedMaterial('resource_rock');
     const rockMat = mat('rock-mine', {
-      map: rockGen?.diffuse ?? MaterialTex.stone(),
-      normalMap: rockGen?.normal ?? MaterialTex.normal(33),
-      color: rockGen ? '#ffffff' : '#8f8a82',
+      map: MaterialTex.stone(),
+      normalMap: MaterialTex.normal(33),
+      color: '#8f8a82',
       roughness: 0.95,
     });
+    applyGeneratedPbr(rockMat, 'resource_rock');
     const oreMat = mat('ore-mine', { color: '#9aa7b5', metalness: 0.9, roughness: 0.35, emissive: 0x11161c });
     const n = 7;
     for (let i = 0; i < n; i++) {
@@ -333,12 +333,8 @@ export class ResourceNode {
 
   private buildWell(rng: RNG): void {
     const metalMat = mat('metal-well', { map: MaterialTex.metal(), color: '#9aa4ae', metalness: 0.6, roughness: 0.5 });
-    const woodGen = getGeneratedMaterial('wood');
-    const woodMat = mat('wood-well', {
-      map: woodGen?.diffuse ?? MaterialTex.wood(),
-      color: woodGen ? '#c8a878' : '#a88a5e',
-      roughness: 0.9,
-    });
+    const woodMat = mat('wood-well', { map: MaterialTex.wood(), color: '#a88a5e', roughness: 0.9 });
+    applyGeneratedPbr(woodMat, 'wood', { tint: '#c8a878' });
     void rng;
     const base = new THREE.Mesh(cylGeo(0.7, 0.85, 0.35, 12), metalMat);
     base.position.y = 0.18;

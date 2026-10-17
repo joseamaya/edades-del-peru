@@ -109,13 +109,14 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
 
 ### Textiles por civilización (implementación)
 
-El código (`CIV_TEXTILE` en `src/model/ProceduralModel.ts`) usa una textura de **uncu** por civilización cuando su
-motivo está atestiguado (`textile_inca`, `textile_wari`, `textile_tiahuanaco`, `textile_moche`, `textile_chavin`,
-`textile_paracas`, `textile_nazca`, `textile_chimu`); el resto usa el textil andino genérico (`textile`), porque el
-atuendo **no está documentado** y no se inventa. Los patrones se generan por IA a partir de los textiles atestiguados
-citados en §7 (p. ej. el uncu inca de *All T'oqapu* de Dumbarton Oaks y The Met); las imágenes de referencia y su
-licencia quedan en `PROVENANCE.md`. Los motivos concretos (tocapu, ajedrezado con canesú rojo, felino, dios de los
-báculos) corresponden a los textiles de la sección 1 y 2.
+El código (`CIV_TEXTILE` en `src/model/ProceduralModel.ts`) usa una textura de **uncu** por civilización: un patrón
+que **abstrae motivos atestiguados del arte/textilería** de esa cultura (tocapu y ajedrezado con canesú rojo inca,
+geometría wari/nazca/paracas, greca moche, felino chavín, felino/plumas chimú), **no** una reconstrucción de una
+prenda concreta. Donde la prenda específica **no está documentada** (§2), el patrón es una **abstracción** —la misma
+convención que los emblemas de `arquitectura.md` §2—; no se inventan prendas ni se presentan como reconstrucción
+histórica. Las civilizaciones sin tradición textil/iconográfica registrada usan el textil andino genérico (`textile`).
+Referencias de dominio público solo para Inca/Wari/Nazca (`PROVENANCE.md`); el resto de slots son prompt-only.
+Los motivos concretos corresponden a los textiles de las secciones 1 y 2.
 
 ---
 

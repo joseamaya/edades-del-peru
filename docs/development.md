@@ -23,8 +23,8 @@ Definition of Done and the building audit see
   present and **falls back to the procedural material** if missing (offline). Generated with
   `scripts/gen_textures.py` (Cloudflare Workers AI: `@cf/black-forest-labs/flux-2-dev`, multipart inputs;
   credentials in `scripts/.cloudflare.json`, gitignored) + `scripts/post_textures.py` (tiling/normal/roughness).
-  Prompts in `scripts/prompts_textures.json` (sections `terrain`/`materials`/`buildings`/`textiles`); andean
-  textile slots may use public-domain museum images as FLUX.2 multi-reference inputs (`scripts/refs.json` →
+  Prompts in `scripts/prompts_textures.json` (sections `terrain`/`materials`/`buildings`/`textiles`/`landscape`);
+  andean textile slots may use public-domain museum images as FLUX.2 multi-reference inputs (`scripts/refs.json` →
   `scripts/_refs/`, gitignored; all of it is optional — the AI layer only overrides the procedural look when the
   webp exists). See `PROVENANCE.md`.
 - **Building/unit materials are AI-overridable**: `mat()` (`ProceduralModel.ts`) maps a `TexKind` to an

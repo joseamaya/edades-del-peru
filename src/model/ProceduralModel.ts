@@ -5,9 +5,10 @@ import { CivDef, ArchStyle, EmblemId } from './defs/civs';
 import { ModelSpec } from './defs/units';
 import { Era } from '../core/types';
 import { ERA_DEFS } from './defs/eras';
-import type { HistoricalArchitectureProfile } from './defs/architecture';
+import type { HistoricalArchitectureProfile, WallMaterial, RoofMaterial } from './defs/architecture';
 import type { LandmarkId } from './defs/landmarks';
 import { mixHex } from '../util/math';
+import { scaleUv } from '../util/uv';
 import { MaterialTex } from '../rendering/Textures';
 import { getGeneratedMaterial } from '../rendering/Biomes';
 
@@ -183,14 +184,6 @@ function mat(opts: MatOpts = {}): THREE.MeshStandardMaterial {
   }
   matCache.set(key, m);
   return m;
-}
-
-/** Scale a geometry's UVs so a shared texture tiles (replaces per-texture clones). */
-function scaleUv(g: THREE.BufferGeometry, rx: number, ry: number): void {
-  const uv = g.getAttribute('uv') as THREE.BufferAttribute | undefined;
-  if (!uv) return;
-  for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * rx, uv.getY(i) * ry);
-  uv.needsUpdate = true;
 }
 
 interface PartOpts extends MatOpts {
@@ -1285,45 +1278,42 @@ function andeanWall(b: Builder): string {
   }
 }
 
+/** Architecture wall material -> model texture kind (data-driven, one place). */
+const WALL_TEX: Record<WallMaterial, TexKind> = {
+  adobe: 'adobe',
+  fieldstone: 'fieldstone',
+  'cut-stone': 'cutstone',
+  megalithic: 'megalith',
+  brick: 'brick',
+  concrete: 'concrete',
+  metal: 'metal',
+};
+
+/** Architecture roof material -> model texture kind. */
+const ROOF_TEX: Record<RoofMaterial, TexKind> = {
+  thatch: 'thatch',
+  'flat-stone': 'flatstone',
+  tile: 'roof',
+  'flat-metal': 'flatmetal',
+};
+
 function andeanTex(b: Builder): TexKind {
-  switch (b.arch.wall) {
-    case 'adobe':
-      return 'adobe';
-    case 'fieldstone':
-      return 'fieldstone';
-    case 'megalithic':
-      return 'megalith';
-    case 'cut-stone':
-      return 'cutstone';
-    default:
-      return 'stone';
-  }
+  return WALL_TEX[b.arch.wall];
 }
 
-/** Foundation texture from the architecture profile (platform / terrace / plinth). */
+/** Foundation texture: terraces are always fieldstone, else the wall material. */
 function foundationTex(b: Builder): TexKind {
-  switch (b.arch.foundation) {
-    case 'plinth':
-      return b.arch.wall === 'concrete' ? 'concrete' : 'brick';
-    case 'terrace':
-      return 'fieldstone';
-    default:
-      return andeanTex(b);
-  }
+  return b.arch.foundation === 'terrace' ? 'fieldstone' : andeanTex(b);
 }
 
 /** Facade texture from the architecture profile for the colonial/republican builders. */
 function facadeTex(b: Builder, fallback: TexKind): TexKind {
-  switch (b.arch.wall) {
-    case 'brick':
-      return 'brick';
-    case 'concrete':
-      return 'concrete';
-    case 'metal':
-      return 'metal';
-    default:
-      return fallback;
-  }
+  return WALL_TEX[b.arch.wall] ?? fallback;
+}
+
+/** Roof texture from the architecture profile (thatch / flat-stone / tile / flat-metal). */
+function roofTex(b: Builder, fallback: TexKind): TexKind {
+  return ROOF_TEX[b.arch.roof] ?? fallback;
 }
 
 function andeanStone(b: Builder): string {
@@ -1684,9 +1674,21 @@ function buildHouse(b: Builder, size: number, grand: boolean): void {
   b.box(w * 0.96, w * 0.08, w * 0.96, b.pal.darkWood, { y: w * 0.05 });
   // gable roof with tiles
   const roofTint = mixHex(b.pal.roof, '#ffffff', 0.58);
-  b.box(w * 1.06, w * 0.16, w * 0.62, roofTint, { y: w * 0.82, z: w * 0.24, rx: 0.55, ry: Math.PI / 2, tex: 'roof' });
-  b.box(w * 1.06, w * 0.16, w * 0.62, roofTint, { y: w * 0.82, z: -w * 0.24, rx: -0.55, ry: Math.PI / 2, tex: 'roof' });
-  b.box(w * 1.08, w * 0.12, w * 0.24, roofTint, { y: w * 1.06, ry: Math.PI / 2, tex: 'roof' });
+  b.box(w * 1.06, w * 0.16, w * 0.62, roofTint, {
+    y: w * 0.82,
+    z: w * 0.24,
+    rx: 0.55,
+    ry: Math.PI / 2,
+    tex: roofTex(b, 'roof'),
+  });
+  b.box(w * 1.06, w * 0.16, w * 0.62, roofTint, {
+    y: w * 0.82,
+    z: -w * 0.24,
+    rx: -0.55,
+    ry: Math.PI / 2,
+    tex: roofTex(b, 'roof'),
+  });
+  b.box(w * 1.08, w * 0.12, w * 0.24, roofTint, { y: w * 1.06, ry: Math.PI / 2, tex: roofTex(b, 'roof') });
   // front/rear eave
   b.box(w * 1.06, 0.05, w * 0.16, b.pal.darkWood, { y: w * 0.72, z: w * 0.48 });
   b.box(w * 1.06, 0.05, w * 0.16, b.pal.darkWood, { y: w * 0.72, z: -w * 0.48 });
@@ -1833,9 +1835,21 @@ function buildBarracks(b: Builder, size: number, wallType: 'wood' | 'brick'): vo
   const roofTint = mixHex(b.pal.roof, '#ffffff', 0.58);
   b.box(w * 0.9, w * 0.5, w * 0.7, wallTint, { y: w * 0.25, tex: facadeTex(b, wallType) });
   b.box(w * 0.94, w * 0.07, w * 0.74, b.pal.darkWood, { y: w * 0.04 });
-  b.box(w * 1.0, w * 0.14, w * 0.44, roofTint, { y: w * 0.56, z: w * 0.16, rx: 0.55, ry: Math.PI / 2, tex: 'roof' });
-  b.box(w * 1.0, w * 0.14, w * 0.44, roofTint, { y: w * 0.56, z: -w * 0.16, rx: -0.55, ry: Math.PI / 2, tex: 'roof' });
-  b.box(w * 1.02, w * 0.1, w * 0.2, roofTint, { y: w * 0.74, ry: Math.PI / 2, tex: 'roof' });
+  b.box(w * 1.0, w * 0.14, w * 0.44, roofTint, {
+    y: w * 0.56,
+    z: w * 0.16,
+    rx: 0.55,
+    ry: Math.PI / 2,
+    tex: roofTex(b, 'roof'),
+  });
+  b.box(w * 1.0, w * 0.14, w * 0.44, roofTint, {
+    y: w * 0.56,
+    z: -w * 0.16,
+    rx: -0.55,
+    ry: Math.PI / 2,
+    tex: roofTex(b, 'roof'),
+  });
+  b.box(w * 1.02, w * 0.1, w * 0.2, roofTint, { y: w * 0.74, ry: Math.PI / 2, tex: roofTex(b, 'roof') });
   // wide door with frame
   b.box(0.4, w * 0.36, 0.07, b.pal.darkWood, { y: w * 0.16, z: w * 0.36 });
   b.box(0.46, 0.05, 0.08, b.pal.darkWood, { y: w * 0.35, z: w * 0.36 });
@@ -1856,9 +1870,21 @@ function buildStable(b: Builder, size: number, wallType: 'wood' | 'brick'): void
   const roofTint = mixHex(b.pal.roof, '#ffffff', 0.58);
   b.box(w * 0.9, w * 0.55, w * 0.75, wallTint, { y: w * 0.28, tex: facadeTex(b, wallType) });
   b.box(w * 0.94, w * 0.07, w * 0.79, b.pal.darkWood, { y: w * 0.05 });
-  b.box(w * 1.02, w * 0.16, w * 0.5, roofTint, { y: w * 0.62, z: w * 0.2, rx: 0.55, ry: Math.PI / 2, tex: 'roof' });
-  b.box(w * 1.02, w * 0.16, w * 0.5, roofTint, { y: w * 0.62, z: -w * 0.2, rx: -0.55, ry: Math.PI / 2, tex: 'roof' });
-  b.box(w * 1.04, w * 0.12, w * 0.22, roofTint, { y: w * 0.8, ry: Math.PI / 2, tex: 'roof' });
+  b.box(w * 1.02, w * 0.16, w * 0.5, roofTint, {
+    y: w * 0.62,
+    z: w * 0.2,
+    rx: 0.55,
+    ry: Math.PI / 2,
+    tex: roofTex(b, 'roof'),
+  });
+  b.box(w * 1.02, w * 0.16, w * 0.5, roofTint, {
+    y: w * 0.62,
+    z: -w * 0.2,
+    rx: -0.55,
+    ry: Math.PI / 2,
+    tex: roofTex(b, 'roof'),
+  });
+  b.box(w * 1.04, w * 0.12, w * 0.22, roofTint, { y: w * 0.8, ry: Math.PI / 2, tex: roofTex(b, 'roof') });
   // wide doors
   b.box(0.4, w * 0.3, 0.07, b.pal.darkWood, { x: -0.22, y: w * 0.16, z: w * 0.38 });
   b.box(0.4, w * 0.3, 0.07, b.pal.darkWood, { x: 0.22, y: w * 0.16, z: w * 0.38 });
@@ -2023,9 +2049,21 @@ function buildDropsite(b: Builder, size: number, matType: 'wood' | 'brick' | 'st
         : mixHex(b.pal.stone, '#ffffff', 0.5);
   const roofTint = mixHex(b.pal.roof, '#ffffff', 0.58);
   b.box(w * 0.85, w * 0.5, w * 0.7, wallTint, { y: w * 0.25, tex: facadeTex(b, matType) });
-  b.box(w * 0.95, w * 0.12, w * 0.42, roofTint, { y: w * 0.56, z: w * 0.15, rx: 0.55, ry: Math.PI / 2, tex: 'roof' });
-  b.box(w * 0.95, w * 0.12, w * 0.42, roofTint, { y: w * 0.56, z: -w * 0.15, rx: -0.55, ry: Math.PI / 2, tex: 'roof' });
-  b.box(w * 0.97, w * 0.1, w * 0.2, roofTint, { y: w * 0.72, ry: Math.PI / 2, tex: 'roof' });
+  b.box(w * 0.95, w * 0.12, w * 0.42, roofTint, {
+    y: w * 0.56,
+    z: w * 0.15,
+    rx: 0.55,
+    ry: Math.PI / 2,
+    tex: roofTex(b, 'roof'),
+  });
+  b.box(w * 0.95, w * 0.12, w * 0.42, roofTint, {
+    y: w * 0.56,
+    z: -w * 0.15,
+    rx: -0.55,
+    ry: Math.PI / 2,
+    tex: roofTex(b, 'roof'),
+  });
+  b.box(w * 0.97, w * 0.1, w * 0.2, roofTint, { y: w * 0.72, ry: Math.PI / 2, tex: roofTex(b, 'roof') });
   // door
   b.box(0.3, w * 0.34, 0.05, b.pal.darkWood, { y: w * 0.17, z: w * 0.36 });
   b.cyl(0.02, 0.02, w * 0.4, 6, b.pal.darkWood, { y: w * 0.7, x: -w * 0.28 });

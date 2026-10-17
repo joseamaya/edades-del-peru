@@ -17,10 +17,12 @@
 - **Buildings** (`materials/`, by architectural style — see `src/model/defs/architecture.ts`):
   - walls: `wall_adobe`, `wall_cutstone`, `wall_megalith`, `wall_fieldstone`, `wall_brick`, `wall_concrete`;
   - roofs: `roof_thatch`, `roof_flatstone`, `roof_flatmetal` (tile roofs reuse `tile`).
-- **Textiles** (`materials/`, attested Andean uncu patterns; one per civilization): `textile_inca`,
-  `textile_wari`, `textile_tiahuanaco`, `textile_moche`, `textile_chavin`, `textile_paracas`,
-  `textile_nazca`, `textile_chimu`. Civilizations with no attested pattern fall back to the generic
-  `textile` weave (see `docs/historia/atuendos.md`).
+- **Textiles** (`materials/`, Andean uncu patterns **abstracting attested motifs** of each culture; one per
+  civilization): `textile_inca`, `textile_wari`, `textile_tiahuanaco`, `textile_moche`, `textile_chavin`,
+  `textile_paracas`, `textile_nazca`, `textile_chimu`. These are abstractions of a culture's attested art/textile
+  motifs, not reconstructions of a specific garment (some garments are undocumented — see
+  `docs/historia/atuendos.md`); civilizations without a recorded textile/iconographic tradition fall back to the
+  generic `textile` weave. Reference images exist for only three of them (below); the rest are prompt-only.
 - **Landscape** (`materials/`): `ground_field`, `ground_road`, `ground_path`, `ground_plaza`,
   `ground_canal`, `terrace_face`, `wall_drystone`, `corral_brush` (cultural-landscape features and the
   starting site), plus `resource_rock` (ore rocks) and `bark` (tree trunks). Applied by
