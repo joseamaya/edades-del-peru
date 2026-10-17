@@ -14,12 +14,13 @@ function landmarkInfo(page: Page) {
     if (!l) return { id: g.mapProfile.landmark as string | null, present: false };
     let verts = 0;
     let meshes = 0;
-    const sizes: number[] = [];
+    const meshVertCounts: number[] = [];
     l.traverse((o: any) => {
       if (o.isMesh && o.geometry?.attributes?.position) {
-        verts += o.geometry.attributes.position.count;
+        const count = o.geometry.attributes.position.count as number;
+        verts += count;
         meshes++;
-        sizes.push(o.geometry.attributes.position.count);
+        meshVertCounts.push(count);
       }
     });
     const size = g.settings.mapSize as number;
@@ -28,7 +29,7 @@ function landmarkInfo(page: Page) {
       present: true,
       // structural fingerprint: the multiset of per-mesh vertex counts (the plain
       // verts:meshes total is too coarse and collides for distinct landmarks)
-      sig: sizes.sort((a, b) => a - b).join(','),
+      sig: meshVertCounts.sort((a, b) => a - b).join(','),
       x: l.position.x as number,
       z: l.position.z as number,
       verts,
