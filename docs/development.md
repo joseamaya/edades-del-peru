@@ -113,7 +113,9 @@ Definition of Done and the building audit see
   `CulturalLandscape` (`src/rendering/CulturalLandscape.ts`) merges them per feature into a few meshes (a handful
   of draw calls) and `Game.spawnCulturalLandscape()` adds the `landscape` group next to the landmark. Deterministic
   from `seed + profile` and visual only (no entities, no gameplay, not saved — regenerated on load); disposed in
-  `Game.destroy()`. Verified by `tests/e2e/landscape.spec.ts`.
+  `Game.destroy()`. The landscape, the settlement overlays and the landmark dim with Fog of War through
+  `applyFow` (`src/rendering/FowMaterial.ts`), which samples the same `Fow` texture in their materials (issue
+  #70). Verified by `tests/e2e/landscape.spec.ts`.
 - **Settlement layout (starting base)**: `Game.spawnStartBase` lays out the starting dwellings with
   `planSettlementSite` (`src/model/defs/settlementPlan.ts`), a **pure** planner (no THREE, unit-tested in
   `tests/settlement.test.ts`). It keeps a compact ring around the anchor, leaned toward the terrain-facing

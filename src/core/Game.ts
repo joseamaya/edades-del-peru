@@ -10,6 +10,7 @@ import { Particles } from '../rendering/Particles';
 import { RTSCamera } from './Camera';
 import { GameLoop } from './GameLoop';
 import { Fow } from '../game/Fow';
+import { applyFowToObject, createFowUniforms } from '../rendering/FowMaterial';
 import { Pathfinder } from '../game/Pathfinding';
 import { Unit, UnitContext } from '../entities/Unit';
 import { Building } from '../entities/Building';
@@ -102,6 +103,8 @@ export class Game {
   settlements: SettlementOverlay[] = [];
   particles!: Particles;
   fow!: Fow;
+  /** Shared fog-of-war uniforms for the visual-only layers (landscape, overlays, landmark). */
+  private readonly fowUniforms = createFowUniforms();
   pathfinder!: Pathfinder;
   markers!: OrderMarkers;
   trees!: TreeInstances;
@@ -250,6 +253,9 @@ export class Game {
     this.trees = new TreeInstances(this.scene);
     this.fow = new Fow(s.mapSize, 128);
     this.terrain.setFow(this.fow.texture, s.fogOfWar);
+    this.fowUniforms.fowMap.value = this.fow.texture;
+    this.fowUniforms.mapSize.value = s.mapSize;
+    this.fowUniforms.fowEnabled.value = s.fogOfWar ? 1 : 0;
     this.pathfinder = new Pathfinder(s.mapSize, 2);
     this.pathfinder.bakeTerrain((x, z) => this.terrain.getHeight(x, z), this.terrain.waterLevel);
     if (!this.pendingSnapshot) this.spawnResources();
@@ -394,6 +400,7 @@ export class Game {
       }
     });
     this.landmark = model;
+    applyFowToObject(model, this.fowUniforms);
     this.scene.add(model);
   }
 
@@ -404,6 +411,7 @@ export class Game {
    */
   private spawnCulturalLandscape(): void {
     this.landscape = new CulturalLandscape(this.terrain, this.mapProfile, this.settings.mapSeed);
+    applyFowToObject(this.landscape.group, this.fowUniforms);
     this.scene.add(this.landscape.group);
   }
 
@@ -560,6 +568,7 @@ export class Game {
   /** Add the visual fields/roads of a planned settlement (no entities, no obstacles). */
   private addSettlementOverlay(plan: SettlementPlan): void {
     const overlay = new SettlementOverlay(plan, this.terrain);
+    applyFowToObject(overlay.group, this.fowUniforms);
     this.scene.add(overlay.group);
     this.settlements.push(overlay);
   }
@@ -2429,6 +2438,7 @@ export class Game {
     this.settings.fogOfWar = on;
     this.fow.setEnabled(on);
     this.terrain.setFow(this.fow.texture, on);
+    this.fowUniforms.fowEnabled.value = on ? 1 : 0;
     if (!on) {
       for (const u of this.units.values()) u.view.group.visible = true;
       for (const b of this.buildings.values()) b.view.group.visible = true;

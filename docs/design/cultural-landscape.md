@@ -103,7 +103,10 @@ the **simulation RNG is never touched** (replay safety).
 
 Materials are plain `MeshStandardMaterial` tinted per feature and, when the AI
 assets exist, overlaid with generated PBR via `applyGeneratedPbr`
-(`LANDSCAPE_SLOT` maps each feature to a `ground_*`/`terrace_face`/… slot). The
+(`LANDSCAPE_SLOT` maps each feature to a `ground_*`/`terrace_face`/… slot). They
+also sample the **fog-of-war grid** (`src/rendering/FowMaterial.ts`, `applyFow`),
+sharing the terrain's `Fow` texture (and the landmark and settlement overlays),
+so they dim with the relief instead of glowing over unexplored terrain. The
 canal is drawn as a translucent turquoise surface on top of the carved ditch; it
 does **not** reuse the `Water` renderer. Water carving lives in `heightField.ts`
 (`carveCanals` builds a `canalMap`; the bed is kept above the waterline so a canal
@@ -158,10 +161,6 @@ By design, not defects:
 
 Open defects tracked as issues:
 
-- **Fog of War is not applied** to the cultural landscape, the settlement overlays
-  or the landmark. Fog lives only in the terrain shader and in per-entity
-  visibility (`Fow`, `src/game/Fow.ts`), while these layers are plain lit meshes, so
-  roads/fields/canals stay bright over unexplored terrain (issue **#70**).
 - **Roads and paths are fragmented**: the planner samples tiles every ~4 (road) /
   ~3 (path) units but each tile is only `size * 0.6` / `size * 0.5` long along the
   spoke, leaving visible gaps (issue **#71**).
