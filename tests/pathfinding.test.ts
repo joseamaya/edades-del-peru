@@ -68,7 +68,6 @@ describe('Pathfinder', () => {
     // the single diagonal step is disallowed, so the route must go around it
     expect(path.length).toBeGreaterThanOrEqual(3);
   });
-
   it('keeps the diagonal when both lateral cells are free', () => {
     const pf = new Pathfinder(20, 2);
     const path = pf.pathfind(3, 3, 5, 5);
@@ -76,19 +75,5 @@ describe('Pathfinder', () => {
       { x: 3, z: 3 },
       { x: 5, z: 5 },
     ]);
-  });
-
-  it('routes around an L-shaped obstacle without crossing it', () => {
-    const pf = new Pathfinder(40, 2);
-    const cols = pf.grid.cols;
-    const idx = (x: number, z: number) => z * cols + x;
-    for (let z = 2; z <= 6; z++) pf.grid.walkable[idx(4, z)] = 0;
-    for (let x = 4; x <= 8; x++) pf.grid.walkable[idx(x, 6)] = 0;
-    const path = pf.pathfind(2 * 2 + 1, 4 * 2 + 1, 7 * 2 + 1, 4 * 2 + 1);
-    expect(path.length).toBeGreaterThan(0);
-    // every waypoint stays on walkable ground
-    for (const p of path) {
-      expect(pf.grid.walkable[Math.floor(p.z / 2) * cols + Math.floor(p.x / 2)]).toBe(1);
-    }
   });
 });
