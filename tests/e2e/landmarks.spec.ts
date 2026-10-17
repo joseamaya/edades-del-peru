@@ -14,16 +14,21 @@ function landmarkInfo(page: Page) {
     if (!l) return { id: g.mapProfile.landmark as string | null, present: false };
     let verts = 0;
     let meshes = 0;
+    const sizes: number[] = [];
     l.traverse((o: any) => {
       if (o.isMesh && o.geometry?.attributes?.position) {
         verts += o.geometry.attributes.position.count;
         meshes++;
+        sizes.push(o.geometry.attributes.position.count);
       }
     });
     const size = g.settings.mapSize as number;
     return {
       id: g.mapProfile.landmark as string | null,
       present: true,
+      // structural fingerprint: the multiset of per-mesh vertex counts (the plain
+      // verts:meshes total is too coarse and collides for distinct landmarks)
+      sig: sizes.sort((a, b) => a - b).join(','),
       x: l.position.x as number,
       z: l.position.z as number,
       verts,
@@ -53,7 +58,7 @@ test('period maps place their own landmark on land', async ({ page }) => {
     expect(info.verts!).toBeGreaterThan(500);
     expect(info.onWater, `${mission} landmark on water`).toBe(false);
     expect(info.dist!).toBeLessThanOrEqual(0.45 * info.size!);
-    signatures.add(`${info.verts}:${info.meshes}`);
+    signatures.add(info.sig!);
   }
   expect(signatures.size, 'the landmarks must not share a structure').toBe(missions.length);
 });
@@ -105,7 +110,7 @@ test('period skirmishes place their family landmark', async ({ page }) => {
     expect(info.present, civ).toBe(true);
     expect(info.meshes!, civ).toBeGreaterThan(0);
     expect(info.onWater, `${civ} landmark on water`).toBe(false);
-    signatures.add(`${info.verts}:${info.meshes}`);
+    signatures.add(info.sig!);
   }
   expect(signatures.size, 'the landmarks must not share a structure').toBe(cases.length);
 });
