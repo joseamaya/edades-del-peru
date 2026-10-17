@@ -16,12 +16,23 @@ Definition of Done and the building audit see
   anachronistic modernization): `settings.period` fixes `startingEra` and disables era advancement (HUD and AI).
 - Data is driven by defs in `src/model/defs/{periods,eras,civs,units,buildings,techs}.ts`; models are generated
   procedurally in `src/model/ProceduralModel.ts` (no external assets).
-- **PBR terrain textures (AI-generated)**: `src/assets/textures/terrain/{slot}_{diffuse|normal|roughness}.webp`
-  (slots `sand/dirt/grass/rock/snow`), loaded by `src/rendering/Biomes.ts` via `import.meta.glob`. The terrain
-  shader uses normal+roughness+specular when present and **falls back to the procedural material** if missing
-  (offline). Generated with `scripts/gen_textures.py` (Cloudflare Workers AI, credentials in
-  `scripts/.cloudflare.json`, gitignored) + `scripts/post_textures.py` (tiling/normal/roughness). See
-  `PROVENANCE.md`.
+- **PBR terrain & material textures (AI-generated)**: `src/assets/textures/{terrain,materials}/{slot}_{diffuse|normal|roughness}.webp`
+  (terrain slots `sand/dirt/grass/rock/snow`; material/building/textile slots — `wall_*`, `roof_*`, `textile_*`,
+  `wood`, `adobe`, `tile`, `clay`, `mud` — loaded by `src/model/ProceduralModel.ts`, see below), consumed by
+  `src/rendering/Biomes.ts` via `import.meta.glob`. The terrain shader uses normal+roughness+specular when
+  present and **falls back to the procedural material** if missing (offline). Generated with
+  `scripts/gen_textures.py` (Cloudflare Workers AI: `@cf/black-forest-labs/flux-2-dev`, multipart inputs;
+  credentials in `scripts/.cloudflare.json`, gitignored) + `scripts/post_textures.py` (tiling/normal/roughness).
+  Prompts in `scripts/prompts_textures.json` (sections `terrain`/`materials`/`buildings`/`textiles`); andean
+  textile slots may use public-domain museum images as FLUX.2 multi-reference inputs (`scripts/refs.json` →
+  `scripts/_refs/`, gitignored; all of it is optional — the AI layer only overrides the procedural look when the
+  webp exists). See `PROVENANCE.md`.
+- **Building/unit materials are AI-overridable**: `mat()` (`ProceduralModel.ts`) maps a `TexKind` to an
+  AI-generated material via `TEX_GEN` (e.g. `adobe → wall_adobe`, `brick → wall_brick`, `roof → tile`,
+  `thatch → roof_thatch`, `textile_inca → textile_inca`); the architecture profile (`archProfileFor`) picks the
+  wall/roof/foundation `TexKind` (`andeanTex`/`facadeTex`/`foundationTex`) and `getAttire` picks the per-civ
+  uncu textile (`CIV_TEXTILE`). Any `TexKind` absent from `TEX_GEN` (e.g. `stone`) stays procedural; every new
+  `TexKind` needs a `TEX_DEFAULTS` entry and a `MaterialTex` fallback (`src/rendering/Textures.ts`).
 - **Coetaneous civilizations**: `civs.ts` gives each civ `periods` and `geography`; `civsForPeriod(period)`
   filters valid rivals.
 - **Civilization bonuses are real modifiers**: `CivDef.effects` (`CivEffects`) is seeded into `PlayerState.bonus`

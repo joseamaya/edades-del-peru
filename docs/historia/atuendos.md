@@ -107,6 +107,16 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
 | República (Patriotas/Guerra del Pacífico) | guerrera/dormán azul, pantalón | kepí (chacó en gala) | fusil Comblain/Peabody-Martini + bayoneta | — | — |
 | Contemporáneo (Perú) | uniforme de campaña | casco | fusil de asalto | chaleco | — |
 
+### Textiles por civilización (implementación)
+
+El código (`CIV_TEXTILE` en `src/model/ProceduralModel.ts`) usa una textura de **uncu** por civilización cuando su
+motivo está atestiguado (`textile_inca`, `textile_wari`, `textile_tiahuanaco`, `textile_moche`, `textile_chavin`,
+`textile_paracas`, `textile_nazca`, `textile_chimu`); el resto usa el textil andino genérico (`textile`), porque el
+atuendo **no está documentado** y no se inventa. Los patrones se generan por IA a partir de los textiles atestiguados
+citados en §7 (p. ej. el uncu inca de *All T'oqapu* de Dumbarton Oaks y The Met); las imágenes de referencia y su
+licencia quedan en `PROVENANCE.md`. Los motivos concretos (tocapu, ajedrezado con canesú rojo, felino, dios de los
+báculos) corresponden a los textiles de la sección 1 y 2.
+
 ---
 
 ## 7. Fuentes
