@@ -3,6 +3,7 @@ import { getGroundTextures, GroundTextures } from './Textures';
 import { getGroundPBR } from './Biomes';
 import { smoothstep } from '../util/math';
 import { generateHeightField } from './heightField';
+import { FOW_DIM_GLSL } from './fowGlsl';
 import type { HistoricalMapProfile } from '../model/defs/profiles';
 
 // Scratch colors reused in biome generation (avoids ~200k allocations).
@@ -339,6 +340,7 @@ export class Terrain {
           }
           return v;
         }
+${FOW_DIM_GLSL}
 
         void main() {
           // local fractal detail (two octaves to break repetition)
@@ -434,11 +436,7 @@ export class Terrain {
 
           // fog of war glued to the relief: unexplored black, explored dimmed, visible clear
           float fw = fowEnabled > 0.5 ? texture(fowMap, vWorldPos.xz / mapSize).r : 1.0;
-          float explored = smoothstep(0.30, 0.65, fw);
-          float visible = smoothstep(0.72, 0.95, fw);
-          float fowDim = mix(0.0, 0.42, explored);
-          fowDim = mix(fowDim, 1.0, visible);
-          outCol *= fowDim;
+          outCol *= fowDim(fw);
 
           gl_FragColor = vec4(outCol, 1.0);
         }

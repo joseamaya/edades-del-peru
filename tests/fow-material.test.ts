@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { applyFow, applyFowToObject, createFowUniforms } from '../src/rendering/FowMaterial';
+import { FOW_DIM_GLSL, FOW_ZONES, fowDimFactor } from '../src/rendering/fowGlsl';
 
 function runCompile(material: THREE.Material): { uniforms: Record<string, unknown>; vertex: string; fragment: string } {
   const shader = {
@@ -13,7 +14,7 @@ function runCompile(material: THREE.Material): { uniforms: Record<string, unknow
 }
 
 describe('applyFow', () => {
-  it('injects the fog grid and shares the uniforms', () => {
+  it('injects the shared fog grid and uniforms', () => {
     const material = new THREE.MeshStandardMaterial();
     const fow = createFowUniforms();
     applyFow(material, fow);
@@ -25,7 +26,37 @@ describe('applyFow', () => {
     expect(vertex).toContain('vFowWorld');
     expect(fragment).toContain('uniform sampler2D fowMap');
     expect(fragment).toContain('texture2D(fowMap');
+    expect(fragment).toContain('fowDim(');
     expect(material.userData.fow).toBe(fow);
+  });
+
+  it('chains any pre-existing onBeforeCompile', () => {
+    const material = new THREE.MeshStandardMaterial();
+    let previousCalls = 0;
+    material.onBeforeCompile = () => {
+      previousCalls++;
+    };
+    applyFow(material, createFowUniforms());
+    runCompile(material);
+    expect(previousCalls).toBe(1);
+  });
+});
+
+describe('fowDimFactor', () => {
+  it('black in unexplored, clear when visible, and a dim step in between', () => {
+    expect(fowDimFactor(0)).toBe(0);
+    expect(fowDimFactor(1)).toBe(1);
+    const explored = fowDimFactor(150 / 255);
+    expect(explored).toBeGreaterThan(0);
+    expect(explored).toBeLessThan(FOW_ZONES.exploredDim + 0.05);
+    expect(fowDimFactor(0)).toBeLessThan(explored);
+    expect(explored).toBeLessThan(fowDimFactor(1));
+  });
+
+  it('the GLSL curve is generated from the same zones', () => {
+    expect(FOW_DIM_GLSL).toContain(String(FOW_ZONES.exploredLow));
+    expect(FOW_DIM_GLSL).toContain(String(FOW_ZONES.exploredDim));
+    expect(FOW_DIM_GLSL).toContain('fowDim(');
   });
 });
 

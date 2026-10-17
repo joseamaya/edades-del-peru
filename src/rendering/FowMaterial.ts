@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { FOW_DIM_GLSL } from './fowGlsl';
 
 /** Shared uniforms so every fogged material samples the same grid (see `Fow`). */
 export interface FowUniforms {
@@ -14,13 +15,15 @@ export function createFowUniforms(): FowUniforms {
 
 /**
  * Dim `material` with the fog-of-war grid, matching the terrain shader
- * (`Terrain.ts`): unexplored black, explored dimmed, currently visible clear. The
- * grid is sampled in world XZ, so the layer dims glued to the relief without a
- * second visibility system. The uniforms are shared, so toggling fog updates every
- * patched material at once.
+ * (`Terrain.ts`, via the shared `FOW_DIM_GLSL`): unexplored black, explored
+ * dimmed, currently visible clear. The grid is sampled in world XZ, so the layer
+ * dims glued to the relief without a second visibility system. The uniforms are
+ * shared, so toggling fog updates every patched material at once.
  */
 export function applyFow(material: THREE.Material, u: FowUniforms): void {
-  material.onBeforeCompile = (shader) => {
+  const previous = material.onBeforeCompile;
+  material.onBeforeCompile = (shader, renderer) => {
+    previous.call(material, shader, renderer);
     shader.uniforms.fowMap = u.fowMap;
     shader.uniforms.fowEnabled = u.fowEnabled;
     shader.uniforms.fowMapSize = u.mapSize;
@@ -33,16 +36,16 @@ export function applyFow(material: THREE.Material, u: FowUniforms): void {
     shader.fragmentShader = shader.fragmentShader
       .replace(
         '#include <common>',
-        '#include <common>\nuniform sampler2D fowMap;\nuniform float fowEnabled;\nuniform float fowMapSize;\nvarying vec3 vFowWorld;',
+        `#include <common>\nuniform sampler2D fowMap;\nuniform float fowEnabled;\nuniform float fowMapSize;\nvarying vec3 vFowWorld;\n${FOW_DIM_GLSL}`,
       )
       .replace(
         '#include <opaque_fragment>',
         `#include <opaque_fragment>
         if (fowEnabled > 0.5) {
           float fowValue = texture2D(fowMap, vFowWorld.xz / fowMapSize).r;
-          float explored = smoothstep(0.30, 0.65, fowValue);
-          float visible = smoothstep(0.72, 0.95, fowValue);
-          gl_FragColor.rgb *= mix(mix(0.0, 0.42, explored), 1.0, visible);
+          float fow = fowDim(fowValue);
+          gl_FragColor.rgb *= fow;
+          gl_FragColor.a *= fow;
         }`,
       );
   };
