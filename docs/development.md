@@ -109,9 +109,11 @@ Definition of Done and the building audit see
   (`src/rendering/heightField.ts`) cuts shallow irrigation ditches keeping the bed above the waterline (so they
   are not pathfinding walls or flooding sources) and writes a `canalMap`; `Terrain.getCanal` exposes it.
   `planCulturalLandscape` (`src/model/defs/landscapePlan.ts`) is a **pure** planner (no THREE, unit-tested in
-  `tests/landscape.test.ts`) that places the features on buildable, flat land, scaled by `settlementShape`;
-  `CulturalLandscape` (`src/rendering/CulturalLandscape.ts`) merges them per feature into a few meshes (a handful
-  of draw calls) and `Game.spawnCulturalLandscape()` adds the `landscape` group next to the landmark. Deterministic
+  `tests/landscape.test.ts`) that places the features on buildable, flat land, scaled by `settlementShape`
+  (roads/paths as ordered chains); `CulturalLandscape` (`src/rendering/CulturalLandscape.ts`) builds the chained
+  features — and the canals, from `Terrain.getCanalPaths()` — as continuous terrain-following ribbons
+  (`src/rendering/ribbon.ts`) and merges them per feature into a few meshes (a handful of draw calls);
+  `Game.spawnCulturalLandscape()` adds the `landscape` group next to the landmark. Deterministic
   from `seed + profile` and visual only (no entities, no gameplay, not saved — regenerated on load); disposed in
   `Game.destroy()`. The landscape, the settlement overlays and the landmark dim with Fog of War through
   `applyFow` (`src/rendering/FowMaterial.ts`), which samples the same `Fow` texture in their materials (issue
@@ -122,7 +124,8 @@ Definition of Done and the building audit see
   azimuth (`settlementShape`: riverside → water/moisture, hilltop → height), with dwellings kept apart (so the
   base cannot seal itself off), on buildable/dry/non-steep ground and on the anchor's side of any river (so the
   base is never cut off). The same plan also places the base's **fields** (most fertile reachable ground) and the
-  straight **roads** to them; `SettlementOverlay` (`src/rendering/SettlementOverlay.ts`) merges them into two
+  **roads** to them; `SettlementOverlay` (`src/rendering/SettlementOverlay.ts`) draws the roads as ribbons and the
+  fields as terrain-conforming grids (both follow the relief) and merges them into two
   meshes (visual only, no economy/obstacles). Deterministic from the base seed. Guarded by
   `tests/e2e/settlement.spec.ts`, `tests/e2e/ai.spec.ts` and `tests/e2e/skirmish-winnable.spec.ts` (which spawn/
   observe robustly rather than assuming the exact legacy ring).

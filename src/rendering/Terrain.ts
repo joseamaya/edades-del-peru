@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { getGroundTextures, GroundTextures } from './Textures';
 import { getGroundPBR } from './Biomes';
 import { smoothstep } from '../util/math';
-import { generateHeightField } from './heightField';
+import { generateHeightField, CANAL_WIDTH_CELLS } from './heightField';
 import { FOW_DIM_GLSL } from './fowGlsl';
 import type { HistoricalMapProfile } from '../model/defs/profiles';
 
@@ -37,6 +37,10 @@ export class Terrain {
   terraceMap: Float32Array;
   /** Irrigation canal strength per vertex (0 none .. 1 centre), for the water ribbon. */
   canalMap: Float32Array;
+  /** Irrigation canal centre-lines in world units (the carved ditches), for the canal ribbon. */
+  canalPaths: { x: number; z: number }[][];
+  /** World width of the carved canal ditch, for the water ribbon (derived from the carve). */
+  readonly canalWidth: number;
   waterLevel = 2.2;
   mesh: THREE.Mesh;
   group = new THREE.Group();
@@ -61,6 +65,10 @@ export class Terrain {
     this.moistureMap = field.moistureMap;
     this.terraceMap = field.terraceMap;
     this.canalMap = field.canalMap;
+    this.canalPaths = field.canalPaths.map((path) =>
+      path.map((p) => ({ x: (p.x / this.resolution) * this.size, z: (p.z / this.resolution) * this.size })),
+    );
+    this.canalWidth = ((2 * (CANAL_WIDTH_CELLS + 0.5)) / this.resolution) * this.size;
     this.waterLevel = field.waterLevel;
     this.mesh = this.buildMesh();
     this.group.add(this.mesh);
@@ -70,10 +78,10 @@ export class Terrain {
     return z * (this.resolution + 1) + x;
   }
 
-  /** Bilinear sample of a per-vertex map at world coordinates. */
+  /** Bilinear sample of a per-vertex map at world coordinates (clamped to the map). */
   private sampleMap(map: Float32Array, wx: number, wz: number): number {
-    const x = (wx / this.size) * this.resolution;
-    const z = (wz / this.size) * this.resolution;
+    const x = Math.min(this.resolution, Math.max(0, (wx / this.size) * this.resolution));
+    const z = Math.min(this.resolution, Math.max(0, (wz / this.size) * this.resolution));
     const x0 = Math.floor(x);
     const z0 = Math.floor(z);
     const x1 = Math.min(x0 + 1, this.resolution);
@@ -122,6 +130,11 @@ export class Terrain {
   /** Interpolated irrigation canal strength (0 none .. 1 centre). */
   getCanal(wx: number, wz: number): number {
     return this.sampleMap(this.canalMap, wx, wz);
+  }
+
+  /** Carved irrigation canal centre-lines in world units, for the canal ribbon. */
+  getCanalPaths(): { x: number; z: number }[][] {
+    return this.canalPaths;
   }
 
   /** Approximate slope magnitude (0 flat .. 1 steep) from the heightfield. */

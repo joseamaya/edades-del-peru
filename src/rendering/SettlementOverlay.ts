@@ -3,18 +3,25 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { Terrain } from './Terrain';
 import type { SettlementPlan, SettlementField, SettlementRoad } from '../model/defs/settlementPlan';
 import { applyGeneratedPbr } from './Biomes';
+import { buildRibbon } from './ribbon';
 import { scaleUv, GROUND_TILE } from '../util/uv';
 
 const ROAD_WIDTH = 1.4;
-/** Small lift above the terrain so the flat quads do not z-fight with the ground. */
-const OFFSET = 0.06;
+/** Length of a road sub-segment; the ribbon samples the terrain at each vertex. */
+const ROAD_STEP = 2;
+/** Field grid cell size; the field mesh follows the terrain at each vertex. */
+const FIELD_STEP = 2;
+/** Small lift above the terrain so the surfaces do not z-fight with the ground. */
+export const SETTLEMENT_OFFSET = 0.06;
 
 /**
  * Visual-only overlay of a planned starting settlement: its fields and the roads
  * that connect them to the center. Deterministic (derived from the same plan as
  * the dwellings) and merged into two meshes (roads, fields) so a base costs two
- * draw calls. No entities, no obstacles, no gameplay effect — the plan is the
- * layout source (see `model/defs/settlementPlan.ts`).
+ * draw calls. The roads are ribbons and the fields are terrain-conforming grids,
+ * so both follow the relief instead of floating over it. No entities, no
+ * obstacles, no gameplay effect — the plan is the layout source (see
+ * `model/defs/settlementPlan.ts`).
  */
 export class SettlementOverlay {
   readonly group = new THREE.Group();
@@ -31,12 +38,14 @@ export class SettlementOverlay {
     applyGeneratedPbr(fieldMat, 'ground_field');
     this.add(
       'roads',
-      plan.roads.map((r) => roadGeometry(r, terrain)),
+      plan.roads
+        .map((r) => roadGeometry(r, terrain.getHeight.bind(terrain)))
+        .filter((g): g is THREE.BufferGeometry => g !== null),
       roadMat,
     );
     this.add(
       'fields',
-      plan.fields.map((f) => fieldGeometry(f, terrain)),
+      plan.fields.map((f) => fieldGeometry(f, terrain.getHeight.bind(terrain))),
       fieldMat,
     );
   }
@@ -64,46 +73,47 @@ export class SettlementOverlay {
   }
 }
 
-/** A flat ribbon quad along the segment, lifted to clear the highest ground under it. */
-function roadGeometry(road: SettlementRoad, terrain: Terrain): THREE.BufferGeometry {
-  const { from, to } = road;
-  const len = Math.hypot(to.x - from.x, to.z - from.z);
-  const y = maxHeight(terrain, from.x, from.z, to.x, to.z) + OFFSET;
-  const angle = Math.atan2(to.z - from.z, to.x - from.x);
-  const geo = new THREE.PlaneGeometry(len, ROAD_WIDTH);
-  scaleUv(geo, Math.max(1, len / GROUND_TILE), Math.max(1, ROAD_WIDTH / GROUND_TILE));
-  return geo
-    .rotateX(-Math.PI / 2)
-    .rotateY(-angle)
-    .translate((from.x + to.x) / 2, y, (from.z + to.z) / 2);
+/** A ribbon along the road, sub-sampled so it drapes over the terrain. */
+export function roadGeometry(
+  road: SettlementRoad,
+  getHeight: (x: number, z: number) => number,
+): THREE.BufferGeometry | null {
+  return buildRibbon(
+    subdivide(road.from, road.to, ROAD_STEP),
+    ROAD_WIDTH,
+    (x, z) => getHeight(x, z) + SETTLEMENT_OFFSET,
+  );
 }
 
-/** A flat field quad at the planned spot, lifted to clear the highest corner. */
-function fieldGeometry(field: SettlementField, terrain: Terrain): THREE.BufferGeometry {
-  const h = field.size / 2;
-  let y = terrain.getHeight(field.x, field.z);
-  for (const [dx, dz] of [
-    [-h, -h],
-    [h, -h],
-    [-h, h],
-    [h, h],
-  ]) {
-    y = Math.max(y, terrain.getHeight(field.x + dx, field.z + dz));
-  }
-  const geo = new THREE.PlaneGeometry(field.size, field.size);
-  const r = Math.max(1, field.size / GROUND_TILE);
-  scaleUv(geo, r, r);
-  return geo
+/** A field grid tilted to the terrain: every vertex sits on the ground + offset. */
+export function fieldGeometry(
+  field: SettlementField,
+  getHeight: (x: number, z: number) => number,
+): THREE.BufferGeometry {
+  const segs = Math.max(1, Math.round(field.size / FIELD_STEP));
+  const geo = new THREE.PlaneGeometry(field.size, field.size, segs, segs)
     .rotateX(-Math.PI / 2)
     .rotateY(-field.yaw)
-    .translate(field.x, y + OFFSET, field.z);
+    .translate(field.x, 0, field.z);
+  const pos = geo.getAttribute('position') as THREE.BufferAttribute;
+  for (let i = 0; i < pos.count; i++) pos.setY(i, getHeight(pos.getX(i), pos.getZ(i)) + SETTLEMENT_OFFSET);
+  pos.needsUpdate = true;
+  geo.computeVertexNormals();
+  const r = Math.max(1, field.size / GROUND_TILE);
+  scaleUv(geo, r, r);
+  return geo;
 }
 
-function maxHeight(terrain: Terrain, x0: number, z0: number, x1: number, z1: number): number {
-  let h = -Infinity;
-  for (let i = 0; i <= 4; i++) {
-    const t = i / 4;
-    h = Math.max(h, terrain.getHeight(x0 + (x1 - x0) * t, z0 + (z1 - z0) * t));
+function subdivide(
+  from: { x: number; z: number },
+  to: { x: number; z: number },
+  step: number,
+): { x: number; z: number }[] {
+  const n = Math.max(1, Math.ceil(Math.hypot(to.x - from.x, to.z - from.z) / step));
+  const pts: { x: number; z: number }[] = [];
+  for (let i = 0; i <= n; i++) {
+    const t = i / n;
+    pts.push({ x: from.x + (to.x - from.x) * t, z: from.z + (to.z - from.z) * t });
   }
-  return h;
+  return pts;
 }

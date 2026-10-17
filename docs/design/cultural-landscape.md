@@ -95,10 +95,15 @@ additionally places visible retaining modules on terrace edges.
 is **pure** (no THREE, unit-tested headless): `seed + profile` always yields the
 same placements. `CulturalLandscape`
 ([`src/rendering/CulturalLandscape.ts`](../../src/rendering/CulturalLandscape.ts))
-turns each placement into a primitive (a plaza is a disc, a road/path/canal a flat
-plane, a wall/terrace a low box, a corral a ring) and **merges every feature into a
-single mesh**, so the whole layer is at most one mesh per drawable feature
-(`RENDERED_FEATURES.length` meshes). Placement uses its own `RNG(seed * k + c)`, so
+turns each point placement into a primitive (a plaza is a disc, a wall/terrace a low
+box, a corral a ring, a field a quad) and builds **roads, paths and canals as
+continuous ribbons** along their polyline (`buildRibbon`,
+[`src/rendering/ribbon.ts`](../../src/rendering/ribbon.ts)), sampling the terrain
+height at every vertex so they follow the relief with no gaps between segments.
+Every feature is then **merged into a single mesh**, so the whole layer is at most
+one mesh per drawable feature (`RENDERED_FEATURES.length` meshes). Canals follow
+the carved ditches: `heightField.ts` returns the cut centre-lines and `Terrain`
+exposes them via `getCanalPaths()`. Placement uses its own `RNG(seed * k + c)`, so
 the **simulation RNG is never touched** (replay safety).
 
 Materials are plain `MeshStandardMaterial` tinted per feature and, when the AI
@@ -159,16 +164,9 @@ By design, not defects:
 
 ## Confirmed defects
 
-Open defects tracked as issues:
-
-- **Roads and paths are fragmented**: the planner samples tiles every ~4 (road) /
-  ~3 (path) units but each tile is only `size * 0.6` / `size * 0.5` long along the
-  spoke, leaving visible gaps (issue **#71**).
-- **The canal visual does not follow the carved ditch**: it is a patchwork of flat
-  3×3 planes on a 2-unit grid, not a continuous ribbon over the physical canal
-  (issue **#72**).
-- **Settlement roads and fields are flat** and lifted by a handful of height
-  samples, so they float over depressions or cut steep ground (issue **#73**).
+None open. The original review defects are resolved: Fog of War on the layer
+(**#70**), fragmented roads/paths (**#71**), the canal not following the carved
+ditch (**#72**) and flat settlement roads/fields (**#73**).
 
 ## Phased plan
 

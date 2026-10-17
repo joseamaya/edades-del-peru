@@ -82,6 +82,26 @@ describe('deterministic height field', () => {
     }
   });
 
+  it('traces canal centre-lines on the carved canal mask (several profiles/seeds)', () => {
+    const n = 97;
+    const cases = [
+      [MAP_PROFILES.central_coast, 777],
+      [MAP_PROFILES.north_coast, 42],
+      [MAP_PROFILES.north_coast, 2024],
+    ] as const;
+    for (const [profile, seed] of cases) {
+      const f = generateHeightField(96, seed, profile);
+      expect(f.canalPaths.length, `seed ${seed}`).toBeGreaterThan(0);
+      for (const path of f.canalPaths) {
+        expect(path.length).toBeGreaterThan(3);
+        // most centre-line points sit on the carved mask (a canal may cross a river, where no cut is needed)
+        const onMask = path.filter((p) => f.canalMap[p.z * n + Math.round(p.x)] > 0).length;
+        expect(onMask / path.length, `seed ${seed}`).toBeGreaterThan(0.5);
+      }
+    }
+    expect(generateHeightField(96, 777, MAP_PROFILES.amazon).canalPaths.length).toBe(0);
+  });
+
   it('never terraces below the waterline', () => {
     const f = generateHeightField(96, 777, MAP_PROFILES.high_andes);
     for (let i = 0; i < f.terraceMap.length; i++) {
