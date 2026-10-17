@@ -238,8 +238,9 @@ Definition of Done and the building audit see
   re-paths or heads straight for it, so a unit never finishes its order and freezes far from the destination.
   Two related traps: `Pathfinder.rebuild()` (on obstacle removal, e.g. a razed building) restores the grid from
   a stored `terrainBlocked` mask — filling with 1 would silently turn water **or too-steep** cells back into
-  walkable ground (`bakeTerrain` marks both: height below the waterline, or a slope above `MAX_WALKABLE_SLOPE`,
-  the same limit `Game.canPlace` enforces so anything buildable stays reachable).
+  walkable ground (`bakeTerrain` marks both: height below the waterline, or a slope above `MAX_WALKABLE_SLOPE = 0.5`,
+  the same limit `Game.canPlace` enforces so anything buildable stays reachable; the slope formula is the shared
+  `terrainSlope` in `src/util/math.ts`).
   And `Unit.updateAttack` closes in directly whenever its route is **exhausted** (`pathIdx >= path.length`), not
   only on an empty route: a building's goal cell is not walkable, so the path can stop a couple of cells short
   and a melee unit would otherwise stall out of range (worst with a tight cluster).

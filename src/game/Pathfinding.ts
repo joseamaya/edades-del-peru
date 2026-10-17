@@ -1,5 +1,7 @@
 /** A* pathfinding over a grid with static obstacles. */
 
+import { terrainSlope } from '../util/math';
+
 export interface PathGrid {
   cols: number;
   rows: number;
@@ -159,10 +161,8 @@ export class Pathfinder {
         const wx = x * cell + cell / 2;
         const wz = z * cell + cell / 2;
         const h = heightFn(wx, wz);
-        // slope from neighbour samples, same scale as Terrain.getSlope
-        const hx = heightFn(wx + cell, wz) - heightFn(wx - cell, wz);
-        const hz = heightFn(wx, wz + cell) - heightFn(wx, wz - cell);
-        const slope = Math.min(1, (Math.hypot(hx, hz) / (2 * cell)) * 0.5);
+        // same scale as Terrain.getSlope (shared helper)
+        const slope = terrainSlope(heightFn, wx, wz, cell);
         if (h < waterLevel + 0.35 || slope > MAX_WALKABLE_SLOPE) {
           this.grid.walkable[z * cols + x] = 0;
         }

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { getGroundTextures, GroundTextures } from './Textures';
 import { getGroundPBR } from './Biomes';
-import { smoothstep } from '../util/math';
+import { smoothstep, terrainSlope } from '../util/math';
 import { generateHeightField, CANAL_WIDTH_CELLS } from './heightField';
 import { FOW_DIM_GLSL } from './fowGlsl';
 import type { HistoricalMapProfile } from '../model/defs/profiles';
@@ -139,10 +139,7 @@ export class Terrain {
 
   /** Approximate slope magnitude (0 flat .. 1 steep) from the heightfield. */
   getSlope(wx: number, wz: number): number {
-    const d = 2;
-    const hx = this.getHeight(wx + d, wz) - this.getHeight(wx - d, wz);
-    const hz = this.getHeight(wx, wz + d) - this.getHeight(wx, wz - d);
-    return Math.min(1, (Math.hypot(hx, hz) / (2 * d)) * 0.5);
+    return terrainSlope((x, z) => this.getHeight(x, z), wx, wz, 2);
   }
 
   private buildMesh(): THREE.Mesh {
