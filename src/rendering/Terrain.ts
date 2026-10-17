@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { getGroundTextures, GroundTextures } from './Textures';
 import { getGroundPBR } from './Biomes';
 import { smoothstep } from '../util/math';
-import { generateHeightField } from './heightField';
+import { generateHeightField, CANAL_WIDTH_CELLS } from './heightField';
 import { FOW_DIM_GLSL } from './fowGlsl';
 import type { HistoricalMapProfile } from '../model/defs/profiles';
 
@@ -39,6 +39,8 @@ export class Terrain {
   canalMap: Float32Array;
   /** Irrigation canal centre-lines in world units (the carved ditches), for the canal ribbon. */
   canalPaths: { x: number; z: number }[][];
+  /** World width of the carved canal ditch, for the water ribbon (derived from the carve). */
+  readonly canalWidth: number;
   waterLevel = 2.2;
   mesh: THREE.Mesh;
   group = new THREE.Group();
@@ -66,6 +68,7 @@ export class Terrain {
     this.canalPaths = field.canalPaths.map((path) =>
       path.map((p) => ({ x: (p.x / this.resolution) * this.size, z: (p.z / this.resolution) * this.size })),
     );
+    this.canalWidth = ((2 * (CANAL_WIDTH_CELLS + 0.5)) / this.resolution) * this.size;
     this.waterLevel = field.waterLevel;
     this.mesh = this.buildMesh();
     this.group.add(this.mesh);

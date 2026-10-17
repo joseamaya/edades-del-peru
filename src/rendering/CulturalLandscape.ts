@@ -37,9 +37,8 @@ const OFFSET: Partial<Record<LandscapeFeature, number>> = {
   corral: 0.1,
 };
 
-/** Ribbon width for the chained features (roads/paths) and the canal. */
+/** Ribbon width for the chained features (roads/paths). */
 const CHAIN_WIDTH: Partial<Record<LandscapeFeature, number>> = { road: 1.8, path: 1.0 };
-const CANAL_WIDTH = 1.6;
 
 /**
  * Static, deterministic cultural landscape (roads, fields, plazas, canals,
@@ -100,7 +99,9 @@ export class CulturalLandscape {
     }
 
     const canalOffset = OFFSET.canal ?? 0.08;
-    for (const path of terrain.getCanalPaths()) pushRibbon(buckets, 'canal', path, CANAL_WIDTH, terrain, canalOffset);
+    for (const path of terrain.getCanalPaths()) {
+      pushRibbon(buckets, 'canal', path, terrain.canalWidth, terrain, canalOffset);
+    }
 
     const materials: Partial<Record<LandscapeFeature, THREE.MeshStandardMaterial>> = {
       plaza: new THREE.MeshStandardMaterial({ color: '#9c9182', roughness: 0.9 }),
@@ -151,7 +152,6 @@ function pushRibbon(
 ): void {
   const geo = buildRibbon(points, width, (x, z) => terrain.getHeight(x, z) + offset);
   if (!geo) return;
-  scaleUv(geo, 1 / GROUND_TILE, 1 / GROUND_TILE);
   (buckets[feature] ??= []).push(geo);
 }
 

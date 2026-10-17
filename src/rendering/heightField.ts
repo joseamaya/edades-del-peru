@@ -29,6 +29,12 @@ const TERRACE_FLATTEN = 0.55;
 
 /** Irrigation canal cut depth (world units); the bed never drops below the waterline. */
 const CANAL_DEPTH = 1.2;
+/**
+ * Irrigation canal carve half-width (in **cells**): the ditch spans
+ * `2 × (CANAL_WIDTH_CELLS + 0.5)` cells. `Terrain.canalWidth` exposes the matching
+ * world width for the water ribbon, so the two never drift.
+ */
+export const CANAL_WIDTH_CELLS = 1.6;
 
 /**
  * Deterministic heightfield generation driven by a `HistoricalMapProfile`. Pure
@@ -162,7 +168,7 @@ function carveCanals(
   if (weight <= 0) return { canalMap, canalPaths };
   const waterLevel = profile.water.level;
   const rng = new RNG((seed * 2246822519 + 53) >>> 0);
-  const width = 1.6;
+  const width = CANAL_WIDTH_CELLS;
   const count = 1 + Math.round(weight * 2);
   for (let c = 0; c < count; c++) {
     const path: { x: number; z: number }[] = [];

@@ -106,10 +106,14 @@ describe('cultural landscape plan', () => {
       const key = `${p.feature}:${p.chain}`;
       (byChain.get(key) ?? byChain.set(key, []).get(key)!).push(p);
     }
+    expect(byChain.size).toBeGreaterThan(0);
     for (const [key, samples] of byChain) {
-      const orders = samples.map((s) => s.order!).sort((a, b) => a - b);
-      // contiguous from 0: no dropped sample in the middle (which would leave a gap)
-      expect(orders, key).toEqual(orders.map((_, i) => i));
+      const sorted = [...samples].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      for (let i = 1; i < sorted.length; i++) {
+        // a dropped middle sample would leave a double-length jump (~8) instead of one step (~4)
+        const step = Math.hypot(sorted[i].x - sorted[i - 1].x, sorted[i].z - sorted[i - 1].z);
+        expect(step, `${key} sample ${i}`).toBeLessThanOrEqual(6);
+      }
     }
   });
 });

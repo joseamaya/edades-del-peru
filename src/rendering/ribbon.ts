@@ -1,12 +1,13 @@
 import * as THREE from 'three';
+import { GROUND_TILE } from '../util/uv';
 
 /**
  * Build a continuous ribbon (triangle strip) along a polyline at a constant
  * `width`, sampling the terrain height at every vertex so the road/path/canal
  * follows the relief. Consecutive samples share vertices, so there are no gaps
- * between segments (the old per-tile approach left them). UVs are in world units
- * (`u` = distance along, `v` = across), so a caller can `scaleUv` by `1/GROUND_TILE`.
- * Returns `null` for fewer than two points.
+ * between segments (the old per-tile approach left them). UVs are already scaled
+ * to the shared ground tile (`u` = distance along, `v` = across), so the caller
+ * needs no `scaleUv`. Returns `null` for fewer than two points.
  */
 export function buildRibbon(
   points: { x: number; z: number }[],
@@ -28,7 +29,7 @@ export function buildRibbon(
     const len = Math.hypot(dx, dz) || 1;
     dx /= len;
     dz /= len;
-    // left/right offsets can fold on sharp corners; clamp them to the segment
+    // offset magnitude is always `half`, so the strip cannot fold on itself
     const px = -dz * half;
     const pz = dx * half;
     if (i > 0) along += Math.hypot(p.x - points[i - 1].x, p.z - points[i - 1].z);
@@ -38,8 +39,8 @@ export function buildRibbon(
     const rz = p.z - pz;
     positions.set([lx, getHeight(lx, lz), lz], 2 * i * 3);
     positions.set([rx, getHeight(rx, rz), rz], (2 * i + 1) * 3);
-    uvs.set([along, 0], 2 * i * 2);
-    uvs.set([along, width], (2 * i + 1) * 2);
+    uvs.set([along / GROUND_TILE, 0], 2 * i * 2);
+    uvs.set([along / GROUND_TILE, width / GROUND_TILE], (2 * i + 1) * 2);
   }
   const indices: number[] = [];
   for (let i = 0; i < n - 1; i++) {

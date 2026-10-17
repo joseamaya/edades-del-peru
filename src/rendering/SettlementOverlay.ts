@@ -12,7 +12,7 @@ const ROAD_STEP = 2;
 /** Field grid cell size; the field mesh follows the terrain at each vertex. */
 const FIELD_STEP = 2;
 /** Small lift above the terrain so the surfaces do not z-fight with the ground. */
-const OFFSET = 0.06;
+export const SETTLEMENT_OFFSET = 0.06;
 
 /**
  * Visual-only overlay of a planned starting settlement: its fields and the roads
@@ -38,12 +38,14 @@ export class SettlementOverlay {
     applyGeneratedPbr(fieldMat, 'ground_field');
     this.add(
       'roads',
-      plan.roads.map((r) => roadGeometry(r, terrain)).filter((g): g is THREE.BufferGeometry => g !== null),
+      plan.roads
+        .map((r) => roadGeometry(r, terrain.getHeight.bind(terrain)))
+        .filter((g): g is THREE.BufferGeometry => g !== null),
       roadMat,
     );
     this.add(
       'fields',
-      plan.fields.map((f) => fieldGeometry(f, terrain)),
+      plan.fields.map((f) => fieldGeometry(f, terrain.getHeight.bind(terrain))),
       fieldMat,
     );
   }
@@ -72,22 +74,29 @@ export class SettlementOverlay {
 }
 
 /** A ribbon along the road, sub-sampled so it drapes over the terrain. */
-function roadGeometry(road: SettlementRoad, terrain: Terrain): THREE.BufferGeometry | null {
-  const pts = subdivide(road.from, road.to, ROAD_STEP);
-  const geo = buildRibbon(pts, ROAD_WIDTH, (x, z) => terrain.getHeight(x, z) + OFFSET);
-  if (geo) scaleUv(geo, 1 / GROUND_TILE, 1 / GROUND_TILE);
-  return geo;
+export function roadGeometry(
+  road: SettlementRoad,
+  getHeight: (x: number, z: number) => number,
+): THREE.BufferGeometry | null {
+  return buildRibbon(
+    subdivide(road.from, road.to, ROAD_STEP),
+    ROAD_WIDTH,
+    (x, z) => getHeight(x, z) + SETTLEMENT_OFFSET,
+  );
 }
 
 /** A field grid tilted to the terrain: every vertex sits on the ground + offset. */
-function fieldGeometry(field: SettlementField, terrain: Terrain): THREE.BufferGeometry {
+export function fieldGeometry(
+  field: SettlementField,
+  getHeight: (x: number, z: number) => number,
+): THREE.BufferGeometry {
   const segs = Math.max(1, Math.round(field.size / FIELD_STEP));
   const geo = new THREE.PlaneGeometry(field.size, field.size, segs, segs)
     .rotateX(-Math.PI / 2)
     .rotateY(-field.yaw)
     .translate(field.x, 0, field.z);
   const pos = geo.getAttribute('position') as THREE.BufferAttribute;
-  for (let i = 0; i < pos.count; i++) pos.setY(i, terrain.getHeight(pos.getX(i), pos.getZ(i)) + OFFSET);
+  for (let i = 0; i < pos.count; i++) pos.setY(i, getHeight(pos.getX(i), pos.getZ(i)) + SETTLEMENT_OFFSET);
   pos.needsUpdate = true;
   geo.computeVertexNormals();
   const r = Math.max(1, field.size / GROUND_TILE);
