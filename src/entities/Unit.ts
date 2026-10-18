@@ -680,10 +680,7 @@ export class Unit {
       return;
     }
     this.noRouteTimer += dt;
-    if (this.noRouteTimer > NO_ROUTE_GIVEUP) {
-      this.notifyNoRoute();
-      this.finishOrder();
-    }
+    if (this.noRouteTimer > NO_ROUTE_GIVEUP) this.notifyNoRoute();
   }
 
   private updateAttackMove(order: Order, dt: number, time: number): void {
@@ -887,10 +884,7 @@ export class Unit {
           return;
         }
         this.noRouteTimer += dt;
-        if (this.noRouteTimer > NO_ROUTE_GIVEUP) {
-          this.notifyNoRoute();
-          this.finishOrder();
-        }
+        if (this.noRouteTimer > NO_ROUTE_GIVEUP) this.notifyNoRoute();
       }
       return;
     }
