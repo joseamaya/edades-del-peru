@@ -21,6 +21,8 @@ import type { UnitSave } from '../game/saveTypes';
 export interface UnitContext {
   getHeight(x: number, z: number): number;
   findPath(sx: number, sz: number, tx: number, tz: number): { x: number; z: number }[];
+  /** Terrain navigability (water/steep/obstacles); guards the pathless fallback. */
+  isWalkable(x: number, z: number): boolean;
   unitsNear(x: number, z: number, radius: number): Unit[];
   enemiesNear(x: number, z: number, radius: number, owner: number): Unit[];
   entitiesById: Map<number, any>;
@@ -56,6 +58,10 @@ const MOVE_STOP_DIST = 0.6;
 /** Distance at which a plain move/attack-move order counts as arrived. */
 const MOVE_ARRIVAL_DIST = 1.2;
 const SEPARATION = 1.4;
+/** Look-ahead (world units) validated before a pathless direct approach. */
+const DIRECT_LOOKAHEAD = 3;
+/** Seconds without a route before a stuck move/gather order gives up. */
+const NO_ROUTE_GIVEUP = 1.5;
 
 /** Color of the worker's load bundle according to the carried resource. */
 const CARRY_COLORS: Record<keyof Resources, number> = {
@@ -88,6 +94,9 @@ export class Unit {
   private path: { x: number; z: number }[] = [];
   private pathIdx = 0;
   private repathTimer = 0;
+  /** Seconds spent with a live order but no route and no clear direct step. */
+  private noRouteTimer = 0;
+  private noRouteNotified = false;
 
   targetEntityId: number | null = null;
   attackCooldown = 0;
@@ -200,6 +209,35 @@ export class Unit {
     this.view.setPosition(this.pos.x, this.pos.y, this.pos.z);
   }
 
+  /**
+   * True when the straight segment from the unit toward (tx, tz), up to
+   * `DIRECT_LOOKAHEAD` and stopping `stopRange` short of the target, stays on
+   * walkable ground. `stopRange` is the attack/harvest range, so sampling never
+   * runs into the target's own blocked cell (a building/resource node). Guards the
+   * pathless fallback so a unit never crosses terrain the pathfinder blocks.
+   */
+  private directAheadClear(tx: number, tz: number, stopRange = 0): boolean {
+    const dx = tx - this.pos.x;
+    const dz = tz - this.pos.z;
+    const dist = Math.hypot(dx, dz);
+    const reach = dist - stopRange;
+    if (reach <= 0.01) return true;
+    const look = Math.min(reach, DIRECT_LOOKAHEAD);
+    const steps = Math.max(1, Math.ceil(look / 0.5));
+    for (let i = 1; i <= steps; i++) {
+      const s = (look * i) / steps;
+      if (!this.ctx.isWalkable(this.pos.x + (dx / dist) * s, this.pos.z + (dz / dist) * s)) return false;
+    }
+    return true;
+  }
+
+  /** Warn the player once that an order cannot be routed. */
+  private notifyNoRoute(): void {
+    if (this.owner !== 0 || this.noRouteNotified) return;
+    this.noRouteNotified = true;
+    this.ctx.event('alert', { icon: '⚠️', text: 'Sin ruta', x: this.pos.x, z: this.pos.z, warn: true });
+  }
+
   clearOrders(): void {
     this.orderQueue.length = 0;
     this.path.length = 0;
@@ -207,6 +245,8 @@ export class Unit {
     this.currentResource = null;
     this.convertProgress = 0;
     this.attackingTarget = false;
+    this.noRouteTimer = 0;
+    this.noRouteNotified = false;
   }
 
   issueOrder(order: Order, clear = true): void {
@@ -384,7 +424,7 @@ export class Unit {
   private executeOrder(order: Order, dt: number, time: number): void {
     switch (order.kind) {
       case OrderKind.MOVE:
-        this.updateMove(order);
+        this.updateMove(order, dt);
         break;
       case OrderKind.ATTACK_MOVE:
         this.updateAttackMove(order, dt, time);
@@ -611,9 +651,12 @@ export class Unit {
    * there is still no route head straight for the target (movement integration is
    * left to `updateMovement`, so it must not move the position here).
    */
-  private updateMove(order: Order): void {
+  private updateMove(order: Order, dt: number): void {
     const t = order.target;
-    if (!this.isPathDone()) return;
+    if (!this.isPathDone()) {
+      this.noRouteTimer = 0;
+      return;
+    }
     if (!t || distance2D(this.pos.x, this.pos.z, t.x, t.z) <= MOVE_ARRIVAL_DIST) {
       this.finishOrder();
       return;
@@ -622,11 +665,24 @@ export class Unit {
       this.setPath(t.x, t.z);
       this.repathTimer = 0.5;
     }
-    if (this.isPathDone()) {
+    if (!this.isPathDone()) {
+      this.noRouteTimer = 0;
+      return;
+    }
+    // still no route: only head straight in when the ground ahead is walkable (or
+    // the unit is escaping a blocked cell), otherwise wait and give up after a grace
+    if (!this.ctx.isWalkable(this.pos.x, this.pos.z) || this.directAheadClear(t.x, t.z)) {
+      this.noRouteTimer = 0;
       this.targetYaw = angleTo(this.pos.x, this.pos.z, t.x, t.z);
       const spd = this.stats.speed;
       this.vel.x = Math.cos(this.targetYaw) * spd;
       this.vel.z = Math.sin(this.targetYaw) * spd;
+      return;
+    }
+    this.noRouteTimer += dt;
+    if (this.noRouteTimer > NO_ROUTE_GIVEUP) {
+      this.notifyNoRoute();
+      this.finishOrder();
     }
   }
 
@@ -652,7 +708,7 @@ export class Unit {
     } else if (this.isPathDone()) {
       this.attackingTarget = false;
       // same no-freeze guarantee as a plain move when the route came back empty
-      this.updateMove(order);
+      this.updateMove(order, dt);
     }
   }
 
@@ -689,14 +745,22 @@ export class Unit {
       }
       if (this.pathIdx >= this.path.length) {
         // route exhausted but still out of range (a building's goal cell is not
-        // walkable, so the path can stop a couple of cells short): head straight in.
-        // Movement integration is left to `updateMovement` (do not move pos here).
-        this.targetYaw = angleTo(this.pos.x, this.pos.z, tpos.x, tpos.z);
-        const spd = this.stats.speed;
-        this.vel.x = Math.cos(this.targetYaw) * spd;
-        this.vel.z = Math.sin(this.targetYaw) * spd;
+        // walkable, so the path can stop a couple of cells short): head straight in
+        // only over walkable ground, else hold and warn
+        if (!this.ctx.isWalkable(this.pos.x, this.pos.z) || this.directAheadClear(tpos.x, tpos.z, range)) {
+          this.noRouteTimer = 0;
+          this.targetYaw = angleTo(this.pos.x, this.pos.z, tpos.x, tpos.z);
+          const spd = this.stats.speed;
+          this.vel.x = Math.cos(this.targetYaw) * spd;
+          this.vel.z = Math.sin(this.targetYaw) * spd;
+          return;
+        }
+        this.noRouteTimer += dt;
+        if (this.noRouteTimer > NO_ROUTE_GIVEUP) this.notifyNoRoute();
+        this.vel.multiplyScalar(Math.pow(0.02, dt));
         return;
       }
+      this.noRouteTimer = 0;
       this.targetYaw = angleTo(this.pos.x, this.pos.z, tpos.x, tpos.z);
     } else {
       // stop cleanly to shoot/strike
@@ -806,14 +870,27 @@ export class Unit {
         this.repathTimer = 0.9;
       }
       if (this.pathIdx >= this.path.length) {
-        // direct search toward the node when there is no path
-        this.targetYaw = angleTo(this.pos.x, this.pos.z, node.pos.x, node.pos.z);
-        const spd = this.stats.speed;
-        this.vel.x = Math.cos(this.targetYaw) * spd;
-        this.vel.z = Math.sin(this.targetYaw) * spd;
-        this.pos.x += this.vel.x * dt;
-        this.pos.z += this.vel.z * dt;
-        this.pos.y = this.ctx.getHeight(this.pos.x, this.pos.z) + 0.05;
+        // no route: only close in over walkable ground, else give up so the worker
+        // frees up (it must not cross blocked terrain to reach the node)
+        if (
+          !this.ctx.isWalkable(this.pos.x, this.pos.z) ||
+          this.directAheadClear(node.pos.x, node.pos.z, harvestRange)
+        ) {
+          this.noRouteTimer = 0;
+          this.targetYaw = angleTo(this.pos.x, this.pos.z, node.pos.x, node.pos.z);
+          const spd = this.stats.speed;
+          this.vel.x = Math.cos(this.targetYaw) * spd;
+          this.vel.z = Math.sin(this.targetYaw) * spd;
+          this.pos.x += this.vel.x * dt;
+          this.pos.z += this.vel.z * dt;
+          this.pos.y = this.ctx.getHeight(this.pos.x, this.pos.z) + 0.05;
+          return;
+        }
+        this.noRouteTimer += dt;
+        if (this.noRouteTimer > NO_ROUTE_GIVEUP) {
+          this.notifyNoRoute();
+          this.finishOrder();
+        }
       }
       return;
     }

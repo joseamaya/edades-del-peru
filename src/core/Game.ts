@@ -1915,6 +1915,7 @@ export class Game {
     return {
       getHeight: (x: number, z: number) => this.terrain.getHeight(x, z),
       findPath: (sx, sz, tx, tz) => this.pathfinder.pathfind(sx, sz, tx, tz),
+      isWalkable: (x, z) => this.pathfinder.isWalkable(x, z),
       unitsNear: (x, z, radius) => this.unitsNear(x, z, radius),
       entitiesById: this.units,
       resourceNodes: this.resourceNodes,
