@@ -188,16 +188,21 @@ export class AI {
         nodes.push({ id: b.id, pos: b.pos, amount: b.foodAmount, resource: 'food', farm: b } as any);
       }
     }
-    // decide the most needed resource
-    let bestRes: keyof Resources = 'food';
-    let bestScore = Infinity;
+    if (nodes.length === 0) return null;
+
+    // which resources actually have a node available
+    const present = new Set<keyof Resources>();
+    for (const n of nodes) present.add(n.resource as keyof Resources);
+
+    // decide the most needed *available* resource
     const workers = this.myUnits().filter((u) => u.kind === UnitKind.WORKER);
     const counts: Record<string, number> = { food: 0, wood: 0, silver: 0, stone: 0 };
     for (const u of workers) {
       const id = u.orderQueue[0]?.entityId;
       if (!id) continue;
       const n = this.game.resourceNodes.get(id);
-      if (n) {
+      // a depleted/dead node must not count as an assigned worker
+      if (n && !n.dead && !n.depleted) {
         counts[n.resource]++;
         continue;
       }
@@ -211,24 +216,22 @@ export class AI {
       silver: p.resources.silver < 250 ? 1.3 : 1.0,
       stone: p.era >= Era.TAHUANTINSUYO && p.resources.stone < 200 ? 1.3 : 0.5,
     };
-    for (const k of RESOURCE_KEYS) {
-      const score = counts[k] / (priority[k] ?? 0.8);
-      if (score < bestScore) {
-        bestScore = score;
-        bestRes = k;
+    // try the most needed available resource first, then the next, so a worker is
+    // never left idle while a reachable node of some type exists
+    const types = RESOURCE_KEYS.filter((k) => present.has(k)).sort(
+      (a, b) => counts[a] / (priority[a] ?? 0.8) - counts[b] / (priority[b] ?? 0.8),
+    );
+    const distTo = (n: ResourceNode) => distance2D(w.pos.x, w.pos.z, n.pos.x, n.pos.z);
+    for (const k of types) {
+      const list = nodes.filter((n) => n.resource === k).sort((a, b) => distTo(a) - distTo(b));
+      for (const n of list) {
+        // reachable: adjacent, or a route exists (a node behind water/steep is skipped)
+        if (distTo(n) <= 3 || this.game.pathfinder.pathfind(w.pos.x, w.pos.z, n.pos.x, n.pos.z).length > 0) {
+          return n;
+        }
       }
     }
-    let best: ResourceNode | null = null;
-    let bestD = Infinity;
-    for (const n of nodes) {
-      if (n.resource !== bestRes) continue;
-      const d = distance2D(w.pos.x, w.pos.z, n.pos.x, n.pos.z);
-      if (d < bestD) {
-        bestD = d;
-        best = n;
-      }
-    }
-    return best;
+    return null;
   }
 
   private buildQueues(): void {
