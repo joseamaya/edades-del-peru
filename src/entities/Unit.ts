@@ -238,6 +238,22 @@ export class Unit {
     this.ctx.event('alert', { icon: '⚠️', text: 'Sin ruta', x: this.pos.x, z: this.pos.z, warn: true });
   }
 
+  /**
+   * Head straight for (tx, tz) when the ground ahead is walkable (or the unit is
+   * escaping a blocked cell). Returns false when the direct approach is blocked, so
+   * the caller can re-path and, after a grace, warn. Movement integration (and the
+   * blocked-cell collision) is left to `updateMovement`.
+   */
+  private directStep(tx: number, tz: number, stopRange = 0): boolean {
+    if (this.ctx.isWalkable(this.pos.x, this.pos.z) && !this.directAheadClear(tx, tz, stopRange)) return false;
+    this.noRouteTimer = 0;
+    this.targetYaw = angleTo(this.pos.x, this.pos.z, tx, tz);
+    const spd = this.stats.speed;
+    this.vel.x = Math.cos(this.targetYaw) * spd;
+    this.vel.z = Math.sin(this.targetYaw) * spd;
+    return true;
+  }
+
   clearOrders(): void {
     this.orderQueue.length = 0;
     this.path.length = 0;
@@ -669,16 +685,8 @@ export class Unit {
       this.noRouteTimer = 0;
       return;
     }
-    // still no route: only head straight in when the ground ahead is walkable (or
-    // the unit is escaping a blocked cell), otherwise wait and give up after a grace
-    if (!this.ctx.isWalkable(this.pos.x, this.pos.z) || this.directAheadClear(t.x, t.z)) {
-      this.noRouteTimer = 0;
-      this.targetYaw = angleTo(this.pos.x, this.pos.z, t.x, t.z);
-      const spd = this.stats.speed;
-      this.vel.x = Math.cos(this.targetYaw) * spd;
-      this.vel.z = Math.sin(this.targetYaw) * spd;
-      return;
-    }
+    // still no route: only head straight in over walkable ground, else wait and warn
+    if (this.directStep(t.x, t.z)) return;
     this.noRouteTimer += dt;
     if (this.noRouteTimer > NO_ROUTE_GIVEUP) this.notifyNoRoute();
   }
@@ -744,14 +752,7 @@ export class Unit {
         // route exhausted but still out of range (a building's goal cell is not
         // walkable, so the path can stop a couple of cells short): head straight in
         // only over walkable ground, else hold and warn
-        if (!this.ctx.isWalkable(this.pos.x, this.pos.z) || this.directAheadClear(tpos.x, tpos.z, range)) {
-          this.noRouteTimer = 0;
-          this.targetYaw = angleTo(this.pos.x, this.pos.z, tpos.x, tpos.z);
-          const spd = this.stats.speed;
-          this.vel.x = Math.cos(this.targetYaw) * spd;
-          this.vel.z = Math.sin(this.targetYaw) * spd;
-          return;
-        }
+        if (this.directStep(tpos.x, tpos.z, range)) return;
         this.noRouteTimer += dt;
         if (this.noRouteTimer > NO_ROUTE_GIVEUP) this.notifyNoRoute();
         this.vel.multiplyScalar(Math.pow(0.02, dt));
@@ -867,10 +868,10 @@ export class Unit {
         this.repathTimer = 0.9;
       }
       if (this.pathIdx >= this.path.length) {
-        // no route: only close in over walkable ground, else give up so the worker
-        // frees up (it must not cross blocked terrain to reach the node)
+        // no route: only close in over walkable ground (a node behind water/steep is
+        // skipped); integrate here so the worker actually reaches harvest range
         if (
-          !this.ctx.isWalkable(this.pos.x, this.pos.z) ||
+          this.ctx.isWalkable(this.pos.x, this.pos.z) ||
           this.directAheadClear(node.pos.x, node.pos.z, harvestRange)
         ) {
           this.noRouteTimer = 0;
@@ -885,7 +886,6 @@ export class Unit {
         }
         this.noRouteTimer += dt;
         if (this.noRouteTimer > NO_ROUTE_GIVEUP) {
-          // free the worker so the AI can reassign it to a reachable node
           this.notifyNoRoute();
           this.finishOrder();
         }
