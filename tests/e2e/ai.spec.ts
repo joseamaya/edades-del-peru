@@ -374,3 +374,41 @@ test('AI siege self-defends against a unit at close range', async ({ page }) => 
   });
   expect(out.target).toBe(out.unit);
 });
+
+test('idle AI workers take an available resource when the preferred one is gone', async ({ page }) => {
+  await bootSkirmish(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    // exhaust every food source for the AI (nodes and farms)
+    for (const n of g.resourceNodes.values()) {
+      if (n.resource === 'food') {
+        n.depleted = true;
+        n.amount = 0;
+      }
+    }
+    for (const b of g.buildings.values()) if (b.owner === 1 && b.isFarm) b.foodAmount = 0;
+    // make the AI workers idle so the economy logic re-assigns them
+    const aiWorkers = [...g.units.values()].filter((u: any) => u.owner === 1 && u.kind === 'worker');
+    for (const w of aiWorkers) w.clearOrders();
+    let t = 0;
+    for (let i = 0; i < 60 * 6; i++) {
+      g.update(1 / 60, t);
+      t += 1 / 60;
+    }
+    const kinds: Record<string, number> = {};
+    let assigned = 0;
+    for (const w of aiWorkers) {
+      const o = w.orderQueue[0];
+      if (!o || o.kind !== 'gather') continue;
+      const n = g.resourceNodes.get(o.entityId);
+      const res = n ? n.resource : 'farm';
+      kinds[res] = (kinds[res] ?? 0) + 1;
+      assigned++;
+    }
+    return { aiWorkers: aiWorkers.length, assigned, kinds };
+  });
+  expect(out.aiWorkers).toBeGreaterThan(0);
+  // with no food left, idle workers must take another available resource
+  expect(out.assigned).toBeGreaterThan(0);
+  expect(out.kinds.food ?? 0).toBe(0);
+});

@@ -884,7 +884,11 @@ export class Unit {
           return;
         }
         this.noRouteTimer += dt;
-        if (this.noRouteTimer > NO_ROUTE_GIVEUP) this.notifyNoRoute();
+        if (this.noRouteTimer > NO_ROUTE_GIVEUP) {
+          // free the worker so the AI can reassign it to a reachable node
+          this.notifyNoRoute();
+          this.finishOrder();
+        }
       }
       return;
     }
