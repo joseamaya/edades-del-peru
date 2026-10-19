@@ -4,6 +4,8 @@ import { faunaTemplate, type FaunaTemplate } from './faunaModels';
 
 /** Hard cap on live animals, regardless of planner output. */
 const MAX_ANIMALS = 16;
+/** Diagonal gait: front-left + back-right vs front-right + back-left. */
+const GAIT_OFFSETS = [0, Math.PI, Math.PI, 0];
 
 interface Animal {
   group: THREE.Group;
@@ -73,6 +75,7 @@ export class Wildlife {
           const mesh = new THREE.Mesh(t.wing, this.material);
           mesh.scale.x = side; // mirror the left wing
           mesh.castShadow = true;
+          mesh.receiveShadow = true;
           pivot.add(mesh);
           group.add(pivot);
           wings.push({ pivot, side });
@@ -110,11 +113,9 @@ export class Wildlife {
       a.group.rotation.y = angle + Math.PI / 2; // face the direction of travel
 
       if (a.legs.length) {
-        // diagonal gait: front-left + back-right vs front-right + back-left
         const phase = this.time * a.template.stride + a.bobPhase;
-        const offsets = [0, Math.PI, Math.PI, 0];
         for (let i = 0; i < a.legs.length; i++) {
-          a.legs[i].rotation.x = Math.sin(phase + offsets[i % offsets.length]) * 0.45;
+          a.legs[i].rotation.x = Math.sin(phase + GAIT_OFFSETS[i % GAIT_OFFSETS.length]) * 0.45;
         }
       }
       for (const w of a.wings) {

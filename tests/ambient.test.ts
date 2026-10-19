@@ -90,6 +90,22 @@ describe('ambient wildlife planning', () => {
     }
   });
 
+  it('treats land near water as shore (isBeach is a thin strip)', () => {
+    // checkerboard water: every land column is within 3 units of water
+    const nearWater: AmbientQuery = {
+      isWater: (x) => Math.floor(x) % 2 === 0,
+      isBuildable: () => true,
+      getSlope: () => 0.2,
+      getHeight: () => 8,
+      isBeach: () => false,
+      getMoisture: () => 0.5,
+    };
+    const out = planWildlife('north_coast', 21, SIZE, 12, nearWater);
+    expect(out.length).toBeGreaterThan(0);
+    // land is always near water here, so pelicans dominate (llamas can still win the weighted pick)
+    expect(out.filter((s) => s.id === 'pelican').length).toBeGreaterThanOrEqual(out.length / 2);
+  });
+
   it('defines a fauna count for every region', () => {
     for (const r of REGIONS) expect(faunaCountFor(r)).toBeGreaterThan(0);
   });
