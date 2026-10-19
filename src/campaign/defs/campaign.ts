@@ -300,6 +300,7 @@ export const MISSIONS: MissionDef[] = [
   },
   {
     id: 'm5_yahuar_pampa',
+    commanders: ['cusi_yupanqui', 'anccu_hualloc'],
     title: 'Yahuar Pampa',
     subtitle: 'Cusco · 1438',
     history:
@@ -377,6 +378,7 @@ export const MISSIONS: MissionDef[] = [
   },
   {
     id: 'm6_chimu_inca',
+    commanders: ['tupac_yupanqui', 'minchancaman'],
     title: 'La Guerra del Norte',
     subtitle: 'Costa norte · c. 1470',
     history:
@@ -468,6 +470,7 @@ export const MISSIONS: MissionDef[] = [
   },
   {
     id: 'm7_tupac_amaru',
+    commanders: ['tupac_amaru', 'micaela_bastidas'],
     title: 'La Gran Rebelión',
     subtitle: 'Virreinato · 1780–1781',
     history:
@@ -545,6 +548,7 @@ export const MISSIONS: MissionDef[] = [
   },
   {
     id: 'm8_independencia',
+    commanders: ['san_martin', 'bolivar', 'sucre'],
     title: 'La Independencia',
     subtitle: 'Independencia · 1821–1824',
     history:
@@ -609,6 +613,7 @@ export const MISSIONS: MissionDef[] = [
   },
   {
     id: 'm9_guerra_pacifico',
+    commanders: ['grau', 'bolognesi'],
     title: 'El Caballero de los Mares',
     subtitle: 'Guerra del Pacífico · 1879–1883',
     history:

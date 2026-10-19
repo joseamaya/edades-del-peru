@@ -43,6 +43,13 @@ Used only as FLUX.2 multi-reference inputs (never redistributed) for the Andean 
 | `textile_wari` | Tunic (Wari, 425–550) | The Met, object 314355 | Public Domain |
 | `textile_nazca` | Tunic with Confronting Catfish (Nasca-Wari) | The Met, object 307975 | Public Domain |
 
+## Commander portraits
+
+- **Location**: generated at runtime by `src/ui/Portrait.ts` (inline SVG, no image files).
+- **Nature**: stylized medallions (bust silhouette + civilization palette + emblem + initials), **not**
+  attested likenesses. Data and status live in `src/model/defs/commanders.ts`; pre-Hispanic figures are
+  marked `abstraction`. Roles, dates and events follow [`docs/historia/`](./docs/historia/).
+
 ## External references (technical only, no code)
 
 - [VOIDSTRIKE](https://github.com/braedonsaunders/voidstrike) (MIT): only the **idea** of the

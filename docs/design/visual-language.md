@@ -173,6 +173,15 @@ overridden per scenario (`MissionDef.atmosphere`). On software renderers the gam
 starts in a safe profile (cinematic effects off, low quality, no refraction);
 `?cine=1` disables that fallback for reference captures.
 
+## Interface
+
+The HUD stays dark and gold, with **Andean ornaments** drawn as inline SVG (chakana
+divider, stepped-fret top-bar band; no image assets). Campaign briefings and
+dialogue show **procedurally drawn commander medallions** in the civilization
+palette (bust silhouette + emblem + initials). They are explicitly stylized:
+pre-Hispanic figures have no attested likeness, so the data marks them as
+`abstraction` and the UI never presents them as portraits from life.
+
 ## Non-goals
 
 - No sci-fi, firearms, horses, vehicles or engines before 1532
