@@ -363,6 +363,11 @@ export class Game {
     return this.qualityGovernor.applied;
   }
 
+  /** Whether the current frame should render water refraction (cheap to query). */
+  wantsWaterRefraction(): boolean {
+    return this.postfx.cinematicEnabled && this.getAppliedQuality() !== 'low';
+  }
+
   /**
    * Apply the region's atmosphere (`HistoricalMapProfile.atmosphere`): the sky
    * tint/haze/sun-warmth plus the terrain/water aerial perspective. `scene.fog`
@@ -2898,7 +2903,7 @@ export class Game {
    */
   private renderWaterRefraction(): void {
     // extra full-scene pass: off in classic mode and once the preset drops to low
-    const on = this.postfx.cinematicEnabled && this.getAppliedQuality() !== 'low';
+    const on = this.wantsWaterRefraction();
     this.water.setRefraction(on);
     if (!on) return;
     const prev = this.renderer.getRenderTarget();

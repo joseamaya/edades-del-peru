@@ -6,7 +6,7 @@ interface RendererState {
   cinematic: boolean;
   applied: string;
   pixelRatio: number | null;
-  refraction: boolean;
+  wantedRefraction: boolean;
 }
 
 async function readState(page: Page, url: string): Promise<RendererState> {
@@ -24,22 +24,24 @@ async function readState(page: Page, url: string): Promise<RendererState> {
       cinematic: g.postfx.cinematicEnabled as boolean,
       applied: g.getAppliedQuality() as string,
       pixelRatio: g.pixelRatioOverride as number | null,
-      refraction: g.water.refractionEnabled as boolean,
+      wantedRefraction: g.wantsWaterRefraction() as boolean,
     };
   });
 }
 
 test('software renderers start in the safe profile; ?cine=1 overrides', async ({ page }) => {
-  const plain = await readState(page, '/?play=1&seed=777&fog=0');
+  // `?noloop=1` avoids rendering the heavy cinematic pipeline on the software runner
+  const plain = await readState(page, '/?play=1&seed=777&fog=0&noloop=1');
   const software = isSoftwareRenderer(plain.name);
   // on a real GPU the cinematic set stays on; on SwiftShader/llvmpipe it degrades
   expect(plain.cinematic, `renderer=${plain.name}`).toBe(!software);
   if (software) {
     expect(plain.applied).toBe('low');
     expect(plain.pixelRatio).toBe(1);
-    expect(plain.refraction).toBe(false);
+    expect(plain.wantedRefraction).toBe(false);
   }
 
-  const forced = await readState(page, '/?play=1&seed=777&fog=0&cine=1');
+  const forced = await readState(page, '/?play=1&seed=777&fog=0&cine=1&noloop=1');
   expect(forced.cinematic).toBe(true);
+  expect(forced.wantedRefraction).toBe(true);
 });
