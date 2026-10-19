@@ -275,10 +275,7 @@ export class Game {
     );
     this.applyAtmosphere();
     this.postfx.setColorGrade(resolveColorGrade(s.period, this.mapProfile));
-    {
-      const db = this.renderer.getDrawingBufferSize(new THREE.Vector2());
-      this.water.setSize(db.x, db.y);
-    }
+    this.syncWaterRefractionSize();
     this.particles = new Particles(this.scene, 4096);
     this.markers = new OrderMarkers(this.scene);
     this.trees = new TreeInstances(this.scene);
@@ -297,14 +294,23 @@ export class Game {
     this.sky.setTimeOfDay(map[mode] ?? 0.5);
   }
 
-  /** Change the post-processing quality preset (persisted with the settings). */
+  /**
+   * Player-chosen post-processing quality preset (persisted with the settings).
+   * The adaptive governor can drop the *applied* preset below this at runtime, but
+   * never writes it, so an automatic downgrade is not saved as the default.
+   */
   setQuality(q: GameSettings['quality']): void {
     this.settings.quality = q;
+    this.qualityGovernor.setUserQuality(q);
+  }
+
+  /** Apply a preset to the renderer without touching the saved settings (governor). */
+  applyQualityPreset(q: GameSettings['quality']): void {
     this.postfx.setQuality(q);
   }
 
-  /** Force a render scale and apply it immediately (used by low mode / the governor). */
-  setPixelRatioOverride(ratio: number): void {
+  /** Force a render scale (`null` restores the default) and apply it immediately. */
+  setPixelRatioOverride(ratio: number | null): void {
     this.pixelRatioOverride = ratio;
     this.onResize();
   }
@@ -2799,8 +2805,8 @@ export class Game {
    * when the cinematic effects are on — it costs an extra scene pass.
    */
   private renderWaterRefraction(): void {
-    // extra full-scene pass: off in classic mode and once the governor drops to low
-    const on = this.postfx.cinematicEnabled && this.settings.quality !== 'low';
+    // extra full-scene pass: off in classic mode and once the preset drops to low
+    const on = this.postfx.cinematicEnabled && this.getAppliedQuality() !== 'low';
     this.water.setRefraction(on);
     if (!on) return;
     const prev = this.renderer.getRenderTarget();
@@ -2817,10 +2823,13 @@ export class Game {
     this.camera.resize(window.innerWidth, window.innerHeight);
     this.postfx.setSize(window.innerWidth, window.innerHeight);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
-    if (this.water) {
-      const db = this.renderer.getDrawingBufferSize(new THREE.Vector2());
-      this.water.setSize(db.x, db.y);
-    }
+    this.syncWaterRefractionSize();
+  }
+
+  private syncWaterRefractionSize(): void {
+    if (!this.water) return;
+    const db = this.renderer.getDrawingBufferSize(new THREE.Vector2());
+    this.water.setSize(db.x, db.y);
   }
 
   getSelectedUnits(): Unit[] {

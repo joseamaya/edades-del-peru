@@ -99,8 +99,8 @@ test('the period color grade and water refraction follow the cinematic effects t
   expect(on.cinematic).toBe(true);
   expect(on.grade).toBe(true);
   expect(on.saturation).not.toBe(1); // a period-specific grade, not the identity
-  // refraction also requires quality != low; pin it so the FPS governor cannot flip it mid-read
-  await page.evaluate(() => ((window as unknown as { game: any }).game.settings.quality = 'high'));
+  // refraction also requires the applied quality != low; pin it so the FPS governor cannot flip it mid-read
+  await page.evaluate(() => (window as unknown as { game: any }).game.setQuality('high'));
   await page.waitForTimeout(200);
   const onRefraction = await page.evaluate(() => (window as unknown as { game: any }).game.water.refractionEnabled);
   expect(onRefraction).toBe(true);

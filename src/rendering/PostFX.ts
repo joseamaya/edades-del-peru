@@ -96,6 +96,8 @@ export class PostFX {
   vignetteEnabled = false;
   chromaticEnabled = false;
   colorGradeEnabled = false;
+  /** The `low` preset drops the expensive passes entirely (not just their strength). */
+  private qualityLow = false;
 
   constructor(renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.Camera, width: number, height: number) {
     this.composer = new EffectComposer(renderer);
@@ -143,6 +145,7 @@ export class PostFX {
 
   /** Adjust the cinematic effects quality (does not enable them). */
   setQuality(level: 'high' | 'medium' | 'low'): void {
+    this.qualityLow = level === 'low';
     if (level === 'high') {
       this.ssaoPass.kernelRadius = 8;
       this.bloomPass.strength = 0.35;
@@ -181,8 +184,8 @@ export class PostFX {
   }
 
   render(dt: number): void {
-    this.ssaoPass.enabled = this.ssaoEnabled;
-    this.bloomPass.enabled = this.bloomEnabled;
+    this.ssaoPass.enabled = this.ssaoEnabled && !this.qualityLow;
+    this.bloomPass.enabled = this.bloomEnabled && !this.qualityLow;
     this.vignettePass.enabled = this.vignetteEnabled;
     this.chromaticPass.enabled = this.chromaticEnabled;
     this.colorGradePass.enabled = this.colorGradeEnabled;

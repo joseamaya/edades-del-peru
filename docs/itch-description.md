@@ -3,6 +3,9 @@
 Borrador para publicar la demo (no subir sin revisar). Capturas en `docs/media/`
 (generadas con `yarn shots:media`).
 
+> *Copy en español a propósito: es texto orientado al jugador (ficha de tienda). El resto
+> de `docs/**` (salvo `docs/historia/**`) se mantiene en inglés.*
+
 ## Título
 
 **Edades del Perú — RTS de la historia peruana**
@@ -37,7 +40,7 @@ Recuay, Chanca contra Inca; nunca Moche contra Chimú.
 ## Ficha / assets
 
 - **Portada/hero**: `docs/media/hero.jpg` (1600×900).
-- **Capturas**: `docs/media/coast.jpg`, `docs/media/chavin.jpg`.
+- **Capturas**: `docs/media/chavin.jpg`.
 - **Motor**: Three.js + TypeScript (Vite). Navegador de escritorio; se degrada
   automáticamente en equipos modestos.
 - **Idioma**: interfaz y contenido histórico en **español**.

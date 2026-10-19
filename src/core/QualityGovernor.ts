@@ -14,21 +14,25 @@ const HIGH_WINDOWS = 3; // consecutive high windows before stepping back up
 
 /**
  * Adaptive post-processing quality. Only steps down from the quality the player
- * chose (never above it), and only drops the render scale in severe cases.
- * Purely visual: it never touches the simulation or the RNG.
+ * chose (never above it) and restores it when the frame rate recovers. It never
+ * writes `settings.quality` (the player's choice), only the applied preset, so an
+ * automatic downgrade is never persisted as the saved default. Purely visual: it
+ * never touches the simulation or the RNG.
  */
 export class QualityGovernor {
   private readonly game: Game;
-  private base: Quality | null = null;
+  private base: Quality;
   private current: Quality;
   private elapsed = 0;
   private lowWindows = 0;
   private highWindows = 0;
-  private severe = false;
+  private droppedScale = false;
+  private prevRatio: number | null = null;
 
   constructor(game: Game) {
     this.game = game;
-    this.current = game.settings.quality;
+    this.base = game.settings.quality;
+    this.current = this.base;
   }
 
   /** Quality preset the governor last applied (for the debug overlay). */
@@ -36,13 +40,17 @@ export class QualityGovernor {
     return this.current;
   }
 
+  /** A new player-chosen preset: it becomes the ceiling and is applied at once. */
+  setUserQuality(q: Quality): void {
+    this.base = q;
+    this.current = q;
+    this.lowWindows = 0;
+    this.highWindows = 0;
+    this.game.applyQualityPreset(q);
+    this.restoreScale();
+  }
+
   update(dt: number): void {
-    // The base is the quality the player selected, resolved lazily so URL/debug
-    // overrides applied right after construction are respected as the ceiling.
-    if (!this.base) {
-      this.base = this.game.settings.quality;
-      this.current = this.base;
-    }
     this.elapsed += dt;
     if (this.elapsed < WINDOW) return;
     this.elapsed = 0;
@@ -69,18 +77,26 @@ export class QualityGovernor {
       this.step(1);
     }
 
-    if (fps < SEVERE_FPS && this.current === 'low' && !this.severe) {
-      this.severe = true;
+    if (fps < SEVERE_FPS && this.current === 'low' && !this.droppedScale) {
+      this.prevRatio = this.game.pixelRatioOverride;
+      this.droppedScale = true;
       this.game.setPixelRatioOverride(1);
     }
   }
 
   private step(dir: -1 | 1): void {
     const cur = ORDER.indexOf(this.current);
-    const ceiling = ORDER.indexOf(this.base ?? this.current);
+    const ceiling = ORDER.indexOf(this.base);
     const next = ORDER[Math.max(0, Math.min(cur + dir, ceiling))];
     if (next === this.current) return;
     this.current = next;
-    this.game.setQuality(next);
+    this.game.applyQualityPreset(next);
+    if (next === this.base) this.restoreScale();
+  }
+
+  private restoreScale(): void {
+    if (!this.droppedScale) return;
+    this.droppedScale = false;
+    this.game.setPixelRatioOverride(this.prevRatio);
   }
 }

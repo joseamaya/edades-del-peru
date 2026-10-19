@@ -179,7 +179,6 @@ export class Building {
         life: 2.5,
         size: 4,
       });
-      // fire at the collapse
       this.ctx.particles.emit({
         x: this.pos.x,
         y: this.pos.y + 1.5,

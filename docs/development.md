@@ -91,9 +91,9 @@ Definition of Done and the building audit see
   a one-shot `deathFx` (units topple, buildings sink + tilt with dust/fire) and frees the model when it ends.
   Entities still leave `units`/`buildings` immediately, so AI/mission/save filters are unchanged.
 - **Water refraction**: `Water` renders the scene with its mesh hidden into a `WebGLRenderTarget`
-  (`Game.renderWaterRefraction`) and the shader samples the seabed, offset by the wave normal and scaled by
-  depth. It costs an extra scene pass, so it only runs with the cinematic set on and quality ≠ `low`; the region
-  `atmosphere` still supplies the aerial perspective.
+  (`Game.renderWaterRefraction`) and the shader samples the seabed, offset by the wave normal and faded by the
+  viewing angle (fresnel). It costs an extra scene pass, so it only runs with the cinematic set on and the
+  applied quality ≠ `low`; the region `atmosphere` still supplies the aerial perspective.
 - **Andenes (agricultural terracing)**: `profile.terrain.terraceChance` is no longer dead data — `carveTerraces`
   (`src/rendering/heightField.ts`) pulls moderate slopes toward flat shelves (gated by a coherent noise mask so
   terraces form patchy zones) and writes a `terraceMap` strength (0..~0.55). `Terrain` exposes it via
