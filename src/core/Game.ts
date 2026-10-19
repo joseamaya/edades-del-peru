@@ -363,6 +363,11 @@ export class Game {
     return this.qualityGovernor.applied;
   }
 
+  /** Whether the water refraction pass runs this frame. */
+  shouldRenderWaterRefraction(): boolean {
+    return this.postfx.cinematicEnabled && this.getAppliedQuality() !== 'low';
+  }
+
   /**
    * Apply the region's atmosphere (`HistoricalMapProfile.atmosphere`): the sky
    * tint/haze/sun-warmth plus the terrain/water aerial perspective. `scene.fog`
@@ -2898,15 +2903,20 @@ export class Game {
    */
   private renderWaterRefraction(): void {
     // extra full-scene pass: off in classic mode and once the preset drops to low
-    const on = this.postfx.cinematicEnabled && this.getAppliedQuality() !== 'low';
-    this.water.setRefraction(on);
-    if (!on) return;
+    if (!this.syncWaterRefraction()) return;
     const prev = this.renderer.getRenderTarget();
     this.water.mesh.visible = false;
     this.renderer.setRenderTarget(this.water.refractionRT);
     this.renderer.render(this.scene, this.camera.camera);
     this.renderer.setRenderTarget(prev);
     this.water.mesh.visible = true;
+  }
+
+  /** Apply the refraction gate to the water material; returns whether it is on. */
+  private syncWaterRefraction(): boolean {
+    const on = this.shouldRenderWaterRefraction();
+    this.water.setRefraction(on);
+    return on;
   }
 
   private onResize(): void {

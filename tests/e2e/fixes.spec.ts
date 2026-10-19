@@ -192,6 +192,16 @@ test('right click lands the order under the cursor on elevated terrain', async (
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });
+  // wait for the game loop to have run its updates: projecting before the first
+  // frame uses the initial camera pose and the click then maps to another cell
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game: any }).game;
+      return g.stepCount >= 2;
+    },
+    null,
+    { timeout: 15_000 },
+  );
 
   const info = await page.evaluate(() => {
     const w = window as unknown as { game: any; THREE: any; innerWidth: number; innerHeight: number };
@@ -243,7 +253,7 @@ test('right click lands the order under the cursor on elevated terrain', async (
       return !!(w && w.orderQueue[0] && w.orderQueue[0].target);
     },
     null,
-    { timeout: 5000 },
+    { timeout: 15_000 },
   );
   const target = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
