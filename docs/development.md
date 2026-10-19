@@ -406,8 +406,9 @@ Match the cost of verification to the change (the full gate is in `AGENTS.md`):
   change is visual** (otherwise `yarn visual:check`); `yarn bench` if it is performance-sensitive.
 - **CI** — the full E2E on `main` is **sharded 4×**, and the PR `@smoke` subset **sharded 2×**. The heavy
   specs (`ai`, `campaign-completable`, `settlement`, `save`) also run nightly (`test:e2e:slow`).
-- **E2E parallelism**: 2 workers by default (`PW_WORKERS=n` overrides), locally and in CI. Sharding is the main
-  wall-clock win; if a change only touches one area, run that spec instead of the suite.
+- **E2E parallelism**: 2 workers locally (`PW_WORKERS=n` overrides) and **1 per CI shard** — the software-WebGL
+  runners are CPU-bound and two workers starve them; sharding (4× full, 2× smoke) provides the parallelism.
+  If a change only touches one area, run that spec instead of the suite.
 
 ## Performance benchmarks
 
