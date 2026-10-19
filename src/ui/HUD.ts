@@ -65,6 +65,8 @@ const CSS = /* css */ `
     --green: #5fd08a;
     --red: #e05a5a;
     --blue: #5aa8e8;
+    /* Woven diamond band (inline SVG) used by the HUD textiles. */
+    --weave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8' viewBox='0 0 16 8'%3E%3Cpath d='M0 8L8 0l8 8' fill='none' stroke='%23e8c36a' stroke-opacity='0.18'/%3E%3C/svg%3E");
   }
   #ui-root { position: fixed; inset: 0; pointer-events: none; z-index: 20; font-family: "Bahnschrift", "Arial Narrow", "Segoe UI", sans-serif; color: var(--text); user-select: none; }
   #ui-root h1, #ui-root h2, #ui-root h3, .ed-logo { font-family: Georgia, "Times New Roman", serif; letter-spacing: 1px; }
@@ -94,7 +96,7 @@ const CSS = /* css */ `
 
   /* Panel inferior */
   #ed-bottom { position: absolute; left: 50%; transform: translateX(-50%); bottom: 12px; width: min(720px, 92vw); min-height: 150px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; pointer-events: auto; display: flex; flex-direction: column; box-shadow: 0 6px 30px rgba(0,0,0,0.55); overflow: hidden; }
-  #ed-bottom-header { padding: 6px 12px; font-size: 13px; font-weight: 700; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; background: rgba(232,195,106,0.06); }
+  #ed-bottom-header { padding: 6px 12px; font-size: 13px; font-weight: 700; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; background: rgba(232,195,106,0.06); background-image: var(--weave); background-repeat: repeat-x; background-position: bottom; }
   #ed-bottom-body { padding: 8px; display: flex; gap: 8px; min-height: 100px; }
   #ed-desc { flex: 1; font-size: 12px; color: var(--text-dim); line-height: 1.4; padding-right: 8px; }
   #ed-desc h3 { margin: 0 0 4px; font-size: 15px; color: var(--text); }
@@ -144,6 +146,7 @@ const CSS = /* css */ `
   /* Andean identity: chakana divider and stepped-fret edge (inline SVG, no assets) */
   .ed-panel { position: relative; }
   .ed-panel::before { content: ''; display: block; width: 46px; height: 20px; margin: -6px auto 10px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M10 1h4v5h5v4h4v4h-4v4h-5v5h-4v-5H5v-4H1v-4h4V6h5z' fill='%23e8c36a' fill-opacity='0.55'/%3E%3C/svg%3E") center/contain no-repeat; }
+  .ed-panel::after { content: ''; display: block; height: 6px; margin-top: 14px; background: var(--weave) repeat-x center; opacity: 0.8; }
   .ed-topbar::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 5px; pointer-events: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='6' viewBox='0 0 24 6'%3E%3Cpath d='M0 5h4V3h4v2h4V1h4v4h4V3h4' fill='none' stroke='%23e8c36a' stroke-opacity='0.28'/%3E%3C/svg%3E"); background-repeat: repeat-x; }
   .ed-commanders { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 4px 0 12px; }
   .ed-cmd-card { display: flex; align-items: center; gap: 8px; text-align: left; background: rgba(232,195,106,0.06); border: 1px solid var(--line); border-radius: 6px; padding: 7px 10px; min-width: 190px; max-width: 240px; }
@@ -223,7 +226,7 @@ const CSS = /* css */ `
   #ed-objectives .obj.failed .mark { color: var(--red); }
 
   /* Commander dialogue box */
-  #ed-dialogue { position: absolute; left: 50%; bottom: 190px; transform: translateX(-50%); width: min(560px, 86vw); background: rgba(12,14,18,0.92); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 4px; padding: 10px 14px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+  #ed-dialogue { position: absolute; left: 50%; bottom: 190px; transform: translateX(-50%); width: min(560px, 86vw); background: rgba(12,14,18,0.92); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 4px; padding: 10px 14px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; background-image: var(--weave); background-repeat: repeat-x; background-position: top; }
   #ed-dialogue.show { opacity: 1; }
   #ed-dialogue .who { font-size: 11px; letter-spacing: 1px; color: var(--gold); font-weight: 700; margin-bottom: 3px; }
   #ed-dialogue .txt { font-size: 13px; color: var(--text); line-height: 1.4; }

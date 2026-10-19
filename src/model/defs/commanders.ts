@@ -1,30 +1,34 @@
 import { CivId } from '../../core/types';
 
+/** Portraits are stylized medallions; `status` describes the *likeness*, not the role. */
+export const PORTRAIT_IDS = [
+  'cusi_yupanqui',
+  'tupac_yupanqui',
+  'minchancaman',
+  'anccu_hualloc',
+  'tupac_amaru',
+  'micaela_bastidas',
+  'san_martin',
+  'bolivar',
+  'sucre',
+  'grau',
+  'bolognesi',
+] as const;
+
+export type PortraitId = (typeof PORTRAIT_IDS)[number];
+
 /**
  * Campaign commanders shown in briefings and dialogue. Portraits are stylized
- * medallions (not attested likenesses), so pre-Hispanic figures are marked as
- * `abstraction`; `source` points at the historical dossier when one exists.
+ * medallions (not attested likenesses): pre-Hispanic figures have no documented
+ * face, so they are marked `abstraction`; post-1532 figures are `documented`.
  */
-export type PortraitId =
-  | 'cusi_yupanqui'
-  | 'tupac_yupanqui'
-  | 'minchancaman'
-  | 'anccu_hualloc'
-  | 'tupac_amaru'
-  | 'micaela_bastidas'
-  | 'san_martin'
-  | 'bolivar'
-  | 'sucre'
-  | 'grau'
-  | 'bolognesi';
-
 export interface CommanderDef {
   id: PortraitId;
   name: string;
   /** Player-facing role, e.g. "Inca · Cusco". */
   role: string;
   civ: CivId;
-  /** `documented` = attested role; `abstraction` = stylized reconstruction. */
+  /** `documented` = an attested likeness exists; `abstraction` = stylized. */
   status: 'documented' | 'abstraction';
   source?: string;
 }
@@ -35,7 +39,7 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     name: 'Cusi Yupanqui',
     role: 'Inca · Cusco',
     civ: CivId.INCA,
-    status: 'documented',
+    status: 'abstraction',
     source: 'docs/historia/campanas/yahuar_pampa.md',
   },
   tupac_yupanqui: {
@@ -43,23 +47,23 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     name: 'Túpac Yupanqui',
     role: 'Inca · auqui',
     civ: CivId.INCA,
-    status: 'documented',
-    source: 'docs/historia/campanas/guerra_del_norte.md',
+    status: 'abstraction',
+    source: 'docs/historia/campanas/chimu_inca.md',
   },
   minchancaman: {
     id: 'minchancaman',
     name: 'Minchancaman',
     role: 'Chimú · Chan Chan',
     civ: CivId.CHIMU,
-    status: 'documented',
-    source: 'docs/historia/campanas/guerra_del_norte.md',
+    status: 'abstraction',
+    source: 'docs/historia/campanas/chimu_inca.md',
   },
   anccu_hualloc: {
     id: 'anccu_hualloc',
     name: 'Anccu Hualloc',
     role: 'Chanca · general',
     civ: CivId.CHANCA,
-    status: 'documented',
+    status: 'abstraction',
     source: 'docs/historia/campanas/yahuar_pampa.md',
   },
   tupac_amaru: {
@@ -68,7 +72,7 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     role: 'Rebelión · Cusco',
     civ: CivId.PATRIOTAS,
     status: 'documented',
-    source: 'docs/historia/campanas/gran_rebelion.md',
+    source: 'docs/historia/campanas/tupac_amaru.md',
   },
   micaela_bastidas: {
     id: 'micaela_bastidas',
@@ -76,7 +80,7 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     role: 'Rebelión · intendencia',
     civ: CivId.PATRIOTAS,
     status: 'documented',
-    source: 'docs/historia/campanas/gran_rebelion.md',
+    source: 'docs/historia/campanas/tupac_amaru.md',
   },
   san_martin: {
     id: 'san_martin',

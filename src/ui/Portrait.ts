@@ -3,6 +3,12 @@ import type { CommanderDef } from '../model/defs/commanders';
 import type { EmblemId } from '../model/defs/civs';
 
 const PORTRAIT_VIEW = 64;
+let portraitSeq = 0;
+
+function escapeXml(s: string): string {
+  const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' };
+  return s.replace(/[&<>"']/g, (c) => map[c]);
+}
 
 /** Two significant initials ("José de San Martín" → "SM", "Miguel Grau" → "MG"). */
 function initials(name: string): string {
@@ -49,8 +55,9 @@ function emblem(emblem: EmblemId, x: number, y: number, color: string): string {
  */
 export function portraitSvg(cmd: CommanderDef, size = 64): string {
   const c = getCiv(cmd.civ).colors;
-  const clip = `pc-${cmd.id}`;
-  const label = `Retrato estilizado de ${cmd.name}`;
+  const clip = `pc-${cmd.id}-${portraitSeq++}`;
+  const label = escapeXml(`Retrato estilizado de ${cmd.name}`);
+  const initialsText = escapeXml(initials(cmd.name));
   return `<svg class="ed-portrait" width="${size}" height="${size}" viewBox="0 0 ${PORTRAIT_VIEW} ${PORTRAIT_VIEW}" role="img" aria-label="${label}">
     <defs>
       <clipPath id="${clip}"><polygon points="32,2 60,17 60,47 32,62 4,47 4,17" /></clipPath>
@@ -66,7 +73,7 @@ export function portraitSvg(cmd: CommanderDef, size = 64): string {
       <path d="M12 62 q4 -18 20 -18 t20 18 z" fill="#000" opacity="0.12" />
     </g>
     <polygon points="32,2 60,17 60,47 32,62 4,47 4,17" fill="none" stroke="${c.secondary}" stroke-width="1.6" opacity="0.85" />
-    <text x="32" y="57" text-anchor="middle" font-family="Georgia, serif" font-size="10" font-weight="700" fill="${c.secondary}" opacity="0.95">${initials(cmd.name)}</text>
+    <text x="32" y="57" text-anchor="middle" font-family="Georgia, serif" font-size="10" font-weight="700" fill="${c.secondary}" opacity="0.95">${initialsText}</text>
     ${emblem(getCiv(cmd.civ).visual.emblem, 52, 12, c.secondary)}
   </svg>`;
 }

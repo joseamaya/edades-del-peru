@@ -319,10 +319,12 @@ export class Mission {
 
   private triggerDialogue(text: string, duration = 5): void {
     // Speakers are written as `Nombre: —texto`; resolve a known commander so the
-    // dialogue box can show their (stylized) portrait.
-    const speaker = text.match(/^\s*([^:\n]{2,40}):\s/)?.[1]?.trim();
+    // dialogue box can show their (stylized) portrait and drop the redundant prefix.
+    const match = text.match(/^\s*([^:\n]{2,40}):\s/);
+    const speaker = match?.[1]?.trim();
     const cmd = speaker ? commanderFor(speaker) : undefined;
-    this.game.hud.showDialogue(cmd?.name ?? 'Comandante', text, duration, cmd?.id);
+    const body = cmd && match ? text.slice(match[0].length) : text;
+    this.game.hud.showDialogue(cmd?.name ?? 'Comandante', body, duration, cmd?.id);
   }
 
   private win(): void {
