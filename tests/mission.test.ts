@@ -35,6 +35,7 @@ function stubGame(unit: { id: number; tag: string; owner: number; dead: boolean;
     hasBuildings: () => true,
     getPaused: () => false,
     togglePause: () => {},
+    playIntro: () => {},
     loop: { start: () => {} },
     hud: {
       showBriefing: (_d: MissionDef, cb: () => void) => cb(),

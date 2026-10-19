@@ -152,6 +152,8 @@ export class Game {
   readonly rng: RNG;
   /** Force a specific devicePixelRatio (e.g. low mode). */
   pixelRatioOverride: number | null = null;
+  /** Play the campaign's camera flyover at mission start (off with `?intro=0`). */
+  introEnabled = true;
   players: PlayerState[] = [];
   units = new Map<number, Unit>();
   buildings = new Map<number, Building>();
@@ -805,6 +807,15 @@ export class Game {
       }
     }
     this.camera.moveTo(c.x, c.z, true);
+  }
+
+  /** Campaign intro: a short overview flight down to the player's base. */
+  playIntro(): void {
+    if (!this.introEnabled) return;
+    const c = this.playerCenter(0);
+    this.camera.moveTo(c.x + 34, c.z + 34, true);
+    this.camera.setHeight(52);
+    this.camera.flyTo(c.x, c.z, 13, 2.6);
   }
 
   private missionEnd(win: boolean): void {

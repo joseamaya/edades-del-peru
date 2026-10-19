@@ -42,6 +42,17 @@ export class RTSCamera {
   private pointerOverUi = false;
   /** Multiplier for keyboard/edge pan speed (user setting). */
   private speedScale = 1;
+  /** Scripted camera flight (intro), overriding the damp while active. */
+  private fly: {
+    fromX: number;
+    fromZ: number;
+    fromZoom: number;
+    toX: number;
+    toZ: number;
+    toZoom: number;
+    t: number;
+    dur: number;
+  } | null = null;
 
   private mapSize: number;
   private viewportH: number;
@@ -198,6 +209,21 @@ export class RTSCamera {
     this.desiredZoom = clamp(h, this.minZoom, this.maxZoom);
   }
 
+  /** Cinematic flight from the current framing to `(x,z,zoom)` over `seconds`. */
+  flyTo(x: number, z: number, zoom: number, seconds: number): void {
+    this.followId = null;
+    this.fly = {
+      fromX: this.desiredTarget.x,
+      fromZ: this.desiredTarget.z,
+      fromZoom: this.desiredZoom,
+      toX: x,
+      toZ: z,
+      toZoom: clamp(zoom, this.minZoom, this.maxZoom),
+      t: 0,
+      dur: Math.max(0.01, seconds),
+    };
+  }
+
   /** Enable camera rotation (Q/E). Off by default (fixed camera, SC2 style). */
   setRotationEnabled(on: boolean): void {
     this.rotationEnabled = on;
@@ -265,11 +291,29 @@ export class RTSCamera {
       }
     }
 
+    if (this.fly) {
+      const f = this.fly;
+      f.t += dt;
+      const k = Math.min(1, f.t / f.dur);
+      const e = k * k * (3 - 2 * k); // smoothstep
+      this.desiredTarget.x = f.fromX + (f.toX - f.fromX) * e;
+      this.desiredTarget.z = f.fromZ + (f.toZ - f.fromZ) * e;
+      this.desiredZoom = f.fromZoom + (f.toZoom - f.fromZoom) * e;
+    }
+
     this.clampTarget();
 
-    this.zoom = damp(this.zoom, this.desiredZoom, CAMERA_CONFIG.zoomLambda, dt);
-    this.target.x = damp(this.target.x, this.desiredTarget.x, CAMERA_CONFIG.panLambda, dt);
-    this.target.z = damp(this.target.z, this.desiredTarget.z, CAMERA_CONFIG.panLambda, dt);
+    if (this.fly) {
+      // the scripted flight (already eased) sets the framing directly, no damping
+      this.zoom = this.desiredZoom;
+      this.target.x = this.desiredTarget.x;
+      this.target.z = this.desiredTarget.z;
+      if (this.fly.t / this.fly.dur >= 1) this.fly = null;
+    } else {
+      this.zoom = damp(this.zoom, this.desiredZoom, CAMERA_CONFIG.zoomLambda, dt);
+      this.target.x = damp(this.target.x, this.desiredTarget.x, CAMERA_CONFIG.panLambda, dt);
+      this.target.z = damp(this.target.z, this.desiredTarget.z, CAMERA_CONFIG.panLambda, dt);
+    }
 
     const dist = this.zoom;
     const y = Math.sin(this.pitch) * dist;
