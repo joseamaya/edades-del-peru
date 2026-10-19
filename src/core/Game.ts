@@ -60,6 +60,7 @@ import { farmYieldMultiplier, nearbyCanal } from '../model/defs/farmYield';
 import { distance2D } from '../util/math';
 import { isTypingTarget } from '../util/dom';
 import { RNG, hashCode, weightedPick } from '../util/rng';
+import { detectSoftwareRenderer } from '../util/gpu';
 import { ERA_DEFS } from '../model/defs/eras';
 import { BUILDING_DEFS, getBuildingStats, BUILDING_INFO } from '../model/defs/buildings';
 import { getUnitStats, getUnitModel, UNIT_INFO, isConverter, DamageClass } from '../model/defs/units';
@@ -187,10 +188,20 @@ export class Game {
   private recorder: ReplayRecorder | null = null;
   private replay: ReplayPlayer | null = null;
   private qualityGovernor!: QualityGovernor;
+  /** Skip the software-renderer auto-degrade (`?cine=1`). */
+  private readonly forceCinematic: boolean;
+  /** True when the renderer is a software rasterizer (safe profile applied). */
+  private softwareFallback = false;
   /** One-shot death animations that outlive their entity (topple / collapse). */
   private deathFx: DeathFx[] = [];
 
-  constructor(settings: GameSettings, snapshot: SaveData | null = null, replay: Replay | null = null) {
+  constructor(
+    settings: GameSettings,
+    snapshot: SaveData | null = null,
+    replay: Replay | null = null,
+    forceCinematic = false,
+  ) {
+    this.forceCinematic = forceCinematic;
     this.settings = { ...DEFAULT_SETTINGS, ...settings };
     this.pendingSnapshot = snapshot;
     this.replay = replay ? new ReplayPlayer(replay) : null;
@@ -213,9 +224,11 @@ export class Game {
     this.enemyActive = !mis || mis.enemy.active;
     this.rng = new RNG((this.settings.mapSeed * 2654435761) >>> 0);
     this.initRenderer();
-    this.postfx.setCinematic(this.settings.cinematic);
-    this.postfx.setQuality(this.settings.quality);
+    const cinematic = this.settings.cinematic && !this.softwareFallback;
+    this.postfx.setCinematic(cinematic);
+    this.postfx.setQuality(this.softwareFallback ? 'low' : this.settings.quality);
     this.qualityGovernor = new QualityGovernor(this);
+    if (this.softwareFallback) this.qualityGovernor.setUserQuality('low');
     this.initWorld();
     this.unitContext = this.ctxFor();
     this.economy = new Economy(this);
@@ -242,6 +255,14 @@ export class Game {
 
   private initRenderer(): void {
     this.renderer = createRenderer();
+    // Software rasterizers (SwiftShader/llvmpipe) cannot afford the cinematic set.
+    // Apply the safe *render profile* without touching the saved player settings;
+    // `?cine=1` skips this fallback.
+    if (!this.forceCinematic && detectSoftwareRenderer(this.renderer.getContext())) {
+      this.softwareFallback = true;
+      this.pixelRatioOverride = 1;
+      this.renderer.setPixelRatio(1);
+    }
     this.camera = new RTSCamera(this.renderer.domElement, this.settings.mapSize);
     this.camera.setRotationEnabled(this.settings.rotateCamera);
     this.camera.setSpeedScale(CAMERA_SPEED_SCALE[this.settings.cameraSpeed]);

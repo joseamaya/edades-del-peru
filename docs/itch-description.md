@@ -41,6 +41,9 @@ Recuay, Chanca contra Inca; nunca Moche contra Chimú.
 
 - **Portada/hero**: `docs/media/hero.jpg` (1600×900).
 - **Capturas**: `docs/media/chavin.jpg`.
+- **GIF de gameplay**: `docs/media/gameplay.gif` (intro de la misión de Caral).
+- **Empaquetado**: `yarn build && yarn package:itch` → `review/edades-del-peru-itch.zip`;
+  subir con `butler push review/edades-del-peru-itch.zip <usuario>/<juego>:html5`.
 - **Motor**: Three.js + TypeScript (Vite). Navegador de escritorio; se degrada
   automáticamente en equipos modestos.
 - **Idioma**: interfaz y contenido histórico en **español**.
