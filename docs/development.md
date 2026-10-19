@@ -76,8 +76,8 @@ Definition of Done and the building audit see
   chromatic aberration → vignette → `OutputPass` → **colour grading** → FXAA. `settings.cinematic` (default
   **on**, `src/core/Config.ts`) enables the whole set and `settings.quality` (`high|medium|low`) tunes
   SSAO/bloom; both are in the Options panel. On a **software rasterizer** (SwiftShader/llvmpipe) the game starts in
-  the safe profile (`cinematic` off, `quality` low, pixel ratio 1) so weak/no-GPU machines stay playable; `?cine=1`
-  forces the cinematic set. `src/core/QualityGovernor.ts` lowers the preset with hysteresis
+  the safe *render* profile (`cinematic` off, `quality` low, pixel ratio 1) without changing the saved player
+  settings; `?cine=1` disables that fallback (and `?low=1` still wins). `src/core/QualityGovernor.ts` lowers the preset with hysteresis
   when FPS drops and restores it (never above the chosen preset), dropping the render scale only in severe
   cases; it only touches post-processing/pixel ratio, never the simulation. `settings.settingsVersion` migrates
   old stored settings (v<2) to the new cinematic-on default once, without clobbering a later explicit choice;
@@ -368,7 +368,7 @@ Definition of Done and the building audit see
   `?period=N`, `?mission=ID`, `?noloop=1` (do not auto-start the loop; tests drive fixed steps from step 0),
   `?fps=1` (show the debug FPS overlay, hidden by default), `?civ=ID` (force the player civilization; with
   `?period=N` it drives the geography), `?map=TYPE` (force the map type), `?intro=0` (skip the campaign
-  camera flyover; `?noloop=1` skips it too) and `?cine=1` (force the cinematic set even on a software renderer).
+  camera flyover; `?noloop=1` skips it too) and `?cine=1` (disables the software-renderer fallback; `?low=1` wins).
 - Shared `scripts/lib.mjs` (`launchChromium`, `withViteServer`, `readPng`, `classify`). Scripts launch Vite on a
   free port and Chromium with SwiftShader; they use `CHROME_PATH` or `chromium.executablePath()`. Run captures
   with `?low=1`.

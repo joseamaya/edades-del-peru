@@ -169,7 +169,9 @@ shore/crest foam and depth-based colour, and — with the cinematic set on and
 quality above `low` — screen-space **refraction** of the seabed (an extra scene
 pass into a render target). Region `atmosphere` supplies the water's aerial
 perspective. Time of day is per mission (`MissionDef.timeOfDay`) and may be
-overridden per scenario (`MissionDef.atmosphere`).
+overridden per scenario (`MissionDef.atmosphere`). On software renderers the game
+starts in a safe profile (cinematic effects off, low quality, no refraction);
+`?cine=1` disables that fallback for reference captures.
 
 ## Non-goals
 

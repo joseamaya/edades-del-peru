@@ -190,6 +190,8 @@ export class Game {
   private qualityGovernor!: QualityGovernor;
   /** Skip the software-renderer auto-degrade (`?cine=1`). */
   private readonly forceCinematic: boolean;
+  /** True when the renderer is a software rasterizer (safe profile applied). */
+  private softwareFallback = false;
   /** One-shot death animations that outlive their entity (topple / collapse). */
   private deathFx: DeathFx[] = [];
 
@@ -222,9 +224,11 @@ export class Game {
     this.enemyActive = !mis || mis.enemy.active;
     this.rng = new RNG((this.settings.mapSeed * 2654435761) >>> 0);
     this.initRenderer();
-    this.postfx.setCinematic(this.settings.cinematic);
-    this.postfx.setQuality(this.settings.quality);
+    const cinematic = this.settings.cinematic && !this.softwareFallback;
+    this.postfx.setCinematic(cinematic);
+    this.postfx.setQuality(this.softwareFallback ? 'low' : this.settings.quality);
     this.qualityGovernor = new QualityGovernor(this);
+    if (this.softwareFallback) this.qualityGovernor.setUserQuality('low');
     this.initWorld();
     this.unitContext = this.ctxFor();
     this.economy = new Economy(this);
@@ -251,11 +255,11 @@ export class Game {
 
   private initRenderer(): void {
     this.renderer = createRenderer();
-    // Software rasterizers (SwiftShader/llvmpipe) cannot afford the cinematic set:
-    // fall back to the safe profile unless explicitly forced with `?cine=1`.
+    // Software rasterizers (SwiftShader/llvmpipe) cannot afford the cinematic set.
+    // Apply the safe *render profile* without touching the saved player settings;
+    // `?cine=1` skips this fallback.
     if (!this.forceCinematic && detectSoftwareRenderer(this.renderer.getContext())) {
-      this.settings.cinematic = false;
-      this.settings.quality = 'low';
+      this.softwareFallback = true;
       this.pixelRatioOverride = 1;
       this.renderer.setPixelRatio(1);
     }

@@ -143,8 +143,6 @@ async function boot(): Promise<void> {
   if (params.get('fps') === '1') game.hud.setShowFps(true);
   if (params.get('intro') === '0' || noloop) game.introEnabled = false;
   if (replay) game.hud.showToast('🎬 Repetición', 'info');
-  game.postfx.setCinematic(game.settings.cinematic);
-  game.postfx.setQuality(game.settings.quality);
   if (params.get('low') === '1') {
     game.pixelRatioOverride = 1;
     game.renderer.setPixelRatio(1);
