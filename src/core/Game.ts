@@ -110,6 +110,9 @@ interface DeathFx {
 const AMBIENT_PROP_SEED = 7;
 const AMBIENT_FAUNA_SEED = 13;
 
+/** Campaign intro flyover framing, relative to the player base. */
+const INTRO_CAMERA = { offset: 34, fromHeight: 52, toZoom: 30, seconds: 2.6 } as const;
+
 export class Game {
   renderer!: THREE.WebGLRenderer;
   scene = new THREE.Scene();
@@ -152,6 +155,8 @@ export class Game {
   readonly rng: RNG;
   /** Force a specific devicePixelRatio (e.g. low mode). */
   pixelRatioOverride: number | null = null;
+  /** Play the campaign's camera flyover at mission start (off with `?intro=0`). */
+  introEnabled = true;
   players: PlayerState[] = [];
   units = new Map<number, Unit>();
   buildings = new Map<number, Building>();
@@ -805,6 +810,15 @@ export class Game {
       }
     }
     this.camera.moveTo(c.x, c.z, true);
+  }
+
+  /** Campaign intro: a short overview flight down to the player's base. */
+  playIntro(): void {
+    if (!this.introEnabled) return;
+    const c = this.playerCenter(0);
+    this.camera.moveTo(c.x + INTRO_CAMERA.offset, c.z + INTRO_CAMERA.offset, true);
+    this.camera.setHeight(INTRO_CAMERA.fromHeight);
+    this.camera.flyTo(c.x, c.z, INTRO_CAMERA.toZoom, INTRO_CAMERA.seconds);
   }
 
   private missionEnd(win: boolean): void {

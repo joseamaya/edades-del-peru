@@ -88,6 +88,7 @@ export class Mission {
       // start the match
       if (this.game.getPaused()) this.game.togglePause();
       this.game.loop.start();
+      this.game.playIntro();
       this.triggerDialogue(this.def.history.split('\n')[0] ?? 'Comienza la misión.', 4);
     });
   }

@@ -232,8 +232,7 @@ Definition of Done and the building audit see
   pulse on the minimap (`pushAlert` + `alert` event), and order markers (`src/entities/OrderMarker.ts`).
   The bottom **command panel** (`#ed-bottom`) is hidden unless a **unit or building is selected** (0 A.D.-style):
   building therefore starts from a selected worker (or the H/F/G/V shortcuts), not from an idle panel.
-- **Camera panning (`src/core/Camera.ts` + `src/core/cameraMath.ts`)**: the camera orbits a ground target; its
-  ground basis is `forward = (−sin yaw, −cos yaw)`, `right = (cos yaw, −sin yaw)`, and **every pan input is rotated
+- **Camera panning (`src/core/Camera.ts` + `src/core/cameraMath.ts`)**: the camera orbits a ground target; its ground basis is `forward = (−sin yaw, −cos yaw)`, `right = (cos yaw, −sin yaw)`, and **every pan input is rotated
   by that basis** (`rotateToWorld`, a rotation by `−yaw`). Edge scrolling is **progressive** (0 at the zone edge,
   ±1 at the border) and every pan vector is **normalized** (a diagonal is not faster than an axis); middle-drag uses
   a **geometric** world-per-pixel (`2·tan(fov/2)·zoom/viewportH`) with the "grab the map" metaphor (the content
@@ -244,6 +243,9 @@ Definition of Done and the building audit see
   controls set `auto`). Tuning lives in `CAMERA_CONFIG`; the pure math is unit-tested (`tests/camera.test.ts`), the
   wiring in `tests/e2e/camera.spec.ts`. The **camera speed** option (Baja/Normal/Alta, `settings.cameraSpeed` →
   `CAMERA_SPEED_SCALE`) scales the keyboard/edge speed only (the middle-drag is direct manipulation).
+- **Campaign intro (visual only)**: `Mission.start` calls `Game.playIntro()` from the briefing's onStart
+  callback, which frames an overview and runs `RTSCamera.flyTo(x, z, zoom, seconds)` down to the player base.
+  Skipped with `?intro=0` (and under `?noloop=1`, since tests drive fixed steps).
 - **Construction (RTS standard)**: placing a building **requires selected workers** (`Game.startPlacement` warns
   if none). Only those workers build: `commitPlacement` emits `issueOrder(BUILD, clear=true)` (the order
   **interrupts** their current task) and **keeps the selection**. Do not reintroduce auto-assignment of builders:
@@ -360,7 +362,8 @@ Definition of Done and the building audit see
 - URL params: `?play=1`, `?menu=0/1`, `?load=1`, `?replay=1`, `?seed=`, `?fog=0`, `?low=1`, `?speed=`, `?era=N`,
   `?period=N`, `?mission=ID`, `?noloop=1` (do not auto-start the loop; tests drive fixed steps from step 0),
   `?fps=1` (show the debug FPS overlay, hidden by default), `?civ=ID` (force the player civilization; with
-  `?period=N` it drives the geography) and `?map=TYPE` (force the map type).
+  `?period=N` it drives the geography), `?map=TYPE` (force the map type) and `?intro=0` (skip the campaign
+  camera flyover; `?noloop=1` skips it too).
 - Shared `scripts/lib.mjs` (`launchChromium`, `withViteServer`, `readPng`, `classify`). Scripts launch Vite on a
   free port and Chromium with SwiftShader; they use `CHROME_PATH` or `chromium.executablePath()`. Run captures
   with `?low=1`.

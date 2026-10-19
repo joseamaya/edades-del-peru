@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { damp } from '../util/math';
+import { damp, smoothstep } from '../util/math';
 import { isTypingTarget } from '../util/dom';
 import {
   CAMERA_CONFIG,
@@ -21,7 +21,8 @@ export interface CameraTarget {
  * WASD/edge-scroll/middle-drag panning, and smoothed follow.
  *
  * Inputs only move `desiredTarget`; the camera keeps interpolating toward it
- * (damping), so panning feels smooth without a second interpolation system.
+ * (damping). The one exception is a scripted `flyTo` (intro), which eases the
+ * framing directly in real time and then hands control back to the damping.
  */
 export class RTSCamera {
   readonly camera: THREE.PerspectiveCamera;
@@ -42,6 +43,17 @@ export class RTSCamera {
   private pointerOverUi = false;
   /** Multiplier for keyboard/edge pan speed (user setting). */
   private speedScale = 1;
+  /** Scripted camera flight (intro), overriding the damp while active. */
+  private fly: {
+    fromX: number;
+    fromZ: number;
+    fromZoom: number;
+    toX: number;
+    toZ: number;
+    toZoom: number;
+    startTime: number | null;
+    dur: number;
+  } | null = null;
 
   private mapSize: number;
   private viewportH: number;
@@ -198,6 +210,21 @@ export class RTSCamera {
     this.desiredZoom = clamp(h, this.minZoom, this.maxZoom);
   }
 
+  /** Cinematic flight from the current framing to `(x,z,zoom)` over `seconds`. */
+  flyTo(x: number, z: number, zoom: number, seconds: number): void {
+    this.followId = null;
+    this.fly = {
+      fromX: this.desiredTarget.x,
+      fromZ: this.desiredTarget.z,
+      fromZoom: this.desiredZoom,
+      toX: x,
+      toZ: z,
+      toZoom: clamp(zoom, this.minZoom, this.maxZoom),
+      startTime: null,
+      dur: Math.max(0.01, seconds),
+    };
+  }
+
   /** Enable camera rotation (Q/E). Off by default (fixed camera, SC2 style). */
   setRotationEnabled(on: boolean): void {
     this.rotationEnabled = on;
@@ -265,11 +292,30 @@ export class RTSCamera {
       }
     }
 
+    if (this.fly) {
+      const f = this.fly;
+      if (f.startTime === null) f.startTime = time;
+      // real time, so the flight lasts `dur` seconds regardless of game speed/FPS
+      const k = clamp((time - f.startTime) / f.dur, 0, 1);
+      const e = smoothstep(0, 1, k);
+      this.desiredTarget.x = f.fromX + (f.toX - f.fromX) * e;
+      this.desiredTarget.z = f.fromZ + (f.toZ - f.fromZ) * e;
+      this.desiredZoom = f.fromZoom + (f.toZoom - f.fromZoom) * e;
+    }
+
     this.clampTarget();
 
-    this.zoom = damp(this.zoom, this.desiredZoom, CAMERA_CONFIG.zoomLambda, dt);
-    this.target.x = damp(this.target.x, this.desiredTarget.x, CAMERA_CONFIG.panLambda, dt);
-    this.target.z = damp(this.target.z, this.desiredTarget.z, CAMERA_CONFIG.panLambda, dt);
+    if (this.fly) {
+      // the scripted flight (already eased) sets the framing directly, no damping
+      this.zoom = this.desiredZoom;
+      this.target.x = this.desiredTarget.x;
+      this.target.z = this.desiredTarget.z;
+      if (this.fly.startTime !== null && (time - this.fly.startTime) / this.fly.dur >= 1) this.fly = null;
+    } else {
+      this.zoom = damp(this.zoom, this.desiredZoom, CAMERA_CONFIG.zoomLambda, dt);
+      this.target.x = damp(this.target.x, this.desiredTarget.x, CAMERA_CONFIG.panLambda, dt);
+      this.target.z = damp(this.target.z, this.desiredTarget.z, CAMERA_CONFIG.panLambda, dt);
+    }
 
     const dist = this.zoom;
     const y = Math.sin(this.pitch) * dist;

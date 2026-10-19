@@ -133,12 +133,14 @@ async function boot(): Promise<void> {
     modResult = result;
   }
   (window as unknown as { __mods?: unknown }).__mods = modResult;
-  if (params.get('noloop') === '1') setAutoStart(false);
+  const noloop = params.get('noloop') === '1';
+  if (noloop) setAutoStart(false);
   const game = new Game(settings, snapshot, replay);
   (window as any).game = game;
   (window as any).THREE = THREE;
   (window as any).ScriptedPlayer = ScriptedPlayer;
   if (params.get('fps') === '1') game.hud.setShowFps(true);
+  if (params.get('intro') === '0' || noloop) game.introEnabled = false;
   if (replay) game.hud.showToast('🎬 Repetición', 'info');
   game.postfx.setCinematic(settings.cinematic);
   game.postfx.setQuality(settings.quality);
