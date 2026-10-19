@@ -6,6 +6,8 @@ export interface AmbientSample {
   height: number;
   water: boolean;
   beach: boolean;
+  /** Within a few units of water (reliable shore test; `isBeach` is a thin strip). */
+  nearWater: boolean;
   /** 0 flat .. 1 steep. */
   slope: number;
   /** 0 dry .. 1 wet. */
@@ -22,6 +24,13 @@ export interface AmbientPlacement<T> {
 
 /** Steepest ground an ambient item may sit on. */
 const MAX_SLOPE = 0.85;
+/** Offsets probed to detect the shore. */
+const NEAR_WATER_OFFSETS: ReadonlyArray<readonly [number, number]> = [
+  [3, 0],
+  [-3, 0],
+  [0, 3],
+  [0, -3],
+];
 
 /**
  * Scatter ambient items over `[0,size]`: sample dry candidate points, pick an id
@@ -51,6 +60,7 @@ export function scatterAmbient<T>(opts: {
       height: query.getHeight(x, z),
       water,
       beach: query.isBeach(x, z),
+      nearWater: NEAR_WATER_OFFSETS.some(([dx, dz]) => query.isWater(x + dx, z + dz)),
       slope: query.getSlope(x, z),
       moisture: query.getMoisture(x, z),
     };

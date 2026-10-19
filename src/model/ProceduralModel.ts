@@ -2614,7 +2614,7 @@ function buildModelTemplate(spec: ModelSpec, ctx: BuildContext): THREE.Group {
 }
 
 /** Bake the part colour times AO into vertex colours, memoized by source geometry + colour. */
-function aoGeometry(geo: THREE.BufferGeometry, color: string): THREE.BufferGeometry {
+export function aoGeometry(geo: THREE.BufferGeometry, color: string): THREE.BufferGeometry {
   const key = `${geo.uuid}|${color}`;
   const owned = bakedGeoCache.get(key);
   if (owned) return owned;
