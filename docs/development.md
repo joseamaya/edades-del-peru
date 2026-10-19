@@ -89,7 +89,16 @@ Definition of Done and the building audit see
   `MissionDef.timeOfDay` (the day/night hour, already per mission).
 - **Death/collapse FX (visual only)**: `Unit.die()`/`Building.die()` keep the model in the scene; `Game` records
   a one-shot `deathFx` (units topple, buildings sink + tilt with dust/fire) and frees the model when it ends.
-  Entities still leave `units`/`buildings` immediately, so AI/mission/save filters are unchanged.
+  Entities still leave `units`/`buildings` immediately, so AI/mission/save filters are unchanged. A building
+  collapse also spawns **instanced debris chunks** (`src/rendering/Debris.ts`, fixed pool: gravity + spin +
+  bounce) and a sustained fire/dust emission while it sinks.
+- **Phased construction**: while `!constructionComplete`, `Building.update` grows the model out of the ground
+  (`view.group.scale.y` eased by `buildRatio`); it is restored to 1 on completion. Visual only (the save already
+  stores `constructionProgress`).
+- **Ambient life (visual only)**: `src/model/defs/props.ts` (cacti, totora, rocks, shrubs) and
+  `src/model/defs/wildlife.ts` (llama, vicuña, condor, pelican) are **pure** planners over the region profile +
+  seed; `src/rendering/Props.ts` (instanced) and `src/rendering/Wildlife.ts` (small wandering groups) render
+  them. No entities, obstacles or save; regenerated deterministically on load and disposed in `Game.destroy`.
 - **Water refraction**: `Water` renders the scene with its mesh hidden into a `WebGLRenderTarget`
   (`Game.renderWaterRefraction`) and the shader samples the seabed, offset by the wave normal and faded by the
   viewing angle (fresnel). It costs an extra scene pass, so it only runs with the cinematic set on and the
