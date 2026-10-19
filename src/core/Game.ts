@@ -7,6 +7,7 @@ import { Terrain } from '../rendering/Terrain';
 import { Water } from '../rendering/Water';
 import { CulturalLandscape } from '../rendering/CulturalLandscape';
 import { Particles } from '../rendering/Particles';
+import { Debris } from '../rendering/Debris';
 import { RTSCamera } from './Camera';
 import { GameLoop } from './GameLoop';
 import { Fow } from '../game/Fow';
@@ -17,6 +18,10 @@ import { Building } from '../entities/Building';
 import { ResourceNode, clearResourceCaches } from '../entities/ResourceNode';
 import { OrderMarkers, MarkerKind } from '../entities/OrderMarker';
 import { TreeInstances } from '../rendering/TreeInstances';
+import { Props } from '../rendering/Props';
+import { Wildlife } from '../rendering/Wildlife';
+import { planProps } from '../model/defs/props';
+import { planWildlife } from '../model/defs/wildlife';
 import { Projectile, updateProjectilePools } from '../entities/Projectile';
 import { EntityView, reserveIds } from '../entities/EntityView';
 import { AI } from '../game/AI';
@@ -121,12 +126,15 @@ export class Game {
   /** Per-base settlement overlays (planned fields/roads); visual only. */
   settlements: SettlementOverlay[] = [];
   particles!: Particles;
+  debris!: Debris;
   fow!: Fow;
   /** Shared fog-of-war uniforms for the visual-only layers (landscape, overlays, landmark). */
   private readonly fowUniforms = createFowUniforms();
   pathfinder!: Pathfinder;
   markers!: OrderMarkers;
   trees!: TreeInstances;
+  props!: Props;
+  wildlife!: Wildlife;
   loop = new GameLoop();
   hud!: HUD;
   audio = new AudioEngine();
@@ -277,8 +285,11 @@ export class Game {
     this.postfx.setColorGrade(resolveColorGrade(s.period, this.mapProfile));
     this.syncWaterRefractionSize();
     this.particles = new Particles(this.scene, 4096);
+    this.debris = new Debris(this.scene);
     this.markers = new OrderMarkers(this.scene);
     this.trees = new TreeInstances(this.scene);
+    this.props = new Props(this.scene);
+    this.wildlife = new Wildlife(this.scene);
     this.fow = new Fow(s.mapSize, 128);
     this.terrain.setFow(this.fow.texture, s.fogOfWar);
     this.fowUniforms.fowMap.value = this.fow.texture;
@@ -287,6 +298,7 @@ export class Game {
     this.pathfinder = new Pathfinder(s.mapSize, 2);
     this.pathfinder.bakeTerrain((x, z) => this.terrain.getHeight(x, z), this.terrain.waterLevel);
     if (!this.pendingSnapshot) this.spawnResources();
+    this.spawnAmbient();
   }
 
   private setTimeOfDay(mode: string): void {
@@ -526,6 +538,27 @@ export class Game {
       node.view.position.set(x, 0, z);
       this.resourceNodes.set(node.id, node);
     }
+  }
+
+  /**
+   * Ambient life (visual only): scatter props and place fauna from the region
+   * profile + seed. Deterministic and regenerated on load (not saved).
+   */
+  private spawnAmbient(): void {
+    const s = this.settings;
+    const region = this.mapProfile.region;
+    const sample = (x: number, z: number) => ({
+      height: this.terrain.getHeight(x, z),
+      water: this.terrain.isWater(x, z),
+      beach: this.terrain.isBeach(x, z),
+      slope: this.terrain.getSlope(x, z),
+      moisture: this.terrain.getMoisture(x, z),
+    });
+    const heightAt = (x: number, z: number): number => this.terrain.getHeight(x, z);
+    const propCount = Math.round((s.mapSize * s.mapSize) / 1100);
+    this.props.place(planProps(region, s.mapSeed * 7 + 3, s.mapSize, propCount, sample), heightAt);
+    const faunaCount = region === 'amazon' ? 4 : 10;
+    this.wildlife.spawn(planWildlife(region, s.mapSeed * 13 + 5, s.mapSize, faunaCount, sample), heightAt);
   }
 
   /** Geography-driven resource pick: profile weights, gated by height, beach, moisture and slope. */
@@ -2600,8 +2633,10 @@ export class Game {
     const cs = cloudDensity(this.sky.sunDir.x * 900 + t * 3, this.sky.sunDir.z * 900) * 0.22;
     this.terrain.setCloudShadow(1 - cs);
     this.particles.update(d);
+    this.debris.update(d);
     this.markers.update(d);
     this.trees.update(d);
+    this.wildlife.update(d);
 
     // a blocking menu/modal suppresses camera panning (edge/keyboard/drag)
     this.camera.setUiCaptured(this.hud.hasBlockingOverlay());
@@ -2700,6 +2735,9 @@ export class Game {
   /** Register a topple/collapse animation for a just-removed entity's model. */
   private spawnDeathFx(view: EntityView, kind: 'unit' | 'building', radius: number, cleanup: () => void): void {
     const building = kind === 'building';
+    if (building) {
+      this.debris.spawn(view.group.position.x, view.group.position.y + 0.6, view.group.position.z, 14, radius);
+    }
     this.deathFx.push({
       view,
       t: 0,
@@ -2729,10 +2767,12 @@ export class Game {
         fx.emitTimer -= dt;
         if (fx.emitTimer <= 0) {
           fx.emitTimer = 0.12;
+          const px = fx.view.group.position.x;
+          const pz = fx.view.group.position.z;
           this.particles.emit({
-            x: fx.view.group.position.x,
+            x: px,
             y: fx.baseY + 1,
-            z: fx.view.group.position.z,
+            z: pz,
             count: 2,
             color: 0x8a7a66,
             kind: 'dust',
@@ -2741,6 +2781,18 @@ export class Game {
             size: 2.6,
             spread: Math.max(1, fx.radius),
             gravity: 0.5,
+          });
+          this.particles.emit({
+            x: px,
+            y: fx.baseY + 0.8,
+            z: pz,
+            count: 2,
+            color: 0xff7a20,
+            kind: 'fire',
+            speed: 1.1,
+            life: 0.7,
+            size: 2.4,
+            spread: Math.max(0.6, fx.radius * 0.7),
           });
         }
       }
@@ -2865,8 +2917,11 @@ export class Game {
     this.sky.dispose();
     this.water.dispose();
     this.particles.dispose();
+    this.debris.dispose();
     this.markers.dispose();
     this.trees.dispose();
+    this.props.dispose();
+    this.wildlife.dispose();
     if (this.landmark) {
       this.scene.remove(this.landmark);
       disposeModel(this.landmark);

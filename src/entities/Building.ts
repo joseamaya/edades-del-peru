@@ -137,6 +137,7 @@ export class Building {
     if (this.constructionProgress >= this.stats.buildTime) {
       this.constructionComplete = true;
       this.setConstructionOpacity(1);
+      this.view.group.scale.y = 1;
       if (this.owner === 0) {
         this.ctx?.event('alert', { icon: '✅', text: 'Edificio terminado', x: this.pos.x, z: this.pos.z });
       }
@@ -245,6 +246,13 @@ export class Building {
   update(dt: number, time: number): void {
     if (this.dead) return;
     this.attackCooldown = Math.max(0, this.attackCooldown - dt);
+
+    // phased construction: the model rises out of the ground as it is built
+    if (!this.constructionComplete) {
+      this.view.group.scale.y = 0.08 + 0.92 * clamp(this.buildRatio, 0, 1);
+    } else if (this.view.group.scale.y !== 1) {
+      this.view.group.scale.y = 1;
+    }
 
     // ambient smoke from factories/smelters/refineries (map life)
     if (

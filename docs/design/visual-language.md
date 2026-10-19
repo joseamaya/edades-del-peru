@@ -133,6 +133,14 @@ dense and frond-heavy while the coast is nearly bare and the high Andes mixes
 `broad`/`needle`. Tree chopping, fog culling and fall animation all run through
 the instance manager.
 
+**Ambient props and fauna** add life on top of the trees, also data-driven and
+visual-only: `src/model/defs/props.ts` scatters cacti, totora, rock clusters and
+shrubs by region suitability (aridity, moisture, slope, beach), and
+`src/model/defs/wildlife.ts` places llamas and vicuñas on the puna, condors above
+the Andes and pelicans on the shore (`src/rendering/Props.ts`,
+`src/rendering/Wildlife.ts`). Both are pure planners over `region + seed` and
+regenerate deterministically on load.
+
 ## Colour
 
 - **Civilization palettes** live in `src/model/defs/civs.ts`
