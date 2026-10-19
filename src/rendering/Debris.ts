@@ -6,6 +6,7 @@ interface Chunk {
   maxLife: number;
   size: number;
   bounce: boolean;
+  groundY: number;
   pos: THREE.Vector3;
   vel: THREE.Vector3;
   axis: THREE.Vector3;
@@ -39,6 +40,7 @@ export class Debris {
       maxLife: 1,
       size: 0.3,
       bounce: false,
+      groundY: 0,
       pos: new THREE.Vector3(),
       vel: new THREE.Vector3(),
       axis: new THREE.Vector3(0, 1, 0),
@@ -48,8 +50,8 @@ export class Debris {
     this.writeAll();
   }
 
-  /** Launch `count` chunks outward from a point. */
-  spawn(x: number, y: number, z: number, count: number, radius: number): void {
+  /** Launch `count` chunks outward from a point; they settle at `groundY`. */
+  spawn(x: number, y: number, z: number, count: number, radius: number, groundY: number): void {
     for (let i = 0; i < count; i++) {
       const c = this.pool.find((p) => !p.active);
       if (!c) return;
@@ -59,6 +61,7 @@ export class Debris {
       c.maxLife = c.life = 0.9 + Math.random() * 0.7;
       c.size = 0.18 + Math.random() * 0.28;
       c.bounce = false;
+      c.groundY = groundY;
       c.pos.set(
         x + (Math.random() - 0.5) * radius,
         y + Math.random() * radius * 0.6,
@@ -79,7 +82,7 @@ export class Debris {
       c.angle += c.spin * dt;
       c.vel.y -= GRAVITY * dt;
       c.pos.addScaledVector(c.vel, dt);
-      const ground = 0.12;
+      const ground = c.groundY + 0.12;
       if (c.pos.y < ground) {
         c.pos.y = ground;
         if (!c.bounce && Math.abs(c.vel.y) > 1.5) {
@@ -104,10 +107,10 @@ export class Debris {
     this.dummy.rotation.set(0, 0, 0);
     for (let i = 0; i < this.pool.length; i++) {
       const c = this.pool[i];
-      const k = c.active ? Math.min(1, c.life / (c.maxLife * 0.4)) : 0;
+      const fade = c.active ? Math.min(1, c.life / (c.maxLife * 0.4)) : 0;
       this.dummy.position.copy(c.pos);
       this.dummy.quaternion.setFromAxisAngle(c.axis, c.angle);
-      this.dummy.scale.setScalar(c.active ? c.size * k : 0);
+      this.dummy.scale.setScalar(c.active ? c.size * fade : 0);
       this.dummy.updateMatrix();
       this.mesh.setMatrixAt(i, this.dummy.matrix);
     }

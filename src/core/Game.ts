@@ -20,8 +20,8 @@ import { OrderMarkers, MarkerKind } from '../entities/OrderMarker';
 import { TreeInstances } from '../rendering/TreeInstances';
 import { Props } from '../rendering/Props';
 import { Wildlife } from '../rendering/Wildlife';
-import { planProps } from '../model/defs/props';
-import { planWildlife } from '../model/defs/wildlife';
+import { planProps, propCountFor } from '../model/defs/props';
+import { planWildlife, faunaCountFor } from '../model/defs/wildlife';
 import { Projectile, updateProjectilePools } from '../entities/Projectile';
 import { EntityView, reserveIds } from '../entities/EntityView';
 import { AI } from '../game/AI';
@@ -105,6 +105,10 @@ interface DeathFx {
   emitTimer: number;
   cleanup: () => void;
 }
+
+/** Seed multipliers so ambient scatter does not correlate with the map/replay RNG. */
+const AMBIENT_PROP_SEED = 7;
+const AMBIENT_FAUNA_SEED = 13;
 
 export class Game {
   renderer!: THREE.WebGLRenderer;
@@ -547,18 +551,11 @@ export class Game {
   private spawnAmbient(): void {
     const s = this.settings;
     const region = this.mapProfile.region;
-    const sample = (x: number, z: number) => ({
-      height: this.terrain.getHeight(x, z),
-      water: this.terrain.isWater(x, z),
-      beach: this.terrain.isBeach(x, z),
-      slope: this.terrain.getSlope(x, z),
-      moisture: this.terrain.getMoisture(x, z),
-    });
     const heightAt = (x: number, z: number): number => this.terrain.getHeight(x, z);
-    const propCount = Math.round((s.mapSize * s.mapSize) / 1100);
-    this.props.place(planProps(region, s.mapSeed * 7 + 3, s.mapSize, propCount, sample), heightAt);
-    const faunaCount = region === 'amazon' ? 4 : 10;
-    this.wildlife.spawn(planWildlife(region, s.mapSeed * 13 + 5, s.mapSize, faunaCount, sample), heightAt);
+    const propSeed = s.mapSeed * AMBIENT_PROP_SEED + 3;
+    const faunaSeed = s.mapSeed * AMBIENT_FAUNA_SEED + 5;
+    this.props.place(planProps(region, propSeed, s.mapSize, propCountFor(s.mapSize), this.terrain), heightAt);
+    this.wildlife.spawn(planWildlife(region, faunaSeed, s.mapSize, faunaCountFor(region), this.terrain), heightAt);
   }
 
   /** Geography-driven resource pick: profile weights, gated by height, beach, moisture and slope. */
@@ -2736,7 +2733,14 @@ export class Game {
   private spawnDeathFx(view: EntityView, kind: 'unit' | 'building', radius: number, cleanup: () => void): void {
     const building = kind === 'building';
     if (building) {
-      this.debris.spawn(view.group.position.x, view.group.position.y + 0.6, view.group.position.z, 14, radius);
+      this.debris.spawn(
+        view.group.position.x,
+        view.group.position.y + 0.6,
+        view.group.position.z,
+        14,
+        radius,
+        view.group.position.y,
+      );
     }
     this.deathFx.push({
       view,

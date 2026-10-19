@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('ambient props and fauna are placed at boot', async ({ page }) => {
-  await page.goto('/?play=1&seed=777&fog=0&low=1');
+  await page.goto('/?civ=inca&period=5&seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });
@@ -16,7 +16,7 @@ test('ambient props and fauna are placed at boot', async ({ page }) => {
   });
   expect(out.propKinds).toBe(4);
   expect(out.instances).toBeGreaterThan(0);
-  expect(out.fauna).toBeGreaterThanOrEqual(0);
+  expect(out.fauna).toBeGreaterThan(0);
 });
 
 test('buildings grow while under construction', async ({ page }) => {

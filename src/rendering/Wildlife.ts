@@ -2,14 +2,17 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { SpeciesId, WildlifeSpawn } from '../model/defs/wildlife';
 
+/** Hard cap on live animals (one merged mesh each), regardless of planner output. */
+const MAX_ANIMALS = 16;
+
 interface Animal {
   group: THREE.Group;
-  home: THREE.Vector3;
-  dir: number;
-  turnTimer: number;
-  speed: number;
+  homeX: number;
+  homeZ: number;
   phase: number;
   radius: number;
+  angSpeed: number;
+  bobPhase: number;
   flyHeight: number;
   ground: boolean;
   heightAt: (x: number, z: number) => number;
@@ -17,20 +20,20 @@ interface Animal {
 
 /**
  * Ambient fauna (visual only): llamas/vicuñas graze, condors/pelicans soar.
- * Small counts, one merged mesh per animal, no entities/obstacles/gameplay.
+ * Motion is a deterministic orbit of the spawn point (no randomness), so it is
+ * stable across runs; one merged mesh per animal, no entities/obstacles/gameplay.
  */
 export class Wildlife {
   private readonly animals: Animal[] = [];
   private readonly materials: THREE.Material[] = [];
+  private time = 0;
 
-  constructor(scene: THREE.Scene) {
-    this.scene = scene;
-  }
-
-  private readonly scene: THREE.Scene;
+  constructor(private readonly scene: THREE.Scene) {}
 
   spawn(spawns: WildlifeSpawn[], heightAt: (x: number, z: number) => number): void {
-    for (const s of spawns) {
+    for (let i = 0; i < Math.min(spawns.length, MAX_ANIMALS - this.animals.length); i++) {
+      const s = spawns[i];
+      const n = this.animals.length;
       const { geo, color, flyHeight, ground } = buildAnimalGeometry(s.id);
       const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.9, metalness: 0 });
       this.materials.push(mat);
@@ -43,12 +46,12 @@ export class Wildlife {
       this.scene.add(group);
       this.animals.push({
         group,
-        home: new THREE.Vector3(s.x, 0, s.z),
-        dir: s.rotY,
-        turnTimer: Math.random() * 3,
-        speed: ground ? 0.5 + Math.random() * 0.4 : 1.4 + Math.random() * 0.5,
-        phase: Math.random() * Math.PI * 2,
-        radius: ground ? 5 + Math.random() * 4 : 14 + Math.random() * 8,
+        homeX: s.x,
+        homeZ: s.z,
+        phase: n * 2.399, // golden angle: spread the herd/locations apart
+        radius: ground ? 4 + (n % 4) : 12 + (n % 5) * 2,
+        angSpeed: ground ? 0.08 + (n % 3) * 0.03 : 0.2 + (n % 2) * 0.1,
+        bobPhase: n * 1.7,
         flyHeight,
         ground,
         heightAt,
@@ -57,27 +60,17 @@ export class Wildlife {
   }
 
   update(dt: number): void {
+    this.time += dt;
     for (const a of this.animals) {
-      a.phase += dt;
-      a.turnTimer -= dt;
-      if (a.turnTimer <= 0) {
-        a.turnTimer = 1.5 + Math.random() * 2.5;
-        const dx = a.group.position.x - a.home.x;
-        const dz = a.group.position.z - a.home.z;
-        if (dx * dx + dz * dz > a.radius * a.radius) {
-          a.dir = Math.atan2(-dx, -dz); // head back toward home
-        } else {
-          a.dir += (Math.random() - 0.5) * 2.2;
-        }
-      }
-      const nx = a.group.position.x + Math.sin(a.dir) * a.speed * dt;
-      const nz = a.group.position.z + Math.cos(a.dir) * a.speed * dt;
-      a.group.position.x = nx;
-      a.group.position.z = nz;
-      const gy = a.heightAt(nx, nz);
-      const bob = a.ground ? Math.abs(Math.sin(a.phase * 3.2)) * 0.03 : Math.sin(a.phase * 1.6) * 0.25;
-      a.group.position.y = gy + a.flyHeight + bob;
-      a.group.rotation.y = a.dir;
+      const angle = a.phase + this.time * a.angSpeed;
+      const x = a.homeX + Math.cos(angle) * a.radius;
+      const z = a.homeZ + Math.sin(angle) * a.radius;
+      const y = a.heightAt(x, z);
+      const bob = a.ground
+        ? Math.abs(Math.sin(this.time * 3 + a.bobPhase)) * 0.03
+        : Math.sin(this.time * 1.6 + a.bobPhase) * 0.25;
+      a.group.position.set(x, y + a.flyHeight + bob, z);
+      a.group.rotation.y = angle + Math.PI / 2; // face the direction of travel
     }
   }
 
@@ -99,9 +92,8 @@ function buildAnimalGeometry(id: SpeciesId): {
   ground: boolean;
 } {
   const parts: THREE.BufferGeometry[] = [];
-  const box = (w: number, h: number, d: number, x: number, y: number, z: number, ry = 0): void => {
+  const box = (w: number, h: number, d: number, x: number, y: number, z: number): void => {
     const g = new THREE.BoxGeometry(w, h, d);
-    if (ry) g.applyMatrix4(new THREE.Matrix4().makeRotationY(ry));
     g.translate(x, y, z);
     parts.push(g);
   };
@@ -116,8 +108,8 @@ function buildAnimalGeometry(id: SpeciesId): {
   let ground = true;
 
   if (id === 'llama' || id === 'vicuna') {
-    const scale = id === 'llama' ? 1 : 0.8;
-    box(0.34, 0.34, 0.8 * scale + 0.4, 0, 0.62, 0); // body
+    const bodyD = id === 'llama' ? 1.2 : 1.0;
+    box(0.34, 0.34, bodyD, 0, 0.62, 0); // body
     box(0.16, 0.5, 0.16, 0, 0.95, 0.34); // neck
     box(0.18, 0.16, 0.3, 0, 1.2, 0.44); // head
     leg(-0.12, 0.28, 0.5);

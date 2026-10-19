@@ -1,6 +1,6 @@
-import { RNG, weightedPick } from '../../util/rng';
+import { scatterAmbient, type AmbientPlacement, type AmbientSample } from './scatter';
+import type { AmbientQuery } from './ambientQuery';
 import type { GeographicRegion } from './profiles';
-import type { PlacementSample } from './props';
 
 /**
  * Ambient Peruvian fauna (visual only): llamas and vicuñas graze the highlands,
@@ -11,27 +11,36 @@ export type SpeciesId = 'llama' | 'vicuna' | 'condor' | 'pelican';
 
 export const SPECIES_IDS: SpeciesId[] = ['llama', 'vicuna', 'condor', 'pelican'];
 
-export interface WildlifeSpawn {
-  id: SpeciesId;
-  x: number;
-  z: number;
-  rotY: number;
-  scale: number;
-}
+export type WildlifeSpawn = AmbientPlacement<SpeciesId>;
 
 /** Base presence of each species per geographic region. */
-const REGION_WEIGHTS: Record<GeographicRegion, Partial<Record<SpeciesId, number>>> = {
-  north_coast: { pelican: 1.2, llama: 0.2 },
-  central_coast: { pelican: 1.0, llama: 0.3 },
-  south_coast: { pelican: 0.8, llama: 0.3, condor: 0.5 },
-  andean_valley: { llama: 1.0, vicuna: 0.4, condor: 0.6 },
-  high_andes: { llama: 0.8, vicuna: 1.2, condor: 1.0 },
-  altiplano: { llama: 1.2, vicuna: 0.8, condor: 0.4 },
-  amazon: { condor: 0.2 },
+const REGION_WEIGHTS: Record<GeographicRegion, Record<SpeciesId, number>> = {
+  north_coast: { pelican: 1.2, llama: 0.2, vicuna: 0, condor: 0 },
+  central_coast: { pelican: 1.0, llama: 0.3, vicuna: 0, condor: 0 },
+  south_coast: { pelican: 0.8, llama: 0.3, vicuna: 0, condor: 0.5 },
+  andean_valley: { pelican: 0, llama: 1.0, vicuna: 0.4, condor: 0.6 },
+  high_andes: { pelican: 0, llama: 0.8, vicuna: 1.2, condor: 1.0 },
+  altiplano: { pelican: 0, llama: 1.2, vicuna: 0.8, condor: 0.4 },
+  amazon: { pelican: 0, llama: 0, vicuna: 0, condor: 0.2 },
 };
 
+/** How many fauna a region carries (kept small: one mesh per animal). */
+const REGION_COUNT: Record<GeographicRegion, number> = {
+  north_coast: 10,
+  central_coast: 10,
+  south_coast: 9,
+  andean_valley: 10,
+  high_andes: 12,
+  altiplano: 12,
+  amazon: 4,
+};
+
+export function faunaCountFor(region: GeographicRegion): number {
+  return REGION_COUNT[region];
+}
+
 /** Habitats are separated by altitude and water: pelicans on the shore, camelids on the puna. */
-function suitability(id: SpeciesId, s: PlacementSample): number {
+function suitability(id: SpeciesId, s: AmbientSample): number {
   switch (id) {
     case 'pelican':
       return s.beach ? 1.5 : 0;
@@ -44,34 +53,29 @@ function suitability(id: SpeciesId, s: PlacementSample): number {
   }
 }
 
-/**
- * Deterministic fauna placement. Pure: same seed + region + sample → same result
- * (unit-tested with a fake sample).
- */
+/** Deterministic fauna placement (unit-tested with a fake query). */
 export function planWildlife(
   region: GeographicRegion,
   seed: number,
   size: number,
   count: number,
-  sample: (x: number, z: number) => PlacementSample,
+  query: AmbientQuery,
 ): WildlifeSpawn[] {
-  const rng = new RNG(seed);
-  const weights = REGION_WEIGHTS[region] ?? {};
-  const out: WildlifeSpawn[] = [];
-  let guard = 0;
-  while (out.length < count && guard++ < count * 8) {
-    const x = rng.range(10, size - 10);
-    const z = rng.range(10, size - 10);
-    const s = sample(x, z);
-    if (s.water) continue;
-    const options: Array<[SpeciesId, number]> = [];
-    for (const id of SPECIES_IDS) {
-      const base = weights[id] ?? 0;
-      if (base > 0) options.push([id, base * suitability(id, s)]);
-    }
-    const id = weightedPick(rng, options);
-    if (!id) break;
-    out.push({ id, x, z, rotY: rng.range(0, Math.PI * 2), scale: rng.range(0.9, 1.15) });
-  }
-  return out;
+  const weights = REGION_WEIGHTS[region];
+  return scatterAmbient<SpeciesId>({
+    seed,
+    size,
+    count,
+    guard: 8,
+    scaleRange: [0.9, 1.15],
+    query,
+    optionsFor: (s) => {
+      const options: Array<[SpeciesId, number]> = [];
+      for (const id of SPECIES_IDS) {
+        const base = weights[id];
+        if (base > 0) options.push([id, base * suitability(id, s)]);
+      }
+      return options;
+    },
+  });
 }
