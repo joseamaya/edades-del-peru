@@ -1,8 +1,9 @@
 import { defineConfig } from '@playwright/test';
 
-// Two workers by default (CI shards the suite across jobs); override with PW_WORKERS.
+// One worker per CI shard: software WebGL is CPU-bound and two workers starve it.
+// Sharding across jobs provides the parallel speedup; `PW_WORKERS` overrides.
 const envWorkers = Number(process.env.PW_WORKERS);
-const workers = Number.isFinite(envWorkers) && envWorkers > 0 ? envWorkers : 2;
+const workers = Number.isFinite(envWorkers) && envWorkers > 0 ? envWorkers : process.env.CI ? 1 : 2;
 
 // Heaviest specs: excluded from the `fast` project (quick local runs) and covered
 // by the `slow` project / nightly workflow. The default `yarn test:e2e` runs both.
