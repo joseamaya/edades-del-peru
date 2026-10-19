@@ -1604,8 +1604,8 @@ export class HUD {
       this.select(
         ['high', 'medium', 'low'] as const,
         { high: 'Alta (AAA)', medium: 'Media', low: 'Baja' },
-        'high',
-        (v) => this.game.postfx.setQuality(v),
+        this.game.settings.quality,
+        (v) => this.game.setQuality(v),
       ),
     );
     row.appendChild(q);
@@ -1780,6 +1780,6 @@ export class HUD {
       this.updateBottomProgress();
       this.renderMinimap();
     }
-    if (this.showFps) this.fpsEl.textContent = `${this.game.loop.getFps()} FPS`;
+    if (this.showFps) this.fpsEl.textContent = `${this.game.loop.getFps()} FPS · ${this.game.getAppliedQuality()}`;
   }
 }

@@ -47,6 +47,19 @@ describe('campaign educational content', () => {
     expect(MISSIONS[0].tutorial).toBe(true);
   });
 
+  it('mission atmosphere overrides stay within the supported range', () => {
+    for (const mis of MISSIONS) {
+      const a = mis.atmosphere;
+      if (!a) continue;
+      if (a.fogDensity !== undefined) {
+        expect(a.fogDensity, `${mis.id} fogDensity`).toBeGreaterThanOrEqual(0);
+        expect(a.fogDensity, `${mis.id} fogDensity`).toBeLessThanOrEqual(0.005);
+      }
+      if (a.skyTint !== undefined) expect(a.skyTint, `${mis.id} skyTint`).toMatch(/^#[0-9a-f]{6}$/i);
+      if (a.sunWarmth !== undefined) expect(a.sunWarmth, `${mis.id} sunWarmth`).toBeGreaterThan(0);
+    }
+  });
+
   it('the coetaneous missions are construction scenarios (no documented war)', () => {
     const peaceful = ['m1_caral', 'm2_chavin', 'm4_wari'];
     for (const id of peaceful) {

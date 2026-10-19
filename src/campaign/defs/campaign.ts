@@ -87,6 +87,8 @@ export const MISSIONS: MissionDef[] = [
     enemyCiv: CivId.PARACAS,
     map: { seed: 900, type: 'andes', size: 128 },
     timeOfDay: 'noon',
+    // Callejón de Conchucos: cool highland mist around the ceremonial center.
+    atmosphere: { fogDensity: 0.0042, skyTint: '#c8d6d0', sunWarmth: 0.9 },
     startingEra: Era.REGIONAL_STATES,
     startingResources: { food: 250, wood: 500, silver: 150, stone: 60 },
     start: {},

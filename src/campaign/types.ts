@@ -77,6 +77,13 @@ export interface TriggerDef {
   cooldown?: number;
 }
 
+/** Per-scenario atmosphere override (fields mirror `HistoricalMapProfile.atmosphere`). */
+export interface MissionAtmosphere {
+  fogDensity?: number;
+  skyTint?: string;
+  sunWarmth?: number;
+}
+
 export interface MissionDef {
   id: string;
   title: string;
@@ -97,6 +104,8 @@ export interface MissionDef {
    * coast). Left undefined, it is derived from the civilization.
    */
   region?: GeographicRegion;
+  /** Optional per-scenario atmosphere override (e.g. the Chavín mist). */
+  atmosphere?: MissionAtmosphere;
   timeOfDay: 'morning' | 'noon' | 'dusk' | 'night';
   startingEra: Era;
   startingResources: Resources;

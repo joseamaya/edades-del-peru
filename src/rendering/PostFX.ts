@@ -7,6 +7,7 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { VignetteShader } from 'three/addons/shaders/VignetteShader.js';
 import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import type { ColorGrade } from '../model/defs/grades';
 
 const ChromaticAberrationShader = {
   uniforms: {
@@ -36,6 +37,44 @@ const ChromaticAberrationShader = {
   `,
 };
 
+/** Display-referred period/biome color grade (applied after tone mapping). */
+const ColorGradeShader = {
+  uniforms: {
+    tDiffuse: { value: null },
+    saturation: { value: 1 },
+    contrast: { value: 1 },
+    lift: { value: new THREE.Vector3(0, 0, 0) },
+    gain: { value: new THREE.Vector3(1, 1, 1) },
+    temperature: { value: 0 },
+  },
+  vertexShader: `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: `
+    uniform sampler2D tDiffuse;
+    uniform float saturation;
+    uniform float contrast;
+    uniform vec3 lift;
+    uniform vec3 gain;
+    uniform float temperature;
+    varying vec2 vUv;
+    void main() {
+      vec3 c = texture2D(tDiffuse, vUv).rgb;
+      c = (c - 0.5) * contrast + 0.5;
+      c.r += temperature * 0.06;
+      c.b -= temperature * 0.06;
+      c = c * gain + lift;
+      float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
+      c = mix(vec3(l), c, saturation);
+      gl_FragColor = vec4(clamp(c, 0.0, 1.0), 1.0);
+    }
+  `,
+};
+
 /**
  * AAA post-processing chain:
  * Render -> SSAO -> Bloom -> Gamma/ColorGrade -> Vignette+Aberration -> FXAA -> Output.
@@ -48,6 +87,7 @@ export class PostFX {
   private fxaaPass: ShaderPass;
   private outputPass: OutputPass;
   private chromaticPass: ShaderPass;
+  private colorGradePass: ShaderPass;
 
   /** Cinematic effects (SSAO, bloom, vignette, aberration). Off = sharp classic look. */
   cinematicEnabled = false;
@@ -55,6 +95,9 @@ export class PostFX {
   ssaoEnabled = false;
   vignetteEnabled = false;
   chromaticEnabled = false;
+  colorGradeEnabled = false;
+  /** The `low` preset drops the expensive passes entirely (not just their strength). */
+  private qualityLow = false;
 
   constructor(renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.Camera, width: number, height: number) {
     this.composer = new EffectComposer(renderer);
@@ -83,6 +126,9 @@ export class PostFX {
     this.outputPass = new OutputPass();
     this.composer.addPass(this.outputPass);
 
+    this.colorGradePass = new ShaderPass(ColorGradeShader);
+    this.composer.addPass(this.colorGradePass);
+
     this.fxaaPass = new ShaderPass(FXAAShader);
     this.composer.addPass(this.fxaaPass);
   }
@@ -91,7 +137,7 @@ export class PostFX {
     this.composer.setSize(width, height);
     const pixelRatio = this.composer.renderer.getPixelRatio();
     this.ssaoPass.setSize(width * pixelRatio, height * pixelRatio);
-    (this.fxaaPass.uniforms['resolution'] as unknown as THREE.Vector2).set(
+    (this.fxaaPass.uniforms['resolution'].value as THREE.Vector2).set(
       1 / (width * pixelRatio),
       1 / (height * pixelRatio),
     );
@@ -99,6 +145,7 @@ export class PostFX {
 
   /** Adjust the cinematic effects quality (does not enable them). */
   setQuality(level: 'high' | 'medium' | 'low'): void {
+    this.qualityLow = level === 'low';
     if (level === 'high') {
       this.ssaoPass.kernelRadius = 8;
       this.bloomPass.strength = 0.35;
@@ -117,6 +164,17 @@ export class PostFX {
     this.bloomEnabled = on;
     this.vignetteEnabled = on;
     this.chromaticEnabled = on;
+    this.colorGradeEnabled = on;
+  }
+
+  /** Set the display-referred period/biome color grade. */
+  setColorGrade(grade: ColorGrade): void {
+    const u = this.colorGradePass.uniforms;
+    u['saturation'].value = grade.saturation;
+    u['contrast'].value = grade.contrast;
+    (u['lift'].value as THREE.Vector3).set(grade.lift[0], grade.lift[1], grade.lift[2]);
+    (u['gain'].value as THREE.Vector3).set(grade.gain[0], grade.gain[1], grade.gain[2]);
+    u['temperature'].value = grade.temperature;
   }
 
   setBloom(strength: number, radius: number, threshold: number): void {
@@ -126,10 +184,11 @@ export class PostFX {
   }
 
   render(dt: number): void {
-    this.ssaoPass.enabled = this.ssaoEnabled;
-    this.bloomPass.enabled = this.bloomEnabled;
+    this.ssaoPass.enabled = this.ssaoEnabled && !this.qualityLow;
+    this.bloomPass.enabled = this.bloomEnabled && !this.qualityLow;
     this.vignettePass.enabled = this.vignetteEnabled;
     this.chromaticPass.enabled = this.chromaticEnabled;
+    this.colorGradePass.enabled = this.colorGradeEnabled;
     this.composer.render(dt);
   }
 

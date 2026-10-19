@@ -45,7 +45,9 @@ import { getPeriod } from '../model/defs/periods';
 import { BuildContext, buildModel, buildLandmarkModel, disposeModel, clearModelCaches } from '../model/ProceduralModel';
 import { clearTextureCache } from '../rendering/Textures';
 import { DEFAULT_SETTINGS, GameSettings, RESOURCE_INFO, CAMERA_SPEED_SCALE } from './Config';
+import { QualityGovernor } from './QualityGovernor';
 import { resolveMapProfile, type HistoricalMapProfile, type GeographicRegion } from '../model/defs/profiles';
+import { resolveColorGrade } from '../model/defs/grades';
 import { planSettlementSite, type SettlementPlan } from '../model/defs/settlementPlan';
 import { SettlementOverlay } from '../rendering/SettlementOverlay';
 import { farmYieldMultiplier, nearbyCanal } from '../model/defs/farmYield';
@@ -61,7 +63,7 @@ import { Mission } from '../campaign/Mission';
 import { Tutorial } from '../campaign/Tutorial';
 import { PlayerCommand, Replay, ReplayPlayer, ReplayRecorder, saveReplay } from '../game/replay';
 import { getMission } from '../campaign/defs/campaign';
-import type { MissionDef } from '../campaign/types';
+import type { MissionDef, MissionAtmosphere } from '../campaign/types';
 import { serializeGame, saveToStorage } from '../game/SaveGame';
 import type { SaveData } from '../game/saveTypes';
 
@@ -83,6 +85,22 @@ const NODE_INFO: Record<ResourceNode['kind'], { name: string; icon: string }> = 
 /** What sits under a screen point: at most one resource/unit/building. */
 type PickResult = { resource: ResourceNode | null; unit?: Unit; building?: Building };
 
+/** A death animation: animates a detached model, then frees it. */
+interface DeathFx {
+  view: EntityView;
+  t: number;
+  dur: number;
+  /** Fall angle (units topple over; buildings barely tilt). */
+  topple: number;
+  /** How far the model sinks into the ground. */
+  sink: number;
+  baseY: number;
+  radius: number;
+  building: boolean;
+  emitTimer: number;
+  cleanup: () => void;
+}
+
 export class Game {
   renderer!: THREE.WebGLRenderer;
   scene = new THREE.Scene();
@@ -95,6 +113,7 @@ export class Game {
   mapProfile!: HistoricalMapProfile;
   /** Explicit map region of the current mission, if any. */
   private missionRegion?: GeographicRegion;
+  private readonly missionAtmosphere?: MissionAtmosphere;
   /** Decorative historical landmark of the map (visual only), if any. */
   landmark: THREE.Group | null = null;
   /** Cultural landscape (roads, fields, plazas, canals); visual only. */
@@ -149,6 +168,9 @@ export class Game {
   stepCount = 0;
   private recorder: ReplayRecorder | null = null;
   private replay: ReplayPlayer | null = null;
+  private qualityGovernor!: QualityGovernor;
+  /** One-shot death animations that outlive their entity (topple / collapse). */
+  private deathFx: DeathFx[] = [];
 
   constructor(settings: GameSettings, snapshot: SaveData | null = null, replay: Replay | null = null) {
     this.settings = { ...DEFAULT_SETTINGS, ...settings };
@@ -169,9 +191,13 @@ export class Game {
       this.settings.victoryMode = 'conquest'; // the campaign does not use wonder victory
     }
     this.missionRegion = mis?.region;
+    this.missionAtmosphere = mis?.atmosphere;
     this.enemyActive = !mis || mis.enemy.active;
     this.rng = new RNG((this.settings.mapSeed * 2654435761) >>> 0);
     this.initRenderer();
+    this.postfx.setCinematic(this.settings.cinematic);
+    this.postfx.setQuality(this.settings.quality);
+    this.qualityGovernor = new QualityGovernor(this);
     this.initWorld();
     this.unitContext = this.ctxFor();
     this.economy = new Economy(this);
@@ -248,6 +274,8 @@ export class Game {
       this.mapProfile.water.inland,
     );
     this.applyAtmosphere();
+    this.postfx.setColorGrade(resolveColorGrade(s.period, this.mapProfile));
+    this.syncWaterRefractionSize();
     this.particles = new Particles(this.scene, 4096);
     this.markers = new OrderMarkers(this.scene);
     this.trees = new TreeInstances(this.scene);
@@ -267,17 +295,47 @@ export class Game {
   }
 
   /**
+   * Player-chosen post-processing quality preset (persisted with the settings).
+   * The adaptive governor can drop the *applied* preset below this at runtime, but
+   * never writes it, so an automatic downgrade is not saved as the default.
+   */
+  setQuality(q: GameSettings['quality']): void {
+    this.settings.quality = q;
+    this.qualityGovernor.setUserQuality(q);
+  }
+
+  /** Apply a preset to the renderer without touching the saved settings (governor). */
+  applyQualityPreset(q: GameSettings['quality']): void {
+    this.postfx.setQuality(q);
+  }
+
+  /** Force a render scale (`null` restores the default) and apply it immediately. */
+  setPixelRatioOverride(ratio: number | null): void {
+    this.pixelRatioOverride = ratio;
+    this.onResize();
+  }
+
+  /** The quality preset the adaptive governor currently applies (debug overlay). */
+  getAppliedQuality(): GameSettings['quality'] {
+    return this.qualityGovernor.applied;
+  }
+
+  /**
    * Apply the region's atmosphere (`HistoricalMapProfile.atmosphere`): the sky
    * tint/haze/sun-warmth plus the terrain/water aerial perspective. `scene.fog`
    * stays null; the effect is distance-bounded and buildings are not dimmed.
    */
   private applyAtmosphere(): void {
     const a = this.mapProfile.atmosphere;
-    const tint = new THREE.Color(a.skyTint);
+    const o = this.missionAtmosphere;
+    const skyTint = o?.skyTint ?? a.skyTint;
+    const fogDensity = o?.fogDensity ?? a.fogDensity;
+    const sunWarmth = o?.sunWarmth ?? a.sunWarmth;
+    const tint = new THREE.Color(skyTint);
     this.terrain.setFogColor(tint);
-    this.terrain.setFogDensity(a.fogDensity);
-    this.water.setFog(a.skyTint, a.fogDensity);
-    this.sky.setAtmosphere(a.skyTint, a.sunWarmth);
+    this.terrain.setFogDensity(fogDensity);
+    this.water.setFog(skyTint, fogDensity);
+    this.sky.setAtmosphere(skyTint, sunWarmth);
   }
 
   private initPlayers(): void {
@@ -2526,6 +2584,7 @@ export class Game {
       this.hud.update(dt, t);
       return;
     }
+    this.qualityGovernor.update(dt);
     if (this.replay) {
       for (const cmd of this.replay.commandsFor(this.stepCount)) this.executeCommand(cmd, false);
     }
@@ -2589,7 +2648,7 @@ export class Game {
     this.tutorial?.update(d);
 
     // clean up dead
-    this.cleanupDead();
+    this.cleanupDead(d);
 
     // Alert of attack on the player base
     this.alertTimer -= d;
@@ -2607,21 +2666,21 @@ export class Game {
     this.stepCount++;
   }
 
-  private cleanupDead(): void {
+  private cleanupDead(dt: number): void {
     for (const [id, u] of this.units) {
       if (u.dead) {
-        u.removeFromScene();
+        this.spawnDeathFx(u.view, 'unit', u.radius, () => u.removeFromScene());
         this.units.delete(id);
       }
     }
     for (const [id, b] of this.buildings) {
       if (b.dead) {
-        b.removeFromScene();
         const h = this.obstacleHandles.get(b.id);
         if (h) {
           this.pathfinder.removeObstacle(h);
           this.obstacleHandles.delete(b.id);
         }
+        this.spawnDeathFx(b.view, 'building', b.radius, () => b.removeFromScene());
         this.buildings.delete(id);
       }
     }
@@ -2635,6 +2694,63 @@ export class Game {
         this.resourceNodes.delete(id);
       }
     }
+    this.updateDeathFx(dt);
+  }
+
+  /** Register a topple/collapse animation for a just-removed entity's model. */
+  private spawnDeathFx(view: EntityView, kind: 'unit' | 'building', radius: number, cleanup: () => void): void {
+    const building = kind === 'building';
+    this.deathFx.push({
+      view,
+      t: 0,
+      dur: building ? 1.1 : 0.5,
+      topple: building ? 0.12 : Math.PI * 0.5,
+      sink: building ? radius * 0.55 : 0.12,
+      baseY: view.group.position.y,
+      radius,
+      building,
+      emitTimer: 0,
+      cleanup,
+    });
+  }
+
+  private updateDeathFx(dt: number): void {
+    if (!this.deathFx.length) return;
+    const alive: DeathFx[] = [];
+    for (const fx of this.deathFx) {
+      fx.t += dt;
+      const k = Math.min(1, fx.t / fx.dur);
+      const e = k * k; // ease-in: the fall accelerates
+      fx.view.group.rotation.x = fx.topple * e;
+      fx.view.group.position.y = fx.baseY - fx.sink * e;
+      const s = 1 - 0.18 * e;
+      fx.view.group.scale.set(s, Math.max(0.12, 1 - e), s);
+      if (fx.building && k < 1) {
+        fx.emitTimer -= dt;
+        if (fx.emitTimer <= 0) {
+          fx.emitTimer = 0.12;
+          this.particles.emit({
+            x: fx.view.group.position.x,
+            y: fx.baseY + 1,
+            z: fx.view.group.position.z,
+            count: 2,
+            color: 0x8a7a66,
+            kind: 'dust',
+            speed: 1.0,
+            life: 1.4,
+            size: 2.6,
+            spread: Math.max(1, fx.radius),
+            gravity: 0.5,
+          });
+        }
+      }
+      if (k >= 1) {
+        fx.cleanup();
+      } else {
+        alive.push(fx);
+      }
+    }
+    this.deathFx = alive;
   }
 
   private ais: AI[] = [];
@@ -2679,7 +2795,26 @@ export class Game {
       this.renderer.render(this.scene, this.camera.camera);
       return;
     }
+    this.renderWaterRefraction();
     this.postfx.render(0.016);
+  }
+
+  /**
+   * Screen-space refraction source: render the scene with the water hidden into
+   * the water's target, so its shader can sample the (distorted) seabed. Only
+   * when the cinematic effects are on — it costs an extra scene pass.
+   */
+  private renderWaterRefraction(): void {
+    // extra full-scene pass: off in classic mode and once the preset drops to low
+    const on = this.postfx.cinematicEnabled && this.getAppliedQuality() !== 'low';
+    this.water.setRefraction(on);
+    if (!on) return;
+    const prev = this.renderer.getRenderTarget();
+    this.water.mesh.visible = false;
+    this.renderer.setRenderTarget(this.water.refractionRT);
+    this.renderer.render(this.scene, this.camera.camera);
+    this.renderer.setRenderTarget(prev);
+    this.water.mesh.visible = true;
   }
 
   private onResize(): void {
@@ -2688,6 +2823,13 @@ export class Game {
     this.camera.resize(window.innerWidth, window.innerHeight);
     this.postfx.setSize(window.innerWidth, window.innerHeight);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.syncWaterRefractionSize();
+  }
+
+  private syncWaterRefractionSize(): void {
+    if (!this.water) return;
+    const db = this.renderer.getDrawingBufferSize(new THREE.Vector2());
+    this.water.setSize(db.x, db.y);
   }
 
   getSelectedUnits(): Unit[] {
@@ -2737,6 +2879,8 @@ export class Game {
     }
     for (const overlay of this.settlements) overlay.dispose();
     this.settlements = [];
+    for (const fx of this.deathFx) fx.cleanup();
+    this.deathFx = [];
     this.fow.dispose();
     this.postfx.dispose();
     clearModelCaches();

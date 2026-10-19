@@ -140,6 +140,11 @@ the instance manager.
   colours** (baked by `bakeVertexAO`), not as separate materials.
 - **Region colour** is a combination of the terrain shader (aridity, vegetation,
   temperature) and `atmosphere` (`skyTint`, `sunWarmth`, `fogDensity`).
+- **Period colour grade** (`src/model/defs/grades.ts`) is a display-referred look
+  applied after tone mapping (`PERIOD_GRADES` per `HistoricalPeriod`, blended with
+  the region's temperature/aridity by `resolveColorGrade`): warm dry coast, cold
+  crisp highlands, muted colonial, dramatic republican desaturation. It is part of
+  the cinematic set and toggles with it.
 - **Textures** are Canvas-generated (`Textures.ts`) with an optional AI-generated
   PBR overlay (`Biomes.ts`).
 
@@ -147,6 +152,15 @@ the instance manager.
 between two civilizations. Two coetaneous civs must differ in **silhouette,
 material and ornament** as well (guarded by
 `tests/e2e/civ-visuals.spec.ts`).
+
+## Water and atmosphere
+
+Water (`src/rendering/Water.ts`) uses Gerstner-style waves, fresnel, sun glints,
+shore/crest foam and depth-based colour, and — with the cinematic set on and
+quality above `low` — screen-space **refraction** of the seabed (an extra scene
+pass into a render target). Region `atmosphere` supplies the water's aerial
+perspective. Time of day is per mission (`MissionDef.timeOfDay`) and may be
+overridden per scenario (`MissionDef.atmosphere`).
 
 ## Non-goals
 

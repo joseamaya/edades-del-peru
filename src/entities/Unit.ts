@@ -374,9 +374,7 @@ export class Unit {
       });
       this.ctx.event('unit:died', { id: this.id, owner: this.owner, kind: this.kind });
     }
-    if (this.view.group.parent) {
-      this.view.group.parent.remove(this.view.group);
-    }
+    // the model stays in the scene: `Game` plays a short topple effect and disposes it
   }
 
   getGatherRate(resource: keyof Resources): number {
