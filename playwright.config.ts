@@ -1,9 +1,12 @@
 import { defineConfig } from '@playwright/test';
 
-// Local runs can parallelize (set PW_WORKERS to override); CI keeps a single
-// worker because the software WebGL (SwiftShader) runners are CPU-bound.
-const localWorkers = Number(process.env.PW_WORKERS);
-const workers = process.env.CI ? 1 : Number.isFinite(localWorkers) && localWorkers > 0 ? localWorkers : 2;
+// Two workers by default (CI shards the suite across jobs); override with PW_WORKERS.
+const envWorkers = Number(process.env.PW_WORKERS);
+const workers = Number.isFinite(envWorkers) && envWorkers > 0 ? envWorkers : 2;
+
+// Heaviest specs: excluded from the `fast` project (quick local runs) and covered
+// by the `slow` project / nightly workflow. The default `yarn test:e2e` runs both.
+const SLOW_SPECS = ['**/ai.spec.ts', '**/campaign-completable.spec.ts', '**/settlement.spec.ts', '**/save.spec.ts'];
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -17,6 +20,10 @@ export default defineConfig({
     baseURL: 'http://localhost:5173',
     viewport: { width: 1280, height: 800 },
   },
+  projects: [
+    { name: 'fast', testIgnore: SLOW_SPECS },
+    { name: 'slow', testMatch: SLOW_SPECS },
+  ],
   webServer: {
     // serve the production build in CI (faster, closer to prod) and reuse a dev server locally
     command: process.env.CI ? 'yarn build && yarn preview --port 5173 --strictPort' : 'yarn dev',
