@@ -14,8 +14,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  e2e:
+  # PRs: the @smoke subset, sharded in two so the gate stays fast.
+  smoke:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,13 +35,46 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
       - run: npx playwright install --with-deps chromium
-      - name: E2E (smoke on PR, full otherwise)
-        run: ${{ github.event_name == 'pull_request' && 'yarn test:e2e:smoke' || 'yarn test:e2e' }}
+      - name: E2E smoke (shard ${{ matrix.shard }}/2)
+        run: yarn test:e2e:smoke --shard=${{ matrix.shard }}/2
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
+          name: playwright-report-smoke-${{ matrix.shard }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  # main / manual: the full suite, sharded in four (~35 min -> ~9-12 min wall clock).
+  full:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+      - run: npx playwright install --with-deps chromium
+      - name: E2E full (shard ${{ matrix.shard }}/4)
+        run: yarn test:e2e --shard=${{ matrix.shard }}/4
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-full-${{ matrix.shard }}
           path: |
             playwright-report/
             test-results/

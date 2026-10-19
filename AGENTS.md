@@ -14,7 +14,9 @@ Package manager **Yarn 1** (`yarn.lock` exists — never create a `package-lock.
 - `yarn typecheck` / `yarn lint` — `tsc --noEmit` / ESLint (also `yarn format` / `yarn format:check` for Prettier)
 - `yarn test` — Vitest. Single file: `yarn test tests/rng.test.ts`; by name: `yarn test -t "…"`
 - `yarn verify:fast` — quick gate (`typecheck + lint + format:check + test + build`, ~10 s)
-- `yarn test:e2e` — full Playwright suite; `yarn test:e2e:smoke` — `@smoke` subset (requires `npx playwright install chromium`)
+- `yarn test:e2e` — full Playwright suite (CI shards it 4×); `yarn test:e2e:smoke` — `@smoke` subset for PRs
+  (CI shards it 2×); `yarn test:e2e:fast` — quick project (excludes the heavy AI/campaign-completable/settlement/save
+  specs); `yarn test:e2e:slow` — those heavy specs (also run nightly). `PW_WORKERS=N` overrides workers.
 - `yarn shot <name> --seed=777 --wait=8000` — screenshot into `review/`
 - `yarn sim [--seeds=…] [--max=…] [--difficulty=…]` — headless AI-vs-AI match runner (AI regression baseline)
 

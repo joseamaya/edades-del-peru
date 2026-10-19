@@ -400,12 +400,14 @@ Match the cost of verification to the change (the full gate is in `AGENTS.md`):
 
 - **Every change** — `yarn verify:fast` (~10 s): `typecheck && lint && format:check && test && build`.
 - **Runtime / gameplay / recipe change** — targeted e2e specs (`yarn test:e2e tests/e2e/<area>.spec.ts`) and
-  `yarn sim` (AI regression); `yarn test:e2e:smoke` for the fast `@smoke` subset.
-- **Before merge** — the full `yarn test:e2e` once; `yarn visual:update` **only if the change is visual**
-  (otherwise `yarn visual:check`); `yarn bench` if it is performance-sensitive.
-- **CI** owns the full e2e on `main` (`@smoke` on PRs) — no need to run it locally after every edit.
-- **E2E parallelism**: local runs default to 2 workers (`PW_WORKERS=n` to override); CI stays on 1 (the
-  software-WebGL runners are CPU-bound). This roughly halves the local suite (~7.5 min vs ~12 min).
+  `yarn sim` (AI regression); `yarn test:e2e:smoke` for the fast `@smoke` subset, or `yarn test:e2e:fast`
+  (excludes the heavy AI/campaign-completable/settlement/save specs).
+- **Before merge** — **do not run the full suite locally**: CI owns it. `yarn visual:update` **only if the
+  change is visual** (otherwise `yarn visual:check`); `yarn bench` if it is performance-sensitive.
+- **CI** — the full E2E on `main` is **sharded 4×**, and the PR `@smoke` subset **sharded 2×**. The heavy
+  specs (`ai`, `campaign-completable`, `settlement`, `save`) also run nightly (`test:e2e:slow`).
+- **E2E parallelism**: 2 workers by default (`PW_WORKERS=n` overrides), locally and in CI. Sharding is the main
+  wall-clock win; if a change only touches one area, run that spec instead of the suite.
 
 ## Performance benchmarks
 

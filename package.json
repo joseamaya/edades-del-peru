@@ -37,6 +37,8 @@
     "verify:fast": "yarn typecheck && yarn lint && yarn format:check && yarn test && yarn build",
     "test:e2e": "playwright test",
     "test:e2e:smoke": "playwright test --grep @smoke",
+    "test:e2e:fast": "playwright test --project=fast",
+    "test:e2e:slow": "playwright test --project=slow",
     "bench": "node scripts/bench.mjs",
     "sim": "node scripts/sim.mjs",
     "shot": "node scripts/screenshot.mjs",
