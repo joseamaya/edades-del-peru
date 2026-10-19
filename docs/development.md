@@ -70,8 +70,30 @@ Definition of Done and the building audit see
   no THREE), so `tests/terrain.test.ts` pins determinism (same seed+profile → same map; different seed/profile →
   different map) without a DOM. Adding a region/profile does not touch the generator: only the data in
   `profiles.ts`. The region `atmosphere` is applied (Phase 9): `Game.applyAtmosphere` feeds `skyTint`/`fogDensity`
-  to the sky, terrain and water as a distance-bounded aerial perspective and `sunWarmth` to the sun; `scene.fog`
-  stays null (classic sharp look, buildings undimmed).
+   to the sky, terrain and water as a distance-bounded aerial perspective and `sunWarmth` to the sun; `scene.fog`
+   stays null (classic sharp look, buildings undimmed).
+- **Post-processing & the cinematic look**: `src/rendering/PostFX.ts` chains Render → SSAO → Bloom →
+  chromatic aberration → vignette → `OutputPass` → **colour grading** → FXAA. `settings.cinematic` (default
+  **on**, `src/core/Config.ts`) enables the whole set and `settings.quality` (`high|medium|low`) tunes
+  SSAO/bloom; both are in the Options panel. `src/core/QualityGovernor.ts` lowers the preset with hysteresis
+  when FPS drops and restores it (never above the chosen preset), dropping the render scale only in severe
+  cases; it only touches post-processing/pixel ratio, never the simulation. `settings.settingsVersion` migrates
+  old stored settings (v<2) to the new cinematic-on default once, without clobbering a later explicit choice;
+  `?low=1` forces the classic look.
+- **Colour grading by period and biome**: `src/model/defs/grades.ts` holds `ColorGrade` and `PERIOD_GRADES`
+  (one mood per `HistoricalPeriod`) plus `resolveColorGrade(period, profile)`, a **pure** blend of the period
+  grade with the region's `climate.temperature`/`aridity`; `Game.initWorld` applies it to `PostFX.setColorGrade`
+  and it toggles with the cinematic set. Guarded by `tests/grades.test.ts`.
+- **Per-mission atmosphere**: `MissionDef.atmosphere` (optional `{ fogDensity?, skyTint?, sunWarmth? }`)
+  overrides the region profile's `atmosphere` in `Game.applyAtmosphere` (e.g. the Chavín mist), independent of
+  `MissionDef.timeOfDay` (the day/night hour, already per mission).
+- **Death/collapse FX (visual only)**: `Unit.die()`/`Building.die()` keep the model in the scene; `Game` records
+  a one-shot `deathFx` (units topple, buildings sink + tilt with dust/fire) and frees the model when it ends.
+  Entities still leave `units`/`buildings` immediately, so AI/mission/save filters are unchanged.
+- **Water refraction**: `Water` renders the scene with its mesh hidden into a `WebGLRenderTarget`
+  (`Game.renderWaterRefraction`) and the shader samples the seabed, offset by the wave normal and scaled by
+  depth. It costs an extra scene pass, so it only runs with the cinematic set on and quality ≠ `low`; the region
+  `atmosphere` still supplies the aerial perspective.
 - **Andenes (agricultural terracing)**: `profile.terrain.terraceChance` is no longer dead data — `carveTerraces`
   (`src/rendering/heightField.ts`) pulls moderate slopes toward flat shelves (gated by a coherent noise mask so
   terraces form patchy zones) and writes a `terraceMap` strength (0..~0.55). `Terrain` exposes it via
@@ -391,3 +413,8 @@ merge step was ~56k, so this step is ‑39%), by merging each model's static par
 colours into vertex colours. ~34 per unit remains (the shadow pass roughly doubles them, and units still have
 no instancing) — reaching ~15-20 needs **instancing** (or collapsing per-part PBR params), which is not done.
 Frame time is dominated by the software renderer, so use draw calls as the actionable signal.
+
+Post-processing is **off** in these runs (`?low=1`). The cinematic set (default on) adds SSAO/bloom/grading and,
+when quality ≠ `low`, one extra full-scene pass for water refraction — the `QualityGovernor` drops to `low`
+(disabling refraction) when the frame rate stays below its threshold, so measure on a real GPU before drawing
+conclusions from the SwiftShader numbers above.

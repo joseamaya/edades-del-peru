@@ -8,6 +8,9 @@ export class Water {
   mesh: THREE.Mesh;
   private uniforms: Record<string, THREE.IUniform>;
   private depthTexture: THREE.DataTexture;
+  /** Scene colour with the water hidden, sampled for screen-space refraction. */
+  readonly refractionRT: THREE.WebGLRenderTarget;
+  refractionEnabled = false;
 
   constructor(scene: THREE.Scene, heightMap: Float32Array, size: number, waterLevel = 2.2, inland = false) {
     const n = Math.round(Math.sqrt(heightMap.length));
@@ -19,6 +22,8 @@ export class Water {
     this.depthTexture.magFilter = THREE.LinearFilter;
     this.depthTexture.minFilter = THREE.LinearFilter;
     this.depthTexture.needsUpdate = true;
+
+    this.refractionRT = new THREE.WebGLRenderTarget(1024, 1024);
 
     // On coastal maps the water extends beyond the map (sea/horizon).
     // On inland maps (andes/altiplano/jungle) it covers only the map (lakes and rivers).
@@ -40,6 +45,9 @@ export class Water {
       depthScale: { value: inland ? 1 : 0.4 },
       fogColor: { value: new THREE.Color(0.8, 0.85, 0.9) },
       fogDensity: { value: 0.0 },
+      refractionMap: { value: this.refractionRT.texture },
+      refractionStrength: { value: 0.012 },
+      refractionAmount: { value: 0.0 },
     };
 
     const mat = new THREE.ShaderMaterial({
@@ -52,6 +60,7 @@ export class Water {
         varying vec3 vWorldPos;
         varying vec2 vUv;
         varying float vWave;
+        varying vec2 vScreen;
         void main() {
           vUv = uv;
           vec3 p = position;
@@ -64,6 +73,7 @@ export class Water {
           vec4 wp = modelMatrix * vec4(p, 1.0);
           vWorldPos = wp.xyz;
           gl_Position = projectionMatrix * viewMatrix * wp;
+          vScreen = gl_Position.xy / gl_Position.w * 0.5 + 0.5;
         }
       `,
       fragmentShader: /* glsl */ `
@@ -79,9 +89,13 @@ export class Water {
         uniform float depthScale;
         uniform vec3 fogColor;
         uniform float fogDensity;
+        uniform sampler2D refractionMap;
+        uniform float refractionStrength;
+        uniform float refractionAmount;
         varying vec3 vWorldPos;
         varying vec2 vUv;
         varying float vWave;
+        varying vec2 vScreen;
 
         float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
         float noise(vec2 p) {
@@ -124,6 +138,13 @@ export class Water {
           float foam = clamp(shoreFoam + waveFoam, 0.0, 1.0);
           col = mix(col, foamColor, foam * 0.55);
 
+          // screen-space refraction of the scene behind the surface (seabed)
+          if (refractionAmount > 0.001) {
+            vec2 ruv = clamp(vScreen + N.xz * refractionStrength, 0.003, 0.997);
+            vec3 refr = texture2D(refractionMap, ruv).rgb;
+            col = mix(col, refr, refractionAmount * (1.0 - fresnel));
+          }
+
           // fresnel toward the sky color (attenuated so it does not whiten the water)
           vec3 skyCol = mix(vec3(0.1, 0.15, 0.25), vec3(0.4, 0.58, 0.72), isDay);
           col = mix(col, skyCol, fresnel * 0.35);
@@ -158,6 +179,16 @@ export class Water {
     this.uniforms.fogDensity.value = density;
   }
 
+  /** Enable or disable screen-space refraction (samples `refractionRT`). */
+  setRefraction(on: boolean): void {
+    this.refractionEnabled = on;
+    this.uniforms.refractionAmount.value = on ? 0.5 : 0;
+  }
+
+  setSize(width: number, height: number): void {
+    this.refractionRT.setSize(Math.max(1, Math.floor(width)), Math.max(1, Math.floor(height)));
+  }
+
   update(time: number): void {
     this.uniforms.time.value = time;
   }
@@ -173,5 +204,6 @@ export class Water {
     this.mesh.geometry.dispose();
     (this.mesh.material as THREE.Material).dispose();
     this.depthTexture.dispose();
+    this.refractionRT.dispose();
   }
 }

@@ -1,6 +1,6 @@
 import { Game, setAutoStart } from './core/Game';
 import * as THREE from 'three';
-import { GameSettings, DEFAULT_SETTINGS } from './core/Config';
+import { GameSettings, DEFAULT_SETTINGS, SETTINGS_VERSION } from './core/Config';
 import { BuildingKind, CivId, HistoricalPeriod } from './core/types';
 import { getBuildingStats } from './model/defs/buildings';
 import { CIVS, civsForPeriod, getCiv } from './model/defs/civs';
@@ -49,6 +49,16 @@ function sanitizeSettings(raw: unknown): GameSettings {
   if (typeof r.musicEnabled === 'boolean') s.musicEnabled = r.musicEnabled;
   if (typeof r.showHints === 'boolean') s.showHints = r.showHints;
   if (typeof r.cinematic === 'boolean') s.cinematic = r.cinematic;
+  if (r.quality === 'high' || r.quality === 'medium' || r.quality === 'low') s.quality = r.quality;
+  // v<SETTINGS_VERSION stored the previous cinematic-off default; adopt the new on
+  // default once. A user who explicitly toggled it off at the current version keeps it.
+  const storedVersion = Number.isFinite(r.settingsVersion) ? (r.settingsVersion as number) : 0;
+  if (storedVersion < SETTINGS_VERSION) {
+    s.cinematic = true;
+    s.settingsVersion = SETTINGS_VERSION;
+  } else {
+    s.settingsVersion = storedVersion;
+  }
   if (typeof r.rotateCamera === 'boolean') s.rotateCamera = r.rotateCamera;
   if (['slow', 'normal', 'fast'].includes(r.cameraSpeed as string)) {
     s.cameraSpeed = r.cameraSpeed as GameSettings['cameraSpeed'];
@@ -131,11 +141,13 @@ async function boot(): Promise<void> {
   if (params.get('fps') === '1') game.hud.setShowFps(true);
   if (replay) game.hud.showToast('🎬 Repetición', 'info');
   game.postfx.setCinematic(settings.cinematic);
+  game.postfx.setQuality(settings.quality);
   if (params.get('low') === '1') {
     game.pixelRatioOverride = 1;
     game.renderer.setPixelRatio(1);
+    game.settings.cinematic = false;
     game.postfx.setCinematic(false);
-    game.postfx.setQuality('low');
+    game.setQuality('low');
     game.postfx.vignetteEnabled = false;
   }
   if (params.get('speed') !== null) game.loop.speed = Math.max(0.25, floatParam(params, 'speed', 1));

@@ -19,6 +19,10 @@ export interface GameSettings {
   showHints: boolean;
   /** Cinematic effects (SSAO, bloom, vignette, aberration). Off = sharp classic look. */
   cinematic: boolean;
+  /** Post-processing quality preset (also auto-lowered by the quality governor). */
+  quality: 'high' | 'medium' | 'low';
+  /** Settings schema version, for one-time migrations of stored settings. */
+  settingsVersion: number;
   /** Allow rotating the camera with Q/E (AoE2 DE style). Off = fixed camera like SC2. */
   rotateCamera: boolean;
   /** Camera pan speed preset (keyboard + edge scroll). */
@@ -31,6 +35,9 @@ export interface GameSettings {
 }
 
 export type Difficulty = GameSettings['difficulty'];
+
+/** Current settings schema version; bump when stored defaults must migrate. */
+export const SETTINGS_VERSION = 2;
 
 export const DEFAULT_SETTINGS: GameSettings = {
   mapSize: 192,
@@ -48,7 +55,9 @@ export const DEFAULT_SETTINGS: GameSettings = {
   soundEnabled: true,
   musicEnabled: true,
   showHints: true,
-  cinematic: false,
+  cinematic: true,
+  quality: 'high',
+  settingsVersion: SETTINGS_VERSION,
   rotateCamera: false,
   cameraSpeed: 'normal',
   victoryMode: 'conquest',

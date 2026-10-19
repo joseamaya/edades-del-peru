@@ -13,6 +13,17 @@ The game is **historically grounded** on one key point: every match is played in
 only **coetaneous civilizations** can face each other (e.g. Moche with Recuay, Chanca with Inca, never Moche
 with Chimú).
 
+## Media
+
+The match runs with the **cinematic look** on by default (SSAO, bloom, vignette, chromatic aberration, a
+period/biome colour grade and water refraction) and degrades automatically on slower hardware. Regenerate these
+captures with `yarn shots:media`.
+
+| | |
+|---|---|
+| ![A Moche base](./docs/media/hero.jpg) | ![The Chavín oracle](./docs/media/chavin.jpg) |
+| A Moche coastal base (cinematic effects + warm coast grade) | *El Oráculo de Chavín* — per-mission highland mist |
+
 ## How to run
 
 Requires Node.js ≥ 20.19. The package manager is **Yarn 1** (`yarn.lock` exists; there is no

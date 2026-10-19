@@ -179,9 +179,22 @@ export class Building {
         life: 2.5,
         size: 4,
       });
+      // fire at the collapse
+      this.ctx.particles.emit({
+        x: this.pos.x,
+        y: this.pos.y + 1.5,
+        z: this.pos.z,
+        count: 18,
+        color: 0xff8020,
+        kind: 'fire',
+        speed: 1.2,
+        life: 1.2,
+        size: 3.5,
+        spread: this.radius,
+      });
     }
     if (this.ctx?.event) this.ctx.event('building:died', { id: this.id, owner: this.owner, kind: this.kind });
-    if (this.view.group.parent) this.view.group.parent.remove(this.view.group);
+    // the model stays in the scene: `Game` plays a short collapse and disposes it
   }
 
   /** Train a unit (queues it). */
