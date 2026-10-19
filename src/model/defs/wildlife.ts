@@ -43,13 +43,14 @@ export function faunaCountFor(region: GeographicRegion): number {
 function suitability(id: SpeciesId, s: AmbientSample): number {
   switch (id) {
     case 'pelican':
-      return s.beach ? 1.5 : 0;
+      // `isBeach` is a thin strip, so also accept low coastal ground (the shore band)
+      return s.beach ? 1.6 : s.height < 3 ? 0.9 : 0;
     case 'llama':
       return s.height > 2 ? 1 : 0;
     case 'vicuna':
       return s.height > 4 ? 1.2 : 0;
     case 'condor':
-      return s.height > 6 ? 1.3 : 0;
+      return s.height > 5 ? 1.3 : 0;
   }
 }
 

@@ -20,6 +20,7 @@ import { OrderMarkers, MarkerKind } from '../entities/OrderMarker';
 import { TreeInstances } from '../rendering/TreeInstances';
 import { Props } from '../rendering/Props';
 import { Wildlife } from '../rendering/Wildlife';
+import { clearFaunaTemplates } from '../rendering/faunaModels';
 import { planProps, propCountFor } from '../model/defs/props';
 import { planWildlife, faunaCountFor } from '../model/defs/wildlife';
 import { Projectile, updateProjectilePools } from '../entities/Projectile';
@@ -2957,6 +2958,7 @@ export class Game {
     this.fow.dispose();
     this.postfx.dispose();
     clearModelCaches();
+    clearFaunaTemplates();
     clearResourceCaches();
     clearTextureCache();
     this.renderer.dispose();

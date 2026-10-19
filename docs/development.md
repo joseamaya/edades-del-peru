@@ -97,8 +97,11 @@ Definition of Done and the building audit see
   stores `constructionProgress`).
 - **Ambient life (visual only)**: `src/model/defs/props.ts` (cacti, totora, rocks, shrubs) and
   `src/model/defs/wildlife.ts` (llama, vicuña, condor, pelican) are **pure** planners over the region profile +
-  seed; `src/rendering/Props.ts` (instanced) and `src/rendering/Wildlife.ts` (small wandering groups) render
-  them. No entities, obstacles or save; regenerated deterministically on load and disposed in `Game.destroy`.
+  seed. `src/rendering/Props.ts` instances the props; `src/rendering/Wildlife.ts` renders the fauna from cached
+  templates (`src/rendering/faunaModels.ts`) built from rounded/capsule shapes with **vertex-colour AO**
+  (reusing `aoGeometry` from `ProceduralModel`) and **articulated legs/wings** (shared geometry + one shared
+  material; diagonal gait and wing flap). No entities, obstacles or save; regenerated deterministically on load,
+  templates freed by `clearFaunaTemplates` in `Game.destroy`.
 - **Water refraction**: `Water` renders the scene with its mesh hidden into a `WebGLRenderTarget`
   (`Game.renderWaterRefraction`) and the shader samples the seabed, offset by the wave normal and faded by the
   viewing angle (fresnel). It costs an extra scene pass, so it only runs with the cinematic set on and the

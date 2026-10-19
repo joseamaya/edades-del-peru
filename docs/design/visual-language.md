@@ -137,9 +137,10 @@ the instance manager.
 visual-only: `src/model/defs/props.ts` scatters cacti, totora, rock clusters and
 shrubs by region suitability (aridity, moisture, slope, beach), and
 `src/model/defs/wildlife.ts` places llamas and vicuñas on the puna, condors above
-the Andes and pelicans on the shore (`src/rendering/Props.ts`,
-`src/rendering/Wildlife.ts`). Both are pure planners over `region + seed` and
-regenerate deterministically on load.
+the Andes and pelicans on the shore. The fauna is built procedurally
+(`src/rendering/faunaModels.ts`) from rounded shapes with vertex-colour AO and
+**articulated legs/wings** (shared geometry and material), rather than flat boxes.
+Both are pure planners over `region + seed` and regenerate deterministically on load.
 
 ## Colour
 
