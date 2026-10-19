@@ -16,8 +16,10 @@ with Chimú).
 ## Media
 
 The match runs with the **cinematic look** on by default (SSAO, bloom, vignette, chromatic aberration, a
-period/biome colour grade and water refraction) and degrades automatically on slower hardware. Regenerate these
-captures with `yarn shots:media`.
+period/biome colour grade and water refraction) and degrades automatically on software/weak hardware.
+Regenerate these captures with `yarn shots:media` and `yarn gif`.
+
+![The Caral mission intro](./docs/media/gameplay.gif)
 
 | | |
 |---|---|

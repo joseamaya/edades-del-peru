@@ -60,6 +60,7 @@ import { farmYieldMultiplier, nearbyCanal } from '../model/defs/farmYield';
 import { distance2D } from '../util/math';
 import { isTypingTarget } from '../util/dom';
 import { RNG, hashCode, weightedPick } from '../util/rng';
+import { detectSoftwareRenderer } from '../util/gpu';
 import { ERA_DEFS } from '../model/defs/eras';
 import { BUILDING_DEFS, getBuildingStats, BUILDING_INFO } from '../model/defs/buildings';
 import { getUnitStats, getUnitModel, UNIT_INFO, isConverter, DamageClass } from '../model/defs/units';
@@ -187,10 +188,18 @@ export class Game {
   private recorder: ReplayRecorder | null = null;
   private replay: ReplayPlayer | null = null;
   private qualityGovernor!: QualityGovernor;
+  /** Skip the software-renderer auto-degrade (`?cine=1`). */
+  private readonly forceCinematic: boolean;
   /** One-shot death animations that outlive their entity (topple / collapse). */
   private deathFx: DeathFx[] = [];
 
-  constructor(settings: GameSettings, snapshot: SaveData | null = null, replay: Replay | null = null) {
+  constructor(
+    settings: GameSettings,
+    snapshot: SaveData | null = null,
+    replay: Replay | null = null,
+    forceCinematic = false,
+  ) {
+    this.forceCinematic = forceCinematic;
     this.settings = { ...DEFAULT_SETTINGS, ...settings };
     this.pendingSnapshot = snapshot;
     this.replay = replay ? new ReplayPlayer(replay) : null;
@@ -242,6 +251,14 @@ export class Game {
 
   private initRenderer(): void {
     this.renderer = createRenderer();
+    // Software rasterizers (SwiftShader/llvmpipe) cannot afford the cinematic set:
+    // fall back to the safe profile unless explicitly forced with `?cine=1`.
+    if (!this.forceCinematic && detectSoftwareRenderer(this.renderer.getContext())) {
+      this.settings.cinematic = false;
+      this.settings.quality = 'low';
+      this.pixelRatioOverride = 1;
+      this.renderer.setPixelRatio(1);
+    }
     this.camera = new RTSCamera(this.renderer.domElement, this.settings.mapSize);
     this.camera.setRotationEnabled(this.settings.rotateCamera);
     this.camera.setSpeedScale(CAMERA_SPEED_SCALE[this.settings.cameraSpeed]);

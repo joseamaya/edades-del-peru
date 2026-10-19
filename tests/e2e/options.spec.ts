@@ -95,7 +95,8 @@ test('the period color grade and water refraction follow the cinematic effects t
       };
     });
   };
-  const on = await readGrade('/?play=1&seed=777&fog=0');
+  // `?cine=1` forces the cinematic set even on the software renderer used by CI
+  const on = await readGrade('/?play=1&seed=777&fog=0&cine=1');
   expect(on.cinematic).toBe(true);
   expect(on.grade).toBe(true);
   expect(on.saturation).not.toBe(1); // a period-specific grade, not the identity
