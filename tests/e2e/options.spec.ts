@@ -88,12 +88,17 @@ test('the period color grade and water refraction follow the cinematic effects t
   const out = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     const saturation = (): number => g.postfx.colorGradePass.uniforms.saturation.value;
-    const read = () => ({
-      cinematic: g.postfx.cinematicEnabled as boolean,
-      grade: g.postfx.colorGradeEnabled as boolean,
-      saturation: saturation(),
-      refraction: g.wantsWaterRefraction() as boolean,
-    });
+    const read = () => {
+      const wanted = g.shouldRenderWaterRefraction() as boolean;
+      g.syncWaterRefraction(); // apply the gate to the water material (no scene pass)
+      return {
+        cinematic: g.postfx.cinematicEnabled as boolean,
+        grade: g.postfx.colorGradeEnabled as boolean,
+        saturation: saturation(),
+        wanted,
+        applied: g.water.refractionEnabled as boolean,
+      };
+    };
     g.postfx.setCinematic(false);
     const off = read();
     g.postfx.setCinematic(true);
@@ -106,13 +111,16 @@ test('the period color grade and water refraction follow the cinematic effects t
 
   expect(out.off.cinematic).toBe(false);
   expect(out.off.grade).toBe(false);
-  expect(out.off.refraction).toBe(false);
+  expect(out.off.wanted).toBe(false);
+  expect(out.off.applied).toBe(false);
 
   expect(out.on.cinematic).toBe(true);
   expect(out.on.grade).toBe(true);
   expect(out.on.saturation).not.toBe(1); // a period-specific grade, not the identity
-  expect(out.on.refraction).toBe(true);
+  expect(out.on.wanted).toBe(true);
+  expect(out.on.applied).toBe(true);
 
   // refraction also requires the applied quality != low
-  expect(out.low.refraction).toBe(false);
+  expect(out.low.wanted).toBe(false);
+  expect(out.low.applied).toBe(false);
 });

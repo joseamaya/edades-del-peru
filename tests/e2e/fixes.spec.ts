@@ -192,10 +192,15 @@ test('right click lands the order under the cursor on elevated terrain', async (
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });
-  // wait for the camera to run its first updates: projecting before the first
+  // wait for the game loop to have run its updates: projecting before the first
   // frame uses the initial camera pose and the click then maps to another cell
-  await page.evaluate(
-    () => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))),
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game: any }).game;
+      return g.stepCount >= 2;
+    },
+    null,
+    { timeout: 15_000 },
   );
 
   const info = await page.evaluate(() => {
