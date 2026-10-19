@@ -1,5 +1,6 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind, Resources, MapType } from '../core/types';
 import type { GeographicRegion } from '../model/defs/profiles';
+import type { PortraitId } from '../model/defs/commanders';
 
 /** World point. `ref` anchors to the player/enemy center; without `ref` it is absolute. */
 export interface MissionPoint {
@@ -106,6 +107,8 @@ export interface MissionDef {
   region?: GeographicRegion;
   /** Optional per-scenario atmosphere override (e.g. the Chavín mist). */
   atmosphere?: MissionAtmosphere;
+  /** Commanders shown as portrait cards in the briefing (stylized, not likenesses). */
+  commanders?: PortraitId[];
   timeOfDay: 'morning' | 'noon' | 'dusk' | 'night';
   startingEra: Era;
   startingResources: Resources;

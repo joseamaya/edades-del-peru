@@ -4,6 +4,7 @@ import type { Building } from '../entities/Building';
 import { MissionDef, ObjectiveDef, ObjectiveKind, TriggerDef, TriggerEffect, MissionPoint } from './types';
 import { OrderKind, BuildingKind } from '../core/types';
 import { distance2D } from '../util/math';
+import { commanderFor } from '../model/defs/commanders';
 import type { MissionSave } from '../game/saveTypes';
 
 export type ObjState = 'pendiente' | 'activo' | 'completed' | 'failed';
@@ -317,7 +318,11 @@ export class Mission {
   }
 
   private triggerDialogue(text: string, duration = 5): void {
-    this.game.hud.showDialogue('Comandante', text, duration);
+    // Speakers are written as `Nombre: —texto`; resolve a known commander so the
+    // dialogue box can show their (stylized) portrait.
+    const speaker = text.match(/^\s*([^:\n]{2,40}):\s/)?.[1]?.trim();
+    const cmd = speaker ? commanderFor(speaker) : undefined;
+    this.game.hud.showDialogue(cmd?.name ?? 'Comandante', text, duration, cmd?.id);
   }
 
   private win(): void {

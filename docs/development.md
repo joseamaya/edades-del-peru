@@ -104,6 +104,11 @@ Definition of Done and the building audit see
   (reusing `aoGeometry` from `ProceduralModel`) and **articulated legs/wings** (shared geometry + one shared
   material; diagonal gait and wing flap). No entities, obstacles or save; regenerated deterministically on load,
   templates freed by `clearFaunaTemplates` in `Game.destroy`.
+- **HUD identity & commander portraits (UI only)**: the HUD uses inline-SVG Andean motifs (chakana divider,
+  stepped-fret top-bar band) with no image assets. `src/model/defs/commanders.ts` maps campaign speakers to
+  stylized portrait medallions (`src/ui/Portrait.ts`: SVG, civilization palette + emblem + initials);
+  `MissionDef.commanders` shows portrait cards in the briefing, and `Mission.triggerDialogue` resolves the
+  `Nombre:` prefix to a portrait. `status: 'abstraction'` marks stylistic reconstructions (never likenesses).
 - **Water refraction**: `Water` renders the scene with its mesh hidden into a `WebGLRenderTarget`
   (`Game.renderWaterRefraction`) and the shader samples the seabed, offset by the wave normal and faded by the
   viewing angle (fresnel). It costs an extra scene pass, so it only runs with the cinematic set on and the
