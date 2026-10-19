@@ -1,59 +1,66 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
-interface Cam {
-  x: number;
-  z: number;
+async function boot(page: Page, url: string): Promise<void> {
+  await page.goto(url);
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
 }
 
-async function dismissBriefing(page: import('@playwright/test').Page): Promise<void> {
+async function dismissBriefing(page: Page): Promise<void> {
   await page.evaluate(() => {
     const btn = [...document.querySelectorAll('button')].find((b) => /COMENZAR MISIÓN/.test(b.textContent ?? ''));
     if (btn) btn.click();
   });
 }
 
-test('the campaign intro flies the camera toward the player base', async ({ page }) => {
-  await page.goto('/?play=1&mission=m1_caral&seed=777&fog=0&low=1');
-  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
-    timeout: 30_000,
-  });
-  await dismissBriefing(page);
-  await page.waitForTimeout(150);
-  const start = (await page.evaluate(() => (window as unknown as { game: any }).game.camera.getTarget())) as Cam;
-  const base = (await page.evaluate(() => {
+function target(page: Page): Promise<{ x: number; z: number }> {
+  return page.evaluate(() => (window as unknown as { game: any }).game.camera.getTarget());
+}
+
+function base(page: Page): Promise<{ x: number; z: number }> {
+  return page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     const c = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center');
     return { x: c.pos.x, z: c.pos.z };
-  })) as Cam;
-  // it starts well away from the base (the overview) ...
-  expect(Math.hypot(start.x - base.x, start.z - base.z)).toBeGreaterThan(25);
-  // ... and settles on the base (poll: the flyover is slower under a software renderer)
-  await page
-    .waitForFunction(
-      () => {
-        const g = (window as unknown as { game: any }).game;
-        const c = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center');
-        const t = g.camera.getTarget();
-        return Math.hypot(t.x - c.pos.x, t.z - c.pos.z) < 2;
-      },
-      null,
-      { timeout: 20_000 },
-    )
-    .catch(() => {});
-  const nearBase = await page.evaluate(() => {
-    const g = (window as unknown as { game: any }).game;
-    const c = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center');
-    const t = g.camera.getTarget();
-    return Math.hypot(t.x - c.pos.x, t.z - c.pos.z);
   });
-  expect(nearBase).toBeLessThan(3);
+}
+
+test('the campaign intro flies the camera from an overview down to the base', async ({ page }) => {
+  await boot(page, '/?play=1&mission=m1_caral&seed=777&fog=0&low=1');
+  await dismissBriefing(page);
+  await page.waitForTimeout(120);
+  const start = await target(page);
+  const b = await base(page);
+  expect(Math.hypot(start.x - b.x, start.z - b.z)).toBeGreaterThan(25); // starts away from the base
+
+  // real-time flight (~2.6 s); poll until it settles on the base
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game: any }).game;
+      const c = [...g.buildings.values()].find((x: any) => x.owner === 0 && x.kind === 'center');
+      const t = g.camera.getTarget();
+      return Math.hypot(t.x - c.pos.x, t.z - c.pos.z) < 1.5;
+    },
+    null,
+    { timeout: 10_000 },
+  );
+  const end = await target(page);
+  expect(Math.hypot(end.x - b.x, end.z - b.z)).toBeLessThan(1.5);
 });
 
-test('?intro=0 disables the flyover', async ({ page }) => {
-  await page.goto('/?play=1&mission=m1_caral&seed=777&fog=0&low=1&intro=0');
-  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
-    timeout: 30_000,
-  });
-  const enabled = await page.evaluate(() => (window as unknown as { game: any }).game.introEnabled);
-  expect(enabled).toBe(false);
+test('?intro=0 disables the flyover and leaves the camera at the base', async ({ page }) => {
+  await boot(page, '/?play=1&mission=m1_caral&seed=777&fog=0&low=1&intro=0');
+  expect(await page.evaluate(() => (window as unknown as { game: any }).game.introEnabled)).toBe(false);
+  await dismissBriefing(page);
+  await page.waitForTimeout(300);
+  const t = await target(page);
+  const b = await base(page);
+  expect(Math.hypot(t.x - b.x, t.z - b.z)).toBeLessThan(3); // never flew away
+});
+
+test('skirmish has no intro', async ({ page }) => {
+  await boot(page, '/?play=1&seed=777&fog=0&low=1');
+  const mission = await page.evaluate(() => (window as unknown as { game: any }).game.mission);
+  expect(mission).toBeNull();
 });

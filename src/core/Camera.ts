@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { damp } from '../util/math';
+import { damp, smoothstep } from '../util/math';
 import { isTypingTarget } from '../util/dom';
 import {
   CAMERA_CONFIG,
@@ -21,7 +21,8 @@ export interface CameraTarget {
  * WASD/edge-scroll/middle-drag panning, and smoothed follow.
  *
  * Inputs only move `desiredTarget`; the camera keeps interpolating toward it
- * (damping), so panning feels smooth without a second interpolation system.
+ * (damping). The one exception is a scripted `flyTo` (intro), which eases the
+ * framing directly in real time and then hands control back to the damping.
  */
 export class RTSCamera {
   readonly camera: THREE.PerspectiveCamera;
@@ -50,7 +51,7 @@ export class RTSCamera {
     toX: number;
     toZ: number;
     toZoom: number;
-    t: number;
+    startTime: number | null;
     dur: number;
   } | null = null;
 
@@ -219,7 +220,7 @@ export class RTSCamera {
       toX: x,
       toZ: z,
       toZoom: clamp(zoom, this.minZoom, this.maxZoom),
-      t: 0,
+      startTime: null,
       dur: Math.max(0.01, seconds),
     };
   }
@@ -293,9 +294,10 @@ export class RTSCamera {
 
     if (this.fly) {
       const f = this.fly;
-      f.t += dt;
-      const k = Math.min(1, f.t / f.dur);
-      const e = k * k * (3 - 2 * k); // smoothstep
+      if (f.startTime === null) f.startTime = time;
+      // real time, so the flight lasts `dur` seconds regardless of game speed/FPS
+      const k = clamp((time - f.startTime) / f.dur, 0, 1);
+      const e = smoothstep(0, 1, k);
       this.desiredTarget.x = f.fromX + (f.toX - f.fromX) * e;
       this.desiredTarget.z = f.fromZ + (f.toZ - f.fromZ) * e;
       this.desiredZoom = f.fromZoom + (f.toZoom - f.fromZoom) * e;
@@ -308,7 +310,7 @@ export class RTSCamera {
       this.zoom = this.desiredZoom;
       this.target.x = this.desiredTarget.x;
       this.target.z = this.desiredTarget.z;
-      if (this.fly.t / this.fly.dur >= 1) this.fly = null;
+      if (this.fly.startTime !== null && (time - this.fly.startTime) / this.fly.dur >= 1) this.fly = null;
     } else {
       this.zoom = damp(this.zoom, this.desiredZoom, CAMERA_CONFIG.zoomLambda, dt);
       this.target.x = damp(this.target.x, this.desiredTarget.x, CAMERA_CONFIG.panLambda, dt);

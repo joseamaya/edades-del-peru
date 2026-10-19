@@ -244,8 +244,8 @@ Definition of Done and the building audit see
   wiring in `tests/e2e/camera.spec.ts`. The **camera speed** option (Baja/Normal/Alta, `settings.cameraSpeed` →
   `CAMERA_SPEED_SCALE`) scales the keyboard/edge speed only (the middle-drag is direct manipulation).
 - **Campaign intro (visual only)**: `Mission.start` calls `Game.playIntro()` from the briefing's onStart
-  callback, which frames an overview and runs `RTSCamera.flyTo(base, 2.6 s)` down to the player base. Skipped
-  with `?intro=0` (and under `?noloop=1`, since tests drive fixed steps).
+  callback, which frames an overview and runs `RTSCamera.flyTo(x, z, zoom, seconds)` down to the player base.
+  Skipped with `?intro=0` (and under `?noloop=1`, since tests drive fixed steps).
 - **Construction (RTS standard)**: placing a building **requires selected workers** (`Game.startPlacement` warns
   if none). Only those workers build: `commitPlacement` emits `issueOrder(BUILD, clear=true)` (the order
   **interrupts** their current task) and **keeps the selection**. Do not reintroduce auto-assignment of builders:
