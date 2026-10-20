@@ -264,7 +264,10 @@ export class Unit {
    * sampled at ~0.5-unit intervals so a thin barrier cannot be tunnelled.
    */
   private stepAllowed(tx: number, tz: number): boolean {
-    if (!this.ctx.isWalkable(this.pos.x, this.pos.z)) return true; // controlled escape
+    // a unit already inside blocked terrain (e.g. spawned under a footprint) may
+    // walk out; this cannot open a crossing from walkable ground, which is sampled
+    // below and never enters a blocked cell
+    if (!this.ctx.isWalkable(this.pos.x, this.pos.z)) return true;
     const dx = tx - this.pos.x;
     const dz = tz - this.pos.z;
     const dist = Math.hypot(dx, dz);

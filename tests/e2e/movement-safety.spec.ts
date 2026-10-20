@@ -214,3 +214,108 @@ test('ESCAPE: a unit starting on a blocked cell can leave it', async ({ page }) 
   expect(out.endWalkable, 'the unit did not end on walkable ground').toBe(true);
   expect(out.endX).toBeGreaterThan(out.destX - 8);
 });
+
+type BarrierKind = 'wall' | 'water' | 'steep';
+
+/**
+ * A full-depth barrier strip between the unit (near bank) and its target (far
+ * bank). `wall` blanks the grid columns, `water` bakes a below-waterline strip and
+ * `steep` bakes a cliff, so the barrier goes through the real `isWalkable` path.
+ */
+async function runCrossBarrier(
+  page: Page,
+  orderKind: 'attack' | 'attack_move',
+  barrier: BarrierKind,
+  seconds = 12,
+): Promise<{ crossed: boolean; offGround: number }> {
+  return page.evaluate(
+    ({ orderKind, barrier, seconds }) => {
+      const g = (window as unknown as { game: any }).game;
+      const { cell, cols } = g.pathfinder.grid;
+      const walkable = (cx: number, cz: number): number => g.pathfinder.grid.walkable[cz * cols + cx];
+      const center = (c: number): number => c * cell + cell / 2;
+      let area: { x: number; z: number } | null = null;
+      for (let z = 5; z < cols - 5 && !area; z++) {
+        for (let x = 5; x < cols - 10 && !area; x++) {
+          let ok = true;
+          for (let dz = -3; dz <= 3 && ok; dz++)
+            for (let dx = -2; dx <= 10; dx++) if (!walkable(x + dx, z + dz)) ok = false;
+          if (ok) area = { x, z };
+        }
+      }
+      if (!area) throw new Error('no clear area');
+      const stripStart = area.x + 3;
+      const stripEnd = area.x + 5;
+      if (barrier === 'wall') {
+        for (let z = 0; z < cols; z++)
+          for (let c = stripStart; c < stripEnd; c++) g.pathfinder.grid.walkable[z * cols + c] = 0;
+      } else {
+        g.pathfinder.bakeTerrain(
+          (x: number) => {
+            const col = Math.floor(x / cell);
+            if (col < stripStart || col >= stripEnd) return 10;
+            return barrier === 'water' ? 0 : 10 + (col - stripStart + 1) * 1000;
+          },
+          barrier === 'water' ? 5 : 0,
+        );
+      }
+      const wz = center(area.z);
+      // the bank cell next to a synthetic water/cliff strip is itself too steep, so
+      // stand two cells back (a walkable cell) and treat the first blocked column as
+      // the barrier edge
+      const nearX = center(stripStart - 2);
+      // the first blocked cell's near edge (not the walkable bank's centre, which a
+      // unit may legitimately approach)
+      const barrierEdgeX = stripStart * cell;
+      const farX = center(stripEnd + 1);
+      const u = g.spawnScriptedUnit('soldier', 0, nearX, wz);
+      u.pos.set(nearX, g.terrain.getHeight(nearX, wz), wz);
+      u.clearOrders();
+      if (orderKind === 'attack') {
+        const target = g.spawnScriptedBuilding('house', 1, farX, wz);
+        u.issueOrder({ kind: 'attack', entityId: target.id }, true);
+      } else {
+        u.issueOrder({ kind: 'attack_move', target: { x: farX, z: wz } }, true);
+      }
+      let t = 0;
+      let offGround = 0;
+      let crossed = false;
+      for (let i = 0; i < seconds * 60; i++) {
+        g.update(1 / 60, t);
+        t += 1 / 60;
+        if (!g.pathfinder.isWalkable(u.pos.x, u.pos.z)) offGround++;
+        if (u.pos.x > barrierEdgeX) crossed = true;
+      }
+      return { crossed, offGround };
+    },
+    { orderKind, barrier, seconds },
+  );
+}
+
+test('ATTACK: a soldier does not cross a barrier to reach its target', async ({ page }) => {
+  await boot(page);
+  const out = await runCrossBarrier(page, 'attack', 'wall');
+  expect(out.offGround, 'soldier entered blocked terrain').toBe(0);
+  expect(out.crossed, 'soldier crossed the wall').toBe(false);
+});
+
+test('ATTACK_MOVE: a soldier does not cross a barrier', async ({ page }) => {
+  await boot(page);
+  const out = await runCrossBarrier(page, 'attack_move', 'wall');
+  expect(out.offGround, 'soldier entered blocked terrain').toBe(0);
+  expect(out.crossed, 'soldier crossed the wall').toBe(false);
+});
+
+test('WATER: movement does not enter a water strip', async ({ page }) => {
+  await boot(page);
+  const out = await runCrossBarrier(page, 'attack_move', 'water');
+  expect(out.offGround, 'soldier entered water').toBe(0);
+  expect(out.crossed, 'soldier crossed the water').toBe(false);
+});
+
+test('STEEP: movement does not cross a blocked slope', async ({ page }) => {
+  await boot(page);
+  const out = await runCrossBarrier(page, 'attack_move', 'steep');
+  expect(out.offGround, 'soldier entered blocked slope').toBe(0);
+  expect(out.crossed, 'soldier crossed the slope').toBe(false);
+});
