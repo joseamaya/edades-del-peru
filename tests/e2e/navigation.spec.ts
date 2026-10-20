@@ -89,14 +89,20 @@ test('a unit never crosses a fully blocked barrier', async ({ page }) => {
     u.combatStance = 'pasivo';
     u.issueOrder({ kind: 'move', target: { x: (origin.x + 6) * cell + cell / 2, z: zc } }, true);
     let t = 0;
+    let maxX = -Infinity;
+    let offGround = 0;
     for (let i = 0; i < 60 * 4; i++) {
       g.update(1 / 60, t);
       t += 1 / 60;
+      maxX = Math.max(maxX, u.pos.x);
+      if (!g.pathfinder.isWalkable(u.pos.x, u.pos.z)) offGround++;
     }
-    return { skip: false, wallX, x: u.pos.x };
+    return { skip: false, wallX, x: u.pos.x, maxX, offGround };
   });
   expect(out.skip).toBe(false);
   expect(out.x!).toBeLessThan(out.wallX!);
+  expect(out.maxX!, 'crossed the wall during the simulation').toBeLessThan(out.wallX!);
+  expect(out.offGround, 'entered blocked terrain').toBe(0);
 });
 
 test('a unit routes around a barrier through a gap', async ({ page }) => {
@@ -128,14 +134,17 @@ test('a unit routes around a barrier through a gap', async ({ page }) => {
     u.combatStance = 'pasivo';
     u.issueOrder({ kind: 'move', target: { x: (origin.x + 6) * cell + cell / 2, z: zc } }, true);
     let t = 0;
+    let offGround = 0;
     for (let i = 0; i < 60 * 30; i++) {
       g.update(1 / 60, t);
       t += 1 / 60;
+      if (!g.pathfinder.isWalkable(u.pos.x, u.pos.z)) offGround++;
     }
-    return { skip: false, wallX, x: u.pos.x };
+    return { skip: false, wallX, x: u.pos.x, offGround };
   });
   expect(out.skip).toBe(false);
   expect(out.x!).toBeGreaterThan(out.wallX!);
+  expect(out.offGround, 'entered blocked terrain while routing around').toBe(0);
 });
 
 test('a unit ordered to an unreachable spot does not cross or oscillate', async ({ page }) => {
@@ -163,19 +172,25 @@ test('a unit ordered to an unreachable spot does not cross or oscillate', async 
     u.combatStance = 'pasivo';
     u.issueOrder({ kind: 'move', target: { x: (origin.x + 8) * cell + cell / 2, z: zc } }, true);
     let t = 0;
+    let maxX = -Infinity;
+    let offGround = 0;
     const at = (secs: number) => {
       while (t < secs) {
         g.update(1 / 60, t);
         t += 1 / 60;
+        maxX = Math.max(maxX, u.pos.x);
+        if (!g.pathfinder.isWalkable(u.pos.x, u.pos.z)) offGround++;
       }
       return u.pos.x;
     };
     const x2 = at(2);
     const x4 = at(4);
-    return { skip: false, wallX, x2, x4 };
+    return { skip: false, wallX, x2, x4, maxX, offGround };
   });
   expect(out.skip).toBe(false);
   expect(out.x2!).toBeLessThan(out.wallX!);
   expect(out.x4!).toBeLessThan(out.wallX!);
+  expect(out.maxX!, 'crossed the wall during the simulation').toBeLessThan(out.wallX!);
+  expect(out.offGround, 'entered blocked terrain').toBe(0);
   expect(Math.abs(out.x4! - out.x2!)).toBeLessThan(1.5);
 });

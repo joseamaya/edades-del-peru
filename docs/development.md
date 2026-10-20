@@ -272,6 +272,12 @@ Definition of Done and the building audit see
 
 ## Code traps (learned the hard way)
 
+- **Unit movement safety** (`Unit.integrateSafely`): every order's direct fallback (`directStep`) only moves when
+  the segment ahead is walkable; `integrateSafely` validates the step, slides along one axis when a wall blocks the
+  diagonal, and allows movement only when the unit starts on a blocked cell (controlled escape). GATHER / DELIVER /
+  BUILD use `directStep` (never integrate `pos` inside the order handler) and interact at
+  `target.radius + 1.4–1.6`: the old fixed 2.4 range forced workers into the building footprint. This changed the
+  simulation, so `REPLAY_VERSION` is 7. Guarded by `tests/e2e/movement-safety.spec.ts`.
 - **Pathfinding to a blocked goal** (`Pathfinder.pathfind`): a destination inside an obstacle (your own
   building, a resource node) is not traversable. `nearestWalkable` alone is not enough — it can return an
   isolated walkable pocket and A* then fails, silently dropping move-to-building orders. `pathfind` now accepts

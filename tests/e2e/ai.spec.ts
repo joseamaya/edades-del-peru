@@ -140,7 +140,9 @@ test('the AI sends its scout to explore', async ({ page }) => {
 });
 
 test('the AI builds a barracks and starts training soldiers in the opening', async ({ page }) => {
-  await page.goto('/?seed=777&fog=0&low=1');
+  // `noloop=1` makes the fixed-step opening deterministic (no frames before the test
+  // stops the loop); the economy/army check still runs over 600 s of simulated time.
+  await page.goto('/?seed=777&fog=0&low=1&noloop=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });
