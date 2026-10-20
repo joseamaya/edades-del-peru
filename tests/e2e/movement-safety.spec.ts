@@ -227,7 +227,7 @@ async function runCrossBarrier(
   orderKind: 'attack' | 'attack_move',
   barrier: BarrierKind,
   seconds = 12,
-): Promise<{ crossed: boolean; offGround: number; maxX: number; barrierStartX: number }> {
+): Promise<{ crossed: boolean; offGround: number }> {
   return page.evaluate(
     ({ orderKind, barrier, seconds }) => {
       const g = (window as unknown as { game: any }).game;
@@ -264,7 +264,9 @@ async function runCrossBarrier(
       // stand two cells back (a walkable cell) and treat the first blocked column as
       // the barrier edge
       const nearX = center(stripStart - 2);
-      const barrierEdgeX = center(stripStart - 1);
+      // the first blocked cell's near edge (not the walkable bank's centre, which a
+      // unit may legitimately approach)
+      const barrierEdgeX = stripStart * cell;
       const farX = center(stripEnd + 1);
       const u = g.spawnScriptedUnit('soldier', 0, nearX, wz);
       u.pos.set(nearX, g.terrain.getHeight(nearX, wz), wz);
@@ -278,15 +280,13 @@ async function runCrossBarrier(
       let t = 0;
       let offGround = 0;
       let crossed = false;
-      let maxX = -Infinity;
       for (let i = 0; i < seconds * 60; i++) {
         g.update(1 / 60, t);
         t += 1 / 60;
         if (!g.pathfinder.isWalkable(u.pos.x, u.pos.z)) offGround++;
         if (u.pos.x > barrierEdgeX) crossed = true;
-        maxX = Math.max(maxX, u.pos.x);
       }
-      return { crossed, offGround, maxX, barrierStartX: barrierEdgeX };
+      return { crossed, offGround };
     },
     { orderKind, barrier, seconds },
   );
