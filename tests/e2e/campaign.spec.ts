@@ -50,6 +50,27 @@ test('the tutorial guides in the first mission', async ({ page }) => {
   await expect(tutorial).toContainText('Paso 1 / 5');
 });
 
+test('the Caral mission closes with a narrative epilogue, not a quiz', async ({ page }) => {
+  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1&noloop=1');
+  const overlay = page.locator('.ed-overlay', { hasText: 'La Ciudad Sagrada' });
+  await expect(overlay).toBeVisible({ timeout: 30_000 });
+  await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+  await overlay.waitFor({ state: 'detached', timeout: 15_000 });
+  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
+    timeout: 30_000,
+  });
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.mission.win();
+  });
+  const victory = page.locator('.ed-overlay', { hasText: 'VICTORIA' });
+  await expect(victory).toBeVisible({ timeout: 15_000 });
+  await expect(victory).toContainText('Epílogo');
+  await expect(victory).toContainText('Códice');
+  await expect(victory).not.toContainText('Pregunta');
+  await expect(victory).not.toContainText('Puntaje');
+});
+
 test('the missions with corrected rosters boot with units and no errors', async ({ page }) => {
   test.setTimeout(180_000);
   const errors: string[] = [];

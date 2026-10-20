@@ -1,5 +1,6 @@
 import type { Game } from '../core/Game';
-import { UnitKind, BuildingKind, OrderKind } from '../core/types';
+import { UnitKind, BuildingKind } from '../core/types';
+import { distance2D } from '../util/math';
 import type { TutorialSave, TutorialBase } from '../game/saveTypes';
 
 interface PasoTutorial {
@@ -35,6 +36,7 @@ export class Tutorial {
       barracks: countB(BuildingKind.BARRACKS),
       soldiers: countU(UnitKind.SOLDIER),
       farms: countB(BuildingKind.FARM),
+      mills: countB(BuildingKind.MILL),
       markets: countB(BuildingKind.MARKET),
     };
     const buildBottom = '#ed-bottom';
@@ -56,7 +58,7 @@ export class Tutorial {
       },
       {
         id: 'farm',
-        text: 'Pulsa G (o el botón Andén) para ordenar la agricultura del valle. Caral vive de la tierra y del mar.',
+        text: 'Pulsa G (o el botón Andén) y coloca el cultivo cerca del agua o de un canal: la tierra húmeda rinde más.',
         highlight: buildBottom,
         check: (g) =>
           [...g.buildings.values()].filter(
@@ -64,21 +66,22 @@ export class Tutorial {
           ).length > (this.base.farms ?? 0),
       },
       {
-        id: 'market',
-        text: 'Con obreros seleccionados, construye un Mercado desde el panel para comerciar con Áspero.',
+        id: 'coast',
+        text: 'Selecciona tu explorador y recorre el valle hacia el litoral hasta descubrir un banco de peces.',
+        check: (g) => {
+          const scouts = [...g.units.values()].filter((u) => u.owner === 0 && !u.dead && u.kind === UnitKind.SCOUT);
+          const fish = [...g.resourceNodes.values()].filter((n) => n.kind === 'fishing' && !n.dead);
+          return scouts.some((u) => fish.some((n) => distance2D(u.pos.x, u.pos.z, n.pos.x, n.pos.z) < 16));
+        },
+      },
+      {
+        id: 'storage',
+        text: 'Construye un Troje (depósito de comida) para guardar el excedente de la comunidad.',
         highlight: buildBottom,
         check: (g) =>
           [...g.buildings.values()].filter(
-            (b) => b.owner === 0 && b.kind === BuildingKind.MARKET && b.constructionComplete && !b.dead,
-          ).length > (this.base.markets ?? 0),
-      },
-      {
-        id: 'explore',
-        text: 'Selecciona tu explorador y haz clic derecho hacia el litoral para abrir las rutas de trueque.',
-        check: (g) =>
-          [...g.units.values()].some(
-            (u) => u.owner === 0 && !u.dead && u.kind === UnitKind.SCOUT && u.orderQueue[0]?.kind === OrderKind.MOVE,
-          ),
+            (b) => b.owner === 0 && b.kind === BuildingKind.MILL && b.constructionComplete && !b.dead,
+          ).length > (this.base.mills ?? 0),
       },
     ];
   }
@@ -129,6 +132,11 @@ export class Tutorial {
     this.begun = s.begun;
     this.finished = s.finished;
     this.delay = s.delay;
-    this.base = { ...s.base, farms: s.base.farms ?? 0, markets: s.base.markets ?? 0 };
+    this.base = {
+      ...s.base,
+      farms: s.base.farms ?? 0,
+      mills: s.base.mills ?? 0,
+      markets: s.base.markets ?? 0,
+    };
   }
 }

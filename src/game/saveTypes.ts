@@ -20,6 +20,7 @@ export interface TutorialBase {
   barracks: number;
   soldiers: number;
   farms?: number;
+  mills?: number;
   markets?: number;
 }
 

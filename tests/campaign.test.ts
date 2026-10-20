@@ -3,7 +3,7 @@ import { MISSIONS } from '../src/campaign/defs/campaign';
 import { EDUCATIONAL, PROLOGUE, getEducational } from '../src/campaign/defs/educational';
 import { getPeriod } from '../src/model/defs/periods';
 import { getCiv } from '../src/model/defs/civs';
-import { UnitKind } from '../src/core/types';
+import { BuildingKind, UnitKind } from '../src/core/types';
 
 describe('campaign educational content', () => {
   it('the prologue is not empty', () => {
@@ -45,6 +45,23 @@ describe('campaign educational content', () => {
 
   it('the first mission brings the guided tutorial', () => {
     expect(MISSIONS[0].tutorial).toBe(true);
+  });
+
+  it('the Caral pilot teaches the valley through actions, not a market or a quiz', () => {
+    const caral = MISSIONS.find((m) => m.id === 'm1_caral')!;
+    const kinds = caral.objectives.map((o) => o.kind);
+    expect(kinds).not.toContain('destroy');
+    expect(caral.objectives.some((o) => o.buildingKind === BuildingKind.MARKET)).toBe(false);
+    expect(caral.objectives.some((o) => o.buildingKind === BuildingKind.FARM)).toBe(true);
+    expect(caral.objectives.some((o) => o.buildingKind === BuildingKind.MILL)).toBe(true);
+    expect(caral.objectives.some((o) => o.kind === 'gather' && o.resource === 'food')).toBe(true);
+    expect(caral.objectives.some((o) => o.kind === 'survive')).toBe(true);
+
+    const edu = getEducational('m1_caral')!;
+    expect(edu.briefing?.length).toBeGreaterThan(20);
+    expect(edu.epilogue?.length).toBeGreaterThan(40);
+    expect(edu.epilogue?.toLowerCase()).not.toContain('pregunta');
+    expect((edu as unknown as { quiz?: unknown }).quiz).toBeUndefined();
   });
 
   it('mission atmosphere overrides stay within the supported range', () => {

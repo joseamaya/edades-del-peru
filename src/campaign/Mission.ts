@@ -367,6 +367,11 @@ export class Mission {
     this.won = s.won ?? null;
     this.timer = s.timer;
     this.objState = new Map(s.objState);
+    // Campaign objectives can change between versions; a loaded save keeps the
+    // states it knows and starts any new objective in its default state.
+    for (const o of this.def.objectives) {
+      if (!this.objState.has(o.id)) this.objState.set(o.id, o.hidden ? 'pendiente' : 'activo');
+    }
     this.fired = new Set(s.fired);
     this.lastFired = new Map(s.lastFired);
     this.spawnedCount = new Map(s.spawnedCount);

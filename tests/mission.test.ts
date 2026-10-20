@@ -49,6 +49,19 @@ function stubGame(unit: { id: number; tag: string; owner: number; dead: boolean;
 }
 
 describe('mission optional (bonus) objectives', () => {
+  it('initializes objectives added after a save was created', () => {
+    const unit = { id: 1, tag: 'guarda', owner: 0, dead: false, kind: UnitKind.WORKER };
+    const game = stubGame(unit);
+    const m = new Mission(game as any, def, () => {});
+    m.start();
+    const save = m.toSave();
+    // Simulate an older save that only knew the required objective.
+    save.objState = [['req', 'completed']];
+    m.applySave(save);
+    expect(m.getObjectiveState('req')).toBe('completed');
+    expect(m.getObjectiveState('bonus')).toBe('activo');
+  });
+
   it('a failed bonus does not defeat and does not block victory', () => {
     const unit = { id: 1, tag: 'guarda', owner: 0, dead: false, kind: UnitKind.WORKER };
     const game = stubGame(unit);

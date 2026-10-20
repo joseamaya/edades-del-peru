@@ -10,10 +10,14 @@ export interface SourceRef {
 }
 
 export interface EducationalMission {
-  /** Expanded historical context, for the pre-mission briefing. */
+  /** Short scene-setting paragraph for the briefing; the full context stays in the Codex. */
+  briefing?: string;
+  /** Expanded historical context, for the Codex. */
   context: string;
   /** Verifiable fun fact shown in the briefing. */
   didYouKnow: string;
+  /** Brief narrative closure after victory. It must not become an assessment. */
+  epilogue?: string;
   sources: SourceRef[];
 }
 
@@ -28,14 +32,23 @@ export const PROLOGUE =
 
 export const EDUCATIONAL: Record<string, EducationalMission> = {
   m1_caral: {
+    briefing:
+      'Valle de Supe, c. 3000 a.C. Entre el mar y los Andes crece una comunidad que organiza canales, ' +
+      'andenes y plazas. No hay guerra documentada: el desafío es sostener a su gente y guardar el excedente.',
     context:
       'En el valle de Supe, a 182 km al norte de Lima y a 23 km del litoral, Caral fue la primera ciudad ' +
       'de América. Se formó con una economía pesquero-agraria complementaria —pesca con redes de algodón en ' +
       'Áspero y agricultura en el valle—, canales de riego y una ideología religiosa que cohesionaba a miles ' +
       'de personas. Funcionó casi un milenio (3000–1800 a.C.).',
-    didYouKnow: 'En Caral no hay guerra documentada: su poder se basó en la construcción, el comercio y la religión.',
+    didYouKnow:
+      'En Caral no hay guerra documentada: la arqueología muestra canales, plazas, pirámides y redes de intercambio.',
+    epilogue:
+      'La comunidad de Supe sostuvo el valle combinando la pesca del litoral con la agricultura irrigada. ' +
+      'Ese excedente y la organización del trabajo hicieron posible las plazas y pirámides. Caral prosperó sin ' +
+      'guerra documentada y fue abandonada siglos después por causas que los arqueólogos todavía debaten.',
     sources: [
       { text: 'Shady Solís, R. Caral-Supe y su entorno natural y social en los orígenes de la civilización.' },
+      { text: 'Zona Arqueológica Caral (Ministerio de Cultura)', url: 'https://zonacaral.gob.pe/' },
       { text: 'UNESCO: Ciudad Sagrada de Caral-Supe', url: 'https://whc.unesco.org/en/list/1269/' },
     ],
   },
