@@ -34,7 +34,7 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
   m1_caral: {
     briefing:
       'Valle de Supe, c. 3000 a.C. Entre el mar y los Andes crece una comunidad que organiza canales, ' +
-      'andenes y plazas. No hay guerra documentada: el desafío es sostener a su gente y guardar el excedente.',
+      'campos de cultivo y plazas. No hay guerra documentada: el desafío es sostener a su gente y guardar el excedente.',
     context:
       'En el valle de Supe, a 182 km al norte de Lima y a 23 km del litoral, Caral fue la primera ciudad ' +
       'de América. Se formó con una economía pesquero-agraria complementaria —pesca con redes de algodón en ' +

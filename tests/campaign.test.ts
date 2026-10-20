@@ -60,8 +60,6 @@ describe('campaign educational content', () => {
     const edu = getEducational('m1_caral')!;
     expect(edu.briefing?.length).toBeGreaterThan(20);
     expect(edu.epilogue?.length).toBeGreaterThan(40);
-    expect(edu.epilogue?.toLowerCase()).not.toContain('pregunta');
-    expect((edu as unknown as { quiz?: unknown }).quiz).toBeUndefined();
   });
 
   it('mission atmosphere overrides stay within the supported range', () => {

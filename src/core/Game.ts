@@ -244,6 +244,7 @@ export class Game {
     this.initAudio();
     if (mis && !this.pendingSnapshot) this.applyMissionSetup(mis);
     if (this.pendingSnapshot) this.applySnapshot(this.pendingSnapshot);
+    if (mis?.guaranteedFishing) this.ensureFishingGrounds(mis.guaranteedFishing);
     this.loop.onUpdate = (dt, t) => this.update(dt, t);
     this.loop.onRender = () => this.render();
     if (autoStart) this.loop.start();
@@ -574,6 +575,50 @@ export class Game {
       node.view.position.set(x, 0, z);
       this.resourceNodes.set(node.id, node);
     }
+    // The random coastal samples can miss the few water cells near shore; a
+    // scenario that depends on fishing asks for a guaranteed reachable supply.
+    const mis = s.missionId ? getMission(s.missionId) : undefined;
+    for (let i = 0; i < (mis?.guaranteedFishing ?? 0); i++) this.spawnFishingNearShore(rng);
+  }
+
+  /** Fill a scenario's minimum fishing supply after loading an older save. */
+  private ensureFishingGrounds(min: number): void {
+    const have = [...this.resourceNodes.values()].filter((n) => n.kind === 'fishing' && !n.dead).length;
+    if (have >= min) return;
+    const rng = new RNG((this.settings.mapSeed * 2654435761 + 97) >>> 0);
+    for (let i = have; i < min; i++) this.spawnFishingNearShore(rng);
+  }
+
+  private spawnFishingNearShore(rng: RNG): boolean {
+    const size = this.settings.mapSize;
+    const candidates: { x: number; z: number }[] = [];
+    const existing = [...this.resourceNodes.values()].filter((n) => n.kind === 'fishing' && !n.dead);
+    for (let x = 20; x < size - 20; x += 2) {
+      for (let z = 20; z < size - 20; z += 2) {
+        if (!this.terrain.isWater(x, z)) continue;
+        if (existing.some((n) => distance2D(x, z, n.pos.x, n.pos.z) < 5)) continue;
+        let nearLand = false;
+        for (let i = 0; i < 8 && !nearLand; i++) {
+          const a = (i / 8) * Math.PI * 2;
+          nearLand = !this.terrain.isWater(x + Math.cos(a) * 5, z + Math.sin(a) * 5);
+        }
+        if (nearLand) candidates.push({ x, z });
+      }
+    }
+    if (candidates.length === 0) return false;
+    const spot = rng.pick(candidates);
+    const node = new ResourceNode(
+      this.scene,
+      'fishing',
+      spot.x,
+      spot.z,
+      rng.range(150, 220),
+      this.mapProfile.baseMapType,
+    );
+    node.pos.y = 0;
+    node.view.position.set(spot.x, 0, spot.z);
+    this.resourceNodes.set(node.id, node);
+    return true;
   }
 
   /**
@@ -1051,15 +1096,16 @@ export class Game {
    * soil moisture and nearby irrigation. Deterministic, so replay/save safe.
    */
   applyTerrainFarmYield(b: Building): void {
-    const x = b.pos.x;
-    const z = b.pos.z;
-    b.applyTerrainYield(
-      farmYieldMultiplier({
-        terrace: this.terrain.getTerrace(x, z),
-        moisture: this.terrain.getMoisture(x, z),
-        canal: nearbyCanal((cx, cz) => this.terrain.getCanal(cx, cz), x, z),
-      }),
-    );
+    b.applyTerrainYield(this.farmYieldAt(b.pos.x, b.pos.z));
+  }
+
+  /** Terrain multiplier for a farm at (x, z), shared by the simulation and the HUD. */
+  farmYieldAt(x: number, z: number): number {
+    return farmYieldMultiplier({
+      terrace: this.terrain.getTerrace(x, z),
+      moisture: this.terrain.getMoisture(x, z),
+      canal: nearbyCanal((cx, cz) => this.terrain.getCanal(cx, cz), x, z),
+    });
   }
 
   /** Train a unit in a completed building of player 0. */

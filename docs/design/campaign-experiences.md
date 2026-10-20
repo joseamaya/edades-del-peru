@@ -27,10 +27,11 @@ war.
 What the player does:
 
 1. Explores the valley and finds the coast. The tutorial completes when the scout discovers a fishing ground.
-2. Places two farms. Farms near moisture, terraces or a canal hold more food, and the HUD shows the reserve
-   and terrain bonus.
-3. Builds a Troje (food storage) to represent the communal surplus.
-4. Reaches a food target and keeps the settlement standing.
+2. Places two fields (the game's Andén building). Fields near moisture or a canal hold more food, and the HUD
+   shows the reserve and terrain bonus.
+3. Builds a communal store (the game's Troje) to represent the surplus. Both names are gameplay abstractions,
+   not attested Caral terms.
+4. Reaches a food target, observes the ceremonial complex and keeps the settlement standing.
 
 Decisions: where to farm, how many workers to send to the coast, where to store food, whether to grow the
 settlement or accumulate reserves. These use existing mechanics (terrain-aware farms, resource nodes,
@@ -45,19 +46,21 @@ the player has just organised.
 
 ## Progression for the other missions
 
-| Mission | Historical idea | Player action | Decision | Consequence |
-|---|---|---|---|---|
-| m2 Chavín | Ceremonial prestige and pilgrimage | Host offerings, sustain the centre | Ceremony vs subsistence | Prestige and continuity |
-| m3 Moche–Recuay | Valleys, canals and attested conflict | Defend centre and canal, keep production | Defend vs counter-raid | Control or loss of the valley |
-| m4 Wari | Planned expansion and provincial centres | Found a frontier centre, stockpile, sustain | Expand vs consolidate | Frontier influence |
-| m5 Yahuar Pampa | Defence of Cusco | Hold Cusco, protect Cusi Yupanqui, counter-attack | Resist vs sortie | Survival or fall |
-| m6 Chimú–Inca | Water as power | Advance, cut the canal, force surrender | Assault vs siege | Chan Chan capitulates |
-| m7 Túpac Amaru | Rebellion and repression | Sustain communities, choose assault or siege | Explicit counterfactual | Defeat and legacy |
-| m8 Independencia | Campaign logistics and coordination | Move, take the royalist centre, hold | Timing and concentration | Patriotic victory |
-| m9 Guerra del Pacífico | Sea control and port defence | Protect the port, raid, intercept | Risk the squadron vs hold the port | Loss of the Huáscar and Grau |
+| Mission                | Historical idea                          | Player action                                     | Decision                           | Consequence                   |
+| ---------------------- | ---------------------------------------- | ------------------------------------------------- | ---------------------------------- | ----------------------------- |
+| m2 Chavín              | Ceremonial prestige and pilgrimage       | Host offerings, sustain the centre                | Ceremony vs subsistence            | Prestige and continuity       |
+| m3 Moche–Recuay        | Valleys, canals and attested conflict    | Defend centre and canal, keep production          | Defend vs counter-raid             | Control or loss of the valley |
+| m4 Wari                | Planned expansion and provincial centres | Found a frontier centre, stockpile, sustain       | Expand vs consolidate              | Frontier influence            |
+| m5 Yahuar Pampa        | Defence of Cusco                         | Hold Cusco, protect Cusi Yupanqui, counter-attack | Resist vs sortie                   | Survival or fall              |
+| m6 Chimú–Inca          | Water as power                           | Advance, cut the canal, force surrender           | Assault vs siege                   | Chan Chan capitulates         |
+| m7 Túpac Amaru         | Rebellion and repression                 | Sustain communities, choose assault or siege      | Explicit counterfactual            | Defeat and legacy             |
+| m8 Independencia       | Campaign logistics and coordination      | Move, take the royalist centre, hold              | Timing and concentration           | Patriotic victory             |
+| m9 Guerra del Pacífico | Sea control and port defence             | Protect the port, raid, intercept                 | Risk the squadron vs hold the port | Loss of the Huáscar and Grau  |
 
-These are design directions, not a shared objective template. Each mission must be reviewed against its dossier
-before it is rewritten.
+These are future design directions, not implemented behaviour and not a shared objective template. m7 is a
+counterfactual licence; m9's historical losses are documented, while a playable land defence of the port would
+be an abstraction. The other rows describe documented contexts. Each mission must be reviewed against its
+dossier before it is rewritten.
 
 ## Historical limits recorded by the pilot
 

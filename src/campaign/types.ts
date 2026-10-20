@@ -107,6 +107,11 @@ export interface MissionDef {
   region?: GeographicRegion;
   /** Optional per-scenario atmosphere override (e.g. the Chavín mist). */
   atmosphere?: MissionAtmosphere;
+  /**
+   * Extra fishing grounds guaranteed on coastal scenarios whose procedural
+   * placement would otherwise leave the coast without a usable fishing node.
+   */
+  guaranteedFishing?: number;
   /** Commanders shown as portrait cards in the briefing (stylized, not likenesses). */
   commanders?: PortraitId[];
   timeOfDay: 'morning' | 'noon' | 'dusk' | 'night';

@@ -11,8 +11,8 @@
   una ideología religiosa cohesionadora.
 - **Objetivos históricos (adaptados al juego)**:
   1. **Explorar** el valle y el litoral para descubrir la complementariedad costa-valle.
-  2. Preparar **andenes** y aprovechar la humedad, las terrazas y los canales.
-  3. **Almacenar** el excedente en un Troje comunal.
+  2. Preparar **campos de cultivo** y aprovechar la humedad y los canales.
+  3. **Almacenar** el excedente en un depósito comunal (el Troje del juego es una abstracción).
   4. **Sostener** a la comunidad en el tiempo.
 - **Mapa**: `costa` — valle del Supe, humedales, litoral y pampa desértica.
 - **Desenlace documentado**: Caral funcionó durante casi un milenio (3000–1800 a.C.) y fue abandonada por
@@ -21,10 +21,11 @@
   supervivencia. La presión del valle es ambiental (sequías / El Niño, sismos), no un ejército rival.
 - **En el juego**: no se construye un mercado; no hay un mercado atestiguado en Caral. El intercambio se
   representa mediante la pesca del litoral, los cultivos del valle y la circulación de recursos. La
-  monumentalidad se descubre recorriendo el complejo ceremonial, no inventando una guerra.
+  monumentalidad se descubre recorriendo el complejo ceremonial, no inventando una guerra. El **Andén** y el
+  **Troje** son abstracciones jugables de campos de cultivo y almacenamiento, no términos atestiguados en Caral.
 
 ## Fuentes
 
-- Shady Solís, R. *Caral-Supe y su entorno natural y social…*.
+- Shady Solís, R. _Caral-Supe y su entorno natural y social…_.
 - Zona Arqueológica Caral (Ministerio de Cultura): <https://zonacaral.gob.pe/>.
 - UNESCO: [Sacred City of Caral-Supe](https://whc.unesco.org/en/list/1269/).

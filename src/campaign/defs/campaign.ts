@@ -11,7 +11,7 @@ export const MISSIONS: MissionDef[] = [
     subtitle: 'Arcaico Tardío · c. 3000 a.C.',
     history:
       'En el valle de Supe, entre el océano y los Andes, crece una de las primeras ciudades de América. ' +
-      'Sus canales, andenes y plazas se sostienen con trabajo comunal.\n' +
+      'Sus canales, campos de cultivo y plazas se sostienen con trabajo comunal.\n' +
       'No hay guerra documentada: organiza la agricultura, aprovecha el litoral y guarda el excedente para sostener a la comunidad.',
     victory:
       'Caral prospera durante siglos como centro de la civilización andina. Su legado guiará a las culturas del Perú durante milenios.',
@@ -21,6 +21,7 @@ export const MISSIONS: MissionDef[] = [
     playerCiv: CivId.CARAL,
     enemyCiv: CivId.CARAL,
     map: { seed: 3000, type: 'coast', size: 128 },
+    guaranteedFishing: 3,
     timeOfDay: 'morning',
     startingEra: Era.FORMATIVE,
     startingResources: { food: 250, wood: 120, silver: 150, stone: 80 },
@@ -32,14 +33,14 @@ export const MISSIONS: MissionDef[] = [
         kind: 'build',
         buildingKind: BuildingKind.FARM,
         count: 2,
-        title: 'Prepara dos andenes de cultivo en el valle',
+        title: 'Prepara dos campos de cultivo en el valle',
       },
       {
         id: 'obj_almacenamiento',
         kind: 'build',
         buildingKind: BuildingKind.MILL,
         count: 1,
-        title: 'Construye un Troje para guardar el excedente',
+        title: 'Construye un depósito comunal (Troje)',
       },
       {
         id: 'obj_alimento',
@@ -77,7 +78,7 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'Los andenes junto al agua y los canales rinden más. La tierra sostiene a la comunidad.',
+            text: 'Los campos junto al agua y los canales rinden más. La tierra sostiene a la comunidad.',
           },
         ],
       },
@@ -87,7 +88,7 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'El Troje guarda el excedente. Con trabajo comunal y reservas se levantan plazas y pirámides.',
+            text: 'El depósito guarda el excedente. Con trabajo comunal y reservas se levantan plazas y pirámides.',
           },
         ],
       },

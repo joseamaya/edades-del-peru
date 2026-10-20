@@ -15,7 +15,6 @@ import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../model/defs/bu
 import { UNIT_ARCHETYPES, getUnitStats, UNIT_INFO, unitMinPeriod } from '../model/defs/units';
 import { TECHS, techAvailable } from '../model/defs/techs';
 import { ERA_DEFS } from '../model/defs/eras';
-import { farmYieldMultiplier, nearbyCanal } from '../model/defs/farmYield';
 import { PERIODS, getPeriod } from '../model/defs/periods';
 import { civsForPeriod, getCiv } from '../model/defs/civs';
 import { RESOURCE_INFO, MAP_LABEL, GameSettings, CAMERA_SPEED_SCALE } from '../core/Config';
@@ -1067,11 +1066,7 @@ export class HUD {
       s += ` · Entrenando: ${UNIT_INFO[b.productionQueue[0].unit].name}`;
     }
     if (b.isFarm && b.constructionComplete) {
-      const mult = farmYieldMultiplier({
-        terrace: this.game.terrain.getTerrace(b.pos.x, b.pos.z),
-        moisture: this.game.terrain.getMoisture(b.pos.x, b.pos.z),
-        canal: nearbyCanal((cx, cz) => this.game.terrain.getCanal(cx, cz), b.pos.x, b.pos.z),
-      });
+      const mult = this.game.farmYieldAt(b.pos.x, b.pos.z);
       s += ` · Reserva de alimentos: ${Math.ceil(b.foodAmount)}`;
       if (mult > 1.001) s += ` · +${Math.round((mult - 1) * 100)}% por el terreno`;
     }
@@ -1510,10 +1505,11 @@ export class HUD {
     const player = getCiv(mis.playerCiv);
     const enemy = getCiv(mis.enemyCiv);
     const edu = getEducational(mis.id);
-    const contextText = edu?.briefing ?? edu?.context;
-    const context = contextText
-      ? `<div class="ed-hist">${mis.history}</div><div class="ed-hist"><b style="color:var(--gold)">Contexto histórico.</b> ${contextText}</div>`
-      : `<div class="ed-hist">${mis.history}</div>`;
+    const context = edu?.briefing
+      ? `<div class="ed-hist"><b style="color:var(--gold)">Contexto histórico.</b> ${edu.briefing}</div>`
+      : edu?.context
+        ? `<div class="ed-hist">${mis.history}</div><div class="ed-hist"><b style="color:var(--gold)">Contexto histórico.</b> ${edu.context}</div>`
+        : `<div class="ed-hist">${mis.history}</div>`;
     const funFact = edu ? `<div class="ed-sabias">💡 <b>¿Sabías que…?</b> ${edu.didYouKnow}</div>` : '';
     const sides = mis.enemy.active
       ? `<span>Bandos: <b>${player.name}</b> vs <b>${player.id === enemy.id ? 'grupos rivales' : enemy.name}</b></span>`

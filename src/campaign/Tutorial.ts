@@ -11,6 +11,11 @@ interface PasoTutorial {
   check: (game: Game) => boolean;
 }
 
+/** A scout must get this close to a fishing ground to discover it. */
+const COAST_DISCOVERY_RADIUS = 16;
+/** A scout must get this close to the ceremonial complex to observe it. */
+const LANDMARK_DISCOVERY_RADIUS = 12;
+
 /**
  * Step-by-step guided tutorial for the first campaign (Caral). Observes the game state
  * and advances when the player performs each action. It is independent of the mission
@@ -37,7 +42,6 @@ export class Tutorial {
       soldiers: countU(UnitKind.SOLDIER),
       farms: countB(BuildingKind.FARM),
       mills: countB(BuildingKind.MILL),
-      markets: countB(BuildingKind.MARKET),
     };
     const buildBottom = '#ed-bottom';
     this.pasos = [
@@ -46,6 +50,17 @@ export class Tutorial {
         text: 'Selecciona a tus obreros: haz clic izquierdo sobre uno o arrastra un recuadro para seleccionar varios.',
         check: (g) =>
           g.selectedUnits.some((id) => g.units.get(id)?.owner === 0 && g.units.get(id)?.kind === UnitKind.WORKER),
+      },
+      {
+        id: 'coast',
+        text: 'Selecciona tu explorador y recorre el valle hacia el litoral hasta descubrir un banco de peces.',
+        check: (g) => {
+          const scouts = [...g.units.values()].filter((u) => u.owner === 0 && !u.dead && u.kind === UnitKind.SCOUT);
+          const fish = [...g.resourceNodes.values()].filter((n) => n.kind === 'fishing' && !n.dead);
+          return scouts.some((u) =>
+            fish.some((n) => distance2D(u.pos.x, u.pos.z, n.pos.x, n.pos.z) < COAST_DISCOVERY_RADIUS),
+          );
+        },
       },
       {
         id: 'house',
@@ -66,17 +81,20 @@ export class Tutorial {
           ).length > (this.base.farms ?? 0),
       },
       {
-        id: 'coast',
-        text: 'Selecciona tu explorador y recorre el valle hacia el litoral hasta descubrir un banco de peces.',
+        id: 'landmark',
+        text: 'Acércate al complejo ceremonial y observa sus plazas y pirámides: la monumentalidad nace del trabajo comunal.',
         check: (g) => {
+          const landmark = g.landmark;
+          if (!landmark) return false;
           const scouts = [...g.units.values()].filter((u) => u.owner === 0 && !u.dead && u.kind === UnitKind.SCOUT);
-          const fish = [...g.resourceNodes.values()].filter((n) => n.kind === 'fishing' && !n.dead);
-          return scouts.some((u) => fish.some((n) => distance2D(u.pos.x, u.pos.z, n.pos.x, n.pos.z) < 16));
+          return scouts.some(
+            (u) => distance2D(u.pos.x, u.pos.z, landmark.position.x, landmark.position.z) < LANDMARK_DISCOVERY_RADIUS,
+          );
         },
       },
       {
         id: 'storage',
-        text: 'Construye un Troje (depósito de comida) para guardar el excedente de la comunidad.',
+        text: 'Construye un depósito comunal (Troje) para guardar el excedente de la comunidad.',
         highlight: buildBottom,
         check: (g) =>
           [...g.buildings.values()].filter(
@@ -124,11 +142,23 @@ export class Tutorial {
 
   /** Snapshot the tutorial progress (used by save/load). */
   toSave(): TutorialSave {
-    return { idx: this.idx, begun: this.begun, finished: this.finished, delay: this.delay, base: { ...this.base } };
+    return {
+      idx: this.idx,
+      stepId: this.pasos[this.idx]?.id,
+      begun: this.begun,
+      finished: this.finished,
+      delay: this.delay,
+      base: { ...this.base },
+    };
   }
 
   applySave(s: TutorialSave): void {
-    this.idx = s.idx;
+    // Saves written before step ids existed used: select, house, farm, market,
+    // explore. Map those positions to their closest current step.
+    const legacyIds = ['select', 'house', 'farm', 'coast', 'landmark'];
+    const stepId = s.stepId ?? legacyIds[s.idx];
+    const found = stepId ? this.pasos.findIndex((p) => p.id === stepId) : -1;
+    this.idx = found >= 0 ? found : Math.min(s.idx, this.pasos.length - 1);
     this.begun = s.begun;
     this.finished = s.finished;
     this.delay = s.delay;
@@ -136,7 +166,6 @@ export class Tutorial {
       ...s.base,
       farms: s.base.farms ?? 0,
       mills: s.base.mills ?? 0,
-      markets: s.base.markets ?? 0,
     };
   }
 }

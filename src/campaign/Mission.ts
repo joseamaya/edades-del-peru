@@ -31,7 +31,11 @@ export class Mission {
     this.game = game;
     this.def = def;
     this.onEnd = onEnd;
-    for (const o of def.objectives) this.objState.set(o.id, o.hidden ? 'pendiente' : 'activo');
+    for (const o of def.objectives) this.objState.set(o.id, this.defaultState(o));
+  }
+
+  private defaultState(o: ObjectiveDef): ObjState {
+    return o.hidden ? 'pendiente' : 'activo';
   }
 
   get activeObjectives(): { def: ObjectiveDef; state: ObjState }[] {
@@ -370,7 +374,7 @@ export class Mission {
     // Campaign objectives can change between versions; a loaded save keeps the
     // states it knows and starts any new objective in its default state.
     for (const o of this.def.objectives) {
-      if (!this.objState.has(o.id)) this.objState.set(o.id, o.hidden ? 'pendiente' : 'activo');
+      if (!this.objState.has(o.id)) this.objState.set(o.id, this.defaultState(o));
     }
     this.fired = new Set(s.fired);
     this.lastFired = new Map(s.lastFired);
