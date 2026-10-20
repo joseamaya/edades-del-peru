@@ -187,8 +187,8 @@ async function diagnose(browser, base, seed) {
             stone: rows.filter((r) => r.resource === 'stone'),
             reachableFood: rows.filter((r) => r.resource === 'food' && r.harvestable).length,
             reachableWood: rows.filter((r) => r.resource === 'wood' && r.harvestable).length,
-            triedFood: rows.filter((r) => r.resource === 'food').length,
-            triedWood: rows.filter((r) => r.resource === 'wood').length,
+            totalFood: rows.filter((r) => r.resource === 'food').length,
+            totalWood: rows.filter((r) => r.resource === 'wood').length,
           },
         });
       }
@@ -232,7 +232,7 @@ async function main() {
       const summaries = row.bases
         .map(
           (b) =>
-            `P${b.owner} food ${b.summary.reachableFood}/${b.summary.triedFood}, wood ${b.summary.reachableWood}/${b.summary.triedWood}`,
+            `P${b.owner} food ${b.summary.reachableFood}/${b.summary.totalFood}, wood ${b.summary.reachableWood}/${b.summary.totalWood}`,
         )
         .join(' | ');
       console.log(summaries);

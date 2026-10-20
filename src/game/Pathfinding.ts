@@ -121,7 +121,6 @@ export class Pathfinder {
   addObstacle(o: Obstacle): void {
     this.obstacles.push(o);
     this.rasterize(o);
-    this.revision++;
   }
 
   removeObstacle(o: Obstacle): void {
@@ -184,49 +183,6 @@ export class Pathfinder {
     const z = Math.floor(wz / cell);
     if (x < 0 || z < 0 || x >= cols || z >= cols) return false;
     return this.grid.walkable[z * cols + x] === 1;
-  }
-
-  /**
-   * Size of the walkable component containing (or nearest to) a world point.
-   * Used to reject start-resource placements that would enclose a base. The
-   * traversal uses the same no-corner-cutting rule as A*.
-   */
-  componentSizeAt(wx: number, wz: number, cap = 1000): number {
-    const cell = this.nearestWalkable(Math.floor(wx / this.grid.cell), Math.floor(wz / this.grid.cell), 12);
-    return cell ? this.componentSizeAtCell(cell.x, cell.z, cap) : 0;
-  }
-
-  /** Size of the walkable component containing an exact cell. */
-  componentSizeAtCell(cx: number, cz: number, cap = 1000): number {
-    const { cols } = this.grid;
-    if (cx < 0 || cz < 0 || cx >= cols || cz >= cols) return 0;
-    if (this.grid.walkable[cz * cols + cx] === 0) return 0;
-    const seen = new Uint8Array(cols * cols);
-    const stack = [cz * cols + cx];
-    seen[cz * cols + cx] = 1;
-    let size = 0;
-    while (stack.length > 0 && size < cap) {
-      const cur = stack.pop()!;
-      size++;
-      const x = cur % cols;
-      const z = (cur - x) / cols;
-      for (let dz = -1; dz <= 1; dz++) {
-        for (let dx = -1; dx <= 1; dx++) {
-          if (dx === 0 && dz === 0) continue;
-          const nx = x + dx;
-          const nz = z + dz;
-          if (nx < 0 || nz < 0 || nx >= cols || nz >= cols) continue;
-          const ni = nz * cols + nx;
-          if (seen[ni] || this.grid.walkable[ni] === 0) continue;
-          if (dx !== 0 && dz !== 0) {
-            if (this.grid.walkable[z * cols + nx] === 0 || this.grid.walkable[nz * cols + x] === 0) continue;
-          }
-          seen[ni] = 1;
-          stack.push(ni);
-        }
-      }
-    }
-    return size;
   }
 
   /** A* returning waypoints in world coordinates (cell centers). */
@@ -334,8 +290,8 @@ export class Pathfinder {
       x: number;
       z: number;
       targetDist: number;
-      cx: number;
-      cz: number;
+      centerX: number;
+      centerZ: number;
       startDist: number;
     }[] = [];
     const minX = Math.max(0, Math.floor((tx - standRadius) / cell) - 1);
@@ -378,8 +334,8 @@ export class Pathfinder {
           x: standX,
           z: standZ,
           targetDist,
-          cx: centreX,
-          cz: centreZ,
+          centerX: centreX,
+          centerZ: centreZ,
           startDist: Math.hypot(standX - sx, standZ - sz),
         });
       }
@@ -391,11 +347,11 @@ export class Pathfinder {
     const tried = new Set<string>();
     let attempts = 0;
     for (const candidate of candidates) {
-      const key = candidate.cx + ',' + candidate.cz;
+      const key = candidate.centerX + ',' + candidate.centerZ;
       if (tried.has(key)) continue;
       tried.add(key);
-      if (attempts++ >= 4) break;
-      const path = this.pathfind(sx, sz, candidate.cx, candidate.cz);
+      if (attempts++ >= 8) break;
+      const path = this.pathfind(sx, sz, candidate.centerX, candidate.centerZ);
       if (path.length === 0) continue;
       const last = path[path.length - 1];
       if (Math.hypot(last.x - candidate.x, last.z - candidate.z) > 0.05) {
@@ -435,7 +391,7 @@ export class Pathfinder {
     return Math.max(dx, dz) + 0.41 * Math.min(dx, dz);
   }
 
-  nearestWalkable(x: number, z: number, maxR: number): { x: number; z: number } | null {
+  private nearestWalkable(x: number, z: number, maxR: number): { x: number; z: number } | null {
     const { cols } = this.grid;
     for (let r = 1; r <= maxR; r++) {
       for (let dz = -r; dz <= r; dz++) {

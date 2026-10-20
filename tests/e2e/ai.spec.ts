@@ -139,7 +139,7 @@ test('the AI sends its scout to explore', async ({ page }) => {
   expect(order).toContain('patrol');
 });
 
-test('the AI builds a barracks and starts training soldiers in the opening', async ({ page }) => {
+test('the AI builds a barracks and starts training soldiers in the opening', { tag: '@smoke' }, async ({ page }) => {
   // `noloop=1` makes the fixed-step opening deterministic (no frames before the test
   // stops the loop); the economy/army check still runs over 600 s of simulated time.
   await page.goto('/?seed=777&fog=0&low=1&noloop=1');
@@ -172,7 +172,7 @@ test('the AI builds a barracks and starts training soldiers in the opening', asy
   expect(out.everTrained).toBe(true);
 });
 
-test('the AI economy opens on a previously-stalled seed (783)', async ({ page }) => {
+test('the AI economy opens on a previously-stalled seed (783)', { tag: '@smoke' }, async ({ page }) => {
   test.setTimeout(120_000);
   await page.goto('/?play=1&seed=783&fog=0&low=1&noloop=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {

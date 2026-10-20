@@ -133,22 +133,11 @@ describe('Pathfinder.findApproachPath', () => {
     expect(pf.findApproachPath(20, 20, 50, 50, 2.2)).toEqual([]);
   });
 
-  it('does not change the default pathfind arrival tolerance', () => {
+  it('keeps a regular path and also finds an approach path for a small obstacle', () => {
     const pf = new Pathfinder(100, 2);
     pf.addObstacle({ x: 50, z: 50, radius: 1.1 });
     expect(pf.pathfind(20, 20, 50, 50).length).toBeGreaterThan(0);
     expect(pf.findApproachPath(20, 20, 50, 50, 2.2).length).toBeGreaterThan(0);
-  });
-
-  it('componentSizeAt distinguishes a walled pocket from the main area', () => {
-    const pf = new Pathfinder(80, 2);
-    const cols = pf.grid.cols;
-    for (let z = 0; z < cols; z++) pf.grid.walkable[z * cols + 20] = 0;
-    const left = pf.componentSizeAt(10, 10, 1000);
-    const right = pf.componentSizeAt(60, 60, 1000);
-    expect(left).toBeGreaterThan(0);
-    expect(right).toBeGreaterThan(0);
-    expect(left).not.toBe(right);
   });
 });
 

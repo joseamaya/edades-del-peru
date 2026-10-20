@@ -931,7 +931,7 @@ export class Unit {
     const dx = node.pos.x - this.pos.x;
     const dz = node.pos.z - this.pos.z;
     const dist = Math.sqrt(dx * dx + dz * dz);
-    const harvestRange = node.farm ? (node.farm.radius ?? 1.5) + 1.4 : 2.8;
+    const harvestRange = node.farm ? (node.farm.radius ?? 1.5) + 1.4 : HARVEST_RANGE;
 
     if (dist > harvestRange) {
       if (this.pathIdx >= this.path.length && this.repathTimer <= 0) {

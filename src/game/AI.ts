@@ -47,6 +47,9 @@ const VISION_PAD = 2;
 /** A combat unit (not a worker or scout). */
 const isSoldier = (u: Unit): boolean => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT;
 
+/** A resource node or a completed farm exposed as a food node. */
+type HarvestNode = ResourceNode & { farm?: Building };
+
 /** A long-range siege unit. */
 const isSiege = (kind: UnitKind): boolean => UNIT_CATEGORY[kind] === 'siege';
 
@@ -68,10 +71,8 @@ export class AI {
   private lastPerception = -1;
   private seenUnits = new Map<number, number>();
   private seenBuildings = new Set<number>();
-  /** Game-time seconds, set at the start of each AI update. */
-  private now = 0;
   /** Nodes with no harvest approach, with the grid revision they were tested on. */
-  private unreachableNodes = new Map<number, { revision: number; until: number }>();
+  private unreachableNodes = new Map<number, number>();
   /** Remaining resource probes for the current economy tick. */
   private pathBudget = 0;
 
@@ -86,7 +87,6 @@ export class AI {
 
   update(dt: number, t: number): void {
     if (this.game.players[this.playerId].alive === false) return;
-    this.now = t;
     this.economyTimer += dt;
     this.buildingTimer += dt;
     this.attackTimer -= dt;
@@ -189,14 +189,14 @@ export class AI {
 
   private chooseResourceNode(w: Unit): ResourceNode | null {
     if (this.pathBudget <= 0) return null;
-    const nodes = [...this.game.resourceNodes.values()].filter(
-      (n) => !n.dead && !n.depleted && !this.isUnreachable(n.id),
-    );
+    const nodes: HarvestNode[] = [...this.game.resourceNodes.values()]
+      .filter((n) => !n.dead && !n.depleted && !this.isUnreachable(n.id))
+      .map((n) => n as HarvestNode);
     const p = this.p;
     // the player's complete farms count as food nodes
     for (const b of this.myBuildings()) {
       if (b.isFarm && b.constructionComplete && b.foodAmount > 0 && !this.isUnreachable(b.id)) {
-        nodes.push({ id: b.id, pos: b.pos, amount: b.foodAmount, resource: 'food', farm: b } as any);
+        nodes.push({ id: b.id, pos: b.pos, amount: b.foodAmount, resource: 'food', farm: b } as HarvestNode);
       }
     }
     if (nodes.length === 0) return null;
@@ -238,7 +238,7 @@ export class AI {
       for (const n of list) {
         if (this.pathBudget <= 0) return null;
         this.pathBudget--;
-        const farm = (n as any).farm;
+        const farm = n.farm;
         const standRadius = farm ? Math.max(0.5, (farm.radius ?? 1.5) + 1.4 - 0.6) : HARVEST_STAND_RANGE;
         const path = this.game.pathfinder.findApproachPath(w.pos.x, w.pos.z, n.pos.x, n.pos.z, standRadius);
         if (path.length > 0) return n;
@@ -248,18 +248,15 @@ export class AI {
     return null;
   }
 
-  /** Blacklist a node until the walkable grid changes. */
+  /** Blacklist a node until an obstacle removal (or terrain bake) changes reachability. */
   private markUnreachable(nodeId: number): void {
-    this.unreachableNodes.set(nodeId, {
-      revision: this.game.pathfinder.revision,
-      until: Number.POSITIVE_INFINITY,
-    });
+    this.unreachableNodes.set(nodeId, this.game.pathfinder.revision);
   }
 
   private isUnreachable(nodeId: number): boolean {
-    const entry = this.unreachableNodes.get(nodeId);
-    if (!entry) return false;
-    if (entry.revision !== this.game.pathfinder.revision || entry.until <= this.now) {
+    const revision = this.unreachableNodes.get(nodeId);
+    if (revision === undefined) return false;
+    if (revision !== this.game.pathfinder.revision) {
       this.unreachableNodes.delete(nodeId);
       return false;
     }
