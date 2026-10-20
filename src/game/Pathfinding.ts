@@ -99,6 +99,8 @@ class MinHeap {
 
 export class Pathfinder {
   grid: PathGrid;
+  /** Bumped whenever the walkable grid changes; used to invalidate approach caches. */
+  revision = 0;
   private obstacles: Obstacle[] = [];
   private heap = new MinHeap();
   private gScore: Float64Array;
@@ -119,12 +121,14 @@ export class Pathfinder {
   addObstacle(o: Obstacle): void {
     this.obstacles.push(o);
     this.rasterize(o);
+    this.revision++;
   }
 
   removeObstacle(o: Obstacle): void {
     const i = this.obstacles.indexOf(o);
     if (i >= 0) this.obstacles.splice(i, 1);
     this.rebuild();
+    this.revision++;
   }
 
   private rasterize(o: Obstacle): void {
@@ -171,6 +175,7 @@ export class Pathfinder {
     // snapshot the terrain-only mask, then re-apply the obstacles on top (idempotent)
     this.terrainBlocked = this.grid.walkable.slice();
     for (const o of this.obstacles) this.rasterize(o);
+    this.revision++;
   }
 
   isWalkable(wx: number, wz: number): boolean {
@@ -179,6 +184,49 @@ export class Pathfinder {
     const z = Math.floor(wz / cell);
     if (x < 0 || z < 0 || x >= cols || z >= cols) return false;
     return this.grid.walkable[z * cols + x] === 1;
+  }
+
+  /**
+   * Size of the walkable component containing (or nearest to) a world point.
+   * Used to reject start-resource placements that would enclose a base. The
+   * traversal uses the same no-corner-cutting rule as A*.
+   */
+  componentSizeAt(wx: number, wz: number, cap = 1000): number {
+    const cell = this.nearestWalkable(Math.floor(wx / this.grid.cell), Math.floor(wz / this.grid.cell), 12);
+    return cell ? this.componentSizeAtCell(cell.x, cell.z, cap) : 0;
+  }
+
+  /** Size of the walkable component containing an exact cell. */
+  componentSizeAtCell(cx: number, cz: number, cap = 1000): number {
+    const { cols } = this.grid;
+    if (cx < 0 || cz < 0 || cx >= cols || cz >= cols) return 0;
+    if (this.grid.walkable[cz * cols + cx] === 0) return 0;
+    const seen = new Uint8Array(cols * cols);
+    const stack = [cz * cols + cx];
+    seen[cz * cols + cx] = 1;
+    let size = 0;
+    while (stack.length > 0 && size < cap) {
+      const cur = stack.pop()!;
+      size++;
+      const x = cur % cols;
+      const z = (cur - x) / cols;
+      for (let dz = -1; dz <= 1; dz++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          if (dx === 0 && dz === 0) continue;
+          const nx = x + dx;
+          const nz = z + dz;
+          if (nx < 0 || nz < 0 || nx >= cols || nz >= cols) continue;
+          const ni = nz * cols + nx;
+          if (seen[ni] || this.grid.walkable[ni] === 0) continue;
+          if (dx !== 0 && dz !== 0) {
+            if (this.grid.walkable[z * cols + nx] === 0 || this.grid.walkable[nz * cols + x] === 0) continue;
+          }
+          seen[ni] = 1;
+          stack.push(ni);
+        }
+      }
+    }
+    return size;
   }
 
   /** A* returning waypoints in world coordinates (cell centers). */
@@ -267,13 +315,127 @@ export class Pathfinder {
     return [];
   }
 
+  /**
+   * Path to a stand point inside a walkable cell within `standRadius` world units
+   * of (tx, tz). Resource nodes block their own cell (and, for now, the four
+   * orthogonal neighbours), so a regular `pathfind` can end up to two cells away
+   * — outside the worker's harvest range. This searches the cells around the
+   * target and returns a path whose last waypoint is a point inside a walkable
+   * cell, close enough to harvest from.
+   *
+   * The returned path is a normal path to the cell centre plus the stand point,
+   * so movement code only needs to follow the waypoints. It returns [] when no
+   * cell within range has a reachable stand point.
+   */
+  findApproachPath(sx: number, sz: number, tx: number, tz: number, standRadius: number): { x: number; z: number }[] {
+    if (!(standRadius > 0)) return [];
+    const { cols, cell } = this.grid;
+    const candidates: {
+      x: number;
+      z: number;
+      targetDist: number;
+      cx: number;
+      cz: number;
+      startDist: number;
+    }[] = [];
+    const minX = Math.max(0, Math.floor((tx - standRadius) / cell) - 1);
+    const maxX = Math.min(cols - 1, Math.floor((tx + standRadius) / cell) + 1);
+    const minZ = Math.max(0, Math.floor((tz - standRadius) / cell) - 1);
+    const maxZ = Math.min(cols - 1, Math.floor((tz + standRadius) / cell) + 1);
+
+    for (let cz = minZ; cz <= maxZ; cz++) {
+      for (let cx = minX; cx <= maxX; cx++) {
+        const idx = cz * cols + cx;
+        if (this.grid.walkable[idx] === 0) continue;
+        const x0 = cx * cell;
+        const z0 = cz * cell;
+        const px = Math.min(Math.max(tx, x0), x0 + cell);
+        const pz = Math.min(Math.max(tz, z0), z0 + cell);
+        const dx = px - tx;
+        const dz = pz - tz;
+        const targetDist = Math.sqrt(dx * dx + dz * dz);
+        if (targetDist > standRadius) continue;
+
+        const centreX = x0 + cell / 2;
+        const centreZ = z0 + cell / 2;
+        let standX: number;
+        let standZ: number;
+        if (targetDist < 1e-6) {
+          const centreDist = Math.hypot(centreX - tx, centreZ - tz);
+          if (centreDist > standRadius) continue;
+          standX = centreX;
+          standZ = centreZ;
+        } else {
+          // Stay just inside the cell: d + 0.12 is past the boundary, so the
+          // point is unambiguously walkable and still as close as possible.
+          const standDist = Math.min(standRadius, targetDist + 0.12);
+          standX = tx + (dx / targetDist) * standDist;
+          standZ = tz + (dz / targetDist) * standDist;
+        }
+        if (!this.isWalkable(standX, standZ)) continue;
+        if (!this.approachClear(tx, tz, standX, standZ)) continue;
+        candidates.push({
+          x: standX,
+          z: standZ,
+          targetDist,
+          cx: centreX,
+          cz: centreZ,
+          startDist: Math.hypot(standX - sx, standZ - sz),
+        });
+      }
+    }
+
+    if (candidates.length === 0) return [];
+    candidates.sort((a, b) => a.targetDist - b.targetDist || a.startDist - b.startDist);
+
+    const tried = new Set<string>();
+    let attempts = 0;
+    for (const candidate of candidates) {
+      const key = candidate.cx + ',' + candidate.cz;
+      if (tried.has(key)) continue;
+      tried.add(key);
+      if (attempts++ >= 4) break;
+      const path = this.pathfind(sx, sz, candidate.cx, candidate.cz);
+      if (path.length === 0) continue;
+      const last = path[path.length - 1];
+      if (Math.hypot(last.x - candidate.x, last.z - candidate.z) > 0.05) {
+        path.push({ x: candidate.x, z: candidate.z });
+      }
+      return path;
+    }
+    return [];
+  }
+
+  /**
+   * Line of sight from a stand point toward a blocked target, ignoring the
+   * target's own blocked cell (the worker stops at harvest range and never
+   * enters it). A wall between the stand cell and the target cell rejects the
+   * candidate, so a worker cannot harvest through a building.
+   */
+  private approachClear(tx: number, tz: number, sx: number, sz: number): boolean {
+    const { cell } = this.grid;
+    const targetCx = Math.floor(tx / cell);
+    const targetCz = Math.floor(tz / cell);
+    const dist = Math.hypot(sx - tx, sz - tz);
+    if (dist < 1e-6) return true;
+    const steps = Math.max(1, Math.ceil(dist / 0.4));
+    for (let i = steps; i >= 1; i--) {
+      const s = (dist * i) / steps;
+      const x = tx + ((sx - tx) / dist) * s;
+      const z = tz + ((sz - tz) / dist) * s;
+      if (Math.floor(x / cell) === targetCx && Math.floor(z / cell) === targetCz) break;
+      if (!this.isWalkable(x, z)) return false;
+    }
+    return true;
+  }
+
   private heuristic(x: number, z: number, gx: number, gz: number): number {
     const dx = Math.abs(x - gx);
     const dz = Math.abs(z - gz);
     return Math.max(dx, dz) + 0.41 * Math.min(dx, dz);
   }
 
-  private nearestWalkable(x: number, z: number, maxR: number): { x: number; z: number } | null {
+  nearestWalkable(x: number, z: number, maxR: number): { x: number; z: number } | null {
     const { cols } = this.grid;
     for (let r = 1; r <= maxR; r++) {
       for (let dz = -r; dz <= r; dz++) {

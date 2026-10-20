@@ -9,7 +9,7 @@ import { getUnitStats } from '../model/defs/units';
 import { unitMinPeriod } from '../model/defs/units';
 import { ERA_DEFS } from '../model/defs/eras';
 import type { Game } from '../core/Game';
-import type { Unit } from '../entities/Unit';
+import { HARVEST_STAND_RANGE, type Unit } from '../entities/Unit';
 import { Building } from '../entities/Building';
 import type { ResourceNode } from '../entities/ResourceNode';
 import { CATEGORIES, UNIT_CATEGORY, armyWeightsFor, UnitCategory } from './aiComposition';
@@ -68,6 +68,12 @@ export class AI {
   private lastPerception = -1;
   private seenUnits = new Map<number, number>();
   private seenBuildings = new Set<number>();
+  /** Game-time seconds, set at the start of each AI update. */
+  private now = 0;
+  /** Nodes with no harvest approach, with the grid revision they were tested on. */
+  private unreachableNodes = new Map<number, { revision: number; until: number }>();
+  /** Remaining resource probes for the current economy tick. */
+  private pathBudget = 0;
 
   constructor(game: Game, playerId: number, difficulty?: Difficulty) {
     this.game = game;
@@ -80,6 +86,7 @@ export class AI {
 
   update(dt: number, t: number): void {
     if (this.game.players[this.playerId].alive === false) return;
+    this.now = t;
     this.economyTimer += dt;
     this.buildingTimer += dt;
     this.attackTimer -= dt;
@@ -146,6 +153,7 @@ export class AI {
 
   private manageWorkers(): void {
     const workers = this.myUnits().filter((u) => u.kind === UnitKind.WORKER);
+    this.pathBudget = 6;
     const busy = workers.filter(
       (w) => w.orderQueue[0]?.kind === OrderKind.GATHER || w.orderQueue[0]?.kind === OrderKind.BUILD,
     );
@@ -180,11 +188,14 @@ export class AI {
   }
 
   private chooseResourceNode(w: Unit): ResourceNode | null {
-    const nodes = [...this.game.resourceNodes.values()].filter((n) => !n.dead && !n.depleted);
+    if (this.pathBudget <= 0) return null;
+    const nodes = [...this.game.resourceNodes.values()].filter(
+      (n) => !n.dead && !n.depleted && !this.isUnreachable(n.id),
+    );
     const p = this.p;
     // the player's complete farms count as food nodes
     for (const b of this.myBuildings()) {
-      if (b.isFarm && b.constructionComplete && b.foodAmount > 0) {
+      if (b.isFarm && b.constructionComplete && b.foodAmount > 0 && !this.isUnreachable(b.id)) {
         nodes.push({ id: b.id, pos: b.pos, amount: b.foodAmount, resource: 'food', farm: b } as any);
       }
     }
@@ -225,13 +236,34 @@ export class AI {
     for (const k of types) {
       const list = nodes.filter((n) => n.resource === k).sort((a, b) => distTo(a) - distTo(b));
       for (const n of list) {
-        // reachable: adjacent, or a route exists (a node behind water/steep is skipped)
-        if (distTo(n) <= 3 || this.game.pathfinder.pathfind(w.pos.x, w.pos.z, n.pos.x, n.pos.z).length > 0) {
-          return n;
-        }
+        if (this.pathBudget <= 0) return null;
+        this.pathBudget--;
+        const farm = (n as any).farm;
+        const standRadius = farm ? Math.max(0.5, (farm.radius ?? 1.5) + 1.4 - 0.6) : HARVEST_STAND_RANGE;
+        const path = this.game.pathfinder.findApproachPath(w.pos.x, w.pos.z, n.pos.x, n.pos.z, standRadius);
+        if (path.length > 0) return n;
+        this.markUnreachable(n.id);
       }
     }
     return null;
+  }
+
+  /** Blacklist a node until the walkable grid changes. */
+  private markUnreachable(nodeId: number): void {
+    this.unreachableNodes.set(nodeId, {
+      revision: this.game.pathfinder.revision,
+      until: Number.POSITIVE_INFINITY,
+    });
+  }
+
+  private isUnreachable(nodeId: number): boolean {
+    const entry = this.unreachableNodes.get(nodeId);
+    if (!entry) return false;
+    if (entry.revision !== this.game.pathfinder.revision || entry.until <= this.now) {
+      this.unreachableNodes.delete(nodeId);
+      return false;
+    }
+    return true;
   }
 
   private buildQueues(): void {

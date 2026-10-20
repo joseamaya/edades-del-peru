@@ -21,6 +21,8 @@ import type { UnitSave } from '../game/saveTypes';
 export interface UnitContext {
   getHeight(x: number, z: number): number;
   findPath(sx: number, sz: number, tx: number, tz: number): { x: number; z: number }[];
+  /** Path to a stand point within `standRadius` of a blocked target (resource/farm). */
+  findApproachPath(sx: number, sz: number, tx: number, tz: number, standRadius: number): { x: number; z: number }[];
   /** Terrain navigability (water/steep/obstacles); guards the pathless fallback. */
   isWalkable(x: number, z: number): boolean;
   unitsNear(x: number, z: number, radius: number): Unit[];
@@ -55,6 +57,10 @@ export interface UnitContext {
 }
 
 const MOVE_STOP_DIST = 0.6;
+/** Distance from a resource node at which a worker can harvest it. */
+export const HARVEST_RANGE = 2.8;
+/** Stand point inside a walkable cell: close enough that the final 0.6 stop still harvests. */
+export const HARVEST_STAND_RANGE = HARVEST_RANGE - MOVE_STOP_DIST;
 /** Distance at which a plain move/attack-move order counts as arrived. */
 const MOVE_ARRIVAL_DIST = 1.2;
 const SEPARATION = 1.4;
@@ -97,6 +103,8 @@ export class Unit {
   /** Seconds spent with a live order but no route and no clear direct step. */
   private noRouteTimer = 0;
   private noRouteNotified = false;
+  /** One-shot fallback: the regular path/direct approach could not reach a node. */
+  private approachTried = false;
 
   targetEntityId: number | null = null;
   attackCooldown = 0;
@@ -311,6 +319,7 @@ export class Unit {
     this.noRouteTimer = 0;
     this.noRouteNotified = false;
     this.directApproach = false;
+    this.approachTried = false;
   }
 
   issueOrder(order: Order, clear = true): void {
@@ -932,6 +941,21 @@ export class Unit {
       if (this.pathIdx >= this.path.length) {
         // no route: only close in over a validated direct segment
         if (this.directStep(node.pos.x, node.pos.z, harvestRange)) return;
+        // Last resort for nodes whose blocked footprint pushed the A* endpoint
+        // outside harvest range: path to a stand point inside range instead.
+        if (!this.approachTried) {
+          this.approachTried = true;
+          const standRadius = node.farm ? Math.max(0.5, harvestRange - MOVE_STOP_DIST) : HARVEST_STAND_RANGE;
+          const pts = this.ctx.findApproachPath(this.pos.x, this.pos.z, node.pos.x, node.pos.z, standRadius);
+          if (pts.length > 0) {
+            this.path = pts;
+            this.pathIdx = 0;
+            this.repathTimer = 0.9;
+            this.noRouteTimer = 0;
+            if (pts.length > 1) this.advanceToNextWaypoint();
+            return;
+          }
+        }
         this.vel.multiplyScalar(Math.pow(0.02, dt));
         this.noRouteTimer += dt;
         if (this.noRouteTimer > NO_ROUTE_GIVEUP) {
