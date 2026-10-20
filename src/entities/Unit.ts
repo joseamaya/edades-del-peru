@@ -108,6 +108,8 @@ export class Unit {
   private walkCycle = 0;
   private workAnim = 0;
   private footstepTimer = 0;
+  /** Set by `directStep` for this tick: integrate the direct approach in `updateMovement`. */
+  private directApproach = false;
   convertProgress = 0;
   garrisonedIn: number | null = null;
   isConstructing: number | null = null;
@@ -251,7 +253,49 @@ export class Unit {
     const spd = this.stats.speed;
     this.vel.x = Math.cos(this.targetYaw) * spd;
     this.vel.z = Math.sin(this.targetYaw) * spd;
+    this.directApproach = true;
     return true;
+  }
+
+  /**
+   * True when moving from the current position to (tx, tz) never samples a
+   * blocked cell. Escape is allowed when the unit already stands on a blocked
+   * cell (e.g. an obstacle was placed under it), otherwise the segment is
+   * sampled at ~0.5-unit intervals so a thin barrier cannot be tunnelled.
+   */
+  private stepAllowed(tx: number, tz: number): boolean {
+    if (!this.ctx.isWalkable(this.pos.x, this.pos.z)) return true; // controlled escape
+    const dx = tx - this.pos.x;
+    const dz = tz - this.pos.z;
+    const dist = Math.hypot(dx, dz);
+    if (dist < 1e-4) return true;
+    const steps = Math.max(1, Math.ceil(dist / 0.5));
+    for (let i = 1; i <= steps; i++) {
+      const s = (dist * i) / steps;
+      if (!this.ctx.isWalkable(this.pos.x + (dx / dist) * s, this.pos.z + (dz / dist) * s)) return false;
+    }
+    return true;
+  }
+
+  /** Integrate `vel` without ever entering blocked terrain (slides along walls). */
+  private integrateSafely(dt: number): void {
+    const size = this.ctx.worldSize;
+    const nx = clamp(this.pos.x + this.vel.x * dt, 2, size - 2);
+    const nz = clamp(this.pos.z + this.vel.z * dt, 2, size - 2);
+    if (this.stepAllowed(nx, nz)) {
+      this.pos.x = nx;
+      this.pos.z = nz;
+    } else if (this.stepAllowed(nx, this.pos.z)) {
+      this.pos.x = nx;
+      this.vel.z = 0;
+    } else if (this.stepAllowed(this.pos.x, nz)) {
+      this.pos.z = nz;
+      this.vel.x = 0;
+    } else {
+      this.vel.x = 0;
+      this.vel.z = 0;
+    }
+    this.pos.y = this.ctx.getHeight(this.pos.x, this.pos.z) + 0.05;
   }
 
   clearOrders(): void {
@@ -263,6 +307,7 @@ export class Unit {
     this.attackingTarget = false;
     this.noRouteTimer = 0;
     this.noRouteNotified = false;
+    this.directApproach = false;
   }
 
   issueOrder(order: Order, clear = true): void {
@@ -503,71 +548,87 @@ export class Unit {
       }
     }
 
-    if (this.orderQueue.length === 0 || (this.isGathering() && this.pathIdx >= this.path.length)) {
-      this.vel.multiplyScalar(Math.pow(0.0001, dt));
-    }
-    // reach the waypoint
-    if (this.pathIdx < this.path.length) {
-      const wp = this.path[this.pathIdx];
-      const dx = wp.x - this.pos.x;
-      const dz = wp.z - this.pos.z;
-      const dist = Math.sqrt(dx * dx + dz * dz);
-      if (dist < MOVE_STOP_DIST) {
-        this.pathIdx++;
-        if (this.pathIdx < this.path.length) {
-          const nw = this.path[this.pathIdx];
-          this.targetYaw = angleTo(this.pos.x, this.pos.z, nw.x, nw.z);
+    const direct = this.directApproach;
+    this.directApproach = false;
+
+    if (direct) {
+      // `directStep` already set the velocity/targetYaw; just animate the walk.
+      this.walkCycle += dt * this.stats.speed;
+      this.emitFootstep(dt);
+    } else {
+      if (this.orderQueue.length === 0 || (this.isGathering() && this.pathIdx >= this.path.length)) {
+        this.vel.multiplyScalar(Math.pow(0.0001, dt));
+      }
+      // reach the waypoint
+      if (this.pathIdx < this.path.length) {
+        const wp = this.path[this.pathIdx];
+        const dx = wp.x - this.pos.x;
+        const dz = wp.z - this.pos.z;
+        const dist = Math.sqrt(dx * dx + dz * dz);
+        if (dist < MOVE_STOP_DIST) {
+          this.pathIdx++;
+          if (this.pathIdx < this.path.length) {
+            const nw = this.path[this.pathIdx];
+            this.targetYaw = angleTo(this.pos.x, this.pos.z, nw.x, nw.z);
+          }
         }
       }
-    }
 
-    if (this.pathIdx < this.path.length) {
-      const wp = this.path[this.pathIdx];
-      this.targetYaw = angleTo(this.pos.x, this.pos.z, wp.x, wp.z);
-      // speed
-      const spd = this.stats.speed;
-      this.vel.x = Math.cos(this.targetYaw) * spd;
-      this.vel.z = Math.sin(this.targetYaw) * spd;
-      this.walkCycle += dt * spd;
-      // footstep dust while walking
-      this.footstepTimer -= dt;
-      if (this.footstepTimer <= 0) {
-        this.footstepTimer = 0.34;
-        this.ctx.particles?.emit({
-          x: this.pos.x,
-          y: this.pos.y + 0.12,
-          z: this.pos.z,
-          count: 1,
-          color: 0xbfae8e,
-          kind: 'dust',
-          speed: 0.5,
-          life: 0.5,
-          size: 1.0,
-          grow: 1.7,
-          spread: 0.5,
-        });
+      if (this.pathIdx < this.path.length) {
+        const wp = this.path[this.pathIdx];
+        this.targetYaw = angleTo(this.pos.x, this.pos.z, wp.x, wp.z);
+        // speed
+        const spd = this.stats.speed;
+        this.vel.x = Math.cos(this.targetYaw) * spd;
+        this.vel.z = Math.sin(this.targetYaw) * spd;
+        this.walkCycle += dt * spd;
+        this.emitFootstep(dt);
+      } else {
+        this.vel.multiplyScalar(Math.pow(0.02, dt));
+        this.walkCycle = lerp(this.walkCycle, 0, dt * 6);
       }
-    } else {
-      this.vel.multiplyScalar(Math.pow(0.02, dt));
-      this.walkCycle = lerp(this.walkCycle, 0, dt * 6);
     }
 
     // separation
     this.applySeparation(dt);
 
-    // integrate
-    this.pos.x += this.vel.x * dt;
-    this.pos.z += this.vel.z * dt;
-    const size = this.ctx.worldSize;
-    this.pos.x = clamp(this.pos.x, 2, size - 2);
-    this.pos.z = clamp(this.pos.z, 2, size - 2);
-    this.pos.y = this.ctx.getHeight(this.pos.x, this.pos.z) + 0.05;
+    // separation must not make a unit faster than its own speed
+    const cap = this.stats.speed * 1.25;
+    const speed = Math.hypot(this.vel.x, this.vel.z);
+    if (speed > cap) {
+      const k = cap / speed;
+      this.vel.x *= k;
+      this.vel.z *= k;
+    }
+
+    // integrate without entering blocked terrain (slides along walls; escape allowed)
+    this.integrateSafely(dt);
 
     // smooth rotation
     let dy = this.targetYaw - this.yaw;
     while (dy > Math.PI) dy -= Math.PI * 2;
     while (dy < -Math.PI) dy += Math.PI * 2;
     this.yaw += dy * Math.min(1, dt * 10);
+  }
+
+  /** Walking dust (shared by path and direct-approach movement). */
+  private emitFootstep(dt: number): void {
+    this.footstepTimer -= dt;
+    if (this.footstepTimer > 0) return;
+    this.footstepTimer = 0.34;
+    this.ctx.particles?.emit({
+      x: this.pos.x,
+      y: this.pos.y + 0.12,
+      z: this.pos.z,
+      count: 1,
+      color: 0xbfae8e,
+      kind: 'dust',
+      speed: 0.5,
+      life: 0.5,
+      size: 1.0,
+      grow: 1.7,
+      spread: 0.5,
+    });
   }
 
   private applySeparation(dt: number): void {
@@ -858,7 +919,7 @@ export class Unit {
     const dx = node.pos.x - this.pos.x;
     const dz = node.pos.z - this.pos.z;
     const dist = Math.sqrt(dx * dx + dz * dz);
-    const harvestRange = 2.8;
+    const harvestRange = node.farm ? (node.farm.radius ?? 1.5) + 1.4 : 2.8;
 
     if (dist > harvestRange) {
       if (this.pathIdx >= this.path.length && this.repathTimer <= 0) {
@@ -866,22 +927,9 @@ export class Unit {
         this.repathTimer = 0.9;
       }
       if (this.pathIdx >= this.path.length) {
-        // no route: only close in over walkable ground (a node behind water/steep is
-        // skipped); integrate here so the worker actually reaches harvest range
-        if (
-          this.ctx.isWalkable(this.pos.x, this.pos.z) ||
-          this.directAheadClear(node.pos.x, node.pos.z, harvestRange)
-        ) {
-          this.noRouteTimer = 0;
-          this.targetYaw = angleTo(this.pos.x, this.pos.z, node.pos.x, node.pos.z);
-          const spd = this.stats.speed;
-          this.vel.x = Math.cos(this.targetYaw) * spd;
-          this.vel.z = Math.sin(this.targetYaw) * spd;
-          this.pos.x += this.vel.x * dt;
-          this.pos.z += this.vel.z * dt;
-          this.pos.y = this.ctx.getHeight(this.pos.x, this.pos.z) + 0.05;
-          return;
-        }
+        // no route: only close in over a validated direct segment
+        if (this.directStep(node.pos.x, node.pos.z, harvestRange)) return;
+        this.vel.multiplyScalar(Math.pow(0.02, dt));
         this.noRouteTimer += dt;
         if (this.noRouteTimer > NO_ROUTE_GIVEUP) {
           this.notifyNoRoute();
@@ -1026,19 +1074,20 @@ export class Unit {
     const dx = dropsite.pos.x - this.pos.x;
     const dz = dropsite.pos.z - this.pos.z;
     const dist = Math.sqrt(dx * dx + dz * dz);
-    if (dist > 2.4) {
+    // approach radius scales with the building: a large dropsite (e.g. the center)
+    // is reachable from further out, and the fixed 2.4 range used to force units
+    // into its blocked footprint
+    const deliverRange = (dropsite.radius ?? 1) + 1.4;
+    if (dist > deliverRange) {
       if (this.pathIdx >= this.path.length && this.repathTimer <= 0) {
         this.setPath(dropsite.pos.x, dropsite.pos.z);
         this.repathTimer = 0.8;
       }
       if (this.pathIdx >= this.path.length) {
-        this.targetYaw = angleTo(this.pos.x, this.pos.z, dropsite.pos.x, dropsite.pos.z);
-        const spd = this.stats.speed;
-        this.vel.x = Math.cos(this.targetYaw) * spd;
-        this.vel.z = Math.sin(this.targetYaw) * spd;
-        this.pos.x += this.vel.x * dt;
-        this.pos.z += this.vel.z * dt;
-        this.pos.y = this.ctx.getHeight(this.pos.x, this.pos.z) + 0.05;
+        if (this.directStep(dropsite.pos.x, dropsite.pos.z, deliverRange)) return;
+        this.vel.multiplyScalar(Math.pow(0.02, dt));
+        this.noRouteTimer += dt;
+        if (this.noRouteTimer > NO_ROUTE_GIVEUP) this.notifyNoRoute();
       }
       return;
     }
@@ -1070,13 +1119,10 @@ export class Unit {
         this.repathTimer = 0.7;
       }
       if (this.pathIdx >= this.path.length) {
-        this.targetYaw = angleTo(this.pos.x, this.pos.z, bld.pos.x, bld.pos.z);
-        const spd = this.stats.speed;
-        this.vel.x = Math.cos(this.targetYaw) * spd;
-        this.vel.z = Math.sin(this.targetYaw) * spd;
-        this.pos.x += this.vel.x * dt;
-        this.pos.z += this.vel.z * dt;
-        this.pos.y = this.ctx.getHeight(this.pos.x, this.pos.z) + 0.05;
+        if (this.directStep(bld.pos.x, bld.pos.z, bld.radius + 1.6)) return;
+        this.vel.multiplyScalar(Math.pow(0.02, dt));
+        this.noRouteTimer += dt;
+        if (this.noRouteTimer > NO_ROUTE_GIVEUP) this.notifyNoRoute();
       }
       return;
     }
@@ -1115,6 +1161,12 @@ export class Unit {
       if (this.repathTimer <= 0) {
         this.setPath(bld.pos.x, bld.pos.z);
         this.repathTimer = 0.6;
+      }
+      if (this.pathIdx >= this.path.length) {
+        if (this.directStep(bld.pos.x, bld.pos.z, bld.radius + 0.4)) return;
+        this.vel.multiplyScalar(Math.pow(0.02, dt));
+        this.noRouteTimer += dt;
+        if (this.noRouteTimer > NO_ROUTE_GIVEUP) this.notifyNoRoute();
       }
     }
   }
