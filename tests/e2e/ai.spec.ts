@@ -139,7 +139,7 @@ test('the AI sends its scout to explore', async ({ page }) => {
   expect(order).toContain('patrol');
 });
 
-test('the AI builds a barracks and starts training soldiers in the opening', async ({ page }) => {
+test('the AI builds a barracks and starts training soldiers in the opening', { tag: '@smoke' }, async ({ page }) => {
   // `noloop=1` makes the fixed-step opening deterministic (no frames before the test
   // stops the loop); the economy/army check still runs over 600 s of simulated time.
   await page.goto('/?seed=777&fog=0&low=1&noloop=1');
@@ -170,6 +170,35 @@ test('the AI builds a barracks and starts training soldiers in the opening', asy
   // before the fix the AI never accumulated the wood for a barracks and fielded nothing
   expect(out.hasBarracks).toBe(true);
   expect(out.everTrained).toBe(true);
+});
+
+test('the AI economy opens on a previously-stalled seed (783)', { tag: '@smoke' }, async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.goto('/?play=1&seed=783&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    g.paused = false;
+    g.addAI(0, 'normal');
+    let t = 0;
+    let everTrained = false;
+    for (let i = 0; i < 60 * 600; i++) {
+      g.update(1 / 60, t);
+      t += 1 / 60;
+      if (!everTrained) {
+        everTrained = [...g.units.values()].some(
+          (u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker' && u.kind !== 'scout',
+        );
+      }
+    }
+    const barracks = [...g.buildings.values()].some((b: any) => b.owner === 0 && b.kind === 'barracks' && !b.dead);
+    return { everTrained, barracks };
+  });
+  expect(out.barracks, 'seed 783 should build a barracks within 10 simulated minutes').toBe(true);
+  expect(out.everTrained, 'seed 783 should train a soldier within 10 simulated minutes').toBe(true);
 });
 
 test('the AI trains a mixed army (melee + ranged)', async ({ page }) => {

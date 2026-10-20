@@ -5,11 +5,9 @@ import { test, expect } from '@playwright/test';
  * collectible nodes on land and with a walkable approach inside the worker harvest
  * range, reachable from the main landmass (fish live on water by design).
  *
- * Nodes near a base (`spawnStartResources`: a dense ring of 10 trees + mine/berry/
- * well with no water or walkability check, plus any ambient node that happens to
- * land close) are logged but not asserted here — that is a separate, documented
- * FOLLOW-UP; this test guards the ambient `spawnResources` (which does check
- * `isWater`) and the harvest-range geometry.
+ * Nodes near a base (`spawnStartResources`) are logged but not asserted here —
+ * that remains a separate, documented FOLLOW-UP. The P0 regression guard for the
+ * opening economy is the seed-783 AI test in `ai.spec.ts`.
  *
  * Failures are reported as `seed / kind / pos / reason`, not patched blindly.
  */

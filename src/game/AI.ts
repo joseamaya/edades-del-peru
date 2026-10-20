@@ -9,7 +9,7 @@ import { getUnitStats } from '../model/defs/units';
 import { unitMinPeriod } from '../model/defs/units';
 import { ERA_DEFS } from '../model/defs/eras';
 import type { Game } from '../core/Game';
-import type { Unit } from '../entities/Unit';
+import { HARVEST_STAND_RANGE, type Unit } from '../entities/Unit';
 import { Building } from '../entities/Building';
 import type { ResourceNode } from '../entities/ResourceNode';
 import { CATEGORIES, UNIT_CATEGORY, armyWeightsFor, UnitCategory } from './aiComposition';
@@ -47,6 +47,9 @@ const VISION_PAD = 2;
 /** A combat unit (not a worker or scout). */
 const isSoldier = (u: Unit): boolean => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT;
 
+/** A resource node or a completed farm exposed as a food node. */
+type HarvestNode = ResourceNode & { farm?: Building };
+
 /** A long-range siege unit. */
 const isSiege = (kind: UnitKind): boolean => UNIT_CATEGORY[kind] === 'siege';
 
@@ -68,6 +71,10 @@ export class AI {
   private lastPerception = -1;
   private seenUnits = new Map<number, number>();
   private seenBuildings = new Set<number>();
+  /** Nodes with no harvest approach, with the grid revision they were tested on. */
+  private unreachableNodes = new Map<number, number>();
+  /** Remaining resource probes for the current economy tick. */
+  private pathBudget = 0;
 
   constructor(game: Game, playerId: number, difficulty?: Difficulty) {
     this.game = game;
@@ -146,6 +153,7 @@ export class AI {
 
   private manageWorkers(): void {
     const workers = this.myUnits().filter((u) => u.kind === UnitKind.WORKER);
+    this.pathBudget = 6;
     const busy = workers.filter(
       (w) => w.orderQueue[0]?.kind === OrderKind.GATHER || w.orderQueue[0]?.kind === OrderKind.BUILD,
     );
@@ -180,12 +188,15 @@ export class AI {
   }
 
   private chooseResourceNode(w: Unit): ResourceNode | null {
-    const nodes = [...this.game.resourceNodes.values()].filter((n) => !n.dead && !n.depleted);
+    if (this.pathBudget <= 0) return null;
+    const nodes: HarvestNode[] = [...this.game.resourceNodes.values()]
+      .filter((n) => !n.dead && !n.depleted && !this.isUnreachable(n.id))
+      .map((n) => n as HarvestNode);
     const p = this.p;
     // the player's complete farms count as food nodes
     for (const b of this.myBuildings()) {
-      if (b.isFarm && b.constructionComplete && b.foodAmount > 0) {
-        nodes.push({ id: b.id, pos: b.pos, amount: b.foodAmount, resource: 'food', farm: b } as any);
+      if (b.isFarm && b.constructionComplete && b.foodAmount > 0 && !this.isUnreachable(b.id)) {
+        nodes.push({ id: b.id, pos: b.pos, amount: b.foodAmount, resource: 'food', farm: b } as HarvestNode);
       }
     }
     if (nodes.length === 0) return null;
@@ -225,13 +236,31 @@ export class AI {
     for (const k of types) {
       const list = nodes.filter((n) => n.resource === k).sort((a, b) => distTo(a) - distTo(b));
       for (const n of list) {
-        // reachable: adjacent, or a route exists (a node behind water/steep is skipped)
-        if (distTo(n) <= 3 || this.game.pathfinder.pathfind(w.pos.x, w.pos.z, n.pos.x, n.pos.z).length > 0) {
-          return n;
-        }
+        if (this.pathBudget <= 0) return null;
+        this.pathBudget--;
+        const farm = n.farm;
+        const standRadius = farm ? Math.max(0.5, (farm.radius ?? 1.5) + 1.4 - 0.6) : HARVEST_STAND_RANGE;
+        const path = this.game.pathfinder.findApproachPath(w.pos.x, w.pos.z, n.pos.x, n.pos.z, standRadius);
+        if (path.length > 0) return n;
+        this.markUnreachable(n.id);
       }
     }
     return null;
+  }
+
+  /** Blacklist a node until an obstacle removal (or terrain bake) changes reachability. */
+  private markUnreachable(nodeId: number): void {
+    this.unreachableNodes.set(nodeId, this.game.pathfinder.revision);
+  }
+
+  private isUnreachable(nodeId: number): boolean {
+    const revision = this.unreachableNodes.get(nodeId);
+    if (revision === undefined) return false;
+    if (revision !== this.game.pathfinder.revision) {
+      this.unreachableNodes.delete(nodeId);
+      return false;
+    }
+    return true;
   }
 
   private buildQueues(): void {

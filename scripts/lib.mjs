@@ -4,12 +4,19 @@ import fs from 'fs';
 import path from 'path';
 import { PNG } from 'pngjs';
 
-/** Launch Chromium with SwiftShader (works without GPU). Respects CHROME_PATH. */
-export async function launchChromium() {
+/** Launch Chromium with SwiftShader (works without GPU). Respects CHROME_PATH.
+ * `opts.args` appends extra flags (e.g. `--js-flags=--expose-gc` for heap audits). */
+export async function launchChromium(opts = {}) {
   const executablePath = process.env.CHROME_PATH || chromium.executablePath();
   return chromium.launch({
     executablePath,
-    args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--disable-gpu-sandbox', '--no-sandbox'],
+    args: [
+      '--use-gl=swiftshader',
+      '--enable-unsafe-swiftshader',
+      '--disable-gpu-sandbox',
+      '--no-sandbox',
+      ...(opts.args ?? []),
+    ],
   });
 }
 
