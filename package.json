@@ -41,6 +41,7 @@
     "test:e2e:slow": "playwright test --project=slow",
     "bench": "node scripts/bench.mjs",
     "sim": "node scripts/sim.mjs",
+    "diagnose:resources": "node scripts/diagnose-resources.mjs",
     "shot": "node scripts/screenshot.mjs",
     "shot:analyze": "node scripts/analyze.mjs",
     "shot:ascii": "node scripts/ascii.mjs",
