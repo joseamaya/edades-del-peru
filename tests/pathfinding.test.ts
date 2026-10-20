@@ -116,6 +116,42 @@ describe('Pathfinder', () => {
   });
 });
 
+describe('Pathfinder.findApproachPath', () => {
+  it('returns a stand point inside harvest range of a blocked target', () => {
+    const pf = new Pathfinder(100, 2);
+    pf.addObstacle({ x: 50, z: 50, radius: 1.1 });
+    const path = pf.findApproachPath(20, 20, 50, 50, 2.2);
+    expect(path.length).toBeGreaterThan(0);
+    const last = path[path.length - 1];
+    expect(Math.hypot(last.x - 50, last.z - 50)).toBeLessThanOrEqual(2.8);
+    expect(pf.isWalkable(last.x, last.z)).toBe(true);
+  });
+
+  it('returns empty when no stand point exists within the radius', () => {
+    const pf = new Pathfinder(100, 2);
+    pf.addObstacle({ x: 50, z: 50, radius: 6 });
+    expect(pf.findApproachPath(20, 20, 50, 50, 2.2)).toEqual([]);
+  });
+
+  it('does not change the default pathfind arrival tolerance', () => {
+    const pf = new Pathfinder(100, 2);
+    pf.addObstacle({ x: 50, z: 50, radius: 1.1 });
+    expect(pf.pathfind(20, 20, 50, 50).length).toBeGreaterThan(0);
+    expect(pf.findApproachPath(20, 20, 50, 50, 2.2).length).toBeGreaterThan(0);
+  });
+
+  it('componentSizeAt distinguishes a walled pocket from the main area', () => {
+    const pf = new Pathfinder(80, 2);
+    const cols = pf.grid.cols;
+    for (let z = 0; z < cols; z++) pf.grid.walkable[z * cols + 20] = 0;
+    const left = pf.componentSizeAt(10, 10, 1000);
+    const right = pf.componentSizeAt(60, 60, 1000);
+    expect(left).toBeGreaterThan(0);
+    expect(right).toBeGreaterThan(0);
+    expect(left).not.toBe(right);
+  });
+});
+
 describe('terrainSlope', () => {
   it('is flat, gentle and cliff on the expected scales', () => {
     expect(terrainSlope(() => 10, 20, 20, 2)).toBe(0);
