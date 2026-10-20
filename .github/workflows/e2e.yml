@@ -47,7 +47,8 @@ jobs:
             test-results/
           retention-days: 7
 
-  # main / manual: the full suite, sharded in four (~35 min -> ~9-12 min wall clock).
+  # main / manual: the fast project, sharded in four. The heavy specs
+  # (ai/campaign-completable/settlement/save) run in the nightly workflow.
   full:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
@@ -68,8 +69,8 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
       - run: npx playwright install --with-deps chromium
-      - name: E2E full (shard ${{ matrix.shard }}/4)
-        run: yarn test:e2e --shard=${{ matrix.shard }}/4
+      - name: E2E fast (shard ${{ matrix.shard }}/4)
+        run: yarn test:e2e:fast --shard=${{ matrix.shard }}/4
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
