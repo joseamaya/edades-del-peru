@@ -5,7 +5,7 @@ import { CivDef, ArchStyle, EmblemId } from './defs/civs';
 import { ModelSpec } from './defs/units';
 import { Era } from '../core/types';
 import { ERA_DEFS } from './defs/eras';
-import type { HistoricalArchitectureProfile, WallMaterial, RoofMaterial } from './defs/architecture';
+import type { HistoricalArchitectureProfile, SilhouetteMotif, WallMaterial, RoofMaterial } from './defs/architecture';
 import type { LandmarkId } from './defs/landmarks';
 import { mixHex } from '../util/math';
 import { scaleUv } from '../util/uv';
@@ -1000,7 +1000,7 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
       buildHouse(b, 3.4, true);
       break;
     case 'center_imperial':
-      buildCivic(b, 3.6, 'stone');
+      buildCivic(b, 3.6, 'stone', true);
       break;
     case 'center_war':
       buildConcrete(b, 3.4, true);
@@ -1553,6 +1553,8 @@ interface AndeanOpts {
   tower?: boolean;
   stair?: boolean;
   banner?: boolean;
+  /** Building role: only the center (and defensive buildings) carry a civ silhouette. */
+  role?: 'center' | 'house' | 'civic' | 'military' | 'fortress' | 'market' | 'dropsite';
 }
 
 /** Parameterized Andean building: base + walls + roof, materials/ornament from the arch profile. */
@@ -1599,13 +1601,24 @@ function buildAndeanStructure(b: Builder, o: AndeanOpts): void {
   if (o.tower) andeanTower(b, w, -w * 0.5, -w * 0.5);
   if (o.stair) andeanStair(b, w, tiers + 2);
   if (o.banner) andeanBanner(b, w * 0.5, baseY + w * 0.6, -w * 0.4, w * 0.9);
+  const motif = b.arch.silhouette;
+  if (o.role === 'center' || (o.role === 'fortress' && FORTRESS_MOTIFS.has(motif))) {
+    addCivSilhouette(b, w, baseY, motif);
+  }
 }
 
 function buildAndeanHouse(b: Builder, size: number, grand: boolean): void {
-  buildAndeanStructure(b, { size, tiers: grand ? 2 : 1, roof: 'thatch', stair: grand, banner: true });
+  buildAndeanStructure(b, {
+    size,
+    tiers: grand ? 2 : 1,
+    roof: 'thatch',
+    stair: grand,
+    banner: true,
+    role: grand ? 'center' : 'house',
+  });
 }
 
-function buildAndeanCivic(b: Builder, size: number, tower: boolean): void {
+function buildAndeanCivic(b: Builder, size: number, tower: boolean, center = false): void {
   buildAndeanStructure(b, {
     size,
     tiers: b.arch.monumentalTiers,
@@ -1613,11 +1626,12 @@ function buildAndeanCivic(b: Builder, size: number, tower: boolean): void {
     tower,
     stair: true,
     banner: true,
+    role: center ? 'center' : 'civic',
   });
 }
 
 function buildAndeanMilitary(b: Builder, size: number, tower: boolean): void {
-  buildAndeanStructure(b, { size, tiers: 1, roof: 'flat', tower, banner: true });
+  buildAndeanStructure(b, { size, tiers: 1, roof: 'flat', tower, banner: true, role: 'military' });
 }
 
 function buildAndeanFortress(b: Builder, size: number): void {
@@ -1628,7 +1642,228 @@ function buildAndeanFortress(b: Builder, size: number): void {
     tower: true,
     stair: true,
     banner: true,
+    role: 'fortress',
   });
+}
+
+/** Motifs that also read as defensive architecture (fortress). */
+const FORTRESS_MOTIFS = new Set<SilhouetteMotif>([
+  'ramp',
+  'tenon-heads',
+  'stone-heads',
+  'perimeter-wall',
+  'citadel',
+  'pucara',
+  'terraces',
+]);
+
+/**
+ * Compact, historically grounded silhouette marker for the base center (and,
+ * where it fits, the fortress). Vertical motifs sit on the platform top and
+ * ground motifs ring the pad, so the building's shape — not just its colour —
+ * identifies the civilization.
+ * Sources: `docs/historia/arquitectura.md` §1 and the civ dossiers.
+ */
+function addCivSilhouette(b: Builder, w: number, baseY: number, motif: SilhouetteMotif): void {
+  const stone = andeanStone(b);
+  const wall = andeanWall(b);
+  const tex = andeanTex(b);
+  const dark = mixHex(b.pal.primary, '#2a2318', 0.55);
+  const green = mixHex('#4a6a2a', b.pal.primary, 0.4);
+  // Vertical motifs sit on the platform top; ground motifs ring the 1.5w pad
+  // (radius ~0.8w) so they read around the base without touching the dwellings.
+  const tx = w * 0.4;
+  const tz = w * 0.35;
+  switch (motif) {
+    case 'circular-plaza': {
+      // Caral: sunken circular plaza with upright stones around the platform.
+      ringPlaza(b, 0, w * 0.8, stone, mixHex(b.pal.primary, '#8a7a5a', 0.5), 12, 0, 0.12);
+      for (let i = 0; i < 8; i++) {
+        const a = (i / 8) * Math.PI * 2;
+        b.box(w * 0.09, w * 0.3, w * 0.09, stone, {
+          x: Math.cos(a) * w * 0.82,
+          y: w * 0.15,
+          z: Math.sin(a) * w * 0.82,
+          tex,
+        });
+        b.box(w * 0.11, w * 0.05, w * 0.11, dark, {
+          x: Math.cos(a) * w * 0.82,
+          y: w * 0.31,
+          z: Math.sin(a) * w * 0.82,
+        });
+      }
+      break;
+    }
+    case 'tenon-heads':
+      // Chavín: cabezas clavas protruding from the temple wall.
+      tenonHeadRow(b, stone, baseY + w * 0.26, w * 0.5, w * 0.16);
+      break;
+    case 'stone-heads': {
+      // Cupisnique: stone heads set into the adobe facade.
+      const head = mixHex(b.pal.primary, '#8f8676', 0.78);
+      for (let i = -1; i <= 1; i++) {
+        b.sphere(w * 0.12, head, { x: i * w * 0.28, y: baseY + w * 0.36, z: w * 0.52 });
+        b.box(w * 0.16, w * 0.08, w * 0.06, dark, { x: i * w * 0.28, y: baseY + w * 0.3, z: w * 0.56 });
+      }
+      break;
+    }
+    case 'funerary-enclosure': {
+      // Paracas: funerary enclosure with wrapped bundles around the platform.
+      enclosure(b, w * 1.48, w * 0.18, w * 0.05, wall, tex, 0, 0, 0.02);
+      for (const [sx, sz] of [
+        [-1, -1],
+        [1, -1],
+        [-1, 1],
+        [1, 1],
+      ] as const) {
+        const x = sx * w * 0.55;
+        const z = sz * w * 0.55;
+        b.cyl(w * 0.08, w * 0.1, w * 0.26, 8, sz > 0 ? b.civAccent : b.civSecondary, {
+          x,
+          y: w * 0.26,
+          z,
+          tex: 'cloth',
+        });
+        b.sphere(w * 0.09, stone, { x, y: w * 0.42, z });
+      }
+      break;
+    }
+    case 'ramp': {
+      // Moche / Chincha: access ramp on the front-right face of the platform.
+      const adobe = andeanWall(b);
+      for (let i = 0; i < 4; i++) {
+        b.box(w * 0.3, w * 0.08, w * 0.16, adobe, {
+          x: w * 0.28,
+          y: w * 0.04 + i * w * 0.08,
+          z: w * 0.66 - i * w * 0.08,
+          tex: 'brick',
+        });
+      }
+      break;
+    }
+    case 'low-mound': {
+      // Nazca: a broad, low ceremonial mound (Cahuachi) around the platform.
+      const earth = mixHex(b.pal.primary, '#c8a878', 0.72);
+      b.cyl(w * 0.86, w * 0.9, w * 0.1, 24, earth, { y: w * 0.05, tex: 'dirt', flatShading: true });
+      b.cyl(w * 0.7, w * 0.74, w * 0.08, 24, earth, { y: w * 0.14, tex: 'dirt', flatShading: true });
+      break;
+    }
+    case 'stelae': {
+      // Recuay: upright carved stelae (Pashash) on the platform top.
+      for (const sx of [-1, 1]) {
+        b.box(w * 0.12, w * 0.4, w * 0.08, stone, {
+          x: tx + sx * w * 0.16,
+          y: baseY + w * 0.2,
+          z: tz,
+          tex,
+        });
+        b.box(w * 0.16, w * 0.06, w * 0.1, b.civAccent, { x: tx + sx * w * 0.16, y: baseY + w * 0.42, z: tz });
+      }
+      break;
+    }
+    case 'perimeter-wall': {
+      // Wari: walled compound — high walls with an accent cap and an open front.
+      for (const sx of [-1, 1]) {
+        b.box(w * 0.08, w * 0.8, w * 1.3, wall, { x: sx * w * 0.72, y: w * 0.4, z: 0, tex });
+        b.box(w * 0.1, w * 0.08, w * 1.3, b.civAccent, { x: sx * w * 0.72, y: w * 0.82, z: 0 });
+        for (const sz of [-1, 1]) {
+          b.box(w * 0.14, w * 0.95, w * 0.14, wall, {
+            x: sx * w * 0.7,
+            y: w * 0.475,
+            z: sz * w * 0.62,
+            tex,
+          });
+          b.box(w * 0.16, w * 0.08, w * 0.16, b.civAccent, {
+            x: sx * w * 0.7,
+            y: w * 0.99,
+            z: sz * w * 0.62,
+          });
+        }
+      }
+      b.box(w * 1.3, w * 0.8, w * 0.08, wall, { y: w * 0.4, z: -w * 0.72, tex });
+      b.box(w * 1.3, w * 0.08, w * 0.1, b.civAccent, { y: w * 0.82, z: -w * 0.72 });
+      b.box(w * 0.42, w * 0.8, w * 0.08, wall, { x: -w * 0.52, y: w * 0.4, z: w * 0.72, tex });
+      b.box(w * 0.42, w * 0.8, w * 0.08, wall, { x: w * 0.52, y: w * 0.4, z: w * 0.72, tex });
+      break;
+    }
+    case 'sunken-court': {
+      // Tiahuanaco: rectangular sunken patio ring around the platform.
+      const cw = w * 1.5;
+      const floor = mixHex(b.pal.primary, '#6a6258', 0.6);
+      b.box(cw, w * 0.06, cw, floor, { y: w * 0.12, tex });
+      b.box(cw, w * 0.24, w * 0.06, stone, { y: w * 0.2, z: cw / 2, tex });
+      b.box(cw, w * 0.24, w * 0.06, stone, { y: w * 0.2, z: -cw / 2, tex });
+      b.box(w * 0.06, w * 0.24, cw, stone, { x: cw / 2, y: w * 0.2, tex });
+      b.box(w * 0.06, w * 0.24, cw, stone, { x: -cw / 2, y: w * 0.2, tex });
+      break;
+    }
+    case 'citadel': {
+      // Chimú: walled citadel (Chan Chan) — taller walls, bastions and a gate.
+      for (const sx of [-1, 1]) {
+        b.box(w * 0.1, w * 1.0, w * 1.3, wall, { x: sx * w * 0.72, y: w * 0.5, z: 0, tex });
+        b.box(w * 0.12, w * 0.1, w * 1.3, b.civAccent, { x: sx * w * 0.72, y: w * 1.02, z: 0 });
+        for (const sz of [-1, 1]) {
+          b.box(w * 0.18, w * 1.15, w * 0.18, wall, {
+            x: sx * w * 0.7,
+            y: w * 0.575,
+            z: sz * w * 0.62,
+            tex,
+          });
+          b.box(w * 0.2, w * 0.1, w * 0.2, b.civAccent, {
+            x: sx * w * 0.7,
+            y: w * 1.18,
+            z: sz * w * 0.62,
+          });
+        }
+      }
+      b.box(w * 1.3, w * 1.0, w * 0.1, wall, { y: w * 0.5, z: -w * 0.72, tex });
+      b.box(w * 1.3, w * 0.1, w * 0.12, b.civAccent, { y: w * 1.02, z: -w * 0.72 });
+      b.box(w * 0.34, w * 1.0, w * 0.1, wall, { x: -w * 0.56, y: w * 0.5, z: w * 0.72, tex });
+      b.box(w * 0.34, w * 1.0, w * 0.1, wall, { x: w * 0.56, y: w * 0.5, z: w * 0.72, tex });
+      b.box(w * 0.12, w * 1.1, w * 0.12, wall, { x: -w * 0.2, y: w * 0.55, z: w * 0.72, tex });
+      b.box(w * 0.12, w * 1.1, w * 0.12, wall, { x: w * 0.2, y: w * 0.55, z: w * 0.72, tex });
+      b.box(w * 0.52, w * 0.1, w * 0.14, b.civAccent, { y: w * 1.1, z: w * 0.72 });
+      break;
+    }
+    case 'pucara':
+      // Chanca: stone watchtower on the platform, front-right.
+      b.cyl(w * 0.12, w * 0.15, w * 0.72, 8, stone, { x: tx, y: baseY + w * 0.36, z: tz, tex });
+      b.cyl(w * 0.17, w * 0.13, w * 0.09, 8, stone, { x: tx, y: baseY + w * 0.76, z: tz, tex });
+      for (const sx of [-1, 0, 1]) {
+        b.box(w * 0.05, w * 0.09, w * 0.05, stone, { x: tx + sx * w * 0.1, y: baseY + w * 0.85, z: tz, tex });
+      }
+      break;
+    case 'chullpa':
+      // Collas/Lupaca: square funerary tower (chullpa) on the platform.
+      b.box(w * 0.2, w * 0.8, w * 0.2, stone, { x: tx, y: baseY + w * 0.4, z: tz, tex });
+      b.box(w * 0.24, w * 0.07, w * 0.24, stone, { x: tx, y: baseY + w * 0.8, z: tz, tex });
+      b.box(w * 0.08, w * 0.18, w * 0.03, dark, { x: tx, y: baseY + w * 0.14, z: tz + w * 0.11 });
+      break;
+    case 'terraces': {
+      // Huanca / highland: andenes as projecting agricultural ledges on the facade.
+      for (let i = 0; i < 3; i++) {
+        b.box(w * 0.86, w * 0.06, w * 0.06, stone, {
+          y: baseY + w * 0.08 + i * w * 0.12,
+          z: w * 0.5,
+          tex,
+        });
+        b.box(w * 0.8, w * 0.03, w * 0.03, green, {
+          y: baseY + w * 0.11 + i * w * 0.12,
+          z: w * 0.54,
+        });
+      }
+      break;
+    }
+    case 'ushnu':
+      // Inca: small stepped ushnu platform with a seat, on the platform top.
+      b.box(w * 0.36, w * 0.18, w * 0.36, stone, { x: tx, y: baseY + w * 0.09, z: tz, tex });
+      b.box(w * 0.24, w * 0.14, w * 0.24, stone, { x: tx, y: baseY + w * 0.25, z: tz, tex });
+      b.box(w * 0.09, w * 0.2, w * 0.09, b.civAccent, { x: tx, y: baseY + w * 0.42, z: tz });
+      break;
+    default:
+      break;
+  }
+  b.finish().userData.civSilhouette = motif;
 }
 
 function buildAndeanFarm(b: Builder): void {
@@ -1651,7 +1886,7 @@ function buildAndeanFarm(b: Builder): void {
 }
 
 function buildAndeanMarket(b: Builder, size: number): void {
-  buildAndeanStructure(b, { size, tiers: 0, roof: 'thatch', banner: true });
+  buildAndeanStructure(b, { size, tiers: 0, roof: 'thatch', banner: true, role: 'market' });
   b.box(size * 1.0, 0.1, size * 0.7, b.civPrimary, { y: size * 0.5, ry: Math.PI / 2 });
   b.box(0.3, 0.2, 0.3, '#efe6d2', { x: -0.25, y: size * 0.12, z: 0.1, tex: 'wood' });
 }
@@ -1708,9 +1943,9 @@ function buildHouse(b: Builder, size: number, grand: boolean): void {
   b.box(0.3, 0.14, 0.02, b.civPrimary, { y: w * 1.2, x: -w * 0.14, z: -w * 0.3 });
 }
 
-function buildCivic(b: Builder, size: number, matType: 'stone' | 'brick'): void {
+function buildCivic(b: Builder, size: number, matType: 'stone' | 'brick', center = false): void {
   if (b.isAndean) {
-    buildAndeanCivic(b, size, false);
+    buildAndeanCivic(b, size, false, center);
     return;
   }
   groundPad(b, size);
@@ -1750,7 +1985,8 @@ function buildCivic(b: Builder, size: number, matType: 'stone' | 'brick'): void 
 
 function buildConcrete(b: Builder, size: number, tower: boolean, radar = false): void {
   if (b.isAndean) {
-    buildAndeanCivic(b, size, tower);
+    // `tower` is only set for the center in the concrete family (center_war).
+    buildAndeanCivic(b, size, tower, tower);
     return;
   }
   groundPad(b, size);
@@ -2145,20 +2381,44 @@ function tieredPlatform(b: Builder, w: number, tiers: number, tierH: number, col
 }
 
 /** Four walls forming a rectangular enclosure (open corners are hidden by the walls). */
-function enclosure(b: Builder, w: number, h: number, thickness: number, color: string, tex: TexKind): void {
-  b.box(w, h, thickness, color, { y: h / 2, z: w / 2, tex });
-  b.box(w, h, thickness, color, { y: h / 2, z: -w / 2, tex });
-  b.box(thickness, h, w, color, { x: w / 2, y: h / 2, tex });
-  b.box(thickness, h, w, color, { x: -w / 2, y: h / 2, tex });
+function enclosure(
+  b: Builder,
+  w: number,
+  h: number,
+  thickness: number,
+  color: string,
+  tex: TexKind,
+  cx = 0,
+  cz = 0,
+  y = 0,
+): void {
+  b.box(w, h, thickness, color, { x: cx, y: y + h / 2, z: cz + w / 2, tex });
+  b.box(w, h, thickness, color, { x: cx, y: y + h / 2, z: cz - w / 2, tex });
+  b.box(thickness, h, w, color, { x: cx + w / 2, y: y + h / 2, z: cz, tex });
+  b.box(thickness, h, w, color, { x: cx - w / 2, y: y + h / 2, z: cz, tex });
 }
 
 /** Sunken circular plaza: outer ring, darker floor and upright stones. */
-function ringPlaza(b: Builder, cx: number, r: number, stone: string, floor: string, blocks: number): void {
-  b.cyl(r, r, 0.3, 28, stone, { x: cx, y: 0.15, tex: andeanTex(b), flatShading: true });
-  b.cyl(r * 0.82, r * 0.82, 0.34, 28, floor, { x: cx, y: 0.17, flatShading: true });
+function ringPlaza(
+  b: Builder,
+  cx: number,
+  r: number,
+  stone: string,
+  floor: string,
+  blocks: number,
+  cz = 0,
+  y = 0,
+): void {
+  b.cyl(r, r, 0.3, 28, stone, { x: cx, y: y + 0.15, z: cz, tex: andeanTex(b), flatShading: true });
+  b.cyl(r * 0.82, r * 0.82, 0.34, 28, floor, { x: cx, y: y + 0.17, z: cz, flatShading: true });
   for (let i = 0; i < blocks; i++) {
     const a = (i / blocks) * Math.PI * 2;
-    b.box(0.4, 0.55, 0.4, stone, { x: cx + Math.cos(a) * r, y: 0.42, z: Math.sin(a) * r, tex: andeanTex(b) });
+    b.box(0.4, 0.55, 0.4, stone, {
+      x: cx + Math.cos(a) * r,
+      y: y + 0.42,
+      z: cz + Math.sin(a) * r,
+      tex: andeanTex(b),
+    });
   }
 }
 

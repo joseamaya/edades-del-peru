@@ -88,6 +88,37 @@ structure, not colour:
 - **Ornament** — friezes (coastal adobe), trapezoidal niches (masonry), cyclopean
   corner blocks (megalithic), hanging tapestries (Inca).
 
+### Silhouette markers per civilization
+
+The center (and, where it fits, the fortress) carries a compact **silhouette
+marker** in addition to the style profile, so two coetaneous civilizations read
+differently even when they share an `ArchStyle` (e.g. Chanca vs Huanca before
+this layer were both fieldstone, terraced, two-tier centres). The marker is data
+in `HistoricalArchitectureProfile.silhouette` (`architecture.ts`) and is built by
+`addCivSilhouette` (`ProceduralModel.ts`):
+
+| Motif | Civilization | Attested form (source) |
+|---|---|---|
+| `circular-plaza` | Caral | sunken circular plaza + upright stones (`caral.md`) |
+| `tenon-heads` | Chavín | cabezas clavas on the temple wall (`chavin.md`) |
+| `stone-heads` | Cupisnique | stone heads in the adobe facade (`cupisnique.md`) |
+| `funerary-enclosure` | Paracas | funerary enclosure with wrapped bundles (`paracas.md`) |
+| `ramp` | Moche, Chincha | access ramp on the huaca/complex (`moche.md`, `chincha.md`) |
+| `low-mound` | Nazca | low broad mound (Cahuachi) (`nazca.md`) |
+| `stelae` | Recuay | carved stelae (Pashash) (`recuay.md`) |
+| `perimeter-wall` | Wari | walled urban compound (`wari.md`) |
+| `sunken-court` | Tiahuanaco | sunken patio (`tiahuanaco.md`) |
+| `citadel` | Chimú | walled citadel (Chan Chan) (`chimu.md`) |
+| `pucara` | Chanca | hilltop watchtower/fortress (`chanca.md`) |
+| `chullpa` | Collas/Lupaca | funerary tower (`collas_lupaca.md`) |
+| `terraces` | Huanca | agricultural andenes (`huanca.md`) |
+| `ushnu` | Inca | stepped ushnu platform (`inca.md`) |
+
+The markers are abstractions of the documented forms (not reconstructions) and
+never replace the material/ornament layer. `tests/e2e/civ-visuals.spec.ts`
+checks the Chanca/Huanca center and fortress pairs; `tests/profiles.test.ts`
+guards that every pre-Hispanic civ has a marker and coetaneous profiles differ.
+
 ### Emblems
 
 Each civilization's banner carries an procedural emblem

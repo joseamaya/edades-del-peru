@@ -80,3 +80,82 @@ test('the Caral, Moche and Inca centers have distinct structures', async ({ page
   ]);
   expect(signatures.size, 'the three centers must not share a structure').toBe(3);
 });
+
+/**
+ * Coetaneous highland civilizations used to share the same center (fieldstone,
+ * terrace, two tiers): only colour differed. The civic silhouette motif (a
+ * documented pucará vs andenes) must make the shapes differ too.
+ */
+test('coetaneous highland centers differ by silhouette motif', async ({ page }) => {
+  const capture = async (civ: string) => {
+    await page.goto(`/?civ=${civ}&period=4&play=1&fog=0&low=1&noloop=1`);
+    await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+      timeout: 30_000,
+    });
+    return page.evaluate(() => {
+      const g = (window as unknown as { game: any }).game;
+      const center = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center' && !b.dead) as any;
+      let verts = 0;
+      let meshes = 0;
+      center.view.group.traverse((o: any) => {
+        if (o.isMesh && o.geometry?.attributes?.position) {
+          verts += o.geometry.attributes.position.count;
+          meshes++;
+        }
+      });
+      return {
+        civ: g.players[0].civ as string,
+        motif: center.view.group.userData.civSilhouette as string | undefined,
+        verts,
+        meshes,
+      };
+    });
+  };
+
+  const chanca = await capture('chanca');
+  const huanca = await capture('huanca');
+  expect(chanca.civ).toBe('chanca');
+  expect(huanca.civ).toBe('huanca');
+  expect(chanca.motif).toBe('pucara');
+  expect(huanca.motif).toBe('terraces');
+  expect(`${chanca.verts}:${chanca.meshes}`).not.toBe(`${huanca.verts}:${huanca.meshes}`);
+});
+
+/**
+ * The silhouette layer is not center-only: defensive buildings carry the same
+ * documented marker, so two coetaneous highland pucarás no longer share a shape.
+ */
+test('coetaneous highland fortresses differ by silhouette motif', async ({ page }) => {
+  const capture = async (civ: string) => {
+    await page.goto(`/?civ=${civ}&period=4&play=1&fog=0&low=1&noloop=1`);
+    await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+      timeout: 30_000,
+    });
+    return page.evaluate(() => {
+      const g = (window as unknown as { game: any }).game;
+      const center = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center' && !b.dead);
+      g.addResource(0, { food: 0, wood: 500, silver: 500, stone: 500 });
+      const fortress = g.placeBuilding('fortress', center.pos.x + 9, center.pos.z + 6);
+      if (!fortress) throw new Error('could not place the fortress');
+      let verts = 0;
+      let meshes = 0;
+      fortress.view.group.traverse((o: any) => {
+        if (o.isMesh && o.geometry?.attributes?.position) {
+          verts += o.geometry.attributes.position.count;
+          meshes++;
+        }
+      });
+      return {
+        motif: fortress.view.group.userData.civSilhouette as string | undefined,
+        verts,
+        meshes,
+      };
+    });
+  };
+
+  const chanca = await capture('chanca');
+  const huanca = await capture('huanca');
+  expect(chanca.motif).toBe('pucara');
+  expect(huanca.motif).toBe('terraces');
+  expect(`${chanca.verts}:${chanca.meshes}`).not.toBe(`${huanca.verts}:${huanca.meshes}`);
+});

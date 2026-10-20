@@ -193,6 +193,32 @@ describe('historical architecture profiles', () => {
     expect(inca.monumentalTiers).toBeGreaterThan(1);
   });
 
+  it('gives every pre-Hispanic civilization a civic silhouette motif', () => {
+    const pre = CIVS.filter((c) => c.periods.some((p) => getPeriod(p).level < Era.VICEROYALTY));
+    for (const civ of pre) {
+      const p = archProfileFor(civ.id, getPeriod(civ.periods[0]).level);
+      expect(p.silhouette, `${civ.id} silhouette`).not.toBe('none');
+    }
+  });
+
+  it('keeps every coetaneous pre-Hispanic pair distinct in silhouette or structure', () => {
+    const pre = CIVS.filter((c) => c.periods.some((p) => getPeriod(p).level < Era.VICEROYALTY));
+    const sig = (civId: CivId, level: Era): string => {
+      const p = archProfileFor(civId, level);
+      return [p.silhouette, p.wall, p.roof, p.foundation, JSON.stringify(p.ornament), p.monumentalTiers].join('|');
+    };
+    for (let i = 0; i < pre.length; i++) {
+      for (let j = i + 1; j < pre.length; j++) {
+        const a = pre[i];
+        const b = pre[j];
+        const shared = a.periods.filter((p) => b.periods.includes(p) && getPeriod(p).level < Era.VICEROYALTY);
+        if (!shared.length) continue;
+        const level = getPeriod(shared[0]).level;
+        expect(sig(a.id, level), `${a.id} vs ${b.id}`).not.toBe(sig(b.id, level));
+      }
+    }
+  });
+
   it('uses a single-tier base for the post-1532 colonial/republican look', () => {
     expect(archProfileFor(CivId.REALISTAS, Era.VICEROYALTY).monumentalTiers).toBe(1);
     expect(archProfileFor(CivId.REPUBLIC, Era.REPUBLIC).monumentalTiers).toBe(1);

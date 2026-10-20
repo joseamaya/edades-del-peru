@@ -98,6 +98,12 @@ Wari y Tiahuanaco; el **felino** lo es de Chavín; el **Inti** del Estado inca.
   de los edificios monumentales (huacas moche más altas que las plataformas Caral). Los constructores
   colonial/republicano toman el material de fachada de `arch.wall` (`facadeTex`). El `emblem` sigue en el
   estandarte (`andeanBanner`/`addEmblem`).
+- **Silueta por civilización**: `HistoricalArchitectureProfile.silhouette` nombra un motivo atestiguado
+  (plaza circular, cabezas clavas, rampa, recinto funerario, montículo bajo, estelas, recinto amurallado,
+  patio hundido, ciudadela, pucará, chullpa, andenes, ushnu) que `addCivSilhouette` añade al **centro**
+  (y a la **fortaleza** cuando el motivo es defensivo). Así dos civilizaciones coetáneas con el mismo
+  `ArchStyle` (p. ej. Chanca y Huanca) difieren en forma, no solo en color; los motivos son abstracciones
+  de las formas documentadas en §1.
 - **Regla de era**: `Builder.isAndean` exige `era ≤ TAHUANTINSUYO` **y** un estilo andino; en el
   Virreinato en adelante se usa la arquitectura de la era (colonial/moderna).
 - **Maravilla (`WONDER`, «Huaca Sagrada»)**: se modela como una **huaca andina escalonada** genérica
