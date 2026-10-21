@@ -168,10 +168,20 @@ the instance manager.
 visual-only: `src/model/defs/props.ts` scatters cacti, totora, rock clusters and
 shrubs by region suitability (aridity, moisture, slope, beach), and
 `src/model/defs/wildlife.ts` places llamas and vicuñas on the puna, condors above
-the Andes and pelicans on the shore. The fauna is built procedurally
-(`src/rendering/faunaModels.ts`) from rounded shapes with vertex-colour AO and
-**articulated legs/wings** (shared geometry and material), rather than flat boxes.
-Both are pure planners over `region + seed` and regenerate deterministically on load.
+the Andes and pelicans on the shore. The **llama pilot** uses a rigged CC0 Andean
+camelid (Quaternius alpaca as a llama stand-in) with `Idle`, `Walk` and `Eating`
+clips: it walks its deterministic orbit and stops to graze, grounded on the terrain.
+Vicuñas, condors and pelicans keep the procedural bodies
+(`src/rendering/faunaModels.ts`) built from rounded shapes with vertex-colour AO and
+**articulated legs/wings** (shared geometry and material), rather than flat boxes;
+an asset-load failure also falls back to that path. Both are pure planners over
+`region + seed` and regenerate deterministically on load.
+
+Fauna evidence (same `map=altiplano`, seed 777, 1600x900):
+[`fauna-llama-before-after.webp`](../media/fauna-llama-before-after.webp) (procedural → rigged close-up) and
+[`fauna-llama-rts-before-after.webp`](../media/fauna-llama-rts-before-after.webp) (default RTS view). The model
+is an abstraction of the existing llama species, not a new spawn rule; a bespoke llama/vicuña mesh remains future
+work.
 
 ## Colour
 

@@ -1,7 +1,7 @@
 import { CivId, Era, HistoricalPeriod, UnitKind } from '../../core/types';
 
 /** Registered rigged models. Add the id here and to the rendering registry. */
-export type ModelAssetId = 'ual_mannequin';
+export type ModelAssetId = 'ual_mannequin' | 'quaternius_alpaca';
 
 /** CC0 Quaternius mannequin: pipeline base for the demo and the Caral worker variant. */
 export const MANNEQUIN_ASSET_ID: ModelAssetId = 'ual_mannequin';
@@ -11,9 +11,9 @@ export const RIG_DEMO_ASSET_ID: ModelAssetId = MANNEQUIN_ASSET_ID;
 export type RigVariant = 'caral_worker';
 
 /** Gameplay states mapped to clips; a rig may omit any state except `idle`. */
-export type RigClipState = 'idle' | 'walk' | 'work' | 'attack';
+export type RigClipState = 'idle' | 'walk' | 'work' | 'attack' | 'eat';
 
-export const RIG_CLIP_STATES: readonly RigClipState[] = ['idle', 'walk', 'work', 'attack'];
+export const RIG_CLIP_STATES: readonly RigClipState[] = ['idle', 'walk', 'work', 'attack', 'eat'];
 
 /** Per-variant clip overrides; `null` removes a state (falls back to idle). */
 export const RIG_VARIANT_CLIPS: Partial<Record<RigVariant, Partial<Record<RigClipState, string | null>>>> = {
@@ -39,10 +39,12 @@ export function rigClipStateFor(input: RigStateInput): RigClipState {
   return 'idle';
 }
 
-export interface UnitModelChoice {
+export interface RigModelChoice {
   asset: ModelAssetId;
   variant?: RigVariant;
 }
+
+export type UnitModelChoice = RigModelChoice;
 
 /**
  * Rigged model for a unit kind, or `null` to keep the procedural model.

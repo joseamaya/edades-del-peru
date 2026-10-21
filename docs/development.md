@@ -100,9 +100,10 @@ Definition of Done and the building audit see
   stores `constructionProgress`).
 - **Ambient life (visual only)**: `src/model/defs/props.ts` (cacti, totora, rocks, shrubs) and
   `src/model/defs/wildlife.ts` (llama, vicuña, condor, pelican) are **pure** planners over the region profile +
-  seed. `src/rendering/Props.ts` instances the props; `src/rendering/Wildlife.ts` renders the fauna from cached
-  templates (`src/rendering/faunaModels.ts`) built from rounded/capsule shapes with **vertex-colour AO**
-  (reusing `aoGeometry` from `ProceduralModel`) and **articulated legs/wings** (shared geometry + one shared
+  seed. `src/rendering/Props.ts` instances the props; `src/rendering/Wildlife.ts` renders the fauna. The **llama
+  pilot** uses the rigged CC0 camelid (`quaternius_alpaca`) with idle/walk/eat clips; the other species and any
+  asset-load failure keep the cached procedural templates (`src/rendering/faunaModels.ts`) built from
+  rounded/capsule shapes with **vertex-colour AO** and **articulated legs/wings** (shared geometry + one shared
   material; diagonal gait and wing flap). No entities, obstacles or save; regenerated deterministically on load,
   templates freed by `clearFaunaTemplates` in `Game.destroy`.
 - **Rigged 3D models (optional, glTF/GLB)**: `src/model/defs/modelAssets.ts` maps a unit kind to a registered
@@ -397,9 +398,9 @@ Definition of Done and the building audit see
 
 Local `*.glb` files live in `src/assets/models/`. The registry (`src/rendering/modelAssetRegistry.ts`) maps an
 asset id to its bundled URL, scale, yaw offset and **clip names**; the game states are always
-`idle | walk | work | attack` (`RIG_CLIP_STATES` in `src/model/defs/modelAssets.ts`). Only `idle` is mandatory;
-a missing state falls back to `idle` and a missing mapped clip logs a `[models]` warning. Death stays on the
-existing topple FX until #108 defines a rig-specific death flow.
+`idle | walk | work | attack | eat` (`RIG_CLIP_STATES` in `src/model/defs/modelAssets.ts`; `eat` is used by
+fauna). Only `idle` is mandatory; a missing state falls back to `idle` and a missing mapped clip logs a
+`[models]` warning. Death stays on the existing topple FX until a rig-specific death flow exists.
 
 Audit of the path this pipeline mirrors: procedural templates are cached by `type|scale|barrel|civ|era`,
 `instantiateTemplate` clones them with per-instance materials, buildings modernize by swapping the whole model,
@@ -419,6 +420,8 @@ To add a model:
    Until then the unit keeps the procedural model; the Caral worker is the reference mapping.
 4. Add the id to `modelAssetIdsForMatch(period, civs)` if it must be preloaded before entities are created.
    Pass every participating civilization (the Caral worker is preloaded for Arcaico matches with Caral).
+5. For fauna, return the id from `wildlifeModelChoice(species)` and list it in `wildlifeModelAssetIds(region)`;
+   the llama/alpaca pilot is the reference.
 
 The loader must be synchronous at entity construction: `acquireRig()` only returns an already-loaded asset;
 `boot()` preloads the list and failures keep the procedural fallback. Clips must be **in-place** (root motion
@@ -431,6 +434,29 @@ the visual harness for the pipeline.
 Next iteration for the worker: dedicated gather and build clips with a proper tool grip, a worker attack clip (or
 no attack state), a rig-specific death flow, and a bespoke historical mesh to replace the generic CC0 base before
 extending the same treatment to other civilizations and eras.
+
+## Rigged fauna (llama pilot)
+
+The species inventory and biome/altitude/seed selection are unchanged (`wildlife.ts`: llama in the Andes/altiplano,
+vicuña above 4 m, condor above 5 m, pelican near water). `wildlifeModelChoice('llama')` returns the
+`quaternius_alpaca` asset; `wildlifeModelAssetIds(region)` preloads it during `boot()` for regions whose llama
+weight is non-zero (main resolves the region with the same `resolveMapProfile` as `Game`). `Wildlife.spawn` asks
+for a rig through `acquireRig`; if it is unavailable it builds the procedural animal exactly as before, and the
+`MAX_ANIMALS = 16` cap is unchanged.
+
+The rig plays `walk` while it advances its deterministic orbit and stops to play `eat` on a deterministic
+sinusoidal cycle per animal; the root sits at `Terrain.getHeight` and the model is grounded at its bind-pose feet.
+The alpaca is an Andean camelid stand-in for the existing llama species, not a new species; vicuña/condor/pelican
+remain procedural. Rigged fauna uses the same shared cache/clone/refcount rules as the worker.
+
+Measured cost on the altiplano map (8 fauna, 4 rigged, direct render): procedural set **+40 draw calls / +11,280
+triangles**; mixed set **+76 calls / +21,840 triangles** (about +4.5 calls and +1.3k triangles per replaced
+llama). The cap remains 16; `tests/e2e/fauna.spec.ts` covers spawn, clip states, grounding, procedural fallback
+and teardown. Evidence: `docs/media/fauna-llama-before-after.webp` and
+`docs/media/fauna-llama-rts-before-after.webp` (`map=altiplano`, seed 777, 1600x900).
+
+Next iteration for fauna: replace vicuña/condor/pelican, add flight-specific states and terrain-avoidance if a
+rigged bird is added, and evaluate per-species LOD/update throttling at the 16-animal cap.
 
 ## Debugging / automation
 

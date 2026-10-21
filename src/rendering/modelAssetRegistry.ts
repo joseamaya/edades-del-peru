@@ -21,6 +21,7 @@ export interface ModelAssetDefinition {
 }
 
 const UAL_URL = modelUrls['../assets/models/ual_mannequin.glb'] ?? '';
+const ALPACA_URL = modelUrls['../assets/models/alpaca_llama.glb'] ?? '';
 
 /**
  * The mannequin is the pipeline's validation asset (Quaternius Universal
@@ -37,6 +38,21 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
       walk: 'Walk_Loop',
       work: 'Fixing_Kneeling',
       attack: 'Sword_Attack',
+    },
+  },
+  /**
+   * Quaternius Ultimate Animated Animal Pack alpaca (CC0). Used as the
+   * Andean camelid stand-in for the llama species; the raw model is ~5.43 m
+   * tall, so `scale` normalises it to the game's stylised ~1.6 m.
+   */
+  quaternius_alpaca: {
+    url: ALPACA_URL,
+    scale: 0.3,
+    yawOffset: 0,
+    clips: {
+      idle: 'Idle',
+      walk: 'Walk',
+      eat: 'Eating',
     },
   },
 };

@@ -1,6 +1,7 @@
 import { scatterAmbient, type AmbientPlacement, type AmbientSample } from './scatter';
 import type { AmbientQuery } from './ambientQuery';
 import type { GeographicRegion } from './profiles';
+import type { ModelAssetId, RigModelChoice } from './modelAssets';
 
 /**
  * Ambient Peruvian fauna (visual only): llamas and vicuñas graze the highlands,
@@ -12,6 +13,15 @@ export type SpeciesId = 'llama' | 'vicuna' | 'condor' | 'pelican';
 export const SPECIES_IDS: SpeciesId[] = ['llama', 'vicuna', 'condor', 'pelican'];
 
 export type WildlifeSpawn = AmbientPlacement<SpeciesId>;
+
+/**
+ * Rigged fauna for a species, or `null` to keep the procedural model.
+ * The llama is the #109 pilot and uses a CC0 alpaca as an Andean camelid stand-in;
+ * the vicuña, condor and pelican stay procedural for now.
+ */
+export function wildlifeModelChoice(id: SpeciesId): RigModelChoice | null {
+  return id === 'llama' ? { asset: 'quaternius_alpaca' } : null;
+}
 
 /** Base presence of each species per geographic region. */
 const REGION_WEIGHTS: Record<GeographicRegion, Record<SpeciesId, number>> = {
@@ -37,6 +47,11 @@ const REGION_COUNT: Record<GeographicRegion, number> = {
 
 export function faunaCountFor(region: GeographicRegion): number {
   return REGION_COUNT[region];
+}
+
+/** Rigged assets a region can spawn (preloaded before the wildlife planner runs). */
+export function wildlifeModelAssetIds(region: GeographicRegion): ModelAssetId[] {
+  return REGION_WEIGHTS[region].llama > 0 ? ['quaternius_alpaca'] : [];
 }
 
 /** Habitats are separated by altitude and water: pelicans on the shore, camelids on the puna. */

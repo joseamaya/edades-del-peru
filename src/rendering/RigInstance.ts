@@ -26,6 +26,11 @@ export class RigInstance {
     this.model = cloneSkeleton(asset.scene);
     this.model.scale.setScalar(asset.definition.scale);
     this.model.rotation.y += asset.definition.yawOffset;
+    // Normalise the bind-pose feet to y=0: the camelid asset has a small
+    // positive/negative offset, while the game places the root on the terrain.
+    this.model.updateMatrixWorld(true);
+    const bounds = new THREE.Box3().setFromObject(this.model);
+    if (Number.isFinite(bounds.min.y)) this.model.position.y -= bounds.min.y;
     this.root.name = `rig:${asset.id}`;
     this.root.add(this.model);
 
