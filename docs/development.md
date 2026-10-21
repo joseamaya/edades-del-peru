@@ -521,19 +521,30 @@ Match the cost of verification to the change (the full gate is in `AGENTS.md`):
 
 ## Performance benchmarks
 
-`yarn bench [--units=100,300,500,1000] [--seed=777]` boots a match in Chromium
-(SwiftShader) and, per scale, spawns N soldiers and measures: spawn/destroy time, simulation step time
-(`Game.update`), heap delta during the sim loop, A* per call, target acquisition (`enemiesNear`) and
-hover-picking (`pickAt`), then — with the loop running and `window.__directRender` on (bypasses
-post-processing so `renderer.info` is meaningful) — FPS, frame time (avg/p95), long tasks and real scene
-draw calls/triangles. It also isolates the cultural landscape's draw calls (the layer rendered visible
-vs hidden) and **fails** (`exit ≠ 0`) when they exceed
+`yarn bench [--units=50,100,200,400,800] [--scenario=soldiers|mixed|mixed-ai] [--seed=777]
+[--steps=600] [--runs=3] [--profile=1] [--gc=1] [--fog=1] [--out=review/bench.json]` boots a match in
+Chromium (SwiftShader) and, per scale, measures spawn/destroy time, simulation step time (`Game.update`),
+heap, A* per call, target acquisition (`enemiesNear`) and hover-picking (`pickAt`). With `--profile=1` it
+installs `scripts/perf-probes.mjs`, which adds per-step section timings (units, AI, pathfinding, FOW, HUD,
+particles, spatial, ...) and exact counters without changing game behaviour. `soldiers` is the original
+scenario; `mixed` builds a deterministic economy+combat scenario (workers, gather orders, soldiers, opposing
+attack orders, barracks); `mixed-ai` also keeps both AIs active. With the loop running and
+`window.__directRender` on (bypasses post-processing so `renderer.info` is meaningful) it records FPS, frame
+time (avg/p50/p95/p99), long tasks and real scene draw calls/triangles, and it isolates the cultural
+landscape's draw calls (the layer rendered visible vs hidden). It **fails** (`exit ≠ 0`) when they exceed
 `2 × CulturalLandscape.featureBudget` (one merged mesh per drawable feature, times the
-VSM main+shadow passes; see [`docs/design/cultural-landscape.md`](design/cultural-landscape.md)). It
-writes `review/bench.json` and prints a table.
+VSM main+shadow passes; see [`docs/design/cultural-landscape.md`](design/cultural-landscape.md)). It writes
+the JSON to `--out` (`review/bench.json` by default) and prints a table.
 
-Numbers are only comparable **on the same machine/browser** — treat them as relative signals, not targets.
-Reference run (this repo, 2-core container, `CHROME_PATH` SwiftShader, `?low=1`, seed 777):
+`yarn sim [--seeds=777,...] [--max=1200] [--metrics=1] [--sample=5] [--out=review/ai-bench.json]` is the
+deterministic AI-vs-AI runner. With `--metrics=1` it records first soldier/first attack/first barracks,
+workers/military/buildings created, gathered resources, losses, pathfinding requests/failures, AI percentiles
+and a sampled timeline (idle/blocked workers, stuck units, army, resources) without changing behaviour.
+
+The full audit with 50/100/200/400/800 results, 20 AI seeds and the prioritized issue list is in
+[`docs/development/performance-audit.md`](development/performance-audit.md). It records the baseline and the
+follow-up after #121 (component reachability cache, stuck-order give-up and the corrected `blockedWorkers`
+metric). Reference run from the audit environment (i7-13700, `CHROME_PATH` SwiftShader, `?low=1`, seed 777):
 
 | units | spawn ms | sim ms/step | heap Δ/loop MB | A* ms/call | target µs/call | pick ms/call | frame ms (avg/p95) | draw calls | triangles | heap MB |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -542,14 +553,19 @@ Reference run (this repo, 2-core container, `CHROME_PATH` SwiftShader, `?low=1`,
 | 500 | 99 | 1.0 | ~8 | 0.09 | 1.0 | 0.16 | ~937/1654 | ~17.3k | 11.7M | 91 |
 | 1000 | 190 | 1.7 | ~20 | 0.09 | 1.0 | 0.27 | ~1488/2557 | ~34k | 22.8M | 115 |
 
-Reading: the **simulation, pathfinding, target acquisition and picking are cheap** (≈0.6–1.7 ms/step up to 1000
-units, well under the 16.6 ms budget; A* is ~0.1 ms and independent of unit count — that column is a map sample,
-not a scaling result; hover-picking is ~0.3 ms/call at 1000 after moving to one pick proxy per entity and a single
-resolve per frame). Draw calls at 1000 fell from the original **~81k baseline to ~34k** (‑58%; the previous
-merge step was ~56k, so this step is ‑39%), by merging each model's static parts by material and baking part
-colours into vertex colours. ~34 per unit remains (the shadow pass roughly doubles them, and units still have
-no instancing) — reaching ~15-20 needs **instancing** (or collapsing per-part PBR params), which is not done.
-Frame time is dominated by the software renderer, so use draw calls as the actionable signal.
+Reading (historical `soldiers` scenario): the **mean simulation, pathfinding, target acquisition and picking are
+cheap** (≈0.6–1.7 ms/step up to 1000 units). The 2026 audit's `mixed` scenario shows the caveat: the **mean** is
+still low (3.9 ms/step at 800 with probes), but the **p99** reaches 15–18 ms because of rare A* searches. The
+AI economy could deadlock on unreachable resources before #121; #121 reduced the search storm and stuck orders
+but did not close PATH-1 (no per-frame budget/queue yet). See
+[`docs/development/performance-audit.md`](development/performance-audit.md) for the current percentiles and the
+20-seed AI results. A* in the table is a random-map sample, not a scaling result; hover-picking is ~0.3 ms/call at
+1000 after moving to one pick proxy per entity and a single resolve per frame. Draw calls at 1000 fell from the
+original **~81k baseline to ~34k** (‑58%; the previous merge step was ~56k, so this step is ‑39%), by merging each
+model's static parts by material and baking part colours into vertex colours. ~34 per unit remains (the shadow
+pass roughly doubles them, and units still have no instancing) — reaching ~15-20 needs **instancing** (or
+collapsing per-part PBR params), which is not done. Frame time is dominated by the software renderer, so use draw
+calls as the actionable signal.
 
 Post-processing is **off** in these runs (`?low=1`). The cinematic set (default on) adds SSAO/bloom/grading and,
 when quality ≠ `low`, one extra full-scene pass for water refraction — the `QualityGovernor` drops to `low`
