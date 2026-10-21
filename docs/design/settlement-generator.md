@@ -84,6 +84,10 @@ All angles/offsets come from a dedicated `RNG(seed * k + c)` stream.
 - **Resources**: a later step seeds `spawnStartResources` near the chosen core.
 - **No save change**: the plan is derived from `seed + profile + civ + period`, so
   it is regenerated on load; only the *resulting entities* are saved (as today).
+- **Visual dressing**: `SettlementOverlay` also draws green young-crop rows
+  (`cropGeometry`) over the planned fields, and Caral bases add a deterministic
+  household layer (`planSettlementDressing` → `SettlementDressing`). Both are
+  visual-only, merged into one mesh each, and carry no obstacles or entities.
 
 ## Determinism & performance
 

@@ -57,6 +57,8 @@ import { resolveMapProfile, type HistoricalMapProfile, type GeographicRegion } f
 import { resolveColorGrade } from '../model/defs/grades';
 import { planSettlementSite, type SettlementPlan } from '../model/defs/settlementPlan';
 import { SettlementOverlay } from '../rendering/SettlementOverlay';
+import { SettlementDressing } from '../rendering/SettlementDressing';
+import { planSettlementDressing } from '../model/defs/settlementDressing';
 import { farmYieldMultiplier, nearbyCanal } from '../model/defs/farmYield';
 import { distance2D } from '../util/math';
 import { isTypingTarget } from '../util/dom';
@@ -135,6 +137,8 @@ export class Game {
   landscape: CulturalLandscape | null = null;
   /** Per-base settlement overlays (planned fields/roads); visual only. */
   settlements: SettlementOverlay[] = [];
+  /** Caral household dressing (hearths, racks, baskets); visual only. */
+  settlementDressing: SettlementDressing[] = [];
   particles!: Particles;
   debris!: Debris;
   fow!: Fow;
@@ -476,17 +480,33 @@ export class Game {
       for (const n of this.resourceNodes.values()) if (Math.hypot(n.pos.x - px, n.pos.z - pz) < radius) return false;
       return true;
     };
+    // The landmark footprint (~12 x 16) must sit on a broad, gentle pad, not on
+    // a cliff edge where its platform would clip through the terrain.
+    const footprintClear = (px: number, pz: number): boolean => {
+      const h0 = this.terrain.getHeight(px, pz);
+      if (this.terrain.isWater(px, pz) || this.terrain.isBeach(px, pz)) return false;
+      for (let k = 0; k < 8; k++) {
+        const a = (k / 8) * Math.PI * 2;
+        for (const r of [4, 9]) {
+          const x = px + Math.cos(a) * r;
+          const z = pz + Math.sin(a) * r;
+          if (this.terrain.isWater(x, z)) return false;
+          if (Math.abs(this.terrain.getHeight(x, z) - h0) > 1.1) return false;
+          if (this.terrain.getSlope(x, z) > 0.45) return false;
+        }
+      }
+      return true;
+    };
     let x = size / 2;
     let z = size / 2;
     let found = false;
-    for (let i = 0; i < 80; i++) {
+    for (let i = 0; i < 140; i++) {
       const a = rng.range(0, Math.PI * 2);
-      const r = rng.range(0.3, 0.42) * size;
+      const r = rng.range(0.22, 0.34) * size;
       const px = size / 2 + Math.cos(a) * r;
       const pz = size / 2 + Math.sin(a) * r;
-      if (this.terrain.isWater(px, pz) || this.terrain.isBeach(px, pz)) continue;
-      if (this.terrain.getSlope(px, pz) > 0.4) continue;
-      if (!clearOf(px, pz, 7)) continue;
+      if (!footprintClear(px, pz)) continue;
+      if (!clearOf(px, pz, 9)) continue;
       x = px;
       z = pz;
       found = true;
@@ -694,6 +714,7 @@ export class Game {
       this.registerObstacle(house);
     }
     this.addSettlementOverlay(plan);
+    if (this.players[player].civ === CivId.CARAL) this.addSettlementDressing(plan, player);
     // nearby resources to start
     this.spawnStartResources(player, x, z);
     // starting workers
@@ -738,6 +759,15 @@ export class Game {
     applyFowToObject(overlay.group, this.fowUniforms);
     this.scene.add(overlay.group);
     this.settlements.push(overlay);
+  }
+
+  /** Household props around a Caral base (visual only, deterministic, no obstacles). */
+  private addSettlementDressing(plan: SettlementPlan, player: number): void {
+    const placements = planSettlementDressing(plan, this.settings.mapSeed * 977 + player * 31 + 7, this.terrain);
+    const dressing = new SettlementDressing(placements, (x, z) => this.terrain.getHeight(x, z));
+    applyFowToObject(dressing.group, this.fowUniforms);
+    this.scene.add(dressing.group);
+    this.settlementDressing.push(dressing);
   }
 
   private spawnStartResources(player: number, x: number, z: number): void {
@@ -3039,6 +3069,8 @@ export class Game {
     }
     for (const overlay of this.settlements) overlay.dispose();
     this.settlements = [];
+    for (const dressing of this.settlementDressing) dressing.dispose();
+    this.settlementDressing = [];
     for (const fx of this.deathFx) fx.cleanup();
     this.deathFx = [];
     for (const unit of this.units.values()) unit.removeFromScene();

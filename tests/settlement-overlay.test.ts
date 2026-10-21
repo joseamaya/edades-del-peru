@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fieldGeometry, roadGeometry, SETTLEMENT_OFFSET } from '../src/rendering/SettlementOverlay';
+import { cropGeometry, fieldGeometry, roadGeometry, SETTLEMENT_OFFSET } from '../src/rendering/SettlementOverlay';
 
 /** A sloped "terrain": height grows with x and z. */
 const height = (x: number, z: number): number => 0.2 * x + 0.1 * z;
@@ -28,5 +28,11 @@ describe('settlement overlay geometry', () => {
     assertOnTerrain(geo);
     // subdivided into a grid, not four flat corners
     expect(geo.getAttribute('position').count).toBeGreaterThan(4);
+  });
+
+  it('lays young-crop rows that follow the field terrain', () => {
+    const rows = cropGeometry({ x: 10, z: -8, yaw: 0.4, size: 5 }, height);
+    expect(rows.length).toBeGreaterThanOrEqual(5);
+    for (const geo of rows) assertOnTerrain(geo, SETTLEMENT_OFFSET + 0.04);
   });
 });

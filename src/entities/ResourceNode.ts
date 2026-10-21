@@ -223,7 +223,7 @@ export class ResourceNode {
       alphaTest: 0.45,
       side: THREE.DoubleSide,
       roughness: 1,
-      color: '#cfe0b0',
+      color: '#b9c49b',
     });
     const w = radius * 2.3;
     const h = height;
@@ -261,7 +261,7 @@ export class ResourceNode {
       void rng;
       return;
     }
-    const h = variant === 'needle' ? 5 + rng.range(0, 2.5) : 3.8 + rng.range(0, 2.2);
+    const h = variant === 'needle' ? 4.2 + rng.range(0, 2) : 3.2 + rng.range(0, 1.6);
     const lean = rng.range(-0.06, 0.06);
 
     const barkMat = mat('bark', {
@@ -289,15 +289,15 @@ export class ResourceNode {
     }
 
     const canopy = new THREE.Group();
-    canopy.position.y = h * 0.86;
+    canopy.position.y = h * 0.82;
     canopy.rotation.z = lean;
     this.view.add(canopy);
     const radius =
       variant === 'frond'
-        ? 1.9 + rng.range(0, 0.5)
+        ? 1.6 + rng.range(0, 0.4)
         : variant === 'needle'
-          ? 1.5 + rng.range(0, 0.4)
-          : 1.7 + rng.range(0, 0.7);
+          ? 1.35 + rng.range(0, 0.35)
+          : 1.45 + rng.range(0, 0.55);
     const ch = variant === 'needle' ? radius * 2.1 : radius * 1.6;
     this.addFoliage(canopy, rng, variant, radius, ch);
     canopy.userData.sway = 1;
@@ -310,14 +310,14 @@ export class ResourceNode {
       color: '#8f8a82',
       roughness: 0.95,
     });
-    applyGeneratedPbr(rockMat, 'resource_rock');
+    applyGeneratedPbr(rockMat, 'wall_fieldstone', { tint: '#c8bfae' });
     const oreMat = mat('ore-mine', { color: '#9aa7b5', metalness: 0.9, roughness: 0.35, emissive: 0x11161c });
     const n = 7;
     for (let i = 0; i < n; i++) {
       const a = (i / n) * Math.PI * 2;
-      const r = rng.range(0.5, 1.3);
-      const hh = rng.range(0.5, 1.6);
-      const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(rng.range(0.4, 0.8), 0), rockMat);
+      const r = rng.range(0.45, 1.1);
+      const hh = rng.range(0.4, 1.3);
+      const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(rng.range(0.32, 0.64), 0), rockMat);
       rock.position.set(Math.cos(a) * r, hh / 2, Math.sin(a) * r);
       rock.scale.y = rng.range(0.7, 1.4);
       rock.rotation.set(rng.range(0, 3), rng.range(0, 3), rng.range(0, 3));

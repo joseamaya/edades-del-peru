@@ -108,7 +108,10 @@ the **simulation RNG is never touched** (replay safety).
 
 Materials are plain `MeshStandardMaterial` tinted per feature and, when the AI
 assets exist, overlaid with generated PBR via `applyGeneratedPbr`
-(`LANDSCAPE_SLOT` maps each feature to a `ground_*`/`terrace_face`/… slot). They
+(`LANDSCAPE_SLOT` maps each feature to a `ground_*`/`terrace_face`/… slot); the
+per-feature `LANDSCAPE_TINT` multiplies the neutral generated maps with the
+regional albedo. Flat features (`plaza`, `field`) sample the terrain height on
+every vertex, so they drape over the relief instead of floating on a slope. They
 also sample the **fog-of-war grid** (`src/rendering/FowMaterial.ts`, `applyFow`),
 sharing the terrain's `Fow` texture (and the landmark and settlement overlays),
 so they dim with the relief instead of glowing over unexplored terrain. The

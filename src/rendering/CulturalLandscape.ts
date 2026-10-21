@@ -25,6 +25,17 @@ const LANDSCAPE_SLOT: Partial<Record<LandscapeFeature, string>> = {
   corral: 'corral_brush',
 };
 
+/** Warm albedo multiplier per feature (the generated maps are neutral). */
+const LANDSCAPE_TINT: Partial<Record<LandscapeFeature, string>> = {
+  plaza: '#c2b092',
+  field: '#8a9a4a',
+  road: '#9a8460',
+  path: '#a8946c',
+  terrace: '#9a9078',
+  wall: '#94866f',
+  corral: '#8a7a64',
+};
+
 /** Vertical offset above the terrain (half-height for the walls, a small lift for the flats). */
 const OFFSET: Partial<Record<LandscapeFeature, number>> = {
   plaza: 0.06,
@@ -73,11 +84,22 @@ export class CulturalLandscape {
     const chains: Partial<Record<LandscapeFeature, Map<number, LandscapePlacement[]>>> = {};
     for (const p of planCulturalLandscape(landscape, seed, q)) {
       if (p.chain === undefined) {
-        const y = terrain.getHeight(p.x, p.z) + (OFFSET[p.feature] ?? 0.04);
+        const off = OFFSET[p.feature] ?? 0.04;
         const geo = featureGeometry(p.feature, p.size, p.yaw);
         const r = Math.max(1, p.size / GROUND_TILE);
         scaleUv(geo, r, r);
-        geo.translate(p.x, y, p.z);
+        if (p.feature === 'plaza' || p.feature === 'field') {
+          // flat features drape over the relief instead of floating on a slope
+          const pos = geo.getAttribute('position') as THREE.BufferAttribute;
+          for (let i = 0; i < pos.count; i++) {
+            pos.setY(i, terrain.getHeight(pos.getX(i) + p.x, pos.getZ(i) + p.z) + off);
+          }
+          pos.needsUpdate = true;
+          geo.computeVertexNormals();
+        } else {
+          geo.translate(0, terrain.getHeight(p.x, p.z) + off, 0);
+        }
+        geo.translate(p.x, 0, p.z);
         (buckets[p.feature] ??= []).push(geo);
       } else {
         const byChain = (chains[p.feature] ??= new Map());
@@ -121,7 +143,7 @@ export class CulturalLandscape {
       if (!merged) continue;
       const material = materials[feature]!;
       const slot = LANDSCAPE_SLOT[feature];
-      if (slot) applyGeneratedPbr(material, slot);
+      if (slot) applyGeneratedPbr(material, slot, LANDSCAPE_TINT[feature] ? { tint: LANDSCAPE_TINT[feature] } : {});
       const mesh = new THREE.Mesh(merged, material);
       mesh.name = feature;
       mesh.receiveShadow = true;

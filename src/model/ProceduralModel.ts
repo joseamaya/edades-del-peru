@@ -1327,7 +1327,7 @@ function concreteWall(b: Builder): { wall: string; tex: TexKind } {
 
 /** Thatch colour (straw) shared by the Andean roofs. */
 function andeanThatch(b: Builder): string {
-  return mixHex('#c9a94e', b.pal.primary, 0.22);
+  return mixHex('#d8b65e', b.pal.primary, 0.18);
 }
 
 /** Stepped stone platform (the Andean "huaca" base). */
@@ -1401,13 +1401,15 @@ function andeanTapestries(b: Builder, w: number, baseY: number): void {
   }
 }
 
-/** Thatch gable roof. */
+/** Thatch gable roof with a deep eave and a darker ridge bundle. */
 function andeanThatchRoof(b: Builder, w: number, y: number): void {
   const thatch = andeanThatch(b);
-  const o = { ry: Math.PI / 2, tex: 'thatch' as TexKind, texScale: 2 };
-  b.box(w * 1.08, w * 0.1, w * 0.6, thatch, { y, z: w * 0.24, rx: 0.6, ...o });
-  b.box(w * 1.08, w * 0.1, w * 0.6, thatch, { y, z: -w * 0.24, rx: -0.6, ...o });
-  b.box(w * 1.1, w * 0.09, w * 0.18, thatch, { y: y + w * 0.2, ...o });
+  const ridge = mixHex(thatch, '#7a5a24', 0.38);
+  const o = { tex: 'thatch' as TexKind, texScale: 2 };
+  b.box(w * 1.18, w * 0.1, w * 0.68, thatch, { y, z: w * 0.26, rx: 0.6, ...o });
+  b.box(w * 1.18, w * 0.1, w * 0.68, thatch, { y, z: -w * 0.26, rx: -0.6, ...o });
+  b.box(w * 1.2, w * 0.1, w * 0.2, ridge, { y: y + w * 0.2, ...o });
+  b.box(w * 1.19, w * 0.05, 0.07, mixHex(thatch, '#5a4018', 0.35), { y: y + w * 0.28 });
 }
 
 /** Recessed wall niches (Andean masonry / altiplano). */
@@ -1575,8 +1577,42 @@ function buildAndeanStructure(b: Builder, o: AndeanOpts): void {
     }
   }
   const dark = mixHex(b.pal.primary, '#2a2318', 0.55);
+  const adobe = b.arch.wall === 'adobe';
+  if (adobe) {
+    const base = mixHex(wall, '#8a7a62', 0.38);
+    const plaster = mixHex(wall, '#ffffff', 0.3);
+    for (const sz of [1, -1]) {
+      b.box(w * 0.94, w * 0.14, 0.05, base, { y: baseY + w * 0.07, z: sz * w * 0.452, tex });
+      b.box(w * 0.94, w * 0.07, 0.05, plaster, { y: baseY + w * 0.6, z: sz * w * 0.452, tex });
+    }
+    for (const sx of [1, -1]) {
+      b.box(0.05, w * 0.14, w * 0.94, base, { x: sx * w * 0.452, y: baseY + w * 0.07, tex });
+      b.box(0.05, w * 0.07, w * 0.94, plaster, { x: sx * w * 0.452, y: baseY + w * 0.6, tex });
+    }
+  }
   b.box(w * 0.26, w * 0.4, 0.06, dark, { y: baseY + w * 0.2, z: w * 0.46 });
   b.box(w * 0.36, w * 0.08, 0.07, mixHex(b.pal.primary, '#6a5f4a', 0.6), { y: baseY + w * 0.42, z: w * 0.46 });
+  if (adobe) {
+    const frame = mixHex(wall, '#ffffff', 0.2);
+    for (const sx of [-1, 1]) {
+      b.box(w * 0.06, w * 0.46, 0.07, frame, { x: sx * w * 0.15, y: baseY + w * 0.23, z: w * 0.465, tex });
+      b.box(0.06, w * 0.18, w * 0.16, dark, { x: sx * w * 0.451, y: baseY + w * 0.34, tex });
+    }
+    b.box(w * 0.36, w * 0.06, 0.07, frame, { y: baseY + w * 0.46, z: w * 0.465, tex });
+    b.box(w * 0.3, w * 0.05, w * 0.22, andeanStone(b), { y: 0.025, z: w * 0.53 });
+    if (o.role === 'house') {
+      const ax = w * 0.62;
+      const az = -w * 0.22;
+      b.box(w * 0.34, w * 0.4, w * 0.4, wall, { x: ax, y: baseY + w * 0.2, z: az, tex });
+      b.box(w * 0.42, w * 0.08, w * 0.5, andeanThatch(b), {
+        x: ax,
+        y: baseY + w * 0.44,
+        z: az,
+        ry: Math.PI / 2,
+        tex: 'thatch',
+      });
+    }
+  }
   if (b.arch.ornament.niches) andeanNiches(b, w, tex);
   if (b.arch.ornament.frieze) andeanFrieze(b, w);
   if (b.arch.ornament.megalithBlocks) andeanMegaliths(b, w, baseY);
@@ -2440,15 +2476,113 @@ function adobeRamp(b: Builder, w: number): void {
   }
 }
 
-/** Caral: a stepped earth platform beside a sunken circular plaza. */
+/**
+ * Caral's sunken circular plaza: a stone ring with a gap and entry steps toward
+ * the platform, two inner terraces, a central altar and upright stones.
+ * Abstraction of the circular plazas documented in the Caral dossier.
+ */
+function caralSunkenPlaza(b: Builder, cz: number, r: number, stone: string, floor: string, earth: string): void {
+  b.cyl(r + 0.9, r + 1.05, 0.2, 28, earth, { y: 0.1, z: cz, tex: 'dirt', flatShading: true });
+  const segments = 24;
+  for (let i = 0; i < segments; i++) {
+    const a = (i / segments) * Math.PI * 2;
+    // leave an opening on the platform side (-Z) for the entry steps
+    if (Math.abs(Math.sin(a) + 1) < 0.34) continue;
+    b.box((2 * Math.PI * r) / segments + 0.08, 0.56, 0.34, stone, {
+      x: Math.cos(a) * (r + 0.08),
+      y: 0.48,
+      z: cz + Math.sin(a) * (r + 0.08),
+      ry: -a - Math.PI / 2,
+      tex: 'fieldstone',
+    });
+  }
+  b.cyl(r * 0.9, r * 0.9, 0.12, 28, floor, { y: 0.24, z: cz, flatShading: true });
+  b.torus(r * 0.62, 0.11, Math.PI * 2, mixHex(stone, '#d8ccb0', 0.45), { y: 0.4, z: cz, rx: Math.PI / 2 });
+  b.cyl(0.5, 0.58, 0.38, 12, mixHex(stone, '#d8ccb0', 0.35), { y: 0.5, z: cz, tex: 'fieldstone' });
+  b.cyl(0.22, 0.3, 0.14, 10, mixHex(stone, '#2a241c', 0.55), { y: 0.75, z: cz });
+  for (let i = 0; i < 3; i++) {
+    b.box(1.5, 0.14, 0.5, floor, { y: 0.18 + i * 0.16, z: cz - r - 0.5 + i * 0.42 });
+  }
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2 + 0.16;
+    b.box(0.3, 0.78, 0.3, stone, {
+      x: Math.cos(a) * (r + 1.05),
+      y: 0.39,
+      z: cz + Math.sin(a) * (r + 1.05),
+      tex: 'fieldstone',
+    });
+    b.box(0.38, 0.08, 0.38, mixHex(stone, '#6a5f4c', 0.45), {
+      x: Math.cos(a) * (r + 1.05),
+      y: 0.82,
+      z: cz + Math.sin(a) * (r + 1.05),
+    });
+  }
+}
+
+/**
+ * Caral: a broad stepped platform with a central stair and summit temple, in
+ * front of a sunken circular plaza. Stone retaining faces, plastered upper
+ * bands and thatch follow `docs/historia/arquitectura.md`; the plaza is an
+ * abstraction of the documented sunken circular plazas.
+ */
 function buildCaralLandmark(b: Builder): void {
-  const earth = mixHex(b.pal.primary, '#c8a878', 0.72);
-  const stone = mixHex(b.pal.primary, '#b8a888', 0.7);
-  const w = 5;
-  const baseY = tieredPlatform(b, w, 3, 0.5, earth, 'dirt');
-  b.box(w * 0.42, 0.7, w * 0.42, earth, { y: baseY + 0.35, tex: 'brick' });
-  b.box(w * 0.3, 0.3, w * 0.3, stone, { y: baseY + 0.85, tex: andeanTex(b) });
-  ringPlaza(b, w * 1.4, w * 0.62, stone, mixHex(b.pal.primary, '#8a7a5a', 0.5), 12);
+  const plaster = mixHex(b.pal.primary, '#dcc8a0', 0.76);
+  const earth = mixHex(b.pal.primary, '#c8b088', 0.68);
+  const stone = mixHex(b.pal.primary, '#b0a48c', 0.72);
+  const dark = mixHex(b.pal.primary, '#4a3a28', 0.6);
+  const w = 7;
+  const tiers = 5;
+  const tierH = 0.5;
+  const padY = 0.18;
+
+  b.cyl(w * 0.58, w * 0.63, padY, 24, earth, { y: padY / 2, tex: 'dirt', flatShading: true });
+  for (let i = 0; i < tiers; i++) {
+    const t = tierSize(w, i);
+    const y = padY + tierH / 2 + i * tierH;
+    b.box(t, tierH, t, plaster, { y, tex: 'adobe' });
+    if (i > 0) b.box(t * 1.012, 0.12, t * 1.012, stone, { y: y - tierH / 2 + 0.06, tex: 'fieldstone' });
+  }
+  const baseY = padY + tiers * tierH;
+
+  const steps = 10;
+  for (let i = 0; i < steps; i++) {
+    const t = (i + 1) / steps;
+    b.box(w * 0.3, tierH * 0.86, w * 0.16, plaster, {
+      y: padY + ((i + 0.5) * (tiers * tierH)) / steps,
+      z: w * 0.63 - t * w * 0.22,
+      tex: 'adobe',
+    });
+  }
+  for (const sx of [-1, 1]) {
+    b.box(0.2, tiers * tierH * 1.06, w * 0.26, stone, {
+      x: sx * w * 0.16,
+      y: padY + tiers * tierH * 0.54,
+      z: w * 0.51,
+      tex: 'fieldstone',
+    });
+  }
+
+  const shrine = w * 0.44;
+  b.box(shrine, 1.0, shrine, plaster, { y: baseY + 0.5, tex: 'adobe' });
+  b.box(shrine * 0.22, 0.56, 0.06, dark, { y: baseY + 0.3, z: shrine * 0.5 + 0.03 });
+  for (const sx of [-1, 1]) {
+    b.box(shrine * 0.15, 0.22, 0.06, dark, { x: sx * shrine * 0.27, y: baseY + 0.62, z: shrine * 0.5 + 0.03 });
+  }
+  const cornice = mixHex(plaster, '#ffffff', 0.25);
+  for (const sz of [1, -1])
+    b.box(shrine * 1.03, 0.1, 0.05, cornice, { y: baseY + 0.97, z: sz * shrine * 0.5, tex: 'adobe' });
+  for (const sx of [1, -1])
+    b.box(0.05, 0.1, shrine * 1.03, cornice, { x: sx * shrine * 0.5, y: baseY + 0.97, tex: 'adobe' });
+  andeanThatchRoof(b, shrine * 0.78, baseY + 1.02);
+
+  // low parapet around the summit, open toward the stair
+  const top = tierSize(w, tiers - 1);
+  b.box(top * 1.0, 0.26, 0.18, stone, { y: baseY + 0.13, z: -(top / 2 - 0.09), tex: 'fieldstone' });
+  for (const sx of [1, -1]) {
+    b.box(0.18, 0.26, top * 0.86, stone, { x: sx * (top / 2 - 0.09), y: baseY + 0.13, tex: 'fieldstone' });
+  }
+
+  caralSunkenPlaza(b, w * 1.1, w * 0.48, stone, mixHex(stone, '#d8c8a0', 0.55), earth);
 }
 
 /** Moche: a tall stepped adobe huaca with a painted frieze and a ramp. */

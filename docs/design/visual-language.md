@@ -241,6 +241,43 @@ Comparable evidence (same mission `m1_caral`, seed 3000, 1600x900):
 fixed front close-up) and [`caral-rts-before-after.webp`](../media/caral-rts-before-after.webp) (default RTS
 view). The left half is the procedural fallback; the right half is the pilot.
 
+## Caral visual pilot
+
+Issue #110 makes the Caral mission (`m1_caral`, Arcaico Tardío, `CivId.CARAL`) read as one
+coherent RTS scene. The work is **visual only**: it adds no entities, obstacles, evaluations or
+didactic pauses, and the simulation/plan is untouched. Two layers changed:
+
+- **Caral-specific.** `buildCaralLandmark` was rebuilt as a broad stepped platform (plastered
+  faces, stone base bands, a central stair and a summit temple with a thatch gable and a low
+  parapet) beside a **sunken circular plaza** with a stone ring, a central altar and upright
+  stones. `SettlementDressing` (`src/model/defs/settlementDressing.ts`,
+  `src/rendering/SettlementDressing.ts`) dresses the starting base with a deterministic set of
+  household props: stone hearths, fish drying racks, baskets/shicras, gourds, cotton bundles,
+  benches and reed windbreaks. The landmark spawn now requires a broad, gentle footprint so the
+  complex no longer clips through cliffs (`Game.spawnLandmark`).
+- **Shared builders (affect every region).** The Andean thatch gable was fixed (it used to render
+  as a crossed X) and given a deeper eave and a ridge bundle; adobe walls gained a stone base
+  band, a plaster cornice, a framed door, a step and a small storage annex; settlement fields now
+  carry green young-crop rows (`SettlementOverlay.cropGeometry`) and the cultural landscape
+  drapes flat plazas/fields over the relief instead of floating. Trees are smaller and use a
+  drier olive canopy; mine rocks use the fieldstone material instead of a coal-dark one.
+
+Historical grounding: the stepped platforms, sunken circular plazas, upright stones, thatch,
+cotton, gourds and fishing come from [`docs/historia/civilizaciones/caral.md`](../historia/civilizaciones/caral.md)
+and [`docs/historia/arquitectura.md`](../historia/arquitectura.md). Caral has **no pottery**, so
+the set uses gourds/baskets instead; the exact prop arrangement and the plaza's altar are an
+**abstraction**, not a reconstruction.
+
+Comparable evidence (same mission `m1_caral`, seed 3000, 1600x900, UI hidden):
+[`caral-scene-before-after.webp`](../media/caral-scene-before-after.webp) (close base),
+[`caral-scene-rts-before-after.webp`](../media/caral-scene-rts-before-after.webp) (RTS base) and
+[`caral-landmark-before-after.webp`](../media/caral-landmark-before-after.webp) (landmark close).
+Each left half is before, the right half after. The dressing merges into one mesh per base and
+the crop rows into one more, so the pilot adds two draw calls per settlement; the landmark stays a
+single cached model. Remaining work before applying the style to other campaigns: bespoke historical
+meshes (the worker/fauna rigs are still generic CC0 bases), denser regional vegetation, and a shared
+palette pass over the other eight dossiers.
+
 ## Non-goals
 
 - No sci-fi, firearms, horses, vehicles or engines before 1532
