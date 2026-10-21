@@ -10,10 +10,13 @@ test('ambient props and fauna are placed at boot', async ({ page }) => {
     const meshes = [...g.props.meshes.values()] as { count: number }[];
     const fauna = g.wildlife.animals as {
       group: { name: string; children: unknown[] };
+      rig: unknown | null;
       legs: { rotation: { x: number; z: number } }[];
       wings: { pivot: { rotation: { x: number; z: number } } }[];
     }[];
-    const sample = fauna.find((a) => a.legs.length) ?? fauna.find((a) => a.wings.length);
+    const rigged = fauna.filter((a) => a.rig);
+    const procedural = fauna.filter((a) => !a.rig);
+    const sample = procedural.find((a) => a.legs.length) ?? procedural.find((a) => a.wings.length);
     let limbMoved = false;
     if (sample) {
       const limb = sample.legs[0] ?? sample.wings[0].pivot;
@@ -26,17 +29,21 @@ test('ambient props and fauna are placed at boot', async ({ page }) => {
       propKinds: meshes.length,
       instances: meshes.reduce((n, m) => n + m.count, 0),
       fauna: fauna.length,
-      articulated: fauna.every((a) => a.group.children.length > 1),
-      speciesOk: fauna.every((a) => (/llama|vicuna/.test(a.group.name) ? a.legs.length === 4 : a.wings.length === 2)),
+      rigged: rigged.length,
+      articulated: procedural.every((a) => a.group.children.length > 1),
+      speciesOk: procedural.every((a) =>
+        /llama|vicuna/.test(a.group.name) ? a.legs.length === 4 : a.wings.length === 2,
+      ),
       limbMoved,
     };
   });
   expect(out.propKinds).toBe(4);
   expect(out.instances).toBeGreaterThan(0);
   expect(out.fauna).toBeGreaterThan(0);
-  expect(out.articulated).toBe(true); // body + animated limbs/wings
-  expect(out.speciesOk).toBe(true); // quadrupeds have 4 legs, birds 2 wings
-  expect(out.limbMoved).toBe(true); // the gait/flap actually animates
+  expect(out.rigged).toBeGreaterThan(0); // llama pilot
+  expect(out.articulated).toBe(true); // procedural body + animated limbs/wings
+  expect(out.speciesOk).toBe(true); // procedural quadrupeds 4 legs, birds 2 wings
+  expect(out.limbMoved).toBe(true); // the procedural gait/flap actually animates
 });
 
 test('buildings grow while under construction', async ({ page }) => {

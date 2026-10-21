@@ -49,12 +49,29 @@ slot is absent (offline / without assets).
     (the sword is anachronistic for a pre-metal worker) and keeps death on the existing topple FX.
   - Attribution is optional under CC0 but credited here: models/animations by Quaternius.
 - **Caral worker attire (Caral + Arcaico/Formative matches)**: the simple mantle, loincloth and headband are
-  **project-authored procedural attachments** on the CC0 mannequin bones, not a new external asset. Historical basis: `docs/historia/atuendos.md` records cotton textiles for
-  Caral-Supe (and the Formative row mentions a simple mantle and cloth band) but marks specific garments as **not
-  documented**. The hair is natural; the digging stick and carry bundle are **plausible/abstraction** (agriculture
-  and cotton nets are documented, these specific props are not). The pilot is therefore an
-  **abstraction/plausible** treatment, not a reconstruction; it has no metal, footwear, firearms, horses or
-  engines.
+  **project-authored procedural attachments** on the CC0 mannequin bones, not a new external asset. Historical
+  basis: `docs/historia/atuendos.md` records cotton textiles for Caral-Supe (and the Formative row mentions a
+  simple mantle and cloth band) but marks specific garments as **not documented**. The hair is natural; the
+  digging stick and carry bundle are **plausible/abstraction** (agriculture and cotton nets are documented, these
+  specific props are not). The pilot is therefore an **abstraction/plausible** treatment, not a reconstruction;
+  it has no metal, footwear, firearms, horses or engines.
+
+## Fauna (rigged)
+
+- **Location**: `src/assets/models/quaternius_alpaca.glb` (loaded by `src/rendering/Wildlife.ts` through the same
+  `ModelAssets` cache).
+- **Asset**: *Alpaca* from Quaternius' **Ultimate Animated Animal Pack** (CC0 1.0). Used as the **llama pilot**:
+  an Andean camelid stand-in for the existing `llama` species, not a new species. The vicuña, condor and pelican
+  remain procedural in this iteration.
+  - Author/pack: <https://quaternius.com/packs/ultimateanimatedanimals.html> (CC0).
+  - Model page: <https://poly.pizza/m/bCVFD48i2l> (Quaternius, Public Domain/CC0 1.0).
+  - Downloaded from the direct Poly Pizza file
+    <https://static.poly.pizza/444228bb-745d-49b2-89ef-cc12805deaa8.glb>, 2026-10-21.
+  - SHA-256: `de56fcb168469a65275a5bc10f449015b23ec849c4cda0827c6fc7278ed235b9` (1,053,804 bytes).
+  - Contents: skinned alpaca (1,998 triangles, 46 bones), materials Brown/White/Grey, 26 clips. The game maps
+    `Idle`, `Walk` and `Eating` to the `idle`, `walk` and `eat` rig states.
+  - Fit: the llama planner still decides biome/altitude/seed; no new spawn rule is introduced. The model is
+    normalised to the game's stylised camelid scale and grounded at its bind-pose feet.
 
 ## Reference images (AI generation input)
 

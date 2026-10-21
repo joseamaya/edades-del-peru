@@ -11,6 +11,8 @@ import { loadMods, ModLoadResult } from './game/Mods';
 import { ScriptedPlayer } from './game/ScriptedPlayer';
 import { getMission } from './campaign/defs/campaign';
 import { modelAssetIdsForMatch, RIG_DEMO_ASSET_ID } from './model/defs/modelAssets';
+import { resolveMapProfile } from './model/defs/profiles';
+import { wildlifeModelAssetIds } from './model/defs/wildlife';
 import { modelAssetStatus, preloadModelAssets } from './rendering/ModelAssets';
 import { mountRigDemo } from './rendering/RigDemo';
 
@@ -144,7 +146,17 @@ async function boot(): Promise<void> {
   // procedural fallback and never block the match.
   const mission = settings.missionId ? getMission(settings.missionId) : undefined;
   const civs = mission ? [mission.playerCiv, mission.enemyCiv] : [settings.civPlayer, settings.civAI];
-  const modelIds = modelAssetIdsForMatch(mission?.period ?? settings.period, civs);
+  const period = mission?.period ?? settings.period;
+  const modelIds = modelAssetIdsForMatch(period, civs);
+  // Mirrors the mission overrides Game applies before `resolveMapProfile`, so
+  // fauna preload and the planner resolve the same region.
+  const profile = resolveMapProfile({
+    period,
+    civ: mission?.playerCiv ?? settings.civPlayer,
+    mapType: mission?.map.type ?? settings.mapType,
+    region: mission?.region,
+  });
+  modelIds.push(...wildlifeModelAssetIds(profile.region));
   if (params.get('rig') === '1') modelIds.push(RIG_DEMO_ASSET_ID);
   if (modelIds.length) await preloadModelAssets(modelIds);
   const game = new Game(settings, snapshot, replay, forceCinematic);

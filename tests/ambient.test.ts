@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { planProps, propCountFor, PROP_IDS } from '../src/model/defs/props';
-import { planWildlife, faunaCountFor, SPECIES_IDS } from '../src/model/defs/wildlife';
+import {
+  planWildlife,
+  faunaCountFor,
+  SPECIES_IDS,
+  wildlifeModelAssetIds,
+  wildlifeModelChoice,
+} from '../src/model/defs/wildlife';
 import type { AmbientQuery } from '../src/model/defs/ambientQuery';
 import type { GeographicRegion } from '../src/model/defs/profiles';
 
@@ -74,6 +80,14 @@ describe('ambient wildlife planning', () => {
 
   it('needs a matching habitat (nothing on low, dry, non-beach ground)', () => {
     expect(planWildlife('high_andes', 42, SIZE, 12, makeQuery({ height: 0 }))).toEqual([]);
+  });
+
+  it('maps only the llama pilot to the rigged asset', () => {
+    expect(wildlifeModelChoice('llama')).toEqual({ asset: 'quaternius_alpaca' });
+    expect(wildlifeModelChoice('vicuna')).toBeNull();
+    const highland = wildlifeModelAssetIds('high_andes');
+    expect(highland).toContain('quaternius_alpaca');
+    expect(wildlifeModelAssetIds('amazon')).toEqual([]);
   });
 
   it('places highland fauna with known species', () => {
