@@ -3,7 +3,8 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { rigClipStateFor } from '../src/model/defs/modelAssets';
+import { modelAssetIdsForMatch, rigClipStateFor, unitModelAsset } from '../src/model/defs/modelAssets';
+import { CivId, Era, HistoricalPeriod, UnitKind } from '../src/core/types';
 import {
   acquireRig,
   clearModelAssets,
@@ -155,6 +156,59 @@ describe('rigged model assets', () => {
 
     clearModelAssets();
     expect(dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it('maps the Caral worker to the dressed rig and preloads it for Caral matches', () => {
+    expect(unitModelAsset(UnitKind.WORKER, Era.FORMATIVE, CivId.CARAL)).toEqual({
+      asset: 'ual_mannequin',
+      variant: 'caral_worker',
+    });
+    expect(unitModelAsset(UnitKind.WORKER, Era.REGIONAL_STATES, CivId.CARAL)).toBeNull();
+    expect(unitModelAsset(UnitKind.WORKER, Era.FORMATIVE, CivId.MOCHE)).toBeNull();
+    expect(modelAssetIdsForMatch(HistoricalPeriod.ARCHAIC, [CivId.CARAL])).toContain('ual_mannequin');
+    expect(modelAssetIdsForMatch(HistoricalPeriod.ARCHAIC, [CivId.MOCHE])).toEqual([]);
+  });
+
+  it('dresses the Caral worker and connects the carried bundle', async () => {
+    await load();
+    const rig = acquireRig('ual_mannequin', 'caral_worker')!;
+    const carry = rig.root.getObjectByName('attire:carry')!;
+    const tool = rig.root.getObjectByName('attire:tool')!;
+    expect(carry).toBeDefined();
+    expect(tool).toBeDefined();
+    expect(carry.visible).toBe(false);
+    expect(tool.visible).toBe(true);
+    expect(rig.root.getObjectByName('attire:loincloth')).toBeDefined();
+    expect(rig.root.getObjectByName('attire:headband')).toBeDefined();
+
+    rig.setCarrying(true, 0x44cc44);
+    expect(carry.visible).toBe(true);
+    expect(tool.visible).toBe(false);
+    const bag = carry.children[0] as THREE.Mesh;
+    expect((bag.material as THREE.MeshStandardMaterial).color.getHex()).toBe(0x44cc44);
+
+    const geometry = (rig.root.getObjectByName('attire:loincloth') as THREE.Mesh).geometry;
+    const dispose = vi.spyOn(geometry, 'dispose');
+    rig.dispose();
+    expect(dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it('clones the body and joint materials instead of mutating the shared asset', async () => {
+    const asset = await load();
+    const rig = acquireRig('ual_mannequin', 'caral_worker')!;
+    const shared: THREE.Material[] = [];
+    asset.scene.traverse((obj) => {
+      const mesh = obj as THREE.Mesh;
+      if (mesh.isMesh) shared.push(mesh.material as THREE.Material);
+    });
+
+    const dressed: THREE.Material[] = [];
+    rig.root.traverse((obj) => {
+      const mesh = obj as THREE.Mesh;
+      if (mesh.isMesh) dressed.push(mesh.material as THREE.Material);
+    });
+    for (const material of dressed) expect(shared).not.toContain(material);
+    rig.dispose();
   });
 
   it('maps movement, work and combat to clip states by priority', () => {

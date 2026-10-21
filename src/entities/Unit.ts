@@ -150,8 +150,8 @@ export class Unit {
     this.era = era;
     this.stats = getUnitStats(kind, era);
     this.hp = this.maxHp = this.stats.hp;
-    const assetId = unitModelAsset(kind, era, ctx.civ.id);
-    this.rig = assetId ? acquireRig(assetId) : null;
+    const modelChoice = unitModelAsset(kind, era, ctx.civ.id);
+    this.rig = modelChoice ? acquireRig(modelChoice.asset, modelChoice.variant) : null;
     const model = this.rig ? this.rig.root : buildModel(getUnitModel(kind, era), ctx);
     this.radius = this.stats.range === 0 ? 0.45 : 0.5;
     if (kind === UnitKind.TANK) this.radius = 0.9;
@@ -750,6 +750,8 @@ export class Unit {
       attacking: this.attackingTarget || (order === OrderKind.ATTACK && this.targetEntityId !== null),
     });
     rig.play(state);
+    const speed = Math.hypot(this.vel.x, this.vel.z);
+    rig.setPlaybackRate(state === 'walk' ? clamp(speed / 1.4, 0.6, 1.6) : 1);
     rig.update(dt);
     this.bobY = 0;
   }
@@ -1065,13 +1067,12 @@ export class Unit {
 
   /** Show/hide the load bundle and color it according to the resource. */
   private updateCarry(): void {
-    if (!this.carryPivot) return;
     const carrying = this.carryCount() > 0;
+    const res = this.currentResource ?? this.dominantResource();
+    this.rig?.setCarrying(carrying, CARRY_COLORS[res]);
+    if (!this.carryPivot) return;
     this.carryPivot.visible = carrying;
-    if (carrying && this.carryMat) {
-      const res = this.currentResource ?? this.dominantResource();
-      this.carryMat.color.setHex(CARRY_COLORS[res]);
-    }
+    if (carrying && this.carryMat) this.carryMat.color.setHex(CARRY_COLORS[res]);
   }
 
   private dominantResource(): keyof Resources {

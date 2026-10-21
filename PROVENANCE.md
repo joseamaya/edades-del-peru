@@ -36,8 +36,10 @@ slot is absent (offline / without assets).
 
 - **Location**: `src/assets/models/*.glb` (loaded by `src/rendering/ModelAssets.ts`).
 - **`ual_mannequin.glb`**: Quaternius *Universal Animation Library* (UAL1.glb), a generic rigged mannequin used
-  only to validate the glTF/GLB + skeleton + mixer pipeline. **It is a placeholder, not final Peruvian art**:
-  #108/#109 replace or retarget it with historically appropriate models.
+  to validate the glTF/GLB + skeleton + mixer pipeline and as the base for the Caral worker pilot (#108).
+  **The base mesh is a placeholder, not a historical reconstruction**: #108 dresses it with project-authored
+  cotton attire (tunic, loincloth, headband, hair, digging stick and carry bundle); #109 replaces/retargets it
+  for fauna.
   - Source: <https://quaternius.com/packs/universalanimationlibrary.html> (CC0 1.0).
   - Downloaded from the CC0 mirror <https://github.com/Dallolz/moorfall-assets>
     (`animations/UAL1.glb`, licence in its `LICENSE.md`), 2026-10-20.
@@ -45,6 +47,11 @@ slot is absent (offline / without assets).
   - Contents: 1 skinned `Mannequin` mesh (65-bone humanoid rig), 43 clips; the game maps
     `Idle_Loop`, `Walk_Loop`, `Fixing_Kneeling`, `Sword_Attack` and `Death01`.
   - Attribution is optional under CC0 but credited here: models/animations by Quaternius.
+- **Caral worker attire (`?mission=m1_caral` pilot)**: the tunic, loincloth, headband, hair, digging stick and
+  carry bundle are **project-authored procedural attachments** on the CC0 mannequin bones, not a new external
+  asset. Historical basis: `docs/historia/atuendos.md` records cotton textiles for Caral-Supe and marks specific
+  garments as **not documented**; this pilot is therefore an **abstraction/plausible** reconstruction (no metal,
+  footwear, firearms, horses or engines). It is not a claim about a specific Caral garment.
 
 ## Reference images (AI generation input)
 
