@@ -10,16 +10,18 @@ export const MISSIONS: MissionDef[] = [
     title: 'La Ciudad Sagrada',
     subtitle: 'Arcaico Tardío · c. 3000 a.C.',
     history:
-      'En el valle de Supe, entre el océano y los Andes, nace la primera ciudad de América. Caral se levanta con canales, plazas y pirámides.\n' +
-      'Sin guerra documentada, su poder es la construcción, el trueque con el litoral y la religión. Alza la ciudad sagrada y sostenla.',
+      'En el valle de Supe, entre el océano y los Andes, crece una de las primeras ciudades de América. ' +
+      'Sus canales, campos de cultivo y plazas se sostienen con trabajo comunal.\n' +
+      'No hay guerra documentada: organiza la agricultura, aprovecha el litoral y guarda el excedente para sostener a la comunidad.',
     victory:
       'Caral prospera durante siglos como centro de la civilización andina. Su legado guiará a las culturas del Perú durante milenios.',
-    defeat: 'El valle queda en silencio. La primera ciudad de América no llega a consolidarse.',
+    defeat: 'El valle no logra sostener a su comunidad. La primera ciudad de América no llega a consolidarse.',
     period: HistoricalPeriod.ARCHAIC,
     tutorial: true,
     playerCiv: CivId.CARAL,
     enemyCiv: CivId.CARAL,
     map: { seed: 3000, type: 'coast', size: 128 },
+    guaranteedFishing: 3,
     timeOfDay: 'morning',
     startingEra: Era.FORMATIVE,
     startingResources: { food: 250, wood: 120, silver: 150, stone: 80 },
@@ -27,25 +29,25 @@ export const MISSIONS: MissionDef[] = [
     enemy: { active: false, difficulty: 'easy', aggression: 0 },
     objectives: [
       {
-        id: 'obj_madera',
-        kind: 'gather',
-        resource: 'wood',
-        count: 200,
-        title: 'Reúne 200 de madera para las pirámides',
-      },
-      {
         id: 'obj_agricultura',
         kind: 'build',
         buildingKind: BuildingKind.FARM,
-        count: 1,
-        title: 'Ordena la agricultura del valle (tecla G)',
+        count: 2,
+        title: 'Prepara dos campos de cultivo en el valle',
       },
       {
-        id: 'obj_comercio',
+        id: 'obj_almacenamiento',
         kind: 'build',
-        buildingKind: BuildingKind.MARKET,
+        buildingKind: BuildingKind.MILL,
         count: 1,
-        title: 'Comercia con Áspero (construye un mercado)',
+        title: 'Construye un depósito comunal (Troje)',
+      },
+      {
+        id: 'obj_alimento',
+        kind: 'gather',
+        resource: 'food',
+        count: 500,
+        title: 'Reúne 500 de comida para sostener a la comunidad',
       },
       { id: 'obj_sostener', kind: 'survive', time: 300, title: 'Sostén el asentamiento 5 minutos' },
     ],
@@ -56,7 +58,7 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'El río Supe nos da vida. Alzad los templos, tended los canales y guardad la armonía del valle.',
+            text: 'El río Supe y el litoral sostienen el valle. Explorad la costa y organizad el trabajo de la comunidad.',
           },
         ],
       },
@@ -66,7 +68,37 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'Vecinos de Áspero traen pescado y conchas del litoral; a cambio, el valle ofrece algodón y calabaza. La ciudad sagrada crece sin guerras.',
+            text: 'En Áspero se pesca con redes de algodón; el valle responde con cultivos. La ciudad crece sin guerra documentada.',
+          },
+        ],
+      },
+      {
+        id: 't_cosecha',
+        condition: { type: 'objective', objectiveId: 'obj_agricultura', state: 'completed' },
+        effects: [
+          {
+            type: 'dialogue',
+            text: 'Los campos junto al agua y los canales rinden más. La tierra sostiene a la comunidad.',
+          },
+        ],
+      },
+      {
+        id: 't_troje',
+        condition: { type: 'objective', objectiveId: 'obj_almacenamiento', state: 'completed' },
+        effects: [
+          {
+            type: 'dialogue',
+            text: 'El depósito guarda el excedente. Con trabajo comunal y reservas se levantan plazas y pirámides.',
+          },
+        ],
+      },
+      {
+        id: 't_abandono',
+        condition: { type: 'time', seconds: 240 },
+        effects: [
+          {
+            type: 'dialogue',
+            text: 'Los arqueólogos debaten el abandono de Caral: sismos o El Niño, entre otras causas. No hay ejército rival en el registro.',
           },
         ],
       },

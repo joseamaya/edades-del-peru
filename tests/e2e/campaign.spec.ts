@@ -47,7 +47,56 @@ test('the tutorial guides in the first mission', async ({ page }) => {
   // the first step appears after ~1.2s of game time; be generous on slow runners
   await expect(tutorial).toBeVisible({ timeout: 30_000 });
   await expect(tutorial).toContainText('Selecciona a tus obreros');
-  await expect(tutorial).toContainText('Paso 1 / 5');
+  await expect(tutorial).toContainText('Paso 1 / 6');
+});
+
+test('Caral guarantees coastal fishing grounds for the tutorial', async ({ page }) => {
+  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
+    timeout: 30_000,
+  });
+  const fish = await page.evaluate(
+    () =>
+      [...(window as unknown as { game: any }).game.resourceNodes.values()].filter(
+        (n: any) => n.kind === 'fishing' && !n.dead,
+      ).length,
+  );
+  expect(fish).toBeGreaterThan(0);
+});
+
+test('the Caral mission closes with a narrative epilogue, not a quiz', async ({ page }) => {
+  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1&noloop=1');
+  const overlay = page.locator('.ed-overlay', { hasText: 'La Ciudad Sagrada' });
+  await expect(overlay).toBeVisible({ timeout: 30_000 });
+  await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+  await overlay.waitFor({ state: 'detached', timeout: 15_000 });
+  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
+    timeout: 30_000,
+  });
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    g.players[0].resources.food = 500;
+    const c = g.playerCenter(0);
+    g.spawnScriptedBuilding('farm', 0, c.x + 6, c.z + 6);
+    g.spawnScriptedBuilding('farm', 0, c.x + 9, c.z + 6);
+    g.spawnScriptedBuilding('mill', 0, c.x + 12, c.z + 6);
+    const m = g.mission;
+    const dt = 1 / 60;
+    for (let i = 0; i < Math.ceil(310 / dt) && !m.ended; i++) {
+      for (const b of g.buildings.values()) if (b.owner === 0 && !b.dead) b.hp = b.maxHp;
+      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
+      g.update(dt, i * dt);
+    }
+    return m.won;
+  });
+  const victory = page.locator('.ed-overlay', { hasText: 'VICTORIA' });
+  await expect(victory).toBeVisible({ timeout: 15_000 });
+  await expect(victory).toContainText('Epílogo');
+  await expect(victory).toContainText('Códice');
+  await expect(victory).not.toContainText('Pregunta');
+  await expect(victory).not.toContainText('Puntaje');
 });
 
 test('the missions with corrected rosters boot with units and no errors', async ({ page }) => {

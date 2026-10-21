@@ -1,5 +1,6 @@
 import type { Game } from '../core/Game';
-import { UnitKind, BuildingKind, OrderKind } from '../core/types';
+import { UnitKind, BuildingKind } from '../core/types';
+import { distance2D } from '../util/math';
 import type { TutorialSave, TutorialBase } from '../game/saveTypes';
 
 interface PasoTutorial {
@@ -9,6 +10,11 @@ interface PasoTutorial {
   highlight?: string;
   check: (game: Game) => boolean;
 }
+
+/** A scout must get this close to a fishing ground to discover it. */
+const COAST_DISCOVERY_RADIUS = 16;
+/** A scout must get this close to the ceremonial complex to observe it. */
+const LANDMARK_DISCOVERY_RADIUS = 12;
 
 /**
  * Step-by-step guided tutorial for the first campaign (Caral). Observes the game state
@@ -35,7 +41,7 @@ export class Tutorial {
       barracks: countB(BuildingKind.BARRACKS),
       soldiers: countU(UnitKind.SOLDIER),
       farms: countB(BuildingKind.FARM),
-      markets: countB(BuildingKind.MARKET),
+      mills: countB(BuildingKind.MILL),
     };
     const buildBottom = '#ed-bottom';
     this.pasos = [
@@ -44,6 +50,17 @@ export class Tutorial {
         text: 'Selecciona a tus obreros: haz clic izquierdo sobre uno o arrastra un recuadro para seleccionar varios.',
         check: (g) =>
           g.selectedUnits.some((id) => g.units.get(id)?.owner === 0 && g.units.get(id)?.kind === UnitKind.WORKER),
+      },
+      {
+        id: 'coast',
+        text: 'Selecciona tu explorador y recorre el valle hacia el litoral hasta descubrir un banco de peces.',
+        check: (g) => {
+          const scouts = [...g.units.values()].filter((u) => u.owner === 0 && !u.dead && u.kind === UnitKind.SCOUT);
+          const fish = [...g.resourceNodes.values()].filter((n) => n.kind === 'fishing' && !n.dead);
+          return scouts.some((u) =>
+            fish.some((n) => distance2D(u.pos.x, u.pos.z, n.pos.x, n.pos.z) < COAST_DISCOVERY_RADIUS),
+          );
+        },
       },
       {
         id: 'house',
@@ -56,7 +73,7 @@ export class Tutorial {
       },
       {
         id: 'farm',
-        text: 'Pulsa G (o el botón Andén) para ordenar la agricultura del valle. Caral vive de la tierra y del mar.',
+        text: 'Pulsa G (o el botón Andén) y coloca el cultivo cerca del agua o de un canal: la tierra húmeda rinde más.',
         highlight: buildBottom,
         check: (g) =>
           [...g.buildings.values()].filter(
@@ -64,21 +81,25 @@ export class Tutorial {
           ).length > (this.base.farms ?? 0),
       },
       {
-        id: 'market',
-        text: 'Con obreros seleccionados, construye un Mercado desde el panel para comerciar con Áspero.',
+        id: 'landmark',
+        text: 'Acércate al complejo ceremonial y observa sus plazas y pirámides: la monumentalidad nace del trabajo comunal.',
+        check: (g) => {
+          const landmark = g.landmark;
+          if (!landmark) return false;
+          const scouts = [...g.units.values()].filter((u) => u.owner === 0 && !u.dead && u.kind === UnitKind.SCOUT);
+          return scouts.some(
+            (u) => distance2D(u.pos.x, u.pos.z, landmark.position.x, landmark.position.z) < LANDMARK_DISCOVERY_RADIUS,
+          );
+        },
+      },
+      {
+        id: 'storage',
+        text: 'Construye un depósito comunal (Troje) para guardar el excedente de la comunidad.',
         highlight: buildBottom,
         check: (g) =>
           [...g.buildings.values()].filter(
-            (b) => b.owner === 0 && b.kind === BuildingKind.MARKET && b.constructionComplete && !b.dead,
-          ).length > (this.base.markets ?? 0),
-      },
-      {
-        id: 'explore',
-        text: 'Selecciona tu explorador y haz clic derecho hacia el litoral para abrir las rutas de trueque.',
-        check: (g) =>
-          [...g.units.values()].some(
-            (u) => u.owner === 0 && !u.dead && u.kind === UnitKind.SCOUT && u.orderQueue[0]?.kind === OrderKind.MOVE,
-          ),
+            (b) => b.owner === 0 && b.kind === BuildingKind.MILL && b.constructionComplete && !b.dead,
+          ).length > (this.base.mills ?? 0),
       },
     ];
   }
@@ -121,14 +142,30 @@ export class Tutorial {
 
   /** Snapshot the tutorial progress (used by save/load). */
   toSave(): TutorialSave {
-    return { idx: this.idx, begun: this.begun, finished: this.finished, delay: this.delay, base: { ...this.base } };
+    return {
+      idx: this.idx,
+      stepId: this.pasos[this.idx]?.id,
+      begun: this.begun,
+      finished: this.finished,
+      delay: this.delay,
+      base: { ...this.base },
+    };
   }
 
   applySave(s: TutorialSave): void {
-    this.idx = s.idx;
+    // Saves written before step ids existed used: select, house, farm, market,
+    // explore. Map those positions to their closest current step.
+    const legacyIds = ['select', 'house', 'farm', 'coast', 'landmark'];
+    const stepId = s.stepId ?? legacyIds[s.idx];
+    const found = stepId ? this.pasos.findIndex((p) => p.id === stepId) : -1;
+    this.idx = found >= 0 ? found : Math.min(s.idx, this.pasos.length - 1);
     this.begun = s.begun;
     this.finished = s.finished;
     this.delay = s.delay;
-    this.base = { ...s.base, farms: s.base.farms ?? 0, markets: s.base.markets ?? 0 };
+    this.base = {
+      ...s.base,
+      farms: s.base.farms ?? 0,
+      mills: s.base.mills ?? 0,
+    };
   }
 }

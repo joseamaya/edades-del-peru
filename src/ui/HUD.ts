@@ -713,6 +713,8 @@ export class HUD {
     const ov = this.el('div', 'ed-overlay');
     const panel = this.el('div', 'ed-panel', ov);
     const p = this.game.players[0];
+    const mis = this.game.mission?.def;
+    const edu = mis ? getEducational(mis.id) : undefined;
     const title = victory ? '🏆 ¡VICTORIA!' : '💀 DERROTA';
     const sub =
       winText && loseText
@@ -722,9 +724,17 @@ export class HUD {
         : victory
           ? 'Tu imperio se alza sobre las ruinas del enemigo.'
           : 'Tu civilización ha caído ante el avance enemigo.';
+    const epilogue =
+      victory && edu?.epilogue
+        ? `<div class="ed-hist"><b style="color:var(--gold)">Epílogo.</b> ${edu.epilogue}</div>
+           <div class="ed-note" style="font-size:12px;color:var(--text-dim);margin-bottom:12px">
+             Puedes ampliar el contexto y las fuentes en el Códice desde el menú.
+           </div>`
+        : '';
     panel.innerHTML = `
       <h2 style="color:${victory ? 'var(--green)' : 'var(--red)'}">${title}</h2>
       <div class="sub" style="white-space:pre-line;line-height:1.6">${sub}</div>
+      ${epilogue}
       <div style="font-size:13px;color:var(--text-dim);line-height:1.7;margin-bottom:16px">
         Bajas infligidas: <b>${p?.kills ?? 0}</b><br>
         Unidades creadas: <b>${p?.stats.created ?? 0}</b><br>
@@ -1054,6 +1064,11 @@ export class HUD {
     let s = `HP ${Math.ceil(b.hp)}/${Math.ceil(b.maxHp)} · Blindaje ${formatStat(stats.armor)}`;
     if (b.constructionComplete && b.productionQueue.length > 0) {
       s += ` · Entrenando: ${UNIT_INFO[b.productionQueue[0].unit].name}`;
+    }
+    if (b.isFarm && b.constructionComplete) {
+      const mult = this.game.farmYieldAt(b.pos.x, b.pos.z);
+      s += ` · Reserva de alimentos: ${Math.ceil(b.foodAmount)}`;
+      if (mult > 1.001) s += ` · +${Math.round((mult - 1) * 100)}% por el terreno`;
     }
     return s;
   }
@@ -1490,9 +1505,11 @@ export class HUD {
     const player = getCiv(mis.playerCiv);
     const enemy = getCiv(mis.enemyCiv);
     const edu = getEducational(mis.id);
-    const context = edu?.context
-      ? `<div class="ed-hist">${mis.history}</div><div class="ed-hist"><b style="color:var(--gold)">Contexto histórico.</b> ${edu.context}</div>`
-      : `<div class="ed-hist">${mis.history}</div>`;
+    const context = edu?.briefing
+      ? `<div class="ed-hist"><b style="color:var(--gold)">Contexto histórico.</b> ${edu.briefing}</div>`
+      : edu?.context
+        ? `<div class="ed-hist">${mis.history}</div><div class="ed-hist"><b style="color:var(--gold)">Contexto histórico.</b> ${edu.context}</div>`
+        : `<div class="ed-hist">${mis.history}</div>`;
     const funFact = edu ? `<div class="ed-sabias">💡 <b>¿Sabías que…?</b> ${edu.didYouKnow}</div>` : '';
     const sides = mis.enemy.active
       ? `<span>Bandos: <b>${player.name}</b> vs <b>${player.id === enemy.id ? 'grupos rivales' : enemy.name}</b></span>`

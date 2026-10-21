@@ -20,7 +20,7 @@ export interface TutorialBase {
   barracks: number;
   soldiers: number;
   farms?: number;
-  markets?: number;
+  mills?: number;
 }
 
 export interface UnitSave {
@@ -105,6 +105,8 @@ export interface MissionSave {
 
 export interface TutorialSave {
   idx: number;
+  /** Stable step id; older saves only have `idx`. */
+  stepId?: string;
   begun: boolean;
   finished: boolean;
   delay: number;
