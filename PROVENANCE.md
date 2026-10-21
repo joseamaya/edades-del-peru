@@ -36,15 +36,25 @@ slot is absent (offline / without assets).
 
 - **Location**: `src/assets/models/*.glb` (loaded by `src/rendering/ModelAssets.ts`).
 - **`ual_mannequin.glb`**: Quaternius *Universal Animation Library* (UAL1.glb), a generic rigged mannequin used
-  only to validate the glTF/GLB + skeleton + mixer pipeline. **It is a placeholder, not final Peruvian art**:
-  #108/#109 replace or retarget it with historically appropriate models.
+  to validate the glTF/GLB + skeleton + mixer pipeline and as the base for the Caral worker pilot (#108).
+  **The base mesh is a placeholder, not a historical reconstruction**: #108 dresses it with project-authored
+  cotton attire (simple mantle, loincloth, headband, hair, digging stick and carry bundle); #109 uses separate animal
+  assets.
   - Source: <https://quaternius.com/packs/universalanimationlibrary.html> (CC0 1.0).
   - Downloaded from the CC0 mirror <https://github.com/Dallolz/moorfall-assets>
     (`animations/UAL1.glb`, licence in its `LICENSE.md`), 2026-10-20.
   - SHA-256: `69591853d817488edaa8fd9bf8fc1d821eaeaf789f8627b3cd23b41c4ed67997` (7,618,436 bytes).
-  - Contents: 1 skinned `Mannequin` mesh (65-bone humanoid rig), 43 clips; the game maps
-    `Idle_Loop`, `Walk_Loop`, `Fixing_Kneeling`, `Sword_Attack` and `Death01`.
+  - Contents: 1 skinned `Mannequin` mesh (65-bone humanoid rig), 43 clips; the base registry maps
+    `Idle_Loop`, `Walk_Loop`, `Fixing_Kneeling` and `Sword_Attack`. The Caral variant omits the attack clip
+    (the sword is anachronistic for a pre-metal worker) and keeps death on the existing topple FX.
   - Attribution is optional under CC0 but credited here: models/animations by Quaternius.
+- **Caral worker attire (Caral + Arcaico/Formative matches)**: the simple mantle, loincloth and headband are
+  **project-authored procedural attachments** on the CC0 mannequin bones, not a new external asset. Historical basis: `docs/historia/atuendos.md` records cotton textiles for
+  Caral-Supe (and the Formative row mentions a simple mantle and cloth band) but marks specific garments as **not
+  documented**. The hair is natural; the digging stick and carry bundle are **plausible/abstraction** (agriculture
+  and cotton nets are documented, these specific props are not). The pilot is therefore an
+  **abstraction/plausible** treatment, not a reconstruction; it has no metal, footwear, firearms, horses or
+  engines.
 
 ## Reference images (AI generation input)
 

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader, type GLTF } from 'three/addons/loaders/GLTFLoader.js';
-import type { ModelAssetId } from '../model/defs/modelAssets';
+import type { ModelAssetId, RigVariant } from '../model/defs/modelAssets';
 import { MODEL_ASSET_DEFS, type ModelAssetDefinition } from './modelAssetRegistry';
 import { RigInstance } from './RigInstance';
 
@@ -186,9 +186,9 @@ export async function preloadModelAssets(ids: readonly ModelAssetId[]): Promise<
  * synchronous so entity construction never waits on I/O; a missing model logs
  * a fallback diagnostic and keeps the procedural mesh.
  */
-export function acquireRig(id: ModelAssetId): RigInstance | null {
+export function acquireRig(id: ModelAssetId, variant?: RigVariant): RigInstance | null {
   const asset = cache.get(id);
-  if (asset) return new RigInstance(asset);
+  if (asset) return new RigInstance(asset, variant);
 
   if (!fallbackWarned.has(id)) {
     fallbackWarned.add(id);

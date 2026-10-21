@@ -106,8 +106,9 @@ Definition of Done and the building audit see
   material; diagonal gait and wing flap). No entities, obstacles or save; regenerated deterministically on load,
   templates freed by `clearFaunaTemplates` in `Game.destroy`.
 - **Rigged 3D models (optional, glTF/GLB)**: `src/model/defs/modelAssets.ts` maps a unit kind to a registered
-  asset id (all `null` by default, so #108/#109 opt units in progressively), and `modelAssetIdsForMatch` lists
-  the models to preload during `boot()` for every participating civilization. Assets live in
+  asset id plus an optional presentation variant. The **Caral worker** is the first mapping (Caral + Arcaico/Formative matches);
+  all other units still use the procedural path, so #109 and later issues opt in progressively.
+  `modelAssetIdsForMatch` lists the models to preload during `boot()` for every participating civilization. Assets live in
   `src/assets/models/*.glb`, are resolved by `src/rendering/modelAssetRegistry.ts` (`import.meta.glob` with
   `?url`, hashed by Vite) and loaded by `src/rendering/ModelAssets.ts` with `GLTFLoader`. The shared
   scene/geometry/material/texture cache is cloned per entity through `SkeletonUtils.clone` in
@@ -119,9 +120,11 @@ Definition of Done and the building audit see
   warning). Teardown runs the `Game.onDestroy` hooks (e.g. the rig demo), disposes every rig (`RigInstance.dispose`)
   and only then calls `clearModelAssets()`, which owns the glTF resources and defers disposal of any asset that
   still has a live rig. Clip names are data in `modelAssetRegistry.ts`; a new model needs a `.glb`, a
-  `ModelAssetId`, a registry entry and (when it should be used) a mapping in `unitModelAsset`. `?rig=1` mounts a
-  visual demo with two independent instances and exposes `window.__rigDemo`; `window.__modelAssets()` is always
-  available as a diagnostics snapshot.
+  `ModelAssetId`, a registry entry and (when it should be used) a mapping in `unitModelAsset`. The **Caral worker
+  variant** (`src/rendering/workerAttire.ts`) adds a project-authored simple cotton mantle/loincloth, headband,
+  hair, a digging stick and a carry bundle as rigid bone attachments; the carry bundle is tinted/shown by
+  `RigInstance.setCarrying` from the unit's real carry state. `?rig=1` mounts a visual demo with two independent
+  instances and exposes `window.__rigDemo`; `window.__modelAssets()` is always available as a diagnostics snapshot.
 - **HUD identity & commander portraits (UI only)**: the HUD uses inline-SVG Andean motifs (chakana divider,
   stepped-fret top-bar band) with no image assets. `src/model/defs/commanders.ts` maps campaign speakers to
   stylized portrait medallions (`src/ui/Portrait.ts`: SVG, civilization palette + emblem + initials);
@@ -401,23 +404,33 @@ existing topple FX until #108 defines a rig-specific death flow.
 Audit of the path this pipeline mirrors: procedural templates are cached by `type|scale|barrel|civ|era`,
 `instantiateTemplate` clones them with per-instance materials, buildings modernize by swapping the whole model,
 units animate named pivots, `disposeModel` frees only materials and `clearModelCaches` owns shared geometry.
-The glTF path keeps the same split: a shared asset cache plus a per-instance skeleton/mixer clone.
+The glTF path keeps the same split: a shared asset cache plus a per-instance skeleton/mixer clone. The Caral
+worker reuses `Walk_Loop` for locomotion (playback rate follows the unit velocity) and `Fixing_Kneeling` for
+gathering/building; `Idle_Loop` is the fallback. The variant intentionally has **no attack clip yet** (the base
+asset's sword swing is wrong for a pre-metal worker), so an attack order falls back to idle until a worker combat
+clip exists. The per-instance attire geometries/materials are the deliberate exception to the shared-cache rule:
+they carry the variant's tint and bone attachments and are disposed with the rig.
 
 To add a model:
 
 1. Put the `.glb` in `src/assets/models/` and record its source/licence/SHA-256 in `PROVENANCE.md`.
 2. Add its id to `ModelAssetId` (`src/model/defs/modelAssets.ts`) and an entry to `MODEL_ASSET_DEFS`.
-3. Return that id from `unitModelAsset(kind, era, civ)` for the units it should replace. Until then the unit
-   keeps the procedural model.
-4. Add the id to `modelAssetIdsForMatch(period, civs)` if it must be preloaded before entities are created
-   (the current mapping is empty; #108/#109 opt units in). Pass every participating civilization.
+3. Return that id (and optional variant) from `unitModelAsset(kind, era, civ)` for the units it should replace.
+   Until then the unit keeps the procedural model; the Caral worker is the reference mapping.
+4. Add the id to `modelAssetIdsForMatch(period, civs)` if it must be preloaded before entities are created.
+   Pass every participating civilization (the Caral worker is preloaded for Arcaico matches with Caral).
 
 The loader must be synchronous at entity construction: `acquireRig()` only returns an already-loaded asset;
 `boot()` preloads the list and failures keep the procedural fallback. Clips must be **in-place** (root motion
-is ignored). Each instance owns its skeleton and `AnimationMixer`; geometry/materials/textures stay shared.
-`Game.destroy` runs `onDestroy` hooks first, then disposes units (and their rigs), and only then calls
-`clearModelAssets()`. That function defers disposal while an asset still has live rigs, so shared resources are
-never freed under an entity that still uses them. `?rig=1` is the visual harness for the pipeline.
+is ignored). Each instance owns its skeleton and `AnimationMixer`; base geometry/materials/textures stay shared,
+while the Caral attire owns its small per-instance attachments. `Game.destroy` runs `onDestroy` hooks first, then
+disposes units (and their rigs), and only then calls `clearModelAssets()`. That function defers disposal while an
+asset still has live rigs, so shared resources are never freed under an entity that still uses them. `?rig=1` is
+the visual harness for the pipeline.
+
+Next iteration for the worker: dedicated gather and build clips with a proper tool grip, a worker attack clip (or
+no attack state), a rig-specific death flow, and a bespoke historical mesh to replace the generic CC0 base before
+extending the same treatment to other civilizations and eras.
 
 ## Debugging / automation
 
