@@ -29,6 +29,19 @@ const DIRS = [
 /** Chebyshev cell distance to an obstacle goal accepted as "arrived" (see pathfind). */
 const GOAL_PROXIMITY = 2;
 
+/** Cell radius searched for the nearest walkable cell of a blocked endpoint. */
+const REACH_SEARCH_RADIUS = 12;
+
+/** A walkable, approachable stand point near a harvest target. */
+interface StandCandidate {
+  x: number;
+  z: number;
+  targetDist: number;
+  centerX: number;
+  centerZ: number;
+  startDist: number;
+}
+
 /**
  * Steepest terrain a unit may traverse (0 flat .. 1 cliff, same scale as
  * `Terrain.getSlope`). Cells above it are baked non-walkable, so units cannot
@@ -246,24 +259,30 @@ export class Pathfinder {
    * point, so use `reachableToNode` to decide a harvest target; this is for
    * whole-region questions.
    */
-  reachable(sx: number, sz: number, tx: number, tz: number, maxR = 12): boolean {
-    const comp = this.ensureComponents();
-    const { cols, cell } = this.grid;
-    const start = this.resolveComponent(comp, cols, cell, sx, sz, maxR);
+  reachable(sx: number, sz: number, tx: number, tz: number, maxR = REACH_SEARCH_RADIUS): boolean {
+    const start = this.resolveComponent(sx, sz, maxR);
     if (start === 0) return false;
-    const goal = this.resolveComponent(comp, cols, cell, tx, tz, maxR);
-    if (goal === 0) return false;
-    return start === goal;
+    const goal = this.resolveComponent(tx, tz, maxR);
+    return goal !== 0 && start === goal;
   }
 
-  private resolveComponent(comp: Int32Array, cols: number, cell: number, wx: number, wz: number, maxR: number): number {
-    const x = Math.max(0, Math.min(cols - 1, Math.floor(wx / cell)));
-    const z = Math.max(0, Math.min(cols - 1, Math.floor(wz / cell)));
+  /** Component of the cell at (wx, wz), falling back to the nearest walkable cell. */
+  private resolveComponent(wx: number, wz: number, maxR: number): number {
+    const { cols } = this.grid;
+    const x = this.clampCell(wx);
+    const z = this.clampCell(wz);
+    const comp = this.ensureComponents();
     const c = comp[z * cols + x];
     if (c !== 0) return c;
     const alt = this.nearestWalkable(x, z, maxR);
     if (!alt) return 0;
     return comp[alt.z * cols + alt.x];
+  }
+
+  /** Cell coordinate clamped to the grid (floor of a world coordinate / cell). */
+  private clampCell(world: number): number {
+    const { cols, cell } = this.grid;
+    return Math.max(0, Math.min(cols - 1, Math.floor(world / cell)));
   }
 
   /** A* returning waypoints in world coordinates (cell centers). */
@@ -283,13 +302,13 @@ export class Pathfinder {
     const destZ = goal.z;
     const destWalkable = this.grid.walkable[goal.z * cols + goal.x] === 1;
     if (!destWalkable) {
-      const alt = this.nearestWalkable(goal.x, goal.z, 12);
+      const alt = this.nearestWalkable(goal.x, goal.z, REACH_SEARCH_RADIUS);
       if (!alt) return [];
       goal.x = alt.x;
       goal.z = alt.z;
     }
     if (this.grid.walkable[start.z * cols + start.x] === 0) {
-      const alt = this.nearestWalkable(start.x, start.z, 12);
+      const alt = this.nearestWalkable(start.x, start.z, REACH_SEARCH_RADIUS);
       if (!alt) return [];
       start.x = alt.x;
       start.z = alt.z;
@@ -393,22 +412,9 @@ export class Pathfinder {
    * `findApproachPath` (which then A*-searches to one) and `reachableToNode` (which
    * only needs the component of a stand point).
    */
-  private standCandidates(
-    sx: number,
-    sz: number,
-    tx: number,
-    tz: number,
-    standRadius: number,
-  ): { x: number; z: number; targetDist: number; centerX: number; centerZ: number; startDist: number }[] {
+  private standCandidates(sx: number, sz: number, tx: number, tz: number, standRadius: number): StandCandidate[] {
     const { cols, cell } = this.grid;
-    const candidates: {
-      x: number;
-      z: number;
-      targetDist: number;
-      centerX: number;
-      centerZ: number;
-      startDist: number;
-    }[] = [];
+    const candidates: StandCandidate[] = [];
     const minX = Math.max(0, Math.floor((tx - standRadius) / cell) - 1);
     const maxX = Math.min(cols - 1, Math.floor((tx + standRadius) / cell) + 1);
     const minZ = Math.max(0, Math.floor((tz - standRadius) / cell) - 1);
@@ -467,14 +473,12 @@ export class Pathfinder {
    */
   reachableToNode(sx: number, sz: number, tx: number, tz: number, standRadius: number): boolean {
     if (!(standRadius > 0)) return false;
-    const comp = this.ensureComponents();
-    const { cols, cell } = this.grid;
-    const start = this.resolveComponent(comp, cols, cell, sx, sz, 12);
+    const start = this.resolveComponent(sx, sz, REACH_SEARCH_RADIUS);
     if (start === 0) return false;
+    const comp = this.ensureComponents();
+    const { cols } = this.grid;
     for (const c of this.standCandidates(sx, sz, tx, tz, standRadius)) {
-      const cx = Math.max(0, Math.min(cols - 1, Math.floor(c.x / cell)));
-      const cz = Math.max(0, Math.min(cols - 1, Math.floor(c.z / cell)));
-      if (comp[cz * cols + cx] === start) return true;
+      if (comp[this.clampCell(c.z) * cols + this.clampCell(c.x)] === start) return true;
     }
     return false;
   }

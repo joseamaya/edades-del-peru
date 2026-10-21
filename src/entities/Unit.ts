@@ -81,8 +81,7 @@ const NO_ROUTE_GIVEUP = 1.5;
 const STUCK_GIVEUP_RETRIES = 3;
 
 /** Economy orders a worker may abandon when it cannot make progress. */
-const isEconomyOrder = (kind: OrderKind): boolean =>
-  kind === OrderKind.GATHER || kind === OrderKind.BUILD || kind === OrderKind.DELIVER;
+const isEconomyOrder = (kind: OrderKind): boolean => kind === OrderKind.GATHER || kind === OrderKind.BUILD;
 
 /** Color of the worker's load bundle according to the carried resource. */
 const CARRY_COLORS: Record<keyof Resources, number> = {
@@ -211,7 +210,6 @@ export class Unit {
   private lastStuckZ = 0;
   /** Consecutive re-routes while stuck; a worker yields its order past the limit. */
   private stuckRetries = 0;
-  private blockedNotified = false;
 
   get team(): Team {
     return this.ctx?.players.find((p) => p.id === this.owner)?.team ?? 0;
@@ -268,13 +266,6 @@ export class Unit {
     if (this.owner !== 0 || this.noRouteNotified) return;
     this.noRouteNotified = true;
     this.ctx.event('alert', { icon: '⚠️', text: 'Sin ruta', x: this.pos.x, z: this.pos.z, warn: true });
-  }
-
-  /** Warn the player once that a worker cannot make progress toward its target. */
-  private notifyBlocked(): void {
-    if (this.owner !== 0 || this.blockedNotified) return;
-    this.blockedNotified = true;
-    this.ctx.event('alert', { icon: '⚠️', text: 'Trabajador bloqueado', x: this.pos.x, z: this.pos.z, warn: true });
   }
 
   /**
@@ -365,7 +356,6 @@ export class Unit {
     const order = this.orderQueue[0];
     if (!order) return;
     this.stuckRetries = 0;
-    this.blockedNotified = false;
     switch (order.kind) {
       case OrderKind.MOVE:
         this.setPath(order.target!.x, order.target!.z);
@@ -585,10 +575,11 @@ export class Unit {
       const o = this.orderQueue[0];
       const target = o.target;
       this.stuckTimer = 0;
-      // a worker that keeps failing to advance must yield its order so the AI (or
-      // the player) can reassign it, instead of re-pathing forever
+      // stop re-pathing forever: drop the order so the AI (or the player) can
+      // reassign the worker, and clear the stale path so it is truly idle
       if (isEconomyOrder(o.kind) && ++this.stuckRetries >= STUCK_GIVEUP_RETRIES) {
-        this.notifyBlocked();
+        this.path.length = 0;
+        this.pathIdx = 0;
         this.finishOrder();
       } else if (target) {
         this.setPath(target.x, target.z);

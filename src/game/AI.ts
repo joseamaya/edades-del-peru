@@ -238,9 +238,7 @@ export class AI {
       for (const n of list) {
         const farm = n.farm;
         const standRadius = farm ? Math.max(0.5, (farm.radius ?? 1.5) + 1.4 - 0.6) : HARVEST_STAND_RANGE;
-        // O(1)-per-candidate component test first: it rejects unreachable nodes
-        // without an A* search (the storm of failing requests), while never
-        // rejecting a node `findApproachPath` would accept.
+        // cheap component test first: skip unreachable nodes without an A* search
         if (!this.game.pathfinder.reachableToNode(w.pos.x, w.pos.z, n.pos.x, n.pos.z, standRadius)) {
           this.markUnreachable(n.id);
           continue;

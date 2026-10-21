@@ -38,9 +38,10 @@ test('a blocked worker yields its gather order instead of re-pathing forever', a
       g.update(1 / 60, t);
       t += 1 / 60;
     }
-    return { ok: true, startOrders, endOrders: w.orderQueue.length, busy: w.isBusy() };
+    return { ok: true, startOrders, endOrders: w.orderQueue.length, busy: w.isBusy(), pathLen: w.path.length };
   });
   expect(out.ok, out.reason ?? '').toBe(true);
   expect(out.startOrders, 'the worker should have started with a gather order').toBeGreaterThan(0);
   expect(out.busy, 'the blocked worker should have yielded its order').toBe(false);
+  expect(out.pathLen, 'the yielded worker should not keep a stale path').toBe(0);
 });
