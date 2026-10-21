@@ -10,7 +10,13 @@ import {
   CombatStance,
 } from '../core/types';
 import { getUnitStats, getUnitModel, UnitStats, DamageClass } from '../model/defs/units';
-import { rigClipStateFor, unitModelAsset } from '../model/defs/modelAssets';
+import {
+  WALK_CLIP_RATE_MAX,
+  WALK_CLIP_RATE_MIN,
+  WALK_CLIP_REFERENCE_SPEED,
+  rigClipStateFor,
+  unitModelAsset,
+} from '../model/defs/modelAssets';
 import { buildModel, BuildContext, disposeModel } from '../model/ProceduralModel';
 import { acquireRig } from '../rendering/ModelAssets';
 import type { RigInstance } from '../rendering/RigInstance';
@@ -751,7 +757,9 @@ export class Unit {
     });
     rig.play(state);
     const speed = Math.hypot(this.vel.x, this.vel.z);
-    rig.setPlaybackRate(state === 'walk' ? clamp(speed / 1.4, 0.6, 1.6) : 1);
+    rig.setPlaybackRate(
+      state === 'walk' ? clamp(speed / WALK_CLIP_REFERENCE_SPEED, WALK_CLIP_RATE_MIN, WALK_CLIP_RATE_MAX) : 1,
+    );
     rig.update(dt);
     this.bobY = 0;
   }

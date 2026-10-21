@@ -87,8 +87,9 @@ Details on subsystems, controls and code "traps" are in
 - Follow the existing style: Prettier (single quotes, 120 columns, trailing commas).
 - Reuse the existing utilities (`src/util/*`) and the data-driven defs
   (`src/model/defs/*`) instead of introducing duplicated constants.
-- Model geometries/textures are **shared and cached**: do not dispose them by hand
-  (see "Code traps" in [`docs/development.md`](./docs/development.md)).
+- Procedural model geometries/textures are **shared and cached**: do not dispose them by hand. The glTF asset
+  cache and the per-instance Caral attire are the explicit exceptions (their owner disposes them; see
+  "Code traps" and "Rigged models" in [`docs/development.md`](./docs/development.md)).
 
 ## Workflow
 

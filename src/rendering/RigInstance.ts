@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { clone as cloneSkeleton } from 'three/addons/utils/SkeletonUtils.js';
-import { RIG_CLIP_STATES, type RigClipState, type RigVariant } from '../model/defs/modelAssets';
+import { RIG_CLIP_STATES, RIG_VARIANT_CLIPS, type RigClipState, type RigVariant } from '../model/defs/modelAssets';
 import type { LoadedModelAsset } from './ModelAssets';
 import { applyRigVariant, type RigVariantHandle } from './rigVariants';
 
@@ -31,7 +31,8 @@ export class RigInstance {
 
     this.mixer = new THREE.AnimationMixer(this.model);
     for (const state of RIG_CLIP_STATES) {
-      const name = asset.definition.clips[state];
+      const override = variant ? RIG_VARIANT_CLIPS[variant]?.[state] : undefined;
+      const name = override === null ? undefined : (override ?? asset.definition.clips[state]);
       const clip = name ? asset.clipNames.get(name) : undefined;
       if (!clip) continue;
       this.actions.set(state, this.mixer.clipAction(clip));

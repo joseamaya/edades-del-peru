@@ -187,6 +187,9 @@ describe('rigged model assets', () => {
     const bag = carry.children[0] as THREE.Mesh;
     expect((bag.material as THREE.MeshStandardMaterial).color.getHex()).toBe(0x44cc44);
 
+    rig.play('attack', 0);
+    expect(rig.currentState).toBe('idle');
+
     const geometry = (rig.root.getObjectByName('attire:loincloth') as THREE.Mesh).geometry;
     const dispose = vi.spyOn(geometry, 'dispose');
     rig.dispose();

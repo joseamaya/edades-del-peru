@@ -24,8 +24,8 @@ const UAL_URL = modelUrls['../assets/models/ual_mannequin.glb'] ?? '';
 
 /**
  * The mannequin is the pipeline's validation asset (Quaternius Universal
- * Animation Library, CC0). It is not the final Caral worker: #108 replaces it
- * with historically appropriate art.
+ * Animation Library, CC0). The base mesh is still a generic placeholder; a later
+ * iteration replaces it with a bespoke historical mesh.
  */
 export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
   ual_mannequin: {

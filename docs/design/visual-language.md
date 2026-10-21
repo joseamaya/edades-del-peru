@@ -218,7 +218,7 @@ pre-Hispanic figures have no attested likeness, so the data marks them as
 Units can opt into a local rigged glTF/GLB (`src/model/defs/modelAssets.ts` → `src/rendering/RigInstance.ts`)
 while the procedural model remains the fallback. The pipeline is intentionally **presentation-only**: the
 simulation owns position/navigation and root motion is ignored. The first asset (`ual_mannequin.glb`) is a
-CC0 pipeline fixture, now used as the base for the **Caral worker pilot**: a project-authored cotton tunic,
+CC0 pipeline fixture, now used as the base for the **Caral worker pilot**: a project-authored simple cotton mantle,
 loincloth, headband, hair, digging stick and carry bundle are attached to its bones. `docs/historia/atuendos.md`
 documents cotton textiles for Caral-Supe but marks specific garments as **not documented**, so the pilot is an
 **abstraction/plausible** treatment, not a reconstruction; there is no metal, footwear, horse or firearm. The
@@ -226,6 +226,10 @@ base mesh is still a generic mannequin, so the pilot validates silhouette, attir
 before a bespoke historical mesh replaces it. Historical models must follow the period dossiers and their
 source/licence must be recorded in [`PROVENANCE.md`](../../PROVENANCE.md) before they are used in a campaign.
 See [`docs/development.md`](../development.md) for the clip convention and the migration steps.
+Comparable evidence (same mission `m1_caral`, seed 3000, 1600x900):
+[`caral-worker-before-after.webp`](../media/caral-worker-before-after.webp) (procedural worker → dressed rig,
+fixed front close-up) and [`caral-rts-before-after.webp`](../media/caral-rts-before-after.webp) (default RTS
+view). The left half is the procedural fallback; the right half is the pilot.
 
 ## Non-goals
 

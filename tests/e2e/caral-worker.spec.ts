@@ -28,7 +28,7 @@ test('the Caral worker is rigged, animated by its orders and keeps gameplay inta
     const g = (window as unknown as { game: any }).game;
     const workers = [...g.units.values()].filter((u: any) => u.kind === 'worker' && u.owner === 0);
     const worker = workers[0];
-    const attire = ['attire:tunic', 'attire:loincloth', 'attire:headband', 'attire:carry', 'attire:tool'].map(
+    const attire = ['attire:mantle', 'attire:loincloth', 'attire:headband', 'attire:carry', 'attire:tool'].map(
       (name) => !!worker.rig.root.getObjectByName(name),
     );
     return {

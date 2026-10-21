@@ -15,6 +15,16 @@ export type RigClipState = 'idle' | 'walk' | 'work' | 'attack';
 
 export const RIG_CLIP_STATES: readonly RigClipState[] = ['idle', 'walk', 'work', 'attack'];
 
+/** Per-variant clip overrides; `null` removes a state (falls back to idle). */
+export const RIG_VARIANT_CLIPS: Partial<Record<RigVariant, Partial<Record<RigClipState, string | null>>>> = {
+  caral_worker: { attack: null },
+};
+
+/** Playback-rate reference for in-place walk clips (world units per second). */
+export const WALK_CLIP_REFERENCE_SPEED = 1.4;
+export const WALK_CLIP_RATE_MIN = 0.6;
+export const WALK_CLIP_RATE_MAX = 1.6;
+
 export interface RigStateInput {
   moving: boolean;
   working: boolean;
@@ -39,7 +49,7 @@ export interface UnitModelChoice {
  * The migration is progressive: this pilot covers the Caral worker only.
  */
 export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId): UnitModelChoice | null {
-  if (kind === UnitKind.WORKER && civ === CivId.CARAL && era <= Era.FORMATIVE) {
+  if (kind === UnitKind.WORKER && civ === CivId.CARAL && era === Era.FORMATIVE) {
     return { asset: MANNEQUIN_ASSET_ID, variant: 'caral_worker' };
   }
   return null;
@@ -47,6 +57,8 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId): UnitModelC
 
 /** Models that must be ready before a match starts (all participating civs are covered). */
 export function modelAssetIdsForMatch(period: HistoricalPeriod, civs: readonly CivId[]): ModelAssetId[] {
+  // Period-locked matches: ARCHAIC starts in Era.FORMATIVE, so this preload
+  // mirrors `unitModelAsset`'s Caral/Formative rule.
   if (period === HistoricalPeriod.ARCHAIC && civs.includes(CivId.CARAL)) return [MANNEQUIN_ASSET_ID];
   return [];
 }
