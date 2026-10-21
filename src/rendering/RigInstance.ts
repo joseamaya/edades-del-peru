@@ -32,12 +32,7 @@ export class RigInstance {
       const name = asset.definition.clips[state];
       const clip = name ? asset.clipNames.get(name) : undefined;
       if (!clip) continue;
-      const action = this.mixer.clipAction(clip);
-      if (state === 'death') {
-        action.setLoop(THREE.LoopOnce, 1);
-        action.clampWhenFinished = true;
-      }
-      this.actions.set(state, action);
+      this.actions.set(state, this.mixer.clipAction(clip));
     }
 
     this.play('idle', 0);
@@ -87,6 +82,6 @@ export class RigInstance {
     this.actions.clear();
     this.root.removeFromParent();
     this.root.clear();
-    this.asset.refs = Math.max(0, this.asset.refs - 1);
+    this.asset.release();
   }
 }

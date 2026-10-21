@@ -10,7 +10,7 @@ import { loadReplay } from './game/replay';
 import { loadMods, ModLoadResult } from './game/Mods';
 import { ScriptedPlayer } from './game/ScriptedPlayer';
 import { getMission } from './campaign/defs/campaign';
-import { modelAssetIdsForMatch } from './model/defs/modelAssets';
+import { modelAssetIdsForMatch, RIG_DEMO_ASSET_ID } from './model/defs/modelAssets';
 import { modelAssetStatus, preloadModelAssets } from './rendering/ModelAssets';
 import { mountRigDemo } from './rendering/RigDemo';
 
@@ -143,8 +143,9 @@ async function boot(): Promise<void> {
   // Local rigged assets are loaded before entities are built; failures keep the
   // procedural fallback and never block the match.
   const mission = settings.missionId ? getMission(settings.missionId) : undefined;
-  const modelIds = modelAssetIdsForMatch(mission?.period ?? settings.period, mission?.playerCiv ?? settings.civPlayer);
-  if (params.get('rig') === '1') modelIds.push('ual_mannequin');
+  const civs = mission ? [mission.playerCiv, mission.enemyCiv] : [settings.civPlayer, settings.civAI];
+  const modelIds = modelAssetIdsForMatch(mission?.period ?? settings.period, civs);
+  if (params.get('rig') === '1') modelIds.push(RIG_DEMO_ASSET_ID);
   if (modelIds.length) await preloadModelAssets(modelIds);
   const game = new Game(settings, snapshot, replay, forceCinematic);
   (window as any).game = game;
@@ -160,6 +161,7 @@ async function boot(): Promise<void> {
         demo.update(dt);
       };
       game.introEnabled = false;
+      game.onDestroy(() => demo.dispose());
       const center = game.playerCenter(0);
       game.camera.flyTo(center.x, center.z + 13, 14, 0.05);
       (window as any).__rigDemo = demo;

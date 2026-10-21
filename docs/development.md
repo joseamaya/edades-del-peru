@@ -107,18 +107,21 @@ Definition of Done and the building audit see
   templates freed by `clearFaunaTemplates` in `Game.destroy`.
 - **Rigged 3D models (optional, glTF/GLB)**: `src/model/defs/modelAssets.ts` maps a unit kind to a registered
   asset id (all `null` by default, so #108/#109 opt units in progressively), and `modelAssetIdsForMatch` lists
-  the models to preload during `boot()`. Assets live in `src/assets/models/*.glb`, are resolved by
-  `src/rendering/modelAssetRegistry.ts` (`import.meta.glob` with `?url`, hashed by Vite) and loaded by
-  `src/rendering/ModelAssets.ts` with `GLTFLoader`. The shared scene/geometry/material/texture cache is cloned
-  per entity through `SkeletonUtils.clone` in `src/rendering/RigInstance.ts`; **each instance owns its skeleton
-  and `AnimationMixer`**, never its geometry/materials. `Unit` uses the rig only for presentation, drives
-  `idle|walk|work|attack|death` from its real order/movement state (`updateRig`) and ignores root motion, so
-  navigation, saves, replay and determinism are untouched. `acquireRig` is synchronous: the asset must be
-  preloaded or the unit keeps its procedural model (with a `[models] … fallback` warning). Teardown calls
-  `RigInstance.dispose()` (mixer + clone) before `clearModelAssets()` (shared resources) from `Game.destroy`.
-  Clip names are data in `modelAssetRegistry.ts`; a new model needs a `.glb`, a `ModelAssetId`, a registry entry
-  and (when it should be used) a mapping in `unitModelAsset`. `?rig=1` mounts a visual demo with two independent
-  instances and exposes `window.__rigDemo`/`window.__modelAssets`.
+  the models to preload during `boot()` for every participating civilization. Assets live in
+  `src/assets/models/*.glb`, are resolved by `src/rendering/modelAssetRegistry.ts` (`import.meta.glob` with
+  `?url`, hashed by Vite) and loaded by `src/rendering/ModelAssets.ts` with `GLTFLoader`. The shared
+  scene/geometry/material/texture cache is cloned per entity through `SkeletonUtils.clone` in
+  `src/rendering/RigInstance.ts`; **each instance owns its skeleton and `AnimationMixer`**, never its
+  geometry/materials. `Unit` uses the rig only for presentation, maps `idle|walk|work|attack` from its real
+  order/movement state through the tested `rigClipStateFor` and ignores root motion, so navigation, saves,
+  replay and determinism are untouched (the existing death topple still renders dead units). `acquireRig` is
+  synchronous: the asset must be preloaded or the unit keeps its procedural model (with a `[models] … fallback`
+  warning). Teardown runs the `Game.onDestroy` hooks (e.g. the rig demo), disposes every rig (`RigInstance.dispose`)
+  and only then calls `clearModelAssets()`, which owns the glTF resources and defers disposal of any asset that
+  still has a live rig. Clip names are data in `modelAssetRegistry.ts`; a new model needs a `.glb`, a
+  `ModelAssetId`, a registry entry and (when it should be used) a mapping in `unitModelAsset`. `?rig=1` mounts a
+  visual demo with two independent instances and exposes `window.__rigDemo`; `window.__modelAssets()` is always
+  available as a diagnostics snapshot.
 - **HUD identity & commander portraits (UI only)**: the HUD uses inline-SVG Andean motifs (chakana divider,
   stepped-fret top-bar band) with no image assets. `src/model/defs/commanders.ts` maps campaign speakers to
   stylized portrait medallions (`src/ui/Portrait.ts`: SVG, civilization palette + emblem + initials);
@@ -310,7 +313,9 @@ Definition of Done and the building audit see
   and a melee unit would otherwise stall out of range (worst with a tight cluster).
 - **Model geometries and textures are shared/cached** (`sharedGeo`, `bakedGeoCache`, `texCloneCache` in
   `ProceduralModel.ts`). `disposeModel()` only frees materials; **do not** dispose geometries/textures by hand nor
-  reuse them by mutating `repeat`. To clear everything use `clearModelCaches()`.
+  reuse them by mutating `repeat`. To clear everything use `clearModelCaches()`. The separate glTF asset cache
+  is the exception: `clearModelAssets()` is its explicit owner and disposes its geometry/material/textures, but
+  only after every rig released them.
 - **`UnitContext` is a single shared instance** created in the constructor (`Game.unitContext`). Do not rebuild it
   per entity/frame.
 - **The unit spatial hash is rebuilt once per frame** (`Game.rebuildSpatial`). If you move units after that point,
@@ -389,8 +394,14 @@ Definition of Done and the building audit see
 
 Local `*.glb` files live in `src/assets/models/`. The registry (`src/rendering/modelAssetRegistry.ts`) maps an
 asset id to its bundled URL, scale, yaw offset and **clip names**; the game states are always
-`idle | walk | work | attack | death` (`RIG_CLIP_STATES` in `src/model/defs/modelAssets.ts`). Only `idle` is
-mandatory; a missing state falls back to `idle` and a missing mapped clip logs a `[models]` warning.
+`idle | walk | work | attack` (`RIG_CLIP_STATES` in `src/model/defs/modelAssets.ts`). Only `idle` is mandatory;
+a missing state falls back to `idle` and a missing mapped clip logs a `[models]` warning. Death stays on the
+existing topple FX until #108 defines a rig-specific death flow.
+
+Audit of the path this pipeline mirrors: procedural templates are cached by `type|scale|barrel|civ|era`,
+`instantiateTemplate` clones them with per-instance materials, buildings modernize by swapping the whole model,
+units animate named pivots, `disposeModel` frees only materials and `clearModelCaches` owns shared geometry.
+The glTF path keeps the same split: a shared asset cache plus a per-instance skeleton/mixer clone.
 
 To add a model:
 
@@ -398,14 +409,15 @@ To add a model:
 2. Add its id to `ModelAssetId` (`src/model/defs/modelAssets.ts`) and an entry to `MODEL_ASSET_DEFS`.
 3. Return that id from `unitModelAsset(kind, era, civ)` for the units it should replace. Until then the unit
    keeps the procedural model.
-4. Add the id to `modelAssetIdsForMatch(...)` if it must be preloaded before entities are created (the current
-   mapping is empty; #108/#109 opt units in).
+4. Add the id to `modelAssetIdsForMatch(period, civs)` if it must be preloaded before entities are created
+   (the current mapping is empty; #108/#109 opt units in). Pass every participating civilization.
 
 The loader must be synchronous at entity construction: `acquireRig()` only returns an already-loaded asset;
 `boot()` preloads the list and failures keep the procedural fallback. Clips must be **in-place** (root motion
-is ignored). Each instance owns its skeleton and `AnimationMixer`; geometry/materials/textures stay shared and
-are freed by `clearModelAssets()` only after every rig is disposed (`Game.destroy`). `?rig=1` is the visual
-harness for the pipeline.
+is ignored). Each instance owns its skeleton and `AnimationMixer`; geometry/materials/textures stay shared.
+`Game.destroy` runs `onDestroy` hooks first, then disposes units (and their rigs), and only then calls
+`clearModelAssets()`. That function defers disposal while an asset still has live rigs, so shared resources are
+never freed under an entity that still uses them. `?rig=1` is the visual harness for the pipeline.
 
 ## Debugging / automation
 

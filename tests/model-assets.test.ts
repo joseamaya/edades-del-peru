@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { rigClipStateFor } from '../src/model/defs/modelAssets';
 import {
   acquireRig,
   clearModelAssets,
@@ -48,7 +49,7 @@ function bone(root: THREE.Object3D, name: string): THREE.Object3D {
 describe('rigged model assets', () => {
   it('loads a local GLB with materials and animation clips', async () => {
     const asset = await load();
-    expect(asset.animations.length).toBeGreaterThan(1);
+    expect(asset.clipNames.size).toBeGreaterThan(1);
     expect(asset.clipNames.has('Idle_Loop')).toBe(true);
     expect(asset.clipNames.has('Walk_Loop')).toBe(true);
 
@@ -93,6 +94,9 @@ describe('rigged model assets', () => {
     b!.update(1);
     expect(bone(a!.root, 'Head').quaternion.equals(aHead)).toBe(true);
     expect(asset.refs).toBe(2);
+    a!.dispose();
+    b!.dispose();
+    expect(asset.refs).toBe(0);
   });
 
   it('switches clips without restarting the current one', async () => {
@@ -109,6 +113,7 @@ describe('rigged model assets', () => {
     rig.play('work', 0);
     rig.update(0.25);
     expect(rig.currentState).toBe('work');
+    rig.dispose();
   });
 
   it('falls back to the procedural path when a rig is not preloaded', () => {
@@ -150,6 +155,13 @@ describe('rigged model assets', () => {
 
     clearModelAssets();
     expect(dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it('maps movement, work and combat to clip states by priority', () => {
+    expect(rigClipStateFor({ moving: true, working: true, attacking: true })).toBe('walk');
+    expect(rigClipStateFor({ moving: false, working: true, attacking: true })).toBe('work');
+    expect(rigClipStateFor({ moving: false, working: false, attacking: true })).toBe('attack');
+    expect(rigClipStateFor({ moving: false, working: false, attacking: false })).toBe('idle');
   });
 
   it('preloads idempotently and reports the registry status', async () => {

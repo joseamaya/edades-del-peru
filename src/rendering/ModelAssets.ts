@@ -7,11 +7,12 @@ import { RigInstance } from './RigInstance';
 export interface LoadedModelAsset {
   readonly id: ModelAssetId;
   readonly scene: THREE.Group;
-  readonly animations: THREE.AnimationClip[];
   readonly clipNames: Map<string, THREE.AnimationClip>;
   readonly definition: ModelAssetDefinition;
   /** Live rigs cloned from this asset (shared geometry/material/texture owners). */
   refs: number;
+  /** Drop one rig reference; after teardown the last one frees the shared resources. */
+  release(): void;
 }
 
 export type ModelAssetState = 'idle' | 'loading' | 'ready' | 'failed';
@@ -29,6 +30,7 @@ const pending = new Map<ModelAssetId, Promise<LoadedModelAsset | null>>();
 const failures = new Map<ModelAssetId, string>();
 const fallbackWarned = new Set<ModelAssetId>();
 let generation = 0;
+let teardown = false;
 
 const TEXTURE_KEYS = [
   'map',
@@ -70,14 +72,22 @@ function finalize(id: ModelAssetId, gltf: GLTF, definition: ModelAssetDefinition
     if ((mesh as THREE.SkinnedMesh).isSkinnedMesh) mesh.frustumCulled = false;
   });
 
-  return {
+  const asset: LoadedModelAsset = {
     id,
     scene: gltf.scene,
-    animations: gltf.animations,
     clipNames,
     definition,
     refs: 0,
+    release: () => releaseModelAsset(asset),
   };
+  return asset;
+}
+
+function releaseModelAsset(asset: LoadedModelAsset): void {
+  asset.refs = Math.max(0, asset.refs - 1);
+  if (!teardown || asset.refs > 0) return;
+  disposeAsset(asset);
+  if (cache.get(asset.id) === asset) cache.delete(asset.id);
 }
 
 function disposeAsset(asset: LoadedModelAsset): void {
@@ -122,6 +132,7 @@ export function loadModelAsset(id: ModelAssetId): Promise<LoadedModelAsset | nul
     return Promise.resolve(null);
   }
 
+  teardown = false;
   const startedAt = generation;
   const promise = new GLTFLoader()
     .loadAsync(definition.url)
@@ -157,6 +168,7 @@ export async function loadModelAssetFromData(
 ): Promise<LoadedModelAsset> {
   const cached = cache.get(id);
   if (cached) return cached;
+  teardown = false;
   const gltf = await parseGltf(new GLTFLoader(), data);
   const asset = finalize(id, gltf, definition);
   cache.set(id, asset);
@@ -198,19 +210,25 @@ export function modelAssetStatus(
       state,
       error,
       refs: asset?.refs ?? 0,
-      clips: asset?.animations.map((clip) => clip.name) ?? [],
+      clips: asset ? [...asset.clipNames.keys()] : [],
     };
   });
 }
 
-/** Release the shared geometry/material/texture cache (game teardown). */
+/**
+ * Request teardown of the shared cache. Assets with live rigs stay cached until
+ * the last instance releases them, so shared geometry is never disposed under
+ * an entity that still uses it.
+ */
 export function clearModelAssets(): void {
   generation++;
+  teardown = true;
   pending.clear();
-  const live = [...cache.values()].reduce((total, asset) => total + asset.refs, 0);
-  if (live > 0) console.warn(`[models] clearing the cache with ${live} live rig(s)`);
-  for (const asset of cache.values()) disposeAsset(asset);
-  cache.clear();
+  for (const [id, asset] of [...cache]) {
+    if (asset.refs > 0) continue;
+    disposeAsset(asset);
+    cache.delete(id);
+  }
   failures.clear();
   fallbackWarned.clear();
 }

@@ -11,7 +11,6 @@ const modelUrls = import.meta.glob('../assets/models/*.glb', {
 }) as Record<string, string>;
 
 export interface ModelAssetDefinition {
-  readonly id: ModelAssetId;
   readonly url: string;
   /** Multiplier applied to the model's metres so it matches the stylised game scale. */
   readonly scale: number;
@@ -30,7 +29,6 @@ const UAL_URL = modelUrls['../assets/models/ual_mannequin.glb'] ?? '';
  */
 export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
   ual_mannequin: {
-    id: 'ual_mannequin',
     url: UAL_URL,
     scale: 0.78,
     yawOffset: 0,
@@ -39,7 +37,6 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
       walk: 'Walk_Loop',
       work: 'Fixing_Kneeling',
       attack: 'Sword_Attack',
-      death: 'Death01',
     },
   },
 };

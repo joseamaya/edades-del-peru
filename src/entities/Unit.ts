@@ -10,7 +10,7 @@ import {
   CombatStance,
 } from '../core/types';
 import { getUnitStats, getUnitModel, UnitStats, DamageClass } from '../model/defs/units';
-import { unitModelAsset, type RigClipState } from '../model/defs/modelAssets';
+import { rigClipStateFor, unitModelAsset } from '../model/defs/modelAssets';
 import { buildModel, BuildContext, disposeModel } from '../model/ProceduralModel';
 import { acquireRig } from '../rendering/ModelAssets';
 import type { RigInstance } from '../rendering/RigInstance';
@@ -156,7 +156,7 @@ export class Unit {
     this.radius = this.stats.range === 0 ? 0.45 : 0.5;
     if (kind === UnitKind.TANK) this.radius = 0.9;
     if (kind === UnitKind.ARTILLERY || kind === UnitKind.MORTAR || kind === UnitKind.NUCLEAR) this.radius = 0.8;
-    this.view = new EntityView(model, this.radius, this, !this.rig);
+    this.view = new EntityView(model, this.radius, this, this.rig ? 'radius' : 'model');
     if (!this.rig) this.findPivots(model);
   }
 
@@ -744,10 +744,11 @@ export class Unit {
     const rig = this.rig;
     if (!rig) return;
     const order = this.orderQueue[0]?.kind;
-    let state: RigClipState = 'idle';
-    if (this.walkCycle > 0.01) state = 'walk';
-    else if (this.isWorking()) state = 'work';
-    else if (order === OrderKind.ATTACK && this.targetEntityId !== null) state = 'attack';
+    const state = rigClipStateFor({
+      moving: this.walkCycle > 0.01,
+      working: this.isWorking(),
+      attacking: this.attackingTarget || (order === OrderKind.ATTACK && this.targetEntityId !== null),
+    });
     rig.play(state);
     rig.update(dt);
     this.bobY = 0;

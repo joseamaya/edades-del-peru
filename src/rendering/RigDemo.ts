@@ -1,5 +1,5 @@
 import type * as THREE from 'three';
-import type { RigClipState } from '../model/defs/modelAssets';
+import { RIG_DEMO_ASSET_ID, type RigClipState } from '../model/defs/modelAssets';
 import { acquireRig } from './ModelAssets';
 import type { RigInstance } from './RigInstance';
 
@@ -21,13 +21,12 @@ export interface RigDemoSnapshot {
  */
 export class RigDemo {
   private readonly rigs: RigInstance[] = [];
-  private readonly roots: THREE.Object3D[] = [];
 
   constructor(host: RigDemoHost) {
     const center = host.playerCenter(0);
     const clips: RigClipState[] = ['idle', 'work'];
     for (let i = 0; i < clips.length; i++) {
-      const rig = acquireRig('ual_mannequin');
+      const rig = acquireRig(RIG_DEMO_ASSET_ID);
       if (!rig) break;
       const x = center.x + (i === 0 ? -2.4 : 2.4);
       const z = center.z + 13;
@@ -36,7 +35,6 @@ export class RigDemo {
       rig.play(clips[i], 0);
       host.scene.add(rig.root);
       this.rigs.push(rig);
-      this.roots.push(rig.root);
     }
   }
 
@@ -61,9 +59,7 @@ export class RigDemo {
 
   dispose(): void {
     for (const rig of this.rigs) rig.dispose();
-    for (const root of this.roots) root.removeFromParent();
     this.rigs.length = 0;
-    this.roots.length = 0;
   }
 }
 

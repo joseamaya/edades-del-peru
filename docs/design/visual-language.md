@@ -231,7 +231,8 @@ the migration steps.
   asset is documented as `plausible` or `abstraction`
   (`src/model/defs/landmarks.ts`).
 - No new asset farms: prefer procedural variation and shared components over
-  one-off models.
+  one-off models. Rigged glTF assets are shared/cached and adopted only when
+  they visibly beat the procedural look; the first one is a pipeline fixture.
 
 ## See also
 

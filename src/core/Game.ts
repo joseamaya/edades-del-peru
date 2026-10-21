@@ -195,6 +195,7 @@ export class Game {
   private softwareFallback = false;
   /** One-shot death animations that outlive their entity (topple / collapse). */
   private deathFx: DeathFx[] = [];
+  private teardownHooks: (() => void)[] = [];
 
   constructor(
     settings: GameSettings,
@@ -3004,6 +3005,11 @@ export class Game {
     this.audio.select();
   }
 
+  /** Register teardown work (debug harnesses) that must run before shared caches are freed. */
+  onDestroy(fn: () => void): void {
+    this.teardownHooks.push(fn);
+  }
+
   destroy(): void {
     this.loop.stop();
     if (this.hoverRaf) cancelAnimationFrame(this.hoverRaf);
@@ -3037,6 +3043,7 @@ export class Game {
     this.deathFx = [];
     for (const unit of this.units.values()) unit.removeFromScene();
     this.units.clear();
+    for (const hook of this.teardownHooks.splice(0)) hook();
     this.fow.dispose();
     this.postfx.dispose();
     clearModelAssets();

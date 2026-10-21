@@ -27,9 +27,11 @@ async function bootDemo(page: Page): Promise<void> {
 
 test('local GLB rigs load, clone independently and animate without touching the simulation', async ({ page }) => {
   const errors: string[] = [];
+  const modelWarnings: string[] = [];
   page.on('pageerror', (err) => errors.push(err.message));
   page.on('console', (msg) => {
     if (msg.type() === 'error') errors.push(msg.text());
+    if (msg.type() === 'warning' && msg.text().includes('[models]')) modelWarnings.push(msg.text());
   });
 
   await bootDemo(page);
@@ -64,4 +66,11 @@ test('local GLB rigs load, clone independently and animate without touching the 
   expect(after.times[1]).toBeGreaterThan(before.times[1]);
   expect(after.bones[0]).not.toEqual(after.bones[1]);
   expect(errors).toEqual([]);
+
+  await page.evaluate(() => (window as unknown as { game: { destroy: () => void } }).game.destroy());
+  const afterDestroy = await page.evaluate(
+    () => (window as unknown as { __modelAssets: () => AssetStatus[] }).__modelAssets()[0],
+  );
+  expect(afterDestroy.state).toBe('idle');
+  expect(modelWarnings).toEqual([]);
 });
