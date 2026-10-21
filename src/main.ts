@@ -148,6 +148,8 @@ async function boot(): Promise<void> {
   const civs = mission ? [mission.playerCiv, mission.enemyCiv] : [settings.civPlayer, settings.civAI];
   const period = mission?.period ?? settings.period;
   const modelIds = modelAssetIdsForMatch(period, civs);
+  // Mirrors the mission overrides Game applies before `resolveMapProfile`, so
+  // fauna preload and the planner resolve the same region.
   const profile = resolveMapProfile({
     period,
     civ: mission?.playerCiv ?? settings.civPlayer,

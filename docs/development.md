@@ -437,23 +437,36 @@ extending the same treatment to other civilizations and eras.
 
 ## Rigged fauna (llama pilot)
 
-The species inventory and biome/altitude/seed selection are unchanged (`wildlife.ts`: llama in the Andes/altiplano,
-vicuña above 4 m, condor above 5 m, pelican near water). `wildlifeModelChoice('llama')` returns the
-`quaternius_alpaca` asset; `wildlifeModelAssetIds(region)` preloads it during `boot()` for regions whose llama
-weight is non-zero (main resolves the region with the same `resolveMapProfile` as `Game`). `Wildlife.spawn` asks
-for a rig through `acquireRig`; if it is unavailable it builds the procedural animal exactly as before, and the
-`MAX_ANIMALS = 16` cap is unchanged.
+**Inventory and selection (unchanged):** `wildlife.ts` has llama, vicuña, condor and pelican. Per-region weights
+(`REGION_WEIGHTS`) and suitability gates decide the mix: llama above 2 m, vicuña above 4 m, condor above 5 m and
+pelican only near water/beach; region counts are 12 (altiplano/high Andes), 10 (valley/coast) and 4 (Amazon),
+with a hard `MAX_ANIMALS = 16` cap. The region comes from `resolveMapProfile` (period + civ + map type + optional
+mission region); the **period does not add/remove fauna** — ambient life is a visual, period-agnostic layer. The
+llama/alpaca is documented from the Andean camelid herding dossiers (`docs/historia/civilizaciones/collas_lupaca.md`,
+`recuay.md`); no new species or spawn rule is added.
+
+`wildlifeModelChoice('llama')` returns the `quaternius_alpaca` asset; `wildlifeModelAssetIds(region)` derives the
+preload list from that same mapping and the region weights during `boot()` (main resolves the region with the
+same `resolveMapProfile` arguments as `Game`). `Wildlife.spawn` asks for a rig through `acquireRig`; if it is
+unavailable it builds the procedural animal exactly as before. The alpaca is an Andean camelid **stand-in** for
+the existing llama, not a new species; vicuña/condor/pelican stay procedural in this iteration.
 
 The rig plays `walk` while it advances its deterministic orbit and stops to play `eat` on a deterministic
-sinusoidal cycle per animal; the root sits at `Terrain.getHeight` and the model is grounded at its bind-pose feet.
+sinusoidal cycle per animal; walk playback follows the orbit speed. The root sits at `Terrain.getHeight`, the model
+is grounded at its bind-pose feet with a 2 cm clearance, and both rig and procedural animals now face their actual
+travel direction (the orbit tangent is `(-sin, cos)`, so the yaw is `-angle`).
 The alpaca is an Andean camelid stand-in for the existing llama species, not a new species; vicuña/condor/pelican
 remain procedural. Rigged fauna uses the same shared cache/clone/refcount rules as the worker.
 
-Measured cost on the altiplano map (8 fauna, 4 rigged, direct render): procedural set **+40 draw calls / +11,280
-triangles**; mixed set **+76 calls / +21,840 triangles** (about +4.5 calls and +1.3k triangles per replaced
-llama). The cap remains 16; `tests/e2e/fauna.spec.ts` covers spawn, clip states, grounding, procedural fallback
-and teardown. Evidence: `docs/media/fauna-llama-before-after.webp` and
-`docs/media/fauna-llama-rts-before-after.webp` (`map=altiplano`, seed 777, 1600x900).
+Measured cost on the altiplano map at the **configured 12 animals** (8 llamas replaced in the mixed set,
+direct render, shadows included): procedural set **+60 draw calls / +17,200 triangles**; mixed set **+132 calls /
++38,320 triangles**. Replacing 8 llamas therefore adds **+72 calls / +21,120 triangles**, about **+9 calls and
++2,640 triangles per llama**. `Wildlife.update` cost measured in-browser: **0.058 ms/step** for the mixed set vs
+0.008 ms/step procedural (software renderer), well below the 16.6 ms budget. The cap remains 16; `tests/e2e/fauna.spec.ts`
+covers spawn, clip states, terrain grounding, facing, procedural fallback and teardown, while
+`tests/e2e/ambient.spec.ts` still verifies the procedural limbs. Evidence:
+`docs/media/fauna-llama-before-after.webp` and `docs/media/fauna-llama-rts-before-after.webp`
+(`map=altiplano`, seed 777, 1600x900).
 
 Next iteration for fauna: replace vicuña/condor/pelican, add flight-specific states and terrain-avoidance if a
 rigged bird is added, and evaluate per-species LOD/update throttling at the 16-animal cap.

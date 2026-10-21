@@ -51,7 +51,13 @@ export function faunaCountFor(region: GeographicRegion): number {
 
 /** Rigged assets a region can spawn (preloaded before the wildlife planner runs). */
 export function wildlifeModelAssetIds(region: GeographicRegion): ModelAssetId[] {
-  return REGION_WEIGHTS[region].llama > 0 ? ['quaternius_alpaca'] : [];
+  const ids = new Set<ModelAssetId>();
+  for (const id of SPECIES_IDS) {
+    if (REGION_WEIGHTS[region][id] <= 0) continue;
+    const choice = wildlifeModelChoice(id);
+    if (choice) ids.add(choice.asset);
+  }
+  return [...ids];
 }
 
 /** Habitats are separated by altitude and water: pelicans on the shore, camelids on the puna. */

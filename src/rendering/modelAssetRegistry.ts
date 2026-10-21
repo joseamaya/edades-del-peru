@@ -18,10 +18,14 @@ export interface ModelAssetDefinition {
   readonly yawOffset: number;
   /** Gameplay state -> clip name in the GLB. `idle` is required. */
   readonly clips: Partial<Record<RigClipState, string>>;
+  /** Ground the bind-pose feet at y=0 (units and terrestrial fauna). */
+  readonly ground: boolean;
+  /** Extra world-space lift after grounding (avoids clip-driven foot penetration). */
+  readonly groundClearance?: number;
 }
 
 const UAL_URL = modelUrls['../assets/models/ual_mannequin.glb'] ?? '';
-const ALPACA_URL = modelUrls['../assets/models/alpaca_llama.glb'] ?? '';
+const ALPACA_URL = modelUrls['../assets/models/quaternius_alpaca.glb'] ?? '';
 
 /**
  * The mannequin is the pipeline's validation asset (Quaternius Universal
@@ -33,6 +37,7 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
     url: UAL_URL,
     scale: 0.78,
     yawOffset: 0,
+    ground: true,
     clips: {
       idle: 'Idle_Loop',
       walk: 'Walk_Loop',
@@ -49,6 +54,8 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
     url: ALPACA_URL,
     scale: 0.3,
     yawOffset: 0,
+    ground: true,
+    groundClearance: 0.02,
     clips: {
       idle: 'Idle',
       walk: 'Walk',

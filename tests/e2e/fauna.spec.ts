@@ -68,6 +68,28 @@ test('the llama pilot uses the rigged camelid and keeps the procedural fallback'
   expect(observed.fauna.some((a) => a.species === 'vicuna' && !a.rigged)).toBe(true);
   expect(llamas.some((a) => a.state === 'walk' || a.state === 'eat')).toBe(true);
   for (const sample of observed.terrain) expect(Math.abs(sample.y - sample.ground)).toBeLessThan(0.02);
+
+  const orientation = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const THREE = (window as unknown as { THREE: any }).THREE;
+    let walking: any = null;
+    for (let i = 0; i < 240 && !walking; i++) {
+      g.wildlife.update(1 / 60);
+      walking = g.wildlife.animals.find((a: any) => a.rig?.currentState === 'walk');
+    }
+    if (!walking) return null;
+    const before = walking.group.position.clone();
+    g.wildlife.update(1 / 60);
+    const velocity = walking.group.position.clone().sub(before);
+    if (velocity.lengthSq() < 1e-8) return null;
+    const quaternion = new THREE.Quaternion();
+    walking.group.getWorldQuaternion(quaternion);
+    const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(quaternion);
+    return { dot: velocity.normalize().dot(forward.normalize()) };
+  });
+  expect(orientation).not.toBeNull();
+  expect(orientation!.dot).toBeGreaterThan(0.9);
+
   expect(errors).toEqual([]);
   expect(modelWarnings).toEqual([]);
 

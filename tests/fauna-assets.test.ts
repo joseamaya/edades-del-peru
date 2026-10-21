@@ -6,7 +6,7 @@ import { acquireRig, clearModelAssets, loadModelAssetFromData } from '../src/ren
 import { clearFaunaTemplates } from '../src/rendering/faunaModels';
 import { Wildlife } from '../src/rendering/Wildlife';
 
-const MODEL_URL = new URL('../src/assets/models/alpaca_llama.glb', import.meta.url);
+const MODEL_URL = new URL('../src/assets/models/quaternius_alpaca.glb', import.meta.url);
 let glb: ArrayBuffer;
 
 beforeAll(() => {
@@ -40,7 +40,7 @@ describe('rigged fauna assets', () => {
   });
 
   it('clones independent camelid skeletons and grounds the feet', async () => {
-    await loadModelAssetFromData('quaternius_alpaca', glb);
+    const asset = await loadModelAssetFromData('quaternius_alpaca', glb);
     const a = acquireRig('quaternius_alpaca')!;
     const b = acquireRig('quaternius_alpaca')!;
     expect(a.root.getObjectByName('Head')).not.toBe(b.root.getObjectByName('Head'));
@@ -54,12 +54,15 @@ describe('rigged fauna assets', () => {
     expect(a.root.getObjectByName('Head')!.quaternion.equals(b.root.getObjectByName('Head')!.quaternion)).toBe(false);
 
     const bounds = new THREE.Box3().setFromObject(a.root);
-    expect(Math.abs(bounds.min.y)).toBeLessThan(0.01);
+    expect(Math.abs(bounds.min.y - (asset.definition.groundClearance ?? 0))).toBeLessThan(0.01);
     expect(bounds.max.y - bounds.min.y).toBeGreaterThan(1);
 
-    a.play('eat', 0);
-    a.update(0.5);
+    a.play('eat', 0.25);
+    a.update(0.3);
     expect(a.currentState).toBe('eat');
+    a.play('walk', 0.25);
+    a.update(0.3);
+    expect(a.currentState).toBe('walk');
 
     a.dispose();
     b.dispose();

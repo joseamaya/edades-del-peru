@@ -140,7 +140,8 @@ export class Wildlife {
         const x = a.homeX + Math.cos(a.angle) * a.radius;
         const z = a.homeZ + Math.sin(a.angle) * a.radius;
         a.group.position.set(x, a.heightAt(x, z), z);
-        a.group.rotation.y = a.angle + Math.PI / 2; // face the direction of travel
+        // Orbit derivative is (-sin, cos); a +Z-facing model needs yaw = -angle.
+        a.group.rotation.y = -a.angle;
         a.rig.play(grazing ? 'eat' : 'walk', 0.25);
         const speed = a.angSpeed * a.radius;
         a.rig.setPlaybackRate(
@@ -158,7 +159,8 @@ export class Wildlife {
         ? Math.abs(Math.sin(this.time * 3 + a.bobPhase)) * 0.03
         : Math.sin(this.time * 1.6 + a.bobPhase) * 0.25;
       a.group.position.set(x, y + a.template.flyHeight + bob, z);
-      a.group.rotation.y = angle + Math.PI / 2; // face the direction of travel
+      // Orbit derivative is (-sin, cos); a +Z-facing model needs yaw = -angle.
+      a.group.rotation.y = -angle;
 
       if (a.legs.length) {
         const phase = this.time * a.template.stride + a.bobPhase;

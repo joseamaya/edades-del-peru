@@ -58,7 +58,7 @@ slot is absent (offline / without assets).
 
 ## Fauna (rigged)
 
-- **Location**: `src/assets/models/alpaca_llama.glb` (loaded by `src/rendering/Wildlife.ts` through the same
+- **Location**: `src/assets/models/quaternius_alpaca.glb` (loaded by `src/rendering/Wildlife.ts` through the same
   `ModelAssets` cache).
 - **Asset**: *Alpaca* from Quaternius' **Ultimate Animated Animal Pack** (CC0 1.0). Used as the **llama pilot**:
   an Andean camelid stand-in for the existing `llama` species, not a new species. The vicuña, condor and pelican

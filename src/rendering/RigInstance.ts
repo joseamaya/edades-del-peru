@@ -26,11 +26,14 @@ export class RigInstance {
     this.model = cloneSkeleton(asset.scene);
     this.model.scale.setScalar(asset.definition.scale);
     this.model.rotation.y += asset.definition.yawOffset;
-    // Normalise the bind-pose feet to y=0: the camelid asset has a small
-    // positive/negative offset, while the game places the root on the terrain.
-    this.model.updateMatrixWorld(true);
-    const bounds = new THREE.Box3().setFromObject(this.model);
-    if (Number.isFinite(bounds.min.y)) this.model.position.y -= bounds.min.y;
+    // Normalise the bind-pose feet to y=0 when the asset is terrain-bound; a
+    // small clearance keeps walk clips from dipping below the ground.
+    if (asset.definition.ground) {
+      this.model.updateMatrixWorld(true);
+      const bounds = new THREE.Box3().setFromObject(this.model);
+      if (Number.isFinite(bounds.min.y)) this.model.position.y -= bounds.min.y;
+      this.model.position.y += asset.definition.groundClearance ?? 0;
+    }
     this.root.name = `rig:${asset.id}`;
     this.root.add(this.model);
 
