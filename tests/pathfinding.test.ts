@@ -116,6 +116,77 @@ describe('Pathfinder', () => {
   });
 });
 
+describe('Pathfinder reachability cache', () => {
+  it('reports open ground as reachable and blocked cells as component 0', () => {
+    const pf = new Pathfinder(100, 2);
+    expect(pf.reachable(10, 10, 90, 90)).toBe(true);
+    pf.addObstacle({ x: 30, z: 30, radius: 3 });
+    expect(pf.componentAt(30, 30)).toBe(0);
+    expect(pf.componentAt(70, 70)).toBeGreaterThan(0);
+  });
+
+  it('splits the map when a wall is added and reconnects it when removed', () => {
+    const pf = new Pathfinder(100, 2);
+    expect(pf.reachable(20, 50, 80, 50)).toBe(true);
+    const wall: { x: number; z: number; radius: number }[] = [];
+    for (let z = -2; z <= 102; z += 2) {
+      const o = { x: 50, z, radius: 2.1 };
+      wall.push(o);
+      pf.addObstacle(o);
+    }
+    expect(pf.reachable(20, 50, 80, 50)).toBe(false);
+    for (const o of wall) pf.removeObstacle(o);
+    expect(pf.reachable(20, 50, 80, 50)).toBe(true);
+  });
+
+  it('marks an enclosed pocket unreachable while its cells stay walkable', () => {
+    const pf = new Pathfinder(100, 2);
+    for (let a = 0; a < 72; a++) {
+      const ang = (a / 72) * Math.PI * 2;
+      pf.addObstacle({ x: 50 + Math.cos(ang) * 8, z: 50 + Math.sin(ang) * 8, radius: 2.1 });
+    }
+    expect(pf.isWalkable(50, 50)).toBe(true);
+    expect(pf.componentAt(50, 50)).toBeGreaterThan(0);
+    expect(pf.reachable(10, 10, 50, 50)).toBe(false);
+  });
+
+  it('invalidates the cache when terrain is baked', () => {
+    const pf = new Pathfinder(100, 2);
+    expect(pf.reachable(10, 50, 90, 50)).toBe(true);
+    pf.bakeTerrain((x) => (x > 45 && x < 55 ? 0 : 10), 5);
+    expect(pf.reachable(10, 50, 90, 50)).toBe(false);
+  });
+
+  it('reachableToNode agrees with findApproachPath and rejects enclosed targets', () => {
+    const pf = new Pathfinder(100, 2);
+    pf.addObstacle({ x: 50, z: 50, radius: 1.1 });
+    expect(pf.reachableToNode(20, 20, 50, 50, 2.2)).toBe(true);
+    expect(pf.findApproachPath(20, 20, 50, 50, 2.2).length).toBeGreaterThan(0);
+
+    // a target sealed in a ring has no stand point in the worker's component
+    const sealed = new Pathfinder(100, 2);
+    for (let a = 0; a < 72; a++) {
+      const ang = (a / 72) * Math.PI * 2;
+      sealed.addObstacle({ x: 50 + Math.cos(ang) * 8, z: 50 + Math.sin(ang) * 8, radius: 2.1 });
+    }
+    expect(sealed.reachableToNode(10, 10, 50, 50, 2.2)).toBe(false);
+    expect(sealed.findApproachPath(10, 10, 50, 50, 2.2)).toEqual([]);
+  });
+
+  it('agrees with A* on whether a route exists', () => {
+    const pf = new Pathfinder(100, 2);
+    for (let z = -2; z <= 102; z += 2) pf.addObstacle({ x: 50, z, radius: 2.1 });
+    const pairs: [number, number, number, number][] = [
+      [20, 20, 80, 80],
+      [20, 20, 20, 80],
+      [80, 20, 80, 80],
+    ];
+    for (const [sx, sz, tx, tz] of pairs) {
+      expect(pf.reachable(sx, sz, tx, tz)).toBe(pf.pathfind(sx, sz, tx, tz).length > 0);
+    }
+  });
+});
+
 describe('Pathfinder.findApproachPath', () => {
   it('returns a stand point inside harvest range of a blocked target', () => {
     const pf = new Pathfinder(100, 2);
