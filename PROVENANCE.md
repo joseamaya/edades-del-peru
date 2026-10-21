@@ -38,8 +38,8 @@ slot is absent (offline / without assets).
 - **`ual_mannequin.glb`**: Quaternius *Universal Animation Library* (UAL1.glb), a generic rigged mannequin used
   to validate the glTF/GLB + skeleton + mixer pipeline and as the base for the Caral worker pilot (#108).
   **The base mesh is a placeholder, not a historical reconstruction**: #108 dresses it with project-authored
-  cotton attire (tunic, loincloth, headband, hair, digging stick and carry bundle); #109 replaces/retargets it
-  for fauna.
+  cotton attire (tunic, loincloth, headband, hair, digging stick and carry bundle); #109 uses separate animal
+  assets.
   - Source: <https://quaternius.com/packs/universalanimationlibrary.html> (CC0 1.0).
   - Downloaded from the CC0 mirror <https://github.com/Dallolz/moorfall-assets>
     (`animations/UAL1.glb`, licence in its `LICENSE.md`), 2026-10-20.
