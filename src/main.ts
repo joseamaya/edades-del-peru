@@ -9,6 +9,10 @@ import { loadFromStorage } from './game/SaveGame';
 import { loadReplay } from './game/replay';
 import { loadMods, ModLoadResult } from './game/Mods';
 import { ScriptedPlayer } from './game/ScriptedPlayer';
+import { getMission } from './campaign/defs/campaign';
+import { modelAssetIdsForMatch } from './model/defs/modelAssets';
+import { modelAssetStatus, preloadModelAssets } from './rendering/ModelAssets';
+import { mountRigDemo } from './rendering/RigDemo';
 
 /** Read saved settings or use the defaults, validating each field. */
 function loadSettings(): GameSettings {
@@ -136,10 +140,31 @@ async function boot(): Promise<void> {
   const noloop = params.get('noloop') === '1';
   if (noloop) setAutoStart(false);
   const forceCinematic = params.get('cine') === '1';
+  // Local rigged assets are loaded before entities are built; failures keep the
+  // procedural fallback and never block the match.
+  const mission = settings.missionId ? getMission(settings.missionId) : undefined;
+  const modelIds = modelAssetIdsForMatch(mission?.period ?? settings.period, mission?.playerCiv ?? settings.civPlayer);
+  if (params.get('rig') === '1') modelIds.push('ual_mannequin');
+  if (modelIds.length) await preloadModelAssets(modelIds);
   const game = new Game(settings, snapshot, replay, forceCinematic);
   (window as any).game = game;
   (window as any).THREE = THREE;
   (window as any).ScriptedPlayer = ScriptedPlayer;
+  (window as any).__modelAssets = () => modelAssetStatus();
+  if (params.get('rig') === '1') {
+    const demo = mountRigDemo(game);
+    if (demo) {
+      const update = game.loop.onUpdate;
+      game.loop.onUpdate = (dt, t) => {
+        update(dt, t);
+        demo.update(dt);
+      };
+      game.introEnabled = false;
+      const center = game.playerCenter(0);
+      game.camera.flyTo(center.x, center.z + 13, 14, 0.05);
+      (window as any).__rigDemo = demo;
+    }
+  }
   if (params.get('fps') === '1') game.hud.setShowFps(true);
   if (params.get('intro') === '0' || noloop) game.introEnabled = false;
   if (replay) game.hud.showToast('🎬 Repetición', 'info');

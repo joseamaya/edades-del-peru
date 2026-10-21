@@ -15,7 +15,8 @@ Definition of Done and the building audit see
   `src/model/defs/periods.ts`) is the **historical period** of the match. Matches are **locked by period** (no
   anachronistic modernization): `settings.period` fixes `startingEra` and disables era advancement (HUD and AI).
 - Data is driven by defs in `src/model/defs/{periods,eras,civs,units,buildings,techs}.ts`; models are generated
-  procedurally in `src/model/ProceduralModel.ts` (no external assets).
+  procedurally in `src/model/ProceduralModel.ts`. A local glTF/GLB pipeline can override a unit's presentation
+  (see **Rigged 3D models** below); the procedural model remains the fallback during the progressive migration.
 - **PBR terrain & material textures (AI-generated)**: `src/assets/textures/{terrain,materials}/{slot}_{diffuse|normal|roughness}.webp`
   (terrain slots `sand/dirt/grass/rock/snow`; material/building/textile slots — `wall_*`, `roof_*`, `textile_*`,
   `wood`, `adobe`, `tile`, `clay`, `mud` — loaded by `src/model/ProceduralModel.ts`, see below), consumed by
@@ -104,6 +105,20 @@ Definition of Done and the building audit see
   (reusing `aoGeometry` from `ProceduralModel`) and **articulated legs/wings** (shared geometry + one shared
   material; diagonal gait and wing flap). No entities, obstacles or save; regenerated deterministically on load,
   templates freed by `clearFaunaTemplates` in `Game.destroy`.
+- **Rigged 3D models (optional, glTF/GLB)**: `src/model/defs/modelAssets.ts` maps a unit kind to a registered
+  asset id (all `null` by default, so #108/#109 opt units in progressively), and `modelAssetIdsForMatch` lists
+  the models to preload during `boot()`. Assets live in `src/assets/models/*.glb`, are resolved by
+  `src/rendering/modelAssetRegistry.ts` (`import.meta.glob` with `?url`, hashed by Vite) and loaded by
+  `src/rendering/ModelAssets.ts` with `GLTFLoader`. The shared scene/geometry/material/texture cache is cloned
+  per entity through `SkeletonUtils.clone` in `src/rendering/RigInstance.ts`; **each instance owns its skeleton
+  and `AnimationMixer`**, never its geometry/materials. `Unit` uses the rig only for presentation, drives
+  `idle|walk|work|attack|death` from its real order/movement state (`updateRig`) and ignores root motion, so
+  navigation, saves, replay and determinism are untouched. `acquireRig` is synchronous: the asset must be
+  preloaded or the unit keeps its procedural model (with a `[models] … fallback` warning). Teardown calls
+  `RigInstance.dispose()` (mixer + clone) before `clearModelAssets()` (shared resources) from `Game.destroy`.
+  Clip names are data in `modelAssetRegistry.ts`; a new model needs a `.glb`, a `ModelAssetId`, a registry entry
+  and (when it should be used) a mapping in `unitModelAsset`. `?rig=1` mounts a visual demo with two independent
+  instances and exposes `window.__rigDemo`/`window.__modelAssets`.
 - **HUD identity & commander portraits (UI only)**: the HUD uses inline-SVG Andean motifs (chakana divider,
   stepped-fret top-bar band) with no image assets. `src/model/defs/commanders.ts` maps campaign speakers to
   stylized portrait medallions (`src/ui/Portrait.ts`: SVG, civilization palette + emblem + initials);
@@ -370,13 +385,36 @@ Definition of Done and the building audit see
 - `Game.destroy()` + `clearModelCaches()` + `clearResourceCaches()` + `clearTextureCache()` release a match; call
   `destroy()` if you recreate the game without reloading the page.
 
+## Rigged models (glTF/GLB)
+
+Local `*.glb` files live in `src/assets/models/`. The registry (`src/rendering/modelAssetRegistry.ts`) maps an
+asset id to its bundled URL, scale, yaw offset and **clip names**; the game states are always
+`idle | walk | work | attack | death` (`RIG_CLIP_STATES` in `src/model/defs/modelAssets.ts`). Only `idle` is
+mandatory; a missing state falls back to `idle` and a missing mapped clip logs a `[models]` warning.
+
+To add a model:
+
+1. Put the `.glb` in `src/assets/models/` and record its source/licence/SHA-256 in `PROVENANCE.md`.
+2. Add its id to `ModelAssetId` (`src/model/defs/modelAssets.ts`) and an entry to `MODEL_ASSET_DEFS`.
+3. Return that id from `unitModelAsset(kind, era, civ)` for the units it should replace. Until then the unit
+   keeps the procedural model.
+4. Add the id to `modelAssetIdsForMatch(...)` if it must be preloaded before entities are created (the current
+   mapping is empty; #108/#109 opt units in).
+
+The loader must be synchronous at entity construction: `acquireRig()` only returns an already-loaded asset;
+`boot()` preloads the list and failures keep the procedural fallback. Clips must be **in-place** (root motion
+is ignored). Each instance owns its skeleton and `AnimationMixer`; geometry/materials/textures stay shared and
+are freed by `clearModelAssets()` only after every rig is disposed (`Game.destroy`). `?rig=1` is the visual
+harness for the pipeline.
+
 ## Debugging / automation
 
 - `src/main.ts` exposes `window.game` (and `window.THREE`) for the console and scripts.
 - The app shows the **main menu by default**; enter the match directly with `?play=1` or any debug param.
   `resetGame()` reloads with `?play=1`.
 - URL params: `?play=1`, `?menu=0/1`, `?load=1`, `?replay=1`, `?seed=`, `?fog=0`, `?low=1`, `?speed=`, `?era=N`,
-  `?period=N`, `?mission=ID`, `?noloop=1` (do not auto-start the loop; tests drive fixed steps from step 0),
+  `?period=N`, `?mission=ID`, `?rig=1` (mount two independent rigged-model instances for the GLB pipeline),
+  `?noloop=1` (do not auto-start the loop; tests drive fixed steps from step 0),
   `?fps=1` (show the debug FPS overlay, hidden by default), `?civ=ID` (force the player civilization; with
   `?period=N` it drives the geography), `?map=TYPE` (force the map type), `?intro=0` (skip the campaign
   camera flyover; `?noloop=1` skips it too) and `?cine=1` (disables the software-renderer fallback; `?low=1` wins).

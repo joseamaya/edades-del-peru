@@ -39,8 +39,9 @@ export function reviewDir() {
 
 /** Read a `--name=value` CLI argument, returning `fallback` when absent. */
 export function cliArg(name, fallback) {
-  const a = process.argv.find((v) => v.startsWith(`--${name}=`));
-  return a ? a.split('=')[1] : fallback;
+  const prefix = `--${name}=`;
+  const a = process.argv.find((v) => v.startsWith(prefix));
+  return a ? a.slice(prefix.length) : fallback;
 }
 
 /** Read a PNG and return its raw data. */
