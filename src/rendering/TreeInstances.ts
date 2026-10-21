@@ -46,9 +46,9 @@ export class TreeInstances {
   constructor(private scene: THREE.Scene) {
     const trunkGeo = this.buildTrunkGeo();
     const canopyGeos: Record<TreeVariant, THREE.BufferGeometry> = {
-      broad: this.buildCanopyGeo(2.9, 2.4, 3.9),
-      needle: this.buildCanopyGeo(2.0, 3.3, 4.4),
-      frond: this.buildCanopyGeo(3.4, 2.2, 3.7),
+      broad: this.buildCanopyGeo(2.35, 2.0, 3.15),
+      needle: this.buildCanopyGeo(1.85, 2.8, 3.6),
+      frond: this.buildCanopyGeo(2.85, 1.85, 3.05),
     };
 
     const barkMat = new THREE.MeshStandardMaterial({
@@ -72,7 +72,7 @@ export class TreeInstances {
         map: MaterialTex.foliage(variant),
         alphaTest: 0.45,
         side: THREE.DoubleSide,
-        color: '#cfe0b0',
+        color: '#b9c49b',
         roughness: 1,
       });
       this.materials.push(leafMat);
@@ -107,15 +107,15 @@ export class TreeInstances {
 
   private buildTrunkGeo(): THREE.BufferGeometry {
     const parts: THREE.BufferGeometry[] = [];
-    const trunk = new THREE.CylinderGeometry(0.14, 0.24, 4.6, 8);
-    trunk.translate(0, 2.3, 0);
+    const trunk = new THREE.CylinderGeometry(0.13, 0.22, 3.8, 8);
+    trunk.translate(0, 1.9, 0);
     parts.push(trunk);
     for (let i = 0; i < 2; i++) {
       const a = i * Math.PI + 0.4;
-      const br = new THREE.CylinderGeometry(0.05, 0.09, 1.2, 6);
-      br.translate(0, 0.6, 0);
+      const br = new THREE.CylinderGeometry(0.05, 0.09, 1.0, 6);
+      br.translate(0, 0.5, 0);
       const m = new THREE.Matrix4()
-        .makeTranslation(Math.cos(a) * 0.25, 3.1, Math.sin(a) * 0.25)
+        .makeTranslation(Math.cos(a) * 0.23, 2.55, Math.sin(a) * 0.23)
         .multiply(new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(-Math.sin(a) * 1.0, 0, Math.cos(a) * 1.0)));
       br.applyMatrix4(m);
       parts.push(br);

@@ -13,6 +13,10 @@ const ROAD_STEP = 2;
 const FIELD_STEP = 2;
 /** Small lift above the terrain so the surfaces do not z-fight with the ground. */
 export const SETTLEMENT_OFFSET = 0.06;
+/** Spacing and width of the young-crop rows on a planned field. */
+const CROP_SPACING = 0.85;
+const CROP_WIDTH = 0.3;
+const CROP_OFFSET = 0.04;
 
 /**
  * Visual-only overlay of a planned starting settlement: its fields and the roads
@@ -47,6 +51,12 @@ export class SettlementOverlay {
       'fields',
       plan.fields.map((f) => fieldGeometry(f, terrain.getHeight.bind(terrain))),
       fieldMat,
+    );
+    const cropMat = new THREE.MeshStandardMaterial({ color: '#82994a', roughness: 1 });
+    this.add(
+      'crops',
+      plan.fields.flatMap((f) => cropGeometry(f, terrain.getHeight.bind(terrain))),
+      cropMat,
     );
   }
 
@@ -102,6 +112,38 @@ export function fieldGeometry(
   const r = Math.max(1, field.size / GROUND_TILE);
   scaleUv(geo, r, r);
   return geo;
+}
+
+/** Young-crop rows that follow the field's terrain, parallel to its furrows. */
+export function cropGeometry(
+  field: SettlementField,
+  getHeight: (x: number, z: number) => number,
+): THREE.BufferGeometry[] {
+  const half = field.size / 2;
+  const n = Math.max(2, Math.floor(field.size / CROP_SPACING));
+  const spacing = field.size / n;
+  const cos = Math.cos(field.yaw);
+  const sin = Math.sin(field.yaw);
+  const out: THREE.BufferGeometry[] = [];
+  for (let i = 0; i < n; i++) {
+    const localX = -half + spacing * (i + 0.5);
+    const from = {
+      x: field.x + localX * cos - -half * sin,
+      z: field.z + localX * sin + -half * cos,
+    };
+    const to = {
+      x: field.x + localX * cos - half * sin,
+      z: field.z + localX * sin + half * cos,
+    };
+    // Rows run along the field's local Z, so they line up with the furrows.
+    const geo = buildRibbon(
+      subdivide(from, to, 2),
+      CROP_WIDTH,
+      (x, z) => getHeight(x, z) + SETTLEMENT_OFFSET + CROP_OFFSET,
+    );
+    if (geo) out.push(geo);
+  }
+  return out;
 }
 
 function subdivide(
