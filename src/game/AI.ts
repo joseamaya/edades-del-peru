@@ -236,10 +236,15 @@ export class AI {
     for (const k of types) {
       const list = nodes.filter((n) => n.resource === k).sort((a, b) => distTo(a) - distTo(b));
       for (const n of list) {
-        if (this.pathBudget <= 0) return null;
-        this.pathBudget--;
         const farm = n.farm;
         const standRadius = farm ? Math.max(0.5, (farm.radius ?? 1.5) + 1.4 - 0.6) : HARVEST_STAND_RANGE;
+        // cheap component test first: skip unreachable nodes without an A* search
+        if (!this.game.pathfinder.reachableToNode(w.pos.x, w.pos.z, n.pos.x, n.pos.z, standRadius)) {
+          this.markUnreachable(n.id);
+          continue;
+        }
+        if (this.pathBudget <= 0) return null;
+        this.pathBudget--;
         const path = this.game.pathfinder.findApproachPath(w.pos.x, w.pos.z, n.pos.x, n.pos.z, standRadius);
         if (path.length > 0) return n;
         this.markUnreachable(n.id);

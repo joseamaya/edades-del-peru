@@ -77,6 +77,11 @@ const SEPARATION = 1.4;
 const DIRECT_LOOKAHEAD = 3;
 /** Seconds without a route before a stuck move/gather order gives up. */
 const NO_ROUTE_GIVEUP = 1.5;
+/** Consecutive failed re-routes before a stuck economy order is dropped. */
+const STUCK_GIVEUP_RETRIES = 3;
+
+/** Economy orders a worker may abandon when it cannot make progress. */
+const isEconomyOrder = (kind: OrderKind): boolean => kind === OrderKind.GATHER || kind === OrderKind.BUILD;
 
 /** Color of the worker's load bundle according to the carried resource. */
 const CARRY_COLORS: Record<keyof Resources, number> = {
@@ -203,6 +208,8 @@ export class Unit {
   private stuckTimer = 0;
   private lastStuckX = 0;
   private lastStuckZ = 0;
+  /** Consecutive re-routes while stuck; a worker yields its order past the limit. */
+  private stuckRetries = 0;
 
   get team(): Team {
     return this.ctx?.players.find((p) => p.id === this.owner)?.team ?? 0;
@@ -348,6 +355,7 @@ export class Unit {
   private startOrder(): void {
     const order = this.orderQueue[0];
     if (!order) return;
+    this.stuckRetries = 0;
     switch (order.kind) {
       case OrderKind.MOVE:
         this.setPath(order.target!.x, order.target!.z);
@@ -560,13 +568,20 @@ export class Unit {
     this.stuckTimer += dt;
     if (moved > 0.4) {
       this.stuckTimer = 0;
+      this.stuckRetries = 0;
       this.lastStuckX = this.pos.x;
       this.lastStuckZ = this.pos.z;
     } else if (this.stuckTimer > 1.2 && this.path.length > 1 && this.orderQueue.length > 0) {
       const o = this.orderQueue[0];
       const target = o.target;
       this.stuckTimer = 0;
-      if (target) {
+      // stop re-pathing forever: drop the order so the AI (or the player) can
+      // reassign the worker, and clear the stale path so it is truly idle
+      if (isEconomyOrder(o.kind) && ++this.stuckRetries >= STUCK_GIVEUP_RETRIES) {
+        this.path.length = 0;
+        this.pathIdx = 0;
+        this.finishOrder();
+      } else if (target) {
         this.setPath(target.x, target.z);
       } else if (o.entityId !== undefined) {
         this.setPathToEntity(o.entityId);

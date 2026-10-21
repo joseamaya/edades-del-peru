@@ -29,6 +29,19 @@ const DIRS = [
 /** Chebyshev cell distance to an obstacle goal accepted as "arrived" (see pathfind). */
 const GOAL_PROXIMITY = 2;
 
+/** Cell radius searched for the nearest walkable cell of a blocked endpoint. */
+const REACH_SEARCH_RADIUS = 12;
+
+/** A walkable, approachable stand point near a harvest target. */
+interface StandCandidate {
+  x: number;
+  z: number;
+  targetDist: number;
+  centerX: number;
+  centerZ: number;
+  startDist: number;
+}
+
 /**
  * Steepest terrain a unit may traverse (0 flat .. 1 cliff, same scale as
  * `Terrain.getSlope`). Cells above it are baked non-walkable, so units cannot
@@ -108,6 +121,9 @@ export class Pathfinder {
   private closed: Uint8Array;
   /** Terrain-only blockage (water/steep), kept so `rebuild` does not lose it. */
   private terrainBlocked: Uint8Array | null = null;
+  /** Connected components of walkable cells, recomputed lazily per revision. */
+  private components: Int32Array | null = null;
+  private componentsRevision = -1;
 
   constructor(size: number, cellSize: number) {
     const cols = Math.ceil(size / cellSize);
@@ -121,6 +137,7 @@ export class Pathfinder {
   addObstacle(o: Obstacle): void {
     this.obstacles.push(o);
     this.rasterize(o);
+    this.revision++;
   }
 
   removeObstacle(o: Obstacle): void {
@@ -185,6 +202,89 @@ export class Pathfinder {
     return this.grid.walkable[z * cols + x] === 1;
   }
 
+  /**
+   * Flood-fill the walkable cells into connected components (same 8-way
+   * no-corner-cutting rule as A*), cached until the grid revision changes.
+   */
+  private ensureComponents(): Int32Array {
+    const { cols } = this.grid;
+    const walkable = this.grid.walkable;
+    if (!this.components || this.components.length !== cols * cols) {
+      this.components = new Int32Array(cols * cols);
+    }
+    const comp = this.components;
+    if (this.componentsRevision === this.revision) return comp;
+
+    comp.fill(0);
+    const stack: number[] = [];
+    let id = 0;
+    for (let i = 0; i < comp.length; i++) {
+      if (comp[i] !== 0 || walkable[i] === 0) continue;
+      id++;
+      comp[i] = id;
+      stack.push(i);
+      while (stack.length > 0) {
+        const cur = stack.pop()!;
+        const cx = cur % cols;
+        const cz = Math.floor(cur / cols);
+        for (let d = 0; d < 8; d++) {
+          const nx = cx + DIRS[d][0];
+          const nz = cz + DIRS[d][1];
+          if (nx < 0 || nz < 0 || nx >= cols || nz >= cols) continue;
+          const ni = nz * cols + nx;
+          if (comp[ni] !== 0 || walkable[ni] === 0) continue;
+          if (d >= 4 && (walkable[cz * cols + nx] === 0 || walkable[nz * cols + cx] === 0)) continue;
+          comp[ni] = id;
+          stack.push(ni);
+        }
+      }
+    }
+    this.componentsRevision = this.revision;
+    return comp;
+  }
+
+  /** Component id of the walkable region containing (wx, wz); 0 when blocked/out of bounds. */
+  componentAt(wx: number, wz: number): number {
+    const { cols, cell } = this.grid;
+    const x = Math.floor(wx / cell);
+    const z = Math.floor(wz / cell);
+    if (x < 0 || z < 0 || x >= cols || z >= cols) return 0;
+    return this.ensureComponents()[z * cols + x];
+  }
+
+  /**
+   * Coarse O(1) reachability test: true when the nearest walkable cell to each
+   * endpoint shares a component. It can report false negatives when a node's
+   * nearest walkable cell sits in a different component than its harvest stand
+   * point, so use `reachableToNode` to decide a harvest target; this is for
+   * whole-region questions.
+   */
+  reachable(sx: number, sz: number, tx: number, tz: number, maxR = REACH_SEARCH_RADIUS): boolean {
+    const start = this.resolveComponent(sx, sz, maxR);
+    if (start === 0) return false;
+    const goal = this.resolveComponent(tx, tz, maxR);
+    return goal !== 0 && start === goal;
+  }
+
+  /** Component of the cell at (wx, wz), falling back to the nearest walkable cell. */
+  private resolveComponent(wx: number, wz: number, maxR: number): number {
+    const { cols } = this.grid;
+    const x = this.clampCell(wx);
+    const z = this.clampCell(wz);
+    const comp = this.ensureComponents();
+    const c = comp[z * cols + x];
+    if (c !== 0) return c;
+    const alt = this.nearestWalkable(x, z, maxR);
+    if (!alt) return 0;
+    return comp[alt.z * cols + alt.x];
+  }
+
+  /** Cell coordinate clamped to the grid (floor of a world coordinate / cell). */
+  private clampCell(world: number): number {
+    const { cols, cell } = this.grid;
+    return Math.max(0, Math.min(cols - 1, Math.floor(world / cell)));
+  }
+
   /** A* returning waypoints in world coordinates (cell centers). */
   pathfind(sx: number, sz: number, tx: number, tz: number): { x: number; z: number }[] {
     const { cols, cell } = this.grid;
@@ -202,13 +302,13 @@ export class Pathfinder {
     const destZ = goal.z;
     const destWalkable = this.grid.walkable[goal.z * cols + goal.x] === 1;
     if (!destWalkable) {
-      const alt = this.nearestWalkable(goal.x, goal.z, 12);
+      const alt = this.nearestWalkable(goal.x, goal.z, REACH_SEARCH_RADIUS);
       if (!alt) return [];
       goal.x = alt.x;
       goal.z = alt.z;
     }
     if (this.grid.walkable[start.z * cols + start.x] === 0) {
-      const alt = this.nearestWalkable(start.x, start.z, 12);
+      const alt = this.nearestWalkable(start.x, start.z, REACH_SEARCH_RADIUS);
       if (!alt) return [];
       start.x = alt.x;
       start.z = alt.z;
@@ -285,15 +385,36 @@ export class Pathfinder {
    */
   findApproachPath(sx: number, sz: number, tx: number, tz: number, standRadius: number): { x: number; z: number }[] {
     if (!(standRadius > 0)) return [];
+    const candidates = this.standCandidates(sx, sz, tx, tz, standRadius);
+    if (candidates.length === 0) return [];
+    candidates.sort((a, b) => a.targetDist - b.targetDist || a.startDist - b.startDist);
+
+    const tried = new Set<string>();
+    let attempts = 0;
+    for (const candidate of candidates) {
+      const key = candidate.centerX + ',' + candidate.centerZ;
+      if (tried.has(key)) continue;
+      tried.add(key);
+      if (attempts++ >= 8) break;
+      const path = this.pathfind(sx, sz, candidate.centerX, candidate.centerZ);
+      if (path.length === 0) continue;
+      const last = path[path.length - 1];
+      if (Math.hypot(last.x - candidate.x, last.z - candidate.z) > 0.05) {
+        path.push({ x: candidate.x, z: candidate.z });
+      }
+      return path;
+    }
+    return [];
+  }
+
+  /**
+   * Walkable, approachable stand points within `standRadius` of (tx, tz). Shared by
+   * `findApproachPath` (which then A*-searches to one) and `reachableToNode` (which
+   * only needs the component of a stand point).
+   */
+  private standCandidates(sx: number, sz: number, tx: number, tz: number, standRadius: number): StandCandidate[] {
     const { cols, cell } = this.grid;
-    const candidates: {
-      x: number;
-      z: number;
-      targetDist: number;
-      centerX: number;
-      centerZ: number;
-      startDist: number;
-    }[] = [];
+    const candidates: StandCandidate[] = [];
     const minX = Math.max(0, Math.floor((tx - standRadius) / cell) - 1);
     const maxX = Math.min(cols - 1, Math.floor((tx + standRadius) / cell) + 1);
     const minZ = Math.max(0, Math.floor((tz - standRadius) / cell) - 1);
@@ -340,26 +461,26 @@ export class Pathfinder {
         });
       }
     }
+    return candidates;
+  }
 
-    if (candidates.length === 0) return [];
-    candidates.sort((a, b) => a.targetDist - b.targetDist || a.startDist - b.startDist);
-
-    const tried = new Set<string>();
-    let attempts = 0;
-    for (const candidate of candidates) {
-      const key = candidate.centerX + ',' + candidate.centerZ;
-      if (tried.has(key)) continue;
-      tried.add(key);
-      if (attempts++ >= 8) break;
-      const path = this.pathfind(sx, sz, candidate.centerX, candidate.centerZ);
-      if (path.length === 0) continue;
-      const last = path[path.length - 1];
-      if (Math.hypot(last.x - candidate.x, last.z - candidate.z) > 0.05) {
-        path.push({ x: candidate.x, z: candidate.z });
-      }
-      return path;
+  /**
+   * Cheap reachability test for a harvest target: true when a walkable, approachable
+   * stand point within `standRadius` shares the worker's connected component. It is a
+   * superset of `findApproachPath` success (a stand point in the worker's component is
+   * reachable by A*), so it can reject unreachable nodes without an A* search while
+   * preserving the node the caller would otherwise have picked.
+   */
+  reachableToNode(sx: number, sz: number, tx: number, tz: number, standRadius: number): boolean {
+    if (!(standRadius > 0)) return false;
+    const start = this.resolveComponent(sx, sz, REACH_SEARCH_RADIUS);
+    if (start === 0) return false;
+    const comp = this.ensureComponents();
+    const { cols } = this.grid;
+    for (const c of this.standCandidates(sx, sz, tx, tz, standRadius)) {
+      if (comp[this.clampCell(c.z) * cols + this.clampCell(c.x)] === start) return true;
     }
-    return [];
+    return false;
   }
 
   /**

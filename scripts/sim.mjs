@@ -135,7 +135,9 @@ async function run(browser, base, seed) {
           let stuck = 0;
           let blockedWorkers = 0;
           for (const u of units) {
-            if (!u.path || u.path.length === 0 || u.garrisonedIn !== null) continue;
+            // only an unconsumed path means the unit is still travelling: a unit
+            // standing at a node/farm keeps a stale non-empty `path` array
+            if (!u.path || u.path.length === 0 || u.pathIdx >= u.path.length || u.garrisonedIn !== null) continue;
             const prev = positions.get(u.id);
             if (prev) {
               const moved = Math.hypot(u.pos.x - prev.x, u.pos.z - prev.z);
