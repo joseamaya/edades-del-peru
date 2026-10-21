@@ -10,7 +10,10 @@ import {
   CombatStance,
 } from '../core/types';
 import { getUnitStats, getUnitModel, UnitStats, DamageClass } from '../model/defs/units';
+import { rigClipStateFor, unitModelAsset } from '../model/defs/modelAssets';
 import { buildModel, BuildContext, disposeModel } from '../model/ProceduralModel';
+import { acquireRig } from '../rendering/ModelAssets';
+import type { RigInstance } from '../rendering/RigInstance';
 import { EntityView } from '../entities/EntityView';
 import { allocId } from '../entities/EntityView';
 import { Order, OrderKind, OrderTarget } from '../core/types';
@@ -138,6 +141,8 @@ export class Unit {
   private carryPivot: THREE.Group | null = null;
   private carryMat: THREE.MeshStandardMaterial | null = null;
   private bobY = 0;
+  /** Rigged presentation; null keeps the procedural model (progressive migration). */
+  rig: RigInstance | null = null;
 
   constructor(kind: UnitKind, owner: number, era: Era, ctx: BuildContext) {
     this.kind = kind;
@@ -145,12 +150,14 @@ export class Unit {
     this.era = era;
     this.stats = getUnitStats(kind, era);
     this.hp = this.maxHp = this.stats.hp;
-    const model = buildModel(getUnitModel(kind, era), ctx);
+    const assetId = unitModelAsset(kind, era, ctx.civ.id);
+    this.rig = assetId ? acquireRig(assetId) : null;
+    const model = this.rig ? this.rig.root : buildModel(getUnitModel(kind, era), ctx);
     this.radius = this.stats.range === 0 ? 0.45 : 0.5;
     if (kind === UnitKind.TANK) this.radius = 0.9;
     if (kind === UnitKind.ARTILLERY || kind === UnitKind.MORTAR || kind === UnitKind.NUCLEAR) this.radius = 0.8;
-    this.view = new EntityView(model, this.radius, this);
-    this.findPivots(model);
+    this.view = new EntityView(model, this.radius, this, this.rig ? 'radius' : 'model');
+    if (!this.rig) this.findPivots(model);
   }
 
   /** Pivots for animation. */
@@ -665,7 +672,10 @@ export class Unit {
   }
 
   private updateAnimation(dt: number, time: number): void {
-    void dt;
+    if (this.rig) {
+      this.updateRig(dt);
+      return;
+    }
     const walk = this.walkCycle;
     if (this.gunPivot) {
       // subtle recoil over the pivot base position
@@ -727,6 +737,21 @@ export class Unit {
         this.armR.rotation.x = -0.9;
       }
     }
+  }
+
+  /** Clip state from the unit's real order/movement; root motion never moves the unit. */
+  private updateRig(dt: number): void {
+    const rig = this.rig;
+    if (!rig) return;
+    const order = this.orderQueue[0]?.kind;
+    const state = rigClipStateFor({
+      moving: this.walkCycle > 0.01,
+      working: this.isWorking(),
+      attacking: this.attackingTarget || (order === OrderKind.ATTACK && this.targetEntityId !== null),
+    });
+    rig.play(state);
+    rig.update(dt);
+    this.bobY = 0;
   }
 
   // --- specific orders ---
@@ -1321,6 +1346,11 @@ export class Unit {
   removeFromScene(): void {
     if (this.view.group.parent) this.view.group.parent.remove(this.view.group);
     this.view.dispose();
-    disposeModel(this.view.group);
+    if (this.rig) {
+      this.rig.dispose();
+      this.rig = null;
+    } else {
+      disposeModel(this.view.group);
+    }
   }
 }

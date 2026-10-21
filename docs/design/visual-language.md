@@ -213,6 +213,16 @@ palette (bust silhouette + emblem + initials). They are explicitly stylized:
 pre-Hispanic figures have no attested likeness, so the data marks them as
 `abstraction` and the UI never presents them as portraits from life.
 
+## Rigged models
+
+Units can opt into a local rigged glTF/GLB (`src/model/defs/modelAssets.ts` → `src/rendering/RigInstance.ts`)
+while the procedural model remains the fallback. The pipeline is intentionally **presentation-only**: the
+simulation owns position/navigation and root motion is ignored. The first asset (`ual_mannequin.glb`) is a CC0
+pipeline fixture, not final art. Historical models must follow the period dossiers (no anachronistic clothing,
+tools, animals or technology) and their source/licence must be recorded in [`PROVENANCE.md`](../../PROVENANCE.md)
+before they are used in a campaign. See [`docs/development.md`](../development.md) for the clip convention and
+the migration steps.
+
 ## Non-goals
 
 - No sci-fi, firearms, horses, vehicles or engines before 1532
@@ -221,7 +231,8 @@ pre-Hispanic figures have no attested likeness, so the data marks them as
   asset is documented as `plausible` or `abstraction`
   (`src/model/defs/landmarks.ts`).
 - No new asset farms: prefer procedural variation and shared components over
-  one-off models.
+  one-off models. Rigged glTF assets are shared/cached and adopted only when
+  they visibly beat the procedural look; the first one is a pipeline fixture.
 
 ## See also
 

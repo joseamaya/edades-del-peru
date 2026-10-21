@@ -32,6 +32,20 @@
 Textures are optional: `src/rendering/Biomes.ts` falls back to the procedural Canvas material when a
 slot is absent (offline / without assets).
 
+## Rigged 3D models
+
+- **Location**: `src/assets/models/*.glb` (loaded by `src/rendering/ModelAssets.ts`).
+- **`ual_mannequin.glb`**: Quaternius *Universal Animation Library* (UAL1.glb), a generic rigged mannequin used
+  only to validate the glTF/GLB + skeleton + mixer pipeline. **It is a placeholder, not final Peruvian art**:
+  #108/#109 replace or retarget it with historically appropriate models.
+  - Source: <https://quaternius.com/packs/universalanimationlibrary.html> (CC0 1.0).
+  - Downloaded from the CC0 mirror <https://github.com/Dallolz/moorfall-assets>
+    (`animations/UAL1.glb`, licence in its `LICENSE.md`), 2026-10-20.
+  - SHA-256: `69591853d817488edaa8fd9bf8fc1d821eaeaf789f8627b3cd23b41c4ed67997` (7,618,436 bytes).
+  - Contents: 1 skinned `Mannequin` mesh (65-bone humanoid rig), 43 clips; the game maps
+    `Idle_Loop`, `Walk_Loop`, `Fixing_Kneeling`, `Sword_Attack` and `Death01`.
+  - Attribution is optional under CC0 but credited here: models/animations by Quaternius.
+
 ## Reference images (AI generation input)
 
 Used only as FLUX.2 multi-reference inputs (never redistributed) for the Andean textiles. Manifests in

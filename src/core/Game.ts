@@ -21,6 +21,7 @@ import { TreeInstances } from '../rendering/TreeInstances';
 import { Props } from '../rendering/Props';
 import { Wildlife } from '../rendering/Wildlife';
 import { clearFaunaTemplates } from '../rendering/faunaModels';
+import { clearModelAssets } from '../rendering/ModelAssets';
 import { planProps, propCountFor } from '../model/defs/props';
 import { planWildlife, faunaCountFor } from '../model/defs/wildlife';
 import { Projectile, updateProjectilePools } from '../entities/Projectile';
@@ -194,6 +195,7 @@ export class Game {
   private softwareFallback = false;
   /** One-shot death animations that outlive their entity (topple / collapse). */
   private deathFx: DeathFx[] = [];
+  private teardownHooks: (() => void)[] = [];
 
   constructor(
     settings: GameSettings,
@@ -3003,6 +3005,11 @@ export class Game {
     this.audio.select();
   }
 
+  /** Register teardown work (debug harnesses) that must run before shared caches are freed. */
+  onDestroy(fn: () => void): void {
+    this.teardownHooks.push(fn);
+  }
+
   destroy(): void {
     this.loop.stop();
     if (this.hoverRaf) cancelAnimationFrame(this.hoverRaf);
@@ -3034,8 +3041,12 @@ export class Game {
     this.settlements = [];
     for (const fx of this.deathFx) fx.cleanup();
     this.deathFx = [];
+    for (const unit of this.units.values()) unit.removeFromScene();
+    this.units.clear();
+    for (const hook of this.teardownHooks.splice(0)) hook();
     this.fow.dispose();
     this.postfx.dispose();
+    clearModelAssets();
     clearModelCaches();
     clearFaunaTemplates();
     clearResourceCaches();

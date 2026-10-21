@@ -32,21 +32,21 @@ export class EntityView {
   readonly pickProxy: THREE.Mesh;
   private static readonly pickMaterial = new THREE.MeshBasicMaterial();
 
-  constructor(model: THREE.Group, radius: number, owner: Unit | Building) {
+  constructor(model: THREE.Group, radius: number, owner: Unit | Building, pickBounds: 'model' | 'radius' = 'model') {
     this.group = model;
     this.radius = radius;
     this.hpBg = new THREE.Mesh();
     this.hpFill = new THREE.Mesh();
-    this.pickProxy = this.buildPickProxy(model, radius);
+    this.pickProxy = this.buildPickProxy(model, radius, pickBounds);
     this.pickProxy.userData.owner = owner;
     this.group.add(this.pickProxy);
     this.pickProxy.updateWorldMatrix(true, false);
     this.addBlobShadow(radius);
   }
 
-  private buildPickProxy(model: THREE.Group, radius: number): THREE.Mesh {
+  private buildPickProxy(model: THREE.Group, radius: number, pickBounds: 'model' | 'radius'): THREE.Mesh {
     model.updateWorldMatrix(true, true);
-    const box = new THREE.Box3().setFromObject(model);
+    const box = pickBounds === 'model' ? new THREE.Box3().setFromObject(model) : new THREE.Box3();
     const size = new THREE.Vector3(radius * 2, radius * 2.4, radius * 2);
     const center = new THREE.Vector3(0, radius * 1.2, 0);
     if (!box.isEmpty()) {
