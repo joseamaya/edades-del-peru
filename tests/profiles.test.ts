@@ -249,6 +249,12 @@ describe('historical landmarks', () => {
     expect(statuses.has('abstraction') || statuses.has('plausible')).toBe(true);
   });
 
+  it('classifies the Chavín Lanzón as an interior gallery feature', () => {
+    const chavin = LANDMARKS.chavin_temple;
+    expect(chavin.source).toContain('Lanzón interior');
+    expect(chavin.source).toContain('Rick et al. 1998');
+  });
+
   it('maps each civilization to its landmark within its period', () => {
     expect(landmarkForCiv(CivId.CARAL, HistoricalPeriod.ARCHAIC)).toBe('caral_ceremonial');
     expect(landmarkForCiv(CivId.MOCHE, HistoricalPeriod.EARLY_INTERMEDIATE)).toBe('moche_huaca');

@@ -13,8 +13,10 @@ export function applyRigVariant(rig: RigInstance, variant: RigVariant): RigVaria
   switch (variant) {
     case 'caral_worker_f':
     case 'caral_worker_m':
-    case 'caral_chasqui_f':
-    case 'caral_chasqui_m':
+    case 'caral_scout_f':
+    case 'caral_scout_m':
+    case 'inca_chasqui_f':
+    case 'inca_chasqui_m':
       return dressCaralWorker(rig, variant);
     default:
       return null;

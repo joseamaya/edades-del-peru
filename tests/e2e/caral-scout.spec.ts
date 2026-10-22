@@ -9,7 +9,7 @@ async function boot(page: Page): Promise<void> {
   });
 }
 
-test('the Caral chasqui uses a rigged runner outfit for both genders', async ({ page }) => {
+test('the Caral scout uses a rigged commoner set for both genders', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await boot(page);
@@ -42,7 +42,9 @@ test('the Caral chasqui uses a rigged runner outfit for both genders', async ({ 
           skirt: visible(unit, 'attire_skirt_f'),
           chasquiSkirt: visible(unit, 'attire_skirt_chasqui_f'),
           wrap: visible(unit, 'attire_wrap_m'),
+          sash: visible(unit, 'attire_sash'),
           belt: visible(unit, 'attire_belt_chasqui'),
+          mantle: visible(unit, 'attire_mantle'),
           tool: visible(unit, 'attire_tool'),
           canteen: visible(unit, 'attire_canteen'),
         };
@@ -53,22 +55,24 @@ test('the Caral chasqui uses a rigged runner outfit for both genders', async ({ 
   expect(initial.scouts.some((scout: any) => !scout.male)).toBe(true);
   expect(initial.scouts.some((scout: any) => scout.male)).toBe(true);
   for (const scout of initial.scouts) {
-    expect(scout.variant, 'variant').toMatch(/^caral_chasqui_[fm]$/);
+    expect(scout.variant, 'variant').toMatch(/^caral_scout_[fm]$/);
     expect(scout.body, 'gender body').toBe(true);
     expect(scout.otherBody, 'inactive body').toBe(false);
     expect(scout.tunic, 'gender tunic').toBe(true);
     expect(scout.otherTunic, 'inactive tunic').toBe(false);
-    expect(scout.belt, 'belt').toBe(true);
+    expect(scout.sash, 'cotton sash').toBe(true);
+    expect(scout.belt, 'no chasqui belt').toBe(false);
+    expect(scout.mantle, 'simple manta').toBe(true);
     expect(scout.tool, 'no digging stick').toBe(false);
-    expect(scout.canteen, 'canteen').toBe(true);
+    expect(scout.canteen, 'no chasqui gourd').toBe(false);
     if (scout.male) {
       expect(scout.wrap, 'male wrap').toBe(true);
       expect(scout.skirt, 'female skirt hidden').toBe(false);
-      expect(scout.chasquiSkirt, 'female chasqui skirt hidden').toBe(false);
+      expect(scout.chasquiSkirt, 'reserved chasqui skirt hidden').toBe(false);
     } else {
       expect(scout.wrap, 'male wrap hidden').toBe(false);
-      expect(scout.skirt, 'worker skirt hidden').toBe(false);
-      expect(scout.chasquiSkirt, 'chasqui skirt').toBe(true);
+      expect(scout.skirt, 'worker skirt').toBe(true);
+      expect(scout.chasquiSkirt, 'reserved chasqui skirt hidden').toBe(false);
     }
   }
 

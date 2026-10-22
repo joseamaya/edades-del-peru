@@ -110,6 +110,11 @@ Wari y Tiahuanaco; el **felino** lo es de Chavín; el **Inti** del Estado inca.
   (plataformas, santuario superior y cabezas clavas como **motivo andino abstracto**, no exclusivo de
   Chavín). El WONDER es construible en **cualquier era** en modo maravilla, así que su modelo es
   era-agnóstico (no cambia con la era).
+- **Chavín y el Lanzón**: el hito `chavin_temple` modela el templo en U, la plaza circular hundida y las
+  cabezas clavas como formas atestiguadas. El **Lanzón** se insinúa dentro de la **Galería del Lanzón**, en
+  una cámara interior del Templo Viejo; **no** se modela como monolito exento en el patio. Su silueta,
+  proporciones y visibilidad desde la cámara son una abstracción legible para RTS, no una reconstrucción.
+  Fuente: [`chavin.md`](./civilizaciones/chavin.md), Rick et al. (1998).
 - **Verificación**: `tests/model.test.ts` (cobertura de estilos/emblemas) y
   `tests/e2e/civ-visuals.spec.ts` (dos civilizaciones coetáneas construyen modelos distintos). Revisión
   visual manual con `yarn shot`.

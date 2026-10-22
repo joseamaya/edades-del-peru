@@ -57,7 +57,8 @@ export const LANDMARKS: Record<LandmarkId, LandmarkDef> = {
     period: HistoricalPeriod.EARLY_HORIZON,
     region: 'andean_valley',
     status: 'documented',
-    source: 'docs/historia/civilizaciones/chavin.md (Chavín de Huántar, centro ceremonial; cabezas clavas)',
+    source:
+      'docs/historia/civilizaciones/chavin.md (Chavín de Huántar: templo, cabezas clavas y Lanzón interior; Rick et al. 1998)',
   },
   moche_huaca: {
     id: 'moche_huaca',

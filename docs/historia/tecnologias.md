@@ -16,7 +16,7 @@ ni después/otra cultura (ámbito).
 | Telar Andino (`andean_loom`) | Horizonte Temprano → Horizonte Tardío | Tradición textil andina prehispánica (Paracas, Nazca, Wari, Inca). |
 | Quipus y Vigías (`quipus_watchers`) | Horizonte Medio → Horizonte Tardío | Registro por quipus de tradición andina (Wari–Inca). |
 | Palabra del Amauta (`amauta_words`) | Horizonte Tardío | El *amauta* es un sabio/maestro inca. |
-| Chasquis Veloces (`swift_chasquis`) | Horizonte Tardío | Los *chasquis* son los correos del Estado inca. |
+| Chasquis Veloces (`swift_chasquis`) | Horizonte Tardío, solo Inca | Los *chasquis* son los correos del Estado inca; el efecto de capacidad es una abstracción logística, no una afirmación de que transportaran carga. |
 
 ## Suelo por cronología (`minPeriod`)
 

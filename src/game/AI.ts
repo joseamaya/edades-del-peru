@@ -457,7 +457,7 @@ export class AI {
   private researchCheck(): void {
     const p = this.p;
     for (const tech of TECHS) {
-      if (!techAvailable(tech, this.game.settings.period) || p.techs.has(tech.id)) continue;
+      if (!techAvailable(tech, this.game.settings.period, p.civ) || p.techs.has(tech.id)) continue;
       if (tech.requirements && !tech.requirements.every((r) => p.techs.has(r))) continue;
       const bld = this.myBuildings().find((b) => b.kind === tech.building && b.constructionComplete);
       if (!bld || bld.researchQueue.length > 0) continue;

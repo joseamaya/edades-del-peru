@@ -55,7 +55,7 @@ Classification of the 15 `BuildingKind`s (`types.ts:94`, defs in
 | `refinery` | Cantera | economy | historically appropriate | stone quarry, `minEra TAHUANTINSUYO` |
 | `barracks` | Casa del Guerrero | military | historically appropriate | trains Amauta / Misionero (era-gated) |
 | `arsenal` | Arsenal | military | generic but acceptable | `minEra FORMATIVE`; trains Hondero (sling), Tirador, Cazador (`VICEROYALTY`) and Artillero Antiaéreo (`CONTEMPORARY`) — ranged, not firearms. The modern "Arsenal" name is reused across eras |
-| `stable` | Establo | military | appropriate (gated) | `minEra VICEROYALTY`; Jinete/Caballería (`VICEROYALTY`), Ariete (`CONTEMPORARY`) — no horses before 1532. The pre-Hispanic Chasqui is trainable at the `center` instead |
+| `stable` | Establo | military | appropriate (gated) | `minEra VICEROYALTY`; Jinete/Caballería (`VICEROYALTY`), Ariete (`CONTEMPORARY`) — no horses before 1532. The pre-Hispanic scout (Chasqui only for the Inca) is trainable at the `center` instead |
 | `factory` | Taller de Artillería | military | appropriate (gated) | `minEra VICEROYALTY`; Artillería/Mortero (`VICEROYALTY`), Cohetes (`CONTEMPORARY`) |
 | `fortress` | Pucará | defense | historically appropriate | Andean hillfort (defensive; no unit training after the sci-fi `MECH` was removed) |
 | `market` | Mercado | economy | historically appropriate | exchange/trade (Chincha) |

@@ -226,7 +226,8 @@ export class Building {
     const tech = getTech(techId);
     if (!tech) return false;
     if (tech.building !== this.kind) return false;
-    if (this.ctx?.period !== undefined && !techAvailable(tech, this.ctx.period)) return false;
+    if (this.ctx?.period !== undefined && !techAvailable(tech, this.ctx.period, this.ctx.getPlayer?.(this.owner)?.civ))
+      return false;
     this.researchQueue.push({ tech: techId, progress: 0, playerId: this.owner });
     return true;
   }

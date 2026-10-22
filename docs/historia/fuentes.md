@@ -18,7 +18,10 @@ oficiales (Ministerio de Cultura, UNESCO, Marina de Guerra del Perú) y enciclop
 
 ## Chavín y Horizonte Temprano
 
-- Wikipedia: [Horizonte Temprano](https://es.wikipedia.org/wiki/Horizonte_Temprano), [Cultura chavín](https://es.wikipedia.org/wiki/Cultura_chav%C3%ADn), [Cultura Cupisnique](https://es.wikipedia.org/wiki/Cultura_cupisnique), [Huaca de los Reyes](https://es.wikipedia.org/wiki/Huaca_de_los_Reyes).
+- Rick, J. W., Rodriguez Kembel, S., Rick, R. M. y Kembel, J. A. (1998). «La arquitectura del complejo
+  ceremonial de Chavín de Huántar: documentación tridimensional y sus implicancias». *Boletín de
+  Arqueología PUCP*, DOI [10.18800/boletindearqueologiapucp.199801.013](https://doi.org/10.18800/boletindearqueologiapucp.199801.013).
+- Wikipedia: [Horizonte Temprano](https://es.wikipedia.org/wiki/Horizonte_Temprano), [Cultura chavín](https://es.wikipedia.org/wiki/Cultura_chav%C3%ADn), [Cultura Cupisnique](https://es.wikipedia.org/wiki/Cultura_cupisnique), [Huaca de los Reyes](https://es.wikipedia.org/wiki/Huaca_de_los_Reyes), [Lanzón de Chavín](https://es.wikipedia.org/wiki/Lanz%C3%B3n_de_Chav%C3%ADn).
 - Museo Nacional de Arqueología / MinCultura: *Culturas precolombinas del Perú* (PDF).
 - Burger, R. *Chavín and the Origins of Andean Civilization*.
 

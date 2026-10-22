@@ -1018,13 +1018,14 @@ Characters + clips UAL1/UAL2) con túnica, falda y faja de algodón autoradas po
 
 | Trabajadores | Draws/trabajador | Tris/trabajador | `rigs` p95 |
 |---:|---:|---:|---:|
-| 4 | 22,5 | 39.073 | 0,20 ms |
-| 12 | 23,0 | 39.216 | 0,30 ms |
-| 24 | 23,3 | 39.311 | 0,50 ms |
-| 48 | 23,4 | 39.335 | 1,00 ms |
+| 4 | 22,0 | 36.449 | 0,10 ms |
+| 12 | 22,3 | 36.544 | 0,60 ms |
+| 24 | 22,5 | 36.592 | 0,80 ms |
+| 48 | 22,8 | 36.675 | 1,80 ms |
 
-El modelo **entra en el presupuesto** de 40 draws / 40.000 tris (main + shadow) con ~22-23 draws y ~39,1-39,3k
-tris. Frente al maniquí baja **~9 draw calls por trabajador** (32 → 23) y sube ~9k tris, porque ahora hay
+El modelo **entra en el presupuesto** de 40 draws / 40.000 tris (main + shadow) con ~22-23 draws y ~36,4-36,7k
+tris visibles en la mezcla femenina/masculina (solo un cuerpo/atuendo por instancia). Frente al maniquí baja
+**~10 draw calls por trabajador** (32 → 22) y sube tris, porque ahora hay
 cuerpo, pelo y ropa con texturas en vez de un placeholder. Para no recortar geometría visible solo se excluyen del
 pase VSM los ojos, demasiado pequeños para proyectar una sombra legible (`Eyes`): en VSM un objeto con
 `receiveShadow` también se dibuja en el shadow map, así que hay que apagar ambos flags. La túnica, la falda y la
@@ -1037,17 +1038,33 @@ yarn bench --scenario=rigs --units=4,12,24,48 --runs=2 --steps=600 --assert \
 
 ### Evidencia
 
-Misma misión (`m1_caral`), 1600×900, UI oculta y pasos fijos; izquierda antes (modelo procedural), derecha
-después (asset final):
+Misma misión (`m1_caral`), seed `777`, 1600×900, UI oculta, `fog=0`, briefing iniciado y pasos fijos; izquierda
+antes (modelo procedural en `3b98be0`, padre de #124), derecha después (asset final):
 
-- [`caral-worker-final-before-after.webp`](../media/caral-worker-final-before-after.webp) — acercamiento.
-- [`caral-worker-final-rts-before-after.webp`](../media/caral-worker-final-rts-before-after.webp) — cámara RTS.
-- [`caral-worker-tasks.webp`](../media/caral-worker-tasks.webp) — poses de recolección, construcción y
-  transporte dirigidas por órdenes reales (#117).
+- [`caral-worker-final-before-after.webp`](../media/caral-worker-final-before-after.webp) — acercamiento idle.
+- [`caral-worker-final-rts-before-after.webp`](../media/caral-worker-final-rts-before-after.webp) — cámara RTS
+  con base, recursos y otros trabajadores para comprobar escala.
+- [`caral-worker-tasks-before-after.webp`](../media/caral-worker-tasks-before-after.webp) — idle, caminar,
+  recolectar, construir y transportar, dirigidas por órdenes reales.
+- [`caral-worker-attack.webp`](../media/caral-worker-attack.webp) y
+  [`caral-worker-attack-rts.webp`](../media/caral-worker-attack-rts.webp) — ataque con la herramienta, cerca y
+  RTS, contra un edificio enemigo.
 
-Las capturas antes/después se generan con `node scripts/shots_evidence.mjs --scene=caral-worker --out=…` y
-`--scene=caral-worker-rts --out=…`, una vez desde el worktree limpio (`main`) y otra desde la rama; la tira de
-tareas se captura solo desde la rama con `--scene=caral-worker-tasks`.
+Procedimiento reproducible:
+
+1. Crear el worktree baseline `3b98be0` y enlazar `node_modules`; copiar `scripts/shots_evidence.mjs` para que
+   ambos lados usen exactamente la misma captura.
+2. Capturar `caral-worker`, `caral-worker-rts`, `caral-worker-tasks` y `rigged-attack` desde el baseline y desde la rama final.
+   El script espera `game:ready` y un frame renderizado, inicia el briefing, fija `fog=0`, `seed=777`, cámara,
+   yaw, zoom y pasos; el loop se detiene antes de la captura.
+3. Componer los pares con
+   `python3 scripts/compare_evidence.py --before … --after … --out docs/media/…`.
+4. Verificar que las tareas se distinguen sin leer la UI y que no hay clipping de túnica, falda, faja, manto,
+   herramienta ni carga.
+
+Las imágenes anteriores se descartaron: el lado “después” se capturó con la niebla de guerra activa y antes de
+iniciar el briefing, por lo que el terreno quedaba sin iluminación y la partida estaba pausada; además no había
+vista de caminar ni de transporte. La comparación nueva solo cambia el modelo/presentación del trabajador.
 
 ### Límites del modelo final
 

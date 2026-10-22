@@ -66,7 +66,7 @@ import { RNG, hashCode, weightedPick } from '../util/rng';
 import { detectSoftwareRenderer } from '../util/gpu';
 import { ERA_DEFS } from '../model/defs/eras';
 import { BUILDING_DEFS, getBuildingStats, BUILDING_INFO } from '../model/defs/buildings';
-import { getUnitStats, getUnitModel, UNIT_INFO, isConverter, DamageClass } from '../model/defs/units';
+import { getUnitStats, getUnitModel, UNIT_INFO, unitDisplayName, isConverter, DamageClass } from '../model/defs/units';
 import { getTech } from '../model/defs/techs';
 import { AudioEngine } from '../audio/AudioEngine';
 import { Mission } from '../campaign/Mission';
@@ -1499,7 +1499,7 @@ export class Game {
       const own = picked.unit.owner === 0 ? 'Tú' : (this.players[picked.unit.owner]?.name ?? 'Enemigo');
       return {
         icon: ui.icon,
-        title: `${ui.name}`,
+        title: unitDisplayName(picked.unit.kind, this.players[picked.unit.owner]?.civ),
         detalle: `${own} · HP ${Math.ceil(picked.unit.hp)}/${Math.ceil(picked.unit.maxHp)}`,
       };
     }
