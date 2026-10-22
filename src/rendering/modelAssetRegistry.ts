@@ -24,10 +24,13 @@ export interface ModelAssetDefinition {
   readonly groundClearance?: number;
   /** Merge flat-coloured skinned primitives into one mesh/material (draw-call budget). */
   readonly consolidate?: boolean;
+  /** Tiny or body-conforming meshes that skip the VSM shadow pass. */
+  readonly shadowSkipMeshes?: readonly string[];
 }
 
 const UAL_URL = modelUrls['../assets/models/ual_mannequin.glb'] ?? '';
 const ALPACA_URL = modelUrls['../assets/models/quaternius_alpaca.glb'] ?? '';
+const CARAL_WORKER_URL = modelUrls['../assets/models/caral_worker.glb'] ?? '';
 
 /**
  * The mannequin is the pipeline's validation asset (Quaternius Universal
@@ -45,6 +48,26 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
       walk: 'Walk_Loop',
       work: 'Fixing_Kneeling',
       attack: 'Sword_Attack',
+    },
+  },
+  /**
+   * Caral worker: Quaternius Universal Base Characters body/hair (CC0) with a
+   * project-authored cotton tunic/skirt/sash and clips from UAL1/UAL2. The
+   * generated GLB is built by `scripts/build_caral_worker.mjs`.
+   */
+  caral_worker: {
+    url: CARAL_WORKER_URL,
+    scale: 1,
+    yawOffset: 0,
+    ground: true,
+    groundClearance: 0.01,
+    // Facial micro-meshes and the thin skirt/sash barely change the silhouette;
+    // dropping them from the VSM shadow pass keeps the worker inside its budget.
+    shadowSkipMeshes: ['Eyes', 'Eyebrows', 'attire_skirt', 'attire_sash'],
+    clips: {
+      idle: 'Idle_Loop',
+      walk: 'Walk_Loop',
+      work: 'Farm_Harvest',
     },
   },
   /**

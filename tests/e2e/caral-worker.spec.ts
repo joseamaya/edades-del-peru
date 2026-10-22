@@ -28,21 +28,38 @@ test('the Caral worker is rigged, animated by its orders and keeps gameplay inta
     const g = (window as unknown as { game: any }).game;
     const workers = [...g.units.values()].filter((u: any) => u.kind === 'worker' && u.owner === 0);
     const worker = workers[0];
-    const attire = ['attire:mantle', 'attire:loincloth', 'attire:headband', 'attire:carry', 'attire:tool'].map(
-      (name) => !!worker.rig.root.getObjectByName(name),
-    );
+    const attire = [
+      'attire_tunic',
+      'attire_skirt',
+      'attire_sash',
+      'attire_headband',
+      'attire_carry',
+      'attire_tool',
+    ].map((name) => !!worker.rig.root.getObjectByName(name));
+    const shadowSkip = ['Eyes', 'Eyebrows', 'attire_skirt', 'attire_sash'].map((name) => {
+      const mesh = worker.rig.root.getObjectByName(name) as { castShadow?: boolean; receiveShadow?: boolean } | null;
+      return !!mesh && !mesh.castShadow && !mesh.receiveShadow;
+    });
+    const tunic = worker.rig.root.getObjectByName('attire_tunic') as {
+      castShadow?: boolean;
+      receiveShadow?: boolean;
+    } | null;
     return {
       assets: (window as unknown as { __modelAssets: () => any[] }).__modelAssets(),
       workers: workers.length,
       rigged: workers.filter((u: any) => !!u.rig).length,
       attire,
+      shadowSkip,
+      tunicShadow: !!tunic && !!tunic.castShadow && !!tunic.receiveShadow,
       hasPickProxy: !!worker.view.pickProxy,
     };
   });
-  expect(initial.assets.find((asset) => asset.id === 'ual_mannequin')?.state).toBe('ready');
+  expect(initial.assets.find((asset) => asset.id === 'caral_worker')?.state).toBe('ready');
   expect(initial.workers).toBeGreaterThan(0);
   expect(initial.rigged).toBe(initial.workers);
   expect(initial.attire.every(Boolean)).toBe(true);
+  expect(initial.shadowSkip.every(Boolean)).toBe(true);
+  expect(initial.tunicShadow).toBe(true);
   expect(initial.hasPickProxy).toBe(true);
 
   const simulation = await page.evaluate(() => {
@@ -55,8 +72,8 @@ test('the Caral worker is rigged, animated by its orders and keeps gameplay inta
     const workers = [...g.units.values()].filter((u: any) => u.kind === 'worker' && u.owner === 0);
     return workers.map((u: any) => ({
       state: u.rig?.currentState ?? null,
-      carry: !!u.rig?.root.getObjectByName('attire:carry')?.visible,
-      tool: !!u.rig?.root.getObjectByName('attire:tool')?.visible,
+      carry: !!u.rig?.root.getObjectByName('attire_carry')?.visible,
+      tool: !!u.rig?.root.getObjectByName('attire_tool')?.visible,
     })) as WorkerState[];
   });
   expect(simulation.some((worker) => worker.state === 'work')).toBe(true);
@@ -93,11 +110,15 @@ test('the Caral worker is rigged, animated by its orders and keeps gameplay inta
     g.selectUnits([worker.id]);
     const selected = g.selectedUnits.includes(worker.id);
     const saved = g.saveMatch();
-    const refsBefore = (window as unknown as { __modelAssets: () => any[] }).__modelAssets()[0].refs;
+    const workerAsset = () =>
+      (window as unknown as { __modelAssets: () => any[] })
+        .__modelAssets()
+        .find((asset) => asset.id === 'caral_worker');
+    const refsBefore = workerAsset().refs;
     const spawned = g.spawnScriptedUnit('worker', 0, worker.pos.x + 3, worker.pos.z + 3);
     const spawnedRigged = !!spawned.rig;
     spawned.removeFromScene();
-    const refsAfter = (window as unknown as { __modelAssets: () => any[] }).__modelAssets()[0].refs;
+    const refsAfter = workerAsset().refs;
     return { selected, saved, spawnedRigged, refsBefore, refsAfter };
   });
   expect(lifecycle.selected).toBe(true);

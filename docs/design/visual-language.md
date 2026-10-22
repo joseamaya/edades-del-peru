@@ -235,18 +235,21 @@ pre-Hispanic figures have no attested likeness, so the data marks them as
 Units can opt into a local rigged glTF/GLB (`src/model/defs/modelAssets.ts` → `src/rendering/RigInstance.ts`)
 while the procedural model remains the fallback. The pipeline is intentionally **presentation-only**: the
 simulation owns position/navigation and root motion is ignored. The first asset (`ual_mannequin.glb`) is a
-CC0 pipeline fixture, now used as the base for the **Caral worker pilot**: a project-authored simple cotton mantle,
-loincloth, headband, hair, digging stick and carry bundle are attached to its bones. `docs/historia/atuendos.md`
-documents cotton textiles for Caral-Supe but marks specific garments as **not documented**, so the pilot is an
-**abstraction/plausible** treatment, not a reconstruction; there is no metal, footwear, horse or firearm. The
-base mesh is still a generic mannequin, so the pilot validates silhouette, attire and state-driven animation
-before a bespoke historical mesh replaces it. Historical models must follow the period dossiers and their
-source/licence must be recorded in [`PROVENANCE.md`](../../PROVENANCE.md) before they are used in a campaign.
-See [`docs/development.md`](../development.md) for the clip convention and the migration steps.
-Comparable evidence (same mission `m1_caral`, seed 3000, 1600x900):
-[`caral-worker-before-after.webp`](../media/caral-worker-before-after.webp) (procedural worker → dressed rig,
-fixed front close-up) and [`caral-rts-before-after.webp`](../media/caral-rts-before-after.webp) (default RTS
-view). The left half is the procedural fallback; the right half is the pilot.
+CC0 pipeline fixture for `?rig=1`; the finished **Caral worker** (`caral_worker.glb`, #116) composes a CC0
+Quaternius body/face and hair with project-authored cotton tunic, skirt and sash generated from the body
+surface, plus UAL1/UAL2 clips. The headband, carry bundle and digging stick are runtime accessories on bones.
+`docs/historia/atuendos.md` documents cotton textiles for Caral-Supe but marks specific garments as **not
+documented**, so the outfit is an **abstraction/plausible** treatment, not a reconstruction; there is no metal,
+footwear, horse or firearm. The face/hair are generic CC0, not a portrait. Historical models must follow the
+period dossiers and their source/licence must be recorded in [`PROVENANCE.md`](../../PROVENANCE.md) before they
+are used in a campaign. See [`docs/development.md`](../development.md) for the clip convention, the build script
+and the migration steps. Micro-meshes that barely change the silhouette (`Eyes`, `Eyebrows`, skirt, sash) skip
+the VSM shadow pass to stay inside the worker budget without cutting visible geometry.
+Comparable evidence (same mission `m1_caral`, seed 3000, 1600x900, UI hidden):
+[`caral-worker-final-before-after.webp`](../media/caral-worker-final-before-after.webp) (procedural worker →
+finished rig, fixed front close-up) and
+[`caral-worker-final-rts-before-after.webp`](../media/caral-worker-final-rts-before-after.webp) (RTS camera).
+The left half is the procedural fallback; the right half is the finished asset.
 
 ## Caral visual pilot
 
@@ -281,9 +284,9 @@ Comparable evidence (same mission `m1_caral`, seed 3000, 1600x900, UI hidden):
 [`caral-landmark-before-after.webp`](../media/caral-landmark-before-after.webp) (landmark close).
 Each left half is before, the right half after. The dressing merges into one mesh per base and
 the crop rows into one more, so the pilot adds two draw calls per settlement; the landmark stays a
-single cached model. Remaining work before applying the style to other campaigns: bespoke historical
-meshes (the worker/fauna rigs are still generic CC0 bases), denser regional vegetation, and a shared
-palette pass over the other eight dossiers.
+single cached model. Remaining work before applying the style to other campaigns: denser regional
+vegetation and a shared palette pass over the other eight dossiers. The worker's CC0 body now carries
+project-authored cotton garments (a documented abstraction); the fauna rigs remain CC0 stand-ins.
 
 ## Non-goals
 
@@ -294,8 +297,8 @@ palette pass over the other eight dossiers.
   (`src/model/defs/landmarks.ts`).
 - No new asset farms: prefer procedural variation and shared components over
   one-off models. Rigged glTF assets are shared/cached and adopted only when
-  they visibly beat the procedural look; the first one is the Caral worker
-  pilot, still using a generic CC0 base mesh.
+  they visibly beat the procedural look; the first one is the Caral worker,
+  a CC0 body with project-authored cotton garments documented as an abstraction.
 
 ## See also
 

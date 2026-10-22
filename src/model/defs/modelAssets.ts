@@ -1,11 +1,13 @@
 import { CivId, Era, HistoricalPeriod, UnitKind } from '../../core/types';
 
 /** Registered rigged models. Add the id here and to the rendering registry. */
-export type ModelAssetId = 'ual_mannequin' | 'quaternius_alpaca';
+export type ModelAssetId = 'ual_mannequin' | 'quaternius_alpaca' | 'caral_worker';
 
-/** CC0 Quaternius mannequin: pipeline base for the demo and the Caral worker variant. */
+/** CC0 Quaternius mannequin: pipeline demo/fallback fixture. */
 export const MANNEQUIN_ASSET_ID: ModelAssetId = 'ual_mannequin';
 export const RIG_DEMO_ASSET_ID: ModelAssetId = MANNEQUIN_ASSET_ID;
+/** Finished Caral worker asset (CC0 body/hair/clips + project-authored cotton cloth). */
+export const CARAL_WORKER_ASSET_ID: ModelAssetId = 'caral_worker';
 
 /** Presentation variants applied on top of a shared rigged asset. */
 export type RigVariant = 'caral_worker';
@@ -50,7 +52,7 @@ export interface RigModelChoice {
  */
 export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId): RigModelChoice | null {
   if (kind === UnitKind.WORKER && civ === CivId.CARAL && era === Era.FORMATIVE) {
-    return { asset: MANNEQUIN_ASSET_ID, variant: 'caral_worker' };
+    return { asset: CARAL_WORKER_ASSET_ID, variant: 'caral_worker' };
   }
   return null;
 }
@@ -59,6 +61,6 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId): RigModelCh
 export function modelAssetIdsForMatch(period: HistoricalPeriod, civs: readonly CivId[]): ModelAssetId[] {
   // Period-locked matches: ARCHAIC starts in Era.FORMATIVE, so this preload
   // mirrors `unitModelAsset`'s Caral/Formative rule.
-  if (period === HistoricalPeriod.ARCHAIC && civs.includes(CivId.CARAL)) return [MANNEQUIN_ASSET_ID];
+  if (period === HistoricalPeriod.ARCHAIC && civs.includes(CivId.CARAL)) return [CARAL_WORKER_ASSET_ID];
   return [];
 }
