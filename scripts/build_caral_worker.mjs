@@ -24,6 +24,14 @@ const SOURCES = {
     url: `${BASE}/hair/Hair_Long.glb`,
     sha256: 'f8122525f83525c65fa6a6fb9869e6a4eb21045248c55e6e513646dbf9cb60de',
   },
+  male: {
+    url: `${BASE}/characters/Superhero_Male.glb`,
+    sha256: '5011951317431872ba7d9310b3bd953a9387e68f83e35c6f091395b8a49dc3ee',
+  },
+  maleHair: {
+    url: `${BASE}/hair/Hair_SimpleParted.glb`,
+    sha256: '1f21aeef18109c81080cb01bbbe4ad80e95550ca3e89e51f762e6d6df1981c13',
+  },
   ual1: {
     url: `${BASE}/animations/UAL1.glb`,
     sha256: '69591853d817488edaa8fd9bf8fc1d821eaeaf789f8627b3cd23b41c4ed67997',
@@ -67,9 +75,11 @@ try {
         return new Promise((resolve, reject) => new GLTFLoader().parse(buffer, '', resolve, reject));
       };
 
-      const [baseGltf, hairGltf, ual1, ual2] = await Promise.all([
+      const [baseGltf, maleGltf, hairGltf, maleHairGltf, ual1, ual2] = await Promise.all([
         load(sources.base, 'base'),
+        load(sources.male, 'male'),
         load(sources.hair, 'hair'),
+        load(sources.maleHair, 'maleHair'),
         load(sources.ual1, 'ual1'),
         load(sources.ual2, 'ual2'),
       ]);
@@ -81,17 +91,28 @@ try {
         });
         return found;
       };
-      const baseMeshes = skinned(baseGltf.scene);
-      if (!baseMeshes.length) throw new Error('base has no skinned mesh');
-      const bodyMesh = baseMeshes.reduce((a, b) =>
-        a.geometry.attributes.position.count > b.geometry.attributes.position.count ? a : b,
-      );
-      const skeleton = bodyMesh.skeleton;
+      const femaleMeshes = skinned(baseGltf.scene);
+      const maleMeshes = skinned(maleGltf.scene);
+      if (!femaleMeshes.length || !maleMeshes.length) throw new Error('base has no skinned mesh');
+      const largest = (meshes) =>
+        meshes.reduce((a, b) => (a.geometry.attributes.position.count > b.geometry.attributes.position.count ? a : b));
+      const femaleBody = femaleMeshes.find((mesh) => mesh.name === 'Superhero_Female') ?? largest(femaleMeshes);
+      const maleBody = largest(maleMeshes);
+      const femaleEyes = femaleMeshes.find((mesh) => mesh.name === 'Eyes');
+      const femaleBrows = femaleMeshes.find((mesh) => mesh.name === 'Eyebrows');
+      const maleEyes = maleMeshes.find((mesh) => mesh.name === 'Face.001') ?? femaleEyes;
+      const maleBrows =
+        maleMeshes.find((mesh) => mesh.name === 'Face') ??
+        maleMeshes.find((mesh) => mesh.material?.name === 'MI_Hair_1');
+      const skeleton = femaleBody.skeleton;
       const boneIndex = new Map(skeleton.bones.map((bone, index) => [bone.name, index]));
-      const bindMatrix = bodyMesh.bindMatrix.clone();
+      const bindMatrix = femaleBody.bindMatrix.clone();
+      femaleBody.name = 'Body_f';
+      if (femaleEyes) femaleEyes.name = 'Eyes_f';
       baseGltf.scene.updateMatrixWorld(true);
+      maleGltf.scene.updateMatrixWorld(true);
 
-      const rebind = (sourceMesh) => {
+      const rebind = (sourceMesh, name = sourceMesh.name) => {
         const remap = sourceMesh.skeleton.bones.map((bone) => boneIndex.get(bone.name));
         if (remap.some((index) => index === undefined)) {
           throw new Error(`${sourceMesh.name}: bone names do not match the base skeleton`);
@@ -107,7 +128,7 @@ try {
         }
         skinIndex.needsUpdate = true;
         const mesh = new THREE.SkinnedMesh(geometry, sourceMesh.material.clone());
-        mesh.name = sourceMesh.name;
+        mesh.name = name;
         mesh.bindMode = sourceMesh.bindMode;
         mesh.bind(skeleton, sourceMesh.bindMatrix);
         mesh.castShadow = true;
@@ -119,17 +140,24 @@ try {
         return mesh;
       };
 
-      const hairMesh = skinned(hairGltf.scene)[0];
-      if (!hairMesh) throw new Error('hair has no skinned mesh');
-      const addedHair = rebind(hairMesh);
-      addedHair.material.color.set(HUMAN_HAIR);
+      const femaleHairMesh = skinned(hairGltf.scene)[0];
+      if (!femaleHairMesh) throw new Error('female hair has no skinned mesh');
+      const femaleHair = rebind(femaleHairMesh, 'Hair_f');
+      femaleHair.material.color.set(HUMAN_HAIR);
+      const maleHairMesh = skinned(maleHairGltf.scene)[0];
+      if (!maleHairMesh) throw new Error('male hair has no skinned mesh');
+      const maleHair = rebind(maleHairMesh, 'Hair_m');
+      maleHair.material.color.set(HUMAN_HAIR);
+      const addedMaleBody = rebind(maleBody, 'Body_m');
+      if (maleEyes) rebind(maleEyes, 'Eyes_m');
 
       // Recolour the exposed skin to the shared darker Andean palette while
       // preserving the source shading and the dark facial features. The hip
       // mask still hides the CC0 underwear.
-      const bodyMaterial = bodyMesh.material.clone();
-      bodyMesh.material = bodyMaterial;
-      if (bodyMaterial.map?.image) {
+      const recolorBody = (bodyMesh) => {
+        const bodyMaterial = bodyMesh.material.clone();
+        bodyMesh.material = bodyMaterial;
+        if (!bodyMaterial.map?.image) return;
         const image = bodyMaterial.map.image;
         const width = image.width;
         const height = image.height;
@@ -250,13 +278,15 @@ try {
         skin.needsUpdate = true;
         bodyMaterial.map = skin;
         bodyMaterial.needsUpdate = true;
-      }
+      };
+      recolorBody(femaleBody);
+      recolorBody(addedMaleBody);
 
       // The source eyebrows are ~1.5k triangles of hair cards. Replace them with
       // two low-poly strips sampled from the same surface so they keep the face
       // readable without doubling the worker's shadow cost.
-      const sourceBrows = skinned(baseGltf.scene).find((mesh) => mesh.name === 'Eyebrows');
-      if (sourceBrows) {
+      const addEyebrows = (sourceBrows, name) => {
+        if (!sourceBrows) return;
         const sourcePositions = sourceBrows.geometry.getAttribute('position');
         const headBone = boneIndex.get('Head');
         if (headBone === undefined) throw new Error('Head bone not found');
@@ -326,19 +356,21 @@ try {
           side: THREE.DoubleSide,
         });
         const brows = new THREE.SkinnedMesh(geometry, material);
-        brows.name = 'Eyebrows';
+        brows.name = name;
         brows.bind(skeleton, bindMatrix);
         brows.castShadow = true;
         brows.receiveShadow = true;
         brows.frustumCulled = false;
         baseGltf.scene.add(brows);
-        sourceBrows.removeFromParent();
-      }
+      };
+      addEyebrows(femaleBrows, 'Eyebrows_f');
+      addEyebrows(maleBrows, 'Eyebrows_m');
+      femaleBrows?.removeFromParent();
 
       // A short-sleeved cotton tunic derived from the body surface: same skin weights,
       // slightly offset along the normals, with the arms and neck excluded.
-      const makeTunic = ({ topY = 1.48, bottomY = 0.88, sideX = 0.22, offset = 0.03 } = {}) => {
-        const geometry = bodyMesh.geometry;
+      const makeTunic = (sourceBody, { topY = 1.48, bottomY = 0.88, sideX = 0.22, offset = 0.03 } = {}) => {
+        const geometry = sourceBody.geometry;
         const positions = geometry.getAttribute('position');
         const normals = geometry.getAttribute('normal');
         const uvs = geometry.getAttribute('uv');
@@ -512,18 +544,19 @@ try {
       });
       const sash = new THREE.MeshStandardMaterial({ color: 0x5f442c, roughness: 0.95, side: THREE.DoubleSide });
 
-      const addSkinned = (geometry, material, name) => {
+      const addSkinned = (geometry, material, name, bind = bindMatrix) => {
         const mesh = new THREE.SkinnedMesh(geometry, material);
         mesh.name = name;
-        mesh.bind(skeleton, bindMatrix);
+        mesh.bind(skeleton, bind);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         mesh.frustumCulled = false;
         baseGltf.scene.add(mesh);
         return mesh;
       };
-      const tunic = addSkinned(makeTunic(), cotton, 'attire_tunic');
-      const skirt = addSkinned(
+      const tunicF = addSkinned(makeTunic(femaleBody), cotton, 'attire_tunic_f');
+      const tunicM = addSkinned(makeTunic(maleBody, { sideX: 0.3 }), cotton, 'attire_tunic_m', maleBody.bindMatrix);
+      const skirtF = addSkinned(
         makeTube({
           topY: 0.97,
           bottomY: 0.68,
@@ -535,11 +568,11 @@ try {
           rings: 7,
         }),
         cotton,
-        'attire_skirt',
+        'attire_skirt_f',
       );
       const cottonChasqui = cotton.clone();
       cottonChasqui.color.setHex(0xe8d8b8);
-      const chasquiSkirt = addSkinned(
+      const chasquiSkirtF = addSkinned(
         makeTube({
           topY: 0.97,
           bottomY: 0.58,
@@ -551,7 +584,22 @@ try {
           rings: 7,
         }),
         cottonChasqui,
-        'attire_skirt_chasqui',
+        'attire_skirt_chasqui_f',
+      );
+      const wrapM = addSkinned(
+        makeTube({
+          topY: 0.97,
+          bottomY: 0.8,
+          topRx: 0.25,
+          topRz: 0.19,
+          bottomRx: 0.29,
+          bottomRz: 0.22,
+          segments: 28,
+          rings: 4,
+        }),
+        cotton,
+        'attire_wrap_m',
+        maleBody.bindMatrix,
       );
       const sashChasqui = new THREE.MeshStandardMaterial({
         color: 0x8a3b2a,
@@ -618,9 +666,17 @@ try {
         depth: size.z,
         meshes: skinned(baseGltf.scene).length,
         animations: animations.map((clip) => clip.name),
-        baseClips: baseMeshes.length,
-        customMeshes: [tunic.name, skirt.name, chasquiSkirt.name, belt.name, chasquiBelt.name],
-        hairMaterial: addedHair.material.name,
+        baseClips: femaleMeshes.length,
+        customMeshes: [
+          tunicF.name,
+          tunicM.name,
+          skirtF.name,
+          chasquiSkirtF.name,
+          wrapM.name,
+          belt.name,
+          chasquiBelt.name,
+        ],
+        hairMaterial: femaleHair.material.name,
         boneCount: skeleton.bones.length,
       };
     },

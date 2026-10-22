@@ -1,4 +1,5 @@
 import { CivId, Era, HistoricalPeriod, UnitKind } from '../../core/types';
+import { genderForId } from './people';
 
 /** Registered rigged models. Add the id here and to the rendering registry. */
 export type ModelAssetId = 'ual_mannequin' | 'quaternius_alpaca' | 'caral_worker';
@@ -9,10 +10,10 @@ export const RIG_DEMO_ASSET_ID: ModelAssetId = MANNEQUIN_ASSET_ID;
 /** Finished Caral worker asset (CC0 body/hair/clips + project-authored cotton cloth). */
 export const CARAL_WORKER_ASSET_ID: ModelAssetId = 'caral_worker';
 /** Eyes are too small to cast a readable shadow; the garments keep theirs. */
-export const CARAL_WORKER_SHADOW_SKIP_MESHES: readonly string[] = ['Eyes'];
+export const CARAL_WORKER_SHADOW_SKIP_MESHES: readonly string[] = ['Eyes_f', 'Eyes_m'];
 
 /** Presentation variants applied on top of a shared rigged asset. */
-export type RigVariant = 'caral_worker' | 'caral_chasqui';
+export type RigVariant = 'caral_worker_f' | 'caral_worker_m' | 'caral_chasqui_f' | 'caral_chasqui_m';
 
 /** Animation states mapped to clips; `eat` is fauna-only. A rig may omit any state except `idle`. */
 export type RigClipState = 'idle' | 'walk' | 'walk_carry' | 'gather' | 'build' | 'attack' | 'eat';
@@ -29,8 +30,10 @@ export const RIG_CLIP_STATES: readonly RigClipState[] = [
 
 /** Per-variant clip overrides; `null` removes a state (falls back to idle). */
 export const RIG_VARIANT_CLIPS: Partial<Record<RigVariant, Partial<Record<RigClipState, string | null>>>> = {
-  caral_worker: { attack: null },
-  caral_chasqui: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: null },
+  caral_worker_f: { attack: null },
+  caral_worker_m: { attack: null },
+  caral_chasqui_f: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: null },
+  caral_chasqui_m: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: null },
 };
 
 /** Playback-rate reference for in-place walk clips (world units per second). */
@@ -67,10 +70,15 @@ export interface RigModelChoice {
  * Rigged model for a unit kind, or `null` to keep the procedural model.
  * The migration is progressive: this pilot covers the Caral worker only.
  */
-export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId): RigModelChoice | null {
+export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): RigModelChoice | null {
   if (civ === CivId.CARAL && era === Era.FORMATIVE) {
-    if (kind === UnitKind.WORKER) return { asset: CARAL_WORKER_ASSET_ID, variant: 'caral_worker' };
-    if (kind === UnitKind.SCOUT) return { asset: CARAL_WORKER_ASSET_ID, variant: 'caral_chasqui' };
+    const female = genderForId(id) === 'female';
+    if (kind === UnitKind.WORKER) {
+      return { asset: CARAL_WORKER_ASSET_ID, variant: female ? 'caral_worker_f' : 'caral_worker_m' };
+    }
+    if (kind === UnitKind.SCOUT) {
+      return { asset: CARAL_WORKER_ASSET_ID, variant: female ? 'caral_chasqui_f' : 'caral_chasqui_m' };
+    }
   }
   return null;
 }

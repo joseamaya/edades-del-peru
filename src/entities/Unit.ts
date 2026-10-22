@@ -24,6 +24,7 @@ import { EntityView } from '../entities/EntityView';
 import { allocId } from '../entities/EntityView';
 import { Order, OrderKind, OrderTarget } from '../core/types';
 import { angleDelta, angleTo, distance2D, clamp, facingRotation, lerp } from '../util/math';
+import { genderForId, type PersonGender } from '../model/defs/people';
 import type { UnitSave } from '../game/saveTypes';
 
 /** Context that Game provides to units (avoids circular dependencies). */
@@ -92,10 +93,11 @@ const CARRY_COLORS: Record<keyof Resources, number> = {
 };
 
 export class Unit {
-  id = allocId();
+  id: number;
   owner: number;
   kind: UnitKind;
   era: Era;
+  readonly gender: PersonGender;
   stats: UnitStats;
   pos = new THREE.Vector3();
   vel = new THREE.Vector3();
@@ -155,10 +157,12 @@ export class Unit {
   /** Rigged presentation; null keeps the procedural model (progressive migration). */
   rig: RigInstance | null = null;
 
-  constructor(kind: UnitKind, owner: number, era: Era, ctx: BuildContext) {
+  constructor(kind: UnitKind, owner: number, era: Era, ctx: BuildContext, id?: number) {
+    this.id = id ?? allocId();
     this.kind = kind;
     this.owner = owner;
     this.era = era;
+    this.gender = genderForId(this.id);
     // Deterministic spawn facing: no Math.random here, so saves/replays and
     // AI-vs-AI runs keep the same yaw. The golden angle gives visual variety.
     this.yaw = (this.id * 2.399963229728653) % (Math.PI * 2);
@@ -166,9 +170,9 @@ export class Unit {
     this.animationTime = (this.id * 1.61803398875) % 10;
     this.stats = getUnitStats(kind, era);
     this.hp = this.maxHp = this.stats.hp;
-    const modelChoice = unitModelAsset(kind, era, ctx.civ.id);
+    const modelChoice = unitModelAsset(kind, era, ctx.civ.id, this.id);
     this.rig = modelChoice ? acquireRig(modelChoice.asset, modelChoice.variant) : null;
-    const model = this.rig ? this.rig.root : buildModel(getUnitModel(kind, era), ctx);
+    const model = this.rig ? this.rig.root : buildModel({ ...getUnitModel(kind, era), gender: this.gender }, ctx);
     this.radius = this.stats.range === 0 ? 0.45 : 0.5;
     if (kind === UnitKind.TANK) this.radius = 0.9;
     if (kind === UnitKind.ARTILLERY || kind === UnitKind.MORTAR || kind === UnitKind.NUCLEAR) this.radius = 0.8;

@@ -18,16 +18,27 @@ export interface CaralWorkerHandle extends RigVariantHandle {
  * (`docs/historia/atuendos.md`); the exact garments and props are plausible
  * abstractions, not reconstructions. No metal or footwear.
  */
-export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_worker'): CaralWorkerHandle {
+export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_worker_f'): CaralWorkerHandle {
   const root = rig.root;
-  const chasqui = variant === 'caral_chasqui';
+  const chasqui = variant.startsWith('caral_chasqui');
+  const male = variant.endsWith('_m');
   const show = (name: string, visible: boolean): void => {
     const mesh = root.getObjectByName(name);
     if (mesh) mesh.visible = visible;
   };
-  show('attire_tunic', true);
-  show('attire_skirt', !chasqui);
-  show('attire_skirt_chasqui', chasqui);
+  show('Body_f', !male);
+  show('Body_m', male);
+  show('Hair_f', !male);
+  show('Hair_m', male);
+  show('Eyes_f', !male);
+  show('Eyes_m', male);
+  show('Eyebrows_f', !male);
+  show('Eyebrows_m', male);
+  show('attire_tunic_f', !male);
+  show('attire_tunic_m', male);
+  show('attire_skirt_f', !male && !chasqui);
+  show('attire_skirt_chasqui_f', !male && chasqui);
+  show('attire_wrap_m', male);
   show('attire_sash', !chasqui);
   show('attire_belt_chasqui', chasqui);
   root.updateMatrixWorld(true);
@@ -53,7 +64,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     mesh.material = material;
   };
   if (chasqui) {
-    tintGarment('attire_tunic', 0xe8d8b8);
+    tintGarment(male ? 'attire_tunic_m' : 'attire_tunic_f', 0xe8d8b8);
   }
 
   const bandMat = makeMaterial(chasqui ? 0xc8a040 : 0x8a3b2a, 0.9);

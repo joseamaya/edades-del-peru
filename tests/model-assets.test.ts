@@ -166,13 +166,21 @@ describe('rigged model assets', () => {
   });
 
   it('maps the Caral worker to the finished worker asset and preloads it for Caral matches', () => {
-    expect(unitModelAsset(UnitKind.WORKER, Era.FORMATIVE, CivId.CARAL)).toEqual({
+    expect(unitModelAsset(UnitKind.WORKER, Era.FORMATIVE, CivId.CARAL, 2)).toEqual({
       asset: 'caral_worker',
-      variant: 'caral_worker',
+      variant: 'caral_worker_f',
     });
-    expect(unitModelAsset(UnitKind.SCOUT, Era.FORMATIVE, CivId.CARAL)).toEqual({
+    expect(unitModelAsset(UnitKind.WORKER, Era.FORMATIVE, CivId.CARAL, 3)).toEqual({
       asset: 'caral_worker',
-      variant: 'caral_chasqui',
+      variant: 'caral_worker_m',
+    });
+    expect(unitModelAsset(UnitKind.SCOUT, Era.FORMATIVE, CivId.CARAL, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'caral_chasqui_f',
+    });
+    expect(unitModelAsset(UnitKind.SCOUT, Era.FORMATIVE, CivId.CARAL, 3)).toEqual({
+      asset: 'caral_worker',
+      variant: 'caral_chasqui_m',
     });
     expect(unitModelAsset(UnitKind.WORKER, Era.REGIONAL_STATES, CivId.CARAL)).toBeNull();
     expect(unitModelAsset(UnitKind.WORKER, Era.FORMATIVE, CivId.MOCHE)).toBeNull();
@@ -205,9 +213,19 @@ describe('rigged model assets', () => {
     );
     expect(json.nodes.map((node) => node.name)).toEqual(
       expect.arrayContaining([
-        'attire_tunic',
-        'attire_skirt',
-        'attire_skirt_chasqui',
+        'Body_f',
+        'Body_m',
+        'Hair_f',
+        'Hair_m',
+        'Eyes_f',
+        'Eyes_m',
+        'Eyebrows_f',
+        'Eyebrows_m',
+        'attire_tunic_f',
+        'attire_tunic_m',
+        'attire_skirt_f',
+        'attire_skirt_chasqui_f',
+        'attire_wrap_m',
         'attire_sash',
         'attire_belt_chasqui',
       ]),
@@ -218,7 +236,7 @@ describe('rigged model assets', () => {
     // The shipped GLB is covered by the e2e test; this checks the attachment
     // handle against the shared 65-bone skeleton without loading its textures.
     await load();
-    const rig = acquireRig('ual_mannequin', 'caral_worker')!;
+    const rig = acquireRig('ual_mannequin', 'caral_worker_f')!;
     const headband = rig.root.getObjectByName('attire_headband') as THREE.Mesh;
     const carry = rig.root.getObjectByName('attire_carry')!;
     const tool = rig.root.getObjectByName('attire_tool')!;
@@ -247,11 +265,12 @@ describe('rigged model assets', () => {
 
   it('dresses the chasqui variant without the digging stick', async () => {
     await load();
-    const rig = acquireRig('ual_mannequin', 'caral_chasqui')!;
+    const rig = acquireRig('ual_mannequin', 'caral_chasqui_f')!;
     expect(rig.root.getObjectByName('attire_headband')).toBeDefined();
     expect(rig.root.getObjectByName('attire_canteen')).toBeDefined();
     expect(rig.root.getObjectByName('attire_tool')).toBeUndefined();
-    expect(RIG_VARIANT_CLIPS.caral_chasqui?.walk).toBe('Walk_Loop');
+    expect(RIG_VARIANT_CLIPS.caral_chasqui_f?.walk).toBe('Walk_Loop');
+    expect(RIG_VARIANT_CLIPS.caral_chasqui_m?.walk).toBe('Walk_Loop');
     rig.dispose();
   });
 

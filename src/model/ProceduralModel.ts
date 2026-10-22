@@ -5,7 +5,7 @@ import { CivDef, ArchStyle, EmblemId } from './defs/civs';
 import { ModelSpec } from './defs/units';
 import { CivId, Era } from '../core/types';
 import { ERA_DEFS } from './defs/eras';
-import { HUMAN_HAIR, HUMAN_SKIN } from './defs/people';
+import { HUMAN_HAIR, HUMAN_SKIN, type PersonGender } from './defs/people';
 import type { HistoricalArchitectureProfile, SilhouetteMotif, WallMaterial, RoofMaterial } from './defs/architecture';
 import type { LandmarkId } from './defs/landmarks';
 import { mixHex } from '../util/math';
@@ -517,10 +517,23 @@ function addHumanoid(
     gadget?: boolean;
     tool?: 'axe' | 'pick';
     carry?: boolean;
+    gender?: PersonGender;
     attire?: Partial<Attire>;
   },
 ): void {
   const attire = { ...getAttire(b, opts.role ?? 'melee'), ...opts.attire };
+  const female = (opts.gender ?? 'male') === 'female';
+  const hipX = female ? 0.09 : 0.11;
+  const legW = female ? 0.1 : 0.125;
+  const shinW = female ? 0.085 : 0.105;
+  const hipTop = female ? 0.17 : 0.14;
+  const hipBottom = female ? 0.145 : 0.115;
+  const abdomenW = female ? 0.25 : 0.29;
+  const chestW = female ? 0.32 : 0.38;
+  const shoulderX = female ? 0.18 : 0.22;
+  const armX = female ? 0.22 : 0.26;
+  const armW = female ? 0.075 : 0.095;
+  const foreW = female ? 0.065 : 0.085;
   const skin = HUMAN_SKIN;
   const hair = HUMAN_HAIR;
   const metalArmor = attire.metal;
@@ -530,24 +543,27 @@ function addHumanoid(
 
   // legs with pivots (hip at y=0.52): thigh + shin + foot
   const legL = b.pivot('legL');
-  legL.position.set(-0.1, 0.52, 0);
+  legL.position.set(-hipX, 0.52, 0);
   const legR = b.pivot('legR');
-  legR.position.set(0.1, 0.52, 0);
+  legR.position.set(hipX, 0.52, 0);
   for (const leg of [legL, legR]) {
-    b.boxIn(leg, 0.115, 0.3, 0.15, attire.leg, { y: -0.15, tex: limbTex, texScale: 2 });
-    b.boxIn(leg, 0.095, 0.24, 0.13, attire.leg, { y: -0.38, tex: limbTex, texScale: 2 });
+    b.boxIn(leg, legW, 0.3, 0.15, attire.leg, { y: -0.15, tex: limbTex, texScale: 2 });
+    b.boxIn(leg, shinW, 0.24, 0.13, attire.leg, { y: -0.38, tex: limbTex, texScale: 2 });
     b.boxIn(leg, 0.12, attire.boot ? 0.12 : 0.07, 0.22, bootCol, { y: attire.boot ? -0.47 : -0.5, z: 0.03 });
   }
   // pelvis / loincloth
-  b.cyl(0.155, 0.13, 0.18, 10, metalArmor ? '#7a828a' : mixHex(attire.leg, '#2a241e', 0.4), {
+  b.cyl(hipTop, hipBottom, 0.18, 10, metalArmor ? '#7a828a' : mixHex(attire.leg, '#2a241e', 0.4), {
     y: 0.55,
     tex: limbTex,
     texScale: 2,
   });
-  b.box(0.34, 0.05, 0.24, '#2a2118', { y: 0.63 });
+  b.box(chestW, 0.05, 0.24, '#2a2118', { y: 0.63 });
+  if (female) {
+    b.cyl(0.17, 0.24, 0.26, 10, mixHex(tunic, '#ffffff', 0.32), { y: 0.44, tex: limbTex, texScale: 2 });
+  }
   // tapered torso (abdomen + chest)
-  b.box(0.27, 0.2, 0.21, tunic, { y: 0.74, tex: limbTex, texScale: 2 });
-  b.box(0.34, 0.28, 0.23, tunic, { y: 0.96, tex: limbTex, texScale: 2 });
+  b.box(abdomenW, 0.2, 0.21, tunic, { y: 0.74, tex: limbTex, texScale: 2 });
+  b.box(chestW, 0.28, 0.23, tunic, { y: 0.96, tex: limbTex, texScale: 2 });
   if (metalArmor) {
     b.box(0.36, 0.3, 0.25, '#c9d2da', { y: 0.97, tex: 'metal', texScale: 2 });
     b.box(0.4, 0.08, 0.27, '#8a929a', { y: 1.08, tex: 'metal' });
@@ -560,16 +576,16 @@ function addHumanoid(
     }
   }
   // rounded shoulders
-  b.sphere(0.075, metalArmor ? '#b8c0c8' : tunic, { x: -0.2, y: 1.06, tex: limbTex });
-  b.sphere(0.075, metalArmor ? '#b8c0c8' : tunic, { x: 0.2, y: 1.06, tex: limbTex });
+  b.sphere(0.075, metalArmor ? '#b8c0c8' : tunic, { x: -shoulderX, y: 1.06, tex: limbTex });
+  b.sphere(0.075, metalArmor ? '#b8c0c8' : tunic, { x: shoulderX, y: 1.06, tex: limbTex });
   // arms with pivots (shoulder at y=1.02): upper arm + forearm + hand
   const armL = b.pivot('armL');
-  armL.position.set(-0.24, 1.02, 0);
+  armL.position.set(-armX, 1.02, 0);
   const armR = b.pivot('armR');
-  armR.position.set(0.24, 1.02, 0);
+  armR.position.set(armX, 1.02, 0);
   for (const arm of [armL, armR]) {
-    b.boxIn(arm, 0.085, 0.24, 0.1, tunic, { y: -0.12, tex: limbTex, texScale: 2 });
-    b.boxIn(arm, 0.075, 0.22, 0.09, tunic, { y: -0.34, tex: limbTex, texScale: 2 });
+    b.boxIn(arm, armW, 0.24, 0.1, tunic, { y: -0.12, tex: limbTex, texScale: 2 });
+    b.boxIn(arm, foreW, 0.22, 0.09, tunic, { y: -0.34, tex: limbTex, texScale: 2 });
     b.sphereIn(arm, 0.05, skin, { y: -0.47 });
   }
   b.boxIn(armR, 0.1, 0.07, 0.12, attire.accent, { y: -0.24 });
@@ -626,8 +642,16 @@ function addHumanoid(
     b.boxIn(head, 0.05, 0.012, 0.01, '#a03028', { x: -0.04, y: 0.01, z: 0.084 });
     b.boxIn(head, 0.05, 0.012, 0.01, '#a03028', { x: 0.04, y: 0.01, z: 0.084 });
   }
-  // hair (cap under the headdress)
+  // hair: long back hair for women, short cap/sideburns for men
   b.sphereIn(head, 0.093, hair, { y: 0.05, z: -0.014 });
+  if (female) {
+    b.boxIn(head, 0.14, 0.36, 0.06, hair, { y: -0.11, z: -0.09, rx: -0.08 });
+    b.boxIn(head, 0.035, 0.28, 0.05, hair, { x: -0.09, y: -0.1, z: 0.015 });
+    b.boxIn(head, 0.035, 0.28, 0.05, hair, { x: 0.09, y: -0.1, z: 0.015 });
+  } else {
+    b.boxIn(head, 0.02, 0.06, 0.015, hair, { x: -0.09, y: -0.02, z: 0.035 });
+    b.boxIn(head, 0.02, 0.06, 0.015, hair, { x: 0.09, y: -0.02, z: 0.035 });
+  }
   addHeadgear(b, head, attire);
   if (opts.gadget) {
     b.box(0.05, 0.05, 0.05, b.pal.emissive, { y: 1.22, z: 0.1, emissive: b.pal.emissive, emissiveIntensity: 1.5 });
@@ -802,42 +826,50 @@ function addVehicleBody(
 // Unit constructors
 // ---------------------------------------------------------------------------
 
-function buildInfantry(type: string, ctx: BuildContext): THREE.Group {
+function buildInfantry(type: string, ctx: BuildContext, gender: PersonGender): THREE.Group {
   const b = new Builder(ctx);
   switch (type) {
     case 'soldier_grunt':
-      addHumanoid(b, { role: 'melee', helmet: false, weapon: 'macana', armor: 'cloth' });
+      addHumanoid(b, { role: 'melee', helmet: false, weapon: 'macana', armor: 'cloth', gender });
       break;
     case 'soldier_modern':
-      addHumanoid(b, { role: 'melee', helmet: true, weapon: 'spear', armor: 'cloth', backpack: true });
+      addHumanoid(b, { role: 'melee', helmet: true, weapon: 'spear', armor: 'cloth', backpack: true, gender });
       break;
     case 'soldier_elite':
-      addHumanoid(b, { role: 'elite', helmet: true, weapon: 'rifle', armor: 'metal', backpack: true, gadget: true });
+      addHumanoid(b, {
+        role: 'elite',
+        helmet: true,
+        weapon: 'rifle',
+        armor: 'metal',
+        backpack: true,
+        gadget: true,
+        gender,
+      });
       break;
     default:
-      addHumanoid(b, { role: 'melee', helmet: false, weapon: 'rifle', armor: 'cloth' });
+      addHumanoid(b, { role: 'melee', helmet: false, weapon: 'rifle', armor: 'cloth', gender });
   }
   return b.finish();
 }
 
-function buildRanged(type: string, ctx: BuildContext): THREE.Group {
+function buildRanged(type: string, ctx: BuildContext, gender: PersonGender): THREE.Group {
   const b = new Builder(ctx);
   const isSniper = type === 'advanced_rifleman' || type === 'veteran_rifleman';
   switch (type) {
     case 'musketeer':
-      addHumanoid(b, { role: 'ranged', helmet: false, weapon: 'sling', armor: 'cloth' });
+      addHumanoid(b, { role: 'ranged', helmet: false, weapon: 'sling', armor: 'cloth', gender });
       break;
     case 'rifleman':
-      addHumanoid(b, { role: 'ranged', helmet: false, weapon: 'bow', armor: 'cloth' });
+      addHumanoid(b, { role: 'ranged', helmet: false, weapon: 'bow', armor: 'cloth', gender });
       break;
     case 'veteran_rifleman':
-      addHumanoid(b, { role: 'ranged', helmet: true, weapon: 'rifle', armor: 'metal', backpack: true });
+      addHumanoid(b, { role: 'ranged', helmet: true, weapon: 'rifle', armor: 'metal', backpack: true, gender });
       break;
     case 'advanced_rifleman':
-      addHumanoid(b, { role: 'ranged', helmet: true, weapon: 'rifle', armor: 'metal', gadget: true });
+      addHumanoid(b, { role: 'ranged', helmet: true, weapon: 'rifle', armor: 'metal', gadget: true, gender });
       break;
     default:
-      addHumanoid(b, { role: 'ranged', weapon: 'rifle' });
+      addHumanoid(b, { role: 'ranged', weapon: 'rifle', gender });
   }
   if (isSniper) {
     b.box(0.3, 0.06, 0.1, b.pal.darkMetal, { y: 0.6, z: 0.35 });
@@ -845,13 +877,13 @@ function buildRanged(type: string, ctx: BuildContext): THREE.Group {
   return b.finish();
 }
 
-function buildWorker(ctx: BuildContext): THREE.Group {
+function buildWorker(ctx: BuildContext, gender: PersonGender): THREE.Group {
   const b = new Builder(ctx);
-  addHumanoid(b, { role: 'worker', weapon: 'none', armor: 'cloth', tool: 'axe', carry: true });
+  addHumanoid(b, { role: 'worker', weapon: 'none', armor: 'cloth', tool: 'axe', carry: true, gender });
   return b.finish();
 }
 
-function buildMounted(type: string, ctx: BuildContext): THREE.Group {
+function buildMounted(type: string, ctx: BuildContext, gender: PersonGender): THREE.Group {
   const b = new Builder(ctx);
   // mount in a raised group (legs + body + saddle)
   const mount = b.pivot('mount');
@@ -866,6 +898,7 @@ function buildMounted(type: string, ctx: BuildContext): THREE.Group {
   const before = b.group.children.length;
   addHumanoid(b, {
     role: 'mounted',
+    gender,
     helmet: type === 'cavalry',
     weapon: 'machete',
     armor: type === 'cavalry' ? 'metal' : 'cloth',
@@ -877,7 +910,7 @@ function buildMounted(type: string, ctx: BuildContext): THREE.Group {
   return b.finish();
 }
 
-function buildMotorcycle(ctx: BuildContext): THREE.Group {
+function buildMotorcycle(ctx: BuildContext, gender: PersonGender): THREE.Group {
   const b = new Builder(ctx);
   b.cyl(0.22, 0.22, 0.35, 14, b.pal.darkMetal, { x: 0.3, rx: Math.PI / 2, metalness: 0.5 });
   b.cyl(0.22, 0.22, 0.35, 14, b.pal.darkMetal, { x: -0.3, rx: Math.PI / 2, metalness: 0.5 });
@@ -885,7 +918,7 @@ function buildMotorcycle(ctx: BuildContext): THREE.Group {
   b.box(0.12, 0.4, 0.14, b.pal.metal, { y: 0.85, x: 0 });
   b.box(0.05, 0.5, 0.05, b.pal.darkMetal, { y: 1.3, x: -0.05 });
   const before = b.group.children.length;
-  addHumanoid(b, { role: 'mounted', helmet: true, weapon: 'rifle', armor: 'cloth' });
+  addHumanoid(b, { role: 'mounted', helmet: true, weapon: 'rifle', armor: 'cloth', gender });
   const rider = new THREE.Group();
   for (const child of b.group.children.splice(before)) rider.add(child);
   rider.position.y = 0.85;
@@ -972,18 +1005,19 @@ function buildMortar(ctx: BuildContext): THREE.Group {
   return b.finish();
 }
 
-function buildCommisar(ctx: BuildContext): THREE.Group {
+function buildCommisar(ctx: BuildContext, gender: PersonGender): THREE.Group {
   const b = new Builder(ctx);
-  addHumanoid(b, { role: 'officer', helmet: true, weapon: 'none', armor: 'cloth', backpack: true });
+  addHumanoid(b, { role: 'officer', helmet: true, weapon: 'none', armor: 'cloth', backpack: true, gender });
   b.box(0.2, 0.28, 0.1, b.civAccent, { y: 0.6, x: 0.3 });
   return b.finish();
 }
 
-function buildMissionary(ctx: BuildContext): THREE.Group {
+function buildMissionary(ctx: BuildContext, gender: PersonGender): THREE.Group {
   const b = new Builder(ctx);
   // robed friar: brown habit, no military headwear
   addHumanoid(b, {
     role: 'officer',
+    gender,
     weapon: 'none',
     armor: 'cloth',
     attire: { tunic: '#6b5236', accent: '#c8a040', tex: 'cloth', leg: '#5a4630', boot: false, head: 'none' },
@@ -3038,7 +3072,7 @@ function instantiateTemplate(template: THREE.Group): THREE.Group {
 
 /** Build a parametric model. Returns a clone that owns its materials (geometry is shared). */
 export function buildModel(spec: ModelSpec, ctx: BuildContext): THREE.Group {
-  const key = `${spec.type}|${spec.scale ?? 1}|${spec.barrel ?? ''}|${ctx.era}|${ctx.civ.id}`;
+  const key = `${spec.type}|${spec.scale ?? 1}|${spec.barrel ?? ''}|${spec.gender ?? ''}|${ctx.era}|${ctx.civ.id}`;
   let template = modelCache.get(key);
   if (!template) {
     template = buildModelTemplate(spec, ctx);
@@ -3062,20 +3096,21 @@ export function buildLandmarkModel(id: LandmarkId, ctx: BuildContext): THREE.Gro
 
 function buildModelTemplate(spec: ModelSpec, ctx: BuildContext): THREE.Group {
   const { type, scale } = spec;
+  const gender = spec.gender ?? 'male';
   let g: THREE.Group;
-  if (type.startsWith('worker')) g = buildWorker(ctx);
-  else if (type.startsWith('soldier')) g = buildInfantry(type, ctx);
+  if (type.startsWith('worker')) g = buildWorker(ctx, gender);
+  else if (type.startsWith('soldier')) g = buildInfantry(type, ctx, gender);
   else if (type === 'musketeer' || type === 'rifleman' || type === 'veteran_rifleman' || type === 'advanced_rifleman')
-    g = buildRanged(type, ctx);
-  else if (type === 'hussar' || type === 'cavalry') g = buildMounted(type, ctx);
-  else if (type === 'motorcycle') g = buildMotorcycle(ctx);
+    g = buildRanged(type, ctx, gender);
+  else if (type === 'hussar' || type === 'cavalry') g = buildMounted(type, ctx, gender);
+  else if (type === 'motorcycle') g = buildMotorcycle(ctx, gender);
   else if (type === 'recon_drone') g = buildDrone(ctx);
   else if (type.startsWith('tank')) g = buildTank(type, ctx);
   else if (type.startsWith('aa')) g = buildAntiAir(ctx);
   else if (type === 'cannon' || type === 'artillery' || type === 'howitzer') g = buildCannon(type, ctx);
   else if (type === 'mortar') g = buildMortar(ctx);
-  else if (type.startsWith('commissar')) g = buildCommisar(ctx);
-  else if (type === 'missionary') g = buildMissionary(ctx);
+  else if (type.startsWith('commissar')) g = buildCommisar(ctx, gender);
+  else if (type === 'missionary') g = buildMissionary(ctx, gender);
   else g = buildStructure(type, ctx);
 
   if (scale) g.scale.setScalar(scale);

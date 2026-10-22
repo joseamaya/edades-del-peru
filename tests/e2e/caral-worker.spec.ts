@@ -30,14 +30,12 @@ test('the Caral worker is rigged, animated by its orders and keeps gameplay inta
     const g = (window as unknown as { game: any }).game;
     const workers = [...g.units.values()].filter((u: any) => u.kind === 'worker' && u.owner === 0);
     const worker = workers[0];
-    const attire = [
-      'attire_tunic',
-      'attire_skirt',
-      'attire_sash',
-      'attire_headband',
-      'attire_carry',
-      'attire_tool',
-    ].map((name) => !!worker.rig.root.getObjectByName(name));
+    const male = String(worker.rig.variantId).endsWith('_m');
+    const tunic = male ? 'attire_tunic_m' : 'attire_tunic_f';
+    const lower = male ? 'attire_wrap_m' : 'attire_skirt_f';
+    const attire = [tunic, lower, 'attire_sash', 'attire_headband', 'attire_carry', 'attire_tool'].map(
+      (name) => !!worker.rig.root.getObjectByName(name),
+    );
     const shadows = (name: string): { cast: boolean; receive: boolean } | null => {
       const mesh = worker.rig.root.getObjectByName(name) as {
         castShadow?: boolean;
@@ -54,7 +52,7 @@ test('the Caral worker is rigged, animated by its orders and keeps gameplay inta
         const flags = shadows(name);
         return !!flags && !flags.cast && !flags.receive;
       }),
-      garmentsShadow: ['attire_tunic', 'attire_skirt', 'attire_sash'].every((name) => {
+      garmentsShadow: [tunic, lower, 'attire_sash'].every((name) => {
         const flags = shadows(name);
         return !!flags && flags.cast && flags.receive;
       }),
@@ -207,14 +205,26 @@ test('the Caral worker is rigged, animated by its orders and keeps gameplay inta
     const spawnedRigged = !!spawned.rig;
     spawned.removeFromScene();
     const refsAfter = workerAsset().refs;
-    return { selected, saved, spawnedRigged, refsBefore, refsAfter };
+    return {
+      selected,
+      saved,
+      spawnedRigged,
+      refsBefore,
+      refsAfter,
+      id: worker.id,
+      gender: worker.gender,
+      variant: worker.rig?.variantId ?? null,
+    };
   });
   expect(lifecycle.selected).toBe(true);
   expect(lifecycle.saved).toBe(true);
   expect(lifecycle.spawnedRigged).toBe(true);
   expect(lifecycle.refsAfter).toBe(lifecycle.refsBefore);
+  expect(lifecycle.gender).toBeTruthy();
+  expect(lifecycle.variant).toMatch(/_f$|_m$/);
 
   await page.goto('/?load=1');
+  await page.evaluate((id) => ((window as unknown as { __savedUnitId: number }).__savedUnitId = id), lifecycle.id);
   await page.waitForFunction(
     () => {
       const g = (window as unknown as { game?: any }).game;
@@ -226,16 +236,21 @@ test('the Caral worker is rigged, animated by its orders and keeps gameplay inta
   const restored = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     const workers = [...g.units.values()].filter((u: any) => u.kind === 'worker' && u.owner === 0);
+    const restoredWorker = workers.find((u: any) => u.id === window.__savedUnitId);
     return {
       workers: workers.length,
       rigged: workers.filter((u: any) => !!u.rig).length,
       asset: (window as unknown as { __modelAssets: () => any[] })
         .__modelAssets()
         .find((asset) => asset.id === 'caral_worker')?.state,
+      gender: restoredWorker?.gender ?? null,
+      variant: restoredWorker?.rig?.variantId ?? null,
     };
   });
   expect(restored.workers).toBeGreaterThan(0);
   expect(restored.rigged).toBe(restored.workers);
   expect(restored.asset).toBe('ready');
+  expect(restored.gender).toBe(lifecycle.gender);
+  expect(restored.variant).toBe(lifecycle.variant);
   expect(errors).toEqual([]);
 });

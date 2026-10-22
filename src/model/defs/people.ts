@@ -5,3 +5,10 @@
  */
 export const HUMAN_SKIN = '#6b3f22';
 export const HUMAN_HAIR = '#2a1c12';
+
+export type PersonGender = 'female' | 'male';
+
+/** Deterministic presentation gender for a unit id (50/50, no gameplay effect). */
+export function genderForId(id: number): PersonGender {
+  return id % 2 === 0 ? 'female' : 'male';
+}
