@@ -40,6 +40,7 @@
     "test:e2e:fast": "playwright test --project=fast",
     "test:e2e:slow": "playwright test --project=slow",
     "bench": "node scripts/bench.mjs",
+    "bench:check": "node scripts/bench.mjs --scenario=rigs --units=4,12,24,48 --runs=1 --steps=300 --assert --out=review/bench-rigs.json && node scripts/bench.mjs --scenario=fauna --animals=4,8,12,16 --runs=1 --steps=300 --assert --out=review/bench-fauna.json && node scripts/bench.mjs --scenario=mixed-rigs --units=12,24,48 --animals=8 --runs=1 --steps=300 --assert --out=review/bench-mixed-rigs.json",
     "sim": "node scripts/sim.mjs",
     "diagnose:resources": "node scripts/diagnose-resources.mjs",
     "shot": "node scripts/screenshot.mjs",

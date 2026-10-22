@@ -75,11 +75,13 @@ export async function installProbes(page, options = {}) {
     };
 
     const firstUnit = g.units.values().next().value;
+    const firstRig = firstUnit?.rig ?? (g.wildlife?.animals ?? []).find((animal) => !!animal.rig)?.rig ?? null;
     const firstBuilding = g.buildings.values().next().value;
     const firstNode = g.resourceNodes.values().next().value;
     const firstProjectile = g.projectiles && g.projectiles[0];
     const firstAI = g.ais && g.ais[0];
     const UnitProto = protoOf(firstUnit);
+    const RigProto = protoOf(firstRig);
     const BuildingProto = protoOf(firstBuilding);
     const ResourceProto = protoOf(firstNode);
     const ProjectileProto = protoOf(firstProjectile);
@@ -96,6 +98,7 @@ export async function installProbes(page, options = {}) {
     wrap(GameProto, 'checkVictory', 'victory');
     wrap(GameProto, 'checkBaseThreat', 'threat');
     wrap(UnitProto, 'update', 'units');
+    if (RigProto) wrap(RigProto, 'update', 'rigs');
     wrap(BuildingProto, 'update', 'buildings');
     wrap(ResourceProto, 'update', 'resources');
     wrap(ProjectileProto, 'update', 'projectiles');
@@ -315,6 +318,8 @@ export async function installProbes(page, options = {}) {
       const scouts = units.filter((u) => u.kind === 'scout');
       const military = units.filter((u) => u.kind !== 'worker' && u.kind !== 'scout');
       const activePaths = units.filter((u) => u.path && u.path.length > 0).length;
+      const riggedUnits = units.filter((u) => !!u.rig).length;
+      const riggedAnimals = (g.wildlife?.animals ?? []).filter((animal) => !!animal.rig).length;
       const combatants = units.filter((u) => {
         const order = u.orderQueue && u.orderQueue[0];
         return order && (order.kind === 'attack' || order.kind === 'attack_move');
@@ -353,6 +358,8 @@ export async function installProbes(page, options = {}) {
           projectiles: g.projectiles.length,
           activePaths,
           combatants,
+          riggedUnits,
+          riggedAnimals,
         },
         byResource,
         buildingsByOwner,

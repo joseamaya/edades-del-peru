@@ -22,6 +22,8 @@ export interface ModelAssetDefinition {
   readonly ground: boolean;
   /** Extra world-space lift after grounding (avoids clip-driven foot penetration). */
   readonly groundClearance?: number;
+  /** Merge flat-coloured skinned primitives into one mesh/material (draw-call budget). */
+  readonly consolidate?: boolean;
 }
 
 const UAL_URL = modelUrls['../assets/models/ual_mannequin.glb'] ?? '';
@@ -56,6 +58,7 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
     yawOffset: 0,
     ground: true,
     groundClearance: 0.02,
+    consolidate: true,
     clips: {
       idle: 'Idle',
       walk: 'Walk',

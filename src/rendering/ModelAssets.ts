@@ -3,6 +3,7 @@ import { GLTFLoader, type GLTF } from 'three/addons/loaders/GLTFLoader.js';
 import type { ModelAssetId, RigVariant } from '../model/defs/modelAssets';
 import { MODEL_ASSET_DEFS, type ModelAssetDefinition } from './modelAssetRegistry';
 import { RigInstance } from './RigInstance';
+import { consolidateSkinnedPrimitives } from './modelConsolidation';
 
 export interface LoadedModelAsset {
   readonly id: ModelAssetId;
@@ -62,6 +63,8 @@ function finalize(id: ModelAssetId, gltf: GLTF, definition: ModelAssetDefinition
   for (const [state, name] of Object.entries(definition.clips)) {
     if (name && !clipNames.has(name)) console.warn(`[models] "${id}" has no clip "${name}" (state ${state})`);
   }
+
+  if (definition.consolidate) consolidateSkinnedPrimitives(gltf.scene);
 
   gltf.scene.traverse((obj) => {
     const mesh = obj as THREE.Mesh;

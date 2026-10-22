@@ -521,14 +521,17 @@ Match the cost of verification to the change (the full gate is in `AGENTS.md`):
 
 ## Performance benchmarks
 
-`yarn bench [--units=50,100,200,400,800] [--scenario=soldiers|mixed|mixed-ai] [--seed=777]
-[--steps=600] [--runs=3] [--profile=1] [--gc=1] [--fog=1] [--out=review/bench.json]` boots a match in
-Chromium (SwiftShader) and, per scale, measures spawn/destroy time, simulation step time (`Game.update`),
-heap, A* per call, target acquisition (`enemiesNear`) and hover-picking (`pickAt`). With `--profile=1` it
-installs `scripts/perf-probes.mjs`, which adds per-step section timings (units, AI, pathfinding, FOW, HUD,
-particles, spatial, ...) and exact counters without changing game behaviour. `soldiers` is the original
-scenario; `mixed` builds a deterministic economy+combat scenario (workers, gather orders, soldiers, opposing
-attack orders, barracks); `mixed-ai` also keeps both AIs active. With the loop running and
+`yarn bench [--units=50,100,200,400,800] [--scenario=soldiers|mixed|mixed-ai|rigs|fauna|mixed-rigs]
+[--animals=4,8,12,16] [--seed=777] [--steps=600] [--runs=3] [--profile=1] [--gc=1] [--fog=1]
+[--assert] [--out=review/bench.json]` boots a match in Chromium (SwiftShader) and, per scale, measures
+spawn/destroy time, simulation step time (`Game.update`), heap, A* per call, target acquisition
+(`enemiesNear`) and hover-picking (`pickAt`). With `--profile=1` it installs `scripts/perf-probes.mjs`, which
+adds per-step section timings (units, AI, pathfinding, rigs, FOW, HUD, particles, spatial, ...) and exact
+counters without changing game behaviour. `soldiers` is the original scenario; `mixed` builds a deterministic
+economy+combat scenario (workers, gather orders, soldiers, opposing attack orders, barracks); `mixed-ai` also
+keeps both AIs active. `rigs` spawns N Caral workers from a clean population, `fauna` spawns N rigged llamas
+(capped at 16) and `mixed-rigs` combines workers, soldiers and 8 llamas. The rig scenarios isolate the animated
+groups' draw calls/triangles by rendering them visible vs hidden (shadow pass included). With the loop running and
 `window.__directRender` on (bypasses post-processing so `renderer.info` is meaningful) it records FPS, frame
 time (avg/p50/p95/p99), long tasks and real scene draw calls/triangles, and it isolates the cultural
 landscape's draw calls (the layer rendered visible vs hidden). It **fails** (`exit ≠ 0`) when they exceed
@@ -541,10 +544,16 @@ deterministic AI-vs-AI runner. With `--metrics=1` it records first soldier/first
 workers/military/buildings created, gathered resources, losses, pathfinding requests/failures, AI percentiles
 and a sampled timeline (idle/blocked workers, stuck units, army, resources) without changing behaviour.
 
+`yarn bench:check` runs the rig/fauna/mixed budgets with `--assert`: it fails when a worker or animal exceeds
+its structural draw-call/triangle budget, when a rigged entity silently falls back to the procedural model, or
+when the mixed scenario's simulation p95 exceeds one frame (16.6 ms). The budgets are machine-independent;
+FPS is not asserted because SwiftShader is not representative of a GPU.
+
 The full audit with 50/100/200/400/800 results, 20 AI seeds and the prioritized issue list is in
 [`docs/development/performance-audit.md`](development/performance-audit.md). It records the baseline and the
 follow-up after #121 (component reachability cache, stuck-order give-up and the corrected `blockedWorkers`
-metric). Reference run from the audit environment (i7-13700, `CHROME_PATH` SwiftShader, `?low=1`, seed 777):
+metric), plus the #118 rig/fauna budget (7→1 alpaca primitives, 14→2 draw calls per animal). Reference run from
+the audit environment (i7-13700, `CHROME_PATH` SwiftShader, `?low=1`, seed 777):
 
 | units | spawn ms | sim ms/step | heap Δ/loop MB | A* ms/call | target µs/call | pick ms/call | frame ms (avg/p95) | draw calls | triangles | heap MB |
 |---|---|---|---|---|---|---|---|---|---|---|

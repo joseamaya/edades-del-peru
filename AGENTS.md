@@ -20,6 +20,7 @@ Package manager **Yarn 1** (`yarn.lock` exists — never create a `package-lock.
   `PW_WORKERS=N` overrides workers.
 - `yarn shot <name> --seed=777 --wait=8000` — screenshot into `review/`
 - `yarn sim [--seeds=…] [--max=…] [--difficulty=…]` — headless AI-vs-AI match runner (AI regression baseline)
+- `yarn bench:check` — rig/fauna/mixed structural budgets (`--assert`); SwiftShader is not a GPU benchmark
 
 Everything runs through `package.json`; there is no `npm test`. The CI gate, in order, is
 `yarn typecheck && yarn lint && yarn format:check && yarn test && yarn build`, and the repo is kept at
