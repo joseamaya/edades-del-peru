@@ -109,9 +109,9 @@ const STYLE_BASES: Record<ArchStyle, ArchBase> = {
 const CIV_ARCH: Partial<Record<CivId, Partial<ArchBase>>> = {
   // Caral's monumental compounds have no painted frieze (that is a Moche/Chimú trait)
   [CivId.CARAL]: { ornament: {}, monumentalTiers: 2, silhouette: 'circular-plaza' },
-  // Chavín: carved stone temple with tenon heads and large blocks
+  // Chavín: carved stone temple with tenon heads and large dressed blocks
   [CivId.CHAVIN]: {
-    wall: 'fieldstone',
+    wall: 'cut-stone',
     roof: 'flat-stone',
     foundation: 'platform',
     monumentalTiers: 3,

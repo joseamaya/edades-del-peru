@@ -714,7 +714,10 @@ export class Game {
       this.registerObstacle(house);
     }
     this.addSettlementOverlay(plan);
-    if (this.players[player].civ === CivId.CARAL) this.addSettlementDressing(plan, player);
+    const civ = this.players[player].civ;
+    if (civ === CivId.CARAL || civ === CivId.CHAVIN) {
+      this.addSettlementDressing(plan, player, civ === CivId.CHAVIN ? 'chavin' : 'caral');
+    }
     // nearby resources to start
     this.spawnStartResources(player, x, z);
     // starting workers
@@ -761,9 +764,14 @@ export class Game {
     this.settlements.push(overlay);
   }
 
-  /** Household props around a Caral base (visual only, deterministic, no obstacles). */
-  private addSettlementDressing(plan: SettlementPlan, player: number): void {
-    const placements = planSettlementDressing(plan, this.settings.mapSeed * 977 + player * 31 + 7, this.terrain);
+  /** Household/ritual props around a base (visual only, deterministic, no obstacles). */
+  private addSettlementDressing(plan: SettlementPlan, player: number, profile: 'caral' | 'chavin'): void {
+    const placements = planSettlementDressing(
+      plan,
+      this.settings.mapSeed * 977 + player * 31 + 7,
+      this.terrain,
+      profile,
+    );
     const dressing = new SettlementDressing(placements, (x, z) => this.terrain.getHeight(x, z));
     applyFowToObject(dressing.group, this.fowUniforms);
     this.scene.add(dressing.group);

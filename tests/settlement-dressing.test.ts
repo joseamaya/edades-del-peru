@@ -61,3 +61,26 @@ describe('Caral settlement dressing', () => {
     expect(planSettlementDressing(plan, 7, flat)).not.toEqual(planSettlementDressing(plan, 8, flat));
   });
 });
+
+describe('Chavín settlement dressing', () => {
+  it('is deterministic and uses the ritual/megalithic set', () => {
+    const out = planSettlementDressing(plan, 7, flat, 'chavin');
+    expect(out).toEqual(planSettlementDressing(plan, 7, flat, 'chavin'));
+    expect(out.some((p) => p.kind === 'stela')).toBe(true);
+    expect(out.some((p) => p.kind === 'offering')).toBe(true);
+    expect(out.some((p) => p.kind === 'stone_head')).toBe(true);
+    expect(out.some((p) => p.kind === 'megalith')).toBe(true);
+    expect(out.some((p) => p.kind === 'hearth')).toBe(false);
+  });
+
+  it('keeps props clear of the buildings and each other', () => {
+    const out = planSettlementDressing(plan, 7, flat, 'chavin');
+    for (const p of out) {
+      for (const a of anchors) expect(Math.hypot(a.x - p.x, a.z - p.z)).toBeGreaterThanOrEqual(1.55);
+      for (const q of out) {
+        if (q === p) continue;
+        expect(Math.hypot(q.x - p.x, q.z - p.z)).toBeGreaterThanOrEqual(0.8);
+      }
+    }
+  });
+});

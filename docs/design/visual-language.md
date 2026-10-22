@@ -290,6 +290,47 @@ single cached model. Remaining work before applying the style to other campaigns
 vegetation and a shared palette pass over the other eight dossiers. The worker's CC0 body now carries
 project-authored cotton garments (a documented abstraction); the fauna rigs remain CC0 stand-ins.
 
+## Chavín visual pilot
+
+Issue #119 tests the standard on a second campaign before extending it to the rest. **`m2_chavin`** (Early
+Horizon, Callejón de Conchucos, 3180 masl) is the contrast case: highland valley, carved stone and a
+pilgrimage/oracle centre instead of Caral's coastal desert, plastered platforms and household economy.
+
+- **Landmark (`chavin_temple`).** Rebuilt as a U-shaped stepped stone platform around an open court, with a
+  central stair, a sunken circular plaza with upright stones and a cross-shaped drainage channel, protruding
+  tenon heads (`cabezas clavas`) and a Lanzón-like monolith under a granite lintel. The plaza and stone heads are
+  documented in [`docs/historia/arquitectura.md`](../historia/arquitectura.md); the exact plan, proportions and
+  head placement are a **plausible abstraction**, not a reconstruction.
+- **Base.** Chavín uses the carved cut-stone architecture profile with flat stone roofs, plus a deterministic
+  dressing set: carved stelae, stone heads, offering altars with spondylus/obsidian and dressed megalith blocks.
+  These are presentation-only props (no obstacles/entities) and follow the feline iconography and long-distance
+  exchange recorded in [`chavin.md`](../historia/civilizaciones/chavin.md).
+- **Palette.** Grey/ochre ashlar, granite highlights, a pink spondylus accent and olive highland vegetation;
+  the noon atmosphere keeps the stone readable instead of washing it out.
+
+Comparable evidence (same `?civ=chavin&period=1&seed=777`, 1600x900, UI hidden):
+[`chavin-scene-before-after.webp`](../media/chavin-scene-before-after.webp) (base close),
+[`chavin-scene-rts-before-after.webp`](../media/chavin-scene-rts-before-after.webp) (base RTS),
+[`chavin-landmark-close-before-after.webp`](../media/chavin-landmark-close-before-after.webp) (landmark close)
+and [`chavin-landmark-before-after.webp`](../media/chavin-landmark-before-after.webp) (landmark RTS). In each
+pair the left half is before, the right half after. The floating landscape planks visible at some edges are
+pre-existing terrain-overlay geometry, not produced by this pilot.
+
+### Reusable art-direction rules
+
+- **Scale.** Capture at the real RTS camera (min zoom 28) and at 1600x900; landmarks must read at 28–32 and keep
+  a 12–20 unit footprint. Props below ~0.4 units disappear at RTS zoom.
+- **Silhouette first.** One civic motif per civilization (plaza, tenon heads, ramp, citadel, ushnu…), applied to
+  the centre and the landmark, not only to a recolour. Verify it in a base close and a base RTS capture.
+- **Materials.** Use the architecture profile (wall + roof + ornament) instead of per-building overrides. Check
+  the diffuse luminance before using a texture on a large mass; very dark maps swallow the silhouette.
+- **Palette.** Three or four dominant colours plus one ritual accent (textile, shell, metal). Keep the terrain
+  and vegetation regional; atmosphere must not flatten the stone.
+- **Detail density.** Landmark: three to five legible masses. Base: two to four props per dwelling plus one
+  civic cluster. Never use a single isolated structure as the only evidence.
+- **History.** Cite the dossier/source, mark uncertain forms as abstractions, and do not invent rulers, battles,
+  weapons, animals or technologies.
+
 ## Non-goals
 
 - No sci-fi, firearms, horses, vehicles or engines before 1532

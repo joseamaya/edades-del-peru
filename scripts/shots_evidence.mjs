@@ -173,6 +173,24 @@ const SCENES = {
       { name: 'deliver', mode: 'close', task: 'deliver', offset: { x: 3.0, y: 1.9, z: 4.0 }, lookHeight: 1.0 },
     ],
   },
+  'chavin-scene': {
+    url: '/?civ=chavin&period=1&seed=777&fog=0&low=1',
+    live: true,
+    views: [{ name: 'close', mode: 'rts', target: 'base', height: 28 }],
+  },
+  'chavin-scene-rts': {
+    url: '/?civ=chavin&period=1&seed=777&fog=0&low=1',
+    live: true,
+    views: [{ name: 'rts', mode: 'rts', target: 'base', height: 60 }],
+  },
+  'chavin-landmark': {
+    url: '/?civ=chavin&period=1&seed=777&fog=0&low=1',
+    live: true,
+    views: [
+      { name: 'close', mode: 'close', target: 'landmark', offset: { x: 14, y: 9, z: 18 }, lookHeight: 3.0 },
+      { name: 'rts', mode: 'rts', target: 'landmark', height: 32 },
+    ],
+  },
   'fauna-perf': {
     url: '/?play=1&civ=caral&period=0&map=altiplano&seed=777&fog=0&low=1&noloop=1',
     prepare: () => {
@@ -226,13 +244,25 @@ async function main() {
       const root = document.getElementById('ui-root');
       if (root) root.style.display = 'none';
     });
-    const target = await page.evaluate(config.prepare);
+    if (config.start) {
+      await page
+        .locator('.ed-primary', { hasText: 'COMENZAR' })
+        .first()
+        .click({ timeout: 3000 })
+        .catch(() => {});
+    }
+    await page.waitForTimeout(2500);
+    const target = config.live ? null : await page.evaluate(config.prepare);
     for (const view of config.views) {
       await page.evaluate(
-        ({ target, view }) => {
+        ({ target, view, live }) => {
           const g = window.game;
           g.loop.stop();
-          const active = view.task ? window.__caralTask(view.task) : target;
+          const p = view.target === 'landmark' ? g.landmark?.position : g.playerCenter(0);
+          const liveTarget = p
+            ? { center: { x: p.x, z: p.z }, subject: { x: p.x, y: g.terrain.getHeight(p.x, p.z), z: p.z } }
+            : null;
+          const active = live ? liveTarget : view.task ? window.__caralTask(view.task) : target;
           if (view.mode === 'close') {
             const s = active.subject;
             const offset = view.offset ?? { x: 4, y: 2.4, z: 5 };
@@ -261,7 +291,7 @@ async function main() {
           }
           g.renderer.render(g.scene, g.camera.camera);
         },
-        { target, view },
+        { target, view, live: config.live === true },
       );
       await page.screenshot({ path: path.join(outDir, `${view.name}.png`) });
     }

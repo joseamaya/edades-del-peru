@@ -85,9 +85,11 @@ All angles/offsets come from a dedicated `RNG(seed * k + c)` stream.
 - **No save change**: the plan is derived from `seed + profile + civ + period`, so
   it is regenerated on load; only the *resulting entities* are saved (as today).
 - **Visual dressing**: `SettlementOverlay` also draws green young-crop rows
-  (`cropGeometry`) over the planned fields, and Caral bases add a deterministic
-  household layer (`planSettlementDressing` → `SettlementDressing`). Both are
-  visual-only, merged into one mesh each, and carry no obstacles or entities.
+  (`cropGeometry`) over the planned fields, and Caral/Chavín bases add a deterministic
+  household or ritual layer (`planSettlementDressing` → `SettlementDressing`). Caral
+  uses hearths, racks, baskets, gourds and cotton; Chavín adds stelae, stone heads,
+  spondylus/obsidian offerings and megaliths. Both are visual-only, merged into one
+  mesh each, and carry no obstacles or entities.
 
 ## Determinism & performance
 
