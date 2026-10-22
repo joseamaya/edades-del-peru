@@ -4,6 +4,7 @@ import {
   dragToWorld,
   edgeFactor,
   edgeVector,
+  groundQuad,
   keyPanVector,
   normalize2D,
   rotateToWorld,
@@ -187,5 +188,29 @@ describe('pan direction matches the camera basis', () => {
       expect(dot(w, forward(yaw))).toBeLessThan(-0.9);
       expect(Math.abs(dot(w, right(yaw)))).toBeLessThan(0.05);
     }
+  });
+});
+
+describe('ground footprint', () => {
+  it('is north-up at yaw 0 and rotates with the camera', () => {
+    const northUp = groundQuad(100, 100, 50, 2, 0);
+    for (const [point, x, y] of [
+      [northUp[0], 45, 131],
+      [northUp[1], 155, 131],
+      [northUp[2], 155, 69],
+      [northUp[3], 45, 69],
+    ] as const) {
+      expect(point.x).toBeCloseTo(x, 6);
+      expect(point.y).toBeCloseTo(y, 6);
+    }
+
+    const diagonal = groundQuad(100, 100, 50, 2, Math.PI / 4);
+    const topMid = {
+      x: (diagonal[2].x + diagonal[3].x) / 2,
+      y: (diagonal[2].y + diagonal[3].y) / 2,
+    };
+    expect(topMid.x).toBeLessThan(100);
+    expect(topMid.y).toBeLessThan(100);
+    expect(diagonal[0].x).not.toBeCloseTo(diagonal[3].x);
   });
 });

@@ -6,9 +6,11 @@ import {
   clampToBounds,
   dragToWorld,
   edgeVector,
+  groundQuad,
   keyPanVector,
   rotateToWorld,
   worldPerPixel,
+  type Vec2,
 } from './cameraMath';
 
 export interface CameraTarget {
@@ -354,11 +356,19 @@ export class RTSCamera {
     return this.zoom;
   }
 
-  /** Approximate rectangle of the visible ground (for the minimap). */
+  /** Rotated ground footprint of the view, in world XZ (for the minimap). */
+  getGroundQuad(): Vec2[] {
+    return groundQuad(this.target.x, this.target.z, this.zoom, this.camera.aspect, this.yaw);
+  }
+
+  /** Axis-aligned bounds of the ground footprint (compatibility helper). */
   getGroundRect(): { x: number; z: number; w: number; d: number } {
-    const halfW = this.zoom * 0.55 * this.camera.aspect;
-    const halfD = this.zoom * 0.62;
-    return { x: this.target.x - halfW, z: this.target.z - halfD, w: halfW * 2, d: halfD * 2 };
+    const quad = this.getGroundQuad();
+    const xs = quad.map((p) => p.x);
+    const zs = quad.map((p) => p.y);
+    const x = Math.min(...xs);
+    const z = Math.min(...zs);
+    return { x, z, w: Math.max(...xs) - x, d: Math.max(...zs) - z };
   }
 
   resize(w: number, h: number): void {

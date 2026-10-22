@@ -264,7 +264,9 @@ Definition of Done and the building audit see
 - **UI/inputs in `src/core/Game.ts` and `src/ui/HUD.ts`**: left click selects / drag = box-select (rectangle
   `#ed-selbox`) · right click = order (**right button no longer pans**; panning is by screen edges, WASD/arrows,
   middle-mouse drag, or dragging the **bottom-left minimap**). Minimap: drag = move viewport, right click = order
-  (`Game.commandMoveToWorld`). Optional camera rotation with Q/E (`settings.rotateCamera`, off = fixed camera).
+  (`Game.commandMoveToWorld`). The minimap is **north-up** (`-z` is north, `+x` is east) and draws a fixed
+  `N/E/S/W` compass; the camera footprint is a rotated quad from `getGroundQuad()` so it stays truthful when the
+  camera yaw changes. Optional camera rotation with Q/E (`settings.rotateCamera`, off = fixed camera).
   Control groups (Ctrl/Alt+1-9 assign, 1-9 recall, Shift+1-9 add). Hover tooltip (`computeHover`) and
   **contextual cursor** (`hoverAction`). Damage icons/numbers (`src/ui/DamageNumbers.ts`), clickable alerts that
   pulse on the minimap (`pushAlert` + `alert` event), and order markers (`src/entities/OrderMarker.ts`).

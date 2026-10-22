@@ -93,6 +93,12 @@ const CSS = /* css */ `
   /* Minimapa */
   #ed-minimap-wrap { position: absolute; left: 12px; bottom: 12px; width: 210px; height: 210px; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.5); }
   #ed-minimap { width: 100%; height: 100%; display: block; cursor: crosshair; pointer-events: auto; }
+  #ed-compass { position: absolute; inset: 0; pointer-events: none; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; color: rgba(255,255,255,0.9); text-shadow: 0 1px 2px rgba(0,0,0,0.9); }
+  #ed-compass span { position: absolute; padding: 1px 3px; border-radius: 2px; background: rgba(6,8,12,0.55); }
+  #ed-compass .n { top: 3px; left: 50%; transform: translateX(-50%); color: var(--gold); }
+  #ed-compass .e { top: 50%; right: 3px; transform: translateY(-50%); }
+  #ed-compass .s { bottom: 3px; left: 50%; transform: translateX(-50%); }
+  #ed-compass .w { top: 50%; left: 3px; transform: translateY(-50%); }
 
   /* Panel inferior */
   #ed-bottom { position: absolute; left: 50%; transform: translateX(-50%); bottom: 12px; width: min(720px, 92vw); min-height: 150px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; pointer-events: auto; display: flex; flex-direction: column; box-shadow: 0 6px 30px rgba(0,0,0,0.55); overflow: hidden; }
@@ -479,6 +485,12 @@ export class HUD {
     this.minimapCanvas.width = 210;
     this.minimapCanvas.height = 210;
     wrap.appendChild(this.minimapCanvas);
+    const compass = this.el('div', '');
+    compass.id = 'ed-compass';
+    compass.setAttribute('aria-hidden', 'true');
+    compass.innerHTML =
+      '<span class="n">N</span><span class="e">E</span><span class="s">S</span><span class="w">W</span>';
+    wrap.appendChild(compass);
     this.minimapCtx = this.minimapCanvas.getContext('2d')!;
     const toWorld = (cx: number, cy: number): { x: number; z: number } => {
       const rect = this.minimapCanvas.getBoundingClientRect();
@@ -1238,11 +1250,35 @@ export class HUD {
     }
     ctx.strokeStyle = 'rgba(255,255,255,0.5)';
     ctx.strokeRect(0, 0, w, w);
-    // camera viewport rectangle
-    const rect = this.game.camera.getGroundRect();
-    ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+    // Camera footprint: rotate with the camera, but keep the minimap north-up.
+    const quad = this.game.camera.getGroundQuad();
+    const points = quad.map((p) => ({ x: (p.x / s) * w, y: (p.y / s) * w }));
+    ctx.beginPath();
+    for (let i = 0; i < points.length; i++) {
+      const p = points[i];
+      if (i === 0) ctx.moveTo(p.x, p.y);
+      else ctx.lineTo(p.x, p.y);
+    }
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
     ctx.lineWidth = 1;
-    ctx.strokeRect((rect.x / s) * w, (rect.z / s) * w, (rect.w / s) * w, (rect.d / s) * w);
+    ctx.stroke();
+    // Small forward line: target -> midpoint of the top edge.
+    const target = this.game.camera.getTarget();
+    const topMid = { x: (points[2].x + points[3].x) / 2, y: (points[2].y + points[3].y) / 2 };
+    ctx.beginPath();
+    ctx.moveTo((target.x / s) * w, (target.z / s) * w);
+    ctx.lineTo(topMid.x, topMid.y);
+    ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+    ctx.setLineDash([3, 3]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.beginPath();
+    ctx.arc((target.x / s) * w, (target.z / s) * w, 1.8, 0, Math.PI * 2);
+    ctx.fill();
     ctx.lineWidth = 1;
     // alert pulses (blink)
     if (this.alertPings.length) {
