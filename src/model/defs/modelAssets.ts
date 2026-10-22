@@ -15,9 +15,17 @@ export const CARAL_WORKER_SHADOW_SKIP_MESHES: readonly string[] = ['Eyes'];
 export type RigVariant = 'caral_worker';
 
 /** Animation states mapped to clips; `eat` is fauna-only. A rig may omit any state except `idle`. */
-export type RigClipState = 'idle' | 'walk' | 'work' | 'attack' | 'eat';
+export type RigClipState = 'idle' | 'walk' | 'walk_carry' | 'gather' | 'build' | 'attack' | 'eat';
 
-export const RIG_CLIP_STATES: readonly RigClipState[] = ['idle', 'walk', 'work', 'attack', 'eat'];
+export const RIG_CLIP_STATES: readonly RigClipState[] = [
+  'idle',
+  'walk',
+  'walk_carry',
+  'gather',
+  'build',
+  'attack',
+  'eat',
+];
 
 /** Per-variant clip overrides; `null` removes a state (falls back to idle). */
 export const RIG_VARIANT_CLIPS: Partial<Record<RigVariant, Partial<Record<RigClipState, string | null>>>> = {
@@ -31,14 +39,20 @@ export const WALK_CLIP_RATE_MAX = 1.6;
 
 export interface RigStateInput {
   moving: boolean;
-  working: boolean;
+  gathering: boolean;
+  building: boolean;
   attacking: boolean;
+  carrying: boolean;
 }
 
-/** Priority: locomotion, then work, then combat, else idle. */
+/**
+ * Priority: locomotion, then the worker's actual task, then combat, else idle.
+ * Walking with a load uses the carry locomotion clip, never a work gesture.
+ */
 export function rigClipStateFor(input: RigStateInput): RigClipState {
-  if (input.moving) return 'walk';
-  if (input.working) return 'work';
+  if (input.moving) return input.carrying ? 'walk_carry' : 'walk';
+  if (input.gathering) return 'gather';
+  if (input.building) return 'build';
   if (input.attacking) return 'attack';
   return 'idle';
 }

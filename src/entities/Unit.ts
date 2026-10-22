@@ -765,15 +765,20 @@ export class Unit {
     const rig = this.rig;
     if (!rig) return;
     const order = this.orderQueue[0]?.kind;
+    const working = this.isWorking();
     const state = rigClipStateFor({
       moving: this.walkCycle > 0.01,
-      working: this.isWorking(),
+      gathering: working && order === OrderKind.GATHER,
+      building: working && order === OrderKind.BUILD,
       attacking: this.attackingTarget || (order === OrderKind.ATTACK && this.targetEntityId !== null),
+      carrying: this.carryCount() > 0,
     });
     rig.play(state);
     const speed = Math.hypot(this.vel.x, this.vel.z);
     rig.setPlaybackRate(
-      state === 'walk' ? clamp(speed / WALK_CLIP_REFERENCE_SPEED, WALK_CLIP_RATE_MIN, WALK_CLIP_RATE_MAX) : 1,
+      state === 'walk' || state === 'walk_carry'
+        ? clamp(speed / WALK_CLIP_REFERENCE_SPEED, WALK_CLIP_RATE_MIN, WALK_CLIP_RATE_MAX)
+        : 1,
     );
     rig.update(dt);
     this.bobY = 0;

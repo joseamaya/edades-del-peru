@@ -50,7 +50,7 @@ test('local GLB rigs load, clone independently and animate without touching the 
   expect(mannequin?.state).toBe('ready');
   expect(mannequin?.clips).toContain('Idle_Loop');
   expect(mannequin?.refs).toBe(2);
-  expect(state.snapshot.states).toEqual(['idle', 'work']);
+  expect(state.snapshot.states).toEqual(['idle', 'gather']);
   expect(state.units).toBeGreaterThan(0);
 
   const before = state.snapshot;

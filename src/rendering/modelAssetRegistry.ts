@@ -46,7 +46,9 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
     clips: {
       idle: 'Idle_Loop',
       walk: 'Walk_Loop',
-      work: 'Fixing_Kneeling',
+      walk_carry: 'Walk_Loop',
+      gather: 'Fixing_Kneeling',
+      build: 'Fixing_Kneeling',
       attack: 'Sword_Attack',
     },
   },
@@ -62,12 +64,16 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
     ground: true,
     groundClearance: 0.01,
     shadowSkipMeshes: CARAL_WORKER_SHADOW_SKIP_MESHES,
-    // The GLB also ships Farm_PlantSeed, TreeChopping_Loop, Walk_Carry_Loop and
-    // Push_Loop for the #117 task-animation pass; only these states are mapped now.
+    // Farm_Harvest reads as the digging-stick harvest; the asset has no
+    // construction clip, so Push_Loop is the explicit pushing/placing
+    // abstraction for building. Farm_PlantSeed and TreeChopping_Loop stay
+    // unused until a crop/wood variant needs them.
     clips: {
       idle: 'Idle_Loop',
       walk: 'Walk_Loop',
-      work: 'Farm_Harvest',
+      walk_carry: 'Walk_Carry_Loop',
+      gather: 'Farm_Harvest',
+      build: 'Push_Loop',
     },
   },
   /**

@@ -62,9 +62,12 @@ slot is absent (offline / without assets).
   - SHA-256: `68e5fdd58c63acde77b367c5844461b35abb0da4aa8c3e6c75db61beb7b45b8b` (4,945,452 bytes).
   - Contents: 7 skinned meshes (`Eyebrows`, `Eyes`, body, hair, tunic, skirt, sash), one 65-bone skeleton,
     7 clips (`Idle_Loop`, `Walk_Loop`, `Farm_Harvest`, `Farm_PlantSeed`, `TreeChopping_Loop`,
-    `Walk_Carry_Loop`, `Push_Loop`), ~19.6k unique triangles, ~1.79 m tall. The game maps `idle`, `walk` and
-    `work` (`Farm_Harvest`); there is no attack clip (falls back to idle). The source hair-card eyebrows were
-    rebuilt as two low-poly strips (~24 triangles) on the `Head` bone.
+    `Walk_Carry_Loop`, `Push_Loop`), ~19.6k unique triangles, ~1.79 m tall. The game maps `idle` (`Idle_Loop`),
+    `walk` (`Walk_Loop`), `walk_carry` (`Walk_Carry_Loop`), `gather` (`Farm_Harvest`) and `build` (`Push_Loop`);
+    `Farm_PlantSeed` and `TreeChopping_Loop` are reserved for future crop/wood variants. There is no attack clip
+    (falls back to idle) and no dedicated construction clip, so `Push_Loop` is an explicit pushing/placing
+    abstraction. The source hair-card eyebrows were rebuilt as two low-poly strips (~24 triangles) on the
+    `Head` bone.
   - Historical basis: `docs/historia/atuendos.md` records **cotton textiles for Caral-Supe** but marks the
     specific garments as **not documented**, so the short-sleeved tunic, skirt and sash are an
     **abstraction/plausible** treatment, not a reconstruction. No metal, footwear, horses or firearms. The

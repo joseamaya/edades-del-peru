@@ -54,7 +54,7 @@ const SCENES = {
       const c = g.findLandNear(base.x + 10, base.z + 10, 16);
       const companions = [
         { dx: 0, dz: 0, facing: 0.9, clip: 'idle', phase: 0.5 },
-        { dx: -1.9, dz: 0.1, facing: 0.5, clip: 'work', phase: 0.6 },
+        { dx: -1.9, dz: 0.1, facing: 0.5, clip: 'gather', phase: 0.6 },
         { dx: 1.9, dz: 0.4, facing: -0.6, clip: 'walk', phase: 0.35 },
         { dx: 0.2, dz: -2.1, facing: 2.8, clip: 'idle', phase: 1.2 },
       ];
@@ -85,6 +85,93 @@ const SCENES = {
       };
     },
     views: [{ name: 'rts', mode: 'rts', height: 20, centerSubject: true }],
+  },
+  'caral-worker-tasks': {
+    url: '/?mission=m1_caral&intro=0&low=1&noloop=1',
+    prepare: () => {
+      const g = window.game;
+      g.loop.stop();
+      const worker = [...g.units.values()].find((u) => u.kind === 'worker' && u.owner === 0);
+      if (!worker) throw new Error('no player worker');
+      let time = 0;
+      const step = (count) => {
+        for (let i = 0; i < count; i++) {
+          time += 1 / 60;
+          g.loop.onUpdate(1 / 60, time);
+        }
+      };
+      const reset = () => {
+        worker.clearOrders();
+        worker.gatherCarry = { food: 0, wood: 0, silver: 0, stone: 0 };
+        worker.currentResource = null;
+        worker.walkCycle = 0;
+        worker.path.length = 0;
+        worker.pathIdx = 0;
+      };
+      const place = (x, z) => {
+        reset();
+        worker.pos.set(x, g.terrain.getHeight(x, z), z);
+        worker.view.setPosition(x, worker.pos.y, z);
+      };
+      const subject = () => ({ x: worker.pos.x, y: worker.pos.y, z: worker.pos.z });
+      window.__caralTask = (task) => {
+        reset();
+        if (task === 'gather') {
+          const nodes = [...g.resourceNodes.values()].filter((n) => !n.dead);
+          const node = nodes.find((n) => n.resource === 'food') ?? nodes[0];
+          place(node.pos.x + 1.2, node.pos.z);
+          g.executeCommand({
+            kind: 'order',
+            unitIds: [worker.id],
+            order: { kind: 'gather', entityId: node.id },
+            clear: true,
+          });
+          worker.path.length = 0;
+          worker.pathIdx = 0;
+          worker.walkCycle = 0;
+          step(30);
+        } else if (task === 'build') {
+          const base = g.playerCenter(0);
+          const c = g.findLandNear(base.x + 8, base.z - 6, 10);
+          place(c.x, c.z);
+          const building = g.spawnScriptedBuilding('house', 0, c.x + 2.5, c.z + 0.5);
+          building.beginConstruction();
+          place(building.pos.x - (building.radius + 1.2), building.pos.z);
+          g.executeCommand({
+            kind: 'order',
+            unitIds: [worker.id],
+            order: { kind: 'build', entityId: building.id },
+            clear: true,
+          });
+          worker.path.length = 0;
+          worker.pathIdx = 0;
+          worker.walkCycle = 0;
+          step(30);
+        } else {
+          const dropsite = [...g.buildings.values()].find(
+            (b) => b.owner === 0 && b.isDropsite && b.dropTypes?.includes('wood'),
+          );
+          place(dropsite.pos.x + 9, dropsite.pos.z);
+          worker.gatherCarry = { food: 0, wood: 10, silver: 0, stone: 0 };
+          worker.currentResource = 'wood';
+          g.executeCommand({
+            kind: 'order',
+            unitIds: [worker.id],
+            order: { kind: 'deliver', entityId: dropsite.id },
+            clear: true,
+          });
+          step(20);
+        }
+        worker.rig?.update(0.4);
+        return { center: { x: worker.pos.x, z: worker.pos.z }, subject: subject() };
+      };
+      return window.__caralTask('gather');
+    },
+    views: [
+      { name: 'gather', mode: 'close', task: 'gather', offset: { x: 2.6, y: 1.7, z: 3.6 }, lookHeight: 0.95 },
+      { name: 'build', mode: 'close', task: 'build', offset: { x: 3.0, y: 1.9, z: 4.0 }, lookHeight: 0.95 },
+      { name: 'deliver', mode: 'close', task: 'deliver', offset: { x: 3.0, y: 1.9, z: 4.0 }, lookHeight: 1.0 },
+    ],
   },
   'fauna-perf': {
     url: '/?play=1&civ=caral&period=0&map=altiplano&seed=777&fog=0&low=1&noloop=1',
@@ -145,19 +232,20 @@ async function main() {
         ({ target, view }) => {
           const g = window.game;
           g.loop.stop();
+          const active = view.task ? window.__caralTask(view.task) : target;
           if (view.mode === 'close') {
-            const s = target.subject;
+            const s = active.subject;
             const offset = view.offset ?? { x: 4, y: 2.4, z: 5 };
             g.camera.camera.position.set(s.x + offset.x, s.y + offset.y, s.z + offset.z);
             g.camera.camera.lookAt(s.x, s.y + (view.lookHeight ?? 1.1), s.z);
           } else {
-            g.camera.moveTo(target.center.x, target.center.z, true);
+            g.camera.moveTo(active.center.x, active.center.z, true);
             g.camera.setHeight(view.height);
             for (let i = 0; i < 60; i++) g.camera.update(1 / 60);
-            if (view.centerSubject && target.subject) {
+            if (view.centerSubject && active.subject) {
               // The RTS camera looks at y=0, so a subject on elevated terrain projects
               // above center; nudge the target away from the camera until it is centered.
-              const subject = new window.THREE.Vector3(target.subject.x, target.subject.y + 0.9, target.subject.z);
+              const subject = new window.THREE.Vector3(active.subject.x, active.subject.y + 0.9, active.subject.z);
               const yaw = g.camera.getYaw();
               for (let i = 0; i < 8; i++) {
                 const p = subject.clone().project(g.camera.camera);
