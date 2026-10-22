@@ -12,7 +12,7 @@ export const CARAL_WORKER_ASSET_ID: ModelAssetId = 'caral_worker';
 export const CARAL_WORKER_SHADOW_SKIP_MESHES: readonly string[] = ['Eyes'];
 
 /** Presentation variants applied on top of a shared rigged asset. */
-export type RigVariant = 'caral_worker';
+export type RigVariant = 'caral_worker' | 'caral_chasqui';
 
 /** Animation states mapped to clips; `eat` is fauna-only. A rig may omit any state except `idle`. */
 export type RigClipState = 'idle' | 'walk' | 'walk_carry' | 'gather' | 'build' | 'attack' | 'eat';
@@ -30,6 +30,7 @@ export const RIG_CLIP_STATES: readonly RigClipState[] = [
 /** Per-variant clip overrides; `null` removes a state (falls back to idle). */
 export const RIG_VARIANT_CLIPS: Partial<Record<RigVariant, Partial<Record<RigClipState, string | null>>>> = {
   caral_worker: { attack: null },
+  caral_chasqui: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: null },
 };
 
 /** Playback-rate reference for in-place walk clips (world units per second). */
@@ -67,8 +68,9 @@ export interface RigModelChoice {
  * The migration is progressive: this pilot covers the Caral worker only.
  */
 export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId): RigModelChoice | null {
-  if (kind === UnitKind.WORKER && civ === CivId.CARAL && era === Era.FORMATIVE) {
-    return { asset: CARAL_WORKER_ASSET_ID, variant: 'caral_worker' };
+  if (civ === CivId.CARAL && era === Era.FORMATIVE) {
+    if (kind === UnitKind.WORKER) return { asset: CARAL_WORKER_ASSET_ID, variant: 'caral_worker' };
+    if (kind === UnitKind.SCOUT) return { asset: CARAL_WORKER_ASSET_ID, variant: 'caral_chasqui' };
   }
   return null;
 }

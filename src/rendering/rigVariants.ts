@@ -12,7 +12,9 @@ export interface RigVariantHandle {
 export function applyRigVariant(rig: RigInstance, variant: RigVariant): RigVariantHandle | null {
   switch (variant) {
     case 'caral_worker':
-      return dressCaralWorker(rig);
+      return dressCaralWorker(rig, 'caral_worker');
+    case 'caral_chasqui':
+      return dressCaralWorker(rig, 'caral_chasqui');
     default:
       return null;
   }

@@ -5,6 +5,7 @@ import { CivDef, ArchStyle, EmblemId } from './defs/civs';
 import { ModelSpec } from './defs/units';
 import { CivId, Era } from '../core/types';
 import { ERA_DEFS } from './defs/eras';
+import { HUMAN_HAIR, HUMAN_SKIN } from './defs/people';
 import type { HistoricalArchitectureProfile, SilhouetteMotif, WallMaterial, RoofMaterial } from './defs/architecture';
 import type { LandmarkId } from './defs/landmarks';
 import { mixHex } from '../util/math';
@@ -520,8 +521,8 @@ function addHumanoid(
   },
 ): void {
   const attire = { ...getAttire(b, opts.role ?? 'melee'), ...opts.attire };
-  const skin = '#d9a06a';
-  const hair = '#2a1c12';
+  const skin = HUMAN_SKIN;
+  const hair = HUMAN_HAIR;
   const metalArmor = attire.metal;
   const tunic = attire.tunic;
   const limbTex = attire.tex;

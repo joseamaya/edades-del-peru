@@ -13,6 +13,11 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
 
 ## 1. General andino (todas las culturas prehispánicas)
 
+> **Nota de representación (piel, pelo y rasgos).** Los dossieres y las fuentes citadas describen prendas,
+> armas y tocados, pero **no documentan tonos de piel ni rasgos faciales**. El juego usa una paleta andina
+> plausible y oscura (`HUMAN_SKIN` en `src/model/defs/people.ts`) y pelo oscuro para todos los humanoides; es una
+> **representación**, no un retrato ni una reconstrucción. No debe leerse como una afirmación racial esencialista.
+
 - **Arma ofensiva principal: la porra/maza (macana/club)**, de mango de madera y cabeza de madera,
   piedra o metal, con formas de disco, estrella, roseta, cactus o cabeza zoomorfa. Fue el arma más
   usada en el Perú antiguo, en guerra y en ceremonias. — Museo Larco, *Club Heads*.

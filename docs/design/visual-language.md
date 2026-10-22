@@ -240,18 +240,27 @@ Quaternius body/face and hair with project-authored cotton tunic, skirt and sash
 surface, plus UAL1/UAL2 clips. The headband, carry bundle and digging stick are runtime accessories on bones.
 `docs/historia/atuendos.md` documents cotton textiles for Caral-Supe but marks specific garments as **not
 documented**, so the outfit is an **abstraction/plausible** treatment, not a reconstruction; there is no metal,
-footwear, horse or firearm. The face/hair are generic CC0, not a portrait. Historical models must follow the
+footwear, horse or firearm. The face/hair are generic CC0, not a portrait. Human skin and hair use the shared
+`HUMAN_SKIN` / `HUMAN_HAIR` palette (`src/model/defs/people.ts`, `#6b3f22` / `#2a1c12`); skin tone and facial
+features are not documented, so this is a plausible Andean representation, not a portrait or a racial claim.
+The same constants drive the procedural humanoids and the recoloured CC0 body texture. Historical models must follow the
 period dossiers and their source/licence must be recorded in [`PROVENANCE.md`](../../PROVENANCE.md) before they
 are used in a campaign. See [`docs/development.md`](../development.md) for the clip convention, the build script
 and the migration steps. Only the eyes (too small to cast a readable shadow) skip the VSM shadow pass; the
 garments keep their shadows, which keeps the worker inside its budget without cutting visible geometry.
+The **chasqui** variant uses the same rig with a distinct runner set: the short-sleeve tunic, the long chasqui
+skirt, a wide belt, an ochre headband, a gourd canteen and no digging stick. It uses `Walk_Loop`; the exported
+`Jog_Fwd_Loop`/`Sprint_Loop` are reserved for a future garment designed for the higher knee.
 Comparable evidence (same mission `m1_caral`, 1600x900, UI hidden):
 [`caral-worker-final-before-after.webp`](../media/caral-worker-final-before-after.webp) (procedural worker →
 finished rig, fixed front close-up) and
 [`caral-worker-final-rts-before-after.webp`](../media/caral-worker-final-rts-before-after.webp) (RTS camera).
 [`caral-worker-tasks.webp`](../media/caral-worker-tasks.webp) shows the order-driven task poses (gather, build,
-carry/deliver) from the same mission. In the two before/after images the left half is the procedural fallback and
-the right half is the finished asset.
+carry/deliver) from the same mission. [`caral-chasqui-before-after.webp`](../media/caral-chasqui-before-after.webp)
+shows the procedural Caral scout → rigged chasqui runner set,
+[`caral-chasqui-rts-before-after.webp`](../media/caral-chasqui-rts-before-after.webp) places it at RTS zoom, and
+[`caral-skin-before-after.webp`](../media/caral-skin-before-after.webp) shows the shared darker skin palette on a
+procedural humanoid. In the before/after images the left half is before and the right half after.
 
 ## Caral visual pilot
 
