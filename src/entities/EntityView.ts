@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { EntityRef } from '../core/types';
+import { facingRotation } from '../util/math';
 import type { Unit } from './Unit';
 import type { Building } from './Building';
 
@@ -99,6 +100,11 @@ export class EntityView {
 
   setRotationY(yaw: number): void {
     this.group.rotation.y = yaw;
+  }
+
+  /** Face a unit's movement yaw; models are modelled facing +Z. */
+  setFacing(yaw: number): void {
+    this.group.rotation.y = facingRotation(yaw);
   }
 
   showSelection(show: boolean): void {

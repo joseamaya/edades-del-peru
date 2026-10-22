@@ -744,7 +744,10 @@ export class Game {
     this.units.set(scout.id, scout);
     this.players[player].populationUsed += scout.stats.population;
     // auto-gathering
-    this.assignInitialWorkers(player, x, z);
+    // AI seats start gathering immediately; the human player keeps control of
+    // the opening workers so they stay selectable at the base. AI-vs-AI seats
+    // get their orders from the AI controller on its first update.
+    if (this.players[player]?.isAI) this.assignInitialWorkers(player, x, z);
   }
 
   /** Deterministic settlement plan for a base at (x, z) (dwellings + fields + roads). */
@@ -1183,6 +1186,15 @@ export class Game {
   /** Attach an AI controller to a player (AI-vs-AI runs/tests). */
   addAI(playerId: number, difficulty?: Difficulty): void {
     this.ais.push(new AI(this, playerId, difficulty));
+    // Attaching an AI after boot (sim/test) must still give it the balanced
+    // opening gather plan; human seats never get this call.
+    const workers = [...this.units.values()].filter(
+      (u) => u.owner === playerId && u.kind === UnitKind.WORKER && !u.dead,
+    );
+    if (workers.length > 0 && workers.every((w) => !w.isBusy())) {
+      const c = this.playerCenter(playerId);
+      this.assignInitialWorkers(playerId, c.x, c.z);
+    }
   }
 
   /** Restore a snapshot into a freshly built game (load mode; no default spawns). */

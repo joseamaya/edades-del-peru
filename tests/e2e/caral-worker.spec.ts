@@ -83,8 +83,9 @@ test('the Caral worker is rigged, animated by its orders and keeps gameplay inta
       tool: !!u.rig?.root.getObjectByName('attire_tool')?.visible,
     })) as WorkerState[];
   });
-  expect(simulation.some((worker) => worker.state === 'gather' || worker.state === 'build')).toBe(true);
-  expect(simulation.some((worker) => worker.carry && !worker.tool)).toBe(true);
+  // The human opening workers stay idle at the base (no auto-gather).
+  expect(simulation.every((worker) => worker.state === 'idle')).toBe(true);
+  expect(simulation.every((worker) => !worker.carry)).toBe(true);
 
   const tasks = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -99,6 +100,8 @@ test('the Caral worker is rigged, animated by its orders and keeps gameplay inta
     const snapshot = () => ({
       state: worker.rig?.currentState ?? null,
       clip: worker.rig?.currentClipName ?? null,
+      carry: !!worker.rig?.root.getObjectByName('attire_carry')?.visible,
+      tool: !!worker.rig?.root.getObjectByName('attire_tool')?.visible,
     });
     const place = (x: number, z: number): void => {
       worker.clearOrders();
@@ -160,9 +163,9 @@ test('the Caral worker is rigged, animated by its orders and keeps gameplay inta
     worker.currentResource = null;
     return { gather, build, deliver };
   });
-  expect(tasks.gather).toEqual({ state: 'gather', clip: 'Farm_Harvest' });
-  expect(tasks.build).toEqual({ state: 'build', clip: 'Push_Loop' });
-  expect(tasks.deliver).toEqual({ state: 'walk_carry', clip: 'Walk_Carry_Loop' });
+  expect(tasks.gather).toMatchObject({ state: 'gather', clip: 'Farm_Harvest', carry: false, tool: true });
+  expect(tasks.build).toMatchObject({ state: 'build', clip: 'Push_Loop', carry: false, tool: false });
+  expect(tasks.deliver).toMatchObject({ state: 'walk_carry', clip: 'Walk_Carry_Loop', carry: true, tool: false });
 
   const transitions = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;

@@ -300,6 +300,15 @@ Definition of Done and the building audit see
 
 ## Code traps (learned the hard way)
 
+- **Unit yaw is a movement angle, not a Three.js rotation**: `angleTo` returns the angle from +X, and models are
+  built facing +Z. `EntityView.setFacing(yaw)` applies `facingRotation(yaw) = atan2(cos yaw, sin yaw)`; keep
+  `setRotationY` for buildings/objects with a raw rotation. Turrets and the muzzle offset use the same helper
+  (`angleDelta` for the local turret aim). Assigning `rotation.y = yaw` directly makes units walk sideways or
+  backwards except on diagonals. Spawn yaw/animation phase come from the deterministic id (no `Math.random`), so
+  saves, replays and AI-vs-AI runs stay stable.
+- **Opening workers**: the human player does not receive automatic GATHER orders at match start (so the opening
+  units stay put and are easy to select); AI seats still run `assignInitialWorkers`. Guarded by
+  `tests/e2e/units-facing.spec.ts`.
 - **Unit movement safety** (`Unit.integrateSafely`): every order's direct fallback (`directStep`) only moves when
   the segment ahead is walkable; `integrateSafely` validates the step, slides along one axis when a wall blocks the
   diagonal, and allows movement only when the unit starts on a blocked cell (controlled escape). GATHER / DELIVER /

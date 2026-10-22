@@ -23,7 +23,7 @@ import type { RigInstance } from '../rendering/RigInstance';
 import { EntityView } from '../entities/EntityView';
 import { allocId } from '../entities/EntityView';
 import { Order, OrderKind, OrderTarget } from '../core/types';
-import { angleTo, distance2D, clamp, lerp } from '../util/math';
+import { angleDelta, angleTo, distance2D, clamp, facingRotation, lerp } from '../util/math';
 import type { UnitSave } from '../game/saveTypes';
 
 /** Context that Game provides to units (avoids circular dependencies). */
@@ -99,8 +99,8 @@ export class Unit {
   stats: UnitStats;
   pos = new THREE.Vector3();
   vel = new THREE.Vector3();
-  yaw = Math.random() * Math.PI * 2;
-  targetYaw = this.yaw;
+  yaw = 0;
+  targetYaw = 0;
   view: EntityView;
   hp: number;
   maxHp: number;
@@ -126,7 +126,7 @@ export class Unit {
   carryCapacity = 10;
   private gatherTimer = 0;
   private currentResource: keyof Resources | null = null;
-  private animationTime = Math.random() * 10;
+  private animationTime = 0;
   private walkCycle = 0;
   private workAnim = 0;
   private footstepTimer = 0;
@@ -159,6 +159,11 @@ export class Unit {
     this.kind = kind;
     this.owner = owner;
     this.era = era;
+    // Deterministic spawn facing: no Math.random here, so saves/replays and
+    // AI-vs-AI runs keep the same yaw. The golden angle gives visual variety.
+    this.yaw = (this.id * 2.399963229728653) % (Math.PI * 2);
+    this.targetYaw = this.yaw;
+    this.animationTime = (this.id * 1.61803398875) % 10;
     this.stats = getUnitStats(kind, era);
     this.hp = this.maxHp = this.stats.hp;
     const modelChoice = unitModelAsset(kind, era, ctx.civ.id);
@@ -487,7 +492,7 @@ export class Unit {
     this.updateCarry();
 
     this.view.setPosition(this.pos.x, this.pos.y, this.pos.z);
-    this.view.setRotationY(this.yaw);
+    this.view.setFacing(this.yaw);
     // walk/idle bounce applied after fixing the position (not overwritten)
     this.view.group.position.y += this.bobY;
     this.view.updateHealth(this.hp / this.maxHp);
@@ -710,7 +715,8 @@ export class Unit {
         const target =
           this.ctx?.entitiesById?.get(this.targetEntityId) ?? this.ctx?.buildings?.get(this.targetEntityId);
         if (target) {
-          aimYaw = angleTo(this.pos.x, this.pos.z, target.pos.x, target.pos.z) - this.yaw;
+          const targetYaw = angleTo(this.pos.x, this.pos.z, target.pos.x, target.pos.z);
+          aimYaw = angleDelta(facingRotation(this.yaw), facingRotation(targetYaw));
         }
       }
       this.turretPivot.rotation.y = aimYaw;
@@ -766,15 +772,15 @@ export class Unit {
     if (!rig) return;
     const order = this.orderQueue[0]?.kind;
     const working = this.isWorking();
+    const speed = Math.hypot(this.vel.x, this.vel.z);
     const state = rigClipStateFor({
-      moving: this.walkCycle > 0.01,
+      moving: speed > 0.15,
       gathering: working && order === OrderKind.GATHER,
       building: working && order === OrderKind.BUILD,
       attacking: this.attackingTarget || (order === OrderKind.ATTACK && this.targetEntityId !== null),
       carrying: this.carryCount() > 0,
     });
     rig.play(state);
-    const speed = Math.hypot(this.vel.x, this.vel.z);
     rig.setPlaybackRate(
       state === 'walk' || state === 'walk_carry'
         ? clamp(speed / WALK_CLIP_REFERENCE_SPEED, WALK_CLIP_RATE_MIN, WALK_CLIP_RATE_MAX)
@@ -931,7 +937,10 @@ export class Unit {
       damageType: this.stats.damageType,
     });
     // muzzle flash at the cannon mouth (weapon pivot + barrel length, rotated with the unit)
-    const muzzle = new THREE.Vector3(0.28, 0.9, 0.62).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.yaw);
+    const muzzle = new THREE.Vector3(0.28, 0.9, 0.62).applyAxisAngle(
+      new THREE.Vector3(0, 1, 0),
+      facingRotation(this.yaw),
+    );
     this.ctx.particles?.emit({
       x: this.pos.x + muzzle.x,
       y: this.pos.y + muzzle.y,
@@ -1367,7 +1376,7 @@ export class Unit {
     this.armorMultiplier = s.armorMultiplier;
     if (s.tag) this.tag = s.tag;
     this.view.setPosition(this.pos.x, this.pos.y, this.pos.z);
-    this.view.setRotationY(this.yaw);
+    this.view.setFacing(this.yaw);
     this.view.group.visible = this.garrisonedIn === null;
     this.view.updateHealth(this.hp / this.maxHp);
   }

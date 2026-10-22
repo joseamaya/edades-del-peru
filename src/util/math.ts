@@ -39,6 +39,23 @@ export function angleTo(ax: number, az: number, bx: number, bz: number): number 
   return Math.atan2(bz - az, bx - ax);
 }
 
+/**
+ * Rotation for a +Z-facing model so it looks along a movement yaw (angle from
+ * +X). The unit yaw measures the direction of travel, while Three.js rotates a
+ * +Z vector by `rotation.y`; a plain assignment leaves the model 90 degrees off.
+ */
+export function facingRotation(yaw: number): number {
+  return Math.atan2(Math.cos(yaw), Math.sin(yaw));
+}
+
+/** Shortest signed delta from `from` to `to` in [-PI, PI]. */
+export function angleDelta(from: number, to: number): number {
+  let d = to - from;
+  while (d > Math.PI) d -= Math.PI * 2;
+  while (d < -Math.PI) d += Math.PI * 2;
+  return d;
+}
+
 export function hexToRgb(hex: string): { r: number; g: number; b: number } {
   const h = hex.replace('#', '');
   const n = parseInt(
