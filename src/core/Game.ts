@@ -744,7 +744,10 @@ export class Game {
     this.units.set(scout.id, scout);
     this.players[player].populationUsed += scout.stats.population;
     // auto-gathering
-    this.assignInitialWorkers(player, x, z);
+    // AI seats start gathering immediately; the human player keeps control of
+    // the opening workers so they stay selectable at the base. AI-vs-AI seats
+    // get their orders from the AI controller on its first update.
+    if (this.players[player]?.isAI) this.assignInitialWorkers(player, x, z);
   }
 
   /** Deterministic settlement plan for a base at (x, z) (dwellings + fields + roads). */
