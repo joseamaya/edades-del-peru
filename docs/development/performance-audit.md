@@ -895,6 +895,117 @@ real.
 
 ---
 
+## Rigged models, fauna and LOD (#118)
+
+Esta sección mide el coste de los modelos riggeados y la fauna antes de ampliar la migración. El escenario
+`rigs` parte de una población limpia y spawnea N trabajadores Caral; `fauna` hace lo mismo con N llamas
+(4/8/12/16, cap 16); `mixed-rigs` combina N trabajadores, N/2 soldados y 8 llamas. Todos usan seed 777,
+1280×800, `?low=1`, niebla y el pase de sombras VSM. Los draw calls/triángulos incluyen **main + shadow**, por
+eso se comparan antes/después con el mismo criterio.
+
+```bash
+yarn bench --scenario=rigs --units=0,4,12,24,48 --steps=600 --runs=3 --profile=1 \
+  --out=review/bench-rigs.json
+yarn bench --scenario=fauna --animals=0,4,8,12,16 --steps=600 --runs=3 --profile=1 \
+  --out=review/bench-fauna.json
+yarn bench --scenario=mixed-rigs --units=12,24,48 --animals=8 --steps=600 --runs=2 --profile=1 \
+  --out=review/bench-mixed-rigs.json
+yarn bench:check   # --assert sobre los tres escenarios
+```
+
+La línea base se midió en `main` con el mismo arreglo del cap de fauna aplicado de forma temporal: el bug
+descrito abajo impedía spawnear 12/16 animales y habría hecho incomparable la tabla. El cambio de cap forma
+parte de #118.
+
+### Fauna: antes / después
+
+| Animales | Draws escena | Draws fauna | Draws/animal | Tris/animal |
+|---:|---:|---:|---:|---:|
+| 0 | 126 → 126 | 0 → 0 | — | — |
+| 4 | 182 → 134 | 56 → 8 | **14 → 2** | 4.120 → 4.120 |
+| 8 | 238 → 142 | 112 → 16 | **14 → 2** | 4.120 → 4.120 |
+| 12 | 294 → 150 | 168 → 24 | **14 → 2** | 4.120 → 4.120 |
+| 16 | 350 → 158 | 224 → 32 | **14 → 2** | 4.120 → 4.120 |
+
+La alpaca tenía **7 primitivas/materiales** (7 `SkinnedMesh`); cada una se dibuja en main y en shadow. Se
+horneó el color plano de cada material en colores por vértice y se fusionaron en **1 `SkinnedMesh`**. El
+triángulo count no cambia y no hay texturas en el asset, así que la pérdida visual es nula (ver evidencia).
+El ahorro es de **12 draw calls por animal**; a 16 animales son **192 draw calls menos** en la escena.
+
+### Trabajadores: baseline para #116
+
+| Trabajadores | Draws/trabajador | Tris/trabajador | `rigs` p95 |
+|---:|---:|---:|---:|
+| 4 | 32,5 | 28.977 | 0,10 ms |
+| 12 | 32,0 | 29.104 | 0,30 ms |
+| 24 | 31,7 | 29.189 | 0,50 ms |
+| 48 | 31,6 | 29.210 | 1,20 ms |
+
+El trabajador sigue usando el maniquí vestido del piloto (#108/#112); #118 **no** lo cambia. Estos números
+fijan el presupuesto que el modelo final de #116 deberá respetar o justificar. Los tris incluyen el pase de
+sombras; el cuerpo base son ~13,7k tris y el resto es vestuario/anclajes.
+
+### Escenario mixto
+
+| Unidades | Draws escena | Draws rigs | Sim p95 |
+|---:|---:|---:|---:|
+| 12 + 8 animales | 862 → 766 | 498 → 402 | 5,0 → 4,5 ms |
+| 24 + 8 animales | 1.496 → 1.400 | 874 → 778 | 5,5 → 4,8 ms |
+| 48 + 8 animales | 2.702 → 2.606 | 1.626 → 1.530 | 4,0 → 6,5 ms |
+
+Cada fila ahorra exactamente **96 draws** (8 animales × 12). La simulación no mejora de forma demostrable:
+la diferencia de p95 está dentro del ruido entre corridas; el objetivo de #118 es reducir coste evitable, no
+vender una mejora de CPU. La CPU de `RigInstance.update` (`rigs`) se mantiene en **0,2–1,9 ms p95** en las
+escalas medidas.
+
+### LOD, compresión e instancing: decisión con datos
+
+- **LOD/actualización remota:** no se añade. El mixer cuesta 1,2 ms p95 con 48 trabajadores, 0,2 ms con 16
+  llamas y 1,9 ms en el mixto de 48+8; el cuello de botella medido son los draw calls de primitivas, no la CPU
+  de animación. Introducir LOD ahora añadiría complejidad sin resolver el coste observado.
+- **Instancing convencional:** no aplica a `SkinnedMesh` con esqueletos independientes; no se usa.
+- **Draco/KTX2:** no se añaden. La alpaca no tiene texturas y el coste de geometría no es el problema; el
+  maniquí y el modelo final sí tienen materiales/texturas y se medirán en #116.
+- **Materiales compartidos:** ya se comparten geometría/material/texturas entre instancias; el problema era el
+  número de primitivas por asset, resuelto con la consolidación.
+
+### Bug de cap de fauna
+
+`Wildlife.spawn` recalculaba `MAX_ANIMALS - this.animals.length` en cada iteración del bucle. Como la longitud
+crecía dentro del bucle, el límite se cerraba a la mitad: partiendo de cero solo añadía **8** animales aunque
+`MAX_ANIMALS = 16`. Se congeló el límite antes del bucle y se añadió un test (`tests/fauna-assets.test.ts`)
+que exige 12 y luego 16. Es un cambio visual (más fauna), no de simulación.
+
+### Presupuestos verificables
+
+`yarn bench:check` ejecuta los tres escenarios con `--assert` y falla si:
+
+- un trabajador supera **40 draw calls** o **40.000 tris** (main + shadow);
+- un animal supera **4 draw calls** o **5.000 tris**;
+- una entidad riggeada cae al modelo procedural sin avisar;
+- el p95 del escenario mixto supera **16,6 ms** (un frame a 60 Hz).
+
+Los presupuestos son estructurales y no dependen de la GPU. No se impone un FPS: SwiftShader no representa
+hardware real y el propio bench lo marca como `software`.
+
+### Evidencia
+
+Misma escena, seed, resolución, cámara y pasos fijos; izquierda antes, derecha después:
+
+- [`fauna-rig-perf-before-after.webp`](../media/fauna-rig-perf-before-after.webp) — acercamiento.
+- [`fauna-rig-perf-rts-before-after.webp`](../media/fauna-rig-perf-rts-before-after.webp) — cámara RTS.
+
+Las capturas se generan con `node scripts/shots_evidence.mjs --scene=fauna-perf --out=…` desde el worktree
+limpio y desde la rama; el resultado es visualmente idéntico y solo cambian los draw calls.
+
+### Límites
+
+- Sin validación en GPU hardware: los draw calls/triángulos son accionables, el FPS no.
+- Los conteos incluyen el pase de sombras VSM; el pase principal es aproximadamente la mitad.
+- El trabajador medido sigue siendo el maniquí del piloto; #116 debe repetir la medición con el asset final.
+- Los presupuestos se fijan con la escena de bench (1280×800, `?low=1`); una escena con más materiales o
+  sombras puede requerir revisarlos, pero no relajarlos silenciosamente.
+
 ## Reproducción
 
 ```bash

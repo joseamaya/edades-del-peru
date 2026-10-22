@@ -175,12 +175,19 @@ Vicuñas, condors and pelicans keep the procedural bodies
 (`src/rendering/faunaModels.ts`) built from rounded shapes with vertex-colour AO and
 **articulated legs/wings** (shared geometry and material), rather than flat boxes;
 an asset-load failure also falls back to that path. Both are pure planners over
-`region + seed` and regenerate deterministically on load.
+`region + seed` and regenerate deterministically on load. The alpaca's seven flat
+primitives are consolidated at load into one vertex-coloured skinned mesh (**14 → 2
+draw calls per animal**, main + shadow, same triangles); `yarn bench:check` guards
+that budget. The documented 16-animal cap is now applied correctly (the old loop
+stopped at 8 when starting from an empty herd).
 
 Fauna evidence (same `map=altiplano`, seed 777, 1600x900):
 [`fauna-llama-before-after.webp`](../media/fauna-llama-before-after.webp) (procedural → rigged close-up) and
-[`fauna-llama-rts-before-after.webp`](../media/fauna-llama-rts-before-after.webp) (default RTS view). The model
-is an abstraction of the existing llama species, not a new spawn rule; a bespoke llama/vicuña mesh remains future
+[`fauna-llama-rts-before-after.webp`](../media/fauna-llama-rts-before-after.webp) (default RTS view). The
+seven-primitive → one-mesh consolidation has its own visual-parity evidence in
+[`fauna-rig-perf-before-after.webp`](../media/fauna-rig-perf-before-after.webp) and
+[`fauna-rig-perf-rts-before-after.webp`](../media/fauna-rig-perf-rts-before-after.webp). The model is an
+abstraction of the existing llama species, not a new spawn rule; a bespoke llama/vicuña mesh remains future
 work.
 
 ## Colour

@@ -63,7 +63,10 @@ export class Wildlife {
   constructor(private readonly scene: THREE.Scene) {}
 
   spawn(spawns: WildlifeSpawn[], heightAt: (x: number, z: number) => number): void {
-    for (let i = 0; i < Math.min(spawns.length, MAX_ANIMALS - this.animals.length); i++) {
+    // Freeze the limit: `this.animals.length` grows inside the loop, so
+    // recomputing it would stop at half the cap when starting from zero.
+    const limit = Math.min(spawns.length, MAX_ANIMALS - this.animals.length);
+    for (let i = 0; i < limit; i++) {
       const s = spawns[i];
       const n = this.animals.length;
       const t = faunaTemplate(s.id);
