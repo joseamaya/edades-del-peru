@@ -8,6 +8,10 @@ const WOOD = '#6f5538';
 const REED = '#b39a5c';
 const STRAW = '#c2a05c';
 const FISH = '#93a0a8';
+const CHAVIN_STONE = '#5f5a52';
+const CHAVIN_LIGHT = '#c8c0ae';
+const SPONDYLUS = '#c86f78';
+const OBSIDIAN = '#26221f';
 
 /** Terrain-conforming household props, merged into one draw call per base. */
 export class SettlementDressing {
@@ -74,6 +78,18 @@ function buildProp(p: DressingPlacement, y: number): THREE.BufferGeometry[] {
       break;
     case 'windbreak':
       windbreak(b);
+      break;
+    case 'stela':
+      stela(b);
+      break;
+    case 'offering':
+      offering(b);
+      break;
+    case 'stone_head':
+      stoneHead(b);
+      break;
+    case 'megalith':
+      megalith(b);
       break;
   }
   return parts;
@@ -194,4 +210,51 @@ function windbreak(b: PartBatch): void {
   for (const x of [-0.5, 0, 0.5]) b.cyl(0.05, 0.06, 1.1, 6, WOOD, x, 0.55, 0);
   b.box(1.2, 0.8, 0.05, REED, 0, 0.62, 0);
   b.box(1.26, 0.06, 0.08, WOOD, 0, 1.02, 0);
+}
+
+/** Chavín: carved stela with a feline face (abstract tenon-head/iconography cue). */
+function stela(b: PartBatch): void {
+  b.box(0.82, 0.16, 0.62, DARK_STONE, 0, 0.08, 0);
+  b.box(0.6, 1.8, 0.2, CHAVIN_STONE, 0, 1.0, 0);
+  b.box(0.68, 0.14, 0.28, CHAVIN_LIGHT, 0, 1.92, 0);
+  b.box(0.09, 0.09, 0.03, OBSIDIAN, -0.13, 1.34, 0.112);
+  b.box(0.09, 0.09, 0.03, OBSIDIAN, 0.13, 1.34, 0.112);
+  b.box(0.26, 0.06, 0.03, OBSIDIAN, 0, 1.16, 0.112);
+  for (const sx of [-1, 1]) b.box(0.05, 0.18, 0.03, CHAVIN_LIGHT, sx * 0.09, 1.04, 0.112);
+}
+
+/** Chavín: offering altar with spondylus shells, obsidian and a basket. */
+function offering(b: PartBatch): void {
+  b.box(1.1, 0.3, 0.8, DARK_STONE, 0, 0.15, 0);
+  b.box(0.92, 0.08, 0.64, CHAVIN_LIGHT, 0, 0.34, 0);
+  for (const [x, z] of [
+    [-0.28, -0.14],
+    [-0.02, 0.12],
+    [0.26, -0.08],
+    [0.1, -0.2],
+    [-0.16, 0.18],
+  ] as const) {
+    b.sphere(0.1, SPONDYLUS, x, 0.42, z, 1, 0.8, 1);
+  }
+  b.add(new THREE.ConeGeometry(0.08, 0.38, 5), OBSIDIAN, 0.32, 0.48, -0.04);
+  b.cyl(0.18, 0.13, 0.24, 8, STRAW, -0.3, 0.42, 0.14);
+}
+
+/** Chavín: carved tenon head (cabeza clava) on a low base. */
+function stoneHead(b: PartBatch): void {
+  b.box(0.76, 0.16, 0.62, DARK_STONE, 0, 0.08, 0);
+  b.box(0.58, 0.7, 0.5, CHAVIN_STONE, 0, 0.51, 0);
+  b.box(0.64, 0.14, 0.56, CHAVIN_LIGHT, 0, 0.9, 0);
+  b.box(0.09, 0.09, 0.03, OBSIDIAN, -0.13, 0.62, 0.262);
+  b.box(0.09, 0.09, 0.03, OBSIDIAN, 0.13, 0.62, 0.262);
+  b.box(0.24, 0.07, 0.03, OBSIDIAN, 0, 0.46, 0.262);
+  for (const sx of [-1, 1]) b.box(0.06, 0.16, 0.03, CHAVIN_LIGHT, sx * 0.08, 0.36, 0.262);
+}
+
+/** Chavín: cluster of dressed megalithic blocks. */
+function megalith(b: PartBatch): void {
+  b.box(1.1, 0.1, 0.9, DARK_STONE, 0, 0.05, 0);
+  b.box(0.62, 1.1, 0.44, CHAVIN_STONE, -0.24, 0.6, 0.02, 0, 0.2, 0);
+  b.box(0.46, 0.74, 0.38, CHAVIN_LIGHT, 0.26, 0.42, -0.1, 0, -0.35, 0);
+  b.box(0.36, 0.46, 0.3, CHAVIN_STONE, 0.16, 0.28, 0.3, 0, 0.55, 0);
 }

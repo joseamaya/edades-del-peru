@@ -3,7 +3,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { CivDef, ArchStyle, EmblemId } from './defs/civs';
 import { ModelSpec } from './defs/units';
-import { Era } from '../core/types';
+import { CivId, Era } from '../core/types';
 import { ERA_DEFS } from './defs/eras';
 import type { HistoricalArchitectureProfile, SilhouetteMotif, WallMaterial, RoofMaterial } from './defs/architecture';
 import type { LandmarkId } from './defs/landmarks';
@@ -205,6 +205,10 @@ class Builder {
     this.ctx = ctx;
     this.civ = ctx.civ;
     this.pal = eraPalette(ctx.era, ctx.civ);
+  }
+
+  get civId(): CivId {
+    return this.civ.id;
   }
 
   box(w: number, h: number, d: number, color: string, o: PartOpts = {}): THREE.Mesh {
@@ -1298,6 +1302,9 @@ const ROOF_TEX: Record<RoofMaterial, TexKind> = {
 };
 
 function andeanTex(b: Builder): TexKind {
+  // Chavín's carved stone reads better with the lighter procedural stone map
+  // than with the near-black megalith AI texture.
+  if (b.civId === CivId.CHAVIN) return 'stone';
   return WALL_TEX[b.arch.wall];
 }
 
@@ -2616,14 +2623,83 @@ function buildIncaLandmark(b: Builder): void {
 }
 
 /** Chavín: a stepped stone temple with tenon heads beside a sunken plaza. */
+/** Chavín: U-shaped stone temple, sunken circular plaza, tenon heads and the Lanzón gallery. */
 function buildChavinTemple(b: Builder): void {
-  const stone = mixHex(b.pal.primary, '#8f8676', 0.78);
-  const dark = mixHex(b.pal.primary, '#2a2318', 0.5);
-  const w = 6;
-  const baseY = tieredPlatform(b, w, 3, 0.55, stone, andeanTex(b));
-  b.box(w * 0.5, 0.9, w * 0.5, stone, { y: baseY + 0.45, tex: andeanTex(b) });
-  tenonHeadRow(b, stone, baseY + 0.1, w * 0.5, w * 0.16);
-  ringPlaza(b, w * 1.35, w * 0.7, stone, dark, 8);
+  const darkStone = mixHex(b.pal.primary, '#8a8378', 0.78);
+  const lightStone = mixHex(b.pal.primary, '#e0d8c8', 0.9);
+  const granite = mixHex(b.pal.primary, '#f0ece2', 0.94);
+  const shadow = mixHex(b.pal.primary, '#3a342e', 0.6);
+  const tex: TexKind = 'stone';
+  const w = 7.5;
+  const tierH = 0.55;
+  const baseY = tieredPlatform(b, w, 3, tierH, darkStone, tex);
+
+  // U-shaped sanctuary: tall rear block plus two forward wings around an open court.
+  const rearZ = -w * 0.34;
+  const wingZ = w * 0.08;
+  b.box(w * 0.92, 2.3, w * 0.3, darkStone, { y: baseY + 1.15, z: rearZ, tex });
+  for (const sx of [-1, 1]) {
+    b.box(w * 0.22, 1.7, w * 0.74, darkStone, { x: sx * w * 0.35, y: baseY + 0.85, z: wingZ, tex });
+  }
+
+  // Central stair from the plaza to the court.
+  const steps = 7;
+  for (let i = 0; i < steps; i++) {
+    const t = (i + 1) / steps;
+    b.box(w * 0.26, tierH * 0.82, w * 0.2, lightStone, {
+      y: ((i + 0.5) * baseY) / steps,
+      z: w * 0.5 - t * w * 0.22,
+      tex,
+    });
+  }
+
+  // Lanzón gallery embedded in the rear block: a dark doorway, granite lintel
+  // and a taller carved monolith visible from the court.
+  const doorW = w * 0.2;
+  const doorH = 1.7;
+  b.box(doorW, doorH, 0.12, shadow, { y: baseY + doorH / 2 + 0.1, z: rearZ + w * 0.151, tex });
+  b.box(doorW * 1.3, 0.16, 0.22, granite, { y: baseY + doorH + 0.18, z: rearZ + w * 0.151, tex });
+  b.box(doorW * 0.62, 1.5, 0.16, shadow, { y: baseY + 0.8, z: rearZ + w * 0.18, tex });
+  for (const sx of [-1, 1]) {
+    b.box(0.07, 0.07, 0.03, granite, { x: sx * 0.1, y: baseY + 1.25, z: rearZ + w * 0.19 });
+  }
+  b.box(0.2, 0.05, 0.03, granite, { y: baseY + 1.05, z: rearZ + w * 0.19 });
+
+  // The Lanzón stands in the court: a taller carved monolith under a granite lintel.
+  const monolithZ = rearZ + w * 0.15 + 0.75;
+  b.box(0.7, 2.0, 0.32, shadow, { y: baseY + 1.0, z: monolithZ, tex });
+  b.box(0.9, 0.16, 0.52, granite, { y: baseY + 2.05, z: monolithZ, tex });
+  for (const sx of [-1, 1]) {
+    b.box(0.1, 0.1, 0.03, granite, { x: sx * 0.15, y: baseY + 1.35, z: monolithZ + 0.18 });
+  }
+  b.box(0.24, 0.06, 0.03, granite, { y: baseY + 1.12, z: monolithZ + 0.18 });
+  for (const sx of [-1, 1]) {
+    b.box(0.06, 0.2, 0.03, granite, { x: sx * 0.08, y: baseY + 1.0, z: monolithZ + 0.18 });
+  }
+
+  // Cabezas clavas (tenon heads) protruding from the facade and the wings.
+  for (const y of [baseY + 0.65, baseY + 1.45]) {
+    for (let i = -3; i <= 3; i++) {
+      if (Math.abs(i) <= 1) continue;
+      b.box(0.55, 0.55, 0.85, granite, { x: i * w * 0.13, y, z: rearZ + w * 0.15 + 0.45, tex });
+    }
+  }
+  for (const sx of [-1, 1]) {
+    for (const zz of [wingZ - w * 0.16, wingZ + w * 0.16]) {
+      b.box(0.62, 0.62, 0.58, granite, { x: sx * (w * 0.35 + 0.34), y: baseY + 1.0, z: zz, tex });
+    }
+  }
+
+  // Sunken circular plaza with upright stones and a stone drainage channel.
+  const plazaZ = w * 1.08;
+  ringPlaza(b, 0, w * 0.52, lightStone, mixHex(darkStone, '#2a2622', 0.55), 12, plazaZ);
+  b.box(w * 0.06, 0.03, w * 0.95, shadow, { y: 0.355, z: plazaZ, tex });
+  b.box(w * 0.95, 0.03, w * 0.06, shadow, { y: 0.355, z: plazaZ, tex });
+
+  // Two larger heads flank the stair at ground level.
+  for (const sx of [-1, 1]) {
+    b.box(0.5, 0.5, 0.7, lightStone, { x: sx * w * 0.28, y: 0.5, z: w * 0.55, tex });
+  }
 }
 
 /** Wari: a walled urban compound with a gated front and a central platform. */
