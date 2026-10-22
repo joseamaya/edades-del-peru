@@ -24,7 +24,7 @@ export class RigDemo {
 
   constructor(host: RigDemoHost) {
     const center = host.playerCenter(0);
-    const clips: RigClipState[] = ['idle', 'work'];
+    const clips: RigClipState[] = ['idle', 'gather'];
     for (let i = 0; i < clips.length; i++) {
       const rig = acquireRig(RIG_DEMO_ASSET_ID);
       if (!rig) break;

@@ -58,6 +58,11 @@ export class RigInstance {
     return this.current;
   }
 
+  /** Clip actually playing, useful for tests and diagnostics. */
+  get currentClipName(): string | null {
+    return this.current ? (this.actions.get(this.current)?.getClip().name ?? null) : null;
+  }
+
   get time(): number {
     return this.mixer.time;
   }
@@ -81,6 +86,7 @@ export class RigInstance {
       next.play();
     }
     this.current = actual;
+    this.variant?.setTask?.(actual);
   }
 
   /** Adjust the current clip's playback rate (walk speed matching). */

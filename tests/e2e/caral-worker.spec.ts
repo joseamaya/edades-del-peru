@@ -83,8 +83,86 @@ test('the Caral worker is rigged, animated by its orders and keeps gameplay inta
       tool: !!u.rig?.root.getObjectByName('attire_tool')?.visible,
     })) as WorkerState[];
   });
-  expect(simulation.some((worker) => worker.state === 'work')).toBe(true);
+  expect(simulation.some((worker) => worker.state === 'gather' || worker.state === 'build')).toBe(true);
   expect(simulation.some((worker) => worker.carry && !worker.tool)).toBe(true);
+
+  const tasks = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const worker = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
+    let time = 0;
+    const step = (count: number): void => {
+      for (let i = 0; i < count; i++) {
+        time += 1 / 60;
+        g.loop.onUpdate(1 / 60, time);
+      }
+    };
+    const snapshot = () => ({
+      state: worker.rig?.currentState ?? null,
+      clip: worker.rig?.currentClipName ?? null,
+    });
+    const place = (x: number, z: number): void => {
+      worker.clearOrders();
+      worker.gatherCarry = { food: 0, wood: 0, silver: 0, stone: 0 };
+      worker.currentResource = null;
+      worker.walkCycle = 0;
+      worker.path.length = 0;
+      worker.pathIdx = 0;
+      worker.pos.set(x, g.terrain.getHeight(x, z), z);
+      worker.view.setPosition(x, worker.pos.y, z);
+    };
+
+    const nodes = [...g.resourceNodes.values()];
+    const node = nodes.find((n: any) => !n.dead && n.resource === 'wood') ?? nodes.find((n: any) => !n.dead);
+    place(node.pos.x + 1.2, node.pos.z);
+    g.executeCommand({
+      kind: 'order',
+      unitIds: [worker.id],
+      order: { kind: 'gather', entityId: node.id },
+      clear: true,
+    });
+    worker.path.length = 0;
+    worker.pathIdx = 0;
+    worker.walkCycle = 0;
+    step(8);
+    const gather = snapshot();
+
+    const building = g.spawnScriptedBuilding('house', 0, worker.pos.x + 2.5, worker.pos.z + 0.5);
+    building.beginConstruction();
+    place(building.pos.x - (building.radius + 1.2), building.pos.z);
+    g.executeCommand({
+      kind: 'order',
+      unitIds: [worker.id],
+      order: { kind: 'build', entityId: building.id },
+      clear: true,
+    });
+    worker.path.length = 0;
+    worker.pathIdx = 0;
+    worker.walkCycle = 0;
+    step(8);
+    const build = snapshot();
+
+    const dropsite = [...g.buildings.values()].find(
+      (b: any) => b.owner === 0 && b.isDropsite && b.dropTypes?.includes('wood'),
+    );
+    place(dropsite.pos.x + 8, dropsite.pos.z);
+    worker.gatherCarry = { food: 0, wood: 10, silver: 0, stone: 0 };
+    worker.currentResource = 'wood';
+    g.executeCommand({
+      kind: 'order',
+      unitIds: [worker.id],
+      order: { kind: 'deliver', entityId: dropsite.id },
+      clear: true,
+    });
+    step(12);
+    const deliver = snapshot();
+    worker.clearOrders();
+    worker.gatherCarry = { food: 0, wood: 0, silver: 0, stone: 0 };
+    worker.currentResource = null;
+    return { gather, build, deliver };
+  });
+  expect(tasks.gather).toEqual({ state: 'gather', clip: 'Farm_Harvest' });
+  expect(tasks.build).toEqual({ state: 'build', clip: 'Push_Loop' });
+  expect(tasks.deliver).toEqual({ state: 'walk_carry', clip: 'Walk_Carry_Loop' });
 
   const transitions = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;

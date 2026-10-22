@@ -1,9 +1,10 @@
-import type { RigVariant } from '../model/defs/modelAssets';
+import type { RigClipState, RigVariant } from '../model/defs/modelAssets';
 import type { RigInstance } from './RigInstance';
 import { dressCaralWorker } from './workerAttire';
 
 export interface RigVariantHandle {
   setCarrying?(carrying: boolean, color?: number): void;
+  setTask?(state: RigClipState): void;
   dispose(): void;
 }
 

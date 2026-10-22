@@ -249,7 +249,9 @@ Comparable evidence (same mission `m1_caral`, 1600x900, UI hidden):
 [`caral-worker-final-before-after.webp`](../media/caral-worker-final-before-after.webp) (procedural worker →
 finished rig, fixed front close-up) and
 [`caral-worker-final-rts-before-after.webp`](../media/caral-worker-final-rts-before-after.webp) (RTS camera).
-The left half is the procedural fallback; the right half is the finished asset.
+[`caral-worker-tasks.webp`](../media/caral-worker-tasks.webp) shows the order-driven task poses (gather, build,
+carry/deliver) from the same mission. In the two before/after images the left half is the procedural fallback and
+the right half is the finished asset.
 
 ## Caral visual pilot
 

@@ -1042,9 +1042,12 @@ después (asset final):
 
 - [`caral-worker-final-before-after.webp`](../media/caral-worker-final-before-after.webp) — acercamiento.
 - [`caral-worker-final-rts-before-after.webp`](../media/caral-worker-final-rts-before-after.webp) — cámara RTS.
+- [`caral-worker-tasks.webp`](../media/caral-worker-tasks.webp) — poses de recolección, construcción y
+  transporte dirigidas por órdenes reales (#117).
 
-Las capturas se generan con `node scripts/shots_evidence.mjs --scene=caral-worker --out=…` y
-`--scene=caral-worker-rts --out=…`, una vez desde el worktree limpio (`main`) y otra desde la rama.
+Las capturas antes/después se generan con `node scripts/shots_evidence.mjs --scene=caral-worker --out=…` y
+`--scene=caral-worker-rts --out=…`, una vez desde el worktree limpio (`main`) y otra desde la rama; la tira de
+tareas se captura solo desde la rama con `--scene=caral-worker-tasks`.
 
 ### Límites del modelo final
 

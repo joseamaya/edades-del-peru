@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { applyGeneratedPbr } from './Biomes';
+import type { RigClipState } from '../model/defs/modelAssets';
 import type { RigInstance } from './RigInstance';
 import type { RigVariantHandle } from './rigVariants';
 
@@ -95,6 +96,11 @@ export function dressCaralWorker(rig: RigInstance): CaralWorkerHandle {
   }
 
   let tool: THREE.Group | null = null;
+  let carrying = false;
+  let task: RigClipState = 'idle';
+  const syncTool = (): void => {
+    if (tool) tool.visible = !carrying && task !== 'build';
+  };
   if (hand) {
     tool = new THREE.Group();
     tool.name = 'attire_tool';
@@ -114,10 +120,15 @@ export function dressCaralWorker(rig: RigInstance): CaralWorkerHandle {
   }
 
   return {
-    setCarrying(carrying: boolean, color?: number): void {
-      if (carry) carry.visible = carrying;
-      if (tool) tool.visible = !carrying;
-      if (carrying && color !== undefined) carryMat.color.setHex(color);
+    setCarrying(next: boolean, color?: number): void {
+      carrying = next;
+      if (carry) carry.visible = next;
+      if (next && color !== undefined) carryMat.color.setHex(color);
+      syncTool();
+    },
+    setTask(next: RigClipState): void {
+      task = next;
+      syncTool();
     },
     dispose(): void {
       for (const g of ownedGeometries) g.dispose();

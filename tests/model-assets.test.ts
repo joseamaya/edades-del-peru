@@ -83,7 +83,7 @@ describe('rigged model assets', () => {
 
     const position = a!.root.position.clone();
     a!.play('idle', 0);
-    b!.play('work', 0);
+    b!.play('gather', 0);
     for (let i = 0; i < 45; i++) {
       a!.update(1 / 60);
       b!.update(1 / 60);
@@ -112,9 +112,10 @@ describe('rigged model assets', () => {
     expect(rig.currentState).toBe('walk');
     expect(rig.time).toBeGreaterThan(time);
 
-    rig.play('work', 0);
+    rig.play('gather', 0);
     rig.update(0.25);
-    expect(rig.currentState).toBe('work');
+    expect(rig.currentState).toBe('gather');
+    expect(rig.currentClipName).toBe('Fixing_Kneeling');
     rig.dispose();
   });
 
@@ -222,11 +223,25 @@ describe('rigged model assets', () => {
     expect(dispose).toHaveBeenCalledTimes(1);
   });
 
-  it('maps movement, work and combat to clip states by priority', () => {
-    expect(rigClipStateFor({ moving: true, working: true, attacking: true })).toBe('walk');
-    expect(rigClipStateFor({ moving: false, working: true, attacking: true })).toBe('work');
-    expect(rigClipStateFor({ moving: false, working: false, attacking: true })).toBe('attack');
-    expect(rigClipStateFor({ moving: false, working: false, attacking: false })).toBe('idle');
+  it('maps movement, tasks and combat to clip states by priority', () => {
+    expect(rigClipStateFor({ moving: true, gathering: true, building: false, attacking: true, carrying: false })).toBe(
+      'walk',
+    );
+    expect(rigClipStateFor({ moving: true, gathering: false, building: false, attacking: false, carrying: true })).toBe(
+      'walk_carry',
+    );
+    expect(rigClipStateFor({ moving: false, gathering: true, building: false, attacking: true, carrying: false })).toBe(
+      'gather',
+    );
+    expect(
+      rigClipStateFor({ moving: false, gathering: false, building: true, attacking: false, carrying: false }),
+    ).toBe('build');
+    expect(
+      rigClipStateFor({ moving: false, gathering: false, building: false, attacking: true, carrying: false }),
+    ).toBe('attack');
+    expect(
+      rigClipStateFor({ moving: false, gathering: false, building: false, attacking: false, carrying: false }),
+    ).toBe('idle');
   });
 
   it('preloads idempotently and reports the registry status', async () => {
