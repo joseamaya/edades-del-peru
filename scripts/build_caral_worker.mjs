@@ -51,6 +51,7 @@ const CLIPS = [
   ['ual2', 'TreeChopping_Loop'],
   ['ual2', 'Walk_Carry_Loop'],
   ['ual1', 'Push_Loop'],
+  ['ual1', 'Punch_Jab'],
 ];
 const outFile = path.resolve(cliArg('out', 'review/caral_worker_test.glb'));
 

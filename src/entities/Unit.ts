@@ -6,6 +6,7 @@ import {
   ZERO_RESOURCES,
   Team,
   GameEvents,
+  PlayerState,
   HistoricalPeriod,
   CombatStance,
 } from '../core/types';
@@ -55,8 +56,8 @@ export interface UnitContext {
     damageType?: DamageClass;
   }): void;
   particles: any;
-  players: { id: number; team: Team }[];
-  getPlayer(playerId: number): { id: number; team: Team };
+  players: PlayerState[];
+  getPlayer(playerId: number): PlayerState;
   event<K extends keyof GameEvents>(name: K, payload: GameEvents[K]): void;
   gather(nodeId: number, unitId: number, amount: number, resource: string): void;
   worldSize: number;

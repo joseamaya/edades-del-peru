@@ -12,7 +12,7 @@ import {
   HistoricalPeriod,
 } from '../core/types';
 import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../model/defs/buildings';
-import { UNIT_ARCHETYPES, getUnitStats, UNIT_INFO, unitMinPeriod } from '../model/defs/units';
+import { UNIT_ARCHETYPES, getUnitStats, UNIT_INFO, unitDisplayName, unitMinPeriod } from '../model/defs/units';
 import { TECHS, techAvailable } from '../model/defs/techs';
 import { ERA_DEFS } from '../model/defs/eras';
 import { PERIODS, getPeriod } from '../model/defs/periods';
@@ -926,7 +926,8 @@ export class HUD {
   private renderUnitPanel(units: Unit[]): void {
     const first = units[0];
     const info = UNIT_INFO[first.kind];
-    this.setDesc(info.icon, `${info.name} ×${units.length}`, this.unitDesc(first));
+    const civ = this.game.players[first.owner]?.civ;
+    this.setDesc(info.icon, `${unitDisplayName(first.kind, civ)} ×${units.length}`, this.unitDesc(first));
     this.clearGrid();
     // summary by type (click = select only that type) — AoE2 style
     if (units.length > 1) {
@@ -936,7 +937,7 @@ export class HUD {
         const gi = UNIT_INFO[kind];
         this.addCard(
           gi.icon,
-          `${count}× ${gi.name}`,
+          `${count}× ${unitDisplayName(kind, this.game.players[first.owner]?.civ)}`,
           'clic: filtrar',
           () => this.game.selectUnits(units.filter((u) => u.kind === kind).map((u) => u.id)),
           { cat: 'sel' },
@@ -986,7 +987,7 @@ export class HUD {
       const uInfo = UNIT_INFO[item.unit];
       const card = this.addCard(
         uInfo.icon,
-        uInfo.name,
+        unitDisplayName(item.unit, this.game.players[b.owner]?.civ),
         `${Math.round(item.progress * 100)}% ✖`,
         () => this.game.executeCommand({ kind: 'cancel', buildingId: b.id, index: i }),
         {
@@ -1003,13 +1004,14 @@ export class HUD {
       if (allowedUnits && !allowedUnits.includes(unitKind)) continue;
       const stats = getUnitStats(unitKind, b.era);
       const uInfo = UNIT_INFO[unitKind];
+      const unitName = unitDisplayName(unitKind, this.game.players[b.owner]?.civ);
       const tech = UNIT_ARCHETYPES[unitKind].requiresTech?.[0];
       const techOk = !tech || this.game.players[0].techs.has(tech);
       const eraOk = !!UNIT_ARCHETYPES[unitKind].eraModel[this.game.players[0].era];
       const periodOk = unitMinPeriod(unitKind) <= this.game.settings.period;
       const fortOk = !UNIT_ARCHETYPES[unitKind].requiresFortress || b.kind === BuildingKind.FORTRESS;
       const disabled = !techOk || !eraOk || !periodOk || !fortOk || !this.canAfford(stats.cost);
-      this.addCard(uInfo.icon, uInfo.name, this.costText(stats.cost), () => this.trainUnit(b.id, unitKind), {
+      this.addCard(uInfo.icon, unitName, this.costText(stats.cost), () => this.trainUnit(b.id, unitKind), {
         disabled,
         afford: !disabled && this.canAfford(stats.cost),
         cat: 'mil',
@@ -1020,7 +1022,7 @@ export class HUD {
     const techs = TECHS.filter(
       (t) =>
         t.building === b.kind &&
-        techAvailable(t, this.game.settings.period) &&
+        techAvailable(t, this.game.settings.period, this.game.players[b.owner]?.civ) &&
         !this.game.players[0].techs.has(t.id) &&
         (!t.requirements || t.requirements.every((r) => this.game.players[0].techs.has(r))),
     );
@@ -1063,7 +1065,7 @@ export class HUD {
     const stats = b.stats;
     let s = `HP ${Math.ceil(b.hp)}/${Math.ceil(b.maxHp)} · Blindaje ${formatStat(stats.armor)}`;
     if (b.constructionComplete && b.productionQueue.length > 0) {
-      s += ` · Entrenando: ${UNIT_INFO[b.productionQueue[0].unit].name}`;
+      s += ` · Entrenando: ${unitDisplayName(b.productionQueue[0].unit, this.game.players[b.owner]?.civ)}`;
     }
     if (b.isFarm && b.constructionComplete) {
       const mult = this.game.farmYieldAt(b.pos.x, b.pos.z);

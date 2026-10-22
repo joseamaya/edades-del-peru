@@ -19,6 +19,7 @@ export class RigInstance {
   private variant: RigVariantHandle | null = null;
   readonly variantId: RigVariant | null;
   private disposed = false;
+  private warnedMissingAttack = false;
 
   constructor(asset: LoadedModelAsset, variant?: RigVariant) {
     this.asset = asset;
@@ -69,10 +70,19 @@ export class RigInstance {
     return this.mixer.time;
   }
 
+  /** Whether the rig has a playable action for a state. */
+  hasState(state: RigClipState): boolean {
+    return this.actions.has(state);
+  }
+
   /** Crossfade to a gameplay state; missing states fall back to `idle`. */
   play(state: RigClipState, fade = 0.2): void {
     if (this.disposed) return;
     const actual = this.actions.has(state) ? state : 'idle';
+    if (state === 'attack' && actual === 'idle' && !this.warnedMissingAttack) {
+      this.warnedMissingAttack = true;
+      console.warn(`[rig] ${this.root.name} (${this.variantId ?? 'no variant'}) has no attack clip`);
+    }
     const next = this.actions.get(actual);
     if (!next || this.current === actual) return;
 

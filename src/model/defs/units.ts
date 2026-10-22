@@ -1,4 +1,4 @@
-import { Era, UnitKind, Resources, ZERO_RESOURCES, HistoricalPeriod } from '../../core/types';
+import { CivId, Era, UnitKind, Resources, ZERO_RESOURCES, HistoricalPeriod } from '../../core/types';
 import { ERA_DEFS } from './eras';
 
 export type DamageClass = 'light' | 'heavy' | 'fortified';
@@ -239,8 +239,8 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
   },
   scout: {
     id: UnitKind.SCOUT,
-    name: 'Chasqui',
-    description: 'Mensajero veloz del Qhapaq Ñan. Ilumina el mapa con su visión.',
+    name: 'Explorador',
+    description: 'Explorador veloz. Ilumina el mapa con su visión.',
     category: 'special',
     eraStats: {
       [Era.FORMATIVE]: { hp: 0.8, attack: 0.5, speed: 1.2, los: 1.3 },
@@ -693,7 +693,7 @@ export const UNIT_INFO: Record<UnitKind, { name: string; icon: string; category:
   hussar: { name: 'Jinete', icon: '🐎', category: 'Caballería' },
   cavalry: { name: 'Caballería de Choque', icon: '🐎', category: 'Caballería' },
   tank: { name: 'Ariete Blindado', icon: '🛡️', category: 'Caballería' },
-  scout: { name: 'Chasqui', icon: '🏃', category: 'Reconocimiento' },
+  scout: { name: 'Explorador', icon: '🏃', category: 'Reconocimiento' },
   anti_air: { name: 'Artillero Antiaéreo', icon: '🎯', category: 'Distancia' },
   artillery: { name: 'Artillería', icon: '💣', category: 'Asedio' },
   mortar: { name: 'Mortero', icon: '💥', category: 'Asedio' },
@@ -701,3 +701,17 @@ export const UNIT_INFO: Record<UnitKind, { name: string; icon: string; category:
   missionary: { name: 'Misionero', icon: '⛪', category: 'Especial' },
   nuclear: { name: 'Artillería de Cohetes', icon: '🚀', category: 'Asedio' },
 };
+
+/** Player-facing unit name; the Chasqui label is reserved for the Inca. */
+export function unitDisplayName(kind: UnitKind, civ?: CivId): string {
+  if (kind === UnitKind.SCOUT && civ === CivId.INCA) return 'Chasqui';
+  return UNIT_INFO[kind].name;
+}
+
+/** Player-facing description; the Qhapaq Ñan belongs to the Inca Chasqui. */
+export function unitDisplayDescription(kind: UnitKind, civ?: CivId): string {
+  if (kind === UnitKind.SCOUT && civ === CivId.INCA) {
+    return 'Mensajero veloz del Qhapaq Ñan. Ilumina el mapa con su visión.';
+  }
+  return UNIT_ARCHETYPES[kind].description;
+}

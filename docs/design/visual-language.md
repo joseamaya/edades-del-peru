@@ -249,28 +249,30 @@ are used in a campaign. See [`docs/development.md`](../development.md) for the c
 and the migration steps. Only the eyes (too small to cast a readable shadow) skip the VSM shadow pass; the
 garments keep their shadows, which keeps the worker inside its budget without cutting visible geometry.
 Gender is a **presentation-only** mix: `genderForId` assigns female/male 50/50 deterministically. The rigged
-Caral worker/chasqui use male and female CC0 bodies with the same skeleton; the male worker wears the tunic +
-short wrap, the female worker the tunic + long skirt, and the chasqui has the corresponding runner set (tunic +
-long or short skirt, wide belt, ochre headband, gourd canteen, no tool). Procedural humanoids use the same gender
-split for shoulder/hip proportions, long/short hair and a light female skirt. The split never changes stats or
-the simulation; Caral's gender division of labour and ratio are **not documented**, so this is a plausible
-representation, not a historical claim.
-The **chasqui** variant uses the same rig with a distinct runner set: the short-sleeve tunic, the long chasqui
-skirt (female) or short wrap (male), a wide belt, an ochre headband, a gourd canteen and no digging stick. It
-uses `Walk_Loop`; the exported `Jog_Fwd_Loop`/`Sprint_Loop` are reserved for a future garment designed for the
-higher knee.
+Caral worker and scout use male and female CC0 bodies with the same skeleton; the male worker wears the tunic +
+short wrap, the female worker the tunic + long skirt. The scout uses the same commoner tunic/skirt or wrap, a
+simple manta and a plain cloth headband, with no chasqui gear and no tool. Procedural humanoids use the same
+gender split for shoulder/hip proportions, long/short hair and a light female skirt. The split never changes
+stats or the simulation; Caral's gender division of labour and ratio are **not documented**, so this is a
+plausible representation, not a historical claim.
+The **Chasqui** name and runner set are reserved for the Inca. The shared GLB keeps an `inca_chasqui_f/m`
+presentation variant (long runner skirt, wide belt, ochre headband, gourd canteen, no digging stick), but
+`unitModelAsset` never assigns it to Caral. The Caral explorer is an **Explorador**; the Chasqui label only
+appears for the Inca. The scout uses `Walk_Loop`, including locomotion; `Jog_Fwd_Loop`/`Sprint_Loop` remain
+reserved for a future garment designed for the higher knee.
 Comparable evidence (same mission `m1_caral`, 1600x900, UI hidden):
 [`caral-worker-final-before-after.webp`](../media/caral-worker-final-before-after.webp) (procedural worker →
 finished rig, fixed front close-up) and
 [`caral-worker-final-rts-before-after.webp`](../media/caral-worker-final-rts-before-after.webp) (RTS camera).
-[`caral-worker-tasks.webp`](../media/caral-worker-tasks.webp) shows the order-driven task poses (gather, build,
-carry/deliver) from the same mission. [`caral-chasqui-before-after.webp`](../media/caral-chasqui-before-after.webp)
-shows the procedural Caral scout → rigged chasqui runner set,
-[`caral-chasqui-rts-before-after.webp`](../media/caral-chasqui-rts-before-after.webp) places it at RTS zoom, and
+[`caral-worker-tasks-before-after.webp`](../media/caral-worker-tasks-before-after.webp) shows the order-driven
+idle, walk, gather, build and carry poses from the same mission.
+[`caral-worker-attack.webp`](../media/caral-worker-attack.webp) and
+[`caral-worker-attack-rts.webp`](../media/caral-worker-attack-rts.webp) show the worker's `TreeChopping_Loop`
+tool strike against a building from close and RTS cameras. [`caral-scout-genders.webp`](../media/caral-scout-genders.webp) shows the
+Caral Explorador in both genders and [`caral-scout-rts.webp`](../media/caral-scout-rts.webp) places it at RTS zoom;
 [`caral-skin-before-after.webp`](../media/caral-skin-before-after.webp) shows the shared darker skin palette on a
-procedural humanoid. [`caral-worker-genders-before-after.webp`](../media/caral-worker-genders-before-after.webp),
-[`caral-chasqui-genders-before-after.webp`](../media/caral-chasqui-genders-before-after.webp) and
-[`procedural-genders-before-after.webp`](../media/procedural-genders-before-after.webp) show the before/after
+procedural humanoid. [`caral-worker-genders-before-after.webp`](../media/caral-worker-genders-before-after.webp)
+and [`procedural-genders-before-after.webp`](../media/procedural-genders-before-after.webp) show the before/after
 gender mix for the rigged and procedural units. In the before/after images the left half is before and the right half after.
 
 ## Caral visual pilot
@@ -317,10 +319,12 @@ Horizon, Callejón de Conchucos, 3180 masl) is the contrast case: highland valle
 pilgrimage/oracle centre instead of Caral's coastal desert, plastered platforms and household economy.
 
 - **Landmark (`chavin_temple`).** Rebuilt as a U-shaped stepped stone platform around an open court, with a
-  central stair, a sunken circular plaza with upright stones and a cross-shaped drainage channel, protruding
-  tenon heads (`cabezas clavas`) and a Lanzón-like monolith under a granite lintel. The plaza and stone heads are
-  documented in [`docs/historia/arquitectura.md`](../historia/arquitectura.md); the exact plan, proportions and
-  head placement are a **plausible abstraction**, not a reconstruction.
+  central stair, a sunken circular plaza with upright stones and a cross-shaped drainage channel, and protruding
+  tenon heads (`cabezas clavas`). The **Lanzón** is an interior monolith embedded in the Galería del Lanzón; the
+  model only hints at it through a deep doorway and granite lintel, never as a free-standing court monument. The
+  plaza, stone heads and interior gallery are documented in
+  [`docs/historia/arquitectura.md`](../historia/arquitectura.md) and Rick et al. (1998); the exact plan,
+  proportions, carving and visibility are a **plausible abstraction**, not a reconstruction.
 - **Base.** Chavín uses the carved cut-stone architecture profile with flat stone roofs, plus a deterministic
   dressing set: carved stelae, stone heads, offering altars with spondylus/obsidian and dressed megalith blocks.
   These are presentation-only props (no obstacles/entities) and follow the feline iconography and long-distance

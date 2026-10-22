@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { execSync } from 'child_process';
 import { launchChromium, withViteServer, cliArg } from './lib.mjs';
 
 /**
@@ -16,9 +17,34 @@ const outDir = path.resolve(cliArg('out', 'review/evidence/fauna'));
 const WIDTH = 1600;
 const HEIGHT = 900;
 
+/**
+ * Wait for the game and a rendered frame before stopping the loop. The old
+ * capture stopped immediately and could photograph terrain before its textures
+ * and lighting were ready, which made the before/after look incomparable.
+ */
+async function waitForSceneReady(page) {
+  await page.waitForFunction(
+    () => {
+      const g = window.game;
+      return !!g && !!g.renderer && !!g.scene && !!g.camera?.camera && document.readyState === 'complete';
+    },
+    null,
+    { timeout: 30_000 },
+  );
+  await page.evaluate(async () => {
+    const g = window.game;
+    g.loop.stop();
+    g.renderer.render(g.scene, g.camera.camera);
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    g.renderer.render(g.scene, g.camera.camera);
+  });
+  await page.waitForTimeout(500);
+}
+
 const SCENES = {
   'caral-worker': {
-    url: '/?mission=m1_caral&intro=0&low=1&noloop=1',
+    url: '/?mission=m1_caral&intro=0&fog=0&low=1&noloop=1',
+    start: true,
     prepare: () => {
       const g = window.game;
       g.loop.stop();
@@ -44,7 +70,8 @@ const SCENES = {
     views: [{ name: 'close', mode: 'close', offset: { x: 2.6, y: 1.7, z: 3.6 }, lookHeight: 0.95 }],
   },
   'caral-worker-rts': {
-    url: '/?mission=m1_caral&intro=0&low=1&noloop=1',
+    url: '/?mission=m1_caral&intro=0&fog=0&low=1&noloop=1',
+    start: true,
     prepare: () => {
       const g = window.game;
       g.loop.stop();
@@ -87,7 +114,8 @@ const SCENES = {
     views: [{ name: 'rts', mode: 'rts', height: 20, centerSubject: true }],
   },
   'caral-worker-tasks': {
-    url: '/?mission=m1_caral&intro=0&low=1&noloop=1',
+    url: '/?mission=m1_caral&intro=0&fog=0&low=1&noloop=1',
+    start: true,
     prepare: () => {
       const g = window.game;
       g.loop.stop();
@@ -113,10 +141,44 @@ const SCENES = {
         worker.pos.set(x, g.terrain.getHeight(x, z), z);
         worker.view.setPosition(x, worker.pos.y, z);
       };
+      const findPad = () => {
+        const base = g.playerCenter(0);
+        for (let r = 10; r <= 40; r += 2) {
+          for (let i = 0; i < 24; i++) {
+            const a = (i / 24) * Math.PI * 2;
+            const x = base.x + Math.cos(a) * r;
+            const z = base.z + Math.sin(a) * r;
+            if (g.terrain.isWater(x, z) || g.terrain.isBeach(x, z)) continue;
+            if (g.terrain.getSlope(x, z) > 0.12) continue;
+            if ([...g.buildings.values()].some((b) => Math.hypot(b.pos.x - x, b.pos.z - z) < 5)) continue;
+            if ([...g.resourceNodes.values()].some((n) => !n.dead && Math.hypot(n.pos.x - x, n.pos.z - z) < 4))
+              continue;
+            return { x, z };
+          }
+        }
+        throw new Error('no flat task pad');
+      };
       const subject = () => ({ x: worker.pos.x, y: worker.pos.y, z: worker.pos.z });
       window.__caralTask = (task) => {
         reset();
-        if (task === 'gather') {
+        if (task === 'idle') {
+          const pad = findPad();
+          place(pad.x, pad.z);
+          step(20);
+          worker.rig?.play('idle', 0);
+          worker.rig?.update(0.4);
+        } else if (task === 'walk') {
+          const pad = findPad();
+          place(pad.x, pad.z);
+          g.executeCommand({
+            kind: 'order',
+            unitIds: [worker.id],
+            order: { kind: 'move', target: { x: pad.x + 5, z: pad.z } },
+            clear: true,
+          });
+          step(18);
+          worker.rig?.update(0.2);
+        } else if (task === 'gather') {
           const nodes = [...g.resourceNodes.values()].filter((n) => !n.dead);
           const node = nodes.find((n) => n.resource === 'food') ?? nodes[0];
           place(node.pos.x + 1.2, node.pos.z);
@@ -148,16 +210,14 @@ const SCENES = {
           worker.walkCycle = 0;
           step(30);
         } else {
-          const dropsite = [...g.buildings.values()].find(
-            (b) => b.owner === 0 && b.isDropsite && b.dropTypes?.includes('wood'),
-          );
-          place(dropsite.pos.x + 9, dropsite.pos.z);
+          const pad = findPad();
+          place(pad.x, pad.z);
           worker.gatherCarry = { food: 0, wood: 10, silver: 0, stone: 0 };
           worker.currentResource = 'wood';
           g.executeCommand({
             kind: 'order',
             unitIds: [worker.id],
-            order: { kind: 'deliver', entityId: dropsite.id },
+            order: { kind: 'move', target: { x: pad.x + 5, z: pad.z } },
             clear: true,
           });
           step(20);
@@ -168,9 +228,11 @@ const SCENES = {
       return window.__caralTask('gather');
     },
     views: [
+      { name: 'idle', mode: 'close', task: 'idle', offset: { x: 2.8, y: 1.8, z: 3.8 }, lookHeight: 0.95 },
+      { name: 'walk', mode: 'close', task: 'walk', offset: { x: 2.8, y: 1.8, z: 3.8 }, lookHeight: 0.95 },
       { name: 'gather', mode: 'close', task: 'gather', offset: { x: 2.6, y: 1.7, z: 3.6 }, lookHeight: 0.95 },
       { name: 'build', mode: 'close', task: 'build', offset: { x: 3.0, y: 1.9, z: 4.0 }, lookHeight: 0.95 },
-      { name: 'deliver', mode: 'close', task: 'deliver', offset: { x: 3.0, y: 1.9, z: 4.0 }, lookHeight: 1.0 },
+      { name: 'carry', mode: 'close', task: 'deliver', offset: { x: -4.0, y: 1.9, z: 0.5 }, lookHeight: 1.0 },
     ],
   },
   'procedural-worker': {
@@ -234,8 +296,9 @@ const SCENES = {
     },
     views: [{ name: 'close', mode: 'close', offset: { x: 0, y: 2.0, z: 5.0 }, lookHeight: 1.0 }],
   },
-  'caral-chasqui-genders': {
+  'caral-scout-genders': {
     url: '/?mission=m1_caral&intro=0&fog=0&low=1&noloop=1',
+    start: true,
     prepare: () => {
       const g = window.game;
       g.loop.stop();
@@ -271,7 +334,10 @@ const SCENES = {
         subject: { x: c.x, y: g.terrain.getHeight(c.x, c.z), z: c.z },
       };
     },
-    views: [{ name: 'close', mode: 'close', offset: { x: 0, y: 2.0, z: 5.0 }, lookHeight: 1.0 }],
+    views: [
+      { name: 'close', mode: 'close', offset: { x: 0, y: 2.0, z: 5.0 }, lookHeight: 1.0 },
+      { name: 'rts', mode: 'rts', height: 20, centerSubject: true },
+    ],
   },
   'procedural-genders': {
     url: '/?play=1&civ=moche&period=2&seed=777&fog=0&low=1&noloop=1',
@@ -319,8 +385,45 @@ const SCENES = {
     },
     views: [{ name: 'close', mode: 'close', offset: { x: 0, y: 2.0, z: 5.0 }, lookHeight: 1.0 }],
   },
-  'caral-chasqui': {
+  'rigged-attack': {
     url: '/?mission=m1_caral&intro=0&fog=0&low=1&noloop=1',
+    start: true,
+    prepare: () => {
+      const g = window.game;
+      g.loop.stop();
+      const base = g.playerCenter(0);
+      const c = g.findLandNear(base.x + 14, base.z + 14, 12);
+      const target = g.spawnScriptedBuilding('house', 1, c.x + 1.8, c.z);
+      const worker = [...g.units.values()].find((u) => u.owner === 0 && u.kind === 'worker');
+      if (!worker) throw new Error('missing Caral worker');
+      worker.clearOrders();
+      worker.pos.set(c.x - 1.2, g.terrain.getHeight(c.x - 1.2, c.z), c.z);
+      worker.view.setPosition(worker.pos.x, worker.pos.y, worker.pos.z);
+      g.executeCommand({
+        kind: 'order',
+        unitIds: [worker.id],
+        order: { kind: 'attack', entityId: target.id },
+        clear: true,
+      });
+      let time = 0;
+      for (let i = 0; i < 150; i++) {
+        time += 1 / 60;
+        g.loop.onUpdate(1 / 60, time);
+      }
+      g.renderer.render(g.scene, g.camera.camera);
+      return {
+        center: { x: c.x, z: c.z },
+        subject: { x: worker.pos.x, y: worker.pos.y, z: worker.pos.z },
+      };
+    },
+    views: [
+      { name: 'close', mode: 'close', offset: { x: -3.2, y: 2.0, z: 4.2 }, lookHeight: 0.95 },
+      { name: 'rts', mode: 'rts', height: 18, centerSubject: true },
+    ],
+  },
+  'caral-scout': {
+    url: '/?mission=m1_caral&intro=0&fog=0&low=1&noloop=1',
+    start: true,
     prepare: () => {
       const g = window.game;
       g.loop.stop();
@@ -408,17 +511,20 @@ async function main() {
   fs.mkdirSync(outDir, { recursive: true });
   const { base, close } = await withViteServer();
   const browser = await launchChromium();
-  const context = await browser.newContext({ viewport: { width: WIDTH, height: HEIGHT } });
+  const context = await browser.newContext({
+    viewport: { width: WIDTH, height: HEIGHT },
+    deviceScaleFactor: 1,
+  });
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
+  page.on('console', (msg) => {
+    if (msg.type() === 'error') errors.push(msg.text());
+  });
   try {
     await page.goto(base + config.url, { waitUntil: 'networkidle' });
     await page.waitForFunction(() => window.game !== undefined, null, { timeout: 30_000 });
-    await page.evaluate(() => {
-      const root = document.getElementById('ui-root');
-      if (root) root.style.display = 'none';
-    });
+    await waitForSceneReady(page);
     if (config.start) {
       await page
         .locator('.ed-primary', { hasText: 'COMENZAR' })
@@ -426,7 +532,11 @@ async function main() {
         .click({ timeout: 3000 })
         .catch(() => {});
     }
-    await page.waitForTimeout(2500);
+    await page.waitForTimeout(250);
+    await page.evaluate(() => {
+      const root = document.getElementById('ui-root');
+      if (root) root.style.display = 'none';
+    });
     const target = config.live ? null : await page.evaluate(config.prepare);
     for (const view of config.views) {
       await page.evaluate(
@@ -444,6 +554,7 @@ async function main() {
             g.camera.camera.position.set(s.x + offset.x, s.y + offset.y, s.z + offset.z);
             g.camera.camera.lookAt(s.x, s.y + (view.lookHeight ?? 1.1), s.z);
           } else {
+            g.camera.setYaw(0);
             g.camera.moveTo(active.center.x, active.center.z, true);
             g.camera.setHeight(view.height);
             for (let i = 0; i < 60; i++) g.camera.update(1 / 60);
@@ -470,6 +581,11 @@ async function main() {
       );
       await page.screenshot({ path: path.join(outDir, `${view.name}.png`) });
     }
+    const commit = execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim();
+    fs.writeFileSync(
+      path.join(outDir, 'manifest.json'),
+      JSON.stringify({ scene, commit, url: config.url, width: WIDTH, height: HEIGHT, views: config.views }, null, 2),
+    );
     console.log(`${scene}: ${config.views.map((v) => v.name).join(', ')} -> ${outDir}`);
     if (errors.length) {
       console.error(`page errors: ${errors.slice(0, 2).join(' | ')}`);

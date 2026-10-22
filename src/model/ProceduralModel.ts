@@ -2657,8 +2657,7 @@ function buildIncaLandmark(b: Builder): void {
   }
 }
 
-/** Chavín: a stepped stone temple with tenon heads beside a sunken plaza. */
-/** Chavín: U-shaped stone temple, sunken circular plaza, tenon heads and the Lanzón gallery. */
+/** Chavín: U-shaped stone temple, sunken circular plaza, tenon heads and the inner Lanzón gallery. */
 function buildChavinTemple(b: Builder): void {
   const darkStone = mixHex(b.pal.primary, '#8a8378', 0.78);
   const lightStone = mixHex(b.pal.primary, '#e0d8c8', 0.9);
@@ -2688,8 +2687,9 @@ function buildChavinTemple(b: Builder): void {
     });
   }
 
-  // Lanzón gallery embedded in the rear block: a dark doorway, granite lintel
-  // and a taller carved monolith visible from the court.
+  // The Lanzón is an interior monolith in the Galería del Lanzón. The model
+  // only hints at it through the deep doorway and lintel; it is not an outdoor
+  // replica. The carving, proportions and exact visibility are abstractions.
   const doorW = w * 0.2;
   const doorH = 1.7;
   b.box(doorW, doorH, 0.12, shadow, { y: baseY + doorH / 2 + 0.1, z: rearZ + w * 0.151, tex });
@@ -2699,18 +2699,6 @@ function buildChavinTemple(b: Builder): void {
     b.box(0.07, 0.07, 0.03, granite, { x: sx * 0.1, y: baseY + 1.25, z: rearZ + w * 0.19 });
   }
   b.box(0.2, 0.05, 0.03, granite, { y: baseY + 1.05, z: rearZ + w * 0.19 });
-
-  // The Lanzón stands in the court: a taller carved monolith under a granite lintel.
-  const monolithZ = rearZ + w * 0.15 + 0.75;
-  b.box(0.7, 2.0, 0.32, shadow, { y: baseY + 1.0, z: monolithZ, tex });
-  b.box(0.9, 0.16, 0.52, granite, { y: baseY + 2.05, z: monolithZ, tex });
-  for (const sx of [-1, 1]) {
-    b.box(0.1, 0.1, 0.03, granite, { x: sx * 0.15, y: baseY + 1.35, z: monolithZ + 0.18 });
-  }
-  b.box(0.24, 0.06, 0.03, granite, { y: baseY + 1.12, z: monolithZ + 0.18 });
-  for (const sx of [-1, 1]) {
-    b.box(0.06, 0.2, 0.03, granite, { x: sx * 0.08, y: baseY + 1.0, z: monolithZ + 0.18 });
-  }
 
   // Cabezas clavas (tenon heads) protruding from the facade and the wings.
   for (const y of [baseY + 0.65, baseY + 1.45]) {

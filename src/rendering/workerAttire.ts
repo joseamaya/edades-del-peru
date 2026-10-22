@@ -13,14 +13,17 @@ export interface CaralWorkerHandle extends RigVariantHandle {
  * Project-authored accessories on the finished Caral worker GLB. The body,
  * face, hair, cotton tunic, skirt and sash are part of the asset; this adds the
  * headband, the carry bundle and the digging stick on existing bones. The
- * chasqui variant shows the long chasqui skirt and wide belt instead, with an
- * ochre headband, no tool and a gourd canteen. Cotton is attested for Caral-Supe
+ * Caral scout uses the commoner tunic/skirt or wrap plus a simple manta and
+ * headband, with no chasqui belt, no gourd and no tool. The Inca chasqui set is
+ * reserved (`inca_chasqui_*`) and keeps the long runner skirt and wide belt;
+ * it is not assigned to Caral. Cotton is attested for Caral-Supe
  * (`docs/historia/atuendos.md`); the exact garments and props are plausible
  * abstractions, not reconstructions. No metal or footwear.
  */
 export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_worker_f'): CaralWorkerHandle {
   const root = rig.root;
-  const chasqui = variant.startsWith('caral_chasqui');
+  const chasqui = variant.startsWith('inca_chasqui');
+  const scout = variant.startsWith('caral_scout');
   const male = variant.endsWith('_m');
   const show = (name: string, visible: boolean): void => {
     const mesh = root.getObjectByName(name);
@@ -67,7 +70,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     tintGarment(male ? 'attire_tunic_m' : 'attire_tunic_f', 0xe8d8b8);
   }
 
-  const bandMat = makeMaterial(chasqui ? 0xc8a040 : 0x8a3b2a, 0.9);
+  const bandMat = makeMaterial(chasqui ? 0xc8a040 : scout ? 0x9a5a3a : 0x8a3b2a, 0.9);
   const woodMat = makeMaterial(0x6b4a2f, 0.9);
   const stoneMat = makeMaterial(0x8a8f94, 0.85);
   const carryMat = makeMaterial(0x8a6a3a, 0.95);
@@ -111,8 +114,18 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   const spine = bonePosition('spine_03');
   const hand = bonePosition('hand_r');
 
+  if (scout && spine) {
+    const mantleMat = makeMaterial(0xcfc0a2, 0.95);
+    const mantle = new THREE.Mesh(
+      trackGeometry(new THREE.CylinderGeometry(0.2, 0.27, 0.3, 10, 1, true, Math.PI * 0.2, Math.PI * 1.6)),
+      mantleMat,
+    );
+    mantle.name = 'attire_mantle';
+    attach('spine_03', mantle, new THREE.Vector3(spine.x, spine.y - 0.01, spine.z));
+  }
+
   let carry: THREE.Group | null = null;
-  if (!chasqui && spine) {
+  if (!chasqui && !scout && spine) {
     carry = new THREE.Group();
     carry.name = 'attire_carry';
     carry.visible = false;
@@ -152,7 +165,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   const syncTool = (): void => {
     if (tool) tool.visible = !carrying && task !== 'build';
   };
-  if (!chasqui && hand) {
+  if (!chasqui && !scout && hand) {
     tool = new THREE.Group();
     tool.name = 'attire_tool';
     const shaft = new THREE.Mesh(trackGeometry(new THREE.CylinderGeometry(0.014, 0.017, 0.8, 6)), woodMat);

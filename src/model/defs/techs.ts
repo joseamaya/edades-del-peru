@@ -1,4 +1,4 @@
-import { BuildingKind, HistoricalPeriod, Resources, ZERO_RESOURCES } from '../../core/types';
+import { BuildingKind, CivId, HistoricalPeriod, Resources, ZERO_RESOURCES } from '../../core/types';
 
 export interface TechEffect {
   attackMult?: number;
@@ -21,6 +21,8 @@ export interface TechDef {
   minPeriod: HistoricalPeriod;
   /** Latest period (inclusive); omit for "from `minPeriod` onwards". */
   maxPeriod?: HistoricalPeriod;
+  /** Optional civilization restriction (e.g. an Inca-only technology). */
+  civs?: CivId[];
   building: BuildingKind;
   effect: TechEffect;
   /** Technologies it unlocks (units or buildings) */
@@ -216,11 +218,12 @@ export const TECHS: TechDef[] = [
   {
     id: 'swift_chasquis',
     name: 'Chasquis Veloces',
-    description: 'Los obreros cargan 5 recursos más por viaje.',
+    description: 'Los relevos chasqui agilizan la logística: los obreros cargan 5 recursos más por viaje.',
     cost: cost({ silver: 180, stone: 120 }),
     time: 60,
     minPeriod: HistoricalPeriod.LATE_HORIZON,
     maxPeriod: HistoricalPeriod.LATE_HORIZON,
+    civs: [CivId.INCA],
     building: BuildingKind.CENTER,
     effect: { capacityBonus: 5 },
     icon: '🏃',
@@ -265,9 +268,10 @@ export function getTech(id: string): TechDef | undefined {
 }
 
 /** Whether a technology is plausible in a historical period (chronology + culture window). */
-export function techAvailable(tech: TechDef, period: HistoricalPeriod): boolean {
+export function techAvailable(tech: TechDef, period: HistoricalPeriod, civ?: CivId): boolean {
   if (period < tech.minPeriod) return false;
-  return tech.maxPeriod === undefined || period <= tech.maxPeriod;
+  if (tech.maxPeriod !== undefined && period > tech.maxPeriod) return false;
+  return tech.civs === undefined || civ === undefined || tech.civs.includes(civ);
 }
 
 /**

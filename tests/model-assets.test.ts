@@ -176,11 +176,11 @@ describe('rigged model assets', () => {
     });
     expect(unitModelAsset(UnitKind.SCOUT, Era.FORMATIVE, CivId.CARAL, 2)).toEqual({
       asset: 'caral_worker',
-      variant: 'caral_chasqui_f',
+      variant: 'caral_scout_f',
     });
     expect(unitModelAsset(UnitKind.SCOUT, Era.FORMATIVE, CivId.CARAL, 3)).toEqual({
       asset: 'caral_worker',
-      variant: 'caral_chasqui_m',
+      variant: 'caral_scout_m',
     });
     expect(unitModelAsset(UnitKind.WORKER, Era.REGIONAL_STATES, CivId.CARAL)).toBeNull();
     expect(unitModelAsset(UnitKind.WORKER, Era.FORMATIVE, CivId.MOCHE)).toBeNull();
@@ -209,6 +209,7 @@ describe('rigged model assets', () => {
         'Sprint_Loop',
         'Farm_Harvest',
         'Walk_Carry_Loop',
+        'Punch_Jab',
       ]),
     );
     expect(json.nodes.map((node) => node.name)).toEqual(
@@ -255,22 +256,39 @@ describe('rigged model assets', () => {
     expect(carry.visible).toBe(false);
     expect(tool.visible).toBe(true);
 
-    rig.play('attack', 0);
-    expect(rig.currentState).toBe('idle');
+    expect(RIG_VARIANT_CLIPS.caral_worker_f?.attack).toBe('TreeChopping_Loop');
+    expect(RIG_VARIANT_CLIPS.caral_worker_m?.attack).toBe('TreeChopping_Loop');
 
     const dispose = vi.spyOn(headband.geometry, 'dispose');
     rig.dispose();
     expect(dispose).toHaveBeenCalledTimes(1);
   });
 
-  it('dresses the chasqui variant without the digging stick', async () => {
+  it('dresses the Caral scout with commoner clothes but no chasqui gear', async () => {
     await load();
-    const rig = acquireRig('ual_mannequin', 'caral_chasqui_f')!;
+    const rig = acquireRig('ual_mannequin', 'caral_scout_f')!;
+    expect(rig.root.getObjectByName('attire_headband')).toBeDefined();
+    expect(rig.root.getObjectByName('attire_mantle')).toBeDefined();
+    expect(rig.root.getObjectByName('attire_canteen')).toBeUndefined();
+    expect(rig.root.getObjectByName('attire_tool')).toBeUndefined();
+    expect(RIG_VARIANT_CLIPS.caral_scout_f?.walk).toBe('Walk_Loop');
+    expect(RIG_VARIANT_CLIPS.caral_scout_m?.walk).toBe('Walk_Loop');
+    expect(RIG_VARIANT_CLIPS.caral_scout_f?.attack).toBe('Punch_Jab');
+    expect(rig.hasState('attack')).toBe(true);
+    rig.play('attack', 0);
+    expect(rig.currentState).toBe('attack');
+    expect(rig.currentClipName).toBe('Punch_Jab');
+    rig.dispose();
+  });
+
+  it('keeps the chasqui set reserved for the Inca, without the digging stick', async () => {
+    await load();
+    const rig = acquireRig('ual_mannequin', 'inca_chasqui_f')!;
     expect(rig.root.getObjectByName('attire_headband')).toBeDefined();
     expect(rig.root.getObjectByName('attire_canteen')).toBeDefined();
     expect(rig.root.getObjectByName('attire_tool')).toBeUndefined();
-    expect(RIG_VARIANT_CLIPS.caral_chasqui_f?.walk).toBe('Walk_Loop');
-    expect(RIG_VARIANT_CLIPS.caral_chasqui_m?.walk).toBe('Walk_Loop');
+    expect(RIG_VARIANT_CLIPS.inca_chasqui_f?.walk).toBe('Walk_Loop');
+    expect(RIG_VARIANT_CLIPS.inca_chasqui_m?.walk).toBe('Walk_Loop');
     rig.dispose();
   });
 

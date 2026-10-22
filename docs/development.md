@@ -217,11 +217,11 @@ Definition of Done and the building audit see
   or engines before 1532). Normal production is gated independently by `eraModel` + `requiresTech` (e.g.
   `cavalry` has no model before Viceroyalty and needs the `shock_cavalry` tech), so `minPeriod` governs the
   scripted content that those gates do not cover.
-- **Chronology/culture of techs**: `TechDef.minPeriod` / `maxPeriod` (`src/model/defs/techs.ts`) is the
-  historical window a technology belongs to (like `UnitArchetype.minPeriod`, plus an optional ceiling).
-  `techAvailable(tech, period)` is enforced centrally in `Building.queueTech` (like the unit guard) plus the HUD
-  research panel and the AI, so a tech never appears for the wrong civilization or period (e.g. Inca *chasquis*
-  no longer leak into the Republic, colonial *obrajes* not before 1532). Windows are sourced in
+- **Chronology/culture of techs**: `TechDef.minPeriod` / `maxPeriod` / `civs` (`src/model/defs/techs.ts`) is
+  the historical window and optional civilization restriction of a technology. `techAvailable(tech, period, civ)`
+  is enforced centrally in `Building.queueTech` (like the unit guard) plus the HUD research panel and the AI, so a
+  tech never appears for the wrong civilization or period (e.g. Inca *chasquis* are Inca-only and do not leak
+  into the Republic, colonial *obrajes* not before 1532). Windows are sourced in
   [`docs/historia/tecnologias.md`](./historia/tecnologias.md).
 - **AI (`src/game/AI.ts`)**: macromanagement (workers, build plan, tech, waves) plus `defendEconomy`
   (recalls idle military when an enemy nears any AI building/worker), `microCombat` retreat of badly wounded
@@ -415,32 +415,34 @@ Local `*.glb` files live in `src/assets/models/`. The registry (`src/rendering/m
 asset id to its bundled URL, scale, yaw offset and **clip names**; the game states are
 `idle | walk | walk_carry | gather | build | attack | eat` (`RIG_CLIP_STATES` in
 `src/model/defs/modelAssets.ts`; `eat` is used by fauna). Only `idle` is mandatory; a missing state falls back to
-`idle` and a missing mapped clip logs a `[models]` warning. Death stays on the existing topple FX until a
-rig-specific death flow exists.
+`idle`, and a requested attack with no action logs a `[rig]` warning instead of failing silently. Death stays on
+the existing topple FX until a rig-specific death flow exists.
 
 Audit of the path this pipeline mirrors: procedural templates are cached by `type|scale|barrel|civ|era`,
 `instantiateTemplate` clones them with per-instance materials, buildings modernize by swapping the whole model,
 units animate named pivots, `disposeModel` frees only materials and `clearModelCaches` owns shared geometry.
 The glTF path keeps the same split: a shared asset cache plus a per-instance skeleton/mixer clone. The Caral
 worker reuses `Walk_Loop` for locomotion (playback rate follows the unit velocity), `Walk_Carry_Loop` while
-delivering a load, `Farm_Harvest` for gathering and `Push_Loop` for building; `Idle_Loop` is the fallback. The
-asset has no construction clip, so `Push_Loop` is an explicit pushing/placing abstraction rather than a literal
-masonry animation. The variant intentionally has **no attack clip** (the base asset's sword swing is wrong for a
-pre-metal worker), so an attack order falls back to idle until a worker combat clip exists. The per-instance
-accessories (headband, carry bundle, digging stick) are the deliberate exception to the shared-cache rule: they
+delivering a load, `Farm_Harvest` for gathering, `Push_Loop` for building and `TreeChopping_Loop` for a tool
+strike; `Idle_Loop` is the fallback. The asset has no construction clip, so `Push_Loop` is an explicit
+pushing/placing abstraction rather than a literal masonry animation. The base asset's `Sword_Attack` is not
+used because the worker is pre-metal; the attack uses the worker's own digging stick (a tool swing) instead. The
+per-instance accessories (headband, carry bundle, digging stick) are the deliberate exception to the shared-cache rule: they
 carry the variant's tint and bone attachments and are disposed with the rig. The digging stick hides while
 carrying and during build work, so it never crosses the body or a placed load. The body, face, hair, tunic, skirt
 and sash are shared GLB geometry/materials. The order-driven poses are captured by
 `node scripts/shots_evidence.mjs --scene=caral-worker-tasks --out=review/evidence/caral-worker-tasks`.
 
-The same GLB backs the Caral **worker and chasqui in both genders** (`caral_worker_f/m`,
-`caral_chasqui_f/m`; `unitModelAsset` maps `WORKER`/`SCOUT + CARAL + FORMATIVE`). The female and male bodies
-share one 65-bone skeleton and the clips; each instance hides the unused body/hair/outfit set. Workers use the
-tunic + skirt/sash (female) or tunic + short wrap/sash (male); chasquis use the long chasqui skirt (female) or
-short wrap (male), a wide belt, ochre headband, gourd canteen and no digging stick. The chasqui variant's
-`RIG_VARIANT_CLIPS` uses `Walk_Loop` for locomotion and disables gather/build/attack; `Jog_Fwd_Loop` and
-`Sprint_Loop` are exported for a future runner garment (the current skirt clips with the high knee) but are not
-mapped. Human skin/hair use the shared `HUMAN_SKIN`/`HUMAN_HAIR` constants (`src/model/defs/people.ts`); the
+The same GLB backs the Caral **worker and scout in both genders** (`caral_worker_f/m`, `caral_scout_f/m`;
+`unitModelAsset` maps `WORKER`/`SCOUT + CARAL + FORMATIVE`). The female and male bodies share one 65-bone
+skeleton and the clips; each instance hides the unused body/hair/outfit set. Workers use the tunic + skirt/sash
+(female) or tunic + short wrap/sash (male). The Caral scout uses the same commoner tunic/skirt or wrap plus a
+simple manta and plain headband, with no chasqui belt, gourd, long runner skirt or digging stick. The
+`inca_chasqui_*` outfit is reserved for the Inca and is not assigned to Caral. Scout `RIG_VARIANT_CLIPS` use
+`Walk_Loop` for locomotion, `Punch_Jab` for attack, and disable gather/build. Worker attacks use
+`TreeChopping_Loop`. `Jog_Fwd_Loop` and `Sprint_Loop` are exported for a future runner garment (the current
+skirt clips with the high knee) but are not mapped. Human skin/hair use the shared `HUMAN_SKIN`/`HUMAN_HAIR`
+constants (`src/model/defs/people.ts`); the
 build script recolours both CC0 body textures while preserving the eyes, mouth and shading. Skin tone is not
 documented: it is a plausible Andean representation, not a portrait.
 
@@ -452,7 +454,7 @@ and ratio are not documented, so this is a plausible representation, not a histo
 
 The worker GLB is generated by `scripts/build_caral_worker.mjs`: it fetches the pinned CC0 sources, verifies
 their SHA-256, rebinds both bodies/hair sets onto one 65-bone skeleton, generates the cotton garments from each
-body surface and exports the nine clips. Rebuild with
+body surface and exports the ten clips. Rebuild with
 `yarn models:build`; record any new hash in
 [`PROVENANCE.md`](../PROVENANCE.md). The registry's `shadowSkipMeshes` keeps only the tiny eye meshes (`Eyes_f`, `Eyes_m`) out of the
 VSM shadow pass (both `castShadow` and `receiveShadow`), because VSM also renders receivers into the shadow map;

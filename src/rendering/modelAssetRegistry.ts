@@ -53,8 +53,8 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
     },
   },
   /**
-   * Caral worker: Quaternius Universal Base Characters body/hair (CC0) with a
-   * project-authored cotton tunic/skirt/sash and clips from UAL1/UAL2. The
+   * Caral worker/scout: Quaternius Universal Base Characters body/hair (CC0)
+   * with project-authored cotton garments and clips from UAL1/UAL2. The
    * generated GLB is built by `scripts/build_caral_worker.mjs`.
    */
   caral_worker: {

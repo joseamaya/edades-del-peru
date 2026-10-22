@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Era, UnitKind, BuildingKind, HistoricalPeriod, CivId } from '../src/core/types';
-import { UNIT_ARCHETYPES, getUnitStats } from '../src/model/defs/units';
+import { UNIT_ARCHETYPES, getUnitStats, unitDisplayDescription, unitDisplayName } from '../src/model/defs/units';
 import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../src/model/defs/buildings';
 import { TECHS, techAvailable } from '../src/model/defs/techs';
 import { ERA_DEFS } from '../src/model/defs/eras';
@@ -109,8 +109,16 @@ describe('building definitions', () => {
     expect(BUILDING_DEFS[BuildingKind.FACTORY].minEra).toBe(Era.VICEROYALTY);
   });
 
-  it('keeps the scout (Chasqui) trainable before 1532, at the center', () => {
+  it('keeps the scout trainable before 1532, at the center', () => {
     expect(BUILDING_DEFS[BuildingKind.CENTER].trainable).toContain(UnitKind.SCOUT);
+  });
+
+  it('reserves the Chasqui name and Qhapaq Ñan description for the Inca', () => {
+    expect(UNIT_ARCHETYPES[UnitKind.SCOUT].name).toBe('Explorador');
+    expect(unitDisplayName(UnitKind.SCOUT, CivId.CARAL)).toBe('Explorador');
+    expect(unitDisplayName(UnitKind.SCOUT, CivId.INCA)).toBe('Chasqui');
+    expect(unitDisplayDescription(UnitKind.SCOUT, CivId.CARAL)).not.toContain('Qhapaq');
+    expect(unitDisplayDescription(UnitKind.SCOUT, CivId.INCA)).toContain('Qhapaq Ñan');
   });
 });
 
@@ -163,6 +171,8 @@ describe('technology definitions', () => {
     }
     // ...but are available to the Inca, and every window is well-formed.
     expect(techAvailable(byId.get('amauta_words')!, HistoricalPeriod.LATE_HORIZON)).toBe(true);
+    expect(techAvailable(byId.get('swift_chasquis')!, HistoricalPeriod.LATE_HORIZON, CivId.INCA)).toBe(true);
+    expect(techAvailable(byId.get('swift_chasquis')!, HistoricalPeriod.LATE_HORIZON, CivId.CHANCA)).toBe(false);
     for (const t of TECHS) {
       if (t.maxPeriod !== undefined) {
         expect(t.maxPeriod, `${t.id} maxPeriod before minPeriod`).toBeGreaterThanOrEqual(t.minPeriod);

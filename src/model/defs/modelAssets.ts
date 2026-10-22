@@ -13,7 +13,8 @@ export const CARAL_WORKER_ASSET_ID: ModelAssetId = 'caral_worker';
 export const CARAL_WORKER_SHADOW_SKIP_MESHES: readonly string[] = ['Eyes_f', 'Eyes_m'];
 
 /** Presentation variants applied on top of a shared rigged asset. */
-export type RigVariant = 'caral_worker_f' | 'caral_worker_m' | 'caral_chasqui_f' | 'caral_chasqui_m';
+export type RigVariant =
+  'caral_worker_f' | 'caral_worker_m' | 'caral_scout_f' | 'caral_scout_m' | 'inca_chasqui_f' | 'inca_chasqui_m';
 
 /** Animation states mapped to clips; `eat` is fauna-only. A rig may omit any state except `idle`. */
 export type RigClipState = 'idle' | 'walk' | 'walk_carry' | 'gather' | 'build' | 'attack' | 'eat';
@@ -30,10 +31,12 @@ export const RIG_CLIP_STATES: readonly RigClipState[] = [
 
 /** Per-variant clip overrides; `null` removes a state (falls back to idle). */
 export const RIG_VARIANT_CLIPS: Partial<Record<RigVariant, Partial<Record<RigClipState, string | null>>>> = {
-  caral_worker_f: { attack: null },
-  caral_worker_m: { attack: null },
-  caral_chasqui_f: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: null },
-  caral_chasqui_m: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: null },
+  caral_worker_f: { attack: 'TreeChopping_Loop' },
+  caral_worker_m: { attack: 'TreeChopping_Loop' },
+  caral_scout_f: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  caral_scout_m: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  inca_chasqui_f: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  inca_chasqui_m: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
 };
 
 /** Playback-rate reference for in-place walk clips (world units per second). */
@@ -68,7 +71,7 @@ export interface RigModelChoice {
 
 /**
  * Rigged model for a unit kind, or `null` to keep the procedural model.
- * The migration is progressive: this pilot covers the Caral worker only.
+ * The migration is progressive: this pilot covers the Caral worker and scout.
  */
 export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): RigModelChoice | null {
   if (civ === CivId.CARAL && era === Era.FORMATIVE) {
@@ -77,7 +80,7 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
       return { asset: CARAL_WORKER_ASSET_ID, variant: female ? 'caral_worker_f' : 'caral_worker_m' };
     }
     if (kind === UnitKind.SCOUT) {
-      return { asset: CARAL_WORKER_ASSET_ID, variant: female ? 'caral_chasqui_f' : 'caral_chasqui_m' };
+      return { asset: CARAL_WORKER_ASSET_ID, variant: female ? 'caral_scout_f' : 'caral_scout_m' };
     }
   }
   return null;

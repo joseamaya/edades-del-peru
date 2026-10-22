@@ -1,7 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 
-async function boot(page: Page, period: number): Promise<void> {
-  await page.goto(`/?play=1&seed=777&fog=0&low=1&period=${period}`);
+async function boot(page: Page, period: number, civ = 'inca'): Promise<void> {
+  await page.goto(`/?play=1&seed=777&fog=0&low=1&period=${period}&civ=${civ}`);
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });
