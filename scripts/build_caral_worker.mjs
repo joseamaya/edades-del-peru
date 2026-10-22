@@ -36,6 +36,8 @@ const SOURCES = {
 const CLIPS = [
   ['ual1', 'Idle_Loop'],
   ['ual1', 'Walk_Loop'],
+  ['ual1', 'Jog_Fwd_Loop'],
+  ['ual1', 'Sprint_Loop'],
   ['ual2', 'Farm_Harvest'],
   ['ual2', 'Farm_PlantSeed'],
   ['ual2', 'TreeChopping_Loop'],
@@ -53,6 +55,7 @@ try {
     async ({ sources, clipsSpec }) => {
       const THREE = await import('/node_modules/three/build/three.module.js');
       const { GLTFLoader, GLTFExporter } = await import('/scripts/gltf_tools.mjs');
+      const { HUMAN_HAIR, HUMAN_SKIN } = await import('/src/model/defs/people.ts');
 
       const hex = (buffer) => [...new Uint8Array(buffer)].map((b) => b.toString(16).padStart(2, '0')).join('');
       const load = async (entry, name) => {
@@ -119,44 +122,84 @@ try {
       const hairMesh = skinned(hairGltf.scene)[0];
       if (!hairMesh) throw new Error('hair has no skinned mesh');
       const addedHair = rebind(hairMesh);
-      addedHair.material.color.setHex(0x2a1c12);
+      addedHair.material.color.set(HUMAN_HAIR);
 
-      // Remove the base body's black underwear by recolouring dark pixels only
-      // inside the hip/waist UV region (the face is left untouched).
+      // Recolour the exposed skin to the shared darker Andean palette while
+      // preserving the source shading and the dark facial features. The hip
+      // mask still hides the CC0 underwear.
       const bodyMaterial = bodyMesh.material.clone();
       bodyMesh.material = bodyMaterial;
       if (bodyMaterial.map?.image) {
         const image = bodyMaterial.map.image;
         const width = image.width;
         const height = image.height;
-        const mask = document.createElement('canvas');
-        mask.width = width;
-        mask.height = height;
-        const maskCtx = mask.getContext('2d');
-        maskCtx.fillStyle = '#fff';
+        const makeMask = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#fff';
+          return { canvas, ctx };
+        };
+        const hip = makeMask();
+        const faceMask = makeMask();
+        const bodyMask = makeMask();
         const geometry = bodyMesh.geometry;
         const positions = geometry.getAttribute('position');
         const uvs = geometry.getAttribute('uv');
+        const skinIndices = geometry.getAttribute('skinIndex');
+        const skinWeights = geometry.getAttribute('skinWeight');
         const index = geometry.index;
         const triangles = index ? index.count / 3 : positions.count / 3;
+        const faceBones = ['Head', 'neck_01'];
+        const bodyBones = [
+          'hand_l',
+          'hand_r',
+          'lowerarm_l',
+          'lowerarm_r',
+          'thigh_l',
+          'thigh_r',
+          'calf_l',
+          'calf_r',
+          'foot_l',
+          'foot_r',
+          'ball_l',
+          'ball_r',
+        ];
+        const faceJoints = new Set(faceBones.map((name) => boneIndex.get(name)).filter((v) => v !== undefined));
+        const bodyJoints = new Set(bodyBones.map((name) => boneIndex.get(name)).filter((v) => v !== undefined));
+        const flip = bodyMaterial.map.flipY ? (v) => 1 - v : (v) => v;
+        const fill = (ctx, ia, ib, ic) => {
+          ctx.beginPath();
+          ctx.moveTo(uvs.getX(ia) * width, flip(uvs.getY(ia)) * height);
+          ctx.lineTo(uvs.getX(ib) * width, flip(uvs.getY(ib)) * height);
+          ctx.lineTo(uvs.getX(ic) * width, flip(uvs.getY(ic)) * height);
+          ctx.closePath();
+          ctx.fill();
+        };
+        const dominantJoint = (i) => {
+          let best = 0;
+          for (let k = 1; k < 4; k++) {
+            if (skinWeights.getComponent(i, k) > skinWeights.getComponent(i, best)) best = k;
+          }
+          return skinIndices.getComponent(i, best);
+        };
         for (let t = 0; t < triangles; t++) {
           const ia = index ? index.getX(t * 3) : t * 3;
           const ib = index ? index.getX(t * 3 + 1) : t * 3 + 1;
           const ic = index ? index.getX(t * 3 + 2) : t * 3 + 2;
-          const hip = [ia, ib, ic].every((i) => {
+          const isHip = [ia, ib, ic].every((i) => {
             const y = positions.getY(i);
             return y >= 0.62 && y <= 1.08 && Math.abs(positions.getX(i)) < 0.42 && Math.abs(positions.getZ(i)) < 0.32;
           });
-          if (!hip) continue;
-          const flip = bodyMaterial.map.flipY ? (v) => 1 - v : (v) => v;
-          maskCtx.beginPath();
-          maskCtx.moveTo(uvs.getX(ia) * width, flip(uvs.getY(ia)) * height);
-          maskCtx.lineTo(uvs.getX(ib) * width, flip(uvs.getY(ib)) * height);
-          maskCtx.lineTo(uvs.getX(ic) * width, flip(uvs.getY(ic)) * height);
-          maskCtx.closePath();
-          maskCtx.fill();
+          if (isHip) fill(hip.ctx, ia, ib, ic);
+          const jointsOf = [ia, ib, ic].map(dominantJoint);
+          if (jointsOf.every((joint) => faceJoints.has(joint))) fill(faceMask.ctx, ia, ib, ic);
+          if (jointsOf.every((joint) => bodyJoints.has(joint))) fill(bodyMask.ctx, ia, ib, ic);
         }
-        const maskData = maskCtx.getImageData(0, 0, width, height).data;
+        const hipData = hip.ctx.getImageData(0, 0, width, height).data;
+        const faceData = faceMask.ctx.getImageData(0, 0, width, height).data;
+        const bodyData = bodyMask.ctx.getImageData(0, 0, width, height).data;
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
@@ -164,15 +207,40 @@ try {
         ctx.drawImage(image, 0, 0);
         const imageData = ctx.getImageData(0, 0, width, height);
         const pixels = imageData.data;
+        const target = HUMAN_SKIN.replace('#', '');
+        const targetRgb = [
+          parseInt(target.slice(0, 2), 16),
+          parseInt(target.slice(2, 4), 16),
+          parseInt(target.slice(4, 6), 16),
+        ];
         for (let i = 0; i < pixels.length; i += 4) {
-          if (maskData[i + 3] === 0) continue;
           const r = pixels[i];
           const g = pixels[i + 1];
           const b = pixels[i + 2];
-          if (Math.max(r, g, b) < 80) {
+          const max = Math.max(r, g, b);
+          const min = Math.min(r, g, b);
+          if (hipData[i + 3] !== 0 && max < 80) {
             pixels[i] = 158;
             pixels[i + 1] = 112;
             pixels[i + 2] = 82;
+          }
+          const shade = 0.72 + 0.45 * ((0.2126 * r + 0.7152 * g + 0.0722 * b) / 255);
+          if (faceData[i + 3] !== 0) {
+            // Keep the eyes, brows, mouth and grey sclera; tint only warm skin.
+            const saturation = max === 0 ? 0 : (max - min) / max;
+            const sclera = max > 190 && saturation < 0.1;
+            if (max >= 60 && !sclera) {
+              pixels[i] = Math.round(r * 0.15 + targetRgb[0] * shade * 0.85);
+              pixels[i + 1] = Math.round(g * 0.15 + targetRgb[1] * shade * 0.85);
+              pixels[i + 2] = Math.round(b * 0.15 + targetRgb[2] * shade * 0.85);
+            }
+          }
+          if (bodyData[i + 3] !== 0 && max >= 50) {
+            // Exposed hands/forearms/legs: tint the whole surface (the source
+            // body texture may paint light sleeves/leggings there), keeping shadows.
+            pixels[i] = Math.round(r * 0.15 + targetRgb[0] * shade * 0.85);
+            pixels[i + 1] = Math.round(g * 0.15 + targetRgb[1] * shade * 0.85);
+            pixels[i + 2] = Math.round(b * 0.15 + targetRgb[2] * shade * 0.85);
           }
         }
         ctx.putImageData(imageData, 0, 0);
@@ -269,7 +337,7 @@ try {
 
       // A short-sleeved cotton tunic derived from the body surface: same skin weights,
       // slightly offset along the normals, with the arms and neck excluded.
-      const makeTunic = () => {
+      const makeTunic = ({ topY = 1.48, bottomY = 0.88, sideX = 0.22, offset = 0.03 } = {}) => {
         const geometry = bodyMesh.geometry;
         const positions = geometry.getAttribute('position');
         const normals = geometry.getAttribute('normal');
@@ -325,12 +393,12 @@ try {
         const sw = [];
         const indices = [];
         const planes = [
-          [0, 1, 0, -1.48],
-          [0, -1, 0, 0.88],
-          [1, 0, 0, -0.22],
-          [-1, 0, 0, -0.22],
-          [0, 0, 1, -0.22],
-          [0, 0, -1, -0.22],
+          [0, 1, 0, -topY],
+          [0, -1, 0, bottomY],
+          [1, 0, 0, -sideX],
+          [-1, 0, 0, -sideX],
+          [0, 0, 1, -sideX],
+          [0, 0, -1, -sideX],
         ];
         for (let t = 0; t < triangles; t++) {
           const ia = index ? index.getX(t * 3) : t * 3;
@@ -344,7 +412,7 @@ try {
           if (poly.length < 3) continue;
           const base = p.length / 3;
           for (const v of poly) {
-            p.push(v.x + v.nx * 0.03, v.y + v.ny * 0.03, v.z + v.nz * 0.03);
+            p.push(v.x + v.nx * offset, v.y + v.ny * offset, v.z + v.nz * offset);
             n.push(v.nx, v.ny, v.nz);
             uv.push(v.u, v.v);
             si.push(...v.si);
@@ -469,6 +537,41 @@ try {
         cotton,
         'attire_skirt',
       );
+      const cottonChasqui = cotton.clone();
+      cottonChasqui.color.setHex(0xe8d8b8);
+      const chasquiSkirt = addSkinned(
+        makeTube({
+          topY: 0.97,
+          bottomY: 0.58,
+          topRx: 0.25,
+          topRz: 0.19,
+          bottomRx: 0.33,
+          bottomRz: 0.25,
+          segments: 32,
+          rings: 7,
+        }),
+        cottonChasqui,
+        'attire_skirt_chasqui',
+      );
+      const sashChasqui = new THREE.MeshStandardMaterial({
+        color: 0x8a3b2a,
+        roughness: 0.95,
+        side: THREE.DoubleSide,
+      });
+      const chasquiBelt = addSkinned(
+        makeTube({
+          topY: 1.04,
+          bottomY: 1.0,
+          topRx: 0.27,
+          topRz: 0.21,
+          bottomRx: 0.28,
+          bottomRz: 0.22,
+          segments: 32,
+          rings: 2,
+        }),
+        sashChasqui,
+        'attire_belt_chasqui',
+      );
       const belt = addSkinned(
         makeTube({
           topY: 0.98,
@@ -516,7 +619,7 @@ try {
         meshes: skinned(baseGltf.scene).length,
         animations: animations.map((clip) => clip.name),
         baseClips: baseMeshes.length,
-        customMeshes: [tunic.name, skirt.name, belt.name],
+        customMeshes: [tunic.name, skirt.name, chasquiSkirt.name, belt.name, chasquiBelt.name],
         hairMaterial: addedHair.material.name,
         boneCount: skeleton.bones.length,
       };

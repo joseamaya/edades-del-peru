@@ -173,6 +173,58 @@ const SCENES = {
       { name: 'deliver', mode: 'close', task: 'deliver', offset: { x: 3.0, y: 1.9, z: 4.0 }, lookHeight: 1.0 },
     ],
   },
+  'procedural-worker': {
+    url: '/?mission=m3_moche_recuay&intro=0&fog=0&low=1&noloop=1',
+    prepare: () => {
+      const g = window.game;
+      g.loop.stop();
+      const base = g.playerCenter(0);
+      const c = g.findLandNear(base.x + 10, base.z + 10, 12);
+      const worker = g.spawnScriptedUnit('worker', 0, c.x, c.z);
+      worker.clearOrders();
+      worker.pos.set(c.x, g.terrain.getHeight(c.x, c.z), c.z);
+      worker.view.setPosition(worker.pos.x, worker.pos.y, worker.pos.z);
+      for (let i = 0; i < 30; i++) g.loop.onUpdate(1 / 60, i / 60);
+      const offset = { x: 3.0, y: 2.0, z: 4.0 };
+      worker.view.setRotationY(Math.atan2(offset.x, offset.z));
+      worker.view.setPosition(worker.pos.x, worker.pos.y, worker.pos.z);
+      g.renderer.render(g.scene, g.camera.camera);
+      return {
+        center: { x: c.x, z: c.z },
+        subject: { x: worker.pos.x, y: worker.pos.y, z: worker.pos.z },
+      };
+    },
+    views: [{ name: 'close', mode: 'close', offset: { x: 3.0, y: 2.0, z: 4.0 }, lookHeight: 1.0 }],
+  },
+  'caral-chasqui': {
+    url: '/?mission=m1_caral&intro=0&fog=0&low=1&noloop=1',
+    prepare: () => {
+      const g = window.game;
+      g.loop.stop();
+      const scout = [...g.units.values()].find((u) => u.owner === 0 && u.kind === 'scout');
+      if (!scout) throw new Error('no player scout');
+      const base = g.playerCenter(0);
+      const c = g.findLandNear(base.x + 10, base.z + 10, 12);
+      scout.clearOrders();
+      scout.pos.set(c.x, g.terrain.getHeight(c.x, c.z), c.z);
+      scout.view.setPosition(scout.pos.x, scout.pos.y, scout.pos.z);
+      for (let i = 0; i < 45; i++) g.loop.onUpdate(1 / 60, i / 60);
+      const offset = { x: 3.0, y: 2.0, z: 4.0 };
+      scout.view.setRotationY(Math.atan2(offset.x, offset.z));
+      scout.rig?.play('walk', 0);
+      scout.rig?.update(0.4);
+      scout.view.setPosition(scout.pos.x, scout.pos.y, scout.pos.z);
+      g.renderer.render(g.scene, g.camera.camera);
+      return {
+        center: { x: c.x, z: c.z },
+        subject: { x: scout.pos.x, y: scout.pos.y, z: scout.pos.z },
+      };
+    },
+    views: [
+      { name: 'close', mode: 'close', offset: { x: 3.0, y: 2.0, z: 4.0 }, lookHeight: 1.0 },
+      { name: 'rts', mode: 'rts', height: 28, centerSubject: true },
+    ],
+  },
   'chavin-scene': {
     url: '/?civ=chavin&period=1&seed=777&fog=0&low=1',
     live: true,

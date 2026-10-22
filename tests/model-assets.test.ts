@@ -3,7 +3,12 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { modelAssetIdsForMatch, rigClipStateFor, unitModelAsset } from '../src/model/defs/modelAssets';
+import {
+  RIG_VARIANT_CLIPS,
+  modelAssetIdsForMatch,
+  rigClipStateFor,
+  unitModelAsset,
+} from '../src/model/defs/modelAssets';
 import { CivId, Era, HistoricalPeriod, UnitKind } from '../src/core/types';
 import {
   acquireRig,
@@ -165,6 +170,10 @@ describe('rigged model assets', () => {
       asset: 'caral_worker',
       variant: 'caral_worker',
     });
+    expect(unitModelAsset(UnitKind.SCOUT, Era.FORMATIVE, CivId.CARAL)).toEqual({
+      asset: 'caral_worker',
+      variant: 'caral_chasqui',
+    });
     expect(unitModelAsset(UnitKind.WORKER, Era.REGIONAL_STATES, CivId.CARAL)).toBeNull();
     expect(unitModelAsset(UnitKind.WORKER, Era.FORMATIVE, CivId.MOCHE)).toBeNull();
     expect(modelAssetIdsForMatch(HistoricalPeriod.ARCHAIC, [CivId.CARAL])).toContain('caral_worker');
@@ -185,10 +194,23 @@ describe('rigged model assets', () => {
     expect(joints).toBeGreaterThan(0);
     for (const skin of json.skins) expect(skin.joints).toHaveLength(joints);
     expect(json.animations.map((clip) => clip.name)).toEqual(
-      expect.arrayContaining(['Idle_Loop', 'Walk_Loop', 'Farm_Harvest', 'Walk_Carry_Loop']),
+      expect.arrayContaining([
+        'Idle_Loop',
+        'Walk_Loop',
+        'Jog_Fwd_Loop',
+        'Sprint_Loop',
+        'Farm_Harvest',
+        'Walk_Carry_Loop',
+      ]),
     );
     expect(json.nodes.map((node) => node.name)).toEqual(
-      expect.arrayContaining(['attire_tunic', 'attire_skirt', 'attire_sash']),
+      expect.arrayContaining([
+        'attire_tunic',
+        'attire_skirt',
+        'attire_skirt_chasqui',
+        'attire_sash',
+        'attire_belt_chasqui',
+      ]),
     );
   });
 
@@ -221,6 +243,16 @@ describe('rigged model assets', () => {
     const dispose = vi.spyOn(headband.geometry, 'dispose');
     rig.dispose();
     expect(dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it('dresses the chasqui variant without the digging stick', async () => {
+    await load();
+    const rig = acquireRig('ual_mannequin', 'caral_chasqui')!;
+    expect(rig.root.getObjectByName('attire_headband')).toBeDefined();
+    expect(rig.root.getObjectByName('attire_canteen')).toBeDefined();
+    expect(rig.root.getObjectByName('attire_tool')).toBeUndefined();
+    expect(RIG_VARIANT_CLIPS.caral_chasqui?.walk).toBe('Walk_Loop');
+    rig.dispose();
   });
 
   it('maps movement, tasks and combat to clip states by priority', () => {
