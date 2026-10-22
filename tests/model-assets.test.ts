@@ -16,6 +16,7 @@ import {
 } from '../src/rendering/ModelAssets';
 
 const MODEL_URL = new URL('../src/assets/models/ual_mannequin.glb', import.meta.url);
+const WORKER_URL = new URL('../src/assets/models/caral_worker.glb', import.meta.url);
 let glb: ArrayBuffer;
 
 beforeAll(() => {
@@ -158,60 +159,67 @@ describe('rigged model assets', () => {
     expect(dispose).toHaveBeenCalledTimes(1);
   });
 
-  it('maps the Caral worker to the dressed rig and preloads it for Caral matches', () => {
+  it('maps the Caral worker to the finished worker asset and preloads it for Caral matches', () => {
     expect(unitModelAsset(UnitKind.WORKER, Era.FORMATIVE, CivId.CARAL)).toEqual({
-      asset: 'ual_mannequin',
+      asset: 'caral_worker',
       variant: 'caral_worker',
     });
     expect(unitModelAsset(UnitKind.WORKER, Era.REGIONAL_STATES, CivId.CARAL)).toBeNull();
     expect(unitModelAsset(UnitKind.WORKER, Era.FORMATIVE, CivId.MOCHE)).toBeNull();
-    expect(modelAssetIdsForMatch(HistoricalPeriod.ARCHAIC, [CivId.CARAL])).toContain('ual_mannequin');
+    expect(modelAssetIdsForMatch(HistoricalPeriod.ARCHAIC, [CivId.CARAL])).toContain('caral_worker');
     expect(modelAssetIdsForMatch(HistoricalPeriod.ARCHAIC, [CivId.MOCHE])).toEqual([]);
   });
 
-  it('dresses the Caral worker and connects the carried bundle', async () => {
+  it('ships a worker GLB with one skeleton, the worker clips and the cotton garment', () => {
+    const file = fs.readFileSync(fileURLToPath(WORKER_URL));
+    const jsonLength = file.readUInt32LE(12);
+    const json = JSON.parse(file.subarray(20, 20 + jsonLength).toString('utf8')) as {
+      animations: { name: string }[];
+      skins: { joints: number[] }[];
+      nodes: { name?: string }[];
+    };
+    expect(json.skins.length).toBeGreaterThan(0);
+    expect(new Set(json.skins.map((skin) => skin.joints.join(','))).size).toBe(1);
+    const joints = json.skins[0].joints.length;
+    expect(joints).toBeGreaterThan(0);
+    for (const skin of json.skins) expect(skin.joints).toHaveLength(joints);
+    expect(json.animations.map((clip) => clip.name)).toEqual(
+      expect.arrayContaining(['Idle_Loop', 'Walk_Loop', 'Farm_Harvest', 'Walk_Carry_Loop']),
+    );
+    expect(json.nodes.map((node) => node.name)).toEqual(
+      expect.arrayContaining(['attire_tunic', 'attire_skirt', 'attire_sash']),
+    );
+  });
+
+  it('adds the Caral accessories to a compatible rig and toggles the carried load', async () => {
+    // The shipped GLB is covered by the e2e test; this checks the attachment
+    // handle against the shared 65-bone skeleton without loading its textures.
     await load();
     const rig = acquireRig('ual_mannequin', 'caral_worker')!;
-    const carry = rig.root.getObjectByName('attire:carry')!;
-    const tool = rig.root.getObjectByName('attire:tool')!;
+    const headband = rig.root.getObjectByName('attire_headband') as THREE.Mesh;
+    const carry = rig.root.getObjectByName('attire_carry')!;
+    const tool = rig.root.getObjectByName('attire_tool')!;
+    expect(headband).toBeDefined();
     expect(carry).toBeDefined();
     expect(tool).toBeDefined();
     expect(carry.visible).toBe(false);
     expect(tool.visible).toBe(true);
-    expect(rig.root.getObjectByName('attire:loincloth')).toBeDefined();
-    expect(rig.root.getObjectByName('attire:headband')).toBeDefined();
 
     rig.setCarrying(true, 0x44cc44);
     expect(carry.visible).toBe(true);
     expect(tool.visible).toBe(false);
     const bag = carry.children[0] as THREE.Mesh;
     expect((bag.material as THREE.MeshStandardMaterial).color.getHex()).toBe(0x44cc44);
+    rig.setCarrying(false);
+    expect(carry.visible).toBe(false);
+    expect(tool.visible).toBe(true);
 
     rig.play('attack', 0);
     expect(rig.currentState).toBe('idle');
 
-    const geometry = (rig.root.getObjectByName('attire:loincloth') as THREE.Mesh).geometry;
-    const dispose = vi.spyOn(geometry, 'dispose');
+    const dispose = vi.spyOn(headband.geometry, 'dispose');
     rig.dispose();
     expect(dispose).toHaveBeenCalledTimes(1);
-  });
-
-  it('clones the body and joint materials instead of mutating the shared asset', async () => {
-    const asset = await load();
-    const rig = acquireRig('ual_mannequin', 'caral_worker')!;
-    const shared: THREE.Material[] = [];
-    asset.scene.traverse((obj) => {
-      const mesh = obj as THREE.Mesh;
-      if (mesh.isMesh) shared.push(mesh.material as THREE.Material);
-    });
-
-    const dressed: THREE.Material[] = [];
-    rig.root.traverse((obj) => {
-      const mesh = obj as THREE.Mesh;
-      if (mesh.isMesh) dressed.push(mesh.material as THREE.Material);
-    });
-    for (const material of dressed) expect(shared).not.toContain(material);
-    rig.dispose();
   });
 
   it('maps movement, work and combat to clip states by priority', () => {

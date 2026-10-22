@@ -941,9 +941,10 @@ El ahorro es de **12 draw calls por animal**; a 16 animales son **192 draw calls
 | 24 | 31,7 | 29.189 | 0,50 ms |
 | 48 | 31,6 | 29.210 | 1,20 ms |
 
-El trabajador sigue usando el maniquí vestido del piloto (#108/#112); #118 **no** lo cambia. Estos números
-fijan el presupuesto que el modelo final de #116 deberá respetar o justificar. Los tris incluyen el pase de
-sombras; el cuerpo base son ~13,7k tris y el resto es vestuario/anclajes.
+El trabajador de esta tabla era el maniquí vestido del piloto (#108/#112); #118 **no** lo cambia. Estos
+números fijaron el presupuesto que el modelo final de #116 debía respetar o justificar. Los tris incluyen el
+pase de sombras; el cuerpo base son ~13,7k tris y el resto es vestuario/anclajes. La medición final está en
+[Final Caral worker (#116)](#final-caral-worker-116).
 
 ### Escenario mixto
 
@@ -1002,9 +1003,60 @@ limpio y desde la rama; el resultado es visualmente idéntico y solo cambian los
 
 - Sin validación en GPU hardware: los draw calls/triángulos son accionables, el FPS no.
 - Los conteos incluyen el pase de sombras VSM; el pase principal es aproximadamente la mitad.
-- El trabajador medido sigue siendo el maniquí del piloto; #116 debe repetir la medición con el asset final.
+- El trabajador medido en #118 era el maniquí del piloto; #116 repite la medición con el asset final y la
+  documenta abajo.
 - Los presupuestos se fijan con la escena de bench (1280×800, `?low=1`); una escena con más materiales o
   sombras puede requerir revisarlos, pero no relajarlos silenciosamente.
+
+## Final Caral worker (#116)
+
+El asset final sustituye el maniquí por una composición CC0 (cuerpo, cara y pelo de Quaternius Universal Base
+Characters + clips UAL1/UAL2) con túnica, falda y faja de algodón autoradas por el proyecto. Los accesorios
+(cinta, carga y bastón) siguen siendo mallas runtime sobre huesos. La ficha completa, fuentes y hashes están en
+[`PROVENANCE.md`](../../PROVENANCE.md); el GLB se regenera con
+`yarn models:build`.
+
+| Trabajadores | Draws/trabajador | Tris/trabajador | `rigs` p95 |
+|---:|---:|---:|---:|
+| 4 | 22,5 | 39.073 | 0,20 ms |
+| 12 | 23,0 | 39.216 | 0,30 ms |
+| 24 | 23,3 | 39.311 | 0,50 ms |
+| 48 | 23,4 | 39.335 | 1,00 ms |
+
+El modelo **entra en el presupuesto** de 40 draws / 40.000 tris (main + shadow) con ~22-23 draws y ~39,1-39,3k
+tris. Frente al maniquí baja **~9 draw calls por trabajador** (32 → 23) y sube ~9k tris, porque ahora hay
+cuerpo, pelo y ropa con texturas en vez de un placeholder. Para no recortar geometría visible solo se excluyen del
+pase VSM los ojos, demasiado pequeños para proyectar una sombra legible (`Eyes`): en VSM un objeto con
+`receiveShadow` también se dibuja en el shadow map, así que hay que apagar ambos flags. La túnica, la falda y la
+faja conservan sombra y recepción. La medición se repite con:
+
+```bash
+yarn bench --scenario=rigs --units=4,12,24,48 --runs=2 --steps=600 --assert \
+  --out=review/bench-rigs-caral.json
+```
+
+### Evidencia
+
+Misma misión (`m1_caral`), 1600×900, UI oculta y pasos fijos; izquierda antes (modelo procedural), derecha
+después (asset final):
+
+- [`caral-worker-final-before-after.webp`](../media/caral-worker-final-before-after.webp) — acercamiento.
+- [`caral-worker-final-rts-before-after.webp`](../media/caral-worker-final-rts-before-after.webp) — cámara RTS.
+
+Las capturas se generan con `node scripts/shots_evidence.mjs --scene=caral-worker --out=…` y
+`--scene=caral-worker-rts --out=…`, una vez desde el worktree limpio (`main`) y otra desde la rama.
+
+### Límites del modelo final
+
+- La túnica de manga corta, la falda y la faja son una **abstracción plausible**: `docs/historia/atuendos.md`
+  documenta algodón para Caral-Supe, pero no las prendas concretas. No hay metal ni calzado.
+- Las cejas de tarjetas de pelo del asset original (~1,5k tris) se sustituyeron por dos tiras low-poly (~24 tris)
+  ancladas al hueso `Head`, para mantener la lectura del rostro sin duplicar su coste en el pase de sombras.
+- El pelo y la cara vienen del cuerpo CC0; no son un retrato. El modelo mide ~1,79 m y se normaliza a la escala
+  estilizada del juego.
+- El pase de sombras VSM dibuja también receptores; por eso el presupuesto se mide con main + shadow y la
+  exclusión de micro-mallas es deliberada, no un atajo silencioso.
+- Sin validación en GPU hardware: los draws/tris son estructurales; el FPS de SwiftShader no es una meta.
 
 ## Reproducción
 

@@ -66,11 +66,14 @@ function finalize(id: ModelAssetId, gltf: GLTF, definition: ModelAssetDefinition
 
   if (definition.consolidate) consolidateSkinnedPrimitives(gltf.scene);
 
+  const skipShadows = new Set(definition.shadowSkipMeshes ?? []);
   gltf.scene.traverse((obj) => {
     const mesh = obj as THREE.Mesh;
     if (!mesh.isMesh) return;
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
+    const skip = skipShadows.has(mesh.name);
+    // VSM renders receivers into the shadow map too, so both flags must be off.
+    mesh.castShadow = !skip;
+    mesh.receiveShadow = !skip;
     // A skinned mesh's bind-pose bounding sphere does not follow the bones.
     if ((mesh as THREE.SkinnedMesh).isSkinnedMesh) mesh.frustumCulled = false;
   });
