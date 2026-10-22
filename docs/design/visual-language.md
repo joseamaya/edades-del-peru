@@ -243,9 +243,9 @@ documented**, so the outfit is an **abstraction/plausible** treatment, not a rec
 footwear, horse or firearm. The face/hair are generic CC0, not a portrait. Historical models must follow the
 period dossiers and their source/licence must be recorded in [`PROVENANCE.md`](../../PROVENANCE.md) before they
 are used in a campaign. See [`docs/development.md`](../development.md) for the clip convention, the build script
-and the migration steps. Micro-meshes that barely change the silhouette (`Eyes`, `Eyebrows`, skirt, sash) skip
-the VSM shadow pass to stay inside the worker budget without cutting visible geometry.
-Comparable evidence (same mission `m1_caral`, seed 3000, 1600x900, UI hidden):
+and the migration steps. Only the eyes (too small to cast a readable shadow) skip the VSM shadow pass; the
+garments keep their shadows, which keeps the worker inside its budget without cutting visible geometry.
+Comparable evidence (same mission `m1_caral`, 1600x900, UI hidden):
 [`caral-worker-final-before-after.webp`](../media/caral-worker-final-before-after.webp) (procedural worker →
 finished rig, fixed front close-up) and
 [`caral-worker-final-rts-before-after.webp`](../media/caral-worker-final-rts-before-after.webp) (RTS camera).

@@ -1,4 +1,4 @@
-import type { ModelAssetId, RigClipState } from '../model/defs/modelAssets';
+import { CARAL_WORKER_SHADOW_SKIP_MESHES, type ModelAssetId, type RigClipState } from '../model/defs/modelAssets';
 
 /**
  * Local model files bundled by Vite. `?url` keeps them as separate assets
@@ -24,7 +24,7 @@ export interface ModelAssetDefinition {
   readonly groundClearance?: number;
   /** Merge flat-coloured skinned primitives into one mesh/material (draw-call budget). */
   readonly consolidate?: boolean;
-  /** Tiny or body-conforming meshes that skip the VSM shadow pass. */
+  /** Tiny meshes that skip the VSM shadow pass (they cast no readable shadow). */
   readonly shadowSkipMeshes?: readonly string[];
 }
 
@@ -61,9 +61,9 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
     yawOffset: 0,
     ground: true,
     groundClearance: 0.01,
-    // Facial micro-meshes and the thin skirt/sash barely change the silhouette;
-    // dropping them from the VSM shadow pass keeps the worker inside its budget.
-    shadowSkipMeshes: ['Eyes', 'Eyebrows', 'attire_skirt', 'attire_sash'],
+    shadowSkipMeshes: CARAL_WORKER_SHADOW_SKIP_MESHES,
+    // The GLB also ships Farm_PlantSeed, TreeChopping_Loop, Walk_Carry_Loop and
+    // Push_Loop for the #117 task-animation pass; only these states are mapped now.
     clips: {
       idle: 'Idle_Loop',
       walk: 'Walk_Loop',

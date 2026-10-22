@@ -25,12 +25,8 @@ export function dressCaralWorker(rig: RigInstance): CaralWorkerHandle {
     ownedGeometries.push(g);
     return g;
   };
-  const makeMaterial = (
-    color: number,
-    roughness: number,
-    side: THREE.Side = THREE.FrontSide,
-  ): THREE.MeshStandardMaterial => {
-    const m = new THREE.MeshStandardMaterial({ color, roughness, metalness: 0, side });
+  const makeMaterial = (color: number, roughness: number): THREE.MeshStandardMaterial => {
+    const m = new THREE.MeshStandardMaterial({ color, roughness, metalness: 0 });
     ownedMaterials.push(m);
     return m;
   };
@@ -112,8 +108,9 @@ export function dressCaralWorker(rig: RigInstance): CaralWorkerHandle {
     blade.rotation.x = Math.PI;
     blade.position.y = -0.67;
     tool.add(blade);
-    tool.rotation.set(-0.35, 0, 0.1);
-    attach('hand_r', tool, new THREE.Vector3(hand.x, hand.y, hand.z));
+    tool.rotation.set(-0.15, 0, 0);
+    const toBody = new THREE.Vector3(root.position.x - hand.x, 0, root.position.z - hand.z).normalize();
+    attach('hand_r', tool, hand.clone().addScaledVector(toBody, 0.03));
   }
 
   return {

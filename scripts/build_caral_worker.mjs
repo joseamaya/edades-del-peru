@@ -44,7 +44,7 @@ const CLIPS = [
 ];
 const outFile = path.resolve(cliArg('out', 'review/caral_worker_test.glb'));
 
-const { base, close } = await withViteServer();
+const { base, close } = await withViteServer({ optimizeDeps: { noDiscovery: true } });
 const browser = await launchChromium();
 const page = await browser.newPage();
 try {
@@ -52,8 +52,7 @@ try {
   const result = await page.evaluate(
     async ({ sources, clipsSpec }) => {
       const THREE = await import('/node_modules/three/build/three.module.js');
-      const { GLTFLoader } = await import('/node_modules/three/examples/jsm/loaders/GLTFLoader.js');
-      const { GLTFExporter } = await import('/node_modules/three/examples/jsm/exporters/GLTFExporter.js');
+      const { GLTFLoader, GLTFExporter } = await import('/scripts/gltf_tools.mjs');
 
       const hex = (buffer) => [...new Uint8Array(buffer)].map((b) => b.toString(16).padStart(2, '0')).join('');
       const load = async (entry, name) => {
@@ -185,7 +184,90 @@ try {
         bodyMaterial.needsUpdate = true;
       }
 
-      // A sleeveless cotton tunic derived from the body surface: same skin weights,
+      // The source eyebrows are ~1.5k triangles of hair cards. Replace them with
+      // two low-poly strips sampled from the same surface so they keep the face
+      // readable without doubling the worker's shadow cost.
+      const sourceBrows = skinned(baseGltf.scene).find((mesh) => mesh.name === 'Eyebrows');
+      if (sourceBrows) {
+        const sourcePositions = sourceBrows.geometry.getAttribute('position');
+        const headBone = boneIndex.get('Head');
+        if (headBone === undefined) throw new Error('Head bone not found');
+        const brow = (side) => {
+          const points = [];
+          for (let i = 0; i < sourcePositions.count; i++) {
+            const x = sourcePositions.getX(i);
+            if (side > 0 ? x >= 0 : x < 0) {
+              points.push({ x, y: sourcePositions.getY(i), z: sourcePositions.getZ(i) });
+            }
+          }
+          const minX = Math.min(...points.map((p) => p.x));
+          const maxX = Math.max(...points.map((p) => p.x));
+          const columns = 5;
+          const positions = [];
+          const normals = [];
+          const skinIndex = [];
+          const skinWeight = [];
+          const indices = [];
+          for (let c = 0; c < columns; c++) {
+            const x0 = minX + ((maxX - minX) * c) / columns;
+            const x1 = minX + ((maxX - minX) * (c + 1)) / columns;
+            const column = points.filter((p) => p.x >= x0 && (c === columns - 1 ? p.x <= x1 : p.x < x1));
+            const sample = column.length ? column : points;
+            const y = sample.reduce((sum, p) => sum + p.y, 0) / sample.length;
+            const z = Math.max(...sample.map((p) => p.z)) + 0.001;
+            const x = (x0 + x1) / 2;
+            for (const dy of [-0.006, 0.006]) {
+              positions.push(x, y + dy, z);
+              normals.push(0, 0, 1);
+              skinIndex.push(headBone, 0, 0, 0);
+              skinWeight.push(1, 0, 0, 0);
+            }
+            if (c > 0) {
+              const a = (c - 1) * 2;
+              const b = c * 2;
+              indices.push(a, a + 1, b, a + 1, b + 1, b);
+            }
+          }
+          return { positions, normals, skinIndex, skinWeight, indices };
+        };
+        const halves = [brow(1), brow(-1)];
+        const positions = [];
+        const normals = [];
+        const skinIndex = [];
+        const skinWeight = [];
+        const indices = [];
+        let offset = 0;
+        for (const half of halves) {
+          positions.push(...half.positions);
+          normals.push(...half.normals);
+          skinIndex.push(...half.skinIndex);
+          skinWeight.push(...half.skinWeight);
+          indices.push(...half.indices.map((index) => index + offset));
+          offset += half.positions.length / 3;
+        }
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+        geometry.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(skinIndex, 4));
+        geometry.setAttribute('skinWeight', new THREE.Float32BufferAttribute(skinWeight, 4));
+        geometry.setIndex(indices);
+        geometry.computeBoundingSphere();
+        const material = new THREE.MeshStandardMaterial({
+          color: 0x2a1c12,
+          roughness: 0.95,
+          side: THREE.DoubleSide,
+        });
+        const brows = new THREE.SkinnedMesh(geometry, material);
+        brows.name = 'Eyebrows';
+        brows.bind(skeleton, bindMatrix);
+        brows.castShadow = true;
+        brows.receiveShadow = true;
+        brows.frustumCulled = false;
+        baseGltf.scene.add(brows);
+        sourceBrows.removeFromParent();
+      }
+
+      // A short-sleeved cotton tunic derived from the body surface: same skin weights,
       // slightly offset along the normals, with the arms and neck excluded.
       const makeTunic = () => {
         const geometry = bodyMesh.geometry;
@@ -243,10 +325,10 @@ try {
         const sw = [];
         const indices = [];
         const planes = [
-          [0, 1, 0, -1.4],
+          [0, 1, 0, -1.48],
           [0, -1, 0, 0.88],
-          [1, 0, 0, -0.3],
-          [-1, 0, 0, -0.3],
+          [1, 0, 0, -0.22],
+          [-1, 0, 0, -0.22],
           [0, 0, 1, -0.22],
           [0, 0, -1, -0.22],
         ];
@@ -262,7 +344,7 @@ try {
           if (poly.length < 3) continue;
           const base = p.length / 3;
           for (const v of poly) {
-            p.push(v.x + v.nx * 0.018, v.y + v.ny * 0.018, v.z + v.nz * 0.018);
+            p.push(v.x + v.nx * 0.03, v.y + v.ny * 0.03, v.z + v.nz * 0.03);
             n.push(v.nx, v.ny, v.nz);
             uv.push(v.u, v.v);
             si.push(...v.si);
@@ -281,7 +363,7 @@ try {
         return out;
       };
 
-      const makeTube = (topY, bottomY, topRx, topRz, bottomRx, bottomRz, segments, rings) => {
+      const makeTube = ({ topY, bottomY, topRx, topRz, bottomRx, bottomRz, segments, rings }) => {
         const p = [];
         const uv = [];
         const si = [];
@@ -300,7 +382,7 @@ try {
           const rz = topRz + (bottomRz - topRz) * t;
           for (let s = 0; s < segments; s++) {
             const a = (s / segments) * Math.PI * 2;
-            const fold = 1 + 0.035 * Math.sin(a * 7 + r * 0.9) + 0.015 * Math.sin(a * 3 - r * 1.7);
+            const fold = 1 + 0.02 * Math.sin(a * 7 + r * 0.9) + 0.008 * Math.sin(a * 3 - r * 1.7);
             const x = Math.cos(a) * rx * fold;
             const z = Math.sin(a) * rz * fold;
             p.push(x, y, z);
@@ -373,8 +455,34 @@ try {
         return mesh;
       };
       const tunic = addSkinned(makeTunic(), cotton, 'attire_tunic');
-      const skirt = addSkinned(makeTube(0.97, 0.68, 0.23, 0.17, 0.3, 0.23, 32, 7), cotton, 'attire_skirt');
-      const belt = addSkinned(makeTube(0.98, 0.93, 0.245, 0.185, 0.25, 0.19, 32, 2), sash, 'attire_sash');
+      const skirt = addSkinned(
+        makeTube({
+          topY: 0.97,
+          bottomY: 0.68,
+          topRx: 0.23,
+          topRz: 0.17,
+          bottomRx: 0.3,
+          bottomRz: 0.23,
+          segments: 32,
+          rings: 7,
+        }),
+        cotton,
+        'attire_skirt',
+      );
+      const belt = addSkinned(
+        makeTube({
+          topY: 0.98,
+          bottomY: 0.93,
+          topRx: 0.245,
+          topRz: 0.185,
+          bottomRx: 0.25,
+          bottomRz: 0.19,
+          segments: 32,
+          rings: 2,
+        }),
+        sash,
+        'attire_sash',
+      );
       const byName = (gltf, name) => gltf.animations.find((clip) => clip.name === name);
       const animations = [];
       for (const [source, name] of clipsSpec) {

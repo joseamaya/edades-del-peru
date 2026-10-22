@@ -8,6 +8,8 @@ export const MANNEQUIN_ASSET_ID: ModelAssetId = 'ual_mannequin';
 export const RIG_DEMO_ASSET_ID: ModelAssetId = MANNEQUIN_ASSET_ID;
 /** Finished Caral worker asset (CC0 body/hair/clips + project-authored cotton cloth). */
 export const CARAL_WORKER_ASSET_ID: ModelAssetId = 'caral_worker';
+/** Eyes are too small to cast a readable shadow; the garments keep theirs. */
+export const CARAL_WORKER_SHADOW_SKIP_MESHES: readonly string[] = ['Eyes'];
 
 /** Presentation variants applied on top of a shared rigged asset. */
 export type RigVariant = 'caral_worker';

@@ -1018,17 +1018,17 @@ Characters + clips UAL1/UAL2) con túnica, falda y faja de algodón autoradas po
 
 | Trabajadores | Draws/trabajador | Tris/trabajador | `rigs` p95 |
 |---:|---:|---:|---:|
-| 4 | 19,5 | 39.349 | 0,20 ms |
-| 12 | 20,0 | 39.492 | 0,30 ms |
-| 24 | 20,3 | 39.587 | 0,50 ms |
-| 48 | 20,4 | 39.611 | 1,10 ms |
+| 4 | 22,5 | 39.073 | 0,20 ms |
+| 12 | 23,0 | 39.216 | 0,30 ms |
+| 24 | 23,3 | 39.311 | 0,50 ms |
+| 48 | 23,4 | 39.335 | 1,00 ms |
 
-El modelo **entra en el presupuesto** de 40 draws / 40.000 tris (main + shadow) con ~19-20 draws y ~39,3-39,6k
-tris. Frente al maniquí baja **~12 draw calls por trabajador** (32 → 20) y sube ~10k tris, porque ahora hay
-cuerpo, pelo y ropa con texturas en vez de un placeholder. Para no recortar geometría visible se excluyen del
-pase VSM las micro-mallas que no cambian la silueta (`Eyes`, `Eyebrows`, `attire_skirt`, `attire_sash`): en VSM
-un objeto con `receiveShadow` también se dibuja en el shadow map, así que hay que apagar ambos flags. La túnica
-sí conserva sombra y recepción. La medición se repite con:
+El modelo **entra en el presupuesto** de 40 draws / 40.000 tris (main + shadow) con ~22-23 draws y ~39,1-39,3k
+tris. Frente al maniquí baja **~9 draw calls por trabajador** (32 → 23) y sube ~9k tris, porque ahora hay
+cuerpo, pelo y ropa con texturas en vez de un placeholder. Para no recortar geometría visible solo se excluyen del
+pase VSM los ojos, demasiado pequeños para proyectar una sombra legible (`Eyes`): en VSM un objeto con
+`receiveShadow` también se dibuja en el shadow map, así que hay que apagar ambos flags. La túnica, la falda y la
+faja conservan sombra y recepción. La medición se repite con:
 
 ```bash
 yarn bench --scenario=rigs --units=4,12,24,48 --runs=2 --steps=600 --assert \
@@ -1037,8 +1037,8 @@ yarn bench --scenario=rigs --units=4,12,24,48 --runs=2 --steps=600 --assert \
 
 ### Evidencia
 
-Misma escena, seed 3000, 1600×900, UI oculta y pasos fijos; izquierda antes (modelo procedural), derecha después
-(asset final):
+Misma misión (`m1_caral`), 1600×900, UI oculta y pasos fijos; izquierda antes (modelo procedural), derecha
+después (asset final):
 
 - [`caral-worker-final-before-after.webp`](../media/caral-worker-final-before-after.webp) — acercamiento.
 - [`caral-worker-final-rts-before-after.webp`](../media/caral-worker-final-rts-before-after.webp) — cámara RTS.
@@ -1048,8 +1048,10 @@ Las capturas se generan con `node scripts/shots_evidence.mjs --scene=caral-worke
 
 ### Límites del modelo final
 
-- La túnica sin mangas, la falda y la faja son una **abstracción plausible**: `docs/historia/atuendos.md`
+- La túnica de manga corta, la falda y la faja son una **abstracción plausible**: `docs/historia/atuendos.md`
   documenta algodón para Caral-Supe, pero no las prendas concretas. No hay metal ni calzado.
+- Las cejas de tarjetas de pelo del asset original (~1,5k tris) se sustituyeron por dos tiras low-poly (~24 tris)
+  ancladas al hueso `Head`, para mantener la lectura del rostro sin duplicar su coste en el pase de sombras.
 - El pelo y la cara vienen del cuerpo CC0; no son un retrato. El modelo mide ~1,79 m y se normaliza a la escala
   estilizada del juego.
 - El pase de sombras VSM dibuja también receptores; por eso el presupuesto se mide con main + shadow y la

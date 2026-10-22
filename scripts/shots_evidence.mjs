@@ -18,7 +18,7 @@ const HEIGHT = 900;
 
 const SCENES = {
   'caral-worker': {
-    url: '/?play=1&civ=caral&period=0&map=altiplano&seed=3000&fog=0&low=1&noloop=1',
+    url: '/?mission=m1_caral&intro=0&low=1&noloop=1',
     prepare: () => {
       const g = window.game;
       g.loop.stop();
@@ -44,7 +44,7 @@ const SCENES = {
     views: [{ name: 'close', mode: 'close', offset: { x: 2.6, y: 1.7, z: 3.6 }, lookHeight: 0.95 }],
   },
   'caral-worker-rts': {
-    url: '/?play=1&civ=caral&period=0&map=altiplano&seed=3000&fog=0&low=1&noloop=1',
+    url: '/?mission=m1_caral&intro=0&low=1&noloop=1',
     prepare: () => {
       const g = window.game;
       g.loop.stop();

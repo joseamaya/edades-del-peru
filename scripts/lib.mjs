@@ -23,8 +23,11 @@ export async function launchChromium(opts = {}) {
 /** Start a Vite server on a free port and return base + close.
  * Watching is disabled: the capture/bench scripts serve static files and a
  * file watcher only burns inotify handles (ENOSPC in constrained environments). */
-export async function withViteServer() {
-  const server = await createServer({ server: { port: 0, watch: { ignored: ['**'] } } });
+export async function withViteServer(options = {}) {
+  const server = await createServer({
+    ...options,
+    server: { port: 0, watch: { ignored: ['**'] }, ...(options.server ?? {}) },
+  });
   await server.listen();
   const base = `http://localhost:${server.config.server.port}`;
   return { base, close: () => server.close() };
