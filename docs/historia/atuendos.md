@@ -17,6 +17,11 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
 > armas y tocados, pero **no documentan tonos de piel ni rasgos faciales**. El juego usa una paleta andina
 > plausible y oscura (`HUMAN_SKIN` en `src/model/defs/people.ts`) y pelo oscuro para todos los humanoides; es una
 > **representación**, no un retrato ni una reconstrucción. No debe leerse como una afirmación racial esencialista.
+>
+> **Género.** Los dossieres no documentan una división de género del trabajo ni una proporción histórica. El juego
+> mezcla personajes femeninos y masculinos al 50% de forma determinista, solo como presentación: no cambia stats,
+> movimiento, guardado ni simulación. El atuendo masculino general (túnica/uncu + taparrabos o wrap corto) y los
+> conjuntos femeninos son abstracciones plausibles, no reconstrucciones.
 
 - **Arma ofensiva principal: la porra/maza (macana/club)**, de mango de madera y cabeza de madera,
   piedra o metal, con formas de disco, estrella, roseta, cactus o cabeza zoomorfa. Fue el arma más

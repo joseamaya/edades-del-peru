@@ -11,10 +11,11 @@ export interface RigVariantHandle {
 /** Apply the presentation-only dressing for a rig variant. */
 export function applyRigVariant(rig: RigInstance, variant: RigVariant): RigVariantHandle | null {
   switch (variant) {
-    case 'caral_worker':
-      return dressCaralWorker(rig, 'caral_worker');
-    case 'caral_chasqui':
-      return dressCaralWorker(rig, 'caral_chasqui');
+    case 'caral_worker_f':
+    case 'caral_worker_m':
+    case 'caral_chasqui_f':
+    case 'caral_chasqui_m':
+      return dressCaralWorker(rig, variant);
     default:
       return null;
   }

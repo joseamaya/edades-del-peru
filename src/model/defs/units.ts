@@ -4,11 +4,15 @@ import { ERA_DEFS } from './eras';
 export type DamageClass = 'light' | 'heavy' | 'fortified';
 export type ProjectileKind = 'bullet' | 'rocket' | 'howitzer_shell' | 'laser' | 'rail' | 'nuclear' | 'tracer';
 
+import type { PersonGender } from './people';
+
 export interface ModelSpec {
   /** Parametric model type. */
   type: string;
   scale?: number;
   barrel?: number;
+  /** Presentation-only gender variant; the simulation is unaffected. */
+  gender?: PersonGender;
 }
 
 export interface UnitStats {

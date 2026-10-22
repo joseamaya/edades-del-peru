@@ -17,6 +17,7 @@ export class RigInstance {
   private readonly actions = new Map<RigClipState, THREE.AnimationAction>();
   private current: RigClipState | null = null;
   private variant: RigVariantHandle | null = null;
+  readonly variantId: RigVariant | null;
   private disposed = false;
 
   constructor(asset: LoadedModelAsset, variant?: RigVariant) {
@@ -48,6 +49,7 @@ export class RigInstance {
 
     this.play('idle', 0);
     this.mixer.update(0);
+    this.variantId = variant ?? null;
     if (variant) {
       this.model.updateMatrixWorld(true);
       this.variant = applyRigVariant(this, variant);

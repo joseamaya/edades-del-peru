@@ -248,9 +248,17 @@ period dossiers and their source/licence must be recorded in [`PROVENANCE.md`](.
 are used in a campaign. See [`docs/development.md`](../development.md) for the clip convention, the build script
 and the migration steps. Only the eyes (too small to cast a readable shadow) skip the VSM shadow pass; the
 garments keep their shadows, which keeps the worker inside its budget without cutting visible geometry.
+Gender is a **presentation-only** mix: `genderForId` assigns female/male 50/50 deterministically. The rigged
+Caral worker/chasqui use male and female CC0 bodies with the same skeleton; the male worker wears the tunic +
+short wrap, the female worker the tunic + long skirt, and the chasqui has the corresponding runner set (tunic +
+long or short skirt, wide belt, ochre headband, gourd canteen, no tool). Procedural humanoids use the same gender
+split for shoulder/hip proportions, long/short hair and a light female skirt. The split never changes stats or
+the simulation; Caral's gender division of labour and ratio are **not documented**, so this is a plausible
+representation, not a historical claim.
 The **chasqui** variant uses the same rig with a distinct runner set: the short-sleeve tunic, the long chasqui
-skirt, a wide belt, an ochre headband, a gourd canteen and no digging stick. It uses `Walk_Loop`; the exported
-`Jog_Fwd_Loop`/`Sprint_Loop` are reserved for a future garment designed for the higher knee.
+skirt (female) or short wrap (male), a wide belt, an ochre headband, a gourd canteen and no digging stick. It
+uses `Walk_Loop`; the exported `Jog_Fwd_Loop`/`Sprint_Loop` are reserved for a future garment designed for the
+higher knee.
 Comparable evidence (same mission `m1_caral`, 1600x900, UI hidden):
 [`caral-worker-final-before-after.webp`](../media/caral-worker-final-before-after.webp) (procedural worker →
 finished rig, fixed front close-up) and
@@ -260,7 +268,10 @@ carry/deliver) from the same mission. [`caral-chasqui-before-after.webp`](../med
 shows the procedural Caral scout → rigged chasqui runner set,
 [`caral-chasqui-rts-before-after.webp`](../media/caral-chasqui-rts-before-after.webp) places it at RTS zoom, and
 [`caral-skin-before-after.webp`](../media/caral-skin-before-after.webp) shows the shared darker skin palette on a
-procedural humanoid. In the before/after images the left half is before and the right half after.
+procedural humanoid. [`caral-worker-genders-before-after.webp`](../media/caral-worker-genders-before-after.webp),
+[`caral-chasqui-genders-before-after.webp`](../media/caral-chasqui-genders-before-after.webp) and
+[`procedural-genders-before-after.webp`](../media/procedural-genders-before-after.webp) show the before/after
+gender mix for the rigged and procedural units. In the before/after images the left half is before and the right half after.
 
 ## Caral visual pilot
 
