@@ -1,5 +1,13 @@
 import { CivId, Era, HistoricalPeriod, UnitKind } from '../../core/types';
 import { genderForId } from './people';
+import {
+  ANDEAN_CULTURES,
+  ANDEAN_ROLES,
+  andeanCultureForCiv,
+  andeanCultureForPeriod,
+  type AndeanRole,
+  type AndeanRigVariant,
+} from './andeanCharacters';
 
 /** Registered rigged models. Add the id here and to the rendering registry. */
 export type ModelAssetId = 'ual_mannequin' | 'quaternius_alpaca' | 'caral_worker';
@@ -20,22 +28,7 @@ export type RigVariant =
   | 'caral_scout_m'
   | 'inca_chasqui_f'
   | 'inca_chasqui_m'
-  | 'moche_worker_f'
-  | 'moche_worker_m'
-  | 'moche_scout_f'
-  | 'moche_scout_m'
-  | 'moche_soldier_f'
-  | 'moche_soldier_m'
-  | 'moche_ranged_f'
-  | 'moche_ranged_m'
-  | 'recuay_worker_f'
-  | 'recuay_worker_m'
-  | 'recuay_scout_f'
-  | 'recuay_scout_m'
-  | 'recuay_soldier_f'
-  | 'recuay_soldier_m'
-  | 'recuay_ranged_f'
-  | 'recuay_ranged_m';
+  | AndeanRigVariant;
 
 /** Animation states mapped to clips; `eat` is fauna-only. A rig may omit any state except `idle`. */
 export type RigClipState = 'idle' | 'walk' | 'walk_carry' | 'gather' | 'build' | 'attack' | 'eat';
@@ -50,6 +43,29 @@ export const RIG_CLIP_STATES: readonly RigClipState[] = [
   'eat',
 ];
 
+/** Role-based clip overrides shared by every Andean culture; `null` removes a state. */
+const ANDEAN_NON_WORKER_CLIPS: Partial<Record<RigClipState, string | null>> = {
+  walk: 'Walk_Loop',
+  gather: null,
+  build: null,
+  attack: 'Punch_Jab',
+};
+
+const ANDEAN_CLIP_OVERRIDES: Record<AndeanRole, Partial<Record<RigClipState, string | null>>> = {
+  worker: { attack: 'TreeChopping_Loop' },
+  scout: ANDEAN_NON_WORKER_CLIPS,
+  soldier: { ...ANDEAN_NON_WORKER_CLIPS, attack: 'TreeChopping_Loop' },
+  ranged: ANDEAN_NON_WORKER_CLIPS,
+};
+
+const ANDEAN_VARIANT_CLIPS = Object.fromEntries(
+  ANDEAN_CULTURES.flatMap((culture) =>
+    (['f', 'm'] as const).flatMap((gender) =>
+      ANDEAN_ROLES.map((role) => [`${culture}_${role}_${gender}`, ANDEAN_CLIP_OVERRIDES[role]] as const),
+    ),
+  ),
+) as Partial<Record<AndeanRigVariant, Partial<Record<RigClipState, string | null>>>>;
+
 /** Per-variant clip overrides; `null` removes a state (falls back to idle). */
 export const RIG_VARIANT_CLIPS: Partial<Record<RigVariant, Partial<Record<RigClipState, string | null>>>> = {
   caral_worker_f: { attack: 'TreeChopping_Loop' },
@@ -58,22 +74,7 @@ export const RIG_VARIANT_CLIPS: Partial<Record<RigVariant, Partial<Record<RigCli
   caral_scout_m: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
   inca_chasqui_f: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
   inca_chasqui_m: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
-  moche_worker_f: { attack: 'TreeChopping_Loop' },
-  moche_worker_m: { attack: 'TreeChopping_Loop' },
-  moche_scout_f: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
-  moche_scout_m: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
-  moche_soldier_f: { walk: 'Walk_Loop', gather: null, build: null, attack: 'TreeChopping_Loop' },
-  moche_soldier_m: { walk: 'Walk_Loop', gather: null, build: null, attack: 'TreeChopping_Loop' },
-  moche_ranged_f: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
-  moche_ranged_m: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
-  recuay_worker_f: { attack: 'TreeChopping_Loop' },
-  recuay_worker_m: { attack: 'TreeChopping_Loop' },
-  recuay_scout_f: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
-  recuay_scout_m: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
-  recuay_soldier_f: { walk: 'Walk_Loop', gather: null, build: null, attack: 'TreeChopping_Loop' },
-  recuay_soldier_m: { walk: 'Walk_Loop', gather: null, build: null, attack: 'TreeChopping_Loop' },
-  recuay_ranged_f: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
-  recuay_ranged_m: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  ...ANDEAN_VARIANT_CLIPS,
 };
 
 /** Playback-rate reference for in-place walk clips (world units per second). */
@@ -108,7 +109,8 @@ export interface RigModelChoice {
 
 /**
  * Rigged model for a unit kind, or `null` to keep the procedural model.
- * The migration is progressive: this pilot covers the Caral worker and scout.
+ * The migration is progressive: Caral worker/scout, the Inca chasqui and the
+ * Moche/Recuay/Chavín/Paracas infantry share the same rig.
  */
 export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): RigModelChoice | null {
   if (civ === CivId.CARAL && era === Era.FORMATIVE) {
@@ -124,11 +126,10 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
     const female = genderForId(id) === 'female';
     return { asset: CARAL_WORKER_ASSET_ID, variant: female ? 'inca_chasqui_f' : 'inca_chasqui_m' };
   }
-  if ((civ === CivId.MOCHE || civ === CivId.RECUAY) && era === Era.REGIONAL_STATES) {
-    const culture = civ === CivId.MOCHE ? 'moche' : 'recuay';
+  const andeanCulture = andeanCultureForCiv(civ);
+  if (andeanCulture && era === Era.REGIONAL_STATES) {
     const suffix = genderForId(id) === 'female' ? 'f' : 'm';
-    const variant = (role: 'worker' | 'scout' | 'soldier' | 'ranged'): RigVariant =>
-      `${culture}_${role}_${suffix}` as RigVariant;
+    const variant = (role: AndeanRole): RigVariant => `${andeanCulture}_${role}_${suffix}` as RigVariant;
     if (kind === UnitKind.WORKER) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('worker') };
     if (kind === UnitKind.SCOUT) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('scout') };
     if (kind === UnitKind.SOLDIER) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('soldier') };
@@ -145,7 +146,6 @@ export function modelAssetIdsForMatch(period: HistoricalPeriod, civs: readonly C
   // in Era.TAHUANTINSUYO, so this preload mirrors `unitModelAsset`.
   const caral = period === HistoricalPeriod.ARCHAIC && civs.includes(CivId.CARAL);
   const inca = period === HistoricalPeriod.LATE_HORIZON && civs.includes(CivId.INCA);
-  const moche =
-    period === HistoricalPeriod.EARLY_INTERMEDIATE && civs.some((c) => c === CivId.MOCHE || c === CivId.RECUAY);
-  return caral || inca || moche ? [CARAL_WORKER_ASSET_ID] : [];
+  const andean = civs.some((civ) => andeanCultureForPeriod(civ, period) !== null);
+  return caral || inca || andean ? [CARAL_WORKER_ASSET_ID] : [];
 }

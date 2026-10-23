@@ -117,6 +117,12 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
 | República (Patriotas/Guerra del Pacífico) | guerrera/dormán azul, pantalón | kepí (chacó en gala) | fusil Comblain/Peabody-Martini + bayoneta | — | — |
 | Contemporáneo (Perú) | uniforme de campaña | casco | fusil de asalto | chaleco | — |
 
+> **Abstracción de juego (Chavín/Paracas).** No hay prendas concretas documentadas para estas culturas (§2).
+> El código usa la túnica compartida, el wrap/skirt, una cinta y una manta simple como base de presentación;
+> Paracas reutiliza esa abstracción en Horizonte Temprano e Intermedio Temprano (no se postula un atuendo
+> distinto para este último). La honda de la variante a distancia es un arma andina general
+> (Métraux, *Weapons*), no una atribución específica a Chavín o Paracas.
+
 ### Textiles por civilización (implementación)
 
 El código (`CIV_TEXTILE` en `src/model/ProceduralModel.ts`) usa una textura de **uncu** por civilización: un patrón

@@ -447,8 +447,13 @@ and sash are shared GLB geometry/materials. The order-driven poses are captured 
 
 The same GLB backs the Caral **worker and scout in both genders** (`caral_worker_f/m`, `caral_scout_f/m`;
 `unitModelAsset` maps `WORKER`/`SCOUT + CARAL + FORMATIVE`). It also backs the Moche/Recuay infantry in
-`EARLY_INTERMEDIATE` (`moche_*`/`recuay_*`, preloaded for that period). The female and male bodies share one 65-bone
-skeleton and the clips; each instance hides the unused body/hair/outfit set. Workers use the tunic + skirt/sash
+`EARLY_INTERMEDIATE` (`moche_*`/`recuay_*`) and Chavín/Paracas in `EARLY_HORIZON` (`chavin_*`/`paracas_*`;
+Paracas is also preloaded in `EARLY_INTERMEDIATE`). Chavín/Paracas retain the shared tunic and short wrap/skirt
+as a presentation base, add a simple manta (longer for Paracas, so the two coetaneous cultures differ in
+silhouette) and a headband, and omit the belt and Moche warrior gear; the sling is a prop whose attack reuses
+`Punch_Jab`. Paracas reuses this Formativo abstraction in both periods; no separate Early Intermediate outfit
+is claimed. The female and male bodies share one 65-bone skeleton and the clips; each instance hides the unused
+body/hair/outfit set. Workers use the tunic + skirt/sash
 (female) or tunic + short wrap/sash (male). The Caral scout uses the same commoner tunic/skirt or wrap plus a
 simple manta and plain headband, with no chasqui belt, gourd, long runner skirt or digging stick. The
 `inca_chasqui_*` outfit is assigned to `SCOUT + INCA + TAHUANTINSUYO` (and preloaded for Horizonte Tardío);

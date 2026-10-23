@@ -267,6 +267,19 @@ tinted from the civilization palette over the shared cotton base; the result is 
 abstraction, not a reconstruction. Evidence:
 [`moche-units.webp`](../media/moche-units.webp) (worker, soldier and ranged unit; UI hidden).
 
+The **Chavín/Paracas infantry** in `m2_chavin` use the same system with `chavin_*`/`paracas_*` variants. Their
+specific garments are **not documented** in detail, so they keep the shared cotton tunic and short wrap/skirt as
+the presentation base (not a claim about a specific garment), a plain headband and a simple manta. This is a
+**plausible abstraction**, not a reconstruction: the manta is the table's Formativo abstraction, and the soldier
+has **no belt**, Moche helmet, backflap, ear ornaments or shield. Paracas gets a longer manta than Chavín so the
+two coetaneous cultures differ in silhouette, not only colour. Paracas reuses this Formativo abstraction in both
+periods; no separate Early Intermediate outfit is claimed. The soldier macana has a stone head; the sling is a
+prop (a generic Andean weapon abstraction—Métraux, *Weapons*, not a culture-specific attribution) and the ranged
+attack reuses `Punch_Jab` until a throw clip exists.
+Evidence:
+[`early-horizon-units.webp`](../media/early-horizon-units.webp) (Chavín worker/soldier/ranged and a Paracas
+soldier; UI hidden).
+
 Comparable evidence (same mission `m1_caral`, 1600x900, UI hidden):
 [`caral-worker-final-before-after.webp`](../media/caral-worker-final-before-after.webp) (procedural worker →
 finished rig, fixed front close-up) and

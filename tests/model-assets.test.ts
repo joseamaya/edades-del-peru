@@ -335,6 +335,33 @@ describe('rigged model assets', () => {
     expect(modelAssetIdsForMatch(HistoricalPeriod.EARLY_INTERMEDIATE, [CivId.CARAL])).toEqual([]);
   });
 
+  it('maps Chavín and Paracas infantry to their rigged variants', () => {
+    expect(unitModelAsset(UnitKind.WORKER, Era.REGIONAL_STATES, CivId.CHAVIN, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'chavin_worker_f',
+    });
+    expect(unitModelAsset(UnitKind.SCOUT, Era.REGIONAL_STATES, CivId.CHAVIN, 3)).toEqual({
+      asset: 'caral_worker',
+      variant: 'chavin_scout_m',
+    });
+    expect(unitModelAsset(UnitKind.SOLDIER, Era.REGIONAL_STATES, CivId.CHAVIN, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'chavin_soldier_f',
+    });
+    expect(unitModelAsset(UnitKind.MUSKETEER, Era.REGIONAL_STATES, CivId.PARACAS, 3)).toEqual({
+      asset: 'caral_worker',
+      variant: 'paracas_ranged_m',
+    });
+    expect(unitModelAsset(UnitKind.SOLDIER, Era.REGIONAL_STATES, CivId.PARACAS, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'paracas_soldier_f',
+    });
+    expect(unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, CivId.CHAVIN)).toBeNull();
+    expect(modelAssetIdsForMatch(HistoricalPeriod.EARLY_HORIZON, [CivId.CHAVIN])).toContain('caral_worker');
+    expect(modelAssetIdsForMatch(HistoricalPeriod.EARLY_HORIZON, [CivId.PARACAS])).toContain('caral_worker');
+    expect(modelAssetIdsForMatch(HistoricalPeriod.EARLY_INTERMEDIATE, [CivId.PARACAS])).toContain('caral_worker');
+  });
+
   it('maps movement, tasks and combat to clip states by priority', () => {
     expect(rigClipStateFor({ moving: true, gathering: true, building: false, attacking: true, carrying: false })).toBe(
       'walk',
