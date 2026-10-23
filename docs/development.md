@@ -452,8 +452,11 @@ Paracas is also preloaded in `EARLY_INTERMEDIATE`). Chavín/Paracas retain the s
 as a presentation base, add a simple manta (longer for Paracas, so the two coetaneous cultures differ in
 silhouette) and a headband, and omit the belt and Moche warrior gear; the sling is a prop whose attack reuses
 `Punch_Jab`. Paracas reuses this Formativo abstraction in both periods; no separate Early Intermediate outfit
-is claimed. The female and male bodies share one 65-bone skeleton and the clips; each instance hides the unused
-body/hair/outfit set. Workers use the tunic + skirt/sash
+is claimed. Wari, Tiahuanaco, Chanca, Chimú and Inca use the same rig in the Middle/Late Horizon: Wari adds a
+pectoral, Tiahuanaco a conical helmet, Chanca face paint, Chimú/Inca gold ear ornaments and the Inca a red
+shoulder sash. Chanca and Chimú now include `LATE_HORIZON` so the m5/m6 enemy is coetaneous with the Inca; the
+Inca scout remains the reserved chasqui variant. The female and male bodies share one 65-bone skeleton and the
+clips; each instance hides the unused body/hair/outfit set. Workers use the tunic + skirt/sash
 (female) or tunic + short wrap/sash (male). The Caral scout uses the same commoner tunic/skirt or wrap plus a
 simple manta and plain headband, with no chasqui belt, gourd, long runner skirt or digging stick. The
 `inca_chasqui_*` outfit is assigned to `SCOUT + INCA + TAHUANTINSUYO` (and preloaded for Horizonte Tardío);

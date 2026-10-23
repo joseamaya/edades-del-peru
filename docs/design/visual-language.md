@@ -280,6 +280,16 @@ Evidence:
 [`early-horizon-units.webp`](../media/early-horizon-units.webp) (Chavín worker/soldier/ranged and a Paracas
 soldier; UI hidden).
 
+The **Middle and Late Horizon infantry** extend the same rig to Wari, Tiahuanaco, Chanca, Chimú and Inca. The
+shared tunic/wrap, ear ornaments, belt, shield and stone macana stay consistent; the distinguishing pieces are
+source-led: Wari's chest/back **pectoral**, Tiahuanaco's **conical helmet**, Chanca **face paint**, and the
+gold **ear ornaments** of Chimú and Inca plus the Inca **red shoulder sash** (canesú). The ranged variant keeps
+the generic sling prop. Chanca and Chimú were added to `LATE_HORIZON` so they are coetaneous with the Inca in
+`m5`/`m6`; the Inca scout keeps the reserved `inca_chasqui_*` set instead of the infantry role clips. Evidence:
+[`middle-horizon-units.webp`](../media/middle-horizon-units.webp) (Wari worker/soldier/ranged and Tiahuanaco
+soldier), [`late-horizon-units.webp`](../media/late-horizon-units.webp) (Inca worker/soldier/ranged and Chanca
+soldier) and [`chimu-inca-units.webp`](../media/chimu-inca-units.webp) (Inca and Chimú soldiers; UI hidden).
+
 Comparable evidence (same mission `m1_caral`, 1600x900, UI hidden):
 [`caral-worker-final-before-after.webp`](../media/caral-worker-final-before-after.webp) (procedural worker →
 finished rig, fixed front close-up) and

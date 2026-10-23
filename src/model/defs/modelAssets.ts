@@ -1,10 +1,10 @@
 import { CivId, Era, HistoricalPeriod, UnitKind } from '../../core/types';
+import { getPeriod } from './periods';
 import { genderForId } from './people';
 import {
   ANDEAN_CULTURES,
   ANDEAN_ROLES,
-  andeanCultureForCiv,
-  andeanCultureForPeriod,
+  andeanCultureForEra,
   type AndeanRole,
   type AndeanRigVariant,
 } from './andeanCharacters';
@@ -110,7 +110,7 @@ export interface RigModelChoice {
 /**
  * Rigged model for a unit kind, or `null` to keep the procedural model.
  * The migration is progressive: Caral worker/scout, the Inca chasqui and the
- * Moche/Recuay/Chavín/Paracas infantry share the same rig.
+ * pre-Hispanic Andean infantry share the same rig.
  */
 export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): RigModelChoice | null {
   if (civ === CivId.CARAL && era === Era.FORMATIVE) {
@@ -126,8 +126,8 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
     const female = genderForId(id) === 'female';
     return { asset: CARAL_WORKER_ASSET_ID, variant: female ? 'inca_chasqui_f' : 'inca_chasqui_m' };
   }
-  const andeanCulture = andeanCultureForCiv(civ);
-  if (andeanCulture && era === Era.REGIONAL_STATES) {
+  const andeanCulture = andeanCultureForEra(civ, era);
+  if (andeanCulture) {
     const suffix = genderForId(id) === 'female' ? 'f' : 'm';
     const variant = (role: AndeanRole): RigVariant => `${andeanCulture}_${role}_${suffix}` as RigVariant;
     if (kind === UnitKind.WORKER) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('worker') };
@@ -142,10 +142,8 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
 
 /** Models that must be ready before a match starts (all participating civs are covered). */
 export function modelAssetIdsForMatch(period: HistoricalPeriod, civs: readonly CivId[]): ModelAssetId[] {
-  // Period-locked matches: ARCHAIC starts in Era.FORMATIVE and LATE_HORIZON
-  // in Era.TAHUANTINSUYO, so this preload mirrors `unitModelAsset`.
-  const caral = period === HistoricalPeriod.ARCHAIC && civs.includes(CivId.CARAL);
-  const inca = period === HistoricalPeriod.LATE_HORIZON && civs.includes(CivId.INCA);
-  const andean = civs.some((civ) => andeanCultureForPeriod(civ, period) !== null);
-  return caral || inca || andean ? [CARAL_WORKER_ASSET_ID] : [];
+  const era = getPeriod(period).level;
+  const kinds = [UnitKind.WORKER, UnitKind.SCOUT, UnitKind.SOLDIER, UnitKind.MUSKETEER];
+  const rigged = civs.some((civ) => kinds.some((kind) => unitModelAsset(kind, era, civ) !== null));
+  return rigged ? [CARAL_WORKER_ASSET_ID] : [];
 }

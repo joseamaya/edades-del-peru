@@ -41,6 +41,51 @@ async function waitForSceneReady(page) {
   await page.waitForTimeout(500);
 }
 
+const ANDEAN_SHOWCASE_VIEWS = [
+  { name: 'close', mode: 'close', offset: { x: 3.6, y: 2.3, z: 4.8 }, lookHeight: 1.0 },
+  { name: 'rts', mode: 'rts', height: 20, centerSubject: true },
+];
+
+function andeanShowcase(url) {
+  return {
+    url,
+    start: true,
+    prepare: () => {
+      const g = window.game;
+      g.loop.stop();
+      const base = g.playerCenter(0);
+      const c = g.findLandNear(base.x + 12, base.z + 12, 16);
+      for (const unit of [...g.units.values()]) {
+        unit.removeFromScene();
+        g.units.delete(unit.id);
+      }
+      const worker = g.spawnScriptedUnit('worker', 0, c.x - 1.8, c.z + 0.4);
+      const soldier = g.spawnScriptedUnit('soldier', 0, c.x, c.z - 0.7);
+      const ranged = g.spawnScriptedUnit('musketeer', 0, c.x + 1.8, c.z + 0.5);
+      const enemy = g.spawnScriptedUnit('soldier', 1, c.x - 1.8, c.z - 1.2);
+      const place = (unit, x, z, facing) => {
+        unit.clearOrders();
+        unit.pos.set(x, g.terrain.getHeight(x, z), z);
+        unit.view.setPosition(unit.pos.x, unit.pos.y, unit.pos.z);
+        unit.view.setRotationY(facing);
+        unit.rig?.play('idle', 0);
+        unit.rig?.update(0.35);
+        unit.view.setPosition(unit.pos.x, unit.pos.y, unit.pos.z);
+      };
+      place(worker, c.x - 1.8, c.z + 0.4, 0.5);
+      place(soldier, c.x, c.z - 0.7, 0.1);
+      place(ranged, c.x + 1.8, c.z + 0.5, -0.5);
+      place(enemy, c.x - 1.8, c.z - 1.2, 2.8);
+      g.renderer.render(g.scene, g.camera.camera);
+      return {
+        center: { x: c.x, z: c.z },
+        subject: { x: c.x, y: g.terrain.getHeight(c.x, c.z), z: c.z },
+      };
+    },
+    views: ANDEAN_SHOWCASE_VIEWS,
+  };
+}
+
 const SCENES = {
   'caral-worker': {
     url: '/?mission=m1_caral&intro=0&fog=0&low=1&noloop=1',
@@ -493,94 +538,11 @@ const SCENES = {
       { name: 'rts', mode: 'rts', height: 20, centerSubject: true },
     ],
   },
-  'moche-units': {
-    url: '/?mission=m3_moche_recuay&intro=0&fog=0&low=1&noloop=1',
-    start: true,
-    prepare: () => {
-      const g = window.game;
-      g.loop.stop();
-      const base = g.playerCenter(0);
-      const c = g.findLandNear(base.x + 12, base.z + 12, 16);
-      const units = [...g.units.values()].filter((u) => u.owner === 0 && !u.dead);
-      const pick = (kind) => units.find((u) => u.kind === kind);
-      const worker = pick('worker');
-      const soldier = pick('soldier');
-      const ranged = pick('musketeer');
-      if (!worker || !soldier || !ranged) throw new Error('missing Moche unit');
-      const keep = new Set([worker, soldier, ranged]);
-      for (const unit of units) {
-        if (keep.has(unit)) continue;
-        unit.removeFromScene();
-        g.units.delete(unit.id);
-      }
-      const place = (unit, x, z, facing) => {
-        unit.clearOrders();
-        unit.pos.set(x, g.terrain.getHeight(x, z), z);
-        unit.view.setPosition(unit.pos.x, unit.pos.y, unit.pos.z);
-        unit.view.setRotationY(facing);
-        unit.rig?.play('idle', 0);
-        unit.rig?.update(0.35);
-        unit.view.setPosition(unit.pos.x, unit.pos.y, unit.pos.z);
-      };
-      place(worker, c.x - 1.8, c.z + 0.4, 0.5);
-      place(soldier, c.x, c.z - 0.7, 0.1);
-      place(ranged, c.x + 1.8, c.z + 0.5, -0.5);
-      g.renderer.render(g.scene, g.camera.camera);
-      return {
-        center: { x: c.x, z: c.z },
-        subject: { x: c.x, y: g.terrain.getHeight(c.x, c.z), z: c.z },
-      };
-    },
-    views: [
-      { name: 'close', mode: 'close', offset: { x: 3.4, y: 2.2, z: 4.6 }, lookHeight: 1.0 },
-      { name: 'rts', mode: 'rts', height: 20, centerSubject: true },
-    ],
-  },
-  'early-horizon-units': {
-    url: '/?mission=m2_chavin&intro=0&fog=0&low=1&noloop=1',
-    start: true,
-    prepare: () => {
-      const g = window.game;
-      g.loop.stop();
-      const base = g.playerCenter(0);
-      const c = g.findLandNear(base.x + 12, base.z + 12, 16);
-      const units = [...g.units.values()].filter((u) => u.owner === 0 && !u.dead);
-      const pick = (kind) => units.find((u) => u.kind === kind);
-      const worker = pick('worker');
-      const soldier = g.spawnScriptedUnit('soldier', 0, c.x, c.z - 1.5);
-      const ranged = g.spawnScriptedUnit('musketeer', 0, c.x + 2, c.z + 0.5);
-      const paracas = g.spawnScriptedUnit('soldier', 1, c.x - 2, c.z + 0.5);
-      if (!worker) throw new Error('missing Chavín worker');
-      const keep = new Set([worker]);
-      for (const unit of units) {
-        if (keep.has(unit)) continue;
-        unit.removeFromScene();
-        g.units.delete(unit.id);
-      }
-      const place = (unit, x, z, facing) => {
-        unit.clearOrders();
-        unit.pos.set(x, g.terrain.getHeight(x, z), z);
-        unit.view.setPosition(unit.pos.x, unit.pos.y, unit.pos.z);
-        unit.view.setRotationY(facing);
-        unit.rig?.play('idle', 0);
-        unit.rig?.update(0.35);
-        unit.view.setPosition(unit.pos.x, unit.pos.y, unit.pos.z);
-      };
-      place(worker, c.x - 1.8, c.z + 0.4, 0.5);
-      place(soldier, c.x, c.z - 0.7, 0.1);
-      place(ranged, c.x + 1.8, c.z + 0.5, -0.5);
-      place(paracas, c.x - 1.8, c.z - 1.2, 2.8);
-      g.renderer.render(g.scene, g.camera.camera);
-      return {
-        center: { x: c.x, z: c.z },
-        subject: { x: c.x, y: g.terrain.getHeight(c.x, c.z), z: c.z },
-      };
-    },
-    views: [
-      { name: 'close', mode: 'close', offset: { x: 3.6, y: 2.3, z: 4.8 }, lookHeight: 1.0 },
-      { name: 'rts', mode: 'rts', height: 20, centerSubject: true },
-    ],
-  },
+  'moche-units': andeanShowcase('/?mission=m3_moche_recuay&intro=0&fog=0&low=1&noloop=1'),
+  'early-horizon-units': andeanShowcase('/?mission=m2_chavin&intro=0&fog=0&low=1&noloop=1'),
+  'middle-horizon-units': andeanShowcase('/?mission=m4_wari&intro=0&fog=0&low=1&noloop=1'),
+  'late-horizon-units': andeanShowcase('/?mission=m5_yahuar_pampa&intro=0&fog=0&low=1&noloop=1'),
+  'chimu-inca-units': andeanShowcase('/?mission=m6_chimu_inca&intro=0&fog=0&low=1&noloop=1'),
   'chavin-scene': {
     url: '/?civ=chavin&period=1&seed=777&fog=0&low=1',
     live: true,

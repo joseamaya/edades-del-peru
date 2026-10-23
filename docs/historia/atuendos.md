@@ -123,6 +123,11 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
 > distinto para este último). La honda de la variante a distancia es un arma andina general
 > (Métraux, *Weapons*), no una atribución específica a Chavín o Paracas.
 
+> **Implementación riggeada (m4–m6).** Wari añade el disco pectoral; Tiahuanaco, el casco cónico; Chanca,
+> la pintura facial; Chimú e Inca, orejeras de metal; e Inca, el canesú rojo. La túnica/wrap, el escudo, la
+> macana y la honda son la abstracción compartida. Chanca y Chimú incluyen Horizonte Tardío para ser coetáneos
+> de los incas en `m5`/`m6`; no se postula un atuendo distinto para ese periodo.
+
 ### Textiles por civilización (implementación)
 
 El código (`CIV_TEXTILE` en `src/model/ProceduralModel.ts`) usa una textura de **uncu** por civilización: un patrón
