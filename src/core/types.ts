@@ -198,6 +198,9 @@ export interface EntityRef {
 
 type EmptyEvent = Record<string, never>;
 
+/** Why a player-owned unit could not make progress on its current order. */
+export type AlertReason = 'no-route' | 'stuck' | 'no-dropsite';
+
 /** Catalog of global bus events (source of truth for `bus`). */
 export type GameEvents = {
   'game:ready': EmptyEvent;
@@ -210,7 +213,18 @@ export type GameEvents = {
   'unit:converted': { id: number; from: number; to: number };
   'building:died': { id: number; owner: number; kind: string };
   'resources:changed': { player: number; resources: Resources };
-  alert: { icon: string; text: string; x: number; z: number; warn?: boolean };
+  alert: {
+    icon: string;
+    text: string;
+    x: number;
+    z: number;
+    warn?: boolean;
+    /** Player-owned unit the alert refers to (click selects/focuses it). */
+    unitId?: number;
+    /** Machine-readable cause for tests and future UI affordances. */
+    reason?: AlertReason;
+    order?: OrderKind;
+  };
   'fx:shot': EmptyEvent;
   'fx:artillery': EmptyEvent;
   'fx:laser': EmptyEvent;

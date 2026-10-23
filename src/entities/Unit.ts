@@ -9,6 +9,7 @@ import {
   PlayerState,
   HistoricalPeriod,
   CombatStance,
+  AlertReason,
 } from '../core/types';
 import { getUnitStats, getUnitModel, UnitStats, DamageClass } from '../model/defs/units';
 import {
@@ -81,6 +82,8 @@ const DIRECT_LOOKAHEAD = 3;
 const NO_ROUTE_GIVEUP = 1.5;
 /** Consecutive failed re-routes before a stuck economy order is dropped. */
 const STUCK_GIVEUP_RETRIES = 3;
+/** Seconds with a full load and no dropsite before warning the player. */
+const NO_DROPSITE_GIVEUP = 2.5;
 
 /** Economy orders a worker may abandon when it cannot make progress. */
 const isEconomyOrder = (kind: OrderKind): boolean => kind === OrderKind.GATHER || kind === OrderKind.BUILD;
@@ -119,7 +122,9 @@ export class Unit {
   private repathTimer = 0;
   /** Seconds spent with a live order but no route and no clear direct step. */
   private noRouteTimer = 0;
-  private noRouteNotified = false;
+  private noDropsiteTimer = 0;
+  /** One block alert per order; reset when the order changes. */
+  private blockedNotified = false;
   /** One-shot fallback: the regular path/direct approach could not reach a node. */
   private approachTried = false;
 
@@ -271,11 +276,34 @@ export class Unit {
     return true;
   }
 
-  /** Warn the player once that an order cannot be routed. */
+  /** Warn the player once per order that it cannot make progress. */
+  private notifyBlocked(reason: AlertReason): void {
+    if (this.owner !== 0 || this.dead || this.blockedNotified) return;
+    this.blockedNotified = true;
+    const order = this.orderQueue[0];
+    const worker = this.kind === UnitKind.WORKER;
+    const target = order?.kind === OrderKind.GATHER ? 'recurso' : order?.kind === OrderKind.BUILD ? 'obra' : 'destino';
+    const cause =
+      reason === 'stuck'
+        ? 'no puede avanzar'
+        : reason === 'no-dropsite'
+          ? 'sin punto de entrega'
+          : `sin ruta al ${target}`;
+    this.ctx.event('alert', {
+      icon: '⚠️',
+      text: `${worker ? 'Trabajador' : 'Unidad'} ${this.id}: ${cause}`,
+      x: this.pos.x,
+      z: this.pos.z,
+      warn: true,
+      unitId: this.id,
+      reason,
+      order: order?.kind,
+    });
+  }
+
+  /** Compatibility wrapper for the original no-route call sites. */
   private notifyNoRoute(): void {
-    if (this.owner !== 0 || this.noRouteNotified) return;
-    this.noRouteNotified = true;
-    this.ctx.event('alert', { icon: '⚠️', text: 'Sin ruta', x: this.pos.x, z: this.pos.z, warn: true });
+    this.notifyBlocked('no-route');
   }
 
   /**
@@ -347,7 +375,8 @@ export class Unit {
     this.convertProgress = 0;
     this.attackingTarget = false;
     this.noRouteTimer = 0;
-    this.noRouteNotified = false;
+    this.noDropsiteTimer = 0;
+    this.blockedNotified = false;
     this.directApproach = false;
     this.approachTried = false;
   }
@@ -366,6 +395,8 @@ export class Unit {
     const order = this.orderQueue[0];
     if (!order) return;
     this.stuckRetries = 0;
+    this.blockedNotified = false;
+    this.noDropsiteTimer = 0;
     switch (order.kind) {
       case OrderKind.MOVE:
         this.setPath(order.target!.x, order.target!.z);
@@ -588,6 +619,7 @@ export class Unit {
       // stop re-pathing forever: drop the order so the AI (or the player) can
       // reassign the worker, and clear the stale path so it is truly idle
       if (isEconomyOrder(o.kind) && ++this.stuckRetries >= STUCK_GIVEUP_RETRIES) {
+        this.notifyBlocked('stuck');
         this.path.length = 0;
         this.pathIdx = 0;
         this.finishOrder();
@@ -963,7 +995,14 @@ export class Unit {
   private updateGather(order: Order, dt: number): void {
     // if the load is full, deliver before continuing to harvest
     if (this.carryCount() >= this.carryCapacity) {
+      const current = this.orderQueue[0];
       this.deliverOrder();
+      if (this.orderQueue[0] === current) {
+        this.noDropsiteTimer += dt;
+        if (this.noDropsiteTimer > NO_DROPSITE_GIVEUP) this.notifyBlocked('no-dropsite');
+      } else {
+        this.noDropsiteTimer = 0;
+      }
       return;
     }
     // the target can be a resource node or a farm (building)
@@ -1132,6 +1171,7 @@ export class Unit {
       this.orderQueue.unshift({ kind: OrderKind.DELIVER, entityId: dropsite.id });
       this.setPath(dropsite.pos.x, dropsite.pos.z);
       this.currentResource = res;
+      this.noDropsiteTimer = 0;
     }
     // no dropsite: keep the load and stay waiting
   }

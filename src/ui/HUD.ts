@@ -10,6 +10,7 @@ import {
   Resources,
   ERA_COLORS,
   HistoricalPeriod,
+  AlertReason,
 } from '../core/types';
 import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../model/defs/buildings';
 import { UNIT_ARCHETYPES, getUnitStats, UNIT_INFO, unitDisplayName, unitMinPeriod } from '../model/defs/units';
@@ -284,6 +285,8 @@ export class HUD {
   private cursorEl!: HTMLElement;
   private alertsEl!: HTMLElement;
   private alertPings: { x: number; z: number; until: number }[] = [];
+  /** Last time each unit/reason alert was shown, to avoid notification spam. */
+  private alertLastAt = new Map<string, number>();
   private tutorialEl!: HTMLElement;
   private tutorialStepEl!: HTMLElement;
   private tutorialCountEl!: HTMLElement;
@@ -353,18 +356,38 @@ export class HUD {
     this.cursorEl.style.top = y + 10 + 'px';
   }
 
-  /** Clickable alert that centers the camera; blinks on the minimap. */
-  pushAlert(info: { icon: string; text: string; x: number; z: number; warn?: boolean }): void {
+  /** Clickable alert that centers and (for unit alerts) selects the subject. */
+  pushAlert(info: {
+    icon: string;
+    text: string;
+    x: number;
+    z: number;
+    warn?: boolean;
+    unitId?: number;
+    reason?: AlertReason;
+  }): void {
+    const now = performance.now();
+    if (info.unitId !== undefined) {
+      const key = `${info.unitId}:${info.reason ?? info.text}`;
+      const last = this.alertLastAt.get(key);
+      if (last !== undefined && now - last < 6000) return;
+      this.alertLastAt.set(key, now);
+      if (this.alertLastAt.size > 100) {
+        for (const [k, t] of this.alertLastAt) if (now - t > 120000) this.alertLastAt.delete(k);
+      }
+    }
     const el = document.createElement('div');
     el.className = 'ed-alert' + (info.warn ? ' warn' : '');
     el.innerHTML = `${info.icon} ${info.text}`;
+    if (info.unitId !== undefined) el.dataset.unitId = String(info.unitId);
     el.addEventListener('click', () => {
-      this.game.camera.focusOn(info.x, info.z);
+      if (info.unitId !== undefined) this.game.focusUnit(info.unitId);
+      else this.game.camera.focusOn(info.x, info.z);
       el.remove();
     });
     this.alertsEl.prepend(el);
     while (this.alertsEl.children.length > 5) this.alertsEl.lastChild?.remove();
-    this.alertPings.push({ x: info.x, z: info.z, until: performance.now() + 6000 });
+    this.alertPings.push({ x: info.x, z: info.z, until: now + 6000 });
     setTimeout(() => el.remove(), 9000);
   }
 
