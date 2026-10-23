@@ -507,11 +507,12 @@ económicas atascadas. La tabla de la sección "Estado tras #121" resume el resu
 - `blockedWorkersMax` ya era ~2 con la métrica corregida; el 13 de la auditoría era en gran parte un artefacto
   de medición (unidades detenidas en un nodo conservaban el array `path`). El give-up de #121 es una red de
   seguridad que rara vez dispara en AI-vs-AI.
-- La UX de trabajador bloqueado (UX-1) sigue pendiente: el jugador no recibe una alerta.
+- La UX de trabajador bloqueado (UX-1) está resuelta: alerta con motivo, selección al hacer clic y
+  deduplicación (ver UX-1).
 
 **Siguiente trabajo P0/P1:** presupuesto/cola de pathfinding, límite de expansiones y caché de búsquedas
 fallidas (PATH-1); reubicación/validación de recursos iniciales cuando no exista alternativa alcanzable;
-compromiso de ataque de la IA (AI-2) y feedback de trabajador bloqueado (UX-1).
+compromiso de ataque de la IA (AI-2).
 
 ## Bottlenecks
 
@@ -768,15 +769,15 @@ Estas partes **funcionan correctamente** en las mediciones y no justifican refac
 
 ### UX
 
-#### UX-1 — Feedback de trabajadores bloqueados / recursos inalcanzables
+#### UX-1 — Feedback de trabajadores bloqueados / recursos inalcanzables — **resuelto**
 - **Problema:** el jugador ve trabajadores “ocupados” que no producen; no hay señal clara de bloqueo.
-- **Evidencia:** seed 783, 9–10 trabajadores con path activo sin avanzar; no hay alerta de trabajador bloqueado
-  (solo `Sin ruta` para unidades en `Unit.notifyNoRoute`).
-- **Archivos:** `src/entities/Unit.ts:240`, `src/ui/HUD.ts`, `src/game/AI.ts`.
-- **Impacto:** el jugador no entiende por qué su economía se detuvo.
-- **Solución:** alerta “trabajador bloqueado” con ping, icono de estado y reasignación automática opcional.
+- **Evidencia:** seed 783, 9–10 trabajadores con path activo sin avanzar; no había alerta de trabajador bloqueado.
+- **Solución:** `Unit` emite una alerta por orden con `unitId`, `reason` y `order` para `no-route`, `stuck` y
+  `no-dropsite`; el HUD la muestra con el motivo y, al hacer clic, selecciona y enfoca al trabajador. Se
+  deduplica por unidad/motivo durante seis segundos.
 - **Aceptación:** alerta visible en <5 s de bloqueo; sin spam.
-- **Tests:** E2E de HUD/alertas.
+- **Tests:** `tests/e2e/blocked-workers.spec.ts` (give-up, alerta única + selección, motivo de recurso inaccesible).
+- **Evidencia:** [`blocked-worker-alert.webp`](../media/blocked-worker-alert.webp) (alerta real, trabajador seleccionado).
 
 ### ARCH
 
@@ -822,7 +823,7 @@ Estas partes **funcionan correctamente** en las mediciones y no justifican refac
 **Estado tras #121:** los dos P0 se redujeron pero no se cerraron (8/20 partidas decisivas; siguen habiendo
 seeds con un bando sin soldado; `pathRequests` totales no bajan). El siguiente paso es el presupuesto/cola de
 pathfinding y la caché de búsquedas fallidas (PATH-1), la reubicación/validación de recursos iniciales cuando
-no exista alternativa alcanzable, el compromiso de ataque (AI-2) y la alerta de trabajador bloqueado (UX-1).
+no exista alternativa alcanzable, el compromiso de ataque (AI-2).
 No hay P0 de rendering ni de memoria: el render no se puede juzgar sin GPU y la memoria no muestra fuga.
 
 ---
@@ -882,9 +883,8 @@ de **llegar al nodo y reasignar cuando no se llega**.
 1. **PATH-1 (resto):** presupuesto/cola por frame, límite de expansiones y caché de búsquedas fallidas.
 2. **AI-1 (resto):** recursos iniciales sin alternativa alcanzable y reasignación cuando no hay nodo válido.
 3. **AI-2:** compromiso de ataque coordinado para cerrar partidas.
-4. **UX-1:** alerta de trabajador bloqueado.
-5. **PERF-2:** throttle del HUD/minimapa (bajo riesgo, elimina un pico de 5–6 ms).
-6. **PERF-3:** medir en GPU real y, solo después, instancing/materiales compartidos.
+4. **PERF-2:** throttle del HUD/minimapa (bajo riesgo, elimina un pico de 5–6 ms).
+5. **PERF-3:** medir en GPU real y, solo después, instancing/materiales compartidos.
 
 ### 8. ¿Qué NO debería tocarse todavía?
 

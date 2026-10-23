@@ -269,7 +269,9 @@ Definition of Done and the building audit see
   camera yaw changes. Optional camera rotation with Q/E (`settings.rotateCamera`, off = fixed camera).
   Control groups (Ctrl/Alt+1-9 assign, 1-9 recall, Shift+1-9 add). Hover tooltip (`computeHover`) and
   **contextual cursor** (`hoverAction`). Damage icons/numbers (`src/ui/DamageNumbers.ts`), clickable alerts that
-  pulse on the minimap (`pushAlert` + `alert` event), and order markers (`src/entities/OrderMarker.ts`).
+  pulse on the minimap (`pushAlert` + `alert` event), and order markers (`src/entities/OrderMarker.ts`). Blocked
+  player units emit one alert per order with `unitId`, `reason` (`no-route`/`stuck`/`no-dropsite`) and `order`;
+  clicking it selects and focuses the unit. The HUD also deduplicates the same unit/reason for six seconds.
   The bottom **command panel** (`#ed-bottom`) is hidden unless a **unit or building is selected** (0 A.D.-style):
   building therefore starts from a selected worker (or the H/F/G/V shortcuts), not from an idle panel.
 - **Camera panning (`src/core/Camera.ts` + `src/core/cameraMath.ts`)**: the camera orbits a ground target; its

@@ -3038,6 +3038,17 @@ export class Game {
     return this.selectedUnits.map((id) => this.units.get(id)).filter((u): u is Unit => !!u && !u.dead);
   }
 
+  /** Select and focus a player-owned unit, e.g. from a blocked-worker alert. */
+  focusUnit(id: number): void {
+    const u = this.units.get(id);
+    if (!u || u.dead || u.owner !== 0) return;
+    this.selectedUnits = [id];
+    this.selectedBuilding = null;
+    this.refreshSelectionVisuals();
+    bus.emit('unit:selected', { ids: [id] });
+    this.camera.focusOn(u.pos.x, u.pos.z);
+  }
+
   getSelectedBuilding(): Building | null {
     return this.selectedBuilding !== null ? (this.buildings.get(this.selectedBuilding) ?? null) : null;
   }
