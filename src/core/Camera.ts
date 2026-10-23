@@ -3,12 +3,16 @@ import { damp, smoothstep } from '../util/math';
 import { isTypingTarget } from '../util/dom';
 import {
   CAMERA_CONFIG,
+  CAMERA_FOV_RAD,
+  CAMERA_PITCH,
   clampToBounds,
   dragToWorld,
   edgeVector,
-  groundQuad,
   keyPanVector,
+  maxZoomForMap,
   rotateToWorld,
+  viewGroundQuad,
+  viewHalfExtents,
   worldPerPixel,
   type Vec2,
 } from './cameraMath';
@@ -32,8 +36,8 @@ export class RTSCamera {
   private desiredTarget = new THREE.Vector3(0, 0, 0);
   private zoom = 34;
   private desiredZoom = 34;
-  private yaw = Math.PI / 4;
-  private pitch = 0.9;
+  private yaw = 0;
+  private pitch = CAMERA_PITCH;
   private shake = 0;
   private followId: number | null = null;
   private followResolver: ((id: number) => CameraTarget | null | undefined) | null = null;
@@ -59,7 +63,7 @@ export class RTSCamera {
 
   private mapSize: number;
   private viewportH: number;
-  private readonly fovRad = (48 * Math.PI) / 180;
+  private readonly fovRad = CAMERA_FOV_RAD;
 
   private keys = new Set<string>();
   private canvas: HTMLCanvasElement;
@@ -67,7 +71,7 @@ export class RTSCamera {
   private dragLast = new THREE.Vector2();
 
   readonly minZoom = CAMERA_CONFIG.minZoom;
-  readonly maxZoom = CAMERA_CONFIG.maxZoom;
+  private zoomLimit: number = CAMERA_CONFIG.maxZoom;
 
   constructor(canvas: HTMLCanvasElement, mapSize = 256) {
     this.canvas = canvas;
@@ -75,6 +79,7 @@ export class RTSCamera {
     this.viewportH = canvas.clientHeight || window.innerHeight;
     this.camera = new THREE.PerspectiveCamera(48, 1, 0.5, 6000);
     this.camera.position.set(120, 160, 120);
+    this.refreshZoomLimit();
     this.attach();
   }
 
@@ -108,6 +113,18 @@ export class RTSCamera {
   /** Terrain size, used to keep the viewport over the map. */
   setMapSize(size: number): void {
     this.mapSize = size;
+    this.refreshZoomLimit();
+  }
+
+  get maxZoom(): number {
+    return this.zoomLimit;
+  }
+
+  /** Recompute the zoom-out limit from the map size, aspect and yaw. */
+  private refreshZoomLimit(): void {
+    this.zoomLimit = Math.max(this.minZoom, maxZoomForMap(this.mapSize, this.camera.aspect, this.yaw));
+    if (this.desiredZoom > this.zoomLimit) this.desiredZoom = this.zoomLimit;
+    if (this.zoom > this.zoomLimit) this.zoom = this.zoomLimit;
   }
 
   /** Suppress panning while a blocking UI (menu/modal/codex) is open. */
@@ -132,6 +149,7 @@ export class RTSCamera {
     if ((k === 'q' || k === 'e') && this.rotationEnabled) {
       const dir = k === 'q' ? 1 : -1;
       this.yaw += dir * 0.045;
+      this.refreshZoomLimit();
     }
   };
 
@@ -267,14 +285,13 @@ export class RTSCamera {
 
   /** Keep the visible rectangle near the terrain so no void shows around it. */
   private clampTarget(): void {
-    const halfW = this.zoom * 0.55 * this.camera.aspect;
-    const halfD = this.zoom * 0.62;
+    const extents = viewHalfExtents(this.zoom, this.camera.aspect, this.yaw, this.pitch, this.fovRad);
     const c = clampToBounds(
       this.desiredTarget.x,
       this.desiredTarget.z,
       this.mapSize,
-      halfW,
-      halfD,
+      extents.x,
+      extents.y,
       CAMERA_CONFIG.boundsMargin,
     );
     this.desiredTarget.x = c.x;
@@ -349,6 +366,7 @@ export class RTSCamera {
 
   setYaw(yaw: number): void {
     this.yaw = yaw;
+    this.refreshZoomLimit();
   }
 
   /** Current zoom distance (for LOD). */
@@ -358,7 +376,15 @@ export class RTSCamera {
 
   /** Rotated ground footprint of the view, in world XZ (for the minimap). */
   getGroundQuad(): Vec2[] {
-    return groundQuad(this.target.x, this.target.z, this.zoom, this.camera.aspect, this.yaw);
+    return viewGroundQuad(
+      this.target.x,
+      this.target.z,
+      this.zoom,
+      this.camera.aspect,
+      this.yaw,
+      this.pitch,
+      this.fovRad,
+    );
   }
 
   /** Axis-aligned bounds of the ground footprint (compatibility helper). */
@@ -375,6 +401,7 @@ export class RTSCamera {
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
     this.viewportH = h;
+    this.refreshZoomLimit();
   }
 }
 

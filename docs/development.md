@@ -272,14 +272,19 @@ Definition of Done and the building audit see
   pulse on the minimap (`pushAlert` + `alert` event), and order markers (`src/entities/OrderMarker.ts`).
   The bottom **command panel** (`#ed-bottom`) is hidden unless a **unit or building is selected** (0 A.D.-style):
   building therefore starts from a selected worker (or the H/F/G/V shortcuts), not from an idle panel.
-- **Camera panning (`src/core/Camera.ts` + `src/core/cameraMath.ts`)**: the camera orbits a ground target; its ground basis is `forward = (−sin yaw, −cos yaw)`, `right = (cos yaw, −sin yaw)`, and **every pan input is rotated
-  by that basis** (`rotateToWorld`, a rotation by `−yaw`). Edge scrolling is **progressive** (0 at the zone edge,
-  ±1 at the border) and every pan vector is **normalized** (a diagonal is not faster than an axis); middle-drag uses
-  a **geometric** world-per-pixel (`2·tan(fov/2)·zoom/viewportH`) with the "grab the map" metaphor (the content
-  follows the cursor). Inputs only move `desiredTarget`; `update` damps toward it. The target is **clamped** so the
-  visible rectangle stays near the terrain (`boundsMargin`). Panning is suppressed while **paused** (the loop skips
-  `camera.update`) or while a **blocking overlay** is open (`camera.setUiCaptured`); **edge scrolling is also off
-  while the pointer is over a HUD control** (`hud.isPointerOverUi` — `#ui-root` is `pointer-events:none`, only real
+- **Camera panning (`src/core/Camera.ts` + `src/core/cameraMath.ts`)**: the camera orbits a ground target; its
+  ground basis is `forward = (−sin yaw, −cos yaw)`, `right = (cos yaw, −sin yaw)`, and **every pan input is rotated
+  by that basis** (`rotateToWorld`, a rotation by `−yaw`). The default is **north-up** (`yaw = 0`), so `W`/arriba =
+  north and the main map matches the north-up minimap; Q/E rotation is optional (`settings.rotateCamera`). Edge
+  scrolling is **progressive** (0 at the zone edge, ±1 at the border) and every pan vector is **normalized** (a
+  diagonal is not faster than an axis); middle-drag uses a **geometric** world-per-pixel
+  (`2·tan(fov/2)·zoom/viewportH`) with the "grab the map" metaphor (the content follows the cursor). Inputs only
+  move `desiredTarget`; `update` damps toward it. The zoom-out limit is **derived from map size, aspect and yaw**
+  (`maxZoomForMap`/`viewHalfExtents`) so the perspective ground footprint stays inside the terrain; this prevents
+  the sky/clear color from appearing around the map at maximum zoom. The target is **clamped** with those same
+  extents (`boundsMargin`). Panning is suppressed while **paused** (the loop skips `camera.update`) or while a
+  **blocking overlay** is open (`camera.setUiCaptured`); **edge scrolling is also off while the pointer is over a
+  HUD control** (`hud.isPointerOverUi` — `#ui-root` is `pointer-events:none`, only real
   controls set `auto`). Tuning lives in `CAMERA_CONFIG`; the pure math is unit-tested (`tests/camera.test.ts`), the
   wiring in `tests/e2e/camera.spec.ts`. The **camera speed** option (Baja/Normal/Alta, `settings.cameraSpeed` →
   `CAMERA_SPEED_SCALE`) scales the keyboard/edge speed only (the middle-drag is direct manipulation).

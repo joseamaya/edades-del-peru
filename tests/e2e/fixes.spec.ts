@@ -214,8 +214,8 @@ test('right click lands the order under the cursor on elevated terrain', async (
     const worker = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
     // deterministic scan for an elevated, almost-flat, on-screen cell: random
     // points made the cursor-vs-order distance flaky (a steep cell diverges)
-    for (let gx = 12; gx < size - 12; gx += 3) {
-      for (let gz = 12; gz < size - 12; gz += 3) {
+    for (let gx = 12; gx < size - 12; gx += 2) {
+      for (let gz = 12; gz < size - 12; gz += 2) {
         const x = gx;
         const z = gz;
         const h = g.terrain.getHeight(x, z);
@@ -227,8 +227,8 @@ test('right click lands the order under the cursor on elevated terrain', async (
         const sx = (v.x * 0.5 + 0.5) * w.innerWidth;
         const sy = (-v.y * 0.5 + 0.5) * w.innerHeight;
         // keep the click away from the HUD (topbar, bottom panel, minimap, help)
-        if (sx < w.innerWidth * 0.25 || sx > w.innerWidth * 0.75) continue;
-        if (sy < w.innerHeight * 0.15 || sy > w.innerHeight * 0.55) continue;
+        if (sx < w.innerWidth * 0.1 || sx > w.innerWidth * 0.9) continue;
+        if (sy < w.innerHeight * 0.1 || sy > w.innerHeight * 0.8) continue;
         // the point must fall over the canvas, not over a HUD overlay
         if (document.elementFromPoint(sx, sy)?.tagName !== 'CANVAS') continue;
         return { x, z, h, sx, sy };

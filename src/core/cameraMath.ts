@@ -31,9 +31,13 @@ export const CAMERA_CONFIG = {
   panLambda: 5,
   /** Smoothing rate (per second) of the zoom. */
   zoomLambda: 6,
-  /** How far (world units) the visible edge may pass the terrain border. */
-  boundsMargin: 6,
+  /** Keep the visible edge inside the terrain border (no sky around the map). */
+  boundsMargin: 0,
 } as const;
+
+/** Camera elevation and vertical field of view used by the ground-footprint math. */
+export const CAMERA_PITCH = 0.9;
+export const CAMERA_FOV_RAD = (48 * Math.PI) / 180;
 
 function clamp01(v: number): number {
   return v < 0 ? 0 : v > 1 ? 1 : v;
@@ -121,28 +125,75 @@ export function clampToBounds(x: number, z: number, size: number, halfW: number,
   return { x: clampNum(x, loX, hiX), y: clampNum(z, loZ, hiZ) };
 }
 
-/** Half-width/height of the visible ground footprint, in zoom units. */
-export const GROUND_QUAD_HALF_WIDTH = 0.55;
-export const GROUND_QUAD_HALF_DEPTH = 0.62;
-
 /**
- * Four ground-plane corners of the camera footprint, in world XZ (`Vec2.y` is z).
- * At yaw 0 the quad is north-up; the order is SW, SE, NE, NW.
+ * Ground footprint of the perspective camera at the target plane, including
+ * the farther top edge. `Vec2.y` is world z.
  */
-export function groundQuad(x: number, z: number, zoom: number, aspect: number, yaw: number): Vec2[] {
-  const halfW = zoom * GROUND_QUAD_HALF_WIDTH * aspect;
-  const halfD = zoom * GROUND_QUAD_HALF_DEPTH;
+export function viewGroundQuad(
+  x: number,
+  z: number,
+  zoom: number,
+  aspect: number,
+  yaw: number,
+  pitch: number = CAMERA_PITCH,
+  fovRad: number = CAMERA_FOV_RAD,
+): Vec2[] {
+  const halfV = fovRad / 2;
+  const horiz = Math.cos(pitch) * zoom;
+  const height = Math.sin(pitch) * zoom;
+  const topDist = height / Math.tan(pitch - halfV);
+  const bottomDist = height / Math.tan(pitch + halfV);
+  const tanH = Math.tan(halfV) * aspect;
+  const topX = topDist * tanH;
+  const bottomX = bottomDist * tanH;
   const c = Math.cos(yaw);
   const s = Math.sin(yaw);
-  // Screen right and screen-up directions on the ground plane.
-  const rx = c * halfW;
-  const rz = -s * halfW;
-  const ux = -s * halfD;
-  const uz = -c * halfD;
-  return [
-    { x: x - rx - ux, y: z - rz - uz },
-    { x: x + rx - ux, y: z + rz - uz },
-    { x: x + rx + ux, y: z + rz + uz },
-    { x: x - rx + ux, y: z - rz + uz },
-  ];
+  const forward = { x: -s, y: -c };
+  const right = { x: c, y: -s };
+  const camera = { x: x + s * horiz, y: z + c * horiz };
+  const topMid = { x: camera.x + forward.x * topDist, y: camera.y + forward.y * topDist };
+  const bottomMid = { x: camera.x + forward.x * bottomDist, y: camera.y + forward.y * bottomDist };
+  const topLeft = { x: topMid.x - right.x * topX, y: topMid.y - right.y * topX };
+  const topRight = { x: topMid.x + right.x * topX, y: topMid.y + right.y * topX };
+  const bottomLeft = { x: bottomMid.x - right.x * bottomX, y: bottomMid.y - right.y * bottomX };
+  const bottomRight = { x: bottomMid.x + right.x * bottomX, y: bottomMid.y + right.y * bottomX };
+  return [bottomLeft, bottomRight, topRight, topLeft];
+}
+
+/** Conservative half-extents of the view footprint (the far/top edge wins). */
+export function viewHalfExtents(
+  zoom: number,
+  aspect: number,
+  yaw: number,
+  pitch: number = CAMERA_PITCH,
+  fovRad: number = CAMERA_FOV_RAD,
+): Vec2 {
+  const halfV = fovRad / 2;
+  const horiz = Math.cos(pitch) * zoom;
+  const height = Math.sin(pitch) * zoom;
+  const topDist = height / Math.tan(pitch - halfV);
+  const bottomDist = height / Math.tan(pitch + halfV);
+  const tanH = Math.tan(halfV) * aspect;
+  const topX = topDist * tanH;
+  const bottomX = bottomDist * tanH;
+  const topZ = topDist - horiz;
+  const bottomZ = horiz - bottomDist;
+  const halfX = Math.max(topX, bottomX);
+  const halfZ = Math.max(topZ, bottomZ);
+  const c = Math.abs(Math.cos(yaw));
+  const s = Math.abs(Math.sin(yaw));
+  return { x: halfX * c + halfZ * s, y: halfX * s + halfZ * c };
+}
+
+/** Largest zoom that still keeps the rotated view footprint inside the map. */
+export function maxZoomForMap(
+  mapSize: number,
+  aspect: number,
+  yaw: number,
+  configuredMax: number = CAMERA_CONFIG.maxZoom,
+  pitch: number = CAMERA_PITCH,
+  fovRad: number = CAMERA_FOV_RAD,
+): number {
+  const extents = viewHalfExtents(1, aspect, yaw, pitch, fovRad);
+  return Math.min(configuredMax, mapSize / (2 * extents.x), mapSize / (2 * extents.y));
 }
