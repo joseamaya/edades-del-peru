@@ -289,7 +289,7 @@ and Chimú in `m5`/`m6` even though their `CivDef` period is Late Intermediate; 
 Inca scout keeps the reserved `inca_chasqui_*` set instead of the infantry role clips. Evidence:
 [`middle-horizon-units.webp`](../media/middle-horizon-units.webp) (Wari worker/soldier/ranged and Tiahuanaco
 soldier), [`late-horizon-units.webp`](../media/late-horizon-units.webp) (Inca worker/soldier/ranged and Chanca
-soldier) and [`chimu-inca-units.webp`](../media/chimu-inca-units.webp) (Inca and Chimú soldiers; UI hidden).
+soldier) and [`chimu-inca-units.webp`](../media/chimu-inca-units.webp) (Inca worker/soldier/ranged and Chimú soldier; UI hidden).
 
 Comparable evidence (same mission `m1_caral`, 1600x900, UI hidden):
 [`caral-worker-final-before-after.webp`](../media/caral-worker-final-before-after.webp) (procedural worker →

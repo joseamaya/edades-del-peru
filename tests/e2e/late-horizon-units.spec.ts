@@ -1,9 +1,33 @@
 import { expect, test, type Page } from '@playwright/test';
 
 const MISSIONS = [
-  { mission: 'm4_wari', player: 'wari', enemy: 'tiahuanaco' },
-  { mission: 'm5_yahuar_pampa', player: 'inca', enemy: 'chanca' },
-  { mission: 'm6_chimu_inca', player: 'inca', enemy: 'chimu' },
+  {
+    mission: 'm4_wari',
+    player: 'wari',
+    enemy: 'tiahuanaco',
+    scout: 'wari_scout',
+    rangedPectoral: true,
+    enemyGear: { helmet: false, ear: false, pectoral: false, facePaint: false, sash: false },
+    enemyRangedEar: false,
+  },
+  {
+    mission: 'm5_yahuar_pampa',
+    player: 'inca',
+    enemy: 'chanca',
+    scout: 'inca_chasqui',
+    rangedPectoral: false,
+    enemyGear: { helmet: false, ear: false, pectoral: false, facePaint: true, sash: false },
+    enemyRangedEar: false,
+  },
+  {
+    mission: 'm6_chimu_inca',
+    player: 'inca',
+    enemy: 'chimu',
+    scout: 'inca_chasqui',
+    rangedPectoral: false,
+    enemyGear: { helmet: false, ear: true, pectoral: false, facePaint: false, sash: false },
+    enemyRangedEar: true,
+  },
 ] as const;
 
 async function boot(page: Page, mission: string): Promise<void> {
@@ -72,9 +96,7 @@ test.describe('Middle and Late Horizon rigged infantry', () => {
       expect(out.worker.variant).toMatch(new RegExp(`^${spec.player}_worker_[fm]$`));
       expect(out.soldier.variant).toMatch(new RegExp(`^${spec.player}_soldier_[fm]$`));
       expect(out.ranged.variant).toMatch(new RegExp(`^${spec.player}_ranged_[fm]$`));
-      expect(out.scout.variant).toMatch(
-        new RegExp(spec.enemy === 'tiahuanaco' ? '^wari_scout_[fm]$' : '^inca_chasqui_[fm]$'),
-      );
+      expect(out.scout.variant).toMatch(new RegExp(`^${spec.scout}_[fm]$`));
       expect(out.enemy.variant).toMatch(new RegExp(`^${spec.enemy}_soldier_[fm]$`));
       expect(out.enemyRanged.variant).toMatch(new RegExp(`^${spec.enemy}_ranged_[fm]$`));
 
@@ -85,27 +107,12 @@ test.describe('Middle and Late Horizon rigged infantry', () => {
       expect(out.soldier.backflap).toBe(false);
       expect(out.soldier.hasAttack).toBe(true);
       expect(out.ranged.sling).toBe(true);
+      expect(out.ranged.pectoral).toBe(spec.rangedPectoral);
+      expect(out.ranged.backplate).toBe(spec.rangedPectoral);
       expect(out.enemyRanged.sling).toBe(true);
-
-      if (spec.enemy === 'tiahuanaco') {
-        expect(out.soldier.pectoral).toBe(true);
-        expect(out.soldier.backplate).toBe(true);
-        expect(out.soldier.helmet).toBe(false);
-        expect(out.enemy.helmet).toBe(false);
-        expect(out.enemy.pectoral).toBe(false);
-      }
-      if (spec.enemy === 'chanca') {
-        expect(out.soldier.sash).toBe(true);
-        expect(out.enemy.facePaint).toBe(true);
-        expect(out.enemy.ear).toBe(false);
-        expect(out.enemy.sash).toBe(false);
-      }
-      if (spec.enemy === 'chimu') {
-        expect(out.soldier.sash).toBe(true);
-        expect(out.enemy.ear).toBe(true);
-        expect(out.enemy.sash).toBe(false);
-        expect(out.enemy.facePaint).toBe(false);
-      }
+      expect(out.enemyRanged.ear).toBe(spec.enemyRangedEar);
+      expect(out.soldier).toMatchObject({ pectoral: spec.rangedPectoral, backplate: spec.rangedPectoral });
+      expect(out.enemy).toMatchObject(spec.enemyGear);
       expect(errors).toEqual([]);
     });
   }
