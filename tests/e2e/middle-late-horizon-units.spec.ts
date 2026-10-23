@@ -6,6 +6,8 @@ const MISSIONS = [
     player: 'wari',
     enemy: 'tiahuanaco',
     scout: 'wari_scout',
+    soldierSash: false,
+    soldierEar: true,
     rangedPectoral: true,
     enemyGear: { helmet: false, ear: false, pectoral: false, facePaint: false, sash: false },
     enemyRangedEar: false,
@@ -15,6 +17,8 @@ const MISSIONS = [
     player: 'inca',
     enemy: 'chanca',
     scout: 'inca_chasqui',
+    soldierSash: true,
+    soldierEar: false,
     rangedPectoral: false,
     enemyGear: { helmet: false, ear: false, pectoral: false, facePaint: true, sash: false },
     enemyRangedEar: false,
@@ -24,6 +28,8 @@ const MISSIONS = [
     player: 'inca',
     enemy: 'chimu',
     scout: 'inca_chasqui',
+    soldierSash: true,
+    soldierEar: false,
     rangedPectoral: false,
     enemyGear: { helmet: false, ear: true, pectoral: false, facePaint: false, sash: false },
     enemyRangedEar: true,
@@ -111,7 +117,13 @@ test.describe('Middle and Late Horizon rigged infantry', () => {
       expect(out.ranged.backplate).toBe(spec.rangedPectoral);
       expect(out.enemyRanged.sling).toBe(true);
       expect(out.enemyRanged.ear).toBe(spec.enemyRangedEar);
-      expect(out.soldier).toMatchObject({ pectoral: spec.rangedPectoral, backplate: spec.rangedPectoral });
+      expect(out.soldier).toMatchObject({
+        pectoral: spec.rangedPectoral,
+        backplate: spec.rangedPectoral,
+        sash: spec.soldierSash,
+        ear: spec.soldierEar,
+      });
+      expect(out.ranged.ear).toBe(spec.soldierEar);
       expect(out.enemy).toMatchObject(spec.enemyGear);
       expect(errors).toEqual([]);
     });

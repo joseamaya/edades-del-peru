@@ -131,7 +131,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     enableShadows(band);
   }
 
-  if (spec?.facePaint && head) {
+  if (spec?.facePaint && (role === 'soldier' || role === 'ranged') && head) {
     const paintMat = makeMaterial(0x6a2a22, 0.9);
     for (const side of [-1, 1]) {
       const mark = new THREE.Mesh(trackGeometry(new THREE.BoxGeometry(0.026, 0.012, 0.006)), paintMat);

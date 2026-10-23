@@ -158,10 +158,10 @@ export const ANDEAN_SPECS: Record<AndeanCulture, AndeanSpec> = {
     shoulderSash: false,
   },
   inca: {
-    metal: 0xf0d060,
+    metal: null,
     helmet: false,
     backflap: false,
-    ear: true,
+    ear: false,
     belt: true,
     shield: true,
     manta: 'none',

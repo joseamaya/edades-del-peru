@@ -124,10 +124,12 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
 > (Métraux, *Weapons*), no una atribución específica a Chavín o Paracas.
 
 > **Implementación riggeada (m4–m6).** Wari añade el disco pectoral (pecho/espalda); Chanca, la pintura
-> facial; Chimú e Inca, orejeras de metal; e Inca, el canesú rojo. Tiahuanaco comparte la diadema/abstracción
-> textil porque sus prendas concretas no están documentadas. La túnica/wrap, el escudo, la macana y la honda son
-> la abstracción compartida. El mapeo por era permite que Chanca y Chimú usen el rig en `m5`/`m6` aunque su
-> periodo de definición sea Intermedio Tardío; no se cambia su roster.
+> facial en guerreros; Chimú, orejeras de metal; e Inca, el canesú rojo. Tiahuanaco comparte la
+> diadema/abstracción textil porque sus prendas concretas no están documentadas. La túnica/wrap, el escudo, la
+> macana y la honda son la abstracción compartida. La tabla de era es una spec general: en este pase no se
+> modelan el casco/orejeras tiahuanacotas, el casco acolchado inca ni el arco tiahuanacota. El mapeo por era
+> permite que Chanca y Chimú usen el rig en `m5`/`m6` aunque su periodo de definición sea Intermedio Tardío;
+> no se cambia su roster.
 
 ### Textiles por civilización (implementación)
 
