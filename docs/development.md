@@ -455,7 +455,8 @@ silhouette) and a headband, and omit the belt and Moche warrior gear; the sling 
 is claimed. Wari, Tiahuanaco, Chanca, Chimú and Inca use the same rig in the Middle/Late Horizon: Wari adds a
 pectoral, Chanca face paint on soldiers/ranged, Chimú gold ear ornaments and the Inca a red shoulder sash.
 Tiahuanaco shares the diadem abstraction because its concrete garments are not documented; its bow is not
-modeled and the ranged variant uses the shared sling. The
+modeled and the ranged variant uses the shared sling. The Inca canesú is a simplified band (no tocapu/llawt'u)
+and Chimú masks/tumi are not modeled. The
 era mapping resolves Chanca and Chimú in m5/m6 even though their `CivDef` period is Late Intermediate; the
 Inca scout remains the reserved chasqui variant. The female and male bodies share one 65-bone skeleton and the
 clips; each instance hides the unused body/hair/outfit set. Workers use the tunic + skirt/sash

@@ -9,6 +9,7 @@ const MISSIONS = [
     soldierSash: false,
     soldierEar: true,
     rangedPectoral: true,
+    pectoralStrap: true,
     enemyGear: { helmet: false, ear: false, pectoral: false, facePaint: false, sash: false },
     enemyRangedEar: false,
     enemyRangedFacePaint: false,
@@ -21,6 +22,7 @@ const MISSIONS = [
     soldierSash: true,
     soldierEar: false,
     rangedPectoral: false,
+    pectoralStrap: false,
     enemyGear: { helmet: false, ear: false, pectoral: false, facePaint: true, sash: false },
     enemyRangedEar: false,
     enemyRangedFacePaint: true,
@@ -33,6 +35,7 @@ const MISSIONS = [
     soldierSash: true,
     soldierEar: false,
     rangedPectoral: false,
+    pectoralStrap: false,
     enemyGear: { helmet: false, ear: true, pectoral: false, facePaint: false, sash: false },
     enemyRangedEar: true,
     enemyRangedFacePaint: false,
@@ -83,6 +86,7 @@ test.describe('Middle and Late Horizon rigged infantry', () => {
           sling: visible(unit, 'attire_andean_sling'),
           pectoral: visible(unit, 'attire_andean_pectoral'),
           backplate: visible(unit, 'attire_andean_backplate'),
+          strap: visible(unit, 'attire_andean_pectoral_strap'),
           facePaint: visible(unit, 'attire_andean_face_paint'),
           sash: visible(unit, 'attire_andean_sash'),
           hasAttack: unit?.rig?.hasState('attack') ?? false,
@@ -127,10 +131,12 @@ test.describe('Middle and Late Horizon rigged infantry', () => {
       expect(out.soldier).toMatchObject({
         pectoral: spec.rangedPectoral,
         backplate: spec.rangedPectoral,
+        strap: spec.pectoralStrap,
         sash: spec.soldierSash,
         ear: spec.soldierEar,
       });
       expect(out.ranged.ear).toBe(spec.soldierEar);
+      expect(out.ranged.strap).toBe(spec.pectoralStrap);
       expect(out.enemy).toMatchObject(spec.enemyGear);
       expect(errors).toEqual([]);
     });

@@ -250,6 +250,10 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       attach('spine_03', pectoral, new THREE.Vector3(spine.x, spine.y + 0.08, spine.z + 0.13));
       const backplate = addMesh(new THREE.BoxGeometry(0.26, 0.24, 0.025), pectoralMat, 'attire_andean_backplate');
       attach('spine_03', backplate, new THREE.Vector3(spine.x, spine.y + 0.04, spine.z - 0.18));
+      for (const side of [-1, 1]) {
+        const strap = addMesh(new THREE.BoxGeometry(0.05, 0.02, 0.3), pectoralMat, 'attire_andean_pectoral_strap');
+        attach('spine_03', strap, new THREE.Vector3(spine.x + side * 0.11, spine.y + 0.2, spine.z + 0.01));
+      }
     }
     const metalMat =
       spec.metal !== null && (spec.helmet || spec.ear) && (role === 'soldier' || role === 'ranged')
