@@ -9,6 +9,87 @@ export interface CaralWorkerHandle extends RigVariantHandle {
   setCarrying(carrying: boolean, color?: number): void;
 }
 
+type AndeanCulture = 'moche' | 'recuay' | 'chavin' | 'paracas';
+
+interface AndeanSpec {
+  primary: number;
+  secondary: number;
+  accent: number;
+  band: number;
+  metal: number;
+  helmet: boolean;
+  backflap: boolean;
+  ear: boolean;
+  belt: boolean;
+  shield: boolean;
+  macana: boolean;
+  sling: boolean;
+}
+
+/**
+ * Presentation-only Andean outfit profiles. Chavín/Paracas garments are not
+ * documented in detail, so they use a simple tunic/headband abstraction; the
+ * Moche warrior gear is the documented set in `docs/historia/atuendos.md`.
+ */
+const ANDEAN_SPECS: Record<AndeanCulture, AndeanSpec> = {
+  moche: {
+    primary: 0xa83a2a,
+    secondary: 0xe8d0a0,
+    accent: 0xd8a040,
+    band: 0xd8a040,
+    metal: 0xc8a040,
+    helmet: true,
+    backflap: true,
+    ear: true,
+    belt: true,
+    shield: true,
+    macana: true,
+    sling: true,
+  },
+  recuay: {
+    primary: 0x7a6a4a,
+    secondary: 0xd8c8a0,
+    accent: 0xa85a2a,
+    band: 0xa85a2a,
+    metal: 0xb08a50,
+    helmet: false,
+    backflap: false,
+    ear: true,
+    belt: true,
+    shield: true,
+    macana: true,
+    sling: true,
+  },
+  chavin: {
+    primary: 0x6a6a72,
+    secondary: 0xc8c2b4,
+    accent: 0x8a7a5a,
+    band: 0x8a7a5a,
+    metal: 0x8a8f94,
+    helmet: false,
+    backflap: false,
+    ear: false,
+    belt: false,
+    shield: false,
+    macana: true,
+    sling: true,
+  },
+  paracas: {
+    primary: 0x8a3a3a,
+    secondary: 0xe8d0a0,
+    accent: 0x3a6a8a,
+    band: 0xe8d0a0,
+    metal: 0xc8a040,
+    helmet: false,
+    backflap: false,
+    ear: false,
+    belt: false,
+    shield: false,
+    macana: true,
+    sling: true,
+  },
+};
+
 /**
  * Project-authored accessories on the finished Caral worker GLB. The body,
  * face, hair, cotton tunic, skirt and sash are part of the asset; this adds the
@@ -24,8 +105,17 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   const root = rig.root;
   const chasqui = variant.startsWith('inca_chasqui');
   const scout = variant.startsWith('caral_scout');
-  const andean = variant.startsWith('moche_') || variant.startsWith('recuay_');
-  const culture = variant.startsWith('moche_') ? 'moche' : 'recuay';
+  const andeanCulture: AndeanCulture | null = variant.startsWith('moche_')
+    ? 'moche'
+    : variant.startsWith('recuay_')
+      ? 'recuay'
+      : variant.startsWith('chavin_')
+        ? 'chavin'
+        : variant.startsWith('paracas_')
+          ? 'paracas'
+          : null;
+  const spec = andeanCulture ? ANDEAN_SPECS[andeanCulture] : null;
+  const andean = spec !== null;
   const role = variant.includes('_worker_')
     ? 'worker'
     : variant.includes('_scout_')
@@ -79,17 +169,12 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   if (chasqui) {
     tintGarment(male ? 'attire_tunic_m' : 'attire_tunic_f', 0xe8d8b8);
   }
-  if (andean) {
-    const primary = culture === 'moche' ? 0xa83a2a : 0x7a6a4a;
-    const secondary = culture === 'moche' ? 0xe8d0a0 : 0xd8c8a0;
-    tintGarment(male ? 'attire_tunic_m' : 'attire_tunic_f', primary);
-    tintGarment(male ? 'attire_wrap_m' : 'attire_skirt_f', secondary);
+  if (spec) {
+    tintGarment(male ? 'attire_tunic_m' : 'attire_tunic_f', spec.primary);
+    tintGarment(male ? 'attire_wrap_m' : 'attire_skirt_f', spec.secondary);
   }
 
-  const bandMat = makeMaterial(
-    andean ? (culture === 'moche' ? 0xd8a040 : 0xa85a2a) : chasqui ? 0xc8a040 : scout ? 0x9a5a3a : 0x8a3b2a,
-    0.9,
-  );
+  const bandMat = makeMaterial(spec ? spec.band : chasqui ? 0xc8a040 : scout ? 0x9a5a3a : 0x8a3b2a, 0.9);
   const woodMat = makeMaterial(0x6b4a2f, 0.9);
   const stoneMat = makeMaterial(0x8a8f94, 0.85);
   const carryMat = makeMaterial(0x8a6a3a, 0.95);
@@ -202,30 +287,29 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     attach('hand_r', tool, hand.clone().addScaledVector(toBody, 0.03));
   }
 
-  if (andean && role !== 'worker' && role !== 'scout') {
-    const primary = culture === 'moche' ? 0xa83a2a : 0x7a6a4a;
-    const accent = culture === 'moche' ? 0xd8a040 : 0xa85a2a;
-    const metal = culture === 'moche' ? 0xc8a040 : 0xb08a50;
+  if (spec && role !== 'worker' && role !== 'scout') {
     const addMesh = (geometry: THREE.BufferGeometry, material: THREE.Material, name: string): THREE.Mesh => {
       const mesh = new THREE.Mesh(trackGeometry(geometry), material);
       mesh.name = name;
       enableShadows(mesh);
       return mesh;
     };
-    const armorMat = makeMaterial(primary, 0.95);
-    const accentMat = makeMaterial(accent, 0.9);
-    const metalMat = makeMaterial(metal, 0.55);
+    const armorMat = makeMaterial(spec.primary, 0.95);
+    const accentMat = makeMaterial(spec.accent, 0.9);
+    const metalMat = makeMaterial(spec.metal, 0.55);
     const shieldMat = makeMaterial(0x7a4a2a, 0.95);
     const boneL = bonePosition('hand_l');
     const pelvis = bonePosition('pelvis');
     const headBone = bonePosition('Head');
-    if (culture === 'moche' && role === 'soldier' && headBone) {
+    if (spec.helmet && role === 'soldier' && headBone) {
       const helmet = addMesh(new THREE.ConeGeometry(0.16, 0.28, 10), metalMat, 'attire_andean_helmet');
       attach('Head', helmet, new THREE.Vector3(headBone.x, headBone.y + 0.2, headBone.z));
-      const backflap = addMesh(new THREE.BoxGeometry(0.34, 0.38, 0.035), armorMat, 'attire_andean_backflap');
-      if (spine) attach('spine_03', backflap, new THREE.Vector3(spine.x, spine.y - 0.1, spine.z - 0.19));
     }
-    if (role === 'soldier' && headBone) {
+    if (spec.backflap && role === 'soldier' && spine) {
+      const backflap = addMesh(new THREE.BoxGeometry(0.34, 0.38, 0.035), armorMat, 'attire_andean_backflap');
+      attach('spine_03', backflap, new THREE.Vector3(spine.x, spine.y - 0.1, spine.z - 0.19));
+    }
+    if (spec.ear && role === 'soldier' && headBone) {
       for (const side of [-1, 1]) {
         const ear = addMesh(new THREE.CylinderGeometry(0.035, 0.035, 0.025, 10), metalMat, 'attire_andean_ear');
         ear.rotation.z = Math.PI / 2;
@@ -233,21 +317,25 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       }
     }
     if (role === 'soldier' && pelvis) {
-      const belt = addMesh(new THREE.CylinderGeometry(0.255, 0.26, 0.045, 20), accentMat, 'attire_andean_belt');
-      attach('pelvis', belt, new THREE.Vector3(pelvis.x, pelvis.y + 0.39, pelvis.z));
-      const shield = addMesh(new THREE.CylinderGeometry(0.16, 0.16, 0.03, 16), shieldMat, 'attire_andean_shield');
-      shield.rotation.z = Math.PI / 2;
-      if (boneL) attach('hand_l', shield, new THREE.Vector3(boneL.x, boneL.y - 0.28, boneL.z));
-      if (hand) {
+      if (spec.belt) {
+        const belt = addMesh(new THREE.CylinderGeometry(0.255, 0.26, 0.045, 20), accentMat, 'attire_andean_belt');
+        attach('pelvis', belt, new THREE.Vector3(pelvis.x, pelvis.y + 0.39, pelvis.z));
+      }
+      if (spec.shield && boneL) {
+        const shield = addMesh(new THREE.CylinderGeometry(0.16, 0.16, 0.03, 16), shieldMat, 'attire_andean_shield');
+        shield.rotation.z = Math.PI / 2;
+        attach('hand_l', shield, new THREE.Vector3(boneL.x, boneL.y - 0.28, boneL.z));
+      }
+      if (spec.macana && hand) {
         const shaft = addMesh(new THREE.CylinderGeometry(0.018, 0.022, 0.42, 6), shieldMat, 'attire_andean_macana');
         shaft.rotation.z = 0.9;
         attach('hand_r', shaft, new THREE.Vector3(hand.x, hand.y - 0.3, hand.z));
-        const head = addMesh(new THREE.BoxGeometry(0.12, 0.12, 0.28), accentMat, 'attire_andean_macana_head');
-        head.rotation.z = 0.9;
-        attach('hand_r', head, new THREE.Vector3(hand.x, hand.y - 0.48, hand.z));
+        const macanaHead = addMesh(new THREE.BoxGeometry(0.12, 0.12, 0.28), accentMat, 'attire_andean_macana_head');
+        macanaHead.rotation.z = 0.9;
+        attach('hand_r', macanaHead, new THREE.Vector3(hand.x, hand.y - 0.48, hand.z));
       }
     }
-    if (role === 'ranged' && hand) {
+    if (spec.sling && role === 'ranged' && hand) {
       const sling = addMesh(new THREE.TorusGeometry(0.16, 0.012, 5, 16), accentMat, 'attire_andean_sling');
       sling.rotation.x = Math.PI / 2;
       attach('hand_r', sling, new THREE.Vector3(hand.x, hand.y - 0.35, hand.z));

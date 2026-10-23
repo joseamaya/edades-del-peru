@@ -35,7 +35,23 @@ export type RigVariant =
   | 'recuay_soldier_f'
   | 'recuay_soldier_m'
   | 'recuay_ranged_f'
-  | 'recuay_ranged_m';
+  | 'recuay_ranged_m'
+  | 'chavin_worker_f'
+  | 'chavin_worker_m'
+  | 'chavin_scout_f'
+  | 'chavin_scout_m'
+  | 'chavin_soldier_f'
+  | 'chavin_soldier_m'
+  | 'chavin_ranged_f'
+  | 'chavin_ranged_m'
+  | 'paracas_worker_f'
+  | 'paracas_worker_m'
+  | 'paracas_scout_f'
+  | 'paracas_scout_m'
+  | 'paracas_soldier_f'
+  | 'paracas_soldier_m'
+  | 'paracas_ranged_f'
+  | 'paracas_ranged_m';
 
 /** Animation states mapped to clips; `eat` is fauna-only. A rig may omit any state except `idle`. */
 export type RigClipState = 'idle' | 'walk' | 'walk_carry' | 'gather' | 'build' | 'attack' | 'eat';
@@ -74,6 +90,22 @@ export const RIG_VARIANT_CLIPS: Partial<Record<RigVariant, Partial<Record<RigCli
   recuay_soldier_m: { walk: 'Walk_Loop', gather: null, build: null, attack: 'TreeChopping_Loop' },
   recuay_ranged_f: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
   recuay_ranged_m: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  chavin_worker_f: { attack: 'TreeChopping_Loop' },
+  chavin_worker_m: { attack: 'TreeChopping_Loop' },
+  chavin_scout_f: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  chavin_scout_m: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  chavin_soldier_f: { walk: 'Walk_Loop', gather: null, build: null, attack: 'TreeChopping_Loop' },
+  chavin_soldier_m: { walk: 'Walk_Loop', gather: null, build: null, attack: 'TreeChopping_Loop' },
+  chavin_ranged_f: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  chavin_ranged_m: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  paracas_worker_f: { attack: 'TreeChopping_Loop' },
+  paracas_worker_m: { attack: 'TreeChopping_Loop' },
+  paracas_scout_f: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  paracas_scout_m: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  paracas_soldier_f: { walk: 'Walk_Loop', gather: null, build: null, attack: 'TreeChopping_Loop' },
+  paracas_soldier_m: { walk: 'Walk_Loop', gather: null, build: null, attack: 'TreeChopping_Loop' },
+  paracas_ranged_f: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  paracas_ranged_m: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
 };
 
 /** Playback-rate reference for in-place walk clips (world units per second). */
@@ -124,11 +156,20 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
     const female = genderForId(id) === 'female';
     return { asset: CARAL_WORKER_ASSET_ID, variant: female ? 'inca_chasqui_f' : 'inca_chasqui_m' };
   }
-  if ((civ === CivId.MOCHE || civ === CivId.RECUAY) && era === Era.REGIONAL_STATES) {
-    const culture = civ === CivId.MOCHE ? 'moche' : 'recuay';
+  const andeanCulture =
+    civ === CivId.MOCHE
+      ? 'moche'
+      : civ === CivId.RECUAY
+        ? 'recuay'
+        : civ === CivId.CHAVIN
+          ? 'chavin'
+          : civ === CivId.PARACAS
+            ? 'paracas'
+            : null;
+  if (andeanCulture && era === Era.REGIONAL_STATES) {
     const suffix = genderForId(id) === 'female' ? 'f' : 'm';
     const variant = (role: 'worker' | 'scout' | 'soldier' | 'ranged'): RigVariant =>
-      `${culture}_${role}_${suffix}` as RigVariant;
+      `${andeanCulture}_${role}_${suffix}` as RigVariant;
     if (kind === UnitKind.WORKER) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('worker') };
     if (kind === UnitKind.SCOUT) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('scout') };
     if (kind === UnitKind.SOLDIER) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('soldier') };
@@ -147,5 +188,8 @@ export function modelAssetIdsForMatch(period: HistoricalPeriod, civs: readonly C
   const inca = period === HistoricalPeriod.LATE_HORIZON && civs.includes(CivId.INCA);
   const moche =
     period === HistoricalPeriod.EARLY_INTERMEDIATE && civs.some((c) => c === CivId.MOCHE || c === CivId.RECUAY);
-  return caral || inca || moche ? [CARAL_WORKER_ASSET_ID] : [];
+  const earlyHorizon =
+    period === HistoricalPeriod.EARLY_HORIZON && civs.some((c) => c === CivId.CHAVIN || c === CivId.PARACAS);
+  const paracasInEarlyIntermediate = period === HistoricalPeriod.EARLY_INTERMEDIATE && civs.includes(CivId.PARACAS);
+  return caral || inca || moche || earlyHorizon || paracasInEarlyIntermediate ? [CARAL_WORKER_ASSET_ID] : [];
 }

@@ -33,6 +33,22 @@ export function applyRigVariant(rig: RigInstance, variant: RigVariant): RigVaria
     case 'recuay_soldier_m':
     case 'recuay_ranged_f':
     case 'recuay_ranged_m':
+    case 'chavin_worker_f':
+    case 'chavin_worker_m':
+    case 'chavin_scout_f':
+    case 'chavin_scout_m':
+    case 'chavin_soldier_f':
+    case 'chavin_soldier_m':
+    case 'chavin_ranged_f':
+    case 'chavin_ranged_m':
+    case 'paracas_worker_f':
+    case 'paracas_worker_m':
+    case 'paracas_scout_f':
+    case 'paracas_scout_m':
+    case 'paracas_soldier_f':
+    case 'paracas_soldier_m':
+    case 'paracas_ranged_f':
+    case 'paracas_ranged_m':
       return dressCaralWorker(rig, variant);
     default:
       return null;
