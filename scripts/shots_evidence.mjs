@@ -493,6 +493,49 @@ const SCENES = {
       { name: 'rts', mode: 'rts', height: 20, centerSubject: true },
     ],
   },
+  'moche-units': {
+    url: '/?mission=m3_moche_recuay&intro=0&fog=0&low=1&noloop=1',
+    start: true,
+    prepare: () => {
+      const g = window.game;
+      g.loop.stop();
+      const base = g.playerCenter(0);
+      const c = g.findLandNear(base.x + 12, base.z + 12, 16);
+      const units = [...g.units.values()].filter((u) => u.owner === 0 && !u.dead);
+      const pick = (kind) => units.find((u) => u.kind === kind);
+      const worker = pick('worker');
+      const soldier = pick('soldier');
+      const ranged = pick('musketeer');
+      if (!worker || !soldier || !ranged) throw new Error('missing Moche unit');
+      const keep = new Set([worker, soldier, ranged]);
+      for (const unit of units) {
+        if (keep.has(unit)) continue;
+        unit.removeFromScene();
+        g.units.delete(unit.id);
+      }
+      const place = (unit, x, z, facing) => {
+        unit.clearOrders();
+        unit.pos.set(x, g.terrain.getHeight(x, z), z);
+        unit.view.setPosition(unit.pos.x, unit.pos.y, unit.pos.z);
+        unit.view.setRotationY(facing);
+        unit.rig?.play('idle', 0);
+        unit.rig?.update(0.35);
+        unit.view.setPosition(unit.pos.x, unit.pos.y, unit.pos.z);
+      };
+      place(worker, c.x - 1.8, c.z + 0.4, 0.5);
+      place(soldier, c.x, c.z - 0.7, 0.1);
+      place(ranged, c.x + 1.8, c.z + 0.5, -0.5);
+      g.renderer.render(g.scene, g.camera.camera);
+      return {
+        center: { x: c.x, z: c.z },
+        subject: { x: c.x, y: g.terrain.getHeight(c.x, c.z), z: c.z },
+      };
+    },
+    views: [
+      { name: 'close', mode: 'close', offset: { x: 3.4, y: 2.2, z: 4.6 }, lookHeight: 1.0 },
+      { name: 'rts', mode: 'rts', height: 20, centerSubject: true },
+    ],
+  },
   'chavin-scene': {
     url: '/?civ=chavin&period=1&seed=777&fog=0&low=1',
     live: true,

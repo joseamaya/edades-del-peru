@@ -12,7 +12,7 @@ const FOG_URL = '/?play=1&civ=moche&period=2&seed=777&low=1&noloop=1';
 const LAYERS = ['landscape', 'settlement', 'landmark'] as const;
 
 async function boot(page: Page, url: string): Promise<void> {
-  await page.goto(url);
+  await page.goto(url, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });

@@ -47,6 +47,10 @@ test('the worker has a hidden carry pivot at start', { tag: '@smoke' }, async ({
     const g = (window as unknown as { game: any }).game;
     const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
     if (!w) return null;
+    // Rigged workers expose the carry bundle as a bone attachment; the
+    // procedural fallback keeps the old pivot.
+    const rigCarry = w.rig?.root.getObjectByName('attire_carry');
+    if (rigCarry) return { visible: rigCarry.visible, children: rigCarry.children.length };
     let carry: any = null;
     w.view.group.traverse((o: any) => {
       if (o.name === 'pivot:carry') carry = o;
