@@ -32,6 +32,9 @@ test('the Chavín campaign and its Paracas rival use rigged infantry', async ({ 
       tool: visible(unit, 'attire_tool'),
       carry: visible(unit, 'attire_carry'),
       manta: visible(unit, 'attire_andean_manta'),
+      mantaHeight:
+        (unit?.rig?.root.getObjectByName('attire_andean_manta')?.geometry?.parameters?.height as number | undefined) ??
+        null,
       helmet: visible(unit, 'attire_andean_helmet'),
       backflap: visible(unit, 'attire_andean_backflap'),
       ear: visible(unit, 'attire_andean_ear'),
@@ -77,6 +80,8 @@ test('the Chavín campaign and its Paracas rival use rigged infantry', async ({ 
   expect(out.paracas.shield).toBe(false);
   expect(out.paracas.helmet).toBe(false);
   expect(out.paracas.backflap).toBe(false);
+  expect(out.paracas.manta).toBe(true);
+  expect(out.paracas.mantaHeight).toBeGreaterThan(out.soldier.mantaHeight as number);
 
   expect(out.worker.variant).toMatch(/^chavin_worker_[fm]$/);
   expect(out.worker.tool).toBe(true);

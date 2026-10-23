@@ -1,6 +1,12 @@
 import { CivId, Era, HistoricalPeriod, UnitKind } from '../../core/types';
 import { genderForId } from './people';
-import { ANDEAN_CULTURES, andeanCultureForCiv, type AndeanRole, type AndeanRigVariant } from './andeanCharacters';
+import {
+  ANDEAN_CULTURES,
+  andeanCultureForCiv,
+  andeanCultureForPeriod,
+  type AndeanRole,
+  type AndeanRigVariant,
+} from './andeanCharacters';
 
 /** Registered rigged models. Add the id here and to the rendering registry. */
 export type ModelAssetId = 'ual_mannequin' | 'quaternius_alpaca' | 'caral_worker';
@@ -135,14 +141,6 @@ export function modelAssetIdsForMatch(period: HistoricalPeriod, civs: readonly C
   // in Era.TAHUANTINSUYO, so this preload mirrors `unitModelAsset`.
   const caral = period === HistoricalPeriod.ARCHAIC && civs.includes(CivId.CARAL);
   const inca = period === HistoricalPeriod.LATE_HORIZON && civs.includes(CivId.INCA);
-  const andean = civs.some((civ) => {
-    const culture = andeanCultureForCiv(civ);
-    if (!culture) return false;
-    if (period === HistoricalPeriod.EARLY_HORIZON) return culture === 'chavin' || culture === 'paracas';
-    if (period === HistoricalPeriod.EARLY_INTERMEDIATE) {
-      return culture === 'moche' || culture === 'recuay' || culture === 'paracas';
-    }
-    return false;
-  });
+  const andean = civs.some((civ) => andeanCultureForPeriod(civ, period) !== null);
   return caral || inca || andean ? [CARAL_WORKER_ASSET_ID] : [];
 }

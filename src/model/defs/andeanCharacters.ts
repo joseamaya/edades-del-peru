@@ -1,4 +1,4 @@
-import { CivId } from '../../core/types';
+import { CivId, HistoricalPeriod } from '../../core/types';
 import { getCiv } from './civs';
 import { hexToRgb } from '../../util/math';
 
@@ -8,8 +8,8 @@ export type AndeanRigVariant = `${AndeanCulture}_${AndeanRole}_${'f' | 'm'}`;
 
 /** Presentation-only Andean outfit profile; colours come from the civ defs. */
 export interface AndeanSpec {
-  /** Accessory metal (not a team/civ colour). */
-  metal: number;
+  /** Accessory metal (not a team/civ colour); `null` when the culture has none. */
+  metal: number | null;
   helmet: boolean;
   backflap: boolean;
   ear: boolean;
@@ -17,7 +17,8 @@ export interface AndeanSpec {
   shield: boolean;
   macana: boolean;
   sling: boolean;
-  manta: boolean;
+  manta: 'none' | 'short' | 'long';
+  macanaHead: 'stone' | 'accent';
 }
 
 export const ANDEAN_CULTURES: readonly AndeanCulture[] = ['moche', 'recuay', 'chavin', 'paracas'];
@@ -30,9 +31,9 @@ export const ANDEAN_CIV: Record<AndeanCulture, CivId> = {
 };
 
 /**
- * Chavín/Paracas garments are not documented in detail, so they use a simple
- * tunic/headband/manta abstraction. The Moche warrior gear is the documented
- * set in `docs/historia/atuendos.md`.
+ * Chavín/Paracas garments are not documented in detail, so they use the shared
+ * tunic/headband plus a simple manta abstraction. The Moche warrior gear is the
+ * documented set in `docs/historia/atuendos.md`.
  */
 export const ANDEAN_SPECS: Record<AndeanCulture, AndeanSpec> = {
   moche: {
@@ -44,7 +45,8 @@ export const ANDEAN_SPECS: Record<AndeanCulture, AndeanSpec> = {
     shield: true,
     macana: true,
     sling: true,
-    manta: false,
+    manta: 'none',
+    macanaHead: 'accent',
   },
   recuay: {
     metal: 0xb08a50,
@@ -55,10 +57,11 @@ export const ANDEAN_SPECS: Record<AndeanCulture, AndeanSpec> = {
     shield: true,
     macana: true,
     sling: true,
-    manta: false,
+    manta: 'none',
+    macanaHead: 'accent',
   },
   chavin: {
-    metal: 0x8a8f94,
+    metal: null,
     helmet: false,
     backflap: false,
     ear: false,
@@ -66,10 +69,11 @@ export const ANDEAN_SPECS: Record<AndeanCulture, AndeanSpec> = {
     shield: false,
     macana: true,
     sling: true,
-    manta: true,
+    manta: 'short',
+    macanaHead: 'stone',
   },
   paracas: {
-    metal: 0xc8a040,
+    metal: null,
     helmet: false,
     backflap: false,
     ear: false,
@@ -77,12 +81,25 @@ export const ANDEAN_SPECS: Record<AndeanCulture, AndeanSpec> = {
     shield: false,
     macana: true,
     sling: true,
-    manta: true,
+    manta: 'long',
+    macanaHead: 'stone',
   },
 };
 
 export function andeanCultureForCiv(civ: CivId): AndeanCulture | null {
   return (ANDEAN_CULTURES as readonly string[]).includes(civ) ? (civ as AndeanCulture) : null;
+}
+
+export function andeanCultureForPeriod(civ: CivId, period: HistoricalPeriod): AndeanCulture | null {
+  const culture = andeanCultureForCiv(civ);
+  if (!culture) return null;
+  if (period === HistoricalPeriod.EARLY_HORIZON) {
+    return culture === 'chavin' || culture === 'paracas' ? culture : null;
+  }
+  if (period === HistoricalPeriod.EARLY_INTERMEDIATE) {
+    return culture === 'moche' || culture === 'recuay' || culture === 'paracas' ? culture : null;
+  }
+  return null;
 }
 
 export function andeanCultureForVariant(variant: string): AndeanCulture | null {
