@@ -1,4 +1,5 @@
 import type { RigClipState, RigVariant } from '../model/defs/modelAssets';
+import { isAndeanVariant } from '../model/defs/andeanCharacters';
 import type { RigInstance } from './RigInstance';
 import { dressCaralWorker } from './workerAttire';
 
@@ -10,47 +11,8 @@ export interface RigVariantHandle {
 
 /** Apply the presentation-only dressing for a rig variant. */
 export function applyRigVariant(rig: RigInstance, variant: RigVariant): RigVariantHandle | null {
-  switch (variant) {
-    case 'caral_worker_f':
-    case 'caral_worker_m':
-    case 'caral_scout_f':
-    case 'caral_scout_m':
-    case 'inca_chasqui_f':
-    case 'inca_chasqui_m':
-    case 'moche_worker_f':
-    case 'moche_worker_m':
-    case 'moche_scout_f':
-    case 'moche_scout_m':
-    case 'moche_soldier_f':
-    case 'moche_soldier_m':
-    case 'moche_ranged_f':
-    case 'moche_ranged_m':
-    case 'recuay_worker_f':
-    case 'recuay_worker_m':
-    case 'recuay_scout_f':
-    case 'recuay_scout_m':
-    case 'recuay_soldier_f':
-    case 'recuay_soldier_m':
-    case 'recuay_ranged_f':
-    case 'recuay_ranged_m':
-    case 'chavin_worker_f':
-    case 'chavin_worker_m':
-    case 'chavin_scout_f':
-    case 'chavin_scout_m':
-    case 'chavin_soldier_f':
-    case 'chavin_soldier_m':
-    case 'chavin_ranged_f':
-    case 'chavin_ranged_m':
-    case 'paracas_worker_f':
-    case 'paracas_worker_m':
-    case 'paracas_scout_f':
-    case 'paracas_scout_m':
-    case 'paracas_soldier_f':
-    case 'paracas_soldier_m':
-    case 'paracas_ranged_f':
-    case 'paracas_ranged_m':
-      return dressCaralWorker(rig, variant);
-    default:
-      return null;
+  if (variant.startsWith('caral_') || variant.startsWith('inca_') || isAndeanVariant(variant)) {
+    return dressCaralWorker(rig, variant);
   }
+  return null;
 }

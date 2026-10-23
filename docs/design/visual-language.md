@@ -268,9 +268,11 @@ abstraction, not a reconstruction. Evidence:
 [`moche-units.webp`](../media/moche-units.webp) (worker, soldier and ranged unit; UI hidden).
 
 The **Chavín/Paracas infantry** in `m2_chavin` use the same system with `chavin_*`/`paracas_*` variants. Their
-specific garments are **not documented** in `docs/historia/atuendos.md`, so they keep a simple tunic/headband/manta and a soldier macana
-(plus a sling for ranged) as a source-grounded abstraction; they do not get Moche helmets, backflaps,
-ear ornaments or shields. Evidence:
+specific garments are **not documented** in detail, so they keep the shared cotton tunic and short wrap/skirt
+(the table's taparrabos abstraction), a plain headband and a simple manta, plus a soldier macana and a ranged
+sling. This is a **plausible abstraction**, not a reconstruction: the tunic is the shared-body base, the manta
+is the documented Formativo addition, and the soldier has **no belt**, Moche helmet, backflap, ear ornaments or
+shield. The sling is a prop; the ranged attack reuses `Punch_Jab` until a throw clip exists. Evidence:
 [`early-horizon-units.webp`](../media/early-horizon-units.webp) (Chavín worker/soldier/ranged and a Paracas
 soldier; UI hidden).
 

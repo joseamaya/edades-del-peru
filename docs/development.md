@@ -448,7 +448,9 @@ and sash are shared GLB geometry/materials. The order-driven poses are captured 
 The same GLB backs the Caral **worker and scout in both genders** (`caral_worker_f/m`, `caral_scout_f/m`;
 `unitModelAsset` maps `WORKER`/`SCOUT + CARAL + FORMATIVE`). It also backs the Moche/Recuay infantry in
 `EARLY_INTERMEDIATE` (`moche_*`/`recuay_*`) and Chavín/Paracas in `EARLY_HORIZON` (`chavin_*`/`paracas_*`; Paracas is also preloaded in
-`EARLY_INTERMEDIATE`). The female and male bodies share one 65-bone
+`EARLY_INTERMEDIATE`). Chavín/Paracas retain the shared tunic and short wrap/skirt (the table's taparrabos
+abstraction), add a simple manta and headband, and omit the belt and Moche warrior gear; the sling is a prop
+whose attack reuses `Punch_Jab`. The female and male bodies share one 65-bone
 skeleton and the clips; each instance hides the unused body/hair/outfit set. Workers use the tunic + skirt/sash
 (female) or tunic + short wrap/sash (male). The Caral scout uses the same commoner tunic/skirt or wrap plus a
 simple manta and plain headband, with no chasqui belt, gourd, long runner skirt or digging stick. The

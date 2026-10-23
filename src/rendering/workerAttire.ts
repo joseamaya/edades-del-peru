@@ -4,102 +4,16 @@ import { applyGeneratedPbr } from './Biomes';
 import type { RigClipState, RigVariant } from '../model/defs/modelAssets';
 import type { RigInstance } from './RigInstance';
 import type { RigVariantHandle } from './rigVariants';
-import { getCiv } from '../model/defs/civs';
-import { CivId } from '../core/types';
+import {
+  ANDEAN_SPECS,
+  andeanCultureForVariant,
+  andeanPalette,
+  type AndeanCulture,
+} from '../model/defs/andeanCharacters';
 
 export interface CaralWorkerHandle extends RigVariantHandle {
   setCarrying(carrying: boolean, color?: number): void;
 }
-
-type AndeanCulture = 'moche' | 'recuay' | 'chavin' | 'paracas';
-
-interface AndeanSpec {
-  metal: number;
-  helmet: boolean;
-  backflap: boolean;
-  ear: boolean;
-  belt: boolean;
-  shield: boolean;
-  macana: boolean;
-  sling: boolean;
-  manta: boolean;
-}
-
-const ANDEAN_CIV: Record<AndeanCulture, CivId> = {
-  moche: CivId.MOCHE,
-  recuay: CivId.RECUAY,
-  chavin: CivId.CHAVIN,
-  paracas: CivId.PARACAS,
-};
-
-/** Civ palette is data; the accessory metal is a presentation material. */
-function andeanPalette(culture: AndeanCulture): {
-  primary: number;
-  secondary: number;
-  accent: number;
-  band: number;
-} {
-  const colors = getCiv(ANDEAN_CIV[culture]).colors;
-  const hex = (value: string): number => Number.parseInt(value.replace('#', ''), 16);
-  return {
-    primary: hex(colors.primary),
-    secondary: hex(colors.secondary),
-    accent: hex(colors.accent),
-    band: hex(colors.accent),
-  };
-}
-
-/**
- * Presentation-only Andean outfit profiles. Chavín/Paracas garments are not
- * documented in detail, so they use a simple tunic/headband/manta abstraction;
- * the Moche warrior gear is the documented set in `docs/historia/atuendos.md`.
- */
-const ANDEAN_SPECS: Record<AndeanCulture, AndeanSpec> = {
-  moche: {
-    metal: 0xc8a040,
-    helmet: true,
-    backflap: true,
-    ear: true,
-    belt: true,
-    shield: true,
-    macana: true,
-    sling: true,
-    manta: false,
-  },
-  recuay: {
-    metal: 0xb08a50,
-    helmet: false,
-    backflap: false,
-    ear: true,
-    belt: true,
-    shield: true,
-    macana: true,
-    sling: true,
-    manta: false,
-  },
-  chavin: {
-    metal: 0x8a8f94,
-    helmet: false,
-    backflap: false,
-    ear: false,
-    belt: false,
-    shield: false,
-    macana: true,
-    sling: true,
-    manta: true,
-  },
-  paracas: {
-    metal: 0xc8a040,
-    helmet: false,
-    backflap: false,
-    ear: false,
-    belt: false,
-    shield: false,
-    macana: true,
-    sling: true,
-    manta: true,
-  },
-};
 
 /**
  * Project-authored accessories on the finished Caral worker GLB. The body,
@@ -116,15 +30,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   const root = rig.root;
   const chasqui = variant.startsWith('inca_chasqui');
   const scout = variant.startsWith('caral_scout');
-  const andeanCulture: AndeanCulture | null = variant.startsWith('moche_')
-    ? 'moche'
-    : variant.startsWith('recuay_')
-      ? 'recuay'
-      : variant.startsWith('chavin_')
-        ? 'chavin'
-        : variant.startsWith('paracas_')
-          ? 'paracas'
-          : null;
+  const andeanCulture: AndeanCulture | null = andeanCultureForVariant(variant);
   const spec = andeanCulture ? ANDEAN_SPECS[andeanCulture] : null;
   const palette = andeanCulture ? andeanPalette(andeanCulture) : null;
   const andean = spec !== null;
@@ -186,7 +92,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     tintGarment(male ? 'attire_wrap_m' : 'attire_skirt_f', palette.secondary);
   }
 
-  const bandMat = makeMaterial(palette ? palette.band : chasqui ? 0xc8a040 : scout ? 0x9a5a3a : 0x8a3b2a, 0.9);
+  const bandMat = makeMaterial(palette ? palette.accent : chasqui ? 0xc8a040 : scout ? 0x9a5a3a : 0x8a3b2a, 0.9);
   const woodMat = makeMaterial(0x6b4a2f, 0.9);
   const stoneMat = makeMaterial(0x8a8f94, 0.85);
   const carryMat = makeMaterial(0x8a6a3a, 0.95);
@@ -241,7 +147,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   }
 
   if (spec?.manta && spine && palette) {
-    const mantaMat = makeMaterial(palette.secondary, 0.95);
+    const mantaMat = makeMaterial(palette.accent, 0.95);
     const manta = new THREE.Mesh(
       trackGeometry(new THREE.CylinderGeometry(0.2, 0.27, 0.3, 10, 1, true, Math.PI * 0.2, Math.PI * 1.6)),
       mantaMat,
@@ -319,7 +225,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     const armorMat = spec.backflap ? makeMaterial(palette!.primary, 0.95) : null;
     const accentMat = makeMaterial(palette!.accent, 0.9);
     const metalMat = spec.helmet || spec.ear ? makeMaterial(spec.metal, 0.55) : null;
-    const shieldMat = spec.shield || spec.macana ? makeMaterial(0x7a4a2a, 0.95) : null;
+    const shieldMat = role === 'soldier' && (spec.shield || spec.macana) ? makeMaterial(0x7a4a2a, 0.95) : null;
     const boneL = bonePosition('hand_l');
     const pelvis = bonePosition('pelvis');
     const headBone = bonePosition('Head');
@@ -352,7 +258,11 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
         const shaft = addMesh(new THREE.CylinderGeometry(0.018, 0.022, 0.42, 6), shieldMat, 'attire_andean_macana');
         shaft.rotation.z = 0.9;
         attach('hand_r', shaft, new THREE.Vector3(hand.x, hand.y - 0.3, hand.z));
-        const macanaHead = addMesh(new THREE.BoxGeometry(0.12, 0.12, 0.28), accentMat, 'attire_andean_macana_head');
+        const macanaHead = addMesh(
+          new THREE.BoxGeometry(0.12, 0.12, 0.28),
+          spec.manta ? stoneMat : accentMat,
+          'attire_andean_macana_head',
+        );
         macanaHead.rotation.z = 0.9;
         attach('hand_r', macanaHead, new THREE.Vector3(hand.x, hand.y - 0.48, hand.z));
       }
