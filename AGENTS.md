@@ -26,7 +26,19 @@ Everything runs through `package.json`; there is no `npm test`. The CI gate, in 
 `yarn typecheck && yarn lint && yarn format:check && yarn test && yarn build`, and the repo is kept at
 **0 lint warnings** and Prettier-clean.
 CI runs that `build` job on every PR, the `@smoke` E2E subset on PRs and the full E2E suite on `main`
-(the E2E workflow is skipped for docs-only PRs).
+(the E2E workflow is skipped for docs-only PRs). CI must be green, but merging also requires the review and
+explicit approval described below.
+
+## Branches, PRs and review
+
+- **Never commit directly to `main`.** Create a descriptive branch (`feat/…`, `fix/…`, `docs/…`), make the
+  changes there and open a PR.
+- **Run the `code-review` skill before merging** (standards + spec/issue axes). If the skill is unavailable,
+  perform an equivalent independent review of the diff.
+- **Report the review findings and wait for explicit user approval before merging.** Green CI and passing tests
+  are required, but they are not a substitute for review.
+- **Do not self-merge or enable auto-merge** unless the user explicitly asks to merge.
+- If work accidentally starts on `main`, move it to a branch before the first commit.
 
 ## Conventions
 
