@@ -4,11 +4,15 @@ import {
   dragToWorld,
   edgeFactor,
   edgeVector,
-  groundQuad,
   keyPanVector,
+  maxZoomForMap,
   normalize2D,
   rotateToWorld,
+  viewGroundQuad,
+  viewHalfExtents,
   worldPerPixel,
+  CAMERA_FOV_RAD,
+  CAMERA_PITCH,
 } from '../src/core/cameraMath';
 import { CAMERA_SPEED_SCALE } from '../src/core/Config';
 
@@ -192,25 +196,48 @@ describe('pan direction matches the camera basis', () => {
 });
 
 describe('ground footprint', () => {
-  it('is north-up at yaw 0 and rotates with the camera', () => {
-    const northUp = groundQuad(100, 100, 50, 2, 0);
-    for (const [point, x, y] of [
-      [northUp[0], 45, 131],
-      [northUp[1], 155, 131],
-      [northUp[2], 155, 69],
-      [northUp[3], 45, 69],
-    ] as const) {
-      expect(point.x).toBeCloseTo(x, 6);
-      expect(point.y).toBeCloseTo(y, 6);
-    }
-
-    const diagonal = groundQuad(100, 100, 50, 2, Math.PI / 4);
+  it('is a north-up trapezoid at yaw 0 and rotates with the camera', () => {
+    const northUp = viewGroundQuad(100, 100, 50, 2, 0, CAMERA_PITCH, CAMERA_FOV_RAD);
     const topMid = {
+      x: (northUp[2].x + northUp[3].x) / 2,
+      y: (northUp[2].y + northUp[3].y) / 2,
+    };
+    const bottomMid = {
+      x: (northUp[0].x + northUp[1].x) / 2,
+      y: (northUp[0].y + northUp[1].y) / 2,
+    };
+    expect(topMid.x).toBeCloseTo(100, 6);
+    expect(topMid.y).toBeLessThan(100);
+    expect(bottomMid.y).toBeGreaterThan(100);
+    expect(northUp[2].x - northUp[3].x).toBeGreaterThan(northUp[1].x - northUp[0].x);
+
+    const diagonal = viewGroundQuad(100, 100, 50, 2, Math.PI / 4, CAMERA_PITCH, CAMERA_FOV_RAD);
+    const diagonalTopMid = {
       x: (diagonal[2].x + diagonal[3].x) / 2,
       y: (diagonal[2].y + diagonal[3].y) / 2,
     };
-    expect(topMid.x).toBeLessThan(100);
-    expect(topMid.y).toBeLessThan(100);
+    expect(diagonalTopMid.x).toBeLessThan(100);
+    expect(diagonalTopMid.y).toBeLessThan(100);
     expect(diagonal[0].x).not.toBeCloseTo(diagonal[3].x);
+  });
+});
+
+describe('map coverage', () => {
+  it('limits zoom so the rotated footprint stays inside the map', () => {
+    const size = 128;
+    const aspect = 16 / 9;
+    const north = maxZoomForMap(size, aspect, 0);
+    const diagonal = maxZoomForMap(size, aspect, Math.PI / 4);
+    expect(north).toBeLessThan(210);
+    expect(diagonal).toBeLessThan(north);
+
+    for (const [yaw, zoom] of [
+      [0, north],
+      [Math.PI / 4, diagonal],
+    ] as const) {
+      const extents = viewHalfExtents(zoom, aspect, yaw, CAMERA_PITCH, CAMERA_FOV_RAD);
+      expect(extents.x).toBeLessThanOrEqual(size / 2 + 1e-6);
+      expect(extents.y).toBeLessThanOrEqual(size / 2 + 1e-6);
+    }
   });
 });

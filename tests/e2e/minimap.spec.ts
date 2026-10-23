@@ -17,15 +17,23 @@ test('the minimap is north-up and shows the camera footprint and compass', { tag
     g.loop.stop();
     const compass = document.getElementById('ed-compass')?.textContent ?? '';
     const yaw = g.camera.getYaw();
-    const diagonal = g.camera.getGroundQuad();
-    g.camera.setYaw(0);
     const northUp = g.camera.getGroundQuad();
-    g.camera.setYaw(yaw);
+    g.camera.setYaw(Math.PI / 4);
+    const diagonal = g.camera.getGroundQuad();
+    g.camera.setHeight(9999);
+    const diagonalMax = g.camera.getGroundQuad();
+    g.camera.setYaw(0);
+    g.camera.setHeight(9999);
+    const northMax = g.camera.getGroundQuad();
     return {
       compass,
       yaw,
       diagonal,
       northUp,
+      northMax,
+      diagonalMax,
+      maxZoom: g.camera.maxZoom,
+      size: g.settings.mapSize,
       center: g.camera.getTarget(),
     };
   });
@@ -34,7 +42,7 @@ test('the minimap is north-up and shows the camera footprint and compass', { tag
   expect(state.compass).toContain('E');
   expect(state.compass).toContain('S');
   expect(state.compass).toContain('W');
-  expect(state.yaw).toBeCloseTo(Math.PI / 4, 5);
+  expect(state.yaw).toBeCloseTo(0, 5);
 
   // North-up at yaw 0: the north edge has a smaller world z.
   const northEdgeMid = {
@@ -44,7 +52,7 @@ test('the minimap is north-up and shows the camera footprint and compass', { tag
   expect(northEdgeMid.x).toBeCloseTo(state.center.x, 5);
   expect(northEdgeMid.y).toBeLessThan(state.center.z);
 
-  // Default yaw=45: the footprint is a rotated quad, not an axis-aligned rectangle.
+  // Optional Q/E rotation still rotates the footprint.
   const diagonalTopMid = {
     x: (state.diagonal[2].x + state.diagonal[3].x) / 2,
     y: (state.diagonal[2].y + state.diagonal[3].y) / 2,
@@ -52,5 +60,12 @@ test('the minimap is north-up and shows the camera footprint and compass', { tag
   expect(diagonalTopMid.x).toBeLessThan(state.center.x);
   expect(diagonalTopMid.y).toBeLessThan(state.center.z);
   expect(state.diagonal[0].x).not.toBeCloseTo(state.diagonal[3].x);
+
+  // At max zoom the footprint stays inside the square map in both orientations.
+  const inside = (quad: { x: number; y: number }[]): boolean =>
+    quad.every((p) => p.x >= -1e-6 && p.x <= state.size + 1e-6 && p.y >= -1e-6 && p.y <= state.size + 1e-6);
+  expect(state.maxZoom).toBeLessThan(210);
+  expect(inside(state.northMax)).toBe(true);
+  expect(inside(state.diagonalMax)).toBe(true);
   expect(errors).toEqual([]);
 });
