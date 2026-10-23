@@ -292,6 +292,22 @@ describe('rigged model assets', () => {
     rig.dispose();
   });
 
+  it('maps the Inca scout to the chasqui presentation and preloads it for the Inca period', () => {
+    expect(unitModelAsset(UnitKind.SCOUT, Era.TAHUANTINSUYO, CivId.INCA, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'inca_chasqui_f',
+    });
+    expect(unitModelAsset(UnitKind.SCOUT, Era.TAHUANTINSUYO, CivId.INCA, 3)).toEqual({
+      asset: 'caral_worker',
+      variant: 'inca_chasqui_m',
+    });
+    expect(unitModelAsset(UnitKind.WORKER, Era.TAHUANTINSUYO, CivId.INCA)).toBeNull();
+    expect(unitModelAsset(UnitKind.SCOUT, Era.FORMATIVE, CivId.INCA)).toBeNull();
+    expect(unitModelAsset(UnitKind.SCOUT, Era.TAHUANTINSUYO, CivId.CARAL)).toBeNull();
+    expect(modelAssetIdsForMatch(HistoricalPeriod.LATE_HORIZON, [CivId.INCA])).toContain('caral_worker');
+    expect(modelAssetIdsForMatch(HistoricalPeriod.LATE_HORIZON, [CivId.MOCHE])).toEqual([]);
+  });
+
   it('maps movement, tasks and combat to clip states by priority', () => {
     expect(rigClipStateFor({ moving: true, gathering: true, building: false, attacking: true, carrying: false })).toBe(
       'walk',

@@ -256,9 +256,9 @@ gender split for shoulder/hip proportions, long/short hair and a light female sk
 stats or the simulation; Caral's gender division of labour and ratio are **not documented**, so this is a
 plausible representation, not a historical claim.
 The **Chasqui** name and runner set are reserved for the Inca. The shared GLB keeps an `inca_chasqui_f/m`
-presentation variant (long runner skirt, wide belt, ochre headband, gourd canteen, no digging stick), but
-`unitModelAsset` never assigns it to Caral. The Caral explorer is an **Explorador**; the Chasqui label only
-appears for the Inca. The scout uses `Walk_Loop`, including locomotion; `Jog_Fwd_Loop`/`Sprint_Loop` remain
+presentation variant (long runner skirt, wide belt, ochre headband, gourd canteen, no digging stick), and
+`unitModelAsset` assigns it to the **Inca Scout** in the Horizonte Tardío. It is never assigned to Caral. The
+Caral explorer is an **Explorador**; the Chasqui label only appears for the Inca. The scout uses `Walk_Loop`, including locomotion; `Jog_Fwd_Loop`/`Sprint_Loop` remain
 reserved for a future garment designed for the higher knee.
 Comparable evidence (same mission `m1_caral`, 1600x900, UI hidden):
 [`caral-worker-final-before-after.webp`](../media/caral-worker-final-before-after.webp) (procedural worker →

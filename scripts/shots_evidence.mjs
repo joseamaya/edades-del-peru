@@ -451,6 +451,48 @@ const SCENES = {
       { name: 'rts', mode: 'rts', height: 28, centerSubject: true },
     ],
   },
+  'inca-chasqui-genders': {
+    url: '/?play=1&period=5&civ=inca&map=andes&seed=777&fog=0&low=1&noloop=1',
+    prepare: () => {
+      const g = window.game;
+      g.loop.stop();
+      const base = g.playerCenter(0);
+      const c = g.findLandNear(base.x + 10, base.z + 10, 12);
+      const scouts = [...g.units.values()].filter((u) => u.kind === 'scout' && u.owner === 0);
+      for (let i = 1; i <= 5; i++) scouts.push(g.spawnScriptedUnit('scout', 0, c.x + i, c.z + i));
+      const female = scouts.find((u) => String(u.rig?.variantId ?? '').endsWith('_f')) ?? scouts[0];
+      const male =
+        scouts.find((u) => String(u.rig?.variantId ?? '').endsWith('_m') && u !== female) ??
+        scouts.find((u) => u !== female);
+      if (!female || !male) throw new Error('need two chasquis');
+      for (const unit of scouts) {
+        if (unit !== female && unit !== male) {
+          unit.removeFromScene();
+          g.units.delete(unit.id);
+        }
+      }
+      const place = (unit, x) => {
+        unit.clearOrders();
+        unit.pos.set(x, g.terrain.getHeight(x, c.z), c.z);
+        unit.view.setPosition(unit.pos.x, unit.pos.y, unit.pos.z);
+        unit.view.setRotationY(0);
+        unit.rig?.play('idle', 0);
+        unit.rig?.update(0.3);
+        unit.view.setPosition(unit.pos.x, unit.pos.y, unit.pos.z);
+      };
+      place(female, c.x - 1.1);
+      place(male, c.x + 1.1);
+      g.renderer.render(g.scene, g.camera.camera);
+      return {
+        center: { x: c.x, z: c.z },
+        subject: { x: c.x, y: g.terrain.getHeight(c.x, c.z), z: c.z },
+      };
+    },
+    views: [
+      { name: 'close', mode: 'close', offset: { x: 0, y: 2.0, z: 5.0 }, lookHeight: 1.0 },
+      { name: 'rts', mode: 'rts', height: 20, centerSubject: true },
+    ],
+  },
   'chavin-scene': {
     url: '/?civ=chavin&period=1&seed=777&fog=0&low=1',
     live: true,

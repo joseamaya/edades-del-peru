@@ -448,8 +448,9 @@ The same GLB backs the Caral **worker and scout in both genders** (`caral_worker
 skeleton and the clips; each instance hides the unused body/hair/outfit set. Workers use the tunic + skirt/sash
 (female) or tunic + short wrap/sash (male). The Caral scout uses the same commoner tunic/skirt or wrap plus a
 simple manta and plain headband, with no chasqui belt, gourd, long runner skirt or digging stick. The
-`inca_chasqui_*` outfit is reserved for the Inca and is not assigned to Caral. Scout `RIG_VARIANT_CLIPS` use
-`Walk_Loop` for locomotion, `Punch_Jab` for attack, and disable gather/build. Worker attacks use
+`inca_chasqui_*` outfit is assigned to `SCOUT + INCA + TAHUANTINSUYO` (and preloaded for Horizonte Tardío);
+it is not assigned to Caral. Scout `RIG_VARIANT_CLIPS` use `Walk_Loop` for locomotion, `Punch_Jab` for attack,
+and disable gather/build. Worker attacks use
 `TreeChopping_Loop`. `Jog_Fwd_Loop` and `Sprint_Loop` are exported for a future runner garment (the current
 skirt clips with the high knee) but are not mapped. Human skin/hair use the shared `HUMAN_SKIN`/`HUMAN_HAIR`
 constants (`src/model/defs/people.ts`); the
