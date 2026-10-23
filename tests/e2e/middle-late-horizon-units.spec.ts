@@ -11,6 +11,7 @@ const MISSIONS = [
     rangedPectoral: true,
     enemyGear: { helmet: false, ear: false, pectoral: false, facePaint: false, sash: false },
     enemyRangedEar: false,
+    enemyRangedFacePaint: false,
   },
   {
     mission: 'm5_yahuar_pampa',
@@ -22,6 +23,7 @@ const MISSIONS = [
     rangedPectoral: false,
     enemyGear: { helmet: false, ear: false, pectoral: false, facePaint: true, sash: false },
     enemyRangedEar: false,
+    enemyRangedFacePaint: true,
   },
   {
     mission: 'm6_chimu_inca',
@@ -33,6 +35,7 @@ const MISSIONS = [
     rangedPectoral: false,
     enemyGear: { helmet: false, ear: true, pectoral: false, facePaint: false, sash: false },
     enemyRangedEar: true,
+    enemyRangedFacePaint: false,
   },
 ] as const;
 
@@ -61,6 +64,7 @@ test.describe('Middle and Late Horizon rigged infantry', () => {
         const scout = g.spawnScriptedUnit('scout', 0, c.x + 3.2, c.z - 0.2);
         const enemy = g.spawnScriptedUnit('soldier', 1, c.x - 1.8, c.z - 1.2);
         const enemyRanged = g.spawnScriptedUnit('musketeer', 1, c.x - 3.0, c.z + 0.8);
+        const enemyScout = g.spawnScriptedUnit('scout', 1, c.x - 3.2, c.z - 0.4);
         const visible = (unit: any, name: string): boolean => {
           const mesh = unit?.rig?.root.getObjectByName(name);
           return !!mesh && mesh.visible;
@@ -94,7 +98,8 @@ test.describe('Middle and Late Horizon rigged infantry', () => {
           scout: describe(scout),
           enemy: describe(enemy),
           enemyRanged: describe(enemyRanged),
-          allRigged: [worker, soldier, ranged, scout, enemy, enemyRanged].every((u: any) => !!u?.rig),
+          enemyScout: describe(enemyScout),
+          allRigged: [worker, soldier, ranged, scout, enemy, enemyRanged, enemyScout].every((u: any) => !!u?.rig),
         };
       });
 
@@ -105,6 +110,7 @@ test.describe('Middle and Late Horizon rigged infantry', () => {
       expect(out.scout.variant).toMatch(new RegExp(`^${spec.scout}_[fm]$`));
       expect(out.enemy.variant).toMatch(new RegExp(`^${spec.enemy}_soldier_[fm]$`));
       expect(out.enemyRanged.variant).toMatch(new RegExp(`^${spec.enemy}_ranged_[fm]$`));
+      expect(out.enemyScout.variant).toMatch(new RegExp(`^${spec.enemy}_scout_[fm]$`));
 
       expect(out.worker.tool).toBe(true);
       expect(out.worker.carry).toBe(false);
@@ -117,6 +123,7 @@ test.describe('Middle and Late Horizon rigged infantry', () => {
       expect(out.ranged.backplate).toBe(spec.rangedPectoral);
       expect(out.enemyRanged.sling).toBe(true);
       expect(out.enemyRanged.ear).toBe(spec.enemyRangedEar);
+      expect(out.enemyRanged.facePaint).toBe(spec.enemyRangedFacePaint);
       expect(out.soldier).toMatchObject({
         pectoral: spec.rangedPectoral,
         backplate: spec.rangedPectoral,

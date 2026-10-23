@@ -374,6 +374,14 @@ describe('rigged model assets', () => {
       asset: 'caral_worker',
       variant: 'wari_soldier_m',
     });
+    expect(unitModelAsset(UnitKind.WORKER, Era.TAHUANTINSUYO, CivId.TIAHUANACO, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'tiahuanaco_worker_f',
+    });
+    expect(unitModelAsset(UnitKind.SCOUT, Era.TAHUANTINSUYO, CivId.TIAHUANACO, 3)).toEqual({
+      asset: 'caral_worker',
+      variant: 'tiahuanaco_scout_m',
+    });
     expect(unitModelAsset(UnitKind.MUSKETEER, Era.TAHUANTINSUYO, CivId.TIAHUANACO, 2)).toEqual({
       asset: 'caral_worker',
       variant: 'tiahuanaco_ranged_f',
@@ -412,9 +420,9 @@ describe('rigged model assets', () => {
       asset: 'caral_worker',
       variant: 'inca_chasqui_m',
     });
-    for (const civ of [CivId.CHANCA, CivId.CHIMU, CivId.INCA]) {
-      expect(modelAssetIdsForMatch(HistoricalPeriod.LATE_HORIZON, [civ])).toContain('caral_worker');
-    }
+    expect(modelAssetIdsForMatch(HistoricalPeriod.LATE_HORIZON, [CivId.CHANCA, CivId.INCA])).toContain('caral_worker');
+    expect(modelAssetIdsForMatch(HistoricalPeriod.LATE_HORIZON, [CivId.CHIMU, CivId.INCA])).toContain('caral_worker');
+    expect(modelAssetIdsForMatch(HistoricalPeriod.LATE_HORIZON, [CivId.CHANCA])).toEqual([]);
     expect(modelAssetIdsForMatch(HistoricalPeriod.LATE_HORIZON, [CivId.MOCHE])).toEqual([]);
   });
 

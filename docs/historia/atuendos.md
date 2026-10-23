@@ -127,7 +127,7 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
 > facial en guerreros; Chimú, orejeras de metal; e Inca, el canesú rojo. Tiahuanaco comparte la
 > diadema/abstracción textil porque sus prendas concretas no están documentadas. La túnica/wrap, el escudo, la
 > macana y la honda son la abstracción compartida. La tabla de era es una spec general: en este pase no se
-> modelan el casco/orejeras tiahuanacotas, el casco acolchado inca ni el arco tiahuanacota. El mapeo por era
+> modelan el casco/orejeras tiahuanacotas, el casco acolchado, el arco tiahuanacota ni el tumi chimú. El mapeo por era
 > permite que Chanca y Chimú usen el rig en `m5`/`m6` aunque su periodo de definición sea Intermedio Tardío;
 > no se cambia su roster.
 

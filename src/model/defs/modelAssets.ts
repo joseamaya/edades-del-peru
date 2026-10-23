@@ -145,10 +145,8 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
 export function modelAssetIdsForMatch(period: HistoricalPeriod, civs: readonly CivId[]): ModelAssetId[] {
   const era = getPeriod(period).level;
   const kinds = [UnitKind.WORKER, UnitKind.SCOUT, UnitKind.SOLDIER, UnitKind.MUSKETEER, UnitKind.RIFLEMAN];
-  const rigged = civs.some((civ) => {
-    const campaignOpponent = period === HistoricalPeriod.LATE_HORIZON && (civ === CivId.CHANCA || civ === CivId.CHIMU);
-    const coetaneous = getCiv(civ).periods.includes(period);
-    return (coetaneous || campaignOpponent) && kinds.some((kind) => unitModelAsset(kind, era, civ) !== null);
-  });
+  const rigged = civs.some(
+    (civ) => getCiv(civ).periods.includes(period) && kinds.some((kind) => unitModelAsset(kind, era, civ) !== null),
+  );
   return rigged ? [CARAL_WORKER_ASSET_ID] : [];
 }
