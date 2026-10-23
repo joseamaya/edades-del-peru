@@ -272,8 +272,9 @@ specific garments are **not documented** in detail, so they keep the shared cott
 the presentation base (not a claim about a specific garment), a plain headband and a simple manta. This is a
 **plausible abstraction**, not a reconstruction: the manta is the table's Formativo abstraction, and the soldier
 has **no belt**, Moche helmet, backflap, ear ornaments or shield. Paracas gets a longer manta than Chavín so the
-two coetaneous cultures differ in silhouette, not only colour. The soldier macana has a stone head; the sling is
-a prop (not the table's principal weapon) and the ranged attack reuses `Punch_Jab` until a throw clip exists.
+two coetaneous cultures differ in silhouette, not only colour. Paracas reuses this Formativo abstraction in both
+periods; no separate Early Intermediate outfit is claimed. The soldier macana has a stone head; the sling is a
+prop (not the table's principal weapon) and the ranged attack reuses `Punch_Jab` until a throw clip exists.
 Evidence:
 [`early-horizon-units.webp`](../media/early-horizon-units.webp) (Chavín worker/soldier/ranged and a Paracas
 soldier; UI hidden).

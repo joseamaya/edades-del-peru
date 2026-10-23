@@ -8,7 +8,9 @@ import {
   ANDEAN_SPECS,
   andeanCultureForVariant,
   andeanPalette,
+  andeanRoleForVariant,
   type AndeanCulture,
+  type AndeanRole,
 } from '../model/defs/andeanCharacters';
 
 export interface CaralWorkerHandle extends RigVariantHandle {
@@ -34,13 +36,9 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   const spec = andeanCulture ? ANDEAN_SPECS[andeanCulture] : null;
   const palette = andeanCulture ? andeanPalette(andeanCulture) : null;
   const andean = spec !== null;
-  const role = variant.includes('_worker_')
-    ? 'worker'
-    : variant.includes('_scout_')
-      ? 'scout'
-      : variant.includes('_soldier_')
-        ? 'soldier'
-        : 'ranged';
+  const role: AndeanRole =
+    (andeanCulture ? andeanRoleForVariant(variant) : null) ??
+    (variant.includes('_worker_') ? 'worker' : variant.includes('_scout_') ? 'scout' : 'ranged');
   const worker = !chasqui && !scout && (!andean || role === 'worker');
   const male = variant.endsWith('_m');
   const show = (name: string, visible: boolean): void => {
@@ -216,16 +214,16 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     attach('hand_r', tool, hand.clone().addScaledVector(toBody, 0.03));
   }
 
-  if (spec && role !== 'worker' && role !== 'scout') {
+  if (spec && palette && role !== 'worker' && role !== 'scout') {
     const addMesh = (geometry: THREE.BufferGeometry, material: THREE.Material, name: string): THREE.Mesh => {
       const mesh = new THREE.Mesh(trackGeometry(geometry), material);
       mesh.name = name;
       enableShadows(mesh);
       return mesh;
     };
-    const armorMat = spec.backflap && role === 'soldier' ? makeMaterial(palette!.primary, 0.95) : null;
+    const armorMat = spec.backflap && role === 'soldier' ? makeMaterial(palette.primary, 0.95) : null;
     const metalMat =
-      (spec.helmet || spec.ear) && role === 'soldier' ? makeMaterial(spec.metal ?? 0x8a8f94, 0.55) : null;
+      spec.metal !== null && (spec.helmet || spec.ear) && role === 'soldier' ? makeMaterial(spec.metal, 0.55) : null;
     const shieldMat = role === 'soldier' && (spec.shield || spec.macana) ? makeMaterial(0x7a4a2a, 0.95) : null;
     const boneL = bonePosition('hand_l');
     const pelvis = bonePosition('pelvis');
@@ -247,7 +245,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     }
     if (role === 'soldier' && pelvis) {
       if (spec.belt) {
-        const beltMat = makeMaterial(palette!.accent, 0.9);
+        const beltMat = makeMaterial(palette.accent, 0.9);
         const belt = addMesh(new THREE.CylinderGeometry(0.255, 0.26, 0.045, 20), beltMat, 'attire_andean_belt');
         attach('pelvis', belt, new THREE.Vector3(pelvis.x, pelvis.y + 0.39, pelvis.z));
       }
@@ -260,14 +258,14 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
         const shaft = addMesh(new THREE.CylinderGeometry(0.018, 0.022, 0.42, 6), shieldMat, 'attire_andean_macana');
         shaft.rotation.z = 0.9;
         attach('hand_r', shaft, new THREE.Vector3(hand.x, hand.y - 0.3, hand.z));
-        const macanaHeadMat = spec.macanaHead === 'stone' ? stoneMat : makeMaterial(palette!.accent, 0.9);
+        const macanaHeadMat = spec.macanaHead === 'stone' ? stoneMat : makeMaterial(palette.accent, 0.9);
         const macanaHead = addMesh(new THREE.BoxGeometry(0.12, 0.12, 0.28), macanaHeadMat, 'attire_andean_macana_head');
         macanaHead.rotation.z = 0.9;
         attach('hand_r', macanaHead, new THREE.Vector3(hand.x, hand.y - 0.48, hand.z));
       }
     }
     if (spec.sling && role === 'ranged' && hand) {
-      const slingMat = makeMaterial(palette!.accent, 0.9);
+      const slingMat = makeMaterial(palette.accent, 0.9);
       const sling = addMesh(new THREE.TorusGeometry(0.16, 0.012, 5, 16), slingMat, 'attire_andean_sling');
       sling.rotation.x = Math.PI / 2;
       attach('hand_r', sling, new THREE.Vector3(hand.x, hand.y - 0.35, hand.z));

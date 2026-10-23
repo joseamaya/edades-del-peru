@@ -55,7 +55,6 @@ test('the Chavín campaign and its Paracas rival use rigged infantry', async ({ 
       worker: describe(pick('worker')),
       scout: describe(pick('scout')),
       allRigged: [...units, soldier, ranged].every((u: any) => !!u.rig),
-      errors: [],
     };
   });
 

@@ -2,6 +2,7 @@ import { CivId, Era, HistoricalPeriod, UnitKind } from '../../core/types';
 import { genderForId } from './people';
 import {
   ANDEAN_CULTURES,
+  ANDEAN_ROLES,
   andeanCultureForCiv,
   andeanCultureForPeriod,
   type AndeanRole,
@@ -43,8 +44,6 @@ export const RIG_CLIP_STATES: readonly RigClipState[] = [
 ];
 
 /** Role-based clip overrides shared by every Andean culture; `null` removes a state. */
-const ANDEAN_ROLES: readonly AndeanRole[] = ['worker', 'scout', 'soldier', 'ranged'];
-
 const ANDEAN_CLIP_OVERRIDES: Record<AndeanRole, Partial<Record<RigClipState, string | null>>> = {
   worker: { attack: 'TreeChopping_Loop' },
   scout: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
@@ -123,8 +122,7 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
   const andeanCulture = andeanCultureForCiv(civ);
   if (andeanCulture && era === Era.REGIONAL_STATES) {
     const suffix = genderForId(id) === 'female' ? 'f' : 'm';
-    const variant = (role: 'worker' | 'scout' | 'soldier' | 'ranged'): RigVariant =>
-      `${andeanCulture}_${role}_${suffix}` as RigVariant;
+    const variant = (role: AndeanRole): RigVariant => `${andeanCulture}_${role}_${suffix}` as RigVariant;
     if (kind === UnitKind.WORKER) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('worker') };
     if (kind === UnitKind.SCOUT) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('scout') };
     if (kind === UnitKind.SOLDIER) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('soldier') };

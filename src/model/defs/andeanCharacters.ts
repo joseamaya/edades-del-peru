@@ -22,6 +22,7 @@ export interface AndeanSpec {
 }
 
 export const ANDEAN_CULTURES: readonly AndeanCulture[] = ['moche', 'recuay', 'chavin', 'paracas'];
+export const ANDEAN_ROLES: readonly AndeanRole[] = ['worker', 'scout', 'soldier', 'ranged'];
 
 export const ANDEAN_CIV: Record<AndeanCulture, CivId> = {
   moche: CivId.MOCHE,
@@ -92,19 +93,17 @@ export function andeanCultureForCiv(civ: CivId): AndeanCulture | null {
 
 export function andeanCultureForPeriod(civ: CivId, period: HistoricalPeriod): AndeanCulture | null {
   const culture = andeanCultureForCiv(civ);
-  if (!culture) return null;
-  if (period === HistoricalPeriod.EARLY_HORIZON) {
-    return culture === 'chavin' || culture === 'paracas' ? culture : null;
-  }
-  if (period === HistoricalPeriod.EARLY_INTERMEDIATE) {
-    return culture === 'moche' || culture === 'recuay' || culture === 'paracas' ? culture : null;
-  }
-  return null;
+  return culture && getCiv(civ).periods.includes(period) ? culture : null;
 }
 
 export function andeanCultureForVariant(variant: string): AndeanCulture | null {
   const culture = variant.split('_')[0] as AndeanCulture;
   return (ANDEAN_CULTURES as readonly string[]).includes(culture) ? culture : null;
+}
+
+export function andeanRoleForVariant(variant: string): AndeanRole | null {
+  const role = variant.split('_')[1] as AndeanRole;
+  return ANDEAN_ROLES.includes(role) ? role : null;
 }
 
 export function isAndeanVariant(variant: string): boolean {
