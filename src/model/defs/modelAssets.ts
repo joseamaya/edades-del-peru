@@ -44,11 +44,18 @@ export const RIG_CLIP_STATES: readonly RigClipState[] = [
 ];
 
 /** Role-based clip overrides shared by every Andean culture; `null` removes a state. */
+const ANDEAN_NON_WORKER_CLIPS: Partial<Record<RigClipState, string | null>> = {
+  walk: 'Walk_Loop',
+  gather: null,
+  build: null,
+  attack: 'Punch_Jab',
+};
+
 const ANDEAN_CLIP_OVERRIDES: Record<AndeanRole, Partial<Record<RigClipState, string | null>>> = {
   worker: { attack: 'TreeChopping_Loop' },
-  scout: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
-  soldier: { walk: 'Walk_Loop', gather: null, build: null, attack: 'TreeChopping_Loop' },
-  ranged: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  scout: ANDEAN_NON_WORKER_CLIPS,
+  soldier: { ...ANDEAN_NON_WORKER_CLIPS, attack: 'TreeChopping_Loop' },
+  ranged: ANDEAN_NON_WORKER_CLIPS,
 };
 
 const ANDEAN_VARIANT_CLIPS = Object.fromEntries(

@@ -2,8 +2,10 @@ import { CivId, HistoricalPeriod } from '../../core/types';
 import { getCiv } from './civs';
 import { hexToRgb } from '../../util/math';
 
-export type AndeanCulture = 'moche' | 'recuay' | 'chavin' | 'paracas';
-export type AndeanRole = 'worker' | 'scout' | 'soldier' | 'ranged';
+export const ANDEAN_CULTURES = ['moche', 'recuay', 'chavin', 'paracas'] as const;
+export const ANDEAN_ROLES = ['worker', 'scout', 'soldier', 'ranged'] as const;
+export type AndeanCulture = (typeof ANDEAN_CULTURES)[number];
+export type AndeanRole = (typeof ANDEAN_ROLES)[number];
 export type AndeanRigVariant = `${AndeanCulture}_${AndeanRole}_${'f' | 'm'}`;
 
 /** Presentation-only Andean outfit profile; colours come from the civ defs. */
@@ -15,14 +17,9 @@ export interface AndeanSpec {
   ear: boolean;
   belt: boolean;
   shield: boolean;
-  macana: boolean;
-  sling: boolean;
   manta: 'none' | 'short' | 'long';
   macanaHead: 'stone' | 'accent';
 }
-
-export const ANDEAN_CULTURES: readonly AndeanCulture[] = ['moche', 'recuay', 'chavin', 'paracas'];
-export const ANDEAN_ROLES: readonly AndeanRole[] = ['worker', 'scout', 'soldier', 'ranged'];
 
 export const ANDEAN_CIV: Record<AndeanCulture, CivId> = {
   moche: CivId.MOCHE,
@@ -44,8 +41,6 @@ export const ANDEAN_SPECS: Record<AndeanCulture, AndeanSpec> = {
     ear: true,
     belt: true,
     shield: true,
-    macana: true,
-    sling: true,
     manta: 'none',
     macanaHead: 'accent',
   },
@@ -56,8 +51,6 @@ export const ANDEAN_SPECS: Record<AndeanCulture, AndeanSpec> = {
     ear: true,
     belt: true,
     shield: true,
-    macana: true,
-    sling: true,
     manta: 'none',
     macanaHead: 'accent',
   },
@@ -68,8 +61,6 @@ export const ANDEAN_SPECS: Record<AndeanCulture, AndeanSpec> = {
     ear: false,
     belt: false,
     shield: false,
-    macana: true,
-    sling: true,
     manta: 'short',
     macanaHead: 'stone',
   },
@@ -80,8 +71,6 @@ export const ANDEAN_SPECS: Record<AndeanCulture, AndeanSpec> = {
     ear: false,
     belt: false,
     shield: false,
-    macana: true,
-    sling: true,
     manta: 'long',
     macanaHead: 'stone',
   },
