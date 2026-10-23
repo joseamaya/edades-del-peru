@@ -260,6 +260,13 @@ presentation variant (long runner skirt, wide belt, ochre headband, gourd cantee
 `unitModelAsset` assigns it to the **Inca Scout** in the Horizonte Tardío. It is never assigned to Caral. The
 Caral explorer is an **Explorador**; the Chasqui label only appears for the Inca. The scout uses `Walk_Loop`, including locomotion; `Jog_Fwd_Loop`/`Sprint_Loop` remain
 reserved for a future garment designed for the higher knee.
+The **Moche/Recuay infantry** in `m3_moche_recuay` now use the same shared rig with `moche_*`/`recuay_*`
+variants. The Moche soldier adds the attested conical helmet, ear ornaments, backflap, belt, shield and macana;
+the ranged unit carries a sling, while the worker keeps the tool/carry attachments. The tunic/skirt/wrap are
+tinted from the civilization palette over the shared cotton base; the result is a rigged, historically grounded
+abstraction, not a reconstruction. Evidence:
+[`moche-units.webp`](../media/moche-units.webp) (worker, soldier and ranged unit; UI hidden).
+
 Comparable evidence (same mission `m1_caral`, 1600x900, UI hidden):
 [`caral-worker-final-before-after.webp`](../media/caral-worker-final-before-after.webp) (procedural worker →
 finished rig, fixed front close-up) and

@@ -14,7 +14,28 @@ export const CARAL_WORKER_SHADOW_SKIP_MESHES: readonly string[] = ['Eyes_f', 'Ey
 
 /** Presentation variants applied on top of a shared rigged asset. */
 export type RigVariant =
-  'caral_worker_f' | 'caral_worker_m' | 'caral_scout_f' | 'caral_scout_m' | 'inca_chasqui_f' | 'inca_chasqui_m';
+  | 'caral_worker_f'
+  | 'caral_worker_m'
+  | 'caral_scout_f'
+  | 'caral_scout_m'
+  | 'inca_chasqui_f'
+  | 'inca_chasqui_m'
+  | 'moche_worker_f'
+  | 'moche_worker_m'
+  | 'moche_scout_f'
+  | 'moche_scout_m'
+  | 'moche_soldier_f'
+  | 'moche_soldier_m'
+  | 'moche_ranged_f'
+  | 'moche_ranged_m'
+  | 'recuay_worker_f'
+  | 'recuay_worker_m'
+  | 'recuay_scout_f'
+  | 'recuay_scout_m'
+  | 'recuay_soldier_f'
+  | 'recuay_soldier_m'
+  | 'recuay_ranged_f'
+  | 'recuay_ranged_m';
 
 /** Animation states mapped to clips; `eat` is fauna-only. A rig may omit any state except `idle`. */
 export type RigClipState = 'idle' | 'walk' | 'walk_carry' | 'gather' | 'build' | 'attack' | 'eat';
@@ -37,6 +58,22 @@ export const RIG_VARIANT_CLIPS: Partial<Record<RigVariant, Partial<Record<RigCli
   caral_scout_m: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
   inca_chasqui_f: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
   inca_chasqui_m: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  moche_worker_f: { attack: 'TreeChopping_Loop' },
+  moche_worker_m: { attack: 'TreeChopping_Loop' },
+  moche_scout_f: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  moche_scout_m: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  moche_soldier_f: { walk: 'Walk_Loop', gather: null, build: null, attack: 'TreeChopping_Loop' },
+  moche_soldier_m: { walk: 'Walk_Loop', gather: null, build: null, attack: 'TreeChopping_Loop' },
+  moche_ranged_f: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  moche_ranged_m: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  recuay_worker_f: { attack: 'TreeChopping_Loop' },
+  recuay_worker_m: { attack: 'TreeChopping_Loop' },
+  recuay_scout_f: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  recuay_scout_m: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  recuay_soldier_f: { walk: 'Walk_Loop', gather: null, build: null, attack: 'TreeChopping_Loop' },
+  recuay_soldier_m: { walk: 'Walk_Loop', gather: null, build: null, attack: 'TreeChopping_Loop' },
+  recuay_ranged_f: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  recuay_ranged_m: { walk: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
 };
 
 /** Playback-rate reference for in-place walk clips (world units per second). */
@@ -87,6 +124,18 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
     const female = genderForId(id) === 'female';
     return { asset: CARAL_WORKER_ASSET_ID, variant: female ? 'inca_chasqui_f' : 'inca_chasqui_m' };
   }
+  if ((civ === CivId.MOCHE || civ === CivId.RECUAY) && era === Era.REGIONAL_STATES) {
+    const culture = civ === CivId.MOCHE ? 'moche' : 'recuay';
+    const suffix = genderForId(id) === 'female' ? 'f' : 'm';
+    const variant = (role: 'worker' | 'scout' | 'soldier' | 'ranged'): RigVariant =>
+      `${culture}_${role}_${suffix}` as RigVariant;
+    if (kind === UnitKind.WORKER) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('worker') };
+    if (kind === UnitKind.SCOUT) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('scout') };
+    if (kind === UnitKind.SOLDIER) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('soldier') };
+    if (kind === UnitKind.MUSKETEER || kind === UnitKind.RIFLEMAN) {
+      return { asset: CARAL_WORKER_ASSET_ID, variant: variant('ranged') };
+    }
+  }
   return null;
 }
 
@@ -96,5 +145,7 @@ export function modelAssetIdsForMatch(period: HistoricalPeriod, civs: readonly C
   // in Era.TAHUANTINSUYO, so this preload mirrors `unitModelAsset`.
   const caral = period === HistoricalPeriod.ARCHAIC && civs.includes(CivId.CARAL);
   const inca = period === HistoricalPeriod.LATE_HORIZON && civs.includes(CivId.INCA);
-  return caral || inca ? [CARAL_WORKER_ASSET_ID] : [];
+  const moche =
+    period === HistoricalPeriod.EARLY_INTERMEDIATE && civs.some((c) => c === CivId.MOCHE || c === CivId.RECUAY);
+  return caral || inca || moche ? [CARAL_WORKER_ASSET_ID] : [];
 }

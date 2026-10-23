@@ -308,6 +308,33 @@ describe('rigged model assets', () => {
     expect(modelAssetIdsForMatch(HistoricalPeriod.LATE_HORIZON, [CivId.MOCHE])).toEqual([]);
   });
 
+  it('maps the Moche and Recuay infantry to their rigged variants', () => {
+    expect(unitModelAsset(UnitKind.WORKER, Era.REGIONAL_STATES, CivId.MOCHE, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'moche_worker_f',
+    });
+    expect(unitModelAsset(UnitKind.SCOUT, Era.REGIONAL_STATES, CivId.MOCHE, 3)).toEqual({
+      asset: 'caral_worker',
+      variant: 'moche_scout_m',
+    });
+    expect(unitModelAsset(UnitKind.SOLDIER, Era.REGIONAL_STATES, CivId.MOCHE, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'moche_soldier_f',
+    });
+    expect(unitModelAsset(UnitKind.MUSKETEER, Era.REGIONAL_STATES, CivId.MOCHE, 3)).toEqual({
+      asset: 'caral_worker',
+      variant: 'moche_ranged_m',
+    });
+    expect(unitModelAsset(UnitKind.SOLDIER, Era.REGIONAL_STATES, CivId.RECUAY, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'recuay_soldier_f',
+    });
+    expect(unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, CivId.MOCHE)).toBeNull();
+    expect(modelAssetIdsForMatch(HistoricalPeriod.EARLY_INTERMEDIATE, [CivId.MOCHE])).toContain('caral_worker');
+    expect(modelAssetIdsForMatch(HistoricalPeriod.EARLY_INTERMEDIATE, [CivId.RECUAY])).toContain('caral_worker');
+    expect(modelAssetIdsForMatch(HistoricalPeriod.EARLY_INTERMEDIATE, [CivId.CARAL])).toEqual([]);
+  });
+
   it('maps movement, tasks and combat to clip states by priority', () => {
     expect(rigClipStateFor({ moving: true, gathering: true, building: false, attacking: true, carrying: false })).toBe(
       'walk',

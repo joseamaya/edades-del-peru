@@ -34,8 +34,9 @@ test('unit stats are formatted without floating-point noise', { tag: '@smoke' },
     const g = (window as unknown as { game: any }).game;
     g.selectUnits([...g.units.values()].filter((u: any) => u.owner === 0).map((u: any) => u.id));
   });
-  const text = await page.locator('#ed-bottom').innerText();
-  expect(text).toContain('Daño 3.3');
+  const bottom = page.locator('#ed-bottom');
+  await expect(bottom).toContainText('Daño 3.3');
+  const text = await bottom.innerText();
   expect(text).not.toMatch(/\d+\.\d{3,}/);
 });
 
