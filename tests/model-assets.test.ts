@@ -301,7 +301,10 @@ describe('rigged model assets', () => {
       asset: 'caral_worker',
       variant: 'inca_chasqui_m',
     });
-    expect(unitModelAsset(UnitKind.WORKER, Era.TAHUANTINSUYO, CivId.INCA)).toBeNull();
+    expect(unitModelAsset(UnitKind.WORKER, Era.TAHUANTINSUYO, CivId.INCA, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'inca_worker_f',
+    });
     expect(unitModelAsset(UnitKind.SCOUT, Era.FORMATIVE, CivId.INCA)).toBeNull();
     expect(unitModelAsset(UnitKind.SCOUT, Era.TAHUANTINSUYO, CivId.CARAL)).toBeNull();
     expect(modelAssetIdsForMatch(HistoricalPeriod.LATE_HORIZON, [CivId.INCA])).toContain('caral_worker');
@@ -360,6 +363,67 @@ describe('rigged model assets', () => {
     expect(modelAssetIdsForMatch(HistoricalPeriod.EARLY_HORIZON, [CivId.CHAVIN])).toContain('caral_worker');
     expect(modelAssetIdsForMatch(HistoricalPeriod.EARLY_HORIZON, [CivId.PARACAS])).toContain('caral_worker');
     expect(modelAssetIdsForMatch(HistoricalPeriod.EARLY_INTERMEDIATE, [CivId.PARACAS])).toContain('caral_worker');
+  });
+
+  it('maps Wari and Tiahuanaco infantry to the Middle Horizon variants', () => {
+    expect(unitModelAsset(UnitKind.WORKER, Era.TAHUANTINSUYO, CivId.WARI, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'wari_worker_f',
+    });
+    expect(unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, CivId.WARI, 3)).toEqual({
+      asset: 'caral_worker',
+      variant: 'wari_soldier_m',
+    });
+    expect(unitModelAsset(UnitKind.WORKER, Era.TAHUANTINSUYO, CivId.TIAHUANACO, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'tiahuanaco_worker_f',
+    });
+    expect(unitModelAsset(UnitKind.SCOUT, Era.TAHUANTINSUYO, CivId.TIAHUANACO, 3)).toEqual({
+      asset: 'caral_worker',
+      variant: 'tiahuanaco_scout_m',
+    });
+    expect(unitModelAsset(UnitKind.MUSKETEER, Era.TAHUANTINSUYO, CivId.TIAHUANACO, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'tiahuanaco_ranged_f',
+    });
+    expect(unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, CivId.TIAHUANACO, 3)).toEqual({
+      asset: 'caral_worker',
+      variant: 'tiahuanaco_soldier_m',
+    });
+    expect(modelAssetIdsForMatch(HistoricalPeriod.MIDDLE_HORIZON, [CivId.WARI, CivId.TIAHUANACO])).toContain(
+      'caral_worker',
+    );
+    expect(modelAssetIdsForMatch(HistoricalPeriod.MIDDLE_HORIZON, [CivId.MOCHE])).toEqual([]);
+    expect(modelAssetIdsForMatch(HistoricalPeriod.EARLY_HORIZON, [CivId.MOCHE])).toEqual([]);
+  });
+
+  it('maps Chanca, Chimú and Inca infantry to the Late Horizon variants', () => {
+    for (const [civ, culture] of [
+      [CivId.CHANCA, 'chanca'],
+      [CivId.CHIMU, 'chimu'],
+      [CivId.INCA, 'inca'],
+    ] as const) {
+      expect(unitModelAsset(UnitKind.WORKER, Era.TAHUANTINSUYO, civ, 2)).toEqual({
+        asset: 'caral_worker',
+        variant: `${culture}_worker_f`,
+      });
+      expect(unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, civ, 3)).toEqual({
+        asset: 'caral_worker',
+        variant: `${culture}_soldier_m`,
+      });
+      expect(unitModelAsset(UnitKind.MUSKETEER, Era.TAHUANTINSUYO, civ, 2)).toEqual({
+        asset: 'caral_worker',
+        variant: `${culture}_ranged_f`,
+      });
+    }
+    expect(unitModelAsset(UnitKind.SCOUT, Era.TAHUANTINSUYO, CivId.INCA, 3)).toEqual({
+      asset: 'caral_worker',
+      variant: 'inca_chasqui_m',
+    });
+    expect(modelAssetIdsForMatch(HistoricalPeriod.LATE_HORIZON, [CivId.CHANCA, CivId.INCA])).toContain('caral_worker');
+    expect(modelAssetIdsForMatch(HistoricalPeriod.LATE_HORIZON, [CivId.CHIMU, CivId.INCA])).toContain('caral_worker');
+    expect(modelAssetIdsForMatch(HistoricalPeriod.LATE_HORIZON, [CivId.CHANCA])).toEqual([]);
+    expect(modelAssetIdsForMatch(HistoricalPeriod.LATE_HORIZON, [CivId.MOCHE])).toEqual([]);
   });
 
   it('maps movement, tasks and combat to clip states by priority', () => {

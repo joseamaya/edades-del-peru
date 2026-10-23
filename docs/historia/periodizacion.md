@@ -15,6 +15,9 @@ periódicamente; se listan los rangos más citados.
 | P4 | Intermedio Tardío | 1000–1476 d.C. | Lumbreras: «Estados Regionales» 1200–1430/1470 | Chimú, Chincha, Chanca, Collas y Lupaca, Huanca, Chancay, Chachapoyas, Sicán, Ichma |
 | P5 | Horizonte Tardío (Inca) | 1476–1534 d.C. | Se inicia con la victoria inca sobre los chancas en 1438 y la expansión imperial | Imperio incaico (Tahuantinsuyo) |
 
+> **Campañas m5/m6.** Yahuar Pampa (1438) y la guerra chimú-inca (c. 1470) usan Chanca y Chimú como
+> oponentes históricos del P4; el roster de escaramuza del P5 sigue siendo solo Inca.
+
 ## Etapas posteriores (cobertura de campañas)
 
 | # | Etapa | Fechas | Facciones |

@@ -1,8 +1,19 @@
-import { CivId, HistoricalPeriod } from '../../core/types';
+import { CivId, Era } from '../../core/types';
 import { getCiv } from './civs';
+import { getPeriod } from './periods';
 import { hexToRgb } from '../../util/math';
 
-export const ANDEAN_CULTURES = ['moche', 'recuay', 'chavin', 'paracas'] as const;
+export const ANDEAN_CULTURES = [
+  'moche',
+  'recuay',
+  'chavin',
+  'paracas',
+  'wari',
+  'tiahuanaco',
+  'chanca',
+  'chimu',
+  'inca',
+] as const;
 export const ANDEAN_ROLES = ['worker', 'scout', 'soldier', 'ranged'] as const;
 export type AndeanCulture = (typeof ANDEAN_CULTURES)[number];
 export type AndeanRole = (typeof ANDEAN_ROLES)[number];
@@ -19,6 +30,9 @@ export interface AndeanSpec {
   shield: boolean;
   manta: 'none' | 'short' | 'long';
   macanaHead: 'stone' | 'accent';
+  pectoral: boolean;
+  facePaint: boolean;
+  shoulderSash: boolean;
 }
 
 export const ANDEAN_CIV: Record<AndeanCulture, CivId> = {
@@ -26,6 +40,11 @@ export const ANDEAN_CIV: Record<AndeanCulture, CivId> = {
   recuay: CivId.RECUAY,
   chavin: CivId.CHAVIN,
   paracas: CivId.PARACAS,
+  wari: CivId.WARI,
+  tiahuanaco: CivId.TIAHUANACO,
+  chanca: CivId.CHANCA,
+  chimu: CivId.CHIMU,
+  inca: CivId.INCA,
 };
 
 /**
@@ -43,6 +62,9 @@ export const ANDEAN_SPECS: Record<AndeanCulture, AndeanSpec> = {
     shield: true,
     manta: 'none',
     macanaHead: 'accent',
+    pectoral: false,
+    facePaint: false,
+    shoulderSash: false,
   },
   recuay: {
     metal: 0xb08a50,
@@ -53,6 +75,9 @@ export const ANDEAN_SPECS: Record<AndeanCulture, AndeanSpec> = {
     shield: true,
     manta: 'none',
     macanaHead: 'accent',
+    pectoral: false,
+    facePaint: false,
+    shoulderSash: false,
   },
   chavin: {
     metal: null,
@@ -63,6 +88,9 @@ export const ANDEAN_SPECS: Record<AndeanCulture, AndeanSpec> = {
     shield: false,
     manta: 'short',
     macanaHead: 'stone',
+    pectoral: false,
+    facePaint: false,
+    shoulderSash: false,
   },
   paracas: {
     metal: null,
@@ -73,6 +101,74 @@ export const ANDEAN_SPECS: Record<AndeanCulture, AndeanSpec> = {
     shield: false,
     manta: 'long',
     macanaHead: 'stone',
+    pectoral: false,
+    facePaint: false,
+    shoulderSash: false,
+  },
+  wari: {
+    metal: 0xc8a040,
+    helmet: false,
+    backflap: false,
+    ear: true,
+    belt: true,
+    shield: true,
+    manta: 'none',
+    macanaHead: 'stone',
+    pectoral: true,
+    facePaint: false,
+    shoulderSash: false,
+  },
+  tiahuanaco: {
+    metal: null,
+    helmet: false,
+    backflap: false,
+    ear: false,
+    belt: true,
+    shield: true,
+    manta: 'none',
+    macanaHead: 'stone',
+    pectoral: false,
+    facePaint: false,
+    shoulderSash: false,
+  },
+  chanca: {
+    metal: null,
+    helmet: false,
+    backflap: false,
+    ear: false,
+    belt: true,
+    shield: true,
+    manta: 'none',
+    macanaHead: 'stone',
+    pectoral: false,
+    facePaint: true,
+    shoulderSash: false,
+  },
+  chimu: {
+    metal: 0xd8b050,
+    helmet: false,
+    backflap: false,
+    ear: true,
+    belt: true,
+    shield: true,
+    manta: 'none',
+    macanaHead: 'stone',
+    pectoral: false,
+    facePaint: false,
+    shoulderSash: false,
+  },
+  inca: {
+    metal: null,
+    helmet: false,
+    backflap: false,
+    ear: false,
+    belt: true,
+    shield: true,
+    manta: 'none',
+    macanaHead: 'stone',
+    pectoral: false,
+    facePaint: false,
+    shoulderSash: true,
   },
 };
 
@@ -80,12 +176,13 @@ export function andeanCultureForCiv(civ: CivId): AndeanCulture | null {
   return (ANDEAN_CULTURES as readonly string[]).includes(civ) ? (civ as AndeanCulture) : null;
 }
 
-export function andeanCultureForPeriod(civ: CivId, period: HistoricalPeriod): AndeanCulture | null {
+export function andeanCultureForEra(civ: CivId, era: Era): AndeanCulture | null {
   const culture = andeanCultureForCiv(civ);
-  return culture && getCiv(civ).periods.includes(period) ? culture : null;
+  return culture && getCiv(civ).periods.some((period) => getPeriod(period).level === era) ? culture : null;
 }
 
 export function andeanCultureForVariant(variant: string): AndeanCulture | null {
+  if (variant.startsWith('inca_chasqui_')) return null;
   const culture = variant.split('_')[0] as AndeanCulture;
   return (ANDEAN_CULTURES as readonly string[]).includes(culture) ? culture : null;
 }

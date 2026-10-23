@@ -265,7 +265,7 @@ variants. The Moche soldier adds the attested conical helmet, ear ornaments, bac
 the ranged unit carries a sling, while the worker keeps the tool/carry attachments. The tunic/skirt/wrap are
 tinted from the civilization palette over the shared cotton base; the result is a rigged, historically grounded
 abstraction, not a reconstruction. Evidence:
-[`moche-units.webp`](../media/moche-units.webp) (worker, soldier and ranged unit; UI hidden).
+[`moche-units.webp`](../media/moche-units.webp) (worker, soldier, ranged unit and a Recuay soldier; UI hidden).
 
 The **Chavín/Paracas infantry** in `m2_chavin` use the same system with `chavin_*`/`paracas_*` variants. Their
 specific garments are **not documented** in detail, so they keep the shared cotton tunic and short wrap/skirt as
@@ -279,6 +279,18 @@ attack reuses `Punch_Jab` until a throw clip exists.
 Evidence:
 [`early-horizon-units.webp`](../media/early-horizon-units.webp) (Chavín worker/soldier/ranged and a Paracas
 soldier; UI hidden).
+
+The **Middle and Late Horizon infantry** extend the same rig to Wari, Tiahuanaco, Chanca, Chimú and Inca. The
+shared tunic/wrap, belt, shield and stone macana stay consistent; the distinguishing pieces are source-led:
+Wari's chest/back **pectoral**, Chanca **face paint** on soldiers/ranged, the gold **ear ornaments** of Chimú
+and the Inca **red shoulder sash** (canesú; a simplified band, without tocapu or llawt'u). Tiahuanaco shares
+the textile/diadem abstraction because its concrete garments are not documented; its documented bow is not
+modeled and the ranged variant uses the shared sling prop. The era mapping resolves Chanca
+and Chimú in `m5`/`m6` even though their `CivDef` period is Late Intermediate; the roster is unchanged. The
+Inca scout keeps the reserved `inca_chasqui_*` set instead of the infantry role clips. Evidence:
+[`middle-horizon-units.webp`](../media/middle-horizon-units.webp) (Wari worker/soldier/ranged and Tiahuanaco
+soldier), [`late-horizon-units.webp`](../media/late-horizon-units.webp) (Inca worker/soldier/ranged and Chanca
+soldier) and [`chimu-inca-units.webp`](../media/chimu-inca-units.webp) (Inca worker/soldier/ranged and Chimú soldier; UI hidden).
 
 Comparable evidence (same mission `m1_caral`, 1600x900, UI hidden):
 [`caral-worker-final-before-after.webp`](../media/caral-worker-final-before-after.webp) (procedural worker →

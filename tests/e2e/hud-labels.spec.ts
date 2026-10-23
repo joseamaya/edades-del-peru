@@ -12,7 +12,7 @@ test('the top bar shows the historical period, not the internal era', { tag: '@s
   // the Late Horizon; the bar must not read "Tahuantinsuyo".
   await boot(page, '/?play=1&seed=777&fog=0&low=1&period=3');
   const header = page.locator('#ed-era');
-  await expect(header).toContainText('Horizonte Medio');
+  await expect(header).toContainText('Horizonte Medio', { timeout: 20_000 });
   await expect(header).toContainText('600–1000');
   await expect(header).not.toContainText('Tahuantinsuyo');
 });

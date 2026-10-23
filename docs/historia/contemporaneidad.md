@@ -38,6 +38,10 @@ emparejamientos permitidos.
 | P7 Independencia | Patriotas, Realistas | **San Martín/Bolívar ↔ Realistas (1821–1824)** |
 | P8 República | República del Perú, Confederación, Chile | **Guerra del Pacífico (1879–1883)** |
 
+> **Excepción de campaña.** `m5` (1438) y `m6` (c. 1470) enfrentan al Inca con Chanca y Chimú, que
+> pertenecen al P4; el roster de escaramuza de P5 sigue siendo solo Inca. El mapeo de modelos usa la era
+> técnica, no el roster, para que esos oponentes históricos conserven su rig.
+
 ## Reglas de diseño para el menú
 
 1. Se elige **primero el periodo**; el juego solo ofrece civilizaciones de ese periodo.
