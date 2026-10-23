@@ -120,3 +120,29 @@ export function clampToBounds(x: number, z: number, size: number, halfW: number,
   const hiZ = Math.max(size - halfD + margin, mid);
   return { x: clampNum(x, loX, hiX), y: clampNum(z, loZ, hiZ) };
 }
+
+/** Half-width/height of the visible ground footprint, in zoom units. */
+export const GROUND_QUAD_HALF_WIDTH = 0.55;
+export const GROUND_QUAD_HALF_DEPTH = 0.62;
+
+/**
+ * Four ground-plane corners of the camera footprint, in world XZ (`Vec2.y` is z).
+ * At yaw 0 the quad is north-up; the order is SW, SE, NE, NW.
+ */
+export function groundQuad(x: number, z: number, zoom: number, aspect: number, yaw: number): Vec2[] {
+  const halfW = zoom * GROUND_QUAD_HALF_WIDTH * aspect;
+  const halfD = zoom * GROUND_QUAD_HALF_DEPTH;
+  const c = Math.cos(yaw);
+  const s = Math.sin(yaw);
+  // Screen right and screen-up directions on the ground plane.
+  const rx = c * halfW;
+  const rz = -s * halfW;
+  const ux = -s * halfD;
+  const uz = -c * halfD;
+  return [
+    { x: x - rx - ux, y: z - rz - uz },
+    { x: x + rx - ux, y: z + rz - uz },
+    { x: x + rx + ux, y: z + rz + uz },
+    { x: x - rx + ux, y: z - rz + uz },
+  ];
+}
