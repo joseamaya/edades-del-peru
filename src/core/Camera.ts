@@ -5,14 +5,13 @@ import {
   CAMERA_CONFIG,
   CAMERA_FOV_RAD,
   CAMERA_PITCH,
-  clampToBounds,
+  clampFocusToMap,
   dragToWorld,
   edgeVector,
   keyPanVector,
   maxZoomForMap,
   rotateToWorld,
   viewGroundQuad,
-  viewHalfExtents,
   worldPerPixel,
   type Vec2,
 } from './cameraMath';
@@ -283,17 +282,9 @@ export class RTSCamera {
     this.desiredTarget.z += w.y * speed * dt;
   }
 
-  /** Keep the visible rectangle near the terrain so no void shows around it. */
+  /** Keep the focus point near the terrain edge (0 A.D.-style). */
   private clampTarget(): void {
-    const extents = viewHalfExtents(this.zoom, this.camera.aspect, this.yaw, this.pitch, this.fovRad);
-    const c = clampToBounds(
-      this.desiredTarget.x,
-      this.desiredTarget.z,
-      this.mapSize,
-      extents.x,
-      extents.y,
-      CAMERA_CONFIG.boundsMargin,
-    );
+    const c = clampFocusToMap(this.desiredTarget.x, this.desiredTarget.z, this.mapSize, CAMERA_CONFIG.edgeMargin);
     this.desiredTarget.x = c.x;
     this.desiredTarget.z = c.y;
   }

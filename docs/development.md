@@ -280,9 +280,12 @@ Definition of Done and the building audit see
   diagonal is not faster than an axis); middle-drag uses a **geometric** world-per-pixel
   (`2·tan(fov/2)·zoom/viewportH`) with the "grab the map" metaphor (the content follows the cursor). Inputs only
   move `desiredTarget`; `update` damps toward it. The zoom-out limit is **derived from map size, aspect and yaw**
-  (`maxZoomForMap`/`viewHalfExtents`) so the perspective ground footprint stays inside the terrain; this prevents
-  the sky/clear color from appearing around the map at maximum zoom. The target is **clamped** with those same
-  extents (`boundsMargin`). Panning is suppressed while **paused** (the loop skips `camera.update`) or while a
+  (`maxZoomForMap`/`viewHalfExtents`) to avoid an absurdly distant camera. The target (screen-center ground point)
+  is clamped **0 A.D.-style** to `edgeMargin` units from the map edge (`clampFocusToMap`), **not** by the viewport
+  footprint: a unit can be followed into a corner and stays near the screen center. The view may therefore show
+  slightly past the map; `Terrain.buildSkirt` adds a low-detail apron (with corner caps) around the playable edge so
+  the sky/clear color never shows there. Panning is suppressed while **paused** (the loop skips `camera.update`) or
+  while a
   **blocking overlay** is open (`camera.setUiCaptured`); **edge scrolling is also off while the pointer is over a
   HUD control** (`hud.isPointerOverUi` — `#ui-root` is `pointer-events:none`, only real
   controls set `auto`). Tuning lives in `CAMERA_CONFIG`; the pure math is unit-tested (`tests/camera.test.ts`), the

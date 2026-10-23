@@ -31,8 +31,8 @@ export const CAMERA_CONFIG = {
   panLambda: 5,
   /** Smoothing rate (per second) of the zoom. */
   zoomLambda: 6,
-  /** Keep the visible edge inside the terrain border (no sky around the map). */
-  boundsMargin: 0,
+  /** Keep the camera focus near the map edge (0 A.D.-style, in world units). */
+  edgeMargin: 8,
 } as const;
 
 /** Camera elevation and vertical field of view used by the ground-footprint math. */
@@ -113,16 +113,13 @@ export function dragToWorld(screenDx: number, screenDy: number, yaw: number, wpp
 }
 
 /**
- * Clamp a target so the visible rectangle stays near the terrain (with margin).
- * When the viewport is wider than the map, the axis is centered.
+ * Clamp the camera focus (screen-center ground point) near the map edge.
+ * Unlike a viewport clamp this still lets the camera follow units into corners;
+ * the view may show the map edge/backdrop, as in 0 A.D.
  */
-export function clampToBounds(x: number, z: number, size: number, halfW: number, halfD: number, margin: number): Vec2 {
-  const mid = size / 2;
-  const loX = Math.min(halfW - margin, mid);
-  const hiX = Math.max(size - halfW + margin, mid);
-  const loZ = Math.min(halfD - margin, mid);
-  const hiZ = Math.max(size - halfD + margin, mid);
-  return { x: clampNum(x, loX, hiX), y: clampNum(z, loZ, hiZ) };
+export function clampFocusToMap(x: number, z: number, size: number, margin: number): Vec2 {
+  const m = Math.min(margin, size / 2);
+  return { x: clampNum(x, m, size - m), y: clampNum(z, m, size - m) };
 }
 
 /**
