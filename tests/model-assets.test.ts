@@ -359,6 +359,7 @@ describe('rigged model assets', () => {
     expect(unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, CivId.CHAVIN)).toBeNull();
     expect(modelAssetIdsForMatch(HistoricalPeriod.EARLY_HORIZON, [CivId.CHAVIN])).toContain('caral_worker');
     expect(modelAssetIdsForMatch(HistoricalPeriod.EARLY_HORIZON, [CivId.PARACAS])).toContain('caral_worker');
+    expect(modelAssetIdsForMatch(HistoricalPeriod.EARLY_INTERMEDIATE, [CivId.PARACAS])).toContain('caral_worker');
   });
 
   it('maps movement, tasks and combat to clip states by priority', () => {

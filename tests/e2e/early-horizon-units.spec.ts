@@ -31,6 +31,7 @@ test('the Chavín campaign and its Paracas rival use rigged infantry', async ({ 
       variant: unit?.rig?.variantId ?? null,
       tool: visible(unit, 'attire_tool'),
       carry: visible(unit, 'attire_carry'),
+      manta: visible(unit, 'attire_andean_manta'),
       helmet: visible(unit, 'attire_andean_helmet'),
       backflap: visible(unit, 'attire_andean_backflap'),
       ear: visible(unit, 'attire_andean_ear'),
@@ -80,6 +81,7 @@ test('the Chavín campaign and its Paracas rival use rigged infantry', async ({ 
   expect(out.worker.variant).toMatch(/^chavin_worker_[fm]$/);
   expect(out.worker.tool).toBe(true);
   expect(out.worker.carry).toBe(false);
+  expect(out.worker.manta).toBe(true);
   expect(out.worker.macana).toBe(false);
 
   expect(out.scout.variant).toMatch(/^chavin_scout_[fm]$/);
