@@ -281,11 +281,12 @@ Evidence:
 soldier; UI hidden).
 
 The **Middle and Late Horizon infantry** extend the same rig to Wari, Tiahuanaco, Chanca, Chimú and Inca. The
-shared tunic/wrap, ear ornaments, belt, shield and stone macana stay consistent; the distinguishing pieces are
-source-led: Wari's chest/back **pectoral**, Tiahuanaco's **conical helmet**, Chanca **face paint**, and the
-gold **ear ornaments** of Chimú and Inca plus the Inca **red shoulder sash** (canesú). The ranged variant keeps
-the generic sling prop. Chanca and Chimú were added to `LATE_HORIZON` so they are coetaneous with the Inca in
-`m5`/`m6`; the Inca scout keeps the reserved `inca_chasqui_*` set instead of the infantry role clips. Evidence:
+shared tunic/wrap, belt, shield and stone macana stay consistent; the distinguishing pieces are source-led:
+Wari's chest/back **pectoral**, Chanca **face paint**, and the gold **ear ornaments** of Chimú and Inca plus
+the Inca **red shoulder sash** (canesú). Tiahuanaco shares the textile/diadem abstraction because its concrete
+garments are not documented. The ranged variant keeps the generic sling prop. The era mapping resolves Chanca
+and Chimú in `m5`/`m6` even though their `CivDef` period is Late Intermediate; the roster is unchanged. The
+Inca scout keeps the reserved `inca_chasqui_*` set instead of the infantry role clips. Evidence:
 [`middle-horizon-units.webp`](../media/middle-horizon-units.webp) (Wari worker/soldier/ranged and Tiahuanaco
 soldier), [`late-horizon-units.webp`](../media/late-horizon-units.webp) (Inca worker/soldier/ranged and Chanca
 soldier) and [`chimu-inca-units.webp`](../media/chimu-inca-units.webp) (Inca and Chimú soldiers; UI hidden).

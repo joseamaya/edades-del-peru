@@ -123,10 +123,11 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
 > distinto para este último). La honda de la variante a distancia es un arma andina general
 > (Métraux, *Weapons*), no una atribución específica a Chavín o Paracas.
 
-> **Implementación riggeada (m4–m6).** Wari añade el disco pectoral; Tiahuanaco, el casco cónico; Chanca,
-> la pintura facial; Chimú e Inca, orejeras de metal; e Inca, el canesú rojo. La túnica/wrap, el escudo, la
-> macana y la honda son la abstracción compartida. Chanca y Chimú incluyen Horizonte Tardío para ser coetáneos
-> de los incas en `m5`/`m6`; no se postula un atuendo distinto para ese periodo.
+> **Implementación riggeada (m4–m6).** Wari añade el disco pectoral (pecho/espalda); Chanca, la pintura
+> facial; Chimú e Inca, orejeras de metal; e Inca, el canesú rojo. Tiahuanaco comparte la diadema/abstracción
+> textil porque sus prendas concretas no están documentadas. La túnica/wrap, el escudo, la macana y la honda son
+> la abstracción compartida. El mapeo por era permite que Chanca y Chimú usen el rig en `m5`/`m6` aunque su
+> periodo de definición sea Intermedio Tardío; no se cambia su roster.
 
 ### Textiles por civilización (implementación)
 

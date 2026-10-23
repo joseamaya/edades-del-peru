@@ -239,7 +239,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       sash.rotation.z = 0.6;
       attach('spine_03', sash, new THREE.Vector3(spine.x, spine.y - 0.02, spine.z + 0.12));
     }
-    if (spec.pectoral && role === 'soldier' && spine) {
+    if (spec.pectoral && spine) {
       const pectoralMat = makeMaterial(spec.metal ?? palette.accent, 0.55);
       const pectoral = addMesh(
         new THREE.CylinderGeometry(0.11, 0.11, 0.018, 16),
@@ -248,6 +248,8 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       );
       pectoral.rotation.x = Math.PI / 2;
       attach('spine_03', pectoral, new THREE.Vector3(spine.x, spine.y + 0.08, spine.z + 0.13));
+      const backplate = addMesh(new THREE.BoxGeometry(0.26, 0.24, 0.025), pectoralMat, 'attire_andean_backplate');
+      attach('spine_03', backplate, new THREE.Vector3(spine.x, spine.y + 0.04, spine.z - 0.18));
     }
     const metalMat =
       spec.metal !== null && (spec.helmet || spec.ear) && role === 'soldier' ? makeMaterial(spec.metal, 0.55) : null;

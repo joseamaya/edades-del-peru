@@ -28,7 +28,9 @@ test.describe('Middle and Late Horizon rigged infantry', () => {
         const worker = g.spawnScriptedUnit('worker', 0, c.x - 1.8, c.z + 0.4);
         const soldier = g.spawnScriptedUnit('soldier', 0, c.x, c.z - 0.7);
         const ranged = g.spawnScriptedUnit('musketeer', 0, c.x + 1.8, c.z + 0.5);
+        const scout = g.spawnScriptedUnit('scout', 0, c.x + 3.2, c.z - 0.2);
         const enemy = g.spawnScriptedUnit('soldier', 1, c.x - 1.8, c.z - 1.2);
+        const enemyRanged = g.spawnScriptedUnit('musketeer', 1, c.x - 3.0, c.z + 0.8);
         const visible = (unit: any, name: string): boolean => {
           const mesh = unit?.rig?.root.getObjectByName(name);
           return !!mesh && mesh.visible;
@@ -46,6 +48,7 @@ test.describe('Middle and Late Horizon rigged infantry', () => {
           macana: visible(unit, 'attire_andean_macana'),
           sling: visible(unit, 'attire_andean_sling'),
           pectoral: visible(unit, 'attire_andean_pectoral'),
+          backplate: visible(unit, 'attire_andean_backplate'),
           facePaint: visible(unit, 'attire_andean_face_paint'),
           sash: visible(unit, 'attire_andean_sash'),
           hasAttack: unit?.rig?.hasState('attack') ?? false,
@@ -58,8 +61,10 @@ test.describe('Middle and Late Horizon rigged infantry', () => {
           worker: describe(worker),
           soldier: describe(soldier),
           ranged: describe(ranged),
+          scout: describe(scout),
           enemy: describe(enemy),
-          allRigged: [worker, soldier, ranged, enemy].every((u: any) => !!u?.rig),
+          enemyRanged: describe(enemyRanged),
+          allRigged: [worker, soldier, ranged, scout, enemy, enemyRanged].every((u: any) => !!u?.rig),
         };
       });
 
@@ -67,7 +72,11 @@ test.describe('Middle and Late Horizon rigged infantry', () => {
       expect(out.worker.variant).toMatch(new RegExp(`^${spec.player}_worker_[fm]$`));
       expect(out.soldier.variant).toMatch(new RegExp(`^${spec.player}_soldier_[fm]$`));
       expect(out.ranged.variant).toMatch(new RegExp(`^${spec.player}_ranged_[fm]$`));
+      expect(out.scout.variant).toMatch(
+        new RegExp(spec.enemy === 'tiahuanaco' ? '^wari_scout_[fm]$' : '^inca_chasqui_[fm]$'),
+      );
       expect(out.enemy.variant).toMatch(new RegExp(`^${spec.enemy}_soldier_[fm]$`));
+      expect(out.enemyRanged.variant).toMatch(new RegExp(`^${spec.enemy}_ranged_[fm]$`));
 
       expect(out.worker.tool).toBe(true);
       expect(out.worker.carry).toBe(false);
@@ -76,16 +85,19 @@ test.describe('Middle and Late Horizon rigged infantry', () => {
       expect(out.soldier.backflap).toBe(false);
       expect(out.soldier.hasAttack).toBe(true);
       expect(out.ranged.sling).toBe(true);
+      expect(out.enemyRanged.sling).toBe(true);
 
       if (spec.enemy === 'tiahuanaco') {
         expect(out.soldier.pectoral).toBe(true);
+        expect(out.soldier.backplate).toBe(true);
         expect(out.soldier.helmet).toBe(false);
-        expect(out.enemy.helmet).toBe(true);
+        expect(out.enemy.helmet).toBe(false);
         expect(out.enemy.pectoral).toBe(false);
       }
       if (spec.enemy === 'chanca') {
         expect(out.soldier.sash).toBe(true);
         expect(out.enemy.facePaint).toBe(true);
+        expect(out.enemy.ear).toBe(false);
         expect(out.enemy.sash).toBe(false);
       }
       if (spec.enemy === 'chimu') {
