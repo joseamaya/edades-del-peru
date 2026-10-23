@@ -386,6 +386,7 @@ describe('rigged model assets', () => {
       'caral_worker',
     );
     expect(modelAssetIdsForMatch(HistoricalPeriod.MIDDLE_HORIZON, [CivId.MOCHE])).toEqual([]);
+    expect(modelAssetIdsForMatch(HistoricalPeriod.EARLY_HORIZON, [CivId.MOCHE])).toEqual([]);
   });
 
   it('maps Chanca, Chimú and Inca infantry to the Late Horizon variants', () => {
