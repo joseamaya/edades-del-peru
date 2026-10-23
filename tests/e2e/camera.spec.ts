@@ -157,3 +157,48 @@ test('the camera speed scale changes keyboard pan distance', async ({ page }) =>
   expect(out.normal).toBeGreaterThan(out.slow);
   expect(out.fast).toBeGreaterThan(out.normal);
 });
+
+test('the camera can focus on each map corner without losing the point', async ({ page }) => {
+  await bootMatch(page);
+  const out = await page.evaluate(() => {
+    const w = window as unknown as { game: any; THREE: any; innerWidth: number; innerHeight: number };
+    const g = w.game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const size = g.settings.mapSize;
+    const margin = 8;
+    const corners = [
+      [0, 0],
+      [size, 0],
+      [0, size],
+      [size, size],
+    ] as const;
+    const results = corners.map(([x, z]) => {
+      g.camera.moveTo(x, z, true);
+      g.camera.update(1, 0);
+      g.camera.camera.updateMatrixWorld();
+      const v = new w.THREE.Vector3(x, 0, z).project(g.camera.camera);
+      const sx = (v.x * 0.5 + 0.5) * w.innerWidth;
+      const sy = (-v.y * 0.5 + 0.5) * w.innerHeight;
+      const target = g.camera.getTarget();
+      return {
+        corner: { x, z },
+        sx,
+        sy,
+        target,
+        overCanvas: document.elementFromPoint(sx, sy)?.tagName === 'CANVAS',
+      };
+    });
+    return { width: w.innerWidth, height: w.innerHeight, size, margin, results };
+  });
+
+  for (const r of out.results) {
+    expect(r.sx).toBeGreaterThan(0);
+    expect(r.sx).toBeLessThan(out.width);
+    expect(r.sy).toBeGreaterThan(0);
+    expect(r.sy).toBeLessThan(out.height);
+    expect(r.overCanvas).toBe(true);
+    expect(r.target.x).toBeCloseTo(r.corner.x === 0 ? out.margin : out.size - out.margin, 5);
+    expect(r.target.z).toBeCloseTo(r.corner.z === 0 ? out.margin : out.size - out.margin, 5);
+  }
+});

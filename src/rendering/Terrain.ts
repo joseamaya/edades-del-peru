@@ -44,6 +44,7 @@ export class Terrain {
   waterLevel = 2.2;
   mesh: THREE.Mesh;
   group = new THREE.Group();
+  private skirt: THREE.Mesh | null = null;
 
   private textures: GroundTextures;
   private pbrExtra: THREE.Texture[] = [];
@@ -72,6 +73,105 @@ export class Terrain {
     this.waterLevel = field.waterLevel;
     this.mesh = this.buildMesh();
     this.group.add(this.mesh);
+    this.buildSkirt();
+  }
+
+  /**
+   * Low-detail terrain apron around the playable map. The camera may look
+   * slightly past the edge (0 A.D.-style focus clamp); this keeps the sky from
+   * showing there without adding any gameplay surface.
+   */
+  private buildSkirt(): void {
+    const width = this.size * 0.6;
+    const n = this.resolution + 1;
+    const color = this.mesh.geometry.getAttribute('color') as THREE.BufferAttribute;
+    const positions: number[] = [];
+    const colors: number[] = [];
+    const indices: number[] = [];
+    const sides: { inner: (i: number) => number; x: (i: number) => number; z: (i: number) => number }[] = [
+      { inner: (i) => i, x: (i) => (i / this.resolution) * this.size, z: () => 0 },
+      {
+        inner: (i) => this.resolution * n + i,
+        x: (i) => (i / this.resolution) * this.size,
+        z: () => this.size,
+      },
+      { inner: (i) => i * n, x: () => 0, z: (i) => (i / this.resolution) * this.size },
+      {
+        inner: (i) => i * n + this.resolution,
+        x: () => this.size,
+        z: (i) => (i / this.resolution) * this.size,
+      },
+    ];
+
+    for (const side of sides) {
+      const base = positions.length / 3;
+      for (let i = 0; i <= this.resolution; i++) {
+        const src = side.inner(i);
+        const x = side.x(i);
+        const z = side.z(i);
+        const y = this.mesh.geometry.getAttribute('position').getY(src);
+        const dx = x === 0 ? -width : x === this.size ? width : 0;
+        const dz = z === 0 ? -width : z === this.size ? width : 0;
+        positions.push(x, y, z, x + dx, y, z + dz);
+        colors.push(color.getX(src), color.getY(src), color.getZ(src));
+        colors.push(color.getX(src), color.getY(src), color.getZ(src));
+      }
+      for (let i = 0; i < this.resolution; i++) {
+        const a = base + i * 2;
+        const b = a + 1;
+        const c = a + 2;
+        const d = a + 3;
+        indices.push(a, b, c, c, b, d);
+      }
+    }
+
+    // Fill the four diagonal corner quadrants (the side strips only cover
+    // the axis-aligned bands).
+    const corners = [
+      { src: 0, x: 0, z: 0, dx: -1, dz: -1 },
+      { src: this.resolution, x: this.size, z: 0, dx: 1, dz: -1 },
+      { src: this.resolution * n, x: 0, z: this.size, dx: -1, dz: 1 },
+      { src: this.resolution * n + this.resolution, x: this.size, z: this.size, dx: 1, dz: 1 },
+    ];
+    for (const c of corners) {
+      const base = positions.length / 3;
+      const y = this.mesh.geometry.getAttribute('position').getY(c.src);
+      const cr = color.getX(c.src);
+      const cg = color.getY(c.src);
+      const cb = color.getZ(c.src);
+      positions.push(
+        c.x,
+        y,
+        c.z,
+        c.x + c.dx * width,
+        y,
+        c.z,
+        c.x,
+        y,
+        c.z + c.dz * width,
+        c.x + c.dx * width,
+        y,
+        c.z + c.dz * width,
+      );
+      for (let i = 0; i < 4; i++) colors.push(cr, cg, cb);
+      indices.push(base, base + 1, base + 2, base + 2, base + 1, base + 3);
+    }
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    geo.setIndex(indices);
+    geo.computeVertexNormals();
+    const mat = new THREE.MeshStandardMaterial({
+      vertexColors: true,
+      roughness: 1,
+      metalness: 0,
+      side: THREE.DoubleSide,
+    });
+    this.skirt = new THREE.Mesh(geo, mat);
+    this.skirt.receiveShadow = false;
+    this.skirt.castShadow = false;
+    this.group.add(this.skirt);
   }
 
   private idx(x: number, z: number): number {
@@ -560,6 +660,11 @@ ${FOW_DIM_GLSL}
   dispose(): void {
     this.mesh.geometry.dispose();
     (this.mesh.material as THREE.Material).dispose();
+    if (this.skirt) {
+      this.skirt.geometry.dispose();
+      (this.skirt.material as THREE.Material).dispose();
+      this.skirt = null;
+    }
     this.pbrExtra.forEach((t) => t.dispose());
     this.pbrExtra = [];
     this.group.removeFromParent();

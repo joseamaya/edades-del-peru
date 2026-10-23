@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  clampToBounds,
+  clampFocusToMap,
   dragToWorld,
   edgeFactor,
   edgeVector,
@@ -115,20 +115,24 @@ describe('zoom-dependent speed', () => {
   });
 });
 
-describe('map bounds', () => {
-  it('clamps the target inside the map with a margin', () => {
-    const c = clampToBounds(-100, 999, 192, 20, 20, 6);
-    expect(c.x).toBeCloseTo(20 - 6, 6);
-    expect(c.y).toBeCloseTo(192 - 20 + 6, 6);
+describe('map focus bounds', () => {
+  it('clamps the focus to the edge margin, not to half a viewport', () => {
+    const c = clampFocusToMap(-100, 999, 192, 8);
+    expect(c.x).toBeCloseTo(8, 6);
+    expect(c.y).toBeCloseTo(184, 6);
   });
 
-  it('centers an axis when the viewport is wider than the map', () => {
-    const c = clampToBounds(0, 0, 192, 200, 20, 6);
-    expect(c.x).toBeCloseTo(96, 6);
+  it('lets the focus reach a map corner', () => {
+    const c = clampFocusToMap(0, 0, 192, 8);
+    expect(c).toEqual({ x: 8, y: 8 });
   });
 
-  it('leaves an in-bounds target untouched', () => {
-    expect(clampToBounds(96, 96, 192, 20, 20, 6)).toEqual({ x: 96, y: 96 });
+  it('leaves an in-bounds focus untouched', () => {
+    expect(clampFocusToMap(96, 96, 192, 8)).toEqual({ x: 96, y: 96 });
+  });
+
+  it('centers a map smaller than twice the margin', () => {
+    expect(clampFocusToMap(0, 0, 12, 8)).toEqual({ x: 6, y: 6 });
   });
 });
 
