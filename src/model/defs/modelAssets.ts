@@ -83,13 +83,18 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
       return { asset: CARAL_WORKER_ASSET_ID, variant: female ? 'caral_scout_f' : 'caral_scout_m' };
     }
   }
+  if (civ === CivId.INCA && era === Era.TAHUANTINSUYO && kind === UnitKind.SCOUT) {
+    const female = genderForId(id) === 'female';
+    return { asset: CARAL_WORKER_ASSET_ID, variant: female ? 'inca_chasqui_f' : 'inca_chasqui_m' };
+  }
   return null;
 }
 
 /** Models that must be ready before a match starts (all participating civs are covered). */
 export function modelAssetIdsForMatch(period: HistoricalPeriod, civs: readonly CivId[]): ModelAssetId[] {
-  // Period-locked matches: ARCHAIC starts in Era.FORMATIVE, so this preload
-  // mirrors `unitModelAsset`'s Caral/Formative rule.
-  if (period === HistoricalPeriod.ARCHAIC && civs.includes(CivId.CARAL)) return [CARAL_WORKER_ASSET_ID];
-  return [];
+  // Period-locked matches: ARCHAIC starts in Era.FORMATIVE and LATE_HORIZON
+  // in Era.TAHUANTINSUYO, so this preload mirrors `unitModelAsset`.
+  const caral = period === HistoricalPeriod.ARCHAIC && civs.includes(CivId.CARAL);
+  const inca = period === HistoricalPeriod.LATE_HORIZON && civs.includes(CivId.INCA);
+  return caral || inca ? [CARAL_WORKER_ASSET_ID] : [];
 }
