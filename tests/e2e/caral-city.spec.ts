@@ -31,6 +31,8 @@ test('the Caral scenario builds the documented Upper and Lower halves', { tag: '
     });
     const upperKeepout = plan.keepout[0];
     const ford = plan.placements.find((p: any) => p.kind === 'ford');
+    // Local rect test: page.evaluate runs in the browser and cannot import the
+    // Node-side terrain helper.
     const inRect = (n: any, r: any) => Math.abs(n.pos.x - r.x) <= r.rx && Math.abs(n.pos.z - r.z) <= r.rz;
     const upperResources = [...g.resourceNodes.values()].filter((n: any) => inRect(n, upperKeepout)).length;
     const fordResources = ford
@@ -51,6 +53,7 @@ test('the Caral scenario builds the documented Upper and Lower halves', { tag: '
       mainZ: plan.mainPyramid.z,
       upperZ: plan.upper.z,
       lowerZ: plan.lower.z,
+      baseInLower: base ? Math.abs(base.pos.z - plan.lower.z) < 4 : false,
       fordDry: !g.terrain.isWater(64, 70),
       riverSideWet: g.terrain.isWater(52, 70),
       fordWalkable: g.pathfinder.isWalkable(64, 70),
@@ -70,6 +73,7 @@ test('the Caral scenario builds the documented Upper and Lower halves', { tag: '
   expect(state.landmarkZ).toBeCloseTo(state.mainZ, 3);
   expect(state.lowerZ).toBeGreaterThan(state.upperZ);
   expect(state.lowerZ - state.upperZ).toBeGreaterThan(40);
+  expect(state.baseInLower).toBe(true);
   expect(state.fordDry).toBe(true);
   expect(state.riverSideWet).toBe(true);
   expect(state.fordWalkable).toBe(true);
@@ -81,7 +85,7 @@ test('the Caral scenario builds the documented Upper and Lower halves', { tag: '
   expect(errors).toEqual([]);
 });
 
-test('the Caral city geometry is deterministic for the same mission seed', { tag: '@smoke' }, async ({ page }) => {
+test('the Caral city geometry is deterministic for the same mission seed', async ({ page }) => {
   await boot(page);
   const first = await page.evaluate(() =>
     (window as unknown as { game: any }).game.setpiecePlan.placements

@@ -11,15 +11,18 @@ import type { Terrain } from './Terrain';
  */
 export class SacredCity {
   readonly group: THREE.Group;
-  /** Upper bound of the city's draw calls (one mesh per shared material). */
-  readonly featureBudget: number;
 
   constructor(ctx: BuildContext, plan: CaralCityPlan, terrain: Terrain) {
     this.group = buildCaralCityModel(ctx, plan, (x, z) => terrain.getHeight(x, z));
-    this.featureBudget = this.group.children.length;
   }
 
   dispose(): void {
+    // Only the merged buffers are owned by this instance; the unmerged parts
+    // share the generator's cached geometries.
+    this.group.traverse((obj) => {
+      const mesh = obj as THREE.Mesh;
+      if (mesh.isMesh && mesh.userData.merged) mesh.geometry.dispose();
+    });
     this.group.removeFromParent();
   }
 }

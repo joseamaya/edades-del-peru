@@ -3,7 +3,7 @@ import { RNG } from '../util/rng';
 import { smoothstep } from '../util/math';
 import type { HistoricalMapProfile } from '../model/defs/profiles';
 import { landscapeWeight } from '../model/defs/landscape';
-import { insideTerrainRect, type TerrainLayout, type TerrainRect } from '../model/defs/terrainLayout';
+import type { TerrainLayout, TerrainRect } from '../model/defs/terrainLayout';
 
 export interface HeightField {
   heightMap: Float32Array;
@@ -81,7 +81,7 @@ export function generateHeightField(
   if (layout?.flats?.length) flattenTerracePads(heightMap, n, layout.flats);
   if (layout?.river) carveFixedRiver(heightMap, moistureMap, n, profile, layout.river);
   const terraceMap = carveTerraces(heightMap, n, profile, seed);
-  const { canalMap, canalPaths } = carveCanals(heightMap, n, profile, seed, layout?.canalExclusion);
+  const { canalMap, canalPaths } = carveCanals(heightMap, n, profile, seed);
   return { heightMap, moistureMap, terraceMap, canalMap, canalPaths, waterLevel: profile.water.level };
 }
 
@@ -268,7 +268,6 @@ function carveCanals(
   n: number,
   profile: HistoricalMapProfile,
   seed: number,
-  exclusion?: readonly TerrainRect[],
 ): { canalMap: Float32Array; canalPaths: { x: number; z: number }[][] } {
   const canalMap = new Float32Array(n * n);
   const canalPaths: { x: number; z: number }[][] = [];
@@ -279,8 +278,6 @@ function carveCanals(
   const rng = new RNG((seed * 2246822519 + 53) >>> 0);
   const width = CANAL_WIDTH_CELLS;
   const count = 1 + Math.round(weight * 2);
-  const denied = (x: number, z: number): boolean =>
-    !!exclusion?.some((r) => insideTerrainRect(r, x / (n - 1), z / (n - 1)));
   for (let c = 0; c < count; c++) {
     const path: { x: number; z: number }[] = [];
     let cx = rng.int(0, n - 1);
@@ -295,7 +292,6 @@ function carveCanals(
           const x = Math.round(cx + dx);
           const z = Math.min(cz + dz, n - 1);
           if (x < 0 || x >= n) continue;
-          if (denied(x, z)) continue;
           const d = Math.abs(dx);
           const strength = 1 - d / (width + 0.5);
           if (strength <= 0) continue;
@@ -311,29 +307,7 @@ function carveCanals(
       cx += wander;
       cx = Math.max(2, Math.min(n - 3, cx));
     }
-    canalPaths.push(...splitCanalPath(path, exclusion, n));
+    canalPaths.push(path);
   }
   return { canalMap, canalPaths };
-}
-
-/** Split a canal polyline into the stretches that stay outside the city core. */
-function splitCanalPath(
-  path: { x: number; z: number }[],
-  exclusion: readonly TerrainRect[] | undefined,
-  n: number,
-): { x: number; z: number }[][] {
-  if (!exclusion?.length) return [path];
-  const out: { x: number; z: number }[][] = [];
-  let current: { x: number; z: number }[] = [];
-  for (const p of path) {
-    const blocked = exclusion.some((r) => insideTerrainRect(r, p.x / (n - 1), p.z / (n - 1)));
-    if (blocked) {
-      if (current.length >= 2) out.push(current);
-      current = [];
-    } else {
-      current.push(p);
-    }
-  }
-  if (current.length >= 2) out.push(current);
-  return out;
 }

@@ -354,6 +354,7 @@ export class Terrain {
         snowLine: { value: this.profile.elevation.snowLine },
         temperature: { value: this.profile.climate.temperature },
         groundTint: { value: new THREE.Color(this.profile.groundTint ?? '#ffffff') },
+        floodplain: { value: this.profile.water.wetland ? 1 : 0 },
       },
       vertexShader: /* glsl */ `
         attribute vec3 color;
@@ -417,6 +418,7 @@ export class Terrain {
         uniform float snowLine;
         uniform float temperature;
         uniform vec3 groundTint;
+        uniform float floodplain;
         varying vec3 vColor;
         varying vec3 vWorldPos;
         varying vec2 vUv;
@@ -482,7 +484,7 @@ ${FOW_DIM_GLSL}
           col = mix(col, col * vec3(0.68, 1.08, 0.52), veg * 0.8);
           // Floodplain: the low, flat ground next to a river reads green even in a
           // desert region (the Supe valley below the Caral terrace).
-          float flood = (1.0 - smoothstep(waterLevel + 0.3, waterLevel + 5.5, vHeight)) * (1.0 - smoothstep(0.4, 0.8, slope));
+          float flood = (1.0 - smoothstep(waterLevel + 0.3, waterLevel + 5.5, vHeight)) * (1.0 - smoothstep(0.4, 0.8, slope)) * floodplain;
           col = mix(col, vec3(0.28, 0.42, 0.16), flood * (1.0 - arid * 0.25) * 0.75);
           // temperature: cool regions read bluish, hot regions warmer
           float tempTint = clamp(abs(temperature - 0.5) * 0.6, 0.0, 0.3);

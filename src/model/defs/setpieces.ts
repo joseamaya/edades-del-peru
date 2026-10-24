@@ -1,3 +1,4 @@
+import { rotateXZ } from '../../util/math';
 import { insideTerrainRect, type TerrainRect } from './terrainLayout';
 
 /**
@@ -31,7 +32,7 @@ export type CaralPlacementKind = 'pyramid' | 'sunken_plaza' | 'plaza' | 'compoun
 export interface CaralPlacement {
   kind: CaralPlacementKind;
   /** Documented name when the structure has one (`greater`, `huanca`, …). */
-  name?: CaralPyramidName | CaralLowerName | string;
+  name?: string;
   /** World coordinates in map units. */
   x: number;
   z: number;
@@ -68,9 +69,8 @@ export interface CaralCityPlan {
 const REFERENCE_SIZE = 128;
 
 function local(anchor: { x: number; z: number }, yaw: number, lx: number, lz: number): { x: number; z: number } {
-  const c = Math.cos(yaw);
-  const s = Math.sin(yaw);
-  return { x: anchor.x + lx * c - lz * s, z: anchor.z + lx * s + lz * c };
+  const p = rotateXZ(lx, lz, yaw);
+  return { x: anchor.x + p.x, z: anchor.z + p.z };
 }
 
 function pyramid(
@@ -84,6 +84,17 @@ function pyramid(
   stairWidth = 1.8,
 ): CaralPlacement {
   return { kind: 'pyramid', name, x, z, yaw, width, depth, tiers, stairWidth };
+}
+
+function temple(
+  name: CaralLowerName,
+  width: number,
+  depth: number,
+  tiers: number,
+  yaw: number,
+  stairWidth = 1.8,
+): CaralPlacement {
+  return { kind: 'pyramid', name, x: 0, z: 0, yaw, width, depth, tiers, stairWidth };
 }
 
 /**
@@ -101,43 +112,42 @@ export function planCaralCity(opts: {
 }): CaralCityPlan {
   const s = opts.size / REFERENCE_SIZE;
   const yaw = opts.yaw ?? 0;
+  const rot = (a: number) => a + yaw;
   const at = (anchor: { x: number; z: number }, lx: number, lz: number) => local(anchor, yaw, lx * s, lz * s);
   const upper = opts.upper;
   const lower = opts.lower;
 
   // --- Caral Alto: six monumental complexes around the Central Plaza ---
   const mainPyramid: CaralPlacement = {
-    ...pyramid('greater', 0, 0, 15, 9, 4, 0, 2.2),
+    ...pyramid('greater', 0, 0, 15, 9, 4, yaw, 2.2),
     ...at(upper, -17, -3),
   };
 
   const placements: CaralPlacement[] = [];
 
   // Central Plaza, the main open space of the Upper Half.
-  placements.push({ kind: 'plaza', name: 'central_plaza', ...at(upper, 0, 0), yaw, width: 20 * s, depth: 11 * s });
+  placements.push({ kind: 'plaza', name: 'central_plaza', ...at(upper, 0, 0), yaw, width: 16 * s, depth: 10 * s });
 
   // The other five pyramids of the Upper Half. The Great Pyramid is the landmark.
-  const central = { ...pyramid('central', 0, 0, 11, 7, 4, 0), ...at(upper, -11, -11) };
-  const quarry = { ...pyramid('quarry', 0, 0, 10, 7, 3, Math.PI), ...at(upper, -11, 8) };
-  const lesser = { ...pyramid('lesser', 0, 0, 8, 6, 3, Math.PI), ...at(upper, 9, 9) };
-  const gallery = { ...pyramid('gallery', 0, 0, 11, 8, 4, -Math.PI / 2), ...at(upper, 13, -3) };
-  const huanca = { ...pyramid('huanca', 0, 0, 9, 7, 3, -Math.PI / 2), ...at(upper, 13, 6) };
+  const central = { ...pyramid('central', 0, 0, 11, 7, 4, rot(0)), ...at(upper, -11, -11) };
+  const quarry = { ...pyramid('quarry', 0, 0, 10, 7, 3, rot(Math.PI)), ...at(upper, -11, 9) };
+  const lesser = { ...pyramid('lesser', 0, 0, 8, 6, 3, rot(Math.PI)), ...at(upper, 9, 9) };
+  const gallery = { ...pyramid('gallery', 0, 0, 11, 8, 4, rot(-Math.PI / 2)), ...at(upper, 14, -4) };
+  const huanca = { ...pyramid('huanca', 0, 0, 9, 7, 3, rot(-Math.PI / 2)), ...at(upper, 15, 6) };
   placements.push(central, quarry, lesser, gallery, huanca);
 
   // Open plazas in front of each stair (the Great Pyramid's sunken plaza is part
   // of the landmark model).
   placements.push(
-    { kind: 'plaza', name: 'central_plaza_front', ...at(upper, -11, -6), yaw: 0, width: 8 * s, depth: 4 * s },
-    { kind: 'plaza', name: 'quarry_plaza', ...at(upper, -11, 3), yaw: 0, width: 7 * s, depth: 4 * s },
-    { kind: 'plaza', name: 'lesser_plaza', ...at(upper, 9, 4), yaw: 0, width: 6 * s, depth: 4 * s },
-    { kind: 'plaza', name: 'gallery_plaza', ...at(upper, 8, -3), yaw: -Math.PI / 2, width: 5 * s, depth: 7 * s },
-    { kind: 'plaza', name: 'huanca_plaza', ...at(upper, 8, 6), yaw: -Math.PI / 2, width: 5 * s, depth: 6 * s },
+    { kind: 'plaza', name: 'quarry_plaza', ...at(upper, -11, 4), yaw: rot(0), width: 7 * s, depth: 4 * s },
+    { kind: 'plaza', name: 'gallery_plaza', ...at(upper, 8, -3), yaw: rot(-Math.PI / 2), width: 5 * s, depth: 7 * s },
+    { kind: 'plaza', name: 'huanca_plaza', ...at(upper, 8, 6), yaw: rot(-Math.PI / 2), width: 5 * s, depth: 6 * s },
   );
 
   // Plaza de la Huanca and its 2.3 m monolith (documented in the 2005/2008 reports).
   placements.push(
-    { kind: 'plaza', name: 'plaza_de_la_huanca', ...at(upper, 7, 2), yaw: 0, width: 6 * s, depth: 6 * s },
-    { kind: 'monolith', name: 'la_huanca', ...at(upper, 7, 2), yaw: 0, width: 0.35 * s, depth: 0.35 * s },
+    { kind: 'plaza', name: 'plaza_de_la_huanca', ...at(upper, 10, 2), yaw: rot(0), width: 4 * s, depth: 4 * s },
+    { kind: 'monolith', name: 'la_huanca', ...at(upper, 10, 2), yaw: rot(0), width: 0.35 * s, depth: 0.35 * s },
   );
 
   // Elite residential units and public buildings of the Upper Half.
@@ -168,30 +178,30 @@ export function planCaralCity(opts: {
     compound('greater_residential_complex', 0, 11, 13, 8, 8, true),
     compound('E2', -7, 14, 7, 5, 5, true),
     compound('E3', 7, 14, 7, 5, 5, true),
-    compound('B3', -20, 4, 7, 5, 4, false, 0.15),
-    compound('B4', 20, 3, 7, 5, 4, false, -0.12),
-    compound('B6', -18, 13, 6, 5, 4, false),
-    compound('B7', 19, 13, 6, 5, 4, false),
+    compound('upper_residence_w', -20, 4, 7, 5, 4, false, 0.15),
+    compound('upper_residence_e', 20, 3, 7, 5, 4, false, -0.12),
+    compound('upper_residence_sw', -18, 13, 6, 5, 4, false),
+    compound('upper_residence_se', 19, 13, 6, 5, 4, false),
   );
 
   // --- Caral Bajo: the Lower Half, across the Supe valley ---
   const lowerAt = (lx: number, lz: number) => at(lower, lx, lz);
 
   // The Amphitheatre Temple is linked to the largest sunken circular plaza.
-  placements.push({ ...pyramid('central', 0, 0, 10, 7, 3, 0, 1.9), name: 'amphitheatre', ...lowerAt(-16, 1) });
+  placements.push({ ...temple('amphitheatre', 10, 7, 3, rot(0), 1.9), ...lowerAt(-16, 1) });
   placements.push({
     kind: 'sunken_plaza',
     name: 'amphitheatre_plaza',
     ...lowerAt(-16, 7),
-    yaw: Math.PI,
-    width: 9 * s,
-    depth: 9 * s,
-    radius: 4.5 * s,
+    yaw: rot(0),
+    width: 14.4 * s,
+    depth: 14.4 * s,
+    radius: 7.2 * s,
   });
 
   placements.push(
-    { ...pyramid('central', 0, 0, 8, 6, 3, -Math.PI / 2, 1.7), name: 'round_altar', ...lowerAt(15, 1) },
-    { ...pyramid('central', 0, 0, 7, 5, 2, 0, 1.5), name: 'bench_temple', ...lowerAt(14, -9) },
+    { ...temple('round_altar', 8, 6, 3, rot(-Math.PI / 2), 1.7), ...lowerAt(15, 1) },
+    { ...temple('bench_temple', 7, 5, 2, rot(0), 1.5), ...lowerAt(14, -9) },
     {
       kind: 'compound',
       name: 'Q',
@@ -205,7 +215,7 @@ export function planCaralCity(opts: {
     {
       kind: 'compound',
       name: 'lesser_residential_complex_w',
-      ...lowerAt(-10, 13),
+      ...lowerAt(-6, 12),
       yaw,
       width: 6 * s,
       depth: 5 * s,
@@ -267,14 +277,14 @@ export function planCaralCity(opts: {
   // Short processional paths inside each half. They are visual-only and help the
   // eye read the axes between the plaza and the main temples.
   placements.push(
-    { kind: 'path', name: 'upper_axis_n', ...at(upper, 0, -9), yaw: 0, width: 2.2 * s, depth: 7 * s },
-    { kind: 'path', name: 'upper_axis_s', ...at(upper, 0, 8), yaw: 0, width: 2.2 * s, depth: 6 * s },
-    { kind: 'path', name: 'lower_axis', ...lowerAt(0, -8), yaw: 0, width: 2.2 * s, depth: 7 * s },
+    { kind: 'path', name: 'upper_axis_n', ...at(upper, 0, -9), yaw: rot(0), width: 2.2 * s, depth: 7 * s },
+    { kind: 'path', name: 'upper_axis_s', ...at(upper, 0, 8), yaw: rot(0), width: 2.2 * s, depth: 6 * s },
+    { kind: 'path', name: 'lower_axis', ...lowerAt(0, -8), yaw: rot(0), width: 2.2 * s, depth: 7 * s },
   );
 
   const keepout: TerrainRect[] = [
     { x: upper.x, z: upper.z, rx: 26 * s, rz: 18 * s },
-    { x: lower.x, z: lower.z, rx: 22 * s, rz: 17 * s },
+    { x: lower.x, z: lower.z, rx: 24 * s, rz: 17 * s },
   ];
 
   for (const ford of opts.fords ?? []) {
