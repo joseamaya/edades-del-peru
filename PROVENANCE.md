@@ -78,6 +78,22 @@ slot is absent (offline / without assets).
 - **Assets**: 2D retouching does not change the “artistic reconstruction, not a photograph”
   disclaimer.
 
+### Caral Pyramid Mayor modular scenery
+
+- **Location**: `src/assets/scenery/caral/caral_pyramid_mayor_lod0.glb` and `lod1.glb`.
+- **Source**: `art-src/blender/scenes/caral_rts_kit.blend`, isolated by
+  `scripts/blender/build_caral_pyramid_mayor.py` into
+  `art-src/blender/scenes/caral_pyramid_mayor.blend`.
+- **SHA-256**: LOD0 `c18c2230394471221bf86eccaa38a51e002185d62a208bef7c01a46199399bbd`;
+  LOD1 `844c1bd866aa8afddaac5bbf3adfb286b867e61c14bedb304bd82f785ba19153`;
+  manifest `b5f0766f0fb3105e244d0285d75ff9c5b7ccb34ba7d6379b0744fbcf227a644f`.
+- **Export**: LOD0 6,044 tris / 7 draw calls / 293,796 bytes; LOD1 2,408 tris / 154,020 bytes.
+  Bounds 13.904 × 2.7744 × 15.5352 game units; Y-up; footprint centre at ground; foundations
+  extend to -0.16.
+- **Content**: Pyramid Mayor + Plaza Mayor; excludes `PlazaCentral`, market stalls and terrain.
+- **Runtime**: `?scenery=caral` mounts the scenery showcase. Visual-only, not a campaign asset.
+- **Confidence**: documented in plan; roofs and remates inferred.
+
 ### Caral city GLB (showcase)
 
 - **Location**: `src/assets/cities/caral_city_lod0.glb` and `caral_city_lod1.glb`.

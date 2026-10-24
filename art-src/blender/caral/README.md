@@ -17,6 +17,11 @@ and hashes live alongside them so provenance is reproducible.
 | `exports/caral_city_lod0.glb` | `f6d30d3df0eda092d0caaea9105627bd8a6369680e2824f1d4bc1deedde63d07` |
 | `exports/caral_city_lod1.glb` | `e291d8cd3e05ae77debded0470ba7c309f89549e5cd8a98ab3c44bb276123de6` |
 | `exports/caral_city_game_manifest.csv` | `b3e35f8b4f3b557abedce201beb9aea431be23f21439326de28c877e622fbd60` |
+| `scenes/caral_pyramid_mayor.blend` | `e6c11af349ee9c92c5751bd6b8f41ae7398037ee97a44550117443b4220886a4` |
+| `exports/caral/caral_pyramid_mayor_lod0.glb` | `c18c2230394471221bf86eccaa38a51e002185d62a208bef7c01a46199399bbd` |
+| `exports/caral/caral_pyramid_mayor_lod1.glb` | `844c1bd866aa8afddaac5bbf3adfb286b867e61c14bedb304bd82f785ba19153` |
+| `exports/caral/caral_pyramid_mayor_manifest.json` | `b5f0766f0fb3105e244d0285d75ff9c5b7ccb34ba7d6379b0744fbcf227a644f` |
+| `caral/scenery_manifest.csv` | `20bd464fd28136f48f659ac00e18ced5858435774e0fc136fec3789911c17e59` |
 
 Paths are relative to `art-src/blender`. The `.blend` sources are stored in Git LFS;
 `.glb`/`.fbx` exports and PNG renders are tracked normally. If the source layout changes,
@@ -76,6 +81,42 @@ The showcase loads both LODs, fixes the missing `MAT-Sand_Desert` base colour in
 and exposes `window.__cityDemo` for inspection. The plaza stalls included in the export must
 be reviewed against the campaign note that Caral has no attested market before using the
 city in the campaign.
+
+## Modular scenery
+
+`caral_pyramid_mayor` is the first modular scenery asset. It isolates the Pyramid Mayor
+(`GEO-Caral_PyramideMayor_LOD0`) and Plaza Mayor (`GEO-Caral_PlazaMayor_LOD0`) from
+`scenes/caral_rts_kit.blend`; it excludes `PlazaCentral`, the market stalls and the terrain.
+
+| LOD | Size X × Y × Z (game axes) | Tris | Draw calls | Materials | Bytes |
+|---|---|---|---|---|---|
+| LOD0 | 13.904 × 2.7744 × 15.5352 | 6,044 | 7 | 7 | 293,796 |
+| LOD1 | 13.904 × 2.7744 × 15.529 | 2,408 | 7 | 7 | 154,020 |
+
+- Pivot: footprint centre at ground level; foundations extend to -0.16.
+- Orientation: Y-up; main stair +Z.
+- Materials: Fire, Plaster Red/White/Yellow, Stone Dark/Granodiorite, Thatch.
+- Source: `scenes/caral_rts_kit.blend`; build script:
+  `scripts/blender/build_caral_pyramid_mayor.py`.
+- Preview: `yarn dev` → `http://localhost:5173/?scenery=caral`.
+- Status: visual-only pilot; not yet integrated into a campaign.
+
+Rebuild:
+
+```bash
+blender --background art-src/blender/scenes/caral_rts_kit.blend \
+  --python scripts/blender/build_caral_pyramid_mayor.py -- \
+  --out-dir=art-src/blender/exports/caral \
+  --game-dir=src/assets/scenery/caral \
+  --blend=art-src/blender/scenes/caral_pyramid_mayor.blend
+```
+
+Review renders:
+
+```bash
+blender --background art-src/blender/scenes/caral_pyramid_mayor.blend \
+  --python scripts/blender/render_caral_pyramid_mayor.py
+```
 
 ## Ingest
 

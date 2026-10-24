@@ -1,0 +1,75 @@
+{
+  "asset_id": "caral_pyramid_mayor",
+  "source_scene": "scenes/caral_rts_kit.blend",
+  "source_objects": [
+    "GEO-Caral_PyramideMayor_LOD0",
+    "GEO-Caral_PlazaMayor_LOD0"
+  ],
+  "scale": 0.08,
+  "lod1_ratio": 0.4,
+  "root": "GEO-Caral_PyramidMayor",
+  "lods": {
+    "LOD0": {
+      "file": "caral_pyramid_mayor_lod0.glb",
+      "triangles": 6044,
+      "draw_calls": 7,
+      "materials": [
+        "MAT-Fire_Ember",
+        "MAT-Plaster_Red",
+        "MAT-Plaster_White",
+        "MAT-Plaster_Yellow",
+        "MAT-Stone_Dark",
+        "MAT-Stone_Granodiorite",
+        "MAT-Thatch_Reed"
+      ],
+      "bounds": {
+        "min": [
+          -6.952,
+          -7.767601,
+          -0.16
+        ],
+        "max": [
+          6.952,
+          7.7676,
+          2.6144
+        ],
+        "size": [
+          13.904,
+          15.5352,
+          2.7744
+        ]
+      }
+    },
+    "LOD1": {
+      "file": "caral_pyramid_mayor_lod1.glb",
+      "triangles": 2408,
+      "draw_calls": 7,
+      "materials": [
+        "MAT-Fire_Ember",
+        "MAT-Plaster_Red",
+        "MAT-Plaster_White",
+        "MAT-Plaster_Yellow",
+        "MAT-Stone_Dark",
+        "MAT-Stone_Granodiorite",
+        "MAT-Thatch_Reed"
+      ],
+      "bounds": {
+        "min": [
+          -6.952001,
+          -7.761351,
+          -0.16
+        ],
+        "max": [
+          6.952001,
+          7.7676,
+          2.6144
+        ],
+        "size": [
+          13.904001,
+          15.528951,
+          2.7744
+        ]
+      }
+    }
+  }
+}

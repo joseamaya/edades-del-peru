@@ -48,6 +48,13 @@ Definition of Done and the building audit see
   procedural landmark remains. `MAT-Sand_Desert` needs a source fix, plaza stalls need a historical review, and
   the 30×50 footprint needs a flat-pad/placement design before integration. See
   [`docs/design/blender-art.md`](design/blender-art.md).
+- **Caral modular scenery**: `src/assets/scenery/caral/caral_pyramid_mayor_lod0.glb` / `lod1.glb`
+  are the first modular Blender exports (Pyramid Mayor + Plaza Mayor; 6,044/2,408 tris, 7 draw calls,
+  Y-up, footprint 13.9 × 15.5, ground pivot). They are rebuilt by
+  `scripts/blender/build_caral_pyramid_mayor.py` from `caral_rts_kit.blend`; the script excludes
+  `PlazaCentral`, market stalls and terrain. `?scenery=caral` mounts the showcase
+  (`window.__sceneryDemo`); the asset is visual-only until the RTS footprint/height are validated.
+  See `docs/design/blender-art.md`.
 - **Building/unit materials are AI-overridable**: `mat()` (`ProceduralModel.ts`) maps a `TexKind` to an
   AI-generated material via `TEX_GEN` (e.g. `adobe → wall_adobe`, `brick → wall_brick`, `roof → tile`,
   `thatch → roof_thatch`, `textile_inca → textile_inca`); the architecture profile (`archProfileFor`) picks the
