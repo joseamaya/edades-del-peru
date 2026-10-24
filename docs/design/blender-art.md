@@ -95,7 +95,8 @@ The showcase exposes `bounds`, `lod0Triangles`, `lod1Triangles`, `drawCalls`, `m
 - The footprint (30×50) is much larger than the current landmark (~12×16) and needs a flat pad,
   a dedicated placement rule and a decision between visual-only and obstacle.
 - The height (2.814) may read too flat at RTS zoom; this needs an in-game capture before integration.
-- The city is **showcase only**; the procedural Caral landmark remains in `m1_caral`.
+- The city is **showcase only**; the modular Pyramid Mayor GLB is now the Caral landmark, with the
+  procedural landmark as fallback.
 
 ## Modular scenery
 
@@ -276,9 +277,9 @@ out of scope.
 - Before publishing, audit the `.blend` scenes for external textures/HDRIs/models and record
   their licences.
 - A render is an **artistic reconstruction**, not a photograph. The UI always says so.
-- The GLB exports are not integrated into the game in this branch; the procedural models stay.
-  A future phase can evaluate `caral_pyramide_mayor.glb`/`caral_rts_kit.glb` as landmark or
-  settlement assets, with scale/material/FOW/shadow validation.
+- The raw source exports `caral_pyramide_mayor.glb`/`caral_rts_kit.glb` are not used at runtime. The
+  modular `caral_pyramid_mayor_lod0.glb` is integrated as the Caral landmark (visual-only, with a flat
+  pad and procedural fallback); the full city and raw kit remain showcase/source assets.
 
 ## Verification
 

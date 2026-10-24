@@ -61,8 +61,9 @@ slot is absent (offline / without assets).
   claimed.
 - **Licence**: the renders are project-owned; audit the `.blend` scenes for external textures/HDRIs/models and
   record their licences before publishing.
-- **GLB exports**: `caral_pyramide_mayor.glb` and `caral_rts_kit.glb` are recorded for provenance but are not
-  integrated into the game in this branch; the procedural models remain.
+- **GLB exports**: the raw source `caral_pyramide_mayor.glb` and `caral_rts_kit.glb` are recorded for
+  provenance but are not used at runtime. The modular `caral_pyramid_mayor_lod0.glb` is now the Caral
+  landmark; the procedural landmark remains the fallback. The full city and raw kit stay showcase/source.
 - **Archived AI pipeline**: the earlier AI-illustration spike is archived on the `feat/visual-ai-pipeline`
   branch and is not part of this branch.
 

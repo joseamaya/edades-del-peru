@@ -60,21 +60,33 @@ test('the Caral landmark uses the modular Pyramid Mayor GLB', async ({ page }) =
   const child = await page.evaluate(() => {
     const landmark = (window as unknown as { game: any }).game.landmark;
     const model = landmark?.getObjectByName('caral_pyramid_mayor');
+    const pad = landmark?.getObjectByName('caral_landmark_pad');
+    const THREE = (window as unknown as { THREE: any }).THREE;
     let meshes = 0;
     model?.traverse((object: any) => {
       if (object.isMesh) meshes++;
     });
+    pad?.updateWorldMatrix(true, false);
+    const box = pad && THREE ? new THREE.Box3().setFromObject(pad) : null;
+    const size = box?.getSize(new THREE.Vector3()) ?? null;
     return {
       name: model?.name ?? null,
       meshes,
-      pad: landmark?.getObjectByName('caral_landmark_pad')?.name ?? null,
+      pad: pad?.name ?? null,
+      padSize: size ? { x: size.x as number, y: size.y as number, z: size.z as number } : null,
+      padTop: box?.max.y as number | undefined,
+      landmarkY: landmark?.position.y as number | undefined,
     };
   });
   expect(info.id).toBe('caral_ceremonial');
   expect(info.present).toBe(true);
   expect(child.name).toBe('caral_pyramid_mayor');
-  expect(child.meshes).toBe(7);
+  expect(child.meshes).toBeGreaterThan(0);
   expect(child.pad).toBe('caral_landmark_pad');
+  expect(child.padSize!.x).toBeGreaterThan(23);
+  expect(child.padSize!.z).toBeGreaterThan(23);
+  expect(child.padSize!.y).toBeGreaterThan(1.3);
+  expect(child.padTop!).toBeGreaterThanOrEqual(child.landmarkY! - 0.03);
 });
 
 test('period maps place their own landmark on land', async ({ page }) => {

@@ -135,7 +135,7 @@ export class Game {
   private readonly missionAtmosphere?: MissionAtmosphere;
   /** Decorative historical landmark of the map (visual only), if any. */
   landmark: THREE.Group | null = null;
-  private landmarkIsStatic = false;
+  private landmarkOwnsStatic = false;
   private landmarkLoadToken = 0;
   /** Cultural landscape (roads, fields, plazas, canals); visual only. */
   landscape: CulturalLandscape | null = null;
@@ -468,7 +468,6 @@ export class Game {
   private spawnLandmark(): void {
     const id = this.mapProfile.landmark;
     if (!id) return;
-    const isCaral = id === 'caral_ceremonial';
     const def = LANDMARKS[id];
     const civ = getCiv(def.civ);
     const era = getPeriod(def.period).level;
@@ -492,7 +491,7 @@ export class Game {
       if (this.terrain.isWater(px, pz) || this.terrain.isBeach(px, pz)) return false;
       for (let k = 0; k < 8; k++) {
         const a = (k / 8) * Math.PI * 2;
-        for (const r of isCaral ? [5, 11] : [4, 9]) {
+        for (const r of [4, 9]) {
           const x = px + Math.cos(a) * r;
           const z = pz + Math.sin(a) * r;
           if (this.terrain.isWater(x, z)) return false;
@@ -511,7 +510,7 @@ export class Game {
       const px = size / 2 + Math.cos(a) * r;
       const pz = size / 2 + Math.sin(a) * r;
       if (!footprintClear(px, pz)) continue;
-      if (!clearOf(px, pz, isCaral ? 12 : 9)) continue;
+      if (!clearOf(px, pz, 9)) continue;
       x = px;
       z = pz;
       found = true;
@@ -522,22 +521,23 @@ export class Game {
       x = safe.x;
       z = safe.z;
     }
-    if (isCaral) {
+    const scenery = def.scenery;
+    if (scenery) {
       const placeholder = new THREE.Group();
       placeholder.name = 'landmark';
-      placeholder.position.set(x, this.terrain.getHeight(x, z), z);
+      placeholder.position.set(x, this.landmarkPadHeight(x, z, scenery.padRadius) + 0.02, z);
       placeholder.rotation.y = rng.range(0, Math.PI * 2);
       this.landmark = placeholder;
-      this.landmarkIsStatic = true;
+      this.landmarkOwnsStatic = true;
       this.scene.add(placeholder);
       const token = ++this.landmarkLoadToken;
-      void loadSceneryModel('caral_pyramid_mayor')
+      void loadSceneryModel(scenery.model)
         .then((model) => {
           if (token !== this.landmarkLoadToken || this.landmark !== placeholder) {
             disposeStaticGltf(model);
             return;
           }
-          const pad = this.createCaralLandmarkPad();
+          const pad = this.createCaralLandmarkPad(scenery.padRadius);
           placeholder.add(pad);
           applyFowToObject(pad, this.fowUniforms);
           model.name = 'caral_pyramid_mayor';
@@ -549,16 +549,10 @@ export class Game {
           if (token !== this.landmarkLoadToken || this.landmark !== placeholder) return;
           const fallback = buildLandmarkModel(id, ctx);
           fallback.name = 'caral_ceremonial_fallback';
-          fallback.traverse((o) => {
-            const mesh = o as THREE.Mesh;
-            if (mesh.isMesh) {
-              mesh.castShadow = true;
-              mesh.receiveShadow = true;
-            }
-          });
+          this.enableLandmarkShadows(fallback);
           placeholder.add(fallback);
           applyFowToObject(fallback, this.fowUniforms);
-          this.landmarkIsStatic = false;
+          this.landmarkOwnsStatic = false;
         });
       return;
     }
@@ -566,27 +560,41 @@ export class Game {
     model.position.set(x, this.terrain.getHeight(x, z), z);
     model.rotation.y = rng.range(0, Math.PI * 2);
     model.name = 'landmark';
-    model.traverse((o) => {
-      const mesh = o as THREE.Mesh;
-      if (mesh.isMesh) {
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-      }
-    });
+    this.enableLandmarkShadows(model);
     this.landmark = model;
     applyFowToObject(model, this.fowUniforms);
     this.scene.add(model);
   }
 
-  private createCaralLandmarkPad(): THREE.Mesh {
-    const geometry = new THREE.CylinderGeometry(11, 11, 0.4, 32);
+  private enableLandmarkShadows(root: THREE.Object3D): void {
+    root.traverse((object) => {
+      const mesh = object as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+    });
+  }
+
+  private landmarkPadHeight(x: number, z: number, radius: number): number {
+    let height = this.terrain.getHeight(x, z);
+    for (let k = 0; k < 8; k++) {
+      const angle = (k / 8) * Math.PI * 2;
+      for (const r of [radius * 0.5, radius]) {
+        height = Math.max(height, this.terrain.getHeight(x + Math.cos(angle) * r, z + Math.sin(angle) * r));
+      }
+    }
+    return height;
+  }
+
+  private createCaralLandmarkPad(radius: number): THREE.Mesh {
+    const geometry = new THREE.CylinderGeometry(radius, radius + 1, 1.4, 32);
     const material = new THREE.MeshStandardMaterial({ color: 0xc8b088, roughness: 1, metalness: 0 });
     const pad = new THREE.Mesh(geometry, material);
     pad.name = 'caral_landmark_pad';
-    pad.position.y = -0.22;
+    pad.position.y = -0.72;
     pad.receiveShadow = true;
     const rim = new THREE.Mesh(
-      new THREE.RingGeometry(10.8, 11.1, 32),
+      new THREE.RingGeometry(radius - 0.2, radius + 0.1, 32),
       new THREE.MeshStandardMaterial({ color: 0x8a7a5a, roughness: 1, metalness: 0, side: THREE.DoubleSide }),
     );
     rim.name = 'caral_landmark_pad_rim';
@@ -3155,10 +3163,10 @@ export class Game {
     if (this.landmark) {
       this.landmarkLoadToken++;
       this.scene.remove(this.landmark);
-      if (this.landmarkIsStatic) disposeStaticGltf(this.landmark);
+      if (this.landmarkOwnsStatic) disposeStaticGltf(this.landmark);
       else disposeModel(this.landmark);
       this.landmark = null;
-      this.landmarkIsStatic = false;
+      this.landmarkOwnsStatic = false;
     }
     if (this.landscape) {
       this.scene.remove(this.landscape.group);

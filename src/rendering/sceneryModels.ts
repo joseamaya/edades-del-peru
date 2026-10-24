@@ -12,6 +12,6 @@ export const SCENERY_MODEL_URLS: Record<SceneryModelId, { lod0: string; lod1: st
   caral_anfiteatro: { lod0: anfiteatroLod0, lod1: anfiteatroLod1 },
 };
 
-export function loadSceneryModel(id: SceneryModelId, lod: 0 | 1 = 0): Promise<THREE.Group> {
-  return loadStaticGltf(SCENERY_MODEL_URLS[id][lod === 0 ? 'lod0' : 'lod1']);
+export function loadSceneryModel(id: SceneryModelId): Promise<THREE.Group> {
+  return loadStaticGltf(SCENERY_MODEL_URLS[id].lod0);
 }
