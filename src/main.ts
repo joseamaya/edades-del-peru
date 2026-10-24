@@ -105,6 +105,11 @@ async function boot(): Promise<void> {
     await mountCityDemo();
     return;
   }
+  if (params.get('scenery') === 'caral') {
+    const { mountSceneryDemo } = await import('./rendering/SceneryDemo');
+    await mountSceneryDemo();
+    return;
+  }
   const wantsLoad = params.get('load') === '1';
   const wantsReplay = params.get('replay') === '1';
   const snapshot = wantsLoad ? loadFromStorage() : null;

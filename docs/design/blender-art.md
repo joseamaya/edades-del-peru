@@ -97,6 +97,23 @@ The showcase exposes `bounds`, `lod0Triangles`, `lod1Triangles`, `drawCalls`, `m
 - The height (2.814) may read too flat at RTS zoom; this needs an in-game capture before integration.
 - The city is **showcase only**; the procedural Caral landmark remains in `m1_caral`.
 
+## Modular scenery
+
+The first modular asset is `caral_pyramid_mayor` (Pyramid Mayor + Plaza Mayor). It is
+isolated from `scenes/caral_rts_kit.blend`, excludes `PlazaCentral`, the market stalls and
+the terrain, and is rebuilt by `scripts/blender/build_caral_pyramid_mayor.py`.
+
+| LOD | Size X × Y × Z (game axes) | Tris | Draw calls | Materials | Bytes |
+|---|---|---|---|---|---|
+| LOD0 | 13.904 × 2.7744 × 15.5352 | 6,044 | 7 | 7 | 293,796 |
+| LOD1 | 13.904 × 2.7744 × 15.529 | 2,408 | 7 | 7 | 154,020 |
+
+- Pivot: footprint centre at ground level; foundations extend to -0.16.
+- Orientation: Y-up; main stair +Z.
+- The source objects are `GEO-Caral_PyramideMayor_LOD0` and `GEO-Caral_PlazaMayor_LOD0`.
+- `?scenery=caral` mounts the LOD showcase; `?city=caral` remains the full-city showcase.
+- The asset is **visual-only** until the RTS footprint and height are validated.
+
 ## Source manifest
 
 `art-src/blender/caral/renders.json`:
