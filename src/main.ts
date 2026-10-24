@@ -105,9 +105,13 @@ async function boot(): Promise<void> {
     await mountCityDemo();
     return;
   }
-  if (params.get('scenery') === 'caral') {
-    const { mountSceneryDemo } = await import('./rendering/SceneryDemo');
-    await mountSceneryDemo();
+  const scenery = params.get('scenery');
+  if (scenery === 'caral' || scenery === 'caral-anfiteatro' || scenery === 'anfiteatro') {
+    const [{ resolveSceneryAsset }, { mountSceneryDemo }] = await Promise.all([
+      import('./rendering/sceneryAssets'),
+      import('./rendering/SceneryDemo'),
+    ]);
+    await mountSceneryDemo(resolveSceneryAsset(scenery));
     return;
   }
   const wantsLoad = params.get('load') === '1';

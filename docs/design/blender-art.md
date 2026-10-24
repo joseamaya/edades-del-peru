@@ -101,7 +101,7 @@ The showcase exposes `bounds`, `lod0Triangles`, `lod1Triangles`, `drawCalls`, `m
 
 The first modular asset is `caral_pyramid_mayor` (Pyramid Mayor + Plaza Mayor). It is
 isolated from `scenes/caral_rts_kit.blend`, excludes `PlazaCentral`, the market stalls and
-the terrain, and is rebuilt by `scripts/blender/build_caral_pyramid_mayor.py`.
+the terrain, and is rebuilt by `scripts/blender/build_caral_scenery.py --asset=pyramid-mayor`.
 
 | LOD | Size X × Y × Z (game axes) | Tris | Draw calls | Materials | Bytes |
 |---|---|---|---|---|---|
@@ -112,7 +112,21 @@ the terrain, and is rebuilt by `scripts/blender/build_caral_pyramid_mayor.py`.
 - Orientation: Y-up; main stair +Z.
 - The source objects are `GEO-Caral_PyramideMayor_LOD0` and `GEO-Caral_PlazaMayor_LOD0`.
 - `?scenery=caral` mounts the LOD showcase; `?city=caral` remains the full-city showcase.
-- The asset is **visual-only** until the RTS footprint and height are validated.
+
+### Anfiteatro
+
+`caral_anfiteatro` combines `GEO-Caral_TemploAnfiteatro_LOD0`, `GEO-Caral_AltarCircular_LOD0` and
+`GEO-Caral_TemploBanqueta_LOD0`. The banqueta is a detached small platform in the source layout.
+
+| LOD | Size X × Y × Z (game axes) | Tris | Draw calls | Materials | Bytes |
+|---|---|---|---|---|---|
+| LOD0 | 19.704 × 1.016 × 7.2 | 3,520 | 7 | 7 | 170,580 |
+| LOD1 | 19.704 × 1.016 × 7.2 | 1,403 | 7 | 7 | 84,880 |
+
+- `MAT-Sand_Desert` is fixed at build time by removing the procedural Base Color link that the glTF
+  exporter cannot represent; the GLB exports its base color.
+- `?scenery=caral-anfiteatro` mounts the showcase.
+- Visual-only until the RTS footprint/height are validated.
 
 ## Source manifest
 

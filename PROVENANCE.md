@@ -94,6 +94,22 @@ slot is absent (offline / without assets).
 - **Runtime**: `?scenery=caral` mounts the scenery showcase. Visual-only, not a campaign asset.
 - **Confidence**: documented in plan; roofs and remates inferred.
 
+### Caral Anfiteatro modular scenery
+
+- **Location**: `src/assets/scenery/caral/caral_anfiteatro_lod0.glb` and `lod1.glb`.
+- **Source**: `art-src/blender/scenes/caral_rts_kit.blend`, isolated by
+  `scripts/blender/build_caral_scenery.py --asset=anfiteatro` into
+  `art-src/blender/scenes/caral_anfiteatro.blend`.
+- **SHA-256**: LOD0 `b00b196a7698c75048e636cbc7f6ed5b4f817d3044f998735f4c701536031565`;
+  LOD1 `6b17d4e4237270979085a12aaaaa248fb787aecb65db1bcf7dcb4713b851897b`;
+  manifest `343c8f1d703be774dd35fd631b161c9eafb612cd4e726bff0e37e14b8dfc61dd`.
+- **Export**: LOD0 3,520 tris / 7 draw calls / 170,580 bytes; LOD1 1,403 tris / 84,880 bytes.
+  Bounds 19.704 × 1.016 × 7.2 game units; Y-up; footprint centre at ground; foundations to -0.2.
+- **Content**: Templo Anfiteatro + Altar Circular + Templo Banqueta; excludes stalls and terrain.
+  `MAT-Sand_Desert` is exported with its base color after stripping the unsupported procedural link.
+- **Runtime**: `?scenery=caral-anfiteatro` mounts the scenery showcase. Visual-only.
+- **Confidence**: documented in plan; graderios and banqueta simplified.
+
 ### Caral city GLB (showcase)
 
 - **Location**: `src/assets/cities/caral_city_lod0.glb` and `caral_city_lod1.glb`.

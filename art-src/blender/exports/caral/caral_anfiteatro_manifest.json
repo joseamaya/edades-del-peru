@@ -1,0 +1,76 @@
+{
+  "asset_id": "caral_anfiteatro",
+  "source_scene": "scenes/caral_rts_kit.blend",
+  "source_objects": [
+    "GEO-Caral_TemploAnfiteatro_LOD0",
+    "GEO-Caral_AltarCircular_LOD0",
+    "GEO-Caral_TemploBanqueta_LOD0"
+  ],
+  "scale": 0.08,
+  "lod1_ratio": 0.4,
+  "root": "GEO-Caral_Anfiteatro",
+  "lods": {
+    "LOD0": {
+      "file": "caral_anfiteatro_lod0.glb",
+      "triangles": 3520,
+      "draw_calls": 7,
+      "materials": [
+        "MAT-Fire_Ember",
+        "MAT-Plaster_Red",
+        "MAT-Plaster_White",
+        "MAT-Plaster_Yellow",
+        "MAT-Sand_Desert",
+        "MAT-Stone_Dark",
+        "MAT-Stone_Granodiorite"
+      ],
+      "bounds": {
+        "min": [
+          -9.851999,
+          -3.6,
+          -0.2
+        ],
+        "max": [
+          9.852,
+          3.6,
+          0.816
+        ],
+        "size": [
+          19.703999,
+          7.200001,
+          1.016
+        ]
+      }
+    },
+    "LOD1": {
+      "file": "caral_anfiteatro_lod1.glb",
+      "triangles": 1403,
+      "draw_calls": 7,
+      "materials": [
+        "MAT-Fire_Ember",
+        "MAT-Plaster_Red",
+        "MAT-Plaster_White",
+        "MAT-Plaster_Yellow",
+        "MAT-Sand_Desert",
+        "MAT-Stone_Dark",
+        "MAT-Stone_Granodiorite"
+      ],
+      "bounds": {
+        "min": [
+          -9.851999,
+          -3.6,
+          -0.2
+        ],
+        "max": [
+          9.852,
+          3.6,
+          0.816
+        ],
+        "size": [
+          19.703999,
+          7.200001,
+          1.016
+        ]
+      }
+    }
+  }
+}
