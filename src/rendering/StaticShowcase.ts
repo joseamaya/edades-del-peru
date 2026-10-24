@@ -2,6 +2,9 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { disposeStaticGltf, loadStaticGltf } from './StaticModel';
 
+export const SHOWCASE_SKY = '#c9d6df';
+export const SHOWCASE_SAND = '#c8b088';
+
 export interface StaticShowcaseHandle {
   bounds: { x: number; y: number; z: number };
   lod0Triangles: number;
@@ -68,22 +71,22 @@ function materialNames(root: THREE.Object3D): string[] {
 function overlayHtml(options: StaticShowcaseOptions): string {
   return `
     <style>
-      #static-showcase-ui { position: fixed; inset: 0; pointer-events: none; z-index: 100; color: #f0ece2;
+      #city-demo-ui { position: fixed; inset: 0; pointer-events: none; z-index: 100; color: #f0ece2;
         font-family: "Bahnschrift", "Arial Narrow", "Segoe UI", sans-serif; }
-      #static-showcase-ui .panel { position: absolute; left: 16px; top: 16px; width: min(400px, 90vw);
+      #city-demo-ui .panel { position: absolute; left: 16px; top: 16px; width: min(400px, 90vw);
         background: rgba(16, 18, 22, 0.9); border: 1px solid rgba(232, 195, 106, 0.35);
         border-radius: 8px; padding: 14px 16px; pointer-events: auto;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55); }
-      #static-showcase-ui .eyebrow { color: #d8b45a; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
-      #static-showcase-ui h1 { margin: 2px 0 6px; font-family: Georgia, serif; font-size: 22px; color: #e8c36a; }
-      #static-showcase-ui p { margin: 4px 0; color: #c9c4b8; font-size: 12px; line-height: 1.5; }
-      #static-showcase-ui .row { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 4px; }
-      #static-showcase-ui button { pointer-events: auto; cursor: pointer; border-radius: 4px;
+      #city-demo-ui .eyebrow { color: #d8b45a; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
+      #city-demo-ui h1 { margin: 2px 0 6px; font-family: Georgia, serif; font-size: 22px; color: #e8c36a; }
+      #city-demo-ui p { margin: 4px 0; color: #c9c4b8; font-size: 12px; line-height: 1.5; }
+      #city-demo-ui .row { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 4px; }
+      #city-demo-ui button { pointer-events: auto; cursor: pointer; border-radius: 4px;
         border: 1px solid rgba(232, 195, 106, 0.35); background: rgba(30, 33, 40, 0.9);
         color: #f0ece2; padding: 6px 10px; font-size: 12px; font-weight: 600; }
-      #static-showcase-ui button:hover, #static-showcase-ui button.active { border-color: #e8c36a; color: #e8c36a; }
-      #static-showcase-ui .note { color: #d8b45a; margin-top: 8px; }
-      #static-showcase-ui .error { color: #ff8a80; }
+      #city-demo-ui button:hover, #city-demo-ui button.active { border-color: #e8c36a; color: #e8c36a; }
+      #city-demo-ui .note { color: #d8b45a; margin-top: 8px; }
+      #city-demo-ui .error { color: #ff8a80; }
     </style>
     <div class="panel">
       <div class="eyebrow">${options.eyebrow}</div>
@@ -160,7 +163,7 @@ export async function mountStaticShowcase(options: StaticShowcaseOptions): Promi
   scene.add(ground);
 
   const overlay = document.createElement('div');
-  overlay.id = 'static-showcase-ui';
+  overlay.id = 'city-demo-ui';
   overlay.innerHTML = overlayHtml(options);
   document.body.appendChild(overlay);
   const stats = overlay.querySelector('.stats') as HTMLElement;

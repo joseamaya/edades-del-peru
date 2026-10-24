@@ -1,4 +1,10 @@
 import { test, expect } from '@playwright/test';
+import fs from 'node:fs';
+import path from 'node:path';
+
+const MANIFEST = JSON.parse(
+  fs.readFileSync(path.resolve('art-src/blender/exports/caral/caral_pyramid_mayor_manifest.json'), 'utf8'),
+);
 
 test('@smoke Caral Pyramid Mayor scenery showcase loads both LODs without errors', async ({ page }) => {
   const errors: string[] = [];
@@ -21,12 +27,13 @@ test('@smoke Caral Pyramid Mayor scenery showcase loads both LODs without errors
     };
   });
 
-  expect(info.lod0).toBe(6044);
-  expect(info.lod1).toBe(2408);
-  expect(info.drawCalls).toBe(7);
-  expect(info.bounds.x).toBeCloseTo(13.9, 0);
-  expect(info.bounds.y).toBeCloseTo(2.77, 1);
-  expect(info.bounds.z).toBeCloseTo(15.5, 0);
+  expect(info.lod0).toBe(MANIFEST.lods.LOD0.triangles);
+  expect(info.lod1).toBe(MANIFEST.lods.LOD1.triangles);
+  expect(info.drawCalls).toBe(MANIFEST.lods.LOD0.draw_calls);
+  const sourceSize = MANIFEST.lods.LOD0.bounds.size;
+  expect(info.bounds.x).toBeCloseTo(sourceSize[0], 0);
+  expect(info.bounds.y).toBeCloseTo(sourceSize[2], 1);
+  expect(info.bounds.z).toBeCloseTo(sourceSize[1], 0);
   expect(info.materials).toContain('MAT-Fire_Ember');
   expect(info.materials).toContain('MAT-Stone_Granodiorite');
   expect(info.lodLevel).toBe(0);

@@ -49,7 +49,7 @@ Definition of Done and the building audit see
   the 30×50 footprint needs a flat-pad/placement design before integration. See
   [`docs/design/blender-art.md`](design/blender-art.md).
 - **Caral modular scenery**: `src/assets/scenery/caral/caral_pyramid_mayor_lod0.glb` / `lod1.glb`
-  are the first modular Blender exports (Pyramid Mayor + Plaza Mayor; 6,044/2,416 tris, 7 draw calls,
+  are the first modular Blender exports (Pyramid Mayor + Plaza Mayor; 6,044/2,408 tris, 7 draw calls,
   Y-up, footprint 13.9 × 15.5, ground pivot). They are rebuilt by
   `scripts/blender/build_caral_pyramid_mayor.py` from `caral_rts_kit.blend`; the script excludes
   `PlazaCentral`, market stalls and terrain. `?scenery=caral` mounts the showcase

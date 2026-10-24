@@ -81,7 +81,6 @@ def place_for_game(objects):
         obj.scale = (GAME_SCALE, GAME_SCALE, GAME_SCALE)
     select_only(objects)
     bpy.ops.object.transform_apply(location=True, rotation=False, scale=True)
-    return bounds(objects)
 
 
 def join_objects(objects, name: str):
@@ -164,6 +163,20 @@ def build_lod(lod: str, collection_name: str, decimate: bool):
     return collection, root, mesh_stats(root)
 
 
+def isolate_for_save(keep_collections):
+    keep_objects = set()
+    for name in keep_collections:
+        collection = bpy.data.collections.get(name)
+        if collection is not None:
+            keep_objects.update(collection.all_objects)
+    for obj in list(bpy.data.objects):
+        if obj not in keep_objects:
+            bpy.data.objects.remove(obj, do_unlink=True)
+    for collection in list(bpy.data.collections):
+        if collection.name not in keep_collections:
+            bpy.data.collections.remove(collection)
+
+
 def export_glb(root, path: str):
     ensure_parent(path)
     select_only([root, *root.children_recursive])
@@ -219,6 +232,8 @@ def main():
     with open(manifest_path, 'w', encoding='utf-8') as handle:
         json.dump(manifest, handle, indent=2)
         handle.write('\n')
+
+    isolate_for_save({'COL-Caral_PyramidMayor_LOD0', 'COL-Caral_PyramidMayor_LOD1'})
 
     blend_path = os.path.abspath(args.blend)
     ensure_parent(blend_path)

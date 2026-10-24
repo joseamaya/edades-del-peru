@@ -12,7 +12,7 @@ import os
 import bpy
 from mathutils import Vector
 
-RENDER_DIR = os.path.abspath('art-src/blender/renders')
+RENDER_DIR = os.path.abspath('review')
 LOD0_COLLECTION = 'COL-Caral_PyramidMayor_LOD0'
 GROUND_Y = -0.17
 SKY = (0.62, 0.72, 0.82, 1.0)
