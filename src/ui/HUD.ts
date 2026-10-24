@@ -20,7 +20,9 @@ import { PERIODS, getPeriod } from '../model/defs/periods';
 import { civsForPeriod, getCiv } from '../model/defs/civs';
 import { RESOURCE_INFO, MAP_LABEL, GameSettings, CAMERA_SPEED_SCALE } from '../core/Config';
 import { formatNumber, formatStat } from '../util/math';
-import { MISSIONS, CAMPAIGN_TITLE, CAMPAIGN_SUBTITLE } from '../campaign/defs/campaign';
+import { MISSIONS, CAMPAIGN_ID, CAMPAIGN_TITLE, CAMPAIGN_SUBTITLE } from '../campaign/defs/campaign';
+import { artIntroForCampaign, artIntroForMission } from '../art/manifest';
+import { artFigureHtml, includeUnreviewedArt } from './ArtFigure';
 import { PROLOGUE, getEducational } from '../campaign/defs/educational';
 import type { MissionDef } from '../campaign/types';
 import { COMMANDERS, type PortraitId } from '../model/defs/commanders';
@@ -178,6 +180,10 @@ const CSS = /* css */ `
   .ed-fuentes ul { margin: 8px 0 0; padding-left: 18px; }
   .ed-fuentes li { font-size: 12px; color: var(--text-dim); line-height: 1.5; margin: 3px 0; }
   .ed-fuentes a { color: var(--blue); }
+  .ed-art { margin: 10px 0 12px; }
+  .ed-art img { width: 100%; max-height: min(300px, 30vh); object-fit: cover; display: block; border: 1px solid var(--line); border-radius: 6px; background: #0b0d11; }
+  .ed-art figcaption { text-align: left; font-size: 11px; line-height: 1.45; color: var(--text-dim); margin-top: 5px; }
+  .ed-art-draft { color: var(--gold); }
 
   /* Codex */
   #ed-codex .ed-panel { width: min(780px, 94vw); max-height: 88vh; display: flex; flex-direction: column; }
@@ -1488,10 +1494,15 @@ export class HUD {
     const ov = this.el('div', 'ed-overlay');
     const panel = this.el('div', 'ed-panel', ov);
     panel.style.maxWidth = '660px';
+    const introArt =
+      artIntroForCampaign(CAMPAIGN_ID, { includeUnreviewed: includeUnreviewedArt() }) ??
+      artIntroForMission('m1_caral', { includeUnreviewed: includeUnreviewedArt() });
+    const art = introArt ? artFigureHtml(introArt, '(max-width: 760px) 100vw, 660px') : '';
     panel.innerHTML = `
       <div style="font-size:12px;letter-spacing:3px;color:#a8883f">CAMPAÑA</div>
       <h2>${CAMPAIGN_TITLE}</h2>
       <div class="sub">${CAMPAIGN_SUBTITLE}</div>
+      ${art}
       <div class="ed-hist">${PROLOGUE}</div>
     `;
     const row = this.el('div', 'row', panel);
@@ -1596,6 +1607,8 @@ export class HUD {
       )
       .join('');
     const commandersHtml = commanders ? `<div class="ed-commanders">${commanders}</div>` : '';
+    const introArt = artIntroForMission(mis.id, { includeUnreviewed: includeUnreviewedArt() });
+    const art = introArt ? artFigureHtml(introArt) : '';
     panel.innerHTML = `
       <div style="font-size:12px;letter-spacing:3px;color:#a8883f">${mis.subtitle}</div>
       <h2>${mis.title}</h2>
@@ -1605,6 +1618,7 @@ export class HUD {
         ${sides}
       </div>
       ${commandersHtml}
+      ${art}
       ${context}
       ${funFact}
       <div class="sub" style="text-align:left;font-size:12px;color:var(--text);line-height:1.7;margin-bottom:10px"><b style="color:var(--gold)">OBJETIVOS</b><br>${this.objectiveTitles(

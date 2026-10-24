@@ -28,6 +28,26 @@ Definition of Done and the building audit see
   andean textile slots may use public-domain museum images as FLUX.2 multi-reference inputs (`scripts/refs.json` →
   `scripts/_refs/`, gitignored; all of it is optional — the AI layer only overrides the procedural look when the
   webp exists). See `PROVENANCE.md`.
+- **Blender render assets (optional)**: campaign/educational art lives in
+  `public/media/generated/{campaigns,education,tours}/` and is **not bundled** into the JS. The editable Blender
+  sources live in `art-src/blender` (`.blend`/`.xcf` in Git LFS); the repo also stores the source manifest
+  (`art-src/blender/caral/renders.json`), the asset table and source hashes in
+  `art-src/blender/caral/README.md`. `yarn art:blender` verifies each PNG hash, converts it to budgeted WebP with
+  `sharp`, writes `src/art/manifest.json` + `public/media/generated/PROVENANCE.md`, and validates the result.
+  Blender 5.2.2 and GIMP 3.2.6 are driven locally through `mcp-for-blender` (port 9876, safe mode) and
+  `gimp3-mcp` (port 9877); see [`design/authoring-tools.md`](design/authoring-tools.md). GIMP is for 2D
+  textures, render retouching and UI art; the reproducible batch path remains `scripts/gen_textures.py` +
+  `scripts/post_textures.py`.
+  The manifest records scene, source render/hash, camera, confidence, licence and review status. The game shows
+  only `reviewed: true` renders by default (`?art=all` previews drafts). Blender is **not** a CI dependency and the
+  ingestion never calls an AI provider. See [`docs/design/blender-art.md`](design/blender-art.md).
+- **Caral city GLB showcase**: `src/assets/cities/caral_city_lod0.glb` / `lod1.glb` are the game-ready
+  Blender exports (18,120/6,194 tris, 10 draw calls, Y-up, ground pivot, +Z stair). `src/rendering/StaticModel.ts`
+  loads static glTF without animation clips, and `?city=caral` mounts a standalone showcase with shadows,
+  orbit controls, LOD0/LOD1 and `window.__cityDemo`. The city is **not** used by a campaign mission yet; the
+  procedural landmark remains. `MAT-Sand_Desert` needs a source fix, plaza stalls need a historical review, and
+  the 30×50 footprint needs a flat-pad/placement design before integration. See
+  [`docs/design/blender-art.md`](design/blender-art.md).
 - **Building/unit materials are AI-overridable**: `mat()` (`ProceduralModel.ts`) maps a `TexKind` to an
   AI-generated material via `TEX_GEN` (e.g. `adobe → wall_adobe`, `brick → wall_brick`, `roof → tile`,
   `thatch → roof_thatch`, `textile_inca → textile_inca`); the architecture profile (`archProfileFor`) picks the

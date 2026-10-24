@@ -100,6 +100,11 @@ function floatParam(params: URLSearchParams, key: string, fallback: number): num
 
 async function boot(): Promise<void> {
   const params = new URLSearchParams(window.location.search);
+  if (params.get('city') === 'caral') {
+    const { mountCityDemo } = await import('./rendering/CityDemo');
+    await mountCityDemo();
+    return;
+  }
   const wantsLoad = params.get('load') === '1';
   const wantsReplay = params.get('replay') === '1';
   const snapshot = wantsLoad ? loadFromStorage() : null;

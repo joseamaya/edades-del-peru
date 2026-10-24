@@ -1,0 +1,22 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "blender": {
+      "type": "local",
+      "command": ["uvx", "--python", "3.11", "mcp-for-blender"],
+      "enabled": true,
+      "environment": {
+        "BLENDER_HOST": "localhost",
+        "BLENDER_PORT": "9876",
+        "BLENDER_MCP_SAFE_MODE": "1",
+        "DISABLE_TELEMETRY": "true",
+        "UV_PYTHON_PREFERENCE": "only-managed"
+      }
+    },
+    "gimp": {
+      "type": "local",
+      "command": ["uvx", "gimp3-mcp@0.2.0"],
+      "enabled": true
+    }
+  }
+}

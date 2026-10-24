@@ -1,0 +1,3 @@
+asset_id,lod,scale,size_x,size_y,size_z,tris,parts,materials,file,bytes,pivot,orientation,notes
+caral_city,LOD0,0.08,30.4,2.814,49.628,18120,10,10,caral_city_lod0.glb,906728,center of footprint at ground level,Y-up; main stair faces +Z,Exported GLB axes (X width, Y height, Z depth); source Blender is Z-up
+caral_city,LOD1,0.08,30.4,2.814,49.628,6194,10,10,caral_city_lod1.glb,454348,center of footprint at ground level,Y-up; main stair faces +Z,Exported GLB axes (X width, Y height, Z depth); source Blender is Z-up

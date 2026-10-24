@@ -1,6 +1,9 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../core/types';
 import { MissionDef } from '../types';
 
+/** Stable id of the campaign (used by the generated-art manifest). */
+export const CAMPAIGN_ID = 'la-senda-del-sol';
+
 export const CAMPAIGN_TITLE = 'La Senda del Sol';
 export const CAMPAIGN_SUBTITLE = 'Nueve escenarios de la historia del Perú, de Caral a la República';
 
