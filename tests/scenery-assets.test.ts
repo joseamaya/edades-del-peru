@@ -22,6 +22,7 @@ const ASSETS = [
     ) as SceneryManifest,
     required: ['MAT-Fire_Ember', 'MAT-Plaster_White', 'MAT-Stone_Granodiorite', 'MAT-Thatch_Reed'],
     forbidden: ['MAT-Sand_Desert', 'MAT-Textile_Cotton', 'MAT-Wood_Warm'],
+    sandColor: null,
   },
   {
     id: 'caral_anfiteatro',
@@ -32,6 +33,7 @@ const ASSETS = [
     ) as SceneryManifest,
     required: ['MAT-Fire_Ember', 'MAT-Plaster_White', 'MAT-Sand_Desert', 'MAT-Stone_Granodiorite'],
     forbidden: ['MAT-Textile_Cotton', 'MAT-Wood_Warm'],
+    sandColor: '9d8563',
   },
 ];
 
@@ -141,8 +143,8 @@ describe.each(ASSETS)('$id scenery GLB', (asset) => {
     for (const material of asset.forbidden) expect(names).not.toContain(material);
   });
 
-  it('exports a non-white sand base color where the asset uses it', () => {
-    if (!asset.required.includes('MAT-Sand_Desert')) return;
-    expect(materialColor(lod0.scene, 'MAT-Sand_Desert')).not.toBe('ffffff');
+  it('exports the expected sand base color where used', () => {
+    if (!asset.sandColor) return;
+    expect(materialColor(lod0.scene, 'MAT-Sand_Desert')).toBe(asset.sandColor);
   });
 });

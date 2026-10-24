@@ -2,8 +2,26 @@ import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 
-function manifest(assetId: string) {
-  return JSON.parse(fs.readFileSync(path.resolve(`art-src/blender/exports/caral/${assetId}_manifest.json`), 'utf8'));
+interface SceneryManifest {
+  lods: {
+    LOD0: { triangles: number; draw_calls: number; materials: string[]; bounds: { min: number[]; size: number[] } };
+    LOD1: { triangles: number; draw_calls: number; materials: string[]; bounds: { min: number[]; size: number[] } };
+  };
+}
+
+interface SceneryDemoHandle {
+  bounds: { x: number; y: number; z: number };
+  lod0Triangles: number;
+  lod1Triangles: number;
+  drawCalls: number;
+  materials: string[];
+  lodLevel: 0 | 1;
+}
+
+function manifest(assetId: string): SceneryManifest {
+  return JSON.parse(
+    fs.readFileSync(path.resolve(`art-src/blender/exports/caral/${assetId}_manifest.json`), 'utf8'),
+  ) as SceneryManifest;
 }
 
 const CASES = [
@@ -22,7 +40,8 @@ for (const testCase of CASES) {
     });
 
     const info = await page.evaluate(() => {
-      const demo = (window as { __sceneryDemo?: any }).__sceneryDemo;
+      const demo = (window as { __sceneryDemo?: SceneryDemoHandle }).__sceneryDemo;
+      if (!demo) throw new Error('missing __sceneryDemo');
       return {
         bounds: demo.bounds,
         lod0: demo.lod0Triangles,
@@ -44,7 +63,10 @@ for (const testCase of CASES) {
     expect(info.lodLevel).toBe(0);
 
     await page.locator('button[data-lod="1"]').click();
-    const level = await page.evaluate(() => (window as { __sceneryDemo?: any }).__sceneryDemo.lodLevel);
+    const level = await page.evaluate(() => {
+      const demo = (window as { __sceneryDemo?: SceneryDemoHandle }).__sceneryDemo;
+      return demo?.lodLevel;
+    });
     expect(level).toBe(1);
     expect(errors).toEqual([]);
   });

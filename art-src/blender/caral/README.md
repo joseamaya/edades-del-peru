@@ -21,7 +21,7 @@ and hashes live alongside them so provenance is reproducible.
 | `exports/caral/caral_pyramid_mayor_lod0.glb` | `c18c2230394471221bf86eccaa38a51e002185d62a208bef7c01a46199399bbd` |
 | `exports/caral/caral_pyramid_mayor_lod1.glb` | `844c1bd866aa8afddaac5bbf3adfb286b867e61c14bedb304bd82f785ba19153` |
 | `exports/caral/caral_pyramid_mayor_manifest.json` | `b5f0766f0fb3105e244d0285d75ff9c5b7ccb34ba7d6379b0744fbcf227a644f` |
-| `scenes/caral_anfiteatro.blend` | `8b069af8dc005e4874f86f011cfc5c422fbd07215ba2d9b1c01f1183987ebaef` |
+| `scenes/caral_anfiteatro.blend` | `245c6bf7695471ead065a13334fe1d18b036edab2fad256cfc9c5d519f3c41a3` |
 | `exports/caral/caral_anfiteatro_lod0.glb` | `b00b196a7698c75048e636cbc7f6ed5b4f817d3044f998735f4c701536031565` |
 | `exports/caral/caral_anfiteatro_lod1.glb` | `6b17d4e4237270979085a12aaaaa248fb787aecb65db1bcf7dcb4713b851897b` |
 | `exports/caral/caral_anfiteatro_manifest.json` | `343c8f1d703be774dd35fd631b161c9eafb612cd4e726bff0e37e14b8dfc61dd` |
@@ -135,6 +135,7 @@ setpiece but can be split later.
 | LOD1 | 19.704 × 1.016 × 7.2 | 1,403 | 7 | 7 | 84,880 |
 
 - Pivot: footprint centre at ground level; foundations extend to -0.2.
+- Orientation: Y-up; the source kit places the main approach toward +Z.
 - Materials: Fire, Plaster Red/White/Yellow, Sand Desert, Stone Dark/Granodiorite.
 - `MAT-Sand_Desert` is fixed at build time by removing the unsupported procedural Base Color
   link, so the GLB exports its `baseColorFactor`.

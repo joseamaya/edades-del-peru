@@ -12,6 +12,9 @@ const shared = {
   sky: SHOWCASE_SKY,
 };
 
+const visualOnlyBounds: StaticShowcaseOptions['boundsLabel'] = (size) =>
+  `Huella ${size.x.toFixed(1)} × ${size.y.toFixed(1)} × ${size.z.toFixed(1)} · pivote centrado a nivel de suelo · Y-up · visual-only`;
+
 export const SCENERY_ASSETS: Record<SceneryAssetId, StaticShowcaseOptions> = {
   'caral-pyramid-mayor': {
     ...shared,
@@ -28,8 +31,7 @@ export const SCENERY_ASSETS: Record<SceneryAssetId, StaticShowcaseOptions> = {
     },
     ground: { color: SHOWCASE_SAND, y: -0.17, size: 120 },
     shadow: { extent: 24, far: 100 },
-    boundsLabel: (size) =>
-      `Huella ${size.x.toFixed(1)} × ${size.y.toFixed(1)} × ${size.z.toFixed(1)} · pivote centrado a nivel de suelo · Y-up · visual-only`,
+    boundsLabel: visualOnlyBounds,
   },
   'caral-anfiteatro': {
     ...shared,
@@ -46,11 +48,12 @@ export const SCENERY_ASSETS: Record<SceneryAssetId, StaticShowcaseOptions> = {
     },
     ground: { color: SHOWCASE_SAND, y: -0.21, size: 100 },
     shadow: { extent: 20, far: 80 },
-    boundsLabel: (size) =>
-      `Huella ${size.x.toFixed(1)} × ${size.y.toFixed(1)} × ${size.z.toFixed(1)} · pivote centrado a nivel de suelo · Y-up · visual-only`,
+    boundsLabel: visualOnlyBounds,
   },
 };
 
-export function resolveSceneryAsset(value: string | null): SceneryAssetId {
-  return value === 'caral-anfiteatro' || value === 'anfiteatro' ? 'caral-anfiteatro' : 'caral-pyramid-mayor';
+export function resolveSceneryAsset(value: string | null): SceneryAssetId | null {
+  if (value === 'caral') return 'caral-pyramid-mayor';
+  if (value === 'caral-anfiteatro') return 'caral-anfiteatro';
+  return null;
 }

@@ -106,13 +106,14 @@ async function boot(): Promise<void> {
     return;
   }
   const scenery = params.get('scenery');
-  if (scenery === 'caral' || scenery === 'caral-anfiteatro' || scenery === 'anfiteatro') {
-    const [{ resolveSceneryAsset }, { mountSceneryDemo }] = await Promise.all([
-      import('./rendering/sceneryAssets'),
-      import('./rendering/SceneryDemo'),
-    ]);
-    await mountSceneryDemo(resolveSceneryAsset(scenery));
-    return;
+  if (scenery) {
+    const { resolveSceneryAsset } = await import('./rendering/sceneryAssets');
+    const assetId = resolveSceneryAsset(scenery);
+    if (assetId) {
+      const { mountSceneryDemo } = await import('./rendering/SceneryDemo');
+      await mountSceneryDemo(assetId);
+      return;
+    }
   }
   const wantsLoad = params.get('load') === '1';
   const wantsReplay = params.get('replay') === '1';

@@ -72,21 +72,22 @@ def bounds(objects):
     return minimum, maximum
 
 
-def sanitize_materials(objects) -> None:
-    materials = {material for obj in objects for material in obj.data.materials if material}
-    for material in materials:
-        if not material.use_nodes:
-            continue
-        bsdf = next((node for node in material.node_tree.nodes if node.type == 'BSDF_PRINCIPLED'), None)
-        if bsdf is None:
-            continue
-        base = bsdf.inputs.get('Base Color')
-        if base is None or not base.is_linked:
-            continue
-        links = list(base.links)
-        if any(link.from_node.type != 'TEX_IMAGE' for link in links):
-            for link in links:
-                material.node_tree.links.remove(link)
+SAND_BASE_COLOR = (0.335, 0.235, 0.125, 1.0)
+
+
+def sanitize_materials() -> None:
+    material = bpy.data.materials.get('MAT-Sand_Desert')
+    if material is None or not material.use_nodes:
+        return
+    bsdf = next((node for node in material.node_tree.nodes if node.type == 'BSDF_PRINCIPLED'), None)
+    if bsdf is None:
+        return
+    base = bsdf.inputs.get('Base Color')
+    if base is None:
+        return
+    for link in list(base.links):
+        material.node_tree.links.remove(link)
+    base.default_value = SAND_BASE_COLOR
 
 
 def duplicate_sources(source_objects, collection_name: str, suffix: str):
@@ -173,7 +174,7 @@ def build_lod(config, lod: str, decimate: bool):
     collection_name = f"{config['collection_prefix']}_{lod}"
     collection, duplicates = duplicate_sources(config['source_objects'], collection_name, f'_{lod}_work')
     place_for_game(duplicates)
-    sanitize_materials(duplicates)
+    sanitize_materials()
     joined_name = f"{config['root']}_{lod}_joined"
     joined = join_objects(duplicates, joined_name)
     if decimate:

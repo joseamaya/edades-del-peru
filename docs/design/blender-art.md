@@ -123,6 +123,8 @@ the terrain, and is rebuilt by `scripts/blender/build_caral_scenery.py --asset=p
 | LOD0 | 19.704 × 1.016 × 7.2 | 3,520 | 7 | 7 | 170,580 |
 | LOD1 | 19.704 × 1.016 × 7.2 | 1,403 | 7 | 7 | 84,880 |
 
+- Pivot: footprint centre at ground level; foundations extend to -0.2.
+- Orientation: Y-up; the source kit places the main approach toward +Z.
 - `MAT-Sand_Desert` is fixed at build time by removing the procedural Base Color link that the glTF
   exporter cannot represent; the GLB exports its base color.
 - `?scenery=caral-anfiteatro` mounts the showcase.

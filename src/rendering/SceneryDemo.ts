@@ -3,6 +3,6 @@ import { mountStaticShowcase, type StaticShowcaseHandle } from './StaticShowcase
 
 export type SceneryDemoHandle = StaticShowcaseHandle;
 
-export async function mountSceneryDemo(assetId: SceneryAssetId = 'caral-pyramid-mayor'): Promise<SceneryDemoHandle> {
+export async function mountSceneryDemo(assetId: SceneryAssetId): Promise<SceneryDemoHandle> {
   return mountStaticShowcase(SCENERY_ASSETS[assetId]);
 }

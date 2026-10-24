@@ -82,7 +82,7 @@ slot is absent (offline / without assets).
 
 - **Location**: `src/assets/scenery/caral/caral_pyramid_mayor_lod0.glb` and `lod1.glb`.
 - **Source**: `art-src/blender/scenes/caral_rts_kit.blend`, isolated by
-  `scripts/blender/build_caral_pyramid_mayor.py` into
+  `scripts/blender/build_caral_scenery.py --asset=pyramid-mayor` into
   `art-src/blender/scenes/caral_pyramid_mayor.blend`.
 - **SHA-256**: LOD0 `c18c2230394471221bf86eccaa38a51e002185d62a208bef7c01a46199399bbd`;
   LOD1 `844c1bd866aa8afddaac5bbf3adfb286b867e61c14bedb304bd82f785ba19153`;
