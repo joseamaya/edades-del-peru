@@ -2,6 +2,7 @@ node_modules/
 dist/
 review/
 .agents/
+.claude/
 coverage/
 test-results/
 playwright-report/
@@ -14,6 +15,10 @@ playwright-report/
 .env.*
 *.tsbuildinfo
 .eslintcache
+# Blender/GIMP backup files
+*.blend1
+*.blend2
+*.xcf~
 # config for AI agent tooling (not part of the game)
 opencode.json
 skills-lock.json
