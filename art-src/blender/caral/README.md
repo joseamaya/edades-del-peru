@@ -21,7 +21,11 @@ and hashes live alongside them so provenance is reproducible.
 | `exports/caral/caral_pyramid_mayor_lod0.glb` | `c18c2230394471221bf86eccaa38a51e002185d62a208bef7c01a46199399bbd` |
 | `exports/caral/caral_pyramid_mayor_lod1.glb` | `844c1bd866aa8afddaac5bbf3adfb286b867e61c14bedb304bd82f785ba19153` |
 | `exports/caral/caral_pyramid_mayor_manifest.json` | `b5f0766f0fb3105e244d0285d75ff9c5b7ccb34ba7d6379b0744fbcf227a644f` |
-| `caral/scenery_manifest.csv` | `20bd464fd28136f48f659ac00e18ced5858435774e0fc136fec3789911c17e59` |
+| `scenes/caral_anfiteatro.blend` | `245c6bf7695471ead065a13334fe1d18b036edab2fad256cfc9c5d519f3c41a3` |
+| `exports/caral/caral_anfiteatro_lod0.glb` | `b00b196a7698c75048e636cbc7f6ed5b4f817d3044f998735f4c701536031565` |
+| `exports/caral/caral_anfiteatro_lod1.glb` | `6b17d4e4237270979085a12aaaaa248fb787aecb65db1bcf7dcb4713b851897b` |
+| `exports/caral/caral_anfiteatro_manifest.json` | `343c8f1d703be774dd35fd631b161c9eafb612cd4e726bff0e37e14b8dfc61dd` |
+| `caral/scenery_manifest.csv` | `121f34c941c7b10dc8a6cee03bd8e60e2dba39cfe8e798d533f897adf26ba21d` |
 
 Paths are relative to `art-src/blender`. The `.blend` sources are stored in Git LFS;
 `.glb`/`.fbx` exports and PNG renders are tracked normally. If the source layout changes,
@@ -97,7 +101,7 @@ city in the campaign.
 - Orientation: Y-up; main stair +Z.
 - Materials: Fire, Plaster Red/White/Yellow, Stone Dark/Granodiorite, Thatch.
 - Source: `scenes/caral_rts_kit.blend`; build script:
-  `scripts/blender/build_caral_pyramid_mayor.py`.
+  `scripts/blender/build_caral_scenery.py --asset=pyramid-mayor`.
 - Preview: `yarn dev` → `http://localhost:5173/?scenery=caral`.
 - Status: visual-only pilot; not yet integrated into a campaign.
 
@@ -105,7 +109,8 @@ Rebuild:
 
 ```bash
 blender --background art-src/blender/scenes/caral_rts_kit.blend \
-  --python scripts/blender/build_caral_pyramid_mayor.py -- \
+  --python scripts/blender/build_caral_scenery.py -- \
+  --asset=pyramid-mayor \
   --out-dir=art-src/blender/exports/caral \
   --game-dir=src/assets/scenery/caral \
   --blend=art-src/blender/scenes/caral_pyramid_mayor.blend
@@ -115,7 +120,44 @@ Review renders:
 
 ```bash
 blender --background art-src/blender/scenes/caral_pyramid_mayor.blend \
-  --python scripts/blender/render_caral_pyramid_mayor.py
+  --python scripts/blender/render_caral_scenery.py -- --asset=pyramid-mayor
+```
+
+### Anfiteatro
+
+`caral_anfiteatro` combines Templo Anfiteatro, Altar Circular and Templo Banqueta. The banqueta
+is a detached small platform in the source layout; it is kept as part of the ceremonial
+setpiece but can be split later.
+
+| LOD | Size X × Y × Z (game axes) | Tris | Draw calls | Materials | Bytes |
+|---|---|---|---|---|---|
+| LOD0 | 19.704 × 1.016 × 7.2 | 3,520 | 7 | 7 | 170,580 |
+| LOD1 | 19.704 × 1.016 × 7.2 | 1,403 | 7 | 7 | 84,880 |
+
+- Pivot: footprint centre at ground level; foundations extend to -0.2.
+- Orientation: Y-up; the source kit places the main approach toward +Z.
+- Materials: Fire, Plaster Red/White/Yellow, Sand Desert, Stone Dark/Granodiorite.
+- `MAT-Sand_Desert` is fixed at build time by removing the unsupported procedural Base Color
+  link, so the GLB exports its `baseColorFactor`.
+- Preview: `?scenery=caral-anfiteatro`.
+- Status: visual-only pilot.
+
+Rebuild:
+
+```bash
+blender --background art-src/blender/scenes/caral_rts_kit.blend \
+  --python scripts/blender/build_caral_scenery.py -- \
+  --asset=anfiteatro \
+  --out-dir=art-src/blender/exports/caral \
+  --game-dir=src/assets/scenery/caral \
+  --blend=art-src/blender/scenes/caral_anfiteatro.blend
+```
+
+Review renders:
+
+```bash
+blender --background art-src/blender/scenes/caral_anfiteatro.blend \
+  --python scripts/blender/render_caral_scenery.py -- --asset=anfiteatro
 ```
 
 ## Ingest

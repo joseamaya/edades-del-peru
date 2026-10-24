@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
-"""Build the Caral Pyramid Mayor + Plaza Mayor game asset from the RTS kit.
+"""Build modular Caral scenery assets from the RTS kit.
 
 Run from the repository root:
   blender --background art-src/blender/scenes/caral_rts_kit.blend \
-    --python scripts/blender/build_caral_pyramid_mayor.py -- \
-    --out-dir=art-src/blender/exports/caral \
-    --game-dir=src/assets/scenery/caral \
-    --blend=art-src/blender/scenes/caral_pyramid_mayor.blend
+    --python scripts/blender/build_caral_scenery.py -- \
+    --asset=anfiteatro
 """
 
 import argparse
@@ -19,19 +17,39 @@ import sys
 import bpy
 from mathutils import Vector
 
-ASSET_ID = 'caral_pyramid_mayor'
-ROOT_NAME = 'GEO-Caral_PyramidMayor'
-SOURCE_OBJECTS = ('GEO-Caral_PyramideMayor_LOD0', 'GEO-Caral_PlazaMayor_LOD0')
 GAME_SCALE = 0.08
-LOD1_RATIO = 0.4
+
+ASSETS = {
+    'pyramid-mayor': {
+        'asset_id': 'caral_pyramid_mayor',
+        'root': 'GEO-Caral_PyramidMayor',
+        'collection_prefix': 'COL-Caral_PyramidMayor',
+        'source_objects': ('GEO-Caral_PyramideMayor_LOD0', 'GEO-Caral_PlazaMayor_LOD0'),
+        'lod1_ratio': 0.4,
+        'blend': 'caral_pyramid_mayor.blend',
+    },
+    'anfiteatro': {
+        'asset_id': 'caral_anfiteatro',
+        'root': 'GEO-Caral_Anfiteatro',
+        'collection_prefix': 'COL-Caral_Anfiteatro',
+        'source_objects': (
+            'GEO-Caral_TemploAnfiteatro_LOD0',
+            'GEO-Caral_AltarCircular_LOD0',
+            'GEO-Caral_TemploBanqueta_LOD0',
+        ),
+        'lod1_ratio': 0.4,
+        'blend': 'caral_anfiteatro.blend',
+    },
+}
 
 
 def parse_args() -> argparse.Namespace:
     argv = sys.argv[sys.argv.index('--') + 1 :] if '--' in sys.argv else []
     parser = argparse.ArgumentParser()
+    parser.add_argument('--asset', choices=sorted(ASSETS), default='pyramid-mayor')
     parser.add_argument('--out-dir', default='art-src/blender/exports/caral')
     parser.add_argument('--game-dir', default='src/assets/scenery/caral')
-    parser.add_argument('--blend', default='art-src/blender/scenes/caral_pyramid_mayor.blend')
+    parser.add_argument('--blend')
     return parser.parse_args(argv)
 
 
@@ -54,11 +72,29 @@ def bounds(objects):
     return minimum, maximum
 
 
-def duplicate_sources(collection_name: str, suffix: str):
+SAND_BASE_COLOR = (0.335, 0.235, 0.125, 1.0)
+
+
+def sanitize_materials() -> None:
+    material = bpy.data.materials.get('MAT-Sand_Desert')
+    if material is None or not material.use_nodes:
+        return
+    bsdf = next((node for node in material.node_tree.nodes if node.type == 'BSDF_PRINCIPLED'), None)
+    if bsdf is None:
+        return
+    base = bsdf.inputs.get('Base Color')
+    if base is None:
+        return
+    for link in list(base.links):
+        material.node_tree.links.remove(link)
+    base.default_value = SAND_BASE_COLOR
+
+
+def duplicate_sources(source_objects, collection_name: str, suffix: str):
     collection = bpy.data.collections.new(collection_name)
     bpy.context.scene.collection.children.link(collection)
     duplicates = []
-    for name in SOURCE_OBJECTS:
+    for name in source_objects:
         source = bpy.data.objects.get(name)
         if source is None:
             raise RuntimeError(f'Missing source object: {name}')
@@ -72,7 +108,7 @@ def duplicate_sources(collection_name: str, suffix: str):
     return collection, duplicates
 
 
-def place_for_game(objects):
+def place_for_game(objects) -> None:
     minimum, maximum = bounds(objects)
     center_x = (minimum.x + maximum.x) * 0.5
     center_y = (minimum.y + maximum.y) * 0.5
@@ -134,15 +170,17 @@ def mesh_stats(root):
     }
 
 
-def build_lod(lod: str, collection_name: str, decimate: bool):
-    collection, duplicates = duplicate_sources(collection_name, f'_{lod}_work')
+def build_lod(config, lod: str, decimate: bool):
+    collection_name = f"{config['collection_prefix']}_{lod}"
+    collection, duplicates = duplicate_sources(config['source_objects'], collection_name, f'_{lod}_work')
     place_for_game(duplicates)
-    joined_name = f'{ROOT_NAME}_{lod}_joined'
+    sanitize_materials()
+    joined_name = f"{config['root']}_{lod}_joined"
     joined = join_objects(duplicates, joined_name)
     if decimate:
         modifier = joined.modifiers.new('LOD1_Decimate', 'DECIMATE')
         modifier.decimate_type = 'COLLAPSE'
-        modifier.ratio = LOD1_RATIO
+        modifier.ratio = config['lod1_ratio']
         bpy.context.view_layer.objects.active = joined
         bpy.ops.object.modifier_apply(modifier=modifier.name)
         joined.data.validate(verbose=False)
@@ -154,10 +192,10 @@ def build_lod(lod: str, collection_name: str, decimate: bool):
         bpy.ops.mesh.dissolve_degenerate(threshold=0.0001)
         bpy.ops.mesh.normals_make_consistent(inside=False)
         bpy.ops.object.mode_set(mode='OBJECT')
-    root = bpy.data.objects.new(f'{ROOT_NAME}_{lod}', None)
+    root = bpy.data.objects.new(f"{config['root']}_{lod}", None)
     collection.objects.link(root)
     root.empty_display_size = 1.0
-    parts = separate_by_material(joined, ROOT_NAME, root, lod)
+    parts = separate_by_material(joined, config['root'], root, lod)
     if not parts:
         raise RuntimeError(f'No mesh parts produced for {lod}')
     return collection, root, mesh_stats(root)
@@ -197,17 +235,18 @@ def export_glb(root, path: str):
 
 def main():
     args = parse_args()
+    config = ASSETS[args.asset]
     out_dir = os.path.abspath(args.out_dir)
     game_dir = os.path.abspath(args.game_dir)
     os.makedirs(out_dir, exist_ok=True)
     os.makedirs(game_dir, exist_ok=True)
 
-    _, lod0_root, lod0_stats = build_lod('LOD0', 'COL-Caral_PyramidMayor_LOD0', decimate=False)
-    lod0_path = os.path.join(out_dir, 'caral_pyramid_mayor_lod0.glb')
+    _, lod0_root, lod0_stats = build_lod(config, 'LOD0', decimate=False)
+    lod0_path = os.path.join(out_dir, f"{config['asset_id']}_lod0.glb")
     export_glb(lod0_root, lod0_path)
 
-    _, lod1_root, lod1_stats = build_lod('LOD1', 'COL-Caral_PyramidMayor_LOD1', decimate=True)
-    lod1_path = os.path.join(out_dir, 'caral_pyramid_mayor_lod1.glb')
+    _, lod1_root, lod1_stats = build_lod(config, 'LOD1', decimate=True)
+    lod1_path = os.path.join(out_dir, f"{config['asset_id']}_lod1.glb")
     export_glb(lod1_root, lod1_path)
 
     for source, target in (
@@ -217,25 +256,25 @@ def main():
         shutil.copy2(source, target)
 
     manifest = {
-        'asset_id': ASSET_ID,
+        'asset_id': config['asset_id'],
         'source_scene': 'scenes/caral_rts_kit.blend',
-        'source_objects': list(SOURCE_OBJECTS),
+        'source_objects': list(config['source_objects']),
         'scale': GAME_SCALE,
-        'lod1_ratio': LOD1_RATIO,
-        'root': ROOT_NAME,
+        'lod1_ratio': config['lod1_ratio'],
+        'root': config['root'],
         'lods': {
             'LOD0': {'file': os.path.basename(lod0_path), **lod0_stats},
             'LOD1': {'file': os.path.basename(lod1_path), **lod1_stats},
         },
     }
-    manifest_path = os.path.join(out_dir, f'{ASSET_ID}_manifest.json')
+    manifest_path = os.path.join(out_dir, f"{config['asset_id']}_manifest.json")
     with open(manifest_path, 'w', encoding='utf-8') as handle:
         json.dump(manifest, handle, indent=2)
         handle.write('\n')
 
-    isolate_for_save({'COL-Caral_PyramidMayor_LOD0', 'COL-Caral_PyramidMayor_LOD1'})
+    isolate_for_save({f"{config['collection_prefix']}_LOD0", f"{config['collection_prefix']}_LOD1"})
 
-    blend_path = os.path.abspath(args.blend)
+    blend_path = os.path.abspath(args.blend or f"art-src/blender/scenes/{config['blend']}")
     ensure_parent(blend_path)
     bpy.ops.wm.save_as_mainfile(filepath=blend_path)
 

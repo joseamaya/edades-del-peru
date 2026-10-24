@@ -82,7 +82,7 @@ slot is absent (offline / without assets).
 
 - **Location**: `src/assets/scenery/caral/caral_pyramid_mayor_lod0.glb` and `lod1.glb`.
 - **Source**: `art-src/blender/scenes/caral_rts_kit.blend`, isolated by
-  `scripts/blender/build_caral_pyramid_mayor.py` into
+  `scripts/blender/build_caral_scenery.py --asset=pyramid-mayor` into
   `art-src/blender/scenes/caral_pyramid_mayor.blend`.
 - **SHA-256**: LOD0 `c18c2230394471221bf86eccaa38a51e002185d62a208bef7c01a46199399bbd`;
   LOD1 `844c1bd866aa8afddaac5bbf3adfb286b867e61c14bedb304bd82f785ba19153`;
@@ -93,6 +93,22 @@ slot is absent (offline / without assets).
 - **Content**: Pyramid Mayor + Plaza Mayor; excludes `PlazaCentral`, market stalls and terrain.
 - **Runtime**: `?scenery=caral` mounts the scenery showcase. Visual-only, not a campaign asset.
 - **Confidence**: documented in plan; roofs and remates inferred.
+
+### Caral Anfiteatro modular scenery
+
+- **Location**: `src/assets/scenery/caral/caral_anfiteatro_lod0.glb` and `lod1.glb`.
+- **Source**: `art-src/blender/scenes/caral_rts_kit.blend`, isolated by
+  `scripts/blender/build_caral_scenery.py --asset=anfiteatro` into
+  `art-src/blender/scenes/caral_anfiteatro.blend`.
+- **SHA-256**: LOD0 `b00b196a7698c75048e636cbc7f6ed5b4f817d3044f998735f4c701536031565`;
+  LOD1 `6b17d4e4237270979085a12aaaaa248fb787aecb65db1bcf7dcb4713b851897b`;
+  manifest `343c8f1d703be774dd35fd631b161c9eafb612cd4e726bff0e37e14b8dfc61dd`.
+- **Export**: LOD0 3,520 tris / 7 draw calls / 170,580 bytes; LOD1 1,403 tris / 84,880 bytes.
+  Bounds 19.704 × 1.016 × 7.2 game units; Y-up; footprint centre at ground; foundations to -0.2.
+- **Content**: Templo Anfiteatro + Altar Circular + Templo Banqueta; excludes stalls and terrain.
+  `MAT-Sand_Desert` is exported with its base color after stripping the unsupported procedural link.
+- **Runtime**: `?scenery=caral-anfiteatro` mounts the scenery showcase. Visual-only.
+- **Confidence**: documented in plan; graderios and banqueta simplified.
 
 ### Caral city GLB (showcase)
 

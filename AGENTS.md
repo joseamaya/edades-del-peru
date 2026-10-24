@@ -90,8 +90,8 @@ explicit approval described below.
 - `window.game` and `window.THREE` are exposed; the app opens the menu, so use `?play=1` (plus `?seed=`, `?fog=0`,
   `?low=1`, `?speed=`, `?era=N`, `?period=N`, `?mission=ID`, `?intro=0`, `?cine=1`, `?rig=1`, `?art=all`) to
   enter a match directly. `?city=caral` mounts the standalone Blender GLB showcase
-  (`window.__cityDemo`); `?scenery=caral` mounts the modular Pyramid Mayor showcase
-  (`window.__sceneryDemo`) instead of booting a match. `?rig=1` mounts the rigged-model demo
+  (`window.__cityDemo`); `?scenery=caral` mounts the modular Pyramid Mayor showcase and
+  `?scenery=caral-anfiteatro` the Anfiteatro showcase (`window.__sceneryDemo`) instead of booting a match. `?rig=1` mounts the rigged-model demo
   (`window.__rigDemo`, `window.__modelAssets`). `?replay=1` plays
   the stored replay (`localStorage['peru-replay']`) and `?noloop=1` skips auto-starting the loop (tests drive fixed
   steps).
