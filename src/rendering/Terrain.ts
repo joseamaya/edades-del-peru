@@ -5,6 +5,7 @@ import { smoothstep, terrainSlope } from '../util/math';
 import { generateHeightField, CANAL_WIDTH_CELLS } from './heightField';
 import { FOW_DIM_GLSL } from './fowGlsl';
 import type { HistoricalMapProfile } from '../model/defs/profiles';
+import type { TerrainLayout } from '../model/defs/terrainLayout';
 
 // Scratch colors reused in biome generation (avoids ~200k allocations).
 const _cBase = new THREE.Color();
@@ -54,14 +55,14 @@ export class Terrain {
   /** Vegetation density (0 dry .. 1 jungle); tints the grass green. */
   private veg = 0;
 
-  constructor(size: number, resolution: number, seed: number, profile: HistoricalMapProfile) {
+  constructor(size: number, resolution: number, seed: number, profile: HistoricalMapProfile, layout?: TerrainLayout) {
     this.size = size;
     this.resolution = resolution;
     this.profile = profile;
     this.textures = getGroundTextures();
     this.arid = profile.climate.aridity;
     this.veg = profile.vegetation.density;
-    const field = generateHeightField(resolution, seed, profile);
+    const field = generateHeightField(resolution, seed, profile, layout);
     this.heightMap = field.heightMap;
     this.moistureMap = field.moistureMap;
     this.terraceMap = field.terraceMap;
@@ -352,6 +353,7 @@ export class Terrain {
         veg: { value: this.veg },
         snowLine: { value: this.profile.elevation.snowLine },
         temperature: { value: this.profile.climate.temperature },
+        groundTint: { value: new THREE.Color(this.profile.groundTint ?? '#ffffff') },
       },
       vertexShader: /* glsl */ `
         attribute vec3 color;
@@ -414,6 +416,7 @@ export class Terrain {
         uniform float arid;
         uniform float snowLine;
         uniform float temperature;
+        uniform vec3 groundTint;
         varying vec3 vColor;
         varying vec3 vWorldPos;
         varying vec2 vUv;
@@ -474,8 +477,13 @@ ${FOW_DIM_GLSL}
           ground = mix(ground, texture(snow, vUv * 2.2).rgb, snowAmt);
           ground = (ground - 0.5) * 1.12 + 0.5; // contrast
           col = mix(col, ground, 0.75);
+          col *= groundTint;
           // vegetation: tints the grass green in humid biomes (jungle/andes)
           col = mix(col, col * vec3(0.68, 1.08, 0.52), veg * 0.8);
+          // Floodplain: the low, flat ground next to a river reads green even in a
+          // desert region (the Supe valley below the Caral terrace).
+          float flood = (1.0 - smoothstep(waterLevel + 0.3, waterLevel + 5.5, vHeight)) * (1.0 - smoothstep(0.4, 0.8, slope));
+          col = mix(col, vec3(0.28, 0.42, 0.16), flood * (1.0 - arid * 0.25) * 0.75);
           // temperature: cool regions read bluish, hot regions warmer
           float tempTint = clamp(abs(temperature - 0.5) * 0.6, 0.0, 0.3);
           vec3 tempColor = temperature < 0.5 ? vec3(0.86, 0.94, 1.06) : vec3(1.06, 0.98, 0.86);

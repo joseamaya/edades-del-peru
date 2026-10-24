@@ -21,6 +21,37 @@ export const MISSIONS: MissionDef[] = [
     playerCiv: CivId.CARAL,
     enemyCiv: CivId.CARAL,
     map: { seed: 3000, type: 'coast', size: 128 },
+    atmosphere: { fogDensity: 0.0019, sunWarmth: 1.08, skyTint: '#d8c2a0' },
+    layout: {
+      base: { x: 0.5, z: 0.76 },
+      setpiece: { id: 'caral_sacred_city', upper: { x: 0.5, z: 0.31 }, lower: { x: 0.5, z: 0.76 } },
+      terrain: {
+        river: {
+          z: 0.55,
+          width: 0.04,
+          valleyWidth: 0.16,
+          amplitude: 0.012,
+          phase: 0.7,
+          fords: [{ x: 0.5, width: 0.08 }],
+        },
+        flats: [
+          { x: 0.5, z: 0.31, rx: 0.19, rz: 0.13 },
+          { x: 0.5, z: 0.76, rx: 0.175, rz: 0.12 },
+        ],
+        canalExclusion: [
+          { x: 0.5, z: 0.31, rx: 0.2, rz: 0.14 },
+          { x: 0.5, z: 0.76, rx: 0.185, rz: 0.13 },
+        ],
+      },
+    },
+    mapOverrides: {
+      terrain: { terraceChance: 0, riverCount: 0 },
+      climate: { aridity: 0.9, moisture: 0.3 },
+      vegetation: { density: 0.06 },
+      resources: { tree: 0.35 },
+      culturalLandscape: null,
+      groundTint: '#d8a878',
+    },
     guaranteedFishing: 3,
     timeOfDay: 'morning',
     startingEra: Era.FORMATIVE,

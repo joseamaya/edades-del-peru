@@ -387,6 +387,20 @@ pre-existing terrain-overlay geometry, not produced by this pilot.
 - **History.** Cite the dossier/source, mark uncertain forms as abstractions, and do not invent rulers, battles,
   weapons, animals or technologies.
 
+## Scenario set-pieces
+
+A campaign scenario may author a **source-backed set-piece** instead of relying
+only on the regional scatter. The first is the Sacred City of Caral in
+`m1_caral` (`src/model/defs/setpieces.ts`, `src/rendering/SacredCity.ts`):
+Caral Alto and Caral Bajo, separated by the Supe river valley, with six broad
+pyramids around the Central Plaza, sunken circular plazas, the Plaza de la
+Huanca and low stone/plaster residential compounds. The set-piece is visual
+only and keeps the documented hierarchy; its exact coordinates are a
+`plausible` schematic. See
+[`caral-sacred-city.md`](./caral-sacred-city.md) for the source table and the
+deliberate abstractions. Set-pieces never add defensive walls, invented
+structures or anachronistic materials.
+
 ## Non-goals
 
 - No sci-fi, firearms, horses, vehicles or engines before 1532
@@ -401,6 +415,8 @@ pre-existing terrain-overlay geometry, not produced by this pilot.
 
 ## See also
 
+- [`caral-sacred-city.md`](./caral-sacred-city.md) — the source-backed Caral
+  scenario set-piece (Upper/Lower halves, six pyramids, river valley).
 - [`cultural-landscape.md`](./cultural-landscape.md) — design proposal for a
   cultural-landscape layer (roads, canals, fields, plazas).
 - [`settlement-generator.md`](./settlement-generator.md) — design proposal for a

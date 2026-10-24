@@ -3,6 +3,7 @@ import { RNG } from '../util/rng';
 import { smoothstep } from '../util/math';
 import type { HistoricalMapProfile } from '../model/defs/profiles';
 import { landscapeWeight } from '../model/defs/landscape';
+import { insideTerrainRect, type TerrainLayout, type TerrainRect } from '../model/defs/terrainLayout';
 
 export interface HeightField {
   heightMap: Float32Array;
@@ -41,7 +42,12 @@ export const CANAL_WIDTH_CELLS = 1.6;
  * (no THREE): the same `seed` + `profile` always yields the same map, which is
  * what `tests/terrain.test.ts` pins.
  */
-export function generateHeightField(resolution: number, seed: number, profile: HistoricalMapProfile): HeightField {
+export function generateHeightField(
+  resolution: number,
+  seed: number,
+  profile: HistoricalMapProfile,
+  layout?: TerrainLayout,
+): HeightField {
   const n = resolution + 1;
   const heightMap = new Float32Array(n * n);
   const moistureMap = new Float32Array(n * n);
@@ -72,9 +78,111 @@ export function generateHeightField(resolution: number, seed: number, profile: H
   }
 
   carveRivers(heightMap, n, profile, new RNG(seed * 7919 + 17));
+  if (layout?.flats?.length) flattenTerracePads(heightMap, n, layout.flats);
+  if (layout?.river) carveFixedRiver(heightMap, moistureMap, n, profile, layout.river);
   const terraceMap = carveTerraces(heightMap, n, profile, seed);
-  const { canalMap, canalPaths } = carveCanals(heightMap, n, profile, seed);
+  const { canalMap, canalPaths } = carveCanals(heightMap, n, profile, seed, layout?.canalExclusion);
   return { heightMap, moistureMap, terraceMap, canalMap, canalPaths, waterLevel: profile.water.level };
+}
+
+/**
+ * Flatten the authored desert terraces toward their own local mean, with a soft
+ * edge so the pad meets the surrounding relief without a cliff. The mean is
+ * sampled from the inner core only, so the ramps do not drag it down.
+ */
+function flattenTerracePads(heightMap: Float32Array, n: number, pads: readonly TerrainRect[]): void {
+  for (const pad of pads) {
+    const cx = pad.x * (n - 1);
+    const cz = pad.z * (n - 1);
+    const rx = Math.max(1, pad.rx * (n - 1));
+    const rz = Math.max(1, pad.rz * (n - 1));
+    const x0 = Math.max(0, Math.floor(cx - rx));
+    const x1 = Math.min(n - 1, Math.ceil(cx + rx));
+    const z0 = Math.max(0, Math.floor(cz - rz));
+    const z1 = Math.min(n - 1, Math.ceil(cz + rz));
+    let sum = 0;
+    let count = 0;
+    for (let z = z0; z <= z1; z++) {
+      for (let x = x0; x <= x1; x++) {
+        const dx = (x - cx) / rx;
+        const dz = (z - cz) / rz;
+        if (Math.max(Math.abs(dx), Math.abs(dz)) > 0.72) continue;
+        sum += heightMap[z * n + x];
+        count++;
+      }
+    }
+    if (!count) continue;
+    const target = sum / count;
+    for (let z = z0; z <= z1; z++) {
+      for (let x = x0; x <= x1; x++) {
+        const dx = (x - cx) / rx;
+        const dz = (z - cz) / rz;
+        const edge = Math.max(Math.abs(dx), Math.abs(dz));
+        const weight = 1 - smoothstep(0.62, 1, edge);
+        if (weight <= 0) continue;
+        const i = z * n + x;
+        heightMap[i] += (target - heightMap[i]) * weight;
+      }
+    }
+  }
+}
+
+/**
+ * Carve the authored east-west river valley. The channel drops below the water
+ * level (so `Water` renders it) and its banks keep a moisture boost, which makes
+ * the valley floor read as the green Supe floodplain next to the desert terrace.
+ */
+function carveFixedRiver(
+  heightMap: Float32Array,
+  moistureMap: Float32Array,
+  n: number,
+  profile: HistoricalMapProfile,
+  river: NonNullable<TerrainLayout['river']>,
+): void {
+  const waterLevel = profile.water.level;
+  const half = Math.max(1, (river.width * (n - 1)) / 2);
+  const valleyHalf = Math.max(half + 2, ((river.valleyWidth ?? river.width * 3.5) * (n - 1)) / 2);
+  for (let x = 0; x < n; x++) {
+    const t = n > 1 ? x / (n - 1) : 0;
+    const centre = (river.z + (river.amplitude ?? 0) * Math.sin(t * Math.PI * 2 + (river.phase ?? 0))) * (n - 1);
+    const z0 = Math.max(0, Math.floor(centre - valleyHalf));
+    const z1 = Math.min(n - 1, Math.ceil(centre + valleyHalf));
+    for (let z = z0; z <= z1; z++) {
+      const d = Math.abs(z - centre);
+      if (d > valleyHalf) continue;
+      const i = z * n + x;
+      if (d <= half) {
+        const depth = 0.45 + 1.35 * (1 - d / half);
+        heightMap[i] = Math.min(heightMap[i], waterLevel - depth);
+      } else {
+        const tBank = (d - half) / Math.max(1, valleyHalf - half);
+        const shelf = waterLevel + 0.55 + 1.65 * smoothstep(0, 1, tBank);
+        heightMap[i] = Math.min(heightMap[i], shelf);
+      }
+      const wet = d <= half ? 1 : 1 - (d - half) / Math.max(1, valleyHalf - half);
+      moistureMap[i] = Math.max(moistureMap[i], 0.42 + wet * 0.48);
+    }
+  }
+
+  // Dry fords/causeways: raise the channel above the pathfinder's waterline
+  // (`waterLevel + 0.35`) so a unit can cross while the river stays on both
+  // sides. The visual causeway is added by the scene renderer.
+  for (const ford of river.fords ?? []) {
+    const fx = ford.x * (n - 1);
+    const fw = Math.max(2, ford.width * (n - 1));
+    const x0 = Math.max(0, Math.floor(fx - fw / 2));
+    const x1 = Math.min(n - 1, Math.ceil(fx + fw / 2));
+    for (let x = x0; x <= x1; x++) {
+      const t = n > 1 ? x / (n - 1) : 0;
+      const centre = (river.z + (river.amplitude ?? 0) * Math.sin(t * Math.PI * 2 + (river.phase ?? 0))) * (n - 1);
+      const z0 = Math.max(0, Math.floor(centre - half - 3));
+      const z1 = Math.min(n - 1, Math.ceil(centre + half + 3));
+      for (let z = z0; z <= z1; z++) {
+        const i = z * n + x;
+        heightMap[i] = Math.max(heightMap[i], waterLevel + 0.55);
+      }
+    }
+  }
 }
 
 /**
@@ -160,6 +268,7 @@ function carveCanals(
   n: number,
   profile: HistoricalMapProfile,
   seed: number,
+  exclusion?: readonly TerrainRect[],
 ): { canalMap: Float32Array; canalPaths: { x: number; z: number }[][] } {
   const canalMap = new Float32Array(n * n);
   const canalPaths: { x: number; z: number }[][] = [];
@@ -170,6 +279,8 @@ function carveCanals(
   const rng = new RNG((seed * 2246822519 + 53) >>> 0);
   const width = CANAL_WIDTH_CELLS;
   const count = 1 + Math.round(weight * 2);
+  const denied = (x: number, z: number): boolean =>
+    !!exclusion?.some((r) => insideTerrainRect(r, x / (n - 1), z / (n - 1)));
   for (let c = 0; c < count; c++) {
     const path: { x: number; z: number }[] = [];
     let cx = rng.int(0, n - 1);
@@ -184,6 +295,7 @@ function carveCanals(
           const x = Math.round(cx + dx);
           const z = Math.min(cz + dz, n - 1);
           if (x < 0 || x >= n) continue;
+          if (denied(x, z)) continue;
           const d = Math.abs(dx);
           const strength = 1 - d / (width + 0.5);
           if (strength <= 0) continue;
@@ -199,7 +311,29 @@ function carveCanals(
       cx += wander;
       cx = Math.max(2, Math.min(n - 3, cx));
     }
-    canalPaths.push(path);
+    canalPaths.push(...splitCanalPath(path, exclusion, n));
   }
   return { canalMap, canalPaths };
+}
+
+/** Split a canal polyline into the stretches that stay outside the city core. */
+function splitCanalPath(
+  path: { x: number; z: number }[],
+  exclusion: readonly TerrainRect[] | undefined,
+  n: number,
+): { x: number; z: number }[][] {
+  if (!exclusion?.length) return [path];
+  const out: { x: number; z: number }[][] = [];
+  let current: { x: number; z: number }[] = [];
+  for (const p of path) {
+    const blocked = exclusion.some((r) => insideTerrainRect(r, p.x / (n - 1), p.z / (n - 1)));
+    if (blocked) {
+      if (current.length >= 2) out.push(current);
+      current = [];
+    } else {
+      current.push(p);
+    }
+  }
+  if (current.length >= 2) out.push(current);
+  return out;
 }
