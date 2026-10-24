@@ -65,6 +65,7 @@ import {
 import { resolveColorGrade } from '../model/defs/grades';
 import { planSettlementSite, type SettlementPlan } from '../model/defs/settlementPlan';
 import { inCaralCity, planCaralCity, type CaralCityPlan } from '../model/defs/setpieces';
+import { riverCentreZ } from '../model/defs/terrainLayout';
 import { SettlementOverlay } from '../rendering/SettlementOverlay';
 import { SettlementDressing } from '../rendering/SettlementDressing';
 import { planSettlementDressing } from '../model/defs/settlementDressing';
@@ -336,10 +337,9 @@ export class Game {
       const river = this.missionLayout?.terrain?.river;
       const fords = river
         ? (river.fords ?? []).map((ford) => {
-            const centre = river.z + (river.amplitude ?? 0) * Math.sin(ford.x * Math.PI * 2 + (river.phase ?? 0));
             return {
               x: ford.x * s.mapSize,
-              z: centre * s.mapSize,
+              z: riverCentreZ(river, ford.x) * s.mapSize,
               width: ford.width * s.mapSize,
               depth: Math.max(8, river.width * s.mapSize + 6),
             };
@@ -1072,11 +1072,11 @@ export class Game {
       // on the valley edge, and the opening mine/berries sit in the base ring.
       for (let i = 0; i < 8; i++) {
         const tx = grove.lower.x - 14 + rng.range(-4, 4);
-        const tz = grove.lower.z - 18 + rng.range(-2, 2);
+        const tz = grove.lower.z - 22 + rng.range(-2, 2);
         place('tree', rng.range(140, 200), tx - x, tz - z);
       }
-      place('mine', 400, -13, -3);
-      place('berry', 150, 12, -4);
+      place('mine', 400, -13, -24);
+      place('berry', 150, 12, -24);
     } else {
       for (let i = 0; i < 10; i++) {
         const a = rng.range(0, Math.PI * 2);

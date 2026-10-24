@@ -2909,7 +2909,7 @@ export function buildCaralCityModel(
   for (const p of plan.placements) {
     const y = heightAt(p.x, p.z);
     const frame = { x: p.x, y, z: p.z, yaw: p.yaw };
-    if (p.kind === 'pyramid') {
+    if (p.kind === 'pyramid' || p.kind === 'temple') {
       buildCaralPyramid(b, {
         ...frame,
         width: p.width,

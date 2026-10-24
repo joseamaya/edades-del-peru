@@ -42,7 +42,7 @@ export const MISSIONS: MissionDef[] = [
         },
         flats: [
           { ...CARAL_UPPER, rx: 0.19, rz: 0.13 },
-          { ...CARAL_LOWER, rx: 0.175, rz: 0.12 },
+          { ...CARAL_LOWER, rx: 0.18, rz: 0.15 },
         ],
       },
     },
