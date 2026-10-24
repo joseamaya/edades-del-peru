@@ -34,6 +34,7 @@ describe('Caral sacred-city plan', () => {
     expect(names.has('central_plaza')).toBe(true);
     expect(names.has('plaza_de_la_huanca')).toBe(true);
     expect(p.placements.some((x) => x.kind === 'monolith' && x.name === 'la_huanca')).toBe(true);
+    expect(p.placements.filter((x) => x.kind === 'plaza').length).toBe(5);
   });
 
   it('includes the Lower-Half Amphitheatre Temple and its large sunken plaza', () => {
@@ -43,6 +44,8 @@ describe('Caral sacred-city plan', () => {
     expect(p.placements.some((x) => x.kind === 'pyramid' && x.name === 'bench_temple')).toBe(true);
     const plaza = p.placements.find((x) => x.kind === 'sunken_plaza' && x.name === 'amphitheatre_plaza');
     expect(plaza?.radius).toBeGreaterThan(4);
+    // The Amphitheatre is linked to the largest sunken plaza in the city.
+    expect(plaza?.radius).toBeGreaterThan(p.mainPyramid.width * 0.46);
   });
 
   it('keeps the two halves apart and inside the map', () => {

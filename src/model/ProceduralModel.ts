@@ -9,7 +9,7 @@ import { HUMAN_HAIR, HUMAN_SKIN, type PersonGender } from './defs/people';
 import type { HistoricalArchitectureProfile, SilhouetteMotif, WallMaterial, RoofMaterial } from './defs/architecture';
 import type { LandmarkId } from './defs/landmarks';
 import type { CaralCityPlan } from './defs/setpieces';
-import { mixHex } from '../util/math';
+import { mixHex, rotateXZ } from '../util/math';
 import { scaleUv } from '../util/uv';
 import { MaterialTex } from '../rendering/Textures';
 import { getGeneratedMaterial } from '../rendering/Biomes';
@@ -52,6 +52,8 @@ export interface BuildContext {
   playerColor: THREE.Color;
   /** Historical architecture profile of `civ` in this period (drives materials/structure). */
   arch: HistoricalArchitectureProfile;
+  /** True while building the authored Caral set-piece mission. */
+  caralSetpiece?: boolean;
 }
 
 const sharedGeo: Record<string, THREE.BufferGeometry> = {};
@@ -1310,7 +1312,7 @@ function andeanWall(b: Builder): string {
   const p = b.pal.primary;
   // Caral's plastered stone reads light and sandy, not the darker adobe of the
   // later north-coast huacas (sources: caral.md, arquitectura.md).
-  if (b.civId === CivId.CARAL) return mixHex(p, '#d8c8a8', 0.86);
+  if (b.civId === CivId.CARAL && b.context.caralSetpiece) return mixHex(p, '#d8c8a8', 0.86);
   switch (b.arch.wall) {
     case 'megalithic':
       return mixHex(p, '#b4aca0', 0.78);
@@ -1344,7 +1346,7 @@ function andeanTex(b: Builder): TexKind {
   // Chavín's carved stone reads better with the lighter procedural stone map
   // than with the near-black megalith AI texture. Caral uses the same light
   // stone for its plastered platforms and houses.
-  if (b.civId === CivId.CHAVIN || b.civId === CivId.CARAL) return 'stone';
+  if (b.civId === CivId.CHAVIN || (b.civId === CivId.CARAL && b.context.caralSetpiece)) return 'stone';
   return WALL_TEX[b.arch.wall];
 }
 
@@ -2533,16 +2535,15 @@ interface CaralFrame {
   z: number;
   y: number;
   yaw: number;
-  cos: number;
-  sin: number;
 }
 
 function caralFrame(x: number, y: number, z: number, yaw: number): CaralFrame {
-  return { x, z, y, yaw, cos: Math.cos(yaw), sin: Math.sin(yaw) };
+  return { x, z, y, yaw };
 }
 
 function caralAt(f: CaralFrame, lx: number, lz: number): { x: number; z: number } {
-  return { x: f.x + lx * f.cos - lz * f.sin, z: f.z + lx * f.sin + lz * f.cos };
+  const p = rotateXZ(lx, lz, f.yaw);
+  return { x: f.x + p.x, z: f.z + p.z };
 }
 
 function caralBox(
@@ -2628,6 +2629,7 @@ function buildCaralPyramid(
     tiers: number;
     stairWidth: number;
     sunkenPlaza?: boolean;
+    roundAltar?: boolean;
   },
 ): void {
   const f = caralFrame(spec.x, spec.y, spec.z, spec.yaw);
@@ -2693,6 +2695,10 @@ function buildCaralPyramid(
   caralBox(b, f, aw * 0.7, wallH, 0.12, stone, aw * 0.65, wy, ad, 'stone');
   caralBox(b, f, aw * 2.02, 0.06, ad * 2.02, plaster, 0, topY + 0.1, 0, undefined);
   caralCyl(b, f, 0.24, 0.3, 0.2, 10, dark, 0, topY + 0.2, 0, 'stone');
+  if (spec.roundAltar) {
+    caralCyl(b, f, 0.7, 0.8, 0.22, 16, stone, 0, topY + 0.2, 0, 'stone');
+    caralCyl(b, f, 0.34, 0.4, 0.14, 12, dark, 0, topY + 0.37, 0, undefined);
+  }
 
   // Low parapet around the summit edge.
   caralBox(b, f, topW * 0.98, 0.24, 0.14, stone, 0, topY + 0.12, -(topD / 2 - 0.07), 'stone');
@@ -2910,6 +2916,7 @@ export function buildCaralCityModel(
         depth: p.depth,
         tiers: p.tiers ?? 3,
         stairWidth: p.stairWidth ?? 1.7,
+        roundAltar: p.name === 'round_altar',
       });
     } else if (p.kind === 'sunken_plaza') {
       buildCaralSunkenPlaza(b, caralFrame(p.x, y, p.z, p.yaw), 0, p.radius ?? p.width / 2);
@@ -3512,6 +3519,7 @@ function mergeStaticParts(container: THREE.Object3D): void {
     out.castShadow = meshes[0].castShadow;
     out.receiveShadow = meshes[0].receiveShadow;
     out.name = 'part';
+    out.userData.merged = true;
     for (const mesh of meshes) mesh.removeFromParent();
     container.add(out);
   }

@@ -67,12 +67,7 @@ export class CulturalLandscape {
   readonly featureBudget = RENDERED_FEATURES.length;
   private materials: THREE.Material[] = [];
 
-  constructor(
-    terrain: Terrain,
-    profile: HistoricalMapProfile,
-    seed: number,
-    avoid?: (x: number, z: number) => boolean,
-  ) {
+  constructor(terrain: Terrain, profile: HistoricalMapProfile, seed: number) {
     this.group.name = 'landscape';
     const landscape = profile.culturalLandscape;
     if (!landscape) return;
@@ -80,7 +75,7 @@ export class CulturalLandscape {
     const q: LandscapeQuery = {
       size: terrain.size,
       isWater: (x, z) => terrain.isWater(x, z),
-      isBuildable: (x, z) => terrain.isBuildable(x, z) && !avoid?.(x, z),
+      isBuildable: (x, z) => terrain.isBuildable(x, z),
       getSlope: (x, z) => terrain.getSlope(x, z),
       getTerrace: (x, z) => terrain.getTerrace(x, z),
     };

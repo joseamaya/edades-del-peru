@@ -332,7 +332,7 @@ export class Game {
     this.terrain.camera = this.camera.camera;
     this.scene.add(this.terrain.group);
     const city = this.missionLayout?.setpiece;
-    if (city) {
+    if (city && city.id === 'caral_sacred_city') {
       const river = this.missionLayout?.terrain?.river;
       const fords = river
         ? (river.fords ?? []).map((ford) => {
@@ -788,9 +788,7 @@ export class Game {
    * load and never saved (like the terrain and the landmark).
    */
   private spawnCulturalLandscape(): void {
-    this.landscape = new CulturalLandscape(this.terrain, this.mapProfile, this.settings.mapSeed, (x, z) =>
-      this.isReserved(x, z),
-    );
+    this.landscape = new CulturalLandscape(this.terrain, this.mapProfile, this.settings.mapSeed);
     applyFowToObject(this.landscape.group, this.fowUniforms);
     this.scene.add(this.landscape.group);
   }
@@ -1070,23 +1068,27 @@ export class Game {
     // (the gallery forest of the Supe), not inside the residential compounds.
     const grove = this.setpiecePlan;
     if (grove) {
+      // Keep the base -> ford axis clear: the gallery forest sits west of it,
+      // on the valley edge, and the opening mine/berries sit in the base ring.
       for (let i = 0; i < 8; i++) {
-        const tx = grove.lower.x + rng.range(-7, 7);
-        const tz = grove.lower.z - 14 + rng.range(-2, 2);
+        const tx = grove.lower.x - 14 + rng.range(-4, 4);
+        const tz = grove.lower.z - 18 + rng.range(-2, 2);
         place('tree', rng.range(140, 200), tx - x, tz - z);
       }
+      place('mine', 400, -13, -3);
+      place('berry', 150, 12, -4);
     } else {
       for (let i = 0; i < 10; i++) {
         const a = rng.range(0, Math.PI * 2);
         const r = rng.range(8, 13);
         place('tree', rng.range(140, 200), Math.cos(a) * r, Math.sin(a) * r);
       }
+      // steel mine
+      const ma = rng.range(0, Math.PI * 2);
+      place('mine', 400, Math.cos(ma) * 12, Math.sin(ma) * 12);
+      // berries
+      place('berry', 150, rng.range(-6, 6), rng.range(9, 13));
     }
-    // steel mine
-    const ma = rng.range(0, Math.PI * 2);
-    place('mine', 400, Math.cos(ma) * 12, Math.sin(ma) * 12);
-    // berries
-    place('berry', 150, rng.range(-6, 6), rng.range(9, 13));
     // well (if the era allows it)
     if (this.players[player].era >= Era.TAHUANTINSUYO) {
       const wa = rng.range(0, Math.PI * 2);
@@ -1125,6 +1127,7 @@ export class Game {
       civ,
       playerColor: new THREE.Color(civ.colors.primary),
       arch: archProfileFor(civ.id, p.era),
+      caralSetpiece: !!this.setpiecePlan,
     };
   }
 

@@ -7,6 +7,9 @@ export const CAMPAIGN_ID = 'la-senda-del-sol';
 export const CAMPAIGN_TITLE = 'La Senda del Sol';
 export const CAMPAIGN_SUBTITLE = 'Nueve escenarios de la historia del Perú, de Caral a la República';
 
+const CARAL_UPPER = { x: 0.5, z: 0.31 };
+const CARAL_LOWER = { x: 0.5, z: 0.76 };
+
 export const MISSIONS: MissionDef[] = [
   {
     id: 'm1_caral',
@@ -26,8 +29,8 @@ export const MISSIONS: MissionDef[] = [
     map: { seed: 3000, type: 'coast', size: 128 },
     atmosphere: { fogDensity: 0.0019, sunWarmth: 1.08, skyTint: '#d8c2a0' },
     layout: {
-      base: { x: 0.5, z: 0.76 },
-      setpiece: { id: 'caral_sacred_city', upper: { x: 0.5, z: 0.31 }, lower: { x: 0.5, z: 0.76 } },
+      base: CARAL_LOWER,
+      setpiece: { id: 'caral_sacred_city', upper: CARAL_UPPER, lower: CARAL_LOWER },
       terrain: {
         river: {
           z: 0.55,
@@ -38,12 +41,8 @@ export const MISSIONS: MissionDef[] = [
           fords: [{ x: 0.5, width: 0.08 }],
         },
         flats: [
-          { x: 0.5, z: 0.31, rx: 0.19, rz: 0.13 },
-          { x: 0.5, z: 0.76, rx: 0.175, rz: 0.12 },
-        ],
-        canalExclusion: [
-          { x: 0.5, z: 0.31, rx: 0.2, rz: 0.14 },
-          { x: 0.5, z: 0.76, rx: 0.185, rz: 0.13 },
+          { ...CARAL_UPPER, rx: 0.19, rz: 0.13 },
+          { ...CARAL_LOWER, rx: 0.175, rz: 0.12 },
         ],
       },
     },

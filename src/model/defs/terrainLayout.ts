@@ -3,12 +3,16 @@
  * map (`0..1`), so the same layout works for any playable size. Used by the pure
  * heightfield generator and by the scenery exclusion queries.
  */
+/**
+ * Axis-aligned rectangle. Coordinates are in the caller's space: normalized
+ * (`0..1`) for terrain layouts and world units for scene keep-out rectangles.
+ */
 export interface TerrainRect {
   x: number;
   z: number;
-  /** Half-extent along X, normalized. */
+  /** Half-extent along X. */
   rx: number;
-  /** Half-extent along Z, normalized. */
+  /** Half-extent along Z. */
   rz: number;
 }
 
@@ -39,8 +43,6 @@ export interface TerrainLayout {
   river?: TerrainRiver;
   /** Flat desert terraces (normalized rectangles). */
   flats?: TerrainRect[];
-  /** Rects that must not be crossed by irrigation canals (the city core). */
-  canalExclusion?: TerrainRect[];
 }
 
 /** Whether a normalized point lies inside a rect, with an optional normalized margin. */
