@@ -91,7 +91,9 @@ slot is absent (offline / without assets).
   Bounds 13.904 × 2.7744 × 15.5352 game units; Y-up; footprint centre at ground; foundations
   extend to -0.16.
 - **Content**: Pyramid Mayor + Plaza Mayor; excludes `PlazaCentral`, market stalls and terrain.
-- **Runtime**: `?scenery=caral` mounts the scenery showcase. Visual-only, not a campaign asset.
+- **Runtime**: `?scenery=caral` mounts the scenery showcase. On `m1_caral`, the Pyramid Mayor GLB
+  replaces the procedural Caral landmark with a flat sand pad; visual-only, no collision. Falls back to
+  the procedural landmark if the GLB cannot load.
 - **Confidence**: documented in plan; roofs and remates inferred.
 
 ### Caral Anfiteatro modular scenery

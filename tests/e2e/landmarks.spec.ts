@@ -7,7 +7,20 @@ async function boot(page: Page, url: string): Promise<void> {
   });
 }
 
-function landmarkInfo(page: Page) {
+async function landmarkInfo(page: Page) {
+  await page.waitForFunction(
+    () => {
+      const landmark = (window as unknown as { game?: any }).game?.landmark;
+      if (!landmark) return true;
+      let meshes = 0;
+      landmark.traverse((object: any) => {
+        if (object.isMesh) meshes++;
+      });
+      return meshes > 0;
+    },
+    null,
+    { timeout: 15_000 },
+  );
   return page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     const l = g.landmark;
@@ -40,6 +53,29 @@ function landmarkInfo(page: Page) {
     };
   });
 }
+
+test('the Caral landmark uses the modular Pyramid Mayor GLB', async ({ page }) => {
+  await boot(page, '/?mission=m1_caral&fog=0&low=1&noloop=1');
+  const info = await landmarkInfo(page);
+  const child = await page.evaluate(() => {
+    const landmark = (window as unknown as { game: any }).game.landmark;
+    const model = landmark?.getObjectByName('caral_pyramid_mayor');
+    let meshes = 0;
+    model?.traverse((object: any) => {
+      if (object.isMesh) meshes++;
+    });
+    return {
+      name: model?.name ?? null,
+      meshes,
+      pad: landmark?.getObjectByName('caral_landmark_pad')?.name ?? null,
+    };
+  });
+  expect(info.id).toBe('caral_ceremonial');
+  expect(info.present).toBe(true);
+  expect(child.name).toBe('caral_pyramid_mayor');
+  expect(child.meshes).toBe(7);
+  expect(child.pad).toBe('caral_landmark_pad');
+});
 
 test('period maps place their own landmark on land', async ({ page }) => {
   const missions: [string, string][] = [

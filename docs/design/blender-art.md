@@ -112,6 +112,8 @@ the terrain, and is rebuilt by `scripts/blender/build_caral_scenery.py --asset=p
 - Orientation: Y-up; main stair +Z.
 - The source objects are `GEO-Caral_PyramideMayor_LOD0` and `GEO-Caral_PlazaMayor_LOD0`.
 - `?scenery=caral` mounts the LOD showcase; `?city=caral` remains the full-city showcase.
+- `m1_caral` uses this GLB as the Caral landmark on a flat sand pad; it is visual-only, has no
+  collision/campaign entity, and falls back to the procedural landmark if the GLB fails.
 
 ### Anfiteatro
 

@@ -192,12 +192,16 @@ Definition of Done and the building audit see
 - **Landmarks (visual only)**: `Game.mapProfile.landmark` (from `landmarkForCiv(civ, period)` — period-gated and
   region-gated: see `resolveMapProfile`) drives `Game.spawnLandmark()`, which builds a cached template via
   `buildLandmarkModel` (`ProceduralModel.ts`, keyed by `landmark|civ|era`) with the landmark's own
-  civilization/era. One landmark per civilization (19 total: Caral, Chavín, Cupisnique, Paracas, Moche, Nazca,
-  Recuay, Wari, Tiahuanaco, Chimú, Chincha, Chanca, Collas/Lupaca, Huanca, Inca, colonial, Patriotas, República,
-  Chile); sources/status in `src/model/defs/landmarks.ts`. Placement is deterministic
+  civilization/era. **Caral is the exception**: `spawnLandmark` asynchronously loads the modular
+  `caral_pyramid_mayor` GLB onto a flat sand pad, keeps the deterministic placeholder position for the
+  tutorial, applies FOW/shadows, and falls back to the procedural landmark if the GLB fails. The other
+  landmarks remain procedural. One landmark per civilization (19 total: Caral, Chavín, Cupisnique, Paracas,
+  Moche, Nazca, Recuay, Wari, Tiahuanaco, Chimú, Chincha, Chanca, Collas/Lupaca, Huanca, Inca, colonial,
+  Patriotas, República, Chile); sources/status in `src/model/defs/landmarks.ts`. Placement is deterministic
   (`RNG(mapSeed*131+11)` on a 0.3–0.42·size ring, skipping water/beach/steep cells and player bases/resources)
   and adds a plain `THREE.Group` named `landmark` to the scene (no entity, no pathfinding obstacle). Freed in
-  `Game.destroy()`; templates are freed by `clearModelCaches()`. The masonry surfaces reuse the civilization's
+  `Game.destroy()`; static GLB resources are freed with `disposeStaticGltf`, procedural templates by
+  `clearModelCaches()`. The masonry surfaces reuse the civilization's
   wall material (`andeanTex` → `WALL_TEX`, so AI-generated `wall_*` when present), not a fixed stone; Chavín
   deliberately resolves to the lighter procedural stone map so its carved masses stay readable at RTS zoom.
   Verified by `tests/e2e/landmarks.spec.ts`.
