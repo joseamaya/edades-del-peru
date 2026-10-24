@@ -45,12 +45,12 @@ export interface TerrainLayout {
   flats?: TerrainRect[];
 }
 
-/** Whether a normalized point lies inside a rect, with an optional normalized margin. */
+/** Whether a point lies inside a rect, with an optional margin in the same space. */
 export function insideTerrainRect(r: TerrainRect, x: number, z: number, margin = 0): boolean {
   return Math.abs(x - r.x) <= r.rx + margin && Math.abs(z - r.z) <= r.rz + margin;
 }
 
-/** Whether a normalized point lies in any rect. */
-export function insideAnyTerrainRect(rects: readonly TerrainRect[] | undefined, x: number, z: number): boolean {
-  return !!rects?.some((r) => insideTerrainRect(r, x, z));
+/** Normalized centre line of the river at `t` (0..1 across the map). */
+export function riverCentreZ(river: TerrainRiver, t: number): number {
+  return river.z + (river.amplitude ?? 0) * Math.sin(t * Math.PI * 2 + (river.phase ?? 0));
 }

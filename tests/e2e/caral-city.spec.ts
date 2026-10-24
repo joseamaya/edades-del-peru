@@ -30,11 +30,13 @@ test('the Caral scenario builds the documented Upper and Lower halves', { tag: '
       }
     });
     const upperKeepout = plan.keepout[0];
+    const lowerKeepout = plan.keepout[1];
     const ford = plan.placements.find((p: any) => p.kind === 'ford');
     // Local rect test: page.evaluate runs in the browser and cannot import the
     // Node-side terrain helper.
     const inRect = (n: any, r: any) => Math.abs(n.pos.x - r.x) <= r.rx && Math.abs(n.pos.z - r.z) <= r.rz;
     const upperResources = [...g.resourceNodes.values()].filter((n: any) => inRect(n, upperKeepout)).length;
+    const lowerResources = [...g.resourceNodes.values()].filter((n: any) => inRect(n, lowerKeepout)).length;
     const fordResources = ford
       ? [...g.resourceNodes.values()].filter((n: any) =>
           inRect(n, { x: ford.x, z: ford.z, rx: ford.width / 2, rz: ford.depth / 2 }),
@@ -60,6 +62,7 @@ test('the Caral scenario builds the documented Upper and Lower halves', { tag: '
       fordReachable: base ? g.pathfinder.reachable(base.pos.x, base.pos.z, plan.upper.x, plan.upper.z) : false,
       fordPathLength: base ? g.pathfinder.pathfind(base.pos.x, base.pos.z, plan.upper.x, plan.upper.z).length : 0,
       upperResources,
+      lowerResources,
       fordResources,
       landscapeMeshes: g.landscape?.group?.children?.length ?? 0,
     };
@@ -80,6 +83,7 @@ test('the Caral scenario builds the documented Upper and Lower halves', { tag: '
   expect(state.fordReachable).toBe(true);
   expect(state.fordPathLength).toBeGreaterThan(0);
   expect(state.upperResources).toBe(0);
+  expect(state.lowerResources).toBe(0);
   expect(state.fordResources).toBe(0);
   expect(state.landscapeMeshes).toBe(0);
   expect(errors).toEqual([]);

@@ -39,9 +39,9 @@ describe('Caral sacred-city plan', () => {
 
   it('includes the Lower-Half Amphitheatre Temple and its large sunken plaza', () => {
     const p = plan();
-    expect(p.placements.some((x) => x.kind === 'pyramid' && x.name === 'amphitheatre')).toBe(true);
-    expect(p.placements.some((x) => x.kind === 'pyramid' && x.name === 'round_altar')).toBe(true);
-    expect(p.placements.some((x) => x.kind === 'pyramid' && x.name === 'bench_temple')).toBe(true);
+    expect(p.placements.some((x) => x.kind === 'temple' && x.name === 'amphitheatre')).toBe(true);
+    expect(p.placements.some((x) => x.kind === 'temple' && x.name === 'round_altar')).toBe(true);
+    expect(p.placements.some((x) => x.kind === 'temple' && x.name === 'bench_temple')).toBe(true);
     const plaza = p.placements.find((x) => x.kind === 'sunken_plaza' && x.name === 'amphitheatre_plaza');
     expect(plaza?.radius).toBeGreaterThan(4);
     // The Amphitheatre is linked to the largest sunken plaza in the city.

@@ -27,7 +27,8 @@ export type SetpieceId = 'caral_sacred_city';
 export type CaralPyramidName = 'greater' | 'central' | 'quarry' | 'lesser' | 'gallery' | 'huanca';
 export type CaralLowerName = 'amphitheatre' | 'round_altar' | 'bench_temple';
 
-export type CaralPlacementKind = 'pyramid' | 'sunken_plaza' | 'plaza' | 'compound' | 'monolith' | 'path' | 'ford';
+export type CaralPlacementKind =
+  'pyramid' | 'temple' | 'sunken_plaza' | 'plaza' | 'compound' | 'monolith' | 'path' | 'ford';
 
 export interface CaralPlacement {
   kind: CaralPlacementKind;
@@ -94,7 +95,7 @@ function temple(
   yaw: number,
   stairWidth = 1.8,
 ): CaralPlacement {
-  return { kind: 'pyramid', name, x: 0, z: 0, yaw, width, depth, tiers, stairWidth };
+  return { kind: 'temple', name, x: 0, z: 0, yaw, width, depth, tiers, stairWidth };
 }
 
 /**
@@ -192,7 +193,7 @@ export function planCaralCity(opts: {
   placements.push({
     kind: 'sunken_plaza',
     name: 'amphitheatre_plaza',
-    ...lowerAt(-16, 7),
+    ...lowerAt(-16, 11.7),
     yaw: rot(0),
     width: 14.4 * s,
     depth: 14.4 * s,
@@ -255,7 +256,7 @@ export function planCaralCity(opts: {
     {
       kind: 'compound',
       name: 'lower_residence_w',
-      ...lowerAt(-18, 6),
+      ...lowerAt(-20, -6),
       yaw: 0.1 + yaw,
       width: 6 * s,
       depth: 5 * s,
@@ -284,7 +285,7 @@ export function planCaralCity(opts: {
 
   const keepout: TerrainRect[] = [
     { x: upper.x, z: upper.z, rx: 26 * s, rz: 18 * s },
-    { x: lower.x, z: lower.z, rx: 24 * s, rz: 17 * s },
+    { x: lower.x, z: lower.z, rx: 24 * s, rz: 20 * s },
   ];
 
   for (const ford of opts.fords ?? []) {

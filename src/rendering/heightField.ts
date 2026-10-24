@@ -3,7 +3,7 @@ import { RNG } from '../util/rng';
 import { smoothstep } from '../util/math';
 import type { HistoricalMapProfile } from '../model/defs/profiles';
 import { landscapeWeight } from '../model/defs/landscape';
-import type { TerrainLayout, TerrainRect } from '../model/defs/terrainLayout';
+import { riverCentreZ, type TerrainLayout, type TerrainRect } from '../model/defs/terrainLayout';
 
 export interface HeightField {
   heightMap: Float32Array;
@@ -144,7 +144,7 @@ function carveFixedRiver(
   const valleyHalf = Math.max(half + 2, ((river.valleyWidth ?? river.width * 3.5) * (n - 1)) / 2);
   for (let x = 0; x < n; x++) {
     const t = n > 1 ? x / (n - 1) : 0;
-    const centre = (river.z + (river.amplitude ?? 0) * Math.sin(t * Math.PI * 2 + (river.phase ?? 0))) * (n - 1);
+    const centre = riverCentreZ(river, t) * (n - 1);
     const z0 = Math.max(0, Math.floor(centre - valleyHalf));
     const z1 = Math.min(n - 1, Math.ceil(centre + valleyHalf));
     for (let z = z0; z <= z1; z++) {
@@ -174,7 +174,7 @@ function carveFixedRiver(
     const x1 = Math.min(n - 1, Math.ceil(fx + fw / 2));
     for (let x = x0; x <= x1; x++) {
       const t = n > 1 ? x / (n - 1) : 0;
-      const centre = (river.z + (river.amplitude ?? 0) * Math.sin(t * Math.PI * 2 + (river.phase ?? 0))) * (n - 1);
+      const centre = riverCentreZ(river, t) * (n - 1);
       const z0 = Math.max(0, Math.floor(centre - half - 3));
       const z1 = Math.min(n - 1, Math.ceil(centre + half + 3));
       for (let z = z0; z <= z1; z++) {

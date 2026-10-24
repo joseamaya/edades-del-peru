@@ -33,10 +33,10 @@ camera framing and the warm desert palette.
 | Sunken circular plazas | Documented | Great Pyramid and Amphitheatre Temple (the largest). |
 | Five open plazas in the Upper Half | Documented count (ICOMOS) | Central Plaza, Plaza de la Huanca and three pyramid forecourts. |
 | Supe crossing | Not documented as a bridge; a crossing was necessary | Central dry stone ford/causeway; walkable, with the river on both sides. |
-| Residential units B1, B2, B5; E2-E3 | Documented in the 2005/2009 reports | Low stone-and-mud compounds around patios and narrow rooms. |
+| Residential units B1, B2, B5; Greater Residential Complex; E2-E3 | Documented in the 2005/2009 reports | Low stone-and-mud compounds around patios and narrow rooms. |
 | Amphitheatre Temple, Round Altar, Bench Temple, Q residence, Lesser Residential Complex, specialised workshop | Documented in the 2005/2009 reports | Caral Bajo placements. |
 | Additional residences (unnamed) | Plausible | Generic `upper_residence_*` / `lower_residence_*` compounds. |
-| Processional paths | Abstraction | Visual-only connectors between the plazas and temples. |
+| Processional paths | Abstraction | Visual-only connectors between the plazas, residences and temples. |
 | Stone retaining walls, mud mortar, `shicras` fill, plastered and painted surfaces | Documented | Sand/cream plaster, light stone bands, restrained red/yellow accents. |
 | No defensive walls, weapons or warrior class | Documented absence | No fortifications or military props in the set-piece. |
 
@@ -65,14 +65,13 @@ camera framing and the warm desert palette.
 - Mission layout: `MissionDef.layout` and `MissionDef.mapOverrides` in
   `src/campaign/types.ts`; values in `src/campaign/defs/campaign.ts`.
 - Terrain: `src/model/defs/terrainLayout.ts` + `generateHeightField` in
-  `src/rendering/heightField.ts` (flats, fixed river valley, canal exclusion).
+  `src/rendering/heightField.ts` (flats, fixed river valley, walkable ford).
 - Models: `src/model/ProceduralModel.ts` (`buildCaralPyramid`,
   `buildCaralSunkenPlaza`, `buildCaralCompound`, `buildCaralMonolith`,
   `buildCaralCityModel`).
 - Renderer: `src/rendering/SacredCity.ts` (merged by material; visual only).
-- Wiring: `src/core/Game.ts` (reserved footprints, fixed base, landmark, intro),
-  `src/rendering/CulturalLandscape.ts` (avoid the city), `src/rendering/Water.ts`
-  (map-aligned depth sampling for inland rivers).
+- Wiring: `src/core/Game.ts` (reserved footprints, fixed base, landmark, intro)
+  and `src/rendering/Water.ts` (map-aligned depth sampling for inland rivers).
 
 ## Guards
 
