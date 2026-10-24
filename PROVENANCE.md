@@ -32,6 +32,73 @@
 Textures are optional: `src/rendering/Biomes.ts` falls back to the procedural Canvas material when a
 slot is absent (offline / without assets).
 
+## Blender render assets
+
+- **Location**: `public/media/generated/{campaigns,education,tours}/`. These files are served as static
+  assets and are not bundled into the JavaScript.
+- **Manifest**: `src/art/manifest.json` is the canonical machine-readable provenance. The ingestion also writes
+  `public/media/generated/manifest.json` (copy) and `public/media/generated/PROVENANCE.md` (human-readable table).
+  Do not edit either by hand; use `yarn art:review` for the review flag.
+- **Source**: the editable Blender project lives in `art-src/blender` (`.blend` in Git LFS). The repository
+  stores the source manifest (`art-src/blender/caral/renders.json`), the asset table
+  (`art-src/blender/caral/caral_asset_manifest.csv`) and the hashes of the source renders and `.blend`/`.glb`
+  files in [`art-src/blender/caral/README.md`](./art-src/blender/caral/README.md). GIMP `.xcf` sources live in
+  `art-src/gimp/projects` (Git LFS). Blender and GIMP are authoring tools, not CI dependencies.
+- **Generation**: `yarn art:blender` verifies each source PNG SHA-256, converts it to budgeted WebP with `sharp`,
+  writes the manifest/provenance and validates the result. It never calls an AI provider and never runs Blender.
+- **Provenance fields**: each record stores the render description, `promptVersion`, civilization, period, era,
+  region, scene file, source render, source hash, Blender asset id, confidence (`documentado`, `blockout`, …),
+  camera, renderer, licence, author, render date, dimensions, bytes and SHA-256.
+- **Nature**: each asset is marked `reconstruction`, `abstraction`, `concept-art` or `reference`. A render is an
+  artistic reconstruction, **not a historical photograph**; the UI always renders the disclaimer.
+- **Review**: renders are ingested with `reviewed: false`. The game shows only reviewed assets by default;
+  `?art=all` previews drafts with a “Borrador sin revisar” badge. Approve with
+  `yarn art:review --id=… --reviewer=… --approve`.
+- **Pilot**: Caral / Arcaico Tardío (`m1_caral`), documented in
+  [`docs/design/blender-art.md`](./docs/design/blender-art.md). The set covers a campaign introduction,
+  architecture, the circular plaza/altar, an orthographic educational map and a tour concept. Caral has no
+  documented war or ruler names; its clothing/faces are not documented, so no character-reference render is
+  claimed.
+- **Licence**: the renders are project-owned; audit the `.blend` scenes for external textures/HDRIs/models and
+  record their licences before publishing.
+- **GLB exports**: `caral_pyramide_mayor.glb` and `caral_rts_kit.glb` are recorded for provenance but are not
+  integrated into the game in this branch; the procedural models remain.
+- **Archived AI pipeline**: the earlier AI-illustration spike is archived on the `feat/visual-ai-pipeline`
+  branch and is not part of this branch.
+
+### GIMP 2D retouching
+
+- **Sources**: `art-src/gimp/projects/*.xcf` (Git LFS).
+- **Exports**: `art-src/gimp/exports/` or the final PNG in `art-src/blender/renders/` when a
+  render is retouched.
+- **Tool**: GIMP 3.2.6 via `gimp3-mcp` (localhost:9877). GIMP is an authoring tool, not a CI
+  dependency and never a runtime dependency.
+- **Rules**: non-destructive XCF, sRGB/8-bit, no invented historical details, no AI upscaling,
+  and the final file hash must be updated in the corresponding manifest.
+- **Assets**: 2D retouching does not change the “artistic reconstruction, not a photograph”
+  disclaimer.
+
+### Caral city GLB (showcase)
+
+- **Location**: `src/assets/cities/caral_city_lod0.glb` and `caral_city_lod1.glb`.
+- **SHA-256**: LOD0 `f6d30d3df0eda092d0caaea9105627bd8a6369680e2824f1d4bc1deedde63d07`;
+  LOD1 `e291d8cd3e05ae77debded0470ba7c309f89549e5cd8a98ab3c44bb276123de6`.
+- **Source**: `art-src/blender/scenes/caral_game_export.blend` (Git LFS;
+  SHA-256 `26d7de923806421967cdd21eefee54013990172511540d1a5eda65ea6875558f`), with the export manifest
+  `art-src/blender/caral/caral_city_game_manifest.csv`.
+- **Export**: LOD0 18,120 tris / 10 parts / 10 materials / 906,728 bytes; LOD1 6,194 tris / 454,348 bytes.
+  Bounds 30.4 × 2.814 × 49.628 game units; Y-up; pivot at the centre of the footprint at ground level;
+  main stair faces +Z. The city is merged by material (10 draw calls) and excludes terrain/trees/rocks/humans.
+- **Runtime**: `src/rendering/StaticModel.ts` is a static glTF loader that does not require animation clips.
+  `?city=caral` mounts a standalone showcase with both LODs, shadows, orbit controls and `window.__cityDemo`.
+- **Material caveat**: the GLB exports `MAT-Sand_Desert` without a `baseColorFactor`; the showcase applies a
+  sand fallback. The source material should be corrected before the city is used in the campaign.
+- **Historical caveat**: the export includes plaza stalls (`GEO-Caral_PlazaCentral_Stall_*`). The campaign design
+  states there is no attested market at Caral; review/remove or document them as a plaza-gathering abstraction
+  before integrating the city into `m1_caral`.
+- **Status**: showcase only. The city is **not** used by a campaign mission yet; the procedural Caral landmark
+  remains. A render is not a photograph.
+
 ## Rigged 3D models
 
 - **Location**: `src/assets/models/*.glb` (loaded by `src/rendering/ModelAssets.ts`).

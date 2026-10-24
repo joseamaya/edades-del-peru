@@ -3,6 +3,8 @@ import { CIVS, civsForPeriod } from '../model/defs/civs';
 import { MISSIONS } from '../campaign/defs/campaign';
 import { getEducational } from '../campaign/defs/educational';
 import { MAP_LABEL } from '../core/Config';
+import { artForMission } from '../art/manifest';
+import { artFigureHtml, includeUnreviewedArt } from './ArtFigure';
 
 /**
  * Codex/educational encyclopedia. Gathers periods, civilizations and campaigns from the
@@ -140,6 +142,10 @@ function campaignTab(): CodexItem[] {
     title: m.title,
     render: () => {
       const edu = getEducational(m.id);
+      const art = artForMission(m.id, { includeUnreviewed: includeUnreviewedArt() });
+      const record =
+        art.find((a) => a.type === 'campaign-intro') ?? art.find((a) => a.type === 'campaign-scene') ?? art[0];
+      const figure = record ? artFigureHtml(record, '(max-width: 620px) 100vw, 420px') : '';
       const sources = edu?.sources.length
         ? `<h4>Fuentes</h4><ul>${edu.sources
             .map(
@@ -150,6 +156,7 @@ function campaignTab(): CodexItem[] {
       return `
         <h3>${m.title}</h3>
         <p><b>${m.subtitle}</b></p>
+        ${figure}
         <p>${m.history.replace(/\n/g, '<br>')}</p>
         ${edu ? `<p>${edu.context}</p>` : ''}
         ${edu ? `<p>💡 <b>¿Sabías que…?</b> ${edu.didYouKnow}</p>` : ''}

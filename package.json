@@ -30,8 +30,8 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "format": "prettier --write \"src/**/*.ts\" \"scripts/**/*.mjs\" \"tests/**/*.ts\" \"*.config.{ts,js}\"",
-    "format:check": "prettier --check \"src/**/*.ts\" \"scripts/**/*.mjs\" \"tests/**/*.ts\" \"*.config.{ts,js}\"",
+    "format": "prettier --write \"src/**/*.ts\" \"scripts/**/*.{mjs,ts}\" \"tests/**/*.ts\" \"*.config.{ts,js}\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"scripts/**/*.{mjs,ts}\" \"tests/**/*.ts\" \"*.config.{ts,js}\"",
     "test": "vitest run",
     "test:watch": "vitest",
     "verify:fast": "yarn typecheck && yarn lint && yarn format:check && yarn test && yarn build",
@@ -57,7 +57,10 @@
     "gif": "node scripts/gif.mjs",
     "package:itch": "node scripts/package_itch.mjs",
     "visual:update": "node scripts/visual.mjs --update",
-    "visual:check": "node scripts/visual.mjs"
+    "visual:check": "node scripts/visual.mjs",
+    "art:blender": "tsx scripts/art/cli.ts blender",
+    "art:validate": "tsx scripts/art/cli.ts validate",
+    "art:review": "tsx scripts/art/cli.ts review"
   },
   "engines": {
     "node": ">=20.19"
@@ -72,6 +75,8 @@
     "eslint": "^10.12.0",
     "pngjs": "^7.0.0",
     "prettier": "^3.9.9",
+    "sharp": "^0.35.5",
+    "tsx": "^4.23.15",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.71.1",
     "vite": "^7.0.4",
