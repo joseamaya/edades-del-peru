@@ -95,3 +95,10 @@ export function formatNumber(n: number): string {
 export function formatStat(n: number): string {
   return Number.isInteger(n) ? String(n) : n.toFixed(1);
 }
+
+/** Rotate a local (x, z) offset around the Y axis. */
+export function rotateXZ(lx: number, lz: number, yaw: number): { x: number; z: number } {
+  const c = Math.cos(yaw);
+  const s = Math.sin(yaw);
+  return { x: lx * c - lz * s, z: lx * s + lz * c };
+}
