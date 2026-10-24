@@ -79,6 +79,8 @@ export interface HistoricalMapProfile {
     sunWarmth: number;
     skyTint: string;
   };
+  /** Optional warm/cool multiplier for the ground albedo (authored scenarios). */
+  groundTint?: string;
   landmark: LandmarkId | null;
   /** Cultural features (roads, canals, fields…); see `docs/design/cultural-landscape.md`. Optional for mods. */
   culturalLandscape?: CulturalLandscapeProfile;
@@ -89,6 +91,44 @@ export interface HistoricalMapProfile {
 export interface WorldProfile {
   map: HistoricalMapProfile;
   architecture: HistoricalArchitectureProfile;
+}
+
+/**
+ * Scenario-level tweaks on top of the resolved regional profile. Used by
+ * campaign missions that need a documented local landscape (e.g. the flat
+ * desert terraces of Caral-Supe) without changing the shared region profile.
+ */
+export interface MapOverrides {
+  terrain?: Partial<HistoricalMapProfile['terrain']>;
+  climate?: Partial<HistoricalMapProfile['climate']>;
+  vegetation?: Partial<HistoricalMapProfile['vegetation']>;
+  resources?: Partial<HistoricalMapProfile['resources']>;
+  /** Replace or disable the generic cultural landscape (authored scenes). */
+  culturalLandscape?: CulturalLandscapeProfile | null;
+  /** Ground albedo multiplier (e.g. the warm ochre terrace of Caral). */
+  groundTint?: string;
+}
+
+/** Apply a mission's map overrides without mutating the regional profile. */
+export function applyMapOverrides(
+  profile: HistoricalMapProfile,
+  overrides: MapOverrides | undefined,
+): HistoricalMapProfile {
+  if (!overrides) return profile;
+  return {
+    ...profile,
+    terrain: { ...profile.terrain, ...overrides.terrain },
+    climate: { ...profile.climate, ...overrides.climate },
+    vegetation: {
+      ...profile.vegetation,
+      ...overrides.vegetation,
+      variants: { ...profile.vegetation.variants, ...overrides.vegetation?.variants },
+    },
+    resources: { ...profile.resources, ...overrides.resources },
+    culturalLandscape:
+      overrides.culturalLandscape === null ? undefined : (overrides.culturalLandscape ?? profile.culturalLandscape),
+    groundTint: overrides.groundTint ?? profile.groundTint,
+  };
 }
 
 /** Sea/lake level shared by every map (matches `Terrain.waterLevel`). */

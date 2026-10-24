@@ -1,6 +1,36 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind, Resources, MapType } from '../core/types';
-import type { GeographicRegion } from '../model/defs/profiles';
+import type { GeographicRegion, MapOverrides } from '../model/defs/profiles';
 import type { PortraitId } from '../model/defs/commanders';
+import type { TerrainLayout } from '../model/defs/terrainLayout';
+import type { SetpieceId } from '../model/defs/setpieces';
+
+/** Normalized map point (0..1); resolved to world units from the mission map size. */
+export interface MissionAnchor {
+  x: number;
+  z: number;
+}
+
+/** Authored scene anchors for a mission's two halves. */
+export interface MissionSetpiece {
+  id: SetpieceId;
+  /** Caral Alto (the monumental Upper Half). */
+  upper: MissionAnchor;
+  /** Caral Bajo (the player's Lower Half). */
+  lower: MissionAnchor;
+  /** Rotation of the city's main axis (radians). */
+  rotation?: number;
+}
+
+/**
+ * Authored scenario layout. Left undefined for the classic procedural skirmish.
+ * `base` fixes the player's starting center; `setpiece` adds a source-backed
+ * scenery composition; `terrain` carves the documented local landforms.
+ */
+export interface MissionLayout {
+  base?: MissionAnchor;
+  setpiece?: MissionSetpiece;
+  terrain?: TerrainLayout;
+}
 
 /** World point. `ref` anchors to the player/enemy center; without `ref` it is absolute. */
 export interface MissionPoint {
@@ -107,6 +137,10 @@ export interface MissionDef {
   region?: GeographicRegion;
   /** Optional per-scenario atmosphere override (e.g. the Chavín mist). */
   atmosphere?: MissionAtmosphere;
+  /** Authored base/setpiece/terrain layout (campaign scenarios). */
+  layout?: MissionLayout;
+  /** Scenario-level map profile tweaks (terrain, climate, vegetation, resources). */
+  mapOverrides?: MapOverrides;
   /**
    * Extra fishing grounds guaranteed on coastal scenarios whose procedural
    * placement would otherwise leave the coast without a usable fishing node.

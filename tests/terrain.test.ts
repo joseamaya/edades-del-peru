@@ -109,3 +109,26 @@ describe('deterministic height field', () => {
     }
   });
 });
+
+describe('authored river fords', () => {
+  it('raises a dry ford above the pathfinding waterline and keeps the river beside it', () => {
+    const res = 128;
+    const layout = {
+      river: {
+        z: 0.55,
+        width: 0.04,
+        valleyWidth: 0.16,
+        amplitude: 0,
+        phase: 0,
+        fords: [{ x: 0.5, width: 0.08 }],
+      },
+    };
+    const f = generateHeightField(res, 3000, MAP_PROFILES.central_coast, layout);
+    const n = res + 1;
+    const at = (x: number, z: number) => f.heightMap[z * n + x];
+    // centre of the ford: above the pathfinder's `waterLevel + 0.35` cut-off
+    expect(at(64, 70)).toBeGreaterThan(f.waterLevel + 0.35);
+    // river beside the ford: still below the waterline
+    expect(at(50, 70)).toBeLessThan(f.waterLevel);
+  });
+});

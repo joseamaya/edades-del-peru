@@ -111,7 +111,7 @@ export class Water {
           float fresnel = pow(1.0 - max(dot(N, V), 0.0), 3.0);
 
           // real depth from the terrain heightmap (the plane is 4x the map)
-          vec2 duv = (vUv - 0.5) * depthScale + 0.5;
+          vec2 duv = vec2((vUv.x - 0.5) / depthScale + 0.5, (0.5 - vUv.y) / depthScale + 0.5);
           float inMap = step(0.0, duv.x) * step(duv.x, 1.0) * step(0.0, duv.y) * step(duv.y, 1.0);
           float landH = mix(0.0, texture2D(depthMap, clamp(duv, 0.0, 1.0)).r * 45.0, inMap);
           float depth = waterLevel - landH;
