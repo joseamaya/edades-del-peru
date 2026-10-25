@@ -8,7 +8,8 @@ import { ERA_DEFS } from './defs/eras';
 import { HUMAN_HAIR, HUMAN_SKIN, type PersonGender } from './defs/people';
 import type { HistoricalArchitectureProfile, SilhouetteMotif, WallMaterial, RoofMaterial } from './defs/architecture';
 import type { LandmarkId } from './defs/landmarks';
-import { mixHex } from '../util/math';
+import type { CaralCityPlan } from './defs/setpieces';
+import { mixHex, rotateXZ } from '../util/math';
 import { scaleUv } from '../util/uv';
 import { MaterialTex } from '../rendering/Textures';
 import { getGeneratedMaterial } from '../rendering/Biomes';
@@ -51,6 +52,8 @@ export interface BuildContext {
   playerColor: THREE.Color;
   /** Historical architecture profile of `civ` in this period (drives materials/structure). */
   arch: HistoricalArchitectureProfile;
+  /** True while building the authored Caral set-piece mission. */
+  caralSetpiece?: boolean;
 }
 
 const sharedGeo: Record<string, THREE.BufferGeometry> = {};
@@ -1307,6 +1310,9 @@ function addWindows(
 /** Wall colour for the civ's Andean architecture profile (earth / stone / masonry). */
 function andeanWall(b: Builder): string {
   const p = b.pal.primary;
+  // Caral's plastered stone reads light and sandy, not the darker adobe of the
+  // later north-coast huacas (sources: caral.md, arquitectura.md).
+  if (b.civId === CivId.CARAL && b.context.caralSetpiece) return mixHex(p, '#d8c8a8', 0.86);
   switch (b.arch.wall) {
     case 'megalithic':
       return mixHex(p, '#b4aca0', 0.78);
@@ -1338,8 +1344,9 @@ const ROOF_TEX: Record<RoofMaterial, TexKind> = {
 
 function andeanTex(b: Builder): TexKind {
   // Chavín's carved stone reads better with the lighter procedural stone map
-  // than with the near-black megalith AI texture.
-  if (b.civId === CivId.CHAVIN) return 'stone';
+  // than with the near-black megalith AI texture. Caral uses the same light
+  // stone for its plastered platforms and houses.
+  if (b.civId === CivId.CHAVIN || (b.civId === CivId.CARAL && b.context.caralSetpiece)) return 'stone';
   return WALL_TEX[b.arch.wall];
 }
 
@@ -2519,112 +2526,441 @@ function adobeRamp(b: Builder, w: number): void {
 }
 
 /**
- * Caral's sunken circular plaza: a stone ring with a gap and entry steps toward
- * the platform, two inner terraces, a central altar and upright stones.
- * Abstraction of the circular plazas documented in the Caral dossier.
+ * A local frame for Caral models: the structure is built in its own +Z-facing
+ * coordinates and then rotated into the world. This keeps the pyramid stair,
+ * sunken plaza and compound rooms aligned under any placement yaw.
  */
-function caralSunkenPlaza(b: Builder, cz: number, r: number, stone: string, floor: string, earth: string): void {
-  b.cyl(r + 0.9, r + 1.05, 0.2, 28, earth, { y: 0.1, z: cz, tex: 'dirt', flatShading: true });
+interface CaralFrame {
+  x: number;
+  z: number;
+  y: number;
+  yaw: number;
+}
+
+function caralFrame(x: number, y: number, z: number, yaw: number): CaralFrame {
+  return { x, z, y, yaw };
+}
+
+function caralAt(f: CaralFrame, lx: number, lz: number): { x: number; z: number } {
+  const p = rotateXZ(lx, lz, f.yaw);
+  return { x: f.x + p.x, z: f.z + p.z };
+}
+
+function caralBox(
+  b: Builder,
+  f: CaralFrame,
+  w: number,
+  h: number,
+  d: number,
+  color: string,
+  lx: number,
+  ly: number,
+  lz: number,
+  tex?: TexKind,
+  extraYaw = 0,
+): void {
+  const p = caralAt(f, lx, lz);
+  b.box(w, h, d, color, {
+    x: p.x,
+    y: f.y + ly,
+    z: p.z,
+    ry: f.yaw + extraYaw,
+    tex,
+    flatShading: true,
+  });
+}
+
+function caralCyl(
+  b: Builder,
+  f: CaralFrame,
+  rt: number,
+  rb: number,
+  h: number,
+  seg: number,
+  color: string,
+  lx: number,
+  ly: number,
+  lz: number,
+  tex?: TexKind,
+): void {
+  const p = caralAt(f, lx, lz);
+  b.cyl(rt, rb, h, seg, color, { x: p.x, y: f.y + ly, z: p.z, tex, flatShading: true });
+}
+
+function caralColors(b: Builder): {
+  plaster: string;
+  stone: string;
+  earth: string;
+  dark: string;
+  red: string;
+  yellow: string;
+} {
+  // The sources describe stone blocks plastered with clay and painted white,
+  // yellow and red. Keep the plaster light and the accents restrained.
+  return {
+    plaster: mixHex(b.pal.primary, '#eadcc2', 0.92),
+    stone: mixHex(b.pal.primary, '#b8ac98', 0.86),
+    earth: mixHex(b.pal.primary, '#c8b088', 0.8),
+    dark: mixHex(b.pal.primary, '#4a3a28', 0.6),
+    red: mixHex(b.pal.primary, '#a24e36', 0.55),
+    yellow: mixHex(b.pal.primary, '#c49a48', 0.45),
+  };
+}
+
+/**
+ * Caral pyramid: a broad, low rectangular platform mound with stone retaining
+ * faces, plastered upper bands, a wide central staircase, a summit atrium with
+ * a hearth, and (optionally) a sunken circular plaza at the foot of the stair.
+ *
+ * Proportions follow the documented Great Pyramid (broad and low, ~1:7 to 1:10
+ * height:base) rather than a steep Egyptian silhouette. The exact dimensions
+ * vary between publications; this is a readable RTS abstraction, marked
+ * `plausible` in the design dossier.
+ */
+function buildCaralPyramid(
+  b: Builder,
+  spec: {
+    x: number;
+    y: number;
+    z: number;
+    yaw: number;
+    width: number;
+    depth: number;
+    tiers: number;
+    stairWidth: number;
+    sunkenPlaza?: boolean;
+    roundAltar?: boolean;
+  },
+): void {
+  const f = caralFrame(spec.x, spec.y, spec.z, spec.yaw);
+  const { plaster, stone, earth, dark, red, yellow } = caralColors(b);
+  const w = spec.width;
+  const d = spec.depth;
+  const tiers = Math.max(2, spec.tiers);
+  const tierH = 0.58;
+  const padH = 0.12;
+  const stairWidth = spec.stairWidth;
+
+  caralBox(b, f, w * 1.16, padH, d * 1.16, earth, 0, padH / 2, 0, 'dirt');
+  for (let i = 0; i < tiers; i++) {
+    const tW = w * (1 - i * 0.14);
+    const tD = d * (1 - i * 0.14);
+    const y = padH + i * tierH + tierH / 2;
+    caralBox(b, f, tW, tierH, tD, plaster, 0, y, 0, undefined);
+    // Stone retaining face at the base of every terrace.
+    caralBox(b, f, tW * 1.015, 0.09, tD * 1.015, stone, 0, padH + i * tierH + 0.045, 0, 'stone');
+  }
+  const topW = w * (1 - (tiers - 1) * 0.14);
+  const topD = d * (1 - (tiers - 1) * 0.14);
+  const topY = padH + tiers * tierH;
+
+  // Wide central staircase on the +Z face.
+  const stepCount = 12;
+  const stairRun = d * 0.2;
+  const stepH = topY / stepCount;
+  for (let i = 0; i < stepCount; i++) {
+    const t = (i + 1) / stepCount;
+    const z = d / 2 + stairRun * (1 - t);
+    caralBox(b, f, stairWidth, stepH * 1.15, stairRun * 0.55, plaster, 0, stepH * (i + 0.5), z, undefined);
+  }
+  for (const sx of [-1, 1]) {
+    caralBox(
+      b,
+      f,
+      0.16,
+      topY,
+      stairRun * 0.9,
+      stone,
+      (sx * stairWidth) / 2,
+      topY / 2,
+      d / 2 + stairRun * 0.45,
+      'stone',
+    );
+  }
+
+  // Painted bands on the first terrace (white/yellow/red reading).
+  caralBox(b, f, w * 1.002, 0.06, d * 1.002, yellow, 0, padH + tierH * 0.72, 0, undefined);
+  caralBox(b, f, w * 0.92, 0.05, 0.04, red, 0, padH + tierH * 0.5, d * 0.5 + 0.03, undefined);
+
+  // Summit platform and atrium enclosure, open toward the stair.
+  caralBox(b, f, topW * 0.94, 0.1, topD * 0.94, stone, 0, topY + 0.05, 0, 'stone');
+  const aw = topW * 0.46;
+  const ad = topD * 0.44;
+  const wallH = 0.45;
+  const wy = topY + 0.1 + wallH / 2;
+  caralBox(b, f, aw * 2, wallH, 0.12, stone, 0, wy, -ad, 'stone');
+  caralBox(b, f, 0.12, wallH, ad * 2, stone, -aw, wy, 0, 'stone');
+  caralBox(b, f, 0.12, wallH, ad * 2, stone, aw, wy, 0, 'stone');
+  caralBox(b, f, aw * 0.7, wallH, 0.12, stone, -aw * 0.65, wy, ad, 'stone');
+  caralBox(b, f, aw * 0.7, wallH, 0.12, stone, aw * 0.65, wy, ad, 'stone');
+  caralBox(b, f, aw * 2.02, 0.06, ad * 2.02, plaster, 0, topY + 0.1, 0, undefined);
+  caralCyl(b, f, 0.24, 0.3, 0.2, 10, dark, 0, topY + 0.2, 0, 'stone');
+  if (spec.roundAltar) {
+    caralCyl(b, f, 0.7, 0.8, 0.22, 16, stone, 0, topY + 0.2, 0, 'stone');
+    caralCyl(b, f, 0.34, 0.4, 0.14, 12, dark, 0, topY + 0.37, 0, undefined);
+  }
+
+  // Low parapet around the summit edge.
+  caralBox(b, f, topW * 0.98, 0.24, 0.14, stone, 0, topY + 0.12, -(topD / 2 - 0.07), 'stone');
+  for (const sx of [-1, 1]) {
+    caralBox(b, f, 0.14, 0.24, topD * 0.9, stone, sx * (topW / 2 - 0.07), topY + 0.12, 0, 'stone');
+  }
+
+  if (spec.sunkenPlaza) buildCaralSunkenPlaza(b, f, d / 2 + w * 0.46 + 0.9, w * 0.46);
+}
+
+/**
+ * Sunken circular plaza: an earth platform, a stone ring with an opening toward
+ * the pyramid, a plastered floor, a central altar and upright stones. The
+ * largest one belongs to the Amphitheatre Temple in the Lower Half.
+ */
+function buildCaralSunkenPlaza(b: Builder, f: CaralFrame, cz: number, radius: number): void {
+  const { stone, earth, plaster, dark } = caralColors(b);
+  const floor = mixHex(plaster, '#efe4cf', 0.4);
+  caralCyl(b, f, radius + 0.8, radius + 0.95, 0.18, 28, earth, 0, 0.09, cz, 'dirt');
   const segments = 24;
   for (let i = 0; i < segments; i++) {
     const a = (i / segments) * Math.PI * 2;
-    // leave an opening on the platform side (-Z) for the entry steps
+    // opening on the platform side (-Z) for the entry steps
     if (Math.abs(Math.sin(a) + 1) < 0.34) continue;
-    b.box((2 * Math.PI * r) / segments + 0.08, 0.56, 0.34, stone, {
-      x: Math.cos(a) * (r + 0.08),
-      y: 0.48,
-      z: cz + Math.sin(a) * (r + 0.08),
-      ry: -a - Math.PI / 2,
-      tex: 'fieldstone',
-    });
+    const lx = Math.cos(a) * (radius + 0.08);
+    const lz = cz + Math.sin(a) * (radius + 0.08);
+    caralBox(b, f, (2 * Math.PI * radius) / segments + 0.08, 0.48, 0.3, stone, lx, 0.42, lz, 'stone', -a - Math.PI / 2);
   }
-  b.cyl(r * 0.9, r * 0.9, 0.12, 28, floor, { y: 0.24, z: cz, flatShading: true });
-  b.torus(r * 0.62, 0.11, Math.PI * 2, mixHex(stone, '#d8ccb0', 0.45), { y: 0.4, z: cz, rx: Math.PI / 2 });
-  b.cyl(0.5, 0.58, 0.38, 12, mixHex(stone, '#d8ccb0', 0.35), { y: 0.5, z: cz, tex: 'fieldstone' });
-  b.cyl(0.22, 0.3, 0.14, 10, mixHex(stone, '#2a241c', 0.55), { y: 0.75, z: cz });
+  caralCyl(b, f, radius * 0.9, radius * 0.9, 0.1, 28, floor, 0, 0.22, cz);
+  caralCyl(b, f, 0.5, 0.58, 0.34, 12, mixHex(stone, '#d8ccb0', 0.35), 0, 0.44, cz, 'stone');
+  caralCyl(b, f, 0.2, 0.28, 0.12, 10, dark, 0, 0.67, cz);
   for (let i = 0; i < 3; i++) {
-    b.box(1.5, 0.14, 0.5, floor, { y: 0.18 + i * 0.16, z: cz - r - 0.5 + i * 0.42 });
+    caralBox(b, f, 1.4, 0.13, 0.45, floor, 0, 0.16 + i * 0.14, cz - radius - 0.45 + i * 0.4, undefined);
   }
   for (let i = 0; i < 12; i++) {
     const a = (i / 12) * Math.PI * 2 + 0.16;
-    b.box(0.3, 0.78, 0.3, stone, {
-      x: Math.cos(a) * (r + 1.05),
-      y: 0.39,
-      z: cz + Math.sin(a) * (r + 1.05),
-      tex: 'fieldstone',
-    });
-    b.box(0.38, 0.08, 0.38, mixHex(stone, '#6a5f4c', 0.45), {
-      x: Math.cos(a) * (r + 1.05),
-      y: 0.82,
-      z: cz + Math.sin(a) * (r + 1.05),
-    });
+    const lx = Math.cos(a) * (radius + 1.0);
+    const lz = cz + Math.sin(a) * (radius + 1.0);
+    caralBox(b, f, 0.28, 0.72, 0.28, stone, lx, 0.36, lz, 'stone');
+    caralBox(b, f, 0.36, 0.07, 0.36, mixHex(stone, '#6a5f4c', 0.45), lx, 0.76, lz, 'stone');
   }
 }
 
 /**
- * Caral: a broad stepped platform with a central stair and summit temple, in
- * front of a sunken circular plaza. Stone retaining faces, plastered upper
- * bands and thatch follow `docs/historia/arquitectura.md`; the plaza is an
- * abstraction of the documented sunken circular plazas.
+ * Low residential compound: stone-and-mud walls around a central patio, with
+ * interconnected rooms, a kitchen hearth and storage bins. The Upper Half has
+ * larger elite units close to the pyramids; the Lower Half has smaller,
+ * multi-purpose residences around the workshops.
+ */
+function buildCaralCompound(
+  b: Builder,
+  spec: {
+    x: number;
+    y: number;
+    z: number;
+    yaw: number;
+    width: number;
+    depth: number;
+    rooms: number;
+    elite: boolean;
+  },
+): void {
+  const f = caralFrame(spec.x, spec.y, spec.z, spec.yaw);
+  const { stone, earth, plaster, dark, red, yellow } = caralColors(b);
+  const w = spec.width;
+  const d = spec.depth;
+  const h = spec.elite ? 0.95 : 0.72;
+  const t = 0.22;
+  const rooms = Math.max(3, spec.rooms);
+
+  caralBox(b, f, w * 1.12, 0.1, d * 1.12, mixHex(earth, '#e0d0b0', 0.55), 0, 0.05, 0, undefined);
+  // Outer walls; the front (+Z) leaves a doorway.
+  caralBox(b, f, w, h, t, stone, 0, h / 2, -d / 2, undefined);
+  caralBox(b, f, t, h, d, stone, -w / 2, h / 2, 0, undefined);
+  caralBox(b, f, t, h, d, stone, w / 2, h / 2, 0, undefined);
+  const door = Math.min(1.1, w * 0.3);
+  const frontSegment = (w - door) / 2;
+  caralBox(b, f, frontSegment, h, t, stone, -(w / 2 - frontSegment / 2), h / 2, d / 2, undefined);
+  caralBox(b, f, frontSegment, h, t, stone, w / 2 - frontSegment / 2, h / 2, d / 2, undefined);
+
+  // Painted band on the street facade (white/yellow/red reading).
+  caralBox(b, f, w * 0.9, 0.07, 0.035, yellow, 0, h * 0.7, d / 2 + t / 2 + 0.02, undefined);
+  caralBox(b, f, w * 0.55, 0.05, 0.035, red, 0, h * 0.85, d / 2 + t / 2 + 0.02, undefined);
+
+  // Interior partitions: a back row of rooms and two side rooms around a patio.
+  const innerW = w - 2 * t;
+  const innerD = d - 2 * t;
+  const backRooms = Math.max(2, Math.floor(rooms / 2));
+  const backZ = -d / 2 + innerD * 0.3;
+  const partitionH = h * 0.86;
+  for (let i = 1; i < backRooms; i++) {
+    const lx = -w / 2 + t + (innerW * i) / backRooms;
+    caralBox(b, f, 0.11, partitionH, innerD * 0.32, stone, lx, partitionH / 2, backZ, undefined);
+  }
+  caralBox(b, f, innerW, partitionH, 0.11, stone, 0, partitionH / 2, backZ + innerD * 0.16, undefined);
+  for (const side of [-1, 1]) {
+    const sideRooms = Math.max(1, Math.floor((rooms - backRooms) / 2));
+    for (let i = 1; i <= sideRooms; i++) {
+      const lz = -d / 2 + t + (innerD * i) / (sideRooms + 1);
+      caralBox(
+        b,
+        f,
+        innerW * 0.3,
+        partitionH,
+        0.11,
+        stone,
+        side * (w / 2 - t - innerW * 0.15),
+        partitionH / 2,
+        lz,
+        undefined,
+      );
+    }
+  }
+  // Patio floor and household furniture.
+  caralBox(b, f, innerW * 0.48, 0.035, innerD * 0.4, mixHex(plaster, '#efe4cf', 0.5), 0, 0.02, d * 0.06, undefined);
+  caralCyl(b, f, 0.2, 0.26, 0.18, 9, dark, -w * 0.18, 0.11, d * 0.06);
+  if (spec.elite) {
+    caralCyl(b, f, 0.3, 0.36, 0.38, 10, mixHex(earth, '#8a7450', 0.4), w * 0.22, 0.21, -d * 0.08, 'dirt');
+    caralBox(b, f, 0.9, 0.22, 0.35, stone, w * 0.18, 0.11, d * 0.28, undefined);
+    caralCyl(b, f, 0.28, 0.34, 0.32, 10, mixHex(earth, '#8a7450', 0.4), -w * 0.24, 0.18, -d * 0.1, 'dirt');
+  } else {
+    caralCyl(b, f, 0.26, 0.32, 0.3, 9, mixHex(earth, '#8a7450', 0.4), w * 0.22, 0.17, -d * 0.1, 'dirt');
+  }
+}
+
+function buildCaralPlaza(
+  b: Builder,
+  spec: { x: number; y: number; z: number; yaw: number; width: number; depth: number },
+): void {
+  const { stone, plaster } = caralColors(b);
+  const f = caralFrame(spec.x, spec.y, spec.z, spec.yaw);
+  const floor = mixHex(plaster, '#cbb896', 0.45);
+  caralBox(b, f, spec.width, 0.05, spec.depth, floor, 0, 0.025, 0, undefined);
+  // A narrow stone kerb reads the plaza as a prepared public space.
+  caralBox(b, f, spec.width, 0.06, 0.16, stone, 0, 0.03, -spec.depth / 2 + 0.08, 'stone');
+  caralBox(b, f, spec.width, 0.06, 0.16, stone, 0, 0.03, spec.depth / 2 - 0.08, 'stone');
+}
+
+function buildCaralPath(
+  b: Builder,
+  spec: { x: number; y: number; z: number; yaw: number; width: number; depth: number },
+): void {
+  const { earth } = caralColors(b);
+  const f = caralFrame(spec.x, spec.y, spec.z, spec.yaw);
+  caralBox(b, f, spec.width, 0.04, spec.depth, mixHex(earth, '#b09470', 0.4), 0, 0.02, 0, 'dirt');
+}
+
+/** Dry stone causeway over the Supe: a flat, walkable crossing (visual only). */
+function buildCaralFord(
+  b: Builder,
+  spec: { x: number; y: number; z: number; yaw: number; width: number; depth: number },
+): void {
+  const { stone } = caralColors(b);
+  const f = caralFrame(spec.x, spec.y, spec.z, spec.yaw);
+  const deck = mixHex(stone, '#e0d4bc', 0.35);
+  caralBox(b, f, spec.width, 0.08, spec.depth, deck, 0, 0.04, 0, undefined);
+  for (let i = -2; i <= 2; i++) {
+    caralBox(
+      b,
+      f,
+      spec.width * 0.92,
+      0.02,
+      0.12,
+      mixHex(stone, '#8a7f6e', 0.45),
+      0,
+      0.09,
+      (i * spec.depth) / 5,
+      undefined,
+    );
+  }
+  for (const sx of [-1, 1]) {
+    caralBox(
+      b,
+      f,
+      0.26,
+      0.22,
+      spec.depth,
+      mixHex(stone, '#8a7f6e', 0.5),
+      sx * (spec.width / 2 - 0.13),
+      0.11,
+      0,
+      undefined,
+    );
+  }
+}
+
+function buildCaralMonolith(b: Builder, spec: { x: number; y: number; z: number; yaw: number; width: number }): void {
+  const { stone, dark } = caralColors(b);
+  const f = caralFrame(spec.x, spec.y, spec.z, spec.yaw);
+  const height = spec.width * 5.5;
+  caralBox(b, f, spec.width * 1.8, 0.12, spec.width * 1.8, stone, 0, 0.06, 0, 'stone');
+  caralBox(b, f, spec.width, height, spec.width * 0.9, stone, 0, 0.12 + height / 2, 0, 'stone');
+  caralBox(b, f, spec.width * 0.7, 0.08, spec.width * 0.7, dark, 0, 0.12 + height + 0.04, 0, 'stone');
+}
+
+/**
+ * Build the whole source-backed Caral scene (Caral Alto + Caral Bajo) as a
+ * single merged model. The Great Pyramid is the map landmark and is built by
+ * `buildLandmarkModel`; this model adds the other five pyramids, the plazas,
+ * the residential compounds and the lower-half temples.
+ */
+export function buildCaralCityModel(
+  ctx: BuildContext,
+  plan: CaralCityPlan,
+  heightAt: (x: number, z: number) => number,
+): THREE.Group {
+  const b = new Builder(ctx);
+  for (const p of plan.placements) {
+    const y = heightAt(p.x, p.z);
+    const frame = { x: p.x, y, z: p.z, yaw: p.yaw };
+    if (p.kind === 'pyramid' || p.kind === 'temple') {
+      buildCaralPyramid(b, {
+        ...frame,
+        width: p.width,
+        depth: p.depth,
+        tiers: p.tiers ?? 3,
+        stairWidth: p.stairWidth ?? 1.7,
+        roundAltar: p.name === 'round_altar',
+      });
+    } else if (p.kind === 'sunken_plaza') {
+      buildCaralSunkenPlaza(b, caralFrame(p.x, y, p.z, p.yaw), 0, p.radius ?? p.width / 2);
+    } else if (p.kind === 'plaza') {
+      buildCaralPlaza(b, { ...frame, width: p.width, depth: p.depth });
+    } else if (p.kind === 'path') {
+      buildCaralPath(b, { ...frame, width: p.width, depth: p.depth });
+    } else if (p.kind === 'compound') {
+      buildCaralCompound(b, {
+        ...frame,
+        width: p.width,
+        depth: p.depth,
+        rooms: p.rooms ?? 4,
+        elite: !!p.elite,
+      });
+    } else if (p.kind === 'monolith') {
+      buildCaralMonolith(b, { ...frame, width: p.width });
+    } else if (p.kind === 'ford') {
+      buildCaralFord(b, { ...frame, width: p.width, depth: p.depth });
+    }
+  }
+  bakeVertexAO(b.group);
+  mergeStaticParts(b.group);
+  b.group.name = 'sacred-city';
+  return b.group;
+}
+
+/**
+ * Caral's map landmark: the documented Great Pyramid (broad, low platform with
+ * a wide central staircase, summit atrium and a sunken circular plaza). The
+ * city plan positions and rotates it inside the Upper Half.
  */
 function buildCaralLandmark(b: Builder): void {
-  const plaster = mixHex(b.pal.primary, '#dcc8a0', 0.76);
-  const earth = mixHex(b.pal.primary, '#c8b088', 0.68);
-  const stone = mixHex(b.pal.primary, '#b0a48c', 0.72);
-  const dark = mixHex(b.pal.primary, '#4a3a28', 0.6);
-  const w = 7;
-  const tiers = 5;
-  const tierH = 0.5;
-  const padY = 0.18;
-
-  b.cyl(w * 0.58, w * 0.63, padY, 24, earth, { y: padY / 2, tex: 'dirt', flatShading: true });
-  for (let i = 0; i < tiers; i++) {
-    const t = tierSize(w, i);
-    const y = padY + tierH / 2 + i * tierH;
-    b.box(t, tierH, t, plaster, { y, tex: 'adobe' });
-    if (i > 0) b.box(t * 1.012, 0.12, t * 1.012, stone, { y: y - tierH / 2 + 0.06, tex: 'fieldstone' });
-  }
-  const baseY = padY + tiers * tierH;
-
-  const steps = 10;
-  for (let i = 0; i < steps; i++) {
-    const t = (i + 1) / steps;
-    b.box(w * 0.3, tierH * 0.86, w * 0.16, plaster, {
-      y: padY + ((i + 0.5) * (tiers * tierH)) / steps,
-      z: w * 0.63 - t * w * 0.22,
-      tex: 'adobe',
-    });
-  }
-  for (const sx of [-1, 1]) {
-    b.box(0.2, tiers * tierH * 1.06, w * 0.26, stone, {
-      x: sx * w * 0.16,
-      y: padY + tiers * tierH * 0.54,
-      z: w * 0.51,
-      tex: 'fieldstone',
-    });
-  }
-
-  const shrine = w * 0.44;
-  b.box(shrine, 1.0, shrine, plaster, { y: baseY + 0.5, tex: 'adobe' });
-  b.box(shrine * 0.22, 0.56, 0.06, dark, { y: baseY + 0.3, z: shrine * 0.5 + 0.03 });
-  for (const sx of [-1, 1]) {
-    b.box(shrine * 0.15, 0.22, 0.06, dark, { x: sx * shrine * 0.27, y: baseY + 0.62, z: shrine * 0.5 + 0.03 });
-  }
-  const cornice = mixHex(plaster, '#ffffff', 0.25);
-  for (const sz of [1, -1])
-    b.box(shrine * 1.03, 0.1, 0.05, cornice, { y: baseY + 0.97, z: sz * shrine * 0.5, tex: 'adobe' });
-  for (const sx of [1, -1])
-    b.box(0.05, 0.1, shrine * 1.03, cornice, { x: sx * shrine * 0.5, y: baseY + 0.97, tex: 'adobe' });
-  andeanThatchRoof(b, shrine * 0.78, baseY + 1.02);
-
-  // low parapet around the summit, open toward the stair
-  const top = tierSize(w, tiers - 1);
-  b.box(top * 1.0, 0.26, 0.18, stone, { y: baseY + 0.13, z: -(top / 2 - 0.09), tex: 'fieldstone' });
-  for (const sx of [1, -1]) {
-    b.box(0.18, 0.26, top * 0.86, stone, { x: sx * (top / 2 - 0.09), y: baseY + 0.13, tex: 'fieldstone' });
-  }
-
-  caralSunkenPlaza(b, w * 1.1, w * 0.48, stone, mixHex(stone, '#d8c8a0', 0.55), earth);
+  buildCaralPyramid(b, {
+    x: 0,
+    y: 0,
+    z: 0,
+    yaw: 0,
+    width: 15,
+    depth: 9,
+    tiers: 4,
+    stairWidth: 2.2,
+    sunkenPlaza: true,
+  });
 }
 
 /** Moche: a tall stepped adobe huaca with a painted frieze and a ramp. */
@@ -3183,6 +3519,7 @@ function mergeStaticParts(container: THREE.Object3D): void {
     out.castShadow = meshes[0].castShadow;
     out.receiveShadow = meshes[0].receiveShadow;
     out.name = 'part';
+    out.userData.merged = true;
     for (const mesh of meshes) mesh.removeFromParent();
     container.add(out);
   }

@@ -93,8 +93,8 @@ slot is absent (offline / without assets).
   extend to -0.16.
 - **Content**: Pyramid Mayor + Plaza Mayor; excludes `PlazaCentral`, market stalls and terrain.
 - **Runtime**: `?scenery=caral` mounts the scenery showcase. On `m1_caral`, the Pyramid Mayor GLB
-  replaces the procedural Caral landmark with a flat sand pad; visual-only, no collision. Falls back to
-  the procedural landmark if the GLB cannot load.
+  replaces the procedural Caral landmark at the sacred-city plan's `greater` anchor, on a flat sand pad;
+  visual-only, no collision. Falls back to the procedural landmark if the GLB cannot load.
 - **Confidence**: documented in plan; roofs and remates inferred.
 
 ### Caral Anfiteatro modular scenery
@@ -110,9 +110,11 @@ slot is absent (offline / without assets).
   Bounds 19.704 × 1.016 × 7.2 game units; Y-up; footprint centre at ground; foundations to -0.2.
 - **Content**: Templo Anfiteatro + Altar Circular + Templo Banqueta; excludes stalls and terrain.
   `MAT-Sand_Desert` is exported with its base color after stripping the unsupported procedural link.
-- **Runtime**: `?scenery=caral-anfiteatro` mounts the scenery showcase. On `m1_caral`, it is the
-  secondary setpiece of the Caral landmark on a low rectangular terrace. Visual-only; loaded saves skip
-  the setpiece because the landmark is regenerated before the snapshot is applied.
+- **Runtime**: `?scenery=caral-anfiteatro` mounts the scenery showcase. On `m1_caral`, it is placed at
+  the sacred-city plan's `amphitheatre` anchor on a low rectangular terrace; the equivalent procedural
+  temple/altar/bench placements are filtered. If the GLB fails, the city rebuilds the procedural lower
+  ensemble. Visual-only; loaded saves keep that ensemble because the modular setpiece is skipped before
+  the snapshot is applied.
 - **Confidence**: documented in plan; graderios and banqueta simplified.
 
 ### Caral city GLB (showcase)
@@ -133,8 +135,9 @@ slot is absent (offline / without assets).
 - **Historical caveat**: the export includes plaza stalls (`GEO-Caral_PlazaCentral_Stall_*`). The campaign design
   states there is no attested market at Caral; review/remove or document them as a plaza-gathering abstraction
   before integrating the city into `m1_caral`.
-- **Status**: showcase only. The city is **not** used by a campaign mission yet; the procedural Caral landmark
-  remains. A render is not a photograph.
+- **Status**: showcase only. The full-city GLB is **not** used by a campaign mission; `m1_caral` builds
+  the sacred-city plan and places the modular Pyramid Mayor and Anfiteatro at its anchors. A render is not
+  a photograph.
 
 ## Rigged 3D models
 

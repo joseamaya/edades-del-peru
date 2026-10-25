@@ -6,6 +6,7 @@ import { Sky, cloudDensity } from '../rendering/Sky';
 import { Terrain } from '../rendering/Terrain';
 import { Water } from '../rendering/Water';
 import { CulturalLandscape } from '../rendering/CulturalLandscape';
+import { SacredCity } from '../rendering/SacredCity';
 import { Particles } from '../rendering/Particles';
 import { Debris } from '../rendering/Debris';
 import { RTSCamera } from './Camera';
@@ -55,9 +56,16 @@ import { BuildContext, buildModel, buildLandmarkModel, disposeModel, clearModelC
 import { clearTextureCache } from '../rendering/Textures';
 import { DEFAULT_SETTINGS, GameSettings, RESOURCE_INFO, CAMERA_SPEED_SCALE } from './Config';
 import { QualityGovernor } from './QualityGovernor';
-import { resolveMapProfile, type HistoricalMapProfile, type GeographicRegion } from '../model/defs/profiles';
+import {
+  applyMapOverrides,
+  resolveMapProfile,
+  type HistoricalMapProfile,
+  type GeographicRegion,
+} from '../model/defs/profiles';
 import { resolveColorGrade } from '../model/defs/grades';
 import { planSettlementSite, type SettlementPlan } from '../model/defs/settlementPlan';
+import { inCaralCity, planCaralCity, type CaralCityPlan } from '../model/defs/setpieces';
+import { riverCentreZ } from '../model/defs/terrainLayout';
 import { SettlementOverlay } from '../rendering/SettlementOverlay';
 import { SettlementDressing } from '../rendering/SettlementDressing';
 import { planSettlementDressing } from '../model/defs/settlementDressing';
@@ -75,7 +83,7 @@ import { Mission } from '../campaign/Mission';
 import { Tutorial } from '../campaign/Tutorial';
 import { PlayerCommand, Replay, ReplayPlayer, ReplayRecorder, saveReplay } from '../game/replay';
 import { getMission } from '../campaign/defs/campaign';
-import type { MissionDef, MissionAtmosphere } from '../campaign/types';
+import type { MissionDef, MissionAtmosphere, MissionLayout } from '../campaign/types';
 import { serializeGame, saveToStorage } from '../game/SaveGame';
 import type { SaveData } from '../game/saveTypes';
 
@@ -133,6 +141,12 @@ export class Game {
   /** Explicit map region of the current mission, if any. */
   private missionRegion?: GeographicRegion;
   private readonly missionAtmosphere?: MissionAtmosphere;
+  /** Authored scenario config (base, terrain, setpiece), if any. */
+  private readonly missionDef?: MissionDef;
+  private readonly missionLayout?: MissionLayout;
+  private setpiecePlan: CaralCityPlan | null = null;
+  /** Visual-only Caral city scene (Caral Alto + Caral Bajo). */
+  setpiece: SacredCity | null = null;
   /** Decorative historical landmark of the map (visual only), if any. */
   landmark: THREE.Group | null = null;
   private landmarkOwnsStatic = false;
@@ -229,8 +243,10 @@ export class Game {
       this.settings.difficulty = mis.enemy.difficulty;
       this.settings.victoryMode = 'conquest'; // the campaign does not use wonder victory
     }
+    this.missionDef = mis;
     this.missionRegion = mis?.region;
     this.missionAtmosphere = mis?.atmosphere;
+    this.missionLayout = mis?.layout;
     this.enemyActive = !mis || mis.enemy.active;
     this.rng = new RNG((this.settings.mapSeed * 2654435761) >>> 0);
     this.initRenderer();
@@ -244,6 +260,7 @@ export class Game {
     this.economy = new Economy(this);
     this.initPlayers();
     this.spawnLandmark();
+    this.spawnSacredCity();
     this.spawnCulturalLandscape();
     this.initInput();
     this.initHUD();
@@ -303,15 +320,39 @@ export class Game {
   private initWorld(): void {
     const s = this.settings;
     const terrainRes = s.mapSize <= 128 ? 192 : s.mapSize <= 192 ? 256 : 320;
-    this.mapProfile = resolveMapProfile({
-      period: s.period,
-      civ: s.civPlayer,
-      mapType: s.mapType,
-      region: this.missionRegion,
-    });
-    this.terrain = new Terrain(s.mapSize, terrainRes, s.mapSeed, this.mapProfile);
+    this.mapProfile = applyMapOverrides(
+      resolveMapProfile({
+        period: s.period,
+        civ: s.civPlayer,
+        mapType: s.mapType,
+        region: this.missionRegion,
+      }),
+      this.missionDef?.mapOverrides,
+    );
+    this.terrain = new Terrain(s.mapSize, terrainRes, s.mapSeed, this.mapProfile, this.missionLayout?.terrain);
     this.terrain.camera = this.camera.camera;
     this.scene.add(this.terrain.group);
+    const city = this.missionLayout?.setpiece;
+    if (city && city.id === 'caral_sacred_city') {
+      const river = this.missionLayout?.terrain?.river;
+      const fords = river
+        ? (river.fords ?? []).map((ford) => {
+            return {
+              x: ford.x * s.mapSize,
+              z: riverCentreZ(river, ford.x) * s.mapSize,
+              width: ford.width * s.mapSize,
+              depth: Math.max(8, river.width * s.mapSize + 6),
+            };
+          })
+        : [];
+      this.setpiecePlan = planCaralCity({
+        size: s.mapSize,
+        upper: { x: city.upper.x * s.mapSize, z: city.upper.z * s.mapSize },
+        lower: { x: city.lower.x * s.mapSize, z: city.lower.z * s.mapSize },
+        yaw: city.rotation,
+        fords,
+      });
+    }
     this.sky = new Sky(this.scene);
     // No atmospheric fog over the board: classic RTS look, sharp.
     this.scene.fog = null;
@@ -441,6 +482,15 @@ export class Game {
     const rng = new RNG(this.settings.mapSeed + 7);
     const spots: [number, number][] = [];
     for (let i = 0; i < 2; i++) {
+      const fixed = i === 0 ? this.missionLayout?.base : undefined;
+      if (fixed) {
+        const fx = fixed.x * s;
+        const fz = fixed.z * s;
+        if (!this.terrain.isWater(fx, fz) && this.terrain.isBuildable(fx, fz)) {
+          spots.push([fx, fz]);
+          continue;
+        }
+      }
       let x: number;
       let z: number;
       let attempts = 0;
@@ -519,17 +569,24 @@ export class Game {
     let x = size / 2;
     let z = size / 2;
     let found = false;
-    for (let i = 0; i < 140; i++) {
-      const a = rng.range(0, Math.PI * 2);
-      const r = rng.range(0.22, 0.34) * size;
-      const px = size / 2 + Math.cos(a) * r;
-      const pz = size / 2 + Math.sin(a) * r;
-      if (!footprintClear(px, pz)) continue;
-      if (!clearOf(px, pz, LANDMARK_CLEAR_RADIUS)) continue;
-      x = px;
-      z = pz;
+    if (this.setpiecePlan) {
+      x = this.setpiecePlan.mainPyramid.x;
+      z = this.setpiecePlan.mainPyramid.z;
       found = true;
-      break;
+    }
+    if (!found) {
+      for (let i = 0; i < 140; i++) {
+        const a = rng.range(0, Math.PI * 2);
+        const r = rng.range(0.22, 0.34) * size;
+        const px = size / 2 + Math.cos(a) * r;
+        const pz = size / 2 + Math.sin(a) * r;
+        if (!footprintClear(px, pz)) continue;
+        if (!clearOf(px, pz, LANDMARK_CLEAR_RADIUS)) continue;
+        x = px;
+        z = pz;
+        found = true;
+        break;
+      }
     }
     if (!found) {
       const safe = this.findLandNear(size / 2, size / 2, Math.floor(size * 0.42));
@@ -545,7 +602,7 @@ export class Game {
       this.landmarkOwnsStatic = true;
       this.scene.add(placeholder);
       const token = ++this.landmarkLoadToken;
-      const mainRotation = rng.range(0, Math.PI * 2);
+      const mainRotation = this.setpiecePlan ? this.setpiecePlan.mainPyramid.yaw : rng.range(0, Math.PI * 2);
       void loadSceneryModel(scenery.model)
         .then((model) => {
           model.name = scenery.model;
@@ -567,10 +624,12 @@ export class Game {
           placeholder.add(fallback);
           applyFowToObject(fallback, this.fowUniforms);
           this.landmarkOwnsStatic = false;
+          this.buildSacredCity(this.setpiecePlan);
         });
       if (this.pendingSnapshot) return;
       for (const setpiece of scenery.setpieces ?? []) {
-        const site = placeSetpiece(setpiece.padRadius);
+        const planned = this.setpiecePlan?.placements.find((placement) => placement.modularAnchor);
+        const site = planned ?? placeSetpiece(setpiece.padRadius);
         if (!site) {
           console.warn(`[landmark] no flat site for setpiece ${setpiece.model}`);
           continue;
@@ -582,7 +641,7 @@ export class Game {
           this.landmarkPadHeight(site.x, site.z, setpiecePadRadius(setpiece)) + 0.02 - placeholder.position.y,
           site.z - z,
         );
-        const rotation = rng.range(0, Math.PI * 2);
+        const rotation = planned?.yaw ?? rng.range(0, Math.PI * 2);
         group.rotation.y = rotation;
         placeholder.add(group);
         applyFowToObject(group, this.fowUniforms);
@@ -595,16 +654,17 @@ export class Game {
             applyFowToObject(pad, this.fowUniforms);
           })
           .catch((error: unknown) => {
-            console.warn(`[landmark] failed to load setpiece ${setpiece.model}`, error);
+            console.warn(`[landmark] failed to load setpiece ${setpiece.model}; using procedural city`, error);
             if (token !== this.landmarkLoadToken || this.landmark !== placeholder) return;
             group.removeFromParent();
+            this.buildSacredCity(this.setpiecePlan);
           });
       }
       return;
     }
     const model = buildLandmarkModel(id, ctx);
     model.position.set(x, this.terrain.getHeight(x, z), z);
-    model.rotation.y = rng.range(0, Math.PI * 2);
+    model.rotation.y = this.setpiecePlan ? this.setpiecePlan.mainPyramid.yaw : rng.range(0, Math.PI * 2);
     model.name = 'landmark';
     this.enableLandmarkShadows(model);
     this.landmark = model;
@@ -714,6 +774,31 @@ export class Game {
   }
 
   /**
+   * Build the visual-only city plan (Caral Alto and Caral Bajo). The Great
+   * Pyramid is already the map landmark; this layer adds the other five
+   * pyramids, plazas, residential compounds and lower-half temples.
+   */
+  private spawnSacredCity(): void {
+    if (!this.setpiecePlan) return;
+    const plan = this.pendingSnapshot
+      ? this.setpiecePlan
+      : {
+          ...this.setpiecePlan,
+          placements: this.setpiecePlan.placements.filter((placement) => !placement.modularReplaced),
+        };
+    this.buildSacredCity(plan);
+  }
+
+  private buildSacredCity(plan: CaralCityPlan | null): void {
+    if (!plan) return;
+    this.setpiece?.dispose();
+    this.setpiece = new SacredCity(this.makeBuildContext(0), plan, this.terrain);
+    this.setpiece.group.userData.proceduralLower = plan === this.setpiecePlan;
+    applyFowToObject(this.setpiece.group, this.fowUniforms);
+    this.scene.add(this.setpiece.group);
+  }
+
+  /**
    * Place the map's cultural landscape (roads, fields, plazas, canals; visual
    * only, deterministic). Derived from `seed + profile`, so it is regenerated on
    * load and never saved (like the terrain and the landmark).
@@ -722,6 +807,11 @@ export class Game {
     this.landscape = new CulturalLandscape(this.terrain, this.mapProfile, this.settings.mapSeed);
     applyFowToObject(this.landscape.group, this.fowUniforms);
     this.scene.add(this.landscape.group);
+  }
+
+  /** Keep authored city footprints free of procedural resources and props. */
+  private isReserved(x: number, z: number): boolean {
+    return !!this.setpiecePlan && inCaralCity(this.setpiecePlan, x, z, 1);
   }
 
   private spawnResources(): void {
@@ -735,7 +825,7 @@ export class Game {
     while (placed < n && guard++ < n * 4) {
       const x = rng.range(15, s.mapSize - 15);
       const z = rng.range(15, s.mapSize - 15);
-      if (this.terrain.isWater(x, z)) continue;
+      if (this.terrain.isWater(x, z) || this.isReserved(x, z)) continue;
       const h = this.terrain.getHeight(x, z);
       const kind = this.pickResourceKind(rng, x, z, h);
       const amount =
@@ -761,7 +851,7 @@ export class Game {
     for (let i = 0; i < huntCount; i++) {
       const x = rng.range(20, s.mapSize - 20);
       const z = rng.range(20, s.mapSize - 20);
-      if (this.terrain.isWater(x, z)) continue;
+      if (this.terrain.isWater(x, z) || this.isReserved(x, z)) continue;
       const node = new ResourceNode(this.scene, 'hunt', x, z, rng.range(120, 180), mapType, undefined, variants);
       node.pos.y = this.terrain.getHeight(x, z);
       node.view.position.set(x, node.pos.y, z);
@@ -833,8 +923,16 @@ export class Game {
     const heightAt = (x: number, z: number): number => this.terrain.getHeight(x, z);
     const propSeed = s.mapSeed * AMBIENT_PROP_SEED + 3;
     const faunaSeed = s.mapSeed * AMBIENT_FAUNA_SEED + 5;
-    this.props.place(planProps(region, propSeed, s.mapSize, propCountFor(s.mapSize), this.terrain), heightAt);
-    this.wildlife.spawn(planWildlife(region, faunaSeed, s.mapSize, faunaCountFor(region), this.terrain), heightAt);
+    const query = {
+      isWater: (x: number, z: number) => this.terrain.isWater(x, z) || this.isReserved(x, z),
+      isBuildable: (x: number, z: number) => this.terrain.isBuildable(x, z) && !this.isReserved(x, z),
+      getSlope: (x: number, z: number) => this.terrain.getSlope(x, z),
+      getHeight: (x: number, z: number) => this.terrain.getHeight(x, z),
+      isBeach: (x: number, z: number) => this.terrain.isBeach(x, z),
+      getMoisture: (x: number, z: number) => this.terrain.getMoisture(x, z),
+    };
+    this.props.place(planProps(region, propSeed, s.mapSize, propCountFor(s.mapSize), query), heightAt);
+    this.wildlife.spawn(planWildlife(region, faunaSeed, s.mapSize, faunaCountFor(region), query), heightAt);
   }
 
   /** Geography-driven resource pick: profile weights, gated by height, beach, moisture and slope. */
@@ -982,17 +1080,31 @@ export class Game {
       this.resourceNodes.set(node.id, node);
       this.registerResourceObstacle(node.id, nx, nz, kind);
     };
-    // trees
-    for (let i = 0; i < 10; i++) {
-      const a = rng.range(0, Math.PI * 2);
-      const r = rng.range(8, 13);
-      place('tree', rng.range(140, 200), Math.cos(a) * r, Math.sin(a) * r);
+    // Trees: in the authored Caral scene the wood grove sits on the valley edge
+    // (the gallery forest of the Supe), not inside the residential compounds.
+    const grove = this.setpiecePlan;
+    if (grove) {
+      // Keep the base -> ford axis clear: the gallery forest sits west of it,
+      // on the valley edge, and the opening mine/berries sit in the base ring.
+      for (let i = 0; i < 8; i++) {
+        const tx = grove.lower.x - 14 + rng.range(-4, 4);
+        const tz = grove.lower.z - 22 + rng.range(-2, 2);
+        place('tree', rng.range(140, 200), tx - x, tz - z);
+      }
+      place('mine', 400, -13, -24);
+      place('berry', 150, 12, -24);
+    } else {
+      for (let i = 0; i < 10; i++) {
+        const a = rng.range(0, Math.PI * 2);
+        const r = rng.range(8, 13);
+        place('tree', rng.range(140, 200), Math.cos(a) * r, Math.sin(a) * r);
+      }
+      // steel mine
+      const ma = rng.range(0, Math.PI * 2);
+      place('mine', 400, Math.cos(ma) * 12, Math.sin(ma) * 12);
+      // berries
+      place('berry', 150, rng.range(-6, 6), rng.range(9, 13));
     }
-    // steel mine
-    const ma = rng.range(0, Math.PI * 2);
-    place('mine', 400, Math.cos(ma) * 12, Math.sin(ma) * 12);
-    // berries
-    place('berry', 150, rng.range(-6, 6), rng.range(9, 13));
     // well (if the era allows it)
     if (this.players[player].era >= Era.TAHUANTINSUYO) {
       const wa = rng.range(0, Math.PI * 2);
@@ -1031,6 +1143,7 @@ export class Game {
       civ,
       playerColor: new THREE.Color(civ.colors.primary),
       arch: archProfileFor(civ.id, p.era),
+      caralSetpiece: !!this.setpiecePlan,
     };
   }
 
@@ -1111,8 +1224,14 @@ export class Game {
   playIntro(): void {
     if (!this.introEnabled) return;
     const c = this.playerCenter(0);
-    this.camera.moveTo(c.x + INTRO_CAMERA.offset, c.z + INTRO_CAMERA.offset, true);
-    this.camera.setHeight(INTRO_CAMERA.fromHeight);
+    const city = this.setpiecePlan?.upper;
+    if (city) {
+      this.camera.moveTo(city.x, city.z, true);
+      this.camera.setHeight(INTRO_CAMERA.fromHeight + 12);
+    } else {
+      this.camera.moveTo(c.x + INTRO_CAMERA.offset, c.z + INTRO_CAMERA.offset, true);
+      this.camera.setHeight(INTRO_CAMERA.fromHeight);
+    }
     this.camera.flyTo(c.x, c.z, INTRO_CAMERA.toZoom, INTRO_CAMERA.seconds);
   }
 
@@ -3280,6 +3399,10 @@ export class Game {
       this.scene.remove(this.landscape.group);
       this.landscape.dispose();
       this.landscape = null;
+    }
+    if (this.setpiece) {
+      this.setpiece.dispose();
+      this.setpiece = null;
     }
     for (const overlay of this.settlements) overlay.dispose();
     this.settlements = [];

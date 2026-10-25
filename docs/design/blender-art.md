@@ -95,8 +95,9 @@ The showcase exposes `bounds`, `lod0Triangles`, `lod1Triangles`, `drawCalls`, `m
 - The footprint (30×50) is much larger than the current landmark (~12×16) and needs a flat pad,
   a dedicated placement rule and a decision between visual-only and obstacle.
 - The height (2.814) may read too flat at RTS zoom; this needs an in-game capture before integration.
-- The city is **showcase only**; the modular Pyramid Mayor GLB is now the Caral landmark, with the
-  procedural landmark as fallback.
+- The full-city GLB is **showcase only**; `m1_caral` uses a separate procedural sacred-city plan,
+  the modular Pyramid Mayor at its `greater` anchor and the modular Anfiteatro at its
+  `amphitheatre` site.
 
 ## Modular scenery
 
@@ -132,8 +133,9 @@ the terrain, and is rebuilt by `scripts/blender/build_caral_scenery.py --asset=p
   exporter cannot represent; the GLB exports its base color.
 - `?scenery=caral-anfiteatro` mounts the showcase.
 - `m1_caral` places this GLB as the secondary setpiece of the Caral landmark, on a low rectangular
-  terrace. It is visual-only; collision and pathfinding are not implemented yet. Loaded saves skip
-  the secondary setpiece because the landmark is regenerated before the snapshot is applied.
+  terrace. It is visual-only; collision and pathfinding are not implemented yet. If the GLB fails, the
+  city rebuilds the procedural lower ensemble; loaded saves keep that ensemble because the modular
+  setpiece is skipped before the snapshot is applied.
 
 ## Source manifest
 
@@ -280,8 +282,9 @@ out of scope.
   their licences.
 - A render is an **artistic reconstruction**, not a photograph. The UI always says so.
 - The raw source exports `caral_pyramide_mayor.glb`/`caral_rts_kit.glb` are not used at runtime. The
-  modular `caral_pyramid_mayor_lod0.glb` is integrated as the Caral landmark (visual-only, with a flat
-  pad and procedural fallback); the full city and raw kit remain showcase/source assets.
+  modular `caral_pyramid_mayor_lod0.glb` and `caral_anfiteatro_lod0.glb` are integrated at the sacred-city
+  plan anchors (visual-only, with pads and procedural fallback); the full-city GLB and raw kit remain
+  showcase/source assets.
 
 ## Verification
 
