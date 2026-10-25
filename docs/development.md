@@ -59,8 +59,9 @@ Definition of Done and the building audit see
   (`window.__sceneryDemo`). The Pyramid Mayor is the Caral landmark and the Anfiteatro is its secondary
   setpiece (both visual-only, raised terraces, no collision); both remain in the showcase. On `m1_caral`
   the plan supplies the fixed `greater` and `amphitheatre` anchors, and the three procedural lower-half
-  temple placements are filtered. Modular setpieces are skipped when loading a save because the snapshot
-  is applied after the landmark is spawned. The builder strips the unsupported procedural Base
+  temple placements are filtered. If the Anfiteatro GLB fails, the full procedural lower ensemble is
+  rebuilt; loaded saves keep that ensemble because the modular setpiece is skipped before the snapshot is
+  applied. The builder strips the unsupported procedural Base
   Color link from `MAT-Sand_Desert` so the GLB exports its `baseColorFactor`. See
   `docs/design/blender-art.md`.
 - **Building/unit materials are AI-overridable**: `mat()` (`ProceduralModel.ts`) maps a `TexKind` to an

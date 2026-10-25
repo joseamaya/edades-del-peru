@@ -112,7 +112,9 @@ slot is absent (offline / without assets).
   `MAT-Sand_Desert` is exported with its base color after stripping the unsupported procedural link.
 - **Runtime**: `?scenery=caral-anfiteatro` mounts the scenery showcase. On `m1_caral`, it is placed at
   the sacred-city plan's `amphitheatre` anchor on a low rectangular terrace; the equivalent procedural
-  temple/altar/bench placements are filtered. Visual-only; loaded saves skip the modular setpiece because the landmark is regenerated before the snapshot is applied.
+  temple/altar/bench placements are filtered. If the GLB fails, the city rebuilds the procedural lower
+  ensemble. Visual-only; loaded saves keep that ensemble because the modular setpiece is skipped before
+  the snapshot is applied.
 - **Confidence**: documented in plan; graderios and banqueta simplified.
 
 ### Caral city GLB (showcase)

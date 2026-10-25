@@ -102,6 +102,37 @@ test('the Caral scenario builds the documented Upper and Lower halves', { tag: '
   expect(errors).toEqual([]);
 });
 
+test('the Caral city keeps the procedural lower ensemble when the Anfiteatro GLB fails', async ({ page }) => {
+  await page.route('**/*caral_anfiteatro_lod0.glb*', (route) => {
+    if (route.request().url().includes('?')) return route.continue();
+    return route.abort();
+  });
+  await boot(page);
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return g?.setpiece?.group?.userData?.proceduralLower === true && !g.landmark?.getObjectByName('caral_anfiteatro');
+    },
+    null,
+    { timeout: 15_000 },
+  );
+  const state = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    let meshes = 0;
+    g.setpiece?.group?.traverse((o: any) => {
+      if (o.isMesh) meshes++;
+    });
+    return {
+      proceduralLower: g.setpiece?.group?.userData?.proceduralLower,
+      anfiteatro: !!g.landmark?.getObjectByName('caral_anfiteatro'),
+      meshes,
+    };
+  });
+  expect(state.proceduralLower).toBe(true);
+  expect(state.anfiteatro).toBe(false);
+  expect(state.meshes).toBeGreaterThan(0);
+});
+
 test('the Caral city geometry is deterministic for the same mission seed', async ({ page }) => {
   await boot(page);
   const first = await page.evaluate(() =>

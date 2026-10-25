@@ -624,6 +624,7 @@ export class Game {
           placeholder.add(fallback);
           applyFowToObject(fallback, this.fowUniforms);
           this.landmarkOwnsStatic = false;
+          this.buildSacredCity(this.setpiecePlan);
         });
       if (this.pendingSnapshot) return;
       for (const setpiece of scenery.setpieces ?? []) {
@@ -655,9 +656,10 @@ export class Game {
             applyFowToObject(pad, this.fowUniforms);
           })
           .catch((error: unknown) => {
-            console.warn(`[landmark] failed to load setpiece ${setpiece.model}`, error);
+            console.warn(`[landmark] failed to load setpiece ${setpiece.model}; using procedural city`, error);
             if (token !== this.landmarkLoadToken || this.landmark !== placeholder) return;
             group.removeFromParent();
+            this.buildSacredCity(this.setpiecePlan);
           });
       }
       return;
@@ -780,12 +782,21 @@ export class Game {
    */
   private spawnSacredCity(): void {
     if (!this.setpiecePlan) return;
-    const replaced = new Set(['amphitheatre', 'round_altar', 'bench_temple']);
+    const replaced = this.pendingSnapshot
+      ? new Set<string>()
+      : new Set(['amphitheatre', 'round_altar', 'bench_temple']);
     const plan = {
       ...this.setpiecePlan,
       placements: this.setpiecePlan.placements.filter((placement) => !replaced.has(placement.name ?? '')),
     };
+    this.buildSacredCity(plan);
+  }
+
+  private buildSacredCity(plan: CaralCityPlan | null): void {
+    if (!plan) return;
+    this.setpiece?.dispose();
     this.setpiece = new SacredCity(this.makeBuildContext(0), plan, this.terrain);
+    this.setpiece.group.userData.proceduralLower = plan === this.setpiecePlan;
     applyFowToObject(this.setpiece.group, this.fowUniforms);
     this.scene.add(this.setpiece.group);
   }
