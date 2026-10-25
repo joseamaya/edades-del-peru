@@ -44,9 +44,11 @@ Definition of Done and the building audit see
 - **Caral city GLB showcase**: `src/assets/cities/caral_city_lod0.glb` / `lod1.glb` are the game-ready
   Blender exports (18,120/6,194 tris, 10 draw calls, Y-up, ground pivot, +Z stair). `src/rendering/StaticModel.ts`
   loads static glTF without animation clips, and `?city=caral` mounts a standalone showcase with shadows,
-  orbit controls, LOD0/LOD1 and `window.__cityDemo`. The city is **not** used by a campaign mission yet; the
-  modular Pyramid Mayor is the Caral landmark instead. `MAT-Sand_Desert` needs a source fix, plaza stalls
-  need a historical review, and the 30×50 footprint needs a flat-pad/placement design before integration. See
+  orbit controls, LOD0/LOD1 and `window.__cityDemo`. The full-city GLB is **not** used by a campaign
+  mission; `m1_caral` instead builds a procedural sacred-city plan and places the modular Pyramid Mayor
+  and Anfiteatro at its fixed anchors. `MAT-Sand_Desert` needs a source fix, plaza stalls need a
+  historical review, and the 30×50 footprint needs a flat-pad/placement design before integrating the
+  full-city GLB. See
   [`docs/design/blender-art.md`](design/blender-art.md).
 - **Caral modular scenery**: `src/assets/scenery/caral/caral_pyramid_mayor_lod0.glb` /
   `lod1.glb` (Pyramid Mayor + Plaza Mayor; 6,044/2,408 tris, 7 draw calls, footprint 13.9 × 15.5)
@@ -55,8 +57,10 @@ Definition of Done and the building audit see
   `scripts/blender/build_caral_scenery.py --asset=…` from `caral_rts_kit.blend`; the script excludes
   market stalls and terrain. `?scenery=caral` and `?scenery=caral-anfiteatro` mount the showcases
   (`window.__sceneryDemo`). The Pyramid Mayor is the Caral landmark and the Anfiteatro is its secondary
-  setpiece (both visual-only, raised terraces, no collision); both remain in the showcase. Setpieces are
-  skipped when loading a save because the snapshot is applied after the landmark is spawned. The builder strips the unsupported procedural Base
+  setpiece (both visual-only, raised terraces, no collision); both remain in the showcase. On `m1_caral`
+  the plan supplies the fixed `greater` and `amphitheatre` anchors, and the three procedural lower-half
+  temple placements are filtered. Modular setpieces are skipped when loading a save because the snapshot
+  is applied after the landmark is spawned. The builder strips the unsupported procedural Base
   Color link from `MAT-Sand_Desert` so the GLB exports its `baseColorFactor`. See
   `docs/design/blender-art.md`.
 - **Building/unit materials are AI-overridable**: `mat()` (`ProceduralModel.ts`) maps a `TexKind` to an

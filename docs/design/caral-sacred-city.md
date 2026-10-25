@@ -25,16 +25,16 @@ camera framing and the warm desert palette.
 | Element | Source status | In game |
 |---|---|---|
 | Dry desert terrace over the green Supe valley | Documented (UNESCO) | Two flattened desert pads above a green river valley. |
-| Upper Half (Caral Alto) | Documented | Six large pyramids around the Central Plaza, elite residences. |
-| Lower Half (Caral Bajo) | Documented | Player base, smaller residences, workshops, Amphitheatre Temple. |
-| Great Pyramid (E Sector) | Documented | `greater`: broad, low platform, wide stair, summit atrium/hearth, sunken plaza. |
+| Upper Half (Caral Alto) | Documented | Five procedural pyramids around the Central Plaza plus the modular Pyramid Mayor; elite residences. |
+| Lower Half (Caral Bajo) | Documented | Player base, smaller residences, workshops, and the modular Anfiteatro ensemble. |
+| Great Pyramid (E Sector) | Documented | `greater`: modular Pyramid Mayor GLB on its planned pad; the procedural plan keeps the position and sunken plaza. |
 | Central, Quarry, Lesser, Gallery, Huanca pyramids | Documented names | Five further pyramids, smaller than the Great Pyramid. |
 | Central Plaza / Plaza de la Huanca | Documented | Large open plaza; secondary plaza with the 2.3 m monolith. |
 | Sunken circular plazas | Documented | Great Pyramid and Amphitheatre Temple (the largest). |
 | Five open plazas in the Upper Half | Documented count (ICOMOS) | Central Plaza, Plaza de la Huanca and three pyramid forecourts. |
 | Supe crossing | Not documented as a bridge; a crossing was necessary | Central dry stone ford/causeway; walkable, with the river on both sides. |
 | Residential units B1, B2, B5; Greater Residential Complex; E2-E3 | Documented in the 2005/2009 reports | Low stone-and-mud compounds around patios and narrow rooms. |
-| Amphitheatre Temple, Round Altar, Bench Temple, Q residence, Lesser Residential Complex, specialised workshop | Documented in the 2005/2009 reports | Caral Bajo placements. |
+| Amphitheatre Temple, Round Altar, Bench Temple, Q residence, Lesser Residential Complex, specialised workshop | Documented in the 2005/2009 reports | The modular Anfiteatro GLB replaces the temple/altar/bench triad; Q and the residential/workshop compounds stay procedural. |
 | Additional residences (unnamed) | Plausible | Generic `upper_residence_*` / `lower_residence_*` compounds. |
 | Processional paths | Abstraction | Visual-only connectors between the plazas, residences and temples. |
 | Stone retaining walls, mud mortar, `shicras` fill, plastered and painted surfaces | Documented | Sand/cream plaster, light stone bands, restrained red/yellow accents. |
@@ -68,15 +68,33 @@ camera framing and the warm desert palette.
   `src/rendering/heightField.ts` (flats, fixed river valley, walkable ford).
 - Models: `src/model/ProceduralModel.ts` (`buildCaralPyramid`,
   `buildCaralSunkenPlaza`, `buildCaralCompound`, `buildCaralMonolith`,
-  `buildCaralCityModel`).
+  `buildCaralCityModel`) for the surrounding city; `caral_pyramid_mayor` and
+  `caral_anfiteatro` GLBs for the two hero structures.
 - Renderer: `src/rendering/SacredCity.ts` (merged by material; visual only).
 - Wiring: `src/core/Game.ts` (reserved footprints, fixed base, landmark, intro)
   and `src/rendering/Water.ts` (map-aligned depth sampling for inland rivers).
+
+## Modular assets in the plan
+
+The plan keeps the documented positions and hierarchy, while the two hero structures use the
+modular Blender GLBs:
+
+- `mainPyramid` is the anchor for the **Pyramid Mayor** GLB (`caral_pyramid_mayor`); the
+  procedural `SacredCity` does not build it. The GLB keeps its own sand pad and fallback.
+- The **Anfiteatro** GLB (`caral_anfiteatro`) is placed at the `amphitheatre` plan site; the
+  procedural `amphitheatre`, `round_altar` and `bench_temple` placements are filtered from the
+  render because that GLB already contains the temple, altar and banqueta.
+- The other five pyramids, plazas, monolith, sunken plazas, compounds and the ford remain
+  procedural and merged by material.
+- All of these layers are visual-only; they do not add obstacles or entities.
 
 ## Guards
 
 - `tests/setpieces.test.ts`: determinism, documented names/hierarchy, bounds,
   Upper/Lower separation, keep-out footprints.
 - `tests/e2e/caral-city.spec.ts`: scene present, mesh/vertex budget, landmark
-  alignment, no resources in the Upper-Half keep-out, no generic landscape
-  ribbons, river present, deterministic reload.
+  alignment, modular Pyramid/Anfiteatro positions matching the plan, no resources
+  in the Upper-Half keep-out, no generic landscape ribbons, river present,
+  deterministic reload.
+- `tests/e2e/landmarks.spec.ts`: the modular landmark, fixed plan position and
+  Anfiteatro fallback.

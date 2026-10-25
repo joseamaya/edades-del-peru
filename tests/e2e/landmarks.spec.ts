@@ -128,7 +128,7 @@ test('the Caral landmark uses the modular Pyramid Mayor and Anfiteatro GLBs', as
   expect(child.setpiece.padSize!.z).toBeCloseTo(9, 3);
   expect(child.setpiece.padSize!.y).toBeCloseTo(3, 3);
   expect(child.setpiece.distance!).toBeGreaterThan(24.5);
-  expect(child.setpiece.distance!).toBeLessThan(40);
+  expect(child.setpiece.distance!).toBeLessThan(80);
 });
 
 test('the Caral landmark falls back when the modular GLB fails', async ({ page }) => {

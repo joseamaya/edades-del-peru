@@ -60,7 +60,7 @@ export interface CaralCityPlan {
   upper: { x: number; z: number };
   /** Lower Half (Caral Bajo) anchor in world units; the player's base sits here. */
   lower: { x: number; z: number };
-  /** The Great Pyramid, built by the landmark renderer. */
+  /** The Great Pyramid anchor; the game renders the modular Pyramid Mayor GLB here. */
   mainPyramid: CaralPlacement;
   placements: CaralPlacement[];
   /** World-space rectangles kept free of resources, props and canals. */
@@ -188,7 +188,9 @@ export function planCaralCity(opts: {
   // --- Caral Bajo: the Lower Half, across the Supe valley ---
   const lowerAt = (lx: number, lz: number) => at(lower, lx, lz);
 
-  // The Amphitheatre Temple is linked to the largest sunken circular plaza.
+  // The Amphitheatre Temple is linked to the largest sunken circular plaza; the
+  // game replaces this temple, the round altar and the bench temple with the
+  // modular Anfiteatro GLB while keeping the plaza.
   placements.push({ ...temple('amphitheatre', 10, 7, 3, rot(0), 1.9), ...lowerAt(-16, 1) });
   placements.push({
     kind: 'sunken_plaza',

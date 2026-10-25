@@ -7,7 +7,7 @@ import type { Terrain } from './Terrain';
  * Visual-only renderer for the Caral scene plan. The geometry is built and
  * merged by `buildCaralCityModel`, so the whole city costs one draw per shared
  * material instead of one per room. It carries no entities, obstacles or game
- * state; the Great Pyramid remains the map landmark.
+ * state; the Great Pyramid and Anfiteatro are separate modular assets.
  */
 export class SacredCity {
   readonly group: THREE.Group;

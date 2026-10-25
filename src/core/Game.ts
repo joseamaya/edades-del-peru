@@ -602,7 +602,7 @@ export class Game {
       this.landmarkOwnsStatic = true;
       this.scene.add(placeholder);
       const token = ++this.landmarkLoadToken;
-      const mainRotation = rng.range(0, Math.PI * 2);
+      const mainRotation = this.setpiecePlan ? this.setpiecePlan.mainPyramid.yaw : rng.range(0, Math.PI * 2);
       void loadSceneryModel(scenery.model)
         .then((model) => {
           model.name = scenery.model;
@@ -627,7 +627,10 @@ export class Game {
         });
       if (this.pendingSnapshot) return;
       for (const setpiece of scenery.setpieces ?? []) {
-        const site = placeSetpiece(setpiece.padRadius);
+        const planned = this.setpiecePlan?.placements.find(
+          (placement) => placement.kind === 'temple' && placement.name === 'amphitheatre',
+        );
+        const site = planned ?? placeSetpiece(setpiece.padRadius);
         if (!site) {
           console.warn(`[landmark] no flat site for setpiece ${setpiece.model}`);
           continue;
@@ -639,7 +642,7 @@ export class Game {
           this.landmarkPadHeight(site.x, site.z, setpiecePadRadius(setpiece)) + 0.02 - placeholder.position.y,
           site.z - z,
         );
-        const rotation = rng.range(0, Math.PI * 2);
+        const rotation = planned?.yaw ?? rng.range(0, Math.PI * 2);
         group.rotation.y = rotation;
         placeholder.add(group);
         applyFowToObject(group, this.fowUniforms);
@@ -777,7 +780,12 @@ export class Game {
    */
   private spawnSacredCity(): void {
     if (!this.setpiecePlan) return;
-    this.setpiece = new SacredCity(this.makeBuildContext(0), this.setpiecePlan, this.terrain);
+    const replaced = new Set(['amphitheatre', 'round_altar', 'bench_temple']);
+    const plan = {
+      ...this.setpiecePlan,
+      placements: this.setpiecePlan.placements.filter((placement) => !replaced.has(placement.name ?? '')),
+    };
+    this.setpiece = new SacredCity(this.makeBuildContext(0), plan, this.terrain);
     applyFowToObject(this.setpiece.group, this.fowUniforms);
     this.scene.add(this.setpiece.group);
   }

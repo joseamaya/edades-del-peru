@@ -43,6 +43,9 @@ test('the Caral scenario builds the documented Upper and Lower halves', { tag: '
         ).length
       : -1;
     const base = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center');
+    const amph = plan.placements.find((p: any) => p.kind === 'temple' && p.name === 'amphitheatre');
+    const anf = g.landmark?.getObjectByName('caral_anfiteatro');
+    const anfPos = anf?.getWorldPosition(new window.THREE.Vector3());
     return {
       hasPlan: !!plan,
       placements: plan.placements.length,
@@ -51,6 +54,12 @@ test('the Caral scenario builds the documented Upper and Lower halves', { tag: '
       verts,
       landmarkX: g.landmark?.position.x ?? null,
       landmarkZ: g.landmark?.position.z ?? null,
+      modularPyramid: !!g.landmark?.getObjectByName('caral_pyramid_mayor'),
+      modularAnfiteatro: !!anf,
+      anfX: anfPos?.x ?? null,
+      anfZ: anfPos?.z ?? null,
+      amphX: amph?.x ?? null,
+      amphZ: amph?.z ?? null,
       mainX: plan.mainPyramid.x,
       mainZ: plan.mainPyramid.z,
       upperZ: plan.upper.z,
@@ -74,6 +83,10 @@ test('the Caral scenario builds the documented Upper and Lower halves', { tag: '
   expect(state.verts).toBeGreaterThan(5000);
   expect(state.landmarkX).toBeCloseTo(state.mainX, 3);
   expect(state.landmarkZ).toBeCloseTo(state.mainZ, 3);
+  expect(state.modularPyramid).toBe(true);
+  expect(state.modularAnfiteatro).toBe(true);
+  expect(state.anfX).toBeCloseTo(state.amphX, 3);
+  expect(state.anfZ).toBeCloseTo(state.amphZ, 3);
   expect(state.lowerZ).toBeGreaterThan(state.upperZ);
   expect(state.lowerZ - state.upperZ).toBeGreaterThan(40);
   expect(state.baseInLower).toBe(true);
