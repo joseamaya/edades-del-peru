@@ -54,28 +54,54 @@ async function landmarkInfo(page: Page) {
   });
 }
 
-test('the Caral landmark uses the modular Pyramid Mayor GLB', async ({ page }) => {
+test('the Caral landmark uses the modular Pyramid Mayor and Anfiteatro GLBs', async ({ page }) => {
   await boot(page, '/?mission=m1_caral&fog=0&low=1&noloop=1');
   const info = await landmarkInfo(page);
+  await page.waitForFunction(
+    () => (window as unknown as { game?: any }).game?.landmark?.getObjectByName('caral_anfiteatro') !== undefined,
+    null,
+    { timeout: 15_000 },
+  );
   const child = await page.evaluate(() => {
     const landmark = (window as unknown as { game: any }).game.landmark;
     const model = landmark?.getObjectByName('caral_pyramid_mayor');
     const pad = landmark?.getObjectByName('caral_landmark_pad');
+    const setpiece = landmark?.getObjectByName('caral_anfiteatro');
+    const setpiecePad = landmark?.getObjectByName('caral_landmark_setpiece_pad');
     const THREE = (window as unknown as { THREE: any }).THREE;
-    let meshes = 0;
-    model?.traverse((object: any) => {
-      if (object.isMesh) meshes++;
-    });
+    const count = (root: any): number => {
+      let meshes = 0;
+      root?.traverse((object: any) => {
+        if (object.isMesh) meshes++;
+      });
+      return meshes;
+    };
     pad?.updateWorldMatrix(true, false);
     const box = pad && THREE ? new THREE.Box3().setFromObject(pad) : null;
     const size = box?.getSize(new THREE.Vector3()) ?? null;
+    setpiece?.updateWorldMatrix(true, false);
+    const setpiecePos = setpiece && THREE ? setpiece.getWorldPosition(new THREE.Vector3()) : null;
+    setpiecePad?.updateWorldMatrix(true, false);
+    const setpiecePadBox = setpiecePad && THREE ? new THREE.Box3().setFromObject(setpiecePad) : null;
+    const setpiecePadSize = setpiecePadBox?.getSize(new THREE.Vector3()) ?? null;
     return {
       name: model?.name ?? null,
-      meshes,
+      meshes: count(model),
       pad: pad?.name ?? null,
       padSize: size ? { x: size.x as number, y: size.y as number, z: size.z as number } : null,
       padTop: box?.max.y as number | undefined,
       landmarkY: landmark?.position.y as number | undefined,
+      setpiece: {
+        name: setpiece?.name ?? null,
+        meshes: count(setpiece),
+        pad: setpiecePad?.name ?? null,
+        padSize: setpiecePadSize
+          ? { x: setpiecePadSize.x as number, y: setpiecePadSize.y as number, z: setpiecePadSize.z as number }
+          : null,
+        distance: setpiecePos
+          ? Math.hypot(setpiecePos.x - landmark.position.x, setpiecePos.z - landmark.position.z)
+          : null,
+      },
     };
   });
   expect(info.id).toBe('caral_ceremonial');
@@ -85,8 +111,16 @@ test('the Caral landmark uses the modular Pyramid Mayor GLB', async ({ page }) =
   expect(child.pad).toBe('caral_landmark_pad');
   expect(child.padSize!.x).toBeGreaterThan(23);
   expect(child.padSize!.z).toBeGreaterThan(23);
-  expect(child.padSize!.y).toBeGreaterThan(1.3);
+  expect(child.padSize!.y).toBeGreaterThan(2.1);
   expect(child.padTop!).toBeGreaterThanOrEqual(child.landmarkY! - 0.03);
+  expect(child.setpiece.name).toBe('caral_anfiteatro');
+  expect(child.setpiece.meshes).toBeGreaterThan(0);
+  expect(child.setpiece.pad).toBe('caral_landmark_setpiece_pad');
+  expect(child.setpiece.padSize!.x).toBeGreaterThan(19);
+  expect(child.setpiece.padSize!.z).toBeGreaterThan(7.5);
+  expect(child.setpiece.padSize!.y).toBeGreaterThan(2.5);
+  expect(child.setpiece.distance!).toBeGreaterThan(20);
+  expect(child.setpiece.distance!).toBeLessThan(40);
 });
 
 test('period maps place their own landmark on land', async ({ page }) => {
