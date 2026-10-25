@@ -61,8 +61,9 @@ slot is absent (offline / without assets).
   claimed.
 - **Licence**: the renders are project-owned; audit the `.blend` scenes for external textures/HDRIs/models and
   record their licences before publishing.
-- **GLB exports**: `caral_pyramide_mayor.glb` and `caral_rts_kit.glb` are recorded for provenance but are not
-  integrated into the game in this branch; the procedural models remain.
+- **GLB exports**: the raw source `caral_pyramide_mayor.glb` and `caral_rts_kit.glb` are recorded for
+  provenance but are not used at runtime. The modular `caral_pyramid_mayor_lod0.glb` is now the Caral
+  landmark; the procedural landmark remains the fallback. The full city and raw kit stay showcase/source.
 - **Archived AI pipeline**: the earlier AI-illustration spike is archived on the `feat/visual-ai-pipeline`
   branch and is not part of this branch.
 
@@ -91,7 +92,9 @@ slot is absent (offline / without assets).
   Bounds 13.904 × 2.7744 × 15.5352 game units; Y-up; footprint centre at ground; foundations
   extend to -0.16.
 - **Content**: Pyramid Mayor + Plaza Mayor; excludes `PlazaCentral`, market stalls and terrain.
-- **Runtime**: `?scenery=caral` mounts the scenery showcase. Visual-only, not a campaign asset.
+- **Runtime**: `?scenery=caral` mounts the scenery showcase. On `m1_caral`, the Pyramid Mayor GLB
+  replaces the procedural Caral landmark with a flat sand pad; visual-only, no collision. Falls back to
+  the procedural landmark if the GLB cannot load.
 - **Confidence**: documented in plan; roofs and remates inferred.
 
 ### Caral Anfiteatro modular scenery

@@ -22,6 +22,8 @@ import { Props } from '../rendering/Props';
 import { Wildlife } from '../rendering/Wildlife';
 import { clearFaunaTemplates } from '../rendering/faunaModels';
 import { clearModelAssets } from '../rendering/ModelAssets';
+import { disposeStaticGltf } from '../rendering/StaticModel';
+import { loadSceneryModel } from '../rendering/sceneryModels';
 import { planProps, propCountFor } from '../model/defs/props';
 import { planWildlife, faunaCountFor } from '../model/defs/wildlife';
 import { Projectile, updateProjectilePools } from '../entities/Projectile';
@@ -133,6 +135,8 @@ export class Game {
   private readonly missionAtmosphere?: MissionAtmosphere;
   /** Decorative historical landmark of the map (visual only), if any. */
   landmark: THREE.Group | null = null;
+  private landmarkOwnsStatic = false;
+  private landmarkLoadToken = 0;
   /** Cultural landscape (roads, fields, plazas, canals); visual only. */
   landscape: CulturalLandscape | null = null;
   /** Per-base settlement overlays (planned fields/roads); visual only. */
@@ -457,9 +461,9 @@ export class Game {
   }
 
   /**
-   * Place the map's historical landmark (visual only, deterministic). It is built
-   * with the landmark's own civilization/era, and only when the resolved map
-   * region fits the landmark (see `resolveMapProfile`).
+   * Place the map's historical landmark (visual only, deterministic). Most are
+   * built with the landmark's own civilization/era; Caral uses the modular
+   * Pyramid Mayor GLB with a flat sand pad and a procedural fallback.
    */
   private spawnLandmark(): void {
     const id = this.mapProfile.landmark;
@@ -480,8 +484,8 @@ export class Game {
       for (const n of this.resourceNodes.values()) if (Math.hypot(n.pos.x - px, n.pos.z - pz) < radius) return false;
       return true;
     };
-    // The landmark footprint (~12 x 16) must sit on a broad, gentle pad, not on
-    // a cliff edge where its platform would clip through the terrain.
+    // The landmark footprint (Caral ~14 x 16, others ~12 x 16) must sit on a
+    // broad, gentle pad, not on a cliff edge where its platform would clip.
     const footprintClear = (px: number, pz: number): boolean => {
       const h0 = this.terrain.getHeight(px, pz);
       if (this.terrain.isWater(px, pz) || this.terrain.isBeach(px, pz)) return false;
@@ -517,20 +521,88 @@ export class Game {
       x = safe.x;
       z = safe.z;
     }
+    const scenery = def.scenery;
+    if (scenery) {
+      const placeholder = new THREE.Group();
+      placeholder.name = 'landmark';
+      placeholder.position.set(x, this.landmarkPadHeight(x, z, scenery.padRadius) + 0.02, z);
+      placeholder.rotation.y = rng.range(0, Math.PI * 2);
+      this.landmark = placeholder;
+      this.landmarkOwnsStatic = true;
+      this.scene.add(placeholder);
+      const token = ++this.landmarkLoadToken;
+      void loadSceneryModel(scenery.model)
+        .then((model) => {
+          if (token !== this.landmarkLoadToken || this.landmark !== placeholder) {
+            disposeStaticGltf(model);
+            return;
+          }
+          const pad = this.createCaralLandmarkPad(scenery.padRadius);
+          placeholder.add(pad);
+          applyFowToObject(pad, this.fowUniforms);
+          model.name = 'caral_pyramid_mayor';
+          placeholder.add(model);
+          applyFowToObject(model, this.fowUniforms);
+        })
+        .catch((error: unknown) => {
+          console.warn('[landmark] failed to load Caral scenery; using procedural fallback', error);
+          if (token !== this.landmarkLoadToken || this.landmark !== placeholder) return;
+          const fallback = buildLandmarkModel(id, ctx);
+          fallback.name = 'caral_ceremonial_fallback';
+          this.enableLandmarkShadows(fallback);
+          placeholder.add(fallback);
+          applyFowToObject(fallback, this.fowUniforms);
+          this.landmarkOwnsStatic = false;
+        });
+      return;
+    }
     const model = buildLandmarkModel(id, ctx);
     model.position.set(x, this.terrain.getHeight(x, z), z);
     model.rotation.y = rng.range(0, Math.PI * 2);
     model.name = 'landmark';
-    model.traverse((o) => {
-      const mesh = o as THREE.Mesh;
-      if (mesh.isMesh) {
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-      }
-    });
+    this.enableLandmarkShadows(model);
     this.landmark = model;
     applyFowToObject(model, this.fowUniforms);
     this.scene.add(model);
+  }
+
+  private enableLandmarkShadows(root: THREE.Object3D): void {
+    root.traverse((object) => {
+      const mesh = object as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+    });
+  }
+
+  private landmarkPadHeight(x: number, z: number, radius: number): number {
+    let height = this.terrain.getHeight(x, z);
+    for (let k = 0; k < 8; k++) {
+      const angle = (k / 8) * Math.PI * 2;
+      for (const r of [radius * 0.5, radius]) {
+        height = Math.max(height, this.terrain.getHeight(x + Math.cos(angle) * r, z + Math.sin(angle) * r));
+      }
+    }
+    return height;
+  }
+
+  private createCaralLandmarkPad(radius: number): THREE.Mesh {
+    const geometry = new THREE.CylinderGeometry(radius, radius + 1, 1.4, 32);
+    const material = new THREE.MeshStandardMaterial({ color: 0xc8b088, roughness: 1, metalness: 0 });
+    const pad = new THREE.Mesh(geometry, material);
+    pad.name = 'caral_landmark_pad';
+    pad.position.y = -0.72;
+    pad.receiveShadow = true;
+    const rim = new THREE.Mesh(
+      new THREE.RingGeometry(radius - 0.2, radius + 0.1, 32),
+      new THREE.MeshStandardMaterial({ color: 0x8a7a5a, roughness: 1, metalness: 0, side: THREE.DoubleSide }),
+    );
+    rim.name = 'caral_landmark_pad_rim';
+    rim.rotation.x = -Math.PI / 2;
+    rim.position.y = -0.005;
+    rim.receiveShadow = true;
+    pad.add(rim);
+    return pad;
   }
 
   /**
@@ -3089,9 +3161,12 @@ export class Game {
     this.props.dispose();
     this.wildlife.dispose();
     if (this.landmark) {
+      this.landmarkLoadToken++;
       this.scene.remove(this.landmark);
-      disposeModel(this.landmark);
+      if (this.landmarkOwnsStatic) disposeStaticGltf(this.landmark);
+      else disposeModel(this.landmark);
       this.landmark = null;
+      this.landmarkOwnsStatic = false;
     }
     if (this.landscape) {
       this.scene.remove(this.landscape.group);

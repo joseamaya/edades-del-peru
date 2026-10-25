@@ -29,6 +29,13 @@ export type LandmarkId =
   | 'republican_fort'
   | 'chile_apostadero';
 
+export type LandmarkSceneryModel = 'caral_pyramid_mayor';
+
+export interface LandmarkScenery {
+  model: LandmarkSceneryModel;
+  padRadius: number;
+}
+
 export interface LandmarkDef {
   id: LandmarkId;
   name: string;
@@ -37,6 +44,7 @@ export interface LandmarkDef {
   region: GeographicRegion;
   status: 'documented' | 'plausible' | 'abstraction';
   source: string;
+  scenery?: LandmarkScenery;
 }
 
 export const LANDMARKS: Record<LandmarkId, LandmarkDef> = {
@@ -49,6 +57,7 @@ export const LANDMARKS: Record<LandmarkId, LandmarkDef> = {
     status: 'documented',
     source:
       'docs/historia/civilizaciones/caral.md (UNESCO: Ciudad Sagrada de Caral-Supe, whc.unesco.org/en/list/1269/)',
+    scenery: { model: 'caral_pyramid_mayor', padRadius: 11 },
   },
   chavin_temple: {
     id: 'chavin_temple',

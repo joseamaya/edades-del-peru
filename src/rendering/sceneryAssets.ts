@@ -1,7 +1,4 @@
-import anfiteatroLod0 from '../assets/scenery/caral/caral_anfiteatro_lod0.glb?url';
-import anfiteatroLod1 from '../assets/scenery/caral/caral_anfiteatro_lod1.glb?url';
-import pyramidLod0 from '../assets/scenery/caral/caral_pyramid_mayor_lod0.glb?url';
-import pyramidLod1 from '../assets/scenery/caral/caral_pyramid_mayor_lod1.glb?url';
+import { SCENERY_MODEL_URLS } from './sceneryModels';
 import { SHOWCASE_SAND, SHOWCASE_SKY, type StaticShowcaseOptions } from './StaticShowcase';
 
 export type SceneryAssetId = 'caral-pyramid-mayor' | 'caral-anfiteatro';
@@ -20,8 +17,8 @@ export const SCENERY_ASSETS: Record<SceneryAssetId, StaticShowcaseOptions> = {
     ...shared,
     title: 'Pirámide Mayor y Plaza',
     note: 'Piloto modular del complejo ceremonial. Excluye la Plaza Central, los puestos de mercado y el terreno. Visual-only hasta validar la huella en el RTS.',
-    lod0Url: pyramidLod0,
-    lod1Url: pyramidLod1,
+    lod0Url: SCENERY_MODEL_URLS.caral_pyramid_mayor.lod0,
+    lod1Url: SCENERY_MODEL_URLS.caral_pyramid_mayor.lod1,
     fog: [60, 180],
     camera: {
       position: [16, 10, 20],
@@ -37,8 +34,8 @@ export const SCENERY_ASSETS: Record<SceneryAssetId, StaticShowcaseOptions> = {
     ...shared,
     title: 'Anfiteatro y Altar',
     note: 'Templo Anfiteatro + Altar Circular + Templo Banqueta. La banqueta es una plataforma separada en el layout fuente. Visual-only hasta validar la huella en el RTS.',
-    lod0Url: anfiteatroLod0,
-    lod1Url: anfiteatroLod1,
+    lod0Url: SCENERY_MODEL_URLS.caral_anfiteatro.lod0,
+    lod1Url: SCENERY_MODEL_URLS.caral_anfiteatro.lod1,
     fog: [50, 160],
     camera: {
       position: [14, 8, 16],

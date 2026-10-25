@@ -54,9 +54,10 @@ Definition of Done and the building audit see
   3,520/1,403 tris, 7 draw calls, footprint 19.7 × 7.2). Both are rebuilt by
   `scripts/blender/build_caral_scenery.py --asset=…` from `caral_rts_kit.blend`; the script excludes
   market stalls and terrain. `?scenery=caral` and `?scenery=caral-anfiteatro` mount the showcases
-  (`window.__sceneryDemo`); both are visual-only until the RTS footprint/height are validated. The
-  builder strips the unsupported procedural Base Color link from `MAT-Sand_Desert` so the GLB exports
-  its `baseColorFactor`. See `docs/design/blender-art.md`.
+  (`window.__sceneryDemo`). The Pyramid Mayor is now the Caral landmark (visual-only, flat pad, no
+  collision); the Anfiteatro remains a showcase. The builder strips the unsupported procedural Base
+  Color link from `MAT-Sand_Desert` so the GLB exports its `baseColorFactor`. See
+  `docs/design/blender-art.md`.
 - **Building/unit materials are AI-overridable**: `mat()` (`ProceduralModel.ts`) maps a `TexKind` to an
   AI-generated material via `TEX_GEN` (e.g. `adobe → wall_adobe`, `brick → wall_brick`, `roof → tile`,
   `thatch → roof_thatch`, `textile_inca → textile_inca`); the architecture profile (`archProfileFor`) picks the
@@ -192,12 +193,16 @@ Definition of Done and the building audit see
 - **Landmarks (visual only)**: `Game.mapProfile.landmark` (from `landmarkForCiv(civ, period)` — period-gated and
   region-gated: see `resolveMapProfile`) drives `Game.spawnLandmark()`, which builds a cached template via
   `buildLandmarkModel` (`ProceduralModel.ts`, keyed by `landmark|civ|era`) with the landmark's own
-  civilization/era. One landmark per civilization (19 total: Caral, Chavín, Cupisnique, Paracas, Moche, Nazca,
-  Recuay, Wari, Tiahuanaco, Chimú, Chincha, Chanca, Collas/Lupaca, Huanca, Inca, colonial, Patriotas, República,
-  Chile); sources/status in `src/model/defs/landmarks.ts`. Placement is deterministic
+  civilization/era. **Caral is the exception**: `spawnLandmark` asynchronously loads the modular
+  `caral_pyramid_mayor` GLB onto a flat sand pad, keeps the deterministic placeholder position for the
+  tutorial, applies FOW/shadows, and falls back to the procedural landmark if the GLB fails. The other
+  landmarks remain procedural. One landmark per civilization (19 total: Caral, Chavín, Cupisnique, Paracas,
+  Moche, Nazca, Recuay, Wari, Tiahuanaco, Chimú, Chincha, Chanca, Collas/Lupaca, Huanca, Inca, colonial,
+  Patriotas, República, Chile); sources/status in `src/model/defs/landmarks.ts`. Placement is deterministic
   (`RNG(mapSeed*131+11)` on a 0.3–0.42·size ring, skipping water/beach/steep cells and player bases/resources)
   and adds a plain `THREE.Group` named `landmark` to the scene (no entity, no pathfinding obstacle). Freed in
-  `Game.destroy()`; templates are freed by `clearModelCaches()`. The masonry surfaces reuse the civilization's
+  `Game.destroy()`; static GLB resources are freed with `disposeStaticGltf`, the procedural fallback with
+  `disposeModel`, and procedural templates by `clearModelCaches()`. The masonry surfaces reuse the civilization's
   wall material (`andeanTex` → `WALL_TEX`, so AI-generated `wall_*` when present), not a fixed stone; Chavín
   deliberately resolves to the lighter procedural stone map so its carved masses stay readable at RTS zoom.
   Verified by `tests/e2e/landmarks.spec.ts`.
