@@ -110,7 +110,9 @@ slot is absent (offline / without assets).
   Bounds 19.704 × 1.016 × 7.2 game units; Y-up; footprint centre at ground; foundations to -0.2.
 - **Content**: Templo Anfiteatro + Altar Circular + Templo Banqueta; excludes stalls and terrain.
   `MAT-Sand_Desert` is exported with its base color after stripping the unsupported procedural link.
-- **Runtime**: `?scenery=caral-anfiteatro` mounts the scenery showcase. Visual-only.
+- **Runtime**: `?scenery=caral-anfiteatro` mounts the scenery showcase. On `m1_caral`, it is the
+  secondary setpiece of the Caral landmark on a low rectangular terrace. Visual-only; loaded saves skip
+  the setpiece because the landmark is regenerated before the snapshot is applied.
 - **Confidence**: documented in plan; graderios and banqueta simplified.
 
 ### Caral city GLB (showcase)

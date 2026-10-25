@@ -45,8 +45,8 @@ Definition of Done and the building audit see
   Blender exports (18,120/6,194 tris, 10 draw calls, Y-up, ground pivot, +Z stair). `src/rendering/StaticModel.ts`
   loads static glTF without animation clips, and `?city=caral` mounts a standalone showcase with shadows,
   orbit controls, LOD0/LOD1 and `window.__cityDemo`. The city is **not** used by a campaign mission yet; the
-  procedural landmark remains. `MAT-Sand_Desert` needs a source fix, plaza stalls need a historical review, and
-  the 30×50 footprint needs a flat-pad/placement design before integration. See
+  modular Pyramid Mayor is the Caral landmark instead. `MAT-Sand_Desert` needs a source fix, plaza stalls
+  need a historical review, and the 30×50 footprint needs a flat-pad/placement design before integration. See
   [`docs/design/blender-art.md`](design/blender-art.md).
 - **Caral modular scenery**: `src/assets/scenery/caral/caral_pyramid_mayor_lod0.glb` /
   `lod1.glb` (Pyramid Mayor + Plaza Mayor; 6,044/2,408 tris, 7 draw calls, footprint 13.9 × 15.5)
@@ -54,8 +54,9 @@ Definition of Done and the building audit see
   3,520/1,403 tris, 7 draw calls, footprint 19.7 × 7.2). Both are rebuilt by
   `scripts/blender/build_caral_scenery.py --asset=…` from `caral_rts_kit.blend`; the script excludes
   market stalls and terrain. `?scenery=caral` and `?scenery=caral-anfiteatro` mount the showcases
-  (`window.__sceneryDemo`). The Pyramid Mayor is now the Caral landmark (visual-only, flat pad, no
-  collision); the Anfiteatro remains a showcase. The builder strips the unsupported procedural Base
+  (`window.__sceneryDemo`). The Pyramid Mayor is the Caral landmark and the Anfiteatro is its secondary
+  setpiece (both visual-only, raised terraces, no collision); both remain in the showcase. Setpieces are
+  skipped when loading a save because the snapshot is applied after the landmark is spawned. The builder strips the unsupported procedural Base
   Color link from `MAT-Sand_Desert` so the GLB exports its `baseColorFactor`. See
   `docs/design/blender-art.md`.
 - **Building/unit materials are AI-overridable**: `mat()` (`ProceduralModel.ts`) maps a `TexKind` to an

@@ -29,11 +29,30 @@ export type LandmarkId =
   | 'republican_fort'
   | 'chile_apostadero';
 
-export type LandmarkSceneryModel = 'caral_pyramid_mayor';
+export type LandmarkSceneryModel = 'caral_pyramid_mayor' | 'caral_anfiteatro';
+
+export interface PadSize {
+  x: number;
+  z: number;
+}
+
+export interface LandmarkSetpiece {
+  model: LandmarkSceneryModel;
+  /** Search radius; the height radius includes the rectangular pad circumradius. */
+  padRadius: number;
+  padSize?: PadSize;
+}
+
+export function setpiecePadRadius(setpiece: LandmarkSetpiece): number {
+  if (!setpiece.padSize) return setpiece.padRadius;
+  return Math.max(setpiece.padRadius, Math.hypot(setpiece.padSize.x, setpiece.padSize.z) / 2);
+}
 
 export interface LandmarkScenery {
   model: LandmarkSceneryModel;
   padRadius: number;
+  /** Secondary structures placed around the landmark (visual only). */
+  setpieces?: LandmarkSetpiece[];
 }
 
 export interface LandmarkDef {
@@ -57,7 +76,11 @@ export const LANDMARKS: Record<LandmarkId, LandmarkDef> = {
     status: 'documented',
     source:
       'docs/historia/civilizaciones/caral.md (UNESCO: Ciudad Sagrada de Caral-Supe, whc.unesco.org/en/list/1269/)',
-    scenery: { model: 'caral_pyramid_mayor', padRadius: 11 },
+    scenery: {
+      model: 'caral_pyramid_mayor',
+      padRadius: 11,
+      setpieces: [{ model: 'caral_anfiteatro', padRadius: 10, padSize: { x: 21, z: 9 } }],
+    },
   },
   chavin_temple: {
     id: 'chavin_temple',

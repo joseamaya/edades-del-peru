@@ -131,7 +131,9 @@ the terrain, and is rebuilt by `scripts/blender/build_caral_scenery.py --asset=p
 - `MAT-Sand_Desert` is fixed at build time by removing the procedural Base Color link that the glTF
   exporter cannot represent; the GLB exports its base color.
 - `?scenery=caral-anfiteatro` mounts the showcase.
-- Visual-only until the RTS footprint/height are validated.
+- `m1_caral` places this GLB as the secondary setpiece of the Caral landmark, on a low rectangular
+  terrace. It is visual-only; collision and pathfinding are not implemented yet. Loaded saves skip
+  the secondary setpiece because the landmark is regenerated before the snapshot is applied.
 
 ## Source manifest
 

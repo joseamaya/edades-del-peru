@@ -103,7 +103,7 @@ city in the campaign.
 - Source: `scenes/caral_rts_kit.blend`; build script:
   `scripts/blender/build_caral_scenery.py --asset=pyramid-mayor`.
 - Preview: `yarn dev` → `http://localhost:5173/?scenery=caral`.
-- Status: visual-only pilot; not yet integrated into a campaign.
+- Status: the Caral landmark on `m1_caral`; visual-only (no collision).
 
 Rebuild:
 
@@ -140,7 +140,7 @@ setpiece but can be split later.
 - `MAT-Sand_Desert` is fixed at build time by removing the unsupported procedural Base Color
   link, so the GLB exports its `baseColorFactor`.
 - Preview: `?scenery=caral-anfiteatro`.
-- Status: visual-only pilot.
+- Status: secondary setpiece of the Caral landmark on `m1_caral`; visual-only.
 
 Rebuild:
 
