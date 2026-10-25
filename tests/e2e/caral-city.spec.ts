@@ -43,7 +43,7 @@ test('the Caral scenario builds the documented Upper and Lower halves', { tag: '
         ).length
       : -1;
     const base = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center');
-    const amph = plan.placements.find((p: any) => p.kind === 'temple' && p.name === 'amphitheatre');
+    const amph = plan.placements.find((p: any) => p.modularAnchor);
     const anf = g.landmark?.getObjectByName('caral_anfiteatro');
     const anfPos = anf?.getWorldPosition(new window.THREE.Vector3());
     return {

@@ -628,9 +628,7 @@ export class Game {
         });
       if (this.pendingSnapshot) return;
       for (const setpiece of scenery.setpieces ?? []) {
-        const planned = this.setpiecePlan?.placements.find(
-          (placement) => placement.kind === 'temple' && placement.name === 'amphitheatre',
-        );
+        const planned = this.setpiecePlan?.placements.find((placement) => placement.modularAnchor);
         const site = planned ?? placeSetpiece(setpiece.padRadius);
         if (!site) {
           console.warn(`[landmark] no flat site for setpiece ${setpiece.model}`);
@@ -782,13 +780,12 @@ export class Game {
    */
   private spawnSacredCity(): void {
     if (!this.setpiecePlan) return;
-    const replaced = this.pendingSnapshot
-      ? new Set<string>()
-      : new Set(['amphitheatre', 'round_altar', 'bench_temple']);
-    const plan = {
-      ...this.setpiecePlan,
-      placements: this.setpiecePlan.placements.filter((placement) => !replaced.has(placement.name ?? '')),
-    };
+    const plan = this.pendingSnapshot
+      ? this.setpiecePlan
+      : {
+          ...this.setpiecePlan,
+          placements: this.setpiecePlan.placements.filter((placement) => !placement.modularReplaced),
+        };
     this.buildSacredCity(plan);
   }
 

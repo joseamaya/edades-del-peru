@@ -52,6 +52,10 @@ export interface CaralPlacement {
   elite?: boolean;
   /** Rooms around the patio (residential compounds). */
   rooms?: number;
+  /** The modular Anfiteatro GLB is anchored at this placement. */
+  modularAnchor?: boolean;
+  /** The rendered city omits this placement because a modular GLB replaces it. */
+  modularReplaced?: boolean;
 }
 
 export interface CaralCityPlan {
@@ -191,7 +195,12 @@ export function planCaralCity(opts: {
   // The Amphitheatre Temple is linked to the largest sunken circular plaza; the
   // game replaces this temple, the round altar and the bench temple with the
   // modular Anfiteatro GLB while keeping the plaza.
-  placements.push({ ...temple('amphitheatre', 10, 7, 3, rot(0), 1.9), ...lowerAt(-16, 1) });
+  placements.push({
+    ...temple('amphitheatre', 10, 7, 3, rot(0), 1.9),
+    ...lowerAt(-16, 1),
+    modularAnchor: true,
+    modularReplaced: true,
+  });
   placements.push({
     kind: 'sunken_plaza',
     name: 'amphitheatre_plaza',
@@ -203,8 +212,8 @@ export function planCaralCity(opts: {
   });
 
   placements.push(
-    { ...temple('round_altar', 8, 6, 3, rot(-Math.PI / 2), 1.7), ...lowerAt(15, 1) },
-    { ...temple('bench_temple', 7, 5, 2, rot(0), 1.5), ...lowerAt(14, -9) },
+    { ...temple('round_altar', 8, 6, 3, rot(-Math.PI / 2), 1.7), ...lowerAt(15, 1), modularReplaced: true },
+    { ...temple('bench_temple', 7, 5, 2, rot(0), 1.5), ...lowerAt(14, -9), modularReplaced: true },
     {
       kind: 'compound',
       name: 'Q',
