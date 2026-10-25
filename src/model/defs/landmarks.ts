@@ -31,11 +31,21 @@ export type LandmarkId =
 
 export type LandmarkSceneryModel = 'caral_pyramid_mayor' | 'caral_anfiteatro';
 
+export interface PadSize {
+  x: number;
+  z: number;
+}
+
 export interface LandmarkSetpiece {
   model: LandmarkSceneryModel;
-  /** Search/height radius; the pad may use a rectangular `padSize` instead. */
+  /** Search radius; the height radius includes the rectangular pad circumradius. */
   padRadius: number;
-  padSize?: { x: number; z: number };
+  padSize?: PadSize;
+}
+
+export function setpiecePadRadius(setpiece: LandmarkSetpiece): number {
+  if (!setpiece.padSize) return setpiece.padRadius;
+  return Math.max(setpiece.padRadius, Math.hypot(setpiece.padSize.x, setpiece.padSize.z) / 2);
 }
 
 export interface LandmarkScenery {

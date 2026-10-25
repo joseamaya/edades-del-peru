@@ -58,7 +58,12 @@ test('the Caral landmark uses the modular Pyramid Mayor and Anfiteatro GLBs', as
   await boot(page, '/?mission=m1_caral&fog=0&low=1&noloop=1');
   const info = await landmarkInfo(page);
   await page.waitForFunction(
-    () => (window as unknown as { game?: any }).game?.landmark?.getObjectByName('caral_anfiteatro') !== undefined,
+    () =>
+      (
+        window as unknown as {
+          game?: { landmark?: { getObjectByName?: (name: string) => unknown } };
+        }
+      ).game?.landmark?.getObjectByName?.('caral_anfiteatro') !== undefined,
     null,
     { timeout: 15_000 },
   );
@@ -69,9 +74,10 @@ test('the Caral landmark uses the modular Pyramid Mayor and Anfiteatro GLBs', as
     const setpiece = landmark?.getObjectByName('caral_anfiteatro');
     const setpiecePad = landmark?.getObjectByName('caral_landmark_setpiece_pad');
     const THREE = (window as unknown as { THREE: any }).THREE;
-    const count = (root: any): number => {
+    type Traversable = { traverse(callback: (object: { isMesh?: boolean }) => void): void };
+    const count = (root: Traversable | null): number => {
       let meshes = 0;
-      root?.traverse((object: any) => {
+      root?.traverse((object) => {
         if (object.isMesh) meshes++;
       });
       return meshes;
@@ -81,9 +87,7 @@ test('the Caral landmark uses the modular Pyramid Mayor and Anfiteatro GLBs', as
     const size = box?.getSize(new THREE.Vector3()) ?? null;
     setpiece?.updateWorldMatrix(true, false);
     const setpiecePos = setpiece && THREE ? setpiece.getWorldPosition(new THREE.Vector3()) : null;
-    setpiecePad?.updateWorldMatrix(true, false);
-    const setpiecePadBox = setpiecePad && THREE ? new THREE.Box3().setFromObject(setpiecePad) : null;
-    const setpiecePadSize = setpiecePadBox?.getSize(new THREE.Vector3()) ?? null;
+    const setpiecePadParams = setpiecePad?.userData?.padSize as { x: number; z: number } | undefined;
     return {
       name: model?.name ?? null,
       meshes: count(model),
@@ -95,8 +99,12 @@ test('the Caral landmark uses the modular Pyramid Mayor and Anfiteatro GLBs', as
         name: setpiece?.name ?? null,
         meshes: count(setpiece),
         pad: setpiecePad?.name ?? null,
-        padSize: setpiecePadSize
-          ? { x: setpiecePadSize.x as number, y: setpiecePadSize.y as number, z: setpiecePadSize.z as number }
+        padSize: setpiecePadParams
+          ? {
+              x: setpiecePadParams.x,
+              y: setpiecePad?.userData?.padHeight as number,
+              z: setpiecePadParams.z,
+            }
           : null,
         distance: setpiecePos
           ? Math.hypot(setpiecePos.x - landmark.position.x, setpiecePos.z - landmark.position.z)
@@ -116,11 +124,37 @@ test('the Caral landmark uses the modular Pyramid Mayor and Anfiteatro GLBs', as
   expect(child.setpiece.name).toBe('caral_anfiteatro');
   expect(child.setpiece.meshes).toBeGreaterThan(0);
   expect(child.setpiece.pad).toBe('caral_landmark_setpiece_pad');
-  expect(child.setpiece.padSize!.x).toBeGreaterThan(19);
-  expect(child.setpiece.padSize!.z).toBeGreaterThan(7.5);
-  expect(child.setpiece.padSize!.y).toBeGreaterThan(2.5);
-  expect(child.setpiece.distance!).toBeGreaterThan(20);
+  expect(child.setpiece.padSize!.x).toBeCloseTo(21, 3);
+  expect(child.setpiece.padSize!.z).toBeCloseTo(9, 3);
+  expect(child.setpiece.padSize!.y).toBeCloseTo(3, 3);
+  expect(child.setpiece.distance!).toBeGreaterThan(24.5);
   expect(child.setpiece.distance!).toBeLessThan(40);
+});
+
+test('the Caral landmark falls back when the modular GLB fails', async ({ page }) => {
+  await page.route('**/*caral_pyramid_mayor_lod0.glb*', (route) => {
+    if (route.request().url().includes('?')) return route.continue();
+    return route.abort();
+  });
+  await boot(page, '/?mission=m1_caral&fog=0&low=1&noloop=1');
+  await page.waitForFunction(
+    () =>
+      (
+        window as unknown as { game?: { landmark?: { getObjectByName?: (name: string) => unknown } } }
+      ).game?.landmark?.getObjectByName?.('caral_ceremonial_fallback') !== undefined,
+    null,
+    { timeout: 15_000 },
+  );
+  const state = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    return {
+      fallback: g.landmark?.getObjectByName('caral_ceremonial_fallback')?.name ?? null,
+      ownsStatic: g.landmarkOwnsStatic as boolean,
+    };
+  });
+  expect(state.fallback).toBe('caral_ceremonial_fallback');
+  expect(state.ownsStatic).toBe(false);
+  await page.evaluate(() => (window as unknown as { game: { destroy(): void } }).game.destroy());
 });
 
 test('period maps place their own landmark on land', async ({ page }) => {

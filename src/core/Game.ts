@@ -49,7 +49,7 @@ import {
 } from '../core/types';
 import { getCiv } from '../model/defs/civs';
 import { archProfileFor } from '../model/defs/architecture';
-import { LANDMARKS, LandmarkSetpiece } from '../model/defs/landmarks';
+import { LANDMARKS, PadSize, setpiecePadRadius } from '../model/defs/landmarks';
 import { getPeriod } from '../model/defs/periods';
 import { BuildContext, buildModel, buildLandmarkModel, disposeModel, clearModelCaches } from '../model/ProceduralModel';
 import { clearTextureCache } from '../rendering/Textures';
@@ -479,6 +479,7 @@ export class Game {
     };
     const size = this.settings.mapSize;
     const rng = new RNG(this.settings.mapSeed * 131 + 11);
+    const LANDMARK_CLEAR_RADIUS = 9;
     const clearOf = (px: number, pz: number, radius: number): boolean => {
       for (const b of this.buildings.values()) if (Math.hypot(b.pos.x - px, b.pos.z - pz) < radius) return false;
       for (const n of this.resourceNodes.values()) if (Math.hypot(n.pos.x - px, n.pos.z - pz) < radius) return false;
@@ -486,7 +487,7 @@ export class Game {
     };
     // The landmark footprint (Caral ~14 x 16, others ~12 x 16) must sit on a
     // broad, gentle pad, not on a cliff edge where its platform would clip.
-    const footprintClear = (px: number, pz: number, radius = 9): boolean => {
+    const footprintClear = (px: number, pz: number, radius = LANDMARK_CLEAR_RADIUS): boolean => {
       const h0 = this.terrain.getHeight(px, pz);
       if (this.terrain.isWater(px, pz) || this.terrain.isBeach(px, pz)) return false;
       for (let k = 0; k < 8; k++) {
@@ -494,7 +495,7 @@ export class Game {
         for (const r of [4, radius]) {
           const x = px + Math.cos(a) * r;
           const z = pz + Math.sin(a) * r;
-          if (this.terrain.isWater(x, z)) return false;
+          if (this.terrain.isWater(x, z) || this.terrain.isBeach(x, z)) return false;
           if (Math.abs(this.terrain.getHeight(x, z) - h0) > 1.1) return false;
           if (this.terrain.getSlope(x, z) > 0.45) return false;
         }
@@ -503,9 +504,9 @@ export class Game {
     };
     const placeSetpiece = (radius: number): { x: number; z: number } | null => {
       const margin = radius + 4;
-      for (let i = 0; i < 160; i++) {
+      for (let i = 0; i < 240; i++) {
         const a = rng.range(0, Math.PI * 2);
-        const r = rng.range(24, 32);
+        const r = rng.range(26, 36);
         const px = x + Math.cos(a) * r;
         const pz = z + Math.sin(a) * r;
         if (px < margin || px > size - margin || pz < margin || pz > size - margin) continue;
@@ -524,7 +525,7 @@ export class Game {
       const px = size / 2 + Math.cos(a) * r;
       const pz = size / 2 + Math.sin(a) * r;
       if (!footprintClear(px, pz)) continue;
-      if (!clearOf(px, pz, 9)) continue;
+      if (!clearOf(px, pz, LANDMARK_CLEAR_RADIUS)) continue;
       x = px;
       z = pz;
       found = true;
@@ -547,27 +548,27 @@ export class Game {
       const mainRotation = rng.range(0, Math.PI * 2);
       void loadSceneryModel(scenery.model)
         .then((model) => {
-          if (token !== this.landmarkLoadToken || this.landmark !== placeholder) {
-            disposeStaticGltf(model);
-            return;
-          }
+          model.name = scenery.model;
+          model.rotation.y = mainRotation;
+          if (!this.attachScenery(placeholder, placeholder, model, token)) return;
           const pad = this.createLandmarkPad(scenery.padRadius, 'caral_landmark_pad');
           placeholder.add(pad);
           applyFowToObject(pad, this.fowUniforms);
-          model.name = scenery.model;
-          model.rotation.y = mainRotation;
-          placeholder.add(model);
-          applyFowToObject(model, this.fowUniforms);
         })
         .catch((error: unknown) => {
           console.warn('[landmark] failed to load Caral scenery; using procedural fallback', error);
           if (token !== this.landmarkLoadToken || this.landmark !== placeholder) return;
+          this.landmarkLoadToken++;
+          this.clearLandmarkScenery(placeholder);
           const fallback = buildLandmarkModel(id, ctx);
           fallback.name = 'caral_ceremonial_fallback';
+          fallback.rotation.y = mainRotation;
           this.enableLandmarkShadows(fallback);
           placeholder.add(fallback);
           applyFowToObject(fallback, this.fowUniforms);
+          this.landmarkOwnsStatic = false;
         });
+      if (this.pendingSnapshot) return;
       for (const setpiece of scenery.setpieces ?? []) {
         const site = placeSetpiece(setpiece.padRadius);
         if (!site) {
@@ -578,7 +579,7 @@ export class Game {
         group.name = 'landmark_setpiece';
         group.position.set(
           site.x - x,
-          this.landmarkPadHeight(site.x, site.z, this.setpiecePadRadius(setpiece)) + 0.02 - placeholder.position.y,
+          this.landmarkPadHeight(site.x, site.z, setpiecePadRadius(setpiece)) + 0.02 - placeholder.position.y,
           site.z - z,
         );
         const rotation = rng.range(0, Math.PI * 2);
@@ -587,16 +588,11 @@ export class Game {
         applyFowToObject(group, this.fowUniforms);
         void loadSceneryModel(setpiece.model)
           .then((model) => {
-            if (token !== this.landmarkLoadToken || this.landmark !== placeholder) {
-              disposeStaticGltf(model);
-              return;
-            }
+            model.name = setpiece.model;
+            if (!this.attachScenery(placeholder, group, model, token)) return;
             const pad = this.createLandmarkPad(setpiece.padRadius, 'caral_landmark_setpiece_pad', setpiece.padSize);
             group.add(pad);
             applyFowToObject(pad, this.fowUniforms);
-            model.name = setpiece.model;
-            group.add(model);
-            applyFowToObject(model, this.fowUniforms);
           })
           .catch((error: unknown) => {
             console.warn(`[landmark] failed to load setpiece ${setpiece.model}`, error);
@@ -616,6 +612,23 @@ export class Game {
     this.scene.add(model);
   }
 
+  private attachScenery(placeholder: THREE.Group, parent: THREE.Object3D, model: THREE.Group, token: number): boolean {
+    if (token !== this.landmarkLoadToken || this.landmark !== placeholder) {
+      disposeStaticGltf(model);
+      return false;
+    }
+    parent.add(model);
+    applyFowToObject(model, this.fowUniforms);
+    return true;
+  }
+
+  private clearLandmarkScenery(placeholder: THREE.Group): void {
+    for (const child of [...placeholder.children]) {
+      placeholder.remove(child);
+      disposeStaticGltf(child);
+    }
+  }
+
   private enableLandmarkShadows(root: THREE.Object3D): void {
     root.traverse((object) => {
       const mesh = object as THREE.Mesh;
@@ -623,11 +636,6 @@ export class Game {
       mesh.castShadow = true;
       mesh.receiveShadow = true;
     });
-  }
-
-  private setpiecePadRadius(setpiece: LandmarkSetpiece): number {
-    if (!setpiece.padSize) return setpiece.padRadius;
-    return Math.max(setpiece.padRadius, Math.hypot(setpiece.padSize.x, setpiece.padSize.z) / 2);
   }
 
   private landmarkPadHeight(x: number, z: number, radius: number): number {
@@ -641,14 +649,52 @@ export class Game {
     return height;
   }
 
-  private createLandmarkPad(radius: number, name: string, size?: { x: number; z: number }): THREE.Mesh {
+  private createLandmarkPad(radius: number, name: string, size?: PadSize): THREE.Mesh {
     const material = new THREE.MeshStandardMaterial({ color: 0xc8b088, roughness: 1, metalness: 0 });
     let pad: THREE.Mesh;
     if (size) {
-      pad = new THREE.Mesh(new THREE.BoxGeometry(size.x, 2.6, size.z), material);
+      const topX = size.x / 2;
+      const topZ = size.z / 2;
+      const bottomX = topX + 3;
+      const bottomZ = topZ + 3;
+      const vertices = new Float32Array([
+        -topX,
+        1.5,
+        -topZ,
+        topX,
+        1.5,
+        -topZ,
+        topX,
+        1.5,
+        topZ,
+        -topX,
+        1.5,
+        topZ,
+        -bottomX,
+        -1.5,
+        -bottomZ,
+        bottomX,
+        -1.5,
+        -bottomZ,
+        bottomX,
+        -1.5,
+        bottomZ,
+        -bottomX,
+        -1.5,
+        bottomZ,
+      ]);
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+      geometry.setIndex([0, 3, 2, 0, 2, 1, 0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5, 2, 3, 7, 2, 7, 6, 3, 0, 4, 3, 4, 7]);
+      geometry.computeVertexNormals();
+      material.side = THREE.DoubleSide;
+      material.flatShading = true;
+      pad = new THREE.Mesh(geometry, material);
       pad.name = name;
-      pad.position.y = -1.32;
+      pad.position.y = -1.52;
       pad.receiveShadow = true;
+      pad.userData.padSize = { ...size };
+      pad.userData.padHeight = 3;
       return pad;
     }
     pad = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius + 2, 2.2, 32), material);

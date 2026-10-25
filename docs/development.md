@@ -55,7 +55,8 @@ Definition of Done and the building audit see
   `scripts/blender/build_caral_scenery.py --asset=…` from `caral_rts_kit.blend`; the script excludes
   market stalls and terrain. `?scenery=caral` and `?scenery=caral-anfiteatro` mount the showcases
   (`window.__sceneryDemo`). The Pyramid Mayor is the Caral landmark and the Anfiteatro is its secondary
-  setpiece (both visual-only, raised terraces, no collision); both remain in the showcase. The builder strips the unsupported procedural Base
+  setpiece (both visual-only, raised terraces, no collision); both remain in the showcase. Setpieces are
+  skipped when loading a save because the snapshot is applied after the landmark is spawned. The builder strips the unsupported procedural Base
   Color link from `MAT-Sand_Desert` so the GLB exports its `baseColorFactor`. See
   `docs/design/blender-art.md`.
 - **Building/unit materials are AI-overridable**: `mat()` (`ProceduralModel.ts`) maps a `TexKind` to an
