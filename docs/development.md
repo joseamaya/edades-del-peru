@@ -19,7 +19,7 @@ Definition of Done and the building audit see
   (see **Rigged 3D models** below); the procedural model remains the fallback during the progressive migration.
 - **PBR terrain & material textures (AI-generated)**: `src/assets/textures/{terrain,materials}/{slot}_{diffuse|normal|roughness}.webp`
   (terrain slots `sand/dirt/grass/rock/snow`; material/building/textile slots — `wall_*`, `roof_*`, `textile_*`,
-  `wood`, `adobe`, `tile`, `clay`, `mud` — loaded by `src/model/ProceduralModel.ts`, see below), consumed by
+  `wood`, `tile`, `ground_*`, `terrace_face`, `corral_brush`, `bark` — loaded by `src/model/ProceduralModel.ts`/`Biomes.ts`, see below), consumed by
   `src/rendering/Biomes.ts` via `import.meta.glob`. The terrain shader uses normal+roughness+specular when
   present and **falls back to the procedural material** if missing (offline). Generated with
   `scripts/gen_textures.py` (Cloudflare Workers AI: `@cf/black-forest-labs/flux-2-dev`, multipart inputs;

@@ -1,4 +1,4 @@
-/** Value noise + deterministic FBM in 2D/3D. */
+/** Value noise + deterministic FBM in 2D. */
 
 const PERM = new Uint8Array(512);
 (function initPerm() {
@@ -27,12 +27,6 @@ function grad2(hash: number, x: number, y: number): number {
   const v = h < 4 ? y : x;
   return (h & 1 ? -u : u) + (h & 2 ? -2 * v : 2 * v);
 }
-function grad3(hash: number, x: number, y: number, z: number): number {
-  const h = hash & 15;
-  const u = h < 8 ? x : y;
-  const v = h < 4 ? y : h === 12 || h === 14 ? x : z;
-  return (h & 1 ? -u : u) + (h & 2 ? -v : v);
-}
 
 export function noise2(x: number, y: number): number {
   const X = Math.floor(x) & 255;
@@ -50,41 +44,6 @@ export function noise2(x: number, y: number): number {
       v,
     ) *
       0.7071 +
-    0.5
-  );
-}
-
-export function noise3(x: number, y: number, z: number): number {
-  const X = Math.floor(x) & 255;
-  const Y = Math.floor(y) & 255;
-  const Z = Math.floor(z) & 255;
-  x -= Math.floor(x);
-  y -= Math.floor(y);
-  z -= Math.floor(z);
-  const u = fade(x);
-  const v = fade(y);
-  const w = fade(z);
-  const A = PERM[X] + Y;
-  const B = PERM[X + 1] + Y;
-  const AA = PERM[A] + Z;
-  const AB = PERM[A + 1] + Z;
-  const BA = PERM[B] + Z;
-  const BB = PERM[B + 1] + Z;
-  return (
-    lerp(
-      lerp(
-        lerp(grad3(PERM[AA], x, y, z), grad3(PERM[BA], x - 1, y, z), u),
-        lerp(grad3(PERM[AB], x, y - 1, z), grad3(PERM[BB], x - 1, y - 1, z), u),
-        v,
-      ),
-      lerp(
-        lerp(grad3(PERM[AA + 1], x, y, z - 1), grad3(PERM[BA + 1], x - 1, y, z - 1), u),
-        lerp(grad3(PERM[AB + 1], x, y - 1, z - 1), grad3(PERM[BB + 1], x - 1, y - 1, z - 1), u),
-        v,
-      ),
-      w,
-    ) *
-      0.6432 +
     0.5
   );
 }
