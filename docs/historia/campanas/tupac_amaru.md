@@ -19,6 +19,7 @@
 - **Desenlace documentado**: la rebelión es derrotada; se abolen el reparto y los corregimientos. Es un
   antecedente central del proceso de independencia.
 - **Mapa**: `andes`.
+- **En el juego**: valle del Cusco, ruta de Sangarará y una iglesia realista como referencia visual. El epílogo recuerda la derrota de 1781 y la abolición del reparto y los corregimientos.
 
 ## Fuentes
 

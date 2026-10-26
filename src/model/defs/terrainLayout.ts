@@ -8,6 +8,8 @@
  * (`0..1`) for terrain layouts and world units for scene keep-out rectangles.
  */
 export interface TerrainRect {
+  /** Optional documented place-name for authored layouts. */
+  name?: string;
   x: number;
   z: number;
   /** Half-extent along X. */
@@ -26,6 +28,8 @@ export interface TerrainFord {
 
 /** East-west river valley (the Supe in the Caral scenario). */
 export interface TerrainRiver {
+  /** Optional documented place-name for authored layouts. */
+  name?: string;
   /** Normalized centre line along Z at the west edge. */
   z: number;
   /** Normalized full channel width. */

@@ -253,6 +253,11 @@ Definition of Done and the building audit see
   `docs/historia/**/*.md` via `import.meta.glob(..., { query: '?raw' })`). Each mission declares `period` to
   resolve dates/coetaneous civs.
 - `src/game/Economy.ts` centralizes worker assignment (used by player and AI).
+- **Campaign geography and closure**: m2–m9 declare an authored `layout` (a fixed `base` plus at least one
+  named `terrain.river`/`terrain.flats`, a named `canal`, or a `decor` landmark). m1 keeps the Caral GLB
+  setpiece; m6 keeps the Chan Chan canal/compound and m9 the Arica port terrace/Chilean naval station as
+  visual-only decor. Every mission now has an educational `epilogue` shown on victory;
+  `tests/campaign-layout.test.ts` and the campaign E2E guard the layout data and the victory overlay.
 - **Chronology of units**: `UnitArchetype.minPeriod` (`src/model/defs/units.ts`) is the earliest historical
   period a unit is plausible in (default Arcaico). `tests/history.test.ts` forbids any campaign — including
   scripted waves/reinforcements — from spawning a unit before its `minPeriod` (no firearms, horses, vehicles

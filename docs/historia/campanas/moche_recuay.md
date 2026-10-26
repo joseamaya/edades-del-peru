@@ -12,6 +12,7 @@
   2. Repeler incursiones desde la sierra (**Recuay**).
   3. Sostener el intercambio de élite (metal, cerámica).
 - **Mapa**: `costa` + estribaciones `andes` (transición valle-sierra).
+- **En el juego**: base fija en los valles de Moche/Chicama, terrazas nombradas hasta el Callejón de Huaylas y un centro recuay decorativo. El epílogo retoma la fragmentación moche hacia el 800 d.C.
 - **Desenlace**: Moche domina la costa norte durante el Intermedio Temprano y se fragmenta hacia el 800 d.C.
 - **Nota**: el conflicto con componente bélico está **atestiguado**, aunque no como una batalla única.
 

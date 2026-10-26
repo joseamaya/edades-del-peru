@@ -16,8 +16,8 @@ export interface EducationalMission {
   context: string;
   /** Verifiable fun fact shown in the briefing. */
   didYouKnow: string;
-  /** Brief narrative closure after victory. It must not become an assessment. */
-  epilogue?: string;
+  /** Narrative closure after victory. It must not become an assessment. */
+  epilogue: string;
   sources: SourceRef[];
 }
 
@@ -61,6 +61,9 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       'de los Andes centrales. Fue una sociedad teocrática liderada por una casta sacerdotal.',
     didYouKnow:
       'No hay guerra directa documentada entre Chavín y Paracas: su emparejamiento en el juego es de coetaneidad.',
+    epilogue:
+      'Chavín declinó hacia 500–200 a.C.; su influencia artística y religiosa se fragmentó y dio paso a las ' +
+      'culturas regionales del Intermedio Temprano. El centro ceremonial dejó de ser el eje del poder andino.',
     sources: [
       { text: 'Wikipedia: Cultura chavín', url: 'https://es.wikipedia.org/wiki/Cultura_chav%C3%ADn' },
       { text: 'Wikipedia: Horizonte Temprano', url: 'https://es.wikipedia.org/wiki/Horizonte_Temprano' },
@@ -74,6 +77,9 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       'atestiguado: fortificaciones, intercambio de élite y piezas de filiación moche halladas en la sierra.',
     didYouKnow:
       'No hay una batalla única documentada Moche–Recuay, pero sí evidencia arqueológica de conflicto e intercambio.',
+    epilogue:
+      'Moche dominó la costa norte durante el Intermedio Temprano y se fragmentó hacia el 800 d.C. La ' +
+      'interacción con Recuay combinó conflicto, intercambio de élite y circulación de objetos entre costa y sierra.',
     sources: [
       { text: 'PUCP: interacciones Moche–Recuay (revistas de arqueología).' },
       { text: 'Wikipedia: Cultura moche', url: 'https://es.wikipedia.org/wiki/Cultura_moche' },
@@ -88,6 +94,9 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       'planificadas y caminos, y aseguró los andenes agrícolas. Ambos colapsan hacia 1000–1100 d.C.',
     didYouKnow:
       'No existe una guerra única documentada Wari–Tiahuanaco: su rivalidad fue de coetaneidad y competencia de influencia.',
+    epilogue:
+      'Wari y Tiahuanaco colapsaron hacia 1000–1100 d.C. El Horizonte Medio dio paso al Intermedio Tardío; ' +
+      'la red de centros y andenes fue una forma de expansión e influencia, no una guerra única documentada.',
     sources: [
       { text: 'Wikipedia: Horizonte Medio', url: 'https://es.wikipedia.org/wiki/Horizonte_Medio' },
       { text: 'Wikipedia: Cultura wari', url: 'https://es.wikipedia.org/wiki/Cultura_wari' },
@@ -101,6 +110,9 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       'expansión del Tahuantinsuyo.',
     didYouKnow:
       'Según las crónicas, los cusqueños resistieron con aliados y la leyenda de los pururaucas, «soldados de piedra».',
+    epilogue:
+      'Los chancas se rindieron y luego se integraron como aliados militares del Tahuantinsuyo. Cusi Yupanqui ' +
+      'asumió el poder como Pachacútec e inició la expansión incaica desde el Cusco.',
     sources: [
       { text: 'Wikipedia: Cultura chanca', url: 'https://es.wikipedia.org/wiki/Cultura_chanca' },
       { text: 'Betanzos, J. (1551). Suma y narración de los incas.' },
@@ -113,6 +125,9 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       'ciudad, en pleno desierto, capituló. Minchancaman fue llevado preso al Cusco y su territorio se repartió ' +
       'en huamanis.',
     didYouKnow: 'El arma decisiva no fue la espada sino el agua: cortar el canal doblegó a Chan Chan.',
+    epilogue:
+      'Chan Chan capituló; Minchancaman fue llevado preso al Cusco y el territorio chimú se repartió en ' +
+      'huamanis. Querrotumi se sublevó en 1475 y fue vencido. La costa norte quedó integrada al Tahuantinsuyo.',
     sources: [
       { text: 'Wikipedia: Guerra chimú-inca', url: 'https://es.wikipedia.org/wiki/Guerra_chim%C3%BA-inca' },
       { text: 'Cieza de León, P. y otros cronistas; «Discurso de la Descendencia» (1542).' },
@@ -126,6 +141,9 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       '1781; aunque la rebelión fue derrotada, abolió el reparto y los corregimientos y fue un antecedente de la ' +
       'independencia.',
     didYouKnow: 'Túpac Amaru II decretó la abolición de la esclavitud el 16 de noviembre de 1780.',
+    epilogue:
+      'La rebelión fue derrotada y Túpac Amaru II fue ejecutado en el Cusco en 1781. Se abolieron el reparto ' +
+      'y los corregimientos, y la rebelión quedó como antecedente central del proceso de independencia.',
     sources: [
       { text: "O'Phelan Godoy, S. (2021). La gran rebelión de Túpac Amaru II." },
       {
