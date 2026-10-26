@@ -43,10 +43,6 @@ function sortRecords(records: ArtManifestRecord[]): ArtManifestRecord[] {
   return [...records].sort((a, b) => typeOrder(a.type) - typeOrder(b.type) || a.id.localeCompare(b.id));
 }
 
-export function isArtVisible(record: ArtManifestRecord, options: ArtLookupOptions = {}): boolean {
-  return visible(record, options);
-}
-
 export function artForMission(missionId: string, options: ArtLookupOptions = {}): ArtManifestRecord[] {
   return sortRecords(ART_MANIFEST.assets.filter((a) => a.missionId === missionId && visible(a, options)));
 }
@@ -63,18 +59,6 @@ export function artForCampaign(campaignId: string, options: ArtLookupOptions = {
 
 export function artIntroForCampaign(campaignId: string, options: ArtLookupOptions = {}): ArtManifestRecord | undefined {
   return artForCampaign(campaignId, options).find((a) => a.type === 'campaign-intro');
-}
-
-export function artForCivilization(civilization: string, options: ArtLookupOptions = {}): ArtManifestRecord[] {
-  return sortRecords(ART_MANIFEST.assets.filter((a) => a.civilization === civilization && visible(a, options)));
-}
-
-export function artForTopic(
-  civilization: string,
-  topic: string,
-  options: ArtLookupOptions = {},
-): ArtManifestRecord | undefined {
-  return artForCivilization(civilization, options).find((a) => a.topic === topic);
 }
 
 /** Resolve a `public/` asset path to a cache-busted URL. */

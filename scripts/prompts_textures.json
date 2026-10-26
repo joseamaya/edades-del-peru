@@ -13,9 +13,6 @@
     "snow": "seamless tileable texture of high-altitude puna ground, pale dry alpine soil with light frost and very sparse grass, top-down view, evenly lit, no shadows, photorealistic PBR albedo, high detail"
   },
   "materials": {
-    "clay": "seamless tileable texture of fired red clay ceramic surface, smooth terracotta with subtle mottling, evenly lit, photorealistic PBR albedo, high detail",
-    "mud": "seamless tileable texture of wet mud plaster surface, earthy brown clay daub with slight straw fibers, evenly lit, photorealistic PBR albedo, high detail",
-    "adobe": "seamless tileable texture of adobe mudbrick wall, sun-dried clay blocks with straw, warm tan-brown, evenly lit, photorealistic PBR albedo, high detail",
     "tile": "seamless tileable texture of terracotta roof tiles, curved clay tiles in rows, weathered orange-brown, evenly lit, photorealistic PBR albedo, high detail",
     "wood": "seamless tileable texture of weathered wooden planks, warm brown linear grain, slightly rough, evenly lit, photorealistic PBR albedo, high detail",
     "textile": "seamless tileable texture of Andean woven textile, geometric stepped and striped pattern in red, ochre, indigo and cream, tight weave, evenly lit, photorealistic PBR albedo, high detail"
@@ -34,11 +31,15 @@
   "textiles": {
     "textile_inca": {
       "prompt": "seamless tileable Andean tapestry weave with Inca tocapu geometric motifs, small repeating stepped diamonds and squares in red, ochre, indigo and cream, fine tight weave, evenly lit, photorealistic PBR albedo, high detail",
-      "refs": ["textile_inca.png"]
+      "refs": [
+        "textile_inca.png"
+      ]
     },
     "textile_wari": {
       "prompt": "seamless tileable Andean tapestry weave with Wari geometric motifs, gridded stepped diagonals and hook shapes in red, tan and teal, fine tight weave, evenly lit, photorealistic PBR albedo, high detail",
-      "refs": ["textile_wari.png"]
+      "refs": [
+        "textile_wari.png"
+      ]
     },
     "textile_tiahuanaco": "seamless tileable Andean tapestry weave with Tiahuanaco motifs of staff-god and stepped geometric bands in red, ochre and indigo, evenly lit, photorealistic PBR albedo, high detail",
     "textile_moche": "seamless tileable Andean textile with Moche stepped-fret wave patterns in red, ochre and cream, evenly lit, photorealistic PBR albedo, high detail",
@@ -46,7 +47,9 @@
     "textile_paracas": "seamless tileable Andean textile with Paracas embroidered geometric and feather-like motifs in red, gold and indigo, evenly lit, photorealistic PBR albedo, high detail",
     "textile_nazca": {
       "prompt": "seamless tileable Andean textile with Nazca geometric trophy-head and stepped motifs in red, ochre and cream, evenly lit, photorealistic PBR albedo, high detail",
-      "refs": ["textile_nazca.png"]
+      "refs": [
+        "textile_nazca.png"
+      ]
     },
     "textile_chimu": "seamless tileable Andean textile with Chimu felines and feather motifs in ochre, red and cream, evenly lit, photorealistic PBR albedo, high detail"
   },
@@ -59,7 +62,6 @@
     "terrace_face": "seamless tileable texture of the retaining face of an Andean agricultural terrace, stacked rough fieldstone wall with dry earth and sparse grass, evenly lit, photorealistic PBR albedo, high detail",
     "wall_drystone": "seamless tileable texture of a dry-stone Andean field wall, irregular grey stones stacked without mortar, evenly lit, photorealistic PBR albedo, high detail",
     "corral_brush": "seamless tileable texture of a woven brush livestock fence, dry branches and twigs tightly bound, warm brown, evenly lit, photorealistic PBR albedo, high detail",
-    "resource_rock": "seamless tileable texture of mineral-bearing Andean rock, grey andesite with metallic silver-grey ore veins, evenly lit, photorealistic PBR albedo, high detail",
     "bark": "seamless tileable texture of tree bark, rough brown vertical ridges and crevices, evenly lit, photorealistic PBR albedo, high detail"
   }
 }
