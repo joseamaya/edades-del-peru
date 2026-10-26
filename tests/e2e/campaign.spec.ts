@@ -341,6 +341,37 @@ test('m4 two centers open the contested frontier', async ({ page }) => {
   expect(out.won).not.toBe(true);
 });
 
+test('m9 land defense fails when Bolognesi falls', async ({ page }) => {
+  await page.goto('/?mission=m9_guerra_pacifico&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
+    const bolognesi = [...g.units.values()].find((u: any) => u.tag === 'bolognesi') as any;
+    const before = {
+      active: m.getObjectiveState('obj_bolognesi') as string,
+      alive: !!bolognesi && !bolognesi.dead,
+    };
+    bolognesi.die();
+    g.update(1 / 60, 0);
+    return {
+      before,
+      after: m.getObjectiveState('obj_bolognesi') as string,
+      ended: m.ended as boolean,
+      won: m.won as boolean | null,
+    };
+  });
+  expect(out.before.alive).toBe(true);
+  expect(out.before.active).toBe('activo');
+  expect(out.after).toBe('failed');
+  expect(out.ended).toBe(true);
+  expect(out.won).toBe(false);
+});
+
 test('m8 holds Junín and then Ayacucho with Sucre alive', async ({ page }) => {
   await page.goto('/?mission=m8_independencia&seed=777&fog=0&low=1&noloop=1');
   await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {

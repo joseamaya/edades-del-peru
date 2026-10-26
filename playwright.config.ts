@@ -7,7 +7,13 @@ const workers = Number.isFinite(envWorkers) && envWorkers > 0 ? envWorkers : pro
 
 // Heaviest specs: excluded from the `fast` project (quick local runs) and covered
 // by the `slow` project / nightly workflow. The default `yarn test:e2e` runs both.
-const SLOW_SPECS = ['**/ai.spec.ts', '**/campaign-completable.spec.ts', '**/settlement.spec.ts', '**/save.spec.ts'];
+const SLOW_SPECS = [
+  '**/ai.spec.ts',
+  '**/campaign-completable.spec.ts',
+  '**/campaign-playtest.spec.ts',
+  '**/settlement.spec.ts',
+  '**/save.spec.ts',
+];
 
 export default defineConfig({
   testDir: './tests/e2e',
