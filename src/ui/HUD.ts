@@ -921,6 +921,16 @@ export class HUD {
       const open = this.game.isCanalOpen();
       this.addCommand(open ? '💧 Cerrar compuerta' : '💧 Abrir compuerta', () => this.game.toggleCanal());
     }
+    if (heritage.operation === 'assembly') {
+      const state = this.game.getAssemblyState();
+      if (state === 'pendiente') {
+        this.addCommand('🏛️ Convocar asamblea', () => this.game.startAssembly());
+      } else if (state === 'activo') {
+        this.addCommand('⏳ Asamblea en curso', () => {});
+      } else if (state === 'completed') {
+        this.addCommand('✓ Asamblea realizada', () => {});
+      }
+    }
     this.addCommand(visited ? '✓ Ficha registrada' : '🔎 Visitar', () => this.game.visitHeritage(heritage.id));
   }
 
@@ -971,6 +981,7 @@ export class HUD {
         heritage.id +
         (this.game.isHeritageVisited(heritage.id) ? ':v' : '') +
         (heritage.operation === 'toggle-canal' ? ':c' + Number(this.game.isCanalOpen()) : '') +
+        (heritage.operation === 'assembly' ? ':a' + this.game.getAssemblyState() : '') +
         tail
       );
     return 'idle' + tail;

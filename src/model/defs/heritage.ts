@@ -19,7 +19,7 @@ export interface HeritageBuildingDef {
   confidence: string;
   citation: string;
   /** Optional scenario operation exposed by the field card. */
-  operation?: 'toggle-canal';
+  operation?: 'toggle-canal' | 'assembly';
   sources: string[];
 }
 
@@ -30,9 +30,10 @@ export const HERITAGE_BUILDINGS: Record<HeritageBuildingId, HeritageBuildingDef>
     sector: 'Caral Alto',
     role: 'Complejo ceremonial principal',
     summary:
-      'La Gran Pirámide y la Plaza Central articulan el sector ceremonial del Caral Alto. La reconstrucción combina la planta documentada con remates y techos inferidos.',
+      'La Gran Pirámide y la Plaza Central articulan el sector ceremonial del Caral Alto. La reconstrucción combina la planta documentada con remates y techos inferidos. La plaza permite convocar una asamblea comunal como abstracción jugable.',
     confidence: 'documentado en planta; remates inferidos',
     citation: 'Dossier de Caral · UNESCO / Zona Arqueológica Caral',
+    operation: 'assembly',
     sources: ['docs/historia/civilizaciones/caral.md', 'docs/historia/arquitectura.md'],
   },
   caral_pyramid_central: {
