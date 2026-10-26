@@ -156,15 +156,20 @@ test('plays m1 Caral with real construction and gathering, without objective che
 
     const dt = 1 / 60;
     let t = 0;
+    let observed = false;
     for (let i = 0; i < Math.ceil(330 / dt) && !g.mission.ended; i++) {
+      if (!observed && Math.hypot(scout.pos.x - landmark.x, scout.pos.z - landmark.z) < 14) {
+        g.visitHeritage('caral_pyramid_mayor');
+        observed = true;
+      }
       // after the three builders finish, put two of them on the farms
       if (
         buildings.length === 3 &&
         buildings.every((b) => b.constructionComplete) &&
         workers[0].orderQueue.length === 0
       ) {
-        for (const [i, worker] of [workers[0], workers[1]].entries()) {
-          const farm = buildings[i];
+        for (const [farmIndex, worker] of [workers[0], workers[1]].entries()) {
+          const farm = buildings[farmIndex];
           if (farm && !farm.dead) {
             g.executeCommand(
               { kind: 'order', unitIds: [worker.id], order: { kind: 'gather', entityId: farm.id }, clear: true },

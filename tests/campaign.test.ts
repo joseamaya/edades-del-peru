@@ -63,7 +63,11 @@ describe('campaign educational content', () => {
     expect(caral.objectives.some((o) => o.buildingKind === BuildingKind.FARM)).toBe(true);
     expect(caral.objectives.some((o) => o.buildingKind === BuildingKind.MILL)).toBe(true);
     expect(caral.objectives.some((o) => o.kind === 'gather' && o.resource === 'food')).toBe(true);
-    expect(caral.objectives.some((o) => o.id === 'obj_complejo' && o.kind === 'reach')).toBe(true);
+    expect(
+      caral.objectives.some(
+        (o) => o.id === 'obj_complejo' && o.kind === 'inspect' && o.heritageIds?.includes('caral_pyramid_mayor'),
+      ),
+    ).toBe(true);
     expect(caral.objectives.some((o) => o.kind === 'survive')).toBe(true);
 
     const edu = getEducational('m1_caral')!;
@@ -105,7 +109,7 @@ describe('campaign educational content', () => {
       // non-combat objectives only, and it teaches building
       const nonCombat =
         id === 'm1_caral'
-          ? ['gather', 'build', 'survive', 'hold', 'inspect', 'canal_open', 'reach']
+          ? ['gather', 'build', 'survive', 'hold', 'inspect', 'canal_open']
           : ['gather', 'build', 'survive', 'hold'];
       for (const o of mis.objectives) expect(nonCombat, `${id}/${o.id}`).toContain(o.kind);
       expect(

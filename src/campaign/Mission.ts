@@ -1,20 +1,20 @@
 import type { Game } from '../core/Game';
 import type { Unit } from '../entities/Unit';
 import type { Building } from '../entities/Building';
-import { MissionDef, ObjectiveDef, ObjectiveKind, TriggerDef, TriggerEffect, MissionPoint } from './types';
+import {
+  MissionDef,
+  ObjectiveDef,
+  ObjectiveKind,
+  ObjectiveProgress,
+  ObjState,
+  TriggerDef,
+  TriggerEffect,
+  MissionPoint,
+} from './types';
 import { OrderKind, BuildingKind } from '../core/types';
 import { distance2D } from '../util/math';
 import { commanderFor } from '../model/defs/commanders';
 import type { MissionSave } from '../game/saveTypes';
-
-export type ObjState = 'pendiente' | 'activo' | 'completed' | 'failed';
-
-/** HUD-facing numeric progress for an objective that has a measurable target. */
-export interface ObjectiveProgress {
-  current: number;
-  target: number;
-  format: 'count' | 'time';
-}
 
 /**
  * Mission controller: evaluates objectives and triggers every frame,
@@ -80,6 +80,10 @@ export class Mission {
                 })
               : { x: 0, z: 0 };
     return { x: ref.x + p.dx, z: ref.z + p.dz };
+  }
+
+  private objective(id: string): ObjectiveDef | undefined {
+    return this.def.objectives.find((o) => o.id === id);
   }
 
   private byTag(tag: string): (Unit | Building)[] {
@@ -412,7 +416,7 @@ export class Mission {
 
   /** World anchor of an active objective, for the minimap. */
   getObjectiveAnchor(id: string): { x: number; z: number } | null {
-    const o = this.def.objectives.find((x) => x.id === id);
+    const o = this.objective(id);
     if (!o) return null;
     if (o.kind === 'canal_open') return this.game.canalSite;
     return o.pos ? this.resolvePoint(o.pos) : null;
@@ -425,7 +429,7 @@ export class Mission {
 
   /** Activate a hidden or pending objective (e.g. a field-card action). */
   activateObjective(id: string): boolean {
-    const def = this.def.objectives.find((o) => o.id === id);
+    const def = this.objective(id);
     if (!def || this.objState.get(id) !== 'pendiente') return false;
     this.objState.set(id, 'activo');
     this.game.hud?.showToast('Nuevo objetivo: ' + def.title, 'info');
@@ -434,7 +438,7 @@ export class Mission {
 
   /** Numeric progress for the HUD, or null for objectives without a meter. */
   getObjectiveProgress(id: string): ObjectiveProgress | null {
-    const o = this.def.objectives.find((x) => x.id === id);
+    const o = this.objective(id);
     if (!o) return null;
     const p = this.game.players[0];
     switch (o.kind) {

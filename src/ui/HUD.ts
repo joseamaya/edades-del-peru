@@ -25,7 +25,7 @@ import { MISSIONS, CAMPAIGN_ID, CAMPAIGN_TITLE, CAMPAIGN_SUBTITLE } from '../cam
 import { artIntroForCampaign, artIntroForMission } from '../art/manifest';
 import { artFigureHtml, includeUnreviewedArt } from './ArtFigure';
 import { PROLOGUE, getEducational } from '../campaign/defs/educational';
-import type { MissionDef } from '../campaign/types';
+import type { MissionDef, ObjectiveProgress, ObjState } from '../campaign/types';
 import { COMMANDERS, type PortraitId } from '../model/defs/commanders';
 import type { HeritageBuildingDef } from '../model/defs/heritage';
 import { portraitSvg } from './Portrait';
@@ -635,16 +635,19 @@ export class HUD {
     const titles = this.objectiveTitles(items.map(({ def }) => def));
     this.objListEl.innerHTML = items
       .map(({ def, state }, i) => {
-        const mark = state === 'completed' ? '✔' : state === 'failed' ? '✖' : '○';
         const cls = state === 'completed' ? 'done' : state === 'failed' ? 'failed' : '';
         const progress = state === 'activo' ? mis.getObjectiveProgress(def.id) : null;
         const suffix = progress ? ` (${this.objectiveProgressText(progress)})` : '';
-        return `<div class="obj ${cls}"><span class="mark">${mark}</span><span>${titles[i]}${suffix}</span></div>`;
+        return `<div class="obj ${cls}"><span class="mark">${this.objectiveMark(state)}</span><span>${titles[i]}${suffix}</span></div>`;
       })
       .join('');
   }
 
-  private objectiveProgressText(p: { current: number; target: number; format: 'count' | 'time' }): string {
+  private objectiveMark(state: ObjState): string {
+    return state === 'completed' ? '✔' : state === 'failed' ? '✖' : '○';
+  }
+
+  private objectiveProgressText(p: ObjectiveProgress): string {
     if (p.format === 'time') return `${this.clockText(p.current)} / ${this.clockText(p.target)}`;
     const current = Math.max(0, Math.min(p.current, p.target));
     return `${Math.floor(current)}/${p.target}`;
@@ -802,14 +805,12 @@ export class HUD {
           .join('<br>')}</div>`
       : '';
     const peaceful = mis?.enemy.active === false;
-    const stats = peaceful
-      ? `Unidades creadas: <b>${p?.stats.created ?? 0}</b><br>
-         Fichas patrimoniales visitadas: <b>${this.game.getVisitedHeritage().length}</b><br>
-         Periodo: <b>${getPeriod(this.game.settings.period).name}</b>`
-      : `Bajas infligidas: <b>${p?.kills ?? 0}</b><br>
-         Unidades creadas: <b>${p?.stats.created ?? 0}</b><br>
+    const commonStats = `Unidades creadas: <b>${p?.stats.created ?? 0}</b><br>
          Periodo: <b>${getPeriod(this.game.settings.period).name}</b>`;
-    const next = victory && mis ? MISSIONS[MISSIONS.findIndex((m) => m.id === mis.id) + 1] : undefined;
+    const stats = peaceful
+      ? `Fichas patrimoniales visitadas: <b>${this.game.getVisitedHeritage().length}</b><br>${commonStats}`
+      : `Bajas infligidas: <b>${p?.kills ?? 0}</b><br>${commonStats}`;
+    const next = victory ? this.nextMission(mis?.id) : undefined;
     panel.innerHTML = `
       <h2 style="color:${victory ? 'var(--green)' : 'var(--red)'}">${title}</h2>
       <div class="sub" style="white-space:pre-line;line-height:1.6">${sub}</div>
@@ -836,6 +837,12 @@ export class HUD {
     menu.addEventListener('click', () => {
       location.href = location.pathname + '?menu=1';
     });
+  }
+
+  private nextMission(id?: string): MissionDef | undefined {
+    if (!id) return undefined;
+    const index = MISSIONS.findIndex((m) => m.id === id);
+    return index >= 0 ? MISSIONS[index + 1] : undefined;
   }
 
   /** Leave the match (respects the active campaign). */

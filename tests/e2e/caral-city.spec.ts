@@ -178,6 +178,27 @@ test('the Caral tutorial hides the shortcut help while it is open', async ({ pag
   await expect(page.locator('#ed-help')).toBeHidden();
 });
 
+test('the Caral HUD keeps the tutorial and objectives separate at both review sizes', async ({ page }) => {
+  await boot(page);
+  await expect(page.locator('#ed-tutorial')).toBeVisible({ timeout: 30_000 });
+  for (const viewport of [
+    { width: 1280, height: 800 },
+    { width: 1600, height: 900 },
+  ]) {
+    await page.setViewportSize(viewport);
+    const tutorial = await page.locator('#ed-tutorial').boundingBox();
+    const objectives = await page.locator('#ed-objectives').boundingBox();
+    expect(tutorial).not.toBeNull();
+    expect(objectives).not.toBeNull();
+    const overlap =
+      tutorial!.x < objectives!.x + objectives!.width &&
+      tutorial!.x + tutorial!.width > objectives!.x &&
+      tutorial!.y < objectives!.y + objectives!.height &&
+      tutorial!.y + tutorial!.height > objectives!.y;
+    expect(overlap, `${viewport.width}x${viewport.height}`).toBe(false);
+  }
+});
+
 test('a peaceful victory summarises optional achievements and offers the next mission', async ({ page }) => {
   await boot(page);
   await page.evaluate(() => {
@@ -249,6 +270,8 @@ test('opening the Caral canal raises the yield at its banks', async ({ page }) =
       site: g.canalSite,
       open: g.isCanalOpen(),
       yield: g.farmYieldAt(g.canalSite.x, g.canalSite.z),
+      waterColor: g.canalWater.material.color.getHex(),
+      gateY: g.canalGate.position.y,
     };
   });
   expect(before.site).not.toBeNull();
@@ -269,10 +292,17 @@ test('opening the Caral canal raises the yield at its banks', async ({ page }) =
   await page.getByRole('button', { name: /Abrir compuerta/ }).click();
   const after = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    return { open: g.isCanalOpen(), yield: g.farmYieldAt(g.canalSite.x, g.canalSite.z) };
+    return {
+      open: g.isCanalOpen(),
+      yield: g.farmYieldAt(g.canalSite.x, g.canalSite.z),
+      waterColor: g.canalWater.material.color.getHex(),
+      gateY: g.canalGate.position.y,
+    };
   });
   expect(after.open).toBe(true);
   expect(after.yield).toBeGreaterThan(before.yield);
+  expect(after.waterColor).not.toBe(before.waterColor);
+  expect(after.gateY).toBeGreaterThan(before.gateY);
   await page.waitForFunction(
     () => (window as unknown as { game?: any }).game?.mission?.objState.get('obj_riego') === 'completed',
     null,

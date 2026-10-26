@@ -63,6 +63,10 @@ for (const mis of MISSIONS) {
                 if (b.owner !== 0 && !b.dead && (!o.entityTag || b.tag === o.entityTag)) b.die();
               }
               break;
+            case 'inspect': {
+              for (const id of o.heritageIds ?? []) g.visitHeritage(id);
+              break;
+            }
             case 'reach': {
               if (!o.pos) break;
               const base =
@@ -77,7 +81,6 @@ for (const mis of MISSIONS) {
                         : { x: 0, z: 0 };
               const tp = { x: base.x + o.pos.dx, z: base.z + o.pos.dz };
               for (const u of g.units.values()) {
-                // an untagged reach objective accepts any player unit
                 if (u.owner === 0 && !u.dead && (!o.entityTag || u.tag === o.entityTag)) {
                   u.pos.set(tp.x, g.terrain.getHeight(tp.x, tp.z), tp.z);
                 }

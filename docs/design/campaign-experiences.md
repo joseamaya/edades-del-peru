@@ -31,9 +31,9 @@ What the player does:
    shows the reserve and terrain bonus.
 3. Builds a communal store (the game's Troje) to represent the surplus. Both names are gameplay abstractions,
    not attested Caral terms; selecting either building shows its historical field card.
-4. Reaches the food target and keeps the settlement standing for five minutes.
-5. Reaches and observes the ceremonial complex; the required `obj_complejo` completes on arrival,
-   making the monumental sector part of the victory rather than a tutorial-only step.
+4. Observes the ceremonial complex; the required `obj_complejo` completes when the Gran Pirámide /
+   Plaza Central field card is opened, making the monumental sector part of the victory.
+5. Reaches the food target and keeps the settlement standing for five minutes.
 6. Optional: opens the communal canal gate; nearby Andenes gain irrigation yield and the `obj_riego`
    bonus completes.
 7. Optional: clicks the six Upper-Half pyramids, reads their field cards and can record each visit;

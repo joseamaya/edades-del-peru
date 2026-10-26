@@ -9,7 +9,7 @@ import type {
   CombatStance,
 } from '../core/types';
 import type { GameSettings } from '../core/Config';
-import type { ObjState } from '../campaign/Mission';
+import type { ObjState } from '../campaign/types';
 import type { HeritageBuildingId } from '../model/defs/heritage';
 
 /** Bump on a breaking snapshot change; adding optional fields is fine. */

@@ -76,10 +76,10 @@ camera framing and the warm desert palette.
   confidence and sources; “Visitar” records the card without gating progress. The communal canal
   has a gate operation that raises the irrigation yield of nearby Andenes. Player-owned Andenes
   and Trojes in m1 also show their historical field cards (`src/model/defs/buildingCards.ts`).
-  The mission also requires reaching and observing the ceremonial complex (`obj_complejo`); its
-  location is a gold minimap pip and the objectives panel shows live progress. The
-  Gran Pirámide/Plaza Central card can activate the hidden `obj_asamblea`: a 20-second worker
-  hold in the plaza, with no resource reward and no victory gate.
+  The mission also requires observing the ceremonial complex: `obj_complejo` completes when the
+  Gran Pirámide / Plaza Central field card is opened. Its landmark is a gold minimap pip and the
+  objectives panel shows live progress. The same card can activate the hidden `obj_asamblea`:
+  a 20-second worker hold in the plaza, with no resource reward and no victory gate.
 - Wiring: `src/core/Game.ts` (reserved footprints, fixed base, landmark, intro)
   and `src/rendering/Water.ts` (map-aligned depth sampling for inland rivers).
 

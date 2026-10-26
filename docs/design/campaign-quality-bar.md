@@ -32,7 +32,7 @@ objectives can be satisfied by a test harness.
 | Onboarding | Met | Six-step tutorial, briefing, Codex, minimap destination pips. |
 | Closure | Met | Epilogue, optional-achievement summary and “Continuar” to m2. |
 | UX | Met | Reviewed at 1280×800 and 1600×900; tutorial dialogue and result layout do not hide controls. |
-| Visuals | Met | Authored Caral set-piece plus modular GLBs; current screenshots in `review/` for review. |
+| Visuals | Met | Authored Caral set-piece plus modular GLBs; current 1280/1600 captures in `review/`, canal state change and HUD layout covered by E2E. |
 | Persistence | Met | Heritage, canal, farm yield, tutorial and mission state round-trip; E2E covers the Caral save. |
 | Tests | Met | Unit tests, campaign/city E2E, real-command playtest, `yarn verify:fast` and CI. |
 | Docs | Met | README, dossier, campaign experiences and Caral design notes aligned. |

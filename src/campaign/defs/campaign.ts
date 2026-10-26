@@ -94,10 +94,11 @@ export const MISSIONS: MissionDef[] = [
       },
       {
         id: 'obj_complejo',
-        kind: 'reach',
+        kind: 'inspect',
         pos: { ref: 'landmark', dx: 0, dz: 0 },
         radius: 14,
-        title: 'Llega al complejo ceremonial y observa sus plazas y pirámides',
+        heritageIds: ['caral_pyramid_mayor'],
+        title: 'Observa la Gran Pirámide y la Plaza Central',
       },
       { id: 'obj_sostener', kind: 'survive', time: 300, title: 'Sostén el asentamiento 5 minutos' },
       {
@@ -179,7 +180,7 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'Las plazas y pirámides de Caral Alto muestran el excedente y el trabajo comunal del valle.',
+            text: 'La escala de plazas y pirámides se asocia al excedente y al trabajo comunal; es una interpretación arqueológica, no un registro escrito.',
           },
         ],
       },
