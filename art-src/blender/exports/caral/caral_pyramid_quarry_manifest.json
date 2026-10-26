@@ -1,0 +1,66 @@
+{
+  "asset_id": "caral_pyramid_quarry",
+  "source_scene": "scenes/caral_rts_kit.blend",
+  "source_objects": [
+    "GEO-Caral_PiramideCantera_LOD0"
+  ],
+  "scale": 0.08,
+  "lod1_ratio": 0.4,
+  "root": "GEO-Caral_PyramidQuarry",
+  "lods": {
+    "LOD0": {
+      "file": "caral_pyramid_quarry_lod0.glb",
+      "triangles": 792,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Fire_Ember",
+        "MAT-Plaster_White",
+        "MAT-Stone_Granodiorite"
+      ],
+      "bounds": {
+        "min": [
+          -2.7452,
+          -2.0004,
+          0.0
+        ],
+        "max": [
+          2.7452,
+          2.0004,
+          1.2552
+        ],
+        "size": [
+          5.4904,
+          4.0008,
+          1.2552
+        ]
+      }
+    },
+    "LOD1": {
+      "file": "caral_pyramid_quarry_lod1.glb",
+      "triangles": 298,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Fire_Ember",
+        "MAT-Plaster_White",
+        "MAT-Stone_Granodiorite"
+      ],
+      "bounds": {
+        "min": [
+          -2.7452,
+          -2.0004,
+          0.0
+        ],
+        "max": [
+          2.7452,
+          2.0004,
+          1.2552
+        ],
+        "size": [
+          5.4904,
+          4.0008,
+          1.2552
+        ]
+      }
+    }
+  }
+}

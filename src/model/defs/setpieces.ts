@@ -134,11 +134,15 @@ export function planCaralCity(opts: {
   placements.push({ kind: 'plaza', name: 'central_plaza', ...at(upper, 0, 0), yaw, width: 16 * s, depth: 10 * s });
 
   // The other five pyramids of the Upper Half. The Great Pyramid is the landmark.
-  const central = { ...pyramid('central', 0, 0, 11, 7, 4, rot(0)), ...at(upper, -11, -11) };
-  const quarry = { ...pyramid('quarry', 0, 0, 10, 7, 3, rot(Math.PI)), ...at(upper, -11, 9) };
-  const lesser = { ...pyramid('lesser', 0, 0, 8, 6, 3, rot(Math.PI)), ...at(upper, 9, 9) };
-  const gallery = { ...pyramid('gallery', 0, 0, 11, 8, 4, rot(-Math.PI / 2)), ...at(upper, 14, -4) };
-  const huanca = { ...pyramid('huanca', 0, 0, 9, 7, 3, rot(-Math.PI / 2)), ...at(upper, 15, 6) };
+  const central = { ...pyramid('central', 0, 0, 11, 7, 4, rot(0)), ...at(upper, -11, -11), modularReplaced: true };
+  const quarry = { ...pyramid('quarry', 0, 0, 10, 7, 3, rot(Math.PI)), ...at(upper, -11, 9), modularReplaced: true };
+  const lesser = { ...pyramid('lesser', 0, 0, 8, 6, 3, rot(Math.PI)), ...at(upper, 9, 9), modularReplaced: true };
+  const gallery = {
+    ...pyramid('gallery', 0, 0, 11, 8, 4, rot(-Math.PI / 2)),
+    ...at(upper, 14, -4),
+    modularReplaced: true,
+  };
+  const huanca = { ...pyramid('huanca', 0, 0, 9, 7, 3, rot(-Math.PI / 2)), ...at(upper, 15, 6), modularReplaced: true };
   placements.push(central, quarry, lesser, gallery, huanca);
 
   // Open plazas in front of each stair (the Great Pyramid's sunken plaza is part

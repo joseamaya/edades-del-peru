@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 const URL = '/?mission=m1_caral&seed=3000&fog=0&low=1&noloop=1';
 
-async function boot(page: import('@playwright/test').Page) {
+async function boot(page: import('@playwright/test').Page, requireModules = true) {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(URL);
@@ -10,9 +10,22 @@ async function boot(page: import('@playwright/test').Page) {
   await expect(overlay).toBeVisible({ timeout: 30_000 });
   await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
   await overlay.waitFor({ state: 'detached', timeout: 15_000 });
-  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.setpiece !== undefined, null, {
-    timeout: 30_000,
-  });
+  await page.waitForFunction(
+    (expectModules: boolean) => {
+      const g = (window as unknown as { game?: any }).game;
+      const landmark = g?.landmark;
+      if (g?.setpiece === undefined || landmark === undefined) return false;
+      if (!expectModules) return true;
+      return (
+        landmark.getObjectByName('caral_pyramid_mayor') !== undefined &&
+        ['central', 'quarry', 'lesser', 'gallery', 'huanca'].every(
+          (name) => landmark.getObjectByName(`caral_pyramid_${name}`) !== undefined,
+        )
+      );
+    },
+    requireModules,
+    { timeout: 30_000 },
+  );
   return errors;
 }
 
@@ -46,6 +59,20 @@ test('the Caral scenario builds the documented Upper and Lower halves', { tag: '
     const amph = plan.placements.find((p: any) => p.modularAnchor);
     const anf = g.landmark?.getObjectByName('caral_anfiteatro');
     const anfPos = anf?.getWorldPosition(new window.THREE.Vector3());
+    const moduleNames = ['central', 'quarry', 'lesser', 'gallery', 'huanca'];
+    const modules = moduleNames.map((name) => {
+      const model = g.landmark?.getObjectByName(`caral_pyramid_${name}`);
+      const placement = plan.placements.find((p: any) => p.name === name);
+      const pos = model?.getWorldPosition(new window.THREE.Vector3());
+      return {
+        name,
+        present: !!model,
+        x: pos?.x ?? null,
+        z: pos?.z ?? null,
+        planX: placement?.x ?? null,
+        planZ: placement?.z ?? null,
+      };
+    });
     return {
       hasPlan: !!plan,
       placements: plan.placements.length,
@@ -56,6 +83,7 @@ test('the Caral scenario builds the documented Upper and Lower halves', { tag: '
       landmarkZ: g.landmark?.position.z ?? null,
       modularPyramid: !!g.landmark?.getObjectByName('caral_pyramid_mayor'),
       modularAnfiteatro: !!anf,
+      modules,
       anfX: anfPos?.x ?? null,
       anfZ: anfPos?.z ?? null,
       amphX: amph?.x ?? null,
@@ -85,6 +113,11 @@ test('the Caral scenario builds the documented Upper and Lower halves', { tag: '
   expect(state.landmarkZ).toBeCloseTo(state.mainZ, 3);
   expect(state.modularPyramid).toBe(true);
   expect(state.modularAnfiteatro).toBe(true);
+  for (const module of state.modules) {
+    expect(module.present, module.name).toBe(true);
+    expect(module.x, module.name).toBeCloseTo(module.planX!, 3);
+    expect(module.z, module.name).toBeCloseTo(module.planZ!, 3);
+  }
   expect(state.anfX).toBeCloseTo(state.amphX, 3);
   expect(state.anfZ).toBeCloseTo(state.amphZ, 3);
   expect(state.lowerZ).toBeGreaterThan(state.upperZ);
@@ -107,7 +140,7 @@ test('the Caral city keeps the procedural lower ensemble when the Anfiteatro GLB
     if (route.request().url().includes('?')) return route.continue();
     return route.abort();
   });
-  await boot(page);
+  await boot(page, false);
   await page.waitForFunction(
     () => {
       const g = (window as unknown as { game?: any }).game;

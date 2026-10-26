@@ -25,6 +25,61 @@ const ASSETS = [
     sandColor: null,
   },
   {
+    id: 'caral_pyramid_central',
+    lod0: new URL('../src/assets/scenery/caral/caral_pyramid_central_lod0.glb', import.meta.url),
+    lod1: new URL('../src/assets/scenery/caral/caral_pyramid_central_lod1.glb', import.meta.url),
+    manifest: JSON.parse(
+      fs.readFileSync(path.resolve('art-src/blender/exports/caral/caral_pyramid_central_manifest.json'), 'utf8'),
+    ) as SceneryManifest,
+    required: ['MAT-Fire_Ember', 'MAT-Plaster_White', 'MAT-Stone_Granodiorite'],
+    forbidden: ['MAT-Sand_Desert', 'MAT-Textile_Cotton', 'MAT-Wood_Warm'],
+    sandColor: null,
+  },
+  {
+    id: 'caral_pyramid_quarry',
+    lod0: new URL('../src/assets/scenery/caral/caral_pyramid_quarry_lod0.glb', import.meta.url),
+    lod1: new URL('../src/assets/scenery/caral/caral_pyramid_quarry_lod1.glb', import.meta.url),
+    manifest: JSON.parse(
+      fs.readFileSync(path.resolve('art-src/blender/exports/caral/caral_pyramid_quarry_manifest.json'), 'utf8'),
+    ) as SceneryManifest,
+    required: ['MAT-Fire_Ember', 'MAT-Plaster_White', 'MAT-Stone_Granodiorite'],
+    forbidden: ['MAT-Sand_Desert', 'MAT-Textile_Cotton', 'MAT-Wood_Warm'],
+    sandColor: null,
+  },
+  {
+    id: 'caral_pyramid_lesser',
+    lod0: new URL('../src/assets/scenery/caral/caral_pyramid_lesser_lod0.glb', import.meta.url),
+    lod1: new URL('../src/assets/scenery/caral/caral_pyramid_lesser_lod1.glb', import.meta.url),
+    manifest: JSON.parse(
+      fs.readFileSync(path.resolve('art-src/blender/exports/caral/caral_pyramid_lesser_manifest.json'), 'utf8'),
+    ) as SceneryManifest,
+    required: ['MAT-Fire_Ember', 'MAT-Plaster_White', 'MAT-Plaster_Yellow', 'MAT-Stone_Granodiorite'],
+    forbidden: ['MAT-Sand_Desert', 'MAT-Textile_Cotton', 'MAT-Wood_Warm'],
+    sandColor: null,
+  },
+  {
+    id: 'caral_pyramid_gallery',
+    lod0: new URL('../src/assets/scenery/caral/caral_pyramid_gallery_lod0.glb', import.meta.url),
+    lod1: new URL('../src/assets/scenery/caral/caral_pyramid_gallery_lod1.glb', import.meta.url),
+    manifest: JSON.parse(
+      fs.readFileSync(path.resolve('art-src/blender/exports/caral/caral_pyramid_gallery_manifest.json'), 'utf8'),
+    ) as SceneryManifest,
+    required: ['MAT-Fire_Ember', 'MAT-Plaster_White', 'MAT-Stone_Granodiorite'],
+    forbidden: ['MAT-Sand_Desert', 'MAT-Textile_Cotton', 'MAT-Wood_Warm'],
+    sandColor: null,
+  },
+  {
+    id: 'caral_pyramid_huanca',
+    lod0: new URL('../src/assets/scenery/caral/caral_pyramid_huanca_lod0.glb', import.meta.url),
+    lod1: new URL('../src/assets/scenery/caral/caral_pyramid_huanca_lod1.glb', import.meta.url),
+    manifest: JSON.parse(
+      fs.readFileSync(path.resolve('art-src/blender/exports/caral/caral_pyramid_huanca_manifest.json'), 'utf8'),
+    ) as SceneryManifest,
+    required: ['MAT-Fire_Ember', 'MAT-Plaster_White', 'MAT-Plaster_Yellow', 'MAT-Stone_Granodiorite'],
+    forbidden: ['MAT-Sand_Desert', 'MAT-Textile_Cotton', 'MAT-Wood_Warm'],
+    sandColor: null,
+  },
+  {
     id: 'caral_anfiteatro',
     lod0: new URL('../src/assets/scenery/caral/caral_anfiteatro_lod0.glb', import.meta.url),
     lod1: new URL('../src/assets/scenery/caral/caral_anfiteatro_lod1.glb', import.meta.url),
