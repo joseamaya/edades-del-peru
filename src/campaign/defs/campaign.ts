@@ -100,6 +100,17 @@ export const MISSIONS: MissionDef[] = [
         title: 'Abre la compuerta del canal comunal',
       },
       {
+        id: 'obj_asamblea',
+        kind: 'hold',
+        pos: { ref: 'landmark', dx: 0, dz: 0 },
+        radius: 18,
+        time: 20,
+        unitKind: UnitKind.WORKER,
+        hidden: true,
+        optional: true,
+        title: 'Convoca una asamblea comunal en la Plaza Central',
+      },
+      {
         id: 'obj_complejos',
         kind: 'inspect',
         heritageIds: [
@@ -152,6 +163,16 @@ export const MISSIONS: MissionDef[] = [
           {
             type: 'dialogue',
             text: 'El depósito guarda el excedente. Con trabajo comunal y reservas se levantan plazas y pirámides.',
+          },
+        ],
+      },
+      {
+        id: 't_asamblea',
+        condition: { type: 'objective', objectiveId: 'obj_asamblea', state: 'completed' },
+        effects: [
+          {
+            type: 'dialogue',
+            text: 'La comunidad se reúne en la plaza: el trabajo comunal organiza el valle y sostiene el excedente.',
           },
         ],
       },

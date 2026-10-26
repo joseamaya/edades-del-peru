@@ -3593,6 +3593,14 @@ export class Game {
     return getHeritageBuilding(this.selectedHeritage);
   }
 
+  getAssemblyState(): string {
+    return this.mission?.getObjectiveState('obj_asamblea') ?? 'pendiente';
+  }
+
+  startAssembly(): boolean {
+    return this.mission?.activateObjective('obj_asamblea') ?? false;
+  }
+
   isHeritageVisited(id: HeritageBuildingId): boolean {
     return this.visitedHeritage.has(id);
   }

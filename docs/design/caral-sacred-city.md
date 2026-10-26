@@ -76,6 +76,8 @@ camera framing and the warm desert palette.
   confidence and sources; “Visitar” records the card without gating progress. The communal canal
   has a gate operation that raises the irrigation yield of nearby Andenes. Player-owned Andenes
   and Trojes in m1 also show their historical field cards (`src/model/defs/buildingCards.ts`).
+  The Gran Pirámide/Plaza Central card can activate the hidden `obj_asamblea`: a 20-second
+  worker hold in the plaza, with no resource reward and no victory gate.
 - Wiring: `src/core/Game.ts` (reserved footprints, fixed base, landmark, intro)
   and `src/rendering/Water.ts` (map-aligned depth sampling for inland rivers).
 

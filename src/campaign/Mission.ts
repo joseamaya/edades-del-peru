@@ -399,6 +399,15 @@ export class Mission {
     return this.objState.get(id) ?? 'pendiente';
   }
 
+  /** Activate a hidden or pending objective (e.g. a field-card action). */
+  activateObjective(id: string): boolean {
+    const def = this.def.objectives.find((o) => o.id === id);
+    if (!def || this.objState.get(id) !== 'pendiente') return false;
+    this.objState.set(id, 'activo');
+    this.game.hud?.showToast('Nuevo objetivo: ' + def.title, 'info');
+    return true;
+  }
+
   /** Remaining seconds for a `hold` objective, or null for other objectives. */
   getHoldRemaining(id: string): number | null {
     const def = this.def.objectives.find((o) => o.id === id);

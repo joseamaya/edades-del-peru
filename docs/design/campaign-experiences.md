@@ -36,6 +36,8 @@ What the player does:
    bonus completes.
 6. Optional: clicks the six Upper-Half pyramids, reads their field cards and can record each visit;
    the recorded visits complete the `obj_complejos` bonus without gating progress.
+7. Optional: from the Plaza Central card, convokes a communal assembly; a worker must hold the
+   plaza for 20 seconds. It teaches communal organisation through time rather than a resource buff.
 
 Decisions: where to farm, how many workers to send to the coast, where to store food, whether to grow the
 settlement or accumulate reserves. These use existing mechanics (terrain-aware farms, resource nodes,

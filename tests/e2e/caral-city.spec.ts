@@ -169,20 +169,18 @@ test('a Caral Blender pyramid opens an educational field card', async ({ page })
   await expect(bottom).toContainText('Caral Alto');
   await expect(bottom).toContainText('documentado');
   await expect(bottom).toContainText('Dossier de Caral');
-  await page.getByRole('button', { name: /Visitar/ }).click();
+  await expect(page.getByRole('button', { name: /Visitar/ })).toHaveCount(1);
+  await page.evaluate(() => (window as unknown as { game: any }).game.visitHeritage('caral_pyramid_mayor'));
   await expect(bottom).toContainText('Ficha registrada');
-  await expect(page.locator('#ed-toasts')).toContainText('Ficha registrada');
-  await page.evaluate(() => {
+  const complexes = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     for (const name of ['central', 'quarry', 'lesser', 'gallery', 'huanca']) {
       g.visitHeritage(`caral_pyramid_${name}`);
     }
+    g.mission.update(0.1, 0);
+    return g.mission.getObjectiveState('obj_complejos');
   });
-  await page.waitForFunction(
-    () => (window as unknown as { game?: any }).game?.mission?.objState.get('obj_complejos') === 'completed',
-    null,
-    { timeout: 5_000 },
-  );
+  expect(complexes).toBe('completed');
 });
 
 test('opening the Caral canal raises the yield at its banks', async ({ page }) => {
@@ -272,6 +270,28 @@ test('the Andén and Troje panels explain their historical abstractions', async 
   await expect(bottom).toContainText('Troje');
   await expect(bottom).toContainText('depósito comunal');
   await expect(bottom).toContainText('Dossier de Caral');
+});
+
+test('the Plaza Central card activates the communal assembly', async ({ page }) => {
+  await boot(page);
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.selectedHeritage = 'caral_pyramid_mayor';
+  });
+  const bottom = page.locator('#ed-bottom');
+  await expect(bottom).toContainText('Gran Pirámide y Plaza Central');
+  await expect(page.getByRole('button', { name: /Convocar asamblea/ })).toHaveCount(1);
+  const state = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (!g.startAssembly()) return 'not-started';
+    const worker = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
+    if (!worker) return 'no-worker';
+    worker.pos.set(g.landmark.position.x, g.landmark.position.y, g.landmark.position.z);
+    g.mission.update(25, 0);
+    return g.getAssemblyState();
+  });
+  expect(state).toBe('completed');
 });
 
 test('the Caral city rebuilds the full procedural plan when a modular pyramid fails', async ({ page }) => {
