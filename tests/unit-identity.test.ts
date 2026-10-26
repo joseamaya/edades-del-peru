@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Era, HistoricalPeriod, UnitKind } from '../src/core/types';
+import { CivId, Era, HistoricalPeriod, UnitKind } from '../src/core/types';
 import { MISSIONS } from '../src/campaign/defs/campaign';
 import { getPeriod } from '../src/model/defs/periods';
 import {
@@ -14,8 +14,9 @@ import { missionUnits } from './mission-units';
 
 const preColumbian = MISSIONS.filter((m) => m.period < HistoricalPeriod.VICEROYALTY);
 const firearmEra = MISSIONS.filter((m) => m.period >= HistoricalPeriod.VICEROYALTY);
-const GUNPOWDER_NAMES = /Arcabucero|Mosquetero|Fusilero|Tirador de Élite/;
+const GUNPOWDER_NAMES = /Arcabucero|Mosquetero|Fusilero|Tirador de Élite|Cazador/;
 const PRE_FIREARM_MODELS = ['arquebusier', 'musketeer_line', 'line_infantry', 'veteran_rifleman', 'advanced_rifleman'];
+const FIREARM_UNITS = new Set([UnitKind.MUSKETEER, UnitKind.RIFLEMAN, UnitKind.SNIPER]);
 
 describe('ranged unit identity', () => {
   it('separates sling, bow, arquebus and rifle by era', () => {
@@ -82,6 +83,34 @@ describe('ranged unit identity', () => {
         expect(unitDisplayName(kind, undefined, era), `${mission.id} shows a pre-firearm name for ${kind}`).toMatch(
           GUNPOWDER_NAMES,
         );
+      }
+    }
+  });
+
+  it('validates every spawned or allowed roster against its mission period', () => {
+    for (const mission of MISSIONS) {
+      const era = getPeriod(mission.period).level;
+      const kinds = new Set([...missionUnits(mission), ...(mission.allowedUnits ?? [])]);
+      if (mission.playerCiv === CivId.INCA && kinds.has(UnitKind.SCOUT)) {
+        expect(unitDisplayName(UnitKind.SCOUT, mission.playerCiv, era)).toBe('Chasqui');
+      }
+      for (const kind of kinds) {
+        expect(unitMinPeriod(kind), `${mission.id} uses ${kind} too early`).toBeLessThanOrEqual(mission.period);
+        const model = getUnitModel(kind, era).type;
+        const weapon = unitRangedWeapon(kind, era);
+        if (mission.period < HistoricalPeriod.VICEROYALTY) {
+          expect(isFirearmWeapon(weapon), `${mission.id} uses firearm ${kind}`).toBe(false);
+          expect(PRE_FIREARM_MODELS, `${mission.id} renders ${kind} as ${model} too early`).not.toContain(model);
+          expect(
+            unitDisplayName(kind, mission.playerCiv, era),
+            `${mission.id} names ${kind} with gunpowder`,
+          ).not.toMatch(GUNPOWDER_NAMES);
+        } else if (FIREARM_UNITS.has(kind)) {
+          expect(isFirearmWeapon(weapon), `${mission.id} shows ${kind} without a firearm`).toBe(true);
+          expect(unitDisplayName(kind, mission.playerCiv, era), `${mission.id} hides ${kind}'s firearm`).toMatch(
+            GUNPOWDER_NAMES,
+          );
+        }
       }
     }
   });

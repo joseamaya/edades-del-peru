@@ -132,6 +132,14 @@ describe('campaign educational content', () => {
     expect(naval.allowedUnits!.includes(UnitKind.ARTILLERY)).toBe(false);
   });
 
+  it('keeps m9 as a port defense around Bolognesi', () => {
+    const m9 = MISSIONS.find((m) => m.id === 'm9_guerra_pacifico')!;
+    expect(m9.start.buildings?.some((b) => b.kind === BuildingKind.FORTRESS)).toBe(true);
+    expect(m9.objectives.some((o) => o.kind === 'protect' && o.entityTag === 'bolognesi')).toBe(true);
+    expect(m9.objectives.some((o) => o.kind === 'survive')).toBe(true);
+    expect(getEducational(m9.id)?.epilogue).toContain('Arica');
+  });
+
   it('scales the opening economy: a scarcity mission forces expansion', () => {
     const wari = MISSIONS.find((m) => m.id === 'm4_wari')!;
     // a lean start, well below the campaign's richer openers
