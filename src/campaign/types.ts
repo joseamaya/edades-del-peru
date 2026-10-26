@@ -64,7 +64,7 @@ export interface MissionPoint {
 }
 
 export type ObjectiveKind =
-  'destroy' | 'eliminate_all' | 'survive' | 'reach' | 'defend' | 'protect' | 'build' | 'gather' | 'reach_era';
+  'destroy' | 'eliminate_all' | 'survive' | 'reach' | 'hold' | 'defend' | 'protect' | 'build' | 'gather' | 'reach_era';
 
 export interface ObjectiveDef {
   id: string;
@@ -72,10 +72,12 @@ export interface ObjectiveDef {
   title: string;
   count?: number;
   entityTag?: string;
-  /** Anchor for `reach`, or the required location for a `build` (expansion/outpost). */
+  /** Anchor for `reach`/`hold`, or the required location for a `build` (expansion/outpost). */
   pos?: MissionPoint;
-  /** Radius around `pos` for `reach`/`build`. */
+  /** Radius around `pos` for `reach`/`hold`/`build`. */
   radius?: number;
+  /** Unit kind that must hold the position (optional; all player units by default). */
+  unitKind?: UnitKind;
   time?: number;
   buildingKind?: BuildingKind;
   resource?: keyof Resources;

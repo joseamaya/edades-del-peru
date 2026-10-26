@@ -25,6 +25,7 @@ export class Mission {
   private fired = new Set<string>();
   private lastFired = new Map<string, number>();
   private spawnedCount = new Map<string, number>();
+  private holdTimers = new Map<string, number>();
   private onEnd: (win: boolean) => void;
 
   constructor(game: Game, def: MissionDef, onEnd: (win: boolean) => void) {
@@ -109,9 +110,27 @@ export class Mission {
     if (this.ended || !this.started) return;
     void t;
     this.timer += dt;
+    this.updateHoldTimers(dt);
     this.evalObjectives();
     if (this.ended) return;
     this.evalTriggers();
+  }
+
+  private updateHoldTimers(dt: number): void {
+    for (const o of this.def.objectives) {
+      if (o.kind !== 'hold' || this.objState.get(o.id) !== 'activo' || !o.pos) continue;
+      const tp = this.resolvePoint(o.pos);
+      const radius = o.radius ?? 8;
+      const held = [...this.game.units.values()].some(
+        (u) =>
+          u.owner === 0 &&
+          !u.dead &&
+          (!o.unitKind || u.kind === o.unitKind) &&
+          distance2D(u.pos.x, u.pos.z, tp.x, tp.z) <= radius,
+      );
+      const current = this.holdTimers.get(o.id) ?? 0;
+      this.holdTimers.set(o.id, held ? Math.min(o.time ?? 0, current + dt) : 0);
+    }
   }
 
   private complete(id: string): void {
@@ -167,6 +186,8 @@ export class Mission {
         const tp = this.resolvePoint(o.pos);
         return pts.some((e) => distance2D(e.pos.x, e.pos.z, tp.x, tp.z) < (o.radius ?? 6)) ? 'win' : 'ok';
       }
+      case 'hold':
+        return (this.holdTimers.get(o.id) ?? 0) >= (o.time ?? 0) ? 'win' : 'ok';
       case 'defend': {
         if (!o.entityTag) return 'ok';
         if (!this.spawned(o.entityTag)) return 'ok';
@@ -358,6 +379,13 @@ export class Mission {
     return this.objState.get(id) ?? 'pendiente';
   }
 
+  /** Remaining seconds for a `hold` objective, or null for other objectives. */
+  getHoldRemaining(id: string): number | null {
+    const def = this.def.objectives.find((o) => o.id === id);
+    if (!def || def.kind !== 'hold') return null;
+    return Math.max(0, (def.time ?? 0) - (this.holdTimers.get(id) ?? 0));
+  }
+
   /** Snapshot the mission state (used by save/load). */
   toSave(): MissionSave {
     return {
@@ -369,6 +397,7 @@ export class Mission {
       fired: [...this.fired],
       lastFired: [...this.lastFired.entries()],
       spawnedCount: [...this.spawnedCount.entries()],
+      holdTimers: [...this.holdTimers.entries()],
     };
   }
 
@@ -386,5 +415,6 @@ export class Mission {
     this.fired = new Set(s.fired);
     this.lastFired = new Map(s.lastFired);
     this.spawnedCount = new Map(s.spawnedCount);
+    this.holdTimers = new Map(s.holdTimers ?? []);
   }
 }

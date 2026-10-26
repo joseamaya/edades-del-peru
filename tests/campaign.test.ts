@@ -186,6 +186,29 @@ describe('campaign educational content', () => {
     expect(m9.defeat).toContain('Arica');
   });
 
+  it('m8 has Junín and Ayacucho as two hold phases', () => {
+    const m8 = MISSIONS.find((m) => m.id === 'm8_independencia')!;
+    const junin = m8.objectives.find((o) => o.id === 'obj_junin');
+    const ayacucho = m8.objectives.find((o) => o.id === 'obj_ayacucho');
+    expect(junin?.kind).toBe('hold');
+    expect(junin?.unitKind).toBe(UnitKind.CAVALRY);
+    expect(ayacucho?.kind).toBe('hold');
+    expect(ayacucho?.hidden).toBe(true);
+    expect(m8.start.units?.some((u) => u.tag === 'sucre')).toBe(true);
+    expect(m8.objectives.some((o) => o.entityTag === 'sucre')).toBe(true);
+  });
+
+  it('hold objectives declare a position, radius and positive time', () => {
+    for (const mis of MISSIONS) {
+      for (const o of mis.objectives) {
+        if (o.kind !== 'hold') continue;
+        expect(o.pos, `${mis.id}/${o.id} hold without pos`).toBeDefined();
+        expect(o.radius, `${mis.id}/${o.id} hold without radius`).toBeGreaterThan(0);
+        expect(o.time, `${mis.id}/${o.id} hold without time`).toBeGreaterThan(0);
+      }
+    }
+  });
+
   it('every objective and trigger entityTag is declared by a start/mark tag', () => {
     for (const mis of MISSIONS) {
       const declared = new Set<string>();

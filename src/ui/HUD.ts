@@ -629,10 +629,12 @@ export class HUD {
     const items = mis.activeObjectives;
     const titles = this.objectiveTitles(items.map(({ def }) => def));
     this.objListEl.innerHTML = items
-      .map(({ state }, i) => {
+      .map(({ def, state }, i) => {
         const mark = state === 'completed' ? '✔' : state === 'failed' ? '✖' : '○';
         const cls = state === 'completed' ? 'done' : state === 'failed' ? 'failed' : '';
-        return `<div class="obj ${cls}"><span class="mark">${mark}</span><span>${titles[i]}</span></div>`;
+        const remaining = state === 'activo' ? mis.getHoldRemaining(def.id) : null;
+        const title = remaining === null ? titles[i] : `${titles[i]} (${Math.ceil(remaining)} s)`;
+        return `<div class="obj ${cls}"><span class="mark">${mark}</span><span>${title}</span></div>`;
       })
       .join('');
   }
