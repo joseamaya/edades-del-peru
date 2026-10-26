@@ -42,6 +42,8 @@ export class Building {
   wonderTimer = -1;
   trainMultiplier = 1;
   foodAmount = 0;
+  /** Multiplier already folded into `foodAmount` (terrain + irrigation). */
+  terrainYield = 1;
   isFarm = false;
   /** Mission tag (for objectives/triggers). */
   tag?: string;
@@ -76,10 +78,13 @@ export class Building {
     return this.ctx?.players?.find((p: any) => p.id === this.owner)?.team ?? 0;
   }
 
-  /** Scale the farm's food reserve by the terrain multiplier under it (>= 1). */
+  /** Rebase the farm's food reserve to the current terrain/irrigation multiplier. */
   applyTerrainYield(multiplier: number): void {
-    if (!this.isFarm || multiplier <= 1) return;
-    this.foodAmount = Math.round(this.foodAmount * multiplier);
+    if (!this.isFarm) return;
+    const next = Math.max(1, multiplier);
+    if (Math.abs(next - this.terrainYield) < 0.001) return;
+    this.foodAmount = Math.round((this.foodAmount / this.terrainYield) * next);
+    this.terrainYield = next;
   }
 
   setContext(ctx: any): void {
@@ -427,6 +432,7 @@ export class Building {
       attackCooldown: this.attackCooldown,
       wonderTimer: this.wonderTimer,
       foodAmount: this.foodAmount,
+      terrainYield: this.terrainYield,
       tag: this.tag,
     };
   }
@@ -444,6 +450,7 @@ export class Building {
     this.attackCooldown = s.attackCooldown;
     this.wonderTimer = s.wonderTimer;
     this.foodAmount = s.foodAmount;
+    this.terrainYield = s.terrainYield ?? 1;
     if (s.tag) this.tag = s.tag;
     this.constructionProgress = s.constructionProgress;
     this.constructionComplete = s.constructionComplete;

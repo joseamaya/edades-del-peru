@@ -32,6 +32,7 @@ export function serializeGame(game: Game): SaveData {
     rngState: game.rng.getState(),
     camera: { x: target.x, z: target.z, zoom: cam.getZoom(), yaw: cam.getYaw() },
     fog: game.fow.serialize(),
+    canalOpen: game.isCanalOpen(),
     players: game.players.map(toPlayerSave),
     units: [...game.units.values()].filter((u) => !u.dead).map((u) => u.toSave()),
     buildings: [...game.buildings.values()].filter((b) => !b.dead).map((b) => b.toSave()),

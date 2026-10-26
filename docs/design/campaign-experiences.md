@@ -32,8 +32,10 @@ What the player does:
 3. Builds a communal store (the game's Troje) to represent the surplus. Both names are gameplay abstractions,
    not attested Caral terms.
 4. Reaches a food target, observes the ceremonial complex and keeps the settlement standing.
-5. Optional: clicks the six Upper-Half pyramids, reads their field cards and can record each visit;
-   the recorded visits complete a bonus objective without gating progress.
+5. Optional: opens the communal canal gate; nearby Andenes gain irrigation yield and the `obj_riego`
+   bonus completes.
+6. Optional: clicks the six Upper-Half pyramids, reads their field cards and can record each visit;
+   the recorded visits complete the `obj_complejos` bonus without gating progress.
 
 Decisions: where to farm, how many workers to send to the coast, where to store food, whether to grow the
 settlement or accumulate reserves. These use existing mechanics (terrain-aware farms, resource nodes,

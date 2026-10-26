@@ -38,6 +38,12 @@ export interface MissionCanal {
   length?: number;
   /** Rotation of the canal axis (radians). */
   yaw?: number;
+  /** Initial gate state; defaults to closed. */
+  initiallyOpen?: boolean;
+  /** Whether the authored canal contributes irrigation yield to nearby farms. */
+  irrigation?: boolean;
+  /** Optional heritage field card exposed by clicking the canal. */
+  heritageId?: HeritageBuildingId;
 }
 
 export interface MissionDecor {
@@ -77,7 +83,8 @@ export type ObjectiveKind =
   | 'build'
   | 'gather'
   | 'reach_era'
-  | 'inspect';
+  | 'inspect'
+  | 'canal_open';
 
 export interface ObjectiveDef {
   id: string;

@@ -31,6 +31,16 @@ export const MISSIONS: MissionDef[] = [
     layout: {
       base: CARAL_LOWER,
       setpiece: { id: 'caral_sacred_city', upper: CARAL_UPPER, lower: CARAL_LOWER },
+      canal: {
+        name: 'Canal comunal del valle',
+        x: 0.28,
+        z: 0.68,
+        length: 22,
+        yaw: 0.15,
+        initiallyOpen: false,
+        irrigation: true,
+        heritageId: 'caral_canal',
+      },
       terrain: {
         river: {
           z: 0.55,
@@ -83,6 +93,12 @@ export const MISSIONS: MissionDef[] = [
         title: 'Reúne 500 de comida para sostener a la comunidad',
       },
       { id: 'obj_sostener', kind: 'survive', time: 300, title: 'Sostén el asentamiento 5 minutos' },
+      {
+        id: 'obj_riego',
+        kind: 'canal_open',
+        optional: true,
+        title: 'Abre la compuerta del canal comunal',
+      },
       {
         id: 'obj_complejos',
         kind: 'inspect',
@@ -579,7 +595,7 @@ export const MISSIONS: MissionDef[] = [
     region: 'north_coast',
     layout: {
       base: { x: 0.35, z: 0.62 },
-      canal: { name: 'Canal de Chan Chan', x: 0.5, z: 0.5, length: 28, yaw: 0.2 },
+      canal: { name: 'Canal de Chan Chan', x: 0.5, z: 0.5, length: 28, yaw: 0.2, initiallyOpen: true },
       decor: { model: 'chimu_compound', at: 'enemy', dx: 18, dz: -8, scale: 1.8, yaw: 0.2 },
       terrain: {
         flats: [

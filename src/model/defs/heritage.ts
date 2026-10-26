@@ -5,7 +5,8 @@ export type HeritageBuildingId =
   | 'caral_pyramid_lesser'
   | 'caral_pyramid_gallery'
   | 'caral_pyramid_huanca'
-  | 'caral_anfiteatro';
+  | 'caral_anfiteatro'
+  | 'caral_canal';
 
 export type HeritageSector = 'Caral Alto' | 'Caral Bajo';
 
@@ -17,6 +18,8 @@ export interface HeritageBuildingDef {
   summary: string;
   confidence: string;
   citation: string;
+  /** Optional scenario operation exposed by the field card. */
+  operation?: 'toggle-canal';
   sources: string[];
 }
 
@@ -86,6 +89,18 @@ export const HERITAGE_BUILDINGS: Record<HeritageBuildingId, HeritageBuildingDef>
     confidence: 'plausible',
     citation: 'Dossier de Caral · Zona Arqueológica Caral',
     sources: ['docs/historia/civilizaciones/caral.md', 'docs/historia/arquitectura.md'],
+  },
+  caral_canal: {
+    id: 'caral_canal',
+    name: 'Canal comunal del valle',
+    sector: 'Caral Bajo',
+    role: 'Infraestructura agrícola',
+    summary:
+      'Los canales de riego llevaban agua del valle a los campos. Abrir la compuerta aumenta el rendimiento de los andenes cercanos; es una abstracción jugable del riego documentado.',
+    confidence: 'documentado; trazado y compuerta abstraídos',
+    citation: 'Dossier de Caral · Zona Arqueológica Caral',
+    operation: 'toggle-canal',
+    sources: ['docs/historia/civilizaciones/caral.md', 'docs/historia/campanas/caral.md'],
   },
   caral_anfiteatro: {
     id: 'caral_anfiteatro',

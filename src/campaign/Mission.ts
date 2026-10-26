@@ -224,6 +224,8 @@ export class Mission {
         const ids = o.heritageIds ?? [];
         return ids.length > 0 && ids.every((id) => this.game.isHeritageVisited(id)) ? 'win' : 'ok';
       }
+      case 'canal_open':
+        return this.game.isCanalOpen() ? 'win' : 'ok';
       case 'reach_era':
         return p.era >= (o.era ?? 0) ? 'win' : 'ok';
       default:
