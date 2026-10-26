@@ -102,8 +102,11 @@ describe('campaign educational content', () => {
         for (const fx of t.effects) expect(['wave', 'reinforce'], `${id}/${t.id}`).not.toContain(fx.type);
       }
       // non-combat objectives only, and it teaches building
-      for (const o of mis.objectives)
-        expect(['gather', 'build', 'survive', 'hold', 'inspect'], `${id}/${o.id}`).toContain(o.kind);
+      const nonCombat =
+        id === 'm1_caral'
+          ? ['gather', 'build', 'survive', 'hold', 'inspect', 'canal_open']
+          : ['gather', 'build', 'survive', 'hold'];
+      for (const o of mis.objectives) expect(nonCombat, `${id}/${o.id}`).toContain(o.kind);
       expect(
         mis.objectives.some((o) => o.kind === 'build'),
         `${id} teaches building`,

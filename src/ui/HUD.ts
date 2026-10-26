@@ -916,6 +916,10 @@ export class HUD {
       disabled: true,
       cat: 'sel',
     });
+    if (heritage.operation === 'toggle-canal') {
+      const open = this.game.isCanalOpen();
+      this.addCommand(open ? '💧 Cerrar compuerta' : '💧 Abrir compuerta', () => this.game.toggleCanal());
+    }
     this.addCommand(visited ? '✓ Ficha registrada' : '🔎 Visitar', () => this.game.visitHeritage(heritage.id));
   }
 
@@ -960,7 +964,14 @@ export class HUD {
         tail
       );
     }
-    if (heritage) return 'h:' + heritage.id + (this.game.isHeritageVisited(heritage.id) ? ':v' : '') + tail;
+    if (heritage)
+      return (
+        'h:' +
+        heritage.id +
+        (this.game.isHeritageVisited(heritage.id) ? ':v' : '') +
+        (heritage.operation === 'toggle-canal' ? ':c' + Number(this.game.isCanalOpen()) : '') +
+        tail
+      );
     return 'idle' + tail;
   }
 

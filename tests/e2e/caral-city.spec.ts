@@ -185,6 +185,63 @@ test('a Caral Blender pyramid opens an educational field card', async ({ page })
   );
 });
 
+test('opening the Caral canal raises the yield at its banks', async ({ page }) => {
+  await boot(page);
+  const before = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    return {
+      site: g.canalSite,
+      open: g.isCanalOpen(),
+      yield: g.farmYieldAt(g.canalSite.x, g.canalSite.z),
+    };
+  });
+  expect(before.site).not.toBeNull();
+  expect(before.open).toBe(false);
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.camera.moveTo(g.canalSite.x, g.canalSite.z, true);
+  });
+  await page.waitForTimeout(800);
+  const point = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const box = new window.THREE.Box3().setFromObject(g.canalGroup);
+    const center = box.getCenter(new window.THREE.Vector3()).project(g.camera.camera);
+    return { x: (center.x * 0.5 + 0.5) * window.innerWidth, y: (-center.y * 0.5 + 0.5) * window.innerHeight };
+  });
+  await page.mouse.click(point.x, point.y);
+  await expect(page.locator('#ed-bottom')).toContainText('Canal comunal del valle');
+  await page.getByRole('button', { name: /Abrir compuerta/ }).click();
+  const after = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    return { open: g.isCanalOpen(), yield: g.farmYieldAt(g.canalSite.x, g.canalSite.z) };
+  });
+  expect(after.open).toBe(true);
+  expect(after.yield).toBeGreaterThan(before.yield);
+  await page.waitForFunction(
+    () => (window as unknown as { game?: any }).game?.mission?.objState.get('obj_riego') === 'completed',
+    null,
+    { timeout: 5_000 },
+  );
+
+  const farm = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const site = g.canalSite;
+    if (!g.executeCommand({ kind: 'place', building: 'farm', x: site.x, z: site.z })) return null;
+    const placed = [...g.buildings.values()].find((b: any) => b.kind === 'farm' && b.owner === 0);
+    if (!placed) return null;
+    placed.constructionComplete = true;
+    return { id: placed.id as number, foodOpen: placed.foodAmount as number };
+  });
+  expect(farm).not.toBeNull();
+  const closed = await page.evaluate((id) => {
+    const g = (window as unknown as { game: any }).game;
+    g.toggleCanal();
+    return { open: g.isCanalOpen(), food: g.buildings.get(id).foodAmount as number };
+  }, farm!.id);
+  expect(closed.open).toBe(false);
+  expect(closed.food).toBeLessThan(farm!.foodOpen);
+});
+
 test('the Caral city rebuilds the full procedural plan when a modular pyramid fails', async ({ page }) => {
   await page.route('**/*caral_pyramid_central_lod0.glb*', (route) => {
     if (route.request().url().includes('?')) return route.continue();
@@ -226,6 +283,7 @@ test('a loaded Caral save keeps the Blender setpiece', async ({ page }) => {
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     g.visitHeritage('caral_pyramid_mayor');
+    g.toggleCanal();
     g.saveMatch();
   });
   await page.goto('/?load=1&fog=0&low=1&noloop=1');
@@ -236,6 +294,7 @@ test('a loaded Caral save keeps the Blender setpiece', async ({ page }) => {
       return (
         g?.setpiece?.group?.userData?.proceduralLower === false &&
         g?.isHeritageVisited('caral_pyramid_mayor') === true &&
+        g?.isCanalOpen() === true &&
         landmark?.getObjectByName('caral_pyramid_mayor') !== undefined &&
         landmark?.getObjectByName('caral_anfiteatro') !== undefined &&
         ['central', 'quarry', 'lesser', 'gallery', 'huanca'].every(

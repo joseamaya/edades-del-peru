@@ -71,9 +71,10 @@ camera framing and the warm desert palette.
   `buildCaralCityModel`) for the surrounding city; the six pyramid GLBs and
   `caral_anfiteatro` for the lower ceremonial ensemble.
 - Renderer: `src/rendering/SacredCity.ts` (merged by material; visual only).
-- Heritage inspection: `src/model/defs/heritage.ts` and the landmark picking path in `Game.ts`.
+- Heritage inspection: `src/model/defs/heritage.ts` and the landmark/canal picking path in `Game.ts`.
   Every modular pyramid and the Anfiteatro open a field card with sector, role, summary,
-  confidence and sources; “Visitar” records the card for the session without gating progress.
+  confidence and sources; “Visitar” records the card without gating progress. The communal canal
+  has a gate operation that raises the irrigation yield of nearby Andenes.
 - Wiring: `src/core/Game.ts` (reserved footprints, fixed base, landmark, intro)
   and `src/rendering/Water.ts` (map-aligned depth sampling for inland rivers).
 

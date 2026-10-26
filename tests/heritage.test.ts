@@ -12,6 +12,7 @@ describe('Caral heritage buildings', () => {
       'caral_pyramid_lesser',
       'caral_pyramid_gallery',
       'caral_pyramid_huanca',
+      'caral_canal',
       'caral_anfiteatro',
     ]);
     for (const id of ids) {

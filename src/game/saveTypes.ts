@@ -67,6 +67,8 @@ export interface BuildingSave {
   attackCooldown: number;
   wonderTimer: number;
   foodAmount: number;
+  /** Terrain/irrigation multiplier already folded into foodAmount (optional for older saves). */
+  terrainYield?: number;
   tag?: string;
 }
 
@@ -130,4 +132,6 @@ export interface SaveData {
   resourceNodes: ResourceNodeSave[];
   mission?: MissionSave;
   tutorial?: TutorialSave;
+  /** Authored irrigation gate state (optional; absent in older saves). */
+  canalOpen?: boolean;
 }

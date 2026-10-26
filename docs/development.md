@@ -64,11 +64,13 @@ Definition of Done and the building audit see
   Color link from `MAT-Sand_Desert` so the GLB exports its `baseColorFactor`. See
   `docs/design/blender-art.md`.
 - **Caral heritage inspector**: `src/model/defs/heritage.ts` is the source of truth for the seven modular
-  structures' field cards (sector, role, summary, confidence, sources). `Game.pickHeritage` raycasts the
-  visual-only landmark, `Game.getSelectedHeritage` drives the HUD panel, and `Game.visitHeritage` records the
-  optional visit without gating objectives; all six Upper-Half visits complete the optional `obj_complejos`
-  bonus. The cards are educational overlays, not construction mechanics.
-- **Mission canals**: `MissionLayout.canal` (`src/campaign/types.ts`) gives a normalized canal site; `Game.spawnCanal` builds the visual water/stones and reserves the footprint, while `MissionPoint.ref: 'canal'` resolves the site for a `reach` objective. m6 uses it: reaching the canal with Túpac Yupanqui completes the objective and a trigger forces Chan Chan's surrender. Visual-only, no pathfinding obstacle. See `tests/e2e/campaign.spec.ts`.
+  structures and the communal canal (sector, role, summary, confidence, sources, optional operation).
+  `Game.pickHeritage` raycasts the visual-only landmark and canal, `Game.getSelectedHeritage` drives the HUD
+  panel, and `Game.visitHeritage` records the optional visit; all six Upper-Half visits complete the optional
+  `obj_complejos` bonus. The canal card exposes the gate operation, which raises the authored irrigation yield
+  for nearby Andenes and completes `obj_riego`. The cards are educational overlays, not construction
+  mechanics.
+- **Mission canals**: `MissionLayout.canal` (`src/campaign/types.ts`) gives a normalized canal site; `Game.spawnCanal` builds the visual water/stones and reserves the footprint, while `MissionPoint.ref: 'canal'` resolves the site for a `reach` objective. m1 adds a closed communal gate whose card operation raises `farmYieldAt` for nearby Andenes; m6 uses the canal as the Chan Chan surrender target. The canal is visual-only and has no pathfinding obstacle. See `tests/e2e/campaign.spec.ts` and `tests/e2e/caral-city.spec.ts`.
 - **Building/unit materials are AI-overridable**: `mat()` (`ProceduralModel.ts`) maps a `TexKind` to an
   AI-generated material via `TEX_GEN` (e.g. `adobe → wall_adobe`, `brick → wall_brick`, `roof → tile`,
   `thatch → roof_thatch`, `textile_inca → textile_inca`); the architecture profile (`archProfileFor`) picks the

@@ -159,6 +159,9 @@ export class Game {
   /** Authored canal target in world units (mission mechanic + visual). */
   canalSite: { x: number; z: number } | null = null;
   private canalGroup: THREE.Group | null = null;
+  private canalWater: THREE.Mesh | null = null;
+  private canalGate: THREE.Mesh | null = null;
+  private canalOpen = false;
   private scenarioDecor: THREE.Group | null = null;
   /** Decorative historical landmark of the map (visual only), if any. */
   landmark: THREE.Group | null = null;
@@ -390,6 +393,7 @@ export class Game {
         }
       }
       this.canalSite = { x: cx, z: cz };
+      this.canalOpen = canal.initiallyOpen ?? false;
     }
     this.sky = new Sky(this.scene);
     // No atmospheric fog over the board: classic RTS look, sharp.
@@ -897,6 +901,7 @@ export class Game {
     if (!spec || !this.canalSite) return;
     const group = new THREE.Group();
     group.name = 'canal';
+    if (spec.heritageId) group.userData.heritageId = spec.heritageId;
     const length = spec.length ?? 24;
     group.position.set(this.canalSite.x, this.terrain.getHeight(this.canalSite.x, this.canalSite.z), this.canalSite.z);
     group.rotation.y = spec.yaw ?? 0;
@@ -923,9 +928,12 @@ export class Game {
     gate.castShadow = true;
     gate.receiveShadow = true;
     group.add(gate);
+    this.canalGate = gate;
     applyFowToObject(group, this.fowUniforms);
     this.scene.add(group);
     this.canalGroup = group;
+    this.canalWater = water;
+    this.updateCanalVisual();
   }
 
   private spawnCulturalLandscape(): void {
@@ -1576,8 +1584,48 @@ export class Game {
     return farmYieldMultiplier({
       terrace: this.terrain.getTerrace(x, z),
       moisture: this.terrain.getMoisture(x, z),
-      canal: nearbyCanal((cx, cz) => this.terrain.getCanal(cx, cz), x, z),
+      canal: nearbyCanal((cx, cz) => Math.max(this.terrain.getCanal(cx, cz), this.authoredCanalAt(cx, cz)), x, z),
     });
+  }
+
+  private authoredCanalAt(x: number, z: number): number {
+    const spec = this.missionLayout?.canal;
+    if (!this.canalOpen || !spec?.irrigation || !this.canalSite) return 0;
+    const yaw = spec.yaw ?? 0;
+    const dx = x - this.canalSite.x;
+    const dz = z - this.canalSite.z;
+    const along = dx * Math.cos(yaw) + dz * Math.sin(yaw);
+    const across = -dx * Math.sin(yaw) + dz * Math.cos(yaw);
+    if (Math.abs(along) > (spec.length ?? 24) / 2) return 0;
+    return Math.max(0, 1 - Math.abs(across) / 2.5);
+  }
+
+  isCanalOpen(): boolean {
+    return this.canalOpen;
+  }
+
+  toggleCanal(): boolean {
+    if (!this.canalSite) return false;
+    this.canalOpen = !this.canalOpen;
+    this.updateCanalVisual();
+    for (const b of this.buildings.values()) {
+      if (b.isFarm) b.applyTerrainYield(this.farmYieldAt(b.pos.x, b.pos.z));
+    }
+    this.hud?.showToast(
+      this.canalOpen ? 'Compuerta abierta: los andenes cercanos riegan mejor' : 'Compuerta cerrada',
+      this.canalOpen ? 'success' : 'info',
+    );
+    return this.canalOpen;
+  }
+
+  private updateCanalVisual(): void {
+    if (!this.canalWater) return;
+    const material = this.canalWater.material as THREE.MeshStandardMaterial;
+    material.opacity = this.canalOpen ? 0.82 : 0.38;
+    material.color.setHex(this.canalOpen ? 0x2f6f7a : 0x5c4a33);
+    material.transparent = true;
+    material.needsUpdate = true;
+    if (this.canalGate) this.canalGate.position.y = this.canalOpen ? 1.55 : 0.8;
   }
 
   /** Train a unit in a completed building of player 0. */
@@ -1629,6 +1677,7 @@ export class Game {
   /** Restore a snapshot into a freshly built game (load mode; no default spawns). */
   private applySnapshot(data: SaveData): void {
     this.rng.setState(data.rngState);
+    this.canalOpen = data.canalOpen ?? this.canalOpen;
 
     for (const ps of data.players) {
       const p = this.players[ps.id];
@@ -1708,6 +1757,19 @@ export class Game {
       if (!data.mission.started) this.mission.start();
     }
     if (data.tutorial && this.tutorial) this.tutorial.applySave(data.tutorial);
+    if (this.canalSite) {
+      this.updateCanalVisual();
+      const savedById = new Map(data.buildings.map((saved) => [saved.id, saved]));
+      for (const b of this.buildings.values()) {
+        if (!b.isFarm) continue;
+        const saved = savedById.get(b.id);
+        if (saved?.terrainYield === undefined) {
+          b.terrainYield = this.farmYieldAt(b.pos.x, b.pos.z);
+        } else {
+          b.applyTerrainYield(this.farmYieldAt(b.pos.x, b.pos.z));
+        }
+      }
+    }
   }
 
   /** Show the victory/defeat screen. */
@@ -1897,10 +1959,13 @@ export class Game {
   }
 
   private pickHeritage(sx: number, sy: number): HeritageBuildingDef | null {
-    if (!this.landmark) return null;
+    const roots = [this.landmark, this.canalGroup].filter((root): root is THREE.Group => !!root);
+    if (roots.length === 0) return null;
     const ndc = new THREE.Vector2((sx / window.innerWidth) * 2 - 1, -(sy / window.innerHeight) * 2 + 1);
     this.raycaster.setFromCamera(ndc, this.camera.camera);
-    for (const hit of this.raycaster.intersectObject(this.landmark, true)) {
+    const hits = roots.flatMap((root) => this.raycaster.intersectObject(root, true));
+    hits.sort((a, b) => a.distance - b.distance);
+    for (const hit of hits) {
       let object: THREE.Object3D | null = hit.object;
       while (object && !object.userData.heritageId) object = object.parent;
       const def = getHeritageBuilding(object?.userData.heritageId as string | undefined);
