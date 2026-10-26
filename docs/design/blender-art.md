@@ -1,9 +1,8 @@
 # Blender art pipeline
 
-This branch uses **Blender renders** as the primary source for historical campaign art,
-architecture references, educational maps and tour concept art. It replaces the earlier
-AI-illustration pilot, which is archived on `feat/visual-ai-pipeline` and is not part of this
-branch.
+This pipeline uses **Blender renders** as the primary source for historical campaign art,
+architecture references, educational maps and tour concept art. The earlier AI-illustration
+pilot was superseded by this pipeline and is no longer maintained.
 
 The editable Blender project lives in the repository at `art-src/blender`. The `.blend`
 sources are tracked with Git LFS; the renders, GLB exports, source manifest and hashes live
