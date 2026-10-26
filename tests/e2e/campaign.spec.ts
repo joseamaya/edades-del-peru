@@ -167,6 +167,47 @@ test('the expansion objective needs the building at the frontier', async ({ page
   expect(out.atFrontier).toBe('completed');
 });
 
+test('m6 cuts the canal to force Chan Chan to surrender', async ({ page }) => {
+  await page.goto('/?mission=m6_chimu_inca&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
+    const tupac = [...g.units.values()].find((u: any) => u.tag === 'tupac_yupanqui') as any;
+    const enemy = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'center' && !b.dead) as any;
+    const canal = g.canalSite as { x: number; z: number } | null;
+    const setPos = (x: number, z: number) => tupac.pos.set(x, g.terrain.getHeight(x, z), z);
+    setPos(enemy.pos.x - 18, enemy.pos.z);
+    g.update(1 / 60, 0);
+    const afterParamonga = m.getObjectiveState('obj_canal') as string;
+    if (!canal) return { afterParamonga, canal: false, won: m.won as boolean | null };
+    setPos(canal.x, canal.z);
+    g.update(1 / 60, 0);
+    return {
+      afterParamonga,
+      canal: true,
+      canalVisual: !!g.scene.getObjectByName('canal'),
+      waterVisual: !!g.scene.getObjectByName('canal_water'),
+      gateVisual: !!g.scene.getObjectByName('canal_gate'),
+      chanChanDecor: !!g.scene.getObjectByName('mission_decor_chimu_compound'),
+      canalObjective: m.getObjectiveState('obj_canal') as string,
+      won: m.won as boolean | null,
+    };
+  });
+  expect(out.canal).toBe(true);
+  expect(out.afterParamonga).toBe('activo');
+  expect(out.canalVisual).toBe(true);
+  expect(out.waterVisual).toBe(true);
+  expect(out.gateVisual).toBe(true);
+  expect(out.chanChanDecor).toBe(true);
+  expect(out.canalObjective).toBe('completed');
+  expect(out.won).toBe(true);
+});
+
 test('a strategic choice wins through either branch', async ({ page }) => {
   const boot = async () => {
     await page.goto('/?mission=m7_tupac_amaru&seed=777&fog=0&low=1&noloop=1');

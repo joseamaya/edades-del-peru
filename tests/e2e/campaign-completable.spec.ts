@@ -65,7 +65,14 @@ for (const mis of MISSIONS) {
               break;
             case 'reach': {
               if (!o.entityTag || !o.pos) break;
-              const base = o.pos.ref === 'enemy' ? centerOf(1) : o.pos.ref === 'player' ? centerOf(0) : { x: 0, z: 0 };
+              const base =
+                o.pos.ref === 'enemy'
+                  ? centerOf(1)
+                  : o.pos.ref === 'player'
+                    ? centerOf(0)
+                    : o.pos.ref === 'canal'
+                      ? (g.canalSite ?? centerOf(0))
+                      : { x: 0, z: 0 };
               const tp = { x: base.x + o.pos.dx, z: base.z + o.pos.dz };
               for (const u of g.units.values()) {
                 if (u.owner === 0 && !u.dead && u.tag === o.entityTag) {
@@ -84,7 +91,13 @@ for (const mis of MISSIONS) {
               let bz: number;
               if (o.pos) {
                 const base =
-                  o.pos.ref === 'enemy' ? centerOf(1) : o.pos.ref === 'player' ? centerOf(0) : { x: 0, z: 0 };
+                  o.pos.ref === 'enemy'
+                    ? centerOf(1)
+                    : o.pos.ref === 'player'
+                      ? centerOf(0)
+                      : o.pos.ref === 'canal'
+                        ? (g.canalSite ?? centerOf(0))
+                        : { x: 0, z: 0 };
                 bx = base.x + o.pos.dx;
                 bz = base.z + o.pos.dz;
               } else {

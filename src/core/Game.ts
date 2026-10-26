@@ -147,6 +147,10 @@ export class Game {
   private setpiecePlan: CaralCityPlan | null = null;
   /** Visual-only Caral city scene (Caral Alto + Caral Bajo). */
   setpiece: SacredCity | null = null;
+  /** Authored canal target in world units (mission mechanic + visual). */
+  canalSite: { x: number; z: number } | null = null;
+  private canalGroup: THREE.Group | null = null;
+  private scenarioDecor: THREE.Group | null = null;
   /** Decorative historical landmark of the map (visual only), if any. */
   landmark: THREE.Group | null = null;
   private landmarkOwnsStatic = false;
@@ -261,6 +265,8 @@ export class Game {
     this.initPlayers();
     this.spawnLandmark();
     this.spawnSacredCity();
+    this.spawnCanal();
+    this.spawnMissionDecor();
     this.spawnCulturalLandscape();
     this.initInput();
     this.initHUD();
@@ -352,6 +358,26 @@ export class Game {
         yaw: city.rotation,
         fords,
       });
+    }
+    const canal = this.missionLayout?.canal;
+    if (canal) {
+      let cx = canal.x * s.mapSize;
+      let cz = canal.z * s.mapSize;
+      if (this.terrain.isWater(cx, cz) || this.terrain.isBeach(cx, cz)) {
+        for (let r = 3; r <= 18 && (this.terrain.isWater(cx, cz) || this.terrain.isBeach(cx, cz)); r += 3) {
+          for (let a = 0; a < 16; a++) {
+            const ang = (a / 16) * Math.PI * 2;
+            const nx = canal.x * s.mapSize + Math.cos(ang) * r;
+            const nz = canal.z * s.mapSize + Math.sin(ang) * r;
+            if (!this.terrain.isWater(nx, nz) && !this.terrain.isBeach(nx, nz)) {
+              cx = nx;
+              cz = nz;
+              break;
+            }
+          }
+        }
+      }
+      this.canalSite = { x: cx, z: cz };
     }
     this.sky = new Sky(this.scene);
     // No atmospheric fog over the board: classic RTS look, sharp.
@@ -803,15 +829,78 @@ export class Game {
    * only, deterministic). Derived from `seed + profile`, so it is regenerated on
    * load and never saved (like the terrain and the landmark).
    */
+  private spawnMissionDecor(): void {
+    const decor = this.missionLayout?.decor;
+    if (!decor) return;
+    const owner = decor.at === 'enemy' ? 1 : 0;
+    const center = [...this.buildings.values()].find(
+      (b) => b.owner === owner && b.kind === BuildingKind.CENTER && !b.dead,
+    );
+    if (!center) return;
+    const x = center.pos.x + decor.dx;
+    const z = center.pos.z + decor.dz;
+    const site = this.findLandNear(x, z, 18);
+    const group = buildLandmarkModel(decor.model, this.makeBuildContext(owner));
+    group.name = `mission_decor_${decor.model}`;
+    group.position.set(site.x, this.terrain.getHeight(site.x, site.z), site.z);
+    group.rotation.y = decor.yaw ?? 0;
+    group.scale.setScalar(decor.scale ?? 1);
+    this.enableLandmarkShadows(group);
+    applyFowToObject(group, this.fowUniforms);
+    this.scene.add(group);
+    this.scenarioDecor = group;
+  }
+
+  private spawnCanal(): void {
+    const spec = this.missionLayout?.canal;
+    if (!spec || !this.canalSite) return;
+    const group = new THREE.Group();
+    group.name = 'canal';
+    const length = spec.length ?? 24;
+    group.position.set(this.canalSite.x, this.terrain.getHeight(this.canalSite.x, this.canalSite.z), this.canalSite.z);
+    group.rotation.y = spec.yaw ?? 0;
+    const water = new THREE.Mesh(
+      new THREE.BoxGeometry(length, 0.12, 2.2),
+      new THREE.MeshStandardMaterial({ color: 0x2f6f7a, roughness: 0.45, metalness: 0.1 }),
+    );
+    water.name = 'canal_water';
+    water.position.y = 0.08;
+    water.receiveShadow = true;
+    group.add(water);
+    const wallMaterial = new THREE.MeshStandardMaterial({ color: 0x9a8460, roughness: 1, metalness: 0 });
+    for (const side of [-1, 1]) {
+      const wall = new THREE.Mesh(new THREE.BoxGeometry(length, 0.7, 0.5), wallMaterial);
+      wall.name = 'canal_bank';
+      wall.position.set(0, 0.35, side * 1.35);
+      wall.castShadow = true;
+      wall.receiveShadow = true;
+      group.add(wall);
+    }
+    const gate = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.6, 3.2), wallMaterial);
+    gate.name = 'canal_gate';
+    gate.position.set(length / 2, 0.8, 0);
+    gate.castShadow = true;
+    gate.receiveShadow = true;
+    group.add(gate);
+    applyFowToObject(group, this.fowUniforms);
+    this.scene.add(group);
+    this.canalGroup = group;
+  }
+
   private spawnCulturalLandscape(): void {
     this.landscape = new CulturalLandscape(this.terrain, this.mapProfile, this.settings.mapSeed);
     applyFowToObject(this.landscape.group, this.fowUniforms);
     this.scene.add(this.landscape.group);
   }
 
-  /** Keep authored city footprints free of procedural resources and props. */
+  /** Keep authored city/canal footprints free of procedural resources and props. */
   private isReserved(x: number, z: number): boolean {
-    return !!this.setpiecePlan && inCaralCity(this.setpiecePlan, x, z, 1);
+    if (this.setpiecePlan && inCaralCity(this.setpiecePlan, x, z, 1)) return true;
+    if (this.canalSite) {
+      const length = this.missionLayout?.canal?.length ?? 24;
+      if (Math.hypot(x - this.canalSite.x, z - this.canalSite.z) < length / 2 + 6) return true;
+    }
+    return false;
   }
 
   private spawnResources(): void {
@@ -3403,6 +3492,17 @@ export class Game {
     if (this.setpiece) {
       this.setpiece.dispose();
       this.setpiece = null;
+    }
+    if (this.canalGroup) {
+      this.scene.remove(this.canalGroup);
+      disposeStaticGltf(this.canalGroup);
+      this.canalGroup = null;
+      this.canalSite = null;
+    }
+    if (this.scenarioDecor) {
+      this.scene.remove(this.scenarioDecor);
+      disposeModel(this.scenarioDecor);
+      this.scenarioDecor = null;
     }
     for (const overlay of this.settlements) overlay.dispose();
     this.settlements = [];

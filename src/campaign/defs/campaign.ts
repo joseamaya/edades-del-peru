@@ -448,15 +448,20 @@ export const MISSIONS: MissionDef[] = [
     subtitle: 'Costa norte · c. 1470',
     history:
       'El Tahuantinsuyo ya domina el Collao, Cajamarca y la costa sur. Solo falta el poderoso Reino Chimú de Minchancaman.\n' +
-      'Al mando del auqui Túpac Yupanqui, avanzad por Paramonga y el valle del Santa hasta Chan Chan.',
+      'Al mando del auqui Túpac Yupanqui, avanzad por Paramonga y el valle del Santa. Cortad el canal que abastece de agua a Chan Chan: sin agua, la ciudad no puede resistir.',
     victory:
-      'Chan Chan capitula y Minchancaman es llevado al Cusco. El Tahuantinsuyo se extiende por toda la costa norte.',
+      'El canal está cortado y Chan Chan capitula. Minchancaman es llevado al Cusco y el Tahuantinsuyo se extiende por la costa norte.',
     defeat: 'La resistencia chimú detiene al ejército inca y la costa norte permanece libre.',
     period: HistoricalPeriod.LATE_HORIZON,
     playerCiv: CivId.INCA,
     enemyCiv: CivId.CHIMU,
     map: { seed: 1470, type: 'coast', size: 192 },
     region: 'north_coast',
+    layout: {
+      canal: { x: 0.5, z: 0.5, length: 28, yaw: 0.2 },
+      decor: { model: 'chimu_compound', at: 'enemy', dx: 18, dz: -8, scale: 1.8, yaw: 0.2 },
+      terrain: { flats: [{ x: 0.5, z: 0.5, rx: 0.14, rz: 0.09 }] },
+    },
     timeOfDay: 'dusk',
     startingEra: Era.TAHUANTINSUYO,
     startingResources: { food: 1000, wood: 700, silver: 900, stone: 400 },
@@ -471,8 +476,6 @@ export const MISSIONS: MissionDef[] = [
     mark: [{ tag: 'chan_chan', kind: BuildingKind.CENTER, owner: 1 }],
     enemy: { active: true, difficulty: 'hard', aggression: 1.2 },
     objectives: [
-      { id: 'obj_kill', kind: 'destroy', entityTag: 'chan_chan', title: 'Toma Chan Chan' },
-      { id: 'obj_hold', kind: 'survive', time: 600, title: 'Mantén tu campamento 10 minutos' },
       {
         id: 'obj_avanzar',
         kind: 'reach',
@@ -482,11 +485,28 @@ export const MISSIONS: MissionDef[] = [
         title: 'Avanzad hasta Paramonga',
       },
       {
+        id: 'obj_canal',
+        kind: 'reach',
+        entityTag: 'tupac_yupanqui',
+        pos: { ref: 'canal', dx: 0, dz: 0 },
+        radius: 8,
+        hidden: true,
+        title: 'Corta el canal que abastece Chan Chan',
+      },
+      {
         id: 'obj_comandante',
         kind: 'protect',
         entityTag: 'tupac_yupanqui',
         title: 'Mantén con vida a Túpac Yupanqui',
       },
+      {
+        id: 'obj_kill',
+        kind: 'destroy',
+        entityTag: 'chan_chan',
+        optional: true,
+        title: 'Toma Chan Chan si resiste',
+      },
+      { id: 'obj_hold', kind: 'survive', time: 600, optional: true, title: 'Mantén el campamento 10 minutos' },
     ],
     triggers: [
       {
@@ -529,6 +549,18 @@ export const MISSIONS: MissionDef[] = [
             type: 'dialogue',
             text: 'Túpac Yupanqui: —¡Paramonga ha caído! Avanzad por el valle del Santa hacia Chan Chan.',
           },
+          { type: 'objective', objectiveId: 'obj_canal', state: 'activate' },
+        ],
+      },
+      {
+        id: 't_canal',
+        condition: { type: 'objective', objectiveId: 'obj_canal', state: 'completed' },
+        effects: [
+          {
+            type: 'dialogue',
+            text: 'Túpac Yupanqui: —El canal está cortado. Chan Chan, sin agua, no puede resistir.',
+          },
+          { type: 'victory' },
         ],
       },
     ],
