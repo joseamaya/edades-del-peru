@@ -515,7 +515,8 @@ function addHumanoid(
     role?: UnitRole;
     helmet?: boolean;
     backpack?: boolean;
-    weapon?: 'rifle' | 'musket' | 'sniper' | 'machete' | 'spear' | 'macana' | 'bow' | 'sling' | 'shield' | 'none';
+    weapon?:
+      'rifle' | 'musket' | 'arquebus' | 'sniper' | 'machete' | 'spear' | 'macana' | 'bow' | 'sling' | 'shield' | 'none';
     armor?: 'cloth' | 'metal';
     gadget?: boolean;
     tool?: 'axe' | 'pick';
@@ -685,10 +686,20 @@ function addHumanoid(
 function addWeapon(b: Builder, gun: THREE.Group, weapon: string): void {
   switch (weapon) {
     case 'rifle':
-    case 'musket':
       b.boxIn(gun, 0.07, 0.07, 0.6, b.pal.darkWood, { z: 0.22, tex: 'wood' });
       b.cylIn(gun, 0.026, 0.026, 0.5, 8, b.pal.darkMetal, { z: 0.62, rx: Math.PI / 2, metalness: 0.7 });
       b.boxIn(gun, 0.05, 0.1, 0.14, b.pal.darkWood, { y: -0.06, z: -0.06 });
+      break;
+    case 'musket':
+      b.boxIn(gun, 0.075, 0.075, 0.7, b.pal.darkWood, { z: 0.26, tex: 'wood' });
+      b.cylIn(gun, 0.024, 0.024, 0.64, 8, b.pal.darkMetal, { z: 0.7, rx: Math.PI / 2, metalness: 0.7 });
+      b.boxIn(gun, 0.05, 0.09, 0.13, b.pal.darkWood, { y: -0.06, z: -0.08 });
+      break;
+    case 'arquebus':
+      b.boxIn(gun, 0.075, 0.075, 0.72, b.pal.darkWood, { z: 0.28, tex: 'wood' });
+      b.cylIn(gun, 0.022, 0.022, 0.62, 8, b.pal.darkMetal, { z: 0.72, rx: Math.PI / 2, metalness: 0.7 });
+      b.boxIn(gun, 0.05, 0.09, 0.12, b.pal.darkWood, { y: -0.06, z: -0.1 });
+      b.cylIn(gun, 0.018, 0.018, 0.08, 6, b.pal.metal, { x: 0.05, y: 0.02, z: 0.32, rz: Math.PI / 2 });
       break;
     case 'sniper':
       b.boxIn(gun, 0.06, 0.08, 0.8, b.pal.darkMetal, { z: 0.3, tex: 'metalDark' });
@@ -855,6 +866,16 @@ function buildInfantry(type: string, ctx: BuildContext, gender: PersonGender): T
   return b.finish();
 }
 
+const RANGED_MODEL_TYPES = new Set([
+  'musketeer',
+  'rifleman',
+  'arquebusier',
+  'musketeer_line',
+  'line_infantry',
+  'veteran_rifleman',
+  'advanced_rifleman',
+]);
+
 function buildRanged(type: string, ctx: BuildContext, gender: PersonGender): THREE.Group {
   const b = new Builder(ctx);
   const isSniper = type === 'advanced_rifleman' || type === 'veteran_rifleman';
@@ -864,6 +885,15 @@ function buildRanged(type: string, ctx: BuildContext, gender: PersonGender): THR
       break;
     case 'rifleman':
       addHumanoid(b, { role: 'ranged', helmet: false, weapon: 'bow', armor: 'cloth', gender });
+      break;
+    case 'arquebusier':
+      addHumanoid(b, { role: 'ranged', helmet: true, weapon: 'arquebus', armor: 'metal', backpack: true, gender });
+      break;
+    case 'line_infantry':
+      addHumanoid(b, { role: 'ranged', helmet: true, weapon: 'rifle', armor: 'cloth', backpack: true, gender });
+      break;
+    case 'musketeer_line':
+      addHumanoid(b, { role: 'ranged', helmet: true, weapon: 'musket', armor: 'metal', backpack: true, gender });
       break;
     case 'veteran_rifleman':
       addHumanoid(b, { role: 'ranged', helmet: true, weapon: 'rifle', armor: 'metal', backpack: true, gender });
@@ -3424,8 +3454,7 @@ function buildModelTemplate(spec: ModelSpec, ctx: BuildContext): THREE.Group {
   let g: THREE.Group;
   if (type.startsWith('worker')) g = buildWorker(ctx, gender);
   else if (type.startsWith('soldier')) g = buildInfantry(type, ctx, gender);
-  else if (type === 'musketeer' || type === 'rifleman' || type === 'veteran_rifleman' || type === 'advanced_rifleman')
-    g = buildRanged(type, ctx, gender);
+  else if (RANGED_MODEL_TYPES.has(type)) g = buildRanged(type, ctx, gender);
   else if (type === 'hussar' || type === 'cavalry') g = buildMounted(type, ctx, gender);
   else if (type === 'motorcycle') g = buildMotorcycle(ctx, gender);
   else if (type === 'recon_drone') g = buildDrone(ctx);

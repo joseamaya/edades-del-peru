@@ -13,7 +13,7 @@ import {
   AlertReason,
 } from '../core/types';
 import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../model/defs/buildings';
-import { UNIT_ARCHETYPES, getUnitStats, UNIT_INFO, unitDisplayName, unitMinPeriod } from '../model/defs/units';
+import { UNIT_ARCHETYPES, getUnitStats, unitDisplayIcon, unitDisplayName, unitMinPeriod } from '../model/defs/units';
 import { TECHS, techAvailable } from '../model/defs/techs';
 import { ERA_DEFS } from '../model/defs/eras';
 import { PERIODS, getPeriod } from '../model/defs/periods';
@@ -968,19 +968,21 @@ export class HUD {
 
   private renderUnitPanel(units: Unit[]): void {
     const first = units[0];
-    const info = UNIT_INFO[first.kind];
     const civ = this.game.players[first.owner]?.civ;
-    this.setDesc(info.icon, `${unitDisplayName(first.kind, civ)} ×${units.length}`, this.unitDesc(first));
+    this.setDesc(
+      unitDisplayIcon(first.kind, first.era),
+      `${unitDisplayName(first.kind, civ, first.era)} ×${units.length}`,
+      this.unitDesc(first),
+    );
     this.clearGrid();
     // summary by type (click = select only that type) — AoE2 style
     if (units.length > 1) {
       const groups = new Map<UnitKind, number>();
       for (const u of units) groups.set(u.kind, (groups.get(u.kind) ?? 0) + 1);
       for (const [kind, count] of groups) {
-        const gi = UNIT_INFO[kind];
         this.addCard(
-          gi.icon,
-          `${count}× ${unitDisplayName(kind, this.game.players[first.owner]?.civ)}`,
+          unitDisplayIcon(kind, first.era),
+          `${count}× ${unitDisplayName(kind, this.game.players[first.owner]?.civ, first.era)}`,
           'clic: filtrar',
           () => this.game.selectUnits(units.filter((u) => u.kind === kind).map((u) => u.id)),
           { cat: 'sel' },
@@ -1027,10 +1029,9 @@ export class HUD {
     // production queue (click the card to cancel)
     for (let i = 0; i < b.productionQueue.length; i++) {
       const item = b.productionQueue[i];
-      const uInfo = UNIT_INFO[item.unit];
       const card = this.addCard(
-        uInfo.icon,
-        unitDisplayName(item.unit, this.game.players[b.owner]?.civ),
+        unitDisplayIcon(item.unit, b.era),
+        unitDisplayName(item.unit, this.game.players[b.owner]?.civ, b.era),
         `${Math.round(item.progress * 100)}% ✖`,
         () => this.game.executeCommand({ kind: 'cancel', buildingId: b.id, index: i }),
         {
@@ -1046,19 +1047,24 @@ export class HUD {
     for (const unitKind of def.trainable ?? []) {
       if (allowedUnits && !allowedUnits.includes(unitKind)) continue;
       const stats = getUnitStats(unitKind, b.era);
-      const uInfo = UNIT_INFO[unitKind];
-      const unitName = unitDisplayName(unitKind, this.game.players[b.owner]?.civ);
+      const unitName = unitDisplayName(unitKind, this.game.players[b.owner]?.civ, b.era);
       const tech = UNIT_ARCHETYPES[unitKind].requiresTech?.[0];
       const techOk = !tech || this.game.players[0].techs.has(tech);
       const eraOk = !!UNIT_ARCHETYPES[unitKind].eraModel[this.game.players[0].era];
       const periodOk = unitMinPeriod(unitKind) <= this.game.settings.period;
       const fortOk = !UNIT_ARCHETYPES[unitKind].requiresFortress || b.kind === BuildingKind.FORTRESS;
       const disabled = !techOk || !eraOk || !periodOk || !fortOk || !this.canAfford(stats.cost);
-      this.addCard(uInfo.icon, unitName, this.costText(stats.cost), () => this.trainUnit(b.id, unitKind), {
-        disabled,
-        afford: !disabled && this.canAfford(stats.cost),
-        cat: 'mil',
-      });
+      this.addCard(
+        unitDisplayIcon(unitKind, b.era),
+        unitName,
+        this.costText(stats.cost),
+        () => this.trainUnit(b.id, unitKind),
+        {
+          disabled,
+          afford: !disabled && this.canAfford(stats.cost),
+          cat: 'mil',
+        },
+      );
     }
 
     // technologies (institute)
@@ -1108,7 +1114,7 @@ export class HUD {
     const stats = b.stats;
     let s = `HP ${Math.ceil(b.hp)}/${Math.ceil(b.maxHp)} · Blindaje ${formatStat(stats.armor)}`;
     if (b.constructionComplete && b.productionQueue.length > 0) {
-      s += ` · Entrenando: ${unitDisplayName(b.productionQueue[0].unit, this.game.players[b.owner]?.civ)}`;
+      s += ` · Entrenando: ${unitDisplayName(b.productionQueue[0].unit, this.game.players[b.owner]?.civ, b.era)}`;
     }
     if (b.isFarm && b.constructionComplete) {
       const mult = this.game.farmYieldAt(b.pos.x, b.pos.z);

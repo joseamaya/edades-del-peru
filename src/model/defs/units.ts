@@ -3,6 +3,14 @@ import { ERA_DEFS } from './eras';
 
 export type DamageClass = 'light' | 'heavy' | 'fortified';
 export type ProjectileKind = 'bullet' | 'rocket' | 'howitzer_shell' | 'laser' | 'rail' | 'nuclear' | 'tracer';
+export type RangedWeapon = 'sling' | 'bow' | 'arquebus' | 'musket' | 'rifle';
+
+export interface EraIdentity {
+  name: string;
+  icon: string;
+  description?: string;
+  weapon?: RangedWeapon;
+}
 
 import type { PersonGender } from './people';
 
@@ -43,6 +51,8 @@ export interface UnitArchetype {
   >;
   /** Model per era (visual). */
   eraModel: Partial<Record<Era, ModelSpec>>;
+  /** Visible name, description, icon and ranged weapon per era. */
+  eraIdentity?: Partial<Record<Era, EraIdentity>>;
   /** Technologies required to train (besides the era). */
   requiresTech?: string[];
   /** Does it need an advancement building (castle)? */
@@ -125,14 +135,52 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
       [Era.FORMATIVE]: { type: 'musketeer', scale: 1 },
       [Era.REGIONAL_STATES]: { type: 'musketeer', scale: 1 },
       [Era.TAHUANTINSUYO]: { type: 'musketeer', scale: 1.02 },
-      [Era.VICEROYALTY]: { type: 'veteran_rifleman', scale: 1.03 },
-      [Era.REPUBLIC]: { type: 'advanced_rifleman', scale: 1.05 },
-      [Era.CONTEMPORARY]: { type: 'advanced_rifleman', scale: 1.1 },
+      [Era.VICEROYALTY]: { type: 'arquebusier', scale: 1.03 },
+      [Era.REPUBLIC]: { type: 'line_infantry', scale: 1.05 },
+      [Era.CONTEMPORARY]: { type: 'line_infantry', scale: 1.1 },
+    },
+    eraIdentity: {
+      [Era.FORMATIVE]: {
+        name: 'Hondero',
+        icon: '🏹',
+        description: 'Tirador con honda y boleadora. Buen daño a distancia en masa.',
+        weapon: 'sling',
+      },
+      [Era.REGIONAL_STATES]: {
+        name: 'Hondero',
+        icon: '🏹',
+        description: 'Tirador con honda y boleadora. Buen daño a distancia en masa.',
+        weapon: 'sling',
+      },
+      [Era.TAHUANTINSUYO]: {
+        name: 'Hondero',
+        icon: '🏹',
+        description: 'Tirador con honda y boleadora. Buen daño a distancia en masa.',
+        weapon: 'sling',
+      },
+      [Era.VICEROYALTY]: {
+        name: 'Arcabucero',
+        icon: '🔫',
+        description: 'Arcabucero con arcabuz de mecha. Dispara a distancia con pólvora.',
+        weapon: 'arquebus',
+      },
+      [Era.REPUBLIC]: {
+        name: 'Fusilero',
+        icon: '🔫',
+        description: 'Fusilero de línea con fusil. La infantería de fuego del ejército republicano.',
+        weapon: 'rifle',
+      },
+      [Era.CONTEMPORARY]: {
+        name: 'Fusilero',
+        icon: '🔫',
+        description: 'Fusilero de línea con fusil. La infantería de fuego del ejército moderno.',
+        weapon: 'rifle',
+      },
     },
   },
   rifleman: {
     id: UnitKind.RIFLEMAN,
-    name: 'Tirador de Élite',
+    name: 'Arquero',
     description: 'Tropas de élite con arco largo y cerbatana. Alta cadencia de fuego.',
     category: 'ranged',
     eraStats: {
@@ -147,9 +195,47 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
       [Era.FORMATIVE]: { type: 'rifleman', scale: 1 },
       [Era.REGIONAL_STATES]: { type: 'rifleman', scale: 1 },
       [Era.TAHUANTINSUYO]: { type: 'rifleman', scale: 1.02 },
-      [Era.VICEROYALTY]: { type: 'veteran_rifleman', scale: 1.04 },
+      [Era.VICEROYALTY]: { type: 'musketeer_line', scale: 1.04 },
       [Era.REPUBLIC]: { type: 'advanced_rifleman', scale: 1.06 },
       [Era.CONTEMPORARY]: { type: 'advanced_rifleman', scale: 1.12 },
+    },
+    eraIdentity: {
+      [Era.FORMATIVE]: {
+        name: 'Arquero',
+        icon: '🏹',
+        description: 'Tropas de élite con arco largo y cerbatana. Alta cadencia de fuego.',
+        weapon: 'bow',
+      },
+      [Era.REGIONAL_STATES]: {
+        name: 'Arquero',
+        icon: '🏹',
+        description: 'Tropas de élite con arco largo y cerbatana. Alta cadencia de fuego.',
+        weapon: 'bow',
+      },
+      [Era.TAHUANTINSUYO]: {
+        name: 'Arquero',
+        icon: '🏹',
+        description: 'Tropas de élite con arco largo y cerbatana. Alta cadencia de fuego.',
+        weapon: 'bow',
+      },
+      [Era.VICEROYALTY]: {
+        name: 'Mosquetero',
+        icon: '🔫',
+        description: 'Mosquetero de élite con mosquete. Dispara a distancia con pólvora.',
+        weapon: 'musket',
+      },
+      [Era.REPUBLIC]: {
+        name: 'Tirador de Élite',
+        icon: '🎯',
+        description: 'Tirador de élite con rifle. Precisión y alcance en el campo de batalla.',
+        weapon: 'rifle',
+      },
+      [Era.CONTEMPORARY]: {
+        name: 'Tirador de Élite',
+        icon: '🎯',
+        description: 'Tirador de élite con rifle. Precisión y alcance en el campo de batalla.',
+        weapon: 'rifle',
+      },
     },
     requiresTech: ['bow_and_bolas'],
   },
@@ -174,6 +260,11 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
       [Era.VICEROYALTY]: { type: 'advanced_rifleman', scale: 1.06 },
       [Era.REPUBLIC]: { type: 'advanced_rifleman', scale: 1.08 },
       [Era.CONTEMPORARY]: { type: 'advanced_rifleman', scale: 1.14 },
+    },
+    eraIdentity: {
+      [Era.VICEROYALTY]: { name: 'Cazador', icon: '🦅', weapon: 'rifle' },
+      [Era.REPUBLIC]: { name: 'Cazador', icon: '🦅', weapon: 'rifle' },
+      [Era.CONTEMPORARY]: { name: 'Cazador', icon: '🦅', weapon: 'rifle' },
     },
     requiresTech: ['hunters'],
   },
@@ -660,6 +751,28 @@ export function getUnitModel(kind: UnitKind, era: Era): ModelSpec {
   return anyEra[best ?? Era.FORMATIVE] ?? { type: 'soldier_grunt' };
 }
 
+/** Visible identity for an era, falling back to the nearest lower era. */
+function eraIdentityFor(kind: UnitKind, era: Era): EraIdentity | undefined {
+  const identities = UNIT_ARCHETYPES[kind].eraIdentity;
+  if (!identities) return undefined;
+  if (identities[era]) return identities[era];
+  const best = ERA_DEFS.filter((e) => e.id <= era)
+    .map((e) => e.id)
+    .reverse()
+    .find((id) => identities[id]);
+  return best === undefined ? undefined : identities[best];
+}
+
+/** Ranged weapon a unit carries in an era, when the archetype defines one. */
+export function unitRangedWeapon(kind: UnitKind, era: Era): RangedWeapon | undefined {
+  return eraIdentityFor(kind, era)?.weapon;
+}
+
+/** True for gunpowder weapons that must not appear before 1532. */
+export function isFirearmWeapon(weapon: RangedWeapon | undefined): boolean {
+  return weapon === 'arquebus' || weapon === 'musket' || weapon === 'rifle';
+}
+
 export interface UnitOverride {
   name?: string;
   description?: string;
@@ -674,11 +787,22 @@ export interface UnitOverride {
 export function overrideUnit(id: UnitKind, o: UnitOverride): void {
   const arch = UNIT_ARCHETYPES[id];
   if (!arch) return;
+  const eraKeys = Object.keys(arch.eraIdentity ?? {}).map(Number) as Era[];
   if (o.name !== undefined) {
     arch.name = o.name;
     UNIT_INFO[id] = { ...UNIT_INFO[id], name: o.name };
+    for (const era of eraKeys) {
+      const identity = arch.eraIdentity?.[era];
+      if (identity) arch.eraIdentity![era] = { ...identity, name: o.name };
+    }
   }
-  if (o.description !== undefined) arch.description = o.description;
+  if (o.description !== undefined) {
+    arch.description = o.description;
+    for (const era of eraKeys) {
+      const identity = arch.eraIdentity?.[era];
+      if (identity) arch.eraIdentity![era] = { ...identity, description: o.description };
+    }
+  }
   if (o.category !== undefined) arch.category = o.category;
   if (o.stats) BASE_STATS[id] = { ...BASE_STATS[id], ...o.stats };
   if (o.eraStats) arch.eraStats = { ...arch.eraStats, ...o.eraStats };
@@ -688,7 +812,7 @@ export const UNIT_INFO: Record<UnitKind, { name: string; icon: string; category:
   worker: { name: 'Obrero', icon: '⛏️', category: 'Economía' },
   soldier: { name: 'Guerrero', icon: '🗡️', category: 'Infantería' },
   musketeer: { name: 'Hondero', icon: '🏹', category: 'Distancia' },
-  rifleman: { name: 'Tirador', icon: '🎯', category: 'Distancia' },
+  rifleman: { name: 'Arquero', icon: '🎯', category: 'Distancia' },
   sniper: { name: 'Cazador', icon: '🦅', category: 'Distancia' },
   hussar: { name: 'Jinete', icon: '🐎', category: 'Caballería' },
   cavalry: { name: 'Caballería de Choque', icon: '🐎', category: 'Caballería' },
@@ -702,16 +826,21 @@ export const UNIT_INFO: Record<UnitKind, { name: string; icon: string; category:
   nuclear: { name: 'Artillería de Cohetes', icon: '🚀', category: 'Asedio' },
 };
 
-/** Player-facing unit name; the Chasqui label is reserved for the Inca. */
-export function unitDisplayName(kind: UnitKind, civ?: CivId): string {
+/** Player-facing unit name for an era; the Chasqui label is reserved for the Inca. */
+export function unitDisplayName(kind: UnitKind, civ: CivId | undefined, era: Era): string {
   if (kind === UnitKind.SCOUT && civ === CivId.INCA) return 'Chasqui';
-  return UNIT_INFO[kind].name;
+  return eraIdentityFor(kind, era)?.name ?? UNIT_ARCHETYPES[kind].name;
 }
 
-/** Player-facing description; the Qhapaq Ñan belongs to the Inca Chasqui. */
-export function unitDisplayDescription(kind: UnitKind, civ?: CivId): string {
+/** Player-facing description for an era; the Qhapaq Ñan belongs to the Inca Chasqui. */
+export function unitDisplayDescription(kind: UnitKind, civ: CivId | undefined, era: Era): string {
   if (kind === UnitKind.SCOUT && civ === CivId.INCA) {
     return 'Mensajero veloz del Qhapaq Ñan. Ilumina el mapa con su visión.';
   }
-  return UNIT_ARCHETYPES[kind].description;
+  return eraIdentityFor(kind, era)?.description ?? UNIT_ARCHETYPES[kind].description;
+}
+
+/** Player-facing icon for an era. */
+export function unitDisplayIcon(kind: UnitKind, era: Era): string {
+  return eraIdentityFor(kind, era)?.icon ?? UNIT_INFO[kind].icon;
 }
