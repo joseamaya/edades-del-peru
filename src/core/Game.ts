@@ -3614,6 +3614,18 @@ export class Game {
     this.audio.uiClick?.();
   }
 
+  /** Select a building by id (debug harness and inspector tests). */
+  selectBuilding(id: number): void {
+    const b = this.buildings.get(id);
+    if (!b || b.dead) return;
+    this.selectedUnits = [];
+    this.selectedBuilding = id;
+    this.selectedHeritage = null;
+    this.refreshSelectionVisuals();
+    bus.emit('unit:selected', { ids: [] });
+    this.audio.select();
+  }
+
   /** Replace the unit selection with the given ids (only own and alive). */
   selectUnits(ids: number[]): void {
     const valid = ids.filter((id) => {

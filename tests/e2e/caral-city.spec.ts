@@ -242,6 +242,38 @@ test('opening the Caral canal raises the yield at its banks', async ({ page }) =
   expect(closed.food).toBeLessThan(farm!.foodOpen);
 });
 
+test('the Andén and Troje panels explain their historical abstractions', async ({ page }) => {
+  await boot(page);
+  const ids = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const center = [...g.buildings.values()].find((b: any) => b.kind === 'center' && b.owner === 0);
+    if (!center) return null;
+    const place = (kind: string, dx: number, dz: number): number | null => {
+      const spot = g.findFreeSpot(center.pos.x + dx, center.pos.z + dz, 3);
+      if (!spot || !g.executeCommand({ kind: 'place', building: kind, x: spot.x, z: spot.z })) return null;
+      const b = [...g.buildings.values()].find(
+        (candidate: any) => candidate.kind === kind && candidate.owner === 0 && candidate.pos.x === spot.x,
+      );
+      if (!b) return null;
+      b.constructionComplete = true;
+      return b.id as number;
+    };
+    return { farm: place('farm', 7, 0), mill: place('mill', -7, 0) };
+  });
+  expect(ids).not.toBeNull();
+  expect(ids!.farm).not.toBeNull();
+  expect(ids!.mill).not.toBeNull();
+  const bottom = page.locator('#ed-bottom');
+  await page.evaluate((id) => (window as unknown as { game: any }).game.selectBuilding(id), ids!.farm);
+  await expect(bottom).toContainText('Andén');
+  await expect(bottom).toContainText('abstracción jugable');
+  await expect(bottom).toContainText('Dossier de Caral');
+  await page.evaluate((id) => (window as unknown as { game: any }).game.selectBuilding(id), ids!.mill);
+  await expect(bottom).toContainText('Troje');
+  await expect(bottom).toContainText('depósito comunal');
+  await expect(bottom).toContainText('Dossier de Caral');
+});
+
 test('the Caral city rebuilds the full procedural plan when a modular pyramid fails', async ({ page }) => {
   await page.route('**/*caral_pyramid_central_lod0.glb*', (route) => {
     if (route.request().url().includes('?')) return route.continue();

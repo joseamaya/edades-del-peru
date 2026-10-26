@@ -30,7 +30,7 @@ What the player does:
 2. Places two fields (the game's Andén building). Fields near moisture or a canal hold more food, and the HUD
    shows the reserve and terrain bonus.
 3. Builds a communal store (the game's Troje) to represent the surplus. Both names are gameplay abstractions,
-   not attested Caral terms.
+   not attested Caral terms; selecting either building shows its historical field card.
 4. Reaches a food target, observes the ceremonial complex and keeps the settlement standing.
 5. Optional: opens the communal canal gate; nearby Andenes gain irrigation yield and the `obj_riego`
    bonus completes.
