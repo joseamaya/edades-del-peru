@@ -13,6 +13,7 @@ import {
   AlertReason,
 } from '../core/types';
 import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../model/defs/buildings';
+import { getBuildingCard } from '../model/defs/buildingCards';
 import { UNIT_ARCHETYPES, getUnitStats, unitDisplayIcon, unitDisplayName, unitMinPeriod } from '../model/defs/units';
 import { TECHS, techAvailable } from '../model/defs/techs';
 import { ERA_DEFS } from '../model/defs/eras';
@@ -1152,6 +1153,10 @@ export class HUD {
       const mult = this.game.farmYieldAt(b.pos.x, b.pos.z);
       s += ` · Reserva de alimentos: ${Math.ceil(b.foodAmount)}`;
       if (mult > 1.001) s += ` · +${Math.round((mult - 1) * 100)}% por el terreno`;
+    }
+    const card = getBuildingCard(this.game.mission?.def.id, b.kind);
+    if (card) {
+      s += `<br><span style="color:var(--text-dim)">${card.role}: ${card.summary}</span><br><span style="color:var(--text-dim);font-size:11px">Fuente: ${card.citation} · ${card.confidence}</span>`;
     }
     return s;
   }

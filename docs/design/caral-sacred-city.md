@@ -74,7 +74,8 @@ camera framing and the warm desert palette.
 - Heritage inspection: `src/model/defs/heritage.ts` and the landmark/canal picking path in `Game.ts`.
   Every modular pyramid and the Anfiteatro open a field card with sector, role, summary,
   confidence and sources; “Visitar” records the card without gating progress. The communal canal
-  has a gate operation that raises the irrigation yield of nearby Andenes.
+  has a gate operation that raises the irrigation yield of nearby Andenes. Player-owned Andenes
+  and Trojes in m1 also show their historical field cards (`src/model/defs/buildingCards.ts`).
 - Wiring: `src/core/Game.ts` (reserved footprints, fixed base, landmark, intro)
   and `src/rendering/Water.ts` (map-aligned depth sampling for inland rivers).
 
