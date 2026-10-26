@@ -27,12 +27,12 @@ objectives can be satisfied by a test harness.
 |---|---|---|
 | History | Met | `docs/historia/campanas/caral.md`, UNESCO / Zona Arqueológica Caral sources; no documented war. |
 | Identity | Met | Authored Supe valley and Caral Alto/Bajo, six modular pyramids, Anfiteatro, operable canal, heritage cards and communal assembly. |
-| Play | Met | `tests/e2e/campaign-playtest.spec.ts` builds and harvests through ordinary commands and wins without cheats. |
+| Play | Met | `tests/e2e/campaign-playtest.spec.ts` builds, harvests and moves through ordinary commands, then uses the public `visitHeritage` action after the scout reaches the site; the field-card button itself is covered by `caral-city.spec.ts`. |
 | Contract | Met | Required ceremonial observation; optional canal, six-pyramid visit and assembly; hidden assembly filtered from the briefing; live progress in the objectives panel. |
 | Onboarding | Met | Six-step tutorial, briefing, Codex, minimap destination pips. |
 | Closure | Met | Epilogue, optional-achievement summary and “Continuar” to m2. |
 | UX | Met | Reviewed at 1280×800 and 1600×900; tutorial dialogue and result layout do not hide controls. |
-| Visuals | Met | Authored Caral set-piece plus modular GLBs; current 1280/1600 captures in `review/`, canal state change and HUD layout covered by E2E. |
+| Visuals | Met locally | Authored Caral set-piece plus modular GLBs; current 1280/1600 captures are local review artifacts (`review/`, gitignored). Canal state change and HUD layout are covered by E2E; there is no CI pixel gate. |
 | Persistence | Met | Heritage, canal, farm yield, tutorial and mission state round-trip; E2E covers the Caral save. |
 | Tests | Met | Unit tests, campaign/city E2E, real-command playtest, `yarn verify:fast` and CI. |
 | Docs | Met | README, dossier, campaign experiences and Caral design notes aligned. |

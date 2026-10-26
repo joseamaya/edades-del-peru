@@ -181,6 +181,7 @@ test('the Caral tutorial hides the shortcut help while it is open', async ({ pag
 test('the Caral HUD keeps the tutorial and objectives separate at both review sizes', async ({ page }) => {
   await boot(page);
   await expect(page.locator('#ed-tutorial')).toBeVisible({ timeout: 30_000 });
+  await page.evaluate(() => (window as unknown as { game: any }).game.loop.stop());
   for (const viewport of [
     { width: 1280, height: 800 },
     { width: 1600, height: 900 },
@@ -249,7 +250,7 @@ test('a Caral Blender pyramid opens an educational field card', async ({ page })
   await expect(bottom).toContainText('documentado');
   await expect(bottom).toContainText('Dossier de Caral');
   await expect(page.getByRole('button', { name: /Visitar/ })).toHaveCount(1);
-  await page.evaluate(() => (window as unknown as { game: any }).game.visitHeritage('caral_pyramid_mayor'));
+  await page.getByRole('button', { name: /Visitar/ }).click();
   await expect(bottom).toContainText('Ficha registrada');
   const complexes = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;

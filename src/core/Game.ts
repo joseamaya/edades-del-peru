@@ -1417,8 +1417,6 @@ export class Game {
     const url = new URL(location.href);
     url.searchParams.set('play', '1');
     url.searchParams.delete('load');
-    url.searchParams.delete('replay');
-    url.searchParams.delete('menu');
     if (this.settings.missionId) url.searchParams.set('mission', this.settings.missionId);
     else url.searchParams.delete('mission');
     location.href = url.toString();

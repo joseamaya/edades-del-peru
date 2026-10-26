@@ -176,14 +176,14 @@ export class Mission {
   private complete(id: string): void {
     if (this.objState.get(id) === 'completed') return;
     this.objState.set(id, 'completed');
-    this.game.hud.showToast('✔ Objetivo completado: ' + this.def.objectives.find((o) => o.id === id)?.title, 'success');
+    this.game.hud.showToast('✔ Objetivo completado: ' + this.objective(id)?.title, 'success');
     this.game.audio?.uiClick?.();
   }
 
   private fail(id: string): void {
     if (this.objState.get(id) === 'failed' || this.objState.get(id) === 'completed') return;
     this.objState.set(id, 'failed');
-    this.game.hud.showToast('✖ Objetivo fallado: ' + this.def.objectives.find((o) => o.id === id)?.title, 'danger');
+    this.game.hud.showToast('✖ Objetivo fallado: ' + this.objective(id)?.title, 'danger');
   }
 
   // --- objectives ---
@@ -242,7 +242,9 @@ export class Mission {
         return p.resources[o.resource ?? 'food'] >= (o.count ?? 0) ? 'win' : 'ok';
       case 'inspect': {
         const ids = o.heritageIds ?? [];
-        return ids.length > 0 && ids.every((id) => this.game.isHeritageVisited(id)) ? 'win' : 'ok';
+        const visited = ids.length > 0 && ids.every((id) => this.game.isHeritageVisited(id));
+        // with a location, the card must also be observed from the site
+        return visited && (!o.pos || this.reached(o)) ? 'win' : 'ok';
       }
       case 'canal_open':
         return this.game.isCanalOpen() ? 'win' : 'ok';
@@ -453,11 +455,10 @@ export class Mission {
         return { current: this.holdTimers.get(o.id) ?? 0, target: o.time ?? 0, format: 'time' };
       case 'inspect': {
         const ids = o.heritageIds ?? [];
-        return {
-          current: ids.filter((hid) => this.game.isHeritageVisited(hid)).length,
-          target: ids.length,
-          format: 'count',
-        };
+        const visited = ids.filter((hid) => this.game.isHeritageVisited(hid)).length;
+        if (!ids.length) return null;
+        if (o.pos) return { current: visited === ids.length && this.reached(o) ? 1 : 0, target: 1, format: 'count' };
+        return { current: visited, target: ids.length, format: 'count' };
       }
       case 'canal_open':
         return { current: this.game.isCanalOpen() ? 1 : 0, target: 1, format: 'count' };

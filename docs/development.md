@@ -258,7 +258,8 @@ Definition of Done and the building audit see
   `tests/campaign-profiles.test.ts`.
 - **Campaign contract**: hidden objectives are omitted from the briefing until activated; `Mission.getObjectiveProgress`
   feeds live count/time meters to the objectives panel; active objective anchors are drawn as gold pips on the
-  minimap. Victory lists optional achievements and offers the next mission. The Caral gold-master gates live in
+  minimap. An `inspect` objective with `pos` also requires a player unit at the site. An untagged `reach`
+  objective accepts any player unit. Victory lists optional achievements and offers the next mission. The Caral gold-master gates live in
   [`design/campaign-quality-bar.md`](design/campaign-quality-bar.md).
 - **Educational layer**: `src/campaign/defs/educational.ts` (prologue + context/«¿Sabías que…?»/sources per mission,
   derived from `docs/historia/`), `src/campaign/Tutorial.ts` (step-by-step guided tutorial, only on missions with

@@ -76,6 +76,7 @@ describe('mission objective progress', () => {
     m.start();
 
     expect(m.getObjectiveProgress('observe')).toEqual({ current: 0, target: 1, format: 'count' });
+    expect(m.getObjectiveAnchor('observe')).toEqual({ x: 10, z: 10 });
     expect(m.getObjectiveProgress('food')).toEqual({ current: 0, target: 10, format: 'count' });
 
     unit.pos = { x: 10, z: 10 };

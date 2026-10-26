@@ -73,7 +73,7 @@ Nine historical scenarios grounded in documented dates, places and societies; wh
 | --- | ------------------------- | -------------- | ---------------------------------------------------------- |
 | 1   | La Ciudad Sagrada         | c. 3000 BCE    | Caral-Supe, Áspero and the Supe valley (no documented war) |
 | 2   | El Oráculo de Chavín      | c. 900–500 BCE | Chavín and Paracas (coetaneous)                            |
-| 3   | La Frontera de los Valles | c. 300–600 CE  | Moche and Recuay (documented conflict)                     |
+| 3   | La Frontera de los Valles | c. 300–600 CE  | Moche and Recuay (archaeologically attested conflict)      |
 | 4   | El Horizonte Medio        | c. 600–1000 CE | Wari and Tiahuanaco (coetaneous)                           |
 | 5   | Yahuar Pampa              | 1438           | Cusi Yupanqui (Inca) vs Anccu Hualloc (Chanca)             |
 | 6   | La Guerra del Norte       | c. 1470        | Túpac Yupanqui (Inca) vs Minchancaman (Chimú)              |
