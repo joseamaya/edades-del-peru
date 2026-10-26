@@ -163,6 +163,7 @@ export class Game {
   landmark: THREE.Group | null = null;
   private landmarkOwnsStatic = false;
   private landmarkLoadToken = 0;
+  private setpieceLoadToken = 0;
   /** Cultural landscape (roads, fields, plazas, canals); visual only. */
   landscape: CulturalLandscape | null = null;
   /** Per-base settlement overlays (planned fields/roads); visual only. */
@@ -650,6 +651,7 @@ export class Game {
           console.warn('[landmark] failed to load Caral scenery; using procedural fallback', error);
           if (token !== this.landmarkLoadToken || this.landmark !== placeholder) return;
           this.landmarkLoadToken++;
+          this.setpieceLoadToken++;
           this.clearLandmarkScenery(placeholder);
           const fallback = buildLandmarkModel(id, ctx);
           fallback.name = 'caral_ceremonial_fallback';
@@ -660,13 +662,16 @@ export class Game {
           this.landmarkOwnsStatic = false;
           this.buildSacredCity(this.setpiecePlan);
         });
-      if (this.pendingSnapshot) return;
+      const moduleToken = ++this.setpieceLoadToken;
       for (const setpiece of scenery.setpieces ?? []) {
-        const planned = this.setpiecePlan?.placements.find((placement) => placement.modularAnchor);
+        const planned = setpiece.placement
+          ? this.setpiecePlan?.placements.find((placement) => placement.name === setpiece.placement)
+          : this.setpiecePlan?.placements.find((placement) => placement.modularAnchor);
         const site = planned ?? placeSetpiece(setpiece.padRadius);
-        if (!site) {
-          console.warn(`[landmark] no flat site for setpiece ${setpiece.model}`);
-          continue;
+        if (!site || (this.setpiecePlan && setpiece.placement && !planned)) {
+          console.warn(`[landmark] missing authored setpiece site for ${setpiece.model}`);
+          this.fallbackSetpieces(placeholder);
+          break;
         }
         const group = new THREE.Group();
         group.name = 'landmark_setpiece';
@@ -682,16 +687,16 @@ export class Game {
         void loadSceneryModel(setpiece.model)
           .then((model) => {
             model.name = setpiece.model;
-            if (!this.attachScenery(placeholder, group, model, token)) return;
+            if (!this.attachScenery(placeholder, group, model, token, moduleToken)) return;
+            if (setpiece.platform === false) return;
             const pad = this.createLandmarkPad(setpiece.padRadius, 'caral_landmark_setpiece_pad', setpiece.padSize);
             group.add(pad);
             applyFowToObject(pad, this.fowUniforms);
           })
           .catch((error: unknown) => {
             console.warn(`[landmark] failed to load setpiece ${setpiece.model}; using procedural city`, error);
-            if (token !== this.landmarkLoadToken || this.landmark !== placeholder) return;
-            group.removeFromParent();
-            this.buildSacredCity(this.setpiecePlan);
+            if (token !== this.landmarkLoadToken || moduleToken !== this.setpieceLoadToken) return;
+            this.fallbackSetpieces(placeholder);
           });
       }
       return;
@@ -706,8 +711,18 @@ export class Game {
     this.scene.add(model);
   }
 
-  private attachScenery(placeholder: THREE.Group, parent: THREE.Object3D, model: THREE.Group, token: number): boolean {
-    if (token !== this.landmarkLoadToken || this.landmark !== placeholder) {
+  private attachScenery(
+    placeholder: THREE.Group,
+    parent: THREE.Object3D,
+    model: THREE.Group,
+    token: number,
+    setpieceToken?: number,
+  ): boolean {
+    if (
+      token !== this.landmarkLoadToken ||
+      (setpieceToken !== undefined && setpieceToken !== this.setpieceLoadToken) ||
+      this.landmark !== placeholder
+    ) {
       disposeStaticGltf(model);
       return false;
     }
@@ -721,6 +736,21 @@ export class Game {
       placeholder.remove(child);
       disposeStaticGltf(child);
     }
+  }
+
+  private clearLandmarkSetpieces(placeholder: THREE.Group): void {
+    for (const child of [...placeholder.children]) {
+      if (child.name !== 'landmark_setpiece') continue;
+      placeholder.remove(child);
+      disposeStaticGltf(child);
+    }
+  }
+
+  private fallbackSetpieces(placeholder: THREE.Group): void {
+    if (this.landmark !== placeholder) return;
+    this.setpieceLoadToken++;
+    this.clearLandmarkSetpieces(placeholder);
+    this.buildSacredCity(this.setpiecePlan);
   }
 
   private enableLandmarkShadows(root: THREE.Object3D): void {
@@ -814,13 +844,10 @@ export class Game {
    */
   private spawnSacredCity(): void {
     if (!this.setpiecePlan) return;
-    const plan = this.pendingSnapshot
-      ? this.setpiecePlan
-      : {
-          ...this.setpiecePlan,
-          placements: this.setpiecePlan.placements.filter((placement) => !placement.modularReplaced),
-        };
-    this.buildSacredCity(plan);
+    this.buildSacredCity({
+      ...this.setpiecePlan,
+      placements: this.setpiecePlan.placements.filter((placement) => !placement.modularReplaced),
+    });
   }
 
   private buildSacredCity(plan: CaralCityPlan | null): void {
@@ -828,6 +855,7 @@ export class Game {
     this.setpiece?.dispose();
     this.setpiece = new SacredCity(this.makeBuildContext(0), plan, this.terrain);
     this.setpiece.group.userData.proceduralLower = plan === this.setpiecePlan;
+    this.setpiece.group.userData.placements = plan.placements.map((placement) => placement.name ?? placement.kind);
     applyFowToObject(this.setpiece.group, this.fowUniforms);
     this.scene.add(this.setpiece.group);
   }

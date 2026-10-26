@@ -20,6 +20,46 @@ from mathutils import Vector
 GAME_SCALE = 0.08
 
 ASSETS = {
+    'central-pyramid': {
+        'asset_id': 'caral_pyramid_central',
+        'root': 'GEO-Caral_PyramidCentral',
+        'collection_prefix': 'COL-Caral_PyramidCentral',
+        'source_objects': ('GEO-Caral_PiramideCentral_LOD0',),
+        'lod1_ratio': 0.4,
+        'blend': 'caral_pyramid_central.blend',
+    },
+    'quarry-pyramid': {
+        'asset_id': 'caral_pyramid_quarry',
+        'root': 'GEO-Caral_PyramidQuarry',
+        'collection_prefix': 'COL-Caral_PyramidQuarry',
+        'source_objects': ('GEO-Caral_PiramideCantera_LOD0',),
+        'lod1_ratio': 0.4,
+        'blend': 'caral_pyramid_quarry.blend',
+    },
+    'lesser-pyramid': {
+        'asset_id': 'caral_pyramid_lesser',
+        'root': 'GEO-Caral_PyramidLesser',
+        'collection_prefix': 'COL-Caral_PyramidLesser',
+        'source_objects': ('GEO-Caral_PiramideMenor_LOD0',),
+        'lod1_ratio': 0.4,
+        'blend': 'caral_pyramid_lesser.blend',
+    },
+    'gallery-pyramid': {
+        'asset_id': 'caral_pyramid_gallery',
+        'root': 'GEO-Caral_PyramidGallery',
+        'collection_prefix': 'COL-Caral_PyramidGallery',
+        'source_objects': ('GEO-Caral_PiramideGaleria_LOD0',),
+        'lod1_ratio': 0.4,
+        'blend': 'caral_pyramid_gallery.blend',
+    },
+    'huanca-pyramid': {
+        'asset_id': 'caral_pyramid_huanca',
+        'root': 'GEO-Caral_PyramidHuanca',
+        'collection_prefix': 'COL-Caral_PyramidHuanca',
+        'source_objects': ('GEO-Caral_PiramideHuanca_LOD0',),
+        'lod1_ratio': 0.4,
+        'blend': 'caral_pyramid_huanca.blend',
+    },
     'pyramid-mayor': {
         'asset_id': 'caral_pyramid_mayor',
         'root': 'GEO-Caral_PyramidMayor',

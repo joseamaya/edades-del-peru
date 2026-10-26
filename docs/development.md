@@ -45,23 +45,22 @@ Definition of Done and the building audit see
   Blender exports (18,120/6,194 tris, 10 draw calls, Y-up, ground pivot, +Z stair). `src/rendering/StaticModel.ts`
   loads static glTF without animation clips, and `?city=caral` mounts a standalone showcase with shadows,
   orbit controls, LOD0/LOD1 and `window.__cityDemo`. The full-city GLB is **not** used by a campaign
-  mission; `m1_caral` instead builds a procedural sacred-city plan and places the modular Pyramid Mayor
-  and Anfiteatro at its fixed anchors. `MAT-Sand_Desert` needs a source fix, plaza stalls need a
-  historical review, and the 30×50 footprint needs a flat-pad/placement design before integrating the
-  full-city GLB. See
+  mission; `m1_caral` instead builds a sacred-city plan and places the modular Pyramid Mayor, five
+  Upper-Half pyramids and Anfiteatro at fixed anchors. `MAT-Sand_Desert` needs a source fix, plaza
+  stalls need a historical review, and the 30×50 footprint needs a flat-pad/placement design before
+  integrating the full-city GLB. See
   [`docs/design/blender-art.md`](design/blender-art.md).
 - **Caral modular scenery**: `src/assets/scenery/caral/caral_pyramid_mayor_lod0.glb` /
-  `lod1.glb` (Pyramid Mayor + Plaza Mayor; 6,044/2,408 tris, 7 draw calls, footprint 13.9 × 15.5)
-  and `caral_anfiteatro_lod0.glb` / `lod1.glb` (Templo Anfiteatro + Altar + Banqueta;
-  3,520/1,403 tris, 7 draw calls, footprint 19.7 × 7.2). Both are rebuilt by
+  `lod1.glb` (Pyramid Mayor + Plaza Mayor; 6,044/2,408 tris, 7 draw calls, footprint 13.9 × 15.5),
+  five Upper-Half pyramid modules (`central`, `quarry`, `lesser`, `gallery`, `huanca`; 792–924 LOD0
+  tris each) and `caral_anfiteatro_lod0.glb` / `lod1.glb` (Templo Anfiteatro + Altar + Banqueta;
+  3,520/1,403 tris, 7 draw calls, footprint 19.7 × 7.2). All are rebuilt by
   `scripts/blender/build_caral_scenery.py --asset=…` from `caral_rts_kit.blend`; the script excludes
   market stalls and terrain. `?scenery=caral` and `?scenery=caral-anfiteatro` mount the showcases
-  (`window.__sceneryDemo`). The Pyramid Mayor is the Caral landmark and the Anfiteatro is its secondary
-  setpiece (both visual-only, raised terraces, no collision); both remain in the showcase. On `m1_caral`
-  the plan supplies the fixed `greater` and `amphitheatre` anchors, and the three procedural lower-half
-  temple placements are filtered. If the Anfiteatro GLB fails, the full procedural lower ensemble is
-  rebuilt; loaded saves keep that ensemble because the modular setpiece is skipped before the snapshot is
-  applied. The builder strips the unsupported procedural Base
+  (`window.__sceneryDemo`). On `m1_caral` the plan supplies the fixed `greater`, five Upper-Half and
+  `amphitheatre` anchors; the five pyramid rows and three lower temple rows are filtered from the
+  procedural city. If any modular setpiece fails, all modular setpieces are cleared and the full
+  procedural plan is rebuilt, including loaded saves. The builder strips the unsupported procedural Base
   Color link from `MAT-Sand_Desert` so the GLB exports its `baseColorFactor`. See
   `docs/design/blender-art.md`.
 - **Mission canals**: `MissionLayout.canal` (`src/campaign/types.ts`) gives a normalized canal site; `Game.spawnCanal` builds the visual water/stones and reserves the footprint, while `MissionPoint.ref: 'canal'` resolves the site for a `reach` objective. m6 uses it: reaching the canal with Túpac Yupanqui completes the objective and a trigger forces Chan Chan's surrender. Visual-only, no pathfinding obstacle. See `tests/e2e/campaign.spec.ts`.

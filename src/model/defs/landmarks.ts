@@ -29,7 +29,16 @@ export type LandmarkId =
   | 'republican_fort'
   | 'chile_apostadero';
 
-export type LandmarkSceneryModel = 'caral_pyramid_mayor' | 'caral_anfiteatro';
+export type CaralModularPlacement = 'central' | 'quarry' | 'lesser' | 'gallery' | 'huanca' | 'amphitheatre';
+
+export type LandmarkSceneryModel =
+  | 'caral_pyramid_mayor'
+  | 'caral_pyramid_central'
+  | 'caral_pyramid_quarry'
+  | 'caral_pyramid_lesser'
+  | 'caral_pyramid_gallery'
+  | 'caral_pyramid_huanca'
+  | 'caral_anfiteatro';
 
 export interface PadSize {
   x: number;
@@ -38,9 +47,13 @@ export interface PadSize {
 
 export interface LandmarkSetpiece {
   model: LandmarkSceneryModel;
+  /** Placement name in the authored scene plan; falls back to a random site for older scenery. */
+  placement?: CaralModularPlacement;
   /** Search radius; the height radius includes the rectangular pad circumradius. */
   padRadius: number;
   padSize?: PadSize;
+  /** Set false when the surrounding authored terrain flat already supports the module. */
+  platform?: boolean;
 }
 
 export function setpiecePadRadius(setpiece: LandmarkSetpiece): number {
@@ -79,7 +92,14 @@ export const LANDMARKS: Record<LandmarkId, LandmarkDef> = {
     scenery: {
       model: 'caral_pyramid_mayor',
       padRadius: 11,
-      setpieces: [{ model: 'caral_anfiteatro', padRadius: 10, padSize: { x: 21, z: 9 } }],
+      setpieces: [
+        { model: 'caral_anfiteatro', placement: 'amphitheatre', padRadius: 10, padSize: { x: 21, z: 9 } },
+        { model: 'caral_pyramid_central', placement: 'central', padRadius: 6, platform: false },
+        { model: 'caral_pyramid_quarry', placement: 'quarry', padRadius: 6, platform: false },
+        { model: 'caral_pyramid_lesser', placement: 'lesser', padRadius: 5, platform: false },
+        { model: 'caral_pyramid_gallery', placement: 'gallery', padRadius: 6, platform: false },
+        { model: 'caral_pyramid_huanca', placement: 'huanca', padRadius: 5.5, platform: false },
+      ],
     },
   },
   chavin_temple: {

@@ -12,25 +12,49 @@ interface SceneryManifest {
   };
 }
 
+const NO_MARKET_PROPS = ['MAT-Sand_Desert', 'MAT-Textile_Cotton', 'MAT-Wood_Warm'];
+
+function manifestFor(id: string): SceneryManifest {
+  return JSON.parse(
+    fs.readFileSync(path.resolve(`art-src/blender/exports/caral/${id}_manifest.json`), 'utf8'),
+  ) as SceneryManifest;
+}
+
+function pyramidAsset(id: string, yellow = false) {
+  return {
+    id,
+    lod0: new URL(`../src/assets/scenery/caral/${id}_lod0.glb`, import.meta.url),
+    lod1: new URL(`../src/assets/scenery/caral/${id}_lod1.glb`, import.meta.url),
+    manifest: manifestFor(id),
+    required: [
+      'MAT-Fire_Ember',
+      'MAT-Plaster_White',
+      ...(yellow ? ['MAT-Plaster_Yellow'] : []),
+      'MAT-Stone_Granodiorite',
+    ],
+    forbidden: NO_MARKET_PROPS,
+    sandColor: null,
+  };
+}
+
 const ASSETS = [
   {
     id: 'caral_pyramid_mayor',
     lod0: new URL('../src/assets/scenery/caral/caral_pyramid_mayor_lod0.glb', import.meta.url),
     lod1: new URL('../src/assets/scenery/caral/caral_pyramid_mayor_lod1.glb', import.meta.url),
-    manifest: JSON.parse(
-      fs.readFileSync(path.resolve('art-src/blender/exports/caral/caral_pyramid_mayor_manifest.json'), 'utf8'),
-    ) as SceneryManifest,
+    manifest: manifestFor('caral_pyramid_mayor'),
     required: ['MAT-Fire_Ember', 'MAT-Plaster_White', 'MAT-Stone_Granodiorite', 'MAT-Thatch_Reed'],
-    forbidden: ['MAT-Sand_Desert', 'MAT-Textile_Cotton', 'MAT-Wood_Warm'],
+    forbidden: NO_MARKET_PROPS,
     sandColor: null,
   },
+  ...['central', 'quarry', 'lesser', 'gallery', 'huanca'].map((name) =>
+    pyramidAsset(`caral_pyramid_${name}`, name === 'lesser' || name === 'huanca'),
+  ),
   {
     id: 'caral_anfiteatro',
     lod0: new URL('../src/assets/scenery/caral/caral_anfiteatro_lod0.glb', import.meta.url),
     lod1: new URL('../src/assets/scenery/caral/caral_anfiteatro_lod1.glb', import.meta.url),
-    manifest: JSON.parse(
-      fs.readFileSync(path.resolve('art-src/blender/exports/caral/caral_anfiteatro_manifest.json'), 'utf8'),
-    ) as SceneryManifest,
+    manifest: manifestFor('caral_anfiteatro'),
     required: ['MAT-Fire_Ember', 'MAT-Plaster_White', 'MAT-Sand_Desert', 'MAT-Stone_Granodiorite'],
     forbidden: ['MAT-Textile_Cotton', 'MAT-Wood_Warm'],
     sandColor: '9d8563',

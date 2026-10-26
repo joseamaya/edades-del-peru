@@ -1,0 +1,66 @@
+{
+  "asset_id": "caral_pyramid_gallery",
+  "source_scene": "scenes/caral_rts_kit.blend",
+  "source_objects": [
+    "GEO-Caral_PiramideGaleria_LOD0"
+  ],
+  "scale": 0.08,
+  "lod1_ratio": 0.4,
+  "root": "GEO-Caral_PyramidGallery",
+  "lods": {
+    "LOD0": {
+      "file": "caral_pyramid_gallery_lod0.glb",
+      "triangles": 924,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Fire_Ember",
+        "MAT-Plaster_White",
+        "MAT-Stone_Granodiorite"
+      ],
+      "bounds": {
+        "min": [
+          -2.9988,
+          -3.073121,
+          0.0
+        ],
+        "max": [
+          2.9988,
+          3.07312,
+          1.6632
+        ],
+        "size": [
+          5.9976,
+          6.146241,
+          1.6632
+        ]
+      }
+    },
+    "LOD1": {
+      "file": "caral_pyramid_gallery_lod1.glb",
+      "triangles": 347,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Fire_Ember",
+        "MAT-Plaster_White",
+        "MAT-Stone_Granodiorite"
+      ],
+      "bounds": {
+        "min": [
+          -2.9988,
+          -3.073121,
+          0.0
+        ],
+        "max": [
+          2.9988,
+          3.07312,
+          1.6632
+        ],
+        "size": [
+          5.9976,
+          6.146241,
+          1.6632
+        ]
+      }
+    }
+  }
+}

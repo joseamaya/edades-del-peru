@@ -25,7 +25,27 @@ and hashes live alongside them so provenance is reproducible.
 | `exports/caral/caral_anfiteatro_lod0.glb` | `b00b196a7698c75048e636cbc7f6ed5b4f817d3044f998735f4c701536031565` |
 | `exports/caral/caral_anfiteatro_lod1.glb` | `6b17d4e4237270979085a12aaaaa248fb787aecb65db1bcf7dcb4713b851897b` |
 | `exports/caral/caral_anfiteatro_manifest.json` | `343c8f1d703be774dd35fd631b161c9eafb612cd4e726bff0e37e14b8dfc61dd` |
-| `caral/scenery_manifest.csv` | `121f34c941c7b10dc8a6cee03bd8e60e2dba39cfe8e798d533f897adf26ba21d` |
+| `scenes/caral_pyramid_central.blend` | `6ac4fc96bac4196ad11151141dfa2cbc0ce0f93a5e55b0b6c9557b6d1609670f` |
+| `scenes/caral_pyramid_quarry.blend` | `5ae709c231327cbfff5908772aa4f1a162c37151e72a8390318c78f2fa94d6f6` |
+| `scenes/caral_pyramid_lesser.blend` | `07d157f9c364cc00980f1002b0a5b38f7c5b0fd7369f00d8774a29c8ee0e45a0` |
+| `scenes/caral_pyramid_gallery.blend` | `46cd8deffb1c4f3dc6d85bfdae3bf42e615b3bf72bc692fee4b30414667b3142` |
+| `scenes/caral_pyramid_huanca.blend` | `dab32da072d63062457c3068edb62a1797402e616fe2bf881c8241222cd57a74` |
+| `exports/caral/caral_pyramid_central_lod0.glb` | `791a6b44ccc7ff9ee2ad7f3990ab57148d866c353c0e1b4ec9fe627a88aac737` |
+| `exports/caral/caral_pyramid_central_lod1.glb` | `4028f1b5d0c2ee9844c4e5a2e52c6ef5b0b6627d436d07678cea67c9c3c19790` |
+| `exports/caral/caral_pyramid_quarry_lod0.glb` | `2a72f8cbe3c6ddd9e7ca55cb17d61b597d10d8d0f37e61125b594ad4c13c4295` |
+| `exports/caral/caral_pyramid_quarry_lod1.glb` | `a5febe4d3ac4dbbe9e6cf4adb6ef0962be7135afe810cb8303fa4aefde451a46` |
+| `exports/caral/caral_pyramid_lesser_lod0.glb` | `2a118701d202bd6a76612d29f2e060b48a8f7999d33099a30c26e6815eb2fbc9` |
+| `exports/caral/caral_pyramid_lesser_lod1.glb` | `5102ddbe79dd8f77725371d331ae727c835b720036cb7614fb7253d4c445d9ba` |
+| `exports/caral/caral_pyramid_gallery_lod0.glb` | `a414604ef6fe54b2c325a4098d81dd102f5484be398a9d7d513b3bbbdaabdd1e` |
+| `exports/caral/caral_pyramid_gallery_lod1.glb` | `aa5cfdf3c6165c4a6b438f17bd8c5871e4616f8ee7088a2f0f07c56f6dd075bc` |
+| `exports/caral/caral_pyramid_huanca_lod0.glb` | `3304107a2c9c55b6d5ad4dbdc0194e1e7fdb34f47e76fe89aae5ef396dbc66a5` |
+| `exports/caral/caral_pyramid_huanca_lod1.glb` | `c5eb19e8ac986d5f4d77105be161a4d28ea5a51a9e5a8800bbcf55e4c6d00f43` |
+| `exports/caral/caral_pyramid_central_manifest.json` | `1a42137fec51302be97d067eec70552a63a77bfb4e80529d2514685e64410bfc` |
+| `exports/caral/caral_pyramid_quarry_manifest.json` | `6ed84a9b338387ee5c2d0dcd30f9ba5b1d0cde264ba97c8d35f22ac971844464` |
+| `exports/caral/caral_pyramid_lesser_manifest.json` | `4712c47c8fd7ce87f4c5bc022e1639c85d3627fb3c7d030eacb1746d9d62f747` |
+| `exports/caral/caral_pyramid_gallery_manifest.json` | `97bc60411a5a9adc11b13ec4bdc94995671135a89a200d95f482d616596dfe08` |
+| `exports/caral/caral_pyramid_huanca_manifest.json` | `d9981690e7a57f12520040f038e48ae078bf60648f134c9394d3d8814e26b33c` |
+| `caral/scenery_manifest.csv` | `6911b8838678f53c76a3db9846ca230ec30617ccaf858713e6ca46e088a250b1` |
 
 Paths are relative to `art-src/blender`. The `.blend` sources are stored in Git LFS;
 `.glb`/`.fbx` exports and PNG renders are tracked normally. If the source layout changes,
@@ -156,6 +176,31 @@ Review renders:
 blender --background art-src/blender/scenes/caral_anfiteatro.blend \
   --python scripts/blender/render_caral_scenery.py -- --asset=anfiteatro
 ```
+
+### Upper-Half pyramids
+
+The five remaining pyramids of Caral Alto are exported as separate modular assets. They use the
+flat authored Upper-Half terrain instead of individual pads, and the procedural plan filters
+their five rows while the GLBs load.
+
+| Asset | Plan anchor | LOD0 size (game axes) | LOD0 tris | Draw calls | Bytes |
+|---|---|---|---|---|---|
+| `caral_pyramid_central` | `central` | 5.84 × 1.5792 × 8.2028 | 792 | 3 | 46,128 |
+| `caral_pyramid_quarry` | `quarry` | 5.4904 × 1.2552 × 4.0008 | 792 | 3 | 46,132 |
+| `caral_pyramid_lesser` | `lesser` | 4.2336 × 0.976 × 3.9295 | 792 | 4 | 46,776 |
+| `caral_pyramid_gallery` | `gallery` | 5.9976 × 1.6632 × 6.1462 | 924 | 3 | 53,252 |
+| `caral_pyramid_huanca` | `huanca` | 4.5648 × 1.2008 × 4.6995 | 792 | 4 | 46,780 |
+
+Rebuild one with:
+
+```bash
+blender --background art-src/blender/scenes/caral_rts_kit.blend \
+  --python scripts/blender/build_caral_scenery.py -- \
+  --asset=central-pyramid
+```
+
+If any modular Upper-Half pyramid or the Anfiteatro fails to load, the game clears all modular
+setpieces and rebuilds the procedural city from the same plan.
 
 ## Ingest
 

@@ -48,7 +48,7 @@ describe('Caral sacred-city plan', () => {
     expect(plaza?.radius).toBeGreaterThan(p.mainPyramid.width * 0.46);
   });
 
-  it('marks the modular Anfiteatro anchor and the procedural placements it replaces', () => {
+  it('marks the modular anchor and every procedural placement the Blender kit replaces', () => {
     const p = plan();
     const amph = p.placements.find((x) => x.modularAnchor);
     expect(amph?.name).toBe('amphitheatre');
@@ -57,7 +57,7 @@ describe('Caral sacred-city plan', () => {
         .filter((x) => x.modularReplaced)
         .map((x) => x.name)
         .sort(),
-    ).toEqual(['amphitheatre', 'bench_temple', 'round_altar']);
+    ).toEqual(['amphitheatre', 'bench_temple', 'central', 'gallery', 'huanca', 'lesser', 'quarry', 'round_altar']);
   });
 
   it('keeps the two halves apart and inside the map', () => {

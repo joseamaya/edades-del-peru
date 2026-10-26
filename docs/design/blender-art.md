@@ -94,9 +94,9 @@ The showcase exposes `bounds`, `lod0Triangles`, `lod1Triangles`, `drawCalls`, `m
 - The footprint (30×50) is much larger than the current landmark (~12×16) and needs a flat pad,
   a dedicated placement rule and a decision between visual-only and obstacle.
 - The height (2.814) may read too flat at RTS zoom; this needs an in-game capture before integration.
-- The full-city GLB is **showcase only**; `m1_caral` uses a separate procedural sacred-city plan,
-  the modular Pyramid Mayor at its `greater` anchor and the modular Anfiteatro at its
-  `amphitheatre` site.
+- The full-city GLB is **showcase only**; `m1_caral` uses a separate sacred-city plan with
+  six modular pyramids at their authored anchors and the modular Anfiteatro at its
+  `amphitheatre` site. Plazas, compounds and the ford around them remain procedural.
 
 ## Modular scenery
 
@@ -116,6 +116,31 @@ the terrain, and is rebuilt by `scripts/blender/build_caral_scenery.py --asset=p
 - `m1_caral` uses this GLB as the Caral landmark on a flat sand pad; it is visual-only, has no
   collision/campaign entity, and falls back to the procedural landmark if the GLB fails.
 
+### Upper-Half pyramids
+
+The other five pyramids of the Upper Half are separate modular assets, exported with the same
+script from the matching `caral_rts_kit.blend` objects:
+
+| Asset | Plan anchor | LOD0 tris | Draw calls | Bytes |
+|---|---|---|---|---|
+| `caral_pyramid_central` | `central` | 792 | 3 | 46,128 |
+| `caral_pyramid_quarry` | `quarry` | 792 | 3 | 46,132 |
+| `caral_pyramid_lesser` | `lesser` | 792 | 4 | 46,776 |
+| `caral_pyramid_gallery` | `gallery` | 924 | 3 | 53,252 |
+| `caral_pyramid_huanca` | `huanca` | 792 | 4 | 46,780 |
+
+They use the flat Upper-Half terrain pad instead of an individual platform, and the procedural
+plan filters their five rows while the GLBs load. If any Upper-Half or Anfiteatro module fails,
+all modular setpieces are cleared and the procedural city is rebuilt from the same plan.
+
+Rebuild one module with:
+
+```bash
+blender --background art-src/blender/scenes/caral_rts_kit.blend \
+  --python scripts/blender/build_caral_scenery.py -- \
+  --asset=central-pyramid
+```
+
 ### Anfiteatro
 
 `caral_anfiteatro` combines `GEO-Caral_TemploAnfiteatro_LOD0`, `GEO-Caral_AltarCircular_LOD0` and
@@ -132,9 +157,9 @@ the terrain, and is rebuilt by `scripts/blender/build_caral_scenery.py --asset=p
   exporter cannot represent; the GLB exports its base color.
 - `?scenery=caral-anfiteatro` mounts the showcase.
 - `m1_caral` places this GLB as the secondary setpiece of the Caral landmark, on a low rectangular
-  terrace. It is visual-only; collision and pathfinding are not implemented yet. If the GLB fails, the
-  city rebuilds the procedural lower ensemble; loaded saves keep that ensemble because the modular
-  setpiece is skipped before the snapshot is applied.
+  terrace. It is visual-only; collision and pathfinding are not implemented yet. If any modular
+  setpiece fails, all modular setpieces are cleared and the full procedural city is rebuilt. Loaded
+  saves use the same modular setpiece path.
 
 ## Source manifest
 
@@ -281,8 +306,8 @@ out of scope.
   their licences.
 - A render is an **artistic reconstruction**, not a photograph. The UI always says so.
 - The raw source exports `caral_pyramide_mayor.glb`/`caral_rts_kit.glb` are not used at runtime. The
-  modular `caral_pyramid_mayor_lod0.glb` and `caral_anfiteatro_lod0.glb` are integrated at the sacred-city
-  plan anchors (visual-only, with pads and procedural fallback); the full-city GLB and raw kit remain
+  modular Pyramid Mayor, five Upper-Half pyramids and Anfiteatro GLBs are integrated at the sacred-city
+  plan anchors (visual-only, with procedural fallback); the full-city GLB and raw kit remain
   showcase/source assets.
 
 ## Verification

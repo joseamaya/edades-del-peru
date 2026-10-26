@@ -1,0 +1,68 @@
+{
+  "asset_id": "caral_pyramid_lesser",
+  "source_scene": "scenes/caral_rts_kit.blend",
+  "source_objects": [
+    "GEO-Caral_PiramideMenor_LOD0"
+  ],
+  "scale": 0.08,
+  "lod1_ratio": 0.4,
+  "root": "GEO-Caral_PyramidLesser",
+  "lods": {
+    "LOD0": {
+      "file": "caral_pyramid_lesser_lod0.glb",
+      "triangles": 792,
+      "draw_calls": 4,
+      "materials": [
+        "MAT-Fire_Ember",
+        "MAT-Plaster_White",
+        "MAT-Plaster_Yellow",
+        "MAT-Stone_Granodiorite"
+      ],
+      "bounds": {
+        "min": [
+          -2.116801,
+          -1.96476,
+          0.0
+        ],
+        "max": [
+          2.116799,
+          1.964761,
+          0.976
+        ],
+        "size": [
+          4.233601,
+          3.929521,
+          0.976
+        ]
+      }
+    },
+    "LOD1": {
+      "file": "caral_pyramid_lesser_lod1.glb",
+      "triangles": 298,
+      "draw_calls": 4,
+      "materials": [
+        "MAT-Fire_Ember",
+        "MAT-Plaster_White",
+        "MAT-Plaster_Yellow",
+        "MAT-Stone_Granodiorite"
+      ],
+      "bounds": {
+        "min": [
+          -2.116801,
+          -1.96476,
+          0.0
+        ],
+        "max": [
+          2.116799,
+          1.964761,
+          0.976
+        ],
+        "size": [
+          4.233601,
+          3.929521,
+          0.976
+        ]
+      }
+    }
+  }
+}
