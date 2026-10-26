@@ -94,7 +94,7 @@ describe('campaign educational content', () => {
         for (const fx of t.effects) expect(['wave', 'reinforce'], `${id}/${t.id}`).not.toContain(fx.type);
       }
       // non-combat objectives only, and it teaches building
-      for (const o of mis.objectives) expect(['gather', 'build', 'survive'], `${id}/${o.id}`).toContain(o.kind);
+      for (const o of mis.objectives) expect(['gather', 'build', 'survive', 'hold'], `${id}/${o.id}`).toContain(o.kind);
       expect(
         mis.objectives.some((o) => o.kind === 'build'),
         `${id} teaches building`,
@@ -184,6 +184,20 @@ describe('campaign educational content', () => {
     expect(m9.start.units?.some((u) => u.tag === 'bolognesi')).toBe(true);
     expect(m9.objectives.map((o) => o.title).join(' ')).not.toMatch(/monitor|Huáscar|escuadra/i);
     expect(m9.defeat).toContain('Arica');
+  });
+
+  it('m2 has a pilgrimage hold, offerings and an oracle reward', () => {
+    const m2 = MISSIONS.find((m) => m.id === 'm2_chavin')!;
+    expect(m2.objectives.some((o) => o.id === 'obj_peregrinaje' && o.kind === 'hold')).toBe(true);
+    expect(m2.objectives.some((o) => o.id === 'obj_ofrendas' && o.resource === 'silver')).toBe(true);
+    expect(m2.triggers.some((t) => t.id === 't_peregrinaje')).toBe(true);
+  });
+
+  it('m4 has two centers, a contested frontier and andenes', () => {
+    const m4 = MISSIONS.find((m) => m.id === 'm4_wari')!;
+    expect(m4.objectives.filter((o) => o.id === 'obj_centro' || o.id === 'obj_centro_2').length).toBe(2);
+    expect(m4.objectives.some((o) => o.id === 'obj_frontera' && o.kind === 'hold')).toBe(true);
+    expect(m4.objectives.some((o) => o.id === 'obj_andenes' && o.buildingKind === BuildingKind.FARM)).toBe(true);
   });
 
   it('m8 has Junín and Ayacucho as two hold phases', () => {

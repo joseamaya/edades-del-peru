@@ -66,7 +66,12 @@ export class Mission {
           ? this.baseCenter(0)
           : p.ref === 'canal'
             ? (this.game.canalSite ?? { x: this.game.settings.mapSize / 2, z: this.game.settings.mapSize / 2 })
-            : { x: 0, z: 0 };
+            : p.ref === 'landmark'
+              ? (this.game.landmark?.position ?? {
+                  x: this.game.settings.mapSize / 2,
+                  z: this.game.settings.mapSize / 2,
+                })
+              : { x: 0, z: 0 };
     return { x: ref.x + p.dx, z: ref.z + p.dz };
   }
 
@@ -329,6 +334,15 @@ export class Mission {
       case 'dialogue':
         this.triggerDialogue(fx.text, fx.duration ?? 5);
         break;
+      case 'resources': {
+        const p = this.game.players[fx.player ?? 0];
+        if (p) {
+          for (const [key, value] of Object.entries(fx.amount)) {
+            p.resources[key as keyof typeof p.resources] += value;
+          }
+        }
+        break;
+      }
       case 'objective':
         this.objState.set(
           fx.objectiveId,

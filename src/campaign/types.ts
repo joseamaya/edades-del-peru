@@ -56,9 +56,9 @@ export interface MissionLayout {
   decor?: MissionDecor;
 }
 
-/** World point. `ref` anchors to the player/enemy center; without `ref` it is absolute. */
+/** World point. `ref` anchors to the player/enemy center, canal or landmark; without it, absolute. */
 export interface MissionPoint {
-  ref?: 'player' | 'enemy' | 'canal';
+  ref?: 'player' | 'enemy' | 'canal' | 'landmark';
   dx: number;
   dz: number;
 }
@@ -120,6 +120,7 @@ export type TriggerEffect =
       objective?: 'base' | 'position';
     }
   | { type: 'dialogue'; text: string; duration?: number }
+  | { type: 'resources'; player?: 0 | 1; amount: Partial<Resources> }
   | { type: 'objective'; objectiveId: string; state: 'activate' | 'complete' | 'fail' }
   | { type: 'camera'; pos: MissionPoint }
   | { type: 'victory' }

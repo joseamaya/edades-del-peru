@@ -208,6 +208,79 @@ test('m6 cuts the canal to force Chan Chan to surrender', async ({ page }) => {
   expect(out.won).toBe(true);
 });
 
+test('m2 pilgrimage at the temple funds the oracle', async ({ page }) => {
+  await page.goto('/?mission=m2_chavin&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
+    const landmark = g.landmark as any;
+    const unit = [...g.units.values()].find((u: any) => u.owner === 0 && !u.dead) as any;
+    if (!landmark || !unit) return { landmark: false, unit: false, state: 'missing', before: 0, after: 0 };
+    const before = g.players[0].resources.silver as number;
+    const dt = 1 / 60;
+    for (let i = 0; i < Math.ceil(65 / dt) && !m.ended; i++) {
+      unit.pos.set(
+        landmark.position.x,
+        g.terrain.getHeight(landmark.position.x, landmark.position.z),
+        landmark.position.z,
+      );
+      g.update(dt, i * dt);
+    }
+    return {
+      landmark: true,
+      unit: true,
+      state: m.getObjectiveState('obj_peregrinaje') as string,
+      before,
+      after: g.players[0].resources.silver as number,
+    };
+  });
+  expect(out.landmark).toBe(true);
+  expect(out.unit).toBe(true);
+  expect(out.state).toBe('completed');
+  expect(out.after).toBeGreaterThanOrEqual(out.before + 100);
+});
+
+test('m4 two centers open the contested frontier', async ({ page }) => {
+  await page.goto('/?mission=m4_wari&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
+    const center = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center') as any;
+    g.spawnScriptedBuilding('market', 0, center.pos.x + 38, center.pos.z);
+    g.spawnScriptedBuilding('market', 0, center.pos.x - 30, center.pos.z + 26);
+    g.update(1 / 60, 0);
+    const active = m.getObjectiveState('obj_frontera') as string;
+    const unit = [...g.units.values()].find((u: any) => u.owner === 0 && !u.dead) as any;
+    const dt = 1 / 60;
+    for (let i = 0; i < Math.ceil(65 / dt) && !m.ended; i++) {
+      unit.pos.set(center.pos.x + 38, g.terrain.getHeight(center.pos.x + 38, center.pos.z), center.pos.z);
+      g.update(dt, i * dt);
+    }
+    return {
+      center1: m.getObjectiveState('obj_centro') as string,
+      center2: m.getObjectiveState('obj_centro_2') as string,
+      active,
+      frontier: m.getObjectiveState('obj_frontera') as string,
+      won: m.won as boolean | null,
+    };
+  });
+  expect(out.center1).toBe('completed');
+  expect(out.center2).toBe('completed');
+  expect(out.active).toBe('activo');
+  expect(out.frontier).toBe('completed');
+  expect(out.won).not.toBe(true);
+});
+
 test('m8 holds Junín and then Ayacucho with Sucre alive', async ({ page }) => {
   await page.goto('/?mission=m8_independencia&seed=777&fog=0&low=1&noloop=1');
   await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
@@ -354,18 +427,24 @@ test('a bonus objective does not gate victory', async ({ page }) => {
     if (g.getPaused()) g.togglePause();
     const dt = 1 / 60;
     let t = 0;
+    const landmark = g.landmark as any;
+    const unit = [...g.units.values()].find((u: any) => u.owner === 0 && !u.dead) as any;
     for (let i = 0; i < Math.ceil(440 / dt) && !m.ended; i++) {
       for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
       for (const b of g.buildings.values()) if (b.owner === 0 && !b.dead) b.hp = b.maxHp;
-      // satisfy the required gather (400) but stay below the bonus (700)
-      g.players[0].resources.food = 400;
+      // satisfy the required offerings (250) but stay below the bonus (400)
+      g.players[0].resources.silver = 250;
+      const target = { x: landmark.position.x, z: landmark.position.z };
+      if (unit) unit.pos.set(target.x, g.terrain.getHeight(target.x, target.z), target.z);
       const have = [...g.buildings.values()].filter(
-        (b: any) => b.owner === 0 && b.kind === 'market' && b.constructionComplete && !b.dead,
+        (b: any) =>
+          b.owner === 0 &&
+          b.kind === 'market' &&
+          b.constructionComplete &&
+          !b.dead &&
+          Math.hypot(b.pos.x - (target.x + 14), b.pos.z - target.z) <= 16,
       ).length;
-      if (have < 1) {
-        const c = g.playerCenter(0);
-        g.spawnScriptedBuilding('market', 0, c.x + 6, c.z + 6);
-      }
+      if (have < 1) g.spawnScriptedBuilding('market', 0, target.x + 14, target.z);
       g.update(dt, t);
       t += dt;
     }

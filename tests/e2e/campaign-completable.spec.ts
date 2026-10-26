@@ -72,7 +72,9 @@ for (const mis of MISSIONS) {
                     ? centerOf(0)
                     : o.pos.ref === 'canal'
                       ? (g.canalSite ?? centerOf(0))
-                      : { x: 0, z: 0 };
+                      : o.pos.ref === 'landmark'
+                        ? (g.landmark?.position ?? centerOf(0))
+                        : { x: 0, z: 0 };
               const tp = { x: base.x + o.pos.dx, z: base.z + o.pos.dz };
               for (const u of g.units.values()) {
                 if (u.owner === 0 && !u.dead && u.tag === o.entityTag) {
@@ -90,7 +92,9 @@ for (const mis of MISSIONS) {
                     ? centerOf(0)
                     : o.pos.ref === 'canal'
                       ? (g.canalSite ?? centerOf(0))
-                      : { x: 0, z: 0 };
+                      : o.pos.ref === 'landmark'
+                        ? (g.landmark?.position ?? centerOf(0))
+                        : { x: 0, z: 0 };
               const tp = { x: base.x + o.pos.dx, z: base.z + o.pos.dz };
               const u = [...g.units.values()].find(
                 (unit: any) => unit.owner === 0 && !unit.dead && (!o.unitKind || unit.kind === o.unitKind),
@@ -100,10 +104,7 @@ for (const mis of MISSIONS) {
             }
             case 'build': {
               const need = o.count ?? 1;
-              const have = [...g.buildings.values()].filter(
-                (b: any) => b.owner === 0 && b.kind === o.buildingKind && b.constructionComplete && !b.dead,
-              ).length;
-              // a location-scoped build (expansion) must stand at the target point
+              // a location-scoped build must stand at the target point
               let bx: number;
               let bz: number;
               if (o.pos) {
@@ -114,7 +115,9 @@ for (const mis of MISSIONS) {
                       ? centerOf(0)
                       : o.pos.ref === 'canal'
                         ? (g.canalSite ?? centerOf(0))
-                        : { x: 0, z: 0 };
+                        : o.pos.ref === 'landmark'
+                          ? (g.landmark?.position ?? centerOf(0))
+                          : { x: 0, z: 0 };
                 bx = base.x + o.pos.dx;
                 bz = base.z + o.pos.dz;
               } else {
@@ -122,6 +125,14 @@ for (const mis of MISSIONS) {
                 bx = c.x + 6;
                 bz = c.z + 6;
               }
+              const have = [...g.buildings.values()].filter(
+                (b: any) =>
+                  b.owner === 0 &&
+                  b.kind === o.buildingKind &&
+                  b.constructionComplete &&
+                  !b.dead &&
+                  (!o.pos || Math.hypot(b.pos.x - bx, b.pos.z - bz) <= (o.radius ?? 12)),
+              ).length;
               for (let k = have; k < need; k++) g.spawnScriptedBuilding(o.buildingKind, 0, bx + k * 2, bz);
               break;
             }

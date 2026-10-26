@@ -16,7 +16,9 @@
 - **Desenlace documentado**: Chavín declina hacia el 500–200 a.C.; su influencia se fragmenta y da paso a
   las culturas regionales del Intermedio Temprano.
 - **Nota**: **no hay guerra directa documentada** Chavín–Paracas; el emparejamiento es de coetaneidad.
+- **En el juego**: las ofrendas son plata, el peregrinaje es una posición `hold` en el templo y la feria exige un mercado junto al centro ceremonial. Completar el peregrinaje otorga plata/comida; el oráculo influye en la economía sin añadir guerra.
 
 ## Fuentes
 
 - Wikipedia: [Cultura chavín](https://es.wikipedia.org/wiki/Cultura_chav%C3%ADn), [Horizonte Temprano](https://es.wikipedia.org/wiki/Horizonte_Temprano).
+- Burger, R. (1995). *Chavín and the Origins of Andean Civilization*.
