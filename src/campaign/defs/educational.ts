@@ -53,6 +53,8 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
     ],
   },
   m2_chavin: {
+    briefing:
+      'Chavín de Huántar, c. 900–500 a.C. El templo y su oráculo atraen peregrinos y ofrendas de buena parte de los Andes; el prestigio del culto sostiene el centro ceremonial.',
     context:
       'Chavín de Huántar, a 3180 msnm en el Callejón de Conchucos (Áncash), fue el gran centro ceremonial y ' +
       'de peregrinaje de los Andes. Su oráculo atraía ofrendas de lejos y su arte se difundió por buena parte ' +
@@ -62,6 +64,7 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
     sources: [
       { text: 'Wikipedia: Cultura chavín', url: 'https://es.wikipedia.org/wiki/Cultura_chav%C3%ADn' },
       { text: 'Wikipedia: Horizonte Temprano', url: 'https://es.wikipedia.org/wiki/Horizonte_Temprano' },
+      { text: 'Burger, R. (1995). Chavín and the Origins of Andean Civilization.' },
     ],
   },
   m3_moche_recuay: {
@@ -77,6 +80,8 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
     ],
   },
   m4_wari: {
+    briefing:
+      'Andes centrales, c. 600–1000 d.C. Wari teje una red de centros provinciales, caminos y andenes; Tiahuanaco compite por la misma esfera de influencia sin una guerra única documentada.',
     context:
       'Wari (núcleo en Ayacucho) y Tiahuanaco (altiplano del Titicaca) fueron dos grandes estados ' +
       'suprarregionales coetáneos que difundieron el culto al dios de los báculos. Wari extendió ciudades ' +

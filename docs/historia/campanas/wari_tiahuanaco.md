@@ -14,6 +14,7 @@
 - **Mapa**: `andes` / `altiplano`.
 - **Desenlace documentado**: ambos estados colapsan hacia el 1000–1100 d.C., dando paso al Intermedio Tardío.
 - **Nota**: **no hay una guerra única documentada** Wari–Tiahuanaco; el emparejamiento es de coetaneidad.
+- **En el juego**: la red exige dos centros provinciales en posiciones distintas, andenes opcionales y una presencia sostenida en la frontera; la competencia con Tiahuanaco se mide en territorio e influencia, no en una guerra inventada.
 
 ## Fuentes
 
