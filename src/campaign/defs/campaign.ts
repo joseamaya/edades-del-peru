@@ -676,6 +676,7 @@ export const MISSIONS: MissionDef[] = [
         kind: 'hold',
         pos: { ref: 'enemy', dx: -30, dz: 0 },
         radius: 14,
+        unitKind: UnitKind.CAVALRY,
         time: 90,
         title: 'Sostén Junín con la caballería patriota',
       },
@@ -720,7 +721,7 @@ export const MISSIONS: MissionDef[] = [
       },
       {
         id: 't_wave_1',
-        condition: { type: 'time', seconds: 120 },
+        condition: { type: 'time', seconds: 60 },
         effects: [
           {
             type: 'wave',
@@ -729,8 +730,9 @@ export const MISSIONS: MissionDef[] = [
               { kind: UnitKind.CAVALRY, count: 3 },
               { kind: UnitKind.SOLDIER, count: 4 },
             ],
-            pos: { ref: 'player', dx: 24, dz: 16 },
+            pos: { ref: 'enemy', dx: -30, dz: 0 },
             radius: 7,
+            objective: 'position',
           },
           { type: 'dialogue', text: '¡La caballería realista carga en Junín!' },
         ],
@@ -744,12 +746,6 @@ export const MISSIONS: MissionDef[] = [
             text: 'General patriota: —Junín resiste. Ahora, a Ayacucho: la decisión final está allí.',
           },
           { type: 'objective', objectiveId: 'obj_ayacucho', state: 'activate' },
-        ],
-      },
-      {
-        id: 't_wave_2',
-        condition: { type: 'time', seconds: 420 },
-        effects: [
           {
             type: 'wave',
             owner: 1,
@@ -757,10 +753,10 @@ export const MISSIONS: MissionDef[] = [
               { kind: UnitKind.SOLDIER, count: 5 },
               { kind: UnitKind.CAVALRY, count: 3 },
             ],
-            pos: { ref: 'player', dx: -22, dz: 20 },
+            pos: { ref: 'enemy', dx: 0, dz: 0 },
             radius: 7,
+            objective: 'position',
           },
-          { type: 'dialogue', text: '¡Refuerzos realistas para Ayacucho!' },
         ],
       },
     ],

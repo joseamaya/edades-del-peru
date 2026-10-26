@@ -218,9 +218,9 @@ test('m8 holds Junín and then Ayacucho with Sucre alive', async ({ page }) => {
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
     const m = g.mission;
-    const sucre = [...g.units.values()].find((u: any) => u.tag === 'sucre') as any;
+    const cavalry = [...g.units.values()].find((u: any) => u.kind === 'cavalry' && u.owner === 0) as any;
     const enemy = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'center' && !b.dead) as any;
-    const move = (x: number, z: number) => sucre.pos.set(x, g.terrain.getHeight(x, z), z);
+    const move = (x: number, z: number) => cavalry.pos.set(x, g.terrain.getHeight(x, z), z);
     const dt = 1 / 60;
     // Junín: hold the forward position for 90s.
     for (let i = 0; i < Math.ceil(95 / dt) && !m.ended; i++) {

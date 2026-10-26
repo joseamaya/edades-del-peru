@@ -122,7 +122,11 @@ export class Mission {
       const tp = this.resolvePoint(o.pos);
       const radius = o.radius ?? 8;
       const held = [...this.game.units.values()].some(
-        (u) => u.owner === 0 && !u.dead && distance2D(u.pos.x, u.pos.z, tp.x, tp.z) <= radius,
+        (u) =>
+          u.owner === 0 &&
+          !u.dead &&
+          (!o.unitKind || u.kind === o.unitKind) &&
+          distance2D(u.pos.x, u.pos.z, tp.x, tp.z) <= radius,
       );
       const current = this.holdTimers.get(o.id) ?? 0;
       this.holdTimers.set(o.id, held ? Math.min(o.time ?? 0, current + dt) : 0);
@@ -373,6 +377,13 @@ export class Mission {
   /** For HUD: state of an objective by id. */
   getObjectiveState(id: string): ObjState {
     return this.objState.get(id) ?? 'pendiente';
+  }
+
+  /** Remaining seconds for a `hold` objective, or null for other objectives. */
+  getHoldRemaining(id: string): number | null {
+    const def = this.def.objectives.find((o) => o.id === id);
+    if (!def || def.kind !== 'hold') return null;
+    return Math.max(0, (def.time ?? 0) - (this.holdTimers.get(id) ?? 0));
   }
 
   /** Snapshot the mission state (used by save/load). */

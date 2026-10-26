@@ -92,7 +92,9 @@ for (const mis of MISSIONS) {
                       ? (g.canalSite ?? centerOf(0))
                       : { x: 0, z: 0 };
               const tp = { x: base.x + o.pos.dx, z: base.z + o.pos.dz };
-              const u = [...g.units.values()].find((unit: any) => unit.owner === 0 && !unit.dead) as any;
+              const u = [...g.units.values()].find(
+                (unit: any) => unit.owner === 0 && !unit.dead && (!o.unitKind || unit.kind === o.unitKind),
+              ) as any;
               if (u) u.pos.set(tp.x, g.terrain.getHeight(tp.x, tp.z), tp.z);
               break;
             }

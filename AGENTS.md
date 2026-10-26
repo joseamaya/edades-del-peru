@@ -53,9 +53,10 @@ explicit approval described below.
   changes there and open a PR.
 - **Run the `code-review` skill before merging** (standards + spec/issue axes). If the skill is unavailable,
   perform an equivalent independent review of the diff.
-- **Report the review findings and wait for explicit user approval before merging.** Green CI and passing tests
-  are required, but they are not a substitute for review.
-- **Do not self-merge or enable auto-merge** unless the user explicitly asks to merge.
+- **Fix the review findings, rerun the tests/CI, then merge.** The user has explicitly authorized this
+  review → fix → merge loop for agent-driven work; do not wait for a separate merge approval unless they
+  revoke that instruction. Never merge with unresolved review findings, failing CI or an unclear spec.
+- **Do not self-merge outside that authorized loop**, and do not enable auto-merge.
 - If work accidentally starts on `main`, move it to a branch before the first commit.
 
 ## Conventions
