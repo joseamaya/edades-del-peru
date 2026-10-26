@@ -115,10 +115,10 @@ describe('building definitions', () => {
 
   it('reserves the Chasqui name and Qhapaq Ñan description for the Inca', () => {
     expect(UNIT_ARCHETYPES[UnitKind.SCOUT].name).toBe('Explorador');
-    expect(unitDisplayName(UnitKind.SCOUT, CivId.CARAL)).toBe('Explorador');
-    expect(unitDisplayName(UnitKind.SCOUT, CivId.INCA)).toBe('Chasqui');
-    expect(unitDisplayDescription(UnitKind.SCOUT, CivId.CARAL)).not.toContain('Qhapaq');
-    expect(unitDisplayDescription(UnitKind.SCOUT, CivId.INCA)).toContain('Qhapaq Ñan');
+    expect(unitDisplayName(UnitKind.SCOUT, CivId.CARAL, Era.FORMATIVE)).toBe('Explorador');
+    expect(unitDisplayName(UnitKind.SCOUT, CivId.INCA, Era.TAHUANTINSUYO)).toBe('Chasqui');
+    expect(unitDisplayDescription(UnitKind.SCOUT, CivId.CARAL, Era.FORMATIVE)).not.toContain('Qhapaq');
+    expect(unitDisplayDescription(UnitKind.SCOUT, CivId.INCA, Era.TAHUANTINSUYO)).toContain('Qhapaq Ñan');
   });
 });
 

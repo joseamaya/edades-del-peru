@@ -75,9 +75,10 @@ export enum HistoricalPeriod {
 export enum UnitKind {
   WORKER = 'worker',
   SOLDIER = 'soldier', // basic infantry (militia -> grunt)
-  MUSKETEER = 'musketeer', // basic archer (ranged)
-  RIFLEMAN = 'rifleman', // advanced archer
-  SNIPER = 'sniper', // elite archer
+  MUSKETEER = 'musketeer', // legacy id: basic ranged (sling -> arquebus -> rifle)
+  RIFLEMAN = 'rifleman', // legacy id: elite ranged (bow -> musket -> rifle)
+  SNIPER = 'sniper', // elite marksman (firearm from the Viceroyalty)
+
   HUSSAR = 'hussar', // light cavalry
   CAVALRY = 'cavalry', // heavy / armored cavalry
   TANK = 'tank', // late elite cavalry

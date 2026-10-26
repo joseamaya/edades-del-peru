@@ -650,6 +650,20 @@ export const MISSIONS: MissionDef[] = [
     },
     mark: [{ tag: 'centro_realista', kind: BuildingKind.CENTER, owner: 1 }],
     enemy: { active: true, difficulty: 'hard', aggression: 1.3 },
+    // 1780: no arcabuceros; the rebel and royalist line use muskets and rifles.
+    allowedUnits: [
+      UnitKind.WORKER,
+      UnitKind.SOLDIER,
+      UnitKind.RIFLEMAN,
+      UnitKind.SNIPER,
+      UnitKind.HUSSAR,
+      UnitKind.CAVALRY,
+      UnitKind.SCOUT,
+      UnitKind.ARTILLERY,
+      UnitKind.MORTAR,
+      UnitKind.COMMISSAR,
+      UnitKind.MISSIONARY,
+    ],
     objectives: [
       {
         id: 'obj_asaltar',
@@ -692,7 +706,7 @@ export const MISSIONS: MissionDef[] = [
             owner: 1,
             units: [
               { kind: UnitKind.SOLDIER, count: 6 },
-              { kind: UnitKind.MUSKETEER, count: 3 },
+              { kind: UnitKind.RIFLEMAN, count: 3 },
             ],
             pos: { ref: 'player', dx: 22, dz: 18 },
             radius: 7,

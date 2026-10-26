@@ -3,20 +3,7 @@ import { UnitKind, HistoricalPeriod } from '../src/core/types';
 import { MISSIONS } from '../src/campaign/defs/campaign';
 import { UNIT_ARCHETYPES, unitMinPeriod, isConverter } from '../src/model/defs/units';
 import { getPeriod } from '../src/model/defs/periods';
-
-/** Every unit kind that a mission spawns (starting army + scripted waves/reinforcements). */
-function missionUnits(mission: (typeof MISSIONS)[number]): UnitKind[] {
-  const kinds: UnitKind[] = [];
-  for (const u of mission.start.units ?? []) kinds.push(u.kind);
-  for (const trigger of mission.triggers) {
-    for (const fx of trigger.effects) {
-      if (fx.type === 'wave' || fx.type === 'reinforce') {
-        for (const u of fx.units) kinds.push(u.kind);
-      }
-    }
-  }
-  return kinds;
-}
+import { missionUnits } from './mission-units';
 
 describe('historical chronology', () => {
   it('no campaign spawns a unit before its technology was introduced', () => {
