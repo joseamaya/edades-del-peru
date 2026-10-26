@@ -243,8 +243,9 @@ Definition of Done and the building audit see
   objectives/triggers. Each mission also declares an optional `region` (`MissionDef`), fed into
   `resolveMapProfile` so a scenario carries its own geography rather than the player's (e.g. m6 = the Inca on the
   Chimú `north_coast`). Objectives may be **bonus/optional** (`ObjectiveDef.optional`): they are evaluated and
-  can be completed, but never gate victory nor cause defeat when failed. Campaign fichas in
-  [`docs/historia/fichas_campana.md`](./historia/fichas_campana.md), validated by
+  can be completed, but never gate victory nor cause defeat when failed. A `hold` objective keeps a
+  player unit inside a radius for `time` seconds (m8 Junín/Ayacucho); `holdTimers` are saved. Campaign
+  fichas in [`docs/historia/fichas_campana.md`](./historia/fichas_campana.md), validated by
   `tests/campaign-profiles.test.ts`.
 - **Educational layer**: `src/campaign/defs/educational.ts` (prologue + context/«¿Sabías que…?»/sources per mission,
   derived from `docs/historia/`), `src/campaign/Tutorial.ts` (step-by-step guided tutorial, only on missions with

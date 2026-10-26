@@ -64,7 +64,7 @@ export interface MissionPoint {
 }
 
 export type ObjectiveKind =
-  'destroy' | 'eliminate_all' | 'survive' | 'reach' | 'defend' | 'protect' | 'build' | 'gather' | 'reach_era';
+  'destroy' | 'eliminate_all' | 'survive' | 'reach' | 'hold' | 'defend' | 'protect' | 'build' | 'gather' | 'reach_era';
 
 export interface ObjectiveDef {
   id: string;
@@ -74,7 +74,7 @@ export interface ObjectiveDef {
   entityTag?: string;
   /** Anchor for `reach`, or the required location for a `build` (expansion/outpost). */
   pos?: MissionPoint;
-  /** Radius around `pos` for `reach`/`build`. */
+  /** Radius around `pos` for `reach`/`hold`/`build`. */
   radius?: number;
   time?: number;
   buildingKind?: BuildingKind;

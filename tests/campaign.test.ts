@@ -186,6 +186,17 @@ describe('campaign educational content', () => {
     expect(m9.defeat).toContain('Arica');
   });
 
+  it('m8 has Junín and Ayacucho as two hold phases', () => {
+    const m8 = MISSIONS.find((m) => m.id === 'm8_independencia')!;
+    const junin = m8.objectives.find((o) => o.id === 'obj_junin');
+    const ayacucho = m8.objectives.find((o) => o.id === 'obj_ayacucho');
+    expect(junin?.kind).toBe('hold');
+    expect(ayacucho?.kind).toBe('hold');
+    expect(ayacucho?.hidden).toBe(true);
+    expect(m8.start.units?.some((u) => u.tag === 'sucre')).toBe(true);
+    expect(m8.objectives.some((o) => o.entityTag === 'sucre')).toBe(true);
+  });
+
   it('every objective and trigger entityTag is declared by a start/mark tag', () => {
     for (const mis of MISSIONS) {
       const declared = new Set<string>();

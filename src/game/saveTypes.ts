@@ -101,6 +101,8 @@ export interface MissionSave {
   fired: string[];
   lastFired: [string, number][];
   spawnedCount: [string, number][];
+  /** Per-hold-objective elapsed time (optional for older saves). */
+  holdTimers?: [string, number][];
 }
 
 export interface TutorialSave {

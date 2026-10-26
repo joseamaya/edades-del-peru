@@ -81,6 +81,21 @@ for (const mis of MISSIONS) {
               }
               break;
             }
+            case 'hold': {
+              if (!o.pos) break;
+              const base =
+                o.pos.ref === 'enemy'
+                  ? centerOf(1)
+                  : o.pos.ref === 'player'
+                    ? centerOf(0)
+                    : o.pos.ref === 'canal'
+                      ? (g.canalSite ?? centerOf(0))
+                      : { x: 0, z: 0 };
+              const tp = { x: base.x + o.pos.dx, z: base.z + o.pos.dz };
+              const u = [...g.units.values()].find((unit: any) => unit.owner === 0 && !unit.dead) as any;
+              if (u) u.pos.set(tp.x, g.terrain.getHeight(tp.x, tp.z), tp.z);
+              break;
+            }
             case 'build': {
               const need = o.count ?? 1;
               const have = [...g.buildings.values()].filter(

@@ -208,6 +208,52 @@ test('m6 cuts the canal to force Chan Chan to surrender', async ({ page }) => {
   expect(out.won).toBe(true);
 });
 
+test('m8 holds Junín and then Ayacucho with Sucre alive', async ({ page }) => {
+  await page.goto('/?mission=m8_independencia&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
+    const sucre = [...g.units.values()].find((u: any) => u.tag === 'sucre') as any;
+    const enemy = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'center' && !b.dead) as any;
+    const move = (x: number, z: number) => sucre.pos.set(x, g.terrain.getHeight(x, z), z);
+    const dt = 1 / 60;
+    // Junín: hold the forward position for 90s.
+    for (let i = 0; i < Math.ceil(95 / dt) && !m.ended; i++) {
+      move(enemy.pos.x - 30, enemy.pos.z);
+      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
+      g.update(dt, i * dt);
+    }
+    const afterJunin = {
+      junin: m.getObjectiveState('obj_junin'),
+      ayacucho: m.getObjectiveState('obj_ayacucho'),
+      won: m.won as boolean | null,
+    };
+    // Ayacucho: hold the decisive position for 120s.
+    for (let i = 0; i < Math.ceil(125 / dt) && !m.ended; i++) {
+      move(enemy.pos.x, enemy.pos.z);
+      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
+      g.update(dt, i * dt);
+    }
+    return {
+      afterJunin,
+      ayacucho: m.getObjectiveState('obj_ayacucho'),
+      sucre: m.getObjectiveState('obj_sucre'),
+      won: m.won as boolean | null,
+    };
+  });
+  expect(out.afterJunin.junin).toBe('completed');
+  expect(out.afterJunin.ayacucho).toBe('activo');
+  expect(out.afterJunin.won).not.toBe(true);
+  expect(out.ayacucho).toBe('completed');
+  expect(out.sucre).not.toBe('failed');
+  expect(out.won).toBe(true);
+});
+
 test('a strategic choice wins through either branch', async ({ page }) => {
   const boot = async () => {
     await page.goto('/?mission=m7_tupac_amaru&seed=777&fog=0&low=1&noloop=1');

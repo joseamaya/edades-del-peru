@@ -130,12 +130,18 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
     ],
   },
   m8_independencia: {
+    briefing:
+      'Sierra del Perú, 1824. Tras la proclamación de Lima, la campaña final se decide en dos encuentros: ' +
+      'Junín (6 de agosto) y Ayacucho (9 de diciembre), donde el ejército de Sucre sella la independencia.',
     context:
       'San Martín proclamó la independencia en Lima el 28 de julio de 1821. La campaña continuó en la sierra ' +
       'con Bolívar y Sucre: la batalla de Junín (6 de agosto de 1824) y la de Ayacucho (9 de diciembre de 1824) ' +
       'sellaron la independencia del Perú y el fin del poder español.',
     didYouKnow:
       'San Martín desembarcó en Paracas en 1820; la victoria militar la completaron Bolívar y Sucre en la sierra.',
+    epilogue:
+      'La victoria de Ayacucho puso fin al poder español en el Perú. La campaña del juego representa sus dos ' +
+      'encuentros como posiciones que deben sostenerse, no como una batalla única.',
     sources: [
       { text: 'Wikipedia: Independencia del Perú', url: 'https://es.wikipedia.org/wiki/Independencia_del_Per%C3%BA' },
       { text: 'Basadre, J. Historia de la República del Perú.' },
