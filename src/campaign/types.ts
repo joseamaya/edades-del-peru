@@ -1,6 +1,7 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind, Resources, MapType } from '../core/types';
 import type { GeographicRegion, MapOverrides } from '../model/defs/profiles';
 import type { PortraitId } from '../model/defs/commanders';
+import type { LandmarkId } from '../model/defs/landmarks';
 import type { TerrainLayout } from '../model/defs/terrainLayout';
 import type { SetpieceId } from '../model/defs/setpieces';
 
@@ -26,15 +27,38 @@ export interface MissionSetpiece {
  * `base` fixes the player's starting center; `setpiece` adds a source-backed
  * scenery composition; `terrain` carves the documented local landforms.
  */
+export interface MissionCanal {
+  /** Normalized centre of the canal. */
+  x: number;
+  z: number;
+  /** Length in world units; defaults to 24. */
+  length?: number;
+  /** Rotation of the canal axis (radians). */
+  yaw?: number;
+}
+
+export interface MissionDecor {
+  model: LandmarkId;
+  at: 'player' | 'enemy';
+  dx: number;
+  dz: number;
+  yaw?: number;
+  scale?: number;
+}
+
 export interface MissionLayout {
   base?: MissionAnchor;
   setpiece?: MissionSetpiece;
   terrain?: TerrainLayout;
+  /** Authored canal used by a mission mechanic (visual-only geometry + a reach target). */
+  canal?: MissionCanal;
+  /** Visual-only landmark/decor placed relative to a base. */
+  decor?: MissionDecor;
 }
 
 /** World point. `ref` anchors to the player/enemy center; without `ref` it is absolute. */
 export interface MissionPoint {
-  ref?: 'player' | 'enemy';
+  ref?: 'player' | 'enemy' | 'canal';
   dx: number;
   dz: number;
 }

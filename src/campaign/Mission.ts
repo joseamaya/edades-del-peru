@@ -58,7 +58,14 @@ export class Mission {
   }
 
   private resolvePoint(p: MissionPoint): { x: number; z: number } {
-    const ref = p.ref === 'enemy' ? this.baseCenter(1) : p.ref === 'player' ? this.baseCenter(0) : { x: 0, z: 0 };
+    const ref =
+      p.ref === 'enemy'
+        ? this.baseCenter(1)
+        : p.ref === 'player'
+          ? this.baseCenter(0)
+          : p.ref === 'canal'
+            ? (this.game.canalSite ?? { x: this.game.settings.mapSize / 2, z: this.game.settings.mapSize / 2 })
+            : { x: 0, z: 0 };
     return { x: ref.x + p.dx, z: ref.z + p.dz };
   }
 
