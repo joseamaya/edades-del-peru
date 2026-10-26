@@ -16,7 +16,7 @@
 - **Desenlace documentado**: Chavín declina hacia el 500–200 a.C.; su influencia se fragmenta y da paso a
   las culturas regionales del Intermedio Temprano.
 - **Nota**: **no hay guerra directa documentada** Chavín–Paracas; el emparejamiento es de coetaneidad.
-- **En el juego**: las ofrendas son plata, el peregrinaje es una posición `hold` en el templo y la feria exige un mercado junto al centro ceremonial. Completar el peregrinaje otorga plata/comida; el oráculo influye en la economía sin añadir guerra.
+- **En el juego**: las ofrendas son plata, el peregrinaje es una posición `hold` en el templo y la feria exige un mercado junto al centro ceremonial. Completar el peregrinaje otorga plata/comida; el oráculo influye en la economía sin añadir guerra. El mapa fija una terraza ceremonial y un río estacional en el valle del Mosna; el epílogo retoma la declinación de Chavín.
 
 ## Fuentes
 

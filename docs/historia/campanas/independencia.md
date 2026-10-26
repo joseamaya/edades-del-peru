@@ -14,7 +14,7 @@
   (6 ago 1824); **Batalla de Ayacucho** (9 dic 1824), que sella la independencia del Perú.
 - **Desenlace documentado**: victoria patriota; fin del poder español en el Perú.
 - **Mapa**: `andes` (sierra) con núcleo en Lima.
-- **En el juego**: dos fases de posición, Junín y Ayacucho, con Sucre protegido y oleadas realistas. Las batallas se abstraen como “sostener” el campo durante un tiempo; no se inventan unidades, generales ni hechos.
+- **En el juego**: dos fases de posición, Junín y Ayacucho, con Sucre protegido y oleadas realistas. Las batallas se abstraen como “sostener” el campo durante un tiempo; no se inventan unidades, generales ni hechos. El mapa fija dos pampas de altura y una iglesia realista como referencia visual.
 
 ## Fuentes
 

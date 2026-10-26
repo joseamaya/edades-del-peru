@@ -154,6 +154,23 @@ export const MISSIONS: MissionDef[] = [
     timeOfDay: 'noon',
     // Callejón de Conchucos: cool highland mist around the ceremonial center.
     atmosphere: { fogDensity: 0.0042, skyTint: '#c8d6d0', sunWarmth: 0.9 },
+    layout: {
+      base: { x: 0.38, z: 0.64 },
+      terrain: {
+        // The Mosna valley and the flat ceremonial terrace.
+        river: {
+          name: 'Valle del Mosna',
+          z: 0.46,
+          width: 0.035,
+          valleyWidth: 0.13,
+          amplitude: 0.008,
+          phase: 0.4,
+          fords: [{ x: 0.38, width: 0.08 }],
+        },
+        flats: [{ name: 'Terraza ceremonial de Chavín', x: 0.38, z: 0.64, rx: 0.14, rz: 0.12 }],
+      },
+    },
+    mapOverrides: { terrain: { riverCount: 0 } },
     startingEra: Era.REGIONAL_STATES,
     startingResources: { food: 250, wood: 500, silver: 150, stone: 60 },
     start: {},
@@ -241,6 +258,16 @@ export const MISSIONS: MissionDef[] = [
     playerCiv: CivId.MOCHE,
     enemyCiv: CivId.RECUAY,
     map: { seed: 400, type: 'coast', size: 128 },
+    layout: {
+      base: { x: 0.35, z: 0.62 },
+      terrain: {
+        flats: [
+          { name: 'Valles de Moche y Chicama', x: 0.35, z: 0.62, rx: 0.15, rz: 0.12 },
+          { name: 'Callejón de Huaylas', x: 0.68, z: 0.36, rx: 0.12, rz: 0.1 },
+        ],
+      },
+      decor: { model: 'recuay_pashash', at: 'enemy', dx: 10, dz: 0, scale: 1.05 },
+    },
     timeOfDay: 'dusk',
     startingEra: Era.REGIONAL_STATES,
     startingResources: { food: 700, wood: 600, silver: 200, stone: 200 },
@@ -329,6 +356,16 @@ export const MISSIONS: MissionDef[] = [
     playerCiv: CivId.WARI,
     enemyCiv: CivId.TIAHUANACO,
     map: { seed: 800, type: 'andes', size: 160 },
+    layout: {
+      base: { x: 0.34, z: 0.62 },
+      terrain: {
+        // Andean terraces around the Wari provincial centers.
+        flats: [
+          { name: 'Andenes de Ayacucho', x: 0.34, z: 0.62, rx: 0.16, rz: 0.12 },
+          { name: 'Terraza provincial wari', x: 0.68, z: 0.4, rx: 0.14, rz: 0.1 },
+        ],
+      },
+    },
     timeOfDay: 'noon',
     startingEra: Era.TAHUANTINSUYO,
     startingResources: { food: 350, wood: 160, silver: 60, stone: 40 },
@@ -437,6 +474,16 @@ export const MISSIONS: MissionDef[] = [
     playerCiv: CivId.INCA,
     enemyCiv: CivId.CHANCA,
     map: { seed: 1438, type: 'andes', size: 160 },
+    layout: {
+      base: { x: 0.36, z: 0.62 },
+      terrain: {
+        flats: [
+          { name: 'Pampa de Yahuar', x: 0.36, z: 0.62, rx: 0.15, rz: 0.12 },
+          { name: 'Alturas del Cusco', x: 0.64, z: 0.38, rx: 0.13, rz: 0.1 },
+        ],
+      },
+      decor: { model: 'chanca_fortress', at: 'enemy', dx: 10, dz: 0 },
+    },
     timeOfDay: 'dusk',
     startingEra: Era.TAHUANTINSUYO,
     startingResources: { food: 700, wood: 600, silver: 400, stone: 200 },
@@ -517,9 +564,15 @@ export const MISSIONS: MissionDef[] = [
     map: { seed: 1470, type: 'coast', size: 192 },
     region: 'north_coast',
     layout: {
-      canal: { x: 0.5, z: 0.5, length: 28, yaw: 0.2 },
+      base: { x: 0.35, z: 0.62 },
+      canal: { name: 'Canal de Chan Chan', x: 0.5, z: 0.5, length: 28, yaw: 0.2 },
       decor: { model: 'chimu_compound', at: 'enemy', dx: 18, dz: -8, scale: 1.8, yaw: 0.2 },
-      terrain: { flats: [{ x: 0.5, z: 0.5, rx: 0.14, rz: 0.09 }] },
+      terrain: {
+        flats: [
+          { name: 'Canal de Chan Chan', x: 0.5, z: 0.5, rx: 0.14, rz: 0.09 },
+          { name: 'Valle del Santa', x: 0.35, z: 0.62, rx: 0.14, rz: 0.11 },
+        ],
+      },
     },
     timeOfDay: 'dusk',
     startingEra: Era.TAHUANTINSUYO,
@@ -638,6 +691,16 @@ export const MISSIONS: MissionDef[] = [
     playerCiv: CivId.INCA,
     enemyCiv: CivId.REALISTAS,
     map: { seed: 1780, type: 'andes', size: 192 },
+    layout: {
+      base: { x: 0.36, z: 0.62 },
+      terrain: {
+        flats: [
+          { name: 'Valle del Cusco', x: 0.36, z: 0.62, rx: 0.15, rz: 0.12 },
+          { name: 'Ruta de Sangarará', x: 0.65, z: 0.38, rx: 0.12, rz: 0.1 },
+        ],
+      },
+      decor: { model: 'colonial_church', at: 'enemy', dx: 10, dz: 0 },
+    },
     timeOfDay: 'dusk',
     startingEra: Era.VICEROYALTY,
     startingResources: { food: 1000, wood: 700, silver: 900, stone: 400 },
@@ -730,6 +793,17 @@ export const MISSIONS: MissionDef[] = [
     playerCiv: CivId.PATRIOTAS,
     enemyCiv: CivId.REALISTAS,
     map: { seed: 1824, type: 'andes', size: 192 },
+    layout: {
+      base: { x: 0.35, z: 0.63 },
+      terrain: {
+        // Junín and Ayacucho as high pampas connected by the campaign route.
+        flats: [
+          { name: 'Pampa de Junín', x: 0.35, z: 0.63, rx: 0.16, rz: 0.12 },
+          { name: 'Pampa de Ayacucho', x: 0.65, z: 0.37, rx: 0.14, rz: 0.1 },
+        ],
+      },
+      decor: { model: 'colonial_church', at: 'enemy', dx: 10, dz: 0 },
+    },
     timeOfDay: 'morning',
     startingEra: Era.REPUBLIC,
     startingResources: { food: 1200, wood: 800, silver: 1200, stone: 500 },
@@ -849,6 +923,15 @@ export const MISSIONS: MissionDef[] = [
     enemyCiv: CivId.CHILE,
     map: { seed: 1879, type: 'coast', size: 192 },
     region: 'south_coast',
+    layout: {
+      base: { x: 0.38, z: 0.6 },
+      terrain: {
+        // The port terrace above the Pacific; the Morro itself is outside the
+        // playable height range and is not invented as a new mesh.
+        flats: [{ name: 'Terraza portuaria de Arica', x: 0.38, z: 0.6, rx: 0.15, rz: 0.12 }],
+      },
+      decor: { model: 'chile_apostadero', at: 'enemy', dx: 10, dz: 0, scale: 1.1 },
+    },
     timeOfDay: 'night',
     startingEra: Era.REPUBLIC,
     startingResources: { food: 1500, wood: 800, silver: 1500, stone: 1200 },

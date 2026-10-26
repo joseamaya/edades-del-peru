@@ -18,7 +18,7 @@
   se reparte en **huamanis** y la monarquía chimú pasa a ser vasalla. Querrotumi se subleva en **1475** y
   es vencido.
 - **Mapa**: `costa` con canal y Chan Chan.
-- **En el juego**: el canal es una geometría visual con un objetivo de alcance para Túpac Yupanqui. Cortarlo dispara la rendición de Chan Chan (victoria), sin reducir la misión a destruir un centro genérico. Chan Chan se representa con el centro enemigo y un compuesto adobe decorativo; el canal y el conjunto son visual-only.
+- **En el juego**: el canal es una geometría visual con un objetivo de alcance para Túpac Yupanqui. Cortarlo dispara la rendición de Chan Chan (victoria), sin reducir la misión a destruir un centro genérico. Chan Chan se representa con el centro enemigo y un compuesto adobe decorativo; el canal y el conjunto son visual-only. El epílogo recuerda la capitulación, el traslado de Minchancaman y la revuelta de Querrotumi en 1475.
 
 ## Fuentes
 

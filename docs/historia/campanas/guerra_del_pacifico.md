@@ -16,7 +16,7 @@
 - **Desenlace documentado**: Chile obtiene el dominio del mar y, tras la guerra, la región de Tarapacá y la
   provincia de Arica se incorporan a Chile. En el Perú, Grau y Bolognesi se convierten en héroes nacionales.
 - **Mapa**: `costa` con litoral y puerto.
-- **En el juego**: la misión representa la **defensa terrestre de Arica (7 de junio de 1880)**, no un combate naval. La campaña marítima de Grau y Angamos queda como contexto histórico; el juego no simula el Huáscar ni la escuadra.
+- **En el juego**: la misión representa la **defensa terrestre de Arica (7 de junio de 1880)**, no un combate naval. La campaña marítima de Grau y Angamos queda como contexto histórico; el juego no simula el Huáscar ni la escuadra. El mapa fija la terraza portuaria y un apostadero chileno como decoración visual; el epílogo recuerda que la plaza cayó históricamente.
 
 ## Fuentes
 

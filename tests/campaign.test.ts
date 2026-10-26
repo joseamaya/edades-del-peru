@@ -26,6 +26,14 @@ describe('campaign educational content', () => {
     }
   });
 
+  it('gives every campaign mission a closing epilogue', () => {
+    for (const mis of MISSIONS) {
+      const edu = getEducational(mis.id);
+      expect(edu?.epilogue, `${mis.id} has no epilogue`).toBeTruthy();
+      expect(edu!.epilogue!.length, `${mis.id} epilogue is too short`).toBeGreaterThan(80);
+    }
+  });
+
   it('there are no orphan educational entries', () => {
     for (const id of Object.keys(EDUCATIONAL)) {
       expect(

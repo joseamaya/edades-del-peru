@@ -28,6 +28,8 @@ export interface MissionSetpiece {
  * scenery composition; `terrain` carves the documented local landforms.
  */
 export interface MissionCanal {
+  /** Optional documented place-name for authored layouts. */
+  name?: string;
   /** Normalized centre of the canal. */
   x: number;
   z: number;

@@ -16,6 +16,7 @@
 - **Desenlace documentado**: victoria cusqueña; los chancas se rinden y luego se integran como aliados
   militares del Tahuantinsuyo. **Cusi Yupanqui** asume el poder como **Pachacútec** e inicia la expansión.
 - **Mapa**: `andes`.
+- **En el juego**: base fija en la pampa de Yahuar, alturas del Cusco y un pucará chanca decorativo. El epílogo retoma la integración chanca y el inicio del Tahuantinsuyo.
 
 ## Fuentes
 

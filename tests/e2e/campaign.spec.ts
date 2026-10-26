@@ -37,6 +37,29 @@ test('the codex opens with periods, civilizations and dossiers', async ({ page }
   await expect(codex.locator('.ed-codex-content')).toContainText('Fuentes');
 });
 
+test('every campaign mission shows its educational epilogue on victory', async ({ page }) => {
+  for (const mission of [
+    'm2_chavin',
+    'm3_moche_recuay',
+    'm4_wari',
+    'm5_yahuar_pampa',
+    'm6_chimu_inca',
+    'm7_tupac_amaru',
+    'm8_independencia',
+    'm9_guerra_pacifico',
+  ]) {
+    await page.goto(`/?mission=${mission}&seed=777&fog=0&low=1&noloop=1`);
+    await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+      timeout: 30_000,
+    });
+    await page.evaluate(() => (window as unknown as { game: any }).game.showVictory(0));
+    const victory = page.locator('.ed-overlay', { hasText: 'VICTORIA' });
+    await expect(victory).toBeVisible({ timeout: 15_000 });
+    await expect(victory).toContainText('Epílogo');
+    await expect(victory).toContainText('Códice');
+  }
+});
+
 test('the tutorial guides in the first mission', async ({ page }) => {
   await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
   const overlay = page.locator('.ed-overlay', { hasText: 'La Ciudad Sagrada' });
@@ -206,6 +229,43 @@ test('m6 cuts the canal to force Chan Chan to surrender', async ({ page }) => {
   expect(out.chanChanDecor).toBe(true);
   expect(out.canalObjective).toBe('completed');
   expect(out.won).toBe(true);
+});
+
+test('authored campaign geography spawns its local base and features', async ({ page }) => {
+  const cases = [
+    { id: 'm2_chavin', river: true, decor: null, canal: false },
+    { id: 'm3_moche_recuay', flats: true, decor: 'mission_decor_recuay_pashash', canal: false },
+    { id: 'm4_wari', flats: true, decor: null, canal: false },
+    { id: 'm5_yahuar_pampa', flats: true, decor: 'mission_decor_chanca_fortress', canal: false },
+    { id: 'm6_chimu_inca', flats: true, decor: 'mission_decor_chimu_compound', canal: true },
+    { id: 'm7_tupac_amaru', flats: true, decor: 'mission_decor_colonial_church', canal: false },
+    { id: 'm8_independencia', flats: true, decor: 'mission_decor_colonial_church', canal: false },
+    { id: 'm9_guerra_pacifico', flats: true, decor: 'mission_decor_chile_apostadero', canal: false },
+  ];
+  for (const item of cases) {
+    await page.goto(`/?mission=${item.id}&seed=777&fog=0&low=1&noloop=1`);
+    await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
+      timeout: 30_000,
+    });
+    const out = await page.evaluate(() => {
+      const g = (window as unknown as { game: any }).game;
+      const center = g.playerCenter(0);
+      return {
+        water: center ? g.terrain.isWater(center.x, center.z) : true,
+        buildable: center ? g.terrain.isBuildable(center.x, center.z) : false,
+        river: !!g.missionLayout?.terrain?.river,
+        flats: g.missionLayout?.terrain?.flats?.length ?? 0,
+        decor: g.scenarioDecor?.name ?? null,
+        canal: !!g.canalSite,
+      };
+    });
+    expect(out.water, `${item.id} starts in water`).toBe(false);
+    expect(out.buildable, `${item.id} start is not buildable`).toBe(true);
+    if (item.river) expect(out.river).toBe(true);
+    if (item.flats) expect(out.flats).toBeGreaterThan(0);
+    if (item.decor) expect(out.decor).toBe(item.decor);
+    if (item.canal !== undefined) expect(out.canal).toBe(item.canal);
+  }
 });
 
 test('m2 pilgrimage at the temple funds the oracle', async ({ page }) => {
