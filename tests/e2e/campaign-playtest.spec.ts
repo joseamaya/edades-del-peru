@@ -75,3 +75,125 @@ test('plays m7 with real gathering and enemy AI without objective cheats', async
   expect(out.won).toBe(null);
   expect(errors).toEqual([]);
 });
+
+/**
+ * Caral is the campaign's gold standard: this plays the mission through the
+ * ordinary command layer (build orders, gather orders and a scout move) instead
+ * of satisfying objectives or spawning finished buildings directly.
+ */
+test('plays m1 Caral with real construction and gathering, without objective cheats', async ({ page }) => {
+  test.setTimeout(180_000);
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+
+  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1&noloop=1');
+  const overlay = page.locator('.ed-overlay', { hasText: 'La Ciudad Sagrada' });
+  await expect(overlay).toBeVisible({ timeout: 30_000 });
+  await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+  await overlay.waitFor({ state: 'detached', timeout: 15_000 });
+  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
+    timeout: 30_000,
+  });
+
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+
+    const workers = [...g.units.values()].filter((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as any[];
+    const scout = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'scout' && !u.dead) as any;
+    const center = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center') as any;
+    if (!center || workers.length < 3 || !scout) return { setup: false };
+
+    const buildings: any[] = [];
+    const placeAndBuild = (kind: string, dx: number, dz: number, worker: any): boolean => {
+      const spot = g.findFreeSpot(center.pos.x + dx, center.pos.z + dz, kind === 'farm' ? 3 : 2);
+      if (!spot || !g.executeCommand({ kind: 'place', building: kind, x: spot.x, z: spot.z })) return false;
+      const building = [...g.buildings.values()].find(
+        (b: any) => b.owner === 0 && b.kind === kind && !b.dead && b.pos.x === spot.x && b.pos.z === spot.z,
+      ) as any;
+      if (!building) return false;
+      buildings.push(building);
+      g.executeCommand(
+        { kind: 'order', unitIds: [worker.id], order: { kind: 'build', entityId: building.id }, clear: true },
+        false,
+      );
+      return true;
+    };
+
+    if (!placeAndBuild('farm', 11, 2, workers[0])) return { setup: false };
+    if (!placeAndBuild('farm', -11, 2, workers[1])) return { setup: false };
+    if (!placeAndBuild('mill', 0, 12, workers[2])) return { setup: false };
+
+    // Keep the fourth worker on the nearest berry patch while the other three build.
+    const berry = [...g.resourceNodes.values()]
+      .filter((n: any) => !n.dead && n.resource === 'food' && n.kind === 'berry')
+      .sort(
+        (a: any, b: any) =>
+          (a.pos.x - center.pos.x) ** 2 +
+          (a.pos.z - center.pos.z) ** 2 -
+          ((b.pos.x - center.pos.x) ** 2 + (b.pos.z - center.pos.z) ** 2),
+      )[0] as any;
+    const berryWorker = workers[3];
+    if (berry && berryWorker) {
+      g.executeCommand(
+        { kind: 'order', unitIds: [berryWorker.id], order: { kind: 'gather', entityId: berry.id }, clear: true },
+        false,
+      );
+    }
+
+    const landmark = g.landmark?.position;
+    if (!landmark) return { setup: false };
+    g.executeCommand(
+      {
+        kind: 'order',
+        unitIds: [scout.id],
+        order: { kind: 'move', target: { x: landmark.x, z: landmark.z } },
+        clear: true,
+      },
+      false,
+    );
+
+    const dt = 1 / 60;
+    let t = 0;
+    for (let i = 0; i < Math.ceil(330 / dt) && !g.mission.ended; i++) {
+      // after the three builders finish, put two of them on the farms
+      if (
+        buildings.length === 3 &&
+        buildings.every((b) => b.constructionComplete) &&
+        workers[0].orderQueue.length === 0
+      ) {
+        for (const [i, worker] of [workers[0], workers[1]].entries()) {
+          const farm = buildings[i];
+          if (farm && !farm.dead) {
+            g.executeCommand(
+              { kind: 'order', unitIds: [worker.id], order: { kind: 'gather', entityId: farm.id }, clear: true },
+              false,
+            );
+          }
+        }
+      }
+      g.update(dt, t);
+      t += dt;
+    }
+
+    return {
+      setup: true,
+      won: g.mission.won as boolean | null,
+      ended: g.mission.ended as boolean,
+      objectives: Object.fromEntries(
+        g.mission.def.objectives.map((o: any) => [o.id, g.mission.getObjectiveState(o.id)]),
+      ),
+    };
+  });
+
+  expect(out.setup, 'Caral playtest could not set up its base').toBe(true);
+  expect(out.ended, JSON.stringify(out)).toBe(true);
+  expect(out.won, JSON.stringify(out)).toBe(true);
+  expect(out.objectives.obj_agricultura).toBe('completed');
+  expect(out.objectives.obj_almacenamiento).toBe('completed');
+  expect(out.objectives.obj_complejo).toBe('completed');
+  expect(out.objectives.obj_alimento).toBe('completed');
+  expect(out.objectives.obj_sostener).toBe('completed');
+  expect(errors).toEqual([]);
+});

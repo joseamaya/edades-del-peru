@@ -21,10 +21,10 @@ the quality governor adapts on weaker hardware. Regenerate these captures with `
 
 ![The Caral mission intro](./docs/media/gameplay.gif)
 
-| | |
-|---|---|
-| ![A Moche base](./docs/media/hero.jpg) | ![The Chavín oracle](./docs/media/chavin.jpg) |
-| A Moche coastal base (cinematic effects + warm coast grade) | *El Oráculo de Chavín* — per-mission highland mist |
+|                                                             |                                                    |
+| ----------------------------------------------------------- | -------------------------------------------------- |
+| ![A Moche base](./docs/media/hero.jpg)                      | ![The Chavín oracle](./docs/media/chavin.jpg)      |
+| A Moche coastal base (cinematic effects + warm coast grade) | _El Oráculo de Chavín_ — per-mission highland mist |
 
 ## How to run
 
@@ -66,71 +66,73 @@ Debug URL parameters:
 
 ## Campaign: La Senda del Sol
 
-Nine historical scenarios with exact data (date, place, sides and real commanders). Each dossier is in
+Nine historical scenarios grounded in documented dates, places and societies; where the record names commanders, the game uses them. Each dossier is in
 [`docs/historia/campanas/`](./docs/historia/campanas/).
 
-| # | Mission | Date | Confrontation |
-|---|---|---|---|
-| 1 | La Ciudad Sagrada | c. 3000 BCE | Caral-Supe (Áspero / valley rivals) |
-| 2 | El Oráculo de Chavín | c. 900–500 BCE | Chavín vs Paracas |
-| 3 | La Frontera de los Valles | c. 300–600 CE | Moche vs Recuay |
-| 4 | El Horizonte Medio | c. 600–1000 CE | Wari vs Tiahuanaco |
-| 5 | Yahuar Pampa | 1438 | Cusi Yupanqui (Inca) vs Anccu Hualloc (Chanca) |
-| 6 | La Guerra del Norte | c. 1470 | Túpac Yupanqui (Inca) vs Minchancaman (Chimú) |
-| 7 | La Gran Rebelión | 1780–1781 | Túpac Amaru II vs Royalists |
-| 8 | La Independencia | 1821–1824 | Patriots (San Martín, Bolívar, Sucre) vs Royalists |
-| 9 | La Defensa de Arica | 1880 | Bolognesi (Peru) vs Chile |
+| #   | Mission                   | Date           | Historical context                                         |
+| --- | ------------------------- | -------------- | ---------------------------------------------------------- |
+| 1   | La Ciudad Sagrada         | c. 3000 BCE    | Caral-Supe, Áspero and the Supe valley (no documented war) |
+| 2   | El Oráculo de Chavín      | c. 900–500 BCE | Chavín and Paracas (coetaneous)                            |
+| 3   | La Frontera de los Valles | c. 300–600 CE  | Moche and Recuay (documented conflict)                     |
+| 4   | El Horizonte Medio        | c. 600–1000 CE | Wari and Tiahuanaco (coetaneous)                           |
+| 5   | Yahuar Pampa              | 1438           | Cusi Yupanqui (Inca) vs Anccu Hualloc (Chanca)             |
+| 6   | La Guerra del Norte       | c. 1470        | Túpac Yupanqui (Inca) vs Minchancaman (Chimú)              |
+| 7   | La Gran Rebelión          | 1780–1781      | Túpac Amaru II vs Royalists                                |
+| 8   | La Independencia          | 1821–1824      | Patriots (San Martín, Bolívar, Sucre) vs Royalists         |
+| 9   | La Defensa de Arica       | 1880           | Bolognesi (Peru) vs Chile                                  |
 
 Mission ids: `m1_caral`, `m2_chavin`, `m3_moche_recuay`, `m4_wari`, `m5_yahuar_pampa`, `m6_chimu_inca`,
 `m7_tupac_amaru`, `m8_independencia`, `m9_guerra_pacifico`.
+
+The campaign [quality bar](./docs/design/campaign-quality-bar.md) records the gates a mission must meet.
 
 ## Educational mode
 
 The game teaches history while you play:
 
-- **Campaign prologue**: opening *Campañas* presents the history of Peru (from Caral to the Republic) before
+- **Campaign prologue**: opening _Campañas_ presents the history of Peru (from Caral to the Republic) before
   choosing a scenario.
 - **Historical briefing**: each mission shows period and dates, geography, sides, expanded context, a
   «¿Sabías que…?» and its **sources** (collapsible).
-- **Guided tutorial**: the first mission (Caral) teaches selecting, building and training step by step
-  (respecting the *Mostrar consejos* setting).
+- **Guided tutorial**: the first mission (Caral) teaches selecting, building and exploring step by step
+  (respecting the _Mostrar consejos_ setting).
 - **Codex** (📖 in the menu): a browser of periods, civilizations and campaigns, with the **historical dossiers**
   from [`docs/historia/`](./docs/historia/) and their sources.
 
 ## Controls
 
-| Action | Key / Mouse |
-|---|---|
-| Select | Left click / drag box |
-| Select all of the same type | Double click |
-| Entire army | E |
-| Move / order | Right button |
-| Attack-move | Ctrl + Right button |
-| Convert (Amauta / Misionero) | Right-click an enemy unit |
-| Queue orders / rally point | Shift + Right button |
-| Pan | WASD / arrows / edges / middle button |
-| Zoom | Wheel · **Q/E** rotate · **F** follow |
-| Last battle | Space · **H** Plaza Mayor |
-| Build platform / dwelling | G / V |
-| Pause | P · **☰** menu |
+| Action                       | Key / Mouse                           |
+| ---------------------------- | ------------------------------------- |
+| Select                       | Left click / drag box                 |
+| Select all of the same type  | Double click                          |
+| Entire army                  | E                                     |
+| Move / order                 | Right button                          |
+| Attack-move                  | Ctrl + Right button                   |
+| Convert (Amauta / Misionero) | Right-click an enemy unit             |
+| Queue orders / rally point   | Shift + Right button                  |
+| Pan                          | WASD / arrows / edges / middle button |
+| Zoom                         | Wheel · **Q/E** rotate · **F** follow |
+| Last battle                  | Space · **H** Plaza Mayor             |
+| Build platform / dwelling    | G / V                                 |
+| Pause                        | P · **☰** menu                       |
 
 ## Historical periods (10)
 
 Matches are **locked by period** (no anachronistic modernization). Chronology in
 [`docs/historia/periodizacion.md`](./docs/historia/periodizacion.md).
 
-| Period | Dates | Civilizations |
-|---|---|---|
-| Late Archaic | 3000–1800 BCE | Caral-Supe |
-| Early Horizon | 1200–200 BCE | Chavín, Paracas, Cupisnique |
-| Early Intermediate | 200 BCE–600 CE | Moche, Nazca, Recuay, Tiahuanaco, Paracas |
-| Middle Horizon | 600–1000 CE | Wari, Tiahuanaco |
-| Late Intermediate | 1000–1476 CE | Chimú, Chincha, Chanca, Collas/Lupaca, Huanca |
-| Late Horizon | 1438–1533 CE | Inca |
-| Viceroyalty | 1542–1821 | Royalists |
-| Independence | 1821–1824 | Patriots, Royalists |
-| Republic | 1821–1900 | Republic of Peru, Chile |
-| Contemporary | 1900–present | Republic of Peru |
+| Period             | Dates          | Civilizations                                 |
+| ------------------ | -------------- | --------------------------------------------- |
+| Late Archaic       | 3000–1800 BCE  | Caral-Supe                                    |
+| Early Horizon      | 1200–200 BCE   | Chavín, Paracas, Cupisnique                   |
+| Early Intermediate | 200 BCE–600 CE | Moche, Nazca, Recuay, Tiahuanaco, Paracas     |
+| Middle Horizon     | 600–1000 CE    | Wari, Tiahuanaco                              |
+| Late Intermediate  | 1000–1476 CE   | Chimú, Chincha, Chanca, Collas/Lupaca, Huanca |
+| Late Horizon       | 1438–1533 CE   | Inca                                          |
+| Viceroyalty        | 1542–1821      | Royalists                                     |
+| Independence       | 1821–1824      | Patriots, Royalists                           |
+| Republic           | 1821–1900      | Republic of Peru, Chile                       |
+| Contemporary       | 1900–present   | Republic of Peru                              |
 
 Only **coetaneous** civilizations are offered as rivals (matrix in
 [`docs/historia/contemporaneidad.md`](./docs/historia/contemporaneidad.md)).

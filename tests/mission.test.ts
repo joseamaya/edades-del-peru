@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Mission } from '../src/campaign/Mission';
 import type { MissionDef } from '../src/campaign/types';
-import { Era, CivId, HistoricalPeriod, UnitKind } from '../src/core/types';
+import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../src/core/types';
 
 /** A mission with a required goal and a bonus that can fail (a protected unit). */
 const def: MissionDef = {
@@ -49,6 +49,47 @@ function stubGame(unit: { id: number; tag: string; owner: number; dead: boolean;
     setVisitedHeritage: () => {},
   };
 }
+
+describe('mission objective progress', () => {
+  it('reports count/time progress and accepts an untagged reach objective', () => {
+    const unit = {
+      id: 1,
+      tag: '',
+      owner: 0,
+      dead: false,
+      kind: UnitKind.SCOUT,
+      pos: { x: 0, z: 0 },
+    };
+    const game = stubGame(unit) as any;
+    game.landmark = { position: { x: 10, z: 10 } };
+    const missionDef: MissionDef = {
+      ...def,
+      start: { units: [{ kind: UnitKind.SCOUT, dx: 0, dz: 0 }] },
+      objectives: [
+        { id: 'observe', kind: 'reach', pos: { ref: 'landmark', dx: 0, dz: 0 }, radius: 5, title: 'observar' },
+        { id: 'food', kind: 'gather', resource: 'food', count: 10, title: 'comida' },
+        { id: 'farms', kind: 'build', buildingKind: BuildingKind.FARM, count: 2, title: 'andenes' },
+      ],
+      triggers: [],
+    };
+    const m = new Mission(game, missionDef, () => {});
+    m.start();
+
+    expect(m.getObjectiveProgress('observe')).toEqual({ current: 0, target: 1, format: 'count' });
+    expect(m.getObjectiveProgress('food')).toEqual({ current: 0, target: 10, format: 'count' });
+
+    unit.pos = { x: 10, z: 10 };
+    game.players[0].resources.food = 4;
+    game.buildings = new Map([
+      [10, { owner: 0, kind: BuildingKind.FARM, constructionComplete: true, dead: false, pos: { x: 0, z: 0 } }],
+    ]);
+    m.update(0.1, 0);
+
+    expect(m.getObjectiveState('observe')).toBe('completed');
+    expect(m.getObjectiveProgress('food')).toEqual({ current: 4, target: 10, format: 'count' });
+    expect(m.getObjectiveProgress('farms')).toEqual({ current: 1, target: 2, format: 'count' });
+  });
+});
 
 describe('mission optional (bonus) objectives', () => {
   it('initializes objectives added after a save was created', () => {

@@ -20,6 +20,9 @@ test('the mission briefing includes context and sources', { tag: '@smoke' }, asy
   await expect(overlay).toContainText('Contexto');
   await expect(overlay).toContainText('¿Sabías que…?');
   await expect(overlay.getByText('Fuentes históricas')).toBeVisible();
+  await expect(overlay).toContainText('Llega al complejo ceremonial');
+  // the assembly is discovered through the Plaza Central card, not spoiled here
+  await expect(overlay).not.toContainText('Convoca una asamblea');
 });
 
 test('the codex opens with periods, civilizations and dossiers', async ({ page }) => {
@@ -105,6 +108,9 @@ test('the Caral mission closes with a narrative epilogue, not a quiz', async ({ 
     g.spawnScriptedBuilding('farm', 0, c.x + 6, c.z + 6);
     g.spawnScriptedBuilding('farm', 0, c.x + 9, c.z + 6);
     g.spawnScriptedBuilding('mill', 0, c.x + 12, c.z + 6);
+    const landmark = g.landmark?.position;
+    const scout = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'scout');
+    if (landmark && scout) scout.pos.set(landmark.x, g.terrain.getHeight(landmark.x, landmark.z), landmark.z);
     const m = g.mission;
     const dt = 1 / 60;
     for (let i = 0; i < Math.ceil(310 / dt) && !m.ended; i++) {

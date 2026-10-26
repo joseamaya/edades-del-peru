@@ -151,6 +151,64 @@ test('the Caral scenario builds the documented Upper and Lower halves', { tag: '
   expect(errors).toEqual([]);
 });
 
+test('the Caral objectives show live progress and keep the assembly hidden', async ({ page }) => {
+  await boot(page);
+  const objectives = page.locator('#ed-objectives');
+  await expect(objectives).toContainText('Prepara dos campos de cultivo');
+  await expect(objectives).toContainText('0/2');
+  await expect(objectives).toContainText('250/500');
+  await expect(objectives).toContainText('0/1');
+  await expect(objectives).toContainText('0/6');
+  await expect(objectives).toContainText(/0:0\d \/ 5:00/);
+  await expect(objectives).not.toContainText('Convoca una asamblea');
+
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    g.players[0].resources.food = 500;
+    g.mission.update(0.1, 0);
+    g.hud.update(0.2, 0);
+  });
+  await expect(objectives).toContainText('✔Reúne 500 de comida');
+});
+
+test('the Caral tutorial hides the shortcut help while it is open', async ({ page }) => {
+  await boot(page);
+  await expect(page.locator('#ed-tutorial')).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('#ed-help')).toBeHidden();
+});
+
+test('a peaceful victory summarises optional achievements and offers the next mission', async ({ page }) => {
+  await boot(page);
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    for (const id of [
+      'caral_pyramid_mayor',
+      'caral_pyramid_central',
+      'caral_pyramid_quarry',
+      'caral_pyramid_lesser',
+      'caral_pyramid_gallery',
+      'caral_pyramid_huanca',
+    ]) {
+      g.visitHeritage(id);
+    }
+    g.toggleCanal();
+    g.mission.update(0.1, 0);
+    g.showVictory(0);
+  });
+  const victory = page.locator('.ed-overlay', { hasText: 'VICTORIA' });
+  await expect(victory).toBeVisible();
+  await expect(victory).toContainText('Logros opcionales');
+  await expect(victory).toContainText('Abre la compuerta del canal comunal');
+  await expect(victory).toContainText('Recorre los seis complejos piramidales');
+  await expect(victory).toContainText('Continuar: El Oráculo de Chavín');
+  await expect(victory).not.toContainText('Bajas infligidas');
+  await victory.getByRole('button', { name: /Continuar: El Oráculo de Chavín/ }).click();
+  await page.waitForURL(/mission=m2_chavin/);
+  await expect(page.locator('.ed-overlay', { hasText: 'El Oráculo de Chavín' })).toBeVisible({ timeout: 30_000 });
+});
+
 test('a Caral Blender pyramid opens an educational field card', async ({ page }) => {
   await boot(page);
   await page.evaluate(() => (window as unknown as { game: any }).game.camera.moveTo(64, 36, true));
@@ -336,6 +394,7 @@ test('a loaded Caral save keeps the Blender setpiece', async ({ page }) => {
     g.loop.stop();
     g.visitHeritage('caral_pyramid_mayor');
     g.toggleCanal();
+    g.startAssembly();
     g.saveMatch();
   });
   await page.goto('/?load=1&fog=0&low=1&noloop=1');
@@ -347,6 +406,7 @@ test('a loaded Caral save keeps the Blender setpiece', async ({ page }) => {
         g?.setpiece?.group?.userData?.proceduralLower === false &&
         g?.isHeritageVisited('caral_pyramid_mayor') === true &&
         g?.isCanalOpen() === true &&
+        g?.getAssemblyState() === 'activo' &&
         landmark?.getObjectByName('caral_pyramid_mayor') !== undefined &&
         landmark?.getObjectByName('caral_anfiteatro') !== undefined &&
         ['central', 'quarry', 'lesser', 'gallery', 'huanca'].every(

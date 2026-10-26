@@ -64,7 +64,7 @@ for (const mis of MISSIONS) {
               }
               break;
             case 'reach': {
-              if (!o.entityTag || !o.pos) break;
+              if (!o.pos) break;
               const base =
                 o.pos.ref === 'enemy'
                   ? centerOf(1)
@@ -77,7 +77,8 @@ for (const mis of MISSIONS) {
                         : { x: 0, z: 0 };
               const tp = { x: base.x + o.pos.dx, z: base.z + o.pos.dz };
               for (const u of g.units.values()) {
-                if (u.owner === 0 && !u.dead && u.tag === o.entityTag) {
+                // an untagged reach objective accepts any player unit
+                if (u.owner === 0 && !u.dead && (!o.entityTag || u.tag === o.entityTag)) {
                   u.pos.set(tp.x, g.terrain.getHeight(tp.x, tp.z), tp.z);
                 }
               }
