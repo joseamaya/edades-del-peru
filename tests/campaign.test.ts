@@ -177,6 +177,15 @@ describe('campaign educational content', () => {
     expect(MISSIONS.find((m) => m.id === 'm4_wari')!.objectives.some((o) => o.id === 'bonus_red')).toBe(true);
   });
 
+  it('m9 is the Arica land defense, not a naval promise', () => {
+    const m9 = MISSIONS.find((m) => m.id === 'm9_guerra_pacifico')!;
+    expect(m9.title).toContain('Arica');
+    expect(m9.objectives.some((o) => o.entityTag === 'bolognesi')).toBe(true);
+    expect(m9.start.units?.some((u) => u.tag === 'bolognesi')).toBe(true);
+    expect(m9.objectives.map((o) => o.title).join(' ')).not.toMatch(/monitor|Huáscar|escuadra/i);
+    expect(m9.defeat).toContain('Arica');
+  });
+
   it('every objective and trigger entityTag is declared by a start/mark tag', () => {
     for (const mis of MISSIONS) {
       const declared = new Set<string>();

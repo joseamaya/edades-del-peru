@@ -678,15 +678,14 @@ export const MISSIONS: MissionDef[] = [
   },
   {
     id: 'm9_guerra_pacifico',
-    commanders: ['grau', 'bolognesi'],
-    title: 'El Caballero de los Mares',
-    subtitle: 'Guerra del Pacífico · 1879–1883',
+    commanders: ['bolognesi'],
+    title: 'La Defensa de Arica',
+    subtitle: 'Arica · 1880',
     history:
-      'La Guerra del Pacífico enfrenta al Perú con Chile. Al mando del monitor Huáscar, el almirante Miguel Grau detiene a una escuadra superior con audaces correrías.\n' +
-      'Proteged el puerto y destruid el centro de mando enemigo antes de que caiga la noche.',
-    victory:
-      'La escuadra enemiga se retira y el puerto resiste. Como en Angamos, el ejemplo de Grau sostiene a la República.',
-    defeat: 'El puerto cae y el monitor se pierde. La República entra en su hora más oscura.',
+      'Tras el combate de Angamos (8 de octubre de 1879), la Guerra del Pacífico continúa en tierra. En Arica, la guarnición peruana al mando de Francisco Bolognesi resiste el asalto chileno del 7 de junio de 1880.\n' +
+      'Defended el puerto y mantened con vida a Bolognesi hasta que termine el asalto.',
+    victory: 'La defensa de Arica resiste el asalto y se convierte en símbolo de la resistencia peruana.',
+    defeat: 'Arica cae ante el asalto chileno. La resistencia se pierde y el puerto queda en manos enemigas.',
     period: HistoricalPeriod.REPUBLIC,
     playerCiv: CivId.REPUBLIC,
     enemyCiv: CivId.CHILE,
@@ -698,18 +697,17 @@ export const MISSIONS: MissionDef[] = [
     start: {
       buildings: [{ kind: BuildingKind.FORTRESS, dx: -10, dz: -6, tag: 'puerto' }],
       units: [
-        { kind: UnitKind.RIFLEMAN, dx: 6, dz: 2, count: 1, tag: 'grau' },
-        { kind: UnitKind.CAVALRY, dx: 8, dz: 0, count: 2 },
+        { kind: UnitKind.RIFLEMAN, dx: 6, dz: 2, count: 1, tag: 'bolognesi' },
         { kind: UnitKind.RIFLEMAN, dx: 4, dz: 8, count: 4 },
+        { kind: UnitKind.SOLDIER, dx: 8, dz: 0, count: 4 },
       ],
     },
     mark: [{ tag: 'centro_enemigo', kind: BuildingKind.CENTER, owner: 1 }],
     enemy: { active: true, difficulty: 'hard', aggression: 1.4 },
-    // a naval/coastal campaign: the Republic has no siege train
+    // A land defense of the port: no siege train in this scenario.
     allowedUnits: [
       UnitKind.WORKER,
       UnitKind.SOLDIER,
-      UnitKind.MUSKETEER,
       UnitKind.RIFLEMAN,
       UnitKind.SNIPER,
       UnitKind.HUSSAR,
@@ -717,17 +715,21 @@ export const MISSIONS: MissionDef[] = [
       UnitKind.SCOUT,
     ],
     objectives: [
-      { id: 'obj_puerto', kind: 'protect', entityTag: 'puerto', title: 'Protege el puerto y el monitor' },
-      { id: 'obj_kill', kind: 'destroy', entityTag: 'centro_enemigo', title: 'Destruye el centro de mando enemigo' },
+      { id: 'obj_puerto', kind: 'protect', entityTag: 'puerto', title: 'Protege el puerto de Arica' },
       {
-        id: 'obj_correria',
-        kind: 'reach',
-        entityTag: 'grau',
-        pos: { ref: 'enemy', dx: -14, dz: 0 },
-        radius: 8,
-        title: 'Lleva a Grau en correría hasta la escuadra enemiga',
+        id: 'obj_bolognesi',
+        kind: 'protect',
+        entityTag: 'bolognesi',
+        title: 'Mantén con vida a Francisco Bolognesi',
       },
-      { id: 'obj_grau', kind: 'protect', entityTag: 'grau', title: 'Mantén con vida a Miguel Grau' },
+      { id: 'obj_resistir', kind: 'survive', time: 600, title: 'Resiste el asalto hasta la noche' },
+      {
+        id: 'obj_kill',
+        kind: 'destroy',
+        entityTag: 'centro_enemigo',
+        optional: true,
+        title: 'Golpea el mando chileno',
+      },
     ],
     triggers: [
       {
@@ -736,7 +738,7 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'Miguel Grau: —El enemigo es superior, pero no pasará. ¡Tripulación, a vuestros puestos!',
+            text: 'Francisco Bolognesi: —Arica no se rinde. ¡A vuestros puestos!',
           },
         ],
       },
@@ -747,29 +749,54 @@ export const MISSIONS: MissionDef[] = [
       },
       {
         id: 't_wave_1',
-        condition: { type: 'time', seconds: 240 },
+        condition: { type: 'time', seconds: 180 },
         effects: [
           {
             type: 'wave',
             owner: 1,
             units: [
               { kind: UnitKind.SOLDIER, count: 4 },
-              { kind: UnitKind.RIFLEMAN, count: 3 },
+              { kind: UnitKind.RIFLEMAN, count: 2 },
             ],
             pos: { ref: 'player', dx: 16, dz: 16 },
             radius: 6,
           },
-          { type: 'dialogue', text: '¡Tropas de desembarco enemigas se dirigen al puerto!' },
+          { type: 'dialogue', text: '¡El asalto chileno se acerca al puerto!' },
         ],
       },
       {
-        id: 't_correria',
-        condition: { type: 'unit_near', entityTag: 'grau', pos: { ref: 'enemy', dx: -14, dz: 0 }, radius: 8 },
+        id: 't_wave_2',
+        condition: { type: 'time', seconds: 360 },
         effects: [
           {
-            type: 'dialogue',
-            text: 'Miguel Grau: —¡Ahí está la escuadra! Una correría más y el puerto respira.',
+            type: 'wave',
+            owner: 1,
+            units: [
+              { kind: UnitKind.SOLDIER, count: 5 },
+              { kind: UnitKind.RIFLEMAN, count: 3 },
+              { kind: UnitKind.CAVALRY, count: 1 },
+            ],
+            pos: { ref: 'player', dx: -12, dz: 20 },
+            radius: 7,
           },
+          { type: 'dialogue', text: '¡Refuerzos chilenos! ¡Sostened la línea!' },
+        ],
+      },
+      {
+        id: 't_wave_3',
+        condition: { type: 'time', seconds: 540 },
+        effects: [
+          {
+            type: 'wave',
+            owner: 1,
+            units: [
+              { kind: UnitKind.SOLDIER, count: 6 },
+              { kind: UnitKind.RIFLEMAN, count: 4 },
+            ],
+            pos: { ref: 'player', dx: 20, dz: -10 },
+            radius: 6,
+          },
+          { type: 'dialogue', text: '¡Último asalto! ¡Arica resiste!' },
         ],
       },
     ],

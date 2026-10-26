@@ -1,4 +1,4 @@
-# Campaña 9 — El Caballero de los Mares (Guerra del Pacífico, 1879–1883)
+# Campaña 9 — La Defensa de Arica (Guerra del Pacífico, 1879–1883)
 
 - **Periodo**: República (P8).
 - **Fecha**: **1879–1883** (campaña marítima: 1879).
@@ -16,6 +16,7 @@
 - **Desenlace documentado**: Chile obtiene el dominio del mar y, tras la guerra, la región de Tarapacá y la
   provincia de Arica se incorporan a Chile. En el Perú, Grau y Bolognesi se convierten en héroes nacionales.
 - **Mapa**: `costa` con litoral y puerto.
+- **En el juego**: la misión representa la **defensa terrestre de Arica (7 de junio de 1880)**, no un combate naval. La campaña marítima de Grau y Angamos queda como contexto histórico; el juego no simula el Huáscar ni la escuadra.
 
 ## Fuentes
 
