@@ -5,7 +5,7 @@
   ocupó **Tarapacá** y **Arica** (1880) y **Lima** (1881).
 - **Personajes**: **Galvarino Riveros** (comandante de la escuadra), **Juan José Latorre** (blindado
   *Cochrane*), **Arturo Prat** (corbeta *Esmeralda*, Iquique, 21 may 1879).
-- **En el juego**: facción enemiga en la campaña **"El Caballero de los Mares"**.
+- **En el juego**: facción enemiga en la campaña **"La Defensa de Arica"**.
 
 ## Fuentes
 

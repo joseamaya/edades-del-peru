@@ -142,13 +142,21 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
     ],
   },
   m9_guerra_pacifico: {
+    briefing:
+      'Arica, 7 de junio de 1880. Tras Angamos, la Guerra del Pacífico continúa en tierra. La guarnición ' +
+      'peruana, al mando de Francisco Bolognesi, resiste el asalto chileno sobre el puerto.',
     context:
       'En la Guerra del Pacífico (1879–1883), por el salitre de Antofagasta, el Perú y Bolivia se enfrentaron a ' +
       'Chile. Al mando del monitor Huáscar, el almirante Miguel Grau contuvo con audaces correrías a una escuadra ' +
       'superior. Cayó en el combate de Angamos (8 de octubre de 1879). Francisco Bolognesi murió defendiendo ' +
       'Arica (7 de junio de 1880). Chile obtuvo el dominio del mar.',
     didYouKnow:
-      'El monitor Huáscar, con Miguel Grau, libró una guerra de correrías que retrasó a una escuadra muy superior.',
+      'La defensa de Arica se convirtió en símbolo de la resistencia peruana; Bolognesi murió en la plaza el ' +
+      '7 de junio de 1880.',
+    epilogue:
+      'La resistencia de Arica quedó como símbolo del sacrificio peruano. En la historia, la plaza cayó el ' +
+      '7 de junio de 1880 y Bolognesi murió en combate; esta campaña permite resistir el asalto, pero no ' +
+      'cambia el desenlace documentado de la guerra.',
     sources: [
       { text: 'Marina de Guerra del Perú: Combate de Angamos', url: 'https://marina.mil.pe/info/combate-de-angamos/' },
       { text: 'BBC Mundo (2022). Batalla de Angamos.' },

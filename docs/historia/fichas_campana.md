@@ -17,7 +17,7 @@ y [`mapas.md`](./mapas.md).
 | 6 | La Guerra del Norte | Horizonte Tardío | Inca (vs Chimú) | `north_coast` | costa | muy árido, desierto costero | muy baja | plata, agricultura de valle | mampostería (`andean-masonry`) | — | [`campanas/chimu_inca.md`](./campanas/chimu_inca.md) |
 | 7 | La Gran Rebelión | Virreinato | Inca / Realistas | `high_andes` | andes | frío, rocoso | media | plata (mita), agricultura, obrajes | colonial (`colonial`) | — | [`campanas/tupac_amaru.md`](./campanas/tupac_amaru.md) |
 | 8 | La Independencia | Independencia | Patriotas | `andean_valley` | andes | templado-húmedo, quebrada | media | agricultura, ganadería, montoneras | republicana (`republican`) | — | [`campanas/independencia.md`](./campanas/independencia.md) |
-| 9 | El Caballero de los Mares | República | República del Perú | `south_coast` | costa | desértico, litoral sur | muy baja | pesca, guano, plata | republicana (`republican`) | Fortificación portuaria | [`campanas/guerra_del_pacifico.md`](./campanas/guerra_del_pacifico.md) |
+| 9 | La Defensa de Arica | República | República del Perú | `south_coast` | costa | desértico, litoral sur | muy baja | pesca, guano, plata | republicana (`republican`) | Fortificación portuaria | [`campanas/guerra_del_pacifico.md`](./campanas/guerra_del_pacifico.md) |
 
 ## Notas
 

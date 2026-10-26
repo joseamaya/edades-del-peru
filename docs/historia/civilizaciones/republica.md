@@ -7,7 +7,7 @@
 - **Economía**: guano y salitre (auge del siglo XIX), ferrocarriles, puertos.
 - **Militar**: **Guerra del Pacífico** (1879–1883) contra Chile; **Miguel Grau** (monitor **Huáscar**,
   **Angamos**, 8 oct 1879) y **Francisco Bolognesi** (defensa de **Arica**, 7 jun 1880).
-- **En el juego**: facción jugable en la campaña **"El Caballero de los Mares"** (1879).
+- **En el juego**: facción jugable en la campaña **"La Defensa de Arica"** (1880).
 
 ## Fuentes
 

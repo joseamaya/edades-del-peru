@@ -79,7 +79,7 @@ Nine historical scenarios with exact data (date, place, sides and real commander
 | 6 | La Guerra del Norte | c. 1470 | Túpac Yupanqui (Inca) vs Minchancaman (Chimú) |
 | 7 | La Gran Rebelión | 1780–1781 | Túpac Amaru II vs Royalists |
 | 8 | La Independencia | 1821–1824 | Patriots (San Martín, Bolívar, Sucre) vs Royalists |
-| 9 | El Caballero de los Mares | 1879–1883 | Miguel Grau and Bolognesi (Peru) vs Chile |
+| 9 | La Defensa de Arica | 1880 | Bolognesi (Peru) vs Chile |
 
 Mission ids: `m1_caral`, `m2_chavin`, `m3_moche_recuay`, `m4_wari`, `m5_yahuar_pampa`, `m6_chimu_inca`,
 `m7_tupac_amaru`, `m8_independencia`, `m9_guerra_pacifico`.
