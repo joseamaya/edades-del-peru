@@ -1156,7 +1156,7 @@ export class HUD {
     }
     const card = getBuildingCard(this.game.mission?.def.id, b.kind);
     if (card) {
-      s += `<br><span style="color:var(--text-dim)">${card.summary}</span><br><span style="color:var(--text-dim);font-size:11px">Fuente: ${card.citation} · ${card.confidence}</span>`;
+      s += `<br><span style="color:var(--text-dim)">${card.role}: ${card.summary}</span><br><span style="color:var(--text-dim);font-size:11px">Fuente: ${card.citation} · ${card.confidence}</span>`;
     }
     return s;
   }
