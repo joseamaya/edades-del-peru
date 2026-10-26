@@ -157,9 +157,9 @@ blender --background art-src/blender/scenes/caral_rts_kit.blend \
   exporter cannot represent; the GLB exports its base color.
 - `?scenery=caral-anfiteatro` mounts the showcase.
 - `m1_caral` places this GLB as the secondary setpiece of the Caral landmark, on a low rectangular
-  terrace. It is visual-only; collision and pathfinding are not implemented yet. If the GLB fails, the
-  city rebuilds the procedural lower ensemble; loaded saves keep that ensemble because the modular
-  setpiece is skipped before the snapshot is applied.
+  terrace. It is visual-only; collision and pathfinding are not implemented yet. If any modular
+  setpiece fails, all modular setpieces are cleared and the full procedural city is rebuilt. Loaded
+  saves use the same modular setpiece path.
 
 ## Source manifest
 

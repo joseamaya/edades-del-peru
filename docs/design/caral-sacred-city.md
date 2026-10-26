@@ -89,7 +89,10 @@ Anfiteatro use modular Blender GLBs:
   render because that GLB already contains the temple, altar and banqueta.
 - The plazas, monolith, sunken plazas, compounds and the ford remain procedural and are
   merged by material.
-- All of these layers are visual-only; they do not add obstacles or entities.
+- The plan's `width`/`depth` values are schematic layout bounds; each Blender module keeps its own
+  source-derived mesh footprint and is not stretched to fill the plan row.
+- All of these layers are visual-only; they do not add obstacles or entities. Collision footprints
+  for the playable-building pass must come from the module bounds, not from the schematic plan rows.
 
 ## Guards
 
