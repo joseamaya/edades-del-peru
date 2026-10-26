@@ -71,6 +71,9 @@ camera framing and the warm desert palette.
   `buildCaralCityModel`) for the surrounding city; the six pyramid GLBs and
   `caral_anfiteatro` for the lower ceremonial ensemble.
 - Renderer: `src/rendering/SacredCity.ts` (merged by material; visual only).
+- Heritage inspection: `src/model/defs/heritage.ts` and the landmark picking path in `Game.ts`.
+  Every modular pyramid and the Anfiteatro open a field card with sector, role, summary,
+  confidence and sources; “Visitar” records the card for the session without gating progress.
 - Wiring: `src/core/Game.ts` (reserved footprints, fixed base, landmark, intro)
   and `src/rendering/Water.ts` (map-aligned depth sampling for inland rivers).
 

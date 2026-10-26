@@ -51,6 +51,7 @@ import {
 import { getCiv } from '../model/defs/civs';
 import { archProfileFor } from '../model/defs/architecture';
 import { LANDMARKS, PadSize, setpiecePadRadius } from '../model/defs/landmarks';
+import { getHeritageBuilding, type HeritageBuildingDef, type HeritageBuildingId } from '../model/defs/heritage';
 import { getPeriod } from '../model/defs/periods';
 import { BuildContext, buildModel, buildLandmarkModel, disposeModel, clearModelCaches } from '../model/ProceduralModel';
 import { clearTextureCache } from '../rendering/Textures';
@@ -111,7 +112,7 @@ const NODE_INFO: Record<ResourceNode['kind'], { name: string; icon: string }> = 
 };
 
 /** What sits under a screen point: at most one resource/unit/building. */
-type PickResult = { resource: ResourceNode | null; unit?: Unit; building?: Building };
+type PickResult = { resource: ResourceNode | null; unit?: Unit; building?: Building; heritage?: HeritageBuildingDef };
 
 /** A death animation: animates a detached model, then frees it. */
 interface DeathFx {
@@ -203,6 +204,8 @@ export class Game {
 
   selectedUnits: number[] = [];
   selectedBuilding: number | null = null;
+  selectedHeritage: HeritageBuildingId | null = null;
+  private readonly visitedHeritage = new Set<HeritageBuildingId>();
   private selectionStart: THREE.Vector2 | null = null;
   obstacleHandles = new Map<number, { x: number; z: number; radius: number }>();
   private readonly spatialCell = 6;
@@ -642,7 +645,7 @@ export class Game {
         .then((model) => {
           model.name = scenery.model;
           model.rotation.y = mainRotation;
-          if (!this.attachScenery(placeholder, placeholder, model, token)) return;
+          if (!this.attachScenery(placeholder, placeholder, model, token, undefined, scenery.model)) return;
           const pad = this.createLandmarkPad(scenery.padRadius, 'caral_landmark_pad');
           placeholder.add(pad);
           applyFowToObject(pad, this.fowUniforms);
@@ -687,7 +690,7 @@ export class Game {
         void loadSceneryModel(setpiece.model)
           .then((model) => {
             model.name = setpiece.model;
-            if (!this.attachScenery(placeholder, group, model, token, moduleToken)) return;
+            if (!this.attachScenery(placeholder, group, model, token, moduleToken, setpiece.model)) return;
             if (setpiece.platform === false) return;
             const pad = this.createLandmarkPad(setpiece.padRadius, 'caral_landmark_setpiece_pad', setpiece.padSize);
             group.add(pad);
@@ -717,6 +720,7 @@ export class Game {
     model: THREE.Group,
     token: number,
     setpieceToken?: number,
+    heritageId?: string,
   ): boolean {
     if (
       token !== this.landmarkLoadToken ||
@@ -726,6 +730,7 @@ export class Game {
       disposeStaticGltf(model);
       return false;
     }
+    if (heritageId) model.userData.heritageId = heritageId;
     parent.add(model);
     applyFowToObject(model, this.fowUniforms);
     return true;
@@ -1886,7 +1891,22 @@ export class Game {
   private pickScene(sx: number, sy: number): PickResult {
     const resource = this.pickResource(sx, sy);
     if (resource) return { resource };
-    return { resource: null, ...this.pickAt(sx, sy) };
+    const entity = this.pickAt(sx, sy);
+    if (entity.unit || entity.building) return { resource: null, ...entity };
+    return { resource: null, ...entity, heritage: this.pickHeritage(sx, sy) ?? undefined };
+  }
+
+  private pickHeritage(sx: number, sy: number): HeritageBuildingDef | null {
+    if (!this.landmark) return null;
+    const ndc = new THREE.Vector2((sx / window.innerWidth) * 2 - 1, -(sy / window.innerHeight) * 2 + 1);
+    this.raycaster.setFromCamera(ndc, this.camera.camera);
+    for (const hit of this.raycaster.intersectObject(this.landmark, true)) {
+      let object: THREE.Object3D | null = hit.object;
+      while (object && !object.userData.heritageId) object = object.parent;
+      const def = getHeritageBuilding(object?.userData.heritageId as string | undefined);
+      if (def) return def;
+    }
+    return null;
   }
 
   /** Contextual action icon according to what is under the cursor and the selection. */
@@ -1904,6 +1924,7 @@ export class Game {
       return converter ? unitDisplayIcon(converter.kind, converter.era) : '⚔️';
     }
     if (picked.building) return picked.building.owner !== 0 ? '⚔️' : '🏰';
+    if (picked.heritage) return '🔎';
     return null;
   }
 
@@ -1940,6 +1961,13 @@ export class Game {
         icon: bi.icon,
         title: bi.name,
         detalle: `${own} · HP ${Math.ceil(picked.building.hp)}/${Math.ceil(picked.building.maxHp)}${state}`,
+      };
+    }
+    if (picked.heritage) {
+      return {
+        icon: '🏛️',
+        title: picked.heritage.name,
+        detalle: `${picked.heritage.sector} · ${picked.heritage.role}`,
       };
     }
     return null;
@@ -2019,6 +2047,7 @@ export class Game {
     if (picked.building && !this.shiftQueue) {
       this.selectedUnits = [];
       this.selectedBuilding = picked.building.id;
+      this.selectedHeritage = null;
       this.refreshSelectionVisuals();
       bus.emit('unit:selected', { ids: [] });
       this.audio.select();
@@ -2031,14 +2060,26 @@ export class Game {
         this.selectedUnits = [picked.unit.id];
       }
       this.selectedBuilding = null;
+      this.selectedHeritage = null;
       this.refreshSelectionVisuals();
       bus.emit('unit:selected', { ids: [...this.selectedUnits] });
       this.audio.select();
       return;
     }
     if (!this.shiftQueue) {
+      const heritage = this.pickHeritage(sx, sy);
+      if (heritage) {
+        this.selectedUnits = [];
+        this.selectedBuilding = null;
+        this.selectedHeritage = heritage.id;
+        this.refreshSelectionVisuals();
+        bus.emit('unit:selected', { ids: [] });
+        this.audio.select();
+        return;
+      }
       this.selectedUnits = [];
       this.selectedBuilding = null;
+      this.selectedHeritage = null;
       this.refreshSelectionVisuals();
       bus.emit('unit:selected', { ids: [] });
       this.audio.select();
@@ -2069,6 +2110,7 @@ export class Game {
     if (result.length > 0) {
       this.selectedUnits = this.shiftQueue ? [...new Set([...this.selectedUnits, ...result])] : result;
       this.selectedBuilding = null;
+      this.selectedHeritage = null;
       this.refreshSelectionVisuals();
       bus.emit('unit:selected', { ids: [...this.selectedUnits] });
     }
@@ -2455,6 +2497,7 @@ export class Game {
       this.cancelPlacement();
       this.selectedUnits = [];
       this.selectedBuilding = null;
+      this.selectedHeritage = null;
       this.refreshSelectionVisuals();
       return;
     }
@@ -3471,6 +3514,7 @@ export class Game {
     if (!u || u.dead || u.owner !== 0) return;
     this.selectedUnits = [id];
     this.selectedBuilding = null;
+    this.selectedHeritage = null;
     this.refreshSelectionVisuals();
     bus.emit('unit:selected', { ids: [id] });
     this.camera.focusOn(u.pos.x, u.pos.z);
@@ -3478,6 +3522,31 @@ export class Game {
 
   getSelectedBuilding(): Building | null {
     return this.selectedBuilding !== null ? (this.buildings.get(this.selectedBuilding) ?? null) : null;
+  }
+
+  getSelectedHeritage(): HeritageBuildingDef | null {
+    return getHeritageBuilding(this.selectedHeritage);
+  }
+
+  isHeritageVisited(id: HeritageBuildingId): boolean {
+    return this.visitedHeritage.has(id);
+  }
+
+  getVisitedHeritage(): HeritageBuildingId[] {
+    return [...this.visitedHeritage];
+  }
+
+  setVisitedHeritage(ids: HeritageBuildingId[]): void {
+    this.visitedHeritage.clear();
+    for (const id of ids) if (getHeritageBuilding(id)) this.visitedHeritage.add(id);
+  }
+
+  visitHeritage(id: HeritageBuildingId): void {
+    const def = getHeritageBuilding(id);
+    if (!def) return;
+    this.visitedHeritage.add(def.id);
+    this.hud?.showToast(`Ficha registrada: ${def.name}`, 'success');
+    this.audio.uiClick?.();
   }
 
   /** Replace the unit selection with the given ids (only own and alive). */
@@ -3488,6 +3557,7 @@ export class Game {
     });
     this.selectedUnits = valid;
     this.selectedBuilding = null;
+    this.selectedHeritage = null;
     this.refreshSelectionVisuals();
     bus.emit('unit:selected', { ids: [...valid] });
     this.audio.select();

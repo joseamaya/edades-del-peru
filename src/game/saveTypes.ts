@@ -10,6 +10,7 @@ import type {
 } from '../core/types';
 import type { GameSettings } from '../core/Config';
 import type { ObjState } from '../campaign/Mission';
+import type { HeritageBuildingId } from '../model/defs/heritage';
 
 /** Bump on a breaking snapshot change; adding optional fields is fine. */
 export const SAVE_VERSION = 3;
@@ -103,6 +104,8 @@ export interface MissionSave {
   spawnedCount: [string, number][];
   /** Per-hold-objective elapsed time (optional for older saves). */
   holdTimers?: [string, number][];
+  /** Optional heritage field cards recorded during the mission. */
+  heritage?: HeritageBuildingId[];
 }
 
 export interface TutorialSave {

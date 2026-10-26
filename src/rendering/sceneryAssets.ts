@@ -33,7 +33,7 @@ export const SCENERY_ASSETS: Record<SceneryAssetId, StaticShowcaseOptions> = {
   'caral-anfiteatro': {
     ...shared,
     title: 'Anfiteatro y Altar',
-    note: 'Templo Anfiteatro + Altar Circular + Templo Banqueta. La banqueta es una plataforma separada en el layout fuente. Visual-only hasta validar la huella en el RTS.',
+    note: 'Templo del Anfiteatro + Altar Redondo + Templo de la Banqueta. La banqueta es una plataforma separada en el layout fuente. Visual-only hasta validar la huella en el RTS.',
     lod0Url: SCENERY_MODEL_URLS.caral_anfiteatro.lod0,
     lod1Url: SCENERY_MODEL_URLS.caral_anfiteatro.lod1,
     fog: [50, 160],

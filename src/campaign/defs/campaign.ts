@@ -83,6 +83,20 @@ export const MISSIONS: MissionDef[] = [
         title: 'Reúne 500 de comida para sostener a la comunidad',
       },
       { id: 'obj_sostener', kind: 'survive', time: 300, title: 'Sostén el asentamiento 5 minutos' },
+      {
+        id: 'obj_complejos',
+        kind: 'inspect',
+        heritageIds: [
+          'caral_pyramid_mayor',
+          'caral_pyramid_central',
+          'caral_pyramid_quarry',
+          'caral_pyramid_lesser',
+          'caral_pyramid_gallery',
+          'caral_pyramid_huanca',
+        ],
+        optional: true,
+        title: 'Recorre los seis complejos piramidales de Caral Alto',
+      },
     ],
     triggers: [
       {

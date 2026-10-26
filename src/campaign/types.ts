@@ -4,6 +4,7 @@ import type { PortraitId } from '../model/defs/commanders';
 import type { LandmarkId } from '../model/defs/landmarks';
 import type { TerrainLayout } from '../model/defs/terrainLayout';
 import type { SetpieceId } from '../model/defs/setpieces';
+import type { HeritageBuildingId } from '../model/defs/heritage';
 
 /** Normalized map point (0..1); resolved to world units from the mission map size. */
 export interface MissionAnchor {
@@ -66,7 +67,17 @@ export interface MissionPoint {
 }
 
 export type ObjectiveKind =
-  'destroy' | 'eliminate_all' | 'survive' | 'reach' | 'hold' | 'defend' | 'protect' | 'build' | 'gather' | 'reach_era';
+  | 'destroy'
+  | 'eliminate_all'
+  | 'survive'
+  | 'reach'
+  | 'hold'
+  | 'defend'
+  | 'protect'
+  | 'build'
+  | 'gather'
+  | 'reach_era'
+  | 'inspect';
 
 export interface ObjectiveDef {
   id: string;
@@ -83,6 +94,8 @@ export interface ObjectiveDef {
   time?: number;
   buildingKind?: BuildingKind;
   resource?: keyof Resources;
+  /** Heritage cards that must be visited for an `inspect` objective. */
+  heritageIds?: HeritageBuildingId[];
   era?: Era;
   hidden?: boolean;
   /**
