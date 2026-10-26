@@ -32,6 +32,8 @@ What the player does:
 3. Builds a communal store (the game's Troje) to represent the surplus. Both names are gameplay abstractions,
    not attested Caral terms.
 4. Reaches a food target, observes the ceremonial complex and keeps the settlement standing.
+5. Optional: clicks the six Upper-Half pyramids, reads their field cards and can record each visit;
+   the recorded visits complete a bonus objective without gating progress.
 
 Decisions: where to farm, how many workers to send to the coast, where to store food, whether to grow the
 settlement or accumulate reserves. These use existing mechanics (terrain-aware farms, resource nodes,
@@ -40,9 +42,10 @@ dropsites, housing) and need no fictional enemy.
 The mission has no market objective. There is no attested market building at Caral; the exchange is represented
 by the coast/valley complementarity and by moving goods and workers, not by a market placeholder.
 
-Monumentality is discovered by reaching the documented ceremonial complex. The game does not claim that the
-player builds the pyramids; the epilogue connects the surviving architecture with the surplus and communal work
-the player has just organised.
+Monumentality is discovered by reaching the documented ceremonial complex. Clicking a modular pyramid or the
+Anfiteatro opens a field card with its sector, role, confidence and sources; the optional visit records the card
+without gating progress. The game does not claim that the player builds the pyramids; the epilogue connects the
+surviving architecture with the surplus and communal work the player has just organised.
 
 ## Progression for the other missions
 

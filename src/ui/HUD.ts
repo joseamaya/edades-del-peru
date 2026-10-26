@@ -26,6 +26,7 @@ import { artFigureHtml, includeUnreviewedArt } from './ArtFigure';
 import { PROLOGUE, getEducational } from '../campaign/defs/educational';
 import type { MissionDef } from '../campaign/types';
 import { COMMANDERS, type PortraitId } from '../model/defs/commanders';
+import type { HeritageBuildingDef } from '../model/defs/heritage';
 import { portraitSvg } from './Portrait';
 import { DamageNumbers } from './DamageNumbers';
 import { openCodex } from './Codex';
@@ -877,8 +878,9 @@ export class HUD {
   private renderBottom(): void {
     const units = this.game.getSelectedUnits();
     const building = this.game.getSelectedBuilding();
+    const heritage = this.game.getSelectedHeritage();
     // the command panel only appears with a selection (0 A.D.-style)
-    if (units.length === 0 && !building) {
+    if (units.length === 0 && !building && !heritage) {
       this.bottomEl.style.display = 'none';
       return;
     }
@@ -897,7 +899,24 @@ export class HUD {
       );
       this.clearGrid();
       this.addCommand('⚔️ Atacar', () => this.orderAttackBuilding(building.id));
+    } else if (heritage) {
+      this.renderHeritagePanel(heritage);
     }
+  }
+
+  private renderHeritagePanel(heritage: HeritageBuildingDef): void {
+    const visited = this.game.isHeritageVisited(heritage.id);
+    this.setDesc(
+      '🏛️',
+      heritage.name,
+      `${heritage.sector} · ${heritage.role}<br><span style="color:var(--text-dim)">${heritage.summary}</span><br><span style="color:var(--text-dim);font-size:11px">Fuente: ${heritage.citation}</span>`,
+    );
+    this.clearGrid();
+    this.addCard('📚', `Certeza: ${heritage.confidence}`, visited ? 'ficha registrada' : 'ficha de campo', () => {}, {
+      disabled: true,
+      cat: 'sel',
+    });
+    this.addCommand(visited ? '✓ Ficha registrada' : '🔎 Visitar', () => this.game.visitHeritage(heritage.id));
   }
 
   /**
@@ -915,6 +934,7 @@ export class HUD {
   private bottomSignature(): string {
     const units = this.game.getSelectedUnits();
     const building = this.game.getSelectedBuilding();
+    const heritage = this.game.getSelectedHeritage();
     const p = this.game.players[0];
     // resource bucket to refresh availability (afford) without recreating each frame
     const res = p ? RESOURCE_KEYS.map((k) => Math.floor(p.resources[k] / 25)).join(',') : '';
@@ -940,6 +960,7 @@ export class HUD {
         tail
       );
     }
+    if (heritage) return 'h:' + heritage.id + (this.game.isHeritageVisited(heritage.id) ? ':v' : '') + tail;
     return 'idle' + tail;
   }
 

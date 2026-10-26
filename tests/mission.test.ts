@@ -45,6 +45,8 @@ function stubGame(unit: { id: number; tag: string; owner: number; dead: boolean;
     audio: { uiClick: () => {} },
     camera: { focusOn: () => {} },
     rng: { float: () => 0.5 },
+    getVisitedHeritage: () => [],
+    setVisitedHeritage: () => {},
   };
 }
 

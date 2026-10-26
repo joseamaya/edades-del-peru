@@ -63,6 +63,11 @@ Definition of Done and the building audit see
   procedural plan is rebuilt, including loaded saves. The builder strips the unsupported procedural Base
   Color link from `MAT-Sand_Desert` so the GLB exports its `baseColorFactor`. See
   `docs/design/blender-art.md`.
+- **Caral heritage inspector**: `src/model/defs/heritage.ts` is the source of truth for the seven modular
+  structures' field cards (sector, role, summary, confidence, sources). `Game.pickHeritage` raycasts the
+  visual-only landmark, `Game.getSelectedHeritage` drives the HUD panel, and `Game.visitHeritage` records the
+  optional visit without gating objectives; all six Upper-Half visits complete the optional `obj_complejos`
+  bonus. The cards are educational overlays, not construction mechanics.
 - **Mission canals**: `MissionLayout.canal` (`src/campaign/types.ts`) gives a normalized canal site; `Game.spawnCanal` builds the visual water/stones and reserves the footprint, while `MissionPoint.ref: 'canal'` resolves the site for a `reach` objective. m6 uses it: reaching the canal with Túpac Yupanqui completes the objective and a trigger forces Chan Chan's surrender. Visual-only, no pathfinding obstacle. See `tests/e2e/campaign.spec.ts`.
 - **Building/unit materials are AI-overridable**: `mat()` (`ProceduralModel.ts`) maps a `TexKind` to an
   AI-generated material via `TEX_GEN` (e.g. `adobe → wall_adobe`, `brick → wall_brick`, `roof → tile`,

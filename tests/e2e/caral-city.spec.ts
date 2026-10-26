@@ -85,6 +85,15 @@ test('the Caral scenario builds the documented Upper and Lower halves', { tag: '
       modularPyramid: !!g.landmark?.getObjectByName('caral_pyramid_mayor'),
       modularAnfiteatro: !!anf,
       modules,
+      heritageIds: [
+        'caral_pyramid_mayor',
+        'caral_pyramid_central',
+        'caral_pyramid_quarry',
+        'caral_pyramid_lesser',
+        'caral_pyramid_gallery',
+        'caral_pyramid_huanca',
+        'caral_anfiteatro',
+      ].map((name) => [name, g.landmark?.getObjectByName(name)?.userData?.heritageId ?? null]),
       proceduralPlacements: g.setpiece?.group?.userData?.placements ?? [],
       anfX: anfPos?.x ?? null,
       anfZ: anfPos?.z ?? null,
@@ -121,6 +130,7 @@ test('the Caral scenario builds the documented Upper and Lower halves', { tag: '
     expect(module.z, module.name).toBeCloseTo(module.planZ!, 3);
     expect(state.proceduralPlacements, module.name).not.toContain(module.name);
   }
+  for (const [name, heritageId] of state.heritageIds) expect(heritageId, name).toBe(name);
   expect(state.proceduralPlacements).not.toContain('amphitheatre');
   expect(state.proceduralPlacements).not.toContain('round_altar');
   expect(state.proceduralPlacements).not.toContain('bench_temple');
@@ -139,6 +149,40 @@ test('the Caral scenario builds the documented Upper and Lower halves', { tag: '
   expect(state.fordResources).toBe(0);
   expect(state.landscapeMeshes).toBe(0);
   expect(errors).toEqual([]);
+});
+
+test('a Caral Blender pyramid opens an educational field card', async ({ page }) => {
+  await boot(page);
+  await page.evaluate(() => (window as unknown as { game: any }).game.camera.moveTo(64, 36, true));
+  await page.waitForTimeout(800);
+  const point = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const model = g.landmark.getObjectByName('caral_pyramid_mayor');
+    const box = new window.THREE.Box3().setFromObject(model);
+    const center = box.getCenter(new window.THREE.Vector3()).project(g.camera.camera);
+    return { x: (center.x * 0.5 + 0.5) * window.innerWidth, y: (-center.y * 0.5 + 0.5) * window.innerHeight };
+  });
+  await page.mouse.click(point.x, point.y);
+  const bottom = page.locator('#ed-bottom');
+  await expect(bottom).toBeVisible();
+  await expect(bottom).toContainText('Gran Pirámide y Plaza Central');
+  await expect(bottom).toContainText('Caral Alto');
+  await expect(bottom).toContainText('documentado');
+  await expect(bottom).toContainText('Dossier de Caral');
+  await page.getByRole('button', { name: /Visitar/ }).click();
+  await expect(bottom).toContainText('Ficha registrada');
+  await expect(page.locator('#ed-toasts')).toContainText('Ficha registrada');
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    for (const name of ['central', 'quarry', 'lesser', 'gallery', 'huanca']) {
+      g.visitHeritage(`caral_pyramid_${name}`);
+    }
+  });
+  await page.waitForFunction(
+    () => (window as unknown as { game?: any }).game?.mission?.objState.get('obj_complejos') === 'completed',
+    null,
+    { timeout: 5_000 },
+  );
 });
 
 test('the Caral city rebuilds the full procedural plan when a modular pyramid fails', async ({ page }) => {
@@ -181,6 +225,7 @@ test('a loaded Caral save keeps the Blender setpiece', async ({ page }) => {
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
+    g.visitHeritage('caral_pyramid_mayor');
     g.saveMatch();
   });
   await page.goto('/?load=1&fog=0&low=1&noloop=1');
@@ -190,6 +235,7 @@ test('a loaded Caral save keeps the Blender setpiece', async ({ page }) => {
       const landmark = g?.landmark;
       return (
         g?.setpiece?.group?.userData?.proceduralLower === false &&
+        g?.isHeritageVisited('caral_pyramid_mayor') === true &&
         landmark?.getObjectByName('caral_pyramid_mayor') !== undefined &&
         landmark?.getObjectByName('caral_anfiteatro') !== undefined &&
         ['central', 'quarry', 'lesser', 'gallery', 'huanca'].every(

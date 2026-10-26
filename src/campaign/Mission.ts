@@ -220,6 +220,10 @@ export class Mission {
       }
       case 'gather':
         return p.resources[o.resource ?? 'food'] >= (o.count ?? 0) ? 'win' : 'ok';
+      case 'inspect': {
+        const ids = o.heritageIds ?? [];
+        return ids.length > 0 && ids.every((id) => this.game.isHeritageVisited(id)) ? 'win' : 'ok';
+      }
       case 'reach_era':
         return p.era >= (o.era ?? 0) ? 'win' : 'ok';
       default:
@@ -412,6 +416,7 @@ export class Mission {
       lastFired: [...this.lastFired.entries()],
       spawnedCount: [...this.spawnedCount.entries()],
       holdTimers: [...this.holdTimers.entries()],
+      heritage: this.game.getVisitedHeritage(),
     };
   }
 
@@ -430,5 +435,6 @@ export class Mission {
     this.lastFired = new Map(s.lastFired);
     this.spawnedCount = new Map(s.spawnedCount);
     this.holdTimers = new Map(s.holdTimers ?? []);
+    this.game.setVisitedHeritage(s.heritage ?? []);
   }
 }
