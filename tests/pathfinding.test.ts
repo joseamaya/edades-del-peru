@@ -46,6 +46,21 @@ describe('Pathfinder', () => {
     expect(Math.hypot(last.x - 50, last.z - 50)).toBeLessThanOrEqual(8);
   });
 
+  it('routes around an axis-aligned rectangular obstacle and restores it on removal', () => {
+    const pf = new Pathfinder(120, 2);
+    const site = { x: 60, z: 60, w: 24, d: 24 };
+    pf.addObstacle(site);
+    expect(pf.isWalkable(60, 60)).toBe(false);
+    expect(pf.isWalkable(60, 50)).toBe(false);
+    const path = pf.pathfind(20, 60, 100, 60);
+    expect(path.length).toBeGreaterThan(0);
+    for (const point of path) {
+      expect(Math.abs(point.x - 60) > 12 || Math.abs(point.z - 60) > 12).toBe(true);
+    }
+    pf.removeObstacle(site);
+    expect(pf.isWalkable(60, 60)).toBe(true);
+  });
+
   it('keeps terrain (water) blocked after an obstacle is removed', () => {
     const pf = new Pathfinder(100, 2);
     // a "sea" for x < 20 (height 0 below the water line), land elsewhere

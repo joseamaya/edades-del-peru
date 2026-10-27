@@ -9,11 +9,9 @@ export interface PathGrid {
   walkable: Uint8Array;
 }
 
-export interface Obstacle {
-  x: number;
-  z: number;
-  radius: number;
-}
+export type Obstacle =
+  | { x: number; z: number; radius: number; w?: never; d?: never }
+  | { x: number; z: number; w: number; d: number; radius?: never };
 
 const DIRS = [
   [1, 0],
@@ -149,6 +147,16 @@ export class Pathfinder {
 
   private rasterize(o: Obstacle): void {
     const { cols, cell } = this.grid;
+    if (typeof o.w === 'number' && typeof o.d === 'number') {
+      const x0 = Math.max(0, Math.floor((o.x - o.w / 2) / cell));
+      const x1 = Math.min(cols - 1, Math.ceil((o.x + o.w / 2) / cell) - 1);
+      const z0 = Math.max(0, Math.floor((o.z - o.d / 2) / cell));
+      const z1 = Math.min(this.grid.rows - 1, Math.ceil((o.z + o.d / 2) / cell) - 1);
+      for (let z = z0; z <= z1; z++) {
+        for (let x = x0; x <= x1; x++) this.grid.walkable[z * cols + x] = 0;
+      }
+      return;
+    }
     const r = Math.max(1, Math.ceil(o.radius / cell));
     const cx = Math.floor(o.x / cell);
     const cz = Math.floor(o.z / cell);

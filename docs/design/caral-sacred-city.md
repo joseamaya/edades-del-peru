@@ -34,8 +34,14 @@ instead of the modular landmark or a hand-built schematic:
   Great Pyramid is centred at `{x: 100, z: 30}` on the 192 m map. No vertical
   exaggeration is applied.
 - **Terrain**: the source terrain is hidden. The game heightfield owns the
-  ground and carves a 0.55 m basin under the Plaza Mayor so the source's sunken
-  floor and red rings remain visible.
+  ground, broadens the green floodplain, carves a 0.55 m basin under the Plaza
+  Mayor so the source's sunken floor and red rings remain visible, and raises dry
+  foothills beyond the east and south edges of the site.
+- **Collision**: the monumental volumes use axis-aligned footprints from the
+  source mesh (`CARAL_SITE_BLOCKERS`), so units route around the pyramids and the
+  Anfiteatro while the open plazas and processional ground stay walkable.
+  Construction is forbidden over the source footprint (`buildKeepout`), but the
+  starting base and its immediate surroundings stay buildable.
 - **Mission anchors**: `layout.site.focus` points to the real Plaza Mayor
   (`{x: 0.52, z: 0.277}`); `siteAnchor` remains the Great Pyramid at
   `{x: 100, z: 30}`.
@@ -53,7 +59,8 @@ instead of the modular landmark or a hand-built schematic:
 
 | Element                                                             | Source status       | In game                                                                              |
 | ------------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------ |
-| Dry desert terrace over the green Supe valley                       | Documented (UNESCO) | Authored heightfield: terrace ≈8 m, valley ≈4 m, river bed ≈1.15 m.                  |
+| Dry desert terrace over the green Supe valley                       | Documented (UNESCO) | Authored heightfield: terrace ≈8 m, floodplain ≈3.9 m, river bed ≈1.05 m.            |
+| Andean foothills around the valley                                  | Geographic context  | Dry foothills rising to ~20 m at the east and south edges, outside the site.         |
 | Upper Half (Caral Alto)                                             | Documented          | Six pyramids, Central Plaza and Plaza de la Huanca.                                  |
 | Lower Half (Caral Bajo)                                             | Documented          | Player base, smaller residences and workshops around the Anfiteatro.                 |
 | Great Pyramid (E Sector)                                            | Documented          | Seven-tier pyramid, long processional stair, summit room and circular forecourt.     |
@@ -95,13 +102,18 @@ instead of the modular landmark or a hand-built schematic:
 - Mission layout: `src/campaign/defs/campaign.ts` and `src/campaign/types.ts`
   (`layout.site`, 192 m map, base in Caral Bajo, Plaza Mayor focus).
 - Heritage proxies: invisible raycast volumes in `Game.ts` map the six pyramids
-  and the Anfiteatro to their existing field cards.
+  and the Anfiteatro to their existing field cards. Their source AABBs feed the
+  rectangular pathfinding blockers in `src/model/defs/caralSite.ts`.
+- Construction: `MissionSite.buildKeepout` in `src/campaign/defs/campaign.ts`
+  rejects placement over the upper, residential and lower source footprints; the
+  Caral Bajo base remains outside them.
 - Terrain palette: `src/assets/textures/terrain/caral_*`. The rock slot reuses the
   dirt albedo for Caral because the photographic rock texture aliases into a
   repeating floral pattern at RTS tiling.
 
 ## Status
 
-The exact site is visual-only: it does not add pathing obstacles. Building
-collision and a full survey-accurate plan remain future work. Render captures are
-QA artefacts, not historical photographs.
+The monumental volumes block pathing and construction; low residential walls and
+sand paths are still visual-only, so a full survey-accurate collision plan remains
+future work. Render captures are QA artefacts, not historical
+photographs.

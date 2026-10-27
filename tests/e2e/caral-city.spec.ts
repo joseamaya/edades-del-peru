@@ -127,6 +127,41 @@ test('the Caral scenario loads the authored sacred-city site', { tag: '@smoke' }
   expect(errors).toEqual([]);
 });
 
+test('the authored site blocks monument footprints without sealing the city', async ({ page }) => {
+  const errors = await boot(page);
+  const state = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    return {
+      mayor: g.pathfinder.isWalkable(100, 30),
+      anfiteatro: g.pathfinder.isWalkable(100, 152),
+      plaza: g.pathfinder.isWalkable(100, 53),
+      base: g.pathfinder.isWalkable(52, 161),
+      route: g.pathfinder.pathfind(52, 161, 100, 53).length,
+      buildOnMayor: g.canPlace(100, 30, 4),
+      buildInValley: g.canPlace(30, 120, 4),
+      buildInGap: g.canPlace(102, 136.5, 4),
+      baseBuildable: !!g.findFreeSpot(60.5, 161.3, 4),
+      commandBlocked: (() => {
+        const before = g.buildings.size;
+        const ok = g.executeCommand({ kind: 'place', building: 'house', x: 100, z: 30 });
+        return { ok, before, after: g.buildings.size };
+      })(),
+    };
+  });
+  expect(state.mayor).toBe(false);
+  expect(state.anfiteatro).toBe(false);
+  expect(state.plaza).toBe(true);
+  expect(state.base).toBe(true);
+  expect(state.route).toBeGreaterThan(0);
+  expect(state.buildOnMayor).toBe(false);
+  expect(state.buildInValley).toBe(true);
+  expect(state.buildInGap).toBe(false);
+  expect(state.baseBuildable).toBe(true);
+  expect(state.commandBlocked.ok).toBe(false);
+  expect(state.commandBlocked.after).toBe(state.commandBlocked.before);
+  expect(errors).toEqual([]);
+});
+
 test('the Caral objectives show live progress and keep the assembly hidden', async ({ page }) => {
   await boot(page);
   const objectives = page.locator('#ed-objectives');

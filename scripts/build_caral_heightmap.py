@@ -15,8 +15,8 @@ from pathlib import Path
 SIZE = 192
 N = SIZE + 1
 TERRACE = 8.0
-VALLEY = 4.0
-RIVER = 1.15
+VALLEY = 3.9
+RIVER = 1.05
 WATER = 2.2
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'src/model/defs/caralHeightmap.ts'
@@ -38,36 +38,40 @@ def noise(x: float, z: float) -> float:
 def city_mask(x: float, z: float) -> float:
     # Flat archaeological terrace. The south-eastern corner is the player's
     # peripheral base; it stays flat but outside the monumental core.
-    return smoothstep(43.0, 48.0, x) * (1.0 - smoothstep(171.0, 177.0, z)) * (1.0 - smoothstep(156.0, 165.0, x))
+    return smoothstep(43.0, 48.0, x) * (1.0 - smoothstep(166.0, 170.0, z)) * (1.0 - smoothstep(145.5, 148.5, x))
 
 
 def height(x: float, z: float) -> float:
-    # Valley floor and river west of the terrace.
-    if x < 16.0:
-        river_profile = 1.0 - smoothstep(8.0, 16.0, x)
-        h = VALLEY - 2.85 * river_profile
-    elif x < 44.0:
+    # Broad green floodplain and a shallow river west of the terrace. The
+    # channel is deliberately wide enough to read from the RTS camera.
+    if x < 10.0:
+        h = RIVER
+    elif x < 24.0:
+        h = RIVER + (VALLEY - RIVER) * smoothstep(10.0, 24.0, x)
+    elif x < 38.0:
         h = VALLEY + 0.18 * noise(x * 0.8, z * 0.8)
     else:
         h = TERRACE
 
-    # The terrace edge drops ~4 m over a short, eroded slope. The city remains
-    # on the desert terrace, as at the real site, not split by the river.
-    if x >= 37.0:
-        edge = smoothstep(37.0, 45.0, x)
+    # The terrace edge descends over ~12 m, so the fields and the base stay
+    # connected without a single-cell cliff at the riverbank.
+    if x >= 38.0:
+        edge = smoothstep(38.0, 50.0, x)
         h = VALLEY + (TERRACE - VALLEY) * edge + (h - (VALLEY + (TERRACE - VALLEY) * edge)) * edge
 
     # A broad access ramp near the southern residential edge keeps the valley
     # and fields reachable without a ford through the river.
-    ramp = smoothstep(170.0, 184.0, z) * (1.0 - smoothstep(54.0, 62.0, x))
-    if x < 54.0:
-        ramp_h = VALLEY + (TERRACE - VALLEY) * smoothstep(16.0, 48.0, x)
+    ramp = smoothstep(168.0, 184.0, z) * (1.0 - smoothstep(56.0, 64.0, x))
+    if x < 64.0:
+        ramp_h = VALLEY + (TERRACE - VALLEY) * smoothstep(20.0, 48.0, x)
         h = h * (1.0 - ramp * 0.9) + ramp_h * (ramp * 0.9)
 
-    # Low desert hills frame the site; they never enter the city/platform.
-    north = smoothstep(9.0, 0.0, z) * (4.8 + 2.2 * math.sin(x * 0.12 + 0.4))
-    east = smoothstep(160.0, 191.0, x) * (3.4 + 1.6 * math.sin(z * 0.13 + 1.2))
-    south = smoothstep(183.0, 192.0, z) * (3.2 + 1.4 * math.sin(x * 0.14))
+    # Dry Andean foothills frame the valley east and south of the city. Their
+    # near slopes start just beyond the source model, so they read from the
+    # normal site and base views instead of only at the map border.
+    north = smoothstep(9.0, 0.0, z) * (8.0 + 2.6 * math.sin(x * 0.12 + 0.4))
+    east = smoothstep(148.0, 170.0, x) * (10.5 + 3.2 * math.sin(z * 0.13 + 1.2))
+    south = smoothstep(166.0, 184.0, z) * (8.5 + 2.4 * math.sin(x * 0.14))
     h += north + east + south
 
     # Shallow dry ravine between the upper and lower halves, visible but
@@ -77,7 +81,7 @@ def height(x: float, z: float) -> float:
 
     # Keep the playable archaeological terrace and the southern base flat.
     flat = city_mask(x, z)
-    base_flat = smoothstep(48.0, 54.0, x) * (1.0 - smoothstep(68.0, 74.0, x)) * smoothstep(170.0, 176.0, z) * (1.0 - smoothstep(184.0, 190.0, z))
+    base_flat = smoothstep(46.0, 52.0, x) * (1.0 - smoothstep(68.0, 74.0, x)) * smoothstep(168.0, 174.0, z) * (1.0 - smoothstep(184.0, 190.0, z))
     h = h * (1.0 - 0.9 * max(flat, base_flat)) + TERRACE * (0.9 * max(flat, base_flat))
 
     # The Plaza Mayor is a sunken circular court in the source model. Carve
@@ -109,7 +113,7 @@ OUT.write_text(
     'export const CARAL_HEIGHTMAP_SIZE = ' + str(N) + ';\n'
     'export const CARAL_HEIGHTMAP_WORLD_SIZE = ' + str(SIZE) + ';\n'
     'export const CARAL_HEIGHTMAP_SCALE = 0.001;\n'
-    'const B64 = \'' + b64 + '\';\n'
+    'const B64 =\n  \'' + b64 + '\';\n'
     'function decode(): Float32Array {\n'
     '  const bin = atob(B64);\n'
     '  const out = new Float32Array(' + str(len(values)) + ');\n'

@@ -67,7 +67,7 @@ import {
 import { resolveColorGrade } from '../model/defs/grades';
 import { planSettlementSite, type SettlementPlan } from '../model/defs/settlementPlan';
 import { inCaralCity, planCaralCity, type CaralCityPlan } from '../model/defs/setpieces';
-import { riverCentreZ } from '../model/defs/terrainLayout';
+import { insideTerrainRect, riverCentreZ } from '../model/defs/terrainLayout';
 import { SettlementOverlay } from '../rendering/SettlementOverlay';
 import { SettlementDressing } from '../rendering/SettlementDressing';
 import { planSettlementDressing } from '../model/defs/settlementDressing';
@@ -79,6 +79,7 @@ import { CARAL_HEIGHTMAP, CARAL_HEIGHTMAP_SIZE, CARAL_HEIGHTMAP_WORLD_SIZE } fro
 import {
   CARAL_HERITAGE_PROXIES,
   CARAL_SITE_ANCHOR,
+  CARAL_SITE_BLOCKERS,
   CARAL_SITE_CAMERA,
   CARAL_SITE_ORIGIN,
   CARAL_SITE_SCALE,
@@ -604,7 +605,14 @@ export class Game {
     }
   }
 
-  /** Load the authored campaign site (visual-only; heritage nodes keep their ids). */
+  /** Block the source's monumental volumes while leaving plazas and paths walkable. */
+  private addSiteObstacles(): void {
+    for (const blocker of CARAL_SITE_BLOCKERS) {
+      this.pathfinder.addObstacle({ x: blocker.x, z: blocker.z, w: blocker.w, d: blocker.d });
+    }
+  }
+
+  /** Load the authored campaign site; monumental volumes block pathing, not the whole footprint. */
   private spawnAuthoredSite(site: MissionSite): void {
     const group = new THREE.Group();
     group.name = 'landmark';
@@ -617,6 +625,7 @@ export class Game {
       this.siteCenter = { ...this.siteFocus };
     }
     this.siteAnchor = { x: CARAL_SITE_ANCHOR.x, z: CARAL_SITE_ANCHOR.z };
+    this.addSiteObstacles();
     this.addSiteHeritageProxies(group);
     const token = ++this.landmarkLoadToken;
     void loadSiteModel(site.id)
@@ -1685,6 +1694,7 @@ export class Game {
   /** Spend and create a building for player 0 (worker assignment is a separate order). */
   private placeBuilding(kind: BuildingKind, x: number, z: number): Building | null {
     const stats = getBuildingStats(kind, this.players[0].era);
+    if (!this.canPlace(x, z, stats.size)) return null;
     if (!this.spendResource(0, stats.cost)) return null;
     const ctx = this.makeBuildContext(0);
     const b = new Building(kind, 0, this.players[0].era, ctx);
@@ -2565,11 +2575,22 @@ export class Game {
     return null;
   }
 
+  /** Whether a building footprint would overlap the authored archaeological site. */
+  private siteBlocksConstruction(x: number, z: number, pad: number): boolean {
+    const rects = this.missionLayout?.site?.buildKeepout;
+    if (!rects) return false;
+    const size = this.settings.mapSize;
+    return rects.some((rect) =>
+      insideTerrainRect({ x: rect.x * size, z: rect.z * size, rx: rect.rx * size, rz: rect.rz * size }, x, z, pad),
+    );
+  }
+
   canPlace(x: number, z: number, foot: number): boolean {
     const r = foot / 2;
     if (this.terrain.isWater(x, z) || !this.terrain.isBuildable(x, z)) return false;
     // keep placement on ground units can reach (same slope limit as the nav mesh)
     if (this.terrain.getSlope(x, z) > MAX_WALKABLE_SLOPE) return false;
+    if (this.siteBlocksConstruction(x, z, r)) return false;
     for (let dx = -r; dx <= r; dx += 1.2) {
       for (let dz = -r; dz <= r; dz += 1.2) {
         if (this.terrain.isWater(x + dx, z + dz)) return false;
