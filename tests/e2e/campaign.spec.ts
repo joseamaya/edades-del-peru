@@ -108,9 +108,11 @@ test('the Caral mission closes with a narrative epilogue, not a quiz', async ({ 
     g.spawnScriptedBuilding('farm', 0, c.x + 6, c.z + 6);
     g.spawnScriptedBuilding('farm', 0, c.x + 9, c.z + 6);
     g.spawnScriptedBuilding('mill', 0, c.x + 12, c.z + 6);
-    const landmark = g.landmark?.position;
+    const ceremonial = g.siteAnchor ?? g.siteCenter ?? g.landmark?.position;
     const scout = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'scout');
-    if (landmark && scout) scout.pos.set(landmark.x, g.terrain.getHeight(landmark.x, landmark.z), landmark.z);
+    if (ceremonial && scout) {
+      scout.pos.set(ceremonial.x, g.terrain.getHeight(ceremonial.x, ceremonial.z), ceremonial.z);
+    }
     g.visitHeritage('caral_pyramid_mayor');
     const m = g.mission;
     const dt = 1 / 60;

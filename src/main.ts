@@ -195,7 +195,11 @@ async function boot(): Promise<void> {
     }
   }
   if (params.get('fps') === '1') game.hud.setShowFps(true);
-  if (params.get('intro') === '0' || noloop) game.introEnabled = false;
+  if (params.get('intro') === '0' || noloop) {
+    game.introEnabled = false;
+    const base = game.playerCenter(0);
+    game.camera.moveTo(base.x, base.z, true);
+  }
   if (replay) game.hud.showToast('🎬 Repetición', 'info');
   if (params.get('low') === '1') {
     game.pixelRatioOverride = 1;

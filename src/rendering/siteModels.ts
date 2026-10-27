@@ -10,10 +10,12 @@ const SITE_MODEL_URLS: Record<AuthoredSiteId, { lod0: string; lod1: string }> = 
 };
 
 /** Load the campaign site; LOD1 is the RTS default, `?lod=0` previews the master. */
-export function loadSiteModel(id: AuthoredSiteId): Promise<THREE.Group> {
+export async function loadSiteModel(id: AuthoredSiteId): Promise<THREE.Group> {
   const params = new URLSearchParams(window.location.search);
   const requested = params.get('lod');
   const level = requested === '0' ? 0 : 1;
   const urls = SITE_MODEL_URLS[id];
-  return loadStaticGltf(level === 0 ? urls.lod0 : urls.lod1, { draco: true });
+  const model = await loadStaticGltf(level === 0 ? urls.lod0 : urls.lod1, { draco: true });
+  model.userData.sourceLod = level;
+  return model;
 }
