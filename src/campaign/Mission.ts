@@ -73,12 +73,18 @@ export class Mission {
           ? this.baseCenter(0)
           : p.ref === 'canal'
             ? (this.game.canalSite ?? { x: this.game.settings.mapSize / 2, z: this.game.settings.mapSize / 2 })
-            : p.ref === 'landmark'
-              ? (this.game.landmark?.position ?? {
+            : p.ref === 'site'
+              ? (this.game.siteCenter ?? {
                   x: this.game.settings.mapSize / 2,
                   z: this.game.settings.mapSize / 2,
                 })
-              : { x: 0, z: 0 };
+              : p.ref === 'landmark'
+                ? (this.game.siteAnchor ??
+                  this.game.landmark?.position ?? {
+                    x: this.game.settings.mapSize / 2,
+                    z: this.game.settings.mapSize / 2,
+                  })
+                : { x: 0, z: 0 };
     return { x: ref.x + p.dx, z: ref.z + p.dz };
   }
 

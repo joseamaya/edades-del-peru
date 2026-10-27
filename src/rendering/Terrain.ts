@@ -6,6 +6,7 @@ import { generateHeightField, CANAL_WIDTH_CELLS } from './heightField';
 import { FOW_DIM_GLSL } from './fowGlsl';
 import type { HistoricalMapProfile } from '../model/defs/profiles';
 import type { TerrainLayout } from '../model/defs/terrainLayout';
+import { sampleAuthoredHeight, type AuthoredHeightField } from '../model/defs/authoredTerrain';
 
 // Scratch colors reused in biome generation (avoids ~200k allocations).
 const _cBase = new THREE.Color();
@@ -22,6 +23,42 @@ function flatTex(r: number, g: number, b: number): THREE.DataTexture {
   t.needsUpdate = true;
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
   return t;
+}
+
+/** Resample an authored site heightfield and derive moisture for the biome shader. */
+function authoredHeightField(
+  resolution: number,
+  worldSize: number,
+  profile: HistoricalMapProfile,
+  authored: AuthoredHeightField,
+): ReturnType<typeof generateHeightField> {
+  const n = resolution + 1;
+  const heightMap = new Float32Array(n * n);
+  const moistureMap = new Float32Array(n * n);
+  const terraceMap = new Float32Array(n * n);
+  const canalMap = new Float32Array(n * n);
+  for (let z = 0; z < n; z++) {
+    for (let x = 0; x < n; x++) {
+      const wx = (x / resolution) * worldSize;
+      const wz = (z / resolution) * worldSize;
+      const h = sampleAuthoredHeight(authored, wx, wz);
+      const i = z * n + x;
+      heightMap[i] = h;
+      // The valley floor and river corridor are wet; the desert terrace is dry.
+      const wet = Math.max(0, Math.min(1, (6.2 - h) / 3.8));
+      const bank = Math.max(0, Math.min(1, (worldSize * 0.12 - wx) / (worldSize * 0.1)));
+      const noise = Math.sin(wx * 0.21 + wz * 0.13) * 0.04 + Math.sin(wz * 0.37 - 1.2) * 0.025;
+      moistureMap[i] = Math.max(0, Math.min(1, wet * 0.82 + bank * 0.28 + noise));
+    }
+  }
+  return {
+    heightMap,
+    moistureMap,
+    terraceMap,
+    canalMap,
+    canalPaths: [],
+    waterLevel: profile.water.level,
+  };
 }
 
 /**
@@ -50,19 +87,30 @@ export class Terrain {
   private textures: GroundTextures;
   private pbrExtra: THREE.Texture[] = [];
   private profile: HistoricalMapProfile;
+  private readonly hasAuthoredHeight: boolean;
   /** Biome aridity (0 humid .. 1 desert); tints sand and reduces vegetation. */
   private arid = 0;
   /** Vegetation density (0 dry .. 1 jungle); tints the grass green. */
   private veg = 0;
 
-  constructor(size: number, resolution: number, seed: number, profile: HistoricalMapProfile, layout?: TerrainLayout) {
+  constructor(
+    size: number,
+    resolution: number,
+    seed: number,
+    profile: HistoricalMapProfile,
+    layout?: TerrainLayout,
+    authored?: AuthoredHeightField,
+  ) {
     this.size = size;
     this.resolution = resolution;
     this.profile = profile;
+    this.hasAuthoredHeight = !!authored;
     this.textures = getGroundTextures();
     this.arid = profile.climate.aridity;
     this.veg = profile.vegetation.density;
-    const field = generateHeightField(resolution, seed, profile, layout);
+    const field = authored
+      ? authoredHeightField(resolution, size, profile, authored)
+      : generateHeightField(resolution, seed, profile, layout);
     this.heightMap = field.heightMap;
     this.moistureMap = field.moistureMap;
     this.terraceMap = field.terraceMap;
@@ -305,18 +353,22 @@ export class Terrain {
     geo.computeVertexNormals();
 
     const tex = this.textures;
+    const caral = this.hasAuthoredHeight;
     const pbr = {
-      grass: getGroundPBR('grass'),
-      dirt: getGroundPBR('dirt'),
-      sand: getGroundPBR('sand'),
-      rock: getGroundPBR('rock'),
+      grass: getGroundPBR(caral ? 'caral_grass' : 'grass'),
+      dirt: getGroundPBR(caral ? 'caral_dirt' : 'dirt'),
+      sand: getGroundPBR(caral ? 'caral_sand' : 'sand'),
+      rock: getGroundPBR(caral ? 'caral_dirt' : 'rock'),
       snow: getGroundPBR('snow'),
     };
     const anyPbr = Object.values(pbr).some((x) => !!x);
     const flatN = flatTex(128, 128, 255);
     const flatR = flatTex(200, 200, 200);
     const diff = (slot: keyof typeof pbr, fallback: THREE.Texture): THREE.Texture => pbr[slot]?.diffuse ?? fallback;
-    const nrm = (slot: keyof typeof pbr): THREE.Texture => pbr[slot]?.normal ?? flatN;
+    // Caral's photographic normals are crack/dune maps; at RTS tiling they
+    // read as a repeating floral relief. Keep the diffuse detail and use the
+    // analytic micro-relief instead.
+    const nrm = (slot: keyof typeof pbr): THREE.Texture => (caral ? flatN : pbr[slot]?.normal) ?? flatN;
     const rgh = (slot: keyof typeof pbr): THREE.Texture => pbr[slot]?.roughness ?? flatR;
     this.pbrExtra = [flatN, flatR];
     const mat = new THREE.ShaderMaterial({
@@ -336,7 +388,7 @@ export class Terrain {
         sandR: { value: rgh('sand') },
         rockR: { value: rgh('rock') },
         snowR: { value: rgh('snow') },
-        usePbr: { value: anyPbr ? 1 : 0 },
+        usePbr: { value: caral ? 0 : anyPbr ? 1 : 0 },
         waterLevel: { value: waterLevel },
         time: { value: 0 },
         sunDir: { value: new THREE.Vector3(0.5, 0.8, 0.4).normalize() },

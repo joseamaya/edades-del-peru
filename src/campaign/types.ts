@@ -55,9 +55,31 @@ export interface MissionDecor {
   scale?: number;
 }
 
+export interface MissionSiteKeepout {
+  /** Normalized centre. */
+  x: number;
+  z: number;
+  /** Normalized half-extents. */
+  rx: number;
+  rz: number;
+}
+
+/** A fully authored site model, heightfield and reserved city footprint. */
+export interface MissionSite {
+  id: 'caral_site';
+  /** Vertical offset of the model floor in world metres. */
+  y?: number;
+  /** Optional camera framing anchor for the intro. */
+  focus?: MissionAnchor;
+  /** Rectangles kept free of procedural resources and props. */
+  keepout?: MissionSiteKeepout[];
+}
+
 export interface MissionLayout {
   base?: MissionAnchor;
   setpiece?: MissionSetpiece;
+  /** Authored site model; takes precedence over the modular setpiece. */
+  site?: MissionSite;
   terrain?: TerrainLayout;
   /** Authored canal used by a mission mechanic (visual-only geometry + a reach target). */
   canal?: MissionCanal;
@@ -67,7 +89,7 @@ export interface MissionLayout {
 
 /** World point. `ref` anchors to the player/enemy center, canal or landmark; without it, absolute. */
 export interface MissionPoint {
-  ref?: 'player' | 'enemy' | 'canal' | 'landmark';
+  ref?: 'player' | 'enemy' | 'canal' | 'landmark' | 'site';
   dx: number;
   dz: number;
 }

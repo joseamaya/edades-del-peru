@@ -28,6 +28,10 @@
   starting site), plus `resource_rock` (ore rocks) and `bark` (tree trunks). Applied by
   `CulturalLandscape`, `SettlementOverlay`, `ResourceNode` and `TreeInstances` via `applyGeneratedPbr`
   (falls back to their colour material when absent).
+- **Caral mission palette**: `terrain/caral_sand_diffuse.webp`, `caral_dirt_diffuse.webp` and
+  `caral_grass_diffuse.webp` (1024² WebP, diffuse only). Derived from the Ciudades Sagradas Caral
+  remaster terrain albedos (CC BY 4.0, © José Amaya); used only by the `m1_caral` authored heightfield.
+  The rock slot reuses the dirt albedo because the generic rock texture aliases at RTS tiling.
 
 Textures are optional: `src/rendering/Biomes.ts` falls back to the procedural Canvas material when a
 slot is absent (offline / without assets).
@@ -135,14 +139,39 @@ slot is absent (offline / without assets).
 - **Historical caveat**: the export includes plaza stalls (`GEO-Caral_PlazaCentral_Stall_*`). The campaign design
   states there is no attested market at Caral; review/remove or document them as a plaza-gathering abstraction
   before integrating the city into `m1_caral`.
-- **Status**: showcase only. The full-city GLB is **not** used by a campaign mission; `m1_caral` builds
-  the sacred-city plan and places the modular Pyramid Mayor and Anfiteatro at its anchors. A render is not
+- **Status**: showcase only. The full-city GLB is **not** used by a campaign mission. A render is not
   a photograph.
+
+### Caral sacred site (m1 runtime, Ciudades Sagradas v2)
+
+- **Location**: `src/assets/sites/caral/caral_site_lod0.glb` and `caral_site_lod1.glb`.
+- **SHA-256**: LOD0 `d11247a3bf17807abe3667b01e75439be0071a70f01f8a34b6196bd1a7e4ded7`;
+  LOD1 `e1567c59390c52e947a9e948f94a18baa8ccd919d030381a70bb6c21cca165bf`.
+- **Source**: the exact Ciudades Sagradas Caral remaster v2 GLBs from
+  `ciudades-sagradas/public/cities/caral/model_lod0.glb` and `model_lod1.glb`;
+  editable scene `ciudades-sagradas/blender/caral/caral_remaster_v2.blend`.
+  The game copies the source GLBs without re-exporting or remodelling their geometry.
+- **Licence / attribution**: Ciudades Sagradas content is CC BY 4.0 (© José Amaya). Attribute
+  “Ciudades Sagradas, José Amaya, CC BY 4.0” wherever the site assets are redistributed. The GLB
+  embeds its source textures (plaster, stone, adobe, thatch, earth, fire and terrain).
+- **Content**: the source's seven-tier Great Pyramid, Central Plaza, Plaza de la Huanca, Anfiteatro,
+  residential compounds, paths and props. `Infra_Terrain` and `Infra_Reference` are hidden at load;
+  the game owns terrain, vegetation, fauna and collision. `Infra_Terrain` is never shown.
+- **Runtime**: `src/core/Game.ts` loads LOD1 by default through `src/rendering/siteModels.ts`
+  (Draco + WebP); `?lod=0` loads the LOD0 detail mesh. Source scale is uniform `0.25`; no vertical
+  exaggeration.
+- **Game-side adaptation**: the source is translated so the Great Pyramid is centred at
+  `(100, 30)` on the 192 m map. A shallow 0.55 m basin is authored under the Plaza Mayor so the
+  source's sunken floor and red rings sit at the heightfield surface. These are the only spatial
+  adaptations; the source geometry and materials are preserved.
+- **Historical caveat**: the source is an artistic reconstruction, not a survey or a historical
+  photograph. Its residential compounds are low-walled source forms; no invented roofs or extra
+  houses are added. Roofs, awnings, fires and painted surfaces are inferred in the source.
 
 ## Rigged 3D models
 
 - **Location**: `src/assets/models/*.glb` (loaded by `src/rendering/ModelAssets.ts`).
-- **`ual_mannequin.glb`**: Quaternius *Universal Animation Library* (UAL1.glb), a generic rigged mannequin used
+- **`ual_mannequin.glb`**: Quaternius _Universal Animation Library_ (UAL1.glb), a generic rigged mannequin used
   to validate the glTF/GLB + skeleton + mixer pipeline and as the `?rig=1` demo/fallback fixture. It is **not**
   the Caral worker anymore; the finished asset is `caral_worker.glb` below.
   - Source: <https://quaternius.com/packs/universalanimationlibrary.html> (CC0 1.0).
@@ -206,7 +235,7 @@ slot is absent (offline / without assets).
 
 - **Location**: `src/assets/models/quaternius_alpaca.glb` (loaded by `src/rendering/Wildlife.ts` through the same
   `ModelAssets` cache).
-- **Asset**: *Alpaca* from Quaternius' **Ultimate Animated Animal Pack** (CC0 1.0). Used as the **llama pilot**:
+- **Asset**: _Alpaca_ from Quaternius' **Ultimate Animated Animal Pack** (CC0 1.0). Used as the **llama pilot**:
   an Andean camelid stand-in for the existing `llama` species, not a new species. The vicuña, condor and pelican
   remain procedural in this iteration.
   - Author/pack: <https://quaternius.com/packs/ultimateanimatedanimals.html> (CC0).
@@ -224,10 +253,10 @@ slot is absent (offline / without assets).
 Used only as FLUX.2 multi-reference inputs (never redistributed) for the Andean textiles. Manifests in
 `scripts/refs.json`; images downloaded to `scripts/_refs/` (gitignored). All sources are public domain.
 
-| Slot | Object | Source | License |
-|---|---|---|---|
-| `textile_inca` | Tunic (Inca, 1450–1550) | The Met, object 313152 | Public Domain |
-| `textile_wari` | Tunic (Wari, 425–550) | The Met, object 314355 | Public Domain |
+| Slot            | Object                                      | Source                 | License       |
+| --------------- | ------------------------------------------- | ---------------------- | ------------- |
+| `textile_inca`  | Tunic (Inca, 1450–1550)                     | The Met, object 313152 | Public Domain |
+| `textile_wari`  | Tunic (Wari, 425–550)                       | The Met, object 314355 | Public Domain |
 | `textile_nazca` | Tunic with Confronting Catfish (Nasca-Wari) | The Met, object 307975 | Public Domain |
 
 ## Commander portraits

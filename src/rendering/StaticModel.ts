@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 
 const TEXTURE_KEYS = [
   'map',
@@ -17,16 +18,32 @@ const TEXTURE_KEYS = [
  * Load a static glTF/GLB (architecture, landmarks, setpieces). Unlike
  * `ModelAssets`, it does not require animation clips or a skeleton.
  */
-export async function loadStaticGltf(url: string): Promise<THREE.Group> {
-  const gltf = await new GLTFLoader().loadAsync(url);
-  if (!gltf.scene) throw new Error(`static glTF has no scene: ${url}`);
-  gltf.scene.traverse((object) => {
-    const mesh = object as THREE.Mesh;
-    if (!mesh.isMesh) return;
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-  });
-  return gltf.scene;
+export interface StaticGltfOptions {
+  /** Decode Draco-compressed source models (e.g. the Ciudades Sagradas v2 GLBs). */
+  draco?: boolean;
+}
+
+export async function loadStaticGltf(url: string, options: StaticGltfOptions = {}): Promise<THREE.Group> {
+  const loader = new GLTFLoader();
+  let draco: DRACOLoader | null = null;
+  if (options.draco) {
+    draco = new DRACOLoader();
+    draco.setDecoderPath('/draco/');
+    loader.setDRACOLoader(draco);
+  }
+  try {
+    const gltf = await loader.loadAsync(url);
+    if (!gltf.scene) throw new Error(`static glTF has no scene: ${url}`);
+    gltf.scene.traverse((object) => {
+      const mesh = object as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+    });
+    return gltf.scene;
+  } finally {
+    draco?.dispose();
+  }
 }
 
 /** Free the geometries, materials and textures owned by a static model. */

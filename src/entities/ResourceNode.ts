@@ -86,10 +86,11 @@ export function clearResourceCaches(): void {
 }
 
 type TreeVariants = Partial<Record<TreeVariant, number>>;
-const TREE_VARIANTS: TreeVariant[] = ['broad', 'needle', 'frond'];
+const TREE_VARIANTS: TreeVariant[] = ['broad', 'needle', 'frond', 'algarrobo', 'molle', 'sauce', 'pacay'];
 function variantForMap(mapType: string): TreeVariant {
   if (mapType === 'altiplano') return 'needle';
   if (mapType === 'jungle') return 'frond';
+  if (mapType === 'coast') return 'algarrobo';
   return 'broad';
 }
 
@@ -213,7 +214,7 @@ export class ResourceNode {
   private addFoliage(
     parent: THREE.Object3D,
     rng: RNG,
-    kind: 'broad' | 'needle' | 'frond' | 'bush',
+    kind: 'broad' | 'needle' | 'frond' | 'bush' | 'algarrobo' | 'molle' | 'sauce' | 'pacay',
     radius: number,
     height: number,
   ): void {

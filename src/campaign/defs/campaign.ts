@@ -7,8 +7,8 @@ export const CAMPAIGN_ID = 'la-senda-del-sol';
 export const CAMPAIGN_TITLE = 'La Senda del Sol';
 export const CAMPAIGN_SUBTITLE = 'Nueve escenarios de la historia del Perú, de Caral a la República';
 
-const CARAL_UPPER = { x: 0.5, z: 0.31 };
-const CARAL_LOWER = { x: 0.5, z: 0.76 };
+const CARAL_UPPER = { x: 0.52, z: 0.38 };
+const CARAL_LOWER = { x: 0.52, z: 0.78 };
 
 export const MISSIONS: MissionDef[] = [
   {
@@ -26,16 +26,22 @@ export const MISSIONS: MissionDef[] = [
     tutorial: true,
     playerCiv: CivId.CARAL,
     enemyCiv: CivId.CARAL,
-    map: { seed: 3000, type: 'coast', size: 128 },
-    atmosphere: { fogDensity: 0.0017, sunWarmth: 0.98, skyTint: '#d4d0c2' },
+    map: { seed: 3000, type: 'coast', size: 192 },
+    atmosphere: { fogDensity: 0.0022, sunWarmth: 0.9, skyTint: '#cdd3d2' },
     layout: {
-      base: CARAL_LOWER,
+      base: { x: 0.315, z: 0.84 },
+      site: {
+        id: 'caral_site',
+        y: 8,
+        focus: { x: 0.52, z: 0.277 },
+        keepout: [{ x: 0.52, z: 0.45, rx: 0.27, rz: 0.43 }],
+      },
       setpiece: { id: 'caral_sacred_city', upper: CARAL_UPPER, lower: CARAL_LOWER },
       canal: {
         name: 'Canal comunal del valle',
-        x: 0.28,
+        x: 0.2,
         z: 0.68,
-        length: 22,
+        length: 18,
         yaw: 0.15,
         initiallyOpen: false,
         irrigation: true,
@@ -58,11 +64,11 @@ export const MISSIONS: MissionDef[] = [
     },
     mapOverrides: {
       terrain: { terraceChance: 0, riverCount: 0 },
-      climate: { aridity: 0.9, moisture: 0.3 },
+      climate: { aridity: 0.78, moisture: 0.34 },
       vegetation: { density: 0.06 },
       resources: { tree: 0.35 },
       culturalLandscape: null,
-      groundTint: '#cbb58f',
+      groundTint: '#b7ab96',
     },
     guaranteedFishing: 3,
     timeOfDay: 'morning',
@@ -110,7 +116,7 @@ export const MISSIONS: MissionDef[] = [
       {
         id: 'obj_asamblea',
         kind: 'hold',
-        pos: { ref: 'landmark', dx: 0, dz: 0 },
+        pos: { ref: 'site', dx: 0, dz: 0 },
         radius: 18,
         time: 20,
         unitKind: UnitKind.WORKER,

@@ -520,7 +520,9 @@ function genLeather(base = '#4a3626'): THREE.CanvasTexture {
 }
 
 /** Foliage with transparency for billboard canopies (billboard + alphaTest). */
-function genFoliage(kind: 'broad' | 'needle' | 'frond' | 'bush'): THREE.CanvasTexture {
+function genFoliage(
+  kind: 'broad' | 'needle' | 'frond' | 'bush' | 'algarrobo' | 'molle' | 'sauce' | 'pacay',
+): THREE.CanvasTexture {
   const key = 'foliage-' + kind;
   if (cache.has(key)) return cache.get(key)!;
   const size = 256;
@@ -534,6 +536,11 @@ function genFoliage(kind: 'broad' | 'needle' | 'frond' | 'bush'): THREE.CanvasTe
     needle: ['#162e1d', '#1f3f28', '#2a5733', '#376b3d', '#458048'],
     frond: ['#2f5a22', '#3f7a2c', '#529434', '#6bb24a', '#8fce68'],
     bush: ['#26491c', '#336324', '#3f7a2c', '#4e9436', '#63ab45'],
+    // Supe valley: olive algarrobo, fine molle, pale riparian sauce and pacay.
+    algarrobo: ['#3b4a20', '#4d5b27', '#5e6d2f', '#73833b', '#8a9948'],
+    molle: ['#29421f', '#365528', '#446a31', '#56823b', '#6d9648'],
+    sauce: ['#4b5e2b', '#5a7034', '#6b843d', '#829d4b', '#9ab65c'],
+    pacay: ['#25471d', '#356328', '#477d32', '#5c963d', '#75ac4e'],
   };
   const pal = palettes[kind];
 
@@ -770,7 +777,8 @@ export const MaterialTex = {
   textile_paracas: (base?: string) => genCloth(base),
   textile_nazca: (base?: string) => genCloth(base),
   textile_chimu: (base?: string) => genCloth(base),
-  foliage: (kind: 'broad' | 'needle' | 'frond' | 'bush') => genFoliage(kind),
+  foliage: (kind: 'broad' | 'needle' | 'frond' | 'bush' | 'algarrobo' | 'molle' | 'sauce' | 'pacay') =>
+    genFoliage(kind),
   bark: () => genBark(),
   hide: (base?: string) => genHide(base),
   flat: (color: string) => genFlat(color),

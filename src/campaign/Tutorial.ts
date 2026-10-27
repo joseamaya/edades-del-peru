@@ -86,10 +86,9 @@ export class Tutorial {
         check: (g) => {
           const landmark = g.landmark;
           if (!landmark) return false;
+          const target = g.siteCenter ?? { x: landmark.position.x, z: landmark.position.z };
           const scouts = [...g.units.values()].filter((u) => u.owner === 0 && !u.dead && u.kind === UnitKind.SCOUT);
-          return scouts.some(
-            (u) => distance2D(u.pos.x, u.pos.z, landmark.position.x, landmark.position.z) < LANDMARK_DISCOVERY_RADIUS,
-          );
+          return scouts.some((u) => distance2D(u.pos.x, u.pos.z, target.x, target.z) < LANDMARK_DISCOVERY_RADIUS);
         },
       },
       {
