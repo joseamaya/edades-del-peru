@@ -38,8 +38,9 @@ instead of the modular landmark or a hand-built schematic:
   Mayor so the source's sunken floor and red rings remain visible, and raises dry
   foothills beyond the east and south edges of the site.
 - **Collision**: the monumental volumes use axis-aligned footprints from the
-  source mesh (`CARAL_SITE_BLOCKERS`), so units route around the pyramids and the
-  Anfiteatro while the open plazas and processional ground stay walkable.
+  source mesh (`CARAL_SITE_BLOCKERS`), and the low residential/retaining walls are
+  rasterized from the source's vertical faces into the pathfinding grid. Units
+  route around both while the open plazas and processional ground stay walkable.
   Construction is forbidden over the source footprint (`buildKeepout`), but the
   starting base and its immediate surroundings stay buildable.
 - **Mission anchors**: `layout.site.focus` points to the real Plaza Mayor
@@ -107,13 +108,16 @@ instead of the modular landmark or a hand-built schematic:
 - Construction: `MissionSite.buildKeepout` in `src/campaign/defs/campaign.ts`
   rejects placement over the upper, residential and lower source footprints; the
   Caral Bajo base remains outside them.
+- Low walls: `Game.addSiteWallCollision` rasterizes vertical `Infra_Residential`,
+  `Infra_LowerHalf` and low `Infra_UpperHalf` faces into `Pathfinder.blockCells`;
+  the static mask survives dynamic-obstacle rebuilds.
 - Terrain palette: `src/assets/textures/terrain/caral_*`. The rock slot reuses the
   dirt albedo for Caral because the photographic rock texture aliases into a
   repeating floral pattern at RTS tiling.
 
 ## Status
 
-The monumental volumes block pathing and construction; low residential walls and
-sand paths are still visual-only, so a full survey-accurate collision plan remains
-future work. Render captures are QA artefacts, not historical
+The monumental volumes and low residential/retaining walls block pathing and
+construction. Sand paths and fine wall details remain visual-only, so a full
+survey-accurate collision plan is still future work. Render captures are QA artefacts, not historical
 photographs.

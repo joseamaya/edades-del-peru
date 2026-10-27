@@ -95,7 +95,7 @@ export const MISSIONS: MissionDef[] = [
       {
         id: 'obj_complejo',
         kind: 'inspect',
-        pos: { ref: 'landmark', dx: 0, dz: 0 },
+        pos: { ref: 'site', dx: 0, dz: 0 },
         radius: 14,
         heritageIds: ['caral_pyramid_mayor'],
         title: 'Observa la Gran Pirámide y la Plaza Central',

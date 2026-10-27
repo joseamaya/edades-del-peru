@@ -119,6 +119,8 @@ export class Pathfinder {
   private closed: Uint8Array;
   /** Terrain-only blockage (water/steep), kept so `rebuild` does not lose it. */
   private terrainBlocked: Uint8Array | null = null;
+  /** Static site geometry mask (walls/ruins) that must survive obstacle rebuilds. */
+  private staticBlocked: Uint8Array | null = null;
   /** Connected components of walkable cells, recomputed lazily per revision. */
   private components: Int32Array | null = null;
   private componentsRevision = -1;
@@ -136,6 +138,27 @@ export class Pathfinder {
     this.obstacles.push(o);
     this.rasterize(o);
     this.revision++;
+  }
+
+  /** Merge a static per-cell mask (for collision baked from authored geometry). */
+  blockCells(mask: Uint8Array): void {
+    const n = this.grid.walkable.length;
+    if (mask.length !== n) throw new Error(`collision mask must have ${n} cells`);
+    if (!this.staticBlocked) this.staticBlocked = new Uint8Array(n);
+    for (let i = 0; i < n; i++) {
+      if (!mask[i]) continue;
+      this.staticBlocked[i] = 1;
+      this.grid.walkable[i] = 0;
+    }
+    this.revision++;
+  }
+
+  private applyStaticBlocked(): void {
+    if (!this.staticBlocked) return;
+    const walkable = this.grid.walkable;
+    for (let i = 0; i < walkable.length; i++) {
+      if (this.staticBlocked[i]) walkable[i] = 0;
+    }
   }
 
   removeObstacle(o: Obstacle): void {
@@ -177,6 +200,7 @@ export class Pathfinder {
     // (baked non-walkable) back into walkable whenever an obstacle is removed
     if (this.terrainBlocked) this.grid.walkable.set(this.terrainBlocked);
     else this.grid.walkable.fill(1);
+    this.applyStaticBlocked();
     for (const o of this.obstacles) this.rasterize(o);
   }
 
@@ -197,6 +221,7 @@ export class Pathfinder {
       }
     }
     // snapshot the terrain-only mask, then re-apply the obstacles on top (idempotent)
+    this.applyStaticBlocked();
     this.terrainBlocked = this.grid.walkable.slice();
     for (const o of this.obstacles) this.rasterize(o);
     this.revision++;

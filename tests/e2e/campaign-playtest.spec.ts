@@ -142,13 +142,13 @@ test('plays m1 Caral with real construction and gathering, without objective che
       );
     }
 
-    const landmark = g.landmark?.position;
-    if (!landmark) return { setup: false };
+    const target = g.siteCenter ?? g.siteAnchor ?? g.landmark?.position;
+    if (!target) return { setup: false };
     g.executeCommand(
       {
         kind: 'order',
         unitIds: [scout.id],
-        order: { kind: 'move', target: { x: landmark.x, z: landmark.z } },
+        order: { kind: 'move', target: { x: target.x, z: target.z } },
         clear: true,
       },
       false,
@@ -158,7 +158,7 @@ test('plays m1 Caral with real construction and gathering, without objective che
     let t = 0;
     let observed = false;
     for (let i = 0; i < Math.ceil(330 / dt) && !g.mission.ended; i++) {
-      if (!observed && Math.hypot(scout.pos.x - landmark.x, scout.pos.z - landmark.z) < 14) {
+      if (!observed && Math.hypot(scout.pos.x - target.x, scout.pos.z - target.z) < 14) {
         g.visitHeritage('caral_pyramid_mayor');
         observed = true;
       }

@@ -612,6 +612,57 @@ export class Game {
     }
   }
 
+  /**
+   * Bake the low residential/retaining walls into the navigation grid. Vertical
+   * source faces below the first 1.2 m are walls; roofs and plaza floors are
+   * horizontal, and the tall pyramid volumes are already covered by the AABBs.
+   */
+  private addSiteWallCollision(model: THREE.Object3D, baseY: number): void {
+    const { cols, rows, cell } = this.pathfinder.grid;
+    const mask = new Uint8Array(cols * rows);
+    const a = new THREE.Vector3();
+    const b = new THREE.Vector3();
+    const c = new THREE.Vector3();
+    const maxWallY = baseY + 1.2;
+    model.updateMatrixWorld(true);
+    model.traverse((object) => {
+      const mesh = object as THREE.Mesh;
+      if (!mesh.isMesh || !mesh.geometry?.getAttribute('position')) return;
+      if (!/Infra_(Residential|LowerHalf|UpperHalf)/.test(mesh.name)) return;
+      const position = mesh.geometry.getAttribute('position');
+      const index = mesh.geometry.getIndex();
+      const count = index ? index.count : position.count;
+      for (let i = 0; i < count; i += 3) {
+        const ia = index ? index.getX(i) : i;
+        const ib = index ? index.getX(i + 1) : i + 1;
+        const ic = index ? index.getX(i + 2) : i + 2;
+        a.fromBufferAttribute(position, ia).applyMatrix4(mesh.matrixWorld);
+        b.fromBufferAttribute(position, ib).applyMatrix4(mesh.matrixWorld);
+        c.fromBufferAttribute(position, ic).applyMatrix4(mesh.matrixWorld);
+        const ux = b.x - a.x;
+        const uy = b.y - a.y;
+        const uz = b.z - a.z;
+        const vx = c.x - a.x;
+        const vy = c.y - a.y;
+        const vz = c.z - a.z;
+        const nx = uy * vz - uz * vy;
+        const ny = uz * vx - ux * vz;
+        const nz = ux * vy - uy * vx;
+        const len = Math.hypot(nx, ny, nz);
+        if (!len || Math.abs(ny) / len >= 0.35) continue;
+        if (Math.max(a.y, b.y, c.y) > maxWallY) continue;
+        const x0 = Math.max(0, Math.floor(Math.min(a.x, b.x, c.x) / cell));
+        const x1 = Math.min(cols - 1, Math.floor(Math.max(a.x, b.x, c.x) / cell));
+        const z0 = Math.max(0, Math.floor(Math.min(a.z, b.z, c.z) / cell));
+        const z1 = Math.min(rows - 1, Math.floor(Math.max(a.z, b.z, c.z) / cell));
+        for (let z = z0; z <= z1; z++) {
+          for (let x = x0; x <= x1; x++) mask[z * cols + x] = 1;
+        }
+      }
+    });
+    this.pathfinder.blockCells(mask);
+  }
+
   /** Load the authored campaign site; monumental volumes block pathing, not the whole footprint. */
   private spawnAuthoredSite(site: MissionSite): void {
     const group = new THREE.Group();
@@ -655,6 +706,7 @@ export class Game {
           if (/Caral_LOD[01]_Anfiteatro$/.test(object.name)) object.userData.heritageId = 'caral_anfiteatro';
         });
         group.add(model);
+        this.addSiteWallCollision(model, site.y ?? 0);
         applyFowToObject(model, this.fowUniforms);
         this.enableLandmarkShadows(model);
       })
