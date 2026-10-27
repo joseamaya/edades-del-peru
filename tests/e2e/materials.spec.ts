@@ -6,7 +6,7 @@ import { test, expect } from '@playwright/test';
  * building, placement ghost tint) never leaks into another entity of the same kind.
  */
 test('model materials are per instance and do not leak between entities', async ({ page }) => {
-  await page.goto('/?seed=777&fog=0&low=1');
+  await page.goto('/?play=1&civ=realistas&period=6&seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });

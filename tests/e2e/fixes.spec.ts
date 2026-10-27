@@ -64,7 +64,7 @@ test('the worker has a hidden carry pivot at start', { tag: '@smoke' }, async ({
 });
 
 test('the worker animates the arm while gathering', async ({ page }) => {
-  await page.goto('/?seed=777&fog=0&low=1');
+  await page.goto('/?play=1&civ=realistas&period=6&seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });
@@ -314,11 +314,13 @@ test('the Sacred Huaca is buildable in any period in wonder mode', async ({ page
 });
 
 test('hides Stone and Quarry in periods that cannot obtain them', async ({ page }) => {
-  await page.goto('/?seed=777&fog=0&low=1');
+  await page.goto('/?play=1&civ=caral&period=0&seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });
-  await page.waitForTimeout(500);
+  await page.waitForFunction(() => document.getElementById('ed-res-stone')?.style.display === 'none', null, {
+    timeout: 30_000,
+  });
 
   const early = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -365,7 +367,7 @@ test('the Amauta converts an enemy unit without throwing', { tag: '@smoke' }, as
 });
 
 test('right-clicking an enemy with an Amauta selected issues a convert order', async ({ page }) => {
-  await page.goto('/?seed=777&fog=0&low=1');
+  await page.goto('/?play=1&civ=realistas&period=6&seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });
