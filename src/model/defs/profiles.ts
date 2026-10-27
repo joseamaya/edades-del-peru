@@ -15,7 +15,7 @@ export type GeographicRegion =
 export type SoilKind = 'sandy' | 'loam' | 'clay' | 'peaty' | 'rocky';
 
 /** Tree/foliage variant (shared with the instancing manager). */
-export type TreeVariant = 'broad' | 'needle' | 'frond';
+export type TreeVariant = 'broad' | 'needle' | 'frond' | 'algarrobo' | 'molle' | 'sauce' | 'pacay';
 
 export interface ResourceProfile {
   /** Relative weight of each gatherable node (tree/mine/well/berry). */
@@ -257,7 +257,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     elevation: { snowLine: 20 },
     climate: { aridity: 0.82, moisture: 0.35, temperature: 0.8 },
     water: { level: WATER_LEVEL, inland: false, wetland: true },
-    vegetation: { density: 0.12, variants: { broad: 1 } },
+    vegetation: { density: 0.18, variants: { algarrobo: 0.52, sauce: 0.18, molle: 0.2, pacay: 0.1 } },
     resources: { tree: 0.4, mine: 0.12, well: 0.28, berry: 0.25, hunt: 12, fishing: 8 },
     atmosphere: { fogDensity: 0.0018, sunWarmth: 1.0, skyTint: '#e2e6dc' },
     landmark: null,

@@ -7,6 +7,7 @@ import type { TreeVariant } from '../model/defs/profiles';
 export type { TreeVariant };
 
 const MAX = 700;
+const VARIANTS: TreeVariant[] = ['broad', 'needle', 'frond', 'algarrobo', 'molle', 'sauce', 'pacay'];
 const ZERO = new THREE.Matrix4().makeScale(0, 0, 0);
 const _m = new THREE.Matrix4();
 const _q = new THREE.Quaternion();
@@ -49,6 +50,12 @@ export class TreeInstances {
       broad: this.buildCanopyGeo(2.35, 2.0, 3.15),
       needle: this.buildCanopyGeo(1.85, 2.8, 3.6),
       frond: this.buildCanopyGeo(2.85, 1.85, 3.05),
+      // Native Supe-valley trees: umbrella algarrobo, fine molle, riparian
+      // sauce and the broader pacay.
+      algarrobo: this.buildCanopyGeo(3.15, 1.65, 2.85),
+      molle: this.buildCanopyGeo(2.15, 2.05, 2.95),
+      sauce: this.buildCanopyGeo(1.7, 2.75, 3.35),
+      pacay: this.buildCanopyGeo(2.7, 2.15, 3.0),
     };
 
     const barkMat = new THREE.MeshStandardMaterial({
@@ -67,12 +74,21 @@ export class TreeInstances {
     this.scene.add(this.trunkMesh);
 
     this.canopyMesh = {} as Record<TreeVariant, THREE.InstancedMesh>;
-    for (const variant of ['broad', 'needle', 'frond'] as TreeVariant[]) {
+    for (const variant of VARIANTS) {
       const leafMat = new THREE.MeshStandardMaterial({
         map: MaterialTex.foliage(variant),
         alphaTest: 0.45,
         side: THREE.DoubleSide,
-        color: '#b9c49b',
+        color:
+          variant === 'algarrobo'
+            ? '#a3a57a'
+            : variant === 'sauce'
+              ? '#aab58a'
+              : variant === 'molle'
+                ? '#9aa77a'
+                : variant === 'pacay'
+                  ? '#a8b884'
+                  : '#b9c49b',
         roughness: 1,
       });
       this.materials.push(leafMat);
@@ -192,7 +208,7 @@ export class TreeInstances {
 
   /** Ray intersection with trees; returns distance and entity id. */
   raycast(raycaster: THREE.Raycaster, out: { dist: number; id: number }[]): void {
-    const meshes: THREE.Mesh[] = [this.trunkMesh, this.canopyMesh.broad, this.canopyMesh.needle, this.canopyMesh.frond];
+    const meshes: THREE.Mesh[] = [this.trunkMesh, ...VARIANTS.map((v) => this.canopyMesh[v])];
     for (const mesh of meshes) {
       const hits = raycaster.intersectObject(mesh, false);
       for (const h of hits) {
@@ -227,7 +243,7 @@ export class TreeInstances {
     _pos.set(s.x, s.y, s.z);
     _scale.setScalar(s.scale);
     _m.compose(_pos, _q2, _scale);
-    for (const variant of ['broad', 'needle', 'frond'] as TreeVariant[]) {
+    for (const variant of VARIANTS) {
       if (variant === s.variant) this.canopyMesh[variant].setMatrixAt(slot, _m);
     }
     this.trunkMesh.instanceMatrix.needsUpdate = true;
@@ -235,7 +251,7 @@ export class TreeInstances {
   }
 
   private zeroOtherCanopies(slot: number, keep: TreeVariant): void {
-    for (const variant of ['broad', 'needle', 'frond'] as TreeVariant[]) {
+    for (const variant of VARIANTS) {
       if (variant === keep) continue;
       this.canopyMesh[variant].setMatrixAt(slot, ZERO);
       this.canopyMesh[variant].instanceMatrix.needsUpdate = true;
@@ -245,7 +261,7 @@ export class TreeInstances {
   private writeZero(slot: number): void {
     this.trunkMesh.setMatrixAt(slot, ZERO);
     this.trunkMesh.instanceMatrix.needsUpdate = true;
-    for (const variant of ['broad', 'needle', 'frond'] as TreeVariant[]) {
+    for (const variant of VARIANTS) {
       this.canopyMesh[variant].setMatrixAt(slot, ZERO);
       this.canopyMesh[variant].instanceMatrix.needsUpdate = true;
     }
@@ -276,7 +292,7 @@ export class TreeInstances {
   dispose(): void {
     this.trunkMesh.geometry.dispose();
     this.trunkMesh.removeFromParent();
-    for (const variant of ['broad', 'needle', 'frond'] as TreeVariant[]) {
+    for (const variant of VARIANTS) {
       this.canopyMesh[variant].geometry.dispose();
       this.canopyMesh[variant].removeFromParent();
     }

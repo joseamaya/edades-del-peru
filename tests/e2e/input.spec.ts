@@ -13,7 +13,7 @@ async function startMission(page: import('@playwright/test').Page): Promise<void
 }
 
 test('a single click on the build card starts placement', { tag: '@smoke' }, async ({ page }) => {
-  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
+  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1&intro=0');
   await startMission(page);
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -29,13 +29,15 @@ test('a single click on the build card starts placement', { tag: '@smoke' }, asy
 });
 
 test('clicking the ground places the previewed building', { tag: '@smoke' }, async ({ page }) => {
-  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
+  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1&intro=0');
   await startMission(page);
   // wait for the mission world to be fully initialized
   await page.waitForFunction(
     () => {
       const g = (window as unknown as { game?: any }).game;
-      return !!g && !!g.mission && g.buildings.size > 0 && g.players[0]?.resources?.food > 0;
+      const center = [...(g?.buildings?.values() ?? [])].find((b: any) => b.kind === 'center' && b.owner === 0);
+      const worker = [...(g?.units?.values() ?? [])].find((u: any) => u.kind === 'worker' && u.owner === 0);
+      return !!g && !!g.mission && !!center && !!worker && g.players[0]?.resources?.food > 0;
     },
     null,
     { timeout: 15_000 },
@@ -53,6 +55,7 @@ test('clicking the ground places the previewed building', { tag: '@smoke' }, asy
     if (!center || !worker) return null;
     // put the camera on the base and refresh matrices so projections are valid
     g.camera.moveTo(center.pos.x, center.pos.z, true);
+    g.camera.setHeight(30);
     g.camera.update(0, performance.now() / 1000);
     g.camera.camera.updateMatrixWorld(true);
     g.selectedUnits = [worker.id];
@@ -87,7 +90,7 @@ test('clicking the ground places the previewed building', { tag: '@smoke' }, asy
 });
 
 test('a single click on the train card queues the unit', { tag: '@smoke' }, async ({ page }) => {
-  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
+  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1&intro=0');
   await startMission(page);
   const id = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;

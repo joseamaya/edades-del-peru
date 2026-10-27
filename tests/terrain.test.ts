@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { generateHeightField } from '../src/rendering/heightField';
 import { MAP_PROFILES } from '../src/model/defs/profiles';
+import { CARAL_HEIGHTMAP, CARAL_HEIGHTMAP_SIZE, CARAL_HEIGHTMAP_WORLD_SIZE } from '../src/model/defs/caralHeightmap';
+import { sampleAuthoredHeight } from '../src/model/defs/authoredTerrain';
 
 function hash(a: Float32Array): number {
   let h = 2166136261;
@@ -130,5 +132,31 @@ describe('authored river fords', () => {
     expect(at(64, 70)).toBeGreaterThan(f.waterLevel + 0.35);
     // river beside the ford: still below the waterline
     expect(at(50, 70)).toBeLessThan(f.waterLevel);
+  });
+});
+
+describe('authored Caral heightfield', () => {
+  const field = {
+    size: CARAL_HEIGHTMAP_SIZE,
+    worldSize: CARAL_HEIGHTMAP_WORLD_SIZE,
+    heights: CARAL_HEIGHTMAP,
+  };
+
+  it('covers the 192 m map at 1 m resolution', () => {
+    expect(field.size).toBe(193);
+    expect(field.worldSize).toBe(192);
+    expect(field.heights.length).toBe(193 * 193);
+  });
+
+  it('keeps the site terrace and base flat at 8 m, with the sunken plaza basin', () => {
+    expect(sampleAuthoredHeight(field, 100, 84)).toBeCloseTo(8, 3);
+    expect(sampleAuthoredHeight(field, 100, 30)).toBeCloseTo(8, 3);
+    expect(sampleAuthoredHeight(field, 60, 161)).toBeCloseTo(8, 3);
+    expect(sampleAuthoredHeight(field, 100, 53)).toBeCloseTo(7.45, 2);
+  });
+
+  it('keeps the Supe river bed below the waterline west of the city', () => {
+    expect(sampleAuthoredHeight(field, 4, 90)).toBeLessThan(2.2);
+    expect(sampleAuthoredHeight(field, 100, 84)).toBeGreaterThan(2.2);
   });
 });

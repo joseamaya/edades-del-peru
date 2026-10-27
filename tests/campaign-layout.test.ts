@@ -43,9 +43,10 @@ describe('campaign authored geography', () => {
     expect(byId('m8_independencia').layout?.terrain?.flats?.length).toBeGreaterThan(0);
   });
 
-  it('keeps Caral on its authored city setpiece', () => {
+  it('keeps Caral on its authored sacred-site model', () => {
     const caral = MISSIONS.find((m) => m.id === 'm1_caral')!;
-    expect(caral.layout?.setpiece?.id).toBe('caral_sacred_city');
+    expect(caral.layout?.setpiece).toBeUndefined();
+    expect(caral.layout?.site?.id).toBe('caral_site');
     expect(caral.layout?.terrain?.river).toBeDefined();
   });
 });

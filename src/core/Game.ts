@@ -25,6 +25,7 @@ import { clearFaunaTemplates } from '../rendering/faunaModels';
 import { clearModelAssets } from '../rendering/ModelAssets';
 import { disposeStaticGltf } from '../rendering/StaticModel';
 import { loadSceneryModel } from '../rendering/sceneryModels';
+import { loadSiteModel } from '../rendering/siteModels';
 import { planProps, propCountFor } from '../model/defs/props';
 import { planWildlife, faunaCountFor } from '../model/defs/wildlife';
 import { Projectile, updateProjectilePools } from '../entities/Projectile';
@@ -74,6 +75,15 @@ import { farmYieldMultiplier, nearbyCanal } from '../model/defs/farmYield';
 import { distance2D } from '../util/math';
 import { isTypingTarget } from '../util/dom';
 import { RNG, hashCode, weightedPick } from '../util/rng';
+import { CARAL_HEIGHTMAP, CARAL_HEIGHTMAP_SIZE, CARAL_HEIGHTMAP_WORLD_SIZE } from '../model/defs/caralHeightmap';
+import {
+  CARAL_HERITAGE_PROXIES,
+  CARAL_SITE_ANCHOR,
+  CARAL_SITE_CAMERA,
+  CARAL_SITE_ORIGIN,
+  CARAL_SITE_SCALE,
+} from '../model/defs/caralSite';
+import type { AuthoredHeightField } from '../model/defs/authoredTerrain';
 import { detectSoftwareRenderer } from '../util/gpu';
 import { ERA_DEFS } from '../model/defs/eras';
 import { BUILDING_DEFS, getBuildingStats, BUILDING_INFO } from '../model/defs/buildings';
@@ -92,7 +102,7 @@ import { Mission } from '../campaign/Mission';
 import { Tutorial } from '../campaign/Tutorial';
 import { PlayerCommand, Replay, ReplayPlayer, ReplayRecorder, saveReplay } from '../game/replay';
 import { getMission } from '../campaign/defs/campaign';
-import type { MissionDef, MissionAtmosphere, MissionLayout } from '../campaign/types';
+import type { MissionDef, MissionAtmosphere, MissionLayout, MissionSite } from '../campaign/types';
 import { serializeGame, saveToStorage } from '../game/SaveGame';
 import type { SaveData } from '../game/saveTypes';
 
@@ -156,6 +166,11 @@ export class Game {
   private setpiecePlan: CaralCityPlan | null = null;
   /** Visual-only Caral city scene (Caral Alto + Caral Bajo). */
   setpiece: SacredCity | null = null;
+  /** Authored site model and its focus, when the mission uses one. */
+  private siteFocus: { x: number; z: number } | null = null;
+  /** Objective anchors for the authored site (world units). */
+  siteAnchor: { x: number; z: number } | null = null;
+  siteCenter: { x: number; z: number } | null = null;
   /** Authored canal target in world units (mission mechanic + visual). */
   canalSite: { x: number; z: number } | null = null;
   private canalGroup: THREE.Group | null = null;
@@ -172,7 +187,7 @@ export class Game {
   landscape: CulturalLandscape | null = null;
   /** Per-base settlement overlays (planned fields/roads); visual only. */
   settlements: SettlementOverlay[] = [];
-  /** Caral household dressing (hearths, racks, baskets); visual only. */
+  /** Per-base settlement dressing (visual only). */
   settlementDressing: SettlementDressing[] = [];
   particles!: Particles;
   debris!: Debris;
@@ -278,8 +293,12 @@ export class Game {
     this.unitContext = this.ctxFor();
     this.economy = new Economy(this);
     this.initPlayers();
-    this.spawnLandmark();
-    this.spawnSacredCity();
+    if (this.missionLayout?.site) {
+      this.spawnAuthoredSite(this.missionLayout.site);
+    } else {
+      this.spawnLandmark();
+      this.spawnSacredCity();
+    }
     this.spawnCanal();
     this.spawnMissionDecor();
     this.spawnCulturalLandscape();
@@ -350,11 +369,22 @@ export class Game {
       }),
       this.missionDef?.mapOverrides,
     );
-    this.terrain = new Terrain(s.mapSize, terrainRes, s.mapSeed, this.mapProfile, this.missionLayout?.terrain);
+    const authored: AuthoredHeightField | undefined =
+      this.missionLayout?.site?.id === 'caral_site'
+        ? { size: CARAL_HEIGHTMAP_SIZE, worldSize: CARAL_HEIGHTMAP_WORLD_SIZE, heights: CARAL_HEIGHTMAP }
+        : undefined;
+    this.terrain = new Terrain(
+      s.mapSize,
+      terrainRes,
+      s.mapSeed,
+      this.mapProfile,
+      this.missionLayout?.terrain,
+      authored,
+    );
     this.terrain.camera = this.camera.camera;
     this.scene.add(this.terrain.group);
     const city = this.missionLayout?.setpiece;
-    if (city && city.id === 'caral_sacred_city') {
+    if (city && city.id === 'caral_sacred_city' && !this.missionLayout?.site) {
       const river = this.missionLayout?.terrain?.river;
       const fords = river
         ? (river.fords ?? []).map((ford) => {
@@ -548,15 +578,90 @@ export class Game {
     for (let i = 0; i < (this.enemyActive ? 2 : 1); i++) {
       this.spawnStartBase(i, spots[i][0], spots[i][1]);
     }
-    // camera on the player
-    this.camera.moveTo(spots[0][0], spots[0][1], true);
+    // Camera on the player. Authored sites open with the city just ahead so
+    // the first frame shows both the base and the monument, not an empty field.
+    this.frameAuthoredSite(spots[0][0], spots[0][1]);
   }
 
-  /**
-   * Place the map's historical landmark (visual only, deterministic). Most are
-   * built with the landmark's own civilization/era; Caral uses the modular
-   * Pyramid Mayor GLB with a flat sand pad and a procedural fallback.
-   */
+  /** Invisible but raycastable volumes over the six pyramids and the Anfiteatro. */
+  private addSiteHeritageProxies(parent: THREE.Group): void {
+    const material = new THREE.MeshBasicMaterial({
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      colorWrite: false,
+      side: THREE.DoubleSide,
+    });
+    for (const p of CARAL_HERITAGE_PROXIES) {
+      const proxy = new THREE.Mesh(new THREE.BoxGeometry(p.w, p.h, p.d), material);
+      proxy.name = p.id;
+      proxy.position.set(p.x, p.h / 2 + 0.02, p.z);
+      proxy.userData.heritageId = p.id;
+      proxy.frustumCulled = false;
+      parent.add(proxy);
+    }
+  }
+
+  /** Load the authored campaign site (visual-only; heritage nodes keep their ids). */
+  private spawnAuthoredSite(site: MissionSite): void {
+    const group = new THREE.Group();
+    group.name = 'landmark';
+    group.position.set(0, site.y ?? 0, 0);
+    this.landmark = group;
+    this.landmarkOwnsStatic = true;
+    this.scene.add(group);
+    if (site.focus) {
+      this.siteFocus = { x: site.focus.x * this.settings.mapSize, z: site.focus.z * this.settings.mapSize };
+      this.siteCenter = { ...this.siteFocus };
+    }
+    this.siteAnchor = { x: CARAL_SITE_ANCHOR.x, z: CARAL_SITE_ANCHOR.z };
+    this.addSiteHeritageProxies(group);
+    const token = ++this.landmarkLoadToken;
+    void loadSiteModel(site.id)
+      .then((model) => {
+        if (token !== this.landmarkLoadToken || this.landmark !== group) {
+          disposeStaticGltf(model);
+          return;
+        }
+        model.name = 'caral_site';
+        // Exact v2 source: metres -> the 192 m map. The site terrain is owned
+        // by the game heightfield, so hide the source terrain/reference layers.
+        model.scale.setScalar(CARAL_SITE_SCALE);
+        model.position.set(CARAL_SITE_ORIGIN.x, 0, CARAL_SITE_ORIGIN.z);
+        model.traverse((object) => {
+          if (/Infra_(Terrain|Reference)/.test(object.name)) object.visible = false;
+          if (/PlazaMayor_(BandaRoja|PisoAnilloRojo|PisoRojo)$/.test(object.name)) {
+            const mesh = object as THREE.Mesh;
+            const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+            for (const material of materials) {
+              material.side = THREE.DoubleSide;
+              material.polygonOffset = true;
+              material.polygonOffsetFactor = -2;
+              material.polygonOffsetUnits = -2;
+            }
+          }
+          if (/Caral_LOD[01]_Mayor$/.test(object.name)) object.userData.heritageId = 'caral_pyramid_mayor';
+          if (/Caral_LOD[01]_Anfiteatro$/.test(object.name)) object.userData.heritageId = 'caral_anfiteatro';
+        });
+        group.add(model);
+        applyFowToObject(model, this.fowUniforms);
+        this.enableLandmarkShadows(model);
+      })
+      .catch((error: unknown) => {
+        console.warn('[site] failed to load authored Caral site', error);
+      });
+  }
+
+  /** Frame the player base with the authored city just ahead of it. */
+  private frameAuthoredSite(x: number, z: number): void {
+    if (!this.missionLayout?.site) {
+      this.camera.moveTo(x, z, true);
+      return;
+    }
+    this.camera.moveTo(x + CARAL_SITE_CAMERA.dx, z + CARAL_SITE_CAMERA.dz, true);
+    this.camera.setHeight(CARAL_SITE_CAMERA.height);
+  }
+
   private spawnLandmark(): void {
     const id = this.mapProfile.landmark;
     if (!id) return;
@@ -945,6 +1050,13 @@ export class Game {
   /** Keep authored city/canal footprints free of procedural resources and props. */
   private isReserved(x: number, z: number): boolean {
     if (this.setpiecePlan && inCaralCity(this.setpiecePlan, x, z, 1)) return true;
+    const site = this.missionLayout?.site;
+    if (site?.keepout) {
+      const size = this.settings.mapSize;
+      for (const r of site.keepout) {
+        if (Math.abs(x - r.x * size) <= r.rx * size && Math.abs(z - r.z * size) <= r.rz * size) return true;
+      }
+    }
     if (this.canalSite) {
       const length = this.missionLayout?.canal?.length ?? 24;
       if (Math.hypot(x - this.canalSite.x, z - this.canalSite.z) < length / 2 + 6) return true;
@@ -1069,7 +1181,8 @@ export class Game {
       isBeach: (x: number, z: number) => this.terrain.isBeach(x, z),
       getMoisture: (x: number, z: number) => this.terrain.getMoisture(x, z),
     };
-    this.props.place(planProps(region, propSeed, s.mapSize, propCountFor(s.mapSize), query), heightAt);
+    const propCount = propCountFor(s.mapSize);
+    this.props.place(planProps(region, propSeed, s.mapSize, propCount, query), heightAt);
     this.wildlife.spawn(planWildlife(region, faunaSeed, s.mapSize, faunaCountFor(region), query), heightAt);
   }
 
@@ -1202,6 +1315,7 @@ export class Game {
     const place = (kind: ResourceNode['kind'], amount: number, dx: number, dz: number) => {
       const nx = x + dx;
       const nz = z + dz;
+      if (this.isReserved(nx, nz)) return;
       const node = new ResourceNode(
         this.scene,
         kind,
@@ -1220,8 +1334,16 @@ export class Game {
     };
     // Trees: in the authored Caral scene the wood grove sits on the valley edge
     // (the gallery forest of the Supe), not inside the residential compounds.
-    const grove = this.setpiecePlan;
-    if (grove) {
+    if (this.missionLayout?.site) {
+      // Keep the authored site core clear: wood and the opening mine/berries sit
+      // west of the terrace or south of the keep-out, not on the plazas.
+      for (let i = 0; i < 5; i++) {
+        place('tree', rng.range(140, 200), -18 + rng.range(-1.5, 1.5), rng.range(-1.5, 1.5));
+      }
+      place('mine', 400, -18, 20);
+      place('berry', 150, 20, 20);
+    } else if (this.setpiecePlan) {
+      const grove = this.setpiecePlan;
       // Keep the base -> ford axis clear: the gallery forest sits west of it,
       // on the valley edge, and the opening mine/berries sit in the base ring.
       for (let i = 0; i < 8; i++) {
@@ -1281,7 +1403,7 @@ export class Game {
       civ,
       playerColor: new THREE.Color(civ.colors.primary),
       arch: archProfileFor(civ.id, p.era),
-      caralSetpiece: !!this.setpiecePlan,
+      caralSetpiece: !!this.setpiecePlan || !!this.missionLayout?.site,
     };
   }
 
@@ -1355,14 +1477,14 @@ export class Game {
         this.spawnScriptedUnit(u.kind, 0, c.x + u.dx + jx, c.z + u.dz + jz, u.tag);
       }
     }
-    this.camera.moveTo(c.x, c.z, true);
+    this.frameAuthoredSite(c.x, c.z);
   }
 
   /** Campaign intro: a short overview flight down to the player's base. */
   playIntro(): void {
     if (!this.introEnabled) return;
     const c = this.playerCenter(0);
-    const city = this.setpiecePlan?.upper;
+    const city = this.siteFocus ?? this.setpiecePlan?.upper;
     if (city) {
       this.camera.moveTo(city.x, city.z, true);
       this.camera.setHeight(INTRO_CAMERA.fromHeight + 12);
@@ -1825,7 +1947,7 @@ export class Game {
     const size = this.settings.mapSize;
     const p = new THREE.Vector3();
     let t = ray.origin.distanceTo(hit);
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 5; i++) {
       ray.at(t, p);
       const hx = Math.min(Math.max(p.x, 0), size);
       const hz = Math.min(Math.max(p.z, 0), size);

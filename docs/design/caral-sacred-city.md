@@ -1,115 +1,107 @@
 # Caral sacred city (mission 1)
 
-Scene design for `m1_caral`. The Age of Empires II screenshot used as a mood
-reference is **not** an archaeological reconstruction. The plan below follows
-the published site description and only uses the screenshot for density,
-camera framing and the warm desert palette.
+Scene design for `m1_caral`. The playable site is the exact Caral remaster v2
+GLB from Ciudades Sagradas, based on the published Upper/Lower halves, the UNESCO
+dimensions and the documented sectors. It is an artistic reconstruction, **not**
+a survey and **not** a historical photograph.
 
 ## Sources
 
-- UNESCO WHC 1269, *Sacred City of Caral-Supe* (description, Outstanding
-  Universal Value, gallery): <https://whc.unesco.org/en/list/1269/>.
-- UNESCO advisory-body evaluation 1269 (Upper/Lower Half, six pyramids, five
-  plazas, residential units, painted plaster): ICOMOS, 2009.
-- R. Shady Solís, *The Caral-Supe Civilization: 5,000 years of Cultural Identity
-  in Peru* (Zona Arqueológica Caral, 2005). Sectors, dimensions and the
-  `La Huanca` monolith.
-- R. Shady Solís, *The social and cultural values of Caral-Supe…* (Zona
-  Arqueológica Caral, 2008): Central/Plaza de la Huanca and the E/H sectors.
+- UNESCO WHC 1269, _Sacred City of Caral-Supe_: <https://whc.unesco.org/en/list/1269/>.
+- UNESCO advisory-body evaluation 1269 (Upper/Lower Half, six pyramids, plazas,
+  residential units, painted plaster): ICOMOS, 2009.
+- R. Shady Solís, _The Caral-Supe Civilization: 5,000 years of Cultural Identity
+  in Peru_ (Zona Arqueológica Caral, 2005). Sectors, dimensions and La Huanca.
+- R. Shady Solís, _The social and cultural values of Caral-Supe…_ (Zona
+  Arqueológica Caral, 2008): Central Plaza, Plaza de la Huanca, E/H sectors.
 - Zona Arqueológica Caral: <https://zonacaral.gob.pe/>.
 - `docs/historia/civilizaciones/caral.md`, `docs/historia/arquitectura.md`,
   `docs/historia/mapas.md`, `docs/historia/campanas/caral.md`.
 
+## Runtime source
+
+`m1_caral` uses the exact `caral_site` GLB from Ciudades Sagradas, at `y = 8`,
+instead of the modular landmark or a hand-built schematic:
+
+- **Source**: `ciudades-sagradas/public/cities/caral/model_lod0.glb` and
+  `model_lod1.glb`, from the `caral_remaster_v2.blend` source scene.
+- **Assets**: copied to `src/assets/sites/caral/caral_site_lod0.glb` and
+  `caral_site_lod1.glb`; LOD1 is the default runtime mesh, `?lod=0` previews the
+  LOD0 detail mesh.
+- **Loader**: `src/rendering/siteModels.ts` and `src/rendering/StaticModel.ts`
+  decode Draco + WebP. `Infra_Terrain` and `Infra_Reference` are hidden.
+- **Transform**: the source is scaled uniformly by `0.25` and translated so the
+  Great Pyramid is centred at `{x: 100, z: 30}` on the 192 m map. No vertical
+  exaggeration is applied.
+- **Terrain**: the source terrain is hidden. The game heightfield owns the
+  ground and carves a 0.55 m basin under the Plaza Mayor so the source's sunken
+  floor and red rings remain visible.
+- **Mission anchors**: `layout.site.focus` points to the real Plaza Mayor
+  (`{x: 0.52, z: 0.277}`); `siteAnchor` remains the Great Pyramid at
+  `{x: 100, z: 30}`.
+- **Residential fabric**: the source's low-walled residential compounds are kept
+  as modelled. No invented roofs or houses are added. Normal game-side base
+  vegetation and resources remain outside the source site.
+- The base sits in Caral Bajo at `{x: 0.315, z: 0.84}` (≈60.5, 161.3 on the 192 m
+  map); Caral Alto and the Great Pyramid remain a short walk north.
+- The site keep-out is `{x: 0.52, z: 0.45, rx: 0.27, rz: 0.43}`. It excludes
+  resources, not the starting base or prior player buildings.
+- The river stays west of the city. Caral itself is on the dry terrace; only the
+  low floodplain is green. There is no sea adjacent to the site.
+
 ## Attested elements modelled
 
-| Element | Source status | In game |
-|---|---|---|
-| Dry desert terrace over the green Supe valley | Documented (UNESCO) | Two flattened desert pads above a green river valley. |
-| Upper Half (Caral Alto) | Documented | Six Blender pyramids around the Central Plaza, including the modular Pyramid Mayor; elite residences stay procedural. |
-| Lower Half (Caral Bajo) | Documented | Player base, smaller residences, workshops, and the modular Anfiteatro ensemble. |
-| Great Pyramid (E Sector) | Documented | `greater`: modular Pyramid Mayor GLB on its planned pad; the other five pyramids use their own GLBs at the plan anchors. |
-| Central, Quarry, Lesser, Gallery, Huanca pyramids | Documented names | Five further pyramids, smaller than the Great Pyramid. |
-| Central Plaza / Plaza de la Huanca | Documented | Large open plaza; secondary plaza with the 2.3 m monolith. |
-| Sunken circular plazas | Documented | Great Pyramid and Amphitheatre Temple (the largest). |
-| Five open plazas in the Upper Half | Documented count (ICOMOS) | Central Plaza, Plaza de la Huanca and three pyramid forecourts. |
-| Supe crossing | Not documented as a bridge; a crossing was necessary | Central dry stone ford/causeway; walkable, with the river on both sides. |
-| Residential units B1, B2, B5; Greater Residential Complex; E2-E3 | Documented in the 2005/2009 reports | Low stone-and-mud compounds around patios and narrow rooms. |
-| Amphitheatre Temple, Round Altar, Bench Temple, Q residence, Lesser Residential Complex, specialised workshop | Documented in the 2005/2009 reports | The modular Anfiteatro GLB replaces the temple/altar/bench triad; Q and the residential/workshop compounds stay procedural. |
-| Additional residences (unnamed) | Plausible | Generic `upper_residence_*` / `lower_residence_*` compounds. |
-| Processional paths | Abstraction | Visual-only connectors between the plazas, residences and temples. |
-| Stone retaining walls, mud mortar, `shicras` fill, plastered and painted surfaces | Documented | Sand/cream plaster, light stone bands, restrained red/yellow accents. |
-| No defensive walls, weapons or warrior class | Documented absence | No fortifications or military props in the set-piece. |
+| Element                                                             | Source status       | In game                                                                              |
+| ------------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------ |
+| Dry desert terrace over the green Supe valley                       | Documented (UNESCO) | Authored heightfield: terrace ≈8 m, valley ≈4 m, river bed ≈1.15 m.                  |
+| Upper Half (Caral Alto)                                             | Documented          | Six pyramids, Central Plaza and Plaza de la Huanca.                                  |
+| Lower Half (Caral Bajo)                                             | Documented          | Player base, smaller residences and workshops around the Anfiteatro.                 |
+| Great Pyramid (E Sector)                                            | Documented          | Seven-tier pyramid, long processional stair, summit room and circular forecourt.     |
+| Central, Quarry, Lesser, Gallery, Huanca pyramids                   | Documented names    | Five smaller pyramids at schematic plan anchors.                                     |
+| Central Plaza / Plaza de la Huanca                                  | Documented          | Earth-paved plaza with stone borders and benches; secondary plaza with the monolith. |
+| Sunken circular plazas                                              | Documented          | Great Pyramid and Amphitheatre Temple forecourts.                                    |
+| Residential units B1, B2, B5; Greater Residential Complex; E2-E3; Q | Documented          | Walled compounds with stone footings, rooms, patios and inferred thatch roofs.       |
+| Amphitheatre Temple, Round Altar, Bench Temple                      | Documented          | Temple platform, reduced round altar and bench, with a small hearth.                 |
+| Processional paths                                                  | Abstraction         | Visual-only sand paths; they do not grant collision or speed.                        |
+| Stone retaining walls, mud mortar, `shicras` fill, painted plaster  | Documented          | Cream plaster, stone cornices and restrained ochre/red bands.                        |
+| No defensive walls, weapons or warrior class                        | Documented absence  | No fortifications or military props in the site.                                     |
+| No attested market at Caral                                         | Documented absence  | The site contains no market stalls; the plaza-gathering abstraction is not a market. |
 
 ## Deliberate abstractions
 
-- **Scale**: the 66 ha core is compressed into an RTS scene. Relative hierarchy
-  and orientation are kept; metres are not.
-- **Exact plan**: the six pyramids and named sectors are documented, but their
-  exact relative coordinates are not reproduced. The arrangement is a
-  `plausible` schematic anchored to the published Upper/Lower split.
-- **Ford/causeway**: no bridge is documented at Caral. The central crossing is a
-  `plausible` dry stone ford that keeps the river and lets units move between the
-  Lower and Upper halves.
-- **Roofs**: Caral's perishable roofs are not preserved. The scene leaves patios
-  open and uses no tiled roofs; this is an `abstraction`, not a reconstruction.
-- **Painted surfaces**: white/cream plaster with small yellow/red bands follows
-  the UNESCO text. The precise colour scheme per building is not known.
-- **Terrain**: the Supe river and floodplain are authored as a broad green valley
-  for readability. The sea is not adjacent to the city; fishing is represented
-  by the river/wetland and a distant coastal strip.
-- **Screenshot**: its UI, unit scale and fantasy density are not copied.
+- **Scale**: the source model is compressed uniformly to 0.25 of its source
+  metres; proportions, terraces and residential footprints are preserved.
+- **Source reconstruction**: the GLB is an artistic reconstruction with inferred
+  perishable roofs, awnings, fires and painted surfaces; the exact plan is not a
+  survey.
+- **Residential compounds**: the source models low-walled patio compounds, not
+  individual roofed houses. They stay as modelled. Adding roofs or new houses
+  would be an invention, not a correction.
+- **Plazas**: the source provides the Plaza Mayor floor, red rings, hearth and
+  stairs; the game only provides the shallow terrain basin beneath them.
+- **No invented history**: no rulers, battles, weapons or market are added.
 
 ## Implementation
 
-- Data/plan: `src/model/defs/setpieces.ts` (`planCaralCity`, `inCaralCity`).
-- Mission layout: `MissionDef.layout` and `MissionDef.mapOverrides` in
-  `src/campaign/types.ts`; values in `src/campaign/defs/campaign.ts`.
-- Terrain: `src/model/defs/terrainLayout.ts` + `generateHeightField` in
-  `src/rendering/heightField.ts` (flats, fixed river valley, walkable ford).
-- Models: `src/model/ProceduralModel.ts` (`buildCaralPyramid`,
-  `buildCaralSunkenPlaza`, `buildCaralCompound`, `buildCaralMonolith`,
-  `buildCaralCityModel`) for the surrounding city; the six pyramid GLBs and
-  `caral_anfiteatro` for the lower ceremonial ensemble.
-- Renderer: `src/rendering/SacredCity.ts` (merged by material; visual only).
-- Heritage inspection: `src/model/defs/heritage.ts` and the landmark/canal picking path in `Game.ts`.
-  Every modular pyramid and the Anfiteatro open a field card with sector, role, summary,
-  confidence and sources; “Visitar” records the card without gating progress. The communal canal
-  has a gate operation that raises the irrigation yield of nearby Andenes. Player-owned Andenes
-  and Trojes in m1 also show their historical field cards (`src/model/defs/buildingCards.ts`).
-  The mission also requires observing the ceremonial complex: `obj_complejo` completes when a player
-  unit is at the site and the Gran Pirámide / Plaza Central field card is opened. Its landmark is a
-  gold minimap pip and the objectives panel shows live progress. The same card can activate the hidden `obj_asamblea`:
-  a 20-second worker hold in the plaza, with no resource reward and no victory gate.
-- Wiring: `src/core/Game.ts` (reserved footprints, fixed base, landmark, intro)
-  and `src/rendering/Water.ts` (map-aligned depth sampling for inland rivers).
+- Source assets: `src/assets/sites/caral/caral_site_lod0.glb` /
+  `caral_site_lod1.glb`, copied from Ciudades Sagradas.
+- Runtime: `src/core/Game.ts` loads the site through `src/rendering/siteModels.ts`
+  (Draco + WebP), hides `Infra_Terrain` / `Infra_Reference`, applies the uniform
+  0.25 transform and registers the visible Great Pyramid and Anfiteatro for field
+  cards.
+- Heightfield: `yarn build:caral-heightmap` (`scripts/build_caral_heightmap.py`)
+  → `src/model/defs/caralHeightmap.ts`; sampled by `src/rendering/Terrain.ts`
+  through `src/model/defs/authoredTerrain.ts`.
+- Mission layout: `src/campaign/defs/campaign.ts` and `src/campaign/types.ts`
+  (`layout.site`, 192 m map, base in Caral Bajo, Plaza Mayor focus).
+- Heritage proxies: invisible raycast volumes in `Game.ts` map the six pyramids
+  and the Anfiteatro to their existing field cards.
+- Terrain palette: `src/assets/textures/terrain/caral_*`. The rock slot reuses the
+  dirt albedo for Caral because the photographic rock texture aliases into a
+  repeating floral pattern at RTS tiling.
 
-## Modular assets in the plan
+## Status
 
-The plan keeps the documented positions and hierarchy, while the six pyramids and the
-Anfiteatro use modular Blender GLBs:
-
-- `mainPyramid` is the anchor for the **Pyramid Mayor** GLB (`caral_pyramid_mayor`); the
-  procedural `SacredCity` does not build it. The GLB keeps its own sand pad and fallback.
-- The five remaining Upper-Half pyramids (`central`, `quarry`, `lesser`, `gallery`, `huanca`)
-  are separate Blender GLBs placed at their authored plan anchors and filtered from the
-  procedural plan.
-- The **Anfiteatro** GLB (`caral_anfiteatro`) is placed at the `amphitheatre` plan site; the
-  procedural `amphitheatre`, `round_altar` and `bench_temple` placements are filtered from the
-  render because that GLB already contains the temple, altar and banqueta.
-- The plazas, monolith, sunken plazas, compounds and the ford remain procedural and are
-  merged by material.
-- The plan's `width`/`depth` values are schematic layout bounds; each Blender module keeps its own
-  source-derived mesh footprint and is not stretched to fill the plan row.
-- All of these layers are visual-only; they do not add obstacles or entities. Collision footprints
-  for the playable-building pass must come from the module bounds, not from the schematic plan rows.
-
-## Guards
-
-- `tests/setpieces.test.ts`: determinism, documented names/hierarchy, bounds,
-  Upper/Lower separation, keep-out footprints.
-- `tests/e2e/caral-city.spec.ts`: scene present, mesh/vertex budget, landmark
-  alignment, all six modular pyramids and the Anfiteatro matching their plan
-  anchors, no resources in the Upper-Half keep-out, no generic landscape ribbons,
-  river present, deterministic reload.
-- `tests/e2e/landmarks.spec.ts`: the modular landmark, fixed plan position and
-  Anfiteatro fallback.
+The exact site is visual-only: it does not add pathing obstacles. Building
+collision and a full survey-accurate plan remain future work. Render captures are
+QA artefacts, not historical photographs.

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-const URL = '/?mission=m1_caral&seed=3000&fog=0&low=1&noloop=1';
+const URL = '/?mission=m1_caral&seed=3000&fog=0&low=1&noloop=1&intro=0';
 
 async function boot(page: import('@playwright/test').Page, requireModules = true) {
   const errors: string[] = [];
@@ -27,127 +27,103 @@ async function boot(page: import('@playwright/test').Page, requireModules = true
     requireModules,
     { timeout: 30_000 },
   );
+  await page.waitForFunction(
+    () => (window as unknown as { game?: any }).game?.landmark?.getObjectByName('caral_site'),
+    null,
+    {
+      timeout: 30_000,
+    },
+  );
   return errors;
 }
 
-test('the Caral scenario builds the documented Upper and Lower halves', { tag: '@smoke' }, async ({ page }) => {
+test('the Caral scenario loads the authored sacred-city site', { tag: '@smoke' }, async ({ page }) => {
   const errors = await boot(page);
   const state = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    const plan = g.setpiecePlan;
+    const site = g.missionLayout.site;
+    const model = g.landmark.getObjectByName('caral_site');
     let verts = 0;
     let meshes = 0;
-    g.setpiece?.group.traverse((o: any) => {
+    model?.traverse((o: any) => {
       if (o.isMesh && o.geometry?.attributes?.position) {
         verts += o.geometry.attributes.position.count;
         meshes++;
       }
     });
-    const upperKeepout = plan.keepout[0];
-    const lowerKeepout = plan.keepout[1];
-    const ford = plan.placements.find((p: any) => p.kind === 'ford');
-    // Local rect test: page.evaluate runs in the browser and cannot import the
-    // Node-side terrain helper.
     const inRect = (n: any, r: any) => Math.abs(n.pos.x - r.x) <= r.rx && Math.abs(n.pos.z - r.z) <= r.rz;
-    const upperResources = [...g.resourceNodes.values()].filter((n: any) => inRect(n, upperKeepout)).length;
-    const lowerResources = [...g.resourceNodes.values()].filter((n: any) => inRect(n, lowerKeepout)).length;
-    const fordResources = ford
-      ? [...g.resourceNodes.values()].filter((n: any) =>
-          inRect(n, { x: ford.x, z: ford.z, rx: ford.width / 2, rz: ford.depth / 2 }),
-        ).length
-      : -1;
+    const resources = g.missionLayout.site.keepout.map(
+      (r: any) => [...g.resourceNodes.values()].filter((n: any) => inRect(n, r)).length,
+    );
     const base = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center');
-    const amph = plan.placements.find((p: any) => p.modularAnchor);
-    const anf = g.landmark?.getObjectByName('caral_anfiteatro');
-    const anfPos = anf?.getWorldPosition(new window.THREE.Vector3());
-    const moduleNames = ['central', 'quarry', 'lesser', 'gallery', 'huanca'];
-    const modules = moduleNames.map((name) => {
-      const model = g.landmark?.getObjectByName(`caral_pyramid_${name}`);
-      const placement = plan.placements.find((p: any) => p.name === name);
-      const pos = model?.getWorldPosition(new window.THREE.Vector3());
-      return {
-        name,
-        present: !!model,
-        x: pos?.x ?? null,
-        z: pos?.z ?? null,
-        planX: placement?.x ?? null,
-        planZ: placement?.z ?? null,
-      };
-    });
+    const names = [
+      'caral_pyramid_mayor',
+      'caral_pyramid_central',
+      'caral_pyramid_quarry',
+      'caral_pyramid_lesser',
+      'caral_pyramid_gallery',
+      'caral_pyramid_huanca',
+      'caral_anfiteatro',
+    ];
     return {
-      hasPlan: !!plan,
-      placements: plan.placements.length,
-      main: plan.mainPyramid.name,
+      siteId: site?.id ?? null,
+      focusX: site?.focus?.x ?? null,
+      focusZ: site?.focus?.z ?? null,
       meshes,
       verts,
       landmarkX: g.landmark?.position.x ?? null,
       landmarkZ: g.landmark?.position.z ?? null,
-      modularPyramid: !!g.landmark?.getObjectByName('caral_pyramid_mayor'),
-      modularAnfiteatro: !!anf,
-      modules,
-      heritageIds: [
-        'caral_pyramid_mayor',
-        'caral_pyramid_central',
-        'caral_pyramid_quarry',
-        'caral_pyramid_lesser',
-        'caral_pyramid_gallery',
-        'caral_pyramid_huanca',
-        'caral_anfiteatro',
-      ].map((name) => [name, g.landmark?.getObjectByName(name)?.userData?.heritageId ?? null]),
-      proceduralPlacements: g.setpiece?.group?.userData?.placements ?? [],
-      anfX: anfPos?.x ?? null,
-      anfZ: anfPos?.z ?? null,
-      amphX: amph?.x ?? null,
-      amphZ: amph?.z ?? null,
-      mainX: plan.mainPyramid.x,
-      mainZ: plan.mainPyramid.z,
-      upperZ: plan.upper.z,
-      lowerZ: plan.lower.z,
-      baseInLower: base ? Math.abs(base.pos.z - plan.lower.z) < 4 : false,
-      fordDry: !g.terrain.isWater(64, 70),
-      riverSideWet: g.terrain.isWater(52, 70),
-      fordWalkable: g.pathfinder.isWalkable(64, 70),
-      fordReachable: base ? g.pathfinder.reachable(base.pos.x, base.pos.z, plan.upper.x, plan.upper.z) : false,
-      fordPathLength: base ? g.pathfinder.pathfind(base.pos.x, base.pos.z, plan.upper.x, plan.upper.z).length : 0,
-      upperResources,
-      lowerResources,
-      fordResources,
-      landscapeMeshes: g.landscape?.group?.children?.length ?? 0,
+      anchorX: g.siteAnchor?.x ?? null,
+      anchorZ: g.siteAnchor?.z ?? null,
+      modelName: model?.name ?? null,
+      modelScale: model?.scale.x ?? null,
+      hiddenSourceLayers: (() => {
+        let visible = 0;
+        g.landmark.traverse((o: any) => {
+          if (!/Infra_(Terrain|Reference)/.test(o.name)) return;
+          let p = o;
+          while (p) {
+            if (!p.visible) return;
+            p = p.parent;
+          }
+          visible++;
+        });
+        return visible;
+      })(),
+      hasSetpiece: !!g.setpiece,
+      heritage: names.map((name) => [name, !!g.landmark?.getObjectByName(name)]),
+      heritageIds: names.map((name) => [name, g.landmark?.getObjectByName(name)?.userData?.heritageId ?? null]),
+      resources,
+      base: base ? { x: base.pos.x, z: base.pos.z } : null,
+      baseDistLower: base ? Math.hypot(base.pos.x - 100, base.pos.z - 152.5) : null,
+      riverWest: g.terrain.isWater(4, 90),
+      cityDry: !g.terrain.isWater(100, 90),
+      upperDry: !g.terrain.isWater(100, 30),
+      lowerDry: !g.terrain.isWater(100, 152),
     };
   });
-  expect(state.hasPlan).toBe(true);
-  expect(state.placements).toBeGreaterThan(30);
-  expect(state.main).toBe('greater');
-  expect(state.meshes).toBeGreaterThan(0);
+  expect(state.siteId).toBe('caral_site');
+  expect(state.focusX).toBeCloseTo(0.52, 3);
+  expect(state.focusZ).toBeCloseTo(0.277, 3);
+  expect(state.modelName).toBe('caral_site');
+  expect(state.modelScale).toBeCloseTo(0.25, 3);
+  expect(state.hiddenSourceLayers).toBe(0);
+  expect(state.meshes).toBeGreaterThan(3);
   expect(state.verts).toBeGreaterThan(5000);
-  expect(state.landmarkX).toBeCloseTo(state.mainX, 3);
-  expect(state.landmarkZ).toBeCloseTo(state.mainZ, 3);
-  expect(state.modularPyramid).toBe(true);
-  expect(state.modularAnfiteatro).toBe(true);
-  for (const module of state.modules) {
-    expect(module.present, module.name).toBe(true);
-    expect(module.x, module.name).toBeCloseTo(module.planX!, 3);
-    expect(module.z, module.name).toBeCloseTo(module.planZ!, 3);
-    expect(state.proceduralPlacements, module.name).not.toContain(module.name);
-  }
-  for (const [name, heritageId] of state.heritageIds) expect(heritageId, name).toBe(name);
-  expect(state.proceduralPlacements).not.toContain('amphitheatre');
-  expect(state.proceduralPlacements).not.toContain('round_altar');
-  expect(state.proceduralPlacements).not.toContain('bench_temple');
-  expect(state.anfX).toBeCloseTo(state.amphX, 3);
-  expect(state.anfZ).toBeCloseTo(state.amphZ, 3);
-  expect(state.lowerZ).toBeGreaterThan(state.upperZ);
-  expect(state.lowerZ - state.upperZ).toBeGreaterThan(40);
-  expect(state.baseInLower).toBe(true);
-  expect(state.fordDry).toBe(true);
-  expect(state.riverSideWet).toBe(true);
-  expect(state.fordWalkable).toBe(true);
-  expect(state.fordReachable).toBe(true);
-  expect(state.fordPathLength).toBeGreaterThan(0);
-  expect(state.upperResources).toBe(0);
-  expect(state.lowerResources).toBe(0);
-  expect(state.fordResources).toBe(0);
-  expect(state.landscapeMeshes).toBe(0);
+  expect(state.hasSetpiece).toBe(false);
+  for (const [name, present] of state.heritage) expect(present, name).toBe(true);
+  for (const [name, id] of state.heritageIds) expect(id, name).toBe(name);
+  for (const count of state.resources) expect(count).toBe(0);
+  expect(state.base).not.toBeNull();
+  expect(state.baseDistLower).toBeLessThan(50);
+  expect(state.riverWest).toBe(true);
+  expect(state.cityDry).toBe(true);
+  expect(state.upperDry).toBe(true);
+  expect(state.lowerDry).toBe(true);
+  expect(state.landmarkX).toBe(0);
+  expect(state.landmarkZ).toBe(0);
+  expect(state.anchorX).toBe(100);
+  expect(state.anchorZ).toBe(30);
   expect(errors).toEqual([]);
 });
 
@@ -233,14 +209,20 @@ test('a peaceful victory summarises optional achievements and offers the next mi
 
 test('a Caral Blender pyramid opens an educational field card', async ({ page }) => {
   await boot(page);
-  await page.evaluate(() => (window as unknown as { game: any }).game.camera.moveTo(64, 36, true));
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.camera.moveTo(100, 34, true);
+    g.camera.setHeight(48);
+  });
   await page.waitForTimeout(800);
   const point = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     const model = g.landmark.getObjectByName('caral_pyramid_mayor');
     const box = new window.THREE.Box3().setFromObject(model);
-    const center = box.getCenter(new window.THREE.Vector3()).project(g.camera.camera);
-    return { x: (center.x * 0.5 + 0.5) * window.innerWidth, y: (-center.y * 0.5 + 0.5) * window.innerHeight };
+    const center = box.getCenter(new window.THREE.Vector3());
+    center.y = box.max.y - 0.5;
+    const projected = center.project(g.camera.camera);
+    return { x: (projected.x * 0.5 + 0.5) * window.innerWidth, y: (-projected.y * 0.5 + 0.5) * window.innerHeight };
   });
   await page.mouse.click(point.x, point.y);
   const bottom = page.locator('#ed-bottom');
@@ -285,8 +267,10 @@ test('opening the Caral canal raises the yield at its banks', async ({ page }) =
   const point = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     const box = new window.THREE.Box3().setFromObject(g.canalGroup);
-    const center = box.getCenter(new window.THREE.Vector3()).project(g.camera.camera);
-    return { x: (center.x * 0.5 + 0.5) * window.innerWidth, y: (-center.y * 0.5 + 0.5) * window.innerHeight };
+    const center = box.getCenter(new window.THREE.Vector3());
+    center.y = box.max.y - 0.5;
+    const projected = center.project(g.camera.camera);
+    return { x: (projected.x * 0.5 + 0.5) * window.innerWidth, y: (-projected.y * 0.5 + 0.5) * window.innerHeight };
   });
   await page.mouse.click(point.x, point.y);
   await expect(page.locator('#ed-bottom')).toContainText('Canal comunal del valle');
@@ -376,46 +360,35 @@ test('the Plaza Central card activates the communal assembly', async ({ page }) 
     if (!g.startAssembly()) return 'not-started';
     const worker = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
     if (!worker) return 'no-worker';
-    worker.pos.set(g.landmark.position.x, g.landmark.position.y, g.landmark.position.z);
+    worker.pos.set(g.siteCenter.x, g.landmark.position.y, g.siteCenter.z);
     g.mission.update(25, 0);
     return g.getAssemblyState();
   });
   expect(state).toBe('completed');
 });
 
-test('the Caral city rebuilds the full procedural plan when a modular pyramid fails', async ({ page }) => {
-  await page.route('**/*caral_pyramid_central_lod0.glb*', (route) => {
-    if (route.request().url().includes('?')) return route.continue();
-    return route.abort();
+test('the Caral site request is consolidated and has no procedural fallback mesh', async ({ page }) => {
+  let requested = false;
+  page.on('request', (request) => {
+    if (request.url().includes('caral_site_lod1.glb')) requested = true;
   });
-  await boot(page, false);
-  await page.waitForFunction(
-    () => {
-      const g = (window as unknown as { game?: any }).game;
-      return (
-        g?.setpiece?.group?.userData?.proceduralLower === true && !g.landmark?.getObjectByName('caral_pyramid_central')
-      );
-    },
-    null,
-    { timeout: 15_000 },
-  );
+  await boot(page);
+  expect(requested).toBe(true);
   const state = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     let meshes = 0;
-    g.setpiece?.group?.traverse((o: any) => {
+    g.landmark.traverse((o: any) => {
       if (o.isMesh) meshes++;
     });
     return {
-      proceduralLower: g.setpiece?.group?.userData?.proceduralLower,
-      central: !!g.landmark?.getObjectByName('caral_pyramid_central'),
-      anfiteatro: !!g.landmark?.getObjectByName('caral_anfiteatro'),
+      procedural: !!g.setpiece,
+      model: !!g.landmark.getObjectByName('caral_site'),
       meshes,
     };
   });
-  expect(state.proceduralLower).toBe(true);
-  expect(state.central).toBe(false);
-  expect(state.anfiteatro).toBe(false);
-  expect(state.meshes).toBeGreaterThan(0);
+  expect(state.procedural).toBe(false);
+  expect(state.model).toBe(true);
+  expect(state.meshes).toBeGreaterThan(3);
 });
 
 test('a loaded Caral save keeps the Blender setpiece', async ({ page }) => {
@@ -434,10 +407,11 @@ test('a loaded Caral save keeps the Blender setpiece', async ({ page }) => {
       const g = (window as unknown as { game?: any }).game;
       const landmark = g?.landmark;
       return (
-        g?.setpiece?.group?.userData?.proceduralLower === false &&
+        g?.setpiece === null &&
         g?.isHeritageVisited('caral_pyramid_mayor') === true &&
         g?.isCanalOpen() === true &&
         g?.getAssemblyState() === 'activo' &&
+        landmark?.getObjectByName('caral_site') !== undefined &&
         landmark?.getObjectByName('caral_pyramid_mayor') !== undefined &&
         landmark?.getObjectByName('caral_anfiteatro') !== undefined &&
         ['central', 'quarry', 'lesser', 'gallery', 'huanca'].every(
@@ -450,18 +424,34 @@ test('a loaded Caral save keeps the Blender setpiece', async ({ page }) => {
   );
 });
 
-test('the Caral city geometry is deterministic for the same mission seed', async ({ page }) => {
+test('the authored Caral geometry is deterministic for the same mission seed', async ({ page }) => {
+  const read = () =>
+    page.evaluate(() => {
+      const g = (window as unknown as { game: any }).game;
+      const names = [
+        'caral_pyramid_mayor',
+        'caral_pyramid_central',
+        'caral_pyramid_quarry',
+        'caral_pyramid_lesser',
+        'caral_pyramid_gallery',
+        'caral_pyramid_huanca',
+        'caral_anfiteatro',
+        'caral_site',
+      ];
+      return names.map((name) => {
+        const object = g.landmark.getObjectByName(name);
+        if (!object) return `${name}:missing`;
+        const p = object.getWorldPosition(new window.THREE.Vector3());
+        let verts = 0;
+        object.traverse((o: any) => {
+          if (o.isMesh && o.geometry?.attributes?.position) verts += o.geometry.attributes.position.count;
+        });
+        return `${name}:${p.x.toFixed(2)}:${p.y.toFixed(2)}:${p.z.toFixed(2)}:${verts}`;
+      });
+    });
   await boot(page);
-  const first = await page.evaluate(() =>
-    (window as unknown as { game: any }).game.setpiecePlan.placements
-      .map((p: any) => `${p.kind}:${p.name ?? ''}:${p.x.toFixed(2)}:${p.z.toFixed(2)}`)
-      .join('|'),
-  );
+  const first = await read();
   await boot(page);
-  const second = await page.evaluate(() =>
-    (window as unknown as { game: any }).game.setpiecePlan.placements
-      .map((p: any) => `${p.kind}:${p.name ?? ''}:${p.x.toFixed(2)}:${p.z.toFixed(2)}`)
-      .join('|'),
-  );
-  expect(second).toBe(first);
+  const second = await read();
+  expect(first).toEqual(second);
 });

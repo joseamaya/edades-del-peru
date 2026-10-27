@@ -3,7 +3,7 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['dist/**', 'node_modules/**', 'review/**', '.agents/**', 'coverage/**'],
+    ignores: ['dist/**', 'node_modules/**', 'review/**', '.agents/**', 'coverage/**', 'public/draco/**'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
