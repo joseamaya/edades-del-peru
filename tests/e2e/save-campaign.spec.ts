@@ -49,4 +49,13 @@ test('saves and loads a campaign mission', async ({ page }) => {
   expect(after.objs).toEqual(before.objs);
   // the briefing must not reappear on load (the mission is already running)
   await expect(page.getByRole('button', { name: /COMENZAR MISIÓN/ })).toHaveCount(0);
+
+  // continuing must not reload the snapshot (`?load=1`) instead of the next mission
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.settings.missionId = 'm2_chavin';
+    g.resetGame();
+  });
+  await page.waitForURL(/mission=m2_chavin/, { timeout: 30_000 });
+  expect(new URL(page.url()).searchParams.has('load')).toBe(false);
 });

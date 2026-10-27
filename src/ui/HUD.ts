@@ -25,7 +25,7 @@ import { MISSIONS, CAMPAIGN_ID, CAMPAIGN_TITLE, CAMPAIGN_SUBTITLE } from '../cam
 import { artIntroForCampaign, artIntroForMission } from '../art/manifest';
 import { artFigureHtml, includeUnreviewedArt } from './ArtFigure';
 import { PROLOGUE, getEducational } from '../campaign/defs/educational';
-import type { MissionDef } from '../campaign/types';
+import type { MissionDef, ObjectiveProgress, ObjState } from '../campaign/types';
 import { COMMANDERS, type PortraitId } from '../model/defs/commanders';
 import type { HeritageBuildingDef } from '../model/defs/heritage';
 import { portraitSvg } from './Portrait';
@@ -226,7 +226,8 @@ const CSS = /* css */ `
   #ui-root.menu-open #ed-minimap-wrap,
   #ui-root.menu-open #ed-help,
   #ui-root.menu-open #ed-objectives,
-  #ui-root.menu-open #ed-fps { display: none; }
+  #ui-root.menu-open #ed-fps,
+  #ui-root.tutorial-open #ed-help { display: none; }
   .ed-keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; font-size: 13px; color: var(--text-dim); text-align: left; }
   .ed-keys b { color: var(--gold); font-weight: 700; }
 
@@ -606,10 +607,12 @@ export class HUD {
       actions.appendChild(skip);
     }
     this.tutorialEl.classList.add('show');
+    this.root.classList.add('tutorial-open');
   }
 
   hideTutorial(): void {
     this.tutorialEl.classList.remove('show');
+    this.root.classList.remove('tutorial-open');
     this.clearHudHighlight();
   }
 
@@ -632,13 +635,27 @@ export class HUD {
     const titles = this.objectiveTitles(items.map(({ def }) => def));
     this.objListEl.innerHTML = items
       .map(({ def, state }, i) => {
-        const mark = state === 'completed' ? '✔' : state === 'failed' ? '✖' : '○';
         const cls = state === 'completed' ? 'done' : state === 'failed' ? 'failed' : '';
-        const remaining = state === 'activo' ? mis.getHoldRemaining(def.id) : null;
-        const title = remaining === null ? titles[i] : `${titles[i]} (${Math.ceil(remaining)} s)`;
-        return `<div class="obj ${cls}"><span class="mark">${mark}</span><span>${title}</span></div>`;
+        const progress = state === 'activo' ? mis.getObjectiveProgress(def.id) : null;
+        const suffix = progress ? ` (${this.objectiveProgressText(progress)})` : '';
+        return `<div class="obj ${cls}"><span class="mark">${this.objectiveMark(state)}</span><span>${titles[i]}${suffix}</span></div>`;
       })
       .join('');
+  }
+
+  private objectiveMark(state: ObjState): string {
+    return state === 'completed' ? '✔' : state === 'failed' ? '✖' : '○';
+  }
+
+  private objectiveProgressText(p: ObjectiveProgress): string {
+    if (p.format === 'time') return `${this.clockText(p.current)} / ${this.clockText(p.target)}`;
+    const current = Math.max(0, Math.min(p.current, p.target));
+    return `${Math.floor(current)}/${p.target}`;
+  }
+
+  private clockText(seconds: number): string {
+    const s = Math.max(0, Math.ceil(seconds));
+    return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
   }
 
   /** Titles with a leading "o" for alternatives and a suffix for bonus objectives. */
@@ -776,18 +793,43 @@ export class HUD {
              Puedes ampliar el contexto y las fuentes en el Códice desde el menú.
            </div>`
         : '';
+    const optional = victory
+      ? (this.game.mission?.activeObjectives ?? []).filter(({ def, state }) => def.optional && state !== 'pendiente')
+      : [];
+    const optionalSummary = optional.length
+      ? `<div class="ed-hist" style="padding:8px 0"><b style="color:var(--gold)">Logros opcionales.</b><br>${optional
+          .map(
+            ({ def, state }) =>
+              `${state === 'completed' ? '✔' : state === 'failed' ? '✖' : '○'} ${escapeHtml(def.title)}`,
+          )
+          .join('<br>')}</div>`
+      : '';
+    const peaceful = mis?.enemy.active === false;
+    const commonStats = `Unidades creadas: <b>${p?.stats.created ?? 0}</b><br>
+         Periodo: <b>${getPeriod(this.game.settings.period).name}</b>`;
+    const stats = peaceful
+      ? `Fichas patrimoniales visitadas: <b>${this.game.getVisitedHeritage().length}</b><br>${commonStats}`
+      : `Bajas infligidas: <b>${p?.kills ?? 0}</b><br>${commonStats}`;
+    const next = victory ? this.nextMission(mis?.id) : undefined;
     panel.innerHTML = `
       <h2 style="color:${victory ? 'var(--green)' : 'var(--red)'}">${title}</h2>
       <div class="sub" style="white-space:pre-line;line-height:1.6">${sub}</div>
       ${epilogue}
+      ${optionalSummary}
       <div style="font-size:13px;color:var(--text-dim);line-height:1.7;margin-bottom:16px">
-        Bajas infligidas: <b>${p?.kills ?? 0}</b><br>
-        Unidades creadas: <b>${p?.stats.created ?? 0}</b><br>
-        Periodo: <b>${getPeriod(this.game.settings.period).name}</b>
+        ${stats}
       </div>
     `;
     const row = this.el('div', 'row', panel);
-    const again = this.el('button', 'ed-primary', row);
+    if (next) {
+      const nextButton = this.el('button', 'ed-primary', row);
+      nextButton.textContent = `▶ Continuar: ${next.title}`;
+      nextButton.addEventListener('click', () => {
+        this.game.settings.missionId = next.id;
+        this.game.resetGame();
+      });
+    }
+    const again = this.el('button', next ? 'ed-ghostbtn' : 'ed-primary', row);
     again.textContent = '↻ Jugar de nuevo';
     again.addEventListener('click', () => this.game.resetGame());
     const menu = this.el('button', 'ed-ghostbtn', row);
@@ -795,6 +837,12 @@ export class HUD {
     menu.addEventListener('click', () => {
       location.href = location.pathname + '?menu=1';
     });
+  }
+
+  private nextMission(id?: string): MissionDef | undefined {
+    if (!id) return undefined;
+    const index = MISSIONS.findIndex((m) => m.id === id);
+    return index >= 0 ? MISSIONS[index + 1] : undefined;
   }
 
   /** Leave the match (respects the active campaign). */
@@ -1320,6 +1368,27 @@ export class HUD {
       ctx.fillStyle = b.owner === 0 ? '#4a8a4a' : visibleNow ? '#c03a3a' : 'rgba(110,110,110,0.6)';
       ctx.fillRect((b.pos.x / s) * w - 1, (b.pos.z / s) * w - 1, 3, 3);
     }
+    // active objectives: a small gold diamond gives the player a destination
+    // without revealing hidden objectives or unexplored resources
+    const mission = this.game.mission;
+    if (mission) {
+      for (const { def, state } of mission.activeObjectives) {
+        if (state !== 'activo') continue;
+        const anchor = mission.getObjectiveAnchor(def.id);
+        if (!anchor) continue;
+        const x = (anchor.x / s) * w;
+        const y = (anchor.z / s) * w;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(Math.PI / 4);
+        ctx.fillStyle = 'rgba(232,195,106,0.28)';
+        ctx.strokeStyle = '#e8c36a';
+        ctx.lineWidth = 1.5;
+        ctx.fillRect(-3, -3, 6, 6);
+        ctx.strokeRect(-3, -3, 6, 6);
+        ctx.restore();
+      }
+    }
     // units: only own ones and currently visible enemy ones
     for (const u of this.game.units.values()) {
       if (u.dead) continue;
@@ -1633,6 +1702,8 @@ export class HUD {
     const player = getCiv(mis.playerCiv);
     const enemy = getCiv(mis.enemyCiv);
     const edu = getEducational(mis.id);
+    // A hidden objective is a discovery; the briefing must not spoil it.
+    const briefingObjectives = mis.objectives.filter((o) => !o.hidden);
     const context = edu?.briefing
       ? `<div class="ed-hist"><b style="color:var(--gold)">Contexto histórico.</b> ${edu.briefing}</div>`
       : edu?.context
@@ -1678,7 +1749,7 @@ export class HUD {
       ${context}
       ${funFact}
       <div class="sub" style="text-align:left;font-size:12px;color:var(--text);line-height:1.7;margin-bottom:10px"><b style="color:var(--gold)">OBJETIVOS</b><br>${this.objectiveTitles(
-        mis.objectives,
+        briefingObjectives,
       )
         .map((t) => '• ' + t)
         .join('<br>')}</div>

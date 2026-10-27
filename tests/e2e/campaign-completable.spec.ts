@@ -63,8 +63,27 @@ for (const mis of MISSIONS) {
                 if (b.owner !== 0 && !b.dead && (!o.entityTag || b.tag === o.entityTag)) b.die();
               }
               break;
+            case 'inspect': {
+              if (o.pos) {
+                const base =
+                  o.pos.ref === 'enemy'
+                    ? centerOf(1)
+                    : o.pos.ref === 'player'
+                      ? centerOf(0)
+                      : o.pos.ref === 'canal'
+                        ? (g.canalSite ?? centerOf(0))
+                        : o.pos.ref === 'landmark'
+                          ? (g.landmark?.position ?? centerOf(0))
+                          : { x: 0, z: 0 };
+                const tp = { x: base.x + o.pos.dx, z: base.z + o.pos.dz };
+                const u = [...g.units.values()].find((unit: any) => unit.owner === 0 && !unit.dead) as any;
+                if (u) u.pos.set(tp.x, g.terrain.getHeight(tp.x, tp.z), tp.z);
+              }
+              for (const id of o.heritageIds ?? []) g.visitHeritage(id);
+              break;
+            }
             case 'reach': {
-              if (!o.entityTag || !o.pos) break;
+              if (!o.pos) break;
               const base =
                 o.pos.ref === 'enemy'
                   ? centerOf(1)
@@ -77,7 +96,7 @@ for (const mis of MISSIONS) {
                         : { x: 0, z: 0 };
               const tp = { x: base.x + o.pos.dx, z: base.z + o.pos.dz };
               for (const u of g.units.values()) {
-                if (u.owner === 0 && !u.dead && u.tag === o.entityTag) {
+                if (u.owner === 0 && !u.dead && (!o.entityTag || u.tag === o.entityTag)) {
                   u.pos.set(tp.x, g.terrain.getHeight(tp.x, tp.z), tp.z);
                 }
               }

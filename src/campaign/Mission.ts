@@ -1,13 +1,20 @@
 import type { Game } from '../core/Game';
 import type { Unit } from '../entities/Unit';
 import type { Building } from '../entities/Building';
-import { MissionDef, ObjectiveDef, ObjectiveKind, TriggerDef, TriggerEffect, MissionPoint } from './types';
+import {
+  MissionDef,
+  ObjectiveDef,
+  ObjectiveKind,
+  ObjectiveProgress,
+  ObjState,
+  TriggerDef,
+  TriggerEffect,
+  MissionPoint,
+} from './types';
 import { OrderKind, BuildingKind } from '../core/types';
 import { distance2D } from '../util/math';
 import { commanderFor } from '../model/defs/commanders';
 import type { MissionSave } from '../game/saveTypes';
-
-export type ObjState = 'pendiente' | 'activo' | 'completed' | 'failed';
 
 /**
  * Mission controller: evaluates objectives and triggers every frame,
@@ -75,6 +82,10 @@ export class Mission {
     return { x: ref.x + p.dx, z: ref.z + p.dz };
   }
 
+  private objective(id: string): ObjectiveDef | undefined {
+    return this.def.objectives.find((o) => o.id === id);
+  }
+
   private byTag(tag: string): (Unit | Building)[] {
     const units = [...this.game.units.values()].filter((u) => u.tag === tag);
     const buildings = [...this.game.buildings.values()].filter((b) => b.tag === tag);
@@ -83,6 +94,30 @@ export class Mission {
 
   private countAlive(tag: string): number {
     return this.byTag(tag).filter((e) => !e.dead).length;
+  }
+
+  /** Buildings that satisfy a `build` objective, including its optional location. */
+  private countBuilt(o: ObjectiveDef): number {
+    if (!o.buildingKind) return 0;
+    const tp = o.pos ? this.resolvePoint(o.pos) : null;
+    return [...this.game.buildings.values()].filter(
+      (b) =>
+        b.owner === 0 &&
+        b.kind === o.buildingKind &&
+        b.constructionComplete &&
+        !b.dead &&
+        (!tp || distance2D(b.pos.x, b.pos.z, tp.x, tp.z) < (o.radius ?? 12)),
+    ).length;
+  }
+
+  /** A `reach` objective with no tag accepts any living player unit. */
+  private reached(o: ObjectiveDef): boolean {
+    if (!o.pos) return false;
+    const tp = this.resolvePoint(o.pos);
+    const pts = o.entityTag
+      ? this.byTag(o.entityTag).filter((e) => !e.dead && 'owner' in e && (e as Unit).owner === 0)
+      : [...this.game.units.values()].filter((u) => u.owner === 0 && !u.dead);
+    return pts.some((e) => distance2D(e.pos.x, e.pos.z, tp.x, tp.z) < (o.radius ?? 6));
   }
 
   private spawned(tag: string): boolean {
@@ -141,14 +176,14 @@ export class Mission {
   private complete(id: string): void {
     if (this.objState.get(id) === 'completed') return;
     this.objState.set(id, 'completed');
-    this.game.hud.showToast('✔ Objetivo completado: ' + this.def.objectives.find((o) => o.id === id)?.title, 'success');
+    this.game.hud.showToast('✔ Objetivo completado: ' + this.objective(id)?.title, 'success');
     this.game.audio?.uiClick?.();
   }
 
   private fail(id: string): void {
     if (this.objState.get(id) === 'failed' || this.objState.get(id) === 'completed') return;
     this.objState.set(id, 'failed');
-    this.game.hud.showToast('✖ Objetivo fallado: ' + this.def.objectives.find((o) => o.id === id)?.title, 'danger');
+    this.game.hud.showToast('✖ Objetivo fallado: ' + this.objective(id)?.title, 'danger');
   }
 
   // --- objectives ---
@@ -185,11 +220,8 @@ export class Mission {
       case 'survive':
         return this.timer >= (o.time ?? 0) ? 'win' : 'ok';
       case 'reach': {
-        if (!o.entityTag || !o.pos) return 'ok';
-        const pts = this.byTag(o.entityTag).filter((e) => !e.dead && 'owner' in e && (e as Unit).owner === 0);
-        if (pts.length === 0) return 'ok';
-        const tp = this.resolvePoint(o.pos);
-        return pts.some((e) => distance2D(e.pos.x, e.pos.z, tp.x, tp.z) < (o.radius ?? 6)) ? 'win' : 'ok';
+        if (!o.pos) return 'ok';
+        return this.reached(o) ? 'win' : 'ok';
       }
       case 'hold':
         return (this.holdTimers.get(o.id) ?? 0) >= (o.time ?? 0) ? 'win' : 'ok';
@@ -204,25 +236,15 @@ export class Mission {
         if (!this.spawned(o.entityTag)) return 'ok';
         return this.countAlive(o.entityTag) === 0 ? 'fail' : 'ok';
       }
-      case 'build': {
-        if (!o.buildingKind) return 'ok';
-        // with `pos`, the building must stand near that point (expansion/outpost)
-        const tp = o.pos ? this.resolvePoint(o.pos) : null;
-        const n = [...this.game.buildings.values()].filter(
-          (b) =>
-            b.owner === 0 &&
-            b.kind === o.buildingKind &&
-            b.constructionComplete &&
-            !b.dead &&
-            (!tp || distance2D(b.pos.x, b.pos.z, tp.x, tp.z) < (o.radius ?? 12)),
-        ).length;
-        return n >= (o.count ?? 1) ? 'win' : 'ok';
-      }
+      case 'build':
+        return this.countBuilt(o) >= (o.count ?? 1) ? 'win' : 'ok';
       case 'gather':
         return p.resources[o.resource ?? 'food'] >= (o.count ?? 0) ? 'win' : 'ok';
       case 'inspect': {
         const ids = o.heritageIds ?? [];
-        return ids.length > 0 && ids.every((id) => this.game.isHeritageVisited(id)) ? 'win' : 'ok';
+        const visited = ids.length > 0 && ids.every((id) => this.game.isHeritageVisited(id));
+        // with a location, the card must also be observed from the site
+        return visited && (!o.pos || this.reached(o)) ? 'win' : 'ok';
       }
       case 'canal_open':
         return this.game.isCanalOpen() ? 'win' : 'ok';
@@ -394,6 +416,14 @@ export class Mission {
     this.onEnd(false);
   }
 
+  /** World anchor of an active objective, for the minimap. */
+  getObjectiveAnchor(id: string): { x: number; z: number } | null {
+    const o = this.objective(id);
+    if (!o) return null;
+    if (o.kind === 'canal_open') return this.game.canalSite;
+    return o.pos ? this.resolvePoint(o.pos) : null;
+  }
+
   /** For HUD: state of an objective by id. */
   getObjectiveState(id: string): ObjState {
     return this.objState.get(id) ?? 'pendiente';
@@ -401,18 +431,44 @@ export class Mission {
 
   /** Activate a hidden or pending objective (e.g. a field-card action). */
   activateObjective(id: string): boolean {
-    const def = this.def.objectives.find((o) => o.id === id);
+    const def = this.objective(id);
     if (!def || this.objState.get(id) !== 'pendiente') return false;
     this.objState.set(id, 'activo');
     this.game.hud?.showToast('Nuevo objetivo: ' + def.title, 'info');
     return true;
   }
 
-  /** Remaining seconds for a `hold` objective, or null for other objectives. */
-  getHoldRemaining(id: string): number | null {
-    const def = this.def.objectives.find((o) => o.id === id);
-    if (!def || def.kind !== 'hold') return null;
-    return Math.max(0, (def.time ?? 0) - (this.holdTimers.get(id) ?? 0));
+  /** Numeric progress for the HUD, or null for objectives without a meter. */
+  getObjectiveProgress(id: string): ObjectiveProgress | null {
+    const o = this.objective(id);
+    if (!o) return null;
+    const p = this.game.players[0];
+    switch (o.kind) {
+      case 'gather':
+        return { current: p.resources[o.resource ?? 'food'], target: o.count ?? 0, format: 'count' };
+      case 'build':
+        return { current: this.countBuilt(o), target: o.count ?? 1, format: 'count' };
+      case 'survive':
+      case 'defend':
+        return { current: Math.min(this.timer, o.time ?? 0), target: o.time ?? 0, format: 'time' };
+      case 'hold':
+        return { current: this.holdTimers.get(o.id) ?? 0, target: o.time ?? 0, format: 'time' };
+      case 'inspect': {
+        const ids = o.heritageIds ?? [];
+        const visited = ids.filter((hid) => this.game.isHeritageVisited(hid)).length;
+        if (!ids.length) return null;
+        if (o.pos) return { current: visited === ids.length && this.reached(o) ? 1 : 0, target: 1, format: 'count' };
+        return { current: visited, target: ids.length, format: 'count' };
+      }
+      case 'canal_open':
+        return { current: this.game.isCanalOpen() ? 1 : 0, target: 1, format: 'count' };
+      case 'reach':
+        return { current: this.reached(o) ? 1 : 0, target: 1, format: 'count' };
+      case 'reach_era':
+        return { current: p.era, target: o.era ?? 0, format: 'count' };
+      default:
+        return null;
+    }
   }
 
   /** Snapshot the mission state (used by save/load). */

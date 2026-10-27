@@ -63,6 +63,11 @@ describe('campaign educational content', () => {
     expect(caral.objectives.some((o) => o.buildingKind === BuildingKind.FARM)).toBe(true);
     expect(caral.objectives.some((o) => o.buildingKind === BuildingKind.MILL)).toBe(true);
     expect(caral.objectives.some((o) => o.kind === 'gather' && o.resource === 'food')).toBe(true);
+    expect(
+      caral.objectives.some(
+        (o) => o.id === 'obj_complejo' && o.kind === 'inspect' && o.heritageIds?.includes('caral_pyramid_mayor'),
+      ),
+    ).toBe(true);
     expect(caral.objectives.some((o) => o.kind === 'survive')).toBe(true);
 
     const edu = getEducational('m1_caral')!;

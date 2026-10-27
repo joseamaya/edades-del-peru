@@ -13,7 +13,8 @@
   1. **Explorar** el valle y el litoral para descubrir la complementariedad costa-valle.
   2. Preparar **campos de cultivo** y aprovechar la humedad y los canales.
   3. **Almacenar** el excedente en un depósito comunal (el Troje del juego es una abstracción).
-  4. **Sostener** a la comunidad en el tiempo.
+  4. **Recorrer y observar** el complejo ceremonial para comprender su escala y su relación con el valle.
+  5. **Sostener** a la comunidad en el tiempo.
 - **Mapa**: `costa` — valle del Supe, humedales, litoral y pampa desértica.
 - **Desenlace documentado**: Caral funcionó durante casi un milenio (3000–1800 a.C.) y fue abandonada por
   causas aún debatidas (posibles terremotos / El Niño).

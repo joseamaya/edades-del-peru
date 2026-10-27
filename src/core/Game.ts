@@ -1416,7 +1416,9 @@ export class Game {
     // ?play=1 avoids showing the main menu again after reloading
     const url = new URL(location.href);
     url.searchParams.set('play', '1');
+    url.searchParams.delete('load');
     if (this.settings.missionId) url.searchParams.set('mission', this.settings.missionId);
+    else url.searchParams.delete('mission');
     location.href = url.toString();
   }
 

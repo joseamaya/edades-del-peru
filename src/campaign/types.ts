@@ -86,6 +86,14 @@ export type ObjectiveKind =
   | 'inspect'
   | 'canal_open';
 
+export type ObjState = 'pendiente' | 'activo' | 'completed' | 'failed';
+
+export interface ObjectiveProgress {
+  current: number;
+  target: number;
+  format: 'count' | 'time';
+}
+
 export interface ObjectiveDef {
   id: string;
   kind: ObjectiveKind;

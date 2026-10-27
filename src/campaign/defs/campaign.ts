@@ -27,7 +27,7 @@ export const MISSIONS: MissionDef[] = [
     playerCiv: CivId.CARAL,
     enemyCiv: CivId.CARAL,
     map: { seed: 3000, type: 'coast', size: 128 },
-    atmosphere: { fogDensity: 0.0019, sunWarmth: 1.08, skyTint: '#d8c2a0' },
+    atmosphere: { fogDensity: 0.0017, sunWarmth: 0.98, skyTint: '#d4d0c2' },
     layout: {
       base: CARAL_LOWER,
       setpiece: { id: 'caral_sacred_city', upper: CARAL_UPPER, lower: CARAL_LOWER },
@@ -62,7 +62,7 @@ export const MISSIONS: MissionDef[] = [
       vegetation: { density: 0.06 },
       resources: { tree: 0.35 },
       culturalLandscape: null,
-      groundTint: '#d8a878',
+      groundTint: '#cbb58f',
     },
     guaranteedFishing: 3,
     timeOfDay: 'morning',
@@ -91,6 +91,14 @@ export const MISSIONS: MissionDef[] = [
         resource: 'food',
         count: 500,
         title: 'Reúne 500 de comida para sostener a la comunidad',
+      },
+      {
+        id: 'obj_complejo',
+        kind: 'inspect',
+        pos: { ref: 'landmark', dx: 0, dz: 0 },
+        radius: 14,
+        heritageIds: ['caral_pyramid_mayor'],
+        title: 'Observa la Gran Pirámide y la Plaza Central',
       },
       { id: 'obj_sostener', kind: 'survive', time: 300, title: 'Sostén el asentamiento 5 minutos' },
       {
@@ -163,6 +171,16 @@ export const MISSIONS: MissionDef[] = [
           {
             type: 'dialogue',
             text: 'El depósito guarda el excedente. Con trabajo comunal y reservas se levantan plazas y pirámides.',
+          },
+        ],
+      },
+      {
+        id: 't_complejo',
+        condition: { type: 'objective', objectiveId: 'obj_complejo', state: 'completed' },
+        effects: [
+          {
+            type: 'dialogue',
+            text: 'La escala de plazas y pirámides se asocia al excedente y al trabajo comunal; es una interpretación arqueológica, no un registro escrito.',
           },
         ],
       },
