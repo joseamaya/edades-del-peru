@@ -61,6 +61,20 @@ describe('Pathfinder', () => {
     expect(pf.isWalkable(60, 60)).toBe(true);
   });
 
+  it('keeps a static collision mask after dynamic obstacles are removed', () => {
+    const pf = new Pathfinder(100, 2);
+    const { cols } = pf.grid;
+    const mask = new Uint8Array(cols * cols);
+    mask[15 * cols + 15] = 1;
+    pf.blockCells(mask);
+    expect(pf.isWalkable(30, 30)).toBe(false);
+    expect(() => pf.blockCells(new Uint8Array(1))).toThrow(/collision mask/);
+    const obstacle = { x: 70, z: 70, radius: 2 };
+    pf.addObstacle(obstacle);
+    pf.removeObstacle(obstacle);
+    expect(pf.isWalkable(30, 30)).toBe(false);
+  });
+
   it('keeps terrain (water) blocked after an obstacle is removed', () => {
     const pf = new Pathfinder(100, 2);
     // a "sea" for x < 20 (height 0 below the water line), land elsewhere
