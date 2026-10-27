@@ -146,6 +146,8 @@ const AMBIENT_FAUNA_SEED = 13;
 
 /** Campaign intro flyover framing, relative to the player base. */
 const INTRO_CAMERA = { offset: 34, fromHeight: 52, toZoom: 30, seconds: 2.6 } as const;
+/** Keep guaranteed fishing searches inside the authored river and map edge. */
+const FISHING_SCAN_MARGIN = 4;
 
 export class Game {
   renderer!: THREE.WebGLRenderer;
@@ -654,9 +656,8 @@ export class Game {
 
   /** Frame the player base with the authored city just ahead of it. */
   private frameAuthoredSite(x: number, z: number): void {
-    if (!this.missionLayout?.site || !this.introEnabled) {
+    if (!this.missionLayout?.site) {
       this.camera.moveTo(x, z, true);
-      if (this.missionLayout?.site) this.camera.setHeight(CARAL_SITE_CAMERA.height);
       return;
     }
     this.camera.moveTo(x + CARAL_SITE_CAMERA.dx, z + CARAL_SITE_CAMERA.dz, true);
@@ -1136,8 +1137,8 @@ export class Game {
     const size = this.settings.mapSize;
     const candidates: { x: number; z: number }[] = [];
     const existing = [...this.resourceNodes.values()].filter((n) => n.kind === 'fishing' && !n.dead);
-    for (let x = 4; x < size - 4; x += 2) {
-      for (let z = 4; z < size - 4; z += 2) {
+    for (let x = FISHING_SCAN_MARGIN; x < size - FISHING_SCAN_MARGIN; x += 2) {
+      for (let z = FISHING_SCAN_MARGIN; z < size - FISHING_SCAN_MARGIN; z += 2) {
         if (!this.terrain.isWater(x, z)) continue;
         if (existing.some((n) => distance2D(x, z, n.pos.x, n.pos.z) < 5)) continue;
         let nearLand = false;
