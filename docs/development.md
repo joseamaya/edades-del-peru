@@ -45,11 +45,10 @@ Definition of Done and the building audit see
   Blender exports (18,120/6,194 tris, 10 draw calls, Y-up, ground pivot, +Z stair). `src/rendering/StaticModel.ts`
   loads static glTF without animation clips, and `?city=caral` mounts a standalone showcase with shadows,
   orbit controls, LOD0/LOD1 and `window.__cityDemo`. The full-city GLB is **not** used by a campaign
-  mission; `m1_caral` instead builds a sacred-city plan and places the modular Pyramid Mayor, five
-  Upper-Half pyramids and Anfiteatro at fixed anchors. `MAT-Sand_Desert` needs a source fix, plaza
-  stalls need a historical review, and the 30×50 footprint needs a flat-pad/placement design before
-  integrating the full-city GLB. See
-  [`docs/design/blender-art.md`](design/blender-art.md).
+  mission. `m1_caral` instead loads the exact Ciudades Sagradas sacred-site GLB
+  (`src/assets/sites/caral/caral_site_lod0/1.glb`) through `siteModels.ts`, with Draco/WebP, the game
+  heightfield and invisible heritage proxies. See
+  [`docs/design/caral-sacred-city.md`](design/caral-sacred-city.md).
 - **Caral modular scenery**: `src/assets/scenery/caral/caral_pyramid_mayor_lod0.glb` /
   `lod1.glb` (Pyramid Mayor + Plaza Mayor; 6,044/2,408 tris, 7 draw calls, footprint 13.9 × 15.5),
   five Upper-Half pyramid modules (`central`, `quarry`, `lesser`, `gallery`, `huanca`; 792–924 LOD0
@@ -57,12 +56,9 @@ Definition of Done and the building audit see
   3,520/1,403 tris, 7 draw calls, footprint 19.7 × 7.2). All are rebuilt by
   `scripts/blender/build_caral_scenery.py --asset=…` from `caral_rts_kit.blend`; the script excludes
   market stalls and terrain. `?scenery=caral` and `?scenery=caral-anfiteatro` mount the showcases
-  (`window.__sceneryDemo`). On `m1_caral` the plan supplies the fixed `greater`, five Upper-Half and
-  `amphitheatre` anchors; the five pyramid rows and three lower temple rows are filtered from the
-  procedural city. If any modular setpiece fails, all modular setpieces are cleared and the full
-  procedural plan is rebuilt, including loaded saves. The builder strips the unsupported procedural Base
-  Color link from `MAT-Sand_Desert` so the GLB exports its `baseColorFactor`. See
-  `docs/design/blender-art.md`.
+  (`window.__sceneryDemo`). These modular pieces are showcase-only now; `m1_caral` uses the exact
+  sacred-site GLB instead. The builder strips the unsupported procedural Base Color link from
+  `MAT-Sand_Desert` so the GLB exports its `baseColorFactor`. See `docs/design/blender-art.md`.
 - **Caral heritage inspector**: `src/model/defs/heritage.ts` is the source of truth for the seven modular
   structures and the communal canal (sector, role, summary, confidence, sources, optional operation).
   `Game.pickHeritage` raycasts the visual-only landmark and canal, `Game.getSelectedHeritage` drives the HUD
@@ -117,13 +113,13 @@ Definition of Done and the building audit see
   no THREE), so `tests/terrain.test.ts` pins determinism (same seed+profile → same map; different seed/profile →
   different map) without a DOM. Adding a region/profile does not touch the generator: only the data in
   `profiles.ts`. The region `atmosphere` is applied (Phase 9): `Game.applyAtmosphere` feeds `skyTint`/`fogDensity`
-   to the sky, terrain and water as a distance-bounded aerial perspective and `sunWarmth` to the sun; `scene.fog`
-   stays null (classic sharp look, buildings undimmed).
+  to the sky, terrain and water as a distance-bounded aerial perspective and `sunWarmth` to the sun; `scene.fog`
+  stays null (classic sharp look, buildings undimmed).
 - **Post-processing & the cinematic look**: `src/rendering/PostFX.ts` chains Render → SSAO → Bloom →
   chromatic aberration → vignette → `OutputPass` → **colour grading** → FXAA. `settings.cinematic` (default
   **on**, `src/core/Config.ts`) enables the whole set and `settings.quality` (`high|medium|low`) tunes
   SSAO/bloom; both are in the Options panel. On a **software rasterizer** (SwiftShader/llvmpipe) the game starts in
-  the safe *render* profile (`cinematic` off, `quality` low, pixel ratio 1) without changing the saved player
+  the safe _render_ profile (`cinematic` off, `quality` low, pixel ratio 1) without changing the saved player
   settings; `?cine=1` disables that fallback (and `?low=1` still wins). `src/core/QualityGovernor.ts` lowers the preset with hysteresis
   when FPS drops and restores it (never above the chosen preset), dropping the render scale only in severe
   cases; it only touches post-processing/pixel ratio, never the simulation. `settings.settingsVersion` migrates
@@ -209,10 +205,9 @@ Definition of Done and the building audit see
 - **Landmarks (visual only)**: `Game.mapProfile.landmark` (from `landmarkForCiv(civ, period)` — period-gated and
   region-gated: see `resolveMapProfile`) drives `Game.spawnLandmark()`, which builds a cached template via
   `buildLandmarkModel` (`ProceduralModel.ts`, keyed by `landmark|civ|era`) with the landmark's own
-  civilization/era. **Caral is the exception**: `spawnLandmark` asynchronously loads the modular
-  `caral_pyramid_mayor` GLB onto a flat sand pad, keeps the deterministic placeholder position for the
-  tutorial, applies FOW/shadows, and falls back to the procedural landmark if the GLB fails. The other
-  landmarks remain procedural. One landmark per civilization (19 total: Caral, Chavín, Cupisnique, Paracas,
+  civilization/era. **Caral is the exception**: it is not placed through `spawnLandmark`; `Game` loads
+  `layout.site` through `spawnAuthoredSite`, applies FOW/shadows and registers the visible Great Pyramid
+  and Anfiteatro for heritage cards. The other landmarks remain procedural. One landmark per civilization (19 total: Caral, Chavín, Cupisnique, Paracas,
   Moche, Nazca, Recuay, Wari, Tiahuanaco, Chimú, Chincha, Chanca, Collas/Lupaca, Huanca, Inca, colonial,
   Patriotas, República, Chile); sources/status in `src/model/defs/landmarks.ts`. Placement is deterministic
   (`RNG(mapSeed*131+11)` on a 0.3–0.42·size ring, skipping water/beach/steep cells and player bases/resources)
@@ -268,9 +263,9 @@ Definition of Done and the building audit see
   resolve dates/coetaneous civs.
 - `src/game/Economy.ts` centralizes worker assignment (used by player and AI).
 - **Campaign geography and closure**: m2–m9 declare an authored `layout` (a fixed `base` plus at least one
-  named `terrain.river`/`terrain.flats`, a named `canal`, or a `decor` landmark). m1 keeps the Caral GLB
-  setpiece; m6 keeps the Chan Chan canal/compound and m9 the Arica port terrace/Chilean naval station as
-  visual-only decor. Every mission now has an educational `epilogue` shown on victory;
+  named `terrain.river`/`terrain.flats`, a named `canal`, or a `decor` landmark). m1 uses
+  `layout.site` for the exact Caral site plus its own heightfield and keep-out; m6 keeps the Chan Chan
+  canal/compound and m9 the Arica port terrace/Chilean naval station as visual-only decor. Every mission now has an educational `epilogue` shown on victory;
   `tests/campaign-layout.test.ts` and the campaign E2E guard the layout data and the victory overlay.
 - **Chronology of units**: `UnitArchetype.minPeriod` (`src/model/defs/units.ts`) is the earliest historical
   period a unit is plausible in (default Arcaico). `tests/history.test.ts` forbids any campaign — including
@@ -288,15 +283,15 @@ Definition of Done and the building audit see
 - **Chronology/culture of techs**: `TechDef.minPeriod` / `maxPeriod` / `civs` (`src/model/defs/techs.ts`) is
   the historical window and optional civilization restriction of a technology. `techAvailable(tech, period, civ)`
   is enforced centrally in `Building.queueTech` (like the unit guard) plus the HUD research panel and the AI, so a
-  tech never appears for the wrong civilization or period (e.g. Inca *chasquis* are Inca-only and do not leak
-  into the Republic, colonial *obrajes* not before 1532). Windows are sourced in
+  tech never appears for the wrong civilization or period (e.g. Inca _chasquis_ are Inca-only and do not leak
+  into the Republic, colonial _obrajes_ not before 1532). Windows are sourced in
   [`docs/historia/tecnologias.md`](./historia/tecnologias.md).
 - **AI (`src/game/AI.ts`)**: macromanagement (workers, build plan, tech, waves) plus `defendEconomy`
   (recalls idle military when an enemy nears any AI building/worker), `microCombat` retreat of badly wounded
   units and `explore` (idle scouts patrol toward the enemy base). It only uses the same systems as the player
   (`issueOrder`, `combatStance`) — **never a hidden resource/production bonus**. Difficulty is split in two:
   `DIFFICULTY_MULT` (Config) tunes the decision cadence (`reaction`) and attack frequency (`aggression`), and
-  `src/game/aiProfiles.ts` decides *strategy* — economy/army size, attack threshold, tech eagerness
+  `src/game/aiProfiles.ts` decides _strategy_ — economy/army size, attack threshold, tech eagerness
   (`techReserve`; only `easy` holds back), retreat threshold, raiding and advanced military. A profile only
   invests in non-essential buildings (institute/factory/fortress) once it has its core army (`armyBase`), so a
   bigger economy becomes military strength instead of building sprawl. **Perception is LOS-limited**: the AI only
@@ -620,7 +615,7 @@ rigged bird is added, and evaluate per-species LOD/update throttling at the 16-a
   `resetGame()` reloads with `?play=1`.
 - URL params: `?play=1`, `?menu=0/1`, `?load=1`, `?replay=1`, `?seed=`, `?fog=0`, `?low=1`, `?speed=`, `?era=N`,
   `?period=N`, `?mission=ID`, `?rig=1` (mount two independent rigged-model instances for the GLB pipeline),
-  `?noloop=1` (do not auto-start the loop; tests drive fixed steps from step 0),
+  `?lod=0/1` (Caral site LOD; LOD1 by default), `?noloop=1` (do not auto-start the loop; tests drive fixed steps from step 0),
   `?fps=1` (show the debug FPS overlay, hidden by default), `?civ=ID` (force the player civilization; with
   `?period=N` it drives the geography), `?map=TYPE` (force the map type), `?intro=0` (skip the campaign
   camera flyover; `?noloop=1` skips it too) and `?cine=1` (disables the software-renderer fallback; `?low=1` wins).
@@ -698,11 +693,11 @@ metric), plus the #118 rig/fauna budget (7→1 alpaca primitives, 14→2 draw ca
 the audit environment (i7-13700, `CHROME_PATH` SwiftShader, `?low=1`, seed 777):
 
 | units | spawn ms | sim ms/step | heap Δ/loop MB | A* ms/call | target µs/call | pick ms/call | frame ms (avg/p95) | draw calls | triangles | heap MB |
-|---|---|---|---|---|---|---|---|---|---|---|
-| 100 | 38 | 0.6 | ~6 | 0.11 | 1.3 | 0.05 | ~611/908 | ~3.9k | 2.8M | 53 |
-| 300 | 69 | 0.8 | ~12 | 0.10 | 0.8 | 0.12 | ~906/1314 | ~10.8k | 7.4M | 70 |
-| 500 | 99 | 1.0 | ~8 | 0.09 | 1.0 | 0.16 | ~937/1654 | ~17.3k | 11.7M | 91 |
-| 1000 | 190 | 1.7 | ~20 | 0.09 | 1.0 | 0.27 | ~1488/2557 | ~34k | 22.8M | 115 |
+| ----- | -------- | ----------- | -------------- | ---------- | -------------- | ------------ | ------------------ | ---------- | --------- | ------- |
+| 100   | 38       | 0.6         | ~6             | 0.11       | 1.3            | 0.05         | ~611/908           | ~3.9k      | 2.8M      | 53      |
+| 300   | 69       | 0.8         | ~12            | 0.10       | 0.8            | 0.12         | ~906/1314          | ~10.8k     | 7.4M      | 70      |
+| 500   | 99       | 1.0         | ~8             | 0.09       | 1.0            | 0.16         | ~937/1654          | ~17.3k     | 11.7M     | 91      |
+| 1000  | 190      | 1.7         | ~20            | 0.09       | 1.0            | 0.27         | ~1488/2557         | ~34k       | 22.8M     | 115     |
 
 Reading (historical `soldiers` scenario): the **mean simulation, pathfinding, target acquisition and picking are
 cheap** (≈0.6–1.7 ms/step up to 1000 units). The 2026 audit's `mixed` scenario shows the caveat: the **mean** is

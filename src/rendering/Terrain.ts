@@ -87,7 +87,7 @@ export class Terrain {
   private textures: GroundTextures;
   private pbrExtra: THREE.Texture[] = [];
   private profile: HistoricalMapProfile;
-  private readonly hasAuthoredHeight: boolean;
+  private readonly hasCaralHeight: boolean;
   /** Biome aridity (0 humid .. 1 desert); tints sand and reduces vegetation. */
   private arid = 0;
   /** Vegetation density (0 dry .. 1 jungle); tints the grass green. */
@@ -104,7 +104,7 @@ export class Terrain {
     this.size = size;
     this.resolution = resolution;
     this.profile = profile;
-    this.hasAuthoredHeight = !!authored;
+    this.hasCaralHeight = !!authored;
     this.textures = getGroundTextures();
     this.arid = profile.climate.aridity;
     this.veg = profile.vegetation.density;
@@ -353,7 +353,7 @@ export class Terrain {
     geo.computeVertexNormals();
 
     const tex = this.textures;
-    const caral = this.hasAuthoredHeight;
+    const caral = this.hasCaralHeight;
     const pbr = {
       grass: getGroundPBR(caral ? 'caral_grass' : 'grass'),
       dirt: getGroundPBR(caral ? 'caral_dirt' : 'dirt'),

@@ -23,15 +23,15 @@ family; the fine identity is the **`GeographicRegion`** (`north_coast`,
 `water` and `elevation` drive `generateHeightField` (`src/rendering/heightField.ts`)
 and the `Terrain` shader (`src/rendering/Terrain.ts`).
 
-| Region | Reads as | Key profile signals |
-|---|---|---|
-| `north_coast` | desert coast + fertile river valley | `soil: sandy`, `aridity 0.92`, low `mtnAmp`, `wetland` |
-| `central_coast` | coastal valley (Supe) | `soil: loam`, `aridity 0.82`, `wetland` |
-| `south_coast` | arid south coast + pampa | `soil: sandy`, `aridity 0.95`, no `wetland` |
-| `andean_valley` | inter-Andean valley | `soil: loam`, `mtnAmp 16`, `terraceChance 0.45`, vegetation 0.55 |
-| `high_andes` | steep high range | `soil: rocky`, `mtnAmp 17`, `terraceChance 0.7`, cold |
-| `altiplano` | high plateau + lake | `soil: peaty`, `wetland`, lake, vegetation 0.15 |
-| `amazon` | high jungle | `soil: clay`, vegetation 1.0, humid |
+| Region          | Reads as                            | Key profile signals                                              |
+| --------------- | ----------------------------------- | ---------------------------------------------------------------- |
+| `north_coast`   | desert coast + fertile river valley | `soil: sandy`, `aridity 0.92`, low `mtnAmp`, `wetland`           |
+| `central_coast` | coastal valley (Supe)               | `soil: loam`, `aridity 0.82`, `wetland`                          |
+| `south_coast`   | arid south coast + pampa            | `soil: sandy`, `aridity 0.95`, no `wetland`                      |
+| `andean_valley` | inter-Andean valley                 | `soil: loam`, `mtnAmp 16`, `terraceChance 0.45`, vegetation 0.55 |
+| `high_andes`    | steep high range                    | `soil: rocky`, `mtnAmp 17`, `terraceChance 0.7`, cold            |
+| `altiplano`     | high plateau + lake                 | `soil: peaty`, `wetland`, lake, vegetation 0.15                  |
+| `amazon`        | high jungle                         | `soil: clay`, vegetation 1.0, humid                              |
 
 Terrain blending (`Terrain.ts` fragment shader) is procedural and slot-based
 (`sand`, `dirt`, `grass`, `rock`, `snow`), combined by **slope**, **elevation**
@@ -60,14 +60,14 @@ look** (colonial/republican), overriding the civilization's pre-Hispanic style.
 
 Style bases (`STYLE_BASES`):
 
-| `ArchStyle` | Wall | Roof | Foundation | Ornament | Civs |
-|---|---|---|---|---|---|
-| `coastal-adobe` | adobe | thatch | platform | frieze | Caral, Cupisnique, Moche, Nazca, Paracas, Chimú, Chincha |
-| `andean-masonry` | cut-stone | thatch | platform | niches | Chavín, Wari, Inca |
-| `altiplano-stone` | megalithic | flat-stone | platform | megalith + niches | Tiahuanaco, Collas/Lupaca |
-| `highland-terraced` | fieldstone | thatch | terrace | — | Recuay, Chanca, Huanca |
-| `colonial` | brick | tile | plinth | — | Realistas |
-| `republican` | concrete | flat-metal | plinth | — | Patriotas, República, Chile |
+| `ArchStyle`         | Wall       | Roof       | Foundation | Ornament          | Civs                                                     |
+| ------------------- | ---------- | ---------- | ---------- | ----------------- | -------------------------------------------------------- |
+| `coastal-adobe`     | adobe      | thatch     | platform   | frieze            | Caral, Cupisnique, Moche, Nazca, Paracas, Chimú, Chincha |
+| `andean-masonry`    | cut-stone  | thatch     | platform   | niches            | Chavín, Wari, Inca                                       |
+| `altiplano-stone`   | megalithic | flat-stone | platform   | megalith + niches | Tiahuanaco, Collas/Lupaca                                |
+| `highland-terraced` | fieldstone | thatch     | terrace    | —                 | Recuay, Chanca, Huanca                                   |
+| `colonial`          | brick      | tile       | plinth     | —                 | Realistas                                                |
+| `republican`        | concrete   | flat-metal | plinth     | —                 | Patriotas, República, Chile                              |
 
 Per-civilization overrides (`CIV_ARCH`) tune the same style (e.g. Caral drops the
 painted frieze; Moche raises `monumentalTiers` to 3; Inca is cut-stone +
@@ -97,22 +97,22 @@ this layer were both fieldstone, terraced, two-tier centres). The marker is data
 in `HistoricalArchitectureProfile.silhouette` (`architecture.ts`) and is built by
 `addCivSilhouette` (`ProceduralModel.ts`):
 
-| Motif | Civilization | Attested form (source) |
-|---|---|---|
-| `circular-plaza` | Caral | sunken circular plaza + upright stones (`caral.md`) |
-| `tenon-heads` | Chavín | cabezas clavas on the temple wall (`chavin.md`) |
-| `stone-heads` | Cupisnique | stone heads in the adobe facade (`cupisnique.md`) |
-| `funerary-enclosure` | Paracas | funerary enclosure with wrapped bundles (`paracas.md`) |
-| `ramp` | Moche, Chincha | access ramp on the huaca/complex (`moche.md`, `chincha.md`) |
-| `low-mound` | Nazca | low broad mound (Cahuachi) (`nazca.md`) |
-| `stelae` | Recuay | carved stelae (Pashash) (`recuay.md`) |
-| `perimeter-wall` | Wari | walled urban compound (`wari.md`) |
-| `sunken-court` | Tiahuanaco | sunken patio (`tiahuanaco.md`) |
-| `citadel` | Chimú | walled citadel (Chan Chan) (`chimu.md`) |
-| `pucara` | Chanca | hilltop watchtower/fortress (`chanca.md`) |
-| `chullpa` | Collas/Lupaca | funerary tower (`collas_lupaca.md`) |
-| `terraces` | Huanca | agricultural andenes (`huanca.md`) |
-| `ushnu` | Inca | stepped ushnu platform (`inca.md`) |
+| Motif                | Civilization   | Attested form (source)                                      |
+| -------------------- | -------------- | ----------------------------------------------------------- |
+| `circular-plaza`     | Caral          | sunken circular plaza + upright stones (`caral.md`)         |
+| `tenon-heads`        | Chavín         | cabezas clavas on the temple wall (`chavin.md`)             |
+| `stone-heads`        | Cupisnique     | stone heads in the adobe facade (`cupisnique.md`)           |
+| `funerary-enclosure` | Paracas        | funerary enclosure with wrapped bundles (`paracas.md`)      |
+| `ramp`               | Moche, Chincha | access ramp on the huaca/complex (`moche.md`, `chincha.md`) |
+| `low-mound`          | Nazca          | low broad mound (Cahuachi) (`nazca.md`)                     |
+| `stelae`             | Recuay         | carved stelae (Pashash) (`recuay.md`)                       |
+| `perimeter-wall`     | Wari           | walled urban compound (`wari.md`)                           |
+| `sunken-court`       | Tiahuanaco     | sunken patio (`tiahuanaco.md`)                              |
+| `citadel`            | Chimú          | walled citadel (Chan Chan) (`chimu.md`)                     |
+| `pucara`             | Chanca         | hilltop watchtower/fortress (`chanca.md`)                   |
+| `chullpa`            | Collas/Lupaca  | funerary tower (`collas_lupaca.md`)                         |
+| `terraces`           | Huanca         | agricultural andenes (`huanca.md`)                          |
+| `ushnu`              | Inca           | stepped ushnu platform (`inca.md`)                          |
 
 The markers are abstractions of the documented forms (not reconstructions) and
 never replace the material/ornament layer. `tests/e2e/civ-visuals.spec.ts`
@@ -128,18 +128,18 @@ fret, wave, condor, tocapu, cross, sunburst, shield). Source table in
 
 ## Materials
 
-| Material | Kind | Where it reads |
-|---|---|---|
-| `adobe` | wall | `andeanWall` tint `#c8a878`, `brick` texture |
-| `fieldstone` / `cut-stone` | wall | `andeanWall` grey `#a89e8c`, `stone` texture |
-| `megalithic` | wall | `andeanWall` light `#b4aca0` + `andeanMegaliths` corner blocks |
-| `brick` | wall | colonial facade (`facadeTex` → `brick`) |
-| `concrete` | wall | republican facade (`concreteWall`) |
-| `metal` | wall | republican `metal` facade |
-| `wood` | post / beam | structural posts, lintels and colonial *quincha* (texture `wood`); **not** a `WallMaterial`, so it never appears in `arch.wall` |
-| `thatch` | roof | `andeanThatchRoof` (straw `#c9a94e` mixed with the civ colour) |
-| `flat-stone` | roof | altiplano flat roof |
-| `tile` / `flat-metal` | roof | colonial tile / republican steel |
+| Material                   | Kind        | Where it reads                                                                                                                  |
+| -------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `adobe`                    | wall        | `andeanWall` tint `#c8a878`, `brick` texture                                                                                    |
+| `fieldstone` / `cut-stone` | wall        | `andeanWall` grey `#a89e8c`, `stone` texture                                                                                    |
+| `megalithic`               | wall        | `andeanWall` light `#b4aca0` + `andeanMegaliths` corner blocks                                                                  |
+| `brick`                    | wall        | colonial facade (`facadeTex` → `brick`)                                                                                         |
+| `concrete`                 | wall        | republican facade (`concreteWall`)                                                                                              |
+| `metal`                    | wall        | republican `metal` facade                                                                                                       |
+| `wood`                     | post / beam | structural posts, lintels and colonial _quincha_ (texture `wood`); **not** a `WallMaterial`, so it never appears in `arch.wall` |
+| `thatch`                   | roof        | `andeanThatchRoof` (straw `#c9a94e` mixed with the civ colour)                                                                  |
+| `flat-stone`               | roof        | altiplano flat roof                                                                                                             |
+| `tile` / `flat-metal`      | roof        | colonial tile / republican steel                                                                                                |
 
 Material colour is always **mixed with the civilization palette** (`mixHex`) so
 walls and roofs stay recognisable per culture without becoming a flat recolour.
@@ -205,7 +205,7 @@ work.
 - **Textures** are Canvas-generated (`Textures.ts`) with an optional AI-generated
   PBR overlay (`Biomes.ts`).
 
-**Rule:** colour differentiates, but it must never be the *only* difference
+**Rule:** colour differentiates, but it must never be the _only_ difference
 between two civilizations. Two coetaneous civs must differ in **silhouette,
 material and ornament** as well (guarded by
 `tests/e2e/civ-visuals.spec.ts`).
@@ -274,7 +274,7 @@ the presentation base (not a claim about a specific garment), a plain headband a
 has **no belt**, Moche helmet, backflap, ear ornaments or shield. Paracas gets a longer manta than Chavín so the
 two coetaneous cultures differ in silhouette, not only colour. Paracas reuses this Formativo abstraction in both
 periods; no separate Early Intermediate outfit is claimed. The soldier macana has a stone head; the sling is a
-prop (a generic Andean weapon abstraction—Métraux, *Weapons*, not a culture-specific attribution) and the ranged
+prop (a generic Andean weapon abstraction—Métraux, _Weapons_, not a culture-specific attribution) and the ranged
 attack reuses `Punch_Jab` until a throw clip exists.
 Evidence:
 [`early-horizon-units.webp`](../media/early-horizon-units.webp) (Chavín worker/soldier/ranged and a Paracas
@@ -391,12 +391,11 @@ pre-existing terrain-overlay geometry, not produced by this pilot.
 
 A campaign scenario may author a **source-backed set-piece** instead of relying
 only on the regional scatter. The first is the Sacred City of Caral in
-`m1_caral` (`src/model/defs/setpieces.ts`, `src/rendering/SacredCity.ts`):
-Caral Alto and Caral Bajo, separated by the Supe river valley, with six broad
-pyramids around the Central Plaza, sunken circular plazas, the Plaza de la
-Huanca and low stone/plaster residential compounds. The set-piece is visual
-only and keeps the documented hierarchy; its exact coordinates are a
-`plausible` schematic. See
+`m1_caral` now uses the exact Ciudades Sagradas sacred-site GLB; the older
+`src/model/defs/setpieces.ts` / `src/rendering/SacredCity.ts` composition is
+retained only as legacy/showcase code. The exact site preserves the Great
+Pyramid, Plaza Mayor with red rings, Anfiteatro and source residential
+compounds. See
 [`caral-sacred-city.md`](./caral-sacred-city.md) for the source table and the
 deliberate abstractions. Set-pieces never add defensive walls, invented
 structures or anachronistic materials.

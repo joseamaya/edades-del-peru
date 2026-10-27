@@ -79,6 +79,7 @@ import { CARAL_HEIGHTMAP, CARAL_HEIGHTMAP_SIZE, CARAL_HEIGHTMAP_WORLD_SIZE } fro
 import {
   CARAL_HERITAGE_PROXIES,
   CARAL_SITE_ANCHOR,
+  CARAL_SITE_CAMERA,
   CARAL_SITE_ORIGIN,
   CARAL_SITE_SCALE,
 } from '../model/defs/caralSite';
@@ -369,7 +370,7 @@ export class Game {
       this.missionDef?.mapOverrides,
     );
     const authored: AuthoredHeightField | undefined =
-      s.missionId === 'm1_caral'
+      this.missionLayout?.site?.id === 'caral_site'
         ? { size: CARAL_HEIGHTMAP_SIZE, worldSize: CARAL_HEIGHTMAP_WORLD_SIZE, heights: CARAL_HEIGHTMAP }
         : undefined;
     this.terrain = new Terrain(
@@ -616,7 +617,7 @@ export class Game {
     this.siteAnchor = { x: CARAL_SITE_ANCHOR.x, z: CARAL_SITE_ANCHOR.z };
     this.addSiteHeritageProxies(group);
     const token = ++this.landmarkLoadToken;
-    void loadSiteModel(site.id, 1)
+    void loadSiteModel(site.id)
       .then((model) => {
         if (token !== this.landmarkLoadToken || this.landmark !== group) {
           disposeStaticGltf(model);
@@ -657,8 +658,8 @@ export class Game {
       this.camera.moveTo(x, z, true);
       return;
     }
-    this.camera.moveTo(x + 10, z - 4, true);
-    this.camera.setHeight(44);
+    this.camera.moveTo(x + CARAL_SITE_CAMERA.dx, z + CARAL_SITE_CAMERA.dz, true);
+    this.camera.setHeight(CARAL_SITE_CAMERA.height);
   }
 
   private spawnLandmark(): void {
@@ -1095,7 +1096,6 @@ export class Game {
       this.registerResourceObstacle(node.id, x, z, kind);
       placed++;
     }
-    if (this.missionLayout?.site?.id === 'caral_site') this.spawnCaralGrove();
     // hunting and fishing (counts from the profile)
     const huntCount = Math.max(4, Math.round(this.mapProfile.resources.hunt));
     for (let i = 0; i < huntCount; i++) {
@@ -1121,39 +1121,6 @@ export class Game {
     // scenario that depends on fishing asks for a guaranteed reachable supply.
     const mis = s.missionId ? getMission(s.missionId) : undefined;
     for (let i = 0; i < (mis?.guaranteedFishing ?? 0); i++) this.spawnFishingNearShore(rng);
-  }
-
-  /** Riparian gallery forest and terrace-edge algarrobos for authored Caral. */
-  private spawnCaralGrove(): void {
-    const rng = new RNG(this.settings.mapSeed * 733 + 41);
-    const variants = { algarrobo: 0.52, sauce: 0.2, molle: 0.18, pacay: 0.1 };
-    const spots: { x: number; z: number }[] = [];
-    // Dense but broken gallery along the Supe and the irrigated valley floor.
-    for (let i = 0; i < 34; i++) {
-      spots.push({ x: rng.range(17, 43), z: rng.range(94, 181) });
-    }
-    // Sparse algarrobos on the terrace edge, outside the archaeological keep-out.
-    for (let i = 0; i < 12; i++) {
-      spots.push({ x: rng.range(38, 46), z: rng.range(52, 178) });
-    }
-    for (const spot of spots) {
-      if (this.terrain.isWater(spot.x, spot.z) || this.isReserved(spot.x, spot.z)) continue;
-      const node = new ResourceNode(
-        this.scene,
-        'tree',
-        spot.x,
-        spot.z,
-        rng.range(140, 210),
-        this.mapProfile.baseMapType,
-        this.trees,
-        variants,
-      );
-      node.pos.y = this.terrain.getHeight(spot.x, spot.z);
-      node.view.position.set(spot.x, node.pos.y, spot.z);
-      node.placeTreeInstance(node.pos.y);
-      this.resourceNodes.set(node.id, node);
-      this.registerResourceObstacle(node.id, spot.x, spot.z, 'tree');
-    }
   }
 
   /** Fill a scenario's minimum fishing supply after loading an older save. */
@@ -1214,7 +1181,7 @@ export class Game {
       isBeach: (x: number, z: number) => this.terrain.isBeach(x, z),
       getMoisture: (x: number, z: number) => this.terrain.getMoisture(x, z),
     };
-    const propCount = propCountFor(s.mapSize) * (this.missionLayout?.site ? 4 : 1);
+    const propCount = propCountFor(s.mapSize);
     this.props.place(planProps(region, propSeed, s.mapSize, propCount, query), heightAt);
     this.wildlife.spawn(planWildlife(region, faunaSeed, s.mapSize, faunaCountFor(region), query), heightAt);
   }

@@ -96,9 +96,8 @@ slot is absent (offline / without assets).
   Bounds 13.904 × 2.7744 × 15.5352 game units; Y-up; footprint centre at ground; foundations
   extend to -0.16.
 - **Content**: Pyramid Mayor + Plaza Mayor; excludes `PlazaCentral`, market stalls and terrain.
-- **Runtime**: `?scenery=caral` mounts the scenery showcase. On `m1_caral`, the Pyramid Mayor GLB
-  replaces the procedural Caral landmark at the sacred-city plan's `greater` anchor, on a flat sand pad;
-  visual-only, no collision. Falls back to the procedural landmark if the GLB cannot load.
+- **Runtime**: `?scenery=caral` mounts the scenery showcase. It is showcase-only; `m1_caral` uses the
+  exact sacred-site GLB listed below. Visual-only, no collision.
 - **Confidence**: documented in plan; roofs and remates inferred.
 
 ### Caral Anfiteatro modular scenery
@@ -114,11 +113,8 @@ slot is absent (offline / without assets).
   Bounds 19.704 × 1.016 × 7.2 game units; Y-up; footprint centre at ground; foundations to -0.2.
 - **Content**: Templo Anfiteatro + Altar Circular + Templo Banqueta; excludes stalls and terrain.
   `MAT-Sand_Desert` is exported with its base color after stripping the unsupported procedural link.
-- **Runtime**: `?scenery=caral-anfiteatro` mounts the scenery showcase. On `m1_caral`, it is placed at
-  the sacred-city plan's `amphitheatre` anchor on a low rectangular terrace; the equivalent procedural
-  temple/altar/bench placements are filtered. If the GLB fails, the city rebuilds the procedural lower
-  ensemble. Visual-only; loaded saves keep that ensemble because the modular setpiece is skipped before
-  the snapshot is applied.
+- **Runtime**: `?scenery=caral-anfiteatro` mounts the scenery showcase. It is showcase-only;
+  `m1_caral` uses the exact sacred-site GLB listed below. Visual-only, no collision.
 - **Confidence**: documented in plan; graderios and banqueta simplified.
 
 ### Caral city GLB (showcase)
@@ -135,10 +131,9 @@ slot is absent (offline / without assets).
 - **Runtime**: `src/rendering/StaticModel.ts` is a static glTF loader that does not require animation clips.
   `?city=caral` mounts a standalone showcase with both LODs, shadows, orbit controls and `window.__cityDemo`.
 - **Material caveat**: the GLB exports `MAT-Sand_Desert` without a `baseColorFactor`; the showcase applies a
-  sand fallback. The source material should be corrected before the city is used in the campaign.
-- **Historical caveat**: the export includes plaza stalls (`GEO-Caral_PlazaCentral_Stall_*`). The campaign design
-  states there is no attested market at Caral; review/remove or document them as a plaza-gathering abstraction
-  before integrating the city into `m1_caral`.
+  sand fallback.
+- **Historical caveat**: the export includes plaza stalls (`GEO-Caral_PlazaCentral_Stall_*`), so it is not
+  used by `m1_caral`; the exact sacred-site GLB below is the runtime source.
 - **Status**: showcase only. The full-city GLB is **not** used by a campaign mission. A render is not
   a photograph.
 
