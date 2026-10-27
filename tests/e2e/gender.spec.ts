@@ -10,7 +10,7 @@ async function boot(page: Page, url: string): Promise<void> {
 test('procedural units get deterministic male/female variants', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  await boot(page, '/?play=1&civ=moche&period=2&seed=777&fog=0&low=1&noloop=1');
+  await boot(page, '/?play=1&civ=realistas&period=6&seed=777&fog=0&low=1&noloop=1');
   const result = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
