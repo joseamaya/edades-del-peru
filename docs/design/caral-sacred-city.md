@@ -39,7 +39,7 @@ instead of the modular landmark or a hand-built schematic:
   foothills beyond the east and south edges of the site.
 - **Collision**: the monumental volumes use axis-aligned footprints from the
   source mesh (`CARAL_SITE_BLOCKERS`), so units route around the pyramids and the
-  Anfiteatro while the plazas, stairs and processional routes stay walkable.
+  Anfiteatro while the open plazas and processional ground stay walkable.
   Construction is forbidden over the source footprint (`buildKeepout`), but the
   starting base and its immediate surroundings stay buildable.
 - **Mission anchors**: `layout.site.focus` points to the real Plaza Mayor
@@ -59,8 +59,8 @@ instead of the modular landmark or a hand-built schematic:
 
 | Element                                                             | Source status       | In game                                                                              |
 | ------------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------ |
-| Dry desert terrace over the green Supe valley                       | Documented (UNESCO) | Authored heightfield: terrace ≈8 m, floodplain ≈3.9 m, river bed ≈1.05 m.           |
-| Andean foothills around the valley                                  | Geographic context  | Dry 8–16 m foothills at the east and south map edges, outside the site.              |
+| Dry desert terrace over the green Supe valley                       | Documented (UNESCO) | Authored heightfield: terrace ≈8 m, floodplain ≈3.9 m, river bed ≈1.05 m.            |
+| Andean foothills around the valley                                  | Geographic context  | Dry foothills rising to ~20 m at the east and south edges, outside the site.         |
 | Upper Half (Caral Alto)                                             | Documented          | Six pyramids, Central Plaza and Plaza de la Huanca.                                  |
 | Lower Half (Caral Bajo)                                             | Documented          | Player base, smaller residences and workshops around the Anfiteatro.                 |
 | Great Pyramid (E Sector)                                            | Documented          | Seven-tier pyramid, long processional stair, summit room and circular forecourt.     |
@@ -113,7 +113,7 @@ instead of the modular landmark or a hand-built schematic:
 
 ## Status
 
-The monumental volumes block pathing and construction; low residential walls,
-stairs and sand paths are still visual-only, so a full survey-accurate collision
-plan remains future work. Render captures are QA artefacts, not historical
+The monumental volumes block pathing and construction; low residential walls and
+sand paths are still visual-only, so a full survey-accurate collision plan remains
+future work. Render captures are QA artefacts, not historical
 photographs.

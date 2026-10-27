@@ -135,7 +135,7 @@ test('coetaneous highland fortresses differ by silhouette motif', async ({ page 
       const g = (window as unknown as { game: any }).game;
       const center = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center' && !b.dead);
       g.addResource(0, { food: 0, wood: 500, silver: 500, stone: 500 });
-      const fortress = g.placeBuilding('fortress', center.pos.x + 9, center.pos.z + 6);
+      const fortress = g.spawnScriptedBuilding('fortress', 0, center.pos.x + 9, center.pos.z + 6);
       if (!fortress) throw new Error('could not place the fortress');
       let verts = 0;
       let meshes = 0;

@@ -61,7 +61,7 @@ Definition of Done and the building audit see
   `MAT-Sand_Desert` so the GLB exports its `baseColorFactor`. See `docs/design/blender-art.md`.
 - **Caral heritage inspector**: `src/model/defs/heritage.ts` is the source of truth for the seven modular
   structures and the communal canal (sector, role, summary, confidence, sources, optional operation).
-  `Game.pickHeritage` raycasts the visual-only landmark and canal, `Game.getSelectedHeritage` drives the HUD
+  `Game.pickHeritage` raycasts the authored site and canal, `Game.getSelectedHeritage` drives the HUD
   panel, and `Game.visitHeritage` records the optional visit; all six Upper-Half visits complete the optional
   `obj_complejos` bonus. The canal card exposes the gate operation, which raises the authored irrigation yield
   for nearby Andenes and completes `obj_riego`. The cards are educational overlays, not construction

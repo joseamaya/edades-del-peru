@@ -1,5 +1,6 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../core/types';
 import { MissionDef } from '../types';
+import { CARAL_SITE_BUILD_KEEPOUT } from '../../model/defs/caralSite';
 
 /** Stable id of the campaign (used by the generated-art manifest). */
 export const CAMPAIGN_ID = 'la-senda-del-sol';
@@ -32,11 +33,7 @@ export const MISSIONS: MissionDef[] = [
         y: 8,
         focus: { x: 0.52, z: 0.277 },
         keepout: [{ x: 0.52, z: 0.45, rx: 0.27, rz: 0.43 }],
-        buildKeepout: [
-          { x: 0.5216, z: 0.2583, rx: 0.2174, rz: 0.1885 },
-          { x: 0.5078, z: 0.501, rx: 0.2474, rz: 0.1833 },
-          { x: 0.5328, z: 0.7992, rx: 0.138, rz: 0.0612 },
-        ],
+        buildKeepout: [...CARAL_SITE_BUILD_KEEPOUT],
       },
       canal: {
         name: 'Canal comunal del valle',

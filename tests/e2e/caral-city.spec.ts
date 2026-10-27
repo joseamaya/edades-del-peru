@@ -139,6 +139,13 @@ test('the authored site blocks monument footprints without sealing the city', as
       route: g.pathfinder.pathfind(52, 161, 100, 53).length,
       buildOnMayor: g.canPlace(100, 30, 4),
       buildInValley: g.canPlace(30, 120, 4),
+      buildInGap: g.canPlace(102, 136.5, 4),
+      baseBuildable: !!g.findFreeSpot(60.5, 161.3, 4),
+      commandBlocked: (() => {
+        const before = g.buildings.size;
+        const ok = g.executeCommand({ kind: 'place', building: 'house', x: 100, z: 30 });
+        return { ok, before, after: g.buildings.size };
+      })(),
     };
   });
   expect(state.mayor).toBe(false);
@@ -148,6 +155,10 @@ test('the authored site blocks monument footprints without sealing the city', as
   expect(state.route).toBeGreaterThan(0);
   expect(state.buildOnMayor).toBe(false);
   expect(state.buildInValley).toBe(true);
+  expect(state.buildInGap).toBe(false);
+  expect(state.baseBuildable).toBe(true);
+  expect(state.commandBlocked.ok).toBe(false);
+  expect(state.commandBlocked.after).toBe(state.commandBlocked.before);
   expect(errors).toEqual([]);
 });
 

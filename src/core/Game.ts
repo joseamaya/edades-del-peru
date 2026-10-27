@@ -67,7 +67,7 @@ import {
 import { resolveColorGrade } from '../model/defs/grades';
 import { planSettlementSite, type SettlementPlan } from '../model/defs/settlementPlan';
 import { inCaralCity, planCaralCity, type CaralCityPlan } from '../model/defs/setpieces';
-import { riverCentreZ } from '../model/defs/terrainLayout';
+import { insideTerrainRect, riverCentreZ } from '../model/defs/terrainLayout';
 import { SettlementOverlay } from '../rendering/SettlementOverlay';
 import { SettlementDressing } from '../rendering/SettlementDressing';
 import { planSettlementDressing } from '../model/defs/settlementDressing';
@@ -1694,6 +1694,7 @@ export class Game {
   /** Spend and create a building for player 0 (worker assignment is a separate order). */
   private placeBuilding(kind: BuildingKind, x: number, z: number): Building | null {
     const stats = getBuildingStats(kind, this.players[0].era);
+    if (!this.canPlace(x, z, stats.size)) return null;
     if (!this.spendResource(0, stats.cost)) return null;
     const ctx = this.makeBuildContext(0);
     const b = new Building(kind, 0, this.players[0].era, ctx);
@@ -2579,12 +2580,9 @@ export class Game {
     const rects = this.missionLayout?.site?.buildKeepout;
     if (!rects) return false;
     const size = this.settings.mapSize;
-    for (const rect of rects) {
-      if (Math.abs(x - rect.x * size) <= rect.rx * size + pad && Math.abs(z - rect.z * size) <= rect.rz * size + pad) {
-        return true;
-      }
-    }
-    return false;
+    return rects.some((rect) =>
+      insideTerrainRect({ x: rect.x * size, z: rect.z * size, rx: rect.rx * size, rz: rect.rz * size }, x, z, pad),
+    );
   }
 
   canPlace(x: number, z: number, foot: number): boolean {
