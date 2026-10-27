@@ -73,6 +73,8 @@ export interface MissionSite {
   focus?: MissionAnchor;
   /** Rectangles kept free of procedural resources and props. */
   keepout?: MissionSiteKeepout[];
+  /** Rectangles where player construction is forbidden (the archaeological site). */
+  buildKeepout?: MissionSiteKeepout[];
 }
 
 export interface MissionLayout {

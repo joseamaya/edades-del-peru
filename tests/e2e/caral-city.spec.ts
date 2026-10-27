@@ -127,6 +127,30 @@ test('the Caral scenario loads the authored sacred-city site', { tag: '@smoke' }
   expect(errors).toEqual([]);
 });
 
+test('the authored site blocks monument footprints without sealing the city', async ({ page }) => {
+  const errors = await boot(page);
+  const state = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    return {
+      mayor: g.pathfinder.isWalkable(100, 30),
+      anfiteatro: g.pathfinder.isWalkable(100, 152),
+      plaza: g.pathfinder.isWalkable(100, 53),
+      base: g.pathfinder.isWalkable(52, 161),
+      route: g.pathfinder.pathfind(52, 161, 100, 53).length,
+      buildOnMayor: g.canPlace(100, 30, 4),
+      buildInValley: g.canPlace(30, 120, 4),
+    };
+  });
+  expect(state.mayor).toBe(false);
+  expect(state.anfiteatro).toBe(false);
+  expect(state.plaza).toBe(true);
+  expect(state.base).toBe(true);
+  expect(state.route).toBeGreaterThan(0);
+  expect(state.buildOnMayor).toBe(false);
+  expect(state.buildInValley).toBe(true);
+  expect(errors).toEqual([]);
+});
+
 test('the Caral objectives show live progress and keep the assembly hidden', async ({ page }) => {
   await boot(page);
   const objectives = page.locator('#ed-objectives');

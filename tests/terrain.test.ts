@@ -159,4 +159,21 @@ describe('authored Caral heightfield', () => {
     expect(sampleAuthoredHeight(field, 4, 90)).toBeLessThan(2.2);
     expect(sampleAuthoredHeight(field, 100, 84)).toBeGreaterThan(2.2);
   });
+
+  it('carves a broad green valley and an eroded terrace edge west of the city', () => {
+    const river = sampleAuthoredHeight(field, 4, 90);
+    const bank = sampleAuthoredHeight(field, 18, 90);
+    const floodplain = sampleAuthoredHeight(field, 30, 90);
+    const edge = sampleAuthoredHeight(field, 42, 90);
+    expect(bank).toBeGreaterThan(river);
+    expect(floodplain).toBeGreaterThan(bank);
+    expect(edge).toBeGreaterThan(floodplain);
+    expect(edge).toBeLessThan(8);
+  });
+
+  it('frames the valley with dry Andean foothills at the map edges', () => {
+    expect(sampleAuthoredHeight(field, 185, 100)).toBeGreaterThan(12);
+    expect(sampleAuthoredHeight(field, 100, 188)).toBeGreaterThan(10);
+    expect(sampleAuthoredHeight(field, 20, 2)).toBeGreaterThan(8);
+  });
 });

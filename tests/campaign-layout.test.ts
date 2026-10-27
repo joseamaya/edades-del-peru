@@ -48,5 +48,10 @@ describe('campaign authored geography', () => {
     expect(caral.layout?.setpiece).toBeUndefined();
     expect(caral.layout?.site?.id).toBe('caral_site');
     expect(caral.layout?.terrain?.river).toBeDefined();
+    expect(caral.layout?.site?.buildKeepout?.length).toBe(3);
+    const base = caral.layout!.base!;
+    for (const rect of caral.layout!.site!.buildKeepout!) {
+      expect(Math.abs(base.x - rect.x) > rect.rx || Math.abs(base.z - rect.z) > rect.rz).toBe(true);
+    }
   });
 });

@@ -12,7 +12,12 @@ export interface PathGrid {
 export interface Obstacle {
   x: number;
   z: number;
-  radius: number;
+  /** Circular obstacle radius. Omit when using `w`/`d`. */
+  radius?: number;
+  /** Width of an axis-aligned rectangular obstacle. */
+  w?: number;
+  /** Depth of an axis-aligned rectangular obstacle. */
+  d?: number;
 }
 
 const DIRS = [
@@ -149,7 +154,17 @@ export class Pathfinder {
 
   private rasterize(o: Obstacle): void {
     const { cols, cell } = this.grid;
-    const r = Math.max(1, Math.ceil(o.radius / cell));
+    if (o.w !== undefined && o.d !== undefined) {
+      const x0 = Math.max(0, Math.floor((o.x - o.w / 2) / cell));
+      const x1 = Math.min(cols - 1, Math.ceil((o.x + o.w / 2) / cell) - 1);
+      const z0 = Math.max(0, Math.floor((o.z - o.d / 2) / cell));
+      const z1 = Math.min(cols - 1, Math.ceil((o.z + o.d / 2) / cell) - 1);
+      for (let z = z0; z <= z1; z++) {
+        for (let x = x0; x <= x1; x++) this.grid.walkable[z * cols + x] = 0;
+      }
+      return;
+    }
+    const r = Math.max(1, Math.ceil((o.radius ?? 0) / cell));
     const cx = Math.floor(o.x / cell);
     const cz = Math.floor(o.z / cell);
     for (let dz = -r; dz <= r; dz++) {
