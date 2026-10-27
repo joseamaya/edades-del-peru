@@ -367,27 +367,25 @@ test('the Plaza Central card activates the communal assembly', async ({ page }) 
   expect(state).toBe('completed');
 });
 
-test('the Caral site request is consolidated and has no procedural fallback mesh', async ({ page }) => {
-  let requested = false;
-  page.on('request', (request) => {
-    if (request.url().includes('caral_site_lod1.glb')) requested = true;
-  });
+test('the Caral site uses the source LOD and has no procedural fallback mesh', async ({ page }) => {
   await boot(page);
-  expect(requested).toBe(true);
   const state = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
+    const model = g.landmark.getObjectByName('caral_site');
     let meshes = 0;
     g.landmark.traverse((o: any) => {
       if (o.isMesh) meshes++;
     });
     return {
       procedural: !!g.setpiece,
-      model: !!g.landmark.getObjectByName('caral_site'),
+      model: !!model,
+      sourceLod: model?.userData?.sourceLod ?? null,
       meshes,
     };
   });
   expect(state.procedural).toBe(false);
   expect(state.model).toBe(true);
+  expect(state.sourceLod).toBe(1);
   expect(state.meshes).toBeGreaterThan(3);
 });
 
