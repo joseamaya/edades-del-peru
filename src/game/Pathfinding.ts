@@ -146,10 +146,9 @@ export class Pathfinder {
     if (mask.length !== n) throw new Error(`collision mask must have ${n} cells`);
     if (!this.staticBlocked) this.staticBlocked = new Uint8Array(n);
     for (let i = 0; i < n; i++) {
-      if (!mask[i]) continue;
-      this.staticBlocked[i] = 1;
-      this.grid.walkable[i] = 0;
+      if (mask[i]) this.staticBlocked[i] = 1;
     }
+    this.applyStaticBlocked();
     this.revision++;
   }
 
@@ -220,9 +219,9 @@ export class Pathfinder {
         }
       }
     }
-    // snapshot the terrain-only mask, then re-apply the obstacles on top (idempotent)
-    this.applyStaticBlocked();
+    // snapshot the terrain-only mask, then re-apply static site and dynamic obstacles
     this.terrainBlocked = this.grid.walkable.slice();
+    this.applyStaticBlocked();
     for (const o of this.obstacles) this.rasterize(o);
     this.revision++;
   }

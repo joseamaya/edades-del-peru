@@ -142,7 +142,7 @@ test('plays m1 Caral with real construction and gathering, without objective che
       );
     }
 
-    const target = g.siteCenter ?? g.siteAnchor ?? g.landmark?.position;
+    const target = g.mission.getObjectiveAnchor('obj_complejo');
     if (!target) return { setup: false };
     g.executeCommand(
       {

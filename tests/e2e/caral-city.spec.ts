@@ -141,6 +141,7 @@ test('the authored site blocks monument footprints without sealing the city', as
       buildInValley: g.canPlace(30, 120, 4),
       buildInGap: g.canPlace(102, 136.5, 4),
       residentialWall: g.pathfinder.isWalkable(100, 110),
+      openValley: g.pathfinder.isWalkable(30, 120),
       baseBuildable: !!g.findFreeSpot(60.5, 161.3, 4),
       commandBlocked: (() => {
         const before = g.buildings.size;
@@ -158,6 +159,7 @@ test('the authored site blocks monument footprints without sealing the city', as
   expect(state.buildInValley).toBe(true);
   expect(state.buildInGap).toBe(false);
   expect(state.residentialWall).toBe(false);
+  expect(state.openValley).toBe(true);
   expect(state.baseBuildable).toBe(true);
   expect(state.commandBlocked.ok).toBe(false);
   expect(state.commandBlocked.after).toBe(state.commandBlocked.before);

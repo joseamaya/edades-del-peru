@@ -117,7 +117,7 @@ instead of the modular landmark or a hand-built schematic:
 
 ## Status
 
-The monumental volumes and low residential/retaining walls block pathing and
-construction. Sand paths and fine wall details remain visual-only, so a full
-survey-accurate collision plan is still future work. Render captures are QA artefacts, not historical
-photographs.
+The monumental volumes and low residential/retaining walls block pathing;
+construction remains forbidden over the `buildKeepout` footprint. Sand paths and
+fine wall details remain visual-only, so a full survey-accurate collision plan is
+still future work. Render captures are QA artefacts, not historical photographs.

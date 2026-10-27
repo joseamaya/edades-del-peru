@@ -614,8 +614,9 @@ export class Game {
 
   /**
    * Bake the low residential/retaining walls into the navigation grid. Vertical
-   * source faces below the first 1.2 m are walls; roofs and plaza floors are
-   * horizontal, and the tall pyramid volumes are already covered by the AABBs.
+   * source faces that start near the floor are walls (including retaining
+   * walls); roofs and plaza floors are horizontal, and the tall pyramid volumes
+   * are already covered by the AABBs.
    */
   private addSiteWallCollision(model: THREE.Object3D, baseY: number): void {
     const { cols, rows, cell } = this.pathfinder.grid;
@@ -623,8 +624,8 @@ export class Game {
     const a = new THREE.Vector3();
     const b = new THREE.Vector3();
     const c = new THREE.Vector3();
-    const maxWallY = baseY + 1.2;
-    model.updateMatrixWorld(true);
+    const maxWallStartY = baseY + 1.2;
+    model.updateWorldMatrix(true, true);
     model.traverse((object) => {
       const mesh = object as THREE.Mesh;
       if (!mesh.isMesh || !mesh.geometry?.getAttribute('position')) return;
@@ -650,7 +651,7 @@ export class Game {
         const nz = ux * vy - uy * vx;
         const len = Math.hypot(nx, ny, nz);
         if (!len || Math.abs(ny) / len >= 0.35) continue;
-        if (Math.max(a.y, b.y, c.y) > maxWallY) continue;
+        if (Math.min(a.y, b.y, c.y) > maxWallStartY) continue;
         const x0 = Math.max(0, Math.floor(Math.min(a.x, b.x, c.x) / cell));
         const x1 = Math.min(cols - 1, Math.floor(Math.max(a.x, b.x, c.x) / cell));
         const z0 = Math.max(0, Math.floor(Math.min(a.z, b.z, c.z) / cell));
@@ -706,6 +707,7 @@ export class Game {
           if (/Caral_LOD[01]_Anfiteatro$/.test(object.name)) object.userData.heritageId = 'caral_anfiteatro';
         });
         group.add(model);
+        group.updateMatrixWorld(true);
         this.addSiteWallCollision(model, site.y ?? 0);
         applyFowToObject(model, this.fowUniforms);
         this.enableLandmarkShadows(model);

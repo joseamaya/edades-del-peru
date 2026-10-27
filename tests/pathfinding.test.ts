@@ -68,6 +68,7 @@ describe('Pathfinder', () => {
     mask[15 * cols + 15] = 1;
     pf.blockCells(mask);
     expect(pf.isWalkable(30, 30)).toBe(false);
+    expect(() => pf.blockCells(new Uint8Array(1))).toThrow(/collision mask/);
     const obstacle = { x: 70, z: 70, radius: 2 };
     pf.addObstacle(obstacle);
     pf.removeObstacle(obstacle);
