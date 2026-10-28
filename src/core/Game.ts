@@ -26,7 +26,7 @@ import { clearModelAssets } from '../rendering/ModelAssets';
 import { disposeStaticGltf } from '../rendering/StaticModel';
 import { loadSceneryModel } from '../rendering/sceneryModels';
 import { loadSiteModel } from '../rendering/siteModels';
-import { planProps, propCountFor, type PropPlacement } from '../model/defs/props';
+import { planProps, propCountFor } from '../model/defs/props';
 import { planWildlife, faunaCountFor } from '../model/defs/wildlife';
 import { Projectile, updateProjectilePools } from '../entities/Projectile';
 import { EntityView, reserveIds } from '../entities/EntityView';
@@ -73,6 +73,7 @@ import { SettlementDressing } from '../rendering/SettlementDressing';
 import { planSettlementDressing } from '../model/defs/settlementDressing';
 import {
   CARAL_VALLEY_PATH_WIDTH,
+  VALLEY_FIELD_MARGIN,
   planCaralValley,
   planCaralValleyProps,
   type CaralValleyPlan,
@@ -202,8 +203,6 @@ export class Game {
   /** Visual-only valley plan; reserved before resources/props scatter. */
   private caralValleyPlan: CaralValleyPlan | null = null;
   private caralValleyBase: { x: number; z: number } | null = null;
-  /** Visual-only reeds/shrubs placed by the valley planner (debug/test evidence). */
-  caralValleyProps: PropPlacement[] = [];
   particles!: Particles;
   debris!: Debris;
   fow!: Fow;
@@ -1148,7 +1147,7 @@ export class Game {
       if (Math.hypot(x - this.canalSite.x, z - this.canalSite.z) < length / 2 + 6) return true;
     }
     for (const field of this.caralValleyPlan?.fields ?? []) {
-      const radius = field.size / 2 + 0.7;
+      const radius = field.size / 2 + VALLEY_FIELD_MARGIN;
       if (Math.abs(x - field.x) <= radius && Math.abs(z - field.z) <= radius) return true;
     }
     return false;
@@ -1275,13 +1274,7 @@ export class Game {
     const placements = planProps(region, propSeed, s.mapSize, propCount, query);
     if (this.missionDef?.id === 'm1_caral') {
       const base = this.caralValleyBase ?? this.playerCenter(0);
-      this.caralValleyProps = planCaralValleyProps(
-        this.settings.mapSeed,
-        base,
-        this.caralValleyPlan?.fields ?? [],
-        this.caralValleyQuery(),
-      );
-      placements.push(...this.caralValleyProps);
+      placements.push(...planCaralValleyProps(this.settings.mapSeed, base, this.caralValleyQuery()));
     }
     this.props.place(placements, heightAt);
     this.wildlife.spawn(planWildlife(region, faunaSeed, s.mapSize, faunaCountFor(region), query), heightAt);

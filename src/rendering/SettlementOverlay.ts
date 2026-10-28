@@ -136,19 +136,11 @@ export function cropGeometry(
   const half = field.size / 2;
   const n = Math.max(2, Math.floor(field.size / CROP_SPACING));
   const spacing = field.size / n;
-  const cos = Math.cos(field.yaw);
-  const sin = Math.sin(field.yaw);
   const out: THREE.BufferGeometry[] = [];
   for (let i = 0; i < n; i++) {
     const localX = -half + spacing * (i + 0.5);
-    const from = {
-      x: field.x + localX * cos - -half * sin,
-      z: field.z + localX * sin + -half * cos,
-    };
-    const to = {
-      x: field.x + localX * cos - half * sin,
-      z: field.z + localX * sin + half * cos,
-    };
+    const from = fieldPoint(field, localX, -half);
+    const to = fieldPoint(field, localX, half);
     // Rows run along the field's local Z, so they line up with the furrows.
     const geo = buildRibbon(
       subdivide(from, to, 2),
@@ -166,18 +158,13 @@ export function fieldBorderGeometry(
   getHeight: (x: number, z: number) => number,
 ): THREE.BufferGeometry[] {
   const half = field.size / 2;
-  const cos = Math.cos(field.yaw);
-  const sin = Math.sin(field.yaw);
   const corners = [
     [-half, -half],
     [half, -half],
     [half, half],
     [-half, half],
     [-half, -half],
-  ].map(([x, z]) => ({
-    x: field.x + x * cos - z * sin,
-    z: field.z + x * sin + z * cos,
-  }));
+  ].map(([x, z]) => fieldPoint(field, x, z));
   const out: THREE.BufferGeometry[] = [];
   for (let i = 0; i < corners.length - 1; i++) {
     const geo = buildRibbon(
@@ -188,6 +175,13 @@ export function fieldBorderGeometry(
     if (geo) out.push(geo);
   }
   return out;
+}
+
+/** Map a point from the field's local grid into world space. */
+function fieldPoint(field: SettlementField, x: number, z: number): { x: number; z: number } {
+  const cos = Math.cos(field.yaw);
+  const sin = Math.sin(field.yaw);
+  return { x: field.x + x * cos - z * sin, z: field.z + x * sin + z * cos };
 }
 
 function subdivide(

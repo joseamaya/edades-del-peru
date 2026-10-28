@@ -1,6 +1,7 @@
 import { RNG } from '../../util/rng';
 import type { PropPlacement } from './props';
 import type { SettlementField, SettlementRoad } from './settlementPlan';
+import { hasNearbyWater } from './scatter';
 import type { TerrainQuery } from './terrainQuery';
 
 /** Terrain and reservation queries used by the visual Caral valley plan. */
@@ -28,6 +29,7 @@ const VALLEY_FIELD_SIZE_MIN = 3.4;
 const VALLEY_FIELD_SIZE_MAX = 4.6;
 const VALLEY_FIELD_SLOPE_LIMIT = 0.32;
 const VALLEY_FIELD_CLEARANCE = 4.2;
+export const VALLEY_FIELD_MARGIN = 0.7;
 
 const REED_ANCHORS: ReadonlyArray<readonly [number, number]> = [
   [9.5, 70],
@@ -61,7 +63,6 @@ const REED_ANCHORS: ReadonlyArray<readonly [number, number]> = [
 ];
 const VALLEY_PROP_CLEARANCE = 1.8;
 const VALLEY_PROP_SLOPE_LIMIT = 0.35;
-const SHORE_PROBE = 4;
 
 /**
  * Deterministic visual-only field/path plan for the green Supe valley beside the
@@ -111,7 +112,6 @@ export function planCaralValley(
 export function planCaralValleyProps(
   seed: number,
   base: { x: number; z: number },
-  fields: readonly SettlementField[],
   q: CaralValleyQuery,
 ): PropPlacement[] {
   const rng = new RNG((seed * 2246822519 + 23) >>> 0);
@@ -122,9 +122,9 @@ export function planCaralValleyProps(
       const z = az + rng.range(-2, 2);
       if (q.isWater(x, z) || !q.isBuildable(x, z) || q.isReserved(x, z)) continue;
       if (q.getSlope(x, z) > VALLEY_PROP_SLOPE_LIMIT) continue;
-      if (!hasWaterNear(x, z, q)) continue;
+      if (!hasNearbyWater(x, z, q)) continue;
       if (Math.hypot(x - base.x, z - base.z) < 8) continue;
-      if (fields.some((f) => Math.hypot(f.x - x, f.z - z) < f.size / 2 + VALLEY_PROP_CLEARANCE)) continue;
+      if (q.isReserved(x, z)) continue;
       if (out.some((p) => Math.hypot(p.x - x, p.z - z) < VALLEY_PROP_CLEARANCE)) continue;
       const reed = rng.chance(0.72);
       out.push({
@@ -145,7 +145,7 @@ function fieldEdge(base: { x: number; z: number }, field: SettlementField): { x:
   const dx = field.x - base.x;
   const dz = field.z - base.z;
   const length = Math.hypot(dx, dz);
-  const inset = field.size / 2 + 0.7;
+  const inset = field.size / 2 + VALLEY_FIELD_MARGIN;
   const t = length > inset ? (length - inset) / length : 0;
   return { x: base.x + dx * t, z: base.z + dz * t };
 }
@@ -160,14 +160,4 @@ function segmentIsOpen(from: { x: number; z: number }, to: { x: number; z: numbe
     if (q.isWater(x, z) || !q.isBuildable(x, z)) return false;
   }
   return true;
-}
-
-/** Riverbank test: a shallow shore is within the probe distance. */
-function hasWaterNear(x: number, z: number, q: CaralValleyQuery): boolean {
-  return (
-    q.isWater(x + SHORE_PROBE, z) ||
-    q.isWater(x - SHORE_PROBE, z) ||
-    q.isWater(x, z + SHORE_PROBE) ||
-    q.isWater(x, z - SHORE_PROBE)
-  );
 }

@@ -54,8 +54,12 @@ describe('Caral valley plan', () => {
   it('places deterministic riverside reeds and shrubs away from the plots', () => {
     const river = valleyQuery({ isWater: (x) => x < 12 });
     const plan = planCaralValley(7, BASE, river);
-    const props = planCaralValleyProps(7, BASE, plan.fields, river);
-    const again = planCaralValleyProps(7, BASE, plan.fields, river);
+    const reserved = valleyQuery({
+      isWater: (x) => x < 12,
+      isReserved: (x, z) => plan.fields.some((f) => Math.hypot(f.x - x, f.z - z) < f.size / 2),
+    });
+    const props = planCaralValleyProps(7, BASE, reserved);
+    const again = planCaralValleyProps(7, BASE, reserved);
     expect(props.length).toBeGreaterThan(8);
     expect(again).toEqual(props);
     for (const p of props) {
