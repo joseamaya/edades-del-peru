@@ -99,3 +99,46 @@ test('the llama pilot uses the rigged camelid and keeps the procedural fallback'
   );
   expect(afterDestroy.find((asset) => asset.id === 'quaternius_alpaca')?.state).toBe('idle');
 });
+
+test('hunt nodes start as a walking herd and become stylised carcasses', async ({ page }) => {
+  await page.goto('/?play=1&seed=777&map=altiplano&low=1&fog=0&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+
+  const state = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const node = [...g.resourceNodes.values()].find((n: any) => n.kind === 'hunt');
+    if (!node) return null;
+    const herd = node.view.getObjectByName('hunt_herd');
+    if (!herd) return null;
+    const body = herd.getObjectByName('hunt_bodies');
+    const legs = herd.getObjectByName('hunt_legs');
+    const carcasses = herd.getObjectByName('hunt_carcasses');
+    if (!body || !legs || !carcasses) return null;
+    const before = Array.from(body.instanceMatrix.array.slice(12, 15));
+    node.update(1.5);
+    const after = Array.from(body.instanceMatrix.array.slice(12, 15));
+    const liveAtStart = body.count;
+    const legsAtStart = legs.count;
+
+    node.subtract(node.maxAmount * 0.5);
+    const afterHalf = { live: body.count, carcasses: carcasses.count, legs: legs.count };
+
+    node.subtract(node.maxAmount * 0.4);
+    const afterMost = { live: body.count, carcasses: carcasses.count };
+
+    node.subtract(node.maxAmount);
+    const depleted = { live: body.count, carcasses: carcasses.count, rotation: node.view.rotation.x };
+
+    return { before, after, liveAtStart, legsAtStart, afterHalf, afterMost, depleted };
+  });
+
+  expect(state).not.toBeNull();
+  expect(state!.before).not.toEqual(state!.after);
+  expect(state!.liveAtStart).toBe(3);
+  expect(state!.legsAtStart).toBe(12);
+  expect(state!.afterHalf).toEqual({ live: 2, carcasses: 1, legs: 8 });
+  expect(state!.afterMost).toEqual({ live: 1, carcasses: 2 });
+  expect(state!.depleted).toEqual({ live: 0, carcasses: 3, rotation: 0 });
+});

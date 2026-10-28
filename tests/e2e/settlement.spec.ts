@@ -85,6 +85,39 @@ test('the settlement overlay is regenerated on load', async ({ page }) => {
   expect(s.fields.length).toBeGreaterThan(0);
 });
 
+test('starting units deploy outside the civic core and its houses', async ({ page }) => {
+  await boot(page, '/?mission=m1_caral&seed=3000&fog=0&low=1&noloop=1&intro=0');
+  const state = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const units = [...g.units.values()].filter(
+      (u: any) => u.owner === 0 && (u.kind === 'worker' || u.kind === 'scout'),
+    );
+    const buildings = [...g.buildings.values()].filter((b: any) => b.owner === 0 && !b.dead);
+    let clearance = Infinity;
+    for (const u of units) {
+      for (const b of buildings)
+        clearance = Math.min(clearance, Math.hypot(u.pos.x - b.pos.x, u.pos.z - b.pos.z) - b.radius);
+    }
+    let pair = Infinity;
+    for (let i = 0; i < units.length; i++) {
+      for (let j = i + 1; j < units.length; j++) {
+        pair = Math.min(pair, Math.hypot(units[i].pos.x - units[j].pos.x, units[i].pos.z - units[j].pos.z));
+      }
+    }
+    g.camera.update(1, 0);
+    g.camera.camera.updateMatrixWorld(true);
+    const inView = units.every((u: any) => {
+      const p = new window.THREE.Vector3(u.pos.x, u.pos.y + 1, u.pos.z).project(g.camera.camera);
+      return Math.abs(p.x) <= 1 && Math.abs(p.y) <= 1 && p.z < 1;
+    });
+    return { units: units.length, clearance, pair, inView };
+  });
+  expect(state.units).toBe(5);
+  expect(state.clearance).toBeGreaterThan(0.5);
+  expect(state.pair).toBeGreaterThan(0.9);
+  expect(state.inView).toBe(true);
+});
+
 test('initial workers start on the ground at their own position', async ({ page }) => {
   // irregular (high-Andes) terrain makes a mismatched height sample obvious
   await boot(page, '/?civ=inca&period=5&seed=777&fog=0&low=1&noloop=1');

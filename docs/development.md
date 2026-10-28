@@ -148,6 +148,10 @@ Definition of Done and the building audit see
   rounded/capsule shapes with **vertex-colour AO** and **articulated legs/wings** (shared geometry + one shared
   material; diagonal gait and wing flap). No entities, obstacles or save; regenerated deterministically on load,
   templates freed by `clearFaunaTemplates` in `Game.destroy`.
+- **Hunt herds (presentation only)**: `ResourceNode` hunt nodes render a small `HuntHerd`
+  (`src/rendering/HuntHerd.ts`) of walking camelids instead of static boxes. Its live/carcass state is derived
+  from `amount / maxAmount` in `subtract` and `applySave`, so save/load and the resource simulation are
+  unchanged. The herd has no entities, obstacles or collision; teardown disposes only its per-herd materials.
 - **Rigged 3D models (optional, glTF/GLB)**: `src/model/defs/modelAssets.ts` maps a unit kind to a registered
   asset id plus an optional presentation variant. The **Caral worker** is the first mapping (Caral + Arcaico/Formative matches);
   all other units still use the procedural path, so #109 and later issues opt in progressively.

@@ -1069,7 +1069,8 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
   switch (type) {
     case 'center_steam':
-      buildHouse(b, 3.4, true);
+      if (b.civId === CivId.CARAL) buildCaralCenter(b, 3.4);
+      else buildHouse(b, 3.4, true);
       break;
     case 'center_imperial':
       buildCivic(b, 3.6, 'stone', true);
@@ -1088,7 +1089,8 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
       break;
 
     case 'house_steam':
-      buildHouse(b, 1.8, false);
+      if (b.civId === CivId.CARAL) buildCaralHouse(b, 1.8);
+      else buildHouse(b, 1.8, false);
       break;
     case 'house_imperial':
       buildCivic(b, 1.9, 'stone');
@@ -2852,6 +2854,57 @@ function buildCaralCompound(
   } else {
     caralCyl(b, f, 0.26, 0.32, 0.3, 9, mixHex(earth, '#8a7450', 0.4), w * 0.22, 0.17, -d * 0.1, 'dirt');
   }
+}
+
+function caralShedRoof(b: Builder, w: number, d: number, y: number): void {
+  b.box(w * 0.54, 0.06, d * 0.34, andeanThatch(b), {
+    y,
+    z: -d * 0.27,
+    rx: 0.08,
+    tex: 'thatch',
+    texScale: 2,
+  });
+}
+
+function caralEntryStep(b: Builder, w: number, d: number, color: string): void {
+  b.box(w * 0.24, 0.05, d * 0.1, color, { y: 0.03, z: d * 0.56, tex: 'stone' });
+}
+
+/** Game-side Caral dwelling: a low walled patio compound, not a generic thatched hut. */
+function buildCaralHouse(b: Builder, size: number): void {
+  const w = size * 1.8;
+  const d = size * 1.55;
+  buildCaralCompound(b, { x: 0, y: 0, z: 0, yaw: 0, width: w, depth: d, rooms: 3, elite: false });
+  const { stone, plaster } = caralColors(b);
+  // A small shed roof over the rear room keeps the compound inhabited without
+  // turning the whole footprint into a generic gabled house.
+  caralShedRoof(b, w, d, 0.78);
+  caralEntryStep(b, w, d, stone);
+  b.cyl(0.12, 0.16, 0.22, 8, mixHex(plaster, '#8a7450', 0.4), {
+    x: w * 0.3,
+    y: 0.11,
+    z: d * 0.28,
+    tex: 'dirt',
+  });
+  b.group.name = 'caral_house';
+}
+
+/** The player's Plaza Mayor: a low civic compound with a central hearth-altar and banner. */
+function buildCaralCenter(b: Builder, size: number): void {
+  const w = size * 1.9;
+  const d = size * 1.55;
+  buildCaralCompound(b, { x: 0, y: 0, z: 0, yaw: 0, width: w, depth: d, rooms: 6, elite: true });
+  const { stone, dark, yellow } = caralColors(b);
+  const f = caralFrame(0, 0, 0, 0);
+  // A prepared central dais and hearth make the building read as a civic place,
+  // while the surrounding rooms keep the same residential compound language.
+  caralCyl(b, f, 0.92, 1.0, 0.12, 18, stone, 0, 0.06, d * 0.06, 'stone');
+  caralCyl(b, f, 0.34, 0.42, 0.2, 12, dark, 0, 0.19, d * 0.06, 'stone');
+  caralShedRoof(b, w, d, 1.03);
+  b.box(w * 0.68, 0.05, 0.035, yellow, { y: 0.58, z: d * 0.5 + 0.14 });
+  caralEntryStep(b, w, d, stone);
+  andeanBanner(b, w * 0.46, 0.62, -d * 0.38, 1.15);
+  b.group.name = 'caral_center';
 }
 
 function buildCaralPlaza(

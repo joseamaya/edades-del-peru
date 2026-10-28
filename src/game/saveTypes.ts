@@ -78,6 +78,8 @@ export interface ResourceNodeSave {
   x: number;
   z: number;
   amount: number;
+  /** Original reserve, needed to reconstruct hunt visuals (optional for older saves). */
+  maxAmount?: number;
 }
 
 export interface PlayerSave {

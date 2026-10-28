@@ -155,6 +155,10 @@ const AMBIENT_FAUNA_SEED = 13;
 
 /** Campaign intro flyover framing, relative to the player base. */
 const INTRO_CAMERA = { offset: 34, fromHeight: 52, toZoom: 30, seconds: 2.6 } as const;
+/** Opening deployment: four workers and the scout, on the camera-facing arc. */
+const STARTING_UNIT_COUNT = 5;
+const STARTING_UNIT_ANGLES = [0, -0.52, 0.52, -1.05, 1.05, -1.6, 1.6] as const;
+const STARTING_UNIT_RADII = [5.2, 6.1, 7.0, 7.9, 8.8, 9.7] as const;
 /** Keep guaranteed fishing searches inside the authored river and map edge. */
 const FISHING_SCAN_MARGIN = 4;
 
@@ -1325,7 +1329,6 @@ export class Game {
     this.buildings.set(center.id, center);
     this.registerObstacle(center);
     // starting dwellings + visual fields/roads, laid out by the terrain-aware planner
-    const rng = new RNG(this.settings.mapSeed + player * 100);
     const plan = this.settlementPlanFor(player, x, z);
     for (const spot of plan.dwellings) {
       const house = new Building(BuildingKind.HOUSE, player, this.players[player].era, ctx);
@@ -1344,24 +1347,23 @@ export class Game {
     if (player === 0 && this.missionDef?.id === 'm1_caral') this.addCaralValley(x, z);
     // nearby resources to start
     this.spawnStartResources(player, x, z);
-    // starting workers
-    const workers = player === 0 ? 4 : 4;
-    for (let i = 0; i < workers; i++) {
+    const rng = new RNG(this.settings.mapSeed + player * 100);
+    // The Caral opening deploys outside the civic core, on the camera-facing
+    // side where the frame reads. Other matches and AI seats keep their ring.
+    const startingSpots = player === 0 && this.missionDef?.id === 'm1_caral' ? this.startingUnitSpots(x, z) : null;
+    for (let i = 0; i < STARTING_UNIT_COUNT - 1; i++) {
       const unit = new Unit(UnitKind.WORKER, player, this.players[player].era, ctx);
-      // sample the height at the worker's actual position, not at fresh random coords
-      // (the scout and spawnResources already reuse matching coords; no other spawn had this)
-      const ux = x + rng.range(-3, 3);
-      const uz = z + rng.range(-3, 3);
-      unit.pos.set(ux, this.terrain.getHeight(ux, uz), uz);
+      const spot = startingSpots?.[i] ?? { x: x + rng.range(-3, 3), z: z + rng.range(-3, 3) };
+      unit.pos.set(spot.x, this.terrain.getHeight(spot.x, spot.z), spot.z);
       unit.setContext(this.unitContext);
       this.applyPlayerBonuses(unit, this.players[player]);
       unit.attach(this.scene);
       this.units.set(unit.id, unit);
       this.players[player].populationUsed += unit.stats.population;
     }
-    // scout
     const scout = new Unit(UnitKind.SCOUT, player, this.players[player].era, ctx);
-    scout.pos.set(x + 4, this.terrain.getHeight(x + 4, z + 4), z + 4);
+    const scoutSpot = startingSpots?.[STARTING_UNIT_COUNT - 1] ?? { x: x + 4, z: z + 4 };
+    scout.pos.set(scoutSpot.x, this.terrain.getHeight(scoutSpot.x, scoutSpot.z), scoutSpot.z);
     scout.setContext(this.unitContext);
     this.applyPlayerBonuses(scout, this.players[player]);
     scout.attach(this.scene);
@@ -1372,6 +1374,58 @@ export class Game {
     // the opening workers so they stay selectable at the base. AI-vs-AI seats
     // get their orders from the AI controller on its first update.
     if (this.players[player]?.isAI) this.assignInitialWorkers(player, x, z);
+  }
+
+  /**
+   * Free deployment spots around a new base, away from every building and
+   * resource. The first four sit on the camera-facing arc; the fifth is the scout.
+   */
+  private startingUnitSpots(x: number, z: number): { x: number; z: number }[] {
+    const out: { x: number; z: number }[] = [];
+    for (let i = 0; i < STARTING_UNIT_COUNT; i++) {
+      let found: { x: number; z: number } | null = null;
+      for (const radius of STARTING_UNIT_RADII) {
+        for (const offset of STARTING_UNIT_ANGLES) {
+          const angle = Math.PI / 2 + offset;
+          const px = x + Math.cos(angle) * radius;
+          const pz = z + Math.sin(angle) * radius;
+          if (this.startingUnitSpotClear(px, pz, out)) {
+            found = { x: px, z: pz };
+            break;
+          }
+        }
+        if (found) break;
+      }
+      const fallback = found ?? this.startingUnitFallback(x, z, out);
+      out.push({ x: fallback.x, z: fallback.z });
+    }
+    return out;
+  }
+
+  private startingUnitFallback(x: number, z: number, used: { x: number; z: number }[]): { x: number; z: number } {
+    const fallback = this.findFreeSpot(x, z, 2) ?? this.findLandNear(x, z, 24);
+    for (let i = 0; i < 12; i++) {
+      const angle = (i / 12) * Math.PI * 2;
+      const radius = 2 + i * 0.8;
+      const px = fallback.x + Math.cos(angle) * radius;
+      const pz = fallback.z + Math.sin(angle) * radius;
+      if (this.startingUnitSpotClear(px, pz, used)) return { x: px, z: pz };
+    }
+    return fallback;
+  }
+
+  private startingUnitSpotClear(x: number, z: number, used: { x: number; z: number }[]): boolean {
+    if (this.terrain.isWater(x, z) || this.terrain.isBeach(x, z)) return false;
+    if (this.terrain.getSlope(x, z) > MAX_WALKABLE_SLOPE) return false;
+    for (const b of this.buildings.values()) {
+      if (b.dead) continue;
+      if (distance2D(x, z, b.pos.x, b.pos.z) < b.radius + 0.9) return false;
+    }
+    for (const n of this.resourceNodes.values()) {
+      if (n.dead) continue;
+      if (distance2D(x, z, n.pos.x, n.pos.z) < n.radius + 0.6) return false;
+    }
+    return used.every((p) => distance2D(x, z, p.x, p.z) >= 1.1);
   }
 
   /** Deterministic settlement plan for a base at (x, z) (dwellings + fields + roads). */
@@ -3944,6 +3998,8 @@ export class Game {
     this.particles.dispose();
     this.debris.dispose();
     this.markers.dispose();
+    for (const node of this.resourceNodes.values()) node.remove();
+    this.resourceNodes.clear();
     this.trees.dispose();
     this.props.dispose();
     this.wildlife.dispose();
