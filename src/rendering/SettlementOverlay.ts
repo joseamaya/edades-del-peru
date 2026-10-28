@@ -18,6 +18,11 @@ const CROP_SPACING = 0.85;
 const CROP_WIDTH = 0.3;
 const CROP_OFFSET = 0.04;
 
+export interface SettlementOverlayOptions {
+  roadWidth?: number;
+  fieldBorders?: boolean;
+}
+
 /**
  * Visual-only overlay of a planned starting settlement: its fields and the roads
  * that connect them to the center. Deterministic (derived from the same plan as
@@ -31,11 +36,15 @@ export class SettlementOverlay {
   readonly group = new THREE.Group();
   private materials: THREE.Material[] = [];
 
+  private readonly roadWidth: number;
+
   constructor(
     readonly plan: SettlementPlan,
     terrain: Terrain,
+    options: SettlementOverlayOptions = {},
   ) {
     this.group.name = 'settlement';
+    this.roadWidth = options.roadWidth ?? ROAD_WIDTH;
     const roadMat = new THREE.MeshStandardMaterial({ color: '#8a6a44', roughness: 1 });
     const fieldMat = new THREE.MeshStandardMaterial({ color: '#6f8f3a', roughness: 1 });
     applyGeneratedPbr(roadMat, 'ground_road');
@@ -43,7 +52,7 @@ export class SettlementOverlay {
     this.add(
       'roads',
       plan.roads
-        .map((r) => roadGeometry(r, terrain.getHeight.bind(terrain)))
+        .map((r) => roadGeometry(r, terrain.getHeight.bind(terrain), this.roadWidth))
         .filter((g): g is THREE.BufferGeometry => g !== null),
       roadMat,
     );
@@ -58,6 +67,14 @@ export class SettlementOverlay {
       plan.fields.flatMap((f) => cropGeometry(f, terrain.getHeight.bind(terrain))),
       cropMat,
     );
+    if (options.fieldBorders) {
+      const borderMat = new THREE.MeshStandardMaterial({ color: '#746955', roughness: 1 });
+      this.add(
+        'field-borders',
+        plan.fields.flatMap((f) => fieldBorderGeometry(f, terrain.getHeight.bind(terrain))),
+        borderMat,
+      );
+    }
   }
 
   private add(name: string, parts: THREE.BufferGeometry[], material: THREE.MeshStandardMaterial): void {
@@ -87,12 +104,9 @@ export class SettlementOverlay {
 export function roadGeometry(
   road: SettlementRoad,
   getHeight: (x: number, z: number) => number,
+  width = ROAD_WIDTH,
 ): THREE.BufferGeometry | null {
-  return buildRibbon(
-    subdivide(road.from, road.to, ROAD_STEP),
-    ROAD_WIDTH,
-    (x, z) => getHeight(x, z) + SETTLEMENT_OFFSET,
-  );
+  return buildRibbon(subdivide(road.from, road.to, ROAD_STEP), width, (x, z) => getHeight(x, z) + SETTLEMENT_OFFSET);
 }
 
 /** A field grid tilted to the terrain: every vertex sits on the ground + offset. */
@@ -122,19 +136,11 @@ export function cropGeometry(
   const half = field.size / 2;
   const n = Math.max(2, Math.floor(field.size / CROP_SPACING));
   const spacing = field.size / n;
-  const cos = Math.cos(field.yaw);
-  const sin = Math.sin(field.yaw);
   const out: THREE.BufferGeometry[] = [];
   for (let i = 0; i < n; i++) {
     const localX = -half + spacing * (i + 0.5);
-    const from = {
-      x: field.x + localX * cos - -half * sin,
-      z: field.z + localX * sin + -half * cos,
-    };
-    const to = {
-      x: field.x + localX * cos - half * sin,
-      z: field.z + localX * sin + half * cos,
-    };
+    const from = fieldPoint(field, localX, -half);
+    const to = fieldPoint(field, localX, half);
     // Rows run along the field's local Z, so they line up with the furrows.
     const geo = buildRibbon(
       subdivide(from, to, 2),
@@ -144,6 +150,38 @@ export function cropGeometry(
     if (geo) out.push(geo);
   }
   return out;
+}
+
+/** Low earthen edging that helps a plot read as cultivated ground, not a lawn. */
+export function fieldBorderGeometry(
+  field: SettlementField,
+  getHeight: (x: number, z: number) => number,
+): THREE.BufferGeometry[] {
+  const half = field.size / 2;
+  const corners = [
+    [-half, -half],
+    [half, -half],
+    [half, half],
+    [-half, half],
+    [-half, -half],
+  ].map(([x, z]) => fieldPoint(field, x, z));
+  const out: THREE.BufferGeometry[] = [];
+  for (let i = 0; i < corners.length - 1; i++) {
+    const geo = buildRibbon(
+      subdivide(corners[i], corners[i + 1], 1.5),
+      0.18,
+      (x, z) => getHeight(x, z) + SETTLEMENT_OFFSET + 0.02,
+    );
+    if (geo) out.push(geo);
+  }
+  return out;
+}
+
+/** Map a point from the field's local grid into world space. */
+function fieldPoint(field: SettlementField, x: number, z: number): { x: number; z: number } {
+  const cos = Math.cos(field.yaw);
+  const sin = Math.sin(field.yaw);
+  return { x: field.x + x * cos - z * sin, z: field.z + x * sin + z * cos };
 }
 
 function subdivide(

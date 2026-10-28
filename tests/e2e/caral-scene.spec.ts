@@ -40,6 +40,42 @@ test('the Caral base is dressed with visual-only household props', { tag: '@smok
   expect(errors).toEqual([]);
 });
 
+test('the Supe valley carries visual plots, paths and riverbank reeds', { tag: '@smoke' }, async ({ page }) => {
+  const errors = await boot(page);
+  const state = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const valley = (g.settlements ?? []).find((o: any) => o.group.name === 'caral-valley');
+    const fieldsMesh = valley?.group.getObjectByName('fields');
+    const crops = valley?.group.getObjectByName('crops');
+    const borders = valley?.group.getObjectByName('field-borders');
+    const paths = valley?.group.getObjectByName('roads');
+    const reeds = g.scene.getObjectByName('props_totora');
+    const fields = valley?.plan.fields ?? [];
+    const nodesInField = [...(g.resourceNodes?.values() ?? [])].filter((node: any) =>
+      fields.some(
+        (f: any) => Math.abs(node.pos.x - f.x) <= f.size / 2 + 0.4 && Math.abs(node.pos.z - f.z) <= f.size / 2 + 0.4,
+      ),
+    ).length;
+    return {
+      fields: valley?.plan.fields.length ?? 0,
+      fieldVerts: fieldsMesh?.geometry.attributes.position.count ?? 0,
+      cropVerts: crops?.geometry.attributes.position.count ?? 0,
+      borderVerts: borders?.geometry.attributes.position.count ?? 0,
+      pathVerts: paths?.geometry.attributes.position.count ?? 0,
+      reeds: reeds?.count ?? 0,
+      nodesInField,
+    };
+  });
+  expect(state.fields).toBeGreaterThanOrEqual(3);
+  expect(state.fieldVerts).toBeGreaterThan(0);
+  expect(state.cropVerts).toBeGreaterThan(0);
+  expect(state.borderVerts).toBeGreaterThan(0);
+  expect(state.pathVerts).toBeGreaterThan(0);
+  expect(state.reeds).toBeGreaterThan(5);
+  expect(state.nodesInField).toBe(0);
+  expect(errors).toEqual([]);
+});
+
 test('the Caral dressing is deterministic for the same mission seed', { tag: '@smoke' }, async ({ page }) => {
   await boot(page);
   const first = await page.evaluate(

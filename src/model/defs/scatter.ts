@@ -32,6 +32,11 @@ const NEAR_WATER_OFFSETS: ReadonlyArray<readonly [number, number]> = [
   [0, -3],
 ];
 
+/** True when one of the fixed probes touches water; shared by all shore-aware scatters. */
+export function hasNearbyWater(x: number, z: number, q: Pick<AmbientQuery, 'isWater'>): boolean {
+  return NEAR_WATER_OFFSETS.some(([dx, dz]) => q.isWater(x + dx, z + dz));
+}
+
 /**
  * Scatter ambient items over `[0,size]`: sample dry candidate points, pick an id
  * by weight and keep the first `count`. Pure (same seed + region + query →
@@ -60,7 +65,7 @@ export function scatterAmbient<T>(opts: {
       height: query.getHeight(x, z),
       water,
       beach: query.isBeach(x, z),
-      nearWater: NEAR_WATER_OFFSETS.some(([dx, dz]) => query.isWater(x + dx, z + dz)),
+      nearWater: hasNearbyWater(x, z, query),
       slope: query.getSlope(x, z),
       moisture: query.getMoisture(x, z),
     };
