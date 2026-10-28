@@ -95,7 +95,7 @@ function variantForMap(mapType: string): TreeVariant {
   return 'broad';
 }
 
-/** Resource node: tree, mine, well, hunt or fishing spot. */
+/** Resource node: tree, mine, stone quarry (`well`), hunt or fishing spot. */
 export class ResourceNode {
   id = allocId();
   pos = new THREE.Vector3();
@@ -170,7 +170,7 @@ export class ResourceNode {
         this.buildMine(rng);
         break;
       case 'well':
-        this.buildWell(rng);
+        this.buildQuarry(rng);
         break;
       case 'hunt':
         this.buildHunt(rng);
@@ -334,36 +334,38 @@ export class ResourceNode {
     }
   }
 
-  private buildWell(rng: RNG): void {
-    const metalMat = mat('metal-well', { map: MaterialTex.metal(), color: '#9aa4ae', metalness: 0.6, roughness: 0.5 });
-    const woodMat = mat('wood-well', { map: MaterialTex.wood(), color: '#a88a5e', roughness: 0.9 });
-    applyGeneratedPbr(woodMat, 'wood', { tint: '#c8a878' });
-    void rng;
-    const base = new THREE.Mesh(cylGeo(0.7, 0.85, 0.35, 12), metalMat);
-    base.position.y = 0.18;
-    this.add(base);
-    const tower = new THREE.Mesh(cylGeo(0.16, 0.16, 1.8, 8), metalMat);
-    tower.position.y = 1.1;
-    this.add(tower);
-    const body = new THREE.Mesh(boxGeo(0.7, 0.4, 0.7), metalMat);
-    body.position.set(0, 0.6, 0.4);
-    this.add(body);
-    const drum = new THREE.Mesh(cylGeo(0.25, 0.25, 0.15, 10), woodMat);
-    drum.position.set(0.2, 0.85, 0.4);
-    this.add(drum);
-    const arm = new THREE.Mesh(boxGeo(0.7, 0.08, 0.14), metalMat);
-    arm.position.set(0.3, 1.0, 0.4);
-    this.add(arm);
-    const lampMat = mat('lamp-well', { color: '#ffcc44', emissive: 0xffcc44, emissiveIntensity: 2, roughness: 0.4 });
-    const light = new THREE.Mesh(cylGeo(0.06, 0.06, 0.08, 8), lampMat);
-    light.position.set(0, 1.4, 0);
-    this.add(light);
-    const pit = new THREE.Mesh(
-      cylGeo(0.55, 0.6, 0.12, 12),
-      mat('pit-well', { color: '#141414', metalness: 0.4, roughness: 0.6 }),
-    );
-    pit.position.y = 0.06;
-    this.add(pit);
+  private buildQuarry(rng: RNG): void {
+    const rockMat = mat('rock-quarry', {
+      map: MaterialTex.stone(),
+      normalMap: MaterialTex.normal(33),
+      color: '#a59c8c',
+      roughness: 0.98,
+    });
+    applyGeneratedPbr(rockMat, 'wall_fieldstone', { tint: '#d0c4ae' });
+    const blockMat = mat('quarry-block', {
+      map: MaterialTex.stone(),
+      normalMap: MaterialTex.normal(33),
+      color: '#c8bca6',
+      roughness: 0.92,
+    });
+    const floor = new THREE.Mesh(cylGeo(0.62, 0.74, 0.1, 12), mat('quarry-floor', { color: '#6f675a', roughness: 1 }));
+    floor.position.y = 0.05;
+    this.add(floor);
+    for (let i = 0; i < 7; i++) {
+      const a = (i / 7) * Math.PI * 2 + rng.range(-0.15, 0.15);
+      const r = rng.range(0.48, 1.02);
+      const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(rng.range(0.3, 0.58), 0), rockMat);
+      rock.position.set(Math.cos(a) * r, rng.range(0.2, 0.45), Math.sin(a) * r);
+      rock.scale.y = rng.range(0.65, 1.2);
+      rock.rotation.set(rng.range(0, 3), rng.range(0, 3), rng.range(0, 3));
+      this.add(rock);
+    }
+    for (let i = 0; i < 3; i++) {
+      const block = new THREE.Mesh(boxGeo(0.48, 0.28, 0.34), blockMat);
+      block.position.set(-0.5 + i * 0.5, 0.14 + (i % 2) * 0.12, 0.52);
+      block.rotation.y = rng.range(-0.25, 0.25);
+      this.add(block);
+    }
   }
 
   private buildHunt(rng: RNG): void {

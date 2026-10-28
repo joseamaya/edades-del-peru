@@ -61,6 +61,11 @@ instead of the modular landmark or a hand-built schematic:
 - **Residential fabric**: the source's low-walled residential compounds are kept
   as modelled. No invented roofs or houses are added. Normal game-side base
   vegetation and resources remain outside the source site.
+- **Natural-resource realism**: `m1_caral` has no silver mines, vicuña herds or
+  cactus scatter. Stone comes from game-side quarry nodes (the save-stable `well`
+  id) outside a 14-unit opening-base clearance; the randomised mine/well that
+  used to sit at the house entrance is gone. Silver remains an abstract opening
+  stock, not a mined material.
 - The base sits in Caral Bajo at `{x: 0.315, z: 0.84}` (≈60.5, 161.3 on the 192 m
   map); Caral Alto and the Great Pyramid remain a short walk north.
 - The site keep-out is `{x: 0.52, z: 0.45, rx: 0.27, rz: 0.43}`. It excludes

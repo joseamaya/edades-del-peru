@@ -60,7 +60,8 @@ export const MISSIONS: MissionDef[] = [
       terrain: { terraceChance: 0, riverCount: 0 },
       climate: { aridity: 0.78, moisture: 0.34 },
       vegetation: { density: 0.06 },
-      resources: { tree: 0.35 },
+      // Caral has no documented silver extraction or coastal vicuña herds.
+      resources: { tree: 0.35, mine: 0, hunt: 0 },
       culturalLandscape: null,
       groundTint: '#b7ab96',
     },

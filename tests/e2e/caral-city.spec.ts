@@ -278,6 +278,28 @@ test('the Caral dwellings read at unit scale and keep the Plaza Mayor dominant',
   expect(heights.center / heights.house).toBeGreaterThanOrEqual(1.2);
 });
 
+test('the Caral opening keeps the base clear of mines, wells, cacti and vicuñas', async ({ page }) => {
+  await boot(page);
+  const state = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const center = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center' && !b.dead);
+    const nodes = [...g.resourceNodes.values()].map((n: any) => ({
+      kind: n.kind,
+      d: Math.hypot(n.pos.x - center.pos.x, n.pos.z - center.pos.z),
+    }));
+    return {
+      near: nodes.filter((n: any) => n.d < 14).map((n: any) => n.kind),
+      mines: nodes.filter((n: any) => n.kind === 'mine').length,
+      hunts: nodes.filter((n: any) => n.kind === 'hunt').length,
+      cacti: g.scene.getObjectByName('props_cactus')?.count ?? -1,
+    };
+  });
+  expect(state.near).toEqual([]);
+  expect(state.mines).toBe(0);
+  expect(state.hunts).toBe(0);
+  expect(state.cacti).toBe(0);
+});
+
 test('the Caral tutorial hides the shortcut help while it is open', async ({ page }) => {
   await boot(page);
   await expect(page.locator('#ed-tutorial')).toBeVisible({ timeout: 30_000 });
