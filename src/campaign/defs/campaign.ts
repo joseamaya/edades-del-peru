@@ -25,7 +25,7 @@ export const MISSIONS: MissionDef[] = [
     playerCiv: CivId.CARAL,
     enemyCiv: CivId.CARAL,
     map: { seed: 3000, type: 'coast', size: 192 },
-    atmosphere: { fogDensity: 0.0022, sunWarmth: 0.9, skyTint: '#cdd3d2' },
+    atmosphere: { fogDensity: 0.0032, sunWarmth: 0.9, skyTint: '#cdd3d2' },
     layout: {
       base: { x: 0.315, z: 0.84 },
       site: {

@@ -171,9 +171,22 @@ describe('authored Caral heightfield', () => {
     expect(edge).toBeLessThan(8);
   });
 
+  it('keeps the valley/terrace seam walkable between the river and the base', () => {
+    let maxStep = 0;
+    for (let z = 15; z <= 160; z++) {
+      for (let x = 30; x < 52; x++) {
+        maxStep = Math.max(
+          maxStep,
+          Math.abs(sampleAuthoredHeight(field, x + 1, z) - sampleAuthoredHeight(field, x, z)),
+        );
+      }
+    }
+    expect(maxStep).toBeLessThan(1);
+  });
+
   it('frames the valley with dry Andean foothills at the map edges', () => {
-    expect(sampleAuthoredHeight(field, 185, 100)).toBeGreaterThan(12);
-    expect(sampleAuthoredHeight(field, 100, 188)).toBeGreaterThan(10);
-    expect(sampleAuthoredHeight(field, 20, 2)).toBeGreaterThan(8);
+    expect(sampleAuthoredHeight(field, 185, 100)).toBeGreaterThan(20);
+    expect(sampleAuthoredHeight(field, 100, 188)).toBeGreaterThan(18);
+    expect(sampleAuthoredHeight(field, 20, 2)).toBeGreaterThan(12);
   });
 });

@@ -252,6 +252,7 @@ test('a Caral Blender pyramid opens an educational field card', async ({ page })
     const g = (window as unknown as { game: any }).game;
     g.camera.moveTo(100, 34, true);
     g.camera.setHeight(48);
+    g.camera.update(1, 0);
   });
   await page.waitForTimeout(800);
   const point = await page.evaluate(() => {
