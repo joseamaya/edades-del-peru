@@ -375,11 +375,19 @@ test('the Andén and Troje panels explain their historical abstractions', async 
   expect(ids!.farm).not.toBeNull();
   expect(ids!.mill).not.toBeNull();
   const bottom = page.locator('#ed-bottom');
-  await page.evaluate((id) => (window as unknown as { game: any }).game.selectBuilding(id), ids!.farm);
+  await page.evaluate((id) => {
+    const g = (window as unknown as { game: any }).game;
+    g.selectBuilding(id);
+    g.hud.update(0.2, 0);
+  }, ids!.farm);
   await expect(bottom).toContainText('Andén');
   await expect(bottom).toContainText('abstracción jugable');
   await expect(bottom).toContainText('Dossier de Caral');
-  await page.evaluate((id) => (window as unknown as { game: any }).game.selectBuilding(id), ids!.mill);
+  await page.evaluate((id) => {
+    const g = (window as unknown as { game: any }).game;
+    g.selectBuilding(id);
+    g.hud.update(0.2, 0);
+  }, ids!.mill);
   await expect(bottom).toContainText('Troje');
   await expect(bottom).toContainText('depósito comunal');
   await expect(bottom).toContainText('Dossier de Caral');
