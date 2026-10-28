@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { OPENING_BASE_CLEARANCE } from '../../src/core/Config';
 
 const URL = '/?mission=m1_caral&seed=3000&fog=0&low=1&noloop=1&intro=0';
 
@@ -276,6 +277,49 @@ test('the Caral dwellings read at unit scale and keep the Plaza Mayor dominant',
   expect(heights.house / heights.worker).toBeGreaterThanOrEqual(0.8);
   expect(heights.center).toBeGreaterThanOrEqual(2.0);
   expect(heights.center / heights.house).toBeGreaterThanOrEqual(1.2);
+});
+
+test('the Caral opening keeps the base clear of mines, wells, cacti and vicuñas', async ({ page }) => {
+  await boot(page);
+  const state = await page.evaluate((clearance: number) => {
+    const g = (window as unknown as { game: any }).game;
+    const center = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center' && !b.dead);
+    const nodes = [...g.resourceNodes.values()].map((n: any) => ({
+      kind: n.kind,
+      d: Math.hypot(n.pos.x - center.pos.x, n.pos.z - center.pos.z),
+    }));
+    const nearProps: string[] = [];
+    for (const [kind, mesh] of g.props.meshes ?? []) {
+      for (let i = 0; i < mesh.count; i++) {
+        const matrix = new window.THREE.Matrix4();
+        mesh.getMatrixAt(i, matrix);
+        const p = new window.THREE.Vector3().setFromMatrixPosition(matrix);
+        if (Math.hypot(p.x - center.pos.x, p.z - center.pos.z) < clearance) nearProps.push(kind);
+      }
+    }
+    const fauna = g.wildlife.debugSnapshot();
+    return {
+      near: nodes.filter((n: any) => n.d < clearance).map((n: any) => n.kind),
+      nearProps,
+      nearFauna: fauna
+        .filter((a: any) => Math.hypot(a.x - center.pos.x, a.z - center.pos.z) < clearance)
+        .map((a: any) => a.species),
+      species: fauna.map((a: any) => a.species),
+      mines: nodes.filter((n: any) => n.kind === 'mine').length,
+      hunts: nodes.filter((n: any) => n.kind === 'hunt').length,
+      quarries: nodes.filter((n: any) => n.kind === 'well').length,
+      cacti: g.scene.getObjectByName('props_cactus')?.count ?? -1,
+    };
+  }, OPENING_BASE_CLEARANCE);
+  expect(state.near).toEqual([]);
+  expect(state.nearProps).toEqual([]);
+  expect(state.nearFauna).toEqual([]);
+  expect(state.species).not.toContain('llama');
+  expect(state.species).not.toContain('vicuna');
+  expect(state.mines).toBe(0);
+  expect(state.hunts).toBe(0);
+  expect(state.quarries).toBeGreaterThan(0);
+  expect(state.cacti).toBe(0);
 });
 
 test('the Caral tutorial hides the shortcut help while it is open', async ({ page }) => {

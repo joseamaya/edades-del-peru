@@ -326,7 +326,8 @@ didactic pauses, and the simulation/plan is untouched. Two layers changed:
   band, a plaster cornice, a framed door, a step and a small storage annex; settlement fields now
   carry green young-crop rows (`SettlementOverlay.cropGeometry`) and the cultural landscape
   drapes flat plazas/fields over the relief instead of floating. Trees are smaller and use a
-  drier olive canopy; mine rocks use the fieldstone material instead of a coal-dark one.
+  drier olive canopy; mine rocks use the fieldstone material instead of a coal-dark one. Stone
+  nodes render as fieldstone quarries; the stable `well` kind id is kept for saves.
 - **Player base.** The starting Plaza Mayor and houses use the same compound language as the
   documented residential units: low stone-footed walls, cream plaster, painted bands, patios,
   hearths and stores, with low thatch roofs over the enclosed rooms and an open central patio
