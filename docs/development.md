@@ -378,7 +378,8 @@ Definition of Done and the building audit see
 - **External reference**: [VOIDSTRIKE](https://github.com/braedonsaunders/voidstrike) (MIT) is used only as
   technique inspiration (damage numbers, instancing, culling); its code is neither sold nor copied.
 - Import Three addons as `three/addons/...` (not `three/examples/jsm/...`).
-- Persistence in `localStorage`: `peru-settings` and `peru-campaign`.
+- Persistence in `localStorage`: `peru-settings`, `peru-campaign` (versioned campaign progress, with legacy
+  numeric migration) and `peru-title-intro` (first-visit title movie).
 
 ## Code traps (learned the hard way)
 

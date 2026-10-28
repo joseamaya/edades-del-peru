@@ -1,6 +1,6 @@
 import { PERIODS } from '../model/defs/periods';
 import { CIVS, civsForPeriod } from '../model/defs/civs';
-import { MISSIONS } from '../campaign/defs/campaign';
+import { RELEASED_MISSIONS } from '../campaign/defs/campaigns';
 import { getEducational } from '../campaign/defs/educational';
 import { MAP_LABEL } from '../core/Config';
 import { artForMission } from '../art/manifest';
@@ -137,7 +137,7 @@ function civTab(): CodexItem[] {
 }
 
 function campaignTab(): CodexItem[] {
-  return MISSIONS.map((m) => ({
+  return RELEASED_MISSIONS.map((m) => ({
     id: m.id,
     title: m.title,
     render: () => {

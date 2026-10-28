@@ -1,16 +1,20 @@
 import { test, expect } from '@playwright/test';
 
 test('shows the historical prologue before the campaign', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/?menu=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });
   await page.getByRole('button', { name: /Campañas/ }).click();
-  const intro = page.locator('.ed-overlay', { hasText: 'La Senda del Sol' });
+  const intro = page.locator('.ed-cinematic', { hasText: 'CAMPAÑA I' });
   await expect(intro).toBeVisible();
   await expect(intro).toContainText('una de las primeras civilizaciones del mundo');
   await intro.getByRole('button', { name: /Ver misiones/ }).click();
-  await expect(page.locator('.ed-overlay', { hasText: 'La Ciudad Sagrada' })).toBeVisible();
+  const hub = page.locator('.ed-campaign-panel');
+  await expect(hub).toBeVisible();
+  await expect(hub).toContainText('Culturas Preincas');
+  await expect(hub.getByRole('button', { name: /Jugar La Ciudad Sagrada/ })).toBeVisible();
+  await expect(hub).toContainText('Próximamente');
 });
 
 test('the mission briefing includes context and sources', { tag: '@smoke' }, async ({ page }) => {
@@ -30,7 +34,7 @@ test('the mission briefing includes context and sources', { tag: '@smoke' }, asy
 });
 
 test('the codex opens with periods, civilizations and dossiers', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/?menu=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });
@@ -44,7 +48,7 @@ test('the codex opens with periods, civilizations and dossiers', async ({ page }
   await expect(codex.locator('.ed-codex-content')).toContainText('Fuentes');
 });
 
-test('every campaign mission shows its educational epilogue on victory', async ({ page }) => {
+test('every campaign mission shows its educational epilogue on victory', async ({ context }) => {
   for (const mission of [
     'm2_chavin',
     'm3_moche_recuay',
@@ -55,6 +59,7 @@ test('every campaign mission shows its educational epilogue on victory', async (
     'm8_independencia',
     'm9_guerra_pacifico',
   ]) {
+    const page = await context.newPage();
     await page.goto(`/?mission=${mission}&seed=777&fog=0&low=1&noloop=1`);
     await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
       timeout: 30_000,
@@ -64,6 +69,7 @@ test('every campaign mission shows its educational epilogue on victory', async (
     await expect(victory).toBeVisible({ timeout: 15_000 });
     await expect(victory).toContainText('Epílogo');
     await expect(victory).toContainText('Códice');
+    await page.close();
   }
 });
 
@@ -242,7 +248,7 @@ test('m6 cuts the canal to force Chan Chan to surrender', async ({ page }) => {
   expect(out.won).toBe(true);
 });
 
-test('authored campaign geography spawns its local base and features', async ({ page }) => {
+test('authored campaign geography spawns its local base and features', async ({ context }) => {
   const cases = [
     { id: 'm2_chavin', river: true, decor: null, canal: false },
     { id: 'm3_moche_recuay', flats: true, decor: 'mission_decor_recuay_pashash', canal: false },
@@ -254,6 +260,7 @@ test('authored campaign geography spawns its local base and features', async ({ 
     { id: 'm9_guerra_pacifico', flats: true, decor: 'mission_decor_chile_apostadero', canal: false },
   ];
   for (const item of cases) {
+    const page = await context.newPage();
     await page.goto(`/?mission=${item.id}&seed=777&fog=0&low=1&noloop=1`);
     await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
       timeout: 30_000,
@@ -276,6 +283,7 @@ test('authored campaign geography spawns its local base and features', async ({ 
     if (item.flats) expect(out.flats).toBeGreaterThan(0);
     if (item.decor) expect(out.decor).toBe(item.decor);
     if (item.canal !== undefined) expect(out.canal).toBe(item.canal);
+    await page.close();
   }
 });
 
@@ -468,43 +476,61 @@ test('a strategic choice wins through either branch', async ({ page }) => {
   expect(siege).toBe(true);
 });
 
-test('the campaign menu shows completion progress and can continue', async ({ page }) => {
-  // two missions already completed
-  await page.addInitScript(() => localStorage.setItem('peru-campaign', '2'));
-  await page.goto('/');
+test('the campaign hub shows Caral progress and only Caral is playable', async ({ page }) => {
+  // legacy numeric progress migrates to the first released mission
+  await page.addInitScript(() => {
+    localStorage.setItem('peru-campaign', '2');
+    localStorage.setItem('peru-campaign-intro', '1');
+  });
+  await page.goto('/?menu=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });
   await page.getByRole('button', { name: /Campañas/ }).click();
-  await page
-    .locator('.ed-overlay', { hasText: 'La Senda del Sol' })
-    .getByRole('button', { name: /Ver misiones/ })
-    .click();
-  const menu = page.locator('.ed-overlay', { hasText: 'CAMPAÑA' });
-  await expect(menu).toContainText('2 / 9 misiones completadas');
-  await expect(menu).toContainText('✓ 1. La Ciudad Sagrada');
-  await expect(menu).toContainText('▶ 3.');
-  await expect(menu).toContainText('🔒 4.');
-  // "continue" opens the next uncompleted mission (mission 3)
-  await menu.getByRole('button', { name: /Continuar campaña/ }).click();
-  await page.waitForURL(/mission=m3_moche_recuay/, { timeout: 15_000 });
+  const menu = page.locator('.ed-campaign-panel');
+  await expect(menu).toContainText('Culturas Preincas');
+  await expect(menu).toContainText('1 / 1 misiones completadas');
+  await expect(menu).toContainText('✓ La Ciudad Sagrada');
+  await expect(menu).toContainText('El Tahuantinsuyo');
+  await expect(menu).toContainText('En preparación');
+  await expect(menu.getByRole('button', { name: /Jugar La Ciudad Sagrada/ })).toHaveCount(0);
 });
 
-test('the campaign menu shows a completed campaign', async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('peru-campaign', '9'));
-  await page.goto('/');
+test('the campaign hub keeps future campaigns as coming soon', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('peru-campaign', '9');
+    localStorage.setItem('peru-campaign-intro', '1');
+  });
+  await page.goto('/?menu=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });
   await page.getByRole('button', { name: /Campañas/ }).click();
-  await page
-    .locator('.ed-overlay', { hasText: 'La Senda del Sol' })
-    .getByRole('button', { name: /Ver misiones/ })
-    .click();
-  const menu = page.locator('.ed-overlay', { hasText: 'CAMPAÑA' });
-  await expect(menu).toContainText('9 / 9 misiones completadas');
-  await expect(menu).toContainText('🏆 Campaña completada');
+  const menu = page.locator('.ed-campaign-panel');
+  await expect(menu).toContainText('✓ La Ciudad Sagrada');
+  for (const title of ['El Tahuantinsuyo', 'El Virreinato', 'Independencia y República']) {
+    await expect(menu).toContainText(title);
+  }
   await expect(menu.getByRole('button', { name: /Continuar campaña/ })).toHaveCount(0);
+});
+
+test('Caral opens with a chapter card and closes the first campaign', async ({ page }) => {
+  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1&noloop=1');
+  const briefing = page.locator('.ed-briefing');
+  await expect(briefing).toBeVisible({ timeout: 30_000 });
+  await briefing.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+  const card = page.locator('.ed-mission-card');
+  await expect(card).toBeVisible();
+  await expect(card).toContainText('La Ciudad Sagrada');
+  await page.evaluate(() => document.querySelector('.ed-mission-card')?.remove());
+  await expect(card).toHaveCount(0);
+
+  await page.evaluate(() => (window as unknown as { game: any }).game.showVictory(0));
+  const victory = page.locator('.ed-epilogue');
+  await expect(victory).toContainText('Fin de la primera campaña');
+  await expect(victory.getByRole('button', { name: /Volver a campañas/ })).toBeVisible();
+  await victory.getByRole('button', { name: /Volver a campañas/ }).click();
+  await expect(page.locator('.ed-campaign-panel')).toBeVisible();
 });
 
 test('a peaceful mission briefing shows no rival side', async ({ page }) => {

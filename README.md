@@ -66,32 +66,26 @@ Debug URL parameters:
 
 ## Campaign: La Senda del Sol
 
-Nine historical scenarios grounded in documented dates, places and societies; where the record names commanders, the game uses them. Each dossier is in
-[`docs/historia/campanas/`](./docs/historia/campanas/).
+The campaign is a saga of **four chapters**. The current release opens only the first mission,
+**Caral**, inside _Culturas Preincas_; the remaining authored scenarios are kept as drafts for
+the next chapters and are not shown in the player-facing campaign menus.
 
-| #   | Mission                   | Date           | Historical context                                         |
-| --- | ------------------------- | -------------- | ---------------------------------------------------------- |
-| 1   | La Ciudad Sagrada         | c. 3000 BCE    | Caral-Supe, Áspero and the Supe valley (no documented war) |
-| 2   | El Oráculo de Chavín      | c. 900–500 BCE | Chavín and Paracas (coetaneous)                            |
-| 3   | La Frontera de los Valles | c. 300–600 CE  | Moche and Recuay (archaeologically attested conflict)      |
-| 4   | El Horizonte Medio        | c. 600–1000 CE | Wari and Tiahuanaco (coetaneous)                           |
-| 5   | Yahuar Pampa              | 1438           | Cusi Yupanqui (Inca) vs Anccu Hualloc (Chanca)             |
-| 6   | La Guerra del Norte       | c. 1470        | Túpac Yupanqui (Inca) vs Minchancaman (Chimú)              |
-| 7   | La Gran Rebelión          | 1780–1781      | Túpac Amaru II vs Royalists                                |
-| 8   | La Independencia          | 1821–1824      | Patriots (San Martín, Bolívar, Sucre) vs Royalists         |
-| 9   | La Defensa de Arica       | 1880           | Bolognesi (Peru) vs Chile                                  |
+| Chapter | Campaign                      | Focus                               | Release                             |
+| ------- | ----------------------------- | ----------------------------------- | ----------------------------------- |
+| I       | **Culturas Preincas**         | Caral, Chavín, Moche/Recuay, Wari   | Caral playable; rest in preparation |
+| II      | **El Tahuantinsuyo**          | Yahuar Pampa and the Inca expansion | In preparation                      |
+| III     | **El Virreinato**             | Túpac Amaru II and colonial Peru    | In preparation                      |
+| IV      | **Independencia y República** | Independence, Arica and modern Peru | In preparation                      |
 
-Mission ids: `m1_caral`, `m2_chavin`, `m3_moche_recuay`, `m4_wari`, `m5_yahuar_pampa`, `m6_chimu_inca`,
-`m7_tupac_amaru`, `m8_independencia`, `m9_guerra_pacifico`.
-
+Draft mission ids remain stable (`m1_caral` … `m9_guerra_pacifico`) and can be opened directly
+with `?mission=ID` for QA; only released missions appear in menus, the Codex and progress.
 The campaign [quality bar](./docs/design/campaign-quality-bar.md) records the gates a mission must meet.
 
 ## Educational mode
 
 The game teaches history while you play:
 
-- **Campaign prologue**: opening _Campañas_ presents the history of Peru (from Caral to the Republic) before
-  choosing a scenario.
+- **Campaign prologue**: opening _Campañas_ presents the saga and the first playable chapter, Caral.
 - **Historical briefing**: each mission shows period and dates, geography, sides, expanded context, a
   «¿Sabías que…?» and its **sources** (collapsible).
 - **Guided tutorial**: the first mission (Caral) teaches selecting, building and exploring step by step

@@ -96,5 +96,5 @@ test('loading without a save shows the main menu', async ({ page }) => {
   });
   const menu = page.locator('.ed-overlay', { hasText: 'EDADES DEL PERÚ' });
   await expect(menu).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByRole('button', { name: /INICIAR ESCARAMUZA/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Escaramuza/ })).toBeVisible();
 });
