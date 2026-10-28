@@ -88,6 +88,7 @@ import {
   CARAL_HERITAGE_PROXIES,
   CARAL_SITE_ANCHOR,
   CARAL_SITE_BLOCKERS,
+  CARAL_SITE_BLOCKER_PADDING,
   CARAL_SITE_CAMERA,
   CARAL_SITE_ORIGIN,
   CARAL_SITE_SCALE,
@@ -161,8 +162,6 @@ const STARTING_UNIT_ANGLES = [0, -0.52, 0.52, -1.05, 1.05, -1.6, 1.6] as const;
 const STARTING_UNIT_RADII = [5.2, 6.1, 7.0, 7.9, 8.8, 9.7] as const;
 /** Keep guaranteed fishing searches inside the authored river and map edge. */
 const FISHING_SCAN_MARGIN = 4;
-/** Padding around authored monument AABBs so units do not clip their edges. */
-const SITE_BLOCKER_PADDING = 0.35;
 export class Game {
   renderer!: THREE.WebGLRenderer;
   scene = new THREE.Scene();
@@ -653,8 +652,8 @@ export class Game {
       this.pathfinder.addObstacle({
         x: blocker.x,
         z: blocker.z,
-        w: blocker.w + SITE_BLOCKER_PADDING * 2,
-        d: blocker.d + SITE_BLOCKER_PADDING * 2,
+        w: blocker.w + CARAL_SITE_BLOCKER_PADDING * 2,
+        d: blocker.d + CARAL_SITE_BLOCKER_PADDING * 2,
       });
     }
   }

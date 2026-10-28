@@ -38,10 +38,15 @@ export const CARAL_HERITAGE_PROXIES: readonly CaralHeritageProxy[] = [
  * because it is solid but not a heritage card. Plazas and the open processional
  * ground stay walkable.
  */
+/** The circular altar is solid but has no heritage click proxy. */
+export const CARAL_CIRCULAR_ALTAR = { x: 72.5, z: 144.55, w: 10.6, d: 7.7 };
+
+/** Extra clearance around solid monument AABBs for unit footprints. */
+export const CARAL_SITE_BLOCKER_PADDING = 0.5;
+
 export const CARAL_SITE_BLOCKERS = [
   ...CARAL_HERITAGE_PROXIES.map(({ x, z, w, d }) => ({ x, z, w, d })),
-  // The circular altar is a solid structure but has no heritage click proxy.
-  { x: 72.5, z: 144.55, w: 10.6, d: 7.7 },
+  CARAL_CIRCULAR_ALTAR,
 ];
 
 /**

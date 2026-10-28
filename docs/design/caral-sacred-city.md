@@ -140,8 +140,10 @@ instead of the modular landmark or a hand-built schematic:
   rejects placement over the upper, residential and lower source footprints; the
   Caral Bajo base remains outside them.
 - Low walls: `Game.addSiteWallCollision` rasterizes vertical `Infra_Residential`,
-  `Infra_LowerHalf` and low `Infra_UpperHalf` faces into `Pathfinder.blockCells`;
-  the static mask survives dynamic-obstacle rebuilds.
+  `Infra_LowerHalf`, `Infra_UpperHalf`, `Infra_Props` and `AltarCircular` faces
+  into `Pathfinder.blockCells`; the static mask survives dynamic-obstacle
+  rebuilds. Caral uses a 1 m navigation grid and `CARAL_SITE_BLOCKER_PADDING`
+  around the monument AABBs.
 - Terrain palette: `src/assets/textures/terrain/caral_*`, with height/slope bands
   for the green valley floor, pale terrace and warm lomas. The rock slot reuses
   the smooth sand albedo for Caral because the photographic rock/dirt normals

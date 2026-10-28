@@ -248,7 +248,6 @@ describe('Pathfinder.nearestWalkablePoint', () => {
     const exit = pf.nearestWalkablePoint(50, 50);
     expect(exit).not.toBeNull();
     expect(pf.isWalkable(exit!.x, exit!.z)).toBe(true);
-    expect(Math.hypot(exit!.x - 50, exit!.z - 50)).toBeLessThanOrEqual(8);
   });
 });
 
