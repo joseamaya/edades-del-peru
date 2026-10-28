@@ -130,6 +130,8 @@ export interface ObjectiveDef {
   radius?: number;
   /** Unit kind that must hold the position (optional; all player units by default). */
   unitKind?: UnitKind;
+  /** Another objective id that must be completed before this one can activate. */
+  requires?: string;
   time?: number;
   buildingKind?: BuildingKind;
   resource?: keyof Resources;

@@ -72,6 +72,7 @@ describe('campaign educational content', () => {
 
     const hidden = ['obj_almacenamiento', 'obj_alimento', 'obj_riego', 'obj_asamblea', 'obj_complejos'];
     for (const id of hidden) expect(caral.objectives.find((o) => o.id === id)?.hidden, id).toBe(true);
+    expect(caral.objectives.find((o) => o.id === 'obj_asamblea')?.requires).toBe('obj_complejo');
     expect(caral.objectives.find((o) => o.id === 'obj_agricultura')?.hidden).toBeFalsy();
     expect(caral.objectives.find((o) => o.id === 'obj_complejo')?.hidden).toBeFalsy();
     expect(caral.objectives.find((o) => o.id === 'obj_sostener')?.hidden).toBeFalsy();

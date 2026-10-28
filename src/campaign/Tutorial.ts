@@ -8,6 +8,8 @@ interface PasoTutorial {
   text: string;
   /** HUD element selector to highlight (optional). */
   highlight?: string;
+  /** Skip this step until the player has reached the matching mission beat. */
+  gate?: (game: Game) => boolean;
   check: (game: Game) => boolean;
 }
 
@@ -95,6 +97,7 @@ export class Tutorial {
         id: 'storage',
         text: 'Construye un depósito comunal (Troje) para guardar el excedente de la comunidad.',
         highlight: buildBottom,
+        gate: (g) => g.mission?.getObjectiveState('obj_almacenamiento') !== 'pendiente',
         check: (g) =>
           [...g.buildings.values()].filter(
             (b) => b.owner === 0 && b.kind === BuildingKind.MILL && b.constructionComplete && !b.dead,
@@ -126,6 +129,15 @@ export class Tutorial {
   }
 
   private show(): void {
+    while (this.idx < this.pasos.length) {
+      const candidate = this.pasos[this.idx];
+      if (!candidate.gate || candidate.gate(this.game)) break;
+      this.idx++;
+    }
+    if (this.idx >= this.pasos.length) {
+      this.finish();
+      return;
+    }
     const paso = this.pasos[this.idx];
     this.game.hud.showTutorialStep(paso.text, this.idx, this.pasos.length, () => this.finish());
     if (paso.highlight) this.game.hud.highlightHud(paso.highlight);

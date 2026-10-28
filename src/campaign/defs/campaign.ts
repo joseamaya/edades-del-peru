@@ -117,6 +117,7 @@ export const MISSIONS: MissionDef[] = [
         radius: 18,
         time: 20,
         unitKind: UnitKind.WORKER,
+        requires: 'obj_complejo',
         hidden: true,
         optional: true,
         title: 'Convoca una asamblea comunal en la Plaza Central',

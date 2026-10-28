@@ -3871,11 +3871,10 @@ export class Game {
   }
 
   canStartAssembly(): boolean {
-    return this.mission?.getObjectiveState('obj_complejo') === 'completed';
+    return this.mission?.canActivateObjective('obj_asamblea') ?? false;
   }
 
   startAssembly(): boolean {
-    if (!this.canStartAssembly()) return false;
     return this.mission?.activateObjective('obj_asamblea') ?? false;
   }
 

@@ -49,7 +49,8 @@ What the player does:
    than a resource buff.
 
 The reveal chain is the mission's pacing: the panel starts with three goals, grows after the fields,
-after the store and after the ceremonial visit. Trigger effects announce each new goal with a toast,
+after the store and after the ceremonial visit. The Caral trigger effects announce each new goal with a toast when it is still
+pending; a goal already satisfied before its reveal is marked complete instead,
 so a hidden objective never becomes an unexplained moving goalpost. The assembly stays optional and
 the five-minute survival clock remains the final pressure; a fast player can finish the productive
 goals early, but the mission does not wait on an arbitrary mid-game timer.
