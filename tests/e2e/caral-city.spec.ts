@@ -233,13 +233,49 @@ test('the Caral base uses compound architecture for its center and houses', asyn
     const g = (window as unknown as { game: any }).game;
     const center = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center' && !b.dead);
     const house = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'house' && !b.dead);
+    const roof = (b: any) => {
+      const group = b.view.group.getObjectByName('caral_roof');
+      const panels = group?.children ?? [];
+      const patio = b.view.group.localToWorld(new window.THREE.Vector3(0, 5, 0));
+      const ray = new window.THREE.Raycaster(patio, new window.THREE.Vector3(0, -1, 0));
+      return { panels: panels.length, patioOpen: ray.intersectObject(group, true).length === 0 };
+    };
     return {
       center: !!center?.view?.group?.getObjectByName('caral_center'),
       house: !!house?.view?.group?.getObjectByName('caral_house'),
+      centerRoof: roof(center),
+      houseRoof: roof(house),
     };
   });
   expect(state.center).toBe(true);
   expect(state.house).toBe(true);
+  expect(state.centerRoof.panels).toBeGreaterThan(0);
+  expect(state.houseRoof.panels).toBeGreaterThan(0);
+  expect(state.centerRoof.patioOpen).toBe(true);
+  expect(state.houseRoof.patioOpen).toBe(true);
+});
+
+test('the Caral dwellings read at unit scale and keep the Plaza Mayor dominant', async ({ page }) => {
+  await boot(page);
+  const heights = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const center = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center' && !b.dead);
+    const house = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'house' && !b.dead);
+    const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.garrisonedIn);
+    const height = (obj: any) => {
+      obj.updateWorldMatrix(true, true);
+      return new window.THREE.Box3().setFromObject(obj).getSize(new window.THREE.Vector3()).y;
+    };
+    return {
+      center: height(center.view.group.getObjectByName('caral_center')),
+      house: height(house.view.group.getObjectByName('caral_house')),
+      worker: height(worker.view.group),
+    };
+  });
+  expect(heights.house).toBeGreaterThanOrEqual(1.5);
+  expect(heights.house / heights.worker).toBeGreaterThanOrEqual(0.8);
+  expect(heights.center).toBeGreaterThanOrEqual(2.0);
+  expect(heights.center / heights.house).toBeGreaterThanOrEqual(1.2);
 });
 
 test('the Caral tutorial hides the shortcut help while it is open', async ({ page }) => {
