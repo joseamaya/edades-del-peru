@@ -378,10 +378,8 @@ export class Mission {
         break;
       }
       case 'objective':
-        this.objState.set(
-          fx.objectiveId,
-          fx.state === 'activate' ? 'activo' : fx.state === 'complete' ? 'completed' : 'failed',
-        );
+        if (fx.state === 'activate') this.activate(fx.objectiveId, fx.announce === true);
+        else this.objState.set(fx.objectiveId, fx.state === 'complete' ? 'completed' : 'failed');
         break;
       case 'camera': {
         const p = this.resolvePoint(fx.pos);
@@ -435,12 +433,28 @@ export class Mission {
     return this.objState.get(id) ?? 'pendiente';
   }
 
-  /** Activate a hidden or pending objective (e.g. a field-card action). */
-  activateObjective(id: string): boolean {
+  /** Whether a hidden/pending objective has met its prerequisites. */
+  canActivateObjective(id: string): boolean {
     const def = this.objective(id);
     if (!def || this.objState.get(id) !== 'pendiente') return false;
+    return !def.requires || this.objState.get(def.requires) === 'completed';
+  }
+
+  /** Activate a hidden or pending objective (e.g. a field-card action). */
+  activateObjective(id: string): boolean {
+    return this.activate(id, true);
+  }
+
+  /** Shared activation path; triggers can opt out of the new-goal toast. */
+  private activate(id: string, announce: boolean): boolean {
+    const def = this.objective(id);
+    if (!def || !this.canActivateObjective(id)) return false;
     this.objState.set(id, 'activo');
-    this.game.hud?.showToast('Nuevo objetivo: ' + def.title, 'info');
+    if (this.evalObjective(def) === 'win') {
+      this.complete(id);
+      return true;
+    }
+    if (announce) this.game.hud?.showToast('Nuevo objetivo: ' + def.title, 'info');
     return true;
   }
 

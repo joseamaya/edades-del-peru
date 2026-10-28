@@ -28,7 +28,7 @@ objectives can be satisfied by a test harness.
 | History | Met | `docs/historia/campanas/caral.md`, UNESCO / Zona Arqueológica Caral sources; no documented war. |
 | Identity | Met | Authored Supe valley and Caral Alto/Bajo, six modular pyramids, Anfiteatro, operable canal, heritage cards and communal assembly. |
 | Play | Met | `tests/e2e/campaign-playtest.spec.ts` builds, harvests and moves through ordinary commands, then uses the public `visitHeritage` action after the scout reaches the site; the field-card button itself is covered by `caral-city.spec.ts`. |
-| Contract | Met | Required ceremonial observation; optional canal, six-pyramid visit and assembly; hidden assembly filtered from the briefing; live progress in the objectives panel. |
+| Contract | Met | Required fields, communal store, food, ceremonial observation and survival; surplus/canal/tour reveals are staged and the assembly stays optional; hidden goals are filtered from the briefing; live progress in the objectives panel. |
 | Onboarding | Met | Six-step tutorial, briefing, Codex, minimap destination pips. |
 | Closure | Met | Epilogue, optional-achievement summary and “Continuar” to m2. |
 | UX | Met | Reviewed at 1280×800 and 1600×900; tutorial dialogue and result layout do not hide controls. |

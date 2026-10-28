@@ -67,8 +67,8 @@ Definition of Done and the building audit see
   for nearby Andenes and completes `obj_riego`. The cards are educational overlays, not construction
   mechanics. The player-owned Andén and Troje panels use the mission-scoped cards in
   `src/model/defs/buildingCards.ts` to state that both names are gameplay abstractions. The Plaza
-  Central card exposes `startAssembly()`, which activates the hidden optional `obj_asamblea` hold;
-  a worker must remain in the plaza for 20 seconds.
+  Central card exposes `startAssembly()` once `obj_complejo` is complete, which activates the hidden
+  optional `obj_asamblea` hold; a worker must remain in the plaza for 20 seconds.
 - **Mission canals**: `MissionLayout.canal` (`src/campaign/types.ts`) gives a normalized canal site; `Game.spawnCanal` builds the visual water/stones and reserves the footprint, while `MissionPoint.ref: 'canal'` resolves the site for a `reach` objective. m1 adds a closed communal gate whose card operation raises `farmYieldAt` for nearby Andenes; m6 uses the canal as the Chan Chan surrender target. The canal is visual-only and has no pathfinding obstacle. See `tests/e2e/campaign.spec.ts` and `tests/e2e/caral-city.spec.ts`.
 - **Building/unit materials are AI-overridable**: `mat()` (`ProceduralModel.ts`) maps a `TexKind` to an
   AI-generated material via `TEX_GEN` (e.g. `adobe → wall_adobe`, `brick → wall_brick`, `roof → tile`,
@@ -253,8 +253,10 @@ Definition of Done and the building audit see
   `tests/campaign-profiles.test.ts`.
 - **Campaign contract**: hidden objectives are omitted from the briefing until activated; `Mission.getObjectiveProgress`
   feeds live count/time meters to the objectives panel; active objective anchors are drawn as gold pips on the
-  minimap. An `inspect` objective with `pos` also requires a player unit at the site. An untagged `reach`
-  objective accepts any player unit. Victory lists optional achievements and offers the next mission. The Caral gold-master gates live in
+  minimap. Trigger activations can opt into the “Nuevo objetivo” toast with `announce: true`; Caral uses this for
+  its staged surplus/canal/tour reveals, while other missions keep silent activations. An `inspect` objective with
+  `pos` also requires a player unit at the site. An untagged `reach` objective accepts any player unit. Victory lists
+  optional achievements and offers the next mission. The Caral gold-master gates live in
   [`design/campaign-quality-bar.md`](design/campaign-quality-bar.md).
 - **Educational layer**: `src/campaign/defs/educational.ts` (prologue + context/«¿Sabías que…?»/sources per mission,
   derived from `docs/historia/`), `src/campaign/Tutorial.ts` (step-by-step guided tutorial, only on missions with

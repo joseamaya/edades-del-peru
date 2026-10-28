@@ -3870,6 +3870,10 @@ export class Game {
     return this.mission?.getObjectiveState('obj_asamblea') ?? 'pendiente';
   }
 
+  canStartAssembly(): boolean {
+    return this.mission?.canActivateObjective('obj_asamblea') ?? false;
+  }
+
   startAssembly(): boolean {
     return this.mission?.activateObjective('obj_asamblea') ?? false;
   }

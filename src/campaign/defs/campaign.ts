@@ -83,6 +83,7 @@ export const MISSIONS: MissionDef[] = [
         kind: 'build',
         buildingKind: BuildingKind.MILL,
         count: 1,
+        hidden: true,
         title: 'Construye un depósito comunal (Troje)',
       },
       {
@@ -90,6 +91,7 @@ export const MISSIONS: MissionDef[] = [
         kind: 'gather',
         resource: 'food',
         count: 500,
+        hidden: true,
         title: 'Reúne 500 de comida para sostener a la comunidad',
       },
       {
@@ -105,6 +107,7 @@ export const MISSIONS: MissionDef[] = [
         id: 'obj_riego',
         kind: 'canal_open',
         optional: true,
+        hidden: true,
         title: 'Abre la compuerta del canal comunal',
       },
       {
@@ -114,6 +117,7 @@ export const MISSIONS: MissionDef[] = [
         radius: 18,
         time: 20,
         unitKind: UnitKind.WORKER,
+        requires: 'obj_complejo',
         hidden: true,
         optional: true,
         title: 'Convoca una asamblea comunal en la Plaza Central',
@@ -130,6 +134,7 @@ export const MISSIONS: MissionDef[] = [
           'caral_pyramid_huanca',
         ],
         optional: true,
+        hidden: true,
         title: 'Recorre los seis complejos piramidales de Caral Alto',
       },
     ],
@@ -162,6 +167,8 @@ export const MISSIONS: MissionDef[] = [
             type: 'dialogue',
             text: 'Los campos junto al agua y los canales rinden más. La tierra sostiene a la comunidad.',
           },
+          { type: 'objective', objectiveId: 'obj_almacenamiento', state: 'activate', announce: true },
+          { type: 'objective', objectiveId: 'obj_alimento', state: 'activate', announce: true },
         ],
       },
       {
@@ -172,6 +179,7 @@ export const MISSIONS: MissionDef[] = [
             type: 'dialogue',
             text: 'El depósito guarda el excedente. Con trabajo comunal y reservas se levantan plazas y pirámides.',
           },
+          { type: 'objective', objectiveId: 'obj_riego', state: 'activate', announce: true },
         ],
       },
       {
@@ -180,8 +188,9 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'La escala de plazas y pirámides se asocia al excedente y al trabajo comunal; es una interpretación arqueológica, no un registro escrito.',
+            text: 'La escala de plazas y pirámides se asocia al excedente y al trabajo comunal; es una interpretación arqueológica, no un registro escrito. La Plaza Central permite convocar una asamblea comunal.',
           },
+          { type: 'objective', objectiveId: 'obj_complejos', state: 'activate', announce: true },
         ],
       },
       {

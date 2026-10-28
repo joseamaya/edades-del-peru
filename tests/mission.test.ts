@@ -127,3 +127,65 @@ describe('mission optional (bonus) objectives', () => {
     expect(m.won).toBe(true);
   });
 });
+
+describe('mission hidden-objective reveals', () => {
+  it('activates a hidden goal through a trigger and announces it', () => {
+    const unit = { id: 1, tag: 'guarda', owner: 0, dead: false, kind: UnitKind.WORKER };
+    const game = stubGame(unit) as any;
+    const toasts: string[] = [];
+    game.hud.showToast = (msg: string) => toasts.push(msg);
+    const revealDef: MissionDef = {
+      ...def,
+      objectives: [
+        { id: 'req', kind: 'gather', resource: 'food', count: 1, title: 'required' },
+        { id: 'secret', kind: 'gather', resource: 'food', count: 10, hidden: true, title: 'secreto' },
+      ],
+      triggers: [
+        {
+          id: 'reveal',
+          condition: { type: 'objective', objectiveId: 'req', state: 'completed' },
+          effects: [{ type: 'objective', objectiveId: 'secret', state: 'activate', announce: true }],
+        },
+      ],
+    };
+    const m = new Mission(game, revealDef, () => {});
+    m.start();
+    game.players[0].resources.food = 1;
+    m.update(0.1, 0);
+    expect(m.getObjectiveState('secret')).toBe('activo');
+    expect(toasts.some((t) => t.includes('Nuevo objetivo: secreto'))).toBe(true);
+
+    game.players[0].resources.food = 10;
+    m.update(0.1, 0);
+    expect(m.getObjectiveState('secret')).toBe('completed');
+    expect(m.won).toBe(true);
+  });
+
+  it('completes a hidden goal quietly when it was already satisfied before reveal', () => {
+    const unit = { id: 1, tag: 'guarda', owner: 0, dead: false, kind: UnitKind.WORKER };
+    const game = stubGame(unit) as any;
+    const toasts: string[] = [];
+    game.hud.showToast = (msg: string) => toasts.push(msg);
+    const revealDef: MissionDef = {
+      ...def,
+      objectives: [
+        { id: 'req', kind: 'gather', resource: 'food', count: 1, title: 'required' },
+        { id: 'secret', kind: 'gather', resource: 'food', count: 10, hidden: true, title: 'secreto' },
+      ],
+      triggers: [
+        {
+          id: 'reveal',
+          condition: { type: 'objective', objectiveId: 'req', state: 'completed' },
+          effects: [{ type: 'objective', objectiveId: 'secret', state: 'activate', announce: true }],
+        },
+      ],
+    };
+    const m = new Mission(game, revealDef, () => {});
+    m.start();
+    game.players[0].resources.food = 10;
+    m.update(0.1, 0);
+    expect(m.getObjectiveState('secret')).toBe('completed');
+    expect(toasts.some((t) => t.includes('Nuevo objetivo: secreto'))).toBe(false);
+    expect(toasts.some((t) => t.includes('Objetivo completado: secreto'))).toBe(true);
+  });
+});
