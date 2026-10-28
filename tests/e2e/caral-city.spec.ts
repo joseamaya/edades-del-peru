@@ -177,7 +177,13 @@ test('the Caral objectives reveal in acts and keep the assembly hidden until the
   await expect(objectives).not.toContainText('250/500');
   await expect(objectives).not.toContainText('canal comunal');
   await expect(objectives).not.toContainText('0/6');
-  await expect(objectives).not.toContainText('Convoca una asamblea');
+  const plaza = page.locator('#ed-bottom');
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.selectedHeritage = 'caral_pyramid_mayor';
+    g.hud.update(0.2, 0);
+  });
+  await expect(plaza).not.toContainText('Convocar asamblea');
 
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -198,12 +204,18 @@ test('the Caral objectives reveal in acts and keep the assembly hidden until the
 
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
+    g.visitHeritage('caral_pyramid_mayor');
     g.mission.objState.set('obj_complejo', 'completed');
     g.mission.update(0.1, 0);
     g.hud.update(0.2, 0);
   });
-  await expect(objectives).toContainText('Convoca una asamblea');
-  await expect(objectives).toContainText('0/6');
+  await expect(objectives).toContainText('1/6');
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.selectedHeritage = 'caral_pyramid_mayor';
+    g.hud.update(0.2, 0);
+  });
+  await expect(plaza).toContainText('Convocar asamblea');
 
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -443,6 +455,8 @@ test('the Plaza Central card activates the communal assembly', async ({ page }) 
   await boot(page);
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
+    g.mission.objState.set('obj_complejo', 'completed');
+    g.mission.update(0.1, 0);
     g.selectedHeritage = 'caral_pyramid_mayor';
   });
   const bottom = page.locator('#ed-bottom');
@@ -489,6 +503,8 @@ test('a loaded Caral save keeps the Blender setpiece', async ({ page }) => {
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     g.visitHeritage('caral_pyramid_mayor');
+    g.mission.objState.set('obj_complejo', 'completed');
+    g.mission.update(0.1, 0);
     g.toggleCanal();
     g.startAssembly();
     g.saveMatch();

@@ -37,14 +37,16 @@ What the player does:
    Completing the Troje reveals the optional canal goal.
 4. Observes the ceremonial complex; the required `obj_complejo` completes when a player unit reaches
    the Plaza Central and the Gran Pirámide / Plaza Central field card is opened, making the monumental
-   sector part of the victory. At that point the communal assembly and the six-pyramid tour are revealed.
+   sector part of the victory. At that point the six-pyramid tour is revealed and the Plaza card
+   starts offering the communal assembly (it is not activated until the player convokes it).
 5. Reaches the food target and keeps the settlement standing for five minutes.
 6. Optional: opens the communal canal gate; nearby Andenes gain irrigation yield and the `obj_riego`
    bonus completes.
 7. Optional: clicks the six Upper-Half pyramids, reads their field cards and can record each visit;
    the recorded visits complete the `obj_complejos` bonus without gating progress.
-8. Optional: from the Plaza Central card, convokes a communal assembly; a worker must hold the
-   plaza for 20 seconds. It teaches communal organisation through time rather than a resource buff.
+8. Optional: after observing the complex, the Plaza Central card offers the communal assembly; a
+   worker must hold the plaza for 20 seconds. It teaches communal organisation through time rather
+   than a resource buff.
 
 The reveal chain is the mission's pacing: the panel starts with three goals, grows after the fields,
 after the store and after the ceremonial visit. Trigger effects announce each new goal with a toast,

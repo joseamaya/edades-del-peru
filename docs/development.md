@@ -67,8 +67,8 @@ Definition of Done and the building audit see
   for nearby Andenes and completes `obj_riego`. The cards are educational overlays, not construction
   mechanics. The player-owned Andén and Troje panels use the mission-scoped cards in
   `src/model/defs/buildingCards.ts` to state that both names are gameplay abstractions. The Plaza
-  Central card exposes `startAssembly()`, which activates the hidden optional `obj_asamblea` hold;
-  a worker must remain in the plaza for 20 seconds.
+  Central card exposes `startAssembly()` once `obj_complejo` is complete, which activates the hidden
+  optional `obj_asamblea` hold; a worker must remain in the plaza for 20 seconds.
 - **Mission canals**: `MissionLayout.canal` (`src/campaign/types.ts`) gives a normalized canal site; `Game.spawnCanal` builds the visual water/stones and reserves the footprint, while `MissionPoint.ref: 'canal'` resolves the site for a `reach` objective. m1 adds a closed communal gate whose card operation raises `farmYieldAt` for nearby Andenes; m6 uses the canal as the Chan Chan surrender target. The canal is visual-only and has no pathfinding obstacle. See `tests/e2e/campaign.spec.ts` and `tests/e2e/caral-city.spec.ts`.
 - **Building/unit materials are AI-overridable**: `mat()` (`ProceduralModel.ts`) maps a `TexKind` to an
   AI-generated material via `TEX_GEN` (e.g. `adobe → wall_adobe`, `brick → wall_brick`, `roof → tile`,

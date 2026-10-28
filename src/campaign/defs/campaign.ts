@@ -166,8 +166,8 @@ export const MISSIONS: MissionDef[] = [
             type: 'dialogue',
             text: 'Los campos junto al agua y los canales rinden más. La tierra sostiene a la comunidad.',
           },
-          { type: 'objective', objectiveId: 'obj_almacenamiento', state: 'activate' },
-          { type: 'objective', objectiveId: 'obj_alimento', state: 'activate' },
+          { type: 'objective', objectiveId: 'obj_almacenamiento', state: 'activate', announce: true },
+          { type: 'objective', objectiveId: 'obj_alimento', state: 'activate', announce: true },
         ],
       },
       {
@@ -178,7 +178,7 @@ export const MISSIONS: MissionDef[] = [
             type: 'dialogue',
             text: 'El depósito guarda el excedente. Con trabajo comunal y reservas se levantan plazas y pirámides.',
           },
-          { type: 'objective', objectiveId: 'obj_riego', state: 'activate' },
+          { type: 'objective', objectiveId: 'obj_riego', state: 'activate', announce: true },
         ],
       },
       {
@@ -187,10 +187,9 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'La escala de plazas y pirámides se asocia al excedente y al trabajo comunal; es una interpretación arqueológica, no un registro escrito.',
+            text: 'La escala de plazas y pirámides se asocia al excedente y al trabajo comunal; es una interpretación arqueológica, no un registro escrito. La Plaza Central permite convocar una asamblea comunal.',
           },
-          { type: 'objective', objectiveId: 'obj_asamblea', state: 'activate' },
-          { type: 'objective', objectiveId: 'obj_complejos', state: 'activate' },
+          { type: 'objective', objectiveId: 'obj_complejos', state: 'activate', announce: true },
         ],
       },
       {

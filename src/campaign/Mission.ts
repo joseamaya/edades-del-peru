@@ -377,18 +377,14 @@ export class Mission {
         }
         break;
       }
-      case 'objective': {
-        const previous = this.objState.get(fx.objectiveId);
-        this.objState.set(
-          fx.objectiveId,
-          fx.state === 'activate' ? 'activo' : fx.state === 'complete' ? 'completed' : 'failed',
-        );
-        if (fx.state === 'activate' && previous === 'pendiente') {
-          const def = this.objective(fx.objectiveId);
-          if (def) this.game.hud?.showToast('Nuevo objetivo: ' + def.title, 'info');
+      case 'objective':
+        if (fx.state === 'activate') {
+          if (fx.announce) this.activateObjective(fx.objectiveId, true);
+          else this.objState.set(fx.objectiveId, 'activo');
+        } else {
+          this.objState.set(fx.objectiveId, fx.state === 'complete' ? 'completed' : 'failed');
         }
         break;
-      }
       case 'camera': {
         const p = this.resolvePoint(fx.pos);
         this.game.camera.focusOn(p.x, p.z);
@@ -442,11 +438,15 @@ export class Mission {
   }
 
   /** Activate a hidden or pending objective (e.g. a field-card action). */
-  activateObjective(id: string): boolean {
+  activateObjective(id: string, announce = true): boolean {
     const def = this.objective(id);
     if (!def || this.objState.get(id) !== 'pendiente') return false;
     this.objState.set(id, 'activo');
-    this.game.hud?.showToast('Nuevo objetivo: ' + def.title, 'info');
+    if (this.evalObjective(def) === 'win') {
+      this.complete(id);
+      return true;
+    }
+    if (announce) this.game.hud?.showToast('Nuevo objetivo: ' + def.title, 'info');
     return true;
   }
 

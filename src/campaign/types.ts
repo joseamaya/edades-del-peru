@@ -175,7 +175,7 @@ export type TriggerEffect =
     }
   | { type: 'dialogue'; text: string; duration?: number }
   | { type: 'resources'; player?: 0 | 1; amount: Partial<Resources> }
-  | { type: 'objective'; objectiveId: string; state: 'activate' | 'complete' | 'fail' }
+  | { type: 'objective'; objectiveId: string; state: 'activate' | 'complete' | 'fail'; announce?: boolean }
   | { type: 'camera'; pos: MissionPoint }
   | { type: 'victory' }
   | { type: 'defeat'; text: string };

@@ -77,29 +77,23 @@ describe('campaign educational content', () => {
     expect(caral.objectives.find((o) => o.id === 'obj_sostener')?.hidden).toBeFalsy();
 
     const trigger = (id: string) => caral.triggers.find((t) => t.id === id)!;
-    expect(trigger('t_cosecha').effects).toContainEqual({
-      type: 'objective',
-      objectiveId: 'obj_almacenamiento',
-      state: 'activate',
-    });
-    expect(trigger('t_cosecha').effects).toContainEqual({
-      type: 'objective',
-      objectiveId: 'obj_alimento',
-      state: 'activate',
-    });
-    expect(trigger('t_troje').effects).toContainEqual({
-      type: 'objective',
-      objectiveId: 'obj_riego',
-      state: 'activate',
-    });
-    expect(trigger('t_complejo').effects).toContainEqual({
+    const activations = [
+      ['t_cosecha', 'obj_almacenamiento'],
+      ['t_cosecha', 'obj_alimento'],
+      ['t_troje', 'obj_riego'],
+      ['t_complejo', 'obj_complejos'],
+    ] as const;
+    for (const [triggerId, objectiveId] of activations) {
+      expect(trigger(triggerId).effects, `${triggerId}/${objectiveId}`).toContainEqual({
+        type: 'objective',
+        objectiveId,
+        state: 'activate',
+        announce: true,
+      });
+    }
+    expect(trigger('t_complejo').effects).not.toContainEqual({
       type: 'objective',
       objectiveId: 'obj_asamblea',
-      state: 'activate',
-    });
-    expect(trigger('t_complejo').effects).toContainEqual({
-      type: 'objective',
-      objectiveId: 'obj_complejos',
       state: 'activate',
     });
 

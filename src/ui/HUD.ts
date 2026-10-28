@@ -971,7 +971,7 @@ export class HUD {
     }
     if (heritage.operation === 'assembly') {
       const state = this.game.getAssemblyState();
-      if (state === 'pendiente') {
+      if (state === 'pendiente' && this.game.canStartAssembly()) {
         this.addCommand('🏛️ Convocar asamblea', () => this.game.startAssembly());
       } else if (state === 'activo') {
         this.addCommand('⏳ Asamblea en curso', () => {});
