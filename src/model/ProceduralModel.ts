@@ -2791,14 +2791,17 @@ function buildCaralCompound(
     depth: number;
     rooms: number;
     elite: boolean;
+    wallHeight?: number;
+    wallThickness?: number;
+    doorHeadHeight?: number;
   },
 ): void {
   const f = caralFrame(spec.x, spec.y, spec.z, spec.yaw);
   const { stone, earth, plaster, dark, red, yellow } = caralColors(b);
   const w = spec.width;
   const d = spec.depth;
-  const h = spec.elite ? 0.95 : 0.72;
-  const t = 0.22;
+  const h = spec.wallHeight ?? (spec.elite ? 0.95 : 0.72);
+  const t = spec.wallThickness ?? 0.22;
   const rooms = Math.max(3, spec.rooms);
 
   caralBox(b, f, w * 1.12, 0.1, d * 1.12, mixHex(earth, '#e0d0b0', 0.55), 0, 0.05, 0, undefined);
@@ -2810,10 +2813,15 @@ function buildCaralCompound(
   const frontSegment = (w - door) / 2;
   caralBox(b, f, frontSegment, h, t, stone, -(w / 2 - frontSegment / 2), h / 2, d / 2, undefined);
   caralBox(b, f, frontSegment, h, t, stone, w / 2 - frontSegment / 2, h / 2, d / 2, undefined);
+  const doorHead = Math.min(h, spec.doorHeadHeight ?? h);
+  if (doorHead < h) {
+    caralBox(b, f, door, h - doorHead, t, stone, 0, doorHead + (h - doorHead) / 2, d / 2, undefined);
+  }
 
   // Painted band on the street facade (white/yellow/red reading).
-  caralBox(b, f, w * 0.9, 0.07, 0.035, yellow, 0, h * 0.7, d / 2 + t / 2 + 0.02, undefined);
-  caralBox(b, f, w * 0.55, 0.05, 0.035, red, 0, h * 0.85, d / 2 + t / 2 + 0.02, undefined);
+  const bandY = Math.max(h * 0.7, doorHead + 0.06);
+  caralBox(b, f, w * 0.9, 0.07, 0.035, yellow, 0, bandY, d / 2 + t / 2 + 0.02, undefined);
+  caralBox(b, f, w * 0.55, 0.05, 0.035, red, 0, Math.min(h - 0.05, bandY + h * 0.15), d / 2 + t / 2 + 0.02, undefined);
 
   // Interior partitions: a back row of rooms and two side rooms around a patio.
   const innerW = w - 2 * t;
@@ -2856,29 +2864,56 @@ function buildCaralCompound(
   }
 }
 
-function caralShedRoof(b: Builder, w: number, d: number, y: number): void {
-  b.box(w * 0.54, 0.06, d * 0.34, andeanThatch(b), {
-    y,
-    z: -d * 0.27,
-    rx: 0.08,
-    tex: 'thatch',
-    texScale: 2,
-  });
+function caralCompoundRoof(b: Builder, w: number, d: number, wallTop: number, thickness: number): THREE.Group {
+  const group = new THREE.Group();
+  group.name = 'caral_roof';
+  b.group.add(group);
+  const roof = andeanThatch(b);
+  const panel = (panelW: number, panelD: number, x: number, z: number, rz = 0): void => {
+    b.boxIn(group, panelW, thickness, panelD, roof, {
+      x,
+      y: wallTop + thickness / 2,
+      z,
+      rz,
+      tex: 'thatch',
+      texScale: 2,
+    });
+  };
+  // Roof only the enclosed rear and side rooms; the central patio stays open.
+  panel(w * 0.94, d * 0.34, 0, -d * 0.33);
+  panel(w * 0.24, d * 0.54, -w * 0.35, d * 0.11, -0.04);
+  panel(w * 0.24, d * 0.54, w * 0.35, d * 0.11, 0.04);
+  return group;
 }
 
 function caralEntryStep(b: Builder, w: number, d: number, color: string): void {
   b.box(w * 0.24, 0.05, d * 0.1, color, { y: 0.03, z: d * 0.56, tex: 'stone' });
 }
 
+const CARAL_HOUSE_WALL_HEIGHT = 1.5;
+const CARAL_CENTER_WALL_HEIGHT = 1.9;
+
 /** Game-side Caral dwelling: a low walled patio compound, not a generic thatched hut. */
 function buildCaralHouse(b: Builder, size: number): void {
   const w = size * 1.8;
   const d = size * 1.55;
-  buildCaralCompound(b, { x: 0, y: 0, z: 0, yaw: 0, width: w, depth: d, rooms: 3, elite: false });
+  buildCaralCompound(b, {
+    x: 0,
+    y: 0,
+    z: 0,
+    yaw: 0,
+    width: w,
+    depth: d,
+    rooms: 3,
+    elite: false,
+    wallHeight: CARAL_HOUSE_WALL_HEIGHT,
+    wallThickness: 0.26,
+    doorHeadHeight: 1.08,
+  });
   const { stone, plaster } = caralColors(b);
-  // A small shed roof over the rear room keeps the compound inhabited without
-  // turning the whole footprint into a generic gabled house.
-  caralShedRoof(b, w, d, 0.78);
+  // Thatch roofs read as inhabited rooms without turning the whole footprint
+  // into a generic gabled house; the patio itself stays open.
+  caralCompoundRoof(b, w, d, CARAL_HOUSE_WALL_HEIGHT, 0.1);
   caralEntryStep(b, w, d, stone);
   b.cyl(0.12, 0.16, 0.22, 8, mixHex(plaster, '#8a7450', 0.4), {
     x: w * 0.3,
@@ -2893,15 +2928,27 @@ function buildCaralHouse(b: Builder, size: number): void {
 function buildCaralCenter(b: Builder, size: number): void {
   const w = size * 1.9;
   const d = size * 1.55;
-  buildCaralCompound(b, { x: 0, y: 0, z: 0, yaw: 0, width: w, depth: d, rooms: 6, elite: true });
+  buildCaralCompound(b, {
+    x: 0,
+    y: 0,
+    z: 0,
+    yaw: 0,
+    width: w,
+    depth: d,
+    rooms: 6,
+    elite: true,
+    wallHeight: CARAL_CENTER_WALL_HEIGHT,
+    wallThickness: 0.3,
+    doorHeadHeight: 1.3,
+  });
   const { stone, dark, yellow } = caralColors(b);
   const f = caralFrame(0, 0, 0, 0);
   // A prepared central dais and hearth make the building read as a civic place,
   // while the surrounding rooms keep the same residential compound language.
-  caralCyl(b, f, 0.92, 1.0, 0.12, 18, stone, 0, 0.06, d * 0.06, 'stone');
-  caralCyl(b, f, 0.34, 0.42, 0.2, 12, dark, 0, 0.19, d * 0.06, 'stone');
-  caralShedRoof(b, w, d, 1.03);
-  b.box(w * 0.68, 0.05, 0.035, yellow, { y: 0.58, z: d * 0.5 + 0.14 });
+  caralCyl(b, f, 0.92, 1.0, 0.18, 18, stone, 0, 0.09, d * 0.06, 'stone');
+  caralCyl(b, f, 0.34, 0.42, 0.26, 12, dark, 0, 0.31, d * 0.06, 'stone');
+  caralCompoundRoof(b, w, d, CARAL_CENTER_WALL_HEIGHT, 0.12);
+  b.box(w * 0.68, 0.05, 0.035, yellow, { y: 1.18, z: d * 0.5 + 0.14 });
   caralEntryStep(b, w, d, stone);
   andeanBanner(b, w * 0.46, 0.62, -d * 0.38, 1.15);
   b.group.name = 'caral_center';
