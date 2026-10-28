@@ -26,14 +26,18 @@ war.
 
 What the player does:
 
-1. Explores the valley and finds the coast. The tutorial completes when the scout discovers a fishing ground.
-2. Places two fields (the game's Andén building). Fields near moisture or a canal hold more food, and the HUD
-   shows the reserve and terrain bonus.
-3. Builds a communal store (the game's Troje) to represent the surplus. Both names are gameplay abstractions,
-   not attested Caral terms; selecting either building shows its historical field card.
+1. Starts with three visible goals: prepare two fields, observe the Gran Pirámide / Plaza Central and
+   sustain the settlement. Explores the valley and finds the coast; the tutorial completes when the
+   scout discovers a fishing ground.
+2. Places two fields (the game's Andén building). Fields near moisture or a canal hold more food, and
+   the HUD shows the reserve and terrain bonus. When both fields are complete, the surplus goals open:
+   build the communal store and gather 500 food.
+3. Builds a communal store (the game's Troje) to represent the surplus. Both names are gameplay
+   abstractions, not attested Caral terms; selecting either building shows its historical field card.
+   Completing the Troje reveals the optional canal goal.
 4. Observes the ceremonial complex; the required `obj_complejo` completes when a player unit reaches
    the Plaza Central and the Gran Pirámide / Plaza Central field card is opened, making the monumental
-   sector part of the victory.
+   sector part of the victory. At that point the communal assembly and the six-pyramid tour are revealed.
 5. Reaches the food target and keeps the settlement standing for five minutes.
 6. Optional: opens the communal canal gate; nearby Andenes gain irrigation yield and the `obj_riego`
    bonus completes.
@@ -41,6 +45,12 @@ What the player does:
    the recorded visits complete the `obj_complejos` bonus without gating progress.
 8. Optional: from the Plaza Central card, convokes a communal assembly; a worker must hold the
    plaza for 20 seconds. It teaches communal organisation through time rather than a resource buff.
+
+The reveal chain is the mission's pacing: the panel starts with three goals, grows after the fields,
+after the store and after the ceremonial visit. Trigger effects announce each new goal with a toast,
+so a hidden objective never becomes an unexplained moving goalpost. The assembly stays optional and
+the five-minute survival clock remains the final pressure; a fast player can finish the productive
+goals early, but the mission does not wait on an arbitrary mid-game timer.
 
 Decisions: where to farm, how many workers to send to the coast, where to store food, whether to grow the
 settlement or accumulate reserves. These use existing mechanics (terrain-aware farms, resource nodes,

@@ -166,16 +166,44 @@ test('the authored site blocks monument footprints without sealing the city', as
   expect(errors).toEqual([]);
 });
 
-test('the Caral objectives show live progress and keep the assembly hidden', async ({ page }) => {
+test('the Caral objectives reveal in acts and keep the assembly hidden until the city', async ({ page }) => {
   await boot(page);
   const objectives = page.locator('#ed-objectives');
   await expect(objectives).toContainText('Prepara dos campos de cultivo');
   await expect(objectives).toContainText('0/2');
-  await expect(objectives).toContainText('250/500');
   await expect(objectives).toContainText('0/1');
-  await expect(objectives).toContainText('0/6');
   await expect(objectives).toContainText(/0:0\d \/ 5:00/);
+  await expect(objectives).not.toContainText('Troje');
+  await expect(objectives).not.toContainText('250/500');
+  await expect(objectives).not.toContainText('canal comunal');
+  await expect(objectives).not.toContainText('0/6');
   await expect(objectives).not.toContainText('Convoca una asamblea');
+
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.mission.objState.set('obj_agricultura', 'completed');
+    g.mission.update(0.1, 0);
+    g.hud.update(0.2, 0);
+  });
+  await expect(objectives).toContainText('Construye un depósito comunal');
+  await expect(objectives).toContainText('250/500');
+
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.mission.objState.set('obj_almacenamiento', 'completed');
+    g.mission.update(0.1, 0);
+    g.hud.update(0.2, 0);
+  });
+  await expect(objectives).toContainText('Abre la compuerta del canal comunal');
+
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.mission.objState.set('obj_complejo', 'completed');
+    g.mission.update(0.1, 0);
+    g.hud.update(0.2, 0);
+  });
+  await expect(objectives).toContainText('Convoca una asamblea');
+  await expect(objectives).toContainText('0/6');
 
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -231,6 +259,8 @@ test('a peaceful victory summarises optional achievements and offers the next mi
       g.visitHeritage(id);
     }
     g.toggleCanal();
+    g.mission.objState.set('obj_riego', 'completed');
+    g.mission.objState.set('obj_complejos', 'completed');
     g.mission.update(0.1, 0);
     g.showVictory(0);
   });
@@ -279,6 +309,8 @@ test('a Caral Blender pyramid opens an educational field card', async ({ page })
   await expect(bottom).toContainText('Ficha registrada');
   const complexes = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
+    g.mission.objState.set('obj_complejo', 'completed');
+    g.mission.update(0.1, 0);
     for (const name of ['central', 'quarry', 'lesser', 'gallery', 'huanca']) {
       g.visitHeritage(`caral_pyramid_${name}`);
     }
@@ -290,6 +322,11 @@ test('a Caral Blender pyramid opens an educational field card', async ({ page })
 
 test('opening the Caral canal raises the yield at its banks', async ({ page }) => {
   await boot(page);
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.mission.objState.set('obj_almacenamiento', 'completed');
+    g.mission.update(0.1, 0);
+  });
   const before = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     return {

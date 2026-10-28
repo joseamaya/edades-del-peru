@@ -83,6 +83,7 @@ export const MISSIONS: MissionDef[] = [
         kind: 'build',
         buildingKind: BuildingKind.MILL,
         count: 1,
+        hidden: true,
         title: 'Construye un depósito comunal (Troje)',
       },
       {
@@ -90,6 +91,7 @@ export const MISSIONS: MissionDef[] = [
         kind: 'gather',
         resource: 'food',
         count: 500,
+        hidden: true,
         title: 'Reúne 500 de comida para sostener a la comunidad',
       },
       {
@@ -105,6 +107,7 @@ export const MISSIONS: MissionDef[] = [
         id: 'obj_riego',
         kind: 'canal_open',
         optional: true,
+        hidden: true,
         title: 'Abre la compuerta del canal comunal',
       },
       {
@@ -130,6 +133,7 @@ export const MISSIONS: MissionDef[] = [
           'caral_pyramid_huanca',
         ],
         optional: true,
+        hidden: true,
         title: 'Recorre los seis complejos piramidales de Caral Alto',
       },
     ],
@@ -162,6 +166,8 @@ export const MISSIONS: MissionDef[] = [
             type: 'dialogue',
             text: 'Los campos junto al agua y los canales rinden más. La tierra sostiene a la comunidad.',
           },
+          { type: 'objective', objectiveId: 'obj_almacenamiento', state: 'activate' },
+          { type: 'objective', objectiveId: 'obj_alimento', state: 'activate' },
         ],
       },
       {
@@ -172,6 +178,7 @@ export const MISSIONS: MissionDef[] = [
             type: 'dialogue',
             text: 'El depósito guarda el excedente. Con trabajo comunal y reservas se levantan plazas y pirámides.',
           },
+          { type: 'objective', objectiveId: 'obj_riego', state: 'activate' },
         ],
       },
       {
@@ -182,6 +189,8 @@ export const MISSIONS: MissionDef[] = [
             type: 'dialogue',
             text: 'La escala de plazas y pirámides se asocia al excedente y al trabajo comunal; es una interpretación arqueológica, no un registro escrito.',
           },
+          { type: 'objective', objectiveId: 'obj_asamblea', state: 'activate' },
+          { type: 'objective', objectiveId: 'obj_complejos', state: 'activate' },
         ],
       },
       {

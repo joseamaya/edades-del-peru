@@ -21,7 +21,11 @@ test('the mission briefing includes context and sources', { tag: '@smoke' }, asy
   await expect(overlay).toContainText('¿Sabías que…?');
   await expect(overlay.getByText('Fuentes históricas')).toBeVisible();
   await expect(overlay).toContainText('Observa la Gran Pirámide');
-  // the assembly is discovered through the Plaza Central card, not spoiled here
+  // the surplus, canal, tour and assembly are discoveries, not spoiled here
+  await expect(overlay).not.toContainText('Construye un depósito');
+  await expect(overlay).not.toContainText('Reúne 500');
+  await expect(overlay).not.toContainText('Abre la compuerta');
+  await expect(overlay).not.toContainText('Recorre los seis');
   await expect(overlay).not.toContainText('Convoca una asamblea');
 });
 

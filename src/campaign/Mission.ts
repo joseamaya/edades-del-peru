@@ -377,12 +377,18 @@ export class Mission {
         }
         break;
       }
-      case 'objective':
+      case 'objective': {
+        const previous = this.objState.get(fx.objectiveId);
         this.objState.set(
           fx.objectiveId,
           fx.state === 'activate' ? 'activo' : fx.state === 'complete' ? 'completed' : 'failed',
         );
+        if (fx.state === 'activate' && previous === 'pendiente') {
+          const def = this.objective(fx.objectiveId);
+          if (def) this.game.hud?.showToast('Nuevo objetivo: ' + def.title, 'info');
+        }
         break;
+      }
       case 'camera': {
         const p = this.resolvePoint(fx.pos);
         this.game.camera.focusOn(p.x, p.z);
