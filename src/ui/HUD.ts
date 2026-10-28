@@ -2018,7 +2018,7 @@ export class HUD {
     start.addEventListener('click', () => {
       this.clearOverlays();
       onStart();
-      this.showMissionTitle(mis);
+      if (this.game.introEnabled) this.showMissionTitle(mis);
     });
   }
 

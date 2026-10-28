@@ -2,9 +2,6 @@ import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../core
 import { MissionDef } from '../types';
 import { CARAL_SITE_BUILD_KEEPOUT } from '../../model/defs/caralSite';
 
-/** Stable id of the campaign (used by the generated-art manifest). */
-export const CAMPAIGN_ID = 'la-senda-del-sol';
-
 export const MISSIONS: MissionDef[] = [
   {
     id: 'm1_caral',

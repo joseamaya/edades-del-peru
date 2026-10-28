@@ -518,7 +518,7 @@ test('the campaign hub keeps future campaigns as coming soon', async ({ page }) 
 });
 
 test('Caral opens with a chapter card and closes the first campaign', async ({ page }) => {
-  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1&noloop=1');
+  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
   const briefing = page.locator('.ed-briefing');
   await expect(briefing).toBeVisible({ timeout: 30_000 });
   await briefing.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();

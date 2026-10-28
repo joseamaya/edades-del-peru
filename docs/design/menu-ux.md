@@ -53,7 +53,8 @@ and points to the next campaign instead of auto-starting an unreleased mission.
 `public/media/menu/caral-dawn.webp` is a UI-only grade of a runtime capture of the Caral
 scene in `m1_caral`; the title and prologues use that engine capture with a slow pan. It is
 an atmospheric menu backdrop, **not** a historical photograph and **not** a campaign-art
-claim. See `public/media/menu/PROVENANCE.md`.
+claim. It is a runtime capture, not a Blender render, so the manifest review gate does not apply;
+see `public/media/menu/PROVENANCE.md`.
 
 ## Accessibility
 
