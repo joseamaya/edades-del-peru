@@ -1348,9 +1348,9 @@ export class Game {
     // nearby resources to start
     this.spawnStartResources(player, x, z);
     const rng = new RNG(this.settings.mapSeed + player * 100);
-    // The human seat deploys outside the civic core, on the camera-facing side
-    // where the opening frame reads. AI seats keep their existing opening ring.
-    const startingSpots = player === 0 ? this.startingUnitSpots(x, z) : null;
+    // The Caral opening deploys outside the civic core, on the camera-facing
+    // side where the frame reads. Other matches and AI seats keep their ring.
+    const startingSpots = player === 0 && this.missionDef?.id === 'm1_caral' ? this.startingUnitSpots(x, z) : null;
     for (let i = 0; i < STARTING_UNIT_COUNT - 1; i++) {
       const unit = new Unit(UnitKind.WORKER, player, this.players[player].era, ctx);
       const spot = startingSpots?.[i] ?? { x: x + rng.range(-3, 3), z: z + rng.range(-3, 3) };
