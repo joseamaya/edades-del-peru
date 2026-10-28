@@ -36,14 +36,12 @@ describe('settlement overlay geometry', () => {
     expect(geo.getAttribute('position').count).toBeGreaterThan(4);
   });
 
-  it('edging follows the field footprint and stays low', () => {
+  it('edging drapes over the field footprint and stays low', () => {
     const edges = fieldBorderGeometry({ x: 10, z: -8, yaw: 0.4, size: 5 }, height);
     expect(edges).toHaveLength(4);
     for (const geo of edges) {
-      const pos = geo.getAttribute('position');
-      expect(pos.count).toBeGreaterThan(0);
-      const y = (geo.boundingBox ?? (geo.computeBoundingBox(), geo.boundingBox))!.min.y;
-      expect(y).toBeCloseTo(height(10, -8) + SETTLEMENT_OFFSET + 0.08 - 0.08, 4);
+      expect(geo.getAttribute('position').count).toBeGreaterThan(0);
+      assertOnTerrain(geo, SETTLEMENT_OFFSET + 0.02);
     }
   });
 

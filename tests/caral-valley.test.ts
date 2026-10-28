@@ -22,8 +22,9 @@ function valleyQuery(overrides: Partial<CaralValleyQuery> = {}): CaralValleyQuer
 
 describe('Caral valley plan', () => {
   it('is deterministic and keeps fields on open, flat ground', () => {
-    const a = planCaralValley(7, BASE, valleyQuery());
-    const b = planCaralValley(7, BASE, valleyQuery());
+    const siteTarget = { x: 74, z: 151 };
+    const a = planCaralValley(7, BASE, valleyQuery(), siteTarget);
+    const b = planCaralValley(7, BASE, valleyQuery(), siteTarget);
     expect(b).toEqual(a);
     expect(a.fields.length).toBeGreaterThanOrEqual(3);
     for (const f of a.fields) {
@@ -31,7 +32,7 @@ describe('Caral valley plan', () => {
       expect(Math.abs(f.yaw)).toBeLessThan(0.5);
     }
     const sitePath = a.roads[a.roads.length - 1];
-    expect(sitePath.to).toEqual({ x: 84, z: 151 });
+    expect(sitePath.to).toEqual(siteTarget);
   });
 
   it('drops plots over water, reserved ground or steep slopes', () => {
@@ -41,14 +42,22 @@ describe('Caral valley plan', () => {
       valleyQuery({ isReserved: () => true, isBuildable: () => false, getSlope: () => 0.6 }),
     );
     expect(plan.fields).toHaveLength(0);
-    // Only the sightline path to the Lower Half may remain; it is visual-only.
-    expect(plan.roads).toHaveLength(1);
+    expect(plan.roads).toHaveLength(0);
   });
 
-  it('places riverside reeds and shrubs away from the plots', () => {
-    const plan = planCaralValley(7, BASE, valleyQuery());
-    const props = planCaralValleyProps(7, BASE, plan.fields, valleyQuery());
+  it('rejects plots and fields that are underwater', () => {
+    const plan = planCaralValley(7, BASE, valleyQuery({ isWater: () => true }), { x: 74, z: 151 });
+    expect(plan.fields).toHaveLength(0);
+    expect(plan.roads).toHaveLength(0);
+  });
+
+  it('places deterministic riverside reeds and shrubs away from the plots', () => {
+    const river = valleyQuery({ isWater: (x) => x < 12 });
+    const plan = planCaralValley(7, BASE, river);
+    const props = planCaralValleyProps(7, BASE, plan.fields, river);
+    const again = planCaralValleyProps(7, BASE, plan.fields, river);
     expect(props.length).toBeGreaterThan(8);
+    expect(again).toEqual(props);
     for (const p of props) {
       expect(['totora', 'shrub']).toContain(p.id);
       expect(plan.fields.some((f) => Math.hypot(f.x - p.x, f.z - p.z) < f.size / 2)).toBe(false);

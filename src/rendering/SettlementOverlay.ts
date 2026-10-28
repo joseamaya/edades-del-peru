@@ -18,6 +18,11 @@ const CROP_SPACING = 0.85;
 const CROP_WIDTH = 0.3;
 const CROP_OFFSET = 0.04;
 
+export interface SettlementOverlayOptions {
+  roadWidth?: number;
+  fieldBorders?: boolean;
+}
+
 /**
  * Visual-only overlay of a planned starting settlement: its fields and the roads
  * that connect them to the center. Deterministic (derived from the same plan as
@@ -31,13 +36,15 @@ export class SettlementOverlay {
   readonly group = new THREE.Group();
   private materials: THREE.Material[] = [];
 
+  private readonly roadWidth: number;
+
   constructor(
     readonly plan: SettlementPlan,
     terrain: Terrain,
-    private readonly roadWidth = ROAD_WIDTH,
-    fieldBorders = false,
+    options: SettlementOverlayOptions = {},
   ) {
     this.group.name = 'settlement';
+    this.roadWidth = options.roadWidth ?? ROAD_WIDTH;
     const roadMat = new THREE.MeshStandardMaterial({ color: '#8a6a44', roughness: 1 });
     const fieldMat = new THREE.MeshStandardMaterial({ color: '#6f8f3a', roughness: 1 });
     applyGeneratedPbr(roadMat, 'ground_road');
@@ -60,8 +67,8 @@ export class SettlementOverlay {
       plan.fields.flatMap((f) => cropGeometry(f, terrain.getHeight.bind(terrain))),
       cropMat,
     );
-    if (fieldBorders) {
-      const borderMat = new THREE.MeshStandardMaterial({ color: '#776b58', roughness: 1 });
+    if (options.fieldBorders) {
+      const borderMat = new THREE.MeshStandardMaterial({ color: '#746955', roughness: 1 });
       this.add(
         'field-borders',
         plan.fields.flatMap((f) => fieldBorderGeometry(f, terrain.getHeight.bind(terrain))),
@@ -153,23 +160,32 @@ export function cropGeometry(
   return out;
 }
 
-/** Low stone edging that helps a plot read as a cultivated field, not a lawn. */
+/** Low earthen edging that helps a plot read as cultivated ground, not a lawn. */
 export function fieldBorderGeometry(
   field: SettlementField,
   getHeight: (x: number, z: number) => number,
 ): THREE.BufferGeometry[] {
-  const y = getHeight(field.x, field.z) + SETTLEMENT_OFFSET + 0.08;
-  const edge = 0.14;
+  const half = field.size / 2;
+  const cos = Math.cos(field.yaw);
+  const sin = Math.sin(field.yaw);
+  const corners = [
+    [-half, -half],
+    [half, -half],
+    [half, half],
+    [-half, half],
+    [-half, -half],
+  ].map(([x, z]) => ({
+    x: field.x + x * cos - z * sin,
+    z: field.z + x * sin + z * cos,
+  }));
   const out: THREE.BufferGeometry[] = [];
-  for (const side of [-1, 1]) {
-    const alongZ = new THREE.BoxGeometry(field.size + edge, 0.16, edge);
-    alongZ.translate(0, 0, (side * field.size) / 2);
-    alongZ.rotateY(field.yaw).translate(field.x, y, field.z);
-    out.push(alongZ);
-    const alongX = new THREE.BoxGeometry(edge, 0.16, field.size + edge);
-    alongX.translate((side * field.size) / 2, 0, 0);
-    alongX.rotateY(field.yaw).translate(field.x, y, field.z);
-    out.push(alongX);
+  for (let i = 0; i < corners.length - 1; i++) {
+    const geo = buildRibbon(
+      subdivide(corners[i], corners[i + 1], 1.5),
+      0.18,
+      (x, z) => getHeight(x, z) + SETTLEMENT_OFFSET + 0.02,
+    );
+    if (geo) out.push(geo);
   }
   return out;
 }

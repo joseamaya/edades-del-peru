@@ -63,6 +63,7 @@ test('the Supe valley carries visual plots, paths and riverbank reeds', { tag: '
       borderVerts: borders?.geometry.attributes.position.count ?? 0,
       pathVerts: paths?.geometry.attributes.position.count ?? 0,
       reeds: reeds?.count ?? 0,
+      valleyProps: g.caralValleyProps?.length ?? 0,
       nodesInField,
     };
   });
@@ -72,6 +73,7 @@ test('the Supe valley carries visual plots, paths and riverbank reeds', { tag: '
   expect(state.borderVerts).toBeGreaterThan(0);
   expect(state.pathVerts).toBeGreaterThan(0);
   expect(state.reeds).toBeGreaterThan(5);
+  expect(state.valleyProps).toBeGreaterThan(5);
   expect(state.nodesInField).toBe(0);
   expect(errors).toEqual([]);
 });

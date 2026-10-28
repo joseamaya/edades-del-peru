@@ -67,8 +67,8 @@ instead of the modular landmark or a hand-built schematic:
   resources, not the starting base or prior player buildings.
 - The river stays west of the city. Caral itself is on the dry terrace; only the
   low floodplain is green. There is no sea adjacent to the site.
-- **Valley fabric**: up to five schematic plots sit on the green floodplain west
-  of Caral Bajo, with low stone edging, young crop rows and narrow dirt paths to
+- **Valley fabric**: up to six schematic plots sit on the green floodplain west
+  of Caral Bajo, with low earthen edging, young crop rows and narrow dirt paths to
   the base, plus a sightline path toward the Lower Half. Totora reeds and low
   shrubs line the Supe bank. This is scenery only: the plots are not resource
   nodes, obstacles or farms, they do not yield food and they do not alter

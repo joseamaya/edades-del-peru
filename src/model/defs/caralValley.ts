@@ -5,8 +5,6 @@ import type { TerrainQuery } from './terrainQuery';
 
 /** Terrain and reservation queries used by the visual Caral valley plan. */
 export interface CaralValleyQuery extends TerrainQuery {
-  getHeight(x: number, z: number): number;
-  getMoisture(x: number, z: number): number;
   isReserved(x: number, z: number): boolean;
 }
 
@@ -14,6 +12,9 @@ export interface CaralValleyPlan {
   fields: SettlementField[];
   roads: SettlementRoad[];
 }
+
+/** Narrow dirt paths, visually distinct from the settlement's wider roads. */
+export const CARAL_VALLEY_PATH_WIDTH = 0.65;
 
 const FIELD_ANCHORS: ReadonlyArray<readonly [number, number]> = [
   [15, 118],
@@ -23,40 +24,10 @@ const FIELD_ANCHORS: ReadonlyArray<readonly [number, number]> = [
   [19, 160],
   [34, 155],
 ];
-const FIELD_SIZE_MIN = 3.4;
-const FIELD_SIZE_MAX = 4.6;
-const FIELD_SLOPE_LIMIT = 0.32;
-const FIELD_CLEARANCE = 4.2;
-const SITE_PATH = { x: 84, z: 151 } as const;
-
-/**
- * Deterministic visual-only field/path plan for the green Supe valley beside the
- * Caral base. The plots sit on the floodplain, never on water, the authored site,
- * the canal or the starting settlement. They are scenery, not resource nodes:
- * no obstacle, no yield and no pathfinding entry is created.
- */
-export function planCaralValley(seed: number, base: { x: number; z: number }, q: CaralValleyQuery): CaralValleyPlan {
-  const rng = new RNG((seed * 2654435761 + 19) >>> 0);
-  const fields: SettlementField[] = [];
-  for (const [ax, az] of FIELD_ANCHORS) {
-    const x = ax + rng.range(-1.4, 1.4);
-    const z = az + rng.range(-1.4, 1.4);
-    if (q.isWater(x, z) || !q.isBuildable(x, z) || q.isReserved(x, z)) continue;
-    if (q.getSlope(x, z) > FIELD_SLOPE_LIMIT) continue;
-    if (fields.some((f) => Math.hypot(f.x - x, f.z - z) < FIELD_CLEARANCE)) continue;
-    fields.push({ x, z, yaw: 0.18 + rng.range(-0.08, 0.08), size: rng.range(FIELD_SIZE_MIN, FIELD_SIZE_MAX) });
-  }
-  const roads: SettlementRoad[] = fields.map((f) => {
-    const dx = f.x - base.x;
-    const dz = f.z - base.z;
-    const length = Math.hypot(dx, dz);
-    const inset = f.size / 2 + 0.7;
-    const t = length > inset ? (length - inset) / length : 0;
-    return { from: base, to: { x: base.x + dx * t, z: base.z + dz * t } };
-  });
-  if (!q.isWater(SITE_PATH.x, SITE_PATH.z)) roads.push({ from: base, to: SITE_PATH });
-  return { fields, roads };
-}
+const VALLEY_FIELD_SIZE_MIN = 3.4;
+const VALLEY_FIELD_SIZE_MAX = 4.6;
+const VALLEY_FIELD_SLOPE_LIMIT = 0.32;
+const VALLEY_FIELD_CLEARANCE = 4.2;
 
 const REED_ANCHORS: ReadonlyArray<readonly [number, number]> = [
   [9.5, 70],
@@ -87,19 +58,60 @@ const REED_ANCHORS: ReadonlyArray<readonly [number, number]> = [
   [20, 102],
   [19, 126],
   [21, 150],
-  [17, 184],
 ];
-const PROP_CLEARANCE = 1.8;
-const PROP_SLOPE_LIMIT = 0.35;
+const VALLEY_PROP_CLEARANCE = 1.8;
+const VALLEY_PROP_SLOPE_LIMIT = 0.35;
+const SHORE_PROBE = 4;
 
 /**
- * Visual-only reeds and low shrubs along the Supe floodplain. Kept away from the
- * fields, the base, the canal and the authored site; no collision or yield.
+ * Deterministic visual-only field/path plan for the green Supe valley beside the
+ * Caral base. The plots sit on the floodplain, never on water, the authored site,
+ * the canal or the starting settlement. They are scenery, not resource nodes:
+ * no obstacle, no yield and no pathfinding entry is created.
+ *
+ * `siteTarget` is the open ground just short of the Lower Half; callers derive it
+ * from the authored site rather than hard-coding world coordinates.
+ */
+export function planCaralValley(
+  seed: number,
+  base: { x: number; z: number },
+  q: CaralValleyQuery,
+  siteTarget?: { x: number; z: number },
+): CaralValleyPlan {
+  const rng = new RNG((seed * 2654435761 + 19) >>> 0);
+  const fields: SettlementField[] = [];
+  for (const [ax, az] of FIELD_ANCHORS) {
+    const x = ax + rng.range(-1.4, 1.4);
+    const z = az + rng.range(-1.4, 1.4);
+    if (q.isWater(x, z) || !q.isBuildable(x, z) || q.isReserved(x, z)) continue;
+    if (q.getSlope(x, z) > VALLEY_FIELD_SLOPE_LIMIT) continue;
+    if (fields.some((f) => Math.hypot(f.x - x, f.z - z) < VALLEY_FIELD_CLEARANCE)) continue;
+    fields.push({
+      x,
+      z,
+      yaw: 0.18 + rng.range(-0.08, 0.08),
+      size: rng.range(VALLEY_FIELD_SIZE_MIN, VALLEY_FIELD_SIZE_MAX),
+    });
+  }
+
+  const roads: SettlementRoad[] = [];
+  for (const field of fields) {
+    const to = fieldEdge(base, field);
+    if (segmentIsOpen(base, to, q)) roads.push({ from: base, to });
+  }
+  if (siteTarget && segmentIsOpen(base, siteTarget, q)) roads.push({ from: base, to: siteTarget });
+  return { fields, roads };
+}
+
+/**
+ * Visual-only reeds and low shrubs along the Supe floodplain. Every candidate
+ * must see water within a few metres, and is kept away from the fields, base,
+ * canal and authored site; no collision or yield.
  */
 export function planCaralValleyProps(
   seed: number,
   base: { x: number; z: number },
-  fields: SettlementField[],
+  fields: readonly SettlementField[],
   q: CaralValleyQuery,
 ): PropPlacement[] {
   const rng = new RNG((seed * 2246822519 + 23) >>> 0);
@@ -109,10 +121,11 @@ export function planCaralValleyProps(
       const x = ax + rng.range(-2, 2);
       const z = az + rng.range(-2, 2);
       if (q.isWater(x, z) || !q.isBuildable(x, z) || q.isReserved(x, z)) continue;
-      if (q.getSlope(x, z) > PROP_SLOPE_LIMIT) continue;
+      if (q.getSlope(x, z) > VALLEY_PROP_SLOPE_LIMIT) continue;
+      if (!hasWaterNear(x, z, q)) continue;
       if (Math.hypot(x - base.x, z - base.z) < 8) continue;
-      if (fields.some((f) => Math.hypot(f.x - x, f.z - z) < f.size / 2 + PROP_CLEARANCE)) continue;
-      if (out.some((p) => Math.hypot(p.x - x, p.z - z) < PROP_CLEARANCE)) continue;
+      if (fields.some((f) => Math.hypot(f.x - x, f.z - z) < f.size / 2 + VALLEY_PROP_CLEARANCE)) continue;
+      if (out.some((p) => Math.hypot(p.x - x, p.z - z) < VALLEY_PROP_CLEARANCE)) continue;
       const reed = rng.chance(0.72);
       out.push({
         id: reed ? 'totora' : 'shrub',
@@ -125,4 +138,36 @@ export function planCaralValleyProps(
     }
   }
   return out;
+}
+
+/** Point on the field edge nearest the base, so a path never cuts the crops. */
+function fieldEdge(base: { x: number; z: number }, field: SettlementField): { x: number; z: number } {
+  const dx = field.x - base.x;
+  const dz = field.z - base.z;
+  const length = Math.hypot(dx, dz);
+  const inset = field.size / 2 + 0.7;
+  const t = length > inset ? (length - inset) / length : 0;
+  return { x: base.x + dx * t, z: base.z + dz * t };
+}
+
+/** True when the drawn path stays on dry, buildable ground. */
+function segmentIsOpen(from: { x: number; z: number }, to: { x: number; z: number }, q: CaralValleyQuery): boolean {
+  const steps = Math.max(2, Math.ceil(Math.hypot(to.x - from.x, to.z - from.z) / 2));
+  for (let i = 1; i <= steps; i++) {
+    const t = i / steps;
+    const x = from.x + (to.x - from.x) * t;
+    const z = from.z + (to.z - from.z) * t;
+    if (q.isWater(x, z) || !q.isBuildable(x, z)) return false;
+  }
+  return true;
+}
+
+/** Riverbank test: a shallow shore is within the probe distance. */
+function hasWaterNear(x: number, z: number, q: CaralValleyQuery): boolean {
+  return (
+    q.isWater(x + SHORE_PROBE, z) ||
+    q.isWater(x - SHORE_PROBE, z) ||
+    q.isWater(x, z + SHORE_PROBE) ||
+    q.isWater(x, z - SHORE_PROBE)
+  );
 }
