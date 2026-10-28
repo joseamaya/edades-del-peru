@@ -275,6 +275,22 @@ export class Pathfinder {
     return comp;
   }
 
+  /** Id of the largest walkable component; used when spawning into a clear region. */
+  mainComponent(): number {
+    const comps = this.ensureComponents();
+    const counts = new Map<number, number>();
+    for (const c of comps) if (c !== 0) counts.set(c, (counts.get(c) ?? 0) + 1);
+    let best = 0;
+    let bestCount = 0;
+    for (const [id, count] of counts) {
+      if (count > bestCount) {
+        best = id;
+        bestCount = count;
+      }
+    }
+    return best;
+  }
+
   /** Component id of the walkable region containing (wx, wz); 0 when blocked/out of bounds. */
   componentAt(wx: number, wz: number): number {
     const { cols, cell } = this.grid;
@@ -550,15 +566,16 @@ export class Pathfinder {
   }
 
   /** Nearest walkable cell centre in world coordinates (for resolving an embedded unit). */
-  nearestWalkablePoint(wx: number, wz: number, maxCells = 0): { x: number; z: number } | null {
+  nearestWalkablePoint(wx: number, wz: number, maxCells = 0, component?: number): { x: number; z: number } | null {
     maxCells ||= this.reachCells();
-    const cell = this.nearestWalkableCell(this.clampCell(wx), this.clampCell(wz), maxCells);
+    const cell = this.nearestWalkableCell(this.clampCell(wx), this.clampCell(wz), maxCells, component);
     if (!cell) return null;
     return { x: (cell.x + 0.5) * this.grid.cell, z: (cell.z + 0.5) * this.grid.cell };
   }
 
-  private nearestWalkableCell(x: number, z: number, maxR: number): { x: number; z: number } | null {
+  private nearestWalkableCell(x: number, z: number, maxR: number, component?: number): { x: number; z: number } | null {
     const { cols } = this.grid;
+    const comps = component === undefined ? null : this.ensureComponents();
     for (let r = 1; r <= maxR; r++) {
       for (let dz = -r; dz <= r; dz++) {
         for (let dx = -r; dx <= r; dx++) {
@@ -566,7 +583,8 @@ export class Pathfinder {
           const nx = x + dx;
           const nz = z + dz;
           if (nx < 0 || nz < 0 || nx >= cols || nz >= cols) continue;
-          if (this.grid.walkable[nz * cols + nx]) return { x: nx, z: nz };
+          const idx = nz * cols + nx;
+          if (this.grid.walkable[idx] && (!comps || comps[idx] === component)) return { x: nx, z: nz };
         }
       }
     }

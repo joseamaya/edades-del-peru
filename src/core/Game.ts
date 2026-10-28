@@ -1648,8 +1648,13 @@ export class Game {
     const era = this.players[owner]?.era ?? this.settings.startingEra;
     const ctx = this.makeBuildContext(owner);
     const land = this.findLandNear(x, z);
+    const main = this.pathfinder.mainComponent();
+    const spot =
+      this.pathfinder.isWalkable(land.x, land.z) && this.pathfinder.componentAt(land.x, land.z) === main
+        ? land
+        : (this.pathfinder.nearestWalkablePoint(land.x, land.z, 0, main) ?? land);
     const u = new Unit(kind, owner, era, ctx);
-    u.pos.set(land.x, this.terrain.getHeight(land.x, land.z), land.z);
+    u.pos.set(spot.x, this.terrain.getHeight(spot.x, spot.z), spot.z);
     u.setContext(this.unitContext);
     if (this.players[owner]) this.applyPlayerBonuses(u, this.players[owner]);
     u.attach(this.scene);

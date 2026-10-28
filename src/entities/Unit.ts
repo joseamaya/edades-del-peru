@@ -315,7 +315,14 @@ export class Unit {
    * blocked-cell collision) is left to `updateMovement`.
    */
   private directStep(tx: number, tz: number, stopRange = 0): boolean {
-    if (this.ctx.isWalkable(this.pos.x, this.pos.z) && !this.directAheadClear(tx, tz, stopRange)) return false;
+    if (!this.ctx.isWalkable(this.pos.x, this.pos.z)) {
+      const exit = this.ctx.nearestWalkable(this.pos.x, this.pos.z);
+      if (!exit) return false;
+      tx = exit.x;
+      tz = exit.z;
+    } else if (!this.directAheadClear(tx, tz, stopRange)) {
+      return false;
+    }
     this.noRouteTimer = 0;
     this.targetYaw = angleTo(this.pos.x, this.pos.z, tx, tz);
     const spd = this.stats.speed;
