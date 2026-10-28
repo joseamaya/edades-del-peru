@@ -26,7 +26,7 @@ function base(page: Page): Promise<{ x: number; z: number }> {
   });
 }
 
-test('the campaign intro flies the camera from an overview down to the base', async ({ page }) => {
+test('the campaign intro flies the camera from an overview to the authored opening frame', async ({ page }) => {
   await boot(page, '/?play=1&mission=m1_caral&seed=777&fog=0&low=1');
   await dismissBriefing(page);
   await page.waitForTimeout(120);
@@ -47,6 +47,12 @@ test('the campaign intro flies the camera from an overview down to the base', as
   );
   const end = await target(page);
   expect(Math.hypot(end.x - b.x, end.z - b.z)).toBeLessThan(1.5);
+  const view = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    return { zoom: g.camera.getZoom(), rect: g.camera.getGroundRect() };
+  });
+  expect(view.zoom).toBeCloseTo(54, 0);
+  expect(view.rect.x).toBeLessThan(8); // the Supe river stays in the opening frame
 });
 
 test('?intro=0 disables the flyover and leaves the camera at the base', async ({ page }) => {

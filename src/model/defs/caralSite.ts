@@ -10,7 +10,7 @@ export const CARAL_SITE_ORIGIN = { x: 100, z: 69.2 } as const;
 export const CARAL_SITE_ANCHOR = { x: 100, z: 30 } as const;
 
 /** Initial framing relative to the player base; wide enough to read the valley and the city. */
-export const CARAL_SITE_CAMERA = { dx: 10, dz: -4, height: 54 } as const;
+export const CARAL_SITE_CAMERA = { dx: 0, dz: 0, height: 54 } as const;
 
 export interface CaralHeritageProxy {
   id: HeritageBuildingId;
