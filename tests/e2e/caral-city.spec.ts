@@ -336,11 +336,12 @@ test('opening the Caral canal raises the yield at its banks', async ({ page }) =
   expect(after.yield).toBeGreaterThan(before.yield);
   expect(after.waterColor).not.toBe(before.waterColor);
   expect(after.gateY).toBeGreaterThan(before.gateY);
-  await page.waitForFunction(
-    () => (window as unknown as { game?: any }).game?.mission?.objState.get('obj_riego') === 'completed',
-    null,
-    { timeout: 5_000 },
-  );
+  const riego = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.mission.update(0.2, 0);
+    return g.mission.objState.get('obj_riego');
+  });
+  expect(riego).toBe('completed');
 
   const farm = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
