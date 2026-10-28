@@ -330,8 +330,8 @@ didactic pauses, and the simulation/plan is untouched. Two layers changed:
 - **Player base.** The starting Plaza Mayor and houses use the same compound language as the
   documented residential units: low stone-footed walls, cream plaster, painted bands, patios,
   hearths and stores, with low thatch roofs over the enclosed rooms and an open central patio
-  instead of a generic gabled hut. Their walls are scaled to unit height for RTS readability
-  while keeping the authored site's compact footprints.
+  instead of a generic gabled hut. Their walls are raised to read at unit scale for RTS clarity while keeping the authored
+  site's compact footprints.
   These are game-side abstractions, not new structures added to the authored site.
 
 Historical grounding: the stepped platforms, sunken circular plazas, upright stones, thatch,
