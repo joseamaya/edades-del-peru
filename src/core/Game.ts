@@ -56,7 +56,7 @@ import { getHeritageBuilding, type HeritageBuildingDef, type HeritageBuildingId 
 import { getPeriod } from '../model/defs/periods';
 import { BuildContext, buildModel, buildLandmarkModel, disposeModel, clearModelCaches } from '../model/ProceduralModel';
 import { clearTextureCache } from '../rendering/Textures';
-import { DEFAULT_SETTINGS, GameSettings, RESOURCE_INFO, CAMERA_SPEED_SCALE } from './Config';
+import { CAMERA_SPEED_SCALE, DEFAULT_SETTINGS, GameSettings, OPENING_BASE_CLEARANCE, RESOURCE_INFO } from './Config';
 import { QualityGovernor } from './QualityGovernor';
 import {
   applyMapOverrides,
@@ -161,9 +161,6 @@ const STARTING_UNIT_ANGLES = [0, -0.52, 0.52, -1.05, 1.05, -1.6, 1.6] as const;
 const STARTING_UNIT_RADII = [5.2, 6.1, 7.0, 7.9, 8.8, 9.7] as const;
 /** Keep guaranteed fishing searches inside the authored river and map edge. */
 const FISHING_SCAN_MARGIN = 4;
-/** Open ground kept clear around every opening base before random scatter. */
-const START_CLEARANCE = 14;
-
 export class Game {
   renderer!: THREE.WebGLRenderer;
   scene = new THREE.Scene();
@@ -209,7 +206,6 @@ export class Game {
   /** Visual-only valley plan; reserved before resources/props scatter. */
   private caralValleyPlan: CaralValleyPlan | null = null;
   private caralValleyBase: { x: number; z: number } | null = null;
-  /** Opening base centres, planned before resource and prop scatter. */
   private startSpots: [number, number][] = [];
   particles!: Particles;
   debris!: Debris;
@@ -474,8 +470,8 @@ export class Game {
     this.fowUniforms.fowEnabled.value = s.fogOfWar ? 1 : 0;
     this.pathfinder = new Pathfinder(s.mapSize, 2);
     this.pathfinder.bakeTerrain((x, z) => this.terrain.getHeight(x, z), this.terrain.waterLevel);
+    this.startSpots = this.planStartSpots();
     if (!this.pendingSnapshot) {
-      this.startSpots = this.planStartSpots();
       this.reserveCaralValley();
       this.spawnResources();
     }
@@ -625,7 +621,7 @@ export class Game {
 
   /** Clear the opening base footprint so scatter cannot block doors or unit spots. */
   private isStartReserved(x: number, z: number): boolean {
-    return this.startSpots.some(([sx, sz]) => Math.hypot(x - sx, z - sz) < START_CLEARANCE);
+    return this.startSpots.some(([sx, sz]) => Math.hypot(x - sx, z - sz) < OPENING_BASE_CLEARANCE);
   }
 
   /** Invisible but raycastable volumes over the six pyramids and the Anfiteatro. */
@@ -1151,7 +1147,8 @@ export class Game {
   }
 
   /** Keep authored city/canal footprints free of procedural resources and props. */
-  private isReserved(x: number, z: number): boolean {
+  private isReserved(x: number, z: number, includeOpening = true): boolean {
+    if (includeOpening && this.isStartReserved(x, z)) return true;
     if (this.setpiecePlan && inCaralCity(this.setpiecePlan, x, z, 1)) return true;
     const site = this.missionLayout?.site;
     if (site?.keepout) {
@@ -1182,7 +1179,7 @@ export class Game {
     while (placed < n && guard++ < n * 4) {
       const x = rng.range(15, s.mapSize - 15);
       const z = rng.range(15, s.mapSize - 15);
-      if (this.terrain.isWater(x, z) || this.isReserved(x, z) || this.isStartReserved(x, z)) continue;
+      if (this.terrain.isWater(x, z) || this.isReserved(x, z)) continue;
       const h = this.terrain.getHeight(x, z);
       const kind = this.pickResourceKind(rng, x, z, h);
       const amount =
@@ -1208,7 +1205,7 @@ export class Game {
     for (let i = 0; i < huntCount; i++) {
       const x = rng.range(20, s.mapSize - 20);
       const z = rng.range(20, s.mapSize - 20);
-      if (this.terrain.isWater(x, z) || this.isReserved(x, z) || this.isStartReserved(x, z)) continue;
+      if (this.terrain.isWater(x, z) || this.isReserved(x, z)) continue;
       const node = new ResourceNode(this.scene, 'hunt', x, z, rng.range(120, 180), mapType, undefined, variants);
       node.pos.y = this.terrain.getHeight(x, z);
       node.view.position.set(x, node.pos.y, z);
@@ -1281,8 +1278,7 @@ export class Game {
     const propSeed = s.mapSeed * AMBIENT_PROP_SEED + 3;
     const faunaSeed = s.mapSeed * AMBIENT_FAUNA_SEED + 5;
     const query = {
-      isWater: (x: number, z: number) =>
-        this.terrain.isWater(x, z) || this.isReserved(x, z) || this.isStartReserved(x, z),
+      isWater: (x: number, z: number) => this.terrain.isWater(x, z) || this.isReserved(x, z),
       isBuildable: (x: number, z: number) =>
         this.terrain.isBuildable(x, z) && !this.isReserved(x, z) && !this.isStartReserved(x, z),
       getSlope: (x: number, z: number) => this.terrain.getSlope(x, z),
@@ -1297,7 +1293,7 @@ export class Game {
       const base = this.caralValleyBase ?? this.playerCenter(0);
       placements = placements.filter((p) => p.id !== 'cactus');
       placements.push(...planCaralValleyProps(this.settings.mapSeed, base, this.caralValleyQuery()));
-      fauna = fauna.filter((f) => f.id !== 'llama');
+      fauna = fauna.filter((f) => f.id !== 'llama' && f.id !== 'vicuna');
     }
     this.props.place(placements, heightAt);
     this.wildlife.spawn(fauna, heightAt);
@@ -1524,7 +1520,7 @@ export class Game {
     const place = (kind: ResourceNode['kind'], amount: number, dx: number, dz: number) => {
       const nx = x + dx;
       const nz = z + dz;
-      if (this.isReserved(nx, nz)) return;
+      if (this.isReserved(nx, nz, false)) return;
       const node = new ResourceNode(
         this.scene,
         kind,

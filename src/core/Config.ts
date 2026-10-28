@@ -39,6 +39,9 @@ export type Difficulty = GameSettings['difficulty'];
 /** Current settings schema version; bump when stored defaults must migrate. */
 export const SETTINGS_VERSION = 2;
 
+/** Open ground kept clear around every opening base before random scatter. */
+export const OPENING_BASE_CLEARANCE = 14;
+
 export const DEFAULT_SETTINGS: GameSettings = {
   mapSize: 192,
   mapType: 'coast',
