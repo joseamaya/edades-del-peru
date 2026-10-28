@@ -9,8 +9,8 @@ export const CARAL_SITE_ORIGIN = { x: 100, z: 69.2 } as const;
 /** Objective anchor at the Great Pyramid. */
 export const CARAL_SITE_ANCHOR = { x: 100, z: 30 } as const;
 
-/** Initial framing relative to the player base; wide enough to read the valley and the city. */
-export const CARAL_SITE_CAMERA = { dx: 10, dz: -4, height: 54 } as const;
+/** Opening framing: wide enough to read the valley, the base and the city. */
+export const CARAL_SITE_CAMERA = { height: 54 } as const;
 
 export interface CaralHeritageProxy {
   id: HeritageBuildingId;

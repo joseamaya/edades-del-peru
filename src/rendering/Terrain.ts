@@ -626,7 +626,13 @@ ${FOW_DIM_GLSL}
           float halfSize = mapSize * 0.5;
           vec2 edge = vec2(abs(vWorldPos.x - halfSize), abs(vWorldPos.z - halfSize));
           float edgeAmt = smoothstep(mapSize * 0.47, mapSize * 0.5, max(edge.x, edge.y));
-          vec3 outCol = mix(lit, fogColor, clamp(max(fogAmt, edgeAmt), 0.0, 0.30));
+          float lomaMask = smoothstep(10.0, 20.0, vHeight);
+          float fogCap = 0.30 + 0.08 * caralTerrain * lomaMask;
+          vec3 outCol = mix(lit, fogColor, clamp(max(fogAmt, edgeAmt), 0.0, fogCap));
+          // Low morning haze pools over the Supe floodplain and separates it
+          // from the dry terrace without washing out the fields.
+          float valleyHaze = caralTerrain * flood * (1.0 - smoothstep(0.08, 0.42, slope));
+          outCol = mix(outCol, fogColor, valleyHaze * 0.09);
 
           // fog of war glued to the relief: unexplored black, explored dimmed, visible clear
           float fw = fowEnabled > 0.5 ? texture(fowMap, vWorldPos.xz / mapSize).r : 1.0;

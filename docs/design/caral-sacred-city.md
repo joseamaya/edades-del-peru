@@ -43,10 +43,12 @@ instead of the modular landmark or a hand-built schematic:
   suppressed on these foothills, which are lomas, not snowfields. The lomas rise
   to ~25 m on the east and ~18 m north/south; where all three rings overlap at
   the outer corners they reach ~44 m. Their crests, quebradas and higher dry
-  bands get their own tint. The mission opens at a wider zoom (`height 54`) so
-  the base, the green valley and the city share the first frame; aerial
-  perspective is slightly denser (`fogDensity 0.0032`) to separate the far
-  foothills.
+  bands get their own tint. The campaign intro settles at the authored opening
+  frame (`height 54`, base centred) so the base, the green Supe valley and the
+  city share the first gameplay frame; water and the green valley remain in
+  the upper-left.
+  A light low-altitude haze over the floodplain and a slightly stronger aerial
+  fade on the dry lomas separate the three bands without changing the palette.
 - **Collision**: the monumental volumes use axis-aligned footprints from the
   source mesh (`CARAL_SITE_BLOCKERS`), and the low residential/retaining walls are
   rasterized from the source's vertical faces into the pathfinding grid. Units
