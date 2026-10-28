@@ -44,6 +44,9 @@ test('the codex opens with periods, civilizations and dossiers', async ({ page }
   await expect(codex).toContainText('Códice del Perú');
   await codex.getByRole('button', { name: /Civilizaciones/ }).click();
   await expect(codex.locator('.ed-codex-nav')).toContainText('Caral-Supe');
+  await codex.getByRole('button', { name: /Campañas/ }).click();
+  await expect(codex.locator('.ed-codex-nav')).toContainText('La Ciudad Sagrada');
+  await expect(codex.locator('.ed-codex-nav')).not.toContainText('El Oráculo de Chavín');
   await codex.getByRole('button', { name: /Dossiers/ }).click();
   await expect(codex.locator('.ed-codex-content')).toContainText('Fuentes');
 });
@@ -480,7 +483,7 @@ test('the campaign hub shows Caral progress and only Caral is playable', async (
   // legacy numeric progress migrates to the first released mission
   await page.addInitScript(() => {
     localStorage.setItem('peru-campaign', '2');
-    localStorage.setItem('peru-campaign-intro', '1');
+    localStorage.setItem('peru-campaign-intro-preinca', '1');
   });
   await page.goto('/?menu=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
@@ -499,7 +502,7 @@ test('the campaign hub shows Caral progress and only Caral is playable', async (
 test('the campaign hub keeps future campaigns as coming soon', async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem('peru-campaign', '9');
-    localStorage.setItem('peru-campaign-intro', '1');
+    localStorage.setItem('peru-campaign-intro-preinca', '1');
   });
   await page.goto('/?menu=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
@@ -531,6 +534,7 @@ test('Caral opens with a chapter card and closes the first campaign', async ({ p
   await expect(victory.getByRole('button', { name: /Volver a campañas/ })).toBeVisible();
   await victory.getByRole('button', { name: /Volver a campañas/ }).click();
   await expect(page.locator('.ed-campaign-panel')).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem('peru-campaign'))).toContain('m1_caral');
 });
 
 test('a peaceful mission briefing shows no rival side', async ({ page }) => {

@@ -34,7 +34,7 @@ import {
   getReleasedMission,
   nextReleasedMission,
 } from '../campaign/defs/campaigns';
-import { SERIES_INTRO, PREINCA_PROLOGUE } from '../campaign/defs/cinematics';
+import { SERIES_INTRO } from '../campaign/defs/cinematics';
 import { completedMissions, markMissionComplete, parseCampaignProgress } from '../campaign/progress';
 import { CinematicPlayer } from './CinematicPlayer';
 import { MENU_BACKDROP } from './menuArt';
@@ -186,7 +186,7 @@ const CSS = /* css */ `
   .ed-ghostbtn:hover { border-color: var(--gold); color: var(--gold); }
 
   /* Onboarding: title, main menu, campaign hub and cinematics */
-  .ed-title-screen { background-size: cover; background-position: center; background-repeat: no-repeat; }
+  .ed-title-screen { background-size: 108%; background-position: 55% 50%; background-repeat: no-repeat; animation: menu-drift 30s ease-in-out infinite alternate; }
   .ed-title-screen::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 55%, transparent 0%, rgba(3,5,8,.38) 56%, rgba(3,5,8,.92) 100%); pointer-events: none; }
   .ed-title-card { position: relative; z-index: 1; text-align: center; padding: 32px; max-width: 720px; }
   .ed-title-ornament { width: 78px; height: 34px; margin: 0 auto 18px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M10 1h4v5h5v4h4v4h-4v4h-5v5h-4v-5H5v-4H1v-4h4V6h5z' fill='%23e8c36a' fill-opacity='0.82'/%3E%3C/svg%3E") center/contain no-repeat; filter: drop-shadow(0 0 14px rgba(232,195,106,.35)); }
@@ -196,7 +196,7 @@ const CSS = /* css */ `
   .ed-title-card .ed-primary { padding: 12px 42px; font-size: 15px; letter-spacing: 2px; box-shadow: 0 8px 30px rgba(232,195,106,.18); }
   .ed-title-card .hint { margin-top: 14px; color: var(--text-dim); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; }
 
-  .ed-menu-screen { align-items: stretch; justify-content: flex-start; background-size: cover; background-position: center 42%; background-repeat: no-repeat; }
+  .ed-menu-screen { align-items: stretch; justify-content: flex-start; background-size: 108%; background-position: 58% 42%; background-repeat: no-repeat; animation: menu-drift 26s ease-in-out infinite alternate; }
   .ed-menu-screen::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(4,7,10,.95) 0%, rgba(4,7,10,.78) 31%, rgba(4,7,10,.18) 64%, rgba(4,7,10,.62) 100%), linear-gradient(0deg, rgba(4,7,10,.92), transparent 48%); pointer-events: none; }
   .ed-menu-shell { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: space-between; width: min(620px, 54vw); min-height: 100%; padding: clamp(28px, 5vw, 70px) clamp(24px, 4vw, 68px) 28px; }
   .ed-menu-kicker { color: var(--gold-dim); font-size: 11px; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 12px; }
@@ -220,7 +220,7 @@ const CSS = /* css */ `
   .ed-menu-footer button { background: none; border: 0; color: var(--gold-dim); font: inherit; cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 3px; }
   .ed-menu-footer button:hover { color: var(--gold); }
 
-  .ed-cinematic { align-items: flex-end; justify-content: flex-start; background-size: cover; background-position: center; background-repeat: no-repeat; padding: clamp(26px, 6vw, 72px); }
+  .ed-cinematic { align-items: flex-end; justify-content: flex-start; background-size: 108%; background-position: 56% 50%; background-repeat: no-repeat; padding: clamp(26px, 6vw, 72px); animation: menu-drift 30s ease-in-out infinite alternate; }
   .ed-cinematic::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 70% 35%, transparent 0%, rgba(3,5,8,.18) 48%, rgba(3,5,8,.82) 100%); pointer-events: none; }
   .ed-cinematic-copy { position: relative; z-index: 1; max-width: 680px; opacity: 0; transform: translateY(12px); }
   .ed-cinematic.is-active .ed-cinematic-copy { animation: cinematic-in .8s ease forwards; }
@@ -275,6 +275,8 @@ const CSS = /* css */ `
   .ed-mission-card .hint { margin-top: 22px; color: var(--gold-dim); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; }
   @keyframes mission-card-in { from { opacity: 0; } to { opacity: 1; } }
 
+  @keyframes menu-drift { from { background-position: 54% 48%; background-size: 106%; } to { background-position: 60% 54%; background-size: 110%; } }
+
   @media (max-width: 820px) {
     .ed-menu-shell { width: 100%; padding: 30px 22px 24px; }
     .ed-menu-side { display: none; }
@@ -290,6 +292,7 @@ const CSS = /* css */ `
   }
   @media (prefers-reduced-motion: reduce) {
     .ed-title-screen, .ed-menu-screen, .ed-cinematic, .ed-campaign-hub { background-position: center; }
+    .ed-menu-screen, .ed-title-screen, .ed-cinematic { animation: none !important; background-size: cover; }
     .ed-cinematic-copy, .ed-menu-btn, .ed-mission-card { animation: none !important; transition: none !important; opacity: 1; transform: none; }
   }
 
@@ -909,8 +912,8 @@ export class HUD {
           ? winText
           : loseText
         : victory
-          ? 'Tu pueblo resiste. La historia continúa.'
-          : 'La empresa se pierde, pero la memoria del Perú permanece.';
+          ? 'Tu imperio se alza sobre las ruinas del enemigo.'
+          : 'Tu civilización ha caído ante el avance enemigo.';
     const epilogue =
       victory && edu?.epilogue
         ? `<div class="ed-hist"><b style="color:var(--gold)">Epílogo.</b> ${edu.epilogue}</div>
@@ -935,6 +938,7 @@ export class HUD {
     const stats = peaceful
       ? `Fichas patrimoniales visitadas: <b>${this.game.getVisitedHeritage().length}</b><br>${commonStats}`
       : `Bajas infligidas: <b>${p?.kills ?? 0}</b><br>${commonStats}`;
+    if (victory && mis) this.saveCampaignProgress(mis.id);
     const next = victory ? nextReleasedMission(mis?.id ?? '') : undefined;
     const chapterEnd = victory && campaign && campaign.releasedMissionIds.includes(mis?.id ?? '') && !next;
     panel.innerHTML = `
@@ -944,7 +948,7 @@ export class HUD {
       ${epilogue}
       ${optionalSummary}
       <div style="font-size:12px;color:var(--text-dim);line-height:1.7;margin-bottom:14px">${stats}</div>
-      ${chapterEnd ? '<div class="ed-hist" style="border-left:3px solid var(--gold);padding-left:12px"><b style="color:var(--gold)">Fin de la primera campaña.</b> El próximo capítulo, Chavín y los primeros estados andinos, llegará en una próxima actualización.</div>' : ''}
+      ${chapterEnd ? '<div class="ed-hist" style="border-left:3px solid var(--gold);padding-left:12px"><b style="color:var(--gold)">Fin de la primera campaña.</b> Puedes volver al mapa de la saga para elegir otro capítulo o repetir la misión.</div>' : ''}
     `;
     const row = this.el('div', 'row', panel);
     if (next) {
@@ -985,7 +989,17 @@ export class HUD {
       </div>
     `;
     const dismiss = () => card.remove();
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-label', 'Continuar a la misión');
     card.addEventListener('click', dismiss);
+    card.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' || event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        dismiss();
+      }
+    });
+    card.focus();
     window.setTimeout(dismiss, 5000);
   }
 
@@ -1611,6 +1625,7 @@ export class HUD {
       </div>
       <div class="ed-menu-actions"></div>
       <div class="ed-menu-footer">
+        <span>Extras</span>
         <span>La Senda del Sol · v0.1</span>
         <button type="button" data-action="intro">Ver introducción</button>
       </div>
@@ -1717,7 +1732,7 @@ export class HUD {
     this.setMenuOpen(true);
     this.game.audio.cinematicSting();
     new CinematicPlayer(this.root, {
-      beats: PREINCA_PROLOGUE,
+      beats: getCampaign('preinca')!.prologue,
       background: MENU_BACKDROP,
       kicker: 'CAMPAÑA I · CULTURAS PREINCAS',
       finalLabel: 'Ver misiones',
@@ -1888,7 +1903,7 @@ export class HUD {
 
   private introSeen(): boolean {
     try {
-      return localStorage.getItem('peru-campaign-intro') === '1';
+      return localStorage.getItem('peru-campaign-intro-preinca') === '1';
     } catch {
       return false;
     }
@@ -1896,7 +1911,7 @@ export class HUD {
 
   private markIntroSeen(): void {
     try {
-      localStorage.setItem('peru-campaign-intro', '1');
+      localStorage.setItem('peru-campaign-intro-preinca', '1');
     } catch {
       /* noop */
     }
@@ -2048,13 +2063,14 @@ export class HUD {
       `;
       const actions = card.querySelector('.card-actions') as HTMLElement;
       if (available) {
-        const mission = campaign.releasedMissionIds[0];
-        const title = this.missionTitle(mission);
-        const play = this.el('button', 'ed-primary', actions) as HTMLButtonElement;
-        play.textContent = done >= total ? `✓ ${title}` : `▶ Jugar ${title}`;
-        play.addEventListener('click', () => this.launchMission(mission));
+        for (const mission of campaign.releasedMissionIds) {
+          const title = this.missionTitle(mission);
+          const play = this.el('button', 'ed-primary', actions) as HTMLButtonElement;
+          play.textContent = done >= total ? `✓ ${title}` : `▶ Jugar ${title}`;
+          play.addEventListener('click', () => this.launchMission(mission));
+        }
         const upcoming = this.el('div', 'upcoming', card);
-        upcoming.textContent = 'Próximamente: Chavín, Moche/Recuay y Wari.';
+        upcoming.textContent = campaign.upcoming.length ? `Próximamente: ${campaign.upcoming.join(', ')}.` : '';
       } else {
         const tag = this.el('span', 'upcoming', actions);
         tag.textContent = 'En preparación';
@@ -2073,9 +2089,11 @@ export class HUD {
   }
 
   private showCampaignIntroReplay(): void {
+    this.clearOverlays();
     this.setMenuOpen(true);
+    this.game.audio.cinematicSting();
     new CinematicPlayer(this.root, {
-      beats: PREINCA_PROLOGUE,
+      beats: getCampaign('preinca')!.prologue,
       background: MENU_BACKDROP,
       kicker: 'CAMPAÑA I · CULTURAS PREINCAS',
       finalLabel: 'Volver a campañas',

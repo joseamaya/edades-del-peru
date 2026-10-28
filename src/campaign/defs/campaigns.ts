@@ -22,10 +22,10 @@ export interface CampaignDef {
   era: string;
   accent: string;
   prologue: CinematicBeat[];
+  /** Named future missions shown inside this chapter, without release promises. */
+  upcoming: string[];
 }
 
-/** Stable id of the saga, also used by the generated-art manifest. */
-export const CAMPAIGN_SERIES_ID = 'la-senda-del-sol';
 export const CAMPAIGN_SERIES_TITLE = 'La Senda del Sol';
 export const CAMPAIGN_SERIES_SUBTITLE = 'Cuatro campañas a través de cinco mil años de historia peruana';
 
@@ -42,6 +42,7 @@ export const CAMPAIGNS: CampaignDef[] = [
     era: '3000 a.C. — 1000 d.C.',
     accent: '#c99a55',
     prologue: PREINCA_PROLOGUE,
+    upcoming: ['Chavín', 'Moche/Recuay', 'Wari'],
   },
   {
     id: 'inca',
@@ -55,6 +56,7 @@ export const CAMPAIGNS: CampaignDef[] = [
     era: '1438 — 1532',
     accent: '#d8b35a',
     prologue: [],
+    upcoming: [],
   },
   {
     id: 'virreinato',
@@ -67,6 +69,7 @@ export const CAMPAIGNS: CampaignDef[] = [
     era: '1542 — 1821',
     accent: '#9d7a4c',
     prologue: [],
+    upcoming: [],
   },
   {
     id: 'independencia',
@@ -79,6 +82,7 @@ export const CAMPAIGNS: CampaignDef[] = [
     era: '1821 — hoy',
     accent: '#8b6b43',
     prologue: [],
+    upcoming: [],
   },
 ];
 
@@ -88,10 +92,6 @@ export function getCampaign(id: string): CampaignDef | undefined {
 
 export function getCampaignForMission(missionId: string): CampaignDef | undefined {
   return CAMPAIGNS.find((c) => c.missionIds.includes(missionId));
-}
-
-export function isReleasedMission(missionId: string): boolean {
-  return CAMPAIGNS.some((c) => c.releasedMissionIds.includes(missionId));
 }
 
 /** Missions visible to players in menus, Codex and progress. */

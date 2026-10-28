@@ -1,4 +1,4 @@
-import { CAMPAIGNS, type CampaignId } from './defs/campaigns';
+import type { CampaignId } from './defs/campaigns';
 
 export interface CampaignProgress {
   version: 2;
@@ -28,20 +28,15 @@ export function parseCampaignProgress(raw: string | null): CampaignProgress {
   } catch {
     // legacy value is a plain number
   }
-  const legacy = Number.parseInt(raw, 10);
+  const legacyText = raw.trim();
+  if (!/^\d+$/.test(legacyText)) return { ...EMPTY, completed: {} };
+  const legacy = Number.parseInt(legacyText, 10);
   if (!Number.isFinite(legacy) || legacy < 1) return { ...EMPTY, completed: {} };
   return { version: 2, completed: { preinca: ['m1_caral'] } };
 }
 
 export function completedMissions(progress: CampaignProgress, campaignId: CampaignId): string[] {
   return progress.completed[campaignId] ?? [];
-}
-
-export function isCampaignComplete(progress: CampaignProgress, campaignId: CampaignId): boolean {
-  const campaign = CAMPAIGNS.find((c) => c.id === campaignId);
-  if (!campaign || !campaign.releasedMissionIds.length) return false;
-  const completed = completedMissions(progress, campaignId);
-  return campaign.releasedMissionIds.every((id) => completed.includes(id));
 }
 
 export function markMissionComplete(

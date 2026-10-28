@@ -39,7 +39,8 @@ the four chapters. Only Caral is released in this build; the other campaigns are
 for the next chapters but are hidden from the player-facing campaign, Codex and progress.
 
 Progress lives in `peru-campaign` as a versioned JSON object. The old numeric value is
-migrated to `preinca: ['m1_caral']` and is never discarded.
+migrated to `preinca: ['m1_caral']`; old draft missions are not deleted from the code, but they do
+not carry into release progress.
 
 ## Mission flow
 
@@ -50,8 +51,9 @@ and points to the next campaign instead of auto-starting an unreleased mission.
 ## Asset provenance
 
 `public/media/menu/caral-dawn.webp` is a UI-only grade of a runtime capture of the Caral
-scene in `m1_caral`. It is an atmospheric menu backdrop, **not** a historical photograph and
-**not** a campaign-art claim. See `public/media/menu/PROVENANCE.md`.
+scene in `m1_caral`; the title and prologues use that engine capture with a slow pan. It is
+an atmospheric menu backdrop, **not** a historical photograph and **not** a campaign-art
+claim. See `public/media/menu/PROVENANCE.md`.
 
 ## Accessibility
 

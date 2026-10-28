@@ -38,8 +38,10 @@ describe('campaign series', () => {
       expect(beat.title.trim()).not.toBe('');
       expect(beat.text.trim().length).toBeGreaterThan(60);
       expect(beat.seconds).toBeGreaterThan(0);
+      expect(beat.source).toMatch(/^docs\/historia\//);
     }
     expect(PREINCA_PROLOGUE[0].text).toContain('una de las primeras civilizaciones del mundo');
+    expect(PREINCA_PROLOGUE.every((beat) => beat.source === 'docs/historia/campanas/caral.md')).toBe(true);
   });
 });
 
@@ -64,6 +66,7 @@ describe('campaign progress', () => {
 
   it('ignores malformed values', () => {
     expect(completedMissions(parseCampaignProgress('not-json'), 'preinca')).toEqual([]);
+    expect(completedMissions(parseCampaignProgress('2x'), 'preinca')).toEqual([]);
     expect(completedMissions(parseCampaignProgress('{"version":2,"completed":[]}'), 'preinca')).toEqual([]);
   });
 });
