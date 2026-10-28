@@ -106,7 +106,9 @@ instead of the modular landmark or a hand-built schematic:
   survey.
 - **Residential compounds**: the source models low-walled patio compounds, not
   individual roofed houses. They stay as modelled. Adding roofs or new houses
-  would be an invention, not a correction.
+  to the authored site would be an invention, not a correction. The player's
+  Plaza Mayor and houses are game-side abstractions of that compound language,
+  not additions to the archaeological site.
 - **Plazas**: the source provides the Plaza Mayor floor, red rings, hearth and
   stairs; the game only provides the shallow terrain basin beneath them.
 - **No invented history**: no rulers, battles, weapons or market are added.

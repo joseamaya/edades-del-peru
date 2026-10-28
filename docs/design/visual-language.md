@@ -327,6 +327,10 @@ didactic pauses, and the simulation/plan is untouched. Two layers changed:
   carry green young-crop rows (`SettlementOverlay.cropGeometry`) and the cultural landscape
   drapes flat plazas/fields over the relief instead of floating. Trees are smaller and use a
   drier olive canopy; mine rocks use the fieldstone material instead of a coal-dark one.
+- **Player base.** The starting Plaza Mayor and houses use the same compound language as the
+  documented residential units: low stone-footed walls, cream plaster, painted bands, patios,
+  hearths and stores, with a small shed roof instead of a generic gabled hut. These are game-side
+  abstractions, not new structures added to the authored site.
 
 Historical grounding: the stepped platforms, sunken circular plazas, upright stones, thatch,
 cotton, gourds and fishing come from [`docs/historia/civilizaciones/caral.md`](../historia/civilizaciones/caral.md)

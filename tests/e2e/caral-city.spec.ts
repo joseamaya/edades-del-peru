@@ -227,6 +227,21 @@ test('the Caral objectives reveal in acts and keep the assembly hidden until the
   await expect(objectives).toContainText('✔Reúne 500 de comida');
 });
 
+test('the Caral base uses compound architecture for its center and houses', async ({ page }) => {
+  await boot(page);
+  const state = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const center = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center' && !b.dead);
+    const house = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'house' && !b.dead);
+    return {
+      center: !!center?.view?.group?.getObjectByName('caral_center'),
+      house: !!house?.view?.group?.getObjectByName('caral_house'),
+    };
+  });
+  expect(state.center).toBe(true);
+  expect(state.house).toBe(true);
+});
+
 test('the Caral tutorial hides the shortcut help while it is open', async ({ page }) => {
   await boot(page);
   await expect(page.locator('#ed-tutorial')).toBeVisible({ timeout: 30_000 });
