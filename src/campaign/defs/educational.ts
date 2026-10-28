@@ -21,14 +21,13 @@ export interface EducationalMission {
   sources: SourceRef[];
 }
 
-/** Prologue shown when opening the campaign, before the mission list. */
+/** High-level saga prologue retained for the Codex and legacy callers. */
 export const PROLOGUE =
   'En el Perú nació una de las primeras civilizaciones del mundo y la más antigua de América. ' +
   'Hace cinco mil años, en el valle de Supe, se levantó Caral, con sus pirámides, plazas y canales.\n' +
-  'Después llegaron el oráculo de Chavín; los señores Moche, Nazca y Recuay; los imperios Wari y ' +
-  'Tiahuanaco; el Tahuantinsuyo de los incas; el Virreinato; la independencia; y la República.\n' +
-  'En esta campaña recorrerás nueve escenarios históricos. Cada uno revive un hecho documentado —sin ' +
-  'inventar nombres ni batallas— para comprender cómo se construyó el Perú.';
+  'La Senda del Sol recorre esa historia en cuatro campañas: Culturas Preincas, El Tahuantinsuyo, ' +
+  'El Virreinato e Independencia y República. Cada escenario revive un hecho documentado —sin inventar ' +
+  'nombres ni batallas— para comprender cómo se construyó el Perú.';
 
 export const EDUCATIONAL: Record<string, EducationalMission> = {
   m1_caral: {

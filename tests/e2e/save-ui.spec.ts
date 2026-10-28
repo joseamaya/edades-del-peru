@@ -31,7 +31,7 @@ test('saves from the pause menu and resumes from the main menu', async ({ page }
   expect(await page.evaluate(() => localStorage.getItem('peru-save') !== null)).toBe(true);
 
   // the main menu offers "Continuar", which reloads into the saved match
-  await page.goto('/');
+  await page.goto('/?menu=1');
   const cont = page.getByRole('button', { name: /Continuar partida/ });
   await cont.waitFor({ timeout: 10_000 });
   await cont.click();

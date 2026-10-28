@@ -22,8 +22,30 @@ test('boots without errors and exposes window.game', { tag: '@smoke' }, async ({
   expect(errors).toEqual([]);
 });
 
-test('shows the main menu by default', async ({ page }) => {
+test('shows the first-visit title screen', async ({ page }) => {
   await page.goto('/');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  await expect(page.locator('.ed-title-screen')).toBeVisible();
+  await page.getByRole('button', { name: 'Entrar' }).click();
+  await expect(page.locator('.ed-cinematic')).toBeVisible();
+  await page.getByRole('button', { name: /Saltar/ }).click();
+  await expect(page.locator('.ed-menu-screen')).toBeVisible();
+  await page.reload();
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  await expect(page.locator('.ed-title-screen')).toHaveCount(0);
+  await expect(page.locator('.ed-menu-screen')).toBeVisible();
+  await page.getByRole('button', { name: /Ver introducción/ }).click();
+  await expect(page.locator('.ed-cinematic')).toBeVisible();
+  await page.getByRole('button', { name: /Saltar/ }).click();
+  await expect(page.locator('.ed-menu-screen')).toBeVisible();
+});
+
+test('shows the main menu with a direct menu link', async ({ page }) => {
+  await page.goto('/?menu=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });

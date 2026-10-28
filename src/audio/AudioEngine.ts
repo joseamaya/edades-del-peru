@@ -146,6 +146,14 @@ export class AudioEngine {
     this.blip(880, 0.04, 'sine', 0.12, 700);
   }
 
+  /** Low, ceremonial hit used by the title and campaign prologues. */
+  cinematicSting(): void {
+    this.noise(0.5, 0.32, 220, 'lowpass');
+    this.blip(98, 1.15, 'sine', 0.24);
+    this.timers.push(setTimeout(() => this.blip(146.83, 1.25, 'sine', 0.16), 180));
+    this.timers.push(setTimeout(() => this.blip(220, 1.4, 'triangle', 0.09), 380));
+  }
+
   eraAdvance(): void {
     this.blip(392, 0.4, 'sine', 0.3);
     this.timers.push(setTimeout(() => this.blip(523, 0.4, 'sine', 0.3), 160));

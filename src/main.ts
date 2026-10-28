@@ -244,7 +244,8 @@ async function boot(): Promise<void> {
   if (params.get('menu') === '1' || (wantsLoad && !snapshot) || (wantsReplay && !replay)) {
     game.hud.showMainMenu();
   } else if (!startsMatchDirectly(params)) {
-    game.hud.showMainMenu();
+    if (game.hud.shouldShowTitleIntro()) game.hud.showTitleIntro(() => game.hud.showMainMenu());
+    else game.hud.showMainMenu();
   }
 }
 

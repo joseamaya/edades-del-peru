@@ -2,12 +2,6 @@ import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../core
 import { MissionDef } from '../types';
 import { CARAL_SITE_BUILD_KEEPOUT } from '../../model/defs/caralSite';
 
-/** Stable id of the campaign (used by the generated-art manifest). */
-export const CAMPAIGN_ID = 'la-senda-del-sol';
-
-export const CAMPAIGN_TITLE = 'La Senda del Sol';
-export const CAMPAIGN_SUBTITLE = 'Nueve escenarios de la historia del Perú, de Caral a la República';
-
 export const MISSIONS: MissionDef[] = [
   {
     id: 'm1_caral',
