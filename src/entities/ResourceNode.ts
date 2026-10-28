@@ -5,6 +5,7 @@ import { ResourceKey } from '../core/types';
 import { MaterialTex } from '../rendering/Textures';
 import { applyGeneratedPbr } from '../rendering/Biomes';
 import { TreeInstances, type TreeVariant } from '../rendering/TreeInstances';
+import { HuntHerd } from '../rendering/HuntHerd';
 import type { ResourceNodeSave } from '../game/saveTypes';
 
 // Shared caches: geometries and materials reused between nodes (fewer draw calls and GC).
@@ -116,6 +117,7 @@ export class ResourceNode {
   private treeVariants?: TreeVariants;
   treeSlot = -1;
   private treeVariant: TreeVariant = 'broad';
+  private huntHerd: HuntHerd | null = null;
 
   constructor(
     scene: THREE.Scene,
@@ -365,26 +367,8 @@ export class ResourceNode {
   }
 
   private buildHunt(rng: RNG): void {
-    const bodyCol = rng.pick(['#8a6a4a', '#5a4a3a', '#7a5a3a']);
-    const hideMat = mat('hide-' + bodyCol, { map: MaterialTex.hide(bodyCol), color: '#ffffff', roughness: 0.9 });
-    const legMat = mat('hide-legs', { color: '#3a2a1a', roughness: 0.9 });
-    const n = 3;
-    for (let i = 0; i < n; i++) {
-      const ox = rng.range(-1.2, 1.2);
-      const oz = rng.range(-1.2, 1.2);
-      const body = new THREE.Mesh(boxGeo(0.5, 0.3, 0.8), hideMat);
-      body.position.set(ox, 0.35, oz);
-      body.rotation.y = rng.range(0, 3);
-      this.add(body);
-      const head = new THREE.Mesh(boxGeo(0.22, 0.22, 0.24), hideMat);
-      head.position.set(ox, 0.45, oz + 0.48);
-      this.add(head);
-      for (let l = 0; l < 4; l++) {
-        const leg = new THREE.Mesh(boxGeo(0.08, 0.3, 0.08), legMat);
-        leg.position.set(ox + (l < 2 ? -0.18 : 0.18), 0.15, oz + (l % 2 === 0 ? -0.3 : 0.3));
-        this.add(leg);
-      }
-    }
+    this.huntHerd = new HuntHerd(rng.range(0, 1000));
+    this.view.add(this.huntHerd.group);
   }
 
   private buildFish(rng: RNG): void {
@@ -444,22 +428,38 @@ export class ResourceNode {
           this.timers.push(setTimeout(() => this.remove(), 2000));
         }
       } else if (this.kind === 'hunt') {
-        this.view.rotation.x = Math.PI / 2;
-        this.timers.push(setTimeout(() => this.remove(), 800));
+        this.huntHerd?.setRemaining(0);
+        this.huntHerd?.fadeOut(1.5);
+        this.timers.push(setTimeout(() => this.remove(), 1800));
       } else {
         this.remove();
       }
+    } else {
+      this.syncHuntHerd();
     }
+  }
+
+  private syncHuntHerd(): void {
+    if (this.kind === 'hunt') this.huntHerd?.setRemaining(this.amount / this.maxAmount);
   }
 
   /** Snapshot the gameplay state (used by save/load). */
   toSave(): ResourceNodeSave {
-    return { id: this.id, kind: this.kind, x: this.pos.x, z: this.pos.z, amount: this.amount };
+    return {
+      id: this.id,
+      kind: this.kind,
+      x: this.pos.x,
+      z: this.pos.z,
+      amount: this.amount,
+      maxAmount: this.maxAmount,
+    };
   }
 
   applySave(s: ResourceNodeSave): void {
     this.id = s.id;
+    this.maxAmount = Math.max(1, s.maxAmount ?? s.amount);
     this.amount = s.amount;
+    this.syncHuntHerd();
   }
 
   remove(): void {
@@ -471,12 +471,15 @@ export class ResourceNode {
       this.treeMgr.unregister(this.treeSlot);
       this.treeSlot = -1;
     }
+    this.huntHerd?.dispose();
+    this.huntHerd = null;
     // geometries and materials are shared/cached: only removed from the scene.
     this.scene.remove(this.view);
   }
 
-  /** Wind for trees. */
+  /** Wind for trees, walking gait for hunt herds. */
   update(time: number): void {
+    if (this.view.visible) this.huntHerd?.update(time);
     if (this.swayParts.length === 0) return;
     const sway = Math.sin(time * 1.4 + this.swaySeed) * 0.02;
     for (const o of this.swayParts) {
