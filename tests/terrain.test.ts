@@ -172,8 +172,8 @@ describe('authored Caral heightfield', () => {
   });
 
   it('frames the valley with dry Andean foothills at the map edges', () => {
-    expect(sampleAuthoredHeight(field, 185, 100)).toBeGreaterThan(12);
-    expect(sampleAuthoredHeight(field, 100, 188)).toBeGreaterThan(10);
-    expect(sampleAuthoredHeight(field, 20, 2)).toBeGreaterThan(8);
+    expect(sampleAuthoredHeight(field, 185, 100)).toBeGreaterThan(20);
+    expect(sampleAuthoredHeight(field, 100, 188)).toBeGreaterThan(18);
+    expect(sampleAuthoredHeight(field, 20, 2)).toBeGreaterThan(12);
   });
 });

@@ -34,9 +34,15 @@ instead of the modular landmark or a hand-built schematic:
   Great Pyramid is centred at `{x: 100, z: 30}` on the 192 m map. No vertical
   exaggeration is applied.
 - **Terrain**: the source terrain is hidden. The game heightfield owns the
-  ground, broadens the green floodplain, carves a 0.55 m basin under the Plaza
-  Mayor so the source's sunken floor and red rings remain visible, and raises dry
-  foothills beyond the east and south edges of the site.
+  ground, meanders the green floodplain and its sandy banks, carves a 0.55 m basin
+  under the Plaza Mayor so the source's sunken floor and red rings remain
+  visible, and raises dry foothills beyond the north, east and south edges of the
+  site.
+- **Reading the basin**: the authored-only palette separates the wet valley
+  floor, the pale desert terrace and the dry lomas by height and slope. Snow is
+  suppressed on these 20–25 m foothills, which are lomas, not snowfields. The
+  mission opens at a wider zoom (`height 54`) so the base, the green valley and
+  the city share the first frame.
 - **Collision**: the monumental volumes use axis-aligned footprints from the
   source mesh (`CARAL_SITE_BLOCKERS`), and the low residential/retaining walls are
   rasterized from the source's vertical faces into the pathfinding grid. Units
@@ -61,7 +67,7 @@ instead of the modular landmark or a hand-built schematic:
 | Element                                                             | Source status       | In game                                                                              |
 | ------------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------ |
 | Dry desert terrace over the green Supe valley                       | Documented (UNESCO) | Authored heightfield: terrace ≈8 m, floodplain ≈3.9 m, river bed ≈1.05 m.            |
-| Andean foothills around the valley                                  | Geographic context  | Dry foothills rising to ~20 m at the east and south edges, outside the site.         |
+| Andean foothills around the valley                                  | Geographic context  | Dry lomas rising to ~25 m at the east and ~18 m south/north, outside the site.       |
 | Upper Half (Caral Alto)                                             | Documented          | Six pyramids, Central Plaza and Plaza de la Huanca.                                  |
 | Lower Half (Caral Bajo)                                             | Documented          | Player base, smaller residences and workshops around the Anfiteatro.                 |
 | Great Pyramid (E Sector)                                            | Documented          | Seven-tier pyramid, long processional stair, summit room and circular forecourt.     |
@@ -111,9 +117,10 @@ instead of the modular landmark or a hand-built schematic:
 - Low walls: `Game.addSiteWallCollision` rasterizes vertical `Infra_Residential`,
   `Infra_LowerHalf` and low `Infra_UpperHalf` faces into `Pathfinder.blockCells`;
   the static mask survives dynamic-obstacle rebuilds.
-- Terrain palette: `src/assets/textures/terrain/caral_*`. The rock slot reuses the
-  dirt albedo for Caral because the photographic rock texture aliases into a
-  repeating floral pattern at RTS tiling.
+- Terrain palette: `src/assets/textures/terrain/caral_*`, with height/slope bands
+  for the green valley floor, pale terrace and warm lomas. The rock slot reuses
+  the smooth sand albedo for Caral because the photographic rock/dirt normals
+  alias into a repeating floral pattern at RTS tiling.
 
 ## Status
 

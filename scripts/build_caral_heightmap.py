@@ -2,9 +2,10 @@
 """Generate the authored Caral heightfield used by the RTS terrain.
 
 The field is in game metres for the m1 map (192 x 192, 1 m grid). The city
-terrace is flat at 8 m, the Supe channel is west of the terrace, and the fields
-sit on the valley floor. Values are serialised as a base64 Uint16 array so the
-browser can decode it synchronously at boot.
+terrace is flat at 8 m, the Supe channel and its floodplain meander west of the
+terrace, and dry lomas frame the north, east and south edges. Values are
+serialised as a base64 Uint16 array so the browser can decode it synchronously
+at boot.
 """
 from __future__ import annotations
 
@@ -43,12 +44,17 @@ def city_mask(x: float, z: float) -> float:
 
 def height(x: float, z: float) -> float:
     # Broad green floodplain and a shallow river west of the terrace. The
-    # channel is deliberately wide enough to read from the RTS camera.
-    if x < 10.0:
+    # channel and banks meander gently so the valley reads as a landform, not
+    # a straight painted strip. The channel is wide enough to read from the
+    # RTS camera.
+    river_edge = 8.0 + 2.5 * math.sin(z * 0.16 + 0.4)
+    ramp_end = river_edge + 14.0 + 2.0 * math.sin(z * 0.11 + 1.3)
+    valley_end = min(41.0, ramp_end + 14.0 + 2.0 * math.sin(z * 0.09 + 2.0))
+    if x < river_edge:
         h = RIVER
-    elif x < 24.0:
-        h = RIVER + (VALLEY - RIVER) * smoothstep(10.0, 24.0, x)
-    elif x < 38.0:
+    elif x < ramp_end:
+        h = RIVER + (VALLEY - RIVER) * smoothstep(river_edge, ramp_end, x)
+    elif x < valley_end:
         h = VALLEY + 0.18 * noise(x * 0.8, z * 0.8)
     else:
         h = TERRACE
@@ -66,13 +72,17 @@ def height(x: float, z: float) -> float:
         ramp_h = VALLEY + (TERRACE - VALLEY) * smoothstep(20.0, 48.0, x)
         h = h * (1.0 - ramp * 0.9) + ramp_h * (ramp * 0.9)
 
-    # Dry Andean foothills frame the valley east and south of the city. Their
-    # near slopes start just beyond the source model, so they read from the
-    # normal site and base views instead of only at the map border.
-    north = smoothstep(9.0, 0.0, z) * (8.0 + 2.6 * math.sin(x * 0.12 + 0.4))
-    east = smoothstep(148.0, 170.0, x) * (10.5 + 3.2 * math.sin(z * 0.13 + 1.2))
-    south = smoothstep(166.0, 184.0, z) * (8.5 + 2.4 * math.sin(x * 0.14))
+    # Dry Andean foothills frame the valley east, north and south of the city.
+    # The near slopes start just beyond the source model; layered ridge lines
+    # and shallow quebradas keep them from reading as a uniform brown wall.
+    north = smoothstep(9.0, 0.0, z) * (12.0 + 3.6 * math.sin(x * 0.12 + 0.4) + 2.0 * math.sin(x * 0.33))
+    east = smoothstep(148.0, 170.0, x) * (15.0 + 4.6 * math.sin(z * 0.13 + 1.2) + 2.5 * math.sin(z * 0.31 + 0.4))
+    south = smoothstep(166.0, 184.0, z) * (12.5 + 4.0 * math.sin(x * 0.14 + 1.1) + 2.0 * math.sin(x * 0.37))
     h += north + east + south
+    # Shallow dry quebradas cut the east and north lomas without creating
+    # playable cliffs inside the terrace.
+    h -= smoothstep(150.0, 176.0, x) * 2.4 * math.exp(-((z - 112.0) / 4.5) ** 2)
+    h -= smoothstep(8.0, 0.0, z) * 1.8 * math.exp(-((x - 118.0) / 5.0) ** 2)
 
     # Shallow dry ravine between the upper and lower halves, visible but
     # traversable (the plan calls it a dry seasonal channel).

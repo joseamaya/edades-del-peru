@@ -358,7 +358,7 @@ export class Terrain {
       grass: getGroundPBR(caral ? 'caral_grass' : 'grass'),
       dirt: getGroundPBR(caral ? 'caral_dirt' : 'dirt'),
       sand: getGroundPBR(caral ? 'caral_sand' : 'sand'),
-      rock: getGroundPBR(caral ? 'caral_dirt' : 'rock'),
+      rock: getGroundPBR(caral ? 'caral_sand' : 'rock'),
       snow: getGroundPBR('snow'),
     };
     const anyPbr = Object.values(pbr).some((x) => !!x);
@@ -407,6 +407,7 @@ export class Terrain {
         temperature: { value: this.profile.climate.temperature },
         groundTint: { value: new THREE.Color(this.profile.groundTint ?? '#ffffff') },
         floodplain: { value: this.profile.water.wetland ? 1 : 0 },
+        authoredTerrain: { value: this.hasCaralHeight ? 1 : 0 },
       },
       vertexShader: /* glsl */ `
         attribute vec3 color;
@@ -471,6 +472,7 @@ export class Terrain {
         uniform float temperature;
         uniform vec3 groundTint;
         uniform float floodplain;
+        uniform float authoredTerrain;
         varying vec3 vColor;
         varying vec3 vWorldPos;
         varying vec2 vUv;
@@ -522,7 +524,7 @@ ${FOW_DIM_GLSL}
           // rock at height and on slopes, snow at summits, soil in dry areas
           float sandAmt = max(1.0 - smoothstep(waterLevel + 0.2, waterLevel + 1.8, vHeight), arid * (1.0 - smoothstep(6.0, 10.0, vHeight)));
           float rockAmt = clamp(smoothstep(4.5, 9.0, vHeight) * 0.7 + smoothstep(0.25, 0.6, slope) * 0.85, 0.0, 1.0);
-          float snowAmt = smoothstep(snowLine - 4.0, snowLine + 0.5, vHeight);
+          float snowAmt = (1.0 - authoredTerrain) * smoothstep(snowLine - 4.0, snowLine + 0.5, vHeight);
           float dirtAmt = (1.0 - smoothstep(0.6, 2.8, vHeight)) * 0.4;
           vec3 ground = texture(grass, vUv * 2.0).rgb;
           ground = mix(ground, texture(dirt, vUv * 2.4 + 3.0).rgb, max(dirtAmt, arid * 0.4));
@@ -538,6 +540,24 @@ ${FOW_DIM_GLSL}
           // desert region (the Supe valley below the Caral terrace).
           float flood = (1.0 - smoothstep(waterLevel + 0.3, waterLevel + 5.5, vHeight)) * (1.0 - smoothstep(0.4, 0.8, slope)) * floodplain;
           col = mix(col, vec3(0.28, 0.42, 0.16), flood * (1.0 - arid * 0.25) * 0.75);
+          // Authored Caral basin: separate the wet valley floor, the pale desert
+          // terrace and the dry lomas. The source texture is a warm monochrome,
+          // so the landform reads only when height bands carry different hues.
+          if (authoredTerrain > 0.5) {
+            float flatness = 1.0 - smoothstep(0.12, 0.38, slope);
+            float valleyFloor = (1.0 - smoothstep(waterLevel + 2.0, waterLevel + 4.2, vHeight)) * flatness;
+            float terraceBand = smoothstep(waterLevel + 4.0, waterLevel + 5.4, vHeight) *
+              (1.0 - smoothstep(9.4, 11.5, vHeight));
+            float lomaBand = smoothstep(10.0, 13.0, vHeight);
+            float lomaGrass = smoothstep(9.5, 11.0, vHeight) *
+              (1.0 - smoothstep(15.0, 18.0, vHeight)) *
+              flatness;
+            col = mix(col, vec3(0.20, 0.31, 0.10), valleyFloor * 0.55);
+            col = mix(col, vec3(0.53, 0.45, 0.31), (1.0 - flatness) * 0.55);
+            col = mix(col, vec3(0.56, 0.49, 0.34), terraceBand * 0.22);
+            col = mix(col, vec3(0.34, 0.28, 0.15), lomaGrass * 0.40);
+            col = mix(col, vec3(0.28, 0.22, 0.14), lomaBand * 0.65);
+          }
           // temperature: cool regions read bluish, hot regions warmer
           float tempTint = clamp(abs(temperature - 0.5) * 0.6, 0.0, 0.3);
           vec3 tempColor = temperature < 0.5 ? vec3(0.86, 0.94, 1.06) : vec3(1.06, 0.98, 0.86);
@@ -671,7 +691,8 @@ ${FOW_DIM_GLSL}
     // Coastal desert: shifts to sand/soil
     _cBase.lerp(_cSand, this.arid * 0.7);
     _cBase.lerp(_cRock, smoothstep(1.8, 4.5, slope));
-    _cBase.lerp(_cSnow, smoothstep(this.profile.elevation.snowLine - 5.5, this.profile.elevation.snowLine, h));
+    if (!this.hasCaralHeight)
+      _cBase.lerp(_cSnow, smoothstep(this.profile.elevation.snowLine - 5.5, this.profile.elevation.snowLine, h));
     return _cBase;
   }
 
