@@ -27,8 +27,8 @@ const DIRS = [
 /** Chebyshev cell distance to an obstacle goal accepted as "arrived" (see pathfind). */
 const GOAL_PROXIMITY = 2;
 
-/** Cell radius searched for the nearest walkable cell of a blocked endpoint. */
-const REACH_SEARCH_RADIUS = 12;
+/** World-space radius searched for the nearest walkable cell of a blocked endpoint. */
+const REACH_SEARCH_DISTANCE = 24;
 
 /** A walkable, approachable stand point near a harvest target. */
 interface StandCandidate {
@@ -275,6 +275,22 @@ export class Pathfinder {
     return comp;
   }
 
+  /** Id of the largest walkable component; used when spawning into a clear region. */
+  mainComponent(): number {
+    const comps = this.ensureComponents();
+    const counts = new Map<number, number>();
+    for (const c of comps) if (c !== 0) counts.set(c, (counts.get(c) ?? 0) + 1);
+    let best = 0;
+    let bestCount = 0;
+    for (const [id, count] of counts) {
+      if (count > bestCount) {
+        best = id;
+        bestCount = count;
+      }
+    }
+    return best;
+  }
+
   /** Component id of the walkable region containing (wx, wz); 0 when blocked/out of bounds. */
   componentAt(wx: number, wz: number): number {
     const { cols, cell } = this.grid;
@@ -291,7 +307,8 @@ export class Pathfinder {
    * point, so use `reachableToNode` to decide a harvest target; this is for
    * whole-region questions.
    */
-  reachable(sx: number, sz: number, tx: number, tz: number, maxR = REACH_SEARCH_RADIUS): boolean {
+  reachable(sx: number, sz: number, tx: number, tz: number, maxR = 0): boolean {
+    maxR ||= this.reachCells();
     const start = this.resolveComponent(sx, sz, maxR);
     if (start === 0) return false;
     const goal = this.resolveComponent(tx, tz, maxR);
@@ -306,9 +323,13 @@ export class Pathfinder {
     const comp = this.ensureComponents();
     const c = comp[z * cols + x];
     if (c !== 0) return c;
-    const alt = this.nearestWalkable(x, z, maxR);
+    const alt = this.nearestWalkableCell(x, z, maxR);
     if (!alt) return 0;
     return comp[alt.z * cols + alt.x];
+  }
+
+  private reachCells(): number {
+    return Math.max(1, Math.ceil(REACH_SEARCH_DISTANCE / this.grid.cell));
   }
 
   /** Cell coordinate clamped to the grid (floor of a world coordinate / cell). */
@@ -334,13 +355,13 @@ export class Pathfinder {
     const destZ = goal.z;
     const destWalkable = this.grid.walkable[goal.z * cols + goal.x] === 1;
     if (!destWalkable) {
-      const alt = this.nearestWalkable(goal.x, goal.z, REACH_SEARCH_RADIUS);
+      const alt = this.nearestWalkableCell(goal.x, goal.z, this.reachCells());
       if (!alt) return [];
       goal.x = alt.x;
       goal.z = alt.z;
     }
     if (this.grid.walkable[start.z * cols + start.x] === 0) {
-      const alt = this.nearestWalkable(start.x, start.z, REACH_SEARCH_RADIUS);
+      const alt = this.nearestWalkableCell(start.x, start.z, this.reachCells());
       if (!alt) return [];
       start.x = alt.x;
       start.z = alt.z;
@@ -505,7 +526,7 @@ export class Pathfinder {
    */
   reachableToNode(sx: number, sz: number, tx: number, tz: number, standRadius: number): boolean {
     if (!(standRadius > 0)) return false;
-    const start = this.resolveComponent(sx, sz, REACH_SEARCH_RADIUS);
+    const start = this.resolveComponent(sx, sz, this.reachCells());
     if (start === 0) return false;
     const comp = this.ensureComponents();
     const { cols } = this.grid;
@@ -544,8 +565,17 @@ export class Pathfinder {
     return Math.max(dx, dz) + 0.41 * Math.min(dx, dz);
   }
 
-  private nearestWalkable(x: number, z: number, maxR: number): { x: number; z: number } | null {
+  /** Nearest walkable cell centre in world coordinates (for resolving an embedded unit). */
+  nearestWalkablePoint(wx: number, wz: number, maxCells = 0, component?: number): { x: number; z: number } | null {
+    maxCells ||= this.reachCells();
+    const cell = this.nearestWalkableCell(this.clampCell(wx), this.clampCell(wz), maxCells, component);
+    if (!cell) return null;
+    return { x: (cell.x + 0.5) * this.grid.cell, z: (cell.z + 0.5) * this.grid.cell };
+  }
+
+  private nearestWalkableCell(x: number, z: number, maxR: number, component?: number): { x: number; z: number } | null {
     const { cols } = this.grid;
+    const comps = component === undefined ? null : this.ensureComponents();
     for (let r = 1; r <= maxR; r++) {
       for (let dz = -r; dz <= r; dz++) {
         for (let dx = -r; dx <= r; dx++) {
@@ -553,7 +583,8 @@ export class Pathfinder {
           const nx = x + dx;
           const nz = z + dz;
           if (nx < 0 || nz < 0 || nx >= cols || nz >= cols) continue;
-          if (this.grid.walkable[nz * cols + nx]) return { x: nx, z: nz };
+          const idx = nz * cols + nx;
+          if (this.grid.walkable[idx] && (!comps || comps[idx] === component)) return { x: nx, z: nz };
         }
       }
     }

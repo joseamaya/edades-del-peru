@@ -33,11 +33,21 @@ export const CARAL_HERITAGE_PROXIES: readonly CaralHeritageProxy[] = [
 ];
 
 /**
- * Solid monumental volumes that pathfinding must route around. Their
- * footprints are the same AABBs used by the heritage click proxies; plazas and
- * the open processional ground stay walkable.
+ * Solid monumental volumes that pathfinding must route around. Most footprints
+ * match the heritage click proxies; the circular altar is added separately
+ * because it is solid but not a heritage card. Plazas and the open processional
+ * ground stay walkable.
  */
-export const CARAL_SITE_BLOCKERS = CARAL_HERITAGE_PROXIES.map(({ x, z, w, d }) => ({ x, z, w, d }));
+/** The circular altar is solid but has no heritage click proxy. */
+export const CARAL_CIRCULAR_ALTAR = { x: 72.5, z: 144.55, w: 10.6, d: 7.7 };
+
+/** Extra clearance around solid monument AABBs for unit footprints. */
+export const CARAL_SITE_BLOCKER_PADDING = 0.5;
+
+export const CARAL_SITE_BLOCKERS = [
+  ...CARAL_HERITAGE_PROXIES.map(({ x, z, w, d }) => ({ x, z, w, d })),
+  CARAL_CIRCULAR_ALTAR,
+];
 
 /**
  * Normalized construction exclusion over the Upper Half, residential fabric,

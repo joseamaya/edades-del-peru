@@ -393,7 +393,8 @@ Definition of Done and the building audit see
   `tests/e2e/units-facing.spec.ts`.
 - **Unit movement safety** (`Unit.integrateSafely`): every order's direct fallback (`directStep`) only moves when
   the segment ahead is walkable; `integrateSafely` validates the step, slides along one axis when a wall blocks the
-  diagonal, and allows movement only when the unit starts on a blocked cell (controlled escape). GATHER / DELIVER /
+  diagonal, and if the unit starts on a blocked cell only moves toward the nearest walkable point (24 m world-space
+  search). GATHER / DELIVER /
   BUILD use `directStep` (never integrate `pos` inside the order handler) and interact at
   `target.radius + 1.4–1.6`: the old fixed 2.4 range forced workers into the building footprint. This changed the
   simulation, so `REPLAY_VERSION` is 7. Guarded by `tests/e2e/movement-safety.spec.ts`.

@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { OPENING_BASE_CLEARANCE } from '../../src/core/Config';
+import { CARAL_CIRCULAR_ALTAR, CARAL_SITE_BLOCKERS } from '../../src/model/defs/caralSite';
 
 const URL = '/?mission=m1_caral&seed=3000&fog=0&low=1&noloop=1&intro=0';
 
@@ -320,6 +321,38 @@ test('the Caral opening keeps the base clear of mines, wells, cacti and vicuñas
   expect(state.hunts).toBe(0);
   expect(state.quarries).toBeGreaterThan(0);
   expect(state.cacti).toBe(0);
+});
+
+test('the authored site blocks every solid monument but keeps its plazas walkable', async ({ page }) => {
+  await boot(page);
+  const state = await page.evaluate(
+    ([blockers, altar]) => {
+      const g = (window as unknown as { game: any }).game;
+      const p = g.pathfinder;
+      const inside = (x: number, z: number) =>
+        blockers.find((b: any) => Math.abs(x - b.x) <= b.w / 2 && Math.abs(z - b.z) <= b.d / 2);
+      const path = p.pathfind(75, 30, 125, 30);
+      const aimed = p.pathfind(75, 30, 100, 30);
+      const aimedEnd = aimed[aimed.length - 1];
+      return {
+        navCell: p.grid.cell,
+        monuments: blockers.filter((b: any) => !p.isWalkable(b.x, b.z)).length,
+        path: path.map((pt: any) => ({ x: pt.x, z: pt.z })),
+        open: p.isWalkable(100, 100) && p.isWalkable(100, 53),
+        altar: p.isWalkable(altar.x, altar.z),
+        pathCrosses: path.filter((pt: any) => inside(pt.x, pt.z)).length,
+        aimedInside: aimedEnd ? !!inside(aimedEnd.x, aimedEnd.z) : false,
+      };
+    },
+    [CARAL_SITE_BLOCKERS, CARAL_CIRCULAR_ALTAR],
+  );
+  expect(state.navCell).toBe(1);
+  expect(state.monuments).toBe(CARAL_SITE_BLOCKERS.length);
+  expect(state.open).toBe(true);
+  expect(state.altar).toBe(false);
+  expect(state.path.length).toBeGreaterThan(0);
+  expect(state.pathCrosses).toBe(0);
+  expect(state.aimedInside).toBe(false);
 });
 
 test('the Caral tutorial hides the shortcut help while it is open', async ({ page }) => {

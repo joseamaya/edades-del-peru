@@ -88,6 +88,7 @@ import {
   CARAL_HERITAGE_PROXIES,
   CARAL_SITE_ANCHOR,
   CARAL_SITE_BLOCKERS,
+  CARAL_SITE_BLOCKER_PADDING,
   CARAL_SITE_CAMERA,
   CARAL_SITE_ORIGIN,
   CARAL_SITE_SCALE,
@@ -468,7 +469,9 @@ export class Game {
     this.fowUniforms.fowMap.value = this.fow.texture;
     this.fowUniforms.mapSize.value = s.mapSize;
     this.fowUniforms.fowEnabled.value = s.fogOfWar ? 1 : 0;
-    this.pathfinder = new Pathfinder(s.mapSize, 2);
+    // The authored site has thin walls and doors; 1 m cells keep them solid
+    // without closing the narrow residential openings.
+    this.pathfinder = new Pathfinder(s.mapSize, this.missionLayout?.site?.id === 'caral_site' ? 1 : 2);
     this.pathfinder.bakeTerrain((x, z) => this.terrain.getHeight(x, z), this.terrain.waterLevel);
     this.startSpots = this.planStartSpots();
     if (!this.pendingSnapshot) {
@@ -646,7 +649,12 @@ export class Game {
   /** Block the source's monumental volumes while leaving plazas and paths walkable. */
   private addSiteObstacles(): void {
     for (const blocker of CARAL_SITE_BLOCKERS) {
-      this.pathfinder.addObstacle({ x: blocker.x, z: blocker.z, w: blocker.w, d: blocker.d });
+      this.pathfinder.addObstacle({
+        x: blocker.x,
+        z: blocker.z,
+        w: blocker.w + CARAL_SITE_BLOCKER_PADDING * 2,
+        d: blocker.d + CARAL_SITE_BLOCKER_PADDING * 2,
+      });
     }
   }
 
@@ -667,7 +675,7 @@ export class Game {
     model.traverse((object) => {
       const mesh = object as THREE.Mesh;
       if (!mesh.isMesh || !mesh.geometry?.getAttribute('position')) return;
-      if (!/Infra_(Residential|LowerHalf|UpperHalf)/.test(mesh.name)) return;
+      if (!/Infra_(Residential|LowerHalf|UpperHalf|Props)/.test(mesh.name) && !/AltarCircular$/.test(mesh.name)) return;
       const position = mesh.geometry.getAttribute('position');
       const index = mesh.geometry.getIndex();
       const count = index ? index.count : position.count;
@@ -1640,8 +1648,13 @@ export class Game {
     const era = this.players[owner]?.era ?? this.settings.startingEra;
     const ctx = this.makeBuildContext(owner);
     const land = this.findLandNear(x, z);
+    const main = this.pathfinder.mainComponent();
+    const spot =
+      this.pathfinder.isWalkable(land.x, land.z) && this.pathfinder.componentAt(land.x, land.z) === main
+        ? land
+        : (this.pathfinder.nearestWalkablePoint(land.x, land.z, 0, main) ?? land);
     const u = new Unit(kind, owner, era, ctx);
-    u.pos.set(land.x, this.terrain.getHeight(land.x, land.z), land.z);
+    u.pos.set(spot.x, this.terrain.getHeight(spot.x, spot.z), spot.z);
     u.setContext(this.unitContext);
     if (this.players[owner]) this.applyPlayerBonuses(u, this.players[owner]);
     u.attach(this.scene);
@@ -3023,6 +3036,7 @@ export class Game {
       findApproachPath: (sx, sz, tx, tz, standRadius: number) =>
         this.pathfinder.findApproachPath(sx, sz, tx, tz, standRadius),
       isWalkable: (x, z) => this.pathfinder.isWalkable(x, z),
+      nearestWalkable: (x, z) => this.pathfinder.nearestWalkablePoint(x, z),
       unitsNear: (x, z, radius) => this.unitsNear(x, z, radius),
       entitiesById: this.units,
       resourceNodes: this.resourceNodes,

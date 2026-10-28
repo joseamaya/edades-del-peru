@@ -37,6 +37,8 @@ export interface UnitContext {
   findApproachPath(sx: number, sz: number, tx: number, tz: number, standRadius: number): { x: number; z: number }[];
   /** Terrain navigability (water/steep/obstacles); guards the pathless fallback. */
   isWalkable(x: number, z: number): boolean;
+  /** Nearest walkable point used to resolve a unit embedded in a solid footprint. */
+  nearestWalkable(x: number, z: number): { x: number; z: number } | null;
   unitsNear(x: number, z: number, radius: number): Unit[];
   enemiesNear(x: number, z: number, radius: number, owner: number): Unit[];
   entitiesById: Map<number, any>;
@@ -313,7 +315,14 @@ export class Unit {
    * blocked-cell collision) is left to `updateMovement`.
    */
   private directStep(tx: number, tz: number, stopRange = 0): boolean {
-    if (this.ctx.isWalkable(this.pos.x, this.pos.z) && !this.directAheadClear(tx, tz, stopRange)) return false;
+    if (!this.ctx.isWalkable(this.pos.x, this.pos.z)) {
+      const exit = this.ctx.nearestWalkable(this.pos.x, this.pos.z);
+      if (!exit) return false;
+      tx = exit.x;
+      tz = exit.z;
+    } else if (!this.directAheadClear(tx, tz, stopRange)) {
+      return false;
+    }
     this.noRouteTimer = 0;
     this.targetYaw = angleTo(this.pos.x, this.pos.z, tx, tz);
     const spd = this.stats.speed;
@@ -330,10 +339,15 @@ export class Unit {
    * sampled at ~0.5-unit intervals so a thin barrier cannot be tunnelled.
    */
   private stepAllowed(tx: number, tz: number): boolean {
-    // a unit already inside blocked terrain (e.g. spawned under a footprint) may
-    // walk out; this cannot open a crossing from walkable ground, which is sampled
-    // below and never enters a blocked cell
-    if (!this.ctx.isWalkable(this.pos.x, this.pos.z)) return true;
+    // A unit embedded in a solid footprint may only move toward the nearest
+    // walkable cell; normal movement never enters a blocked cell below.
+    if (!this.ctx.isWalkable(this.pos.x, this.pos.z)) {
+      const exit = this.ctx.nearestWalkable(this.pos.x, this.pos.z);
+      if (!exit) return false;
+      const before = Math.hypot(exit.x - this.pos.x, exit.z - this.pos.z);
+      const after = Math.hypot(exit.x - tx, exit.z - tz);
+      return after < before - 1e-4;
+    }
     const dx = tx - this.pos.x;
     const dz = tz - this.pos.z;
     const dist = Math.hypot(dx, dz);

@@ -49,10 +49,12 @@ instead of the modular landmark or a hand-built schematic:
   the upper-left.
   A light low-altitude haze over the floodplain and a slightly stronger aerial
   fade on the dry lomas separate the three bands without changing the palette.
-- **Collision**: the monumental volumes use axis-aligned footprints from the
-  source mesh (`CARAL_SITE_BLOCKERS`), and the low residential/retaining walls are
-  rasterized from the source's vertical faces into the pathfinding grid. Units
-  route around both while the open plazas and processional ground stay walkable.
+- **Collision**: the monumental volumes use padded axis-aligned footprints from
+  the source mesh (`CARAL_SITE_BLOCKERS`, including the circular altar), and the
+  residential/retaining walls plus solid props are rasterized from the source's
+  vertical faces into a **1 m** pathfinding grid. Pyramids and temples are
+  intentionally non-climbable; their stairs are visual, not navigable. Units
+  route around them while the open plazas and processional ground stay walkable.
   Construction is forbidden over the source footprint (`buildKeepout`), but the
   starting base and its immediate surroundings stay buildable.
 - **Mission anchors**: `layout.site.focus` points to the real Plaza Mayor
@@ -138,8 +140,10 @@ instead of the modular landmark or a hand-built schematic:
   rejects placement over the upper, residential and lower source footprints; the
   Caral Bajo base remains outside them.
 - Low walls: `Game.addSiteWallCollision` rasterizes vertical `Infra_Residential`,
-  `Infra_LowerHalf` and low `Infra_UpperHalf` faces into `Pathfinder.blockCells`;
-  the static mask survives dynamic-obstacle rebuilds.
+  `Infra_LowerHalf`, `Infra_UpperHalf`, `Infra_Props` and `AltarCircular` faces
+  into `Pathfinder.blockCells`; the static mask survives dynamic-obstacle
+  rebuilds. Caral uses a 1 m navigation grid and `CARAL_SITE_BLOCKER_PADDING`
+  around the monument AABBs.
 - Terrain palette: `src/assets/textures/terrain/caral_*`, with height/slope bands
   for the green valley floor, pale terrace and warm lomas. The rock slot reuses
   the smooth sand albedo for Caral because the photographic rock/dirt normals
