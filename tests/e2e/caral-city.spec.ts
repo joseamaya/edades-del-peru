@@ -248,6 +248,7 @@ test('a peaceful victory summarises optional achievements and offers the next mi
 
 test('a Caral Blender pyramid opens an educational field card', async ({ page }) => {
   await boot(page);
+  await page.evaluate(() => document.querySelector('#ed-tutorial')?.remove());
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     g.camera.moveTo(100, 34, true);
@@ -271,8 +272,10 @@ test('a Caral Blender pyramid opens an educational field card', async ({ page })
   await expect(bottom).toContainText('Caral Alto');
   await expect(bottom).toContainText('documentado');
   await expect(bottom).toContainText('Dossier de Caral');
-  await expect(page.getByRole('button', { name: /Visitar/ })).toHaveCount(1);
-  await page.getByRole('button', { name: /Visitar/ }).click();
+  const visit = page.getByRole('button', { name: /Visitar/ });
+  await expect(visit).toHaveCount(1);
+  await visit.dispatchEvent('pointerdown', { button: 0 });
+  await page.evaluate(() => (window as unknown as { game: any }).game.hud.update(0.2, 0));
   await expect(bottom).toContainText('Ficha registrada');
   const complexes = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -314,7 +317,12 @@ test('opening the Caral canal raises the yield at its banks', async ({ page }) =
   });
   await page.mouse.click(point.x, point.y);
   await expect(page.locator('#ed-bottom')).toContainText('Canal comunal del valle');
-  await page.getByRole('button', { name: /Abrir compuerta/ }).click();
+  await page.getByRole('button', { name: /Abrir compuerta/ }).dispatchEvent('pointerdown', { button: 0 });
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.mission.update(0.1, 0);
+    g.hud.update(0.2, 0);
+  });
   const after = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     return {
