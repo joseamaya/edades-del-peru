@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { cropGeometry, fieldGeometry, roadGeometry, SETTLEMENT_OFFSET } from '../src/rendering/SettlementOverlay';
+import {
+  cropGeometry,
+  fieldBorderGeometry,
+  fieldGeometry,
+  roadGeometry,
+  SETTLEMENT_OFFSET,
+} from '../src/rendering/SettlementOverlay';
 
 /** A sloped "terrain": height grows with x and z. */
 const height = (x: number, z: number): number => 0.2 * x + 0.1 * z;
@@ -28,6 +34,17 @@ describe('settlement overlay geometry', () => {
     assertOnTerrain(geo);
     // subdivided into a grid, not four flat corners
     expect(geo.getAttribute('position').count).toBeGreaterThan(4);
+  });
+
+  it('edging follows the field footprint and stays low', () => {
+    const edges = fieldBorderGeometry({ x: 10, z: -8, yaw: 0.4, size: 5 }, height);
+    expect(edges).toHaveLength(4);
+    for (const geo of edges) {
+      const pos = geo.getAttribute('position');
+      expect(pos.count).toBeGreaterThan(0);
+      const y = (geo.boundingBox ?? (geo.computeBoundingBox(), geo.boundingBox))!.min.y;
+      expect(y).toBeCloseTo(height(10, -8) + SETTLEMENT_OFFSET + 0.08 - 0.08, 4);
+    }
   });
 
   it('lays young-crop rows that follow the field terrain', () => {

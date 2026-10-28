@@ -65,12 +65,13 @@ import {
   type GeographicRegion,
 } from '../model/defs/profiles';
 import { resolveColorGrade } from '../model/defs/grades';
-import { planSettlementSite, type SettlementPlan } from '../model/defs/settlementPlan';
+import { planSettlementSite, type SettlementField, type SettlementPlan } from '../model/defs/settlementPlan';
 import { inCaralCity, planCaralCity, type CaralCityPlan } from '../model/defs/setpieces';
 import { insideTerrainRect, riverCentreZ } from '../model/defs/terrainLayout';
 import { SettlementOverlay } from '../rendering/SettlementOverlay';
 import { SettlementDressing } from '../rendering/SettlementDressing';
 import { planSettlementDressing } from '../model/defs/settlementDressing';
+import { planCaralValley, planCaralValleyProps, type CaralValleyPlan } from '../model/defs/caralValley';
 import { farmYieldMultiplier, nearbyCanal } from '../model/defs/farmYield';
 import { distance2D } from '../util/math';
 import { isTypingTarget } from '../util/dom';
@@ -192,6 +193,9 @@ export class Game {
   settlements: SettlementOverlay[] = [];
   /** Per-base settlement dressing (visual only). */
   settlementDressing: SettlementDressing[] = [];
+  /** Visual-only valley plan; reserved before resources/props scatter. */
+  private caralValleyPlan: CaralValleyPlan | null = null;
+  private caralValleyFields: SettlementField[] = [];
   particles!: Particles;
   debris!: Debris;
   fow!: Fow;
@@ -455,8 +459,21 @@ export class Game {
     this.fowUniforms.fowEnabled.value = s.fogOfWar ? 1 : 0;
     this.pathfinder = new Pathfinder(s.mapSize, 2);
     this.pathfinder.bakeTerrain((x, z) => this.terrain.getHeight(x, z), this.terrain.waterLevel);
-    if (!this.pendingSnapshot) this.spawnResources();
+    if (!this.pendingSnapshot) {
+      this.reserveCaralValley();
+      this.spawnResources();
+    }
     this.spawnAmbient();
+  }
+
+  /** Plan the valley before resource/prop scatter so no node lands on a plot. */
+  private reserveCaralValley(): void {
+    if (this.missionDef?.id !== 'm1_caral' || this.caralValleyPlan) return;
+    const base = this.missionLayout?.base;
+    if (!base) return;
+    const size = this.settings.mapSize;
+    this.caralValleyPlan = this.planCaralValleyAt(base.x * size, base.z * size);
+    this.caralValleyFields = this.caralValleyPlan.fields;
   }
 
   private setTimeOfDay(mode: string): void {
@@ -1122,6 +1139,10 @@ export class Game {
       const length = this.missionLayout?.canal?.length ?? 24;
       if (Math.hypot(x - this.canalSite.x, z - this.canalSite.z) < length / 2 + 6) return true;
     }
+    for (const field of this.caralValleyFields) {
+      const radius = field.size / 2 + 0.7;
+      if (Math.abs(x - field.x) <= radius && Math.abs(z - field.z) <= radius) return true;
+    }
     return false;
   }
 
@@ -1243,7 +1264,20 @@ export class Game {
       getMoisture: (x: number, z: number) => this.terrain.getMoisture(x, z),
     };
     const propCount = propCountFor(s.mapSize);
-    this.props.place(planProps(region, propSeed, s.mapSize, propCount, query), heightAt);
+    const placements = planProps(region, propSeed, s.mapSize, propCount, query);
+    if (this.missionDef?.id === 'm1_caral') {
+      placements.push(
+        ...planCaralValleyProps(this.settings.mapSeed, this.playerCenter(0), this.caralValleyFields, {
+          isWater: query.isWater,
+          isBuildable: query.isBuildable,
+          getSlope: query.getSlope,
+          getHeight: query.getHeight,
+          getMoisture: query.getMoisture,
+          isReserved: (x, z) => this.isReserved(x, z),
+        }),
+      );
+    }
+    this.props.place(placements, heightAt);
     this.wildlife.spawn(planWildlife(region, faunaSeed, s.mapSize, faunaCountFor(region), query), heightAt);
   }
 
@@ -1308,6 +1342,7 @@ export class Game {
     if (civ === CivId.CARAL || civ === CivId.CHAVIN) {
       this.addSettlementDressing(plan, player, civ === CivId.CHAVIN ? 'chavin' : 'caral');
     }
+    if (player === 0 && this.missionDef?.id === 'm1_caral') this.addCaralValley(x, z);
     // nearby resources to start
     this.spawnStartResources(player, x, z);
     // starting workers
@@ -1369,6 +1404,39 @@ export class Game {
     applyFowToObject(dressing.group, this.fowUniforms);
     this.scene.add(dressing.group);
     this.settlementDressing.push(dressing);
+  }
+
+  private planCaralValleyAt(x: number, z: number): CaralValleyPlan {
+    return planCaralValley(
+      this.settings.mapSeed * 97 + 31,
+      { x, z },
+      {
+        isWater: (px, pz) => this.terrain.isWater(px, pz),
+        isBuildable: (px, pz) => this.terrain.isBuildable(px, pz),
+        getSlope: (px, pz) => this.terrain.getSlope(px, pz),
+        getHeight: (px, pz) => this.terrain.getHeight(px, pz),
+        getMoisture: (px, pz) => this.terrain.getMoisture(px, pz),
+        isReserved: (px, pz) => this.isReserved(px, pz),
+      },
+    );
+  }
+
+  /** Visual-only riverside fields and paths; no entities, obstacles or yields. */
+  private addCaralValley(x: number, z: number): void {
+    const valley = this.caralValleyPlan ?? this.planCaralValleyAt(x, z);
+    this.caralValleyPlan = valley;
+    this.caralValleyFields = valley.fields;
+    if (!valley.fields.length && !valley.roads.length) return;
+    const overlay = new SettlementOverlay(
+      { center: { x, z }, dwellings: [], fields: valley.fields, roads: valley.roads },
+      this.terrain,
+      0.65,
+      true,
+    );
+    overlay.group.name = 'caral-valley';
+    applyFowToObject(overlay.group, this.fowUniforms);
+    this.scene.add(overlay.group);
+    this.settlements.push(overlay);
   }
 
   private spawnStartResources(player: number, x: number, z: number): void {

@@ -67,12 +67,22 @@ instead of the modular landmark or a hand-built schematic:
   resources, not the starting base or prior player buildings.
 - The river stays west of the city. Caral itself is on the dry terrace; only the
   low floodplain is green. There is no sea adjacent to the site.
+- **Valley fabric**: up to five schematic plots sit on the green floodplain west
+  of Caral Bajo, with low stone edging, young crop rows and narrow dirt paths to
+  the base, plus a sightline path toward the Lower Half. Totora reeds and low
+  shrubs line the Supe bank. This is scenery only: the plots are not resource
+  nodes, obstacles or farms, they do not yield food and they do not alter
+  pathfinding. The layout is deterministic and avoids water, reserved ground and
+  the authored site. It abstracts the documented floodplain agriculture,
+  irrigation and riverine vegetation (algodón, calabaza and other crops), not a
+  surveyed field system.
 
 ## Attested elements modelled
 
 | Element                                                             | Source status       | In game                                                                              |
 | ------------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------ |
 | Dry desert terrace over the green Supe valley                       | Documented (UNESCO) | Authored heightfield: terrace ≈8 m, floodplain ≈3.9 m, river bed ≈1.05 m.            |
+| Floodplain cultivation and riverine vegetation                      | Documented economy  | Schematic plots, low edging, crop rows, reeds and shrubs; visual-only, no yield.     |
 | Andean foothills around the valley                                  | Geographic context  | Dry lomas rising to ~25 m east and ~18 m north/south; outer corners ~44 m.           |
 | Upper Half (Caral Alto)                                             | Documented          | Six pyramids, Central Plaza and Plaza de la Huanca.                                  |
 | Lower Half (Caral Bajo)                                             | Documented          | Player base, smaller residences and workshops around the Anfiteatro.                 |
@@ -127,6 +137,10 @@ instead of the modular landmark or a hand-built schematic:
   for the green valley floor, pale terrace and warm lomas. The rock slot reuses
   the smooth sand albedo for Caral because the photographic rock/dirt normals
   alias into a repeating floral pattern at RTS tiling.
+- Valley fabric: `src/model/defs/caralValley.ts` plans the floodplain plots and
+  riverside props; `SettlementOverlay` draws the plots, crop rows, low borders and
+  narrow paths, and `Props` carries the reeds/shrubs. Every placement is
+  visual-only and excluded from the gameplay obstacle/resource layers.
 
 ## Status
 

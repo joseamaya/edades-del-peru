@@ -34,6 +34,8 @@ export class SettlementOverlay {
   constructor(
     readonly plan: SettlementPlan,
     terrain: Terrain,
+    private readonly roadWidth = ROAD_WIDTH,
+    fieldBorders = false,
   ) {
     this.group.name = 'settlement';
     const roadMat = new THREE.MeshStandardMaterial({ color: '#8a6a44', roughness: 1 });
@@ -43,7 +45,7 @@ export class SettlementOverlay {
     this.add(
       'roads',
       plan.roads
-        .map((r) => roadGeometry(r, terrain.getHeight.bind(terrain)))
+        .map((r) => roadGeometry(r, terrain.getHeight.bind(terrain), this.roadWidth))
         .filter((g): g is THREE.BufferGeometry => g !== null),
       roadMat,
     );
@@ -58,6 +60,14 @@ export class SettlementOverlay {
       plan.fields.flatMap((f) => cropGeometry(f, terrain.getHeight.bind(terrain))),
       cropMat,
     );
+    if (fieldBorders) {
+      const borderMat = new THREE.MeshStandardMaterial({ color: '#776b58', roughness: 1 });
+      this.add(
+        'field-borders',
+        plan.fields.flatMap((f) => fieldBorderGeometry(f, terrain.getHeight.bind(terrain))),
+        borderMat,
+      );
+    }
   }
 
   private add(name: string, parts: THREE.BufferGeometry[], material: THREE.MeshStandardMaterial): void {
@@ -87,12 +97,9 @@ export class SettlementOverlay {
 export function roadGeometry(
   road: SettlementRoad,
   getHeight: (x: number, z: number) => number,
+  width = ROAD_WIDTH,
 ): THREE.BufferGeometry | null {
-  return buildRibbon(
-    subdivide(road.from, road.to, ROAD_STEP),
-    ROAD_WIDTH,
-    (x, z) => getHeight(x, z) + SETTLEMENT_OFFSET,
-  );
+  return buildRibbon(subdivide(road.from, road.to, ROAD_STEP), width, (x, z) => getHeight(x, z) + SETTLEMENT_OFFSET);
 }
 
 /** A field grid tilted to the terrain: every vertex sits on the ground + offset. */
@@ -142,6 +149,27 @@ export function cropGeometry(
       (x, z) => getHeight(x, z) + SETTLEMENT_OFFSET + CROP_OFFSET,
     );
     if (geo) out.push(geo);
+  }
+  return out;
+}
+
+/** Low stone edging that helps a plot read as a cultivated field, not a lawn. */
+export function fieldBorderGeometry(
+  field: SettlementField,
+  getHeight: (x: number, z: number) => number,
+): THREE.BufferGeometry[] {
+  const y = getHeight(field.x, field.z) + SETTLEMENT_OFFSET + 0.08;
+  const edge = 0.14;
+  const out: THREE.BufferGeometry[] = [];
+  for (const side of [-1, 1]) {
+    const alongZ = new THREE.BoxGeometry(field.size + edge, 0.16, edge);
+    alongZ.translate(0, 0, (side * field.size) / 2);
+    alongZ.rotateY(field.yaw).translate(field.x, y, field.z);
+    out.push(alongZ);
+    const alongX = new THREE.BoxGeometry(edge, 0.16, field.size + edge);
+    alongX.translate((side * field.size) / 2, 0, 0);
+    alongX.rotateY(field.yaw).translate(field.x, y, field.z);
+    out.push(alongX);
   }
   return out;
 }
