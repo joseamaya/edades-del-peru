@@ -40,9 +40,13 @@ instead of the modular landmark or a hand-built schematic:
   site.
 - **Reading the basin**: the authored-only palette separates the wet valley
   floor, the pale desert terrace and the dry lomas by height and slope. Snow is
-  suppressed on these 20–25 m foothills, which are lomas, not snowfields. The
-  mission opens at a wider zoom (`height 54`) so the base, the green valley and
-  the city share the first frame.
+  suppressed on these foothills, which are lomas, not snowfields. The lomas rise
+  to ~25 m on the east and ~18 m north/south; where all three rings overlap at
+  the outer corners they reach ~44 m. Their crests, quebradas and higher dry
+  bands get their own tint. The mission opens at a wider zoom (`height 54`) so
+  the base, the green valley and the city share the first frame; aerial
+  perspective is slightly denser (`fogDensity 0.0032`) to separate the far
+  foothills.
 - **Collision**: the monumental volumes use axis-aligned footprints from the
   source mesh (`CARAL_SITE_BLOCKERS`), and the low residential/retaining walls are
   rasterized from the source's vertical faces into the pathfinding grid. Units
@@ -67,7 +71,7 @@ instead of the modular landmark or a hand-built schematic:
 | Element                                                             | Source status       | In game                                                                              |
 | ------------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------ |
 | Dry desert terrace over the green Supe valley                       | Documented (UNESCO) | Authored heightfield: terrace ≈8 m, floodplain ≈3.9 m, river bed ≈1.05 m.            |
-| Andean foothills around the valley                                  | Geographic context  | Dry lomas rising to ~25 m at the east and ~18 m south/north, outside the site.       |
+| Andean foothills around the valley                                  | Geographic context  | Dry lomas rising to ~25 m east and ~18 m north/south; outer corners ~44 m.           |
 | Upper Half (Caral Alto)                                             | Documented          | Six pyramids, Central Plaza and Plaza de la Huanca.                                  |
 | Lower Half (Caral Bajo)                                             | Documented          | Player base, smaller residences and workshops around the Anfiteatro.                 |
 | Great Pyramid (E Sector)                                            | Documented          | Seven-tier pyramid, long processional stair, summit room and circular forecourt.     |

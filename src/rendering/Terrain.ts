@@ -407,7 +407,7 @@ export class Terrain {
         temperature: { value: this.profile.climate.temperature },
         groundTint: { value: new THREE.Color(this.profile.groundTint ?? '#ffffff') },
         floodplain: { value: this.profile.water.wetland ? 1 : 0 },
-        authoredTerrain: { value: this.hasCaralHeight ? 1 : 0 },
+        caralTerrain: { value: this.hasCaralHeight ? 1 : 0 },
       },
       vertexShader: /* glsl */ `
         attribute vec3 color;
@@ -472,7 +472,7 @@ export class Terrain {
         uniform float temperature;
         uniform vec3 groundTint;
         uniform float floodplain;
-        uniform float authoredTerrain;
+        uniform float caralTerrain;
         varying vec3 vColor;
         varying vec3 vWorldPos;
         varying vec2 vUv;
@@ -524,7 +524,7 @@ ${FOW_DIM_GLSL}
           // rock at height and on slopes, snow at summits, soil in dry areas
           float sandAmt = max(1.0 - smoothstep(waterLevel + 0.2, waterLevel + 1.8, vHeight), arid * (1.0 - smoothstep(6.0, 10.0, vHeight)));
           float rockAmt = clamp(smoothstep(4.5, 9.0, vHeight) * 0.7 + smoothstep(0.25, 0.6, slope) * 0.85, 0.0, 1.0);
-          float snowAmt = (1.0 - authoredTerrain) * smoothstep(snowLine - 4.0, snowLine + 0.5, vHeight);
+          float snowAmt = (1.0 - caralTerrain) * smoothstep(snowLine - 4.0, snowLine + 0.5, vHeight);
           float dirtAmt = (1.0 - smoothstep(0.6, 2.8, vHeight)) * 0.4;
           vec3 ground = texture(grass, vUv * 2.0).rgb;
           ground = mix(ground, texture(dirt, vUv * 2.4 + 3.0).rgb, max(dirtAmt, arid * 0.4));
@@ -543,12 +543,13 @@ ${FOW_DIM_GLSL}
           // Authored Caral basin: separate the wet valley floor, the pale desert
           // terrace and the dry lomas. The source texture is a warm monochrome,
           // so the landform reads only when height bands carry different hues.
-          if (authoredTerrain > 0.5) {
+          if (caralTerrain > 0.5) {
             float flatness = 1.0 - smoothstep(0.12, 0.38, slope);
             float valleyFloor = (1.0 - smoothstep(waterLevel + 2.0, waterLevel + 4.2, vHeight)) * flatness;
             float terraceBand = smoothstep(waterLevel + 4.0, waterLevel + 5.4, vHeight) *
               (1.0 - smoothstep(9.4, 11.5, vHeight));
             float lomaBand = smoothstep(10.0, 13.0, vHeight);
+            float lomaHigh = smoothstep(20.0, 34.0, vHeight);
             float lomaGrass = smoothstep(9.5, 11.0, vHeight) *
               (1.0 - smoothstep(15.0, 18.0, vHeight)) *
               flatness;
@@ -557,6 +558,7 @@ ${FOW_DIM_GLSL}
             col = mix(col, vec3(0.56, 0.49, 0.34), terraceBand * 0.22);
             col = mix(col, vec3(0.34, 0.28, 0.15), lomaGrass * 0.40);
             col = mix(col, vec3(0.28, 0.22, 0.14), lomaBand * 0.65);
+            col = mix(col, vec3(0.42, 0.34, 0.24), lomaHigh * 0.35);
           }
           // temperature: cool regions read bluish, hot regions warmer
           float tempTint = clamp(abs(temperature - 0.5) * 0.6, 0.0, 0.3);

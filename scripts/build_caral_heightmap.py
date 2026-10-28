@@ -49,7 +49,7 @@ def height(x: float, z: float) -> float:
     # RTS camera.
     river_edge = 8.0 + 2.5 * math.sin(z * 0.16 + 0.4)
     ramp_end = river_edge + 14.0 + 2.0 * math.sin(z * 0.11 + 1.3)
-    valley_end = min(41.0, ramp_end + 14.0 + 2.0 * math.sin(z * 0.09 + 2.0))
+    valley_end = 38.0
     if x < river_edge:
         h = RIVER
     elif x < ramp_end:
