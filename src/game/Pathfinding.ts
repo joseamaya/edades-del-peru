@@ -544,6 +544,13 @@ export class Pathfinder {
     return Math.max(dx, dz) + 0.41 * Math.min(dx, dz);
   }
 
+  /** Nearest walkable cell centre in world coordinates (for resolving an embedded unit). */
+  nearestWalkablePoint(wx: number, wz: number, maxCells = REACH_SEARCH_RADIUS): { x: number; z: number } | null {
+    const cell = this.nearestWalkable(this.clampCell(wx), this.clampCell(wz), maxCells);
+    if (!cell) return null;
+    return { x: (cell.x + 0.5) * this.grid.cell, z: (cell.z + 0.5) * this.grid.cell };
+  }
+
   private nearestWalkable(x: number, z: number, maxR: number): { x: number; z: number } | null {
     const { cols } = this.grid;
     for (let r = 1; r <= maxR; r++) {

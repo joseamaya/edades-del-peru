@@ -161,6 +161,8 @@ const STARTING_UNIT_ANGLES = [0, -0.52, 0.52, -1.05, 1.05, -1.6, 1.6] as const;
 const STARTING_UNIT_RADII = [5.2, 6.1, 7.0, 7.9, 8.8, 9.7] as const;
 /** Keep guaranteed fishing searches inside the authored river and map edge. */
 const FISHING_SCAN_MARGIN = 4;
+/** Padding around authored monument AABBs so units do not clip their edges. */
+const SITE_BLOCKER_PADDING = 0.35;
 export class Game {
   renderer!: THREE.WebGLRenderer;
   scene = new THREE.Scene();
@@ -468,7 +470,9 @@ export class Game {
     this.fowUniforms.fowMap.value = this.fow.texture;
     this.fowUniforms.mapSize.value = s.mapSize;
     this.fowUniforms.fowEnabled.value = s.fogOfWar ? 1 : 0;
-    this.pathfinder = new Pathfinder(s.mapSize, 2);
+    // The authored site has thin walls and doors; 1 m cells keep them solid
+    // without closing the narrow residential openings.
+    this.pathfinder = new Pathfinder(s.mapSize, this.missionLayout?.site?.id === 'caral_site' ? 1 : 2);
     this.pathfinder.bakeTerrain((x, z) => this.terrain.getHeight(x, z), this.terrain.waterLevel);
     this.startSpots = this.planStartSpots();
     if (!this.pendingSnapshot) {
@@ -646,7 +650,12 @@ export class Game {
   /** Block the source's monumental volumes while leaving plazas and paths walkable. */
   private addSiteObstacles(): void {
     for (const blocker of CARAL_SITE_BLOCKERS) {
-      this.pathfinder.addObstacle({ x: blocker.x, z: blocker.z, w: blocker.w, d: blocker.d });
+      this.pathfinder.addObstacle({
+        x: blocker.x,
+        z: blocker.z,
+        w: blocker.w + SITE_BLOCKER_PADDING * 2,
+        d: blocker.d + SITE_BLOCKER_PADDING * 2,
+      });
     }
   }
 
@@ -667,7 +676,7 @@ export class Game {
     model.traverse((object) => {
       const mesh = object as THREE.Mesh;
       if (!mesh.isMesh || !mesh.geometry?.getAttribute('position')) return;
-      if (!/Infra_(Residential|LowerHalf|UpperHalf)/.test(mesh.name)) return;
+      if (!/Infra_(Residential|LowerHalf|UpperHalf|Props)/.test(mesh.name) && !/AltarCircular$/.test(mesh.name)) return;
       const position = mesh.geometry.getAttribute('position');
       const index = mesh.geometry.getIndex();
       const count = index ? index.count : position.count;
@@ -3023,6 +3032,7 @@ export class Game {
       findApproachPath: (sx, sz, tx, tz, standRadius: number) =>
         this.pathfinder.findApproachPath(sx, sz, tx, tz, standRadius),
       isWalkable: (x, z) => this.pathfinder.isWalkable(x, z),
+      nearestWalkable: (x, z) => this.pathfinder.nearestWalkablePoint(x, z),
       unitsNear: (x, z, radius) => this.unitsNear(x, z, radius),
       entitiesById: this.units,
       resourceNodes: this.resourceNodes,
