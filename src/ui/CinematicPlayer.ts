@@ -48,7 +48,7 @@ export class CinematicPlayer {
   }
 
   private readonly onKeyDown = (event: KeyboardEvent): void => {
-    const target = event.target as HTMLElement | null;
+    const target = event.target instanceof HTMLElement ? event.target : null;
     if (target?.closest('button') && event.key !== 'Escape') return;
     if (event.key === 'Escape') {
       event.preventDefault();
