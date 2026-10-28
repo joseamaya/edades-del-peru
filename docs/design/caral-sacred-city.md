@@ -45,7 +45,8 @@ instead of the modular landmark or a hand-built schematic:
   the outer corners they reach ~44 m. Their crests, quebradas and higher dry
   bands get their own tint. The campaign intro settles at the authored opening
   frame (`height 54`, base centred) so the base, the green Supe valley and the
-  city share the first gameplay frame; the river stays visible at the left edge.
+  city share the first gameplay frame; water and the green valley stay visible
+  along the left edge.
   A light low-altitude haze over the floodplain and a slightly stronger aerial
   fade on the dry lomas separate the three bands without changing the palette.
 - **Collision**: the monumental volumes use axis-aligned footprints from the

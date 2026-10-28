@@ -719,12 +719,8 @@ export class Game {
 
   /** Frame the player base with the authored city just ahead of it. */
   private frameAuthoredSite(x: number, z: number): void {
-    if (!this.missionLayout?.site) {
-      this.camera.moveTo(x, z, true);
-      return;
-    }
-    this.camera.moveTo(x + CARAL_SITE_CAMERA.dx, z + CARAL_SITE_CAMERA.dz, true);
-    this.camera.setHeight(CARAL_SITE_CAMERA.height);
+    this.camera.moveTo(x, z, true);
+    if (this.missionLayout?.site) this.camera.setHeight(CARAL_SITE_CAMERA.height);
   }
 
   private spawnLandmark(): void {
@@ -1550,7 +1546,7 @@ export class Game {
     if (!this.introEnabled) return;
     const c = this.playerCenter(0);
     const city = this.siteFocus ?? this.setpiecePlan?.upper;
-    const siteFraming = this.missionLayout?.site ? CARAL_SITE_CAMERA : null;
+    const siteFraming = this.missionLayout?.site?.id === 'caral_site' ? CARAL_SITE_CAMERA : null;
     if (city) {
       this.camera.moveTo(city.x, city.z, true);
       this.camera.setHeight(INTRO_CAMERA.fromHeight + 12);
@@ -1558,12 +1554,7 @@ export class Game {
       this.camera.moveTo(c.x + INTRO_CAMERA.offset, c.z + INTRO_CAMERA.offset, true);
       this.camera.setHeight(INTRO_CAMERA.fromHeight);
     }
-    this.camera.flyTo(
-      c.x + (siteFraming?.dx ?? 0),
-      c.z + (siteFraming?.dz ?? 0),
-      siteFraming?.height ?? INTRO_CAMERA.toZoom,
-      INTRO_CAMERA.seconds,
-    );
+    this.camera.flyTo(c.x, c.z, siteFraming?.height ?? INTRO_CAMERA.toZoom, INTRO_CAMERA.seconds);
   }
 
   private missionEnd(win: boolean): void {

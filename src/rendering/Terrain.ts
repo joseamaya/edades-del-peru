@@ -626,7 +626,8 @@ ${FOW_DIM_GLSL}
           float halfSize = mapSize * 0.5;
           vec2 edge = vec2(abs(vWorldPos.x - halfSize), abs(vWorldPos.z - halfSize));
           float edgeAmt = smoothstep(mapSize * 0.47, mapSize * 0.5, max(edge.x, edge.y));
-          float fogCap = mix(0.30, 0.38, caralTerrain);
+          float lomaMask = smoothstep(10.0, 20.0, vHeight);
+          float fogCap = 0.30 + 0.08 * caralTerrain * lomaMask;
           vec3 outCol = mix(lit, fogColor, clamp(max(fogAmt, edgeAmt), 0.0, fogCap));
           // Low morning haze pools over the Supe floodplain and separates it
           // from the dry terrace without washing out the fields.
