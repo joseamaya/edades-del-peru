@@ -16,7 +16,8 @@ Package manager **Yarn 1** (`yarn.lock` exists — never create a `package-lock.
 - `yarn verify:fast` — quick gate (`typecheck + lint + format:check + test + build`, ~10 s)
 - `yarn test:e2e` — full Playwright suite; `yarn test:e2e:smoke` — `@smoke` subset for PRs
   (CI shards it 2×); `yarn test:e2e:fast` — quick project, run sharded 4× on `main` (excludes the heavy
-  AI/campaign-completable/campaign-playtest/settlement/save specs); `yarn test:e2e:slow` — those heavy specs (nightly).
+  AI/campaign-completable/campaign-playtest/Caral scenario-visual/settlement/save specs);
+  `yarn test:e2e:slow` — those heavy specs (nightly).
   `PW_WORKERS=N` overrides workers.
 - `yarn shot <name> --seed=777 --wait=8000` — screenshot into `review/`
 - `yarn sim [--seeds=…] [--max=…] [--difficulty=…]` — headless AI-vs-AI match runner (AI regression baseline)
