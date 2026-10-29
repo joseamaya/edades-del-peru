@@ -16,3 +16,9 @@
 
 - Wikipedia: [Horizonte Medio](https://es.wikipedia.org/wiki/Horizonte_Medio), [Cultura wari](https://es.wikipedia.org/wiki/Cultura_wari).
 - Lumbreras, L. G.: *Imperio Wari*.
+
+## Fuentes arqueológicas citadas en el sitio del juego
+
+- Ochatoma Paravicino, J. y Cabrera Romero, M., *El área sagrada de Wari* (arquitectura en D, plazas y galerías).
+- Isbell, W. H., estudios sobre Wari, el Horizonte Medio y sus recintos amurallados.
+- The Metropolitan Museum of Art, *Wari Imperial Art* (materiales, revoques y cultura material).

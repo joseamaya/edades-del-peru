@@ -89,7 +89,7 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
   },
   m4_wari: {
     briefing:
-      'Andes centrales, c. 600–1000 d.C. Wari teje una red de centros provinciales, caminos y andenes; Tiahuanaco compite por la misma esfera de influencia sin una guerra única documentada. Conecta dos centros y sostén la frontera.',
+      'Andes centrales, c. 600–1000 d.C. Wari teje una red de centros provinciales, caminos y andenes; Tiahuanaco compite por la misma esfera de influencia sin una guerra única documentada. Conecta dos centros provinciales y sostén la esfera wari.',
     context:
       'Wari (núcleo en Ayacucho) y Tiahuanaco (altiplano del Titicaca) fueron dos grandes estados ' +
       'suprarregionales coetáneos que difundieron el culto al dios de los báculos. Wari extendió ciudades ' +

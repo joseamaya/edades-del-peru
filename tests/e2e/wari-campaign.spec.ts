@@ -9,7 +9,7 @@ async function start(page: Page): Promise<void> {
   await page.waitForTimeout(800);
 }
 
-test('m4 loads the authored Wari site', { tag: '@smoke' }, async ({ page }) => {
+test('m4 loads the authored Wari site', async ({ page }) => {
   await start(page);
   const out = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;

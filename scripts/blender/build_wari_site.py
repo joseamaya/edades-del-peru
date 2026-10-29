@@ -1,4 +1,4 @@
-"""Build the project-owned Wari campaign site (Vegachayoc Moqo synthesis)."""
+"""Build the project-owned Wari campaign site (monumental-core synthesis)."""
 
 import bpy
 import math

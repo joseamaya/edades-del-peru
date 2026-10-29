@@ -603,7 +603,7 @@ export const MISSIONS: MissionDef[] = [
     },
     timeOfDay: 'noon',
     startingEra: Era.TAHUANTINSUYO,
-    startingResources: { food: 350, wood: 300, silver: 100, stone: 40 },
+    startingResources: { food: 350, wood: 160, silver: 60, stone: 40 },
     start: {},
     enemy: { active: false, difficulty: 'easy', aggression: 0 },
     objectives: [
@@ -627,8 +627,8 @@ export const MISSIONS: MissionDef[] = [
         buildingKind: BuildingKind.MARKET,
         count: 2,
         nodes: [
-          { ref: 'site', dx: 30, dz: -26 },
-          { ref: 'site', dx: 28, dz: 26 },
+          { ref: 'site', dx: 40, dz: -32 },
+          { ref: 'site', dx: 38, dz: 34 },
         ],
         radius: 16,
         title: 'Conecta dos centros provinciales en la frontera',
@@ -636,7 +636,7 @@ export const MISSIONS: MissionDef[] = [
       {
         id: 'obj_frontera',
         kind: 'hold',
-        pos: { ref: 'site', dx: 30, dz: -26 },
+        pos: { ref: 'site', dx: 40, dz: -32 },
         radius: 14,
         time: 60,
         hidden: true,
@@ -654,7 +654,7 @@ export const MISSIONS: MissionDef[] = [
         kind: 'build',
         buildingKind: BuildingKind.MARKET,
         count: 1,
-        pos: { ref: 'site', dx: -28, dz: 0 },
+        pos: { ref: 'site', dx: -40, dz: 0 },
         radius: 16,
         optional: true,
         title: 'Amplía la red con un tercer centro',
