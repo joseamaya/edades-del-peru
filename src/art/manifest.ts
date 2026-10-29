@@ -3,6 +3,7 @@ import { CIVS } from '../model/defs/civs';
 import { PERIODS } from '../model/defs/periods';
 import { MAP_PROFILES } from '../model/defs/profiles';
 import { IMAGE_TYPE_RULES } from './imageTypes';
+import { publicAsset } from '../util/publicAsset';
 import type { ArtManifest, ArtManifestRecord, ArtNature, ArtScope, ManifestValidationIssue, SceneType } from './types';
 
 const manifest = manifestJson as unknown as ArtManifest;
@@ -63,12 +64,9 @@ export function artIntroForCampaign(campaignId: string, options: ArtLookupOption
 
 /** Resolve a `public/` asset path to a cache-busted URL. */
 export function artAssetUrl(record: ArtManifestRecord | string, version?: string): string {
-  const base = (import.meta.env?.BASE_URL as string | undefined) ?? './';
-  const prefix = base.endsWith('/') ? base : `${base}/`;
   const asset = typeof record === 'string' ? record : record.asset;
-  const clean = asset.replace(/^\/+/, '');
   const query = version ? `?v=${encodeURIComponent(version)}` : '';
-  return `${prefix}${clean}${query}`;
+  return `${publicAsset(asset)}${query}`;
 }
 
 /** Build a `srcset` string for the main asset plus its generated variants. */

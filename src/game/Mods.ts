@@ -5,6 +5,7 @@ import { overrideBuilding } from '../model/defs/buildings';
 import { overrideTech } from '../model/defs/techs';
 import { overrideUnit } from '../model/defs/units';
 import { ModDef, validateMod } from './mods/schema';
+import { publicAsset } from '../util/publicAsset';
 
 export interface ModLoadResult {
   /** Mod ids that were validated and applied, in order. */
@@ -26,7 +27,7 @@ export function applyMod(mod: ModDef): void {
  * invalid or missing mod is skipped with an error, never thrown, so one bad mod
  * cannot stop the game from booting.
  */
-export async function loadMods(ids: string[], base = './mods/'): Promise<ModLoadResult> {
+export async function loadMods(ids: string[], base = publicAsset('mods/')): Promise<ModLoadResult> {
   const loaded: string[] = [];
   const errors: string[] = [];
   for (const id of ids) {

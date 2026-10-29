@@ -15,6 +15,11 @@ if (!fs.existsSync(path.join(dist, 'index.html'))) {
   console.error('[itch] no dist/index.html — run `yarn build` first');
   process.exit(1);
 }
+const html = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
+if (/\b(?:src|href)="\//.test(html)) {
+  console.error('[itch] dist uses an absolute VITE_BASE; rebuild with the default ./ base before packaging');
+  process.exit(1);
+}
 fs.rmSync(target, { force: true });
 try {
   execFileSync('zip', ['-r', '-q', target, '.'], { cwd: dist, stdio: 'inherit' });

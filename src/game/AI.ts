@@ -39,6 +39,8 @@ const RAID_RADIUS = 24;
 const SIEGE_SELF_DEFENSE = 0.5;
 /** Engagement reach of a melee unit (no weapon range, so it uses its sight). */
 const MELEE_REACH = 8;
+/** Maximum distance a soldier will switch to the focus target. */
+const FOCUS_LEASH = 18;
 /** Seconds the AI remembers an enemy unit after losing sight of it. */
 const MEMORY_TTL = 12;
 /** Sight padding over `stats.los` (matches the player's fog reveal). */
@@ -575,7 +577,7 @@ export class AI {
 
   /** Can `s` attack `target` from where it stands (melee uses its sight radius). */
   private inReach(s: Unit, target: Unit): boolean {
-    const reach = s.stats.range > 0 ? s.stats.range : MELEE_REACH;
+    const reach = Math.max(s.stats.range, MELEE_REACH);
     return distance2D(s.pos.x, s.pos.z, target.pos.x, target.pos.z) <= reach;
   }
 
@@ -586,7 +588,9 @@ export class AI {
     if (!current || !isSoldier(current)) return; // keep building/worker attacks
     const base = this.center();
     if (base && distance2D(s.pos.x, s.pos.z, base.pos.x, base.pos.z) <= DEFEND_RADIUS) return; // stay on defense
-    if (this.inReach(s, focus)) s.issueOrder({ kind: OrderKind.ATTACK, entityId: focus.id }, true);
+    if (this.inReach(s, focus) || distance2D(s.pos.x, s.pos.z, focus.pos.x, focus.pos.z) <= FOCUS_LEASH) {
+      s.issueOrder({ kind: OrderKind.ATTACK, entityId: focus.id }, true);
+    }
   }
 
   /** Recall idle military to answer an enemy threatening the base or its workers. */
