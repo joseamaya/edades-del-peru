@@ -88,7 +88,7 @@ export interface AuthoredSiteDef {
   /** Opening/intro camera height. */
   cameraHeight: number;
   /** Frame the base alone or the midpoint between base and site. */
-  framing?: 'base' | 'midpoint' | 'site-biased' | 'site';
+  framing?: 'midpoint' | 'site-biased' | 'site';
   heightField?: AuthoredHeightField;
   pathCellSize: number;
   heritageProxies: readonly SiteHeritageProxy[];
@@ -100,8 +100,8 @@ export interface AuthoredSiteDef {
   environs?: SiteEnvirons;
   /** Source meshes hidden because the game heightfield/scene owns that layer. */
   hideNodePatterns?: readonly RegExp[];
-  /** A cleared approach strip through source walls (world units). */
-  walkableCorridor?: { from: { x: number; z: number }; to: { x: number; z: number }; width: number };
+  /** Clears an approach strip from the player base to the site anchor. */
+  walkableCorridor?: { width: number };
   /** Source nodes that carry a heritage card. */
   heritageNodeMap?: readonly SiteHeritageNodeMap[];
   /** Thin source surfaces that need double-sided rendering and polygon offset. */
@@ -239,7 +239,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       meshPatterns: [/Chavin_LOD[01]_City/],
       maxStartYAboveBase: 1.2,
     },
-    walkableCorridor: { from: { x: 57.6, z: 117.1 }, to: { x: 98, z: 87.5 }, width: 8 },
+    walkableCorridor: { width: 8 },
     terrain: { ...DEFAULT_SITE_TERRAIN },
     hideNodePatterns: [/Chavin_LOD[01]_(Terrain|Reference)/],
   },

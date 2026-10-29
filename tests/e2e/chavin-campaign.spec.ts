@@ -102,7 +102,8 @@ test('m2 offering flow opens the pilgrimage and completes the mission', async ({
   expect(out.ended).toBe(true);
 });
 
-test('m2 shows its own tutorial and hides the two staged goals from the briefing', async ({ page }) => {
+test('m2 tutorial advances through the offering gate without skipping steps', async ({ page }) => {
+  test.setTimeout(120_000);
   await page.goto(URL);
   const briefing = page.locator('.ed-overlay', { hasText: 'El Oráculo de Chavín' });
   await expect(briefing).toBeVisible({ timeout: 30_000 });
@@ -114,4 +115,49 @@ test('m2 shows its own tutorial and hides the two staged goals from the briefing
   await expect(tutorial).toBeVisible({ timeout: 30_000 });
   await expect(tutorial).toContainText('Selecciona a tus obreros');
   await expect(tutorial).toContainText('Paso 1 / 5');
+
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.start();
+    const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as any;
+    g.selectedUnits = [worker.id];
+  });
+  await expect(tutorial).toContainText('Lleva un obrero', { timeout: 10_000 });
+
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const anchor = g.siteAnchor as { x: number; z: number };
+    const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as any;
+    worker.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+  });
+  await expect(tutorial).toContainText('entrega una ofrenda', { timeout: 10_000 });
+
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const anchor = g.siteAnchor as { x: number; z: number };
+    for (let i = 0; i < 5; i++) g.makeOffering('chavin_edificio_b');
+    g.update(1 / 60, 0);
+  });
+  await expect(tutorial).toContainText('Abre la feria', { timeout: 10_000 });
+
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const anchor = g.siteAnchor as { x: number; z: number };
+    g.spawnScriptedBuilding('market', 0, anchor.x, anchor.z + 34);
+  });
+  await expect(tutorial).toContainText('Mantén un obrero', { timeout: 10_000 });
+
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const anchor = g.siteAnchor as { x: number; z: number };
+    const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as any;
+    const dt = 1 / 60;
+    let t = 0;
+    for (let i = 0; i < Math.ceil(70 / dt); i++) {
+      worker.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+      g.update(dt, t);
+      t += dt;
+    }
+  });
+  await expect(tutorial).not.toBeVisible({ timeout: 10_000 });
 });

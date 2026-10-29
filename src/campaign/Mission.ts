@@ -433,7 +433,7 @@ export class Mission {
       const delta = next - (this.delivered.get(objective.id) ?? 0);
       if (delta <= 0) continue;
       this.delivered.set(objective.id, next);
-      recorded += delta;
+      recorded = Math.max(recorded, delta);
       if (next >= (objective.count ?? 0)) this.complete(objective.id);
     }
     if (recorded > 0) this.checkAllComplete();

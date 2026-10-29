@@ -19,7 +19,7 @@ const TUTORIALS: Record<string, TutorialDef> = {
       {
         id: 'offer',
         text: 'Con un obrero junto al templo, selecciona el Edificio B y entrega una ofrenda de plata.',
-        check: { type: 'delivered', objectiveId: 'obj_ofrendas' },
+        check: { type: 'objectiveCompleted', objectiveId: 'obj_ofrendas' },
       },
       {
         id: 'market',

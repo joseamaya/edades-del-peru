@@ -213,6 +213,43 @@ describe('mission delivery objectives', () => {
     expect(loaded.won).toBe(true);
   });
 
+  it('counts one offering once when two delivery goals are active', () => {
+    const unit = { id: 1, tag: 'guarda', owner: 0, dead: false, kind: UnitKind.WORKER };
+    const game = stubGame(unit) as any;
+    const deliverDef: MissionDef = {
+      ...def,
+      objectives: [
+        { id: 'offer', kind: 'deliver', resource: 'silver', count: 10, title: 'ofrenda' },
+        { id: 'bonus', kind: 'deliver', resource: 'silver', count: 20, optional: true, title: 'bonus' },
+      ],
+      triggers: [],
+    };
+    const m = new Mission(game, deliverDef, () => {});
+    m.start();
+    expect(m.recordDelivery('silver', 5)).toBe(5);
+    expect(m.getObjectiveProgress('offer')).toEqual({ current: 5, target: 10, format: 'count' });
+    expect(m.getObjectiveProgress('bonus')).toEqual({ current: 5, target: 20, format: 'count' });
+  });
+
+  it('loads an older save without delivered state', () => {
+    const unit = { id: 1, tag: 'guarda', owner: 0, dead: false, kind: UnitKind.WORKER };
+    const game = stubGame(unit) as any;
+    const deliverDef: MissionDef = {
+      ...def,
+      objectives: [{ id: 'offer', kind: 'deliver', resource: 'silver', count: 10, title: 'ofrenda' }],
+      triggers: [],
+    };
+    const m = new Mission(game, deliverDef, () => {});
+    m.start();
+    m.recordDelivery('silver', 4);
+    const save = m.toSave();
+    delete save.delivered;
+    const loaded = new Mission(game, deliverDef, () => {});
+    loaded.start();
+    loaded.applySave(save);
+    expect(loaded.getObjectiveProgress('offer')).toEqual({ current: 0, target: 10, format: 'count' });
+  });
+
   it('ignores deliveries before a hidden goal is active', () => {
     const unit = { id: 1, tag: 'guarda', owner: 0, dead: false, kind: UnitKind.WORKER };
     const game = stubGame(unit) as any;

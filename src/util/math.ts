@@ -102,3 +102,17 @@ export function rotateXZ(lx: number, lz: number, yaw: number): { x: number; z: n
   const s = Math.sin(yaw);
   return { x: lx * c - lz * s, z: lx * s + lz * c };
 }
+
+/** Shortest distance from a point to a finite 2D segment. */
+export function distanceToSegment(
+  x: number,
+  z: number,
+  from: { x: number; z: number },
+  to: { x: number; z: number },
+): number {
+  const dx = to.x - from.x;
+  const dz = to.z - from.z;
+  const len2 = dx * dx + dz * dz;
+  const t = len2 === 0 ? 0 : Math.max(0, Math.min(1, ((x - from.x) * dx + (z - from.z) * dz) / len2));
+  return Math.hypot(x - (from.x + t * dx), z - (from.z + t * dz));
+}

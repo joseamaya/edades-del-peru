@@ -206,7 +206,6 @@ export type TutorialCheck =
   | { type: 'selectUnit'; unitKind: UnitKind }
   | { type: 'reachFishing'; radius: number }
   | { type: 'build'; buildingKind: BuildingKind; baseline: TutorialBuildBaseline }
-  | { type: 'delivered'; objectiveId: string }
   | { type: 'objectiveCompleted'; objectiveId: string }
   | { type: 'approachSite'; radius: number; unitKind?: UnitKind };
 

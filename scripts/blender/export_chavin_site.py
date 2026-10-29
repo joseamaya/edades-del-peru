@@ -28,6 +28,13 @@ for obj in [o for o in bpy.data.objects if o.type == 'MESH']:
             poly.material_index -= 1
     print(f'REMOVED_LANZON_FACES {obj.name} {len(faces)}')
 
+# Strip provenance extras that belonged to the removed CyArk scan. The GLB
+# exporter copies custom properties into node extras; never ship NC metadata.
+for datablock in [*bpy.data.objects, *bpy.data.materials]:
+    for key in list(datablock.keys()):
+        if key.lower() in {'license', 'attribution', 'derivative'} or 'cyark' in str(datablock[key]).lower():
+            del datablock[key]
+
 if max_tex:
     for image in bpy.data.images:
         if image.users == 0 or image.type != 'IMAGE':

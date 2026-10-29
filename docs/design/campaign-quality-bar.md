@@ -1,7 +1,7 @@
 # Campaign quality bar
 
-This is the definition of done for a historical campaign. Caral (`m1_caral`) is the
-gold-master case; the other eight missions are reviewed against the same gates before
+This is the definition of done for a historical campaign. Caral (`m1_caral`) and Chavín (`m2_chavin`) are the
+gold-master cases; the other missions are reviewed against the same gates before
 they are called complete. A mission is not done because it boots or because its
 objectives can be satisfied by a test harness.
 

@@ -26,10 +26,10 @@ or procedural. No UNESCO/Mincul photographs are included.
 ## Hashes
 
 - `chavin_hero.png`: `16bc0e3ab76e9b8468c0a268f9538ddc340f0388422b3d0c0a0d0bd8e11155d3`
-- `chavin_lod0_clean.blend`: `ea86697e51dfcf6797b4a175058f5ed56cba8f79bb008b337b172f2c7511e744`
-- `chavin_lod1_clean.blend`: `04d28b1a6ce30adfe0ccb7b3fd7a278326e1be2be0b56d1d56d6bdfb01c794c3`
-- `chavin_site_lod0.glb`: `d54ef3625d3032bae969f016eb5b8bf6439b364cbd34faa76fcac0f5e234fe08`
-- `chavin_site_lod1.glb`: `2a269c5628575554dc4e4cdd00e52b6c89aec64936cde145ca25e4328348b7bb`
+- `chavin_lod0_clean.blend`: `6774b77efaa5bb1213ae6af8e356530de6b8caa915902288eca37aba6a99885c`
+- `chavin_lod1_clean.blend`: `ea82b12e8aa42fc31f23e0e0d801c2cb8d6a5dc5e5c9867573eb5e15a047f7e2`
+- `chavin_site_lod0.glb`: `11b6ba6e1049dece0f12c474883317392f45465fee1a7f22d89317d093763518`
+- `chavin_site_lod1.glb`: `341626aff66ae8e049ab331897a773edc89221f8dce53fe782bdc7762b90c621`
 
 ## Limits
 

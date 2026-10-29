@@ -166,8 +166,8 @@ slot is absent (offline / without assets).
 ### Chavín sacred site (m2 runtime)
 
 - **Location**: `src/assets/sites/chavin/chavin_site_lod0.glb` and `chavin_site_lod1.glb`.
-- **SHA-256**: LOD0 `d54ef3625d3032bae969f016eb5b8bf6439b364cbd34faa76fcac0f5e234fe08`;
-  LOD1 `2a269c5628575554dc4e4cdd00e52b6c89aec64936cde145ca25e4328348b7bb`.
+- **SHA-256**: LOD0 `11b6ba6e1049dece0f12c474883317392f45465fee1a7f22d89317d093763518`;
+  LOD1 `341626aff66ae8e049ab331897a773edc89221f8dce53fe782bdc7762b90c621`.
 - **Source**: `art-src/blender/chavin/chavin_lod0_clean.blend` /
   `chavin_lod1_clean.blend` (LFS), derived from the project's Chavín preview and
   re-exported with `scripts/blender/export_chavin_site.py`.

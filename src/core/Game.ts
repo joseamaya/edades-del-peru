@@ -80,7 +80,7 @@ import {
   type CaralValleyQuery,
 } from '../model/defs/caralValley';
 import { farmYieldMultiplier, nearbyCanal } from '../model/defs/farmYield';
-import { distance2D } from '../util/math';
+import { distance2D, distanceToSegment } from '../util/math';
 import { isTypingTarget } from '../util/dom';
 import { RNG, hashCode, weightedPick } from '../util/rng';
 import { getAuthoredSite, type AuthoredSiteDef, type SiteHeritageProxy } from '../model/defs/sites';
@@ -650,19 +650,6 @@ export class Game {
     }
   }
 
-  private distanceToSegment(
-    x: number,
-    z: number,
-    from: { x: number; z: number },
-    to: { x: number; z: number },
-  ): number {
-    const dx = to.x - from.x;
-    const dz = to.z - from.z;
-    const len2 = dx * dx + dz * dz;
-    const t = len2 === 0 ? 0 : Math.max(0, Math.min(1, ((x - from.x) * dx + (z - from.z) * dz) / len2));
-    return Math.hypot(x - (from.x + t * dx), z - (from.z + t * dz));
-  }
-
   /**
    * Bake the low residential/retaining walls into the navigation grid. Vertical
    * source faces that start near the floor are walls (including retaining
@@ -672,6 +659,8 @@ export class Game {
   private addSiteWallCollision(model: THREE.Object3D, baseY: number, def: AuthoredSiteDef): void {
     if (def.wallCollision.meshPatterns.length === 0) return;
     const corridor = def.walkableCorridor;
+    const corridorFrom = corridor ? this.playerCenter(0) : null;
+    const corridorTo = corridor ? def.anchor : null;
     const { cols, rows, cell } = this.pathfinder.grid;
     const mask = new Uint8Array(cols * rows);
     const a = new THREE.Vector3();
@@ -714,7 +703,12 @@ export class Game {
             if (corridor) {
               const px = (x + 0.5) * cell;
               const pz = (z + 0.5) * cell;
-              if (this.distanceToSegment(px, pz, corridor.from, corridor.to) <= corridor.width / 2) continue;
+              if (
+                corridorFrom &&
+                corridorTo &&
+                distanceToSegment(px, pz, corridorFrom, corridorTo) <= corridor.width / 2
+              )
+                continue;
             }
             mask[z * cols + x] = 1;
           }

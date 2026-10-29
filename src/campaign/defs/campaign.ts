@@ -232,7 +232,7 @@ export const MISSIONS: MissionDef[] = [
       base: { x: 0.3, z: 0.61 },
       site: {
         id: 'chavin_site',
-        y: 8,
+        y: 4.6,
         focus: { x: 0.51, z: 0.456 },
         keepout: [{ x: 0.51, z: 0.456, rx: 0.19, rz: 0.17 }],
         buildKeepout: [{ x: 0.51, z: 0.456, rx: 0.17, rz: 0.14 }],
