@@ -33,6 +33,43 @@ test('m4 loads the authored Wari site', async ({ page }) => {
   expect(out.names.some((name) => /Wari_LOD1_(Apron|Terrain)/.test(name))).toBe(false);
 });
 
+test('m4 draws the provincial road network', async ({ page }) => {
+  await start(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    const overlays = g.settlements.filter((s: any) => s.group?.name?.startsWith('mission-roads'));
+    let meshes = 0;
+    for (const overlay of overlays) {
+      overlay.group.traverse((o: any) => {
+        if (o.isMesh) meshes++;
+      });
+    }
+    const planRoads = overlays.flatMap((s: any) => s.plan.roads);
+    const endpoints = new Set(planRoads.flatMap((r: any) => [`${r.from.x},${r.from.z}`, `${r.to.x},${r.to.z}`]));
+    const base = g.playerCenter(0);
+    const baseLeg = planRoads.some((r: any) => Math.hypot(r.from.x - base.x, r.from.z - base.z) < 0.01);
+    return {
+      found: overlays.length > 0,
+      overlays: overlays.length,
+      meshes,
+      roads: g.missionLayout?.roads?.length ?? 0,
+      planRoads: planRoads.length,
+      endpoints: endpoints.size,
+      baseLeg,
+      names: overlays.map((s: any) => s.group.name),
+    };
+  });
+  expect(out.found).toBe(true);
+  expect(out.overlays).toBe(2);
+  expect(out.roads).toBe(4);
+  expect(out.planRoads).toBe(4);
+  expect(out.endpoints).toBeGreaterThanOrEqual(4);
+  expect(out.baseLeg).toBe(true);
+  expect(out.names).toContain('mission-roads-2');
+  expect(out.meshes).toBeGreaterThan(0);
+});
+
 test('m4 network and frontier complete the mission without a battle', async ({ page }) => {
   await start(page);
   const out = await page.evaluate(() => {

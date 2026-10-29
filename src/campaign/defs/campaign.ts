@@ -2,6 +2,10 @@ import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../core
 import { MissionDef } from '../types';
 import { CARAL_SITE_BUILD_KEEPOUT } from '../../model/defs/sites';
 
+const WARI_NODE_A = { ref: 'site' as const, dx: 40, dz: -32 };
+const WARI_NODE_B = { ref: 'site' as const, dx: 38, dz: 34 };
+const WARI_BONUS_NODE = { ref: 'site' as const, dx: -40, dz: 0 };
+
 export const MISSIONS: MissionDef[] = [
   {
     id: 'm1_caral',
@@ -592,6 +596,12 @@ export const MISSIONS: MissionDef[] = [
           { name: 'Terraza provincial wari', x: 0.7, z: 0.58, rx: 0.12, rz: 0.09 },
         ],
       },
+      roads: [
+        { from: { ref: 'player', dx: 0, dz: 0 }, to: { ref: 'site', dx: 0, dz: 14 }, width: 2.5 },
+        { from: { ref: 'site', dx: 0, dz: 14 }, to: WARI_NODE_A, width: 2.5 },
+        { from: { ref: 'site', dx: 0, dz: 14 }, to: WARI_NODE_B, width: 2.5 },
+        { from: WARI_NODE_A, to: WARI_NODE_B, width: 2 },
+      ],
     },
     mapOverrides: {
       terrain: { terraceChance: 0.6, riverCount: 0 },
@@ -603,7 +613,7 @@ export const MISSIONS: MissionDef[] = [
     },
     timeOfDay: 'noon',
     startingEra: Era.TAHUANTINSUYO,
-    startingResources: { food: 350, wood: 160, silver: 60, stone: 40 },
+    startingResources: { food: 350, wood: 300, silver: 100, stone: 40 },
     start: {},
     enemy: { active: false, difficulty: 'easy', aggression: 0 },
     objectives: [
@@ -626,17 +636,14 @@ export const MISSIONS: MissionDef[] = [
         kind: 'network',
         buildingKind: BuildingKind.MARKET,
         count: 2,
-        nodes: [
-          { ref: 'site', dx: 40, dz: -32 },
-          { ref: 'site', dx: 38, dz: 34 },
-        ],
+        nodes: [WARI_NODE_A, WARI_NODE_B],
         radius: 16,
         title: 'Conecta dos centros provinciales en la frontera',
       },
       {
         id: 'obj_frontera',
         kind: 'hold',
-        pos: { ref: 'site', dx: 40, dz: -32 },
+        pos: WARI_NODE_A,
         radius: 14,
         time: 60,
         hidden: true,
@@ -654,7 +661,7 @@ export const MISSIONS: MissionDef[] = [
         kind: 'build',
         buildingKind: BuildingKind.MARKET,
         count: 1,
-        pos: { ref: 'site', dx: -40, dz: 0 },
+        pos: WARI_BONUS_NODE,
         radius: 16,
         optional: true,
         title: 'Amplía la red con un tercer centro',

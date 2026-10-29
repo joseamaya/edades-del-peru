@@ -25,6 +25,9 @@ and **not** a historical photograph.
 - The source terrain/apron is hidden; the game heightfield owns the ground.
 - A 1 m grid, monument AABBs and an 8 m approach corridor keep the base
   connected to the plaza.
+- Visual road ribbons connect the base, the site and both provincial nodes
+  (`MissionRoad`). They follow the terrain, have no collision and do not affect
+  pathfinding.
 
 ## Attested elements
 
@@ -45,14 +48,17 @@ and **not** a historical photograph.
 - The `Mercado` building represents a provincial administrative/exchange node,
   not an attested market form.
 - The 600-food, two-farm, two-centre and 60/480-second targets are pacing
-  abstractions.
+  abstractions. The 300 wood / 100 silver opening stock is a scenario balance
+  so two provincial markets can be founded without a long prelude; the 600-food
+  target still forces agricultural expansion.
 - There is no active enemy: the competition with Tiahuanaco is expressed through
   influence, presence and dialogue, not an invented war.
 
 ## Mission flow
 
 1. Gather 600 food and prepare two andenes.
-2. Found two provincial centres at the network nodes.
+2. Found two provincial centres at the network nodes; the roads show the
+   intended network but are visual only.
 3. Hold the first frontier node for 60 seconds.
 4. Sustain the Wari sphere for eight minutes.
 5. Optional: found a third centre.
@@ -64,13 +70,13 @@ and **not** a historical photograph.
 - Network objective: `src/campaign/Mission.ts` and `src/campaign/types.ts`.
 - Heritage cards: `src/model/defs/heritage.ts`; economy cards: `buildingCards.ts`.
 - Tutorial: `src/campaign/defs/tutorials.ts`.
-- Tests: `tests/e2e/wari-campaign.spec.ts`, `campaign-completable.spec.ts`,
-  `campaign.spec.ts`, `tests/authored-sites.test.ts`.
+- Tests: `tests/e2e/wari-campaign.spec.ts`, `campaign-playtest.spec.ts`,
+  `campaign-completable.spec.ts`, `campaign.spec.ts`, `tests/authored-sites.test.ts`.
 
 ## Status
 
-The authored site, network, frontier hold, tutorial, save/load-compatible state
-and completability coverage are implemented. Current captures are local review
+The authored site, network, frontier hold, tutorial, roads, save/load-compatible
+state, a real-command victory playtest and completability coverage are implemented. Current captures are local review
 artifacts in `review/`; there is no CI pixel gate. The model remains a
 representative reconstruction and the historical limits stay visible in the
 Codex and dossier.

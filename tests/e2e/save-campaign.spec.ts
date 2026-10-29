@@ -225,6 +225,7 @@ test('saves and loads the Wari network and frontier', async ({ page }) => {
       network: g.mission.getObjectiveProgress('obj_red'),
       frontier: g.mission.getObjectiveProgress('obj_frontera'),
       tutorialStep: g.tutorial?.toSave().stepId ?? null,
+      roads: g.settlements.filter((s: any) => s.group?.name?.startsWith('mission-roads')).length,
     };
   });
   expect(before.network?.current).toBe(2);
@@ -247,6 +248,7 @@ test('saves and loads the Wari network and frontier', async ({ page }) => {
       network: g.mission.getObjectiveProgress('obj_red'),
       frontier: g.mission.getObjectiveProgress('obj_frontera'),
       tutorialStep: g.tutorial?.toSave().stepId ?? null,
+      roads: g.settlements.filter((s: any) => s.group?.name?.startsWith('mission-roads')).length,
     };
   });
   expect(after).toEqual(before);

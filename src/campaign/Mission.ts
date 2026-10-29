@@ -11,7 +11,7 @@ import {
   TriggerEffect,
   MissionPoint,
 } from './types';
-import { OrderKind, BuildingKind, Resources } from '../core/types';
+import { OrderKind, Resources } from '../core/types';
 import { distance2D } from '../util/math';
 import { commanderFor } from '../model/defs/commanders';
 import type { MissionSave } from '../game/saveTypes';
@@ -58,35 +58,8 @@ export class Mission {
       .map((o) => ({ def: o, state: this.objState.get(o.id) as ObjState }));
   }
 
-  private baseCenter(owner: number): { x: number; z: number } {
-    const c = [...this.game.buildings.values()].find(
-      (b) => b.owner === owner && b.kind === BuildingKind.CENTER && !b.dead,
-    );
-    if (c) return { x: c.pos.x, z: c.pos.z };
-    return { x: this.game.settings.mapSize / 2, z: this.game.settings.mapSize / 2 };
-  }
-
   private resolvePoint(p: MissionPoint): { x: number; z: number } {
-    const ref =
-      p.ref === 'enemy'
-        ? this.baseCenter(1)
-        : p.ref === 'player'
-          ? this.baseCenter(0)
-          : p.ref === 'canal'
-            ? (this.game.canalSite ?? { x: this.game.settings.mapSize / 2, z: this.game.settings.mapSize / 2 })
-            : p.ref === 'site'
-              ? (this.game.siteCenter ?? {
-                  x: this.game.settings.mapSize / 2,
-                  z: this.game.settings.mapSize / 2,
-                })
-              : p.ref === 'landmark'
-                ? (this.game.siteAnchor ??
-                  this.game.landmark?.position ?? {
-                    x: this.game.settings.mapSize / 2,
-                    z: this.game.settings.mapSize / 2,
-                  })
-                : { x: 0, z: 0 };
-    return { x: ref.x + p.dx, z: ref.z + p.dz };
+    return this.game.resolveMissionPoint(p);
   }
 
   private objective(id: string): ObjectiveDef | undefined {
@@ -374,7 +347,7 @@ export class Mission {
           const unit = this.game.spawnScriptedUnit(u.kind, fx.owner, p.x + jitter, p.z + k);
           if (fx.owner === 1) {
             // enemy waves attack a target (the player base or the position)
-            const t = fx.objective === 'position' ? p : this.baseCenter(0);
+            const t = fx.objective === 'position' ? p : this.game.playerCenter(0);
             unit.issueOrder({ kind: OrderKind.ATTACK_MOVE, target: { x: t.x, z: t.z } });
           }
         }
