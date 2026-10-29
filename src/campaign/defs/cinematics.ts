@@ -56,4 +56,11 @@ export const PREINCA_PROLOGUE: CinematicBeat[] = [
     seconds: 7,
     source: 'docs/historia/campanas/caral.md',
   },
+  {
+    kicker: 'DESPUÉS DE CARAL',
+    title: 'Templos, señoríos y horizontes',
+    text: 'Chavín articula un culto andino; Moche y Recuay comparten los valles y la sierra; Wari teje una red de centros y caminos. Cuatro escenarios, una misma historia.',
+    seconds: 7,
+    source: 'docs/historia/periodizacion.md',
+  },
 ];

@@ -12,7 +12,11 @@ import { MISSIONS } from '../../src/campaign/defs/campaign';
  * `protect` objectives are satisfied by running the fixed-step clock. This
  * exercises the objective evaluator and the victory path deterministically.
  */
-for (const mis of MISSIONS) {
+// Caral's authored site plus its 660 s clock is too slow for this generic loop;
+// its narrative completion is covered by campaign.spec.ts.
+const COMPLETABLE_MISSIONS = MISSIONS.filter((mis) => mis.id !== 'm1_caral');
+
+for (const mis of COMPLETABLE_MISSIONS) {
   test(`campaign ${mis.id} is completable`, async ({ page }) => {
     test.setTimeout(120_000);
     const errors: string[] = [];

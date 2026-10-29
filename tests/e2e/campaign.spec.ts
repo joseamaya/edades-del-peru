@@ -46,7 +46,9 @@ test('the codex opens with periods, civilizations and dossiers', async ({ page }
   await expect(codex.locator('.ed-codex-nav')).toContainText('Caral-Supe');
   await codex.getByRole('button', { name: /Campañas/ }).click();
   await expect(codex.locator('.ed-codex-nav')).toContainText('La Ciudad Sagrada');
-  await expect(codex.locator('.ed-codex-nav')).not.toContainText('El Oráculo de Chavín');
+  await expect(codex.locator('.ed-codex-nav')).toContainText('El Oráculo de Chavín');
+  await expect(codex.locator('.ed-codex-nav')).toContainText('La Frontera de los Valles');
+  await expect(codex.locator('.ed-codex-nav')).toContainText('El Horizonte Medio');
   await codex.getByRole('button', { name: /Dossiers/ }).click();
   await expect(codex.locator('.ed-codex-content')).toContainText('Fuentes');
 });
@@ -479,8 +481,8 @@ test('a strategic choice wins through either branch', async ({ page }) => {
   expect(siege).toBe(true);
 });
 
-test('the campaign hub shows Caral progress and only Caral is playable', async ({ page }) => {
-  // legacy numeric progress migrates to the first released mission
+test('the campaign hub shows preinca progress and its four missions', async ({ page }) => {
+  // legacy numeric progress migrates to the first two released missions
   await page.addInitScript(() => {
     localStorage.setItem('peru-campaign', '2');
     localStorage.setItem('peru-campaign-intro-preinca', '1');
@@ -492,11 +494,13 @@ test('the campaign hub shows Caral progress and only Caral is playable', async (
   await page.getByRole('button', { name: /Campañas/ }).click();
   const menu = page.locator('.ed-campaign-panel');
   await expect(menu).toContainText('Culturas Preincas');
-  await expect(menu).toContainText('1 / 1 misiones completadas');
+  await expect(menu).toContainText('2 / 4 misiones completadas');
   await expect(menu).toContainText('✓ La Ciudad Sagrada');
+  await expect(menu).toContainText('✓ El Oráculo de Chavín');
+  await expect(menu.getByRole('button', { name: /Jugar La Ciudad Sagrada/ })).toHaveCount(0);
+  await expect(menu.getByRole('button', { name: /Jugar La Frontera de los Valles/ })).toBeVisible();
   await expect(menu).toContainText('El Tahuantinsuyo');
   await expect(menu).toContainText('En preparación');
-  await expect(menu.getByRole('button', { name: /Jugar La Ciudad Sagrada/ })).toHaveCount(0);
 });
 
 test('the campaign hub keeps future campaigns as coming soon', async ({ page }) => {
@@ -510,14 +514,22 @@ test('the campaign hub keeps future campaigns as coming soon', async ({ page }) 
   });
   await page.getByRole('button', { name: /Campañas/ }).click();
   const menu = page.locator('.ed-campaign-panel');
-  await expect(menu).toContainText('✓ La Ciudad Sagrada');
+  await expect(menu).toContainText('4 / 4 misiones completadas');
+  for (const title of [
+    '✓ La Ciudad Sagrada',
+    '✓ El Oráculo de Chavín',
+    '✓ La Frontera de los Valles',
+    '✓ El Horizonte Medio',
+  ]) {
+    await expect(menu).toContainText(title);
+  }
   for (const title of ['El Tahuantinsuyo', 'El Virreinato', 'Independencia y República']) {
     await expect(menu).toContainText(title);
   }
   await expect(menu.getByRole('button', { name: /Continuar campaña/ })).toHaveCount(0);
 });
 
-test('Caral opens with a chapter card and closes the first campaign', async ({ page }) => {
+test('Caral opens with a chapter card and chains into Chavín', async ({ page }) => {
   await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
   const briefing = page.locator('.ed-briefing');
   await expect(briefing).toBeVisible({ timeout: 30_000 });
@@ -530,11 +542,22 @@ test('Caral opens with a chapter card and closes the first campaign', async ({ p
 
   await page.evaluate(() => (window as unknown as { game: any }).game.showVictory(0));
   const victory = page.locator('.ed-epilogue');
+  await expect(victory).toContainText('Continuar: El Oráculo de Chavín');
+  await victory.getByRole('button', { name: /Continuar: El Oráculo de Chavín/ }).click();
+  await page.waitForURL(/mission=m2_chavin/);
+  await expect(page.locator('.ed-overlay', { hasText: 'El Oráculo de Chavín' })).toBeVisible({ timeout: 30_000 });
+  expect(await page.evaluate(() => localStorage.getItem('peru-campaign'))).toContain('m1_caral');
+});
+
+test('Wari closes the preinca chapter', async ({ page }) => {
+  await page.goto('/?mission=m4_wari&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
+    timeout: 30_000,
+  });
+  await page.evaluate(() => (window as unknown as { game: any }).game.showVictory(0));
+  const victory = page.locator('.ed-epilogue');
   await expect(victory).toContainText('Fin de la primera campaña');
   await expect(victory.getByRole('button', { name: /Volver a campañas/ })).toBeVisible();
-  await victory.getByRole('button', { name: /Volver a campañas/ }).click();
-  await expect(page.locator('.ed-campaign-panel')).toBeVisible();
-  expect(await page.evaluate(() => localStorage.getItem('peru-campaign'))).toContain('m1_caral');
 });
 
 test('a peaceful mission briefing shows no rival side', async ({ page }) => {

@@ -66,26 +66,26 @@ Debug URL parameters:
 
 ## Campaign: La Senda del Sol
 
-The campaign is a saga of **four chapters**. The current release opens only the first mission,
-**Caral**, inside _Culturas Preincas_; the remaining authored scenarios are kept as drafts for
-the next chapters and are not shown in the player-facing campaign menus.
+The campaign is a saga of **four chapters**. The first chapter, _Culturas Preincas_, is playable
+from Caral to Wari; the remaining authored scenarios stay as drafts for the next chapters.
 
-| Chapter | Campaign                      | Focus                               | Release                             |
-| ------- | ----------------------------- | ----------------------------------- | ----------------------------------- |
-| I       | **Culturas Preincas**         | Caral, Chavín, Moche/Recuay, Wari   | Caral playable; rest in preparation |
-| II      | **El Tahuantinsuyo**          | Yahuar Pampa and the Inca expansion | In preparation                      |
-| III     | **El Virreinato**             | Túpac Amaru II and colonial Peru    | In preparation                      |
-| IV      | **Independencia y República** | Independence, Arica and modern Peru | In preparation                      |
+| Chapter | Campaign                      | Focus                               | Release                    |
+| ------- | ----------------------------- | ----------------------------------- | -------------------------- |
+| I       | **Culturas Preincas**         | Caral, Chavín, Moche/Recuay, Wari   | **Four missions playable** |
+| II      | **El Tahuantinsuyo**          | Yahuar Pampa and the Inca expansion | In preparation             |
+| III     | **El Virreinato**             | Túpac Amaru II and colonial Peru    | In preparation             |
+| IV      | **Independencia y República** | Independence, Arica and modern Peru | In preparation             |
 
-Draft mission ids remain stable (`m1_caral` … `m9_guerra_pacifico`) and can be opened directly
-with `?mission=ID` for QA; only released missions appear in menus, the Codex and progress.
+Mission ids remain stable (`m1_caral` … `m9_guerra_pacifico`). The released preinca missions
+appear in menus, the Codex and progress; later-chapter drafts stay reachable with `?mission=ID`
+for QA.
 The campaign [quality bar](./docs/design/campaign-quality-bar.md) records the gates a mission must meet.
 
 ## Educational mode
 
 The game teaches history while you play:
 
-- **Campaign prologue**: opening _Campañas_ presents the saga and the first playable chapter, Caral.
+- **Campaign prologue**: opening _Campañas_ presents the saga and the four-mission preinca chapter.
 - **Historical briefing**: each mission shows period and dates, geography, sides, expanded context, a
   «¿Sabías que…?» and its **sources** (collapsible).
 - **Guided tutorial**: the first mission (Caral) teaches selecting, building and exploring step by step

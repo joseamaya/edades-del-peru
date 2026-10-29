@@ -2,8 +2,9 @@
 
 Ficha de las nueve misiones redactadas para **La Senda del Sol**: periodo, civilización, región y los
 
-La saga se organiza en cuatro campañas; en este lanzamiento solo **Caral** está disponible y el resto
-queda como borrador para los siguientes capítulos.
+La saga se organiza en cuatro campañas. La primera, **Culturas Preincas**, está disponible con
+Caral, Chavín, Moche/Recuay y Wari; las demás misiones quedan como borrador para los siguientes
+capítulos.
 parámetros visuales que resuelve el sistema de perfiles (`resolveMapProfile` en
 `src/model/defs/profiles.ts`). Los rasgos son **abstracciones jugables** de la geografía documentada; la
 columna _Arquitectura_ es la que resulta de `archProfileFor(civ, era)` (ver [`arquitectura.md`](./arquitectura.md))

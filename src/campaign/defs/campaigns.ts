@@ -37,12 +37,12 @@ export const CAMPAIGNS: CampaignDef[] = [
     description:
       'Antes de los incas, los Andes ya habían construido ciudades, templos, redes de intercambio y estados regionales.',
     missionIds: ['m1_caral', 'm2_chavin', 'm3_moche_recuay', 'm4_wari'],
-    releasedMissionIds: ['m1_caral'],
+    releasedMissionIds: ['m1_caral', 'm2_chavin', 'm3_moche_recuay', 'm4_wari'],
     status: 'available',
     era: '3000 a.C. — 1000 d.C.',
     accent: '#c99a55',
     prologue: PREINCA_PROLOGUE,
-    upcoming: ['Chavín', 'Moche/Recuay', 'Wari'],
+    upcoming: [],
   },
   {
     id: 'inca',

@@ -34,9 +34,10 @@ campaign progress and links to the campaign map.
 ## Campaign map
 
 `Culturas Preincas`, `El Tahuantinsuyo`, `El Virreinato` and `Independencia y República` are
-the four chapters. Only Caral is released in this build; the other campaigns are shown as
-**En preparación**, with no invented release dates. Authored mission ids stay in the data
-for the next chapters but are hidden from the player-facing campaign, Codex and progress.
+the four chapters. The first chapter is fully playable (Caral, Chavín, Moche/Recuay, Wari);
+the other campaigns are shown as **En preparación**, with no invented release dates. Authored
+mission ids for those chapters stay in the data but are hidden from player-facing menus,
+Codex and progress.
 
 Progress lives in `peru-campaign` as a versioned JSON object. The old numeric value is
 migrated to `preinca: ['m1_caral']`; old draft missions are not deleted from the code, but they do
@@ -45,8 +46,8 @@ not carry into release progress.
 ## Mission flow
 
 Campaign prologue → campaign map → mission briefing → chapter title card → existing camera
-flyover → gameplay. The victory screen is an epilogue page; for Caral it closes the chapter
-and points to the next campaign instead of auto-starting an unreleased mission.
+flyover → gameplay. The victory screen is an epilogue page; the preinca chain continues
+from Caral through Chavín and Moche/Recuay to Wari, which closes the chapter.
 
 ## Asset provenance
 
