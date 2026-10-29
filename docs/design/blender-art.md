@@ -119,6 +119,15 @@ reproducible builder/exporter is `scripts/blender/build_moche_site.py`; the
 campaign render is `art-src/blender/moche/renders/moche_hero.png`. It is a
 representative reconstruction, not a survey. See `docs/design/moche-sacred-site.md`.
 
+## Wari site source
+
+`m4_wari` uses a project-owned synthesis of the Wari monumental core. The
+editable master and LODs live in `art-src/blender/wari/` (Git LFS); runtime GLBs
+are `src/assets/sites/wari/wari_site_lod0.glb` / `wari_site_lod1.glb`. The
+builder/exporter is `scripts/blender/build_wari_site.py`; the briefing render is
+`art-src/blender/wari/renders/wari_hero.png`. It is a representative
+reconstruction, not a survey. See `docs/design/wari-sacred-site.md`.
+
 ## Modular scenery
 
 The first modular asset is `caral_pyramid_mayor` (Pyramid Mayor + Plaza Mayor). It is

@@ -96,7 +96,7 @@ as an abstraction and says so in its field card.
 | ---------------------- | ---------------------------------------- | ------------------------------------------------- | ---------------------------------- | ----------------------------- |
 | m2 Chavín              | Ceremonial prestige and pilgrimage       | Deliver offerings, receive pilgrims, open feria   | Ceremony vs subsistence            | Prestige and continuity       |
 | m3 Moche–Recuay        | Valleys, canals and attested conflict    | Open the canal, hold the huacas, exchange silver  | Defend vs counter-raid             | Control or loss of the valley |
-| m4 Wari                | Planned expansion and provincial centres | Found a frontier centre, stockpile, sustain       | Expand vs consolidate              | Frontier influence            |
+| m4 Wari                | Planned expansion and provincial centres | Connect two centres, stockpile, hold the frontier | Expand vs consolidate              | Frontier influence            |
 | m5 Yahuar Pampa        | Defence of Cusco                         | Hold Cusco, protect Cusi Yupanqui, counter-attack | Resist vs sortie                   | Survival or fall              |
 | m6 Chimú–Inca          | Water as power                           | Advance, cut the canal, force surrender           | Assault vs siege                   | Chan Chan capitulates         |
 | m7 Túpac Amaru         | Rebellion and repression                 | Sustain communities, choose assault or siege      | Explicit counterfactual            | Defeat and legacy             |

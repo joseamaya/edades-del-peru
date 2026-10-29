@@ -36,6 +36,23 @@ describe('authored campaign sites', () => {
     expect(mission.layout?.canal?.heritageId).toBe('moche_canal');
   });
 
+  it('keeps Wari on its authored site and network layout', () => {
+    const wari = getAuthoredSite('wari_site')!;
+    expect(wari.scale).toBe(0.25);
+    expect(wari.anchor).toEqual({ x: 107.5, z: 102 });
+    expect(wari.heritageProxies.map((p) => p.id)).toEqual([
+      'wari_templo_d',
+      'wari_plaza',
+      'wari_galeria',
+      'wari_mural',
+    ]);
+    expect(wari.blockers.length).toBe(2);
+    expect(wari.walkableCorridor?.width).toBe(8);
+    const mission = MISSIONS.find((m) => m.id === 'm4_wari')!;
+    expect(mission.layout?.site?.id).toBe('wari_site');
+    expect(mission.objectives.find((o) => o.id === 'obj_red')?.kind).toBe('network');
+  });
+
   it('does not resolve a missing site id', () => {
     expect(getAuthoredSite(null)).toBeUndefined();
     expect(getAuthoredSite(undefined)).toBeUndefined();
@@ -57,6 +74,7 @@ describe('authored campaign sites', () => {
       'plaza',
       'trade',
     ]);
+    expect(tutorialForMission('m4_wari')?.steps.map((s) => s.id)).toEqual(['select', 'farm', 'network', 'frontier']);
   });
 
   it('registers sites with unique ids and sensible defaults', () => {

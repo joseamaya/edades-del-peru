@@ -36,6 +36,31 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
     ],
   },
+  m4_wari: {
+    steps: [
+      {
+        id: 'select',
+        text: 'Selecciona a tus obreros: haz clic izquierdo sobre uno o arrastra un recuadro para seleccionar varios.',
+        check: { type: 'selectUnit', unitKind: UnitKind.WORKER },
+      },
+      {
+        id: 'farm',
+        text: 'Acondiciona un andén cerca de la base: la red wari necesita alimentos antes de expandirse.',
+        highlight: buildBottom,
+        check: { type: 'build', buildingKind: BuildingKind.FARM, baseline: 'farms' },
+      },
+      {
+        id: 'network',
+        text: 'Funda dos centros provinciales en los nodos de la frontera. La red se mide en centros conectados, no en batallas.',
+        check: { type: 'objectiveCompleted', objectiveId: 'obj_red' },
+      },
+      {
+        id: 'frontier',
+        text: 'Mantén una unidad en el primer centro provincial para sostener la frontera frente a Tiahuanaco.',
+        check: { type: 'objectiveCompleted', objectiveId: 'obj_frontera' },
+      },
+    ],
+  },
   m3_moche_recuay: {
     steps: [
       {

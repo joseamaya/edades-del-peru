@@ -2,7 +2,7 @@ import type { AuthoredHeightField } from './authoredTerrain';
 import type { HeritageBuildingId } from './heritage';
 import { CARAL_HEIGHTMAP, CARAL_HEIGHTMAP_SIZE, CARAL_HEIGHTMAP_WORLD_SIZE } from './caralHeightmap';
 
-export type AuthoredSiteId = 'caral_site' | 'chavin_site' | 'moche_site';
+export type AuthoredSiteId = 'caral_site' | 'chavin_site' | 'moche_site' | 'wari_site';
 
 export interface SiteHeritageProxy {
   id: HeritageBuildingId;
@@ -255,12 +255,12 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     pathCellSize: 1,
     heritageProxies: [
       { id: 'moche_huaca_sol', x: 109.5, z: 73, w: 23, d: 15.5, h: 12 },
-      { id: 'moche_huaca_luna', x: 132.5, z: 75, w: 16.5, d: 12, h: 9 },
-      { id: 'moche_plaza', x: 121, z: 70, w: 20.5, d: 13.5, h: 2 },
+      { id: 'moche_huaca_luna', x: 132.5, z: 71, w: 16.5, d: 12, h: 9 },
+      { id: 'moche_plaza', x: 121, z: 76, w: 20.5, d: 13.5, h: 2 },
     ],
     blockers: [
       { x: 109.5, z: 73, w: 23, d: 15.5 },
-      { x: 132.5, z: 75, w: 16.5, d: 12 },
+      { x: 132.5, z: 71, w: 16.5, d: 12 },
     ],
     blockerPadding: 0.5,
     buildKeepout: [{ x: 0.62, z: 0.38, rx: 0.18, rz: 0.15 }],
@@ -282,6 +282,40 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       },
     },
     hideNodePatterns: [/Moche_LOD[01]_(Terrain|Apron)/],
+  },
+  wari_site: {
+    id: 'wari_site',
+    label: 'Complejo Arqueológico Wari',
+    modelName: 'wari_site',
+    scale: 0.25,
+    origin: { x: 107.5, z: 86.4 },
+    anchor: { x: 107.5, z: 102 },
+    cameraHeight: 70,
+    framing: 'site-biased',
+    pathCellSize: 1,
+    heritageProxies: [
+      { id: 'wari_templo_d', x: 107.5, z: 83.9, w: 15, d: 7.5, h: 3.5 },
+      { id: 'wari_plaza', x: 107.5, z: 96.4, w: 23, d: 13, h: 2 },
+      { id: 'wari_galeria', x: 107.5, z: 74.4, w: 15, d: 3, h: 1.5 },
+      { id: 'wari_mural', x: 107.5, z: 89.7, w: 15, d: 1, h: 1.2 },
+    ],
+    blockers: [
+      { x: 107.5, z: 83.9, w: 15, d: 7.5 },
+      { x: 107.5, z: 74.4, w: 15, d: 3 },
+    ],
+    blockerPadding: 0.5,
+    buildKeepout: [{ x: 0.56, z: 0.45, rx: 0.18, rz: 0.15 }],
+    wallCollision: {
+      meshPatterns: [/Wari_(Plaza|Perimeter|Gallery|D_Facade)/, /^Cube/],
+      maxStartYAboveBase: 1.2,
+    },
+    walkableCorridor: { width: 8 },
+    terrain: {
+      ...DEFAULT_SITE_TERRAIN,
+      flatNormals: true,
+      suppressSnow: true,
+    },
+    hideNodePatterns: [/Wari_LOD[01]_(Terrain|Apron)/],
   },
 };
 

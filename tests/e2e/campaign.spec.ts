@@ -181,7 +181,7 @@ test('a mission roster restriction blocks disallowed units', async ({ page }) =>
   expect(out.soldier).toBe(true);
 });
 
-test('the expansion objective needs the building at the frontier', async ({ page }) => {
+test('the network objective needs both provincial nodes', async ({ page }) => {
   await page.goto('/?mission=m4_wari&seed=777&fog=0&low=1&noloop=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
@@ -190,26 +190,24 @@ test('the expansion objective needs the building at the frontier', async ({ page
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     const m = g.mission;
-    const o = m.def.objectives.find((x: any) => x.id === 'obj_centro');
-    const centerOf = (owner: number): { x: number; z: number } => {
-      const c = [...g.buildings.values()].find((b: any) => b.owner === owner && b.kind === 'center' && !b.dead);
-      return c ? { x: c.pos.x, z: c.pos.z } : { x: g.settings.mapSize / 2, z: g.settings.mapSize / 2 };
-    };
-    const base = o.pos.ref === 'enemy' ? centerOf(1) : centerOf(0);
-    const tp = { x: base.x + o.pos.dx, z: base.z + o.pos.dz };
-    const home = centerOf(0);
-    // a market at home does not satisfy the frontier objective
+    const o = m.def.objectives.find((x: any) => x.id === 'obj_red');
+    const base = g.siteCenter as { x: number; z: number };
+    const nodes = o.nodes.map((n: any) => ({ x: base.x + n.dx, z: base.z + n.dz }));
+    const home = g.playerCenter(0);
     g.spawnScriptedBuilding('market', 0, home.x + 8, home.z + 8);
     m.update(0.1, 0);
-    const atHome = m.getObjectiveState('obj_centro');
-    // one at the frontier does
-    g.spawnScriptedBuilding('market', 0, tp.x, tp.z);
+    const atHome = m.getObjectiveState('obj_red');
+    g.spawnScriptedBuilding('market', 0, nodes[0].x, nodes[0].z);
     m.update(0.1, 0);
-    const atFrontier = m.getObjectiveState('obj_centro');
-    return { atHome, atFrontier };
+    const oneNode = m.getObjectiveState('obj_red');
+    g.spawnScriptedBuilding('market', 0, nodes[1].x, nodes[1].z);
+    m.update(0.1, 0);
+    const bothNodes = m.getObjectiveState('obj_red');
+    return { atHome, oneNode, bothNodes };
   });
   expect(out.atHome).not.toBe('completed');
-  expect(out.atFrontier).toBe('completed');
+  expect(out.oneNode).not.toBe('completed');
+  expect(out.bothNodes).toBe('completed');
 });
 
 test('m6 cuts the canal to force Chan Chan to surrender', async ({ page }) => {
@@ -336,7 +334,7 @@ test('m2 offerings open the pilgrimage and reward the oracle', async ({ page }) 
   expect(out.silver).toBeGreaterThan(out.afterOffers.silver);
 });
 
-test('m4 two centers open the contested frontier', async ({ page }) => {
+test('m4 network opens the contested frontier', async ({ page }) => {
   await page.goto('/?mission=m4_wari&seed=777&fog=0&low=1&noloop=1');
   await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
     timeout: 30_000,
@@ -346,27 +344,26 @@ test('m4 two centers open the contested frontier', async ({ page }) => {
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
     const m = g.mission;
-    const center = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center') as any;
-    g.spawnScriptedBuilding('market', 0, center.pos.x + 38, center.pos.z);
-    g.spawnScriptedBuilding('market', 0, center.pos.x - 30, center.pos.z + 26);
+    const base = g.siteCenter as { x: number; z: number };
+    const o = m.def.objectives.find((x: any) => x.id === 'obj_red');
+    const nodes = o.nodes.map((n: any) => ({ x: base.x + n.dx, z: base.z + n.dz }));
+    for (const node of nodes) g.spawnScriptedBuilding('market', 0, node.x, node.z);
     g.update(1 / 60, 0);
     const active = m.getObjectiveState('obj_frontera') as string;
     const unit = [...g.units.values()].find((u: any) => u.owner === 0 && !u.dead) as any;
     const dt = 1 / 60;
     for (let i = 0; i < Math.ceil(65 / dt) && !m.ended; i++) {
-      unit.pos.set(center.pos.x + 38, g.terrain.getHeight(center.pos.x + 38, center.pos.z), center.pos.z);
+      unit.pos.set(nodes[0].x, g.terrain.getHeight(nodes[0].x, nodes[0].z), nodes[0].z);
       g.update(dt, i * dt);
     }
     return {
-      center1: m.getObjectiveState('obj_centro') as string,
-      center2: m.getObjectiveState('obj_centro_2') as string,
+      network: m.getObjectiveState('obj_red') as string,
       active,
       frontier: m.getObjectiveState('obj_frontera') as string,
       won: m.won as boolean | null,
     };
   });
-  expect(out.center1).toBe('completed');
-  expect(out.center2).toBe('completed');
+  expect(out.network).toBe('completed');
   expect(out.active).toBe('activo');
   expect(out.frontier).toBe('completed');
   expect(out.won).not.toBe(true);

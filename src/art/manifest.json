@@ -425,6 +425,68 @@
         "author": "Miguel Amaya",
         "renderedAt": "2026-10-29T12:00:00-05:00"
       }
+    },
+    {
+      "id": "m4_wari-intro",
+      "type": "campaign-intro",
+      "scope": "mission",
+      "campaignId": "la-senda-del-sol",
+      "missionId": "m4_wari",
+      "civilization": "wari",
+      "period": 3,
+      "era": 2,
+      "region": "high_andes",
+      "topic": "campaign_intro",
+      "sceneType": "urban_ceremonial",
+      "asset": "media/generated/campaigns/la-senda-del-sol/m4_wari/intro.webp",
+      "variants": [
+        {
+          "asset": "media/generated/campaigns/la-senda-del-sol/m4_wari/intro-800.webp",
+          "width": 800,
+          "height": 450,
+          "bytes": 5780
+        }
+      ],
+      "sources": [
+        "docs/historia/civilizaciones/wari.md",
+        "docs/historia/campanas/wari_tiahuanaco.md",
+        "docs/historia/arquitectura.md",
+        "docs/historia/fuentes.md",
+        "art-src/blender/wari/wari_asset_manifest.csv"
+      ],
+      "promptVersion": "v1-blender-185c4875",
+      "prompt": "Blender render: Complejo Wari, Horizonte Medio",
+      "negativePrompt": "n/a (blender render)",
+      "provider": "blender",
+      "model": "eevee",
+      "generatedAt": "2026-10-29T17:57:19.528Z",
+      "nature": "reconstruction",
+      "reviewed": false,
+      "reviewer": null,
+      "reviewedAt": null,
+      "disclaimer": "No es una fotografía histórica: es un render 3D del proyecto.",
+      "alt": "Vista del complejo Wari con su templo en D, plaza amurallada, galerías y andenes.",
+      "caption": "Complejo Wari, Horizonte Medio",
+      "width": 1280,
+      "height": 720,
+      "sourceWidth": 1600,
+      "sourceHeight": 900,
+      "crop": "cover-attention",
+      "bytes": 10378,
+      "format": "webp",
+      "sha256": "8ea255e09b6d2b214a38f8af74c4719aee41ec20ba038e6f84ddf5f8fadd1397",
+      "blender": {
+        "sceneFile": "wari/wari_site_master.blend",
+        "sourceRender": "wari/renders/wari_hero.png",
+        "sourceSha256": "f54af622e92ccf942b08381764efcfc7d77257367a2505fb89a670cae2693845",
+        "sceneAssetId": null,
+        "confidence": "formas documentadas; combinación y dimensiones interpretadas",
+        "camera": "hero",
+        "renderer": "eevee",
+        "license": "project-owned",
+        "author": "Miguel Amaya",
+        "renderedAt": "2026-10-29T13:00:00-05:00"
+      }
     }
   ]
 }

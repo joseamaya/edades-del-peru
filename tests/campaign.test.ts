@@ -138,7 +138,7 @@ describe('campaign educational content', () => {
       const nonCombat =
         id === 'm1_caral'
           ? ['gather', 'build', 'survive', 'hold', 'inspect', 'canal_open']
-          : ['gather', 'build', 'survive', 'hold', 'deliver'];
+          : ['gather', 'build', 'survive', 'hold', 'deliver', 'network'];
       for (const o of mis.objectives) expect(nonCombat, `${id}/${o.id}`).toContain(o.kind);
       expect(
         mis.objectives.some((o) => o.kind === 'build'),
@@ -184,8 +184,8 @@ describe('campaign educational content', () => {
     // gathering is a stated goal, not merely implied by the low start
     expect(wari.objectives.some((o) => o.kind === 'gather')).toBe(true);
     // an expansion objective: a provincial center founded at the frontier
-    const expand = wari.objectives.find((o) => o.kind === 'build')!;
-    expect(expand.pos, 'expansion build has no location').toBeDefined();
+    const expand = wari.objectives.find((o) => o.id === 'obj_red')!;
+    expect(expand.nodes?.length, 'network has no nodes').toBe(2);
     expect(expand.radius ?? 0).toBeGreaterThan(0);
   });
 
@@ -265,9 +265,11 @@ describe('campaign educational content', () => {
     expect(m3.triggers.some((t) => t.id === 't_huacas')).toBe(true);
   });
 
-  it('m4 has two centers, a contested frontier and andenes', () => {
+  it('m4 has a two-node network, a contested frontier and andenes', () => {
     const m4 = MISSIONS.find((m) => m.id === 'm4_wari')!;
-    expect(m4.objectives.filter((o) => o.id === 'obj_centro' || o.id === 'obj_centro_2').length).toBe(2);
+    const network = m4.objectives.find((o) => o.id === 'obj_red')!;
+    expect(network.kind).toBe('network');
+    expect(network.nodes?.length).toBe(2);
     expect(m4.objectives.some((o) => o.id === 'obj_frontera' && o.kind === 'hold')).toBe(true);
     expect(m4.objectives.some((o) => o.id === 'obj_andenes' && o.buildingKind === BuildingKind.FARM)).toBe(true);
   });

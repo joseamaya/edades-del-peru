@@ -188,3 +188,66 @@ test('saves and loads the Moche canal, hold and exchange', async ({ page }) => {
   });
   expect(after).toEqual(before);
 });
+
+test('saves and loads the Wari network and frontier', async ({ page }) => {
+  await page.goto('/?mission=m4_wari&seed=777&fog=0&low=1');
+  await startMission(page);
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const before = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const center = g.playerCenter(0);
+    g.spawnScriptedBuilding('farm', 0, center.x + 8, center.z + 8);
+    g.spawnScriptedBuilding('farm', 0, center.x - 8, center.z + 8);
+    g.players[0].resources.food = 600;
+    const site = g.siteCenter as { x: number; z: number };
+    const network = g.mission.def.objectives.find((o: any) => o.id === 'obj_red');
+    const nodes = network.nodes.map((n: any) => ({ x: site.x + n.dx, z: site.z + n.dz }));
+    for (const node of nodes) g.spawnScriptedBuilding('market', 0, node.x, node.z);
+    const dt = 1 / 60;
+    let t = 0;
+    for (let i = 0; i < Math.ceil(10 / dt); i++) {
+      const unit = [...g.units.values()].find((u: any) => u.owner === 0 && !u.dead) as any;
+      if (unit) unit.pos.set(nodes[0].x, g.terrain.getHeight(nodes[0].x, nodes[0].z), nodes[0].z);
+      g.update(dt, t);
+      t += dt;
+    }
+    g.saveMatch();
+    return {
+      network: g.mission.getObjectiveProgress('obj_red'),
+      frontier: g.mission.getObjectiveProgress('obj_frontera'),
+      tutorialStep: g.tutorial?.toSave().stepId ?? null,
+    };
+  });
+  expect(before.network?.current).toBe(2);
+  expect(before.frontier?.current).toBeGreaterThan(0);
+  expect(before.tutorialStep).not.toBeNull();
+
+  await page.goto('/?load=1');
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const after = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    return {
+      network: g.mission.getObjectiveProgress('obj_red'),
+      frontier: g.mission.getObjectiveProgress('obj_frontera'),
+      tutorialStep: g.tutorial?.toSave().stepId ?? null,
+    };
+  });
+  expect(after).toEqual(before);
+});

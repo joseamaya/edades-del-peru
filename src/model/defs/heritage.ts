@@ -17,9 +17,13 @@ export type HeritageBuildingId =
   | 'moche_huaca_sol'
   | 'moche_huaca_luna'
   | 'moche_plaza'
-  | 'moche_canal';
+  | 'moche_canal'
+  | 'wari_templo_d'
+  | 'wari_plaza'
+  | 'wari_galeria'
+  | 'wari_mural';
 
-export type HeritageSector = 'Caral Alto' | 'Caral Bajo' | 'Chavín' | 'Moche';
+export type HeritageSector = 'Caral Alto' | 'Caral Bajo' | 'Chavín' | 'Moche' | 'Wari';
 
 export interface HeritageBuildingDef {
   id: HeritageBuildingId;
@@ -221,6 +225,50 @@ export const HERITAGE_BUILDINGS: Record<HeritageBuildingId, HeritageBuildingDef>
     confidence: 'documentado en planta; mobiliario omitido',
     citation: 'Dossier de Moche · Huacas del Sol y de la Luna',
     sources: ['docs/historia/civilizaciones/moche.md', 'docs/historia/arquitectura.md'],
+  },
+  wari_templo_d: {
+    id: 'wari_templo_d',
+    name: 'Templo en D',
+    sector: 'Wari',
+    role: 'Arquitectura ceremonial wari',
+    summary:
+      'Los templos en D son una forma diagnóstica de Wari: un recinto ceremonial con muro curvo y acceso recto. La reconstrucción sintetiza el volumen documentado; no reproduce un edificio específico del complejo.',
+    confidence: 'forma documentada; planta específica interpretada',
+    citation: 'Dossier de Wari · Ministerio de Cultura / Ochatoma y Cabrera',
+    sources: ['docs/historia/civilizaciones/wari.md', 'docs/historia/campanas/wari_tiahuanaco.md'],
+  },
+  wari_plaza: {
+    id: 'wari_plaza',
+    name: 'Plaza y patios',
+    sector: 'Wari',
+    role: 'Espacio público y administración',
+    summary:
+      'El complejo Wari combina plazas, patios y galerías dentro de recintos amurallados. La plaza del juego representa esa organización pública y administrativa; el trazado completo sigue en discusión.',
+    confidence: 'documentado; trazado representativo',
+    citation: 'Dossier de Wari · Ministerio de Cultura',
+    sources: ['docs/historia/civilizaciones/wari.md', 'docs/historia/campanas/wari_tiahuanaco.md'],
+  },
+  wari_galeria: {
+    id: 'wari_galeria',
+    name: 'Galerías y almacenes',
+    sector: 'Wari',
+    role: 'Administración y almacenamiento',
+    summary:
+      'Las galerías y recintos de almacenamiento articulaban la producción y la administración wari. El juego modela una secuencia representativa, no el inventario completo del complejo.',
+    confidence: 'documentado; secuencia representativa',
+    citation: 'Dossier de Wari · Isbell / Ministerio de Cultura',
+    sources: ['docs/historia/civilizaciones/wari.md', 'docs/historia/arquitectura.md'],
+  },
+  wari_mural: {
+    id: 'wari_mural',
+    name: 'Muro con revoque y pintura',
+    sector: 'Wari',
+    role: 'Identidad material y mural',
+    summary:
+      'Los muros wari conservaron revoques y pintura blanca y roja. El juego usa esas bandas como abstracción material; no reconstruye un mural figurado específico.',
+    confidence: 'revoque documentado; motivos interpretados',
+    citation: 'Dossier de Wari · Metropolitan Museum / Ministerio de Cultura',
+    sources: ['docs/historia/civilizaciones/wari.md', 'docs/historia/arquitectura.md'],
   },
   moche_canal: {
     id: 'moche_canal',
