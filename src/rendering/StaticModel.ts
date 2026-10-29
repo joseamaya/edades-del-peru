@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { DRACO_DECODER_PATH } from '../util/publicAsset';
 
 const TEXTURE_KEYS = [
   'map',
@@ -28,7 +29,7 @@ export async function loadStaticGltf(url: string, options: StaticGltfOptions = {
   let draco: DRACOLoader | null = null;
   if (options.draco) {
     draco = new DRACOLoader();
-    draco.setDecoderPath('/draco/');
+    draco.setDecoderPath(DRACO_DECODER_PATH);
     loader.setDRACOLoader(draco);
   }
   try {

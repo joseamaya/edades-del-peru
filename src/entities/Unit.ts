@@ -1262,13 +1262,13 @@ export class Unit {
     const dx = bld.pos.x - this.pos.x;
     const dz = bld.pos.z - this.pos.z;
     const dist = Math.sqrt(dx * dx + dz * dz);
-    if (dist > bld.radius + 1.6) {
+    if (dist > bld.radius + 3) {
       if (this.pathIdx >= this.path.length && this.repathTimer <= 0) {
         this.setPath(bld.pos.x, bld.pos.z);
         this.repathTimer = 0.7;
       }
       if (this.pathIdx >= this.path.length) {
-        if (this.directStep(bld.pos.x, bld.pos.z, bld.radius + 1.6)) return;
+        if (this.directStep(bld.pos.x, bld.pos.z, bld.radius + 3)) return;
         this.vel.multiplyScalar(Math.pow(0.02, dt));
         this.noRouteTimer += dt;
         if (this.noRouteTimer > NO_ROUTE_GIVEUP) this.notifyNoRoute();

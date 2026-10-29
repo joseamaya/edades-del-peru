@@ -586,7 +586,7 @@ export class AI {
     if (!current || !isSoldier(current)) return; // keep building/worker attacks
     const base = this.center();
     if (base && distance2D(s.pos.x, s.pos.z, base.pos.x, base.pos.z) <= DEFEND_RADIUS) return; // stay on defense
-    if (this.inReach(s, focus)) s.issueOrder({ kind: OrderKind.ATTACK, entityId: focus.id }, true);
+    s.issueOrder({ kind: OrderKind.ATTACK, entityId: focus.id }, true);
   }
 
   /** Recall idle military to answer an enemy threatening the base or its workers. */

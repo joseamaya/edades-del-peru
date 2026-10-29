@@ -736,3 +736,21 @@ Post-processing is **off** in these runs (`?low=1`). The cinematic set (default 
 when quality ≠ `low`, one extra full-scene pass for water refraction — the `QualityGovernor` drops to `low`
 (disabling refraction) when the frame rate stays below its threshold, so measure on a real GPU before drawing
 conclusions from the SwiftShader numbers above.
+
+## GitHub Pages readiness (not deployed)
+
+The game is not published yet. `vite.config.ts` accepts `VITE_BASE` and defaults
+to `./`, so the itch.io zip keeps relative paths. For the future GitHub Pages
+project site, build with:
+
+```bash
+VITE_BASE=/edades-del-peru/ yarn build
+VITE_BASE=/edades-del-peru/ yarn preview --port 4174
+```
+
+Open `http://localhost:4174/edades-del-peru/?mission=m1_caral&seed=777&fog=0&low=1&noloop=1`
+and confirm that `draco_wasm_wrapper.js`, `draco_decoder.wasm`, GLB files,
+`media/` and `mods/` return 200. Assets under `public/` must resolve through
+`src/util/publicAsset.ts`; do not hardcode `/draco/` or other root paths.
+GitHub Pages remains disabled until an explicit release decision; this section
+only documents the build contract.
