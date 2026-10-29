@@ -110,7 +110,8 @@ export type ObjectiveKind =
   | 'reach_era'
   | 'inspect'
   | 'deliver'
-  | 'canal_open';
+  | 'canal_open'
+  | 'network';
 
 export type ObjState = 'pendiente' | 'activo' | 'completed' | 'failed';
 
@@ -128,6 +129,8 @@ export interface ObjectiveDef {
   entityTag?: string;
   /** Anchor for `reach`/`hold`, or the required location for a `build` (expansion/outpost). */
   pos?: MissionPoint;
+  /** Required nodes for a `network` objective. */
+  nodes?: MissionPoint[];
   /** Radius around `pos` for `reach`/`hold`/`build`. */
   radius?: number;
   /** Unit kind that must hold the position (optional; all player units by default). */

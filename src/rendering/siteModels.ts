@@ -5,6 +5,8 @@ import chavinLod0Url from '../assets/sites/chavin/chavin_site_lod0.glb?url';
 import chavinLod1Url from '../assets/sites/chavin/chavin_site_lod1.glb?url';
 import mocheLod0Url from '../assets/sites/moche/moche_site_lod0.glb?url';
 import mocheLod1Url from '../assets/sites/moche/moche_site_lod1.glb?url';
+import wariLod0Url from '../assets/sites/wari/wari_site_lod0.glb?url';
+import wariLod1Url from '../assets/sites/wari/wari_site_lod1.glb?url';
 import { loadStaticGltf } from './StaticModel';
 import type { AuthoredSiteId } from '../model/defs/sites';
 
@@ -12,6 +14,7 @@ const SITE_MODEL_URLS: Partial<Record<AuthoredSiteId, { lod0: string; lod1: stri
   caral_site: { lod0: siteLod0Url, lod1: siteLod1Url },
   chavin_site: { lod0: chavinLod0Url, lod1: chavinLod1Url },
   moche_site: { lod0: mocheLod0Url, lod1: mocheLod1Url },
+  wari_site: { lod0: wariLod0Url, lod1: wariLod1Url },
 };
 
 /** Load the campaign site; LOD1 is the RTS default, `?lod=0` previews the master. */

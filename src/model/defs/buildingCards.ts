@@ -90,6 +90,39 @@ const MISSION_ECONOMY_CARDS: BuildingCardDef[] = [
     sources: ['docs/historia/campanas/moche_recuay.md', 'docs/historia/civilizaciones/moche.md'],
   },
   {
+    building: BuildingKind.FARM,
+    missionId: 'm4_wari',
+    name: 'Andén · terraza wari',
+    role: 'Producción agrícola',
+    summary:
+      'El Andén representa las terrazas agrícolas que sostenían la red wari. La humedad y la cercanía al agua elevan su rendimiento; es una abstracción jugable de los andenes documentados.',
+    confidence: 'abstracción jugable',
+    citation: 'Dossier de Wari · Ministerio de Cultura',
+    sources: ['docs/historia/campanas/wari_tiahuanaco.md', 'docs/historia/civilizaciones/wari.md'],
+  },
+  {
+    building: BuildingKind.MILL,
+    missionId: 'm4_wari',
+    name: 'Troje · almacén provincial',
+    role: 'Almacenamiento y redistribución',
+    summary:
+      'El Troje representa los almacenes que articulaban la producción y la administración wari. No es un término atestiguado en Wari: es una abstracción jugable.',
+    confidence: 'abstracción jugable',
+    citation: 'Dossier de Wari · Isbell / Ministerio de Cultura',
+    sources: ['docs/historia/campanas/wari_tiahuanaco.md', 'docs/historia/civilizaciones/wari.md'],
+  },
+  {
+    building: BuildingKind.MARKET,
+    missionId: 'm4_wari',
+    name: 'Centro provincial',
+    role: 'Nodo de la red wari',
+    summary:
+      'El Mercado representa un centro administrativo y de intercambio de la red wari. Su forma es una abstracción; la red de centros y caminos es la forma documentada de expansión.',
+    confidence: 'abstracción jugable',
+    citation: 'Dossier de Wari · Ministerio de Cultura',
+    sources: ['docs/historia/campanas/wari_tiahuanaco.md', 'docs/historia/civilizaciones/wari.md'],
+  },
+  {
     building: BuildingKind.MARKET,
     missionId: 'm3_moche_recuay',
     name: 'Plaza de intercambio',

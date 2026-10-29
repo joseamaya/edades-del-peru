@@ -117,6 +117,22 @@ export class Mission {
     ).length;
   }
 
+  /** Completed player buildings at each `network` node. */
+  private countNetwork(o: ObjectiveDef): number {
+    if (!o.buildingKind || !o.nodes) return 0;
+    return o.nodes.filter((node) => {
+      const p = this.resolvePoint(node);
+      return [...this.game.buildings.values()].some(
+        (b) =>
+          b.owner === 0 &&
+          b.kind === o.buildingKind &&
+          b.constructionComplete &&
+          !b.dead &&
+          distance2D(b.pos.x, b.pos.z, p.x, p.z) < (o.radius ?? 12),
+      );
+    }).length;
+  }
+
   /** A `reach` objective with no tag accepts any living player unit. */
   private reached(o: ObjectiveDef): boolean {
     if (!o.pos) return false;
@@ -247,6 +263,8 @@ export class Mission {
         return this.countBuilt(o) >= (o.count ?? 1) ? 'win' : 'ok';
       case 'deliver':
         return (this.delivered.get(o.id) ?? 0) >= (o.count ?? 0) ? 'win' : 'ok';
+      case 'network':
+        return this.countNetwork(o) >= (o.count ?? o.nodes?.length ?? 0) ? 'win' : 'ok';
       case 'gather':
         return p.resources[o.resource ?? 'food'] >= (o.count ?? 0) ? 'win' : 'ok';
       case 'inspect': {
@@ -455,6 +473,20 @@ export class Mission {
     const o = this.objective(id);
     if (!o) return null;
     if (o.kind === 'canal_open') return this.game.canalSite;
+    if (o.kind === 'network') {
+      const node = o.nodes?.find((point) => {
+        const p = this.resolvePoint(point);
+        return ![...this.game.buildings.values()].some(
+          (b) =>
+            b.owner === 0 &&
+            b.kind === o.buildingKind &&
+            b.constructionComplete &&
+            !b.dead &&
+            distance2D(b.pos.x, b.pos.z, p.x, p.z) < (o.radius ?? 12),
+        );
+      });
+      return node ? this.resolvePoint(node) : null;
+    }
     return o.pos ? this.resolvePoint(o.pos) : null;
   }
 
@@ -504,6 +536,8 @@ export class Mission {
           target: o.count ?? 0,
           format: 'count',
         };
+      case 'network':
+        return { current: this.countNetwork(o), target: o.count ?? o.nodes?.length ?? 0, format: 'count' };
       case 'survive':
       case 'defend':
         return { current: Math.min(this.timer, o.time ?? 0), target: o.time ?? 0, format: 'time' };

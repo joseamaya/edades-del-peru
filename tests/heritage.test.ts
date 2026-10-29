@@ -22,6 +22,10 @@ describe('campaign heritage buildings', () => {
       'moche_huaca_sol',
       'moche_huaca_luna',
       'moche_plaza',
+      'wari_templo_d',
+      'wari_plaza',
+      'wari_galeria',
+      'wari_mural',
       'moche_canal',
     ]);
     for (const id of ids) {

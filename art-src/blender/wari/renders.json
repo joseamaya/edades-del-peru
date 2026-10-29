@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "sourceRoot": "art-src/blender",
+  "assets": [
+    {
+      "id": "m4_wari-intro",
+      "type": "campaign-intro",
+      "scope": "mission",
+      "campaignId": "la-senda-del-sol",
+      "missionId": "m4_wari",
+      "civilization": "wari",
+      "period": 3,
+      "era": 2,
+      "region": "high_andes",
+      "topic": "campaign_intro",
+      "sceneType": "urban_ceremonial",
+      "asset": "media/generated/campaigns/la-senda-del-sol/m4_wari/intro.webp",
+      "render": "wari/renders/wari_hero.png",
+      "sceneFile": "wari/wari_site_master.blend",
+      "confidence": "formas documentadas; combinación y dimensiones interpretadas",
+      "camera": "hero",
+      "renderer": "eevee",
+      "license": "project-owned",
+      "author": "Miguel Amaya",
+      "sources": [
+        "docs/historia/civilizaciones/wari.md",
+        "docs/historia/campanas/wari_tiahuanaco.md",
+        "docs/historia/arquitectura.md",
+        "docs/historia/fuentes.md",
+        "art-src/blender/wari/wari_asset_manifest.csv"
+      ],
+      "alt": "Vista del complejo Wari con su templo en D, plaza amurallada, galerías y andenes.",
+      "caption": "Complejo Wari, Horizonte Medio",
+      "nature": "reconstruction",
+      "sourceSha256": "f54af622e92ccf942b08381764efcfc7d77257367a2505fb89a670cae2693845",
+      "renderedAt": "2026-10-29T13:00:00-05:00"
+    }
+  ]
+}

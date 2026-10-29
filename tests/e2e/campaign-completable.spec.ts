@@ -61,6 +61,28 @@ for (const mis of COMPLETABLE_MISSIONS) {
             case 'canal_open':
               if (!g.isCanalOpen()) g.toggleCanal();
               break;
+            case 'network': {
+              for (const node of o.nodes ?? []) {
+                const base =
+                  node.ref === 'site'
+                    ? (g.siteCenter ?? centerOf(0))
+                    : node.ref === 'player'
+                      ? centerOf(0)
+                      : { x: 0, z: 0 };
+                const bx = base.x + node.dx;
+                const bz = base.z + node.dz;
+                const have = [...g.buildings.values()].some(
+                  (b: any) =>
+                    b.owner === 0 &&
+                    b.kind === o.buildingKind &&
+                    b.constructionComplete &&
+                    !b.dead &&
+                    Math.hypot(b.pos.x - bx, b.pos.z - bz) <= (o.radius ?? 12),
+                );
+                if (!have) g.spawnScriptedBuilding(o.buildingKind, 0, bx, bz);
+              }
+              break;
+            }
             case 'reach_era':
               g.players[0].era = Math.max(g.players[0].era, o.era ?? 0);
               break;

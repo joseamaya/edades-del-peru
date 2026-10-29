@@ -234,6 +234,45 @@ describe('mission delivery objectives', () => {
     expect(m.getObjectiveProgress('bonus')).toEqual({ current: 5, target: 20, format: 'count' });
   });
 
+  it('counts completed buildings at every network node', () => {
+    const unit = { id: 1, tag: 'guarda', owner: 0, dead: false, kind: UnitKind.WORKER };
+    const game = stubGame(unit) as any;
+    const networkDef: MissionDef = {
+      ...def,
+      objectives: [
+        {
+          id: 'red',
+          kind: 'network',
+          buildingKind: BuildingKind.MARKET,
+          count: 2,
+          radius: 6,
+          nodes: [
+            { dx: 10, dz: 10 },
+            { dx: 30, dz: 10 },
+          ],
+          title: 'red',
+        },
+      ],
+      triggers: [],
+    };
+    game.buildings = new Map([
+      [1, { owner: 0, kind: BuildingKind.MARKET, constructionComplete: true, dead: false, pos: { x: 10, z: 10 } }],
+    ]);
+    const m = new Mission(game, networkDef, () => {});
+    m.start();
+    expect(m.getObjectiveProgress('red')).toEqual({ current: 1, target: 2, format: 'count' });
+    game.buildings.set(2, {
+      owner: 0,
+      kind: BuildingKind.MARKET,
+      constructionComplete: true,
+      dead: false,
+      pos: { x: 30, z: 10 },
+    });
+    m.update(0.1, 0);
+    expect(m.getObjectiveProgress('red')).toEqual({ current: 2, target: 2, format: 'count' });
+    expect(m.getObjectiveState('red')).toBe('completed');
+  });
+
   it('loads an older save without delivered state', () => {
     const unit = { id: 1, tag: 'guarda', owner: 0, dead: false, kind: UnitKind.WORKER };
     const game = stubGame(unit) as any;

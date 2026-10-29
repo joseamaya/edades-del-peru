@@ -8,6 +8,7 @@ import type { BlenderSourceManifest } from '../src/art/types';
 const SOURCE_MANIFESTS = [
   path.resolve('art-src/blender/caral/renders.json'),
   path.resolve('art-src/blender/moche/renders.json'),
+  path.resolve('art-src/blender/wari/renders.json'),
 ];
 const CSV = path.resolve('art-src/blender/caral/caral_asset_manifest.csv');
 const CHAVIN_CSV = path.resolve('art-src/blender/chavin/chavin_asset_manifest.csv');
@@ -15,6 +16,7 @@ const EXPECTED = [
   'm1_caral-intro',
   'm2_chavin-intro',
   'm3_moche-intro',
+  'm4_wari-intro',
   'caral-architecture-pyramid',
   'caral-religion-plaza',
   'caral-map-city',
@@ -24,6 +26,7 @@ const EXPECTED_META: Record<string, { civilization: string; period: number; regi
   'm1_caral-intro': { civilization: 'caral', period: 0, region: 'central_coast' },
   'm2_chavin-intro': { civilization: 'chavin', period: 1, region: 'andean_valley' },
   'm3_moche-intro': { civilization: 'moche', period: 2, region: 'north_coast' },
+  'm4_wari-intro': { civilization: 'wari', period: 3, region: 'high_andes' },
 };
 
 describe('Blender campaign art', () => {
