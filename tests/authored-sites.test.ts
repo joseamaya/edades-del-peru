@@ -27,7 +27,7 @@ describe('authored campaign sites', () => {
   it('keeps Moche on its authored site and canal layout', () => {
     const moche = getAuthoredSite('moche_site')!;
     expect(moche.scale).toBe(0.25);
-    expect(moche.anchor).toEqual({ x: 121, z: 85 });
+    expect(moche.anchor).toEqual({ x: 123, z: 81 });
     expect(moche.heritageProxies.map((p) => p.id)).toEqual(['moche_huaca_sol', 'moche_huaca_luna', 'moche_plaza']);
     expect(moche.blockers.length).toBe(2);
     expect(moche.walkableCorridor?.width).toBe(8);

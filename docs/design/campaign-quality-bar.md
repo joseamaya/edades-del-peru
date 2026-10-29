@@ -59,14 +59,14 @@ objectives can be satisfied by a test harness.
 | --- | --- | --- |
 | History | Met | `docs/historia/campanas/moche_recuay.md`; no invented ruler or single battle. |
 | Identity | Met | Authored Huacas de Moche, operable canal, huaca hold and elite exchange. |
-| Play | Met | `tests/e2e/campaign-playtest.spec.ts` moves real units, opens the canal and exchanges silver. |
-| Contract | Met | Canal, hold, required 250 and optional 400 silver; hidden goals stay out of the briefing. |
+| Play | Met | `campaign-playtest.spec.ts` moves real units and exchanges silver; `moche-campaign.spec.ts` selects the cards through public state and clicks the canal and Huaca de la Luna action buttons. |
+| Contract | Met | Canal, hold, required 250 and optional 400 silver; hidden goals stay out of the briefing (covered by `campaign.test.ts`). |
 | Onboarding | Met | Four-step Moche tutorial, briefing, Codex and minimap pips. |
 | Closure | Met | Mission epilogue and optional elite-exchange summary. |
 | UX | Met locally | Briefing/tutorial captured at 1280×800 and 1600×900; no CI pixel gate. |
 | Visuals | Met locally | Authored site GLB, desert palette and current RTS captures in `review/`. |
 | Persistence | Met | Canal, hold timer, delivered silver and tutorial round-trip in `save-campaign.spec.ts`. |
-| Tests | Met | Data, site, tutorial, mission, real-command playtest and save/load coverage. |
+| Tests | Met | Data, site/proxy collision, tutorial, mission, HUD, real-command playtest and save/load coverage. |
 | Docs | Met | This document, dossier, experience table, site note, art docs and README aligned. |
 
 ## Wari gold-master status

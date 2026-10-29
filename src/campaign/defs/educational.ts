@@ -72,13 +72,13 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
   },
   m3_moche_recuay: {
     briefing:
-      'Valles de Moche y Chicama, c. 300–600 d.C. El agua del canal y el control de las huacas sostienen el valle; el intercambio con la sierra recuay completa su poder. No hay una batalla única documentada: defiende el valle sin inventar un rey ni una guerra.',
+      'Valles de Moche y Chicama, c. 300–600 d.C. El agua del canal sostiene los campos y el prestigio del valle. No hay una batalla única documentada: defiende el valle sin inventar un rey ni una guerra.',
     context:
       'Moche dominó los valles de la costa norte (Chicama, Moche, Virú) mientras Recuay señoreaba el Callejón ' +
       'de Huaylas. Fueron coetáneos y mantuvieron interacciones de largo alcance con un componente bélico ' +
       'atestiguado: fortificaciones, intercambio de élite y piezas de filiación moche halladas en la sierra.',
     didYouKnow:
-      'No hay una batalla única documentada Moche–Recuay, pero sí evidencia arqueológica de conflicto e intercambio.',
+      'No hay una batalla única documentada Moche–Recuay, pero sí evidencia arqueológica de conflicto y contactos de largo alcance.',
     epilogue:
       'Moche dominó la costa norte durante el Intermedio Temprano y se fragmentó hacia el 800 d.C. La ' +
       'interacción con Recuay combinó conflicto, intercambio de élite y circulación de objetos entre costa y sierra.',

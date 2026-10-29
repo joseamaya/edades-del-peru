@@ -249,7 +249,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     modelName: 'moche_site',
     scale: 0.25,
     origin: { x: 119, z: 73 },
-    anchor: { x: 121, z: 85 },
+    anchor: { x: 123, z: 81 },
     cameraHeight: 68,
     framing: 'site-biased',
     pathCellSize: 1,
