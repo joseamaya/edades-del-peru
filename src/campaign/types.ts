@@ -5,6 +5,7 @@ import type { LandmarkId } from '../model/defs/landmarks';
 import type { TerrainLayout } from '../model/defs/terrainLayout';
 import type { SetpieceId } from '../model/defs/setpieces';
 import type { HeritageBuildingId } from '../model/defs/heritage';
+import type { AuthoredSiteId } from '../model/defs/sites';
 
 /** Normalized map point (0..1); resolved to world units from the mission map size. */
 export interface MissionAnchor {
@@ -66,7 +67,7 @@ export interface MissionSiteKeepout {
 
 /** A fully authored site model, heightfield and reserved city footprint. */
 export interface MissionSite {
-  id: 'caral_site';
+  id: AuthoredSiteId;
   /** Vertical offset of the model floor in world metres. */
   y?: number;
   /** Optional camera framing anchor for the intro. */
@@ -196,6 +197,28 @@ export interface MissionAtmosphere {
   fogDensity?: number;
   skyTint?: string;
   sunWarmth?: number;
+}
+
+export type TutorialBuildBaseline = 'houses' | 'farms' | 'mills';
+
+export type TutorialCheck =
+  | { type: 'selectUnit'; unitKind: UnitKind }
+  | { type: 'reachFishing'; radius: number }
+  | { type: 'build'; buildingKind: BuildingKind; baseline: TutorialBuildBaseline }
+  | { type: 'approachSite'; radius: number; unitKind?: UnitKind };
+
+export interface TutorialStepDef {
+  id: string;
+  text: string;
+  /** HUD element selector to highlight (optional). */
+  highlight?: string;
+  /** Hide this step until an objective has moved past `pendiente`. */
+  gateObjective?: string;
+  check: TutorialCheck;
+}
+
+export interface TutorialDef {
+  steps: TutorialStepDef[];
 }
 
 export interface MissionDef {

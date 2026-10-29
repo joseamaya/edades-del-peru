@@ -1,0 +1,49 @@
+import { BuildingKind, UnitKind } from '../../core/types';
+import type { TutorialDef } from '../types';
+
+const buildBottom = '#ed-bottom';
+
+const TUTORIALS: Record<string, TutorialDef> = {
+  m1_caral: {
+    steps: [
+      {
+        id: 'select',
+        text: 'Selecciona a tus obreros: haz clic izquierdo sobre uno o arrastra un recuadro para seleccionar varios.',
+        check: { type: 'selectUnit', unitKind: UnitKind.WORKER },
+      },
+      {
+        id: 'coast',
+        text: 'Selecciona tu explorador y recorre el valle hacia el litoral hasta descubrir un banco de peces.',
+        check: { type: 'reachFishing', radius: 16 },
+      },
+      {
+        id: 'house',
+        text: 'Con obreros seleccionados, pulsa V (o el botón Vivienda) y haz clic en el suelo para construir una vivienda.',
+        highlight: buildBottom,
+        check: { type: 'build', buildingKind: BuildingKind.HOUSE, baseline: 'houses' },
+      },
+      {
+        id: 'farm',
+        text: 'Pulsa G (o el botón Andén) y coloca el cultivo cerca del agua o de un canal: la tierra húmeda rinde más.',
+        highlight: buildBottom,
+        check: { type: 'build', buildingKind: BuildingKind.FARM, baseline: 'farms' },
+      },
+      {
+        id: 'landmark',
+        text: 'Acércate al complejo ceremonial y observa sus plazas y pirámides: la monumentalidad nace del trabajo comunal.',
+        check: { type: 'approachSite', radius: 12, unitKind: UnitKind.SCOUT },
+      },
+      {
+        id: 'storage',
+        text: 'Construye un depósito comunal (Troje) para guardar el excedente de la comunidad.',
+        highlight: buildBottom,
+        gateObjective: 'obj_almacenamiento',
+        check: { type: 'build', buildingKind: BuildingKind.MILL, baseline: 'mills' },
+      },
+    ],
+  },
+};
+
+export function tutorialForMission(missionId: string): TutorialDef | undefined {
+  return TUTORIALS[missionId];
+}
