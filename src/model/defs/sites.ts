@@ -2,7 +2,7 @@ import type { AuthoredHeightField } from './authoredTerrain';
 import type { HeritageBuildingId } from './heritage';
 import { CARAL_HEIGHTMAP, CARAL_HEIGHTMAP_SIZE, CARAL_HEIGHTMAP_WORLD_SIZE } from './caralHeightmap';
 
-export type AuthoredSiteId = 'caral_site' | 'chavin_site' | 'moche_site' | 'wari_site';
+export type AuthoredSiteId = 'caral_site';
 
 export interface SiteHeritageProxy {
   id: HeritageBuildingId;
@@ -104,6 +104,15 @@ export interface AuthoredSiteDef {
   doubleSidedPatterns?: readonly RegExp[];
 }
 
+export const DEFAULT_SITE_TERRAIN: SiteTerrainStyle = {
+  preset: 'default',
+  pbr: { grass: 'grass', dirt: 'dirt', sand: 'sand', rock: 'rock', snow: 'snow' },
+  flatNormals: false,
+  suppressSnow: false,
+  valleyHaze: false,
+  moisture: { valleyHeight: 6.2, valleyRange: 3.8, bankStart: 0.12, bankRange: 0.1 },
+};
+
 /** Uniform source-to-game scale for the Ciudades Sagradas Caral remaster. */
 export const CARAL_SITE_SCALE = 0.25;
 
@@ -176,6 +185,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       maxStartYAboveBase: 1.2,
     },
     terrain: {
+      ...DEFAULT_SITE_TERRAIN,
       preset: 'caral',
       pbr: {
         grass: 'caral_grass',
@@ -187,7 +197,6 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       flatNormals: true,
       suppressSnow: true,
       valleyHaze: true,
-      moisture: { valleyHeight: 6.2, valleyRange: 3.8, bankStart: 0.12, bankRange: 0.1 },
     },
     environs: {
       valley: 'caral',
@@ -202,87 +211,8 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     ],
     doubleSidedPatterns: [/PlazaMayor_(BandaRoja|PisoAnilloRojo|PisoRojo)$/],
   },
-  chavin_site: {
-    id: 'chavin_site',
-    label: 'Chavín de Huántar',
-    modelName: 'chavin_site',
-    scale: 0.25,
-    origin: { x: 64, z: 64 },
-    anchor: { x: 64, z: 64 },
-    cameraHeight: 48,
-    pathCellSize: 1,
-    heritageProxies: [],
-    blockers: [],
-    blockerPadding: 0.5,
-    buildKeepout: [],
-    wallCollision: {
-      meshPatterns: [],
-      maxStartYAboveBase: 1.2,
-    },
-    terrain: {
-      preset: 'default',
-      pbr: { grass: 'grass', dirt: 'dirt', sand: 'sand', rock: 'rock', snow: 'snow' },
-      flatNormals: false,
-      suppressSnow: false,
-      valleyHaze: false,
-      moisture: { valleyHeight: 6.2, valleyRange: 3.8, bankStart: 0.12, bankRange: 0.1 },
-    },
-  },
-  moche_site: {
-    id: 'moche_site',
-    label: 'Huacas de Moche',
-    modelName: 'moche_site',
-    scale: 0.25,
-    origin: { x: 64, z: 64 },
-    anchor: { x: 64, z: 64 },
-    cameraHeight: 48,
-    pathCellSize: 1,
-    heritageProxies: [],
-    blockers: [],
-    blockerPadding: 0.5,
-    buildKeepout: [],
-    wallCollision: {
-      meshPatterns: [],
-      maxStartYAboveBase: 1.2,
-    },
-    terrain: {
-      preset: 'default',
-      pbr: { grass: 'grass', dirt: 'dirt', sand: 'sand', rock: 'rock', snow: 'snow' },
-      flatNormals: false,
-      suppressSnow: false,
-      valleyHaze: false,
-      moisture: { valleyHeight: 6.2, valleyRange: 3.8, bankStart: 0.12, bankRange: 0.1 },
-    },
-  },
-  wari_site: {
-    id: 'wari_site',
-    label: 'Wari',
-    modelName: 'wari_site',
-    scale: 0.25,
-    origin: { x: 80, z: 80 },
-    anchor: { x: 80, z: 80 },
-    cameraHeight: 50,
-    pathCellSize: 1,
-    heritageProxies: [],
-    blockers: [],
-    blockerPadding: 0.5,
-    buildKeepout: [],
-    wallCollision: {
-      meshPatterns: [],
-      maxStartYAboveBase: 1.2,
-    },
-    terrain: {
-      preset: 'default',
-      pbr: { grass: 'grass', dirt: 'dirt', sand: 'sand', rock: 'rock', snow: 'snow' },
-      flatNormals: false,
-      suppressSnow: false,
-      valleyHaze: false,
-      moisture: { valleyHeight: 6.2, valleyRange: 3.8, bankStart: 0.12, bankRange: 0.1 },
-    },
-  },
 };
 
-export function getAuthoredSite(id: string | null | undefined): AuthoredSiteDef | undefined {
-  if (!id) return undefined;
-  return AUTHORED_SITES[id as AuthoredSiteId];
+export function getAuthoredSite(id: AuthoredSiteId | null | undefined): AuthoredSiteDef | undefined {
+  return id ? AUTHORED_SITES[id] : undefined;
 }

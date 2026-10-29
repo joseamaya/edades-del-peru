@@ -2784,7 +2784,7 @@ export class Game {
 
   /** Whether a building footprint would overlap the authored archaeological site. */
   private siteBlocksConstruction(x: number, z: number, pad: number): boolean {
-    const rects = this.missionLayout?.site?.buildKeepout;
+    const rects = this.siteDef?.buildKeepout ?? this.missionLayout?.site?.buildKeepout;
     if (!rects) return false;
     const size = this.settings.mapSize;
     return rects.some((rect) =>

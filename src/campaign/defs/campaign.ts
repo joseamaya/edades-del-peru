@@ -1,6 +1,6 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../core/types';
 import { MissionDef } from '../types';
-import { CARAL_SITE_BUILD_KEEPOUT } from '../../model/defs/caralSite';
+import { CARAL_SITE_BUILD_KEEPOUT } from '../../model/defs/sites';
 
 export const MISSIONS: MissionDef[] = [
   {

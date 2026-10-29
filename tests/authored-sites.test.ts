@@ -24,9 +24,9 @@ describe('authored campaign sites', () => {
     expect(caral.environs?.valley).toBe('caral');
   });
 
-  it('does not resolve unknown site ids', () => {
-    expect(getAuthoredSite('unknown_site')).toBeUndefined();
+  it('does not resolve a missing site id', () => {
     expect(getAuthoredSite(null)).toBeUndefined();
+    expect(getAuthoredSite(undefined)).toBeUndefined();
   });
 
   it('gives the first mission a stable, serializable tutorial definition', () => {
@@ -35,7 +35,7 @@ describe('authored campaign sites', () => {
     expect(tutorialForMission('m2_chavin')).toBeUndefined();
   });
 
-  it('registers every future site with a unique id and sensible defaults', () => {
+  it('registers sites with unique ids and sensible defaults', () => {
     for (const [id, site] of Object.entries(AUTHORED_SITES)) {
       expect(site.id).toBe(id);
       expect(site.label.trim().length).toBeGreaterThan(0);

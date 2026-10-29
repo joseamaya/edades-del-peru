@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { CARAL_SITE_CAMERA } from '../../src/model/defs/caralSite';
+import { CARAL_SITE_CAMERA } from '../../src/model/defs/sites';
 
 async function boot(page: Page, url: string): Promise<void> {
   await page.goto(url);

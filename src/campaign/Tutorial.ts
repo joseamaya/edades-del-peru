@@ -2,7 +2,7 @@ import type { Game } from '../core/Game';
 import { BuildingKind, UnitKind } from '../core/types';
 import { distance2D } from '../util/math';
 import type { TutorialSave, TutorialBase } from '../game/saveTypes';
-import type { TutorialBuildBaseline, TutorialDef, TutorialStepDef } from './types';
+import type { TutorialDef, TutorialStepDef } from './types';
 
 /**
  * Data-driven guided tutorial. It observes the game state and advances when the
@@ -79,7 +79,7 @@ export class Tutorial {
         return scouts.some((u) => fish.some((n) => distance2D(u.pos.x, u.pos.z, n.pos.x, n.pos.z) < radius));
       }
       case 'build': {
-        const baseline = this.base[paso.check.baseline as TutorialBuildBaseline] ?? 0;
+        const baseline = this.base[paso.check.baseline] ?? 0;
         return this.countBuilt(paso.check.buildingKind) > baseline;
       }
       case 'approachSite': {

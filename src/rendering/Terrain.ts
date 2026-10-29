@@ -92,7 +92,6 @@ export class Terrain {
   private textures: GroundTextures;
   private pbrExtra: THREE.Texture[] = [];
   private profile: HistoricalMapProfile;
-  private readonly hasAuthoredHeight: boolean;
   private readonly siteTerrain?: SiteTerrainStyle;
   private readonly terrainPreset: number;
   private readonly suppressSnow: boolean;
@@ -114,30 +113,18 @@ export class Terrain {
     this.resolution = resolution;
     this.profile = profile;
     const authored = site?.heightField;
-    this.siteTerrain = site?.terrain;
-    this.hasAuthoredHeight = !!authored;
-    this.terrainPreset = site?.terrain.preset === 'caral' ? 1 : 0;
+    const style = site?.terrain;
+    this.siteTerrain = style;
+    this.terrainPreset = style?.preset === 'caral' ? 1 : 0;
     this.suppressSnow = site?.terrain.suppressSnow ?? false;
     this.valleyHaze = site?.terrain.valleyHaze ?? false;
     this.textures = getGroundTextures();
     this.arid = profile.climate.aridity;
     this.veg = profile.vegetation.density;
-    const field = authored
-      ? authoredHeightField(
-          resolution,
-          size,
-          profile,
-          authored,
-          this.siteTerrain ?? {
-            preset: 'default',
-            pbr: { grass: 'grass', dirt: 'dirt', sand: 'sand', rock: 'rock', snow: 'snow' },
-            flatNormals: false,
-            suppressSnow: false,
-            valleyHaze: false,
-            moisture: { valleyHeight: 6.2, valleyRange: 3.8, bankStart: 0.12, bankRange: 0.1 },
-          },
-        )
-      : generateHeightField(resolution, seed, profile, layout);
+    const field =
+      authored && style
+        ? authoredHeightField(resolution, size, profile, authored, style)
+        : generateHeightField(resolution, seed, profile, layout);
     this.heightMap = field.heightMap;
     this.moistureMap = field.moistureMap;
     this.terraceMap = field.terraceMap;
@@ -434,7 +421,6 @@ export class Terrain {
         temperature: { value: this.profile.climate.temperature },
         groundTint: { value: new THREE.Color(this.profile.groundTint ?? '#ffffff') },
         floodplain: { value: this.profile.water.wetland ? 1 : 0 },
-        authoredTerrain: { value: this.hasAuthoredHeight ? 1 : 0 },
         terrainPreset: { value: this.terrainPreset },
         suppressSnow: { value: this.suppressSnow ? 1 : 0 },
         valleyHaze: { value: this.valleyHaze ? 1 : 0 },
@@ -502,7 +488,6 @@ export class Terrain {
         uniform float temperature;
         uniform vec3 groundTint;
         uniform float floodplain;
-        uniform float authoredTerrain;
         uniform float terrainPreset;
         uniform float suppressSnow;
         uniform float valleyHaze;
