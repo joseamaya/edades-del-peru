@@ -251,6 +251,20 @@ describe('campaign educational content', () => {
     expect(m2.triggers.some((t) => t.id === 't_peregrinaje')).toBe(true);
   });
 
+  it('m3 opens the canal, holds the huacas and sustains elite exchange', () => {
+    const m3 = MISSIONS.find((m) => m.id === 'm3_moche_recuay')!;
+    expect(m3.tutorial).toBe(true);
+    expect(m3.layout?.site?.id).toBe('moche_site');
+    expect(m3.layout?.canal?.heritageId).toBe('moche_canal');
+    expect(m3.objectives.some((o) => o.id === 'obj_canal' && o.kind === 'canal_open')).toBe(true);
+    expect(m3.objectives.some((o) => o.id === 'obj_huacas' && o.kind === 'hold')).toBe(true);
+    expect(m3.objectives.some((o) => o.id === 'obj_intercambio' && o.kind === 'deliver')).toBe(true);
+    expect(m3.objectives.find((o) => o.id === 'bonus_intercambio')?.optional).toBe(true);
+    expect(m3.objectives.some((o) => o.id === 'obj_huacas' && o.hidden)).toBe(true);
+    expect(m3.triggers.some((t) => t.id === 't_canal')).toBe(true);
+    expect(m3.triggers.some((t) => t.id === 't_huacas')).toBe(true);
+  });
+
   it('m4 has two centers, a contested frontier and andenes', () => {
     const m4 = MISSIONS.find((m) => m.id === 'm4_wari')!;
     expect(m4.objectives.filter((o) => o.id === 'obj_centro' || o.id === 'obj_centro_2').length).toBe(2);

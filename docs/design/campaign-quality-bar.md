@@ -53,6 +53,22 @@ objectives can be satisfied by a test harness.
 | Tests       | Met         | Data, tutorial, mission, site, real-command playtest and save/load coverage.                                                                        |
 | Docs        | Met         | This document, dossier, quality bar, README and campaign experiences aligned.                                                                       |
 
+## Moche gold-master status
+
+| Gate | Status | Evidence |
+| --- | --- | --- |
+| History | Met | `docs/historia/campanas/moche_recuay.md`; no invented ruler or single battle. |
+| Identity | Met | Authored Huacas de Moche, operable canal, huaca hold and elite exchange. |
+| Play | Met | `tests/e2e/campaign-playtest.spec.ts` moves real units, opens the canal and exchanges silver. |
+| Contract | Met | Canal, hold, required 250 and optional 400 silver; hidden goals stay out of the briefing. |
+| Onboarding | Met | Four-step Moche tutorial, briefing, Codex and minimap pips. |
+| Closure | Met | Mission epilogue and optional elite-exchange summary. |
+| UX | Met locally | Briefing/tutorial captured at 1280×800 and 1600×900; no CI pixel gate. |
+| Visuals | Met locally | Authored site GLB, desert palette and current RTS captures in `review/`. |
+| Persistence | Met | Canal, hold timer, delivered silver and tutorial round-trip in `save-campaign.spec.ts`. |
+| Tests | Met | Data, site, tutorial, mission, real-command playtest and save/load coverage. |
+| Docs | Met | This document, dossier, experience table, site note, art docs and README aligned. |
+
 ## Applying it to m2–m9
 
 For each mission, first link the dossier claim to the mechanic, then implement the

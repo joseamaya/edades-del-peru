@@ -423,19 +423,25 @@ export class Mission {
     this.onEnd(false);
   }
 
-  /** Record a resource handed over at a site for every active `deliver` goal. */
+  /**
+   * Record a resource handed over at a site. Required goals fill first, then
+   * optional ones, so a single delivery is never charged to two objectives.
+   */
   recordDelivery(resource: keyof Resources, amount: number): number {
-    let recorded = 0;
+    let remaining = amount;
     for (const objective of this.def.objectives) {
+      if (remaining <= 0) break;
       if (objective.kind !== 'deliver' || objective.resource !== resource) continue;
       if (this.objState.get(objective.id) !== 'activo') continue;
-      const next = Math.min(objective.count ?? 0, (this.delivered.get(objective.id) ?? 0) + amount);
-      const delta = next - (this.delivered.get(objective.id) ?? 0);
-      if (delta <= 0) continue;
-      this.delivered.set(objective.id, next);
-      recorded = Math.max(recorded, delta);
-      if (next >= (objective.count ?? 0)) this.complete(objective.id);
+      const target = objective.count ?? 0;
+      const current = this.delivered.get(objective.id) ?? 0;
+      if (current >= target) continue;
+      const delta = Math.min(remaining, target - current);
+      this.delivered.set(objective.id, current + delta);
+      remaining -= delta;
+      if (current + delta >= target) this.complete(objective.id);
     }
+    const recorded = amount - remaining;
     if (recorded > 0) this.checkAllComplete();
     return recorded;
   }

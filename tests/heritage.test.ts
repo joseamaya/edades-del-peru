@@ -19,6 +19,10 @@ describe('campaign heritage buildings', () => {
       'chavin_edificio_b',
       'chavin_portada',
       'chavin_galeria',
+      'moche_huaca_sol',
+      'moche_huaca_luna',
+      'moche_plaza',
+      'moche_canal',
     ]);
     for (const id of ids) {
       expect(HERITAGE_BUILDINGS[id as keyof typeof HERITAGE_BUILDINGS].id).toBe(id);
@@ -38,6 +42,12 @@ describe('campaign heritage buildings', () => {
   it('exposes the Chavín offering on the Lanzón temple card', () => {
     expect(HERITAGE_BUILDINGS.chavin_edificio_b.operation).toBe('offer');
     expect(HERITAGE_BUILDINGS.chavin_edificio_b.operationResource).toBe('silver');
+  });
+
+  it('exposes the Moche elite exchange and canal actions', () => {
+    expect(HERITAGE_BUILDINGS.moche_huaca_luna.operation).toBe('trade');
+    expect(HERITAGE_BUILDINGS.moche_huaca_luna.operationResource).toBe('silver');
+    expect(HERITAGE_BUILDINGS.moche_canal.operation).toBe('toggle-canal');
   });
 
   it('distinguishes the documented hero structures from plausible readings', () => {

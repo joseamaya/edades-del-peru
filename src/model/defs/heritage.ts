@@ -13,9 +13,13 @@ export type HeritageBuildingId =
   | 'chavin_edificio_a'
   | 'chavin_edificio_b'
   | 'chavin_portada'
-  | 'chavin_galeria';
+  | 'chavin_galeria'
+  | 'moche_huaca_sol'
+  | 'moche_huaca_luna'
+  | 'moche_plaza'
+  | 'moche_canal';
 
-export type HeritageSector = 'Caral Alto' | 'Caral Bajo' | 'Chavín';
+export type HeritageSector = 'Caral Alto' | 'Caral Bajo' | 'Chavín' | 'Moche' | 'Wari';
 
 export interface HeritageBuildingDef {
   id: HeritageBuildingId;
@@ -26,7 +30,7 @@ export interface HeritageBuildingDef {
   confidence: string;
   citation: string;
   /** Optional scenario operation exposed by the field card. */
-  operation?: 'toggle-canal' | 'assembly' | 'offer';
+  operation?: 'toggle-canal' | 'assembly' | 'offer' | 'trade';
   /** Resource and amount consumed by an `offer` operation. */
   operationResource?: keyof Resources;
   operationAmount?: number;
@@ -181,6 +185,54 @@ export const HERITAGE_BUILDINGS: Record<HeritageBuildingId, HeritageBuildingDef>
     confidence: 'documentado; secuencia representativa',
     citation: 'Dossier de Chavín · UNESCO 330',
     sources: ['docs/historia/civilizaciones/chavin.md', 'docs/historia/campanas/chavin.md'],
+  },
+  moche_huaca_sol: {
+    id: 'moche_huaca_sol',
+    name: 'Huaca del Sol',
+    sector: 'Moche',
+    role: 'Plataforma monumental y poder político',
+    summary:
+      'La Huaca del Sol es la mayor plataforma escalonada de adobe de los Huacas de Moche. La reconstrucción representa su volumen y sus terrazas; la altura original y los frisos son lecturas plausibles, no un levantamiento.',
+    confidence: 'planta y volumen documentados; remates inferidos',
+    citation: 'Dossier de Moche · Huacas del Sol y de la Luna',
+    sources: ['docs/historia/civilizaciones/moche.md', 'docs/historia/campanas/moche_recuay.md'],
+  },
+  moche_huaca_luna: {
+    id: 'moche_huaca_luna',
+    name: 'Huaca de la Luna',
+    sector: 'Moche',
+    role: 'Centro ceremonial y intercambio de élite',
+    summary:
+      'La Huaca de la Luna articula plazas, terrazas y recintos ceremoniales. El intercambio de élite con la sierra está atestiguado por objetos y contactos; la operación de intercambio es una abstracción jugable, no un mercado documentado.',
+    confidence: 'planta documentada; secuencia ritual interpretada',
+    citation: 'Dossier de Moche · Huacas del Sol y de la Luna / PUCP',
+    operation: 'trade',
+    operationResource: 'silver',
+    operationAmount: 50,
+    sources: ['docs/historia/civilizaciones/moche.md', 'docs/historia/campanas/moche_recuay.md'],
+  },
+  moche_plaza: {
+    id: 'moche_plaza',
+    name: 'Plaza entre las huacas',
+    sector: 'Moche',
+    role: 'Espacio público y ceremonial',
+    summary:
+      'La plaza abierta entre las dos huacas organiza el acceso y la vida pública del conjunto. El juego la usa como punto de reunión y de defensa; su trazado es una síntesis legible del espacio documentado.',
+    confidence: 'documentado en planta; mobiliario omitido',
+    citation: 'Dossier de Moche · Huacas del Sol y de la Luna',
+    sources: ['docs/historia/civilizaciones/moche.md', 'docs/historia/arquitectura.md'],
+  },
+  moche_canal: {
+    id: 'moche_canal',
+    name: 'Canal de riego del valle',
+    sector: 'Moche',
+    role: 'Agua y agricultura de valle',
+    summary:
+      'Los canales moche llevaban agua del valle a los campos y sostenían la producción agrícola. La compuerta es una abstracción jugable del control del agua; no se reconstruye un canal específico.',
+    confidence: 'abstracción jugable sobre práctica documentada',
+    citation: 'Dossier de Moche · Cultura moche',
+    operation: 'toggle-canal',
+    sources: ['docs/historia/civilizaciones/moche.md', 'docs/historia/campanas/moche_recuay.md'],
   },
 };
 

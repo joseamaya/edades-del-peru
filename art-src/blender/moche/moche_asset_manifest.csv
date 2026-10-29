@@ -1,0 +1,3 @@
+id,lod,source,scale,orientation,pivot,collision,confidence,notes
+moche_site,0,moche_site_lod0.blend,0.25,Y-up,ground centre,source walls + game AABB,planta y volumen documentados; remates inferidos,LOD0 runtime
+moche_site,1,moche_site_lod1.blend,0.25,Y-up,ground centre,source walls + game AABB,planta y volumen documentados; remates inferidos,LOD1 runtime default

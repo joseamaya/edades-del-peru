@@ -123,3 +123,68 @@ test('saves and loads the Chavín delivered offerings', async ({ page }) => {
   expect(after.tutorialStep).toBe(before.tutorialStep);
   expect(after.silver).toBe(before.silver);
 });
+
+test('saves and loads the Moche canal, hold and exchange', async ({ page }) => {
+  await page.goto('/?mission=m3_moche_recuay&seed=400&fog=0&low=1');
+  await startMission(page);
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const before = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const anchor = g.siteAnchor as { x: number; z: number };
+    const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as any;
+    g.toggleCanal();
+    const dt = 1 / 60;
+    let t = 0;
+    for (let i = 0; i < Math.ceil(92 / dt) && !g.mission.ended; i++) {
+      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
+      for (const b of g.buildings.values()) if (b.owner === 0 && !b.dead) b.hp = b.maxHp;
+      worker.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+      g.update(dt, t);
+      t += dt;
+    }
+    for (let i = 0; i < 2; i++) g.makeTrade('moche_huaca_luna');
+    g.saveMatch();
+    return {
+      canal: g.isCanalOpen(),
+      hold: g.mission.getObjectiveProgress('obj_huacas'),
+      trade: g.mission.getObjectiveProgress('obj_intercambio'),
+      tutorialStep: g.tutorial?.toSave().stepId ?? null,
+      silver: g.players[0].resources.silver,
+    };
+  });
+  expect(before.canal).toBe(true);
+  expect(before.hold?.current).toBe(90);
+  expect(before.trade?.current).toBe(100);
+  expect(before.tutorialStep).not.toBeNull();
+
+  await page.goto('/?load=1');
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const after = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    return {
+      canal: g.isCanalOpen(),
+      hold: g.mission.getObjectiveProgress('obj_huacas'),
+      trade: g.mission.getObjectiveProgress('obj_intercambio'),
+      tutorialStep: g.tutorial?.toSave().stepId ?? null,
+      silver: g.players[0].resources.silver,
+    };
+  });
+  expect(after).toEqual(before);
+});

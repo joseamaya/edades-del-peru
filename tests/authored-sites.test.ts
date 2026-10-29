@@ -24,6 +24,18 @@ describe('authored campaign sites', () => {
     expect(caral.environs?.valley).toBe('caral');
   });
 
+  it('keeps Moche on its authored site and canal layout', () => {
+    const moche = getAuthoredSite('moche_site')!;
+    expect(moche.scale).toBe(0.25);
+    expect(moche.anchor).toEqual({ x: 121, z: 85 });
+    expect(moche.heritageProxies.map((p) => p.id)).toEqual(['moche_huaca_sol', 'moche_huaca_luna', 'moche_plaza']);
+    expect(moche.blockers.length).toBe(2);
+    expect(moche.walkableCorridor?.width).toBe(8);
+    const mission = MISSIONS.find((m) => m.id === 'm3_moche_recuay')!;
+    expect(mission.layout?.site?.id).toBe('moche_site');
+    expect(mission.layout?.canal?.heritageId).toBe('moche_canal');
+  });
+
   it('does not resolve a missing site id', () => {
     expect(getAuthoredSite(null)).toBeUndefined();
     expect(getAuthoredSite(undefined)).toBeUndefined();
@@ -38,6 +50,12 @@ describe('authored campaign sites', () => {
       'offer',
       'market',
       'pilgrimage',
+    ]);
+    expect(tutorialForMission('m3_moche_recuay')?.steps.map((s) => s.id)).toEqual([
+      'select',
+      'canal',
+      'plaza',
+      'trade',
     ]);
   });
 

@@ -670,7 +670,7 @@ export class Game {
     model.updateWorldMatrix(true, true);
     model.traverse((object) => {
       const mesh = object as THREE.Mesh;
-      if (!mesh.isMesh || !mesh.geometry?.getAttribute('position')) return;
+      if (!mesh.isMesh || !mesh.visible || !mesh.geometry?.getAttribute('position')) return;
       if (!def.wallCollision.meshPatterns.some((pattern) => pattern.test(mesh.name))) return;
       const position = mesh.geometry.getAttribute('position');
       const index = mesh.geometry.getIndex();
@@ -4028,6 +4028,47 @@ export class Game {
     }
     this.players[0].resources[resource] -= recorded;
     this.hud?.showToast(`Ofrenda entregada: ${recorded} de ${RESOURCE_INFO[resource].name.toLowerCase()}.`, 'success');
+    this.audio.uiClick?.();
+    return true;
+  }
+
+  /** Exchange elite goods at a Moche/Recuay site card. */
+  makeTrade(id: HeritageBuildingId): boolean {
+    const def = getHeritageBuilding(id);
+    if (!def || def.operation !== 'trade') return false;
+    const resource = def.operationResource ?? 'silver';
+    const amount = def.operationAmount ?? 50;
+    const anchor = this.siteAnchor ?? this.siteCenter;
+    const near = anchor
+      ? [...this.units.values()].some(
+          (unit) =>
+            unit.owner === 0 &&
+            !unit.dead &&
+            unit.kind === UnitKind.WORKER &&
+            distance2D(unit.pos.x, unit.pos.z, anchor.x, anchor.z) < 18,
+        )
+      : false;
+    if (!near) {
+      this.hud?.showToast('Acerca un obrero a las huacas para intercambiar.', 'warning');
+      return false;
+    }
+    if (this.players[0].resources[resource] < amount) {
+      this.hud?.showToast(
+        `Necesitas ${amount} de ${RESOURCE_INFO[resource].name.toLowerCase()} para intercambiar.`,
+        'warning',
+      );
+      return false;
+    }
+    const recorded = this.mission?.recordDelivery(resource, amount) ?? 0;
+    if (recorded <= 0) {
+      this.hud?.showToast('No hay un intercambio pendiente en este momento.', 'info');
+      return false;
+    }
+    this.players[0].resources[resource] -= recorded;
+    this.hud?.showToast(
+      `Intercambio entregado: ${recorded} de ${RESOURCE_INFO[resource].name.toLowerCase()}.`,
+      'success',
+    );
     this.audio.uiClick?.();
     return true;
   }

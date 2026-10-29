@@ -283,3 +283,70 @@ test('plays m2 Chavín with real construction and the offering mechanic', async 
   expect(out.won, JSON.stringify(out)).toBe(true);
   expect(errors).toEqual([]);
 });
+
+test('plays m3 Moche with real movement, the canal and the exchange', async ({ page }) => {
+  test.setTimeout(180_000);
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+
+  await page.goto('/?mission=m3_moche_recuay&seed=400&fog=0&low=1&noloop=1&intro=0');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game?.mission !== undefined, null, {
+    timeout: 30_000,
+  });
+  const overlay = page.locator('.ed-overlay', { hasText: 'La Frontera de los Valles' });
+  await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+  await overlay.waitFor({ state: 'detached', timeout: 15_000 });
+
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const anchor = g.siteAnchor as { x: number; z: number };
+    const own = [...g.units.values()].filter((u: any) => u.owner === 0 && !u.dead) as any[];
+    const workers = own.filter((u) => u.kind === 'worker');
+    const fighters = own.filter((u) => u.kind !== 'worker');
+    if (!anchor || workers.length < 1 || fighters.length < 2) return { setup: false };
+
+    g.toggleCanal();
+    g.executeCommand(
+      {
+        kind: 'order',
+        unitIds: [...fighters, workers[0]].map((u) => u.id),
+        order: { kind: 'move', target: { x: anchor.x, z: anchor.z } },
+        clear: true,
+      },
+      false,
+    );
+
+    const dt = 1 / 60;
+    let t = 0;
+    let reached = false;
+    for (let i = 0; i < Math.ceil(115 / dt) && !g.mission.ended; i++) {
+      if (!reached && Math.hypot(workers[0].pos.x - anchor.x, workers[0].pos.z - anchor.z) < 12) reached = true;
+      g.update(dt, t);
+      t += dt;
+    }
+    const held = g.mission.getObjectiveState('obj_huacas') as string;
+    let traded = 0;
+    for (let i = 0; i < 6; i++) if (g.makeTrade('moche_huaca_luna')) traded++;
+    g.update(dt, t);
+    return {
+      setup: true,
+      reached,
+      held,
+      traded,
+      canal: g.mission.getObjectiveState('obj_canal') as string,
+      trade: g.mission.getObjectiveState('obj_intercambio') as string,
+      won: g.mission.won as boolean | null,
+    };
+  });
+
+  expect(out.setup, JSON.stringify(out)).toBe(true);
+  expect(out.reached, JSON.stringify(out)).toBe(true);
+  expect(out.canal).toBe('completed');
+  expect(out.held).toBe('completed');
+  expect(out.traded).toBeGreaterThanOrEqual(1);
+  expect(out.trade).toBe('completed');
+  expect(out.won, JSON.stringify(out)).toBe(true);
+  expect(errors).toEqual([]);
+});

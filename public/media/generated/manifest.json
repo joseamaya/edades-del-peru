@@ -363,6 +363,68 @@
         "author": "Miguel Amaya",
         "renderedAt": "2026-10-29T09:39:00-05:00"
       }
+    },
+    {
+      "id": "m3_moche-intro",
+      "type": "campaign-intro",
+      "scope": "mission",
+      "campaignId": "la-senda-del-sol",
+      "missionId": "m3_moche_recuay",
+      "civilization": "moche",
+      "period": 2,
+      "era": 1,
+      "region": "north_coast",
+      "topic": "campaign_intro",
+      "sceneType": "urban_ceremonial",
+      "asset": "media/generated/campaigns/la-senda-del-sol/m3_moche/intro.webp",
+      "variants": [
+        {
+          "asset": "media/generated/campaigns/la-senda-del-sol/m3_moche/intro-800.webp",
+          "width": 800,
+          "height": 450,
+          "bytes": 10132
+        }
+      ],
+      "sources": [
+        "docs/historia/civilizaciones/moche.md",
+        "docs/historia/campanas/moche_recuay.md",
+        "docs/historia/arquitectura.md",
+        "docs/historia/fuentes.md",
+        "art-src/blender/moche/moche_asset_manifest.csv"
+      ],
+      "promptVersion": "v1-blender-141fd948",
+      "prompt": "Blender render: Huacas de Moche, Intermedio Temprano",
+      "negativePrompt": "n/a (blender render)",
+      "provider": "blender",
+      "model": "eevee",
+      "generatedAt": "2026-10-29T17:06:27.593Z",
+      "nature": "reconstruction",
+      "reviewed": false,
+      "reviewer": null,
+      "reviewedAt": null,
+      "disclaimer": "No es una fotografía histórica: es un render 3D del proyecto.",
+      "alt": "Vista de las Huacas del Sol y de la Luna, con sus plataformas escalonadas de adobe y la plaza entre ambas.",
+      "caption": "Huacas de Moche, Intermedio Temprano",
+      "width": 1280,
+      "height": 720,
+      "sourceWidth": 1600,
+      "sourceHeight": 900,
+      "crop": "cover-attention",
+      "bytes": 21124,
+      "format": "webp",
+      "sha256": "846b0ac5d0388071e9eb81d09a2e01d5259fc64c2b52b4d2ead31588627bc466",
+      "blender": {
+        "sceneFile": "moche/moche_site_master.blend",
+        "sourceRender": "moche/renders/moche_hero.png",
+        "sourceSha256": "de5891c34e82d3746c5f79cfab5d7c1850002e9547720845905c180d8023b2c6",
+        "sceneAssetId": null,
+        "confidence": "planta y volumen documentados; remates y frisos inferidos",
+        "camera": "hero",
+        "renderer": "eevee",
+        "license": "project-owned",
+        "author": "Miguel Amaya",
+        "renderedAt": "2026-10-29T12:00:00-05:00"
+      }
     }
   ]
 }

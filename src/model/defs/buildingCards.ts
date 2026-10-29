@@ -67,6 +67,39 @@ const MISSION_ECONOMY_CARDS: BuildingCardDef[] = [
     citation: 'Dossier de Chavín · Burger 1995 / UNESCO 330',
     sources: ['docs/historia/campanas/chavin.md', 'docs/historia/civilizaciones/chavin.md'],
   },
+  {
+    building: BuildingKind.FARM,
+    missionId: 'm3_moche_recuay',
+    name: 'Andén · campo de valle',
+    role: 'Producción agrícola',
+    summary:
+      'El Andén representa los campos irrigados de los valles de Moche y Chicama. La cercanía al canal eleva su rendimiento; es una abstracción jugable de la agricultura de valle documentada.',
+    confidence: 'abstracción jugable',
+    citation: 'Dossier de Moche · Cultura moche',
+    sources: ['docs/historia/campanas/moche_recuay.md', 'docs/historia/civilizaciones/moche.md'],
+  },
+  {
+    building: BuildingKind.MILL,
+    missionId: 'm3_moche_recuay',
+    name: 'Troje · depósito de valle',
+    role: 'Almacenamiento de excedentes',
+    summary:
+      'El Troje representa el almacenamiento del excedente agrícola que sostiene a la elite y a los especialistas. No es un término atestiguado en Moche: es una abstracción jugable.',
+    confidence: 'abstracción jugable',
+    citation: 'Dossier de Moche · Cultura moche',
+    sources: ['docs/historia/campanas/moche_recuay.md', 'docs/historia/civilizaciones/moche.md'],
+  },
+  {
+    building: BuildingKind.MARKET,
+    missionId: 'm3_moche_recuay',
+    name: 'Plaza de intercambio',
+    role: 'Intercambio de élite',
+    summary:
+      'La plaza representa el intercambio de bienes de prestigio entre la costa moche y la sierra recuay. El edificio Mercado es una abstracción; no implica un mercado atestiguado con esa forma.',
+    confidence: 'abstracción jugable',
+    citation: 'Dossier de Moche · PUCP / Cultura moche',
+    sources: ['docs/historia/campanas/moche_recuay.md', 'docs/historia/civilizaciones/moche.md'],
+  },
 ];
 
 export function getBuildingCard(missionId: string | null | undefined, building: BuildingKind): BuildingCardDef | null {

@@ -10,7 +10,8 @@ describe('mission economy building cards', () => {
   });
 
   it('keeps the cards mission-scoped', () => {
-    expect(getBuildingCard('m3_moche_recuay', BuildingKind.FARM)).toBeNull();
+    expect(getBuildingCard('m3_moche_recuay', BuildingKind.FARM)?.name).toContain('Andén');
+    expect(getBuildingCard('m3_moche_recuay', BuildingKind.MARKET)?.name).toContain('intercambio');
     expect(getBuildingCard('m2_chavin', BuildingKind.FARM)?.name).toContain('Andén');
     expect(getBuildingCard('m2_chavin', BuildingKind.MARKET)?.name).toContain('Feria');
     expect(getBuildingCard(null, BuildingKind.FARM)).toBeNull();
