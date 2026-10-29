@@ -7,6 +7,7 @@ import { FOW_DIM_GLSL } from './fowGlsl';
 import type { HistoricalMapProfile } from '../model/defs/profiles';
 import type { TerrainLayout } from '../model/defs/terrainLayout';
 import { sampleAuthoredHeight, type AuthoredHeightField } from '../model/defs/authoredTerrain';
+import type { AuthoredSiteDef, SiteTerrainStyle } from '../model/defs/sites';
 
 // Scratch colors reused in biome generation (avoids ~200k allocations).
 const _cBase = new THREE.Color();
@@ -31,6 +32,7 @@ function authoredHeightField(
   worldSize: number,
   profile: HistoricalMapProfile,
   authored: AuthoredHeightField,
+  style: SiteTerrainStyle,
 ): ReturnType<typeof generateHeightField> {
   const n = resolution + 1;
   const heightMap = new Float32Array(n * n);
@@ -45,8 +47,11 @@ function authoredHeightField(
       const i = z * n + x;
       heightMap[i] = h;
       // The valley floor and river corridor are wet; the desert terrace is dry.
-      const wet = Math.max(0, Math.min(1, (6.2 - h) / 3.8));
-      const bank = Math.max(0, Math.min(1, (worldSize * 0.12 - wx) / (worldSize * 0.1)));
+      const wet = Math.max(0, Math.min(1, (style.moisture.valleyHeight - h) / style.moisture.valleyRange));
+      const bank = Math.max(
+        0,
+        Math.min(1, (worldSize * style.moisture.bankStart - wx) / (worldSize * style.moisture.bankRange)),
+      );
       const noise = Math.sin(wx * 0.21 + wz * 0.13) * 0.04 + Math.sin(wz * 0.37 - 1.2) * 0.025;
       moistureMap[i] = Math.max(0, Math.min(1, wet * 0.82 + bank * 0.28 + noise));
     }
@@ -87,7 +92,10 @@ export class Terrain {
   private textures: GroundTextures;
   private pbrExtra: THREE.Texture[] = [];
   private profile: HistoricalMapProfile;
-  private readonly hasCaralHeight: boolean;
+  private readonly siteTerrain?: SiteTerrainStyle;
+  private readonly terrainPreset: number;
+  private readonly suppressSnow: boolean;
+  private readonly valleyHaze: boolean;
   /** Biome aridity (0 humid .. 1 desert); tints sand and reduces vegetation. */
   private arid = 0;
   /** Vegetation density (0 dry .. 1 jungle); tints the grass green. */
@@ -99,18 +107,24 @@ export class Terrain {
     seed: number,
     profile: HistoricalMapProfile,
     layout?: TerrainLayout,
-    authored?: AuthoredHeightField,
+    site?: AuthoredSiteDef,
   ) {
     this.size = size;
     this.resolution = resolution;
     this.profile = profile;
-    this.hasCaralHeight = !!authored;
+    const authored = site?.heightField;
+    const style = site?.terrain;
+    this.siteTerrain = style;
+    this.terrainPreset = style?.preset === 'caral' ? 1 : 0;
+    this.suppressSnow = site?.terrain.suppressSnow ?? false;
+    this.valleyHaze = site?.terrain.valleyHaze ?? false;
     this.textures = getGroundTextures();
     this.arid = profile.climate.aridity;
     this.veg = profile.vegetation.density;
-    const field = authored
-      ? authoredHeightField(resolution, size, profile, authored)
-      : generateHeightField(resolution, seed, profile, layout);
+    const field =
+      authored && style
+        ? authoredHeightField(resolution, size, profile, authored, style)
+        : generateHeightField(resolution, seed, profile, layout);
     this.heightMap = field.heightMap;
     this.moistureMap = field.moistureMap;
     this.terraceMap = field.terraceMap;
@@ -353,13 +367,13 @@ export class Terrain {
     geo.computeVertexNormals();
 
     const tex = this.textures;
-    const caral = this.hasCaralHeight;
+    const style = this.siteTerrain;
     const pbr = {
-      grass: getGroundPBR(caral ? 'caral_grass' : 'grass'),
-      dirt: getGroundPBR(caral ? 'caral_dirt' : 'dirt'),
-      sand: getGroundPBR(caral ? 'caral_sand' : 'sand'),
-      rock: getGroundPBR(caral ? 'caral_sand' : 'rock'),
-      snow: getGroundPBR('snow'),
+      grass: getGroundPBR(style?.pbr.grass ?? 'grass'),
+      dirt: getGroundPBR(style?.pbr.dirt ?? 'dirt'),
+      sand: getGroundPBR(style?.pbr.sand ?? 'sand'),
+      rock: getGroundPBR(style?.pbr.rock ?? 'rock'),
+      snow: getGroundPBR(style?.pbr.snow ?? 'snow'),
     };
     const anyPbr = Object.values(pbr).some((x) => !!x);
     const flatN = flatTex(128, 128, 255);
@@ -368,7 +382,7 @@ export class Terrain {
     // Caral's photographic normals are crack/dune maps; at RTS tiling they
     // read as a repeating floral relief. Keep the diffuse detail and use the
     // analytic micro-relief instead.
-    const nrm = (slot: keyof typeof pbr): THREE.Texture => (caral ? flatN : pbr[slot]?.normal) ?? flatN;
+    const nrm = (slot: keyof typeof pbr): THREE.Texture => (style?.flatNormals ? flatN : pbr[slot]?.normal) ?? flatN;
     const rgh = (slot: keyof typeof pbr): THREE.Texture => pbr[slot]?.roughness ?? flatR;
     this.pbrExtra = [flatN, flatR];
     const mat = new THREE.ShaderMaterial({
@@ -388,7 +402,7 @@ export class Terrain {
         sandR: { value: rgh('sand') },
         rockR: { value: rgh('rock') },
         snowR: { value: rgh('snow') },
-        usePbr: { value: caral ? 0 : anyPbr ? 1 : 0 },
+        usePbr: { value: style?.flatNormals ? 0 : anyPbr ? 1 : 0 },
         waterLevel: { value: waterLevel },
         time: { value: 0 },
         sunDir: { value: new THREE.Vector3(0.5, 0.8, 0.4).normalize() },
@@ -407,7 +421,9 @@ export class Terrain {
         temperature: { value: this.profile.climate.temperature },
         groundTint: { value: new THREE.Color(this.profile.groundTint ?? '#ffffff') },
         floodplain: { value: this.profile.water.wetland ? 1 : 0 },
-        caralTerrain: { value: this.hasCaralHeight ? 1 : 0 },
+        terrainPreset: { value: this.terrainPreset },
+        suppressSnow: { value: this.suppressSnow ? 1 : 0 },
+        valleyHaze: { value: this.valleyHaze ? 1 : 0 },
       },
       vertexShader: /* glsl */ `
         attribute vec3 color;
@@ -472,7 +488,9 @@ export class Terrain {
         uniform float temperature;
         uniform vec3 groundTint;
         uniform float floodplain;
-        uniform float caralTerrain;
+        uniform float terrainPreset;
+        uniform float suppressSnow;
+        uniform float valleyHaze;
         varying vec3 vColor;
         varying vec3 vWorldPos;
         varying vec2 vUv;
@@ -524,7 +542,7 @@ ${FOW_DIM_GLSL}
           // rock at height and on slopes, snow at summits, soil in dry areas
           float sandAmt = max(1.0 - smoothstep(waterLevel + 0.2, waterLevel + 1.8, vHeight), arid * (1.0 - smoothstep(6.0, 10.0, vHeight)));
           float rockAmt = clamp(smoothstep(4.5, 9.0, vHeight) * 0.7 + smoothstep(0.25, 0.6, slope) * 0.85, 0.0, 1.0);
-          float snowAmt = (1.0 - caralTerrain) * smoothstep(snowLine - 4.0, snowLine + 0.5, vHeight);
+          float snowAmt = (1.0 - suppressSnow) * smoothstep(snowLine - 4.0, snowLine + 0.5, vHeight);
           float dirtAmt = (1.0 - smoothstep(0.6, 2.8, vHeight)) * 0.4;
           vec3 ground = texture(grass, vUv * 2.0).rgb;
           ground = mix(ground, texture(dirt, vUv * 2.4 + 3.0).rgb, max(dirtAmt, arid * 0.4));
@@ -543,7 +561,7 @@ ${FOW_DIM_GLSL}
           // Authored Caral basin: separate the wet valley floor, the pale desert
           // terrace and the dry lomas. The source texture is a warm monochrome,
           // so the landform reads only when height bands carry different hues.
-          if (caralTerrain > 0.5) {
+          if (terrainPreset > 0.5 && terrainPreset < 1.5) {
             float flatness = 1.0 - smoothstep(0.12, 0.38, slope);
             float valleyFloor = (1.0 - smoothstep(waterLevel + 2.0, waterLevel + 4.2, vHeight)) * flatness;
             float terraceBand = smoothstep(waterLevel + 4.0, waterLevel + 5.4, vHeight) *
@@ -627,12 +645,12 @@ ${FOW_DIM_GLSL}
           vec2 edge = vec2(abs(vWorldPos.x - halfSize), abs(vWorldPos.z - halfSize));
           float edgeAmt = smoothstep(mapSize * 0.47, mapSize * 0.5, max(edge.x, edge.y));
           float lomaMask = smoothstep(10.0, 20.0, vHeight);
-          float fogCap = 0.30 + 0.08 * caralTerrain * lomaMask;
+          float fogCap = 0.30 + 0.08 * terrainPreset * lomaMask;
           vec3 outCol = mix(lit, fogColor, clamp(max(fogAmt, edgeAmt), 0.0, fogCap));
           // Low morning haze pools over the Supe floodplain and separates it
           // from the dry terrace without washing out the fields.
-          float valleyHaze = caralTerrain * flood * (1.0 - smoothstep(0.08, 0.42, slope));
-          outCol = mix(outCol, fogColor, valleyHaze * 0.09);
+          float valleyHazeAmt = valleyHaze * flood * (1.0 - smoothstep(0.08, 0.42, slope));
+          outCol = mix(outCol, fogColor, valleyHazeAmt * 0.09);
 
           // fog of war glued to the relief: unexplored black, explored dimmed, visible clear
           float fw = fowEnabled > 0.5 ? texture(fowMap, vWorldPos.xz / mapSize).r : 1.0;
@@ -699,7 +717,7 @@ ${FOW_DIM_GLSL}
     // Coastal desert: shifts to sand/soil
     _cBase.lerp(_cSand, this.arid * 0.7);
     _cBase.lerp(_cRock, smoothstep(1.8, 4.5, slope));
-    if (!this.hasCaralHeight)
+    if (!this.suppressSnow)
       _cBase.lerp(_cSnow, smoothstep(this.profile.elevation.snowLine - 5.5, this.profile.elevation.snowLine, h));
     return _cBase;
   }

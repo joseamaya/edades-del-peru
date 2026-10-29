@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Tutorial } from '../src/campaign/Tutorial';
+import { tutorialForMission } from '../src/campaign/defs/tutorials';
 
 function stubGame() {
   return { buildings: new Map(), units: new Map() };
@@ -9,7 +10,7 @@ const base = { houses: 0, barracks: 0, soldiers: 0 };
 
 describe('tutorial save compatibility', () => {
   it('restores a save by step id after the step list changes', () => {
-    const tutorial = new Tutorial(stubGame() as any);
+    const tutorial = new Tutorial(stubGame() as any, tutorialForMission('m1_caral')!);
     tutorial.applySave({
       idx: 0,
       stepId: 'landmark',
@@ -22,9 +23,86 @@ describe('tutorial save compatibility', () => {
   });
 
   it('maps the legacy indices to the closest current step', () => {
-    const tutorial = new Tutorial(stubGame() as any);
+    const tutorial = new Tutorial(stubGame() as any, tutorialForMission('m1_caral')!);
     // Legacy index 3 was the removed market step; the coast is its closest replacement.
     tutorial.applySave({ idx: 3, begun: true, finished: false, delay: 0, base });
     expect(tutorial.toSave().stepId).toBe('coast');
+  });
+});
+
+function gameForSteps() {
+  const hud = {
+    last: '',
+    showTutorialStep(text: string) {
+      this.last = text;
+    },
+    highlightHud() {},
+    clearHudHighlight() {},
+    hideTutorial() {},
+    showToast() {},
+  };
+  return {
+    hud,
+    selectedUnits: [] as number[],
+    units: new Map<number, { owner: number; kind: string; dead: boolean; pos: { x: number; z: number } }>(),
+    buildings: new Map<number, { owner: number; kind: string; dead: boolean; constructionComplete: boolean }>(),
+    resourceNodes: new Map<number, { kind: string; dead: boolean; pos: { x: number; z: number } }>(),
+    landmark: { position: { x: 100, z: 30 } },
+    siteCenter: { x: 100, z: 30 },
+    getPaused: () => false,
+    mission: {
+      activeObjectives: [{}],
+      getObjectiveState: () => 'activo',
+    },
+  };
+}
+
+function tutorialAt(game: ReturnType<typeof gameForSteps>, stepId: string): Tutorial {
+  const tutorial = new Tutorial(game as any, tutorialForMission('m1_caral')!);
+  tutorial.applySave({ idx: 0, stepId, begun: true, finished: false, delay: 0, base });
+  return tutorial;
+}
+
+describe('tutorial checks', () => {
+  it('advances when a worker is selected', () => {
+    const game = gameForSteps();
+    game.units.set(1, { owner: 0, kind: 'worker', dead: false, pos: { x: 0, z: 0 } });
+    game.selectedUnits.push(1);
+    const tutorial = tutorialAt(game, 'select');
+    tutorial.update(0);
+    expect(tutorial.toSave().stepId).toBe('coast');
+  });
+
+  it('advances when a scout reaches a fishing ground', () => {
+    const game = gameForSteps();
+    game.units.set(1, { owner: 0, kind: 'scout', dead: false, pos: { x: 10, z: 10 } });
+    game.resourceNodes.set(1, { kind: 'fishing', dead: false, pos: { x: 12, z: 10 } });
+    const tutorial = tutorialAt(game, 'coast');
+    tutorial.update(0);
+    expect(tutorial.toSave().stepId).toBe('house');
+  });
+
+  it('advances when a completed house is built', () => {
+    const game = gameForSteps();
+    game.buildings.set(1, { owner: 0, kind: 'house', dead: false, constructionComplete: true });
+    const tutorial = tutorialAt(game, 'house');
+    tutorial.update(0);
+    expect(tutorial.toSave().stepId).toBe('farm');
+  });
+
+  it('advances when a scout reaches the site', () => {
+    const game = gameForSteps();
+    game.units.set(1, { owner: 0, kind: 'scout', dead: false, pos: { x: 100, z: 30 } });
+    const tutorial = tutorialAt(game, 'landmark');
+    tutorial.update(0);
+    expect(tutorial.toSave().stepId).toBe('storage');
+  });
+
+  it('finishes after the gated communal store is completed', () => {
+    const game = gameForSteps();
+    game.buildings.set(1, { owner: 0, kind: 'mill', dead: false, constructionComplete: true });
+    const tutorial = tutorialAt(game, 'storage');
+    tutorial.update(0);
+    expect(tutorial.toSave().finished).toBe(true);
   });
 });

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { OPENING_BASE_CLEARANCE } from '../../src/core/Config';
-import { CARAL_CIRCULAR_ALTAR, CARAL_SITE_BLOCKERS } from '../../src/model/defs/caralSite';
+import { CARAL_CIRCULAR_ALTAR, CARAL_SITE_BLOCKERS } from '../../src/model/defs/sites';
 
 const URL = '/?mission=m1_caral&seed=3000&fog=0&low=1&noloop=1&intro=0';
 

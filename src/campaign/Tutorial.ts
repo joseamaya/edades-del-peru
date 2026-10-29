@@ -1,43 +1,29 @@
 import type { Game } from '../core/Game';
-import { UnitKind, BuildingKind } from '../core/types';
+import { BuildingKind, UnitKind } from '../core/types';
 import { distance2D } from '../util/math';
 import type { TutorialSave, TutorialBase } from '../game/saveTypes';
-
-interface PasoTutorial {
-  id: string;
-  text: string;
-  /** HUD element selector to highlight (optional). */
-  highlight?: string;
-  /** Skip this step until the player has reached the matching mission beat. */
-  gate?: (game: Game) => boolean;
-  check: (game: Game) => boolean;
-}
-
-/** A scout must get this close to a fishing ground to discover it. */
-const COAST_DISCOVERY_RADIUS = 16;
-/** A scout must get this close to the ceremonial complex to observe it. */
-const LANDMARK_DISCOVERY_RADIUS = 12;
+import type { TutorialDef, TutorialStepDef } from './types';
 
 /**
- * Step-by-step guided tutorial for the first campaign (Caral). Observes the game state
- * and advances when the player performs each action. It is independent of the mission
- * objectives (it does not change the victory condition) and respects the «Mostrar consejos» setting.
+ * Data-driven guided tutorial. It observes the game state and advances when the
+ * player performs each action. It is independent of mission objectives and
+ * respects the «Mostrar consejos» setting.
  */
 export class Tutorial {
   private game: Game;
-  private pasos: PasoTutorial[];
+  private pasos: TutorialStepDef[];
   private idx = 0;
   private begun = false;
   private finished = false;
   private delay = 0;
   private base: TutorialBase;
 
-  constructor(game: Game) {
+  constructor(game: Game, def: TutorialDef) {
     this.game = game;
-    const countB = (k: BuildingKind): number =>
-      [...game.buildings.values()].filter((b) => b.owner === 0 && b.kind === k && !b.dead).length;
-    const countU = (k: UnitKind): number =>
-      [...game.units.values()].filter((u) => u.owner === 0 && u.kind === k && !u.dead).length;
+    const countB = (kind: BuildingKind): number =>
+      [...game.buildings.values()].filter((b) => b.owner === 0 && b.kind === kind && !b.dead).length;
+    const countU = (kind: UnitKind): number =>
+      [...game.units.values()].filter((u) => u.owner === 0 && u.kind === kind && !u.dead).length;
     this.base = {
       houses: countB(BuildingKind.HOUSE),
       barracks: countB(BuildingKind.BARRACKS),
@@ -45,65 +31,7 @@ export class Tutorial {
       farms: countB(BuildingKind.FARM),
       mills: countB(BuildingKind.MILL),
     };
-    const buildBottom = '#ed-bottom';
-    this.pasos = [
-      {
-        id: 'select',
-        text: 'Selecciona a tus obreros: haz clic izquierdo sobre uno o arrastra un recuadro para seleccionar varios.',
-        check: (g) =>
-          g.selectedUnits.some((id) => g.units.get(id)?.owner === 0 && g.units.get(id)?.kind === UnitKind.WORKER),
-      },
-      {
-        id: 'coast',
-        text: 'Selecciona tu explorador y recorre el valle hacia el litoral hasta descubrir un banco de peces.',
-        check: (g) => {
-          const scouts = [...g.units.values()].filter((u) => u.owner === 0 && !u.dead && u.kind === UnitKind.SCOUT);
-          const fish = [...g.resourceNodes.values()].filter((n) => n.kind === 'fishing' && !n.dead);
-          return scouts.some((u) =>
-            fish.some((n) => distance2D(u.pos.x, u.pos.z, n.pos.x, n.pos.z) < COAST_DISCOVERY_RADIUS),
-          );
-        },
-      },
-      {
-        id: 'house',
-        text: 'Con obreros seleccionados, pulsa V (o el botón Vivienda) y haz clic en el suelo para construir una vivienda.',
-        highlight: buildBottom,
-        check: (g) =>
-          [...g.buildings.values()].filter(
-            (b) => b.owner === 0 && b.kind === BuildingKind.HOUSE && b.constructionComplete && !b.dead,
-          ).length > this.base.houses,
-      },
-      {
-        id: 'farm',
-        text: 'Pulsa G (o el botón Andén) y coloca el cultivo cerca del agua o de un canal: la tierra húmeda rinde más.',
-        highlight: buildBottom,
-        check: (g) =>
-          [...g.buildings.values()].filter(
-            (b) => b.owner === 0 && b.kind === BuildingKind.FARM && b.constructionComplete && !b.dead,
-          ).length > (this.base.farms ?? 0),
-      },
-      {
-        id: 'landmark',
-        text: 'Acércate al complejo ceremonial y observa sus plazas y pirámides: la monumentalidad nace del trabajo comunal.',
-        check: (g) => {
-          const landmark = g.landmark;
-          if (!landmark) return false;
-          const target = g.siteCenter ?? { x: landmark.position.x, z: landmark.position.z };
-          const scouts = [...g.units.values()].filter((u) => u.owner === 0 && !u.dead && u.kind === UnitKind.SCOUT);
-          return scouts.some((u) => distance2D(u.pos.x, u.pos.z, target.x, target.z) < LANDMARK_DISCOVERY_RADIUS);
-        },
-      },
-      {
-        id: 'storage',
-        text: 'Construye un depósito comunal (Troje) para guardar el excedente de la comunidad.',
-        highlight: buildBottom,
-        gate: (g) => g.mission?.getObjectiveState('obj_almacenamiento') !== 'pendiente',
-        check: (g) =>
-          [...g.buildings.values()].filter(
-            (b) => b.owner === 0 && b.kind === BuildingKind.MILL && b.constructionComplete && !b.dead,
-          ).length > (this.base.mills ?? 0),
-      },
-    ];
+    this.pasos = def.steps;
   }
 
   /** Advance the tutorial; shown after the briefing closes and the match resumes. */
@@ -118,7 +46,7 @@ export class Tutorial {
       return;
     }
     const paso = this.pasos[this.idx];
-    if (paso.check(this.game)) {
+    if (this.checkStep(paso)) {
       this.idx++;
       if (this.idx >= this.pasos.length) {
         this.finish();
@@ -128,10 +56,57 @@ export class Tutorial {
     }
   }
 
+  private countBuilt(kind: BuildingKind): number {
+    return [...this.game.buildings.values()].filter(
+      (b) => b.owner === 0 && b.kind === kind && b.constructionComplete && !b.dead,
+    ).length;
+  }
+
+  private checkStep(paso: TutorialStepDef): boolean {
+    const game = this.game;
+    switch (paso.check.type) {
+      case 'selectUnit': {
+        const kind = paso.check.unitKind;
+        return game.selectedUnits.some((id) => {
+          const unit = game.units.get(id);
+          return unit?.owner === 0 && unit.kind === kind;
+        });
+      }
+      case 'reachFishing': {
+        const radius = paso.check.radius;
+        const scouts = [...game.units.values()].filter((u) => u.owner === 0 && !u.dead && u.kind === UnitKind.SCOUT);
+        const fish = [...game.resourceNodes.values()].filter((n) => n.kind === 'fishing' && !n.dead);
+        return scouts.some((u) => fish.some((n) => distance2D(u.pos.x, u.pos.z, n.pos.x, n.pos.z) < radius));
+      }
+      case 'build': {
+        const baseline = this.base[paso.check.baseline] ?? 0;
+        return this.countBuilt(paso.check.buildingKind) > baseline;
+      }
+      case 'approachSite': {
+        const landmark = game.landmark;
+        if (!landmark) return false;
+        const target = game.siteCenter ?? { x: landmark.position.x, z: landmark.position.z };
+        const unitKind = paso.check.unitKind;
+        const radius = paso.check.radius;
+        const units = [...game.units.values()].filter(
+          (u) => u.owner === 0 && !u.dead && (!unitKind || u.kind === unitKind),
+        );
+        return units.some((u) => distance2D(u.pos.x, u.pos.z, target.x, target.z) < radius);
+      }
+      default:
+        return false;
+    }
+  }
+
+  private gateOpen(paso: TutorialStepDef): boolean {
+    if (!paso.gateObjective) return true;
+    return this.game.mission?.getObjectiveState(paso.gateObjective) !== 'pendiente';
+  }
+
   private show(): void {
     while (this.idx < this.pasos.length) {
       const candidate = this.pasos[this.idx];
-      if (!candidate.gate || candidate.gate(this.game)) break;
+      if (this.gateOpen(candidate)) break;
       this.idx++;
     }
     if (this.idx >= this.pasos.length) {

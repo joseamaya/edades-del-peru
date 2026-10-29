@@ -83,17 +83,7 @@ import { farmYieldMultiplier, nearbyCanal } from '../model/defs/farmYield';
 import { distance2D } from '../util/math';
 import { isTypingTarget } from '../util/dom';
 import { RNG, hashCode, weightedPick } from '../util/rng';
-import { CARAL_HEIGHTMAP, CARAL_HEIGHTMAP_SIZE, CARAL_HEIGHTMAP_WORLD_SIZE } from '../model/defs/caralHeightmap';
-import {
-  CARAL_HERITAGE_PROXIES,
-  CARAL_SITE_ANCHOR,
-  CARAL_SITE_BLOCKERS,
-  CARAL_SITE_BLOCKER_PADDING,
-  CARAL_SITE_CAMERA,
-  CARAL_SITE_ORIGIN,
-  CARAL_SITE_SCALE,
-} from '../model/defs/caralSite';
-import type { AuthoredHeightField } from '../model/defs/authoredTerrain';
+import { getAuthoredSite, type AuthoredSiteDef, type SiteHeritageProxy } from '../model/defs/sites';
 import { detectSoftwareRenderer } from '../util/gpu';
 import { ERA_DEFS } from '../model/defs/eras';
 import { BUILDING_DEFS, getBuildingStats, BUILDING_INFO } from '../model/defs/buildings';
@@ -110,6 +100,7 @@ import { getTech } from '../model/defs/techs';
 import { AudioEngine } from '../audio/AudioEngine';
 import { Mission } from '../campaign/Mission';
 import { Tutorial } from '../campaign/Tutorial';
+import { tutorialForMission } from '../campaign/defs/tutorials';
 import { PlayerCommand, Replay, ReplayPlayer, ReplayRecorder, saveReplay } from '../game/replay';
 import { getMission } from '../campaign/defs/campaign';
 import type { MissionDef, MissionAtmosphere, MissionLayout, MissionSite } from '../campaign/types';
@@ -178,6 +169,8 @@ export class Game {
   /** Authored scenario config (base, terrain, setpiece), if any. */
   private readonly missionDef?: MissionDef;
   private readonly missionLayout?: MissionLayout;
+  /** Authored site definition resolved from the mission layout. */
+  private readonly siteDef?: AuthoredSiteDef;
   private setpiecePlan: CaralCityPlan | null = null;
   /** Visual-only Caral city scene (Caral Alto + Caral Bajo). */
   setpiece: SacredCity | null = null;
@@ -300,6 +293,7 @@ export class Game {
     this.missionRegion = mis?.region;
     this.missionAtmosphere = mis?.atmosphere;
     this.missionLayout = mis?.layout;
+    this.siteDef = getAuthoredSite(this.missionLayout?.site?.id);
     this.enemyActive = !mis || mis.enemy.active;
     this.rng = new RNG((this.settings.mapSeed * 2654435761) >>> 0);
     this.initRenderer();
@@ -324,7 +318,9 @@ export class Game {
     this.initInput();
     this.initHUD();
     this.mission = mis ? new Mission(this, mis, (win) => this.missionEnd(win)) : null;
-    this.tutorial = mis && mis.tutorial && this.settings.showHints ? new Tutorial(this) : null;
+    const tutorialDef = mis ? tutorialForMission(mis.id) : undefined;
+    this.tutorial =
+      mis && mis.tutorial && tutorialDef && this.settings.showHints ? new Tutorial(this, tutorialDef) : null;
     if (!mis || mis.enemy.active) this.addAI(1);
     this.audio.setEra(this.players[0].era);
     this.initAudio();
@@ -388,17 +384,13 @@ export class Game {
       }),
       this.missionDef?.mapOverrides,
     );
-    const authored: AuthoredHeightField | undefined =
-      this.missionLayout?.site?.id === 'caral_site'
-        ? { size: CARAL_HEIGHTMAP_SIZE, worldSize: CARAL_HEIGHTMAP_WORLD_SIZE, heights: CARAL_HEIGHTMAP }
-        : undefined;
     this.terrain = new Terrain(
       s.mapSize,
       terrainRes,
       s.mapSeed,
       this.mapProfile,
       this.missionLayout?.terrain,
-      authored,
+      this.siteDef,
     );
     this.terrain.camera = this.camera.camera;
     this.scene.add(this.terrain.group);
@@ -471,7 +463,7 @@ export class Game {
     this.fowUniforms.fowEnabled.value = s.fogOfWar ? 1 : 0;
     // The authored site has thin walls and doors; 1 m cells keep them solid
     // without closing the narrow residential openings.
-    this.pathfinder = new Pathfinder(s.mapSize, this.missionLayout?.site?.id === 'caral_site' ? 1 : 2);
+    this.pathfinder = new Pathfinder(s.mapSize, this.siteDef?.pathCellSize ?? 2);
     this.pathfinder.bakeTerrain((x, z) => this.terrain.getHeight(x, z), this.terrain.waterLevel);
     this.startSpots = this.planStartSpots();
     if (!this.pendingSnapshot) {
@@ -483,7 +475,7 @@ export class Game {
 
   /** Plan the valley before resource/prop scatter so no node lands on a plot. */
   private reserveCaralValley(): void {
-    if (this.missionDef?.id !== 'm1_caral' || this.caralValleyPlan) return;
+    if (this.siteDef?.environs?.valley !== 'caral' || this.caralValleyPlan) return;
     const base = this.missionLayout?.base;
     if (!base) return;
     const size = this.settings.mapSize;
@@ -627,8 +619,8 @@ export class Game {
     return this.startSpots.some(([sx, sz]) => Math.hypot(x - sx, z - sz) < OPENING_BASE_CLEARANCE);
   }
 
-  /** Invisible but raycastable volumes over the six pyramids and the Anfiteatro. */
-  private addSiteHeritageProxies(parent: THREE.Group): void {
+  /** Invisible but raycastable volumes over the site's named heritage nodes. */
+  private addSiteHeritageProxies(parent: THREE.Group, proxies: readonly SiteHeritageProxy[]): void {
     const material = new THREE.MeshBasicMaterial({
       transparent: true,
       opacity: 0,
@@ -636,7 +628,7 @@ export class Game {
       colorWrite: false,
       side: THREE.DoubleSide,
     });
-    for (const p of CARAL_HERITAGE_PROXIES) {
+    for (const p of proxies) {
       const proxy = new THREE.Mesh(new THREE.BoxGeometry(p.w, p.h, p.d), material);
       proxy.name = p.id;
       proxy.position.set(p.x, p.h / 2 + 0.02, p.z);
@@ -647,13 +639,13 @@ export class Game {
   }
 
   /** Block the source's monumental volumes while leaving plazas and paths walkable. */
-  private addSiteObstacles(): void {
-    for (const blocker of CARAL_SITE_BLOCKERS) {
+  private addSiteObstacles(def: AuthoredSiteDef): void {
+    for (const blocker of def.blockers) {
       this.pathfinder.addObstacle({
         x: blocker.x,
         z: blocker.z,
-        w: blocker.w + CARAL_SITE_BLOCKER_PADDING * 2,
-        d: blocker.d + CARAL_SITE_BLOCKER_PADDING * 2,
+        w: blocker.w + def.blockerPadding * 2,
+        d: blocker.d + def.blockerPadding * 2,
       });
     }
   }
@@ -664,18 +656,19 @@ export class Game {
    * walls); roofs and plaza floors are horizontal, and the tall pyramid volumes
    * are already covered by the AABBs.
    */
-  private addSiteWallCollision(model: THREE.Object3D, baseY: number): void {
+  private addSiteWallCollision(model: THREE.Object3D, baseY: number, def: AuthoredSiteDef): void {
+    if (def.wallCollision.meshPatterns.length === 0) return;
     const { cols, rows, cell } = this.pathfinder.grid;
     const mask = new Uint8Array(cols * rows);
     const a = new THREE.Vector3();
     const b = new THREE.Vector3();
     const c = new THREE.Vector3();
-    const maxWallStartY = baseY + 1.2;
+    const maxWallStartY = baseY + def.wallCollision.maxStartYAboveBase;
     model.updateWorldMatrix(true, true);
     model.traverse((object) => {
       const mesh = object as THREE.Mesh;
       if (!mesh.isMesh || !mesh.geometry?.getAttribute('position')) return;
-      if (!/Infra_(Residential|LowerHalf|UpperHalf|Props)/.test(mesh.name) && !/AltarCircular$/.test(mesh.name)) return;
+      if (!def.wallCollision.meshPatterns.some((pattern) => pattern.test(mesh.name))) return;
       const position = mesh.geometry.getAttribute('position');
       const index = mesh.geometry.getIndex();
       const count = index ? index.count : position.count;
@@ -712,6 +705,11 @@ export class Game {
 
   /** Load the authored campaign site; monumental volumes block pathing, not the whole footprint. */
   private spawnAuthoredSite(site: MissionSite): void {
+    const def = this.siteDef;
+    if (!def) {
+      console.warn(`[site] missing authored definition for ${site.id}`);
+      return;
+    }
     const group = new THREE.Group();
     group.name = 'landmark';
     group.position.set(0, site.y ?? 0, 0);
@@ -722,24 +720,22 @@ export class Game {
       this.siteFocus = { x: site.focus.x * this.settings.mapSize, z: site.focus.z * this.settings.mapSize };
       this.siteCenter = { ...this.siteFocus };
     }
-    this.siteAnchor = { x: CARAL_SITE_ANCHOR.x, z: CARAL_SITE_ANCHOR.z };
-    this.addSiteObstacles();
-    this.addSiteHeritageProxies(group);
+    this.siteAnchor = { ...def.anchor };
+    this.addSiteObstacles(def);
+    this.addSiteHeritageProxies(group, def.heritageProxies);
     const token = ++this.landmarkLoadToken;
-    void loadSiteModel(site.id)
+    void loadSiteModel(def.id)
       .then((model) => {
         if (token !== this.landmarkLoadToken || this.landmark !== group) {
           disposeStaticGltf(model);
           return;
         }
-        model.name = 'caral_site';
-        // Exact v2 source: metres -> the 192 m map. The site terrain is owned
-        // by the game heightfield, so hide the source terrain/reference layers.
-        model.scale.setScalar(CARAL_SITE_SCALE);
-        model.position.set(CARAL_SITE_ORIGIN.x, 0, CARAL_SITE_ORIGIN.z);
+        model.name = def.modelName;
+        model.scale.setScalar(def.scale);
+        model.position.set(def.origin.x, 0, def.origin.z);
         model.traverse((object) => {
-          if (/Infra_(Terrain|Reference)/.test(object.name)) object.visible = false;
-          if (/PlazaMayor_(BandaRoja|PisoAnilloRojo|PisoRojo)$/.test(object.name)) {
+          if (def.hideNodePatterns?.some((pattern) => pattern.test(object.name))) object.visible = false;
+          if (def.doubleSidedPatterns?.some((pattern) => pattern.test(object.name))) {
             const mesh = object as THREE.Mesh;
             const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
             for (const material of materials) {
@@ -749,24 +745,24 @@ export class Game {
               material.polygonOffsetUnits = -2;
             }
           }
-          if (/Caral_LOD[01]_Mayor$/.test(object.name)) object.userData.heritageId = 'caral_pyramid_mayor';
-          if (/Caral_LOD[01]_Anfiteatro$/.test(object.name)) object.userData.heritageId = 'caral_anfiteatro';
+          const heritage = def.heritageNodeMap?.find((entry) => entry.pattern.test(object.name));
+          if (heritage) object.userData.heritageId = heritage.id;
         });
         group.add(model);
         group.updateMatrixWorld(true);
-        this.addSiteWallCollision(model, site.y ?? 0);
+        this.addSiteWallCollision(model, site.y ?? 0, def);
         applyFowToObject(model, this.fowUniforms);
         this.enableLandmarkShadows(model);
       })
       .catch((error: unknown) => {
-        console.warn('[site] failed to load authored Caral site', error);
+        console.warn(`[site] failed to load authored ${def.id} site`, error);
       });
   }
 
   /** Frame the player base with the authored city just ahead of it. */
   private frameAuthoredSite(x: number, z: number): void {
     this.camera.moveTo(x, z, true);
-    if (this.missionLayout?.site) this.camera.setHeight(CARAL_SITE_CAMERA.height);
+    if (this.siteDef) this.camera.setHeight(this.siteDef.cameraHeight);
   }
 
   private spawnLandmark(): void {
@@ -1297,11 +1293,13 @@ export class Game {
     const propCount = propCountFor(s.mapSize);
     let placements = planProps(region, propSeed, s.mapSize, propCount, query);
     let fauna = planWildlife(region, faunaSeed, s.mapSize, faunaCountFor(region), query);
-    if (this.missionDef?.id === 'm1_caral') {
+    if (this.siteDef?.environs?.valley === 'caral') {
       const base = this.caralValleyBase ?? this.playerCenter(0);
-      placements = placements.filter((p) => p.id !== 'cactus');
+      const suppressedProps = new Set(this.siteDef.environs.suppressPropIds ?? []);
+      placements = placements.filter((p) => !suppressedProps.has(p.id));
       placements.push(...planCaralValleyProps(this.settings.mapSeed, base, this.caralValleyQuery()));
-      fauna = fauna.filter((f) => f.id !== 'llama' && f.id !== 'vicuna');
+      const suppressedFauna = new Set(this.siteDef.environs.suppressFaunaIds ?? []);
+      fauna = fauna.filter((f) => !suppressedFauna.has(f.id));
     }
     this.props.place(placements, heightAt);
     this.wildlife.spawn(fauna, heightAt);
@@ -1367,13 +1365,14 @@ export class Game {
     if (civ === CivId.CARAL || civ === CivId.CHAVIN) {
       this.addSettlementDressing(plan, player, civ === CivId.CHAVIN ? 'chavin' : 'caral');
     }
-    if (player === 0 && this.missionDef?.id === 'm1_caral') this.addCaralValley(x, z);
+    if (player === 0 && this.siteDef?.environs?.valley === 'caral') this.addCaralValley(x, z);
     // nearby resources to start
     this.spawnStartResources(player, x, z);
     const rng = new RNG(this.settings.mapSeed + player * 100);
     // The Caral opening deploys outside the civic core, on the camera-facing
     // side where the frame reads. Other matches and AI seats keep their ring.
-    const startingSpots = player === 0 && this.missionDef?.id === 'm1_caral' ? this.startingUnitSpots(x, z) : null;
+    const startingSpots =
+      player === 0 && this.siteDef?.environs?.opening === 'caral' ? this.startingUnitSpots(x, z) : null;
     for (let i = 0; i < STARTING_UNIT_COUNT - 1; i++) {
       const unit = new Unit(UnitKind.WORKER, player, this.players[player].era, ctx);
       const spot = startingSpots?.[i] ?? { x: x + rng.range(-3, 3), z: z + rng.range(-3, 3) };
@@ -1502,7 +1501,7 @@ export class Game {
 
   /** Open ground just west of the Anfiteatro, derived from the authored proxy. */
   private caralValleySiteTarget(): { x: number; z: number } | null {
-    const anf = CARAL_HERITAGE_PROXIES.find((p) => p.id === 'caral_anfiteatro');
+    const anf = this.siteDef?.heritageProxies.find((p) => p.id === 'caral_anfiteatro');
     return anf ? { x: anf.x - anf.w / 2 - 4, z: anf.z } : null;
   }
 
@@ -1547,7 +1546,7 @@ export class Game {
     };
     // Trees: in the authored Caral scene the wood grove sits on the valley edge
     // (the gallery forest of the Supe), not inside the residential compounds.
-    if (this.missionLayout?.site) {
+    if (this.siteDef?.environs?.opening === 'caral') {
       // Keep the authored site core clear: wood and the opening stone/berries sit
       // west of the terrace or south of the keep-out, not on the plazas.
       for (let i = 0; i < 5; i++) {
@@ -1703,7 +1702,7 @@ export class Game {
     if (!this.introEnabled) return;
     const c = this.playerCenter(0);
     const city = this.siteFocus ?? this.setpiecePlan?.upper;
-    const siteFraming = this.missionLayout?.site?.id === 'caral_site' ? CARAL_SITE_CAMERA : null;
+    const siteFraming = this.siteDef ? { height: this.siteDef.cameraHeight } : null;
     if (city) {
       this.camera.moveTo(city.x, city.z, true);
       this.camera.setHeight(INTRO_CAMERA.fromHeight + 12);
@@ -2785,7 +2784,7 @@ export class Game {
 
   /** Whether a building footprint would overlap the authored archaeological site. */
   private siteBlocksConstruction(x: number, z: number, pad: number): boolean {
-    const rects = this.missionLayout?.site?.buildKeepout;
+    const rects = this.siteDef?.buildKeepout ?? this.missionLayout?.site?.buildKeepout;
     if (!rects) return false;
     const size = this.settings.mapSize;
     return rects.some((rect) =>
