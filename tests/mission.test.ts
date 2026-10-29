@@ -28,7 +28,7 @@ const def: MissionDef = {
 };
 
 function stubGame(unit: { id: number; tag: string; owner: number; dead: boolean; kind: UnitKind }) {
-  return {
+  const game: any = {
     players: [{ resources: { food: 0, wood: 0, silver: 0, stone: 0 }, era: Era.FORMATIVE }],
     units: new Map([[unit.id, unit]]),
     buildings: new Map(),
@@ -47,7 +47,12 @@ function stubGame(unit: { id: number; tag: string; owner: number; dead: boolean;
     rng: { float: () => 0.5 },
     getVisitedHeritage: () => [],
     setVisitedHeritage: () => {},
+    resolveMissionPoint: (p: { ref?: string; dx: number; dz: number }) => {
+      const ref = p.ref === 'landmark' ? (game.landmark?.position ?? { x: 0, z: 0 }) : { x: 0, z: 0 };
+      return { x: ref.x + p.dx, z: ref.z + p.dz };
+    },
   };
+  return game;
 }
 
 describe('mission objective progress', () => {

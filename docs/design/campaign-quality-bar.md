@@ -75,14 +75,14 @@ objectives can be satisfied by a test harness.
 | --- | --- | --- |
 | History | Met | `docs/historia/campanas/wari_tiahuanaco.md`; no invented war or ruler. |
 | Identity | Met | Authored Wari site and a two-node `network` objective plus frontier hold. |
-| Play | Met | `tests/e2e/wari-campaign.spec.ts` and the generic completability path. |
+| Play | Met | `tests/e2e/campaign-playtest.spec.ts` builds the farms and markets with real commands and reaches victory. |
 | Contract | Met | Network progress, hidden frontier, optional third centre and live timers. |
 | Onboarding | Met | Four-step Wari tutorial, briefing, Codex and minimap pips. |
 | Closure | Met | Epilogue connects the network with the 1000–1100 CE collapse. |
 | UX | Met locally | Briefing/tutorial captured at 1280×800 and 1600×900; no CI pixel gate. |
-| Visuals | Met locally | Authored site GLB, highland palette and current RTS captures in `review/`. |
+| Visuals | Met locally | Authored site GLB, terrain-following road ribbons, highland palette and current RTS captures in `review/`. |
 | Persistence | Met | Network, hold and mission state use the shared save/load path. |
-| Tests | Met | Data, site, network, campaign and completability coverage. |
+| Tests | Met | Data, site, network, real-command playtest, save/load and completability coverage. |
 | Docs | Met | This document, dossier, experience table, site note, art docs and README aligned. |
 
 ## Applying it to m2–m9

@@ -350,3 +350,136 @@ test('plays m3 Moche with real movement, the canal and the exchange', async ({ p
   expect(out.won, JSON.stringify(out)).toBe(true);
   expect(errors).toEqual([]);
 });
+
+test('plays m4 Wari with real gathering, construction and the provincial network', async ({ page }) => {
+  test.setTimeout(240_000);
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+
+  await page.goto('/?mission=m4_wari&seed=777&fog=0&low=1&noloop=1&intro=0');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game?.mission !== undefined, null, {
+    timeout: 30_000,
+  });
+  const overlay = page.locator('.ed-overlay', { hasText: 'El Horizonte Medio' });
+  await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+  await overlay.waitFor({ state: 'detached', timeout: 15_000 });
+
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const workers = [...g.units.values()].filter((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as any[];
+    const center = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center') as any;
+    if (!center || workers.length < 4) return { setup: false, workers: workers.length };
+
+    const nearest = (kind: string, from: any) =>
+      ([...g.resourceNodes.values()].filter((n: any) => !n.dead && n.resource === kind) as any[]).sort(
+        (a: any, b: any) =>
+          (a.pos.x - from.pos.x) ** 2 +
+          (a.pos.z - from.pos.z) ** 2 -
+          ((b.pos.x - from.pos.x) ** 2 + (b.pos.z - from.pos.z) ** 2),
+      )[0];
+    const orderGather = (worker: any, kind: string) => {
+      const node = nearest(kind, worker);
+      if (node) {
+        g.executeCommand(
+          { kind: 'order', unitIds: [worker.id], order: { kind: 'gather', entityId: node.id }, clear: true },
+          false,
+        );
+      }
+      return !!node;
+    };
+    const placeAndBuild = (kind: string, x: number, z: number, worker: any): any => {
+      const spot = g.findFreeSpot(x, z, kind === 'farm' ? 3 : 5);
+      if (!spot || !g.executeCommand({ kind: 'place', building: kind, x: spot.x, z: spot.z })) return null;
+      const building = [...g.buildings.values()].find(
+        (b: any) => b.owner === 0 && b.kind === kind && !b.dead && b.pos.x === spot.x && b.pos.z === spot.z,
+      ) as any;
+      if (!building) return null;
+      g.executeCommand(
+        { kind: 'order', unitIds: [worker.id], order: { kind: 'build', entityId: building.id }, clear: true },
+        false,
+      );
+      return building;
+    };
+
+    const farms = [
+      placeAndBuild('farm', center.pos.x + 10, center.pos.z + 4, workers[0]),
+      placeAndBuild('farm', center.pos.x - 10, center.pos.z + 4, workers[1]),
+    ];
+    if (!farms[0] || !farms[1]) return { setup: false, reason: 'farm placement' };
+    orderGather(workers[2], 'wood');
+    orderGather(workers[3], 'wood');
+    orderGather(workers[4] ?? workers[3], 'silver');
+
+    const site = g.siteCenter as { x: number; z: number };
+    const network = g.mission.def.objectives.find((o: any) => o.id === 'obj_red');
+    const nodes = network.nodes.map((n: any) => ({ x: site.x + n.dx, z: site.z + n.dz }));
+    const markets: any[] = [];
+    const dt = 1 / 60;
+    let t = 0;
+    let reached = false;
+    for (let i = 0; i < Math.ceil(620 / dt) && !g.mission.ended; i++) {
+      if (markets.length < 2 && g.players[0].resources.wood >= 120 && g.players[0].resources.silver >= 40) {
+        const builder = markets.length === 0 ? workers[2] : workers[3];
+        const market = placeAndBuild('market', nodes[markets.length].x, nodes[markets.length].z, builder);
+        if (market) markets.push(market);
+      }
+      if (markets.length === 1 && g.players[0].resources.wood < 120) {
+        orderGather(workers[3], 'wood');
+        orderGather(workers[4] ?? workers[3], 'wood');
+      }
+      if (farms.every((f) => f?.constructionComplete) && workers[0].orderQueue.length === 0) {
+        for (const [idx, worker] of [workers[0], workers[1]].entries()) {
+          const farm = farms[idx];
+          if (farm && !farm.dead) {
+            g.executeCommand(
+              { kind: 'order', unitIds: [worker.id], order: { kind: 'gather', entityId: farm.id }, clear: true },
+              false,
+            );
+          }
+        }
+      }
+      if (markets.length === 2 && markets.every((m) => m.constructionComplete) && !reached) {
+        const mover = workers[4] ?? workers[3];
+        g.executeCommand(
+          {
+            kind: 'order',
+            unitIds: [mover.id],
+            order: { kind: 'move', target: { x: nodes[0].x, z: nodes[0].z } },
+            clear: true,
+          },
+          false,
+        );
+        reached = true;
+      }
+      g.update(dt, t);
+      t += dt;
+    }
+    return {
+      setup: true,
+      farms: farms.every((f) => f?.constructionComplete),
+      markets: markets.length,
+      marketsComplete: markets.every((m) => m.constructionComplete),
+      reached,
+      resources: { ...g.players[0].resources },
+      objectives: Object.fromEntries(
+        g.mission.def.objectives.map((o: any) => [o.id, g.mission.getObjectiveState(o.id)]),
+      ),
+      won: g.mission.won as boolean | null,
+    };
+  });
+
+  expect(out.setup, JSON.stringify(out)).toBe(true);
+  expect(out.farms, JSON.stringify(out)).toBe(true);
+  expect(out.markets, JSON.stringify(out)).toBe(2);
+  expect(out.marketsComplete, JSON.stringify(out)).toBe(true);
+  expect(out.reached, JSON.stringify(out)).toBe(true);
+  expect(out.objectives.obj_andenes).toBe('completed');
+  expect(out.objectives.obj_red).toBe('completed');
+  expect(out.objectives.obj_suministros).toBe('completed');
+  expect(out.objectives.obj_frontera).toBe('completed');
+  expect(out.objectives.obj_sostener).toBe('completed');
+  expect(out.won, JSON.stringify(out)).toBe(true);
+  expect(errors).toEqual([]);
+});

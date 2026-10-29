@@ -103,7 +103,7 @@ import { Tutorial } from '../campaign/Tutorial';
 import { tutorialForMission } from '../campaign/defs/tutorials';
 import { PlayerCommand, Replay, ReplayPlayer, ReplayRecorder, saveReplay } from '../game/replay';
 import { getMission } from '../campaign/defs/campaign';
-import type { MissionDef, MissionAtmosphere, MissionLayout, MissionSite } from '../campaign/types';
+import type { MissionDef, MissionAtmosphere, MissionLayout, MissionPoint, MissionSite } from '../campaign/types';
 import { serializeGame, saveToStorage } from '../game/SaveGame';
 import type { SaveData } from '../game/saveTypes';
 
@@ -314,6 +314,7 @@ export class Game {
     }
     this.spawnCanal();
     this.spawnMissionDecor();
+    this.spawnMissionRoads();
     this.spawnCulturalLandscape();
     this.initInput();
     this.initHUD();
@@ -1356,6 +1357,57 @@ export class Game {
     return weightedPick(rng, options) ?? 'tree';
   }
 
+  /** Resolve a mission point against the player/enemy base, site, canal or landmark. */
+  resolveMissionPoint(p: MissionPoint): { x: number; z: number } {
+    const centre = { x: this.settings.mapSize / 2, z: this.settings.mapSize / 2 };
+    const ref =
+      p.ref === 'enemy'
+        ? this.playerCenter(1)
+        : p.ref === 'player'
+          ? this.playerCenter(0)
+          : p.ref === 'canal'
+            ? (this.canalSite ?? centre)
+            : p.ref === 'site'
+              ? (this.siteCenter ?? centre)
+              : p.ref === 'landmark'
+                ? (this.siteAnchor ?? this.landmark?.position ?? centre)
+                : { x: 0, z: 0 };
+    return { x: ref.x + p.dx, z: ref.z + p.dz };
+  }
+
+  /** Draw the mission's visual road network; no pathfinding or gameplay effect. */
+  private spawnMissionRoads(): void {
+    const roads = this.missionLayout?.roads;
+    if (!roads?.length) return;
+    for (const overlay of this.settlements.filter((s) => s.group.name.startsWith('mission-roads'))) {
+      overlay.dispose();
+    }
+    this.settlements = this.settlements.filter((s) => !s.group.name.startsWith('mission-roads'));
+    const groups = new Map<number, typeof roads>();
+    for (const road of roads) {
+      const width = road.width ?? 4;
+      groups.set(width, [...(groups.get(width) ?? []), road]);
+    }
+    let index = 0;
+    for (const [width, group] of groups) {
+      const plan: SettlementPlan = {
+        center: this.siteCenter ?? this.playerCenter(0),
+        dwellings: [],
+        fields: [],
+        roads: group.map((road) => ({
+          from: this.resolveMissionPoint(road.from),
+          to: this.resolveMissionPoint(road.to),
+        })),
+      };
+      const overlay = new SettlementOverlay(plan, this.terrain, { roadWidth: width });
+      overlay.group.name = index === 0 ? 'mission-roads' : `mission-roads-${width}`;
+      applyFowToObject(overlay.group, this.fowUniforms);
+      this.scene.add(overlay.group);
+      this.settlements.push(overlay);
+      index++;
+    }
+  }
+
   /** Register a building as a pathfinding obstacle. */
   private registerObstacle(b: Building): void {
     const stats = getBuildingStats(b.kind, b.era);
@@ -2127,6 +2179,7 @@ export class Game {
         this.addSettlementOverlay(this.settlementPlanFor(b.owner, b.pos.x, b.pos.z));
       }
     }
+    this.spawnMissionRoads();
 
     if (data.mission && this.mission) {
       this.mission.applySave(data.mission);

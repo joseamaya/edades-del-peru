@@ -47,6 +47,13 @@ export interface MissionCanal {
   heritageId?: HeritageBuildingId;
 }
 
+export interface MissionRoad {
+  from: MissionPoint;
+  to: MissionPoint;
+  /** Ribbon width in world units; defaults to 4. */
+  width?: number;
+}
+
 export interface MissionDecor {
   model: LandmarkId;
   at: 'player' | 'enemy';
@@ -88,6 +95,8 @@ export interface MissionLayout {
   canal?: MissionCanal;
   /** Visual-only landmark/decor placed relative to a base. */
   decor?: MissionDecor;
+  /** Visual-only roads that read the provincial network. */
+  roads?: MissionRoad[];
 }
 
 /** World point. `ref` anchors to the player/enemy center, canal or landmark; without it, absolute. */

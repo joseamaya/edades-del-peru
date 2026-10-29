@@ -592,6 +592,12 @@ export const MISSIONS: MissionDef[] = [
           { name: 'Terraza provincial wari', x: 0.7, z: 0.58, rx: 0.12, rz: 0.09 },
         ],
       },
+      roads: [
+        { from: { ref: 'player', dx: 0, dz: 0 }, to: { ref: 'site', dx: 0, dz: 14 }, width: 2.5 },
+        { from: { ref: 'site', dx: 0, dz: 14 }, to: { ref: 'site', dx: 40, dz: -32 }, width: 2.5 },
+        { from: { ref: 'site', dx: 0, dz: 14 }, to: { ref: 'site', dx: 38, dz: 34 }, width: 2.5 },
+        { from: { ref: 'site', dx: 40, dz: -32 }, to: { ref: 'site', dx: 38, dz: 34 }, width: 2 },
+      ],
     },
     mapOverrides: {
       terrain: { terraceChance: 0.6, riverCount: 0 },
@@ -603,7 +609,7 @@ export const MISSIONS: MissionDef[] = [
     },
     timeOfDay: 'noon',
     startingEra: Era.TAHUANTINSUYO,
-    startingResources: { food: 350, wood: 160, silver: 60, stone: 40 },
+    startingResources: { food: 350, wood: 300, silver: 100, stone: 40 },
     start: {},
     enemy: { active: false, difficulty: 'easy', aggression: 0 },
     objectives: [
