@@ -2042,7 +2042,8 @@ export class HUD {
     for (const campaign of CAMPAIGNS) {
       const card = this.el('div', `ed-campaign-card ${campaign.status}`, grid);
       card.style.setProperty('--campaign-accent', campaign.accent);
-      const done = campaignProgressCount(campaign, completedMissions(progress, campaign.id));
+      const completed = completedMissions(progress, campaign.id);
+      const done = campaignProgressCount(campaign, completed);
       const total = campaign.releasedMissionIds.length;
       const available = campaign.status === 'available' && total > 0;
       card.innerHTML = `
@@ -2060,7 +2061,7 @@ export class HUD {
         for (const mission of campaign.releasedMissionIds) {
           const title = this.missionTitle(mission);
           const play = this.el('button', 'ed-primary', actions) as HTMLButtonElement;
-          play.textContent = done >= total ? `✓ ${title}` : `▶ Jugar ${title}`;
+          play.textContent = completed.includes(mission) ? `✓ ${title}` : `▶ Jugar ${title}`;
           play.addEventListener('click', () => this.launchMission(mission));
         }
         const upcoming = this.el('div', 'upcoming', card);

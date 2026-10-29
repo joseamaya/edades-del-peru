@@ -18,11 +18,12 @@ describe('campaign series', () => {
     expect(CAMPAIGNS.filter((c) => c.status === 'available').map((c) => c.id)).toEqual(['preinca']);
   });
 
-  it('releases only Caral in this build', () => {
-    expect(RELEASED_MISSIONS.map((m) => m.id)).toEqual(['m1_caral']);
+  it('releases the four preinca missions in order', () => {
+    expect(RELEASED_MISSIONS.map((m) => m.id)).toEqual(['m1_caral', 'm2_chavin', 'm3_moche_recuay', 'm4_wari']);
     expect(getReleasedMission('m1_caral')?.title).toBe('La Ciudad Sagrada');
-    expect(getReleasedMission('m2_chavin')).toBeUndefined();
-    expect(nextReleasedMission('m1_caral')).toBeUndefined();
+    expect(getReleasedMission('m2_chavin')?.title).toBe('El Oráculo de Chavín');
+    expect(nextReleasedMission('m1_caral')?.id).toBe('m2_chavin');
+    expect(nextReleasedMission('m4_wari')).toBeUndefined();
   });
 
   it('keeps authored drafts mapped to their eventual campaign', () => {
@@ -41,13 +42,20 @@ describe('campaign series', () => {
       expect(beat.source).toMatch(/^docs\/historia\//);
     }
     expect(PREINCA_PROLOGUE[0].text).toContain('una de las primeras civilizaciones del mundo');
-    expect(PREINCA_PROLOGUE.every((beat) => beat.source === 'docs/historia/campanas/caral.md')).toBe(true);
+    expect(PREINCA_PROLOGUE.slice(0, 3).every((beat) => beat.source === 'docs/historia/campanas/caral.md')).toBe(true);
+    expect(PREINCA_PROLOGUE[3].source).toBe('docs/historia/periodizacion.md');
   });
 });
 
 describe('campaign progress', () => {
-  it('migrates the legacy numeric progress to Caral', () => {
-    expect(completedMissions(parseCampaignProgress('2'), 'preinca')).toEqual(['m1_caral']);
+  it('migrates the legacy numeric progress to the released mission order', () => {
+    expect(completedMissions(parseCampaignProgress('2'), 'preinca')).toEqual(['m1_caral', 'm2_chavin']);
+    expect(completedMissions(parseCampaignProgress('9'), 'preinca')).toEqual([
+      'm1_caral',
+      'm2_chavin',
+      'm3_moche_recuay',
+      'm4_wari',
+    ]);
     expect(completedMissions(parseCampaignProgress('0'), 'preinca')).toEqual([]);
   });
 

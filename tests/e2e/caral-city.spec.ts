@@ -383,7 +383,7 @@ test('the Caral HUD keeps the tutorial and objectives separate at both review si
   }
 });
 
-test('a peaceful victory summarises optional achievements and closes the chapter', async ({ page }) => {
+test('a peaceful victory summarises optional achievements and offers the next mission', async ({ page }) => {
   await boot(page);
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -409,10 +409,11 @@ test('a peaceful victory summarises optional achievements and closes the chapter
   await expect(victory).toContainText('Logros opcionales');
   await expect(victory).toContainText('Abre la compuerta del canal comunal');
   await expect(victory).toContainText('Recorre los seis complejos piramidales');
-  await expect(victory).toContainText('Fin de la primera campaña');
+  await expect(victory).toContainText('Continuar: El Oráculo de Chavín');
   await expect(victory).not.toContainText('Bajas infligidas');
-  await victory.getByRole('button', { name: /Volver a campañas/ }).click();
-  await expect(page.locator('.ed-campaign-panel')).toBeVisible({ timeout: 15_000 });
+  await victory.getByRole('button', { name: /Continuar: El Oráculo de Chavín/ }).click();
+  await page.waitForURL(/mission=m2_chavin/);
+  await expect(page.locator('.ed-overlay', { hasText: 'El Oráculo de Chavín' })).toBeVisible({ timeout: 30_000 });
 });
 
 test('a Caral Blender pyramid opens an educational field card', async ({ page }) => {
