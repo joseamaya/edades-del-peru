@@ -900,9 +900,6 @@ export class HUD {
     const panel = this.el('div', 'ed-panel ed-epilogue', ov);
     const p = this.game.players[0];
     const mis = this.game.mission?.def;
-    if (mis?.id === 'm1_caral') {
-      panel.style.backgroundImage = `linear-gradient(180deg, rgba(12,16,21,.96), rgba(6,9,13,.96)), url("${MENU_BACKDROP}")`;
-    }
     const edu = mis ? getEducational(mis.id) : undefined;
     const campaign = mis ? getCampaignForMission(mis.id) : undefined;
     const title = victory ? 'VICTORIA' : 'DERROTA';
@@ -1952,9 +1949,6 @@ export class HUD {
     this.clearOverlays();
     const ov = this.el('div', 'ed-overlay');
     const panel = this.el('div', 'ed-panel ed-briefing', ov);
-    if (mis.id === 'm1_caral') {
-      panel.style.backgroundImage = `linear-gradient(180deg, rgba(14,18,23,.96), rgba(8,11,15,.93)), url("${MENU_BACKDROP}")`;
-    }
     const period = getPeriod(mis.period);
     const player = getCiv(mis.playerCiv);
     const enemy = getCiv(mis.enemyCiv);
