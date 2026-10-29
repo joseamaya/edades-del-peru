@@ -351,7 +351,7 @@ test('plays m3 Moche with real movement, the canal and the exchange', async ({ p
   expect(errors).toEqual([]);
 });
 
-test('plays m4 Wari with real gathering, construction and the provincial network', async ({ page }) => {
+test('plays m4 Wari with real construction and the provincial network', async ({ page }) => {
   test.setTimeout(240_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));

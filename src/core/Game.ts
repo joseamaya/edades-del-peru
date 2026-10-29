@@ -314,7 +314,7 @@ export class Game {
     }
     this.spawnCanal();
     this.spawnMissionDecor();
-    this.spawnMissionRoads();
+    if (!this.pendingSnapshot) this.spawnMissionRoads();
     this.spawnCulturalLandscape();
     this.initInput();
     this.initHUD();

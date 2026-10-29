@@ -11,7 +11,7 @@ import {
   TriggerEffect,
   MissionPoint,
 } from './types';
-import { OrderKind, BuildingKind, Resources } from '../core/types';
+import { OrderKind, Resources } from '../core/types';
 import { distance2D } from '../util/math';
 import { commanderFor } from '../model/defs/commanders';
 import type { MissionSave } from '../game/saveTypes';
@@ -56,14 +56,6 @@ export class Mission {
           this.objState.get(o.id) === 'failed',
       )
       .map((o) => ({ def: o, state: this.objState.get(o.id) as ObjState }));
-  }
-
-  private baseCenter(owner: number): { x: number; z: number } {
-    const c = [...this.game.buildings.values()].find(
-      (b) => b.owner === owner && b.kind === BuildingKind.CENTER && !b.dead,
-    );
-    if (c) return { x: c.pos.x, z: c.pos.z };
-    return { x: this.game.settings.mapSize / 2, z: this.game.settings.mapSize / 2 };
   }
 
   private resolvePoint(p: MissionPoint): { x: number; z: number } {
@@ -355,7 +347,7 @@ export class Mission {
           const unit = this.game.spawnScriptedUnit(u.kind, fx.owner, p.x + jitter, p.z + k);
           if (fx.owner === 1) {
             // enemy waves attack a target (the player base or the position)
-            const t = fx.objective === 'position' ? p : this.baseCenter(0);
+            const t = fx.objective === 'position' ? p : this.game.playerCenter(0);
             unit.issueOrder({ kind: OrderKind.ATTACK_MOVE, target: { x: t.x, z: t.z } });
           }
         }

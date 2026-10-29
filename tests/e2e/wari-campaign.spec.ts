@@ -47,6 +47,8 @@ test('m4 draws the provincial road network', async ({ page }) => {
     }
     const planRoads = overlays.flatMap((s: any) => s.plan.roads);
     const endpoints = new Set(planRoads.flatMap((r: any) => [`${r.from.x},${r.from.z}`, `${r.to.x},${r.to.z}`]));
+    const base = g.playerCenter(0);
+    const baseLeg = planRoads.some((r: any) => Math.hypot(r.from.x - base.x, r.from.z - base.z) < 0.01);
     return {
       found: overlays.length > 0,
       overlays: overlays.length,
@@ -54,6 +56,7 @@ test('m4 draws the provincial road network', async ({ page }) => {
       roads: g.missionLayout?.roads?.length ?? 0,
       planRoads: planRoads.length,
       endpoints: endpoints.size,
+      baseLeg,
       names: overlays.map((s: any) => s.group.name),
     };
   });
@@ -62,6 +65,7 @@ test('m4 draws the provincial road network', async ({ page }) => {
   expect(out.roads).toBe(4);
   expect(out.planRoads).toBe(4);
   expect(out.endpoints).toBeGreaterThanOrEqual(4);
+  expect(out.baseLeg).toBe(true);
   expect(out.names).toContain('mission-roads-2');
   expect(out.meshes).toBeGreaterThan(0);
 });

@@ -75,7 +75,7 @@ objectives can be satisfied by a test harness.
 | --- | --- | --- |
 | History | Met | `docs/historia/campanas/wari_tiahuanaco.md`; no invented war or ruler. |
 | Identity | Met | Authored Wari site and a two-node `network` objective plus frontier hold. |
-| Play | Met | `tests/e2e/campaign-playtest.spec.ts` builds the farms and markets with real commands and reaches victory. |
+| Play | Met | `tests/e2e/campaign-playtest.spec.ts` builds the farms and markets with real commands and reaches victory from the documented 300 wood / 100 silver opening stock. |
 | Contract | Met | Network progress, hidden frontier, optional third centre and live timers. |
 | Onboarding | Met | Four-step Wari tutorial, briefing, Codex and minimap pips. |
 | Closure | Met | Epilogue connects the network with the 1000–1100 CE collapse. |
