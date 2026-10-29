@@ -1,0 +1,32 @@
+name: GitHub Pages build (manual)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - name: Build the project-site bundle
+        run: yarn build
+        env:
+          VITE_BASE: /${{ github.event.repository.name }}/
+      - name: Check the Pages asset contract
+        run: |
+          test -f dist/draco/draco_decoder.wasm
+          test -f dist/draco/draco_wasm_wrapper.js
+          grep -q "/${{ github.event.repository.name }}/assets/" dist/index.html
+      - uses: actions/upload-artifact@v4
+        with:
+          name: github-pages-build
+          path: dist
+          retention-days: 7

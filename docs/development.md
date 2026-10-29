@@ -753,5 +753,6 @@ Open `http://localhost:4174/edades-del-peru/?mission=m1_caral&seed=777&fog=0&low
 and confirm that `draco_wasm_wrapper.js`, `draco_decoder.wasm`, GLB files,
 `media/` and `mods/` return 200. Assets under `public/` must resolve through
 `src/util/publicAsset.ts`; do not hardcode `/draco/` or other root paths.
-GitHub Pages remains disabled until an explicit release decision; this section
-only documents the build contract.
+GitHub Pages remains disabled until an explicit release decision. The manual
+`GitHub Pages build (manual)` workflow produces a downloadable `dist` artifact
+with the project base and checks the Draco files; it does not deploy.
