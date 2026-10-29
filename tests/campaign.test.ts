@@ -253,7 +253,8 @@ describe('campaign educational content', () => {
 
   it('m3 briefing does not spoil its hidden huaca or exchange goals', () => {
     const m3 = MISSIONS.find((m) => m.id === 'm3_moche_recuay')!;
-    const briefing = getEducational('m3_moche_recuay')!.briefing ?? '';
+    const edu = getEducational('m3_moche_recuay')!;
+    const briefing = `${edu.briefing ?? ''} ${edu.didYouKnow}`;
     for (const objective of m3.objectives.filter((o) => o.hidden)) {
       expect(briefing).not.toContain(objective.title);
     }

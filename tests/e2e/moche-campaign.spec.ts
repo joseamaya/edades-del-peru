@@ -32,7 +32,7 @@ test('m3 loads the authored Huacas de Moche site', { tag: '@smoke' }, async ({ p
         luna: proxy('moche_huaca_luna'),
         plaza: proxy('moche_plaza'),
       },
-      blocked: g.pathfinder.isWalkable(132.5, 71),
+      lunaWalkable: g.pathfinder.isWalkable(132.5, 71),
       anchorWalkable: g.pathfinder.isWalkable(g.siteAnchor.x, g.siteAnchor.z),
       names,
     };
@@ -44,12 +44,12 @@ test('m3 loads the authored Huacas de Moche site', { tag: '@smoke' }, async ({ p
   expect(out.proxies.sol).toEqual({ x: 109.5, z: 73 });
   expect(out.proxies.luna).toEqual({ x: 132.5, z: 71 });
   expect(out.proxies.plaza).toEqual({ x: 121, z: 76 });
-  expect(out.blocked).toBe(false);
+  expect(out.lunaWalkable).toBe(false);
   expect(out.anchorWalkable).toBe(true);
   expect(out.names.some((name) => /Moche_LOD1_(Apron|Terrain)/.test(name))).toBe(false);
 });
 
-test('m3 canal and exchange field-card buttons work', async ({ page }) => {
+test('m3 canal and exchange field-card buttons work', { tag: '@smoke' }, async ({ page }) => {
   await start(page);
   const bottom = page.locator('#ed-bottom');
   await page.evaluate(() => {
@@ -63,6 +63,10 @@ test('m3 canal and exchange field-card buttons work', async ({ page }) => {
   await page.getByRole('button', { name: /Abrir compuerta/ }).click();
   await page.evaluate(() => (window as unknown as { game: any }).game.update(1 / 60, 0));
   expect(await page.evaluate(() => (window as unknown as { game: any }).game.isCanalOpen())).toBe(true);
+  await page.evaluate(() => (window as unknown as { game: any }).game.update(1 / 60, 0));
+  expect(
+    await page.evaluate(() => (window as unknown as { game: any }).game.mission.getObjectiveState('obj_canal')),
+  ).toBe('completed');
 
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;

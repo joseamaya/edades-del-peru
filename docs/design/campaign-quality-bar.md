@@ -59,7 +59,7 @@ objectives can be satisfied by a test harness.
 | --- | --- | --- |
 | History | Met | `docs/historia/campanas/moche_recuay.md`; no invented ruler or single battle. |
 | Identity | Met | Authored Huacas de Moche, operable canal, huaca hold and elite exchange. |
-| Play | Met | `campaign-playtest.spec.ts` moves real units and exchanges silver; `moche-campaign.spec.ts` clicks the canal and Huaca de la Luna field-card buttons. |
+| Play | Met | `campaign-playtest.spec.ts` moves real units and exchanges silver; `moche-campaign.spec.ts` selects the cards through public state and clicks the canal and Huaca de la Luna action buttons. |
 | Contract | Met | Canal, hold, required 250 and optional 400 silver; hidden goals stay out of the briefing (covered by `campaign.test.ts`). |
 | Onboarding | Met | Four-step Moche tutorial, briefing, Codex and minimap pips. |
 | Closure | Met | Mission epilogue and optional elite-exchange summary. |
