@@ -1,11 +1,14 @@
 import type * as THREE from 'three';
 import siteLod0Url from '../assets/sites/caral/caral_site_lod0.glb?url';
 import siteLod1Url from '../assets/sites/caral/caral_site_lod1.glb?url';
+import chavinLod0Url from '../assets/sites/chavin/chavin_site_lod0.glb?url';
+import chavinLod1Url from '../assets/sites/chavin/chavin_site_lod1.glb?url';
 import { loadStaticGltf } from './StaticModel';
 import type { AuthoredSiteId } from '../model/defs/sites';
 
 const SITE_MODEL_URLS: Partial<Record<AuthoredSiteId, { lod0: string; lod1: string }>> = {
   caral_site: { lod0: siteLod0Url, lod1: siteLod1Url },
+  chavin_site: { lod0: chavinLod0Url, lod1: chavinLod1Url },
 };
 
 /** Load the campaign site; LOD1 is the RTS default, `?lod=0` previews the master. */

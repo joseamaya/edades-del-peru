@@ -80,7 +80,7 @@ import {
   type CaralValleyQuery,
 } from '../model/defs/caralValley';
 import { farmYieldMultiplier, nearbyCanal } from '../model/defs/farmYield';
-import { distance2D } from '../util/math';
+import { distance2D, distanceToSegment } from '../util/math';
 import { isTypingTarget } from '../util/dom';
 import { RNG, hashCode, weightedPick } from '../util/rng';
 import { getAuthoredSite, type AuthoredSiteDef, type SiteHeritageProxy } from '../model/defs/sites';
@@ -658,6 +658,9 @@ export class Game {
    */
   private addSiteWallCollision(model: THREE.Object3D, baseY: number, def: AuthoredSiteDef): void {
     if (def.wallCollision.meshPatterns.length === 0) return;
+    const corridor = def.walkableCorridor;
+    const corridorFrom = corridor ? this.playerCenter(0) : null;
+    const corridorTo = corridor ? def.anchor : null;
     const { cols, rows, cell } = this.pathfinder.grid;
     const mask = new Uint8Array(cols * rows);
     const a = new THREE.Vector3();
@@ -696,7 +699,19 @@ export class Game {
         const z0 = Math.max(0, Math.floor(Math.min(a.z, b.z, c.z) / cell));
         const z1 = Math.min(rows - 1, Math.floor(Math.max(a.z, b.z, c.z) / cell));
         for (let z = z0; z <= z1; z++) {
-          for (let x = x0; x <= x1; x++) mask[z * cols + x] = 1;
+          for (let x = x0; x <= x1; x++) {
+            if (corridor) {
+              const px = (x + 0.5) * cell;
+              const pz = (z + 0.5) * cell;
+              if (
+                corridorFrom &&
+                corridorTo &&
+                distanceToSegment(px, pz, corridorFrom, corridorTo) <= corridor.width / 2
+              )
+                continue;
+            }
+            mask[z * cols + x] = 1;
+          }
         }
       }
     });
@@ -759,10 +774,29 @@ export class Game {
       });
   }
 
-  /** Frame the player base with the authored city just ahead of it. */
+  /** Frame the base, or the base/site midpoint for sites that need both in shot. */
+  private missionFraming(x: number, z: number): { x: number; z: number; height?: number } {
+    const focus = this.siteFocus;
+    if (this.siteDef?.framing === 'midpoint' && focus) {
+      return { x: (x + focus.x) / 2, z: (z + focus.z) / 2, height: this.siteDef.cameraHeight };
+    }
+    if (this.siteDef?.framing === 'site-biased' && focus) {
+      return {
+        x: x * 0.35 + focus.x * 0.65,
+        z: z * 0.35 + focus.z * 0.65,
+        height: this.siteDef.cameraHeight,
+      };
+    }
+    if (this.siteDef?.framing === 'site' && focus) {
+      return { x: focus.x, z: focus.z, height: this.siteDef.cameraHeight };
+    }
+    return { x, z, height: this.siteDef?.cameraHeight };
+  }
+
   private frameAuthoredSite(x: number, z: number): void {
-    this.camera.moveTo(x, z, true);
-    if (this.siteDef) this.camera.setHeight(this.siteDef.cameraHeight);
+    const framing = this.missionFraming(x, z);
+    this.camera.moveTo(framing.x, framing.z, true);
+    if (framing.height) this.camera.setHeight(framing.height);
   }
 
   private spawnLandmark(): void {
@@ -1702,7 +1736,6 @@ export class Game {
     if (!this.introEnabled) return;
     const c = this.playerCenter(0);
     const city = this.siteFocus ?? this.setpiecePlan?.upper;
-    const siteFraming = this.siteDef ? { height: this.siteDef.cameraHeight } : null;
     if (city) {
       this.camera.moveTo(city.x, city.z, true);
       this.camera.setHeight(INTRO_CAMERA.fromHeight + 12);
@@ -1710,7 +1743,8 @@ export class Game {
       this.camera.moveTo(c.x + INTRO_CAMERA.offset, c.z + INTRO_CAMERA.offset, true);
       this.camera.setHeight(INTRO_CAMERA.fromHeight);
     }
-    this.camera.flyTo(c.x, c.z, siteFraming?.height ?? INTRO_CAMERA.toZoom, INTRO_CAMERA.seconds);
+    const framing = this.missionFraming(c.x, c.z);
+    this.camera.flyTo(framing.x, framing.z, framing.height ?? INTRO_CAMERA.toZoom, INTRO_CAMERA.seconds);
   }
 
   private missionEnd(win: boolean): void {
@@ -3958,6 +3992,44 @@ export class Game {
 
   startAssembly(): boolean {
     return this.mission?.activateObjective('obj_asamblea') ?? false;
+  }
+
+  /** Hand over a field-card offering at the authored site. */
+  makeOffering(id: HeritageBuildingId): boolean {
+    const def = getHeritageBuilding(id);
+    if (!def || def.operation !== 'offer') return false;
+    const resource = def.operationResource ?? 'silver';
+    const amount = def.operationAmount ?? 50;
+    const anchor = this.siteAnchor ?? this.siteCenter;
+    const near = anchor
+      ? [...this.units.values()].some(
+          (unit) =>
+            unit.owner === 0 &&
+            !unit.dead &&
+            unit.kind === UnitKind.WORKER &&
+            distance2D(unit.pos.x, unit.pos.z, anchor.x, anchor.z) < 18,
+        )
+      : false;
+    if (!near) {
+      this.hud?.showToast('Acerca un obrero al templo para entregar la ofrenda.', 'warning');
+      return false;
+    }
+    if (this.players[0].resources[resource] < amount) {
+      this.hud?.showToast(
+        `Necesitas ${amount} de ${RESOURCE_INFO[resource].name.toLowerCase()} para la ofrenda.`,
+        'warning',
+      );
+      return false;
+    }
+    const recorded = this.mission?.recordDelivery(resource, amount) ?? 0;
+    if (recorded <= 0) {
+      this.hud?.showToast('No hay una ofrenda pendiente en este momento.', 'info');
+      return false;
+    }
+    this.players[0].resources[resource] -= recorded;
+    this.hud?.showToast(`Ofrenda entregada: ${recorded} de ${RESOURCE_INFO[resource].name.toLowerCase()}.`, 'success');
+    this.audio.uiClick?.();
+    return true;
   }
 
   isHeritageVisited(id: HeritageBuildingId): boolean {

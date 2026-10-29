@@ -40,7 +40,7 @@ mission ids for those chapters stay in the data but are hidden from player-facin
 Codex and progress.
 
 Progress lives in `peru-campaign` as a versioned JSON object. The old numeric value is
-migrated to `preinca: ['m1_caral']`; old draft missions are not deleted from the code, but they do
+migrated to the released mission order (legacy `2` becomes Caral + Chavín); old draft missions are not deleted from the code, but they do
 not carry into release progress.
 
 ## Mission flow

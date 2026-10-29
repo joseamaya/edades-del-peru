@@ -1124,6 +1124,13 @@ export class HUD {
       const open = this.game.isCanalOpen();
       this.addCommand(open ? '💧 Cerrar compuerta' : '💧 Abrir compuerta', () => this.game.toggleCanal());
     }
+    if (heritage.operation === 'offer') {
+      const amount = heritage.operationAmount ?? 50;
+      const resource = heritage.operationResource ?? 'silver';
+      this.addCommand(`🕯️ Entregar ofrenda (${amount} ${RESOURCE_INFO[resource].name.toLowerCase()})`, () =>
+        this.game.makeOffering(heritage.id),
+      );
+    }
     if (heritage.operation === 'assembly') {
       const state = this.game.getAssemblyState();
       if (state === 'pendiente' && this.game.canStartAssembly()) {

@@ -11,7 +11,7 @@ import {
   TriggerEffect,
   MissionPoint,
 } from './types';
-import { OrderKind, BuildingKind } from '../core/types';
+import { OrderKind, BuildingKind, Resources } from '../core/types';
 import { distance2D } from '../util/math';
 import { commanderFor } from '../model/defs/commanders';
 import type { MissionSave } from '../game/saveTypes';
@@ -33,6 +33,7 @@ export class Mission {
   private lastFired = new Map<string, number>();
   private spawnedCount = new Map<string, number>();
   private holdTimers = new Map<string, number>();
+  private delivered = new Map<string, number>();
   private onEnd: (win: boolean) => void;
 
   constructor(game: Game, def: MissionDef, onEnd: (win: boolean) => void) {
@@ -244,6 +245,8 @@ export class Mission {
       }
       case 'build':
         return this.countBuilt(o) >= (o.count ?? 1) ? 'win' : 'ok';
+      case 'deliver':
+        return (this.delivered.get(o.id) ?? 0) >= (o.count ?? 0) ? 'win' : 'ok';
       case 'gather':
         return p.resources[o.resource ?? 'food'] >= (o.count ?? 0) ? 'win' : 'ok';
       case 'inspect': {
@@ -420,6 +423,23 @@ export class Mission {
     this.onEnd(false);
   }
 
+  /** Record a resource handed over at a site for every active `deliver` goal. */
+  recordDelivery(resource: keyof Resources, amount: number): number {
+    let recorded = 0;
+    for (const objective of this.def.objectives) {
+      if (objective.kind !== 'deliver' || objective.resource !== resource) continue;
+      if (this.objState.get(objective.id) !== 'activo') continue;
+      const next = Math.min(objective.count ?? 0, (this.delivered.get(objective.id) ?? 0) + amount);
+      const delta = next - (this.delivered.get(objective.id) ?? 0);
+      if (delta <= 0) continue;
+      this.delivered.set(objective.id, next);
+      recorded = Math.max(recorded, delta);
+      if (next >= (objective.count ?? 0)) this.complete(objective.id);
+    }
+    if (recorded > 0) this.checkAllComplete();
+    return recorded;
+  }
+
   /** World anchor of an active objective, for the minimap. */
   getObjectiveAnchor(id: string): { x: number; z: number } | null {
     const o = this.objective(id);
@@ -468,6 +488,12 @@ export class Mission {
         return { current: p.resources[o.resource ?? 'food'], target: o.count ?? 0, format: 'count' };
       case 'build':
         return { current: this.countBuilt(o), target: o.count ?? 1, format: 'count' };
+      case 'deliver':
+        return {
+          current: Math.min(this.delivered.get(o.id) ?? 0, o.count ?? 0),
+          target: o.count ?? 0,
+          format: 'count',
+        };
       case 'survive':
       case 'defend':
         return { current: Math.min(this.timer, o.time ?? 0), target: o.time ?? 0, format: 'time' };
@@ -503,6 +529,7 @@ export class Mission {
       lastFired: [...this.lastFired.entries()],
       spawnedCount: [...this.spawnedCount.entries()],
       holdTimers: [...this.holdTimers.entries()],
+      delivered: [...this.delivered.entries()],
       heritage: this.game.getVisitedHeritage(),
     };
   }
@@ -522,6 +549,7 @@ export class Mission {
     this.lastFired = new Map(s.lastFired);
     this.spawnedCount = new Map(s.spawnedCount);
     this.holdTimers = new Map(s.holdTimers ?? []);
+    this.delivered = new Map(s.delivered ?? []);
     this.game.setVisitedHeritage(s.heritage ?? []);
   }
 }

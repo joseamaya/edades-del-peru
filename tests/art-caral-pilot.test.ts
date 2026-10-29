@@ -7,20 +7,27 @@ import type { BlenderSourceManifest } from '../src/art/types';
 
 const SOURCE_MANIFEST = path.resolve('art-src/blender/caral/renders.json');
 const CSV = path.resolve('art-src/blender/caral/caral_asset_manifest.csv');
+const CHAVIN_CSV = path.resolve('art-src/blender/chavin/chavin_asset_manifest.csv');
 const EXPECTED = [
   'm1_caral-intro',
+  'm2_chavin-intro',
   'caral-architecture-pyramid',
   'caral-religion-plaza',
   'caral-map-city',
   'caral-tour-isometric',
 ];
+const EXPECTED_META: Record<string, { civilization: string; period: number; region: string }> = {
+  'm1_caral-intro': { civilization: 'caral', period: 0, region: 'central_coast' },
+  'm2_chavin-intro': { civilization: 'chavin', period: 1, region: 'andean_valley' },
+};
 
-describe('Caral Blender pilot', () => {
+describe('Blender campaign art', () => {
   it('has a valid source manifest', () => {
     const source = JSON.parse(fs.readFileSync(SOURCE_MANIFEST, 'utf8')) as BlenderSourceManifest;
     expect(validateSourceManifest(source)).toEqual([]);
     expect(source.assets.map((asset) => asset.id).sort()).toEqual([...EXPECTED].sort());
     expect(fs.existsSync(CSV)).toBe(true);
+    expect(fs.existsSync(CHAVIN_CSV)).toBe(true);
   });
 
   it('keeps ids, output paths and source hashes unique and complete', () => {
@@ -31,9 +38,12 @@ describe('Caral Blender pilot', () => {
       expect(asset.asset.startsWith('media/generated/'), asset.id).toBe(true);
       expect(asset.asset.endsWith('.webp'), asset.id).toBe(true);
       expect(asset.sourceSha256, asset.id).toMatch(/^[0-9a-f]{64}$/);
-      expect(asset.civilization, asset.id).toBe('caral');
-      expect(asset.period, asset.id).toBe(0);
-      expect(asset.region, asset.id).toBe('central_coast');
+      const meta = EXPECTED_META[asset.id];
+      if (meta) {
+        expect(asset.civilization, asset.id).toBe(meta.civilization);
+        expect(asset.period, asset.id).toBe(meta.period);
+        expect(asset.region, asset.id).toBe(meta.region);
+      }
       expect(asset.sources.length, asset.id).toBeGreaterThan(2);
     }
   });

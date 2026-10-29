@@ -216,71 +216,95 @@ export const MISSIONS: MissionDef[] = [
     subtitle: 'Horizonte Temprano · c. 900–500 a.C.',
     history:
       'Chavín de Huántar, a 3180 msnm en el Callejón de Conchucos, es el gran centro ceremonial de los Andes. Peregrinos de lejos traen ofrendas al oráculo.\n' +
-      'No hay guerra documentada: tu poder es el prestigio del culto. Reúne ofrendas, atiende la feria del templo y sostén el centro ceremonial.',
+      'No hay guerra documentada: tu poder es el prestigio del culto. Entrega ofrendas, recibe peregrinos y sostén el centro ceremonial.',
     victory:
       'La influencia de Chavín se extiende por buena parte de los Andes centrales. Su arte y su culto marcan una época.',
     defeat: 'El oráculo pierde su prestigio y el centro ceremonial declina antes de tiempo.',
     period: HistoricalPeriod.EARLY_HORIZON,
+    tutorial: true,
     playerCiv: CivId.CHAVIN,
     enemyCiv: CivId.PARACAS,
-    map: { seed: 900, type: 'andes', size: 128 },
+    map: { seed: 900, type: 'andes', size: 192 },
     timeOfDay: 'noon',
     // Callejón de Conchucos: cool highland mist around the ceremonial center.
     atmosphere: { fogDensity: 0.0042, skyTint: '#c8d6d0', sunWarmth: 0.9 },
     layout: {
-      base: { x: 0.38, z: 0.64 },
+      base: { x: 0.3, z: 0.61 },
+      site: {
+        id: 'chavin_site',
+        y: 4.6,
+        focus: { x: 0.51, z: 0.456 },
+        keepout: [{ x: 0.51, z: 0.456, rx: 0.19, rz: 0.17 }],
+        buildKeepout: [{ x: 0.51, z: 0.456, rx: 0.17, rz: 0.14 }],
+      },
       terrain: {
         // The Mosna valley and the flat ceremonial terrace.
         river: {
           name: 'Valle del Mosna',
-          z: 0.46,
+          z: 0.2,
           width: 0.035,
           valleyWidth: 0.13,
           amplitude: 0.008,
           phase: 0.4,
-          fords: [{ x: 0.38, width: 0.08 }],
+          fords: [{ x: 0.36, width: 0.08 }],
         },
-        flats: [{ name: 'Terraza ceremonial de Chavín', x: 0.38, z: 0.64, rx: 0.14, rz: 0.12 }],
+        flats: [{ name: 'Terraza ceremonial de Chavín', x: 0.51, z: 0.456, rx: 0.2, rz: 0.17 }],
       },
     },
-    mapOverrides: { terrain: { riverCount: 0 } },
+    mapOverrides: {
+      terrain: { riverCount: 0, terraceChance: 0.1 },
+      climate: { aridity: 0.05, moisture: 0.8, temperature: 0.3 },
+      vegetation: { density: 0.8 },
+      resources: { tree: 0.8, mine: 0.6, well: 0.5, hunt: 0.4, berry: 0.6 },
+      culturalLandscape: null,
+      groundTint: '#b9d29a',
+    },
     startingEra: Era.REGIONAL_STATES,
-    startingResources: { food: 250, wood: 500, silver: 150, stone: 60 },
+    startingResources: { food: 300, wood: 450, silver: 300, stone: 100 },
     start: {},
     enemy: { active: false, difficulty: 'easy', aggression: 0 },
     objectives: [
       {
         id: 'obj_ofrendas',
-        kind: 'gather',
+        kind: 'deliver',
         resource: 'silver',
         count: 250,
-        title: 'Reúne ofrendas de peregrinaje (250 de plata)',
+        pos: { ref: 'site', dx: 0, dz: 0 },
+        radius: 18,
+        title: 'Entrega 250 de plata como ofrendas en el templo',
       },
       {
         id: 'obj_peregrinaje',
         kind: 'hold',
-        pos: { ref: 'landmark', dx: 0, dz: 0 },
-        radius: 12,
+        pos: { ref: 'site', dx: 0, dz: 0 },
+        radius: 14,
         time: 60,
-        title: 'Recibe peregrinos en el templo',
+        unitKind: UnitKind.WORKER,
+        hidden: true,
+        requires: 'obj_ofrendas',
+        title: 'Recibe a los peregrinos en la Plaza Circular',
       },
       {
         id: 'obj_feria',
         kind: 'build',
         buildingKind: BuildingKind.MARKET,
         count: 1,
-        pos: { ref: 'landmark', dx: 14, dz: 0 },
+        pos: { ref: 'site', dx: 0, dz: 34 },
         radius: 16,
-        title: 'Atiende la feria de peregrinos junto al templo',
+        hidden: true,
+        requires: 'obj_ofrendas',
+        title: 'Abre la feria de peregrinos junto al templo',
       },
       { id: 'obj_sostener', kind: 'survive', time: 420, title: 'Sostén el centro ceremonial 7 minutos' },
       {
         id: 'bonus_ofrenda_mayor',
-        kind: 'gather',
+        kind: 'deliver',
         resource: 'silver',
         count: 400,
+        hidden: true,
+        requires: 'obj_ofrendas',
         optional: true,
-        title: 'Ofrenda mayor: reúne 400 de plata',
+        title: 'Ofrenda mayor: entrega 400 de plata',
       },
     ],
     triggers: [
@@ -290,7 +314,7 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'El oráculo de Chavín atrae peregrinos de lejos. Traed ofrendas y sostened el culto.',
+            text: 'Chavín de Huántar, a 3180 msnm en el Callejón de Conchucos, es el gran centro ceremonial de los Andes. Peregrinos de lejos traen ofrendas al oráculo.',
           },
         ],
       },
@@ -305,6 +329,19 @@ export const MISSIONS: MissionDef[] = [
         ],
       },
       {
+        id: 't_ofrendas',
+        condition: { type: 'objective', objectiveId: 'obj_ofrendas', state: 'completed' },
+        effects: [
+          {
+            type: 'dialogue',
+            text: 'Las ofrendas llegan al Templo del Lanzón. Abre la feria, recibe a los peregrinos y sostén el prestigio del oráculo.',
+          },
+          { type: 'objective', objectiveId: 'obj_peregrinaje', state: 'activate', announce: true },
+          { type: 'objective', objectiveId: 'obj_feria', state: 'activate', announce: true },
+          { type: 'objective', objectiveId: 'bonus_ofrenda_mayor', state: 'activate', announce: true },
+        ],
+      },
+      {
         id: 't_peregrinaje',
         condition: { type: 'objective', objectiveId: 'obj_peregrinaje', state: 'completed' },
         effects: [
@@ -313,6 +350,26 @@ export const MISSIONS: MissionDef[] = [
             text: 'El oráculo recibe a los peregrinos: las ofrendas sostienen el templo y su prestigio crece.',
           },
           { type: 'resources', player: 0, amount: { silver: 100, food: 100 } },
+        ],
+      },
+      {
+        id: 't_feria',
+        condition: { type: 'objective', objectiveId: 'obj_feria', state: 'completed' },
+        effects: [
+          {
+            type: 'dialogue',
+            text: 'La feria reúne a peregrinos y artesanos. El intercambio de larga distancia forma parte del prestigio del centro ceremonial.',
+          },
+        ],
+      },
+      {
+        id: 't_declive',
+        condition: { type: 'time', seconds: 300 },
+        effects: [
+          {
+            type: 'dialogue',
+            text: 'Los arqueólogos debaten el declive de Chavín hacia 500–200 a.C.; su influencia se fragmenta y da paso a las culturas regionales.',
+          },
         ],
       },
     ],

@@ -209,9 +209,10 @@ Definition of Done and the building audit see
 - **Landmarks (visual only)**: `Game.mapProfile.landmark` (from `landmarkForCiv(civ, period)` — period-gated and
   region-gated: see `resolveMapProfile`) drives `Game.spawnLandmark()`, which builds a cached template via
   `buildLandmarkModel` (`ProceduralModel.ts`, keyed by `landmark|civ|era`) with the landmark's own
-  civilization/era. **Caral is the exception**: it is not placed through `spawnLandmark`; `Game` loads
-  `layout.site` through `spawnAuthoredSite`, applies FOW/shadows and registers the visible Great Pyramid
-  and Anfiteatro for heritage cards. The other landmarks remain procedural. One landmark per civilization (19 total: Caral, Chavín, Cupisnique, Paracas,
+  civilization/era. **Caral and Chavín are the exceptions**: they are not placed through `spawnLandmark`;
+  `Game` loads `layout.site` through the generic `AuthoredSiteDef` registry (`src/model/defs/sites.ts`),
+  applies the per-site heightfield, transform, collision, FOW/shadows and heritage proxies. The other
+  landmarks remain procedural. One landmark per civilization (19 total: Caral, Chavín, Cupisnique, Paracas,
   Moche, Nazca, Recuay, Wari, Tiahuanaco, Chimú, Chincha, Chanca, Collas/Lupaca, Huanca, Inca, colonial,
   Patriotas, República, Chile); sources/status in `src/model/defs/landmarks.ts`. Placement is deterministic
   (`RNG(mapSeed*131+11)` on a 0.3–0.42·size ring, skipping water/beach/steep cells and player bases/resources)

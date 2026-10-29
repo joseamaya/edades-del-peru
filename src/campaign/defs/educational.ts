@@ -53,7 +53,7 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
   },
   m2_chavin: {
     briefing:
-      'Chavín de Huántar, c. 900–500 a.C. El templo y su oráculo atraen peregrinos y ofrendas de buena parte de los Andes; el prestigio del culto sostiene el centro ceremonial.',
+      'Chavín de Huántar, c. 900–500 a.C. El templo y su oráculo atraen peregrinos y ofrendas de buena parte de los Andes. Entrega ofrendas en el Edificio B, recibe a los peregrinos y sostén el prestigio del centro ceremonial.',
     context:
       'Chavín de Huántar, a 3180 msnm en el Callejón de Conchucos (Áncash), fue el gran centro ceremonial y ' +
       'de peregrinaje de los Andes. Su oráculo atraía ofrendas de lejos y su arte se difundió por buena parte ' +
@@ -64,8 +64,9 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       'Chavín declinó hacia 500–200 a.C.; su influencia artística y religiosa se fragmentó y dio paso a las ' +
       'culturas regionales del Intermedio Temprano. El centro ceremonial dejó de ser el eje del poder andino.',
     sources: [
-      { text: 'Wikipedia: Cultura chavín', url: 'https://es.wikipedia.org/wiki/Cultura_chav%C3%ADn' },
-      { text: 'Wikipedia: Horizonte Temprano', url: 'https://es.wikipedia.org/wiki/Horizonte_Temprano' },
+      { text: 'UNESCO: Chavín (Archaeological Site)', url: 'https://whc.unesco.org/en/list/330/' },
+      { text: 'Ministerio de Cultura: Plan de Manejo 2020 de Chavín.' },
+      { text: 'Rick, J. W. et al. (1998). La arquitectura del complejo ceremonial de Chavín de Huántar.' },
       { text: 'Burger, R. (1995). Chavín and the Origins of Andean Civilization.' },
     ],
   },

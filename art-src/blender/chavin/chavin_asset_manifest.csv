@@ -1,0 +1,3 @@
+id,lod,source,scale,orientation,pivot,collision,confidence,notes
+chavin_site,0,chavin_lod0_clean.blend,0.22,Y-up,ground centre,source walls + game AABB,planta documentada; remates inferidos,LOD0 runtime
+chavin_site,1,chavin_lod1_clean.blend,0.22,Y-up,ground centre,source walls + game AABB,planta documentada; remates inferidos,LOD1 runtime default

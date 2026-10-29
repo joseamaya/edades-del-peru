@@ -67,11 +67,34 @@ Anfiteatro opens a field card with its sector, role, confidence and sources; the
 without gating progress. The game does not claim that the player builds the pyramids; the epilogue connects the
 surviving architecture with the surplus and communal work the player has just organised.
 
+## Chavín pilot (m2)
+
+Historical idea: Chavín's power was ceremonial prestige, not a documented war.
+Pilgrims and long-distance offerings sustained the temple, and the feria linked
+the sanctuary to exchange networks.
+
+What the player does:
+
+1. Reaches the authored Chavín site and reads the Plaza Circular, Edificio A/B,
+   Portada and gallery field cards.
+2. Delivers five offerings of 50 silver at Edificio B. A worker must be near the
+   temple; the offering is consumed and tracked as delivered, not merely held.
+3. Completing the offering goal reveals the pilgrimage, the feria and the optional
+   major offering.
+4. Holds the Plaza Circular for 60 seconds with a worker to receive pilgrims, and
+   builds the feria outside the archaeological keep-out.
+5. Sustains the centre for seven minutes. The epilogue connects the documented
+   decline with the fragmentation of Chavín's influence.
+
+The mission deliberately does **not** add a Chavín–Paracas war: Paracas is a
+coetaneous reference, not an enemy. The feria uses the game's `Mercado` building
+as an abstraction and says so in its field card.
+
 ## Progression for the other missions
 
 | Mission                | Historical idea                          | Player action                                     | Decision                           | Consequence                   |
 | ---------------------- | ---------------------------------------- | ------------------------------------------------- | ---------------------------------- | ----------------------------- |
-| m2 Chavín              | Ceremonial prestige and pilgrimage       | Host offerings, sustain the centre                | Ceremony vs subsistence            | Prestige and continuity       |
+| m2 Chavín              | Ceremonial prestige and pilgrimage       | Deliver offerings, receive pilgrims, open feria   | Ceremony vs subsistence            | Prestige and continuity       |
 | m3 Moche–Recuay        | Valleys, canals and attested conflict    | Defend centre and canal, keep production          | Defend vs counter-raid             | Control or loss of the valley |
 | m4 Wari                | Planned expansion and provincial centres | Found a frontier centre, stockpile, sustain       | Expand vs consolidate              | Frontier influence            |
 | m5 Yahuar Pampa        | Defence of Cusco                         | Hold Cusco, protect Cusi Yupanqui, counter-attack | Resist vs sortie                   | Survival or fall              |

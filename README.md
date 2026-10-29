@@ -80,6 +80,7 @@ Mission ids remain stable (`m1_caral` … `m9_guerra_pacifico`). The released pr
 appear in menus, the Codex and progress; later-chapter drafts stay reachable with `?mission=ID`
 for QA.
 The campaign [quality bar](./docs/design/campaign-quality-bar.md) records the gates a mission must meet.
+Caral and Chavín have authored, source-backed sites; Moche/Recuay and Wari follow the same pipeline.
 
 ## Educational mode
 
@@ -88,8 +89,8 @@ The game teaches history while you play:
 - **Campaign prologue**: opening _Campañas_ presents the saga and the four-mission preinca chapter.
 - **Historical briefing**: each mission shows period and dates, geography, sides, expanded context, a
   «¿Sabías que…?» and its **sources** (collapsible).
-- **Guided tutorial**: the first mission (Caral) teaches selecting, building and exploring step by step
-  (respecting the _Mostrar consejos_ setting).
+- **Guided tutorial**: Caral teaches selecting, building and exploring; Chavín teaches the offering,
+  pilgrimage and feria loop step by step (respecting the _Mostrar consejos_ setting).
 - **Codex** (📖 in the menu): a browser of periods, civilizations and campaigns, with the **historical dossiers**
   from [`docs/historia/`](./docs/historia/) and their sources.
 

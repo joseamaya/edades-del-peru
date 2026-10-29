@@ -301,6 +301,68 @@
         "author": "Miguel Amaya",
         "renderedAt": "2026-10-23T21:07:44-05:00"
       }
+    },
+    {
+      "id": "m2_chavin-intro",
+      "type": "campaign-intro",
+      "scope": "mission",
+      "campaignId": "la-senda-del-sol",
+      "missionId": "m2_chavin",
+      "civilization": "chavin",
+      "period": 1,
+      "era": 1,
+      "region": "andean_valley",
+      "topic": "campaign_intro",
+      "sceneType": "urban_ceremonial",
+      "asset": "media/generated/campaigns/la-senda-del-sol/m2_chavin/intro.webp",
+      "variants": [
+        {
+          "asset": "media/generated/campaigns/la-senda-del-sol/m2_chavin/intro-800.webp",
+          "width": 800,
+          "height": 450,
+          "bytes": 20458
+        }
+      ],
+      "sources": [
+        "docs/historia/civilizaciones/chavin.md",
+        "docs/historia/campanas/chavin.md",
+        "docs/historia/arquitectura.md",
+        "docs/historia/mapas.md",
+        "docs/historia/fuentes.md"
+      ],
+      "promptVersion": "v1-blender-de6f44a4",
+      "prompt": "Blender render: Chavín de Huántar, Horizonte Temprano",
+      "negativePrompt": "n/a (blender render)",
+      "provider": "blender",
+      "model": "eevee",
+      "generatedAt": "2026-10-29T14:41:16.391Z",
+      "nature": "reconstruction",
+      "reviewed": false,
+      "reviewer": null,
+      "reviewedAt": null,
+      "disclaimer": "No es una fotografía histórica: es un render 3D del proyecto.",
+      "alt": "Vista del centro ceremonial de Chavín de Huántar con sus terrazas, plazas y el valle del Mosna.",
+      "caption": "Chavín de Huántar, Horizonte Temprano",
+      "width": 1280,
+      "height": 720,
+      "sourceWidth": 1600,
+      "sourceHeight": 900,
+      "crop": "cover-attention",
+      "bytes": 38654,
+      "format": "webp",
+      "sha256": "5322c8117c8afe1ddd042caa564e1d5eff98ad06c0435b2365b373d66f66acac",
+      "blender": {
+        "sceneFile": "chavin/chavin_lod0_clean.blend",
+        "sourceRender": "chavin/renders/chavin_hero.png",
+        "sourceSha256": "16bc0e3ab76e9b8468c0a268f9538ddc340f0388422b3d0c0a0d0bd8e11155d3",
+        "sceneAssetId": null,
+        "confidence": "planta documentada; techos, remates y relieves inferidos",
+        "camera": "hero",
+        "renderer": "eevee",
+        "license": "project-owned; Lanzón escaneado eliminado",
+        "author": "Miguel Amaya",
+        "renderedAt": "2026-10-29T09:39:00-05:00"
+      }
     }
   ]
 }

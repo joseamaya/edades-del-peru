@@ -2,7 +2,7 @@ import type { AuthoredHeightField } from './authoredTerrain';
 import type { HeritageBuildingId } from './heritage';
 import { CARAL_HEIGHTMAP, CARAL_HEIGHTMAP_SIZE, CARAL_HEIGHTMAP_WORLD_SIZE } from './caralHeightmap';
 
-export type AuthoredSiteId = 'caral_site';
+export type AuthoredSiteId = 'caral_site' | 'chavin_site';
 
 export interface SiteHeritageProxy {
   id: HeritageBuildingId;
@@ -87,6 +87,8 @@ export interface AuthoredSiteDef {
   anchor: { x: number; z: number };
   /** Opening/intro camera height. */
   cameraHeight: number;
+  /** Frame the base alone or the midpoint between base and site. */
+  framing?: 'midpoint' | 'site-biased' | 'site';
   heightField?: AuthoredHeightField;
   pathCellSize: number;
   heritageProxies: readonly SiteHeritageProxy[];
@@ -98,6 +100,8 @@ export interface AuthoredSiteDef {
   environs?: SiteEnvirons;
   /** Source meshes hidden because the game heightfield/scene owns that layer. */
   hideNodePatterns?: readonly RegExp[];
+  /** Clears an approach strip from the player base to the site anchor. */
+  walkableCorridor?: { width: number };
   /** Source nodes that carry a heritage card. */
   heritageNodeMap?: readonly SiteHeritageNodeMap[];
   /** Thin source surfaces that need double-sided rendering and polygon offset. */
@@ -210,6 +214,34 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       { pattern: /Caral_LOD[01]_Anfiteatro$/, id: 'caral_anfiteatro' },
     ],
     doubleSidedPatterns: [/PlazaMayor_(BandaRoja|PisoAnilloRojo|PisoRojo)$/],
+  },
+  chavin_site: {
+    id: 'chavin_site',
+    label: 'Chavín de Huántar',
+    modelName: 'chavin_site',
+    scale: 0.22,
+    origin: { x: 96, z: 96 },
+    anchor: { x: 98, z: 87.5 },
+    cameraHeight: 60,
+    framing: 'site-biased',
+    pathCellSize: 1,
+    heritageProxies: [
+      { id: 'chavin_plaza_circular', x: 98, z: 86, w: 18, d: 15, h: 5 },
+      { id: 'chavin_edificio_a', x: 107, z: 80, w: 25, d: 22, h: 18 },
+      { id: 'chavin_edificio_b', x: 90, z: 91, w: 20, d: 19, h: 13 },
+      { id: 'chavin_portada', x: 110, z: 85, w: 9, d: 7, h: 8 },
+      { id: 'chavin_galeria', x: 92, z: 86, w: 8, d: 10, h: 6 },
+    ],
+    blockers: [],
+    blockerPadding: 0.5,
+    buildKeepout: [{ x: 0.51, z: 0.456, rx: 0.17, rz: 0.14 }],
+    wallCollision: {
+      meshPatterns: [/Chavin_LOD[01]_City/],
+      maxStartYAboveBase: 1.2,
+    },
+    walkableCorridor: { width: 8 },
+    terrain: { ...DEFAULT_SITE_TERRAIN },
+    hideNodePatterns: [/Chavin_LOD[01]_(Terrain|Reference)/],
   },
 };
 

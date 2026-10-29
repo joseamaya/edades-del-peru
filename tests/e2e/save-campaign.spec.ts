@@ -59,3 +59,67 @@ test('saves and loads a campaign mission', async ({ page }) => {
   await page.waitForURL(/mission=m2_chavin/, { timeout: 30_000 });
   expect(new URL(page.url()).searchParams.has('load')).toBe(false);
 });
+
+test('saves and loads the Chavín delivered offerings', async ({ page }) => {
+  await page.goto('/?mission=m2_chavin&seed=900&fog=0&low=1');
+  await startMission(page);
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const before = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    const anchor = g.siteAnchor as { x: number; z: number };
+    const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as any;
+    worker.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+    for (let i = 0; i < 5; i++) g.makeOffering('chavin_edificio_b');
+    g.update(1 / 60, 0);
+    const dt = 1 / 60;
+    let t = 0;
+    for (let i = 0; i < Math.ceil(10 / dt); i++) {
+      worker.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+      g.update(dt, t);
+      t += dt;
+    }
+    g.saveMatch();
+    return {
+      progress: g.mission.getObjectiveProgress('obj_ofrendas'),
+      pilgrimage: g.mission.getObjectiveProgress('obj_peregrinaje'),
+      tutorialStep: g.tutorial?.toSave().stepId ?? null,
+      silver: g.players[0].resources.silver,
+    };
+  });
+  expect(before.progress.current).toBe(250);
+  expect(before.pilgrimage?.current).toBeGreaterThan(0);
+  expect(before.tutorialStep).not.toBeNull();
+  expect(before.silver).toBe(50);
+
+  await page.goto('/?load=1');
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const after = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    return {
+      progress: g.mission.getObjectiveProgress('obj_ofrendas'),
+      pilgrimage: g.mission.getObjectiveProgress('obj_peregrinaje'),
+      tutorialStep: g.tutorial?.toSave().stepId ?? null,
+      silver: g.players[0].resources.silver,
+    };
+  });
+  expect(after.progress).toEqual(before.progress);
+  expect(after.pilgrimage).toEqual(before.pilgrimage);
+  expect(after.tutorialStep).toBe(before.tutorialStep);
+  expect(after.silver).toBe(before.silver);
+});

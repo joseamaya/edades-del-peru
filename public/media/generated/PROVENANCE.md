@@ -23,6 +23,7 @@ written for external tools and offline review.
 | `caral-religion-plaza` | religion | Caral-Supe | Arcaico Tardío | central_coast | reconstruction | unreviewed | `close_anfiteatro` | `altar documentado` | `2e5426b6edf2` | [religion-plaza.webp](education/caral/religion-plaza.webp) |
 | `caral-tour-isometric` | tour-concept | Caral-Supe | Arcaico Tardío | central_coast | concept-art | unreviewed | `isometric` | `documentado en planta; remates inferidos` | `f0611f395f31` | [isometric.webp](tours/caral/isometric.webp) |
 | `m1_caral-intro` | campaign-intro | Caral-Supe | Arcaico Tardío | central_coast | concept-art | unreviewed | `hero` | `documentado en planta; techos y remates inferidos` | `428feecd5844` | [intro.webp](campaigns/la-senda-del-sol/m1_caral/intro.webp) |
+| `m2_chavin-intro` | campaign-intro | Chavín | Horizonte Temprano | andean_valley | reconstruction | unreviewed | `hero` | `planta documentada; techos, remates y relieves inferidos` | `16bc0e3ab76e` | [intro.webp](campaigns/la-senda-del-sol/m2_chavin/intro.webp) |
 
 ## Review
 

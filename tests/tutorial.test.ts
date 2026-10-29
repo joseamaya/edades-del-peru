@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Tutorial } from '../src/campaign/Tutorial';
 import { tutorialForMission } from '../src/campaign/defs/tutorials';
+import type { TutorialDef } from '../src/campaign/types';
 
 function stubGame() {
   return { buildings: new Map(), units: new Map() };
@@ -38,7 +39,9 @@ function gameForSteps() {
     },
     highlightHud() {},
     clearHudHighlight() {},
-    hideTutorial() {},
+    hideTutorial() {
+      this.last = '';
+    },
     showToast() {},
   };
   return {
@@ -70,6 +73,7 @@ describe('tutorial checks', () => {
     game.selectedUnits.push(1);
     const tutorial = tutorialAt(game, 'select');
     tutorial.update(0);
+    tutorial.update(0);
     expect(tutorial.toSave().stepId).toBe('coast');
   });
 
@@ -79,6 +83,7 @@ describe('tutorial checks', () => {
     game.resourceNodes.set(1, { kind: 'fishing', dead: false, pos: { x: 12, z: 10 } });
     const tutorial = tutorialAt(game, 'coast');
     tutorial.update(0);
+    tutorial.update(0);
     expect(tutorial.toSave().stepId).toBe('house');
   });
 
@@ -86,6 +91,7 @@ describe('tutorial checks', () => {
     const game = gameForSteps();
     game.buildings.set(1, { owner: 0, kind: 'house', dead: false, constructionComplete: true });
     const tutorial = tutorialAt(game, 'house');
+    tutorial.update(0);
     tutorial.update(0);
     expect(tutorial.toSave().stepId).toBe('farm');
   });
@@ -95,6 +101,7 @@ describe('tutorial checks', () => {
     game.units.set(1, { owner: 0, kind: 'scout', dead: false, pos: { x: 100, z: 30 } });
     const tutorial = tutorialAt(game, 'landmark');
     tutorial.update(0);
+    tutorial.update(0);
     expect(tutorial.toSave().stepId).toBe('storage');
   });
 
@@ -102,6 +109,43 @@ describe('tutorial checks', () => {
     const game = gameForSteps();
     game.buildings.set(1, { owner: 0, kind: 'mill', dead: false, constructionComplete: true });
     const tutorial = tutorialAt(game, 'storage');
+    tutorial.update(0);
+    tutorial.update(0);
+    expect(tutorial.toSave().finished).toBe(true);
+  });
+});
+
+describe('tutorial gates', () => {
+  it('fills a missing markets baseline from older saves', () => {
+    const tutorial = new Tutorial(stubGame() as any, tutorialForMission('m1_caral')!);
+    tutorial.applySave({ idx: 0, stepId: 'select', begun: true, finished: false, delay: 0, base });
+    expect(tutorial.toSave().base.markets).toBe(0);
+  });
+
+  it('waits for a gated step instead of silently skipping it', () => {
+    const game = gameForSteps();
+    let state = 'activo';
+    game.mission.getObjectiveState = () => state;
+    const def: TutorialDef = {
+      steps: [
+        {
+          id: 'gated',
+          text: 'Paso condicionado',
+          gateObjective: 'obj',
+          check: { type: 'objectiveCompleted', objectiveId: 'obj' },
+        },
+      ],
+    };
+    const tutorial = new Tutorial(game as any, def);
+    tutorial.update(2);
+    expect(game.hud.last).toBe('Paso condicionado');
+    state = 'pendiente';
+    tutorial.update(0);
+    expect(game.hud.last).toBe('');
+    state = 'activo';
+    tutorial.update(0);
+    expect(game.hud.last).toBe('Paso condicionado');
+    state = 'completed';
     tutorial.update(0);
     expect(tutorial.toSave().finished).toBe(true);
   });

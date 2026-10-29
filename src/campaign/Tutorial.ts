@@ -16,6 +16,7 @@ export class Tutorial {
   private begun = false;
   private finished = false;
   private delay = 0;
+  private visible = false;
   private base: TutorialBase;
 
   constructor(game: Game, def: TutorialDef) {
@@ -30,6 +31,7 @@ export class Tutorial {
       soldiers: countU(UnitKind.SOLDIER),
       farms: countB(BuildingKind.FARM),
       mills: countB(BuildingKind.MILL),
+      markets: countB(BuildingKind.MARKET),
     };
     this.pasos = def.steps;
   }
@@ -46,6 +48,15 @@ export class Tutorial {
       return;
     }
     const paso = this.pasos[this.idx];
+    if (!this.gateOpen(paso)) {
+      if (this.visible) this.game.hud.hideTutorial();
+      this.visible = false;
+      return;
+    }
+    if (!this.visible) {
+      this.show();
+      return;
+    }
     if (this.checkStep(paso)) {
       this.idx++;
       if (this.idx >= this.pasos.length) {
@@ -82,6 +93,8 @@ export class Tutorial {
         const baseline = this.base[paso.check.baseline] ?? 0;
         return this.countBuilt(paso.check.buildingKind) > baseline;
       }
+      case 'objectiveCompleted':
+        return game.mission?.getObjectiveState(paso.check.objectiveId) === 'completed';
       case 'approachSite': {
         const landmark = game.landmark;
         if (!landmark) return false;
@@ -104,16 +117,13 @@ export class Tutorial {
   }
 
   private show(): void {
-    while (this.idx < this.pasos.length) {
-      const candidate = this.pasos[this.idx];
-      if (this.gateOpen(candidate)) break;
-      this.idx++;
-    }
-    if (this.idx >= this.pasos.length) {
-      this.finish();
+    const paso = this.pasos[this.idx];
+    if (!paso || !this.gateOpen(paso)) {
+      this.visible = false;
+      this.game.hud.hideTutorial();
       return;
     }
-    const paso = this.pasos[this.idx];
+    this.visible = true;
     this.game.hud.showTutorialStep(paso.text, this.idx, this.pasos.length, () => this.finish());
     if (paso.highlight) this.game.hud.highlightHud(paso.highlight);
     else this.game.hud.clearHudHighlight();
@@ -122,6 +132,7 @@ export class Tutorial {
   private finish(): void {
     if (this.finished) return;
     this.finished = true;
+    this.visible = false;
     this.game.hud.hideTutorial();
     this.game.hud.showToast('🎓 Tutorial completado. ¡Buena suerte, estratega!', 'success');
   }
@@ -152,6 +163,7 @@ export class Tutorial {
       ...s.base,
       farms: s.base.farms ?? 0,
       mills: s.base.mills ?? 0,
+      markets: s.base.markets ?? 0,
     };
   }
 }

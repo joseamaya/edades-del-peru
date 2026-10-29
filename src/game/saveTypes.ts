@@ -22,6 +22,7 @@ export interface TutorialBase {
   soldiers: number;
   farms?: number;
   mills?: number;
+  markets?: number;
 }
 
 export interface UnitSave {
@@ -108,6 +109,8 @@ export interface MissionSave {
   spawnedCount: [string, number][];
   /** Per-hold-objective elapsed time (optional for older saves). */
   holdTimers?: [string, number][];
+  /** Per-deliver-objective amount already handed over (optional for older saves). */
+  delivered?: [string, number][];
   /** Optional heritage field cards recorded during the mission. */
   heritage?: HeritageBuildingId[];
 }
