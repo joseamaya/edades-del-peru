@@ -11,6 +11,7 @@ const SLOW_SPECS = [
   '**/ai.spec.ts',
   '**/campaign-completable.spec.ts',
   '**/campaign-playtest.spec.ts',
+  '**/chavin-campaign.spec.ts',
   '**/caral-city.spec.ts',
   '**/caral-scene.spec.ts',
   '**/caral-worker.spec.ts',

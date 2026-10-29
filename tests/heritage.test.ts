@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import { HERITAGE_BUILDINGS, getHeritageBuilding } from '../src/model/defs/heritage';
 
-describe('Caral heritage buildings', () => {
+describe('campaign heritage buildings', () => {
   it('registers every modular Caral structure with a stable id', () => {
     const ids = Object.keys(HERITAGE_BUILDINGS);
     expect(ids).toEqual([
@@ -14,6 +14,11 @@ describe('Caral heritage buildings', () => {
       'caral_pyramid_huanca',
       'caral_canal',
       'caral_anfiteatro',
+      'chavin_plaza_circular',
+      'chavin_edificio_a',
+      'chavin_edificio_b',
+      'chavin_portada',
+      'chavin_galeria',
     ]);
     for (const id of ids) {
       expect(HERITAGE_BUILDINGS[id as keyof typeof HERITAGE_BUILDINGS].id).toBe(id);
@@ -28,6 +33,11 @@ describe('Caral heritage buildings', () => {
         expect(fs.existsSync(source), source).toBe(true);
       }
     }
+  });
+
+  it('exposes the Chavín offering on the Lanzón temple card', () => {
+    expect(HERITAGE_BUILDINGS.chavin_edificio_b.operation).toBe('offer');
+    expect(HERITAGE_BUILDINGS.chavin_edificio_b.operationResource).toBe('silver');
   });
 
   it('distinguishes the documented hero structures from plausible readings', () => {

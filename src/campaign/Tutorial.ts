@@ -30,6 +30,7 @@ export class Tutorial {
       soldiers: countU(UnitKind.SOLDIER),
       farms: countB(BuildingKind.FARM),
       mills: countB(BuildingKind.MILL),
+      markets: countB(BuildingKind.MARKET),
     };
     this.pasos = def.steps;
   }
@@ -82,6 +83,10 @@ export class Tutorial {
         const baseline = this.base[paso.check.baseline] ?? 0;
         return this.countBuilt(paso.check.buildingKind) > baseline;
       }
+      case 'delivered':
+        return (game.mission?.getObjectiveProgress(paso.check.objectiveId)?.current ?? 0) > 0;
+      case 'objectiveCompleted':
+        return game.mission?.getObjectiveState(paso.check.objectiveId) === 'completed';
       case 'approachSite': {
         const landmark = game.landmark;
         if (!landmark) return false;
@@ -152,6 +157,7 @@ export class Tutorial {
       ...s.base,
       farms: s.base.farms ?? 0,
       mills: s.base.mills ?? 0,
+      markets: s.base.markets ?? 0,
     };
   }
 }

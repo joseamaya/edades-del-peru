@@ -88,7 +88,6 @@ test('the Caral mission uses the authored site instead of a modular landmark', a
 
 test('period maps place their own landmark on land', async ({ page }) => {
   const missions: [string, string][] = [
-    ['m2_chavin', 'chavin_temple'],
     ['m3_moche_recuay', 'moche_huaca'],
     ['m4_wari', 'wari_compound'],
     ['m5_yahuar_pampa', 'inca_ushnu'],

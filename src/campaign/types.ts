@@ -109,6 +109,7 @@ export type ObjectiveKind =
   | 'gather'
   | 'reach_era'
   | 'inspect'
+  | 'deliver'
   | 'canal_open';
 
 export type ObjState = 'pendiente' | 'activo' | 'completed' | 'failed';
@@ -199,12 +200,14 @@ export interface MissionAtmosphere {
   sunWarmth?: number;
 }
 
-export type TutorialBuildBaseline = 'houses' | 'farms' | 'mills';
+export type TutorialBuildBaseline = 'houses' | 'farms' | 'mills' | 'markets';
 
 export type TutorialCheck =
   | { type: 'selectUnit'; unitKind: UnitKind }
   | { type: 'reachFishing'; radius: number }
   | { type: 'build'; buildingKind: BuildingKind; baseline: TutorialBuildBaseline }
+  | { type: 'delivered'; objectiveId: string }
+  | { type: 'objectiveCompleted'; objectiveId: string }
   | { type: 'approachSite'; radius: number; unitKind?: UnitKind };
 
 export interface TutorialStepDef {

@@ -202,3 +202,84 @@ test('plays m1 Caral with real construction and gathering, without objective che
   expect(out.objectives.obj_sostener).toBe('completed');
   expect(errors).toEqual([]);
 });
+
+test('plays m2 Chavín with real construction and the offering mechanic', async ({ page }) => {
+  test.setTimeout(180_000);
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+
+  await page.goto('/?mission=m2_chavin&seed=900&fog=0&low=1&noloop=1&intro=0');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game?.mission !== undefined, null, {
+    timeout: 30_000,
+  });
+  const overlay = page.locator('.ed-overlay', { hasText: 'El Oráculo de Chavín' });
+  await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+  await overlay.waitFor({ state: 'detached', timeout: 15_000 });
+
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const workers = [...g.units.values()].filter((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as any[];
+    const anchor = g.siteAnchor as { x: number; z: number };
+    if (workers.length < 2 || !anchor) return { setup: false };
+
+    const spot = g.findFreeSpot(anchor.x, anchor.z + 34, 5);
+    if (!spot || !g.executeCommand({ kind: 'place', building: 'market', x: spot.x, z: spot.z })) {
+      return { setup: false, reason: 'market placement' };
+    }
+    const market = [...g.buildings.values()].find(
+      (b: any) => b.owner === 0 && b.kind === 'market' && !b.dead && b.pos.x === spot.x && b.pos.z === spot.z,
+    ) as any;
+    if (!market) return { setup: false, reason: 'market missing' };
+    g.executeCommand(
+      { kind: 'order', unitIds: [workers[0].id], order: { kind: 'build', entityId: market.id }, clear: true },
+      false,
+    );
+    const holder = workers[1];
+    g.executeCommand(
+      {
+        kind: 'order',
+        unitIds: [holder.id],
+        order: { kind: 'move', target: { x: anchor.x, z: anchor.z } },
+        clear: true,
+      },
+      false,
+    );
+    const dt = 1 / 60;
+    let t = 0;
+    let offered = false;
+    let reached = false;
+    for (let i = 0; i < Math.ceil(500 / dt) && !g.mission.ended; i++) {
+      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
+      for (const b of g.buildings.values()) if (b.owner === 0 && !b.dead) b.hp = b.maxHp;
+      if (!reached && Math.hypot(holder.pos.x - anchor.x, holder.pos.z - anchor.z) < 8) reached = true;
+      if (!offered && market.constructionComplete && reached) {
+        for (let k = 0; k < 5; k++) g.makeOffering('chavin_edificio_b');
+        offered = true;
+      }
+      g.update(dt, t);
+      t += dt;
+    }
+    return {
+      setup: true,
+      offered,
+      reached,
+      marketComplete: market.constructionComplete,
+      won: g.mission.won,
+      ended: g.mission.ended,
+      states: Object.fromEntries(g.mission.def.objectives.map((o: any) => [o.id, g.mission.getObjectiveState(o.id)])),
+    };
+  });
+
+  expect(out.setup, JSON.stringify(out)).toBe(true);
+  expect(out.reached, JSON.stringify(out)).toBe(true);
+  expect(out.offered, JSON.stringify(out)).toBe(true);
+  expect(out.marketComplete, JSON.stringify(out)).toBe(true);
+  expect(out.states.obj_ofrendas).toBe('completed');
+  expect(out.states.obj_peregrinaje).toBe('completed');
+  expect(out.states.obj_feria).toBe('completed');
+  expect(out.states.obj_sostener).toBe('completed');
+  expect(out.won, JSON.stringify(out)).toBe(true);
+  expect(errors).toEqual([]);
+});

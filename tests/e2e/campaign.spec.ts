@@ -292,7 +292,7 @@ test('authored campaign geography spawns its local base and features', async ({ 
   }
 });
 
-test('m2 pilgrimage at the temple funds the oracle', async ({ page }) => {
+test('m2 offerings open the pilgrimage and reward the oracle', async ({ page }) => {
   await page.goto('/?mission=m2_chavin&seed=777&fog=0&low=1&noloop=1');
   await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
     timeout: 30_000,
@@ -302,31 +302,38 @@ test('m2 pilgrimage at the temple funds the oracle', async ({ page }) => {
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
     const m = g.mission;
-    const landmark = g.landmark as any;
+    const anchor = g.siteAnchor as { x: number; z: number } | null;
     const unit = [...g.units.values()].find((u: any) => u.owner === 0 && !u.dead) as any;
-    if (!landmark || !unit) return { landmark: false, unit: false, state: 'missing', before: 0, after: 0 };
-    const before = g.players[0].resources.silver as number;
+    if (!anchor || !unit) return { anchor: false, unit: false };
+    unit.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+    for (let i = 0; i < 5; i++) g.makeOffering('chavin_edificio_b');
+    g.update(1 / 60, 0);
+    const afterOffers = {
+      silver: g.players[0].resources.silver as number,
+      offerings: m.getObjectiveState('obj_ofrendas') as string,
+      pilgrimage: m.getObjectiveState('obj_peregrinaje') as string,
+      feria: m.getObjectiveState('obj_feria') as string,
+    };
     const dt = 1 / 60;
     for (let i = 0; i < Math.ceil(65 / dt) && !m.ended; i++) {
-      unit.pos.set(
-        landmark.position.x,
-        g.terrain.getHeight(landmark.position.x, landmark.position.z),
-        landmark.position.z,
-      );
+      unit.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
       g.update(dt, i * dt);
     }
     return {
-      landmark: true,
+      anchor: true,
       unit: true,
-      state: m.getObjectiveState('obj_peregrinaje') as string,
-      before,
-      after: g.players[0].resources.silver as number,
+      afterOffers,
+      pilgrimage: m.getObjectiveState('obj_peregrinaje') as string,
+      silver: g.players[0].resources.silver as number,
     };
   });
-  expect(out.landmark).toBe(true);
+  expect(out.anchor).toBe(true);
   expect(out.unit).toBe(true);
-  expect(out.state).toBe('completed');
-  expect(out.after).toBeGreaterThanOrEqual(out.before + 100);
+  expect(out.afterOffers.offerings).toBe('completed');
+  expect(out.afterOffers.pilgrimage).toBe('activo');
+  expect(out.afterOffers.feria).toBe('activo');
+  expect(out.pilgrimage).toBe('completed');
+  expect(out.silver).toBeGreaterThan(out.afterOffers.silver);
 });
 
 test('m4 two centers open the contested frontier', async ({ page }) => {
@@ -580,35 +587,30 @@ test('a bonus objective does not gate victory', async ({ page }) => {
     const m = g.mission;
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
+    const anchor = g.siteAnchor as { x: number; z: number } | null;
+    const unit = [...g.units.values()].find((u: any) => u.owner === 0 && !u.dead) as any;
+    if (!anchor || !unit) return { setup: false };
+    unit.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+    for (let i = 0; i < 5; i++) g.makeOffering('chavin_edificio_b');
+    g.update(1 / 60, 0);
+    g.spawnScriptedBuilding('market', 0, anchor.x, anchor.z + 34);
     const dt = 1 / 60;
     let t = 0;
-    const landmark = g.landmark as any;
-    const unit = [...g.units.values()].find((u: any) => u.owner === 0 && !u.dead) as any;
-    for (let i = 0; i < Math.ceil(440 / dt) && !m.ended; i++) {
+    for (let i = 0; i < Math.ceil(500 / dt) && !m.ended; i++) {
       for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
       for (const b of g.buildings.values()) if (b.owner === 0 && !b.dead) b.hp = b.maxHp;
-      // satisfy the required offerings (250) but stay below the bonus (400)
-      g.players[0].resources.silver = 250;
-      const target = { x: landmark.position.x, z: landmark.position.z };
-      if (unit) unit.pos.set(target.x, g.terrain.getHeight(target.x, target.z), target.z);
-      const have = [...g.buildings.values()].filter(
-        (b: any) =>
-          b.owner === 0 &&
-          b.kind === 'market' &&
-          b.constructionComplete &&
-          !b.dead &&
-          Math.hypot(b.pos.x - (target.x + 14), b.pos.z - target.z) <= 16,
-      ).length;
-      if (have < 1) g.spawnScriptedBuilding('market', 0, target.x + 14, target.z);
+      unit.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
       g.update(dt, t);
       t += dt;
     }
     return {
+      setup: true,
       won: m.won as boolean | null,
       required: m.getObjectiveState('obj_ofrendas') as string,
       bonus: m.getObjectiveState('bonus_ofrenda_mayor') as string,
     };
   });
+  expect(out.setup).toBe(true);
   expect(out.required).toBe('completed');
   expect(out.bonus).not.toBe('completed');
   expect(out.won).toBe(true);

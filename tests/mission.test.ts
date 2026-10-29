@@ -189,3 +189,41 @@ describe('mission hidden-objective reveals', () => {
     expect(toasts.some((t) => t.includes('Objetivo completado: secreto'))).toBe(true);
   });
 });
+
+describe('mission delivery objectives', () => {
+  it('tracks delivered resources, wins at the target and round-trips through a save', () => {
+    const unit = { id: 1, tag: 'guarda', owner: 0, dead: false, kind: UnitKind.WORKER };
+    const game = stubGame(unit) as any;
+    const deliverDef: MissionDef = {
+      ...def,
+      objectives: [{ id: 'offer', kind: 'deliver', resource: 'silver', count: 10, title: 'ofrenda' }],
+      triggers: [],
+    };
+    const m = new Mission(game, deliverDef, () => {});
+    m.start();
+    expect(m.recordDelivery('silver', 4)).toBe(4);
+    expect(m.getObjectiveProgress('offer')).toEqual({ current: 4, target: 10, format: 'count' });
+    const saved = m.toSave();
+    const loaded = new Mission(game, deliverDef, () => {});
+    loaded.start();
+    loaded.applySave(saved);
+    expect(loaded.getObjectiveProgress('offer')).toEqual({ current: 4, target: 10, format: 'count' });
+    expect(loaded.recordDelivery('silver', 6)).toBe(6);
+    expect(loaded.getObjectiveState('offer')).toBe('completed');
+    expect(loaded.won).toBe(true);
+  });
+
+  it('ignores deliveries before a hidden goal is active', () => {
+    const unit = { id: 1, tag: 'guarda', owner: 0, dead: false, kind: UnitKind.WORKER };
+    const game = stubGame(unit) as any;
+    const deliverDef: MissionDef = {
+      ...def,
+      objectives: [{ id: 'offer', kind: 'deliver', resource: 'silver', count: 10, hidden: true, title: 'ofrenda' }],
+      triggers: [],
+    };
+    const m = new Mission(game, deliverDef, () => {});
+    m.start();
+    expect(m.recordDelivery('silver', 5)).toBe(0);
+    expect(m.getObjectiveState('offer')).toBe('pendiente');
+  });
+});

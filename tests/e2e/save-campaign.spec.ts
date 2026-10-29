@@ -59,3 +59,52 @@ test('saves and loads a campaign mission', async ({ page }) => {
   await page.waitForURL(/mission=m2_chavin/, { timeout: 30_000 });
   expect(new URL(page.url()).searchParams.has('load')).toBe(false);
 });
+
+test('saves and loads the Chavín delivered offerings', async ({ page }) => {
+  await page.goto('/?mission=m2_chavin&seed=900&fog=0&low=1');
+  await startMission(page);
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const before = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    const anchor = g.siteAnchor as { x: number; z: number };
+    const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as any;
+    worker.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+    g.makeOffering('chavin_edificio_b');
+    g.makeOffering('chavin_edificio_b');
+    g.saveMatch();
+    return {
+      progress: g.mission.getObjectiveProgress('obj_ofrendas'),
+      silver: g.players[0].resources.silver,
+    };
+  });
+  expect(before.progress.current).toBe(100);
+  expect(before.silver).toBe(200);
+
+  await page.goto('/?load=1');
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const after = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    return {
+      progress: g.mission.getObjectiveProgress('obj_ofrendas'),
+      silver: g.players[0].resources.silver,
+    };
+  });
+  expect(after.progress).toEqual(before.progress);
+  expect(after.silver).toBe(before.silver);
+});

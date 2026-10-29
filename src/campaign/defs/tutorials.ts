@@ -4,6 +4,38 @@ import type { TutorialDef } from '../types';
 const buildBottom = '#ed-bottom';
 
 const TUTORIALS: Record<string, TutorialDef> = {
+  m2_chavin: {
+    steps: [
+      {
+        id: 'select',
+        text: 'Selecciona a tus obreros: haz clic izquierdo sobre uno o arrastra un recuadro para seleccionar varios.',
+        check: { type: 'selectUnit', unitKind: UnitKind.WORKER },
+      },
+      {
+        id: 'temple',
+        text: 'Lleva un obrero al conjunto ceremonial y observa la Plaza Circular y el Templo del Lanzón.',
+        check: { type: 'approachSite', radius: 14, unitKind: UnitKind.WORKER },
+      },
+      {
+        id: 'offer',
+        text: 'Con un obrero junto al templo, selecciona el Edificio B y entrega una ofrenda de plata.',
+        check: { type: 'delivered', objectiveId: 'obj_ofrendas' },
+      },
+      {
+        id: 'market',
+        text: 'Abre la feria de peregrinos: construye un mercado junto al templo.',
+        highlight: '#ed-bottom',
+        gateObjective: 'obj_feria',
+        check: { type: 'build', buildingKind: BuildingKind.MARKET, baseline: 'markets' },
+      },
+      {
+        id: 'pilgrimage',
+        text: 'Mantén un obrero en la Plaza Circular hasta completar la recepción de peregrinos.',
+        gateObjective: 'obj_peregrinaje',
+        check: { type: 'objectiveCompleted', objectiveId: 'obj_peregrinaje' },
+      },
+    ],
+  },
   m1_caral: {
     steps: [
       {

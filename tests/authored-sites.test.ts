@@ -32,7 +32,13 @@ describe('authored campaign sites', () => {
   it('gives the first mission a stable, serializable tutorial definition', () => {
     const tutorial = tutorialForMission('m1_caral');
     expect(tutorial?.steps.map((s) => s.id)).toEqual(['select', 'coast', 'house', 'farm', 'landmark', 'storage']);
-    expect(tutorialForMission('m2_chavin')).toBeUndefined();
+    expect(tutorialForMission('m2_chavin')?.steps.map((s) => s.id)).toEqual([
+      'select',
+      'temple',
+      'offer',
+      'market',
+      'pilgrimage',
+    ]);
   });
 
   it('registers sites with unique ids and sensible defaults', () => {

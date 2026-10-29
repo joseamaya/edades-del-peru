@@ -138,7 +138,7 @@ describe('campaign educational content', () => {
       const nonCombat =
         id === 'm1_caral'
           ? ['gather', 'build', 'survive', 'hold', 'inspect', 'canal_open']
-          : ['gather', 'build', 'survive', 'hold'];
+          : ['gather', 'build', 'survive', 'hold', 'deliver'];
       for (const o of mis.objectives) expect(nonCombat, `${id}/${o.id}`).toContain(o.kind);
       expect(
         mis.objectives.some((o) => o.kind === 'build'),
@@ -242,7 +242,12 @@ describe('campaign educational content', () => {
   it('m2 has a pilgrimage hold, offerings and an oracle reward', () => {
     const m2 = MISSIONS.find((m) => m.id === 'm2_chavin')!;
     expect(m2.objectives.some((o) => o.id === 'obj_peregrinaje' && o.kind === 'hold')).toBe(true);
-    expect(m2.objectives.some((o) => o.id === 'obj_ofrendas' && o.resource === 'silver')).toBe(true);
+    expect(m2.objectives.some((o) => o.id === 'obj_ofrendas' && o.kind === 'deliver' && o.resource === 'silver')).toBe(
+      true,
+    );
+    expect(m2.objectives.find((o) => o.id === 'obj_peregrinaje')?.hidden).toBe(true);
+    expect(m2.objectives.find((o) => o.id === 'obj_feria')?.hidden).toBe(true);
+    expect(m2.triggers.some((t) => t.id === 't_ofrendas')).toBe(true);
     expect(m2.triggers.some((t) => t.id === 't_peregrinaje')).toBe(true);
   });
 

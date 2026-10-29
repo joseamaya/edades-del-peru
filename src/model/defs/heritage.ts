@@ -1,3 +1,5 @@
+import type { Resources } from '../../core/types';
+
 export type HeritageBuildingId =
   | 'caral_pyramid_mayor'
   | 'caral_pyramid_central'
@@ -6,9 +8,14 @@ export type HeritageBuildingId =
   | 'caral_pyramid_gallery'
   | 'caral_pyramid_huanca'
   | 'caral_anfiteatro'
-  | 'caral_canal';
+  | 'caral_canal'
+  | 'chavin_plaza_circular'
+  | 'chavin_edificio_a'
+  | 'chavin_edificio_b'
+  | 'chavin_portada'
+  | 'chavin_galeria';
 
-export type HeritageSector = 'Caral Alto' | 'Caral Bajo';
+export type HeritageSector = 'Caral Alto' | 'Caral Bajo' | 'Chavín';
 
 export interface HeritageBuildingDef {
   id: HeritageBuildingId;
@@ -19,7 +26,10 @@ export interface HeritageBuildingDef {
   confidence: string;
   citation: string;
   /** Optional scenario operation exposed by the field card. */
-  operation?: 'toggle-canal' | 'assembly';
+  operation?: 'toggle-canal' | 'assembly' | 'offer';
+  /** Resource and amount consumed by an `offer` operation. */
+  operationResource?: keyof Resources;
+  operationAmount?: number;
   sources: string[];
 }
 
@@ -113,6 +123,64 @@ export const HERITAGE_BUILDINGS: Record<HeritageBuildingId, HeritageBuildingDef>
     confidence: 'documentado en planta; graderíos simplificados',
     citation: 'Dossier de Caral · UNESCO / Zona Arqueológica Caral',
     sources: ['docs/historia/civilizaciones/caral.md', 'docs/historia/arquitectura.md'],
+  },
+  chavin_plaza_circular: {
+    id: 'chavin_plaza_circular',
+    name: 'Plaza Circular Hundida',
+    sector: 'Chavín',
+    role: 'Plaza ritual y atrio',
+    summary:
+      'La Plaza Circular Hundida y el atrio del Lanzón forman el núcleo del conjunto tradicionalmente llamado Templo Antiguo. El pavimento, las gradas y las escalinatas organizan un acceso ritual; la reconstrucción no inventa techos no conservados.',
+    confidence: 'documentado en planta; remates inferidos',
+    citation: 'Dossier de Chavín · UNESCO 330 / Ministerio de Cultura',
+    sources: ['docs/historia/civilizaciones/chavin.md', 'docs/historia/campanas/chavin.md'],
+  },
+  chavin_edificio_a: {
+    id: 'chavin_edificio_a',
+    name: 'Edificio A · Pirámide Mayor',
+    sector: 'Chavín',
+    role: 'Templo y terraza monumental',
+    summary:
+      'El Edificio A, tradicionalmente “Templo Nuevo” o “Castillo”, se organiza en terrazas y mira al este. La Portada de las Falcónidas marca su fachada principal; la secuencia cronológica del conjunto sigue en revisión.',
+    confidence: 'documentado; alturas y cubiertas inferidas',
+    citation: 'Dossier de Chavín · Plan de Manejo 2020',
+    sources: ['docs/historia/civilizaciones/chavin.md', 'docs/historia/campanas/chavin.md'],
+  },
+  chavin_edificio_b: {
+    id: 'chavin_edificio_b',
+    name: 'Edificio B · Templo del Lanzón',
+    sector: 'Chavín',
+    role: 'Galería y santuario interior',
+    summary:
+      'El Edificio B alberga la Galería del Lanzón. El Lanzón es una reconstrucción propia y simplificada, no la malla escaneada de CyArk; su escala y posición siguen las fuentes publicadas. Entrega aquí las ofrendas para sostener el culto.',
+    confidence: 'planta documentada; escultura y cubierta interpretadas',
+    citation: 'Dossier de Chavín · Rick et al. 1998 / UNESCO 330',
+    operation: 'offer',
+    operationResource: 'silver',
+    operationAmount: 50,
+    sources: ['docs/historia/civilizaciones/chavin.md', 'docs/historia/campanas/chavin.md'],
+  },
+  chavin_portada: {
+    id: 'chavin_portada',
+    name: 'Portada de las Falcónidas',
+    sector: 'Chavín',
+    role: 'Fachada ritual del Edificio A',
+    summary:
+      'La portada reúne dos columnas circulares, jambas trilíticas y un friso partido. Las tallas de esta reconstrucción son una lectura geométrica, no una reproducción iconográfica exacta; el dintel se omite por falta de evidencia.',
+    confidence: 'documentado en escala; relieves interpretativos',
+    citation: 'Dossier de Chavín · Plan de Manejo 2020',
+    sources: ['docs/historia/civilizaciones/chavin.md', 'docs/historia/campanas/chavin.md'],
+  },
+  chavin_galeria: {
+    id: 'chavin_galeria',
+    name: 'Galería y ventilación',
+    sector: 'Chavín',
+    role: 'Red interna ceremonial',
+    summary:
+      'El conjunto conserva una red de galerías, ductos y drenajes. El juego modela una secuencia representativa, no las 22 galerías completas; el recorrido es una abstracción didáctica de un espacio documentado.',
+    confidence: 'documentado; secuencia representativa',
+    citation: 'Dossier de Chavín · UNESCO 330',
+    sources: ['docs/historia/civilizaciones/chavin.md', 'docs/historia/campanas/chavin.md'],
   },
 };
 

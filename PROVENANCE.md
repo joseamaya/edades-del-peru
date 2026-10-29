@@ -163,6 +163,29 @@ slot is absent (offline / without assets).
   photograph. Its residential compounds are low-walled source forms; no invented roofs or extra
   houses are added. Roofs, awnings, fires and painted surfaces are inferred in the source.
 
+### Chavín sacred site (m2 runtime)
+
+- **Location**: `src/assets/sites/chavin/chavin_site_lod0.glb` and `chavin_site_lod1.glb`.
+- **SHA-256**: LOD0 `d54ef3625d3032bae969f016eb5b8bf6439b364cbd34faa76fcac0f5e234fe08`;
+  LOD1 `2a269c5628575554dc4e4cdd00e52b6c89aec64936cde145ca25e4328348b7bb`.
+- **Source**: `art-src/blender/chavin/chavin_lod0_clean.blend` /
+  `chavin_lod1_clean.blend` (LFS), derived from the project's Chavín preview and
+  re-exported with `scripts/blender/export_chavin_site.py`.
+- **Licence cleanup**: the source preview's Lanzón was a derived CyArk / Google
+  Arts & Culture scan under CC BY-NC-SA 4.0. That mesh and its material were
+  removed before committing the sources and GLBs. The game uses a project-owned
+  low-poly Lanzón interpretation; no NC geometry or material remains.
+- **Content**: Edificio A/B, Plaza Circular, Portada de las Falcónidas, one
+  representative gallery sequence, terraces, paths, vegetation and water. The
+  source terrain and reference layers are hidden at load; the game owns terrain,
+  vegetation, fauna and collision.
+- **Runtime**: `src/model/defs/sites.ts` (scale `0.22`, origin `(96,96)`, anchor
+  `(98,87.5)`), `src/rendering/siteModels.ts` (Draco/WebP), and
+  `src/core/Game.ts` for heightfield, collision and heritage proxies.
+- **Historical caveat**: representative centre, not a survey. Roofs, heights and
+  some reliefs are inferred; the Lanzón is an interpretation, not the scan. See
+  `docs/design/chavin-sacred-site.md`.
+
 ## Rigged 3D models
 
 - **Location**: `src/assets/models/*.glb` (loaded by `src/rendering/ModelAssets.ts`).
