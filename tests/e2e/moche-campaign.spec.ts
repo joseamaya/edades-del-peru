@@ -18,19 +18,78 @@ test('m3 loads the authored Huacas de Moche site', { tag: '@smoke' }, async ({ p
     g.landmark?.traverse((o: any) => {
       if (o.isMesh && o.visible) names.push(o.name);
     });
+    const proxy = (name: string) => {
+      const p = g.landmark?.getObjectByName(name);
+      return p ? { x: p.position.x, z: p.position.z } : null;
+    };
     return {
       model: g.landmark?.getObjectByName('moche_site')?.name ?? null,
       procedural: g.landmark?.getObjectByName('moche_huaca')?.name ?? null,
       heritage: g.landmark?.getObjectByName('moche_huaca_luna')?.userData?.heritageId ?? null,
       anchor: g.siteAnchor,
+      proxies: {
+        sol: proxy('moche_huaca_sol'),
+        luna: proxy('moche_huaca_luna'),
+        plaza: proxy('moche_plaza'),
+      },
+      blocked: g.pathfinder.isWalkable(132.5, 71),
+      anchorWalkable: g.pathfinder.isWalkable(g.siteAnchor.x, g.siteAnchor.z),
       names,
     };
   });
   expect(out.model).toBe('moche_site');
   expect(out.procedural).toBeNull();
   expect(out.heritage).toBe('moche_huaca_luna');
-  expect(out.anchor).toEqual({ x: 121, z: 85 });
+  expect(out.anchor).toEqual({ x: 123, z: 81 });
+  expect(out.proxies.sol).toEqual({ x: 109.5, z: 73 });
+  expect(out.proxies.luna).toEqual({ x: 132.5, z: 71 });
+  expect(out.proxies.plaza).toEqual({ x: 121, z: 76 });
+  expect(out.blocked).toBe(false);
+  expect(out.anchorWalkable).toBe(true);
   expect(out.names.some((name) => /Moche_LOD1_(Apron|Terrain)/.test(name))).toBe(false);
+});
+
+test('m3 canal and exchange field-card buttons work', async ({ page }) => {
+  await start(page);
+  const bottom = page.locator('#ed-bottom');
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    g.selectedHeritage = 'moche_canal';
+    g.hud.update(0.2, 0);
+  });
+  await expect(bottom).toContainText('Abrir compuerta');
+  await page.getByRole('button', { name: /Abrir compuerta/ }).click();
+  await page.evaluate(() => (window as unknown as { game: any }).game.update(1 / 60, 0));
+  expect(await page.evaluate(() => (window as unknown as { game: any }).game.isCanalOpen())).toBe(true);
+
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const anchor = g.siteAnchor as { x: number; z: number };
+    for (const u of g.units.values())
+      if (u.owner === 0 && !u.dead) u.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+    const dt = 1 / 60;
+    let t = 0;
+    for (let i = 0; i < Math.ceil(95 / dt); i++) {
+      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
+      g.update(dt, t);
+      t += dt;
+    }
+    g.selectedHeritage = 'moche_huaca_luna';
+    g.hud.update(0.2, 0);
+  });
+  await expect(bottom).toContainText('Intercambiar');
+  for (let i = 0; i < 5; i++) {
+    await page.getByRole('button', { name: /Intercambiar/ }).click();
+    await page.evaluate(() => (window as unknown as { game: any }).game.hud.update(0.2, 0));
+  }
+  await expect
+    .poll(() =>
+      page.evaluate(() => (window as unknown as { game: any }).game.mission.getObjectiveState('obj_intercambio')),
+    )
+    .toBe('completed');
+  expect(await page.evaluate(() => (window as unknown as { game: any }).game.players[0].resources.silver)).toBe(50);
 });
 
 test('m3 canal, huaca hold and elite exchange complete the mission', async ({ page }) => {
@@ -57,7 +116,6 @@ test('m3 canal, huaca hold and elite exchange complete the mission', async ({ pa
     worker.pos.set(g.siteAnchor.x, g.terrain.getHeight(g.siteAnchor.x, g.siteAnchor.z), g.siteAnchor.z);
     step(92);
     const hold = m.getObjectiveState('obj_huacas');
-    g.players[0].resources.silver = 500;
     for (let i = 0; i < 5; i++) g.makeTrade('moche_huaca_luna');
     step(0.2);
     return {
@@ -71,7 +129,7 @@ test('m3 canal, huaca hold and elite exchange complete the mission', async ({ pa
   expect(out.canal).toBe('completed');
   expect(out.hold).toBe('completed');
   expect(out.trade).toBe('completed');
-  expect(out.silver).toBe(250);
+  expect(out.silver).toBe(50);
   expect(out.won).toBe(true);
 });
 

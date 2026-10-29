@@ -251,6 +251,15 @@ describe('campaign educational content', () => {
     expect(m2.triggers.some((t) => t.id === 't_peregrinaje')).toBe(true);
   });
 
+  it('m3 briefing does not spoil its hidden huaca or exchange goals', () => {
+    const m3 = MISSIONS.find((m) => m.id === 'm3_moche_recuay')!;
+    const briefing = getEducational('m3_moche_recuay')!.briefing ?? '';
+    for (const objective of m3.objectives.filter((o) => o.hidden)) {
+      expect(briefing).not.toContain(objective.title);
+    }
+    expect(briefing).not.toMatch(/huacas|intercambio/i);
+  });
+
   it('m3 opens the canal, holds the huacas and sustains elite exchange', () => {
     const m3 = MISSIONS.find((m) => m.id === 'm3_moche_recuay')!;
     expect(m3.tutorial).toBe(true);

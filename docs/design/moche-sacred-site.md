@@ -21,7 +21,7 @@ and **not** a historical photograph.
 - Build/export: `scripts/blender/build_moche_site.py`.
 - LOD1 is the RTS default; `?lod=0` previews LOD0.
 - Scale `0.25`, site origin `(119, 73)` on the 192 m map; the southern plaza
-  edge is the objective anchor `(121, 85)`.
+  edge is the objective anchor `(123, 81)`.
 - The source terrain and apron are hidden; the game heightfield owns the ground.
 - A 1 m pathfinding grid and a cleared 8 m approach corridor connect the base to
   the plaza. Monumental volumes are AABBs and low walls are baked into the grid.
@@ -65,12 +65,14 @@ and **not** a historical photograph.
 - Heritage cards and `trade`: `src/model/defs/heritage.ts`.
 - Economy cards: `src/model/defs/buildingCards.ts`.
 - Tutorial: `src/campaign/defs/tutorials.ts`.
-- Tests: `tests/e2e/moche-campaign.spec.ts`, `tests/e2e/campaign-playtest.spec.ts`,
-  `tests/e2e/save-campaign.spec.ts`, `tests/authored-sites.test.ts`.
+- Tests: `tests/e2e/moche-campaign.spec.ts` (site, proxies, HUD cards),
+  `tests/e2e/campaign-playtest.spec.ts`, `tests/e2e/save-campaign.spec.ts`,
+  `tests/authored-sites.test.ts`.
 
 ## Status
 
-The authored site, canal, hold, exchange, tutorial, save/load and a real-command
-playtest are implemented. Current captures are local review artifacts in
+The authored site, canal, hold, exchange, tutorial, save/load, HUD field-card
+coverage and a real-command playtest are implemented. Current captures are local review artifacts in
 `review/`; there is no CI pixel gate. The model remains a representative
 reconstruction and the historical limits stay visible in the Codex and dossier.
+Draw-call/mesh merging is tracked as a separate art/performance task.

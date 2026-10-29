@@ -449,7 +449,7 @@ export const MISSIONS: MissionDef[] = [
       {
         id: 'obj_huacas',
         kind: 'hold',
-        pos: { ref: 'site', dx: 2, dz: 12 },
+        pos: { ref: 'site', dx: 4, dz: 8 },
         radius: 18,
         time: 90,
         hidden: true,
