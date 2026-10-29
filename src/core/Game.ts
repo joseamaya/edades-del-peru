@@ -1649,10 +1649,9 @@ export class Game {
     const ctx = this.makeBuildContext(owner);
     const land = this.findLandNear(x, z);
     const main = this.pathfinder.mainComponent();
-    const spot =
-      this.pathfinder.isWalkable(land.x, land.z) && this.pathfinder.componentAt(land.x, land.z) === main
-        ? land
-        : (this.pathfinder.nearestWalkablePoint(land.x, land.z, 0, main) ?? land);
+    const spot = this.pathfinder.isWalkable(land.x, land.z)
+      ? land
+      : (this.pathfinder.nearestWalkablePoint(land.x, land.z, 0, main) ?? land);
     const u = new Unit(kind, owner, era, ctx);
     u.pos.set(spot.x, this.terrain.getHeight(spot.x, spot.z), spot.z);
     u.setContext(this.unitContext);

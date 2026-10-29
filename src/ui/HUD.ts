@@ -1000,7 +1000,7 @@ export class HUD {
       }
     });
     card.focus();
-    window.setTimeout(dismiss, 5000);
+    window.setTimeout(dismiss, 15000);
   }
 
   /** Leave the match (respects the active campaign). */
