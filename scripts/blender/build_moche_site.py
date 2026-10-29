@@ -261,10 +261,16 @@ def main():
     scene.render.filepath = os.path.join(OUT, 'renders', 'moche_hero.png')
     bpy.ops.render.render(write_still=True)
 
+    root = bpy.data.objects.new('Moche_LOD0_Root', None)
+    bpy.context.scene.collection.objects.link(root)
+    for obj in [o for o in bpy.data.objects if o.type == 'MESH']:
+        obj.parent = root
+
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, 'moche_site_master.blend'))
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, 'moche_site_lod0.blend'))
 
     # LOD1: decimate every mesh, then save and export.
+    root.name = 'Moche_LOD1_Root'
     for obj in [o for o in bpy.data.objects if o.type == 'MESH']:
         bpy.context.view_layer.objects.active = obj
         mod = obj.modifiers.new('LOD1_Decimate', 'DECIMATE')
@@ -275,8 +281,9 @@ def main():
 
     def export(path):
         meshes = [o for o in bpy.data.objects if o.type == 'MESH']
+        roots = [o for o in bpy.data.objects if o.type == 'EMPTY' and o.name.startswith('Moche_LOD')]
         bpy.ops.object.select_all(action='DESELECT')
-        for obj in meshes:
+        for obj in [*roots, *meshes]:
             obj.hide_set(False)
             obj.select_set(True)
         bpy.context.view_layer.objects.active = meshes[0]

@@ -69,6 +69,12 @@ Definition of Done and the building audit see
   `src/model/defs/buildingCards.ts` to state that both names are gameplay abstractions. The Plaza
   Central card exposes `startAssembly()` once `obj_complejo` is complete, which activates the hidden
   optional `obj_asamblea` hold; a worker must remain in the plaza for 20 seconds.
+- **Authored preinca sites**: `m1_caral`, `m2_chavin` and `m3_moche_recuay` load their own GLB through
+  `src/rendering/siteModels.ts`. Moche adds `moche_site` with a 1 m grid, monument AABBs, an 8 m approach
+  corridor, a southern plaza anchor and a canal gate. The site is a project-owned reconstruction; the
+  Blender source and export live in `art-src/blender/moche/` and `scripts/blender/build_moche_site.py`.
+  The mission uses the `trade` heritage operation at the Huaca de la Luna and `recordDelivery` fills required
+  `deliver` goals before optional ones. See `docs/design/moche-sacred-site.md`.
 - **Mission canals**: `MissionLayout.canal` (`src/campaign/types.ts`) gives a normalized canal site; `Game.spawnCanal` builds the visual water/stones and reserves the footprint, while `MissionPoint.ref: 'canal'` resolves the site for a `reach` objective. m1 adds a closed communal gate whose card operation raises `farmYieldAt` for nearby Andenes; m6 uses the canal as the Chan Chan surrender target. The canal is visual-only and has no pathfinding obstacle. See `tests/e2e/campaign.spec.ts` and `tests/e2e/caral-city.spec.ts`.
 - **Building/unit materials are AI-overridable**: `mat()` (`ProceduralModel.ts`) maps a `TexKind` to an
   AI-generated material via `TEX_GEN` (e.g. `adobe → wall_adobe`, `brick → wall_brick`, `roof → tile`,
@@ -209,7 +215,7 @@ Definition of Done and the building audit see
 - **Landmarks (visual only)**: `Game.mapProfile.landmark` (from `landmarkForCiv(civ, period)` — period-gated and
   region-gated: see `resolveMapProfile`) drives `Game.spawnLandmark()`, which builds a cached template via
   `buildLandmarkModel` (`ProceduralModel.ts`, keyed by `landmark|civ|era`) with the landmark's own
-  civilization/era. **Caral and Chavín are the exceptions**: they are not placed through `spawnLandmark`;
+  civilization/era. **Caral, Chavín and Moche are the exceptions**: they are not placed through `spawnLandmark`;
   `Game` loads `layout.site` through the generic `AuthoredSiteDef` registry (`src/model/defs/sites.ts`),
   applies the per-site heightfield, transform, collision, FOW/shadows and heritage proxies. The other
   landmarks remain procedural. One landmark per civilization (19 total: Caral, Chavín, Cupisnique, Paracas,

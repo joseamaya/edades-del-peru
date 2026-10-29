@@ -392,12 +392,12 @@
         "docs/historia/fuentes.md",
         "art-src/blender/moche/moche_asset_manifest.csv"
       ],
-      "promptVersion": "v1-blender-141fd948",
+      "promptVersion": "v1-blender-2853ceae",
       "prompt": "Blender render: Huacas de Moche, Intermedio Temprano",
       "negativePrompt": "n/a (blender render)",
       "provider": "blender",
       "model": "eevee",
-      "generatedAt": "2026-10-29T17:06:27.593Z",
+      "generatedAt": "2026-10-29T17:43:17.135Z",
       "nature": "reconstruction",
       "reviewed": false,
       "reviewer": null,
@@ -416,7 +416,7 @@
       "blender": {
         "sceneFile": "moche/moche_site_master.blend",
         "sourceRender": "moche/renders/moche_hero.png",
-        "sourceSha256": "de5891c34e82d3746c5f79cfab5d7c1850002e9547720845905c180d8023b2c6",
+        "sourceSha256": "fe2e12cd686d9d0bda0e54772e8e9743ff1a41b79d5a7e84d0b8fe1bc4fe5e4b",
         "sceneAssetId": null,
         "confidence": "planta y volumen documentados; remates y frisos inferidos",
         "camera": "hero",

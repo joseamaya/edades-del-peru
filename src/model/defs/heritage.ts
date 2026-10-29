@@ -19,7 +19,7 @@ export type HeritageBuildingId =
   | 'moche_plaza'
   | 'moche_canal';
 
-export type HeritageSector = 'Caral Alto' | 'Caral Bajo' | 'Chavín' | 'Moche' | 'Wari';
+export type HeritageSector = 'Caral Alto' | 'Caral Bajo' | 'Chavín' | 'Moche';
 
 export interface HeritageBuildingDef {
   id: HeritageBuildingId;

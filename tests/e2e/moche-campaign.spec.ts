@@ -9,7 +9,7 @@ async function start(page: Page): Promise<void> {
   await page.waitForTimeout(800);
 }
 
-test('m3 loads the authored Huacas de Moche site', async ({ page }) => {
+test('m3 loads the authored Huacas de Moche site', { tag: '@smoke' }, async ({ page }) => {
   await start(page);
   const out = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;

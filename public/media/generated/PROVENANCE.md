@@ -24,7 +24,7 @@ written for external tools and offline review.
 | `caral-tour-isometric` | tour-concept | Caral-Supe | Arcaico Tardío | central_coast | concept-art | unreviewed | `isometric` | `documentado en planta; remates inferidos` | `f0611f395f31` | [isometric.webp](tours/caral/isometric.webp) |
 | `m1_caral-intro` | campaign-intro | Caral-Supe | Arcaico Tardío | central_coast | concept-art | unreviewed | `hero` | `documentado en planta; techos y remates inferidos` | `428feecd5844` | [intro.webp](campaigns/la-senda-del-sol/m1_caral/intro.webp) |
 | `m2_chavin-intro` | campaign-intro | Chavín | Horizonte Temprano | andean_valley | reconstruction | unreviewed | `hero` | `planta documentada; techos, remates y relieves inferidos` | `16bc0e3ab76e` | [intro.webp](campaigns/la-senda-del-sol/m2_chavin/intro.webp) |
-| `m3_moche-intro` | campaign-intro | Cultura Moche | Intermedio Temprano | north_coast | reconstruction | unreviewed | `hero` | `planta y volumen documentados; remates y frisos inferidos` | `de5891c34e82` | [intro.webp](campaigns/la-senda-del-sol/m3_moche/intro.webp) |
+| `m3_moche-intro` | campaign-intro | Cultura Moche | Intermedio Temprano | north_coast | reconstruction | unreviewed | `hero` | `planta y volumen documentados; remates y frisos inferidos` | `fe2e12cd686d` | [intro.webp](campaigns/la-senda-del-sol/m3_moche/intro.webp) |
 
 ## Review
 

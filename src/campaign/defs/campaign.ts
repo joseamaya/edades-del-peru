@@ -51,7 +51,7 @@ export const MISSIONS: MissionDef[] = [
       },
     },
     mapOverrides: {
-      terrain: { terraceChance: 0, riverCount: 0 },
+      terrain: { terraceChance: 0.08, riverCount: 0 },
       climate: { aridity: 0.78, moisture: 0.34 },
       vegetation: { density: 0.06 },
       // Caral has no documented silver extraction or coastal vicuña herds.
@@ -396,7 +396,6 @@ export const MISSIONS: MissionDef[] = [
         y: 6,
         focus: { x: 0.62, z: 0.38 },
         keepout: [{ x: 0.62, z: 0.38, rx: 0.2, rz: 0.17 }],
-        buildKeepout: [{ x: 0.62, z: 0.38, rx: 0.18, rz: 0.15 }],
       },
       canal: {
         name: 'Canal del valle de Moche',
@@ -412,12 +411,13 @@ export const MISSIONS: MissionDef[] = [
         flats: [
           { name: 'Valles de Moche y Chicama', x: 0.3, z: 0.66, rx: 0.18, rz: 0.14 },
           { name: 'Huacas de Moche', x: 0.62, z: 0.38, rx: 0.2, rz: 0.17 },
+          { name: 'Callejón de Huaylas', x: 0.72, z: 0.3, rx: 0.1, rz: 0.08 },
         ],
       },
       decor: { model: 'recuay_pashash', at: 'enemy', dx: 10, dz: 0, scale: 1.05 },
     },
     mapOverrides: {
-      terrain: { terraceChance: 0, riverCount: 0 },
+      terrain: { terraceChance: 0.08, riverCount: 0 },
       climate: { aridity: 0.78, moisture: 0.24 },
       vegetation: { density: 0.24 },
       resources: { tree: 0.45, mine: 0.8, well: 0.35, hunt: 0.25 },
@@ -445,7 +445,7 @@ export const MISSIONS: MissionDef[] = [
       {
         id: 'obj_huacas',
         kind: 'hold',
-        pos: { ref: 'site', dx: 0, dz: 12 },
+        pos: { ref: 'site', dx: 2, dz: 12 },
         radius: 18,
         time: 90,
         hidden: true,
@@ -505,7 +505,7 @@ export const MISSIONS: MissionDef[] = [
             pos: { ref: 'site', dx: -20, dz: -26 },
             radius: 6,
           },
-          { type: 'dialogue', text: '¡Recuay cruza la quebrada por el sur! ¡Defended la plaza!' },
+          { type: 'dialogue', text: '¡Recuay cruza la quebrada por el norte! ¡Defended la plaza!' },
         ],
       },
       {

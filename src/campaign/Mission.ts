@@ -429,7 +429,11 @@ export class Mission {
    */
   recordDelivery(resource: keyof Resources, amount: number): number {
     let remaining = amount;
-    for (const objective of this.def.objectives) {
+    const ordered = [
+      ...this.def.objectives.filter((objective) => !objective.optional),
+      ...this.def.objectives.filter((objective) => objective.optional),
+    ];
+    for (const objective of ordered) {
       if (remaining <= 0) break;
       if (objective.kind !== 'deliver' || objective.resource !== resource) continue;
       if (this.objState.get(objective.id) !== 'activo') continue;

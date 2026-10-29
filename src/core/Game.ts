@@ -3996,46 +3996,22 @@ export class Game {
 
   /** Hand over a field-card offering at the authored site. */
   makeOffering(id: HeritageBuildingId): boolean {
-    const def = getHeritageBuilding(id);
-    if (!def || def.operation !== 'offer') return false;
-    const resource = def.operationResource ?? 'silver';
-    const amount = def.operationAmount ?? 50;
-    const anchor = this.siteAnchor ?? this.siteCenter;
-    const near = anchor
-      ? [...this.units.values()].some(
-          (unit) =>
-            unit.owner === 0 &&
-            !unit.dead &&
-            unit.kind === UnitKind.WORKER &&
-            distance2D(unit.pos.x, unit.pos.z, anchor.x, anchor.z) < 18,
-        )
-      : false;
-    if (!near) {
-      this.hud?.showToast('Acerca un obrero al templo para entregar la ofrenda.', 'warning');
-      return false;
-    }
-    if (this.players[0].resources[resource] < amount) {
-      this.hud?.showToast(
-        `Necesitas ${amount} de ${RESOURCE_INFO[resource].name.toLowerCase()} para la ofrenda.`,
-        'warning',
-      );
-      return false;
-    }
-    const recorded = this.mission?.recordDelivery(resource, amount) ?? 0;
-    if (recorded <= 0) {
-      this.hud?.showToast('No hay una ofrenda pendiente en este momento.', 'info');
-      return false;
-    }
-    this.players[0].resources[resource] -= recorded;
-    this.hud?.showToast(`Ofrenda entregada: ${recorded} de ${RESOURCE_INFO[resource].name.toLowerCase()}.`, 'success');
-    this.audio.uiClick?.();
-    return true;
+    return this.makeHeritageExchange(id, 'offer', 'ofrenda', 'templo');
   }
 
   /** Exchange elite goods at a Moche/Recuay site card. */
   makeTrade(id: HeritageBuildingId): boolean {
+    return this.makeHeritageExchange(id, 'trade', 'intercambio', 'huacas');
+  }
+
+  private makeHeritageExchange(
+    id: HeritageBuildingId,
+    operation: 'offer' | 'trade',
+    noun: string,
+    place: string,
+  ): boolean {
     const def = getHeritageBuilding(id);
-    if (!def || def.operation !== 'trade') return false;
+    if (!def || def.operation !== operation) return false;
     const resource = def.operationResource ?? 'silver';
     const amount = def.operationAmount ?? 50;
     const anchor = this.siteAnchor ?? this.siteCenter;
@@ -4049,24 +4025,28 @@ export class Game {
         )
       : false;
     if (!near) {
-      this.hud?.showToast('Acerca un obrero a las huacas para intercambiar.', 'warning');
+      this.hud?.showToast(
+        `Acerca un obrero a las ${place} para ${operation === 'offer' ? 'entregar' : 'intercambiar'}.`,
+        'warning',
+      );
       return false;
     }
+    const resourceName = RESOURCE_INFO[resource].name.toLowerCase();
     if (this.players[0].resources[resource] < amount) {
       this.hud?.showToast(
-        `Necesitas ${amount} de ${RESOURCE_INFO[resource].name.toLowerCase()} para intercambiar.`,
+        `Necesitas ${amount} de ${resourceName} para ${operation === 'offer' ? 'la' : 'el'} ${noun}.`,
         'warning',
       );
       return false;
     }
     const recorded = this.mission?.recordDelivery(resource, amount) ?? 0;
     if (recorded <= 0) {
-      this.hud?.showToast('No hay un intercambio pendiente en este momento.', 'info');
+      this.hud?.showToast(`No hay ${operation === 'offer' ? 'una' : 'un'} ${noun} pendiente en este momento.`, 'info');
       return false;
     }
     this.players[0].resources[resource] -= recorded;
     this.hud?.showToast(
-      `Intercambio entregado: ${recorded} de ${RESOURCE_INFO[resource].name.toLowerCase()}.`,
+      `${noun[0].toUpperCase()}${noun.slice(1)} ${noun === 'ofrenda' ? 'entregada' : 'entregado'}: ${recorded} de ${resourceName}.`,
       'success',
     );
     this.audio.uiClick?.();
