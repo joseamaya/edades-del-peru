@@ -1131,6 +1131,13 @@ export class HUD {
         this.game.makeOffering(heritage.id),
       );
     }
+    if (heritage.operation === 'trade') {
+      const amount = heritage.operationAmount ?? 50;
+      const resource = heritage.operationResource ?? 'silver';
+      this.addCommand(`🪶 Intercambiar (${amount} ${RESOURCE_INFO[resource].name.toLowerCase()})`, () =>
+        this.game.makeTrade(heritage.id),
+      );
+    }
     if (heritage.operation === 'assembly') {
       const state = this.game.getAssemblyState();
       if (state === 'pendiente' && this.game.canStartAssembly()) {

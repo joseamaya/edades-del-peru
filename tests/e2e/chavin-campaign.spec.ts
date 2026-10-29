@@ -134,7 +134,6 @@ test('m2 tutorial advances through the offering gate without skipping steps', as
 
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    const anchor = g.siteAnchor as { x: number; z: number };
     for (let i = 0; i < 5; i++) g.makeOffering('chavin_edificio_b');
     g.update(1 / 60, 0);
   });

@@ -109,6 +109,16 @@ CyArk-derived Lanzón scan. The cleaned sources live in
 project-owned low-poly interpretation, not the scan. See
 `docs/design/chavin-sacred-site.md`.
 
+## Moche site source
+
+`m3_moche_recuay` uses a project-owned reconstruction of the Huacas del Sol y
+de la Luna. The editable master and LODs live in
+`art-src/blender/moche/` (Git LFS); the runtime GLBs are
+`src/assets/sites/moche/moche_site_lod0.glb` / `moche_site_lod1.glb`. The
+reproducible builder/exporter is `scripts/blender/build_moche_site.py`; the
+campaign render is `art-src/blender/moche/renders/moche_hero.png`. It is a
+representative reconstruction, not a survey. See `docs/design/moche-sacred-site.md`.
+
 ## Modular scenery
 
 The first modular asset is `caral_pyramid_mayor` (Pyramid Mayor + Plaza Mayor). It is

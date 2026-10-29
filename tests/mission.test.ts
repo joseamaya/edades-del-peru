@@ -228,6 +228,9 @@ describe('mission delivery objectives', () => {
     m.start();
     expect(m.recordDelivery('silver', 5)).toBe(5);
     expect(m.getObjectiveProgress('offer')).toEqual({ current: 5, target: 10, format: 'count' });
+    expect(m.getObjectiveProgress('bonus')).toEqual({ current: 0, target: 20, format: 'count' });
+    expect(m.recordDelivery('silver', 10)).toBe(10);
+    expect(m.getObjectiveProgress('offer')).toEqual({ current: 10, target: 10, format: 'count' });
     expect(m.getObjectiveProgress('bonus')).toEqual({ current: 5, target: 20, format: 'count' });
   });
 

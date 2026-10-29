@@ -2,7 +2,7 @@ import type { AuthoredHeightField } from './authoredTerrain';
 import type { HeritageBuildingId } from './heritage';
 import { CARAL_HEIGHTMAP, CARAL_HEIGHTMAP_SIZE, CARAL_HEIGHTMAP_WORLD_SIZE } from './caralHeightmap';
 
-export type AuthoredSiteId = 'caral_site' | 'chavin_site';
+export type AuthoredSiteId = 'caral_site' | 'chavin_site' | 'moche_site';
 
 export interface SiteHeritageProxy {
   id: HeritageBuildingId;
@@ -242,6 +242,46 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     walkableCorridor: { width: 8 },
     terrain: { ...DEFAULT_SITE_TERRAIN },
     hideNodePatterns: [/Chavin_LOD[01]_(Terrain|Reference)/],
+  },
+  moche_site: {
+    id: 'moche_site',
+    label: 'Huacas de Moche',
+    modelName: 'moche_site',
+    scale: 0.25,
+    origin: { x: 119, z: 73 },
+    anchor: { x: 121, z: 85 },
+    cameraHeight: 68,
+    framing: 'site-biased',
+    pathCellSize: 1,
+    heritageProxies: [
+      { id: 'moche_huaca_sol', x: 109.5, z: 73, w: 23, d: 15.5, h: 12 },
+      { id: 'moche_huaca_luna', x: 132.5, z: 75, w: 16.5, d: 12, h: 9 },
+      { id: 'moche_plaza', x: 121, z: 70, w: 20.5, d: 13.5, h: 2 },
+    ],
+    blockers: [
+      { x: 109.5, z: 73, w: 23, d: 15.5 },
+      { x: 132.5, z: 75, w: 16.5, d: 12 },
+    ],
+    blockerPadding: 0.5,
+    buildKeepout: [{ x: 0.62, z: 0.38, rx: 0.18, rz: 0.15 }],
+    wallCollision: {
+      meshPatterns: [/Moche_LOD[01]_Walls/, /^Cube/],
+      maxStartYAboveBase: 1.2,
+    },
+    walkableCorridor: { width: 8 },
+    terrain: {
+      ...DEFAULT_SITE_TERRAIN,
+      flatNormals: true,
+      suppressSnow: true,
+      pbr: {
+        grass: 'grass',
+        dirt: 'dirt',
+        sand: 'sand',
+        rock: 'rock',
+        snow: 'snow',
+      },
+    },
+    hideNodePatterns: [/Moche_LOD[01]_(Terrain|Apron)/],
   },
 };
 

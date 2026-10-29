@@ -256,7 +256,7 @@ test('m6 cuts the canal to force Chan Chan to surrender', async ({ page }) => {
 test('authored campaign geography spawns its local base and features', async ({ context }) => {
   const cases = [
     { id: 'm2_chavin', river: true, decor: null, canal: false },
-    { id: 'm3_moche_recuay', flats: true, decor: 'mission_decor_recuay_pashash', canal: false },
+    { id: 'm3_moche_recuay', flats: true, decor: 'mission_decor_recuay_pashash', canal: true },
     { id: 'm4_wari', flats: true, decor: null, canal: false },
     { id: 'm5_yahuar_pampa', flats: true, decor: 'mission_decor_chanca_fortress', canal: false },
     { id: 'm6_chimu_inca', flats: true, decor: 'mission_decor_chimu_compound', canal: true },

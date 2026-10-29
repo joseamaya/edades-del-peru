@@ -36,6 +36,30 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
     ],
   },
+  m3_moche_recuay: {
+    steps: [
+      {
+        id: 'select',
+        text: 'Selecciona a tus obreros: haz clic izquierdo sobre uno o arrastra un recuadro para seleccionar varios.',
+        check: { type: 'selectUnit', unitKind: UnitKind.WORKER },
+      },
+      {
+        id: 'canal',
+        text: 'Selecciona el canal del valle y abre su compuerta: el agua sostiene los andenes y las huacas.',
+        check: { type: 'objectiveCompleted', objectiveId: 'obj_canal' },
+      },
+      {
+        id: 'plaza',
+        text: 'Lleva una unidad a la plaza entre las huacas y mantén la posición mientras llegan las incursiones recuay.',
+        check: { type: 'objectiveCompleted', objectiveId: 'obj_huacas' },
+      },
+      {
+        id: 'trade',
+        text: 'Con un obrero junto a las huacas, selecciona la Huaca de la Luna e intercambia plata con la sierra.',
+        check: { type: 'objectiveCompleted', objectiveId: 'obj_intercambio' },
+      },
+    ],
+  },
   m1_caral: {
     steps: [
       {

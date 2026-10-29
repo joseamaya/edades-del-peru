@@ -58,6 +58,9 @@ for (const mis of COMPLETABLE_MISSIONS) {
             case 'deliver':
               m.recordDelivery(o.resource ?? 'food', o.count ?? 0);
               break;
+            case 'canal_open':
+              if (!g.isCanalOpen()) g.toggleCanal();
+              break;
             case 'reach_era':
               g.players[0].era = Math.max(g.players[0].era, o.era ?? 0);
               break;

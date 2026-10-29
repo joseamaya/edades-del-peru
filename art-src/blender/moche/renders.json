@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "sourceRoot": "art-src/blender",
+  "assets": [
+    {
+      "id": "m3_moche-intro",
+      "type": "campaign-intro",
+      "scope": "mission",
+      "campaignId": "la-senda-del-sol",
+      "missionId": "m3_moche_recuay",
+      "civilization": "moche",
+      "period": 2,
+      "era": 1,
+      "region": "north_coast",
+      "topic": "campaign_intro",
+      "sceneType": "urban_ceremonial",
+      "asset": "media/generated/campaigns/la-senda-del-sol/m3_moche/intro.webp",
+      "render": "moche/renders/moche_hero.png",
+      "sceneFile": "moche/moche_site_master.blend",
+      "confidence": "planta y volumen documentados; remates y frisos inferidos",
+      "camera": "hero",
+      "renderer": "eevee",
+      "license": "project-owned",
+      "author": "Miguel Amaya",
+      "sources": [
+        "docs/historia/civilizaciones/moche.md",
+        "docs/historia/campanas/moche_recuay.md",
+        "docs/historia/arquitectura.md",
+        "docs/historia/fuentes.md",
+        "art-src/blender/moche/moche_asset_manifest.csv"
+      ],
+      "alt": "Vista de las Huacas del Sol y de la Luna, con sus plataformas escalonadas de adobe y la plaza entre ambas.",
+      "caption": "Huacas de Moche, Intermedio Temprano",
+      "nature": "reconstruction",
+      "sourceSha256": "fe2e12cd686d9d0bda0e54772e8e9743ff1a41b79d5a7e84d0b8fe1bc4fe5e4b",
+      "renderedAt": "2026-10-29T12:00:00-05:00"
+    }
+  ]
+}
