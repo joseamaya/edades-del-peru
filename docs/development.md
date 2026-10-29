@@ -644,6 +644,7 @@ rigged bird is added, and evaluate per-species LOD/update throttling at the 16-a
 - **Release media**: `yarn shots:media` writes the curated stills to `docs/media/`; `yarn gif` captures the
   mission intro and writes `docs/media/gameplay.gif` (needs `ffmpeg`). `yarn package:itch` zips the **contents**
   of `dist/` into `review/edades-del-peru-itch.zip` (root `index.html`, relative asset paths) for `butler push`.
+  It refuses a build made with an absolute `VITE_BASE`; rebuild with the default `./` first.
 - **Visual regression** (`scripts/visual.mjs` + `scripts/scenes.mjs`): `yarn shots:periods` captures the 21
   representative scenes (the nine periods named in the PRP and the remaining civilization families: close-up of
   the player base; and four geographic regions: wide view) into `review/periods/` for human review.

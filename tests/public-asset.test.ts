@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { joinPublicBase } from '../src/util/publicAsset';
+import { DRACO_DECODER_PATH, joinPublicBase, publicAsset } from '../src/util/publicAsset';
 
 describe('public asset paths', () => {
   it('keeps a root base', () => {
@@ -16,5 +16,10 @@ describe('public asset paths', () => {
 
   it('normalizes a base without a trailing slash and a leading path slash', () => {
     expect(joinPublicBase('/edades-del-peru', '/mods/example.json')).toBe('/edades-del-peru/mods/example.json');
+  });
+
+  it('keeps the Draco decoder path relative to the public base', () => {
+    expect(publicAsset('draco/')).toBe(`${import.meta.env.BASE_URL}draco/`);
+    expect(DRACO_DECODER_PATH.endsWith('/draco/')).toBe(true);
   });
 });

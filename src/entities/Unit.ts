@@ -86,6 +86,8 @@ const NO_ROUTE_GIVEUP = 1.5;
 const STUCK_GIVEUP_RETRIES = 3;
 /** Seconds with a full load and no dropsite before warning the player. */
 const NO_DROPSITE_GIVEUP = 2.5;
+/** Extra build reach so large buildings remain constructible from their approach cell. */
+const BUILD_REACH_PAD = 3;
 
 /** Economy orders a worker may abandon when it cannot make progress. */
 const isEconomyOrder = (kind: OrderKind): boolean => kind === OrderKind.GATHER || kind === OrderKind.BUILD;
@@ -1262,13 +1264,13 @@ export class Unit {
     const dx = bld.pos.x - this.pos.x;
     const dz = bld.pos.z - this.pos.z;
     const dist = Math.sqrt(dx * dx + dz * dz);
-    if (dist > bld.radius + 3) {
+    if (dist > bld.radius + BUILD_REACH_PAD) {
       if (this.pathIdx >= this.path.length && this.repathTimer <= 0) {
         this.setPath(bld.pos.x, bld.pos.z);
         this.repathTimer = 0.7;
       }
       if (this.pathIdx >= this.path.length) {
-        if (this.directStep(bld.pos.x, bld.pos.z, bld.radius + 3)) return;
+        if (this.directStep(bld.pos.x, bld.pos.z, bld.radius + BUILD_REACH_PAD)) return;
         this.vel.multiplyScalar(Math.pow(0.02, dt));
         this.noRouteTimer += dt;
         if (this.noRouteTimer > NO_ROUTE_GIVEUP) this.notifyNoRoute();
