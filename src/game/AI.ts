@@ -338,7 +338,11 @@ export class AI {
     )
       buildPlan.push({ kind: BuildingKind.STABLE, cost: woodCost(BuildingKind.STABLE), priority: 62 });
     if (p.era >= Era.REGIONAL_STATES && countOf(BuildingKind.FARM) < 4)
-      buildPlan.push({ kind: BuildingKind.FARM, cost: woodCost(BuildingKind.FARM), priority: 50 });
+      buildPlan.push({
+        kind: BuildingKind.FARM,
+        cost: woodCost(BuildingKind.FARM),
+        priority: p.resources.food < 120 ? 92 : 50,
+      });
     if (secure && p.era >= Era.REGIONAL_STATES && !has(BuildingKind.INSTITUTE))
       buildPlan.push({ kind: BuildingKind.INSTITUTE, cost: woodCost(BuildingKind.INSTITUTE), priority: 46 });
     if (secure && p.era >= BUILDING_DEFS[BuildingKind.FACTORY].minEra && !has(BuildingKind.FACTORY))
@@ -546,8 +550,8 @@ export class AI {
       if (s.orderQueue[0]?.kind === OrderKind.ATTACK) {
         const order = s.orderQueue[0];
         const target = this.orderTarget(order);
-        if (target && !this.canAttackEntity(s, target)) {
-          this.retarget(s, focus, base);
+        if (target && (!this.canAttackEntity(s, target) || s.isAttackBlocked())) {
+          this.retarget(s, focus, base, target.id);
           continue;
         }
         this.focusFire(s, order, focus);
@@ -726,11 +730,11 @@ export class AI {
   }
 
   /** Nearest enemy building within `radius` of the unit (to press the attack). */
-  private findEnemyBuildingInRange(s: Unit, radius: number): Building | null {
+  private findEnemyBuildingInRange(s: Unit, radius: number, excludeId?: number): Building | null {
     let best: Building | null = null;
     let bestD = radius;
     for (const b of this.game.buildings.values()) {
-      if (!this.isEnemyBuilding(b)) continue;
+      if (!this.isEnemyBuilding(b) || b.id === excludeId) continue;
       const d = distance2D(s.pos.x, s.pos.z, b.pos.x, b.pos.z);
       if (d < bestD && this.canAttackEntity(s, b)) {
         bestD = d;
@@ -740,12 +744,13 @@ export class AI {
     return best;
   }
 
-  private findEnemyInRange(s: Unit): Unit | null {
+  private findEnemyInRange(s: Unit, excludeId?: number): Unit | null {
     let best: Unit | null = null;
     let bestD = Infinity;
     const range = s.stats.range > 0 ? s.stats.range * 1.2 : MELEE_REACH;
     const nearby = this.game.enemiesNear(s.pos.x, s.pos.z, range, this.playerId);
     for (const u of nearby) {
+      if (u.id === excludeId) continue;
       const d = distance2D(s.pos.x, s.pos.z, u.pos.x, u.pos.z);
       if (d < range && d < bestD && this.canAttackEntity(s, u)) {
         bestD = d;
@@ -756,11 +761,11 @@ export class AI {
   }
 
   /** Nearest enemy worker within `radius` of the unit (raiding). */
-  private findEnemyWorkerInRange(s: Unit, radius: number): Unit | null {
+  private findEnemyWorkerInRange(s: Unit, radius: number, excludeId?: number): Unit | null {
     let best: Unit | null = null;
     let bestD = radius;
     for (const u of this.game.units.values()) {
-      if (u.kind !== UnitKind.WORKER || !this.isEnemyUnit(u)) continue;
+      if (u.id === excludeId || u.kind !== UnitKind.WORKER || !this.isEnemyUnit(u)) continue;
       const d = distance2D(s.pos.x, s.pos.z, u.pos.x, u.pos.z);
       if (d < bestD && this.canAttackEntity(s, u)) {
         bestD = d;
@@ -832,7 +837,7 @@ export class AI {
   }
 
   /** Enemy building to focus: the center first, else the nearest reachable one. */
-  private findAttackTarget(from?: { x: number; z: number }): Building | null {
+  private findAttackTarget(from?: { x: number; z: number }, excludeId?: number): Building | null {
     const base = this.center();
     const bx = from?.x ?? base?.pos.x ?? this.game.settings.mapSize / 2;
     const bz = from?.z ?? base?.pos.z ?? this.game.settings.mapSize / 2;
@@ -840,7 +845,7 @@ export class AI {
     let nearest: Building | null = null;
     let nearestD = Infinity;
     for (const b of this.game.buildings.values()) {
-      if (!this.isEnemyBuildingKnown(b)) continue;
+      if (!this.isEnemyBuildingKnown(b) || b.id === excludeId) continue;
       if (!this.canReachBuilding(bx, bz, b)) continue;
       if (b.kind === BuildingKind.CENTER) center = b;
       const d = distance2D(bx, bz, b.pos.x, b.pos.z);
@@ -885,13 +890,13 @@ export class AI {
   }
 
   /** Replace an order stuck on an unreachable target with the best reachable one. */
-  private retarget(s: Unit, focus: Unit | null, base: Building | null): void {
+  private retarget(s: Unit, focus: Unit | null, base: Building | null, excludeId?: number): void {
     const target =
-      (focus && this.canAttackEntity(s, focus) ? focus : null) ??
-      this.findEnemyInRange(s) ??
-      this.findEnemyWorkerInRange(s, RAID_RADIUS) ??
-      this.findEnemyBuildingInRange(s, PRESS_BUILDING_RADIUS) ??
-      this.findAttackTarget(s.pos);
+      (focus && this.canAttackEntity(s, focus) && focus.id !== excludeId ? focus : null) ??
+      this.findEnemyInRange(s, excludeId) ??
+      this.findEnemyWorkerInRange(s, RAID_RADIUS, excludeId) ??
+      this.findEnemyBuildingInRange(s, PRESS_BUILDING_RADIUS, excludeId) ??
+      this.findAttackTarget(s.pos, excludeId);
     if (target) {
       s.issueOrder({ kind: OrderKind.ATTACK, entityId: target.id }, true);
       return;
