@@ -23,12 +23,12 @@ historical photograph.
 
 ## Hashes
 
-- `wari_hero.png`: `f54af622e92ccf942b08381764efcfc7d77257367a2505fb89a670cae2693845`
-- `wari_site_master.blend`: `e5848229e76eef98fe2f1e0bf57e8b4f86dab92485729f425a217b26eb97dffc`
-- `wari_site_lod0.blend`: `e5848229e76eef98fe2f1e0bf57e8b4f86dab92485729f425a217b26eb97dffc`
-- `wari_site_lod1.blend`: `976f3a2ec81781769c264faf9aade24746abaea7a919d3fffe507cfd03a1e0f8`
-- `wari_site_lod0.glb`: `453516621a7f09230932e3070e62a70ed2926fad40d20c968151cb6e1d2f14a1`
-- `wari_site_lod1.glb`: `b029c87cec58e66ac0b18ff9c0114d291fc7b8b57aa11b63381c67a7f0742768`
+- `wari_hero.png`: `542eb0ff13a71094857179903a214f409a5e0ba1860b9a4ccb2001bc0b805b06`
+- `wari_site_master.blend`: `b5cb9b43fad0a199207ce4fe2981ea05106bd6c72ddb896ecc2bf69b38175d29`
+- `wari_site_lod0.blend`: `b5cb9b43fad0a199207ce4fe2981ea05106bd6c72ddb896ecc2bf69b38175d29`
+- `wari_site_lod1.blend`: `999c9ce4468c7064feb4f65e04f88a162ffccfd57aca12d2340bb1d932161509`
+- `wari_site_lod0.glb`: `030b1287d3c31c7a751e760d1a294187361dfe1386e8de4046940b7dce23f379`
+- `wari_site_lod1.glb`: `8ff4223a392066e58154e6282f3d9a0773580b5f4aaba992e9f83bd1f43fdbf6`
 
 ## Limits
 

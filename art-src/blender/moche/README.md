@@ -23,12 +23,12 @@ historical photograph.
 
 ## Hashes
 
-- `moche_hero.png`: `fe2e12cd686d9d0bda0e54772e8e9743ff1a41b79d5a7e84d0b8fe1bc4fe5e4b`
-- `moche_site_master.blend`: `c1c62d021cdcfe129d5dacd428477ae59014020d774001beecd30f0caa51920c`
-- `moche_site_lod0.blend`: `fa60ea8c40325904f2c513c8a1945e61fdb572acf0a03b86976cbdc967362f7f`
-- `moche_site_lod1.blend`: `a8485abe3bb4abb04e280b1484d6d000368f5acd6aec22519955cb8cedab019f`
-- `moche_site_lod0.glb`: `977a7696ff401e5efc9bf9a540ed39508bcaaf289aa4b5376be6474c5eb96a78`
-- `moche_site_lod1.glb`: `2c04515f4d8cfbfba592139e5383ab646ef4da029d1adc90c54f8e5853808980`
+- `moche_hero.png`: `e94b1823b122e7c5729f973b3bd25187f9a395071125f7e9ca8207d577183c13`
+- `moche_site_master.blend`: `8ddb99529019df04502b2e09230b9a918d57f52f8ddf01b4dd39d61f569bf71e`
+- `moche_site_lod0.blend`: `8ddb99529019df04502b2e09230b9a918d57f52f8ddf01b4dd39d61f569bf71e`
+- `moche_site_lod1.blend`: `3fcd3c991715a724f10e912c12d7a4f5630e7ac21482c652e017b5994231e2fd`
+- `moche_site_lod0.glb`: `9512e5ba382c508af5ffb463411e27a684ac3909dc8dbaee373321fbc1649e0b`
+- `moche_site_lod1.glb`: `20ac502fdc798378f71c925a713fba82ad16e273b3526ea1a88472685f0541a1`
 
 ## Limits
 

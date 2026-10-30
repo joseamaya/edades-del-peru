@@ -29,9 +29,11 @@ Eight records remain `reviewed: false`:
 - `m4_wari-intro`
 
 The game hides unreviewed records by default; `?art=all` previews them with a draft badge.
-A human must review the contact sheet before any of them is presented as final art. In
-particular, the m3/m4 intros are the weakest candidates: m3 is washed out and m4 reads mostly
-untextured at contact-sheet size.
+A human must review the contact sheet before any of them is presented as final art. The m3/m4
+intros were re-rendered on 2026-10-30: m3 now has warmer adobe/plaster contrast and a closer
+camera; m4 has textured cut-stone walls, a white/red D-temple and visible murals. Both remain
+`reviewed: false` until a human approves them. The runtime GLBs keep flat materials (18 KB
+Moche, 34 KB Wari); the image textures are render-only.
 
 ## Performance note
 
@@ -41,7 +43,7 @@ benchmark):
 | Site | Draw calls | Triangles | Meshes | Materials |
 | --- | ---: | ---: | ---: | ---: |
 | Moche | 315 | 1,335,364 | 992 | 268 |
-| Wari | 158 | 755,944 | 552 | 125 |
+| Wari | 159 | 755,946 | 556 | 125 |
 
 These numbers are not a release verdict. A real-GPU pass at 1280×800 and 1600×900 is still
 required before deciding whether Moche/Wari need mesh/material optimization.

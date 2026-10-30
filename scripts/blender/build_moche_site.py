@@ -36,7 +36,7 @@ def image(name, colorspace='sRGB'):
     return img
 
 
-def textured(name, diffuse, normal, roughness, tint=(1, 1, 1, 1)):
+def textured(name, diffuse, normal, roughness, tint=(1, 1, 1, 1), normal_strength=1.0, mix=1.0):
     mat = bpy.data.materials.new(name)
     mat.use_nodes = True
     nodes = mat.node_tree.nodes
@@ -49,7 +49,15 @@ def textured(name, diffuse, normal, roughness, tint=(1, 1, 1, 1)):
         tex = nodes.new('ShaderNodeTexImage')
         tex.image = d
         tex.location = (-520, 260)
-        links.new(tex.outputs['Color'], bsdf.inputs['Base Color'])
+        if mix < 1.0:
+            blend = nodes.new('ShaderNodeMixRGB')
+            blend.location = (-280, 260)
+            blend.inputs['Fac'].default_value = mix
+            blend.inputs['Color1'].default_value = tint
+            links.new(tex.outputs['Color'], blend.inputs['Color2'])
+            links.new(blend.outputs['Color'], bsdf.inputs['Base Color'])
+        else:
+            links.new(tex.outputs['Color'], bsdf.inputs['Base Color'])
     n = image(normal, 'Non-Color')
     if n:
         tex = nodes.new('ShaderNodeTexImage')
@@ -57,6 +65,7 @@ def textured(name, diffuse, normal, roughness, tint=(1, 1, 1, 1)):
         tex.location = (-520, -20)
         nmap = nodes.new('ShaderNodeNormalMap')
         nmap.location = (-240, -20)
+        nmap.inputs['Strength'].default_value = normal_strength
         links.new(tex.outputs['Color'], nmap.inputs['Color'])
         links.new(nmap.outputs['Normal'], bsdf.inputs['Normal'])
     r = image(roughness, 'Non-Color')
@@ -78,7 +87,7 @@ def flat(name, color, roughness=0.8, metallic=0.0):
     return mat
 
 
-def uv_tile(obj, tile=8.0):
+def uv_tile(obj, tile=14.0):
     mesh = obj.data
     uv = mesh.uv_layers.active
     if not uv:
@@ -156,14 +165,34 @@ def main():
     os.makedirs(os.path.join(OUT, 'renders'), exist_ok=True)
     os.makedirs(GLB, exist_ok=True)
 
-    adobe = textured('MAT_Moche_Adobe', 'wall_adobe_diffuse.webp', 'wall_adobe_normal.webp', 'wall_adobe_roughness.webp', (0.82, 0.55, 0.34, 1))
-    plaster = flat('MAT_Moche_Plaster', (0.62, 0.34, 0.22), 0.92)
-    sand = flat('MAT_Moche_Sand', (0.78, 0.62, 0.4), 0.95)
-    stone = flat('MAT_Moche_Stone', (0.54, 0.47, 0.36), 0.9)
-    earth = flat('MAT_Moche_Earth', (0.66, 0.52, 0.32), 1.0)
+    adobe = textured(
+        'MAT_Moche_Adobe',
+        'wall_adobe_diffuse.webp',
+        'wall_adobe_normal.webp',
+        'wall_adobe_roughness.webp',
+        (0.72, 0.4, 0.22, 1),
+        0.25,
+        0.35,
+    )
+    plaster = textured(
+        'MAT_Moche_Plaster',
+        'wall_adobe_diffuse.webp',
+        'wall_adobe_normal.webp',
+        'wall_adobe_roughness.webp',
+        (0.82, 0.54, 0.34, 1),
+        0.12,
+        0.2,
+    )
+    sand = flat('MAT_Moche_Sand', (0.88, 0.68, 0.44), 0.96)
+    stone = flat('MAT_Moche_Stone', (0.5, 0.42, 0.3), 0.9)
+    earth = flat('MAT_Moche_Earth', (0.55, 0.4, 0.24), 0.98)
     cream = flat('MAT_Moche_Frieze_Cream', (0.86, 0.76, 0.55), 0.9)
     red = flat('MAT_Moche_Frieze_Red', (0.48, 0.12, 0.09), 0.9)
     black = flat('MAT_Moche_Frieze_Black', (0.09, 0.07, 0.06), 0.95)
+    runtime_materials = {
+        adobe: flat('MAT_Moche_Adobe_Runtime', (0.72, 0.4, 0.22), 0.9),
+        plaster: flat('MAT_Moche_Plaster_Runtime', (0.82, 0.54, 0.34), 0.92),
+    }
 
     walls = []
     city = []
@@ -223,16 +252,16 @@ def main():
     # Lighting and camera for the campaign briefing.
     bpy.ops.object.light_add(type='SUN', location=(120, -160, 220))
     sun = bpy.context.object
-    sun.data.energy = 3.2
-    sun.data.angle = math.radians(8)
-    sun.rotation_euler = (math.radians(48), math.radians(8), math.radians(32))
+    sun.data.energy = 3.6
+    sun.data.angle = math.radians(3)
+    sun.rotation_euler = (math.radians(36), math.radians(10), math.radians(34))
 
-    bpy.ops.object.camera_add(location=(150, -235, 145))
+    bpy.ops.object.camera_add(location=(120, -190, 105))
     cam = bpy.context.object
     cam.data.lens = 38
     target = bpy.data.objects.new('Moche_Camera_Target', None)
     bpy.context.scene.collection.objects.link(target)
-    target.location = (-2, 0, 18)
+    target.location = (-2, 0, 15)
     con = cam.constraints.new('TRACK_TO')
     con.target = target
     con.track_axis = 'TRACK_NEGATIVE_Z'
@@ -245,8 +274,8 @@ def main():
         bpy.context.scene.world = world
     world.use_nodes = True
     bg = next(n for n in world.node_tree.nodes if n.type == 'BACKGROUND')
-    bg.inputs['Color'].default_value = (0.62, 0.68, 0.7, 1)
-    bg.inputs['Strength'].default_value = 0.8
+    bg.inputs['Color'].default_value = (0.55, 0.63, 0.72, 1)
+    bg.inputs['Strength'].default_value = 0.25
 
     scene = bpy.context.scene
     scene.render.resolution_x = 1600
@@ -254,12 +283,26 @@ def main():
     scene.render.resolution_percentage = 100
     scene.render.image_settings.file_format = 'PNG'
     scene.render.film_transparent = False
+    scene.view_settings.view_transform = 'AgX'
+    try:
+        scene.view_settings.look = 'AgX - Medium High Contrast'
+    except TypeError:
+        pass
+    scene.view_settings.exposure = -0.7
     try:
         scene.render.engine = 'BLENDER_EEVEE_NEXT'
     except TypeError:
         pass
     scene.render.filepath = os.path.join(OUT, 'renders', 'moche_hero.png')
     bpy.ops.render.render(write_still=True)
+
+    # The intro render uses image textures; the runtime GLB keeps flat materials
+    # so the site payload stays small.
+    for obj in [o for o in bpy.data.objects if o.type == 'MESH']:
+        for slot in obj.material_slots:
+            const = runtime_materials.get(slot.material)
+            if const:
+                slot.material = const
 
     root = bpy.data.objects.new('Moche_LOD0_Root', None)
     bpy.context.scene.collection.objects.link(root)
