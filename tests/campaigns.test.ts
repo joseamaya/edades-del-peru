@@ -15,15 +15,25 @@ describe('campaign series', () => {
   it('groups the saga into four campaigns', () => {
     expect(CAMPAIGN_SERIES_TITLE).toBe('La Senda del Sol');
     expect(CAMPAIGNS.map((c) => c.id)).toEqual(['preinca', 'inca', 'virreinato', 'independencia']);
-    expect(CAMPAIGNS.filter((c) => c.status === 'available').map((c) => c.id)).toEqual(['preinca']);
+    expect(CAMPAIGNS.filter((c) => c.status === 'available').map((c) => c.id)).toEqual(['preinca', 'inca']);
   });
 
-  it('releases the four preinca missions in order', () => {
-    expect(RELEASED_MISSIONS.map((m) => m.id)).toEqual(['m1_caral', 'm2_chavin', 'm3_moche_recuay', 'm4_wari']);
+  it('releases the preinca and Inca chapters in order', () => {
+    expect(RELEASED_MISSIONS.map((m) => m.id)).toEqual([
+      'm1_caral',
+      'm2_chavin',
+      'm3_moche_recuay',
+      'm4_wari',
+      'm5_yahuar_pampa',
+      'm6_chimu_inca',
+    ]);
     expect(getReleasedMission('m1_caral')?.title).toBe('La Ciudad Sagrada');
     expect(getReleasedMission('m2_chavin')?.title).toBe('El Oráculo de Chavín');
+    expect(getReleasedMission('m5_yahuar_pampa')?.title).toBe('Yahuar Pampa');
     expect(nextReleasedMission('m1_caral')?.id).toBe('m2_chavin');
     expect(nextReleasedMission('m4_wari')).toBeUndefined();
+    expect(nextReleasedMission('m5_yahuar_pampa')?.id).toBe('m6_chimu_inca');
+    expect(nextReleasedMission('m6_chimu_inca')).toBeUndefined();
   });
 
   it('keeps authored drafts mapped to their eventual campaign', () => {

@@ -64,3 +64,28 @@ export const PREINCA_PROLOGUE: CinematicBeat[] = [
     source: 'docs/historia/periodizacion.md',
   },
 ];
+
+/** Prologue for the second released campaign, El Tahuantinsuyo. */
+export const INCA_PROLOGUE: CinematicBeat[] = [
+  {
+    kicker: 'CUSCO · 1438',
+    title: 'El imperio que nace',
+    text: 'La confederación chanca marcha sobre el Cusco. Cusi Yupanqui organiza la defensa y vence en Yahuar Pampa; asume el poder como Pachacútec.',
+    seconds: 7,
+    source: 'docs/historia/campanas/yahuar_pampa.md',
+  },
+  {
+    kicker: 'COSTA NORTE · c. 1470',
+    title: 'El agua como arma',
+    text: 'Túpac Yupanqui avanza sobre el Reino Chimú. El canal que abastece Chan Chan se convierte en el objetivo decisivo: sin agua, la ciudad no resiste.',
+    seconds: 7,
+    source: 'docs/historia/campanas/chimu_inca.md',
+  },
+  {
+    kicker: 'DOS CAMPAÑAS, UN IMPERIO',
+    title: 'La expansión inca',
+    text: 'Yahuar Pampa y la guerra del norte muestran cómo el Tahuantinsuyo se defendió y se expandió antes de la llegada europea.',
+    seconds: 6,
+    source: 'docs/historia/periodizacion.md',
+  },
+];

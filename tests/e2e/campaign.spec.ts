@@ -144,6 +144,20 @@ test('the Caral mission closes with a narrative epilogue, not a quiz', async ({ 
   await expect(victory).not.toContainText('Puntaje');
 });
 
+test('chapter II tutorials open with their first step', async ({ page }) => {
+  for (const [id, title] of [
+    ['m5_yahuar_pampa', 'Yahuar Pampa'],
+    ['m6_chimu_inca', 'La Guerra del Norte'],
+  ]) {
+    await page.goto(`/?mission=${id}&seed=777&fog=0&low=1&noloop=1`);
+    const overlay = page.locator('.ed-overlay', { hasText: title });
+    await expect(overlay).toBeVisible({ timeout: 30_000 });
+    await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+    await overlay.waitFor({ state: 'detached', timeout: 15_000 });
+    await expect(page.locator('#ed-tutorial.show')).toContainText('Paso 1 / 3', { timeout: 15_000 });
+  }
+});
+
 test('the missions with corrected rosters boot with units and no errors', async ({ page }) => {
   test.setTimeout(180_000);
   const errors: string[] = [];

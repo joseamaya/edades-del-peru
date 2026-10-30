@@ -105,6 +105,8 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
     ],
   },
   m5_yahuar_pampa: {
+    briefing:
+      'Cusco, 1438. La confederación chanca avanza sobre la ciudad. Cusi Yupanqui organiza la defensa: sostén el Cusco, protege al príncipe y rechaza al ejército chanca.',
     context:
       'En 1438 la confederación Chanca, reunida en Andahuaylas y al mando de Anccu Hualloc, marchó sobre el ' +
       'Cusco. El inca Viracocha y el heredero Inca Urco huyeron; el príncipe Cusi Yupanqui organizó la defensa ' +
@@ -121,6 +123,8 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
     ],
   },
   m6_chimu_inca: {
+    briefing:
+      'Costa norte, c. 1470. Túpac Yupanqui avanza sobre el Reino Chimú. Llega a Paramonga y corta el canal que abastece Chan Chan: el agua decide la campaña.',
     context:
       'Hacia 1470, al mando del auqui Túpac Yupanqui, los incas avanzaron sobre el Reino Chimú de Minchancaman ' +
       'por Paramonga, Huarmey y el valle del Santa. Secaron el canal que abastecía de agua a Chan Chan; la ' +

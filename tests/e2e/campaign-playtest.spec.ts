@@ -76,6 +76,90 @@ test('plays m7 with real gathering and enemy AI without objective cheats', async
   expect(errors).toEqual([]);
 });
 
+test('plays m5 by holding Cusco and counterattacking with real orders', async ({ page }) => {
+  test.setTimeout(120_000);
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/?mission=m5_yahuar_pampa&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
+    const enemy = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'center' && !b.dead) as any;
+    const attackers = [...g.units.values()]
+      .filter((u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker' && u.tag !== 'cusi_yupanqui')
+      .map((u: any) => u.id);
+    g.executeCommand(
+      { kind: 'order', unitIds: attackers, order: { kind: 'attack', entityId: enemy.id }, clear: true },
+      false,
+    );
+    const dt = 1 / 60;
+    let t = 0;
+    for (let i = 0; i < Math.ceil(620 / dt) && !m.ended; i++) {
+      g.update(dt, t);
+      t += dt;
+    }
+    return {
+      defend: m.getObjectiveState('obj_defend') as string,
+      kill: m.getObjectiveState('obj_kill') as string,
+      cusi: m.getObjectiveState('obj_cusi') as string,
+      won: m.won as boolean | null,
+    };
+  });
+  expect(out.defend).toBe('completed');
+  expect(out.kill).toBe('completed');
+  expect(out.cusi).not.toBe('failed');
+  expect(out.won).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('plays m6 by advancing and cutting the canal with real orders', async ({ page }) => {
+  test.setTimeout(120_000);
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/?mission=m6_chimu_inca&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
+    const ids = [...g.units.values()].filter((u: any) => u.owner === 0 && !u.dead).map((u: any) => u.id);
+    const enemy = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'center' && !b.dead) as any;
+    const canal = g.canalSite as { x: number; z: number } | null;
+    const order = (x: number, z: number) =>
+      g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'move', target: { x, z } }, clear: true }, false);
+    const dt = 1 / 60;
+    let t = 0;
+    order(enemy.pos.x - 18, enemy.pos.z);
+    for (let i = 0; i < Math.ceil(180 / dt) && !m.ended; i++) {
+      g.update(dt, t);
+      t += dt;
+    }
+    const afterParamonga = m.getObjectiveState('obj_avanzar') as string;
+    if (canal) order(canal.x, canal.z);
+    for (let i = 0; i < Math.ceil(120 / dt) && !m.ended; i++) {
+      g.update(dt, t);
+      t += dt;
+    }
+    return {
+      afterParamonga,
+      canal: m.getObjectiveState('obj_canal') as string,
+      won: m.won as boolean | null,
+    };
+  });
+  expect(out.afterParamonga).toBe('completed');
+  expect(out.canal).toBe('completed');
+  expect(out.won).toBe(true);
+  expect(errors).toEqual([]);
+});
+
 /**
  * Caral is the campaign's gold standard: this plays the mission through the
  * ordinary command layer (build orders, gather orders and a scout move) instead
