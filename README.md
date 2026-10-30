@@ -83,6 +83,9 @@ for QA.
 The campaign [quality bar](./docs/design/campaign-quality-bar.md) records the gates a mission must meet.
 Caral, Chavín, Moche and Wari have authored, source-backed sites.
 
+The technical preinca release candidate, its art gate and its publish checklist are in
+[`docs/design/release-candidate.md`](./docs/design/release-candidate.md).
+
 ## Educational mode
 
 The game teaches history while you play:
