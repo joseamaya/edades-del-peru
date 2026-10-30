@@ -755,7 +755,7 @@ and confirm that `draco_wasm_wrapper.js`, `draco_decoder.wasm`, GLB files,
 `src/util/publicAsset.ts`; do not hardcode `/draco/` or other root paths.
 The manual `GitHub Pages build (manual)` workflow produces a downloadable `dist`
 artifact with the project base and checks the Draco files; it does not deploy.
-The `Deploy GitHub Pages` workflow is the explicit release path and deploys that
-artifact after Pages is enabled. The artifact was smoke-tested under
-`/edades-del-peru/` on 2026-10-30; see
+The `Deploy GitHub Pages` workflow is the explicit release path. Pages is now
+enabled and the live site is <https://joseamaya.github.io/edades-del-peru/>. The
+artifact and live URL were smoke-tested on 2026-10-30; see
 [`docs/design/release-candidate.md`](./design/release-candidate.md).
