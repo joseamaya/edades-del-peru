@@ -29,6 +29,9 @@ import { angleDelta, angleTo, distance2D, clamp, facingRotation, lerp } from '..
 import { genderForId, type PersonGender } from '../model/defs/people';
 import type { UnitSave } from '../game/saveTypes';
 
+/** Reach of a melee attack from the edge of the target footprint. */
+export const MELEE_ATTACK_RANGE = 0.9;
+
 /** Context that Game provides to units (avoids circular dependencies). */
 export interface UnitContext {
   getHeight(x: number, z: number): number;
@@ -131,6 +134,7 @@ export class Unit {
   private blockedNotified = false;
   /** One-shot fallback: the regular path/direct approach could not reach a node. */
   private approachTried = false;
+  private attackApproachTried = false;
 
   targetEntityId: number | null = null;
   attackCooldown = 0;
@@ -395,6 +399,7 @@ export class Unit {
     this.blockedNotified = false;
     this.directApproach = false;
     this.approachTried = false;
+    this.attackApproachTried = false;
   }
 
   issueOrder(order: Order, clear = true): void {
@@ -925,7 +930,7 @@ export class Unit {
     const dx = tpos.x - this.pos.x;
     const dz = tpos.z - this.pos.z;
     const dist = Math.sqrt(dx * dx + dz * dz);
-    const range = this.stats.range > 0 ? this.stats.range + target.radius : 0.9 + target.radius;
+    const range = this.stats.range > 0 ? this.stats.range + target.radius : MELEE_ATTACK_RANGE + target.radius;
 
     if (dist > range * 1.15) {
       // chase (with a direct-approach fallback if there is no path)
@@ -938,6 +943,21 @@ export class Unit {
         // walkable, so the path can stop a couple of cells short): head straight in
         // only over walkable ground, else hold and warn
         if (this.directStep(tpos.x, tpos.z, range)) return;
+        if (!this.attackApproachTried) {
+          this.attackApproachTried = true;
+          const building = this.ctx.buildings.get(target.id);
+          const pts = building
+            ? this.buildingApproach(tpos.x, tpos.z, target.radius, range)
+            : this.ctx.findApproachPath(this.pos.x, this.pos.z, tpos.x, tpos.z, range);
+          if (pts.length > 0) {
+            this.path = pts;
+            this.pathIdx = 0;
+            this.repathTimer = 0.8;
+            this.noRouteTimer = 0;
+            if (pts.length > 1) this.advanceToNextWaypoint();
+            return;
+          }
+        }
         this.noRouteTimer += dt;
         if (this.noRouteTimer > NO_ROUTE_GIVEUP) this.notifyNoRoute();
         this.vel.multiplyScalar(Math.pow(0.02, dt));
@@ -958,6 +978,20 @@ export class Unit {
         this.attackCooldown = this.stats.attackSpeed;
       }
     }
+  }
+
+  /** Path to a walkable point just outside a building footprint. */
+  private buildingApproach(tx: number, tz: number, radius: number, stopRange: number): { x: number; z: number }[] {
+    const stand = Math.max(radius + MELEE_ATTACK_RANGE, stopRange - 0.1);
+    for (let i = 0; i < 16; i++) {
+      const angle = (i / 16) * Math.PI * 2;
+      const px = tx + Math.cos(angle) * stand;
+      const pz = tz + Math.sin(angle) * stand;
+      if (!this.ctx.isWalkable(px, pz)) continue;
+      const pts = this.ctx.findPath(this.pos.x, this.pos.z, px, pz);
+      if (pts.length > 0) return pts;
+    }
+    return [];
   }
 
   private attackTarget(target: any, time: number): void {

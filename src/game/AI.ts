@@ -9,7 +9,7 @@ import { getUnitStats } from '../model/defs/units';
 import { unitMinPeriod } from '../model/defs/units';
 import { ERA_DEFS } from '../model/defs/eras';
 import type { Game } from '../core/Game';
-import { HARVEST_STAND_RANGE, type Unit } from '../entities/Unit';
+import { HARVEST_STAND_RANGE, MELEE_ATTACK_RANGE, type Unit } from '../entities/Unit';
 import { Building } from '../entities/Building';
 import type { ResourceNode } from '../entities/ResourceNode';
 import { CATEGORIES, UNIT_CATEGORY, armyWeightsFor, UnitCategory } from './aiComposition';
@@ -45,6 +45,14 @@ const FOCUS_LEASH = 18;
 const MEMORY_TTL = 12;
 /** Sight padding over `stats.los` (matches the player's fog reveal). */
 const VISION_PAD = 2;
+/** Wood kept back for one soldier once a barracks exists. */
+const MILITARY_WOOD_RESERVE = 20;
+/** Extra stand-off when probing a building footprint. */
+const BUILDING_APPROACH_PAD = 0.1;
+/** Walkable ring probes around a building footprint. */
+const BUILDING_APPROACH_PROBES = 24;
+/** Safety margin around an entity when deciding whether an attack can connect. */
+const ATTACK_STAND_PAD = 0.5;
 
 /** A combat unit (not a worker or scout). */
 const isSoldier = (u: Unit): boolean => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT;
@@ -62,6 +70,8 @@ export class AI {
   private mult: { aggression: number; reaction: number };
   private profile: AIProfile;
   private attackTimer = 60;
+  /** Consecutive attack checks where the army was below the ideal threshold. */
+  private attackStall = 0;
   private economyTimer = 0;
   private buildingTimer = 0;
   private researchTimer = 4;
@@ -73,8 +83,8 @@ export class AI {
   private lastPerception = -1;
   private seenUnits = new Map<number, number>();
   private seenBuildings = new Set<number>();
-  /** Nodes with no harvest approach, with the grid revision they were tested on. */
-  private unreachableNodes = new Map<number, number>();
+  /** Per worker component, nodes with no harvest approach and the grid revision tested. */
+  private unreachableNodes = new Map<number, Map<number, number>>();
   /** Remaining resource probes for the current economy tick. */
   private pathBudget = 0;
 
@@ -192,12 +202,12 @@ export class AI {
   private chooseResourceNode(w: Unit): ResourceNode | null {
     if (this.pathBudget <= 0) return null;
     const nodes: HarvestNode[] = [...this.game.resourceNodes.values()]
-      .filter((n) => !n.dead && !n.depleted && !this.isUnreachable(n.id))
+      .filter((n) => !n.dead && !n.depleted)
       .map((n) => n as HarvestNode);
     const p = this.p;
     // the player's complete farms count as food nodes
     for (const b of this.myBuildings()) {
-      if (b.isFarm && b.constructionComplete && b.foodAmount > 0 && !this.isUnreachable(b.id)) {
+      if (b.isFarm && b.constructionComplete && b.foodAmount > 0) {
         nodes.push({ id: b.id, pos: b.pos, amount: b.foodAmount, resource: 'food', farm: b } as HarvestNode);
       }
     }
@@ -238,33 +248,40 @@ export class AI {
     for (const k of types) {
       const list = nodes.filter((n) => n.resource === k).sort((a, b) => distTo(a) - distTo(b));
       for (const n of list) {
+        if (this.isUnreachable(w, n)) continue;
         const farm = n.farm;
         const standRadius = farm ? Math.max(0.5, (farm.radius ?? 1.5) + 1.4 - 0.6) : HARVEST_STAND_RANGE;
-        // cheap component test first: skip unreachable nodes without an A* search
-        if (!this.game.pathfinder.reachableToNode(w.pos.x, w.pos.z, n.pos.x, n.pos.z, standRadius)) {
-          this.markUnreachable(n.id);
-          continue;
-        }
+        // cheap component test first: skip without A*; do not blacklist on this
+        // check alone, because a stand point blocked from one worker can be
+        // reachable from another worker or from a different side.
+        if (!this.game.pathfinder.reachableToNode(w.pos.x, w.pos.z, n.pos.x, n.pos.z, standRadius)) continue;
         if (this.pathBudget <= 0) return null;
         this.pathBudget--;
         const path = this.game.pathfinder.findApproachPath(w.pos.x, w.pos.z, n.pos.x, n.pos.z, standRadius);
         if (path.length > 0) return n;
-        this.markUnreachable(n.id);
+        this.markUnreachable(w, n);
       }
     }
     return null;
   }
 
-  /** Blacklist a node until an obstacle removal (or terrain bake) changes reachability. */
-  private markUnreachable(nodeId: number): void {
-    this.unreachableNodes.set(nodeId, this.game.pathfinder.revision);
+  /** Blacklist a node for a worker's component until the grid changes. */
+  private markUnreachable(w: Unit, n: HarvestNode): void {
+    const component = this.game.pathfinder.componentAt(w.pos.x, w.pos.z);
+    let nodes = this.unreachableNodes.get(component);
+    if (!nodes) {
+      nodes = new Map();
+      this.unreachableNodes.set(component, nodes);
+    }
+    nodes.set(n.id, this.game.pathfinder.revision);
   }
 
-  private isUnreachable(nodeId: number): boolean {
-    const revision = this.unreachableNodes.get(nodeId);
+  private isUnreachable(w: Unit, n: HarvestNode): boolean {
+    const nodes = this.unreachableNodes.get(this.game.pathfinder.componentAt(w.pos.x, w.pos.z));
+    const revision = nodes?.get(n.id);
     if (revision === undefined) return false;
     if (revision !== this.game.pathfinder.revision) {
-      this.unreachableNodes.delete(nodeId);
+      nodes!.delete(n.id);
       return false;
     }
     return true;
@@ -340,9 +357,13 @@ export class AI {
     const plan = has(BuildingKind.BARRACKS) ? buildPlan : buildPlan.filter((b) => b.essential);
     const underConstruction = myB.filter((b) => !b.constructionComplete);
     plan.sort((a, b) => b.priority - a.priority || b.cost.wood - a.cost.wood);
+    // Keep one soldier's wood in reserve instead of spending it on farms/houses:
+    // a completed barracks with no wood is a stalled army.
+    const woodReserve =
+      has(BuildingKind.BARRACKS) && soldiers < armyTarget(this.profile, p.era) ? MILITARY_WOOD_RESERVE : 0;
     if (underConstruction.length < this.profile.maxConcurrentBuilds) {
       for (const item of plan) {
-        if (this.canAfford(item.cost)) {
+        if (this.canAfford(item.cost) && p.resources.wood - (item.cost.wood ?? 0) >= woodReserve) {
           const spot = this.findBuildSpot(item.kind);
           if (spot) {
             this.placeAI(item.kind, spot.x, spot.z);
@@ -514,13 +535,19 @@ export class AI {
           continue;
         }
         if (mopping) {
-          if (fallback === undefined) fallback = this.findAttackTarget();
+          if (fallback === undefined) fallback = this.findAttackTarget(s.pos);
           if (fallback) s.issueOrder({ kind: OrderKind.ATTACK, entityId: fallback.id }, true);
         }
         continue;
       }
       if (s.orderQueue[0]?.kind === OrderKind.ATTACK) {
-        this.focusFire(s, s.orderQueue[0], focus);
+        const order = s.orderQueue[0];
+        const target = this.orderTarget(order);
+        if (target && !this.canAttackEntity(s, target)) {
+          this.retarget(s, focus, base);
+          continue;
+        }
+        this.focusFire(s, order, focus);
         continue;
       }
       const enemy = this.findEnemyInRange(s);
@@ -542,7 +569,7 @@ export class AI {
       }
       const distHome = base ? distance2D(s.pos.x, s.pos.z, base.pos.x, base.pos.z) : 0;
       if (mopping && distHome > DEFEND_RADIUS) {
-        if (fallback === undefined) fallback = this.findAttackTarget();
+        if (fallback === undefined) fallback = this.findAttackTarget(s.pos);
         if (fallback) s.issueOrder({ kind: OrderKind.ATTACK, entityId: fallback.id }, true);
       }
     }
@@ -550,29 +577,33 @@ export class AI {
 
   /** Enemy unit nearest to the AI army's centre (focus-fire target). */
   private focusTarget(soldiers: Unit[]): Unit | null {
-    let cx = 0;
-    let cz = 0;
-    let n = 0;
-    for (const s of soldiers) {
-      if (isSiege(s.kind)) continue; // support sits behind the fighting line
-      cx += s.pos.x;
-      cz += s.pos.z;
-      n++;
-    }
-    if (n === 0) return null;
-    cx /= n;
-    cz /= n;
+    const center = this.armyCenter(soldiers);
+    if (!center) return null;
     let best: Unit | null = null;
     let bestD = Infinity;
     for (const u of this.game.units.values()) {
       if (!isSoldier(u) || !this.isEnemyUnitKnown(u)) continue;
-      const d = distance2D(cx, cz, u.pos.x, u.pos.z);
+      const d = distance2D(center.x, center.z, u.pos.x, u.pos.z);
       if (d < bestD) {
         bestD = d;
         best = u;
       }
     }
     return best;
+  }
+
+  /** Average position of the fighting line (siege support excluded). */
+  private armyCenter(soldiers: Unit[]): { x: number; z: number } | null {
+    let cx = 0;
+    let cz = 0;
+    let n = 0;
+    for (const s of soldiers) {
+      if (isSiege(s.kind)) continue;
+      cx += s.pos.x;
+      cz += s.pos.z;
+      n++;
+    }
+    return n === 0 ? null : { x: cx / n, z: cz / n };
   }
 
   /** Can `s` attack `target` from where it stands (melee uses its sight radius). */
@@ -698,7 +729,7 @@ export class AI {
     for (const b of this.game.buildings.values()) {
       if (!this.isEnemyBuilding(b)) continue;
       const d = distance2D(s.pos.x, s.pos.z, b.pos.x, b.pos.z);
-      if (d < bestD) {
+      if (d < bestD && this.canAttackEntity(s, b)) {
         bestD = d;
         best = b;
       }
@@ -713,7 +744,7 @@ export class AI {
     const nearby = this.game.enemiesNear(s.pos.x, s.pos.z, range, this.playerId);
     for (const u of nearby) {
       const d = distance2D(s.pos.x, s.pos.z, u.pos.x, u.pos.z);
-      if (d < range && d < bestD) {
+      if (d < range && d < bestD && this.canAttackEntity(s, u)) {
         bestD = d;
         best = u;
       }
@@ -728,7 +759,7 @@ export class AI {
     for (const u of this.game.units.values()) {
       if (u.kind !== UnitKind.WORKER || !this.isEnemyUnit(u)) continue;
       const d = distance2D(s.pos.x, s.pos.z, u.pos.x, u.pos.z);
-      if (d < bestD) {
+      if (d < bestD && this.canAttackEntity(s, u)) {
         bestD = d;
         best = u;
       }
@@ -756,9 +787,37 @@ export class AI {
   private launchAttack(): void {
     const soldiers = this.soldiers();
     const threshold = attackThreshold(this.profile, this.p.era);
-    if (soldiers.length < threshold) return;
-    const target = this.findAttackTarget();
-    if (!target) return;
+    if (soldiers.length < threshold) {
+      // Do not wait forever for the ideal army, but only commit a smaller force
+      // after a few checks and when it is not smaller than the known enemy army.
+      let enemyArmy = 0;
+      for (const u of this.game.units.values()) if (isSoldier(u) && this.isEnemyUnitKnown(u)) enemyArmy++;
+      this.attackStall++;
+      if (soldiers.length < 2 || this.attackStall < 3 || soldiers.length < enemyArmy) return;
+    } else {
+      this.attackStall = 0;
+    }
+    let target: Building | null = null;
+    for (const s of soldiers) {
+      target = this.findAttackTarget(s.pos);
+      if (target) break;
+    }
+    if (!target) {
+      // No known building yet: advance toward the last known enemy base or the
+      // mirror of our base so the army can find one instead of standing still.
+      if (soldiers.length < threshold) return;
+      const base = this.center();
+      const known = this.findEnemyCenter();
+      const fallback =
+        known?.pos ??
+        (base ? { x: this.game.settings.mapSize - base.pos.x, z: this.game.settings.mapSize - base.pos.z } : null);
+      if (!fallback) return;
+      for (const s of soldiers) {
+        s.issueOrder({ kind: OrderKind.ATTACK_MOVE, target: { x: fallback.x, z: fallback.z } }, true);
+      }
+      return;
+    }
+    this.attackStall = 0;
     for (const s of soldiers) {
       // attack the building itself so conquest actually progresses
       s.issueOrder({ kind: OrderKind.ATTACK, entityId: target.id }, true);
@@ -769,16 +828,17 @@ export class AI {
     }
   }
 
-  /** Enemy building to focus: the center first, else the nearest one to our base. */
-  private findAttackTarget(): Building | null {
+  /** Enemy building to focus: the center first, else the nearest reachable one. */
+  private findAttackTarget(from?: { x: number; z: number }): Building | null {
     const base = this.center();
-    const bx = base?.pos.x ?? this.game.settings.mapSize / 2;
-    const bz = base?.pos.z ?? this.game.settings.mapSize / 2;
+    const bx = from?.x ?? base?.pos.x ?? this.game.settings.mapSize / 2;
+    const bz = from?.z ?? base?.pos.z ?? this.game.settings.mapSize / 2;
     let center: Building | null = null;
     let nearest: Building | null = null;
     let nearestD = Infinity;
     for (const b of this.game.buildings.values()) {
       if (!this.isEnemyBuildingKnown(b)) continue;
+      if (!this.canReachBuilding(bx, bz, b)) continue;
       if (b.kind === BuildingKind.CENTER) center = b;
       const d = distance2D(bx, bz, b.pos.x, b.pos.z);
       if (d < nearestD) {
@@ -787,5 +847,56 @@ export class AI {
       }
     }
     return center ?? nearest;
+  }
+
+  private orderTarget(order: Order): Unit | Building | null {
+    if (order.entityId === undefined) return null;
+    return this.game.units.get(order.entityId) ?? this.game.buildings.get(order.entityId) ?? null;
+  }
+
+  /** Attack range from the edge of the target, including its footprint. */
+  private attackStandRadius(s: Unit, target: Unit | Building): number {
+    return Math.max(s.stats.range, MELEE_ATTACK_RANGE) + target.radius + ATTACK_STAND_PAD;
+  }
+
+  /** Can this soldier actually close on the target, not just see it? */
+  private canAttackEntity(s: Unit, target: Unit | Building): boolean {
+    if (target.dead) return false;
+    const stand = this.attackStandRadius(s, target);
+    if (distance2D(s.pos.x, s.pos.z, target.pos.x, target.pos.z) <= stand) return true;
+    if (target instanceof Building) return this.canReachBuilding(s.pos.x, s.pos.z, target);
+    return this.game.pathfinder.reachableToNode(s.pos.x, s.pos.z, target.pos.x, target.pos.z, stand);
+  }
+
+  /** A building spans several blocked cells; probe a walkable ring around its edge. */
+  private canReachBuilding(x: number, z: number, b: Building): boolean {
+    const pathfinder = this.game.pathfinder;
+    const stand = b.radius + MELEE_ATTACK_RANGE + BUILDING_APPROACH_PAD;
+    for (let i = 0; i < BUILDING_APPROACH_PROBES; i++) {
+      const angle = (i / BUILDING_APPROACH_PROBES) * Math.PI * 2;
+      const px = b.pos.x + Math.cos(angle) * stand;
+      const pz = b.pos.z + Math.sin(angle) * stand;
+      if (pathfinder.isWalkable(px, pz) && pathfinder.reachable(x, z, px, pz)) return true;
+    }
+    return false;
+  }
+
+  /** Replace an order stuck on an unreachable target with the best reachable one. */
+  private retarget(s: Unit, focus: Unit | null, base: Building | null): void {
+    const target =
+      (focus && this.canAttackEntity(s, focus) ? focus : null) ??
+      this.findEnemyInRange(s) ??
+      this.findEnemyWorkerInRange(s, RAID_RADIUS) ??
+      this.findEnemyBuildingInRange(s, PRESS_BUILDING_RADIUS) ??
+      this.findAttackTarget(s.pos);
+    if (target) {
+      s.issueOrder({ kind: OrderKind.ATTACK, entityId: target.id }, true);
+      return;
+    }
+    if (base && distance2D(s.pos.x, s.pos.z, base.pos.x, base.pos.z) > DEFEND_RADIUS) {
+      s.issueOrder({ kind: OrderKind.MOVE, target: { x: base.pos.x, z: base.pos.z } }, true);
+    } else {
+      s.clearOrders();
+    }
   }
 }
