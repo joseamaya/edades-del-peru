@@ -253,3 +253,76 @@ test('saves and loads the Wari network and frontier', async ({ page }) => {
   });
   expect(after).toEqual(before);
 });
+
+test('saves and loads the later campaign missions', async ({ context }) => {
+  test.setTimeout(180_000);
+  for (const id of ['m5_yahuar_pampa', 'm6_chimu_inca', 'm7_tupac_amaru', 'm8_independencia', 'm9_guerra_pacifico']) {
+    const page = await context.newPage();
+    await page.goto(`/?mission=${id}&seed=777&fog=0&low=1`);
+    await startMission(page);
+    await page.waitForFunction(
+      () => {
+        const g = (window as unknown as { game?: any }).game;
+        return !!g?.mission && g.units.size > 0;
+      },
+      null,
+      { timeout: 20_000 },
+    );
+    const before = await page.evaluate(() => {
+      const g = (window as unknown as { game: any }).game;
+      g.loop.stop();
+      if (g.getPaused()) g.togglePause();
+      const dt = 1 / 60;
+      for (let i = 0; i < Math.ceil(15 / dt); i++) g.update(dt, i * dt);
+      const objs: Record<string, string> = {};
+      const progress: Record<string, unknown> = {};
+      for (const o of g.mission.def.objectives) {
+        objs[o.id] = g.mission.getObjectiveState(o.id);
+        progress[o.id] = g.mission.getObjectiveProgress(o.id);
+      }
+      g.saveMatch();
+      return {
+        missionId: g.settings.missionId,
+        units: g.units.size,
+        buildings: g.buildings.size,
+        objs,
+        progress,
+        tutorialStep: g.tutorial?.toSave().stepId ?? null,
+        resources: { ...g.players[0].resources },
+      };
+    });
+
+    await page.goto('/?load=1&noloop=1');
+    await page.waitForFunction(
+      () => {
+        const g = (window as unknown as { game?: any }).game;
+        return !!g?.mission && g.units.size > 0;
+      },
+      null,
+      { timeout: 20_000 },
+    );
+    const after = await page.evaluate(() => {
+      const g = (window as unknown as { game: any }).game;
+      g.loop.stop();
+      const objs: Record<string, string> = {};
+      const progress: Record<string, unknown> = {};
+      for (const o of g.mission.def.objectives) {
+        objs[o.id] = g.mission.getObjectiveState(o.id);
+        progress[o.id] = g.mission.getObjectiveProgress(o.id);
+      }
+      return {
+        missionId: g.settings.missionId,
+        units: g.units.size,
+        buildings: g.buildings.size,
+        objs,
+        progress,
+        tutorialStep: g.tutorial?.toSave().stepId ?? null,
+        resources: { ...g.players[0].resources },
+      };
+    });
+
+    expect(after, `${id} save round-trip`).toEqual(before);
+    await expect(page.getByRole('button', { name: /COMENZAR MISIÓN/ })).toHaveCount(0);
+    await page.close();
+  }
+});

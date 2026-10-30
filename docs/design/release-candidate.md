@@ -10,7 +10,7 @@ missions m1 Caral through m9 Guerra del Pacífico.
 - `yarn verify:fast`: typecheck, lint, format, 437 unit tests and build pass.
 - `yarn test:e2e:slow`: 74 passing, including campaign playtests, saves and settlement.
 - `yarn test:e2e:smoke`: 42 passing.
-- `yarn test:e2e:fast`: 180 passing.
+- `yarn test:e2e:fast`: 181 passing.
 - `yarn art:validate`: manifest and Blender render assets are valid.
 - GitHub Pages serves the project under `/edades-del-peru/`; the live build is checked with a
   headless browser after each deploy, including the m5–m9 briefings and tutorials.
@@ -53,8 +53,7 @@ required before deciding whether Moche/Wari need mesh/material optimization.
 - All nine missions are released, but m5–m9 use documented procedural landmarks and authored
   terrain; they do not have dedicated GLB sites like Caral, Chavín, Moche and Wari. Their
   quality-bar visual gate is partial.
-- Mission-specific save round-trips are covered for m1–m4; m5–m9 use the shared save path and
-  remain partial on the persistence gate.
+- Mission-specific save round-trips are covered for m1–m9.
 - GitHub Pages is enabled and the `Deploy GitHub Pages` workflow is re-run for each chapter
   release. The itch build is packaged as `review/edades-del-peru-itch.zip` but not uploaded
   because `butler` is not available here.
