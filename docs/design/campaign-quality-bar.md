@@ -91,3 +91,24 @@ For each mission, first link the dossier claim to the mechanic, then implement t
 mechanic, then the UX and tests. Do not copy Caral's `gather + build + survive`
 sequence: use the gate table to find the mission's own historical problem. A campaign
 with no documented battle must not acquire one merely to fit the RTS template.
+
+
+## Chapter II playable status (m5–m6)
+
+Chapter II is released as **playable**, not yet as a full gold master. The historical mechanics,
+onboarding and real-command victory paths are covered; the visual and persistence gates still
+need dedicated art and mission-specific save tests.
+
+| Gate | m5 Yahuar Pampa | m6 Chimú–Inca |
+| --- | --- | --- |
+| History | Met: `yahuar_pampa.md`; no invented battle. | Met: `chimu_inca.md`; water/canal campaign. |
+| Identity | Met: defend Cusco, protect Cusi, counterattack. | Met: advance to Paramonga, cut the canal, force surrender. |
+| Play | Met: real-command playtest holds and counterattacks. | Met: real-command playtest advances and cuts the canal. |
+| Contract | Met: defend, destroy, protect; waves and timer. | Met: staged Paramonga/canal objectives; optional Chan Chan/hold. |
+| Onboarding | Met: three-step tutorial + briefing. | Met: three-step tutorial + briefing. |
+| Closure | Met: epilogue and optional achievements. | Met: epilogue and optional objectives. |
+| UX | Met locally: 1280×800 briefing/tutorial reviewed. | Met locally: 1280×800 briefing/tutorial reviewed. |
+| Visuals | Partial: documented procedural pucará + authored terrain; no dedicated GLB yet. | Partial: documented procedural Chimú compound + canal; no dedicated GLB yet. |
+| Persistence | Partial: shared save path; mission-specific round-trip pending. | Partial: shared save path; mission-specific round-trip pending. |
+| Tests | Met: data, completability, real-command playtest. | Met: data, completability, real-command playtest. |
+| Docs | Met: README, dossiers, campaign experiences and this table. | Met: README, dossiers, campaign experiences and this table. |

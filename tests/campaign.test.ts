@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { MISSIONS } from '../src/campaign/defs/campaign';
 import { EDUCATIONAL, PROLOGUE, getEducational } from '../src/campaign/defs/educational';
+import { tutorialForMission } from '../src/campaign/defs/tutorials';
 import { getPeriod } from '../src/model/defs/periods';
 import { getCiv } from '../src/model/defs/civs';
 import { BuildingKind, UnitKind } from '../src/core/types';
@@ -259,6 +260,15 @@ describe('campaign educational content', () => {
       expect(briefing).not.toContain(objective.title);
     }
     expect(briefing).not.toMatch(/huacas|intercambio/i);
+  });
+
+  it('chapter II has briefings and guided tutorials', () => {
+    for (const id of ['m5_yahuar_pampa', 'm6_chimu_inca']) {
+      const mis = MISSIONS.find((m) => m.id === id)!;
+      expect(mis.tutorial, `${id} tutorial flag`).toBe(true);
+      expect(getEducational(id)?.briefing?.length, `${id} briefing`).toBeGreaterThan(40);
+      expect(tutorialForMission(id)?.steps.length, `${id} tutorial steps`).toBeGreaterThanOrEqual(3);
+    }
   });
 
   it('m3 opens the canal, holds the huacas and sustains elite exchange', () => {

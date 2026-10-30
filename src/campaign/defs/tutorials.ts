@@ -4,6 +4,46 @@ import type { TutorialDef } from '../types';
 const buildBottom = '#ed-bottom';
 
 const TUTORIALS: Record<string, TutorialDef> = {
+  m5_yahuar_pampa: {
+    steps: [
+      {
+        id: 'select',
+        text: 'Selecciona a tus defensores: haz clic izquierdo sobre un soldado o arrastra un recuadro.',
+        check: { type: 'selectUnit', unitKind: UnitKind.SOLDIER },
+      },
+      {
+        id: 'defend',
+        text: 'Sostén el Cusco durante ocho minutos. Las oleadas chancas atacarán por el norte y por el oeste.',
+        highlight: '#ed-objectives',
+        check: { type: 'objectiveCompleted', objectiveId: 'obj_defend' },
+      },
+      {
+        id: 'counter',
+        text: 'Cuando la defensa resista, contraataca y destruye el campamento chanca. Cusi Yupanqui debe seguir con vida.',
+        check: { type: 'objectiveCompleted', objectiveId: 'obj_kill' },
+      },
+    ],
+  },
+  m6_chimu_inca: {
+    steps: [
+      {
+        id: 'select',
+        text: 'Selecciona a Túpac Yupanqui y su ejército. La campaña se decide avanzando, no esperando en la base.',
+        check: { type: 'selectUnit', unitKind: UnitKind.RIFLEMAN },
+      },
+      {
+        id: 'paramonga',
+        text: 'Avanza con Túpac Yupanqui hasta Paramonga, al norte del campamento chimú.',
+        highlight: '#ed-objectives',
+        check: { type: 'objectiveCompleted', objectiveId: 'obj_avanzar' },
+      },
+      {
+        id: 'canal',
+        text: 'Llega al canal que abastece Chan Chan. Cortar el agua fuerza la rendición chimú.',
+        check: { type: 'objectiveCompleted', objectiveId: 'obj_canal' },
+      },
+    ],
+  },
   m2_chavin: {
     steps: [
       {

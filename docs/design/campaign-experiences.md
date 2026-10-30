@@ -103,10 +103,10 @@ as an abstraction and says so in its field card.
 | m8 Independencia       | Campaign logistics and coordination      | Move, take the royalist centre, hold              | Timing and concentration           | Patriotic victory             |
 | m9 Guerra del Pacífico | Sea control and port defence             | Protect the port, raid, intercept                 | Risk the squadron vs hold the port | Loss of the Huáscar and Grau  |
 
-These are future design directions, not implemented behaviour and not a shared objective template. m7 is a
-counterfactual licence; m9's historical losses are documented, while a playable land defence of the port would
-be an abstraction. The other rows describe documented contexts. Each mission must be reviewed against its
-dossier before it is rewritten.
+m5 and m6 are implemented and released in chapter II. The remaining rows are future design directions, not
+implemented behaviour and not a shared objective template. m7 is a counterfactual licence; m9's historical
+losses are documented, while a playable land defence of the port would be an abstraction. Each mission must
+be reviewed against its dossier before it is rewritten.
 
 ## Historical limits recorded by the pilot
 

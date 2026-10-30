@@ -1,7 +1,7 @@
 import { MISSIONS, getMission } from './campaign';
 import type { MissionDef } from '../types';
 import type { CinematicBeat } from './cinematics';
-import { PREINCA_PROLOGUE } from './cinematics';
+import { INCA_PROLOGUE, PREINCA_PROLOGUE } from './cinematics';
 
 export type CampaignId = 'preinca' | 'inca' | 'virreinato' | 'independencia';
 
@@ -51,11 +51,11 @@ export const CAMPAIGNS: CampaignDef[] = [
     description:
       'Desde la defensa del Cusco frente a los chancas hasta la expansión imperial por la costa y la sierra.',
     missionIds: ['m5_yahuar_pampa', 'm6_chimu_inca'],
-    releasedMissionIds: [],
-    status: 'coming-soon',
+    releasedMissionIds: ['m5_yahuar_pampa', 'm6_chimu_inca'],
+    status: 'available',
     era: '1438 — 1532',
     accent: '#d8b35a',
-    prologue: [],
+    prologue: INCA_PROLOGUE,
     upcoming: [],
   },
   {
