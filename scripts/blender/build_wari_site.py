@@ -19,6 +19,57 @@ def clear():
                 block.remove(item)
 
 
+def image(name, colorspace='sRGB'):
+    path = os.path.join(ROOT, 'src', 'assets', 'textures', 'materials', name)
+    if not os.path.exists(path):
+        return None
+    img = bpy.data.images.load(path, check_existing=True)
+    img.colorspace_settings.name = colorspace
+    img.pack()
+    return img
+
+
+def textured(name, diffuse, normal, roughness, tint=(1, 1, 1, 1), normal_strength=1.0, mix=1.0):
+    mat = bpy.data.materials.new(name)
+    mat.use_nodes = True
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    bsdf = next(n for n in nodes if n.type == 'BSDF_PRINCIPLED')
+    bsdf.inputs['Base Color'].default_value = tint
+    bsdf.inputs['Roughness'].default_value = 0.88
+    d = image(diffuse)
+    if d:
+        tex = nodes.new('ShaderNodeTexImage')
+        tex.image = d
+        tex.location = (-520, 260)
+        if mix < 1.0:
+            blend = nodes.new('ShaderNodeMixRGB')
+            blend.location = (-280, 260)
+            blend.inputs['Fac'].default_value = mix
+            blend.inputs['Color1'].default_value = tint
+            links.new(tex.outputs['Color'], blend.inputs['Color2'])
+            links.new(blend.outputs['Color'], bsdf.inputs['Base Color'])
+        else:
+            links.new(tex.outputs['Color'], bsdf.inputs['Base Color'])
+    n = image(normal, 'Non-Color')
+    if n:
+        tex = nodes.new('ShaderNodeTexImage')
+        tex.image = n
+        tex.location = (-520, -20)
+        nmap = nodes.new('ShaderNodeNormalMap')
+        nmap.location = (-240, -20)
+        nmap.inputs['Strength'].default_value = normal_strength
+        links.new(tex.outputs['Color'], nmap.inputs['Color'])
+        links.new(nmap.outputs['Normal'], bsdf.inputs['Normal'])
+    r = image(roughness, 'Non-Color')
+    if r:
+        tex = nodes.new('ShaderNodeTexImage')
+        tex.image = r
+        tex.location = (-520, -260)
+        links.new(tex.outputs['Color'], bsdf.inputs['Roughness'])
+    return mat
+
+
 def flat(name, color, roughness=0.85):
     mat = bpy.data.materials.new(name)
     mat.use_nodes = True
@@ -26,6 +77,25 @@ def flat(name, color, roughness=0.85):
     bsdf.inputs['Base Color'].default_value = (*color, 1)
     bsdf.inputs['Roughness'].default_value = roughness
     return mat
+
+
+def uv_tile(obj, tile=14.0):
+    mesh = obj.data
+    if not mesh.uv_layers:
+        mesh.uv_layers.new()
+    uv = mesh.uv_layers.active
+    for poly in mesh.polygons:
+        n = poly.normal
+        if abs(n.x) >= abs(n.y) and abs(n.x) >= abs(n.z):
+            su, sv = obj.dimensions.y / tile, obj.dimensions.z / tile
+        elif abs(n.y) >= abs(n.z):
+            su, sv = obj.dimensions.x / tile, obj.dimensions.z / tile
+        else:
+            su, sv = obj.dimensions.x / tile, obj.dimensions.y / tile
+        for li in poly.loop_indices:
+            loop_uv = uv.data[li].uv
+            loop_uv.x *= su
+            loop_uv.y *= sv
 
 
 def box(name, loc, size, mat, rot_z=0.0, rot_x=0.0):
@@ -37,6 +107,7 @@ def box(name, loc, size, mat, rot_z=0.0, rot_x=0.0):
     obj.rotation_euler[0] = rot_x
     bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
     obj.data.materials.append(mat)
+    uv_tile(obj)
     return obj
 
 
@@ -60,6 +131,7 @@ def d_temple(prefix, x, z, radius, height, mat):
     obj = bpy.data.objects.new(prefix, mesh)
     bpy.context.scene.collection.objects.link(obj)
     obj.data.materials.append(mat)
+    uv_tile(obj)
     return obj
 
 
@@ -68,11 +140,22 @@ def main():
     os.makedirs(os.path.join(OUT, 'renders'), exist_ok=True)
     os.makedirs(GLB, exist_ok=True)
 
-    stone = flat('MAT_Wari_Cutstone', (0.43, 0.40, 0.34), 0.92)
-    plaster_white = flat('MAT_Wari_Plaster_White', (0.82, 0.79, 0.70), 0.9)
-    plaster_red = flat('MAT_Wari_Plaster_Red', (0.48, 0.18, 0.12), 0.9)
-    earth = flat('MAT_Wari_Earth', (0.45, 0.34, 0.22), 1.0)
-    plaza = flat('MAT_Wari_Plaza', (0.62, 0.54, 0.38), 0.96)
+    stone = textured(
+        'MAT_Wari_Cutstone',
+        'wall_cutstone_diffuse.webp',
+        'wall_cutstone_normal.webp',
+        'wall_cutstone_roughness.webp',
+        (0.38, 0.33, 0.26, 1),
+        0.35,
+        0.35,
+    )
+    plaster_white = flat('MAT_Wari_Plaster_White', (0.72, 0.67, 0.57), 0.92)
+    plaster_red = flat('MAT_Wari_Plaster_Red', (0.44, 0.13, 0.09), 0.92)
+    earth = flat('MAT_Wari_Earth', (0.4, 0.3, 0.2), 0.98)
+    plaza = flat('MAT_Wari_Plaza', (0.5, 0.42, 0.3), 0.96)
+    runtime_materials = {
+        stone: flat('MAT_Wari_Cutstone_Runtime', (0.38, 0.33, 0.26), 0.92),
+    }
 
     walls = []
     city = []
@@ -81,6 +164,16 @@ def main():
     city.append(d_temple('Wari_D_Temple', 0, 10, 30, 12, plaster_white))
     walls.append(wall_run('Wari_D_Facade', -30, 10, 30, 10, 9, 3.0, stone))
     city.append(box('Wari_D_Altar', (0, -2, 3), (12, 8, 6), plaster_red))
+    city.append(box('Wari_D_RedBand', (0, 10, 1.2), (58, 1.2, 2.4), plaster_red))
+    for i, x in enumerate((-20, 0, 20)):
+        city.append(
+            box(
+                f'Wari_D_Mural_{i}',
+                (x, -20.5, 4.0),
+                (10, 0.5, 3.2),
+                plaster_red if i % 2 == 0 else plaster_white,
+            )
+        )
 
     # Walled plaza and patios.
     city.append(box('Wari_Plaza', (0, -40, 0.4), (92, 52, 0.8), plaza))
@@ -119,16 +212,16 @@ def main():
 
     bpy.ops.object.light_add(type='SUN', location=(120, -180, 240))
     sun = bpy.context.object
-    sun.data.energy = 3.4
-    sun.data.angle = math.radians(7)
-    sun.rotation_euler = (math.radians(46), math.radians(8), math.radians(28))
+    sun.data.energy = 3.6
+    sun.data.angle = math.radians(3)
+    sun.rotation_euler = (math.radians(36), math.radians(10), math.radians(34))
 
-    bpy.ops.object.camera_add(location=(160, -250, 150))
+    bpy.ops.object.camera_add(location=(125, -195, 110))
     cam = bpy.context.object
     cam.data.lens = 40
     target = bpy.data.objects.new('Wari_Camera_Target', None)
     bpy.context.scene.collection.objects.link(target)
-    target.location = (0, 0, 16)
+    target.location = (0, 0, 12)
     con = cam.constraints.new('TRACK_TO')
     con.target = target
     con.track_axis = 'TRACK_NEGATIVE_Z'
@@ -139,20 +232,33 @@ def main():
     bpy.context.scene.world = world
     world.use_nodes = True
     bg = next(n for n in world.node_tree.nodes if n.type == 'BACKGROUND')
-    bg.inputs['Color'].default_value = (0.55, 0.62, 0.68, 1)
-    bg.inputs['Strength'].default_value = 0.75
+    bg.inputs['Color'].default_value = (0.55, 0.63, 0.72, 1)
+    bg.inputs['Strength'].default_value = 0.25
 
     scene = bpy.context.scene
     scene.render.resolution_x = 1600
     scene.render.resolution_y = 900
     scene.render.resolution_percentage = 100
     scene.render.image_settings.file_format = 'PNG'
+    scene.view_settings.view_transform = 'AgX'
+    try:
+        scene.view_settings.look = 'AgX - Medium High Contrast'
+    except TypeError:
+        pass
+    scene.view_settings.exposure = -0.7
     try:
         scene.render.engine = 'BLENDER_EEVEE_NEXT'
     except TypeError:
         pass
     scene.render.filepath = os.path.join(OUT, 'renders', 'wari_hero.png')
     bpy.ops.render.render(write_still=True)
+
+    # Intro render uses image textures; the runtime GLB keeps flat materials.
+    for obj in [o for o in bpy.data.objects if o.type == 'MESH']:
+        for slot in obj.material_slots:
+            const = runtime_materials.get(slot.material)
+            if const:
+                slot.material = const
 
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, 'wari_site_master.blend'))
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, 'wari_site_lod0.blend'))
