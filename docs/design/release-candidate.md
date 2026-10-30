@@ -1,6 +1,6 @@
 # Preinca release candidate
 
-Status: **technical release candidate; not published**. Date: 2026-10-30. Scope: chapter I
+Status: **release candidate approved for GitHub Pages; itch upload pending butler**. Date: 2026-10-30. Scope: chapter I
 (_Culturas Preincas_), missions m1 Caral, m2 Chavín, m3 Moche/Recuay and m4 Wari.
 
 ## Verified
@@ -25,15 +25,13 @@ Eight records remain `reviewed: false`:
 - `caral-tour-isometric`
 - `m1_caral-intro`
 - `m2_chavin-intro`
-- `m3_moche-intro`
-- `m4_wari-intro`
 
 The game hides unreviewed records by default; `?art=all` previews them with a draft badge.
 A human must review the contact sheet before any of them is presented as final art. The m3/m4
-intros were re-rendered on 2026-10-30: m3 now has warmer adobe/plaster contrast and a closer
-camera; m4 has textured cut-stone walls, a white/red D-temple and visible murals. Both remain
-`reviewed: false` until a human approves them. The runtime GLBs keep flat materials (18 KB
-Moche, 34 KB Wari); the image textures are render-only.
+intros were re-rendered on 2026-10-30 and approved by Miguel Amaya: m3 has warmer adobe/plaster
+contrast and a closer camera; m4 has textured cut-stone walls, a white/red D-temple and visible
+murals. The runtime GLBs keep flat materials (18 KB Moche, 34 KB Wari); the image textures are
+render-only. The remaining six Caral/m1/m2 records are still unreviewed and stay hidden.
 
 ## Performance note
 
@@ -52,7 +50,9 @@ required before deciding whether Moche/Wari need mesh/material optimization.
 
 - Chapters II–IV are drafts: m5 Yahuar Pampa, m6 Chimú–Inca, m7 Túpac Amaru, m8 Independencia
   and m9 Guerra del Pacífico are reachable for QA but are not in the released campaign menus.
-- GitHub Pages remains disabled. The manual workflow uploads an artifact; it does not deploy.
+- The `Deploy GitHub Pages` workflow is manual and deploys the verified artifact after Pages is
+enabled. The itch build is packaged but not uploaded because `butler` is not available in this
+environment.
 - Six AI seeds still draw (778, 779, 782, 788, 791, 793). They are documented, not hidden.
 
 ## Publish checklist
@@ -61,4 +61,4 @@ required before deciding whether Moche/Wari need mesh/material optimization.
 2. Run the real-GPU performance pass and record the result.
 3. Re-run `yarn verify:fast`, the full slow E2E suite and the Pages artifact smoke.
 4. Tag the release and update the changelog/version.
-5. Enable Pages or upload the itch build only after an explicit publish decision.
+5. Run `Deploy GitHub Pages`; upload the itch build separately with `butler`.

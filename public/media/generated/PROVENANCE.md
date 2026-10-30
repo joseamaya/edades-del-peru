@@ -24,8 +24,8 @@ written for external tools and offline review.
 | `caral-tour-isometric` | tour-concept | Caral-Supe | Arcaico Tardío | central_coast | concept-art | unreviewed | `isometric` | `documentado en planta; remates inferidos` | `f0611f395f31` | [isometric.webp](tours/caral/isometric.webp) |
 | `m1_caral-intro` | campaign-intro | Caral-Supe | Arcaico Tardío | central_coast | concept-art | unreviewed | `hero` | `documentado en planta; techos y remates inferidos` | `428feecd5844` | [intro.webp](campaigns/la-senda-del-sol/m1_caral/intro.webp) |
 | `m2_chavin-intro` | campaign-intro | Chavín | Horizonte Temprano | andean_valley | reconstruction | unreviewed | `hero` | `planta documentada; techos, remates y relieves inferidos` | `16bc0e3ab76e` | [intro.webp](campaigns/la-senda-del-sol/m2_chavin/intro.webp) |
-| `m3_moche-intro` | campaign-intro | Cultura Moche | Intermedio Temprano | north_coast | reconstruction | unreviewed | `hero` | `planta y volumen documentados; remates y frisos inferidos` | `e94b1823b122` | [intro.webp](campaigns/la-senda-del-sol/m3_moche/intro.webp) |
-| `m4_wari-intro` | campaign-intro | Imperio Wari | Horizonte Medio | high_andes | reconstruction | unreviewed | `hero` | `formas documentadas; combinación y dimensiones interpretadas` | `542eb0ff13a7` | [intro.webp](campaigns/la-senda-del-sol/m4_wari/intro.webp) |
+| `m3_moche-intro` | campaign-intro | Cultura Moche | Intermedio Temprano | north_coast | reconstruction | reviewed (Miguel Amaya) | `hero` | `planta y volumen documentados; remates y frisos inferidos` | `e94b1823b122` | [intro.webp](campaigns/la-senda-del-sol/m3_moche/intro.webp) |
+| `m4_wari-intro` | campaign-intro | Imperio Wari | Horizonte Medio | high_andes | reconstruction | reviewed (Miguel Amaya) | `hero` | `formas documentadas; combinación y dimensiones interpretadas` | `542eb0ff13a7` | [intro.webp](campaigns/la-senda-del-sol/m4_wari/intro.webp) |
 
 ## Review
 
