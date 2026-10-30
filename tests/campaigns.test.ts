@@ -8,17 +8,21 @@ import {
   getReleasedMission,
   nextReleasedMission,
 } from '../src/campaign/defs/campaigns';
-import { SERIES_INTRO, PREINCA_PROLOGUE } from '../src/campaign/defs/cinematics';
+import { SERIES_INTRO, PREINCA_PROLOGUE, VIRREINATO_PROLOGUE } from '../src/campaign/defs/cinematics';
 import { completedMissions, markMissionComplete, parseCampaignProgress } from '../src/campaign/progress';
 
 describe('campaign series', () => {
   it('groups the saga into four campaigns', () => {
     expect(CAMPAIGN_SERIES_TITLE).toBe('La Senda del Sol');
     expect(CAMPAIGNS.map((c) => c.id)).toEqual(['preinca', 'inca', 'virreinato', 'independencia']);
-    expect(CAMPAIGNS.filter((c) => c.status === 'available').map((c) => c.id)).toEqual(['preinca', 'inca']);
+    expect(CAMPAIGNS.filter((c) => c.status === 'available').map((c) => c.id)).toEqual([
+      'preinca',
+      'inca',
+      'virreinato',
+    ]);
   });
 
-  it('releases the preinca and Inca chapters in order', () => {
+  it('releases the preinca, Inca and colonial chapters in order', () => {
     expect(RELEASED_MISSIONS.map((m) => m.id)).toEqual([
       'm1_caral',
       'm2_chavin',
@@ -26,6 +30,7 @@ describe('campaign series', () => {
       'm4_wari',
       'm5_yahuar_pampa',
       'm6_chimu_inca',
+      'm7_tupac_amaru',
     ]);
     expect(getReleasedMission('m1_caral')?.title).toBe('La Ciudad Sagrada');
     expect(getReleasedMission('m2_chavin')?.title).toBe('El Oráculo de Chavín');
@@ -34,6 +39,7 @@ describe('campaign series', () => {
     expect(nextReleasedMission('m4_wari')).toBeUndefined();
     expect(nextReleasedMission('m5_yahuar_pampa')?.id).toBe('m6_chimu_inca');
     expect(nextReleasedMission('m6_chimu_inca')).toBeUndefined();
+    expect(nextReleasedMission('m7_tupac_amaru')).toBeUndefined();
   });
 
   it('keeps authored drafts mapped to their eventual campaign', () => {
@@ -44,8 +50,8 @@ describe('campaign series', () => {
     expect(getCampaign('preinca')?.missionIds).toEqual(['m1_caral', 'm2_chavin', 'm3_moche_recuay', 'm4_wari']);
   });
 
-  it('ships the title and Caral prologues with readable beats', () => {
-    for (const beat of [...SERIES_INTRO, ...PREINCA_PROLOGUE]) {
+  it('ships the title, Caral and Virreinato prologues with readable beats', () => {
+    for (const beat of [...SERIES_INTRO, ...PREINCA_PROLOGUE, ...VIRREINATO_PROLOGUE]) {
       expect(beat.title.trim()).not.toBe('');
       expect(beat.text.trim().length).toBeGreaterThan(60);
       expect(beat.seconds).toBeGreaterThan(0);
@@ -54,6 +60,8 @@ describe('campaign series', () => {
     expect(PREINCA_PROLOGUE[0].text).toContain('una de las primeras civilizaciones del mundo');
     expect(PREINCA_PROLOGUE.slice(0, 3).every((beat) => beat.source === 'docs/historia/campanas/caral.md')).toBe(true);
     expect(PREINCA_PROLOGUE[3].source).toBe('docs/historia/periodizacion.md');
+    expect(VIRREINATO_PROLOGUE).toHaveLength(3);
+    expect(VIRREINATO_PROLOGUE.every((beat) => beat.source === 'docs/historia/campanas/tupac_amaru.md')).toBe(true);
   });
 });
 

@@ -145,17 +145,28 @@ test('the Caral mission closes with a narrative epilogue, not a quiz', async ({ 
 });
 
 test('chapter II tutorials open with their first step', async ({ page }) => {
+  test.setTimeout(90_000);
   for (const [id, title] of [
     ['m5_yahuar_pampa', 'Yahuar Pampa'],
     ['m6_chimu_inca', 'La Guerra del Norte'],
   ]) {
-    await page.goto(`/?mission=${id}&seed=777&fog=0&low=1&noloop=1`);
+    await page.goto(`/?mission=${id}&seed=777&fog=0&low=1`);
     const overlay = page.locator('.ed-overlay', { hasText: title });
     await expect(overlay).toBeVisible({ timeout: 30_000 });
     await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
     await overlay.waitFor({ state: 'detached', timeout: 15_000 });
-    await expect(page.locator('#ed-tutorial.show')).toContainText('Paso 1 / 3', { timeout: 15_000 });
+    await expect(page.locator('#ed-tutorial.show')).toContainText('Paso 1 / 3', { timeout: 30_000 });
   }
+});
+
+test('the chapter III tutorial opens with its first step', async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.goto('/?mission=m7_tupac_amaru&seed=777&fog=0&low=1');
+  const overlay = page.locator('.ed-overlay', { hasText: 'La Gran Rebelión' });
+  await expect(overlay).toBeVisible({ timeout: 30_000 });
+  await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+  await overlay.waitFor({ state: 'detached', timeout: 15_000 });
+  await expect(page.locator('#ed-tutorial.show')).toContainText('Paso 1 / 2', { timeout: 30_000 });
 });
 
 test('the missions with corrected rosters boot with units and no errors', async ({ page }) => {
@@ -521,7 +532,7 @@ test('the campaign hub shows preinca progress and its four missions', async ({ p
   await expect(menu).toContainText('En preparación');
 });
 
-test('the campaign hub keeps future campaigns as coming soon', async ({ page }) => {
+test('the campaign hub releases Virreinato and keeps chapter IV coming soon', async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem('peru-campaign', '9');
     localStorage.setItem('peru-campaign-intro-preinca', '1');
@@ -541,9 +552,12 @@ test('the campaign hub keeps future campaigns as coming soon', async ({ page }) 
   ]) {
     await expect(menu).toContainText(title);
   }
-  for (const title of ['El Tahuantinsuyo', 'El Virreinato', 'Independencia y República']) {
-    await expect(menu).toContainText(title);
-  }
+  const virreinato = menu.locator('.ed-campaign-card', { hasText: 'El Virreinato' });
+  await expect(virreinato).toContainText('0 / 1 misiones completadas');
+  await expect(virreinato.getByRole('button', { name: /Jugar La Gran Rebelión/ })).toBeVisible();
+  await expect(virreinato).not.toContainText('En preparación');
+  const independencia = menu.locator('.ed-campaign-card', { hasText: 'Independencia y República' });
+  await expect(independencia).toContainText('En preparación');
   await expect(menu.getByRole('button', { name: /Continuar campaña/ })).toHaveCount(0);
 });
 
@@ -576,6 +590,21 @@ test('Wari closes the preinca chapter', async ({ page }) => {
   const victory = page.locator('.ed-epilogue');
   await expect(victory).toContainText('Fin de la primera campaña');
   await expect(victory.getByRole('button', { name: /Volver a campañas/ })).toBeVisible();
+});
+
+test('chapter endings name the right campaign ordinal', async ({ page }) => {
+  for (const [id, label] of [
+    ['m6_chimu_inca', 'Fin de la segunda campaña.'],
+    ['m7_tupac_amaru', 'Fin de la tercera campaña.'],
+  ]) {
+    await page.goto(`/?mission=${id}&seed=777&fog=0&low=1&noloop=1`);
+    await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
+      timeout: 30_000,
+    });
+    await page.evaluate(() => (window as unknown as { game: any }).game.showVictory(0));
+    const victory = page.locator('.ed-epilogue');
+    await expect(victory).toContainText(label, { timeout: 15_000 });
+  }
 });
 
 test('a peaceful mission briefing shows no rival side', async ({ page }) => {

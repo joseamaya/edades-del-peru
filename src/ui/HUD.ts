@@ -938,6 +938,9 @@ export class HUD {
     if (victory && mis) this.saveCampaignProgress(mis.id);
     const next = victory ? nextReleasedMission(mis?.id ?? '') : undefined;
     const chapterEnd = victory && campaign && campaign.releasedMissionIds.includes(mis?.id ?? '') && !next;
+    const chapterIndex = campaign ? CAMPAIGNS.findIndex((c) => c.id === campaign.id) : -1;
+    const chapterOrdinal = ['primera', 'segunda', 'tercera', 'cuarta'][chapterIndex];
+    const chapterEndText = chapterOrdinal ? `Fin de la ${chapterOrdinal} campaña.` : 'Fin de la campaña.';
     panel.innerHTML = `
       <div class="ed-menu-kicker">${campaign ? campaign.title.toUpperCase() : 'LA SENDA DEL SOL'}${mis ? ` · ${mis.subtitle}` : ''}</div>
       <h2 class="epilogue-title ${victory ? 'win' : 'lose'}">${title}</h2>
@@ -945,7 +948,7 @@ export class HUD {
       ${epilogue}
       ${optionalSummary}
       <div style="font-size:12px;color:var(--text-dim);line-height:1.7;margin-bottom:14px">${stats}</div>
-      ${chapterEnd ? '<div class="ed-hist" style="border-left:3px solid var(--gold);padding-left:12px"><b style="color:var(--gold)">Fin de la primera campaña.</b> Puedes volver al mapa de la saga para elegir otro capítulo o repetir la misión.</div>' : ''}
+      ${chapterEnd ? `<div class="ed-hist" style="border-left:3px solid var(--gold);padding-left:12px"><b style="color:var(--gold)">${chapterEndText}</b> Puedes volver al mapa de la saga para elegir otro capítulo o repetir la misión.</div>` : ''}
     `;
     const row = this.el('div', 'row', panel);
     if (next) {

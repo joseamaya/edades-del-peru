@@ -1,7 +1,7 @@
 import { MISSIONS, getMission } from './campaign';
 import type { MissionDef } from '../types';
 import type { CinematicBeat } from './cinematics';
-import { INCA_PROLOGUE, PREINCA_PROLOGUE } from './cinematics';
+import { INCA_PROLOGUE, PREINCA_PROLOGUE, VIRREINATO_PROLOGUE } from './cinematics';
 
 export type CampaignId = 'preinca' | 'inca' | 'virreinato' | 'independencia';
 
@@ -64,11 +64,11 @@ export const CAMPAIGNS: CampaignDef[] = [
     subtitle: 'El Perú colonial',
     description: 'Instituciones, sociedades y resistencias de tres siglos bajo la monarquía hispánica.',
     missionIds: ['m7_tupac_amaru'],
-    releasedMissionIds: [],
-    status: 'coming-soon',
+    releasedMissionIds: ['m7_tupac_amaru'],
+    status: 'available',
     era: '1542 — 1821',
     accent: '#9d7a4c',
-    prologue: [],
+    prologue: VIRREINATO_PROLOGUE,
     upcoming: [],
   },
   {

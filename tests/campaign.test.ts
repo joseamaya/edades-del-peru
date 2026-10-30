@@ -252,6 +252,13 @@ describe('campaign educational content', () => {
     expect(m2.triggers.some((t) => t.id === 't_peregrinaje')).toBe(true);
   });
 
+  it('chapter III has a briefing and a two-step guided tutorial', () => {
+    const mis = MISSIONS.find((m) => m.id === 'm7_tupac_amaru')!;
+    expect(mis.tutorial).toBe(true);
+    expect(getEducational(mis.id)?.briefing?.length).toBeGreaterThan(40);
+    expect(tutorialForMission(mis.id)?.steps.length).toBe(2);
+  });
+
   it('m3 briefing does not spoil its hidden huaca or exchange goals', () => {
     const m3 = MISSIONS.find((m) => m.id === 'm3_moche_recuay')!;
     const edu = getEducational('m3_moche_recuay')!;

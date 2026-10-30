@@ -122,6 +122,33 @@ describe('tutorial gates', () => {
     expect(tutorial.toSave().base.markets).toBe(0);
   });
 
+  it('advances when any objective in a strategic group is completed', () => {
+    const game = gameForSteps();
+    game.mission.activeObjectives = [
+      { def: { group: 'victoria' }, state: 'activo' },
+      { def: { group: 'victoria' }, state: 'activo' },
+    ] as any;
+    const def: TutorialDef = {
+      steps: [
+        {
+          id: 'victory',
+          text: 'Elige una ruta de victoria',
+          check: { type: 'objectiveGroupCompleted', group: 'victoria' },
+        },
+      ],
+    };
+    const tutorial = new Tutorial(game as any, def);
+    tutorial.applySave({ idx: 0, stepId: 'victory', begun: true, finished: false, delay: 0, base });
+    tutorial.update(0);
+    expect(tutorial.toSave().finished).toBe(false);
+    game.mission.activeObjectives = [
+      { def: { group: 'victoria' }, state: 'completed' },
+      { def: { group: 'victoria' }, state: 'activo' },
+    ] as any;
+    tutorial.update(0);
+    expect(tutorial.toSave().finished).toBe(true);
+  });
+
   it('waits for a gated step instead of silently skipping it', () => {
     const game = gameForSteps();
     let state = 'activo';
