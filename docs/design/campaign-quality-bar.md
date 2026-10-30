@@ -109,7 +109,7 @@ need dedicated art and mission-specific save tests.
 | Closure | Met: epilogue and optional achievements. | Met: epilogue and optional objectives. |
 | UX | Met locally: 1280×800 briefing/tutorial reviewed. | Met locally: 1280×800 briefing/tutorial reviewed. |
 | Visuals | Partial: documented procedural pucará + authored terrain; no dedicated GLB yet. | Partial: documented procedural Chimú compound + canal; no dedicated GLB yet. |
-| Persistence | Partial: shared save path; mission-specific round-trip pending. | Partial: shared save path; mission-specific round-trip pending. |
+| Persistence | Met: save/load round-trip. | Met: save/load round-trip. |
 | Tests | Met: data, completability, real-command playtest. | Met: data, completability, real-command playtest. |
 | Docs | Met: README, dossiers, campaign experiences and this table. | Met: README, dossiers, campaign experiences and this table. |
 
@@ -130,7 +130,7 @@ dedicated art and a mission-specific save round-trip.
 | Closure | Met: epilogue and optional objectives. |
 | UX | Met locally: 1280×800 briefing/tutorial reviewed. |
 | Visuals | Partial: documented procedural colonial church + authored terrain; no dedicated GLB yet. |
-| Persistence | Partial: shared save path; mission-specific round-trip pending. |
+| Persistence | Met: save/load round-trip. |
 | Tests | Met: data, completability, branch choice and real-command playtest. |
 | Docs | Met: README, dossier, campaign experiences and this table. |
 
@@ -151,6 +151,6 @@ dedicated art and mission-specific save round-trips.
 | Closure | Met: epilogue and optional objectives. | Met: epilogue and optional objective. |
 | UX | Met locally: 1280×800 briefing/tutorial reviewed. | Met locally: 1280×800 briefing/tutorial reviewed. |
 | Visuals | Partial: documented procedural church + authored terrain; no dedicated GLB yet. | Partial: documented procedural Chilean post + authored port terrace; no dedicated GLB yet. |
-| Persistence | Partial: shared save path; mission-specific round-trip pending. | Partial: shared save path; mission-specific round-trip pending. |
+| Persistence | Met: save/load round-trip. | Met: save/load round-trip. |
 | Tests | Met: data, completability and real-command playtest. | Met: data, failure path, completability and real-command playtest. |
 | Docs | Met: README, dossier, campaign experiences and this table. | Met: README, dossier, campaign experiences and this table. |
