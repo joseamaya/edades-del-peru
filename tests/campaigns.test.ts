@@ -8,7 +8,13 @@ import {
   getReleasedMission,
   nextReleasedMission,
 } from '../src/campaign/defs/campaigns';
-import { SERIES_INTRO, PREINCA_PROLOGUE, VIRREINATO_PROLOGUE } from '../src/campaign/defs/cinematics';
+import {
+  INDEPENDENCIA_PROLOGUE,
+  INCA_PROLOGUE,
+  SERIES_INTRO,
+  PREINCA_PROLOGUE,
+  VIRREINATO_PROLOGUE,
+} from '../src/campaign/defs/cinematics';
 import { completedMissions, markMissionComplete, parseCampaignProgress } from '../src/campaign/progress';
 
 describe('campaign series', () => {
@@ -19,6 +25,7 @@ describe('campaign series', () => {
       'preinca',
       'inca',
       'virreinato',
+      'independencia',
     ]);
   });
 
@@ -31,6 +38,8 @@ describe('campaign series', () => {
       'm5_yahuar_pampa',
       'm6_chimu_inca',
       'm7_tupac_amaru',
+      'm8_independencia',
+      'm9_guerra_pacifico',
     ]);
     expect(getReleasedMission('m1_caral')?.title).toBe('La Ciudad Sagrada');
     expect(getReleasedMission('m2_chavin')?.title).toBe('El Oráculo de Chavín');
@@ -40,9 +49,11 @@ describe('campaign series', () => {
     expect(nextReleasedMission('m5_yahuar_pampa')?.id).toBe('m6_chimu_inca');
     expect(nextReleasedMission('m6_chimu_inca')).toBeUndefined();
     expect(nextReleasedMission('m7_tupac_amaru')).toBeUndefined();
+    expect(nextReleasedMission('m8_independencia')?.id).toBe('m9_guerra_pacifico');
+    expect(nextReleasedMission('m9_guerra_pacifico')).toBeUndefined();
   });
 
-  it('keeps authored drafts mapped to their eventual campaign', () => {
+  it('maps every mission to its campaign', () => {
     expect(getCampaignForMission('m1_caral')?.id).toBe('preinca');
     expect(getCampaignForMission('m5_yahuar_pampa')?.id).toBe('inca');
     expect(getCampaignForMission('m7_tupac_amaru')?.id).toBe('virreinato');
@@ -50,8 +61,14 @@ describe('campaign series', () => {
     expect(getCampaign('preinca')?.missionIds).toEqual(['m1_caral', 'm2_chavin', 'm3_moche_recuay', 'm4_wari']);
   });
 
-  it('ships the title, Caral and Virreinato prologues with readable beats', () => {
-    for (const beat of [...SERIES_INTRO, ...PREINCA_PROLOGUE, ...VIRREINATO_PROLOGUE]) {
+  it('ships the title and chapter prologues with readable beats', () => {
+    for (const beat of [
+      ...SERIES_INTRO,
+      ...PREINCA_PROLOGUE,
+      ...INCA_PROLOGUE,
+      ...VIRREINATO_PROLOGUE,
+      ...INDEPENDENCIA_PROLOGUE,
+    ]) {
       expect(beat.title.trim()).not.toBe('');
       expect(beat.text.trim().length).toBeGreaterThan(60);
       expect(beat.seconds).toBeGreaterThan(0);

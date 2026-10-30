@@ -1,7 +1,7 @@
 import { MISSIONS, getMission } from './campaign';
 import type { MissionDef } from '../types';
 import type { CinematicBeat } from './cinematics';
-import { INCA_PROLOGUE, PREINCA_PROLOGUE, VIRREINATO_PROLOGUE } from './cinematics';
+import { INDEPENDENCIA_PROLOGUE, INCA_PROLOGUE, PREINCA_PROLOGUE, VIRREINATO_PROLOGUE } from './cinematics';
 
 export type CampaignId = 'preinca' | 'inca' | 'virreinato' | 'independencia';
 
@@ -77,11 +77,11 @@ export const CAMPAIGNS: CampaignDef[] = [
     subtitle: 'Del Perú colonial al Perú contemporáneo',
     description: 'Las guerras de independencia, la construcción de la República y los desafíos del Perú moderno.',
     missionIds: ['m8_independencia', 'm9_guerra_pacifico'],
-    releasedMissionIds: [],
-    status: 'coming-soon',
+    releasedMissionIds: ['m8_independencia', 'm9_guerra_pacifico'],
+    status: 'available',
     era: '1821 — hoy',
     accent: '#8b6b43',
-    prologue: [],
+    prologue: INDEPENDENCIA_PROLOGUE,
     upcoming: [],
   },
 ];

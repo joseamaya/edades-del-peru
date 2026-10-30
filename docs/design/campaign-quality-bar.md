@@ -133,3 +133,24 @@ dedicated art and a mission-specific save round-trip.
 | Persistence | Partial: shared save path; mission-specific round-trip pending. |
 | Tests | Met: data, completability, branch choice and real-command playtest. |
 | Docs | Met: README, dossier, campaign experiences and this table. |
+
+
+## Chapter IV playable status (m8–m9)
+
+Chapter IV is released as **playable**, not yet as a full gold master. The historical phases,
+onboarding and real-command victory paths are covered; the visual and persistence gates still need
+dedicated art and mission-specific save round-trips.
+
+| Gate | m8 La Independencia | m9 La Defensa de Arica |
+| --- | --- | --- |
+| History | Met: `independencia.md`; Junín and Ayacucho. | Met: `guerra_del_pacifico.md`; Arica land defence. |
+| Identity | Met: hold Junín, protect Sucre, hold Ayacucho. | Met: protect the port and Bolognesi, survive the assault. |
+| Play | Met: real-command playtest holds both phases. | Met: real-command playtest defends the port and strikes the command. |
+| Contract | Met: sequential holds plus a required protect objective. | Met: required protects and survive, with an optional counterstrike. |
+| Onboarding | Met: three-step tutorial + briefing. | Met: two-step tutorial + briefing. |
+| Closure | Met: epilogue and optional objectives. | Met: epilogue and optional objective. |
+| UX | Met locally: 1280×800 briefing/tutorial reviewed. | Met locally: 1280×800 briefing/tutorial reviewed. |
+| Visuals | Partial: documented procedural church + authored terrain; no dedicated GLB yet. | Partial: documented procedural Chilean post + authored port terrace; no dedicated GLB yet. |
+| Persistence | Partial: shared save path; mission-specific round-trip pending. | Partial: shared save path; mission-specific round-trip pending. |
+| Tests | Met: data, completability and real-command playtest. | Met: data, failure path, completability and real-command playtest. |
+| Docs | Met: README, dossier, campaign experiences and this table. | Met: README, dossier, campaign experiences and this table. |

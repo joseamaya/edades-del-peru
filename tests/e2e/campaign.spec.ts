@@ -14,7 +14,8 @@ test('shows the historical prologue before the campaign', async ({ page }) => {
   await expect(hub).toBeVisible();
   await expect(hub).toContainText('Culturas Preincas');
   await expect(hub.getByRole('button', { name: /Jugar La Ciudad Sagrada/ })).toBeVisible();
-  await expect(hub).toContainText('Próximamente');
+  await expect(hub).toContainText('Independencia y República');
+  await expect(hub.getByRole('button', { name: /Jugar La Defensa de Arica/ })).toBeVisible();
 });
 
 test('the mission briefing includes context and sources', { tag: '@smoke' }, async ({ page }) => {
@@ -167,6 +168,21 @@ test('the chapter III tutorial opens with its first step', async ({ page }) => {
   await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
   await overlay.waitFor({ state: 'detached', timeout: 15_000 });
   await expect(page.locator('#ed-tutorial.show')).toContainText('Paso 1 / 2', { timeout: 30_000 });
+});
+
+test('chapter IV tutorials open with their first step', async ({ page }) => {
+  test.setTimeout(90_000);
+  for (const [id, title, step] of [
+    ['m8_independencia', 'La Independencia', 'Paso 1 / 3'],
+    ['m9_guerra_pacifico', 'La Defensa de Arica', 'Paso 1 / 2'],
+  ]) {
+    await page.goto(`/?mission=${id}&seed=777&fog=0&low=1`);
+    const overlay = page.locator('.ed-overlay', { hasText: title });
+    await expect(overlay).toBeVisible({ timeout: 30_000 });
+    await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+    await overlay.waitFor({ state: 'detached', timeout: 15_000 });
+    await expect(page.locator('#ed-tutorial.show')).toContainText(step, { timeout: 30_000 });
+  }
 });
 
 test('the missions with corrected rosters boot with units and no errors', async ({ page }) => {
@@ -528,11 +544,12 @@ test('the campaign hub shows preinca progress and its four missions', async ({ p
   await expect(menu).toContainText('✓ El Oráculo de Chavín');
   await expect(menu.getByRole('button', { name: /Jugar La Ciudad Sagrada/ })).toHaveCount(0);
   await expect(menu.getByRole('button', { name: /Jugar La Frontera de los Valles/ })).toBeVisible();
-  await expect(menu).toContainText('El Tahuantinsuyo');
-  await expect(menu).toContainText('En preparación');
+  const inca = menu.locator('.ed-campaign-card', { hasText: 'El Tahuantinsuyo' });
+  await expect(inca).toContainText('0 / 2 misiones completadas');
+  await expect(inca.getByRole('button', { name: /Jugar Yahuar Pampa/ })).toBeVisible();
 });
 
-test('the campaign hub releases Virreinato and keeps chapter IV coming soon', async ({ page }) => {
+test('the campaign hub releases all four chapters', async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem('peru-campaign', '9');
     localStorage.setItem('peru-campaign-intro-preinca', '1');
@@ -557,7 +574,10 @@ test('the campaign hub releases Virreinato and keeps chapter IV coming soon', as
   await expect(virreinato.getByRole('button', { name: /Jugar La Gran Rebelión/ })).toBeVisible();
   await expect(virreinato).not.toContainText('En preparación');
   const independencia = menu.locator('.ed-campaign-card', { hasText: 'Independencia y República' });
-  await expect(independencia).toContainText('En preparación');
+  await expect(independencia).toContainText('0 / 2 misiones completadas');
+  await expect(independencia.getByRole('button', { name: /Jugar La Independencia/ })).toBeVisible();
+  await expect(independencia.getByRole('button', { name: /Jugar La Defensa de Arica/ })).toBeVisible();
+  await expect(menu).not.toContainText('En preparación');
   await expect(menu.getByRole('button', { name: /Continuar campaña/ })).toHaveCount(0);
 });
 
@@ -596,6 +616,7 @@ test('chapter endings name the right campaign ordinal', async ({ page }) => {
   for (const [id, label] of [
     ['m6_chimu_inca', 'Fin de la segunda campaña.'],
     ['m7_tupac_amaru', 'Fin de la tercera campaña.'],
+    ['m9_guerra_pacifico', 'Fin de la cuarta campaña.'],
   ]) {
     await page.goto(`/?mission=${id}&seed=777&fog=0&low=1&noloop=1`);
     await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {

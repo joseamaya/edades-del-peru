@@ -115,6 +115,112 @@ test('plays m7 by assaulting the realista command post with real orders', async 
   expect(errors).toEqual([]);
 });
 
+test('plays m8 by holding Junín and Ayacucho with real orders', async ({ page }) => {
+  test.setTimeout(120_000);
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/?mission=m8_independencia&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
+    const enemy = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'center' && !b.dead) as any;
+    const center = g.playerCenter(0) as { x: number; z: number };
+    const sucre = [...g.units.values()].find((u: any) => u.tag === 'sucre') as any;
+    const cavalry = [...g.units.values()]
+      .filter((u: any) => u.owner === 0 && !u.dead && u.kind === 'cavalry')
+      .map((u: any) => u.id);
+    const rifles = [...g.units.values()]
+      .filter((u: any) => u.owner === 0 && !u.dead && u.kind === 'rifleman' && u.tag !== 'sucre')
+      .map((u: any) => u.id);
+    const artillery = [...g.units.values()]
+      .filter((u: any) => u.owner === 0 && !u.dead && u.kind === 'artillery')
+      .map((u: any) => u.id);
+    const move = (ids: number[], x: number, z: number) =>
+      g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'move', target: { x, z } }, clear: true }, false);
+    const dt = 1 / 60;
+    let t = 0;
+    move([sucre.id], g.settings.mapSize * 0.1, g.settings.mapSize * 0.9);
+    move(artillery, center.x, center.z + 15);
+    move([...cavalry, ...rifles], enemy.pos.x - 30, enemy.pos.z);
+    for (let i = 0; i < Math.ceil(110 / dt) && !m.ended; i++) {
+      g.update(dt, t);
+      t += dt;
+    }
+    const junin = m.getObjectiveState('obj_junin') as string;
+    move(cavalry, enemy.pos.x, enemy.pos.z);
+    move(rifles, enemy.pos.x - 12, enemy.pos.z + 10);
+    for (let i = 0; i < Math.ceil(130 / dt) && !m.ended; i++) {
+      g.update(dt, t);
+      t += dt;
+    }
+    return {
+      junin,
+      ayacucho: m.getObjectiveState('obj_ayacucho') as string,
+      sucre: m.getObjectiveState('obj_sucre') as string,
+      won: m.won as boolean | null,
+    };
+  });
+  expect(out.junin).toBe('completed');
+  expect(out.ayacucho).toBe('completed');
+  expect(out.sucre).not.toBe('failed');
+  expect(out.won).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('plays m9 by defending the port and striking the Chilean command with real orders', async ({ page }) => {
+  test.setTimeout(120_000);
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/?mission=m9_guerra_pacifico&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
+    const enemy = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'center' && !b.dead) as any;
+    const fort = [...g.buildings.values()].find((b: any) => b.tag === 'puerto') as any;
+    const bolognesi = [...g.units.values()].find((u: any) => u.tag === 'bolognesi') as any;
+    const soldiers = [...g.units.values()]
+      .filter((u: any) => u.owner === 0 && !u.dead && u.kind === 'soldier')
+      .map((u: any) => u.id);
+    const rifles = [...g.units.values()]
+      .filter((u: any) => u.owner === 0 && !u.dead && u.kind === 'rifleman' && u.tag !== 'bolognesi')
+      .map((u: any) => u.id);
+    const move = (ids: number[], x: number, z: number) =>
+      g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'move', target: { x, z } }, clear: true }, false);
+    const attack = (ids: number[], entityId: number) =>
+      g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'attack', entityId }, clear: true }, false);
+    const dt = 1 / 60;
+    let t = 0;
+    move([bolognesi.id], fort.pos.x - 2, fort.pos.z - 2);
+    move(rifles, fort.pos.x + 4, fort.pos.z + 4);
+    attack(soldiers, enemy.id);
+    for (let i = 0; i < Math.ceil(620 / dt) && !m.ended; i++) {
+      g.update(dt, t);
+      t += dt;
+    }
+    return {
+      puerto: m.getObjectiveState('obj_puerto') as string,
+      bolognesi: m.getObjectiveState('obj_bolognesi') as string,
+      resistir: m.getObjectiveState('obj_resistir') as string,
+      won: m.won as boolean | null,
+    };
+  });
+  expect(out.puerto).not.toBe('failed');
+  expect(out.bolognesi).not.toBe('failed');
+  expect(out.resistir).toBe('completed');
+  expect(out.won).toBe(true);
+  expect(errors).toEqual([]);
+});
+
 test('plays m5 by holding Cusco and counterattacking with real orders', async ({ page }) => {
   test.setTimeout(120_000);
   const errors: string[] = [];

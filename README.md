@@ -13,7 +13,7 @@ The game is **historically grounded** on one key point: every match is played in
 only **coetaneous civilizations** can face each other (e.g. Moche with Recuay, Chanca with Inca, never Moche
 with Chimú).
 
-**Play the preinca, Inca and colonial chapters:** <https://joseamaya.github.io/edades-del-peru/>
+**Play all four chapters:** <https://joseamaya.github.io/edades-del-peru/>
 
 ## Media
 
@@ -69,21 +69,20 @@ Debug URL parameters:
 
 ## Campaign: La Senda del Sol
 
-The campaign is a saga of **four chapters**. The first three, _Culturas Preincas_,
-_El Tahuantinsuyo_ and _El Virreinato_, are playable; the remaining authored scenarios stay as drafts.
+The campaign is a saga of **four chapters**. All four, from _Culturas Preincas_ to
+_Independencia y República_, are playable.
 
 | Chapter | Campaign                      | Focus                               | Release                    |
 | ------- | ----------------------------- | ----------------------------------- | -------------------------- |
 | I       | **Culturas Preincas**         | Caral, Chavín, Moche/Recuay, Wari   | **Four missions playable** |
 | II      | **El Tahuantinsuyo**          | Yahuar Pampa and the Inca expansion | **Two missions playable**  |
 | III     | **El Virreinato**             | Túpac Amaru II and colonial Peru    | **One mission playable**   |
-| IV      | **Independencia y República** | Independence, Arica and modern Peru | In preparation             |
+| IV      | **Independencia y República** | Independence, Arica and modern Peru | **Two missions playable**  |
 
-Mission ids remain stable (`m1_caral` … `m9_guerra_pacifico`). The released preinca, Inca and
-colonial missions appear in menus, the Codex and progress; later-chapter drafts stay reachable
-with `?mission=ID` for QA.
+Mission ids remain stable (`m1_caral` … `m9_guerra_pacifico`). All released missions appear in
+menus, the Codex and progress; `?mission=ID` remains available for QA.
 The campaign [quality bar](./docs/design/campaign-quality-bar.md) records the gates a mission must meet.
-Caral, Chavín, Moche and Wari have authored, source-backed sites; m5–m7 use documented procedural landmarks and authored terrain.
+Caral, Chavín, Moche and Wari have authored, source-backed sites; m5–m9 use documented procedural landmarks and authored terrain.
 
 The current release status, art gate and publish checklist are in
 [`docs/design/release-candidate.md`](./docs/design/release-candidate.md).
@@ -95,9 +94,9 @@ The game teaches history while you play:
 - **Campaign prologue**: opening _Campañas_ presents the saga and its released chapters.
 - **Historical briefing**: each mission shows period and dates, geography, sides, expanded context, a
   «¿Sabías que…?» and its **sources** (collapsible).
-- **Guided tutorial**: Caral teaches selecting, building and exploring; Chavín teaches the offering,
-  pilgrimage and feria loop; Moche teaches the canal, huaca hold and elite exchange; Wari teaches the
-  provincial network and frontier (respecting the _Mostrar consejos_ setting).
+- **Guided tutorial**: Caral teaches selecting, building and exploring; later missions teach the
+  offering/feria loop, the canal and provincial network, Inca defence and expansion, the colonial
+  assault-or-siege choice, and the Junín/Ayacucho and Arica defences (respecting _Mostrar consejos_).
 - **Codex** (📖 in the menu): a browser of periods, civilizations and campaigns, with the **historical dossiers**
   from [`docs/historia/`](./docs/historia/) and their sources.
 
