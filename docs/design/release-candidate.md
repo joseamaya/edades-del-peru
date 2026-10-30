@@ -1,6 +1,6 @@
 # Preinca release candidate
 
-Status: **release candidate approved for GitHub Pages; itch upload pending butler**. Date: 2026-10-30. Scope: chapter I
+Status: **published on GitHub Pages** at <https://joseamaya.github.io/edades-del-peru/>; itch upload pending `butler`. Date: 2026-10-30. Scope: chapter I
 (_Culturas Preincas_), missions m1 Caral, m2 Chavín, m3 Moche/Recuay and m4 Wari.
 
 ## Verified
@@ -50,9 +50,10 @@ required before deciding whether Moche/Wari need mesh/material optimization.
 
 - Chapters II–IV are drafts: m5 Yahuar Pampa, m6 Chimú–Inca, m7 Túpac Amaru, m8 Independencia
   and m9 Guerra del Pacífico are reachable for QA but are not in the released campaign menus.
-- The `Deploy GitHub Pages` workflow is manual and deploys the verified artifact after Pages is
-enabled. The itch build is packaged but not uploaded because `butler` is not available in this
-environment.
+- GitHub Pages is enabled and the `Deploy GitHub Pages` workflow deployed run `41125621797`
+successfully. The live URL was checked with a headless browser: m1 Caral loaded with no page
+errors or failed requests. The itch build is packaged as
+`review/edades-del-peru-itch.zip` but not uploaded because `butler` is not available here.
 - Six AI seeds still draw (778, 779, 782, 788, 791, 793). They are documented, not hidden.
 
 ## Publish checklist
@@ -61,4 +62,4 @@ environment.
 2. Run the real-GPU performance pass and record the result.
 3. Re-run `yarn verify:fast`, the full slow E2E suite and the Pages artifact smoke.
 4. Tag the release and update the changelog/version.
-5. Run `Deploy GitHub Pages`; upload the itch build separately with `butler`.
+5. GitHub Pages is deployed; upload the itch build separately with `butler`.

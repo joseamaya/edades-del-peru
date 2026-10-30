@@ -13,6 +13,8 @@ The game is **historically grounded** on one key point: every match is played in
 only **coetaneous civilizations** can face each other (e.g. Moche with Recuay, Chanca with Inca, never Moche
 with Chimú).
 
+**Play the preinca chapter:** <https://joseamaya.github.io/edades-del-peru/>
+
 ## Media
 
 The match runs with the **cinematic look** on by default (SSAO, bloom, vignette, chromatic aberration, a
