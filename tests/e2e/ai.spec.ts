@@ -248,6 +248,33 @@ test('the AI attacks enemy buildings when it has an army', async ({ page }) => {
   expect(onCenter).toBeGreaterThan(0);
 });
 
+test('a soldier ordered onto a building closes to its edge and damages it', async ({ page }) => {
+  await bootSkirmish(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const house = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'house' && !b.dead) as any;
+    const maxHp = house.hp;
+    // stand just outside melee reach: the old attack path stopped short and the
+    // soldier never entered range because the building's centre is not walkable
+    const spots = [
+      { x: house.pos.x + 6.5, z: house.pos.z },
+      { x: house.pos.x, z: house.pos.z + 6.5 },
+      { x: house.pos.x - 6.5, z: house.pos.z },
+    ];
+    for (const spot of spots) {
+      const soldier = g.spawnScriptedUnit('soldier', 0, spot.x, spot.z);
+      soldier.issueOrder({ kind: 'attack', entityId: house.id }, true);
+    }
+    let t = 0;
+    for (let i = 0; i < 60 * 45; i++) {
+      g.update(1 / 60, t);
+      t += 1 / 60;
+    }
+    return { hp: house.hp, maxHp };
+  });
+  expect(out.hp).toBeLessThan(out.maxHp);
+});
+
 test('a raiding AI (hard+) attacks enemy workers instead of buildings', async ({ page }) => {
   const firstTarget = async (difficulty: Difficulty): Promise<string> => {
     await bootSkirmish(page);

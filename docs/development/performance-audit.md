@@ -514,6 +514,39 @@ económicas atascadas. La tabla de la sección "Estado tras #121" resume el resu
 fallidas (PATH-1); reubicación/validación de recursos iniciales cuando no exista alternativa alcanzable;
 compromiso de ataque de la IA (AI-2).
 
+## AI-2 attack commitment (2026-10-30)
+
+Partial implementation of #136 on the post-#121 baseline:
+
+- `findAttackTarget` chooses a **reachable** enemy building instead of blindly
+  picking the center.
+- Soldiers validate that the target can be reached and re-target a stuck order
+  (unreachable unit, destroyed or blocked building).
+- `Unit.updateAttack` searches for a stand point outside the building footprint;
+  before, the path stopped short and the soldier stayed 5-6 units away without
+  attacking.
+- Attack commitment waits for the ideal threshold, but after several checks it can
+  commit a smaller force **only when no enemy army is known**.
+- The economy keeps 20 wood in reserve for a soldier once a barracks exists, and
+  the unreachable-node blacklist is scoped per worker component instead of
+  blocking the node for the whole AI.
+
+Verification: `yarn sim --seeds=777,778,779,780,781,782,783,784,785,786 --max=1200 --metrics=1`.
+
+| Metric | Value |
+|---|---:|
+| Decisive matches | **5/10** (P0 3, P1 2) |
+| Unfinished | 5/10 |
+| First soldier (median P0/P1) | 369 s / 356 s |
+| First attack (median P0/P1) | 369 s / 356 s |
+| `pathRequests` / failures (median) | 12,134 / 3,695 |
+| `blockedWorkersMax` (median) | 2 |
+
+In the original audit those same seeds 777-786 finished **0/10**. The improvement is
+clear, but **#136 remains open**: 5/10 draws are still below the 70 % decisive-match
+target. Seeds 778, 780, 782, 784 and 786 still need an economy/army audit; 778 and 784
+field large armies but do not break the enemy base.
+
 ## Bottlenecks
 
 ### 🔴 Crítico
