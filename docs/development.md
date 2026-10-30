@@ -755,4 +755,6 @@ and confirm that `draco_wasm_wrapper.js`, `draco_decoder.wasm`, GLB files,
 `src/util/publicAsset.ts`; do not hardcode `/draco/` or other root paths.
 GitHub Pages remains disabled until an explicit release decision. The manual
 `GitHub Pages build (manual)` workflow produces a downloadable `dist` artifact
-with the project base and checks the Draco files; it does not deploy.
+with the project base and checks the Draco files; it does not deploy. The artifact
+was smoke-tested under `/edades-del-peru/` on 2026-10-30; see
+[`docs/design/release-candidate.md`](./design/release-candidate.md).
