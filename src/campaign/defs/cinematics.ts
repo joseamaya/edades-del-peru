@@ -114,3 +114,28 @@ export const VIRREINATO_PROLOGUE: CinematicBeat[] = [
     source: 'docs/historia/campanas/tupac_amaru.md',
   },
 ];
+
+/** Prologue for the fourth released campaign, Independencia y República. */
+export const INDEPENDENCIA_PROLOGUE: CinematicBeat[] = [
+  {
+    kicker: 'LIMA · 28 DE JULIO DE 1821',
+    title: 'La independencia proclamada',
+    text: 'San Martín proclama la independencia del Perú en Lima. La guerra no termina allí: la campaña final se libra en la sierra, con Bolívar y Sucre al mando de los ejércitos patriotas.',
+    seconds: 7,
+    source: 'docs/historia/campanas/independencia.md',
+  },
+  {
+    kicker: 'SIERRA DEL PERÚ · 1824',
+    title: 'Junín y Ayacucho',
+    text: 'La caballería patriota sostiene Junín el 6 de agosto de 1824. El 9 de diciembre, el ejército de Sucre resiste en Ayacucho y sella la independencia del Perú.',
+    seconds: 8,
+    source: 'docs/historia/campanas/independencia.md',
+  },
+  {
+    kicker: 'ARICA · 7 DE JUNIO DE 1880',
+    title: 'La defensa del puerto',
+    text: 'En la Guerra del Pacífico, la guarnición peruana de Arica resiste el asalto chileno. Francisco Bolognesi muere en la defensa; la plaza cae, pero su resistencia queda como símbolo.',
+    seconds: 8,
+    source: 'docs/historia/campanas/guerra_del_pacifico.md',
+  },
+];

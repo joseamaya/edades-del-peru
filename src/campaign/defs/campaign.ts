@@ -1082,6 +1082,7 @@ export const MISSIONS: MissionDef[] = [
     },
     mark: [{ tag: 'centro_realista', kind: BuildingKind.CENTER, owner: 1 }],
     enemy: { active: true, difficulty: 'hard', aggression: 1.3 },
+    tutorial: true,
     objectives: [
       {
         id: 'obj_junin',
@@ -1210,6 +1211,7 @@ export const MISSIONS: MissionDef[] = [
     },
     mark: [{ tag: 'centro_enemigo', kind: BuildingKind.CENTER, owner: 1 }],
     enemy: { active: true, difficulty: 'hard', aggression: 1.4 },
+    tutorial: true,
     // A land defense of the port: no siege train in this scenario.
     allowedUnits: [
       UnitKind.WORKER,

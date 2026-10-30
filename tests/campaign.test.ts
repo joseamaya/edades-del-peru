@@ -252,6 +252,18 @@ describe('campaign educational content', () => {
     expect(m2.triggers.some((t) => t.id === 't_peregrinaje')).toBe(true);
   });
 
+  it('chapter IV has briefings and guided tutorials', () => {
+    for (const [id, steps] of [
+      ['m8_independencia', 3],
+      ['m9_guerra_pacifico', 2],
+    ] as const) {
+      const mis = MISSIONS.find((m) => m.id === id)!;
+      expect(mis.tutorial, `${id} tutorial flag`).toBe(true);
+      expect(getEducational(id)?.briefing?.length, `${id} briefing`).toBeGreaterThan(40);
+      expect(tutorialForMission(id)?.steps.length, `${id} tutorial steps`).toBe(steps);
+    }
+  });
+
   it('chapter III has a briefing and a two-step guided tutorial', () => {
     const mis = MISSIONS.find((m) => m.id === 'm7_tupac_amaru')!;
     expect(mis.tutorial).toBe(true);

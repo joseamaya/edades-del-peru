@@ -1,18 +1,19 @@
 # Release status
 
 Status: **published on GitHub Pages** at <https://joseamaya.github.io/edades-del-peru/>; itch upload
-deferred until the end of the campaign work. Date: 2026-10-30. Scope: chapters I–III
-(_Culturas Preincas_, _El Tahuantinsuyo_ and _El Virreinato_), missions m1 Caral, m2 Chavín,
-m3 Moche/Recuay, m4 Wari, m5 Yahuar Pampa, m6 Chimú–Inca and m7 Túpac Amaru.
+deferred until the end of the campaign work. Date: 2026-10-30. Scope: all four chapters
+(_Culturas Preincas_, _El Tahuantinsuyo_, _El Virreinato_ and _Independencia y República_),
+missions m1 Caral through m9 Guerra del Pacífico.
 
 ## Verified
 
-- `yarn verify:fast`: typecheck, lint, format, 436 unit tests and build pass.
-- `yarn test:e2e:slow`: 72 passing, including campaign playtests, saves and settlement.
+- `yarn verify:fast`: typecheck, lint, format, 437 unit tests and build pass.
+- `yarn test:e2e:slow`: 74 passing, including campaign playtests, saves and settlement.
 - `yarn test:e2e:smoke`: 42 passing.
+- `yarn test:e2e:fast`: 180 passing.
 - `yarn art:validate`: manifest and Blender render assets are valid.
 - GitHub Pages serves the project under `/edades-del-peru/`; the live build is checked with a
-  headless browser after each deploy, including the m5–m7 briefing and tutorial.
+  headless browser after each deploy, including the m5–m9 briefings and tutorials.
 - AI issue #136 is closed: 14/20 decisive AI-vs-AI matches (70 %); remaining draws are
   documented in `docs/development/performance-audit.md`.
 
@@ -49,11 +50,10 @@ required before deciding whether Moche/Wari need mesh/material optimization.
 
 ## Known limitations
 
-- Chapter IV remains a draft: m8 Independencia and m9 Guerra del Pacífico are reachable for QA
-  but are not in the released campaign menus.
-- m5–m7 use documented procedural landmarks and authored terrain; they do not have dedicated
-  GLB sites like Caral, Chavín, Moche and Wari. Their quality-bar visual gate is partial.
-- Mission-specific save round-trips are covered for m1–m4; m5–m7 use the shared save path and
+- All nine missions are released, but m5–m9 use documented procedural landmarks and authored
+  terrain; they do not have dedicated GLB sites like Caral, Chavín, Moche and Wari. Their
+  quality-bar visual gate is partial.
+- Mission-specific save round-trips are covered for m1–m4; m5–m9 use the shared save path and
   remain partial on the persistence gate.
 - GitHub Pages is enabled and the `Deploy GitHub Pages` workflow is re-run for each chapter
   release. The itch build is packaged as `review/edades-del-peru-itch.zip` but not uploaded

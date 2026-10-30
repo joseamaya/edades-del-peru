@@ -4,6 +4,41 @@ import type { TutorialDef } from '../types';
 const buildBottom = '#ed-bottom';
 
 const TUTORIALS: Record<string, TutorialDef> = {
+  m8_independencia: {
+    steps: [
+      {
+        id: 'select',
+        text: 'Selecciona a la caballería patriota: será la punta de lanza en Junín.',
+        check: { type: 'selectUnit', unitKind: UnitKind.CAVALRY },
+      },
+      {
+        id: 'junin',
+        text: 'Sostén la posición de Junín con la caballería durante 90 segundos. Sucre debe seguir con vida.',
+        highlight: '#ed-objectives',
+        check: { type: 'objectiveCompleted', objectiveId: 'obj_junin' },
+      },
+      {
+        id: 'ayacucho',
+        text: 'Avanza a Ayacucho y sostén el campo 120 segundos para sellar la independencia.',
+        check: { type: 'objectiveCompleted', objectiveId: 'obj_ayacucho' },
+      },
+    ],
+  },
+  m9_guerra_pacifico: {
+    steps: [
+      {
+        id: 'select',
+        text: 'Selecciona a los defensores de Arica. Bolognesi y el puerto deben resistir el asalto.',
+        check: { type: 'selectUnit', unitKind: UnitKind.RIFLEMAN },
+      },
+      {
+        id: 'resist',
+        text: 'Defiende el puerto y mantén con vida a Bolognesi hasta que termine el asalto, a los 10 minutos.',
+        highlight: '#ed-objectives',
+        check: { type: 'objectiveCompleted', objectiveId: 'obj_resistir' },
+      },
+    ],
+  },
   m7_tupac_amaru: {
     steps: [
       {
