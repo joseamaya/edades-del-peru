@@ -387,7 +387,10 @@ export class AI {
       const r = this.rng.range(stats.size + 3, 24);
       const x = center.pos.x + Math.cos(ang) * r;
       const z = center.pos.z + Math.sin(ang) * r;
-      if (this.game.canPlace(x, z, stats.size)) return { x, z };
+      if (!this.game.canPlace(x, z, stats.size)) continue;
+      // Do not place a building on an island or behind a sealed wall: the
+      // builders would get stuck and the whole build plan would wait forever.
+      if (this.game.pathfinder.reachable(center.pos.x, center.pos.z, x, z)) return { x, z };
     }
     return null;
   }

@@ -526,26 +526,29 @@ Partial implementation of #136 on the post-#121 baseline:
   before, the path stopped short and the soldier stayed 5-6 units away without
   attacking.
 - Attack commitment waits for the ideal threshold, but after several checks it can
-  commit a smaller force **only when no enemy army is known**.
+  commit a smaller force when it is not smaller than the known enemy army.
 - The economy keeps 20 wood in reserve for a soldier once a barracks exists, and
   the unreachable-node blacklist is scoped per worker component instead of
   blocking the node for the whole AI.
+- Builders use the same footprint-edge approach as attackers, so a mill or
+  barracks whose centre is blocked no longer stalls the whole build plan.
 
 Verification: `yarn sim --seeds=777,778,779,780,781,782,783,784,785,786 --max=1200 --metrics=1`.
 
 | Metric | Value |
 |---|---:|
-| Decisive matches | **5/10** (P0 3, P1 2) |
-| Unfinished | 5/10 |
-| First soldier (median P0/P1) | 369 s / 356 s |
-| First attack (median P0/P1) | 369 s / 356 s |
-| `pathRequests` / failures (median) | 12,134 / 3,695 |
+| Decisive matches | **7/10** (P0 4, P1 3) |
+| Unfinished | 3/10 |
+| First soldier (median P0/P1) | 363 s / 381 s |
+| First attack (median P0/P1) | 367 s / 442 s |
+| `pathRequests` / failures (median) | 13,537 / 3,241 |
 | `blockedWorkersMax` (median) | 2 |
 
 In the original audit those same seeds 777-786 finished **0/10**. The improvement is
-clear, but **#136 remains open**: 5/10 draws are still below the 70 % decisive-match
-target. Seeds 778, 780, 782, 784 and 786 still need an economy/army audit; 778 and 784
-field large armies but do not break the enemy base.
+clear, but **#136 remains open**: 3/10 draws are still below the 70 % decisive-match
+target on the full 20-seed set. Seeds 777, 778 and 782 still draw; 782 now fields
+soldiers but does not break the enemy base, while 777 and 778 field large armies that
+do not finish the last buildings. A full 20-seed rerun is still required before closing.
 
 ## Bottlenecks
 
