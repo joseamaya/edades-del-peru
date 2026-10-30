@@ -13,7 +13,7 @@ The game is **historically grounded** on one key point: every match is played in
 only **coetaneous civilizations** can face each other (e.g. Moche with Recuay, Chanca with Inca, never Moche
 with Chimú).
 
-**Play the preinca and Inca chapters:** <https://joseamaya.github.io/edades-del-peru/>
+**Play the preinca, Inca and colonial chapters:** <https://joseamaya.github.io/edades-del-peru/>
 
 ## Media
 
@@ -69,23 +69,23 @@ Debug URL parameters:
 
 ## Campaign: La Senda del Sol
 
-The campaign is a saga of **four chapters**. The first two, _Culturas Preincas_ and
-_El Tahuantinsuyo_, are playable; the remaining authored scenarios stay as drafts.
+The campaign is a saga of **four chapters**. The first three, _Culturas Preincas_,
+_El Tahuantinsuyo_ and _El Virreinato_, are playable; the remaining authored scenarios stay as drafts.
 
 | Chapter | Campaign                      | Focus                               | Release                    |
 | ------- | ----------------------------- | ----------------------------------- | -------------------------- |
 | I       | **Culturas Preincas**         | Caral, Chavín, Moche/Recuay, Wari   | **Four missions playable** |
 | II      | **El Tahuantinsuyo**          | Yahuar Pampa and the Inca expansion | **Two missions playable**  |
-| III     | **El Virreinato**             | Túpac Amaru II and colonial Peru    | In preparation             |
+| III     | **El Virreinato**             | Túpac Amaru II and colonial Peru    | **One mission playable**   |
 | IV      | **Independencia y República** | Independence, Arica and modern Peru | In preparation             |
 
-Mission ids remain stable (`m1_caral` … `m9_guerra_pacifico`). The released preinca and Inca
-missions appear in menus, the Codex and progress; later-chapter drafts stay reachable with
-`?mission=ID` for QA.
+Mission ids remain stable (`m1_caral` … `m9_guerra_pacifico`). The released preinca, Inca and
+colonial missions appear in menus, the Codex and progress; later-chapter drafts stay reachable
+with `?mission=ID` for QA.
 The campaign [quality bar](./docs/design/campaign-quality-bar.md) records the gates a mission must meet.
-Caral, Chavín, Moche and Wari have authored, source-backed sites; m5/m6 use documented procedural landmarks and authored terrain.
+Caral, Chavín, Moche and Wari have authored, source-backed sites; m5–m7 use documented procedural landmarks and authored terrain.
 
-The technical preinca release candidate, its art gate and its publish checklist are in
+The current release status, art gate and publish checklist are in
 [`docs/design/release-candidate.md`](./docs/design/release-candidate.md).
 
 ## Educational mode

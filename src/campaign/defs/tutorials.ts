@@ -4,6 +4,21 @@ import type { TutorialDef } from '../types';
 const buildBottom = '#ed-bottom';
 
 const TUTORIALS: Record<string, TutorialDef> = {
+  m7_tupac_amaru: {
+    steps: [
+      {
+        id: 'select',
+        text: 'Selecciona a Túpac Amaru II y su ejército. La rebelión se decide en el sur andino, no esperando en la base.',
+        check: { type: 'selectUnit', unitKind: UnitKind.RIFLEMAN },
+      },
+      {
+        id: 'victory',
+        text: 'Túpac Amaru II debe sobrevivir. Asalta el centro realista del Cusco o resiste el cerco diez minutos: ambas rutas ganan.',
+        highlight: '#ed-objectives',
+        check: { type: 'objectiveGroupCompleted', group: 'victoria' },
+      },
+    ],
+  },
   m5_yahuar_pampa: {
     steps: [
       {

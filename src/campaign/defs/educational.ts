@@ -140,6 +140,10 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
     ],
   },
   m7_tupac_amaru: {
+    briefing:
+      'Sur andino, 1780. Túpac Amaru II se alza contra el reparto, la mita y los obrajes del Virreinato. ' +
+      'Micaela Bastidas sostiene el avituallamiento. Elige asaltar el Cusco o resistir el cerco realista: ' +
+      'Túpac Amaru II debe sobrevivir.',
     context:
       'Entre 1780 y 1781, José Gabriel Condorcanqui, Túpac Amaru II, se alzó contra las reformas borbónicas: ' +
       'el reparto de mercancías, la mita minera y los obrajes. Decretó la abolición de la esclavitud y venció ' +

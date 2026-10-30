@@ -219,6 +219,7 @@ export type TutorialCheck =
   | { type: 'reachFishing'; radius: number }
   | { type: 'build'; buildingKind: BuildingKind; baseline: TutorialBuildBaseline }
   | { type: 'objectiveCompleted'; objectiveId: string }
+  | { type: 'objectiveGroupCompleted'; group: string }
   | { type: 'approachSite'; radius: number; unitKind?: UnitKind };
 
 export interface TutorialStepDef {

@@ -95,6 +95,12 @@ export class Tutorial {
       }
       case 'objectiveCompleted':
         return game.mission?.getObjectiveState(paso.check.objectiveId) === 'completed';
+      case 'objectiveGroupCompleted': {
+        const group = paso.check.group;
+        return (
+          game.mission?.activeObjectives.some(({ def, state }) => def.group === group && state === 'completed') ?? false
+        );
+      }
       case 'approachSite': {
         const landmark = game.landmark;
         if (!landmark) return false;

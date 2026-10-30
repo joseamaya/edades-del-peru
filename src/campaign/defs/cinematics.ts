@@ -89,3 +89,28 @@ export const INCA_PROLOGUE: CinematicBeat[] = [
     source: 'docs/historia/periodizacion.md',
   },
 ];
+
+/** Prologue for the third released campaign, El Virreinato. */
+export const VIRREINATO_PROLOGUE: CinematicBeat[] = [
+  {
+    kicker: 'SUR ANDINO · 1780',
+    title: 'La Gran Rebelión',
+    text: 'Las reformas borbónicas recargan el reparto de mercancías, la mita minera y los obrajes. José Gabriel Condorcanqui, Túpac Amaru II, se alza en Tinta contra los abusos del Virreinato.',
+    seconds: 7,
+    source: 'docs/historia/campanas/tupac_amaru.md',
+  },
+  {
+    kicker: 'SANGARARÁ · NOVIEMBRE DE 1780',
+    title: 'Una rebelión que se extiende',
+    text: 'Túpac Amaru II vence en Sangarará y decreta la abolición de la esclavitud. Micaela Bastidas organiza el avituallamiento y la red de apoyo de la rebelión.',
+    seconds: 7,
+    source: 'docs/historia/campanas/tupac_amaru.md',
+  },
+  {
+    kicker: 'CUSCO · 1781',
+    title: 'Derrota y legado',
+    text: 'El asedio al Cusco fracasa. Túpac Amaru II es capturado y ejecutado, pero la rebelión fuerza la abolición del reparto y de los corregimientos y queda como antecedente de la independencia.',
+    seconds: 8,
+    source: 'docs/historia/campanas/tupac_amaru.md',
+  },
+];

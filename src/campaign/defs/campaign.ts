@@ -977,6 +977,7 @@ export const MISSIONS: MissionDef[] = [
     },
     mark: [{ tag: 'centro_realista', kind: BuildingKind.CENTER, owner: 1 }],
     enemy: { active: true, difficulty: 'hard', aggression: 1.3 },
+    tutorial: true,
     // 1780: no arcabuceros; the rebel and royalist line use muskets and rifles.
     allowedUnits: [
       UnitKind.WORKER,

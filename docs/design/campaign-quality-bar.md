@@ -112,3 +112,24 @@ need dedicated art and mission-specific save tests.
 | Persistence | Partial: shared save path; mission-specific round-trip pending. | Partial: shared save path; mission-specific round-trip pending. |
 | Tests | Met: data, completability, real-command playtest. | Met: data, completability, real-command playtest. |
 | Docs | Met: README, dossiers, campaign experiences and this table. | Met: README, dossiers, campaign experiences and this table. |
+
+
+## Chapter III playable status (m7)
+
+Chapter III is released as **playable**, not yet as a full gold master. The historical choice,
+onboarding and real-command victory path are covered; the visual and persistence gates still need
+dedicated art and a mission-specific save round-trip.
+
+| Gate | m7 Túpac Amaru |
+| --- | --- |
+| History | Met: `tupac_amaru.md`; rebellion, Sangarará and repression. |
+| Identity | Met: sustain the rebellion, protect Túpac Amaru, choose assault or siege. |
+| Play | Met: real-command playtest assaults the realista command post. |
+| Contract | Met: alternative assault/siege victory plus a required protect objective. |
+| Onboarding | Met: two-step tutorial + briefing. |
+| Closure | Met: epilogue and optional objectives. |
+| UX | Met locally: 1280×800 briefing/tutorial reviewed. |
+| Visuals | Partial: documented procedural colonial church + authored terrain; no dedicated GLB yet. |
+| Persistence | Partial: shared save path; mission-specific round-trip pending. |
+| Tests | Met: data, completability, branch choice and real-command playtest. |
+| Docs | Met: README, dossier, campaign experiences and this table. |
