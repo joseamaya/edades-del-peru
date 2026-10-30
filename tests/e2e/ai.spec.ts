@@ -248,6 +248,27 @@ test('the AI attacks enemy buildings when it has an army', async ({ page }) => {
   expect(onCenter).toBeGreaterThan(0);
 });
 
+test('the AI commits a smaller force when it has no known enemy army', async ({ page }) => {
+  await bootSkirmish(page);
+  const orders = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.addAI(0);
+    const ai = g.ais[g.ais.length - 1];
+    for (const u of g.units.values()) if (u.owner === 1) u.die();
+    ai.seenUnits.clear();
+    ai.attackStall = 2;
+    const enemy = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'center');
+    ai.seenBuildings.add(enemy.id);
+    const soldiers = [
+      g.spawnScriptedUnit('soldier', 0, enemy.pos.x + 8, enemy.pos.z),
+      g.spawnScriptedUnit('soldier', 0, enemy.pos.x - 8, enemy.pos.z),
+    ];
+    ai.launchAttack();
+    return soldiers.map((s: any) => s.orderQueue[0]?.kind ?? null);
+  });
+  expect(orders).toEqual(['attack', 'attack']);
+});
+
 test('a soldier ordered onto a building closes to its edge and damages it', async ({ page }) => {
   await bootSkirmish(page);
   const out = await page.evaluate(() => {

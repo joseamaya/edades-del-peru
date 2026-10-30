@@ -31,6 +31,8 @@ import type { UnitSave } from '../game/saveTypes';
 
 /** Reach of a melee attack from the edge of the target footprint. */
 export const MELEE_ATTACK_RANGE = 0.9;
+/** Extra reach against a building so a blocked edge cell does not make it untouchable. */
+const BUILDING_ATTACK_PAD = 0.5;
 
 /** Context that Game provides to units (avoids circular dependencies). */
 export interface UnitContext {
@@ -479,6 +481,26 @@ export class Unit {
 
   isBusy(): boolean {
     return this.orderQueue.length > 0;
+  }
+
+  /** True when an attack order has been unable to reach its target for a while. */
+  isAttackBlocked(): boolean {
+    if (this.orderQueue[0]?.kind !== OrderKind.ATTACK) return false;
+    const target =
+      this.targetEntityId !== null
+        ? (this.ctx.entitiesById.get(this.targetEntityId) ?? this.ctx.buildings.get(this.targetEntityId))
+        : null;
+    if (!target) return true;
+    if (this.noRouteTimer > 1.5) return true;
+    const range =
+      (this.stats.range > 0 ? this.stats.range : MELEE_ATTACK_RANGE) +
+      target.radius +
+      (this.ctx.buildings.get(target.id) ? BUILDING_ATTACK_PAD : 0);
+    return (
+      this.attackApproachTried &&
+      this.path.length === 0 &&
+      distance2D(this.pos.x, this.pos.z, target.pos.x, target.pos.z) > range
+    );
   }
 
   isGathering(): boolean {
@@ -932,11 +954,15 @@ export class Unit {
     const dx = tpos.x - this.pos.x;
     const dz = tpos.z - this.pos.z;
     const dist = Math.sqrt(dx * dx + dz * dz);
-    const range = this.stats.range > 0 ? this.stats.range + target.radius : MELEE_ATTACK_RANGE + target.radius;
+    const building = this.ctx.buildings.get(target.id);
+    const range =
+      (this.stats.range > 0 ? this.stats.range : MELEE_ATTACK_RANGE) +
+      target.radius +
+      (building ? BUILDING_ATTACK_PAD : 0);
 
     if (dist > range * 1.15) {
       // chase (with a direct-approach fallback if there is no path)
-      if (this.repathTimer <= 0) {
+      if (this.repathTimer <= 0 && !building) {
         this.setPath(tpos.x, tpos.z);
         this.repathTimer = 0.8;
       }
@@ -944,13 +970,23 @@ export class Unit {
         // route exhausted but still out of range (a building's goal cell is not
         // walkable, so the path can stop a couple of cells short): head straight in
         // only over walkable ground, else hold and warn
+        if (building && this.repathTimer <= 0) {
+          // A building centre is blocked; do not let directStep press against
+          // the wall forever. Retry a stand point outside the footprint.
+          this.repathTimer = 0.8;
+          const pts = this.buildingApproach(tpos.x, tpos.z, target.radius, range);
+          if (pts.length > 0) {
+            this.path = pts;
+            this.pathIdx = 0;
+            this.noRouteTimer = 0;
+            if (pts.length > 1) this.advanceToNextWaypoint();
+            return;
+          }
+        }
         if (this.directStep(tpos.x, tpos.z, range)) return;
-        if (!this.attackApproachTried) {
+        if (!building && !this.attackApproachTried) {
           this.attackApproachTried = true;
-          const building = this.ctx.buildings.get(target.id);
-          const pts = building
-            ? this.buildingApproach(tpos.x, tpos.z, target.radius, range)
-            : this.ctx.findApproachPath(this.pos.x, this.pos.z, tpos.x, tpos.z, range);
+          const pts = this.ctx.findApproachPath(this.pos.x, this.pos.z, tpos.x, tpos.z, range);
           if (pts.length > 0) {
             this.path = pts;
             this.pathIdx = 0;
@@ -991,7 +1027,14 @@ export class Unit {
       const pz = tz + Math.sin(angle) * stand;
       if (!this.ctx.isWalkable(px, pz)) continue;
       const pts = this.ctx.findPath(this.pos.x, this.pos.z, px, pz);
-      if (pts.length > 0) return pts;
+      if (pts.length > 0) {
+        const last = pts[pts.length - 1];
+        if (Math.hypot(last.x - px, last.z - pz) > 0.05) pts.push({ x: px, z: pz });
+        return pts;
+      }
+      // Same-cell stand point: pathfind returns [] even though the unit only
+      // needs to step a few tenths into attack range.
+      if (Math.hypot(px - this.pos.x, pz - this.pos.z) > 0.1) return [{ x: px, z: pz }];
     }
     return [];
   }
