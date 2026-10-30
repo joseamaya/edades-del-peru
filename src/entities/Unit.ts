@@ -135,6 +135,7 @@ export class Unit {
   /** One-shot fallback: the regular path/direct approach could not reach a node. */
   private approachTried = false;
   private attackApproachTried = false;
+  private buildApproachTried = false;
 
   targetEntityId: number | null = null;
   attackCooldown = 0;
@@ -400,6 +401,7 @@ export class Unit {
     this.directApproach = false;
     this.approachTried = false;
     this.attackApproachTried = false;
+    this.buildApproachTried = false;
   }
 
   issueOrder(order: Order, clear = true): void {
@@ -1305,6 +1307,18 @@ export class Unit {
       }
       if (this.pathIdx >= this.path.length) {
         if (this.directStep(bld.pos.x, bld.pos.z, bld.radius + BUILD_REACH_PAD)) return;
+        if (!this.buildApproachTried) {
+          this.buildApproachTried = true;
+          const pts = this.buildingApproach(bld.pos.x, bld.pos.z, bld.radius, bld.radius + BUILD_REACH_PAD);
+          if (pts.length > 0) {
+            this.path = pts;
+            this.pathIdx = 0;
+            this.repathTimer = 0.7;
+            this.noRouteTimer = 0;
+            if (pts.length > 1) this.advanceToNextWaypoint();
+            return;
+          }
+        }
         this.vel.multiplyScalar(Math.pow(0.02, dt));
         this.noRouteTimer += dt;
         if (this.noRouteTimer > NO_ROUTE_GIVEUP) this.notifyNoRoute();
