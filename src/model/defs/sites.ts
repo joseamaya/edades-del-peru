@@ -1,6 +1,9 @@
 import type { AuthoredHeightField } from './authoredTerrain';
 import type { HeritageBuildingId } from './heritage';
 import { CARAL_HEIGHTMAP, CARAL_HEIGHTMAP_SIZE, CARAL_HEIGHTMAP_WORLD_SIZE } from './caralHeightmap';
+import { CHAVIN_HEIGHTMAP, CHAVIN_HEIGHTMAP_SIZE, CHAVIN_HEIGHTMAP_WORLD_SIZE } from './chavinHeightmap';
+import { MOCHE_HEIGHTMAP, MOCHE_HEIGHTMAP_SIZE, MOCHE_HEIGHTMAP_WORLD_SIZE } from './mocheHeightmap';
+import { WARI_HEIGHTMAP, WARI_HEIGHTMAP_SIZE, WARI_HEIGHTMAP_WORLD_SIZE } from './wariHeightmap';
 
 export type AuthoredSiteId = 'caral_site' | 'chavin_site' | 'moche_site' | 'wari_site';
 
@@ -228,6 +231,11 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     anchor: { x: 98, z: 87.5 },
     cameraHeight: 60,
     framing: 'site-biased',
+    heightField: {
+      size: CHAVIN_HEIGHTMAP_SIZE,
+      worldSize: CHAVIN_HEIGHTMAP_WORLD_SIZE,
+      heights: CHAVIN_HEIGHTMAP,
+    },
     pathCellSize: 1,
     heritageProxies: [
       { id: 'chavin_plaza_circular', x: 98, z: 86, w: 18, d: 15, h: 5 },
@@ -256,6 +264,11 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     anchor: { x: 123, z: 81 },
     cameraHeight: 68,
     framing: 'site-biased',
+    heightField: {
+      size: MOCHE_HEIGHTMAP_SIZE,
+      worldSize: MOCHE_HEIGHTMAP_WORLD_SIZE,
+      heights: MOCHE_HEIGHTMAP,
+    },
     pathCellSize: 1,
     heritageProxies: [
       { id: 'moche_huaca_sol', x: 109.5, z: 73, w: 23, d: 15.5, h: 12 },
@@ -296,6 +309,11 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     anchor: { x: 107.5, z: 102 },
     cameraHeight: 70,
     framing: 'site-biased',
+    heightField: {
+      size: WARI_HEIGHTMAP_SIZE,
+      worldSize: WARI_HEIGHTMAP_WORLD_SIZE,
+      heights: WARI_HEIGHTMAP,
+    },
     pathCellSize: 1,
     heritageProxies: [
       { id: 'wari_templo_d', x: 107.5, z: 83.9, w: 15, d: 7.5, h: 3.5 },
