@@ -26,6 +26,7 @@ import { EntityView } from '../entities/EntityView';
 import { allocId } from '../entities/EntityView';
 import { Order, OrderKind, OrderTarget } from '../core/types';
 import { angleDelta, angleTo, distance2D, clamp, facingRotation, lerp } from '../util/math';
+import { anchorFor, distXZ, enemyWithinLeash, leashRadius as stanceLeashRadius, type LeashOrigin } from '../game/stance';
 import { genderForId, type PersonGender } from '../model/defs/people';
 import type { UnitSave } from '../game/saveTypes';
 
@@ -156,6 +157,8 @@ export class Unit {
   isConstructing: number | null = null;
   rallyPoint: OrderTarget | null = null;
   combatStance: CombatStance = 'agresivo';
+  /** Post a 'defensivo' unit fights from: it gives up any chase that leaves this circle. */
+  private leashOrigin: LeashOrigin | null = null;
   buildEfficiency = 1;
   gatherMultiplier = 1;
   attackMultiplier = 1;
@@ -245,6 +248,12 @@ export class Unit {
 
   setContext(ctx: UnitContext): void {
     this.ctx = ctx;
+  }
+
+  /** Stance switch: 'defensivo' anchors the post where the unit stands, the others release it. */
+  setStance(stance: CombatStance): void {
+    this.combatStance = stance;
+    this.leashOrigin = anchorFor(stance, this.pos.x, this.pos.z);
   }
 
   get posX(): number {
@@ -589,14 +598,44 @@ export class Unit {
   private autoAttack(dt: number, time: number): void {
     if (this.combatStance === 'pasivo') return;
     if (this.kind === UnitKind.WORKER || this.kind === UnitKind.SCOUT) return;
+    if (this.combatStance === 'defensivo') {
+      if (this.leashOrigin === null) this.leashOrigin = { x: this.pos.x, z: this.pos.z };
+      if (this.attackCooldown <= 0) {
+        const radius = stanceLeashRadius(this.stats.range, this.stats.los);
+        const enemy = this.acquireEnemy(radius, this.leashOrigin);
+        if (enemy) {
+          this.issueOrder({ kind: OrderKind.ATTACK, entityId: enemy.id }, true);
+          this.updateAttack(this.orderQueue[0], dt, time);
+          return;
+        }
+      }
+      this.returnToPost();
+      return;
+    }
     if (this.attackCooldown <= 0) {
       const range = this.stats.range > 0 ? this.stats.range + 1 : this.stats.los + 1;
-      const enemy = this.ctx?.enemiesNear ? this.ctx.enemiesNear(this.pos.x, this.pos.z, range, this.owner)[0] : null;
+      const enemy = this.acquireEnemy(range, null);
       if (enemy) {
         this.issueOrder({ kind: OrderKind.ATTACK, entityId: enemy.id }, true);
         this.updateAttack(this.orderQueue[0], dt, time);
       }
     }
+  }
+
+  /** Closest enemy in `radius`; with a post, only one that stays inside the leash. */
+  private acquireEnemy(radius: number, origin: LeashOrigin | null): Unit | null {
+    if (!this.ctx?.enemiesNear) return null;
+    const found = this.ctx.enemiesNear(this.pos.x, this.pos.z, radius, this.owner);
+    if (found.length === 0) return null;
+    if (origin === null) return found[0];
+    return found.find((e) => enemyWithinLeash(origin, e.pos, radius)) ?? null;
+  }
+
+  /** Walk a defensive unit back to its post once no target is in reach. */
+  private returnToPost(): void {
+    if (this.leashOrigin === null || this.orderQueue.length > 0) return;
+    if (distXZ(this.leashOrigin.x, this.leashOrigin.z, this.pos.x, this.pos.z) <= 0.75) return;
+    this.issueOrder({ kind: OrderKind.MOVE, target: { x: this.leashOrigin.x, z: this.leashOrigin.z } }, true);
   }
 
   private executeOrder(order: Order, dt: number, time: number): void {
@@ -638,7 +677,12 @@ export class Unit {
 
   /** Drop the current order and start the next one (shift-queue fix). */
   private finishOrder(): void {
+    const finished = this.orderQueue[0];
     this.orderQueue.shift();
+    if (finished && finished.kind === OrderKind.MOVE && this.combatStance === 'defensivo') {
+      // a defensive unit re-anchors where it was last told to stand
+      this.leashOrigin = { x: this.pos.x, z: this.pos.z };
+    }
     if (this.orderQueue.length > 0) {
       this.startOrder();
     }
@@ -954,6 +998,18 @@ export class Unit {
     const dx = tpos.x - this.pos.x;
     const dz = tpos.z - this.pos.z;
     const dist = Math.sqrt(dx * dx + dz * dz);
+    if (
+      this.combatStance === 'defensivo' &&
+      this.leashOrigin !== null &&
+      !enemyWithinLeash(this.leashOrigin, tpos, stanceLeashRadius(this.stats.range, this.stats.los))
+    ) {
+      // the target left the leash: give up the chase and walk back to the post
+      this.targetEntityId = null;
+      this.attackingTarget = false;
+      this.finishOrder();
+      this.returnToPost();
+      return;
+    }
     const building = this.ctx.buildings.get(target.id);
     const range =
       (this.stats.range > 0 ? this.stats.range : MELEE_ATTACK_RANGE) +
@@ -1498,6 +1554,7 @@ export class Unit {
       isConstructing: this.isConstructing,
       rallyPoint: this.rallyPoint,
       combatStance: this.combatStance,
+      leashOrigin: this.leashOrigin,
       buildEfficiency: this.buildEfficiency,
       gatherMultiplier: this.gatherMultiplier,
       attackMultiplier: this.attackMultiplier,
@@ -1522,6 +1579,7 @@ export class Unit {
     this.isConstructing = s.isConstructing;
     this.rallyPoint = s.rallyPoint;
     this.combatStance = s.combatStance ?? 'agresivo';
+    this.leashOrigin = s.leashOrigin ?? null;
     this.buildEfficiency = s.buildEfficiency;
     this.gatherMultiplier = s.gatherMultiplier;
     this.attackMultiplier = s.attackMultiplier;
