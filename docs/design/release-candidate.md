@@ -7,10 +7,10 @@ missions m1 Caral through m9 Guerra del Pacífico.
 
 ## Verified
 
-- `yarn verify:fast`: typecheck, lint, format, 443 unit tests and build pass.
+- `yarn verify:fast`: typecheck, lint, format, 444 unit tests and build pass.
 - `yarn test:e2e:slow`: 74 passing, including campaign playtests, saves and settlement.
 - `yarn test:e2e:smoke`: 42 passing.
-- `yarn test:e2e:fast`: 182 passing.
+- `yarn test:e2e:fast`: 183 passing.
 - `yarn art:validate`: manifest and Blender render assets are valid.
 - GitHub Pages serves the project under `/edades-del-peru/`; the live build is checked with a
   headless browser after each deploy, including the m5–m9 briefings and tutorials.
@@ -19,7 +19,7 @@ missions m1 Caral through m9 Guerra del Pacífico.
 
 ## Art gate
 
-Six records remain `reviewed: false`:
+Eleven records remain `reviewed: false`:
 
 - `caral-architecture-pyramid`
 - `caral-map-city`
@@ -27,9 +27,14 @@ Six records remain `reviewed: false`:
 - `caral-tour-isometric`
 - `m1_caral-intro`
 - `m2_chavin-intro`
+- `m5_chanca-intro`
+- `m6_chimu-intro`
+- `m7_colonial-intro`
+- `m8_independencia-intro`
+- `m9_arica-intro`
 
 The game hides unreviewed records by default; `?art=all` previews them with a draft badge.
-A human must review the contact sheet before any of them is presented as final art. The m3/m4
+A human must review the contact sheet before any of them is presented as final art. The m5–m9 intros are draft Blender renders of the authored sites and stay hidden until review. The m3/m4
 intros were re-rendered on 2026-10-30 and approved by Miguel Amaya: m3 has warmer adobe/plaster
 contrast and a closer camera; m4 has textured cut-stone walls, a white/red D-temple and visible
 murals. The runtime GLBs keep flat materials (18 KB Moche, 34 KB Wari); the image textures are
@@ -51,7 +56,7 @@ required before deciding whether Moche/Wari need mesh/material optimization.
 ## Known limitations
 
 - All nine missions are released. All m5–m9 now use authored sites with their own heightfields and collision. They are smaller
-  than the authored sites of Caral, Chavín, Moche and Wari and do not have a CI pixel gate.
+  than the authored sites of Caral, Chavín, Moche and Wari and do not have a CI pixel gate. Their intro renders are drafts.
 - Mission-specific save round-trips are covered for m1–m9.
 - GitHub Pages is enabled and the `Deploy GitHub Pages` workflow is re-run for each chapter
   release. The itch build is packaged as `review/edades-del-peru-itch.zip` but not uploaded

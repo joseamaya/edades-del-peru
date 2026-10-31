@@ -23,3 +23,15 @@ layout. `?lod=0` previews the master.
 | independence_chapel | LOD1 | 12760 | `77d8df2fa7cdf373e0b8dc527ac9dbad27a6ce0f4af25a2a38f042ee0fcb43cc` |
 | arica_battery | LOD0 | 20956 | `d06d5ad8853960dac6acfe38b33e4c6f18ea0bc659b0df7fcd623c3bd2cf39ae` |
 | arica_battery | LOD1 | 17596 | `efe5d29daee3887255ab38d68b006db68747eb272f6635ba8c7dc8b44274b85a` |
+
+
+## Campaign intro renders
+
+`renders/*.png` are 1600×900 draft hero renders produced by
+`scripts/blender/render_mission_decor.py`. Ingest them with:
+
+```bash
+yarn art:blender --manifest=art-src/blender/mission-decor/renders.json
+```
+
+The resulting records start `reviewed: false` and stay hidden until approved.

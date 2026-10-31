@@ -26,6 +26,11 @@ written for external tools and offline review.
 | `m2_chavin-intro` | campaign-intro | Chavín | Horizonte Temprano | andean_valley | reconstruction | unreviewed | `hero` | `planta documentada; techos, remates y relieves inferidos` | `16bc0e3ab76e` | [intro.webp](campaigns/la-senda-del-sol/m2_chavin/intro.webp) |
 | `m3_moche-intro` | campaign-intro | Cultura Moche | Intermedio Temprano | north_coast | reconstruction | reviewed (Miguel Amaya) | `hero` | `planta y volumen documentados; remates y frisos inferidos` | `e94b1823b122` | [intro.webp](campaigns/la-senda-del-sol/m3_moche/intro.webp) |
 | `m4_wari-intro` | campaign-intro | Imperio Wari | Horizonte Medio | high_andes | reconstruction | reviewed (Miguel Amaya) | `hero` | `formas documentadas; combinación y dimensiones interpretadas` | `542eb0ff13a7` | [intro.webp](campaigns/la-senda-del-sol/m4_wari/intro.webp) |
+| `m5_chanca-intro` | campaign-intro | Tahuantinsuyo | Horizonte Tardío (Inca) | high_andes | abstraction | unreviewed | `hero` | `Reconstrucción volumétrica de una práctica defensiva documentada; planta y remates plausibles.` | `636ac28e257f` | [intro.webp](campaigns/la-senda-del-sol/m5_yahuar/intro.webp) |
+| `m6_chimu-intro` | campaign-intro | Tahuantinsuyo | Horizonte Tardío (Inca) | north_coast | abstraction | unreviewed | `hero` | `Tradición arquitectónica documentada; combinación y dimensiones plausibles.` | `56da86bb2342` | [intro.webp](campaigns/la-senda-del-sol/m6_chimu/intro.webp) |
+| `m7_colonial-intro` | campaign-intro | Tahuantinsuyo | Virreinato del Perú | high_andes | abstraction | unreviewed | `hero` | `Tipología documentada; planta y remates plausibles.` | `ae45811f72e4` | [intro.webp](campaigns/la-senda-del-sol/m7_tupac/intro.webp) |
+| `m8_independencia-intro` | campaign-intro | Patriotas | Independencia | andean_valley | abstraction | unreviewed | `hero` | `Contexto documentado; planta y remates plausibles.` | `7ad55630b4eb` | [intro.webp](campaigns/la-senda-del-sol/m8_independencia/intro.webp) |
+| `m9_arica-intro` | campaign-intro | República del Perú | República | south_coast | abstraction | unreviewed | `hero` | `Infraestructura documentada; planta y remates plausibles.` | `19b3cd697875` | [intro.webp](campaigns/la-senda-del-sol/m9_arica/intro.webp) |
 
 ## Review
 
