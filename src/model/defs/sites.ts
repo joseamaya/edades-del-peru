@@ -6,8 +6,22 @@ import { MOCHE_HEIGHTMAP, MOCHE_HEIGHTMAP_SIZE, MOCHE_HEIGHTMAP_WORLD_SIZE } fro
 import { WARI_HEIGHTMAP, WARI_HEIGHTMAP_SIZE, WARI_HEIGHTMAP_WORLD_SIZE } from './wariHeightmap';
 import { CHANCA_HEIGHTMAP, CHANCA_HEIGHTMAP_SIZE, CHANCA_HEIGHTMAP_WORLD_SIZE } from './chancaHeightmap';
 import { CHIMU_HEIGHTMAP, CHIMU_HEIGHTMAP_SIZE, CHIMU_HEIGHTMAP_WORLD_SIZE } from './chimuHeightmap';
+import { COLONIAL_HEIGHTMAP, COLONIAL_HEIGHTMAP_SIZE, COLONIAL_HEIGHTMAP_WORLD_SIZE } from './colonialHeightmap';
+import {
+  INDEPENDENCE_HEIGHTMAP,
+  INDEPENDENCE_HEIGHTMAP_SIZE,
+  INDEPENDENCE_HEIGHTMAP_WORLD_SIZE,
+} from './independenceHeightmap';
 
-export type AuthoredSiteId = 'caral_site' | 'chavin_site' | 'moche_site' | 'wari_site' | 'chanca_site' | 'chimu_site';
+export type AuthoredSiteId =
+  | 'caral_site'
+  | 'chavin_site'
+  | 'moche_site'
+  | 'wari_site'
+  | 'chanca_site'
+  | 'chimu_site'
+  | 'colonial_site'
+  | 'independence_site';
 
 /** Dedicated visual-only decor GLBs for the later campaigns. */
 export type DecorModelId =
@@ -392,6 +406,66 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     buildKeepout: [{ x: 0.744, z: 0.339, rx: 0.075, rz: 0.065 }],
     wallCollision: {
       meshPatterns: [/chimu/i],
+      maxStartYAboveBase: 1.2,
+    },
+    walkableCorridor: { width: 8 },
+    terrain: {
+      ...DEFAULT_SITE_TERRAIN,
+      flatNormals: true,
+      suppressSnow: true,
+    },
+  },
+  colonial_site: {
+    id: 'colonial_site',
+    label: 'Plaza y templo colonial del Cusco',
+    modelName: 'colonial_site',
+    scale: 0.65,
+    origin: { x: 134.8, z: 73 },
+    anchor: { x: 134.8, z: 73 },
+    cameraHeight: 52,
+    framing: 'site-biased',
+    heightField: {
+      size: COLONIAL_HEIGHTMAP_SIZE,
+      worldSize: COLONIAL_HEIGHTMAP_WORLD_SIZE,
+      heights: COLONIAL_HEIGHTMAP,
+    },
+    pathCellSize: 1,
+    heritageProxies: [{ id: 'colonial_church', x: 134.8, z: 73, w: 9, d: 9, h: 6 }],
+    blockers: [{ x: 134.8, z: 73, w: 9, d: 9 }],
+    blockerPadding: 0.5,
+    buildKeepout: [{ x: 0.702, z: 0.38, rx: 0.065, rz: 0.065 }],
+    wallCollision: {
+      meshPatterns: [/colonial/i],
+      maxStartYAboveBase: 1.2,
+    },
+    walkableCorridor: { width: 8 },
+    terrain: {
+      ...DEFAULT_SITE_TERRAIN,
+      flatNormals: true,
+      suppressSnow: true,
+    },
+  },
+  independence_site: {
+    id: 'independence_site',
+    label: 'Capilla y campamento patriota de Ayacucho',
+    modelName: 'independence_site',
+    scale: 0.65,
+    origin: { x: 134.8, z: 71 },
+    anchor: { x: 134.8, z: 71 },
+    cameraHeight: 54,
+    framing: 'site-biased',
+    heightField: {
+      size: INDEPENDENCE_HEIGHTMAP_SIZE,
+      worldSize: INDEPENDENCE_HEIGHTMAP_WORLD_SIZE,
+      heights: INDEPENDENCE_HEIGHTMAP,
+    },
+    pathCellSize: 1,
+    heritageProxies: [{ id: 'independence_chapel', x: 134.8, z: 71, w: 9, d: 9, h: 6 }],
+    blockers: [{ x: 134.8, z: 71, w: 9, d: 9 }],
+    blockerPadding: 0.5,
+    buildKeepout: [{ x: 0.702, z: 0.37, rx: 0.065, rz: 0.065 }],
+    wallCollision: {
+      meshPatterns: [/independence/i],
       maxStartYAboveBase: 1.2,
     },
     walkableCorridor: { width: 8 },

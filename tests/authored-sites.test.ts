@@ -55,6 +55,28 @@ describe('authored campaign sites', () => {
     expect(mission.layout?.site?.id).toBe('chimu_site');
   });
 
+  it('keeps the colonial mission on its authored site and heightfield', () => {
+    const site = getAuthoredSite('colonial_site')!;
+    expect(site.scale).toBe(0.65);
+    expect(site.anchor).toEqual({ x: 134.8, z: 73 });
+    expect(site.heightField?.worldSize).toBe(192);
+    expect(site.heritageProxies.map((p) => p.id)).toEqual(['colonial_church']);
+    expect(site.walkableCorridor?.width).toBe(8);
+    const mission = MISSIONS.find((m) => m.id === 'm7_tupac_amaru')!;
+    expect(mission.layout?.site?.id).toBe('colonial_site');
+  });
+
+  it('keeps the independence mission on its authored site and heightfield', () => {
+    const site = getAuthoredSite('independence_site')!;
+    expect(site.scale).toBe(0.65);
+    expect(site.anchor).toEqual({ x: 134.8, z: 71 });
+    expect(site.heightField?.worldSize).toBe(192);
+    expect(site.heritageProxies.map((p) => p.id)).toEqual(['independence_chapel']);
+    expect(site.walkableCorridor?.width).toBe(8);
+    const mission = MISSIONS.find((m) => m.id === 'm8_independencia')!;
+    expect(mission.layout?.site?.id).toBe('independence_site');
+  });
+
   it('keeps Moche on its authored site and canal layout', () => {
     const moche = getAuthoredSite('moche_site')!;
     expect(moche.scale).toBe(0.25);

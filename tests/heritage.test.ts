@@ -29,6 +29,8 @@ describe('campaign heritage buildings', () => {
       'moche_canal',
       'chanca_pucara',
       'chimu_compound',
+      'colonial_church',
+      'independence_chapel',
     ]);
     for (const id of ids) {
       expect(HERITAGE_BUILDINGS[id as keyof typeof HERITAGE_BUILDINGS].id).toBe(id);

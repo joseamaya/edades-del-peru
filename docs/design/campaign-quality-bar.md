@@ -131,9 +131,10 @@ because the UX evidence is local and there is no CI pixel gate.
 | Play | Met: real-command playtest assaults the realista command post. |
 | Contract | Met: alternative assault/siege victory plus a required protect objective. |
 | Onboarding | Met: two-step tutorial + briefing. |
+| Terrain | Met: authored Cusco colonial heightfield. |
 | Closure | Met: epilogue and optional objectives. |
 | UX | Met locally: 1600×900 briefing/tutorial reviewed. |
-| Visuals | Met locally: dedicated colonial church GLB + authored terrain. |
+| Visuals | Met locally: authored colonial site GLB + heightfield. |
 | Persistence | Met: save/load round-trip. |
 | Tests | Met: data, completability, branch choice and real-command playtest. |
 | Docs | Met: README, dossier, campaign experiences and this table. |
@@ -152,9 +153,10 @@ because the UX evidence is local and there is no CI pixel gate.
 | Play | Met: real-command playtest holds both phases. | Met: real-command playtest defends the port and strikes the command. |
 | Contract | Met: sequential holds plus a required protect objective. | Met: required protects and survive, with an optional counterstrike. |
 | Onboarding | Met: three-step tutorial + briefing. | Met: two-step tutorial + briefing. |
+| Terrain | Met: authored Junín–Ayacucho heightfield. | Partial: Arica decor over terrain; no authored heightfield yet. |
 | Closure | Met: epilogue and optional objectives. | Met: epilogue and optional objective. |
 | UX | Met locally: 1600×900 briefing/tutorial reviewed. | Met locally: 1600×900 briefing/tutorial reviewed. |
-| Visuals | Met locally: dedicated independence chapel GLB + authored terrain. | Met locally: dedicated Arica battery GLB + authored port terrace. |
+| Visuals | Met locally: authored independence site GLB + heightfield. | Met locally: dedicated Arica battery GLB + authored port terrace. |
 | Persistence | Met: save/load round-trip. | Met: save/load round-trip. |
 | Tests | Met: data, completability and real-command playtest. | Met: data, failure path, completability and real-command playtest. |
 | Docs | Met: README, dossier, campaign experiences and this table. | Met: README, dossier, campaign experiences and this table. |
