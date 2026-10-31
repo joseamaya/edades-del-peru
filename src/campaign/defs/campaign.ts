@@ -739,6 +739,7 @@ export const MISSIONS: MissionDef[] = [
     map: { seed: 1438, type: 'andes', size: 160 },
     layout: {
       base: { x: 0.36, z: 0.62 },
+      enemyBase: { x: 0.7725, z: 0.38 },
       site: {
         id: 'chanca_site',
         y: 5,
@@ -753,6 +754,7 @@ export const MISSIONS: MissionDef[] = [
         ],
       },
     },
+    mapOverrides: { culturalLandscape: null },
     timeOfDay: 'dusk',
     startingEra: Era.TAHUANTINSUYO,
     startingResources: { food: 700, wood: 600, silver: 400, stone: 200 },
@@ -841,6 +843,7 @@ export const MISSIONS: MissionDef[] = [
     region: 'north_coast',
     layout: {
       base: { x: 0.35, z: 0.62 },
+      enemyBase: { x: 0.814, z: 0.339 },
       site: {
         id: 'chimu_site',
         y: 5,
@@ -856,6 +859,7 @@ export const MISSIONS: MissionDef[] = [
         ],
       },
     },
+    mapOverrides: { culturalLandscape: null },
     timeOfDay: 'dusk',
     startingEra: Era.TAHUANTINSUYO,
     startingResources: { food: 1000, wood: 700, silver: 900, stone: 400 },
@@ -975,6 +979,7 @@ export const MISSIONS: MissionDef[] = [
     map: { seed: 1780, type: 'andes', size: 192 },
     layout: {
       base: { x: 0.36, z: 0.62 },
+      enemyBase: { x: 0.772, z: 0.38 },
       terrain: {
         flats: [
           { name: 'Valle del Cusco', x: 0.36, z: 0.62, rx: 0.15, rz: 0.12 },
@@ -1084,6 +1089,7 @@ export const MISSIONS: MissionDef[] = [
     map: { seed: 1824, type: 'andes', size: 192 },
     layout: {
       base: { x: 0.35, z: 0.63 },
+      enemyBase: { x: 0.772, z: 0.37 },
       terrain: {
         // Junín and Ayacucho as high pampas connected by the campaign route.
         flats: [
@@ -1099,6 +1105,7 @@ export const MISSIONS: MissionDef[] = [
         buildKeepout: [{ x: 0.702, z: 0.37, rx: 0.065, rz: 0.065 }],
       },
     },
+    mapOverrides: { culturalLandscape: null },
     timeOfDay: 'morning',
     startingEra: Era.REPUBLIC,
     startingResources: { food: 1200, wood: 800, silver: 1200, stone: 500 },
@@ -1234,6 +1241,7 @@ export const MISSIONS: MissionDef[] = [
         buildKeepout: [{ x: 0.702, z: 0.38, rx: 0.08, rz: 0.07 }],
       },
     },
+    mapOverrides: { culturalLandscape: null },
     timeOfDay: 'dusk',
     startingEra: Era.REPUBLIC,
     startingResources: { food: 1500, wood: 800, silver: 1500, stone: 1200 },

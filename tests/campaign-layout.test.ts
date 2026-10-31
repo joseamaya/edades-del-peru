@@ -43,6 +43,15 @@ describe('campaign authored geography', () => {
     expect(byId('m8_independencia').layout?.terrain?.flats?.length).toBeGreaterThan(0);
   });
 
+  it('places later enemy openings at their authored sites, away from the player base', () => {
+    for (const id of ['m5_yahuar_pampa', 'm6_chimu_inca', 'm7_tupac_amaru', 'm8_independencia']) {
+      const layout = MISSIONS.find((m) => m.id === id)!.layout!;
+      expect(layout.enemyBase, `${id} enemyBase`).toBeDefined();
+      const distance = Math.hypot(layout.enemyBase!.x - layout.base!.x, layout.enemyBase!.z - layout.base!.z);
+      expect(distance, `${id} enemy opening too close`).toBeGreaterThan(0.25);
+    }
+  });
+
   it('keeps Caral on its authored sacred-site model', () => {
     const caral = MISSIONS.find((m) => m.id === 'm1_caral')!;
     expect(caral.layout?.setpiece).toBeUndefined();
