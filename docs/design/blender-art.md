@@ -128,6 +128,25 @@ builder/exporter is `scripts/blender/build_wari_site.py`; the briefing render is
 `art-src/blender/wari/renders/wari_hero.png`. It is a representative
 reconstruction, not a survey. See `docs/design/wari-sacred-site.md`.
 
+## Mission decor GLBs (m5–m9)
+
+The later campaigns use dedicated low-poly decor models instead of only the procedural landmark
+builder. Sources and LODs live in `art-src/blender/mission-decor/` (Git LFS); the reproducible
+builder is `scripts/blender/build_mission_decor.py`. Runtime GLBs are in
+`src/assets/sites/{chanca,chimu,colonial,independence,arica}/`.
+
+| Mission | Model | Historical reference | Status |
+| --- | --- | --- | --- |
+| m5 Yahuar Pampa | `chanca_fortress` | Chanca pucará / highland fortress | project-owned abstraction |
+| m6 Chimú–Inca | `chimu_compound` | Chimú adobe compound and audience | project-owned abstraction |
+| m7 Túpac Amaru | `colonial_church` | colonial church and plaza | project-owned abstraction |
+| m8 Independencia | `independence_chapel` | campaign chapel and patriot camp | project-owned abstraction |
+| m9 Arica | `arica_battery` | port terrace, battery and warehouse | project-owned abstraction |
+
+Each model has LOD0/LOD1 and is loaded through `src/rendering/decorModels.ts`; the procedural
+landmark remains the fallback if a GLB fails. They are visual-only: collision and pathfinding stay
+with the mission terrain and layout. `?lod=0` previews the master.
+
 ## Modular scenery
 
 The first modular asset is `caral_pyramid_mayor` (Pyramid Mayor + Plaza Mayor). It is

@@ -5,7 +5,7 @@ import type { LandmarkId } from '../model/defs/landmarks';
 import type { TerrainLayout } from '../model/defs/terrainLayout';
 import type { SetpieceId } from '../model/defs/setpieces';
 import type { HeritageBuildingId } from '../model/defs/heritage';
-import type { AuthoredSiteId } from '../model/defs/sites';
+import type { AuthoredSiteId, DecorModelId } from '../model/defs/sites';
 
 /** Normalized map point (0..1); resolved to world units from the mission map size. */
 export interface MissionAnchor {
@@ -56,6 +56,8 @@ export interface MissionRoad {
 
 export interface MissionDecor {
   model: LandmarkId;
+  /** Dedicated GLB used instead of the procedural landmark. */
+  glb?: DecorModelId;
   at: 'player' | 'enemy';
   dx: number;
   dz: number;
