@@ -7,10 +7,10 @@ missions m1 Caral through m9 Guerra del Pacífico.
 
 ## Verified
 
-- `yarn verify:fast`: typecheck, lint, format, 438 unit tests and build pass.
+- `yarn verify:fast`: typecheck, lint, format, 443 unit tests and build pass.
 - `yarn test:e2e:slow`: 74 passing, including campaign playtests, saves and settlement.
 - `yarn test:e2e:smoke`: 42 passing.
-- `yarn test:e2e:fast`: 183 passing.
+- `yarn test:e2e:fast`: 182 passing.
 - `yarn art:validate`: manifest and Blender render assets are valid.
 - GitHub Pages serves the project under `/edades-del-peru/`; the live build is checked with a
   headless browser after each deploy, including the m5–m9 briefings and tutorials.
