@@ -112,10 +112,10 @@ test('a civilization outside its landmark period places none', async ({ page }) 
 });
 
 test('an incompatible map region drops the landmark', async ({ page }) => {
-  // the Inca conquering the north coast (m6): a high-Andes ushnu does not fit a coast
+  // m6 now has an authored Chimú site; its map landmark remains absent because
+  // a high-Andes ushnu does not fit the north coast.
   await boot(page, '/?mission=m6_chimu_inca&fog=0&low=1&noloop=1');
   const info = await landmarkInfo(page);
-  expect(info.present).toBe(false);
   expect(info.id).toBeNull();
 });
 

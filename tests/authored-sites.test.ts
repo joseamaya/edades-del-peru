@@ -44,6 +44,17 @@ describe('authored campaign sites', () => {
     expect(mission.layout?.site?.id).toBe('chanca_site');
   });
 
+  it('keeps the Chimú mission on its authored site and heightfield', () => {
+    const site = getAuthoredSite('chimu_site')!;
+    expect(site.scale).toBe(0.7);
+    expect(site.anchor).toEqual({ x: 142.8, z: 65 });
+    expect(site.heightField?.worldSize).toBe(192);
+    expect(site.heritageProxies.map((p) => p.id)).toEqual(['chimu_compound']);
+    expect(site.walkableCorridor?.width).toBe(8);
+    const mission = MISSIONS.find((m) => m.id === 'm6_chimu_inca')!;
+    expect(mission.layout?.site?.id).toBe('chimu_site');
+  });
+
   it('keeps Moche on its authored site and canal layout', () => {
     const moche = getAuthoredSite('moche_site')!;
     expect(moche.scale).toBe(0.25);

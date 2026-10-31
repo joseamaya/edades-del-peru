@@ -841,12 +841,18 @@ export const MISSIONS: MissionDef[] = [
     region: 'north_coast',
     layout: {
       base: { x: 0.35, z: 0.62 },
+      site: {
+        id: 'chimu_site',
+        y: 5,
+        focus: { x: 0.744, z: 0.339 },
+        keepout: [{ x: 0.744, z: 0.339, rx: 0.085, rz: 0.075 }],
+        buildKeepout: [{ x: 0.744, z: 0.339, rx: 0.075, rz: 0.065 }],
+      },
       canal: { name: 'Canal de Chan Chan', x: 0.5, z: 0.5, length: 28, yaw: 0.2, initiallyOpen: true },
-      decor: { model: 'chimu_compound', glb: 'chimu_compound', at: 'enemy', dx: 18, dz: -8, scale: 0.7, yaw: 0.2 },
       terrain: {
         flats: [
           { name: 'Canal de Chan Chan', x: 0.5, z: 0.5, rx: 0.14, rz: 0.09 },
-          { name: 'Valle del Santa', x: 0.35, z: 0.62, rx: 0.14, rz: 0.11 },
+          { name: 'Costa de Chan Chan', x: 0.744, z: 0.339, rx: 0.085, rz: 0.075 },
         ],
       },
     },
