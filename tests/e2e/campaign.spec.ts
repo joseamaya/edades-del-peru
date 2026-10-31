@@ -216,6 +216,17 @@ test('later campaign briefing and tutorial fit 1600x900', async ({ context }) =>
   }
 });
 
+test('later campaign briefings show their draft intro art with art=all', async ({ page }) => {
+  test.setTimeout(120_000);
+  for (const id of ['m5_yahuar_pampa', 'm6_chimu_inca', 'm7_tupac_amaru', 'm8_independencia', 'm9_guerra_pacifico']) {
+    await page.goto(`/?mission=${id}&seed=777&fog=0&low=1&art=all`);
+    const img = page.locator('.ed-briefing .ed-art img');
+    await expect(img).toBeVisible({ timeout: 30_000 });
+    await expect(img).toHaveJSProperty('complete', true);
+    expect(await img.evaluate((node) => (node as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+  }
+});
+
 test('the missions with corrected rosters boot with units and no errors', async ({ page }) => {
   test.setTimeout(180_000);
   const errors: string[] = [];

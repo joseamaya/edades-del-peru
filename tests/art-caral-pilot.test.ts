@@ -9,6 +9,7 @@ const SOURCE_MANIFESTS = [
   path.resolve('art-src/blender/caral/renders.json'),
   path.resolve('art-src/blender/moche/renders.json'),
   path.resolve('art-src/blender/wari/renders.json'),
+  path.resolve('art-src/blender/mission-decor/renders.json'),
 ];
 const CSV = path.resolve('art-src/blender/caral/caral_asset_manifest.csv');
 const CHAVIN_CSV = path.resolve('art-src/blender/chavin/chavin_asset_manifest.csv');
@@ -21,12 +22,22 @@ const EXPECTED = [
   'caral-religion-plaza',
   'caral-map-city',
   'caral-tour-isometric',
+  'm5_chanca-intro',
+  'm6_chimu-intro',
+  'm7_colonial-intro',
+  'm8_independencia-intro',
+  'm9_arica-intro',
 ];
 const EXPECTED_META: Record<string, { civilization: string; period: number; region: string }> = {
   'm1_caral-intro': { civilization: 'caral', period: 0, region: 'central_coast' },
   'm2_chavin-intro': { civilization: 'chavin', period: 1, region: 'andean_valley' },
   'm3_moche-intro': { civilization: 'moche', period: 2, region: 'north_coast' },
   'm4_wari-intro': { civilization: 'wari', period: 3, region: 'high_andes' },
+  'm5_chanca-intro': { civilization: 'inca', period: 5, region: 'high_andes' },
+  'm6_chimu-intro': { civilization: 'inca', period: 5, region: 'north_coast' },
+  'm7_colonial-intro': { civilization: 'inca', period: 6, region: 'high_andes' },
+  'm8_independencia-intro': { civilization: 'patriotas', period: 7, region: 'andean_valley' },
+  'm9_arica-intro': { civilization: 'republica', period: 8, region: 'south_coast' },
 };
 
 describe('Blender campaign art', () => {

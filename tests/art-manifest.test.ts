@@ -150,6 +150,16 @@ describe('Blender art manifest', () => {
     expect(issues.some((i) => i.id === asset.id && i.field === 'asset')).toBe(true);
   });
 
+  it('ships draft intro records for m5-m9', () => {
+    const missions = ['m5_yahuar_pampa', 'm6_chimu_inca', 'm7_tupac_amaru', 'm8_independencia', 'm9_guerra_pacifico'];
+    for (const missionId of missions) {
+      const intro = ART_MANIFEST.assets.find((a) => a.missionId === missionId && a.type === 'campaign-intro');
+      expect(intro, `${missionId} has no intro`).toBeDefined();
+      expect(intro!.reviewed).toBe(false);
+      expect(intro!.asset).toContain('/intro.webp');
+    }
+  });
+
   it('keeps the committed Caral manifest valid and consistent with its assets', async () => {
     expect(validateManifestData(ART_MANIFEST)).toEqual([]);
     const issues = await validateManifestFiles(ART_MANIFEST, process.cwd());
