@@ -33,6 +33,17 @@ describe('authored campaign sites', () => {
     }
   });
 
+  it('keeps Yahuar Pampa on its authored Chanca site and heightfield', () => {
+    const site = getAuthoredSite('chanca_site')!;
+    expect(site.scale).toBe(0.7);
+    expect(site.anchor).toEqual({ x: 112.4, z: 60.8 });
+    expect(site.heightField?.worldSize).toBe(160);
+    expect(site.heritageProxies.map((p) => p.id)).toEqual(['chanca_pucara']);
+    expect(site.walkableCorridor?.width).toBe(8);
+    const mission = MISSIONS.find((m) => m.id === 'm5_yahuar_pampa')!;
+    expect(mission.layout?.site?.id).toBe('chanca_site');
+  });
+
   it('keeps Moche on its authored site and canal layout', () => {
     const moche = getAuthoredSite('moche_site')!;
     expect(moche.scale).toBe(0.25);

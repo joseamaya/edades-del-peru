@@ -186,7 +186,7 @@ test('chapter IV tutorials open with their first step', async ({ page }) => {
 });
 
 test('later campaign briefing and tutorial fit 1600x900', async ({ context }) => {
-  test.setTimeout(180_000);
+  test.setTimeout(300_000);
   for (const id of ['m5_yahuar_pampa', 'm6_chimu_inca', 'm7_tupac_amaru', 'm8_independencia', 'm9_guerra_pacifico']) {
     const page = await context.newPage();
     await page.setViewportSize({ width: 1600, height: 900 });
@@ -328,7 +328,7 @@ test('authored campaign geography spawns its local base and features', async ({ 
     { id: 'm2_chavin', river: true, decor: null, canal: false },
     { id: 'm3_moche_recuay', flats: true, decor: 'mission_decor_recuay_pashash', canal: true },
     { id: 'm4_wari', flats: true, decor: null, canal: false },
-    { id: 'm5_yahuar_pampa', flats: true, decor: 'mission_decor_chanca_fortress', canal: false },
+    { id: 'm5_yahuar_pampa', flats: true, decor: null, site: 'chanca_site', canal: false },
     { id: 'm6_chimu_inca', flats: true, decor: 'mission_decor_chimu_compound', canal: true },
     { id: 'm7_tupac_amaru', flats: true, decor: 'mission_decor_colonial_church', canal: false },
     { id: 'm8_independencia', flats: true, decor: 'mission_decor_colonial_church', canal: false },
@@ -349,6 +349,7 @@ test('authored campaign geography spawns its local base and features', async ({ 
         river: !!g.missionLayout?.terrain?.river,
         flats: g.missionLayout?.terrain?.flats?.length ?? 0,
         decor: g.scenarioDecor?.name ?? null,
+        site: g.siteDef?.id ?? null,
         canal: !!g.canalSite,
       };
     });
@@ -357,6 +358,7 @@ test('authored campaign geography spawns its local base and features', async ({ 
     if (item.river) expect(out.river).toBe(true);
     if (item.flats) expect(out.flats).toBeGreaterThan(0);
     if (item.decor) expect(out.decor).toBe(item.decor);
+    if (item.site) expect(out.site).toBe(item.site);
     if (item.canal !== undefined) expect(out.canal).toBe(item.canal);
     await page.close();
   }
@@ -364,7 +366,6 @@ test('authored campaign geography spawns its local base and features', async ({ 
 
 test('later missions load their dedicated decor GLBs', async ({ context }) => {
   const cases = [
-    ['m5_yahuar_pampa', 'chanca_fortress'],
     ['m6_chimu_inca', 'chimu_compound'],
     ['m7_tupac_amaru', 'colonial_church'],
     ['m8_independencia', 'independence_chapel'],

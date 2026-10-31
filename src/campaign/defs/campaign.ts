@@ -739,18 +739,30 @@ export const MISSIONS: MissionDef[] = [
     map: { seed: 1438, type: 'andes', size: 160 },
     layout: {
       base: { x: 0.36, z: 0.62 },
+      site: {
+        id: 'chanca_site',
+        y: 5,
+        focus: { x: 0.7025, z: 0.38 },
+        keepout: [{ x: 0.7025, z: 0.38, rx: 0.1, rz: 0.09 }],
+        buildKeepout: [{ x: 0.7025, z: 0.38, rx: 0.085, rz: 0.075 }],
+      },
       terrain: {
         flats: [
           { name: 'Pampa de Yahuar', x: 0.36, z: 0.62, rx: 0.15, rz: 0.12 },
-          { name: 'Alturas del Cusco', x: 0.64, z: 0.38, rx: 0.13, rz: 0.1 },
+          { name: 'Alturas del Cusco', x: 0.7025, z: 0.38, rx: 0.1, rz: 0.09 },
         ],
       },
-      decor: { model: 'chanca_fortress', glb: 'chanca_fortress', at: 'enemy', dx: 10, dz: 0, scale: 0.7 },
     },
     timeOfDay: 'dusk',
     startingEra: Era.TAHUANTINSUYO,
     startingResources: { food: 700, wood: 600, silver: 400, stone: 200 },
     start: {
+      buildings: [
+        { kind: BuildingKind.FORTRESS, dx: -9, dz: -7 },
+        { kind: BuildingKind.FORTRESS, dx: 9, dz: -7 },
+        { kind: BuildingKind.FORTRESS, dx: -9, dz: 7 },
+        { kind: BuildingKind.FORTRESS, dx: 9, dz: 7 },
+      ],
       units: [
         { kind: UnitKind.RIFLEMAN, dx: -8, dz: 8, tag: 'cusi_yupanqui', count: 1 },
         { kind: UnitKind.SOLDIER, dx: -6, dz: 10, count: 6 },
