@@ -23,9 +23,12 @@ export type HeritageBuildingId =
   | 'wari_galeria'
   | 'wari_mural'
   | 'chanca_pucara'
-  | 'chimu_compound';
+  | 'chimu_compound'
+  | 'colonial_church'
+  | 'independence_chapel';
 
-export type HeritageSector = 'Caral Alto' | 'Caral Bajo' | 'Chavín' | 'Moche' | 'Wari' | 'Chanca' | 'Chimú';
+export type HeritageSector =
+  'Caral Alto' | 'Caral Bajo' | 'Chavín' | 'Moche' | 'Wari' | 'Chanca' | 'Chimú' | 'Virreinato' | 'Independencia';
 
 export interface HeritageBuildingDef {
   id: HeritageBuildingId;
@@ -305,6 +308,28 @@ export const HERITAGE_BUILDINGS: Record<HeritageBuildingId, HeritageBuildingDef>
     confidence: 'tradición documentada; planta y remates plausibles',
     citation: 'Dossier de la Guerra chimú-inca · fuentes coloniales y arqueología',
     sources: ['docs/historia/campanas/chimu_inca.md', 'docs/historia/arquitectura.md'],
+  },
+  colonial_church: {
+    id: 'colonial_church',
+    name: 'Templo y plaza colonial',
+    sector: 'Virreinato',
+    role: 'Centro urbano y símbolo del orden colonial',
+    summary:
+      'La iglesia y la plaza articulan el orden urbano colonial del Cusco. La reconstrucción representa una iglesia de nave, torre y atrio; no reproduce un templo específico ni inventa su planta.',
+    confidence: 'tipología documentada; planta y remates plausibles',
+    citation: 'Dossier de Túpac Amaru II · arquitectura colonial',
+    sources: ['docs/historia/campanas/tupac_amaru.md', 'docs/historia/arquitectura.md'],
+  },
+  independence_chapel: {
+    id: 'independence_chapel',
+    name: 'Capilla y campamento patriota',
+    sector: 'Independencia',
+    role: 'Puesto de mando y campamento de campaña',
+    summary:
+      'La campaña de la sierra combinó columnas, campamentos y puestos de mando. La capilla y el campamento son una abstracción de ese paisaje militar; no representan una iglesia específica de Junín o Ayacucho.',
+    confidence: 'contexto documentado; planta y remates plausibles',
+    citation: 'Dossier de la Independencia · Basadre',
+    sources: ['docs/historia/campanas/independencia.md', 'docs/historia/arquitectura.md'],
   },
 };
 

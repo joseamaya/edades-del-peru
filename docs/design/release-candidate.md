@@ -50,8 +50,8 @@ required before deciding whether Moche/Wari need mesh/material optimization.
 
 ## Known limitations
 
-- All nine missions are released. m5 and m6 now use authored sites with their own heightfields and collision;
-  m7–m9 still use dedicated low-poly decor GLBs over authored terrain. They are smaller
+- All nine missions are released. m5–m8 now use authored sites with their own heightfields and collision;
+  m9 still uses a dedicated low-poly decor GLB over authored terrain. They are smaller
   than the authored sites of Caral, Chavín, Moche and Wari and do not have a CI pixel gate.
 - Mission-specific save round-trips are covered for m1–m9.
 - GitHub Pages is enabled and the `Deploy GitHub Pages` workflow is re-run for each chapter
