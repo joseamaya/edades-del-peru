@@ -21,9 +21,10 @@ export type HeritageBuildingId =
   | 'wari_templo_d'
   | 'wari_plaza'
   | 'wari_galeria'
-  | 'wari_mural';
+  | 'wari_mural'
+  | 'chanca_pucara';
 
-export type HeritageSector = 'Caral Alto' | 'Caral Bajo' | 'Chavín' | 'Moche' | 'Wari';
+export type HeritageSector = 'Caral Alto' | 'Caral Bajo' | 'Chavín' | 'Moche' | 'Wari' | 'Chanca';
 
 export interface HeritageBuildingDef {
   id: HeritageBuildingId;
@@ -281,6 +282,17 @@ export const HERITAGE_BUILDINGS: Record<HeritageBuildingId, HeritageBuildingDef>
     citation: 'Dossier de Moche · Cultura moche',
     operation: 'toggle-canal',
     sources: ['docs/historia/civilizaciones/moche.md', 'docs/historia/campanas/moche_recuay.md'],
+  },
+  chanca_pucara: {
+    id: 'chanca_pucara',
+    name: 'Pucará chanca',
+    sector: 'Chanca',
+    role: 'Altura fortificada y campamento',
+    summary:
+      'La campaña chanca se apoya en alturas y posiciones fortificadas. El pucará de Yahuar Pampa es una reconstrucción volumétrica de esa práctica defensiva; no se conserva una planta exacta de este campamento.',
+    confidence: 'práctica documentada; planta y remates plausibles',
+    citation: 'Dossier de Yahuar Pampa · Betanzos / Pachacuti Yamqui',
+    sources: ['docs/historia/campanas/yahuar_pampa.md', 'docs/historia/arquitectura.md'],
   },
 };
 

@@ -87,10 +87,10 @@ test('the Caral mission uses the authored site instead of a modular landmark', a
 });
 
 test('period maps place their own landmark on land', async ({ page }) => {
-  const missions: [string, string][] = [['m5_yahuar_pampa', 'inca_ushnu']];
+  const missions: [string, string][] = [['/?civ=inca&period=5&seed=777&fog=0&low=1&noloop=1', 'inca_ushnu']];
   const signatures = new Set<string>();
   for (const [mission, id] of missions) {
-    await boot(page, `/?mission=${mission}&fog=0&low=1&noloop=1`);
+    await boot(page, mission);
     const info = await landmarkInfo(page);
     expect(info.id, mission).toBe(id);
     expect(info.present).toBe(true);

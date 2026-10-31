@@ -106,12 +106,13 @@ because the UX evidence is local and there is no CI pixel gate.
 | --- | --- | --- |
 | History | Met: `yahuar_pampa.md`; no invented battle. | Met: `chimu_inca.md`; water/canal campaign. |
 | Identity | Met: defend Cusco, protect Cusi, counterattack. | Met: advance to Paramonga, cut the canal, force surrender. |
+| Terrain | Met: authored Yahuar Pampa heightfield. | Partial: decor GLB over terrain; no authored heightfield yet. |
 | Play | Met: real-command playtest holds and counterattacks. | Met: real-command playtest advances and cuts the canal. |
 | Contract | Met: defend, destroy, protect; waves and timer. | Met: staged Paramonga/canal objectives; optional Chan Chan/hold. |
 | Onboarding | Met: three-step tutorial + briefing. | Met: three-step tutorial + briefing. |
 | Closure | Met: epilogue and optional achievements. | Met: epilogue and optional objectives. |
 | UX | Met locally: 1600×900 briefing/tutorial reviewed. | Met locally: 1600×900 briefing/tutorial reviewed. |
-| Visuals | Met locally: dedicated Chanca fortress GLB + authored terrain. | Met locally: dedicated Chimú compound GLB + canal. |
+| Visuals | Met locally: authored Chanca site GLB + heightfield. | Met locally: dedicated Chimú compound GLB + canal. |
 | Persistence | Met: save/load round-trip. | Met: save/load round-trip. |
 | Tests | Met: data, completability, real-command playtest. | Met: data, completability, real-command playtest. |
 | Docs | Met: README, dossiers, campaign experiences and this table. | Met: README, dossiers, campaign experiences and this table. |

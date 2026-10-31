@@ -4,8 +4,9 @@ import { CARAL_HEIGHTMAP, CARAL_HEIGHTMAP_SIZE, CARAL_HEIGHTMAP_WORLD_SIZE } fro
 import { CHAVIN_HEIGHTMAP, CHAVIN_HEIGHTMAP_SIZE, CHAVIN_HEIGHTMAP_WORLD_SIZE } from './chavinHeightmap';
 import { MOCHE_HEIGHTMAP, MOCHE_HEIGHTMAP_SIZE, MOCHE_HEIGHTMAP_WORLD_SIZE } from './mocheHeightmap';
 import { WARI_HEIGHTMAP, WARI_HEIGHTMAP_SIZE, WARI_HEIGHTMAP_WORLD_SIZE } from './wariHeightmap';
+import { CHANCA_HEIGHTMAP, CHANCA_HEIGHTMAP_SIZE, CHANCA_HEIGHTMAP_WORLD_SIZE } from './chancaHeightmap';
 
-export type AuthoredSiteId = 'caral_site' | 'chavin_site' | 'moche_site' | 'wari_site';
+export type AuthoredSiteId = 'caral_site' | 'chavin_site' | 'moche_site' | 'wari_site' | 'chanca_site';
 
 /** Dedicated visual-only decor GLBs for the later campaigns. */
 export type DecorModelId =
@@ -338,6 +339,36 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       suppressSnow: true,
     },
     hideNodePatterns: [/Wari_LOD[01]_(Terrain|Apron)/],
+  },
+  chanca_site: {
+    id: 'chanca_site',
+    label: 'Pucará chanca de Yahuar Pampa',
+    modelName: 'chanca_site',
+    scale: 0.7,
+    origin: { x: 112.4, z: 60.8 },
+    anchor: { x: 112.4, z: 60.8 },
+    cameraHeight: 48,
+    framing: 'site-biased',
+    heightField: {
+      size: CHANCA_HEIGHTMAP_SIZE,
+      worldSize: CHANCA_HEIGHTMAP_WORLD_SIZE,
+      heights: CHANCA_HEIGHTMAP,
+    },
+    pathCellSize: 1,
+    heritageProxies: [{ id: 'chanca_pucara', x: 112.4, z: 60.8, w: 11, d: 9, h: 5 }],
+    blockers: [{ x: 112.4, z: 60.8, w: 11, d: 9 }],
+    blockerPadding: 0.5,
+    buildKeepout: [{ x: 0.7025, z: 0.38, rx: 0.085, rz: 0.075 }],
+    wallCollision: {
+      meshPatterns: [/chanca/i],
+      maxStartYAboveBase: 1.2,
+    },
+    walkableCorridor: { width: 8 },
+    terrain: {
+      ...DEFAULT_SITE_TERRAIN,
+      flatNormals: true,
+      suppressSnow: true,
+    },
   },
 };
 
