@@ -592,7 +592,7 @@ export class Game {
     const rng = new RNG(this.settings.mapSeed + 7);
     const spots: [number, number][] = [];
     for (let i = 0; i < (this.enemyActive ? 2 : 1); i++) {
-      const fixed = i === 0 ? this.missionLayout?.base : undefined;
+      const fixed = i === 0 ? this.missionLayout?.base : this.missionLayout?.enemyBase;
       if (fixed) {
         const fx = fixed.x * s;
         const fz = fixed.z * s;
@@ -784,9 +784,9 @@ export class Game {
     }
     if (this.siteDef?.framing === 'site-biased' && focus) {
       return {
-        x: x * 0.35 + focus.x * 0.65,
-        z: z * 0.35 + focus.z * 0.65,
-        height: this.siteDef.cameraHeight,
+        x: x * 0.75 + focus.x * 0.25,
+        z: z * 0.75 + focus.z * 0.25,
+        height: this.siteDef.cameraHeight + 10,
       };
     }
     if (this.siteDef?.framing === 'site' && focus) {
@@ -1803,6 +1803,13 @@ export class Game {
         this.spawnScriptedUnit(u.kind, 0, c.x + u.dx + jx, c.z + u.dz + jz, u.tag);
       }
     }
+    this.frameAuthoredSite(c.x, c.z);
+  }
+
+  /** Re-apply the authored-site opening framing after the briefing closes. */
+  reframeMissionOpening(): void {
+    if (!this.missionLayout?.site) return;
+    const c = this.playerCenter(0);
     this.frameAuthoredSite(c.x, c.z);
   }
 

@@ -89,6 +89,8 @@ export interface MissionSite {
 
 export interface MissionLayout {
   base?: MissionAnchor;
+  /** Fixed enemy opening base; defaults to the procedural skirmish placement. */
+  enemyBase?: MissionAnchor;
   setpiece?: MissionSetpiece;
   /** Authored site model; takes precedence over the modular setpiece. */
   site?: MissionSite;
