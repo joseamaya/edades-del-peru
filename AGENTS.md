@@ -20,6 +20,7 @@ Package manager **Yarn 1** (`yarn.lock` exists — never create a `package-lock.
   `yarn test:e2e:slow` — those heavy specs (nightly).
   `PW_WORKERS=N` overrides workers.
 - `yarn shot <name> --seed=777 --wait=8000` — screenshot into `review/`
+- `yarn audit:campaigns` — full m1–m9 briefing/tutorial/layout/victory audit into `review/audit/`
 - `yarn sim [--seeds=…] [--max=…] [--difficulty=…]` — headless AI-vs-AI match runner (AI regression baseline)
 - `yarn bench:check` — rig/fauna/mixed structural budgets (`--assert`); SwiftShader is not a GPU benchmark
 - `yarn art:blender` — ingest the in-repo Blender renders into WebP + manifest (`--dry-run`, `--only=…`, `--force`)

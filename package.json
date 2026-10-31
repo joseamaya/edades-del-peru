@@ -39,6 +39,7 @@
     "test:e2e:smoke": "playwright test --grep @smoke",
     "test:e2e:fast": "playwright test --project=fast",
     "test:e2e:slow": "playwright test --project=slow",
+    "audit:campaigns": "node scripts/audit_campaigns.mjs",
     "bench": "node scripts/bench.mjs",
     "models:build": "node scripts/build_caral_worker.mjs --out=src/assets/models/caral_worker.glb",
     "build:caral-heightmap": "python3 scripts/build_caral_heightmap.py",
