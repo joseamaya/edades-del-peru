@@ -332,7 +332,7 @@ test('authored campaign geography spawns its local base and features', async ({ 
     { id: 'm6_chimu_inca', flats: true, decor: null, site: 'chimu_site', canal: true },
     { id: 'm7_tupac_amaru', flats: true, decor: null, site: 'colonial_site', canal: false },
     { id: 'm8_independencia', flats: true, decor: null, site: 'independence_site', canal: false },
-    { id: 'm9_guerra_pacifico', flats: true, decor: 'mission_decor_chile_apostadero', canal: false },
+    { id: 'm9_guerra_pacifico', flats: true, decor: null, site: 'arica_site', canal: false },
   ];
   for (const item of cases) {
     const page = await context.newPage();
@@ -360,34 +360,6 @@ test('authored campaign geography spawns its local base and features', async ({ 
     if (item.decor) expect(out.decor).toBe(item.decor);
     if (item.site) expect(out.site).toBe(item.site);
     if (item.canal !== undefined) expect(out.canal).toBe(item.canal);
-    await page.close();
-  }
-});
-
-test('later missions load their dedicated decor GLBs', async ({ context }) => {
-  const cases = [['m9_guerra_pacifico', 'arica_battery']] as const;
-  for (const [id, glb] of cases) {
-    const page = await context.newPage();
-    await page.goto(`/?mission=${id}&seed=777&fog=0&low=1&noloop=1`);
-    await page.waitForFunction(
-      (expected) => {
-        const g = (window as unknown as { game?: any }).game;
-        return g?.scenarioDecor?.userData?.authoredGlb === expected && g.scenarioDecor.children[0]?.name === expected;
-      },
-      glb,
-      { timeout: 30_000 },
-    );
-    const out = await page.evaluate(() => {
-      const g = (window as unknown as { game: any }).game;
-      return {
-        glb: g.scenarioDecor.userData.authoredGlb as string,
-        child: g.scenarioDecor.children[0]?.name as string,
-        meshes: g.scenarioDecor.children[0]?.children.length ?? 0,
-      };
-    });
-    expect(out.glb).toBe(glb);
-    expect(out.child).toBe(glb);
-    expect(out.meshes).toBeGreaterThan(0);
     await page.close();
   }
 });

@@ -153,7 +153,7 @@ because the UX evidence is local and there is no CI pixel gate.
 | Play | Met: real-command playtest holds both phases. | Met: real-command playtest defends the port and strikes the command. |
 | Contract | Met: sequential holds plus a required protect objective. | Met: required protects and survive, with an optional counterstrike. |
 | Onboarding | Met: three-step tutorial + briefing. | Met: two-step tutorial + briefing. |
-| Terrain | Met: authored Junín–Ayacucho heightfield. | Partial: Arica decor over terrain; no authored heightfield yet. |
+| Terrain | Met: authored Junín–Ayacucho heightfield. | Met: authored Arica port heightfield. |
 | Closure | Met: epilogue and optional objectives. | Met: epilogue and optional objective. |
 | UX | Met locally: 1600×900 briefing/tutorial reviewed. | Met locally: 1600×900 briefing/tutorial reviewed. |
 | Visuals | Met locally: authored independence site GLB + heightfield. | Met locally: dedicated Arica battery GLB + authored port terrace. |
