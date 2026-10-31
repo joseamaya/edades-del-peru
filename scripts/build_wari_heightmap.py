@@ -41,7 +41,7 @@ def height(x: float, z: float) -> float:
     node_b = smoothstep(124.0, 131.0, x) * (1.0 - smoothstep(149.0, 156.0, x))
     node_b *= smoothstep(101.0, 108.0, z) * (1.0 - smoothstep(122.0, 129.0, z))
     flat = max(site, base, node_a, node_b)
-    h = h * (1.0 - 0.94 * flat) + SITE_Y * (0.94 * flat)
+    h = h * (1.0 - 1.0 * flat) + SITE_Y * (1.0 * flat)
 
     # Terraced highland ridges; the south/east slopes frame the provincial route.
     north = smoothstep(14.0, 0.0, z) * (8.0 + 2.2 * math.sin(x * 0.1))
