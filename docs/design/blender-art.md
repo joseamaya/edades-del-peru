@@ -141,7 +141,7 @@ builder is `scripts/blender/build_mission_decor.py`. Runtime GLBs are in
 | m6 Chimú–Inca | `chimu_compound` | Chimú adobe compound and audience | authored site (heightfield + collision) |
 | m7 Túpac Amaru | `colonial_church` | colonial church and plaza | authored site (heightfield + collision) |
 | m8 Independencia | `independence_chapel` | campaign chapel and patriot camp | authored site (heightfield + collision) |
-| m9 Arica | `arica_battery` | port terrace, battery and warehouse | project-owned abstraction |
+| m9 Arica | `arica_battery` | port terrace, battery and warehouse | authored site (heightfield + collision) |
 
 Each model has LOD0/LOD1 and is loaded through `src/rendering/decorModels.ts`; the procedural
 landmark remains the fallback if a GLB fails. They are visual-only: collision and pathfinding stay

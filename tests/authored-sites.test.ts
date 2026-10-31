@@ -77,6 +77,17 @@ describe('authored campaign sites', () => {
     expect(mission.layout?.site?.id).toBe('independence_site');
   });
 
+  it('keeps the Arica mission on its authored port site and heightfield', () => {
+    const site = getAuthoredSite('arica_site')!;
+    expect(site.scale).toBe(0.8);
+    expect(site.anchor).toEqual({ x: 134.8, z: 73 });
+    expect(site.heightField?.worldSize).toBe(192);
+    expect(site.heritageProxies.map((p) => p.id)).toEqual(['arica_battery']);
+    expect(site.walkableCorridor?.width).toBe(8);
+    const mission = MISSIONS.find((m) => m.id === 'm9_guerra_pacifico')!;
+    expect(mission.layout?.site?.id).toBe('arica_site');
+  });
+
   it('keeps Moche on its authored site and canal layout', () => {
     const moche = getAuthoredSite('moche_site')!;
     expect(moche.scale).toBe(0.25);

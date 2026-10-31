@@ -1226,7 +1226,13 @@ export const MISSIONS: MissionDef[] = [
         // playable height range and is not invented as a new mesh.
         flats: [{ name: 'Terraza portuaria de Arica', x: 0.38, z: 0.6, rx: 0.15, rz: 0.12 }],
       },
-      decor: { model: 'chile_apostadero', glb: 'arica_battery', at: 'enemy', dx: 10, dz: 0, scale: 0.8 },
+      site: {
+        id: 'arica_site',
+        y: 4,
+        focus: { x: 0.702, z: 0.38 },
+        keepout: [{ x: 0.702, z: 0.38, rx: 0.09, rz: 0.08 }],
+        buildKeepout: [{ x: 0.702, z: 0.38, rx: 0.08, rz: 0.07 }],
+      },
     },
     timeOfDay: 'dusk',
     startingEra: Era.REPUBLIC,

@@ -25,10 +25,20 @@ export type HeritageBuildingId =
   | 'chanca_pucara'
   | 'chimu_compound'
   | 'colonial_church'
-  | 'independence_chapel';
+  | 'independence_chapel'
+  | 'arica_battery';
 
 export type HeritageSector =
-  'Caral Alto' | 'Caral Bajo' | 'Chavín' | 'Moche' | 'Wari' | 'Chanca' | 'Chimú' | 'Virreinato' | 'Independencia';
+  | 'Caral Alto'
+  | 'Caral Bajo'
+  | 'Chavín'
+  | 'Moche'
+  | 'Wari'
+  | 'Chanca'
+  | 'Chimú'
+  | 'Virreinato'
+  | 'Independencia'
+  | 'República';
 
 export interface HeritageBuildingDef {
   id: HeritageBuildingId;
@@ -330,6 +340,17 @@ export const HERITAGE_BUILDINGS: Record<HeritageBuildingId, HeritageBuildingDef>
     confidence: 'contexto documentado; planta y remates plausibles',
     citation: 'Dossier de la Independencia · Basadre',
     sources: ['docs/historia/campanas/independencia.md', 'docs/historia/arquitectura.md'],
+  },
+  arica_battery: {
+    id: 'arica_battery',
+    name: 'Batería y terraza portuaria de Arica',
+    sector: 'República',
+    role: 'Defensa terrestre del puerto',
+    summary:
+      'La defensa de Arica combinó la terraza portuaria, baterías y almacenes. La reconstrucción representa esa infraestructura como una batería baja con almacén y muelle; no reproduce una batería específica.',
+    confidence: 'contexto documentado; planta y remates plausibles',
+    citation: 'Dossier de la Guerra del Pacífico · Marina de Guerra del Perú',
+    sources: ['docs/historia/campanas/guerra_del_pacifico.md', 'docs/historia/arquitectura.md'],
   },
 };
 

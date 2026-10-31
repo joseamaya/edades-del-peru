@@ -39,7 +39,7 @@ describe('campaign authored geography', () => {
     expect(byId('m2_chavin').layout?.terrain?.river).toBeDefined();
     expect(byId('m4_wari').layout?.terrain?.flats?.length).toBeGreaterThan(0);
     expect(byId('m6_chimu_inca').layout?.canal).toBeDefined();
-    expect(byId('m9_guerra_pacifico').layout?.decor?.model).toBe('chile_apostadero');
+    expect(byId('m9_guerra_pacifico').layout?.site?.id).toBe('arica_site');
     expect(byId('m8_independencia').layout?.terrain?.flats?.length).toBeGreaterThan(0);
   });
 

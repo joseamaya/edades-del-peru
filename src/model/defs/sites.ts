@@ -12,6 +12,7 @@ import {
   INDEPENDENCE_HEIGHTMAP_SIZE,
   INDEPENDENCE_HEIGHTMAP_WORLD_SIZE,
 } from './independenceHeightmap';
+import { ARICA_HEIGHTMAP, ARICA_HEIGHTMAP_SIZE, ARICA_HEIGHTMAP_WORLD_SIZE } from './aricaHeightmap';
 
 export type AuthoredSiteId =
   | 'caral_site'
@@ -21,7 +22,8 @@ export type AuthoredSiteId =
   | 'chanca_site'
   | 'chimu_site'
   | 'colonial_site'
-  | 'independence_site';
+  | 'independence_site'
+  | 'arica_site';
 
 /** Dedicated visual-only decor GLBs for the later campaigns. */
 export type DecorModelId =
@@ -466,6 +468,36 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     buildKeepout: [{ x: 0.702, z: 0.37, rx: 0.065, rz: 0.065 }],
     wallCollision: {
       meshPatterns: [/independence/i],
+      maxStartYAboveBase: 1.2,
+    },
+    walkableCorridor: { width: 8 },
+    terrain: {
+      ...DEFAULT_SITE_TERRAIN,
+      flatNormals: true,
+      suppressSnow: true,
+    },
+  },
+  arica_site: {
+    id: 'arica_site',
+    label: 'Terraza portuaria y batería de Arica',
+    modelName: 'arica_site',
+    scale: 0.8,
+    origin: { x: 134.8, z: 73 },
+    anchor: { x: 134.8, z: 73 },
+    cameraHeight: 48,
+    framing: 'site-biased',
+    heightField: {
+      size: ARICA_HEIGHTMAP_SIZE,
+      worldSize: ARICA_HEIGHTMAP_WORLD_SIZE,
+      heights: ARICA_HEIGHTMAP,
+    },
+    pathCellSize: 1,
+    heritageProxies: [{ id: 'arica_battery', x: 134.8, z: 73, w: 13, d: 9, h: 3 }],
+    blockers: [{ x: 134.8, z: 73, w: 13, d: 9 }],
+    blockerPadding: 0.5,
+    buildKeepout: [{ x: 0.702, z: 0.38, rx: 0.08, rz: 0.07 }],
+    wallCollision: {
+      meshPatterns: [/arica/i],
       maxStartYAboveBase: 1.2,
     },
     walkableCorridor: { width: 8 },
