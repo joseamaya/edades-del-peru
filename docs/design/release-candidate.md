@@ -7,7 +7,7 @@ missions m1 Caral through m9 Guerra del Pacífico.
 
 ## Verified
 
-- `yarn verify:fast`: typecheck, lint, format, 437 unit tests and build pass.
+- `yarn verify:fast`: typecheck, lint, format, 438 unit tests and build pass.
 - `yarn test:e2e:slow`: 74 passing, including campaign playtests, saves and settlement.
 - `yarn test:e2e:smoke`: 42 passing.
 - `yarn test:e2e:fast`: 183 passing.

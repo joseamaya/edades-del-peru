@@ -24,6 +24,15 @@ describe('authored campaign sites', () => {
     expect(caral.environs?.valley).toBe('caral');
   });
 
+  it('gives the Chavín, Moche and Wari sites their own authored heightfields', () => {
+    for (const id of ['chavin_site', 'moche_site', 'wari_site'] as const) {
+      const site = getAuthoredSite(id)!;
+      expect(site.heightField?.worldSize, `${id} heightfield world size`).toBe(192);
+      expect(site.heightField?.size, `${id} heightfield sample grid`).toBe(193);
+      expect(site.heightField?.heights.length, `${id} heightfield samples`).toBe(193 * 193);
+    }
+  });
+
   it('keeps Moche on its authored site and canal layout', () => {
     const moche = getAuthoredSite('moche_site')!;
     expect(moche.scale).toBe(0.25);

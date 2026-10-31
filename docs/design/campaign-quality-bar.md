@@ -43,6 +43,7 @@ objectives can be satisfied by a test harness.
 | ----------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | History     | Met         | `docs/historia/campanas/chavin.md`; UNESCO 330, Plan de Manejo 2020, Rick et al.; no invented war.                                                  |
 | Identity    | Met         | Authored Chavín site, plaza/atrio, Edificio A/B, Portada and gallery cards; offering + pilgrimage + feria loop.                                     |
+| Terrain     | Met         | Authored Mosna valley heightfield (`chavinHeightmap.ts`): ceremonial terrace, river and highland ridges.                                            |
 | Play        | Met         | `tests/e2e/campaign-playtest.spec.ts` builds the feria with ordinary commands, delivers offerings through the mission mechanic and reaches victory. |
 | Contract    | Met         | Offerings, pilgrimage, feria and survival; pilgrimage/feria/bonus are staged; hidden goals stay out of the briefing.                                |
 | Onboarding  | Met         | Five-step Chavín tutorial, briefing, Codex and minimap destination pips.                                                                            |
@@ -59,6 +60,7 @@ objectives can be satisfied by a test harness.
 | --- | --- | --- |
 | History | Met | `docs/historia/campanas/moche_recuay.md`; no invented ruler or single battle. |
 | Identity | Met | Authored Huacas de Moche, operable canal, huaca hold and elite exchange. |
+| Terrain | Met | Authored coastal heightfield (`mocheHeightmap.ts`): Pacific shore, irrigated valley and Huacas terrace. |
 | Play | Met | `campaign-playtest.spec.ts` moves real units and exchanges silver; `moche-campaign.spec.ts` selects the cards through public state and clicks the canal and Huaca de la Luna action buttons. |
 | Contract | Met | Canal, hold, required 250 and optional 400 silver; hidden goals stay out of the briefing (covered by `campaign.test.ts`). |
 | Onboarding | Met | Four-step Moche tutorial, briefing, Codex and minimap pips. |
@@ -75,6 +77,7 @@ objectives can be satisfied by a test harness.
 | --- | --- | --- |
 | History | Met | `docs/historia/campanas/wari_tiahuanaco.md`; no invented war or ruler. |
 | Identity | Met | Authored Wari site and a two-node `network` objective plus frontier hold. |
+| Terrain | Met | Authored highland heightfield (`wariHeightmap.ts`): basin, terraces and provincial-node plateaus. |
 | Play | Met | `tests/e2e/campaign-playtest.spec.ts` builds the farms and markets with real commands and reaches victory from the documented 300 wood / 100 silver opening stock. |
 | Contract | Met | Network progress, hidden frontier, optional third centre and live timers. |
 | Onboarding | Met | Four-step Wari tutorial, briefing, Codex and minimap pips. |
