@@ -1992,7 +1992,7 @@ export class Game {
       case 'stance':
         for (const id of cmd.unitIds) {
           const u = this.units.get(id);
-          if (u && !u.dead) u.combatStance = cmd.stance;
+          if (u && !u.dead) u.setStance(cmd.stance);
         }
         return true;
       case 'place':
