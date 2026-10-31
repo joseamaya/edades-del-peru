@@ -83,6 +83,18 @@ slot is absent (offline / without assets).
 - **Assets**: 2D retouching does not change the “artistic reconstruction, not a photograph”
   disclaimer.
 
+### Mission decor GLBs (m5-m9)
+
+- **Location**: `src/assets/sites/{chanca,chimu,colonial,independence,arica}/`.
+- **Source**: `art-src/blender/mission-decor/` (Git LFS), rebuilt by
+  `scripts/blender/build_mission_decor.py`.
+- **Content**: dedicated low-poly abstractions of the Chanca fortress, Chimú compound, colonial
+  church, independence chapel/camp and Arica battery. They are visual-only and replace the
+  procedural landmark in those missions; the procedural builder remains the fallback.
+- **Confidence**: project-owned abstractions, not surveys or reconstructions of a specific
+  standing building. Hashes and sizes are recorded in
+  [`art-src/blender/mission-decor/README.md`](./art-src/blender/mission-decor/README.md).
+
 ### Caral Pyramid Mayor modular scenery
 
 - **Location**: `src/assets/scenery/caral/caral_pyramid_mayor_lod0.glb` and `lod1.glb`.

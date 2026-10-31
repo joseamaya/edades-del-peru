@@ -26,6 +26,7 @@ import { clearModelAssets } from '../rendering/ModelAssets';
 import { disposeStaticGltf } from '../rendering/StaticModel';
 import { loadSceneryModel } from '../rendering/sceneryModels';
 import { loadSiteModel } from '../rendering/siteModels';
+import { loadDecorModel } from '../rendering/decorModels';
 import { planProps, propCountFor } from '../model/defs/props';
 import { planWildlife, faunaCountFor } from '../model/defs/wildlife';
 import { Projectile, updateProjectilePools } from '../entities/Projectile';
@@ -1128,15 +1129,37 @@ export class Game {
     const x = center.pos.x + decor.dx;
     const z = center.pos.z + decor.dz;
     const site = this.findLandNear(x, z, 18);
-    const group = buildLandmarkModel(decor.model, this.makeBuildContext(owner));
+    const group = new THREE.Group();
     group.name = `mission_decor_${decor.model}`;
     group.position.set(site.x, this.terrain.getHeight(site.x, site.z), site.z);
     group.rotation.y = decor.yaw ?? 0;
     group.scale.setScalar(decor.scale ?? 1);
-    this.enableLandmarkShadows(group);
-    applyFowToObject(group, this.fowUniforms);
+    if (decor.glb) group.userData.authoredGlb = decor.glb;
     this.scene.add(group);
     this.scenarioDecor = group;
+    if (decor.glb) {
+      void loadDecorModel(decor.glb)
+        .then((model) => {
+          if (this.scenarioDecor !== group) return;
+          model.name = decor.glb!;
+          group.add(model);
+          this.enableLandmarkShadows(model);
+          applyFowToObject(model, this.fowUniforms);
+        })
+        .catch((error: unknown) => {
+          console.warn(`[decor] failed to load ${decor.glb}; using procedural fallback`, error);
+          if (this.scenarioDecor !== group) return;
+          const fallback = buildLandmarkModel(decor.model, this.makeBuildContext(owner));
+          group.add(fallback);
+          this.enableLandmarkShadows(fallback);
+          applyFowToObject(fallback, this.fowUniforms);
+        });
+    } else {
+      const model = buildLandmarkModel(decor.model, this.makeBuildContext(owner));
+      group.add(model);
+      this.enableLandmarkShadows(model);
+      applyFowToObject(model, this.fowUniforms);
+    }
   }
 
   private spawnCanal(): void {

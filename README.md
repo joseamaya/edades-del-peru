@@ -82,7 +82,7 @@ _Independencia y República_, are playable.
 Mission ids remain stable (`m1_caral` … `m9_guerra_pacifico`). All released missions appear in
 menus, the Codex and progress; `?mission=ID` remains available for QA.
 The campaign [quality bar](./docs/design/campaign-quality-bar.md) records the gates a mission must meet.
-Caral, Chavín, Moche and Wari have authored, source-backed sites; m5–m9 use documented procedural landmarks and authored terrain.
+Caral, Chavín, Moche and Wari have authored, source-backed sites; m5–m9 add dedicated low-poly GLB landmarks over authored terrain.
 
 The current release status, art gate and publish checklist are in
 [`docs/design/release-candidate.md`](./docs/design/release-candidate.md).

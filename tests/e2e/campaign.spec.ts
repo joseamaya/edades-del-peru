@@ -185,6 +185,37 @@ test('chapter IV tutorials open with their first step', async ({ page }) => {
   }
 });
 
+test('later campaign briefing and tutorial fit 1600x900', async ({ context }) => {
+  test.setTimeout(180_000);
+  for (const id of ['m5_yahuar_pampa', 'm6_chimu_inca', 'm7_tupac_amaru', 'm8_independencia', 'm9_guerra_pacifico']) {
+    const page = await context.newPage();
+    await page.setViewportSize({ width: 1600, height: 900 });
+    await page.goto(`/?mission=${id}&seed=777&fog=0&low=1`);
+    const briefing = page.locator('.ed-briefing');
+    await expect(briefing).toBeVisible({ timeout: 30_000 });
+    const briefingBox = await briefing.boundingBox();
+    expect(briefingBox, `${id} briefing has no box`).not.toBeNull();
+    expect(briefingBox!.x).toBeGreaterThanOrEqual(0);
+    expect(briefingBox!.y).toBeGreaterThanOrEqual(0);
+    expect(briefingBox!.x + briefingBox!.width).toBeLessThanOrEqual(1600);
+    expect(briefingBox!.y + briefingBox!.height).toBeLessThanOrEqual(900);
+    await briefing.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+    await briefing.waitFor({ state: 'detached', timeout: 15_000 });
+    const tutorial = page.locator('#ed-tutorial.show');
+    await expect(tutorial).toBeVisible({ timeout: 30_000 });
+    const tutorialBox = await tutorial.boundingBox();
+    const objectivesBox = await page.locator('#ed-objectives').boundingBox();
+    expect(tutorialBox, `${id} tutorial has no box`).not.toBeNull();
+    expect(objectivesBox, `${id} objectives have no box`).not.toBeNull();
+    expect(tutorialBox!.x).toBeGreaterThanOrEqual(0);
+    expect(tutorialBox!.x + tutorialBox!.width).toBeLessThanOrEqual(1600);
+    expect(tutorialBox!.y + tutorialBox!.height).toBeLessThanOrEqual(900);
+    expect(objectivesBox!.x + objectivesBox!.width).toBeLessThanOrEqual(1600);
+    expect(objectivesBox!.y + objectivesBox!.height).toBeLessThanOrEqual(900);
+    await page.close();
+  }
+});
+
 test('the missions with corrected rosters boot with units and no errors', async ({ page }) => {
   test.setTimeout(180_000);
   const errors: string[] = [];
@@ -327,6 +358,40 @@ test('authored campaign geography spawns its local base and features', async ({ 
     if (item.flats) expect(out.flats).toBeGreaterThan(0);
     if (item.decor) expect(out.decor).toBe(item.decor);
     if (item.canal !== undefined) expect(out.canal).toBe(item.canal);
+    await page.close();
+  }
+});
+
+test('later missions load their dedicated decor GLBs', async ({ context }) => {
+  const cases = [
+    ['m5_yahuar_pampa', 'chanca_fortress'],
+    ['m6_chimu_inca', 'chimu_compound'],
+    ['m7_tupac_amaru', 'colonial_church'],
+    ['m8_independencia', 'independence_chapel'],
+    ['m9_guerra_pacifico', 'arica_battery'],
+  ] as const;
+  for (const [id, glb] of cases) {
+    const page = await context.newPage();
+    await page.goto(`/?mission=${id}&seed=777&fog=0&low=1&noloop=1`);
+    await page.waitForFunction(
+      (expected) => {
+        const g = (window as unknown as { game?: any }).game;
+        return g?.scenarioDecor?.userData?.authoredGlb === expected && g.scenarioDecor.children[0]?.name === expected;
+      },
+      glb,
+      { timeout: 30_000 },
+    );
+    const out = await page.evaluate(() => {
+      const g = (window as unknown as { game: any }).game;
+      return {
+        glb: g.scenarioDecor.userData.authoredGlb as string,
+        child: g.scenarioDecor.children[0]?.name as string,
+        meshes: g.scenarioDecor.children[0]?.children.length ?? 0,
+      };
+    });
+    expect(out.glb).toBe(glb);
+    expect(out.child).toBe(glb);
+    expect(out.meshes).toBeGreaterThan(0);
     await page.close();
   }
 });

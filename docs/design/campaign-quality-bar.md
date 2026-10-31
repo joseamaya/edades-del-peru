@@ -95,9 +95,9 @@ with no documented battle must not acquire one merely to fit the RTS template.
 
 ## Chapter II playable status (m5–m6)
 
-Chapter II is released as **playable**, not yet as a full gold master. The historical mechanics,
-onboarding and real-command victory paths are covered; the visual and persistence gates still
-need dedicated art and mission-specific save tests.
+Chapter II is released as **playable** with the historical mechanics, onboarding, real-command
+victory paths, dedicated decor GLBs and save round-trips covered. It is not yet a full gold master
+because the UX evidence is local and there is no CI pixel gate.
 
 | Gate | m5 Yahuar Pampa | m6 Chimú–Inca |
 | --- | --- | --- |
@@ -107,8 +107,8 @@ need dedicated art and mission-specific save tests.
 | Contract | Met: defend, destroy, protect; waves and timer. | Met: staged Paramonga/canal objectives; optional Chan Chan/hold. |
 | Onboarding | Met: three-step tutorial + briefing. | Met: three-step tutorial + briefing. |
 | Closure | Met: epilogue and optional achievements. | Met: epilogue and optional objectives. |
-| UX | Met locally: 1280×800 briefing/tutorial reviewed. | Met locally: 1280×800 briefing/tutorial reviewed. |
-| Visuals | Partial: documented procedural pucará + authored terrain; no dedicated GLB yet. | Partial: documented procedural Chimú compound + canal; no dedicated GLB yet. |
+| UX | Met locally: 1600×900 briefing/tutorial reviewed. | Met locally: 1600×900 briefing/tutorial reviewed. |
+| Visuals | Met locally: dedicated Chanca fortress GLB + authored terrain. | Met locally: dedicated Chimú compound GLB + canal. |
 | Persistence | Met: save/load round-trip. | Met: save/load round-trip. |
 | Tests | Met: data, completability, real-command playtest. | Met: data, completability, real-command playtest. |
 | Docs | Met: README, dossiers, campaign experiences and this table. | Met: README, dossiers, campaign experiences and this table. |
@@ -116,9 +116,9 @@ need dedicated art and mission-specific save tests.
 
 ## Chapter III playable status (m7)
 
-Chapter III is released as **playable**, not yet as a full gold master. The historical choice,
-onboarding and real-command victory path are covered; the visual and persistence gates still need
-dedicated art and a mission-specific save round-trip.
+Chapter III is released as **playable** with the historical choice, onboarding, real-command
+victory path, dedicated decor GLB and save round-trip covered. It is not yet a full gold master
+because the UX evidence is local and there is no CI pixel gate.
 
 | Gate | m7 Túpac Amaru |
 | --- | --- |
@@ -128,8 +128,8 @@ dedicated art and a mission-specific save round-trip.
 | Contract | Met: alternative assault/siege victory plus a required protect objective. |
 | Onboarding | Met: two-step tutorial + briefing. |
 | Closure | Met: epilogue and optional objectives. |
-| UX | Met locally: 1280×800 briefing/tutorial reviewed. |
-| Visuals | Partial: documented procedural colonial church + authored terrain; no dedicated GLB yet. |
+| UX | Met locally: 1600×900 briefing/tutorial reviewed. |
+| Visuals | Met locally: dedicated colonial church GLB + authored terrain. |
 | Persistence | Met: save/load round-trip. |
 | Tests | Met: data, completability, branch choice and real-command playtest. |
 | Docs | Met: README, dossier, campaign experiences and this table. |
@@ -137,9 +137,9 @@ dedicated art and a mission-specific save round-trip.
 
 ## Chapter IV playable status (m8–m9)
 
-Chapter IV is released as **playable**, not yet as a full gold master. The historical phases,
-onboarding and real-command victory paths are covered; the visual and persistence gates still need
-dedicated art and mission-specific save round-trips.
+Chapter IV is released as **playable** with the historical phases, onboarding, real-command
+victory paths, dedicated decor GLBs and save round-trips covered. It is not yet a full gold master
+because the UX evidence is local and there is no CI pixel gate.
 
 | Gate | m8 La Independencia | m9 La Defensa de Arica |
 | --- | --- | --- |
@@ -149,8 +149,8 @@ dedicated art and mission-specific save round-trips.
 | Contract | Met: sequential holds plus a required protect objective. | Met: required protects and survive, with an optional counterstrike. |
 | Onboarding | Met: three-step tutorial + briefing. | Met: two-step tutorial + briefing. |
 | Closure | Met: epilogue and optional objectives. | Met: epilogue and optional objective. |
-| UX | Met locally: 1280×800 briefing/tutorial reviewed. | Met locally: 1280×800 briefing/tutorial reviewed. |
-| Visuals | Partial: documented procedural church + authored terrain; no dedicated GLB yet. | Partial: documented procedural Chilean post + authored port terrace; no dedicated GLB yet. |
+| UX | Met locally: 1600×900 briefing/tutorial reviewed. | Met locally: 1600×900 briefing/tutorial reviewed. |
+| Visuals | Met locally: dedicated independence chapel GLB + authored terrain. | Met locally: dedicated Arica battery GLB + authored port terrace. |
 | Persistence | Met: save/load round-trip. | Met: save/load round-trip. |
 | Tests | Met: data, completability and real-command playtest. | Met: data, failure path, completability and real-command playtest. |
 | Docs | Met: README, dossier, campaign experiences and this table. | Met: README, dossier, campaign experiences and this table. |

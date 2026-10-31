@@ -745,7 +745,7 @@ export const MISSIONS: MissionDef[] = [
           { name: 'Alturas del Cusco', x: 0.64, z: 0.38, rx: 0.13, rz: 0.1 },
         ],
       },
-      decor: { model: 'chanca_fortress', at: 'enemy', dx: 10, dz: 0 },
+      decor: { model: 'chanca_fortress', glb: 'chanca_fortress', at: 'enemy', dx: 10, dz: 0, scale: 0.7 },
     },
     timeOfDay: 'dusk',
     startingEra: Era.TAHUANTINSUYO,
@@ -830,7 +830,7 @@ export const MISSIONS: MissionDef[] = [
     layout: {
       base: { x: 0.35, z: 0.62 },
       canal: { name: 'Canal de Chan Chan', x: 0.5, z: 0.5, length: 28, yaw: 0.2, initiallyOpen: true },
-      decor: { model: 'chimu_compound', at: 'enemy', dx: 18, dz: -8, scale: 1.8, yaw: 0.2 },
+      decor: { model: 'chimu_compound', glb: 'chimu_compound', at: 'enemy', dx: 18, dz: -8, scale: 0.7, yaw: 0.2 },
       terrain: {
         flats: [
           { name: 'Canal de Chan Chan', x: 0.5, z: 0.5, rx: 0.14, rz: 0.09 },
@@ -963,7 +963,7 @@ export const MISSIONS: MissionDef[] = [
           { name: 'Ruta de Sangarará', x: 0.65, z: 0.38, rx: 0.12, rz: 0.1 },
         ],
       },
-      decor: { model: 'colonial_church', at: 'enemy', dx: 10, dz: 0 },
+      decor: { model: 'colonial_church', glb: 'colonial_church', at: 'enemy', dx: 10, dz: 0, scale: 0.65 },
     },
     timeOfDay: 'dusk',
     startingEra: Era.VICEROYALTY,
@@ -1067,7 +1067,7 @@ export const MISSIONS: MissionDef[] = [
           { name: 'Pampa de Ayacucho', x: 0.65, z: 0.37, rx: 0.14, rz: 0.1 },
         ],
       },
-      decor: { model: 'colonial_church', at: 'enemy', dx: 10, dz: 0 },
+      decor: { model: 'colonial_church', glb: 'independence_chapel', at: 'enemy', dx: 10, dz: 0, scale: 0.65 },
     },
     timeOfDay: 'morning',
     startingEra: Era.REPUBLIC,
@@ -1196,9 +1196,9 @@ export const MISSIONS: MissionDef[] = [
         // playable height range and is not invented as a new mesh.
         flats: [{ name: 'Terraza portuaria de Arica', x: 0.38, z: 0.6, rx: 0.15, rz: 0.12 }],
       },
-      decor: { model: 'chile_apostadero', at: 'enemy', dx: 10, dz: 0, scale: 1.1 },
+      decor: { model: 'chile_apostadero', glb: 'arica_battery', at: 'enemy', dx: 10, dz: 0, scale: 0.8 },
     },
-    timeOfDay: 'night',
+    timeOfDay: 'dusk',
     startingEra: Era.REPUBLIC,
     startingResources: { food: 1500, wood: 800, silver: 1500, stone: 1200 },
     start: {

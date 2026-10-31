@@ -4,6 +4,10 @@ import { CARAL_HEIGHTMAP, CARAL_HEIGHTMAP_SIZE, CARAL_HEIGHTMAP_WORLD_SIZE } fro
 
 export type AuthoredSiteId = 'caral_site' | 'chavin_site' | 'moche_site' | 'wari_site';
 
+/** Dedicated visual-only decor GLBs for the later campaigns. */
+export type DecorModelId =
+  'chanca_fortress' | 'chimu_compound' | 'colonial_church' | 'independence_chapel' | 'arica_battery';
+
 export interface SiteHeritageProxy {
   id: HeritageBuildingId;
   x: number;
