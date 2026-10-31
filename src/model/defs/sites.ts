@@ -5,8 +5,9 @@ import { CHAVIN_HEIGHTMAP, CHAVIN_HEIGHTMAP_SIZE, CHAVIN_HEIGHTMAP_WORLD_SIZE } 
 import { MOCHE_HEIGHTMAP, MOCHE_HEIGHTMAP_SIZE, MOCHE_HEIGHTMAP_WORLD_SIZE } from './mocheHeightmap';
 import { WARI_HEIGHTMAP, WARI_HEIGHTMAP_SIZE, WARI_HEIGHTMAP_WORLD_SIZE } from './wariHeightmap';
 import { CHANCA_HEIGHTMAP, CHANCA_HEIGHTMAP_SIZE, CHANCA_HEIGHTMAP_WORLD_SIZE } from './chancaHeightmap';
+import { CHIMU_HEIGHTMAP, CHIMU_HEIGHTMAP_SIZE, CHIMU_HEIGHTMAP_WORLD_SIZE } from './chimuHeightmap';
 
-export type AuthoredSiteId = 'caral_site' | 'chavin_site' | 'moche_site' | 'wari_site' | 'chanca_site';
+export type AuthoredSiteId = 'caral_site' | 'chavin_site' | 'moche_site' | 'wari_site' | 'chanca_site' | 'chimu_site';
 
 /** Dedicated visual-only decor GLBs for the later campaigns. */
 export type DecorModelId =
@@ -361,6 +362,36 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     buildKeepout: [{ x: 0.7025, z: 0.38, rx: 0.085, rz: 0.075 }],
     wallCollision: {
       meshPatterns: [/chanca/i],
+      maxStartYAboveBase: 1.2,
+    },
+    walkableCorridor: { width: 8 },
+    terrain: {
+      ...DEFAULT_SITE_TERRAIN,
+      flatNormals: true,
+      suppressSnow: true,
+    },
+  },
+  chimu_site: {
+    id: 'chimu_site',
+    label: 'Conjunto chimú de Chan Chan',
+    modelName: 'chimu_site',
+    scale: 0.7,
+    origin: { x: 142.8, z: 65 },
+    anchor: { x: 142.8, z: 65 },
+    cameraHeight: 55,
+    framing: 'site-biased',
+    heightField: {
+      size: CHIMU_HEIGHTMAP_SIZE,
+      worldSize: CHIMU_HEIGHTMAP_WORLD_SIZE,
+      heights: CHIMU_HEIGHTMAP,
+    },
+    pathCellSize: 1,
+    heritageProxies: [{ id: 'chimu_compound', x: 142.8, z: 65, w: 11, d: 8.5, h: 4.5 }],
+    blockers: [{ x: 142.8, z: 65, w: 11, d: 8.5 }],
+    blockerPadding: 0.5,
+    buildKeepout: [{ x: 0.744, z: 0.339, rx: 0.075, rz: 0.065 }],
+    wallCollision: {
+      meshPatterns: [/chimu/i],
       maxStartYAboveBase: 1.2,
     },
     walkableCorridor: { width: 8 },

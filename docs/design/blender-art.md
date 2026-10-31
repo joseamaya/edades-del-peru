@@ -138,7 +138,7 @@ builder is `scripts/blender/build_mission_decor.py`. Runtime GLBs are in
 | Mission | Model | Historical reference | Status |
 | --- | --- | --- | --- |
 | m5 Yahuar Pampa | `chanca_fortress` | Chanca pucará / highland fortress | authored site (heightfield + collision) |
-| m6 Chimú–Inca | `chimu_compound` | Chimú adobe compound and audience | project-owned abstraction |
+| m6 Chimú–Inca | `chimu_compound` | Chimú adobe compound and audience | authored site (heightfield + collision) |
 | m7 Túpac Amaru | `colonial_church` | colonial church and plaza | project-owned abstraction |
 | m8 Independencia | `independence_chapel` | campaign chapel and patriot camp | project-owned abstraction |
 | m9 Arica | `arica_battery` | port terrace, battery and warehouse | project-owned abstraction |

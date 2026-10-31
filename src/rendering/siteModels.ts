@@ -9,6 +9,8 @@ import wariLod0Url from '../assets/sites/wari/wari_site_lod0.glb?url';
 import wariLod1Url from '../assets/sites/wari/wari_site_lod1.glb?url';
 import chancaLod0Url from '../assets/sites/chanca/chanca_fortress_lod0.glb?url';
 import chancaLod1Url from '../assets/sites/chanca/chanca_fortress_lod1.glb?url';
+import chimuLod0Url from '../assets/sites/chimu/chimu_compound_lod0.glb?url';
+import chimuLod1Url from '../assets/sites/chimu/chimu_compound_lod1.glb?url';
 import { loadStaticGltf } from './StaticModel';
 import type { AuthoredSiteId } from '../model/defs/sites';
 
@@ -18,6 +20,7 @@ const SITE_MODEL_URLS: Partial<Record<AuthoredSiteId, { lod0: string; lod1: stri
   moche_site: { lod0: mocheLod0Url, lod1: mocheLod1Url },
   wari_site: { lod0: wariLod0Url, lod1: wariLod1Url },
   chanca_site: { lod0: chancaLod0Url, lod1: chancaLod1Url },
+  chimu_site: { lod0: chimuLod0Url, lod1: chimuLod1Url },
 };
 
 /** Load the campaign site; LOD1 is the RTS default, `?lod=0` previews the master. */

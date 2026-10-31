@@ -308,7 +308,7 @@ test('m6 cuts the canal to force Chan Chan to surrender', async ({ page }) => {
       canalVisual: !!g.scene.getObjectByName('canal'),
       waterVisual: !!g.scene.getObjectByName('canal_water'),
       gateVisual: !!g.scene.getObjectByName('canal_gate'),
-      chanChanDecor: !!g.scene.getObjectByName('mission_decor_chimu_compound'),
+      chimuSite: g.siteDef?.id === 'chimu_site',
       canalObjective: m.getObjectiveState('obj_canal') as string,
       won: m.won as boolean | null,
     };
@@ -318,7 +318,7 @@ test('m6 cuts the canal to force Chan Chan to surrender', async ({ page }) => {
   expect(out.canalVisual).toBe(true);
   expect(out.waterVisual).toBe(true);
   expect(out.gateVisual).toBe(true);
-  expect(out.chanChanDecor).toBe(true);
+  expect(out.chimuSite).toBe(true);
   expect(out.canalObjective).toBe('completed');
   expect(out.won).toBe(true);
 });
@@ -329,7 +329,7 @@ test('authored campaign geography spawns its local base and features', async ({ 
     { id: 'm3_moche_recuay', flats: true, decor: 'mission_decor_recuay_pashash', canal: true },
     { id: 'm4_wari', flats: true, decor: null, canal: false },
     { id: 'm5_yahuar_pampa', flats: true, decor: null, site: 'chanca_site', canal: false },
-    { id: 'm6_chimu_inca', flats: true, decor: 'mission_decor_chimu_compound', canal: true },
+    { id: 'm6_chimu_inca', flats: true, decor: null, site: 'chimu_site', canal: true },
     { id: 'm7_tupac_amaru', flats: true, decor: 'mission_decor_colonial_church', canal: false },
     { id: 'm8_independencia', flats: true, decor: 'mission_decor_colonial_church', canal: false },
     { id: 'm9_guerra_pacifico', flats: true, decor: 'mission_decor_chile_apostadero', canal: false },
@@ -366,7 +366,6 @@ test('authored campaign geography spawns its local base and features', async ({ 
 
 test('later missions load their dedicated decor GLBs', async ({ context }) => {
   const cases = [
-    ['m6_chimu_inca', 'chimu_compound'],
     ['m7_tupac_amaru', 'colonial_church'],
     ['m8_independencia', 'independence_chapel'],
     ['m9_guerra_pacifico', 'arica_battery'],

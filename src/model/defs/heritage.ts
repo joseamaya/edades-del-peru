@@ -22,9 +22,10 @@ export type HeritageBuildingId =
   | 'wari_plaza'
   | 'wari_galeria'
   | 'wari_mural'
-  | 'chanca_pucara';
+  | 'chanca_pucara'
+  | 'chimu_compound';
 
-export type HeritageSector = 'Caral Alto' | 'Caral Bajo' | 'Chavín' | 'Moche' | 'Wari' | 'Chanca';
+export type HeritageSector = 'Caral Alto' | 'Caral Bajo' | 'Chavín' | 'Moche' | 'Wari' | 'Chanca' | 'Chimú';
 
 export interface HeritageBuildingDef {
   id: HeritageBuildingId;
@@ -293,6 +294,17 @@ export const HERITAGE_BUILDINGS: Record<HeritageBuildingId, HeritageBuildingDef>
     confidence: 'práctica documentada; planta y remates plausibles',
     citation: 'Dossier de Yahuar Pampa · Betanzos / Pachacuti Yamqui',
     sources: ['docs/historia/campanas/yahuar_pampa.md', 'docs/historia/arquitectura.md'],
+  },
+  chimu_compound: {
+    id: 'chimu_compound',
+    name: 'Conjunto chimú y Chan Chan',
+    sector: 'Chimú',
+    role: 'Centro político y residencia real',
+    summary:
+      'Chan Chan fue la capital del Reino Chimú, con conjuntos amurallados, audiencias y depósitos. La reconstrucción representa un conjunto adobe genérico de esa tradición; no reproduce una ciudadela real.',
+    confidence: 'tradición documentada; planta y remates plausibles',
+    citation: 'Dossier de la Guerra chimú-inca · fuentes coloniales y arqueología',
+    sources: ['docs/historia/campanas/chimu_inca.md', 'docs/historia/arquitectura.md'],
   },
 };
 
