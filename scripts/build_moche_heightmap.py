@@ -45,7 +45,7 @@ def height(x: float, z: float) -> float:
     base = smoothstep(39.0, 47.0, x) * (1.0 - smoothstep(77.0, 85.0, x))
     base *= smoothstep(108.0, 116.0, z) * (1.0 - smoothstep(139.0, 147.0, z))
     flat = max(site, base)
-    h = h * (1.0 - 0.94 * flat) + SITE_Y * (0.94 * flat)
+    h = h * (1.0 - 1.0 * flat) + SITE_Y * (1.0 * flat)
 
     # Andean foothills east of the valley and low dunes north/south.
     east = smoothstep(145.0, 180.0, x) * (10.0 + 3.0 * math.sin(z * 0.1 + 0.8))

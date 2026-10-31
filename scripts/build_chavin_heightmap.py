@@ -48,7 +48,7 @@ def height(x: float, z: float) -> float:
     base = smoothstep(38.0, 45.0, x) * (1.0 - smoothstep(73.0, 80.0, x))
     base *= smoothstep(104.0, 111.0, z) * (1.0 - smoothstep(130.0, 137.0, z))
     flat = max(site, base)
-    h = h * (1.0 - 0.94 * flat) + SITE_Y * (0.94 * flat)
+    h = h * (1.0 - 1.0 * flat) + SITE_Y * (1.0 * flat)
 
     # Highland ridges frame the Callejón de Conchucos, without cliffs at the site.
     north = smoothstep(14.0, 0.0, z) * (10.0 + 2.5 * math.sin(x * 0.09))
