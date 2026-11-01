@@ -37,6 +37,7 @@ describe('campaign series', () => {
       'm4_wari',
       'm5_yahuar_pampa',
       'm6_chimu_inca',
+      'm6b_guerra_civil',
       'm7_tupac_amaru',
       'm8_independencia',
       'm9_guerra_pacifico',
@@ -47,7 +48,8 @@ describe('campaign series', () => {
     expect(nextReleasedMission('m1_caral')?.id).toBe('m2_chavin');
     expect(nextReleasedMission('m4_wari')).toBeUndefined();
     expect(nextReleasedMission('m5_yahuar_pampa')?.id).toBe('m6_chimu_inca');
-    expect(nextReleasedMission('m6_chimu_inca')).toBeUndefined();
+    expect(nextReleasedMission('m6_chimu_inca')?.id).toBe('m6b_guerra_civil');
+    expect(nextReleasedMission('m6b_guerra_civil')).toBeUndefined();
     expect(nextReleasedMission('m7_tupac_amaru')).toBeUndefined();
     expect(nextReleasedMission('m8_independencia')?.id).toBe('m9_guerra_pacifico');
     expect(nextReleasedMission('m9_guerra_pacifico')).toBeUndefined();
@@ -56,6 +58,7 @@ describe('campaign series', () => {
   it('maps every mission to its campaign', () => {
     expect(getCampaignForMission('m1_caral')?.id).toBe('preinca');
     expect(getCampaignForMission('m5_yahuar_pampa')?.id).toBe('inca');
+    expect(getCampaignForMission('m6b_guerra_civil')?.id).toBe('inca');
     expect(getCampaignForMission('m7_tupac_amaru')?.id).toBe('virreinato');
     expect(getCampaignForMission('m9_guerra_pacifico')?.id).toBe('independencia');
     expect(getCampaign('preinca')?.missionIds).toEqual(['m1_caral', 'm2_chavin', 'm3_moche_recuay', 'm4_wari']);

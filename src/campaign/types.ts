@@ -253,6 +253,12 @@ export interface MissionDef {
   tutorial?: boolean;
   playerCiv: CivId;
   enemyCiv: CivId;
+  /** Optional player-facing faction names for civil wars or coalitions. */
+  playerName?: string;
+  enemyName?: string;
+  /** Optional owner colours when both sides share a civilization. */
+  playerColor?: string;
+  enemyColor?: string;
   map: { seed: number; type: MapType; size: number };
   /**
    * Explicit geographic region of the map, when the scenario's geography differs

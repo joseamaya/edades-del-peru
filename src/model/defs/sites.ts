@@ -13,6 +13,7 @@ import {
   INDEPENDENCE_HEIGHTMAP_WORLD_SIZE,
 } from './independenceHeightmap';
 import { ARICA_HEIGHTMAP, ARICA_HEIGHTMAP_SIZE, ARICA_HEIGHTMAP_WORLD_SIZE } from './aricaHeightmap';
+import { CUSCO_HEIGHTMAP, CUSCO_HEIGHTMAP_SIZE, CUSCO_HEIGHTMAP_WORLD_SIZE } from './cuscoHeightmap';
 
 export type AuthoredSiteId =
   | 'caral_site'
@@ -23,7 +24,8 @@ export type AuthoredSiteId =
   | 'chimu_site'
   | 'colonial_site'
   | 'independence_site'
-  | 'arica_site';
+  | 'arica_site'
+  | 'cusco_inca_site';
 
 /** Dedicated visual-only decor GLBs for the later campaigns. */
 export type DecorModelId =
@@ -498,6 +500,36 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     buildKeepout: [{ x: 0.702, z: 0.38, rx: 0.08, rz: 0.07 }],
     wallCollision: {
       meshPatterns: [/arica/i],
+      maxStartYAboveBase: 1.2,
+    },
+    walkableCorridor: { width: 8 },
+    terrain: {
+      ...DEFAULT_SITE_TERRAIN,
+      flatNormals: true,
+      suppressSnow: true,
+    },
+  },
+  cusco_inca_site: {
+    id: 'cusco_inca_site',
+    label: 'Cusco incaico y Quipaipan',
+    modelName: 'cusco_inca_site',
+    scale: 0.7,
+    origin: { x: 124.8, z: 130.6 },
+    anchor: { x: 124.8, z: 130.6 },
+    cameraHeight: 58,
+    framing: 'site-biased',
+    heightField: {
+      size: CUSCO_HEIGHTMAP_SIZE,
+      worldSize: CUSCO_HEIGHTMAP_WORLD_SIZE,
+      heights: CUSCO_HEIGHTMAP,
+    },
+    pathCellSize: 1,
+    heritageProxies: [{ id: 'cusco_ushnu', x: 124.8, z: 130.6, w: 13, d: 10, h: 6 }],
+    blockers: [{ x: 124.8, z: 130.6, w: 13, d: 10 }],
+    blockerPadding: 0.5,
+    buildKeepout: [{ x: 0.65, z: 0.68, rx: 0.08, rz: 0.07 }],
+    wallCollision: {
+      meshPatterns: [/cusco/i],
       maxStartYAboveBase: 1.2,
     },
     walkableCorridor: { width: 8 },

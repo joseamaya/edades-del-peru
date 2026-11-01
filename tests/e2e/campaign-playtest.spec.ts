@@ -221,6 +221,57 @@ test('plays m9 by defending the port and striking the Chilean command with real 
   expect(errors).toEqual([]);
 });
 
+test('plays m6b by advancing to Quipaipan and defeating Huáscar with real orders', async ({ page }) => {
+  test.setTimeout(120_000);
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/?mission=m6b_guerra_civil&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
+    const enemy = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'center' && !b.dead) as any;
+    const site = g.siteCenter as { x: number; z: number };
+    const atahualpa = [...g.units.values()].find((u: any) => u.tag === 'atahualpa') as any;
+    const army = [...g.units.values()]
+      .filter((u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker' && u.tag !== 'atahualpa')
+      .map((u: any) => u.id);
+    const move = (ids: number[], x: number, z: number) =>
+      g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'move', target: { x, z } }, clear: true }, false);
+    const attack = (ids: number[], entityId: number) =>
+      g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'attack', entityId }, clear: true }, false);
+    move([atahualpa.id], site.x - 35, site.z + 20);
+    move(army, enemy.pos.x, enemy.pos.z + 18);
+    const dt = 1 / 60;
+    let t = 0;
+    for (let i = 0; i < Math.ceil(220 / dt) && !m.ended; i++) {
+      g.update(dt, t);
+      t += dt;
+    }
+    const reach = m.getObjectiveState('obj_avanzar') as string;
+    attack(army, enemy.id);
+    for (let i = 0; i < Math.ceil(300 / dt) && !m.ended; i++) {
+      g.update(dt, t);
+      t += dt;
+    }
+    return {
+      reach,
+      quipaipan: m.getObjectiveState('obj_quipaipan') as string,
+      atahualpa: m.getObjectiveState('obj_atahualpa') as string,
+      won: m.won as boolean | null,
+    };
+  });
+  expect(out.reach).toBe('completed');
+  expect(out.quipaipan).toBe('completed');
+  expect(out.atahualpa).not.toBe('failed');
+  expect(out.won).toBe(true);
+  expect(errors).toEqual([]);
+});
+
 test('plays m5 by holding Cusco and counterattacking with real orders', async ({ page }) => {
   test.setTimeout(120_000);
   const errors: string[] = [];

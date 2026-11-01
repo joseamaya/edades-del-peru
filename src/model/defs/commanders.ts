@@ -13,6 +13,8 @@ export const PORTRAIT_IDS = [
   'sucre',
   'grau',
   'bolognesi',
+  'atahualpa',
+  'huascar',
 ] as const;
 
 export type PortraitId = (typeof PORTRAIT_IDS)[number];
@@ -121,6 +123,22 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     civ: CivId.REPUBLIC,
     status: 'documented',
     source: 'docs/historia/campanas/guerra_del_pacifico.md',
+  },
+  atahualpa: {
+    id: 'atahualpa',
+    name: 'Atahualpa',
+    role: 'Inca · Quito',
+    civ: CivId.INCA,
+    status: 'abstraction',
+    source: 'docs/historia/campanas/guerra_civil_inca.md',
+  },
+  huascar: {
+    id: 'huascar',
+    name: 'Huáscar',
+    role: 'Inca · Cusco',
+    civ: CivId.INCA,
+    status: 'abstraction',
+    source: 'docs/historia/campanas/guerra_civil_inca.md',
   },
 };
 

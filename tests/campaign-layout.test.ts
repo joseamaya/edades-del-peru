@@ -40,11 +40,12 @@ describe('campaign authored geography', () => {
     expect(byId('m4_wari').layout?.terrain?.flats?.length).toBeGreaterThan(0);
     expect(byId('m6_chimu_inca').layout?.canal).toBeDefined();
     expect(byId('m9_guerra_pacifico').layout?.site?.id).toBe('arica_site');
+    expect(byId('m6b_guerra_civil').layout?.site?.id).toBe('cusco_inca_site');
     expect(byId('m8_independencia').layout?.terrain?.flats?.length).toBeGreaterThan(0);
   });
 
   it('places later enemy openings at their authored sites, away from the player base', () => {
-    for (const id of ['m5_yahuar_pampa', 'm6_chimu_inca', 'm7_tupac_amaru', 'm8_independencia']) {
+    for (const id of ['m5_yahuar_pampa', 'm6_chimu_inca', 'm6b_guerra_civil', 'm7_tupac_amaru', 'm8_independencia']) {
       const layout = MISSIONS.find((m) => m.id === id)!.layout!;
       expect(layout.enemyBase, `${id} enemyBase`).toBeDefined();
       const distance = Math.hypot(layout.enemyBase!.x - layout.base!.x, layout.enemyBase!.z - layout.base!.z);

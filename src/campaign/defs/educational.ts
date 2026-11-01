@@ -139,6 +139,27 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       { text: 'Cieza de León, P. y otros cronistas; «Discurso de la Descendencia» (1542).' },
     ],
   },
+  m6b_guerra_civil: {
+    briefing:
+      'Sierra andina, 1529–1532. Tras la muerte de Huayna Cápac, Huáscar y Atahualpa se disputan el trono. ' +
+      'Avanza con el ejército de Atahualpa hacia Quipaipan, derrota a Huáscar y mantenlo con vida.',
+    context:
+      'La guerra civil inca enfrentó a los partidarios de Huáscar, en el Cusco, con los de Atahualpa, en Quito. ' +
+      'Las campañas de Chillopampa, Mullihambato y Chimborazo precedieron a Quipaipan (1532), donde el ejército ' +
+      'de Atahualpa venció y capturó a Huáscar. La división facilitó la conquista española, que comenzó con la ' +
+      'captura de Atahualpa en Cajamarca ese mismo año.',
+    didYouKnow:
+      'La guerra civil terminó con la captura de Huáscar, pero Atahualpa fue capturado por los españoles en Cajamarca en 1532.',
+    epilogue:
+      'Atahualpa ganó la guerra civil, pero el Tahuantinsuyo quedó dividido y debilitado. Poco después, los ' +
+      'españoles capturaron a Atahualpa en Cajamarca. La guerra civil no fue una guerra contra España: fue una ' +
+      'disputa dinástica inca.',
+    sources: [
+      { text: 'Wikipedia: Guerra civil incaica', url: 'https://es.wikipedia.org/wiki/Guerra_civil_incaica' },
+      { text: 'Betanzos, J. (1551). Suma y narración de los incas.' },
+      { text: 'Cieza de León, P. Crónica del Perú.' },
+    ],
+  },
   m7_tupac_amaru: {
     briefing:
       'Sur andino, 1780. Túpac Amaru II se alza contra el reparto, la mita y los obrajes del Virreinato. ' +

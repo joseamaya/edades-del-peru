@@ -1978,9 +1978,11 @@ export class HUD {
         ? `<div class="ed-hist">${mis.history}</div><div class="ed-hist"><b style="color:var(--gold)">Contexto histórico.</b> ${edu.context}</div>`
         : `<div class="ed-hist">${mis.history}</div>`;
     const funFact = edu ? `<div class="ed-sabias">💡 <b>¿Sabías que…?</b> ${edu.didYouKnow}</div>` : '';
+    const playerName = mis.playerName ?? player.name;
+    const enemyName = mis.enemyName ?? enemy.name;
     const sides = mis.enemy.active
-      ? `<span>Bandos: <b>${player.name}</b> vs <b>${player.id === enemy.id ? 'grupos rivales' : enemy.name}</b></span>`
-      : `<span>Bandos: <b>${player.name}</b> (sin enfrentamiento documentado)</span>`;
+      ? `<span>Bandos: <b>${escapeHtml(playerName)}</b> vs <b>${escapeHtml(enemyName)}</b></span>`
+      : `<span>Bandos: <b>${escapeHtml(playerName)}</b> (sin enfrentamiento documentado)</span>`;
     const sources =
       edu && edu.sources.length
         ? `<details class="ed-fuentes"><summary>Fuentes históricas</summary><ul>${edu.sources

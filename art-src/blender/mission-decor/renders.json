@@ -30,7 +30,7 @@
       "alt": "Vista del pucará chanca sobre la pampa de Yahuar, con sus muros y torres de altura.",
       "caption": "Pucará chanca de Yahuar Pampa",
       "nature": "abstraction",
-      "sourceSha256": "636ac28e257fffcc2dc2d99effaf6f4a545ccf64d4eacb56732f5ed808ac63d2",
+      "sourceSha256": "8ea28413d903a6b719aa5d799d3a8587b278780721fa7c160423e80023d4b7d9",
       "renderedAt": "2026-10-31T10:00:00-05:00"
     },
     {
@@ -61,7 +61,7 @@
       "alt": "Vista del conjunto chimú de adobe, con audiencia, muros y patio.",
       "caption": "Conjunto chimú de Chan Chan",
       "nature": "abstraction",
-      "sourceSha256": "56da86bb23425c59b7f38d6c689b7c0d338d618e6294640d4096509289ab3899",
+      "sourceSha256": "71a26600795cdf103bf1fc0d06058ca5557530b9a0f953728015e5796b1b20d0",
       "renderedAt": "2026-10-31T10:00:00-05:00"
     },
     {
@@ -92,7 +92,7 @@
       "alt": "Vista de una iglesia colonial con torre, nave y atrio en el valle del Cusco.",
       "caption": "Templo y plaza colonial del Cusco",
       "nature": "abstraction",
-      "sourceSha256": "ae45811f72e43ed03aedd7095194bc270a5e0e61b6cd2adad7e392f2030b8c6d",
+      "sourceSha256": "51550ba7530e0f734e8b93a0a5e0804a06c52d9078c8bf40f411149a4474aae9",
       "renderedAt": "2026-10-31T10:00:00-05:00"
     },
     {
@@ -123,7 +123,7 @@
       "alt": "Vista de una capilla de campaña y tiendas patriotas en la pampa de Ayacucho.",
       "caption": "Capilla y campamento patriota de Ayacucho",
       "nature": "abstraction",
-      "sourceSha256": "7ad55630b4eb44660e6fb6fea030e8954ec868c038069453dd509af81ecd794d",
+      "sourceSha256": "9553b0d8f155f435359da12150acf918500de6771ef895ba762c89d8dbaa4777",
       "renderedAt": "2026-10-31T10:00:00-05:00"
     },
     {
@@ -154,8 +154,39 @@
       "alt": "Vista de la batería, el almacén y el muelle de la terraza portuaria de Arica.",
       "caption": "Terraza portuaria y batería de Arica",
       "nature": "abstraction",
-      "sourceSha256": "19b3cd697875a93cbe089e7974ee32f71a0a697441aba04bcd3a558f5e225dc7",
+      "sourceSha256": "4d148e26ff3916d266eddbcf8a7308533e1ad0a6d3a7a3518dc13f70f0633f1c",
       "renderedAt": "2026-10-31T10:00:00-05:00"
+    },
+    {
+      "id": "m6b_guerra_civil-intro",
+      "type": "campaign-intro",
+      "scope": "mission",
+      "campaignId": "la-senda-del-sol",
+      "missionId": "m6b_guerra_civil",
+      "civilization": "inca",
+      "period": 5,
+      "era": 2,
+      "region": "high_andes",
+      "topic": "campaign_intro",
+      "sceneType": "campaign_scene",
+      "asset": "media/generated/campaigns/la-senda-del-sol/m6b_guerra_civil/intro.webp",
+      "render": "mission-decor/renders/cusco_hero.png",
+      "sceneFile": "mission-decor/cusco_inca_lod0.blend",
+      "confidence": "tipología documentada; planta y remates plausibles",
+      "camera": "hero",
+      "renderer": "workbench",
+      "license": "project-owned",
+      "author": "Miguel Amaya",
+      "sources": [
+        "docs/historia/campanas/guerra_civil_inca.md",
+        "docs/historia/arquitectura.md",
+        "art-src/blender/mission-decor/README.md"
+      ],
+      "alt": "Vista del ushnu, la plaza y el recinto amurallado del Cusco incaico.",
+      "caption": "Cusco incaico y Quipaipan, 1529–1532",
+      "nature": "abstraction",
+      "sourceSha256": "72eae8f2ab3144c1f634f25de5a4551723ce849958c441cb18a5407c657b48cf",
+      "renderedAt": "2026-10-31T18:25:00-05:00"
     }
   ]
 }

@@ -15,6 +15,7 @@ SHOTS = [
     ('colonial_church', 'colonial', (0.48, 0.43, 0.34), (0.62, 0.58, 0.52)),
     ('independence_chapel', 'independence', (0.48, 0.45, 0.30), (0.68, 0.72, 0.66)),
     ('arica_battery', 'arica', (0.58, 0.48, 0.32), (0.62, 0.68, 0.74)),
+    ('cusco_inca', 'cusco', (0.45, 0.40, 0.30), (0.64, 0.68, 0.72)),
 ]
 
 
@@ -35,7 +36,7 @@ def setup_world(sky):
     bg = next(n for n in world.node_tree.nodes if n.type == 'BACKGROUND')
     bg.inputs['Color'].default_value = (*sky, 1)
     bg.inputs['Strength'].default_value = 0.28
-    world.color = (*sky, 1)
+    world.color = sky
 
 
 def setup_lights():

@@ -82,9 +82,16 @@ export const INCA_PROLOGUE: CinematicBeat[] = [
     source: 'docs/historia/campanas/chimu_inca.md',
   },
   {
-    kicker: 'DOS CAMPAÑAS, UN IMPERIO',
+    kicker: 'CUSCO–QUITO · 1529–1532',
+    title: 'La guerra civil',
+    text: 'Tras la muerte de Huayna Cápac, Huáscar y Atahualpa se disputan el trono. La guerra civil enfrenta a los ejércitos incas y deja al Tahuantinsuyo dividido antes de la llegada española.',
+    seconds: 7,
+    source: 'docs/historia/campanas/guerra_civil_inca.md',
+  },
+  {
+    kicker: 'TRES CAPÍTULOS, UN IMPERIO',
     title: 'La expansión inca',
-    text: 'Yahuar Pampa y la guerra del norte muestran cómo el Tahuantinsuyo se defendió y se expandió antes de la llegada europea.',
+    text: 'Yahuar Pampa, la guerra del norte y la guerra civil muestran cómo el Tahuantinsuyo se defendió, se expandió y se dividió antes de la llegada europea.',
     seconds: 6,
     source: 'docs/historia/periodizacion.md',
   },

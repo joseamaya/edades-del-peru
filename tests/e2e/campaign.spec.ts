@@ -61,6 +61,7 @@ test('every campaign mission shows its educational epilogue on victory', async (
     'm4_wari',
     'm5_yahuar_pampa',
     'm6_chimu_inca',
+    'm6b_guerra_civil',
     'm7_tupac_amaru',
     'm8_independencia',
     'm9_guerra_pacifico',
@@ -150,6 +151,7 @@ test('chapter II tutorials open with their first step', async ({ page }) => {
   for (const [id, title] of [
     ['m5_yahuar_pampa', 'Yahuar Pampa'],
     ['m6_chimu_inca', 'La Guerra del Norte'],
+    ['m6b_guerra_civil', 'La Guerra Civil'],
   ]) {
     await page.goto(`/?mission=${id}&seed=777&fog=0&low=1`);
     const overlay = page.locator('.ed-overlay', { hasText: title });
@@ -186,8 +188,15 @@ test('chapter IV tutorials open with their first step', async ({ page }) => {
 });
 
 test('later campaign briefing and tutorial fit 1600x900', async ({ context }) => {
-  test.setTimeout(300_000);
-  for (const id of ['m5_yahuar_pampa', 'm6_chimu_inca', 'm7_tupac_amaru', 'm8_independencia', 'm9_guerra_pacifico']) {
+  test.setTimeout(420_000);
+  for (const id of [
+    'm5_yahuar_pampa',
+    'm6_chimu_inca',
+    'm6b_guerra_civil',
+    'm7_tupac_amaru',
+    'm8_independencia',
+    'm9_guerra_pacifico',
+  ]) {
     const page = await context.newPage();
     await page.setViewportSize({ width: 1600, height: 900 });
     await page.goto(`/?mission=${id}&seed=777&fog=0&low=1`);
@@ -218,7 +227,14 @@ test('later campaign briefing and tutorial fit 1600x900', async ({ context }) =>
 
 test('later campaign briefings show their draft intro art with art=all', async ({ page }) => {
   test.setTimeout(120_000);
-  for (const id of ['m5_yahuar_pampa', 'm6_chimu_inca', 'm7_tupac_amaru', 'm8_independencia', 'm9_guerra_pacifico']) {
+  for (const id of [
+    'm5_yahuar_pampa',
+    'm6_chimu_inca',
+    'm6b_guerra_civil',
+    'm7_tupac_amaru',
+    'm8_independencia',
+    'm9_guerra_pacifico',
+  ]) {
     await page.goto(`/?mission=${id}&seed=777&fog=0&low=1&art=all`);
     const img = page.locator('.ed-briefing .ed-art img');
     await expect(img).toBeVisible({ timeout: 30_000 });
@@ -231,7 +247,14 @@ test('the missions with corrected rosters boot with units and no errors', async 
   test.setTimeout(180_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  const ids = ['m3_moche_recuay', 'm5_yahuar_pampa', 'm6_chimu_inca', 'm7_tupac_amaru', 'm9_guerra_pacifico'];
+  const ids = [
+    'm3_moche_recuay',
+    'm5_yahuar_pampa',
+    'm6_chimu_inca',
+    'm6b_guerra_civil',
+    'm7_tupac_amaru',
+    'm9_guerra_pacifico',
+  ];
   for (const id of ids) {
     await page.goto(`/?mission=${id}&seed=777&fog=0&low=1`);
     await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
@@ -341,6 +364,7 @@ test('authored campaign geography spawns its local base and features', async ({ 
     { id: 'm4_wari', flats: true, decor: null, canal: false },
     { id: 'm5_yahuar_pampa', flats: true, decor: null, site: 'chanca_site', canal: false },
     { id: 'm6_chimu_inca', flats: true, decor: null, site: 'chimu_site', canal: true },
+    { id: 'm6b_guerra_civil', flats: true, decor: null, site: 'cusco_inca_site', canal: false },
     { id: 'm7_tupac_amaru', flats: true, decor: null, site: 'colonial_site', canal: false },
     { id: 'm8_independencia', flats: true, decor: null, site: 'independence_site', canal: false },
     { id: 'm9_guerra_pacifico', flats: true, decor: null, site: 'arica_site', canal: false },
@@ -589,7 +613,7 @@ test('the campaign hub shows preinca progress and its four missions', async ({ p
   await expect(menu.getByRole('button', { name: /Jugar La Ciudad Sagrada/ })).toHaveCount(0);
   await expect(menu.getByRole('button', { name: /Jugar La Frontera de los Valles/ })).toBeVisible();
   const inca = menu.locator('.ed-campaign-card', { hasText: 'El Tahuantinsuyo' });
-  await expect(inca).toContainText('0 / 2 misiones completadas');
+  await expect(inca).toContainText('0 / 3 misiones completadas');
   await expect(inca.getByRole('button', { name: /Jugar Yahuar Pampa/ })).toBeVisible();
 });
 
@@ -658,7 +682,7 @@ test('Wari closes the preinca chapter', async ({ page }) => {
 
 test('chapter endings name the right campaign ordinal', async ({ page }) => {
   for (const [id, label] of [
-    ['m6_chimu_inca', 'Fin de la segunda campaña.'],
+    ['m6b_guerra_civil', 'Fin de la segunda campaña.'],
     ['m7_tupac_amaru', 'Fin de la tercera campaña.'],
     ['m9_guerra_pacifico', 'Fin de la cuarta campaña.'],
   ]) {

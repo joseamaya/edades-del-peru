@@ -9,6 +9,7 @@ const MISSIONS = [
   ['m4_wari', 'El Horizonte Medio'],
   ['m5_yahuar_pampa', 'Yahuar Pampa'],
   ['m6_chimu_inca', 'La Guerra del Norte'],
+  ['m6b_guerra_civil', 'La Guerra Civil'],
   ['m7_tupac_amaru', 'La Gran Rebelión'],
   ['m8_independencia', 'La Independencia'],
   ['m9_guerra_pacifico', 'La Defensa de Arica'],
