@@ -25,16 +25,16 @@ cancel the seat bias; even then the decisive sample stays small.
 
 All measured on the deterministic harness, `--max=1500`, seeds 777-784.
 
-| Change | `normal` | `easy` | `hard` | `legendary` |
-|---|---|---|---|---|
-| baseline | 4/0/4 | 0/2/6 | 1/4/3 | 0/3/5 |
-| fixed attack cadence (drop `aggression`) | 4/0 | 0/1 | 0/4 | 0/2 |
-| push at a large fraction of the army + home guard + no solo retreat | 4/0 | 2/0 | 0/3 | 0/2 |
-| + houses scaled to the desired population | 4/0 | 0/1 | 1/5 | 0/4 |
-| **houses scaled only** (final) | 4/2/2 | 0/1/7 | 1/5/2 | 0/4/4 |
+| Change                                                              | `normal` | `easy` | `hard` | `legendary` |
+| ------------------------------------------------------------------- | -------- | ------ | ------ | ----------- |
+| baseline                                                            | 4/0/4    | 0/2/6  | 1/4/3  | 0/3/5       |
+| fixed attack cadence (drop `aggression`)                            | 4/0      | 0/1    | 0/4    | 0/2         |
+| push at a large fraction of the army + home guard + no solo retreat | 4/0      | 2/0    | 0/3    | 0/2         |
+| + houses scaled to the desired population                           | 4/0      | 0/1    | 1/5    | 0/4         |
+| **houses scaled only** (final)                                      | 4/2/2    | 0/1/7  | 1/5/2  | 0/4/4       |
 
 None produced `easy < normal < hard < legendary`. Bisecciones on the `hard` profile showed that with `normal`'s
-fields it measures like `normal`, so the effect is real (not pure noise) — but it tracks *which* field differs,
+fields it measures like `normal`, so the effect is real (not pure noise) — but it tracks _which_ field differs,
 not "more is better". The `hard`/`legendary` profiles are **worse than `normal`**, and the win-rate does not
 respond to the changes in a monotone way.
 
@@ -50,7 +50,7 @@ order the win-rate.
 
 The perverse direction (higher difficulty measures weaker) comes from the combat model, not the profiles:
 committing to an attack is a net loss, so profiles that mass and attack more lose more. Tuning
-economy/army/timing/guard changes *how much* the AI commits, not *whether committing is good*. To make the
+economy/army/timing/guard changes _how much_ the AI commits, not _whether committing is good_. To make the
 ordering monotone, the AI must be able to convert its (real) economic/army advantage into wins.
 
 ## Player-side benchmark (the useful yardstick)
@@ -64,15 +64,15 @@ edits and no RNG.
 `yarn sim --player=scripted --p1=<difficulty> --max=2400` plays the bot against each difficulty. A **stronger
 AI beats the bot more often**, which is the metric:
 
-| difficulty | AI wins vs the bot |
-|---|---|
-| `easy` | 0 |
-| `normal` | 5 |
-| `hard` | 4 |
-| `legendary` | 7 |
+| difficulty  | AI wins vs the bot |
+| ----------- | ------------------ |
+| `easy`      | 0                  |
+| `normal`    | 5                  |
+| `hard`      | 4                  |
+| `legendary` | 7                  |
 
 This is **roughly monotonic from the player side** (`easy` clearly weakest, `legendary` clearly strongest,
-`normal`/`hard` within noise) — unlike the AI-vs-AI mirror, which put `hard`/`legendary` *below* `normal`. The
+`normal`/`hard` within noise) — unlike the AI-vs-AI mirror, which put `hard`/`legendary` _below_ `normal`. The
 bot is deliberately simple, so it only finishes a game on the easiest difficulty; the metric is therefore "how
 often the AI beats it", not "how often the bot wins".
 
@@ -91,3 +91,14 @@ often the AI beats it", not "how often the bot wins".
 - `scripts/sim.mjs --p1=<difficulty>` sets player 1's profile so a difficulty can be measured in both seats.
 - `scripts/sim.mjs --player=scripted` runs the `ScriptedPlayer` bot as player 0 (the player-side benchmark).
 
+## Resource-density baseline (issue #254)
+
+The skirmish generator now places tree clusters instead of lone trees (global 6.5 m trunk spacing so every
+tree keeps a harvest stand point), guarantees one forest/berries/hunt/silver/stone ring per player, and
+separates the two bases by at least 45 % of the map diagonal. Before the change the playtest measured
+~4,550 wood on the whole map and a ~50-unit base separation on 192×192; the new generation test
+(`tests/e2e/map-density.spec.ts`) requires >40,000 wood on coast/andes/jungle (>=15,000 on altiplano) and >=45 % diagonal.
+
+Baseline after the change (`yarn sim --seeds=777,779,783 --max=900`, normal vs normal): three undecided caps
+at 900 s; gathered banks 2,679–2,786; both seats trained, no AI crash. Longer matches are expected on the
+denser maps and are the new reference line for future economy/AI tuning.
