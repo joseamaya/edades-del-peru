@@ -5,10 +5,11 @@ describe('hotkey map', () => {
   it('never binds the same key to two actions', () => {
     const seen = new Map<string, string>();
     for (const hotkey of HOTKEYS) {
-      for (const key of hotkey.keys) {
-        expect(seen.get(key), `${key} is bound to ${seen.get(key)} and ${hotkey.action}`).toBeUndefined();
-        seen.set(key, hotkey.action);
-      }
+      expect(
+        seen.get(hotkey.key),
+        `${hotkey.key} is bound to ${seen.get(hotkey.key)} and ${hotkey.action}`,
+      ).toBeUndefined();
+      seen.set(hotkey.key, hotkey.action);
     }
   });
 

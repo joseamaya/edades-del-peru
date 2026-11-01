@@ -112,10 +112,11 @@ The game teaches history while you play:
 | Convert (Amauta / Misionero) | Right-click an enemy unit             |
 | Queue orders / rally point   | Shift + Right button                  |
 | Pan                          | WASD / arrows / edges / middle button |
-| Zoom                         | Wheel · **Z/X** rotate · **F** follow |
-| Last battle                  | Space · **H** Plaza Mayor             |
+| Zoom                         | Wheel                                 |
+| Last battle / center base    | Space / **H** (Plaza Mayor)           |
 | Build platform / dwelling    | G / V                                 |
-| Center base / follow         | H / F                                 |
+| Rotate camera (optional)     | Z / X                                 |
+| Follow unit                  | **F**                                 |
 | Pause                        | P · **☰** menu                       |
 
 ## Historical periods (10)

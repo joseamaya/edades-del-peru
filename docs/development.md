@@ -343,7 +343,7 @@ Definition of Done and the building audit see
   middle-mouse drag, or dragging the **bottom-left minimap**). Minimap: drag = move viewport, right click = order
   (`Game.commandMoveToWorld`). The minimap is **north-up** (`-z` is north, `+x` is east) and draws a fixed
   `N/E/S/W` compass; the camera footprint is a rotated quad from `getGroundQuad()` so it stays truthful when the
-  camera yaw changes. Optional camera rotation with Q/E (`settings.rotateCamera`, off = fixed camera).
+  camera yaw changes. Optional camera rotation with Z/X (`settings.rotateCamera`, off = fixed camera).
   Control groups (Ctrl/Alt+1-9 assign, 1-9 recall, Shift+1-9 add). Hover tooltip (`computeHover`) and
   **contextual cursor** (`hoverAction`). Damage icons/numbers (`src/ui/DamageNumbers.ts`), clickable alerts that
   pulse on the minimap (`pushAlert` + `alert` event), and order markers (`src/entities/OrderMarker.ts`). Blocked
@@ -354,7 +354,7 @@ Definition of Done and the building audit see
 - **Camera panning (`src/core/Camera.ts` + `src/core/cameraMath.ts`)**: the camera orbits a ground target; its
   ground basis is `forward = (−sin yaw, −cos yaw)`, `right = (cos yaw, −sin yaw)`, and **every pan input is rotated
   by that basis** (`rotateToWorld`, a rotation by `−yaw`). The default is **north-up** (`yaw = 0`), so `W`/arriba =
-  north and the main map matches the north-up minimap; Q/E rotation is optional (`settings.rotateCamera`). Edge
+  north and the main map matches the north-up minimap; Z/X rotation is optional (`settings.rotateCamera`). Edge
   scrolling is **progressive** (0 at the zone edge, ±1 at the border) and every pan vector is **normalized** (a
   diagonal is not faster than an axis); middle-drag uses a **geometric** world-per-pixel
   (`2·tan(fov/2)·zoom/viewportH`) with the "grab the map" metaphor (the content follows the cursor). Inputs only

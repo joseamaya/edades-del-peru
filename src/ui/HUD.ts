@@ -1961,7 +1961,7 @@ export class HUD {
       <b>Shift + Botón derecho</b><span>Encolar órdenes / fijar punto de reunión</span>
       <b>G · V</b><span>Construir andén · vivienda</span>
       <b>WASD / flechas / bordes</b><span>Mover la cámara</span>
-      <b>Rueda</b><span>Zoom · <b>Q/E</b> rotar · <b>F</b> seguir</span>
+      <b>Rueda</b><span>Zoom · <b>Z/X</b> rotar (si está activada) · <b>F</b> seguir</span>
       <b>H</b><span>Ir a la Plaza Mayor · <b>Espacio</b> última batalla</span>
       <b>P</b><span>Pausa · <b>☰ Menú</b> opciones y salir</span>
       <b>Meta</b><span>Destruye a tu rival o construye la Huaca Sagrada y protégela 5 min</span>
@@ -2197,7 +2197,7 @@ export class HUD {
     );
     this.toggle(
       row,
-      'Rotar cámara (Q/E)',
+      'Rotar cámara (Z/X)',
       ['Activada', 'Desactivada'],
       () => this.game.settings.rotateCamera,
       (v) => {
