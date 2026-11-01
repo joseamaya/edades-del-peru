@@ -29,11 +29,6 @@ export default tseslint.config(
     },
   },
   {
-    // Visual-only jitter (smoke, sway, muzzle light) never feeds gameplay state.
-    files: ['src/entities/Building.ts', 'src/entities/Projectile.ts', 'src/entities/ResourceNode.ts'],
-    rules: { 'no-restricted-properties': 'off' },
-  },
-  {
     files: ['scripts/**/*.{mjs,ts}', '*.mjs'],
     languageOptions: {
       globals: {

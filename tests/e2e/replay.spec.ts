@@ -1,40 +1,55 @@
 import { test, expect, Page } from '@playwright/test';
 
-/** The scripted match every run executes: gather, train, then place a house. */
-async function scriptedRun(page: Page, capture: boolean, steps = 900): Promise<number> {
+const CHECKPOINTS = [300, 600, 900];
+
+interface RunResult {
+  hash: number;
+  checkpoints: Record<number, number>;
+}
+
+/**
+ * The scripted match every run executes: gather, train, then place a house.
+ * `batch` groups steps into frames, as the real loop does; each step still gets
+ * deterministic simulation time from the step counter.
+ */
+async function scriptedRun(page: Page, capture: boolean, steps = 900, batch = 1): Promise<RunResult> {
   return page.evaluate(
-    ({ capture, steps }) => {
+    ({ capture, steps, batch, checkpoints }) => {
       const g = (window as unknown as { game: any }).game;
       g.loop.stop();
       g.paused = false;
       const node = [...g.resourceNodes.values()].find((x: any) => !x.dead && x.resource === 'wood');
       const workers = [...g.units.values()].filter((u: any) => u.owner === 0 && u.kind === 'worker');
       const center = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center');
-      let t = 0;
-      for (let i = 0; i < steps; i++) {
-        if (i === 30 && node) {
-          for (const w of workers) {
-            g.executeCommand({
-              kind: 'order',
-              unitIds: [w.id],
-              order: { kind: 'gather', entityId: node.id },
-              clear: true,
-            });
+      const marks = new Set<number>(checkpoints);
+      const snapshots: Record<number, number> = {};
+      let step = 0;
+      while (step < steps) {
+        for (let j = 0; j < batch && step < steps; j++, step++) {
+          if (step === 30 && node) {
+            for (const w of workers) {
+              g.executeCommand({
+                kind: 'order',
+                unitIds: [w.id],
+                order: { kind: 'gather', entityId: node.id },
+                clear: true,
+              });
+            }
           }
+          if (step === 120 && center) g.executeCommand({ kind: 'train', buildingId: center.id, unit: 'worker' });
+          if (step === 200 && center) {
+            const spot = g.findFreeSpot(center.pos.x + 10, center.pos.z, 4);
+            if (spot) g.executeCommand({ kind: 'place', building: 'house', x: spot.x, z: spot.z });
+          }
+          const next = step + 1;
+          g.update(1 / 60, step / 60);
+          if (marks.has(next)) snapshots[next] = g.stateHash();
         }
-        if (i === 120 && center) g.executeCommand({ kind: 'train', buildingId: center.id, unit: 'worker' });
-        if (i === 200 && center) {
-          const spot = g.findFreeSpot(center.pos.x + 10, center.pos.z, 4);
-          if (spot) g.executeCommand({ kind: 'place', building: 'house', x: spot.x, z: spot.z });
-        }
-        g.update(1 / 60, t);
-        t += 1 / 60;
       }
-      const hash = g.stateHash();
       if (capture) (window as unknown as { __replay: unknown }).__replay = g.exportReplay();
-      return hash;
+      return { hash: g.stateHash(), checkpoints: snapshots };
     },
-    { capture, steps },
+    { capture, steps, batch, checkpoints: CHECKPOINTS },
   );
 }
 
@@ -59,7 +74,8 @@ test('the same seed and commands produce the same state', async ({ page }) => {
   const first = await scriptedRun(page, false);
   await bootMatch(page);
   const second = await scriptedRun(page, false);
-  expect(first).toBe(second);
+  expect(second.checkpoints).toEqual(first.checkpoints);
+  expect(second.hash).toBe(first.hash);
 });
 
 test('a recorded replay reproduces the match', async ({ page }) => {
@@ -76,20 +92,22 @@ test('a recorded replay reproduces the match', async ({ page }) => {
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });
-  const replayed = await page.evaluate(() => {
+  const replayed = await page.evaluate((checkpoints) => {
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     g.paused = false;
-    let t = 0;
+    const marks = new Set<number>(checkpoints);
+    const snapshots: Record<number, number> = {};
     for (let i = 0; i < 900; i++) {
-      g.update(1 / 60, t);
-      t += 1 / 60;
+      g.update(1 / 60, i / 60);
+      if (marks.has(i + 1)) snapshots[i + 1] = g.stateHash();
     }
-    return { hash: g.stateHash(), active: g.replayActive };
-  });
+    return { hash: g.stateHash(), checkpoints: snapshots, active: g.replayActive };
+  }, CHECKPOINTS);
 
   expect(replayed.active).toBe(true);
-  expect(replayed.hash).toBe(recorded);
+  expect(replayed.checkpoints).toEqual(recorded.checkpoints);
+  expect(replayed.hash).toBe(recorded.hash);
 });
 
 test('live input is ignored during replay playback', async ({ page }) => {
@@ -121,51 +139,11 @@ test('the main menu offers the last replay and plays it', async ({ page }) => {
   expect(new URL(page.url()).searchParams.get('replay')).toBe('1');
 });
 
-/** Same scripted match, but with the old wall-clock `t` repeated across a batch of steps. */
-async function batchedRun(page: Page, batch: number, steps = 900): Promise<number> {
-  return page.evaluate(
-    ({ batch, steps }) => {
-      const g = (window as unknown as { game: any }).game;
-      g.loop.stop();
-      g.paused = false;
-      const node = [...g.resourceNodes.values()].find((x: any) => !x.dead && x.resource === 'wood');
-      const workers = [...g.units.values()].filter((u: any) => u.owner === 0 && u.kind === 'worker');
-      const center = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center');
-      let step = 0;
-      let frame = 0;
-      while (step < steps) {
-        // A frame's wall time is shared by all of its sub-steps, as the old loop did.
-        const frameTime = (frame * batch) / 60;
-        for (let j = 0; j < batch && step < steps; j++, step++) {
-          if (step === 30 && node) {
-            for (const w of workers) {
-              g.executeCommand({
-                kind: 'order',
-                unitIds: [w.id],
-                order: { kind: 'gather', entityId: node.id },
-                clear: true,
-              });
-            }
-          }
-          if (step === 120 && center) g.executeCommand({ kind: 'train', buildingId: center.id, unit: 'worker' });
-          if (step === 200 && center) {
-            const spot = g.findFreeSpot(center.pos.x + 10, center.pos.z, 4);
-            if (spot) g.executeCommand({ kind: 'place', building: 'house', x: spot.x, z: spot.z });
-          }
-          g.update(1 / 60, frameTime);
-        }
-        frame++;
-      }
-      return g.stateHash();
-    },
-    { batch, steps },
-  );
-}
-
 test('the same steps hash equally when frames are batched 1 vs 8', async ({ page }) => {
   await bootMatch(page);
-  const one = await batchedRun(page, 1);
+  const one = await scriptedRun(page, false, 900, 1);
   await bootMatch(page);
-  const eight = await batchedRun(page, 8);
-  expect(eight).toBe(one);
+  const eight = await scriptedRun(page, false, 900, 8);
+  expect(eight.checkpoints).toEqual(one.checkpoints);
+  expect(eight.hash).toBe(one.hash);
 });

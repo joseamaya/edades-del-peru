@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { allocId } from './EntityView';
-import { RNG, weightedPick } from '../util/rng';
+import { RNG, weightedPick, cosmeticRandom } from '../util/rng';
 import { ResourceKey } from '../core/types';
 import { MaterialTex } from '../rendering/Textures';
 import { applyGeneratedPbr } from '../rendering/Biomes';
@@ -136,7 +136,7 @@ export class ResourceNode {
     this.treeVariants = treeVariants;
     this.pos.set(x, 0, z);
     this.amount = this.maxAmount = amount;
-    this.swaySeed = Math.random() * Math.PI * 2;
+    this.swaySeed = cosmeticRandom() * Math.PI * 2;
     switch (kind) {
       case 'tree':
         this.resource = 'wood';
@@ -191,8 +191,8 @@ export class ResourceNode {
   /** Register the tree instance once its height (y) is known. */
   placeTreeInstance(y: number): void {
     if (this.kind !== 'tree' || !this.treeMgr || this.treeSlot >= 0) return;
-    const scale = 0.85 + Math.random() * 0.35;
-    const rotY = Math.random() * Math.PI * 2;
+    const scale = 0.85 + cosmeticRandom() * 0.35;
+    const rotY = cosmeticRandom() * Math.PI * 2;
     this.treeSlot = this.treeMgr.register(this.id, this.treeVariant, this.pos.x, y, this.pos.z, scale, rotY);
   }
 

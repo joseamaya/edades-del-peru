@@ -10,7 +10,7 @@ export class GameLoop {
   private stepCount = 0;
 
   speed = 1;
-  onUpdate: (dt: number, time: number) => void = () => {};
+  onUpdate: (dt: number, time: number) => void | boolean = () => {};
   onRender: (alpha: number) => void = () => {};
 
   getFps(): number {
@@ -41,8 +41,8 @@ export class GameLoop {
       const step = 1 / 60;
       let iterations = 0;
       while (this.acc >= step && iterations < 8) {
-        this.onUpdate(step, this.stepCount * step);
-        this.stepCount++;
+        const stepped = this.onUpdate(step, this.stepCount * step);
+        if (stepped !== false) this.stepCount++;
         this.acc -= step;
         iterations++;
       }

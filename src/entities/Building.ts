@@ -10,6 +10,7 @@ import { unitMinPeriod } from '../model/defs/units';
 import { getTech, techAvailable } from '../model/defs/techs';
 import { clamp } from '../util/math';
 import type { BuildingSave } from '../game/saveTypes';
+import { cosmeticRandom } from '../util/rng';
 
 export class Building {
   id = allocId();
@@ -47,7 +48,7 @@ export class Building {
   isFarm = false;
   /** Mission tag (for objectives/triggers). */
   tag?: string;
-  private smokeTimer = Math.random() * 1.5;
+  private smokeTimer = cosmeticRandom() * 1.5;
   private damageSmokeTimer = 0;
   /** Materials that were opaque, to restore them when construction finishes. */
   private constructionMats: THREE.MeshStandardMaterial[] | null = null;
@@ -270,11 +271,11 @@ export class Building {
     ) {
       this.smokeTimer -= dt;
       if (this.smokeTimer <= 0) {
-        this.smokeTimer = 0.35 + Math.random() * 0.3;
+        this.smokeTimer = 0.35 + cosmeticRandom() * 0.3;
         this.ctx?.particles?.emit?.({
-          x: this.pos.x + (Math.random() - 0.5) * this.radius * 0.4,
+          x: this.pos.x + (cosmeticRandom() - 0.5) * this.radius * 0.4,
           y: this.pos.y + this.radius * 0.9,
-          z: this.pos.z + (Math.random() - 0.5) * this.radius * 0.4,
+          z: this.pos.z + (cosmeticRandom() - 0.5) * this.radius * 0.4,
           count: 1,
           color: 0x9a9a92,
           kind: 'smoke',
@@ -295,9 +296,9 @@ export class Building {
           this.damageSmokeTimer = 0.5 - dmgRatio * 0.35;
           for (let i = 0; i < Math.floor(dmgRatio * 3); i++) {
             this.ctx?.particles?.emit?.({
-              x: this.pos.x + (Math.random() - 0.5) * this.radius,
-              y: this.pos.y + this.radius * 0.7 + Math.random() * this.radius * 0.8,
-              z: this.pos.z + (Math.random() - 0.5) * this.radius,
+              x: this.pos.x + (cosmeticRandom() - 0.5) * this.radius,
+              y: this.pos.y + this.radius * 0.7 + cosmeticRandom() * this.radius * 0.8,
+              z: this.pos.z + (cosmeticRandom() - 0.5) * this.radius,
               count: 1,
               color: dmgRatio > 0.7 ? 0x2a2a2a : 0x4a4a4a,
               kind: 'smoke',

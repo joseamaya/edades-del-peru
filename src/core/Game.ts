@@ -3809,13 +3809,12 @@ export class Game {
 
   // --- main update ---
 
-  private update(dt: number, _time: number): void {
-    // Simulation time comes from the fixed-step counter, never from wall time:
-    // AI perception, mission timers and combat must replay identically.
-    const t = this.stepCount * dt;
+  private update(dt: number, time: number): boolean {
+    const t = time;
+    const realTime = performance.now() / 1000;
     if (this.paused) {
-      this.hud.update(dt, t);
-      return;
+      this.hud.update(dt, realTime);
+      return false;
     }
     this.qualityGovernor.update(dt);
     if (this.replay) {
@@ -3823,14 +3822,14 @@ export class Game {
     }
     const d = dt;
 
-    this.sky.update(t);
+    this.sky.update(realTime);
     this.water.setSunDir(this.sky.sunDir);
     this.water.setDayFactor(this.sky.getDayFactor());
-    this.water.update(t);
+    this.water.update(realTime);
     this.terrain.setSunLight(this.sky.sunDir, this.sky.getSunColor());
-    this.terrain.update(t);
+    this.terrain.update(realTime);
     // cloud shadows: dim the sun according to cloud density near the sun
-    const cs = cloudDensity(this.sky.sunDir.x * 900 + t * 3, this.sky.sunDir.z * 900) * 0.22;
+    const cs = cloudDensity(this.sky.sunDir.x * 900 + realTime * 3, this.sky.sunDir.z * 900) * 0.22;
     this.terrain.setCloudShadow(1 - cs);
     this.particles.update(d);
     this.debris.update(d);
@@ -3842,7 +3841,7 @@ export class Game {
     this.camera.setUiCaptured(this.hud.hasBlockingOverlay());
     // edge scrolling is off while the pointer is over a HUD control
     this.camera.setPointerOverUi(this.isPointerOverUi());
-    this.camera.update(d, t);
+    this.camera.update(d, realTime);
     this.rebuildSpatial();
 
     // units
@@ -3864,7 +3863,7 @@ export class Game {
     // resources
     for (const n of this.resourceNodes.values()) {
       if (n.dead) continue;
-      n.update(t);
+      n.update(realTime);
     }
     // projectiles
     for (const p of this.projectiles) {
@@ -3897,8 +3896,9 @@ export class Game {
 
     this.checkVictory();
 
-    this.hud.update(d, t);
+    this.hud.update(d, realTime);
     this.stepCount++;
+    return true;
   }
 
   private cleanupDead(dt: number): void {
