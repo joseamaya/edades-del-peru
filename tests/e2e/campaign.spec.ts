@@ -104,6 +104,7 @@ test('the chapter card freezes the mission clock and shows the full subtitle', a
   const subtitle = card.locator('.place');
   await expect(subtitle).toContainText('plazas se sostienen con trabajo comunal');
   expect((await subtitle.textContent()) ?? '').not.toContain('…');
+  await expect(page.locator('#ed-objectives'), 'objectives stay hidden behind the card').toBeHidden();
 
   await page.waitForTimeout(2500);
   const held = await page.evaluate(() => {
@@ -115,6 +116,7 @@ test('the chapter card freezes the mission clock and shows the full subtitle', a
   await page.evaluate(() => document.querySelector<HTMLElement>('.ed-mission-card')?.click());
   const justClosed = await page.evaluate(() => (window as unknown as { game: any }).game.mission?.timer ?? 0);
   expect(justClosed, 'the timer starts at 0:00 when the card closes').toBeLessThan(0.5);
+  await expect(page.locator('#ed-objectives'), 'objectives appear after the card').toBeVisible();
   await page.waitForTimeout(4000);
   const running = await page.evaluate(() => (window as unknown as { game: any }).game.mission?.timer ?? 0);
   expect(running, 'the timer resumes after the card and the opening flight').toBeGreaterThan(0);

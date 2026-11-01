@@ -147,7 +147,7 @@ export class Mission {
     if (this.ended || !this.started) return;
     void t;
     // The title card and the opening camera flight are not gameplay time.
-    if (this.game.isCinematicActive?.()) return;
+    if (this.game.isCinematicActive()) return;
     this.timer += dt;
     this.updateHoldTimers(dt);
     this.evalObjectives();

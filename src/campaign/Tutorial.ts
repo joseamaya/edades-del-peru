@@ -39,7 +39,7 @@ export class Tutorial {
   /** Advance the tutorial; shown after the briefing closes and the match resumes. */
   update(dt: number): void {
     if (this.finished) return;
-    if (this.game.isCinematicActive?.()) return;
+    if (this.game.isCinematicActive()) return;
     if (!this.begun) {
       if (this.game.getPaused() || !this.game.mission || this.game.mission.activeObjectives.length === 0) return;
       this.delay += dt;

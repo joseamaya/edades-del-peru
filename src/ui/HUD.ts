@@ -423,6 +423,7 @@ export class HUD {
   private tutorialEl!: HTMLElement;
   private tutorialStepEl!: HTMLElement;
   private tutorialCountEl!: HTMLElement;
+  private missionCard: HTMLElement | null = null;
 
   constructor(game: Game) {
     this.game = game;
@@ -753,7 +754,7 @@ export class HUD {
 
   private refreshObjectives(): void {
     const mis = this.game.mission;
-    if (!mis) return;
+    if (!mis || this.isMissionCardOpen()) return;
     this.objPanelEl.style.display = 'block';
     const items = mis.activeObjectives;
     const titles = this.objectiveTitles(items.map(({ def }) => def));
@@ -976,8 +977,6 @@ export class HUD {
     });
   }
 
-  private missionCard: HTMLElement | null = null;
-
   /** True while the chapter card is on screen (its absence means the mission may advance). */
   isMissionCardOpen(): boolean {
     return this.missionCard !== null && this.missionCard.isConnected;
@@ -999,7 +998,7 @@ export class HUD {
     this.missionCard = card;
     const dismiss = () => {
       card.remove();
-      this.missionCard = null;
+      if (this.missionCard === card) this.missionCard = null;
     };
     card.tabIndex = 0;
     card.setAttribute('role', 'button');
@@ -2326,10 +2325,12 @@ export class HUD {
       this.dialogueTimer -= dt;
       if (this.dialogueTimer <= 0) this.dialogueEl.classList.remove('show');
     }
-    // campaign objectives panel (tick shared with the minimap)
+    // campaign objectives panel (tick shared with the minimap); the chapter card
+    // owns the screen until the player dismisses it
     if (this.game.mission) {
-      this.objPanelEl.style.display = 'block';
-      if (this.updateAcc > 0.15) this.refreshObjectives();
+      const cardOpen = this.isMissionCardOpen();
+      this.objPanelEl.style.display = cardOpen ? 'none' : 'block';
+      if (!cardOpen && this.updateAcc > 0.15) this.refreshObjectives();
     } else {
       this.objPanelEl.style.display = 'none';
     }
