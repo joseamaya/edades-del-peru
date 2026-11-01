@@ -12,6 +12,7 @@ import {
   HistoricalPeriod,
   AlertReason,
   CombatStance,
+  MapType,
 } from '../core/types';
 import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../model/defs/buildings';
 import { getBuildingCard } from '../model/defs/buildingCards';
@@ -20,7 +21,7 @@ import { TECHS, techAvailable } from '../model/defs/techs';
 import { ERA_DEFS } from '../model/defs/eras';
 import { PERIODS, getPeriod } from '../model/defs/periods';
 import { civsForPeriod, getCiv } from '../model/defs/civs';
-import { RESOURCE_INFO, MAP_LABEL, GameSettings, CAMERA_SPEED_SCALE } from '../core/Config';
+import { RESOURCE_INFO, MAP_LABEL, GameSettings, CAMERA_SPEED_SCALE, STARTING_RESOURCES } from '../core/Config';
 import { formatNumber, formatStat } from '../util/math';
 import { artIntroForMission } from '../art/manifest';
 import { artFigureHtml, includeUnreviewedArt } from './ArtFigure';
@@ -101,6 +102,7 @@ const CSS = /* css */ `
   .ed-topbar { position: absolute; top: 0; left: 0; right: 0; height: 46px; display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: linear-gradient(180deg, rgba(12,14,18,0.96), rgba(12,14,18,0.82)); border-bottom: 1px solid var(--line); overflow: hidden; }
   .ed-logo { font-weight: 700; font-size: 15px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; display: flex; align-items: center; gap: 8px; white-space: nowrap; flex-shrink: 0; }
   .ed-logo svg { width: 22px; height: 22px; }
+  .ed-res.res-unavailable { opacity: .42; }
   .ed-res { display: flex; align-items: center; gap: 5px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; padding: 3px 10px; font-size: 13px; font-weight: 600; min-width: 86px; flex-shrink: 0; }
   .ed-res .res-icon { font-size: 14px; }
   .ed-res .res-val { color: var(--text); }
@@ -127,12 +129,12 @@ const CSS = /* css */ `
   #ed-compass .w { top: 50%; left: 3px; transform: translateY(-50%); }
 
   /* Panel inferior */
-  #ed-bottom { position: absolute; left: 50%; transform: translateX(-50%); bottom: 12px; width: min(720px, 92vw); min-height: 150px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; pointer-events: auto; display: flex; flex-direction: column; box-shadow: 0 6px 30px rgba(0,0,0,0.55); overflow: hidden; }
+  #ed-bottom { position: absolute; left: 50%; transform: translateX(-50%); bottom: 12px; width: min(640px, 90vw); min-height: 118px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; pointer-events: auto; display: flex; flex-direction: column; box-shadow: 0 6px 30px rgba(0,0,0,0.55); overflow: hidden; }
   #ed-bottom-header { padding: 6px 12px; font-size: 13px; font-weight: 700; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; background: rgba(232,195,106,0.06); background-image: var(--weave); background-repeat: repeat-x; background-position: bottom; }
-  #ed-bottom-body { padding: 8px; display: flex; gap: 8px; min-height: 100px; }
+  #ed-bottom-body { padding: 6px 8px; display: flex; gap: 8px; min-height: 76px; }
   #ed-desc { flex: 1; font-size: 12px; color: var(--text-dim); line-height: 1.4; padding-right: 8px; }
   #ed-desc h3 { margin: 0 0 4px; font-size: 15px; color: var(--text); }
-  .ed-grid { display: flex; flex-wrap: wrap; gap: 6px; max-width: 430px; }
+  .ed-grid { display: flex; flex-wrap: wrap; gap: 5px; max-width: 380px; }
   .ed-card { pointer-events: auto; width: 66px; height: 66px; border-radius: 4px; border: 1px solid var(--line); background: var(--panel-2); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; font-size: 10px; text-align: center; position: relative; transition: border-color 0.12s, transform 0.06s; }
   .ed-card:hover { border-color: var(--gold); transform: translateY(-1px); }
   .ed-card .ic { font-size: 24px; line-height: 1; }
@@ -230,8 +232,8 @@ const CSS = /* css */ `
 
   .ed-cinematic { align-items: flex-end; justify-content: flex-start; background-size: 108%; background-position: 56% 50%; background-repeat: no-repeat; padding: clamp(26px, 6vw, 72px); animation: menu-drift 30s ease-in-out infinite alternate; }
   .ed-cinematic::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 70% 35%, transparent 0%, rgba(3,5,8,.18) 48%, rgba(3,5,8,.82) 100%); pointer-events: none; }
-  .ed-cinematic-copy { position: relative; z-index: 1; max-width: 680px; opacity: 0; transform: translateY(12px); }
-  .ed-cinematic.is-active .ed-cinematic-copy { animation: cinematic-in .8s ease forwards; }
+  .ed-cinematic-copy { position: relative; z-index: 1; max-width: 680px; margin-bottom: clamp(84px, 12vh, 130px); }
+  .ed-cinematic.is-active .ed-cinematic-copy { animation: cinematic-in .8s ease; }
   .ed-cinematic-series { color: var(--gold-dim); font-size: 10px; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 16px; }
   .ed-cinematic-kicker { color: var(--gold); font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; }
   .ed-cinematic-title { margin: 0 0 12px; color: #f4e7c2; font-size: clamp(34px, 5vw, 58px); line-height: 1.02; text-shadow: 0 4px 22px rgba(0,0,0,.72); }
@@ -243,7 +245,7 @@ const CSS = /* css */ `
   .ed-cinematic-actions { display: flex; align-items: center; gap: 4px; }
   .ed-cinematic-skip { opacity: .7; }
   .ed-cinematic-skip:hover { opacity: 1; }
-  @keyframes cinematic-in { to { opacity: 1; transform: none; } }
+  @keyframes cinematic-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
   .ed-campaign-hub { background-size: cover; background-position: center; background-repeat: no-repeat; }
   .ed-campaign-panel { width: min(1020px, 94vw); max-height: 90vh; overflow: auto; text-align: left; background: linear-gradient(180deg, rgba(12,16,21,.96), rgba(8,11,15,.94)); border: 1px solid var(--line); border-radius: 8px; padding: clamp(22px, 3vw, 38px); box-shadow: 0 24px 70px rgba(0,0,0,.72); }
@@ -262,6 +264,9 @@ const CSS = /* css */ `
   .ed-campaign-card .card-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
   .ed-campaign-card .ed-primary, .ed-campaign-card .ed-ghostbtn { padding: 7px 14px; font-size: 12px; }
   .ed-campaign-card .upcoming { color: var(--gold-dim); font-size: 11px; line-height: 1.5; }
+  .ed-skirmish-info { text-align: left; font-size: 12px; line-height: 1.55; color: var(--text-dim); background: rgba(232,195,106,0.06); border-left: 3px solid var(--gold-dim); border-radius: 4px; padding: 8px 12px; margin: 8px 0; }
+  .ed-skirmish-info b { color: var(--gold); }
+  .ed-map-preview { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto 8px; border: 1px solid var(--line); border-radius: 4px; image-rendering: auto; }
   .ed-campaign-foot { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
 
   .ed-briefing { width: min(900px, 94vw); max-height: 90vh; overflow: auto; text-align: left; background: linear-gradient(180deg, rgba(14,18,23,.97), rgba(8,11,15,.96)); border-color: rgba(232,195,106,.32); }
@@ -349,6 +354,11 @@ const CSS = /* css */ `
   @keyframes hint-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(232,195,106,0.55); } 50% { box-shadow: 0 0 0 9px rgba(232,195,106,0); } }
 
   #ed-help { position: absolute; right: 12px; bottom: 12px; font-size: 11px; color: var(--text-dim); background: rgba(10,12,16,0.7); padding: 8px 12px; border-radius: 4px; border: 1px solid rgba(232,195,106,0.15); max-width: 220px; line-height: 1.5; }
+  #ui-root.help-collapsed #ed-help { display: none; }
+  .ed-help-close { position: absolute; top: 2px; right: 4px; background: none; border: 0; color: var(--text-dim); font-size: 14px; cursor: pointer; padding: 0 3px; }
+  #ed-help-open { position: absolute; right: 12px; bottom: 12px; width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(232,195,106,0.35); background: rgba(10,12,16,0.8); color: var(--gold); font-weight: 700; cursor: pointer; display: none; }
+  #ui-root.help-collapsed #ed-help-open { display: block; }
+  #ui-root.menu-open #ed-help-open, #ui-root.tutorial-open #ed-help-open { display: none; }
   #ed-cursor { position: absolute; width: 20px; height: 20px; pointer-events: none; }
   .ed-error { color: var(--red); font-size: 12px; margin-top: 8px; min-height: 16px; }
   #ed-fps { position: absolute; top: 52px; right: 12px; font-size: 11px; color: var(--text-dim); background: rgba(0,0,0,0.4); padding: 2px 8px; border-radius: 3px; }
@@ -814,7 +824,19 @@ export class HUD {
   private buildHelp(): void {
     const help = this.el('div', '');
     help.id = 'ed-help';
-    help.innerHTML = `<b>Atajos</b><br>Clic izq: seleccionar · arrastra: área<br>Clic der: orden · Ctrl+der: atacar-mover<br>Shift: cola/rally · Ctrl+1-9: grupo · 1-9: recuperar<br>Minimapa: arrastra para mover · clic der: orden<br>Rueda: zoom · ${formatHotkeys()}`;
+    help.innerHTML = `<button class="ed-help-close" type="button" aria-label="Cerrar ayuda" title="Cerrar (F1)">×</button><b>Atajos</b><br>Clic izq: seleccionar · arrastra: área<br>Clic der: orden · Ctrl+der: atacar-mover<br>Shift: cola/rally · Ctrl+1-9: grupo · 1-9: recuperar<br>Minimapa: arrastra para mover · clic der: orden<br>Rueda: zoom · ${formatHotkeys()}`;
+    help.querySelector('.ed-help-close')?.addEventListener('click', () => this.toggleHelp());
+    const open = this.el('button', '', this.root) as HTMLButtonElement;
+    open.id = 'ed-help-open';
+    open.type = 'button';
+    open.textContent = '?';
+    open.title = 'Mostrar atajos (F1)';
+    open.addEventListener('click', () => this.toggleHelp());
+  }
+
+  /** Show/hide the in-match shortcut panel (F1 or ?). */
+  toggleHelp(): void {
+    this.root.classList.toggle('help-collapsed');
   }
 
   private buildFps(): void {
@@ -1657,7 +1679,7 @@ export class HUD {
       <div>
         <div class="ed-menu-kicker">LA SENDA DEL SOL · 3000 A.C. — HOY</div>
         <h1 class="ed-menu-title">EDADES <br>DEL PERÚ</h1>
-        <p class="ed-menu-sub">Un estratega en tiempo real a través de cinco mil años de historia peruana.</p>
+        <p class="ed-menu-sub">Un juego de estrategia en tiempo real a través de cinco mil años de historia peruana.</p>
       </div>
       <div class="ed-menu-actions"></div>
       <div class="ed-menu-footer">
@@ -1812,6 +1834,15 @@ export class HUD {
       <h2>Configura tu partida</h2>
       <div class="sub">Un enfrentamiento libre entre civilizaciones coetáneas.</div>
     `;
+    const civ = getCiv(this.game.settings.civPlayer);
+    const civInfo = this.el('div', 'ed-skirmish-info', panel);
+    civInfo.innerHTML = `<b>${civ.name}</b> · ${civ.description}<br><span>${civ.bonuses.join(' · ')}</span>`;
+    const preview = document.createElement('canvas');
+    preview.className = 'ed-map-preview';
+    preview.width = 260;
+    preview.height = 84;
+    panel.appendChild(preview);
+    this.drawMapPreview(preview, this.game.settings.mapType);
     const rows = this.el('div', 'row', panel);
     const periodLabels: Record<string, string> = {};
     for (const p of PERIODS) periodLabels[String(p.id)] = `${p.name} · ${p.dates}`;
@@ -1886,12 +1917,10 @@ export class HUD {
     rows2.appendChild(
       this.field(
         'Mapa',
-        this.select(
-          ['coast', 'andes', 'altiplano', 'jungle'] as const,
-          MAP_LABEL,
-          this.game.settings.mapType,
-          (v) => (this.game.settings.mapType = v),
-        ),
+        this.select(['coast', 'andes', 'altiplano', 'jungle'] as const, MAP_LABEL, this.game.settings.mapType, (v) => {
+          this.game.settings.mapType = v;
+          this.showSkirmishSetup();
+        }),
       ),
     );
     rows2.appendChild(
@@ -1916,6 +1945,28 @@ export class HUD {
         ),
       ),
     );
+    rows2.appendChild(
+      this.field(
+        'Población máxima',
+        this.select(
+          ['50', '100', '150', '200'],
+          { '50': '50', '100': '100', '150': '150', '200': '200' },
+          String(this.game.settings.populationCap),
+          (v) => (this.game.settings.populationCap = Number(v)),
+        ),
+      ),
+    );
+    rows2.appendChild(
+      this.field(
+        'Recursos iniciales',
+        this.select(
+          STARTING_RESOURCES,
+          { low: 'Escasos', standard: 'Estándar', rich: 'Abundantes' },
+          this.game.settings.startingResources,
+          (v) => (this.game.settings.startingResources = v),
+        ),
+      ),
+    );
     const startRow = this.el('div', 'row', panel);
     const back = this.el('button', 'ed-ghostbtn', startRow);
     back.textContent = '← Menú principal';
@@ -1928,6 +1979,37 @@ export class HUD {
       this.clearOverlays();
       this.game.resetGame();
     });
+  }
+
+  private drawMapPreview(canvas: HTMLCanvasElement, mapType: MapType): void {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const palette: Record<MapType, [string, string, string]> = {
+      coast: ['#2f5d73', '#b7a06a', '#6e8a4a'],
+      andes: ['#6b5136', '#9a7b4f', '#5f7a45'],
+      altiplano: ['#8a7b63', '#c2b07a', '#6f7b58'],
+      jungle: ['#1f4a35', '#3f6b3a', '#7a8a4a'],
+    };
+    const [water, land, accent] = palette[mapType] ?? palette.coast;
+    const g = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    g.addColorStop(0, water);
+    g.addColorStop(0.35, land);
+    g.addColorStop(1, accent);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.globalAlpha = 0.18;
+    for (let i = 0; i < 70; i++) {
+      const x = (i * 97) % canvas.width;
+      const y = (i * 53) % canvas.height;
+      ctx.fillStyle = i % 2 ? '#000' : '#fff';
+      ctx.fillRect(x, y, 3, 2);
+    }
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = 'rgba(6,9,12,.55)';
+    ctx.fillRect(8, canvas.height - 24, 132, 18);
+    ctx.fillStyle = '#f0dfb7';
+    ctx.font = '11px sans-serif';
+    ctx.fillText(MAP_LABEL[mapType], 14, canvas.height - 11);
   }
 
   /** Open the educational codex/encyclopedia (periods, civilizations, campaigns and dossiers). */
@@ -2356,7 +2438,7 @@ export class HUD {
         el.classList.toggle('res-low', val < 30);
       }
       // hide resources unavailable in the period (e.g. Stone without a Quarry)
-      this.resEls.stone.style.display = this.game.canBuildKind(BuildingKind.REFINERY) ? '' : 'none';
+      this.resEls.stone.classList.toggle('res-unavailable', !this.game.canBuildKind(BuildingKind.REFINERY));
       this.popEl.querySelector('span')!.textContent = `${p.populationUsed}/${p.populationCap}`;
       const period = getPeriod(this.game.settings.period);
       this.eraEl.querySelector('span:last-child')!.textContent = `${period.name} · ${period.dates}`;

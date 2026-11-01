@@ -315,16 +315,29 @@ export class Unit {
     this.blockedNotified = true;
     const order = this.orderQueue[0];
     const worker = this.kind === UnitKind.WORKER;
-    const target = order?.kind === OrderKind.GATHER ? 'recurso' : order?.kind === OrderKind.BUILD ? 'obra' : 'destino';
-    const cause =
-      reason === 'stuck'
-        ? 'no puede avanzar'
-        : reason === 'no-dropsite'
-          ? 'sin punto de entrega'
-          : `sin ruta al ${target}`;
+    const subject = worker ? 'Un obrero' : 'Una unidad';
+    let text: string;
+    if (reason === 'stuck') {
+      text = `${subject} no puede avanzar`;
+    } else if (reason === 'no-dropsite') {
+      text = `${subject} no tiene dónde entregar la carga`;
+    } else if (order?.kind === OrderKind.GATHER && order.entityId !== undefined) {
+      const node = this.ctx.resourceNodes.get(order.entityId);
+      const resource: Record<string, string> = {
+        food: 'los alimentos',
+        wood: 'la madera',
+        silver: 'la plata',
+        stone: 'la piedra',
+      };
+      text = `${subject} no encuentra camino a ${resource[node?.resource] ?? 'ese recurso'}`;
+    } else if (order?.kind === OrderKind.BUILD) {
+      text = `${subject} no encuentra camino a la obra`;
+    } else {
+      text = `${subject} no encuentra camino a su destino`;
+    }
     this.ctx.event('alert', {
       icon: '⚠️',
-      text: `${worker ? 'Trabajador' : 'Unidad'} ${this.id}: ${cause}`,
+      text,
       x: this.pos.x,
       z: this.pos.z,
       warn: true,

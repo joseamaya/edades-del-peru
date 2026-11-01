@@ -91,7 +91,7 @@ test('a blocked worker emits one actionable HUD alert', async ({ page }) => {
 
   expect(out.ok, out.reason ?? '').toBe(true);
   expect(out.count).toBe(1);
-  expect(out.text).toContain(`Trabajador ${out.workerId}`);
+  expect(out.text).toContain('Un obrero');
   expect(out.text).toContain('no puede avanzar');
   expect(out.before).not.toContain(out.workerId);
   expect(out.selected).toContain(out.workerId);
@@ -142,7 +142,7 @@ test('an unreachable gather target reports its reason', async ({ page }) => {
   });
 
   expect(out.ok, out.reason ?? '').toBe(true);
-  expect(out.text).toContain(`Trabajador ${out.workerId}`);
-  expect(out.text).toContain('sin ruta al recurso');
+  expect(out.text).toContain('Un obrero');
+  expect(out.text).toContain('no encuentra camino a');
   expect(out.busy, 'the blocked order should be dropped').toBe(false);
 });

@@ -1,6 +1,6 @@
 import { Game, setAutoStart } from './core/Game';
 import * as THREE from 'three';
-import { GameSettings, DEFAULT_SETTINGS, SETTINGS_VERSION } from './core/Config';
+import { GameSettings, DEFAULT_SETTINGS, SETTINGS_VERSION, STARTING_RESOURCES } from './core/Config';
 import { BuildingKind, CivId, HistoricalPeriod } from './core/types';
 import { getBuildingStats } from './model/defs/buildings';
 import { CIVS, civsForPeriod, getCiv } from './model/defs/civs';
@@ -48,6 +48,9 @@ function sanitizeSettings(raw: unknown): GameSettings {
   if (PERIOD_IDS.includes(r.period as number)) s.period = r.period as HistoricalPeriod;
   if (DIFFICULTIES.includes(r.difficulty as string)) s.difficulty = r.difficulty as GameSettings['difficulty'];
   if (Number.isFinite(r.populationCap)) s.populationCap = Math.max(1, Math.floor(r.populationCap as number));
+  if (STARTING_RESOURCES.includes(r.startingResources as never)) {
+    s.startingResources = r.startingResources as GameSettings['startingResources'];
+  }
   if (Number.isFinite(r.gameSpeed)) s.gameSpeed = r.gameSpeed as number;
   if (TIMES_OF_DAY.includes(r.timeOfDay as string)) s.timeOfDay = r.timeOfDay as GameSettings['timeOfDay'];
   if (typeof r.fogOfWar === 'boolean') s.fogOfWar = r.fogOfWar;

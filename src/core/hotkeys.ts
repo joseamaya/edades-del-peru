@@ -1,5 +1,6 @@
 /** Single source of truth for in-match keyboard shortcuts. */
 export type HotkeyAction =
+  | 'toggleHelp'
   | 'pause'
   | 'lastBattle'
   | 'centerBase'
@@ -18,6 +19,7 @@ export interface HotkeyDef {
 }
 
 export const HOTKEYS: HotkeyDef[] = [
+  { action: 'toggleHelp', key: 'f1', label: 'Mostrar/ocultar ayuda (también ?)', group: 'game' },
   { action: 'pause', key: 'p', label: 'Pausa', group: 'game' },
   { action: 'lastBattle', key: ' ', label: 'Última batalla', group: 'game' },
   { action: 'centerBase', key: 'h', label: 'Centrar Plaza Mayor', group: 'game' },
