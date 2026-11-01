@@ -264,7 +264,7 @@ describe('terrainSlope', () => {
 describe('gates', () => {
   it('open only for their owner and close on removal', () => {
     const pf = new Pathfinder(100, 2);
-    const gate = { x: 50, z: 50, radius: 2, owner: 0 };
+    const gate = { x: 50, z: 50, radius: 2, owners: [0] };
     pf.addGate(gate);
     expect(pf.isWalkable(50, 50, 0)).toBe(true);
     expect(pf.isWalkable(50, 50, 1)).toBe(false);
@@ -272,5 +272,14 @@ describe('gates', () => {
     expect(pf.pathfind(40, 50, 60, 50, 0).length).toBeGreaterThan(0);
     pf.removeGate(gate);
     expect(pf.isWalkable(50, 50, 0)).toBe(true);
+  });
+
+  it('opens for the whole owner team', () => {
+    const pf = new Pathfinder(100, 2);
+    const gate = { x: 50, z: 50, radius: 2, owners: [0, 1] };
+    pf.addGate(gate);
+    expect(pf.isWalkable(50, 50, 0)).toBe(true);
+    expect(pf.isWalkable(50, 50, 1)).toBe(true);
+    expect(pf.isWalkable(50, 50, 2)).toBe(false);
   });
 });

@@ -695,6 +695,12 @@ async function main() {
           failures.push(`${r.n}: sim p95 ${fmt(p95)} ms > ${RIG_BUDGETS.mixedP95Ms} ms`);
         }
       }
+      if (scenario === 'fortifications') {
+        const p99 = r.sim?.labels?.total?.p99;
+        if (p99 != null && p99 > RIG_BUDGETS.fortificationsP99Ms) {
+          failures.push(`${r.n}: sim p99 ${fmt(p99)} ms > ${RIG_BUDGETS.fortificationsP99Ms} ms`);
+        }
+      }
     }
     if (failures.length) {
       console.error(`\nbudget failures:\n- ${failures.join('\n- ')}`);

@@ -97,3 +97,37 @@ test('a dragged wall line closes the path', async ({ page }) => {
   expect(out.walls).toBeGreaterThanOrEqual(9);
   expect(out.blocked).toBe(true);
 });
+
+test('a saved gate keeps its ownership after loading', async ({ page }) => {
+  await boot(page);
+  const before = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    g.paused = false;
+    g.players[0].resources = { food: 5000, wood: 5000, silver: 5000, stone: 5000 };
+    const c = g.playerCenter(0);
+    const spot = g.pathfinder.nearestWalkablePoint(c.x + 18, c.z + 4, g.pathfinder.grid.cols, 1);
+    if (!spot) return { ok: false, reason: 'no spot' };
+    g.executeCommand({ kind: 'place', building: 'gate', x: spot.x, z: spot.z });
+    g.saveMatch();
+    return { ok: true, x: spot.x, z: spot.z };
+  });
+  expect(before.ok, before.reason ?? '').toBe(true);
+
+  await page.goto('/?load=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.buildings?.size > 0, null, {
+    timeout: 30_000,
+  });
+  const after = await page.evaluate((spot) => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    return {
+      gates: [...g.buildings.values()].filter((b: any) => b.kind === 'gate').length,
+      own: g.pathfinder.isWalkable(spot.x, spot.z, 0),
+      enemy: g.pathfinder.isWalkable(spot.x, spot.z, 1),
+    };
+  }, before);
+  expect(after.gates).toBeGreaterThanOrEqual(1);
+  expect(after.own).toBe(true);
+  expect(after.enemy).toBe(false);
+});

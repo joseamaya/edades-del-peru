@@ -129,8 +129,8 @@ export class Pathfinder {
   private componentsRevision = -1;
   private mainComponentId = 0;
   private mainComponentRevision = -1;
-  /** Gate regions: solid for enemies, passable for their owner's bit. */
-  private gates: { x: number; z: number; radius: number; owner: number }[] = [];
+  /** Gate regions: solid for enemies, passable for the listed owners. */
+  private gates: { x: number; z: number; radius: number; owners: number[] }[] = [];
   private gateMask = new Map<number, number>();
 
   constructor(size: number, cellSize: number) {
@@ -175,17 +175,17 @@ export class Pathfinder {
     this.revision++;
   }
 
-  /** A gate blocks everyone except its owner (and, by extension, its team). */
-  addGate(gate: { x: number; z: number; radius: number; owner: number }): void {
+  /** A gate blocks everyone except the listed owners (the owner's team). */
+  addGate(gate: { x: number; z: number; radius: number; owners: number[] }): void {
     this.gates.push(gate);
     this.applyGates();
     this.revision++;
   }
 
-  removeGate(gate: { x: number; z: number; radius: number; owner: number }): void {
+  removeGate(gate: { x: number; z: number; radius: number; owners: number[] }): void {
     const i = this.gates.indexOf(gate);
     if (i >= 0) this.gates.splice(i, 1);
-    this.rebuild();
+    this.applyGates();
     this.revision++;
   }
 
@@ -203,8 +203,8 @@ export class Pathfinder {
           if (x < 0 || z < 0 || x >= cols || z >= this.grid.rows) continue;
           if (Math.sqrt(dx * dx + dz * dz) > r) continue;
           const idx = z * cols + x;
-          this.gateMask.set(idx, (this.gateMask.get(idx) ?? 0) | (1 << gate.owner));
-          this.grid.walkable[idx] = 0;
+          const bits = gate.owners.reduce((mask, owner) => mask | (1 << owner), 0);
+          this.gateMask.set(idx, (this.gateMask.get(idx) ?? 0) | bits);
         }
       }
     }
@@ -251,7 +251,6 @@ export class Pathfinder {
     else this.grid.walkable.fill(1);
     this.applyStaticBlocked();
     for (const o of this.obstacles) this.rasterize(o);
-    this.applyGates();
   }
 
   /** Mark cells non-traversable due to water or too-steep terrain (call with terrain height). */
@@ -274,7 +273,6 @@ export class Pathfinder {
     this.terrainBlocked = this.grid.walkable.slice();
     this.applyStaticBlocked();
     for (const o of this.obstacles) this.rasterize(o);
-    this.applyGates();
     this.revision++;
   }
 

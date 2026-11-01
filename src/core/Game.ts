@@ -156,6 +156,7 @@ const AMBIENT_PROP_SEED = 7;
 const AMBIENT_FAUNA_SEED = 13;
 
 /** Campaign intro flyover framing, relative to the player base. */
+const WALL_SEGMENT_SPACING = 2;
 const INTRO_CAMERA = { offset: 34, fromHeight: 52, toZoom: 30, seconds: 2.6 } as const;
 /** Opening deployment: four workers and the scout, on the camera-facing arc. */
 const STARTING_UNIT_COUNT = 5;
@@ -1509,8 +1510,10 @@ export class Game {
   private registerObstacle(b: Building): void {
     const stats = getBuildingStats(b.kind, b.era);
     if (b.kind === BuildingKind.GATE) {
-      const gate = { x: b.pos.x, z: b.pos.z, radius: stats.size * 0.6, owner: b.owner };
-      this.obstacleHandles.set(b.id, { ...gate, gate: true });
+      const team = this.players[b.owner]?.team;
+      const owners = this.players.filter((p) => p.team === team).map((p) => p.id);
+      const gate = { x: b.pos.x, z: b.pos.z, radius: stats.size * 0.6, owners, gate: true as const };
+      this.obstacleHandles.set(b.id, gate);
       this.pathfinder.addGate(gate);
       return;
     }
@@ -2134,8 +2137,7 @@ export class Game {
     this.applyTerrainFarmYield(b);
     b.attach(this.scene);
     b.beginConstruction();
-    // Wall/gate segments are cheap and instant, so a drag can close a line.
-    if (kind === BuildingKind.WALL || kind === BuildingKind.GATE) b.addBuildProgress(9999);
+    if (BUILDING_DEFS[kind].instant) b.completeInstantly();
     this.buildings.set(b.id, b);
     this.registerObstacle(b);
     return b;
@@ -3088,13 +3090,15 @@ export class Game {
   /** Wall drag: one segment every 2 m along the drag line. */
   private commitWallLine(a: { x: number; z: number }, b: { x: number; z: number }): void {
     const length = Math.hypot(b.x - a.x, b.z - a.z);
-    const segments = Math.max(1, Math.ceil(length / 2));
+    const segments = Math.max(1, Math.ceil(length / WALL_SEGMENT_SPACING));
+    let blocked = 0;
     for (let i = 0; i <= segments; i++) {
       const t = i / segments;
       const x = a.x + (b.x - a.x) * t;
       const z = a.z + (b.z - a.z) * t;
-      this.placeAndOrder(BuildingKind.WALL, x, z);
+      if (!this.placeAndOrder(BuildingKind.WALL, x, z)) blocked++;
     }
+    if (blocked > 0) this.hud.showToast(`${blocked} tramo(s) de muralla sin espacio`, 'warning');
   }
 
   /** Place a building for player 0 through the command layer; returns the new building. */
@@ -4062,7 +4066,7 @@ export class Game {
       if (b.dead) {
         const h = this.obstacleHandles.get(b.id);
         if (h) {
-          if (h.gate) this.pathfinder.removeGate(h as { x: number; z: number; radius: number; owner: number });
+          if (h.gate) this.pathfinder.removeGate(h as { x: number; z: number; radius: number; owners: number[] });
           else this.pathfinder.removeObstacle(h);
           this.obstacleHandles.delete(b.id);
         }

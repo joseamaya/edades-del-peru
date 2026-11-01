@@ -32,6 +32,8 @@ export interface BuildingDef {
   dropTypes?: Array<'food' | 'wood' | 'silver' | 'stone'>;
   providesPop?: number;
   isUnique?: boolean; // only 1
+  /** Wall/gate segments finish instantly (no construction site). */
+  instant?: boolean;
 }
 
 const BASE: Resources = ZERO_RESOURCES;
@@ -205,6 +207,7 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
     },
   },
   wall: {
+    instant: true,
     id: BuildingKind.WALL,
     name: 'Muralla',
     description: 'Segmento defensivo que bloquea el paso. Coloca varios en cadena para cerrar un frente.',
@@ -214,12 +217,13 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
       [Era.FORMATIVE]: { type: 'wall' },
       [Era.REGIONAL_STATES]: { type: 'wall' },
       [Era.TAHUANTINSUYO]: { type: 'wall' },
-      [Era.VICEROYALTY]: { type: 'wall' },
-      [Era.REPUBLIC]: { type: 'wall' },
-      [Era.CONTEMPORARY]: { type: 'wall' },
+      [Era.VICEROYALTY]: { type: 'wall_colonial' },
+      [Era.REPUBLIC]: { type: 'wall_modern' },
+      [Era.CONTEMPORARY]: { type: 'wall_modern' },
     },
   },
   gate: {
+    instant: true,
     id: BuildingKind.GATE,
     name: 'Puerta',
     description: 'Paso fortificado: tus unidades pueden cruzar, las enemigas no.',
@@ -229,9 +233,9 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
       [Era.FORMATIVE]: { type: 'gate' },
       [Era.REGIONAL_STATES]: { type: 'gate' },
       [Era.TAHUANTINSUYO]: { type: 'gate' },
-      [Era.VICEROYALTY]: { type: 'gate' },
-      [Era.REPUBLIC]: { type: 'gate' },
-      [Era.CONTEMPORARY]: { type: 'gate' },
+      [Era.VICEROYALTY]: { type: 'gate_colonial' },
+      [Era.REPUBLIC]: { type: 'gate_modern' },
+      [Era.CONTEMPORARY]: { type: 'gate_modern' },
     },
   },
   tower: {
@@ -244,9 +248,9 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
       [Era.FORMATIVE]: { type: 'tower' },
       [Era.REGIONAL_STATES]: { type: 'tower' },
       [Era.TAHUANTINSUYO]: { type: 'tower' },
-      [Era.VICEROYALTY]: { type: 'tower' },
-      [Era.REPUBLIC]: { type: 'tower' },
-      [Era.CONTEMPORARY]: { type: 'tower' },
+      [Era.VICEROYALTY]: { type: 'tower_colonial' },
+      [Era.REPUBLIC]: { type: 'tower_modern' },
+      [Era.CONTEMPORARY]: { type: 'tower_modern' },
     },
   },
   fortress: {
@@ -611,3 +615,13 @@ export const BUILDING_INFO: Record<BuildingKind, { name: string; icon: string; c
   farm: { name: 'Andén', icon: '🌽', category: 'Economía' },
   wonder: { name: 'Huaca Sagrada', icon: '🗿', category: 'Victoria' },
 };
+
+/** Projectiles fired by a defensive building per cooldown (base + garrison). */
+export function defensiveShotCount(garrisoned: number): number {
+  return 1 + Math.max(0, garrisoned);
+}
+
+/** Damage per defensive projectile: the base shot is full, each garrison shot is 35%. */
+export function defensiveShotDamage(attack: number, index: number): number {
+  return index === 0 ? attack : attack * 0.35;
+}

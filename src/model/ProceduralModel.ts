@@ -1228,13 +1228,19 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
       break;
 
     case 'wall':
-      buildWall(b);
+    case 'wall_colonial':
+    case 'wall_modern':
+      buildWall(b, type.endsWith('_modern') ? 'modern' : type.endsWith('_colonial') ? 'colonial' : 'stone');
       break;
     case 'gate':
-      buildGate(b);
+    case 'gate_colonial':
+    case 'gate_modern':
+      buildGate(b, type.endsWith('_modern') ? 'modern' : type.endsWith('_colonial') ? 'colonial' : 'stone');
       break;
     case 'tower':
-      buildTower(b);
+    case 'tower_colonial':
+    case 'tower_modern':
+      buildTower(b, type.endsWith('_modern') ? 'modern' : type.endsWith('_colonial') ? 'colonial' : 'stone');
       break;
 
     case 'fortress_imperial':
@@ -1301,32 +1307,44 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
   return b.finish();
 }
 
-function buildWall(b: Builder): void {
-  const stone = b.pal.stone;
-  b.box(2.2, 1.8, 0.9, stone, { y: 0.9 });
-  b.box(2.35, 0.18, 1.05, b.pal.detail, { y: 1.82 });
-  b.box(0.45, 0.6, 1.05, b.pal.darkWood, { x: -0.7, y: 2.1 });
-  b.box(0.45, 0.6, 1.05, b.pal.darkWood, { x: 0.7, y: 2.1 });
+type FortStyle = 'stone' | 'colonial' | 'modern';
+
+function buildWall(b: Builder, style: FortStyle): void {
+  const wall = style === 'modern' ? b.pal.concrete : style === 'colonial' ? b.pal.brick : b.pal.stone;
+  const cap = style === 'modern' ? b.pal.darkMetal : b.pal.detail;
+  b.box(2.2, style === 'modern' ? 1.5 : 1.8, 0.9, wall, { y: style === 'modern' ? 0.75 : 0.9 });
+  b.box(2.35, 0.18, 1.05, cap, { y: style === 'modern' ? 1.55 : 1.82 });
+  if (style === 'modern') {
+    b.box(1.2, 0.18, 1.05, b.pal.darkMetal, { y: 1.2 });
+  } else {
+    b.box(0.45, 0.6, 1.05, b.pal.darkWood, { x: -0.7, y: 2.1 });
+    b.box(0.45, 0.6, 1.05, b.pal.darkWood, { x: 0.7, y: 2.1 });
+  }
 }
 
-function buildGate(b: Builder): void {
-  const stone = b.pal.stone;
-  b.box(0.55, 2.4, 1.0, stone, { x: -0.95, y: 1.2 });
-  b.box(0.55, 2.4, 1.0, stone, { x: 0.95, y: 1.2 });
+function buildGate(b: Builder, style: FortStyle): void {
+  const wall = style === 'modern' ? b.pal.concrete : style === 'colonial' ? b.pal.brick : b.pal.stone;
+  const door = style === 'modern' ? b.pal.darkMetal : b.pal.darkWood;
+  b.box(0.55, 2.4, 1.0, wall, { x: -0.95, y: 1.2 });
+  b.box(0.55, 2.4, 1.0, wall, { x: 0.95, y: 1.2 });
   b.box(2.45, 0.35, 1.1, b.pal.detail, { y: 2.45 });
-  b.box(1.2, 1.9, 0.35, b.pal.darkWood, { y: 0.95 });
+  b.box(1.2, 1.9, 0.35, door, { y: 0.95 });
   b.box(0.15, 0.5, 0.5, b.pal.metal, { x: 0.42, y: 1.0 });
 }
 
-function buildTower(b: Builder): void {
-  const stone = b.pal.stone;
-  b.cyl(1.1, 1.35, 3.0, 10, stone, { y: 1.5 });
-  b.cyl(1.3, 1.3, 0.35, 10, b.pal.detail, { y: 3.15 });
-  for (let i = 0; i < 6; i++) {
-    const a = (i / 6) * Math.PI * 2;
-    b.box(0.28, 0.65, 0.28, b.pal.detail, { x: Math.cos(a) * 1.15, y: 3.55, z: Math.sin(a) * 1.15 });
+function buildTower(b: Builder, style: FortStyle): void {
+  const wall = style === 'modern' ? b.pal.concrete : style === 'colonial' ? b.pal.brick : b.pal.stone;
+  b.cyl(1.1, 1.35, 3.0, style === 'modern' ? 8 : 10, wall, { y: 1.5 });
+  b.cyl(1.3, 1.3, 0.35, style === 'modern' ? 8 : 10, b.pal.detail, { y: 3.15 });
+  if (style === 'modern') {
+    b.box(1.0, 0.5, 0.35, b.pal.darkMetal, { y: 3.3 });
+  } else {
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      b.box(0.28, 0.65, 0.28, b.pal.detail, { x: Math.cos(a) * 1.15, y: 3.55, z: Math.sin(a) * 1.15 });
+    }
+    b.box(0.9, 0.9, 0.9, b.pal.darkWood, { y: 2.5 });
   }
-  b.box(0.9, 0.9, 0.9, b.pal.darkWood, { y: 2.5 });
 }
 
 /** Civic accent: a banner with the player color. */
