@@ -72,12 +72,12 @@ Debug URL parameters:
 The campaign is a saga of **four chapters**. All four, from _Culturas Preincas_ to
 _Independencia y República_, are playable.
 
-| Chapter | Campaign                      | Focus                               | Release                    |
-| ------- | ----------------------------- | ----------------------------------- | -------------------------- |
-| I       | **Culturas Preincas**         | Caral, Chavín, Moche/Recuay, Wari   | **Four missions playable** |
+| Chapter | Campaign                      | Focus                                         | Release                     |
+| ------- | ----------------------------- | --------------------------------------------- | --------------------------- |
+| I       | **Culturas Preincas**         | Caral, Chavín, Moche/Recuay, Wari             | **Four missions playable**  |
 | II      | **El Tahuantinsuyo**          | Yahuar Pampa, the Chimú war and the civil war | **Three missions playable** |
-| III     | **El Virreinato**             | Túpac Amaru II and colonial Peru    | **One mission playable**   |
-| IV      | **Independencia y República** | Independence, Arica and modern Peru | **Two missions playable**  |
+| III     | **El Virreinato**             | Túpac Amaru II and colonial Peru              | **One mission playable**    |
+| IV      | **Independencia y República** | Independence, Arica and modern Peru           | **Two missions playable**   |
 
 Mission ids remain stable (`m1_caral` … `m9_guerra_pacifico`, plus `m6b_guerra_civil`). All released missions appear in
 menus, the Codex and progress; `?mission=ID` remains available for QA.
@@ -112,9 +112,11 @@ The game teaches history while you play:
 | Convert (Amauta / Misionero) | Right-click an enemy unit             |
 | Queue orders / rally point   | Shift + Right button                  |
 | Pan                          | WASD / arrows / edges / middle button |
-| Zoom                         | Wheel · **Q/E** rotate · **F** follow |
-| Last battle                  | Space · **H** Plaza Mayor             |
+| Zoom                         | Wheel                                 |
+| Last battle / center base    | Space / **H** (Plaza Mayor)           |
 | Build platform / dwelling    | G / V                                 |
+| Rotate camera (optional)     | Z / X                                 |
+| Follow unit                  | **F**                                 |
 | Pause                        | P · **☰** menu                       |
 
 ## Historical periods (10)

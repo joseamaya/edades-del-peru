@@ -47,6 +47,7 @@ import { openCodex } from './Codex';
 import { bus } from '../core/EventBus';
 import { hasSave } from '../game/SaveGame';
 import { hasReplay } from '../game/replay';
+import { formatHotkeys } from '../core/hotkeys';
 
 function escapeHtml(s: string): string {
   const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
@@ -806,7 +807,7 @@ export class HUD {
   private buildHelp(): void {
     const help = this.el('div', '');
     help.id = 'ed-help';
-    help.innerHTML = `<b>Atajos</b><br>Clic izq: seleccionar · arrastra: área<br>Clic der: orden · Ctrl+der: atacar-mover<br>Shift: cola/rally · Ctrl+1-9: grupo · 1-9: recuperar<br>Minimapa: arrastra para mover · clic der: orden<br>Rueda: zoom · Q/E: rotar (opcional) · H/F/G/V: edificios · P: pausa`;
+    help.innerHTML = `<b>Atajos</b><br>Clic izq: seleccionar · arrastra: área<br>Clic der: orden · Ctrl+der: atacar-mover<br>Shift: cola/rally · Ctrl+1-9: grupo · 1-9: recuperar<br>Minimapa: arrastra para mover · clic der: orden<br>Rueda: zoom · ${formatHotkeys()}`;
   }
 
   private buildFps(): void {
@@ -1960,7 +1961,7 @@ export class HUD {
       <b>Shift + Botón derecho</b><span>Encolar órdenes / fijar punto de reunión</span>
       <b>G · V</b><span>Construir andén · vivienda</span>
       <b>WASD / flechas / bordes</b><span>Mover la cámara</span>
-      <b>Rueda</b><span>Zoom · <b>Q/E</b> rotar · <b>F</b> seguir</span>
+      <b>Rueda</b><span>Zoom · <b>Z/X</b> rotar (si está activada) · <b>F</b> seguir</span>
       <b>H</b><span>Ir a la Plaza Mayor · <b>Espacio</b> última batalla</span>
       <b>P</b><span>Pausa · <b>☰ Menú</b> opciones y salir</span>
       <b>Meta</b><span>Destruye a tu rival o construye la Huaca Sagrada y protégela 5 min</span>
@@ -2196,7 +2197,7 @@ export class HUD {
     );
     this.toggle(
       row,
-      'Rotar cámara (Q/E)',
+      'Rotar cámara (Z/X)',
       ['Activada', 'Desactivada'],
       () => this.game.settings.rotateCamera,
       (v) => {

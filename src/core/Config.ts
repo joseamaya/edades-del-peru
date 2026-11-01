@@ -23,7 +23,7 @@ export interface GameSettings {
   quality: 'high' | 'medium' | 'low';
   /** Settings schema version, for one-time migrations of stored settings. */
   settingsVersion: number;
-  /** Allow rotating the camera with Q/E (AoE2 DE style). Off = fixed camera like SC2. */
+  /** Allow rotating the camera with Z/X (AoE2 DE style). Off = fixed camera like SC2. */
   rotateCamera: boolean;
   /** Camera pan speed preset (keyboard + edge scroll). */
   cameraSpeed: 'slow' | 'normal' | 'fast';

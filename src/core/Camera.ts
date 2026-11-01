@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { keyFor } from './hotkeys';
 import { damp, smoothstep } from '../util/math';
 import { isTypingTarget } from '../util/dom';
 import {
@@ -22,7 +23,7 @@ export interface CameraTarget {
 }
 
 /**
- * RTS camera: orbits a ground point with zoom, Q/E rotation,
+ * RTS camera: orbits a ground point with zoom, Z/X rotation,
  * WASD/edge-scroll/middle-drag panning, and smoothed follow.
  *
  * Inputs only move `desiredTarget`; the camera keeps interpolating toward it
@@ -145,11 +146,11 @@ export class RTSCamera {
     if (isTypingTarget(e.target)) return;
     const k = e.key.toLowerCase();
     this.keys.add(k);
-    if ((k === 'q' || k === 'e') && this.rotationEnabled) {
-      const dir = k === 'q' ? 1 : -1;
-      this.yaw += dir * 0.045;
-      this.refreshZoomLimit();
-    }
+    if (!this.rotationEnabled) return;
+    const dir = k === keyFor('rotateLeft') ? 1 : k === keyFor('rotateRight') ? -1 : 0;
+    if (dir === 0) return;
+    this.yaw += dir * 0.045;
+    this.refreshZoomLimit();
   };
 
   private onKeyUp = (e: KeyboardEvent): void => {
@@ -249,7 +250,7 @@ export class RTSCamera {
     return this.fly !== null;
   }
 
-  /** Enable camera rotation (Q/E). Off by default (fixed camera, SC2 style). */
+  /** Enable camera rotation (Z/X). Off by default (fixed camera, SC2 style). */
   setRotationEnabled(on: boolean): void {
     this.rotationEnabled = on;
   }
