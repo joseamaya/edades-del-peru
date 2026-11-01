@@ -402,7 +402,7 @@ Definition of Done and the building audit see
   AI perception, mission timers and combat replay identically regardless of frame batching. `GameLoop` passes
   `stepCount * step` and only advances that counter when the step actually simulated, so pausing does not jump
   the clock. Sky, water, camera and resource sway keep real time so they do not lag when the accumulator drops.
-  Cosmetic randomness uses `cosmeticRandom()` (or `Game.fxRng`), and ESLint forbids `Math.random` in
+  Cosmetic randomness uses `cosmeticRandom()` or the cosmetic `Game.fxRng`, and ESLint forbids `Math.random` in
   `src/game/**` and `src/entities/**`. This changed AI cadence, so `REPLAY_VERSION` is 11. Guarded by the
   1-vs-8-step hash test in `tests/e2e/replay.spec.ts`.
 - **Opening workers**: the human player does not receive automatic GATHER orders at match start (so the opening

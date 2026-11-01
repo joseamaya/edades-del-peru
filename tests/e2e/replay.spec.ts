@@ -78,7 +78,7 @@ test('the same seed and commands produce the same state', async ({ page }) => {
   expect(second.hash).toBe(first.hash);
 });
 
-test('a recorded replay reproduces the match', async ({ page }) => {
+test('a recorded replay reproduces the match', { tag: '@smoke' }, async ({ page }) => {
   await bootMatch(page);
   const recorded = await scriptedRun(page, true);
   const commands = await page.evaluate(() => {
@@ -139,7 +139,7 @@ test('the main menu offers the last replay and plays it', async ({ page }) => {
   expect(new URL(page.url()).searchParams.get('replay')).toBe('1');
 });
 
-test('the same steps hash equally when frames are batched 1 vs 8', async ({ page }) => {
+test('the same steps hash equally when frames are batched 1 vs 8', { tag: '@smoke' }, async ({ page }) => {
   await bootMatch(page);
   const one = await scriptedRun(page, false, 900, 1);
   await bootMatch(page);

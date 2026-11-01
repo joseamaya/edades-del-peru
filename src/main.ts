@@ -184,8 +184,9 @@ async function boot(): Promise<void> {
     if (demo) {
       const update = game.loop.onUpdate;
       game.loop.onUpdate = (dt, t) => {
-        update(dt, t);
+        const stepped = update(dt, t);
         demo.update(dt);
+        return stepped;
       };
       game.introEnabled = false;
       game.onDestroy(() => demo.dispose());
