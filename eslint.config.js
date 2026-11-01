@@ -16,6 +16,24 @@ export default tseslint.config(
     },
   },
   {
+    files: ['src/game/**/*.ts', 'src/entities/**/*.ts'],
+    rules: {
+      'no-restricted-properties': [
+        'error',
+        {
+          object: 'Math',
+          property: 'random',
+          message: 'Use the seeded RNG for simulation state; cosmetics use the dedicated FX RNG.',
+        },
+      ],
+    },
+  },
+  {
+    // Visual-only jitter (smoke, sway, muzzle light) never feeds gameplay state.
+    files: ['src/entities/Building.ts', 'src/entities/Projectile.ts', 'src/entities/ResourceNode.ts'],
+    rules: { 'no-restricted-properties': 'off' },
+  },
+  {
     files: ['scripts/**/*.{mjs,ts}', '*.mjs'],
     languageOptions: {
       globals: {

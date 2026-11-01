@@ -120,3 +120,52 @@ test('the main menu offers the last replay and plays it', async ({ page }) => {
   });
   expect(new URL(page.url()).searchParams.get('replay')).toBe('1');
 });
+
+/** Same scripted match, but with the old wall-clock `t` repeated across a batch of steps. */
+async function batchedRun(page: Page, batch: number, steps = 900): Promise<number> {
+  return page.evaluate(
+    ({ batch, steps }) => {
+      const g = (window as unknown as { game: any }).game;
+      g.loop.stop();
+      g.paused = false;
+      const node = [...g.resourceNodes.values()].find((x: any) => !x.dead && x.resource === 'wood');
+      const workers = [...g.units.values()].filter((u: any) => u.owner === 0 && u.kind === 'worker');
+      const center = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center');
+      let step = 0;
+      let frame = 0;
+      while (step < steps) {
+        // A frame's wall time is shared by all of its sub-steps, as the old loop did.
+        const frameTime = (frame * batch) / 60;
+        for (let j = 0; j < batch && step < steps; j++, step++) {
+          if (step === 30 && node) {
+            for (const w of workers) {
+              g.executeCommand({
+                kind: 'order',
+                unitIds: [w.id],
+                order: { kind: 'gather', entityId: node.id },
+                clear: true,
+              });
+            }
+          }
+          if (step === 120 && center) g.executeCommand({ kind: 'train', buildingId: center.id, unit: 'worker' });
+          if (step === 200 && center) {
+            const spot = g.findFreeSpot(center.pos.x + 10, center.pos.z, 4);
+            if (spot) g.executeCommand({ kind: 'place', building: 'house', x: spot.x, z: spot.z });
+          }
+          g.update(1 / 60, frameTime);
+        }
+        frame++;
+      }
+      return g.stateHash();
+    },
+    { batch, steps },
+  );
+}
+
+test('the same steps hash equally when frames are batched 1 vs 8', async ({ page }) => {
+  await bootMatch(page);
+  const one = await batchedRun(page, 1);
+  await bootMatch(page);
+  const eight = await batchedRun(page, 8);
+  expect(eight).toBe(one);
+});

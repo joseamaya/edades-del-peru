@@ -7,6 +7,7 @@ export class GameLoop {
   private lastFps = 0;
   private frames = 0;
   private fpsTimer = 0;
+  private stepCount = 0;
 
   speed = 1;
   onUpdate: (dt: number, time: number) => void = () => {};
@@ -40,7 +41,8 @@ export class GameLoop {
       const step = 1 / 60;
       let iterations = 0;
       while (this.acc >= step && iterations < 8) {
-        this.onUpdate(step, now / 1000);
+        this.onUpdate(step, this.stepCount * step);
+        this.stepCount++;
         this.acc -= step;
         iterations++;
       }

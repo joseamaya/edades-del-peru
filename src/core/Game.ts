@@ -255,6 +255,7 @@ export class Game {
   private pendingSnapshot: SaveData | null = null;
   /** Simulation step counter (fixed 60Hz ticks), used to time recorded commands. */
   stepCount = 0;
+  private fxRng!: RNG;
   private recorder: ReplayRecorder | null = null;
   private replay: ReplayPlayer | null = null;
   private qualityGovernor!: QualityGovernor;
@@ -297,6 +298,8 @@ export class Game {
     this.siteDef = getAuthoredSite(this.missionLayout?.site?.id);
     this.enemyActive = !mis || mis.enemy.active;
     this.rng = new RNG((this.settings.mapSeed * 2654435761) >>> 0);
+    // Cosmetic-only randomness must not consume the simulation sequence.
+    this.fxRng = new RNG((this.settings.mapSeed * 2654435761 + 0x9e3779b9) >>> 0);
     this.initRenderer();
     const cinematic = this.settings.cinematic && !this.softwareFallback;
     this.postfx.setCinematic(cinematic);
@@ -3309,7 +3312,7 @@ export class Game {
         gravity: 6,
         spread: 1.4,
       });
-      if (Math.random() < 0.5)
+      if (this.fxRng.float() < 0.5)
         this.particles.emit({
           x: target.pos.x,
           y: target.pos.y + 1.4,
@@ -3806,7 +3809,10 @@ export class Game {
 
   // --- main update ---
 
-  private update(dt: number, t: number): void {
+  private update(dt: number, _time: number): void {
+    // Simulation time comes from the fixed-step counter, never from wall time:
+    // AI perception, mission timers and combat must replay identically.
+    const t = this.stepCount * dt;
     if (this.paused) {
       this.hud.update(dt, t);
       return;
