@@ -12,6 +12,7 @@ import {
   HistoricalPeriod,
   AlertReason,
   CombatStance,
+  MapType,
 } from '../core/types';
 import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../model/defs/buildings';
 import { getBuildingCard } from '../model/defs/buildingCards';
@@ -20,7 +21,7 @@ import { TECHS, techAvailable } from '../model/defs/techs';
 import { ERA_DEFS } from '../model/defs/eras';
 import { PERIODS, getPeriod } from '../model/defs/periods';
 import { civsForPeriod, getCiv } from '../model/defs/civs';
-import { RESOURCE_INFO, MAP_LABEL, GameSettings, CAMERA_SPEED_SCALE } from '../core/Config';
+import { RESOURCE_INFO, MAP_LABEL, GameSettings, CAMERA_SPEED_SCALE, STARTING_RESOURCES } from '../core/Config';
 import { formatNumber, formatStat } from '../util/math';
 import { artIntroForMission } from '../art/manifest';
 import { artFigureHtml, includeUnreviewedArt } from './ArtFigure';
@@ -353,7 +354,7 @@ const CSS = /* css */ `
   @keyframes hint-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(232,195,106,0.55); } 50% { box-shadow: 0 0 0 9px rgba(232,195,106,0); } }
 
   #ed-help { position: absolute; right: 12px; bottom: 12px; font-size: 11px; color: var(--text-dim); background: rgba(10,12,16,0.7); padding: 8px 12px; border-radius: 4px; border: 1px solid rgba(232,195,106,0.15); max-width: 220px; line-height: 1.5; }
-  #ed-help.collapsed, #ui-root.help-collapsed #ed-help { display: none; }
+  #ui-root.help-collapsed #ed-help { display: none; }
   .ed-help-close { position: absolute; top: 2px; right: 4px; background: none; border: 0; color: var(--text-dim); font-size: 14px; cursor: pointer; padding: 0 3px; }
   #ed-help-open { position: absolute; right: 12px; bottom: 12px; width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(232,195,106,0.35); background: rgba(10,12,16,0.8); color: var(--gold); font-weight: 700; cursor: pointer; display: none; }
   #ui-root.help-collapsed #ed-help-open { display: block; }
@@ -1916,12 +1917,10 @@ export class HUD {
     rows2.appendChild(
       this.field(
         'Mapa',
-        this.select(
-          ['coast', 'andes', 'altiplano', 'jungle'] as const,
-          MAP_LABEL,
-          this.game.settings.mapType,
-          (v) => (this.game.settings.mapType = v),
-        ),
+        this.select(['coast', 'andes', 'altiplano', 'jungle'] as const, MAP_LABEL, this.game.settings.mapType, (v) => {
+          this.game.settings.mapType = v;
+          this.showSkirmishSetup();
+        }),
       ),
     );
     rows2.appendChild(
@@ -1961,7 +1960,7 @@ export class HUD {
       this.field(
         'Recursos iniciales',
         this.select(
-          ['low', 'standard', 'rich'] as const,
+          STARTING_RESOURCES,
           { low: 'Escasos', standard: 'Estándar', rich: 'Abundantes' },
           this.game.settings.startingResources,
           (v) => (this.game.settings.startingResources = v),
@@ -1982,10 +1981,10 @@ export class HUD {
     });
   }
 
-  private drawMapPreview(canvas: HTMLCanvasElement, mapType: string): void {
+  private drawMapPreview(canvas: HTMLCanvasElement, mapType: MapType): void {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    const palette: Record<string, [string, string, string]> = {
+    const palette: Record<MapType, [string, string, string]> = {
       coast: ['#2f5d73', '#b7a06a', '#6e8a4a'],
       andes: ['#6b5136', '#9a7b4f', '#5f7a45'],
       altiplano: ['#8a7b63', '#c2b07a', '#6f7b58'],
@@ -2010,7 +2009,7 @@ export class HUD {
     ctx.fillRect(8, canvas.height - 24, 132, 18);
     ctx.fillStyle = '#f0dfb7';
     ctx.font = '11px sans-serif';
-    ctx.fillText(MAP_LABEL[mapType as keyof typeof MAP_LABEL] ?? mapType, 14, canvas.height - 11);
+    ctx.fillText(MAP_LABEL[mapType], 14, canvas.height - 11);
   }
 
   /** Open the educational codex/encyclopedia (periods, civilizations, campaigns and dossiers). */

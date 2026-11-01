@@ -57,7 +57,14 @@ import { getHeritageBuilding, type HeritageBuildingDef, type HeritageBuildingId 
 import { getPeriod } from '../model/defs/periods';
 import { BuildContext, buildModel, buildLandmarkModel, disposeModel, clearModelCaches } from '../model/ProceduralModel';
 import { clearTextureCache } from '../rendering/Textures';
-import { CAMERA_SPEED_SCALE, DEFAULT_SETTINGS, GameSettings, OPENING_BASE_CLEARANCE, RESOURCE_INFO } from './Config';
+import {
+  CAMERA_SPEED_SCALE,
+  DEFAULT_SETTINGS,
+  GameSettings,
+  OPENING_BASE_CLEARANCE,
+  RESOURCE_INFO,
+  STARTING_BANKS,
+} from './Config';
 import { QualityGovernor } from './QualityGovernor';
 import {
   applyMapOverrides,
@@ -545,12 +552,7 @@ export class Game {
 
   private initPlayers(): void {
     const civs = [this.settings.civPlayer, this.settings.civAI];
-    const preset = this.missionDef ? 'standard' : this.settings.startingResources;
-    const startBank: Record<typeof preset, Resources> = {
-      low: { food: 150, wood: 150, silver: 50, stone: 0 },
-      standard: { food: 250, wood: 220, silver: 100, stone: 50 },
-      rich: { food: 500, wood: 400, silver: 250, stone: 150 },
-    };
+    const preset = this.missionDef ? 'standard' : (this.settings.startingResources ?? 'standard');
     for (let i = 0; i < 2; i++) {
       const civ = getCiv(civs[i] as CivId);
       const isAI = i === 1;
@@ -569,7 +571,7 @@ export class Game {
         colorHex,
         isAI,
         difficulty: i === 1 ? 1 : 0,
-        resources: { ...startBank[preset] },
+        resources: { ...(STARTING_BANKS[preset] ?? STARTING_BANKS.standard) },
         populationUsed: 0,
         populationCap: this.settings.populationCap,
         era: this.settings.startingEra,
@@ -3046,16 +3048,17 @@ export class Game {
     if (isTypingTarget(e.target)) return;
     const k = e.key.toLowerCase();
     if (this.gameEnded) return;
-    if (k === keyFor('toggleHelp') || k === '?') {
-      this.hud.toggleHelp();
-      return;
-    }
     if (k === keyFor('pause')) {
       this.togglePause();
       return;
     }
     // do not process game shortcuts with a menu open or while paused
     if (this.paused || this.hud.hasBlockingOverlay()) return;
+    if (k === keyFor('toggleHelp') || k === '?') {
+      e.preventDefault();
+      this.hud.toggleHelp();
+      return;
+    }
     if (k === 'escape') {
       this.cancelPlacement();
       this.selectedUnits = [];

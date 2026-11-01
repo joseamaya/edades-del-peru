@@ -1,4 +1,4 @@
-import { CivId, Era, MapType, HistoricalPeriod } from './types';
+import { CivId, Era, MapType, HistoricalPeriod, Resources } from './types';
 
 export interface GameSettings {
   mapSize: number; // 256 | 192 | 128
@@ -12,7 +12,7 @@ export interface GameSettings {
   startingEra: Era;
   populationCap: number;
   /** Skirmish starting bank: a low, standard or rich opening. */
-  startingResources: 'low' | 'standard' | 'rich';
+  startingResources: StartingResourcePreset;
   gameSpeed: number; // multiplier (0.5x-3x)
   timeOfDay: 'morning' | 'noon' | 'dusk' | 'night';
   fogOfWar: boolean;
@@ -37,6 +37,16 @@ export interface GameSettings {
 }
 
 export type Difficulty = GameSettings['difficulty'];
+
+export const STARTING_RESOURCES = ['low', 'standard', 'rich'] as const;
+export type StartingResourcePreset = (typeof STARTING_RESOURCES)[number];
+
+/** Opening banks for skirmish matches. */
+export const STARTING_BANKS: Record<StartingResourcePreset, Resources> = {
+  low: { food: 150, wood: 150, silver: 50, stone: 0 },
+  standard: { food: 250, wood: 220, silver: 100, stone: 50 },
+  rich: { food: 500, wood: 400, silver: 250, stone: 150 },
+};
 
 /** Current settings schema version; bump when stored defaults must migrate. */
 export const SETTINGS_VERSION = 2;

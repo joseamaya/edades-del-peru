@@ -61,7 +61,7 @@ test('the skirmish setup shows the civ bonus and applies starting resources', as
   await boot(page, '/?menu=1');
   await page.getByRole('button', { name: /Escaramuza/ }).click();
   await expect(page.locator('.ed-skirmish-info')).toBeVisible();
-  await expect(page.locator('.ed-skirmish-info')).toContainText('moche');
+  await expect(page.locator('.ed-skirmish-info b')).toContainText('Moche');
   await expect(page.locator('.ed-map-preview')).toBeVisible();
 
   await page.locator('.ed-field', { hasText: 'Recursos iniciales' }).locator('select').selectOption('rich');
@@ -78,7 +78,7 @@ test('the skirmish setup shows the civ bonus and applies starting resources', as
   expect(bank.cap).toBe(150);
 });
 
-test('F1 and ? toggle the shortcut panel', { tag: '@smoke' }, async ({ page }) => {
+test('F1 and ? toggle the shortcut panel', async ({ page }) => {
   await boot(page, '/?play=1&seed=777&fog=0&low=1');
   const help = page.locator('#ed-help');
   await expect(help).toBeVisible();
