@@ -1081,9 +1081,16 @@ export class Unit {
     const pKind = this.stats.projectile;
     const from = new THREE.Vector3(this.pos.x, this.pos.y + 0.8, this.pos.z);
     const to = new THREE.Vector3(target.pos.x, target.pos.y + 0.5, target.pos.z);
-    const arc = pKind === 'howitzer_shell' || pKind === 'nuclear' ? 1 : 0;
+    const arc =
+      pKind === 'howitzer_shell' || pKind === 'nuclear'
+        ? 1
+        : pKind === 'arrow'
+          ? 0.25
+          : pKind === 'sling_stone'
+            ? 0.4
+            : 0;
     const speed =
-      pKind === 'bullet' ? 40 : pKind === 'tracer' ? 60 : pKind === 'laser' ? 90 : pKind === 'rail' ? 130 : 28;
+      pKind === 'bullet' ? 40 : pKind === 'tracer' ? 60 : pKind === 'arrow' ? 34 : pKind === 'sling_stone' ? 26 : 28;
     this.ctx.spawnProjectile({
       from,
       target: to,

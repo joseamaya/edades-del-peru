@@ -11,7 +11,7 @@ import { CIVS, ArchStyle, EmblemId } from '../../model/defs/civs';
  *
  * Sources of truth for the valid id/field sets: `src/model/defs/*`.
  */
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 export interface UnitModEntry extends UnitOverride {
   id: string;
@@ -44,7 +44,15 @@ export type ValidationResult = { ok: true; mod: ModDef } | { ok: false; errors: 
 
 const RESOURCE_KEYS: (keyof Resources)[] = ['food', 'wood', 'silver', 'stone'];
 const DAMAGE_CLASSES: DamageClass[] = ['light', 'heavy', 'fortified'];
-const PROJECTILES: ProjectileKind[] = ['bullet', 'rocket', 'howitzer_shell', 'laser', 'rail', 'nuclear', 'tracer'];
+const PROJECTILES: ProjectileKind[] = [
+  'bullet',
+  'rocket',
+  'howitzer_shell',
+  'nuclear',
+  'tracer',
+  'arrow',
+  'sling_stone',
+];
 const UNIT_CATEGORIES = ['econ', 'infantry', 'ranged', 'cavalry', 'siege', 'special', 'unique'];
 const BUILDING_CATEGORIES = ['economy', 'military', 'defense', 'advance', 'special'];
 const ARCH_STYLES: ArchStyle[] = [

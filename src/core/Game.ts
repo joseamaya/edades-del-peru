@@ -2266,7 +2266,8 @@ export class Game {
     window.addEventListener('pointerdown', enable, { once: true });
     bus.on('fx:shot', () => this.audio.shot());
     bus.on('fx:artillery', () => this.audio.artillery());
-    bus.on('fx:laser', () => this.audio.laser());
+    bus.on('fx:bow', () => this.audio.bow());
+    bus.on('fx:sling', () => this.audio.sling());
     bus.on('fx:explosion', () => this.audio.explosion());
     bus.on('fx:death', () => this.audio.death());
     bus.on('fx:hit', () => this.audio.hit());
@@ -3366,7 +3367,8 @@ export class Game {
 
   private spawnProjectile(o: any): void {
     if (o.kind === 'howitzer_shell' || o.kind === 'nuclear') bus.emit('fx:artillery', {});
-    else if (o.kind === 'laser' || o.kind === 'rail') bus.emit('fx:laser', {});
+    else if (o.kind === 'arrow') bus.emit('fx:bow', {});
+    else if (o.kind === 'sling_stone') bus.emit('fx:sling', {});
     else bus.emit('fx:shot', {});
     const p = new Projectile(this.scene, {
       ...o,

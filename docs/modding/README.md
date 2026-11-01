@@ -18,11 +18,11 @@ match is created.
 The base game is not a mod; a mod only **overrides by `id`** (units, buildings, civs) or **adds a new tech**
 (`techs[].id` is free-form). Adding new units, buildings or civilizations is not supported yet.
 
-## Schema (`schemaVersion: 1`)
+## Schema (`schemaVersion: 2`)
 
 ```jsonc
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "name": "My mod",           // required, non-empty
   "description": "…",          // optional
   "units":     [ /* … */ ],
@@ -62,7 +62,7 @@ An existing id is merged. A **new** id must include `name`, `description`, `cost
 
 ## Validation rules
 
-- `schemaVersion` must be `1`; `name` must be a non-empty string.
+- `schemaVersion` must be `2`; `name` must be a non-empty string.
 - Numeric fields must be numbers `>= 0`; eras are `0`–`5`; historical periods are `0`–`9`.
 - Ids must exist for `units`/`buildings`/`civs` overrides; a tech `building` must be a known `BuildingKind`.
 - `damageType`, `projectile`, `category`, `visual.arch` and `visual.emblem` must be known values.

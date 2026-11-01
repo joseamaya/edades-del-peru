@@ -375,9 +375,9 @@ export class Building {
     this.ctx?.spawnProjectile?.({
       from,
       target: to,
-      speed: 40,
+      speed: this.era <= Era.TAHUANTINSUYO ? 26 : 40,
       damage: this.stats.attack.attack,
-      kind: 'bullet',
+      kind: this.era <= Era.TAHUANTINSUYO ? 'sling_stone' : 'bullet',
       owner: this.owner,
       targetId: target.id,
     });
