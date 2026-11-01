@@ -3059,6 +3059,12 @@ export class Game {
       this.hud.toggleHelp();
       return;
     }
+    if (k === keyFor('nextIdleWorker')) {
+      e.preventDefault();
+      if (e.ctrlKey || e.metaKey) this.selectIdleWorkers();
+      else this.cycleIdleWorker();
+      return;
+    }
     if (k === 'escape') {
       this.cancelPlacement();
       this.selectedUnits = [];
@@ -3110,6 +3116,7 @@ export class Game {
 
   private lastBattleEvent: number | null = null;
 
+  private idleCursor = -1;
   private controlGroups = new Map<number, number[]>();
   private lastGroupN = 0;
   private lastGroupTap = 0;
@@ -4114,6 +4121,41 @@ export class Game {
 
   getSelectedUnits(): Unit[] {
     return this.selectedUnits.map((id) => this.units.get(id)).filter((u): u is Unit => !!u && !u.dead);
+  }
+
+  /** Player-owned workers with no orders, not garrisoned and not constructing. */
+  idleWorkerIds(): number[] {
+    return [...this.units.values()]
+      .filter(
+        (u) =>
+          u.owner === 0 &&
+          u.kind === UnitKind.WORKER &&
+          !u.dead &&
+          u.garrisonedIn === null &&
+          u.isConstructing === null &&
+          u.orderQueue.length === 0,
+      )
+      .map((u) => u.id)
+      .sort((a, b) => a - b);
+  }
+
+  /** Cycle through idle workers, centering the camera on each one. */
+  cycleIdleWorker(): number | null {
+    const ids = this.idleWorkerIds();
+    if (ids.length === 0) {
+      this.hud?.showToast('No hay obreros ociosos', 'info');
+      return null;
+    }
+    this.idleCursor = (this.idleCursor + 1) % ids.length;
+    const id = ids[this.idleCursor];
+    this.focusUnit(id);
+    return id;
+  }
+
+  selectIdleWorkers(): number[] {
+    const ids = this.idleWorkerIds();
+    if (ids.length > 0) this.selectUnits(ids);
+    return ids;
   }
 
   /** Select and focus a player-owned unit, e.g. from a blocked-worker alert. */
