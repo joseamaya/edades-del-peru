@@ -34,12 +34,24 @@ export const MELEE_ATTACK_RANGE = 0.9;
 /** Extra reach against a building so a blocked edge cell does not make it untouchable. */
 const BUILDING_ATTACK_PAD = 0.5;
 
+/** Structural view of a resource node, enough for gather retargeting. */
+interface GatherNodeRef {
+  id: number;
+  pos: { x: number; z: number };
+  resource: keyof Resources;
+  amount?: number;
+  dead?: boolean;
+  depleted?: boolean;
+}
+
 /** Context that Game provides to units (avoids circular dependencies). */
 export interface UnitContext {
   getHeight(x: number, z: number): number;
   findPath(sx: number, sz: number, tx: number, tz: number): { x: number; z: number }[];
   /** Path to a stand point within `standRadius` of a blocked target (resource/farm). */
   findApproachPath(sx: number, sz: number, tx: number, tz: number, standRadius: number): { x: number; z: number }[];
+  /** Cheap reachability test using the same stand-point criteria as `findApproachPath`. */
+  reachableToNode(sx: number, sz: number, tx: number, tz: number, standRadius: number): boolean;
   /** Terrain navigability (water/steep/obstacles); guards the pathless fallback. */
   isWalkable(x: number, z: number): boolean;
   /** Nearest walkable point used to resolve a unit embedded in a solid footprint. */
@@ -399,9 +411,14 @@ export class Unit {
     this.currentResource = null;
     this.convertProgress = 0;
     this.attackingTarget = false;
-    this.noRouteTimer = 0;
     this.noDropsiteTimer = 0;
     this.blockedNotified = false;
+    this.resetApproachState();
+  }
+
+  /** One-shot fallbacks belong to a single order attempt, never to the next trip. */
+  private resetApproachState(): void {
+    this.noRouteTimer = 0;
     this.directApproach = false;
     this.approachTried = false;
     this.attackApproachTried = false;
@@ -424,11 +441,7 @@ export class Unit {
     this.stuckRetries = 0;
     this.blockedNotified = false;
     this.noDropsiteTimer = 0;
-    this.noRouteTimer = 0;
-    this.directApproach = false;
-    this.approachTried = false;
-    this.attackApproachTried = false;
-    this.buildApproachTried = false;
+    this.resetApproachState();
     switch (order.kind) {
       case OrderKind.MOVE:
         this.setPath(order.target!.x, order.target!.z);
@@ -479,6 +492,15 @@ export class Unit {
     }
   }
 
+  /** Head for a stand point when the regular path ended outside harvesting range. */
+  private followApproachPath(pts: { x: number; z: number }[]): void {
+    this.path = pts;
+    this.pathIdx = 0;
+    this.repathTimer = 0.9;
+    this.noRouteTimer = 0;
+    if (pts.length > 1) this.advanceToNextWaypoint();
+  }
+
   private advanceToNextWaypoint(): void {
     if (this.pathIdx < this.path.length) {
       const wp = this.path[this.pathIdx];
@@ -498,7 +520,7 @@ export class Unit {
         ? (this.ctx.entitiesById.get(this.targetEntityId) ?? this.ctx.buildings.get(this.targetEntityId))
         : null;
     if (!target) return true;
-    if (this.noRouteTimer > 1.5) return true;
+    if (this.noRouteTimer > NO_ROUTE_GIVEUP) return true;
     const range =
       (this.stats.range > 0 ? this.stats.range : MELEE_ATTACK_RANGE) +
       target.radius +
@@ -1158,11 +1180,7 @@ export class Unit {
           const standRadius = node.farm ? Math.max(0.5, harvestRange - MOVE_STOP_DIST) : HARVEST_STAND_RANGE;
           const pts = this.ctx.findApproachPath(this.pos.x, this.pos.z, node.pos.x, node.pos.z, standRadius);
           if (pts.length > 0) {
-            this.path = pts;
-            this.pathIdx = 0;
-            this.repathTimer = 0.9;
-            this.noRouteTimer = 0;
-            if (pts.length > 1) this.advanceToNextWaypoint();
+            this.followApproachPath(pts);
             return;
           }
         }
@@ -1252,36 +1270,32 @@ export class Unit {
    * approach searches are rare.
    */
   private tryAlternativeGatherNode(order: Order): boolean {
-    const current = this.ctx.resourceNodes.get(order.entityId!);
-    const resource = (current?.resource ?? this.currentResource) as keyof Resources | null;
-    if (!resource) return false;
-    const candidates: any[] = [];
-    for (const node of this.ctx.resourceNodes.values()) {
-      if (node.dead || node.depleted) continue;
-      if (node.resource !== resource || node.id === order.entityId) continue;
+    const current = this.ctx.resourceNodes.get(order.entityId!) as GatherNodeRef | undefined;
+    if (!current) return false;
+    const candidates: GatherNodeRef[] = [];
+    for (const node of this.ctx.resourceNodes.values() as Iterable<GatherNodeRef>) {
+      if (node.id === current.id || node.dead || node.depleted) continue;
+      if (node.resource !== current.resource) continue;
       if (node.amount !== undefined && node.amount <= 0) continue;
       candidates.push(node);
     }
-    const distTo = (node: any): number => distance2D(this.pos.x, this.pos.z, node.pos.x, node.pos.z);
+    const distTo = (node: GatherNodeRef): number => distance2D(this.pos.x, this.pos.z, node.pos.x, node.pos.z);
     candidates.sort((a, b) => distTo(a) - distTo(b));
-    for (const node of candidates.slice(0, 8)) {
+    for (const node of candidates) {
+      if (!this.ctx.reachableToNode(this.pos.x, this.pos.z, node.pos.x, node.pos.z, HARVEST_STAND_RANGE)) continue;
       if (distTo(node) <= HARVEST_RANGE) {
         order.entityId = node.id;
         this.path.length = 0;
         this.pathIdx = 0;
-        this.noRouteTimer = 0;
         this.approachTried = false;
+        this.noRouteTimer = 0;
         return true;
       }
       const pts = this.ctx.findApproachPath(this.pos.x, this.pos.z, node.pos.x, node.pos.z, HARVEST_STAND_RANGE);
       if (pts.length === 0) continue;
       order.entityId = node.id;
-      this.path = pts;
-      this.pathIdx = 0;
-      this.repathTimer = 0.9;
-      this.noRouteTimer = 0;
       this.approachTried = false;
-      if (pts.length > 1) this.advanceToNextWaypoint();
+      this.followApproachPath(pts);
       return true;
     }
     return false;

@@ -125,6 +125,7 @@ test('an unreachable gather target reports its reason', async ({ page }) => {
     w.ctx.isWalkable = (x: number, z: number) => x === w.pos.x && z === w.pos.z;
     w.issueOrder({ kind: 'gather', entityId: node.id });
     let t = 0;
+    // Gather orders now get the longer NO_ROUTE_GIVEUP_ECONOMY grace (4.5 s).
     for (let i = 0; i < 60 * 6; i++) {
       g.update(1 / 60, t);
       t += 1 / 60;

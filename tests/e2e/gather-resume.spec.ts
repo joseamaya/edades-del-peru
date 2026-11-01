@@ -108,3 +108,77 @@ test('a crowded node yields after the economy grace and switches to another node
   expect(out.busy, 'the gather order must still be running').toBe(true);
   expect(out.after, 'the worker should retarget a reachable node of the same resource').not.toBe(out.firstId);
 });
+
+test('three workers finish three gather cycles at a one-sided node', async ({ page }) => {
+  await page.goto('/?play=1&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    const workers = [...g.units.values()].filter((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead);
+    const dropsite = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.isDropsite && !b.dead);
+    if (workers.length < 3 || !dropsite) return { ok: false, reason: 'missing workers/dropsite' };
+
+    const node = [...g.resourceNodes.values()]
+      .filter((n: any) => !n.dead && !n.depleted && n.kind !== 'fishing' && n.amount > 200)
+      .sort(
+        (a: any, b: any) =>
+          Math.hypot(a.pos.x - dropsite.pos.x, a.pos.z - dropsite.pos.z) -
+          Math.hypot(b.pos.x - dropsite.pos.x, b.pos.z - dropsite.pos.z),
+      )[0];
+    if (!node) return { ok: false, reason: 'no resource node' };
+
+    // Ring the node but leave its north side open, so the only stand points are there.
+    for (let i = 0; i < 10; i++) {
+      const angle = (i / 10) * Math.PI * 2;
+      if (Math.cos(angle) > -0.35 && Math.cos(angle) < 0.35) continue;
+      g.pathfinder.addObstacle({
+        x: node.pos.x + Math.cos(angle) * 2.6,
+        z: node.pos.z + Math.sin(angle) * 2.6,
+        radius: 1.5,
+      });
+    }
+
+    const main = g.pathfinder.mainComponent();
+    const north = g.pathfinder.nearestWalkablePoint(node.pos.x, node.pos.z - 3.5, 0, main);
+    if (!north) return { ok: false, reason: 'no north stand point' };
+    const crew = workers.slice(0, 3);
+    for (const [i, w] of crew.entries()) {
+      w.clearOrders();
+      w.pos.set(north.x + (i - 1) * 0.8, 0, north.z + (i % 2) * 0.8);
+      w.snapToGround();
+      w.carryCapacity = 6;
+      w.gatherMultiplier = 4;
+    }
+
+    const crewIds = new Set(crew.map((w: any) => w.id));
+    const counts: Record<number, number> = {};
+    for (const w of crew) counts[w.id] = 0;
+    // UnitContext is shared by every unit, so only count the crew under test.
+    const originalGather = crew[0].ctx.gather;
+    crew[0].ctx.gather = (dropId: number, unitId: number, amount: number, resource: string) => {
+      if (amount > 0 && crewIds.has(unitId)) counts[unitId] = (counts[unitId] ?? 0) + 1;
+      return originalGather(dropId, unitId, amount, resource);
+    };
+    for (const w of crew) w.issueOrder({ kind: 'gather', entityId: node.id });
+
+    let t = 0;
+    let steps = 0;
+    for (; steps < 60 * 180; steps++) {
+      g.update(1 / 60, t);
+      t += 1 / 60;
+      if (crew.every((w: any) => (counts[w.id] ?? 0) >= 3)) break;
+    }
+    return {
+      ok: true,
+      counts: crew.map((w: any) => ({ id: w.id, count: counts[w.id] ?? 0 })),
+      steps,
+      busy: crew.map((w: any) => w.orderQueue[0]?.kind ?? null),
+    };
+  });
+
+  expect(out.ok, out.reason ?? '').toBe(true);
+  for (const entry of out.counts ?? []) expect(entry.count, `worker ${entry.id}`).toBeGreaterThanOrEqual(3);
+});
