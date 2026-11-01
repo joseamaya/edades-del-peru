@@ -127,6 +127,8 @@ export class Pathfinder {
   /** Connected components of walkable cells, recomputed lazily per revision. */
   private components: Int32Array | null = null;
   private componentsRevision = -1;
+  private mainComponentId = 0;
+  private mainComponentRevision = -1;
 
   constructor(size: number, cellSize: number) {
     const cols = Math.ceil(size / cellSize);
@@ -281,6 +283,7 @@ export class Pathfinder {
   /** Id of the largest walkable component; used when spawning into a clear region. */
   mainComponent(): number {
     const comps = this.ensureComponents();
+    if (this.mainComponentRevision === this.componentsRevision) return this.mainComponentId;
     const counts = new Map<number, number>();
     for (const c of comps) if (c !== 0) counts.set(c, (counts.get(c) ?? 0) + 1);
     let best = 0;
@@ -291,6 +294,8 @@ export class Pathfinder {
         bestCount = count;
       }
     }
+    this.mainComponentId = best;
+    this.mainComponentRevision = this.componentsRevision;
     return best;
   }
 
