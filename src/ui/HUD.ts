@@ -11,6 +11,7 @@ import {
   ERA_COLORS,
   HistoricalPeriod,
   AlertReason,
+  CombatStance,
 } from '../core/types';
 import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../model/defs/buildings';
 import { getBuildingCard } from '../model/defs/buildingCards';
@@ -48,6 +49,12 @@ import { bus } from '../core/EventBus';
 import { hasSave } from '../game/SaveGame';
 import { hasReplay } from '../game/replay';
 import { formatHotkeys } from '../core/hotkeys';
+
+const STANCE_TOOLTIP: Record<CombatStance, string> = {
+  agresivo: 'Agresivo: persigue y ataca enemigos.',
+  defensivo: 'Defensivo: solo responde cerca de su posición y vuelve a ella.',
+  pasivo: 'Pasivo: no ataca por su cuenta.',
+};
 
 function escapeHtml(s: string): string {
   const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
@@ -1286,11 +1293,7 @@ export class HUD {
 
   private unitDesc(u: Unit): string {
     const stats = u.stats;
-    const stance = {
-      agresivo: 'Agresivo: persigue y ataca enemigos.',
-      defensivo: 'Defensivo: solo responde cerca de su posición y vuelve a ella.',
-      pasivo: 'Pasivo: no ataca por su cuenta.',
-    }[u.combatStance];
+    const stance = STANCE_TOOLTIP[u.combatStance];
     return `HP ${Math.ceil(u.hp)}/${Math.ceil(u.maxHp)} · Daño ${formatStat(stats.attack)} · Rango ${formatStat(stats.range)} · Blindaje ${formatStat(stats.heavyArmor)} · <span title="${stance}">Postura: ${u.combatStance}</span>`;
   }
 

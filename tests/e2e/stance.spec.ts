@@ -7,7 +7,7 @@ async function boot(page: import('@playwright/test').Page): Promise<void> {
   });
 }
 
-test('a defensive unit stops at its leash and returns to its origin', async ({ page }) => {
+test('a defensive unit stops at its leash and returns to its origin', { tag: '@smoke' }, async ({ page }) => {
   await boot(page);
   const out = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -24,7 +24,6 @@ test('a defensive unit stops at its leash and returns to its origin', async ({ p
     enemy.hp = 1000;
     soldier.setCombatStance('defensivo');
     const origin = { ...spot };
-    soldier.issueOrder({ kind: 'attack', entityId: enemy.id });
 
     const dist = (a: { x: number; z: number }, b: { x: number; z: number }): number => Math.hypot(a.x - b.x, a.z - b.z);
     let t = 0;
@@ -35,6 +34,7 @@ test('a defensive unit stops at its leash and returns to its origin', async ({ p
       }
     };
     step(1);
+    const acquired = soldier.targetEntityId === enemy.id;
     const chased = dist(soldier.pos, origin);
     enemy.pos.set(spot.x + 40, enemy.pos.y, spot.z);
     enemy.snapToGround();
@@ -43,6 +43,7 @@ test('a defensive unit stops at its leash and returns to its origin', async ({ p
     return {
       ok: true,
       origin,
+      acquired,
       chased,
       distanceToOrigin: dist(soldier.pos, origin),
       distanceToEnemy: dist(soldier.pos, far),
@@ -53,11 +54,45 @@ test('a defensive unit stops at its leash and returns to its origin', async ({ p
   });
 
   expect(out.ok, out.reason ?? '').toBe(true);
+  expect(out.acquired, 'the unit should auto-acquire an enemy inside its leash').toBe(true);
   expect(out.chased, 'the unit should defend by closing some distance').toBeGreaterThan(0.5);
   expect(out.stance).toBe('defensivo');
   expect(out.leash).not.toBeNull();
   expect(out.distanceToOrigin, 'defensive units return to their anchor').toBeLessThan(3);
   expect(out.distanceToEnemy, 'defensive units do not chase beyond the leash').toBeGreaterThan(15);
+});
+
+test('a defensive move anchors the leash at the destination', async ({ page }) => {
+  await boot(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    g.paused = false;
+    const cols = g.pathfinder.grid.cols;
+    const main = g.pathfinder.mainComponent();
+    const spot = g.pathfinder.nearestWalkablePoint(g.settings.mapSize * 0.5, g.settings.mapSize * 0.2, cols, main);
+    const goal = g.pathfinder.nearestWalkablePoint(spot.x + 22, spot.z, cols, main);
+    if (!spot || !goal) return { ok: false, reason: 'no spot' };
+    const soldier = g.spawnScriptedUnit('soldier', 0, spot.x, spot.z);
+    soldier.setCombatStance('defensivo');
+    soldier.issueOrder({ kind: 'move', target: { x: goal.x, z: goal.z } });
+    let t = 0;
+    for (let i = 0; i < 60 * 14; i++) {
+      g.update(1 / 60, t);
+      t += 1 / 60;
+    }
+    return {
+      ok: true,
+      toStart: Math.hypot(soldier.pos.x - spot.x, soldier.pos.z - spot.z),
+      toGoal: Math.hypot(soldier.pos.x - goal.x, soldier.pos.z - goal.z),
+      leash: soldier.leashOrigin,
+    };
+  });
+
+  expect(out.ok, out.reason ?? '').toBe(true);
+  expect(out.toGoal, 'a defensive unit should stay where it was ordered').toBeLessThan(3);
+  expect(out.toStart, 'it must not walk back to the pre-move position').toBeGreaterThan(10);
+  expect(out.leash?.x).toBeGreaterThan(out.toStart);
 });
 
 test('an aggressive unit keeps pursuing a fleeing enemy', async ({ page }) => {

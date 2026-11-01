@@ -109,6 +109,8 @@ const NO_DROPSITE_GIVEUP = 2.5;
 const LEASH_MIN_RADIUS = 6;
 /** Distance from the leash origin at which a defensive unit stops returning. */
 const LEASH_RETURN_DIST = 1.5;
+/** Re-path cadence while walking back to the defensive anchor. */
+const LEASH_REPATH = 0.6;
 /** Extra build reach so large buildings remain constructible from their approach cell. */
 const BUILD_REACH_PAD = 3;
 
@@ -451,11 +453,11 @@ export class Unit {
     this.resetApproachState();
     switch (order.kind) {
       case OrderKind.MOVE:
-        if (this.combatStance === 'defensivo') this.leashOrigin = { x: this.pos.x, z: this.pos.z };
+        if (this.combatStance === 'defensivo' && order.target) this.leashOrigin = { ...order.target };
         this.setPath(order.target!.x, order.target!.z);
         break;
       case OrderKind.ATTACK_MOVE:
-        if (this.combatStance === 'defensivo') this.leashOrigin = { x: this.pos.x, z: this.pos.z };
+        if (this.combatStance === 'defensivo' && order.target) this.leashOrigin = { ...order.target };
         this.setPath(order.target!.x, order.target!.z);
         break;
       case OrderKind.GATHER:
@@ -552,7 +554,7 @@ export class Unit {
 
   private withinLeash(x: number, z: number): boolean {
     const origin = this.leashOrigin;
-    return !origin || distance2D(origin.x, origin.z, x, z) <= this.leashRadius();
+    return !!origin && distance2D(origin.x, origin.z, x, z) <= this.leashRadius();
   }
 
   /** Walk back to the stance anchor when there is nothing left to defend. */
@@ -566,7 +568,7 @@ export class Unit {
     }
     if (this.pathIdx >= this.path.length && this.repathTimer <= 0) {
       this.setPath(origin.x, origin.z);
-      this.repathTimer = 0.6;
+      this.repathTimer = LEASH_REPATH;
     }
   }
 
@@ -1045,8 +1047,16 @@ export class Unit {
       return;
     }
     if (this.combatStance === 'defensivo' && !this.withinLeash(target.pos.x, target.pos.z)) {
-      this.finishOrder();
-      this.returnToLeash();
+      const am = this.orderQueue[0];
+      if (am?.kind === OrderKind.ATTACK_MOVE && am.target) {
+        // an out-of-leash target must not cancel the attack-move march
+        this.attackingTarget = false;
+        this.targetEntityId = null;
+        this.setPath(am.target.x, am.target.z);
+      } else {
+        this.finishOrder();
+        this.returnToLeash();
+      }
       return;
     }
     const tpos = target.pos;
