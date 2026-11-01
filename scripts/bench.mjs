@@ -42,8 +42,12 @@ const fog = cliArg('fog', '1') !== '0' ? 1 : 0;
 const outFile = cliArg('out', 'review/bench.json');
 const scales = scenario === 'fauna' ? animalScales : unitScales;
 
-if (!['soldiers', 'mixed', 'mixed-ai', 'rigs', 'fauna', 'mixed-rigs', 'fortifications'].includes(scenario)) {
-  console.error(`unknown scenario "${scenario}" (use soldiers|mixed|mixed-ai|rigs|fauna|mixed-rigs|fortifications)`);
+if (
+  !['soldiers', 'mixed', 'mixed-ai', 'rigs', 'fauna', 'mixed-rigs', 'fortifications', 'group-move'].includes(scenario)
+) {
+  console.error(
+    `unknown scenario "${scenario}" (use soldiers|mixed|mixed-ai|rigs|fauna|mixed-rigs|fortifications|group-move)`,
+  );
   process.exit(1);
 }
 
@@ -56,6 +60,7 @@ const RIG_BUDGETS = {
   animal: { drawCalls: 4, triangles: 5000 },
   mixedP95Ms: 16.6,
   fortificationsP99Ms: 12,
+  groupMovePathP99Ms: 4,
 };
 
 // The cultural landscape merges each feature into a single mesh, so its draw-call
@@ -187,6 +192,20 @@ async function setupScenario(page, n) {
           g.addAI(0, 'normal');
           g.addAI(1, 'normal');
         }
+      } else if (scenarioName === 'group-move') {
+        g.ais.length = 0;
+        clearUnits();
+        const ids = [];
+        for (let i = 0; i < N; i++) {
+          const ring = 3 + Math.sqrt(i + 1) * 1.3;
+          const ang = i * 2.399963229728653;
+          ids.push(
+            g.spawnScriptedUnit('soldier', 0, center.x + Math.cos(ang) * ring, center.z + Math.sin(ang) * ring).id,
+          );
+        }
+        g.selectUnits(ids);
+        const goal = g.findLandNear(center.x + 24, center.z, 30);
+        g.commandMoveToWorld(goal.x, goal.z);
       } else if (scenarioName === 'fortifications') {
         g.ais.length = 0;
         clearUnits();
@@ -699,6 +718,12 @@ async function main() {
         const p99 = r.sim?.labels?.total?.p99;
         if (p99 != null && p99 > RIG_BUDGETS.fortificationsP99Ms) {
           failures.push(`${r.n}: sim p99 ${fmt(p99)} ms > ${RIG_BUDGETS.fortificationsP99Ms} ms`);
+        }
+      }
+      if (scenario === 'group-move') {
+        const p99 = r.sim?.labels?.pathfinding?.p99;
+        if (p99 != null && p99 > RIG_BUDGETS.groupMovePathP99Ms) {
+          failures.push(`${r.n}: path p99 ${fmt(p99)} ms > ${RIG_BUDGETS.groupMovePathP99Ms} ms`);
         }
       }
     }

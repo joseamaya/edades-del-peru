@@ -415,6 +415,12 @@ Definition of Done and the building audit see
   unit adds a projectile. Save/load restores kinds and registers the gate again; `REPLAY_VERSION` is 16.
   Guarded by `tests/pathfinding.test.ts` and `tests/e2e/fortifications.spec.ts`; `bench:check` includes a
   50-wall scenario (`fortifications`, sim p99 budget).
+- **Group movement**: a normal group order computes **one** A* from the first member and every
+  member follows that corridor, with only the final formation offset applied (`Unit.issueGroupMove`).
+  `moveSpeedLimit` caps the whole group at its slowest member and is cleared by any non-move order.
+  Shift-queued moves keep individual paths. Separation remains the local avoidance; the group-move
+  benchmark (`bench:check`, 800 units) measures pathfinding p99 with a 4 ms budget. This changed
+  movement, so `REPLAY_VERSION` is 17. Guarded by `tests/e2e/group-movement.spec.ts`.
 - **Combat stances**: `pasivo` never auto-attacks; `defensivo` anchors `leashOrigin` (set on the stance, on a
   move/attack-move destination, or on stop), only acquires enemies inside both LOS and `max(range, 6)`, drops an
   out-of-leash target and walks back. An attack-move keeps its march instead of cancelling. `leashOrigin` is in

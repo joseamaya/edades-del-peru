@@ -2888,21 +2888,26 @@ export class Game {
     this.audio.order();
   }
 
-  /** Line-formation movement orders (AoE2 style). */
+  /** Line-formation movement: one shared A* path, per-unit final offsets. */
   private issueMoveFormation(units: Unit[], target: OrderTarget): void {
     const n = units.length;
     const yaw = Math.atan2(target.z - units[0].pos.z, target.x - units[0].pos.x);
     const spacing = 1.5;
     const cols = Math.ceil(Math.sqrt(n));
     const rows = Math.ceil(n / cols);
+    // One A* for the whole order; separation keeps the members from overlapping.
+    const shared = this.pathfinder.pathfind(units[0].pos.x, units[0].pos.z, target.x, target.z, 0);
+    const slowest = Math.min(...units.map((u) => u.stats.speed));
     let idx = 0;
     for (const u of units) {
       const r = Math.floor(idx / cols) - (rows - 1) / 2;
       const c = (idx % cols) - (cols - 1) / 2;
       idx++;
-      const ox = Math.cos(yaw) * r * spacing - Math.sin(yaw) * c * spacing;
-      const oz = Math.sin(yaw) * r * spacing + Math.cos(yaw) * c * spacing;
-      this.orderUnit(u, { kind: OrderKind.MOVE, target: { x: target.x + ox, z: target.z + oz } }, !this.shiftQueue);
+      const offset = {
+        x: Math.cos(yaw) * r * spacing - Math.sin(yaw) * c * spacing,
+        z: Math.sin(yaw) * r * spacing + Math.cos(yaw) * c * spacing,
+      };
+      u.issueGroupMove(target, shared, offset, slowest, !this.shiftQueue);
     }
   }
 
