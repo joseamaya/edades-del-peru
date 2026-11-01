@@ -1766,9 +1766,7 @@ export class Game {
     const land = this.findLandNear(x, z);
     const main = this.pathfinder.mainComponent();
     const spot =
-      this.pathfinder.isWalkable(land.x, land.z) && this.pathfinder.componentAt(land.x, land.z) === main
-        ? land
-        : (this.pathfinder.nearestWalkablePoint(land.x, land.z, 0, main) ?? land);
+      this.pathfinder.componentAt(land.x, land.z) === main ? land : (this.mainComponentPoint(land.x, land.z) ?? land);
     const u = new Unit(kind, owner, era, ctx);
     u.pos.set(spot.x, this.terrain.getHeight(spot.x, spot.z), spot.z);
     u.setContext(this.unitContext);
@@ -3442,19 +3440,24 @@ export class Game {
     }
   }
 
+  /** Nearest walkable point in the main landmass, searching the whole map. */
+  private mainComponentPoint(x: number, z: number): { x: number; z: number } | null {
+    const main = this.pathfinder.mainComponent();
+    return this.pathfinder.nearestWalkablePoint(x, z, this.pathfinder.grid.cols, main);
+  }
+
   /**
    * A walkable point in the main landmass. Spawns that would land in a pocket
    * enclosed by trees, houses or props are moved to the nearest main-component cell.
    */
   private mainComponentSpot(x: number, z: number): { x: number; z: number } {
     const main = this.pathfinder.mainComponent();
-    if (this.pathfinder.isWalkable(x, z) && this.pathfinder.componentAt(x, z) === main) return { x, z };
-    return this.pathfinder.nearestWalkablePoint(x, z, 0, main) ?? { x, z };
+    if (this.pathfinder.componentAt(x, z) === main) return { x, z };
+    return this.mainComponentPoint(x, z) ?? { x, z };
   }
 
-  /** Spawn point around a building, trying several radii/angles before the nearest-cell fallback. */
-  private spawnPointAround(b: Building): { x: number; z: number } {
-    const main = this.pathfinder.mainComponent();
+  /** Spawn around a building on the rally's landmass (or the main one), avoiding isolated pockets. */
+  private spawnPointAround(b: Building, component = this.pathfinder.mainComponent()): { x: number; z: number } {
     const startAngle = this.rng.float() * Math.PI * 2;
     const baseR = b.radius + 0.5;
     for (let i = 0; i < 12; i++) {
@@ -3462,10 +3465,15 @@ export class Game {
       for (const pad of [0, 1.2, 2.4]) {
         const x = b.pos.x + Math.cos(angle) * (baseR + pad);
         const z = b.pos.z + Math.sin(angle) * (baseR + pad);
-        if (this.pathfinder.isWalkable(x, z) && this.pathfinder.componentAt(x, z) === main) return { x, z };
+        if (this.pathfinder.componentAt(x, z) === component) return { x, z };
       }
     }
-    return this.pathfinder.nearestWalkablePoint(b.pos.x, b.pos.z, 0, main) ?? { x: b.pos.x + baseR, z: b.pos.z };
+    return (
+      this.pathfinder.nearestWalkablePoint(b.pos.x, b.pos.z, this.pathfinder.grid.cols, component) ?? {
+        x: b.pos.x + baseR,
+        z: b.pos.z,
+      }
+    );
   }
 
   // --- spawn from buildings ---
@@ -3481,7 +3489,8 @@ export class Game {
     }
     const ctx = this.makeBuildContext(player);
     const u = new Unit(unit, player, p.era, ctx);
-    const { x: px, z: pz } = this.spawnPointAround(b);
+    const rallyComponent = hasRally && rally ? this.pathfinder.componentAt(rally.x, rally.z) : 0;
+    const { x: px, z: pz } = this.spawnPointAround(b, rallyComponent || undefined);
     u.pos.set(px, this.terrain.getHeight(px, pz), pz);
     u.setContext(this.unitContext);
     this.applyPlayerBonuses(u, p);

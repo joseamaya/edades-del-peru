@@ -423,6 +423,12 @@ Definition of Done and the building audit see
   And `Unit.updateAttack` closes in directly whenever its route is **exhausted** (`pathIdx >= path.length`), not
   only on an empty route: a building's goal cell is not walkable, so the path can stop a couple of cells short
   and a melee unit would otherwise stall out of range (worst with a tight cluster).
+- **Spawn points must share a walkable component**: `Game.spawnPointAround` tries several angles/radii
+  around a building and keeps only cells in the main component (or the rally point's component), falling back
+  to `nearestWalkablePoint(..., cols, component)` over the whole map. Initial units (`mainComponentSpot`),
+  trained units and scripted reinforcements all use this rule so a unit is never born in a pocket sealed by
+  houses, trees or props. `Pathfinder.mainComponent()` caches the largest component per grid revision. This
+  changed spawn positions, so `REPLAY_VERSION` is 10. Guarded by `tests/e2e/spawn-component.spec.ts`.
 - **Model geometries and textures are shared/cached** (`sharedGeo`, `bakedGeoCache`, `texCloneCache` in
   `ProceduralModel.ts`). `disposeModel()` only frees materials; **do not** dispose geometries/textures by hand nor
   reuse them by mutating `repeat`. To clear everything use `clearModelCaches()`. The separate glTF asset cache
