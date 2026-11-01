@@ -407,6 +407,14 @@ Definition of Done and the building audit see
   Cosmetic randomness uses `cosmeticRandom()` or the cosmetic `Game.fxRng`, and ESLint forbids `Math.random` in
   `src/game/**` and `src/entities/**`. This changed AI cadence, so `REPLAY_VERSION` is 11. Guarded by the
   1-vs-8-step hash test in `tests/e2e/replay.spec.ts`.
+- **Fortifications** (`BuildingKind.WALL/GATE/TOWER`): walls and towers are normal obstacles; a gate keeps its
+  cells blocked in the global grid and records an owner bit (`Pathfinder.addGate`). `pathfind`, `isWalkable`,
+  `findApproachPath` and `reachableToNode` take an optional `owner`, so the owner's units cross its gate while
+  enemies treat it as solid. `Game.registerObstacle` registers gates specially and `cleanupDead` removes them.
+  Walls are placed by dragging a line (2 m segments, instant construction); towers fire and every garrisoned
+  unit adds a projectile. Save/load restores kinds and registers the gate again; `REPLAY_VERSION` is 16.
+  Guarded by `tests/pathfinding.test.ts` and `tests/e2e/fortifications.spec.ts`; `bench:check` includes a
+  50-wall scenario (`fortifications`, sim p99 budget).
 - **Combat stances**: `pasivo` never auto-attacks; `defensivo` anchors `leashOrigin` (set on the stance, on a
   move/attack-move destination, or on stop), only acquires enemies inside both LOS and `max(range, 6)`, drops an
   out-of-leash target and walks back. An attack-move keeps its march instead of cancelling. `leashOrigin` is in

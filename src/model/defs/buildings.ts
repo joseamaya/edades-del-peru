@@ -32,6 +32,8 @@ export interface BuildingDef {
   dropTypes?: Array<'food' | 'wood' | 'silver' | 'stone'>;
   providesPop?: number;
   isUnique?: boolean; // only 1
+  /** Wall/gate segments finish instantly (no construction site). */
+  instant?: boolean;
 }
 
 const BASE: Resources = ZERO_RESOURCES;
@@ -202,6 +204,53 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
       [Era.VICEROYALTY]: { type: 'factory_atomic', scale: 1.04 },
       [Era.REPUBLIC]: { type: 'factory_information', scale: 1.06 },
       [Era.CONTEMPORARY]: { type: 'factory_modern', scale: 1.1 },
+    },
+  },
+  wall: {
+    instant: true,
+    id: BuildingKind.WALL,
+    name: 'Muralla',
+    description: 'Segmento defensivo que bloquea el paso. Coloca varios en cadena para cerrar un frente.',
+    category: 'defense',
+    minEra: Era.FORMATIVE,
+    eraModel: {
+      [Era.FORMATIVE]: { type: 'wall' },
+      [Era.REGIONAL_STATES]: { type: 'wall' },
+      [Era.TAHUANTINSUYO]: { type: 'wall' },
+      [Era.VICEROYALTY]: { type: 'wall_colonial' },
+      [Era.REPUBLIC]: { type: 'wall_modern' },
+      [Era.CONTEMPORARY]: { type: 'wall_modern' },
+    },
+  },
+  gate: {
+    instant: true,
+    id: BuildingKind.GATE,
+    name: 'Puerta',
+    description: 'Paso fortificado: tus unidades pueden cruzar, las enemigas no.',
+    category: 'defense',
+    minEra: Era.FORMATIVE,
+    eraModel: {
+      [Era.FORMATIVE]: { type: 'gate' },
+      [Era.REGIONAL_STATES]: { type: 'gate' },
+      [Era.TAHUANTINSUYO]: { type: 'gate' },
+      [Era.VICEROYALTY]: { type: 'gate_colonial' },
+      [Era.REPUBLIC]: { type: 'gate_modern' },
+      [Era.CONTEMPORARY]: { type: 'gate_modern' },
+    },
+  },
+  tower: {
+    id: BuildingKind.TOWER,
+    name: 'Atalaya',
+    description: 'Torre defensiva con ataque a distancia. La guarnición añade proyectiles.',
+    category: 'defense',
+    minEra: Era.FORMATIVE,
+    eraModel: {
+      [Era.FORMATIVE]: { type: 'tower' },
+      [Era.REGIONAL_STATES]: { type: 'tower' },
+      [Era.TAHUANTINSUYO]: { type: 'tower' },
+      [Era.VICEROYALTY]: { type: 'tower_colonial' },
+      [Era.REPUBLIC]: { type: 'tower_modern' },
+      [Era.CONTEMPORARY]: { type: 'tower_modern' },
     },
   },
   fortress: {
@@ -408,6 +457,40 @@ const BASE_BUILDING_STATS: Record<BuildingKind, BuildingStats> = {
     garrisons: 20,
     attack: { range: 14, attack: 25, attackSpeed: 2.5 },
   },
+  wall: {
+    hp: 320,
+    armor: 4,
+    los: 3,
+    cost: cost({ stone: 10, wood: 5 }),
+    buildTime: 4,
+    size: 1,
+    providesPop: 0,
+    isDropsite: false,
+    garrisons: 0,
+  },
+  gate: {
+    hp: 480,
+    armor: 4,
+    los: 4,
+    cost: cost({ stone: 20, wood: 10 }),
+    buildTime: 6,
+    size: 1,
+    providesPop: 0,
+    isDropsite: false,
+    garrisons: 0,
+  },
+  tower: {
+    hp: 750,
+    armor: 3,
+    los: 12,
+    cost: cost({ stone: 60, wood: 40 }),
+    buildTime: 20,
+    size: 2,
+    providesPop: 0,
+    isDropsite: false,
+    garrisons: 6,
+    attack: { range: 12, attack: 14, attackSpeed: 2.2 },
+  },
   market: {
     hp: 500,
     armor: 1,
@@ -524,8 +607,21 @@ export const BUILDING_INFO: Record<BuildingKind, { name: string; icon: string; c
   stable: { name: 'Establo', icon: '🐎', category: 'Militar' },
   factory: { name: 'Taller de Artillería', icon: '🏭', category: 'Militar' },
   fortress: { name: 'Pucará', icon: '🏰', category: 'Defensa' },
+  wall: { name: 'Muralla', icon: '🧱', category: 'Defensa' },
+  gate: { name: 'Puerta', icon: '🚪', category: 'Defensa' },
+  tower: { name: 'Atalaya', icon: '🗼', category: 'Defensa' },
   market: { name: 'Mercado', icon: '💰', category: 'Economía' },
   institute: { name: 'Yachaywasi', icon: '📚', category: 'Avance' },
   farm: { name: 'Andén', icon: '🌽', category: 'Economía' },
   wonder: { name: 'Huaca Sagrada', icon: '🗿', category: 'Victoria' },
 };
+
+/** Projectiles fired by a defensive building per cooldown (base + garrison). */
+export function defensiveShotCount(garrisoned: number): number {
+  return 1 + Math.max(0, garrisoned);
+}
+
+/** Damage per defensive projectile: the base shot is full, each garrison shot is 35%. */
+export function defensiveShotDamage(attack: number, index: number): number {
+  return index === 0 ? attack : attack * 0.35;
+}

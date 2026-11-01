@@ -16,14 +16,14 @@ atestiguado se indica **«no documentado»**; no se inventa (ver `AGENTS.md`).
 Cada civilización prehispánica usa uno de cuatro estilos andinos; las civilizaciones posteriores a 1532
 usan el colonial o el republicano.
 
-| Estilo | Rasgos modelados | Civilizaciones |
-|---|---|---|
-| `coastal-adobe` | Adobe/molde, **plataformas escalonadas** (huacas), frisos pintados, techos de paja | Caral, Cupisnique, Moche, Nazca, Paracas, Chimú, Chincha |
-| `andean-masonry` | **Mampostería de piedra pulida**, nichos trapezoidales, vanos trapezoidales, andenes | Chavín, Wari, Inca |
-| `altiplano-stone` | Arquitectura **megalítica**, patio hundido, bloques ciclópeos | Tiahuanaco, Collas y Lupaca |
-| `highland-terraced` | **Andenes** con muros de contención de piedra, fortalezas en cerros | Recuay, Chanca, Huanca |
-| `colonial` | Adobe/quincha con cubierta de teja, vanos en arco, campanario | Realistas |
-| `republican` | Neoclásico y arquitectura portuaria/moderna | Patriotas, República, Chile |
+| Estilo              | Rasgos modelados                                                                     | Civilizaciones                                           |
+| ------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------- |
+| `coastal-adobe`     | Adobe/molde, **plataformas escalonadas** (huacas), frisos pintados, techos de paja   | Caral, Cupisnique, Moche, Nazca, Paracas, Chimú, Chincha |
+| `andean-masonry`    | **Mampostería de piedra pulida**, nichos trapezoidales, vanos trapezoidales, andenes | Chavín, Wari, Inca                                       |
+| `altiplano-stone`   | Arquitectura **megalítica**, patio hundido, bloques ciclópeos                        | Tiahuanaco, Collas y Lupaca                              |
+| `highland-terraced` | **Andenes** con muros de contención de piedra, fortalezas en cerros                  | Recuay, Chanca, Huanca                                   |
+| `colonial`          | Adobe/quincha con cubierta de teja, vanos en arco, campanario                        | Realistas                                                |
+| `republican`        | Neoclásico y arquitectura portuaria/moderna                                          | Patriotas, República, Chile                              |
 
 ### Fuentes por estilo
 
@@ -43,7 +43,7 @@ usan el colonial o el republicano.
   [`patriotas.md`](./civilizaciones/patriotas.md), [`republica.md`](./civilizaciones/republica.md),
   [`chile.md`](./civilizaciones/chile.md).
 
-> Fuentes generales del sistema andino: Moseley, M. E., *The Incas and their Ancestors*; Rowe/Lumbreras
+> Fuentes generales del sistema andino: Moseley, M. E., _The Incas and their Ancestors_; Rowe/Lumbreras
 > para la periodización (ver [`fuentes.md`](./fuentes.md) y [`periodizacion.md`](./periodizacion.md)).
 
 ---
@@ -53,18 +53,18 @@ usan el colonial o el republicano.
 Glifo procedural por civilización, dibujado en el estandarte del edificio. Cada uno abstrae un motivo
 atestiguado en el arte de la cultura (no es un logotipo inventado).
 
-| Emblema | Motivo | Civilizaciones |
-|---|---|---|
-| `sun` | Disco solar (**Inti**) | Inca |
-| `feline` | Cabeza de **felino** | Chavín |
-| `staff` | **Dios de los báculos** | Wari, Tiahuanaco |
-| `fret` | **Greca / ola escalonada** | Moche, Cupisnique |
-| `wave` | **Ola / mar** | Caral, Nazca, Chimú, Chincha |
-| `condor` | **Cóndor** (ave) | Chanca |
+| Emblema     | Motivo                        | Civilizaciones                           |
+| ----------- | ----------------------------- | ---------------------------------------- |
+| `sun`       | Disco solar (**Inti**)        | Inca                                     |
+| `feline`    | Cabeza de **felino**          | Chavín                                   |
+| `staff`     | **Dios de los báculos**       | Wari, Tiahuanaco                         |
+| `fret`      | **Greca / ola escalonada**    | Moche, Cupisnique                        |
+| `wave`      | **Ola / mar**                 | Caral, Nazca, Chimú, Chincha             |
+| `condor`    | **Cóndor** (ave)              | Chanca                                   |
 | `geometric` | Rombo / **tocapu** geométrico | Paracas, Recuay, Collas y Lupaca, Huanca |
-| `cross` | Cruz | Realistas |
-| `sunburst` | Sol radiante | Patriotas |
-| `shield` | Escudo | República, Chile |
+| `cross`     | Cruz                          | Realistas                                |
+| `sunburst`  | Sol radiante                  | Patriotas                                |
+| `shield`    | Escudo                        | República, Chile                         |
 
 Fuentes de los motivos: [`atuendos.md`](./atuendos.md) (tocapu, insignias) y los dossieres por
 civilización (arte y religión). El **dios de los báculos** (staff god) es el motivo característico de
@@ -98,6 +98,12 @@ Wari y Tiahuanaco; el **felino** lo es de Chavín; el **Inti** del Estado inca.
   de los edificios monumentales (huacas moche más altas que las plataformas Caral). Los constructores
   colonial/republicano toman el material de fachada de `arch.wall` (`facadeTex`). El `emblem` sigue en el
   estandarte (`andeanBanner`/`addEmblem`).
+- **Murallas, puertas y atalayas (abstracción jugable)**: el pucará de altura está atestiguado como
+  recinto fortificado (Chanca, Recuay y otros), y los complejos amurallados aparecen en Wari y Chan Chan.
+  El juego usa segmentos de muralla, puertas y torres como abstracción RTS: no se afirma una tipología
+  constructiva específica para cada cultura. Los nombres siguen el vocabulario de los dossiers
+  (`pucará`, recinto amurallado, ciudadela) y los modelos cambian de material por era (piedra/adobe,
+  colonial, moderno) para no introducir formas anacrónicas.
 - **Silueta por civilización**: `HistoricalArchitectureProfile.silhouette` nombra un motivo atestiguado
   (plaza circular, cabezas clavas, rampa, recinto funerario, montículo bajo, estelas, recinto amurallado,
   patio hundido, ciudadela, pucará, chullpa, andenes, ushnu) que `addCivSilhouette` añade al **centro**

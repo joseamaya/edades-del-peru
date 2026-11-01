@@ -84,6 +84,9 @@ const BUILDABLE_KINDS: BuildingKind[] = [
   BuildingKind.SMELTER,
   BuildingKind.REFINERY,
   BuildingKind.FORTRESS,
+  BuildingKind.WALL,
+  BuildingKind.GATE,
+  BuildingKind.TOWER,
   BuildingKind.INSTITUTE,
   BuildingKind.WONDER,
 ];

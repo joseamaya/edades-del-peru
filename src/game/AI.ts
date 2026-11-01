@@ -254,10 +254,10 @@ export class AI {
         // cheap component test first: skip without A*; do not blacklist on this
         // check alone, because a stand point blocked from one worker can be
         // reachable from another worker or from a different side.
-        if (!this.game.pathfinder.reachableToNode(w.pos.x, w.pos.z, n.pos.x, n.pos.z, standRadius)) continue;
+        if (!this.game.pathfinder.reachableToNode(w.pos.x, w.pos.z, n.pos.x, n.pos.z, standRadius, w.owner)) continue;
         if (this.pathBudget <= 0) return null;
         this.pathBudget--;
-        const path = this.game.pathfinder.findApproachPath(w.pos.x, w.pos.z, n.pos.x, n.pos.z, standRadius);
+        const path = this.game.pathfinder.findApproachPath(w.pos.x, w.pos.z, n.pos.x, n.pos.z, standRadius, w.owner);
         if (path.length > 0) return n;
         this.markUnreachable(w, n);
       }
@@ -846,7 +846,7 @@ export class AI {
     let nearestD = Infinity;
     for (const b of this.game.buildings.values()) {
       if (!this.isEnemyBuildingKnown(b) || b.id === excludeId) continue;
-      if (!this.canReachBuilding(bx, bz, b)) continue;
+      if (!this.canReachBuilding(bx, bz, b, this.playerId)) continue;
       if (b.kind === BuildingKind.CENTER) center = b;
       const d = distance2D(bx, bz, b.pos.x, b.pos.z);
       if (d < nearestD) {
@@ -872,19 +872,19 @@ export class AI {
     if (target.dead) return false;
     const stand = this.attackStandRadius(s, target);
     if (distance2D(s.pos.x, s.pos.z, target.pos.x, target.pos.z) <= stand) return true;
-    if (target instanceof Building) return this.canReachBuilding(s.pos.x, s.pos.z, target);
-    return this.game.pathfinder.reachableToNode(s.pos.x, s.pos.z, target.pos.x, target.pos.z, stand);
+    if (target instanceof Building) return this.canReachBuilding(s.pos.x, s.pos.z, target, s.owner);
+    return this.game.pathfinder.reachableToNode(s.pos.x, s.pos.z, target.pos.x, target.pos.z, stand, s.owner);
   }
 
   /** A building spans several blocked cells; probe a walkable ring around its edge. */
-  private canReachBuilding(x: number, z: number, b: Building): boolean {
+  private canReachBuilding(x: number, z: number, b: Building, owner: number): boolean {
     const pathfinder = this.game.pathfinder;
     const stand = b.radius + MELEE_ATTACK_RANGE + BUILDING_APPROACH_PAD;
     for (let i = 0; i < BUILDING_APPROACH_PROBES; i++) {
       const angle = (i / BUILDING_APPROACH_PROBES) * Math.PI * 2;
       const px = b.pos.x + Math.cos(angle) * stand;
       const pz = b.pos.z + Math.sin(angle) * stand;
-      if (pathfinder.isWalkable(px, pz) && pathfinder.reachable(x, z, px, pz)) return true;
+      if (pathfinder.isWalkable(px, pz, owner) && pathfinder.reachable(x, z, px, pz)) return true;
     }
     return false;
   }

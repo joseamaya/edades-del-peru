@@ -6,6 +6,8 @@ import {
   BuildingStats,
   BUILDING_DEFS,
   defensiveProjectileFor,
+  defensiveShotCount,
+  defensiveShotDamage,
 } from '../model/defs/buildings';
 import { UNIT_ARCHETYPES } from '../model/defs/units';
 import { buildModel, BuildContext, disposeModel } from '../model/ProceduralModel';
@@ -154,6 +156,14 @@ export class Building {
         this.ctx?.event('alert', { icon: '✅', text: 'Edificio terminado', x: this.pos.x, z: this.pos.z });
       }
     }
+  }
+
+  /** Finish a wall/gate segment without a construction site or completion alert. */
+  completeInstantly(): void {
+    this.constructionProgress = this.stats.buildTime;
+    this.constructionComplete = true;
+    this.setConstructionOpacity(1);
+    this.view.group.scale.y = 1;
   }
 
   get buildRatio(): number {
@@ -379,15 +389,19 @@ export class Building {
     const from = new THREE.Vector3(this.pos.x, this.pos.y + 3, this.pos.z);
     const to = new THREE.Vector3(target.pos.x, target.pos.y + 0.5, target.pos.z);
     const shot = defensiveProjectileFor(this.era);
-    this.ctx?.spawnProjectile?.({
-      from,
-      target: to,
-      speed: shot.speed,
-      damage: this.stats.attack.attack,
-      kind: shot.kind,
-      owner: this.owner,
-      targetId: target.id,
-    });
+    // Every garrisoned unit adds a projectile, so a manned tower punishes a push.
+    const shots = defensiveShotCount(this.garrisonedIds.length);
+    for (let i = 0; i < shots; i++) {
+      this.ctx?.spawnProjectile?.({
+        from,
+        target: to,
+        speed: shot.speed,
+        damage: defensiveShotDamage(this.stats.attack.attack, i),
+        kind: shot.kind,
+        owner: this.owner,
+        targetId: target.id,
+      });
+    }
     this.ctx?.particles?.emit?.({
       x: this.pos.x,
       y: this.pos.y + 3,

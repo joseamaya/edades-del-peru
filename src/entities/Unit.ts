@@ -47,13 +47,20 @@ interface GatherNodeRef {
 /** Context that Game provides to units (avoids circular dependencies). */
 export interface UnitContext {
   getHeight(x: number, z: number): number;
-  findPath(sx: number, sz: number, tx: number, tz: number): { x: number; z: number }[];
+  findPath(sx: number, sz: number, tx: number, tz: number, owner?: number): { x: number; z: number }[];
   /** Path to a stand point within `standRadius` of a blocked target (resource/farm). */
-  findApproachPath(sx: number, sz: number, tx: number, tz: number, standRadius: number): { x: number; z: number }[];
+  findApproachPath(
+    sx: number,
+    sz: number,
+    tx: number,
+    tz: number,
+    standRadius: number,
+    owner?: number,
+  ): { x: number; z: number }[];
   /** Cheap reachability test using the same stand-point criteria as `findApproachPath`. */
-  reachableToNode(sx: number, sz: number, tx: number, tz: number, standRadius: number): boolean;
+  reachableToNode(sx: number, sz: number, tx: number, tz: number, standRadius: number, owner?: number): boolean;
   /** Terrain navigability (water/steep/obstacles); guards the pathless fallback. */
-  isWalkable(x: number, z: number): boolean;
+  isWalkable(x: number, z: number, owner?: number): boolean;
   /** Nearest walkable point used to resolve a unit embedded in a solid footprint. */
   nearestWalkable(x: number, z: number): { x: number; z: number } | null;
   unitsNear(x: number, z: number, radius: number): Unit[];
@@ -306,7 +313,7 @@ export class Unit {
     const steps = Math.max(1, Math.ceil(look / 0.5));
     for (let i = 1; i <= steps; i++) {
       const s = (look * i) / steps;
-      if (!this.ctx.isWalkable(this.pos.x + (dx / dist) * s, this.pos.z + (dz / dist) * s)) return false;
+      if (!this.ctx.isWalkable(this.pos.x + (dx / dist) * s, this.pos.z + (dz / dist) * s, this.owner)) return false;
     }
     return true;
   }
@@ -361,7 +368,7 @@ export class Unit {
    * blocked-cell collision) is left to `updateMovement`.
    */
   private directStep(tx: number, tz: number, stopRange = 0): boolean {
-    if (!this.ctx.isWalkable(this.pos.x, this.pos.z)) {
+    if (!this.ctx.isWalkable(this.pos.x, this.pos.z, this.owner)) {
       const exit = this.ctx.nearestWalkable(this.pos.x, this.pos.z);
       if (!exit) return false;
       tx = exit.x;
@@ -387,7 +394,7 @@ export class Unit {
   private stepAllowed(tx: number, tz: number): boolean {
     // A unit embedded in a solid footprint may only move toward the nearest
     // walkable cell; normal movement never enters a blocked cell below.
-    if (!this.ctx.isWalkable(this.pos.x, this.pos.z)) {
+    if (!this.ctx.isWalkable(this.pos.x, this.pos.z, this.owner)) {
       const exit = this.ctx.nearestWalkable(this.pos.x, this.pos.z);
       if (!exit) return false;
       const before = Math.hypot(exit.x - this.pos.x, exit.z - this.pos.z);
@@ -401,7 +408,7 @@ export class Unit {
     const steps = Math.max(1, Math.ceil(dist / 0.5));
     for (let i = 1; i <= steps; i++) {
       const s = (dist * i) / steps;
-      if (!this.ctx.isWalkable(this.pos.x + (dx / dist) * s, this.pos.z + (dz / dist) * s)) return false;
+      if (!this.ctx.isWalkable(this.pos.x + (dx / dist) * s, this.pos.z + (dz / dist) * s, this.owner)) return false;
     }
     return true;
   }
@@ -502,7 +509,7 @@ export class Unit {
   }
 
   setPath(tx: number, tz: number): void {
-    const pts = this.ctx.findPath(this.pos.x, this.pos.z, tx, tz);
+    const pts = this.ctx.findPath(this.pos.x, this.pos.z, tx, tz, this.owner);
     this.path = pts;
     this.pathIdx = 0;
     if (pts.length > 1) {
@@ -1110,7 +1117,7 @@ export class Unit {
         if (this.directStep(tpos.x, tpos.z, range)) return;
         if (!building && !this.attackApproachTried) {
           this.attackApproachTried = true;
-          const pts = this.ctx.findApproachPath(this.pos.x, this.pos.z, tpos.x, tpos.z, range);
+          const pts = this.ctx.findApproachPath(this.pos.x, this.pos.z, tpos.x, tpos.z, range, this.owner);
           if (pts.length > 0) {
             this.path = pts;
             this.pathIdx = 0;
@@ -1149,8 +1156,8 @@ export class Unit {
       const angle = (i / 16) * Math.PI * 2;
       const px = tx + Math.cos(angle) * stand;
       const pz = tz + Math.sin(angle) * stand;
-      if (!this.ctx.isWalkable(px, pz)) continue;
-      const pts = this.ctx.findPath(this.pos.x, this.pos.z, px, pz);
+      if (!this.ctx.isWalkable(px, pz, this.owner)) continue;
+      const pts = this.ctx.findPath(this.pos.x, this.pos.z, px, pz, this.owner);
       if (pts.length > 0) {
         const last = pts[pts.length - 1];
         if (Math.hypot(last.x - px, last.z - pz) > 0.05) pts.push({ x: px, z: pz });
@@ -1282,7 +1289,14 @@ export class Unit {
         if (!this.approachTried) {
           this.approachTried = true;
           const standRadius = node.farm ? Math.max(0.5, harvestRange - MOVE_STOP_DIST) : HARVEST_STAND_RANGE;
-          const pts = this.ctx.findApproachPath(this.pos.x, this.pos.z, node.pos.x, node.pos.z, standRadius);
+          const pts = this.ctx.findApproachPath(
+            this.pos.x,
+            this.pos.z,
+            node.pos.x,
+            node.pos.z,
+            standRadius,
+            this.owner,
+          );
           if (pts.length > 0) {
             this.followApproachPath(pts);
             return;
@@ -1386,7 +1400,8 @@ export class Unit {
     const distTo = (node: GatherNodeRef): number => distance2D(this.pos.x, this.pos.z, node.pos.x, node.pos.z);
     candidates.sort((a, b) => distTo(a) - distTo(b));
     for (const node of candidates) {
-      if (!this.ctx.reachableToNode(this.pos.x, this.pos.z, node.pos.x, node.pos.z, HARVEST_STAND_RANGE)) continue;
+      if (!this.ctx.reachableToNode(this.pos.x, this.pos.z, node.pos.x, node.pos.z, HARVEST_STAND_RANGE, this.owner))
+        continue;
       if (distTo(node) <= HARVEST_RANGE) {
         order.entityId = node.id;
         this.path.length = 0;
@@ -1395,7 +1410,14 @@ export class Unit {
         this.noRouteTimer = 0;
         return true;
       }
-      const pts = this.ctx.findApproachPath(this.pos.x, this.pos.z, node.pos.x, node.pos.z, HARVEST_STAND_RANGE);
+      const pts = this.ctx.findApproachPath(
+        this.pos.x,
+        this.pos.z,
+        node.pos.x,
+        node.pos.z,
+        HARVEST_STAND_RANGE,
+        this.owner,
+      );
       if (pts.length === 0) continue;
       order.entityId = node.id;
       this.approachTried = false;

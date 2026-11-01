@@ -129,6 +129,9 @@ export class Pathfinder {
   private componentsRevision = -1;
   private mainComponentId = 0;
   private mainComponentRevision = -1;
+  /** Gate regions: solid for enemies, passable for the listed owners. */
+  private gates: { x: number; z: number; radius: number; owners: number[] }[] = [];
+  private gateMask = new Map<number, number>();
 
   constructor(size: number, cellSize: number) {
     const cols = Math.ceil(size / cellSize);
@@ -170,6 +173,48 @@ export class Pathfinder {
     if (i >= 0) this.obstacles.splice(i, 1);
     this.rebuild();
     this.revision++;
+  }
+
+  /** A gate blocks everyone except the listed owners (the owner's team). */
+  addGate(gate: { x: number; z: number; radius: number; owners: number[] }): void {
+    this.gates.push(gate);
+    this.applyGates();
+    this.revision++;
+  }
+
+  removeGate(gate: { x: number; z: number; radius: number; owners: number[] }): void {
+    const i = this.gates.indexOf(gate);
+    if (i >= 0) this.gates.splice(i, 1);
+    this.applyGates();
+    this.revision++;
+  }
+
+  private applyGates(): void {
+    this.gateMask.clear();
+    const { cols } = this.grid;
+    for (const gate of this.gates) {
+      const r = Math.max(1, Math.ceil(gate.radius / this.grid.cell));
+      const cx = Math.floor(gate.x / this.grid.cell);
+      const cz = Math.floor(gate.z / this.grid.cell);
+      for (let dz = -r; dz <= r; dz++) {
+        for (let dx = -r; dx <= r; dx++) {
+          const x = cx + dx;
+          const z = cz + dz;
+          if (x < 0 || z < 0 || x >= cols || z >= this.grid.rows) continue;
+          if (Math.sqrt(dx * dx + dz * dz) > r) continue;
+          const idx = z * cols + x;
+          const bits = gate.owners.reduce((mask, owner) => mask | (1 << owner), 0);
+          this.gateMask.set(idx, (this.gateMask.get(idx) ?? 0) | bits);
+        }
+      }
+    }
+  }
+
+  /** Whether a cell is passable for `owner` (gates open only to their owner). */
+  private cellOpen(idx: number, owner?: number): boolean {
+    const mask = this.gateMask.get(idx);
+    if (mask !== undefined) return owner !== undefined && owner >= 0 && (mask & (1 << owner)) !== 0;
+    return this.grid.walkable[idx] === 1;
   }
 
   private rasterize(o: Obstacle): void {
@@ -231,12 +276,12 @@ export class Pathfinder {
     this.revision++;
   }
 
-  isWalkable(wx: number, wz: number): boolean {
+  isWalkable(wx: number, wz: number, owner?: number): boolean {
     const { cols, cell } = this.grid;
     const x = Math.floor(wx / cell);
     const z = Math.floor(wz / cell);
     if (x < 0 || z < 0 || x >= cols || z >= cols) return false;
-    return this.grid.walkable[z * cols + x] === 1;
+    return this.cellOpen(z * cols + x, owner);
   }
 
   /**
@@ -347,7 +392,7 @@ export class Pathfinder {
   }
 
   /** A* returning waypoints in world coordinates (cell centers). */
-  pathfind(sx: number, sz: number, tx: number, tz: number): { x: number; z: number }[] {
+  pathfind(sx: number, sz: number, tx: number, tz: number, owner?: number): { x: number; z: number }[] {
     const { cols, cell } = this.grid;
     const start = { x: Math.floor(sx / cell), z: Math.floor(sz / cell) };
     const goal = { x: Math.floor(tx / cell), z: Math.floor(tz / cell) };
@@ -361,15 +406,15 @@ export class Pathfinder {
     // `nearestWalkable` cell is not enough — it can be an isolated pocket.
     const destX = goal.x;
     const destZ = goal.z;
-    const destWalkable = this.grid.walkable[goal.z * cols + goal.x] === 1;
+    const destWalkable = this.cellOpen(goal.z * cols + goal.x, owner);
     if (!destWalkable) {
-      const alt = this.nearestWalkableCell(goal.x, goal.z, this.reachCells());
+      const alt = this.nearestWalkableCell(goal.x, goal.z, this.reachCells(), undefined, owner);
       if (!alt) return [];
       goal.x = alt.x;
       goal.z = alt.z;
     }
-    if (this.grid.walkable[start.z * cols + start.x] === 0) {
-      const alt = this.nearestWalkableCell(start.x, start.z, this.reachCells());
+    if (!this.cellOpen(start.z * cols + start.x, owner)) {
+      const alt = this.nearestWalkableCell(start.x, start.z, this.reachCells(), undefined, owner);
       if (!alt) return [];
       start.x = alt.x;
       start.z = alt.z;
@@ -412,14 +457,14 @@ export class Pathfinder {
         const nz = bz + DIRS[d][1];
         if (nx < 0 || nz < 0 || nx >= cols || nz >= cols) continue;
         const ni = nz * cols + nx;
-        if (this.closed[ni] || this.grid.walkable[ni] === 0) continue;
+        if (this.closed[ni] || !this.cellOpen(ni, owner)) continue;
         const diag = d >= 4;
         if (diag) {
           // no corner cutting: reject the diagonal if EITHER orthogonal cell is
           // blocked, so a unit cannot slip through a one-cell corner gap
           const ax = bz * cols + nx;
           const az = nz * cols + bx;
-          if (this.grid.walkable[ax] === 0 || this.grid.walkable[az] === 0) continue;
+          if (!this.cellOpen(ax, owner) || !this.cellOpen(az, owner)) continue;
         }
         const cost = g + (diag ? 1.4142 : 1);
         if (cost < this.gScore[ni]) {
@@ -444,9 +489,16 @@ export class Pathfinder {
    * so movement code only needs to follow the waypoints. It returns [] when no
    * cell within range has a reachable stand point.
    */
-  findApproachPath(sx: number, sz: number, tx: number, tz: number, standRadius: number): { x: number; z: number }[] {
-    for (const candidate of this.orderedApproachCandidates(sx, sz, tx, tz, standRadius)) {
-      const path = this.pathfind(sx, sz, candidate.centerX, candidate.centerZ);
+  findApproachPath(
+    sx: number,
+    sz: number,
+    tx: number,
+    tz: number,
+    standRadius: number,
+    owner?: number,
+  ): { x: number; z: number }[] {
+    for (const candidate of this.orderedApproachCandidates(sx, sz, tx, tz, standRadius, owner)) {
+      const path = this.pathfind(sx, sz, candidate.centerX, candidate.centerZ, owner);
       if (path.length === 0) continue;
       const last = path[path.length - 1];
       if (Math.hypot(last.x - candidate.x, last.z - candidate.z) > 0.05) {
@@ -462,7 +514,14 @@ export class Pathfinder {
    * `findApproachPath` (which then A*-searches to one) and `reachableToNode` (which
    * only needs the component of a stand point).
    */
-  private standCandidates(sx: number, sz: number, tx: number, tz: number, standRadius: number): StandCandidate[] {
+  private standCandidates(
+    sx: number,
+    sz: number,
+    tx: number,
+    tz: number,
+    standRadius: number,
+    owner?: number,
+  ): StandCandidate[] {
     const { cols, cell } = this.grid;
     const candidates: StandCandidate[] = [];
     const minX = Math.max(0, Math.floor((tx - standRadius) / cell) - 1);
@@ -499,8 +558,8 @@ export class Pathfinder {
           standX = tx + (dx / targetDist) * standDist;
           standZ = tz + (dz / targetDist) * standDist;
         }
-        if (!this.isWalkable(standX, standZ)) continue;
-        if (!this.approachClear(tx, tz, standX, standZ)) continue;
+        if (!this.isWalkable(standX, standZ, owner)) continue;
+        if (!this.approachClear(tx, tz, standX, standZ, owner)) continue;
         candidates.push({
           x: standX,
           z: standZ,
@@ -521,12 +580,12 @@ export class Pathfinder {
    * reachable by A*), so it can reject unreachable nodes without an A* search while
    * preserving the node the caller would otherwise have picked.
    */
-  reachableToNode(sx: number, sz: number, tx: number, tz: number, standRadius: number): boolean {
+  reachableToNode(sx: number, sz: number, tx: number, tz: number, standRadius: number, owner?: number): boolean {
     const start = this.resolveComponent(sx, sz, this.reachCells());
     if (start === 0) return false;
     const comp = this.ensureComponents();
     const { cols } = this.grid;
-    for (const c of this.orderedApproachCandidates(sx, sz, tx, tz, standRadius)) {
+    for (const c of this.orderedApproachCandidates(sx, sz, tx, tz, standRadius, owner)) {
       if (comp[this.clampCell(c.z) * cols + this.clampCell(c.x)] === start) return true;
     }
     return false;
@@ -543,9 +602,10 @@ export class Pathfinder {
     tx: number,
     tz: number,
     standRadius: number,
+    owner?: number,
   ): StandCandidate[] {
     if (!(standRadius > 0)) return [];
-    const candidates = this.standCandidates(sx, sz, tx, tz, standRadius);
+    const candidates = this.standCandidates(sx, sz, tx, tz, standRadius, owner);
     candidates.sort((a, b) => a.targetDist - b.targetDist || a.startDist - b.startDist);
     const tried = new Set<string>();
     const ordered: StandCandidate[] = [];
@@ -565,7 +625,7 @@ export class Pathfinder {
    * enters it). A wall between the stand cell and the target cell rejects the
    * candidate, so a worker cannot harvest through a building.
    */
-  private approachClear(tx: number, tz: number, sx: number, sz: number): boolean {
+  private approachClear(tx: number, tz: number, sx: number, sz: number, owner?: number): boolean {
     const { cell } = this.grid;
     const targetCx = Math.floor(tx / cell);
     const targetCz = Math.floor(tz / cell);
@@ -577,7 +637,7 @@ export class Pathfinder {
       const x = tx + ((sx - tx) / dist) * s;
       const z = tz + ((sz - tz) / dist) * s;
       if (Math.floor(x / cell) === targetCx && Math.floor(z / cell) === targetCz) break;
-      if (!this.isWalkable(x, z)) return false;
+      if (!this.isWalkable(x, z, owner)) return false;
     }
     return true;
   }
@@ -589,14 +649,26 @@ export class Pathfinder {
   }
 
   /** Nearest walkable cell centre in world coordinates (for resolving an embedded unit). */
-  nearestWalkablePoint(wx: number, wz: number, maxCells = 0, component?: number): { x: number; z: number } | null {
+  nearestWalkablePoint(
+    wx: number,
+    wz: number,
+    maxCells = 0,
+    component?: number,
+    owner?: number,
+  ): { x: number; z: number } | null {
     maxCells ||= this.reachCells();
-    const cell = this.nearestWalkableCell(this.clampCell(wx), this.clampCell(wz), maxCells, component);
+    const cell = this.nearestWalkableCell(this.clampCell(wx), this.clampCell(wz), maxCells, component, owner);
     if (!cell) return null;
     return { x: (cell.x + 0.5) * this.grid.cell, z: (cell.z + 0.5) * this.grid.cell };
   }
 
-  private nearestWalkableCell(x: number, z: number, maxR: number, component?: number): { x: number; z: number } | null {
+  private nearestWalkableCell(
+    x: number,
+    z: number,
+    maxR: number,
+    component?: number,
+    owner?: number,
+  ): { x: number; z: number } | null {
     const { cols } = this.grid;
     const comps = component === undefined ? null : this.ensureComponents();
     for (let r = 1; r <= maxR; r++) {
@@ -607,7 +679,7 @@ export class Pathfinder {
           const nz = z + dz;
           if (nx < 0 || nz < 0 || nx >= cols || nz >= cols) continue;
           const idx = nz * cols + nx;
-          if (this.grid.walkable[idx] && (!comps || comps[idx] === component)) return { x: nx, z: nz };
+          if (this.cellOpen(idx, owner) && (!comps || comps[idx] === component)) return { x: nx, z: nz };
         }
       }
     }
