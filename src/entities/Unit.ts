@@ -105,6 +105,12 @@ const NO_ROUTE_GIVEUP_ECONOMY = 4.5;
 const STUCK_GIVEUP_RETRIES = 3;
 /** Seconds with a full load and no dropsite before warning the player. */
 const NO_DROPSITE_GIVEUP = 2.5;
+/** Minimum defensive leash around the stance origin. */
+const LEASH_MIN_RADIUS = 6;
+/** Distance from the leash origin at which a defensive unit stops returning. */
+const LEASH_RETURN_DIST = 1.5;
+/** Re-path cadence while walking back to the defensive anchor. */
+const LEASH_REPATH = 0.6;
 /** Extra build reach so large buildings remain constructible from their approach cell. */
 const BUILD_REACH_PAD = 3;
 
@@ -170,6 +176,8 @@ export class Unit {
   isConstructing: number | null = null;
   rallyPoint: OrderTarget | null = null;
   combatStance: CombatStance = 'agresivo';
+  /** Anchor a defensive unit returns to after a short pursuit. */
+  leashOrigin: { x: number; z: number } | null = null;
   buildEfficiency = 1;
   gatherMultiplier = 1;
   attackMultiplier = 1;
@@ -414,6 +422,7 @@ export class Unit {
     this.noDropsiteTimer = 0;
     this.blockedNotified = false;
     this.resetApproachState();
+    if (this.combatStance === 'defensivo') this.leashOrigin = { x: this.pos.x, z: this.pos.z };
   }
 
   /** One-shot fallbacks belong to a single order attempt, never to the next trip. */
@@ -444,9 +453,11 @@ export class Unit {
     this.resetApproachState();
     switch (order.kind) {
       case OrderKind.MOVE:
+        if (this.combatStance === 'defensivo' && order.target) this.leashOrigin = { ...order.target };
         this.setPath(order.target!.x, order.target!.z);
         break;
       case OrderKind.ATTACK_MOVE:
+        if (this.combatStance === 'defensivo' && order.target) this.leashOrigin = { ...order.target };
         this.setPath(order.target!.x, order.target!.z);
         break;
       case OrderKind.GATHER:
@@ -529,6 +540,50 @@ export class Unit {
       this.attackApproachTried &&
       this.path.length === 0 &&
       distance2D(this.pos.x, this.pos.z, target.pos.x, target.pos.z) > range
+    );
+  }
+
+  setCombatStance(stance: CombatStance): void {
+    this.combatStance = stance;
+    if (stance === 'defensivo') this.leashOrigin = { x: this.pos.x, z: this.pos.z };
+  }
+
+  private leashRadius(): number {
+    return Math.max(this.stats.range, LEASH_MIN_RADIUS);
+  }
+
+  private withinLeash(x: number, z: number): boolean {
+    const origin = this.leashOrigin;
+    return !!origin && distance2D(origin.x, origin.z, x, z) <= this.leashRadius();
+  }
+
+  /** Walk back to the stance anchor when there is nothing left to defend. */
+  private returnToLeash(): void {
+    const origin = this.leashOrigin;
+    if (!origin) return;
+    if (distance2D(this.pos.x, this.pos.z, origin.x, origin.z) <= LEASH_RETURN_DIST) {
+      this.path.length = 0;
+      this.pathIdx = 0;
+      return;
+    }
+    if (this.pathIdx >= this.path.length && this.repathTimer <= 0) {
+      this.setPath(origin.x, origin.z);
+      this.repathTimer = LEASH_REPATH;
+    }
+  }
+
+  /** Nearest enemy inside the defensive leash and the unit's acquisition range. */
+  private defensiveTarget(): Unit | null {
+    const origin = this.leashOrigin ?? { x: this.pos.x, z: this.pos.z };
+    const acquire = this.stats.range > 0 ? this.stats.range + 1 : this.stats.los + 1;
+    const candidates = this.ctx?.enemiesNear?.(origin.x, origin.z, this.leashRadius(), this.owner) ?? [];
+    return (
+      candidates
+        .filter((u) => distance2D(this.pos.x, this.pos.z, u.pos.x, u.pos.z) <= acquire)
+        .sort(
+          (a, b) =>
+            distance2D(this.pos.x, this.pos.z, a.pos.x, a.pos.z) - distance2D(this.pos.x, this.pos.z, b.pos.x, b.pos.z),
+        )[0] ?? null
     );
   }
 
@@ -618,6 +673,18 @@ export class Unit {
   private autoAttack(dt: number, time: number): void {
     if (this.combatStance === 'pasivo') return;
     if (this.kind === UnitKind.WORKER || this.kind === UnitKind.SCOUT) return;
+    if (this.combatStance === 'defensivo') {
+      const enemy = this.defensiveTarget();
+      if (!enemy) {
+        this.returnToLeash();
+        return;
+      }
+      if (this.attackCooldown <= 0) {
+        this.issueOrder({ kind: OrderKind.ATTACK, entityId: enemy.id }, false);
+        this.updateAttack(this.orderQueue[0], dt, time);
+      }
+      return;
+    }
     if (this.attackCooldown <= 0) {
       const range = this.stats.range > 0 ? this.stats.range + 1 : this.stats.los + 1;
       const enemy = this.ctx?.enemiesNear ? this.ctx.enemiesNear(this.pos.x, this.pos.z, range, this.owner)[0] : null;
@@ -976,6 +1043,19 @@ export class Unit {
         }
       } else if (order.kind === OrderKind.ATTACK) {
         this.finishOrder();
+      }
+      return;
+    }
+    if (this.combatStance === 'defensivo' && !this.withinLeash(target.pos.x, target.pos.z)) {
+      const am = this.orderQueue[0];
+      if (am?.kind === OrderKind.ATTACK_MOVE && am.target) {
+        // an out-of-leash target must not cancel the attack-move march
+        this.attackingTarget = false;
+        this.targetEntityId = null;
+        this.setPath(am.target.x, am.target.z);
+      } else {
+        this.finishOrder();
+        this.returnToLeash();
       }
       return;
     }
@@ -1569,6 +1649,7 @@ export class Unit {
       isConstructing: this.isConstructing,
       rallyPoint: this.rallyPoint,
       combatStance: this.combatStance,
+      leashOrigin: this.leashOrigin ? { ...this.leashOrigin } : null,
       buildEfficiency: this.buildEfficiency,
       gatherMultiplier: this.gatherMultiplier,
       attackMultiplier: this.attackMultiplier,
@@ -1593,6 +1674,11 @@ export class Unit {
     this.isConstructing = s.isConstructing;
     this.rallyPoint = s.rallyPoint;
     this.combatStance = s.combatStance ?? 'agresivo';
+    this.leashOrigin = s.leashOrigin
+      ? { ...s.leashOrigin }
+      : this.combatStance === 'defensivo'
+        ? { x: s.pos.x, z: s.pos.z }
+        : null;
     this.buildEfficiency = s.buildEfficiency;
     this.gatherMultiplier = s.gatherMultiplier;
     this.attackMultiplier = s.attackMultiplier;

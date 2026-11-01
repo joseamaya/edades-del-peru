@@ -405,6 +405,10 @@ Definition of Done and the building audit see
   Cosmetic randomness uses `cosmeticRandom()` or the cosmetic `Game.fxRng`, and ESLint forbids `Math.random` in
   `src/game/**` and `src/entities/**`. This changed AI cadence, so `REPLAY_VERSION` is 11. Guarded by the
   1-vs-8-step hash test in `tests/e2e/replay.spec.ts`.
+- **Combat stances**: `pasivo` never auto-attacks; `defensivo` anchors `leashOrigin` (set on the stance, on a
+  move/attack-move destination, or on stop), only acquires enemies inside both LOS and `max(range, 6)`, drops an
+  out-of-leash target and walks back. An attack-move keeps its march instead of cancelling. `leashOrigin` is in
+  the save; the stance change bumped `REPLAY_VERSION`. Guarded by `tests/e2e/stance.spec.ts`.
 - **Opening workers**: the human player does not receive automatic GATHER orders at match start (so the opening
   units stay put and are easy to select); AI seats still run `assignInitialWorkers`. Guarded by
   `tests/e2e/units-facing.spec.ts`.
