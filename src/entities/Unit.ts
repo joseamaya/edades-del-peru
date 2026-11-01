@@ -85,8 +85,10 @@ const MOVE_ARRIVAL_DIST = 1.2;
 const SEPARATION = 1.4;
 /** Look-ahead (world units) validated before a pathless direct approach. */
 const DIRECT_LOOKAHEAD = 3;
-/** Seconds without a route before a stuck move/gather order gives up. */
+/** Seconds without a route before a stuck move/combat order gives up. */
 const NO_ROUTE_GIVEUP = 1.5;
+/** Gather orders get a longer grace: a blocked stand point can free up as other workers leave. */
+const NO_ROUTE_GIVEUP_ECONOMY = 4.5;
 /** Consecutive failed re-routes before a stuck economy order is dropped. */
 const STUCK_GIVEUP_RETRIES = 3;
 /** Seconds with a full load and no dropsite before warning the player. */
@@ -422,6 +424,11 @@ export class Unit {
     this.stuckRetries = 0;
     this.blockedNotified = false;
     this.noDropsiteTimer = 0;
+    this.noRouteTimer = 0;
+    this.directApproach = false;
+    this.approachTried = false;
+    this.attackApproachTried = false;
+    this.buildApproachTried = false;
     switch (order.kind) {
       case OrderKind.MOVE:
         this.setPath(order.target!.x, order.target!.z);
@@ -1161,7 +1168,8 @@ export class Unit {
         }
         this.vel.multiplyScalar(Math.pow(0.02, dt));
         this.noRouteTimer += dt;
-        if (this.noRouteTimer > NO_ROUTE_GIVEUP) {
+        if (this.noRouteTimer > NO_ROUTE_GIVEUP_ECONOMY) {
+          if (this.tryAlternativeGatherNode(order)) return;
           this.notifyNoRoute();
           this.finishOrder();
         }
@@ -1235,6 +1243,48 @@ export class Unit {
         this.deliverOrder();
       }
     }
+  }
+
+  /**
+   * A node whose free stand points are taken (or blocked by other props) should not
+   * cost the whole gather order: switch to the nearest reachable node of the same
+   * resource, as AoE does. Only runs after the route grace expires, so the extra
+   * approach searches are rare.
+   */
+  private tryAlternativeGatherNode(order: Order): boolean {
+    const current = this.ctx.resourceNodes.get(order.entityId!);
+    const resource = (current?.resource ?? this.currentResource) as keyof Resources | null;
+    if (!resource) return false;
+    const candidates: any[] = [];
+    for (const node of this.ctx.resourceNodes.values()) {
+      if (node.dead || node.depleted) continue;
+      if (node.resource !== resource || node.id === order.entityId) continue;
+      if (node.amount !== undefined && node.amount <= 0) continue;
+      candidates.push(node);
+    }
+    const distTo = (node: any): number => distance2D(this.pos.x, this.pos.z, node.pos.x, node.pos.z);
+    candidates.sort((a, b) => distTo(a) - distTo(b));
+    for (const node of candidates.slice(0, 8)) {
+      if (distTo(node) <= HARVEST_RANGE) {
+        order.entityId = node.id;
+        this.path.length = 0;
+        this.pathIdx = 0;
+        this.noRouteTimer = 0;
+        this.approachTried = false;
+        return true;
+      }
+      const pts = this.ctx.findApproachPath(this.pos.x, this.pos.z, node.pos.x, node.pos.z, HARVEST_STAND_RANGE);
+      if (pts.length === 0) continue;
+      order.entityId = node.id;
+      this.path = pts;
+      this.pathIdx = 0;
+      this.repathTimer = 0.9;
+      this.noRouteTimer = 0;
+      this.approachTried = false;
+      if (pts.length > 1) this.advanceToNextWaypoint();
+      return true;
+    }
+    return false;
   }
 
   private carryCount(): number {
