@@ -417,9 +417,11 @@ Definition of Done and the building audit see
   50-wall scenario (`fortifications`, sim p99 budget).
 - **Group movement**: a normal group order computes **one** A* from the first member and every
   member follows that corridor, with only the final formation offset applied (`Unit.issueGroupMove`).
-  `moveSpeedLimit` caps the whole group at its slowest member and is cleared by any non-move order.
-  Shift-queued moves keep individual paths. Separation remains the local avoidance; the group-move
-  benchmark (`bench:check`, 800 units) measures pathfinding p99 with a 4 ms budget. This changed
+  `moveSpeedLimit` caps the whole group at its slowest member (saved with the unit and cleared by
+  `clearOrders`/non-move orders). Formation presets (caja/línea/dispersa) cycle from the HUD, and
+  `Pathfinder.smoothLineOfSight` removes waypoints only when the straight segment keeps the same
+  no-corner-cutting rule. Shift-queued moves keep individual paths. Separation remains the local
+  avoidance; the group-move benchmark (`bench:check`, 800 units) budgets A* at 4 ms/call. This changed
   movement, so `REPLAY_VERSION` is 17. Guarded by `tests/e2e/group-movement.spec.ts`.
 - **Combat stances**: `pasivo` never auto-attacks; `defensivo` anchors `leashOrigin` (set on the stance, on a
   move/attack-move destination, or on stop), only acquires enemies inside both LOS and `max(range, 6)`, drops an

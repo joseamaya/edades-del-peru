@@ -476,7 +476,7 @@ export class Unit {
     this.blockedNotified = false;
     this.noDropsiteTimer = 0;
     this.resetApproachState();
-    if (order.kind !== OrderKind.MOVE) this.moveSpeedLimit = null;
+    this.moveSpeedLimit = null;
     switch (order.kind) {
       case OrderKind.MOVE:
         if (this.combatStance === 'defensivo' && order.target) this.leashOrigin = { ...order.target };
@@ -523,14 +523,18 @@ export class Unit {
     speedLimit: number,
     clear = true,
   ): void {
+    const goal = { x: target.x + offset.x, z: target.z + offset.z };
     if (!clear && this.orderQueue.length > 0) {
-      this.orderQueue.push({ kind: OrderKind.MOVE, target: { ...target } });
+      this.orderQueue.push({ kind: OrderKind.MOVE, target: goal });
       return;
     }
     if (clear) this.clearOrders();
-    this.orderQueue.push({ kind: OrderKind.MOVE, target: { ...target } });
+    this.orderQueue.push({ kind: OrderKind.MOVE, target: goal });
     this.moveSpeedLimit = speedLimit;
-    const goal = { x: target.x + offset.x, z: target.z + offset.z };
+    this.stuckRetries = 0;
+    this.blockedNotified = false;
+    this.resetApproachState();
+    if (this.combatStance === 'defensivo') this.leashOrigin = { ...goal };
     const pts = shared.map((p) => ({ ...p }));
     if (pts.length > 0) {
       const last = pts[pts.length - 1];
@@ -1725,6 +1729,7 @@ export class Unit {
       rallyPoint: this.rallyPoint,
       combatStance: this.combatStance,
       leashOrigin: this.leashOrigin ? { ...this.leashOrigin } : null,
+      moveSpeedLimit: this.moveSpeedLimit,
       buildEfficiency: this.buildEfficiency,
       gatherMultiplier: this.gatherMultiplier,
       attackMultiplier: this.attackMultiplier,

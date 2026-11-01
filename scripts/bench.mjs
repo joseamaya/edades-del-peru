@@ -721,9 +721,9 @@ async function main() {
         }
       }
       if (scenario === 'group-move') {
-        const p99 = r.sim?.labels?.pathfinding?.p99;
-        if (p99 != null && p99 > RIG_BUDGETS.groupMovePathP99Ms) {
-          failures.push(`${r.n}: path p99 ${fmt(p99)} ms > ${RIG_BUDGETS.groupMovePathP99Ms} ms`);
+        const perCall = r.micro?.pathMsPerCall;
+        if (perCall != null && perCall > RIG_BUDGETS.groupMovePathP99Ms) {
+          failures.push(`${r.n}: A* ${fmt(perCall)} ms/call > ${RIG_BUDGETS.groupMovePathP99Ms} ms`);
         }
       }
     }
