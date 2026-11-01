@@ -612,12 +612,12 @@ export class Game {
     if (this.enemyActive && !this.missionLayout?.base && !this.missionLayout?.enemyBase) {
       const diagonal = Math.SQRT2 * s;
       const radius = (diagonal * 0.45) / 2;
-      for (let i = 0; i < 2; i++) {
+      const ok = (p: { x: number; z: number }): boolean =>
+        p.x > 12 && p.z > 12 && p.x < s - 12 && p.z < s - 12 && this.terrain.isBuildable(p.x, p.z);
+      for (let attempt = 0; attempt < 200; attempt++) {
         const ang = rng.range(0, Math.PI * 2);
         const a = { x: s / 2 - Math.cos(ang) * radius, z: s / 2 - Math.sin(ang) * radius };
         const b = { x: s / 2 + Math.cos(ang) * radius, z: s / 2 + Math.sin(ang) * radius };
-        const ok = (p: { x: number; z: number }): boolean =>
-          p.x > 12 && p.z > 12 && p.x < s - 12 && p.z < s - 12 && this.terrain.isBuildable(p.x, p.z);
         if (ok(a) && ok(b)) {
           spots.push([a.x, a.z], [b.x, b.z]);
           return spots;
@@ -1297,7 +1297,7 @@ export class Game {
         trees.push({ x, z });
       }
       for (const t of trees) {
-        const amount = rng.range(200, 260);
+        const amount = rng.range(210, 270);
         const node = new ResourceNode(this.scene, 'tree', t.x, t.z, amount, mapType, this.trees, variants);
         node.pos.y = this.terrain.getHeight(t.x, t.z);
         node.view.position.set(t.x, node.pos.y, t.z);
@@ -1763,18 +1763,30 @@ export class Game {
       ];
       for (const slot of slots) {
         let done = false;
-        for (let k = 0; k < 8 && !done; k++) {
+        for (let k = 0; k < 16 && !done; k++) {
           const angle = slot.angle + (k % 2 === 0 ? 1 : -1) * Math.ceil(k / 2) * 0.22;
-          done = place(slot.kind, slot.amount, Math.cos(angle) * slot.radius, Math.sin(angle) * slot.radius);
+          const radius = slot.radius + Math.floor(k / 8) * 3;
+          done = place(slot.kind, slot.amount, Math.cos(angle) * radius, Math.sin(angle) * radius);
+        }
+        if (!done) {
+          // Last resort: walk outwards until a valid cell appears.
+          for (let r = slot.radius; r <= slot.radius + 18 && !done; r += 2) {
+            for (let k = 0; k < 16 && !done; k++) {
+              const angle = (k / 16) * Math.PI * 2;
+              done = place(slot.kind, slot.amount, Math.cos(angle) * r, Math.sin(angle) * r);
+            }
+          }
         }
       }
       // The opening forest is a compact grove with spaced trunks, not scattered singles.
       const groveAngle = Math.PI * 0.25;
-      const gx = Math.cos(groveAngle) * 12;
-      const gz = Math.sin(groveAngle) * 12;
-      for (let i = 0; i < 6; i++) {
-        const a = (i / 6) * Math.PI * 2;
-        place('tree', 200, gx + Math.cos(a) * 8, gz + Math.sin(a) * 8);
+      for (let gr = 0; gr < 3; gr++) {
+        const gx = Math.cos(groveAngle + gr * 0.7) * (12 + gr * 4);
+        const gz = Math.sin(groveAngle + gr * 0.7) * (12 + gr * 4);
+        for (let i = 0; i < 6; i++) {
+          const a = (i / 6) * Math.PI * 2;
+          place('tree', 210, gx + Math.cos(a) * 8, gz + Math.sin(a) * 8);
+        }
       }
     }
   }

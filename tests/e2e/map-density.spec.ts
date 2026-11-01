@@ -1,12 +1,15 @@
 import { test, expect } from '@playwright/test';
 
 const CASES = [
-  [777, 'coast'],
-  [779, 'andes'],
-  [783, 'jungle'],
+  [777, 'coast', 40000, 150],
+  [555, 'coast', 40000, 150],
+  [42, 'coast', 40000, 150],
+  [779, 'andes', 40000, 150],
+  [783, 'jungle', 40000, 150],
+  [785, 'altiplano', 15000, 100],
 ] as const;
 
-for (const [seed, map] of CASES) {
+for (const [seed, map, minWood, minTrees] of CASES) {
   test(`resources and base spacing are playable (${map}, seed ${seed})`, async ({ page }) => {
     await page.goto(`/?play=1&seed=${seed}&map=${map}&fog=0&low=1&noloop=1`);
     await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
@@ -38,9 +41,9 @@ for (const [seed, map] of CASES) {
         trees: nodes.filter((n: any) => n.kind === 'tree').length,
       };
     });
-    expect(out.wood, 'wood total').toBeGreaterThan(40_000);
-    expect(out.trees, 'tree nodes').toBeGreaterThan(150);
-    expect(out.distance, 'base separation').toBeGreaterThanOrEqual(out.diagonal * 0.44);
+    expect(out.wood, 'wood total').toBeGreaterThan(minWood);
+    expect(out.trees, 'tree nodes').toBeGreaterThanOrEqual(minTrees);
+    expect(out.distance, 'base separation').toBeGreaterThanOrEqual(out.diagonal * 0.45 - 0.01);
     for (const ring of out.rings) {
       expect(ring.trees, 'opening forest').toBeGreaterThanOrEqual(3);
       expect(ring.berry, 'opening berries').toBeGreaterThanOrEqual(1);

@@ -93,12 +93,12 @@ often the AI beats it", not "how often the bot wins".
 
 ## Resource-density baseline (issue #254)
 
-The skirmish generator now places tree clusters instead of lone trees (global 6 m trunk spacing so every
+The skirmish generator now places tree clusters instead of lone trees (global 6.5 m trunk spacing so every
 tree keeps a harvest stand point), guarantees one forest/berries/hunt/silver/stone ring per player, and
 separates the two bases by at least 45 % of the map diagonal. Before the change the playtest measured
 ~4,550 wood on the whole map and a ~50-unit base separation on 192×192; the new generation test
-(`tests/e2e/map-density.spec.ts`) requires >40,000 wood on coast/andes/jungle and >=44 % diagonal.
+(`tests/e2e/map-density.spec.ts`) requires >40,000 wood on coast/andes/jungle (>=15,000 on altiplano) and >=45 % diagonal.
 
-Baseline after the change (`yarn sim --seeds=777,779,783 --max=900`, normal vs normal): two undecided caps
-and one P0 win at 729 s; gathered banks 2,135–3,086; no AI crash. Longer matches are expected on the denser
-maps and are the new reference line for future economy/AI tuning.
+Baseline after the change (`yarn sim --seeds=777,779,783 --max=900`, normal vs normal): three undecided caps
+at 900 s; gathered banks 2,679–2,786; both seats trained, no AI crash. Longer matches are expected on the
+denser maps and are the new reference line for future economy/AI tuning.
