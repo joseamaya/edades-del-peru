@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { cosmeticRandom } from '../util/rng';
 
 /**
  * Ballistic/tracer projectile with a parabolic arc, trail and area damage.
@@ -117,7 +118,7 @@ export class Projectile {
     if (this.mesh) this.mesh.position.copy(this.pos);
     if (this.light) {
       this.light.position.copy(this.pos);
-      this.light.intensity = 2.5 + Math.random() * 1.5;
+      this.light.intensity = 2.5 + cosmeticRandom() * 1.5;
     }
 
     // trail

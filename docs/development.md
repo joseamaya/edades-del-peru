@@ -398,6 +398,13 @@ Definition of Done and the building audit see
   (`angleDelta` for the local turret aim). Assigning `rotation.y = yaw` directly makes units walk sideways or
   backwards except on diagonals. Spawn yaw/animation phase come from the deterministic id (no `Math.random`), so
   saves, replays and AI-vs-AI runs stay stable.
+- **Simulation time**: `Game.update` derives `t` from `stepCount * dt`, never from wall-clock time, so
+  AI perception, mission timers and combat replay identically regardless of frame batching. `GameLoop` passes
+  `stepCount * step` and only advances that counter when the step actually simulated, so pausing does not jump
+  the clock. Sky, water, camera and resource sway keep real time so they do not lag when the accumulator drops.
+  Cosmetic randomness uses `cosmeticRandom()` or the cosmetic `Game.fxRng`, and ESLint forbids `Math.random` in
+  `src/game/**` and `src/entities/**`. This changed AI cadence, so `REPLAY_VERSION` is 11. Guarded by the
+  1-vs-8-step hash test in `tests/e2e/replay.spec.ts`.
 - **Opening workers**: the human player does not receive automatic GATHER orders at match start (so the opening
   units stay put and are easy to select); AI seats still run `assignInitialWorkers`. Guarded by
   `tests/e2e/units-facing.spec.ts`.

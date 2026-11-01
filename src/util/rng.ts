@@ -85,3 +85,9 @@ export function weightedPick<T>(rng: RNG, entries: ReadonlyArray<[T, number]>): 
   }
   return entries[entries.length - 1][0];
 }
+
+/**
+ * Visual-only randomness (smoke, sway, muzzle light). Kept out of the seeded
+ * simulation stream so cosmetics can never desync a replay.
+ */
+export const cosmeticRandom = (): number => Math.random();

@@ -16,6 +16,19 @@ export default tseslint.config(
     },
   },
   {
+    files: ['src/game/**/*.ts', 'src/entities/**/*.ts'],
+    rules: {
+      'no-restricted-properties': [
+        'error',
+        {
+          object: 'Math',
+          property: 'random',
+          message: 'Use the seeded RNG for simulation state; cosmetics use the dedicated FX RNG.',
+        },
+      ],
+    },
+  },
+  {
     files: ['scripts/**/*.{mjs,ts}', '*.mjs'],
     languageOptions: {
       globals: {
