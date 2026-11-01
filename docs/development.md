@@ -99,8 +99,10 @@ Definition of Done and the building audit see
   and save shape but now stores `1 + reduction` (no `SAVE_VERSION` bump), so `saveTypes` is unchanged.
   **Height advantage (§7, abstraction)**: a unit attacking from higher ground deals more and uphill less — the
   pure `elevationDamageMultiplier(attackerY, targetY)` (±25% cap) is applied to the **final** damage in
-  `Game.resolveDamage`, only when the attacker has a position (melee; projectiles pass `{ owner }`). Units only,
-  not buildings. The ±25% is a gameplay abstraction of the high-ground/visibility advantage, not a measured value.
+  `Game.resolveDamage`, only when the attacker has a position (melee, and area projectiles use the impact
+  ground position). Units only, not buildings. Class counters (`bonusVs` in `units.ts`) are another additive
+  multiplier applied inside `computeDamage`; projectile spawns carry `attackerKind`/`bonusVs` so ranged damage
+  uses the same table. The ±25% is a gameplay abstraction of the high-ground/visibility advantage, not a measured value.
 - **Maps by geography**: `MapType = 'coast' | 'andes' | 'altiplano' | 'jungle'` (generated in `Terrain.generate`).
 - **Historical world profiles (data layer)**: `src/model/defs/profiles.ts` defines `GeographicRegion` (finer than
   `MapType`) and `HistoricalMapProfile` (terrain+soil/climate+aridity/moisture/temperature/water/vegetation/

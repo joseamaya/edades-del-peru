@@ -102,3 +102,10 @@ separates the two bases by at least 45 % of the map diagonal. Before the change 
 Baseline after the change (`yarn sim --seeds=777,779,783 --max=900`, normal vs normal): three undecided caps
 at 900 s; gathered banks 2,679–2,786; both seats trained, no AI crash. Longer matches are expected on the
 denser maps and are the new reference line for future economy/AI tuning.
+
+### Counters baseline (issue #232)
+
+After adding the class counter table, `yarn sim --seeds=777,779,783 --max=900` (normal vs normal) keeps the
+same outcome as the #254 baseline (three 900 s caps, banks 2,679–2,786, both seats training) and no AI crash.
+The counter table is documented as a gameplay abstraction in [`historia/combate.md`](historia/combate.md);
+no quantitative historical claim is made.

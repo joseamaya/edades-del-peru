@@ -11,7 +11,7 @@ import {
   CombatStance,
   AlertReason,
 } from '../core/types';
-import { getUnitStats, getUnitModel, UnitStats, DamageClass } from '../model/defs/units';
+import { getUnitStats, getUnitModel, UnitStats, DamageClass, UnitClass } from '../model/defs/units';
 import {
   WALK_CLIP_RATE_MAX,
   WALK_CLIP_RATE_MIN,
@@ -74,6 +74,8 @@ export interface UnitContext {
     trail?: string;
     targetId?: number;
     damageType?: DamageClass;
+    attackerKind?: UnitKind;
+    bonusVs?: Partial<Record<UnitClass, number>>;
   }): void;
   particles: any;
   players: PlayerState[];
@@ -1196,6 +1198,8 @@ export class Unit {
       trail: pKind === 'tracer' ? 'tracer' : undefined,
       targetId: target.id,
       damageType: this.stats.damageType,
+      attackerKind: this.kind,
+      bonusVs: this.stats.bonusVs,
     });
     // muzzle flash at the cannon mouth (weapon pivot + barrel length, rotated with the unit)
     const muzzle = new THREE.Vector3(0.28, 0.9, 0.62).applyAxisAngle(

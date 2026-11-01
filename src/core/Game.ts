@@ -104,6 +104,7 @@ import {
   unitDisplayName,
   isConverter,
   DamageClass,
+  unitClassFor,
 } from '../model/defs/units';
 import { getTech } from '../model/defs/techs';
 import { AudioEngine } from '../audio/AudioEngine';
@@ -3376,8 +3377,13 @@ export class Game {
       const a = (target as Building).stats.armor;
       armor = { light: a, heavy: a, building: a };
     }
+    const targetClass = target instanceof Unit ? unitClassFor(target.kind) : 'building';
+    const attackerClass =
+      from instanceof Unit ? unitClassFor(from.kind) : from?.attackerKind ? unitClassFor(from.attackerKind) : null;
+    const bonusVs = from instanceof Unit ? from.stats.bonusVs : from?.bonusVs;
+    const classBonus = attackerClass && bonusVs ? (bonusVs[targetClass] ?? 0) : 0;
     const elevated = target instanceof Unit && from?.pos ? elevationDamageMultiplier(from.pos.y, target.pos.y) : 1;
-    const final = Math.max(1, computeDamage(damage, damageType, armor, armorMult) * elevated);
+    const final = Math.max(1, computeDamage(damage, damageType, armor, armorMult, classBonus) * elevated);
     target.takeDamage(final, attackerId);
     const dmgH = target instanceof Unit ? 2.2 : 2.6;
     this.hud?.addDamageNumber(target.pos.x, target.pos.y + dmgH, target.pos.z, final, final >= 40 ? 'big' : 'normal');
@@ -3485,7 +3491,9 @@ export class Game {
   private applyProjectileDamage(o: any, targetId: number | undefined): void {
     const impact = o.target as THREE.Vector3;
     const damageType: DamageClass = o.damageType ?? 'heavy';
+    const from = { owner: o.owner, attackerKind: o.attackerKind, bonusVs: o.bonusVs };
     if (o.area && o.area > 0) {
+      const ground = new THREE.Vector3(impact.x, this.terrain.getHeight(impact.x, impact.z), impact.z);
       // area damage
       const targets: { t: any; d: number }[] = [];
       for (const u of this.units.values()) {
@@ -3501,7 +3509,7 @@ export class Game {
       }
       for (const { t, d } of targets) {
         const falloff = 1 - d / o.area;
-        this.resolveDamage(o.owner, t.id, o.damage * falloff, { owner: o.owner }, damageType);
+        this.resolveDamage(o.owner, t.id, o.damage * falloff, { ...from, pos: ground }, damageType);
       }
       // explosion smoke
       this.particles.emit({
@@ -3520,7 +3528,7 @@ export class Game {
     } else if (targetId !== undefined) {
       const target = this.units.get(targetId) ?? this.buildings.get(targetId);
       if (target && !target.dead) {
-        this.resolveDamage(o.owner, targetId, o.damage, { owner: o.owner }, damageType);
+        this.resolveDamage(o.owner, targetId, o.damage, from, damageType);
       }
     } else {
       // no targetId: damage the enemy closest to the impact point
@@ -3545,7 +3553,7 @@ export class Game {
           }
         }
       }
-      if (best && bestD < 3) this.resolveDamage(o.owner, best.id, o.damage, { owner: o.owner }, damageType);
+      if (best && bestD < 3) this.resolveDamage(o.owner, best.id, o.damage, from, damageType);
     }
   }
 

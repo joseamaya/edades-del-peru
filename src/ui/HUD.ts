@@ -16,7 +16,15 @@ import {
 } from '../core/types';
 import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../model/defs/buildings';
 import { getBuildingCard } from '../model/defs/buildingCards';
-import { UNIT_ARCHETYPES, getUnitStats, unitDisplayIcon, unitDisplayName, unitMinPeriod } from '../model/defs/units';
+import {
+  UNIT_ARCHETYPES,
+  UNIT_CLASS_LABEL,
+  getUnitStats,
+  unitClassFor,
+  unitDisplayIcon,
+  unitDisplayName,
+  unitMinPeriod,
+} from '../model/defs/units';
 import { TECHS, techAvailable } from '../model/defs/techs';
 import { ERA_DEFS } from '../model/defs/eras';
 import { PERIODS, getPeriod } from '../model/defs/periods';
@@ -1325,7 +1333,20 @@ export class HUD {
   private unitDesc(u: Unit): string {
     const stats = u.stats;
     const stance = STANCE_TOOLTIP[u.combatStance];
-    return `HP ${Math.ceil(u.hp)}/${Math.ceil(u.maxHp)} · Daño ${formatStat(stats.attack)} · Rango ${formatStat(stats.range)} · Blindaje ${formatStat(stats.heavyArmor)} · <span title="${stance}">Postura: ${u.combatStance}</span>`;
+    const bonuses = Object.entries(stats.bonusVs ?? {}).map(([cls, value]) => ({
+      label: UNIT_CLASS_LABEL[cls as keyof typeof UNIT_CLASS_LABEL],
+      value: value ?? 0,
+    }));
+    const strong = bonuses.filter((b) => b.value > 0).map((b) => `${b.label} (+${Math.round(b.value * 100)}%)`);
+    const weak = bonuses.filter((b) => b.value < 0).map((b) => `${b.label} (${Math.round(b.value * 100)}%)`);
+    const myClass = unitClassFor(u.kind);
+    for (const [kind, archetype] of Object.entries(UNIT_ARCHETYPES)) {
+      if ((archetype.bonusVs?.[myClass] ?? 0) <= 0) continue;
+      const label = UNIT_CLASS_LABEL[unitClassFor(kind as keyof typeof UNIT_ARCHETYPES)];
+      if (!weak.some((w) => w.startsWith(label))) weak.push(label);
+    }
+    const counters = `${strong.length ? ` · Fuerte contra: ${strong.join(', ')}` : ''}${weak.length ? ` · Débil contra: ${weak.join(', ')}` : ''}`;
+    return `HP ${Math.ceil(u.hp)}/${Math.ceil(u.maxHp)} · Daño ${formatStat(stats.attack)} · Rango ${formatStat(stats.range)} · Blindaje ${formatStat(stats.heavyArmor)}${counters} · <span title="${stance}">Postura: ${u.combatStance}</span>`;
   }
 
   private renderBuildingPanel(b: Building): void {

@@ -26,10 +26,16 @@ export function armorForType(damageType: DamageClass, armor: ArmorProfile): numb
  * single armor value, so `Game.resolveDamage` sets all three fields to it and every
  * attack type is reduced by it (siege included). Damage never drops below 1.
  */
-export function computeDamage(damage: number, damageType: DamageClass, armor: ArmorProfile, armorMult = 1): number {
+export function computeDamage(
+  damage: number,
+  damageType: DamageClass,
+  armor: ArmorProfile,
+  armorMult = 1,
+  classBonus = 0,
+): number {
   const base = armorForType(damageType, armor);
   const bonus = clamp(armorMult - 1, 0, ARMOR_BONUS_CAP);
-  return Math.max(1, (damage - base) * (1 - bonus));
+  return Math.max(1, (damage - base) * (1 - bonus) * (1 + classBonus));
 }
 
 /** Damage bonus/penalty per unit of height advantage. */

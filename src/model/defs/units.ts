@@ -2,6 +2,19 @@ import { CivId, Era, UnitKind, Resources, ZERO_RESOURCES, HistoricalPeriod } fro
 import { ERA_DEFS } from './eras';
 
 export type DamageClass = 'light' | 'heavy' | 'fortified';
+
+/** Tactical class used by the counter table (gameplay abstraction). */
+export type UnitClass = 'infantry' | 'ranged' | 'cavalry' | 'siege' | 'worker' | 'special' | 'building';
+
+export const UNIT_CLASS_LABEL: Record<UnitClass, string> = {
+  infantry: 'infantería',
+  ranged: 'unidades a distancia',
+  cavalry: 'caballería',
+  siege: 'asedio',
+  worker: 'obreros',
+  special: 'especialistas',
+  building: 'edificios',
+};
 export type ProjectileKind =
   'bullet' | 'rocket' | 'howitzer_shell' | 'nuclear' | 'tracer' | 'arrow' | 'sling_stone' | 'none';
 export type RangedWeapon = 'sling' | 'bow' | 'arquebus' | 'musket' | 'rifle';
@@ -39,6 +52,8 @@ export interface UnitStats {
   population: number;
   damageType: DamageClass;
   projectile: ProjectileKind;
+  /** Additive damage multiplier against a target class (0.3 = +30%). */
+  bonusVs?: Partial<Record<UnitClass, number>>;
 }
 
 export interface UnitArchetype {
@@ -66,6 +81,8 @@ export interface UnitArchetype {
   minPeriod?: HistoricalPeriod;
   /** Conversion unit (can convert enemy units). */
   converter?: boolean;
+  /** Counter table: additive damage bonus/penalty against a target class. */
+  bonusVs?: Partial<Record<UnitClass, number>>;
 }
 
 const BASE: Resources = ZERO_RESOURCES;
@@ -102,6 +119,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
     name: 'Guerrero',
     description: 'Infantería básica con lanza y macana. Barata y numerosa.',
     category: 'infantry',
+    bonusVs: { cavalry: 0.3, siege: 0.15 },
     eraStats: {
       [Era.FORMATIVE]: { hp: 1, attack: 1 },
       [Era.REGIONAL_STATES]: { hp: 1.15, attack: 1.25 },
@@ -124,6 +142,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
     name: 'Hondero',
     description: 'Tirador con honda y boleadora. Buen daño a distancia en masa.',
     category: 'ranged',
+    bonusVs: { infantry: 0.3, ranged: 0.15 },
     eraStats: {
       [Era.FORMATIVE]: { hp: 1, attack: 1 },
       [Era.REGIONAL_STATES]: { hp: 1.2, attack: 1.3 },
@@ -184,6 +203,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
     name: 'Arquero',
     description: 'Tropas de élite con arco largo y cerbatana. Alta cadencia de fuego.',
     category: 'ranged',
+    bonusVs: { infantry: 0.25, ranged: 0.2, cavalry: -0.15 },
     eraStats: {
       [Era.FORMATIVE]: { hp: 1.2, attack: 1.4, range: 1.1 },
       [Era.REGIONAL_STATES]: { hp: 1.4, attack: 1.6, range: 1.15 },
@@ -246,6 +266,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
     name: 'Cazador',
     description: 'Cazador de largo alcance. Devastador contra oficiales y tropas.',
     category: 'ranged',
+    bonusVs: { ranged: 0.2 },
     eraStats: {
       [Era.FORMATIVE]: { hp: 0.9, attack: 2.0, range: 1.6 },
       [Era.REGIONAL_STATES]: { hp: 1.0, attack: 2.3, range: 1.7 },
@@ -275,6 +296,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
     name: 'Jinete',
     description: 'Jinete ligero veloz. Perfecto para asaltar la economía y flanquear.',
     category: 'cavalry',
+    bonusVs: { ranged: 0.3, siege: 0.3, infantry: -0.15 },
     eraStats: {
       [Era.FORMATIVE]: { hp: 1.2, attack: 1.0, speed: 1.0 },
       [Era.REGIONAL_STATES]: { hp: 1.35, attack: 1.3, speed: 1.05 },
@@ -295,6 +317,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
     name: 'Caballería de Choque',
     description: 'Jinetes de choque. Golpean fuerte contra infantería y economía.',
     category: 'cavalry',
+    bonusVs: { ranged: 0.35, siege: 0.35, infantry: -0.2 },
     eraStats: {
       [Era.FORMATIVE]: { hp: 1.6, attack: 1.2 },
       [Era.REGIONAL_STATES]: { hp: 1.8, attack: 1.5 },
@@ -316,6 +339,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
     name: 'Ariete Blindado',
     description: 'Blindaje pesado y cañón de gran calibre. El rey del campo de batalla.',
     category: 'cavalry',
+    bonusVs: { ranged: 0.3, building: 0.25 },
     eraStats: {
       [Era.FORMATIVE]: { hp: 2.2, attack: 2.0, speed: 0.9 },
       [Era.REGIONAL_STATES]: { hp: 2.5, attack: 2.4, speed: 0.95 },
@@ -357,6 +381,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
     name: 'Artillero Antiaéreo',
     description: 'Artillero de precisión: diezma unidades a distancia con fuego sostenido.',
     category: 'ranged',
+    bonusVs: { ranged: 0.3 },
     eraStats: {
       [Era.FORMATIVE]: { hp: 1.0, attack: 1.3, range: 1.2 },
       [Era.REGIONAL_STATES]: { hp: 1.1, attack: 1.5, range: 1.25 },
@@ -381,6 +406,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
     name: 'Artillería de Asedio',
     description: 'Asedio de largo alcance. Destruye edificios y formaciones.',
     category: 'siege',
+    bonusVs: { building: 0.5 },
     eraStats: {
       [Era.FORMATIVE]: { hp: 1.0, attack: 3.0, range: 2.4, speed: 0.55 },
       [Era.REGIONAL_STATES]: { hp: 1.1, attack: 3.5, range: 2.5, speed: 0.58 },
@@ -402,6 +428,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
     name: 'Mortero',
     description: 'Daño en área devastador. Ideal para aplastar formaciones.',
     category: 'siege',
+    bonusVs: { building: 0.5 },
     eraStats: {
       [Era.FORMATIVE]: { hp: 0.9, attack: 2.2, range: 2.0, speed: 0.5, area: 3.5 },
       [Era.REGIONAL_STATES]: { hp: 1.0, attack: 2.6, range: 2.1, speed: 0.52, area: 3.6 },
@@ -469,6 +496,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
     name: 'Artillería de Cohetes',
     description: 'Artillería de cohetes de largo alcance. Devastación en área masiva.',
     category: 'siege',
+    bonusVs: { building: 0.5 },
     eraStats: {
       [Era.FORMATIVE]: { hp: 1, attack: 1, range: 1, speed: 0.4 },
       [Era.REGIONAL_STATES]: { hp: 1, attack: 1, range: 1, speed: 0.4 },
@@ -717,6 +745,28 @@ const BASE_STATS: Record<UnitKind, UnitStats> = {
   },
 };
 
+const CLASS_BY_KIND: Record<UnitKind, UnitClass> = {
+  [UnitKind.WORKER]: 'worker',
+  [UnitKind.SOLDIER]: 'infantry',
+  [UnitKind.MUSKETEER]: 'ranged',
+  [UnitKind.RIFLEMAN]: 'ranged',
+  [UnitKind.SNIPER]: 'ranged',
+  [UnitKind.HUSSAR]: 'cavalry',
+  [UnitKind.CAVALRY]: 'cavalry',
+  [UnitKind.TANK]: 'siege',
+  [UnitKind.SCOUT]: 'special',
+  [UnitKind.ANTI_AIR]: 'ranged',
+  [UnitKind.ARTILLERY]: 'siege',
+  [UnitKind.MORTAR]: 'siege',
+  [UnitKind.COMMISSAR]: 'special',
+  [UnitKind.MISSIONARY]: 'special',
+  [UnitKind.NUCLEAR]: 'siege',
+};
+
+export function unitClassFor(kind: UnitKind): UnitClass {
+  return CLASS_BY_KIND[kind];
+}
+
 const WEAPON_PROJECTILE: Record<RangedWeapon, ProjectileKind> = {
   sling: 'sling_stone',
   bow: 'arrow',
@@ -745,6 +795,8 @@ export function getUnitStats(kind: UnitKind, era: Era): UnitStats {
   const base = BASE_STATS[kind];
   const mods = UNIT_ARCHETYPES[kind].eraStats[era] ?? {};
   const clone: UnitStats = { ...base };
+  const bonusVs = UNIT_ARCHETYPES[kind].bonusVs;
+  if (bonusVs) clone.bonusVs = { ...bonusVs };
   // A mod that overrides the projectile keeps it; otherwise the era decides.
   if (base.projectile === DEFAULT_PROJECTILES[kind]) clone.projectile = projectileFor(kind, era);
   if (mods.hp) clone.hp = base.hp * mods.hp;
