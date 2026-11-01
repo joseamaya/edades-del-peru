@@ -34,6 +34,7 @@ function stubGame(unit: { id: number; tag: string; owner: number; dead: boolean;
     buildings: new Map(),
     hasBuildings: () => true,
     getPaused: () => false,
+    isCinematicActive: () => false,
     togglePause: () => {},
     playIntro: () => {},
     loop: { start: () => {} },

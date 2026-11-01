@@ -53,6 +53,7 @@ function gameForSteps() {
     landmark: { position: { x: 100, z: 30 } },
     siteCenter: { x: 100, z: 30 },
     getPaused: () => false,
+    isCinematicActive: () => false,
     mission: {
       activeObjectives: [{}],
       getObjectiveState: () => 'activo',

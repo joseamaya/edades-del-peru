@@ -86,11 +86,40 @@ test('the tutorial guides in the first mission', async ({ page }) => {
   await expect(overlay).toBeVisible({ timeout: 30_000 });
   await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
   await overlay.waitFor({ state: 'detached', timeout: 15_000 });
+  await page.locator('.ed-mission-card').click();
   const tutorial = page.locator('#ed-tutorial');
-  // the first step appears after ~1.2s of game time; be generous on slow runners
+  // the first step appears after the card and the ~2.6s opening flight
   await expect(tutorial).toBeVisible({ timeout: 30_000 });
   await expect(tutorial).toContainText('Selecciona a tus obreros');
   await expect(tutorial).toContainText('Paso 1 / 6');
+});
+
+test('the chapter card freezes the mission clock and shows the full subtitle', async ({ page }) => {
+  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
+  const briefing = page.locator('.ed-overlay', { hasText: 'La Ciudad Sagrada' });
+  await expect(briefing).toBeVisible({ timeout: 30_000 });
+  await briefing.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+  const card = page.locator('.ed-mission-card');
+  await expect(card).toBeVisible();
+  const subtitle = card.locator('.place');
+  await expect(subtitle).toContainText('plazas se sostienen con trabajo comunal');
+  expect((await subtitle.textContent()) ?? '').not.toContain('…');
+  await expect(page.locator('#ed-objectives'), 'objectives stay hidden behind the card').toBeHidden();
+
+  await page.waitForTimeout(2500);
+  const held = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    return { timer: g.mission?.timer ?? 0, paused: g.getPaused() };
+  });
+  expect(held.timer, 'the mission clock must not run behind the card').toBe(0);
+
+  await page.evaluate(() => document.querySelector<HTMLElement>('.ed-mission-card')?.click());
+  const justClosed = await page.evaluate(() => (window as unknown as { game: any }).game.mission?.timer ?? 0);
+  expect(justClosed, 'the timer starts at 0:00 when the card closes').toBeLessThan(0.5);
+  await expect(page.locator('#ed-objectives'), 'objectives appear after the card').toBeVisible();
+  await page.waitForTimeout(4000);
+  const running = await page.evaluate(() => (window as unknown as { game: any }).game.mission?.timer ?? 0);
+  expect(running, 'the timer resumes after the card and the opening flight').toBeGreaterThan(0);
 });
 
 test('Caral guarantees coastal fishing grounds for the tutorial', async ({ page }) => {

@@ -271,7 +271,7 @@ const CSS = /* css */ `
   .ed-mission-card .inner { text-align: center; padding: 30px; max-width: 760px; }
   .ed-mission-card .year { color: var(--gold); font-size: 12px; letter-spacing: 4px; text-transform: uppercase; }
   .ed-mission-card h2 { margin: 10px 0 4px; color: #f4e7c2; font-size: clamp(38px, 7vw, 76px); line-height: .98; text-shadow: 0 4px 30px rgba(0,0,0,.7); }
-  .ed-mission-card .place { color: var(--text-dim); font-size: 13px; letter-spacing: 2px; }
+  .ed-mission-card .place { color: var(--text-dim); font-size: 13px; line-height: 1.6; letter-spacing: 1px; max-width: 640px; margin: 0 auto; }
   .ed-mission-card .hint { margin-top: 22px; color: var(--gold-dim); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; }
   @keyframes mission-card-in { from { opacity: 0; } to { opacity: 1; } }
 
@@ -423,6 +423,7 @@ export class HUD {
   private tutorialEl!: HTMLElement;
   private tutorialStepEl!: HTMLElement;
   private tutorialCountEl!: HTMLElement;
+  private missionCard: HTMLElement | null = null;
 
   constructor(game: Game) {
     this.game = game;
@@ -753,7 +754,7 @@ export class HUD {
 
   private refreshObjectives(): void {
     const mis = this.game.mission;
-    if (!mis) return;
+    if (!mis || this.isMissionCardOpen()) return;
     this.objPanelEl.style.display = 'block';
     const items = mis.activeObjectives;
     const titles = this.objectiveTitles(items.map(({ def }) => def));
@@ -976,19 +977,29 @@ export class HUD {
     });
   }
 
+  /** True while the chapter card is on screen (its absence means the mission may advance). */
+  isMissionCardOpen(): boolean {
+    return this.missionCard !== null && this.missionCard.isConnected;
+  }
+
   /** Chapter title card shown over the opening camera flight. */
   private showMissionTitle(mis: MissionDef): void {
+    this.missionCard?.remove();
     const card = this.el('div', 'ed-mission-card');
     const [year, place] = mis.subtitle.split('·').map((part) => part.trim());
     card.innerHTML = `
       <div class="inner">
         <div class="year">${year ?? ''}${place ? ` · ${place}` : ''}</div>
         <h2>${mis.title}</h2>
-        <div class="place">${mis.history.split('\n')[0]?.slice(0, 110) ?? ''}…</div>
+        <div class="place">${mis.history.split('\n')[0] ?? ''}</div>
         <div class="hint">Haz clic para continuar</div>
       </div>
     `;
-    const dismiss = () => card.remove();
+    this.missionCard = card;
+    const dismiss = () => {
+      card.remove();
+      if (this.missionCard === card) this.missionCard = null;
+    };
     card.tabIndex = 0;
     card.setAttribute('role', 'button');
     card.setAttribute('aria-label', 'Continuar a la misión');
@@ -2314,10 +2325,12 @@ export class HUD {
       this.dialogueTimer -= dt;
       if (this.dialogueTimer <= 0) this.dialogueEl.classList.remove('show');
     }
-    // campaign objectives panel (tick shared with the minimap)
+    // campaign objectives panel (tick shared with the minimap); the chapter card
+    // owns the screen until the player dismisses it
     if (this.game.mission) {
-      this.objPanelEl.style.display = 'block';
-      if (this.updateAcc > 0.15) this.refreshObjectives();
+      const cardOpen = this.isMissionCardOpen();
+      this.objPanelEl.style.display = cardOpen ? 'none' : 'block';
+      if (!cardOpen && this.updateAcc > 0.15) this.refreshObjectives();
     } else {
       this.objPanelEl.style.display = 'none';
     }

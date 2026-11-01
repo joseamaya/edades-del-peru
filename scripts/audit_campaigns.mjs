@@ -126,6 +126,45 @@ async function auditVictory(browser, base, id, title) {
   await context.close();
 }
 
+async function auditChapterCard(browser, base) {
+  const viewport = { width: 1600, height: 900 };
+  const context = await browser.newContext({ viewport });
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
+  page.on('console', (m) => {
+    if (m.type() === 'error') errors.push(`console: ${m.text()}`);
+  });
+  await page.goto(`${base}/?mission=m1_caral&seed=777&fog=0&low=1&art=all`, { waitUntil: 'networkidle' });
+  await page.waitForFunction(() => window.game?.mission !== undefined, null, { timeout: 60_000 });
+  const start = page.getByRole('button', { name: /COMENZAR MISIÓN/ });
+  await start.waitFor({ state: 'visible', timeout: 30_000 });
+  await start.click();
+  const card = page.locator('.ed-mission-card');
+  await card.waitFor({ state: 'visible', timeout: 15_000 });
+  const box = await card.boundingBox();
+  const objectives = page.locator('#ed-objectives');
+  const objectivesDuringCard = await objectives.isVisible().catch(() => false);
+  const held = await page.evaluate(() => (window.game?.mission?.timer ?? 0) === 0);
+  if (!inside(box, viewport)) issue('m1_caral', 'layout', 'chapter card outside 1600x900');
+  if (objectivesDuringCard) issue('m1_caral', 'layout', 'objectives visible behind the chapter card');
+  if (!held) issue('m1_caral', 'objective', 'mission clock runs behind the chapter card');
+  await page.screenshot({ path: path.join(outDir, 'm1_caral-card-1600.png') });
+  await page.evaluate(() => document.querySelector('.ed-mission-card')?.click());
+  await card.waitFor({ state: 'detached', timeout: 5000 });
+  await objectives.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+  const objectivesAfterCard = await objectives.isVisible().catch(() => false);
+  if (!objectivesAfterCard) issue('m1_caral', 'layout', 'objectives hidden after the chapter card');
+  for (const error of errors) issue('m1_caral', 'runtime', error);
+  report.missions.push({
+    id: 'm1_caral',
+    phase: 'chapter-card',
+    layout: { card: box, objectivesDuringCard, objectivesAfterCard, clockHeld: held },
+    errors,
+  });
+  await context.close();
+}
+
 async function auditGlobal(browser, base) {
   const context = await browser.newContext({ viewport: { width: 1600, height: 900 } });
   const page = await context.newPage();
@@ -167,6 +206,7 @@ async function main() {
   const browser = await launchChromium();
   try {
     await auditGlobal(browser, base);
+    await auditChapterCard(browser, base);
     for (const [id, title] of MISSIONS) {
       for (const viewport of VIEWPORTS) await auditLayout(browser, base, id, title, viewport);
       await auditVictory(browser, base, id, title);
