@@ -56,3 +56,34 @@ test('the FPS overlay is hidden unless explicitly enabled', async ({ page }) => 
   await boot(page, '/?play=1&seed=777&fog=0&low=1&fps=1');
   await expect(page.locator('#ed-fps')).toBeVisible();
 });
+
+test('the skirmish setup shows the civ bonus and applies starting resources', async ({ page }) => {
+  await boot(page, '/?menu=1');
+  await page.getByRole('button', { name: /Escaramuza/ }).click();
+  await expect(page.locator('.ed-skirmish-info')).toBeVisible();
+  await expect(page.locator('.ed-skirmish-info')).toContainText('moche');
+  await expect(page.locator('.ed-map-preview')).toBeVisible();
+
+  await page.locator('.ed-field', { hasText: 'Recursos iniciales' }).locator('select').selectOption('rich');
+  await page.locator('.ed-field', { hasText: 'Población máxima' }).locator('select').selectOption('150');
+  await page.getByRole('button', { name: /INICIAR ESCARAMUZA/ }).click();
+  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.units?.size > 0, null, {
+    timeout: 30_000,
+  });
+  const bank = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    return { food: g.players[0].resources.food, cap: g.players[0].populationCap };
+  });
+  expect(bank.food).toBe(500);
+  expect(bank.cap).toBe(150);
+});
+
+test('F1 and ? toggle the shortcut panel', { tag: '@smoke' }, async ({ page }) => {
+  await boot(page, '/?play=1&seed=777&fog=0&low=1');
+  const help = page.locator('#ed-help');
+  await expect(help).toBeVisible();
+  await page.keyboard.press('F1');
+  await expect(help).toBeHidden();
+  await page.keyboard.press('?');
+  await expect(help).toBeVisible();
+});

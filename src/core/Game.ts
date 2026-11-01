@@ -545,6 +545,12 @@ export class Game {
 
   private initPlayers(): void {
     const civs = [this.settings.civPlayer, this.settings.civAI];
+    const preset = this.missionDef ? 'standard' : this.settings.startingResources;
+    const startBank: Record<typeof preset, Resources> = {
+      low: { food: 150, wood: 150, silver: 50, stone: 0 },
+      standard: { food: 250, wood: 220, silver: 100, stone: 50 },
+      rich: { food: 500, wood: 400, silver: 250, stone: 150 },
+    };
     for (let i = 0; i < 2; i++) {
       const civ = getCiv(civs[i] as CivId);
       const isAI = i === 1;
@@ -563,7 +569,7 @@ export class Game {
         colorHex,
         isAI,
         difficulty: i === 1 ? 1 : 0,
-        resources: { food: 250, wood: 220, silver: 100, stone: 50 },
+        resources: { ...startBank[preset] },
         populationUsed: 0,
         populationCap: this.settings.populationCap,
         era: this.settings.startingEra,
@@ -3040,6 +3046,10 @@ export class Game {
     if (isTypingTarget(e.target)) return;
     const k = e.key.toLowerCase();
     if (this.gameEnded) return;
+    if (k === keyFor('toggleHelp') || k === '?') {
+      this.hud.toggleHelp();
+      return;
+    }
     if (k === keyFor('pause')) {
       this.togglePause();
       return;

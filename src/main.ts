@@ -48,6 +48,9 @@ function sanitizeSettings(raw: unknown): GameSettings {
   if (PERIOD_IDS.includes(r.period as number)) s.period = r.period as HistoricalPeriod;
   if (DIFFICULTIES.includes(r.difficulty as string)) s.difficulty = r.difficulty as GameSettings['difficulty'];
   if (Number.isFinite(r.populationCap)) s.populationCap = Math.max(1, Math.floor(r.populationCap as number));
+  if (['low', 'standard', 'rich'].includes(r.startingResources as string)) {
+    s.startingResources = r.startingResources as GameSettings['startingResources'];
+  }
   if (Number.isFinite(r.gameSpeed)) s.gameSpeed = r.gameSpeed as number;
   if (TIMES_OF_DAY.includes(r.timeOfDay as string)) s.timeOfDay = r.timeOfDay as GameSettings['timeOfDay'];
   if (typeof r.fogOfWar === 'boolean') s.fogOfWar = r.fogOfWar;

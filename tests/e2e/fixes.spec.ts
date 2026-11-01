@@ -318,24 +318,29 @@ test('the Sacred Huaca is buildable in any period in wonder mode', async ({ page
   expect(r.quarryInPeriod).toBe(false);
 });
 
-test('hides Stone and Quarry in periods that cannot obtain them', async ({ page }) => {
+test('shows Stone dimmed in periods that cannot obtain it yet', async ({ page }) => {
   await page.goto('/?play=1&civ=caral&period=0&seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });
-  await page.waitForFunction(() => document.getElementById('ed-res-stone')?.style.display === 'none', null, {
-    timeout: 30_000,
-  });
+  await page.waitForFunction(
+    () => document.getElementById('ed-res-stone')?.classList.contains('res-unavailable'),
+    null,
+    { timeout: 30_000 },
+  );
 
   const early = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
+    const stone = document.getElementById('ed-res-stone');
     return {
       era: g.players[0].era,
-      stoneDisplay: document.getElementById('ed-res-stone')?.style.display ?? '',
+      stoneVisible: stone?.offsetParent !== null,
+      dimmed: stone?.classList.contains('res-unavailable') ?? false,
     };
   });
   expect(early.era).toBeLessThan(2);
-  expect(early.stoneDisplay).toBe('none');
+  expect(early.stoneVisible).toBe(true);
+  expect(early.dimmed).toBe(true);
 });
 
 test('the Amauta converts an enemy unit without throwing', { tag: '@smoke' }, async ({ page }) => {

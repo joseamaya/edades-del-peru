@@ -11,6 +11,8 @@ export interface GameSettings {
   difficulty: 'easy' | 'normal' | 'hard' | 'legendary';
   startingEra: Era;
   populationCap: number;
+  /** Skirmish starting bank: a low, standard or rich opening. */
+  startingResources: 'low' | 'standard' | 'rich';
   gameSpeed: number; // multiplier (0.5x-3x)
   timeOfDay: 'morning' | 'noon' | 'dusk' | 'night';
   fogOfWar: boolean;
@@ -52,6 +54,7 @@ export const DEFAULT_SETTINGS: GameSettings = {
   difficulty: 'normal',
   startingEra: Era.REGIONAL_STATES,
   populationCap: 100,
+  startingResources: 'standard',
   gameSpeed: 1,
   timeOfDay: 'noon',
   fogOfWar: true,
