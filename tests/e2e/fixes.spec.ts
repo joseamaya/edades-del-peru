@@ -276,7 +276,7 @@ test('camera rotation is off by default and can be enabled', async ({ page }) =>
   });
 
   const yaw0 = await page.evaluate(() => (window as unknown as { game: any }).game.camera.getYaw());
-  await page.keyboard.press('q');
+  await page.keyboard.press('z');
   const yawOff = await page.evaluate(() => (window as unknown as { game: any }).game.camera.getYaw());
   expect(yawOff).toBeCloseTo(yaw0, 5);
 
@@ -285,9 +285,14 @@ test('camera rotation is off by default and can be enabled', async ({ page }) =>
     g.settings.rotateCamera = true;
     g.camera.setRotationEnabled(true);
   });
-  await page.keyboard.press('q');
+  await page.keyboard.press('z');
   const yawOn = await page.evaluate(() => (window as unknown as { game: any }).game.camera.getYaw());
   expect(yawOn).not.toBeCloseTo(yaw0, 5);
+
+  // E selects the army but must not rotate the camera.
+  await page.keyboard.press('e');
+  const yawAfterE = await page.evaluate(() => (window as unknown as { game: any }).game.camera.getYaw());
+  expect(yawAfterE).toBeCloseTo(yawOn, 5);
 });
 
 test('the Sacred Huaca is buildable in any period in wonder mode', async ({ page }) => {

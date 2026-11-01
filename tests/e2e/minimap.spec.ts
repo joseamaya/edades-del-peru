@@ -52,7 +52,7 @@ test('the minimap is north-up and shows the camera footprint and compass', { tag
   expect(northEdgeMid.x).toBeCloseTo(state.center.x, 5);
   expect(northEdgeMid.y).toBeLessThan(state.center.z);
 
-  // Optional Q/E rotation still rotates the footprint.
+  // Optional Z/X rotation still rotates the footprint.
   const diagonalTopMid = {
     x: (state.diagonal[2].x + state.diagonal[3].x) / 2,
     y: (state.diagonal[2].y + state.diagonal[3].y) / 2,

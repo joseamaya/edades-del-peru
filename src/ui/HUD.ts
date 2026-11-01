@@ -47,6 +47,7 @@ import { openCodex } from './Codex';
 import { bus } from '../core/EventBus';
 import { hasSave } from '../game/SaveGame';
 import { hasReplay } from '../game/replay';
+import { formatHotkeys } from '../core/hotkeys';
 
 function escapeHtml(s: string): string {
   const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
@@ -806,7 +807,7 @@ export class HUD {
   private buildHelp(): void {
     const help = this.el('div', '');
     help.id = 'ed-help';
-    help.innerHTML = `<b>Atajos</b><br>Clic izq: seleccionar · arrastra: área<br>Clic der: orden · Ctrl+der: atacar-mover<br>Shift: cola/rally · Ctrl+1-9: grupo · 1-9: recuperar<br>Minimapa: arrastra para mover · clic der: orden<br>Rueda: zoom · Q/E: rotar (opcional) · H/F/G/V: edificios · P: pausa`;
+    help.innerHTML = `<b>Atajos</b><br>Clic izq: seleccionar · arrastra: área<br>Clic der: orden · Ctrl+der: atacar-mover<br>Shift: cola/rally · Ctrl+1-9: grupo · 1-9: recuperar<br>Minimapa: arrastra para mover · clic der: orden<br>Rueda: zoom · ${formatHotkeys()}`;
   }
 
   private buildFps(): void {

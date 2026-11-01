@@ -84,6 +84,7 @@ import { farmYieldMultiplier, nearbyCanal } from '../model/defs/farmYield';
 import { distance2D, distanceToSegment } from '../util/math';
 import { isTypingTarget } from '../util/dom';
 import { RNG, hashCode, weightedPick } from '../util/rng';
+import { keyFor } from './hotkeys';
 import { getAuthoredSite, type AuthoredSiteDef, type SiteHeritageProxy } from '../model/defs/sites';
 import { detectSoftwareRenderer } from '../util/gpu';
 import { ERA_DEFS } from '../model/defs/eras';
@@ -3039,7 +3040,7 @@ export class Game {
     if (isTypingTarget(e.target)) return;
     const k = e.key.toLowerCase();
     if (this.gameEnded) return;
-    if (k === 'p') {
+    if (k === keyFor('pause')) {
       this.togglePause();
       return;
     }
@@ -3062,17 +3063,17 @@ export class Game {
       else this.recallControlGroup(n);
       return;
     }
-    if (k === 'h') {
+    if (k === keyFor('centerBase')) {
       const center = [...this.buildings.values()].find((b) => b.owner === 0 && b.kind === BuildingKind.CENTER);
       if (center) this.camera.focusOn(center.pos.x, center.pos.z);
     }
-    if (k === 'f') {
+    if (k === keyFor('followUnit')) {
       if (this.selectedUnits.length > 0) {
         const u = this.units.get(this.selectedUnits[0]);
         if (u) this.camera.follow(u.id);
       }
     }
-    if (e.key === ' ') {
+    if (k === keyFor('lastBattle')) {
       const lastEvt = this.lastBattleEvent;
       if (lastEvt) {
         const ent = this.units.get(lastEvt) ?? this.buildings.get(lastEvt);
@@ -3080,7 +3081,7 @@ export class Game {
       }
     }
     // select the whole army (own combat units)
-    if (k === 'e') {
+    if (k === keyFor('selectArmy')) {
       const army = [...this.units.values()].filter((u) => u.owner === 0 && !u.dead && u.kind !== UnitKind.WORKER);
       this.selectedUnits = army.map((u) => u.id);
       this.selectedBuilding = null;
@@ -3090,8 +3091,8 @@ export class Game {
       return;
     }
     // numeric controls for panels
-    if (k === 'g') this.startPlacement(BuildingKind.FARM);
-    if (k === 'v') this.startPlacement(BuildingKind.HOUSE);
+    if (k === keyFor('buildFarm')) this.startPlacement(BuildingKind.FARM);
+    if (k === keyFor('buildHouse')) this.startPlacement(BuildingKind.HOUSE);
   };
 
   private lastBattleEvent: number | null = null;
