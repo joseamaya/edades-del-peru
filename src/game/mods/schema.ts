@@ -52,6 +52,7 @@ const PROJECTILES: ProjectileKind[] = [
   'tracer',
   'arrow',
   'sling_stone',
+  'none',
 ];
 const UNIT_CATEGORIES = ['econ', 'infantry', 'ranged', 'cavalry', 'siege', 'special', 'unique'];
 const BUILDING_CATEGORIES = ['economy', 'military', 'defense', 'advance', 'special'];

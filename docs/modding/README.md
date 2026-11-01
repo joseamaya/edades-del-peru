@@ -62,7 +62,10 @@ An existing id is merged. A **new** id must include `name`, `description`, `cost
 
 ## Validation rules
 
-- `schemaVersion` must be `2`; `name` must be a non-empty string.
+- `schemaVersion` must be `2`; `name` must be a non-empty string. Version 2 removes the retired
+  `laser`/`rail` projectiles and adds `arrow`, `sling_stone` and `none` (melee units). A version-1 mod
+  can migrate by bumping the number and replacing those values with a period-appropriate projectile.
+- A unit `stats.projectile` override is preserved; otherwise the unit's era weapon decides.
 - Numeric fields must be numbers `>= 0`; eras are `0`–`5`; historical periods are `0`–`9`.
 - Ids must exist for `units`/`buildings`/`civs` overrides; a tech `building` must be a known `BuildingKind`.
 - `damageType`, `projectile`, `category`, `visual.arch` and `visual.emblem` must be known values.
