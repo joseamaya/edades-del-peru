@@ -77,6 +77,17 @@ describe('authored campaign sites', () => {
     expect(mission.layout?.site?.id).toBe('independence_site');
   });
 
+  it('keeps the Inca civil war on its authored Cusco site and heightfield', () => {
+    const site = getAuthoredSite('cusco_inca_site')!;
+    expect(site.scale).toBe(0.7);
+    expect(site.anchor).toEqual({ x: 124.8, z: 130.6 });
+    expect(site.heightField?.worldSize).toBe(192);
+    expect(site.heritageProxies.map((p) => p.id)).toEqual(['cusco_ushnu']);
+    expect(site.walkableCorridor?.width).toBe(8);
+    const mission = MISSIONS.find((m) => m.id === 'm6b_guerra_civil')!;
+    expect(mission.layout?.site?.id).toBe('cusco_inca_site');
+  });
+
   it('keeps the Arica mission on its authored port site and heightfield', () => {
     const site = getAuthoredSite('arica_site')!;
     expect(site.scale).toBe(0.8);

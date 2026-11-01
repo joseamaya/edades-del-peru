@@ -42,7 +42,14 @@ describe('campaign commanders', () => {
   });
 
   it('the late-campaign missions carry portraits', () => {
-    for (const id of ['m5_yahuar_pampa', 'm6_chimu_inca', 'm7_tupac_amaru', 'm8_independencia', 'm9_guerra_pacifico']) {
+    for (const id of [
+      'm5_yahuar_pampa',
+      'm6_chimu_inca',
+      'm6b_guerra_civil',
+      'm7_tupac_amaru',
+      'm8_independencia',
+      'm9_guerra_pacifico',
+    ]) {
       const mis = MISSIONS.find((m) => m.id === id)!;
       expect(mis.commanders?.length, id).toBeGreaterThan(0);
     }

@@ -50,8 +50,8 @@ export const CAMPAIGNS: CampaignDef[] = [
     subtitle: 'Los hitos del imperio inca',
     description:
       'Desde la defensa del Cusco frente a los chancas hasta la expansión imperial por la costa y la sierra.',
-    missionIds: ['m5_yahuar_pampa', 'm6_chimu_inca'],
-    releasedMissionIds: ['m5_yahuar_pampa', 'm6_chimu_inca'],
+    missionIds: ['m5_yahuar_pampa', 'm6_chimu_inca', 'm6b_guerra_civil'],
+    releasedMissionIds: ['m5_yahuar_pampa', 'm6_chimu_inca', 'm6b_guerra_civil'],
     status: 'available',
     era: '1438 — 1532',
     accent: '#d8b35a',

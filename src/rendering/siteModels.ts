@@ -17,6 +17,8 @@ import independenceLod0Url from '../assets/sites/independence/independence_chape
 import independenceLod1Url from '../assets/sites/independence/independence_chapel_lod1.glb?url';
 import aricaLod0Url from '../assets/sites/arica/arica_battery_lod0.glb?url';
 import aricaLod1Url from '../assets/sites/arica/arica_battery_lod1.glb?url';
+import cuscoLod0Url from '../assets/sites/cusco/cusco_inca_lod0.glb?url';
+import cuscoLod1Url from '../assets/sites/cusco/cusco_inca_lod1.glb?url';
 import { loadStaticGltf } from './StaticModel';
 import type { AuthoredSiteId } from '../model/defs/sites';
 
@@ -30,6 +32,7 @@ const SITE_MODEL_URLS: Partial<Record<AuthoredSiteId, { lod0: string; lod1: stri
   colonial_site: { lod0: colonialLod0Url, lod1: colonialLod1Url },
   independence_site: { lod0: independenceLod0Url, lod1: independenceLod1Url },
   arica_site: { lod0: aricaLod0Url, lod1: aricaLod1Url },
+  cusco_inca_site: { lod0: cuscoLod0Url, lod1: cuscoLod1Url },
 };
 
 /** Load the campaign site; LOD1 is the RTS default, `?lod=0` previews the master. */

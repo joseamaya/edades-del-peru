@@ -88,8 +88,8 @@ slot is absent (offline / without assets).
 - **Location**: `src/assets/sites/{chanca,chimu,colonial,independence,arica}/`.
 - **Source**: `art-src/blender/mission-decor/` (Git LFS), rebuilt by
   `scripts/blender/build_mission_decor.py`.
-- **Content**: dedicated low-poly abstractions of the Chanca fortress, Chimú compound, colonial
-  church, independence chapel/camp and Arica battery. They are visual-only and replace the
+- **Content**: dedicated low-poly abstractions of the Chanca fortress, Chimú compound, Cusco
+  ushnu, colonial church, independence chapel/camp and Arica battery. They are visual-only and replace the
   procedural landmark in those missions; the procedural builder remains the fallback.
 - **Confidence**: project-owned abstractions, not surveys or reconstructions of a specific
   standing building. Hashes and sizes are recorded in

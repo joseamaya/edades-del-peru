@@ -506,7 +506,7 @@
           "asset": "media/generated/campaigns/la-senda-del-sol/m5_yahuar/intro-800.webp",
           "width": 800,
           "height": 450,
-          "bytes": 6304
+          "bytes": 5496
         }
       ],
       "sources": [
@@ -514,12 +514,12 @@
         "docs/historia/arquitectura.md",
         "art-src/blender/mission-decor/README.md"
       ],
-      "promptVersion": "v1-blender-bbddfcd8",
+      "promptVersion": "v1-blender-cd45302c",
       "prompt": "Blender render: Pucará chanca de Yahuar Pampa",
       "negativePrompt": "n/a (blender render)",
       "provider": "blender",
       "model": "workbench",
-      "generatedAt": "2026-10-31T15:10:13.535Z",
+      "generatedAt": "2026-10-31T23:29:49.885Z",
       "nature": "abstraction",
       "reviewed": false,
       "reviewer": null,
@@ -532,13 +532,13 @@
       "sourceWidth": 1600,
       "sourceHeight": 900,
       "crop": "cover-attention",
-      "bytes": 10790,
+      "bytes": 10010,
       "format": "webp",
-      "sha256": "738091b8f60ed96cefa29e2119205fd06d2b72994f66241c2727bb4482db2c5d",
+      "sha256": "4280a22477f04aaaebf5740ed7ef19935ff671794d3ef5dea1d4b8d22d094427",
       "blender": {
         "sceneFile": "mission-decor/chanca_fortress_lod0.blend",
         "sourceRender": "mission-decor/renders/chanca_hero.png",
-        "sourceSha256": "636ac28e257fffcc2dc2d99effaf6f4a545ccf64d4eacb56732f5ed808ac63d2",
+        "sourceSha256": "8ea28413d903a6b719aa5d799d3a8587b278780721fa7c160423e80023d4b7d9",
         "sceneAssetId": null,
         "confidence": "Reconstrucción volumétrica de una práctica defensiva documentada; planta y remates plausibles.",
         "camera": "hero",
@@ -566,7 +566,7 @@
           "asset": "media/generated/campaigns/la-senda-del-sol/m6_chimu/intro-800.webp",
           "width": 800,
           "height": 450,
-          "bytes": 6734
+          "bytes": 6164
         }
       ],
       "sources": [
@@ -574,12 +574,12 @@
         "docs/historia/arquitectura.md",
         "art-src/blender/mission-decor/README.md"
       ],
-      "promptVersion": "v1-blender-e2362069",
+      "promptVersion": "v1-blender-2495a2df",
       "prompt": "Blender render: Conjunto chimú de Chan Chan",
       "negativePrompt": "n/a (blender render)",
       "provider": "blender",
       "model": "workbench",
-      "generatedAt": "2026-10-31T15:10:13.896Z",
+      "generatedAt": "2026-10-31T23:29:50.030Z",
       "nature": "abstraction",
       "reviewed": false,
       "reviewer": null,
@@ -592,13 +592,13 @@
       "sourceWidth": 1600,
       "sourceHeight": 900,
       "crop": "cover-attention",
-      "bytes": 11592,
+      "bytes": 10734,
       "format": "webp",
-      "sha256": "5100dbd736855494da14de11d21eff93b58b6ae30e45630ba6b6ad0e004d254c",
+      "sha256": "3f7cd28781c24eddac2d669ba085c521e08ba46bbb90db8c9e4413efdf65044b",
       "blender": {
         "sceneFile": "mission-decor/chimu_compound_lod0.blend",
         "sourceRender": "mission-decor/renders/chimu_hero.png",
-        "sourceSha256": "56da86bb23425c59b7f38d6c689b7c0d338d618e6294640d4096509289ab3899",
+        "sourceSha256": "71a26600795cdf103bf1fc0d06058ca5557530b9a0f953728015e5796b1b20d0",
         "sceneAssetId": null,
         "confidence": "Tradición arquitectónica documentada; combinación y dimensiones plausibles.",
         "camera": "hero",
@@ -606,6 +606,66 @@
         "license": "project-owned",
         "author": "Miguel Amaya",
         "renderedAt": "2026-10-31T10:00:00-05:00"
+      }
+    },
+    {
+      "id": "m6b_guerra_civil-intro",
+      "type": "campaign-intro",
+      "scope": "mission",
+      "campaignId": "la-senda-del-sol",
+      "missionId": "m6b_guerra_civil",
+      "civilization": "inca",
+      "period": 5,
+      "era": 2,
+      "region": "high_andes",
+      "topic": "campaign_intro",
+      "sceneType": "campaign_scene",
+      "asset": "media/generated/campaigns/la-senda-del-sol/m6b_guerra_civil/intro.webp",
+      "variants": [
+        {
+          "asset": "media/generated/campaigns/la-senda-del-sol/m6b_guerra_civil/intro-800.webp",
+          "width": 800,
+          "height": 450,
+          "bytes": 6450
+        }
+      ],
+      "sources": [
+        "docs/historia/campanas/guerra_civil_inca.md",
+        "docs/historia/arquitectura.md",
+        "art-src/blender/mission-decor/README.md"
+      ],
+      "promptVersion": "v1-blender-19b4e72a",
+      "prompt": "Blender render: Cusco incaico y Quipaipan, 1529–1532",
+      "negativePrompt": "n/a (blender render)",
+      "provider": "blender",
+      "model": "workbench",
+      "generatedAt": "2026-10-31T23:29:50.567Z",
+      "nature": "abstraction",
+      "reviewed": false,
+      "reviewer": null,
+      "reviewedAt": null,
+      "disclaimer": "No es una fotografía histórica: es un render 3D del proyecto.",
+      "alt": "Vista del ushnu, la plaza y el recinto amurallado del Cusco incaico.",
+      "caption": "Cusco incaico y Quipaipan, 1529–1532",
+      "width": 1280,
+      "height": 720,
+      "sourceWidth": 1600,
+      "sourceHeight": 900,
+      "crop": "cover-attention",
+      "bytes": 11490,
+      "format": "webp",
+      "sha256": "45b8ec94b6e0aff1f737f497bfdd8886533766cbacc803b732cd1ec42c127ac7",
+      "blender": {
+        "sceneFile": "mission-decor/cusco_inca_lod0.blend",
+        "sourceRender": "mission-decor/renders/cusco_hero.png",
+        "sourceSha256": "72eae8f2ab3144c1f634f25de5a4551723ce849958c441cb18a5407c657b48cf",
+        "sceneAssetId": null,
+        "confidence": "tipología documentada; planta y remates plausibles",
+        "camera": "hero",
+        "renderer": "workbench",
+        "license": "project-owned",
+        "author": "Miguel Amaya",
+        "renderedAt": "2026-10-31T18:25:00-05:00"
       }
     },
     {
@@ -626,7 +686,7 @@
           "asset": "media/generated/campaigns/la-senda-del-sol/m7_tupac/intro-800.webp",
           "width": 800,
           "height": 450,
-          "bytes": 4338
+          "bytes": 4128
         }
       ],
       "sources": [
@@ -634,12 +694,12 @@
         "docs/historia/arquitectura.md",
         "art-src/blender/mission-decor/README.md"
       ],
-      "promptVersion": "v1-blender-6fe473ab",
+      "promptVersion": "v1-blender-54198353",
       "prompt": "Blender render: Templo y plaza colonial del Cusco",
       "negativePrompt": "n/a (blender render)",
       "provider": "blender",
       "model": "workbench",
-      "generatedAt": "2026-10-31T15:10:14.211Z",
+      "generatedAt": "2026-10-31T23:29:50.165Z",
       "nature": "abstraction",
       "reviewed": false,
       "reviewer": null,
@@ -652,13 +712,13 @@
       "sourceWidth": 1600,
       "sourceHeight": 900,
       "crop": "cover-attention",
-      "bytes": 7642,
+      "bytes": 7500,
       "format": "webp",
-      "sha256": "d9f5706eee4622a37e6254317a0945a3d0171e32e6b8459fe374da05a4f1b20d",
+      "sha256": "57d55b58debbeecdaa9df17451a819379202852a3a9cf6a1afb96520f477aa63",
       "blender": {
         "sceneFile": "mission-decor/colonial_church_lod0.blend",
         "sourceRender": "mission-decor/renders/colonial_hero.png",
-        "sourceSha256": "ae45811f72e43ed03aedd7095194bc270a5e0e61b6cd2adad7e392f2030b8c6d",
+        "sourceSha256": "51550ba7530e0f734e8b93a0a5e0804a06c52d9078c8bf40f411149a4474aae9",
         "sceneAssetId": null,
         "confidence": "Tipología documentada; planta y remates plausibles.",
         "camera": "hero",
@@ -686,7 +746,7 @@
           "asset": "media/generated/campaigns/la-senda-del-sol/m8_independencia/intro-800.webp",
           "width": 800,
           "height": 450,
-          "bytes": 4266
+          "bytes": 4382
         }
       ],
       "sources": [
@@ -694,12 +754,12 @@
         "docs/historia/arquitectura.md",
         "art-src/blender/mission-decor/README.md"
       ],
-      "promptVersion": "v1-blender-57f01c7a",
+      "promptVersion": "v1-blender-f42fa5cb",
       "prompt": "Blender render: Capilla y campamento patriota de Ayacucho",
       "negativePrompt": "n/a (blender render)",
       "provider": "blender",
       "model": "workbench",
-      "generatedAt": "2026-10-31T15:10:14.522Z",
+      "generatedAt": "2026-10-31T23:29:50.294Z",
       "nature": "abstraction",
       "reviewed": false,
       "reviewer": null,
@@ -712,13 +772,13 @@
       "sourceWidth": 1600,
       "sourceHeight": 900,
       "crop": "cover-attention",
-      "bytes": 7538,
+      "bytes": 7950,
       "format": "webp",
-      "sha256": "faed9442d425758b4081e718d262a4913426160aa35ac7d43c4d56cb13d9d95b",
+      "sha256": "08617ba3ecb3f55c00dbd52b58715017ac0de71b2bf597dd65cc79261900a6c6",
       "blender": {
         "sceneFile": "mission-decor/independence_chapel_lod0.blend",
         "sourceRender": "mission-decor/renders/independence_hero.png",
-        "sourceSha256": "7ad55630b4eb44660e6fb6fea030e8954ec868c038069453dd509af81ecd794d",
+        "sourceSha256": "9553b0d8f155f435359da12150acf918500de6771ef895ba762c89d8dbaa4777",
         "sceneAssetId": null,
         "confidence": "Contexto documentado; planta y remates plausibles.",
         "camera": "hero",
@@ -746,7 +806,7 @@
           "asset": "media/generated/campaigns/la-senda-del-sol/m9_arica/intro-800.webp",
           "width": 800,
           "height": 450,
-          "bytes": 4578
+          "bytes": 4750
         }
       ],
       "sources": [
@@ -754,12 +814,12 @@
         "docs/historia/arquitectura.md",
         "art-src/blender/mission-decor/README.md"
       ],
-      "promptVersion": "v1-blender-b761a1dc",
+      "promptVersion": "v1-blender-41792702",
       "prompt": "Blender render: Terraza portuaria y batería de Arica",
       "negativePrompt": "n/a (blender render)",
       "provider": "blender",
       "model": "workbench",
-      "generatedAt": "2026-10-31T15:10:14.840Z",
+      "generatedAt": "2026-10-31T23:29:50.428Z",
       "nature": "abstraction",
       "reviewed": false,
       "reviewer": null,
@@ -772,13 +832,13 @@
       "sourceWidth": 1600,
       "sourceHeight": 900,
       "crop": "cover-attention",
-      "bytes": 8074,
+      "bytes": 8880,
       "format": "webp",
-      "sha256": "1fc9ccedda2364337388b40a3b7e57643461c1cfd2f8243d4f4409f1b35ba9a5",
+      "sha256": "2ac411155e095a31c36231ba1d54d381497ffc29da9ad787e4edc93199b66f7e",
       "blender": {
         "sceneFile": "mission-decor/arica_battery_lod0.blend",
         "sourceRender": "mission-decor/renders/arica_hero.png",
-        "sourceSha256": "19b3cd697875a93cbe089e7974ee32f71a0a697441aba04bcd3a558f5e225dc7",
+        "sourceSha256": "4d148e26ff3916d266eddbcf8a7308533e1ad0a6d3a7a3518dc13f70f0633f1c",
         "sceneAssetId": null,
         "confidence": "Infraestructura documentada; planta y remates plausibles.",
         "camera": "hero",

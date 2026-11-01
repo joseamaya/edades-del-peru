@@ -18,6 +18,7 @@ const EXPECTED_REGION: Record<string, GeographicRegion> = {
   m4_wari: 'high_andes',
   m5_yahuar_pampa: 'high_andes',
   m6_chimu_inca: 'north_coast',
+  m6b_guerra_civil: 'high_andes',
   m7_tupac_amaru: 'high_andes',
   m8_independencia: 'andean_valley',
   m9_guerra_pacifico: 'south_coast',
@@ -69,6 +70,7 @@ describe('campaign map profiles', () => {
       'm3_moche_recuay',
       'm4_wari',
       'm5_yahuar_pampa',
+      'm6b_guerra_civil',
       'm8_independencia',
       'm9_guerra_pacifico',
     ]);

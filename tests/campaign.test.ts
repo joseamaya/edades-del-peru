@@ -282,7 +282,7 @@ describe('campaign educational content', () => {
   });
 
   it('chapter II has briefings and guided tutorials', () => {
-    for (const id of ['m5_yahuar_pampa', 'm6_chimu_inca']) {
+    for (const id of ['m5_yahuar_pampa', 'm6_chimu_inca', 'm6b_guerra_civil']) {
       const mis = MISSIONS.find((m) => m.id === id)!;
       expect(mis.tutorial, `${id} tutorial flag`).toBe(true);
       expect(getEducational(id)?.briefing?.length, `${id} briefing`).toBeGreaterThan(40);

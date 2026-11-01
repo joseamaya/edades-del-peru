@@ -544,13 +544,19 @@ export class Game {
     for (let i = 0; i < 2; i++) {
       const civ = getCiv(civs[i] as CivId);
       const isAI = i === 1;
+      const name = isAI
+        ? (this.missionDef?.enemyName ?? civ.name) + ' (IA)'
+        : (this.missionDef?.playerName ?? civ.name);
+      const colorHex = isAI
+        ? (this.missionDef?.enemyColor ?? civ.colors.primary)
+        : (this.missionDef?.playerColor ?? civ.colors.primary);
       this.players.push({
         id: i,
-        name: isAI ? civ.name + ' (IA)' : civ.name,
+        name,
         civ: civ.id,
         team: i as Team,
-        color: new THREE.Color(civ.colors.primary),
-        colorHex: civ.colors.primary,
+        color: new THREE.Color(colorHex),
+        colorHex,
         isAI,
         difficulty: i === 1 ? 1 : 0,
         resources: { food: 250, wood: 220, silver: 100, stone: 50 },

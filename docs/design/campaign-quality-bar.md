@@ -160,3 +160,24 @@ because the UX evidence is local and there is no CI pixel gate.
 | Persistence | Met: save/load round-trip. | Met: save/load round-trip. |
 | Tests | Met: data, completability and real-command playtest. | Met: data, failure path, completability and real-command playtest. |
 | Docs | Met: README, dossier, campaign experiences and this table. | Met: README, dossier, campaign experiences and this table. |
+
+
+## Inca civil war playable status (m6b)
+
+`m6b_guerra_civil` is released as **playable**. It uses the same authored-site
+pipeline as the later campaigns.
+
+| Gate | m6b La Guerra Civil |
+| --- | --- |
+| History | Met: `guerra_civil_inca.md`; Huáscar vs Atahualpa. |
+| Identity | Met: advance to Quipaipan, defeat Huáscar, protect Atahualpa. |
+| Terrain | Met: authored Cusco/Quipaipan heightfield. |
+| Play | Met: real-command playtest advances and defeats Huáscar. |
+| Contract | Met: reach, hidden destroy and protect objectives. |
+| Onboarding | Met: three-step tutorial + briefing. |
+| Closure | Met: epilogue and optional objectives. |
+| UX | Met locally: 1600×900 briefing/tutorial reviewed. |
+| Visuals | Met locally: authored Cusco site GLB + heightfield; intro render pending. |
+| Persistence | Met: save/load round-trip. |
+| Tests | Met: data, completability and real-command playtest. |
+| Docs | Met: README, dossier, experiences and this table. |

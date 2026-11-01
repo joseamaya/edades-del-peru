@@ -256,7 +256,14 @@ test('saves and loads the Wari network and frontier', async ({ page }) => {
 
 test('saves and loads the later campaign missions', async ({ context }) => {
   test.setTimeout(180_000);
-  for (const id of ['m5_yahuar_pampa', 'm6_chimu_inca', 'm7_tupac_amaru', 'm8_independencia', 'm9_guerra_pacifico']) {
+  for (const id of [
+    'm5_yahuar_pampa',
+    'm6_chimu_inca',
+    'm6b_guerra_civil',
+    'm7_tupac_amaru',
+    'm8_independencia',
+    'm9_guerra_pacifico',
+  ]) {
     const page = await context.newPage();
     await page.goto(`/?mission=${id}&seed=777&fog=0&low=1`);
     await startMission(page);

@@ -188,6 +188,30 @@ def independence(detail):
     join('independence_chapel')
 
 
+def cusco(detail):
+    stone = material('MAT-Stone_Cusco', (0.38, 0.33, 0.26))
+    dark = material('MAT-Stone_Cusco_Dark', (0.18, 0.15, 0.12))
+    earth = material('MAT-Earth_Cusco', (0.48, 0.34, 0.19))
+    gold = material('MAT-Gold_Cusco', (0.72, 0.54, 0.20))
+    box('platform', (0, 0, 0.7), (18, 14, 1.4), earth)
+    box('terrace-1', (0, 2.0, 1.6), (14, 9, 1.8), stone)
+    box('terrace-2', (0, 3.2, 2.8), (10, 6, 1.8), stone)
+    box('ushnu', (0, 3.8, 4.2), (5, 5, 2.4), stone)
+    box('ushnu-top', (0, 3.8, 5.6), (3.4, 3.4, 0.8), gold)
+    box('wall-n', (0, -6.4, 2.0), (15, 0.7, 2.4), stone)
+    box('wall-w', (-8.6, 0, 2.0), (0.7, 12, 2.4), stone)
+    box('wall-e', (8.6, 0, 2.0), (0.7, 12, 2.4), stone)
+    box('gate', (0, -6.4, 2.1), (2.4, 0.9, 2.8), dark)
+    if detail:
+        for x in (-5.0, 0, 5.0):
+            box('step', (x, -7.2, 1.2), (1.4, 0.9, 0.5), stone)
+        for x in (-6.5, 6.5):
+            cylinder('tower', (x, -4.0, 3.0), 1.2, 3.4, stone, 8)
+            cone('tower-roof', (x, -4.0, 5.2), 1.5, 1.2, dark, 8)
+        box('sun-wall', (-6.5, 4.5, 1.9), (0.8, 5, 2.4), stone)
+    join('cusco_inca')
+
+
 def arica(detail):
     stone = material('MAT-Stone_Arica', (0.38, 0.35, 0.30))
     dark = material('MAT-Stone_Arica_Dark', (0.24, 0.22, 0.19))
@@ -216,6 +240,7 @@ MODELS = [
     ('colonial_church', lambda detail: church(detail, 'colonial_church')),
     ('independence_chapel', independence),
     ('arica_battery', arica),
+    ('cusco_inca', cusco),
 ]
 
 

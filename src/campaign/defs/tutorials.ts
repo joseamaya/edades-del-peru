@@ -39,6 +39,26 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
     ],
   },
+  m6b_guerra_civil: {
+    steps: [
+      {
+        id: 'select',
+        text: 'Selecciona al ejército de Atahualpa. La guerra civil se decide avanzando hacia Quipaipan.',
+        check: { type: 'selectUnit', unitKind: UnitKind.SOLDIER },
+      },
+      {
+        id: 'quipaipan',
+        text: 'Avanza hasta Quipaipan y presenta batalla contra el ejército de Huáscar.',
+        highlight: '#ed-objectives',
+        check: { type: 'objectiveCompleted', objectiveId: 'obj_avanzar' },
+      },
+      {
+        id: 'huascar',
+        text: 'Derrota el centro de Huáscar sin dejar caer a Atahualpa.',
+        check: { type: 'objectiveCompleted', objectiveId: 'obj_quipaipan' },
+      },
+    ],
+  },
   m7_tupac_amaru: {
     steps: [
       {

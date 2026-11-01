@@ -3,14 +3,14 @@
 Status: **published on GitHub Pages** at <https://joseamaya.github.io/edades-del-peru/>; itch upload
 deferred until the end of the campaign work. Date: 2026-10-30. Scope: all four chapters
 (_Culturas Preincas_, _El Tahuantinsuyo_, _El Virreinato_ and _Independencia y República_),
-missions m1 Caral through m9 Guerra del Pacífico.
+missions m1 Caral through m9 Guerra del Pacífico, plus m6b La Guerra Civil.
 
 ## Verified
 
-- `yarn verify:fast`: typecheck, lint, format, 445 unit tests and build pass.
-- `yarn test:e2e:slow`: 74 passing, including campaign playtests, saves and settlement.
+- `yarn verify:fast`: typecheck, lint, format, 446 unit tests and build pass.
+- `yarn test:e2e:slow`: 76 passing, including campaign playtests, saves and settlement.
 - `yarn test:e2e:smoke`: 42 passing.
-- `yarn test:e2e:fast`: 183 passing.
+- `yarn test:e2e:fast`: 184 passing.
 - `yarn art:validate`: manifest and Blender render assets are valid.
 - GitHub Pages serves the project under `/edades-del-peru/`; the live build is checked with a
   headless browser after each deploy, including the m5–m9 briefings and tutorials.
@@ -19,7 +19,7 @@ missions m1 Caral through m9 Guerra del Pacífico.
 
 ## Art gate
 
-Eleven records remain `reviewed: false`:
+Twelve records remain `reviewed: false`:
 
 - `caral-architecture-pyramid`
 - `caral-map-city`
@@ -29,12 +29,13 @@ Eleven records remain `reviewed: false`:
 - `m2_chavin-intro`
 - `m5_chanca-intro`
 - `m6_chimu-intro`
+- `m6b_guerra_civil-intro`
 - `m7_colonial-intro`
 - `m8_independencia-intro`
 - `m9_arica-intro`
 
 The game hides unreviewed records by default; `?art=all` previews them with a draft badge.
-A human must review the contact sheet before any of them is presented as final art. The m5–m9 intros are draft Blender renders of the authored sites and stay hidden until review. The m3/m4
+A human must review the contact sheet before any of them is presented as final art. The m5–m9 and m6b intros are draft Blender renders of the authored sites and stay hidden until review. The m3/m4
 intros were re-rendered on 2026-10-30 and approved by Miguel Amaya: m3 has warmer adobe/plaster
 contrast and a closer camera; m4 has textured cut-stone walls, a white/red D-temple and visible
 murals. The runtime GLBs keep flat materials (18 KB Moche, 34 KB Wari); the image textures are
@@ -55,7 +56,7 @@ required before deciding whether Moche/Wari need mesh/material optimization.
 
 ## Known limitations
 
-- All nine missions are released. All m5–m9 now use authored sites with their own heightfields and collision. They are smaller
+- All ten missions are released. All m5–m9 and m6b now use authored sites with their own heightfields and collision. They are smaller
   than the authored sites of Caral, Chavín, Moche and Wari and do not have a CI pixel gate. Their intro renders are drafts.
 - Mission-specific save round-trips are covered for m1–m9.
 - GitHub Pages is enabled and the `Deploy GitHub Pages` workflow is re-run for each chapter

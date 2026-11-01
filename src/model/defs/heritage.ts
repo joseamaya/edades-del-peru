@@ -26,7 +26,8 @@ export type HeritageBuildingId =
   | 'chimu_compound'
   | 'colonial_church'
   | 'independence_chapel'
-  | 'arica_battery';
+  | 'arica_battery'
+  | 'cusco_ushnu';
 
 export type HeritageSector =
   | 'Caral Alto'
@@ -38,7 +39,8 @@ export type HeritageSector =
   | 'Chimú'
   | 'Virreinato'
   | 'Independencia'
-  | 'República';
+  | 'República'
+  | 'Guerra Civil Inca';
 
 export interface HeritageBuildingDef {
   id: HeritageBuildingId;
@@ -351,6 +353,17 @@ export const HERITAGE_BUILDINGS: Record<HeritageBuildingId, HeritageBuildingDef>
     confidence: 'contexto documentado; planta y remates plausibles',
     citation: 'Dossier de la Guerra del Pacífico · Marina de Guerra del Perú',
     sources: ['docs/historia/campanas/guerra_del_pacifico.md', 'docs/historia/arquitectura.md'],
+  },
+  cusco_ushnu: {
+    id: 'cusco_ushnu',
+    name: 'Ushnu y plaza del Cusco',
+    sector: 'Guerra Civil Inca',
+    role: 'Centro ceremonial y político',
+    summary:
+      'El ushnu y la plaza articulaban el poder ritual y político del Cusco. La reconstrucción representa una plataforma escalonada y un recinto amurallado; no reproduce una planta exacta.',
+    confidence: 'tipología documentada; planta y remates plausibles',
+    citation: 'Dossier de la Guerra Civil Inca · crónicas y arqueología del Cusco',
+    sources: ['docs/historia/civilizaciones/inca.md', 'docs/historia/campanas/guerra_civil_inca.md'],
   },
 };
 
