@@ -3156,6 +3156,8 @@ export class Game {
       findPath: (sx, sz, tx, tz) => this.pathfinder.pathfind(sx, sz, tx, tz),
       findApproachPath: (sx, sz, tx, tz, standRadius: number) =>
         this.pathfinder.findApproachPath(sx, sz, tx, tz, standRadius),
+      reachableToNode: (sx, sz, tx, tz, standRadius: number) =>
+        this.pathfinder.reachableToNode(sx, sz, tx, tz, standRadius),
       isWalkable: (x, z) => this.pathfinder.isWalkable(x, z),
       nearestWalkable: (x, z) => this.pathfinder.nearestWalkablePoint(x, z),
       unitsNear: (x, z, radius) => this.unitsNear(x, z, radius),

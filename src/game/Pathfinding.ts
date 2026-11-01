@@ -27,6 +27,9 @@ const DIRS = [
 /** Chebyshev cell distance to an obstacle goal accepted as "arrived" (see pathfind). */
 const GOAL_PROXIMITY = 2;
 
+/** Stand-point cells tried when the direct A* endpoint is outside harvest range. */
+const MAX_APPROACH_ATTEMPTS = 8;
+
 /** World-space radius searched for the nearest walkable cell of a blocked endpoint. */
 const REACH_SEARCH_DISTANCE = 24;
 
@@ -437,18 +440,7 @@ export class Pathfinder {
    * cell within range has a reachable stand point.
    */
   findApproachPath(sx: number, sz: number, tx: number, tz: number, standRadius: number): { x: number; z: number }[] {
-    if (!(standRadius > 0)) return [];
-    const candidates = this.standCandidates(sx, sz, tx, tz, standRadius);
-    if (candidates.length === 0) return [];
-    candidates.sort((a, b) => a.targetDist - b.targetDist || a.startDist - b.startDist);
-
-    const tried = new Set<string>();
-    let attempts = 0;
-    for (const candidate of candidates) {
-      const key = candidate.centerX + ',' + candidate.centerZ;
-      if (tried.has(key)) continue;
-      tried.add(key);
-      if (attempts++ >= 8) break;
+    for (const candidate of this.orderedApproachCandidates(sx, sz, tx, tz, standRadius)) {
       const path = this.pathfind(sx, sz, candidate.centerX, candidate.centerZ);
       if (path.length === 0) continue;
       const last = path[path.length - 1];
@@ -525,15 +517,41 @@ export class Pathfinder {
    * preserving the node the caller would otherwise have picked.
    */
   reachableToNode(sx: number, sz: number, tx: number, tz: number, standRadius: number): boolean {
-    if (!(standRadius > 0)) return false;
     const start = this.resolveComponent(sx, sz, this.reachCells());
     if (start === 0) return false;
     const comp = this.ensureComponents();
     const { cols } = this.grid;
-    for (const c of this.standCandidates(sx, sz, tx, tz, standRadius)) {
+    for (const c of this.orderedApproachCandidates(sx, sz, tx, tz, standRadius)) {
       if (comp[this.clampCell(c.z) * cols + this.clampCell(c.x)] === start) return true;
     }
     return false;
+  }
+
+  /**
+   * Stand-point candidates in the order `findApproachPath` searches them, capped and
+   * de-duplicated the same way, so `reachableToNode` cannot accept a node the A*
+   * helper would refuse.
+   */
+  private orderedApproachCandidates(
+    sx: number,
+    sz: number,
+    tx: number,
+    tz: number,
+    standRadius: number,
+  ): StandCandidate[] {
+    if (!(standRadius > 0)) return [];
+    const candidates = this.standCandidates(sx, sz, tx, tz, standRadius);
+    candidates.sort((a, b) => a.targetDist - b.targetDist || a.startDist - b.startDist);
+    const tried = new Set<string>();
+    const ordered: StandCandidate[] = [];
+    for (const candidate of candidates) {
+      const key = candidate.centerX + ',' + candidate.centerZ;
+      if (tried.has(key)) continue;
+      tried.add(key);
+      ordered.push(candidate);
+      if (ordered.length >= MAX_APPROACH_ATTEMPTS) break;
+    }
+    return ordered;
   }
 
   /**
