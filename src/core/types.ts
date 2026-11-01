@@ -228,7 +228,8 @@ export type GameEvents = {
   };
   'fx:shot': EmptyEvent;
   'fx:artillery': EmptyEvent;
-  'fx:laser': EmptyEvent;
+  'fx:bow': EmptyEvent;
+  'fx:sling': EmptyEvent;
   'fx:explosion': EmptyEvent;
   'fx:death': EmptyEvent;
   'fx:hit': EmptyEvent;

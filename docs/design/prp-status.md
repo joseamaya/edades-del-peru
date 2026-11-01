@@ -83,10 +83,11 @@ before 1532, and consider a per-era label for `arsenal`.
 | `MECH` (`'mec'`, "Guardián Blindado") | declared "unique futuristic unit" | **removed** — was sci-fi and reachable in the Contemporary period, violating the invariant |
 | `NUCLEAR` ("Artillería de Cohetes") | "atomic-era tactical weapon (area)" | kept — real-world rocket artillery fits `CONTEMPORARY` |
 
-Projectile kinds `bullet`, `rocket`, `howitzer_shell`, `laser`, `rail`, `nuclear`
-and `tracer` are declared in the **base** game (`ModelSpec.projectile`); `NUCLEAR`
-fires `nuclear`. With `MECH` removed, `rail` and `laser` are declared but unused by
-any base-game unit (the mod schema also lists them). Recorded for completeness.
+Projectile kinds `bullet`, `rocket`, `howitzer_shell`, `nuclear`, `tracer`, `arrow`
+and `sling_stone` are declared in the base game (`ModelSpec.projectile`); `NUCLEAR`
+fires `nuclear`. Per-era units use arrows, sling stones or firearms according to
+their weapon (`projectileFor`), and `laser`/`rail` were removed from the type and the
+mod schema (schema version 2).
 
 ## Non-goals
 

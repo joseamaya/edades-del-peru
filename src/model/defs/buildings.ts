@@ -1,5 +1,5 @@
 import { Era, BuildingKind, Resources, ZERO_RESOURCES, UnitKind } from '../../core/types';
-import { ModelSpec } from './units';
+import { ModelSpec, ProjectileKind } from './units';
 
 export interface BuildingStats {
   hp: number;
@@ -453,6 +453,11 @@ const BASE_BUILDING_STATS: Record<BuildingKind, BuildingStats> = {
     garrisons: 0,
   },
 };
+
+/** Defensive projectile and speed for a building's auto-attack in this era. */
+export function defensiveProjectileFor(era: Era): { kind: ProjectileKind; speed: number } {
+  return era <= Era.TAHUANTINSUYO ? { kind: 'sling_stone', speed: 26 } : { kind: 'bullet', speed: 40 };
+}
 
 /** Final stats of a building in a given era. */
 export function getBuildingStats(kind: BuildingKind, era: Era): BuildingStats {

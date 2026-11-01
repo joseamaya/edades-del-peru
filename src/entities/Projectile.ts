@@ -63,7 +63,7 @@ export class Projectile {
 
     this.buildMesh();
     if (this.mesh) scene.add(this.mesh);
-    if (opts.kind === 'howitzer_shell' || opts.kind === 'rail') {
+    if (opts.kind === 'howitzer_shell' || opts.kind === 'nuclear') {
       this.light = new THREE.PointLight(0xff8844, 2.5, 12);
       scene.add(this.light);
     }
@@ -73,7 +73,7 @@ export class Projectile {
     const cat = projectileCategory(this.kind);
     const assets = getProjectileAssets(cat);
     this.mesh = new THREE.Mesh(assets.geo, assets.mat);
-    if (cat === 'tracer' || cat === 'bullet') this.mesh.rotation.x = Math.PI / 2;
+    if (cat === 'tracer' || cat === 'bullet' || cat === 'arrow') this.mesh.rotation.x = Math.PI / 2;
     this.mesh.position.copy(this.pos);
     this.mesh.castShadow = true;
   }
@@ -115,7 +115,10 @@ export class Projectile {
       this.pos.y = this.startY + (this.target.y - this.startY) * t + this.arc * 8 * Math.sin(Math.PI * t);
     }
 
-    if (this.mesh) this.mesh.position.copy(this.pos);
+    if (this.mesh) {
+      this.mesh.position.copy(this.pos);
+      if (this.kind === 'arrow') this.mesh.quaternion.setFromUnitVectors(ARROW_UP, dir);
+    }
     if (this.light) {
       this.light.position.copy(this.pos);
       this.light.intensity = 2.5 + cosmeticRandom() * 1.5;
@@ -157,10 +160,11 @@ export class Projectile {
   }
 }
 
-type ProjectileCategory = 'laser' | 'tracer' | 'shell' | 'bullet';
+type ProjectileCategory = 'arrow' | 'sling' | 'tracer' | 'shell' | 'bullet';
 
 function projectileCategory(kind: string): ProjectileCategory {
-  if (kind === 'laser' || kind === 'rail') return 'laser';
+  if (kind === 'arrow') return 'arrow';
+  if (kind === 'sling_stone') return 'sling';
   if (kind === 'tracer') return 'tracer';
   if (kind === 'howitzer_shell' || kind === 'nuclear') return 'shell';
   return 'bullet';
@@ -171,8 +175,13 @@ const projAssets = new Map<ProjectileCategory, { geo: THREE.BufferGeometry; mat:
 function getProjectileAssets(cat: ProjectileCategory): { geo: THREE.BufferGeometry; mat: THREE.Material } {
   let a = projAssets.get(cat);
   if (!a) {
-    if (cat === 'laser') {
-      a = { geo: new THREE.SphereGeometry(0.14, 8, 8), mat: new THREE.MeshBasicMaterial({ color: 0x66ccff }) };
+    if (cat === 'arrow') {
+      a = {
+        geo: new THREE.CylinderGeometry(0.02, 0.02, 0.65, 5),
+        mat: new THREE.MeshStandardMaterial({ color: 0xb08a5a, roughness: 0.8 }),
+      };
+    } else if (cat === 'sling') {
+      a = { geo: new THREE.SphereGeometry(0.09, 6, 5), mat: new THREE.MeshStandardMaterial({ color: 0x6f6a5f }) };
     } else if (cat === 'tracer') {
       a = { geo: new THREE.CapsuleGeometry(0.03, 0.5, 2, 6), mat: new THREE.MeshBasicMaterial({ color: 0xffdd66 }) };
     } else if (cat === 'shell') {
@@ -193,6 +202,7 @@ function allocIdProj(): number {
   return projId++;
 }
 
+const ARROW_UP = new THREE.Vector3(0, 1, 0);
 const trailPool: { mesh: THREE.Mesh; life: number; vel: THREE.Vector3 }[] = [];
 const impactPool: { mesh: THREE.Mesh; life: number }[] = [];
 

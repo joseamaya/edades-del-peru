@@ -6,7 +6,7 @@ import { getUnitStats } from '../src/model/defs/units';
 import { getTech } from '../src/model/defs/techs';
 
 const validMod = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   name: 'test mod',
   units: [{ id: 'soldier', stats: { hp: 55, attack: 6 } }],
   techs: [
@@ -35,6 +35,11 @@ describe('mod schema', () => {
 
   it('rejects an unknown unit id', () => {
     const r = validateMod({ ...validMod, units: [{ id: 'dragon', stats: { hp: 1 } }] });
+    expect(r.ok).toBe(false);
+  });
+
+  it('rejects the retired laser projectile', () => {
+    const r = validateMod({ ...validMod, units: [{ id: 'soldier', stats: { projectile: 'laser' } }] });
     expect(r.ok).toBe(false);
   });
 

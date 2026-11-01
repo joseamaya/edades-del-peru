@@ -1,6 +1,12 @@
 import * as THREE from 'three';
 import { Era, BuildingKind, UnitKind, Team, OrderTarget } from '../core/types';
-import { getBuildingStats, getBuildingModel, BuildingStats, BUILDING_DEFS } from '../model/defs/buildings';
+import {
+  getBuildingStats,
+  getBuildingModel,
+  BuildingStats,
+  BUILDING_DEFS,
+  defensiveProjectileFor,
+} from '../model/defs/buildings';
 import { UNIT_ARCHETYPES } from '../model/defs/units';
 import { buildModel, BuildContext, disposeModel } from '../model/ProceduralModel';
 import { EntityView } from './EntityView';
@@ -372,12 +378,13 @@ export class Building {
     this.attackCooldown = this.stats.attack.attackSpeed;
     const from = new THREE.Vector3(this.pos.x, this.pos.y + 3, this.pos.z);
     const to = new THREE.Vector3(target.pos.x, target.pos.y + 0.5, target.pos.z);
+    const shot = defensiveProjectileFor(this.era);
     this.ctx?.spawnProjectile?.({
       from,
       target: to,
-      speed: 40,
+      speed: shot.speed,
       damage: this.stats.attack.attack,
-      kind: 'bullet',
+      kind: shot.kind,
       owner: this.owner,
       targetId: target.id,
     });

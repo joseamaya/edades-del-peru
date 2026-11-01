@@ -2,7 +2,8 @@ import { CivId, Era, UnitKind, Resources, ZERO_RESOURCES, HistoricalPeriod } fro
 import { ERA_DEFS } from './eras';
 
 export type DamageClass = 'light' | 'heavy' | 'fortified';
-export type ProjectileKind = 'bullet' | 'rocket' | 'howitzer_shell' | 'laser' | 'rail' | 'nuclear' | 'tracer';
+export type ProjectileKind =
+  'bullet' | 'rocket' | 'howitzer_shell' | 'nuclear' | 'tracer' | 'arrow' | 'sling_stone' | 'none';
 export type RangedWeapon = 'sling' | 'bow' | 'arquebus' | 'musket' | 'rifle';
 
 export interface EraIdentity {
@@ -716,11 +717,36 @@ const BASE_STATS: Record<UnitKind, UnitStats> = {
   },
 };
 
+const WEAPON_PROJECTILE: Record<RangedWeapon, ProjectileKind> = {
+  sling: 'sling_stone',
+  bow: 'arrow',
+  arquebus: 'bullet',
+  musket: 'bullet',
+  rifle: 'bullet',
+};
+
+/** Projectile that matches the unit's weapon in this era (no firearms before 1532). */
+export function projectileFor(kind: UnitKind, era: Era): ProjectileKind {
+  const base = BASE_STATS[kind];
+  if (base.range === 0) return 'none';
+  const weapon = unitRangedWeapon(kind, era);
+  if (weapon) return WEAPON_PROJECTILE[weapon];
+  if (era <= Era.TAHUANTINSUYO) return 'sling_stone';
+  return base.projectile;
+}
+
+/** Pristine projectile defaults, captured before mods patch BASE_STATS. */
+const DEFAULT_PROJECTILES: Record<UnitKind, ProjectileKind> = Object.fromEntries(
+  Object.entries(BASE_STATS).map(([kind, stats]) => [kind, stats.projectile]),
+) as Record<UnitKind, ProjectileKind>;
+
 /** Final stats of an archetype in a given era. */
 export function getUnitStats(kind: UnitKind, era: Era): UnitStats {
   const base = BASE_STATS[kind];
   const mods = UNIT_ARCHETYPES[kind].eraStats[era] ?? {};
   const clone: UnitStats = { ...base };
+  // A mod that overrides the projectile keeps it; otherwise the era decides.
+  if (base.projectile === DEFAULT_PROJECTILES[kind]) clone.projectile = projectileFor(kind, era);
   if (mods.hp) clone.hp = base.hp * mods.hp;
   if (mods.attack) clone.attack = base.attack * mods.attack;
   if (mods.range) clone.range = base.range * mods.range;

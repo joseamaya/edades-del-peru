@@ -111,9 +111,14 @@ export class AudioEngine {
     this.blip(90, 0.8, 'sawtooth', 0.35, 25);
   }
 
-  laser(): void {
-    this.blip(1200, 0.12, 'sawtooth', 0.2, 200);
-    this.noise(0.08, 0.15, 3000, 'highpass');
+  bow(): void {
+    this.noise(0.12, 0.25, 1800, 'bandpass');
+    this.blip(320, 0.1, 'triangle', 0.18, 180);
+  }
+
+  sling(): void {
+    this.noise(0.16, 0.2, 900, 'highpass');
+    this.blip(240, 0.08, 'sine', 0.12, 140);
   }
 
   hit(): void {
