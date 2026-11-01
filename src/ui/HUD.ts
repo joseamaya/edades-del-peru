@@ -1278,13 +1278,20 @@ export class HUD {
     }
     this.addCommand('⛔ Detener', () => this.orderStop(), 'S');
     this.addCommand('🦅 Atacar-mover', () => this.orderAttackMove(), 'Ctrl+botón derecho');
+    this.addCommand('⚔️ Agresivo', () => this.orderStance('agresivo'));
     this.addCommand('🛡️ Defensivo', () => this.orderStance('defensivo'));
+    this.addCommand('🚶 Pasivo', () => this.orderStance('pasivo'));
     this.addCommand('⭕ Patrullar', () => this.orderPatrol());
   }
 
   private unitDesc(u: Unit): string {
     const stats = u.stats;
-    return `HP ${Math.ceil(u.hp)}/${Math.ceil(u.maxHp)} · Daño ${formatStat(stats.attack)} · Rango ${formatStat(stats.range)} · Blindaje ${formatStat(stats.heavyArmor)}`;
+    const stance = {
+      agresivo: 'Agresivo: persigue y ataca enemigos.',
+      defensivo: 'Defensivo: solo responde cerca de su posición y vuelve a ella.',
+      pasivo: 'Pasivo: no ataca por su cuenta.',
+    }[u.combatStance];
+    return `HP ${Math.ceil(u.hp)}/${Math.ceil(u.maxHp)} · Daño ${formatStat(stats.attack)} · Rango ${formatStat(stats.range)} · Blindaje ${formatStat(stats.heavyArmor)} · <span title="${stance}">Postura: ${u.combatStance}</span>`;
   }
 
   private renderBuildingPanel(b: Building): void {

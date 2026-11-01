@@ -43,6 +43,7 @@ export interface UnitSave {
   isConstructing: number | null;
   rallyPoint: OrderTarget | null;
   combatStance: CombatStance;
+  leashOrigin?: { x: number; z: number } | null;
   buildEfficiency: number;
   gatherMultiplier: number;
   attackMultiplier: number;
