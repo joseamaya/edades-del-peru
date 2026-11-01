@@ -42,8 +42,8 @@ const fog = cliArg('fog', '1') !== '0' ? 1 : 0;
 const outFile = cliArg('out', 'review/bench.json');
 const scales = scenario === 'fauna' ? animalScales : unitScales;
 
-if (!['soldiers', 'mixed', 'mixed-ai', 'rigs', 'fauna', 'mixed-rigs'].includes(scenario)) {
-  console.error(`unknown scenario "${scenario}" (use soldiers|mixed|mixed-ai|rigs|fauna|mixed-rigs)`);
+if (!['soldiers', 'mixed', 'mixed-ai', 'rigs', 'fauna', 'mixed-rigs', 'fortifications'].includes(scenario)) {
+  console.error(`unknown scenario "${scenario}" (use soldiers|mixed|mixed-ai|rigs|fauna|mixed-rigs|fortifications)`);
   process.exit(1);
 }
 
@@ -55,6 +55,7 @@ const RIG_BUDGETS = {
   worker: { drawCalls: 40, triangles: 40000 },
   animal: { drawCalls: 4, triangles: 5000 },
   mixedP95Ms: 16.6,
+  fortificationsP99Ms: 12,
 };
 
 // The cultural landscape merges each feature into a single mesh, so its draw-call
@@ -185,6 +186,19 @@ async function setupScenario(page, n) {
           g.settings.populationCap = 0;
           g.addAI(0, 'normal');
           g.addAI(1, 'normal');
+        }
+      } else if (scenarioName === 'fortifications') {
+        g.ais.length = 0;
+        clearUnits();
+        for (const p of g.players) p.resources = { food: 1e6, wood: 1e6, silver: 1e6, stone: 1e6 };
+        const wallX = center.x;
+        for (let i = 0; i < N; i++) {
+          const wallZ = center.z + (i - (N - 1) / 2) * 2;
+          g.executeCommand({ kind: 'place', building: 'wall', x: wallX, z: wallZ });
+        }
+        for (let i = 0; i < Math.max(1, Math.round(N / 2)); i++) {
+          const u = g.spawnScriptedUnit('soldier', 0, wallX - 8 - (i % 4), center.z + (i % 7) - 3);
+          u.issueOrder({ kind: 'move', target: { x: wallX + 8, z: center.z + (i % 7) - 3 } });
         }
       } else {
         // Rig/fauna scenarios start from a clean population so the incremental

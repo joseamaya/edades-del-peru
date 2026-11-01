@@ -1227,6 +1227,16 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
       buildModern(b, 3.2, true);
       break;
 
+    case 'wall':
+      buildWall(b);
+      break;
+    case 'gate':
+      buildGate(b);
+      break;
+    case 'tower':
+      buildTower(b);
+      break;
+
     case 'fortress_imperial':
       buildFortress(b, 3.4, 'stone');
       break;
@@ -1289,6 +1299,34 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
   // the wonder is a self-contained monument (no civic banner/glowing accent)
   if (type !== 'wonder') addCivAccent(b);
   return b.finish();
+}
+
+function buildWall(b: Builder): void {
+  const stone = b.pal.stone;
+  b.box(2.2, 1.8, 0.9, stone, { y: 0.9 });
+  b.box(2.35, 0.18, 1.05, b.pal.detail, { y: 1.82 });
+  b.box(0.45, 0.6, 1.05, b.pal.darkWood, { x: -0.7, y: 2.1 });
+  b.box(0.45, 0.6, 1.05, b.pal.darkWood, { x: 0.7, y: 2.1 });
+}
+
+function buildGate(b: Builder): void {
+  const stone = b.pal.stone;
+  b.box(0.55, 2.4, 1.0, stone, { x: -0.95, y: 1.2 });
+  b.box(0.55, 2.4, 1.0, stone, { x: 0.95, y: 1.2 });
+  b.box(2.45, 0.35, 1.1, b.pal.detail, { y: 2.45 });
+  b.box(1.2, 1.9, 0.35, b.pal.darkWood, { y: 0.95 });
+  b.box(0.15, 0.5, 0.5, b.pal.metal, { x: 0.42, y: 1.0 });
+}
+
+function buildTower(b: Builder): void {
+  const stone = b.pal.stone;
+  b.cyl(1.1, 1.35, 3.0, 10, stone, { y: 1.5 });
+  b.cyl(1.3, 1.3, 0.35, 10, b.pal.detail, { y: 3.15 });
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI * 2;
+    b.box(0.28, 0.65, 0.28, b.pal.detail, { x: Math.cos(a) * 1.15, y: 3.55, z: Math.sin(a) * 1.15 });
+  }
+  b.box(0.9, 0.9, 0.9, b.pal.darkWood, { y: 2.5 });
 }
 
 /** Civic accent: a banner with the player color. */

@@ -379,15 +379,19 @@ export class Building {
     const from = new THREE.Vector3(this.pos.x, this.pos.y + 3, this.pos.z);
     const to = new THREE.Vector3(target.pos.x, target.pos.y + 0.5, target.pos.z);
     const shot = defensiveProjectileFor(this.era);
-    this.ctx?.spawnProjectile?.({
-      from,
-      target: to,
-      speed: shot.speed,
-      damage: this.stats.attack.attack,
-      kind: shot.kind,
-      owner: this.owner,
-      targetId: target.id,
-    });
+    // Every garrisoned unit adds a projectile, so a manned tower punishes a push.
+    const shots = 1 + this.garrisonedIds.length;
+    for (let i = 0; i < shots; i++) {
+      this.ctx?.spawnProjectile?.({
+        from,
+        target: to,
+        speed: shot.speed,
+        damage: i === 0 ? this.stats.attack.attack : this.stats.attack.attack * 0.35,
+        kind: shot.kind,
+        owner: this.owner,
+        targetId: target.id,
+      });
+    }
     this.ctx?.particles?.emit?.({
       x: this.pos.x,
       y: this.pos.y + 3,
