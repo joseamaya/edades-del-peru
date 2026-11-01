@@ -39,8 +39,7 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       'de América. Se formó con una economía pesquero-agraria complementaria —pesca con redes de algodón en ' +
       'Áspero y agricultura en el valle—, canales de riego y una ideología religiosa que cohesionaba a miles ' +
       'de personas. Funcionó casi un milenio (3000–1800 a.C.).',
-    didYouKnow:
-      'En Caral no hay guerra documentada: la arqueología muestra canales, plazas, pirámides y redes de intercambio.',
+    didYouKnow: 'En Caral se registra uno de los usos más tempranos del quipu, mucho antes del Tahuantinsuyo.',
     epilogue:
       'La comunidad de Supe sostuvo el valle combinando la pesca del litoral con la agricultura irrigada. ' +
       'Ese excedente y la organización del trabajo hicieron posible las plazas y pirámides. Caral prosperó sin ' +

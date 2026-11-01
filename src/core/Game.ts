@@ -1820,6 +1820,11 @@ export class Game {
     this.frameAuthoredSite(c.x, c.z);
   }
 
+  /** True while the opening flight or the chapter title card is holding the mission clock. */
+  isCinematicActive(): boolean {
+    return this.camera.isFlying() || this.hud.isMissionCardOpen();
+  }
+
   /** Campaign intro: a short overview flight down to the player's base. */
   playIntro(): void {
     if (!this.introEnabled) return;

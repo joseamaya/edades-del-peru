@@ -244,6 +244,11 @@ export class RTSCamera {
     };
   }
 
+  /** True while the scripted intro flight is still running. */
+  isFlying(): boolean {
+    return this.fly !== null;
+  }
+
   /** Enable camera rotation (Q/E). Off by default (fixed camera, SC2 style). */
   setRotationEnabled(on: boolean): void {
     this.rotationEnabled = on;
