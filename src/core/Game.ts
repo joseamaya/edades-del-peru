@@ -2888,21 +2888,40 @@ export class Game {
     this.audio.order();
   }
 
-  /** Line-formation movement orders (AoE2 style). */
+  /** Line-formation movement: one shared A* path, per-unit final offsets. */
   private issueMoveFormation(units: Unit[], target: OrderTarget): void {
     const n = units.length;
     const yaw = Math.atan2(target.z - units[0].pos.z, target.x - units[0].pos.x);
     const spacing = 1.5;
     const cols = Math.ceil(Math.sqrt(n));
     const rows = Math.ceil(n / cols);
+    // One A* for the whole order; separation keeps the members from overlapping.
+    const owner = units[0].owner;
+    const shared = this.pathfinder.pathfind(units[0].pos.x, units[0].pos.z, target.x, target.z, owner);
+    const slowest = Math.min(...units.map((u) => u.stats.speed));
+    const spread = this.formationPreset === 'dispersed' ? spacing * 1.7 : spacing;
     let idx = 0;
     for (const u of units) {
       const r = Math.floor(idx / cols) - (rows - 1) / 2;
       const c = (idx % cols) - (cols - 1) / 2;
       idx++;
-      const ox = Math.cos(yaw) * r * spacing - Math.sin(yaw) * c * spacing;
-      const oz = Math.sin(yaw) * r * spacing + Math.cos(yaw) * c * spacing;
-      this.orderUnit(u, { kind: OrderKind.MOVE, target: { x: target.x + ox, z: target.z + oz } }, !this.shiftQueue);
+      let offset: { x: number; z: number };
+      if (this.formationPreset === 'line') {
+        const lineIndex = idx - 1 - (n - 1) / 2;
+        offset = { x: -Math.sin(yaw) * lineIndex * spread, z: Math.cos(yaw) * lineIndex * spread };
+      } else {
+        offset = {
+          x: Math.cos(yaw) * r * spread - Math.sin(yaw) * c * spread,
+          z: Math.sin(yaw) * r * spread + Math.cos(yaw) * c * spread,
+        };
+      }
+      const gx = target.x + offset.x;
+      const gz = target.z + offset.z;
+      if (!this.pathfinder.isWalkable(gx, gz, owner)) {
+        const safe = this.pathfinder.nearestWalkablePoint(gx, gz, this.pathfinder.grid.cols, undefined, owner);
+        if (safe) offset = { x: safe.x - target.x, z: safe.z - target.z };
+      }
+      u.issueGroupMove(target, shared, offset, slowest, !this.shiftQueue);
     }
   }
 
@@ -3240,6 +3259,7 @@ export class Game {
   private lastBattleEvent: number | null = null;
 
   private idleCursor = -1;
+  private formationPreset: 'box' | 'line' | 'dispersed' = 'box';
   private wallDragStart: { x: number; z: number } | null = null;
   private controlGroups = new Map<number, number[]>();
   private lastGroupN = 0;
@@ -4282,6 +4302,14 @@ export class Game {
     const id = ids[this.idleCursor];
     this.focusUnit(id);
     return id;
+  }
+
+  cycleFormation(): string {
+    const order = ['box', 'line', 'dispersed'] as const;
+    this.formationPreset = order[(order.indexOf(this.formationPreset) + 1) % order.length];
+    const label = { box: 'caja', line: 'línea', dispersed: 'dispersa' }[this.formationPreset];
+    this.hud?.showToast(`Formación: ${label}`, 'info');
+    return label;
   }
 
   selectIdleWorkers(): number[] {
