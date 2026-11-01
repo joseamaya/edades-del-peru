@@ -103,6 +103,9 @@ const CSS = /* css */ `
   .ed-logo { font-weight: 700; font-size: 15px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; display: flex; align-items: center; gap: 8px; white-space: nowrap; flex-shrink: 0; }
   .ed-logo svg { width: 22px; height: 22px; }
   .ed-res.res-unavailable { opacity: .42; }
+  .ed-idle { display: flex; align-items: center; gap: 3px; font-size: 12px; color: var(--text); cursor: pointer; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(232,195,106,.2); }
+  .ed-idle:hover { border-color: var(--gold); }
+  .ed-idle.none { opacity: .45; }
   .ed-res { display: flex; align-items: center; gap: 5px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; padding: 3px 10px; font-size: 13px; font-weight: 600; min-width: 86px; flex-shrink: 0; }
   .ed-res .res-icon { font-size: 14px; }
   .ed-res .res-val { color: var(--text); }
@@ -413,6 +416,7 @@ export class HUD {
   private root: HTMLDivElement;
   private resEls: Record<string, HTMLElement> = {} as any;
   private popEl!: HTMLElement;
+  private idleEl!: HTMLElement;
   private eraEl!: HTMLElement;
   private eraDot!: HTMLElement;
   private bottomEl!: HTMLElement;
@@ -592,6 +596,11 @@ export class HUD {
     this.popEl.id = 'ed-pop';
     this.popEl.innerHTML = `👥 <span>0/0</span>`;
     top.appendChild(this.popEl);
+    this.idleEl = this.el('div', 'ed-idle', top);
+    this.idleEl.id = 'ed-idle';
+    this.idleEl.title = 'Obreros ociosos · clic o tecla . para ciclar';
+    this.idleEl.innerHTML = `👷 <span class="idle-val">0</span>`;
+    this.idleEl.addEventListener('click', () => this.game.cycleIdleWorker());
     this.eraEl = this.el('div', '');
     this.eraEl.id = 'ed-era';
     this.eraDot = this.el('span', 'era-dot');
@@ -2446,6 +2455,9 @@ export class HUD {
     }
     if (this.updateAcc > 0.15) {
       this.updateAcc = 0;
+      const idle = this.game.idleWorkerIds().length;
+      this.idleEl.querySelector('.idle-val')!.textContent = String(idle);
+      this.idleEl.classList.toggle('none', idle === 0);
       this.renderBottomIfChanged();
       this.updateBottomProgress();
       this.renderMinimap();
