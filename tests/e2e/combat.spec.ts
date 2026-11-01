@@ -83,4 +83,6 @@ test('class counters raise damage and appear in the unit panel', async ({ page }
   expect(out.vsCavalry).toBeGreaterThan(out.vsInfantry);
   expect(out.panel).toContain('Fuerte contra');
   expect(out.panel).toContain('infantería');
+  expect(out.panel).toContain('Débil contra');
+  expect(out.panel).toContain('caballería');
 });

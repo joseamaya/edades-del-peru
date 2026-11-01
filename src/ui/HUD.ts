@@ -20,6 +20,7 @@ import {
   UNIT_ARCHETYPES,
   UNIT_CLASS_LABEL,
   getUnitStats,
+  unitClassFor,
   unitDisplayIcon,
   unitDisplayName,
   unitMinPeriod,
@@ -1338,6 +1339,12 @@ export class HUD {
     }));
     const strong = bonuses.filter((b) => b.value > 0).map((b) => `${b.label} (+${Math.round(b.value * 100)}%)`);
     const weak = bonuses.filter((b) => b.value < 0).map((b) => `${b.label} (${Math.round(b.value * 100)}%)`);
+    const myClass = unitClassFor(u.kind);
+    for (const [kind, archetype] of Object.entries(UNIT_ARCHETYPES)) {
+      if ((archetype.bonusVs?.[myClass] ?? 0) <= 0) continue;
+      const label = UNIT_CLASS_LABEL[unitClassFor(kind as keyof typeof UNIT_ARCHETYPES)];
+      if (!weak.some((w) => w.startsWith(label))) weak.push(label);
+    }
     const counters = `${strong.length ? ` · Fuerte contra: ${strong.join(', ')}` : ''}${weak.length ? ` · Débil contra: ${weak.join(', ')}` : ''}`;
     return `HP ${Math.ceil(u.hp)}/${Math.ceil(u.maxHp)} · Daño ${formatStat(stats.attack)} · Rango ${formatStat(stats.range)} · Blindaje ${formatStat(stats.heavyArmor)}${counters} · <span title="${stance}">Postura: ${u.combatStance}</span>`;
   }

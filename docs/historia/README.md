@@ -6,7 +6,7 @@ personajes, tecnología y cultura provienen de fuentes citadas en [`fuentes.md`]
 
 ## Advertencia
 
-*Edades del Perú* es una **obra de ficción estratégica**. La mecánica de juego (recolectar, construir,
+_Edades del Perú_ es una **obra de ficción estratégica**. La mecánica de juego (recolectar, construir,
 entrenar ejércitos) no refleja la vida real de estas sociedades. Sin embargo, los **nombres, fechas,
 ubicaciones y personajes** se ciñen a la historiografía y la arqueología andinas. Donde no existe un dato
 (nombres de gobernantes, batallas no documentadas), se indica explícitamente en el dossier correspondiente
@@ -20,6 +20,7 @@ en lugar de inventarlo.
 - [`atuendos.md`](./atuendos.md) — vestimenta, armamento, protección y tocados (spec de modelado).
 - [`arquitectura.md`](./arquitectura.md) — estilos constructivos y emblemas por civilización (spec de modelado).
 - [`tecnologias.md`](./tecnologias.md) — ventana histórica de las tecnologías (cronología y ámbito cultural).
+- [`combate.md`](./combate.md) — contrato de diseño de clases y counters (abstracción, no dato medido).
 - [`fuentes.md`](./fuentes.md) — bibliografía y fuentes por dossier.
 - [`civilizaciones/`](./civilizaciones/) — un dossier por civilización/facción.
 - [`campanas/`](./campanas/) — un dossier por misión de campaña.

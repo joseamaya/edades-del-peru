@@ -358,7 +358,6 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
     name: 'Explorador',
     description: 'Explorador veloz. Ilumina el mapa con su visión.',
     category: 'special',
-    bonusVs: { siege: 0.2 },
     eraStats: {
       [Era.FORMATIVE]: { hp: 0.8, attack: 0.5, speed: 1.2, los: 1.3 },
       [Era.REGIONAL_STATES]: { hp: 0.9, attack: 0.6, speed: 1.25, los: 1.35 },
@@ -754,8 +753,8 @@ const CLASS_BY_KIND: Record<UnitKind, UnitClass> = {
   [UnitKind.SNIPER]: 'ranged',
   [UnitKind.HUSSAR]: 'cavalry',
   [UnitKind.CAVALRY]: 'cavalry',
-  [UnitKind.TANK]: 'cavalry',
-  [UnitKind.SCOUT]: 'cavalry',
+  [UnitKind.TANK]: 'siege',
+  [UnitKind.SCOUT]: 'special',
   [UnitKind.ANTI_AIR]: 'ranged',
   [UnitKind.ARTILLERY]: 'siege',
   [UnitKind.MORTAR]: 'siege',
