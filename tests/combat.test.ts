@@ -85,3 +85,10 @@ describe('elevationDamageMultiplier', () => {
     expect(elevationDamageMultiplier(0, 12)).toBe(1 - ELEVATION_BONUS_CAP);
   });
 });
+
+describe('class counters', () => {
+  it('applies the class bonus after armor and caps', () => {
+    expect(computeDamage(10, 'light', INFANTRY, 1, 0.3)).toBeCloseTo(13, 5);
+    expect(computeDamage(10, 'light', HUSSAR, 1, -0.2)).toBeCloseTo((10 - 1) * 0.8, 5);
+  });
+});

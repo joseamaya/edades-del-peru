@@ -57,3 +57,30 @@ test('the civilization armor bonus reduces incoming damage', async ({ page }) =>
   expect(out.plainLoss).toBeCloseTo(10, 5);
   expect(out.armoredLoss).toBeCloseTo(9, 5);
 });
+
+test('class counters raise damage and appear in the unit panel', async ({ page }) => {
+  await boot(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const c = g.playerCenter(0);
+    const soldier = g.spawnScriptedUnit('soldier', 0, c.x + 8, c.z);
+    const ally = g.spawnScriptedUnit('soldier', 0, c.x + 10, c.z);
+    const hussar = g.spawnScriptedUnit('hussar', 1, c.x + 12, c.z);
+    const musketeer = g.spawnScriptedUnit('musketeer', 0, c.x + 14, c.z);
+    soldier.clearOrders();
+    const hussarHp = hussar.hp;
+    const allyHp = ally.hp;
+    g.resolveDamage(soldier.id, hussar.id, 10, soldier, 'light');
+    g.resolveDamage(soldier.id, ally.id, 10, soldier, 'light');
+    g.selectUnits([musketeer.id]);
+    g.hud.update(0.2, 0);
+    return {
+      vsCavalry: hussarHp - hussar.hp,
+      vsInfantry: allyHp - ally.hp,
+      panel: document.querySelector('#ed-bottom')?.textContent ?? '',
+    };
+  });
+  expect(out.vsCavalry).toBeGreaterThan(out.vsInfantry);
+  expect(out.panel).toContain('Fuerte contra');
+  expect(out.panel).toContain('infantería');
+});
