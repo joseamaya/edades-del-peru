@@ -609,6 +609,21 @@ export class Game {
     const s = this.settings.mapSize;
     const rng = new RNG(this.settings.mapSeed + 7);
     const spots: [number, number][] = [];
+    if (this.enemyActive && !this.missionLayout?.base && !this.missionLayout?.enemyBase) {
+      const diagonal = Math.SQRT2 * s;
+      const radius = (diagonal * 0.45) / 2;
+      for (let i = 0; i < 2; i++) {
+        const ang = rng.range(0, Math.PI * 2);
+        const a = { x: s / 2 - Math.cos(ang) * radius, z: s / 2 - Math.sin(ang) * radius };
+        const b = { x: s / 2 + Math.cos(ang) * radius, z: s / 2 + Math.sin(ang) * radius };
+        const ok = (p: { x: number; z: number }): boolean =>
+          p.x > 12 && p.z > 12 && p.x < s - 12 && p.z < s - 12 && this.terrain.isBuildable(p.x, p.z);
+        if (ok(a) && ok(b)) {
+          spots.push([a.x, a.z], [b.x, b.z]);
+          return spots;
+        }
+      }
+    }
     for (let i = 0; i < (this.enemyActive ? 2 : 1); i++) {
       const fixed = i === 0 ? this.missionLayout?.base : this.missionLayout?.enemyBase;
       if (fixed) {
@@ -1253,15 +1268,55 @@ export class Game {
     const rng = new RNG(this.settings.mapSeed * 31 + 1);
     const mapType = this.mapProfile.baseMapType;
     const variants = this.mapProfile.vegetation.variants;
+    // Dense forests: a handful of tree clusters per biome instead of lone trees.
+    // They also act as natural barriers, as in the reference RTS maps.
+    const treeWeight = this.mapProfile.resources.tree;
+    const clusters = Math.min(24, Math.max(6, Math.round(((s.mapSize * s.mapSize) / 1800) * (treeWeight / 0.4))));
+    for (let c = 0; c < clusters; c++) {
+      let cx = 0;
+      let cz = 0;
+      let found = false;
+      for (let attempt = 0; attempt < 40 && !found; attempt++) {
+        cx = rng.range(18, s.mapSize - 18);
+        cz = rng.range(18, s.mapSize - 18);
+        found = !this.terrain.isWater(cx, cz) && !this.isReserved(cx, cz);
+      }
+      if (!found) continue;
+      const count = 20 + Math.floor(rng.float() * 9);
+      const trees: { x: number; z: number }[] = [];
+      for (let attempt = 0; attempt < count * 40 && trees.length < count; attempt++) {
+        const x = cx + rng.range(-14, 14);
+        const z = cz + rng.range(-14, 14);
+        if (this.terrain.isWater(x, z) || this.isReserved(x, z)) continue;
+        if (!this.pathfinder.isWalkable(x, z)) continue;
+        // Tree obstacles cover a 3x3 cell block; keep 6.5 m between trunks so
+        // every tree keeps a free stand point.
+        if (trees.some((t) => distance2D(t.x, t.z, x, z) < 6.5)) continue;
+        if ([...this.resourceNodes.values()].some((n) => n.kind === 'tree' && distance2D(n.pos.x, n.pos.z, x, z) < 6.5))
+          continue;
+        trees.push({ x, z });
+      }
+      for (const t of trees) {
+        const amount = rng.range(200, 260);
+        const node = new ResourceNode(this.scene, 'tree', t.x, t.z, amount, mapType, this.trees, variants);
+        node.pos.y = this.terrain.getHeight(t.x, t.z);
+        node.view.position.set(t.x, node.pos.y, t.z);
+        node.placeTreeInstance(node.pos.y);
+        this.resourceNodes.set(node.id, node);
+        this.registerResourceObstacle(node.id, t.x, t.z, 'tree');
+      }
+    }
     const n = Math.floor((s.mapSize * s.mapSize) / 1000);
     let placed = 0;
     let guard = 0;
     while (placed < n && guard++ < n * 4) {
       const x = rng.range(15, s.mapSize - 15);
       const z = rng.range(15, s.mapSize - 15);
-      if (this.terrain.isWater(x, z) || this.isReserved(x, z)) continue;
+      if (this.terrain.isWater(x, z) || this.isReserved(x, z) || !this.pathfinder.isWalkable(x, z)) continue;
       const h = this.terrain.getHeight(x, z);
       const kind = this.pickResourceKind(rng, x, z, h);
+      const minGap = kind === 'tree' ? 6 : 3;
+      if ([...this.resourceNodes.values()].some((n) => distance2D(n.pos.x, n.pos.z, x, z) < minGap)) continue;
       const amount =
         kind === 'tree'
           ? rng.range(140, 220)
@@ -1653,10 +1708,12 @@ export class Game {
 
   private spawnStartResources(player: number, x: number, z: number): void {
     const rng = new RNG(this.settings.mapSeed + player * 911);
-    const place = (kind: ResourceNode['kind'], amount: number, dx: number, dz: number) => {
+    const place = (kind: ResourceNode['kind'], amount: number, dx: number, dz: number): boolean => {
       const nx = x + dx;
       const nz = z + dz;
-      if (this.isReserved(nx, nz, false)) return;
+      if (this.isReserved(nx, nz, false) || !this.pathfinder.isWalkable(nx, nz)) return false;
+      const gap = kind === 'tree' ? 6 : 3;
+      if ([...this.resourceNodes.values()].some((n) => distance2D(n.pos.x, n.pos.z, nx, nz) < gap)) return false;
       const node = new ResourceNode(
         this.scene,
         kind,
@@ -1672,6 +1729,7 @@ export class Game {
       node.placeTreeInstance(node.pos.y);
       this.resourceNodes.set(node.id, node);
       this.registerResourceObstacle(node.id, nx, nz, kind);
+      return true;
     };
     // Trees: in the authored Caral scene the wood grove sits on the valley edge
     // (the gallery forest of the Supe), not inside the residential compounds.
@@ -1695,21 +1753,29 @@ export class Game {
       place('mine', 400, -13, -24);
       place('berry', 150, 12, -24);
     } else {
-      for (let i = 0; i < 10; i++) {
-        const a = rng.range(0, Math.PI * 2);
-        const r = rng.range(8, 13);
-        place('tree', rng.range(140, 200), Math.cos(a) * r, Math.sin(a) * r);
+      // Guaranteed opening ring: one forest, berries, hunt, silver and stone at
+      // fixed relative angles, identical for both players (terrain permitting).
+      const slots: Array<{ kind: ResourceNode['kind']; amount: number; angle: number; radius: number }> = [
+        { kind: 'berry', amount: 180, angle: Math.PI * 1.1, radius: 10 },
+        { kind: 'hunt', amount: 180, angle: Math.PI * 1.55, radius: 12 },
+        { kind: 'mine', amount: 450, angle: Math.PI * 0.85, radius: 13 },
+        { kind: 'well', amount: 420, angle: Math.PI * 1.32, radius: 14 },
+      ];
+      for (const slot of slots) {
+        let done = false;
+        for (let k = 0; k < 8 && !done; k++) {
+          const angle = slot.angle + (k % 2 === 0 ? 1 : -1) * Math.ceil(k / 2) * 0.22;
+          done = place(slot.kind, slot.amount, Math.cos(angle) * slot.radius, Math.sin(angle) * slot.radius);
+        }
       }
-      // steel mine
-      const ma = rng.range(0, Math.PI * 2);
-      place('mine', 400, Math.cos(ma) * 12, Math.sin(ma) * 12);
-      // berries
-      place('berry', 150, rng.range(-6, 6), rng.range(9, 13));
-    }
-    // well (if the era allows it)
-    if (this.players[player].era >= Era.TAHUANTINSUYO) {
-      const wa = rng.range(0, Math.PI * 2);
-      place('well', 300, Math.cos(wa) * 14, Math.sin(wa) * 14);
+      // The opening forest is a compact grove with spaced trunks, not scattered singles.
+      const groveAngle = Math.PI * 0.25;
+      const gx = Math.cos(groveAngle) * 12;
+      const gz = Math.sin(groveAngle) * 12;
+      for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2;
+        place('tree', 200, gx + Math.cos(a) * 8, gz + Math.sin(a) * 8);
+      }
     }
   }
 
