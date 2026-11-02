@@ -4,6 +4,7 @@ import { createRenderer, createPostFX } from '../rendering/Renderer';
 import { PostFX } from '../rendering/PostFX';
 import { Sky, cloudDensity } from '../rendering/Sky';
 import { Terrain } from '../rendering/Terrain';
+import { HeadlessTerrain } from '../sim/HeadlessTerrain';
 import { Water } from '../rendering/Water';
 import { CulturalLandscape } from '../rendering/CulturalLandscape';
 import { SacredCity } from '../rendering/SacredCity';
@@ -277,6 +278,7 @@ export class Game {
   private groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
   private placingBuilding: { kind: BuildingKind; valid: boolean; ghost: THREE.Group } | null = null;
   private shiftQueue = false;
+  readonly headless: boolean;
   private paused = false;
   private gameEnded = false;
   private wonderReqTime = 300;
@@ -303,8 +305,10 @@ export class Game {
     snapshot: SaveData | null = null,
     replay: Replay | null = null,
     forceCinematic = false,
+    headless = false,
   ) {
     this.forceCinematic = forceCinematic;
+    this.headless = headless;
     this.settings = { ...DEFAULT_SETTINGS, ...settings };
     this.pendingSnapshot = snapshot;
     this.replay = replay ? new ReplayPlayer(replay) : null;
@@ -331,12 +335,27 @@ export class Game {
     this.rng = new RNG((this.settings.mapSeed * 2654435761) >>> 0);
     // Cosmetic-only randomness must not consume the simulation sequence.
     this.fxRng = new RNG((this.settings.mapSeed * 2654435761 + 0x9e3779b9) >>> 0);
-    this.initRenderer();
-    const cinematic = this.settings.cinematic && !this.softwareFallback;
-    this.postfx.setCinematic(cinematic);
-    this.postfx.setQuality(this.softwareFallback ? 'low' : this.settings.quality);
-    this.qualityGovernor = new QualityGovernor(this);
-    if (this.softwareFallback) this.qualityGovernor.setUserQuality('low');
+    if (!headless) {
+      this.initRenderer();
+      const cinematic = this.settings.cinematic && !this.softwareFallback;
+      this.postfx.setCinematic(cinematic);
+      this.postfx.setQuality(this.softwareFallback ? 'low' : this.settings.quality);
+      this.qualityGovernor = new QualityGovernor(this);
+      if (this.softwareFallback) this.qualityGovernor.setUserQuality('low');
+    } else {
+      const noop = (): void => {};
+      const proxy = new Proxy({}, { get: () => noop });
+      this.camera = proxy as never;
+      this.postfx = proxy as never;
+      this.particles = proxy as never;
+      this.debris = proxy as never;
+      this.markers = proxy as never;
+      this.trees = proxy as never;
+      this.props = proxy as never;
+      this.wildlife = proxy as never;
+      this.hud = proxy as never;
+      this.qualityGovernor = proxy as never;
+    }
     this.initWorld();
     this.unitContext = this.ctxFor();
     this.economy = new Economy(this);
@@ -351,31 +370,35 @@ export class Game {
       setRallyPoint: (buildingId: number, target: OrderTarget) => this.setRallyPoint(buildingId, target),
       advanceEra: () => this.advanceEra(0),
     });
-    if (this.missionLayout?.site) {
-      this.spawnAuthoredSite(this.missionLayout.site);
-    } else {
-      this.spawnLandmark();
-      this.spawnSacredCity();
+    if (!this.headless) {
+      if (this.missionLayout?.site) {
+        this.spawnAuthoredSite(this.missionLayout.site);
+      } else {
+        this.spawnLandmark();
+        this.spawnSacredCity();
+      }
+      this.spawnCanal();
+      this.spawnMissionDecor();
+      if (!this.pendingSnapshot) this.spawnMissionRoads();
+      this.spawnCulturalLandscape();
+      this.initInput();
+      this.initHUD();
     }
-    this.spawnCanal();
-    this.spawnMissionDecor();
-    if (!this.pendingSnapshot) this.spawnMissionRoads();
-    this.spawnCulturalLandscape();
-    this.initInput();
-    this.initHUD();
     this.mission = mis ? new Mission(this, mis, (win) => this.missionEnd(win)) : null;
     const tutorialDef = mis ? tutorialForMission(mis.id) : undefined;
     this.tutorial =
       mis && mis.tutorial && tutorialDef && this.settings.showHints ? new Tutorial(this, tutorialDef) : null;
     if (!mis || mis.enemy.active) this.addAI(1);
-    this.audio.setEra(this.players[0].era);
-    this.initAudio();
-    if (mis && !this.pendingSnapshot) this.applyMissionSetup(mis);
+    if (!this.headless) {
+      this.audio.setEra(this.players[0].era);
+      this.initAudio();
+    }
+    if (mis && !this.pendingSnapshot && !this.headless) this.applyMissionSetup(mis);
     if (this.pendingSnapshot) this.applySnapshot(this.pendingSnapshot);
     if (mis?.guaranteedFishing) this.ensureFishingGrounds(mis.guaranteedFishing);
     this.loop.onUpdate = (dt, t) => this.update(dt, t);
     this.loop.onRender = () => this.render();
-    if (autoStart) this.loop.start();
+    if (autoStart && !headless) this.loop.start();
     if (mis && !this.pendingSnapshot) this.mission?.start();
     // record skirmish matches (not replays or loaded saves) for the local player
     if (!replay && !snapshot && !mis) this.recorder = new ReplayRecorder(this.settings);
@@ -419,6 +442,10 @@ export class Game {
   };
 
   private initWorld(): void {
+    if (this.headless) {
+      this.initHeadlessWorld();
+      return;
+    }
     const s = this.settings;
     const terrainRes = s.mapSize <= 128 ? 192 : s.mapSize <= 192 ? 256 : 320;
     this.mapProfile = applyMapOverrides(
@@ -518,6 +545,33 @@ export class Game {
       this.spawnResources();
     }
     this.spawnAmbient();
+  }
+
+  private initHeadlessWorld(): void {
+    const s = this.settings;
+    const terrainRes = s.mapSize <= 128 ? 192 : s.mapSize <= 192 ? 256 : 320;
+    this.mapProfile = applyMapOverrides(
+      resolveMapProfile({
+        period: s.period,
+        civ: s.civPlayer,
+        mapType: s.mapType,
+        region: this.missionRegion,
+      }),
+      this.missionDef?.mapOverrides,
+    );
+    this.terrain = new HeadlessTerrain(
+      s.mapSize,
+      terrainRes,
+      s.mapSeed,
+      this.mapProfile,
+      this.missionLayout?.terrain,
+      this.siteDef,
+    ) as unknown as Terrain;
+    this.pathfinder = new Pathfinder(s.mapSize, this.siteDef?.pathCellSize ?? 2);
+    this.pathfinder.bakeTerrain((x, z) => this.terrain.getHeight(x, z), this.terrain.waterLevel);
+    this.fow = new Fow(s.mapSize, 128);
+    this.startSpots = this.planStartSpots();
+    if (!this.pendingSnapshot) this.spawnResources();
   }
 
   /** Plan the valley before resource/prop scatter so no node lands on a plot. */
@@ -1334,7 +1388,7 @@ export class Game {
         const amount = rng.range(210, 270);
         const node = new ResourceNode('tree', t.x, t.z, amount);
         node.pos.y = this.terrain.getHeight(t.x, t.z);
-        attachResource(this.scene, node, mapType, this.trees, variants);
+        this.attachResourceNode(node, mapType, this.trees, variants);
         this.resourceNodes.set(node.id, node);
         this.registerResourceObstacle(node.id, t.x, t.z, 'tree');
       }
@@ -1362,7 +1416,7 @@ export class Game {
                 : rng.range(200, 300);
       const node = new ResourceNode(kind, x, z, amount);
       node.pos.y = this.terrain.getHeight(x, z);
-      attachResource(this.scene, node, mapType, this.trees, variants);
+      this.attachResourceNode(node, mapType, this.trees, variants);
       this.resourceNodes.set(node.id, node);
       this.registerResourceObstacle(node.id, x, z, kind);
       placed++;
@@ -1375,7 +1429,7 @@ export class Game {
       if (this.terrain.isWater(x, z) || this.isReserved(x, z)) continue;
       const node = new ResourceNode('hunt', x, z, rng.range(120, 180));
       node.pos.y = this.terrain.getHeight(x, z);
-      attachResource(this.scene, node, mapType, undefined, variants);
+      this.attachResourceNode(node, mapType, undefined, variants);
       this.resourceNodes.set(node.id, node);
     }
     const fishingCount = Math.round(this.mapProfile.resources.fishing);
@@ -1385,7 +1439,7 @@ export class Game {
       if (!this.terrain.isWater(x, z)) continue;
       const node = new ResourceNode('fishing', x, z, rng.range(150, 220));
       node.pos.y = 0;
-      attachResource(this.scene, node, mapType);
+      this.attachResourceNode(node, mapType);
       this.resourceNodes.set(node.id, node);
     }
     // The random coastal samples can miss the few water cells near shore; a
@@ -1422,7 +1476,7 @@ export class Game {
     const spot = rng.pick(candidates);
     const node = new ResourceNode('fishing', spot.x, spot.z, rng.range(150, 220));
     node.pos.y = 0;
-    attachResource(this.scene, node, this.mapProfile.baseMapType);
+    this.attachResourceNode(node, this.mapProfile.baseMapType);
     this.resourceNodes.set(node.id, node);
     return true;
   }
@@ -1662,6 +1716,7 @@ export class Game {
 
   /** Add the visual fields/roads of a planned settlement (no entities, no obstacles). */
   private addSettlementOverlay(plan: SettlementPlan): void {
+    if (this.headless) return;
     const overlay = new SettlementOverlay(plan, this.terrain);
     applyFowToObject(overlay.group, this.fowUniforms);
     this.scene.add(overlay.group);
@@ -1670,6 +1725,7 @@ export class Game {
 
   /** Household/ritual props around a base (visual only, deterministic, no obstacles). */
   private addSettlementDressing(plan: SettlementPlan, player: number, profile: 'caral' | 'chavin'): void {
+    if (this.headless) return;
     const placements = planSettlementDressing(
       plan,
       this.settings.mapSeed * 977 + player * 31 + 7,
@@ -1708,6 +1764,7 @@ export class Game {
 
   /** Visual-only riverside fields and paths; no entities, obstacles or yields. */
   private addCaralValley(x: number, z: number): void {
+    if (this.headless) return;
     const valley = this.caralValleyPlan ?? this.planCaralValleyAt(x, z);
     this.caralValleyPlan = valley;
     this.caralValleyBase ??= { x, z };
@@ -1737,7 +1794,7 @@ export class Game {
       add: (kind, amount, nx, nz) => {
         const node = new ResourceNode(kind, nx, nz, amount);
         node.pos.y = this.terrain.getHeight(nx, nz);
-        attachResource(this.scene, node, this.mapProfile.baseMapType, this.trees, this.mapProfile.vegetation.variants);
+        this.attachResourceNode(node, this.mapProfile.baseMapType, this.trees, this.mapProfile.vegetation.variants);
         this.resourceNodes.set(node.id, node);
         this.registerResourceObstacle(node.id, nx, nz, kind);
       },
@@ -1971,12 +2028,21 @@ export class Game {
 
   /** Create and attach a unit view from the current build context. */
   attachUnit(u: Unit): void {
-    attachUnit(this.scene, u, this.makeBuildContext(u.owner));
+    if (!this.headless) attachUnit(this.scene, u, this.makeBuildContext(u.owner));
   }
 
   /** Create and attach a building view from the current build context. */
   attachBuilding(b: Building): void {
-    attachBuilding(this.scene, b, this.makeBuildContext(b.owner));
+    if (!this.headless) attachBuilding(this.scene, b, this.makeBuildContext(b.owner));
+  }
+
+  private attachResourceNode(
+    node: ResourceNode,
+    mapType: string,
+    trees?: typeof this.trees,
+    variants?: typeof this.mapProfile.vegetation.variants,
+  ): void {
+    if (!this.headless) attachResource(this.scene, node, mapType, trees, variants);
   }
 
   /** A stable hash of the gameplay state (replay/determinism verification). */
@@ -2191,7 +2257,7 @@ export class Game {
     for (const ns of data.resourceNodes) {
       const node = new ResourceNode(ns.kind, ns.x, ns.z, ns.amount);
       node.pos.y = ns.kind === 'fishing' ? 0 : this.terrain.getHeight(ns.x, ns.z);
-      attachResource(this.scene, node, this.mapProfile.baseMapType, this.trees, this.mapProfile.vegetation.variants);
+      this.attachResourceNode(node, this.mapProfile.baseMapType, this.trees, this.mapProfile.vegetation.variants);
       node.applySave(ns);
       this.resourceNodes.set(node.id, node);
       this.registerResourceObstacle(node.id, ns.x, ns.z, ns.kind);
@@ -3458,7 +3524,7 @@ export class Game {
       },
     });
     this.projectiles.push(p);
-    this.projectileViews.set(p.id, new ProjectileView(this.scene, p));
+    if (!this.headless) this.projectileViews.set(p.id, new ProjectileView(this.scene, p));
   }
 
   private applyProjectileDamage(o: any, targetId: number | undefined): void {
@@ -3850,9 +3916,10 @@ export class Game {
     const t = time;
     const realTime = performance.now() / 1000;
     if (this.paused) {
-      this.hud.update(dt, realTime);
+      if (!this.headless) this.hud.update(dt, realTime);
       return false;
     }
+    if (this.headless) return this.updateHeadless(dt, time);
     this.qualityGovernor.update(dt);
     if (this.replay) {
       for (const cmd of this.replay.commandsFor(this.stepCount)) this.executeCommand(cmd, false);
@@ -3937,6 +4004,33 @@ export class Game {
     this.checkVictory();
 
     this.hud.update(d, realTime);
+    this.stepCount++;
+    return true;
+  }
+
+  private updateHeadless(dt: number, time: number): boolean {
+    this.rebuildSpatial();
+    if (this.replay) {
+      for (const cmd of this.replay.commandsFor(this.stepCount)) this.executeCommand(cmd, false);
+    }
+    for (const u of this.units.values()) {
+      if (u.dead) continue;
+      u.ctx = this.unitContext;
+      u.update(dt, time);
+    }
+    for (const b of this.buildings.values()) {
+      if (b.dead) continue;
+      b.ctx = this.unitContext;
+      b.update(dt, time);
+    }
+    for (const p of this.projectiles) p.update(dt);
+    this.projectiles = this.projectiles.filter((p) => !p.dead);
+    applyPopulation(this.units.values(), this.buildings.values(), this.players, this.settings.populationCap);
+    this.mission?.update(dt, time);
+    this.tutorial?.update(dt);
+    this.cleanupDead(dt);
+    for (const ai of this.ais) ai.update(dt, time);
+    this.checkVictory();
     this.stepCount++;
     return true;
   }
@@ -4329,6 +4423,16 @@ export class Game {
 
   destroy(): void {
     this.loop.stop();
+    if (this.headless) {
+      for (const node of this.resourceNodes.values()) node.remove();
+      this.resourceNodes.clear();
+      this.units.clear();
+      this.buildings.clear();
+      this.projectiles.length = 0;
+      this.projectileViews.clear();
+      this.ais.length = 0;
+      return;
+    }
     if (this.hoverRaf) cancelAnimationFrame(this.hoverRaf);
     this.camera.dispose();
     window.removeEventListener('resize', this.onResizeBound);

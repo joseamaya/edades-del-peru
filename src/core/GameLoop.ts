@@ -54,6 +54,6 @@ export class GameLoop {
 
   stop(): void {
     this.running = false;
-    cancelAnimationFrame(this.rafId);
+    if (typeof cancelAnimationFrame !== 'undefined') cancelAnimationFrame(this.rafId);
   }
 }
