@@ -103,7 +103,7 @@ import {
 import { farmYieldMultiplier, nearbyCanal } from '../model/defs/farmYield';
 import { distance2D, distanceToSegment } from '../util/math';
 import { isTypingTarget } from '../util/dom';
-import { RNG, hashCode, weightedPick } from '../util/rng';
+import { RNG, weightedPick } from '../util/rng';
 import { keyFor } from './hotkeys';
 import { getAuthoredSite, type AuthoredSiteDef, type SiteHeritageProxy } from '../model/defs/sites';
 import { detectSoftwareRenderer } from '../util/gpu';
@@ -128,6 +128,7 @@ import { getMission } from '../campaign/defs/campaign';
 import type { MissionDef, MissionAtmosphere, MissionLayout, MissionPoint, MissionSite } from '../campaign/types';
 import { serializeGame, saveToStorage } from '../game/SaveGame';
 import { CommandProcessor } from '../game/CommandProcessor';
+import { stateHashOf } from '../game/stateHash';
 import { applyPopulation } from '../game/systems/PopulationSystem';
 import { resolveConquest } from '../game/systems/VictorySystem';
 import {
@@ -2047,50 +2048,13 @@ export class Game {
 
   /** A stable hash of the gameplay state (replay/determinism verification). */
   stateHash(): number {
-    const units = [...this.units.values()]
-      .filter((u) => !u.dead)
-      .sort((a, b) => a.id - b.id)
-      .map((u) => [
-        u.id,
-        u.owner,
-        u.kind,
-        u.pos.x,
-        u.pos.z,
-        u.hp,
-        u.orderQueue.map((o) => [o.kind, o.entityId ?? null, o.target?.x ?? null, o.target?.z ?? null]),
-      ]);
-    const buildings = [...this.buildings.values()]
-      .filter((b) => !b.dead)
-      .sort((a, b) => a.id - b.id)
-      .map((b) => [
-        b.id,
-        b.owner,
-        b.kind,
-        b.pos.x,
-        b.pos.z,
-        b.hp,
-        b.constructionComplete,
-        b.constructionProgress,
-        b.productionQueue.map((q) => q.unit),
-        b.researchQueue,
-        b.foodAmount,
-      ]);
-    const nodes = [...this.resourceNodes.values()]
-      .filter((n) => !n.dead)
-      .sort((a, b) => a.id - b.id)
-      .map((n) => [n.id, n.amount, n.depleted]);
-    const players = this.players.map((p) => [
-      p.id,
-      p.era,
-      p.resources.food,
-      p.resources.wood,
-      p.resources.silver,
-      p.resources.stone,
-      p.populationUsed,
-      [...p.techs].sort(),
-      p.alive,
-    ]);
-    return hashCode(JSON.stringify({ units, buildings, nodes, players, rng: this.rng.getState() }));
+    return stateHashOf({
+      units: this.units.values(),
+      buildings: this.buildings.values(),
+      nodes: this.resourceNodes.values(),
+      players: this.players,
+      rngState: this.rng.getState(),
+    });
   }
 
   /** The replay recorded so far (skirmish only), or null. */
