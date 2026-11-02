@@ -125,3 +125,18 @@ Measured with `yarn sim --seeds=777,783 --max=900` (normal/legendary in both sea
 the time cap: the AI now produces and fights, but closing a fortified base inside 900 s remains unsolved. The
 <10 % unresolved and strict legendary>hard>normal>easy ordering are **not yet met**; this needs combat/eco
 tuning (building durability, siege availability in early periods) beyond the AI layer.
+
+## Balance matrix tool (issue #234 follow-up)
+
+`yarn sim:matrix` (or `node scripts/sim.mjs --matrix --jobs=4 --seeds=… --max=900`) plays every difficulty in
+both seats against `normal` and aggregates:
+
+| difficulty | runs | wins | undecided | unresolved |
+| ---------- | ---- | ---- | --------- | ---------- |
+| easy       | 8    | 2    | 6         | 75.0 %     |
+| normal     | 8    | 0    | 8         | 100 %      |
+| hard       | 8    | 0    | 7         | 87.5 %     |
+| legendary  | 8    | 0    | 8         | 100 %      |
+
+Baseline on 2026-11-01 with seeds 777–780 at 900 s: **90.6 % unresolved**, order not monotonic. This is the
+reference for the balance follow-up; the matrix is a manual tool, not part of CI.

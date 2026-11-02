@@ -32,11 +32,14 @@ const seeds = String(cliArg('seeds', '777,778,779,780,781,782,783,784'))
   .map((n) => Number.parseInt(n, 10))
   .filter((n) => Number.isFinite(n));
 const maxSeconds = Number.parseInt(cliArg('max', '1200'), 10);
+const matrix = cliArg('matrix', '0') === '1' || process.argv.includes('--matrix');
+const jobs = Math.max(1, Number.parseInt(cliArg('jobs', '4'), 10));
+const assertBalance = process.argv.includes('--assert-balance');
 const difficulty = String(cliArg('difficulty', 'normal'));
 const p1Difficulty = String(cliArg('p1', 'normal'));
 // `--player=scripted` runs the greedy ScriptedPlayer bot as player 0 instead of an AI
 const player = String(cliArg('player', 'ai'));
-const metrics = cliArg('metrics', '1') !== '0';
+const metrics = cliArg('metrics', matrix ? '0' : '1') !== '0';
 const sampleSeconds = Math.max(1, Number.parseFloat(cliArg('sample', '5')));
 const debug = cliArg('debug', '0') === '1';
 const outFile = cliArg('out', 'review/ai-bench.json');
@@ -51,7 +54,7 @@ for (const d of [difficulty, p1Difficulty]) {
   }
 }
 
-async function run(browser, base, seed) {
+async function run(browser, base, seed, diff = difficulty, diff1 = p1Difficulty) {
   const context = await browser.newContext({ viewport: { width: 800, height: 600 } });
   const page = await context.newPage();
   const errors = [];
@@ -77,7 +80,7 @@ async function run(browser, base, seed) {
       if (mode !== 'scripted') g.addAI(0, diff);
       g.addAI(1, diff1);
     },
-    { diff: difficulty, diff1: p1Difficulty, mode: player },
+    { diff, diff1, mode: player },
   );
 
   if (metrics) await installProbes(page, { sampleEvery: 5, maxSamples: 20000 });
@@ -291,6 +294,79 @@ async function main() {
   const { base, close } = await withViteServer();
   const browser = await launchChromium();
   try {
+    if (matrix) {
+      const configurations = DIFFICULTIES.map((d) => [
+        { difficulty: d, p1: 'normal', tag: d },
+        { difficulty: 'normal', p1: d, tag: d },
+      ]).flat();
+      const tasks = configurations.flatMap((cfg) => seeds.map((seed) => ({ cfg, seed })));
+      const results = [];
+      let cursor = 0;
+      const worker = async () => {
+        for (;;) {
+          const i = cursor++;
+          if (i >= tasks.length) return;
+          const { cfg, seed } = tasks[i];
+          process.stdout.write(`matrix: ${cfg.tag} seed ${seed}... `);
+          const row = await run(browser, base, seed, cfg.difficulty, cfg.p1);
+          results.push({ ...row, matrixTag: cfg.tag, diff: cfg.difficulty, p1: cfg.p1 });
+          console.log(`${row.winner == null ? 'draw' : `P${row.winner}`} ${row.seconds}s`);
+        }
+      };
+      await Promise.all(Array.from({ length: Math.min(jobs, tasks.length) }, worker));
+
+      const byDifficulty = {};
+      for (const d of DIFFICULTIES) {
+        const runs = results.filter((r) => r.matrixTag === d);
+        let wins = 0;
+        let undecided = 0;
+        let seconds = 0;
+        for (const r of runs) {
+          const seat = r.diff === d ? 0 : 1;
+          if (r.winner === seat) wins++;
+          if (r.winner == null) undecided++;
+          seconds += r.seconds;
+        }
+        byDifficulty[d] = {
+          runs: runs.length,
+          wins,
+          undecided,
+          unresolvedRate: runs.length ? undecided / runs.length : 1,
+          avgSeconds: runs.length ? seconds / runs.length : 0,
+        };
+      }
+      const unresolved = results.filter((r) => r.winner == null).length / Math.max(1, results.length);
+      const order = DIFFICULTIES.every(
+        (d, i) => i === 0 || byDifficulty[DIFFICULTIES[i - 1]].wins <= byDifficulty[d].wins,
+      );
+      const ok = order && unresolved < 0.1;
+
+      console.log('\ndifficulty | runs | wins | undecided | unresolved % | avg seconds');
+      console.log('-----------|------|------|-----------|--------------|------------');
+      for (const d of DIFFICULTIES) {
+        const b = byDifficulty[d];
+        console.log(
+          `${d.padEnd(10)} | ${String(b.runs).padEnd(4)} | ${String(b.wins).padEnd(4)} | ${String(b.undecided).padEnd(9)} | ${(b.unresolvedRate * 100).toFixed(1).padEnd(12)} | ${b.avgSeconds.toFixed(0)}`,
+        );
+      }
+      console.log(
+        `\nmatrix (${seeds.length} seeds × ${configurations.length} configs): monotonic=${order} unresolved=${(unresolved * 100).toFixed(1)}% -> ${ok ? 'PASS' : 'FAIL'}`,
+      );
+
+      const out = {
+        env: { matrix: true, seeds, maxSeconds, jobs, node: process.version, commit: process.env.GIT_COMMIT ?? null },
+        matrix: { byDifficulty, order, unresolvedRate: unresolved, ok },
+        rows: results,
+        date: new Date().toISOString(),
+      };
+      const outPath = path.resolve(outFile);
+      fs.mkdirSync(path.dirname(outPath), { recursive: true });
+      fs.writeFileSync(outPath, JSON.stringify(out, null, 2));
+      console.log(`wrote ${outFile}`);
+      if (assertBalance && !ok) process.exitCode = 1;
+      return;
+    }
+
     const rows = [];
     for (const seed of seeds) {
       process.stdout.write(`sim: seed ${seed}... `);
