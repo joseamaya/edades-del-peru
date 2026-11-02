@@ -19,6 +19,7 @@ import { getTech, techAvailable } from '../model/defs/techs';
 import { clamp } from '../util/math';
 import type { BuildingSave } from '../game/saveTypes';
 import { cosmeticRandom } from '../util/rng';
+import { advanceProduction } from '../game/systems/ProductionSystem';
 
 export class Building {
   id = allocId();
@@ -330,23 +331,12 @@ export class Building {
 
     // production (with the player's training multiplier)
     const p = this.ctx?.players?.find((x: any) => x.id === this.owner);
-    const trainMult = 1 - (p?.bonus?.training ?? 0);
-    for (let i = this.productionQueue.length - 1; i >= 0; i--) {
-      const item = this.productionQueue[i];
-      const stats = getUnitStats(item.unit, this.era);
-      item.progress += (dt / stats.trainTime) * this.trainMultiplier * trainMult;
-      if (item.progress >= 1) {
-        if (this.ctx?.unitSpawn) {
-          const ok = this.ctx.unitSpawn(this.id, item.unit, this.rallyPoint, this.hasRallyPoint);
-          if (ok) {
-            this.productionQueue.splice(i, 1);
-          } else {
-            // population full: pause the queue (AoE2 style)
-            item.progress = 1;
-          }
-        }
-      }
-    }
+    advanceProduction(
+      this.productionQueue,
+      dt,
+      { era: this.era, trainMultiplier: this.trainMultiplier, trainingBonus: p?.bonus?.training ?? 0 },
+      (unit) => this.ctx?.unitSpawn?.(this.id, unit, this.rallyPoint, this.hasRallyPoint) ?? false,
+    );
 
     // research
     for (let i = this.researchQueue.length - 1; i >= 0; i--) {
