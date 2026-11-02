@@ -55,9 +55,10 @@ every PR on (keep the subset fast).
 ```
 src/
   core/        Engine: Game (hub), RTS Camera, EventBus, GameLoop, Config, types
-  rendering/   Renderer, PostFX, Sky, Water, Terrain, Particles, Biomes, Textures
+  rendering/   Renderer, PostFX, Sky, Water, Terrain, Particles, Biomes, Textures, Projectile/FOW views
   model/       Defs (periods, civs, units, buildings, techs) + parametric models
-  entities/    Unit, Building, Resource node, Projectile, Views
+  entities/    Unit, Building, Resource node, Projectile (sim) + entity views
+  sim/         Three-free simulation primitives (Vec3)
   campaign/    Mission engine + 9 historical campaigns
   game/        A* pathfinding, Fog of war, AI, Economy
   ui/          Full Spanish HUD

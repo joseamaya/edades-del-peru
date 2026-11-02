@@ -388,6 +388,8 @@ Definition of Done and the building audit see
 - **External reference**: [VOIDSTRIKE](https://github.com/braedonsaunders/voidstrike) (MIT) is used only as
   technique inspiration (damage numbers, instancing, culling); its code is neither sold nor copied.
 - Import Three addons as `three/addons/...` (not `three/examples/jsm/...`).
+- Simulation primitives live in `src/sim/` and must not import `three`; `Vec3` mirrors only the vector
+  operations the simulation needs.
 - Persistence in `localStorage`: `peru-settings`, `peru-campaign` (versioned campaign progress, with legacy
   numeric migration), `peru-campaign-intro-preinca` (Caral prologue) and `peru-title-intro`
   (first-visit title movie).
