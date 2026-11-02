@@ -12,7 +12,42 @@
         overflow: hidden;
       }
     </style>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%2314161b'/><path d='M16 5l2.5 7.5L26 15l-7.5 2.5L16 25l-2.5-7.5L6 15l7.5-2.5z' fill='%23e8c36a'/></svg>">
+    <style>
+      #boot-loader {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-content: center;
+        justify-items: center;
+        gap: 18px;
+        background: #14161b;
+        color: #e8c36a;
+        font:
+          600 13px/1.4 system-ui,
+          sans-serif;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        z-index: 1000;
+      }
+      #boot-loader .boot-mark {
+        width: 38px;
+        height: 38px;
+        border: 2px solid #3a2f18;
+        border-top-color: #e8c36a;
+        border-radius: 50%;
+        animation: boot-spin 0.9s linear infinite;
+      }
+      @keyframes boot-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%2314161b'/><path d='M16 5l2.5 7.5L26 15l-7.5 2.5L16 25l-2.5-7.5L6 15l7.5-2.5z' fill='%23e8c36a'/></svg>"
+    />
   </head>
   <body>
     <div id="app"></div>

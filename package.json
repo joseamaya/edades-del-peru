@@ -26,7 +26,8 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && vite build && node scripts/check-dist.mjs",
+    "dist:check": "node scripts/check-dist.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
@@ -62,6 +63,8 @@
     "visual:update": "node scripts/visual.mjs --update",
     "visual:check": "node scripts/visual.mjs",
     "art:blender": "tsx scripts/art/cli.ts blender",
+    "art:models": "tsx scripts/art/cli.ts models",
+    "art:textures": "tsx scripts/art/cli.ts textures",
     "art:validate": "tsx scripts/art/cli.ts validate",
     "art:review": "tsx scripts/art/cli.ts review"
   },
@@ -73,6 +76,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@gltf-transform/cli": "^4.5.1",
     "@playwright/test": "^1.56.1",
     "@types/three": "^0.185.3",
     "eslint": "^10.12.0",

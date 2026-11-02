@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader, type GLTF } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import type { ModelAssetId, RigVariant } from '../model/defs/modelAssets';
 import { MODEL_ASSET_DEFS, type ModelAssetDefinition } from './modelAssetRegistry';
 import { RigInstance } from './RigInstance';
@@ -141,6 +142,7 @@ export function loadModelAsset(id: ModelAssetId): Promise<LoadedModelAsset | nul
   teardown = false;
   const startedAt = generation;
   const promise = new GLTFLoader()
+    .setMeshoptDecoder(MeshoptDecoder)
     .loadAsync(definition.url)
     .then((gltf) => {
       const asset = finalize(id, gltf, definition);
@@ -175,7 +177,7 @@ export async function loadModelAssetFromData(
   const cached = cache.get(id);
   if (cached) return cached;
   teardown = false;
-  const gltf = await parseGltf(new GLTFLoader(), data);
+  const gltf = await parseGltf(new GLTFLoader().setMeshoptDecoder(MeshoptDecoder), data);
   const asset = finalize(id, gltf, definition);
   cache.set(id, asset);
   failures.delete(id);

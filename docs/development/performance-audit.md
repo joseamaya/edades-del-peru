@@ -10,6 +10,31 @@
 
 ---
 
+## Assets y carga (#246)
+
+Medición local (Linux, Chromium/SwiftShader, `vite preview`, `?menu=1`). La carga inicial se mide hasta que
+`.ed-menu-shell` es visible; no sustituye una pasada con GPU real.
+
+| Métrica                              |   Antes |     Después |
+| ------------------------------------ | ------: | ----------: |
+| `dist/` total                        |   49 MB | **22.6 MB** |
+| Modelos GLB (`src/assets/models`)    | 15.3 MB |  **4.3 MB** |
+| Texturas PBR (`src/assets/textures`) |   19 MB |  **5.9 MB** |
+| Chunk de entrada (gzip)              |  816 KB |    **1 KB** |
+| Chunk de arranque diferido (gzip)    |       — |      830 KB |
+| Menú interactivo (local)             | 2037 ms | **1919 ms** |
+
+- `yarn art:models` comprime los GLB con `gltf-transform` (meshopt + cuantización, sin paleta ni texturas WebP
+  para no romper el parseo en Node); solo reemplaza el archivo si el resultado es menor.
+- `yarn art:textures` reencodea las texturas: normales/rugosidad a 256 px, difusas de material a 512 px y
+  terreno a 768 px.
+- `src/main.ts` ya no importa `Game`: carga `src/boot.ts` en diferido y muestra un indicador mientras tanto.
+  El chunk de arranque sigue conteniendo `Game` (830 KB gzip) porque el menú vive en `HUD`; separarlo es
+  trabajo de **#239**. El presupuesto de `scripts/check-dist.mjs` vigila el total (<25 MB) y el chunk de
+  entrada (<600 KB gzip) en cada `yarn build`.
+
+---
+
 ## Executive Summary
 
 El motor **soporta la simulación de 800 unidades en CPU** con un coste medio bajo (≈3,0 ms/paso sin sondas;
@@ -46,14 +71,14 @@ atascadas en `Unit`. La comparación de #121 usa la métrica de `blockedWorkers`
 detenido en un nodo conserva su array `path`; ya no se cuenta como bloqueado) y parte del estado posterior a la
 remediación P0, no del baseline original de la auditoría:
 
-| Métrica | Baseline #121 | Tras #121 |
-|---|---:|---:|
-| Partidas decisivas | 7/20 | **8/20** |
-| Llamadas A* de `chooseResourceNode` (mediana) | 3.952 | **2.891** (−27 %) |
-| Entregas (mediana) | 337 | **389** (+16 %) |
-| `pathRequests` (mediana) | 51.067 | 51.822 |
-| `pathFailures` (mediana) | 45.964 | 45.885 |
-| `blockedWorkersMax` (mediana, métrica corregida) | 2 | 2 |
+| Métrica                                          | Baseline #121 |         Tras #121 |
+| ------------------------------------------------ | ------------: | ----------------: |
+| Partidas decisivas                               |          7/20 |          **8/20** |
+| Llamadas A* de `chooseResourceNode` (mediana)    |         3.952 | **2.891** (−27 %) |
+| Entregas (mediana)                               |           337 |   **389** (+16 %) |
+| `pathRequests` (mediana)                         |        51.067 |            51.822 |
+| `pathFailures` (mediana)                         |        45.964 |            45.885 |
+| `blockedWorkersMax` (mediana, métrica corregida) |             2 |                 2 |
 
 Esto **reduce** el bloqueo económico y la tormenta de búsquedas de la IA, pero no cierra AI-1/PATH-1: la
 mayoría de las peticiones A* provienen de los `setPath` de las unidades, no de `chooseResourceNode`; siguen
@@ -70,18 +95,18 @@ cambiado, se indica explícitamente.
 `GameLoop` (`src/core/GameLoop.ts`) ejecuta hasta 8 pasos fijos de **1/60 s** por frame. Todo el mundo se
 actualiza dentro de `Game.update` (`src/core/Game.ts:2653`):
 
-| Fase | Sistemas | Frecuencia real |
-|---|---|---|
-| Visual | `sky`, `water`, `terrain`, `particles`, `debris`, `markers`, `trees`, `wildlife` | 60 Hz |
-| Cámara + input | `RTSCamera`, HUD/overlays | 60 Hz |
-| Spatial | `rebuildSpatial` (limpia y reasigna buckets) | 60 Hz |
-| Entidades | `Unit.update`, `Building.update`, `ResourceNode.update`, `Projectile.update` | 60 Hz |
-| FOW + LOD | `updateFow` (reveal + `decay` + `upload`), `applyLod` | 60 Hz |
-| Población | `updatePopulation` (recorre unidades y edificios) | 60 Hz |
-| Campaña | `Mission.update`, `Tutorial.update` | 60 Hz |
-| Limpieza | `cleanupDead` (y `pathfinder.removeObstacle` → `rebuild`) | 60 Hz |
-| IA | `AI.update`, con decisiones internas escalonadas | 60 Hz de entrada; decisiones a 0,3–8 s |
-| Victoria/HUD | `checkVictory`, `HUD.update` | 60 Hz |
+| Fase           | Sistemas                                                                         | Frecuencia real                        |
+| -------------- | -------------------------------------------------------------------------------- | -------------------------------------- |
+| Visual         | `sky`, `water`, `terrain`, `particles`, `debris`, `markers`, `trees`, `wildlife` | 60 Hz                                  |
+| Cámara + input | `RTSCamera`, HUD/overlays                                                        | 60 Hz                                  |
+| Spatial        | `rebuildSpatial` (limpia y reasigna buckets)                                     | 60 Hz                                  |
+| Entidades      | `Unit.update`, `Building.update`, `ResourceNode.update`, `Projectile.update`     | 60 Hz                                  |
+| FOW + LOD      | `updateFow` (reveal + `decay` + `upload`), `applyLod`                            | 60 Hz                                  |
+| Población      | `updatePopulation` (recorre unidades y edificios)                                | 60 Hz                                  |
+| Campaña        | `Mission.update`, `Tutorial.update`                                              | 60 Hz                                  |
+| Limpieza       | `cleanupDead` (y `pathfinder.removeObstacle` → `rebuild`)                        | 60 Hz                                  |
+| IA             | `AI.update`, con decisiones internas escalonadas                                 | 60 Hz de entrada; decisiones a 0,3–8 s |
+| Victoria/HUD   | `checkVictory`, `HUD.update`                                                     | 60 Hz                                  |
 
 La IA ya está escalonada (`src/game/AI.ts:81`): percepción 0,3 s, economía 0,6 s, edificios 1,2 s, exploración
 6 s, ataque 30–60 s, combate/defensa 0,3–0,4 s × reacción, investigación 8 s. **No hace falta bajar su frecuencia
@@ -129,8 +154,8 @@ Debilidades medidas:
 
 - `myUnits()`/`myBuildings()`/`soldiers()` **crean arrays filtrados** en cada llamada (`AI.ts:131`), y se llaman
   muchas veces por tick.
-- `chooseResourceNode()` (`AI.ts:182`) crea la lista completa de nodos, la ordena por tipo y **antes de #121
-  llamaba a A* por cada candidato** hasta encontrar uno alcanzable. En el seed 786: 3.927 llamadas a
+- `chooseResourceNode()` (`AI.ts:182`) crea la lista completa de nodos, la ordena por tipo y _*antes de #121
+  llamaba a A* por cada candidato_* hasta encontrar uno alcanzable. En el seed 786: 3.927 llamadas a
   `chooseResourceNode`, 2.907 retornos `null` y **353.014 peticiones A***. Desde #121 usa una consulta O(1) de
   componente conexa, sin falsos negativos respecto a `findApproachPath`.
 - `findThreat()` es O(unidades enemigas × anclas) (`AI.ts:574`); `findEnemyWorkerInRange()` recorre todas las
@@ -265,13 +290,13 @@ yarn sim --seeds=783 --max=2400 --metrics=1 --sample=10 --out=review/ai-seed783-
 
 ### Escala — escenario `mixed` (sin IA), mediana de 3 corridas
 
-| Units | FPS* | Frame ms (avg/p95)* | Sim ms p50/p95/p99 | Path ms p50/p95/p99 | Heap tras GC (Δ retenido) | Draw calls | Triángulos | Units/Wk/Mil | Paths activos | Path req/fail |
-|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 50 | 4 | 503/762 | 0,40 / 3,40 / 5,80 | 0,00 / 2,60 / 2,80 | 59,2 MB (Δ4,4) | 1.681 | 1,61 M | 60/26/29 | 47 | 375/51 |
-| 100 | 4 | 607/901 | 0,60 / 4,40 / 6,00 | 0,00 / 3,00 / 3,50 | 71,7 MB (Δ15,0) | 3.212 | 2,71 M | 109/46/57 | 92 | 748/60 |
-| 200 | 4 | 725/1.084 | 0,70 / 3,00 / 5,60 | 0,00 / 1,50 / 2,30 | 77,4 MB (Δ15,2) | 6.159 | 4,77 M | 210/84/115 | 177 | 1.503/37 |
-| 400 | 4 | 786/1.490 | 1,20 / 5,30 / 6,60 | 0,00 / 0,10 / 5,80 | 105,5 MB (Δ32,2) | 12.258 | 9,28 M | 409/159/230 | 345 | 2.982/47 |
-| 800 | 4 | 1.273/2.345 | 3,40 / 7,00 / **18,50** | 0,00 / 0,10 / **15,60** | 134,1 MB (Δ38,7) | 24.237 | 18,09 M | 808/312/459 | 698 | 5.917/152 |
+| Units | FPS* | Frame ms (avg/p95)* |      Sim ms p50/p95/p99 |     Path ms p50/p95/p99 | Heap tras GC (Δ retenido) | Draw calls | Triángulos | Units/Wk/Mil | Paths activos | Path req/fail |
+| ----: | ---: | ------------------: | ----------------------: | ----------------------: | ------------------------: | ---------: | ---------: | -----------: | ------------: | ------------: |
+|    50 |    4 |             503/762 |      0,40 / 3,40 / 5,80 |      0,00 / 2,60 / 2,80 |            59,2 MB (Δ4,4) |      1.681 |     1,61 M |     60/26/29 |            47 |        375/51 |
+|   100 |    4 |             607/901 |      0,60 / 4,40 / 6,00 |      0,00 / 3,00 / 3,50 |           71,7 MB (Δ15,0) |      3.212 |     2,71 M |    109/46/57 |            92 |        748/60 |
+|   200 |    4 |           725/1.084 |      0,70 / 3,00 / 5,60 |      0,00 / 1,50 / 2,30 |           77,4 MB (Δ15,2) |      6.159 |     4,77 M |   210/84/115 |           177 |      1.503/37 |
+|   400 |    4 |           786/1.490 |      1,20 / 5,30 / 6,60 |      0,00 / 0,10 / 5,80 |          105,5 MB (Δ32,2) |     12.258 |     9,28 M |  409/159/230 |           345 |      2.982/47 |
+|   800 |    4 |         1.273/2.345 | 3,40 / 7,00 / **18,50** | 0,00 / 0,10 / **15,60** |          134,1 MB (Δ38,7) |     24.237 |    18,09 M |  808/312/459 |           698 |     5.917/152 |
 
 \* FPS/frame en SwiftShader: **no representativos de GPU**. La muestra de frame a 800 es de 2 frames.
 
@@ -281,58 +306,58 @@ coste de render en software.
 
 **Estado estacionario a 800 (3000 pasos, 605 unidades tras combate):**
 
-| Métrica | Valor |
-|---|---:|
-| Sim total mean / p95 / p99 / max | 2,50 / 4,00 / 8,60 / 20,60 ms |
-| Units mean / p99 / max | 1,20 / 6,40 / 19,30 ms |
-| Pathfinding mean / p99 / max | 0,19 / 6,10 / 16,50 ms |
-| HUD mean / p99 / max | 0,27 / 5,80 / 7,30 ms |
-| FOW mean | 0,17 ms |
-| Heap retenido tras GC | **−10,3 MB** (bruto +91,9 MB en 50 s) |
-| Path requests / failures | 29.011 / 1.246 (4,3 %) |
+| Métrica                          |                                 Valor |
+| -------------------------------- | ------------------------------------: |
+| Sim total mean / p95 / p99 / max |         2,50 / 4,00 / 8,60 / 20,60 ms |
+| Units mean / p99 / max           |                1,20 / 6,40 / 19,30 ms |
+| Pathfinding mean / p99 / max     |                0,19 / 6,10 / 16,50 ms |
+| HUD mean / p99 / max             |                 0,27 / 5,80 / 7,30 ms |
+| FOW mean                         |                               0,17 ms |
+| Heap retenido tras GC            | **−10,3 MB** (bruto +91,9 MB en 50 s) |
+| Path requests / failures         |                29.011 / 1.246 (4,3 %) |
 
 ### Escala con IA (`mixed-ai`), mediana de 2 corridas
 
-| Units | Sim p50/p95/p99 | AI p50/p95/p99 | Path p50/p95/p99 | Heap tras GC (Δ) | Draw calls | Path req/fail |
-|---:|---:|---:|---:|---:|---:|---:|
-| 50 | 0,50 / 4,50 / 6,50 | 0,00 / 0,10 / 0,20 | 0,00 / 1,50 / 1,70 | 77,4 MB (Δ23,5) | 1.998 | 400/27 |
-| 100 | 0,70 / 5,30 / 6,70 | 0,00 / 0,10 / 0,40 | 0,00 / 3,00 / 3,40 | 67,3 MB (Δ10,6) | 3.498 | 784/55 |
-| 200 | 1,10 / 4,80 / 7,50 | 0,00 / 0,20 / 0,50 | 0,00 / 1,30 / 2,90 | 93,1 MB (Δ30,8) | 6.434 | 1.558/30 |
-| 400 | 1,70 / 5,70 / 9,00 | 0,00 / 0,30 / 0,90 | 0,00 / 0,10 / 5,00 | 120,1 MB (Δ46,7) | 12.416 | 3.485/264 |
-| 800 | 4,70 / 10,40 / **22,90** | 0,00 / 0,70 / **1,90** | 0,00 / 0,20 / **15,50** | 147,4 MB (Δ51,9) | 24.400 | 7.473/**1.536** |
+| Units |          Sim p50/p95/p99 |         AI p50/p95/p99 |        Path p50/p95/p99 | Heap tras GC (Δ) | Draw calls |   Path req/fail |
+| ----: | -----------------------: | ---------------------: | ----------------------: | ---------------: | ---------: | --------------: |
+|    50 |       0,50 / 4,50 / 6,50 |     0,00 / 0,10 / 0,20 |      0,00 / 1,50 / 1,70 |  77,4 MB (Δ23,5) |      1.998 |          400/27 |
+|   100 |       0,70 / 5,30 / 6,70 |     0,00 / 0,10 / 0,40 |      0,00 / 3,00 / 3,40 |  67,3 MB (Δ10,6) |      3.498 |          784/55 |
+|   200 |       1,10 / 4,80 / 7,50 |     0,00 / 0,20 / 0,50 |      0,00 / 1,30 / 2,90 |  93,1 MB (Δ30,8) |      6.434 |        1.558/30 |
+|   400 |       1,70 / 5,70 / 9,00 |     0,00 / 0,30 / 0,90 |      0,00 / 0,10 / 5,00 | 120,1 MB (Δ46,7) |     12.416 |       3.485/264 |
+|   800 | 4,70 / 10,40 / **22,90** | 0,00 / 0,70 / **1,90** | 0,00 / 0,20 / **15,50** | 147,4 MB (Δ51,9) |     24.400 | 7.473/**1.536** |
 
 La IA añade ≈0,15 ms/paso de media y p99 1,9 ms. **No es el coste dominante**; sí lo es la pathfinding que
 provoca.
 
 ### Desglose a 800 unidades (`mixed`, 600 pasos)
 
-| Sección | Mean (ms) | p95 | p99 | Max |
-|---|---:|---:|---:|---:|
-| **Total** | **3,90** | 7,00 | **18,50** | 21,80 |
-| Unidades | 2,03 | 2,80 | **16,30** | 19,50 |
-| Pathfinding | 0,53 | 0,10 | **15,60** | 18,00 |
-| HUD | 0,28 | 1,00 | **5,40** | 5,90 |
-| FOW | 0,22 | 0,30 | 0,40 | 0,50 |
-| Partículas | 0,09 | 0,20 | 0,20 | 0,30 |
-| Spatial | 0,07 | 0,20 | 0,20 | 0,20 |
-| Cámara | 0,01 | 0,10 | 0,10 | 0,10 |
-| Edificios | 0,01 | 0,10 | 0,10 | 0,10 |
-| Recursos | 0,01 | 0,10 | 0,10 | 0,10 |
-| Población | 0,01 | 0,10 | 0,10 | 0,10 |
-| Limpieza | 0,01 | 0,10 | 0,10 | 0,90 |
+| Sección     | Mean (ms) |  p95 |       p99 |   Max |
+| ----------- | --------: | ---: | --------: | ----: |
+| **Total**   |  **3,90** | 7,00 | **18,50** | 21,80 |
+| Unidades    |      2,03 | 2,80 | **16,30** | 19,50 |
+| Pathfinding |      0,53 | 0,10 | **15,60** | 18,00 |
+| HUD         |      0,28 | 1,00 |  **5,40** |  5,90 |
+| FOW         |      0,22 | 0,30 |      0,40 |  0,50 |
+| Partículas  |      0,09 | 0,20 |      0,20 |  0,30 |
+| Spatial     |      0,07 | 0,20 |      0,20 |  0,20 |
+| Cámara      |      0,01 | 0,10 |      0,10 |  0,10 |
+| Edificios   |      0,01 | 0,10 |      0,10 |  0,10 |
+| Recursos    |      0,01 | 0,10 |      0,10 |  0,10 |
+| Población   |      0,01 | 0,10 |      0,10 |  0,10 |
+| Limpieza    |      0,01 | 0,10 |      0,10 |  0,90 |
 
 `pathfinding` y `units` se solapan: A* se ejecuta dentro de `Unit.update`/IA. El pico de unidades **es** el pico
 de pathfinding.
 
 ### Control `soldiers` (sin economía/combate)
 
-| Units | Sim p50/p95/p99 | Heap tras GC | Draw calls |
-|---:|---:|---:|---:|
-| 50 | 0,40 / 2,10 / 5,70 | 56,7 MB | 2.115 |
-| 100 | 0,60 / 1,90 / 6,30 | 74,8 MB | 3.876 |
-| 200 | 0,90 / 2,30 / 6,50 | 83,4 MB | 7.298 |
-| 400 | 1,10 / 2,20 / 6,10 | 118,8 MB | 13.979 |
-| 800 | 2,20 / 3,70 / 7,20 | 128,0 MB | 27.383 |
+| Units |    Sim p50/p95/p99 | Heap tras GC | Draw calls |
+| ----: | -----------------: | -----------: | ---------: |
+|    50 | 0,40 / 2,10 / 5,70 |      56,7 MB |      2.115 |
+|   100 | 0,60 / 1,90 / 6,30 |      74,8 MB |      3.876 |
+|   200 | 0,90 / 2,30 / 6,50 |      83,4 MB |      7.298 |
+|   400 | 1,10 / 2,20 / 6,10 |     118,8 MB |     13.979 |
+|   800 | 2,20 / 3,70 / 7,20 |     128,0 MB |     27.383 |
 
 Comparación a 800: `soldiers` 2,43 ms/paso vs `mixed` 3,90 ms/paso. **Economía + combate + pathfinding añaden
 ≈1,5 ms/paso de media y, sobre todo, elevan el p99 de 7,2 a 18,5 ms.**
@@ -340,29 +365,29 @@ Comparación a 800: `soldiers` 2,43 ms/paso vs `mixed` 3,90 ms/paso. **Economía
 ### Microbenchmarks
 
 | Escala | A* ms/llamada (aleatorio) | `enemiesNear` µs/llamada | `pickAt` ms/llamada |
-|---:|---:|---:|---:|
-| 50 | 0,058 | 1,0 | 0,05 |
-| 100 | 0,058 | 1,0 | 0,06 |
-| 200 | 0,058 | 1,0 | 0,08 |
-| 400 | 0,058 | 1,0 | 0,15 |
-| 800 | 0,058–0,075 | 1,0 | **0,32** |
+| -----: | ------------------------: | -----------------------: | ------------------: |
+|     50 |                     0,058 |                      1,0 |                0,05 |
+|    100 |                     0,058 |                      1,0 |                0,06 |
+|    200 |                     0,058 |                      1,0 |                0,08 |
+|    400 |                     0,058 |                      1,0 |                0,15 |
+|    800 |               0,058–0,075 |                      1,0 |            **0,32** |
 
 `pickAt` es O(N) y crece con las unidades; `enemiesNear` usa el spatial grid y se mantiene plano.
 
 ### Auditoría de escena a 800 (`mixed`)
 
-| Métrica | Valor |
-|---|---:|
-| Meshes | 15.818 |
-| InstancedMesh | 9 |
-| Points | 2 |
-| Grupos | 6.915 |
-| Geometrías únicas | 3.621 |
-| Materiales únicos | **14.448** |
-| Usos de geometría | 15.818 |
-| Usos de material | 15.818 |
+| Métrica                    |                          Valor |
+| -------------------------- | -----------------------------: |
+| Meshes                     |                         15.818 |
+| InstancedMesh              |                              9 |
+| Points                     |                              2 |
+| Grupos                     |                          6.915 |
+| Geometrías únicas          |                          3.621 |
+| Materiales únicos          |                     **14.448** |
+| Usos de geometría          |                         15.818 |
+| Usos de material           |                         15.818 |
 | Duplicados top (geometría) | 1.618, 404, 313, 313, 249, 249 |
-| Duplicados top (material) | 819, 147, 144, 84, 42, 40 |
+| Duplicados top (material)  |      819, 147, 144, 84, 42, 40 |
 
 **Lectura:** hay ≈1 material por mesh. El coste de memoria/render viene del clonado por instancia, no de
 assets sin cachear. Los árboles sí están instanciados.
@@ -373,28 +398,28 @@ assets sin cachear. Los árboles sí están instanciados.
 
 ### 20 seeds, normal vs normal, cap 1200 s
 
-| Seed | Winner | Duration | First Soldier (P0/P1) | First Attack (P0/P1) | Workers/Military total | Buildings | Gathered P0/P1 | Path req/fail |
-|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 777 | — | 1200 | 338 / 285 | 341 / 285 | 13 / 24 | 15 | 3392 / 2093 | 12.050 / 2.423 |
-| 778 | — | 1200 | 263 / 351 | 264 / 351 | 17 / 33 | 23 | 2405 / 2557 | 75.690 / 63.881 |
-| 779 | — | 1200 | 1060 / 511 | 1060 / 511 | 14 / 6 | 10 | 1461 / 1377 | 213.079 / 199.406 |
-| 780 | — | 1200 | 983 / — | — / — | 11 / 3 | 6 | 1582 / 998 | 285.287 / 267.825 |
-| 781 | — | 1200 | — / 279 | — / 279 | 15 / 6 | 10 | 818 / 2741 | 94.660 / 83.410 |
-| 782 | — | 1200 | 819 / — | 819 / — | 9 / 11 | 11 | 2422 / 665 | 40.236 / 24.106 |
-| 783 | — | 1200 | — / — | — / — | 8 / **0** | 3 | **430 / 0** | 25.520 / 8.456 |
-| 784 | — | 1200 | — / 325 | — / 339 | 11 / 5 | 18 | 1228 / 2465 | 78.794 / 69.653 |
-| 785 | — | 1200 | 344 / 505 | 344 / 505 | 12 / 5 | 14 | 1914 / 2130 | 16.255 / 1.420 |
-| 786 | — | 1200 | — / 380 | — / 380 | 9 / 7 | 7 | 1002 / 1879 | **353.014 / 346.425** |
-| 787 | **1** | 839 | — / 259 | — / 259 | 14 / 11 | 10 | 881 / 1824 | 12.422 / 262 |
-| 788 | — | 1200 | — / 893 | — / 894 | 11 / 4 | 6 | 637 / 1970 | 205.213 / 146.789 |
-| 789 | — | 1200 | — / 271 | — / 271 | 12 / 5 | 6 | 2001 / 1410 | 167.931 / 145.785 |
-| 790 | **1** | 977 | — / 283 | — / 304 | 12 / 11 | 15 | 780 / 1811 | 13.258 / 206 |
-| 791 | — | 1200 | 818 / 332 | 818 / 335 | 15 / 11 | 13 | 2472 / 1265 | 21.813 / 8.334 |
-| 792 | **1** | 882 | — / 385 | — / 385 | 22 / 12 | 9 | 1589 / 1572 | 60.090 / 53.109 |
-| 793 | **0** | 975 | 256 / — | 643 / — | 12 / 9 | 8 | 1804 / 1163 | 154.051 / 138.478 |
-| 794 | — | 1200 | 311 / 286 | 313 / 291 | 12 / 30 | 18 | 3450 / 2863 | 198.912 / 181.380 |
-| 795 | — | 1200 | — / 385 | — / 625 | 12 / 11 | 11 | 843 / 2793 | 67.066 / 55.966 |
-| 796 | — | 1200 | 705 / — | 1061 / — | 9 / 9 | 9 | 2262 / 10 | 117.922 / 94.826 |
+| Seed | Winner | Duration | First Soldier (P0/P1) | First Attack (P0/P1) | Workers/Military total | Buildings | Gathered P0/P1 |         Path req/fail |
+| ---: | -----: | -------: | --------------------: | -------------------: | ---------------------: | --------: | -------------: | --------------------: |
+|  777 |      — |     1200 |             338 / 285 |            341 / 285 |                13 / 24 |        15 |    3392 / 2093 |        12.050 / 2.423 |
+|  778 |      — |     1200 |             263 / 351 |            264 / 351 |                17 / 33 |        23 |    2405 / 2557 |       75.690 / 63.881 |
+|  779 |      — |     1200 |            1060 / 511 |           1060 / 511 |                 14 / 6 |        10 |    1461 / 1377 |     213.079 / 199.406 |
+|  780 |      — |     1200 |               983 / — |                — / — |                 11 / 3 |         6 |     1582 / 998 |     285.287 / 267.825 |
+|  781 |      — |     1200 |               — / 279 |              — / 279 |                 15 / 6 |        10 |     818 / 2741 |       94.660 / 83.410 |
+|  782 |      — |     1200 |               819 / — |              819 / — |                 9 / 11 |        11 |     2422 / 665 |       40.236 / 24.106 |
+|  783 |      — |     1200 |                 — / — |                — / — |              8 / **0** |         3 |    **430 / 0** |        25.520 / 8.456 |
+|  784 |      — |     1200 |               — / 325 |              — / 339 |                 11 / 5 |        18 |    1228 / 2465 |       78.794 / 69.653 |
+|  785 |      — |     1200 |             344 / 505 |            344 / 505 |                 12 / 5 |        14 |    1914 / 2130 |        16.255 / 1.420 |
+|  786 |      — |     1200 |               — / 380 |              — / 380 |                  9 / 7 |         7 |    1002 / 1879 | **353.014 / 346.425** |
+|  787 |  **1** |      839 |               — / 259 |              — / 259 |                14 / 11 |        10 |     881 / 1824 |          12.422 / 262 |
+|  788 |      — |     1200 |               — / 893 |              — / 894 |                 11 / 4 |         6 |     637 / 1970 |     205.213 / 146.789 |
+|  789 |      — |     1200 |               — / 271 |              — / 271 |                 12 / 5 |         6 |    2001 / 1410 |     167.931 / 145.785 |
+|  790 |  **1** |      977 |               — / 283 |              — / 304 |                12 / 11 |        15 |     780 / 1811 |          13.258 / 206 |
+|  791 |      — |     1200 |             818 / 332 |            818 / 335 |                15 / 11 |        13 |    2472 / 1265 |        21.813 / 8.334 |
+|  792 |  **1** |      882 |               — / 385 |              — / 385 |                22 / 12 |         9 |    1589 / 1572 |       60.090 / 53.109 |
+|  793 |  **0** |      975 |               256 / — |              643 / — |                 12 / 9 |         8 |    1804 / 1163 |     154.051 / 138.478 |
+|  794 |      — |     1200 |             311 / 286 |            313 / 291 |                12 / 30 |        18 |    3450 / 2863 |     198.912 / 181.380 |
+|  795 |      — |     1200 |               — / 385 |              — / 625 |                12 / 11 |        11 |     843 / 2793 |       67.066 / 55.966 |
+|  796 |      — |     1200 |               705 / — |             1061 / — |                  9 / 9 |         9 |      2262 / 10 |      117.922 / 94.826 |
 
 `—` = no produjo soldado / no lanzó ataque dentro del cap.
 
@@ -404,31 +429,31 @@ cada bando en los 1200 s.
 
 ### Agregados
 
-| Métrica | Valor |
-|---|---:|
-| Victorias P0 / P1 / sin terminar | **1 / 3 / 16** |
-| Partidas decisivas | 4/20 (20 %) |
-| Duración mediana | 1200 s (cap) |
-| P0 sin soldado | **10/20** |
-| P1 sin soldado | **5/20** |
-| P0 sin ataque | **11/20** |
-| P1 sin ataque | 5/20 |
-| Primer soldado (mediana, cuando existe) | P0 **524 s**, P1 **332 s** |
-| Primer ataque (mediana, cuando existe) | P0 **643 s**, P1 **339 s** |
-| Primer cuartel (mediana) | **240 s** |
-| Trabajadores creados (mediana, ambos bandos) | 12 |
-| Militares creados (mediana, ambos bandos) | 9 |
-| Edificios creados (mediana) | 10 |
-| Recursos recolectados P0/P1 (mediana) | **1.585 / 1.818** en 1200 s |
-| Path requests / failures (mediana) | **77.242 / 66.767 (86 %)** |
-| `chooseResourceNull` (mediana) | **1.114** |
-| `blockedWorkers` máx (mediana) | **13** |
-| Idle workers máx (mediana) | 4 |
-| Bajas de unidades P0/P1 (total 20 seeds) | 116 / 45 |
-| Bajas de edificios P0/P1 | 37 / 17 |
-| AI mean / p99 (mediana por seed) | 0,004 / 0,10 ms |
-| AI max (peor seed) | 10,7 ms |
-| Sim total p99 (mediana por seed) | 0,8 ms; max 170 ms (arranque) |
+| Métrica                                      |                         Valor |
+| -------------------------------------------- | ----------------------------: |
+| Victorias P0 / P1 / sin terminar             |                **1 / 3 / 16** |
+| Partidas decisivas                           |                   4/20 (20 %) |
+| Duración mediana                             |                  1200 s (cap) |
+| P0 sin soldado                               |                     **10/20** |
+| P1 sin soldado                               |                      **5/20** |
+| P0 sin ataque                                |                     **11/20** |
+| P1 sin ataque                                |                          5/20 |
+| Primer soldado (mediana, cuando existe)      |    P0 **524 s**, P1 **332 s** |
+| Primer ataque (mediana, cuando existe)       |    P0 **643 s**, P1 **339 s** |
+| Primer cuartel (mediana)                     |                     **240 s** |
+| Trabajadores creados (mediana, ambos bandos) |                            12 |
+| Militares creados (mediana, ambos bandos)    |                             9 |
+| Edificios creados (mediana)                  |                            10 |
+| Recursos recolectados P0/P1 (mediana)        |   **1.585 / 1.818** en 1200 s |
+| Path requests / failures (mediana)           |    **77.242 / 66.767 (86 %)** |
+| `chooseResourceNull` (mediana)               |                     **1.114** |
+| `blockedWorkers` máx (mediana)               |                        **13** |
+| Idle workers máx (mediana)                   |                             4 |
+| Bajas de unidades P0/P1 (total 20 seeds)     |                      116 / 45 |
+| Bajas de edificios P0/P1                     |                       37 / 17 |
+| AI mean / p99 (mediana por seed)             |               0,004 / 0,10 ms |
+| AI max (peor seed)                           |                       10,7 ms |
+| Sim total p99 (mediana por seed)             | 0,8 ms; max 170 ms (arranque) |
 
 ### Hallazgos de comportamiento
 
@@ -451,33 +476,33 @@ cada bando en los 1200 s.
 Después del diagnóstico se implementó un fix **mínimo** para el bloqueo económico, sin reescribir la generación
 de mapas ni el sistema de pathfinding:
 
-| Archivo | Cambio |
-|---|---|
-| `src/game/Pathfinding.ts` | `findApproachPath` (punto de apoyo dentro del rango de recolección), `componentSizeAt`, `revision` |
-| `src/entities/Unit.ts` | `HARVEST_RANGE`/`HARVEST_STAND_RANGE`; fallback de aproximación **sólo** cuando el path normal y el paso directo fallan |
-| `src/game/AI.ts` | `chooseResourceNode` valida con `findApproachPath`; caché de nodos inalcanzables por revisión de grid; presupuesto de 6 sondas por tick |
-| `src/core/Game.ts` | expone `findApproachPath` en `UnitContext` |
-| tests | `tests/pathfinding.test.ts`, seed 783 en `tests/e2e/ai.spec.ts`, guardia de recursos ambientales |
+| Archivo                   | Cambio                                                                                                                                  |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/game/Pathfinding.ts` | `findApproachPath` (punto de apoyo dentro del rango de recolección), `componentSizeAt`, `revision`                                      |
+| `src/entities/Unit.ts`    | `HARVEST_RANGE`/`HARVEST_STAND_RANGE`; fallback de aproximación **sólo** cuando el path normal y el paso directo fallan                 |
+| `src/game/AI.ts`          | `chooseResourceNode` valida con `findApproachPath`; caché de nodos inalcanzables por revisión de grid; presupuesto de 6 sondas por tick |
+| `src/core/Game.ts`        | expone `findApproachPath` en `UnitContext`                                                                                              |
+| tests                     | `tests/pathfinding.test.ts`, seed 783 en `tests/e2e/ai.spec.ts`, guardia de recursos ambientales                                        |
 
 No se cambió la generación de bases ni el balance: un intento de reubicar recursos/base se revirtió porque
 rompía tests existentes de apertura de la IA.
 
 ### Antes / después (20 seeds, normal vs normal, 1200 s)
 
-| Métrica | Baseline | Después P0 |
-|---|---:|---:|
-| Partidas decisivas | **4/20** (P0 1, P1 3) | **8/20** (P0 3, P1 5) |
-| Sin terminar | 16/20 | 12/20 |
-| P0 sin soldado | 10/20 | **4/20** |
-| P1 sin soldado | 5/20 | **9/20** |
-| Primer soldado mediana P0/P1 | 524 s / 332 s | **342 s / 374 s** |
-| Primer ataque mediana P0/P1 | 643 s / 339 s | **403 s / 376 s** |
-| Path requests mediana | 77.242 | **56.644** (−27 %) |
-| Path failures mediana | 66.767 (86 %) | **52.039 (92 %)** |
-| `blockedWorkersMax` mediana | 13 | 13 |
-| Seed 783 | sin soldado | P0 soldado 592 s; P1 sin soldado; sin terminar |
-| Seed 793 | ambos sin soldado | P0 soldado 293 s; P1 sin soldado; sin terminar |
-| Seed 777 | P0 sin soldado, P1 285 s | P0 364 s, P1 268 s |
+| Métrica                      |                 Baseline |                                     Después P0 |
+| ---------------------------- | -----------------------: | ---------------------------------------------: |
+| Partidas decisivas           |    **4/20** (P0 1, P1 3) |                          **8/20** (P0 3, P1 5) |
+| Sin terminar                 |                    16/20 |                                          12/20 |
+| P0 sin soldado               |                    10/20 |                                       **4/20** |
+| P1 sin soldado               |                     5/20 |                                       **9/20** |
+| Primer soldado mediana P0/P1 |            524 s / 332 s |                              **342 s / 374 s** |
+| Primer ataque mediana P0/P1  |            643 s / 339 s |                              **403 s / 376 s** |
+| Path requests mediana        |                   77.242 |                             **56.644** (−27 %) |
+| Path failures mediana        |            66.767 (86 %) |                              **52.039 (92 %)** |
+| `blockedWorkersMax` mediana  |                       13 |                                             13 |
+| Seed 783                     |              sin soldado | P0 soldado 592 s; P1 sin soldado; sin terminar |
+| Seed 793                     |        ambos sin soldado | P0 soldado 293 s; P1 sin soldado; sin terminar |
+| Seed 777                     | P0 sin soldado, P1 285 s |                             P0 364 s, P1 268 s |
 
 **Lectura honesta:** el bloqueo extremo (seed 783, 793) se mitigó y las partidas decisivas se duplicaron, pero
 **P0 no está cerrado**:
@@ -535,14 +560,14 @@ Partial implementation of #136 on the post-#121 baseline:
 
 Verification: `yarn sim --seeds=777,778,779,780,781,782,783,784,785,786,787,788,789,790,791,792,793,794,795,796 --max=1200 --metrics=1`.
 
-| Metric | Value |
-|---|---:|
-| Decisive matches | **14/20** (P0 9, P1 5) |
-| Unfinished | 6/20 |
-| First soldier (median P0/P1) | 340 s / 376 s |
-| First attack (median P0/P1) | 350 s / 356 s |
-| `pathRequests` / failures (median) | 40,780 / 38,009 |
-| `blockedWorkersMax` (median) | 2 |
+| Metric                             |                  Value |
+| ---------------------------------- | ---------------------: |
+| Decisive matches                   | **14/20** (P0 9, P1 5) |
+| Unfinished                         |                   6/20 |
+| First soldier (median P0/P1)       |          340 s / 376 s |
+| First attack (median P0/P1)        |          350 s / 356 s |
+| `pathRequests` / failures (median) |        40,780 / 38,009 |
+| `blockedWorkersMax` (median)       |                      2 |
 
 The original audit finished 4/20 and the post-#121 baseline 8/20. The current
 **14/20 (70 %)** meets the audit target. Remaining draws are 778, 779, 782, 788, 791
@@ -563,7 +588,7 @@ not finish the last buildings.
      `src/entities/Unit.ts:885` (`updateGather`), `src/game/Economy.ts`.
    - Impacto: la partida no arranca económicamente; no hay ejército; no hay victoria.
 
-2. **Tormenta de peticiones A* y fallos de ruta (mitigado parcialmente en #121).**
+2. _*Tormenta de peticiones A* y fallos de ruta (mitigado parcialmente en #121)._*
    - Evidencia baseline: mediana 77.242 peticiones / 66.767 fallos (86 %); seed 786 353.014 / 346.425 (98 %);
      `mixed-ai` 800: 1.536 fallos de 7.473 (20,6 %).
    - Tras #121: menos búsquedas desde `chooseResourceNode`, pero `pathRequests` totales no bajan porque
@@ -580,7 +605,7 @@ not finish the last buildings.
 
 ### 🟠 Importante
 
-4. **Peores casos de A* (spikes).**
+4. _*Peores casos de A* (spikes)._*
    - Evidencia: path p99 **15,6 ms** y units p99 **16,3 ms** a 800 en la ventana inicial; estado estacionario
      6,1/8,6 ms; max 20,6 ms. El microbench aleatorio (0,058 ms) subestima el peor caso.
    - Archivos: `src/game/Pathfinding.ts:218` (fills completos), `:292` (`reconstruct`), `:308` (`smooth`).
@@ -635,16 +660,16 @@ not finish the last buildings.
 
 Ordenadas por impacto, riesgo y complejidad. **No implementar todavía.**
 
-| # | Optimización | Impacto | Riesgo | Complejidad | Evidencia |
-|---:|---|---|---|---|---|
-| 1 | Caché de alcanzabilidad por nodo/base + detección y reasignación de trabajadores bloqueados | Muy alto | Medio | Media | seed 783, 10/20 P0 sin soldado, `blockedWorkers` 13 |
-| 2 | Presupuesto/cola de pathfinding por frame + límite de expansiones A* + caché de rutas a nodos estáticos | Muy alto | Medio | Media-alta | 86–98 % de fallos, p99 15,6 ms |
-| 3 | IA de compromiso de ataque: atacar en grupo, objetivo alcanzable, detección de ejército atascado | Alto | Medio-alto | Alta | 16/20 tablas, primer ataque 643 s P0 |
-| 4 | Throttle/skip del minimapa y escrituras DOM del HUD | Medio | Bajo | Baja | HUD p99 5,4–6,3 ms |
-| 5 | Validación en GPU real y, después, instancing/materiales compartidos con copy-on-write | Alto en GPU | Alto | Alta | 24k draws, 14.448 materiales |
-| 6 | Índice espacial para picking o throttle de hover | Medio-bajo | Bajo | Media | `pickAt` 0,32 ms a 800 |
-| 7 | Reducir asignaciones (arrays reutilizables, pools de paths/vectores/colores) | Medio | Bajo-medio | Media | bruto 91,9 MB/50 s |
-| 8 | Gate de rendimiento en CI/nightly con los JSON de `bench`/`sim` | Medio | Bajo | Baja | no existe job de rendimiento |
+|   # | Optimización                                                                                            | Impacto     | Riesgo     | Complejidad | Evidencia                                           |
+| --: | ------------------------------------------------------------------------------------------------------- | ----------- | ---------- | ----------- | --------------------------------------------------- |
+|   1 | Caché de alcanzabilidad por nodo/base + detección y reasignación de trabajadores bloqueados             | Muy alto    | Medio      | Media       | seed 783, 10/20 P0 sin soldado, `blockedWorkers` 13 |
+|   2 | Presupuesto/cola de pathfinding por frame + límite de expansiones A* + caché de rutas a nodos estáticos | Muy alto    | Medio      | Media-alta  | 86–98 % de fallos, p99 15,6 ms                      |
+|   3 | IA de compromiso de ataque: atacar en grupo, objetivo alcanzable, detección de ejército atascado        | Alto        | Medio-alto | Alta        | 16/20 tablas, primer ataque 643 s P0                |
+|   4 | Throttle/skip del minimapa y escrituras DOM del HUD                                                     | Medio       | Bajo       | Baja        | HUD p99 5,4–6,3 ms                                  |
+|   5 | Validación en GPU real y, después, instancing/materiales compartidos con copy-on-write                  | Alto en GPU | Alto       | Alta        | 24k draws, 14.448 materiales                        |
+|   6 | Índice espacial para picking o throttle de hover                                                        | Medio-bajo  | Bajo       | Media       | `pickAt` 0,32 ms a 800                              |
+|   7 | Reducir asignaciones (arrays reutilizables, pools de paths/vectores/colores)                            | Medio       | Bajo-medio | Media       | bruto 91,9 MB/50 s                                  |
+|   8 | Gate de rendimiento en CI/nightly con los JSON de `bench`/`sim`                                         | Medio       | Bajo       | Baja        | no existe job de rendimiento                        |
 
 **No hacer todavía:** ECS, Web Workers, Simulation LOD, reescritura de `Game.ts`, reemplazo de A*, rebalanceo
 económico, cambios de rendering sin GPU.
@@ -682,6 +707,7 @@ Estas partes **funcionan correctamente** en las mediciones y no justifican refac
 ### PERF
 
 #### PERF-1 — Gate de rendimiento en CI/nightly
+
 - **Problema:** no hay job que ejecute `bench`/`sim` ni compare umbrales; las regresiones pasan desapercibidas.
 - **Evidencia:** CI actual solo corre typecheck/lint/format/test/build y E2E; `bench`/`sim` no están en
   `.github/workflows/`.
@@ -694,6 +720,7 @@ Estas partes **funcionan correctamente** en las mediciones y no justifican refac
 - **Tests:** ejecución del workflow; validación del JSON.
 
 #### PERF-2 — Pico periódico del HUD/minimapa
+
 - **Problema:** `HUD.update` redibuja el minimapa cada 0,15 s y escribe DOM cada frame; p99 5,4–6,3 ms a 800.
 - **Evidencia:** `hud` p99 5,4 ms (mixed) y 6,3 ms (mixed-ai); media 0,28–0,35 ms.
 - **Archivos:** `src/ui/HUD.ts:1781`, `renderMinimap`, `renderBottomIfChanged`.
@@ -704,6 +731,7 @@ Estas partes **funcionan correctamente** en las mediciones y no justifican refac
 - **Tests:** `tests/e2e/hud-labels.spec.ts`, `hud-identity.spec.ts`, `visual:check`, bench.
 
 #### PERF-3 — Escalado de draw calls/materiales por instancia
+
 - **Problema:** 24.237 draw calls, 18,1 M triángulos y 14.448 materiales únicos a 800; ≈1 material por mesh.
 - **Evidencia:** auditoría de escena a 800; top material duplicates 819/147/144; `buildModel` clona materiales.
 - **Archivos:** `src/model/ProceduralModel.ts`, `src/entities/EntityView.ts`, `src/core/Game.ts`.
@@ -714,6 +742,7 @@ Estas partes **funcionan correctamente** en las mediciones y no justifican refac
 - **Tests:** `tests/visual/baseline.json`, `visual:check`, `bench`, `renderer.spec.ts`.
 
 #### PERF-4 — Picking O(N) en hover
+
 - **Problema:** `pickAt` recorre proxies y cuesta 0,318 ms/llamada a 800.
 - **Evidencia:** microbench 0,05 ms (50) → 0,32 ms (800).
 - **Archivos:** `src/core/Game.ts:1436`.
@@ -723,6 +752,7 @@ Estas partes **funcionan correctamente** en las mediciones y no justifican refac
 - **Tests:** `tests/e2e/picking.spec.ts`, `input.spec.ts`, `selection-panel.spec.ts`.
 
 #### PERF-5 — Churn de asignaciones / GC
+
 - **Problema:** +91,9 MB brutos en 50 s a 605 unidades; retenido tras GC −10,3 MB (no hay fuga, pero hay
   mucha basura).
 - **Evidencia:** `bench-800-long.json`; arrays nuevos en `unitsNear`/`enemiesNear`, `rebuildSpatial`, paths,
@@ -737,6 +767,7 @@ Estas partes **funcionan correctamente** en las mediciones y no justifican refac
 ### AI
 
 #### AI-1 — Bloqueo económico por recursos inalcanzables (P0) — **mitigado parcialmente en #121**
+
 - **Problema:** la IA asigna trabajadores a nodos que no puede alcanzar; el trabajador queda “busy” con path
   activo, no avanza y no se reasigna.
 - **Estado:** #121 añadió caché de alcanzabilidad O(1) y abandono de órdenes atascadas. No cierra la issue:
@@ -753,6 +784,7 @@ Estas partes **funcionan correctamente** en las mediciones y no justifican refac
 - **Tests:** `yarn sim` 20 seeds; `tests/e2e/resource-reachability.spec.ts`; nuevo test de trabajador bloqueado.
 
 #### AI-2 — Estancamiento y falta de ataque coordinado
+
 - **Problema:** la IA acumula economía/ejército pero no lo convierte en victoria; 16/20 tablas.
 - **Evidencia:** primer ataque P0 643 s (cuando existe), 11/20 seeds sin ataque P0, 16/20 sin terminar; las 4
   victorias fueron unilaterales.
@@ -767,6 +799,7 @@ Estas partes **funcionan correctamente** en las mediciones y no justifican refac
 ### ECONOMY
 
 #### ECO-1 — Inanición de comida/madera y reparto desequilibrado
+
 - **Problema:** con trabajadores “ocupados”, la IA puede quedarse sin comida/madera mientras acumula piedra.
 - **Evidencia:** seed 783: comida/madera 0, piedra 540, 66 entregas en 2400 s; seed 786: P0 madera 0 toda la
   partida; mediana recolectada P0 1.585 en 1200 s.
@@ -781,6 +814,7 @@ Estas partes **funcionan correctamente** en las mediciones y no justifican refac
 ### PATH
 
 #### PATH-1 — Tormenta de peticiones A* y fallos (P0) — **mitigado parcialmente en #121**
+
 - **Problema:** la IA y las unidades emiten muchas más peticiones de las necesarias; la mayoría falla.
 - **Estado:** #121 eliminó el A* por candidato en `chooseResourceNode`; las peticiones totales no bajan porque
   dominan los `setPath` de las unidades. Faltan presupuesto/cola, límite de expansiones y caché de fallos.
@@ -794,6 +828,7 @@ Estas partes **funcionan correctamente** en las mediciones y no justifican refac
 - **Tests:** `tests/pathfinding.test.ts`, `yarn sim` counters, `movement-safety.spec.ts`.
 
 #### PATH-2 — Peores casos de A* (spikes)
+
 - **Problema:** el coste medio es bajo, pero hay búsquedas de 15–18 ms.
 - **Evidencia:** path p99 15,6 ms y units p99 16,3 ms a 800; max 20,6 ms; microbench aleatorio 0,058 ms.
 - **Archivos:** `src/game/Pathfinding.ts:218` (fills), `:292`, `:308`.
@@ -806,6 +841,7 @@ Estas partes **funcionan correctamente** en las mediciones y no justifican refac
 ### UX
 
 #### UX-1 — Feedback de trabajadores bloqueados / recursos inalcanzables — **resuelto**
+
 - **Problema:** el jugador ve trabajadores “ocupados” que no producen; no hay señal clara de bloqueo.
 - **Evidencia:** seed 783, 9–10 trabajadores con path activo sin avanzar; no había alerta de trabajador bloqueado.
 - **Solución:** `Unit` emite una alerta por orden con `unitId`, `reason` y `order` para `no-route`, `stuck` y
@@ -818,6 +854,7 @@ Estas partes **funcionan correctamente** en las mediciones y no justifican refac
 ### ARCH
 
 #### ARCH-1 — Servicio de alcanzabilidad/caché de rutas — **parcialmente implementado en #121**
+
 - **Problema:** la alcanzabilidad se calcula repetidamente con A* en varios sistemas (IA, trabajadores,
   edificios).
 - **Estado:** #121 añadió componentes conexas e invalidación por `revision`; `chooseResourceNode` ya no llama
@@ -831,6 +868,7 @@ Estas partes **funcionan correctamente** en las mediciones y no justifican refac
 - **Tests:** unit tests de caché + invalidación; sim counters.
 
 #### ARCH-2 — Presupuestos de simulación y perfilador opt-in
+
 - **Problema:** no hay presupuesto por sistema ni un medidor permanente; las regresiones se detectan tarde.
 - **Evidencia:** esta auditoría necesitó una capa externa de sondas; no había métricas por sistema.
 - **Archivos:** `scripts/perf-probes.mjs`, `scripts/bench.mjs`, `scripts/sim.mjs`.
@@ -843,18 +881,18 @@ Estas partes **funcionan correctamente** en las mediciones y no justifican refac
 
 ## Prioridad final
 
-| Prioridad | Área | Problema | Evidencia | Impacto | Esfuerzo |
-|---|---|---|---|---|---|
-| **P0 (mitigado)** | AI/ECONOMY | Bloqueo económico por recursos inalcanzables | Baseline 10/20 P0 sin soldado → **4/20** tras P0; seed 783 soldado 592 s | Bloquea partidas | Medio |
-| **P0 (mitigado)** | PATH | Tormenta de A* y fallos de ruta | 77k→57k requests; fallos 86 %→92 %; seed 786 353k/346k | Sigue bloqueando parte de la economía | Medio |
-| **P1** | AI | Estancamiento: 12/20 tablas tras P0; ejército no ataca | Primer ataque P0 403 s; 4/20 P0 sin soldado | Calidad RTS | Alto |
-| **P1** | PERF | Peores casos de A* | Path p99 15,6 ms; units p99 16,3 ms a 800 | Hitches | Medio |
-| **P1** | PERF/UX | Pico del HUD/minimapa | HUD p99 5,4–6,3 ms a 800 | Hitches periódicos | Bajo |
-| **P1** | PERF | Draw calls/materiales por instancia | 24.237 draws, 14.448 materiales a 800 | Riesgo GPU (pendiente GPU real) | Alto |
-| **P2** | PERF/UX | Picking O(N) en hover | 0,318 ms/llamada a 800 | Latencia de selección | Bajo-medio |
-| **P2** | PERF | Churn de asignaciones/GC | +91,9 MB brutos/50 s; retenido −10,3 MB | Riesgo de GC | Medio |
-| **P2** | ARCH | Falta gate de rendimiento en CI | No hay job de bench/sim | Regresiones silenciosas | Bajo |
-| **P3** | ARCH | Micro-optimizar FOW/spatial/población | 0,22/0,07/0,01 ms | Ninguno ahora | Alto (no hacer) |
+| Prioridad         | Área       | Problema                                               | Evidencia                                                                | Impacto                               | Esfuerzo        |
+| ----------------- | ---------- | ------------------------------------------------------ | ------------------------------------------------------------------------ | ------------------------------------- | --------------- |
+| **P0 (mitigado)** | AI/ECONOMY | Bloqueo económico por recursos inalcanzables           | Baseline 10/20 P0 sin soldado → **4/20** tras P0; seed 783 soldado 592 s | Bloquea partidas                      | Medio           |
+| **P0 (mitigado)** | PATH       | Tormenta de A* y fallos de ruta                        | 77k→57k requests; fallos 86 %→92 %; seed 786 353k/346k                   | Sigue bloqueando parte de la economía | Medio           |
+| **P1**            | AI         | Estancamiento: 12/20 tablas tras P0; ejército no ataca | Primer ataque P0 403 s; 4/20 P0 sin soldado                              | Calidad RTS                           | Alto            |
+| **P1**            | PERF       | Peores casos de A*                                     | Path p99 15,6 ms; units p99 16,3 ms a 800                                | Hitches                               | Medio           |
+| **P1**            | PERF/UX    | Pico del HUD/minimapa                                  | HUD p99 5,4–6,3 ms a 800                                                 | Hitches periódicos                    | Bajo            |
+| **P1**            | PERF       | Draw calls/materiales por instancia                    | 24.237 draws, 14.448 materiales a 800                                    | Riesgo GPU (pendiente GPU real)       | Alto            |
+| **P2**            | PERF/UX    | Picking O(N) en hover                                  | 0,318 ms/llamada a 800                                                   | Latencia de selección                 | Bajo-medio      |
+| **P2**            | PERF       | Churn de asignaciones/GC                               | +91,9 MB brutos/50 s; retenido −10,3 MB                                  | Riesgo de GC                          | Medio           |
+| **P2**            | ARCH       | Falta gate de rendimiento en CI                        | No hay job de bench/sim                                                  | Regresiones silenciosas               | Bajo            |
+| **P3**            | ARCH       | Micro-optimizar FOW/spatial/población                  | 0,22/0,07/0,01 ms                                                        | Ninguno ahora                         | Alto (no hacer) |
 
 **Estado tras #121:** los dos P0 se redujeron pero no se cerraron (8/20 partidas decisivas; siguen habiendo
 seeds con un bando sin soldado; `pathRequests` totales no bajan). El siguiente paso es el presupuesto/cola de
@@ -883,6 +921,7 @@ peticiones fallidas bloquean la economía y producen hitches.
 ### 3. ¿Pathfinding sigue siendo un problema?
 
 **Sí, aunque menos en la IA.** No por el coste medio del A* (0,058 ms en mapa aleatorio), sino por:
+
 - p99 de 15,6 ms a 800 (baseline; #121 no cambia el coste de una búsqueda individual);
 - peticiones totales altas; #121 eliminó el A* por candidato de `chooseResourceNode`, pero dominan los
   `setPath` de las unidades;
@@ -891,6 +930,7 @@ peticiones fallidas bloquean la economía y producen hitches.
 ### 4. ¿La IA escala correctamente?
 
 **En CPU sí; en calidad todavía no.** `AI.update` cuesta 0,15 ms de media y p99 1,9 ms a 800. Tras #121:
+
 - 12/20 partidas no terminan (16/20 en la auditoría original; 12/20 ya tras la remediación P0);
 - siguen habiendo seeds con un bando sin soldado;
 - el primer ataque P0 ocurre a 403 s tras la remediación P0 (643 s en la auditoría original);
@@ -906,13 +946,13 @@ de **llegar al nodo y reasignar cuando no se llega**.
 
 ### 6. ¿Qué ocurre con 100/200/400/800 unidades?
 
-| Unidades | Veredicto | Evidencia |
-|---:|---|---|
-| 50 | OK | Sim p99 5,8 ms; 1.681 draws |
-| 100 | OK | Sim p99 6,0 ms; 3.212 draws |
-| 200 | OK | Sim p99 5,6 ms (mixed) / 7,5 ms (IA); 6.159 draws |
-| 400 | OK con vigilancia | Sim p99 6,6 ms (mixed) / 9,0 ms (IA); path p99 5,8 ms; 12.258 draws |
-| 800 | Condicional | Media 3,9 ms; p99 18,5 ms inicial / 8,6 ms estacionario; 24.237 draws; render no certificado |
+| Unidades | Veredicto         | Evidencia                                                                                    |
+| -------: | ----------------- | -------------------------------------------------------------------------------------------- |
+|       50 | OK                | Sim p99 5,8 ms; 1.681 draws                                                                  |
+|      100 | OK                | Sim p99 6,0 ms; 3.212 draws                                                                  |
+|      200 | OK                | Sim p99 5,6 ms (mixed) / 7,5 ms (IA); 6.159 draws                                            |
+|      400 | OK con vigilancia | Sim p99 6,6 ms (mixed) / 9,0 ms (IA); path p99 5,8 ms; 12.258 draws                          |
+|      800 | Condicional       | Media 3,9 ms; p99 18,5 ms inicial / 8,6 ms estacionario; 24.237 draws; render no certificado |
 
 ### 7. ¿Cuál debería ser la siguiente mejora?
 
@@ -955,13 +995,13 @@ parte de #118.
 
 ### Fauna: antes / después
 
-| Animales | Draws escena | Draws fauna | Draws/animal | Tris/animal |
-|---:|---:|---:|---:|---:|
-| 0 | 126 → 126 | 0 → 0 | — | — |
-| 4 | 182 → 134 | 56 → 8 | **14 → 2** | 4.120 → 4.120 |
-| 8 | 238 → 142 | 112 → 16 | **14 → 2** | 4.120 → 4.120 |
-| 12 | 294 → 150 | 168 → 24 | **14 → 2** | 4.120 → 4.120 |
-| 16 | 350 → 158 | 224 → 32 | **14 → 2** | 4.120 → 4.120 |
+| Animales | Draws escena | Draws fauna | Draws/animal |   Tris/animal |
+| -------: | -----------: | ----------: | -----------: | ------------: |
+|        0 |    126 → 126 |       0 → 0 |            — |             — |
+|        4 |    182 → 134 |      56 → 8 |   **14 → 2** | 4.120 → 4.120 |
+|        8 |    238 → 142 |    112 → 16 |   **14 → 2** | 4.120 → 4.120 |
+|       12 |    294 → 150 |    168 → 24 |   **14 → 2** | 4.120 → 4.120 |
+|       16 |    350 → 158 |    224 → 32 |   **14 → 2** | 4.120 → 4.120 |
 
 La alpaca tenía **7 primitivas/materiales** (7 `SkinnedMesh`); cada una se dibuja en main y en shadow. Se
 horneó el color plano de cada material en colores por vértice y se fusionaron en **1 `SkinnedMesh`**. El
@@ -971,11 +1011,11 @@ El ahorro es de **12 draw calls por animal**; a 16 animales son **192 draw calls
 ### Trabajadores: baseline para #116
 
 | Trabajadores | Draws/trabajador | Tris/trabajador | `rigs` p95 |
-|---:|---:|---:|---:|
-| 4 | 32,5 | 28.977 | 0,10 ms |
-| 12 | 32,0 | 29.104 | 0,30 ms |
-| 24 | 31,7 | 29.189 | 0,50 ms |
-| 48 | 31,6 | 29.210 | 1,20 ms |
+| -----------: | ---------------: | --------------: | ---------: |
+|            4 |             32,5 |          28.977 |    0,10 ms |
+|           12 |             32,0 |          29.104 |    0,30 ms |
+|           24 |             31,7 |          29.189 |    0,50 ms |
+|           48 |             31,6 |          29.210 |    1,20 ms |
 
 El trabajador de esta tabla era el maniquí vestido del piloto (#108/#112); #118 **no** lo cambia. Estos
 números fijaron el presupuesto que el modelo final de #116 debía respetar o justificar. Los tris incluyen el
@@ -984,10 +1024,10 @@ pase de sombras; el cuerpo base son ~13,7k tris y el resto es vestuario/anclajes
 
 ### Escenario mixto
 
-| Unidades | Draws escena | Draws rigs | Sim p95 |
-|---:|---:|---:|---:|
-| 12 + 8 animales | 862 → 766 | 498 → 402 | 5,0 → 4,5 ms |
-| 24 + 8 animales | 1.496 → 1.400 | 874 → 778 | 5,5 → 4,8 ms |
+|        Unidades |  Draws escena |    Draws rigs |      Sim p95 |
+| --------------: | ------------: | ------------: | -----------: |
+| 12 + 8 animales |     862 → 766 |     498 → 402 | 5,0 → 4,5 ms |
+| 24 + 8 animales | 1.496 → 1.400 |     874 → 778 | 5,5 → 4,8 ms |
 | 48 + 8 animales | 2.702 → 2.606 | 1.626 → 1.530 | 4,0 → 6,5 ms |
 
 Cada fila ahorra exactamente **96 draws** (8 animales × 12). La simulación no mejora de forma demostrable:
@@ -1053,11 +1093,11 @@ Characters + clips UAL1/UAL2) con túnica, falda y faja de algodón autoradas po
 `yarn models:build`.
 
 | Trabajadores | Draws/trabajador | Tris/trabajador | `rigs` p95 |
-|---:|---:|---:|---:|
-| 4 | 22,0 | 36.449 | 0,10 ms |
-| 12 | 22,3 | 36.544 | 0,60 ms |
-| 24 | 22,5 | 36.592 | 0,80 ms |
-| 48 | 22,8 | 36.675 | 1,80 ms |
+| -----------: | ---------------: | --------------: | ---------: |
+|            4 |             22,0 |          36.449 |    0,10 ms |
+|           12 |             22,3 |          36.544 |    0,60 ms |
+|           24 |             22,5 |          36.592 |    0,80 ms |
+|           48 |             22,8 |          36.675 |    1,80 ms |
 
 El modelo **entra en el presupuesto** de 40 draws / 40.000 tris (main + shadow) con ~22-23 draws y ~36,4-36,7k
 tris visibles en la mezcla femenina/masculina (solo un cuerpo/atuendo por instancia). Frente al maniquí baja
