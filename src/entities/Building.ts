@@ -16,6 +16,12 @@ import { unitMinPeriod } from '../model/defs/units';
 import { getTech, techAvailable } from '../model/defs/techs';
 import { clamp } from '../util/math';
 import type { BuildingSave } from '../game/saveTypes';
+
+interface ConstructionMaterial {
+  transparent: boolean;
+  opacity: number;
+  needsUpdate: boolean;
+}
 import { cosmeticRandom } from '../util/rng';
 import { advanceProduction } from '../game/systems/ProductionSystem';
 
@@ -99,6 +105,7 @@ export class Building {
 
   setView(view: EntityView | null): void {
     this.view = view;
+    this.constructionMats = null;
   }
 
   beginConstruction(): void {
@@ -125,11 +132,15 @@ export class Building {
     // fade only the materials that were opaque (not windows/glass/glow)
     if (!this.constructionMats) this.constructionMats = [];
     this.view?.group.traverse((obj) => {
-      const m = obj as unknown as { isMesh?: boolean; visible: boolean; material: any };
+      const m = obj as unknown as {
+        isMesh?: boolean;
+        visible: boolean;
+        material: ConstructionMaterial | ConstructionMaterial[];
+      };
       if (!m.isMesh || !m.visible) return;
       const mats = Array.isArray(m.material) ? m.material : [m.material];
       for (const raw of mats) {
-        const mat = raw as { transparent: boolean; opacity: number; needsUpdate: boolean };
+        const mat = raw as ConstructionMaterial;
         if (!mat || mat.transparent !== false) continue;
         if (this.constructionMats!.includes(mat)) continue;
         this.constructionMats!.push(mat);

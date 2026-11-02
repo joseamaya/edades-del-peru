@@ -21,10 +21,7 @@ export function attachBuilding(scene: THREE.Scene, building: Building, ctx: Buil
 /** Replace a building's model when its era advances. */
 export function modernizeBuilding(building: Building, ctx: BuildContext): void {
   const old = building.view;
-  if (!old) {
-    building.setView(makeView(building, ctx));
-    return;
-  }
+  if (!old) return;
   const model = buildModel(getBuildingModel(building.kind, building.era), ctx);
   model.position.copy(old.group.position);
   model.rotation.copy(old.group.rotation);
@@ -35,6 +32,7 @@ export function modernizeBuilding(building: Building, ctx: BuildContext): void {
   old.dispose();
   disposeModel(old.group);
   building.setView(new EntityView(model, building.radius * 0.9, building));
+  building.setConstructionOpacity(building.constructionComplete ? 1 : 0.45);
 }
 
 /** Remove the view and free its model resources. */

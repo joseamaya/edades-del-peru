@@ -2282,8 +2282,8 @@ export class Game {
 
     for (const bs of data.buildings) {
       const b = new Building(bs.kind, bs.owner, bs.era);
-      b.applySave(bs);
       this.attachBuilding(b);
+      b.applySave(bs);
       this.buildings.set(b.id, b);
       this.registerObstacle(b);
     }
@@ -3797,7 +3797,7 @@ export class Game {
     // modernize buildings
     const ctx = this.makeBuildContext(player);
     for (const b of this.buildings.values()) {
-      if (b.owner === player) {
+      if (b.owner === player && b.era !== p.era) {
         b.era = p.era;
         modernizeBuilding(b, ctx);
       }

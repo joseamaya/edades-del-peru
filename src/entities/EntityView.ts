@@ -5,8 +5,6 @@ import { facingRotation } from '../util/math';
 import type { Unit } from './Unit';
 import type { Building } from './Building';
 
-/** Global entity id counter. */
-
 /** How far above a unit's model the health bar floats. */
 const HEALTH_BAR_LIFT = 1.2;
 const _tmpQuat = new THREE.Quaternion();

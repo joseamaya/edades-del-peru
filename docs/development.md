@@ -506,7 +506,7 @@ Definition of Done and the building audit see
 - **Picking is one proxy per entity** (`EntityView.pickProxy`): an invisible box the size of the model, tagged
   `userData.owner` (the `EntityView` owner argument is required). `Game.pickEntity` raycasts the flat proxy list
   non-recursively and resolves the entity in O(1); it does **not** walk the real meshes (~80 per unit). The proxy
-  is built in the model's local frame, so anything that swaps a view (`Building.modernize`, `Game.modernizeUnits`)
+  is built in the model's local frame, so anything that swaps a view (`RenderSync.modernizeBuilding`, `Game.modernizeUnits`)
   must pass the entity as the owner so the new proxy is re-tagged and not offset.
 - **Models are built once, cloned per instance** (`buildModel`): a template is cached by
   `type|scale|barrel|era|civ`; `bakeVertexAO` bakes each part's **colour × AO into vertex colours** and
