@@ -673,7 +673,7 @@ rigged bird is added, and evaluate per-species LOD/update throttling at the 16-a
 
 ## Debugging / automation
 
-- `Game` delegates input to `InputController`, selection/UI helpers to `SelectionController`, world/mission decoration to `WorldViewDecor`, opening spawns to `StartBaseBuilder`, and the simulation/render loop + save/combat plumbing to `RuntimeController`.
+- `Game` delegates input to `InputController`, selection/UI helpers to `SelectionController`, world/mission decoration to `WorldViewDecor`, opening spawns to `StartBaseBuilder`, and the simulation/render loop + save/combat plumbing to `RuntimeController`; opening spawns go through `StartBaseBuilder`.
 - `src/main.ts` exposes `window.game` (and `window.THREE`) for the console and scripts.
 - The app shows the **main menu by default**; enter the match directly with `?play=1` or any debug param.
   `resetGame()` reloads with `?play=1`.

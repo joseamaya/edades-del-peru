@@ -54,7 +54,7 @@ every PR on (keep the subset fast).
 
 ```
 src/
-  core/        Engine: Game facade, Input/Selection/Runtime/World controllers, camera, loop, config
+  core/        Engine: Game facade, Input/Selection/Runtime/World/StartBase controllers, camera, loop, config
   rendering/   Renderer, PostFX, Sky, Water, Terrain, Particles, Biomes, Textures, Projectile/FOW views
   model/       Defs (periods, civs, units, buildings, techs) + parametric models
   entities/    Unit, Building, Resource node, Projectile (sim) + entity views

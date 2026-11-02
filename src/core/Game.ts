@@ -29,7 +29,6 @@ import { clearModelAssets } from '../rendering/ModelAssets';
 import { disposeStaticGltf } from '../rendering/StaticModel';
 import { Projectile } from '../entities/Projectile';
 import { ProjectileView } from '../rendering/ProjectileView';
-import type { EntityView } from '../entities/EntityView';
 import { attachBuilding, attachResource, attachUnit, detachUnit, modernizeBuilding } from '../rendering/RenderSync';
 import { AI } from '../game/AI';
 import type { Difficulty } from './Config';
@@ -76,7 +75,7 @@ import { getAuthoredSite, type AuthoredSiteDef } from '../model/defs/sites';
 import { detectSoftwareRenderer } from '../util/gpu';
 import { ERA_DEFS } from '../model/defs/eras';
 import { BUILDING_DEFS, getBuildingStats } from '../model/defs/buildings';
-import { getUnitStats } from '../model/defs/units';
+import { getUnitStats, type DamageClass } from '../model/defs/units';
 import { getTech } from '../model/defs/techs';
 import { AudioEngine } from '../audio/AudioEngine';
 import { Mission } from '../campaign/Mission';
@@ -88,11 +87,10 @@ import type { MissionDef, MissionAtmosphere, MissionLayout, MissionPoint } from 
 import { CommandProcessor } from '../game/CommandProcessor';
 import { InputController } from './InputController';
 import { WorldViewDecor } from './WorldViewDecor';
-import { RuntimeController } from './RuntimeController';
+import { RuntimeController, type DeathFx } from './RuntimeController';
 import { StartBaseBuilder } from './StartBaseBuilder';
 import { SelectionController } from './SelectionController';
 import { stateHashOf } from '../game/stateHash';
-import {} from '../sim/WorldBuilder';
 import type { SaveData } from '../game/saveTypes';
 
 /** When false the main loop does not auto-start, so tests can drive fixed steps from step 0. */
@@ -103,20 +101,6 @@ export function setAutoStart(value: boolean): void {
 
 /** What sits under a screen point: at most one resource/unit/building. */
 /** A death animation: animates a detached model, then frees it. */
-interface DeathFx {
-  view: EntityView;
-  t: number;
-  dur: number;
-  /** Fall angle (units topple over; buildings barely tilt). */
-  topple: number;
-  /** How far the model sinks into the ground. */
-  sink: number;
-  baseY: number;
-  radius: number;
-  building: boolean;
-  emitTimer: number;
-  cleanup: () => void;
-}
 
 /** Seed multipliers so ambient scatter does not correlate with the map/replay RNG. */
 
@@ -211,6 +195,8 @@ export class Game {
   readonly selection = new SelectionController(this);
   ais: AI[] = [];
   alertTimer = 0;
+  lastBaseAlert = 0;
+  lastUnitAlert = 0;
   alerted = false;
   idleCursor = -1;
   formationPreset: 'box' | 'line' | 'dispersed' = 'box';
@@ -868,7 +854,7 @@ export class Game {
 
   techComplete = (playerId: number, techId: string): void => this.runtime.techComplete(playerId, techId);
 
-  resolveDamage(attackerId: number, targetId: number, damage: number, from: any, damageType?: any): void {
+  resolveDamage(attackerId: number, targetId: number, damage: number, from: any, damageType?: DamageClass): void {
     this.runtime.resolveDamage(attackerId, targetId, damage, from, damageType);
   }
 

@@ -23,7 +23,7 @@ import { resolveConquest } from '../game/systems/VictorySystem';
 import { areaDamage, resolveAttackDamage, selectAreaTargets, selectNearestTarget } from '../game/systems/CombatSystem';
 import type { SaveData } from '../game/saveTypes';
 
-interface DeathFx {
+export interface DeathFx {
   view: EntityView;
   t: number;
   dur: number;
