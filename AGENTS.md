@@ -10,7 +10,7 @@ Three.js + Vite + TypeScript. Player-facing docs are in [`README.md`](./README.m
 Package manager **Yarn 1** (`yarn.lock` exists — never create a `package-lock.json`). Node >= 20.19 (CI uses 22).
 
 - `yarn dev` — Vite at http://localhost:5173
-- `yarn build` — `tsc --noEmit && vite build` (dist/)
+- `yarn build` — `tsc --noEmit && vite build && node scripts/check-dist.mjs` (dist + size budget)
 - `yarn typecheck` / `yarn lint` — `tsc --noEmit` / ESLint (also `yarn format` / `yarn format:check` for Prettier)
 - `yarn test` — Vitest. Single file: `yarn test tests/rng.test.ts`; by name: `yarn test -t "…"`
 - `yarn verify:fast` — quick gate (`typecheck + lint + format:check + test + build`, ~10 s)
@@ -24,6 +24,9 @@ Package manager **Yarn 1** (`yarn.lock` exists — never create a `package-lock.
 - `yarn sim [--seeds=…] [--max=…] [--difficulty=…]` — headless AI-vs-AI match runner (AI regression baseline)
 - `yarn bench:check` — rig/fauna/mixed structural budgets (`--assert`); SwiftShader is not a GPU benchmark
 - `yarn art:blender` — ingest the in-repo Blender renders into WebP + manifest (`--dry-run`, `--only=…`, `--force`)
+- `yarn art:models` — meshopt-compress the committed GLBs in place (`--only=…`, `--dry-run`, `--force`)
+- `yarn art:textures` — re-encode the committed PBR WebPs to the shipping budget (`--only=…`, `--dry-run`, `--force`)
+- `yarn dist:check` — verify `dist/` (<25 MB) and the entry chunk (<600 KB gzip)
 - `yarn art:validate` — validate the Blender render manifest/assets; `yarn art:review` — human review gate
 
 Everything runs through `package.json`; there is no `npm test`. The CI gate, in order, is

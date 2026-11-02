@@ -70,6 +70,23 @@ verifies the source PNG SHA-256, converts it to budgeted WebP and writes the man
 `);
 }
 
+function printOptimizeResult(result: {
+  optimized: { file: string; before: number; after: number }[];
+  skipped: string[];
+  errors: string[];
+}): void {
+  for (const item of result.optimized) {
+    console.log(`optimized ${item.file}: ${(item.before / 1e6).toFixed(2)} MB -> ${(item.after / 1e6).toFixed(2)} MB`);
+  }
+  for (const item of result.skipped) console.log(`skipped ${item}`);
+  if (result.errors.length) {
+    console.error(result.errors.join('\n'));
+    process.exitCode = 1;
+  }
+  console.log('');
+  console.log(`Optimized: ${result.optimized.length}; skipped: ${result.skipped.length}`);
+}
+
 async function main(): Promise<void> {
   const parsed = parseArgs(process.argv.slice(2));
   const flags = parsed.flags;
@@ -112,18 +129,7 @@ async function main(): Promise<void> {
         textureSize: Number(str(flags, 'texture-size') ?? 1024),
         onProgress: (message) => console.log(message),
       });
-      for (const item of result.optimized) {
-        console.log(
-          `optimized ${item.file}: ${(item.before / 1e6).toFixed(2)} MB -> ${(item.after / 1e6).toFixed(2)} MB`,
-        );
-      }
-      for (const item of result.skipped) console.log(`skipped ${item}`);
-      if (result.errors.length) {
-        console.error(result.errors.join('\n'));
-        process.exitCode = 1;
-      }
-      console.log('');
-      console.log(`Optimized: ${result.optimized.length}; skipped: ${result.skipped.length}`);
+      printOptimizeResult(result);
       return;
     }
     case 'textures': {
@@ -133,18 +139,7 @@ async function main(): Promise<void> {
         force: bool(flags, 'force'),
         onProgress: (message) => console.log(message),
       });
-      for (const item of result.optimized) {
-        console.log(
-          `optimized ${item.file}: ${(item.before / 1e6).toFixed(2)} MB -> ${(item.after / 1e6).toFixed(2)} MB`,
-        );
-      }
-      for (const item of result.skipped) console.log(`skipped ${item}`);
-      if (result.errors.length) {
-        console.error(result.errors.join('\n'));
-        process.exitCode = 1;
-      }
-      console.log('');
-      console.log(`Optimized: ${result.optimized.length}; skipped: ${result.skipped.length}`);
+      printOptimizeResult(result);
       return;
     }
     case 'validate': {

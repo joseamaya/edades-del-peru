@@ -11,8 +11,15 @@ function hideBootLoader(): void {
 
 async function start(): Promise<void> {
   showBootLoader();
-  const { boot } = await import('./boot');
-  await boot();
+  try {
+    const { boot } = await import('./boot');
+    await boot();
+  } catch (error) {
+    console.error(error);
+    const loader = document.getElementById('boot-loader');
+    if (loader) loader.innerHTML = '<p>No se pudo cargar el juego. Recarga la página.</p>';
+    return;
+  }
   hideBootLoader();
 }
 

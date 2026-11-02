@@ -30,7 +30,13 @@ if (!entry) {
   console.error('dist/index.html has no module entry script');
   process.exit(1);
 }
-const entryPath = path.join(DIST, entry);
+const assetsAt = entry.lastIndexOf('/assets/');
+const relativeEntry = assetsAt >= 0 ? entry.slice(assetsAt + 1) : entry.replace(/^\/+/, '');
+const entryPath = path.join(DIST, relativeEntry);
+if (!fs.existsSync(entryPath)) {
+  console.error(`entry script not found in dist: ${entry}`);
+  process.exit(1);
+}
 const entryGzip = zlib.gzipSync(fs.readFileSync(entryPath), { level: 9 }).length;
 
 const mb = (bytes) => (bytes / 1024 / 1024).toFixed(2);

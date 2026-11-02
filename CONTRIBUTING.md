@@ -24,7 +24,7 @@ The app shows the **main menu** by default. To jump straight into the match use 
 | Command | What it does |
 |---|---|
 | `yarn dev` | Development server (Vite). |
-| `yarn build` | Typecheck + production build in `dist/`. |
+| `yarn build` | Typecheck + production build in `dist/`, then the size budget. |
 | `yarn typecheck` | Only `tsc --noEmit`. |
 | `yarn lint` | ESLint (must stay at **0 warnings**). |
 | `yarn format` | Prettier over `src/**/*.ts`, `scripts/**/*.mjs` and `tests/**/*.ts`. |

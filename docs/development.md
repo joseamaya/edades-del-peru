@@ -9,7 +9,7 @@ Definition of Done and the building audit see
 
 ## Architecture
 
-- Entry: `index.html` -> `src/main.ts` -> `src/core/Game.ts` (hub wiring render, entities, AI/pathfinding/fog,
+- Entry: `index.html` -> `src/main.ts` (loading shell) -> `src/boot.ts` -> `src/core/Game.ts` (hub wiring render, entities, AI/pathfinding/fog,
   campaign, HUD and audio).
 - **Temporal model**: `Era` (0-5) is the internal **tech level** (stats/models); `HistoricalPeriod` (0-9, in
   `src/model/defs/periods.ts`) is the **historical period** of the match. Matches are **locked by period** (no
