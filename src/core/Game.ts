@@ -220,7 +220,7 @@ export class Game {
   particles!: Particles;
   debris!: Debris;
   fow!: Fow;
-  private fowTexture!: FowTexture;
+  fowTexture!: FowTexture;
   /** Shared fog-of-war uniforms for the visual-only layers (landscape, overlays, landmark). */
   private readonly fowUniforms = createFowUniforms();
   pathfinder!: Pathfinder;
