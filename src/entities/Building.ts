@@ -329,13 +329,15 @@ export class Building {
       }
     }
 
-    // production (with the player's training multiplier)
+    // training queue: ProductionSystem owns the progress math
     const p = this.ctx?.players?.find((x: any) => x.id === this.owner);
     advanceProduction(
       this.productionQueue,
       dt,
       { era: this.era, trainMultiplier: this.trainMultiplier, trainingBonus: p?.bonus?.training ?? 0 },
-      (unit) => this.ctx?.unitSpawn?.(this.id, unit, this.rallyPoint, this.hasRallyPoint) ?? false,
+      this.ctx?.unitSpawn
+        ? (unit) => this.ctx.unitSpawn(this.id, unit, this.rallyPoint, this.hasRallyPoint)
+        : undefined,
     );
 
     // research

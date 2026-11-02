@@ -27,9 +27,26 @@ describe('advanceProduction', () => {
     expect(queue).toHaveLength(0);
   });
 
-  it('applies the building and civilization training multipliers', () => {
+  it('applies the building training multiplier', () => {
     const queue: ProductionItem[] = [{ unit: UnitKind.WORKER, progress: 0 }];
-    advanceProduction(queue, trainTime, { era: Era.FORMATIVE, trainMultiplier: 2, trainingBonus: 0.5 }, () => false);
+    advanceProduction(queue, trainTime / 2, { era: Era.FORMATIVE, trainMultiplier: 2, trainingBonus: 0 }, () => false);
     expect(queue[0].progress).toBeCloseTo(1);
+  });
+
+  it('applies the civilization training bonus', () => {
+    const queue: ProductionItem[] = [{ unit: UnitKind.WORKER, progress: 0 }];
+    advanceProduction(
+      queue,
+      trainTime * 2,
+      { era: Era.FORMATIVE, trainMultiplier: 1, trainingBonus: 0.5 },
+      () => false,
+    );
+    expect(queue[0].progress).toBeCloseTo(1);
+  });
+
+  it('leaves completed progress untouched when no spawn callback exists', () => {
+    const queue: ProductionItem[] = [{ unit: UnitKind.WORKER, progress: 0 }];
+    advanceProduction(queue, trainTime * 1.5, { era: Era.FORMATIVE, trainMultiplier: 1, trainingBonus: 0 });
+    expect(queue[0].progress).toBe(1.5);
   });
 });
