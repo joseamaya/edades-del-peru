@@ -86,3 +86,61 @@ export function placeStartResources(options: StartResourceOptions): void {
     }
   }
 }
+
+/** Opening deployment: four workers and the scout, on the camera-facing arc. */
+const STARTING_UNIT_COUNT = 5;
+const STARTING_UNIT_ANGLES = [0, -0.52, 0.52, -1.05, 1.05, -1.6, 1.6] as const;
+const STARTING_UNIT_RADII = [5.2, 6.1, 7.0, 7.9, 8.8, 9.7] as const;
+
+export interface StartingUnitOptions {
+  player: number;
+  x: number;
+  z: number;
+  seed: number;
+  /** Authored Caral deployment spots; otherwise the deterministic jitter ring is used. */
+  spots?: { x: number; z: number }[];
+  mainComponentSpot(x: number, z: number): { x: number; z: number };
+  createUnit(kind: 'worker' | 'scout', x: number, z: number): void;
+}
+
+/** Place the four opening workers and the scout, preserving the original RNG order. */
+export function placeStartingUnits(options: StartingUnitOptions): void {
+  const rng = new RNG(options.seed + options.player * 100);
+  for (let i = 0; i < STARTING_UNIT_COUNT - 1; i++) {
+    const raw = options.spots?.[i] ?? { x: options.x + rng.range(-3, 3), z: options.z + rng.range(-3, 3) };
+    const spot = options.mainComponentSpot(raw.x, raw.z);
+    options.createUnit('worker', spot.x, spot.z);
+  }
+  const rawScout = options.spots?.[STARTING_UNIT_COUNT - 1] ?? { x: options.x + 4, z: options.z + 4 };
+  const scout = options.mainComponentSpot(rawScout.x, rawScout.z);
+  options.createUnit('scout', scout.x, scout.z);
+}
+
+export interface UnitSpotOptions {
+  x: number;
+  z: number;
+  isClear(x: number, z: number, used: { x: number; z: number }[]): boolean;
+  fallback(x: number, z: number, used: { x: number; z: number }[]): { x: number; z: number };
+}
+
+/** Free deployment spots around a new base; the first four face the camera. */
+export function planStartingUnitSpots(options: UnitSpotOptions): { x: number; z: number }[] {
+  const out: { x: number; z: number }[] = [];
+  for (let i = 0; i < STARTING_UNIT_COUNT; i++) {
+    let found: { x: number; z: number } | null = null;
+    for (const radius of STARTING_UNIT_RADII) {
+      for (const offset of STARTING_UNIT_ANGLES) {
+        const angle = Math.PI / 2 + offset;
+        const px = options.x + Math.cos(angle) * radius;
+        const pz = options.z + Math.sin(angle) * radius;
+        if (options.isClear(px, pz, out)) {
+          found = { x: px, z: pz };
+          break;
+        }
+      }
+      if (found) break;
+    }
+    out.push(found ?? options.fallback(options.x, options.z, out));
+  }
+  return out;
+}
