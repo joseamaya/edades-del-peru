@@ -2303,8 +2303,8 @@ export class Game {
       const u = new Unit(us.kind, us.owner, us.era, this.makeBuildContext(us.owner), us.id);
       u.setContext(this.unitContext);
       this.applyPlayerBonuses(u, this.players[us.owner]);
-      u.applySave(us);
       this.attachUnit(u);
+      u.applySave(us);
       this.units.set(u.id, u);
     }
 

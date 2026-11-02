@@ -151,8 +151,8 @@ export class UnitView {
       if (this.headPivot) this.headPivot.rotation.x = 0.14 + chop * 0.08;
       this.bobY = -chop * 0.02;
     } else {
-      this.workAnim *= dt * 8;
-      const idle = Math.sin(time * 1.6 + u.id);
+      this.workAnim = this.workAnim + (0 - this.workAnim) * Math.min(1, dt * 8);
+      const idle = Math.sin(time * 1.6 + ((u.id * 1.61803398875) % 10));
       if (this.legL) this.legL.rotation.x = idle * 0.03;
       if (this.legR) this.legR.rotation.x = -idle * 0.03;
       if (this.armL) this.armL.rotation.x = idle * 0.02;
@@ -183,8 +183,11 @@ export class UnitView {
   dispose(): void {
     if (this.view.group.parent) this.view.group.parent.remove(this.view.group);
     this.view.dispose();
-    disposeModel(this.view.group);
-    this.rig?.dispose();
-    this.rig = null;
+    if (this.rig) {
+      this.rig.dispose();
+      this.rig = null;
+    } else {
+      disposeModel(this.view.group);
+    }
   }
 }

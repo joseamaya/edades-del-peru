@@ -15,7 +15,7 @@ import { getUnitStats, UnitStats, DamageClass, UnitClass } from '../model/defs/u
 import type { BuildContext } from '../model/ProceduralModel';
 import type { RigInstance } from '../rendering/RigInstance';
 import type { UnitView } from '../rendering/UnitView';
-import { EntityView } from '../entities/EntityView';
+import type { EntityView } from '../entities/EntityView';
 import { allocId } from '../sim/ids';
 import { Order, OrderKind, OrderTarget } from '../core/types';
 import { angleDelta, angleTo, distance2D, clamp, facingRotation, lerp } from '../util/math';
@@ -196,6 +196,12 @@ export class Unit {
     this.radius = this.stats.range === 0 ? 0.45 : 0.5;
     if (kind === UnitKind.TANK) this.radius = 0.9;
     if (kind === UnitKind.ARTILLERY || kind === UnitKind.MORTAR || kind === UnitKind.NUCLEAR) this.radius = 0.8;
+  }
+
+  removeFromScene(): void {
+    this.unitView?.dispose();
+    this.unitView = null;
+    this.view = null;
   }
 
   get rig(): RigInstance | null {

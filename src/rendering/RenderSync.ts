@@ -64,6 +64,8 @@ export function modernizeUnit(unit: Unit, ctx: BuildContext): void {
   unit.unitView = view;
   unit.view = view.view;
   if (parent) view.view.attachTo(parent as THREE.Scene);
+  view.view.setPosition(unit.pos.x, unit.pos.y, unit.pos.z);
+  view.view.setFacing(unit.yaw);
 }
 
 /** Remove and free a unit view. */
