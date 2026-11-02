@@ -16,8 +16,8 @@ export interface StartResourceOptions {
   setpieceLower?: { x: number; z: number };
   isReserved(x: number, z: number): boolean;
   isWalkable(x: number, z: number): boolean;
-  /** Must expose nodes added during this call too (production passes the live node map). */
-  existing: Iterable<{ pos: { x: number; z: number } }>;
+  /** Fresh iterable per call, including nodes added earlier in this pass. */
+  existing(): Iterable<{ pos: { x: number; z: number } }>;
   add(kind: ResourceNodeKind, amount: number, x: number, z: number): void;
 }
 
@@ -32,7 +32,7 @@ export function placeStartResources(options: StartResourceOptions): void {
     const nz = options.z + dz;
     if (options.isReserved(nx, nz) || !options.isWalkable(nx, nz)) return false;
     const gap = kind === 'tree' ? 6 : 3;
-    for (const node of options.existing) if (distance2D(node.pos.x, node.pos.z, nx, nz) < gap) return false;
+    for (const node of options.existing()) if (distance2D(node.pos.x, node.pos.z, nx, nz) < gap) return false;
     options.add(kind, amount, nx, nz);
     return true;
   };

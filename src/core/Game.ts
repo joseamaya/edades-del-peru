@@ -1747,7 +1747,7 @@ export class Game {
       setpieceLower: this.setpiecePlan?.lower,
       isReserved: (nx, nz) => this.isReserved(nx, nz, false),
       isWalkable: (nx, nz) => this.pathfinder.isWalkable(nx, nz),
-      existing: this.resourceNodes.values(),
+      existing: () => this.resourceNodes.values(),
       add: (kind, amount, nx, nz) => {
         const node = new ResourceNode(kind, nx, nz, amount);
         node.pos.y = this.terrain.getHeight(nx, nz);

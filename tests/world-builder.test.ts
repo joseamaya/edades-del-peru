@@ -12,7 +12,7 @@ function run(seed: number, caralOpening = false) {
     caralOpening,
     isReserved: () => false,
     isWalkable: () => true,
-    existing: added,
+    existing: () => added,
     add: (kind, amount, x, z) => added.push({ kind, amount, x, z, pos: { x, z } }),
   });
   return added;
@@ -43,7 +43,7 @@ describe('placeStartResources', () => {
       caralOpening: true,
       isReserved: () => false,
       isWalkable: () => true,
-      existing: [],
+      existing: () => [],
       add: (kind, _amount, x, z) => added.push({ kind, x, z }),
     });
     expect(added.filter((n) => n.kind === 'tree')).toHaveLength(5);
