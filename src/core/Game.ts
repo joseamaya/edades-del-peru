@@ -12,6 +12,7 @@ import { Debris } from '../rendering/Debris';
 import { RTSCamera } from './Camera';
 import { GameLoop } from './GameLoop';
 import { Fow } from '../game/Fow';
+import { FowTexture } from '../rendering/FowTexture';
 import { applyFowToObject, createFowUniforms } from '../rendering/FowMaterial';
 import { Pathfinder, MAX_WALKABLE_SLOPE } from '../game/Pathfinding';
 import { Unit, UnitContext } from '../entities/Unit';
@@ -219,6 +220,7 @@ export class Game {
   particles!: Particles;
   debris!: Debris;
   fow!: Fow;
+  private fowTexture!: FowTexture;
   /** Shared fog-of-war uniforms for the visual-only layers (landscape, overlays, landmark). */
   private readonly fowUniforms = createFowUniforms();
   pathfinder!: Pathfinder;
@@ -487,8 +489,9 @@ export class Game {
     this.props = new Props(this.scene);
     this.wildlife = new Wildlife(this.scene);
     this.fow = new Fow(s.mapSize, 128);
-    this.terrain.setFow(this.fow.texture, s.fogOfWar);
-    this.fowUniforms.fowMap.value = this.fow.texture;
+    this.fowTexture = new FowTexture(this.fow);
+    this.terrain.setFow(this.fowTexture.texture, s.fogOfWar);
+    this.fowUniforms.fowMap.value = this.fowTexture.texture;
     this.fowUniforms.mapSize.value = s.mapSize;
     this.fowUniforms.fowEnabled.value = s.fogOfWar ? 1 : 0;
     // The authored site has thin walls and doors; 1 m cells keep them solid
@@ -3853,7 +3856,7 @@ export class Game {
       const vis = this.fow.isVisible(b.pos.x, b.pos.z) || !this.settings.fogOfWar;
       b.view.group.visible = vis;
     }
-    this.fow.upload();
+    this.fowTexture.upload();
     this.fow.decay();
   }
 
@@ -3875,7 +3878,7 @@ export class Game {
   setFogOfWar(on: boolean): void {
     this.settings.fogOfWar = on;
     this.fow.setEnabled(on);
-    this.terrain.setFow(this.fow.texture, on);
+    this.terrain.setFow(this.fowTexture.texture, on);
     this.fowUniforms.fowEnabled.value = on ? 1 : 0;
     if (!on) {
       for (const u of this.units.values()) u.view.group.visible = true;
@@ -4469,7 +4472,7 @@ export class Game {
     for (const unit of this.units.values()) unit.removeFromScene();
     this.units.clear();
     for (const hook of this.teardownHooks.splice(0)) hook();
-    this.fow.dispose();
+    this.fowTexture.dispose();
     this.postfx.dispose();
     clearModelAssets();
     clearModelCaches();
