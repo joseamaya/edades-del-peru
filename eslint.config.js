@@ -15,6 +15,39 @@ export default tseslint.config(
       'no-constant-condition': 'off',
     },
   },
+
+  {
+    files: ['src/game/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['three', 'three/*', 'three/addons/*'],
+              message: 'Simulation code must not import Three.js; keep presentation in src/rendering.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/entities/Unit.ts', 'src/entities/Building.ts', 'src/entities/Projectile.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['three', 'three/*', 'three/addons/*'],
+              message: 'Entity simulation must not import Three.js; use its view in src/rendering.',
+            },
+          ],
+        },
+      ],
+    },
+  },
   {
     files: ['src/game/**/*.ts', 'src/entities/**/*.ts'],
     rules: {
