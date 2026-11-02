@@ -4000,9 +4000,7 @@ export class Game {
     // projectiles
     for (const p of this.projectiles) {
       p.update(d);
-      const view = this.projectileViews.get(p.id);
-      if (!view) continue;
-      view.sync(d);
+      this.projectileViews.get(p.id)?.sync(d);
       if (p.dead) this.projectileViews.delete(p.id);
     }
     this.projectiles = this.projectiles.filter((p) => !p.dead);
@@ -4479,6 +4477,8 @@ export class Game {
     for (const unit of this.units.values()) unit.removeFromScene();
     this.units.clear();
     for (const hook of this.teardownHooks.splice(0)) hook();
+    for (const view of this.projectileViews.values()) view.dispose();
+    this.projectileViews.clear();
     this.fowTexture.dispose();
     this.postfx.dispose();
     clearModelAssets();
