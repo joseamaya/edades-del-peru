@@ -115,6 +115,7 @@ import { PlayerCommand, Replay, ReplayPlayer, ReplayRecorder, saveReplay } from 
 import { getMission } from '../campaign/defs/campaign';
 import type { MissionDef, MissionAtmosphere, MissionLayout, MissionPoint, MissionSite } from '../campaign/types';
 import { serializeGame, saveToStorage } from '../game/SaveGame';
+import { CommandProcessor } from '../game/CommandProcessor';
 import type { SaveData } from '../game/saveTypes';
 
 /** When false the main loop does not auto-start, so tests can drive fixed steps from step 0. */
@@ -268,6 +269,7 @@ export class Game {
   private fxRng!: RNG;
   private recorder: ReplayRecorder | null = null;
   private replay: ReplayPlayer | null = null;
+  private commandProcessor!: CommandProcessor;
   private qualityGovernor!: QualityGovernor;
   /** Skip the software-renderer auto-degrade (`?cine=1`). */
   private readonly forceCinematic: boolean;
@@ -320,6 +322,16 @@ export class Game {
     this.unitContext = this.ctxFor();
     this.economy = new Economy(this);
     this.initPlayers();
+    this.commandProcessor = new CommandProcessor({
+      units: this.units,
+      placeBuilding: (kind: BuildingKind, x: number, z: number) => this.placeBuilding(kind, x, z) !== null,
+      trainUnit: (buildingId: number, unit: UnitKind) => this.trainUnit(buildingId, unit),
+      researchTech: (buildingId: number, tech: string) => this.researchTech(buildingId, tech),
+      cancelProduction: (buildingId: number, index: number) => this.cancelProduction(buildingId, index),
+      ungarrison: (buildingId: number) => this.ungarrison(buildingId),
+      setRallyPoint: (buildingId: number, target: OrderTarget) => this.setRallyPoint(buildingId, target),
+      advanceEra: () => this.advanceEra(0),
+    });
     if (this.missionLayout?.site) {
       this.spawnAuthoredSite(this.missionLayout.site);
     } else {
@@ -2024,7 +2036,7 @@ export class Game {
     // no live input during playback: it would desync the replay
     if (this.replay && record) return false;
     if (record && this.recorder) this.recorder.record(this.stepCount, cmd);
-    return this.applyCommand(cmd);
+    return this.commandProcessor.apply(cmd);
   }
 
   /** A stable hash of the gameplay state (replay/determinism verification). */
@@ -2088,42 +2100,6 @@ export class Game {
   /** Route a single-unit order through the command layer (records it for replays). */
   private orderUnit(u: Unit, order: Order, clear: boolean): void {
     this.executeCommand({ kind: 'order', unitIds: [u.id], order, clear });
-  }
-
-  private applyCommand(cmd: PlayerCommand): boolean {
-    switch (cmd.kind) {
-      case 'order':
-        for (const id of cmd.unitIds) {
-          const u = this.units.get(id);
-          if (u && !u.dead) u.issueOrder(cmd.order, cmd.clear);
-        }
-        return true;
-      case 'stop':
-        for (const id of cmd.unitIds) this.units.get(id)?.clearOrders();
-        return true;
-      case 'stance':
-        for (const id of cmd.unitIds) {
-          const u = this.units.get(id);
-          if (u && !u.dead) u.setCombatStance(cmd.stance);
-        }
-        return true;
-      case 'place':
-        return this.placeBuilding(cmd.building, cmd.x, cmd.z) !== null;
-      case 'train':
-        return this.trainUnit(cmd.buildingId, cmd.unit);
-      case 'research':
-        return this.researchTech(cmd.buildingId, cmd.tech);
-      case 'cancel':
-        this.cancelProduction(cmd.buildingId, cmd.index);
-        return true;
-      case 'ungarrison':
-        return this.ungarrison(cmd.buildingId);
-      case 'rally':
-        this.setRallyPoint(cmd.buildingId, cmd.target);
-        return true;
-      case 'advanceEra':
-        return this.advanceEra(0);
-    }
   }
 
   /** Spend and create a building for player 0 (worker assignment is a separate order). */
