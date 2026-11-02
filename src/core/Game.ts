@@ -3890,6 +3890,11 @@ export class Game {
 
   // --- population ---
 
+  /** Kept as a method so the perf probes can time the population pass. */
+  private updatePopulation(): void {
+    applyPopulation(this.units.values(), this.buildings.values(), this.players, this.settings.populationCap);
+  }
+
   // --- victory ---
 
   private checkVictory(): void {
@@ -4005,7 +4010,7 @@ export class Game {
 
     this.updateFow();
     this.applyLod();
-    applyPopulation(this.units.values(), this.buildings.values(), this.players, this.settings.populationCap);
+    this.updatePopulation();
 
     // campaign mission: evaluate BEFORE cleaning up dead so that
     // objectives detect freshly destroyed entities (destroy/protect)

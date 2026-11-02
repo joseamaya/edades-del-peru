@@ -46,6 +46,12 @@ describe('applyPopulation', () => {
     expect(players[0].populationCap).toBe(17);
   });
 
+  it('gives a player with no completed buildings the base plus headroom', () => {
+    const players = [player(0)];
+    applyPopulation([], [], players, 200);
+    expect(players[0].populationCap).toBe(7);
+  });
+
   it('clamps to the match cap before adding the civilization bonus', () => {
     const players = [player(0, 5)];
     applyPopulation([], [building(0, 50)], players, 20);

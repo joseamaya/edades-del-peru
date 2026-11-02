@@ -1,22 +1,13 @@
-export interface PopulationUnit {
-  owner: number;
-  dead: boolean;
-  garrisonedIn: number | null;
-  stats: { population: number };
-}
+import type { PlayerState } from '../../core/types';
+import type { Unit } from '../../entities/Unit';
+import type { Building } from '../../entities/Building';
 
-export interface PopulationBuilding {
-  owner: number;
-  constructionComplete: boolean;
-  providesPop: number;
-}
+export type PopulationUnit = Pick<Unit, 'owner' | 'dead' | 'garrisonedIn' | 'stats'>;
+export type PopulationBuilding = Pick<Building, 'owner' | 'constructionComplete' | 'providesPop'>;
+export type PopulationPlayer = Pick<PlayerState, 'id' | 'populationUsed' | 'populationCap' | 'bonus'>;
 
-export interface PopulationPlayer {
-  id: number;
-  populationUsed: number;
-  populationCap: number;
-  bonus: { population: number };
-}
+const STARTING_POP = 3;
+const POP_HEADROOM = 4;
 
 /**
  * Recompute population used/cap for every player. Buildings under construction
@@ -37,12 +28,12 @@ export function applyPopulation(
   const capacity = new Map<number, number>();
   for (const building of buildings) {
     if (!building.constructionComplete) continue;
-    capacity.set(building.owner, (capacity.get(building.owner) ?? 3) + building.providesPop);
+    capacity.set(building.owner, (capacity.get(building.owner) ?? STARTING_POP) + building.providesPop);
   }
 
   for (const player of players) {
     player.populationUsed = used.get(player.id) ?? 0;
-    const base = capacity.get(player.id) ?? 3;
-    player.populationCap = Math.min(matchCap, base + 4) + player.bonus.population;
+    const base = capacity.get(player.id) ?? STARTING_POP;
+    player.populationCap = Math.min(matchCap, base + POP_HEADROOM) + player.bonus.population;
   }
 }
