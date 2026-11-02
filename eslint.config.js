@@ -17,7 +17,7 @@ export default tseslint.config(
   },
 
   {
-    files: ['src/game/**/*.ts'],
+    files: ['src/game/**/*.ts', 'src/sim/**/*.ts'],
     rules: {
       'no-restricted-imports': [
         'error',

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateHeightField } from '../src/rendering/heightField';
+import { generateHeightField } from '../src/sim/heightField';
 import { MAP_PROFILES } from '../src/model/defs/profiles';
 import { CARAL_HEIGHTMAP, CARAL_HEIGHTMAP_SIZE, CARAL_HEIGHTMAP_WORLD_SIZE } from '../src/model/defs/caralHeightmap';
 import { sampleAuthoredHeight } from '../src/model/defs/authoredTerrain';

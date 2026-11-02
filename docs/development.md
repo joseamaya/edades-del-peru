@@ -118,7 +118,7 @@ Definition of Done and the building audit see
 - **Profile-driven generation (Phase 3)**: `Game.initWorld` resolves `resolveMapProfile({ period, civ, mapType })`
   once into `Game.mapProfile` and feeds it to `Terrain` (which now takes a `HistoricalMapProfile`, not a `MapType`
   string), `Water` (`profile.water.level`/`inland`), the resource spawner and the tree variants. The heightmap
-  generation is pure and lives in `src/rendering/heightField.ts` (`generateHeightField(resolution, seed, profile)`,
+  generation is pure and lives in `src/sim/heightField.ts`; `TerrainData` owns the grids while `Terrain` renders them (`generateHeightField(resolution, seed, profile)`,
   no THREE), so `tests/terrain.test.ts` pins determinism (same seed+profile → same map; different seed/profile →
   different map) without a DOM. Adding a region/profile does not touch the generator: only the data in
   `profiles.ts`. The region `atmosphere` is applied (Phase 9): `Game.applyAtmosphere` feeds `skyTint`/`fogDensity`
@@ -196,8 +196,8 @@ Definition of Done and the building audit see
   viewing angle (fresnel). It costs an extra scene pass, so it only runs with the cinematic set on and the
   applied quality ≠ `low`; the region `atmosphere` still supplies the aerial perspective.
 - **Andenes (agricultural terracing)**: `profile.terrain.terraceChance` is no longer dead data — `carveTerraces`
-  (`src/rendering/heightField.ts`) pulls moderate slopes toward flat shelves (gated by a coherent noise mask so
-  terraces form patchy zones) and writes a `terraceMap` strength (0..~0.55). `Terrain` exposes it via
+  (`src/sim/heightField.ts`) pulls moderate slopes toward flat shelves (gated by a coherent noise mask so
+  terraces form patchy zones) and writes a `terraceMap` strength (0..~0.55). `TerrainData` exposes it via
   `getTerrace(wx, wz)` and tints terraced ground as cultivated.
 - **Farm yield from the terrain (§7 geography as mechanic)**: `Game.applyTerrainFarmYield` (called from every
   farm placement path: player, AI, scripts) scales a farm's `foodAmount` by
@@ -234,7 +234,7 @@ Definition of Done and the building audit see
 - **Cultural landscape (visual only)**: `HistoricalMapProfile.culturalLandscape`
   (`src/model/defs/landscape.ts`) names the features each region carries (canal, field, road, path, terrace,
   wall, corral, plaza — coast irrigation vs Andean terracing vs altiplano corrals). `carveCanals`
-  (`src/rendering/heightField.ts`) cuts shallow irrigation ditches keeping the bed above the waterline (so they
+  (`src/sim/heightField.ts`) cuts shallow irrigation ditches keeping the bed above the waterline (so they
   are not pathfinding walls or flooding sources) and writes a `canalMap`; `Terrain.getCanal` exposes it.
   `planCulturalLandscape` (`src/model/defs/landscapePlan.ts`) is a **pure** planner (no THREE, unit-tested in
   `tests/landscape.test.ts`) that places the features on buildable, flat land, scaled by `settlementShape`
