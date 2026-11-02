@@ -117,6 +117,7 @@ import type { MissionDef, MissionAtmosphere, MissionLayout, MissionPoint, Missio
 import { serializeGame, saveToStorage } from '../game/SaveGame';
 import { CommandProcessor } from '../game/CommandProcessor';
 import { applyPopulation } from '../game/systems/PopulationSystem';
+import { conquestVictory } from '../game/systems/VictorySystem';
 import type { SaveData } from '../game/saveTypes';
 
 /** When false the main loop does not auto-start, so tests can drive fixed steps from step 0. */
@@ -3901,19 +3902,13 @@ export class Game {
     if (this.gameEnded) return;
     // in campaign, victory/defeat is decided by the mission
     if (this.mission) return;
-    for (const p of this.players) {
-      if (!p.alive) continue;
-      // conquest: a player is defeated only when no building of theirs remains
-      if (!this.hasBuildings(p.id)) {
-        p.alive = false;
-        bus.emit('player:defeat', { player: p.id });
-        const other = this.players.find((q) => q.id !== p.id);
-        if (other && other.alive) {
-          this.endGame(other.id);
-        }
-        return;
-      }
-    }
+    const result = conquestVictory(this.players, (id) => this.hasBuildings(id));
+    if (!result) return;
+    const defeated = this.players.find((p) => p.id === result.defeated);
+    if (!defeated) return;
+    defeated.alive = false;
+    bus.emit('player:defeat', { player: defeated.id });
+    if (result.winner !== null) this.endGame(result.winner);
   }
 
   /** True if the player still owns at least one standing building. */
