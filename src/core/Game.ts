@@ -2257,9 +2257,9 @@ export class Game {
 
     for (const ns of data.resourceNodes) {
       const node = new ResourceNode(ns.kind, ns.x, ns.z, ns.amount);
-      node.applySave(ns);
       node.pos.y = ns.kind === 'fishing' ? 0 : this.terrain.getHeight(ns.x, ns.z);
       attachResource(this.scene, node, this.mapProfile.baseMapType, this.trees, this.mapProfile.vegetation.variants);
+      node.applySave(ns);
       this.resourceNodes.set(node.id, node);
       this.registerResourceObstacle(node.id, ns.x, ns.z, ns.kind);
     }
