@@ -20,7 +20,7 @@ for (const era of [0, 1, 2, 3, 4, 5]) {
       const u = new UnitCtor(k, 0, g.players[0].era, g.makeBuildContext(0));
       u.pos.set(c.x + 6 + i * 2.2, g.terrain.getHeight(c.x + 6 + i * 2.2, c.z + 4), c.z + 4);
       u.setContext(g.ctxFor());
-      u.attach(g.scene);
+      g.attachUnit(u);
       g.units.set(u.id, u);
     });
     g.camera.moveTo(c.x, c.z, true);
