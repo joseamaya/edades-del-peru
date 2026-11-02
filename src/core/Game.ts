@@ -118,7 +118,7 @@ import { serializeGame, saveToStorage } from '../game/SaveGame';
 import { CommandProcessor } from '../game/CommandProcessor';
 import { applyPopulation } from '../game/systems/PopulationSystem';
 import { resolveConquest } from '../game/systems/VictorySystem';
-import { areaFalloff, resolveAttackDamage, selectAreaTargets, selectNearestTarget } from '../game/systems/CombatSystem';
+import { areaDamage, resolveAttackDamage, selectAreaTargets, selectNearestTarget } from '../game/systems/CombatSystem';
 import type { SaveData } from '../game/saveTypes';
 
 /** When false the main loop does not auto-start, so tests can drive fixed steps from step 0. */
@@ -3557,7 +3557,7 @@ export class Game {
         this.resolveDamage(
           o.owner,
           target.id,
-          areaFalloff(o.damage, distance, o.area),
+          areaDamage(o.damage, distance, o.area),
           { ...from, pos: ground },
           damageType,
         );

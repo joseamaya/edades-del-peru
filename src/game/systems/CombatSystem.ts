@@ -33,9 +33,46 @@ function distance(a: CombatPoint, b: CombatPoint): number {
   return Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
 }
 
-function isEnemy(entity: CombatEntity, attackerOwner: number, teamOf: (owner: number) => number | undefined): boolean {
+function hostileUnit(
+  entity: CombatEntity,
+  attackerOwner: number,
+  teamOf: (owner: number) => number | undefined,
+): boolean {
   if (entity.dead || entity.owner === attackerOwner) return false;
   return teamOf(entity.owner) !== teamOf(attackerOwner);
+}
+
+function hostileBuilding(entity: CombatEntity, attackerOwner: number): boolean {
+  return !entity.dead && entity.owner !== attackerOwner;
+}
+
+function insideRadius<T extends CombatEntity>(
+  entities: Iterable<T>,
+  impact: CombatPoint,
+  radius: number,
+  hostile: (entity: T) => boolean,
+): AreaTarget<T>[] {
+  const targets: AreaTarget<T>[] = [];
+  for (const entity of entities) {
+    if (!hostile(entity)) continue;
+    const d = distance(entity.pos, impact);
+    if (d < radius) targets.push({ target: entity, distance: d });
+  }
+  return targets;
+}
+
+function nearest<T extends CombatEntity>(
+  entities: Iterable<T>,
+  impact: CombatPoint,
+  hostile: (entity: T) => boolean,
+  best: { target: T; distance: number } | null,
+): { target: T; distance: number } | null {
+  for (const entity of entities) {
+    if (!hostile(entity)) continue;
+    const d = distance(entity.pos, impact);
+    if (!best || d < best.distance) best = { target: entity, distance: d };
+  }
+  return best;
 }
 
 /** Enemies of `attackerOwner` whose centre is inside an area explosion. */
@@ -47,23 +84,15 @@ export function selectAreaTargets<T extends CombatEntity>(
   attackerOwner: number,
   teamOf: (owner: number) => number | undefined,
 ): AreaTarget<T>[] {
-  const targets: AreaTarget<T>[] = [];
-  for (const unit of units) {
-    if (!isEnemy(unit, attackerOwner, teamOf)) continue;
-    const d = distance(unit.pos, impact);
-    if (d < radius) targets.push({ target: unit, distance: d });
-  }
-  for (const building of buildings) {
-    if (!isEnemy(building, attackerOwner, teamOf)) continue;
-    const d = distance(building.pos, impact);
-    if (d < radius) targets.push({ target: building, distance: d });
-  }
-  return targets;
+  return [
+    ...insideRadius(units, impact, radius, (unit) => hostileUnit(unit, attackerOwner, teamOf)),
+    ...insideRadius(buildings, impact, radius, (building) => hostileBuilding(building, attackerOwner)),
+  ];
 }
 
 /**
- * Nearest enemy to a targetless impact. Matches the legacy fallback: a unit
- * wins over any building, and the hit only happens strictly inside `maxDistance`.
+ * Nearest enemy to a targetless impact. A unit wins over any building; a
+ * same-team building still absorbs the hit when no enemy unit is available.
  */
 export function selectNearestTarget<T extends CombatEntity>(
   impact: CombatPoint,
@@ -73,31 +102,14 @@ export function selectNearestTarget<T extends CombatEntity>(
   teamOf: (owner: number) => number | undefined,
   maxDistance = 3,
 ): T | null {
-  let best: T | null = null;
-  let bestDistance = Infinity;
-  for (const unit of units) {
-    if (!isEnemy(unit, attackerOwner, teamOf)) continue;
-    const d = distance(unit.pos, impact);
-    if (d < bestDistance) {
-      bestDistance = d;
-      best = unit;
-    }
-  }
-  if (!best) {
-    for (const building of buildings) {
-      if (!isEnemy(building, attackerOwner, teamOf)) continue;
-      const d = distance(building.pos, impact);
-      if (d < bestDistance) {
-        bestDistance = d;
-        best = building;
-      }
-    }
-  }
-  return best && bestDistance < maxDistance ? best : null;
+  const best =
+    nearest(units, impact, (unit) => hostileUnit(unit, attackerOwner, teamOf), null) ??
+    nearest(buildings, impact, (building) => hostileBuilding(building, attackerOwner), null);
+  return best && best.distance < maxDistance ? best.target : null;
 }
 
 /** Linear falloff of an area explosion (1 at the centre, 0 at the edge). */
-export function areaFalloff(damage: number, distanceFromImpact: number, radius: number): number {
+export function areaDamage(damage: number, distanceFromImpact: number, radius: number): number {
   return damage * (1 - distanceFromImpact / radius);
 }
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  areaFalloff,
+  areaDamage,
   resolveAttackDamage,
   selectAreaTargets,
   selectNearestTarget,
@@ -24,6 +24,12 @@ describe('selectAreaTargets', () => {
     expect(targets.map((t) => t.target.id)).toEqual([1, 5]);
   });
 
+  it('still damages a same-team building, matching the legacy rule', () => {
+    const team = (owner: number): number => (owner === 0 || owner === 1 ? 0 : owner);
+    const targets = selectAreaTargets({ x: 0, y: 0, z: 0 }, 5, [], [entity(9, 1, 1, 1)], 0, team);
+    expect(targets.map((t) => t.target.id)).toEqual([9]);
+  });
+
   it('reports the 3D distance used by the falloff', () => {
     const targets = selectAreaTargets({ x: 0, y: 0, z: 0 }, 10, [entity(1, 1, 3, 4)], [], 0, teams);
     expect(targets[0].distance).toBeCloseTo(5);
@@ -37,6 +43,11 @@ describe('selectNearestTarget', () => {
     expect(selectNearestTarget({ x: 0, y: 0, z: 0 }, units, buildings, 0, teams)?.id).toBe(1);
   });
 
+  it('falls back to a same-team building when no enemy unit exists', () => {
+    const team = (owner: number): number => (owner === 0 || owner === 1 ? 0 : owner);
+    expect(selectNearestTarget({ x: 0, y: 0, z: 0 }, [], [entity(2, 1, 2, 0)], 0, team)?.id).toBe(2);
+  });
+
   it('falls back to a building and rejects targets outside the strict radius', () => {
     expect(selectNearestTarget({ x: 0, y: 0, z: 0 }, [], [entity(2, 1, 2, 0)], 0, teams)?.id).toBe(2);
     expect(selectNearestTarget({ x: 0, y: 0, z: 0 }, [], [entity(2, 1, 3, 0)], 0, teams)).toBeNull();
@@ -45,8 +56,8 @@ describe('selectNearestTarget', () => {
 
 describe('areaFalloff and resolveAttackDamage', () => {
   it('scales damage linearly from the centre to the edge', () => {
-    expect(areaFalloff(100, 0, 10)).toBe(100);
-    expect(areaFalloff(100, 5, 10)).toBe(50);
+    expect(areaDamage(100, 0, 10)).toBe(100);
+    expect(areaDamage(100, 5, 10)).toBe(50);
   });
 
   it('applies armor, class bonus and elevation but never drops below 1', () => {
