@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { CommandProcessor, type CommandHost } from '../src/game/CommandProcessor';
-import { OrderKind, UnitKind, BuildingKind } from '../src/core/types';
+import { OrderKind, UnitKind, BuildingKind, type Order } from '../src/core/types';
 
 function fakeHost() {
   const unit = {
@@ -25,7 +25,7 @@ function fakeHost() {
 describe('CommandProcessor', () => {
   it('issues orders only to live units', () => {
     const { host, unit, processor } = fakeHost();
-    const order = { kind: OrderKind.MOVE, target: { x: 4, z: 5 } } as const;
+    const order: Order = { kind: OrderKind.MOVE, target: { x: 4, z: 5 } };
     expect(processor.apply({ kind: 'order', unitIds: [7, 99], order, clear: true })).toBe(true);
     expect(unit.issueOrder).toHaveBeenCalledWith(order, true);
     host.units.get(7)!.dead = true;
@@ -51,6 +51,7 @@ describe('CommandProcessor', () => {
     expect(processor.apply({ kind: 'research', buildingId: 1, tech: 'loom' })).toBe(false);
     expect(processor.apply({ kind: 'ungarrison', buildingId: 1 })).toBe(true);
     expect(processor.apply({ kind: 'advanceEra' })).toBe(false);
+    expect(host.advanceEra).toHaveBeenCalledOnce();
     processor.apply({ kind: 'cancel', buildingId: 1, index: 0 });
     expect(host.cancelProduction).toHaveBeenCalledWith(1, 0);
   });

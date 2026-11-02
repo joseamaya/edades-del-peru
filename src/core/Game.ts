@@ -330,7 +330,7 @@ export class Game {
       cancelProduction: (buildingId: number, index: number) => this.cancelProduction(buildingId, index),
       ungarrison: (buildingId: number) => this.ungarrison(buildingId),
       setRallyPoint: (buildingId: number, target: OrderTarget) => this.setRallyPoint(buildingId, target),
-      advanceEra: (playerId: number) => this.advanceEra(playerId),
+      advanceEra: () => this.advanceEra(0),
     });
     if (this.missionLayout?.site) {
       this.spawnAuthoredSite(this.missionLayout.site);

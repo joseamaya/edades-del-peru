@@ -1,28 +1,24 @@
 import type { PlayerCommand } from './replay';
-import type { BuildingKind, CombatStance, Order, OrderTarget, UnitKind } from '../core/types';
+import type { Unit } from '../entities/Unit';
+import type { BuildingKind, OrderTarget, UnitKind } from '../core/types';
 
-interface CommandUnit {
-  dead: boolean;
-  issueOrder(order: Order, clear: boolean): void;
-  clearOrders(): void;
-  setCombatStance(stance: CombatStance): void;
-}
+type CommandUnit = Pick<Unit, 'dead' | 'issueOrder' | 'clearOrders' | 'setCombatStance'>;
 
 /** The simulation operations a player command can reach. */
 export interface CommandHost {
-  units: Map<number, CommandUnit>;
+  units: ReadonlyMap<number, CommandUnit>;
   placeBuilding(kind: BuildingKind, x: number, z: number): boolean;
   trainUnit(buildingId: number, unit: UnitKind): boolean;
   researchTech(buildingId: number, tech: string): boolean;
   cancelProduction(buildingId: number, index: number): void;
   ungarrison(buildingId: number): boolean;
   setRallyPoint(buildingId: number, target: OrderTarget): void;
-  advanceEra(playerId: number): boolean;
+  advanceEra(): boolean;
 }
 
 /**
- * Single reducer for player intent. Replays feed the same commands through the
- * same entry point, so the reducer must stay free of rendering and input.
+ * Single dispatch point for player intent. Replays feed the same commands
+ * through the same entry point, so it must stay free of rendering and input.
  */
 export class CommandProcessor {
   constructor(private readonly host: CommandHost) {}
@@ -59,7 +55,7 @@ export class CommandProcessor {
         this.host.setRallyPoint(cmd.buildingId, cmd.target);
         return true;
       case 'advanceEra':
-        return this.host.advanceEra(0);
+        return this.host.advanceEra();
     }
   }
 }
