@@ -36,7 +36,7 @@ Requires Node.js ≥ 20.19. The package manager is **Yarn 1** (`yarn.lock` exist
 ```bash
 yarn install
 yarn dev          # development (http://localhost:5173)
-yarn build        # typecheck + production build (dist/)
+yarn build        # typecheck + production build (dist/) + size budget
 VITE_BASE=/edades-del-peru/ yarn build   # future GitHub Pages project-site build
 yarn preview      # serve the build
 yarn typecheck    # tsc --noEmit

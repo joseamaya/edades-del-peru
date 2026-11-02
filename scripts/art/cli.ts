@@ -2,6 +2,8 @@ import path from 'node:path';
 import { ingestBlenderRenders, loadManifest, saveManifest } from './ingest';
 import { formatIssues, validateManifestFiles } from './validate';
 import { MANIFEST_PATH, REPO_ROOT } from './paths';
+import { optimizeModels } from './models';
+import { optimizeTextures } from './textures';
 
 type FlagValue = string | true | undefined;
 type Flags = Record<string, FlagValue>;
@@ -57,12 +59,32 @@ Usage:
   yarn art:blender [--manifest=art-src/blender/caral/renders.json]
                    [--source-root=art-src/blender]
                    [--only=id1,id2] [--force] [--dry-run]
+  yarn art:models [--only=id1,id2] [--dry-run] [--force]
+                   [--compress=draco|meshopt] [--texture-size=1024]
+  yarn art:textures [--only=id1,id2] [--dry-run] [--force]
   yarn art:validate
   yarn art:review --id=ASSET_ID --reviewer=NAME --approve|--reject
 
 The Blender sources live in art-src/blender (LFS for .blend/.xcf). The ingestion
 verifies the source PNG SHA-256, converts it to budgeted WebP and writes the manifest.
 `);
+}
+
+function printOptimizeResult(result: {
+  optimized: { file: string; before: number; after: number }[];
+  skipped: string[];
+  errors: string[];
+}): void {
+  for (const item of result.optimized) {
+    console.log(`optimized ${item.file}: ${(item.before / 1e6).toFixed(2)} MB -> ${(item.after / 1e6).toFixed(2)} MB`);
+  }
+  for (const item of result.skipped) console.log(`skipped ${item}`);
+  if (result.errors.length) {
+    console.error(result.errors.join('\n'));
+    process.exitCode = 1;
+  }
+  console.log('');
+  console.log(`Optimized: ${result.optimized.length}; skipped: ${result.skipped.length}`);
 }
 
 async function main(): Promise<void> {
@@ -96,6 +118,28 @@ async function main(): Promise<void> {
         process.exitCode = 1;
       }
       if (result.ok && !bool(flags, 'dry-run')) console.log(`Manifest: ${path.relative(REPO_ROOT, MANIFEST_PATH)}`);
+      return;
+    }
+    case 'models': {
+      const result = optimizeModels({
+        only: onlyArg(flags),
+        dryRun: bool(flags, 'dry-run'),
+        force: bool(flags, 'force'),
+        compress: str(flags, 'compress') as 'draco' | 'meshopt' | undefined,
+        textureSize: Number(str(flags, 'texture-size') ?? 1024),
+        onProgress: (message) => console.log(message),
+      });
+      printOptimizeResult(result);
+      return;
+    }
+    case 'textures': {
+      const result = await optimizeTextures({
+        only: onlyArg(flags),
+        dryRun: bool(flags, 'dry-run'),
+        force: bool(flags, 'force'),
+        onProgress: (message) => console.log(message),
+      });
+      printOptimizeResult(result);
       return;
     }
     case 'validate': {

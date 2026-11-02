@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { DRACO_DECODER_PATH } from '../util/publicAsset';
 
 const TEXTURE_KEYS = [
@@ -25,7 +26,7 @@ export interface StaticGltfOptions {
 }
 
 export async function loadStaticGltf(url: string, options: StaticGltfOptions = {}): Promise<THREE.Group> {
-  const loader = new GLTFLoader();
+  const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
   let draco: DRACOLoader | null = null;
   if (options.draco) {
     draco = new DRACOLoader();
