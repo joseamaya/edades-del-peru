@@ -1,7 +1,9 @@
 import { RNG } from '../util/rng';
 import { distance2D } from '../util/math';
 
-export type ResourceNodeKind = 'tree' | 'mine' | 'well' | 'hunt' | 'fishing' | 'berry';
+import type { ResourceNode } from '../entities/ResourceNode';
+
+export type ResourceNodeKind = ResourceNode['kind'];
 
 export interface StartResourceOptions {
   player: number;
@@ -14,6 +16,7 @@ export interface StartResourceOptions {
   setpieceLower?: { x: number; z: number };
   isReserved(x: number, z: number): boolean;
   isWalkable(x: number, z: number): boolean;
+  /** Must expose nodes added during this call too (production passes the live node map). */
   existing: Iterable<{ pos: { x: number; z: number } }>;
   add(kind: ResourceNodeKind, amount: number, x: number, z: number): void;
 }

@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { placeStartResources, type ResourceNodeKind } from '../src/sim/WorldBuilder';
 
 function run(seed: number, caralOpening = false) {
-  const added: Array<{ kind: ResourceNodeKind; amount: number; x: number; z: number }> = [];
+  const added: Array<{ kind: ResourceNodeKind; amount: number; x: number; z: number; pos: { x: number; z: number } }> =
+    [];
   placeStartResources({
     player: 0,
     x: 64,
@@ -11,8 +12,8 @@ function run(seed: number, caralOpening = false) {
     caralOpening,
     isReserved: () => false,
     isWalkable: () => true,
-    existing: [],
-    add: (kind, amount, x, z) => added.push({ kind, amount, x, z }),
+    existing: added,
+    add: (kind, amount, x, z) => added.push({ kind, amount, x, z, pos: { x, z } }),
   });
   return added;
 }
@@ -29,7 +30,7 @@ describe('placeStartResources', () => {
     expect(nodes.filter((n) => n.kind === 'mine')).toHaveLength(1);
     expect(nodes.filter((n) => n.kind === 'well')).toHaveLength(1);
     expect(nodes.filter((n) => n.kind === 'hunt')).toHaveLength(1);
-    expect(nodes.filter((n) => n.kind === 'tree')).toHaveLength(18);
+    expect(nodes.filter((n) => n.kind === 'tree')).toHaveLength(11);
   });
 
   it('keeps the authored Caral grove on the valley edge', () => {
