@@ -44,6 +44,7 @@ export interface UnitSave {
   rallyPoint: OrderTarget | null;
   combatStance: CombatStance;
   leashOrigin: { x: number; z: number } | null;
+  moveSpeedLimit?: number | null;
   buildEfficiency: number;
   gatherMultiplier: number;
   attackMultiplier: number;

@@ -1326,6 +1326,7 @@ export class HUD {
       }
     }
     this.addCommand('⛔ Detener', () => this.orderStop(), 'S');
+    this.addCommand('🧭 Formación', () => this.game.cycleFormation());
     this.addCommand('🦅 Atacar-mover', () => this.orderAttackMove(), 'Ctrl+botón derecho');
     this.addCommand('⚔️ Agresivo', () => this.orderStance('agresivo'));
     this.addCommand('🛡️ Defensivo', () => this.orderStance('defensivo'));

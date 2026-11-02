@@ -437,13 +437,13 @@ export class Pathfinder {
       const best = this.heap.pop();
       if (this.closed[best]) continue;
       if (best === goalIdx) {
-        return this.reconstruct(this.cameFrom, best, cell);
+        return this.reconstruct(this.cameFrom, best, cell, owner);
       }
       if (!destWalkable) {
         const bx = best % cols;
         const bz = (best - bx) / cols;
         if (Math.max(Math.abs(bx - destX), Math.abs(bz - destZ)) <= GOAL_PROXIMITY) {
-          return this.reconstruct(this.cameFrom, best, cell);
+          return this.reconstruct(this.cameFrom, best, cell, owner);
         }
       }
       this.closed[best] = 1;
@@ -686,7 +686,7 @@ export class Pathfinder {
     return null;
   }
 
-  private reconstruct(cameFrom: Int32Array, end: number, cell: number): { x: number; z: number }[] {
+  private reconstruct(cameFrom: Int32Array, end: number, cell: number, owner?: number): { x: number; z: number }[] {
     const pts: { x: number; z: number }[] = [];
     let cur = end;
     const { cols } = this.grid;
@@ -698,7 +698,45 @@ export class Pathfinder {
       cur = cameFrom[cur];
     }
     pts.reverse();
-    return this.smooth(pts);
+    return this.smoothLineOfSight(this.smooth(pts), owner);
+  }
+
+  /** Remove waypoints while the straight segment stays walkable for the owner. */
+  private smoothLineOfSight(pts: { x: number; z: number }[], owner?: number): { x: number; z: number }[] {
+    if (pts.length <= 2) return pts;
+    const out = [pts[0]];
+    let i = 0;
+    while (i < pts.length - 1) {
+      let j = pts.length - 1;
+      while (j > i + 1 && !this.segmentClear(pts[i], pts[j], owner)) j--;
+      out.push(pts[j]);
+      i = j;
+    }
+    return out;
+  }
+
+  private segmentClear(a: { x: number; z: number }, b: { x: number; z: number }, owner?: number): boolean {
+    const { cols, cell } = this.grid;
+    const dist = Math.hypot(b.x - a.x, b.z - a.z);
+    const steps = Math.max(1, Math.ceil(dist / 0.2));
+    let prevX = Math.floor(a.x / cell);
+    let prevZ = Math.floor(a.z / cell);
+    for (let i = 1; i <= steps; i++) {
+      const t = i / steps;
+      const x = Math.floor((a.x + (b.x - a.x) * t) / cell);
+      const z = Math.floor((a.z + (b.z - a.z) * t) / cell);
+      if (x < 0 || z < 0 || x >= cols || z >= this.grid.rows) return false;
+      if (!this.cellOpen(z * cols + x, owner)) return false;
+      const dx = x - prevX;
+      const dz = z - prevZ;
+      if (dx !== 0 && dz !== 0) {
+        // same no-corner-cutting rule as A*
+        if (!this.cellOpen(prevZ * cols + x, owner) || !this.cellOpen(z * cols + prevX, owner)) return false;
+      }
+      prevX = x;
+      prevZ = z;
+    }
+    return true;
   }
 
   /** Smooth the path by removing collinear points. */

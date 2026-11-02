@@ -187,6 +187,8 @@ export class Unit {
   combatStance: CombatStance = 'agresivo';
   /** Anchor a defensive unit returns to after a short pursuit. */
   leashOrigin: { x: number; z: number } | null = null;
+  /** Group move speed cap (the slowest member), cleared by any non-move order. */
+  moveSpeedLimit: number | null = null;
   buildEfficiency = 1;
   gatherMultiplier = 1;
   attackMultiplier = 1;
@@ -441,6 +443,7 @@ export class Unit {
     this.currentResource = null;
     this.convertProgress = 0;
     this.attackingTarget = false;
+    this.moveSpeedLimit = null;
     this.noDropsiteTimer = 0;
     this.blockedNotified = false;
     this.resetApproachState();
@@ -473,6 +476,7 @@ export class Unit {
     this.blockedNotified = false;
     this.noDropsiteTimer = 0;
     this.resetApproachState();
+    this.moveSpeedLimit = null;
     switch (order.kind) {
       case OrderKind.MOVE:
         if (this.combatStance === 'defensivo' && order.target) this.leashOrigin = { ...order.target };
@@ -506,6 +510,42 @@ export class Unit {
         if (order.entityId !== undefined) this.setPathToEntity(order.entityId);
         break;
     }
+  }
+
+  /**
+   * Shared-path group move: every member follows one A* corridor and only the
+   * final point is offset, so a group arrives together instead of computing N paths.
+   */
+  issueGroupMove(
+    target: OrderTarget,
+    shared: { x: number; z: number }[],
+    offset: { x: number; z: number },
+    speedLimit: number,
+    clear = true,
+  ): void {
+    const goal = { x: target.x + offset.x, z: target.z + offset.z };
+    if (!clear && this.orderQueue.length > 0) {
+      this.orderQueue.push({ kind: OrderKind.MOVE, target: goal });
+      return;
+    }
+    if (clear) this.clearOrders();
+    this.orderQueue.push({ kind: OrderKind.MOVE, target: goal });
+    this.moveSpeedLimit = speedLimit;
+    this.stuckRetries = 0;
+    this.blockedNotified = false;
+    this.resetApproachState();
+    if (this.combatStance === 'defensivo') this.leashOrigin = { ...goal };
+    const pts = shared.map((p) => ({ ...p }));
+    if (pts.length > 0) {
+      const last = pts[pts.length - 1];
+      if (Math.hypot(last.x - goal.x, last.z - goal.z) > 0.1) pts.push(goal);
+      else pts[pts.length - 1] = goal;
+    } else {
+      pts.push(goal);
+    }
+    this.path = pts;
+    this.pathIdx = 0;
+    if (pts.length > 1) this.advanceToNextWaypoint();
   }
 
   setPath(tx: number, tz: number): void {
@@ -822,8 +862,8 @@ export class Unit {
       if (this.pathIdx < this.path.length) {
         const wp = this.path[this.pathIdx];
         this.targetYaw = angleTo(this.pos.x, this.pos.z, wp.x, wp.z);
-        // speed
-        const spd = this.stats.speed;
+        // speed: a group marches at its slowest member
+        const spd = Math.min(this.stats.speed, this.moveSpeedLimit ?? Infinity);
         this.vel.x = Math.cos(this.targetYaw) * spd;
         this.vel.z = Math.sin(this.targetYaw) * spd;
         this.walkCycle += dt * spd;
@@ -837,8 +877,8 @@ export class Unit {
     // separation
     this.applySeparation(dt);
 
-    // separation must not make a unit faster than its own speed
-    const cap = this.stats.speed * 1.25;
+    // separation must not make a unit faster than its (possibly capped) speed
+    const cap = Math.min(this.stats.speed, this.moveSpeedLimit ?? Infinity) * 1.25;
     const speed = Math.hypot(this.vel.x, this.vel.z);
     if (speed > cap) {
       const k = cap / speed;
@@ -1689,6 +1729,7 @@ export class Unit {
       rallyPoint: this.rallyPoint,
       combatStance: this.combatStance,
       leashOrigin: this.leashOrigin ? { ...this.leashOrigin } : null,
+      moveSpeedLimit: this.moveSpeedLimit,
       buildEfficiency: this.buildEfficiency,
       gatherMultiplier: this.gatherMultiplier,
       attackMultiplier: this.attackMultiplier,
