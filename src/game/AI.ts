@@ -13,7 +13,9 @@ import { HARVEST_STAND_RANGE, MELEE_ATTACK_RANGE, type Unit } from '../entities/
 import { Building } from '../entities/Building';
 import type { ResourceNode } from '../entities/ResourceNode';
 import { CATEGORIES, UNIT_CATEGORY, armyWeightsFor, UnitCategory } from './aiComposition';
+import { unitClassFor } from '../model/defs/units';
 import { AIProfile, attackThreshold, armyTarget, profileFor, workerTarget } from './aiProfiles';
+import { aiBuildSteps } from '../model/defs/aiBuildOrders';
 
 /**
  * Opponent AI: macroeconomy (assigns workers), combat micro (focus fire,
@@ -87,6 +89,9 @@ export class AI {
   private unreachableNodes = new Map<number, Map<number, number>>();
   /** Remaining resource probes for the current economy tick. */
   private pathBudget = 0;
+  private now = 0;
+  /** Coarse threat map keyed by 24 m zones, fed by perception. */
+  private threatZones = new Map<string, { value: number; at: number }>();
 
   constructor(game: Game, playerId: number, difficulty?: Difficulty) {
     this.game = game;
@@ -98,6 +103,7 @@ export class AI {
   }
 
   update(dt: number, t: number): void {
+    this.now = t;
     if (this.game.players[this.playerId].alive === false) return;
     this.economyTimer += dt;
     this.buildingTimer += dt;
@@ -297,58 +303,37 @@ export class AI {
     // only invest in non-essential buildings once a core army exists, so the
     // economy turns into military strength instead of building sprawl
     const soldiers = this.soldiers().length;
-    const secure = soldiers >= this.profile.armyBase;
 
     const buildPlan: { kind: BuildingKind; cost: Resources; priority: number; essential?: boolean }[] = [];
     const woodCost = (k: BuildingKind) => getBuildingStats(k, p.era).cost;
+    const steps = aiBuildSteps(p.civ, this.game.settings.difficulty ?? 'normal');
+    for (const step of steps) {
+      if (has(step.building)) continue;
+      if (p.era < BUILDING_DEFS[step.building].minEra) continue;
+      if (step.minEra !== undefined && p.era < step.minEra) continue;
+      if (step.requiresBuilding && !has(step.requiresBuilding)) continue;
+      if (step.requiresAdvancedMilitary && !this.profile.advancedMilitary) continue;
+      if (step.minSoldiers !== undefined && soldiers < step.minSoldiers) continue;
+      buildPlan.push({
+        kind: step.building,
+        cost: woodCost(step.building),
+        priority: step.priority,
+        essential: step.essential,
+      });
+    }
 
-    // economy income first (dropsites), then pop, military and the rest
-    if (!has(BuildingKind.SAWMILL))
-      buildPlan.push({
-        kind: BuildingKind.SAWMILL,
-        cost: woodCost(BuildingKind.SAWMILL),
-        priority: 96,
-        essential: true,
-      });
-    if (!has(BuildingKind.MILL))
-      buildPlan.push({ kind: BuildingKind.MILL, cost: woodCost(BuildingKind.MILL), priority: 94, essential: true });
-    if (!has(BuildingKind.BARRACKS))
-      buildPlan.push({
-        kind: BuildingKind.BARRACKS,
-        cost: woodCost(BuildingKind.BARRACKS),
-        priority: 88,
-        essential: true,
-      });
     // Enough houses for the workers + army this profile wants. A flat count
     // leaves higher-difficulty profiles stuck at the population cap.
     const desiredPop = workerTarget(this.profile, p.era) + armyTarget(this.profile, p.era) + 4;
     if (countOf(BuildingKind.HOUSE) < Math.ceil(desiredPop / 5)) {
       buildPlan.push({ kind: BuildingKind.HOUSE, cost: woodCost(BuildingKind.HOUSE), priority: 85 });
     }
-    if (!has(BuildingKind.SMELTER))
-      buildPlan.push({ kind: BuildingKind.SMELTER, cost: woodCost(BuildingKind.SMELTER), priority: 80 });
-    if (p.era >= Era.TAHUANTINSUYO && !has(BuildingKind.REFINERY))
-      buildPlan.push({ kind: BuildingKind.REFINERY, cost: woodCost(BuildingKind.REFINERY), priority: 70 });
-    if (this.profile.advancedMilitary && !has(BuildingKind.ARSENAL))
-      buildPlan.push({ kind: BuildingKind.ARSENAL, cost: woodCost(BuildingKind.ARSENAL), priority: 68 });
-    if (
-      this.profile.advancedMilitary &&
-      p.era >= BUILDING_DEFS[BuildingKind.STABLE].minEra &&
-      !has(BuildingKind.STABLE)
-    )
-      buildPlan.push({ kind: BuildingKind.STABLE, cost: woodCost(BuildingKind.STABLE), priority: 62 });
     if (p.era >= Era.REGIONAL_STATES && countOf(BuildingKind.FARM) < 4)
       buildPlan.push({
         kind: BuildingKind.FARM,
         cost: woodCost(BuildingKind.FARM),
         priority: p.resources.food < 120 ? 92 : 50,
       });
-    if (secure && p.era >= Era.REGIONAL_STATES && !has(BuildingKind.INSTITUTE))
-      buildPlan.push({ kind: BuildingKind.INSTITUTE, cost: woodCost(BuildingKind.INSTITUTE), priority: 46 });
-    if (secure && p.era >= BUILDING_DEFS[BuildingKind.FACTORY].minEra && !has(BuildingKind.FACTORY))
-      buildPlan.push({ kind: BuildingKind.FACTORY, cost: woodCost(BuildingKind.FACTORY), priority: 44 });
-    if (secure && p.era >= Era.REGIONAL_STATES && !has(BuildingKind.FORTRESS))
-      buildPlan.push({ kind: BuildingKind.FORTRESS, cost: woodCost(BuildingKind.FORTRESS), priority: 42 });
     if (p.era >= Era.CONTEMPORARY && !has(BuildingKind.WONDER) && this.game.settings.victoryMode === 'wonder') {
       buildPlan.push({ kind: BuildingKind.WONDER, cost: woodCost(BuildingKind.WONDER), priority: 30 });
     }
@@ -455,12 +440,19 @@ export class AI {
       if (c) current[c]++;
     }
 
+    const enemyClasses = new Set(
+      [...this.game.units.values()].filter((u) => this.isEnemyUnitKnown(u)).map((u) => unitClassFor(u.kind)),
+    );
+    if ([...this.game.buildings.values()].some((b) => this.isEnemyBuildingKnown(b))) enemyClasses.add('building');
     let best: { unit: UnitKind; bld: Building } | null = null;
     let bestDeficit = -Infinity;
     for (const c of candidates) {
       const deficit = (weights[c.category] / totalWeight) * target - current[c.category];
-      if (deficit > bestDeficit) {
-        bestDeficit = deficit;
+      const bonus = getUnitStats(c.unit, p.era).bonusVs ?? {};
+      const counter = [...enemyClasses].reduce((sum, cls) => sum + Math.max(0, bonus[cls] ?? 0), 0);
+      const score = deficit + counter * target * 0.2;
+      if (score > bestDeficit) {
+        bestDeficit = score;
         best = { unit: c.unit, bld: c.bld };
       }
     }
@@ -515,6 +507,14 @@ export class AI {
   private microCombat(): void {
     const base = this.center();
     const soldiers = this.soldiers();
+    if (base && soldiers.length > 0) {
+      const mine = soldiers.reduce((sum, s) => sum + s.stats.attack * (s.hp / s.maxHp), 0);
+      const danger = this.threatNear(base.pos.x, base.pos.z, DEFEND_RADIUS + 8);
+      if (mine < danger * 0.75) {
+        const far = soldiers.filter((s) => distance2D(s.pos.x, s.pos.z, base.pos.x, base.pos.z) > DEFEND_RADIUS);
+        for (const s of far) s.issueOrder({ kind: OrderKind.MOVE, target: { x: base.pos.x, z: base.pos.z } }, true);
+      }
+    }
     const focus = this.focusTarget(soldiers);
     // once the enemy has no soldiers left, the deployed army mops up its buildings
     const mopping = ![...this.game.units.values()].some((u) => isSoldier(u) && this.isEnemyUnitKnown(u));
@@ -700,8 +700,12 @@ export class AI {
    * move). This removes the old omniscient AI.
    */
   private updatePerception(now: number): void {
+    const seenNow = new Set<number>();
     const scan = (x: number, z: number, radius: number): void => {
-      for (const e of this.game.enemiesNear(x, z, radius, this.playerId)) this.seenUnits.set(e.id, now);
+      for (const e of this.game.enemiesNear(x, z, radius, this.playerId)) {
+        this.seenUnits.set(e.id, now);
+        seenNow.add(e.id);
+      }
       for (const b of this.game.buildings.values()) {
         if (!this.isEnemyBuilding(b)) continue;
         if (distance2D(x, z, b.pos.x, b.pos.z) <= radius + b.radius) this.seenBuildings.add(b.id);
@@ -709,9 +713,34 @@ export class AI {
     };
     for (const u of this.myUnits()) scan(u.pos.x, u.pos.z, u.stats.los + VISION_PAD);
     for (const b of this.myBuildings()) scan(b.pos.x, b.pos.z, b.stats.los + VISION_PAD);
+    for (const id of seenNow) {
+      const unit = this.game.units.get(id);
+      if (unit && !unit.dead) this.noteThreat(unit, now);
+    }
     for (const [id, last] of this.seenUnits) {
       if (now - last > MEMORY_TTL) this.seenUnits.delete(id);
     }
+    for (const [key, zone] of this.threatZones) {
+      if (now - zone.at > MEMORY_TTL) this.threatZones.delete(key);
+    }
+  }
+
+  private noteThreat(unit: Unit, now: number): void {
+    const key = `${Math.floor(unit.pos.x / 24)},${Math.floor(unit.pos.z / 24)}`;
+    const value = (unit.stats.attack + unit.hp * 0.04) * Math.max(0.2, unit.hp / unit.maxHp);
+    const prev = this.threatZones.get(key);
+    this.threatZones.set(key, { value: (prev?.at === now ? prev.value : 0) + value, at: now });
+  }
+
+  /** Remembered enemy strength near a point; stale zones decay after the memory TTL. */
+  private threatNear(x: number, z: number, radius: number): number {
+    let total = 0;
+    for (const [key, zone] of this.threatZones) {
+      if (this.now - zone.at > MEMORY_TTL) continue;
+      const [cx, cz] = key.split(',').map(Number);
+      if (distance2D(x, z, cx * 24 + 12, cz * 24 + 12) <= radius + 24) total += zone.value;
+    }
+    return total;
   }
 
   /** An enemy unit the AI is currently aware of (seen within memory). */
@@ -801,7 +830,9 @@ export class AI {
       let enemyArmy = 0;
       for (const u of this.game.units.values()) if (isSoldier(u) && this.isEnemyUnitKnown(u)) enemyArmy++;
       this.attackStall++;
-      if (soldiers.length < 2 || this.attackStall < 3 || soldiers.length < enemyArmy) return;
+      // Better profiles commit when close to parity instead of waiting forever.
+      const parity = Math.max(0.7, 1.05 - this.mult.aggression * 0.15);
+      if (soldiers.length < 2 || this.attackStall < 3 || soldiers.length < enemyArmy * parity) return;
     } else {
       this.attackStall = 0;
     }
@@ -826,6 +857,10 @@ export class AI {
       return;
     }
     this.attackStall = 0;
+    const myStrength = soldiers.reduce((sum, s) => sum + s.stats.attack * (s.hp / s.maxHp), 0);
+    const threat = this.threatNear(target.pos.x, target.pos.z, 30) + target.hp * 0.02;
+    // Do not throw a smaller army at a defended position; wait for reinforcements.
+    if (myStrength < threat * Math.max(0.75, 1.15 - this.mult.aggression * 0.25)) return;
     for (const s of soldiers) {
       // attack the building itself so conquest actually progresses
       s.issueOrder({ kind: OrderKind.ATTACK, entityId: target.id }, true);

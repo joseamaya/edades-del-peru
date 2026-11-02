@@ -415,6 +415,11 @@ Definition of Done and the building audit see
   unit adds a projectile. Save/load restores kinds and registers the gate again; `REPLAY_VERSION` is 16.
   Guarded by `tests/pathfinding.test.ts` and `tests/e2e/fortifications.spec.ts`; `bench:check` includes a
   50-wall scenario (`fortifications`, sim p99 budget).
+- **AI strategy**: build steps live in `src/model/defs/aiBuildOrders.ts` (essential economy/barracks,
+  profile-gated advanced buildings, civ priority nudges). Perception also fills a coarse threat map used by
+  `launchAttack`, and `trainMilitary` adds the #232 class counters against the known enemy composition. AI
+  difficulty still changes reaction/aggression/army targets, never resources. Guarded by
+  `tests/ai-build-orders.test.ts`; balance caveats are tracked in `docs/ai-difficulty.md`.
 - **Group movement**: a normal group order computes **one** A* from the first member and every
   member follows that corridor, with only the final formation offset applied (`Unit.issueGroupMove`).
   `moveSpeedLimit` caps the whole group at its slowest member (saved with the unit and cleared by
