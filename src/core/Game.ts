@@ -30,7 +30,8 @@ import { loadSiteModel } from '../rendering/siteModels';
 import { loadDecorModel } from '../rendering/decorModels';
 import { planProps, propCountFor } from '../model/defs/props';
 import { planWildlife, faunaCountFor } from '../model/defs/wildlife';
-import { Projectile, updateProjectilePools } from '../entities/Projectile';
+import { Projectile } from '../entities/Projectile';
+import { ProjectileView, updateProjectilePools } from '../rendering/ProjectileView';
 import { EntityView, reserveIds } from '../entities/EntityView';
 import { AI } from '../game/AI';
 import { elevationDamageMultiplier, ArmorProfile } from '../game/combat';
@@ -248,6 +249,7 @@ export class Game {
   buildings = new Map<number, Building>();
   resourceNodes = new Map<number, ResourceNode>();
   projectiles: Projectile[] = [];
+  private projectileViews = new Map<number, ProjectileView>();
 
   selectedUnits: number[] = [];
   selectedBuilding: number | null = null;
@@ -3529,7 +3531,7 @@ export class Game {
     else if (o.kind === 'arrow') bus.emit('fx:bow', {});
     else if (o.kind === 'sling_stone') bus.emit('fx:sling', {});
     else bus.emit('fx:shot', {});
-    const p = new Projectile(this.scene, {
+    const p = new Projectile({
       ...o,
       getTargetPos: () => {
         const t = this.units.get(o.targetId) ?? this.buildings.get(o.targetId);
@@ -3540,6 +3542,7 @@ export class Game {
       },
     });
     this.projectiles.push(p);
+    this.projectileViews.set(p.id, new ProjectileView(this.scene, p));
   }
 
   private applyProjectileDamage(o: any, targetId: number | undefined): void {
@@ -3997,6 +4000,10 @@ export class Game {
     // projectiles
     for (const p of this.projectiles) {
       p.update(d);
+      const view = this.projectileViews.get(p.id);
+      if (!view) continue;
+      view.sync(d);
+      if (p.dead) this.projectileViews.delete(p.id);
     }
     this.projectiles = this.projectiles.filter((p) => !p.dead);
     updateProjectilePools(d);
