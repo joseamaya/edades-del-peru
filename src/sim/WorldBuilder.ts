@@ -88,7 +88,7 @@ export function placeStartResources(options: StartResourceOptions): void {
 }
 
 /** Opening deployment: four workers and the scout, on the camera-facing arc. */
-export const STARTING_UNIT_COUNT = 5;
+const STARTING_UNIT_COUNT = 5;
 const STARTING_UNIT_ANGLES = [0, -0.52, 0.52, -1.05, 1.05, -1.6, 1.6] as const;
 const STARTING_UNIT_RADII = [5.2, 6.1, 7.0, 7.9, 8.8, 9.7] as const;
 
