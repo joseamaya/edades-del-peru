@@ -1,19 +1,11 @@
 import * as THREE from 'three';
+export { allocId, reserveIds } from '../sim/ids';
 import { EntityRef } from '../core/types';
 import { facingRotation } from '../util/math';
 import type { Unit } from './Unit';
 import type { Building } from './Building';
 
 /** Global entity id counter. */
-let nextId = 1;
-export function allocId(): number {
-  return nextId++;
-}
-
-/** Ensure future ids are greater than `maxId` (used when restoring a save). */
-export function reserveIds(maxId: number): void {
-  if (maxId >= nextId) nextId = maxId + 1;
-}
 
 /** How far above a unit's model the health bar floats. */
 const HEALTH_BAR_LIFT = 1.2;

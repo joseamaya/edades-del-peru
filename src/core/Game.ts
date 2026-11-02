@@ -32,6 +32,7 @@ import { planProps, propCountFor } from '../model/defs/props';
 import { planWildlife, faunaCountFor } from '../model/defs/wildlife';
 import { Projectile } from '../entities/Projectile';
 import { ProjectileView, updateProjectilePools } from '../rendering/ProjectileView';
+import { attachBuilding, detachBuilding, modernizeBuilding } from '../rendering/RenderSync';
 import { EntityView, reserveIds } from '../entities/EntityView';
 import { AI } from '../game/AI';
 import { elevationDamageMultiplier, ArmorProfile } from '../game/combat';
@@ -1553,10 +1554,10 @@ export class Game {
   private spawnStartBase(player: number, x: number, z: number): void {
     const ctx = this.makeBuildContext(player);
     // center
-    const center = new Building(BuildingKind.CENTER, player, this.players[player].era, ctx);
+    const center = new Building(BuildingKind.CENTER, player, this.players[player].era);
     center.pos.set(x, 0, z);
     center.pos.y = this.terrain.getHeight(x, z);
-    center.attach(this.scene);
+    this.attachBuilding(center);
     center.beginConstruction();
     center.addBuildProgress(9999);
     this.buildings.set(center.id, center);
@@ -1564,9 +1565,9 @@ export class Game {
     // starting dwellings + visual fields/roads, laid out by the terrain-aware planner
     const plan = this.settlementPlanFor(player, x, z);
     for (const spot of plan.dwellings) {
-      const house = new Building(BuildingKind.HOUSE, player, this.players[player].era, ctx);
+      const house = new Building(BuildingKind.HOUSE, player, this.players[player].era);
       house.pos.set(spot.x, this.terrain.getHeight(spot.x, spot.z), spot.z);
-      house.attach(this.scene);
+      this.attachBuilding(house);
       house.beginConstruction();
       house.addBuildProgress(9999);
       this.buildings.set(house.id, house);
@@ -1882,11 +1883,11 @@ export class Game {
   /** Create a scripted unit (campaign). */
   spawnScriptedUnit(kind: UnitKind, owner: number, x: number, z: number, tag?: string): Unit {
     const era = this.players[owner]?.era ?? this.settings.startingEra;
-    const ctx = this.makeBuildContext(owner);
     const land = this.findLandNear(x, z);
     const main = this.pathfinder.mainComponent();
     const spot =
       this.pathfinder.componentAt(land.x, land.z) === main ? land : (this.mainComponentPoint(land.x, land.z) ?? land);
+    const ctx = this.makeBuildContext(owner);
     const u = new Unit(kind, owner, era, ctx);
     u.pos.set(spot.x, this.terrain.getHeight(spot.x, spot.z), spot.z);
     u.setContext(this.unitContext);
@@ -1902,12 +1903,11 @@ export class Game {
   /** Create a scripted building (campaign), already finished. */
   spawnScriptedBuilding(kind: BuildingKind, owner: number, x: number, z: number, tag?: string): Building {
     const era = this.players[owner]?.era ?? this.settings.startingEra;
-    const ctx = this.makeBuildContext(owner);
     const land = this.findLandNear(x, z, 26);
-    const b = new Building(kind, owner, era, ctx);
+    const b = new Building(kind, owner, era);
     b.pos.set(land.x, this.terrain.getHeight(land.x, land.z), land.z);
     this.applyTerrainFarmYield(b);
-    b.attach(this.scene);
+    this.attachBuilding(b);
     b.beginConstruction();
     b.addBuildProgress(9999);
     if (tag) b.tag = tag;
@@ -2047,6 +2047,11 @@ export class Game {
     return this.commandProcessor.apply(cmd);
   }
 
+  /** Create and attach a building view from the current build context. */
+  attachBuilding(b: Building): void {
+    attachBuilding(this.scene, b, this.makeBuildContext(b.owner));
+  }
+
   /** A stable hash of the gameplay state (replay/determinism verification). */
   stateHash(): number {
     const units = [...this.units.values()]
@@ -2115,11 +2120,10 @@ export class Game {
     const stats = getBuildingStats(kind, this.players[0].era);
     if (!this.canPlace(x, z, stats.size)) return null;
     if (!this.spendResource(0, stats.cost)) return null;
-    const ctx = this.makeBuildContext(0);
-    const b = new Building(kind, 0, this.players[0].era, ctx);
+    const b = new Building(kind, 0, this.players[0].era);
     b.pos.set(x, this.terrain.getHeight(x, z), z);
     this.applyTerrainFarmYield(b);
-    b.attach(this.scene);
+    this.attachBuilding(b);
     b.beginConstruction();
     if (BUILDING_DEFS[kind].instant) b.completeInstantly();
     this.buildings.set(b.id, b);
@@ -2277,9 +2281,9 @@ export class Game {
     }
 
     for (const bs of data.buildings) {
-      const b = new Building(bs.kind, bs.owner, bs.era, this.makeBuildContext(bs.owner));
+      const b = new Building(bs.kind, bs.owner, bs.era);
       b.applySave(bs);
-      b.attach(this.scene);
+      this.attachBuilding(b);
       this.buildings.set(b.id, b);
       this.registerObstacle(b);
     }
@@ -2667,7 +2671,7 @@ export class Game {
     this.raycaster.setFromCamera(ndc, this.camera.camera);
     const proxies: THREE.Object3D[] = [];
     for (const u of this.units.values()) if (!u.dead) proxies.push(u.view.pickProxy);
-    for (const b of this.buildings.values()) if (!b.dead) proxies.push(b.view.pickProxy);
+    for (const b of this.buildings.values()) if (!b.dead && b.view) proxies.push(b.view.pickProxy);
     const hits = this.raycaster.intersectObjects(proxies, false);
     for (const h of hits) {
       const e = h.object.userData.owner;
@@ -2762,7 +2766,7 @@ export class Game {
       const sel = this.selectedBuilding === b.id;
       b.selected = sel;
       const p = this.players[b.owner];
-      b.view.showSelectionColor(sel, p.color);
+      b.view?.showSelectionColor(sel, p.color);
     }
   }
 
@@ -3794,7 +3798,8 @@ export class Game {
     const ctx = this.makeBuildContext(player);
     for (const b of this.buildings.values()) {
       if (b.owner === player) {
-        b.modernize(p.era, ctx);
+        b.era = p.era;
+        modernizeBuilding(b, ctx);
       }
     }
     // modernize units in the field
@@ -3857,7 +3862,7 @@ export class Game {
     for (const b of this.buildings.values()) {
       if (b.owner === 0) continue;
       const vis = this.fow.isVisible(b.pos.x, b.pos.z) || !this.settings.fogOfWar;
-      b.view.group.visible = vis;
+      if (b.view) b.view.group.visible = vis;
     }
     this.fowTexture.upload();
     this.fow.decay();
@@ -3885,7 +3890,7 @@ export class Game {
     this.fowUniforms.fowEnabled.value = on ? 1 : 0;
     if (!on) {
       for (const u of this.units.values()) u.view.group.visible = true;
-      for (const b of this.buildings.values()) b.view.group.visible = true;
+      for (const b of this.buildings.values()) if (b.view) b.view.group.visible = true;
       for (const n of this.resourceNodes.values()) n.setVisibleEx(true);
     }
   }
@@ -4050,7 +4055,7 @@ export class Game {
           else this.pathfinder.removeObstacle(h);
           this.obstacleHandles.delete(b.id);
         }
-        this.spawnDeathFx(b.view, 'building', b.radius, () => b.removeFromScene());
+        if (b.view) this.spawnDeathFx(b.view, 'building', b.radius, () => detachBuilding(b));
         this.buildings.delete(id);
       }
     }

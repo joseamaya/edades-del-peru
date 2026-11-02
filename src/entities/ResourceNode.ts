@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { allocId } from './EntityView';
+import { allocId } from '../sim/ids';
 import { RNG, weightedPick, cosmeticRandom } from '../util/rng';
 import { ResourceKey } from '../core/types';
 import { MaterialTex } from '../rendering/Textures';
