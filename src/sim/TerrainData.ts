@@ -1,4 +1,4 @@
-import { generateHeightField, CANAL_WIDTH_CELLS } from '../rendering/heightField';
+import { generateHeightField, CANAL_WIDTH_CELLS } from './heightField';
 import { terrainSlope } from '../util/math';
 import type { HistoricalMapProfile } from '../model/defs/profiles';
 import type { TerrainLayout } from '../model/defs/terrainLayout';
