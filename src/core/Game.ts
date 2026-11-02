@@ -1966,6 +1966,14 @@ export class Game {
     return this.input.screenToWorld(x, z);
   }
 
+  hasEnded(): boolean {
+    return this.input.hasEnded();
+  }
+
+  commitWallLine(a: { x: number; z: number }, b: { x: number; z: number }): void {
+    this.input.commitWallLine(a, b);
+  }
+
   commandMoveToWorld(x: number, z: number, ctrlQueue?: boolean, shiftQueue?: boolean): void {
     this.input.commandMoveToWorld(x, z, ctrlQueue, shiftQueue);
   }
@@ -3596,6 +3604,11 @@ export class Game {
     return true;
   }
 
+  /**
+   * Can this building be constructed in the current match? It accounts for the era
+   * (period-locked matches) and the Sacred Huaca, which depends on the victory mode,
+   * not the era (so wonder victory is reachable in any period).
+   */
   canBuildKind(kind: BuildingKind): boolean {
     if (kind === BuildingKind.CENTER) return false;
     if (kind === BuildingKind.WONDER) return this.settings.victoryMode === 'wonder';

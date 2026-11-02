@@ -24,9 +24,9 @@ const NODE_INFO: Record<ResourceNode['kind'], { name: string; icon: string }> = 
   tree: { name: 'Árbol', icon: '🌳' },
   mine: { name: 'Mina', icon: '⛏️' },
   well: { name: 'Cantera', icon: '🪨' },
-  hunt: { name: 'Caza', icon: '🦙' },
-  fishing: { name: 'Pesca', icon: '🐟' },
-  berry: { name: 'Bayas', icon: '🫐' },
+  hunt: { name: 'Caza', icon: '🦌' },
+  fishing: { name: 'Banco de peces', icon: '🐟' },
+  berry: { name: 'Arbusto', icon: '🫐' },
 };
 
 const WALL_SEGMENT_SPACING = 2;
@@ -651,12 +651,6 @@ export class InputController {
 
   // --- construction ---
 
-  /**
-   * Can this building be constructed in the current match? It accounts for the era
-   * (period-locked matches) and the Sacred Huaca, which depends on the victory mode,
-   * not the era (so wonder victory is reachable in any period).
-   */
-
   startPlacement(kind: BuildingKind): void {
     // RTS standard: building requires selected workers
     const hasWorker = this.game.selectedUnits.some((id: number) => {
@@ -736,7 +730,7 @@ export class InputController {
   }
 
   /** Wall drag: one segment every 2 m along the drag line. */
-  private commitWallLine(a: { x: number; z: number }, b: { x: number; z: number }): void {
+  commitWallLine(a: { x: number; z: number }, b: { x: number; z: number }): void {
     const length = Math.hypot(b.x - a.x, b.z - a.z);
     const segments = Math.max(1, Math.ceil(length / WALL_SEGMENT_SPACING));
     let blocked = 0;
@@ -765,10 +759,6 @@ export class InputController {
       this.placingBuilding = null;
     }
   }
-
-  /** Cancel a queued training and refund its cost. */
-
-  /** Release a building's garrisoned units around it (seeded exit positions). */
 
   // --- keyboard ---
 
