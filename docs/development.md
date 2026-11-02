@@ -9,7 +9,7 @@ Definition of Done and the building audit see
 
 ## Architecture
 
-- Entry: `index.html` -> `src/main.ts` (loading shell) -> `src/boot.ts` -> `src/core/Game.ts` (hub wiring render, entities, AI/pathfinding/fog,
+- Entry: `index.html` -> `src/main.ts` (loading shell) -> `src/boot.ts` -> `src/core/Game.ts` (facade over input/selection/world/runtime controllers wiring render, entities, AI/pathfinding/fog,
   campaign, HUD and audio).
 - **Temporal model**: `Era` (0-5) is the internal **tech level** (stats/models); `HistoricalPeriod` (0-9, in
   `src/model/defs/periods.ts`) is the **historical period** of the match. Matches are **locked by period** (no
@@ -673,6 +673,7 @@ rigged bird is added, and evaluate per-species LOD/update throttling at the 16-a
 
 ## Debugging / automation
 
+- `Game` delegates input to `InputController`, selection/UI helpers to `SelectionController`, world/mission decoration to `WorldViewDecor`, opening spawns to `StartBaseBuilder`, and the simulation/render loop + save/combat plumbing to `RuntimeController`.
 - `src/main.ts` exposes `window.game` (and `window.THREE`) for the console and scripts.
 - The app shows the **main menu by default**; enter the match directly with `?play=1` or any debug param.
   `resetGame()` reloads with `?play=1`.
