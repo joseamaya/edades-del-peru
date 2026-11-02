@@ -109,3 +109,19 @@ After adding the class counter table, `yarn sim --seeds=777,779,783 --max=900` (
 same outcome as the #254 baseline (three 900 s caps, banks 2,679–2,786, both seats training) and no AI crash.
 The counter table is documented as a gameplay abstraction in [`historia/combate.md`](historia/combate.md);
 no quantitative historical claim is made.
+
+## Strategic AI update (issue #234)
+
+- Build order is data-driven (`src/model/defs/aiBuildOrders.ts`): economy + first barracks are essential, advanced
+  military buildings are profile-gated, and civ-specific priorities nudge barracks/fortress/institute (Moche,
+  Recauy, Chanca, Wari, Inca, Realistas, etc.). Houses/farms still adapt to population and food.
+- Perception feeds a coarse 24 m threat map; attacks are not committed when the remembered defence outweighs
+  the army (the factor loosens with aggression/difficulty).
+- Unit training scores positive class counters against the known enemy composition (uses the #232 table), and
+  towers are part of the defensive build steps.
+- Attack thresholds/parity are more decisive on `hard`/`legendary`.
+
+Measured with `yarn sim --seeds=777,783 --max=900` (normal/legendary in both seats), games still frequently hit
+the time cap: the AI now produces and fights, but closing a fortified base inside 900 s remains unsolved. The
+<10 % unresolved and strict legendary>hard>normal>easy ordering are **not yet met**; this needs combat/eco
+tuning (building durability, siege availability in early periods) beyond the AI layer.
