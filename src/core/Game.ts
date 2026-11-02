@@ -116,6 +116,7 @@ import { getMission } from '../campaign/defs/campaign';
 import type { MissionDef, MissionAtmosphere, MissionLayout, MissionPoint, MissionSite } from '../campaign/types';
 import { serializeGame, saveToStorage } from '../game/SaveGame';
 import { CommandProcessor } from '../game/CommandProcessor';
+import { applyPopulation } from '../game/systems/PopulationSystem';
 import type { SaveData } from '../game/saveTypes';
 
 /** When false the main loop does not auto-start, so tests can drive fixed steps from step 0. */
@@ -3889,26 +3890,6 @@ export class Game {
 
   // --- population ---
 
-  private updatePopulation(): void {
-    for (const p of this.players) {
-      let used = 0;
-      for (const u of this.units.values()) {
-        if (u.owner === p.id && !u.dead && u.garrisonedIn === null) {
-          used += u.stats.population;
-        }
-      }
-      p.populationUsed = used;
-      let cap = 3; // initial center
-      for (const b of this.buildings.values()) {
-        if (b.owner === p.id && b.constructionComplete) {
-          cap += b.providesPop;
-        }
-      }
-      // a civilization population bonus deliberately raises the match cap
-      p.populationCap = Math.min(this.settings.populationCap, cap + 4) + p.bonus.population;
-    }
-  }
-
   // --- victory ---
 
   private checkVictory(): void {
@@ -4024,7 +4005,7 @@ export class Game {
 
     this.updateFow();
     this.applyLod();
-    this.updatePopulation();
+    applyPopulation(this.units.values(), this.buildings.values(), this.players, this.settings.populationCap);
 
     // campaign mission: evaluate BEFORE cleaning up dead so that
     // objectives detect freshly destroyed entities (destroy/protect)
