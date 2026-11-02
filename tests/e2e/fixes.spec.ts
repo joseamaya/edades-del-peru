@@ -414,7 +414,7 @@ test('right-clicking an enemy with an Amauta selected issues a convert order', a
     enemy.clearOrders();
     g.selectedUnits = [amauta.id];
     g.selectedBuilding = null;
-    const v = enemy.pos.clone();
+    const v = new window.THREE.Vector3(enemy.pos.x, enemy.pos.y, enemy.pos.z);
     v.y += 0.5;
     const s = v.project(g.camera.camera);
     return {

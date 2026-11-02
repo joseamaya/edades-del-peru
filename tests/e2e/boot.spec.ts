@@ -83,8 +83,7 @@ test('selects a unit on click', { tag: '@smoke' }, async ({ page }) => {
     const canvas = g.renderer.domElement as HTMLCanvasElement;
     for (const u of g.units.values() as Iterable<any>) {
       if (u.owner !== 0 || u.dead) continue;
-      const v = u.pos.clone();
-      v.y += 0.4;
+      const v = new window.THREE.Vector3(u.pos.x, u.pos.y + 0.4, u.pos.z);
       const s = v.project(g.camera.camera);
       if (!Number.isFinite(s.x) || !Number.isFinite(s.y)) continue;
       const x = Math.round((s.x * 0.5 + 0.5) * window.innerWidth);
