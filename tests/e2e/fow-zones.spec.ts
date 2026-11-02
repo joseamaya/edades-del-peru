@@ -22,7 +22,7 @@ test('the cultural layers share the terrain fog mask', { tag: '@smoke' }, async 
   await boot(page, FOG_URL);
   const res = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    const mask = g.fow.texture;
+    const mask = g.fowTexture.texture;
     const terrainMask = g.terrain.mesh.material.uniforms.fowMap.value;
 
     const groups: [string, any][] = [];
@@ -150,18 +150,18 @@ test('the cultural layers dim per fog zone (unexplored/explored/visible)', { tag
         const cells = g.fow.cells;
         const gx = Math.max(0, Math.min(cells - 1, Math.floor(x / g.fow.cell)));
         const gz = Math.max(0, Math.min(cells - 1, Math.floor(z / g.fow.cell)));
-        return g.fow.texture.image.data[(gz * cells + gx) * 4];
+        return g.fowTexture.texture.image.data[(gz * cells + gx) * 4];
       };
 
       // noloop -> the grid starts all-unexplored
       const p0 = read();
       const grid0 = cellByte();
       g.fow.reveal(x, z, 12);
-      g.fow.upload();
+      g.fowTexture.upload();
       const p1 = read();
       const grid1 = cellByte();
       g.fow.decay();
-      g.fow.upload();
+      g.fowTexture.upload();
       const p2 = read();
       const grid2 = cellByte();
       rt.dispose();

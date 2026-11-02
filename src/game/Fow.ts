@@ -1,9 +1,7 @@
-import * as THREE from 'three';
-
 /**
  * Grid fog of war. States: 0=unexplored, 1=explored, 2=visible.
- * The texture is applied directly in the terrain shader (glued to the relief);
- * this class only keeps the grid and exposes the texture.
+ * The grid is pure simulation state; `FowTexture` in the renderer turns `data`
+ * into the texture sampled by the terrain shader.
  */
 export class Fow {
   readonly size: number;
@@ -11,7 +9,8 @@ export class Fow {
   readonly cell: number;
   private grid: Uint8Array;
   private dirty = true;
-  readonly texture: THREE.DataTexture;
+  /** RGBA bytes consumed by the renderer's DataTexture. */
+  readonly data: Uint8Array;
   enabled = true;
 
   constructor(size: number, cells = 128) {
@@ -20,13 +19,7 @@ export class Fow {
     this.cell = size / cells;
     this.grid = new Uint8Array(cells * cells);
 
-    const data = new Uint8Array(cells * cells * 4);
-    this.texture = new THREE.DataTexture(data, cells, cells, THREE.RGBAFormat);
-    this.texture.minFilter = THREE.LinearFilter;
-    this.texture.magFilter = THREE.LinearFilter;
-    this.texture.wrapS = THREE.ClampToEdgeWrapping;
-    this.texture.wrapT = THREE.ClampToEdgeWrapping;
-    this.texture.needsUpdate = true;
+    this.data = new Uint8Array(cells * cells * 4);
   }
 
   /** Convert world coordinates to a cell. */
@@ -77,11 +70,11 @@ export class Fow {
     return this.grid[cz * this.cells + cx] >= 1;
   }
 
-  /** Upload the texture to the GPU only if it changed. */
-  upload(): void {
-    if (!this.dirty) return;
+  /** Refresh the RGBA buffer; returns true when the renderer must re-upload it. */
+  flush(): boolean {
+    if (!this.dirty) return false;
     this.dirty = false;
-    const data = this.texture.image.data as Uint8Array;
+    const data = this.data;
     for (let i = 0; i < this.grid.length; i++) {
       const v = this.grid[i];
       const o = i * 4;
@@ -91,7 +84,7 @@ export class Fow {
       data[o + 2] = 0;
       data[o + 3] = 255;
     }
-    this.texture.needsUpdate = true;
+    return true;
   }
 
   setEnabled(enabled: boolean): void {
@@ -119,9 +112,5 @@ export class Fow {
   /** Kept for compatibility: there is no mesh to show/hide. */
   setFogEnabled(enabled: boolean): void {
     this.enabled = enabled;
-  }
-
-  dispose(): void {
-    this.texture.dispose();
   }
 }

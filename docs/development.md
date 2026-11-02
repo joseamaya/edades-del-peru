@@ -244,7 +244,7 @@ Definition of Done and the building audit see
   `Game.spawnCulturalLandscape()` adds the `landscape` group next to the landmark. Deterministic
   from `seed + profile` and visual only (no entities, no gameplay, not saved — regenerated on load); disposed in
   `Game.destroy()`. The landscape, the settlement overlays and the landmark dim with Fog of War through
-  `applyFow` (`src/rendering/FowMaterial.ts`), which samples the same `Fow` texture in their materials (issue
+  `applyFow` (`src/rendering/FowMaterial.ts`), which samples the same `FowTexture` in their materials (issue
   #70). Verified by `tests/e2e/landscape.spec.ts`.
 - **Settlement layout (starting base)**: `Game.spawnStartBase` lays out the starting dwellings with
   `planSettlementSite` (`src/model/defs/settlementPlan.ts`), a **pure** planner (no THREE, unit-tested in
@@ -490,8 +490,8 @@ Definition of Done and the building audit see
 - **Terrain faces must point up**: in `Terrain.buildMesh` the indices go `(a,c,b)` and `(b,c,d)` (not `(a,b,c)`).
   Inverting the winding makes faces point down: backface culling hides the terrain and the sky dome appears as if
   it were the ground. Verify with a vertical `Raycaster` that hits the terrain.
-- **Fog of war is integrated into the terrain shader** (`Terrain.setFow` + `Fow.texture`), not as a separate mesh:
-  that keeps it glued to the relief. `Fow` only keeps the grid and the texture.
+- **Fog of war is integrated into the terrain shader** (`Terrain.setFow` + `FowTexture.texture`), not as a separate mesh:
+  that keeps it glued to the relief. `Fow` keeps the pure grid; `FowTexture` owns the GPU texture.
 - **Construction opacity** (`Building.setConstructionOpacity`): when fading you must store the materials that were
   opaque and restore them to `transparent=false, opacity=1` when done. A guard like
   `if (mat.transparent === false)` makes the restore a no-op and leaves **all** buildings semi-transparent
