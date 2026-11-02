@@ -1,12 +1,11 @@
 import * as THREE from 'three';
 import { getGroundTextures, GroundTextures } from './Textures';
 import { getGroundPBR } from './Biomes';
-import { smoothstep, terrainSlope } from '../util/math';
-import { generateHeightField, CANAL_WIDTH_CELLS } from './heightField';
+import { smoothstep } from '../util/math';
+import { TerrainData } from '../sim/TerrainData';
 import { FOW_DIM_GLSL } from './fowGlsl';
 import type { HistoricalMapProfile } from '../model/defs/profiles';
 import type { TerrainLayout } from '../model/defs/terrainLayout';
-import { sampleAuthoredHeight, type AuthoredHeightField } from '../model/defs/authoredTerrain';
 import type { AuthoredSiteDef, SiteTerrainStyle } from '../model/defs/sites';
 
 // Scratch colors reused in biome generation (avoids ~200k allocations).
@@ -26,46 +25,6 @@ function flatTex(r: number, g: number, b: number): THREE.DataTexture {
   return t;
 }
 
-/** Resample an authored site heightfield and derive moisture for the biome shader. */
-function authoredHeightField(
-  resolution: number,
-  worldSize: number,
-  profile: HistoricalMapProfile,
-  authored: AuthoredHeightField,
-  style: SiteTerrainStyle,
-): ReturnType<typeof generateHeightField> {
-  const n = resolution + 1;
-  const heightMap = new Float32Array(n * n);
-  const moistureMap = new Float32Array(n * n);
-  const terraceMap = new Float32Array(n * n);
-  const canalMap = new Float32Array(n * n);
-  for (let z = 0; z < n; z++) {
-    for (let x = 0; x < n; x++) {
-      const wx = (x / resolution) * worldSize;
-      const wz = (z / resolution) * worldSize;
-      const h = sampleAuthoredHeight(authored, wx, wz);
-      const i = z * n + x;
-      heightMap[i] = h;
-      // The valley floor and river corridor are wet; the desert terrace is dry.
-      const wet = Math.max(0, Math.min(1, (style.moisture.valleyHeight - h) / style.moisture.valleyRange));
-      const bank = Math.max(
-        0,
-        Math.min(1, (worldSize * style.moisture.bankStart - wx) / (worldSize * style.moisture.bankRange)),
-      );
-      const noise = Math.sin(wx * 0.21 + wz * 0.13) * 0.04 + Math.sin(wz * 0.37 - 1.2) * 0.025;
-      moistureMap[i] = Math.max(0, Math.min(1, wet * 0.82 + bank * 0.28 + noise));
-    }
-  }
-  return {
-    heightMap,
-    moistureMap,
-    terraceMap,
-    canalMap,
-    canalPaths: [],
-    waterLevel: profile.water.level,
-  };
-}
-
 /**
  * Procedural terrain: FBM heightmap + mountains + rivers + beaches.
  * Biome vertex colors (grass/soil/sand/rock/snow) and a shader
@@ -74,6 +33,7 @@ function authoredHeightField(
 export class Terrain {
   readonly size: number;
   readonly resolution: number; // vertices per side
+  readonly data: TerrainData;
   heightMap: Float32Array;
   moistureMap: Float32Array;
   /** Agricultural terracing strength per vertex (0 none .. ~0.55 shelf), for farm yield. */
@@ -112,7 +72,6 @@ export class Terrain {
     this.size = size;
     this.resolution = resolution;
     this.profile = profile;
-    const authored = site?.heightField;
     const style = site?.terrain;
     this.siteTerrain = style;
     this.terrainPreset = style?.preset === 'caral' ? 1 : 0;
@@ -121,19 +80,14 @@ export class Terrain {
     this.textures = getGroundTextures();
     this.arid = profile.climate.aridity;
     this.veg = profile.vegetation.density;
-    const field =
-      authored && style
-        ? authoredHeightField(resolution, size, profile, authored, style)
-        : generateHeightField(resolution, seed, profile, layout);
-    this.heightMap = field.heightMap;
-    this.moistureMap = field.moistureMap;
-    this.terraceMap = field.terraceMap;
-    this.canalMap = field.canalMap;
-    this.canalPaths = field.canalPaths.map((path) =>
-      path.map((p) => ({ x: (p.x / this.resolution) * this.size, z: (p.z / this.resolution) * this.size })),
-    );
-    this.canalWidth = ((2 * (CANAL_WIDTH_CELLS + 0.5)) / this.resolution) * this.size;
-    this.waterLevel = field.waterLevel;
+    this.data = new TerrainData(size, resolution, seed, profile, layout, site);
+    this.heightMap = this.data.heightMap;
+    this.moistureMap = this.data.moistureMap;
+    this.terraceMap = this.data.terraceMap;
+    this.canalMap = this.data.canalMap;
+    this.canalPaths = this.data.canalPaths;
+    this.canalWidth = this.data.canalWidth;
+    this.waterLevel = this.data.waterLevel;
     this.mesh = this.buildMesh();
     this.group.add(this.mesh);
     this.buildSkirt();
@@ -241,68 +195,47 @@ export class Terrain {
     return z * (this.resolution + 1) + x;
   }
 
-  /** Bilinear sample of a per-vertex map at world coordinates (clamped to the map). */
-  private sampleMap(map: Float32Array, wx: number, wz: number): number {
-    const x = Math.min(this.resolution, Math.max(0, (wx / this.size) * this.resolution));
-    const z = Math.min(this.resolution, Math.max(0, (wz / this.size) * this.resolution));
-    const x0 = Math.floor(x);
-    const z0 = Math.floor(z);
-    const x1 = Math.min(x0 + 1, this.resolution);
-    const z1 = Math.min(z0 + 1, this.resolution);
-    const fx = x - x0;
-    const fz = z - z0;
-    const h00 = map[this.idx(x0, z0)];
-    const h10 = map[this.idx(x1, z0)];
-    const h01 = map[this.idx(x0, z1)];
-    const h11 = map[this.idx(x1, z1)];
-    const a = h00 + (h10 - h00) * fx;
-    const b = h01 + (h11 - h01) * fx;
-    return a + (b - a) * fz;
-  }
-
   /** Interpolate terrain height in world coordinates. */
   getHeight(wx: number, wz: number): number {
-    return this.sampleMap(this.heightMap, wx, wz);
+    return this.data.getHeight(wx, wz);
   }
 
   /** Is the point navigable water? */
   isWater(wx: number, wz: number): boolean {
-    return this.getHeight(wx, wz) < this.waterLevel - 0.15;
+    return this.data.isWater(wx, wz);
   }
 
   isBeach(wx: number, wz: number): boolean {
-    const h = this.getHeight(wx, wz);
-    return h >= this.waterLevel - 0.15 && h < this.waterLevel + 0.9;
+    return this.data.isBeach(wx, wz);
   }
 
   isBuildable(wx: number, wz: number): boolean {
-    const h = this.getHeight(wx, wz);
-    return h > this.waterLevel + 0.4;
+    return this.data.isBuildable(wx, wz);
   }
 
   /** Interpolated moisture (0 dry .. 1 humid) at world coordinates. */
   getMoisture(wx: number, wz: number): number {
-    return this.sampleMap(this.moistureMap, wx, wz);
+    return this.data.getMoisture(wx, wz);
   }
 
   /** Interpolated agricultural terracing strength (0 none .. ~0.55 shelf). */
   getTerrace(wx: number, wz: number): number {
-    return this.sampleMap(this.terraceMap, wx, wz);
+    return this.data.getTerrace(wx, wz);
   }
 
   /** Interpolated irrigation canal strength (0 none .. 1 centre). */
   getCanal(wx: number, wz: number): number {
-    return this.sampleMap(this.canalMap, wx, wz);
+    return this.data.getCanal(wx, wz);
   }
 
   /** Carved irrigation canal centre-lines in world units, for the canal ribbon. */
   getCanalPaths(): { x: number; z: number }[][] {
-    return this.canalPaths;
+    return this.data.getCanalPaths();
   }
 
   /** Approximate slope magnitude (0 flat .. 1 steep) from the heightfield. */
   getSlope(wx: number, wz: number): number {
-    return terrainSlope((x, z) => this.getHeight(x, z), wx, wz, 2);
+    return this.data.getSlope(wx, wz);
   }
 
   private buildMesh(): THREE.Mesh {
