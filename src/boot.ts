@@ -103,6 +103,8 @@ function floatParam(params: URLSearchParams, key: string, fallback: number): num
 
 export async function boot(): Promise<void> {
   const params = new URLSearchParams(window.location.search);
+  // Test-only blank page: lets a spec import fresh modules without booting a match.
+  if (params.get('probe') === '1') return;
   if (params.get('city') === 'caral') {
     const { mountCityDemo } = await import('./rendering/CityDemo');
     await mountCityDemo();
