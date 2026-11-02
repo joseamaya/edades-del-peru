@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { conquestVictory } from '../src/game/systems/VictorySystem';
+import { resolveConquest } from '../src/game/systems/VictorySystem';
 
-describe('conquestVictory', () => {
+describe('resolveConquest', () => {
   it('ends the match when an alive player has no buildings', () => {
     expect(
-      conquestVictory(
+      resolveConquest(
         [
           { id: 0, alive: true },
           { id: 1, alive: true },
@@ -19,7 +19,7 @@ describe('conquestVictory', () => {
 
   it('ignores already defeated players', () => {
     expect(
-      conquestVictory(
+      resolveConquest(
         [
           { id: 0, alive: false },
           { id: 1, alive: false },
@@ -31,7 +31,7 @@ describe('conquestVictory', () => {
 
   it('reports no winner when the other player is also gone', () => {
     expect(
-      conquestVictory(
+      resolveConquest(
         [
           { id: 0, alive: true },
           { id: 1, alive: false },
@@ -46,7 +46,7 @@ describe('conquestVictory', () => {
 
   it('does nothing while every alive player still has a building', () => {
     expect(
-      conquestVictory(
+      resolveConquest(
         [
           { id: 0, alive: true },
           { id: 1, alive: true },

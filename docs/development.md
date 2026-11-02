@@ -383,7 +383,7 @@ Definition of Done and the building audit see
   `Game.canBuildKind` (era per period; the **Huaca Sagrada** depends on the victory mode, not the era, so
   wonder victory is reachable in any period).
 - **Victory/defeat (conquest)**: a player is defeated only when **no building of theirs remains** (`Game.hasBuildings`),
-  in both skirmish (`Game.checkVictory`) and campaign (`Mission.checkBaseLost`). Do not go back to "losing the
+  in both skirmish (`resolveConquest` via `Game.checkVictory`) and campaign (`Mission.checkBaseLost`). Do not go back to "losing the
   Plaza Mayor ends the match": a full base with army must survive the loss of its center.
 - **External reference**: [VOIDSTRIKE](https://github.com/braedonsaunders/voidstrike) (MIT) is used only as
   technique inspiration (damage numbers, instancing, culling); its code is neither sold nor copied.

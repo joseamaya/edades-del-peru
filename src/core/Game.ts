@@ -117,7 +117,7 @@ import type { MissionDef, MissionAtmosphere, MissionLayout, MissionPoint, Missio
 import { serializeGame, saveToStorage } from '../game/SaveGame';
 import { CommandProcessor } from '../game/CommandProcessor';
 import { applyPopulation } from '../game/systems/PopulationSystem';
-import { conquestVictory } from '../game/systems/VictorySystem';
+import { resolveConquest } from '../game/systems/VictorySystem';
 import type { SaveData } from '../game/saveTypes';
 
 /** When false the main loop does not auto-start, so tests can drive fixed steps from step 0. */
@@ -3902,7 +3902,7 @@ export class Game {
     if (this.gameEnded) return;
     // in campaign, victory/defeat is decided by the mission
     if (this.mission) return;
-    const result = conquestVictory(this.players, (id) => this.hasBuildings(id));
+    const result = resolveConquest(this.players, (id) => this.hasBuildings(id));
     if (!result) return;
     const defeated = this.players.find((p) => p.id === result.defeated);
     if (!defeated) return;
