@@ -98,7 +98,7 @@ explicit approval described below.
   enter a match directly. `?city=caral` mounts the standalone Blender GLB showcase
   (`window.__cityDemo`); `?scenery=caral` mounts the modular Pyramid Mayor showcase and
   `?scenery=caral-anfiteatro` the Anfiteatro showcase (`window.__sceneryDemo`) instead of booting a match. `?rig=1` mounts the rigged-model demo
-  (`window.__rigDemo`, `window.__modelAssets`). `?replay=1` plays
+  (`window.__rigDemo`, `window.__modelAssets`). `?probe=1` mounts a blank page that exposes `window.__createHeadlessGame` for parity tests; `?replay=1` plays
   the stored replay (`localStorage['peru-replay']`) and `?noloop=1` skips auto-starting the loop (tests drive fixed
   steps).
 - `yarn shot` and the scripts write generated PNG/JSON to `review/` (gitignored) — never edit those by hand.

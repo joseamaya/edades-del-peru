@@ -103,8 +103,18 @@ function floatParam(params: URLSearchParams, key: string, fallback: number): num
 
 export async function boot(): Promise<void> {
   const params = new URLSearchParams(window.location.search);
-  // Test-only blank page: lets a spec import fresh modules without booting a match.
-  if (params.get('probe') === '1') return;
+  // Test-only blank page: exposes a fresh headless Game without booting a match.
+  if (params.get('probe') === '1') {
+    (window as unknown as { __createHeadlessGame: (settings: GameSettings) => Game }).__createHeadlessGame = (
+      settings,
+    ) => {
+      setAutoStart(false);
+      const game = new Game(settings, null, null, false, true);
+      (window as any).game = game;
+      return game;
+    };
+    return;
+  }
   if (params.get('city') === 'caral') {
     const { mountCityDemo } = await import('./rendering/CityDemo');
     await mountCityDemo();
