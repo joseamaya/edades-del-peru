@@ -398,7 +398,7 @@ export class Game {
     if (mis?.guaranteedFishing) this.ensureFishingGrounds(mis.guaranteedFishing);
     this.loop.onUpdate = (dt, t) => this.update(dt, t);
     this.loop.onRender = () => this.render();
-    if (autoStart) this.loop.start();
+    if (autoStart && !headless) this.loop.start();
     if (mis && !this.pendingSnapshot) this.mission?.start();
     // record skirmish matches (not replays or loaded saves) for the local player
     if (!replay && !snapshot && !mis) this.recorder = new ReplayRecorder(this.settings);
@@ -3524,7 +3524,7 @@ export class Game {
       },
     });
     this.projectiles.push(p);
-    this.projectileViews.set(p.id, new ProjectileView(this.scene, p));
+    if (!this.headless) this.projectileViews.set(p.id, new ProjectileView(this.scene, p));
   }
 
   private applyProjectileDamage(o: any, targetId: number | undefined): void {
@@ -4009,6 +4009,7 @@ export class Game {
   }
 
   private updateHeadless(dt: number, time: number): boolean {
+    this.rebuildSpatial();
     if (this.replay) {
       for (const cmd of this.replay.commandsFor(this.stepCount)) this.executeCommand(cmd, false);
     }
@@ -4427,6 +4428,9 @@ export class Game {
       this.resourceNodes.clear();
       this.units.clear();
       this.buildings.clear();
+      this.projectiles.length = 0;
+      this.projectileViews.clear();
+      this.ais.length = 0;
       return;
     }
     if (this.hoverRaf) cancelAnimationFrame(this.hoverRaf);

@@ -20,5 +20,6 @@ describe('headless Game', () => {
     expect(game.units.size).toBeGreaterThan(0);
     expect(game.buildings.size).toBeGreaterThan(0);
     game.destroy();
+    setAutoStart(true);
   });
 });
