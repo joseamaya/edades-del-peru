@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { Unit } from '../src/entities/Unit';
 import { Building } from '../src/entities/Building';
 import { BuildingKind, Era, UnitKind } from '../src/core/types';
+import { Projectile } from '../src/entities/Projectile';
+import { Vec3 } from '../src/sim/Vec3';
 
 const noBuildContext = {} as never;
 
@@ -37,6 +39,19 @@ describe('headless simulation entities', () => {
     expect(() => unit.update(1 / 60, 0)).not.toThrow();
     unit.takeDamage(unit.maxHp + 1);
     expect(unit.dead).toBe(true);
+  });
+
+  it('advances a projectile without a renderer', () => {
+    const projectile = new Projectile({
+      from: new Vec3(),
+      target: new Vec3(1, 0, 0),
+      speed: 1,
+      damage: 1,
+      kind: 'arrow',
+      owner: 0,
+    });
+    projectile.update(2);
+    expect(projectile.dead).toBe(true);
   });
 
   it('runs a building production queue without a view', () => {
