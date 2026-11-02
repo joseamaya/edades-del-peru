@@ -388,11 +388,10 @@ export class AI {
     const p = this.p;
     const stats = getBuildingStats(kind, p.era);
     if (!this.game.spendResource(this.playerId, stats.cost)) return;
-    const ctx = this.game.makeBuildContext(this.playerId);
-    const b = new Building(kind, this.playerId, p.era, ctx);
+    const b = new Building(kind, this.playerId, p.era);
     b.pos.set(x, this.game.terrain.getHeight(x, z), z);
     this.game.applyTerrainFarmYield(b);
-    b.attach(this.game.scene);
+    this.game.attachBuilding(b);
     b.beginConstruction();
     this.game.buildings.set(b.id, b);
     const handle = { x, z, radius: stats.size * 0.6 };

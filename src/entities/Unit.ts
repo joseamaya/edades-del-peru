@@ -23,7 +23,7 @@ import { buildModel, BuildContext, disposeModel } from '../model/ProceduralModel
 import { acquireRig } from '../rendering/ModelAssets';
 import type { RigInstance } from '../rendering/RigInstance';
 import { EntityView } from '../entities/EntityView';
-import { allocId } from '../entities/EntityView';
+import { allocId } from '../sim/ids';
 import { Order, OrderKind, OrderTarget } from '../core/types';
 import { angleDelta, angleTo, distance2D, clamp, facingRotation, lerp } from '../util/math';
 import { genderForId, type PersonGender } from '../model/defs/people';

@@ -1,8 +1,7 @@
-import * as THREE from 'three';
+import { Vec3 } from '../sim/Vec3';
 import { Era, BuildingKind, UnitKind, Team, OrderTarget } from '../core/types';
 import {
   getBuildingStats,
-  getBuildingModel,
   BuildingStats,
   BUILDING_DEFS,
   defensiveProjectileFor,
@@ -10,14 +9,19 @@ import {
   defensiveShotDamage,
 } from '../model/defs/buildings';
 import { UNIT_ARCHETYPES } from '../model/defs/units';
-import { buildModel, BuildContext, disposeModel } from '../model/ProceduralModel';
-import { EntityView } from './EntityView';
-import { allocId } from './EntityView';
+import type { EntityView } from './EntityView';
+import { allocId } from '../sim/ids';
 import { getUnitStats } from '../model/defs/units';
 import { unitMinPeriod } from '../model/defs/units';
 import { getTech, techAvailable } from '../model/defs/techs';
 import { clamp } from '../util/math';
 import type { BuildingSave } from '../game/saveTypes';
+
+interface ConstructionMaterial {
+  transparent: boolean;
+  opacity: number;
+  needsUpdate: boolean;
+}
 import { cosmeticRandom } from '../util/rng';
 import { advanceProduction } from '../game/systems/ProductionSystem';
 
@@ -27,9 +31,9 @@ export class Building {
   kind: BuildingKind;
   era: Era;
   stats: BuildingStats;
-  pos = new THREE.Vector3();
+  pos = new Vec3();
   yaw = 0;
-  view: EntityView;
+  view: EntityView | null = null;
   hp: number;
   maxHp: number;
   dead = false;
@@ -60,11 +64,11 @@ export class Building {
   private smokeTimer = cosmeticRandom() * 1.5;
   private damageSmokeTimer = 0;
   /** Materials that were opaque, to restore them when construction finishes. */
-  private constructionMats: THREE.MeshStandardMaterial[] | null = null;
+  private constructionMats: Array<{ transparent: boolean; opacity: number; needsUpdate: boolean }> | null = null;
 
   ctx: any;
   garrisons = 0;
-  constructor(kind: BuildingKind, owner: number, era: Era, ctx: BuildContext) {
+  constructor(kind: BuildingKind, owner: number, era: Era) {
     this.kind = kind;
     this.owner = owner;
     this.era = era;
@@ -79,8 +83,6 @@ export class Building {
       this.isFarm = true;
       this.foodAmount = 500 + this.era * 200;
     }
-    const model = buildModel(getBuildingModel(kind, era), ctx);
-    this.view = new EntityView(model, this.radius * 0.9, this);
     this.hp = this.maxHp = this.stats.hp;
   }
 
@@ -101,15 +103,15 @@ export class Building {
     this.ctx = ctx;
   }
 
-  attach(scene: THREE.Scene): void {
-    this.view.attachTo(scene);
-    this.view.setPosition(this.pos.x, this.pos.y, this.pos.z);
+  setView(view: EntityView | null): void {
+    this.view = view;
+    this.constructionMats = null;
   }
 
   beginConstruction(): void {
     this.constructionProgress = 0;
     this.constructionComplete = false;
-    this.view.group.visible = true;
+    if (this.view) this.view.group.visible = true;
     // semi-transparent construction
     this.setConstructionOpacity(0.45);
   }
@@ -129,12 +131,16 @@ export class Building {
     }
     // fade only the materials that were opaque (not windows/glass/glow)
     if (!this.constructionMats) this.constructionMats = [];
-    this.view.group.traverse((obj) => {
-      const m = obj as THREE.Mesh;
+    this.view?.group.traverse((obj) => {
+      const m = obj as unknown as {
+        isMesh?: boolean;
+        visible: boolean;
+        material: ConstructionMaterial | ConstructionMaterial[];
+      };
       if (!m.isMesh || !m.visible) return;
       const mats = Array.isArray(m.material) ? m.material : [m.material];
       for (const raw of mats) {
-        const mat = raw as THREE.MeshStandardMaterial;
+        const mat = raw as ConstructionMaterial;
         if (!mat || mat.transparent !== false) continue;
         if (this.constructionMats!.includes(mat)) continue;
         this.constructionMats!.push(mat);
@@ -152,7 +158,7 @@ export class Building {
     if (this.constructionProgress >= this.stats.buildTime) {
       this.constructionComplete = true;
       this.setConstructionOpacity(1);
-      this.view.group.scale.y = 1;
+      if (this.view) this.view.group.scale.y = 1;
       if (this.owner === 0) {
         this.ctx?.event('alert', { icon: '✅', text: 'Edificio terminado', x: this.pos.x, z: this.pos.z });
       }
@@ -164,7 +170,7 @@ export class Building {
     this.constructionProgress = this.stats.buildTime;
     this.constructionComplete = true;
     this.setConstructionOpacity(1);
-    this.view.group.scale.y = 1;
+    if (this.view) this.view.group.scale.y = 1;
   }
 
   get buildRatio(): number {
@@ -272,10 +278,9 @@ export class Building {
     this.attackCooldown = Math.max(0, this.attackCooldown - dt);
 
     // phased construction: the model rises out of the ground as it is built
-    if (!this.constructionComplete) {
-      this.view.group.scale.y = 0.08 + 0.92 * clamp(this.buildRatio, 0, 1);
-    } else if (this.view.group.scale.y !== 1) {
-      this.view.group.scale.y = 1;
+    if (this.view) {
+      if (!this.constructionComplete) this.view.group.scale.y = 0.08 + 0.92 * clamp(this.buildRatio, 0, 1);
+      else if (this.view.group.scale.y !== 1) this.view.group.scale.y = 1;
     }
 
     // ambient smoke from factories/smelters/refineries (map life)
@@ -366,8 +371,8 @@ export class Building {
       this.ctx?.event('wonder:time', { owner: this.owner, time: this.wonderTimer });
     }
 
-    this.view.updateHealth(this.hp / this.maxHp);
-    this.view.animatePulse(time);
+    this.view?.updateHealth(this.hp / this.maxHp);
+    this.view?.animatePulse(time);
   }
 
   private autoDefend(time: number): void {
@@ -378,8 +383,8 @@ export class Building {
     if (this.attackCooldown > 0) return;
     const target = enemies[0];
     this.attackCooldown = this.stats.attack.attackSpeed;
-    const from = new THREE.Vector3(this.pos.x, this.pos.y + 3, this.pos.z);
-    const to = new THREE.Vector3(target.pos.x, target.pos.y + 0.5, target.pos.z);
+    const from = { x: this.pos.x, y: this.pos.y + 3, z: this.pos.z };
+    const to = { x: target.pos.x, y: target.pos.y + 0.5, z: target.pos.z };
     const shot = defensiveProjectileFor(this.era);
     // Every garrisoned unit adds a projectile, so a manned tower punishes a push.
     const shots = defensiveShotCount(this.garrisonedIds.length);
@@ -406,24 +411,6 @@ export class Building {
       size: 1.2,
     });
     void time;
-  }
-
-  /** When advancing era, the building is modernized. */
-  modernize(era: Era, ctx: BuildContext): void {
-    if (era === this.era) return;
-    this.era = era;
-    const old = this.view.group;
-    const newModel = buildModel(getBuildingModel(this.kind, era), ctx);
-    newModel.position.copy(old.position);
-    newModel.rotation.copy(old.rotation);
-    if (old.parent) {
-      old.parent.add(newModel);
-      old.parent.remove(old);
-    }
-    this.view.dispose();
-    disposeModel(old);
-    this.view = new EntityView(newModel, this.radius * 0.9, this);
-    if (!this.constructionComplete) this.setConstructionOpacity(0.45);
   }
 
   /** Snapshot the gameplay state (used by save/load). */
@@ -469,13 +456,7 @@ export class Building {
     this.constructionProgress = s.constructionProgress;
     this.constructionComplete = s.constructionComplete;
     this.setConstructionOpacity(this.constructionComplete ? 1 : 0.45);
-    this.view.setPosition(this.pos.x, this.pos.y, this.pos.z);
-    this.view.setRotationY(this.yaw);
-  }
-
-  removeFromScene(): void {
-    if (this.view.group.parent) this.view.group.parent.remove(this.view.group);
-    this.view.dispose();
-    disposeModel(this.view.group);
+    this.view?.setPosition(this.pos.x, this.pos.y, this.pos.z);
+    this.view?.setRotationY(this.yaw);
   }
 }
