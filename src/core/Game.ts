@@ -20,7 +20,7 @@ import { Unit, UnitContext } from '../entities/Unit';
 import { Building } from '../entities/Building';
 import { ResourceNode } from '../entities/ResourceNode';
 import { clearResourceCaches } from '../rendering/ResourceNodeView';
-import { OrderMarkers, MarkerKind } from '../entities/OrderMarker';
+import { OrderMarkers } from '../entities/OrderMarker';
 import { TreeInstances } from '../rendering/TreeInstances';
 import { Props } from '../rendering/Props';
 import { Wildlife } from '../rendering/Wildlife';
@@ -68,7 +68,7 @@ import { archProfileFor } from '../model/defs/architecture';
 import { LANDMARKS, PadSize, setpiecePadRadius } from '../model/defs/landmarks';
 import { getHeritageBuilding, type HeritageBuildingDef, type HeritageBuildingId } from '../model/defs/heritage';
 import { getPeriod } from '../model/defs/periods';
-import { BuildContext, buildModel, buildLandmarkModel, disposeModel, clearModelCaches } from '../model/ProceduralModel';
+import { BuildContext, buildLandmarkModel, disposeModel, clearModelCaches } from '../model/ProceduralModel';
 import { clearTextureCache } from '../rendering/Textures';
 import {
   CAMERA_SPEED_SCALE,
@@ -88,7 +88,7 @@ import {
 import { resolveColorGrade } from '../model/defs/grades';
 import type { SettlementPlan } from '../model/defs/settlementPlan';
 import { inCaralCity, planCaralCity, type CaralCityPlan } from '../model/defs/setpieces';
-import { insideTerrainRect, riverCentreZ } from '../model/defs/terrainLayout';
+import { riverCentreZ } from '../model/defs/terrainLayout';
 import { SettlementOverlay } from '../rendering/SettlementOverlay';
 import { SettlementDressing } from '../rendering/SettlementDressing';
 import { planSettlementDressing } from '../model/defs/settlementDressing';
@@ -102,22 +102,12 @@ import {
 } from '../model/defs/caralValley';
 import { farmYieldMultiplier, nearbyCanal } from '../model/defs/farmYield';
 import { distance2D, distanceToSegment } from '../util/math';
-import { isTypingTarget } from '../util/dom';
 import { RNG, weightedPick } from '../util/rng';
-import { keyFor } from './hotkeys';
 import { getAuthoredSite, type AuthoredSiteDef, type SiteHeritageProxy } from '../model/defs/sites';
 import { detectSoftwareRenderer } from '../util/gpu';
 import { ERA_DEFS } from '../model/defs/eras';
 import { BUILDING_DEFS, getBuildingStats, BUILDING_INFO } from '../model/defs/buildings';
-import {
-  getUnitStats,
-  unitDisplayDescription,
-  unitDisplayIcon,
-  unitDisplayName,
-  isConverter,
-  DamageClass,
-  unitClassFor,
-} from '../model/defs/units';
+import { getUnitStats, DamageClass, unitClassFor } from '../model/defs/units';
 import { getTech } from '../model/defs/techs';
 import { AudioEngine } from '../audio/AudioEngine';
 import { Mission } from '../campaign/Mission';
@@ -128,6 +118,7 @@ import { getMission } from '../campaign/defs/campaign';
 import type { MissionDef, MissionAtmosphere, MissionLayout, MissionPoint, MissionSite } from '../campaign/types';
 import { serializeGame, saveToStorage } from '../game/SaveGame';
 import { CommandProcessor } from '../game/CommandProcessor';
+import { InputController } from './InputController';
 import { stateHashOf } from '../game/stateHash';
 import { applyPopulation } from '../game/systems/PopulationSystem';
 import { resolveConquest } from '../game/systems/VictorySystem';
@@ -147,18 +138,7 @@ export function setAutoStart(value: boolean): void {
   autoStart = value;
 }
 
-const NODE_INFO: Record<ResourceNode['kind'], { name: string; icon: string }> = {
-  tree: { name: 'Árbol', icon: '🌳' },
-  mine: { name: 'Mina', icon: '⛏️' },
-  well: { name: 'Cantera', icon: '🪨' },
-  hunt: { name: 'Caza', icon: '🦌' },
-  fishing: { name: 'Banco de peces', icon: '🐟' },
-  berry: { name: 'Arbusto', icon: '🫐' },
-};
-
 /** What sits under a screen point: at most one resource/unit/building. */
-type PickResult = { resource: ResourceNode | null; unit?: Unit; building?: Building; heritage?: HeritageBuildingDef };
-
 /** A death animation: animates a detached model, then frees it. */
 interface DeathFx {
   view: EntityView;
@@ -180,7 +160,6 @@ const AMBIENT_PROP_SEED = 7;
 const AMBIENT_FAUNA_SEED = 13;
 
 /** Campaign intro flyover framing, relative to the player base. */
-const WALL_SEGMENT_SPACING = 2;
 const INTRO_CAMERA = { offset: 34, fromHeight: 52, toZoom: 30, seconds: 2.6 } as const;
 /** Keep guaranteed fishing searches inside the authored river and map edge. */
 const FISHING_SCAN_MARGIN = 4;
@@ -265,20 +244,24 @@ export class Game {
   projectiles: Projectile[] = [];
   private projectileViews = new Map<number, ProjectileView>();
 
+  readonly input = new InputController(this);
+  private idleCursor = -1;
+  private formationPreset: 'box' | 'line' | 'dispersed' = 'box';
+  get placingBuilding(): { kind: BuildingKind; valid: boolean; ghost: THREE.Group } | null {
+    return this.input.placingBuilding;
+  }
+
+  get mouseScreen(): THREE.Vector2 {
+    return this.input.mouseScreen;
+  }
+
   selectedUnits: number[] = [];
   selectedBuilding: number | null = null;
   selectedHeritage: HeritageBuildingId | null = null;
   private readonly visitedHeritage = new Set<HeritageBuildingId>();
-  private selectionStart: THREE.Vector2 | null = null;
   obstacleHandles = new Map<number, { x: number; z: number; radius: number; gate?: boolean; owner?: number }>();
   private readonly spatialCell = 6;
   private spatial = new Map<number, Unit[]>();
-  private mouse = new THREE.Vector2();
-  private mouseScreen = new THREE.Vector2();
-  private raycaster = new THREE.Raycaster();
-  private groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-  private placingBuilding: { kind: BuildingKind; valid: boolean; ghost: THREE.Group } | null = null;
-  private shiftQueue = false;
   readonly headless: boolean;
   private paused = false;
   private gameEnded = false;
@@ -1955,6 +1938,54 @@ export class Game {
     this.audio.uiClick?.();
   }
 
+  private refreshSelectionVisuals(): void {
+    this.input.refreshSelectionVisuals();
+  }
+
+  private siteBlocksConstruction(x: number, z: number, pad: number): boolean {
+    return this.input.siteBlocksConstruction(x, z, pad);
+  }
+
+  private initInput(): void {
+    this.input.init();
+  }
+
+  private isPointerOverUi(): boolean {
+    return this.input.isPointerOverUi();
+  }
+
+  togglePause(): void {
+    this.input.togglePause();
+  }
+
+  getPaused(): boolean {
+    return this.input.getPaused();
+  }
+
+  screenToWorld(x: number, z: number): THREE.Vector3 | null {
+    return this.input.screenToWorld(x, z);
+  }
+
+  commandMoveToWorld(x: number, z: number, ctrlQueue?: boolean, shiftQueue?: boolean): void {
+    this.input.commandMoveToWorld(x, z, ctrlQueue, shiftQueue);
+  }
+
+  startPlacement(kind: BuildingKind): void {
+    this.input.startPlacement(kind);
+  }
+
+  cancelPlacement(): void {
+    this.input.cancelPlacement();
+  }
+
+  pickAt(x: number, y: number): { unit?: Unit; building?: Building } {
+    return this.input.pickAt(x, y);
+  }
+
+  pickEntity(x: number, y: number): { unit?: Unit; building?: Building } {
+    return this.input.pickEntity(x, y);
+  }
+
   private initHUD(): void {
     this.hud = new HUD(this);
     bus.on('player:era', (e) => {
@@ -2068,7 +2099,7 @@ export class Game {
   }
 
   /** Route a single-unit order through the command layer (records it for replays). */
-  private orderUnit(u: Unit, order: Order, clear: boolean): void {
+  orderUnit(u: Unit, order: Order, clear: boolean): void {
     this.executeCommand({ kind: 'order', unitIds: [u.id], order, clear });
   }
 
@@ -2306,951 +2337,6 @@ export class Game {
     bus.on('fx:hit', () => this.audio.hit());
     bus.on('fx:wood', () => this.audio.woodChop());
     bus.on('fx:mine', () => this.audio.mineHit());
-  }
-
-  private initInput(): void {
-    const canvas = this.renderer.domElement;
-    canvas.addEventListener('mousedown', this.onMouseDown);
-    window.addEventListener('mouseup', this.onMouseUp);
-    canvas.addEventListener('mousemove', this.onMouseMove);
-    window.addEventListener('keydown', this.onKeyDown);
-    window.addEventListener('keyup', this.onKeyUp);
-  }
-
-  // --- input ---
-
-  private screenToWorld(sx: number, sy: number): THREE.Vector3 | null {
-    const ndc = new THREE.Vector2((sx / window.innerWidth) * 2 - 1, -(sy / window.innerHeight) * 2 + 1);
-    this.raycaster.setFromCamera(ndc, this.camera.camera);
-    const ray = this.raycaster.ray;
-    const hit = new THREE.Vector3();
-    // first shot: plane y=0 (lower bound of the terrain)
-    if (!ray.intersectPlane(this.groundPlane, hit)) return null;
-    const dir = ray.direction;
-    if (Math.abs(dir.y) < 1e-4) return hit;
-    // refined against the heightfield: fixed point sampling the real height
-    const size = this.settings.mapSize;
-    const p = new THREE.Vector3();
-    let t = ray.origin.distanceTo(hit);
-    for (let i = 0; i < 5; i++) {
-      ray.at(t, p);
-      const hx = Math.min(Math.max(p.x, 0), size);
-      const hz = Math.min(Math.max(p.z, 0), size);
-      const h = this.terrain.getHeight(hx, hz);
-      const nt = (h - ray.origin.y) / dir.y;
-      if (!Number.isFinite(nt) || nt <= 0) break;
-      t = nt;
-    }
-    ray.at(t, p);
-    p.y = this.terrain.getHeight(Math.min(Math.max(p.x, 0), size), Math.min(Math.max(p.z, 0), size));
-    return p;
-  }
-
-  /**
-   * True if the pointer is over a HUD control. `#ui-root` is `pointer-events:none`
-   * and only real controls set `auto`, so `elementFromPoint` returning anything but
-   * the canvas means a control is under the cursor (0 A.D.-style edge guard).
-   */
-  private isPointerOverUi(): boolean {
-    return this.hud.isPointerOverUi(this.mouseScreen.x, this.mouseScreen.y);
-  }
-
-  private onMouseDown = (e: MouseEvent): void => {
-    if (this.gameEnded) return;
-    if (this.placingBuilding) {
-      if (e.button === 0) {
-        const wp = this.screenToWorld(e.clientX, e.clientY);
-        if (wp) {
-          // Walls are placed by dragging a line; other buildings commit on click.
-          if (this.placingBuilding.kind === BuildingKind.WALL) {
-            this.wallDragStart = { x: wp.x, z: wp.z };
-            return;
-          }
-          // recompute with the real click point (do not trust the mousemove state)
-          const foot = getBuildingStats(this.placingBuilding.kind, this.players[0].era).size;
-          if (this.canPlace(wp.x, wp.z, foot)) this.commitPlacement(wp.x, wp.z);
-          else this.updatePlacementGhost(wp.x, wp.z);
-        }
-      } else if (e.button === 2) {
-        this.cancelPlacement();
-      }
-      return;
-    }
-    if (e.button === 0) {
-      this.leftDown = true;
-      this.leftMoved = false;
-      this.selectionStart = new THREE.Vector2(e.clientX, e.clientY);
-      this.shiftQueue = e.shiftKey;
-      this.ctrlQueue = e.ctrlKey || e.altKey;
-    } else if (e.button === 2) {
-      this.rightDown = true;
-    }
-  };
-
-  private ctrlQueue = false;
-  private leftDown = false;
-  private leftMoved = false;
-  private rightDown = false;
-
-  private onMouseUp = (e: MouseEvent): void => {
-    if (e.button === 0 && this.wallDragStart && this.placingBuilding?.kind === BuildingKind.WALL) {
-      const start = this.wallDragStart;
-      this.wallDragStart = null;
-      const end = this.screenToWorld(e.clientX, e.clientY);
-      if (end) this.commitWallLine(start, { x: end.x, z: end.z });
-      return;
-    }
-    if (e.button === 0 && this.leftDown) {
-      this.leftDown = false;
-      this.hud?.hideSelectionBox();
-      if (this.selectionStart) {
-        if (!this.leftMoved) {
-          this.selectAt(this.selectionStart.x, this.selectionStart.y);
-          // double click: select all units of the same type
-          const now = performance.now();
-          if (now - this.lastClickTime < 320 && this.selectedUnits.length === 1) {
-            const u = this.units.get(this.selectedUnits[0]);
-            if (u && u.owner === 0) {
-              const sameType = [...this.units.values()].filter((x) => x.owner === 0 && x.kind === u.kind && !x.dead);
-              this.selectedUnits = sameType.map((x) => x.id);
-              this.refreshSelectionVisuals();
-              bus.emit('unit:selected', { ids: [...this.selectedUnits] });
-            }
-          }
-          this.lastClickTime = now;
-        } else {
-          this.boxSelect(this.selectionStart, new THREE.Vector2(e.clientX, e.clientY));
-        }
-        this.selectionStart = null;
-      }
-    } else if (e.button === 2 && this.rightDown) {
-      this.rightDown = false;
-      this.issueContextOrder(e.clientX, e.clientY);
-    }
-  };
-  private lastClickTime = 0;
-  private hoverRaf = 0;
-  private pendingHover = new THREE.Vector2();
-
-  private onMouseMove = (e: MouseEvent): void => {
-    this.mouseScreen.set(e.clientX, e.clientY);
-    this.camera.updateMouse(e.clientX, e.clientY);
-    const wp = this.screenToWorld(e.clientX, e.clientY);
-    if (wp) {
-      this.mouse.set(wp.x, wp.z);
-      if (this.placingBuilding) {
-        this.updatePlacementGhost(wp.x, wp.z);
-      }
-    }
-    // left-button drag = selection rectangle
-    if (this.leftDown && this.selectionStart) {
-      const dx = e.clientX - this.selectionStart.x;
-      const dy = e.clientY - this.selectionStart.y;
-      if (!this.leftMoved && Math.abs(dx) + Math.abs(dy) > 4) this.leftMoved = true;
-      if (this.leftMoved)
-        this.hud?.showSelectionBox(this.selectionStart.x, this.selectionStart.y, e.clientX, e.clientY);
-    }
-    // cursor + hover tooltip: one pick per frame, shared by the tooltip and the action icon
-    if (!this.gameEnded && !this.placingBuilding) {
-      this.pendingHover.set(e.clientX, e.clientY);
-      if (this.hoverRaf === 0) this.hoverRaf = requestAnimationFrame(this.flushHover);
-    }
-  };
-
-  private flushHover = (): void => {
-    this.hoverRaf = 0;
-    if (this.gameEnded || this.placingBuilding) return;
-    const { x, y } = this.pendingHover;
-    const picked = this.pickScene(x, y);
-    const info = this.computeHover(picked);
-    const hasSel = this.selectedUnits.length > 0 || this.selectedBuilding !== null;
-    const icon = hasSel ? this.hoverAction(picked) : null;
-    this.renderer.domElement.style.cursor = icon ? 'none' : info ? 'pointer' : 'default';
-    this.hud?.setHover(info, x, y);
-    this.hud?.setCursor(icon, x, y);
-  };
-
-  /** Everything under the cursor, resolved once and reused by the tooltip and the action icon. */
-  private pickScene(sx: number, sy: number): PickResult {
-    const resource = this.pickResource(sx, sy);
-    if (resource) return { resource };
-    const entity = this.pickAt(sx, sy);
-    if (entity.unit || entity.building) return { resource: null, ...entity };
-    return { resource: null, ...entity, heritage: this.pickHeritage(sx, sy) ?? undefined };
-  }
-
-  private pickHeritage(sx: number, sy: number): HeritageBuildingDef | null {
-    const roots = [this.landmark, this.canalGroup].filter((root): root is THREE.Group => !!root);
-    if (roots.length === 0) return null;
-    const ndc = new THREE.Vector2((sx / window.innerWidth) * 2 - 1, -(sy / window.innerHeight) * 2 + 1);
-    this.raycaster.setFromCamera(ndc, this.camera.camera);
-    const hits = roots.flatMap((root) => this.raycaster.intersectObject(root, true));
-    hits.sort((a, b) => a.distance - b.distance);
-    for (const hit of hits) {
-      let object: THREE.Object3D | null = hit.object;
-      while (object && !object.userData.heritageId) object = object.parent;
-      const def = getHeritageBuilding(object?.userData.heritageId as string | undefined);
-      if (def) return def;
-    }
-    return null;
-  }
-
-  /** Contextual action icon according to what is under the cursor and the selection. */
-  private hoverAction(picked: PickResult): string | null {
-    if (this.placingBuilding) return '🚧';
-    if (picked.resource) {
-      const hasWorker = this.selectedUnits.some((id) => this.units.get(id)?.kind === UnitKind.WORKER);
-      return hasWorker ? '⛏️' : null;
-    }
-    if (picked.unit) {
-      if (picked.unit.owner === 0) return null;
-      const converter = this.selectedUnits
-        .map((id) => this.units.get(id))
-        .find((u): u is Unit => !!u && !u.dead && isConverter(u.kind));
-      return converter ? unitDisplayIcon(converter.kind, converter.era) : '⚔️';
-    }
-    if (picked.building) return picked.building.owner !== 0 ? '⚔️' : '🏰';
-    if (picked.heritage) return '🔎';
-    return null;
-  }
-
-  /** Information about the entity or resource under the cursor (for the tooltip). */
-  private computeHover(picked: PickResult): { icon: string; title: string; detalle: string } | null {
-    if (picked.resource) {
-      const node = picked.resource;
-      const ni = NODE_INFO[node.kind];
-      return {
-        icon: ni.icon,
-        title: ni.name,
-        detalle: `${Math.ceil(node.amount)} ${RESOURCE_INFO[node.resource].name}`,
-      };
-    }
-    if (picked.unit) {
-      const own = picked.unit.owner === 0 ? 'Tú' : (this.players[picked.unit.owner]?.name ?? 'Enemigo');
-      return {
-        icon: unitDisplayIcon(picked.unit.kind, picked.unit.era),
-        title: unitDisplayName(picked.unit.kind, this.players[picked.unit.owner]?.civ, picked.unit.era),
-        detalle: `${own} · HP ${Math.ceil(picked.unit.hp)}/${Math.ceil(picked.unit.maxHp)} · ${unitDisplayDescription(
-          picked.unit.kind,
-          this.players[picked.unit.owner]?.civ,
-          picked.unit.era,
-        )}`,
-      };
-    }
-    if (picked.building) {
-      const bi = BUILDING_INFO[picked.building.kind];
-      const own = picked.building.owner === 0 ? 'Tú' : (this.players[picked.building.owner]?.name ?? 'Enemigo');
-      const state = picked.building.constructionComplete
-        ? ''
-        : ` · Construyendo ${Math.floor(picked.building.buildRatio * 100)}%`;
-      return {
-        icon: bi.icon,
-        title: bi.name,
-        detalle: `${own} · HP ${Math.ceil(picked.building.hp)}/${Math.ceil(picked.building.maxHp)}${state}`,
-      };
-    }
-    if (picked.heritage) {
-      return {
-        icon: '🏛️',
-        title: picked.heritage.name,
-        detalle: `${picked.heritage.sector} · ${picked.heritage.role}`,
-      };
-    }
-    return null;
-  }
-
-  /** Project a world point to screen coordinates. */
-  private projectToScreen(x: number, y: number, z: number): { x: number; y: number } {
-    const v = this.tmpProject.set(x, y, z).project(this.camera.camera);
-    return { x: (v.x * 0.5 + 0.5) * window.innerWidth, y: (-v.y * 0.5 + 0.5) * window.innerHeight };
-  }
-  private tmpProject = new THREE.Vector3();
-  private static readonly UNIT_PICK_PX = 30;
-  private static readonly BUILDING_PICK_PX = 24;
-
-  /**
-   * Tolerant picking: exact raycast first and, if it fails, the entity closest
-   * to the cursor on screen (fixes clicking on small/moving units).
-   */
-  private pickAt(sx: number, sy: number): { unit?: Unit; building?: Building } {
-    const direct = this.pickEntity(sx, sy);
-    if (direct.unit) return direct;
-
-    // closest unit on screen (tolerance for small units or behind buildings)
-    let bestUnit: Unit | undefined;
-    let bestUnitD = Game.UNIT_PICK_PX;
-    for (const u of this.units.values()) {
-      if (u.dead) continue;
-      const s = this.projectToScreen(u.pos.x, u.pos.y + 0.5, u.pos.z);
-      const d = Math.hypot(s.x - sx, s.y - sy);
-      if (d < bestUnitD) {
-        bestUnitD = d;
-        bestUnit = u;
-      }
-    }
-    if (bestUnit) {
-      if (direct.building) {
-        const bs = this.projectToScreen(direct.building.pos.x, direct.building.pos.y + 1.3, direct.building.pos.z);
-        const bd = Math.hypot(bs.x - sx, bs.y - sy);
-        return bestUnitD <= bd ? { unit: bestUnit } : direct;
-      }
-      return { unit: bestUnit };
-    }
-    if (direct.building) return direct;
-
-    // closest building on screen
-    let bestBuilding: Building | undefined;
-    let bestBuildingD = Game.BUILDING_PICK_PX;
-    for (const b of this.buildings.values()) {
-      if (b.dead) continue;
-      const s = this.projectToScreen(b.pos.x, b.pos.y + 1.3, b.pos.z);
-      const d = Math.hypot(s.x - sx, s.y - sy);
-      if (d < bestBuildingD) {
-        bestBuildingD = d;
-        bestBuilding = b;
-      }
-    }
-    return bestBuilding ? { building: bestBuilding } : {};
-  }
-
-  private pickEntity(sx: number, sy: number): { unit?: Unit; building?: Building } {
-    const ndc = new THREE.Vector2((sx / window.innerWidth) * 2 - 1, -(sy / window.innerHeight) * 2 + 1);
-    this.raycaster.setFromCamera(ndc, this.camera.camera);
-    const proxies: THREE.Object3D[] = [];
-    for (const u of this.units.values()) if (!u.dead && u.view) proxies.push(u.view.pickProxy);
-    for (const b of this.buildings.values()) if (!b.dead && b.view) proxies.push(b.view.pickProxy);
-    const hits = this.raycaster.intersectObjects(proxies, false);
-    for (const h of hits) {
-      const e = h.object.userData.owner;
-      if (e instanceof Unit) return { unit: e };
-      if (e instanceof Building) return { building: e };
-    }
-    return {};
-  }
-
-  private selectAt(sx: number, sy: number): void {
-    const picked = this.pickAt(sx, sy);
-    if (picked.building && !this.shiftQueue) {
-      this.selectedUnits = [];
-      this.selectedBuilding = picked.building.id;
-      this.selectedHeritage = null;
-      this.refreshSelectionVisuals();
-      bus.emit('unit:selected', { ids: [] });
-      this.audio.select();
-      return;
-    }
-    if (picked.unit) {
-      if (this.shiftQueue) {
-        if (!this.selectedUnits.includes(picked.unit.id)) this.selectedUnits.push(picked.unit.id);
-      } else {
-        this.selectedUnits = [picked.unit.id];
-      }
-      this.selectedBuilding = null;
-      this.selectedHeritage = null;
-      this.refreshSelectionVisuals();
-      bus.emit('unit:selected', { ids: [...this.selectedUnits] });
-      this.audio.select();
-      return;
-    }
-    if (!this.shiftQueue) {
-      const heritage = this.pickHeritage(sx, sy);
-      if (heritage) {
-        this.selectedUnits = [];
-        this.selectedBuilding = null;
-        this.selectedHeritage = heritage.id;
-        this.refreshSelectionVisuals();
-        bus.emit('unit:selected', { ids: [] });
-        this.audio.select();
-        return;
-      }
-      this.selectedUnits = [];
-      this.selectedBuilding = null;
-      this.selectedHeritage = null;
-      this.refreshSelectionVisuals();
-      bus.emit('unit:selected', { ids: [] });
-      this.audio.select();
-    }
-  }
-
-  private boxSelect(a: THREE.Vector2, b: THREE.Vector2): void {
-    const minX = Math.min(a.x, b.x);
-    const maxX = Math.max(a.x, b.x);
-    const minY = Math.min(a.y, b.y);
-    const maxY = Math.max(a.y, b.y);
-    const result: number[] = [];
-    for (const u of this.units.values()) {
-      if (u.owner !== 0) continue;
-      if (u.dead) continue;
-      const screen = new THREE.Vector3(u.pos.x, u.pos.y, u.pos.z).project(this.camera.camera);
-      const sx = (screen.x * 0.5 + 0.5) * window.innerWidth;
-      const sy = (-screen.y * 0.5 + 0.5) * window.innerHeight;
-      if (sx >= minX && sx <= maxX && sy >= minY && sy <= maxY) {
-        result.push(u.id);
-      }
-    }
-    if (result.length > 0) {
-      this.selectedUnits = this.shiftQueue ? [...new Set([...this.selectedUnits, ...result])] : result;
-      this.selectedBuilding = null;
-      this.selectedHeritage = null;
-      this.refreshSelectionVisuals();
-      bus.emit('unit:selected', { ids: [...this.selectedUnits] });
-    }
-  }
-
-  private refreshSelectionVisuals(): void {
-    for (const u of this.units.values()) {
-      const sel = this.selectedUnits.includes(u.id);
-      u.selected = sel;
-      const p = this.players[u.owner];
-      u.view?.showSelectionColor(sel, p.color);
-    }
-    for (const b of this.buildings.values()) {
-      const sel = this.selectedBuilding === b.id;
-      b.selected = sel;
-      const p = this.players[b.owner];
-      b.view?.showSelectionColor(sel, p.color);
-    }
-  }
-
-  private issueContextOrder(sx: number, sy: number): void {
-    const units = this.selectedUnits.map((id) => this.units.get(id)).filter((u): u is Unit => !!u && !u.dead);
-    if (units.length === 0) return;
-    const picked = this.pickAt(sx, sy);
-    const wp = this.screenToWorld(sx, sy);
-    const target: OrderTarget = wp ? { x: wp.x, z: wp.z } : { x: this.mouse.x, z: this.mouse.y };
-
-    // click on a resource node -> gather
-    const node = this.pickResource(sx, sy);
-    if (node) {
-      this.markOrder(target, 'gather');
-      for (const u of units) {
-        if (u.kind === UnitKind.WORKER) {
-          this.orderUnit(u, { kind: OrderKind.GATHER, entityId: node.id }, !this.shiftQueue);
-        } else {
-          this.orderUnit(u, { kind: OrderKind.ATTACK_MOVE, target }, !this.shiftQueue);
-        }
-      }
-      return;
-    }
-    if (picked.building) {
-      const b = picked.building;
-      // farm: workers gather food from it (only if it is complete)
-      if (b.owner === 0 && b.isFarm && b.constructionComplete && b.foodAmount > 0) {
-        for (const u of units) {
-          if (u.kind === UnitKind.WORKER) {
-            this.orderUnit(u, { kind: OrderKind.GATHER, entityId: b.id }, !this.shiftQueue);
-          } else {
-            this.orderUnit(u, { kind: OrderKind.ATTACK_MOVE, target }, !this.shiftQueue);
-          }
-        }
-        this.audio.order();
-        return;
-      }
-      if (b.owner !== 0) {
-        // attack an enemy building
-        this.markOrder({ x: b.pos.x, z: b.pos.z }, 'attack');
-        for (const u of units) {
-          this.orderUnit(u, { kind: OrderKind.ATTACK, entityId: b.id }, !this.shiftQueue);
-        }
-      } else if (this.shiftQueue) {
-        // set rally point
-        this.executeCommand({ kind: 'rally', buildingId: b.id, target });
-      } else {
-        for (const u of units) {
-          if (u.kind === UnitKind.WORKER && !b.constructionComplete) {
-            this.orderUnit(u, { kind: OrderKind.BUILD, entityId: b.id }, !this.shiftQueue);
-          } else if (u.kind === UnitKind.WORKER && b.isDropsite) {
-            this.orderUnit(u, { kind: OrderKind.DELIVER, entityId: b.id }, !this.shiftQueue);
-          } else if (b.garrisons > 0) {
-            this.orderUnit(u, { kind: OrderKind.GARRISON, entityId: b.id }, !this.shiftQueue);
-          } else {
-            this.orderUnit(u, { kind: OrderKind.MOVE, target }, !this.shiftQueue);
-          }
-        }
-      }
-      return;
-    }
-    if (picked.unit && picked.unit.owner !== 0) {
-      const enemyId = picked.unit.id;
-      const target = { x: picked.unit.pos.x, z: picked.unit.pos.z };
-      const canConvert = units.some((u) => isConverter(u.kind));
-      this.markOrder(target, canConvert ? 'convert' : 'attack');
-      for (const u of units) {
-        if (canConvert && isConverter(u.kind)) {
-          this.orderUnit(u, { kind: OrderKind.CONVERT, entityId: enemyId }, !this.shiftQueue);
-        } else {
-          this.orderUnit(u, { kind: OrderKind.ATTACK, entityId: enemyId }, !this.shiftQueue);
-        }
-      }
-      return;
-    }
-    if (this.ctrlQueue) {
-      // attack-move
-      this.markOrder(target, 'attack');
-      for (const u of units) {
-        this.orderUnit(u, { kind: OrderKind.ATTACK_MOVE, target }, !this.shiftQueue);
-      }
-    } else {
-      this.markOrder(target, 'move');
-      this.issueMoveFormation(units, target);
-    }
-    this.audio.order();
-  }
-
-  /** Visually mark the destination of an order on the ground. */
-  private markOrder(target: OrderTarget, kind: MarkerKind): void {
-    const y = this.terrain.getHeight(target.x, target.z);
-    this.markers.spawn(target.x, y, target.z, kind);
-  }
-
-  /** Move/attack-move order to a world point (used by the minimap). */
-  commandMoveToWorld(x: number, z: number, ctrlQueue = this.ctrlQueue, shiftQueue = this.shiftQueue): void {
-    const units = this.selectedUnits.map((id) => this.units.get(id)).filter((u): u is Unit => !!u && !u.dead);
-    if (units.length === 0) return;
-    const target: OrderTarget = { x, z };
-    if (ctrlQueue) {
-      this.markOrder(target, 'attack');
-      for (const u of units) this.orderUnit(u, { kind: OrderKind.ATTACK_MOVE, target }, !shiftQueue);
-    } else {
-      this.markOrder(target, 'move');
-      this.issueMoveFormation(units, target);
-    }
-    this.audio.order();
-  }
-
-  /** Line-formation movement: one shared A* path, per-unit final offsets. */
-  private issueMoveFormation(units: Unit[], target: OrderTarget): void {
-    const n = units.length;
-    const yaw = Math.atan2(target.z - units[0].pos.z, target.x - units[0].pos.x);
-    const spacing = 1.5;
-    const cols = Math.ceil(Math.sqrt(n));
-    const rows = Math.ceil(n / cols);
-    // One A* for the whole order; separation keeps the members from overlapping.
-    const owner = units[0].owner;
-    const shared = this.pathfinder.pathfind(units[0].pos.x, units[0].pos.z, target.x, target.z, owner);
-    const slowest = Math.min(...units.map((u) => u.stats.speed));
-    const spread = this.formationPreset === 'dispersed' ? spacing * 1.7 : spacing;
-    let idx = 0;
-    for (const u of units) {
-      const r = Math.floor(idx / cols) - (rows - 1) / 2;
-      const c = (idx % cols) - (cols - 1) / 2;
-      idx++;
-      let offset: { x: number; z: number };
-      if (this.formationPreset === 'line') {
-        const lineIndex = idx - 1 - (n - 1) / 2;
-        offset = { x: -Math.sin(yaw) * lineIndex * spread, z: Math.cos(yaw) * lineIndex * spread };
-      } else {
-        offset = {
-          x: Math.cos(yaw) * r * spread - Math.sin(yaw) * c * spread,
-          z: Math.sin(yaw) * r * spread + Math.cos(yaw) * c * spread,
-        };
-      }
-      const gx = target.x + offset.x;
-      const gz = target.z + offset.z;
-      if (!this.pathfinder.isWalkable(gx, gz, owner)) {
-        const safe = this.pathfinder.nearestWalkablePoint(gx, gz, this.pathfinder.grid.cols, undefined, owner);
-        if (safe) offset = { x: safe.x - target.x, z: safe.z - target.z };
-      }
-      u.issueGroupMove(target, shared, offset, slowest, !this.shiftQueue);
-    }
-  }
-
-  private pickResource(sx: number, sy: number): ResourceNode | null {
-    const ndc = new THREE.Vector2((sx / window.innerWidth) * 2 - 1, -(sy / window.innerHeight) * 2 + 1);
-    this.raycaster.setFromCamera(ndc, this.camera.camera);
-    let best: ResourceNode | null = null;
-    let bestD = Infinity;
-    // nodes with their own mesh (mine, well, hunt, fishing, berry and reserve trees)
-    const meshes: THREE.Object3D[] = [];
-    for (const n of this.resourceNodes.values()) {
-      if (n.kind === 'tree' && n.treeSlot >= 0) continue;
-      if (n.nodeView) meshes.push(n.nodeView.view);
-    }
-    const hits = this.raycaster.intersectObjects(meshes, true);
-    for (const h of hits) {
-      let cur: THREE.Object3D | null = h.object;
-      while (cur) {
-        let found: ResourceNode | null = null;
-        for (const n of this.resourceNodes.values()) {
-          if (n.nodeView?.view === cur) {
-            found = n;
-            break;
-          }
-        }
-        if (found) {
-          best = found;
-          bestD = h.distance;
-          break;
-        }
-        cur = cur.parent;
-      }
-      if (best) break; // ordered by distance: the first is the closest
-    }
-    // instanced trees
-    const treeHits: { dist: number; id: number }[] = [];
-    this.trees.raycast(this.raycaster, treeHits);
-    for (const th of treeHits) {
-      if (th.dist < bestD) {
-        const n = this.resourceNodes.get(th.id);
-        if (n) {
-          bestD = th.dist;
-          best = n;
-        }
-      }
-    }
-    return best;
-  }
-
-  private setRallyPoint(buildingId: number, target: OrderTarget): void {
-    const b = this.buildings.get(buildingId);
-    if (b) {
-      b.rallyPoint = target;
-      b.hasRallyPoint = true;
-      this.hud.showToast('Punto de reunión establecido', 'info');
-    }
-  }
-
-  // --- construction ---
-
-  /**
-   * Can this building be constructed in the current match? It accounts for the era
-   * (period-locked matches) and the Sacred Huaca, which depends on the victory mode,
-   * not the era (so wonder victory is reachable in any period).
-   */
-  canBuildKind(kind: BuildingKind): boolean {
-    if (kind === BuildingKind.CENTER) return false;
-    if (kind === BuildingKind.WONDER) return this.settings.victoryMode === 'wonder';
-    return this.players[0].era >= BUILDING_DEFS[kind].minEra;
-  }
-
-  startPlacement(kind: BuildingKind): void {
-    // RTS standard: building requires selected workers
-    const hasWorker = this.selectedUnits.some((id) => {
-      const u = this.units.get(id);
-      return !!u && !u.dead && u.kind === UnitKind.WORKER;
-    });
-    if (!hasWorker) {
-      this.hud.showToast('Selecciona obreros para construir', 'warning');
-      return;
-    }
-    const ctx = this.makeBuildContext(0);
-    const ghost = new THREE.Group();
-    this.placingBuilding = { kind, valid: false, ghost };
-    this.scene.add(ghost);
-    const ghostModel = buildModelForGhost(kind, ctx);
-    ghost.add(ghostModel);
-    const wp = this.screenToWorld(this.mouseScreen.x, this.mouseScreen.y);
-    if (wp) this.updatePlacementGhost(wp.x, wp.z);
-  }
-
-  private updatePlacementGhost(x: number, z: number): void {
-    if (!this.placingBuilding) return;
-    const stats = getBuildingStats(this.placingBuilding.kind, this.players[0].era);
-    const foot = stats.size;
-    const y = this.terrain.getHeight(x, z);
-    const valid = this.canPlace(x, z, foot);
-    this.placingBuilding.valid = valid;
-    this.placingBuilding.ghost.position.set(x, y + 0.1, z);
-    this.placingBuilding.ghost.visible = true;
-    this.placingBuilding.ghost.traverse((o) => {
-      const m = o as THREE.Mesh;
-      if (m.isMesh) {
-        const mat = m.material as THREE.MeshStandardMaterial;
-        if (mat) mat.color.setHex(valid ? 0x33ff88 : 0xff4444);
-      }
-    });
-  }
-
-  /** Find a free spot near a point to build. */
-  findFreeSpot(x: number, z: number, foot: number): { x: number; z: number } | null {
-    const rng = new RNG(Math.floor(x * 7 + z * 13));
-    for (let i = 0; i < 60; i++) {
-      const ang = rng.range(0, Math.PI * 2);
-      const r = rng.range(foot + 2, 10);
-      const nx = x + Math.cos(ang) * r;
-      const nz = z + Math.sin(ang) * r;
-      if (this.canPlace(nx, nz, foot)) return { x: nx, z: nz };
-    }
-    return null;
-  }
-
-  /** Whether a building footprint would overlap the authored archaeological site. */
-  private siteBlocksConstruction(x: number, z: number, pad: number): boolean {
-    const rects = this.siteDef?.buildKeepout ?? this.missionLayout?.site?.buildKeepout;
-    if (!rects) return false;
-    const size = this.settings.mapSize;
-    return rects.some((rect) =>
-      insideTerrainRect({ x: rect.x * size, z: rect.z * size, rx: rect.rx * size, rz: rect.rz * size }, x, z, pad),
-    );
-  }
-
-  canPlace(x: number, z: number, foot: number): boolean {
-    const r = foot / 2;
-    if (this.terrain.isWater(x, z) || !this.terrain.isBuildable(x, z)) return false;
-    // keep placement on ground units can reach (same slope limit as the nav mesh)
-    if (this.terrain.getSlope(x, z) > MAX_WALKABLE_SLOPE) return false;
-    if (this.siteBlocksConstruction(x, z, r)) return false;
-    for (let dx = -r; dx <= r; dx += 1.2) {
-      for (let dz = -r; dz <= r; dz += 1.2) {
-        if (this.terrain.isWater(x + dx, z + dz)) return false;
-      }
-    }
-    for (const b of this.buildings.values()) {
-      if (b.dead) continue;
-      if (distance2D(x, z, b.pos.x, b.pos.z) < b.radius * 0.9 + r * 0.8) return false;
-    }
-    for (const n of this.resourceNodes.values()) {
-      if (n.dead) continue;
-      if (distance2D(x, z, n.pos.x, n.pos.z) < n.radius + r * 0.9) return false;
-    }
-    return true;
-  }
-
-  private commitPlacement(x: number, z: number): void {
-    if (!this.placingBuilding) return;
-    const kind = this.placingBuilding.kind;
-    this.cancelPlacement();
-    this.placeAndOrder(kind, x, z);
-  }
-
-  /** Place one segment and send the selected workers to it. */
-  private placeAndOrder(kind: BuildingKind, x: number, z: number): Building | null {
-    const stats = getBuildingStats(kind, this.players[0].era);
-    if (!this.canPlace(x, z, stats.size)) return null;
-    const b = this.commandPlace(kind, x, z);
-    if (!b) {
-      this.hud.showToast('Recursos insuficientes', 'error');
-      return null;
-    }
-    const builders = this.selectedUnits
-      .map((id) => this.units.get(id))
-      .filter((u): u is Unit => !!u && !u.dead && u.kind === UnitKind.WORKER);
-    for (const u of builders) {
-      this.executeCommand({
-        kind: 'order',
-        unitIds: [u.id],
-        order: { kind: OrderKind.BUILD, entityId: b.id },
-        clear: true,
-      });
-    }
-    return b;
-  }
-
-  /** Wall drag: one segment every 2 m along the drag line. */
-  private commitWallLine(a: { x: number; z: number }, b: { x: number; z: number }): void {
-    const length = Math.hypot(b.x - a.x, b.z - a.z);
-    const segments = Math.max(1, Math.ceil(length / WALL_SEGMENT_SPACING));
-    let blocked = 0;
-    for (let i = 0; i <= segments; i++) {
-      const t = i / segments;
-      const x = a.x + (b.x - a.x) * t;
-      const z = a.z + (b.z - a.z) * t;
-      if (!this.placeAndOrder(BuildingKind.WALL, x, z)) blocked++;
-    }
-    if (blocked > 0) this.hud.showToast(`${blocked} tramo(s) de muralla sin espacio`, 'warning');
-  }
-
-  /** Place a building for player 0 through the command layer; returns the new building. */
-  private commandPlace(kind: BuildingKind, x: number, z: number): Building | null {
-    const before = new Set(this.buildings.keys());
-    if (!this.executeCommand({ kind: 'place', building: kind, x, z })) return null;
-    for (const [id, b] of this.buildings) if (!before.has(id)) return b;
-    return null;
-  }
-
-  private cancelPlacement(): void {
-    this.wallDragStart = null;
-    if (this.placingBuilding) {
-      this.scene.remove(this.placingBuilding.ghost);
-      disposeModel(this.placingBuilding.ghost);
-      this.placingBuilding = null;
-    }
-  }
-
-  spendResource(player: number, res: Resources): boolean {
-    const p = this.players[player];
-    for (const k of RESOURCE_KEYS) {
-      if (p.resources[k] < res[k]) return false;
-    }
-    for (const k of RESOURCE_KEYS) p.resources[k] -= res[k];
-    bus.emit('resources:changed', { player, resources: { ...p.resources } });
-    return true;
-  }
-
-  addResource(player: number, res: Resources): void {
-    const p = this.players[player];
-    for (const k of RESOURCE_KEYS) p.resources[k] += res[k];
-    bus.emit('resources:changed', { player, resources: { ...p.resources } });
-  }
-
-  /** Cancel a queued training and refund its cost. */
-  cancelProduction(buildingId: number, index: number): void {
-    const b = this.buildings.get(buildingId);
-    if (!b || b.owner !== 0) return;
-    const item = b.productionQueue[index];
-    if (!item) return;
-    const stats = getUnitStats(item.unit, b.era);
-    b.productionQueue.splice(index, 1);
-    this.addResource(b.owner, { ...ZERO_RESOURCES, ...stats.cost });
-    this.hud?.showToast('Entrenamiento cancelado', 'info');
-  }
-
-  /** Release a building's garrisoned units around it (seeded exit positions). */
-  ungarrison(buildingId: number): boolean {
-    const b = this.buildings.get(buildingId);
-    if (!b || b.dead) return false;
-    const ids = b.ungarrisonAll();
-    for (const id of ids) {
-      const u = this.units.get(id);
-      if (!u) continue;
-      u.garrisonedIn = null;
-      if (u.view) u.view.group.visible = true;
-      const ang = this.rng.float() * Math.PI * 2;
-      const px = b.pos.x + Math.cos(ang) * (b.radius + 0.6);
-      const pz = b.pos.z + Math.sin(ang) * (b.radius + 0.6);
-      u.pos.set(px, this.terrain.getHeight(px, pz), pz);
-      u.snapToGround();
-    }
-    return true;
-  }
-
-  // --- keyboard ---
-
-  private onKeyDown = (e: KeyboardEvent): void => {
-    if (isTypingTarget(e.target)) return;
-    const k = e.key.toLowerCase();
-    if (this.gameEnded) return;
-    if (k === keyFor('pause')) {
-      this.togglePause();
-      return;
-    }
-    // do not process game shortcuts with a menu open or while paused
-    if (this.paused || this.hud.hasBlockingOverlay()) return;
-    if (k === keyFor('toggleHelp') || k === '?') {
-      e.preventDefault();
-      this.hud.toggleHelp();
-      return;
-    }
-    if (k === keyFor('nextIdleWorker')) {
-      e.preventDefault();
-      if (e.ctrlKey || e.metaKey) this.selectIdleWorkers();
-      else this.cycleIdleWorker();
-      return;
-    }
-    if (k === 'escape') {
-      this.cancelPlacement();
-      this.selectedUnits = [];
-      this.selectedBuilding = null;
-      this.selectedHeritage = null;
-      this.refreshSelectionVisuals();
-      return;
-    }
-    // control groups (Ctrl/Alt+n assign, n recall, Shift+n add)
-    if (/^[1-9]$/.test(e.key)) {
-      e.preventDefault();
-      const n = Number(e.key);
-      if (e.ctrlKey || e.metaKey || e.altKey) this.assignControlGroup(n);
-      else if (e.shiftKey) this.addToControlGroup(n);
-      else this.recallControlGroup(n);
-      return;
-    }
-    if (k === keyFor('centerBase')) {
-      const center = [...this.buildings.values()].find((b) => b.owner === 0 && b.kind === BuildingKind.CENTER);
-      if (center) this.camera.focusOn(center.pos.x, center.pos.z);
-    }
-    if (k === keyFor('followUnit')) {
-      if (this.selectedUnits.length > 0) {
-        const u = this.units.get(this.selectedUnits[0]);
-        if (u) this.camera.follow(u.id);
-      }
-    }
-    if (k === keyFor('lastBattle')) {
-      const lastEvt = this.lastBattleEvent;
-      if (lastEvt) {
-        const ent = this.units.get(lastEvt) ?? this.buildings.get(lastEvt);
-        if (ent) this.camera.focusOn(ent.pos.x, ent.pos.z);
-      }
-    }
-    // select the whole army (own combat units)
-    if (k === keyFor('selectArmy')) {
-      const army = [...this.units.values()].filter((u) => u.owner === 0 && !u.dead && u.kind !== UnitKind.WORKER);
-      this.selectedUnits = army.map((u) => u.id);
-      this.selectedBuilding = null;
-      this.refreshSelectionVisuals();
-      bus.emit('unit:selected', { ids: [...this.selectedUnits] });
-      this.audio.select();
-      return;
-    }
-    // numeric controls for panels
-    if (k === keyFor('buildFarm')) this.startPlacement(BuildingKind.FARM);
-    if (k === keyFor('buildHouse')) this.startPlacement(BuildingKind.HOUSE);
-  };
-
-  private lastBattleEvent: number | null = null;
-
-  private idleCursor = -1;
-  private formationPreset: 'box' | 'line' | 'dispersed' = 'box';
-  private wallDragStart: { x: number; z: number } | null = null;
-  private controlGroups = new Map<number, number[]>();
-  private lastGroupN = 0;
-  private lastGroupTap = 0;
-
-  private assignControlGroup(n: number): void {
-    const ids = this.selectedUnits.filter((id) => {
-      const u = this.units.get(id);
-      return u && !u.dead && u.owner === 0;
-    });
-    this.controlGroups.set(n, ids);
-    this.hud?.showToast(ids.length > 0 ? `Grupo ${n} · ${ids.length} unidades` : `Grupo ${n} vacío`, 'info');
-  }
-
-  private addToControlGroup(n: number): void {
-    const cur = this.controlGroups.get(n) ?? [];
-    const add = this.selectedUnits.filter((id) => {
-      const u = this.units.get(id);
-      return u && !u.dead && u.owner === 0;
-    });
-    this.controlGroups.set(n, [...new Set([...cur, ...add])]);
-    this.hud?.showToast(`Añadido al grupo ${n}`, 'info');
-  }
-
-  private recallControlGroup(n: number): void {
-    const ids = (this.controlGroups.get(n) ?? []).filter((id) => {
-      const u = this.units.get(id);
-      return u && !u.dead;
-    });
-    if (ids.length === 0) return;
-    this.selectedUnits = ids;
-    this.selectedBuilding = null;
-    this.refreshSelectionVisuals();
-    bus.emit('unit:selected', { ids: [...ids] });
-    this.audio.select();
-    const now = performance.now();
-    if (this.lastGroupN === n && now - this.lastGroupTap < 400) {
-      const u = this.units.get(ids[0]);
-      if (u) this.camera.focusOn(u.pos.x, u.pos.z);
-    }
-    this.lastGroupN = n;
-    this.lastGroupTap = now;
-  }
-
-  private onKeyUp = (e: KeyboardEvent): void => {
-    void e;
-  };
-
-  togglePause(): void {
-    if (!this.paused && this.hud.hasBlockingOverlay()) return;
-    this.paused = !this.paused;
-    this.hud.setPaused(this.paused);
-  }
-
-  getPaused(): boolean {
-    return this.paused;
-  }
-
-  /** True once the match has been decided (victory/defeat). */
-  hasEnded(): boolean {
-    return this.gameEnded;
   }
 
   // --- UnitContext context ---
@@ -4397,7 +3483,7 @@ export class Game {
       this.ais.length = 0;
       return;
     }
-    if (this.hoverRaf) cancelAnimationFrame(this.hoverRaf);
+    this.input.dispose();
     this.camera.dispose();
     window.removeEventListener('resize', this.onResizeBound);
     const canvas = this.renderer.domElement;
@@ -4463,19 +3549,102 @@ export class Game {
     this.renderer.dispose();
     canvas.remove();
   }
-}
 
-function buildModelForGhost(kind: BuildingKind, ctx: BuildContext): THREE.Group {
-  const def = BUILDING_DEFS[kind];
-  const modelType = Object.values(def.eraModel)[0];
-  const g = buildModel({ type: modelType?.type ?? 'center_steam' }, ctx);
-  // the ghost is a flat valid/invalid silhouette, so ignore the baked vertex colours
-  g.traverse((o) => {
-    const mesh = o as THREE.Mesh;
-    if (!mesh.isMesh) return;
-    const m = mesh.material as THREE.MeshStandardMaterial;
-    m.vertexColors = false;
-    m.needsUpdate = true;
-  });
-  return g;
+  private setRallyPoint(buildingId: number, target: OrderTarget): void {
+    const b = this.buildings.get(buildingId);
+    if (b) {
+      b.rallyPoint = target;
+      b.hasRallyPoint = true;
+      this.hud.showToast('Punto de reunión establecido', 'info');
+    }
+  }
+
+  findFreeSpot(x: number, z: number, foot: number): { x: number; z: number };
+
+  /** Find a free spot near a point to build. */
+  findFreeSpot(x: number, z: number, foot: number): { x: number; z: number } | null {
+    const rng = new RNG(Math.floor(x * 7 + z * 13));
+    for (let i = 0; i < 60; i++) {
+      const ang = rng.range(0, Math.PI * 2);
+      const r = rng.range(foot + 2, 10);
+      const nx = x + Math.cos(ang) * r;
+      const nz = z + Math.sin(ang) * r;
+      if (this.canPlace(nx, nz, foot)) return { x: nx, z: nz };
+    }
+    return null;
+  }
+
+  canPlace(x: number, z: number, foot: number): boolean {
+    const r = foot / 2;
+    if (this.terrain.isWater(x, z) || !this.terrain.isBuildable(x, z)) return false;
+    // keep placement on ground units can reach (same slope limit as the nav mesh)
+    if (this.terrain.getSlope(x, z) > MAX_WALKABLE_SLOPE) return false;
+    if (this.siteBlocksConstruction(x, z, r)) return false;
+    for (let dx = -r; dx <= r; dx += 1.2) {
+      for (let dz = -r; dz <= r; dz += 1.2) {
+        if (this.terrain.isWater(x + dx, z + dz)) return false;
+      }
+    }
+    for (const b of this.buildings.values()) {
+      if (b.dead) continue;
+      if (distance2D(x, z, b.pos.x, b.pos.z) < b.radius * 0.9 + r * 0.8) return false;
+    }
+    for (const n of this.resourceNodes.values()) {
+      if (n.dead) continue;
+      if (distance2D(x, z, n.pos.x, n.pos.z) < n.radius + r * 0.9) return false;
+    }
+    return true;
+  }
+
+  canBuildKind(kind: BuildingKind): boolean {
+    if (kind === BuildingKind.CENTER) return false;
+    if (kind === BuildingKind.WONDER) return this.settings.victoryMode === 'wonder';
+    return this.players[0].era >= BUILDING_DEFS[kind].minEra;
+  }
+
+  spendResource(player: number, res: Resources): boolean {
+    const p = this.players[player];
+    for (const k of RESOURCE_KEYS) {
+      if (p.resources[k] < res[k]) return false;
+    }
+    for (const k of RESOURCE_KEYS) p.resources[k] -= res[k];
+    bus.emit('resources:changed', { player, resources: { ...p.resources } });
+    return true;
+  }
+
+  addResource(player: number, res: Resources): void {
+    const p = this.players[player];
+    for (const k of RESOURCE_KEYS) p.resources[k] += res[k];
+    bus.emit('resources:changed', { player, resources: { ...p.resources } });
+  }
+
+  cancelProduction(buildingId: number, index: number): void {
+    const b = this.buildings.get(buildingId);
+    if (!b || b.owner !== 0) return;
+    const item = b.productionQueue[index];
+    if (!item) return;
+    const stats = getUnitStats(item.unit, b.era);
+    b.productionQueue.splice(index, 1);
+    this.addResource(b.owner, { ...ZERO_RESOURCES, ...stats.cost });
+    this.hud?.showToast('Entrenamiento cancelado', 'info');
+  }
+
+  ungarrison(buildingId: number): boolean {
+    const b = this.buildings.get(buildingId);
+    if (!b || b.dead) return false;
+    const ids = b.ungarrisonAll();
+    for (const id of ids) {
+      const u = this.units.get(id);
+      if (!u) continue;
+      u.garrisonedIn = null;
+      if (u.view) u.view.group.visible = true;
+      const ang = this.rng.float() * Math.PI * 2;
+      const px = b.pos.x + Math.cos(ang) * (b.radius + 0.6);
+      const pz = b.pos.z + Math.sin(ang) * (b.radius + 0.6);
+      u.pos.set(px, this.terrain.getHeight(px, pz), pz);
+      u.snapToGround();
+    }
+    return true;
+  }
+  lastBattleEvent: number | null = null;
 }
