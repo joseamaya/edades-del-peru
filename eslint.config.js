@@ -33,7 +33,12 @@ export default tseslint.config(
     },
   },
   {
-    files: ['src/entities/Unit.ts', 'src/entities/Building.ts', 'src/entities/Projectile.ts'],
+    files: [
+      'src/entities/Unit.ts',
+      'src/entities/Building.ts',
+      'src/entities/Projectile.ts',
+      'src/entities/ResourceNode.ts',
+    ],
     rules: {
       'no-restricted-imports': [
         'error',

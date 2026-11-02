@@ -390,9 +390,9 @@ Definition of Done and the building audit see
 - Import Three addons as `three/addons/...` (not `three/examples/jsm/...`).
 - Simulation primitives live in `src/sim/` and must not import `three`; `Vec3` mirrors only the vector
   operations the simulation needs. ESLint also forbids static `three` imports in `src/game/**` and in the simulation
-  entities (`Unit`, `Building`, `Projectile`). Their views live in `UnitView`/`ProjectileView` under
-  `src/rendering/` (building views still use `src/entities/EntityView`). `ResourceNode` and `OrderMarker`
-  are not covered yet.
+  entities (`Unit`, `Building`, `Projectile`, `ResourceNode`). Their views live in `UnitView`/
+  `ProjectileView`/`ResourceNodeView` under `src/rendering/` (building views still use `src/entities/EntityView`).
+  `OrderMarker` is not covered yet.
 - Persistence in `localStorage`: `peru-settings`, `peru-campaign` (versioned campaign progress, with legacy
   numeric migration), `peru-campaign-intro-preinca` (Caral prologue) and `peru-title-intro`
   (first-visit title movie).

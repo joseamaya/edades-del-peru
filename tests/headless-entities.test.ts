@@ -4,6 +4,7 @@ import { Building } from '../src/entities/Building';
 import { BuildingKind, Era, UnitKind } from '../src/core/types';
 import { Projectile } from '../src/entities/Projectile';
 import { Vec3 } from '../src/sim/Vec3';
+import { ResourceNode } from '../src/entities/ResourceNode';
 
 const noBuildContext = {} as never;
 
@@ -52,6 +53,13 @@ describe('headless simulation entities', () => {
     });
     projectile.update(2);
     expect(projectile.dead).toBe(true);
+  });
+
+  it('depletes a resource node without a view', () => {
+    const node = new ResourceNode('tree', 3, 4, 10);
+    node.subtract(10);
+    expect(node.depleted).toBe(true);
+    expect(node.dead).toBe(true);
   });
 
   it('runs a building production queue without a view', () => {
