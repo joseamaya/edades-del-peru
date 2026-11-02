@@ -144,3 +144,40 @@ export function planStartingUnitSpots(options: UnitSpotOptions): { x: number; z:
   }
   return out;
 }
+
+import { planSettlementSite, type SettlementPlan, type SettlementQuery } from '../model/defs/settlementPlan';
+import type { SettlementShape } from '../model/defs/landscape';
+import { BuildingKind } from '../core/types';
+
+export interface SettlementOptions {
+  shape: SettlementShape;
+  seed: number;
+  player: number;
+  x: number;
+  z: number;
+  terrain: SettlementQuery;
+}
+
+/** Deterministic settlement plan for a base at (x, z). */
+export function planSettlement(options: SettlementOptions): SettlementPlan {
+  return planSettlementSite(
+    {
+      shape: options.shape,
+      seed: options.seed * 131 + options.player * 100 + 1,
+      anchor: { x: options.x, z: options.z },
+      count: 3,
+    },
+    options.terrain,
+  );
+}
+
+export interface StartBuildingOptions {
+  plan: SettlementPlan;
+  createBuilding(kind: BuildingKind, x: number, z: number): void;
+}
+
+/** Create the starting centre followed by the planned dwellings, in order. */
+export function placeStartBuildings(options: StartBuildingOptions): void {
+  options.createBuilding(BuildingKind.CENTER, options.plan.center.x, options.plan.center.z);
+  for (const spot of options.plan.dwellings) options.createBuilding(BuildingKind.HOUSE, spot.x, spot.z);
+}
