@@ -2,6 +2,9 @@ import { RNG } from '../util/rng';
 import { distance2D } from '../util/math';
 
 import type { ResourceNode } from '../entities/ResourceNode';
+import { planSettlementSite, type SettlementPlan, type SettlementQuery } from '../model/defs/settlementPlan';
+import type { SettlementShape } from '../model/defs/landscape';
+import type { BuildingKind } from '../core/types';
 
 export type ResourceNodeKind = ResourceNode['kind'];
 
@@ -143,4 +146,37 @@ export function planStartingUnitSpots(options: UnitSpotOptions): { x: number; z:
     out.push(found ?? options.fallback(options.x, options.z, out));
   }
   return out;
+}
+
+export interface SettlementOptions {
+  shape: SettlementShape;
+  seed: number;
+  player: number;
+  x: number;
+  z: number;
+  terrain: SettlementQuery;
+}
+
+/** Deterministic settlement plan for a base at (x, z). */
+export function planStartSettlement(options: SettlementOptions): SettlementPlan {
+  return planSettlementSite(
+    {
+      shape: options.shape,
+      seed: options.seed * 131 + options.player * 100 + 1,
+      anchor: { x: options.x, z: options.z },
+      count: 3,
+    },
+    options.terrain,
+  );
+}
+
+export interface StartBuildingOptions {
+  plan: SettlementPlan;
+  createBuilding(kind: BuildingKind, x: number, z: number): void;
+}
+
+/** Create the starting centre followed by the planned dwellings, in order. */
+export function placeStartBuildings(options: StartBuildingOptions): void {
+  options.createBuilding('center' as BuildingKind, options.plan.center.x, options.plan.center.z);
+  for (const spot of options.plan.dwellings) options.createBuilding('house' as BuildingKind, spot.x, spot.z);
 }

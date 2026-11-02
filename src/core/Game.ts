@@ -85,7 +85,7 @@ import {
   type GeographicRegion,
 } from '../model/defs/profiles';
 import { resolveColorGrade } from '../model/defs/grades';
-import { planSettlementSite, type SettlementPlan } from '../model/defs/settlementPlan';
+import type { SettlementPlan } from '../model/defs/settlementPlan';
 import { inCaralCity, planCaralCity, type CaralCityPlan } from '../model/defs/setpieces';
 import { insideTerrainRect, riverCentreZ } from '../model/defs/terrainLayout';
 import { SettlementOverlay } from '../rendering/SettlementOverlay';
@@ -129,7 +129,13 @@ import { serializeGame, saveToStorage } from '../game/SaveGame';
 import { CommandProcessor } from '../game/CommandProcessor';
 import { applyPopulation } from '../game/systems/PopulationSystem';
 import { resolveConquest } from '../game/systems/VictorySystem';
-import { placeStartResources, placeStartingUnits, planStartingUnitSpots } from '../sim/WorldBuilder';
+import {
+  placeStartBuildings,
+  placeStartResources,
+  placeStartingUnits,
+  planStartSettlement,
+  planStartingUnitSpots,
+} from '../sim/WorldBuilder';
 import { areaDamage, resolveAttackDamage, selectAreaTargets, selectNearestTarget } from '../game/systems/CombatSystem';
 import type { SaveData } from '../game/saveTypes';
 
@@ -1549,26 +1555,20 @@ export class Game {
 
   private spawnStartBase(player: number, x: number, z: number): void {
     const ctx = this.makeBuildContext(player);
-    // center
-    const center = new Building(BuildingKind.CENTER, player, this.players[player].era);
-    center.pos.set(x, 0, z);
-    center.pos.y = this.terrain.getHeight(x, z);
-    this.attachBuilding(center);
-    center.beginConstruction();
-    center.addBuildProgress(9999);
-    this.buildings.set(center.id, center);
-    this.registerObstacle(center);
-    // starting dwellings + visual fields/roads, laid out by the terrain-aware planner
+    // center and starting dwellings, laid out by the terrain-aware planner
     const plan = this.settlementPlanFor(player, x, z);
-    for (const spot of plan.dwellings) {
-      const house = new Building(BuildingKind.HOUSE, player, this.players[player].era);
-      house.pos.set(spot.x, this.terrain.getHeight(spot.x, spot.z), spot.z);
-      this.attachBuilding(house);
-      house.beginConstruction();
-      house.addBuildProgress(9999);
-      this.buildings.set(house.id, house);
-      this.registerObstacle(house);
-    }
+    placeStartBuildings({
+      plan,
+      createBuilding: (kind, bx, bz) => {
+        const b = new Building(kind, player, this.players[player].era);
+        b.pos.set(bx, this.terrain.getHeight(bx, bz), bz);
+        this.attachBuilding(b);
+        b.beginConstruction();
+        b.addBuildProgress(9999);
+        this.buildings.set(b.id, b);
+        this.registerObstacle(b);
+      },
+    });
     this.addSettlementOverlay(plan);
     const civ = this.players[player].civ;
     if (civ === CivId.CARAL || civ === CivId.CHAVIN) {
@@ -1649,13 +1649,15 @@ export class Game {
     return used.every((p) => distance2D(x, z, p.x, p.z) >= 1.1);
   }
 
-  /** Deterministic settlement plan for a base at (x, z) (dwellings + fields + roads). */
   private settlementPlanFor(player: number, x: number, z: number): SettlementPlan {
-    const shape = this.mapProfile.culturalLandscape?.settlementShape ?? 'dispersed';
-    return planSettlementSite(
-      { shape, seed: this.settings.mapSeed * 131 + player * 100 + 1, anchor: { x, z }, count: 3 },
-      this.terrain,
-    );
+    return planStartSettlement({
+      shape: this.mapProfile.culturalLandscape?.settlementShape ?? 'dispersed',
+      seed: this.settings.mapSeed,
+      player,
+      x,
+      z,
+      terrain: this.terrain,
+    });
   }
 
   /** Add the visual fields/roads of a planned settlement (no entities, no obstacles). */

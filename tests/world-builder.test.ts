@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  placeStartBuildings,
   placeStartResources,
+  planStartSettlement,
   placeStartingUnits,
   planStartingUnitSpots,
   type ResourceNodeKind,
@@ -103,5 +105,28 @@ describe('starting units', () => {
     });
     expect(spots).toHaveLength(5);
     expect(spots[0]).toEqual({ x: 10, z: 20 });
+  });
+});
+
+describe('start buildings', () => {
+  const terrain = {
+    isWater: () => false,
+    isBuildable: () => true,
+    getSlope: () => 0,
+    getHeight: () => 0,
+    getMoisture: () => 0.4,
+  };
+
+  it('plans a centre and three dwellings, then creates them in order', () => {
+    const plan = planStartSettlement({ shape: 'dispersed', seed: 777, player: 0, x: 64, z: 64, terrain });
+    expect(plan.center).toEqual({ x: 64, z: 64 });
+    expect(plan.dwellings).toHaveLength(3);
+    const created: Array<{ kind: string; x: number; z: number }> = [];
+    placeStartBuildings({
+      plan,
+      createBuilding: (kind, x, z) => created.push({ kind, x, z }),
+    });
+    expect(created[0]).toEqual({ kind: 'center', x: 64, z: 64 });
+    expect(created.slice(1)).toEqual(plan.dwellings.map((d) => ({ kind: 'house', x: d.x, z: d.z })));
   });
 });
