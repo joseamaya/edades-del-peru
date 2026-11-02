@@ -110,7 +110,7 @@ test('hunt nodes start as a walking herd and become stylised carcasses', async (
     const g = (window as unknown as { game: any }).game;
     const node = [...g.resourceNodes.values()].find((n: any) => n.kind === 'hunt');
     if (!node) return null;
-    const herd = node.view.getObjectByName('hunt_herd');
+    const herd = node.nodeView!.view.getObjectByName('hunt_herd');
     if (!herd) return null;
     const body = herd.getObjectByName('hunt_bodies');
     const legs = herd.getObjectByName('hunt_legs');
@@ -129,7 +129,7 @@ test('hunt nodes start as a walking herd and become stylised carcasses', async (
     const afterMost = { live: body.count, carcasses: carcasses.count };
 
     node.subtract(node.maxAmount);
-    const depleted = { live: body.count, carcasses: carcasses.count, rotation: node.view.rotation.x };
+    const depleted = { live: body.count, carcasses: carcasses.count, rotation: node.nodeView!.view.rotation.x };
 
     return { before, after, liveAtStart, legsAtStart, afterHalf, afterMost, depleted };
   });

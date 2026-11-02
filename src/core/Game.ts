@@ -17,7 +17,8 @@ import { applyFowToObject, createFowUniforms } from '../rendering/FowMaterial';
 import { Pathfinder, MAX_WALKABLE_SLOPE } from '../game/Pathfinding';
 import { Unit, UnitContext } from '../entities/Unit';
 import { Building } from '../entities/Building';
-import { ResourceNode, clearResourceCaches } from '../entities/ResourceNode';
+import { ResourceNode } from '../entities/ResourceNode';
+import { clearResourceCaches } from '../rendering/ResourceNodeView';
 import { OrderMarkers, MarkerKind } from '../entities/OrderMarker';
 import { TreeInstances } from '../rendering/TreeInstances';
 import { Props } from '../rendering/Props';
@@ -34,6 +35,7 @@ import { Projectile } from '../entities/Projectile';
 import { ProjectileView, updateProjectilePools } from '../rendering/ProjectileView';
 import {
   attachBuilding,
+  attachResource,
   attachUnit,
   detachBuilding,
   detachUnit,
@@ -1327,10 +1329,9 @@ export class Game {
       }
       for (const t of trees) {
         const amount = rng.range(210, 270);
-        const node = new ResourceNode(this.scene, 'tree', t.x, t.z, amount, mapType, this.trees, variants);
+        const node = new ResourceNode('tree', t.x, t.z, amount);
         node.pos.y = this.terrain.getHeight(t.x, t.z);
-        node.view.position.set(t.x, node.pos.y, t.z);
-        node.placeTreeInstance(node.pos.y);
+        attachResource(this.scene, node, mapType, this.trees, variants);
         this.resourceNodes.set(node.id, node);
         this.registerResourceObstacle(node.id, t.x, t.z, 'tree');
       }
@@ -1356,10 +1357,9 @@ export class Game {
               : kind === 'berry'
                 ? rng.range(120, 180)
                 : rng.range(200, 300);
-      const node = new ResourceNode(this.scene, kind, x, z, amount, mapType, this.trees, variants);
+      const node = new ResourceNode(kind, x, z, amount);
       node.pos.y = this.terrain.getHeight(x, z);
-      node.view.position.set(x, node.pos.y, z);
-      node.placeTreeInstance(node.pos.y);
+      attachResource(this.scene, node, mapType, this.trees, variants);
       this.resourceNodes.set(node.id, node);
       this.registerResourceObstacle(node.id, x, z, kind);
       placed++;
@@ -1370,9 +1370,9 @@ export class Game {
       const x = rng.range(20, s.mapSize - 20);
       const z = rng.range(20, s.mapSize - 20);
       if (this.terrain.isWater(x, z) || this.isReserved(x, z)) continue;
-      const node = new ResourceNode(this.scene, 'hunt', x, z, rng.range(120, 180), mapType, undefined, variants);
+      const node = new ResourceNode('hunt', x, z, rng.range(120, 180));
       node.pos.y = this.terrain.getHeight(x, z);
-      node.view.position.set(x, node.pos.y, z);
+      attachResource(this.scene, node, mapType, undefined, variants);
       this.resourceNodes.set(node.id, node);
     }
     const fishingCount = Math.round(this.mapProfile.resources.fishing);
@@ -1380,9 +1380,9 @@ export class Game {
       const x = rng.range(20, s.mapSize - 20);
       const z = rng.range(20, s.mapSize - 20);
       if (!this.terrain.isWater(x, z)) continue;
-      const node = new ResourceNode(this.scene, 'fishing', x, z, rng.range(150, 220), mapType);
+      const node = new ResourceNode('fishing', x, z, rng.range(150, 220));
       node.pos.y = 0;
-      node.view.position.set(x, 0, z);
+      attachResource(this.scene, node, mapType);
       this.resourceNodes.set(node.id, node);
     }
     // The random coastal samples can miss the few water cells near shore; a
@@ -1417,16 +1417,9 @@ export class Game {
     }
     if (candidates.length === 0) return false;
     const spot = rng.pick(candidates);
-    const node = new ResourceNode(
-      this.scene,
-      'fishing',
-      spot.x,
-      spot.z,
-      rng.range(150, 220),
-      this.mapProfile.baseMapType,
-    );
+    const node = new ResourceNode('fishing', spot.x, spot.z, rng.range(150, 220));
     node.pos.y = 0;
-    node.view.position.set(spot.x, 0, spot.z);
+    attachResource(this.scene, node, this.mapProfile.baseMapType);
     this.resourceNodes.set(node.id, node);
     return true;
   }
@@ -1751,19 +1744,9 @@ export class Game {
       if (this.isReserved(nx, nz, false) || !this.pathfinder.isWalkable(nx, nz)) return false;
       const gap = kind === 'tree' ? 6 : 3;
       if ([...this.resourceNodes.values()].some((n) => distance2D(n.pos.x, n.pos.z, nx, nz) < gap)) return false;
-      const node = new ResourceNode(
-        this.scene,
-        kind,
-        nx,
-        nz,
-        amount,
-        this.mapProfile.baseMapType,
-        this.trees,
-        this.mapProfile.vegetation.variants,
-      );
+      const node = new ResourceNode(kind, nx, nz, amount);
       node.pos.y = this.terrain.getHeight(nx, nz);
-      node.view.position.set(nx, node.pos.y, nz);
-      node.placeTreeInstance(node.pos.y);
+      attachResource(this.scene, node, this.mapProfile.baseMapType, this.trees, this.mapProfile.vegetation.variants);
       this.resourceNodes.set(node.id, node);
       this.registerResourceObstacle(node.id, nx, nz, kind);
       return true;
@@ -2273,20 +2256,10 @@ export class Game {
     reserveIds(maxId);
 
     for (const ns of data.resourceNodes) {
-      const node = new ResourceNode(
-        this.scene,
-        ns.kind,
-        ns.x,
-        ns.z,
-        ns.amount,
-        this.mapProfile.baseMapType,
-        this.trees,
-        this.mapProfile.vegetation.variants,
-      );
-      node.applySave(ns);
+      const node = new ResourceNode(ns.kind, ns.x, ns.z, ns.amount);
       node.pos.y = ns.kind === 'fishing' ? 0 : this.terrain.getHeight(ns.x, ns.z);
-      node.view.position.set(ns.x, node.pos.y, ns.z);
-      node.placeTreeInstance(node.pos.y);
+      attachResource(this.scene, node, this.mapProfile.baseMapType, this.trees, this.mapProfile.vegetation.variants);
+      node.applySave(ns);
       this.resourceNodes.set(node.id, node);
       this.registerResourceObstacle(node.id, ns.x, ns.z, ns.kind);
     }
@@ -2928,7 +2901,7 @@ export class Game {
     const meshes: THREE.Object3D[] = [];
     for (const n of this.resourceNodes.values()) {
       if (n.kind === 'tree' && n.treeSlot >= 0) continue;
-      meshes.push(n.view);
+      if (n.nodeView) meshes.push(n.nodeView.view);
     }
     const hits = this.raycaster.intersectObjects(meshes, true);
     for (const h of hits) {
@@ -2936,7 +2909,7 @@ export class Game {
       while (cur) {
         let found: ResourceNode | null = null;
         for (const n of this.resourceNodes.values()) {
-          if (n.view === cur) {
+          if (n.nodeView?.view === cur) {
             found = n;
             break;
           }

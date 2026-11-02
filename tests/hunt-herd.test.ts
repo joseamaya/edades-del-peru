@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { HuntHerd } from '../src/rendering/HuntHerd';
-import { ResourceNode, clearResourceCaches } from '../src/entities/ResourceNode';
+import { ResourceNode } from '../src/entities/ResourceNode';
+import { clearResourceCaches } from '../src/rendering/ResourceNodeView';
+import { attachResource } from '../src/rendering/RenderSync';
 import { clearFaunaTemplates } from '../src/rendering/faunaModels';
 
 afterEach(() => {
@@ -45,15 +47,18 @@ describe('hunt herd presentation', () => {
 });
 
 it('reconstructs a partially harvested herd from a saved node', () => {
-  const node = new ResourceNode(new THREE.Scene(), 'hunt', 10, 10, 150, 'coast');
+  const scene = new THREE.Scene();
+  const node = new ResourceNode('hunt', 10, 10, 150);
+  attachResource(scene, node, 'coast');
   node.subtract(75);
   const saved = node.toSave();
   expect(saved.maxAmount).toBe(150);
 
-  const loaded = new ResourceNode(new THREE.Scene(), 'hunt', saved.x, saved.z, saved.amount, 'coast');
+  const loaded = new ResourceNode('hunt', saved.x, saved.z, saved.amount);
+  attachResource(scene, loaded, 'coast');
   loaded.applySave(saved);
-  expect((loaded.view.getObjectByName('hunt_bodies') as THREE.InstancedMesh).count).toBe(2);
-  expect((loaded.view.getObjectByName('hunt_carcasses') as THREE.InstancedMesh).count).toBe(1);
+  expect((loaded.nodeView!.view.getObjectByName('hunt_bodies') as THREE.InstancedMesh).count).toBe(2);
+  expect((loaded.nodeView!.view.getObjectByName('hunt_carcasses') as THREE.InstancedMesh).count).toBe(1);
   node.remove();
   loaded.remove();
 });

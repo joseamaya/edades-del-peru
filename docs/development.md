@@ -157,7 +157,7 @@ Definition of Done and the building audit see
   rounded/capsule shapes with **vertex-colour AO** and **articulated legs/wings** (shared geometry + one shared
   material; diagonal gait and wing flap). No entities, obstacles or save; regenerated deterministically on load,
   templates freed by `clearFaunaTemplates` in `Game.destroy`.
-- **Hunt herds (presentation only)**: `ResourceNode` hunt nodes render a small `HuntHerd`
+- **Hunt herds (presentation only)**: `ResourceNodeView` hunt nodes render a small `HuntHerd`
   (`src/rendering/HuntHerd.ts`) of walking camelids instead of static boxes. Its live/carcass state is derived
   from `amount / maxAmount` in `subtract` and `applySave`, so save/load and the resource simulation are
   unchanged. The herd has no entities, obstacles or collision; teardown disposes only its per-herd materials.
@@ -390,9 +390,9 @@ Definition of Done and the building audit see
 - Import Three addons as `three/addons/...` (not `three/examples/jsm/...`).
 - Simulation primitives live in `src/sim/` and must not import `three`; `Vec3` mirrors only the vector
   operations the simulation needs. ESLint also forbids static `three` imports in `src/game/**` and in the simulation
-  entities (`Unit`, `Building`, `Projectile`). Their views live in `UnitView`/`ProjectileView` under
-  `src/rendering/` (building views still use `src/entities/EntityView`). `ResourceNode` and `OrderMarker`
-  are not covered yet.
+  entities (`Unit`, `Building`, `Projectile`, `ResourceNode`). Their views live in `UnitView`/
+  `ProjectileView`/`ResourceNodeView` under `src/rendering/` (building views still use `src/entities/EntityView`).
+  `OrderMarker` is not covered yet.
 - Persistence in `localStorage`: `peru-settings`, `peru-campaign` (versioned campaign progress, with legacy
   numeric migration), `peru-campaign-intro-preinca` (Caral prologue) and `peru-title-intro`
   (first-visit title movie).
