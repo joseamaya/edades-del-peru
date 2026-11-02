@@ -51,3 +51,53 @@ describe('placeStartResources', () => {
     expect(added.find((n) => n.kind === 'berry')?.x).toBeCloseTo(84);
   });
 });
+
+import { placeStartingUnits, planStartingUnitSpots } from '../src/sim/WorldBuilder';
+
+describe('starting units', () => {
+  it('places four workers and one scout deterministically', () => {
+    const kinds: string[] = [];
+    const run = () => {
+      const out: Array<{ kind: string; x: number; z: number }> = [];
+      placeStartingUnits({
+        player: 0,
+        x: 64,
+        z: 64,
+        seed: 777,
+        mainComponentSpot: (x, z) => ({ x, z }),
+        createUnit: (kind, x, z) => out.push({ kind, x, z }),
+      });
+      return out;
+    };
+    const a = run();
+    expect(a).toEqual(run());
+    expect(a.filter((u) => u.kind === 'worker')).toHaveLength(4);
+    expect(a.filter((u) => u.kind === 'scout')).toHaveLength(1);
+  });
+
+  it('uses authored spots when provided', () => {
+    const spots = [0, 1, 2, 3, 4].map((i) => ({ x: i, z: i }));
+    const out: Array<{ kind: string; x: number; z: number }> = [];
+    placeStartingUnits({
+      player: 0,
+      x: 64,
+      z: 64,
+      seed: 777,
+      spots,
+      mainComponentSpot: (x, z) => ({ x, z }),
+      createUnit: (kind, x, z) => out.push({ kind, x, z }),
+    });
+    expect(out.at(-1)).toEqual({ kind: 'scout', x: 4, z: 4 });
+  });
+
+  it('falls back when no clear arc spot exists', () => {
+    const spots = planStartingUnitSpots({
+      x: 64,
+      z: 64,
+      isClear: () => false,
+      fallback: (_x, _z, used) => ({ x: 10 + used.length, z: 20 }),
+    });
+    expect(spots).toHaveLength(5);
+    expect(spots[0]).toEqual({ x: 10, z: 20 });
+  });
+});

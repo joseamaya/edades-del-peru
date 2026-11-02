@@ -129,7 +129,7 @@ import { serializeGame, saveToStorage } from '../game/SaveGame';
 import { CommandProcessor } from '../game/CommandProcessor';
 import { applyPopulation } from '../game/systems/PopulationSystem';
 import { resolveConquest } from '../game/systems/VictorySystem';
-import { placeStartResources } from '../sim/WorldBuilder';
+import { placeStartResources, placeStartingUnits, planStartingUnitSpots } from '../sim/WorldBuilder';
 import { areaDamage, resolveAttackDamage, selectAreaTargets, selectNearestTarget } from '../game/systems/CombatSystem';
 import type { SaveData } from '../game/saveTypes';
 
@@ -174,10 +174,6 @@ const AMBIENT_FAUNA_SEED = 13;
 /** Campaign intro flyover framing, relative to the player base. */
 const WALL_SEGMENT_SPACING = 2;
 const INTRO_CAMERA = { offset: 34, fromHeight: 52, toZoom: 30, seconds: 2.6 } as const;
-/** Opening deployment: four workers and the scout, on the camera-facing arc. */
-const STARTING_UNIT_COUNT = 5;
-const STARTING_UNIT_ANGLES = [0, -0.52, 0.52, -1.05, 1.05, -1.6, 1.6] as const;
-const STARTING_UNIT_RADII = [5.2, 6.1, 7.0, 7.9, 8.8, 9.7] as const;
 /** Keep guaranteed fishing searches inside the authored river and map edge. */
 const FISHING_SCAN_MARGIN = 4;
 export class Game {
@@ -1581,31 +1577,32 @@ export class Game {
     if (player === 0 && this.siteDef?.environs?.valley === 'caral') this.addCaralValley(x, z);
     // nearby resources to start
     this.spawnStartResources(player, x, z);
-    const rng = new RNG(this.settings.mapSeed + player * 100);
     // The Caral opening deploys outside the civic core, on the camera-facing
     // side where the frame reads. Other matches and AI seats keep their ring.
     const startingSpots =
-      player === 0 && this.siteDef?.environs?.opening === 'caral' ? this.startingUnitSpots(x, z) : null;
-    for (let i = 0; i < STARTING_UNIT_COUNT - 1; i++) {
-      const unit = new Unit(UnitKind.WORKER, player, this.players[player].era, ctx);
-      const raw = startingSpots?.[i] ?? { x: x + rng.range(-3, 3), z: z + rng.range(-3, 3) };
-      const spot = this.mainComponentSpot(raw.x, raw.z);
-      unit.pos.set(spot.x, this.terrain.getHeight(spot.x, spot.z), spot.z);
-      unit.setContext(this.unitContext);
-      this.applyPlayerBonuses(unit, this.players[player]);
-      this.attachUnit(unit);
-      this.units.set(unit.id, unit);
-      this.players[player].populationUsed += unit.stats.population;
-    }
-    const scout = new Unit(UnitKind.SCOUT, player, this.players[player].era, ctx);
-    const rawScout = startingSpots?.[STARTING_UNIT_COUNT - 1] ?? { x: x + 4, z: z + 4 };
-    const scoutSpot = this.mainComponentSpot(rawScout.x, rawScout.z);
-    scout.pos.set(scoutSpot.x, this.terrain.getHeight(scoutSpot.x, scoutSpot.z), scoutSpot.z);
-    scout.setContext(this.unitContext);
-    this.applyPlayerBonuses(scout, this.players[player]);
-    this.attachUnit(scout);
-    this.units.set(scout.id, scout);
-    this.players[player].populationUsed += scout.stats.population;
+      player === 0 && this.siteDef?.environs?.opening === 'caral' ? this.startingUnitSpots(x, z) : undefined;
+    placeStartingUnits({
+      player,
+      x,
+      z,
+      seed: this.settings.mapSeed,
+      spots: startingSpots,
+      mainComponentSpot: (sx, sz) => this.mainComponentSpot(sx, sz),
+      createUnit: (kind, sx, sz) => {
+        const unit = new Unit(
+          kind === 'worker' ? UnitKind.WORKER : UnitKind.SCOUT,
+          player,
+          this.players[player].era,
+          ctx,
+        );
+        unit.pos.set(sx, this.terrain.getHeight(sx, sz), sz);
+        unit.setContext(this.unitContext);
+        this.applyPlayerBonuses(unit, this.players[player]);
+        this.attachUnit(unit);
+        this.units.set(unit.id, unit);
+        this.players[player].populationUsed += unit.stats.population;
+      },
+    });
     // auto-gathering
     // AI seats start gathering immediately; the human player keeps control of
     // the opening workers so they stay selectable at the base. AI-vs-AI seats
@@ -1618,25 +1615,12 @@ export class Game {
    * resource. The first four sit on the camera-facing arc; the fifth is the scout.
    */
   private startingUnitSpots(x: number, z: number): { x: number; z: number }[] {
-    const out: { x: number; z: number }[] = [];
-    for (let i = 0; i < STARTING_UNIT_COUNT; i++) {
-      let found: { x: number; z: number } | null = null;
-      for (const radius of STARTING_UNIT_RADII) {
-        for (const offset of STARTING_UNIT_ANGLES) {
-          const angle = Math.PI / 2 + offset;
-          const px = x + Math.cos(angle) * radius;
-          const pz = z + Math.sin(angle) * radius;
-          if (this.startingUnitSpotClear(px, pz, out)) {
-            found = { x: px, z: pz };
-            break;
-          }
-        }
-        if (found) break;
-      }
-      const fallback = found ?? this.startingUnitFallback(x, z, out);
-      out.push({ x: fallback.x, z: fallback.z });
-    }
-    return out;
+    return planStartingUnitSpots({
+      x,
+      z,
+      isClear: (px, pz, used) => this.startingUnitSpotClear(px, pz, used),
+      fallback: (bx, bz, used) => this.startingUnitFallback(bx, bz, used),
+    });
   }
 
   private startingUnitFallback(x: number, z: number, used: { x: number; z: number }[]): { x: number; z: number } {
