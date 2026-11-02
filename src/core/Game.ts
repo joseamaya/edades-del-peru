@@ -32,7 +32,7 @@ import { planWildlife, faunaCountFor } from '../model/defs/wildlife';
 import { Projectile, updateProjectilePools } from '../entities/Projectile';
 import { EntityView, reserveIds } from '../entities/EntityView';
 import { AI } from '../game/AI';
-import { computeDamage, elevationDamageMultiplier, ArmorProfile } from '../game/combat';
+import { elevationDamageMultiplier, ArmorProfile } from '../game/combat';
 import type { Difficulty } from './Config';
 import { Economy } from '../game/Economy';
 import { HUD } from '../ui/HUD';
@@ -118,6 +118,7 @@ import { serializeGame, saveToStorage } from '../game/SaveGame';
 import { CommandProcessor } from '../game/CommandProcessor';
 import { applyPopulation } from '../game/systems/PopulationSystem';
 import { resolveConquest } from '../game/systems/VictorySystem';
+import { areaDamage, resolveAttackDamage, selectAreaTargets, selectNearestTarget } from '../game/systems/CombatSystem';
 import type { SaveData } from '../game/saveTypes';
 
 /** When false the main loop does not auto-start, so tests can drive fixed steps from step 0. */
@@ -3426,7 +3427,14 @@ export class Game {
     const bonusVs = from instanceof Unit ? from.stats.bonusVs : from?.bonusVs;
     const classBonus = attackerClass && bonusVs ? (bonusVs[targetClass] ?? 0) : 0;
     const elevated = target instanceof Unit && from?.pos ? elevationDamageMultiplier(from.pos.y, target.pos.y) : 1;
-    const final = Math.max(1, computeDamage(damage, damageType, armor, armorMult, classBonus) * elevated);
+    const final = resolveAttackDamage({
+      damage,
+      damageType,
+      armor,
+      armorMultiplier: armorMult,
+      classBonus,
+      elevation: elevated,
+    });
     target.takeDamage(final, attackerId);
     const dmgH = target instanceof Unit ? 2.2 : 2.6;
     this.hud?.addDamageNumber(target.pos.x, target.pos.y + dmgH, target.pos.z, final, final >= 40 ? 'big' : 'normal');
@@ -3537,22 +3545,22 @@ export class Game {
     const from = { owner: o.owner, attackerKind: o.attackerKind, bonusVs: o.bonusVs };
     if (o.area && o.area > 0) {
       const ground = new THREE.Vector3(impact.x, this.terrain.getHeight(impact.x, impact.z), impact.z);
-      // area damage
-      const targets: { t: any; d: number }[] = [];
-      for (const u of this.units.values()) {
-        if (u.dead || u.owner === o.owner) continue;
-        if (this.players[u.owner]?.team === this.players[o.owner]?.team) continue;
-        const d = u.pos.distanceTo(impact);
-        if (d < o.area) targets.push({ t: u, d });
-      }
-      for (const b of this.buildings.values()) {
-        if (b.dead || b.owner === o.owner) continue;
-        const d = b.pos.distanceTo(impact);
-        if (d < o.area) targets.push({ t: b, d });
-      }
-      for (const { t, d } of targets) {
-        const falloff = 1 - d / o.area;
-        this.resolveDamage(o.owner, t.id, o.damage * falloff, { ...from, pos: ground }, damageType);
+      const targets = selectAreaTargets<Unit | Building>(
+        impact,
+        o.area,
+        this.units.values(),
+        this.buildings.values(),
+        o.owner,
+        (owner) => this.players[owner]?.team,
+      );
+      for (const { target, distance } of targets) {
+        this.resolveDamage(
+          o.owner,
+          target.id,
+          areaDamage(o.damage, distance, o.area),
+          { ...from, pos: ground },
+          damageType,
+        );
       }
       // explosion smoke
       this.particles.emit({
@@ -3575,28 +3583,15 @@ export class Game {
       }
     } else {
       // no targetId: damage the enemy closest to the impact point
-      let best: any = null;
-      let bestD = Infinity;
-      for (const u of this.units.values()) {
-        if (u.dead || u.owner === o.owner) continue;
-        if (this.players[u.owner]?.team === this.players[o.owner]?.team) continue;
-        const d = u.pos.distanceTo(impact);
-        if (d < bestD) {
-          bestD = d;
-          best = u;
-        }
-      }
-      if (!best) {
-        for (const b of this.buildings.values()) {
-          if (b.dead || b.owner === o.owner) continue;
-          const d = b.pos.distanceTo(impact);
-          if (d < bestD) {
-            bestD = d;
-            best = b;
-          }
-        }
-      }
-      if (best && bestD < 3) this.resolveDamage(o.owner, best.id, o.damage, from, damageType);
+      const best = selectNearestTarget<Unit | Building>(
+        impact,
+        this.units.values(),
+        this.buildings.values(),
+        o.owner,
+        (owner) => this.players[owner]?.team,
+        3,
+      );
+      if (best) this.resolveDamage(o.owner, best.id, o.damage, from, damageType);
     }
   }
 
