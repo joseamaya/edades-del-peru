@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Game, setAutoStart } from '../src/core/Game';
 import { DEFAULT_SETTINGS } from '../src/core/Config';
+import { bus } from '../src/core/EventBus';
 
 describe('headless Game', () => {
   it('runs an AI-vs-AI match without DOM or renderer', () => {
@@ -19,6 +20,17 @@ describe('headless Game', () => {
     expect(game.stepCount).toBe(600);
     expect(game.units.size).toBeGreaterThan(0);
     expect(game.buildings.size).toBeGreaterThan(0);
+    const alerts: string[] = [];
+    const onAlert = (payload: { text: string }): void => {
+      alerts.push(payload.text);
+    };
+    bus.on('alert', onAlert);
+    const center = [...game.buildings.values()].find((building) => building.owner === 0 && building.kind === 'center');
+    expect(center).toBeDefined();
+    game.lastBaseAlert = -10_000;
+    game.resolveDamage(0, center!.id, 1, { owner: 0 }, 'heavy');
+    expect(alerts.length).toBeGreaterThan(0);
+    bus.off('alert', onAlert);
     game.destroy();
     setAutoStart(true);
   });

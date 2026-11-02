@@ -21,23 +21,23 @@ The app shows the **main menu** by default. To jump straight into the match use 
 
 ## Commands
 
-| Command | What it does |
-|---|---|
-| `yarn dev` | Development server (Vite). |
-| `yarn build` | Typecheck + production build in `dist/`, then the size budget. |
-| `yarn typecheck` | Only `tsc --noEmit`. |
-| `yarn lint` | ESLint (must stay at **0 warnings**). |
-| `yarn format` | Prettier over `src/**/*.ts`, `scripts/**/*.mjs` and `tests/**/*.ts`. |
-| `yarn test` | Unit tests (Vitest). |
-| `yarn verify:fast` | Quick gate: `typecheck + lint + format:check + test + build` (~10 s). |
-| `yarn bench` | Entity-scale performance benchmark (writes `review/bench.json`). |
-| `yarn sim` | Headless AI-vs-AI match runner (AI regression baseline). |
-| `yarn test:e2e` | E2E suite (Playwright). Requires `npx playwright install chromium`. |
-| `yarn test:e2e:smoke` | Fast `@smoke` subset of the E2E suite (used on PRs). |
-| `yarn shot <name>` | Screenshot into `review/` for visual review. |
-| `yarn shots:periods` | Capture the period/region snapshots into `review/periods/`. |
-| `yarn visual:check` | Re-capture and fail if a period/region scene drifts from the baseline. |
-| `yarn visual:update` | Refresh the visual baseline (`tests/visual/baseline.json`) after an intentional change. |
+| Command               | What it does                                                                            |
+| --------------------- | --------------------------------------------------------------------------------------- |
+| `yarn dev`            | Development server (Vite).                                                              |
+| `yarn build`          | Typecheck + production build in `dist/`, then the size budget.                          |
+| `yarn typecheck`      | Only `tsc --noEmit`.                                                                    |
+| `yarn lint`           | ESLint (must stay at **0 warnings**).                                                   |
+| `yarn format`         | Prettier over `src/**/*.ts`, `scripts/**/*.mjs` and `tests/**/*.ts`.                    |
+| `yarn test`           | Unit tests (Vitest).                                                                    |
+| `yarn verify:fast`    | Quick gate: `typecheck + lint + format:check + test + build` (~10 s).                   |
+| `yarn bench`          | Entity-scale performance benchmark (writes `review/bench.json`).                        |
+| `yarn sim`            | Headless AI-vs-AI match runner (AI regression baseline).                                |
+| `yarn test:e2e`       | E2E suite (Playwright). Requires `npx playwright install chromium`.                     |
+| `yarn test:e2e:smoke` | Fast `@smoke` subset of the E2E suite (used on PRs).                                    |
+| `yarn shot <name>`    | Screenshot into `review/` for visual review.                                            |
+| `yarn shots:periods`  | Capture the period/region snapshots into `review/periods/`.                             |
+| `yarn visual:check`   | Re-capture and fail if a period/region scene drifts from the baseline.                  |
+| `yarn visual:update`  | Refresh the visual baseline (`tests/visual/baseline.json`) after an intentional change. |
 
 Before opening a PR, run at least:
 
@@ -54,7 +54,7 @@ every PR on (keep the subset fast).
 
 ```
 src/
-  core/        Engine: Game (hub), RTS Camera, EventBus, GameLoop, Config, types
+  core/        Engine: Game facade, Input/Selection/Runtime/World/StartBase controllers, camera, loop, config
   rendering/   Renderer, PostFX, Sky, Water, Terrain, Particles, Biomes, Textures, Projectile/FOW views
   model/       Defs (periods, civs, units, buildings, techs) + parametric models
   entities/    Unit, Building, Resource node, Projectile (sim) + entity views
