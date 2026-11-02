@@ -133,7 +133,7 @@ import {
   placeStartBuildings,
   placeStartResources,
   placeStartingUnits,
-  planSettlement,
+  planStartSettlement,
   planStartingUnitSpots,
 } from '../sim/WorldBuilder';
 import { areaDamage, resolveAttackDamage, selectAreaTargets, selectNearestTarget } from '../game/systems/CombatSystem';
@@ -1650,7 +1650,7 @@ export class Game {
   }
 
   private settlementPlanFor(player: number, x: number, z: number): SettlementPlan {
-    return planSettlement({
+    return planStartSettlement({
       shape: this.mapProfile.culturalLandscape?.settlementShape ?? 'dispersed',
       seed: this.settings.mapSeed,
       player,

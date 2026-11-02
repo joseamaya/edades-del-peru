@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  placeStartBuildings,
   placeStartResources,
+  planStartSettlement,
   placeStartingUnits,
   planStartingUnitSpots,
   type ResourceNodeKind,
@@ -106,9 +108,6 @@ describe('starting units', () => {
   });
 });
 
-import { placeStartBuildings, planSettlement } from '../src/sim/WorldBuilder';
-import { BuildingKind } from '../src/core/types';
-
 describe('start buildings', () => {
   const terrain = {
     isWater: () => false,
@@ -119,15 +118,15 @@ describe('start buildings', () => {
   };
 
   it('plans a centre and three dwellings, then creates them in order', () => {
-    const plan = planSettlement({ shape: 'dispersed', seed: 777, player: 0, x: 64, z: 64, terrain });
+    const plan = planStartSettlement({ shape: 'dispersed', seed: 777, player: 0, x: 64, z: 64, terrain });
     expect(plan.center).toEqual({ x: 64, z: 64 });
     expect(plan.dwellings).toHaveLength(3);
-    const created: Array<{ kind: BuildingKind; x: number; z: number }> = [];
+    const created: Array<{ kind: string; x: number; z: number }> = [];
     placeStartBuildings({
       plan,
       createBuilding: (kind, x, z) => created.push({ kind, x, z }),
     });
-    expect(created[0]).toEqual({ kind: BuildingKind.CENTER, x: 64, z: 64 });
-    expect(created.slice(1)).toEqual(plan.dwellings.map((d) => ({ kind: BuildingKind.HOUSE, x: d.x, z: d.z })));
+    expect(created[0]).toEqual({ kind: 'center', x: 64, z: 64 });
+    expect(created.slice(1)).toEqual(plan.dwellings.map((d) => ({ kind: 'house', x: d.x, z: d.z })));
   });
 });
