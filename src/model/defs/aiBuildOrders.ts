@@ -1,4 +1,5 @@
 import { BuildingKind, CivId, Era } from '../../core/types';
+import type { Difficulty } from '../../core/Config';
 
 export interface AIBuildStep {
   building: BuildingKind;
@@ -15,6 +16,13 @@ export interface AIBuildStep {
 }
 
 /** Civilization nudges: identity through build priorities, not hidden bonuses. */
+const DIFFICULTY_PRIORITY: Record<Difficulty, Partial<Record<BuildingKind, number>>> = {
+  easy: { [BuildingKind.BARRACKS]: -6, [BuildingKind.FORTRESS]: -8 },
+  normal: {},
+  hard: { [BuildingKind.BARRACKS]: 2, [BuildingKind.FORTRESS]: 2 },
+  legendary: { [BuildingKind.BARRACKS]: 4, [BuildingKind.FORTRESS]: 4, [BuildingKind.TOWER]: 4 },
+};
+
 const CIV_PRIORITY: Partial<Record<CivId, Partial<Record<BuildingKind, number>>>> = {
   [CivId.MOCHE]: { [BuildingKind.BARRACKS]: 4, [BuildingKind.ARSENAL]: 2 },
   [CivId.RECUAY]: { [BuildingKind.FORTRESS]: 10 },
@@ -51,10 +59,20 @@ const STEPS: AIBuildStep[] = [
   { building: BuildingKind.TOWER, priority: 40, minSoldiers: 6 },
 ];
 
-/** Build steps for this civilization, with civ-specific priority nudges. */
-export function aiBuildSteps(civ: CivId): AIBuildStep[] {
-  return STEPS.map((step) => ({
+const STEP_CACHE = new Map<string, AIBuildStep[]>();
+
+/** Build steps for this civilization and difficulty, with priority nudges. */
+export function aiBuildSteps(civ: CivId, difficulty: Difficulty = 'normal'): AIBuildStep[] {
+  const key = `${civ}|${difficulty}`;
+  const cached = STEP_CACHE.get(key);
+  if (cached) return cached;
+  const steps = STEPS.map((step) => ({
     ...step,
-    priority: step.priority + (CIV_PRIORITY[civ]?.[step.building] ?? 0),
+    priority:
+      step.priority +
+      (CIV_PRIORITY[civ]?.[step.building] ?? 0) +
+      (DIFFICULTY_PRIORITY[difficulty]?.[step.building] ?? 0),
   }));
+  STEP_CACHE.set(key, steps);
+  return steps;
 }

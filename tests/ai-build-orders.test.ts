@@ -17,6 +17,12 @@ describe('AI build orders', () => {
     expect(barracks(moche)).toBeGreaterThan(barracks(caral));
   });
 
+  it('nudges priorities by difficulty', () => {
+    const barracks = (difficulty: 'easy' | 'legendary'): number =>
+      aiBuildSteps(CivId.MOCHE, difficulty).find((s) => s.building === BuildingKind.BARRACKS)?.priority ?? 0;
+    expect(barracks('legendary')).toBeGreaterThan(barracks('easy'));
+  });
+
   it('gates advanced military buildings behind the profile flag', () => {
     const steps = aiBuildSteps(CivId.WARI);
     expect(steps.find((s) => s.building === BuildingKind.ARSENAL)?.requiresAdvancedMilitary).toBe(true);

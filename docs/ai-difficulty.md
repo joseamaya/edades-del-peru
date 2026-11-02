@@ -114,7 +114,7 @@ no quantitative historical claim is made.
 
 - Build order is data-driven (`src/model/defs/aiBuildOrders.ts`): economy + first barracks are essential, advanced
   military buildings are profile-gated, and civ-specific priorities nudge barracks/fortress/institute (Moche,
-  Recauy, Chanca, Wari, Inca, Realistas, etc.). Houses/farms still adapt to population and food.
+  Recuay, Chanca, Wari, Inca, Realistas, etc.). Houses/farms still adapt to population and food.
 - Perception feeds a coarse 24 m threat map; attacks are not committed when the remembered defence outweighs
   the army (the factor loosens with aggression/difficulty).
 - Unit training scores positive class counters against the known enemy composition (uses the #232 table), and
