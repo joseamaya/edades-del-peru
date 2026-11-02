@@ -53,6 +53,13 @@ export class Vec3 {
     return Math.hypot(this.x - v.x, this.y - v.y, this.z - v.z);
   }
 
+  multiplyScalar(scale: number): this {
+    this.x *= scale;
+    this.y *= scale;
+    this.z *= scale;
+    return this;
+  }
+
   normalize(): this {
     const length = this.length();
     if (length > 0) {

@@ -3,6 +3,8 @@ import { EntityView } from '../entities/EntityView';
 import type { Building } from '../entities/Building';
 import { buildModel, disposeModel, type BuildContext } from '../model/ProceduralModel';
 import { getBuildingModel } from '../model/defs/buildings';
+import { UnitView } from './UnitView';
+import type { Unit } from '../entities/Unit';
 
 function makeView(building: Building, ctx: BuildContext): EntityView {
   const model = buildModel(getBuildingModel(building.kind, building.era), ctx);
@@ -43,4 +45,30 @@ export function detachBuilding(building: Building): void {
   view.dispose();
   disposeModel(view.group);
   building.setView(null);
+}
+
+/** Create, position and attach a unit view. */
+export function attachUnit(scene: THREE.Scene, unit: Unit, ctx: BuildContext): void {
+  const view = new UnitView(unit, ctx);
+  unit.unitView = view;
+  unit.view = view.view;
+  view.attach(scene);
+}
+
+/** Rebuild a unit view after an era change, preserving its scene parent. */
+export function modernizeUnit(unit: Unit, ctx: BuildContext): void {
+  const old = unit.unitView;
+  const parent = old?.view.group.parent ?? null;
+  old?.dispose();
+  const view = new UnitView(unit, ctx);
+  unit.unitView = view;
+  unit.view = view.view;
+  if (parent) view.view.attachTo(parent as THREE.Scene);
+}
+
+/** Remove and free a unit view. */
+export function detachUnit(unit: Unit): void {
+  unit.unitView?.dispose();
+  unit.unitView = null;
+  unit.view = null;
 }

@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { Vec3 } from '../sim/Vec3';
 import {
   Era,
   UnitKind,
@@ -11,17 +11,10 @@ import {
   CombatStance,
   AlertReason,
 } from '../core/types';
-import { getUnitStats, getUnitModel, UnitStats, DamageClass, UnitClass } from '../model/defs/units';
-import {
-  WALK_CLIP_RATE_MAX,
-  WALK_CLIP_RATE_MIN,
-  WALK_CLIP_REFERENCE_SPEED,
-  rigClipStateFor,
-  unitModelAsset,
-} from '../model/defs/modelAssets';
-import { buildModel, BuildContext, disposeModel } from '../model/ProceduralModel';
-import { acquireRig } from '../rendering/ModelAssets';
+import { getUnitStats, UnitStats, DamageClass, UnitClass } from '../model/defs/units';
+import type { BuildContext } from '../model/ProceduralModel';
 import type { RigInstance } from '../rendering/RigInstance';
+import type { UnitView } from '../rendering/UnitView';
 import { EntityView } from '../entities/EntityView';
 import { allocId } from '../sim/ids';
 import { Order, OrderKind, OrderTarget } from '../core/types';
@@ -70,8 +63,8 @@ export interface UnitContext {
   buildings: Map<number, any>;
   resolveDamage(attackerId: number, targetId: number, damage: number, fromEntity: any, damageType: DamageClass): void;
   spawnProjectile(opts: {
-    from: THREE.Vector3;
-    target: THREE.Vector3;
+    from: { x: number; y: number; z: number };
+    target: { x: number; y: number; z: number };
     speed: number;
     damage: number;
     kind: string;
@@ -127,13 +120,6 @@ const BUILD_REACH_PAD = 3;
 const isEconomyOrder = (kind: OrderKind): boolean => kind === OrderKind.GATHER || kind === OrderKind.BUILD;
 
 /** Color of the worker's load bundle according to the carried resource. */
-const CARRY_COLORS: Record<keyof Resources, number> = {
-  food: 0xc8a04a,
-  wood: 0x8a6a3a,
-  silver: 0x9aa2aa,
-  stone: 0x4ac6d8,
-};
-
 export class Unit {
   id: number;
   owner: number;
@@ -141,11 +127,12 @@ export class Unit {
   era: Era;
   readonly gender: PersonGender;
   stats: UnitStats;
-  pos = new THREE.Vector3();
-  vel = new THREE.Vector3();
+  pos = new Vec3();
+  vel = new Vec3();
   yaw = 0;
   targetYaw = 0;
-  view: EntityView;
+  view: EntityView | null = null;
+  unitView: UnitView | null = null;
   hp: number;
   maxHp: number;
   dead = false;
@@ -174,9 +161,7 @@ export class Unit {
   carryCapacity = 10;
   private gatherTimer = 0;
   private currentResource: keyof Resources | null = null;
-  private animationTime = 0;
-  private walkCycle = 0;
-  private workAnim = 0;
+  walkCycle = 0;
   private footstepTimer = 0;
   /** Set by `directStep` for this tick: integrate the direct approach in `updateMovement`. */
   private directApproach = false;
@@ -194,20 +179,9 @@ export class Unit {
   attackMultiplier = 1;
   armorMultiplier = 1;
 
-  private gunPivot: THREE.Group | null = null;
-  private turretPivot: THREE.Group | null = null;
-  private legL: THREE.Group | null = null;
-  private legR: THREE.Group | null = null;
-  private armL: THREE.Group | null = null;
-  private armR: THREE.Group | null = null;
-  private headPivot: THREE.Group | null = null;
-  private carryPivot: THREE.Group | null = null;
-  private carryMat: THREE.MeshStandardMaterial | null = null;
-  private bobY = 0;
-  /** Rigged presentation; null keeps the procedural model (progressive migration). */
-  rig: RigInstance | null = null;
+  /** Rigged presentation lives in UnitView. */
 
-  constructor(kind: UnitKind, owner: number, era: Era, ctx: BuildContext, id?: number) {
+  constructor(kind: UnitKind, owner: number, era: Era, _ctx: BuildContext, id?: number) {
     this.id = id ?? allocId();
     this.kind = kind;
     this.owner = owner;
@@ -217,52 +191,46 @@ export class Unit {
     // AI-vs-AI runs keep the same yaw. The golden angle gives visual variety.
     this.yaw = (this.id * 2.399963229728653) % (Math.PI * 2);
     this.targetYaw = this.yaw;
-    this.animationTime = (this.id * 1.61803398875) % 10;
     this.stats = getUnitStats(kind, era);
     this.hp = this.maxHp = this.stats.hp;
-    const modelChoice = unitModelAsset(kind, era, ctx.civ.id, this.id);
-    this.rig = modelChoice ? acquireRig(modelChoice.asset, modelChoice.variant) : null;
-    const model = this.rig ? this.rig.root : buildModel({ ...getUnitModel(kind, era), gender: this.gender }, ctx);
     this.radius = this.stats.range === 0 ? 0.45 : 0.5;
     if (kind === UnitKind.TANK) this.radius = 0.9;
     if (kind === UnitKind.ARTILLERY || kind === UnitKind.MORTAR || kind === UnitKind.NUCLEAR) this.radius = 0.8;
-    this.view = new EntityView(model, this.radius, this, this.rig ? 'radius' : 'model');
-    if (!this.rig) this.findPivots(model);
   }
 
-  /** Pivots for animation. */
-  findPivots(model: THREE.Group): void {
-    this.gunPivot = this.turretPivot = this.legL = this.legR = this.armL = this.armR = this.headPivot = null;
-    this.carryPivot = null;
-    this.carryMat = null;
-    model.traverse((o) => {
-      if (o.name === 'pivot:gun') {
-        this.gunPivot = o as THREE.Group;
-        this.gunBaseZ = this.gunPivot.position.z;
-      }
-      if (o.name === 'pivot:turret') this.turretPivot = o as THREE.Group;
-      if (o.name === 'pivot:legL') this.legL = o as THREE.Group;
-      if (o.name === 'pivot:legR') this.legR = o as THREE.Group;
-      if (o.name === 'pivot:armL') this.armL = o as THREE.Group;
-      if (o.name === 'pivot:armR') this.armR = o as THREE.Group;
-      if (o.name === 'pivot:head') this.headPivot = o as THREE.Group;
-      if (o.name === 'pivot:carry') {
-        this.carryPivot = o as THREE.Group;
-        // the bundle is tinted per carried resource, so it needs its own material
-        // (baked vertex colours would multiply the tint instead of replacing it)
-        for (const child of this.carryPivot.children) {
-          const mesh = child as THREE.Mesh;
-          if (!mesh.isMesh) continue;
-          const m = (mesh.material as THREE.MeshStandardMaterial).clone();
-          m.vertexColors = false;
-          m.needsUpdate = true;
-          mesh.material = m;
-          if (!this.carryMat) this.carryMat = m;
-        }
-      }
-    });
+  get rig(): RigInstance | null {
+    return this.unitView?.rig ?? null;
   }
-  private gunBaseZ = 0;
+
+  /** Presentation hooks used by UnitView. */
+  isWorkingNow(): boolean {
+    return this.isWorking();
+  }
+
+  carryCountNow(): number {
+    return this.carryCount();
+  }
+
+  carriedResource(): keyof Resources {
+    return this.currentResource ?? this.dominantResource();
+  }
+
+  private dominantResource(): keyof Resources {
+    if (this.gatherCarry.food > 0) return 'food';
+    if (this.gatherCarry.wood > 0) return 'wood';
+    if (this.gatherCarry.silver > 0) return 'silver';
+    return 'stone';
+  }
+
+  isAttackingTarget(): boolean {
+    return this.attackingTarget;
+  }
+
+  aimYawAt(x: number, z: number): number {
+    const targetYaw = angleTo(this.pos.x, this.pos.z, x, z);
+    return angleDelta(facingRotation(this.yaw), facingRotation(targetYaw));
+  }
+
   private attackingTarget = false;
   private stuckTimer = 0;
   private lastStuckX = 0;
@@ -287,15 +255,10 @@ export class Unit {
     return this.pos.z;
   }
 
-  attach(scene: THREE.Scene): void {
-    this.view.attachTo(scene);
-    this.view.group.position.copy(this.pos);
-  }
-
   /** Bring the position onto the terrain. */
   snapToGround(): void {
     this.pos.y = this.ctx.getHeight(this.pos.x, this.pos.z);
-    this.view.setPosition(this.pos.x, this.pos.y, this.pos.z);
+    this.view?.setPosition(this.pos.x, this.pos.y, this.pos.z);
   }
 
   /**
@@ -697,7 +660,6 @@ export class Unit {
   }
 
   update(dt: number, time: number): void {
-    this.animationTime += dt;
     if (this.dead) return;
     if (this.garrisonedIn !== null) return;
 
@@ -713,16 +675,6 @@ export class Unit {
 
     // movement
     this.updateMovement(dt);
-
-    // animations
-    this.updateAnimation(dt, time);
-    this.updateCarry();
-
-    this.view.setPosition(this.pos.x, this.pos.y, this.pos.z);
-    this.view.setFacing(this.yaw);
-    // walk/idle bounce applied after fixing the position (not overwritten)
-    this.view.group.position.y += this.bobY;
-    this.view.updateHealth(this.hp / this.maxHp);
   }
 
   private updateIdle(dt: number): void {
@@ -937,99 +889,6 @@ export class Unit {
     this.vel.z += fz * 4.5 * dt;
   }
 
-  private updateAnimation(dt: number, time: number): void {
-    if (this.rig) {
-      this.updateRig(dt);
-      return;
-    }
-    const walk = this.walkCycle;
-    if (this.gunPivot) {
-      // subtle recoil over the pivot base position
-      const recoil = this.attackCooldown > this.stats.attackSpeed - 0.12 ? -0.15 : 0;
-      this.gunPivot.position.z = this.gunBaseZ + recoil;
-    }
-    if (this.turretPivot) {
-      // aim the turret at the target if it exists
-      let aimYaw = Math.sin(time * 0.6) * 0.05;
-      if (this.targetEntityId !== null) {
-        const target =
-          this.ctx?.entitiesById?.get(this.targetEntityId) ?? this.ctx?.buildings?.get(this.targetEntityId);
-        if (target) {
-          const targetYaw = angleTo(this.pos.x, this.pos.z, target.pos.x, target.pos.z);
-          aimYaw = angleDelta(facingRotation(this.yaw), facingRotation(targetYaw));
-        }
-      }
-      this.turretPivot.rotation.y = aimYaw;
-    }
-    // procedural walk cycle with pivots (arms/legs in counterphase)
-    // the phase derives from the distance traveled (stride tied to speed)
-    this.bobY = 0;
-    if (walk > 0.01) {
-      const phase = this.walkCycle * 3.2;
-      const s = Math.sin(phase);
-      const c = Math.cos(phase);
-      if (this.legL) this.legL.rotation.x = s * 0.55;
-      if (this.legR) this.legR.rotation.x = -s * 0.55;
-      if (this.armL) this.armL.rotation.x = -s * 0.42;
-      if (this.armR) this.armR.rotation.x = s * 0.42;
-      if (this.headPivot) this.headPivot.rotation.x = c * 0.05;
-      this.bobY = Math.abs(s) * 0.045;
-    } else if (this.isWorking()) {
-      // work gesture: strike with the tool (axe/pick)
-      this.workAnim += dt;
-      const chop = Math.abs(Math.sin(this.workAnim * 5.5));
-      if (this.legL) this.legL.rotation.x = 0.12;
-      if (this.legR) this.legR.rotation.x = -0.12;
-      if (this.armR) this.armR.rotation.x = -0.15 - chop * 0.85;
-      if (this.armL) this.armL.rotation.x = -0.25 - chop * 0.15;
-      if (this.headPivot) this.headPivot.rotation.x = 0.14 + chop * 0.08;
-      this.bobY = -chop * 0.02;
-    } else {
-      this.workAnim = lerp(this.workAnim, 0, dt * 8);
-      const idle = Math.sin(this.animationTime * 1.6);
-      if (this.legL) this.legL.rotation.x = idle * 0.03;
-      if (this.legR) this.legR.rotation.x = -idle * 0.03;
-      // arms fall to a neutral position when standing still
-      if (this.armL) this.armL.rotation.x = idle * 0.02;
-      if (this.armR) this.armR.rotation.x = idle * 0.02;
-      if (this.headPivot) this.headPivot.rotation.x = idle * 0.02;
-      this.bobY = idle * 0.014;
-    }
-    // attack stance: the weapon arm points at the target when not moving
-    if (this.armR) {
-      if (this.targetEntityId !== null && walk <= 0.01 && this.orderQueue[0]?.kind === OrderKind.ATTACK) {
-        const recoil = this.attackCooldown > this.stats.attackSpeed - 0.12 ? -0.25 : 0;
-        this.armR.rotation.x = -1.05 + recoil;
-      } else if (this.gunPivot && walk <= 0.01 && this.orderQueue[0]?.kind === OrderKind.ATTACK) {
-        this.armR.rotation.x = -0.9;
-      }
-    }
-  }
-
-  /** Clip state from the unit's real order/movement; root motion never moves the unit. */
-  private updateRig(dt: number): void {
-    const rig = this.rig;
-    if (!rig) return;
-    const order = this.orderQueue[0]?.kind;
-    const working = this.isWorking();
-    const speed = Math.hypot(this.vel.x, this.vel.z);
-    const state = rigClipStateFor({
-      moving: speed > 0.15,
-      gathering: working && order === OrderKind.GATHER,
-      building: working && order === OrderKind.BUILD,
-      attacking: this.attackingTarget || (order === OrderKind.ATTACK && this.targetEntityId !== null),
-      carrying: this.carryCount() > 0,
-    });
-    rig.play(state);
-    rig.setPlaybackRate(
-      state === 'walk' || state === 'walk_carry'
-        ? clamp(speed / WALK_CLIP_REFERENCE_SPEED, WALK_CLIP_RATE_MIN, WALK_CLIP_RATE_MAX)
-        : 1,
-    );
-    rig.update(dt);
-    this.bobY = 0;
-  }
-
   // --- specific orders ---
 
   /**
@@ -1221,8 +1080,8 @@ export class Unit {
 
   private fireAt(target: any, time: number): void {
     const pKind = this.stats.projectile;
-    const from = new THREE.Vector3(this.pos.x, this.pos.y + 0.8, this.pos.z);
-    const to = new THREE.Vector3(target.pos.x, target.pos.y + 0.5, target.pos.z);
+    const from = { x: this.pos.x, y: this.pos.y + 0.8, z: this.pos.z };
+    const to = { x: target.pos.x, y: target.pos.y + 0.5, z: target.pos.z };
     const arc =
       pKind === 'howitzer_shell' || pKind === 'nuclear'
         ? 1
@@ -1249,10 +1108,12 @@ export class Unit {
       bonusVs: this.stats.bonusVs,
     });
     // muzzle flash at the cannon mouth (weapon pivot + barrel length, rotated with the unit)
-    const muzzle = new THREE.Vector3(0.28, 0.9, 0.62).applyAxisAngle(
-      new THREE.Vector3(0, 1, 0),
-      facingRotation(this.yaw),
-    );
+    const angle = facingRotation(this.yaw);
+    const muzzle = {
+      x: 0.28 * Math.cos(angle) + 0.62 * Math.sin(angle),
+      y: 0.9,
+      z: -0.28 * Math.sin(angle) + 0.62 * Math.cos(angle),
+    };
     this.ctx.particles?.emit({
       x: this.pos.x + muzzle.x,
       y: this.pos.y + muzzle.y,
@@ -1471,23 +1332,6 @@ export class Unit {
     return this.gatherCarry.food + this.gatherCarry.wood + this.gatherCarry.silver + this.gatherCarry.stone;
   }
 
-  /** Show/hide the load bundle and color it according to the resource. */
-  private updateCarry(): void {
-    const carrying = this.carryCount() > 0;
-    const res = this.currentResource ?? this.dominantResource();
-    this.rig?.setCarrying(carrying, CARRY_COLORS[res]);
-    if (!this.carryPivot) return;
-    this.carryPivot.visible = carrying;
-    if (carrying && this.carryMat) this.carryMat.color.setHex(CARRY_COLORS[res]);
-  }
-
-  private dominantResource(): keyof Resources {
-    if (this.gatherCarry.food > 0) return 'food';
-    if (this.gatherCarry.wood > 0) return 'wood';
-    if (this.gatherCarry.silver > 0) return 'silver';
-    return 'stone';
-  }
-
   private deliverOrder(): void {
     const res = this.currentResource;
     if (!res) return;
@@ -1623,7 +1467,7 @@ export class Unit {
       if (bld.garrisonedIds.length < capacity) {
         bld.garrisonUnit(this.id, this.owner);
         this.garrisonedIn = bld.id;
-        this.view.group.visible = false;
+        if (this.view) this.view.group.visible = false;
         this.finishOrder();
       } else {
         // building full: stay nearby waiting
@@ -1764,20 +1608,9 @@ export class Unit {
     this.attackMultiplier = s.attackMultiplier;
     this.armorMultiplier = s.armorMultiplier;
     if (s.tag) this.tag = s.tag;
-    this.view.setPosition(this.pos.x, this.pos.y, this.pos.z);
-    this.view.setFacing(this.yaw);
-    this.view.group.visible = this.garrisonedIn === null;
-    this.view.updateHealth(this.hp / this.maxHp);
-  }
-
-  removeFromScene(): void {
-    if (this.view.group.parent) this.view.group.parent.remove(this.view.group);
-    this.view.dispose();
-    if (this.rig) {
-      this.rig.dispose();
-      this.rig = null;
-    } else {
-      disposeModel(this.view.group);
-    }
+    this.view?.setPosition(this.pos.x, this.pos.y, this.pos.z);
+    this.view?.setFacing(this.yaw);
+    if (this.view) this.view.group.visible = this.garrisonedIn === null;
+    this.view?.updateHealth(this.hp / this.maxHp);
   }
 }

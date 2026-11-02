@@ -32,7 +32,14 @@ import { planProps, propCountFor } from '../model/defs/props';
 import { planWildlife, faunaCountFor } from '../model/defs/wildlife';
 import { Projectile } from '../entities/Projectile';
 import { ProjectileView, updateProjectilePools } from '../rendering/ProjectileView';
-import { attachBuilding, detachBuilding, modernizeBuilding } from '../rendering/RenderSync';
+import {
+  attachBuilding,
+  attachUnit,
+  detachBuilding,
+  detachUnit,
+  modernizeBuilding,
+  modernizeUnit,
+} from '../rendering/RenderSync';
 import { EntityView, reserveIds } from '../entities/EntityView';
 import { AI } from '../game/AI';
 import { elevationDamageMultiplier, ArmorProfile } from '../game/combat';
@@ -101,7 +108,6 @@ import { ERA_DEFS } from '../model/defs/eras';
 import { BUILDING_DEFS, getBuildingStats, BUILDING_INFO } from '../model/defs/buildings';
 import {
   getUnitStats,
-  getUnitModel,
   unitDisplayDescription,
   unitDisplayIcon,
   unitDisplayName,
@@ -1593,7 +1599,7 @@ export class Game {
       unit.pos.set(spot.x, this.terrain.getHeight(spot.x, spot.z), spot.z);
       unit.setContext(this.unitContext);
       this.applyPlayerBonuses(unit, this.players[player]);
-      unit.attach(this.scene);
+      this.attachUnit(unit);
       this.units.set(unit.id, unit);
       this.players[player].populationUsed += unit.stats.population;
     }
@@ -1603,7 +1609,7 @@ export class Game {
     scout.pos.set(scoutSpot.x, this.terrain.getHeight(scoutSpot.x, scoutSpot.z), scoutSpot.z);
     scout.setContext(this.unitContext);
     this.applyPlayerBonuses(scout, this.players[player]);
-    scout.attach(this.scene);
+    this.attachUnit(scout);
     this.units.set(scout.id, scout);
     this.players[player].populationUsed += scout.stats.population;
     // auto-gathering
@@ -1892,7 +1898,7 @@ export class Game {
     u.pos.set(spot.x, this.terrain.getHeight(spot.x, spot.z), spot.z);
     u.setContext(this.unitContext);
     if (this.players[owner]) this.applyPlayerBonuses(u, this.players[owner]);
-    u.attach(this.scene);
+    this.attachUnit(u);
     if (tag) u.tag = tag;
     this.units.set(u.id, u);
     const p = this.players[owner];
@@ -2045,6 +2051,11 @@ export class Game {
     if (this.replay && record) return false;
     if (record && this.recorder) this.recorder.record(this.stepCount, cmd);
     return this.commandProcessor.apply(cmd);
+  }
+
+  /** Create and attach a unit view from the current build context. */
+  attachUnit(u: Unit): void {
+    attachUnit(this.scene, u, this.makeBuildContext(u.owner));
   }
 
   /** Create and attach a building view from the current build context. */
@@ -2293,7 +2304,7 @@ export class Game {
       u.setContext(this.unitContext);
       this.applyPlayerBonuses(u, this.players[us.owner]);
       u.applySave(us);
-      u.attach(this.scene);
+      this.attachUnit(u);
       this.units.set(u.id, u);
     }
 
@@ -2670,7 +2681,7 @@ export class Game {
     const ndc = new THREE.Vector2((sx / window.innerWidth) * 2 - 1, -(sy / window.innerHeight) * 2 + 1);
     this.raycaster.setFromCamera(ndc, this.camera.camera);
     const proxies: THREE.Object3D[] = [];
-    for (const u of this.units.values()) if (!u.dead) proxies.push(u.view.pickProxy);
+    for (const u of this.units.values()) if (!u.dead && u.view) proxies.push(u.view.pickProxy);
     for (const b of this.buildings.values()) if (!b.dead && b.view) proxies.push(b.view.pickProxy);
     const hits = this.raycaster.intersectObjects(proxies, false);
     for (const h of hits) {
@@ -2734,12 +2745,7 @@ export class Game {
     for (const u of this.units.values()) {
       if (u.owner !== 0) continue;
       if (u.dead) continue;
-      const p = u.pos;
-      const ndc = new THREE.Vector3().copy(p);
-      void ndc;
-      // project to screen
-      const v = p.clone();
-      const screen = v.project(this.camera.camera);
+      const screen = new THREE.Vector3(u.pos.x, u.pos.y, u.pos.z).project(this.camera.camera);
       const sx = (screen.x * 0.5 + 0.5) * window.innerWidth;
       const sy = (-screen.y * 0.5 + 0.5) * window.innerHeight;
       if (sx >= minX && sx <= maxX && sy >= minY && sy <= maxY) {
@@ -2760,7 +2766,7 @@ export class Game {
       const sel = this.selectedUnits.includes(u.id);
       u.selected = sel;
       const p = this.players[u.owner];
-      u.view.showSelectionColor(sel, p.color);
+      u.view?.showSelectionColor(sel, p.color);
     }
     for (const b of this.buildings.values()) {
       const sel = this.selectedBuilding === b.id;
@@ -3162,7 +3168,7 @@ export class Game {
       const u = this.units.get(id);
       if (!u) continue;
       u.garrisonedIn = null;
-      u.view.group.visible = true;
+      if (u.view) u.view.group.visible = true;
       const ang = this.rng.float() * Math.PI * 2;
       const px = b.pos.x + Math.cos(ang) * (b.radius + 0.6);
       const pz = b.pos.z + Math.sin(ang) * (b.radius + 0.6);
@@ -3659,7 +3665,7 @@ export class Game {
     u.pos.set(px, this.terrain.getHeight(px, pz), pz);
     u.setContext(this.unitContext);
     this.applyPlayerBonuses(u, p);
-    u.attach(this.scene);
+    this.attachUnit(u);
     this.units.set(u.id, u);
     p.populationUsed += stats.population;
     p.stats.created++;
@@ -3819,19 +3825,7 @@ export class Game {
       u.stats = getUnitStats(u.kind, p.era);
       u.maxHp = u.stats.hp;
       if (u.hp > u.maxHp) u.hp = u.maxHp;
-      // rebuild model
-      const old = u.view.group;
-      const model = buildModel(getUnitModel(u.kind, p.era), ctx);
-      model.position.copy(old.position);
-      model.rotation.copy(old.rotation);
-      if (old.parent) {
-        old.parent.add(model);
-        old.parent.remove(old);
-      }
-      u.view.dispose();
-      disposeModel(old);
-      u.view = new EntityView(model, u.radius, u);
-      u.findPivots(model);
+      modernizeUnit(u, ctx);
       // reset multipliers before re-applying (avoids double counting)
       u.attackMultiplier = 1;
       u.armorMultiplier = 1;
@@ -3857,7 +3851,7 @@ export class Game {
     for (const u of this.units.values()) {
       if (u.owner === 0) continue;
       const vis = this.fow.isVisible(u.pos.x, u.pos.z) || !this.settings.fogOfWar;
-      u.view.group.visible = vis;
+      if (u.view) u.view.group.visible = vis;
     }
     for (const b of this.buildings.values()) {
       if (b.owner === 0) continue;
@@ -3889,7 +3883,7 @@ export class Game {
     this.terrain.setFow(this.fowTexture.texture, on);
     this.fowUniforms.fowEnabled.value = on ? 1 : 0;
     if (!on) {
-      for (const u of this.units.values()) u.view.group.visible = true;
+      for (const u of this.units.values()) if (u.view) u.view.group.visible = true;
       for (const b of this.buildings.values()) if (b.view) b.view.group.visible = true;
       for (const n of this.resourceNodes.values()) n.setVisibleEx(true);
     }
@@ -3987,9 +3981,10 @@ export class Game {
       u.ctx = this.unitContext;
       // show a health bar for selected or damaged units (all owners): makes fights
       // and wounded enemies readable without hovering
-      u.view.showHealthBar(u.selected || u.hp < u.maxHp, this.players[u.owner].color);
+      u.view?.showHealthBar(u.selected || u.hp < u.maxHp, this.players[u.owner].color);
       u.update(d, t);
-      u.view.faceHealthBar(this.camera.camera.quaternion);
+      u.unitView?.sync(d, t);
+      u.view?.faceHealthBar(this.camera.camera.quaternion);
     }
     // buildings
     for (const b of this.buildings.values()) {
@@ -4043,7 +4038,7 @@ export class Game {
   private cleanupDead(dt: number): void {
     for (const [id, u] of this.units) {
       if (u.dead) {
-        this.spawnDeathFx(u.view, 'unit', u.radius, () => u.removeFromScene());
+        if (u.view) this.spawnDeathFx(u.view, 'unit', u.radius, () => detachUnit(u));
         this.units.delete(id);
       }
     }
@@ -4479,7 +4474,7 @@ export class Game {
     this.settlementDressing = [];
     for (const fx of this.deathFx) fx.cleanup();
     this.deathFx = [];
-    for (const unit of this.units.values()) unit.removeFromScene();
+    for (const unit of this.units.values()) detachUnit(unit);
     this.units.clear();
     for (const hook of this.teardownHooks.splice(0)) hook();
     for (const view of this.projectileViews.values()) view.dispose();
