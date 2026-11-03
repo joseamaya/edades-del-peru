@@ -106,7 +106,7 @@ actualiza dentro de `Game.update` (`src/core/Game.ts:2653`):
 | Spatial | `rebuildSpatial` (limpia y reasigna buckets) | 60 Hz |
 | Entidades | `Unit.update`, `Building.update`, `ResourceNode.update`, `Projectile.update` | 60 Hz |
 | FOW + LOD | `updateFow` (reveal + `decay` + `upload`), `applyLod` | 60 Hz |
-| Población | `updatePopulation` (recorre unidades y edificios) | 60 Hz |
+| Población | `RuntimeController.updatePopulation` (recorre unidades y edificios) | 60 Hz |
 | Campaña | `Mission.update`, `Tutorial.update` | 60 Hz |
 | Limpieza | `cleanupDead` (y `pathfinder.removeObstacle` → `rebuild`) | 60 Hz |
 | IA | `AI.update`, con decisiones internas escalonadas | 60 Hz de entrada; decisiones a 0,3–8 s |

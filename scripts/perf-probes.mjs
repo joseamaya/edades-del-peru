@@ -88,15 +88,16 @@ export async function installProbes(page, options = {}) {
     const AICtor = firstAI ? protoOf(firstAI) : null;
     const PathProto = protoOf(g.pathfinder);
     const GameProto = protoOf(g);
+    const RuntimeProto = protoOf(g.runtime);
 
     // --- simulation sections ---
-    wrap(GameProto, 'rebuildSpatial', 'spatial');
-    wrap(GameProto, 'updateFow', 'fow');
-    wrap(GameProto, 'applyLod', 'lod');
-    wrap(GameProto, 'updatePopulation', 'population');
-    wrap(GameProto, 'cleanupDead', 'cleanup');
-    wrap(GameProto, 'checkVictory', 'victory');
-    wrap(GameProto, 'checkBaseThreat', 'threat');
+    wrap(RuntimeProto, 'rebuildSpatial', 'spatial');
+    wrap(RuntimeProto, 'updateFow', 'fow');
+    wrap(RuntimeProto, 'applyLod', 'lod');
+    wrap(RuntimeProto, 'updatePopulation', 'population');
+    wrap(RuntimeProto, 'cleanupDead', 'cleanup');
+    wrap(RuntimeProto, 'checkVictory', 'victory');
+    wrap(RuntimeProto, 'checkBaseThreat', 'threat');
     wrap(UnitProto, 'update', 'units');
     if (RigProto) wrap(RigProto, 'update', 'rigs');
     wrap(BuildingProto, 'update', 'buildings');
