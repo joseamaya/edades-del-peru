@@ -54,6 +54,7 @@ export function generateHeightField(
   const t = profile.terrain;
   const aridity = profile.climate.aridity;
   const moisture = profile.climate.moisture;
+  const waterLevel = profile.water.level;
 
   for (let z = 0; z < n; z++) {
     for (let x = 0; x < n; x++) {
@@ -80,7 +81,7 @@ export function generateHeightField(
       let height = base * HEIGHT_SCALE + Math.max(0, mtn - 0.52) * t.mtnAmp * mtnMask * edgeBlend;
       if (t.valleyDepth && t.valleyWidth) {
         const valley = Math.exp(-Math.pow(across / t.valleyWidth, 2));
-        height -= valley * t.valleyDepth;
+        height = Math.max(waterLevel + 0.8, height - valley * t.valleyDepth);
       }
 
       const i = z * n + x;
