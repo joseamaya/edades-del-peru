@@ -14,8 +14,8 @@
 
 ## Assets y carga (#246)
 
-Medición local (Linux, Chromium/SwiftShader, `vite preview`, `?menu=1`). La carga inicial se mide hasta que
-`.ed-menu-shell` es visible; no sustituye una pasada con GPU real.
+Medición local (Linux, Chromium/SwiftShader, `vite preview`). La landing se mide sin `navigator.webdriver`
+hasta `#landing`; el menú real, con `?menu=1`, hasta `.ed-menu-shell`. No sustituye una pasada con GPU real.
 
 | Métrica | Antes | Después |
 |---|---:|---:|

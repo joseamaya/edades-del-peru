@@ -40,6 +40,17 @@ function hasDirectEntry(): boolean {
     'menu',
     'low',
     'fog',
+    'art',
+    'aiart',
+    'intro',
+    'cine',
+    'speed',
+    'noloop',
+    'civ',
+    'map',
+    'mod',
+    'fps',
+    'lod',
   ].some((key) => params.has(key));
 }
 
