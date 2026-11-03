@@ -61,14 +61,25 @@ export function generateHeightField(
       const nz = z / (resolution / 2) - 1;
       const border = Math.max(Math.abs(nx), Math.abs(nz)); // 0 center -> 1 edge
 
-      let base = fbm2(nx * t.fbmScale + t.fbmOffset, nz * t.fbmScale, t.fbmOctaves) * t.baseGain + t.baseBias;
+      // Domain warp bends the noise into long ridges and broad valley floors
+      // instead of isolated cones.
+      const wx = nx + (fbm2(nx * 0.7 + 5, nz * 0.7 + 9, 2) - 0.5) * 0.42;
+      const wz = nz + (fbm2(nx * 0.7 + 17, nz * 0.7 + 2, 2) - 0.5) * 0.42;
+      let base = fbm2(wx * t.fbmScale + t.fbmOffset, wz * t.fbmScale, t.fbmOctaves) * t.baseGain + t.baseBias;
       if (t.borderCarve > 0) base -= smoothstep(0.9, 1.02, border) * t.borderCarve;
 
-      // mountains (flattened at the edge to avoid spikes and artifacts)
-      const mtn = ridged2(nx * 1.7 + 11, nz * 1.7, 4);
+      const ridgeAngle = t.ridgeDirection ?? 0;
+      const across = -nx * Math.sin(ridgeAngle) + nz * Math.cos(ridgeAngle);
+      const along = nx * Math.cos(ridgeAngle) + nz * Math.sin(ridgeAngle);
+      // mountains (elongated along the ridge axis, flattened at the edge)
+      const mtn = ridged2(across * 1.9 + 11, along * 0.65, 4);
       const mtnMask = smoothstep(0.45, 0.82, mtn);
       const edgeBlend = 1 - smoothstep(0.92, 1.06, border);
-      const height = base * HEIGHT_SCALE + Math.max(0, mtn - 0.52) * t.mtnAmp * mtnMask * edgeBlend;
+      let height = base * HEIGHT_SCALE + Math.max(0, mtn - 0.52) * t.mtnAmp * mtnMask * edgeBlend;
+      if (t.valleyDepth && t.valleyWidth) {
+        const valley = Math.exp(-Math.pow(across / t.valleyWidth, 2));
+        height -= valley * t.valleyDepth;
+      }
 
       const i = z * n + x;
       heightMap[i] = height;
@@ -77,6 +88,7 @@ export function generateHeightField(
     }
   }
 
+  applyThermalErosion(heightMap, n, t.erosionIterations ?? 0);
   carveRivers(heightMap, n, profile, new RNG(seed * 7919 + 17));
   if (layout?.flats?.length) flattenTerracePads(heightMap, n, layout.flats);
   if (layout?.river) carveFixedRiver(heightMap, moistureMap, n, profile, layout.river);
@@ -221,6 +233,31 @@ function carveTerraces(heightMap: Float32Array, n: number, profile: HistoricalMa
     }
   }
   return terraceMap;
+}
+
+/**
+ * Deterministic thermal erosion: only cells steeper than the talus angle shed
+ * material to their four neighbours. A few passes round sharp noise peaks into
+ * scree slopes and give valleys a readable floor without touching water.
+ */
+function applyThermalErosion(heightMap: Float32Array, n: number, iterations: number): void {
+  if (iterations <= 0) return;
+  const talus = 0.58;
+  const rate = 0.22;
+  for (let pass = 0; pass < iterations; pass++) {
+    const next = new Float32Array(heightMap);
+    for (let z = 1; z < n - 1; z++) {
+      for (let x = 1; x < n - 1; x++) {
+        const i = z * n + x;
+        const h = heightMap[i];
+        const avg =
+          (heightMap[i - 1] + heightMap[i + 1] + heightMap[i - n] + heightMap[i + n]) / 4;
+        const excess = h - avg - talus;
+        if (excess > 0) next[i] = h - excess * rate;
+      }
+    }
+    heightMap.set(next);
+  }
 }
 
 /** Carve rivers with directional noise, dropping the terrain toward the water level. */

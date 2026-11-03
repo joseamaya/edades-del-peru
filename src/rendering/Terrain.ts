@@ -99,12 +99,26 @@ export class Terrain {
    * showing there without adding any gameplay surface.
    */
   private buildSkirt(): void {
-    const width = this.size * 0.6;
+    const width = this.size * 4;
     const n = this.resolution + 1;
     const color = this.mesh.geometry.getAttribute('color') as THREE.BufferAttribute;
     const positions: number[] = [];
     const colors: number[] = [];
     const indices: number[] = [];
+    let lr = 0;
+    let lg = 0;
+    let lb = 0;
+    let landCells = 0;
+    for (let i = 0; i < this.heightMap.length; i++) {
+      if (this.heightMap[i] <= this.waterLevel + 0.8) continue;
+      lr += color.getX(i);
+      lg += color.getY(i);
+      lb += color.getZ(i);
+      landCells++;
+    }
+    const far = landCells
+      ? [lr / landCells, lg / landCells, lb / landCells]
+      : [color.getX(0), color.getY(0), color.getZ(0)];
     const sides: { inner: (i: number) => number; x: (i: number) => number; z: (i: number) => number }[] = [
       { inner: (i) => i, x: (i) => (i / this.resolution) * this.size, z: () => 0 },
       {
@@ -131,7 +145,7 @@ export class Terrain {
         const dz = z === 0 ? -width : z === this.size ? width : 0;
         positions.push(x, y, z, x + dx, y, z + dz);
         colors.push(color.getX(src), color.getY(src), color.getZ(src));
-        colors.push(color.getX(src), color.getY(src), color.getZ(src));
+        colors.push(far[0], far[1], far[2]);
       }
       for (let i = 0; i < this.resolution; i++) {
         const a = base + i * 2;
@@ -170,7 +184,7 @@ export class Terrain {
         y,
         c.z + c.dz * width,
       );
-      for (let i = 0; i < 4; i++) colors.push(cr, cg, cb);
+      colors.push(cr, cg, cb, far[0], far[1], far[2], far[0], far[1], far[2], far[0], far[1], far[2]);
       indices.push(base, base + 1, base + 2, base + 2, base + 1, base + 3);
     }
 
@@ -179,11 +193,13 @@ export class Terrain {
     geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
     geo.setIndex(indices);
     geo.computeVertexNormals();
-    const mat = new THREE.MeshStandardMaterial({
+    // Unlit apron: the skirt's normals face away from the camera, so a lit
+    // material renders the edge as a black void. Vertex colours keep the land
+    // tone and fog blends it into the distance.
+    const mat = new THREE.MeshBasicMaterial({
       vertexColors: true,
-      roughness: 1,
-      metalness: 0,
       side: THREE.DoubleSide,
+      fog: true,
     });
     this.skirt = new THREE.Mesh(geo, mat);
     this.skirt.receiveShadow = false;
