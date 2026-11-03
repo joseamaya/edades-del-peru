@@ -4,6 +4,7 @@ import { formatIssues, validateManifestFiles } from './validate';
 import { MANIFEST_PATH, REPO_ROOT } from './paths';
 import { optimizeModels } from './models';
 import { optimizeTextures } from './textures';
+import { packTerrainTextures } from './terrainTextures';
 
 type FlagValue = string | true | undefined;
 type Flags = Record<string, FlagValue>;
@@ -62,6 +63,9 @@ Usage:
   yarn art:models [--only=id1,id2] [--dry-run] [--force]
                    [--compress=draco|meshopt] [--texture-size=1024]
   yarn art:textures [--only=id1,id2] [--dry-run] [--force]
+  yarn art:textures --terrain [--manifest=scripts/terrain-textures.json]
+                   [--only=slot1,slot2] [--dry-run] [--check]
+                   [--format=webp] [--max-bytes=2100000]
   yarn art:validate
   yarn art:review --id=ASSET_ID --reviewer=NAME --approve|--reject
 
@@ -133,6 +137,36 @@ async function main(): Promise<void> {
       return;
     }
     case 'textures': {
+      if (bool(flags, 'terrain')) {
+        const format = str(flags, 'format') ?? 'webp';
+        if (format !== 'webp') {
+          console.error(`Unsupported terrain texture format: ${format}. KTX2 is deferred (see #302).`);
+          process.exitCode = 1;
+          return;
+        }
+        const maxBytes = Number(str(flags, 'max-bytes') ?? 2_200_000);
+        const result = await packTerrainTextures({
+          manifestPath: str(flags, 'manifest'),
+          only: onlyArg(flags),
+          dryRun: bool(flags, 'dry-run'),
+          check: bool(flags, 'check'),
+          maxBytes: Number.isFinite(maxBytes) ? maxBytes : 2_200_000,
+          onProgress: (message) => console.log(message),
+        });
+        for (const slot of result.slots) {
+          console.log(
+            `${slot.slot}: albedo ${(slot.albedo / 1024).toFixed(0)} KB + surface ${(slot.surface / 1024).toFixed(0)} KB`,
+          );
+        }
+        console.log(`Terrain textures: ${(result.totalBytes / 1e6).toFixed(2)} MB`);
+        if (result.manifestUpdated)
+          console.log(`Manifest: ${str(flags, 'manifest') ?? 'scripts/terrain-textures.json'}`);
+        if (result.errors.length) {
+          console.error(result.errors.join('\n'));
+          process.exitCode = 1;
+        }
+        return;
+      }
       const result = await optimizeTextures({
         only: onlyArg(flags),
         dryRun: bool(flags, 'dry-run'),
@@ -149,7 +183,13 @@ async function main(): Promise<void> {
         process.exitCode = 1;
         return;
       }
-      console.log('Manifest and Blender render assets are valid.');
+      const terrain = await packTerrainTextures({ check: true, maxBytes: 2_200_000 });
+      if (terrain.errors.length) {
+        console.error(terrain.errors.join('\n'));
+        process.exitCode = 1;
+        return;
+      }
+      console.log('Manifest, Blender render assets and terrain textures are valid.');
       return;
     }
     case 'review': {

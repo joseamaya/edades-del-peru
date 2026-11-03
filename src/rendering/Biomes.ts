@@ -1,13 +1,14 @@
 import * as THREE from 'three';
 
 /**
- * AI-generated PBR textures (Cloudflare Workers AI) in WebP:
- *   - terrain:   `src/assets/textures/terrain/{slot}_{diffuse|normal|roughness}.webp`
+ * PBR textures in WebP:
+ *   - terrain:   `src/assets/textures/terrain/{slot}_{albedo|surface}.webp`
+ *                (albedo RGB + AO alpha; surface = normal.xy + roughness + height)
  *   - materials: `src/assets/textures/materials/{mat}_{diffuse|normal|roughness}.webp`
  * If files are missing, null is returned and the usual procedural material
  * acts as a fallback (works offline / without assets).
  */
-const terrainMods = import.meta.glob('../assets/textures/terrain/*_{diffuse,normal,roughness}.webp', {
+const terrainMods = import.meta.glob('../assets/textures/terrain/*_{albedo,surface}.webp', {
   eager: true,
   query: '?url',
   import: 'default',
@@ -23,6 +24,12 @@ export interface PbrSet {
   diffuse: THREE.Texture;
   normal: THREE.Texture | null;
   roughness: THREE.Texture | null;
+}
+
+/** Packed terrain material: albedo (RGB + AO alpha) and surface (normal.xy + roughness + height). */
+export interface GroundPbrSet {
+  albedo: THREE.Texture;
+  surface: THREE.Texture;
 }
 
 const loader = new THREE.TextureLoader();
@@ -51,16 +58,14 @@ function load(
   return t;
 }
 
-/** PBR terrain set for a slot (grass/dirt/sand/rock/snow). */
-export function getGroundPBR(slot: string): PbrSet | null {
+/** Packed PBR terrain set for a slot (grass/dirt/sand/rock/snow + regional slots). */
+export function getGroundPBR(slot: string): GroundPbrSet | null {
   const base = '../assets/textures/terrain';
-  const diffuse = load(terrainMods, base, slot, 'diffuse', true, THREE.RepeatWrapping);
-  if (!diffuse) return null;
-  return {
-    diffuse,
-    normal: load(terrainMods, base, slot, 'normal', false, THREE.RepeatWrapping),
-    roughness: load(terrainMods, base, slot, 'roughness', false, THREE.RepeatWrapping),
-  };
+  const albedo = load(terrainMods, base, slot, 'albedo', true, THREE.RepeatWrapping);
+  if (!albedo) return null;
+  const surface = load(terrainMods, base, slot, 'surface', false, THREE.RepeatWrapping);
+  if (!surface) return null;
+  return { albedo, surface };
 }
 
 /** PBR material set for modeling (wood, adobe, tile, clay, mud, textile). */

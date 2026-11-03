@@ -17,17 +17,23 @@ Definition of Done and the building audit see
 - Data is driven by defs in `src/model/defs/{periods,eras,civs,units,buildings,techs}.ts`; models are generated
   procedurally in `src/model/ProceduralModel.ts`. A local glTF/GLB pipeline can override a unit's presentation
   (see **Rigged 3D models** below); the procedural model remains the fallback during the progressive migration.
-- **PBR terrain & material textures (AI-generated)**: `src/assets/textures/{terrain,materials}/{slot}_{diffuse|normal|roughness}.webp`
-  (terrain slots `sand/dirt/grass/rock/snow`; material/building/textile slots — `wall_*`, `roof_*`, `textile_*`,
-  `wood`, `tile`, `ground_*`, `terrace_face`, `corral_brush`, `bark` — loaded by `src/model/ProceduralModel.ts`/`Biomes.ts`, see below), consumed by
-  `src/rendering/Biomes.ts` via `import.meta.glob`. The terrain shader uses normal+roughness+specular when
-  present and **falls back to the procedural material** if missing (offline). Generated with
-  `scripts/gen_textures.py` (Cloudflare Workers AI: `@cf/black-forest-labs/flux-2-dev`, multipart inputs;
-  credentials in `scripts/.cloudflare.json`, gitignored) + `scripts/post_textures.py` (tiling/normal/roughness).
-  Prompts in `scripts/prompts_textures.json` (sections `terrain`/`materials`/`buildings`/`textiles`/`landscape`);
-  andean textile slots may use public-domain museum images as FLUX.2 multi-reference inputs (`scripts/refs.json` →
-  `scripts/_refs/`, gitignored; all of it is optional — the AI layer only overrides the procedural look when the
-  webp exists). See `PROVENANCE.md`.
+- **PBR terrain textures (CC0 + Caral remaster)**: `src/assets/textures/terrain/{slot}_{albedo|surface}.webp`
+  (base slots `grass/dirt/sand/rock/snow`; regional `puna_grass/coastal_gravel/jungle_floor`; Caral
+  `caral_grass`). `_albedo` is RGB + AO alpha; `_surface` is normal.xy + roughness + height. Loaded by
+  `src/rendering/Biomes.ts` via `import.meta.glob` and consumed by the terrain shader. The regional slots are
+  selected by `HistoricalMapProfile.groundPbr`. Regenerate/verify with `yarn art:textures --terrain`
+  (downloads 1k Poly Haven sources, verifies `scripts/terrain-textures.json` hashes, packs WebP and checks the
+  budget); the shader **falls back to the procedural material** when a slot is missing (offline). See
+  `PROVENANCE.md`.
+- **PBR material textures (AI-generated)**: `src/assets/textures/materials/{mat}_{diffuse|normal|roughness}.webp`
+  (material/building/textile slots — `wall_*`, `roof_*`, `textile_*`, `wood`, `tile`, `ground_*`,
+  `terrace_face`, `corral_brush`, `bark` — loaded by `src/model/ProceduralModel.ts`/`Biomes.ts`, see below),
+  consumed by `src/rendering/Biomes.ts` via `import.meta.glob`. Generated with `scripts/gen_textures.py`
+  (Cloudflare Workers AI: `@cf/black-forest-labs/flux-2-dev`, multipart inputs; credentials in
+  `scripts/.cloudflare.json`, gitignored) + `scripts/post_textures.py` (tiling/normal/roughness). Prompts in
+  `scripts/prompts_textures.json` (sections `materials`/`buildings`/`textiles`/`landscape`); andean textile slots
+  may use public-domain museum images as FLUX.2 multi-reference inputs (`scripts/refs.json` → `scripts/_refs/`,
+  gitignored; all of it is optional — the AI layer only overrides the procedural look when the webp exists).
 - **Blender render assets (optional)**: campaign/educational art lives in
   `public/media/generated/{campaigns,education,tours}/` and is **not bundled** into the JS. The editable Blender
   sources live in `art-src/blender` (`.blend`/`.xcf` in Git LFS); the repo also stores the source manifest
@@ -495,10 +501,11 @@ Definition of Done and the building audit see
 - **The terrain material weights are a CPU splatmap** (`src/rendering/terrainSplat.ts`): a deterministic
   512² RGBA texture (grass, dirt, sand, rock) built once per match from `TerrainData`; snow stays procedural by
   height. `Terrain` uploads it as a `DataTexture`. Keep the generation pure and seed-stable; #304 paints
-  building/path wear into this map. The shader combines it with a height bias, two non-integer texture scales and
-  a low-frequency macro mask, and switches the rock albedo/normal to triplanar above `slope ≈ 0.45`. Terrain
-  textures use `RepeatWrapping` (materials keep `MirroredRepeatWrapping`); do not reintroduce mirrored terrain
-  sampling or the kaleidoscope tiling returns.
+  building/path wear into this map. The shader combines it with the packed surface height (`_surface.a`), two
+  non-integer texture scales and a low-frequency macro mask, and switches the rock albedo/normal to triplanar
+  above `slope ≈ 0.45`. Terrain albedo carries AO in its alpha; `_surface` packs normal.xy + roughness + height.
+  Terrain textures use `RepeatWrapping` (materials keep `MirroredRepeatWrapping`); do not reintroduce mirrored
+  terrain sampling or the kaleidoscope tiling returns.
 - **Terrain faces must point up**: in `Terrain.buildMesh` the indices go `(a,c,b)` and `(b,c,d)` (not `(a,b,c)`).
   Inverting the winding makes faces point down: backface culling hides the terrain and the sky dome appears as if
   it were the ground. Verify with a vertical `Raycaster` that hits the terrain.

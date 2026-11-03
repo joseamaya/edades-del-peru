@@ -1,0 +1,505 @@
+{
+  "version": 1,
+  "targetWidth": 384,
+  "slots": [
+    {
+      "slot": "grass",
+      "kind": "polyhaven",
+      "assetId": "grass_ground",
+      "author": "Charlotte Baglioni",
+      "license": "CC0 1.0",
+      "url": "https://polyhaven.com/a/grass_ground",
+      "width": 384,
+      "maps": {
+        "albedo": {
+          "map": "Diffuse",
+          "file": ".cache/terrain-textures/grass/albedo.jpg",
+          "sha256": "a79cc5ed65af0f80261b39a383b64a8c5272c5144d724deb43dbc29f0e4cd19b",
+          "bytes": 876584
+        },
+        "normal": {
+          "map": "nor_gl",
+          "file": ".cache/terrain-textures/grass/normal.jpg",
+          "sha256": "7000e2ccd479bb7b66dcdf4faef7b47554324566886314ca620cbf03e274e826",
+          "bytes": 1310516
+        },
+        "roughness": {
+          "map": "Rough",
+          "file": ".cache/terrain-textures/grass/roughness.jpg",
+          "sha256": "111341f948b7e073edf7ac6add8777e1bf10df8959400df3863243e89bbc8c08",
+          "bytes": 328190
+        },
+        "ao": {
+          "map": "AO",
+          "file": ".cache/terrain-textures/grass/ao.jpg",
+          "sha256": "5f6c3623404f9c3f0ef4d27fb96cc3bf107554352e1193e8480ab3e2c9fb187d",
+          "bytes": 968681
+        },
+        "height": {
+          "map": "Displacement",
+          "file": ".cache/terrain-textures/grass/height.jpg",
+          "sha256": "7363f35a24809de03f965ca6afaf1786722473c5155b16548cd3f04ea25b3a95",
+          "bytes": 732755
+        }
+      },
+      "outputs": {
+        "albedo": "src/assets/textures/terrain/grass_albedo.webp",
+        "surface": "src/assets/textures/terrain/grass_surface.webp"
+      },
+      "outputMeta": {
+        "albedo": {
+          "sha256": "5b01845156e82a4b82e8390bc324ab461025d787fefda1e3d6030a368434569a",
+          "bytes": 119390,
+          "width": 384
+        },
+        "surface": {
+          "sha256": "501876e4b83555d7da9a3b81430000cda9cd046b8cbabb13dfccd4665a2d133a",
+          "bytes": 117374,
+          "width": 384
+        }
+      }
+    },
+    {
+      "slot": "dirt",
+      "kind": "polyhaven",
+      "assetId": "brown_mud_02",
+      "author": "Rob Tuytel",
+      "license": "CC0 1.0",
+      "url": "https://polyhaven.com/a/brown_mud_02",
+      "width": 384,
+      "maps": {
+        "albedo": {
+          "map": "Diffuse",
+          "file": ".cache/terrain-textures/dirt/albedo.jpg",
+          "sha256": "058b6f12493305ec6b47cb5ea77f013c9e7e58216b34af3700a3d3d7d821732d",
+          "bytes": 527741
+        },
+        "normal": {
+          "map": "nor_gl",
+          "file": ".cache/terrain-textures/dirt/normal.jpg",
+          "sha256": "9ca6f68d25599c98ba5e594df221f5653d93faceda1ba26a0babb1143e8c615f",
+          "bytes": 1397011
+        },
+        "roughness": {
+          "map": "Rough",
+          "file": ".cache/terrain-textures/dirt/roughness.jpg",
+          "sha256": "c6d5891f090554c8f51172b2c4056f490ab1ed1a69127f1f876f9d58c46f0f23",
+          "bytes": 422119
+        },
+        "ao": {
+          "map": "AO",
+          "file": ".cache/terrain-textures/dirt/ao.jpg",
+          "sha256": "bd1a4cc8a4799a9861acdd8a569ec55390416c668b0886bd6b49ac092b455b07",
+          "bytes": 457983
+        },
+        "height": {
+          "map": "Displacement",
+          "file": ".cache/terrain-textures/dirt/height.jpg",
+          "sha256": "9b67555e1a95954b496de3c993c92304d36f198cd310f73a0532b10e54c177d2",
+          "bytes": 195242
+        }
+      },
+      "outputs": {
+        "albedo": "src/assets/textures/terrain/dirt_albedo.webp",
+        "surface": "src/assets/textures/terrain/dirt_surface.webp"
+      },
+      "outputMeta": {
+        "albedo": {
+          "sha256": "b9ad3f28ed42cce4a4d5f5f0270d24c7b4a02179458608862636eca5e0b49882",
+          "bytes": 134834,
+          "width": 384
+        },
+        "surface": {
+          "sha256": "4d61153de2564107413e08403884d6b22e4e1da3d4b691f3ebe4259a4c7b1a7d",
+          "bytes": 123148,
+          "width": 384
+        }
+      }
+    },
+    {
+      "slot": "sand",
+      "kind": "polyhaven",
+      "assetId": "coast_sand_01",
+      "author": "Rob Tuytel",
+      "license": "CC0 1.0",
+      "url": "https://polyhaven.com/a/coast_sand_01",
+      "width": 384,
+      "maps": {
+        "albedo": {
+          "map": "Diffuse",
+          "file": ".cache/terrain-textures/sand/albedo.jpg",
+          "sha256": "58af2e40100f7f405703a86d593af64379f822c4786850def23ecfc921450d54",
+          "bytes": 960614
+        },
+        "normal": {
+          "map": "nor_gl",
+          "file": ".cache/terrain-textures/sand/normal.jpg",
+          "sha256": "fe4d045aec99e71e80f682fcf0ad958d2dff1fe614b73178b304d1bac047b54a",
+          "bytes": 1146826
+        },
+        "roughness": {
+          "map": "Rough",
+          "file": ".cache/terrain-textures/sand/roughness.jpg",
+          "sha256": "cbc3e0bf2214e04318a643c9dc81f50f33cc5f7b935a20016c5d9efd9a6d1696",
+          "bytes": 383892
+        },
+        "ao": {
+          "map": "AO",
+          "file": ".cache/terrain-textures/sand/ao.jpg",
+          "sha256": "8876cf6f88179996efaaf3bda9a072b8c571530ee5797e850c7a730448c588c6",
+          "bytes": 701579
+        },
+        "height": {
+          "map": "Displacement",
+          "file": ".cache/terrain-textures/sand/height.jpg",
+          "sha256": "e7f08f61db1de5b3efa8b8856544f69e66a69cdfa94c535d3e5759d23effec71",
+          "bytes": 325269
+        }
+      },
+      "outputs": {
+        "albedo": "src/assets/textures/terrain/sand_albedo.webp",
+        "surface": "src/assets/textures/terrain/sand_surface.webp"
+      },
+      "outputMeta": {
+        "albedo": {
+          "sha256": "7615b9b2aeee940a5ba8cade7167784e0639fce76bcf9cffd0bb8f75ea1bb294",
+          "bytes": 113800,
+          "width": 384
+        },
+        "surface": {
+          "sha256": "2cdc74da9ec79c39fe61e6cba0bc4e97aa91a697754c3e7da82426ccaa817ff5",
+          "bytes": 89076,
+          "width": 384
+        }
+      }
+    },
+    {
+      "slot": "rock",
+      "kind": "polyhaven",
+      "assetId": "aerial_rocks_01",
+      "author": "Rob Tuytel",
+      "license": "CC0 1.0",
+      "url": "https://polyhaven.com/a/aerial_rocks_01",
+      "width": 384,
+      "maps": {
+        "albedo": {
+          "map": "Diffuse",
+          "file": ".cache/terrain-textures/rock/albedo.jpg",
+          "sha256": "0f184f4a1da57342d240086b5abfb804bb129bc649024c9546b054bb918264b7",
+          "bytes": 812635
+        },
+        "normal": {
+          "map": "nor_gl",
+          "file": ".cache/terrain-textures/rock/normal.jpg",
+          "sha256": "641120d07a70d7bb04032defae96e2b549edfa0e59d73c80a32668e432dc0beb",
+          "bytes": 1454589
+        },
+        "roughness": {
+          "map": "Rough",
+          "file": ".cache/terrain-textures/rock/roughness.jpg",
+          "sha256": "165a51a04c35cef89151f1e5766615bf10cd4397eb46ff547868b5f3c2a3311f",
+          "bytes": 423974
+        },
+        "ao": {
+          "map": "AO",
+          "file": ".cache/terrain-textures/rock/ao.jpg",
+          "sha256": "b2d3435a518a2fd1111bb6ba7d83c54462cf5a8ad0baf6576ddda0d75a18ee6e",
+          "bytes": 404895
+        },
+        "height": {
+          "map": "Displacement",
+          "file": ".cache/terrain-textures/rock/height.jpg",
+          "sha256": "d5fff6531346c5a681c977402cccb27c1346bc08d41762b44d6a1ca8b562f627",
+          "bytes": 162223
+        }
+      },
+      "outputs": {
+        "albedo": "src/assets/textures/terrain/rock_albedo.webp",
+        "surface": "src/assets/textures/terrain/rock_surface.webp"
+      },
+      "outputMeta": {
+        "albedo": {
+          "sha256": "1f49ee03f78094e5f16be0dd5cb467383c11a60d6a2dc9614edfa86f5fa109cb",
+          "bytes": 140302,
+          "width": 384
+        },
+        "surface": {
+          "sha256": "727d8e410858fbe1bde9f6668f41ec7988b468b943d25b5773dc207a0cc85673",
+          "bytes": 114796,
+          "width": 384
+        }
+      }
+    },
+    {
+      "slot": "snow",
+      "kind": "polyhaven",
+      "assetId": "snow_01",
+      "author": "Rob Tuytel",
+      "license": "CC0 1.0",
+      "url": "https://polyhaven.com/a/snow_01",
+      "width": 384,
+      "maps": {
+        "albedo": {
+          "map": "Diffuse",
+          "file": ".cache/terrain-textures/snow/albedo.jpg",
+          "sha256": "bf71d93b7e47fe29bfb6ae11626439535b647da041b979ba5303ce8b0a862d53",
+          "bytes": 356249
+        },
+        "normal": {
+          "map": "nor_gl",
+          "file": ".cache/terrain-textures/snow/normal.jpg",
+          "sha256": "ce806bc45cae729a211b16c94239018d58570b9a796a8cc890cf8cbce2c8f050",
+          "bytes": 1370735
+        },
+        "roughness": {
+          "map": "Rough",
+          "file": ".cache/terrain-textures/snow/roughness.jpg",
+          "sha256": "c008cd329bda1127d8c6ff2ed8772e563419fbfb836648b2f05e07ab893be1aa",
+          "bytes": 195503
+        },
+        "ao": {
+          "map": "AO",
+          "file": ".cache/terrain-textures/snow/ao.jpg",
+          "sha256": "470584963898c99be98b487bdf186a0080fd1b7f63ddbc64085e06d74641006c",
+          "bytes": 414038
+        },
+        "height": {
+          "map": "Displacement",
+          "file": ".cache/terrain-textures/snow/height.jpg",
+          "sha256": "042965c95de9420ec28af9d1af7b308185139ed69483214fb77d621c0b984db0",
+          "bytes": 234435
+        }
+      },
+      "outputs": {
+        "albedo": "src/assets/textures/terrain/snow_albedo.webp",
+        "surface": "src/assets/textures/terrain/snow_surface.webp"
+      },
+      "outputMeta": {
+        "albedo": {
+          "sha256": "57e237cf34ea5178558a1b55bbaf8d57d28ac0b0a1984aa81638dd4ae4889d00",
+          "bytes": 108690,
+          "width": 384
+        },
+        "surface": {
+          "sha256": "f163500254f4331224c470b904e9652694c67e26f55a6cc19f871a879c45c090",
+          "bytes": 126184,
+          "width": 384
+        }
+      }
+    },
+    {
+      "slot": "puna_grass",
+      "kind": "polyhaven",
+      "assetId": "aerial_grass_rock",
+      "author": "Rob Tuytel",
+      "license": "CC0 1.0",
+      "url": "https://polyhaven.com/a/aerial_grass_rock",
+      "width": 384,
+      "maps": {
+        "albedo": {
+          "map": "Diffuse",
+          "file": ".cache/terrain-textures/puna_grass/albedo.jpg",
+          "sha256": "57b8041bfe0d0f01430e4dbaad45e7ddddf0a9fc97317f90dbc51f7b0d9e1b5d",
+          "bytes": 666655
+        },
+        "normal": {
+          "map": "nor_gl",
+          "file": ".cache/terrain-textures/puna_grass/normal.jpg",
+          "sha256": "1aa3e23bff453f152e089b9f83aa36b4901651e019f7e2ca01d5331a9bbbda78",
+          "bytes": 904956
+        },
+        "roughness": {
+          "map": "Rough",
+          "file": ".cache/terrain-textures/puna_grass/roughness.jpg",
+          "sha256": "b9f3f76aba74007f708333c0dbe73c52eb83ea0c4187a13e2e994f888a25114a",
+          "bytes": 362214
+        },
+        "ao": {
+          "map": "AO",
+          "file": ".cache/terrain-textures/puna_grass/ao.jpg",
+          "sha256": "4ad3b0c6d03f3a427a2195c115bb3a9c05924383d04309c7f2b1b14086aa4b9d",
+          "bytes": 506528
+        },
+        "height": {
+          "map": "Displacement",
+          "file": ".cache/terrain-textures/puna_grass/height.jpg",
+          "sha256": "c2eb4b602346c28c1641b9976704e177542cca0452d5d96900c790cb58685d46",
+          "bytes": 174116
+        }
+      },
+      "outputs": {
+        "albedo": "src/assets/textures/terrain/puna_grass_albedo.webp",
+        "surface": "src/assets/textures/terrain/puna_grass_surface.webp"
+      },
+      "outputMeta": {
+        "albedo": {
+          "sha256": "0f2dd5dca801b6cb289ce276e262794b01088b7d6d5a9773e494d22db55920b9",
+          "bytes": 127926,
+          "width": 384
+        },
+        "surface": {
+          "sha256": "bb8cb86447d6954a37519832c9d8451fcf881169f7e290977bbfb5688dfb5167",
+          "bytes": 87246,
+          "width": 384
+        }
+      }
+    },
+    {
+      "slot": "coastal_gravel",
+      "kind": "polyhaven",
+      "assetId": "coast_sand_03",
+      "author": "Rob Tuytel",
+      "license": "CC0 1.0",
+      "url": "https://polyhaven.com/a/coast_sand_03",
+      "width": 384,
+      "maps": {
+        "albedo": {
+          "map": "Diffuse",
+          "file": ".cache/terrain-textures/coastal_gravel/albedo.jpg",
+          "sha256": "83f048d3d2931f193e498e7e9e687fba116c227fba827998614003707cd27c38",
+          "bytes": 1164522
+        },
+        "normal": {
+          "map": "nor_gl",
+          "file": ".cache/terrain-textures/coastal_gravel/normal.jpg",
+          "sha256": "9fbc52583f761577df65556f8cca80b33fb54094cda8b5deae3025ab56bedfb2",
+          "bytes": 1522963
+        },
+        "roughness": {
+          "map": "Rough",
+          "file": ".cache/terrain-textures/coastal_gravel/roughness.jpg",
+          "sha256": "a241157bdfb97d00a097670081b219ea81b4642e2570f3f3084d9890c7798822",
+          "bytes": 579986
+        },
+        "ao": {
+          "map": "AO",
+          "file": ".cache/terrain-textures/coastal_gravel/ao.jpg",
+          "sha256": "dd7ea511051745717381a08ce1df9289a9746d45ebeae4a5119d78b98ee389f1",
+          "bytes": 1131155
+        },
+        "height": {
+          "map": "Displacement",
+          "file": ".cache/terrain-textures/coastal_gravel/height.jpg",
+          "sha256": "cd8fe02fd17988e9fd39347f5d63eb273ead097bffd5e1410f5bd5cb428b3fcc",
+          "bytes": 442632
+        }
+      },
+      "outputs": {
+        "albedo": "src/assets/textures/terrain/coastal_gravel_albedo.webp",
+        "surface": "src/assets/textures/terrain/coastal_gravel_surface.webp"
+      },
+      "outputMeta": {
+        "albedo": {
+          "sha256": "5ad8a4a8c1d9cc24660a873f46f9d11b36fa75e234f6ac370d4057957cdd6549",
+          "bytes": 187598,
+          "width": 384
+        },
+        "surface": {
+          "sha256": "8077da9c61f024ffc7bd2ac8272156a6dd24788cc54e116ab5779176cc5de2dd",
+          "bytes": 142852,
+          "width": 384
+        }
+      }
+    },
+    {
+      "slot": "jungle_floor",
+      "kind": "polyhaven",
+      "assetId": "forrest_ground_01",
+      "author": "Rob Tuytel",
+      "license": "CC0 1.0",
+      "url": "https://polyhaven.com/a/forrest_ground_01",
+      "width": 384,
+      "maps": {
+        "albedo": {
+          "map": "Diffuse",
+          "file": ".cache/terrain-textures/jungle_floor/albedo.jpg",
+          "sha256": "3dd6875cb3908e022a3c45ebbffa5e84c670ff2691fbbb6dc9ea4bff88523800",
+          "bytes": 833711
+        },
+        "normal": {
+          "map": "nor_gl",
+          "file": ".cache/terrain-textures/jungle_floor/normal.jpg",
+          "sha256": "32528a7cdee962cc0b248ee4023a74d0df175737ea90e1eb425122351e0bdab4",
+          "bytes": 1428763
+        },
+        "roughness": {
+          "map": "Rough",
+          "file": ".cache/terrain-textures/jungle_floor/roughness.jpg",
+          "sha256": "30d8b56a03d7b12da16f58011b675662a40e58e1cdc768119a5f03968140058c",
+          "bytes": 257165
+        },
+        "ao": {
+          "map": "AO",
+          "file": ".cache/terrain-textures/jungle_floor/ao.jpg",
+          "sha256": "a3632232fa080e28239d456526a3f0c83e0a404515581339b9d6633324dca6a4",
+          "bytes": 660492
+        },
+        "height": {
+          "map": "Displacement",
+          "file": ".cache/terrain-textures/jungle_floor/height.jpg",
+          "sha256": "a1ce10a2426d20d7fec2e48efa255638055922c809ff3ea03067257c0a594953",
+          "bytes": 321227
+        }
+      },
+      "outputs": {
+        "albedo": "src/assets/textures/terrain/jungle_floor_albedo.webp",
+        "surface": "src/assets/textures/terrain/jungle_floor_surface.webp"
+      },
+      "outputMeta": {
+        "albedo": {
+          "sha256": "80ac504545e9989dabb7b9d2205c4d279c372624ad7da4567122fb40c2953c76",
+          "bytes": 169228,
+          "width": 384
+        },
+        "surface": {
+          "sha256": "79d63c4f1c0cb2fe69fef2355b9db47095a2329e53df111c6ab7add1b632cfcd",
+          "bytes": 137036,
+          "width": 384
+        }
+      }
+    },
+    {
+      "slot": "caral_grass",
+      "kind": "local",
+      "author": "Jos\u00e9 Amaya",
+      "license": "CC BY 4.0",
+      "url": "https://github.com/joseamaya/ciudades-sagradas",
+      "source": "Ciudades Sagradas Caral remaster v2",
+      "width": 512,
+      "maps": {
+        "albedo": {
+          "file": "art-src/textures/caral/dry_grass_diffuse.jpg",
+          "sha256": "17ed1380590befd8570f1602f3dad356e811890488bdd9461cb0d49f12ad53f2",
+          "bytes": 63009
+        },
+        "normal": {
+          "file": "art-src/textures/caral/dry_grass_normal.png",
+          "sha256": "3471753b00cafbf16e632e649dd9ef76823fbdb1ab03821b711376a3354b254b",
+          "bytes": 263245
+        },
+        "roughness": {
+          "file": "art-src/textures/caral/dry_grass_roughness.jpg",
+          "sha256": "948ac7ac0682d8c0a537eb299b886297b767111a4f6c6b67b3e777bf121fa13f",
+          "bytes": 12678
+        }
+      },
+      "outputs": {
+        "albedo": "src/assets/textures/terrain/caral_grass_albedo.webp",
+        "surface": "src/assets/textures/terrain/caral_grass_surface.webp"
+      },
+      "outputMeta": {
+        "albedo": {
+          "sha256": "f7b7168a92fa8b182ff048e12ba79e3b68e41d3927e32ff0ed41e33b038a9375",
+          "bytes": 2840,
+          "width": 512
+        },
+        "surface": {
+          "sha256": "72080e535a9531e7044539a80d506331487a7a568847f9868c3d63750806d6a4",
+          "bytes": 44162,
+          "width": 512
+        }
+      }
+    }
+  ],
+  "quality": 80
+}

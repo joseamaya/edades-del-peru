@@ -25,7 +25,7 @@ Package manager **Yarn 1** (`yarn.lock` exists — never create a `package-lock.
 - `yarn bench:check` — rig/fauna/mixed structural budgets (`--assert`); SwiftShader is not a GPU benchmark
 - `yarn art:blender` — ingest the in-repo Blender renders into WebP + manifest (`--dry-run`, `--only=…`, `--force`)
 - `yarn art:models` — meshopt-compress the committed GLBs in place (`--only=…`, `--dry-run`, `--force`)
-- `yarn art:textures` — re-encode the committed PBR WebPs to the shipping budget (`--only=…`, `--dry-run`, `--force`)
+- `yarn art:textures` — re-encode the material PBR WebPs; `--terrain` downloads/verifies the CC0 terrain sources and packs `_albedo`/`_surface` (`--only=…`, `--dry-run`, `--check`)
 - `yarn dist:check` — verify `dist/` (<25 MB) and the entry chunk (<600 KB gzip)
 - `yarn art:validate` — validate the Blender render manifest/assets; `yarn art:review` — human review gate
 

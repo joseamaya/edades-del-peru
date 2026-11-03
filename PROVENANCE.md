@@ -1,18 +1,57 @@
 # Asset provenance
 
-## AI-generated textures
+## PBR textures
 
-- **Location**: `src/assets/textures/{terrain,materials}/{slot}_{diffuse|normal|roughness}.webp`
+### Terrain (CC0 scans + Caral remaster)
+
+- **Location**: `src/assets/textures/terrain/{slot}_{albedo|surface}.webp`.
+- **Packing**: `_albedo` is RGB albedo with AO in the alpha channel; `_surface` is RG = normal.xy,
+  B = roughness, A = height. This is two texture samples per material and feeds the terrain height blend.
+- **Source manifest**: `scripts/terrain-textures.json` records the asset id, author, URL, licence, source
+  SHA-256 and output SHA-256 for every slot.
+- **Pipeline**: `yarn art:textures --terrain` downloads the 1k Poly Haven maps into
+  `.cache/terrain-textures/` (gitignored), verifies each source SHA-256, packs the WebP and validates the
+  budget. `--dry-run` and `--check` are available; KTX2 is deferred.
+- **Base + regional slots**: `grass`, `dirt`, `sand`, `rock`, `snow`, `puna_grass`, `coastal_gravel`,
+  `jungle_floor`. The regional slots are selected by `HistoricalMapProfile.groundPbr` (puna/altiplano →
+  `puna_grass`, south coast → `coastal_gravel`, Amazon → `jungle_floor`).
+- **Licence (Poly Haven)**: CC0 1.0, <https://polyhaven.com/license>. Attribution is not required but is
+  recorded here.
+- **Caral**: `caral_grass` is derived from the Ciudades Sagradas Caral remaster v2 dry-grass map
+  (CC BY 4.0, © José Amaya). Attribute “Ciudades Sagradas, José Amaya, CC BY 4.0”. The remaster's sand,
+  earth and rock albedos are almost flat (the old 768² files were effectively a solid colour), so those
+  Caral slots use the CC0 `sand`/`dirt`/`rock` scans plus the mission's `groundTint`; the source dry-grass
+  images are copied to `art-src/textures/caral/` for reproducibility.
+- **Historical note**: the dry grass/rock scan used for `puna_grass` is a visual abstraction of Andean
+  ichu, not a species-specific botanical reconstruction.
+
+| Slot | Source | Author | Licence | Size | Output SHA-256 (albedo / surface) |
+|---|---|---|---|---|---|
+| `grass` | `grass_ground` | Charlotte Baglioni | CC0 1.0 | 384² | `5b01845156e8…` / `501876e4b835…` |
+| `dirt` | `brown_mud_02` | Rob Tuytel | CC0 1.0 | 384² | `b9ad3f28ed42…` / `4d61153de256…` |
+| `sand` | `coast_sand_01` | Rob Tuytel | CC0 1.0 | 384² | `7615b9b2aeee…` / `2cdc74da9ec7…` |
+| `rock` | `aerial_rocks_01` | Rob Tuytel | CC0 1.0 | 384² | `1f49ee03f780…` / `727d8e410858…` |
+| `snow` | `snow_01` | Rob Tuytel | CC0 1.0 | 384² | `57e237cf34ea…` / `f163500254f4…` |
+| `puna_grass` | `aerial_grass_rock` | Rob Tuytel | CC0 1.0 | 384² | `0f2dd5dca801…` / `bb8cb86447d6…` |
+| `coastal_gravel` | `coast_sand_03` | Rob Tuytel | CC0 1.0 | 384² | `5ad8a4a8c1d9…` / `8077da9c61f0…` |
+| `jungle_floor` | `forrest_ground_01` | Rob Tuytel | CC0 1.0 | 384² | `80ac504545e9…` / `79d63c4f1c0c…` |
+| `caral_grass` | Caral remaster v2 | José Amaya | CC BY 4.0 | 512² | `f7b7168a92fa…` / `72080e535a95…` |
+
+Full hashes and source URLs live in `scripts/terrain-textures.json`. The old AI-generated terrain
+albedos/normals/roughnesses are no longer part of the build.
+
+### Materials (AI-generated)
+
+- **Location**: `src/assets/textures/materials/{mat}_{diffuse|normal|roughness}.webp`.
 - **Generation**: albedo with **Cloudflare Workers AI** (`@cf/black-forest-labs/flux-2-dev`,
   multipart inputs), via `scripts/gen_textures.py` (prompts in `scripts/prompts_textures.json`).
-  Earlier terrain/material albedos were generated with `@cf/black-forest-labs/flux-1-schnell`.
+  Earlier material albedos were generated with `@cf/black-forest-labs/flux-1-schnell`.
 - **Post-processing**: `scripts/post_textures.py` (tiling, Sobel normal, heuristic roughness).
 - **Usage**: project-owned assets. Check Cloudflare Workers AI terms and the model
   license for commercial use before distributing.
 
 ### Slots
 
-- **Terrain** (`terrain/`): `sand`, `dirt`, `grass`, `rock`, `snow`.
 - **Materials** (`materials/`): `clay`, `mud`, `adobe`, `tile`, `wood`, `textile`.
 - **Buildings** (`materials/`, by architectural style — see `src/model/defs/architecture.ts`):
   - walls: `wall_adobe`, `wall_cutstone`, `wall_megalith`, `wall_fieldstone`, `wall_brick`, `wall_concrete`;
@@ -28,10 +67,6 @@
   starting site), plus `resource_rock` (ore rocks) and `bark` (tree trunks). Applied by
   `CulturalLandscape`, `SettlementOverlay`, `ResourceNode` and `TreeInstances` via `applyGeneratedPbr`
   (falls back to their colour material when absent).
-- **Caral mission palette**: `terrain/caral_sand_diffuse.webp`, `caral_dirt_diffuse.webp` and
-  `caral_grass_diffuse.webp` (1024² WebP, diffuse only). Derived from the Ciudades Sagradas Caral
-  remaster terrain albedos (CC BY 4.0, © José Amaya); used only by the `m1_caral` authored heightfield.
-  The rock slot reuses the dirt albedo because the generic rock texture aliases at RTS tiling.
 
 Textures are optional: `src/rendering/Biomes.ts` falls back to the procedural Canvas material when a
 slot is absent (offline / without assets).
