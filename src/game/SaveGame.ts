@@ -39,6 +39,7 @@ export function serializeGame(game: Game): SaveData {
     resourceNodes: [...game.resourceNodes.values()].filter((n) => !n.dead && !n.depleted).map((n) => n.toSave()),
     mission: game.mission?.toSave(),
     tutorial: game.tutorial?.toSave(),
+    matchStats: game.matchStats.toSave(),
   };
 }
 

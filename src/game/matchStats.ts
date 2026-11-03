@@ -1,5 +1,4 @@
 import type { Era, Resources } from '../core/types';
-import { RESOURCE_KEYS } from '../core/types';
 
 export const MATCH_SNAPSHOT_INTERVAL = 5;
 
@@ -19,6 +18,7 @@ export interface PlayerSnapshot {
   era: Era;
   kills: number;
   lost: number;
+  alive: boolean;
 }
 
 export interface MatchSnapshot {
@@ -125,7 +125,6 @@ export class MatchStatsCollector {
     }
     const rows: PlayerSnapshot[] = [];
     for (const p of players) {
-      if (!p.alive) continue;
       const c = counts.get(p.id) ?? { army: 0, workers: 0, buildings: 0 };
       rows.push({
         id: p.id,
@@ -143,12 +142,52 @@ export class MatchStatsCollector {
         era: p.era,
         kills: p.kills,
         lost: p.totalLost,
+        alive: p.alive,
       });
     }
     this.samples.push({ t, players: rows });
   }
+
+  toSave(): MatchStatsSave {
+    return {
+      elapsed: this.elapsed,
+      timer: this.timer,
+      gathered: [...this.gathered.entries()].map(([id, resources]) => [id, { ...resources }]),
+      samples: this.samples.map((sample) => ({
+        t: sample.t,
+        players: sample.players.map((player) => ({
+          ...player,
+          resources: { ...player.resources },
+          gathered: { ...player.gathered },
+          techs: [...player.techs],
+        })),
+      })),
+    };
+  }
+
+  applySave(save: MatchStatsSave | undefined): void {
+    this.reset();
+    if (!save) return;
+    this.elapsed = save.elapsed;
+    this.timer = save.timer;
+    for (const [id, resources] of save.gathered) this.gathered.set(id, { ...resources });
+    for (const sample of save.samples) {
+      this.samples.push({
+        t: sample.t,
+        players: sample.players.map((player) => ({
+          ...player,
+          resources: { ...player.resources },
+          gathered: { ...player.gathered },
+          techs: [...player.techs],
+        })),
+      });
+    }
+  }
 }
 
-export function totalGathered(resources: Resources): number {
-  return RESOURCE_KEYS.reduce((sum, key) => sum + resources[key], 0);
+export interface MatchStatsSave {
+  elapsed: number;
+  timer: number;
+  gathered: [number, Resources][];
+  samples: MatchSnapshot[];
 }

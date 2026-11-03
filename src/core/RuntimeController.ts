@@ -115,6 +115,8 @@ export class RuntimeController {
       p.bonus = { ...ps.bonus, gathering: { ...ps.bonus.gathering } };
     }
 
+    this.game.matchStats.applySave(data.matchStats);
+
     let maxId = 0;
     for (const u of data.units) maxId = Math.max(maxId, u.id);
     for (const b of data.buildings) maxId = Math.max(maxId, b.id);
@@ -725,13 +727,16 @@ export class RuntimeController {
   /** Persist the recorded replay (called when the match ends). */
   finishRecording(): void {
     if (!this.game.recorder) return;
-    saveReplay(this.game.recorder.toReplay());
+    this.game.lastReplay = this.game.recorder.toReplay();
+    saveReplay(this.game.lastReplay);
     this.game.recorder = null;
   }
 
   /** Save the current recording without clearing it (e.g. leaving a match early). */
   saveRecording(): void {
-    if (this.game.recorder) saveReplay(this.game.recorder.toReplay());
+    if (!this.game.recorder) return;
+    this.game.lastReplay = this.game.recorder.toReplay();
+    saveReplay(this.game.lastReplay);
   }
 
   // --- main update ---

@@ -1,7 +1,7 @@
 import { TECHS } from '../model/defs/techs';
 import { ERA_DEFS } from '../model/defs/eras';
 import { RESOURCE_KEYS, type Resources } from '../core/types';
-import { totalGathered, type MatchSnapshot, type PlayerSnapshot } from '../game/matchStats';
+import type { MatchSnapshot, PlayerSnapshot } from '../game/matchStats';
 
 export interface MatchStatsPlayerMeta {
   id: number;
@@ -18,10 +18,10 @@ const RESOURCE_LABEL: Record<keyof Resources, string> = {
 };
 
 const RESOURCE_COLOR: Record<keyof Resources, string> = {
-  food: '#e8c36a',
-  wood: '#5fd08a',
-  silver: '#9fb4d8',
-  stone: '#c49a6c',
+  food: 'var(--stats-food)',
+  wood: 'var(--stats-wood)',
+  silver: 'var(--stats-silver)',
+  stone: 'var(--stats-stone)',
 };
 
 const ARMY_COLORS = ['#e8c36a', '#e05a5a', '#5aa8e8', '#5fd08a'];
@@ -88,7 +88,7 @@ function chart(series: { label: string; color: string; values: number[] }[], tim
   const lines = usable
     .map((s) => {
       const points = s.values.map((value, index) => `${x(index).toFixed(1)},${y(value).toFixed(1)}`).join(' ');
-      return `<polyline fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" points="${points}" />`;
+      return `<polyline fill="none" style="stroke:${s.color}" stroke-width="2" stroke-linejoin="round" points="${points}" />`;
     })
     .join('');
   const legend = usable
@@ -259,13 +259,4 @@ export function mountMatchStats(
   }
   root.replaceChildren(tabs, body);
   render('summary');
-}
-
-export function snapshotTotals(samples: MatchSnapshot[]): { samples: number; seconds: number } {
-  const last = samples[samples.length - 1];
-  return { samples: samples.length, seconds: last ? Math.round(last.t) : 0 };
-}
-
-export function totalGatheredFor(player: PlayerSnapshot): number {
-  return totalGathered(player.gathered);
 }

@@ -56,7 +56,7 @@ import { DamageNumbers } from './DamageNumbers';
 import { openCodex } from './Codex';
 import { bus } from '../core/EventBus';
 import { hasSave } from '../game/SaveGame';
-import { hasReplay } from '../game/replay';
+import { hasReplay, saveReplay } from '../game/replay';
 import { mountMatchStats } from './MatchStatsPanel';
 import { formatHotkeys } from '../core/hotkeys';
 
@@ -105,6 +105,10 @@ const CSS = /* css */ `
     --red: #e05a5a;
     --blue: #5aa8e8;
     /* Woven diamond band (inline SVG) used by the HUD textiles. */
+    --stats-food: #e8c36a;
+    --stats-wood: #5fd08a;
+    --stats-silver: #9fb4d8;
+    --stats-stone: #c49a6c;
     --weave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8' viewBox='0 0 16 8'%3E%3Cpath d='M0 8L8 0l8 8' fill='none' stroke='%23e8c36a' stroke-opacity='0.18'/%3E%3C/svg%3E");
   }
   #ui-root { position: fixed; inset: 0; pointer-events: none; z-index: 20; font-family: "Bahnschrift", "Arial Narrow", "Segoe UI", sans-serif; color: var(--text); user-select: none; }
@@ -327,6 +331,14 @@ const CSS = /* css */ `
     .ed-stats-card strong, .ed-stats-tech ul { color: #1d1a14; }
     .ed-stats-chart { color: #1d1a14; }
     .ed-stats-chart .grid { stroke: rgba(90,70,30,.2); }
+    .ed-stats-table thead th { color: #6b4f13; }
+    .ed-stats-tabs button.active { background: rgba(120,90,20,.15); border-color: #8a6a1f; color: #6b4f13; }
+    :root {
+      --stats-food: #9a6b0f;
+      --stats-wood: #2f7a4a;
+      --stats-silver: #4a6485;
+      --stats-stone: #7a5530;
+    }
     .ed-stats-table th, .ed-stats-table td { border-bottom-color: rgba(90,70,30,.2); }
     .ed-stats-table th:first-child, .ed-stats-legends { color: #5c513b; }
   }
@@ -1077,24 +1089,24 @@ export class HUD {
     menu.addEventListener('click', () => {
       location.href = location.pathname + '?menu=1';
     });
-    const replayRow = this.el('div', 'row', panel);
-    const watch = this.el('button', 'ed-ghostbtn', replayRow);
-    watch.textContent = '▶ Ver repetición';
-    watch.dataset.statsReplay = 'watch';
-    watch.addEventListener('click', () => {
-      this.game.saveRecording();
-      location.href = location.pathname + '?replay=1';
-    });
-    const save = this.el('button', 'ed-ghostbtn', replayRow);
-    save.textContent = '💾 Guardar repetición';
-    save.dataset.statsReplay = 'save';
-    save.addEventListener('click', () => {
-      this.game.saveRecording();
-      this.showToast(
-        hasReplay() ? 'Repetición guardada' : 'No hay repetición disponible',
-        hasReplay() ? 'success' : 'error',
-      );
-    });
+    const replay = this.game.lastReplay;
+    if (replay) {
+      const replayRow = this.el('div', 'row', panel);
+      const watch = this.el('button', 'ed-ghostbtn', replayRow);
+      watch.textContent = '▶ Ver repetición';
+      watch.dataset.statsReplay = 'watch';
+      watch.addEventListener('click', () => {
+        saveReplay(replay);
+        location.href = location.pathname + '?replay=1';
+      });
+      const save = this.el('button', 'ed-ghostbtn', replayRow);
+      save.textContent = '💾 Guardar repetición';
+      save.dataset.statsReplay = 'save';
+      save.addEventListener('click', () => {
+        const saved = saveReplay(replay);
+        this.showToast(saved ? 'Repetición guardada' : 'No se pudo guardar', saved ? 'success' : 'error');
+      });
+    }
   }
 
   /** True while the chapter card is on screen (its absence means the mission may advance). */

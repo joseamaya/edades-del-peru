@@ -226,6 +226,8 @@ export class Game {
   /** Simulation step counter (fixed 60Hz ticks), used to time recorded commands. */
   stepCount = 0;
   readonly matchStats = new MatchStatsCollector();
+  /** Last finished/abandoned replay, kept for the post-game action. */
+  lastReplay: Replay | null = null;
   fxRng!: RNG;
   private recorder: ReplayRecorder | null = null;
   private replay: ReplayPlayer | null = null;

@@ -11,6 +11,7 @@ import type {
 import type { GameSettings } from '../core/Config';
 import type { ObjState } from '../campaign/types';
 import type { HeritageBuildingId } from '../model/defs/heritage';
+import type { MatchStatsSave } from './matchStats';
 
 /** Bump on a breaking snapshot change; adding optional fields is fine. */
 export const SAVE_VERSION = 3;
@@ -141,4 +142,6 @@ export interface SaveData {
   tutorial?: TutorialSave;
   /** Authored irrigation gate state (optional; absent in older saves). */
   canalOpen?: boolean;
+  /** Post-game samples; excluded from stateHash. */
+  matchStats?: MatchStatsSave;
 }

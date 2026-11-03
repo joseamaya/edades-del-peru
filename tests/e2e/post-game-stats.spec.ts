@@ -17,7 +17,7 @@ test('post-game stats open every tab and expose the replay actions', { tag: '@sm
       g.update(1 / 60, t);
       t += 1 / 60;
     }
-    g.showVictory(0);
+    g.endGame(0);
   });
   await expect(page.locator('.ed-overlay', { hasText: 'VICTORIA' })).toBeVisible();
   const tabs = page.locator('.ed-stats-tabs button');
