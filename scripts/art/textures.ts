@@ -22,21 +22,21 @@ const TEXTURE_ROOT = path.join(REPO_ROOT, 'src', 'assets', 'textures');
 /** Per-map budget: normal/roughness carry less visible detail than diffuse. */
 export function textureBudget(file: string): { width: number; quality: number } {
   const name = path.basename(file).toLowerCase();
-  const terrain = file.split(path.sep).includes('terrain');
   if (name.endsWith('_normal.webp')) return { width: 256, quality: 78 };
   if (name.endsWith('_roughness.webp')) return { width: 256, quality: 78 };
-  if (terrain) return { width: 768, quality: 78 };
   return { width: 512, quality: 78 };
 }
 
 /**
- * Re-encode the committed PBR textures to the game's shipping budget. Normal
- * and roughness maps go to 256 px, material diffuse maps to 512 px and terrain
- * maps to 768 px, close to the resolution visible at the RTS camera distance.
+ * Re-encode the committed **material** PBR textures to the game's shipping
+ * budget. Normal and roughness maps go to 256 px and material diffuse maps to
+ * 512 px. Terrain uses the packed pipeline (`yarn art:textures --terrain`) and
+ * is deliberately excluded here.
  */
 export async function optimizeTextures(options: TextureOptimizeOptions = {}): Promise<TextureOptimizeResult> {
   const result: TextureOptimizeResult = { optimized: [], skipped: [], errors: [] };
   for (const file of collectFiles(TEXTURE_ROOT, '.webp')) {
+    if (file.split(path.sep).includes('terrain')) continue;
     const id = path.relative(TEXTURE_ROOT, file);
     if (options.only && !options.only.has(id) && !options.only.has(path.basename(file, '.webp'))) continue;
     const budget = textureBudget(file);

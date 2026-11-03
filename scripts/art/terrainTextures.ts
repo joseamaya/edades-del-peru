@@ -205,17 +205,16 @@ function outputPath(relative: string): string {
   return path.resolve(REPO_ROOT, relative);
 }
 
-async function verifyOutput(file: string, meta: OutputMeta | undefined, width: number): Promise<void> {
+async function verifyOutput(file: string, meta: OutputMeta, width: number): Promise<number> {
   if (!fs.existsSync(file)) throw new Error(`missing output: ${file}`);
   const bytes = fs.readFileSync(file);
-  if (meta) {
-    if (sha256(bytes) !== meta.sha256) throw new Error(`output hash mismatch: ${file}`);
-    if (bytes.length !== meta.bytes) throw new Error(`output bytes mismatch: ${file}`);
-  }
+  if (sha256(bytes) !== meta.sha256) throw new Error(`output hash mismatch: ${file}`);
+  if (bytes.length !== meta.bytes) throw new Error(`output bytes mismatch: ${file}`);
   const metadata = await sharp(bytes, { failOn: 'none' }).metadata();
   if (metadata.width !== width || metadata.height !== width) {
     throw new Error(`output dimensions mismatch: ${file}`);
   }
+  return bytes.length;
 }
 
 export async function packTerrainTextures(options: TerrainTextureOptions = {}): Promise<TerrainTextureResult> {
@@ -230,10 +229,9 @@ export async function packTerrainTextures(options: TerrainTextureOptions = {}): 
     const surfaceOut = outputPath(slot.outputs.surface);
     try {
       if (options.check) {
-        await verifyOutput(albedoOut, slot.outputMeta?.albedo, slot.width);
-        await verifyOutput(surfaceOut, slot.outputMeta?.surface, slot.width);
-        const albedoBytes = fs.statSync(albedoOut).size;
-        const surfaceBytes = fs.statSync(surfaceOut).size;
+        if (!slot.outputMeta) throw new Error(`${slot.slot}: missing output metadata`);
+        const albedoBytes = await verifyOutput(albedoOut, slot.outputMeta.albedo, slot.width);
+        const surfaceBytes = await verifyOutput(surfaceOut, slot.outputMeta.surface, slot.width);
         const total = albedoBytes + surfaceBytes;
         result.slots.push({ slot: slot.slot, albedo: albedoBytes, surface: surfaceBytes, total });
         result.totalBytes += total;
