@@ -14,7 +14,15 @@ export type CommandHotkeyAction =
   | 'command12'
   | 'command13'
   | 'command14'
-  | 'command15';
+  | 'command15'
+  | 'command16'
+  | 'command17'
+  | 'command18'
+  | 'command19'
+  | 'command20'
+  | 'command21'
+  | 'command22'
+  | 'command23';
 
 export type HotkeyAction =
   | 'toggleHelp'
@@ -40,9 +48,33 @@ export interface HotkeyDef {
   group: 'game' | 'camera' | 'commands';
 }
 
-export const COMMAND_SLOT_COUNT = 15;
+export const COMMAND_SLOT_COUNT = 23;
 
-const COMMAND_KEYS = ['q', 'w', 'r', 't', 'y', 'a', 's', 'd', 'j', 'l', 'c', 'b', 'n', 'm', 'u'];
+const COMMAND_KEYS = [
+  'q',
+  'r',
+  't',
+  'y',
+  'u',
+  'i',
+  'o',
+  'l',
+  'c',
+  'b',
+  'n',
+  'm',
+  ';',
+  "'",
+  '[',
+  ']',
+  '\\',
+  ',',
+  '/',
+  '-',
+  '=',
+  '0',
+  '`',
+];
 
 export const DEFAULT_KEYMAP: HotkeyMap = {
   toggleHelp: '?',
@@ -58,20 +90,28 @@ export const DEFAULT_KEYMAP: HotkeyMap = {
   rotateLeft: 'z',
   rotateRight: 'x',
   command1: 'q',
-  command2: 'w',
-  command3: 'r',
-  command4: 't',
-  command5: 'y',
-  command6: 'a',
-  command7: 's',
-  command8: 'd',
-  command9: 'j',
-  command10: 'l',
-  command11: 'c',
-  command12: 'b',
-  command13: 'n',
-  command14: 'm',
-  command15: 'u',
+  command2: 'r',
+  command3: 't',
+  command4: 'y',
+  command5: 'u',
+  command6: 'i',
+  command7: 'o',
+  command8: 'l',
+  command9: 'c',
+  command10: 'b',
+  command11: 'n',
+  command12: 'm',
+  command13: ';',
+  command14: "'",
+  command15: '[',
+  command16: ']',
+  command17: '\\',
+  command18: ',',
+  command19: '/',
+  command20: '-',
+  command21: '=',
+  command22: '0',
+  command23: '`',
 };
 
 const NAMED_LABELS: { action: HotkeyAction; label: string; group: HotkeyDef['group'] }[] = [
@@ -103,24 +143,51 @@ export const HOTKEYS: HotkeyDef[] = [
   })),
 ];
 
+const RESERVED_KEYS = new Set([
+  'w',
+  'a',
+  's',
+  'd',
+  '1',
+  '2',
+  '3',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+  '9',
+  'f1',
+  'f2',
+  'f3',
+  'f4',
+  'escape',
+]);
+
+export function isReservedKey(key: string): boolean {
+  return RESERVED_KEYS.has(key.toLowerCase());
+}
+
 export function keyFor(action: HotkeyAction, map: HotkeyMap = DEFAULT_KEYMAP): string {
   return map[action] ?? DEFAULT_KEYMAP[action] ?? '';
 }
 
 export function normalizeKeymap(raw: unknown): HotkeyMap {
   const out: HotkeyMap = { ...DEFAULT_KEYMAP };
-  if (!raw || typeof raw !== 'object') return out;
-  const source = raw as Record<string, unknown>;
+  const source = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {};
   const seen = new Set<string>();
+  const fallbackKeys = HOTKEYS.map((hotkey) => DEFAULT_KEYMAP[hotkey.action]);
   for (const hotkey of HOTKEYS) {
-    const value = source[hotkey.action];
-    if (typeof value === 'string' && value.length > 0 && !seen.has(value)) {
-      out[hotkey.action] = value;
-      seen.add(value);
-    } else {
-      out[hotkey.action] = DEFAULT_KEYMAP[hotkey.action];
-      seen.add(out[hotkey.action]);
+    const candidate = source[hotkey.action];
+    let value =
+      typeof candidate === 'string' && candidate.length > 0 && !isReservedKey(candidate) && !seen.has(candidate)
+        ? candidate
+        : DEFAULT_KEYMAP[hotkey.action];
+    if (seen.has(value) || isReservedKey(value)) {
+      value = fallbackKeys.find((key) => !seen.has(key) && !isReservedKey(key)) ?? value;
     }
+    out[hotkey.action] = value;
+    seen.add(value);
   }
   return out;
 }

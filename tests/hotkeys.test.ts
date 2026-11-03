@@ -36,6 +36,7 @@ describe('hotkey map', () => {
     expect(keymapConflicts({ ...DEFAULT_KEYMAP, buildFarm: 'e' })).toContain('buildFarm');
     expect(keymapConflicts({ ...DEFAULT_KEYMAP, buildFarm: 'u' })).toContain('buildFarm');
     expect(normalizeKeymap(undefined)).toEqual(DEFAULT_KEYMAP);
+    expect(normalizeKeymap({ ...DEFAULT_KEYMAP, command1: 'w' }).command1).not.toBe('w');
   });
 
   it('builds the help text from the same table', () => {

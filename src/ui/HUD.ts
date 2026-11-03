@@ -64,6 +64,7 @@ import {
   HOTKEYS,
   formatHotkeys,
   keyFor,
+  isReservedKey,
   keymapConflicts,
   normalizeKeymap,
   type HotkeyAction,
@@ -2614,7 +2615,7 @@ export class HUD {
             return;
           }
           const next = { ...this.game.settings.hotkeys, [hotkey.action]: key };
-          if (keymapConflicts(next).length > 0) {
+          if (isReservedKey(key) || keymapConflicts(next).length > 0) {
             this.showToast('Esa tecla ya está asignada', 'warning');
             render();
             return;

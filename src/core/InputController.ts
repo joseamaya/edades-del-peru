@@ -794,10 +794,10 @@ export class InputController {
     // do not process game shortcuts with a menu open or while paused
     if (this.game.paused || this.game.hud.hasBlockingOverlay()) return;
     const marker = /^f([1-4])$/.exec(k);
-    if (marker) {
+    if (marker && (e.ctrlKey || e.metaKey || e.altKey)) {
       e.preventDefault();
       const index = Number(marker[1]);
-      if (e.ctrlKey || e.metaKey || e.altKey) {
+      if (e.ctrlKey || e.metaKey) {
         const target = this.game.camera.getTarget();
         this.cameraMarks.set(index, { x: target.x, z: target.z });
         this.game.hud?.showToast(`Marcador de cámara F${index} guardado`, 'info');
@@ -807,7 +807,7 @@ export class InputController {
       }
       return;
     }
-    if (k === this.key('toggleHelp') || k === '?') {
+    if (k === this.key('toggleHelp') || k === '?' || k === 'f1') {
       e.preventDefault();
       this.game.hud.toggleHelp();
       return;

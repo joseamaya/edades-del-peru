@@ -84,6 +84,10 @@ test('? toggles the shortcut panel', async ({ page }) => {
   await expect(help).toBeVisible();
   await page.keyboard.press('?');
   await expect(help).toBeHidden();
+  await page.keyboard.press('F1');
+  await expect(help).toBeVisible();
+  await page.keyboard.press('F1');
+  await expect(help).toBeHidden();
   await page.keyboard.press('?');
   await expect(help).toBeVisible();
 });

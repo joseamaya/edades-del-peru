@@ -86,6 +86,7 @@ function sanitizeSettings(raw: unknown): GameSettings {
     s.civAI = rival.id;
   }
   s.hotkeys = normalizeKeymap(r.hotkeys);
+  if (typeof r.showFps === 'boolean') s.showFps = r.showFps;
   return s;
 }
 
