@@ -36,7 +36,7 @@ function load(
   color: boolean,
   wrap: THREE.Wrapping = THREE.MirroredRepeatWrapping,
 ): THREE.Texture | null {
-  const ck = `${base}/${key}_${type}`;
+  const ck = `${base}/${key}_${type}_${wrap}`;
   if (cache.has(ck)) return cache.get(ck)!;
   const url = mods[`${base}/${key}_${type}.webp`];
   if (!url) {

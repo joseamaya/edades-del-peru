@@ -529,15 +529,17 @@ ${FOW_DIM_GLSL}
           float dirtWeight = splat.g;
           float sandWeight = splat.b;
           float rockWeight = splat.a;
-          float snowWeight = snowAmt * 0.9;
+          float snowWeight = snowAmt;
 
           // Height-biased blend: a weightless material cannot appear, while
-          // taller materials keep a crisper edge. #302 supplies real height maps.
-          float grassHeightScore = grassWeight * (1.0 + heightBias.x * 0.9);
-          float dirtHeightScore = dirtWeight * (1.0 + heightBias.y * 0.9);
-          float sandHeightScore = sandWeight * (1.0 + heightBias.z * 0.9);
-          float rockHeightScore = rockWeight * (1.0 + heightBias.w * 0.9);
-          float snowHeightScore = snowWeight * (1.0 + heightSnow * 0.9);
+          // taller materials keep a crisper edge. The uniforms are the contract
+          // #302 fills with real per-material height maps.
+          const float HEIGHT_BIAS_STRENGTH = 0.9;
+          float grassHeightScore = grassWeight * (1.0 + heightBias.x * HEIGHT_BIAS_STRENGTH);
+          float dirtHeightScore = dirtWeight * (1.0 + heightBias.y * HEIGHT_BIAS_STRENGTH);
+          float sandHeightScore = sandWeight * (1.0 + heightBias.z * HEIGHT_BIAS_STRENGTH);
+          float rockHeightScore = rockWeight * (1.0 + heightBias.w * HEIGHT_BIAS_STRENGTH);
+          float snowHeightScore = snowWeight * (1.0 + heightSnow * HEIGHT_BIAS_STRENGTH);
           float heightSum = max(1e-4, grassHeightScore + dirtHeightScore + sandHeightScore + rockHeightScore + snowHeightScore);
           grassWeight = grassHeightScore / heightSum;
           dirtWeight = dirtHeightScore / heightSum;
@@ -566,7 +568,7 @@ ${FOW_DIM_GLSL}
           vec3 snowNear = texture2D(snow, uvSnowNear).rgb;
 
           vec3 geometricNormal = normalize(vNormal);
-          float rockTriplanarWeight = terrainDetail * smoothstep(0.42, 0.62, slope);
+          float rockTriplanarWeight = smoothstep(0.40, 0.52, slope);
           if (rockTriplanarWeight > 0.0) {
             rockNear = mix(rockNear, triplanarAlbedo(rock, vWorldPos, geometricNormal, 0.075), rockTriplanarWeight);
           }

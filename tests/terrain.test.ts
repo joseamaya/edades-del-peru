@@ -141,7 +141,7 @@ describe('deterministic terrain splat', () => {
 
   it('puts sand in the water and rock on the highest ground', () => {
     const splat = buildTerrainSplat(data, profile, { size: 64, seed: 777 });
-    const n = 97;
+    const heightColumns = 97;
     let low = 0;
     let high = 0;
     for (let i = 1; i < data.heightMap.length; i++) {
@@ -149,8 +149,8 @@ describe('deterministic terrain splat', () => {
       if (data.heightMap[i] > data.heightMap[high]) high = i;
     }
     const at = (index: number) => {
-      const x = Math.min(63, Math.floor(((index % n) / (n - 1)) * 64));
-      const z = Math.min(63, Math.floor((Math.floor(index / n) / (n - 1)) * 64));
+      const x = Math.min(63, Math.floor(((index % heightColumns) / (heightColumns - 1)) * 64));
+      const z = Math.min(63, Math.floor((Math.floor(index / heightColumns) / (heightColumns - 1)) * 64));
       return (z * 64 + x) * 4;
     };
     const wet = at(low);
