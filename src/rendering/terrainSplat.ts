@@ -1,6 +1,7 @@
 import type { HistoricalMapProfile } from '../model/defs/profiles';
 import type { TerrainData } from '../sim/TerrainData';
 import { smoothstep } from '../util/math';
+import { fbm2 } from '../util/noise';
 
 /** Splat texture resolution: one texel per ~0.375 m on the 192 m maps. */
 export const TERRAIN_SPLAT_SIZE = 512;
@@ -15,41 +16,6 @@ export interface TerrainSplat {
 export interface TerrainSplatOptions {
   size?: number;
   seed?: number;
-}
-
-function hash2(ix: number, iy: number, seed: number): number {
-  let h = Math.imul(ix | 0, 374761393) ^ Math.imul(iy | 0, 668265263) ^ Math.imul(seed | 0, 2246822519);
-  h = Math.imul(h ^ (h >>> 13), 1274126177);
-  h ^= h >>> 16;
-  return (h >>> 0) / 4294967295;
-}
-
-function valueNoise(x: number, y: number, seed: number): number {
-  const xi = Math.floor(x);
-  const yi = Math.floor(y);
-  const xf = x - xi;
-  const yf = y - yi;
-  const u = xf * xf * (3 - 2 * xf);
-  const v = yf * yf * (3 - 2 * yf);
-  const a = hash2(xi, yi, seed);
-  const b = hash2(xi + 1, yi, seed);
-  const c = hash2(xi, yi + 1, seed);
-  const d = hash2(xi + 1, yi + 1, seed);
-  return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
-}
-
-function fbm(x: number, y: number, seed: number, octaves = 3): number {
-  let value = 0;
-  let amplitude = 0.5;
-  let frequency = 1;
-  let norm = 0;
-  for (let i = 0; i < octaves; i++) {
-    value += valueNoise(x * frequency, y * frequency, seed + i * 101) * amplitude;
-    norm += amplitude;
-    amplitude *= 0.5;
-    frequency *= 2.03;
-  }
-  return value / norm;
 }
 
 /**
@@ -81,16 +47,17 @@ export function buildTerrainSplat(
 
       // Perturb the hard thresholds so material borders are irregular instead
       // of contour lines. The noise is low frequency and seed-stable.
-      const thr = (fbm(wx * 0.055, wz * 0.055, seed + 1) - 0.5) * 1.1;
-      const thrSlope = (fbm(wx * 0.085 + 17, wz * 0.085 - 9, seed + 2) - 0.5) * 0.12;
-      const hN = h + thr;
-      const slopeN = Math.min(1, Math.max(0, slope + thrSlope));
+      const seedOffset = (seed % 997) * 0.37;
+      const heightJitter = (fbm2(wx * 0.055 + seedOffset, wz * 0.055 - seedOffset * 0.7, 3) - 0.5) * 1.1;
+      const slopeJitter = (fbm2(wx * 0.085 + 17 + seedOffset * 0.3, wz * 0.085 - 9 - seedOffset * 0.2, 3) - 0.5) * 0.12;
+      const noisyHeight = h + heightJitter;
+      const noisySlope = Math.min(1, Math.max(0, slope + slopeJitter));
 
-      const sandNear = 1 - smoothstep(water + 0.2, water + 1.8, hN);
-      const sandArid = aridity * (1 - smoothstep(6, 10, hN));
+      const sandNear = 1 - smoothstep(water + 0.2, water + 1.8, noisyHeight);
+      const sandArid = aridity * (1 - smoothstep(6, 10, noisyHeight));
       let sand = Math.max(sandNear, sandArid);
-      let rock = smoothstep(4.5, 9, hN) * 0.7 + smoothstep(0.25, 0.6, slopeN) * 0.85;
-      let dirt = Math.max((1 - smoothstep(0.6, 2.8, hN)) * 0.4, aridity * 0.4);
+      let rock = smoothstep(4.5, 9, noisyHeight) * 0.7 + smoothstep(0.25, 0.6, noisySlope) * 0.85;
+      let dirt = Math.max((1 - smoothstep(0.6, 2.8, noisyHeight)) * 0.4, aridity * 0.4);
       dirt += terrace * 0.18 + canal * 0.35;
 
       // Humid, vegetated ground pushes back the bare/rocky masks.
