@@ -1555,7 +1555,12 @@ export class Unit {
     }
     const origin = order.origin ?? { x: this.pos.x, z: this.pos.z };
     const route = distance2D(origin.x, origin.z, target.pos.x, target.pos.z);
-    this.ctx.tradeIncome(this.owner, tradeIncomeForDistance(route), target.pos.x, target.pos.z);
+    const income = tradeIncomeForDistance(route);
+    if (income <= 0) {
+      this.finishOrder();
+      return;
+    }
+    this.ctx.tradeIncome(this.owner, income, target.pos.x, target.pos.z);
     this.finishOrder();
   }
 

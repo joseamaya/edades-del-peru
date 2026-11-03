@@ -1326,7 +1326,8 @@ export class HUD {
             .join(',')
         : '';
     const farmKey = building?.isFarm ? (building.foodAmount <= 0 ? 'empty' : 'full') : '';
-    const tail = '|e:' + (p?.era ?? 0) + '|res:' + res + '|m:' + marketKey + '|f:' + farmKey;
+    const marketSilver = building?.kind === BuildingKind.MARKET ? Math.floor(p?.resources.silver ?? 0) : '';
+    const tail = '|e:' + (p?.era ?? 0) + '|res:' + res + '|m:' + marketKey + '|f:' + farmKey + '|sv:' + marketSilver;
     if (units.length > 0) {
       const ids = units
         .map((u) => u.id)

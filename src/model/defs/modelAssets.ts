@@ -151,5 +151,5 @@ export function modelAssetIdsForMatch(period: HistoricalPeriod, civs: readonly C
   const rigged = civs.some(
     (civ) => getCiv(civ).periods.includes(period) && kinds.some((kind) => unitModelAsset(kind, era, civ) !== null),
   );
-  return rigged ? [CARAL_WORKER_ASSET_ID] : [];
+  return [...(rigged ? [CARAL_WORKER_ASSET_ID] : []), 'quaternius_alpaca'];
 }

@@ -41,7 +41,8 @@ describe('market', () => {
   it('earns more silver on longer caravan routes, bounded', () => {
     expect(tradeIncomeForDistance(20)).toBe(20);
     expect(tradeIncomeForDistance(100)).toBe(100);
-    expect(tradeIncomeForDistance(1)).toBe(10);
+    expect(tradeIncomeForDistance(1)).toBe(0);
+    expect(tradeIncomeForDistance(7)).toBe(0);
     expect(tradeIncomeForDistance(10_000)).toBe(200);
   });
 });

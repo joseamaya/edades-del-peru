@@ -12,7 +12,7 @@ const DECAY_SECONDS = 20;
 
 /** Silver earned by a caravan for a route of this length; bounded for stable economy. */
 export function tradeIncomeForDistance(distance: number): number {
-  if (!Number.isFinite(distance)) return 10;
+  if (!Number.isFinite(distance) || distance < 8) return 0;
   return Math.max(10, Math.min(200, Math.round(distance)));
 }
 
