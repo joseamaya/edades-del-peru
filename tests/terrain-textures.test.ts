@@ -64,8 +64,8 @@ describe('terrain texture manifest', () => {
         const image = await sharp(file, { failOn: 'none' }).metadata();
         expect([image.width, image.height], file).toEqual([meta.width, meta.width]);
         if (key === 'surface') expect(image.channels, file).toBe(4);
-        else if (slot.kind === 'polyhaven') expect(image.channels, file).toBe(4);
-        else expect(image.channels, file).toBeGreaterThanOrEqual(3);
+        else if (slot.slot === 'caral_grass') expect(image.channels, file).toBeGreaterThanOrEqual(3);
+        else expect(image.channels, file).toBe(4);
       }
     }
   });

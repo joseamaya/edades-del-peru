@@ -195,5 +195,5 @@ golden rule — **do not invent history**. Bug reports and ideas go to
 
 ## License
 
-Distributed under the **MIT** license — see [`LICENSE`](./LICENSE). The AI-generated texture assets and their
-provenance are documented in [`PROVENANCE.md`](./PROVENANCE.md).
+Distributed under the **MIT** license — see [`LICENSE`](./LICENSE). The texture assets and their provenance are
+documented in [`PROVENANCE.md`](./PROVENANCE.md).

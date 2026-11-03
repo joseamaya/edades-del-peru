@@ -11,7 +11,8 @@
   SHA-256 and output SHA-256 for every slot.
 - **Pipeline**: `yarn art:textures --terrain` downloads the 1k Poly Haven maps into
   `.cache/terrain-textures/` (gitignored), verifies each source SHA-256, packs the WebP and validates the
-  budget. `--dry-run` and `--check` are available; KTX2 is deferred.
+  budget. `--dry-run` and `--check` are available; KTX2 is deferred. Base/regional slots are 384² because
+  512² exceeded the 2.2 MB terrain budget; `caral_grass` stays at 512².
 - **Base + regional slots**: `grass`, `dirt`, `sand`, `rock`, `snow`, `puna_grass`, `coastal_gravel`,
   `jungle_floor`. The regional slots are selected by `HistoricalMapProfile.groundPbr` (puna/altiplano →
   `puna_grass`, south coast → `coastal_gravel`, Amazon → `jungle_floor`).
@@ -338,5 +339,5 @@ Used only as FLUX.2 multi-reference inputs (never redistributed) for the Andean 
 ## External references (technical only, no code)
 
 - [VOIDSTRIKE](https://github.com/braedonsaunders/voidstrike) (MIT): only the **idea** of the
-  slot-based PBR terrain pipeline (diffuse/normal/roughness) with blending by slope/elevation is taken.
+  slot-based PBR terrain pipeline (albedo + packed surface) with blending by slope/elevation is taken.
   No files or assets from it are copied.

@@ -147,6 +147,29 @@ function packRgba(
   return out;
 }
 
+function packSurfaceRgba(
+  width: number,
+  normal: Buffer,
+  roughness: Buffer,
+  height: Buffer | null,
+  albedo: Buffer,
+): Buffer {
+  const out = Buffer.alloc(width * width * 4);
+  for (let i = 0; i < width * width; i++) {
+    out[i * 4] = readChannel(normal.subarray(i * 3), 3, 0);
+    out[i * 4 + 1] = readChannel(normal.subarray(i * 3), 3, 1);
+    out[i * 4 + 2] = roughness[i] ?? 204;
+    // Caral has no displacement source; use a luminance-derived height so the
+    // packed alpha stays non-constant (WebP drops a fully opaque alpha channel).
+    out[i * 4 + 3] = height
+      ? (height[i] ?? 128)
+      : Math.round(
+          (albedo[i * 3] ?? 128) * 0.299 + (albedo[i * 3 + 1] ?? 128) * 0.587 + (albedo[i * 3 + 2] ?? 128) * 0.114,
+        );
+  }
+  return out;
+}
+
 async function encode(rgba: Buffer, width: number, quality: number): Promise<Buffer> {
   return sharp(rgba, { raw: { width, height: width, channels: 4 } })
     .webp({ quality, effort: 6 })
@@ -172,19 +195,7 @@ async function packSlot(
   const ao = aoFile ? await readResizedChannels(aoFile, width, 1) : null;
 
   const albedoRgba = packRgba(width, albedo, 3, ao, 1);
-  const surface = Buffer.alloc(width * width * 4);
-  for (let i = 0; i < width * width; i++) {
-    surface[i * 4] = normal[i * 3] ?? 128;
-    surface[i * 4 + 1] = normal[i * 3 + 1] ?? 128;
-    surface[i * 4 + 2] = roughness[i] ?? 204;
-    // Caral has no displacement source; use a luminance-derived height so the
-    // packed alpha stays non-constant (WebP drops a fully opaque alpha channel).
-    surface[i * 4 + 3] = height
-      ? (height[i] ?? 128)
-      : Math.round(
-          (albedo[i * 3] ?? 128) * 0.299 + (albedo[i * 3 + 1] ?? 128) * 0.587 + (albedo[i * 3 + 2] ?? 128) * 0.114,
-        );
-  }
+  const surface = packSurfaceRgba(width, normal, roughness, height, albedo);
 
   options.onProgress?.(`packing ${slot.slot} at ${width}px`);
   return { albedo: await encode(albedoRgba, width, quality), surface: await encode(surface, width, quality) };
@@ -221,13 +232,10 @@ export async function packTerrainTextures(options: TerrainTextureOptions = {}): 
       if (options.check) {
         await verifyOutput(albedoOut, slot.outputMeta?.albedo, slot.width);
         await verifyOutput(surfaceOut, slot.outputMeta?.surface, slot.width);
-        const total = fs.statSync(albedoOut).size + fs.statSync(surfaceOut).size;
-        result.slots.push({
-          slot: slot.slot,
-          albedo: fs.statSync(albedoOut).size,
-          surface: fs.statSync(surfaceOut).size,
-          total,
-        });
+        const albedoBytes = fs.statSync(albedoOut).size;
+        const surfaceBytes = fs.statSync(surfaceOut).size;
+        const total = albedoBytes + surfaceBytes;
+        result.slots.push({ slot: slot.slot, albedo: albedoBytes, surface: surfaceBytes, total });
         result.totalBytes += total;
         continue;
       }
