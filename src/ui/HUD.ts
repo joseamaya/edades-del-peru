@@ -918,7 +918,7 @@ export class HUD {
   private buildHelp(): void {
     const help = this.el('div', '');
     help.id = 'ed-help';
-    help.innerHTML = `<button class="ed-help-close" type="button" aria-label="Cerrar ayuda" title="Cerrar (?)">×</button><b>Atajos</b><br>Clic izq: seleccionar · arrastra: área<br>Clic der: orden · Ctrl+der: atacar-mover<br>Shift: cola/rally · Ctrl+1-9: grupo · 1-9: recuperar<br>Minimapa: arrastra para mover · clic der: orden<br>Rueda: zoom · ${formatHotkeys('game', this.game.settings.hotkeys)} · ${formatHotkeys('camera', this.game.settings.hotkeys)}`;
+    help.innerHTML = `<button class="ed-help-close" type="button" aria-label="Cerrar ayuda" title="Cerrar (?)">×</button><b>Atajos</b><br>Clic izq: seleccionar · arrastra: área<br>Clic der: orden · Ctrl+der: atacar-mover<br>Shift: cola/rally · Ctrl+1-9: grupo · 1-9: recuperar<br>Minimapa: arrastra para mover · clic der: orden<br>Rueda: zoom · <span class="ed-help-keys">${formatHotkeys('game', this.game.settings.hotkeys)} · ${formatHotkeys('camera', this.game.settings.hotkeys)}</span>`;
     help.querySelector('.ed-help-close')?.addEventListener('click', () => this.toggleHelp());
     const open = this.el('button', '', this.root) as HTMLButtonElement;
     open.id = 'ed-help-open';
@@ -926,6 +926,13 @@ export class HUD {
     open.textContent = '?';
     open.title = 'Mostrar atajos (?)';
     open.addEventListener('click', () => this.toggleHelp());
+  }
+
+  private refreshHelp(): void {
+    const keys = this.root.querySelector('.ed-help-keys');
+    if (keys) {
+      keys.textContent = `${formatHotkeys('game', this.game.settings.hotkeys)} · ${formatHotkeys('camera', this.game.settings.hotkeys)}`;
+    }
   }
 
   showTechTree(): void {
@@ -2623,6 +2630,8 @@ export class HUD {
           this.game.settings.hotkeys = normalizeKeymap(next);
           this.game.camera.setKeymap(this.game.settings.hotkeys);
           this.game.saveSettings();
+          this.refreshHelp();
+          this.bottomKey = '';
           this.showToast('Atajo actualizado', 'success');
           render();
         };

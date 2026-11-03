@@ -22,7 +22,8 @@ export type CommandHotkeyAction =
   | 'command20'
   | 'command21'
   | 'command22'
-  | 'command23';
+  | 'command23'
+  | 'command24';
 
 export type HotkeyAction =
   | 'toggleHelp'
@@ -48,7 +49,7 @@ export interface HotkeyDef {
   group: 'game' | 'camera' | 'commands';
 }
 
-export const COMMAND_SLOT_COUNT = 23;
+export const COMMAND_SLOT_COUNT = 24;
 
 const COMMAND_KEYS = [
   'q',
@@ -112,6 +113,7 @@ export const DEFAULT_KEYMAP: HotkeyMap = {
   command21: '=',
   command22: '0',
   command23: '`',
+  command24: 'f7',
 };
 
 const NAMED_LABELS: { action: HotkeyAction; label: string; group: HotkeyDef['group'] }[] = [

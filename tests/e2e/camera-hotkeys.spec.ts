@@ -18,7 +18,7 @@ test('camera markers save and recall with F1-F4', { tag: '@smoke' }, async ({ pa
   await page.evaluate(() => (window as unknown as { game: any }).game.camera.focusOn(40, 50));
   await page.keyboard.press('Control+F2');
   await page.evaluate(() => (window as unknown as { game: any }).game.camera.focusOn(90, 95));
-  await page.keyboard.press('Alt+F2');
+  await page.keyboard.press('F2');
   const target = await page.evaluate(() => (window as unknown as { game: any }).game.camera.getTarget());
   expect(target.x).toBeCloseTo(40, 0);
   expect(target.z).toBeCloseTo(50, 0);

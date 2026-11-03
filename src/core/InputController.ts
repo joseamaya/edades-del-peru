@@ -794,18 +794,22 @@ export class InputController {
     // do not process game shortcuts with a menu open or while paused
     if (this.game.paused || this.game.hud.hasBlockingOverlay()) return;
     const marker = /^f([1-4])$/.exec(k);
-    if (marker && (e.ctrlKey || e.metaKey || e.altKey)) {
-      e.preventDefault();
+    if (marker) {
       const index = Number(marker[1]);
       if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
         const target = this.game.camera.getTarget();
         this.cameraMarks.set(index, { x: target.x, z: target.z });
         this.game.hud?.showToast(`Marcador de cámara F${index} guardado`, 'info');
-      } else {
+        return;
+      }
+      // F1 keeps the legacy help shortcut; F2-F4 are bare recall keys.
+      if (index > 1 && !e.shiftKey && !e.altKey) {
+        e.preventDefault();
         const target = this.cameraMarks.get(index);
         if (target) this.game.camera.focusOn(target.x, target.z);
+        return;
       }
-      return;
     }
     if (k === this.key('toggleHelp') || k === '?' || k === 'f1') {
       e.preventDefault();
