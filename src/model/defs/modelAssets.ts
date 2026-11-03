@@ -128,6 +128,9 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
     return { asset: CARAL_WORKER_ASSET_ID, variant: female ? 'inca_chasqui_f' : 'inca_chasqui_m' };
   }
   const andeanCulture = andeanCultureForEra(civ, era);
+  if (kind === UnitKind.CARAVAN) {
+    return { asset: 'quaternius_alpaca' };
+  }
   if (andeanCulture) {
     const suffix = genderForId(id) === 'female' ? 'f' : 'm';
     const variant = (role: AndeanRole): RigVariant => `${andeanCulture}_${role}_${suffix}` as RigVariant;

@@ -57,7 +57,8 @@ const BUILDING_APPROACH_PROBES = 24;
 const ATTACK_STAND_PAD = 0.5;
 
 /** A combat unit (not a worker or scout). */
-const isSoldier = (u: Unit): boolean => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT;
+const isSoldier = (u: Unit): boolean =>
+  u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT && u.kind !== UnitKind.CARAVAN;
 
 /** A resource node or a completed farm exposed as a food node. */
 type HarvestNode = ResourceNode & { farm?: Building };
@@ -187,6 +188,9 @@ export class AI {
           }
         }
       }
+    }
+    for (const b of this.myBuildings()) {
+      if (b.isFarm && b.foodAmount <= 0 && this.canAfford({ wood: 40 })) this.game.replantFarm(b.id, this.playerId);
     }
     // assign idle workers to resources
     for (const w of idle) {
@@ -637,7 +641,7 @@ export class AI {
     const tx = threat.pos.x;
     const tz = threat.pos.z;
     for (const u of this.myUnits()) {
-      if (u.kind === UnitKind.WORKER || u.kind === UnitKind.SCOUT) continue;
+      if (u.kind === UnitKind.WORKER || u.kind === UnitKind.SCOUT || u.kind === UnitKind.CARAVAN) continue;
       const order = u.orderQueue[0]?.kind;
       if (order === OrderKind.ATTACK || order === OrderKind.ATTACK_MOVE) continue;
       if (distance2D(u.pos.x, u.pos.z, tx, tz) > DEFEND_RESPONSE) continue;

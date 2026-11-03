@@ -1,6 +1,6 @@
 import type { PlayerCommand } from './replay';
 import type { Unit } from '../entities/Unit';
-import type { BuildingKind, OrderTarget, UnitKind } from '../core/types';
+import type { BuildingKind, OrderTarget, Resources, UnitKind } from '../core/types';
 
 type CommandUnit = Pick<Unit, 'dead' | 'issueOrder' | 'clearOrders' | 'setCombatStance'>;
 
@@ -14,6 +14,8 @@ export interface CommandHost {
   ungarrison(buildingId: number): boolean;
   setRallyPoint(buildingId: number, target: OrderTarget): void;
   advanceEra(): boolean;
+  marketTrade(resource: keyof Resources, action: 'buy' | 'sell', amount: number): boolean;
+  replantFarm(buildingId: number): boolean;
 }
 
 /**
@@ -56,6 +58,10 @@ export class CommandProcessor {
         return true;
       case 'advanceEra':
         return this.host.advanceEra();
+      case 'market':
+        return this.host.marketTrade(cmd.resource, cmd.action, cmd.amount);
+      case 'replant':
+        return this.host.replantFarm(cmd.buildingId);
     }
   }
 }

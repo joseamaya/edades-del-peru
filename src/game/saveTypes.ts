@@ -144,4 +144,6 @@ export interface SaveData {
   canalOpen?: boolean;
   /** Post-game samples; excluded from stateHash. */
   matchStats?: MatchStatsSave;
+  /** Market pressure per player (optional for older saves). */
+  markets?: Resources[];
 }

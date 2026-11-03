@@ -497,7 +497,23 @@ export class InputController {
         this.game.executeCommand({ kind: 'rally', buildingId: b.id, target });
       } else {
         for (const u of units) {
-          if (u.kind === UnitKind.WORKER && !b.constructionComplete) {
+          if (u.kind === UnitKind.CARAVAN && b.kind === BuildingKind.MARKET && b.constructionComplete) {
+            const origin = [...this.game.buildings.values()]
+              .filter((market) => market.owner === u.owner && market.kind === BuildingKind.MARKET && !market.dead)
+              .sort(
+                (a, c) =>
+                  Math.hypot(a.pos.x - u.pos.x, a.pos.z - u.pos.z) - Math.hypot(c.pos.x - u.pos.x, c.pos.z - u.pos.z),
+              )[0];
+            this.game.orderUnit(
+              u,
+              {
+                kind: OrderKind.TRADE,
+                entityId: b.id,
+                origin: origin ? { x: origin.pos.x, z: origin.pos.z } : { x: u.pos.x, z: u.pos.z },
+              },
+              !this.shiftQueue,
+            );
+          } else if (u.kind === UnitKind.WORKER && !b.constructionComplete) {
             this.game.orderUnit(u, { kind: OrderKind.BUILD, entityId: b.id }, !this.shiftQueue);
           } else if (u.kind === UnitKind.WORKER && b.isDropsite) {
             this.game.orderUnit(u, { kind: OrderKind.DELIVER, entityId: b.id }, !this.shiftQueue);

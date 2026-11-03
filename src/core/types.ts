@@ -83,6 +83,7 @@ export enum UnitKind {
   CAVALRY = 'cavalry', // heavy / armored cavalry
   TANK = 'tank', // late elite cavalry
   SCOUT = 'scout', // light scout
+  CARAVAN = 'caravan', // trade caravan (llama / mule train)
   ANTI_AIR = 'anti_air', // anti-air / skirmisher
   ARTILLERY = 'artillery', // long-range siege
   MORTAR = 'mortar', // area siege
@@ -129,6 +130,7 @@ export enum OrderKind {
   PATROL = 'patrol',
   GARRISON = 'garrison',
   DELIVER = 'deliver',
+  TRADE = 'trade',
   CONVERT = 'convert',
 }
 

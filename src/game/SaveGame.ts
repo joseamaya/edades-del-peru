@@ -1,6 +1,7 @@
 import type { Game } from '../core/Game';
 import type { PlayerState } from '../core/types';
 import { SAVE_VERSION, SaveData, PlayerSave } from './saveTypes';
+import { serializeMarket } from './market';
 
 /** Stable localStorage key (see AGENTS: keep storage keys stable). */
 const STORAGE_KEY = 'peru-save';
@@ -40,6 +41,7 @@ export function serializeGame(game: Game): SaveData {
     mission: game.mission?.toSave(),
     tutorial: game.tutorial?.toSave(),
     matchStats: game.matchStats.toSave(),
+    markets: game.markets.map(serializeMarket),
   };
 }
 

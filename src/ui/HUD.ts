@@ -1319,7 +1319,14 @@ export class HUD {
     const p = this.game.players[0];
     // resource bucket to refresh availability (afford) without recreating each frame
     const res = p ? RESOURCE_KEYS.map((k) => Math.floor(p.resources[k] / 25)).join(',') : '';
-    const tail = '|e:' + (p?.era ?? 0) + '|res:' + res;
+    const marketKey =
+      building?.kind === BuildingKind.MARKET
+        ? ['food', 'wood', 'stone']
+            .map((r) => this.game.marketQuote(building.owner, r as keyof Resources, 'buy').silver)
+            .join(',')
+        : '';
+    const farmKey = building?.isFarm ? (building.foodAmount <= 0 ? 'empty' : 'full') : '';
+    const tail = '|e:' + (p?.era ?? 0) + '|res:' + res + '|m:' + marketKey + '|f:' + farmKey;
     if (units.length > 0) {
       const ids = units
         .map((u) => u.id)
@@ -1509,6 +1516,39 @@ export class HUD {
         afford: !disabled,
         cat: 'advance',
       });
+    }
+
+    if (b.kind === BuildingKind.MARKET) {
+      for (const resource of ['food', 'wood', 'stone'] as const) {
+        const info = RESOURCE_INFO[resource];
+        const buy = this.game.marketQuote(b.owner, resource, 'buy');
+        const sell = this.game.marketQuote(b.owner, resource, 'sell');
+        const silver = this.game.players[b.owner]?.resources.silver ?? 0;
+        const have = this.game.players[b.owner]?.resources[resource] ?? 0;
+        this.addCard(
+          info.icon,
+          `Comprar ${info.name}`,
+          `${buy.silver} plata`,
+          () => this.game.executeCommand({ kind: 'market', action: 'buy', resource, amount: buy.amount }),
+          { cat: 'econ', disabled: silver < buy.silver, afford: silver >= buy.silver },
+        );
+        this.addCard(
+          info.icon,
+          `Vender ${info.name}`,
+          `${sell.silver} plata`,
+          () => this.game.executeCommand({ kind: 'market', action: 'sell', resource, amount: sell.amount }),
+          { cat: 'econ', disabled: have < sell.amount, afford: have >= sell.amount },
+        );
+      }
+    }
+    if (b.kind === BuildingKind.FARM && b.foodAmount <= 0) {
+      this.addCard(
+        '🌱',
+        'Replantar',
+        this.costText({ ...({ food: 0, wood: 40, silver: 0, stone: 0 } as Resources) }),
+        () => this.game.executeCommand({ kind: 'replant', buildingId: b.id }),
+        { cat: 'econ' },
+      );
     }
 
     // build more (if center, house, etc.)

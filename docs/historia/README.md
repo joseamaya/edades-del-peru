@@ -21,6 +21,7 @@ en lugar de inventarlo.
 - [`arquitectura.md`](./arquitectura.md) — estilos constructivos y emblemas por civilización (spec de modelado).
 - [`tecnologias.md`](./tecnologias.md) — ventana histórica de las tecnologías (cronología y ámbito cultural).
 - [`combate.md`](./combate.md) — contrato de diseño de clases y counters (abstracción, no dato medido).
+- [`comercio.md`](./comercio.md) — base histórica de mercados, caravanas de llamas y redes de intercambio.
 - [`fuentes.md`](./fuentes.md) — bibliografía y fuentes por dossier.
 - [`civilizaciones/`](./civilizaciones/) — un dossier por civilización/facción.
 - [`campanas/`](./campanas/) — un dossier por misión de campaña.
