@@ -50,6 +50,14 @@ export interface HistoricalMapProfile {
     riverWidth: number;
     /** Chance of agricultural terracing (andenes) on buildable slopes. */
     terraceChance: number;
+    /** Orientation of the main ridge/valley axis in radians (0 = east-west). */
+    ridgeDirection?: number;
+    /** Depth of the inter-Andean valley carved along `ridgeDirection` (world units). */
+    valleyDepth?: number;
+    /** Half-width of that valley in normalized map units (0..1). */
+    valleyWidth?: number;
+    /** Deterministic thermal-erosion passes (0 disables). */
+    erosionIterations?: number;
   };
   elevation: {
     snowLine: number;
@@ -205,6 +213,10 @@ const ANDES_TERRAIN = {
   baseBias: 0.64,
   borderCarve: 0,
   mtnAmp: 16,
+  ridgeDirection: 0.55,
+  valleyDepth: 2.4,
+  valleyWidth: 0.2,
+  erosionIterations: 2,
   riverCount: 2,
   riverWidth: 1.6,
 };
@@ -217,6 +229,10 @@ const ALTIPLANO_TERRAIN = {
   baseBias: 0.64,
   borderCarve: 0,
   mtnAmp: 8,
+  ridgeDirection: 0.1,
+  valleyDepth: 1.2,
+  valleyWidth: 0.4,
+  erosionIterations: 1,
   riverCount: 1,
   riverWidth: 1.4,
 };
@@ -298,7 +314,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     id: 'high_andes',
     region: 'high_andes',
     baseMapType: 'andes',
-    terrain: { ...ANDES_TERRAIN, soil: 'rocky', baseBias: 0.62, mtnAmp: 17, terraceChance: 0.7 },
+    terrain: { ...ANDES_TERRAIN, soil: 'rocky', baseBias: 0.62, mtnAmp: 17, terraceChance: 0.7, valleyDepth: 2.0 },
     elevation: { snowLine: 13 },
     climate: { aridity: 0.15, moisture: 0.6, temperature: 0.3 },
     water: { level: WATER_LEVEL, inland: true, wetland: false },
