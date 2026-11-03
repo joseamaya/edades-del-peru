@@ -167,7 +167,7 @@ export class MatchStatsCollector {
 
   applySave(save: MatchStatsSave | undefined): void {
     this.reset();
-    if (!save) return;
+    if (!save || !Array.isArray(save.samples) || !Array.isArray(save.gathered)) return;
     this.elapsed = save.elapsed;
     this.timer = save.timer;
     for (const [id, resources] of save.gathered) this.gathered.set(id, { ...resources });

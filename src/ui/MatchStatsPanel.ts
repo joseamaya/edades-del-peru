@@ -105,7 +105,7 @@ function chart(series: { label: string; color: string; values: number[] }[], tim
 
 function table(rows: { label: string; values: string[] }[], players: PlayerSnapshot[]): string {
   return `<table class="ed-stats-table"><thead><tr><th></th>${players
-    .map((p) => `<th style="color:${p.colorHex}">${esc(p.name)}<small>${esc(p.civ)}</small></th>`)
+    .map((p) => `<th style="--player-color:${p.colorHex}">${esc(p.name)}<small>${esc(p.civ)}</small></th>`)
     .join('')}</tr></thead><tbody>${rows
     .map((row) => `<tr><th>${esc(row.label)}</th>${row.values.map((value) => `<td>${value}</td>`).join('')}</tr>`)
     .join('')}</tbody></table>`;
@@ -133,7 +133,7 @@ function summary(samples: MatchSnapshot[], players: PlayerSnapshot[]): string {
   const cards = players
     .map(
       (p) => `<div class="ed-stats-card">
-        <b style="color:${p.colorHex}">${esc(p.name)}</b>
+        <b style="--player-color:${p.colorHex}">${esc(p.name)}</b>
         <span>${esc(p.civ)} · ${esc(ERA_DEFS[p.era]?.name ?? '—')}</span>
         <strong>${p.kills}</strong><span>bajas · ${p.lost} pérdidas</span>
       </div>`,
@@ -184,7 +184,7 @@ function tech(samples: MatchSnapshot[], players: PlayerSnapshot[]): string {
         const list = p.techs.length
           ? p.techs.map((id) => `<li>${esc(TECHS.find((entry) => entry.id === id)?.name ?? id)}</li>`).join('')
           : '<li class="ed-stats-empty">Sin tecnologías investigadas.</li>';
-        return `<div class="ed-stats-card ed-stats-tech"><b style="color:${p.colorHex}">${esc(
+        return `<div class="ed-stats-card ed-stats-tech"><b style="--player-color:${p.colorHex}">${esc(
           p.name,
         )}</b><span>${esc(ERA_DEFS[p.era]?.name ?? '—')} · ${p.techs.length} tecnologías</span><ul>${list}</ul></div>`;
       })
@@ -203,7 +203,7 @@ function timeline(samples: MatchSnapshot[], players: PlayerSnapshot[]): string {
         last = row.era;
         eras.push(`${Math.round(sample.t)}s · ${esc(ERA_DEFS[row.era]?.name ?? '—')}`);
       }
-      return `<div class="ed-stats-card"><b style="color:${p.colorHex}">${esc(p.name)}</b><ul>${
+      return `<div class="ed-stats-card"><b style="--player-color:${p.colorHex}">${esc(p.name)}</b><ul>${
         eras.length ? eras.map((entry) => `<li>${entry}</li>`).join('') : '<li>Sin cambios de era.</li>'
       }</ul></div>`;
     })

@@ -306,14 +306,14 @@ const CSS = /* css */ `
   .ed-stats-tabs button.active { background: rgba(232,195,106,.16); border-color: var(--gold); color: var(--gold); }
   .ed-stats-body { background: rgba(10,12,16,.55); border: 1px solid var(--line); border-radius: 6px; padding: 10px; }
   .ed-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 7px; margin-bottom: 10px; }
-  .ed-stats-card { background: var(--panel-2); border: 1px solid var(--line); border-radius: 5px; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; font-size: 11px; color: var(--text-dim); }
-  .ed-stats-card b { font-size: 12px; }
+  .ed-stats-card { background: var(--panel-2); border: 1px solid var(--line); border-left: 3px solid var(--player-color, var(--line)); border-radius: 5px; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; font-size: 11px; color: var(--text-dim); }
+  .ed-stats-card b { font-size: 12px; color: var(--text); }
   .ed-stats-card strong { color: var(--text); font-size: 21px; line-height: 1.1; }
   .ed-stats-card span { font-size: 10px; }
   .ed-stats-table { width: 100%; border-collapse: collapse; font-size: 11px; margin: 4px 0 10px; }
   .ed-stats-table th, .ed-stats-table td { border-bottom: 1px solid rgba(232,195,106,.12); padding: 4px 6px; text-align: right; }
   .ed-stats-table th:first-child { text-align: left; color: var(--text-dim); font-weight: 600; }
-  .ed-stats-table thead th { color: var(--gold); font-size: 11px; }
+  .ed-stats-table thead th { color: var(--gold); font-size: 11px; border-bottom: 2px solid var(--player-color, transparent); }
   .ed-stats-table thead small { display: block; color: var(--text-dim); font-size: 9px; font-weight: 400; }
   .ed-stats-chart { color: var(--text); }
   .ed-stats-chart svg { width: 100%; height: auto; display: block; overflow: visible; }
@@ -328,7 +328,7 @@ const CSS = /* css */ `
   @media (prefers-color-scheme: light) {
     .ed-stats-body { background: #f7f2e5; border-color: #c9b98f; color: #1d1a14; }
     .ed-stats-card { background: #fffaf0; border-color: #d8c9a6; color: #5c513b; }
-    .ed-stats-card strong, .ed-stats-tech ul { color: #1d1a14; }
+    .ed-stats-card b, .ed-stats-card strong, .ed-stats-tech ul { color: #1d1a14; }
     .ed-stats-chart { color: #1d1a14; }
     .ed-stats-chart .grid { stroke: rgba(90,70,30,.2); }
     .ed-stats-table thead th { color: #6b4f13; }
@@ -1096,7 +1096,10 @@ export class HUD {
       watch.textContent = '▶ Ver repetición';
       watch.dataset.statsReplay = 'watch';
       watch.addEventListener('click', () => {
-        saveReplay(replay);
+        if (!saveReplay(replay)) {
+          this.showToast('No se pudo abrir la repetición', 'error');
+          return;
+        }
         location.href = location.pathname + '?replay=1';
       });
       const save = this.el('button', 'ed-ghostbtn', replayRow);
