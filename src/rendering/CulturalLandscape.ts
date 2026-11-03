@@ -100,6 +100,8 @@ export class CulturalLandscape {
           });
         } else if (p.feature === 'corral') {
           geo = conformCorralGeometry(p.size, p.x, p.z, off, (x, z) => terrain.getHeight(x, z));
+          const r = Math.max(1, p.size / GROUND_TILE);
+          scaleUv(geo, r, r);
         } else {
           geo = featureGeometry(p.feature, p.size, p.yaw);
           const r = Math.max(1, p.size / GROUND_TILE);
