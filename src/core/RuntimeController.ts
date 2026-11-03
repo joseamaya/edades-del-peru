@@ -260,6 +260,7 @@ export class RuntimeController {
     if (!drop) return;
     if (amount > 0) {
       const p = this.game.players[drop.owner];
+      this.game.matchStats.recordGather(drop.owner, resource as keyof Resources, amount);
       p.resources[resource as keyof Resources] += amount;
       bus.emit('resources:changed', { player: drop.owner, resources: { ...p.resources } });
     }
@@ -742,6 +743,7 @@ export class RuntimeController {
       if (!this.game.headless) this.game.hud.update(dt, realTime);
       return false;
     }
+    this.game.matchStats.update(dt, this.game.players, this.game.units.values(), this.game.buildings.values());
     if (this.game.headless) return this.updateHeadless(dt, time);
     this.game.qualityGovernor.update(dt);
     if (this.game.replay) {

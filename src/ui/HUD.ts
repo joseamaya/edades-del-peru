@@ -57,6 +57,7 @@ import { openCodex } from './Codex';
 import { bus } from '../core/EventBus';
 import { hasSave } from '../game/SaveGame';
 import { hasReplay } from '../game/replay';
+import { mountMatchStats } from './MatchStatsPanel';
 import { formatHotkeys } from '../core/hotkeys';
 
 const STANCE_TOOLTIP: Record<CombatStance, string> = {
@@ -294,6 +295,41 @@ const CSS = /* css */ `
   .epilogue-title.win { color: var(--gold); }
   .epilogue-title.lose { color: var(--red); }
 
+
+  .ed-stats { text-align: left; margin: 10px 0 14px; border-top: 1px solid var(--line); padding-top: 10px; }
+  .ed-stats-tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 10px; }
+  .ed-stats-tabs button { pointer-events: auto; background: transparent; border: 1px solid var(--line); color: var(--text-dim); border-radius: 4px; padding: 5px 10px; font-size: 11px; font-weight: 700; cursor: pointer; }
+  .ed-stats-tabs button.active { background: rgba(232,195,106,.16); border-color: var(--gold); color: var(--gold); }
+  .ed-stats-body { background: rgba(10,12,16,.55); border: 1px solid var(--line); border-radius: 6px; padding: 10px; }
+  .ed-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 7px; margin-bottom: 10px; }
+  .ed-stats-card { background: var(--panel-2); border: 1px solid var(--line); border-radius: 5px; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; font-size: 11px; color: var(--text-dim); }
+  .ed-stats-card b { font-size: 12px; }
+  .ed-stats-card strong { color: var(--text); font-size: 21px; line-height: 1.1; }
+  .ed-stats-card span { font-size: 10px; }
+  .ed-stats-table { width: 100%; border-collapse: collapse; font-size: 11px; margin: 4px 0 10px; }
+  .ed-stats-table th, .ed-stats-table td { border-bottom: 1px solid rgba(232,195,106,.12); padding: 4px 6px; text-align: right; }
+  .ed-stats-table th:first-child { text-align: left; color: var(--text-dim); font-weight: 600; }
+  .ed-stats-table thead th { color: var(--gold); font-size: 11px; }
+  .ed-stats-table thead small { display: block; color: var(--text-dim); font-size: 9px; font-weight: 400; }
+  .ed-stats-chart { color: var(--text); }
+  .ed-stats-chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .ed-stats-chart .grid { stroke: rgba(232,195,106,.14); stroke-width: 1; }
+  .ed-stats-chart .axis-line { stroke: rgba(232,195,106,.3); stroke-width: 1; }
+  .ed-stats-chart .axis { fill: currentColor; opacity: .62; font-size: 9px; }
+  .ed-stats-legends { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+  .ed-stats-legend { display: inline-flex; align-items: center; gap: 4px; }
+  .ed-stats-legend i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+  .ed-stats-empty { color: var(--text-dim); font-size: 11px; padding: 6px 0; }
+  .ed-stats-tech ul { margin: 4px 0 0; padding-left: 16px; color: var(--text); font-size: 10px; }
+  @media (prefers-color-scheme: light) {
+    .ed-stats-body { background: #f7f2e5; border-color: #c9b98f; color: #1d1a14; }
+    .ed-stats-card { background: #fffaf0; border-color: #d8c9a6; color: #5c513b; }
+    .ed-stats-card strong, .ed-stats-tech ul { color: #1d1a14; }
+    .ed-stats-chart { color: #1d1a14; }
+    .ed-stats-chart .grid { stroke: rgba(90,70,30,.2); }
+    .ed-stats-table th, .ed-stats-table td { border-bottom-color: rgba(90,70,30,.2); }
+    .ed-stats-table th:first-child, .ed-stats-legends { color: #5c513b; }
+  }
   .ed-mission-card { position: absolute; inset: 0; z-index: 30; display: flex; align-items: center; justify-content: center; background: rgba(3,6,9,.56); pointer-events: auto; animation: mission-card-in .7s ease; }
   .ed-mission-card .inner { text-align: center; padding: 30px; max-width: 760px; }
   .ed-mission-card .year { color: var(--gold); font-size: 12px; letter-spacing: 4px; text-transform: uppercase; }
@@ -980,6 +1016,7 @@ export class HUD {
           )
           .join('<br>')}</div>`
       : '';
+    this.game.matchStats.captureNow(this.game.players, this.game.units.values(), this.game.buildings.values());
     const peaceful = mis?.enemy.active === false;
     const commonStats = `Unidades creadas: <b>${p?.stats.created ?? 0}</b><br>
          Periodo: <b>${getPeriod(this.game.settings.period).name}</b>`;
@@ -999,8 +1036,23 @@ export class HUD {
       ${epilogue}
       ${optionalSummary}
       <div style="font-size:12px;color:var(--text-dim);line-height:1.7;margin-bottom:14px">${stats}</div>
+      <div id="ed-stats-panel" class="ed-stats"></div>
       ${chapterEnd ? `<div class="ed-hist" style="border-left:3px solid var(--gold);padding-left:12px"><b style="color:var(--gold)">${chapterEndText}</b> Puedes volver al mapa de la saga para elegir otro capítulo o repetir la misión.</div>` : ''}
     `;
+    const statsRoot = panel.querySelector<HTMLElement>('#ed-stats-panel');
+    if (statsRoot) {
+      mountMatchStats(
+        statsRoot,
+        this.game.matchStats.samples,
+        this.game.players.map((player) => ({
+          id: player.id,
+          name: player.name,
+          civ: player.civ,
+          colorHex: player.colorHex,
+        })),
+        0,
+      );
+    }
     const row = this.el('div', 'row', panel);
     if (next) {
       const nextButton = this.el('button', 'ed-primary', row);
@@ -1024,6 +1076,24 @@ export class HUD {
     menu.textContent = 'Menú principal';
     menu.addEventListener('click', () => {
       location.href = location.pathname + '?menu=1';
+    });
+    const replayRow = this.el('div', 'row', panel);
+    const watch = this.el('button', 'ed-ghostbtn', replayRow);
+    watch.textContent = '▶ Ver repetición';
+    watch.dataset.statsReplay = 'watch';
+    watch.addEventListener('click', () => {
+      this.game.saveRecording();
+      location.href = location.pathname + '?replay=1';
+    });
+    const save = this.el('button', 'ed-ghostbtn', replayRow);
+    save.textContent = '💾 Guardar repetición';
+    save.dataset.statsReplay = 'save';
+    save.addEventListener('click', () => {
+      this.game.saveRecording();
+      this.showToast(
+        hasReplay() ? 'Repetición guardada' : 'No hay repetición disponible',
+        hasReplay() ? 'success' : 'error',
+      );
     });
   }
 
