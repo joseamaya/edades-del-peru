@@ -61,18 +61,20 @@ export function generateHeightField(
       const nz = z / (resolution / 2) - 1;
       const border = Math.max(Math.abs(nx), Math.abs(nz)); // 0 center -> 1 edge
 
-      // Domain warp bends the noise into long ridges and broad valley floors
-      // instead of isolated cones.
-      const wx = nx + (fbm2(nx * 0.7 + 5, nz * 0.7 + 9, 2) - 0.5) * 0.42;
-      const wz = nz + (fbm2(nx * 0.7 + 17, nz * 0.7 + 2, 2) - 0.5) * 0.42;
+      // Andean profiles get a domain warp that bends the noise into long
+      // ridges and broad valley floors instead of isolated cones. Other maps
+      // keep the previous silhouette to avoid changing their gameplay.
+      const warped = t.ridgeDirection !== undefined;
+      const wx = warped ? nx + (fbm2(nx * 0.7 + 5, nz * 0.7 + 9, 2) - 0.5) * 0.42 : nx;
+      const wz = warped ? nz + (fbm2(nx * 0.7 + 17, nz * 0.7 + 2, 2) - 0.5) * 0.42 : nz;
       let base = fbm2(wx * t.fbmScale + t.fbmOffset, wz * t.fbmScale, t.fbmOctaves) * t.baseGain + t.baseBias;
       if (t.borderCarve > 0) base -= smoothstep(0.9, 1.02, border) * t.borderCarve;
 
       const ridgeAngle = t.ridgeDirection ?? 0;
       const across = -nx * Math.sin(ridgeAngle) + nz * Math.cos(ridgeAngle);
       const along = nx * Math.cos(ridgeAngle) + nz * Math.sin(ridgeAngle);
-      // mountains (elongated along the ridge axis, flattened at the edge)
-      const mtn = ridged2(across * 1.9 + 11, along * 0.65, 4);
+      // mountains (elongated along the ridge axis on Andean maps)
+      const mtn = warped ? ridged2(across * 1.9 + 11, along * 0.65, 4) : ridged2(nx * 1.7 + 11, nz * 1.7, 4);
       const mtnMask = smoothstep(0.45, 0.82, mtn);
       const edgeBlend = 1 - smoothstep(0.92, 1.06, border);
       let height = base * HEIGHT_SCALE + Math.max(0, mtn - 0.52) * t.mtnAmp * mtnMask * edgeBlend;
@@ -250,8 +252,7 @@ function applyThermalErosion(heightMap: Float32Array, n: number, iterations: num
       for (let x = 1; x < n - 1; x++) {
         const i = z * n + x;
         const h = heightMap[i];
-        const avg =
-          (heightMap[i - 1] + heightMap[i + 1] + heightMap[i - n] + heightMap[i + n]) / 4;
+        const avg = (heightMap[i - 1] + heightMap[i + 1] + heightMap[i - n] + heightMap[i + n]) / 4;
         const excess = h - avg - talus;
         if (excess > 0) next[i] = h - excess * rate;
       }
