@@ -34,8 +34,9 @@ function load(
   key: string,
   type: string,
   color: boolean,
+  wrap: THREE.Wrapping = THREE.MirroredRepeatWrapping,
 ): THREE.Texture | null {
-  const ck = `${key}_${type}`;
+  const ck = `${base}/${key}_${type}`;
   if (cache.has(ck)) return cache.get(ck)!;
   const url = mods[`${base}/${key}_${type}.webp`];
   if (!url) {
@@ -43,7 +44,7 @@ function load(
     return null;
   }
   const t = loader.load(url);
-  t.wrapS = t.wrapT = THREE.MirroredRepeatWrapping;
+  t.wrapS = t.wrapT = wrap;
   t.anisotropy = 8;
   t.colorSpace = color ? THREE.SRGBColorSpace : THREE.NoColorSpace;
   cache.set(ck, t);
@@ -53,12 +54,12 @@ function load(
 /** PBR terrain set for a slot (grass/dirt/sand/rock/snow). */
 export function getGroundPBR(slot: string): PbrSet | null {
   const base = '../assets/textures/terrain';
-  const diffuse = load(terrainMods, base, slot, 'diffuse', true);
+  const diffuse = load(terrainMods, base, slot, 'diffuse', true, THREE.RepeatWrapping);
   if (!diffuse) return null;
   return {
     diffuse,
-    normal: load(terrainMods, base, slot, 'normal', false),
-    roughness: load(terrainMods, base, slot, 'roughness', false),
+    normal: load(terrainMods, base, slot, 'normal', false, THREE.RepeatWrapping),
+    roughness: load(terrainMods, base, slot, 'roughness', false, THREE.RepeatWrapping),
   };
 }
 

@@ -65,6 +65,7 @@ export class HeadlessTerrain {
   setSunLight(): void {}
   setCloudShadow(): void {}
   setFow(): void {}
+  setLowDetail(): void {}
   getTexture(): null {
     return null;
   }

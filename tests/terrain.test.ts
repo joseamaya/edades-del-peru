@@ -3,8 +3,10 @@ import { generateHeightField } from '../src/sim/heightField';
 import { MAP_PROFILES } from '../src/model/defs/profiles';
 import { CARAL_HEIGHTMAP, CARAL_HEIGHTMAP_SIZE, CARAL_HEIGHTMAP_WORLD_SIZE } from '../src/model/defs/caralHeightmap';
 import { sampleAuthoredHeight } from '../src/model/defs/authoredTerrain';
+import { TerrainData } from '../src/sim/TerrainData';
+import { buildTerrainSplat } from '../src/rendering/terrainSplat';
 
-function hash(a: Float32Array): number {
+function hash(a: ArrayLike<number>): number {
   let h = 2166136261;
   for (let i = 0; i < a.length; i++) {
     h ^= Math.round(a[i] * 1000) | 0;
@@ -109,6 +111,52 @@ describe('deterministic height field', () => {
     for (let i = 0; i < f.terraceMap.length; i++) {
       if (f.terraceMap[i] > 0) expect(f.heightMap[i]).toBeGreaterThan(f.waterLevel);
     }
+  });
+});
+
+describe('deterministic terrain splat', () => {
+  const profile = MAP_PROFILES.central_coast;
+  const data = new TerrainData(192, 96, 777, profile);
+
+  it('packs four material weights that sum to one', () => {
+    const splat = buildTerrainSplat(data, profile, { size: 64, seed: 777 });
+    for (let i = 0; i < splat.data.length; i += 4) {
+      const sum = (splat.data[i] + splat.data[i + 1] + splat.data[i + 2] + splat.data[i + 3]) / 255;
+      expect(sum).toBeGreaterThan(0.97);
+      expect(sum).toBeLessThan(1.03);
+    }
+  });
+
+  it('produces the same splat for the same seed and profile', () => {
+    const a = buildTerrainSplat(data, profile, { size: 64, seed: 777 });
+    const b = buildTerrainSplat(data, profile, { size: 64, seed: 777 });
+    expect(hash(a.data)).toBe(hash(b.data));
+  });
+
+  it('a different seed changes the noisy material borders', () => {
+    const a = buildTerrainSplat(data, profile, { size: 64, seed: 777 });
+    const b = buildTerrainSplat(data, profile, { size: 64, seed: 778 });
+    expect(hash(a.data)).not.toBe(hash(b.data));
+  });
+
+  it('puts sand in the water and rock on the highest ground', () => {
+    const splat = buildTerrainSplat(data, profile, { size: 64, seed: 777 });
+    const n = 97;
+    let low = 0;
+    let high = 0;
+    for (let i = 1; i < data.heightMap.length; i++) {
+      if (data.heightMap[i] < data.heightMap[low]) low = i;
+      if (data.heightMap[i] > data.heightMap[high]) high = i;
+    }
+    const at = (index: number) => {
+      const x = Math.min(63, Math.floor(((index % n) / (n - 1)) * 64));
+      const z = Math.min(63, Math.floor((Math.floor(index / n) / (n - 1)) * 64));
+      return (z * 64 + x) * 4;
+    };
+    const wet = at(low);
+    const peak = at(high);
+    expect(splat.data[wet + 2]).toBeGreaterThan(splat.data[wet]);
+    expect(splat.data[peak + 3]).toBeGreaterThan(splat.data[peak]);
   });
 });
 

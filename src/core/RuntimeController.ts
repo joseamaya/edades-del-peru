@@ -1084,6 +1084,7 @@ export class RuntimeController {
   /** Apply a preset to the renderer without touching the saved settings (governor). */
   applyQualityPreset(q: GameSettings['quality']): void {
     this.game.postfx.setQuality(q);
+    this.game.terrain?.setLowDetail(q === 'low');
   }
 
   /** Force a render scale (`null` restores the default) and apply it immediately. */

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { getGroundTextures, GroundTextures } from './Textures';
 import { getGroundPBR } from './Biomes';
+import { buildTerrainSplat, TERRAIN_SPLAT_SIZE, type TerrainSplat } from './terrainSplat';
 import { smoothstep } from '../util/math';
 import { TerrainData } from '../sim/TerrainData';
 import { FOW_DIM_GLSL } from './fowGlsl';
@@ -56,6 +57,10 @@ export class Terrain {
   private readonly terrainPreset: number;
   private readonly suppressSnow: boolean;
   private readonly valleyHaze: boolean;
+  /** CPU-authored per-match material weights (grass/dirt/sand/rock). */
+  readonly splat: TerrainSplat;
+  /** GPU copy of `splat`, sampled by the terrain shader. */
+  readonly splatTexture: THREE.DataTexture;
   /** Biome aridity (0 humid .. 1 desert); tints sand and reduces vegetation. */
   private arid = 0;
   /** Vegetation density (0 dry .. 1 jungle); tints the grass green. */
@@ -88,6 +93,15 @@ export class Terrain {
     this.canalPaths = this.data.canalPaths;
     this.canalWidth = this.data.canalWidth;
     this.waterLevel = this.data.waterLevel;
+    this.splat = buildTerrainSplat(this.data, profile, { size: TERRAIN_SPLAT_SIZE, seed });
+    const splatTexture = new THREE.DataTexture(this.splat.data, this.splat.size, this.splat.size, THREE.RGBAFormat);
+    splatTexture.minFilter = THREE.LinearFilter;
+    splatTexture.magFilter = THREE.LinearFilter;
+    splatTexture.wrapS = THREE.ClampToEdgeWrapping;
+    splatTexture.wrapT = THREE.ClampToEdgeWrapping;
+    splatTexture.colorSpace = THREE.NoColorSpace;
+    splatTexture.needsUpdate = true;
+    this.splatTexture = splatTexture;
     this.mesh = this.buildMesh();
     this.group.add(this.mesh);
     this.buildSkirt();
@@ -338,6 +352,13 @@ export class Terrain {
         sandR: { value: rgh('sand') },
         rockR: { value: rgh('rock') },
         snowR: { value: rgh('snow') },
+        splatMap: { value: this.splatTexture },
+        heightGrass: { value: 0.06 },
+        heightDirt: { value: 0.22 },
+        heightSand: { value: 0.12 },
+        heightRock: { value: 0.78 },
+        heightSnow: { value: 0.62 },
+        terrainDetail: { value: 1 },
         usePbr: { value: style?.flatNormals ? 0 : anyPbr ? 1 : 0 },
         waterLevel: { value: waterLevel },
         time: { value: 0 },
@@ -406,6 +427,13 @@ export class Terrain {
         uniform sampler2D sandR;
         uniform sampler2D rockR;
         uniform sampler2D snowR;
+        uniform sampler2D splatMap;
+        uniform float heightGrass;
+        uniform float heightDirt;
+        uniform float heightSand;
+        uniform float heightRock;
+        uniform float heightSnow;
+        uniform float terrainDetail;
         uniform float usePbr;
         uniform float veg;
         uniform float waterLevel;
@@ -464,6 +492,31 @@ export class Terrain {
           return v;
         }
 ${FOW_DIM_GLSL}
+        vec3 sampleNormalMap(sampler2D tex, vec2 uv) {
+          vec2 s = texture2D(tex, uv).rg * 2.0 - 1.0;
+          return vec3(s, sqrt(max(0.0, 1.0 - dot(s, s))));
+        }
+
+        vec3 triplanarAlbedo(sampler2D tex, vec3 p, vec3 n, float scale) {
+          vec3 w = pow(abs(n), vec3(4.0));
+          w /= max(1e-4, w.x + w.y + w.z);
+          vec3 x = texture2D(tex, p.zy * scale).rgb;
+          vec3 y = texture2D(tex, p.xz * scale).rgb;
+          vec3 z = texture2D(tex, p.xy * scale).rgb;
+          return x * w.x + y * w.y + z * w.z;
+        }
+
+        vec3 triplanarNormal(sampler2D tex, vec3 p, vec3 n, float scale) {
+          vec3 w = pow(abs(n), vec3(4.0));
+          w /= max(1e-4, w.x + w.y + w.z);
+          vec3 nx = sampleNormalMap(tex, p.zy * scale);
+          vec3 ny = sampleNormalMap(tex, p.xz * scale);
+          vec3 nz = sampleNormalMap(tex, p.xy * scale);
+          nx = vec3(nx.xy + n.zy, abs(nx.z) * n.x);
+          ny = vec3(ny.xy + n.xz, abs(ny.z) * n.y);
+          nz = vec3(nz.xy + n.xy, abs(nz.z) * n.z);
+          return normalize(nx.zyx * w.x + ny.xzy * w.y + nz.xyz * w.z);
+        }
 
         void main() {
           // local fractal detail (two octaves to break repetition)
@@ -474,17 +527,66 @@ ${FOW_DIM_GLSL}
           // real slope (normal pointing up)
           float slope = 1.0 - clamp(vNormal.y, 0.0, 1.0);
 
-          // blend with textures: grass by default, sand only on the coast,
-          // rock at height and on slopes, snow at summits, soil in dry areas
-          float sandAmt = max(1.0 - smoothstep(waterLevel + 0.2, waterLevel + 1.8, vHeight), arid * (1.0 - smoothstep(6.0, 10.0, vHeight)));
-          float rockAmt = clamp(smoothstep(4.5, 9.0, vHeight) * 0.7 + smoothstep(0.25, 0.6, slope) * 0.85, 0.0, 1.0);
+          // CPU splatmap: grass, dirt, sand and rock. Snow stays procedural so
+          // it follows the heightfield without another texture.
+          vec4 sw = texture2D(splatMap, clamp(vWorldPos.xz / mapSize, vec2(0.001), vec2(0.999)));
           float snowAmt = (1.0 - suppressSnow) * smoothstep(snowLine - 4.0, snowLine + 0.5, vHeight);
-          float dirtAmt = (1.0 - smoothstep(0.6, 2.8, vHeight)) * 0.4;
-          vec3 ground = texture(grass, vUv * 2.0).rgb;
-          ground = mix(ground, texture(dirt, vUv * 2.4 + 3.0).rgb, max(dirtAmt, arid * 0.4));
-          ground = mix(ground, texture(sand, vUv * 3.0).rgb, clamp(sandAmt + arid * 0.45, 0.0, 1.0));
-          ground = mix(ground, texture(rock, vUv * 2.6).rgb, rockAmt);
-          ground = mix(ground, texture(snow, vUv * 2.2).rgb, snowAmt);
+          float wGrass = sw.r;
+          float wDirt = sw.g;
+          float wSand = sw.b;
+          float wRock = sw.a;
+          float wSnow = snowAmt * 0.9;
+
+          // Height-biased blend: the taller material keeps a crisper edge, so
+          // sand tucks between rocks instead of smearing into them. #302 will
+          // replace these constants with scanned height maps.
+          float ma = max(max(wGrass + heightGrass, wDirt + heightDirt),
+                         max(max(wSand + heightSand, wRock + heightRock), wSnow + heightSnow)) - 0.18;
+          float bGrass = max(0.0, wGrass + heightGrass - ma);
+          float bDirt = max(0.0, wDirt + heightDirt - ma);
+          float bSand = max(0.0, wSand + heightSand - ma);
+          float bRock = max(0.0, wRock + heightRock - ma);
+          float bSnow = max(0.0, wSnow + heightSnow - ma);
+          float bsum = max(1e-4, bGrass + bDirt + bSand + bRock + bSnow);
+          wGrass = bGrass / bsum;
+          wDirt = bDirt / bsum;
+          wSand = bSand / bsum;
+          wRock = bRock / bsum;
+          wSnow = bSnow / bsum;
+
+          // Two non-integer scales plus a low-frequency macro mask hide the
+          // tile grid without stochastic sampling.
+          vec2 wp = vWorldPos.xz;
+          vec2 uvNear = wp * 0.075;
+          vec2 uvFar = wp * 0.029 + 17.0;
+          float macro = smoothstep(0.15, 0.85, fbm(wp * 0.012 + 7.0));
+
+          vec3 grassNear = texture2D(grass, uvNear).rgb;
+          vec3 dirtNear = texture2D(dirt, uvNear * 1.13 + 3.0).rgb;
+          vec3 sandNear = texture2D(sand, uvNear * 0.91 + 7.0).rgb;
+          vec3 rockNear = texture2D(rock, uvNear * 1.07 + 13.0).rgb;
+          vec3 snowNear = texture2D(snow, uvNear * 1.21 + 19.0).rgb;
+
+          vec3 geoN = normalize(vNormal);
+          float triMask = terrainDetail * smoothstep(0.42, 0.62, slope);
+          if (triMask > 0.0) {
+            rockNear = mix(rockNear, triplanarAlbedo(rock, vWorldPos, geoN, 0.075), triMask);
+          }
+
+          vec3 groundNear = grassNear * wGrass + dirtNear * wDirt + sandNear * wSand + rockNear * wRock + snowNear * wSnow;
+          vec3 groundFar = groundNear;
+          if (terrainDetail > 0.5) {
+            vec3 grassFar = texture2D(grass, uvFar).rgb;
+            vec3 dirtFar = texture2D(dirt, uvFar * 0.87 + 11.0).rgb;
+            vec3 sandFar = texture2D(sand, uvFar * 1.19 + 23.0).rgb;
+            vec3 rockFar = texture2D(rock, uvFar * 0.93 + 31.0).rgb;
+            vec3 snowFar = texture2D(snow, uvFar * 1.11 + 41.0).rgb;
+            if (triMask > 0.0) {
+              rockFar = mix(rockFar, triplanarAlbedo(rock, vWorldPos, geoN, 0.029), triMask);
+            }
+            groundFar = grassFar * wGrass + dirtFar * wDirt + sandFar * wSand + rockFar * wRock + snowFar * wSnow;
+          }
+          vec3 ground = mix(groundNear, groundFar, macro * 0.65 * terrainDetail);
           ground = (ground - 0.5) * 1.12 + 0.5; // contrast
           col = mix(col, ground, 0.75);
           col *= groundTint;
@@ -536,30 +638,30 @@ ${FOW_DIM_GLSL}
           vec2 bump = vec2((nC - nX) * bumpAmt, (nC - nZ) * bumpAmt);
           float rough = 0.9;
 
+          vec3 rockTriN = vec3(0.0);
+          float rockTriW = 0.0;
           if (usePbr > 0.5) {
-            float wSnow = snowAmt;
-            float wRock = rockAmt * (1.0 - wSnow);
-            float wSand = clamp(sandAmt + arid * 0.45, 0.0, 1.0) * (1.0 - wRock - wSnow);
-            float wDirt = max(dirtAmt, arid * 0.4);
-            float wGrass = max(0.0, 1.0 - wDirt - wSand - wRock - wSnow);
-            float wsum = max(1e-3, wGrass + wDirt + wSand + wRock + wSnow);
-            vec2 uv2 = vUv * 2.5;
             vec2 nb =
-              (texture(grassN, uv2).rg * 2.0 - 1.0) * wGrass +
-              (texture(dirtN, uv2).rg * 2.0 - 1.0) * wDirt +
-              (texture(sandN, uv2).rg * 2.0 - 1.0) * wSand +
-              (texture(rockN, uv2).rg * 2.0 - 1.0) * wRock +
-              (texture(snowN, uv2).rg * 2.0 - 1.0) * wSnow;
-            bump += nb / wsum * 0.8;
+              (texture(grassN, uvNear).rg * 2.0 - 1.0) * wGrass +
+              (texture(dirtN, uvNear * 1.13 + 3.0).rg * 2.0 - 1.0) * wDirt +
+              (texture(sandN, uvNear * 0.91 + 7.0).rg * 2.0 - 1.0) * wSand +
+              (texture(rockN, uvNear * 1.07 + 13.0).rg * 2.0 - 1.0) * wRock +
+              (texture(snowN, uvNear * 1.21 + 19.0).rg * 2.0 - 1.0) * wSnow;
+            bump += nb * 0.8;
             rough = (
-              texture(grassR, uv2).r * wGrass + texture(dirtR, uv2).r * wDirt +
-              texture(sandR, uv2).r * wSand + texture(rockR, uv2).r * wRock +
-              texture(snowR, uv2).r * wSnow
-            ) / wsum;
+              texture(grassR, uvNear).r * wGrass + texture(dirtR, uvNear * 1.13 + 3.0).r * wDirt +
+              texture(sandR, uvNear * 0.91 + 7.0).r * wSand + texture(rockR, uvNear * 1.07 + 13.0).r * wRock +
+              texture(snowR, uvNear * 1.21 + 19.0).r * wSnow
+            );
+            if (triMask > 0.001 && wRock > 0.001) {
+              rockTriN = triplanarNormal(rockN, vWorldPos, geoN, 0.075);
+              rockTriW = triMask * wRock;
+            }
           }
 
           // directional sun lighting + ambient (terrain relief)
           N = normalize(N + vec3(bump.x, 0.0, bump.y));
+          if (rockTriW > 0.001) N = normalize(mix(N, rockTriN, rockTriW));
           float ndl = max(dot(N, sunDir), 0.0);
           vec3 lit = col * (ambientColor + sunColor * ndl * cloudShadow * 1.15);
           // weak specular highlight modulated by roughness
@@ -702,6 +804,12 @@ ${FOW_DIM_GLSL}
 
   camera: THREE.Camera | null = null;
 
+  /** Low quality samples one texture scale and skips triplanar rock. */
+  setLowDetail(low: boolean): void {
+    const mat = this.mesh.material as THREE.ShaderMaterial;
+    mat.uniforms.terrainDetail.value = low ? 0 : 1;
+  }
+
   dispose(): void {
     this.mesh.geometry.dispose();
     (this.mesh.material as THREE.Material).dispose();
@@ -712,6 +820,7 @@ ${FOW_DIM_GLSL}
     }
     this.pbrExtra.forEach((t) => t.dispose());
     this.pbrExtra = [];
+    this.splatTexture.dispose();
     this.group.removeFromParent();
   }
 }
