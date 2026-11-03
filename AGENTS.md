@@ -25,7 +25,7 @@ Package manager **Yarn 1** (`yarn.lock` exists — never create a `package-lock.
 - `yarn bench:check` — rig/fauna/mixed structural budgets (`--assert`); SwiftShader is not a GPU benchmark
 - `yarn art:blender` — ingest the in-repo Blender renders into WebP + manifest (`--dry-run`, `--only=…`, `--force`)
 - `yarn art:models` — meshopt-compress the committed GLBs in place (`--only=…`, `--dry-run`, `--force`)
-- `yarn art:textures` — re-encode the committed PBR WebPs to the shipping budget (`--only=…`, `--dry-run`, `--force`)
+- `yarn art:textures` — re-encode material PBR WebPs (`--only=…`, `--dry-run`, `--force`); `--terrain` downloads/verifies the CC0 terrain sources and packs `_albedo`/`_surface` (`--only=…`, `--dry-run`, `--check`)
 - `yarn dist:check` — verify `dist/` (<25 MB) and the entry chunk (<600 KB gzip)
 - `yarn art:validate` — validate the Blender render manifest/assets; `yarn art:review` — human review gate
 
@@ -38,7 +38,7 @@ explicit approval described below.
 
 ## Authoring tools (Blender and GIMP)
 
-- Sources live in `art-src/blender` and `art-src/gimp`; `.blend`/`.xcf` are Git LFS.
+- Sources live in `art-src/blender`, `art-src/gimp` and `art-src/textures` (terrain source scans); `.blend`/`.xcf` are Git LFS.
 - Blender 5.2.2 is driven by `mcp-for-blender` on `localhost:9876` with safe mode; GIMP 3.2.6
   by `gimp3-mcp` on `localhost:9877`. Both are local authoring tools, **not** CI dependencies.
 - MCP client config is **project-scoped** in this repo's `opencode.json` (gitignored); do not add

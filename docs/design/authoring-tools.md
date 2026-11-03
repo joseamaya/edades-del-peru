@@ -46,6 +46,8 @@ art-src/
   gimp/
     projects/        # .xcf sources (Git LFS)
     exports/         # PNG/WebP intermediates
+  textures/
+    caral/           # Caral terrain source images (CC BY 4.0)
 ```
 
 - `.blend` and `.xcf` are tracked with Git LFS (`.gitattributes`).

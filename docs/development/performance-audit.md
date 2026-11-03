@@ -30,8 +30,8 @@ hasta `#landing`; el menú real, con `?menu=1`, hasta `.ed-menu-shell`. No susti
 - `yarn art:models` comprime los GLB con `gltf-transform` (meshopt + cuantización). Desactiva la paleta para
   no generar texturas sintéticas y conserva las texturas en su formato original. Solo reemplaza el archivo si
   el resultado es menor.
-- `yarn art:textures` reencodea las texturas: normales/rugosidad a 256 px, difusas de material a 512 px y
-  terreno a 768 px.
+- `yarn art:textures` reencodea solo las texturas de material: normales/rugosidad a 256 px y difusas a
+  512 px. El terreno empaquetado se regenera aparte con `yarn art:textures --terrain`.
 - `src/main.ts` ya no importa `Game`: carga `src/boot.ts` en diferido y muestra un indicador mientras tanto.
   La entrada ya no descarga el juego: muestra una landing ligera y carga `boot`/`Game`/`HUD` solo al pulsar
   Entrar. El chunk de juego diferido sigue en ~838 KB gzip; `scripts/check-dist.mjs` vigila el total

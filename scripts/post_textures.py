@@ -4,8 +4,8 @@
   - normal map derivation (Sobel) and roughness (heuristic)
 
 Input:  scripts/_textures_raw/{slot}_raw.png
-Output: src/assets/textures/terrain/{slot}_{diffuse|normal|roughness}.webp     (terrain slots)
-        src/assets/textures/materials/{slot}_{diffuse|normal|roughness}.webp  (the rest)
+Output: src/assets/textures/materials/{slot}_{diffuse|normal|roughness}.webp
+Terrain slots are not generated here; use `yarn art:textures --terrain`.
 
 Usage: python3 scripts/post_textures.py
 """
@@ -16,9 +16,7 @@ from PIL import Image, ImageFilter
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 RAW = ROOT / "scripts" / "_textures_raw"
-TER = ROOT / "src" / "assets" / "textures" / "terrain"
 MAT = ROOT / "src" / "assets" / "textures" / "materials"
-TERRAIN_SLOTS = {"sand", "dirt", "grass", "rock", "snow"}
 
 DIFFUSE_SIZE = 1024
 MAP_SIZE = 512
@@ -64,7 +62,10 @@ def process(slot: str) -> None:
     if not raw.exists():
         print(f"skip {slot} (no albedo)")
         return
-    dest = TER if slot in TERRAIN_SLOTS else MAT
+    if slot in {"sand", "dirt", "grass", "rock", "snow"}:
+        print(f"skip {slot} (terrain slots use yarn art:textures --terrain)")
+        return
+    dest = MAT
     dest.mkdir(parents=True, exist_ok=True)
     img = Image.open(raw).convert("RGB").resize((DIFFUSE_SIZE, DIFFUSE_SIZE), Image.LANCZOS)
     arr = np.asarray(img).astype(np.float32)

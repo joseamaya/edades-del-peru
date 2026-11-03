@@ -144,10 +144,9 @@ instead of the modular landmark or a hand-built schematic:
   into `Pathfinder.blockCells`; the static mask survives dynamic-obstacle
   rebuilds. Caral uses a 1 m navigation grid and `CARAL_SITE_BLOCKER_PADDING`
   around the monument AABBs.
-- Terrain palette: `src/assets/textures/terrain/caral_*`, with height/slope bands
-  for the green valley floor, pale terrace and warm lomas. The rock slot reuses
-  the smooth sand albedo for Caral because the photographic rock/dirt normals
-  alias into a repeating floral pattern at RTS tiling.
+- Terrain palette: `caral_grass` comes from the remaster dry-grass source; `sand`, `dirt` and `rock` use
+  the CC0 terrain scans with the mission's warm `groundTint`. Height/slope bands still separate the green
+  valley floor, pale terrace and warm lomas.
 - Valley fabric: `src/model/defs/caralValley.ts` plans the floodplain plots and
   riverside props; `SettlementOverlay` draws the plots, crop rows, low borders and
   narrow paths, and `Props` carries the reeds/shrubs. Every placement is

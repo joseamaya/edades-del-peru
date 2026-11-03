@@ -5,13 +5,6 @@
   "width": 1024,
   "height": 1024,
   "seed": 777,
-  "terrain": {
-    "sand": "seamless tileable texture of arid Peruvian coastal desert sand, fine golden-tan grains with subtle wind ripples and scattered grit, top-down view, evenly lit, no shadows, no objects, photorealistic PBR albedo, high detail",
-    "dirt": "seamless tileable texture of dry packed earth soil from the Andean highlands, medium brown with small stones and faint cracks, top-down view, evenly lit, no shadows, no objects, photorealistic PBR albedo, high detail",
-    "grass": "seamless tileable texture of dry golden Andean bunch grass (ichu), sparse greenish-brown tufts over dusty soil, top-down view, evenly lit, no shadows, photorealistic PBR albedo, high detail",
-    "rock": "seamless tileable texture of grey volcanic andesite stone, rough speckled surface with subtle mineral grains, top-down view, evenly lit, no shadows, photorealistic PBR albedo, high detail",
-    "snow": "seamless tileable texture of high-altitude puna ground, pale dry alpine soil with light frost and very sparse grass, top-down view, evenly lit, no shadows, photorealistic PBR albedo, high detail"
-  },
   "materials": {
     "tile": "seamless tileable texture of terracotta roof tiles, curved clay tiles in rows, weathered orange-brown, evenly lit, photorealistic PBR albedo, high detail",
     "wood": "seamless tileable texture of weathered wooden planks, warm brown linear grain, slightly rough, evenly lit, photorealistic PBR albedo, high detail",

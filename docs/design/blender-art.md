@@ -32,7 +32,7 @@ HUD briefing / campaign prologue / Codex
 
 ## Source project
 
-- Path: `art-src/blender/` (`.blend`/`.xcf` in Git LFS).
+- Path: `art-src/blender/` (`.blend`/`.xcf` in Git LFS); terrain source scans live in `art-src/textures/`.
 - Blender 5.2.2 LTS; authoring uses the local `mcp-for-blender` MCP (safe mode, port 9876).
 - Scenes: `scenes/caral_city_master.blend`, `scenes/caral_rts_kit.blend`,
   `scenes/caral_vertical_slice.blend`, `scenes/caral_game_export.blend`.

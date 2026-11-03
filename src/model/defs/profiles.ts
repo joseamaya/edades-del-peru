@@ -32,6 +32,8 @@ export interface ResourceProfile {
  * Data-driven visual/natural identity of a map. Modifies the existing procedural
  * generator (it does not replace it): the same seed + profile is deterministic.
  */
+export type GroundPbrSlot = 'grass' | 'dirt' | 'sand' | 'rock' | 'snow';
+
 export interface HistoricalMapProfile {
   id: string;
   region: GeographicRegion;
@@ -89,6 +91,8 @@ export interface HistoricalMapProfile {
   };
   /** Optional warm/cool multiplier for the ground albedo (authored scenarios). */
   groundTint?: string;
+  /** Optional regional terrain texture slots; falls back to the base slot name. */
+  groundPbr?: Partial<Record<GroundPbrSlot, string>>;
   landmark: LandmarkId | null;
   /** Cultural features (roads, canals, fields…); see `docs/design/cultural-landscape.md`. Optional for mods. */
   culturalLandscape?: CulturalLandscapeProfile;
@@ -141,6 +145,9 @@ export function applyMapOverrides(
 
 /** Sea/lake level shared by every map (matches `Terrain.waterLevel`). */
 export const WATER_LEVEL = 2.2;
+
+/** Warm multiplier for the desaturated CC0 coastal sand. */
+const COAST_GROUND_TINT = '#d8c6a4';
 
 const MAPTYPE_REGION: Record<MapType, GeographicRegion> = {
   coast: 'central_coast',
@@ -259,6 +266,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     climate: { aridity: 0.92, moisture: 0.28, temperature: 0.82 },
     water: { level: WATER_LEVEL, inland: false, wetland: true },
     vegetation: { density: 0.06, variants: { broad: 1 } },
+    groundTint: COAST_GROUND_TINT,
     resources: { tree: 0.3, mine: 0.4, well: 0.2, berry: 0.15, hunt: 12, fishing: 8 },
     atmosphere: { fogDensity: 0.0016, sunWarmth: 1.05, skyTint: '#dfe4d8' },
     landmark: null,
@@ -274,6 +282,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     climate: { aridity: 0.82, moisture: 0.35, temperature: 0.8 },
     water: { level: WATER_LEVEL, inland: false, wetland: true },
     vegetation: { density: 0.18, variants: { algarrobo: 0.52, sauce: 0.18, molle: 0.2, pacay: 0.1 } },
+    groundTint: COAST_GROUND_TINT,
     resources: { tree: 0.4, mine: 0.12, well: 0.28, berry: 0.25, hunt: 12, fishing: 8 },
     atmosphere: { fogDensity: 0.0018, sunWarmth: 1.0, skyTint: '#e2e6dc' },
     landmark: null,
@@ -289,6 +298,8 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     climate: { aridity: 0.95, moisture: 0.22, temperature: 0.85 },
     water: { level: WATER_LEVEL, inland: false, wetland: false },
     vegetation: { density: 0.04, variants: { broad: 1 } },
+    groundPbr: { sand: 'coastal_gravel' },
+    groundTint: COAST_GROUND_TINT,
     resources: { tree: 0.25, mine: 0.45, well: 0.15, berry: 0.1, hunt: 8, fishing: 10 },
     atmosphere: { fogDensity: 0.0012, sunWarmth: 1.08, skyTint: '#e6e2d6' },
     landmark: null,
@@ -319,6 +330,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     climate: { aridity: 0.15, moisture: 0.6, temperature: 0.3 },
     water: { level: WATER_LEVEL, inland: true, wetland: false },
     vegetation: { density: 0.5, variants: { broad: 0.5, needle: 0.5 } },
+    groundPbr: { grass: 'puna_grass' },
     resources: { tree: 0.4, mine: 0.4, well: 0.25, berry: 0.15, hunt: 12, fishing: 0 },
     atmosphere: { fogDensity: 0.0008, sunWarmth: 0.98, skyTint: '#c8d4d8' },
     landmark: null,
@@ -334,6 +346,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     climate: { aridity: 0.4, moisture: 0.5, temperature: 0.25 },
     water: { level: WATER_LEVEL, inland: true, wetland: true },
     vegetation: { density: 0.15, variants: { needle: 0.7, broad: 0.3 } },
+    groundPbr: { grass: 'puna_grass' },
     resources: { tree: 0.1, mine: 0.3, well: 0.4, berry: 0.15, hunt: 16, fishing: 6 },
     atmosphere: { fogDensity: 0.0015, sunWarmth: 0.9, skyTint: '#d2dadf' },
     landmark: null,
@@ -349,6 +362,7 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     climate: { aridity: 0, moisture: 1, temperature: 0.95 },
     water: { level: WATER_LEVEL, inland: true, wetland: true },
     vegetation: { density: 1, variants: { frond: 0.7, broad: 0.3 } },
+    groundPbr: { dirt: 'jungle_floor' },
     resources: { tree: 0.7, mine: 0.1, well: 0.15, berry: 0.25, hunt: 10, fishing: 8 },
     atmosphere: { fogDensity: 0.0028, sunWarmth: 0.92, skyTint: '#c4d2be' },
     landmark: null,

@@ -5,7 +5,7 @@ import { buildTerrainSplat, TERRAIN_SPLAT_SIZE, type TerrainSplat } from './terr
 import { smoothstep } from '../util/math';
 import { TerrainData } from '../sim/TerrainData';
 import { FOW_DIM_GLSL } from './fowGlsl';
-import type { HistoricalMapProfile } from '../model/defs/profiles';
+import type { GroundPbrSlot, HistoricalMapProfile } from '../model/defs/profiles';
 import type { TerrainLayout } from '../model/defs/terrainLayout';
 import type { AuthoredSiteDef, SiteTerrainStyle } from '../model/defs/sites';
 
@@ -18,11 +18,12 @@ const _cSand = new THREE.Color();
 const _cTerraced = new THREE.Color();
 const _cCanalBed = new THREE.Color();
 
-/** 1x1 filler texture (neutral normal / constant roughness). */
-function flatTex(r: number, g: number, b: number): THREE.DataTexture {
-  const t = new THREE.DataTexture(new Uint8Array([r, g, b, 255]), 1, 1, THREE.RGBAFormat);
+/** 1x1 filler surface: neutral normal, constant roughness, mid height. */
+function flatSurfaceTex(): THREE.DataTexture {
+  const t = new THREE.DataTexture(new Uint8Array([128, 128, 204, 128]), 1, 1, THREE.RGBAFormat);
   t.needsUpdate = true;
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.colorSpace = THREE.NoColorSpace;
   return t;
 }
 
@@ -318,45 +319,33 @@ export class Terrain {
 
     const tex = this.textures;
     const style = this.siteTerrain;
+    const pbrSlot = (key: GroundPbrSlot): string => style?.pbr[key] ?? this.profile.groundPbr?.[key] ?? key;
     const pbr = {
-      grass: getGroundPBR(style?.pbr.grass ?? 'grass'),
-      dirt: getGroundPBR(style?.pbr.dirt ?? 'dirt'),
-      sand: getGroundPBR(style?.pbr.sand ?? 'sand'),
-      rock: getGroundPBR(style?.pbr.rock ?? 'rock'),
-      snow: getGroundPBR(style?.pbr.snow ?? 'snow'),
+      grass: getGroundPBR(pbrSlot('grass')),
+      dirt: getGroundPBR(pbrSlot('dirt')),
+      sand: getGroundPBR(pbrSlot('sand')),
+      rock: getGroundPBR(pbrSlot('rock')),
+      snow: getGroundPBR(pbrSlot('snow')),
     };
-    const anyPbr = Object.values(pbr).some((x) => !!x);
-    const flatN = flatTex(128, 128, 255);
-    const flatR = flatTex(200, 200, 200);
-    const diff = (slot: keyof typeof pbr, fallback: THREE.Texture): THREE.Texture => pbr[slot]?.diffuse ?? fallback;
-    // Caral's photographic normals are crack/dune maps; at RTS tiling they
-    // read as a repeating floral relief. Keep the diffuse detail and use the
-    // analytic micro-relief instead.
-    const nrm = (slot: keyof typeof pbr): THREE.Texture => (style?.flatNormals ? flatN : pbr[slot]?.normal) ?? flatN;
-    const rgh = (slot: keyof typeof pbr): THREE.Texture => pbr[slot]?.roughness ?? flatR;
-    this.pbrExtra = [flatN, flatR];
+    const flatSurface = flatSurfaceTex();
+    const albedo = (slot: keyof typeof pbr, fallback: THREE.Texture): THREE.Texture => pbr[slot]?.albedo ?? fallback;
+    const surface = (slot: keyof typeof pbr): THREE.Texture => pbr[slot]?.surface ?? flatSurface;
+    this.pbrExtra = [flatSurface];
     const mat = new THREE.ShaderMaterial({
       uniforms: {
-        grass: { value: diff('grass', tex.grass) },
-        dirt: { value: diff('dirt', tex.dirt) },
-        sand: { value: diff('sand', tex.sand) },
-        rock: { value: diff('rock', tex.rock) },
-        snow: { value: diff('snow', tex.snow) },
-        grassN: { value: nrm('grass') },
-        dirtN: { value: nrm('dirt') },
-        sandN: { value: nrm('sand') },
-        rockN: { value: nrm('rock') },
-        snowN: { value: nrm('snow') },
-        grassR: { value: rgh('grass') },
-        dirtR: { value: rgh('dirt') },
-        sandR: { value: rgh('sand') },
-        rockR: { value: rgh('rock') },
-        snowR: { value: rgh('snow') },
+        grass: { value: albedo('grass', tex.grass) },
+        dirt: { value: albedo('dirt', tex.dirt) },
+        sand: { value: albedo('sand', tex.sand) },
+        rock: { value: albedo('rock', tex.rock) },
+        snow: { value: albedo('snow', tex.snow) },
+        grassSurface: { value: surface('grass') },
+        dirtSurface: { value: surface('dirt') },
+        sandSurface: { value: surface('sand') },
+        rockSurface: { value: surface('rock') },
+        snowSurface: { value: surface('snow') },
         splatMap: { value: this.splatTexture },
-        heightBias: { value: new THREE.Vector4(0.06, 0.22, 0.12, 0.78) },
-        heightSnow: { value: 0.62 },
+        flatNormals: { value: style?.flatNormals ? 1 : 0 },
         terrainDetail: { value: 1 },
-        usePbr: { value: style?.flatNormals ? 0 : anyPbr ? 1 : 0 },
         waterLevel: { value: waterLevel },
         time: { value: 0 },
         sunDir: { value: new THREE.Vector3(0.5, 0.8, 0.4).normalize() },
@@ -414,21 +403,14 @@ export class Terrain {
         uniform sampler2D sand;
         uniform sampler2D rock;
         uniform sampler2D snow;
-        uniform sampler2D grassN;
-        uniform sampler2D dirtN;
-        uniform sampler2D sandN;
-        uniform sampler2D rockN;
-        uniform sampler2D snowN;
-        uniform sampler2D grassR;
-        uniform sampler2D dirtR;
-        uniform sampler2D sandR;
-        uniform sampler2D rockR;
-        uniform sampler2D snowR;
+        uniform sampler2D grassSurface;
+        uniform sampler2D dirtSurface;
+        uniform sampler2D sandSurface;
+        uniform sampler2D rockSurface;
+        uniform sampler2D snowSurface;
         uniform sampler2D splatMap;
-        uniform vec4 heightBias;
-        uniform float heightSnow;
+        uniform float flatNormals;
         uniform float terrainDetail;
-        uniform float usePbr;
         uniform float veg;
         uniform float waterLevel;
         uniform vec3 sunDir;
@@ -531,22 +513,6 @@ ${FOW_DIM_GLSL}
           float rockWeight = splat.a;
           float snowWeight = snowAmt;
 
-          // Height-biased blend: a weightless material cannot appear, while
-          // taller materials keep a crisper edge. The uniforms are the contract
-          // #302 fills with real per-material height maps.
-          const float HEIGHT_BIAS_STRENGTH = 0.9;
-          float grassHeightScore = grassWeight * (1.0 + heightBias.x * HEIGHT_BIAS_STRENGTH);
-          float dirtHeightScore = dirtWeight * (1.0 + heightBias.y * HEIGHT_BIAS_STRENGTH);
-          float sandHeightScore = sandWeight * (1.0 + heightBias.z * HEIGHT_BIAS_STRENGTH);
-          float rockHeightScore = rockWeight * (1.0 + heightBias.w * HEIGHT_BIAS_STRENGTH);
-          float snowHeightScore = snowWeight * (1.0 + heightSnow * HEIGHT_BIAS_STRENGTH);
-          float heightSum = max(1e-4, grassHeightScore + dirtHeightScore + sandHeightScore + rockHeightScore + snowHeightScore);
-          grassWeight = grassHeightScore / heightSum;
-          dirtWeight = dirtHeightScore / heightSum;
-          sandWeight = sandHeightScore / heightSum;
-          rockWeight = rockHeightScore / heightSum;
-          snowWeight = snowHeightScore / heightSum;
-
           // Two non-integer scales plus a low-frequency macro mask hide the
           // tile grid without stochastic sampling.
           vec2 worldXZ = vWorldPos.xz;
@@ -561,37 +527,63 @@ ${FOW_DIM_GLSL}
           vec2 uvRockNear = uvNear * 1.07 + 13.0;
           vec2 uvSnowNear = uvNear * 1.21 + 19.0;
 
-          vec3 grassNear = texture2D(grass, uvGrassNear).rgb;
-          vec3 dirtNear = texture2D(dirt, uvDirtNear).rgb;
-          vec3 sandNear = texture2D(sand, uvSandNear).rgb;
-          vec3 rockNear = texture2D(rock, uvRockNear).rgb;
-          vec3 snowNear = texture2D(snow, uvSnowNear).rgb;
+          // Packed surface: R/G normal.xy, B roughness, A height.
+          vec4 grassSurfaceTex = texture2D(grassSurface, uvGrassNear);
+          vec4 dirtSurfaceTex = texture2D(dirtSurface, uvDirtNear);
+          vec4 sandSurfaceTex = texture2D(sandSurface, uvSandNear);
+          vec4 rockSurfaceTex = texture2D(rockSurface, uvRockNear);
+          vec4 snowSurfaceTex = texture2D(snowSurface, uvSnowNear);
+
+          // Height blend: a weightless material cannot appear, while taller
+          // materials keep a crisper edge.
+          const float HEIGHT_STRENGTH = 0.9;
+          float grassHeightScore = grassWeight * (1.0 + grassSurfaceTex.a * HEIGHT_STRENGTH);
+          float dirtHeightScore = dirtWeight * (1.0 + dirtSurfaceTex.a * HEIGHT_STRENGTH);
+          float sandHeightScore = sandWeight * (1.0 + sandSurfaceTex.a * HEIGHT_STRENGTH);
+          float rockHeightScore = rockWeight * (1.0 + rockSurfaceTex.a * HEIGHT_STRENGTH);
+          float snowHeightScore = snowWeight * (1.0 + snowSurfaceTex.a * HEIGHT_STRENGTH);
+          float heightSum = max(1e-4, grassHeightScore + dirtHeightScore + sandHeightScore + rockHeightScore + snowHeightScore);
+          grassWeight = grassHeightScore / heightSum;
+          dirtWeight = dirtHeightScore / heightSum;
+          sandWeight = sandHeightScore / heightSum;
+          rockWeight = rockHeightScore / heightSum;
+          snowWeight = snowHeightScore / heightSum;
+
+          vec4 grassTex = texture2D(grass, uvGrassNear);
+          vec4 dirtTex = texture2D(dirt, uvDirtNear);
+          vec4 sandTex = texture2D(sand, uvSandNear);
+          vec4 rockTex = texture2D(rock, uvRockNear);
+          vec4 snowTex = texture2D(snow, uvSnowNear);
 
           vec3 geometricNormal = normalize(vNormal);
           float rockTriplanarWeight = smoothstep(0.40, 0.52, slope);
           if (rockTriplanarWeight > 0.0) {
-            rockNear = mix(rockNear, triplanarAlbedo(rock, vWorldPos, geometricNormal, 0.075), rockTriplanarWeight);
+            rockTex.rgb = mix(rockTex.rgb, triplanarAlbedo(rock, vWorldPos, geometricNormal, 0.075), rockTriplanarWeight);
           }
 
-          vec3 groundNear = grassNear * grassWeight + dirtNear * dirtWeight + sandNear * sandWeight + rockNear * rockWeight + snowNear * snowWeight;
+          vec3 groundNear = grassTex.rgb * grassWeight + dirtTex.rgb * dirtWeight + sandTex.rgb * sandWeight + rockTex.rgb * rockWeight + snowTex.rgb * snowWeight;
+          float aoNear = grassTex.a * grassWeight + dirtTex.a * dirtWeight + sandTex.a * sandWeight + rockTex.a * rockWeight + snowTex.a * snowWeight;
           vec3 groundFar = groundNear;
+          float aoFar = aoNear;
           if (terrainDetail > 0.5) {
             vec2 uvGrassFar = uvFar;
             vec2 uvDirtFar = uvFar * 0.87 + 11.0;
             vec2 uvSandFar = uvFar * 1.19 + 23.0;
             vec2 uvRockFar = uvFar * 0.93 + 31.0;
             vec2 uvSnowFar = uvFar * 1.11 + 41.0;
-            vec3 grassFar = texture2D(grass, uvGrassFar).rgb;
-            vec3 dirtFar = texture2D(dirt, uvDirtFar).rgb;
-            vec3 sandFar = texture2D(sand, uvSandFar).rgb;
-            vec3 rockFar = texture2D(rock, uvRockFar).rgb;
-            vec3 snowFar = texture2D(snow, uvSnowFar).rgb;
+            vec4 grassFarTex = texture2D(grass, uvGrassFar);
+            vec4 dirtFarTex = texture2D(dirt, uvDirtFar);
+            vec4 sandFarTex = texture2D(sand, uvSandFar);
+            vec4 rockFarTex = texture2D(rock, uvRockFar);
+            vec4 snowFarTex = texture2D(snow, uvSnowFar);
             if (rockTriplanarWeight > 0.0) {
-              rockFar = mix(rockFar, triplanarAlbedo(rock, vWorldPos, geometricNormal, 0.029), rockTriplanarWeight);
+              rockFarTex.rgb = mix(rockFarTex.rgb, triplanarAlbedo(rock, vWorldPos, geometricNormal, 0.029), rockTriplanarWeight);
             }
-            groundFar = grassFar * grassWeight + dirtFar * dirtWeight + sandFar * sandWeight + rockFar * rockWeight + snowFar * snowWeight;
+            groundFar = grassFarTex.rgb * grassWeight + dirtFarTex.rgb * dirtWeight + sandFarTex.rgb * sandWeight + rockFarTex.rgb * rockWeight + snowFarTex.rgb * snowWeight;
+            aoFar = grassFarTex.a * grassWeight + dirtFarTex.a * dirtWeight + sandFarTex.a * sandWeight + rockFarTex.a * rockWeight + snowFarTex.a * snowWeight;
           }
           vec3 ground = mix(groundNear, groundFar, macro * 0.65 * terrainDetail);
+          ground *= mix(1.0, mix(aoNear, aoFar, macro * 0.65 * terrainDetail), 0.7);
           ground = (ground - 0.5) * 1.12 + 0.5; // contrast
           col = mix(col, ground, 0.75);
           col *= groundTint;
@@ -633,7 +625,7 @@ ${FOW_DIM_GLSL}
           // micro-variation
           col *= 0.9 + 0.2 * detail;
 
-          // micro-relief: analytic normal + PBR normal maps
+          // micro-relief: analytic normal + packed surface normal
           vec3 N = normalize(vNormal);
           vec2 nu = vWorldPos.xz * 0.45;
           float nC = fbm(nu);
@@ -643,25 +635,24 @@ ${FOW_DIM_GLSL}
           vec2 bump = vec2((nC - nX) * bumpAmt, (nC - nZ) * bumpAmt);
           float rough = 0.9;
 
+          vec2 normalBump =
+            (grassSurfaceTex.rg * 2.0 - 1.0) * grassWeight +
+            (dirtSurfaceTex.rg * 2.0 - 1.0) * dirtWeight +
+            (sandSurfaceTex.rg * 2.0 - 1.0) * sandWeight +
+            (rockSurfaceTex.rg * 2.0 - 1.0) * rockWeight +
+            (snowSurfaceTex.rg * 2.0 - 1.0) * snowWeight;
+          normalBump *= 1.0 - flatNormals;
+          bump += normalBump * 0.8;
+          rough =
+            grassSurfaceTex.b * grassWeight + dirtSurfaceTex.b * dirtWeight +
+            sandSurfaceTex.b * sandWeight + rockSurfaceTex.b * rockWeight +
+            snowSurfaceTex.b * snowWeight;
+
           vec3 rockTriplanarNormal = vec3(0.0);
           float rockTriplanarBlend = 0.0;
-          if (usePbr > 0.5) {
-            vec2 normalBump =
-              (texture(grassN, uvGrassNear).rg * 2.0 - 1.0) * grassWeight +
-              (texture(dirtN, uvDirtNear).rg * 2.0 - 1.0) * dirtWeight +
-              (texture(sandN, uvSandNear).rg * 2.0 - 1.0) * sandWeight +
-              (texture(rockN, uvRockNear).rg * 2.0 - 1.0) * rockWeight +
-              (texture(snowN, uvSnowNear).rg * 2.0 - 1.0) * snowWeight;
-            bump += normalBump * 0.8;
-            rough = (
-              texture(grassR, uvGrassNear).r * grassWeight + texture(dirtR, uvDirtNear).r * dirtWeight +
-              texture(sandR, uvSandNear).r * sandWeight + texture(rockR, uvRockNear).r * rockWeight +
-              texture(snowR, uvSnowNear).r * snowWeight
-            );
-            if (rockTriplanarWeight > 0.001 && rockWeight > 0.001) {
-              rockTriplanarNormal = triplanarNormal(rockN, vWorldPos, geometricNormal, 0.075);
-              rockTriplanarBlend = rockTriplanarWeight * rockWeight;
-            }
+          if (flatNormals < 0.5 && rockTriplanarWeight > 0.001 && rockWeight > 0.001) {
+            rockTriplanarNormal = triplanarNormal(rockSurface, vWorldPos, geometricNormal, 0.075);
+            rockTriplanarBlend = rockTriplanarWeight * rockWeight;
           }
 
           // directional sun lighting + ambient (terrain relief)
