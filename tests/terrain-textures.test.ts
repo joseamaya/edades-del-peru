@@ -1,13 +1,15 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import sharp from 'sharp';
 import manifest from '../scripts/terrain-textures.json';
+import { TERRAIN_TEXTURE_BUDGET_BYTES } from '../scripts/art/terrainTextures';
 import { MAP_PROFILES } from '../src/model/defs/profiles';
 import { AUTHORED_SITES } from '../src/model/defs/sites';
 
-const root = path.resolve(__dirname, '..');
+const root = fileURLToPath(new URL('..', import.meta.url));
 const slots = new Set(manifest.slots.map((slot) => slot.slot));
 
 function sha256(file: string): string {
@@ -31,12 +33,24 @@ describe('terrain texture manifest', () => {
     }
   });
 
+  it('records author, licence, URL, date and source hashes for every slot', () => {
+    for (const slot of manifest.slots) {
+      expect(slot.author, slot.slot).toBeTruthy();
+      expect(slot.license, slot.slot).toBeTruthy();
+      expect(slot.url, slot.slot).toBeTruthy();
+      expect(slot.date, slot.slot).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      for (const key of ['albedo', 'normal', 'roughness'] as const) {
+        expect(slot.maps[key]?.sha256, `${slot.slot} ${key}`).toMatch(/^[a-f0-9]{64}$/);
+      }
+    }
+  });
+
   it('keeps the packed outputs inside the terrain budget', () => {
     let total = 0;
     for (const slot of manifest.slots) {
       total += slot.outputMeta.albedo.bytes + slot.outputMeta.surface.bytes;
     }
-    expect(total).toBeLessThanOrEqual(2_200_000);
+    expect(total).toBeLessThanOrEqual(TERRAIN_TEXTURE_BUDGET_BYTES);
   });
 
   it('matches every committed output hash and size', async () => {
@@ -50,6 +64,7 @@ describe('terrain texture manifest', () => {
         const image = await sharp(file, { failOn: 'none' }).metadata();
         expect([image.width, image.height], file).toEqual([meta.width, meta.width]);
         if (key === 'surface') expect(image.channels, file).toBe(4);
+        else if (slot.kind === 'polyhaven') expect(image.channels, file).toBe(4);
         else expect(image.channels, file).toBeGreaterThanOrEqual(3);
       }
     }

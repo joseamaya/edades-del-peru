@@ -144,7 +144,7 @@ fret, wave, condor, tocapu, cross, sunburst, shield). Source table in
 Material colour is always **mixed with the civilization palette** (`mixHex`) so
 walls and roofs stay recognisable per culture without becoming a flat recolour.
 Texture slots are generated in `src/rendering/Textures.ts` (`MaterialTex`) and
-the AI-generated PBR set is loaded by `src/rendering/Biomes.ts` (falling back to
+the PBR set (CC0 terrain scans; AI-generated materials) is loaded by `src/rendering/Biomes.ts` (falling back to
 the procedural material when the assets are absent — see
 [`PROVENANCE.md`](../../PROVENANCE.md)). The per-style wall/roof material becomes a
 generated slot via `WALL_TEX`/`ROOF_TEX` (`ProceduralModel.ts`): `adobe→wall_adobe`,

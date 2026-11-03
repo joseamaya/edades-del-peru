@@ -4,7 +4,7 @@ import { formatIssues, validateManifestFiles } from './validate';
 import { MANIFEST_PATH, REPO_ROOT } from './paths';
 import { optimizeModels } from './models';
 import { optimizeTextures } from './textures';
-import { packTerrainTextures } from './terrainTextures';
+import { packTerrainTextures, TERRAIN_TEXTURE_BUDGET_BYTES } from './terrainTextures';
 
 type FlagValue = string | true | undefined;
 type Flags = Record<string, FlagValue>;
@@ -65,7 +65,7 @@ Usage:
   yarn art:textures [--only=id1,id2] [--dry-run] [--force]
   yarn art:textures --terrain [--manifest=scripts/terrain-textures.json]
                    [--only=slot1,slot2] [--dry-run] [--check]
-                   [--format=webp] [--max-bytes=2100000]
+                   [--format=webp] [--max-bytes=2200000]
   yarn art:validate
   yarn art:review --id=ASSET_ID --reviewer=NAME --approve|--reject
 
@@ -144,13 +144,13 @@ async function main(): Promise<void> {
           process.exitCode = 1;
           return;
         }
-        const maxBytes = Number(str(flags, 'max-bytes') ?? 2_200_000);
+        const maxBytes = Number(str(flags, 'max-bytes') ?? TERRAIN_TEXTURE_BUDGET_BYTES);
         const result = await packTerrainTextures({
           manifestPath: str(flags, 'manifest'),
           only: onlyArg(flags),
           dryRun: bool(flags, 'dry-run'),
           check: bool(flags, 'check'),
-          maxBytes: Number.isFinite(maxBytes) ? maxBytes : 2_200_000,
+          maxBytes: Number.isFinite(maxBytes) ? maxBytes : TERRAIN_TEXTURE_BUDGET_BYTES,
           onProgress: (message) => console.log(message),
         });
         for (const slot of result.slots) {
@@ -183,7 +183,7 @@ async function main(): Promise<void> {
         process.exitCode = 1;
         return;
       }
-      const terrain = await packTerrainTextures({ check: true, maxBytes: 2_200_000 });
+      const terrain = await packTerrainTextures({ check: true, maxBytes: TERRAIN_TEXTURE_BUDGET_BYTES });
       if (terrain.errors.length) {
         console.error(terrain.errors.join('\n'));
         process.exitCode = 1;

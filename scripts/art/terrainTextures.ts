@@ -27,6 +27,8 @@ export interface TerrainTextureSlot {
   license: string;
   url: string;
   source?: string;
+  date: string;
+  heightSource?: string;
   width: number;
   maps: Partial<Record<MapKey, SourceMap>>;
   outputs: { albedo: string; surface: string };
@@ -35,7 +37,6 @@ export interface TerrainTextureSlot {
 
 export interface TerrainTextureManifest {
   version: number;
-  targetWidth: number;
   quality?: number;
   slots: TerrainTextureSlot[];
 }
@@ -56,6 +57,7 @@ export interface TerrainTextureResult {
   manifestUpdated: boolean;
 }
 
+export const TERRAIN_TEXTURE_BUDGET_BYTES = 2_200_000;
 const DEFAULT_MANIFEST = path.join(REPO_ROOT, 'scripts', 'terrain-textures.json');
 const POLYHAVEN_FILES = 'https://api.polyhaven.com/files';
 
@@ -64,7 +66,17 @@ function sha256(bytes: Buffer): string {
 }
 
 function readManifest(file: string): TerrainTextureManifest {
-  return JSON.parse(fs.readFileSync(file, 'utf8')) as TerrainTextureManifest;
+  const manifest = JSON.parse(fs.readFileSync(file, 'utf8')) as TerrainTextureManifest;
+  if (manifest.version !== 1) throw new Error(`unsupported terrain texture manifest version: ${manifest.version}`);
+  for (const slot of manifest.slots) {
+    for (const field of ['author', 'license', 'url', 'date'] as const) {
+      if (!slot[field]) throw new Error(`${slot.slot}: missing ${field}`);
+    }
+    for (const key of ['albedo', 'normal', 'roughness'] as const) {
+      if (!slot.maps[key]?.sha256) throw new Error(`${slot.slot}: missing ${key} source hash`);
+    }
+  }
+  return manifest;
 }
 
 async function downloadSource(slot: TerrainTextureSlot, key: MapKey, dest: string): Promise<void> {
@@ -95,6 +107,9 @@ async function ensureSource(slot: TerrainTextureSlot, key: MapKey): Promise<stri
     else throw new Error(`${slot.slot}: source not found: ${source.file}`);
   }
   const bytes = fs.readFileSync(file);
+  if (bytes.length !== source.bytes) {
+    throw new Error(`${slot.slot}: ${key} size mismatch (${bytes.length} != ${source.bytes})`);
+  }
   const actual = sha256(bytes);
   if (actual !== source.sha256) {
     throw new Error(`${slot.slot}: ${key} hash mismatch (${actual} != ${source.sha256})`);
@@ -102,7 +117,7 @@ async function ensureSource(slot: TerrainTextureSlot, key: MapKey): Promise<stri
   return file;
 }
 
-async function raw(file: string, width: number, channels: 1 | 3): Promise<Buffer> {
+async function readResizedChannels(file: string, width: number, channels: 1 | 3): Promise<Buffer> {
   const pipeline = sharp(file, { failOn: 'none' }).resize(width, width, { fit: 'fill' });
   if (channels === 1) pipeline.greyscale();
   else pipeline.removeAlpha();
@@ -110,12 +125,12 @@ async function raw(file: string, width: number, channels: 1 | 3): Promise<Buffer
   return data;
 }
 
-function channel(data: Buffer, channels: number, index: number): number {
+function readChannel(data: Buffer, channels: number, index: number): number {
   if (channels === 1) return data[0] ?? 0;
   return data[index] ?? 0;
 }
 
-function fillRgba(
+function packRgba(
   width: number,
   rgb: Buffer,
   rgbChannels: number,
@@ -124,10 +139,10 @@ function fillRgba(
 ): Buffer {
   const out = Buffer.alloc(width * width * 4);
   for (let i = 0; i < width * width; i++) {
-    out[i * 4] = channel(rgb.subarray(i * rgbChannels), rgbChannels, 0);
-    out[i * 4 + 1] = channel(rgb.subarray(i * rgbChannels), rgbChannels, 1);
-    out[i * 4 + 2] = channel(rgb.subarray(i * rgbChannels), rgbChannels, 2);
-    out[i * 4 + 3] = fourth ? channel(fourth.subarray(i * fourthChannels), fourthChannels, 0) : 255;
+    out[i * 4] = readChannel(rgb.subarray(i * rgbChannels), rgbChannels, 0);
+    out[i * 4 + 1] = readChannel(rgb.subarray(i * rgbChannels), rgbChannels, 1);
+    out[i * 4 + 2] = readChannel(rgb.subarray(i * rgbChannels), rgbChannels, 2);
+    out[i * 4 + 3] = fourth ? readChannel(fourth.subarray(i * fourthChannels), fourthChannels, 0) : 255;
   }
   return out;
 }
@@ -150,13 +165,13 @@ async function packSlot(
   const heightFile = slot.maps.height ? await ensureSource(slot, 'height') : null;
   const aoFile = slot.maps.ao ? await ensureSource(slot, 'ao') : null;
 
-  const albedo = await raw(albedoFile, width, 3);
-  const normal = await raw(normalFile, width, 3);
-  const roughness = await raw(roughnessFile, width, 1);
-  const height = heightFile ? await raw(heightFile, width, 1) : null;
-  const ao = aoFile ? await raw(aoFile, width, 1) : null;
+  const albedo = await readResizedChannels(albedoFile, width, 3);
+  const normal = await readResizedChannels(normalFile, width, 3);
+  const roughness = await readResizedChannels(roughnessFile, width, 1);
+  const height = heightFile ? await readResizedChannels(heightFile, width, 1) : null;
+  const ao = aoFile ? await readResizedChannels(aoFile, width, 1) : null;
 
-  const albedoRgba = fillRgba(width, albedo, 3, ao, 1);
+  const albedoRgba = packRgba(width, albedo, 3, ao, 1);
   const surface = Buffer.alloc(width * width * 4);
   for (let i = 0; i < width * width; i++) {
     surface[i * 4] = normal[i * 3] ?? 128;
@@ -251,7 +266,7 @@ export async function packTerrainTextures(options: TerrainTextureOptions = {}): 
     result.manifestUpdated = true;
   }
 
-  const max = options.maxBytes ?? 2_200_000;
+  const max = options.maxBytes ?? TERRAIN_TEXTURE_BUDGET_BYTES;
   if (result.totalBytes > max) {
     result.errors.push(
       `terrain textures ${(result.totalBytes / 1e6).toFixed(2)} MB exceed budget ${(max / 1e6).toFixed(2)} MB`,

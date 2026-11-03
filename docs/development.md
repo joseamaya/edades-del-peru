@@ -23,8 +23,9 @@ Definition of Done and the building audit see
   `src/rendering/Biomes.ts` via `import.meta.glob` and consumed by the terrain shader. The regional slots are
   selected by `HistoricalMapProfile.groundPbr`. Regenerate/verify with `yarn art:textures --terrain`
   (downloads 1k Poly Haven sources, verifies `scripts/terrain-textures.json` hashes, packs WebP and checks the
-  budget); the shader **falls back to the procedural material** when a slot is missing (offline). See
-  `PROVENANCE.md`.
+  budget); the shader **falls back to the procedural material** when a slot is missing (offline). Before/after
+  evidence: `docs/media/terrain-textures-before-after.webp` (costa, Andes, altiplano, selva, Caral; left
+  `main`, right packed textures). See `PROVENANCE.md`.
 - **PBR material textures (AI-generated)**: `src/assets/textures/materials/{mat}_{diffuse|normal|roughness}.webp`
   (material/building/textile slots — `wall_*`, `roof_*`, `textile_*`, `wood`, `tile`, `ground_*`,
   `terrace_face`, `corral_brush`, `bark` — loaded by `src/model/ProceduralModel.ts`/`Biomes.ts`, see below),

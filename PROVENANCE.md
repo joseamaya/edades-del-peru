@@ -21,7 +21,10 @@
   (CC BY 4.0, © José Amaya). Attribute “Ciudades Sagradas, José Amaya, CC BY 4.0”. The remaster's sand,
   earth and rock albedos are almost flat (the old 768² files were effectively a solid colour), so those
   Caral slots use the CC0 `sand`/`dirt`/`rock` scans plus the mission's `groundTint`; the source dry-grass
-  images are copied to `art-src/textures/caral/` for reproducibility.
+  images are copied to `art-src/textures/caral/` for reproducibility. The remaster has no displacement map,
+  so `caral_grass` uses a luminance-derived height (`heightSource: derived-luminance` in the manifest); it is
+  an approximation for the height blend, not a scanned height field. The remaster has no AO map either, so
+  `caral_grass_albedo` is RGB (sampled AO = 1.0).
 - **Historical note**: the dry grass/rock scan used for `puna_grass` is a visual abstraction of Andean
   ichu, not a species-specific botanical reconstruction.
 
@@ -37,8 +40,9 @@
 | `jungle_floor` | `forrest_ground_01` | Rob Tuytel | CC0 1.0 | 384² | `80ac504545e9…` / `79d63c4f1c0c…` |
 | `caral_grass` | Caral remaster v2 | José Amaya | CC BY 4.0 | 512² | `f7b7168a92fa…` / `72080e535a95…` |
 
-Full hashes and source URLs live in `scripts/terrain-textures.json`. The old AI-generated terrain
-albedos/normals/roughnesses are no longer part of the build.
+All sources were retrieved on **2026-11-03**; `scripts/terrain-textures.json` stores the date, full source
+URLs, source hashes and output hashes per slot. The old AI-generated terrain albedos/normals/roughnesses are
+no longer part of the build.
 
 ### Materials (AI-generated)
 

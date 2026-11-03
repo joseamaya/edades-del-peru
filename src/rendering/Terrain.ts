@@ -5,7 +5,7 @@ import { buildTerrainSplat, TERRAIN_SPLAT_SIZE, type TerrainSplat } from './terr
 import { smoothstep } from '../util/math';
 import { TerrainData } from '../sim/TerrainData';
 import { FOW_DIM_GLSL } from './fowGlsl';
-import type { HistoricalMapProfile } from '../model/defs/profiles';
+import type { GroundPbrSlot, HistoricalMapProfile } from '../model/defs/profiles';
 import type { TerrainLayout } from '../model/defs/terrainLayout';
 import type { AuthoredSiteDef, SiteTerrainStyle } from '../model/defs/sites';
 
@@ -319,8 +319,7 @@ export class Terrain {
 
     const tex = this.textures;
     const style = this.siteTerrain;
-    const pbrSlot = (key: 'grass' | 'dirt' | 'sand' | 'rock' | 'snow'): string =>
-      style?.pbr[key] ?? this.profile.groundPbr?.[key] ?? key;
+    const pbrSlot = (key: GroundPbrSlot): string => style?.pbr[key] ?? this.profile.groundPbr?.[key] ?? key;
     const pbr = {
       grass: getGroundPBR(pbrSlot('grass')),
       dirt: getGroundPBR(pbrSlot('dirt')),

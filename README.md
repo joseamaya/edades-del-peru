@@ -5,7 +5,7 @@
 
 An **Age of Empires II**-style real-time strategy game that walks through the history of Peru, from Caral to
 the present, built with **Three.js** and procedural generation (Canvas textures, parametric models, WebAudio
-audio), plus a small set of AI-generated terrain and material textures (see [`PROVENANCE.md`](./PROVENANCE.md)).
+audio), CC0 terrain scans and a small set of AI-generated material textures (see [`PROVENANCE.md`](./PROVENANCE.md)).
 The whole in-game interface is in Spanish and the historical content is **historically grounded** and verifiable
 (see [`docs/historia/`](./docs/historia/)).
 

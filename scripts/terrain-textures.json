@@ -1,6 +1,5 @@
 {
   "version": 1,
-  "targetWidth": 384,
   "slots": [
     {
       "slot": "grass",
@@ -57,7 +56,9 @@
           "bytes": 117374,
           "width": 384
         }
-      }
+      },
+      "date": "2026-11-03",
+      "heightSource": "displacement"
     },
     {
       "slot": "dirt",
@@ -114,7 +115,9 @@
           "bytes": 123148,
           "width": 384
         }
-      }
+      },
+      "date": "2026-11-03",
+      "heightSource": "displacement"
     },
     {
       "slot": "sand",
@@ -171,7 +174,9 @@
           "bytes": 89076,
           "width": 384
         }
-      }
+      },
+      "date": "2026-11-03",
+      "heightSource": "displacement"
     },
     {
       "slot": "rock",
@@ -228,7 +233,9 @@
           "bytes": 114796,
           "width": 384
         }
-      }
+      },
+      "date": "2026-11-03",
+      "heightSource": "displacement"
     },
     {
       "slot": "snow",
@@ -285,7 +292,9 @@
           "bytes": 126184,
           "width": 384
         }
-      }
+      },
+      "date": "2026-11-03",
+      "heightSource": "displacement"
     },
     {
       "slot": "puna_grass",
@@ -342,7 +351,9 @@
           "bytes": 87246,
           "width": 384
         }
-      }
+      },
+      "date": "2026-11-03",
+      "heightSource": "displacement"
     },
     {
       "slot": "coastal_gravel",
@@ -399,7 +410,9 @@
           "bytes": 142852,
           "width": 384
         }
-      }
+      },
+      "date": "2026-11-03",
+      "heightSource": "displacement"
     },
     {
       "slot": "jungle_floor",
@@ -456,7 +469,9 @@
           "bytes": 137036,
           "width": 384
         }
-      }
+      },
+      "date": "2026-11-03",
+      "heightSource": "displacement"
     },
     {
       "slot": "caral_grass",
@@ -464,7 +479,7 @@
       "author": "Jos\u00e9 Amaya",
       "license": "CC BY 4.0",
       "url": "https://github.com/joseamaya/ciudades-sagradas",
-      "source": "Ciudades Sagradas Caral remaster v2",
+      "source": "ciudades-sagradas/blender/textures/generated/remaster/dry_grass_{diffuse.jpg,normal.png,roughness.jpg}",
       "width": 512,
       "maps": {
         "albedo": {
@@ -498,7 +513,9 @@
           "bytes": 44162,
           "width": 512
         }
-      }
+      },
+      "date": "2026-11-03",
+      "heightSource": "derived-luminance"
     }
   ],
   "quality": 80
