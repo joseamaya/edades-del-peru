@@ -5,6 +5,7 @@ import { getEducational } from '../campaign/defs/educational';
 import { MAP_LABEL } from '../core/Config';
 import { artForMission } from '../art/manifest';
 import { artFigureHtml, includeUnreviewedArt } from './ArtFigure';
+import { techTreeHtml } from './TechTree';
 
 /**
  * Codex/educational encyclopedia. Gathers periods, civilizations and campaigns from the
@@ -18,7 +19,7 @@ const DOSSIERS = import.meta.glob('../../docs/historia/**/*.md', {
   eager: true,
 }) as Record<string, string>;
 
-type Tab = 'periods' | 'civs' | 'campaigns' | 'dossiers';
+type Tab = 'periods' | 'civs' | 'campaigns' | 'tech' | 'dossiers';
 
 interface CodexItem {
   id: string;
@@ -180,6 +181,11 @@ const TABS: { id: Tab; label: string; items: () => CodexItem[] }[] = [
   { id: 'periods', label: '🕰 Periodos', items: periodTab },
   { id: 'civs', label: '🏛 Civilizaciones', items: civTab },
   { id: 'campaigns', label: '📜 Campañas', items: campaignTab },
+  {
+    id: 'tech',
+    label: '🌳 Árbol tecnológico',
+    items: () => [{ id: 'tree', title: 'Edificios, unidades y tecnologías', render: () => techTreeHtml() }],
+  },
   { id: 'dossiers', label: '📖 Dossiers', items: dossierTab },
 ];
 

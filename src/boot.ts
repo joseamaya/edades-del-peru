@@ -1,6 +1,7 @@
 import { Game, setAutoStart } from './core/Game';
 import * as THREE from 'three';
 import { GameSettings, DEFAULT_SETTINGS, SETTINGS_VERSION, STARTING_RESOURCES } from './core/Config';
+import { normalizeKeymap } from './core/hotkeys';
 import { BuildingKind, CivId, HistoricalPeriod } from './core/types';
 import { getBuildingStats } from './model/defs/buildings';
 import { CIVS, civsForPeriod, getCiv } from './model/defs/civs';
@@ -84,6 +85,7 @@ function sanitizeSettings(raw: unknown): GameSettings {
     const rival = disp.find((c) => c.id !== s.civPlayer) ?? disp[0];
     s.civAI = rival.id;
   }
+  s.hotkeys = normalizeKeymap(r.hotkeys);
   return s;
 }
 
@@ -210,7 +212,7 @@ export async function boot(): Promise<void> {
       (window as any).__rigDemo = demo;
     }
   }
-  if (params.get('fps') === '1') game.hud.setShowFps(true);
+  if (params.get('fps') === '1' || settings.showFps) game.hud.setShowFps(true);
   if (params.get('intro') === '0' || noloop) {
     game.introEnabled = false;
     const base = game.playerCenter(0);

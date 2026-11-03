@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { keyFor } from './hotkeys';
+import { DEFAULT_KEYMAP, keyFor, type HotkeyMap } from './hotkeys';
 import { damp, smoothstep } from '../util/math';
 import { isTypingTarget } from '../util/dom';
 import {
@@ -49,6 +49,7 @@ export class RTSCamera {
   private pointerOverUi = false;
   /** Multiplier for keyboard/edge pan speed (user setting). */
   private speedScale = 1;
+  private keymap: HotkeyMap = DEFAULT_KEYMAP;
   /** Scripted camera flight (intro), overriding the damp while active. */
   private fly: {
     fromX: number;
@@ -142,12 +143,16 @@ export class RTSCamera {
     this.speedScale = scale;
   }
 
+  setKeymap(map: HotkeyMap): void {
+    this.keymap = map;
+  }
+
   private onKeyDown = (e: KeyboardEvent): void => {
     if (isTypingTarget(e.target)) return;
     const k = e.key.toLowerCase();
     this.keys.add(k);
     if (!this.rotationEnabled) return;
-    const dir = k === keyFor('rotateLeft') ? 1 : k === keyFor('rotateRight') ? -1 : 0;
+    const dir = k === keyFor('rotateLeft', this.keymap) ? 1 : k === keyFor('rotateRight', this.keymap) ? -1 : 0;
     if (dir === 0) return;
     this.yaw += dir * 0.045;
     this.refreshZoomLimit();
