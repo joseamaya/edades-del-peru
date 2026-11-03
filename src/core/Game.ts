@@ -412,6 +412,7 @@ export class Game {
       this.siteDef,
     );
     this.terrain.camera = this.camera.camera;
+    this.terrain.setLowDetail(this.softwareFallback || this.settings.quality === 'low');
     this.scene.add(this.terrain.group);
     const city = this.missionLayout?.setpiece;
     if (city && city.id === 'caral_sacred_city' && !this.missionLayout?.site) {

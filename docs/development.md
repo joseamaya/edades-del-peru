@@ -492,6 +492,13 @@ Definition of Done and the building audit see
   without checking that buildings are not washed out.
 - **The terrain shader samples the shadow map in VSM format by hand** (`Terrain.ts`): do not change
   `renderer.shadowMap.type` or the `customProgramCacheKey`, or terrain shadows break.
+- **The terrain material weights are a CPU splatmap** (`src/rendering/terrainSplat.ts`): a deterministic
+  512² RGBA texture (grass, dirt, sand, rock) built once per match from `TerrainData`; snow stays procedural by
+  height. `Terrain` uploads it as a `DataTexture`. Keep the generation pure and seed-stable; #304 paints
+  building/path wear into this map. The shader combines it with a height bias, two non-integer texture scales and
+  a low-frequency macro mask, and switches the rock albedo/normal to triplanar above `slope ≈ 0.45`. Terrain
+  textures use `RepeatWrapping` (materials keep `MirroredRepeatWrapping`); do not reintroduce mirrored terrain
+  sampling or the kaleidoscope tiling returns.
 - **Terrain faces must point up**: in `Terrain.buildMesh` the indices go `(a,c,b)` and `(b,c,d)` (not `(a,b,c)`).
   Inverting the winding makes faces point down: backface culling hides the terrain and the sky dome appears as if
   it were the ground. Verify with a vertical `Raycaster` that hits the terrain.
