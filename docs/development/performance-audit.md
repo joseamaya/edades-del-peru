@@ -14,8 +14,8 @@
 
 ## Assets y carga (#246)
 
-Medición local (Linux, Chromium/SwiftShader, `vite preview`, `?menu=1`). La carga inicial se mide hasta que
-`.ed-menu-shell` es visible; no sustituye una pasada con GPU real.
+Medición local (Linux, Chromium/SwiftShader, `vite preview`). La landing se mide sin `navigator.webdriver`
+hasta `#landing`; el menú real, con `?menu=1`, hasta `.ed-menu-shell`. No sustituye una pasada con GPU real.
 
 | Métrica | Antes | Después |
 |---|---:|---:|
@@ -23,8 +23,9 @@ Medición local (Linux, Chromium/SwiftShader, `vite preview`, `?menu=1`). La car
 | Modelos GLB (`src/assets/models`) | 15.3 MB | **4.3 MB** |
 | Texturas PBR (`src/assets/textures`) | 19 MB | **5.9 MB** |
 | Chunk de entrada (gzip) | 816 KB | **1 KB** |
-| Chunk de arranque (gzip) | — | 830 KB |
-| Menú interactivo (local) | 2037 ms | **1919 ms** |
+| Chunk de juego diferido (gzip) | — | 838 KB |
+| Landing interactiva (local) | — | **<1000 ms** |
+| Menú real tras pulsar Entrar | 2037 ms | **1919 ms** |
 
 - `yarn art:models` comprime los GLB con `gltf-transform` (meshopt + cuantización). Desactiva la paleta para
   no generar texturas sintéticas y conserva las texturas en su formato original. Solo reemplaza el archivo si
@@ -32,10 +33,9 @@ Medición local (Linux, Chromium/SwiftShader, `vite preview`, `?menu=1`). La car
 - `yarn art:textures` reencodea las texturas: normales/rugosidad a 256 px, difusas de material a 512 px y
   terreno a 768 px.
 - `src/main.ts` ya no importa `Game`: carga `src/boot.ts` en diferido y muestra un indicador mientras tanto.
-  El chunk de arranque todavía contiene `Game` (830 KB gzip) porque el menú vive en `HUD`; separar menú y
-  partida es trabajo de **#239**. Por eso el presupuesto de `scripts/check-dist.mjs` vigila el total
-  (<25 MB) y el chunk de entrada (<600 KB gzip); el chunk de arranque se reporta pero su objetivo de 600 KB
-  queda bloqueado por #239.
+  La entrada ya no descarga el juego: muestra una landing ligera y carga `boot`/`Game`/`HUD` solo al pulsar
+  Entrar. El chunk de juego diferido sigue en ~838 KB gzip; `scripts/check-dist.mjs` vigila el total
+  (<25 MB) y la entrada (<600 KB gzip).
 
 ---
 
