@@ -12,6 +12,7 @@ import type { LandscapeFeature } from '../model/defs/landscape';
 import { applyGeneratedPbr } from './Biomes';
 import { buildRibbon } from './ribbon';
 import { scaleUv, GROUND_TILE } from '../util/uv';
+import { conformCorralGeometry, conformWallGeometry } from './landscapeConform';
 
 /** AI-generated ground/landscape material slot per feature (see `prompts_textures.json`). */
 const LANDSCAPE_SLOT: Partial<Record<LandscapeFeature, string>> = {
@@ -85,21 +86,37 @@ export class CulturalLandscape {
     for (const p of planCulturalLandscape(landscape, seed, q)) {
       if (p.chain === undefined) {
         const off = OFFSET[p.feature] ?? 0.04;
-        const geo = featureGeometry(p.feature, p.size, p.yaw);
-        const r = Math.max(1, p.size / GROUND_TILE);
-        scaleUv(geo, r, r);
-        if (p.feature === 'plaza' || p.feature === 'field') {
-          // flat features drape over the relief instead of floating on a slope
-          const pos = geo.getAttribute('position') as THREE.BufferAttribute;
-          for (let i = 0; i < pos.count; i++) {
-            pos.setY(i, terrain.getHeight(pos.getX(i) + p.x, pos.getZ(i) + p.z) + off);
-          }
-          pos.needsUpdate = true;
-          geo.computeVertexNormals();
+        let geo: THREE.BufferGeometry;
+        if (p.feature === 'wall' || p.feature === 'terrace') {
+          geo = conformWallGeometry({
+            x: p.x,
+            z: p.z,
+            size: p.size,
+            yaw: p.yaw,
+            height: p.feature === 'wall' ? 0.9 : 1.2,
+            depth: p.feature === 'wall' ? 0.3 : 0.35,
+            offset: 0.03,
+            getHeight: (x, z) => terrain.getHeight(x, z),
+          });
+        } else if (p.feature === 'corral') {
+          geo = conformCorralGeometry(p.size, p.x, p.z, off, (x, z) => terrain.getHeight(x, z));
         } else {
-          geo.translate(0, terrain.getHeight(p.x, p.z) + off, 0);
+          geo = featureGeometry(p.feature, p.size, p.yaw);
+          const r = Math.max(1, p.size / GROUND_TILE);
+          scaleUv(geo, r, r);
+          if (p.feature === 'plaza' || p.feature === 'field') {
+            // flat features drape over the relief instead of floating on a slope
+            const pos = geo.getAttribute('position') as THREE.BufferAttribute;
+            for (let i = 0; i < pos.count; i++) {
+              pos.setY(i, terrain.getHeight(pos.getX(i) + p.x, pos.getZ(i) + p.z) + off);
+            }
+            pos.needsUpdate = true;
+            geo.computeVertexNormals();
+          } else {
+            geo.translate(0, terrain.getHeight(p.x, p.z) + off, 0);
+          }
+          geo.translate(p.x, 0, p.z);
         }
-        geo.translate(p.x, 0, p.z);
         (buckets[p.feature] ??= []).push(geo);
       } else {
         const byChain = (chains[p.feature] ??= new Map());
