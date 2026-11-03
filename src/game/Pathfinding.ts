@@ -229,7 +229,7 @@ export class Pathfinder {
       }
       return;
     }
-    const r = Math.max(1, Math.ceil(o.radius / cell));
+    const r = Math.max(1, Math.ceil(o.radius / cell) + 1);
     const cx = Math.floor(o.x / cell);
     const cz = Math.floor(o.z / cell);
     for (let dz = -r; dz <= r; dz++) {
@@ -237,8 +237,12 @@ export class Pathfinder {
         const x = cx + dx;
         const z = cz + dz;
         if (x < 0 || z < 0 || x >= cols || z >= cols) continue;
-        const d = Math.sqrt(dx * dx + dz * dz);
-        if (d > r) continue;
+        // Compare against the cell centre in world units. Rounding the radius
+        // up to whole cells used to block a ring far wider than the building,
+        // leaving melee units no stand point inside their attack range.
+        const wx = (x + 0.5) * cell;
+        const wz = (z + 0.5) * cell;
+        if (Math.hypot(wx - o.x, wz - o.z) > o.radius) continue;
         this.grid.walkable[z * cols + x] = 0;
       }
     }

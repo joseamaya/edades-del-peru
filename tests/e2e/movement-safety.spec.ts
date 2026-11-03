@@ -292,6 +292,26 @@ async function runCrossBarrier(
   );
 }
 
+test('ATTACK: a melee unit reaches and damages an enemy building', async ({ page }) => {
+  await boot(page);
+  const result = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const home = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center');
+    const enemy = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'center');
+    const u = g.spawnScriptedUnit('soldier', 0, home.pos.x, home.pos.z);
+    const hp0 = enemy.hp;
+    u.issueOrder({ kind: 'attack', entityId: enemy.id }, true);
+    let t = 0;
+    for (let i = 0; i < 60 * 60; i++) {
+      g.update(1 / 60, t);
+      t += 1 / 60;
+    }
+    return { hp0, hp: enemy.hp, dist: Math.hypot(u.pos.x - enemy.pos.x, u.pos.z - enemy.pos.z) };
+  });
+  expect(result.hp).toBeLessThan(result.hp0);
+  expect(result.dist).toBeLessThan(8);
+});
+
 test('ATTACK: a soldier does not cross a barrier to reach its target', async ({ page }) => {
   await boot(page);
   const out = await runCrossBarrier(page, 'attack', 'wall');
