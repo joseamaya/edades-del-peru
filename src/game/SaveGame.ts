@@ -39,6 +39,7 @@ export function serializeGame(game: Game): SaveData {
     resourceNodes: [...game.resourceNodes.values()].filter((n) => !n.dead && !n.depleted).map((n) => n.toSave()),
     mission: game.mission?.toSave(),
     tutorial: game.tutorial?.toSave(),
+    matchStats: game.matchStats.toSave(),
   };
 }
 
@@ -53,6 +54,11 @@ export function validateSave(raw: unknown): SaveData | null {
   if (typeof cam.zoom !== 'number' || typeof cam.yaw !== 'number') return null;
   if (!Array.isArray(r.players) || !Array.isArray(r.units) || !Array.isArray(r.buildings)) return null;
   if (!Array.isArray(r.resourceNodes)) return null;
+  if (r.matchStats !== undefined) {
+    const stats = r.matchStats as { elapsed?: unknown; samples?: unknown; gathered?: unknown };
+    if (!stats || typeof stats.elapsed !== 'number' || !Array.isArray(stats.samples) || !Array.isArray(stats.gathered))
+      return null;
+  }
   return raw as SaveData;
 }
 

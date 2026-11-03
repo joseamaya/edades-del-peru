@@ -10,6 +10,22 @@ describe('validateSave', () => {
     expect(validateSave({ version: SAVE_VERSION, settings: {} })).toBeNull();
   });
 
+  it('rejects malformed post-game snapshots', () => {
+    const data = {
+      version: SAVE_VERSION,
+      settings: {},
+      rngState: 0,
+      camera: { x: 0, z: 0, zoom: 100, yaw: 0 },
+      fog: '',
+      players: [],
+      units: [],
+      buildings: [],
+      resourceNodes: [],
+      matchStats: { elapsed: 10, samples: 'nope', gathered: [] },
+    };
+    expect(validateSave(data)).toBeNull();
+  });
+
   it('accepts a minimal valid save of the current version', () => {
     const data = {
       version: SAVE_VERSION,
