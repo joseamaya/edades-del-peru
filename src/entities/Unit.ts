@@ -773,7 +773,7 @@ export class Unit {
       this.stuckRetries = 0;
       this.lastStuckX = this.pos.x;
       this.lastStuckZ = this.pos.z;
-    } else if (this.stuckTimer > 1.2 && this.path.length > 1 && this.orderQueue.length > 0) {
+    } else if (this.stuckTimer > 1.2 && this.path.length > 0 && !this.isPathDone() && this.orderQueue.length > 0) {
       const o = this.orderQueue[0];
       const target = o.target;
       this.stuckTimer = 0;
@@ -787,7 +787,15 @@ export class Unit {
       } else if (target) {
         this.setPath(target.x, target.z);
       } else if (o.entityId !== undefined) {
-        this.setPathToEntity(o.entityId);
+        const building = this.ctx.buildings.get(o.entityId);
+        if (building) {
+          // A building centre is not walkable: let updateAttack pick a stand
+          // point outside the footprint instead of repathing into the wall.
+          this.path.length = 0;
+          this.pathIdx = 0;
+        } else {
+          this.setPathToEntity(o.entityId);
+        }
       }
     }
 
