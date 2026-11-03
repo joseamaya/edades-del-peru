@@ -19,6 +19,7 @@ import type { EntityView } from '../entities/EntityView';
 import { allocId } from '../sim/ids';
 import { Order, OrderKind, OrderTarget } from '../core/types';
 import { angleDelta, angleTo, distance2D, clamp, facingRotation, lerp } from '../util/math';
+import { tradeIncomeForDistance } from '../game/market';
 import { genderForId, type PersonGender } from '../model/defs/people';
 import type { UnitSave } from '../game/saveTypes';
 
@@ -82,6 +83,7 @@ export interface UnitContext {
   getPlayer(playerId: number): PlayerState;
   event<K extends keyof GameEvents>(name: K, payload: GameEvents[K]): void;
   gather(nodeId: number, unitId: number, amount: number, resource: string): void;
+  tradeIncome(owner: number, amount: number, x: number, z: number): void;
   worldSize: number;
   /** The match's historical period (for the chronology guard on training). */
   period: HistoricalPeriod;
@@ -478,6 +480,9 @@ export class Unit {
       case OrderKind.DELIVER:
         if (order.entityId !== undefined) this.setPathToEntity(order.entityId);
         break;
+      case OrderKind.TRADE:
+        if (order.entityId !== undefined) this.setPathToEntity(order.entityId);
+        break;
     }
   }
 
@@ -692,7 +697,7 @@ export class Unit {
   /** Auto-attack of idle military units (AoE2 style). */
   private autoAttack(dt: number, time: number): void {
     if (this.combatStance === 'pasivo') return;
-    if (this.kind === UnitKind.WORKER || this.kind === UnitKind.SCOUT) return;
+    if (this.kind === UnitKind.WORKER || this.kind === UnitKind.SCOUT || this.kind === UnitKind.CARAVAN) return;
     if (this.combatStance === 'defensivo') {
       const enemy = this.defensiveTarget();
       if (!enemy) {
@@ -737,6 +742,9 @@ export class Unit {
         break;
       case OrderKind.DELIVER:
         this.updateDeliver(order, dt);
+        break;
+      case OrderKind.TRADE:
+        this.updateTrade(order);
         break;
       case OrderKind.PATROL:
         this.updatePatrol(dt);
@@ -1516,6 +1524,44 @@ export class Unit {
         }
       }
     }
+  }
+
+  private updateTrade(order: Order): void {
+    const target = order.entityId === undefined ? undefined : this.ctx.buildings.get(order.entityId);
+    if (!target || target.dead || target.owner !== this.owner) {
+      this.finishOrder();
+      return;
+    }
+    const dist = distance2D(this.pos.x, this.pos.z, target.pos.x, target.pos.z);
+    const reach = (target.radius ?? 1) + 1.4;
+    if (dist > reach) {
+      if (this.pathIdx >= this.path.length && this.repathTimer <= 0) {
+        this.repathTimer = 0.8;
+        const pts = this.ctx.findApproachPath(
+          this.pos.x,
+          this.pos.z,
+          target.pos.x,
+          target.pos.z,
+          Math.max(0.5, reach - 0.6),
+          this.owner,
+        );
+        if (pts.length > 0) {
+          this.path = pts;
+          this.pathIdx = 0;
+          if (pts.length > 1) this.advanceToNextWaypoint();
+        }
+      }
+      return;
+    }
+    const origin = order.origin ?? { x: this.pos.x, z: this.pos.z };
+    const route = distance2D(origin.x, origin.z, target.pos.x, target.pos.z);
+    const income = tradeIncomeForDistance(route);
+    if (income <= 0) {
+      this.finishOrder();
+      return;
+    }
+    this.ctx.tradeIncome(this.owner, income, target.pos.x, target.pos.z);
+    this.finishOrder();
   }
 
   private updateConvert(_order: Order, dt: number, time: number): void {

@@ -66,7 +66,9 @@ export class ScriptedPlayer {
   }
 
   private soldiers(): Unit[] {
-    return this.units().filter((u) => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT);
+    return this.units().filter(
+      (u) => u.kind !== UnitKind.WORKER && u.kind !== UnitKind.SCOUT && u.kind !== UnitKind.CARAVAN,
+    );
   }
 
   private center(): Building | null {

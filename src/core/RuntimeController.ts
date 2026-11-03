@@ -17,6 +17,7 @@ import { BUILDING_INFO } from '../model/defs/buildings';
 import { getUnitStats, DamageClass, unitClassFor } from '../model/defs/units';
 import { getTech } from '../model/defs/techs';
 import { saveReplay } from '../game/replay';
+import { applyMarketSave, tickMarket, type MarketState } from '../game/market';
 import type { MissionDef } from '../campaign/types';
 import { applyPopulation } from '../game/systems/PopulationSystem';
 import { resolveConquest } from '../game/systems/VictorySystem';
@@ -117,6 +118,7 @@ export class RuntimeController {
 
     this.game.matchStats.applySave(data.matchStats);
 
+    this.game.markets.forEach((market: MarketState, index: number) => applyMarketSave(market, data.markets?.[index]));
     let maxId = 0;
     for (const u of data.units) maxId = Math.max(maxId, u.id);
     for (const b of data.buildings) maxId = Math.max(maxId, b.id);
@@ -212,6 +214,7 @@ export class RuntimeController {
       getPlayer: (id) => this.game.players[id],
       event: (name, payload) => bus.emit(name, payload),
       gather: (dropId, unitId, amount, resource) => this.deliverGather(dropId, unitId, amount, resource),
+      tradeIncome: (owner, amount) => this.tradeIncome(owner, amount),
       worldSize: this.game.settings.mapSize,
       period: this.game.settings.period,
       unitSpawn: this.game.unitSpawn,
@@ -266,6 +269,14 @@ export class RuntimeController {
       p.resources[resource as keyof Resources] += amount;
       bus.emit('resources:changed', { player: drop.owner, resources: { ...p.resources } });
     }
+  }
+
+  tradeIncome(owner: number, amount: number): void {
+    if (!(amount > 0)) return;
+    const p = this.game.players[owner];
+    if (!p) return;
+    p.resources.silver += amount;
+    bus.emit('resources:changed', { player: owner, resources: { ...p.resources } });
   }
 
   resolveDamage(
@@ -749,6 +760,7 @@ export class RuntimeController {
       return false;
     }
     this.game.matchStats.update(dt, this.game.players, this.game.units.values(), this.game.buildings.values());
+    for (const market of this.game.markets) tickMarket(market, dt);
     if (this.game.headless) return this.updateHeadless(dt, time);
     this.game.qualityGovernor.update(dt);
     if (this.game.replay) {

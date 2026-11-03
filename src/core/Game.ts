@@ -83,6 +83,7 @@ import { Tutorial } from '../campaign/Tutorial';
 import { tutorialForMission } from '../campaign/defs/tutorials';
 import { PlayerCommand, Replay, ReplayPlayer, ReplayRecorder } from '../game/replay';
 import { MatchStatsCollector } from '../game/matchStats';
+import { applyMarketTrade, createMarketState, marketQuote, type MarketQuote, type MarketState } from '../game/market';
 import { getMission } from '../campaign/defs/campaign';
 import type { MissionDef, MissionAtmosphere, MissionLayout, MissionPoint } from '../campaign/types';
 import { CommandProcessor } from '../game/CommandProcessor';
@@ -226,6 +227,7 @@ export class Game {
   /** Simulation step counter (fixed 60Hz ticks), used to time recorded commands. */
   stepCount = 0;
   readonly matchStats = new MatchStatsCollector();
+  markets: MarketState[] = [];
   /** Last finished/abandoned replay, kept for the post-game action. */
   lastReplay: Replay | null = null;
   fxRng!: RNG;
@@ -310,6 +312,8 @@ export class Game {
       ungarrison: (buildingId: number) => this.ungarrison(buildingId),
       setRallyPoint: (buildingId: number, target: OrderTarget) => this.setRallyPoint(buildingId, target),
       advanceEra: () => this.advanceEra(0),
+      marketTrade: (resource, action, amount) => this.tradeMarket(0, resource, action, amount),
+      replantFarm: (buildingId) => this.replantFarm(buildingId),
     });
     if (!this.headless) {
       if (this.missionLayout?.site) {
@@ -529,6 +533,7 @@ export class Game {
   private initPlayers(): void {
     const civs = [this.settings.civPlayer, this.settings.civAI];
     const preset = this.missionDef ? 'standard' : (this.settings.startingResources ?? 'standard');
+    this.markets = [createMarketState(), createMarketState()];
     for (let i = 0; i < 2; i++) {
       const civ = getCiv(civs[i] as CivId);
       const isAI = i === 1;
@@ -1006,6 +1011,7 @@ export class Game {
       nodes: this.resourceNodes.values(),
       players: this.players,
       rngState: this.rng.getState(),
+      markets: this.markets.map((market) => market.pressure),
     });
   }
 
@@ -1173,6 +1179,27 @@ export class Game {
   }
 
   /** Rebuild the unit spatial hash (once per frame). */
+  marketQuote(player: number, resource: keyof Resources, action: 'buy' | 'sell', amount = 100): MarketQuote {
+    return marketQuote(this.markets[player] ?? createMarketState(), resource, action, amount);
+  }
+
+  /** Buy or sell at a player's market. AI uses it directly, player input via a recorded command. */
+  tradeMarket(player: number, resource: keyof Resources, action: 'buy' | 'sell', amount = 100): boolean {
+    const state = this.markets[player];
+    if (!state || !applyMarketTrade(this.players[player].resources, state, resource, action, amount)) return false;
+    bus.emit('resources:changed', { player, resources: { ...this.players[player].resources } });
+    return true;
+  }
+
+  /** Restore a depleted farm's food reserve for a wood cost. */
+  replantFarm(buildingId: number, player = 0): boolean {
+    const b = this.buildings.get(buildingId);
+    if (!b || b.owner !== player || !b.isFarm || b.foodAmount > 0 || b.dead) return false;
+    if (!this.spendResource(player, { ...ZERO_RESOURCES, wood: 40 })) return false;
+    b.replant();
+    return true;
+  }
+
   canAdvanceEra(player: number): { ok: boolean; reason?: string } {
     const p = this.players[player];
     if (p.era >= Era.CONTEMPORARY) return { ok: false, reason: 'Era máxima' };

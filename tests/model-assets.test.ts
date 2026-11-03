@@ -185,7 +185,7 @@ describe('rigged model assets', () => {
     expect(unitModelAsset(UnitKind.WORKER, Era.REGIONAL_STATES, CivId.CARAL)).toBeNull();
     expect(unitModelAsset(UnitKind.WORKER, Era.FORMATIVE, CivId.MOCHE)).toBeNull();
     expect(modelAssetIdsForMatch(HistoricalPeriod.ARCHAIC, [CivId.CARAL])).toContain('caral_worker');
-    expect(modelAssetIdsForMatch(HistoricalPeriod.ARCHAIC, [CivId.MOCHE])).toEqual([]);
+    expect(modelAssetIdsForMatch(HistoricalPeriod.ARCHAIC, [CivId.MOCHE])).toEqual(['quaternius_alpaca']);
   });
 
   it('ships a worker GLB with one skeleton, the worker clips and the cotton garment', () => {
@@ -308,7 +308,7 @@ describe('rigged model assets', () => {
     expect(unitModelAsset(UnitKind.SCOUT, Era.FORMATIVE, CivId.INCA)).toBeNull();
     expect(unitModelAsset(UnitKind.SCOUT, Era.TAHUANTINSUYO, CivId.CARAL)).toBeNull();
     expect(modelAssetIdsForMatch(HistoricalPeriod.LATE_HORIZON, [CivId.INCA])).toContain('caral_worker');
-    expect(modelAssetIdsForMatch(HistoricalPeriod.LATE_HORIZON, [CivId.MOCHE])).toEqual([]);
+    expect(modelAssetIdsForMatch(HistoricalPeriod.LATE_HORIZON, [CivId.MOCHE])).toEqual(['quaternius_alpaca']);
   });
 
   it('maps the Moche and Recuay infantry to their rigged variants', () => {
@@ -335,7 +335,7 @@ describe('rigged model assets', () => {
     expect(unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, CivId.MOCHE)).toBeNull();
     expect(modelAssetIdsForMatch(HistoricalPeriod.EARLY_INTERMEDIATE, [CivId.MOCHE])).toContain('caral_worker');
     expect(modelAssetIdsForMatch(HistoricalPeriod.EARLY_INTERMEDIATE, [CivId.RECUAY])).toContain('caral_worker');
-    expect(modelAssetIdsForMatch(HistoricalPeriod.EARLY_INTERMEDIATE, [CivId.CARAL])).toEqual([]);
+    expect(modelAssetIdsForMatch(HistoricalPeriod.EARLY_INTERMEDIATE, [CivId.CARAL])).toEqual(['quaternius_alpaca']);
   });
 
   it('maps Chavín and Paracas infantry to their rigged variants', () => {
@@ -393,8 +393,8 @@ describe('rigged model assets', () => {
     expect(modelAssetIdsForMatch(HistoricalPeriod.MIDDLE_HORIZON, [CivId.WARI, CivId.TIAHUANACO])).toContain(
       'caral_worker',
     );
-    expect(modelAssetIdsForMatch(HistoricalPeriod.MIDDLE_HORIZON, [CivId.MOCHE])).toEqual([]);
-    expect(modelAssetIdsForMatch(HistoricalPeriod.EARLY_HORIZON, [CivId.MOCHE])).toEqual([]);
+    expect(modelAssetIdsForMatch(HistoricalPeriod.MIDDLE_HORIZON, [CivId.MOCHE])).toEqual(['quaternius_alpaca']);
+    expect(modelAssetIdsForMatch(HistoricalPeriod.EARLY_HORIZON, [CivId.MOCHE])).toEqual(['quaternius_alpaca']);
   });
 
   it('maps Chanca, Chimú and Inca infantry to the Late Horizon variants', () => {
@@ -422,8 +422,8 @@ describe('rigged model assets', () => {
     });
     expect(modelAssetIdsForMatch(HistoricalPeriod.LATE_HORIZON, [CivId.CHANCA, CivId.INCA])).toContain('caral_worker');
     expect(modelAssetIdsForMatch(HistoricalPeriod.LATE_HORIZON, [CivId.CHIMU, CivId.INCA])).toContain('caral_worker');
-    expect(modelAssetIdsForMatch(HistoricalPeriod.LATE_HORIZON, [CivId.CHANCA])).toEqual([]);
-    expect(modelAssetIdsForMatch(HistoricalPeriod.LATE_HORIZON, [CivId.MOCHE])).toEqual([]);
+    expect(modelAssetIdsForMatch(HistoricalPeriod.LATE_HORIZON, [CivId.CHANCA])).toEqual(['quaternius_alpaca']);
+    expect(modelAssetIdsForMatch(HistoricalPeriod.LATE_HORIZON, [CivId.MOCHE])).toEqual(['quaternius_alpaca']);
   });
 
   it('maps movement, tasks and combat to clip states by priority', () => {

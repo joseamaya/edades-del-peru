@@ -91,6 +91,13 @@ export class Building {
   }
 
   /** Rebase the farm's food reserve to the current terrain/irrigation multiplier. */
+  /** Replant a depleted farm, restoring the reserve at its current terrain yield. */
+  replant(): boolean {
+    if (!this.isFarm || this.foodAmount > 0) return false;
+    this.foodAmount = Math.max(1, Math.round((500 + this.era * 200) * this.terrainYield));
+    return true;
+  }
+
   applyTerrainYield(multiplier: number): void {
     if (!this.isFarm) return;
     const next = Math.max(1, multiplier);

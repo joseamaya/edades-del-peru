@@ -276,6 +276,7 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
     minEra: Era.FORMATIVE,
     isDropsite: true,
     dropTypes: ['food', 'wood', 'silver', 'stone'],
+    trainable: [UnitKind.CARAVAN],
     eraModel: {
       [Era.FORMATIVE]: { type: 'market_steam', scale: 1 },
       [Era.REGIONAL_STATES]: { type: 'market_imperial', scale: 1 },

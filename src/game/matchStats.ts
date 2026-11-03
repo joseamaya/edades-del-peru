@@ -116,7 +116,7 @@ export class MatchStatsCollector {
       const c = counts.get(u.owner);
       if (!c) continue;
       if (u.kind === 'worker') c.workers++;
-      else if (u.kind !== 'scout') c.army++;
+      else if (u.kind !== 'scout' && u.kind !== 'caravan') c.army++;
     }
     for (const b of buildings) {
       if (b.dead) continue;

@@ -1,8 +1,9 @@
 import type { GameSettings } from '../core/Config';
+import type { Resources } from '../core/types';
 import type { BuildingKind, CombatStance, Order, OrderTarget, UnitKind } from '../core/types';
 
 /** Bump when the replay schema or the simulation changes in a breaking way. */
-export const REPLAY_VERSION = 18;
+export const REPLAY_VERSION = 19;
 
 /** Stable localStorage key (see AGENTS: keep storage keys stable). */
 const STORAGE_KEY = 'peru-replay';
@@ -22,7 +23,9 @@ export type PlayerCommand =
   | { kind: 'ungarrison'; buildingId: number }
   | { kind: 'rally'; buildingId: number; target: OrderTarget }
   | { kind: 'stance'; unitIds: number[]; stance: CombatStance }
-  | { kind: 'advanceEra' };
+  | { kind: 'advanceEra' }
+  | { kind: 'market'; action: 'buy' | 'sell'; resource: keyof Resources; amount: number }
+  | { kind: 'replant'; buildingId: number };
 
 /** A command stamped with the simulation step it was issued on. */
 export interface TimedCommand {
