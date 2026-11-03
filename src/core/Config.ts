@@ -1,4 +1,5 @@
 import { CivId, Era, MapType, HistoricalPeriod, Resources } from './types';
+import { DEFAULT_KEYMAP, type HotkeyMap } from './hotkeys';
 
 export interface GameSettings {
   mapSize: number; // 256 | 192 | 128
@@ -19,6 +20,8 @@ export interface GameSettings {
   soundEnabled: boolean;
   musicEnabled: boolean;
   showHints: boolean;
+  /** Persistent FPS/quality overlay (also `?fps=1` for debugging). */
+  showFps: boolean;
   /** Cinematic effects (SSAO, bloom, vignette, aberration). Off = sharp classic look. */
   cinematic: boolean;
   /** Post-processing quality preset (also auto-lowered by the quality governor). */
@@ -27,6 +30,8 @@ export interface GameSettings {
   settingsVersion: number;
   /** Allow rotating the camera with Z/X (AoE2 DE style). Off = fixed camera like SC2. */
   rotateCamera: boolean;
+  /** Remappable keyboard shortcuts; normalized against `DEFAULT_KEYMAP`. */
+  hotkeys: HotkeyMap;
   /** Camera pan speed preset (keyboard + edge scroll). */
   cameraSpeed: 'slow' | 'normal' | 'fast';
   victoryMode: 'conquest' | 'wonder';
@@ -71,10 +76,12 @@ export const DEFAULT_SETTINGS: GameSettings = {
   soundEnabled: true,
   musicEnabled: true,
   showHints: true,
+  showFps: false,
   cinematic: true,
   quality: 'high',
   settingsVersion: SETTINGS_VERSION,
   rotateCamera: false,
+  hotkeys: { ...DEFAULT_KEYMAP },
   cameraSpeed: 'normal',
   victoryMode: 'conquest',
   activeMods: [],

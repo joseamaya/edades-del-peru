@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { HOTKEYS, formatHotkeys, keyFor } from '../src/core/hotkeys';
+import { DEFAULT_KEYMAP, HOTKEYS, formatHotkeys, keyFor, keymapConflicts, normalizeKeymap } from '../src/core/hotkeys';
 
 describe('hotkey map', () => {
   it('never binds the same key to two actions', () => {
@@ -15,6 +15,7 @@ describe('hotkey map', () => {
 
   it('keeps camera rotation separate from army selection', () => {
     expect(keyFor('selectArmy')).toBe('e');
+    expect(keyFor('command1')).toBe('q');
     expect(keyFor('rotateLeft')).not.toBe('e');
     expect(keyFor('rotateRight')).not.toBe('e');
     expect(keyFor('rotateLeft')).not.toBe(keyFor('rotateRight'));
@@ -27,6 +28,15 @@ describe('hotkey map', () => {
     expect(keyFor('buildHouse')).toBe('v');
     expect(keyFor('pause')).toBe('p');
     expect(keyFor('lastBattle')).toBe(' ');
+  });
+
+  it('rejects duplicate remaps and fills missing actions from defaults', () => {
+    const remapped = normalizeKeymap({ ...DEFAULT_KEYMAP, buildFarm: 'e' });
+    expect(remapped.buildFarm).toBe(DEFAULT_KEYMAP.buildFarm);
+    expect(keymapConflicts({ ...DEFAULT_KEYMAP, buildFarm: 'e' })).toContain('buildFarm');
+    expect(keymapConflicts({ ...DEFAULT_KEYMAP, buildFarm: 'u' })).toContain('buildFarm');
+    expect(normalizeKeymap(undefined)).toEqual(DEFAULT_KEYMAP);
+    expect(normalizeKeymap({ ...DEFAULT_KEYMAP, command1: 'w' }).command1).not.toBe('w');
   });
 
   it('builds the help text from the same table', () => {

@@ -12,7 +12,7 @@ import { buildModel, disposeModel, type BuildContext } from '../model/Procedural
 import { insideTerrainRect } from '../model/defs/terrainLayout';
 import { isTypingTarget } from '../util/dom';
 
-import { keyFor } from './hotkeys';
+import { keyFor, type HotkeyAction } from './hotkeys';
 import { MarkerKind } from '../entities/OrderMarker';
 
 /**
@@ -779,22 +779,44 @@ export class InputController {
 
   // --- keyboard ---
 
+  private key(action: HotkeyAction): string {
+    return keyFor(action, this.game.settings.hotkeys);
+  }
+
   private onKeyDown = (e: KeyboardEvent): void => {
     if (isTypingTarget(e.target)) return;
     const k = e.key.toLowerCase();
     if (this.game.gameEnded) return;
-    if (k === keyFor('pause')) {
+    if (k === this.key('pause')) {
       this.togglePause();
       return;
     }
     // do not process game shortcuts with a menu open or while paused
     if (this.game.paused || this.game.hud.hasBlockingOverlay()) return;
-    if (k === keyFor('toggleHelp') || k === '?') {
+    const marker = /^f([1-4])$/.exec(k);
+    if (marker) {
+      const index = Number(marker[1]);
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const target = this.game.camera.getTarget();
+        this.cameraMarks.set(index, { x: target.x, z: target.z });
+        this.game.hud?.showToast(`Marcador de cámara F${index} guardado`, 'info');
+        return;
+      }
+      // F1 keeps the legacy help shortcut; F2-F4 are bare recall keys.
+      if (index > 1 && !e.shiftKey && !e.altKey) {
+        e.preventDefault();
+        const target = this.cameraMarks.get(index);
+        if (target) this.game.camera.focusOn(target.x, target.z);
+        return;
+      }
+    }
+    if (k === this.key('toggleHelp') || k === '?' || k === 'f1') {
       e.preventDefault();
       this.game.hud.toggleHelp();
       return;
     }
-    if (k === keyFor('nextIdleWorker')) {
+    if (k === this.key('nextIdleWorker')) {
       e.preventDefault();
       if (e.ctrlKey || e.metaKey) this.game.selectIdleWorkers();
       else this.game.cycleIdleWorker();
@@ -817,17 +839,17 @@ export class InputController {
       else this.recallControlGroup(n);
       return;
     }
-    if (k === keyFor('centerBase')) {
+    if (k === this.key('centerBase')) {
       const center = [...this.game.buildings.values()].find((b) => b.owner === 0 && b.kind === BuildingKind.CENTER);
       if (center) this.game.camera.focusOn(center.pos.x, center.pos.z);
     }
-    if (k === keyFor('followUnit')) {
+    if (k === this.key('followUnit')) {
       if (this.game.selectedUnits.length > 0) {
         const u = this.game.units.get(this.game.selectedUnits[0]);
         if (u) this.game.camera.follow(u.id);
       }
     }
-    if (k === keyFor('lastBattle')) {
+    if (k === this.key('lastBattle')) {
       const lastEvt = this.game.lastBattleEvent;
       if (lastEvt) {
         const ent = this.game.units.get(lastEvt) ?? this.game.buildings.get(lastEvt);
@@ -835,7 +857,7 @@ export class InputController {
       }
     }
     // select the whole army (own combat units)
-    if (k === keyFor('selectArmy')) {
+    if (k === this.key('selectArmy')) {
       const army = [...this.game.units.values()].filter(
         (u: Unit) => u.owner === 0 && !u.dead && u.kind !== UnitKind.WORKER,
       );
@@ -847,12 +869,19 @@ export class InputController {
       return;
     }
     // numeric controls for panels
-    if (k === keyFor('buildFarm')) this.startPlacement(BuildingKind.FARM);
-    if (k === keyFor('buildHouse')) this.startPlacement(BuildingKind.HOUSE);
+    if (k === this.key('techTree')) {
+      e.preventDefault();
+      this.game.hud.showTechTree();
+      return;
+    }
+    if (k === this.key('buildFarm')) this.startPlacement(BuildingKind.FARM);
+    if (k === this.key('buildHouse')) this.startPlacement(BuildingKind.HOUSE);
+    if (this.game.hud.triggerHotkey(k)) e.preventDefault();
   };
 
   private wallDragStart: { x: number; z: number } | null = null;
   private controlGroups = new Map<number, number[]>();
+  private cameraMarks = new Map<number, { x: number; z: number }>();
   private lastGroupN = 0;
   private lastGroupTap = 0;
 

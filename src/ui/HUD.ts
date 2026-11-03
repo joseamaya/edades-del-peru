@@ -54,11 +54,21 @@ import type { HeritageBuildingDef } from '../model/defs/heritage';
 import { portraitSvg } from './Portrait';
 import { DamageNumbers } from './DamageNumbers';
 import { openCodex } from './Codex';
+import { openTechTree } from './TechTree';
 import { bus } from '../core/EventBus';
 import { hasSave } from '../game/SaveGame';
 import { hasReplay, saveReplay } from '../game/replay';
 import { mountMatchStats } from './MatchStatsPanel';
-import { formatHotkeys } from '../core/hotkeys';
+import {
+  COMMAND_SLOT_COUNT,
+  HOTKEYS,
+  formatHotkeys,
+  keyFor,
+  isReservedKey,
+  keymapConflicts,
+  normalizeKeymap,
+  type HotkeyAction,
+} from '../core/hotkeys';
 
 const STANCE_TOOLTIP: Record<CombatStance, string> = {
   agresivo: 'Agresivo: persigue y ataca enemigos.',
@@ -167,6 +177,8 @@ const CSS = /* css */ `
   .ed-card.cat-sel { border-left: 3px solid #5a9ad0; }
   .ed-card.progress { border-color: var(--gold); }
   .ed-card .progbar { position: absolute; bottom: 0; left: 0; height: 3px; background: var(--gold); width: 0%; }
+  .ed-hotkey { position: absolute; top: 2px; right: 3px; min-width: 12px; padding: 0 2px; border-radius: 2px; background: rgba(232,195,106,.18); color: var(--gold); font-size: 8px; font-weight: 800; line-height: 12px; text-align: center; pointer-events: none; }
+  .ed-command .ed-hotkey { position: static; margin-left: 6px; background: rgba(0,0,0,.2); }
 
   .ed-group { display: flex; gap: 6px; margin-top: 6px; }
   .ed-command { pointer-events: auto; border: 1px solid var(--line); background: var(--panel-2); color: var(--text); border-radius: 4px; padding: 5px 9px; font-size: 11px; cursor: pointer; font-weight: 600; }
@@ -300,6 +312,9 @@ const CSS = /* css */ `
   .epilogue-title.lose { color: var(--red); }
 
 
+  .ed-hotkey-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 12px; margin: 8px 0; text-align: left; max-height: 180px; overflow: auto; }
+  .ed-hotkey-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--text-dim); }
+  .ed-hotkey-row button { margin: 0; padding: 3px 8px; min-width: 70px; font-size: 11px; }
   .ed-stats { text-align: left; margin: 10px 0 14px; border-top: 1px solid var(--line); padding-top: 10px; }
   .ed-stats-tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 10px; }
   .ed-stats-tabs button { pointer-events: auto; background: transparent; border: 1px solid var(--line); color: var(--text-dim); border-radius: 4px; padding: 5px 10px; font-size: 11px; font-weight: 700; cursor: pointer; }
@@ -342,6 +357,16 @@ const CSS = /* css */ `
     .ed-stats-table th, .ed-stats-table td { border-bottom-color: rgba(90,70,30,.2); }
     .ed-stats-table th:first-child, .ed-stats-legends { color: #5c513b; }
   }
+
+  .ed-tree-panel { width: min(1080px, 96vw); max-height: 90vh; overflow: auto; text-align: left; }
+  .ed-tree { display: flex; flex-direction: column; gap: 14px; margin: 10px 0; }
+  .ed-tree-era { border-top: 1px solid var(--line); padding-top: 8px; }
+  .ed-tree-era h3 { margin: 0 0 6px; color: var(--gold); font-size: 15px; }
+  .ed-tree-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .ed-tree-col h4 { margin: 0 0 4px; color: var(--text-dim); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
+  .ed-tree-item { display: flex; align-items: center; gap: 6px; font-size: 11px; padding: 2px 0; }
+  .ed-tree-empty { color: var(--text-dim); font-size: 11px; }
+  @media (max-width: 700px) { .ed-tree-cols { grid-template-columns: 1fr; } }
   .ed-mission-card { position: absolute; inset: 0; z-index: 30; display: flex; align-items: center; justify-content: center; background: rgba(3,6,9,.56); pointer-events: auto; animation: mission-card-in .7s ease; }
   .ed-mission-card .inner { text-align: center; padding: 30px; max-width: 760px; }
   .ed-mission-card .year { color: var(--gold); font-size: 12px; letter-spacing: 4px; text-transform: uppercase; }
@@ -489,6 +514,7 @@ export class HUD {
   private bannerEl!: HTMLElement;
   private updateAcc = 0;
   private bottomKey = '';
+  private hotkeySlot = 0;
   private objPanelEl!: HTMLElement;
   private objListEl!: HTMLElement;
   private dialogueEl!: HTMLElement;
@@ -892,17 +918,28 @@ export class HUD {
   private buildHelp(): void {
     const help = this.el('div', '');
     help.id = 'ed-help';
-    help.innerHTML = `<button class="ed-help-close" type="button" aria-label="Cerrar ayuda" title="Cerrar (F1)">×</button><b>Atajos</b><br>Clic izq: seleccionar · arrastra: área<br>Clic der: orden · Ctrl+der: atacar-mover<br>Shift: cola/rally · Ctrl+1-9: grupo · 1-9: recuperar<br>Minimapa: arrastra para mover · clic der: orden<br>Rueda: zoom · ${formatHotkeys()}`;
+    help.innerHTML = `<button class="ed-help-close" type="button" aria-label="Cerrar ayuda" title="Cerrar (?)">×</button><b>Atajos</b><br>Clic izq: seleccionar · arrastra: área<br>Clic der: orden · Ctrl+der: atacar-mover<br>Shift: cola/rally · Ctrl+1-9: grupo · 1-9: recuperar<br>Minimapa: arrastra para mover · clic der: orden<br>Rueda: zoom · <span class="ed-help-keys">${formatHotkeys('game', this.game.settings.hotkeys)} · ${formatHotkeys('camera', this.game.settings.hotkeys)}</span>`;
     help.querySelector('.ed-help-close')?.addEventListener('click', () => this.toggleHelp());
     const open = this.el('button', '', this.root) as HTMLButtonElement;
     open.id = 'ed-help-open';
     open.type = 'button';
     open.textContent = '?';
-    open.title = 'Mostrar atajos (F1)';
+    open.title = 'Mostrar atajos (?)';
     open.addEventListener('click', () => this.toggleHelp());
   }
 
-  /** Show/hide the in-match shortcut panel (F1 or ?). */
+  private refreshHelp(): void {
+    const keys = this.root.querySelector('.ed-help-keys');
+    if (keys) {
+      keys.textContent = `${formatHotkeys('game', this.game.settings.hotkeys)} · ${formatHotkeys('camera', this.game.settings.hotkeys)}`;
+    }
+  }
+
+  showTechTree(): void {
+    openTechTree(this.root, () => {});
+  }
+
+  /** Show/hide the in-match shortcut panel (?). */
   toggleHelp(): void {
     this.root.classList.toggle('help-collapsed');
   }
@@ -961,6 +998,9 @@ export class HUD {
       if (this.game.saveMatch()) this.showToast('Partida guardada', 'success');
       else this.showToast('No se pudo guardar la partida', 'error');
     });
+    const tree = this.el('button', 'ed-ghostbtn', row);
+    tree.textContent = '🌳 Árbol tecnológico';
+    tree.addEventListener('click', () => this.showTechTree());
     const settings = this.el('button', 'ed-ghostbtn', row);
     settings.textContent = '⚙️ Opciones';
     settings.addEventListener('click', () => this.showOptions());
@@ -1170,6 +1210,28 @@ export class HUD {
     this.gridEl.innerHTML = '';
   }
 
+  private applyHotkey(el: HTMLElement): void {
+    if (this.hotkeySlot >= COMMAND_SLOT_COUNT) return;
+    const action = `command${this.hotkeySlot + 1}` as HotkeyAction;
+    const key = keyFor(action, this.game.settings.hotkeys);
+    this.hotkeySlot++;
+    if (!key) return;
+    el.dataset.hotkey = key;
+    const label = document.createElement('span');
+    label.className = 'ed-hotkey';
+    label.textContent = key === ' ' ? '␣' : key.toUpperCase();
+    el.appendChild(label);
+  }
+
+  /** Run the visible command card/button bound to a key. */
+  triggerHotkey(key: string): boolean {
+    if (!key) return false;
+    const el = this.root.querySelector<HTMLElement>(`[data-hotkey="${window.CSS.escape(key)}"]`);
+    if (!el || el.classList.contains('disabled')) return false;
+    el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, button: 0 }));
+    return true;
+  }
+
   private addCard(
     icon: string,
     name: string,
@@ -1197,6 +1259,7 @@ export class HUD {
         onClick();
       });
     }
+    this.applyHotkey(card);
     this.gridEl.appendChild(card);
     return card;
   }
@@ -1209,6 +1272,7 @@ export class HUD {
       if (e.button !== 0) return;
       onClick();
     });
+    this.applyHotkey(btn);
     this.commandsEl.appendChild(btn);
   }
 
@@ -1239,6 +1303,7 @@ export class HUD {
     }
     this.bottomEl.style.display = '';
     this.commandsEl.innerHTML = '';
+    this.hotkeySlot = 0;
 
     if (units.length > 0) {
       this.renderUnitPanel(units);
@@ -1570,6 +1635,7 @@ export class HUD {
       );
     }
 
+    this.addCommand('🌳 Árbol tecnológico', () => this.showTechTree());
     this.addCommand('📍 Punto de reunión', () =>
       this.game.hud.showToast('Usa Shift+Botón derecho en el suelo', 'info'),
     );
@@ -2507,9 +2573,71 @@ export class HUD {
       () => this.game.settings.showHints,
       (v) => (this.game.settings.showHints = v),
     );
+    this.toggle(
+      row,
+      'Mostrar FPS',
+      ['Activado', 'Desactivado'],
+      () => this.game.settings.showFps,
+      (v) => {
+        this.game.settings.showFps = v;
+        this.game.hud.setShowFps(v);
+        this.game.saveSettings();
+      },
+    );
+    const hotkeyTitle = this.el('div', 'ed-menu-kicker', panel);
+    hotkeyTitle.textContent = 'ATAJOS';
+    const hotkeyHint = this.el('div', 'sub', panel);
+    hotkeyHint.textContent = 'Pulsa una tecla para reasignar. Los atajos se guardan en este navegador.';
+    this.renderHotkeyEditor(panel);
     const back = this.el('button', 'ed-primary', panel);
     back.textContent = 'Volver';
     back.addEventListener('click', () => (from === 'main' ? this.showMainMenu() : this.showPauseMenu()));
+  }
+
+  private renderHotkeyEditor(parent: HTMLElement): void {
+    const grid = this.el('div', 'ed-hotkey-grid', parent);
+    for (const hotkey of HOTKEYS) {
+      const row = this.el('div', 'ed-hotkey-row', grid);
+      const label = this.el('span', '', row);
+      label.textContent = hotkey.label;
+      const button = this.el('button', 'ed-ghostbtn', row) as HTMLButtonElement;
+      const render = (): void => {
+        const key = keyFor(hotkey.action, this.game.settings.hotkeys);
+        button.textContent = key === ' ' ? 'Espacio' : key.toUpperCase();
+      };
+      render();
+      button.addEventListener('click', () => {
+        button.textContent = 'Pulsa una tecla…';
+        const onKey = (event: KeyboardEvent): void => {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          window.removeEventListener('keydown', onKey, true);
+          if (event.key === 'Escape') {
+            render();
+            return;
+          }
+          const key = event.key.toLowerCase();
+          if (['shift', 'control', 'alt', 'meta'].includes(key)) {
+            render();
+            return;
+          }
+          const next = { ...this.game.settings.hotkeys, [hotkey.action]: key };
+          if (isReservedKey(key) || keymapConflicts(next).length > 0) {
+            this.showToast('Esa tecla ya está asignada', 'warning');
+            render();
+            return;
+          }
+          this.game.settings.hotkeys = normalizeKeymap(next);
+          this.game.camera.setKeymap(this.game.settings.hotkeys);
+          this.game.saveSettings();
+          this.refreshHelp();
+          this.bottomKey = '';
+          this.showToast('Atajo actualizado', 'success');
+          render();
+        };
+        window.addEventListener('keydown', onKey, true);
+      });
+    }
   }
 
   private field(label: string, input: HTMLElement): HTMLElement {

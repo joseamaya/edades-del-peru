@@ -361,6 +361,7 @@ export class Game {
       this.renderer.setPixelRatio(1);
     }
     this.camera = new RTSCamera(this.renderer.domElement, this.settings.mapSize);
+    this.camera.setKeymap(this.settings.hotkeys);
     this.camera.setRotationEnabled(this.settings.rotateCamera);
     this.camera.setSpeedScale(CAMERA_SPEED_SCALE[this.settings.cameraSpeed]);
     this.camera.setFollowResolver((id) => {
@@ -947,6 +948,14 @@ export class Game {
   resetGame(): void {
     this.runtime.resetGame();
   }
+  saveSettings(): void {
+    try {
+      localStorage.setItem('peru-settings', JSON.stringify(this.settings));
+    } catch {
+      /* storage unavailable */
+    }
+  }
+
   saveMatch(): boolean {
     return this.runtime.saveMatch();
   }

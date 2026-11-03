@@ -78,9 +78,13 @@ test('the skirmish setup shows the civ bonus and applies starting resources', as
   expect(bank.cap).toBe(150);
 });
 
-test('F1 and ? toggle the shortcut panel', async ({ page }) => {
+test('? toggles the shortcut panel', async ({ page }) => {
   await boot(page, '/?play=1&seed=777&fog=0&low=1');
   const help = page.locator('#ed-help');
+  await expect(help).toBeVisible();
+  await page.keyboard.press('?');
+  await expect(help).toBeHidden();
+  await page.keyboard.press('F1');
   await expect(help).toBeVisible();
   await page.keyboard.press('F1');
   await expect(help).toBeHidden();
