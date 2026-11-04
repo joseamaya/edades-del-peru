@@ -46,6 +46,18 @@ sun plus the scene hemisphere light (`Sky`), and the region `atmosphere`
 (`skyTint`, `fogDensity`, `sunWarmth`) still supplies aerial perspective — an
 **abstraction** of the documented geography.
 
+**Ground cover** (`src/model/defs/groundCover.ts` + `src/rendering/GroundCover.ts`)
+adds the missing low layer: grass/herb tufts in valleys, ichu on the puna, ferns
+in the humid jungle and pebbles/gravel on the arid coast. It is deterministic
+from the terrain splat, moisture and slope, skips water, painted paths, building
+wear, fields, roads and authored keep-outs, and is instanced per species (one
+draw call each). Instances fade and cull by 24 m chunk in the vertex shader and
+bend slightly with the wind; the layer is hidden at `quality: low` and on the
+software-renderer fallback. Heights stay below unit torsos so selection, orders
+and small units remain readable. Like the cultural landscape, it samples the
+shared fog-of-war grid. The species vocabulary is an **abstraction** of the
+documented geography (`docs/historia/mapas.md`), not a botanical reconstruction.
+
 Distinguishing rule of thumb (the classic "biome" trap to avoid):
 
 - **Coast** is not just sand: it is desert **plus** a fertile river valley,

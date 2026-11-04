@@ -66,6 +66,8 @@ export class CulturalLandscape {
   readonly group = new THREE.Group();
   /** Worst-case mesh count: one merged mesh per drawable feature (the E2E/bench guard). */
   readonly featureBudget = RENDERED_FEATURES.length;
+  /** Field footprints, used to keep ground cover out of cultivated plots. */
+  readonly fields: LandscapePlacement[] = [];
   private materials: THREE.Material[] = [];
 
   constructor(terrain: Terrain, profile: HistoricalMapProfile, seed: number) {
@@ -84,6 +86,7 @@ export class CulturalLandscape {
     const buckets: Partial<Record<LandscapeFeature, THREE.BufferGeometry[]>> = {};
     const chains: Partial<Record<LandscapeFeature, Map<number, LandscapePlacement[]>>> = {};
     for (const p of planCulturalLandscape(landscape, seed, q)) {
+      if (p.feature === 'field') this.fields.push(p);
       if (p.chain === undefined) {
         const off = OFFSET[p.feature] ?? 0.04;
         let geo: THREE.BufferGeometry;

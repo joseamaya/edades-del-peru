@@ -276,6 +276,16 @@ export class Terrain {
     return this.data.getSlope(wx, wz);
   }
 
+  /** Current splat weights at a world point (grass, dirt, sand, rock; 0..1). */
+  getSplatWeights(wx: number, wz: number): { grass: number; dirt: number; sand: number; rock: number } {
+    const size = this.splat.size;
+    const tx = Math.max(0, Math.min(size - 1, Math.floor((wx / this.size) * size)));
+    const tz = Math.max(0, Math.min(size - 1, Math.floor((wz / this.size) * size)));
+    const i = (tz * size + tx) * 4;
+    const d = this.splat.data;
+    return { grass: d[i] / 255, dirt: d[i + 1] / 255, sand: d[i + 2] / 255, rock: d[i + 3] / 255 };
+  }
+
   private buildMesh(): THREE.Mesh {
     const n = this.resolution + 1;
     const positions = new Float32Array(n * n * 3);

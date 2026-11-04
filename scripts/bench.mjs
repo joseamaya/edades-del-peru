@@ -75,6 +75,9 @@ const RIG_BUDGETS = {
 //     main-pass plus one shadow-pass draw.
 const LANDSCAPE_DRAW_CALLS_PER_MESH = 2;
 
+/** Ground cover is one instanced draw per species; the planner has a hard instance cap. */
+const COVER_BUDGET = { instances: 16000, chunks: 256 };
+
 /** Build the requested scale scenario inside the page; returns spawn/micro data. */
 async function setupScenario(page, n) {
   return page.evaluate(
@@ -500,6 +503,21 @@ async function measure(browser, base, n, runIndex) {
     };
   });
 
+  // Ground cover is hidden at low quality; count the planned instances so the
+  // structural budget still guards the planner.
+  const cover = await page.evaluate(() => {
+    const c = window.game.groundCover;
+    if (!c) return { present: false };
+    return {
+      present: true,
+      enabled: c.enabled,
+      instances: c.instanceCount,
+      chunks: c.chunkCount,
+      species: c.speciesCounts,
+      budget: c.instanceBudget,
+    };
+  });
+
   const destroyMs = await page.evaluate(() => {
     const g = window.game;
     g.loop.stop();
@@ -556,6 +574,7 @@ async function measure(browser, base, n, runIndex) {
     rigCost,
     scene,
     landscape,
+    cover,
     destroyMs,
     errors,
   };
@@ -671,6 +690,19 @@ async function main() {
   console.log(
     `\nlandscape: ${worst.landscape.landscapeCalls} draw calls (${worst.landscape.landscapeTris} tris, ${worst.landscape.landscapeMeshes} meshes), budget <= ${budgetOf(worst)}`,
   );
+  const coverWorst = rows.reduce((a, r) => ((r.cover?.instances ?? 0) > (a.cover?.instances ?? 0) ? r : a), rows[0]);
+  if (coverWorst?.cover?.present) {
+    console.log(
+      `\ncover: ${coverWorst.cover.instances} instances (${coverWorst.cover.chunks} chunks), budget <= ${COVER_BUDGET.instances}`,
+    );
+  }
+  const coverOver = rows.filter((r) => (r.cover?.instances ?? 0) > COVER_BUDGET.instances);
+  if (coverOver.length) {
+    console.error(
+      `ground-cover instance budget exceeded: ${coverOver.map((r) => `${r.cover.instances} @ ${r.n}`).join(', ')}`,
+    );
+    process.exitCode = 1;
+  }
   const missing = rows.filter((r) => !(r.landscape.landscapeCalls > 0));
   const over = rows.filter((r) => r.landscape.landscapeCalls > budgetOf(r));
   if (missing.length) {
@@ -688,6 +720,14 @@ async function main() {
     const failures = [];
     for (const r of rows) {
       const c = r.rigCost;
+      if (r.cover?.present) {
+        if (r.cover.instances > COVER_BUDGET.instances) {
+          failures.push(`${r.n}: ${r.cover.instances} cover instances > ${COVER_BUDGET.instances}`);
+        }
+        if (r.cover.chunks > COVER_BUDGET.chunks) {
+          failures.push(`${r.n}: ${r.cover.chunks} cover chunks > ${COVER_BUDGET.chunks}`);
+        }
+      }
       if (!c) continue;
       if (scenario === 'rigs' && c.units > 0) {
         if (r.riggedUnits !== r.startWorkers)

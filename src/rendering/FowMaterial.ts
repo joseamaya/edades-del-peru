@@ -31,7 +31,12 @@ export function applyFow(material: THREE.Material, u: FowUniforms): void {
       .replace('#include <common>', '#include <common>\nvarying vec3 vFowWorld;')
       .replace(
         '#include <project_vertex>',
-        '#include <project_vertex>\n  vFowWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;',
+        `#include <project_vertex>
+        #ifdef USE_INSTANCING
+          vFowWorld = (modelMatrix * instanceMatrix * vec4(transformed, 1.0)).xyz;
+        #else
+          vFowWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;
+        #endif`,
       );
     shader.fragmentShader = shader.fragmentShader
       .replace(
@@ -49,7 +54,8 @@ export function applyFow(material: THREE.Material, u: FowUniforms): void {
         }`,
       );
   };
-  material.customProgramCacheKey = () => 'fow-v1';
+  const previousKey = material.customProgramCacheKey.bind(material);
+  material.customProgramCacheKey = () => `${previousKey()}:fow-v2`;
   material.userData.fow = u;
   material.needsUpdate = true;
 }

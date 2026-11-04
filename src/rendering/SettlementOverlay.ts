@@ -36,7 +36,7 @@ export class SettlementOverlay {
   readonly group = new THREE.Group();
   private materials: THREE.Material[] = [];
 
-  private readonly roadWidth: number;
+  readonly roadWidth: number;
 
   constructor(
     readonly plan: SettlementPlan,
@@ -82,6 +82,24 @@ export class SettlementOverlay {
         borderMat,
       );
     }
+  }
+
+  /** True when a point falls on a planned field or road (plus a small margin). */
+  blocksGroundCover(x: number, z: number, margin = 0.6): boolean {
+    for (const field of this.plan.fields) {
+      const dx = x - field.x;
+      const dz = z - field.z;
+      const cos = Math.cos(field.yaw);
+      const sin = Math.sin(field.yaw);
+      const lx = dx * cos + dz * sin;
+      const lz = -dx * sin + dz * cos;
+      const half = field.size / 2 + margin;
+      if (Math.abs(lx) <= half && Math.abs(lz) <= half) return true;
+    }
+    for (const road of this.plan.roads) {
+      if (pointSegmentDistance(x, z, road.from, road.to) <= this.roadWidth / 2 + margin) return true;
+    }
+    return false;
   }
 
   private add(name: string, parts: THREE.BufferGeometry[], material: THREE.MeshStandardMaterial): void {
@@ -189,6 +207,19 @@ function fieldPoint(field: SettlementField, x: number, z: number): { x: number; 
   const cos = Math.cos(field.yaw);
   const sin = Math.sin(field.yaw);
   return { x: field.x + x * cos - z * sin, z: field.z + x * sin + z * cos };
+}
+
+function pointSegmentDistance(
+  x: number,
+  z: number,
+  from: { x: number; z: number },
+  to: { x: number; z: number },
+): number {
+  const vx = to.x - from.x;
+  const vz = to.z - from.z;
+  const len2 = Math.max(1e-4, vx * vx + vz * vz);
+  const t = Math.max(0, Math.min(1, ((x - from.x) * vx + (z - from.z) * vz) / len2));
+  return Math.hypot(x - (from.x + vx * t), z - (from.z + vz * t));
 }
 
 function subdivide(

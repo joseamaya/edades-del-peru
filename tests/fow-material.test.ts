@@ -24,6 +24,7 @@ describe('applyFow', () => {
     expect(uniforms.fowEnabled).toBe(fow.fowEnabled);
     expect(uniforms.fowMapSize).toBe(fow.mapSize);
     expect(vertex).toContain('vFowWorld');
+    expect(vertex).toContain('instanceMatrix * vec4(transformed');
     expect(fragment).toContain('uniform sampler2D fowMap');
     expect(fragment).toContain('texture2D(fowMap');
     expect(fragment).toContain('fowDim(');

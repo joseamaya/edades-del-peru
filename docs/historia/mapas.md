@@ -96,3 +96,10 @@ costa, `carveCanals` talla acequias superficiales (siempre por encima del nivel 
 pathfinding) y `planCulturalLandscape` coloca los elementos de forma determinista sobre terreno edificable. Es
 **solo visual** (como los landmarks): no añade entidades ni efectos de juego.
 
+
+La **cobertura de suelo** (`src/model/defs/groundCover.ts` + `src/rendering/GroundCover.ts`) es una capa
+visual instanciada y determinista: matas de pasto/hierbas en valles, ichu en la puna, helechos en la selva
+húmeda y guijarros/grava en la costa árida. Su densidad sale del splatmap, la humedad y la pendiente; no se
+coloca sobre agua, caminos, edificios, campos ni zonas reservadas. Se oculta en calidad baja y en el
+*fallback* por software, y respeta el FoW. Las especies son una **abstracción jugable** de la vegetación
+descrita en este documento, no una reconstrucción botánica.

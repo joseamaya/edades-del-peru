@@ -885,6 +885,7 @@ export class WorldViewDecor {
       applyFowToObject(overlay.group, this.game.fowUniforms);
       this.game.scene.add(overlay.group);
       this.game.settlements.push(overlay);
+      this.game.excludeGroundCoverForOverlay(overlay);
       index++;
     }
   }
@@ -896,6 +897,7 @@ export class WorldViewDecor {
     applyFowToObject(overlay.group, this.game.fowUniforms);
     this.game.scene.add(overlay.group);
     this.game.settlements.push(overlay);
+    this.game.excludeGroundCoverForOverlay(overlay);
   }
 
   /** Household/ritual props around a base (visual only, deterministic, no obstacles). */
@@ -955,5 +957,6 @@ export class WorldViewDecor {
     applyFowToObject(overlay.group, this.game.fowUniforms);
     this.game.scene.add(overlay.group);
     this.game.settlements.push(overlay);
+    this.game.excludeGroundCoverForOverlay(overlay);
   }
 }
