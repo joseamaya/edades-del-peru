@@ -23,6 +23,7 @@ import { clearResourceCaches } from '../rendering/ResourceNodeView';
 import { OrderMarkers } from '../entities/OrderMarker';
 import { TreeInstances } from '../rendering/TreeInstances';
 import { Props } from '../rendering/Props';
+import { GroundCover } from '../rendering/GroundCover';
 import { Wildlife } from '../rendering/Wildlife';
 import { clearFaunaTemplates } from '../rendering/faunaModels';
 import { clearModelAssets } from '../rendering/ModelAssets';
@@ -149,6 +150,8 @@ export class Game {
   setpieceLoadToken = 0;
   /** Cultural landscape (roads, fields, plazas, canals); visual only. */
   landscape: CulturalLandscape | null = null;
+  /** Instanced low ground cover (ichu/grass/ferns/gravel); visual only. */
+  groundCover: GroundCover | null = null;
   /** Per-base settlement overlays (planned fields/roads); visual only. */
   settlements: SettlementOverlay[] = [];
   /** Per-base settlement dressing (visual only). */
@@ -239,6 +242,11 @@ export class Game {
   private readonly forceCinematic: boolean;
   /** True when the renderer is a software rasterizer (safe profile applied). */
   private softwareFallback = false;
+
+  /** True when the renderer fell back to the software-safe profile. */
+  get usesSoftwareRenderer(): boolean {
+    return this.softwareFallback;
+  }
   /** One-shot death animations that outlive their entity (topple / collapse). */
   deathFx: DeathFx[] = [];
   private teardownHooks: (() => void)[] = [];
@@ -340,6 +348,7 @@ export class Game {
     }
     if (mis && !this.pendingSnapshot && !this.headless) this.applyMissionSetup(mis);
     if (this.pendingSnapshot) this.applySnapshot(this.pendingSnapshot);
+    if (!this.headless) this.initGroundCover();
     if (mis?.guaranteedFishing) this.world.ensureFishingGrounds(mis.guaranteedFishing);
     this.loop.onUpdate = (dt, t) => this.update(dt, t);
     this.loop.onRender = () => this.render();
@@ -492,6 +501,36 @@ export class Game {
       this.world.spawnResources();
     }
     this.world.spawnAmbient();
+  }
+
+  /** Build the static low cover after bases, fields and roads have claimed their ground. */
+  private initGroundCover(): void {
+    this.groundCover = new GroundCover(
+      this.terrain,
+      this.mapProfile,
+      this.settings.mapSeed,
+      { isExcluded: (x, z) => this.isGroundCoverExcluded(x, z) },
+      this.fowUniforms,
+    );
+    this.scene.add(this.groundCover.group);
+    this.groundCover.setEnabled(!(this.softwareFallback || this.settings.quality === 'low'));
+  }
+
+  /** Keep cover off buildings, resources, fields, roads, water and authored keep-outs. */
+  private isGroundCoverExcluded(x: number, z: number): boolean {
+    if (this.terrain.isWater(x, z) || this.terrain.getCanal(x, z) > 0.1) return true;
+    if (this.isReserved(x, z, false)) return true;
+    for (const b of this.buildings.values()) {
+      if (Math.hypot(x - b.pos.x, z - b.pos.z) < b.radius + 0.7) return true;
+    }
+    for (const n of this.resourceNodes.values()) {
+      if (Math.hypot(x - n.pos.x, z - n.pos.z) < n.radius + 0.4) return true;
+    }
+    for (const overlay of this.settlements) {
+      if (overlay.blocksGroundCover(x, z)) return true;
+    }
+    if (this.landscape?.blocksGroundCover(x, z)) return true;
+    return false;
   }
 
   private initHeadlessWorld(): void {
@@ -1007,7 +1046,15 @@ export class Game {
   /** Register a building and paint its footprint wear into the terrain splat. */
   addBuilding(b: Building): void {
     this.buildings.set(b.id, b);
-    if (!this.headless) this.terrain.paintWear(b.pos.x, b.pos.z, b.radius * 1.6, 0.9);
+    if (!this.headless) {
+      this.terrain.paintWear(b.pos.x, b.pos.z, b.radius * 1.6, 0.9);
+      this.groundCover?.excludeCircle(b.pos.x, b.pos.z, b.radius + 0.7);
+    }
+  }
+
+  /** Remove cover under a settlement/field/road overlay created after the initial plan. */
+  excludeGroundCoverForOverlay(overlay: SettlementOverlay): void {
+    this.groundCover?.excludeWhere((x, z) => overlay.blocksGroundCover(x, z));
   }
 
   attachResourceNode(
@@ -1291,6 +1338,10 @@ export class Game {
     const canvas = this.renderer.domElement;
     canvas.removeEventListener('webglcontextlost', this.onContextLost);
     canvas.removeEventListener('webglcontextrestored', this.onContextRestored);
+    if (this.groundCover) {
+      this.groundCover.dispose();
+      this.groundCover = null;
+    }
     this.terrain.dispose();
     this.sky.dispose();
     this.water.dispose();

@@ -773,7 +773,8 @@ and a sampled timeline (idle/blocked workers, stuck units, army, resources) with
 
 `yarn bench:check` runs the rig/fauna/mixed budgets with `--assert`: it fails when a worker or animal exceeds
 its structural draw-call/triangle budget, when a rigged entity silently falls back to the procedural model, or
-when the mixed scenario's simulation p95 exceeds one frame (16.6 ms). The budgets are machine-independent;
+when the mixed scenario's simulation p95 exceeds one frame (16.6 ms). It also asserts the ground-cover instance
+cap (16000) and chunk count. The budgets are machine-independent;
 FPS is not asserted because SwiftShader is not representative of a GPU.
 
 The full audit with 50/100/200/400/800 results, 20 AI seeds and the prioritized issue list is in

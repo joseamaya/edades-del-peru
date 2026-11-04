@@ -5,6 +5,7 @@ import type { SettlementPlan, SettlementField, SettlementRoad } from '../model/d
 import { applyGeneratedPbr } from './Biomes';
 import { buildRibbon } from './ribbon';
 import { scaleUv, GROUND_TILE } from '../util/uv';
+import { distanceToSegment } from '../util/math';
 
 const ROAD_WIDTH = 1.4;
 /** Length of a road sub-segment; the ribbon samples the terrain at each vertex. */
@@ -82,6 +83,24 @@ export class SettlementOverlay {
         borderMat,
       );
     }
+  }
+
+  /** True when a point falls on a planned field or road (plus a small margin). */
+  blocksGroundCover(x: number, z: number, margin = 0.6): boolean {
+    for (const field of this.plan.fields) {
+      const dx = x - field.x;
+      const dz = z - field.z;
+      const cos = Math.cos(field.yaw);
+      const sin = Math.sin(field.yaw);
+      const lx = dx * cos + dz * sin;
+      const lz = -dx * sin + dz * cos;
+      const half = field.size / 2 + margin;
+      if (Math.abs(lx) <= half && Math.abs(lz) <= half) return true;
+    }
+    for (const road of this.plan.roads) {
+      if (distanceToSegment(x, z, road.from, road.to) <= this.roadWidth / 2 + margin) return true;
+    }
+    return false;
   }
 
   private add(name: string, parts: THREE.BufferGeometry[], material: THREE.MeshStandardMaterial): void {

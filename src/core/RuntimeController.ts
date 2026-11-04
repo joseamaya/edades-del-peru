@@ -776,6 +776,14 @@ export class RuntimeController {
     const hemi = this.game.sky.getHemi();
     this.game.terrain.setHemisphere(hemi.color, hemi.groundColor, hemi.intensity);
     this.game.terrain.update(realTime);
+    this.game.groundCover?.setLighting(
+      this.game.sky.sunDir,
+      this.game.sky.getSunColor(),
+      hemi.color,
+      hemi.groundColor,
+      hemi.intensity,
+    );
+    this.game.groundCover?.update(realTime);
     // cloud shadows: dim the sun according to cloud density near the sun
     const cs = cloudDensity(this.game.sky.sunDir.x * 900 + realTime * 3, this.game.sky.sunDir.z * 900) * 0.22;
     this.game.terrain.setCloudShadow(1 - cs);
@@ -1088,6 +1096,7 @@ export class RuntimeController {
   applyQualityPreset(q: GameSettings['quality']): void {
     this.game.postfx.setQuality(q);
     this.game.terrain?.setLowDetail(q === 'low');
+    this.game.groundCover?.setEnabled(q !== 'low' && !this.game.usesSoftwareRenderer);
   }
 
   /** Force a render scale (`null` restores the default) and apply it immediately. */

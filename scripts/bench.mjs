@@ -500,6 +500,20 @@ async function measure(browser, base, n, runIndex) {
     };
   });
 
+  // Ground cover is hidden at low quality; count the planned instances so the
+  // structural budget still guards the planner.
+  const cover = await page.evaluate(() => {
+    const c = window.game.groundCover;
+    if (!c) return { present: false };
+    return {
+      present: true,
+      enabled: c.enabled,
+      instances: c.instanceCount,
+      chunks: c.chunkCount,
+      budget: c.instanceBudget,
+    };
+  });
+
   const destroyMs = await page.evaluate(() => {
     const g = window.game;
     g.loop.stop();
@@ -556,6 +570,7 @@ async function measure(browser, base, n, runIndex) {
     rigCost,
     scene,
     landscape,
+    cover,
     destroyMs,
     errors,
   };
@@ -671,6 +686,19 @@ async function main() {
   console.log(
     `\nlandscape: ${worst.landscape.landscapeCalls} draw calls (${worst.landscape.landscapeTris} tris, ${worst.landscape.landscapeMeshes} meshes), budget <= ${budgetOf(worst)}`,
   );
+  const coverWorst = rows.reduce((a, r) => ((r.cover?.instances ?? 0) > (a.cover?.instances ?? 0) ? r : a), rows[0]);
+  if (coverWorst?.cover?.present) {
+    console.log(
+      `\ncover: ${coverWorst.cover.instances} instances (${coverWorst.cover.chunks} chunks), budget <= ${coverWorst.cover.budget}`,
+    );
+  }
+  const coverOver = rows.filter((r) => (r.cover?.instances ?? 0) > (r.cover?.budget ?? 0));
+  if (coverOver.length) {
+    console.error(
+      `ground-cover instance budget exceeded: ${coverOver.map((r) => `${r.cover.instances} @ ${r.n}`).join(', ')}`,
+    );
+    process.exitCode = 1;
+  }
   const missing = rows.filter((r) => !(r.landscape.landscapeCalls > 0));
   const over = rows.filter((r) => r.landscape.landscapeCalls > budgetOf(r));
   if (missing.length) {
@@ -688,6 +716,11 @@ async function main() {
     const failures = [];
     for (const r of rows) {
       const c = r.rigCost;
+      if (r.cover?.present) {
+        if (r.cover.instances > r.cover.budget) {
+          failures.push(`${r.n}: ${r.cover.instances} cover instances > ${r.cover.budget}`);
+        }
+      }
       if (!c) continue;
       if (scenario === 'rigs' && c.units > 0) {
         if (r.riggedUnits !== r.startWorkers)
