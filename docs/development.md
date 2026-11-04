@@ -150,10 +150,11 @@ Definition of Done and the building audit see
   overrides the region profile's `atmosphere` in `Game.applyAtmosphere` (e.g. the Chavín mist), independent of
   `MissionDef.timeOfDay` (the day/night hour, already per mission).
 - **Death/collapse FX (visual only)**: `Unit.die()`/`Building.die()` keep the model in the scene; `Game` records
-  a one-shot `deathFx` (units topple, buildings sink + tilt with dust/fire) and frees the model when it ends.
-  Entities still leave `units`/`buildings` immediately, so AI/mission/save filters are unchanged. A building
-  collapse also spawns **instanced debris chunks** (`src/rendering/Debris.ts`, fixed pool: gravity + spin +
-  bounce) and a sustained fire/dust emission while it sinks.
+  a one-shot `deathFx` (units freeze their rig pose and topple; buildings sink + tilt with dust/fire). Units keep
+  a **corpse for 30 s** before cleanup; buildings collapse in ~1.1 s. Entities still leave `units`/`buildings`
+  immediately, so AI/mission/save filters are unchanged. A building collapse also spawns **instanced debris
+  chunks** (`src/rendering/Debris.ts`, fixed pool: gravity + spin + bounce). Damaged buildings use the shared
+  `DAMAGE_THRESHOLDS` bands: scorched (tinted + black smoke) and critical (fire, lean, rubble).
 - **Phased construction**: while `!constructionComplete`, `Building.update` grows the model out of the ground
   (`view.group.scale.y` eased by `buildRatio`); it is restored to 1 on completion. Visual only (the save already
   stores `constructionProgress`).
@@ -578,8 +579,8 @@ Local `*.glb` files live in `src/assets/models/`. The registry (`src/rendering/m
 asset id to its bundled URL, scale, yaw offset and **clip names**; the game states are
 `idle | walk | walk_carry | gather | build | attack | eat` (`RIG_CLIP_STATES` in
 `src/model/defs/modelAssets.ts`; `eat` is used by fauna). Only `idle` is mandatory; a missing state falls back to
-`idle`, and a requested attack with no action logs a `[rig]` warning instead of failing silently. Death stays on
-the existing topple FX until a rig-specific death flow exists.
+`idle`, and a requested attack with no action logs a `[rig]` warning instead of failing silently. Death freezes
+the rig pose (`RigInstance.playDeath`) and uses the shared topple/corpse FX; there is no dedicated death clip yet.
 
 Audit of the path this pipeline mirrors: procedural templates are cached by `type|scale|barrel|civ|era`,
 `instantiateTemplate` clones them with per-instance materials, buildings modernize by swapping the whole model,
@@ -657,7 +658,7 @@ an asset still has live rigs, so shared resources are never freed under an entit
 the visual harness for the pipeline.
 
 Next iteration for the worker: a dedicated construction clip (the current build state uses `Push_Loop`), a
-rig-specific death flow and, if needed, a worker attack clip. The mesh/outfit pilot is closed in #116; future
+dedicated death clip and, if needed, a worker attack clip. The mesh/outfit pilot is closed in #116; future
 historical changes must update the period dossier, the build script and `PROVENANCE.md` together.
 
 ## Rigged fauna (llama pilot)

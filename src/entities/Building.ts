@@ -24,6 +24,7 @@ interface ConstructionMaterial {
 }
 import { cosmeticRandom } from '../util/rng';
 import { advanceProduction } from '../game/systems/ProductionSystem';
+import { DAMAGE_THRESHOLDS, damageStageFor } from '../model/defs/damage';
 
 export class Building {
   id = allocId();
@@ -340,11 +341,11 @@ export class Building {
           }
         }
       }
-      if (dmgRatio > 0.65) {
+      if (damageStageFor(1 - dmgRatio) === 2) {
         this.damageFireTimer -= dt;
         if (this.damageFireTimer <= 0) {
-          this.damageFireTimer = 0.22 - (dmgRatio - 0.65) * 0.1;
-          for (let i = 0; i < (dmgRatio > 0.85 ? 2 : 1); i++) {
+          this.damageFireTimer = 0.22 - (dmgRatio - DAMAGE_THRESHOLDS.critical) * 0.1;
+          for (let i = 0; i < (dmgRatio > DAMAGE_THRESHOLDS.critical ? 2 : 1); i++) {
             this.ctx?.particles?.emit?.({
               x: this.pos.x + (cosmeticRandom() - 0.5) * this.radius,
               y: this.pos.y + this.radius * 0.7 + cosmeticRandom() * this.radius * 0.7,
@@ -400,7 +401,7 @@ export class Building {
     }
 
     this.view?.updateHealth(this.hp / this.maxHp);
-    this.view?.setDamageStage(1 - this.hp / this.maxHp);
+    this.view?.setDamageStage(this.hp / this.maxHp);
     this.view?.animatePulse(time);
   }
 

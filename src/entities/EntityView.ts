@@ -4,6 +4,7 @@ import { EntityRef } from '../core/types';
 import { facingRotation } from '../util/math';
 import type { Unit } from './Unit';
 import type { Building } from './Building';
+import { damageStageFor, type DamageStage } from '../model/defs/damage';
 
 /** How far above a unit's model the health bar floats. */
 const HEALTH_BAR_LIFT = 1.2;
@@ -18,7 +19,7 @@ export class EntityView {
   private hpFill: THREE.Mesh;
   private losRing: THREE.Mesh | null = null;
   private blobShadow: THREE.Mesh | null = null;
-  private damageStage = 0;
+  private damageStage: DamageStage = 0;
   private rubble: THREE.Group | null = null;
   private readonly originalColors = new Map<THREE.Material, THREE.Color>();
   readonly radius: number;
@@ -189,8 +190,19 @@ export class EntityView {
   }
 
   /** Building damage read: healthy -> scorched -> critical (leaning + rubble). */
-  setDamageStage(ratio: number): void {
-    const stage = ratio >= 0.85 ? 2 : ratio >= 0.65 ? 1 : 0;
+  get currentDamageStage(): DamageStage {
+    return this.damageStage;
+  }
+
+  /** Remove selection/health UI before the model becomes a corpse. */
+  hideCombatUi(): void {
+    if (this.ring) this.ring.visible = false;
+    if (this.healthBar) this.healthBar.visible = false;
+    if (this.losRing) this.losRing.visible = false;
+  }
+
+  setDamageStage(hpRatio: number): void {
+    const stage = damageStageFor(hpRatio);
     if (stage === this.damageStage) return;
     this.damageStage = stage;
     const tint = stage === 2 ? 0.55 : stage === 1 ? 0.8 : 1;

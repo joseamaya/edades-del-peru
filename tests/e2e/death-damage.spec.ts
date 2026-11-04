@@ -17,11 +17,10 @@ test('rigged units leave a persistent corpse after the fall', async ({ page }) =
     unit.takeDamage(9999);
     for (let i = 0; i < 10; i++) g.update(1 / 60, i / 60);
     const afterFall = g.deathFx.length;
+    const visibleCorpse = g.deathFx[0]?.view.group.visible ?? false;
     for (let i = 0; i < 60; i++) g.update(1 / 60, i / 60);
     const afterOneSecond = g.deathFx.length;
-    const fx = g.deathFx[0];
-    if (fx) fx.t = 30;
-    g.update(0.2, 0);
+    for (let i = 0; i < 1800; i++) g.update(1 / 60, i / 60);
     return {
       rigPresent: !!rig,
       rigFrozen: rig ? rig.currentState === null : false,
@@ -29,6 +28,7 @@ test('rigged units leave a persistent corpse after the fall', async ({ page }) =
       afterOneSecond,
       afterExpiry: g.deathFx.length,
       removed: !g.units.has(unit.id),
+      visibleCorpse,
     };
   });
   expect(result).toMatchObject({
@@ -38,6 +38,7 @@ test('rigged units leave a persistent corpse after the fall', async ({ page }) =
     afterOneSecond: 1,
     afterExpiry: 0,
     removed: true,
+    visibleCorpse: true,
   });
 });
 
@@ -50,14 +51,22 @@ test('buildings show scorched, then critical damage states', async ({ page }) =>
     const view = building.view;
     building.takeDamage(building.maxHp * 0.7);
     g.update(1 / 60, 0);
+    const scorchedStage = view.currentDamageStage;
     const scorchedLean = view.group.rotation.z;
     const scorchedRubble = !!view.group.getObjectByName('damage-rubble');
     building.takeDamage(building.maxHp * 0.2);
     g.update(1 / 60, 0);
+    const criticalStage = view.currentDamageStage;
     const criticalLean = view.group.rotation.z;
     const criticalRubble = view.group.getObjectByName('damage-rubble')?.visible ?? false;
-    return { scorchedLean, scorchedRubble, criticalLean, criticalRubble };
+    return { scorchedStage, scorchedLean, scorchedRubble, criticalStage, criticalLean, criticalRubble };
   });
-  expect(result).toMatchObject({ scorchedLean: 0, scorchedRubble: false, criticalRubble: true });
+  expect(result).toMatchObject({
+    scorchedStage: 1,
+    scorchedLean: 0,
+    scorchedRubble: false,
+    criticalStage: 2,
+    criticalRubble: true,
+  });
   expect((result as { criticalLean: number }).criticalLean).toBeGreaterThan(0);
 });

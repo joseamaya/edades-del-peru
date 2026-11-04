@@ -106,7 +106,6 @@ export class RigInstance {
     if (this.disposed) return;
     this.mixer.stopAllAction();
     this.current = null;
-    this.variant?.setTask?.('idle');
   }
 
   /** Adjust the current clip's playback rate (walk speed matching). */
