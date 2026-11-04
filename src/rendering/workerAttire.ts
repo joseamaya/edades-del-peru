@@ -4,6 +4,7 @@ import { applyGeneratedPbr } from './Biomes';
 import type { RigClipState, RigVariant } from '../model/defs/modelAssets';
 import type { RigInstance } from './RigInstance';
 import type { RigVariantHandle } from './rigVariants';
+import { createRigAttireTools } from './rigAttire';
 import {
   ANDEAN_SPECS,
   andeanCultureForVariant,
@@ -41,10 +42,18 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     (variant.includes('_worker_') ? 'worker' : variant.includes('_scout_') ? 'scout' : 'ranged');
   const worker = !chasqui && !scout && (!andean || role === 'worker');
   const male = variant.endsWith('_m');
-  const show = (name: string, visible: boolean): void => {
-    const mesh = root.getObjectByName(name);
-    if (mesh) mesh.visible = visible;
-  };
+  const tools = createRigAttireTools(root);
+  const {
+    track: trackGeometry,
+    material: makeMaterial,
+    show,
+    tint: tintGarment,
+    bone,
+    bonePosition,
+    attach,
+    enableShadows,
+    dispose: disposeAttire,
+  } = tools;
   show('Body_f', !male);
   show('Body_m', male);
   show('Hair_f', !male);
@@ -62,26 +71,6 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   show('attire_belt_chasqui', chasqui);
   root.updateMatrixWorld(true);
 
-  const ownedGeometries: THREE.BufferGeometry[] = [];
-  const ownedMaterials: THREE.Material[] = [];
-  const trackGeometry = <T extends THREE.BufferGeometry>(g: T): T => {
-    ownedGeometries.push(g);
-    return g;
-  };
-  const makeMaterial = (color: number, roughness: number): THREE.MeshStandardMaterial => {
-    const m = new THREE.MeshStandardMaterial({ color, roughness, metalness: 0 });
-    ownedMaterials.push(m);
-    return m;
-  };
-
-  const tintGarment = (name: string, color: number): void => {
-    const mesh = root.getObjectByName(name) as THREE.Mesh | null;
-    if (!mesh) return;
-    const material = (mesh.material as THREE.MeshStandardMaterial).clone();
-    material.color.setHex(color);
-    ownedMaterials.push(material);
-    mesh.material = material;
-  };
   if (chasqui) {
     tintGarment(male ? 'attire_tunic_m' : 'attire_tunic_f', 0xe8d8b8);
   }
@@ -96,30 +85,6 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   const carryMat = makeMaterial(0x8a6a3a, 0.95);
   const gourdMat = makeMaterial(0xb98a4a, 0.95);
   if (typeof document !== 'undefined') applyGeneratedPbr(carryMat, 'textile', { tint: 0x8a6a3a });
-
-  const bone = (name: string): THREE.Object3D | null => root.getObjectByName(name) ?? null;
-  const bonePosition = (name: string): THREE.Vector3 | null => {
-    const b = bone(name);
-    if (!b) return null;
-    b.updateWorldMatrix(true, false);
-    return b.getWorldPosition(new THREE.Vector3());
-  };
-  const enableShadows = (object: THREE.Object3D): void => {
-    object.traverse((child) => {
-      const mesh = child as THREE.Mesh;
-      if (!mesh.isMesh) return;
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-    });
-  };
-  const attach = (boneName: string, object: THREE.Object3D, position: THREE.Vector3): void => {
-    const b = bone(boneName);
-    if (!b) return;
-    object.position.copy(position);
-    object.updateMatrixWorld(true);
-    b.attach(object);
-    enableShadows(object);
-  };
 
   const head = bone('Head');
   if (head) {
@@ -319,8 +284,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       syncTool();
     },
     dispose(): void {
-      for (const g of ownedGeometries) g.dispose();
-      for (const m of ownedMaterials) m.dispose();
+      disposeAttire();
     },
   };
 }

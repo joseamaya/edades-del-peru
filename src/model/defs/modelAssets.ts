@@ -162,7 +162,7 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
     return { asset: 'quaternius_alpaca' };
   }
   const postColonial = postColonialCultureForCiv(civ);
-  if (postColonial && era >= (postColonial === 'realistas' ? Era.VICEROYALTY : Era.REPUBLIC)) {
+  if (postColonial && era === (postColonial === 'realistas' ? Era.VICEROYALTY : Era.REPUBLIC)) {
     const role: PostColonialRole | null =
       kind === UnitKind.SOLDIER
         ? 'soldier'
@@ -171,11 +171,9 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
             kind === UnitKind.SNIPER ||
             kind === UnitKind.ANTI_AIR
           ? 'ranged'
-          : kind === UnitKind.COMMISSAR
-            ? 'commissar'
-            : kind === UnitKind.MISSIONARY
-              ? 'missionary'
-              : null;
+          : kind === UnitKind.MISSIONARY
+            ? 'missionary'
+            : null;
     if (role) {
       const suffix = genderForId(id) === 'female' ? 'f' : 'm';
       return { asset: CARAL_WORKER_ASSET_ID, variant: `${postColonial}_${role}_${suffix}` };
@@ -201,7 +199,14 @@ function postColonialCultureForCiv(civ: CivId): PostColonialCulture | null {
 /** Models that must be ready before a match starts (all participating civs are covered). */
 export function modelAssetIdsForMatch(period: HistoricalPeriod, civs: readonly CivId[]): ModelAssetId[] {
   const era = getPeriod(period).level;
-  const kinds = [UnitKind.WORKER, UnitKind.SCOUT, UnitKind.SOLDIER, UnitKind.MUSKETEER, UnitKind.RIFLEMAN];
+  const kinds = [
+    UnitKind.WORKER,
+    UnitKind.SCOUT,
+    UnitKind.SOLDIER,
+    UnitKind.MUSKETEER,
+    UnitKind.RIFLEMAN,
+    UnitKind.MISSIONARY,
+  ];
   const rigged = civs.some(
     (civ) => getCiv(civ).periods.includes(period) && kinds.some((kind) => unitModelAsset(kind, era, civ) !== null),
   );

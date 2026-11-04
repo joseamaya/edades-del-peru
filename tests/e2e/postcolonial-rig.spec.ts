@@ -23,13 +23,14 @@ test('post-1532 infantry, ranged and missionary classes use the shared rig', asy
       hat: !!u.rig?.root.getObjectByName('attire_post_hat'),
       weapon: !!u.rig?.root.getObjectByName('attire_post_weapon'),
       cross: !!u.rig?.root.getObjectByName('attire_post_cross'),
+      sword: !!u.rig?.root.getObjectByName('attire_post_sword'),
     });
     return { soldier: read(soldier), ranged: read(ranged), missionary: read(missionary) };
   });
-  expect(result.soldier).toMatchObject({ rig: true, coat: true, hat: true, weapon: true, cross: false });
+  expect(result.soldier).toMatchObject({ rig: true, coat: true, hat: true, weapon: true, sword: true, cross: false });
   expect(result.soldier.variant).toMatch(/^realistas_soldier_[fm]$/);
   expect(result.ranged).toMatchObject({ rig: true, weapon: true });
   expect(result.ranged.variant).toMatch(/^realistas_ranged_[fm]$/);
-  expect(result.missionary).toMatchObject({ rig: true, cross: true, weapon: false });
+  expect(result.missionary).toMatchObject({ rig: true, cross: true, weapon: false, sword: false });
   expect(result.missionary.variant).toMatch(/^realistas_missionary_[fm]$/);
 });

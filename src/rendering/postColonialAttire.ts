@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { RigClipState, RigVariant } from '../model/defs/modelAssets';
 import type { RigInstance } from './RigInstance';
 import type { RigVariantHandle } from './rigVariants';
+import { createRigAttireTools } from './rigAttire';
 import {
   POST_COLONIAL_SPECS,
   isPostColonialVariant,
@@ -22,49 +23,8 @@ export function dressPostColonial(rig: RigInstance, variant: RigVariant): RigVar
   const role = postColonialRoleForVariant(variant);
   const root = rig.root;
   const male = variant.endsWith('_m');
-  const ownedGeometries: THREE.BufferGeometry[] = [];
-  const ownedMaterials: THREE.Material[] = [];
-  const track = <T extends THREE.BufferGeometry>(geometry: T): T => {
-    ownedGeometries.push(geometry);
-    return geometry;
-  };
-  const material = (color: number, roughness = 0.9, metalness = 0): THREE.MeshStandardMaterial => {
-    const m = new THREE.MeshStandardMaterial({ color, roughness, metalness });
-    ownedMaterials.push(m);
-    return m;
-  };
-  const show = (name: string, visible: boolean): void => {
-    const object = root.getObjectByName(name);
-    if (object) object.visible = visible;
-  };
-  const tint = (name: string, color: number): void => {
-    const mesh = root.getObjectByName(name) as THREE.Mesh | null;
-    if (!mesh) return;
-    const mat = (mesh.material as THREE.MeshStandardMaterial).clone();
-    mat.color.setHex(color);
-    ownedMaterials.push(mat);
-    mesh.material = mat;
-  };
-  const bone = (name: string): THREE.Object3D | null => root.getObjectByName(name) ?? null;
-  const bonePosition = (name: string): THREE.Vector3 | null => {
-    const b = bone(name);
-    if (!b) return null;
-    b.updateWorldMatrix(true, false);
-    return b.getWorldPosition(new THREE.Vector3());
-  };
-  const attach = (boneName: string, object: THREE.Object3D, position: THREE.Vector3): void => {
-    const b = bone(boneName);
-    if (!b) return;
-    object.position.copy(position);
-    object.updateMatrixWorld(true);
-    b.attach(object);
-    object.traverse((child) => {
-      const mesh = child as THREE.Mesh;
-      if (!mesh.isMesh) return;
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-    });
-  };
+  const tools = createRigAttireTools(root);
+  const { track, material, show, tint, bonePosition, attach, dispose } = tools;
 
   show('Body_f', !male);
   show('Body_m', male);
@@ -106,8 +66,15 @@ export function dressPostColonial(rig: RigInstance, variant: RigVariant): RigVar
     belt.name = 'attire_post_belt';
     belt.rotation.x = Math.PI / 2;
     attach('spine_03', belt, new THREE.Vector3(spine.x, spine.y - 0.34, spine.z));
+    if (spec.sidearm === 'sword' && role !== 'missionary') {
+      const scabbard = new THREE.Mesh(track(new THREE.BoxGeometry(0.025, 0.55, 0.04)), leatherMat);
+      scabbard.name = 'attire_post_sword';
+      scabbard.rotation.z = 0.35;
+      attach('spine_03', scabbard, new THREE.Vector3(spine.x + 0.2, spine.y - 0.28, spine.z + 0.08));
+    }
     if (role === 'missionary') {
-      const robe = new THREE.Mesh(track(new THREE.CylinderGeometry(0.22, 0.34, 0.85, 10, 1, true)), coatMat);
+      const robeMat = material(0x6a5a48, 0.95);
+      const robe = new THREE.Mesh(track(new THREE.CylinderGeometry(0.22, 0.34, 0.85, 10, 1, true)), robeMat);
       robe.name = 'attire_post_robe';
       attach('spine_03', robe, new THREE.Vector3(spine.x, spine.y - 0.45, spine.z));
       const crossMat = material(0xc8a040, 0.5, 0.4);
@@ -123,7 +90,7 @@ export function dressPostColonial(rig: RigInstance, variant: RigVariant): RigVar
   }
 
   if (head) {
-    const hatMat = material(spec.hat === 'morion' ? 0x8a8f94 : spec.hat === 'bicorn' ? 0x24262c : 0x2b2f36, 0.7);
+    const hatMat = material(spec.hatColor, 0.7);
     let hat: THREE.Mesh;
     if (spec.hat === 'morion') {
       hat = new THREE.Mesh(track(new THREE.ConeGeometry(0.14, 0.16, 8)), hatMat);
@@ -174,9 +141,6 @@ export function dressPostColonial(rig: RigInstance, variant: RigVariant): RigVar
       const weapon = root.getObjectByName('attire_post_weapon');
       if (weapon) weapon.visible = task !== 'build';
     },
-    dispose(): void {
-      for (const geometry of ownedGeometries) geometry.dispose();
-      for (const mat of ownedMaterials) mat.dispose();
-    },
+    dispose,
   };
 }

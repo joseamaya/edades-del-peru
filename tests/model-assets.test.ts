@@ -197,6 +197,7 @@ describe('rigged model assets', () => {
     expect(unitModelAsset(UnitKind.WORKER, Era.FORMATIVE, CivId.MOCHE)).toBeNull();
     expect(modelAssetIdsForMatch(HistoricalPeriod.ARCHAIC, [CivId.CARAL])).toContain('caral_worker');
     expect(modelAssetIdsForMatch(HistoricalPeriod.ARCHAIC, [CivId.MOCHE])).toEqual(['quaternius_alpaca']);
+    expect(modelAssetIdsForMatch(HistoricalPeriod.VICEROYALTY, [CivId.REALISTAS])).toContain('caral_worker');
   });
 
   it('maps post-1532 humanoid classes to colonial/republican rig variants', () => {
@@ -216,8 +217,23 @@ describe('rigged model assets', () => {
       asset: 'caral_worker',
       variant: 'chile_ranged_m',
     });
+    expect(unitModelAsset(UnitKind.SOLDIER, Era.REPUBLIC, CivId.REPUBLIC, 6)).toEqual({
+      asset: 'caral_worker',
+      variant: 'republica_soldier_f',
+    });
+    expect(unitModelAsset(UnitKind.SNIPER, Era.REPUBLIC, CivId.PATRIOTAS, 7)).toEqual({
+      asset: 'caral_worker',
+      variant: 'patriotas_ranged_m',
+    });
+    expect(unitModelAsset(UnitKind.COMMISSAR, Era.REPUBLIC, CivId.PATRIOTAS)).toBeNull();
+    expect(RIG_VARIANT_CLIPS.realistas_soldier_m?.attack).toBe('Punch_Jab');
+    expect(RIG_VARIANT_CLIPS.republica_ranged_f?.attack).toBe('Punch_Jab');
     expect(unitModelAsset(UnitKind.HUSSAR, Era.REPUBLIC, CivId.CHILE)).toBeNull();
+    expect(unitModelAsset(UnitKind.CAVALRY, Era.REPUBLIC, CivId.CHILE)).toBeNull();
+    expect(unitModelAsset(UnitKind.TANK, Era.REPUBLIC, CivId.CHILE)).toBeNull();
     expect(unitModelAsset(UnitKind.ARTILLERY, Era.REPUBLIC, CivId.CHILE)).toBeNull();
+    expect(unitModelAsset(UnitKind.MORTAR, Era.REPUBLIC, CivId.CHILE)).toBeNull();
+    expect(unitModelAsset(UnitKind.SOLDIER, Era.CONTEMPORARY, CivId.REPUBLIC)).toBeNull();
   });
 
   it('adds a coat, hat and firearm to a post-colonial rig', async () => {
