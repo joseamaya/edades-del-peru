@@ -34,6 +34,8 @@ export interface DeathFx {
   radius: number;
   building: boolean;
   emitTimer: number;
+  /** Seconds the fallen model stays in the scene before cleanup (units). */
+  corpseDur?: number;
   cleanup: () => void;
 }
 
@@ -941,13 +943,14 @@ export class RuntimeController {
     this.game.deathFx.push({
       view,
       t: 0,
-      dur: building ? 1.1 : 0.5,
+      dur: building ? 1.1 : 0.6,
       topple: building ? 0.12 : Math.PI * 0.5,
-      sink: building ? radius * 0.55 : 0.12,
+      sink: building ? radius * 0.55 : 0.06,
       baseY: view.group.position.y,
       radius,
       building,
       emitTimer: 0,
+      corpseDur: building ? undefined : 30,
       cleanup,
     });
   }
@@ -961,8 +964,10 @@ export class RuntimeController {
       const e = k * k; // ease-in: the fall accelerates
       fx.view.group.rotation.x = fx.topple * e;
       fx.view.group.position.y = fx.baseY - fx.sink * e;
-      const s = 1 - 0.18 * e;
-      fx.view.group.scale.set(s, Math.max(0.12, 1 - e), s);
+      if (fx.building) {
+        const s = 1 - 0.18 * e;
+        fx.view.group.scale.set(s, Math.max(0.12, 1 - e), s);
+      }
       if (fx.building && k < 1) {
         fx.emitTimer -= dt;
         if (fx.emitTimer <= 0) {
@@ -996,7 +1001,7 @@ export class RuntimeController {
           });
         }
       }
-      if (k >= 1) {
+      if (fx.t >= (fx.corpseDur ?? fx.dur)) {
         fx.cleanup();
       } else {
         alive.push(fx);

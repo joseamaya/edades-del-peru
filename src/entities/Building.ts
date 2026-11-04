@@ -24,6 +24,7 @@ interface ConstructionMaterial {
 }
 import { cosmeticRandom } from '../util/rng';
 import { advanceProduction } from '../game/systems/ProductionSystem';
+import { DAMAGE_THRESHOLDS, damageStageFor } from '../model/defs/damage';
 
 export class Building {
   id = allocId();
@@ -63,6 +64,7 @@ export class Building {
   tag?: string;
   private smokeTimer = cosmeticRandom() * 1.5;
   private damageSmokeTimer = 0;
+  private damageFireTimer = 0;
   /** Materials that were opaque, to restore them when construction finishes. */
   private constructionMats: Array<{ transparent: boolean; opacity: number; needsUpdate: boolean }> | null = null;
 
@@ -339,6 +341,26 @@ export class Building {
           }
         }
       }
+      if (damageStageFor(1 - dmgRatio) === 2) {
+        this.damageFireTimer -= dt;
+        if (this.damageFireTimer <= 0) {
+          this.damageFireTimer = 0.22 - (dmgRatio - DAMAGE_THRESHOLDS.critical) * 0.1;
+          for (let i = 0; i < (dmgRatio > DAMAGE_THRESHOLDS.critical ? 2 : 1); i++) {
+            this.ctx?.particles?.emit?.({
+              x: this.pos.x + (cosmeticRandom() - 0.5) * this.radius,
+              y: this.pos.y + this.radius * 0.7 + cosmeticRandom() * this.radius * 0.7,
+              z: this.pos.z + (cosmeticRandom() - 0.5) * this.radius,
+              count: 1,
+              color: 0xff7a20,
+              kind: 'fire',
+              speed: 0.8,
+              life: 0.55,
+              size: 1.2,
+              grow: 0.5,
+            });
+          }
+        }
+      }
     }
 
     // training queue: ProductionSystem owns the progress math
@@ -379,6 +401,7 @@ export class Building {
     }
 
     this.view?.updateHealth(this.hp / this.maxHp);
+    this.view?.setDamageRatio(this.hp / this.maxHp);
     this.view?.animatePulse(time);
   }
 

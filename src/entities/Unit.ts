@@ -658,7 +658,9 @@ export class Unit {
       });
       this.ctx.event('unit:died', { id: this.id, owner: this.owner, kind: this.kind });
     }
-    // the model stays in the scene: `Game` plays a short topple effect and disposes it
+    this.unitView?.rig?.playDeath();
+    this.unitView?.view.hideCombatUi();
+    // the model stays in the scene: `Game` topples it and keeps the corpse briefly
   }
 
   getGatherRate(resource: keyof Resources): number {
