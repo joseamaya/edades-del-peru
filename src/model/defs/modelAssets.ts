@@ -9,6 +9,14 @@ import {
   type AndeanRole,
   type AndeanRigVariant,
 } from './andeanCharacters';
+import {
+  POST_COLONIAL_CULTURES,
+  POST_COLONIAL_ROLES,
+  POST_COLONIAL_SPECS,
+  type PostColonialCulture,
+  type PostColonialRigVariant,
+  type PostColonialRole,
+} from './postColonialCharacters';
 
 /** Registered rigged models. Add the id here and to the rendering registry. */
 export type ModelAssetId = 'ual_mannequin' | 'quaternius_alpaca' | 'caral_worker';
@@ -29,7 +37,8 @@ export type RigVariant =
   | 'caral_scout_m'
   | 'inca_chasqui_f'
   | 'inca_chasqui_m'
-  | AndeanRigVariant;
+  | AndeanRigVariant
+  | PostColonialRigVariant;
 
 /** Animation states mapped to clips; `eat` is fauna-only. A rig may omit any state except `idle`. */
 export type RigClipState = 'idle' | 'walk' | 'walk_carry' | 'gather' | 'build' | 'attack' | 'eat';
@@ -59,6 +68,26 @@ const ANDEAN_CLIP_OVERRIDES: Record<AndeanRole, Partial<Record<RigClipState, str
   ranged: ANDEAN_NON_WORKER_CLIPS,
 };
 
+const POST_COLONIAL_VARIANT_CLIPS = Object.fromEntries(
+  POST_COLONIAL_CULTURES.flatMap((culture) =>
+    (['f', 'm'] as const).flatMap((gender) =>
+      POST_COLONIAL_ROLES.map(
+        (role) =>
+          [
+            `${culture}_${role}_${gender}`,
+            {
+              walk: 'Walk_Loop',
+              walk_carry: 'Walk_Loop',
+              gather: null,
+              build: null,
+              attack: role === 'missionary' ? null : 'Punch_Jab',
+            },
+          ] as const,
+      ),
+    ),
+  ),
+) as Partial<Record<PostColonialRigVariant, Partial<Record<RigClipState, string | null>>>>;
+
 const ANDEAN_VARIANT_CLIPS = Object.fromEntries(
   ANDEAN_CULTURES.flatMap((culture) =>
     (['f', 'm'] as const).flatMap((gender) =>
@@ -76,6 +105,7 @@ export const RIG_VARIANT_CLIPS: Partial<Record<RigVariant, Partial<Record<RigCli
   inca_chasqui_f: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
   inca_chasqui_m: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
   ...ANDEAN_VARIANT_CLIPS,
+  ...POST_COLONIAL_VARIANT_CLIPS,
 };
 
 /** Playback-rate reference for in-place walk clips (world units per second). */
@@ -131,6 +161,26 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
   if (kind === UnitKind.CARAVAN) {
     return { asset: 'quaternius_alpaca' };
   }
+  const postColonial = postColonialCultureForCiv(civ);
+  if (postColonial && era >= (postColonial === 'realistas' ? Era.VICEROYALTY : Era.REPUBLIC)) {
+    const role: PostColonialRole | null =
+      kind === UnitKind.SOLDIER
+        ? 'soldier'
+        : kind === UnitKind.MUSKETEER ||
+            kind === UnitKind.RIFLEMAN ||
+            kind === UnitKind.SNIPER ||
+            kind === UnitKind.ANTI_AIR
+          ? 'ranged'
+          : kind === UnitKind.COMMISSAR
+            ? 'commissar'
+            : kind === UnitKind.MISSIONARY
+              ? 'missionary'
+              : null;
+    if (role) {
+      const suffix = genderForId(id) === 'female' ? 'f' : 'm';
+      return { asset: CARAL_WORKER_ASSET_ID, variant: `${postColonial}_${role}_${suffix}` };
+    }
+  }
   if (andeanCulture) {
     const suffix = genderForId(id) === 'female' ? 'f' : 'm';
     const variant = (role: AndeanRole): RigVariant => `${andeanCulture}_${role}_${suffix}` as RigVariant;
@@ -142,6 +192,10 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
     }
   }
   return null;
+}
+
+function postColonialCultureForCiv(civ: CivId): PostColonialCulture | null {
+  return POST_COLONIAL_CULTURES.find((culture) => POST_COLONIAL_SPECS[culture].civ === civ) ?? null;
 }
 
 /** Models that must be ready before a match starts (all participating civs are covered). */

@@ -199,6 +199,36 @@ describe('rigged model assets', () => {
     expect(modelAssetIdsForMatch(HistoricalPeriod.ARCHAIC, [CivId.MOCHE])).toEqual(['quaternius_alpaca']);
   });
 
+  it('maps post-1532 humanoid classes to colonial/republican rig variants', () => {
+    expect(unitModelAsset(UnitKind.SOLDIER, Era.VICEROYALTY, CivId.REALISTAS, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'realistas_soldier_f',
+    });
+    expect(unitModelAsset(UnitKind.MUSKETEER, Era.VICEROYALTY, CivId.REALISTAS, 3)).toEqual({
+      asset: 'caral_worker',
+      variant: 'realistas_ranged_m',
+    });
+    expect(unitModelAsset(UnitKind.MISSIONARY, Era.REPUBLIC, CivId.PATRIOTAS, 4)).toEqual({
+      asset: 'caral_worker',
+      variant: 'patriotas_missionary_f',
+    });
+    expect(unitModelAsset(UnitKind.RIFLEMAN, Era.REPUBLIC, CivId.CHILE, 5)).toEqual({
+      asset: 'caral_worker',
+      variant: 'chile_ranged_m',
+    });
+    expect(unitModelAsset(UnitKind.HUSSAR, Era.REPUBLIC, CivId.CHILE)).toBeNull();
+    expect(unitModelAsset(UnitKind.ARTILLERY, Era.REPUBLIC, CivId.CHILE)).toBeNull();
+  });
+
+  it('adds a coat, hat and firearm to a post-colonial rig', async () => {
+    await load();
+    const rig = acquireRig('ual_mannequin', 'realistas_soldier_m')!;
+    expect(rig.root.getObjectByName('attire_post_coat')).toBeDefined();
+    expect(rig.root.getObjectByName('attire_post_hat')).toBeDefined();
+    expect(rig.root.getObjectByName('attire_post_weapon')).toBeDefined();
+    rig.dispose();
+  });
+
   it('ships a worker GLB with one skeleton, the worker clips and the cotton garment', () => {
     const file = fs.readFileSync(fileURLToPath(WORKER_URL));
     const jsonLength = file.readUInt32LE(12);
