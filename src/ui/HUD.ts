@@ -1945,7 +1945,7 @@ export class HUD {
     shell.innerHTML = `
       <div>
         <div class="ed-menu-kicker">${t('hud.menu.main.kicker')}</div>
-        <h1 class="ed-menu-title">${t('hud.menu.main.title')}</h1>
+        <h1 class="ed-menu-title">${t('hud.menu.main.titleTop')}<br>${t('hud.menu.main.titleBottom')}</h1>
         <p class="ed-menu-sub">${t('hud.menu.main.sub')}</p>
       </div>
       <div class="ed-menu-actions"></div>

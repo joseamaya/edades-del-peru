@@ -166,7 +166,8 @@ export const es = {
   'hud.building.source': 'Fuente: {citation} · {confidence}',
 
   'hud.menu.main.kicker': 'LA SENDA DEL SOL · 3000 A.C. — HOY',
-  'hud.menu.main.title': 'EDADES <br>DEL PERÚ',
+  'hud.menu.main.titleTop': 'EDADES',
+  'hud.menu.main.titleBottom': 'DEL PERÚ',
   'hud.menu.main.sub': 'Un juego de estrategia en tiempo real a través de cinco mil años de historia peruana.',
   'hud.menu.main.extras': 'Extras',
   'hud.menu.main.intro': 'Ver introducción',
