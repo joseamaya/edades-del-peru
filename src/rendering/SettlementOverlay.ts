@@ -50,14 +50,14 @@ export class SettlementOverlay {
       color: '#8a6a44',
       roughness: 1,
       transparent: true,
-      opacity: 0.3,
+      opacity: 0.25,
       depthWrite: false,
     });
     applyGeneratedPbr(roadMat, 'ground_road');
     this.add(
       'roads',
       plan.roads
-        .map((r) => roadGeometry(r, terrain.getHeight.bind(terrain), this.roadWidth * 0.55))
+        .map((r) => roadGeometry(r, terrain.getHeight.bind(terrain), this.roadWidth * 0.18))
         .filter((g): g is THREE.BufferGeometry => g !== null),
       roadMat,
     );

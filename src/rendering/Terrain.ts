@@ -820,31 +820,51 @@ ${FOW_DIM_GLSL}
     );
   }
 
+  /** Restore the original splat under a removed building. */
+  clearWear(x: number, z: number, radius: number, strength = 1): void {
+    const pad = radius * 1.35;
+    this.paintSplatRegion(
+      { minX: x - pad, maxX: x + pad, minZ: z - pad, maxZ: z + pad },
+      (wx, wz) => Math.hypot(wx - x, wz - z),
+      radius,
+      strength,
+      'clear',
+    );
+  }
+
   /** Paint a dirt/gravel path under a polyline (settlement and mission roads). */
   paintPath(points: { x: number; z: number }[], width: number, strength = 0.8): void {
     if (points.length < 2) return;
     const radius = Math.max(0.35, width / 2);
     const pad = radius * 1.35;
     for (let i = 0; i < points.length - 1; i++) {
-      const a = points[i];
-      const b = points[i + 1];
-      const vx = b.x - a.x;
-      const vz = b.z - a.z;
-      const len2 = Math.max(1e-4, vx * vx + vz * vz);
-      this.paintSplatRegion(
-        {
-          minX: Math.min(a.x, b.x) - pad,
-          maxX: Math.max(a.x, b.x) + pad,
-          minZ: Math.min(a.z, b.z) - pad,
-          maxZ: Math.max(a.z, b.z) + pad,
-        },
-        (wx, wz) => {
-          const t = Math.max(0, Math.min(1, ((wx - a.x) * vx + (wz - a.z) * vz) / len2));
-          return Math.hypot(wx - (a.x + vx * t), wz - (a.z + vz * t));
-        },
-        radius,
-        strength,
-      );
+      const from = points[i];
+      const to = points[i + 1];
+      const length = Math.hypot(to.x - from.x, to.z - from.z);
+      const steps = Math.max(1, Math.ceil(length / 2));
+      for (let step = 0; step < steps; step++) {
+        const t0 = step / steps;
+        const t1 = (step + 1) / steps;
+        const a = { x: from.x + (to.x - from.x) * t0, z: from.z + (to.z - from.z) * t0 };
+        const b = { x: from.x + (to.x - from.x) * t1, z: from.z + (to.z - from.z) * t1 };
+        const vx = b.x - a.x;
+        const vz = b.z - a.z;
+        const len2 = Math.max(1e-4, vx * vx + vz * vz);
+        this.paintSplatRegion(
+          {
+            minX: Math.min(a.x, b.x) - pad,
+            maxX: Math.max(a.x, b.x) + pad,
+            minZ: Math.min(a.z, b.z) - pad,
+            maxZ: Math.max(a.z, b.z) + pad,
+          },
+          (wx, wz) => {
+            const t = Math.max(0, Math.min(1, ((wx - a.x) * vx + (wz - a.z) * vz) / len2));
+            return Math.hypot(wx - (a.x + vx * t), wz - (a.z + vz * t));
+          },
+          radius,
+          strength,
+        );
+      }
     }
   }
 
@@ -853,6 +873,7 @@ ${FOW_DIM_GLSL}
     distance: (wx: number, wz: number) => number,
     radius: number,
     strength: number,
+    mode: 'wear' | 'clear' = 'wear',
   ): void {
     const size = this.splat.size;
     const worldSize = this.size;
@@ -873,10 +894,19 @@ ${FOW_DIM_GLSL}
         const weight = Math.max(0, Math.min(1, strength * edge));
         if (weight <= 0.001) continue;
         const i = (tz * size + tx) * 4;
-        const grass = (base[i] / 255) * (1 - weight);
-        const dirt = Math.min(1, base[i + 1] / 255 + weight);
-        const sand = (base[i + 2] / 255) * (1 - weight * 0.65);
-        const rock = (base[i + 3] / 255) * (1 - weight * 0.5);
+        if (mode === 'clear') {
+          const keep = 1 - weight;
+          out[i] = Math.round(base[i] + (out[i] - base[i]) * keep);
+          out[i + 1] = Math.round(base[i + 1] + (out[i + 1] - base[i + 1]) * keep);
+          out[i + 2] = Math.round(base[i + 2] + (out[i + 2] - base[i + 2]) * keep);
+          out[i + 3] = Math.round(base[i + 3] + (out[i + 3] - base[i + 3]) * keep);
+          changed = true;
+          continue;
+        }
+        const grass = (out[i] / 255) * (1 - weight);
+        const dirt = Math.min(1, out[i + 1] / 255 + weight);
+        const sand = (out[i + 2] / 255) * (1 - weight * 0.65);
+        const rock = (out[i + 3] / 255) * (1 - weight * 0.5);
         const sum = grass + dirt + sand + rock;
         const inv = sum > 0 ? 1 / sum : 1;
         out[i] = Math.round(grass * inv * 255);

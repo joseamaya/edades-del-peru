@@ -251,7 +251,7 @@ export async function boot(): Promise<void> {
                 b.attach(game.scene);
                 b.beginConstruction();
                 b.addBuildProgress(9999);
-                game.buildings.set(b.id, b);
+                game.addBuilding(b);
               }
             }
           }
