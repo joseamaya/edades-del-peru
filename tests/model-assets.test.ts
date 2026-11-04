@@ -124,6 +124,17 @@ describe('rigged model assets', () => {
     rig.dispose();
   });
 
+  it('freezes a rig pose for a corpse', async () => {
+    await load();
+    const rig = acquireRig('ual_mannequin')!;
+    rig.play('walk', 0);
+    rig.update(0.25);
+    rig.playDeath();
+    expect(rig.currentState).toBeNull();
+    rig.update(1);
+    rig.dispose();
+  });
+
   it('falls back to the procedural path when a rig is not preloaded', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     expect(acquireRig('ual_mannequin')).toBeNull();

@@ -101,6 +101,14 @@ export class RigInstance {
     this.variant?.setTask?.(actual);
   }
 
+  /** Freeze the current pose for a corpse; the caller topples the root. */
+  playDeath(): void {
+    if (this.disposed) return;
+    this.mixer.stopAllAction();
+    this.current = null;
+    this.variant?.setTask?.('idle');
+  }
+
   /** Adjust the current clip's playback rate (walk speed matching). */
   setPlaybackRate(rate: number): void {
     if (this.disposed || !this.current) return;

@@ -18,6 +18,9 @@ export class EntityView {
   private hpFill: THREE.Mesh;
   private losRing: THREE.Mesh | null = null;
   private blobShadow: THREE.Mesh | null = null;
+  private damageStage = 0;
+  private rubble: THREE.Group | null = null;
+  private readonly originalColors = new Map<THREE.Material, THREE.Color>();
   readonly radius: number;
   /** Invisible box standing in for the whole model in raycasts (one test per entity). */
   readonly pickProxy: THREE.Mesh;
@@ -185,6 +188,60 @@ export class EntityView {
     this.healthBar.quaternion.copy(world).multiply(cameraQuaternion);
   }
 
+  /** Building damage read: healthy -> scorched -> critical (leaning + rubble). */
+  setDamageStage(ratio: number): void {
+    const stage = ratio >= 0.85 ? 2 : ratio >= 0.65 ? 1 : 0;
+    if (stage === this.damageStage) return;
+    this.damageStage = stage;
+    const tint = stage === 2 ? 0.55 : stage === 1 ? 0.8 : 1;
+    const skip = new Set<THREE.Object3D>();
+    for (const object of [
+      this.pickProxy,
+      this.hpBg,
+      this.hpFill,
+      this.ring,
+      this.losRing,
+      this.blobShadow,
+      this.rubble,
+    ]) {
+      if (object) skip.add(object);
+    }
+    this.group.traverse((object) => {
+      const mesh = object as THREE.Mesh;
+      if (!mesh.isMesh || skip.has(mesh)) return;
+      const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      for (const material of materials) {
+        const mat = material as THREE.MeshStandardMaterial;
+        if (!mat?.color) continue;
+        let original = this.originalColors.get(mat);
+        if (!original) {
+          original = mat.color.clone();
+          this.originalColors.set(mat, original);
+        }
+        mat.color.copy(original).multiplyScalar(tint);
+      }
+    });
+    this.group.rotation.z = stage === 2 ? 0.035 : 0;
+    if (stage === 2 && !this.rubble) this.rubble = this.buildRubble();
+    if (this.rubble) this.rubble.visible = stage === 2;
+  }
+
+  private buildRubble(): THREE.Group {
+    const group = new THREE.Group();
+    group.name = 'damage-rubble';
+    const material = new THREE.MeshStandardMaterial({ color: 0x5c5246, roughness: 1, metalness: 0 });
+    for (let i = 0; i < 4; i++) {
+      const size = 0.12 + (i % 2) * 0.08;
+      const chunk = new THREE.Mesh(new THREE.BoxGeometry(size, size * 0.6, size * 1.2), material);
+      const angle = (i / 4) * Math.PI * 2 + 0.4;
+      chunk.position.set(Math.cos(angle) * this.radius * 0.55, size * 0.3, Math.sin(angle) * this.radius * 0.55);
+      chunk.rotation.set(0.2 * i, angle, 0.1 * i);
+      group.add(chunk);
+    }
+    this.group.add(group);
+    return group;
+  }
+
   /** Vision-radius ring (debug/effect). */
   showLosRing(show: boolean, radius: number): void {
     if (!this.losRing) {
@@ -229,6 +286,19 @@ export class EntityView {
     kill(this.losRing);
     kill(this.hpBg);
     kill(this.hpFill);
+    if (this.rubble) {
+      this.rubble.traverse((o) => {
+        const mesh = o as THREE.Mesh;
+        if (!mesh.isMesh) return;
+        mesh.geometry.dispose();
+        const mat = mesh.material;
+        if (Array.isArray(mat)) mat.forEach((x) => x.dispose());
+        else if (mat && 'dispose' in mat) (mat as THREE.Material).dispose();
+      });
+      this.rubble.removeFromParent();
+      this.rubble = null;
+    }
+    this.originalColors.clear();
     this.pickProxy.geometry.dispose();
     this.pickProxy.removeFromParent();
     this.healthBar?.removeFromParent();

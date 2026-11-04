@@ -68,6 +68,14 @@ Distinguishing rule of thumb (the classic "biome" trap to avoid):
 - **Altiplano** is not just grass: it is a high plateau **plus** lake, bofedales
   and adapted agriculture.
 
+## Death and damage
+
+Rigged units freeze their current pose and topple over ~0.6 s; the corpse stays
+in the scene for 30 s before cleanup (no gameplay effect, no obstacle). Buildings
+use three readable damage states: healthy, scorched (darker materials + black
+smoke), and critical (heavier tint, fire particles, a slight lean and a small
+rubble ring). The final collapse/debris burst still comes from `DeathFx`.
+
 ## Architecture
 
 Each civilization has a `CivDef.visual.arch` (`ArchStyle`) and a resolved
