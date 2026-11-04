@@ -511,7 +511,8 @@ Definition of Done and the building audit see
   summit bands. `HistoricalMapProfile.region` selects the palette and `SiteTerrainStyle.palette` overrides it
   (Caral). The shader mixes one band colour with the tinted albedo by `textureMix`; do not reintroduce the old
   aridity/vegetation/temperature multiplier chain. Terrain lighting shares the scene hemisphere light
-  (`Terrain.setHemisphere`, fed by `Sky.getHemi`) plus the sun/cloud shadow.
+  (`Terrain.setHemisphere`, fed by `Sky.getHemi`) plus the sun/cloud shadow. Before/after evidence:
+  `docs/media/terrain-palettes-before-after.webp` (left `main`, right this palette pass).
 - **Terrain faces must point up**: in `Terrain.buildMesh` the indices go `(a,c,b)` and `(b,c,d)` (not `(a,b,c)`).
   Inverting the winding makes faces point down: backface culling hides the terrain and the sky dome appears as if
   it were the ground. Verify with a vertical `Raycaster` that hits the terrain.
