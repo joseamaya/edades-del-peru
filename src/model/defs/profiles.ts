@@ -146,9 +146,6 @@ export function applyMapOverrides(
 /** Sea/lake level shared by every map (matches `Terrain.waterLevel`). */
 export const WATER_LEVEL = 2.2;
 
-/** Warm multiplier for the desaturated CC0 coastal sand. */
-const COAST_GROUND_TINT = '#d8c6a4';
-
 const MAPTYPE_REGION: Record<MapType, GeographicRegion> = {
   coast: 'central_coast',
   andes: 'andean_valley',
@@ -266,7 +263,6 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     climate: { aridity: 0.92, moisture: 0.28, temperature: 0.82 },
     water: { level: WATER_LEVEL, inland: false, wetland: true },
     vegetation: { density: 0.06, variants: { broad: 1 } },
-    groundTint: COAST_GROUND_TINT,
     resources: { tree: 0.3, mine: 0.4, well: 0.2, berry: 0.15, hunt: 12, fishing: 8 },
     atmosphere: { fogDensity: 0.0016, sunWarmth: 1.05, skyTint: '#dfe4d8' },
     landmark: null,
@@ -282,7 +278,6 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     climate: { aridity: 0.82, moisture: 0.35, temperature: 0.8 },
     water: { level: WATER_LEVEL, inland: false, wetland: true },
     vegetation: { density: 0.18, variants: { algarrobo: 0.52, sauce: 0.18, molle: 0.2, pacay: 0.1 } },
-    groundTint: COAST_GROUND_TINT,
     resources: { tree: 0.4, mine: 0.12, well: 0.28, berry: 0.25, hunt: 12, fishing: 8 },
     atmosphere: { fogDensity: 0.0018, sunWarmth: 1.0, skyTint: '#e2e6dc' },
     landmark: null,
@@ -299,7 +294,6 @@ export const MAP_PROFILES: Record<GeographicRegion, HistoricalMapProfile> = {
     water: { level: WATER_LEVEL, inland: false, wetland: false },
     vegetation: { density: 0.04, variants: { broad: 1 } },
     groundPbr: { sand: 'coastal_gravel' },
-    groundTint: COAST_GROUND_TINT,
     resources: { tree: 0.25, mine: 0.45, well: 0.15, berry: 0.1, hunt: 8, fishing: 10 },
     atmosphere: { fogDensity: 0.0012, sunWarmth: 1.08, skyTint: '#e6e2d6' },
     landmark: null,

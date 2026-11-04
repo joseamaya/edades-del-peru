@@ -33,12 +33,15 @@ and the `Terrain` shader (`src/rendering/Terrain.ts`).
 | `altiplano`     | high plateau + lake                 | `soil: peaty`, `wetland`, lake, vegetation 0.15                  |
 | `amazon`        | high jungle                         | `soil: clay`, vegetation 1.0, humid                              |
 
-Terrain blending (`Terrain.ts` fragment shader) is procedural and slot-based
-(`sand`, `dirt`, `grass`, `rock`, `snow`), combined by **slope**, **elevation**
-(`snowLine`), **aridity** (`sand`/`dirt` push), **vegetation** (green tint) and
-**temperature** (cool → bluish, hot → warm). The same weather reads on the
-horizon through each region's `atmosphere` (`skyTint`, `fogDensity`, `sunWarmth`)
-— an **abstraction** of the documented geography, applied as aerial perspective.
+Terrain blending is data-driven: `src/model/defs/terrainPalettes.ts` owns the
+material tints (`grass`, `dirt`, `sand`, `rock`, `snow`) and the macro bands
+(valley, slope, loma, summit). `HistoricalMapProfile.region` selects the palette;
+`SiteTerrainStyle.palette` overrides it for authored sites (Caral). The shader
+mixes the band colour with the tinted PBR albedo by `textureMix`, so biomes differ
+in luminance and hue rather than by a chain of tint multipliers. Lighting uses the
+sun plus the scene hemisphere light (`Sky`), and the region `atmosphere`
+(`skyTint`, `fogDensity`, `sunWarmth`) still supplies aerial perspective — an
+**abstraction** of the documented geography.
 
 Distinguishing rule of thumb (the classic "biome" trap to avoid):
 
