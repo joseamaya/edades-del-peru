@@ -23,6 +23,10 @@ function stringLiterals(file: string): { line: number; value: string }[] {
   const visit = (node: ts.Node): void => {
     if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
       out.push({ line: sf.getLineAndCharacterOfPosition(node.getStart()).line + 1, value: node.text });
+    } else if (ts.isTemplateExpression(node)) {
+      const line = sf.getLineAndCharacterOfPosition(node.getStart()).line + 1;
+      out.push({ line, value: node.head.text });
+      for (const span of node.templateSpans) out.push({ line, value: span.literal.text });
     }
     ts.forEachChild(node, visit);
   };
@@ -34,7 +38,16 @@ describe('i18n', () => {
   it('interpolates named parameters', () => {
     expect(t('hud.tutorial.step', { current: 2, total: 5 })).toBe('Paso 2 / 5');
     expect(
-      t('hud.unit.stats', { hp: 10, maxHp: 10, attack: 3, range: 1, armor: 0, counters: '', stance: 'x' }),
+      t('hud.unit.stats', {
+        hp: 10,
+        maxHp: 10,
+        attack: 3,
+        range: 1,
+        armor: 0,
+        counters: '',
+        stance: 'x',
+        stanceLabel: 'x',
+      }),
     ).toContain('HP 10/10');
   });
 

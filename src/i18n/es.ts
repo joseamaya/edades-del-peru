@@ -76,7 +76,6 @@ export const es = {
   'hud.pause.sub': 'La partida está detenida',
   'hud.pause.resume': '▶ Reanudar',
   'hud.pause.save': '💾 Guardar partida',
-  'hud.pause.techTree': '🌳 Árbol tecnológico',
   'hud.pause.options': '⚙️ Opciones',
   'hud.pause.mainMenu': '🏠 Menú principal',
   'hud.pause.quit': '🏳 Abandonar',
@@ -117,7 +116,6 @@ export const es = {
   'hud.ordinal.third': 'tercera',
   'hud.ordinal.fourth': 'cuarta',
 
-  'hud.mission.fallbackTitle': 'La Ciudad Sagrada',
   'hud.missionCard.hint': 'Haz clic para continuar',
   'hud.missionCard.aria': 'Continuar a la misión',
 
@@ -149,7 +147,7 @@ export const es = {
   'hud.unit.strong': ' · Fuerte contra: {targets}',
   'hud.unit.weak': ' · Débil contra: {targets}',
   'hud.unit.stats':
-    'HP {hp}/{maxHp} · Daño {attack} · Rango {range} · Blindaje {armor}{counters} · <span title="{stance}">Postura: {stance}</span>',
+    'HP {hp}/{maxHp} · Daño {attack} · Rango {range} · Blindaje {armor}{counters} · <span title="{stance}">Postura: {stanceLabel}</span>',
 
   'hud.building.underConstruction': 'En construcción',
   'hud.building.buy': 'Comprar {resource}',
@@ -158,7 +156,6 @@ export const es = {
   'hud.building.replant': 'Replantar',
   'hud.building.house': 'Vivienda',
   'hud.building.farm': 'Granja',
-  'hud.building.techTree': '🌳 Árbol tecnológico',
   'hud.building.rally': '📍 Punto de reunión',
   'hud.building.ungarrison': '🚪 Desembarcar ({count})',
   'hud.building.armor': 'HP {hp}/{maxHp} · Blindaje {armor}',

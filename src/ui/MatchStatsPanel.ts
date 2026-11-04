@@ -1,6 +1,7 @@
 import { TECHS } from '../model/defs/techs';
 import { ERA_DEFS } from '../model/defs/eras';
 import { RESOURCE_KEYS, type Resources } from '../core/types';
+import { RESOURCE_INFO } from '../core/Config';
 import type { MatchSnapshot, PlayerSnapshot } from '../game/matchStats';
 import { t } from '../i18n';
 
@@ -10,13 +11,6 @@ export interface MatchStatsPlayerMeta {
   civ: string;
   colorHex: string;
 }
-
-const RESOURCE_LABEL: Record<keyof Resources, string> = {
-  food: t('resource.food'),
-  wood: t('resource.wood'),
-  silver: t('resource.silver'),
-  stone: t('resource.stone'),
-};
 
 const RESOURCE_COLOR: Record<keyof Resources, string> = {
   food: 'var(--stats-food)',
@@ -149,13 +143,13 @@ function economy(samples: MatchSnapshot[], players: PlayerSnapshot[], playerId: 
   if (!player) return `<div class="ed-stats-empty">${t('hud.stats.noEconomy')}</div>`;
   const gatherRows = RESOURCE_KEYS.map(
     (key) =>
-      `<div class="ed-stats-card"><b>${RESOURCE_LABEL[key]}</b><strong>${Math.round(
+      `<div class="ed-stats-card"><b>${RESOURCE_INFO[key].name}</b><strong>${Math.round(
         player.gathered[key],
       )}</strong><span>${t('hud.stats.gathered')}</span></div>`,
   ).join('');
   const times = samples.map((s) => s.t);
   const series = RESOURCE_KEYS.map((key) => ({
-    label: RESOURCE_LABEL[key],
+    label: RESOURCE_INFO[key].name,
     color: RESOURCE_COLOR[key],
     values: seriesFor(samples, player.id, (p) => p.gathered[key]),
   }));
