@@ -143,7 +143,7 @@ export class RuntimeController {
       const b = new Building(bs.kind, bs.owner, bs.era);
       this.game.attachBuilding(b);
       b.applySave(bs);
-      this.game.buildings.set(b.id, b);
+      this.game.addBuilding(b);
       this.game.registerObstacle(b);
     }
 
@@ -900,6 +900,7 @@ export class RuntimeController {
           this.game.obstacleHandles.delete(b.id);
         }
         if (b.view) this.spawnDeathFx(b.view, 'building', b.radius, () => detachBuilding(b));
+        this.game.terrain.clearWear(b.pos.x, b.pos.z, b.radius * 1.6);
         this.game.buildings.delete(id);
       }
     }

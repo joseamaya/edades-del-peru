@@ -1357,10 +1357,6 @@ function addCivAccent(b: Builder): void {
 
 // --- building pieces ---
 
-function groundPad(b: Builder, size: number): void {
-  b.box(size * 2.2, 0.14, size * 2.2, '#e9e0cd', { y: 0.07, roughness: 0.95, tex: 'dirt', texScale: 1.4 });
-}
-
 /** Windows with frame and glowing glass, on one face of a box of width `w`. */
 function addWindows(
   b: Builder,
@@ -1702,7 +1698,6 @@ function buildAndeanStructure(b: Builder, o: AndeanOpts): void {
   const wall = andeanWall(b);
   const tex = andeanTex(b);
   const tiers = o.tiers ?? 1;
-  b.box(w * 1.5, 0.12, w * 1.5, mixHex(b.pal.primary, '#cbbfa4', 0.7), { y: 0.06, tex: 'dirt', texScale: 1.4 });
   const baseY = andeanFoundation(b, w, tiers);
   b.box(w * 0.9, w * 0.62, w * 0.9, wall, { y: baseY + w * 0.31, tex });
   const masonry = b.arch.wall === 'cut-stone' || b.arch.wall === 'megalithic' || b.arch.wall === 'fieldstone';
@@ -2069,7 +2064,6 @@ function buildHouse(b: Builder, size: number, grand: boolean): void {
     buildAndeanHouse(b, size, grand);
     return;
   }
-  groundPad(b, size);
   const w = size;
   const wallTint = mixHex(b.pal.wood, '#ffffff', 0.52);
   // main wall with a wood grain
@@ -2121,7 +2115,6 @@ function buildCivic(b: Builder, size: number, matType: 'stone' | 'brick', center
     buildAndeanCivic(b, size, false, center);
     return;
   }
-  groundPad(b, size);
   const wallTint = matType === 'stone' ? '#ece5d8' : '#f0e2d0';
   const w = size;
   b.box(w * 0.9, w * 0.6, w * 0.9, wallTint, { y: w * 0.3, tex: facadeTex(b, matType), roughness: 0.85 });
@@ -2162,7 +2155,6 @@ function buildConcrete(b: Builder, size: number, tower: boolean, radar = false):
     buildAndeanCivic(b, size, tower, tower);
     return;
   }
-  groundPad(b, size);
   const w = size;
   b.box(w * 0.92, w * 0.55, w * 0.92, mixHex(b.pal.concrete, '#ffffff', 0.62), {
     y: w * 0.28,
@@ -2195,7 +2187,6 @@ function buildConcrete(b: Builder, size: number, tower: boolean, radar = false):
 }
 
 function buildModern(b: Builder, size: number, tower: boolean): void {
-  groundPad(b, size);
   const w = size;
   b.box(w * 0.94, w * 0.6, w * 0.94, mixHex(b.pal.metal, '#ffffff', 0.45), {
     y: w * 0.3,
@@ -2238,7 +2229,6 @@ function buildBarracks(b: Builder, size: number, wallType: 'wood' | 'brick'): vo
     buildAndeanMilitary(b, size, false);
     return;
   }
-  groundPad(b, size);
   const w = size;
   const wallTint = wallType === 'wood' ? mixHex(b.pal.wood, '#ffffff', 0.5) : mixHex(b.pal.brick, '#ffffff', 0.5);
   const roofTint = mixHex(b.pal.roof, '#ffffff', 0.58);
@@ -2273,7 +2263,6 @@ function buildStable(b: Builder, size: number, wallType: 'wood' | 'brick'): void
     buildAndeanMilitary(b, size, false);
     return;
   }
-  groundPad(b, size);
   const w = size;
   const wallTint = wallType === 'wood' ? mixHex(b.pal.wood, '#ffffff', 0.5) : mixHex(b.pal.brick, '#ffffff', 0.5);
   const roofTint = mixHex(b.pal.roof, '#ffffff', 0.58);
@@ -2308,7 +2297,6 @@ function buildMilitary(b: Builder, size: number, antenna: boolean): void {
     buildAndeanMilitary(b, size, antenna);
     return;
   }
-  groundPad(b, size);
   const w = size;
   b.box(w * 0.92, w * 0.5, w * 0.8, mixHex(b.pal.concrete, '#ffffff', 0.62), {
     y: w * 0.25,
@@ -2343,7 +2331,6 @@ function buildFactory(b: Builder, size: number, wallType: 'brick' | 'wood'): voi
     buildAndeanStructure(b, { size, tiers: 1, roof: 'flat', banner: true });
     return;
   }
-  groundPad(b, size);
   const w = size;
   const wallTint = wallType === 'brick' ? mixHex(b.pal.brick, '#ffffff', 0.5) : mixHex(b.pal.wood, '#ffffff', 0.5);
   b.box(w * 1.0, w * 0.55, w * 0.8, wallTint, { y: w * 0.28, tex: facadeTex(b, wallType) });
@@ -2364,7 +2351,6 @@ function buildFortress(b: Builder, size: number, matType: 'stone' | 'concrete'):
     buildAndeanFortress(b, size);
     return;
   }
-  groundPad(b, size);
   const w = size;
   const wallTint = matType === 'stone' ? mixHex(b.pal.stone, '#ffffff', 0.5) : mixHex(b.pal.concrete, '#ffffff', 0.62);
   // central tower
@@ -2417,7 +2403,6 @@ function buildMarket(b: Builder, size: number, wallType: 'wood' | 'brick'): void
     buildAndeanMarket(b, size);
     return;
   }
-  groundPad(b, size);
   const w = size;
   const wallTint = wallType === 'wood' ? mixHex(b.pal.wood, '#ffffff', 0.5) : mixHex(b.pal.brick, '#ffffff', 0.5);
   b.box(w * 0.9, w * 0.4, w * 0.7, wallTint, { y: w * 0.2, tex: facadeTex(b, wallType) });
@@ -2448,7 +2433,6 @@ function buildDropsite(b: Builder, size: number, matType: 'wood' | 'brick' | 'st
     buildAndeanStructure(b, { size, tiers: 0, roof: 'thatch', banner: true });
     return;
   }
-  groundPad(b, size);
   const w = size;
   const wallTint =
     matType === 'wood'
@@ -2518,7 +2502,6 @@ function buildWonder(b: Builder): void {
   const head = mixHex(b.pal.primary, '#4a4238', 0.55);
   const w = 7;
   const tierH = 0.62;
-  groundPad(b, w);
   const baseY = tieredPlatform(b, w, 5, tierH, stone, andeanTex(b));
   // top shrine
   b.box(w * 0.32, 0.8, w * 0.32, stone, { y: baseY + 0.4, tex: andeanTex(b) });

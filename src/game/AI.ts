@@ -397,7 +397,7 @@ export class AI {
     this.game.applyTerrainFarmYield(b);
     this.game.attachBuilding(b);
     b.beginConstruction();
-    this.game.buildings.set(b.id, b);
+    this.game.addBuilding(b);
     const handle = { x, z, radius: stats.size * 0.6 };
     this.game.obstacleHandles.set(b.id, handle);
     this.game.pathfinder.addObstacle(handle);

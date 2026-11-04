@@ -502,11 +502,14 @@ Definition of Done and the building audit see
 - **The terrain material weights are a CPU splatmap** (`src/rendering/terrainSplat.ts`): a deterministic
   512² RGBA texture (grass, dirt, sand, rock) built once per match from `TerrainData`; snow stays procedural by
   height. `Terrain` uploads it as a `DataTexture`. Keep the generation pure and seed-stable; #304 paints
-  building/path wear into this map. The shader combines it with the packed surface height (`_surface.a`), two
+  building/path wear into this map (`Terrain.paintWear` / `paintPath`; buildings no longer carry a rectangular
+  `groundPad`). The shader combines it with the packed surface height (`_surface.a`), two
   non-integer texture scales and a low-frequency macro mask, and switches the rock albedo/normal to triplanar
   above `slope ≈ 0.45`. Terrain albedo carries AO in its alpha; `_surface` packs normal.xy + roughness + height.
   Terrain textures use `RepeatWrapping` (materials keep `MirroredRepeatWrapping`); do not reintroduce mirrored
-  terrain sampling or the kaleidoscope tiling returns.
+  terrain sampling or the kaleidoscope tiling returns. A dark, low-roughness `shore` band around `waterLevel`
+  reads as wet sand; keep it tied to the heightfield, not a separate mesh. Before/after evidence:
+  `docs/media/terrain-ground-objects-before-after.webp` (left `main`, right this pass).
 - **Terrain palettes are data** (`src/model/defs/terrainPalettes.ts`): material tints plus valley/slope/loma/
   summit bands. `HistoricalMapProfile.region` selects the palette and `SiteTerrainStyle.palette` overrides it
   (Caral). The shader mixes one band colour with the tinted albedo by `textureMix`; do not reintroduce the old
