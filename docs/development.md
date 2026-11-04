@@ -508,7 +508,8 @@ Definition of Done and the building audit see
   above `slope ≈ 0.45`. Terrain albedo carries AO in its alpha; `_surface` packs normal.xy + roughness + height.
   Terrain textures use `RepeatWrapping` (materials keep `MirroredRepeatWrapping`); do not reintroduce mirrored
   terrain sampling or the kaleidoscope tiling returns. A dark, low-roughness `shore` band around `waterLevel`
-  reads as wet sand; keep it tied to the heightfield, not a separate mesh.
+  reads as wet sand; keep it tied to the heightfield, not a separate mesh. Before/after evidence:
+  `docs/media/terrain-ground-objects-before-after.webp` (left `main`, right this pass).
 - **Terrain palettes are data** (`src/model/defs/terrainPalettes.ts`): material tints plus valley/slope/loma/
   summit bands. `HistoricalMapProfile.region` selects the palette and `SiteTerrainStyle.palette` overrides it
   (Caral). The shader mixes one band colour with the tinted albedo by `textureMix`; do not reintroduce the old
