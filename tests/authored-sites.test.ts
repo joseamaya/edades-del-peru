@@ -20,7 +20,7 @@ describe('authored campaign sites', () => {
     expect(caral.heritageProxies.map((p) => p.id)).toContain('caral_pyramid_mayor');
     expect(caral.buildKeepout.length).toBe(4);
     expect(caral.wallCollision.meshPatterns.length).toBeGreaterThan(0);
-    expect(caral.terrain.preset).toBe('caral');
+    expect(caral.terrain.palette).toBe('caral');
     expect(caral.environs?.valley).toBe('caral');
   });
 

@@ -773,6 +773,8 @@ export class RuntimeController {
     this.game.water.setDayFactor(this.game.sky.getDayFactor());
     this.game.water.update(realTime);
     this.game.terrain.setSunLight(this.game.sky.sunDir, this.game.sky.getSunColor());
+    const hemi = this.game.sky.getHemi();
+    this.game.terrain.setHemisphere(hemi.color, hemi.groundColor, hemi.intensity);
     this.game.terrain.update(realTime);
     // cloud shadows: dim the sun according to cloud density near the sun
     const cs = cloudDensity(this.game.sky.sunDir.x * 900 + realTime * 3, this.game.sky.sunDir.z * 900) * 0.22;

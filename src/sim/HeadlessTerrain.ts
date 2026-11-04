@@ -63,6 +63,7 @@ export class HeadlessTerrain {
   }
   update(): void {}
   setSunLight(): void {}
+  setHemisphere(): void {}
   setCloudShadow(): void {}
   setFow(): void {}
   setLowDetail(): void {}

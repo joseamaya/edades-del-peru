@@ -1,5 +1,6 @@
 import type { AuthoredHeightField } from './authoredTerrain';
 import type { GroundPbrSlot } from './profiles';
+import type { TerrainPaletteId } from './terrainPalettes';
 import type { HeritageBuildingId } from './heritage';
 import { CARAL_HEIGHTMAP, CARAL_HEIGHTMAP_SIZE, CARAL_HEIGHTMAP_WORLD_SIZE } from './caralHeightmap';
 import { CHAVIN_HEIGHTMAP, CHAVIN_HEIGHTMAP_SIZE, CHAVIN_HEIGHTMAP_WORLD_SIZE } from './chavinHeightmap';
@@ -72,8 +73,8 @@ export interface SiteTerrainMoisture {
 }
 
 export interface SiteTerrainStyle {
-  /** Shader palette family. Caral keeps the authored desert/valley treatment. */
-  preset: 'caral' | 'default';
+  /** Optional palette override (Caral keeps the authored desert/valley treatment). */
+  palette?: TerrainPaletteId;
   pbr: Record<GroundPbrSlot, string>;
   /** Disable photographic normal maps where they alias at RTS tiling. */
   flatNormals: boolean;
@@ -131,7 +132,6 @@ export interface AuthoredSiteDef {
 }
 
 export const DEFAULT_SITE_TERRAIN: SiteTerrainStyle = {
-  preset: 'default',
   pbr: { grass: 'grass', dirt: 'dirt', sand: 'sand', rock: 'rock', snow: 'snow' },
   flatNormals: false,
   suppressSnow: false,
@@ -212,7 +212,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     },
     terrain: {
       ...DEFAULT_SITE_TERRAIN,
-      preset: 'caral',
+      palette: 'caral',
       pbr: {
         grass: 'caral_grass',
         dirt: 'dirt',
