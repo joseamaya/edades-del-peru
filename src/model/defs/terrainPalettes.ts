@@ -1,7 +1,57 @@
+import { smoothstep } from '../../util/math';
+
 /** Data-driven terrain palettes: material tints and macro height bands. */
 
 export type TerrainPaletteId =
   'north_coast' | 'central_coast' | 'south_coast' | 'andean_valley' | 'high_andes' | 'altiplano' | 'amazon' | 'caral';
+
+/** Shared landform thresholds (world units; slope is the raw height delta used by the mesh). */
+export const TERRAIN_BAND_RANGES = {
+  valleyOffset: 1,
+  valleyRange: 6,
+  lomaStart: 4.5,
+  lomaEnd: 12,
+  slopeStart: 1.8,
+  slopeEnd: 4.5,
+} as const;
+
+export interface TerrainBandWeights {
+  valley: number;
+  slope: number;
+  loma: number;
+  summit: number;
+}
+
+/** Normalized band weights; summit wins over slope so snowy peaks stay snowy. */
+export function terrainBandWeights(
+  height: number,
+  slope: number,
+  waterLevel: number,
+  snowLine: number,
+  suppressSnow = false,
+): TerrainBandWeights {
+  const r = TERRAIN_BAND_RANGES;
+  const valley = 1 - smoothstep(waterLevel + r.valleyOffset, waterLevel + r.valleyOffset + r.valleyRange, height);
+  const loma = smoothstep(r.lomaStart, r.lomaEnd, height);
+  const summit = suppressSnow ? 0 : smoothstep(snowLine - 6, snowLine, height);
+  const slopeBand = smoothstep(r.slopeStart, r.slopeEnd, slope);
+
+  let wSummit = summit;
+  let wSlope = slopeBand * (1 - summit);
+  let wLoma = loma * (1 - summit) * (1 - slopeBand);
+  let wValley = valley * (1 - loma) * (1 - slopeBand) * (1 - summit);
+  const sum = wValley + wSlope + wLoma + wSummit;
+  if (sum > 0) {
+    const inv = 1 / sum;
+    wValley *= inv;
+    wSlope *= inv;
+    wLoma *= inv;
+    wSummit *= inv;
+  } else {
+    wValley = 1;
+  }
+  return { valley: wValley, slope: wSlope, loma: wLoma, summit: wSummit };
+}
 
 export interface TerrainPalette {
   /** Multipliers applied to the packed material albedo (near-white preserves detail). */

@@ -2,11 +2,15 @@ import * as THREE from 'three';
 import { getGroundTextures, GroundTextures } from './Textures';
 import { getGroundPBR } from './Biomes';
 import { buildTerrainSplat, TERRAIN_SPLAT_SIZE, type TerrainSplat } from './terrainSplat';
-import { smoothstep } from '../util/math';
 import { TerrainData } from '../sim/TerrainData';
 import { FOW_DIM_GLSL } from './fowGlsl';
 import type { GroundPbrSlot, HistoricalMapProfile } from '../model/defs/profiles';
-import { TERRAIN_PALETTES, type TerrainPalette, type TerrainPaletteId } from '../model/defs/terrainPalettes';
+import {
+  TERRAIN_PALETTES,
+  terrainBandWeights,
+  type TerrainPalette,
+  type TerrainPaletteId,
+} from '../model/defs/terrainPalettes';
 import type { TerrainLayout } from '../model/defs/terrainLayout';
 import type { AuthoredSiteDef, SiteTerrainStyle } from '../model/defs/sites';
 
@@ -378,7 +382,7 @@ export class Terrain {
         rockTint: { value: paletteColor(this.palette.materials.rock) },
         snowTint: { value: paletteColor(this.palette.materials.snow) },
         textureMix: { value: this.palette.textureMix },
-        groundTint: { value: new THREE.Color(this.profile.groundTint ?? '#ffffff') },
+        groundTint: { value: paletteColor(this.profile.groundTint ?? '#ffffff') },
         fogCapBoost: { value: this.palette.fogCapBoost ?? 0 },
         suppressSnow: { value: this.suppressSnow ? 1 : 0 },
         valleyHaze: { value: this.valleyHaze ? 1 : 0 },
@@ -735,33 +739,12 @@ ${FOW_DIM_GLSL}
   }
 
   private biomeColor(h: number, slope: number, waterLevel: number): THREE.Color {
-    const valley = 1 - smoothstep(waterLevel + 1, waterLevel + 7, h);
-    const loma = smoothstep(4.5, 12, h);
-    const summit = this.suppressSnow
-      ? 0
-      : smoothstep(this.profile.elevation.snowLine - 6, this.profile.elevation.snowLine, h);
-    const slopeBand = smoothstep(1.8, 4.5, slope);
-
-    let wValley = valley * (1 - slopeBand) * (1 - loma);
-    let wSlope = slopeBand;
-    let wLoma = loma * (1 - summit);
-    let wSummit = summit;
-    const sum = wValley + wSlope + wLoma + wSummit;
-    if (sum > 0) {
-      const inv = 1 / sum;
-      wValley *= inv;
-      wSlope *= inv;
-      wLoma *= inv;
-      wSummit *= inv;
-    } else {
-      wValley = 1;
-    }
-
+    const w = terrainBandWeights(h, slope, waterLevel, this.profile.elevation.snowLine, this.suppressSnow);
     const c = this.bandColors;
     _cBase.setRGB(
-      c.valley.r * wValley + c.slope.r * wSlope + c.loma.r * wLoma + c.summit.r * wSummit,
-      c.valley.g * wValley + c.slope.g * wSlope + c.loma.g * wLoma + c.summit.g * wSummit,
-      c.valley.b * wValley + c.slope.b * wSlope + c.loma.b * wLoma + c.summit.b * wSummit,
+      c.valley.r * w.valley + c.slope.r * w.slope + c.loma.r * w.loma + c.summit.r * w.summit,
+      c.valley.g * w.valley + c.slope.g * w.slope + c.loma.g * w.loma + c.summit.g * w.summit,
+      c.valley.b * w.valley + c.slope.b * w.slope + c.loma.b * w.loma + c.summit.b * w.summit,
     );
     return _cBase;
   }

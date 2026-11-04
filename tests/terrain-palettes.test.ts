@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import * as THREE from 'three';
 import { MAP_PROFILES } from '../src/model/defs/profiles';
 import { AUTHORED_SITES } from '../src/model/defs/sites';
-import { TERRAIN_PALETTES } from '../src/model/defs/terrainPalettes';
+import { TERRAIN_PALETTES, terrainBandWeights } from '../src/model/defs/terrainPalettes';
 
 function luminance(hex: string): number {
-  const c = new THREE.Color(hex);
-  return 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
+  const value = parseInt(hex.replace('#', ''), 16);
+  return (0.2126 * ((value >> 16) & 255) + 0.7152 * ((value >> 8) & 255) + 0.0722 * (value & 255)) / 255;
 }
 
 describe('terrain palettes', () => {
@@ -25,6 +24,15 @@ describe('terrain palettes', () => {
       expect(palette.textureMix).toBeGreaterThan(0);
       expect(palette.textureMix).toBeLessThanOrEqual(1);
     }
+  });
+
+  it('keeps summit weights on steep high ground', () => {
+    const peak = terrainBandWeights(20, 6, 2.2, 15);
+    expect(peak.summit).toBeCloseTo(1, 5);
+    expect(peak.valley + peak.slope + peak.loma + peak.summit).toBeCloseTo(1, 5);
+    const valley = terrainBandWeights(4, 0, 2.2, 15);
+    expect(valley.valley).toBeGreaterThan(valley.slope);
+    expect(valley.valley + valley.slope + valley.loma + valley.summit).toBeCloseTo(1, 5);
   });
 
   it('separates the four playable map types in luminance, not only hue', () => {

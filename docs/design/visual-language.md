@@ -198,8 +198,9 @@ work.
 - **Civilization palettes** live in `src/model/defs/civs.ts`
   (`primary`/`secondary`/`accent`/`concrete`) and flow into models as **vertex
   colours** (baked by `bakeVertexAO`), not as separate materials.
-- **Region colour** is a combination of the terrain shader (aridity, vegetation,
-  temperature) and `atmosphere` (`skyTint`, `sunWarmth`, `fogDensity`).
+- **Region colour** is the terrain palette (`src/model/defs/terrainPalettes.ts`:
+  material tints plus valley/slope/loma/summit bands) and `atmosphere`
+  (`skyTint`, `sunWarmth`, `fogDensity`).
 - **Period colour grade** (`src/model/defs/grades.ts`) is a display-referred look
   applied after tone mapping (`PERIOD_GRADES` per `HistoricalPeriod`, blended with
   the region's temperature/aridity by `resolveColorGrade`): warm dry coast, cold
