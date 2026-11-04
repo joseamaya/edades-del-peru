@@ -31,6 +31,7 @@ import { PERIODS, getPeriod } from '../model/defs/periods';
 import { civsForPeriod, getCiv } from '../model/defs/civs';
 import { RESOURCE_INFO, MAP_LABEL, GameSettings, CAMERA_SPEED_SCALE, STARTING_RESOURCES } from '../core/Config';
 import { formatNumber, formatStat } from '../util/math';
+import { t as tr } from '../i18n';
 import { artIntroForMission } from '../art/manifest';
 import { artFigureHtml, includeUnreviewedArt } from './ArtFigure';
 import { getEducational } from '../campaign/defs/educational';
@@ -71,9 +72,9 @@ import {
 } from '../core/hotkeys';
 
 const STANCE_TOOLTIP: Record<CombatStance, string> = {
-  agresivo: 'Agresivo: persigue y ataca enemigos.',
-  defensivo: 'Defensivo: solo responde cerca de su posición y vuelve a ella.',
-  pasivo: 'Pasivo: no ataca por su cuenta.',
+  agresivo: tr('hud.stance.agresivo'),
+  defensivo: tr('hud.stance.defensivo'),
+  pasivo: tr('hud.stance.pasivo'),
 };
 
 function escapeHtml(s: string): string {
@@ -667,7 +668,7 @@ export class HUD {
   private buildTopBar(): void {
     const top = this.el('div', 'ed-topbar');
     const logo = this.el('div', 'ed-logo');
-    logo.innerHTML = `<svg viewBox="0 0 32 32" fill="none"><path d="M16 3l2.6 7.8L26 13l-7.4 2.2L16 23l-2.6-7.8L6 13l7.4-2.2z" fill="#e8c36a"/><path d="M16 18v9M12 27h8" stroke="#e8c36a" stroke-width="1.6"/></svg> EDADES DEL PERÚ`;
+    logo.innerHTML = `<svg viewBox="0 0 32 32" fill="none"><path d="M16 3l2.6 7.8L26 13l-7.4 2.2L16 23l-2.6-7.8L6 13l7.4-2.2z" fill="#e8c36a"/><path d="M16 18v9M12 27h8" stroke="#e8c36a" stroke-width="1.6"/></svg> ${tr('app.title')}`;
     top.appendChild(logo);
     for (const k of RESOURCE_KEYS) {
       const info = RESOURCE_INFO[k];
@@ -683,7 +684,7 @@ export class HUD {
     top.appendChild(this.popEl);
     this.idleEl = this.el('div', 'ed-idle', top);
     this.idleEl.id = 'ed-idle';
-    this.idleEl.title = 'Obreros ociosos · clic o tecla . para ciclar';
+    this.idleEl.title = tr('hud.topbar.idle');
     this.idleEl.innerHTML = `👷 <span class="idle-val">0</span>`;
     this.idleEl.addEventListener('click', () => this.game.cycleIdleWorker());
     this.eraEl = this.el('div', '');
@@ -708,11 +709,11 @@ export class HUD {
     top.appendChild(speed);
     const pauseBtn = this.el('button', 'ed-topbtn') as HTMLButtonElement;
     pauseBtn.textContent = '⏸';
-    pauseBtn.title = 'Pausa (P)';
+    pauseBtn.title = tr('hud.topbar.pauseTitle');
     pauseBtn.addEventListener('click', () => this.game.togglePause());
     top.appendChild(pauseBtn);
     const menuBtn = this.el('button', 'ed-topbtn') as HTMLButtonElement;
-    menuBtn.textContent = '☰ Menú';
+    menuBtn.textContent = tr('hud.topbar.menu');
     menuBtn.addEventListener('click', () => this.showPauseMenu());
     top.appendChild(menuBtn);
   }
@@ -801,7 +802,7 @@ export class HUD {
     this.objPanelEl = this.el('div', '');
     this.objPanelEl.id = 'ed-objectives';
     this.objPanelEl.style.display = 'none';
-    this.objPanelEl.innerHTML = `<h4>🎯 Objetivos</h4>`;
+    this.objPanelEl.innerHTML = `<h4>${tr('hud.objectives.title')}</h4>`;
     this.objListEl = this.el('div', '', this.objPanelEl);
   }
 
@@ -824,7 +825,7 @@ export class HUD {
   private buildTutorial(): void {
     this.tutorialEl = this.el('div', '');
     this.tutorialEl.id = 'ed-tutorial';
-    this.tutorialEl.innerHTML = `<div class="tut-head"><span>🎓 Tutorial</span><span class="tut-count"></span></div><div class="tut-step"></div><div class="tut-actions"></div>`;
+    this.tutorialEl.innerHTML = `<div class="tut-head"><span>${tr('hud.tutorial.title')}</span><span class="tut-count"></span></div><div class="tut-step"></div><div class="tut-actions"></div>`;
     this.tutorialStepEl = this.tutorialEl.querySelector('.tut-step') as HTMLElement;
     this.tutorialCountEl = this.tutorialEl.querySelector('.tut-count') as HTMLElement;
   }
@@ -832,14 +833,14 @@ export class HUD {
   /** Show/update the tutorial panel. `onSkip` adds the skip button. */
   showTutorialStep(text: string, index: number, total: number, onSkip?: () => void): void {
     this.tutorialStepEl.textContent = text;
-    this.tutorialCountEl.textContent = `Paso ${index + 1} / ${total}`;
+    this.tutorialCountEl.textContent = tr('hud.tutorial.step', { current: index + 1, total });
     const actions = this.tutorialEl.querySelector('.tut-actions') as HTMLElement;
     actions.innerHTML = '';
     if (onSkip) {
       const skip = document.createElement('button');
       skip.className = 'ed-ghostbtn';
       skip.style.margin = '0';
-      skip.textContent = 'Omitir tutorial';
+      skip.textContent = tr('hud.tutorial.skip');
       skip.addEventListener('click', onSkip);
       actions.appendChild(skip);
     }
@@ -901,10 +902,10 @@ export class HUD {
     return objs.map((o) => {
       let t = o.title;
       if (o.group) {
-        if (seen.has(o.group)) t = 'o ' + t;
+        if (seen.has(o.group)) t = tr('hud.objectives.alternative') + t;
         seen.add(o.group);
       }
-      if (o.optional) t += ' (opcional)';
+      if (o.optional) t += tr('hud.objectives.optionalSuffix');
       return t;
     });
   }
@@ -918,13 +919,18 @@ export class HUD {
   private buildHelp(): void {
     const help = this.el('div', '');
     help.id = 'ed-help';
-    help.innerHTML = `<button class="ed-help-close" type="button" aria-label="Cerrar ayuda" title="Cerrar (?)">×</button><b>Atajos</b><br>Clic izq: seleccionar · arrastra: área<br>Clic der: orden · Ctrl+der: atacar-mover<br>Shift: cola/rally · Ctrl+1-9: grupo · 1-9: recuperar<br>Minimapa: arrastra para mover · clic der: orden<br>Rueda: zoom · <span class="ed-help-keys">${formatHotkeys('game', this.game.settings.hotkeys)} · ${formatHotkeys('camera', this.game.settings.hotkeys)}</span>`;
+    help.innerHTML = `<button class="ed-help-close" type="button" aria-label="${tr('hud.help.closeAria')}" title="${tr('hud.help.closeTitle')}">×</button>${tr(
+      'hud.help.body',
+      {
+        keys: `${formatHotkeys('game', this.game.settings.hotkeys)} · ${formatHotkeys('camera', this.game.settings.hotkeys)}`,
+      },
+    )}`;
     help.querySelector('.ed-help-close')?.addEventListener('click', () => this.toggleHelp());
     const open = this.el('button', '', this.root) as HTMLButtonElement;
     open.id = 'ed-help-open';
     open.type = 'button';
     open.textContent = '?';
-    open.title = 'Mostrar atajos (?)';
+    open.title = tr('hud.help.openTitle');
     open.addEventListener('click', () => this.toggleHelp());
   }
 
@@ -987,31 +993,31 @@ export class HUD {
     const ov = this.el('div', 'ed-overlay');
     ov.id = 'ed-paused';
     const panel = this.el('div', 'ed-panel', ov);
-    panel.innerHTML = `<h2 style="color:var(--gold)">⏸ PAUSA</h2><div class="sub">La partida está detenida</div>`;
+    panel.innerHTML = `<h2 style="color:var(--gold)">${tr('hud.pause.title')}</h2><div class="sub">${tr('hud.pause.sub')}</div>`;
     const row = this.el('div', 'row', panel);
     const resume = this.el('button', 'ed-primary', row);
-    resume.textContent = '▶ Reanudar';
+    resume.textContent = tr('hud.pause.resume');
     resume.addEventListener('click', () => this.game.togglePause());
     const save = this.el('button', 'ed-ghostbtn', row);
-    save.textContent = '💾 Guardar partida';
+    save.textContent = tr('hud.pause.save');
     save.addEventListener('click', () => {
-      if (this.game.saveMatch()) this.showToast('Partida guardada', 'success');
-      else this.showToast('No se pudo guardar la partida', 'error');
+      if (this.game.saveMatch()) this.showToast(tr('hud.toast.saved'), 'success');
+      else this.showToast(tr('hud.toast.saveFailed'), 'error');
     });
     const tree = this.el('button', 'ed-ghostbtn', row);
-    tree.textContent = '🌳 Árbol tecnológico';
+    tree.textContent = tr('hud.pause.techTree');
     tree.addEventListener('click', () => this.showTechTree());
     const settings = this.el('button', 'ed-ghostbtn', row);
-    settings.textContent = '⚙️ Opciones';
+    settings.textContent = tr('hud.pause.options');
     settings.addEventListener('click', () => this.showOptions());
     const home = this.el('button', 'ed-ghostbtn', row);
-    home.textContent = '🏠 Menú principal';
+    home.textContent = tr('hud.pause.mainMenu');
     home.addEventListener('click', () => {
       this.game.saveRecording();
       location.href = location.pathname;
     });
     const quit = this.el('button', 'ed-ghostbtn', row);
-    quit.textContent = '🏳 Abandonar';
+    quit.textContent = tr('hud.pause.quit');
     quit.addEventListener('click', () => this.abandonMatch());
   }
 
@@ -1041,27 +1047,21 @@ export class HUD {
     const mis = this.game.mission?.def;
     const edu = mis ? getEducational(mis.id) : undefined;
     const campaign = mis ? getCampaignForMission(mis.id) : undefined;
-    const title = victory ? 'VICTORIA' : 'DERROTA';
+    const title = victory ? tr('hud.victory.title') : tr('hud.victory.defeat');
     const sub =
-      winText && loseText
-        ? victory
-          ? winText
-          : loseText
-        : victory
-          ? 'Tu imperio se alza sobre las ruinas del enemigo.'
-          : 'Tu civilización ha caído ante el avance enemigo.';
+      winText && loseText ? (victory ? winText : loseText) : victory ? tr('hud.victory.win') : tr('hud.victory.lose');
     const epilogue =
       victory && edu?.epilogue
-        ? `<div class="ed-hist"><b style="color:var(--gold)">Epílogo.</b> ${edu.epilogue}</div>
+        ? `<div class="ed-hist"><b style="color:var(--gold)">${tr('hud.victory.epilogue')}</b> ${edu.epilogue}</div>
            <div class="ed-note" style="font-size:12px;color:var(--text-dim);margin-bottom:12px">
-             Puedes ampliar el contexto y las fuentes en el Códice desde el menú.
+             ${tr('hud.victory.epilogueHint')}
            </div>`
         : '';
     const optional = victory
       ? (this.game.mission?.activeObjectives ?? []).filter(({ def, state }) => def.optional && state !== 'pendiente')
       : [];
     const optionalSummary = optional.length
-      ? `<div class="ed-hist" style="padding:8px 0"><b style="color:var(--gold)">Logros opcionales.</b><br>${optional
+      ? `<div class="ed-hist" style="padding:8px 0"><b style="color:var(--gold)">${tr('hud.victory.optional')}</b><br>${optional
           .map(
             ({ def, state }) =>
               `${state === 'completed' ? '✔' : state === 'failed' ? '✖' : '○'} ${escapeHtml(def.title)}`,
@@ -1070,26 +1070,29 @@ export class HUD {
       : '';
     this.game.matchStats.captureNow(this.game.players, this.game.units.values(), this.game.buildings.values());
     const peaceful = mis?.enemy.active === false;
-    const commonStats = `Unidades creadas: <b>${p?.stats.created ?? 0}</b><br>
-         Periodo: <b>${getPeriod(this.game.settings.period).name}</b>`;
+    const commonStats = `${tr('hud.victory.created', { count: p?.stats.created ?? 0 })}<br>
+         ${tr('hud.victory.period', { period: getPeriod(this.game.settings.period).name })}`;
     const stats = peaceful
-      ? `Fichas patrimoniales visitadas: <b>${this.game.getVisitedHeritage().length}</b><br>${commonStats}`
-      : `Bajas infligidas: <b>${p?.kills ?? 0}</b><br>${commonStats}`;
+      ? `${tr('hud.victory.heritage', { count: this.game.getVisitedHeritage().length })}<br>${commonStats}`
+      : `${tr('hud.victory.kills', { count: p?.kills ?? 0 })}<br>${commonStats}`;
     if (victory && mis) this.saveCampaignProgress(mis.id);
     const next = victory ? nextReleasedMission(mis?.id ?? '') : undefined;
     const chapterEnd = victory && campaign && campaign.releasedMissionIds.includes(mis?.id ?? '') && !next;
     const chapterIndex = campaign ? CAMPAIGNS.findIndex((c) => c.id === campaign.id) : -1;
-    const chapterOrdinal = ['primera', 'segunda', 'tercera', 'cuarta'][chapterIndex];
-    const chapterEndText = chapterOrdinal ? `Fin de la ${chapterOrdinal} campaña.` : 'Fin de la campaña.';
+    const chapterOrdinal = ['first', 'second', 'third', 'fourth'][chapterIndex] as
+      'first' | 'second' | 'third' | 'fourth' | undefined;
+    const chapterEndText = chapterOrdinal
+      ? tr('hud.victory.chapterEnd', { ordinal: tr(`hud.ordinal.${chapterOrdinal}`) })
+      : tr('hud.victory.chapterEndGeneric');
     panel.innerHTML = `
-      <div class="ed-menu-kicker">${campaign ? campaign.title.toUpperCase() : 'LA SENDA DEL SOL'}${mis ? ` · ${mis.subtitle}` : ''}</div>
+      <div class="ed-menu-kicker">${campaign ? campaign.title.toUpperCase() : tr('app.series')}${mis ? ` · ${mis.subtitle}` : ''}</div>
       <h2 class="epilogue-title ${victory ? 'win' : 'lose'}">${title}</h2>
       <div class="sub" style="white-space:pre-line;line-height:1.6">${sub}</div>
       ${epilogue}
       ${optionalSummary}
       <div style="font-size:12px;color:var(--text-dim);line-height:1.7;margin-bottom:14px">${stats}</div>
       <div id="ed-stats-panel" class="ed-stats"></div>
-      ${chapterEnd ? `<div class="ed-hist" style="border-left:3px solid var(--gold);padding-left:12px"><b style="color:var(--gold)">${chapterEndText}</b> Puedes volver al mapa de la saga para elegir otro capítulo o repetir la misión.</div>` : ''}
+      ${chapterEnd ? `<div class="ed-hist" style="border-left:3px solid var(--gold);padding-left:12px"><b style="color:var(--gold)">${chapterEndText}</b> ${tr('hud.victory.chapterEndHint')}</div>` : ''}
     `;
     const statsRoot = panel.querySelector<HTMLElement>('#ed-stats-panel');
     if (statsRoot) {
@@ -1108,24 +1111,24 @@ export class HUD {
     const row = this.el('div', 'row', panel);
     if (next) {
       const nextButton = this.el('button', 'ed-primary', row);
-      nextButton.textContent = `▶ Continuar: ${next.title}`;
+      nextButton.textContent = tr('hud.victory.continue', { title: next.title });
       nextButton.addEventListener('click', () => {
         this.game.settings.missionId = next.id;
         this.game.resetGame();
       });
     } else if (victory && campaign) {
       const hub = this.el('button', 'ed-primary', row);
-      hub.textContent = 'Volver a campañas';
+      hub.textContent = tr('hud.victory.backCampaigns');
       hub.addEventListener('click', () => {
         this.setMenuOpen(true);
         this.showCampaignHub();
       });
     }
     const again = this.el('button', next || (victory && campaign) ? 'ed-ghostbtn' : 'ed-primary', row);
-    again.textContent = '↻ Jugar de nuevo';
+    again.textContent = tr('hud.victory.playAgain');
     again.addEventListener('click', () => this.game.resetGame());
     const menu = this.el('button', 'ed-ghostbtn', row);
-    menu.textContent = 'Menú principal';
+    menu.textContent = tr('hud.victory.mainMenu');
     menu.addEventListener('click', () => {
       location.href = location.pathname + '?menu=1';
     });
@@ -1133,21 +1136,24 @@ export class HUD {
     if (replay) {
       const replayRow = this.el('div', 'row', panel);
       const watch = this.el('button', 'ed-ghostbtn', replayRow);
-      watch.textContent = '▶ Ver repetición';
+      watch.textContent = tr('hud.victory.watchReplay');
       watch.dataset.statsReplay = 'watch';
       watch.addEventListener('click', () => {
         if (!saveReplay(replay)) {
-          this.showToast('No se pudo abrir la repetición', 'error');
+          this.showToast(tr('hud.victory.replayOpenFailed'), 'error');
           return;
         }
         location.href = location.pathname + '?replay=1';
       });
       const save = this.el('button', 'ed-ghostbtn', replayRow);
-      save.textContent = '💾 Guardar repetición';
+      save.textContent = tr('hud.victory.saveReplay');
       save.dataset.statsReplay = 'save';
       save.addEventListener('click', () => {
         const saved = saveReplay(replay);
-        this.showToast(saved ? 'Repetición guardada' : 'No se pudo guardar', saved ? 'success' : 'error');
+        this.showToast(
+          saved ? tr('hud.victory.replaySaved') : tr('hud.victory.replaySaveFailed'),
+          saved ? 'success' : 'error',
+        );
       });
     }
   }
@@ -1167,7 +1173,7 @@ export class HUD {
         <div class="year">${year ?? ''}${place ? ` · ${place}` : ''}</div>
         <h2>${mis.title}</h2>
         <div class="place">${mis.history.split('\n')[0] ?? ''}</div>
-        <div class="hint">Haz clic para continuar</div>
+        <div class="hint">${tr('hud.missionCard.hint')}</div>
       </div>
     `;
     this.missionCard = card;
@@ -1177,7 +1183,7 @@ export class HUD {
     };
     card.tabIndex = 0;
     card.setAttribute('role', 'button');
-    card.setAttribute('aria-label', 'Continuar a la misión');
+    card.setAttribute('aria-label', tr('hud.missionCard.aria'));
     card.addEventListener('click', dismiss);
     card.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' || event.key === 'Enter' || event.key === ' ') {
@@ -1313,10 +1319,10 @@ export class HUD {
       this.setDesc(
         '🏰',
         BUILDING_INFO[building.kind].name,
-        `Base enemiga · HP ${Math.ceil(building.hp)}/${Math.ceil(building.maxHp)}`,
+        tr('hud.heritage.enemyBase', { hp: Math.ceil(building.hp), maxHp: Math.ceil(building.maxHp) }),
       );
       this.clearGrid();
-      this.addCommand('⚔️ Atacar', () => this.orderAttackBuilding(building.id));
+      this.addCommand(tr('hud.heritage.attack'), () => this.orderAttackBuilding(building.id));
     } else if (heritage) {
       this.renderHeritagePanel(heritage);
     }
@@ -1327,42 +1333,51 @@ export class HUD {
     this.setDesc(
       '🏛️',
       heritage.name,
-      `${heritage.sector} · ${heritage.role}<br><span style="color:var(--text-dim)">${heritage.summary}</span><br><span style="color:var(--text-dim);font-size:11px">Fuente: ${heritage.citation}</span>`,
+      `${heritage.sector} · ${heritage.role}<br><span style="color:var(--text-dim)">${heritage.summary}</span><br><span style="color:var(--text-dim);font-size:11px">${tr('hud.heritage.source', { source: heritage.citation })}</span>`,
     );
     this.clearGrid();
-    this.addCard('📚', `Certeza: ${heritage.confidence}`, visited ? 'ficha registrada' : 'ficha de campo', () => {}, {
-      disabled: true,
-      cat: 'sel',
-    });
+    this.addCard(
+      '📚',
+      tr('hud.heritage.certainty', { confidence: heritage.confidence }),
+      visited ? tr('hud.heritage.fieldRecord') : tr('hud.heritage.fieldCard'),
+      () => {},
+      {
+        disabled: true,
+        cat: 'sel',
+      },
+    );
     if (heritage.operation === 'toggle-canal') {
       const open = this.game.isCanalOpen();
-      this.addCommand(open ? '💧 Cerrar compuerta' : '💧 Abrir compuerta', () => this.game.toggleCanal());
+      this.addCommand(open ? tr('hud.heritage.closeGate') : tr('hud.heritage.openGate'), () => this.game.toggleCanal());
     }
     if (heritage.operation === 'offer') {
       const amount = heritage.operationAmount ?? 50;
       const resource = heritage.operationResource ?? 'silver';
-      this.addCommand(`🕯️ Entregar ofrenda (${amount} ${RESOURCE_INFO[resource].name.toLowerCase()})`, () =>
-        this.game.makeOffering(heritage.id),
+      this.addCommand(
+        tr('hud.heritage.offering', { amount, resource: RESOURCE_INFO[resource].name.toLowerCase() }),
+        () => this.game.makeOffering(heritage.id),
       );
     }
     if (heritage.operation === 'trade') {
       const amount = heritage.operationAmount ?? 50;
       const resource = heritage.operationResource ?? 'silver';
-      this.addCommand(`🪶 Intercambiar (${amount} ${RESOURCE_INFO[resource].name.toLowerCase()})`, () =>
+      this.addCommand(tr('hud.heritage.trade', { amount, resource: RESOURCE_INFO[resource].name.toLowerCase() }), () =>
         this.game.makeTrade(heritage.id),
       );
     }
     if (heritage.operation === 'assembly') {
       const state = this.game.getAssemblyState();
       if (state === 'pendiente' && this.game.canStartAssembly()) {
-        this.addCommand('🏛️ Convocar asamblea', () => this.game.startAssembly());
+        this.addCommand(tr('hud.heritage.assemblyCall'), () => this.game.startAssembly());
       } else if (state === 'activo') {
-        this.addCommand('⏳ Asamblea en curso', () => {});
+        this.addCommand(tr('hud.heritage.assemblyActive'), () => {});
       } else if (state === 'completed') {
-        this.addCommand('✓ Asamblea realizada', () => {});
+        this.addCommand(tr('hud.heritage.assemblyDone'), () => {});
       }
     }
-    this.addCommand(visited ? '✓ Ficha registrada' : '🔎 Visitar', () => this.game.visitHeritage(heritage.id));
+    this.addCommand(visited ? tr('hud.heritage.visited') : tr('hud.heritage.visit'), () =>
+      this.game.visitHeritage(heritage.id),
+    );
   }
 
   /**
@@ -1466,7 +1481,7 @@ export class HUD {
         this.addCard(
           unitDisplayIcon(kind, first.era),
           `${count}× ${unitDisplayName(kind, this.game.players[first.owner]?.civ, first.era)}`,
-          'clic: filtrar',
+          tr('hud.unit.filter'),
           () => this.game.selectUnits(units.filter((u) => u.kind === kind).map((u) => u.id)),
           { cat: 'sel' },
         );
@@ -1483,13 +1498,13 @@ export class HUD {
         });
       }
     }
-    this.addCommand('⛔ Detener', () => this.orderStop(), 'S');
-    this.addCommand('🧭 Formación', () => this.game.cycleFormation());
-    this.addCommand('🦅 Atacar-mover', () => this.orderAttackMove(), 'Ctrl+botón derecho');
-    this.addCommand('⚔️ Agresivo', () => this.orderStance('agresivo'));
-    this.addCommand('🛡️ Defensivo', () => this.orderStance('defensivo'));
-    this.addCommand('🚶 Pasivo', () => this.orderStance('pasivo'));
-    this.addCommand('⭕ Patrullar', () => this.orderPatrol());
+    this.addCommand(tr('hud.unit.stop'), () => this.orderStop(), 'S');
+    this.addCommand(tr('hud.unit.formation'), () => this.game.cycleFormation());
+    this.addCommand(tr('hud.unit.attackMove'), () => this.orderAttackMove(), tr('hud.unit.attackMove'));
+    this.addCommand(tr('hud.unit.aggressive'), () => this.orderStance('agresivo'));
+    this.addCommand(tr('hud.unit.defensive'), () => this.orderStance('defensivo'));
+    this.addCommand(tr('hud.unit.passive'), () => this.orderStance('pasivo'));
+    this.addCommand(tr('hud.unit.patrol'), () => this.orderPatrol());
   }
 
   private unitDesc(u: Unit): string {
@@ -1507,8 +1522,16 @@ export class HUD {
       const label = UNIT_CLASS_LABEL[unitClassFor(kind as keyof typeof UNIT_ARCHETYPES)];
       if (!weak.some((w) => w.startsWith(label))) weak.push(label);
     }
-    const counters = `${strong.length ? ` · Fuerte contra: ${strong.join(', ')}` : ''}${weak.length ? ` · Débil contra: ${weak.join(', ')}` : ''}`;
-    return `HP ${Math.ceil(u.hp)}/${Math.ceil(u.maxHp)} · Daño ${formatStat(stats.attack)} · Rango ${formatStat(stats.range)} · Blindaje ${formatStat(stats.heavyArmor)}${counters} · <span title="${stance}">Postura: ${u.combatStance}</span>`;
+    const counters = `${strong.length ? tr('hud.unit.strong', { targets: strong.join(', ') }) : ''}${weak.length ? tr('hud.unit.weak', { targets: weak.join(', ') }) : ''}`;
+    return tr('hud.unit.stats', {
+      hp: Math.ceil(u.hp),
+      maxHp: Math.ceil(u.maxHp),
+      attack: formatStat(stats.attack),
+      range: formatStat(stats.range),
+      armor: formatStat(stats.heavyArmor),
+      counters,
+      stance,
+    });
   }
 
   private renderBuildingPanel(b: Building): void {
@@ -1518,10 +1541,16 @@ export class HUD {
     this.clearGrid();
 
     if (!b.constructionComplete) {
-      const buildCard = this.addCard('🔨', 'En construcción', `${Math.round(b.buildRatio * 100)}%`, () => {}, {
-        disabled: true,
-        progress: b.buildRatio,
-      });
+      const buildCard = this.addCard(
+        '🔨',
+        tr('hud.building.underConstruction'),
+        `${Math.round(b.buildRatio * 100)}%`,
+        () => {},
+        {
+          disabled: true,
+          progress: b.buildRatio,
+        },
+      );
       buildCard.dataset.buildCard = '1';
       return;
     }
@@ -1593,15 +1622,15 @@ export class HUD {
         const have = this.game.players[b.owner]?.resources[resource] ?? 0;
         this.addCard(
           info.icon,
-          `Comprar ${info.name}`,
-          `${buy.silver} plata`,
+          tr('hud.building.buy', { resource: info.name }),
+          tr('hud.building.silver', { amount: buy.silver }),
           () => this.game.executeCommand({ kind: 'market', action: 'buy', resource, amount: buy.amount }),
           { cat: 'econ', disabled: silver < buy.silver, afford: silver >= buy.silver },
         );
         this.addCard(
           info.icon,
-          `Vender ${info.name}`,
-          `${sell.silver} plata`,
+          tr('hud.building.sell', { resource: info.name }),
+          tr('hud.building.silver', { amount: sell.silver }),
           () => this.game.executeCommand({ kind: 'market', action: 'sell', resource, amount: sell.amount }),
           { cat: 'econ', disabled: have < sell.amount, afford: have >= sell.amount },
         );
@@ -1610,7 +1639,7 @@ export class HUD {
     if (b.kind === BuildingKind.FARM && b.foodAmount <= 0) {
       this.addCard(
         '🌱',
-        'Replantar',
+        tr('hud.building.replant'),
         this.costText({ ...({ food: 0, wood: 40, silver: 0, stone: 0 } as Resources) }),
         () => this.game.executeCommand({ kind: 'replant', buildingId: b.id }),
         { cat: 'econ' },
@@ -1621,24 +1650,22 @@ export class HUD {
     if (b.kind === BuildingKind.CENTER) {
       this.addCard(
         '🏠',
-        'Vivienda',
+        tr('hud.building.house'),
         this.costText(getBuildingStats(BuildingKind.HOUSE, b.era).cost),
         () => this.game.startPlacement(BuildingKind.HOUSE),
         { cat: 'econ' },
       );
       this.addCard(
         '🌽',
-        'Granja',
+        tr('hud.building.farm'),
         this.costText(getBuildingStats(BuildingKind.FARM, b.era).cost),
         () => this.game.startPlacement(BuildingKind.FARM),
         { cat: 'econ' },
       );
     }
 
-    this.addCommand('🌳 Árbol tecnológico', () => this.showTechTree());
-    this.addCommand('📍 Punto de reunión', () =>
-      this.game.hud.showToast('Usa Shift+Botón derecho en el suelo', 'info'),
-    );
+    this.addCommand(tr('hud.pause.techTree'), () => this.showTechTree());
+    this.addCommand(tr('hud.building.rally'), () => this.game.hud.showToast(tr('hud.toast.rallyHint'), 'info'));
     if (b.garrisonedIds.length > 0) {
       this.addCommand(`🚪 Desembarcar (${b.garrisonedIds.length})`, () => this.ungarrison(b.id));
     }
@@ -1646,18 +1673,24 @@ export class HUD {
 
   private buildingDesc(b: Building): string {
     const stats = b.stats;
-    let s = `HP ${Math.ceil(b.hp)}/${Math.ceil(b.maxHp)} · Blindaje ${formatStat(stats.armor)}`;
+    let s = tr('hud.building.armor', {
+      hp: Math.ceil(b.hp),
+      maxHp: Math.ceil(b.maxHp),
+      armor: formatStat(stats.armor),
+    });
     if (b.constructionComplete && b.productionQueue.length > 0) {
-      s += ` · Entrenando: ${unitDisplayName(b.productionQueue[0].unit, this.game.players[b.owner]?.civ, b.era)}`;
+      s += tr('hud.building.training', {
+        unit: unitDisplayName(b.productionQueue[0].unit, this.game.players[b.owner]?.civ, b.era),
+      });
     }
     if (b.isFarm && b.constructionComplete) {
       const mult = this.game.farmYieldAt(b.pos.x, b.pos.z);
-      s += ` · Reserva de alimentos: ${Math.ceil(b.foodAmount)}`;
-      if (mult > 1.001) s += ` · +${Math.round((mult - 1) * 100)}% por el terreno`;
+      s += tr('hud.building.foodReserve', { amount: Math.ceil(b.foodAmount) });
+      if (mult > 1.001) s += tr('hud.building.terrainBonus', { percent: Math.round((mult - 1) * 100) });
     }
     const card = getBuildingCard(this.game.mission?.def.id, b.kind);
     if (card) {
-      s += `<br><span style="color:var(--text-dim)">${card.role}: ${card.summary}</span><br><span style="color:var(--text-dim);font-size:11px">Fuente: ${card.citation} · ${card.confidence}</span>`;
+      s += `<br><span style="color:var(--text-dim)">${tr('hud.building.role', { role: card.role, summary: card.summary })}</span><br><span style="color:var(--text-dim);font-size:11px">${tr('hud.building.source', { citation: card.citation, confidence: card.confidence })}</span>`;
     }
     return s;
   }
@@ -1668,17 +1701,17 @@ export class HUD {
     const stats = getUnitStats(unit, b.era);
     const p = this.game.players[0];
     if (p.populationUsed + stats.population > p.populationCap) {
-      this.showToast('Población máxima alcanzada', 'warning');
+      this.showToast(tr('hud.toast.maxPopulation'), 'warning');
       return;
     }
     if (!this.game.executeCommand({ kind: 'train', buildingId, unit })) {
-      this.showToast('Recursos insuficientes', 'error');
+      this.showToast(tr('hud.toast.insufficientResources'), 'error');
     }
   }
 
   private researchTech(buildingId: number, techId: string): void {
     if (!this.game.executeCommand({ kind: 'research', buildingId, tech: techId })) {
-      this.showToast('Recursos insuficientes', 'error');
+      this.showToast(tr('hud.toast.insufficientResources'), 'error');
     }
   }
 
@@ -1709,7 +1742,7 @@ export class HUD {
   private orderStance(stance: 'agresivo' | 'defensivo' | 'pasivo'): void {
     const ids = this.game.getSelectedUnits().map((u) => u.id);
     if (ids.length) this.game.executeCommand({ kind: 'stance', unitIds: ids, stance });
-    this.showToast(`Postura: ${stance}`, 'info');
+    this.showToast(tr('hud.toast.stance', { stance: tr(`hud.stance.${stance}Label`) }), 'info');
   }
 
   private orderPatrol(): void {
@@ -1903,15 +1936,15 @@ export class HUD {
     const shell = this.el('div', 'ed-menu-shell', ov);
     shell.innerHTML = `
       <div>
-        <div class="ed-menu-kicker">LA SENDA DEL SOL · 3000 A.C. — HOY</div>
-        <h1 class="ed-menu-title">EDADES <br>DEL PERÚ</h1>
-        <p class="ed-menu-sub">Un juego de estrategia en tiempo real a través de cinco mil años de historia peruana.</p>
+        <div class="ed-menu-kicker">${tr('hud.menu.main.kicker')}</div>
+        <h1 class="ed-menu-title">${tr('hud.menu.main.title')}</h1>
+        <p class="ed-menu-sub">${tr('hud.menu.main.sub')}</p>
       </div>
       <div class="ed-menu-actions"></div>
       <div class="ed-menu-footer">
-        <span>Extras</span>
-        <span>La Senda del Sol · v0.1</span>
-        <button type="button" data-action="intro">Ver introducción</button>
+        <span>${tr('hud.menu.main.extras')}</span>
+        <span>${tr('app.version')}</span>
+        <button type="button" data-action="intro">${tr('hud.menu.main.intro')}</button>
       </div>
     `;
     const actions = shell.querySelector('.ed-menu-actions') as HTMLElement;
@@ -1922,17 +1955,17 @@ export class HUD {
       return btn;
     };
     if (hasSave()) {
-      addAction('▶', 'Continuar partida', 'Retoma la partida guardada', () => {
+      addAction('▶', tr('hud.menu.main.continue'), tr('hud.menu.main.continueHint'), () => {
         this.setMenuOpen(false);
         this.clearOverlays();
         this.game.loadMatch();
       }).classList.add('primary');
     }
-    addAction('☀', 'Campañas', 'La Senda del Sol · cuatro capítulos', () => this.showCampaignIntro());
-    addAction('⚔', 'Escaramuza', 'Elige periodo, civilización y mapa', () => this.showSkirmishSetup());
-    addAction('📖', 'Códice', 'Periodos, civilizaciones y fuentes', () => this.showCodex());
-    addAction('?', 'Cómo jugar', 'Controles y conceptos básicos', () => this.showControls());
-    addAction('⚙', 'Opciones', 'Calidad, cámara, sonido y música', () => this.showOptions('main'));
+    addAction('☀', tr('hud.menu.main.campaigns'), tr('hud.menu.main.campaignsHint'), () => this.showCampaignIntro());
+    addAction('⚔', tr('hud.menu.main.skirmish'), tr('hud.menu.main.skirmishHint'), () => this.showSkirmishSetup());
+    addAction('📖', tr('hud.menu.main.codex'), tr('hud.menu.main.codexHint'), () => this.showCodex());
+    addAction('?', tr('hud.menu.main.controls'), tr('hud.menu.main.controlsHint'), () => this.showControls());
+    addAction('⚙', tr('hud.menu.main.options'), tr('hud.menu.main.optionsHint'), () => this.showOptions('main'));
 
     const side = this.el('div', 'ed-menu-side', ov);
     const campaign = getCampaign('preinca')!;
@@ -1940,14 +1973,14 @@ export class HUD {
     const done = campaignProgressCount(campaign, completedMissions(progress, campaign.id));
     const total = campaign.releasedMissionIds.length;
     side.innerHTML = `
-      <div class="side-kicker">CAMPAÑA DISPONIBLE</div>
+      <div class="side-kicker">${tr('hud.menu.side.kicker')}</div>
       <h3>${campaign.title}</h3>
       <p>${campaign.description}</p>
       <div class="progress"><i style="width:${total ? (done / total) * 100 : 0}%"></i></div>
-      <div class="side-meta">${done} / ${total} misiones completadas · ${campaign.era}</div>
+      <div class="side-meta">${tr('hud.menu.side.progress', { done, total, era: campaign.era })}</div>
     `;
     const sideBtn = this.el('button', 'ed-primary', side) as HTMLButtonElement;
-    sideBtn.textContent = done >= total && total > 0 ? '✓ Campaña completada' : '▶ Entrar a la campaña';
+    sideBtn.textContent = done >= total && total > 0 ? tr('hud.menu.side.completed') : tr('hud.menu.side.enter');
     sideBtn.disabled = total === 0;
     sideBtn.addEventListener('click', () => this.showCampaignHub());
 
@@ -1955,7 +1988,7 @@ export class HUD {
     introBtn.addEventListener('click', () => this.showSeriesIntro());
     if (hasReplay()) {
       const replay = this.el('button', '', shell.querySelector('.ed-menu-footer') as HTMLElement);
-      replay.textContent = 'Ver última repetición';
+      replay.textContent = tr('hud.menu.main.replay');
       replay.addEventListener('click', () => {
         this.setMenuOpen(false);
         this.clearOverlays();
@@ -1974,11 +2007,11 @@ export class HUD {
     ov.innerHTML = `
       <div class="ed-title-card">
         <div class="ed-title-ornament"></div>
-        <div class="kicker">LA SENDA DEL SOL</div>
-        <h1>EDADES DEL PERÚ</h1>
-        <div class="sub">Cinco mil años de historia, desde Caral hasta la República.</div>
-        <button class="ed-primary" type="button">Entrar</button>
-        <div class="hint">Una historia de culturas, imperios y resistencia</div>
+        <div class="kicker">${tr('app.series')}</div>
+        <h1>${tr('app.title')}</h1>
+        <div class="sub">${tr('hud.menu.titleIntro.sub')}</div>
+        <button class="ed-primary" type="button">${tr('hud.menu.titleIntro.enter')}</button>
+        <div class="hint">${tr('hud.menu.titleIntro.hint')}</div>
       </div>
     `;
     const enter = ov.querySelector('button') as HTMLButtonElement;
@@ -2000,8 +2033,8 @@ export class HUD {
     new CinematicPlayer(this.root, {
       beats: SERIES_INTRO,
       background: MENU_BACKDROP,
-      kicker: 'LA SENDA DEL SOL',
-      finalLabel: 'Entrar al menú',
+      kicker: tr('app.series'),
+      finalLabel: tr('hud.menu.seriesIntro.final'),
       onDone: done,
     });
   }
@@ -2018,8 +2051,8 @@ export class HUD {
     new CinematicPlayer(this.root, {
       beats: getCampaign('preinca')!.prologue,
       background: MENU_BACKDROP,
-      kicker: 'CAMPAÑA I · CULTURAS PREINCAS',
-      finalLabel: 'Ver misiones',
+      kicker: tr('hud.menu.campaignIntro.kicker'),
+      finalLabel: tr('hud.menu.campaignIntro.final'),
       onDone: () => {
         this.markIntroSeen();
         this.showCampaignHub();
@@ -2056,9 +2089,9 @@ export class HUD {
     const panel = this.el('div', 'ed-panel', ov);
     panel.style.maxWidth = '700px';
     panel.innerHTML = `
-      <div style="font-size:12px;letter-spacing:4px;color:#a8883f">ESCARAMUZA</div>
-      <h2>Configura tu partida</h2>
-      <div class="sub">Un enfrentamiento libre entre civilizaciones coetáneas.</div>
+      <div style="font-size:12px;letter-spacing:4px;color:#a8883f">${tr('hud.menu.skirmish.kicker')}</div>
+      <h2>${tr('hud.menu.skirmish.title')}</h2>
+      <div class="sub">${tr('hud.menu.skirmish.sub')}</div>
     `;
     const civ = getCiv(this.game.settings.civPlayer);
     const civInfo = this.el('div', 'ed-skirmish-info', panel);
@@ -2074,7 +2107,7 @@ export class HUD {
     for (const p of PERIODS) periodLabels[String(p.id)] = `${p.name} · ${p.dates}`;
     rows.appendChild(
       this.field(
-        'Periodo histórico',
+        tr('hud.menu.skirmish.period'),
         this.select(
           PERIODS.map((p) => String(p.id)),
           periodLabels,
@@ -2094,10 +2127,15 @@ export class HUD {
     );
     rows.appendChild(
       this.field(
-        'Dificultad',
+        tr('hud.menu.skirmish.difficulty'),
         this.select(
           ['easy', 'normal', 'hard', 'legendary'] as const,
-          { easy: 'Fácil', normal: 'Normal', hard: 'Difícil', legendary: 'Legendario' },
+          {
+            easy: tr('difficulty.easy'),
+            normal: tr('difficulty.normal'),
+            hard: tr('difficulty.hard'),
+            legendary: tr('difficulty.legendary'),
+          },
           this.game.settings.difficulty,
           (v) => (this.game.settings.difficulty = v),
         ),
@@ -2108,7 +2146,7 @@ export class HUD {
     for (const c of disponibles) civLabels[c.id] = `${c.name} (${MAP_LABEL[c.geography]})`;
     rows.appendChild(
       this.field(
-        'Tu civilización',
+        tr('hud.menu.skirmish.civ'),
         this.select(
           disponibles.map((c) => c.id),
           civLabels,
@@ -2127,7 +2165,7 @@ export class HUD {
     );
     rows.appendChild(
       this.field(
-        'Rival (contemporáneo)',
+        tr('hud.menu.skirmish.rival'),
         this.select(
           disponibles.map((c) => c.id),
           civLabels,
@@ -2142,7 +2180,7 @@ export class HUD {
     const rows2 = this.el('div', 'row', panel);
     rows2.appendChild(
       this.field(
-        'Mapa',
+        tr('hud.menu.skirmish.map'),
         this.select(['coast', 'andes', 'altiplano', 'jungle'] as const, MAP_LABEL, this.game.settings.mapType, (v) => {
           this.game.settings.mapType = v;
           this.showSkirmishSetup();
@@ -2151,10 +2189,10 @@ export class HUD {
     );
     rows2.appendChild(
       this.field(
-        'Hora del día',
+        tr('hud.menu.skirmish.time'),
         this.select(
           ['morning', 'noon', 'dusk', 'night'] as const,
-          { morning: 'Mañana', noon: 'Mediodía', dusk: 'Atardecer', night: 'Noche' },
+          { morning: tr('time.morning'), noon: tr('time.noon'), dusk: tr('time.dusk'), night: tr('time.night') },
           this.game.settings.timeOfDay,
           (v) => this.setTimeOfDay(v),
         ),
@@ -2162,10 +2200,10 @@ export class HUD {
     );
     rows2.appendChild(
       this.field(
-        'Victoria',
+        tr('hud.menu.skirmish.victory'),
         this.select(
           ['conquest', 'wonder'] as const,
-          { conquest: 'Conquista', wonder: 'Huaca Sagrada' },
+          { conquest: tr('victory.conquest'), wonder: tr('victory.wonder') },
           this.game.settings.victoryMode,
           (v) => (this.game.settings.victoryMode = v),
         ),
@@ -2173,7 +2211,7 @@ export class HUD {
     );
     rows2.appendChild(
       this.field(
-        'Población máxima',
+        tr('hud.menu.skirmish.population'),
         this.select(
           ['50', '100', '150', '200'],
           { '50': '50', '100': '100', '150': '150', '200': '200' },
@@ -2184,10 +2222,10 @@ export class HUD {
     );
     rows2.appendChild(
       this.field(
-        'Recursos iniciales',
+        tr('hud.menu.skirmish.resources'),
         this.select(
           STARTING_RESOURCES,
-          { low: 'Escasos', standard: 'Estándar', rich: 'Abundantes' },
+          { low: tr('starting.low'), standard: tr('starting.standard'), rich: tr('starting.rich') },
           this.game.settings.startingResources,
           (v) => (this.game.settings.startingResources = v),
         ),
@@ -2195,10 +2233,10 @@ export class HUD {
     );
     const startRow = this.el('div', 'row', panel);
     const back = this.el('button', 'ed-ghostbtn', startRow);
-    back.textContent = '← Menú principal';
+    back.textContent = tr('hud.menu.skirmish.back');
     back.addEventListener('click', () => this.showMainMenu());
     const startBtn = this.el('button', 'ed-primary', startRow);
-    startBtn.textContent = '▶ INICIAR ESCARAMUZA';
+    startBtn.textContent = tr('hud.menu.skirmish.start');
     startBtn.addEventListener('click', () => {
       this.game.settings.missionId = undefined;
       this.setMenuOpen(false);
@@ -2268,24 +2306,11 @@ export class HUD {
     const ov = this.el('div', 'ed-overlay');
     const panel = this.el('div', 'ed-panel', ov);
     panel.style.maxWidth = '620px';
-    panel.innerHTML = `<h2>CÓMO JUGAR</h2><div class="sub">Reúne recursos, construye, entrena un ejército y vence a tu rival.</div>`;
+    panel.innerHTML = `<h2>${tr('hud.menu.controls.title')}</h2><div class="sub">${tr('hud.menu.controls.sub')}</div>`;
     const keys = this.el('div', 'ed-keys', panel);
-    keys.innerHTML = `
-      <b>Clic izquierdo / arrastrar</b><span>Seleccionar unidad, edificio o caja de selección</span>
-      <b>Doble clic</b><span>Seleccionar todas las unidades del mismo tipo</span>
-      <b>E</b><span>Seleccionar todo tu ejército</span>
-      <b>Botón derecho</b><span>Mover · recolectar · atacar · construir (con obreros)</span>
-      <b>Ctrl + Botón derecho</b><span>Atacar-mover</span>
-      <b>Shift + Botón derecho</b><span>Encolar órdenes / fijar punto de reunión</span>
-      <b>G · V</b><span>Construir andén · vivienda</span>
-      <b>WASD / flechas / bordes</b><span>Mover la cámara</span>
-      <b>Rueda</b><span>Zoom · <b>Z/X</b> rotar (si está activada) · <b>F</b> seguir</span>
-      <b>H</b><span>Ir a la Plaza Mayor · <b>Espacio</b> última batalla</span>
-      <b>P</b><span>Pausa · <b>☰ Menú</b> opciones y salir</span>
-      <b>Meta</b><span>Destruye a tu rival o construye la Huaca Sagrada y protégela 5 min</span>
-    `;
+    keys.innerHTML = tr('hud.menu.controls.keys');
     const back = this.el('button', 'ed-primary', panel);
-    back.textContent = '← Volver';
+    back.textContent = tr('hud.menu.controls.back');
     back.addEventListener('click', () => this.showMainMenu());
   }
 
@@ -2303,19 +2328,21 @@ export class HUD {
     // A hidden objective is a discovery; the briefing must not spoil it.
     const briefingObjectives = mis.objectives.filter((o) => !o.hidden);
     const context = edu?.briefing
-      ? `<div class="ed-hist"><b style="color:var(--gold)">Contexto histórico.</b> ${edu.briefing}</div>`
+      ? `<div class="ed-hist"><b style="color:var(--gold)">${tr('hud.menu.briefing.historicalContext')}</b> ${edu.briefing}</div>`
       : edu?.context
-        ? `<div class="ed-hist">${mis.history}</div><div class="ed-hist"><b style="color:var(--gold)">Contexto histórico.</b> ${edu.context}</div>`
+        ? `<div class="ed-hist">${mis.history}</div><div class="ed-hist"><b style="color:var(--gold)">${tr('hud.menu.briefing.historicalContext')}</b> ${edu.context}</div>`
         : `<div class="ed-hist">${mis.history}</div>`;
-    const funFact = edu ? `<div class="ed-sabias">💡 <b>¿Sabías que…?</b> ${edu.didYouKnow}</div>` : '';
+    const funFact = edu
+      ? `<div class="ed-sabias">💡 <b>${tr('hud.menu.briefing.didYouKnow')}</b> ${edu.didYouKnow}</div>`
+      : '';
     const playerName = mis.playerName ?? player.name;
     const enemyName = mis.enemyName ?? enemy.name;
     const sides = mis.enemy.active
-      ? `<span>Bandos: <b>${escapeHtml(playerName)}</b> vs <b>${escapeHtml(enemyName)}</b></span>`
-      : `<span>Bandos: <b>${escapeHtml(playerName)}</b> (sin enfrentamiento documentado)</span>`;
+      ? `<span>${tr('hud.menu.briefing.sides', { player: escapeHtml(playerName), enemy: escapeHtml(enemyName) })}</span>`
+      : `<span>${tr('hud.menu.briefing.sidesSolo', { player: escapeHtml(playerName) })}</span>`;
     const sources =
       edu && edu.sources.length
-        ? `<details class="ed-fuentes"><summary>Fuentes históricas</summary><ul>${edu.sources
+        ? `<details class="ed-fuentes"><summary>${tr('hud.menu.briefing.sources')}</summary><ul>${edu.sources
             .map(
               (f) => `<li>${f.url ? `<a href="${f.url}" target="_blank" rel="noopener">${f.text}</a>` : f.text}</li>`,
             )
@@ -2329,7 +2356,7 @@ export class HUD {
       .map(
         (c) =>
           `<div class="ed-cmd-card">${portraitSvg(c, 56)}<div class="ed-cmd-info"><b>${escapeHtml(c.name)}</b><span>${escapeHtml(c.role)}</span>${
-            c.status === 'abstraction' ? '<em>Reconstrucción estilizada</em>' : ''
+            c.status === 'abstraction' ? `<em>${tr('hud.menu.briefing.stylized')}</em>` : ''
           }</div></div>`,
       )
       .join('');
@@ -2338,18 +2365,18 @@ export class HUD {
     const art = introArt ? artFigureHtml(introArt) : '';
     const campaign = getCampaignForMission(mis.id);
     panel.innerHTML = `
-      <div style="font-size:12px;letter-spacing:3px;color:#a8883f">${campaign ? `CAMPAÑA · ${campaign.title}` : 'MISIÓN HISTÓRICA'} · ${mis.subtitle}</div>
+      <div style="font-size:12px;letter-spacing:3px;color:#a8883f">${campaign ? tr('hud.menu.briefing.campaign', { campaign: campaign.title }) : tr('hud.menu.briefing.mission')} · ${mis.subtitle}</div>
       <h2>${mis.title}</h2>
       <div class="ed-meta">
-        <span>Periodo: <b>${period.name}</b> (${period.dates})</span>
-        <span>Geografía: <b>${MAP_LABEL[mis.map.type]}</b></span>
+        <span>${tr('hud.menu.briefing.period', { period: period.name, dates: period.dates })}</span>
+        <span>${tr('hud.menu.briefing.geography', { map: MAP_LABEL[mis.map.type] })}</span>
         ${sides}
       </div>
       ${commandersHtml}
       ${art}
       ${context}
       ${funFact}
-      <div class="sub" style="text-align:left;font-size:12px;color:var(--text);line-height:1.7;margin-bottom:10px"><b style="color:var(--gold)">OBJETIVOS</b><br>${this.objectiveTitles(
+      <div class="sub" style="text-align:left;font-size:12px;color:var(--text);line-height:1.7;margin-bottom:10px"><b style="color:var(--gold)">${tr('hud.menu.briefing.objectives')}</b><br>${this.objectiveTitles(
         briefingObjectives,
       )
         .map((t) => '• ' + t)
@@ -2357,7 +2384,7 @@ export class HUD {
       ${sources}
     `;
     const start = this.el('button', 'ed-primary', panel);
-    start.textContent = '▶ COMENZAR MISIÓN';
+    start.textContent = tr('hud.menu.briefing.start');
     start.addEventListener('click', () => {
       this.clearOverlays();
       onStart();
@@ -2382,8 +2409,8 @@ export class HUD {
       </div>
       <div class="ed-campaign-grid"></div>
       <div class="ed-campaign-foot">
-        <button class="ed-ghostbtn" type="button" data-action="intro">Ver prólogo</button>
-        <button class="ed-primary" type="button" data-action="back">← Menú principal</button>
+        <button class="ed-ghostbtn" type="button" data-action="intro">${tr('hud.menu.campaignHub.intro')}</button>
+        <button class="ed-primary" type="button" data-action="back">${tr('hud.menu.campaignHub.back')}</button>
       </div>
     `;
     const grid = panel.querySelector('.ed-campaign-grid') as HTMLElement;
@@ -2400,7 +2427,7 @@ export class HUD {
         <h3>${campaign.title}</h3>
         <p>${campaign.description}</p>
         <div class="card-meta">
-          <span>${available ? `${done} / ${total} misiones completadas` : 'Próximamente'}</span>
+          <span>${available ? tr('hud.menu.campaignHub.completed', { done, total }) : tr('hud.menu.campaignHub.upcoming')}</span>
           <span>${campaign.subtitle}</span>
         </div>
         <div class="card-actions"></div>
@@ -2410,14 +2437,18 @@ export class HUD {
         for (const mission of campaign.releasedMissionIds) {
           const title = this.missionTitle(mission);
           const play = this.el('button', 'ed-primary', actions) as HTMLButtonElement;
-          play.textContent = completed.includes(mission) ? `✓ ${title}` : `▶ Jugar ${title}`;
+          play.textContent = completed.includes(mission)
+            ? tr('hud.menu.campaignHub.completedMission', { title })
+            : tr('hud.menu.campaignHub.play', { title });
           play.addEventListener('click', () => this.launchMission(mission));
         }
         const upcoming = this.el('div', 'upcoming', card);
-        upcoming.textContent = campaign.upcoming.length ? `Próximamente: ${campaign.upcoming.join(', ')}.` : '';
+        upcoming.textContent = campaign.upcoming.length
+          ? tr('hud.menu.campaignHub.upcomingList', { missions: campaign.upcoming.join(', ') })
+          : '';
       } else {
         const tag = this.el('span', 'upcoming', actions);
-        tag.textContent = 'En preparación';
+        tag.textContent = tr('hud.menu.campaignHub.inPreparation');
       }
     }
     panel.querySelector('[data-action="back"]')!.addEventListener('click', () => this.showMainMenu());
@@ -2439,14 +2470,14 @@ export class HUD {
     new CinematicPlayer(this.root, {
       beats: getCampaign('preinca')!.prologue,
       background: MENU_BACKDROP,
-      kicker: 'CAMPAÑA I · CULTURAS PREINCAS',
-      finalLabel: 'Volver a campañas',
+      kicker: tr('hud.menu.campaignIntro.kicker'),
+      finalLabel: tr('hud.victory.backCampaigns'),
       onDone: () => this.showCampaignHub(),
     });
   }
 
   private missionTitle(id: string): string {
-    return getReleasedMission(id)?.title ?? 'La Ciudad Sagrada';
+    return getReleasedMission(id)?.title ?? tr('hud.mission.fallbackTitle');
   }
 
   private launchMission(id: string): void {
@@ -2491,13 +2522,13 @@ export class HUD {
     this.clearOverlays();
     const ov = this.el('div', 'ed-overlay');
     const panel = this.el('div', 'ed-panel', ov);
-    panel.innerHTML = `<h2>OPCIONES</h2><div class="sub">Ajustes visuales y de sonido</div>`;
+    panel.innerHTML = `<h2>${tr('hud.menu.options.title')}</h2><div class="sub">${tr('hud.menu.options.sub')}</div>`;
     const row = this.el('div', 'row', panel);
     const q = this.field(
-      'Calidad',
+      tr('hud.menu.options.quality'),
       this.select(
         ['high', 'medium', 'low'] as const,
-        { high: 'Alta (AAA)', medium: 'Media', low: 'Baja' },
+        { high: tr('quality.high'), medium: tr('quality.medium'), low: tr('quality.low') },
         this.game.settings.quality,
         (v) => this.game.setQuality(v),
       ),
@@ -2505,8 +2536,8 @@ export class HUD {
     row.appendChild(q);
     this.toggle(
       row,
-      'Efectos cinematográficos',
-      ['Activados', 'Desactivados'],
+      tr('hud.menu.options.cinematic'),
+      [tr('toggle.on'), tr('toggle.off')],
       () => this.game.settings.cinematic,
       (v) => {
         this.game.settings.cinematic = v;
@@ -2515,8 +2546,8 @@ export class HUD {
     );
     this.toggle(
       row,
-      'Rotar cámara (Z/X)',
-      ['Activada', 'Desactivada'],
+      tr('hud.menu.options.rotate'),
+      [tr('toggle.onF'), tr('toggle.offF')],
       () => this.game.settings.rotateCamera,
       (v) => {
         this.game.settings.rotateCamera = v;
@@ -2525,10 +2556,10 @@ export class HUD {
     );
     row.appendChild(
       this.field(
-        'Velocidad de cámara',
+        tr('hud.menu.options.cameraSpeed'),
         this.select(
           ['slow', 'normal', 'fast'] as const,
-          { slow: 'Baja', normal: 'Normal', fast: 'Alta' },
+          { slow: tr('cameraSpeed.slow'), normal: tr('cameraSpeed.normal'), fast: tr('cameraSpeed.fast') },
           this.game.settings.cameraSpeed,
           (v) => {
             this.game.settings.cameraSpeed = v;
@@ -2539,15 +2570,15 @@ export class HUD {
     );
     this.toggle(
       row,
-      'Niebla de guerra',
-      ['Activada', 'Desactivada'],
+      tr('hud.menu.options.fog'),
+      [tr('toggle.onF'), tr('toggle.offF')],
       () => this.game.settings.fogOfWar,
       (v) => this.game.setFogOfWar(v),
     );
     this.toggle(
       row,
-      'Sonido',
-      ['Activado', 'Desactivado'],
+      tr('hud.menu.options.sound'),
+      [tr('toggle.onM'), tr('toggle.offM')],
       () => this.game.settings.soundEnabled,
       (v) => {
         this.game.settings.soundEnabled = v;
@@ -2556,8 +2587,8 @@ export class HUD {
     );
     this.toggle(
       row,
-      'Música',
-      ['Activada', 'Desactivada'],
+      tr('hud.menu.options.music'),
+      [tr('toggle.onF'), tr('toggle.offF')],
       () => this.game.settings.musicEnabled,
       (v) => {
         this.game.settings.musicEnabled = v;
@@ -2568,15 +2599,15 @@ export class HUD {
     );
     this.toggle(
       row,
-      'Consejos',
-      ['Activados', 'Desactivados'],
+      tr('hud.menu.options.hints'),
+      [tr('toggle.on'), tr('toggle.off')],
       () => this.game.settings.showHints,
       (v) => (this.game.settings.showHints = v),
     );
     this.toggle(
       row,
-      'Mostrar FPS',
-      ['Activado', 'Desactivado'],
+      tr('hud.menu.options.showFps'),
+      [tr('toggle.onM'), tr('toggle.offM')],
       () => this.game.settings.showFps,
       (v) => {
         this.game.settings.showFps = v;
@@ -2585,12 +2616,12 @@ export class HUD {
       },
     );
     const hotkeyTitle = this.el('div', 'ed-menu-kicker', panel);
-    hotkeyTitle.textContent = 'ATAJOS';
+    hotkeyTitle.textContent = tr('hud.menu.options.hotkeys');
     const hotkeyHint = this.el('div', 'sub', panel);
-    hotkeyHint.textContent = 'Pulsa una tecla para reasignar. Los atajos se guardan en este navegador.';
+    hotkeyHint.textContent = tr('hud.menu.options.hotkeysHint');
     this.renderHotkeyEditor(panel);
     const back = this.el('button', 'ed-primary', panel);
-    back.textContent = 'Volver';
+    back.textContent = tr('hud.menu.options.back');
     back.addEventListener('click', () => (from === 'main' ? this.showMainMenu() : this.showPauseMenu()));
   }
 
@@ -2603,11 +2634,11 @@ export class HUD {
       const button = this.el('button', 'ed-ghostbtn', row) as HTMLButtonElement;
       const render = (): void => {
         const key = keyFor(hotkey.action, this.game.settings.hotkeys);
-        button.textContent = key === ' ' ? 'Espacio' : key.toUpperCase();
+        button.textContent = key === ' ' ? tr('hud.menu.options.space') : key.toUpperCase();
       };
       render();
       button.addEventListener('click', () => {
-        button.textContent = 'Pulsa una tecla…';
+        button.textContent = tr('hud.menu.options.pressKey');
         const onKey = (event: KeyboardEvent): void => {
           event.preventDefault();
           event.stopImmediatePropagation();
@@ -2623,7 +2654,7 @@ export class HUD {
           }
           const next = { ...this.game.settings.hotkeys, [hotkey.action]: key };
           if (isReservedKey(key) || keymapConflicts(next).length > 0) {
-            this.showToast('Esa tecla ya está asignada', 'warning');
+            this.showToast(tr('hud.toast.hotkeyConflict'), 'warning');
             render();
             return;
           }
@@ -2632,7 +2663,7 @@ export class HUD {
           this.game.saveSettings();
           this.refreshHelp();
           this.bottomKey = '';
-          this.showToast('Atajo actualizado', 'success');
+          this.showToast(tr('hud.toast.hotkeyUpdated'), 'success');
           render();
         };
         window.addEventListener('keydown', onKey, true);
@@ -2741,6 +2772,10 @@ export class HUD {
       this.updateBottomProgress();
       this.renderMinimap();
     }
-    if (this.showFps) this.fpsEl.textContent = `${this.game.loop.getFps()} FPS · ${this.game.getAppliedQuality()}`;
+    if (this.showFps)
+      this.fpsEl.textContent = tr('hud.fps.value', {
+        fps: this.game.loop.getFps(),
+        quality: this.game.getAppliedQuality(),
+      });
   }
 }

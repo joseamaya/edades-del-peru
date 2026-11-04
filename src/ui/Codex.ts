@@ -6,6 +6,7 @@ import { MAP_LABEL } from '../core/Config';
 import { artForMission } from '../art/manifest';
 import { artFigureHtml, includeUnreviewedArt } from './ArtFigure';
 import { techTreeHtml } from './TechTree';
+import { t } from '../i18n';
 
 /**
  * Codex/educational encyclopedia. Gathers periods, civilizations and campaigns from the
@@ -94,9 +95,9 @@ function dossierGroups(): { group: string; items: { key: string; title: string }
     else general.push(entry);
   }
   return [
-    { group: 'General', items: general },
-    { group: 'Civilizaciones', items: civs },
-    { group: 'Campañas', items: campaigns },
+    { group: t('hud.codex.group.general'), items: general },
+    { group: t('hud.codex.group.civs'), items: civs },
+    { group: t('hud.codex.group.campaigns'), items: campaigns },
   ];
 }
 
@@ -111,8 +112,8 @@ function periodTab(): CodexItem[] {
         .join('');
       return `
         <h3>${p.name}</h3>
-        <p><b>Fechas:</b> ${p.dates} · <b>Mapa:</b> ${MAP_LABEL[p.map]}</p>
-        <h4>Civilizaciones coetáneas</h4>
+        <p><b>${t('hud.codex.dates')}</b> ${p.dates} · <b>${t('hud.codex.map')}</b> ${MAP_LABEL[p.map]}</p>
+        <h4>${t('hud.codex.coetaneousCivs')}</h4>
         <ul>${lista || '<li>—</li>'}</ul>
       `;
     },
@@ -128,9 +129,9 @@ function civTab(): CodexItem[] {
       const bonus = c.bonuses.map((b) => `<li>${b}</li>`).join('');
       return `
         <h3>${c.name}</h3>
-        <p><b>Adjetivo:</b> ${c.adjective} · <b>Geografía:</b> ${MAP_LABEL[c.geography]} · <b>Periodos:</b> ${periods}</p>
+        <p><b>${t('hud.codex.adjective')}</b> ${c.adjective} · <b>${t('hud.codex.geography')}</b> ${MAP_LABEL[c.geography]} · <b>${t('hud.codex.periods')}</b> ${periods}</p>
         <p>${c.description}</p>
-        <h4>Bonificaciones</h4>
+        <h4>${t('hud.codex.bonuses')}</h4>
         <ul>${bonus || '<li>—</li>'}</ul>
       `;
     },
@@ -148,7 +149,7 @@ function campaignTab(): CodexItem[] {
         art.find((a) => a.type === 'campaign-intro') ?? art.find((a) => a.type === 'campaign-scene') ?? art[0];
       const figure = record ? artFigureHtml(record, '(max-width: 620px) 100vw, 420px') : '';
       const sources = edu?.sources.length
-        ? `<h4>Fuentes</h4><ul>${edu.sources
+        ? `<h4>${t('hud.codex.sources')}</h4><ul>${edu.sources
             .map(
               (f) => `<li>${f.url ? `<a href="${f.url}" target="_blank" rel="noopener">${f.text}</a>` : f.text}</li>`,
             )
@@ -160,7 +161,7 @@ function campaignTab(): CodexItem[] {
         ${figure}
         <p>${m.history.replace(/\n/g, '<br>')}</p>
         ${edu ? `<p>${edu.context}</p>` : ''}
-        ${edu ? `<p>💡 <b>¿Sabías que…?</b> ${edu.didYouKnow}</p>` : ''}
+        ${edu ? `<p>💡 <b>${t('hud.menu.briefing.didYouKnow')}</b> ${edu.didYouKnow}</p>` : ''}
         ${sources}
       `;
     },
@@ -178,15 +179,15 @@ function dossierTab(): CodexItem[] {
 }
 
 const TABS: { id: Tab; label: string; items: () => CodexItem[] }[] = [
-  { id: 'periods', label: '🕰 Periodos', items: periodTab },
-  { id: 'civs', label: '🏛 Civilizaciones', items: civTab },
-  { id: 'campaigns', label: '📜 Campañas', items: campaignTab },
+  { id: 'periods', label: t('hud.codex.tab.periods'), items: periodTab },
+  { id: 'civs', label: t('hud.codex.tab.civs'), items: civTab },
+  { id: 'campaigns', label: t('hud.codex.tab.campaigns'), items: campaignTab },
   {
     id: 'tech',
-    label: '🌳 Árbol tecnológico',
-    items: () => [{ id: 'tree', title: 'Edificios, unidades y tecnologías', render: () => techTreeHtml() }],
+    label: t('hud.codex.tab.tech'),
+    items: () => [{ id: 'tree', title: t('hud.techTree.itemTitle'), render: () => techTreeHtml() }],
   },
-  { id: 'dossiers', label: '📖 Dossiers', items: dossierTab },
+  { id: 'dossiers', label: t('hud.codex.tab.dossiers'), items: dossierTab },
 ];
 
 /** Open the codex inside `root`. `onClose` returns to the menu. */
@@ -198,8 +199,8 @@ export function openCodex(root: HTMLElement, onClose: () => void): void {
   const panel = document.createElement('div');
   panel.className = 'ed-panel';
   panel.innerHTML = `
-    <h2>📖 Códice del Perú</h2>
-    <div class="sub">Periodos, civilizaciones y campañas, con los dossiers históricos y sus fuentes.</div>
+    <h2>${t('hud.codex.title')}</h2>
+    <div class="sub">${t('hud.codex.sub')}</div>
   `;
   const tabsEl = document.createElement('div');
   tabsEl.className = 'ed-codex-tabs';
@@ -212,7 +213,7 @@ export function openCodex(root: HTMLElement, onClose: () => void): void {
   body.append(nav, content);
   const close = document.createElement('button');
   close.className = 'ed-primary';
-  close.textContent = '← Volver al menú';
+  close.textContent = t('hud.codex.back');
   close.style.marginTop = '14px';
   close.addEventListener('click', onClose);
   panel.append(tabsEl, body, close);

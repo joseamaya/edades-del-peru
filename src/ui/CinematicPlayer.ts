@@ -1,4 +1,5 @@
 import type { CinematicBeat } from '../campaign/defs/cinematics';
+import { t } from '../i18n';
 
 export interface CinematicOptions {
   beats: CinematicBeat[];
@@ -27,7 +28,7 @@ export class CinematicPlayer {
     this.overlay.style.backgroundImage = `linear-gradient(90deg, rgba(4,7,10,.94), rgba(4,7,10,.52) 56%, rgba(4,7,10,.72)), url("${options.background}")`;
     this.overlay.innerHTML = `
       <div class="ed-cinematic-copy">
-        <div class="ed-cinematic-series">${escapeHtml(options.kicker ?? 'LA SENDA DEL SOL')}</div>
+        <div class="ed-cinematic-series">${escapeHtml(options.kicker ?? t('app.series'))}</div>
         <div class="ed-cinematic-kicker"></div>
         <h2 class="ed-cinematic-title"></h2>
         <p class="ed-cinematic-text"></p>
@@ -35,8 +36,8 @@ export class CinematicPlayer {
       <div class="ed-cinematic-footer">
         <div class="ed-cinematic-progress" aria-hidden="true"></div>
         <div class="ed-cinematic-actions">
-          <button class="ed-cinematic-skip ed-ghostbtn" type="button">Saltar</button>
-          <button class="ed-cinematic-next ed-primary" type="button">Continuar</button>
+          <button class="ed-cinematic-skip ed-ghostbtn" type="button">${t('hud.cinematic.skip')}</button>
+          <button class="ed-cinematic-next ed-primary" type="button">${t('hud.cinematic.continue')}</button>
         </div>
       </div>
     `;
@@ -74,7 +75,9 @@ export class CinematicPlayer {
       .join('');
     const next = this.overlay.querySelector('.ed-cinematic-next') as HTMLButtonElement;
     next.textContent =
-      this.index === this.options.beats.length - 1 ? (this.options.finalLabel ?? 'Continuar') : 'Siguiente';
+      this.index === this.options.beats.length - 1
+        ? (this.options.finalLabel ?? t('hud.cinematic.continue'))
+        : t('hud.cinematic.next');
     this.overlay.classList.remove('is-active');
     void this.overlay.offsetWidth;
     this.overlay.classList.add('is-active');

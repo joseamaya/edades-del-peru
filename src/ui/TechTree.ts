@@ -4,6 +4,7 @@ import { TECHS } from '../model/defs/techs';
 import { PERIODS } from '../model/defs/periods';
 import { ERA_DEFS } from '../model/defs/eras';
 import { Era } from '../core/types';
+import { t } from '../i18n';
 
 export interface TechTreeNode {
   id: string;
@@ -56,9 +57,9 @@ export function techTreeHtml(): string {
       (era) => `<div class="ed-tree-era">
         <h3>${era.name}</h3>
         <div class="ed-tree-cols">
-          ${column('Edificios', era.buildings)}
-          ${column('Unidades', era.units)}
-          ${column('Tecnologías', era.techs)}
+          ${column(t('hud.techTree.buildings'), era.buildings)}
+          ${column(t('hud.techTree.units'), era.units)}
+          ${column(t('hud.techTree.techs'), era.techs)}
         </div>
       </div>`,
     )
@@ -72,12 +73,12 @@ export function openTechTree(root: HTMLElement, onClose: () => void): void {
   overlay.id = 'ed-tech-tree';
   const panel = document.createElement('div');
   panel.className = 'ed-panel ed-tree-panel';
-  panel.innerHTML = `<h2>🌳 Árbol tecnológico</h2>
-    <div class="sub">Edificios, unidades y tecnologías por era, generados desde los defs del juego.</div>
+  panel.innerHTML = `<h2>${t('hud.techTree.title')}</h2>
+    <div class="sub">${t('hud.techTree.sub')}</div>
     ${techTreeHtml()}`;
   const close = document.createElement('button');
   close.className = 'ed-primary';
-  close.textContent = '← Volver';
+  close.textContent = t('hud.techTree.back');
   close.addEventListener('click', () => {
     overlay.remove();
     onClose();
