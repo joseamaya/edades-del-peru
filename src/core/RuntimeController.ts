@@ -143,7 +143,7 @@ export class RuntimeController {
       const b = new Building(bs.kind, bs.owner, bs.era);
       this.game.attachBuilding(b);
       b.applySave(bs);
-      this.game.buildings.set(b.id, b);
+      this.game.addBuilding(b);
       this.game.registerObstacle(b);
     }
 

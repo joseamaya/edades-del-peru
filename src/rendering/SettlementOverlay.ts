@@ -45,17 +45,24 @@ export class SettlementOverlay {
   ) {
     this.group.name = 'settlement';
     this.roadWidth = options.roadWidth ?? ROAD_WIDTH;
-    const roadMat = new THREE.MeshStandardMaterial({ color: '#8a6a44', roughness: 1 });
-    const fieldMat = new THREE.MeshStandardMaterial({ color: '#6f8f3a', roughness: 1 });
+    for (const road of plan.roads) terrain.paintPath([road.from, road.to], this.roadWidth, 0.9);
+    const roadMat = new THREE.MeshStandardMaterial({
+      color: '#8a6a44',
+      roughness: 1,
+      transparent: true,
+      opacity: 0.3,
+      depthWrite: false,
+    });
     applyGeneratedPbr(roadMat, 'ground_road');
-    applyGeneratedPbr(fieldMat, 'ground_field');
     this.add(
       'roads',
       plan.roads
-        .map((r) => roadGeometry(r, terrain.getHeight.bind(terrain), this.roadWidth))
+        .map((r) => roadGeometry(r, terrain.getHeight.bind(terrain), this.roadWidth * 0.55))
         .filter((g): g is THREE.BufferGeometry => g !== null),
       roadMat,
     );
+    const fieldMat = new THREE.MeshStandardMaterial({ color: '#6f8f3a', roughness: 1 });
+    applyGeneratedPbr(fieldMat, 'ground_field');
     this.add(
       'fields',
       plan.fields.map((f) => fieldGeometry(f, terrain.getHeight.bind(terrain))),

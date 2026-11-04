@@ -776,7 +776,7 @@ export class Game {
     b.beginConstruction();
     b.addBuildProgress(9999);
     if (tag) b.tag = tag;
-    this.buildings.set(b.id, b);
+    this.addBuilding(b);
     this.registerObstacle(b);
     return b;
   }
@@ -1004,6 +1004,12 @@ export class Game {
     if (!this.headless) attachBuilding(this.scene, b, this.makeBuildContext(b.owner));
   }
 
+  /** Register a building and paint its footprint wear into the terrain splat. */
+  addBuilding(b: Building): void {
+    this.buildings.set(b.id, b);
+    if (!this.headless) this.terrain.paintWear(b.pos.x, b.pos.z, b.radius * 1.6, 0.9);
+  }
+
   attachResourceNode(
     node: ResourceNode,
     mapType: string,
@@ -1051,7 +1057,7 @@ export class Game {
     this.attachBuilding(b);
     b.beginConstruction();
     if (BUILDING_DEFS[kind].instant) b.completeInstantly();
-    this.buildings.set(b.id, b);
+    this.addBuilding(b);
     this.registerObstacle(b);
     return b;
   }

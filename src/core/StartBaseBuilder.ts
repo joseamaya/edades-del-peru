@@ -27,7 +27,7 @@ export class StartBaseBuilder {
         this.game.attachBuilding(b);
         b.beginConstruction();
         b.addBuildProgress(9999);
-        this.game.buildings.set(b.id, b);
+        this.game.addBuilding(b);
         this.game.registerObstacle(b);
       },
     });

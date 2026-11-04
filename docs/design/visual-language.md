@@ -38,7 +38,10 @@ material tints (`grass`, `dirt`, `sand`, `rock`, `snow`) and the macro bands
 (valley, slope, loma, summit). `HistoricalMapProfile.region` selects the palette;
 `SiteTerrainStyle.palette` overrides it for authored sites (Caral). The shader
 mixes the band colour with the tinted PBR albedo by `textureMix`, so biomes differ
-in luminance and hue rather than by a chain of tint multipliers. Lighting uses the
+in luminance and hue rather than by a chain of tint multipliers. Buildings paint
+soft dirt wear into the same splatmap; roads/paths are painted as dirt channels
+(with only a translucent relief ribbon), and a low-roughness band around the
+waterline reads as wet sand. Lighting uses the
 sun plus the scene hemisphere light (`Sky`), and the region `atmosphere`
 (`skyTint`, `fogDensity`, `sunWarmth`) still supplies aerial perspective — an
 **abstraction** of the documented geography.

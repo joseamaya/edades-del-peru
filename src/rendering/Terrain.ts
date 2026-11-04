@@ -3,6 +3,8 @@ import { getGroundTextures, GroundTextures } from './Textures';
 import { getGroundPBR } from './Biomes';
 import { buildTerrainSplat, TERRAIN_SPLAT_SIZE, type TerrainSplat } from './terrainSplat';
 import { TerrainData } from '../sim/TerrainData';
+import { smoothstep } from '../util/math';
+import { fbm2 } from '../util/noise';
 import { FOW_DIM_GLSL } from './fowGlsl';
 import type { GroundPbrSlot, HistoricalMapProfile } from '../model/defs/profiles';
 import {
@@ -76,6 +78,8 @@ export class Terrain {
   private readonly splat: TerrainSplat;
   /** GPU copy of `splat`, sampled by the terrain shader. */
   private readonly splatTexture: THREE.DataTexture;
+  /** Untouched weights, used as the base for wear/path painting. */
+  private readonly splatBase: Uint8Array;
 
   constructor(
     size: number,
@@ -110,6 +114,7 @@ export class Terrain {
     this.canalWidth = this.data.canalWidth;
     this.waterLevel = this.data.waterLevel;
     this.splat = buildTerrainSplat(this.data, profile, { size: TERRAIN_SPLAT_SIZE, seed });
+    this.splatBase = new Uint8Array(this.splat.data);
     const splatTexture = new THREE.DataTexture(this.splat.data, this.splat.size, this.splat.size, THREE.RGBAFormat);
     splatTexture.minFilter = THREE.LinearFilter;
     splatTexture.magFilter = THREE.LinearFilter;
@@ -531,6 +536,7 @@ ${FOW_DIM_GLSL}
           // it follows the heightfield without another texture.
           vec4 splat = texture2D(splatMap, clamp(vWorldPos.xz / mapSize, vec2(0.001), vec2(0.999)));
           float snowAmt = (1.0 - suppressSnow) * smoothstep(snowLine - 4.0, snowLine + 0.5, vHeight);
+          float shore = (1.0 - smoothstep(0.0, 1.4, abs(vHeight - waterLevel))) * (1.0 - smoothstep(0.35, 0.7, slope));
           float grassWeight = splat.r;
           float dirtWeight = splat.g;
           float sandWeight = splat.b;
@@ -621,6 +627,7 @@ ${FOW_DIM_GLSL}
           ground = (ground - 0.5) * 1.12 + 0.5; // contrast
           col = mix(col, ground, textureMix);
           col *= groundTint;
+          col = mix(col, col * vec3(0.55, 0.52, 0.45), shore * 0.6);
           col = mix(col, col * (0.9 + 0.2 * detail2), 0.25);
 
           // slope-based AO
@@ -651,6 +658,7 @@ ${FOW_DIM_GLSL}
             grassSurfaceTex.b * grassWeight + dirtSurfaceTex.b * dirtWeight +
             sandSurfaceTex.b * sandWeight + rockSurfaceTex.b * rockWeight +
             snowSurfaceTex.b * snowWeight;
+          rough = mix(rough, 0.22, shore * 0.75);
 
           vec3 rockTriplanarNormal = vec3(0.0);
           float rockTriplanarBlend = 0.0;
@@ -800,6 +808,86 @@ ${FOW_DIM_GLSL}
   }
 
   camera: THREE.Camera | null = null;
+
+  /** Paint a soft, noisy dirt footprint around a building. */
+  paintWear(x: number, z: number, radius: number, strength = 0.9): void {
+    const pad = radius * 1.35;
+    this.paintSplatRegion(
+      { minX: x - pad, maxX: x + pad, minZ: z - pad, maxZ: z + pad },
+      (wx, wz) => Math.hypot(wx - x, wz - z),
+      radius,
+      strength,
+    );
+  }
+
+  /** Paint a dirt/gravel path under a polyline (settlement and mission roads). */
+  paintPath(points: { x: number; z: number }[], width: number, strength = 0.8): void {
+    if (points.length < 2) return;
+    const radius = Math.max(0.35, width / 2);
+    const pad = radius * 1.35;
+    for (let i = 0; i < points.length - 1; i++) {
+      const a = points[i];
+      const b = points[i + 1];
+      const vx = b.x - a.x;
+      const vz = b.z - a.z;
+      const len2 = Math.max(1e-4, vx * vx + vz * vz);
+      this.paintSplatRegion(
+        {
+          minX: Math.min(a.x, b.x) - pad,
+          maxX: Math.max(a.x, b.x) + pad,
+          minZ: Math.min(a.z, b.z) - pad,
+          maxZ: Math.max(a.z, b.z) + pad,
+        },
+        (wx, wz) => {
+          const t = Math.max(0, Math.min(1, ((wx - a.x) * vx + (wz - a.z) * vz) / len2));
+          return Math.hypot(wx - (a.x + vx * t), wz - (a.z + vz * t));
+        },
+        radius,
+        strength,
+      );
+    }
+  }
+
+  private paintSplatRegion(
+    bounds: { minX: number; maxX: number; minZ: number; maxZ: number },
+    distance: (wx: number, wz: number) => number,
+    radius: number,
+    strength: number,
+  ): void {
+    const size = this.splat.size;
+    const worldSize = this.size;
+    const cell = worldSize / size;
+    const x0 = Math.max(0, Math.floor(bounds.minX / cell));
+    const x1 = Math.min(size - 1, Math.ceil(bounds.maxX / cell));
+    const z0 = Math.max(0, Math.floor(bounds.minZ / cell));
+    const z1 = Math.min(size - 1, Math.ceil(bounds.maxZ / cell));
+    const base = this.splatBase;
+    const out = this.splat.data;
+    let changed = false;
+    for (let tz = z0; tz <= z1; tz++) {
+      const wz = (tz + 0.5) * cell;
+      for (let tx = x0; tx <= x1; tx++) {
+        const wx = (tx + 0.5) * cell;
+        const jitter = (fbm2(wx * 0.45 + 11, wz * 0.45 - 7, 2) - 0.5) * radius * 0.45;
+        const edge = 1 - smoothstep(radius * 0.55, radius, distance(wx, wz) + jitter);
+        const weight = Math.max(0, Math.min(1, strength * edge));
+        if (weight <= 0.001) continue;
+        const i = (tz * size + tx) * 4;
+        const grass = (base[i] / 255) * (1 - weight);
+        const dirt = Math.min(1, base[i + 1] / 255 + weight);
+        const sand = (base[i + 2] / 255) * (1 - weight * 0.65);
+        const rock = (base[i + 3] / 255) * (1 - weight * 0.5);
+        const sum = grass + dirt + sand + rock;
+        const inv = sum > 0 ? 1 / sum : 1;
+        out[i] = Math.round(grass * inv * 255);
+        out[i + 1] = Math.round(dirt * inv * 255);
+        out[i + 2] = Math.round(sand * inv * 255);
+        out[i + 3] = Math.round(rock * inv * 255);
+        changed = true;
+      }
+    }
+    if (changed) this.splatTexture.needsUpdate = true;
+  }
 
   /** Low quality samples one texture scale and skips triplanar rock. */
   setLowDetail(low: boolean): void {

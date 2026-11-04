@@ -135,7 +135,15 @@ export class CulturalLandscape {
       const off = OFFSET[feature] ?? 0.04;
       for (const samples of byChain.values()) {
         const pts = samples.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).map((p) => ({ x: p.x, z: p.z }));
-        pushRibbon(buckets, feature, pts, width, terrain, off);
+        if (feature === 'road' || feature === 'path') terrain.paintPath(pts, width, 0.8);
+        pushRibbon(
+          buckets,
+          feature,
+          pts,
+          feature === 'road' || feature === 'path' ? width * 0.55 : width,
+          terrain,
+          off,
+        );
       }
     }
 
@@ -147,8 +155,20 @@ export class CulturalLandscape {
     const materials: Partial<Record<LandscapeFeature, THREE.MeshStandardMaterial>> = {
       plaza: new THREE.MeshStandardMaterial({ color: '#9c9182', roughness: 0.9 }),
       field: new THREE.MeshStandardMaterial({ color: '#6f8f3a', roughness: 1 }),
-      road: new THREE.MeshStandardMaterial({ color: '#8a6a44', roughness: 1 }),
-      path: new THREE.MeshStandardMaterial({ color: '#9a8464', roughness: 1 }),
+      road: new THREE.MeshStandardMaterial({
+        color: '#8a6a44',
+        roughness: 1,
+        transparent: true,
+        opacity: 0.35,
+        depthWrite: false,
+      }),
+      path: new THREE.MeshStandardMaterial({
+        color: '#9a8464',
+        roughness: 1,
+        transparent: true,
+        opacity: 0.35,
+        depthWrite: false,
+      }),
       canal: new THREE.MeshStandardMaterial({ color: '#1a8a9a', roughness: 0.2, transparent: true, opacity: 0.72 }),
       terrace: new THREE.MeshStandardMaterial({ color: '#8a8070', roughness: 0.95 }),
       wall: new THREE.MeshStandardMaterial({ color: '#8c7f6e', roughness: 0.9 }),
