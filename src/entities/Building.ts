@@ -401,7 +401,7 @@ export class Building {
     }
 
     this.view?.updateHealth(this.hp / this.maxHp);
-    this.view?.setDamageStage(this.hp / this.maxHp);
+    this.view?.setDamageRatio(this.hp / this.maxHp);
     this.view?.animatePulse(time);
   }
 

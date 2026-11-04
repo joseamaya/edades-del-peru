@@ -201,7 +201,7 @@ export class EntityView {
     if (this.losRing) this.losRing.visible = false;
   }
 
-  setDamageStage(hpRatio: number): void {
+  setDamageRatio(hpRatio: number): void {
     const stage = damageStageFor(hpRatio);
     if (stage === this.damageStage) return;
     this.damageStage = stage;
