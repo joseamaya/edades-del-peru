@@ -123,7 +123,7 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
 > distinto para este último). La honda de la variante a distancia es un arma andina general
 > (Métraux, *Weapons*), no una atribución específica a Chavín o Paracas.
 
-> **Implementación riggeada (m7–m8).** La infantería, fusileros, comisarios y misioneros de Realistas/Patriotas/República/Chile usan el rig humanoide compartido con casaca, tocado y fusil/sable como abstracción de la tabla de era; la caballería y la artillería siguen en el modelo procedural hasta tener un rig montado. La revisión de atuendos y procedencia sigue pendiente en #241.
+> **Implementación riggeada (m7–m8).** Los soldados, fusileros y misioneros de Realistas/Patriotas/República/Chile usan el rig humanoide compartido con casaca, tocado y fusil (el soldado virreinal añade sable) como abstracción de la tabla de era; la caballería, la artillería, el mortero y el tanque siguen en el modelo procedural hasta tener un rig montado. El Amauta andino (unidad `commissar`) no es un comisario colonial y también queda fuera. La revisión de atuendos y procedencia sigue pendiente en #241.
 
 > **Implementación riggeada (m4–m6).** Wari añade el disco pectoral (pecho/espalda); Chanca, la pintura
 > facial en guerreros; Chimú, orejeras de metal; e Inca, el canesú rojo. Tiahuanaco comparte la
