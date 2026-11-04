@@ -12,6 +12,7 @@ import type { LandscapeFeature } from '../model/defs/landscape';
 import { applyGeneratedPbr } from './Biomes';
 import { buildRibbon } from './ribbon';
 import { scaleUv, GROUND_TILE } from '../util/uv';
+import { distanceToSegment, rotateXZ } from '../util/math';
 import { conformCorralGeometry, conformWallGeometry } from './landscapeConform';
 
 /** AI-generated ground/landscape material slot per feature (see `prompts_textures.json`). */
@@ -66,8 +67,9 @@ export class CulturalLandscape {
   readonly group = new THREE.Group();
   /** Worst-case mesh count: one merged mesh per drawable feature (the E2E/bench guard). */
   readonly featureBudget = RENDERED_FEATURES.length;
-  /** Field footprints, used to keep ground cover out of cultivated plots. */
-  readonly fields: LandscapePlacement[] = [];
+  /** Field footprints and road/path centrelines, used to keep ground cover off them. */
+  private readonly fields: LandscapePlacement[] = [];
+  private readonly roads: { points: { x: number; z: number }[]; width: number }[] = [];
   private materials: THREE.Material[] = [];
 
   constructor(terrain: Terrain, profile: HistoricalMapProfile, seed: number) {
@@ -138,7 +140,10 @@ export class CulturalLandscape {
       const off = OFFSET[feature] ?? 0.04;
       for (const samples of byChain.values()) {
         const pts = samples.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).map((p) => ({ x: p.x, z: p.z }));
-        if (feature === 'road' || feature === 'path') terrain.paintPath(pts, width, 0.8);
+        if (feature === 'road' || feature === 'path') {
+          terrain.paintPath(pts, width, 0.8);
+          this.roads.push({ points: pts, width });
+        }
         pushRibbon(
           buckets,
           feature,
@@ -192,6 +197,21 @@ export class CulturalLandscape {
       this.group.add(mesh);
       this.materials.push(material);
     }
+  }
+
+  /** True when a point falls on a field, road or path (plus a small margin). */
+  blocksGroundCover(x: number, z: number, margin = 0.6): boolean {
+    for (const field of this.fields) {
+      const local = rotateXZ(x - field.x, z - field.z, -field.yaw);
+      const half = field.size / 2 + margin;
+      if (Math.abs(local.x) <= half && Math.abs(local.z) <= half) return true;
+    }
+    for (const road of this.roads) {
+      for (let i = 0; i < road.points.length - 1; i++) {
+        if (distanceToSegment(x, z, road.points[i], road.points[i + 1]) <= road.width / 2 + margin) return true;
+      }
+    }
+    return false;
   }
 
   dispose(): void {

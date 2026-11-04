@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  GROUND_COVER_INSTANCE_BUDGET,
   groundCoverCount,
   planGroundCover,
   type GroundCoverQuery,
@@ -63,13 +64,15 @@ describe('ground cover planner', () => {
         getSplatWeights: () => ({ grass: 0.2, dirt: 0.05, sand: 0.05, rock: 0.7 }),
       }),
     );
-    expect(amazon.some((p) => p.id === 'fern')).toBe(true);
-    expect(andes.some((p) => p.id === 'ichu')).toBe(true);
+    expect(amazon.some((p) => p.species === 'fern')).toBe(true);
+    expect(andes.some((p) => p.species === 'ichu')).toBe(true);
   });
 
   it('scales the target with vegetation density and respects the budget', () => {
-    expect(groundCoverCount(192, 0, 16000)).toBeLessThan(groundCoverCount(192, 1, 16000));
-    expect(groundCoverCount(320, 1, 16000)).toBe(16000);
+    expect(groundCoverCount(192, 0, GROUND_COVER_INSTANCE_BUDGET)).toBeLessThan(
+      groundCoverCount(192, 1, GROUND_COVER_INSTANCE_BUDGET),
+    );
+    expect(groundCoverCount(320, 1, GROUND_COVER_INSTANCE_BUDGET)).toBe(GROUND_COVER_INSTANCE_BUDGET);
   });
 
   it('keeps every region within the instance budget', () => {
@@ -77,10 +80,10 @@ describe('ground cover planner', () => {
       const placements = planGroundCover(
         profile,
         3,
-        groundCoverCount(192, profile.vegetation.density, 16000),
+        groundCoverCount(192, profile.vegetation.density, GROUND_COVER_INSTANCE_BUDGET),
         fakeQuery(),
       );
-      expect(placements.length).toBeLessThanOrEqual(16000);
+      expect(placements.length).toBeLessThanOrEqual(GROUND_COVER_INSTANCE_BUDGET);
     }
   });
 });

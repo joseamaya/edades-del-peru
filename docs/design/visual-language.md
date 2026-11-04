@@ -56,7 +56,8 @@ bend slightly with the wind; the layer is hidden at `quality: low` and on the
 software-renderer fallback. Heights stay below unit torsos so selection, orders
 and small units remain readable. Like the cultural landscape, it samples the
 shared fog-of-war grid. The species vocabulary is an **abstraction** of the
-documented geography (`docs/historia/mapas.md`), not a botanical reconstruction.
+documented geography (`docs/historia/mapas.md`), not a botanical reconstruction. Before/after captures:
+[`terrain-ground-cover-before-after.webp`](../media/terrain-ground-cover-before-after.webp).
 
 Distinguishing rule of thumb (the classic "biome" trap to avoid):
 

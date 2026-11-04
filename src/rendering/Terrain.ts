@@ -3,6 +3,7 @@ import { getGroundTextures, GroundTextures } from './Textures';
 import { getGroundPBR } from './Biomes';
 import { buildTerrainSplat, TERRAIN_SPLAT_SIZE, type TerrainSplat } from './terrainSplat';
 import { TerrainData } from '../sim/TerrainData';
+import type { GroundCoverWeights } from '../model/defs/groundCover';
 import { smoothstep } from '../util/math';
 import { fbm2 } from '../util/noise';
 import { FOW_DIM_GLSL } from './fowGlsl';
@@ -277,7 +278,7 @@ export class Terrain {
   }
 
   /** Current splat weights at a world point (grass, dirt, sand, rock; 0..1). */
-  getSplatWeights(wx: number, wz: number): { grass: number; dirt: number; sand: number; rock: number } {
+  getSplatWeights(wx: number, wz: number): GroundCoverWeights {
     const size = this.splat.size;
     const tx = Math.max(0, Math.min(size - 1, Math.floor((wx / this.size) * size)));
     const tz = Math.max(0, Math.min(size - 1, Math.floor((wz / this.size) * size)));

@@ -5,6 +5,7 @@ import type { SettlementPlan, SettlementField, SettlementRoad } from '../model/d
 import { applyGeneratedPbr } from './Biomes';
 import { buildRibbon } from './ribbon';
 import { scaleUv, GROUND_TILE } from '../util/uv';
+import { distanceToSegment } from '../util/math';
 
 const ROAD_WIDTH = 1.4;
 /** Length of a road sub-segment; the ribbon samples the terrain at each vertex. */
@@ -36,7 +37,7 @@ export class SettlementOverlay {
   readonly group = new THREE.Group();
   private materials: THREE.Material[] = [];
 
-  readonly roadWidth: number;
+  private readonly roadWidth: number;
 
   constructor(
     readonly plan: SettlementPlan,
@@ -97,7 +98,7 @@ export class SettlementOverlay {
       if (Math.abs(lx) <= half && Math.abs(lz) <= half) return true;
     }
     for (const road of this.plan.roads) {
-      if (pointSegmentDistance(x, z, road.from, road.to) <= this.roadWidth / 2 + margin) return true;
+      if (distanceToSegment(x, z, road.from, road.to) <= this.roadWidth / 2 + margin) return true;
     }
     return false;
   }
@@ -207,19 +208,6 @@ function fieldPoint(field: SettlementField, x: number, z: number): { x: number; 
   const cos = Math.cos(field.yaw);
   const sin = Math.sin(field.yaw);
   return { x: field.x + x * cos - z * sin, z: field.z + x * sin + z * cos };
-}
-
-function pointSegmentDistance(
-  x: number,
-  z: number,
-  from: { x: number; z: number },
-  to: { x: number; z: number },
-): number {
-  const vx = to.x - from.x;
-  const vz = to.z - from.z;
-  const len2 = Math.max(1e-4, vx * vx + vz * vz);
-  const t = Math.max(0, Math.min(1, ((x - from.x) * vx + (z - from.z) * vz) / len2));
-  return Math.hypot(x - (from.x + vx * t), z - (from.z + vz * t));
 }
 
 function subdivide(

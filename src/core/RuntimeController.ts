@@ -1096,7 +1096,7 @@ export class RuntimeController {
   applyQualityPreset(q: GameSettings['quality']): void {
     this.game.postfx.setQuality(q);
     this.game.terrain?.setLowDetail(q === 'low');
-    this.game.groundCover?.setEnabled(q !== 'low');
+    this.game.groundCover?.setEnabled(q !== 'low' && !this.game.usesSoftwareRenderer);
   }
 
   /** Force a render scale (`null` restores the default) and apply it immediately. */

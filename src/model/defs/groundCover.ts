@@ -6,6 +6,9 @@ export type GroundCoverSpecies = 'grass' | 'ichu' | 'fern' | 'pebble' | 'gravel'
 
 export const GROUND_COVER_SPECIES: readonly GroundCoverSpecies[] = ['grass', 'ichu', 'fern', 'pebble', 'gravel'];
 
+/** Hard cap shared by the renderer, tests and the benchmark. */
+export const GROUND_COVER_INSTANCE_BUDGET = 16000;
+
 export interface GroundCoverWeights {
   grass: number;
   dirt: number;
@@ -36,7 +39,7 @@ export interface GroundCoverQuery {
 }
 
 export interface GroundCoverPlacement {
-  id: GroundCoverSpecies;
+  species: GroundCoverSpecies;
   x: number;
   z: number;
   rotY: number;
@@ -130,7 +133,7 @@ export function planGroundCover(
     const id = weightedPick(rng, options);
     if (!id) continue;
     const [min, max] = SCALE_RANGE[id];
-    out.push({ id, x, z, rotY: rng.range(0, Math.PI * 2), scale: rng.range(min, max) });
+    out.push({ species: id, x, z, rotY: rng.range(0, Math.PI * 2), scale: rng.range(min, max) });
   }
   return out;
 }

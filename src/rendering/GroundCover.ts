@@ -1,12 +1,14 @@
 import * as THREE from 'three';
 import type { HistoricalMapProfile } from '../model/defs/profiles';
 import {
+  GROUND_COVER_INSTANCE_BUDGET,
   GROUND_COVER_SPECIES,
   groundCoverCount,
   planGroundCover,
   type GroundCoverPlacement,
   type GroundCoverQuery,
   type GroundCoverSpecies,
+  type GroundCoverWeights,
 } from '../model/defs/groundCover';
 import { RNG } from '../util/rng';
 import { FOW_DIM_GLSL } from './fowGlsl';
@@ -18,8 +20,6 @@ const _e = new THREE.Euler();
 const _pos = new THREE.Vector3();
 const _scale = new THREE.Vector3();
 
-/** Hard cap shared with the benchmark budget (`scripts/bench.mjs`). */
-export const GROUND_COVER_INSTANCE_BUDGET = 16000;
 const CHUNK_SIZE = 24;
 const FADE_START = 0.45;
 const FADE_END = 0.75;
@@ -31,12 +31,6 @@ const COLORS: Record<GroundCoverSpecies, readonly string[]> = {
   pebble: ['#8a8378', '#9b9488', '#746e64'],
   gravel: ['#9a9488', '#aaa396', '#858076'],
 };
-
-interface GroundCoverOptions {
-  /** Override the hard cap (tests); production uses `GROUND_COVER_INSTANCE_BUDGET`. */
-  budget?: number;
-  chunkSize?: number;
-}
 
 /**
  * Instanced low ground cover: ichu/grass tufts, ferns and gravel/pebbles.
@@ -72,19 +66,18 @@ export class GroundCover {
       getMoisture(x: number, z: number): number;
       isWater(x: number, z: number): boolean;
       isBeach(x: number, z: number): boolean;
-      getSplatWeights(x: number, z: number): { grass: number; dirt: number; sand: number; rock: number };
+      getSplatWeights(x: number, z: number): GroundCoverWeights;
     },
     profile: HistoricalMapProfile,
     seed: number,
     query: Pick<GroundCoverQuery, 'isExcluded'>,
     private readonly fow: FowUniforms,
-    options: GroundCoverOptions = {},
   ) {
     this.group.name = 'ground-cover';
-    this.instanceBudget = options.budget ?? GROUND_COVER_INSTANCE_BUDGET;
+    this.instanceBudget = GROUND_COVER_INSTANCE_BUDGET;
     this.fadeStart = terrain.size * FADE_START;
     this.fadeEnd = terrain.size * FADE_END;
-    const chunkSize = options.chunkSize ?? CHUNK_SIZE;
+    const chunkSize = CHUNK_SIZE;
     const count = groundCoverCount(terrain.size, profile.vegetation.density, this.instanceBudget);
     const placements = planGroundCover(profile, seed, count, {
       size: terrain.size,
@@ -101,11 +94,11 @@ export class GroundCover {
     const counts = Object.fromEntries(GROUND_COVER_SPECIES.map((id) => [id, 0])) as Record<GroundCoverSpecies, number>;
     const bySpecies = new Map<GroundCoverSpecies, GroundCoverPlacement[]>();
     for (const p of placements) {
-      counts[p.id]++;
+      counts[p.species]++;
       chunks.add(`${Math.floor(p.x / chunkSize)}:${Math.floor(p.z / chunkSize)}`);
-      const list = bySpecies.get(p.id);
+      const list = bySpecies.get(p.species);
       if (list) list.push(p);
-      else bySpecies.set(p.id, [p]);
+      else bySpecies.set(p.species, [p]);
     }
     this.instanceCount = placements.length;
     this.chunkCount = chunks.size;

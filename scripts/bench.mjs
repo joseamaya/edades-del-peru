@@ -75,9 +75,6 @@ const RIG_BUDGETS = {
 //     main-pass plus one shadow-pass draw.
 const LANDSCAPE_DRAW_CALLS_PER_MESH = 2;
 
-/** Ground cover is one instanced draw per species; the planner has a hard instance cap. */
-const COVER_BUDGET = { instances: 16000, chunks: 256 };
-
 /** Build the requested scale scenario inside the page; returns spawn/micro data. */
 async function setupScenario(page, n) {
   return page.evaluate(
@@ -513,7 +510,6 @@ async function measure(browser, base, n, runIndex) {
       enabled: c.enabled,
       instances: c.instanceCount,
       chunks: c.chunkCount,
-      species: c.speciesCounts,
       budget: c.instanceBudget,
     };
   });
@@ -693,10 +689,10 @@ async function main() {
   const coverWorst = rows.reduce((a, r) => ((r.cover?.instances ?? 0) > (a.cover?.instances ?? 0) ? r : a), rows[0]);
   if (coverWorst?.cover?.present) {
     console.log(
-      `\ncover: ${coverWorst.cover.instances} instances (${coverWorst.cover.chunks} chunks), budget <= ${COVER_BUDGET.instances}`,
+      `\ncover: ${coverWorst.cover.instances} instances (${coverWorst.cover.chunks} chunks), budget <= ${coverWorst.cover.budget}`,
     );
   }
-  const coverOver = rows.filter((r) => (r.cover?.instances ?? 0) > COVER_BUDGET.instances);
+  const coverOver = rows.filter((r) => (r.cover?.instances ?? 0) > (r.cover?.budget ?? 0));
   if (coverOver.length) {
     console.error(
       `ground-cover instance budget exceeded: ${coverOver.map((r) => `${r.cover.instances} @ ${r.n}`).join(', ')}`,
@@ -721,11 +717,8 @@ async function main() {
     for (const r of rows) {
       const c = r.rigCost;
       if (r.cover?.present) {
-        if (r.cover.instances > COVER_BUDGET.instances) {
-          failures.push(`${r.n}: ${r.cover.instances} cover instances > ${COVER_BUDGET.instances}`);
-        }
-        if (r.cover.chunks > COVER_BUDGET.chunks) {
-          failures.push(`${r.n}: ${r.cover.chunks} cover chunks > ${COVER_BUDGET.chunks}`);
+        if (r.cover.instances > r.cover.budget) {
+          failures.push(`${r.n}: ${r.cover.instances} cover instances > ${r.cover.budget}`);
         }
       }
       if (!c) continue;

@@ -242,6 +242,11 @@ export class Game {
   private readonly forceCinematic: boolean;
   /** True when the renderer is a software rasterizer (safe profile applied). */
   private softwareFallback = false;
+
+  /** True when the renderer fell back to the software-safe profile. */
+  get usesSoftwareRenderer(): boolean {
+    return this.softwareFallback;
+  }
   /** One-shot death animations that outlive their entity (topple / collapse). */
   deathFx: DeathFx[] = [];
   private teardownHooks: (() => void)[] = [];
@@ -524,16 +529,7 @@ export class Game {
     for (const overlay of this.settlements) {
       if (overlay.blocksGroundCover(x, z)) return true;
     }
-    for (const field of this.landscape?.fields ?? []) {
-      const dx = x - field.x;
-      const dz = z - field.z;
-      const cos = Math.cos(field.yaw);
-      const sin = Math.sin(field.yaw);
-      const lx = dx * cos + dz * sin;
-      const lz = -dx * sin + dz * cos;
-      const half = field.size / 2 + 0.6;
-      if (Math.abs(lx) <= half && Math.abs(lz) <= half) return true;
-    }
+    if (this.landscape?.blocksGroundCover(x, z)) return true;
     return false;
   }
 
