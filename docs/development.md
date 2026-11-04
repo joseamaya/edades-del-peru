@@ -655,7 +655,9 @@ is ignored). Each instance owns its skeleton and `AnimationMixer`; base geometry
 while the Caral accessories own their small per-instance attachments. `Game.destroy` runs `onDestroy` hooks first,
 then disposes units (and their rigs), and only then calls `clearModelAssets()`. That function defers disposal while
 an asset still has live rigs, so shared resources are never freed under an entity that still uses them. `?rig=1` is
-the visual harness for the pipeline.
+the visual harness for the pipeline. Post-1532 humanoid classes (soldier, ranged, missionary) use the same
+rig with colonial/republican coat/hat/weapon variants; mounted, artillery, mortar, tank and the Andean Amauta
+stay procedural until dedicated assets exist.
 
 Next iteration for the worker: a dedicated construction clip (the current build state uses `Push_Loop`), a
 dedicated death clip and, if needed, a worker attack clip. The mesh/outfit pilot is closed in #116; future

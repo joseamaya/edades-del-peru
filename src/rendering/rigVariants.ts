@@ -1,5 +1,7 @@
 import type { RigClipState, RigVariant } from '../model/defs/modelAssets';
 import { isAndeanVariant } from '../model/defs/andeanCharacters';
+import { isPostColonialVariant } from '../model/defs/postColonialCharacters';
+import { dressPostColonial } from './postColonialAttire';
 import type { RigInstance } from './RigInstance';
 import { dressCaralWorker } from './workerAttire';
 
@@ -11,6 +13,7 @@ export interface RigVariantHandle {
 
 /** Apply the presentation-only dressing for a rig variant. */
 export function applyRigVariant(rig: RigInstance, variant: RigVariant): RigVariantHandle | null {
+  if (isPostColonialVariant(variant)) return dressPostColonial(rig, variant);
   if (variant.startsWith('caral_') || variant.startsWith('inca_') || isAndeanVariant(variant)) {
     return dressCaralWorker(rig, variant);
   }
