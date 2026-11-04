@@ -1,7 +1,9 @@
 import { TECHS } from '../model/defs/techs';
 import { ERA_DEFS } from '../model/defs/eras';
 import { RESOURCE_KEYS, type Resources } from '../core/types';
+import { RESOURCE_INFO } from '../core/Config';
 import type { MatchSnapshot, PlayerSnapshot } from '../game/matchStats';
+import { t } from '../i18n';
 
 export interface MatchStatsPlayerMeta {
   id: number;
@@ -9,13 +11,6 @@ export interface MatchStatsPlayerMeta {
   civ: string;
   colorHex: string;
 }
-
-const RESOURCE_LABEL: Record<keyof Resources, string> = {
-  food: 'Comida',
-  wood: 'Madera',
-  silver: 'Plata',
-  stone: 'Piedra',
-};
 
 const RESOURCE_COLOR: Record<keyof Resources, string> = {
   food: 'var(--stats-food)',
@@ -29,11 +24,11 @@ const ARMY_COLORS = ['#e8c36a', '#e05a5a', '#5aa8e8', '#5fd08a'];
 type Tab = 'summary' | 'economy' | 'military' | 'tech' | 'timeline';
 
 const TABS: { id: Tab; label: string }[] = [
-  { id: 'summary', label: 'Resumen' },
-  { id: 'economy', label: 'Economía' },
-  { id: 'military', label: 'Militar' },
-  { id: 'tech', label: 'Tecnología' },
-  { id: 'timeline', label: 'Línea de tiempo' },
+  { id: 'summary', label: t('hud.stats.tab.summary') },
+  { id: 'economy', label: t('hud.stats.tab.economy') },
+  { id: 'military', label: t('hud.stats.tab.military') },
+  { id: 'tech', label: t('hud.stats.tab.tech') },
+  { id: 'timeline', label: t('hud.stats.tab.timeline') },
 ];
 
 function esc(value: string): string {
@@ -63,7 +58,7 @@ function seriesFor(samples: MatchSnapshot[], playerId: number, value: (p: Player
 function chart(series: { label: string; color: string; values: number[] }[], times: number[], unit = ''): string {
   const usable = series.filter((s) => s.values.length > 0);
   if (times.length < 2 || usable.length === 0) {
-    return '<div class="ed-stats-empty">Sin datos suficientes para la gráfica.</div>';
+    return `<div class="ed-stats-empty">${t('hud.stats.noChart')}</div>`;
   }
   const width = 560;
   const height = 160;
@@ -72,7 +67,7 @@ function chart(series: { label: string; color: string; values: number[] }[], tim
   const top = 12;
   const bottom = 22;
   const dataMax = Math.max(0, ...usable.flatMap((s) => s.values));
-  if (dataMax <= 0) return '<div class="ed-stats-empty">Sin recolección registrada.</div>';
+  if (dataMax <= 0) return `<div class="ed-stats-empty">${t('hud.stats.noGather')}</div>`;
   const max = Math.max(1, dataMax);
   const x = (index: number): number => left + (index / (times.length - 1)) * (width - left - right);
   const y = (value: number): number => top + (1 - value / max) * (height - top - bottom);
@@ -94,7 +89,7 @@ function chart(series: { label: string; color: string; values: number[] }[], tim
   const legend = usable
     .map((s) => `<span class="ed-stats-legend"><i style="background:${s.color}"></i>${esc(s.label)}</span>`)
     .join('');
-  return `<div class="ed-stats-chart"><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Gráfica de la partida">
+  return `<div class="ed-stats-chart"><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${t('hud.stats.chartAria')}">
       ${grid}
       <line class="axis-line" x1="${left}" x2="${width - right}" y1="${height - bottom}" y2="${height - bottom}" />
       ${lines}
@@ -114,19 +109,19 @@ function table(rows: { label: string; values: string[] }[], players: PlayerSnaps
 function summary(samples: MatchSnapshot[], players: PlayerSnapshot[]): string {
   const rows = [
     {
-      label: 'Bajas infligidas',
+      label: t('hud.stats.kills'),
       values: players.map((p) => String(p.kills)),
     },
-    { label: 'Pérdidas', values: players.map((p) => String(p.lost)) },
-    { label: 'Ejército', values: players.map((p) => String(p.army)) },
-    { label: 'Trabajadores', values: players.map((p) => String(p.workers)) },
-    { label: 'Edificios', values: players.map((p) => String(p.buildings)) },
+    { label: t('hud.stats.losses'), values: players.map((p) => String(p.lost)) },
+    { label: t('hud.stats.army'), values: players.map((p) => String(p.army)) },
+    { label: t('hud.stats.workers'), values: players.map((p) => String(p.workers)) },
+    { label: t('hud.stats.buildings'), values: players.map((p) => String(p.buildings)) },
     {
-      label: 'Tecnologías',
+      label: t('hud.stats.techs'),
       values: players.map((p) => String(p.techs.length)),
     },
     {
-      label: 'Era',
+      label: t('hud.stats.era'),
       values: players.map((p) => esc(ERA_DEFS[p.era]?.name ?? '—')),
     },
   ];
@@ -135,7 +130,7 @@ function summary(samples: MatchSnapshot[], players: PlayerSnapshot[]): string {
       (p) => `<div class="ed-stats-card">
         <b style="--player-color:${p.colorHex}">${esc(p.name)}</b>
         <span>${esc(p.civ)} · ${esc(ERA_DEFS[p.era]?.name ?? '—')}</span>
-        <strong>${p.kills}</strong><span>bajas · ${p.lost} pérdidas</span>
+        <strong>${p.kills}</strong><span>${t('hud.stats.killsShort', { lost: p.lost })}</span>
       </div>`,
     )
     .join('');
@@ -145,16 +140,16 @@ function summary(samples: MatchSnapshot[], players: PlayerSnapshot[]): string {
 
 function economy(samples: MatchSnapshot[], players: PlayerSnapshot[], playerId: number): string {
   const player = players.find((p) => p.id === playerId) ?? players[0];
-  if (!player) return '<div class="ed-stats-empty">Sin datos de economía.</div>';
+  if (!player) return `<div class="ed-stats-empty">${t('hud.stats.noEconomy')}</div>`;
   const gatherRows = RESOURCE_KEYS.map(
     (key) =>
-      `<div class="ed-stats-card"><b>${RESOURCE_LABEL[key]}</b><strong>${Math.round(
+      `<div class="ed-stats-card"><b>${RESOURCE_INFO[key].name}</b><strong>${Math.round(
         player.gathered[key],
-      )}</strong><span>recolectado</span></div>`,
+      )}</strong><span>${t('hud.stats.gathered')}</span></div>`,
   ).join('');
   const times = samples.map((s) => s.t);
   const series = RESOURCE_KEYS.map((key) => ({
-    label: RESOURCE_LABEL[key],
+    label: RESOURCE_INFO[key].name,
     color: RESOURCE_COLOR[key],
     values: seriesFor(samples, player.id, (p) => p.gathered[key]),
   }));
@@ -163,10 +158,10 @@ function economy(samples: MatchSnapshot[], players: PlayerSnapshot[], playerId: 
 
 function military(samples: MatchSnapshot[], players: PlayerSnapshot[]): string {
   const rows = [
-    { label: 'Bajas', values: players.map((p) => String(p.kills)) },
-    { label: 'Pérdidas', values: players.map((p) => String(p.lost)) },
-    { label: 'Ejército actual', values: players.map((p) => String(p.army)) },
-    { label: 'Edificios', values: players.map((p) => String(p.buildings)) },
+    { label: t('hud.stats.kills'), values: players.map((p) => String(p.kills)) },
+    { label: t('hud.stats.losses'), values: players.map((p) => String(p.lost)) },
+    { label: t('hud.stats.currentArmy'), values: players.map((p) => String(p.army)) },
+    { label: t('hud.stats.buildings'), values: players.map((p) => String(p.buildings)) },
   ];
   const times = samples.map((s) => s.t);
   const series = players.map((p, index) => ({
@@ -183,12 +178,12 @@ function tech(samples: MatchSnapshot[], players: PlayerSnapshot[]): string {
       .map((p) => {
         const list = p.techs.length
           ? p.techs.map((id) => `<li>${esc(TECHS.find((entry) => entry.id === id)?.name ?? id)}</li>`).join('')
-          : '<li class="ed-stats-empty">Sin tecnologías investigadas.</li>';
+          : `<li class="ed-stats-empty">${t('hud.stats.noTech')}</li>`;
         return `<div class="ed-stats-card ed-stats-tech"><b style="--player-color:${p.colorHex}">${esc(
           p.name,
-        )}</b><span>${esc(ERA_DEFS[p.era]?.name ?? '—')} · ${p.techs.length} tecnologías</span><ul>${list}</ul></div>`;
+        )}</b><span>${esc(ERA_DEFS[p.era]?.name ?? '—')} · ${t('hud.stats.techCount', { count: p.techs.length })}</span><ul>${list}</ul></div>`;
       })
-      .join('') + (samples.length ? '' : '<div class="ed-stats-empty">Sin datos.</div>')
+      .join('') + (samples.length ? '' : `<div class="ed-stats-empty">${t('hud.stats.noData')}</div>`)
   );
 }
 
@@ -204,7 +199,7 @@ function timeline(samples: MatchSnapshot[], players: PlayerSnapshot[]): string {
         eras.push(`${Math.round(sample.t)}s · ${esc(ERA_DEFS[row.era]?.name ?? '—')}`);
       }
       return `<div class="ed-stats-card"><b style="--player-color:${p.colorHex}">${esc(p.name)}</b><ul>${
-        eras.length ? eras.map((entry) => `<li>${entry}</li>`).join('') : '<li>Sin cambios de era.</li>'
+        eras.length ? eras.map((entry) => `<li>${entry}</li>`).join('') : `<li>${t('hud.stats.noEraChange')}</li>`
       }</ul></div>`;
     })
     .join('');
@@ -227,7 +222,7 @@ export function mountMatchStats(
     .map((meta) => latest(samples, meta.id) ?? null)
     .filter((player): player is PlayerSnapshot => player !== null);
   if (players.length === 0) {
-    root.innerHTML = '<div class="ed-stats-empty">La partida terminó antes de la primera instantánea.</div>';
+    root.innerHTML = `<div class="ed-stats-empty">${t('hud.stats.empty')}</div>`;
     return;
   }
   const tabs = document.createElement('div');

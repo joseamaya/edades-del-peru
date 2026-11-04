@@ -1,3 +1,5 @@
+import { t } from '../i18n';
+
 /** Single source of truth for in-match keyboard shortcuts. */
 export type CommandHotkeyAction =
   | 'command1'
@@ -117,18 +119,18 @@ export const DEFAULT_KEYMAP: HotkeyMap = {
 };
 
 const NAMED_LABELS: { action: HotkeyAction; label: string; group: HotkeyDef['group'] }[] = [
-  { action: 'toggleHelp', label: 'Mostrar/ocultar ayuda', group: 'game' },
-  { action: 'nextIdleWorker', label: 'Siguiente obrero ocioso (Ctrl: todos)', group: 'game' },
-  { action: 'pause', label: 'Pausa', group: 'game' },
-  { action: 'lastBattle', label: 'Última batalla', group: 'game' },
-  { action: 'centerBase', label: 'Centrar Plaza Mayor', group: 'game' },
-  { action: 'followUnit', label: 'Seguir unidad', group: 'game' },
-  { action: 'selectArmy', label: 'Todo el ejército', group: 'game' },
-  { action: 'buildFarm', label: 'Andén', group: 'game' },
-  { action: 'buildHouse', label: 'Vivienda', group: 'game' },
-  { action: 'techTree', label: 'Árbol tecnológico', group: 'game' },
-  { action: 'rotateLeft', label: 'Rotar cámara a la izquierda', group: 'camera' },
-  { action: 'rotateRight', label: 'Rotar cámara a la derecha', group: 'camera' },
+  { action: 'toggleHelp', label: t('hotkey.toggleHelp'), group: 'game' },
+  { action: 'nextIdleWorker', label: t('hotkey.nextIdleWorker'), group: 'game' },
+  { action: 'pause', label: t('hotkey.pause'), group: 'game' },
+  { action: 'lastBattle', label: t('hotkey.lastBattle'), group: 'game' },
+  { action: 'centerBase', label: t('hotkey.centerBase'), group: 'game' },
+  { action: 'followUnit', label: t('hotkey.followUnit'), group: 'game' },
+  { action: 'selectArmy', label: t('hotkey.selectArmy'), group: 'game' },
+  { action: 'buildFarm', label: t('hotkey.buildFarm'), group: 'game' },
+  { action: 'buildHouse', label: t('hotkey.buildHouse'), group: 'game' },
+  { action: 'techTree', label: t('hotkey.techTree'), group: 'game' },
+  { action: 'rotateLeft', label: t('hotkey.rotateLeft'), group: 'camera' },
+  { action: 'rotateRight', label: t('hotkey.rotateRight'), group: 'camera' },
 ];
 
 function commandAction(index: number): CommandHotkeyAction {
@@ -140,7 +142,7 @@ export const HOTKEYS: HotkeyDef[] = [
   ...Array.from({ length: COMMAND_SLOT_COUNT }, (_, index) => ({
     action: commandAction(index),
     key: COMMAND_KEYS[index] ?? '',
-    label: `Comando ${index + 1}`,
+    label: t('hotkey.command', { index: index + 1 }),
     group: 'commands' as const,
   })),
 ];
@@ -209,8 +211,8 @@ export function formatHotkeys(group?: HotkeyDef['group'], map: HotkeyMap = DEFAU
   return HOTKEYS.filter((h) => !group || h.group === group)
     .map((h) => {
       const key = keyFor(h.action, map);
-      const label = key === ' ' ? 'Espacio' : key.toUpperCase();
-      const suffix = h.group === 'camera' ? ' (si está activada)' : '';
+      const label = key === ' ' ? t('hotkey.space') : key.toUpperCase();
+      const suffix = h.group === 'camera' ? t('hotkey.rotateSuffix') : '';
       return `${label}: ${h.label}${suffix}`;
     })
     .join(' · ');

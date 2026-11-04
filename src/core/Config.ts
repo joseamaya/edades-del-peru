@@ -1,5 +1,6 @@
 import { CivId, Era, MapType, HistoricalPeriod, Resources } from './types';
 import { DEFAULT_KEYMAP, type HotkeyMap } from './hotkeys';
+import { t } from '../i18n';
 
 export interface GameSettings {
   mapSize: number; // 256 | 192 | 128
@@ -88,18 +89,18 @@ export const DEFAULT_SETTINGS: GameSettings = {
 };
 
 export const RESOURCE_INFO = {
-  food: { name: 'Comida', icon: '🌽', color: '#8fca7a' },
-  wood: { name: 'Madera', icon: '🪵', color: '#b58a5c' },
-  silver: { name: 'Plata', icon: '🥈', color: '#9aa7b5' },
-  stone: { name: 'Piedra', icon: '🪨', color: '#c8a878' },
+  food: { name: t('resource.food'), icon: '🌽', color: '#8fca7a' },
+  wood: { name: t('resource.wood'), icon: '🪵', color: '#b58a5c' },
+  silver: { name: t('resource.silver'), icon: '🥈', color: '#9aa7b5' },
+  stone: { name: t('resource.stone'), icon: '🪨', color: '#c8a878' },
 } as const;
 
 /** Player-facing names for the map / geography types. */
 export const MAP_LABEL: Record<MapType, string> = {
-  coast: 'Costa / litoral',
-  andes: 'Andes / sierra',
-  altiplano: 'Altiplano',
-  jungle: 'Selva',
+  coast: t('map.coast'),
+  andes: t('map.andes'),
+  altiplano: t('map.altiplano'),
+  jungle: t('map.jungle'),
 };
 
 export const DIFFICULTY_MULT = {

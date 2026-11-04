@@ -17,6 +17,18 @@ export default tseslint.config(
   },
 
   {
+    files: ['src/ui/**/*.ts', 'src/core/Config.ts', 'src/core/hotkeys.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'Literal[value=/[ÁÉÍÓÚáéíóúÑñ]/]',
+          message: 'Move player-facing Spanish UI text to src/i18n/es.ts and use t().',
+        },
+      ],
+    },
+  },
+  {
     files: ['src/game/**/*.ts', 'src/sim/**/*.ts'],
     rules: {
       'no-restricted-imports': [

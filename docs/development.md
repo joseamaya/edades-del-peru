@@ -5,7 +5,8 @@ traps and the debug harness. For the short orientation see [`AGENTS.md`](../AGEN
 for player-facing docs see [`README.md`](../README.md); for art direction see
 [`docs/design/visual-language.md`](./design/visual-language.md); for the PRP
 Definition of Done and the building audit see
-[`docs/design/prp-status.md`](./design/prp-status.md).
+[`docs/design/prp-status.md`](./design/prp-status.md); for UI copy see
+[`docs/design/i18n.md`](./design/i18n.md).
 
 ## Architecture
 

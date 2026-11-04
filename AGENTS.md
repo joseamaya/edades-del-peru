@@ -67,8 +67,9 @@ explicit approval described below.
 ## Conventions
 
 - **Language split**: code (identifiers, comments, docs) is **English**; only the text shown to the player
-  (HUD, menus, narrative) and `docs/historia/**` stay **Spanish**. Historical proper nouns (civs, mission ids,
-  place names) are data — never translate them.
+  (HUD, menus, narrative) and `docs/historia/**` stay **Spanish**. Player-facing UI copy lives in
+  `src/i18n/es.ts` behind `t()`; historical proper nouns (civs, mission ids, place names) are data — never
+  translate them.
 - Strict TS (`strict`, ES2022, `moduleResolution: bundler`). No comments unless they add context the code
   cannot express. Prettier (single quotes, 120 cols) over `src/**/*.ts`, `scripts/**/*.{mjs,ts}`, `tests/**/*.ts`
   and `*.config.{ts,js}`.
