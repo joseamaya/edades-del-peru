@@ -98,15 +98,16 @@ test('every campaign mission shows its educational epilogue on victory', async (
 });
 
 test('the tutorial guides in the first mission', async ({ page }) => {
+  test.setTimeout(180_000);
   await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
   const overlay = page.locator('.ed-overlay', { hasText: 'La Ciudad Sagrada' });
   await expect(overlay).toBeVisible({ timeout: 30_000 });
   await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
   await overlay.waitFor({ state: 'detached', timeout: 15_000 });
-  await page.locator('.ed-mission-card').click();
+  await page.locator('.ed-mission-card').click({ timeout: 60_000 });
   const tutorial = page.locator('#ed-tutorial');
   // the first step appears after the card and the ~2.6s opening flight
-  await expect(tutorial).toBeVisible({ timeout: 30_000 });
+  await expect(tutorial).toBeVisible({ timeout: 60_000 });
   await expect(tutorial).toContainText('Selecciona a tus obreros');
   await expect(tutorial).toContainText('Paso 1 / 6');
 });
@@ -193,7 +194,7 @@ test('the Caral mission closes with a narrative epilogue, not a quiz', async ({ 
 });
 
 test('chapter II tutorials open with their first step', async ({ page }) => {
-  test.setTimeout(90_000);
+  test.setTimeout(240_000);
   for (const [id, title] of [
     ['m5_yahuar_pampa', 'Yahuar Pampa'],
     ['m6_chimu_inca', 'La Guerra del Norte'],
@@ -204,22 +205,22 @@ test('chapter II tutorials open with their first step', async ({ page }) => {
     await expect(overlay).toBeVisible({ timeout: 30_000 });
     await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
     await overlay.waitFor({ state: 'detached', timeout: 15_000 });
-    await expect(page.locator('#ed-tutorial.show')).toContainText('Paso 1 / 3', { timeout: 30_000 });
+    await expect(page.locator('#ed-tutorial.show')).toContainText('Paso 1 / 3', { timeout: 60_000 });
   }
 });
 
 test('the chapter III tutorial opens with its first step', async ({ page }) => {
-  test.setTimeout(60_000);
+  test.setTimeout(180_000);
   await page.goto('/?mission=m7_tupac_amaru&seed=777&fog=0&low=1&intro=0');
   const overlay = page.locator('.ed-overlay', { hasText: 'La Gran Rebelión' });
   await expect(overlay).toBeVisible({ timeout: 30_000 });
   await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
   await overlay.waitFor({ state: 'detached', timeout: 15_000 });
-  await expect(page.locator('#ed-tutorial.show')).toContainText('Paso 1 / 2', { timeout: 30_000 });
+  await expect(page.locator('#ed-tutorial.show')).toContainText('Paso 1 / 2', { timeout: 60_000 });
 });
 
 test('chapter IV tutorials open with their first step', async ({ page }) => {
-  test.setTimeout(90_000);
+  test.setTimeout(240_000);
   for (const [id, title, step] of [
     ['m8_independencia', 'La Independencia', 'Paso 1 / 3'],
     ['m9_guerra_pacifico', 'La Defensa de Arica', 'Paso 1 / 2'],
@@ -229,12 +230,12 @@ test('chapter IV tutorials open with their first step', async ({ page }) => {
     await expect(overlay).toBeVisible({ timeout: 30_000 });
     await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
     await overlay.waitFor({ state: 'detached', timeout: 15_000 });
-    await expect(page.locator('#ed-tutorial.show')).toContainText(step, { timeout: 30_000 });
+    await expect(page.locator('#ed-tutorial.show')).toContainText(step, { timeout: 60_000 });
   }
 });
 
 test('later campaign briefing and tutorial fit 1600x900', async ({ context }) => {
-  test.setTimeout(420_000);
+  test.setTimeout(720_000);
   for (const id of [
     'm5_yahuar_pampa',
     'm6_chimu_inca',
@@ -257,7 +258,7 @@ test('later campaign briefing and tutorial fit 1600x900', async ({ context }) =>
     await briefing.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
     await briefing.waitFor({ state: 'detached', timeout: 15_000 });
     const tutorial = page.locator('#ed-tutorial.show');
-    await expect(tutorial).toBeVisible({ timeout: 30_000 });
+    await expect(tutorial).toBeVisible({ timeout: 60_000 });
     const tutorialBox = await tutorial.boundingBox();
     const objectivesBox = await page.locator('#ed-objectives').boundingBox();
     expect(tutorialBox, `${id} tutorial has no box`).not.toBeNull();

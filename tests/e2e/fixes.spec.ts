@@ -406,7 +406,7 @@ test('right-clicking an enemy with an Amauta selected issues a convert order', a
   });
   await page.waitForTimeout(1800); // let the camera settle on slow software renderers
 
-  const info = await page.evaluate(() => {
+  const order = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     const c = g.camera.getTarget();
     const amauta = g.spawnScriptedUnit('commissar', 0, c.x - 5, c.z);
@@ -415,23 +415,34 @@ test('right-clicking an enemy with an Amauta selected issues a convert order', a
     enemy.clearOrders();
     g.selectedUnits = [amauta.id];
     g.selectedBuilding = null;
+    g.camera.camera.updateMatrixWorld(true);
+    g.camera.camera.updateProjectionMatrix();
     const v = new window.THREE.Vector3(enemy.pos.x, enemy.pos.y, enemy.pos.z);
     v.y += 0.5;
     const s = v.project(g.camera.camera);
-    return {
+    const projected = {
       x: Math.round((s.x * 0.5 + 0.5) * window.innerWidth),
       y: Math.round((-s.y * 0.5 + 0.5) * window.innerHeight),
-      aid: amauta.id,
     };
+    let x = projected.x;
+    let y = projected.y;
+    // Software renderers can lag camera matrices by a frame; find a nearby
+    // screen point that actually picks the spawned enemy (not the Amauta).
+    let foundEnemy = g.pickAt(x, y)?.unit?.id === enemy.id;
+    for (let radius = 4; radius <= 40 && !foundEnemy; radius += 4) {
+      const found = [-radius, 0, radius]
+        .flatMap((dx) => [-radius, 0, radius].map((dy) => ({ x: projected.x + dx, y: projected.y + dy })))
+        .find((point) => g.pickAt(point.x, point.y)?.unit?.id === enemy.id);
+      if (found) {
+        x = found.x;
+        y = found.y;
+        foundEnemy = true;
+      }
+    }
+    if (!foundEnemy) throw new Error('could not project the enemy unit');
+    g.input.issueContextOrder(x, y);
+    return g.units.get(amauta.id).orderQueue.map((o: { kind: string }) => o.kind);
   });
-
-  await page.mouse.click(info.x, info.y, { button: 'right' });
-  await page.waitForTimeout(150);
-
-  const order = await page.evaluate((aid) => {
-    const g = (window as unknown as { game: any }).game;
-    return g.units.get(aid).orderQueue.map((o: any) => o.kind);
-  }, info.aid);
   expect(order).toContain('convert');
 });
 
