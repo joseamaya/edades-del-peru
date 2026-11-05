@@ -580,8 +580,7 @@ Local `*.glb` files live in `src/assets/models/`. The registry (`src/rendering/m
 asset id to its bundled URL, scale, yaw offset and **clip names**; the game states are
 `idle | walk | walk_carry | gather | build | attack | eat` (`RIG_CLIP_STATES` in
 `src/model/defs/modelAssets.ts`; `eat` is used by fauna). Only `idle` is mandatory; a missing state falls back to
-`idle`, and a requested attack with no action logs a `[rig]` warning instead of failing silently. Death freezes
-the rig pose (`RigInstance.playDeath`) and uses the shared topple/corpse FX; there is no dedicated death clip yet.
+`idle`, and a requested attack with no action logs a `[rig]` warning instead of failing silently. Death uses the rig's `Death` clip when present (`RigInstance.playDeath`) and the shared topple/corpse FX; rigs without one freeze their current pose.
 
 Audit of the path this pipeline mirrors: procedural templates are cached by `type|scale|barrel|civ|era`,
 `instantiateTemplate` clones them with per-instance materials, buildings modernize by swapping the whole model,
@@ -600,13 +599,14 @@ and sash are shared GLB geometry/materials. The order-driven poses are captured 
 
 The mounted rig (`mounted_rig.glb`, #241a) is a project-authored low-poly horse and rider built by
 `scripts/blender/build_mounted_rig.py`. It is a skinned 30-bone rig with four clips (`Idle_Loop`, `Walk_Loop`,
-`Attack`, `Death`), and it maps `HUSSAR`/`CAVALRY` in the Viceroyalty and Republic eras for the Inca and the
+`Attack`, `Death`), and it maps `HUSSAR`/`CAVALRY` in the Viceroyalty and Republic eras: the late-colonial rebel and the
 four post-colonial civilizations. The rider coat, trim, trousers and headwear are tinted/selected by
 `src/rendering/mountedAttire.ts` from `src/model/defs/mountedCharacters.ts`; the horse is brown by design and
-is not a breed reconstruction. `Attack` is the mounted charge/sword swing; `Death` is exported for the
-topple/corpse path. There is no mounted mapping before 1532, and `modelAssetIdsForMatch` preloads the asset for
+is not a breed reconstruction. `Attack` is the mounted charge/sword swing; `Death` plays once during the topple when the rig provides it. There is no mounted mapping before 1532, and `modelAssetIdsForMatch` preloads the asset for
 the affected periods. The `.blend` source is in `art-src/blender/scenes/mounted_rig.blend` (Git LFS); the GLB
-SHA-256 is recorded in `PROVENANCE.md`.
+SHA-256 is recorded in `PROVENANCE.md`. Measure it with
+`yarn bench --scenario=mounted --units=4,12,24 --assert`; `yarn bench:check` includes the mounted scenario
+(the merged meshes render at ~27 draws and ~10.1k triangles per unit including the VSM shadow pass).
 
 The same GLB backs the Caral **worker and scout in both genders** (`caral_worker_f/m`, `caral_scout_f/m`;
 `unitModelAsset` maps `WORKER`/`SCOUT + CARAL + FORMATIVE`). It also backs the Moche/Recuay infantry in

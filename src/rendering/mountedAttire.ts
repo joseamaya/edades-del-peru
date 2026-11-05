@@ -32,6 +32,7 @@ export function dressMounted(rig: RigInstance, variant: RigVariant): RigVariantH
   tint('MAT-Rider-Trim', spec.trim);
   tint('MAT-Rider-Trousers', spec.trousers);
   tint('MAT-Rider-Hat', spec.hatColor);
+  tint('MAT-Hat-Metal', spec.hatColor);
 
   for (const [hat, name] of Object.entries(HAT_NAMES)) {
     root.traverse((object) => {

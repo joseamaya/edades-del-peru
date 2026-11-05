@@ -229,17 +229,17 @@ describe('rigged model assets', () => {
     expect(unitModelAsset(UnitKind.COMMISSAR, Era.REPUBLIC, CivId.PATRIOTAS)).toBeNull();
     expect(RIG_VARIANT_CLIPS.realistas_soldier_m?.attack).toBe('Punch_Jab');
     expect(RIG_VARIANT_CLIPS.republica_ranged_f?.attack).toBe('Punch_Jab');
-    expect(unitModelAsset(UnitKind.HUSSAR, Era.REPUBLIC, CivId.CHILE, 8)).toEqual({
+    expect(unitModelAsset(UnitKind.HUSSAR, Era.REPUBLIC, CivId.CHILE)).toEqual({
       asset: 'mounted_rig',
       variant: 'mounted_chile',
     });
-    expect(unitModelAsset(UnitKind.CAVALRY, Era.VICEROYALTY, CivId.REALISTAS, 9)).toEqual({
+    expect(unitModelAsset(UnitKind.CAVALRY, Era.VICEROYALTY, CivId.REALISTAS)).toEqual({
       asset: 'mounted_rig',
       variant: 'mounted_realistas',
     });
-    expect(unitModelAsset(UnitKind.CAVALRY, Era.VICEROYALTY, CivId.INCA, 10)).toEqual({
+    expect(unitModelAsset(UnitKind.CAVALRY, Era.VICEROYALTY, CivId.INCA)).toEqual({
       asset: 'mounted_rig',
-      variant: 'mounted_inca',
+      variant: 'mounted_rebelde',
     });
     expect(unitModelAsset(UnitKind.CAVALRY, Era.CONTEMPORARY, CivId.REPUBLIC)).toBeNull();
     expect(unitModelAsset(UnitKind.CAVALRY, Era.FORMATIVE, CivId.REALISTAS)).toBeNull();

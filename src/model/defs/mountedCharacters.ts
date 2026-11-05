@@ -6,12 +6,13 @@ import {
   type PostColonialSpec,
 } from './postColonialCharacters';
 
+/** Uniform abstractions for post-1532 mounted units; see docs/historia/atuendos.md §6. */
 export const MOUNTED_VARIANTS = [
   'mounted_realistas',
   'mounted_patriotas',
   'mounted_republica',
   'mounted_chile',
-  'mounted_inca',
+  'mounted_rebelde',
 ] as const;
 
 export type MountedRigVariant = (typeof MOUNTED_VARIANTS)[number];
@@ -31,7 +32,7 @@ export const MOUNTED_SPECS: Record<MountedRigVariant, MountedSpec> = {
   mounted_patriotas: specFromCulture('patriotas'),
   mounted_republica: specFromCulture('republica'),
   mounted_chile: specFromCulture('chile'),
-  mounted_inca: {
+  mounted_rebelde: {
     coat: 0x6a3a2a,
     trim: 0xd8a040,
     trousers: 0x3a2a1a,
@@ -50,7 +51,7 @@ export function isMountedVariant(variant: string): variant is MountedRigVariant 
 }
 
 export function mountedVariantForCiv(civ: CivId): MountedRigVariant | null {
-  if (civ === CivId.INCA) return 'mounted_inca';
+  if (civ === CivId.INCA) return 'mounted_rebelde';
   const culture = postColonialCultureForCiv(civ);
   return culture ? (`mounted_${culture}` as MountedRigVariant) : null;
 }

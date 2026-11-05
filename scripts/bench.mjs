@@ -8,7 +8,7 @@ import { installProbes, resetProbes, snapshotProbes, readSceneStats, readMemory,
  * Reproducible performance benchmark for entity scale.
  *
  * Usage:
- *   node scripts/bench.mjs [--units=50,100,200,400,800] [--scenario=soldiers|mixed|mixed-ai]
+ *   node scripts/bench.mjs [--units=50,100,200,400,800] [--scenario=soldiers|mixed|mixed-ai|mounted]
  *                          [--seed=777] [--steps=600] [--runs=3] [--profile=1] [--gc=1]
  *                          [--fog=1] [--out=review/bench.json]
  *
@@ -43,10 +43,12 @@ const outFile = cliArg('out', 'review/bench.json');
 const scales = scenario === 'fauna' ? animalScales : unitScales;
 
 if (
-  !['soldiers', 'mixed', 'mixed-ai', 'rigs', 'fauna', 'mixed-rigs', 'fortifications', 'group-move'].includes(scenario)
+  !['soldiers', 'mixed', 'mixed-ai', 'mounted', 'rigs', 'fauna', 'mixed-rigs', 'fortifications', 'group-move'].includes(
+    scenario,
+  )
 ) {
   console.error(
-    `unknown scenario "${scenario}" (use soldiers|mixed|mixed-ai|rigs|fauna|mixed-rigs|fortifications|group-move)`,
+    `unknown scenario "${scenario}" (use soldiers|mixed|mixed-ai|mounted|rigs|fauna|mixed-rigs|fortifications|group-move)`,
   );
   process.exit(1);
 }
@@ -57,6 +59,7 @@ const RIG_BUDGETS = {
   // worker baseline is the dressed mannequin; the animal baseline is the
   // consolidated alpaca (2 draws: mesh + shadow).
   worker: { drawCalls: 40, triangles: 40000 },
+  mounted: { drawCalls: 40, triangles: 12000 },
   animal: { drawCalls: 4, triangles: 5000 },
   mixedP95Ms: 16.6,
   fortificationsP99Ms: 12,
@@ -114,6 +117,13 @@ async function setupScenario(page, n) {
           spawns.push({ id: 'llama', x: cx + Math.cos(ang) * radius, z: cz + Math.sin(ang) * radius, scale: 1 });
         }
         g.wildlife.spawn(spawns, (x, z) => g.terrain.getHeight(x, z));
+      };
+      const spawnCavalry = (count, cx, cz) => {
+        for (let i = 0; i < count; i++) {
+          const ring = 4 + Math.sqrt(i + 1) * 2.4;
+          const ang = i * 2.399963229728653;
+          g.spawnScriptedUnit('cavalry', 0, cx + Math.cos(ang) * ring, cz + Math.sin(ang) * ring);
+        }
       };
       const spawnWorkers = (count, cx, cz) => {
         for (let i = 0; i < count; i++) {
@@ -229,6 +239,8 @@ async function setupScenario(page, n) {
           spawnFauna(N, center.x, center.z);
         } else if (scenarioName === 'rigs') {
           spawnWorkers(N, center.x, center.z);
+        } else if (scenarioName === 'mounted') {
+          spawnCavalry(N, center.x, center.z);
         } else {
           spawnWorkers(N, center.x, center.z);
           spawnArmy(Math.max(0, Math.round(N / 2)), center.x, center.z);
@@ -332,6 +344,10 @@ async function measure(browser, base, n, runIndex) {
   if (scenario === 'rigs' || scenario === 'mixed-rigs') {
     params.set('civ', 'caral');
     params.set('period', '0');
+  }
+  if (scenario === 'mounted') {
+    params.set('civ', 'realistas');
+    params.set('period', '6');
   }
   if (scenario === 'fauna' || scenario === 'mixed-rigs') params.set('map', 'altiplano');
   await page.goto(`${base}/?${params}`, { waitUntil: 'networkidle' });
@@ -730,6 +746,16 @@ async function main() {
         }
         if (c.perWorkerTris > RIG_BUDGETS.worker.triangles) {
           failures.push(`${r.n}: ${fmt(c.perWorkerTris, 0)} worker triangles > ${RIG_BUDGETS.worker.triangles}`);
+        }
+      }
+      if (scenario === 'mounted' && c.units > 0) {
+        if (r.riggedUnits !== r.startMilitary)
+          failures.push(`${r.n}: only ${r.riggedUnits}/${r.startMilitary} cavalry rigged`);
+        if (c.perWorkerCalls > RIG_BUDGETS.mounted.drawCalls) {
+          failures.push(`${r.n}: ${fmt(c.perWorkerCalls, 1)} mounted draw calls > ${RIG_BUDGETS.mounted.drawCalls}`);
+        }
+        if (c.perWorkerTris > RIG_BUDGETS.mounted.triangles) {
+          failures.push(`${r.n}: ${fmt(c.perWorkerTris, 0)} mounted triangles > ${RIG_BUDGETS.mounted.triangles}`);
         }
       }
       if ((scenario === 'fauna' || scenario === 'mixed-rigs') && c.animals > 0) {

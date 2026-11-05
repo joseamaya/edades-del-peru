@@ -9,7 +9,6 @@ is copied to src/assets/models/mounted_rig.glb for the game registry.
 from __future__ import annotations
 
 import math
-import os
 import shutil
 from pathlib import Path
 
@@ -119,6 +118,7 @@ metal = material('MAT-Metal', (0.42, 0.44, 0.46, 1), 0.35, 0.78)
 leather = material('MAT-Leather', (0.12, 0.075, 0.04, 1), 0.9)
 saddle_cloth = material('MAT-Saddle-Cloth', (0.24, 0.10, 0.08, 1), 0.92)
 hat_fabric = material('MAT-Rider-Hat', (0.10, 0.11, 0.13, 1), 0.9)
+hat_metal = material('MAT-Hat-Metal', (0.42, 0.44, 0.46, 1), 0.35, 0.78)
 
 # ---------------------------------------------------------------------------
 # Armature: horse and rider share one skeleton so a single mixer drives both.
@@ -211,10 +211,10 @@ box('GEO-Rider-Hair', 'rider_head', horse_dark, (0, -0.12, 1.86), (0.22, 0.16, 0
 cylinder('GEO-Hat-Bicorn-Brim', 'rider_head', hat_fabric, (0, -0.04, 1.99), 0.25, 0.035, vertices=16)
 box('GEO-Hat-Bicorn-Crown', 'rider_head', hat_fabric, (0, -0.04, 2.06), (0.38, 0.18, 0.12), bevel=0.03)
 box('GEO-Hat-Bicorn-Trim', 'rider_head', trim, (0, 0.06, 2.00), (0.38, 0.02, 0.04), bevel=0.01)
-cylinder('GEO-Hat-Morion-Brim', 'rider_head', metal, (0, -0.04, 1.99), 0.23, 0.035, vertices=10)
+cylinder('GEO-Hat-Morion-Brim', 'rider_head', hat_metal, (0, -0.04, 1.99), 0.23, 0.035, vertices=10)
 bpy.ops.mesh.primitive_cone_add(vertices=8, radius1=0.18, radius2=0.07, depth=0.20, location=(0, -0.04, 2.08))
 _morion = bpy.context.object
-finish(_morion, 'GEO-Hat-Morion-Crown', 'rider_head', metal)
+finish(_morion, 'GEO-Hat-Morion-Crown', 'rider_head', hat_metal)
 box('GEO-Hat-Morion-Comb', 'rider_head', trim, (0, -0.04, 2.18), (0.035, 0.28, 0.09), bevel=0.01)
 cylinder('GEO-Hat-Kepi-Band', 'rider_head', hat_fabric, (0, -0.04, 1.99), 0.17, 0.04, vertices=12)
 cylinder('GEO-Hat-Kepi-Crown', 'rider_head', hat_fabric, (0, -0.04, 2.06), 0.16, 0.14, vertices=12)
@@ -235,6 +235,36 @@ for side, sx, thigh, calf, boot in (
 # sword on the right hand
 box('GEO-Rider-Sword-Blade', 'rider_hand_R', metal, (-0.46, 0.34, 1.43), (0.035, 0.58, 0.02), rot=(math.radians(20), 0, 0), bevel=0.005)
 box('GEO-Rider-Sword-Guard', 'rider_hand_R', trim, (-0.43, 0.15, 1.22), (0.14, 0.035, 0.03), bevel=0.005)
+
+# ---------------------------------------------------------------------------
+# Keep the hat meshes separate (the variant dressing toggles them), but merge
+# the rest by material to stay inside the rig draw-call budget.
+# ---------------------------------------------------------------------------
+def apply_non_armature_modifiers(obj):
+    for mod in list(obj.modifiers):
+        if mod.type == 'ARMATURE':
+            continue
+        bpy.context.view_layer.objects.active = obj
+        bpy.ops.object.modifier_apply(modifier=mod.name)
+
+
+groups = {}
+for obj in list(bpy.data.objects):
+    if obj.type != 'MESH' or obj.parent != arm or obj.name.startswith('GEO-Hat-'):
+        continue
+    material_name = obj.data.materials[0].name if obj.data.materials else 'MAT-Unmaterial'
+    groups.setdefault(material_name, []).append(obj)
+for material_name, objects in groups.items():
+    if len(objects) < 2:
+        continue
+    for obj in objects:
+        apply_non_armature_modifiers(obj)
+    bpy.ops.object.select_all(action='DESELECT')
+    for obj in objects:
+        obj.select_set(True)
+    bpy.context.view_layer.objects.active = objects[0]
+    bpy.ops.object.join()
+    objects[0].name = f'GEO-Merged-{material_name.removeprefix("MAT-")}'
 
 # ---------------------------------------------------------------------------
 # Clips. Pose rotations are local to each bone; all clips start from rest.
@@ -320,7 +350,7 @@ key_action('Death', 40, [
     (40, {'rot': {'body': (0.35, 0, 0.55), 'neck': (0.35, 0, -0.3), 'head': (0.2, 0, -0.4), 'leg_LF_upper': (0.9, 0, 0), 'leg_RF_upper': (-0.6, 0, 0), 'rider_spine': (0.5, 0, 0.3), 'rider_head': (0.3, 0, 0.2)}}),
 ])
 
-# Bike / engine not in scope. Reload idle as the active action.
+# Reload idle as the active action.
 arm.animation_data.action = bpy.data.actions.get('Idle_Loop')
 
 # ---------------------------------------------------------------------------
