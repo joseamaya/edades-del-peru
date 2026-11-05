@@ -73,12 +73,12 @@ The first release is **campaign-only**. _La Senda del Sol_ is the series; it con
 Peruvian historical epochs**. All four, from _Culturas Preincas_ to _Independencia y República_, are playable.
 Skirmish is hidden from the menu for this release (the `?play=1` debug harness remains for tests).
 
-| Campaign                      | Epoch                  | Focus                                         | Release                     |
-| ----------------------------- | ---------------------- | --------------------------------------------- | --------------------------- |
-| **Culturas Preincas**         | 3000 a.C. — 1000 d.C.  | Caral, Chavín, Moche/Recuay, Wari             | **Four missions playable**  |
-| **El Tahuantinsuyo**          | 1438 — 1532            | Yahuar Pampa, the Chimú war and the civil war | **Three missions playable** |
-| **El Virreinato**             | 1542 — 1821            | Túpac Amaru II and colonial Peru              | **One mission playable**    |
-| **Independencia y República** | 1821 — hoy             | Independence, Arica and modern Peru           | **Two missions playable**   |
+| Campaign                      | Focus                                         | Release                     |
+| ----------------------------- | --------------------------------------------- | --------------------------- |
+| **Culturas Preincas**         | Caral, Chavín, Moche/Recuay, Wari             | **Four missions playable**  |
+| **El Tahuantinsuyo**          | Yahuar Pampa, the Chimú war and the civil war | **Three missions playable** |
+| **El Virreinato**             | Túpac Amaru II and colonial Peru              | **One mission playable**    |
+| **Independencia y República** | Independence, Arica and modern Peru           | **Two missions playable**   |
 
 Mission ids remain stable (`m1_caral` … `m9_guerra_pacifico`, plus `m6b_guerra_civil`). All released missions appear in
 menus, the Codex and progress; `?mission=ID` remains available for QA.

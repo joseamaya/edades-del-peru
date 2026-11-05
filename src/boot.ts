@@ -7,6 +7,7 @@ import { getBuildingStats } from './model/defs/buildings';
 import { CIVS, civsForPeriod, getCiv } from './model/defs/civs';
 import { getPeriod } from './model/defs/periods';
 import { loadFromStorage } from './game/SaveGame';
+import { purgeSkirmishData } from './game/storageCleanup';
 import { loadReplay } from './game/replay';
 import { loadMods, ModLoadResult } from './game/Mods';
 import { ScriptedPlayer } from './game/ScriptedPlayer';
@@ -260,11 +261,15 @@ export async function boot(): Promise<void> {
       }
     }
   }
-  if (params.get('menu') === '1' || (wantsLoad && !snapshot) || (wantsReplay && !replay)) {
+  const openMenu = (): void => {
+    purgeSkirmishData();
     game.hud.showMainMenu();
+  };
+  if (params.get('menu') === '1' || (wantsLoad && !snapshot) || (wantsReplay && !replay)) {
+    openMenu();
   } else if (!startsMatchDirectly(params)) {
-    if (game.hud.shouldShowTitleIntro()) game.hud.showTitleIntro(() => game.hud.showMainMenu());
-    else game.hud.showMainMenu();
+    if (game.hud.shouldShowTitleIntro()) game.hud.showTitleIntro(openMenu);
+    else openMenu();
   }
 }
 

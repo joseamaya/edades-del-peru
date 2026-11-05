@@ -27,8 +27,6 @@ export interface CampaignDef {
 }
 
 export const CAMPAIGN_SERIES_TITLE = 'La Senda del Sol';
-export const CAMPAIGN_SERIES_SUBTITLE =
-  'Cuatro campañas por época: Culturas Preincas, Tahuantinsuyo, Virreinato e Independencia';
 
 export const CAMPAIGNS: CampaignDef[] = [
   {

@@ -100,3 +100,11 @@ export function loadReplay(): Replay | null {
 export function hasReplay(): boolean {
   return loadReplay() !== null;
 }
+
+export function clearReplay(): void {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    /* storage unavailable */
+  }
+}
