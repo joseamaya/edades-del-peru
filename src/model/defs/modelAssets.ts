@@ -17,6 +17,13 @@ import {
   type PostColonialRole,
 } from './postColonialCharacters';
 import { MOUNTED_VARIANTS, mountedVariantForCiv, type MountedRigVariant } from './mountedCharacters';
+import {
+  MODERN_CULTURES,
+  MODERN_ROLES,
+  modernCultureForCiv,
+  type ModernRigVariant,
+  type ModernRole,
+} from './modernCharacters';
 import { SIEGE_VARIANTS, siegeVariantFor, type SiegeRigVariant } from './siegeCharacters';
 
 /** Registered rigged models. Add the id here and to the rendering registry. */
@@ -42,6 +49,7 @@ export type RigVariant =
   | 'inca_chasqui_m'
   | AndeanRigVariant
   | PostColonialRigVariant
+  | ModernRigVariant
   | MountedRigVariant
   | SiegeRigVariant;
 
@@ -94,6 +102,24 @@ const POST_COLONIAL_VARIANT_CLIPS = variantClips(
   (role) => POST_COLONIAL_ROLE_CLIPS[role],
 ) as Partial<Record<PostColonialRigVariant, Partial<Record<RigClipState, string | null>>>>;
 
+const MODERN_ROLE_CLIPS: Record<ModernRole, Partial<Record<RigClipState, string | null>>> = {
+  soldier: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  ranged: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  missionary: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: null },
+  worker: {
+    walk: 'Walk_Loop',
+    walk_carry: 'Walk_Carry_Loop',
+    gather: 'Farm_Harvest',
+    build: 'Push_Loop',
+    attack: 'Punch_Jab',
+  },
+  scout: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+};
+
+const MODERN_VARIANT_CLIPS = variantClips(MODERN_CULTURES, MODERN_ROLES, (role) => MODERN_ROLE_CLIPS[role]) as Partial<
+  Record<ModernRigVariant, Partial<Record<RigClipState, string | null>>>
+>;
+
 const MOUNTED_CLIPS: Partial<Record<RigClipState, string | null>> = {
   walk: 'Walk_Loop',
   walk_carry: 'Walk_Loop',
@@ -142,6 +168,7 @@ const ANDEAN_VARIANT_CLIPS = variantClips(
 export const RIG_VARIANT_CLIPS: Partial<Record<RigVariant, Partial<Record<RigClipState, string | null>>>> = {
   ...ANDEAN_VARIANT_CLIPS,
   ...POST_COLONIAL_VARIANT_CLIPS,
+  ...MODERN_VARIANT_CLIPS,
   ...MOUNTED_VARIANT_CLIPS,
   ...SIEGE_VARIANT_CLIPS,
   caral_worker_f: { attack: 'TreeChopping_Loop' },
@@ -184,9 +211,9 @@ export interface RigModelChoice {
 
 /**
  * Rigged model for a unit kind, or `null` to keep the procedural model.
- * Every pre-Hispanic Andean culture, the post-1532 humanoids and the Inca Amauta
- * use the shared humanoid rig; contemporary Republic uniforms, its vehicles and
- * the m7 Inca override stay procedural until a later pass.
+ * Every pre-Hispanic Andean culture, the post-1532 humanoids, the contemporary
+ * Republic humanoids and the Inca Amauta use the shared humanoid rig; contemporary
+ * Republic vehicles and the m7 Inca override stay procedural until a later pass.
  */
 export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): RigModelChoice | null {
   if (civ === CivId.CARAL && era === Era.FORMATIVE) {
@@ -212,6 +239,25 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
   }
   const siegeVariant = siegeVariantFor(kind, era, civ);
   if (siegeVariant) return { asset: SIEGE_RIG_ASSET_ID, variant: siegeVariant };
+  const modernCulture = modernCultureForCiv(civ);
+  if (modernCulture && era === Era.CONTEMPORARY) {
+    const role: ModernRole | null =
+      kind === UnitKind.SOLDIER
+        ? 'soldier'
+        : kind === UnitKind.MUSKETEER || kind === UnitKind.RIFLEMAN || kind === UnitKind.SNIPER
+          ? 'ranged'
+          : kind === UnitKind.MISSIONARY
+            ? 'missionary'
+            : kind === UnitKind.WORKER
+              ? 'worker'
+              : kind === UnitKind.SCOUT
+                ? 'scout'
+                : null;
+    if (role) {
+      const suffix = genderForId(id) === 'female' ? 'f' : 'm';
+      return { asset: CARAL_WORKER_ASSET_ID, variant: `${modernCulture}_${role}_${suffix}` };
+    }
+  }
   const postColonial = postColonialCultureForCiv(civ);
   const postColonialEra =
     postColonial === 'realistas' ? era === Era.VICEROYALTY || era === Era.REPUBLIC : era === Era.REPUBLIC;

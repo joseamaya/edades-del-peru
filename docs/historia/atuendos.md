@@ -131,7 +131,8 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
 > macana); no se postulan prendas específicas. El Amauta (`commissar`) usa la variante `amauta` sin armas de su
 > cultura andina; en la práctica el tech lo limita al Horizonte Tardío inca (§5bis). Los trabajadores y exploradores post-1532 usan la paleta de su cultura sin tocado
 > ni arma, y el trabajador conserva el bulto de carga; es una abstracción de indumentaria civil no documentada.
-> La República contemporánea y los vehículos contemporáneos (moto, AA, cohetes) quedan pendientes en #327.
+> La República contemporánea usa una abstracción de uniforme de campaña moderno (verde, casco y fusil de asalto)
+> para sus humanoides; los vehículos contemporáneos (moto, AA, cohetes) quedan pendientes en #327.
 
 > **Implementación riggeada (m4–m6).** Wari añade el disco pectoral (pecho/espalda); Chanca, la pintura
 > facial en guerreros; Chimú, orejeras de metal; e Inca, el canesú rojo. Tiahuanaco comparte la
