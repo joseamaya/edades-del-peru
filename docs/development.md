@@ -171,8 +171,9 @@ Definition of Done and the building audit see
   from `amount / maxAmount` in `subtract` and `applySave`, so save/load and the resource simulation are
   unchanged. The herd has no entities, obstacles or collision; teardown disposes only its per-herd materials.
 - **Rigged 3D models (optional, glTF/GLB)**: `src/model/defs/modelAssets.ts` maps a unit kind to a registered
-  asset id plus an optional presentation variant. The **Caral worker** is the first mapping (Caral + Arcaico/Formative matches);
-  all other units still use the procedural path, so #109 and later issues opt in progressively.
+  asset id plus an optional presentation variant. The **Caral worker** (Caral + Arcaico/Formative matches) and
+  the **mounted cavalry** (`mounted_rig`, Viceroyalty/Republic `HUSSAR`/`CAVALRY`) are mapped; all other units
+  still use the procedural path, so #109/#241 opt in progressively.
   `modelAssetIdsForMatch` lists the models to preload during `boot()` for every participating civilization. Assets live in
   `src/assets/models/*.glb`, are resolved by `src/rendering/modelAssetRegistry.ts` (`import.meta.glob` with
   `?url`, hashed by Vite) and loaded by `src/rendering/ModelAssets.ts` with `GLTFLoader`. The shared
@@ -596,6 +597,16 @@ carry the variant's tint and bone attachments and are disposed with the rig. The
 carrying and during build work, so it never crosses the body or a placed load. The body, face, hair, tunic, skirt
 and sash are shared GLB geometry/materials. The order-driven poses are captured by
 `node scripts/shots_evidence.mjs --scene=caral-worker-tasks --out=review/evidence/caral-worker-tasks`.
+
+The mounted rig (`mounted_rig.glb`, #241a) is a project-authored low-poly horse and rider built by
+`scripts/blender/build_mounted_rig.py`. It is a skinned 30-bone rig with four clips (`Idle_Loop`, `Walk_Loop`,
+`Attack`, `Death`), and it maps `HUSSAR`/`CAVALRY` in the Viceroyalty and Republic eras for the Inca and the
+four post-colonial civilizations. The rider coat, trim, trousers and headwear are tinted/selected by
+`src/rendering/mountedAttire.ts` from `src/model/defs/mountedCharacters.ts`; the horse is brown by design and
+is not a breed reconstruction. `Attack` is the mounted charge/sword swing; `Death` is exported for the
+topple/corpse path. There is no mounted mapping before 1532, and `modelAssetIdsForMatch` preloads the asset for
+the affected periods. The `.blend` source is in `art-src/blender/scenes/mounted_rig.blend` (Git LFS); the GLB
+SHA-256 is recorded in `PROVENANCE.md`.
 
 The same GLB backs the Caral **worker and scout in both genders** (`caral_worker_f/m`, `caral_scout_f/m`;
 `unitModelAsset` maps `WORKER`/`SCOUT + CARAL + FORMATIVE`). It also backs the Moche/Recuay infantry in

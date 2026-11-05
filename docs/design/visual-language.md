@@ -268,7 +268,9 @@ Quaternius body/face and hair with project-authored cotton tunic, skirt and sash
 surface, plus UAL1/UAL2 clips. The headband, carry bundle and digging stick are runtime accessories on bones.
 `docs/historia/atuendos.md` documents cotton textiles for Caral-Supe but marks specific garments as **not
 documented**, so the outfit is an **abstraction/plausible** treatment, not a reconstruction; there is no metal,
-footwear, horse or firearm. The face/hair are generic CC0, not a portrait. Human skin and hair use the shared
+footwear, horse or firearm. Post-1532 cavalry uses the project-authored `mounted_rig.glb` (horse + rider);
+it is a stylized, low-poly silhouette, not a breed or uniform reconstruction. Its coat/headwear palette follows
+the abstractions in `atuendos.md` §6 and is resolved per civilization in `mountedCharacters.ts`. The face/hair are generic CC0, not a portrait. Human skin and hair use the shared
 `HUMAN_SKIN` / `HUMAN_HAIR` palette (`src/model/defs/people.ts`, `#6b3f22` / `#2a1c12`); skin tone and facial
 features are not documented, so this is a plausible Andean representation, not a portrait or a racial claim.
 The same constants drive the procedural humanoids and the recoloured CC0 body texture. Historical models must follow the

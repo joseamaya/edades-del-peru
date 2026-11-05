@@ -31,6 +31,7 @@ export interface ModelAssetDefinition {
 const UAL_URL = modelUrls['../assets/models/ual_mannequin.glb'] ?? '';
 const ALPACA_URL = modelUrls['../assets/models/quaternius_alpaca.glb'] ?? '';
 const CARAL_WORKER_URL = modelUrls['../assets/models/caral_worker.glb'] ?? '';
+const MOUNTED_RIG_URL = modelUrls['../assets/models/mounted_rig.glb'] ?? '';
 
 /**
  * The mannequin is the pipeline's validation asset (Quaternius Universal
@@ -74,6 +75,24 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
       walk_carry: 'Walk_Carry_Loop',
       gather: 'Farm_Harvest',
       build: 'Push_Loop',
+    },
+  },
+  /**
+   * Project-authored low-poly horse and rider. The source is
+   * `art-src/blender/scenes/mounted_rig.blend`, built by
+   * `scripts/blender/build_mounted_rig.py`.
+   */
+  mounted_rig: {
+    url: MOUNTED_RIG_URL,
+    scale: 1,
+    yawOffset: 0,
+    ground: true,
+    groundClearance: 0.02,
+    clips: {
+      idle: 'Idle_Loop',
+      walk: 'Walk_Loop',
+      walk_carry: 'Walk_Loop',
+      attack: 'Attack',
     },
   },
   /**
