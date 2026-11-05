@@ -727,7 +727,7 @@ rigged bird is added, and evaluate per-species LOD/update throttling at the 16-a
   `resetGame()` reloads with `?play=1&mission=…` and clears `menu`/`load`/`replay`.
 - URL params: `?play=1`, `?menu=0/1`, `?load=1`, `?replay=1`, `?seed=`, `?fog=0`, `?low=1`, `?speed=`, `?era=N`,
   `?period=N`, `?mission=ID`, `?rig=1` (mount two independent rigged-model instances for the GLB pipeline),
-  `?lod=0/1` (Caral site LOD; LOD1 by default), `?noloop=1` (do not auto-start the loop; tests drive fixed steps from step 0),
+  `?lod=0/1` (Caral site LOD; LOD1 by default), `?noloop=1` (do not auto-start the loop; tests drive fixed steps from step 0), `?cardhold=1` (keep the mission title card until clicked),
   `?fps=1` (show the debug FPS overlay, hidden by default), `?civ=ID` (force the player civilization; with
   `?period=N` it drives the geography), `?map=TYPE` (force the map type), `?intro=0` (skip the campaign
   camera flyover; `?noloop=1` skips it too) and `?cine=1` (disables the software-renderer fallback; `?low=1` wins).
