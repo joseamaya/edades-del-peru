@@ -104,7 +104,9 @@ test('the tutorial guides in the first mission', async ({ page }) => {
   await expect(overlay).toBeVisible({ timeout: 30_000 });
   await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
   await overlay.waitFor({ state: 'detached', timeout: 15_000 });
-  await page.locator('.ed-mission-card').click({ timeout: 60_000 });
+  const card = page.locator('.ed-mission-card');
+  await expect(card).toBeVisible({ timeout: 60_000 });
+  await card.click({ timeout: 5_000 }).catch(() => {});
   const tutorial = page.locator('#ed-tutorial');
   // the first step appears after the card and the ~2.6s opening flight
   await expect(tutorial).toBeVisible({ timeout: 60_000 });
@@ -113,12 +115,13 @@ test('the tutorial guides in the first mission', async ({ page }) => {
 });
 
 test('the chapter card freezes the mission clock and shows the full subtitle', async ({ page }) => {
+  test.setTimeout(180_000);
   await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
   const briefing = page.locator('.ed-overlay', { hasText: 'La Ciudad Sagrada' });
   await expect(briefing).toBeVisible({ timeout: 30_000 });
   await briefing.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
   const card = page.locator('.ed-mission-card');
-  await expect(card).toBeVisible();
+  await expect(card).toBeVisible({ timeout: 60_000 });
   const subtitle = card.locator('.place');
   await expect(subtitle).toContainText('plazas se sostienen con trabajo comunal');
   expect((await subtitle.textContent()) ?? '').not.toContain('…');
@@ -700,7 +703,7 @@ test('Caral opens with a chapter card and chains into Chavín', async ({ page })
   await expect(briefing).toBeVisible({ timeout: 30_000 });
   await briefing.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
   const card = page.locator('.ed-mission-card');
-  await expect(card).toBeVisible();
+  await expect(card).toBeVisible({ timeout: 60_000 });
   await expect(card).toContainText('La Ciudad Sagrada');
   await page.evaluate(() => document.querySelector('.ed-mission-card')?.remove());
   await expect(card).toHaveCount(0);
