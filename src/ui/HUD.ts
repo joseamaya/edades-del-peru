@@ -38,8 +38,8 @@ import { getEducational } from '../campaign/defs/educational';
 import {
   CAMPAIGNS,
   campaignProgressCount,
-  getCampaign,
   getCampaignForMission,
+  campaignNumber,
   getReleasedMission,
   nextReleasedMission,
 } from '../campaign/defs/campaigns';
@@ -1977,13 +1977,12 @@ export class HUD {
     addAction('⚙', t('hud.menu.main.options'), t('hud.menu.main.optionsHint'), () => this.showOptions('main'));
 
     const side = this.el('div', 'ed-menu-side', ov);
-    const campaign = getCampaign('preinca')!;
-    const campaignIndex = CAMPAIGNS.findIndex((c) => c.id === campaign.id) + 1;
+    const campaign = CAMPAIGNS[0]!;
     const progress = this.readCampaignProgress();
     const done = campaignProgressCount(campaign, completedMissions(progress, campaign.id));
     const total = campaign.releasedMissionIds.length;
     side.innerHTML = `
-      <div class="side-kicker">${t('hud.menu.side.kicker', { n: campaignIndex, total: CAMPAIGNS.length })}</div>
+      <div class="side-kicker">${t('hud.menu.campaignHub.campaignNumber', { n: campaignNumber(campaign.id), total: CAMPAIGNS.length })}</div>
       <h3>${campaign.title}</h3>
       <p>${campaign.description}</p>
       <div class="progress"><i style="width:${total ? (done / total) * 100 : 0}%"></i></div>
@@ -2372,23 +2371,25 @@ export class HUD {
     const ov = this.el('div', 'ed-overlay ed-campaign-hub');
     ov.style.backgroundImage = `linear-gradient(0deg, rgba(4,7,10,.9), rgba(4,7,10,.62)), url("${MENU_BACKDROP}")`;
     const panel = this.el('div', 'ed-panel ed-campaign-panel', ov);
+    const campaignTitles = CAMPAIGNS.map((c) => c.title).join(' · ');
+    const featuredCampaign = CAMPAIGNS[0]!;
     panel.innerHTML = `
       <div class="ed-campaign-head">
         <div>
           <div class="ed-menu-kicker">${t('app.series')}</div>
           <h2>${t('hud.menu.campaignHub.title')}</h2>
-          <div class="sub">${t('hud.menu.campaignHub.subtitle')}</div>
+          <div class="sub">${t('hud.menu.campaignHub.subtitle', { campaigns: campaignTitles })}</div>
         </div>
       </div>
       <div class="ed-campaign-grid"></div>
       <div class="ed-campaign-foot">
-        <button class="ed-ghostbtn" type="button" data-action="intro">${t('hud.menu.campaignHub.intro')}</button>
+        <button class="ed-ghostbtn" type="button" data-action="intro">${t('hud.menu.campaignHub.intro', { campaign: featuredCampaign.title })}</button>
         <button class="ed-primary" type="button" data-action="back">${t('hud.menu.campaignHub.back')}</button>
       </div>
     `;
     const grid = panel.querySelector('.ed-campaign-grid') as HTMLElement;
     const progress = this.readCampaignProgress();
-    CAMPAIGNS.forEach((campaign, index) => {
+    CAMPAIGNS.forEach((campaign) => {
       const card = this.el('div', `ed-campaign-card ${campaign.status}`, grid);
       card.style.setProperty('--campaign-accent', campaign.accent);
       const completed = completedMissions(progress, campaign.id);
@@ -2396,7 +2397,7 @@ export class HUD {
       const total = campaign.releasedMissionIds.length;
       const available = campaign.status === 'available' && total > 0;
       card.innerHTML = `
-        <div class="era">${t('hud.menu.campaignHub.campaignNumber', { n: index + 1, total: CAMPAIGNS.length })} · ${campaign.era}</div>
+        <div class="era">${t('hud.menu.campaignHub.campaignNumber', { n: campaignNumber(campaign.id), total: CAMPAIGNS.length })} · ${campaign.era}</div>
         <h3>${campaign.title}</h3>
         <p>${campaign.description}</p>
         <div class="card-meta">
@@ -2441,12 +2442,14 @@ export class HUD {
     this.setMenuOpen(true);
     this.game.audio.cinematicSting();
     new CinematicPlayer(this.root, {
-      beats: getCampaign('preinca')!.prologue,
+      beats: CAMPAIGNS[0]!.prologue,
       background: MENU_BACKDROP,
       kicker: t('hud.menu.campaignIntro.kicker', {
-        n: CAMPAIGNS.findIndex((c) => c.id === 'preinca') + 1,
-        total: CAMPAIGNS.length,
-        campaign: getCampaign('preinca')!.title.toUpperCase(),
+        number: t('hud.menu.campaignHub.campaignNumber', {
+          n: campaignNumber(CAMPAIGNS[0]!.id),
+          total: CAMPAIGNS.length,
+        }),
+        campaign: CAMPAIGNS[0]!.title.toUpperCase(),
       }),
       finalLabel: t('hud.menu.campaignHub.introReplay'),
       onDone: () => this.showCampaignHub(),

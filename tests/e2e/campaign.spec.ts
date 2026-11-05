@@ -627,7 +627,6 @@ test('the campaign hub shows preinca progress and its four missions', async ({ p
   // legacy numeric progress migrates to the first two released missions
   await page.addInitScript(() => {
     localStorage.setItem('peru-campaign', '2');
-    localStorage.setItem('peru-campaign-intro-preinca', '1');
   });
   await page.goto('/?menu=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
@@ -649,7 +648,6 @@ test('the campaign hub shows preinca progress and its four missions', async ({ p
 test('the campaign hub releases all four chapters', async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem('peru-campaign', '9');
-    localStorage.setItem('peru-campaign-intro-preinca', '1');
   });
   await page.goto('/?menu=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {

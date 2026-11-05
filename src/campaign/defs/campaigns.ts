@@ -89,6 +89,11 @@ export function getCampaign(id: string): CampaignDef | undefined {
   return CAMPAIGNS.find((c) => c.id === id);
 }
 
+/** 1-based position of a campaign in the series. */
+export function campaignNumber(id: CampaignId): number {
+  return CAMPAIGNS.findIndex((c) => c.id === id) + 1;
+}
+
 export function getCampaignForMission(missionId: string): CampaignDef | undefined {
   return CAMPAIGNS.find((c) => c.missionIds.includes(missionId));
 }

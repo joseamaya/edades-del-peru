@@ -1,4 +1,5 @@
 import { Game, setAutoStart } from './core/Game';
+import { CAMPAIGN_ONLY } from './core/release';
 import * as THREE from 'three';
 import { GameSettings, DEFAULT_SETTINGS, SETTINGS_VERSION, STARTING_RESOURCES } from './core/Config';
 import { normalizeKeymap } from './core/hotkeys';
@@ -262,7 +263,7 @@ export async function boot(): Promise<void> {
     }
   }
   const openMenu = (): void => {
-    purgeSkirmishData();
+    if (CAMPAIGN_ONLY) purgeSkirmishData();
     game.hud.showMainMenu();
   };
   if (params.get('menu') === '1' || (wantsLoad && !snapshot) || (wantsReplay && !replay)) {

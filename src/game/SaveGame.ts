@@ -89,13 +89,18 @@ export function hasSave(): boolean {
 /** Remove a legacy skirmish save, including saves from older schema versions. */
 export function clearSkirmishSave(): void {
   try {
+    const save = loadFromStorage();
+    if (save) {
+      if (!save.settings.missionId) localStorage.removeItem(STORAGE_KEY);
+      return;
+    }
+    // Older schema versions do not validate: inspect the raw mission id.
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return;
     const parsed = JSON.parse(raw) as { settings?: { missionId?: unknown } };
     const missionId = parsed?.settings?.missionId;
     if (typeof missionId !== 'string' || !missionId) localStorage.removeItem(STORAGE_KEY);
   } catch {
-    // An unreadable save cannot be a playable campaign save.
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch {

@@ -93,7 +93,7 @@ test('the campaign-only menu removes a legacy skirmish save', async ({ page }) =
   await page.goto('/?play=1&seed=777&fog=0&low=1');
   await waitReady(page);
   await page.evaluate(() => {
-    const g = (window as unknown as { game: any }).game;
+    const g = (window as unknown as { game: { saveMatch(): void; saveRecording(): void } }).game;
     g.saveMatch();
     g.saveRecording();
   });
@@ -109,10 +109,39 @@ test('the campaign-only menu removes a legacy skirmish save', async ({ page }) =
   expect(await page.evaluate(() => localStorage.getItem('peru-replay'))).toBeNull();
 });
 
+test('campaign-only cleanup removes old skirmish data', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('peru-save', JSON.stringify({ version: 1, settings: {} }));
+    localStorage.setItem('peru-replay', JSON.stringify({ version: 1, settings: {} }));
+  });
+  await page.goto('/?menu=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  await expect(page.locator('.ed-menu-shell')).toBeVisible({ timeout: 15_000 });
+  expect(await page.evaluate(() => localStorage.getItem('peru-save'))).toBeNull();
+  expect(await page.evaluate(() => localStorage.getItem('peru-replay'))).toBeNull();
+});
+
+test('campaign-only cleanup keeps old campaign data', async ({ page }) => {
+  await page.addInitScript(() => {
+    const settings = { missionId: 'm1_caral' };
+    localStorage.setItem('peru-save', JSON.stringify({ version: 1, settings }));
+    localStorage.setItem('peru-replay', JSON.stringify({ version: 1, settings }));
+  });
+  await page.goto('/?menu=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  await expect(page.locator('.ed-menu-shell')).toBeVisible({ timeout: 15_000 });
+  expect(await page.evaluate(() => localStorage.getItem('peru-save'))).not.toBeNull();
+  expect(await page.evaluate(() => localStorage.getItem('peru-replay'))).not.toBeNull();
+});
+
 test('campaign saves survive the campaign-only cleanup', async ({ page }) => {
   await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
   await waitReady(page);
-  await page.evaluate(() => (window as unknown as { game: any }).game.saveMatch());
+  await page.evaluate(() => (window as unknown as { game: { saveMatch(): void } }).game.saveMatch());
   expect(await page.evaluate(() => localStorage.getItem('peru-save') !== null)).toBe(true);
 
   await page.goto('/?menu=1&noloop=1');
