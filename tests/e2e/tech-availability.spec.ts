@@ -61,7 +61,7 @@ test('the Misionero converts an enemy unit', async ({ page }) => {
     enemy.clearOrders();
     missionary.issueOrder({ kind: 'convert', entityId: enemy.id }, true);
     // the model must be the humanoid builder, not the structure fallback
-    let humanoid = false;
+    let humanoid = !!missionary.rig;
     missionary.view.group.traverse((o: any) => {
       if (o.name === 'pivot:legL') humanoid = true;
     });

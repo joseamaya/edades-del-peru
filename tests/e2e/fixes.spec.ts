@@ -73,7 +73,7 @@ test('the worker animates the arm while gathering', async ({ page }) => {
     const g = (window as unknown as { game: any }).game;
     const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
     const node = [...g.resourceNodes.values()][0];
-    if (!w || !node || !w.armR) return false;
+    if (!w || !node || !w.unitView?.armR) return false;
     const nx = node.pos.x + 1.5;
     w.pos.set(nx, g.terrain.getHeight(nx, node.pos.z), node.pos.z);
     w.issueOrder({ kind: 'gather', entityId: node.id }, true);
@@ -87,7 +87,7 @@ test('the worker animates the arm while gathering', async ({ page }) => {
     const r = await page.evaluate(() => {
       const g = (window as unknown as { game: any }).game;
       const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
-      return w?.armR ? w.armR.rotation.x.toFixed(3) : '0';
+      return w?.unitView?.armR ? w.unitView.armR.rotation.x.toFixed(3) : '0';
     });
     samples.add(r);
   }
@@ -141,8 +141,9 @@ test('selected workers build and complete the structure', async ({ page }) => {
     g.paused = false;
     const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
     const center = [...g.buildings.values()].find((b: any) => b.kind === 'center' && b.owner === 0);
-    const x = center.pos.x + 12;
-    const z = center.pos.z + 6;
+    const spot = g.findFreeSpot(center.pos.x, center.pos.z, 2);
+    const x = spot.x;
+    const z = spot.z;
     // zoom to the worker so it arrives fast
     w.pos.set(x + 1, g.terrain.getHeight(x + 1, z + 1), z + 1);
     g.selectedUnits = [w.id];
@@ -403,7 +404,7 @@ test('right-clicking an enemy with an Amauta selected issues a convert order', a
       }
     }
   });
-  await page.waitForTimeout(900); // let the camera settle
+  await page.waitForTimeout(1800); // let the camera settle on slow software renderers
 
   const info = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;

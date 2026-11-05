@@ -688,7 +688,7 @@ export class InputController {
     if (wp) this.updatePlacementGhost(wp.x, wp.z);
   }
 
-  private updatePlacementGhost(x: number, z: number): void {
+  updatePlacementGhost(x: number, z: number): void {
     if (!this.placingBuilding) return;
     const stats = getBuildingStats(this.placingBuilding.kind, this.game.players[0].era);
     const foot = stats.size;
@@ -716,7 +716,7 @@ export class InputController {
     );
   }
 
-  private commitPlacement(x: number, z: number): void {
+  commitPlacement(x: number, z: number): void {
     if (!this.placingBuilding) return;
     const kind = this.placingBuilding.kind;
     this.cancelPlacement();
