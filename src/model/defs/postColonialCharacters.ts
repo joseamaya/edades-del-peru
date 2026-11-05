@@ -1,7 +1,7 @@
 import { CivId } from '../../core/types';
 
 export const POST_COLONIAL_CULTURES = ['realistas', 'patriotas', 'republica', 'chile'] as const;
-export const POST_COLONIAL_ROLES = ['soldier', 'ranged', 'missionary'] as const;
+export const POST_COLONIAL_ROLES = ['soldier', 'ranged', 'missionary', 'worker', 'scout'] as const;
 
 export type PostColonialCulture = (typeof POST_COLONIAL_CULTURES)[number];
 export type PostColonialRole = (typeof POST_COLONIAL_ROLES)[number];
@@ -78,5 +78,7 @@ export function postColonialCultureForCiv(civ: CivId): PostColonialCulture | nul
 export function postColonialRoleForVariant(variant: string): PostColonialRole {
   if (variant.includes('_ranged_')) return 'ranged';
   if (variant.includes('_missionary_')) return 'missionary';
+  if (variant.includes('_worker_')) return 'worker';
+  if (variant.includes('_scout_')) return 'scout';
   return 'soldier';
 }

@@ -17,6 +17,7 @@ import {
   type PostColonialRole,
 } from './postColonialCharacters';
 import { MOUNTED_VARIANTS, mountedVariantForCiv, type MountedRigVariant } from './mountedCharacters';
+import { unitTrainableInPeriod } from './units';
 import { SIEGE_VARIANTS, siegeVariantFor, type SiegeRigVariant } from './siegeCharacters';
 
 /** Registered rigged models. Add the id here and to the rendering registry. */
@@ -71,24 +72,27 @@ const ANDEAN_CLIP_OVERRIDES: Record<AndeanRole, Partial<Record<RigClipState, str
   scout: ANDEAN_NON_WORKER_CLIPS,
   soldier: { ...ANDEAN_NON_WORKER_CLIPS, attack: 'TreeChopping_Loop' },
   ranged: ANDEAN_NON_WORKER_CLIPS,
+  amauta: { ...ANDEAN_NON_WORKER_CLIPS, attack: null },
+};
+
+const POST_COLONIAL_ROLE_CLIPS: Record<PostColonialRole, Partial<Record<RigClipState, string | null>>> = {
+  soldier: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  ranged: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  missionary: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: null },
+  worker: {
+    walk: 'Walk_Loop',
+    walk_carry: 'Walk_Carry_Loop',
+    gather: 'Farm_Harvest',
+    build: 'Push_Loop',
+    attack: 'Punch_Jab',
+  },
+  scout: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
 };
 
 const POST_COLONIAL_VARIANT_CLIPS = Object.fromEntries(
   POST_COLONIAL_CULTURES.flatMap((culture) =>
     (['f', 'm'] as const).flatMap((gender) =>
-      POST_COLONIAL_ROLES.map(
-        (role) =>
-          [
-            `${culture}_${role}_${gender}`,
-            {
-              walk: 'Walk_Loop',
-              walk_carry: 'Walk_Loop',
-              gather: null,
-              build: null,
-              attack: role === 'missionary' ? null : 'Punch_Jab',
-            },
-          ] as const,
-      ),
+      POST_COLONIAL_ROLES.map((role) => [`${culture}_${role}_${gender}`, POST_COLONIAL_ROLE_CLIPS[role]] as const),
     ),
   ),
 ) as Partial<Record<PostColonialRigVariant, Partial<Record<RigClipState, string | null>>>>;
@@ -199,7 +203,9 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
   const siegeVariant = siegeVariantFor(kind, era, civ);
   if (siegeVariant) return { asset: SIEGE_RIG_ASSET_ID, variant: siegeVariant };
   const postColonial = postColonialCultureForCiv(civ);
-  if (postColonial && era === (postColonial === 'realistas' ? Era.VICEROYALTY : Era.REPUBLIC)) {
+  const postColonialEra =
+    postColonial === 'realistas' ? era === Era.VICEROYALTY || era === Era.REPUBLIC : era === Era.REPUBLIC;
+  if (postColonial && postColonialEra) {
     const role: PostColonialRole | null =
       kind === UnitKind.SOLDIER
         ? 'soldier'
@@ -210,7 +216,11 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
           ? 'ranged'
           : kind === UnitKind.MISSIONARY
             ? 'missionary'
-            : null;
+            : kind === UnitKind.WORKER
+              ? 'worker'
+              : kind === UnitKind.SCOUT
+                ? 'scout'
+                : null;
     if (role) {
       const suffix = genderForId(id) === 'female' ? 'f' : 'm';
       return { asset: CARAL_WORKER_ASSET_ID, variant: `${postColonial}_${role}_${suffix}` };
@@ -225,6 +235,7 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
     if (kind === UnitKind.MUSKETEER || kind === UnitKind.RIFLEMAN) {
       return { asset: CARAL_WORKER_ASSET_ID, variant: variant('ranged') };
     }
+    if (kind === UnitKind.COMMISSAR) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('amauta') };
   }
   return null;
 }
@@ -232,24 +243,13 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
 /** Models that must be ready before a match starts (all participating civs are covered). */
 export function modelAssetIdsForMatch(period: HistoricalPeriod, civs: readonly CivId[]): ModelAssetId[] {
   const era = getPeriod(period).level;
-  const kinds = [
-    UnitKind.WORKER,
-    UnitKind.SCOUT,
-    UnitKind.SOLDIER,
-    UnitKind.MUSKETEER,
-    UnitKind.RIFLEMAN,
-    UnitKind.MISSIONARY,
-    UnitKind.HUSSAR,
-    UnitKind.CAVALRY,
-    UnitKind.ARTILLERY,
-    UnitKind.MORTAR,
-    UnitKind.TANK,
-  ];
+  const kinds = Object.values(UnitKind);
   const ids = new Set<ModelAssetId>();
   for (const civ of civs) {
     // Campaign player civs may use a period outside their CivDef (m7 uses INCA in the Viceroyalty).
     if (civ !== CivId.INCA && !getCiv(civ).periods.includes(period)) continue;
     for (const kind of kinds) {
+      if (!unitTrainableInPeriod(kind, period, civ)) continue;
       const choice = unitModelAsset(kind, era, civ);
       if (choice) ids.add(choice.asset);
     }
