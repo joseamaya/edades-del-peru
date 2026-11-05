@@ -89,12 +89,48 @@ test('saves and loads a skirmish match', async ({ page }) => {
   expect(Math.abs((after.uz as number) - before.uz)).toBeLessThan(2);
 });
 
+test('the campaign-only menu removes a legacy skirmish save', async ({ page }) => {
+  await page.goto('/?play=1&seed=777&fog=0&low=1');
+  await waitReady(page);
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.saveMatch();
+    g.saveRecording();
+  });
+  expect(await page.evaluate(() => localStorage.getItem('peru-save') !== null)).toBe(true);
+  expect(await page.evaluate(() => localStorage.getItem('peru-replay') !== null)).toBe(true);
+
+  await page.goto('/?menu=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  await expect(page.locator('.ed-menu-shell')).toBeVisible({ timeout: 15_000 });
+  expect(await page.evaluate(() => localStorage.getItem('peru-save'))).toBeNull();
+  expect(await page.evaluate(() => localStorage.getItem('peru-replay'))).toBeNull();
+});
+
+test('campaign saves survive the campaign-only cleanup', async ({ page }) => {
+  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
+  await waitReady(page);
+  await page.evaluate(() => (window as unknown as { game: any }).game.saveMatch());
+  expect(await page.evaluate(() => localStorage.getItem('peru-save') !== null)).toBe(true);
+
+  await page.goto('/?menu=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  await expect(page.locator('.ed-menu-shell')).toBeVisible({ timeout: 15_000 });
+  expect(await page.evaluate(() => localStorage.getItem('peru-save') !== null)).toBe(true);
+  await expect(page.getByRole('button', { name: /Continuar/ })).toBeVisible();
+});
+
 test('loading without a save shows the main menu', async ({ page }) => {
   await page.goto('/?load=1&seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });
-  const menu = page.locator('.ed-overlay', { hasText: 'EDADES DEL PERÚ' });
+  const menu = page.locator('.ed-menu-shell');
   await expect(menu).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByRole('button', { name: /Escaramuza/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Campañas/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Escaramuza/ })).toHaveCount(0);
 });

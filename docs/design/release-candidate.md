@@ -1,7 +1,7 @@
 # Release status
 
 Status: **published on GitHub Pages** at <https://joseamaya.github.io/edades-del-peru/>; itch upload
-deferred until the end of the campaign work. Date: 2026-10-30. Scope: all four chapters
+deferred until the end of the campaign work. Date: 2026-10-30. Scope: all four campaigns
 (_Culturas Preincas_, _El Tahuantinsuyo_, _El Virreinato_ and _Independencia y República_),
 missions m1 Caral through m9 Guerra del Pacífico, plus m6b La Guerra Civil.
 
@@ -59,7 +59,7 @@ required before deciding whether Moche/Wari need mesh/material optimization.
 - All ten missions are released. All m5–m9 and m6b now use authored sites with their own heightfields and collision. They are smaller
   than the authored sites of Caral, Chavín, Moche and Wari and do not have a CI pixel gate. Their intro renders are drafts.
 - Mission-specific save round-trips are covered for m1–m9.
-- GitHub Pages is enabled and the `Deploy GitHub Pages` workflow is re-run for each chapter
+- GitHub Pages is enabled and the `Deploy GitHub Pages` workflow is re-run for each campaign
   release. The itch build is packaged as `review/edades-del-peru-itch.zip` but not uploaded
   because `butler` is not available here.
 - Six AI seeds still draw (778, 779, 782, 788, 791, 793). They are documented, not hidden.

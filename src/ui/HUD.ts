@@ -37,7 +37,6 @@ import { artFigureHtml, includeUnreviewedArt } from './ArtFigure';
 import { getEducational } from '../campaign/defs/educational';
 import {
   CAMPAIGNS,
-  CAMPAIGN_SERIES_TITLE,
   CAMPAIGN_SERIES_SUBTITLE,
   campaignProgressCount,
   getCampaign,
@@ -46,6 +45,8 @@ import {
   nextReleasedMission,
 } from '../campaign/defs/campaigns';
 import { SERIES_INTRO } from '../campaign/defs/cinematics';
+import { CAMPAIGN_ONLY, SKIRMISH_ENABLED } from '../core/release';
+import { purgeSkirmishData } from '../game/storageCleanup';
 import { completedMissions, markMissionComplete, parseCampaignProgress } from '../campaign/progress';
 import { CinematicPlayer } from './CinematicPlayer';
 import { MENU_BACKDROP } from './menuArt';
@@ -1936,6 +1937,7 @@ export class HUD {
   // --- menus ---
 
   showMainMenu(): void {
+    if (CAMPAIGN_ONLY) purgeSkirmishData();
     this.game.loop.stop();
     this.clearOverlays();
     this.setMenuOpen(true);
@@ -1969,8 +1971,10 @@ export class HUD {
         this.game.loadMatch();
       }).classList.add('primary');
     }
-    addAction('☀', t('hud.menu.main.campaigns'), t('hud.menu.main.campaignsHint'), () => this.showCampaignIntro());
-    addAction('⚔', t('hud.menu.main.skirmish'), t('hud.menu.main.skirmishHint'), () => this.showSkirmishSetup());
+    addAction('☀', t('hud.menu.main.campaigns'), t('hud.menu.main.campaignsHint'), () => this.showCampaignHub());
+    if (SKIRMISH_ENABLED) {
+      addAction('⚔', t('hud.menu.main.skirmish'), t('hud.menu.main.skirmishHint'), () => this.showSkirmishSetup());
+    }
     addAction('📖', t('hud.menu.main.codex'), t('hud.menu.main.codexHint'), () => this.showCodex());
     addAction('?', t('hud.menu.main.controls'), t('hud.menu.main.controlsHint'), () => this.showControls());
     addAction('⚙', t('hud.menu.main.options'), t('hud.menu.main.optionsHint'), () => this.showOptions('main'));
@@ -2410,8 +2414,8 @@ export class HUD {
     panel.innerHTML = `
       <div class="ed-campaign-head">
         <div>
-          <div class="ed-menu-kicker">LA SENDA DEL SOL</div>
-          <h2>${CAMPAIGN_SERIES_TITLE}</h2>
+          <div class="ed-menu-kicker">${t('app.series')}</div>
+          <h2>${t('hud.menu.campaignHub.title')}</h2>
           <div class="sub">${CAMPAIGN_SERIES_SUBTITLE}</div>
         </div>
       </div>
@@ -2423,7 +2427,7 @@ export class HUD {
     `;
     const grid = panel.querySelector('.ed-campaign-grid') as HTMLElement;
     const progress = this.readCampaignProgress();
-    for (const campaign of CAMPAIGNS) {
+    CAMPAIGNS.forEach((campaign, index) => {
       const card = this.el('div', `ed-campaign-card ${campaign.status}`, grid);
       card.style.setProperty('--campaign-accent', campaign.accent);
       const completed = completedMissions(progress, campaign.id);
@@ -2431,7 +2435,7 @@ export class HUD {
       const total = campaign.releasedMissionIds.length;
       const available = campaign.status === 'available' && total > 0;
       card.innerHTML = `
-        <div class="era">${campaign.era}</div>
+        <div class="era">${t('hud.menu.campaignHub.campaignNumber', { n: index + 1, total: CAMPAIGNS.length })} · ${campaign.era}</div>
         <h3>${campaign.title}</h3>
         <p>${campaign.description}</p>
         <div class="card-meta">
@@ -2458,7 +2462,7 @@ export class HUD {
         const tag = this.el('span', 'upcoming', actions);
         tag.textContent = t('hud.menu.campaignHub.inPreparation');
       }
-    }
+    });
     panel.querySelector('[data-action="back"]')!.addEventListener('click', () => this.showMainMenu());
     panel.querySelector('[data-action="intro"]')!.addEventListener('click', () => {
       this.clearOverlays();

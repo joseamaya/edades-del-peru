@@ -42,7 +42,7 @@ test('unit stats are formatted without floating-point noise', { tag: '@smoke' },
 
 test('the skirmish setup names maps and geographies in Spanish', { tag: '@smoke' }, async ({ page }) => {
   await boot(page, '/?menu=1');
-  await page.getByRole('button', { name: /Escaramuza/ }).click();
+  await page.evaluate(() => (window as any).game.hud.showSkirmishSetup());
   const options = await page.$$eval('option', (els) => els.map((e) => e.textContent ?? ''));
   expect(options).toContain('Costa / litoral');
   expect(options.some((o) => o.trim() === 'coast')).toBe(false);
@@ -59,7 +59,7 @@ test('the FPS overlay is hidden unless explicitly enabled', async ({ page }) => 
 
 test('the skirmish setup shows the civ bonus and applies starting resources', async ({ page }) => {
   await boot(page, '/?menu=1');
-  await page.getByRole('button', { name: /Escaramuza/ }).click();
+  await page.evaluate(() => (window as any).game.hud.showSkirmishSetup());
   await expect(page.locator('.ed-skirmish-info')).toBeVisible();
   await expect(page.locator('.ed-skirmish-info b')).toContainText('Moche');
   await expect(page.locator('.ed-map-preview')).toBeVisible();

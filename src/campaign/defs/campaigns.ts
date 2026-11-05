@@ -7,7 +7,7 @@ export type CampaignId = 'preinca' | 'inca' | 'virreinato' | 'independencia';
 
 export type CampaignStatus = 'available' | 'coming-soon';
 
-/** A chapter of the La Senda del Sol saga. */
+/** A campaign of the La Senda del Sol series. */
 export interface CampaignDef {
   id: CampaignId;
   title: string;
@@ -22,12 +22,13 @@ export interface CampaignDef {
   era: string;
   accent: string;
   prologue: CinematicBeat[];
-  /** Named future missions shown inside this chapter, without release promises. */
+  /** Named future missions shown inside this campaign, without release promises. */
   upcoming: string[];
 }
 
 export const CAMPAIGN_SERIES_TITLE = 'La Senda del Sol';
-export const CAMPAIGN_SERIES_SUBTITLE = 'Cuatro campañas a través de cinco mil años de historia peruana';
+export const CAMPAIGN_SERIES_SUBTITLE =
+  'Cuatro campañas por época: Culturas Preincas, Tahuantinsuyo, Virreinato e Independencia';
 
 export const CAMPAIGNS: CampaignDef[] = [
   {
@@ -106,7 +107,7 @@ export function getReleasedMission(id: string): MissionDef | undefined {
   return RELEASED_MISSIONS.find((m) => m.id === id);
 }
 
-/** Next playable mission in the same campaign, or undefined when the chapter ends. */
+/** Next playable mission in the same campaign, or undefined when the campaign ends. */
 export function nextReleasedMission(id: string): MissionDef | undefined {
   const campaign = getCampaignForMission(id);
   if (!campaign) return undefined;
