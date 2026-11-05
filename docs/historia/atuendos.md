@@ -128,8 +128,8 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
 > **Implementación riggeada (cobertura restante, #327).** Caral, Cupisnique, Nazca, Chincha, Collas/Lupaca y
 > Huanca usan el rig andino compartido. Donde las prendas concretas no están documentadas (§2), se reutiliza
 > la abstracción general (túnica/wrap, cinta, manta simple y, cuando la tabla de era lo permite, rodela y
-> macana); no se postulan prendas específicas. El Amauta (`commissar`) usa una variante inca sin armas para el
-> Horizonte Tardío (§5bis). Los trabajadores y exploradores post-1532 usan la paleta de su cultura sin tocado
+> macana); no se postulan prendas específicas. El Amauta (`commissar`) usa la variante `amauta` sin armas de su
+> cultura andina; en la práctica el tech lo limita al Horizonte Tardío inca (§5bis). Los trabajadores y exploradores post-1532 usan la paleta de su cultura sin tocado
 > ni arma, y el trabajador conserva el bulto de carga; es una abstracción de indumentaria civil no documentada.
 > La República contemporánea y los vehículos contemporáneos (moto, AA, cohetes) quedan pendientes en #327.
 

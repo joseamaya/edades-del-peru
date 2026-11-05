@@ -22,6 +22,7 @@ export function dressPostColonial(rig: RigInstance, variant: RigVariant): RigVar
   const spec = POST_COLONIAL_SPECS[culture];
   const role = postColonialRoleForVariant(variant);
   const armed = role === 'soldier' || role === 'ranged';
+  const civilian = role === 'worker' || role === 'scout';
   const root = rig.root;
   const male = variant.endsWith('_m');
   const tools = createRigAttireTools(root);
@@ -60,7 +61,7 @@ export function dressPostColonial(rig: RigInstance, variant: RigVariant): RigVar
   const metalMat = material(0x8a8f94, 0.4, 0.65);
 
   if (spine) {
-    if (role !== 'worker' && role !== 'scout') {
+    if (!civilian) {
       const coat = new THREE.Mesh(track(new THREE.CylinderGeometry(0.2, 0.24, 0.58, 10, 1, true)), coatMat);
       coat.name = 'attire_post_coat';
       attach('spine_03', coat, new THREE.Vector3(spine.x, spine.y - 0.12, spine.z));
@@ -69,7 +70,7 @@ export function dressPostColonial(rig: RigInstance, variant: RigVariant): RigVar
       belt.rotation.x = Math.PI / 2;
       attach('spine_03', belt, new THREE.Vector3(spine.x, spine.y - 0.34, spine.z));
     }
-    if (spec.sidearm === 'sword' && (role === 'soldier' || role === 'ranged')) {
+    if (spec.sidearm === 'sword' && armed) {
       const scabbard = new THREE.Mesh(track(new THREE.BoxGeometry(0.025, 0.55, 0.04)), leatherMat);
       scabbard.name = 'attire_post_sword';
       scabbard.rotation.z = 0.35;
@@ -92,7 +93,7 @@ export function dressPostColonial(rig: RigInstance, variant: RigVariant): RigVar
     }
   }
 
-  if (head && role !== 'worker' && role !== 'scout') {
+  if (head && !civilian) {
     const hatMat = material(spec.hatColor, 0.7);
     let hat: THREE.Mesh;
     if (spec.hat === 'morion') {
@@ -137,13 +138,14 @@ export function dressPostColonial(rig: RigInstance, variant: RigVariant): RigVar
   }
 
   let carry: THREE.Group | null = null;
+  let carryBag: THREE.Mesh | null = null;
   if (role === 'worker' && spine) {
     carry = new THREE.Group();
     carry.name = 'attire_post_carry';
     carry.visible = false;
     const carryMat = material(0x8a6a3a, 0.95);
-    const bag = new THREE.Mesh(track(new THREE.BoxGeometry(0.22, 0.26, 0.16)), carryMat);
-    carry.add(bag);
+    carryBag = new THREE.Mesh(track(new THREE.BoxGeometry(0.22, 0.26, 0.16)), carryMat);
+    carry.add(carryBag);
     const flap = new THREE.Mesh(track(new THREE.BoxGeometry(0.23, 0.05, 0.17)), material(0x6b4a2f, 0.9));
     flap.position.y = 0.13;
     carry.add(flap);
@@ -155,9 +157,8 @@ export function dressPostColonial(rig: RigInstance, variant: RigVariant): RigVar
     setCarrying(next: boolean, color?: number): void {
       if (!carry) return;
       carry.visible = next;
-      if (next && color !== undefined) {
-        const bag = carry.children[0] as THREE.Mesh;
-        (bag.material as THREE.MeshStandardMaterial).color.setHex(color);
+      if (next && color !== undefined && carryBag) {
+        (carryBag.material as THREE.MeshStandardMaterial).color.setHex(color);
       }
     },
     setTask(next: RigClipState): void {

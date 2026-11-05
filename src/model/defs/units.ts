@@ -851,7 +851,7 @@ export function unitMinPeriod(kind: UnitKind): HistoricalPeriod {
   return UNIT_ARCHETYPES[kind].minPeriod ?? HistoricalPeriod.ARCHAIC;
 }
 
-/** Whether a unit can be trained in a period: chronology plus its required techs. */
+/** Period availability: chronology plus whether the required techs exist in that period (not researched state). */
 export function unitTrainableInPeriod(kind: UnitKind, period: HistoricalPeriod, civ?: CivId): boolean {
   if (unitMinPeriod(kind) > period) return false;
   const required = UNIT_ARCHETYPES[kind].requiresTech;

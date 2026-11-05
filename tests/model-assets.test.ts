@@ -352,22 +352,30 @@ describe('rigged model assets', () => {
 
   it('covers every trainable unit combination or documents the deferral', () => {
     // Contemporary Republic units (uniform and vehicles) and the m7 Inca override are deferred; see #327.
+    const contemporaryRepublic = [
+      UnitKind.WORKER,
+      UnitKind.SOLDIER,
+      UnitKind.MUSKETEER,
+      UnitKind.RIFLEMAN,
+      UnitKind.SNIPER,
+      UnitKind.SCOUT,
+      UnitKind.MISSIONARY,
+      UnitKind.HUSSAR,
+      UnitKind.ANTI_AIR,
+      UnitKind.NUCLEAR,
+    ];
+    const m7Inca = [
+      UnitKind.WORKER,
+      UnitKind.SOLDIER,
+      UnitKind.MUSKETEER,
+      UnitKind.RIFLEMAN,
+      UnitKind.SNIPER,
+      UnitKind.SCOUT,
+      UnitKind.MISSIONARY,
+    ];
     const deferred = new Set([
-      ...[
-        'worker',
-        'soldier',
-        'musketeer',
-        'rifleman',
-        'sniper',
-        'scout',
-        'missionary',
-        'hussar',
-        'anti_air',
-        'nuclear',
-      ].map((kind) => `republica@CONTEMPORARY:${kind}`),
-      ...['worker', 'soldier', 'musketeer', 'rifleman', 'sniper', 'scout', 'missionary'].map(
-        (kind) => `inca@VICEROYALTY:${kind}`,
-      ),
+      ...contemporaryRepublic.map((kind) => `${CivId.REPUBLIC}@${HistoricalPeriod.CONTEMPORARY}:${kind}`),
+      ...m7Inca.map((kind) => `${CivId.INCA}@${HistoricalPeriod.VICEROYALTY}:${kind}`),
     ]);
     const combos: { civ: CivId; period: HistoricalPeriod; kind: UnitKind }[] = [];
     for (const civ of CIVS) {
@@ -384,8 +392,7 @@ describe('rigged model assets', () => {
     }
     const missing = combos.filter(
       ({ civ, period, kind }) =>
-        unitModelAsset(kind, getPeriod(period).level, civ) === null &&
-        !deferred.has(`${civ}@${HistoricalPeriod[period]}:${kind}`),
+        unitModelAsset(kind, getPeriod(period).level, civ) === null && !deferred.has(`${civ}@${period}:${kind}`),
     );
     expect(missing).toEqual([]);
   });

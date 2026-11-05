@@ -33,8 +33,8 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   const root = rig.root;
   const chasqui = variant.startsWith('inca_chasqui');
   const scout = variant.startsWith('caral_scout');
-  const legacyCaral = variant.startsWith('caral_worker') || variant.startsWith('caral_scout');
-  const andeanCulture: AndeanCulture | null = legacyCaral ? null : andeanCultureForVariant(variant);
+  const finishedCaralLook = variant.startsWith('caral_worker') || variant.startsWith('caral_scout');
+  const andeanCulture: AndeanCulture | null = finishedCaralLook ? null : andeanCultureForVariant(variant);
   const spec = andeanCulture ? ANDEAN_SPECS[andeanCulture] : null;
   const palette = andeanCulture ? andeanPalette(andeanCulture) : null;
   const andean = spec !== null;
