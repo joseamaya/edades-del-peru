@@ -247,7 +247,8 @@ export function modelAssetIdsForMatch(period: HistoricalPeriod, civs: readonly C
   ];
   const ids = new Set<ModelAssetId>();
   for (const civ of civs) {
-    if (!getCiv(civ).periods.includes(period)) continue;
+    // Campaign player civs may use a period outside their CivDef (m7 uses INCA in the Viceroyalty).
+    if (civ !== CivId.INCA && !getCiv(civ).periods.includes(period)) continue;
     for (const kind of kinds) {
       const choice = unitModelAsset(kind, era, civ);
       if (choice) ids.add(choice.asset);

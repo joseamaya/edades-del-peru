@@ -119,8 +119,10 @@ def build_bones():
     bone('turret', (0, -0.10, 1.22), (0, -0.10, 1.48), 'root')
     bone('tank_gun', (0, 0.20, 1.34), (0, 1.55, 1.34), 'turret')
     for side, x in (('L', 0.62), ('R', -0.62)):
-        bone(f'cannon_wheel_{side}', (x, 0.0, 0.45), (x, 0.0, 0.72), 'root')
-        bone(f'tank_wheel_{side}', (x, -0.15, 0.35), (x, -0.15, 0.62), 'root')
+        bone(f'cannon_wheel_{side}', (x, 0.0, 0.40), (x, 0.0, 0.62), 'root')
+        for i in range(4):
+            y = -0.90 + i * 0.60
+            bone(f'tank_wheel_{side}_{i}', (x, y, 0.21), (x, y, 0.43), 'root')
     for crew, x in (('g', 0.62), ('l', -0.62)):
         bone(f'crew_{crew}_hip', (x, -0.62, 0.48), (x, -0.62, 0.70), 'root')
         bone(f'crew_{crew}_spine', (x, -0.62, 0.70), (x, -0.62, 1.03), f'crew_{crew}_hip')
@@ -166,9 +168,9 @@ def build_meshes():
     box('GEO-Tank-Hull', 'root', tank, (0, 0.0, 0.82), (1.40, 2.40, 0.64), bevel=0.08)
     box('GEO-Tank-Glacis', 'root', tank, (0, 1.12, 0.86), (1.25, 0.30, 0.52), rot=(math.radians(-20), 0, 0), bevel=0.04)
     for side, x in (('L', 0.72), ('R', -0.72)):
-        box(f'GEO-Tank-Track-{side}', 'root', track, (x, 0.0, 0.23), (0.34, 2.55, 0.46), bevel=0.04)
+        box(f'GEO-Tank-Track-{side}', 'root', track, (x, 0.0, 0.25), (0.34, 2.55, 0.50), bevel=0.04)
         for i in range(4):
-            cylinder(f'GEO-Tank-Wheel-{side}-{i}', f'tank_wheel_{side}', dark, (x, -0.90 + i * 0.60, 0.21), 0.21, 0.12, rot=(0, math.pi / 2, 0), vertices=10)
+            cylinder(f'GEO-Tank-Wheel-{side}-{i}', f'tank_wheel_{side}_{i}', dark, (x, -0.90 + i * 0.60, 0.21), 0.21, 0.12, rot=(0, math.pi / 2, 0), vertices=10)
     cylinder('GEO-Tank-Turret', 'turret', tank, (0, -0.10, 1.34), 0.55, 0.42, vertices=12)
     box('GEO-Tank-Turret-Box', 'turret', tank, (0, -0.10, 1.50), (0.80, 0.76, 0.28), bevel=0.05)
     cylinder('GEO-Tank-Gun', 'tank_gun', metal, (0, 0.92, 1.35), 0.10, 1.40, rot=(math.pi / 2, 0, 0), vertices=12)
@@ -188,7 +190,7 @@ def build_meshes():
             box(f'GEO-Crew-{crew}-Hand-{side}', f'crew_{crew}_arm_{side}', skin, (x + sx * 0.34, -0.45, 0.69), (0.08, 0.10, 0.10), bevel=0.02)
             box(f'GEO-Crew-{crew}-Thigh-{side}', f'crew_{crew}_thigh_{side}', trousers, (x + sx * 0.10, -0.54, 0.38), (0.16, 0.20, 0.34), rot=(math.radians(18), 0, 0), bevel=0.02)
             box(f'GEO-Crew-{crew}-Calf-{side}', f'crew_{crew}_calf_{side}', trousers, (x + sx * 0.13, -0.44, 0.14), (0.12, 0.14, 0.28), bevel=0.02)
-            box(f'GEO-Crew-{crew}-Boot-{side}', f'crew_{crew}_calf_{side}', leather, (x + sx * 0.13, -0.35, 0.03), (0.13, 0.24, 0.10), bevel=0.02)
+            box(f'GEO-Crew-{crew}-Boot-{side}', f'crew_{crew}_calf_{side}', leather, (x + sx * 0.13, -0.35, 0.05), (0.13, 0.24, 0.10), bevel=0.02)
         if role == 'gunner':
             cylinder(f'GEO-Crew-{crew}-Rammer', f'crew_{crew}_arm_R', wood, (x - 0.34, -0.42, 0.75), 0.035, 1.05, rot=(math.radians(62), 0, 0), vertices=6)
 
@@ -261,11 +263,18 @@ def build_actions():
     def walk_pose(phase):
         s = math.sin(phase)
         c = math.cos(phase)
+        wheel_rot = s * 0.6
         return {'rot': {
-            'cannon_wheel_L': (s * 0.6, 0, 0),
-            'cannon_wheel_R': (s * 0.6, 0, 0),
-            'tank_wheel_L': (s * 0.6, 0, 0),
-            'tank_wheel_R': (s * 0.6, 0, 0),
+            'cannon_wheel_L': (wheel_rot, 0, 0),
+            'cannon_wheel_R': (wheel_rot, 0, 0),
+            'tank_wheel_L_0': (wheel_rot, 0, 0),
+            'tank_wheel_L_1': (wheel_rot, 0, 0),
+            'tank_wheel_L_2': (wheel_rot, 0, 0),
+            'tank_wheel_L_3': (wheel_rot, 0, 0),
+            'tank_wheel_R_0': (wheel_rot, 0, 0),
+            'tank_wheel_R_1': (wheel_rot, 0, 0),
+            'tank_wheel_R_2': (wheel_rot, 0, 0),
+            'tank_wheel_R_3': (wheel_rot, 0, 0),
             'crew_g_hip': (0.04 * s, 0, 0),
             'crew_l_hip': (-0.04 * s, 0, 0),
             'crew_g_thigh_L': (0.35 * s, 0, 0),

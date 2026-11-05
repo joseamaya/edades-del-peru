@@ -318,6 +318,9 @@ describe('rigged model assets', () => {
     expect(modelAssetIdsForMatch(HistoricalPeriod.VICEROYALTY, [CivId.REALISTAS])).toEqual(
       expect.arrayContaining(['mounted_rig', 'siege_rig']),
     );
+    expect(modelAssetIdsForMatch(HistoricalPeriod.VICEROYALTY, [CivId.INCA])).toEqual(
+      expect.arrayContaining(['mounted_rig', 'siege_rig']),
+    );
 
     const data = fs.readFileSync(fileURLToPath(SIEGE_URL));
     const buffer = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer;
@@ -343,6 +346,24 @@ describe('rigged model assets', () => {
     expect((coat.material as THREE.MeshStandardMaterial).color.getHex()).toBe(
       siegeSpecForVariant('siege_cannon_realistas').coat,
     );
+
+    const mortarRig = acquireRig('siege_rig', 'siege_mortar_patriotas')!;
+    expect(mortarRig.root.getObjectByName('GEO-Mortar-Siege-Metal')?.visible).toBe(true);
+    expect(mortarRig.root.getObjectByName('GEO-Cannon-Siege-Wood')?.visible).toBe(false);
+    expect(mortarRig.root.getObjectByName('GEO-Crew-Crew-Coat')?.visible).toBe(true);
+    mortarRig.dispose();
+
+    const tankRig = acquireRig('siege_rig', 'siege_tank_republica')!;
+    expect(tankRig.root.getObjectByName('GEO-Tank-Tank-Hull')?.visible).toBe(true);
+    expect(tankRig.root.getObjectByName('GEO-Crew-Crew-Coat')?.visible).toBe(false);
+    tankRig.dispose();
+
+    const rebelRig = acquireRig('siege_rig', 'siege_cannon_rebelde')!;
+    const rebelCoat = rebelRig.root.getObjectByName('GEO-Crew-Crew-Coat') as THREE.Mesh;
+    expect((rebelCoat.material as THREE.MeshStandardMaterial).color.getHex()).toBe(
+      siegeSpecForVariant('siege_cannon_rebelde').coat,
+    );
+    rebelRig.dispose();
     rig.dispose();
   });
 

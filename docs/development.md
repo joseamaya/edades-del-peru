@@ -610,10 +610,10 @@ SHA-256 is recorded in `PROVENANCE.md`. Measure it with
 (the merged meshes render at ~27 draws and ~10.1k triangles per unit including the VSM shadow pass).
 
 The siege rig (`siege_rig.glb`, #241b) is the project-authored companion for `ARTILLERY`, `MORTAR` and
-`TANK`: a 27-bone rig with hidden cannon/mortar/crew/tank groups, four clips and per-culture palette variants
+`TANK`: a 33-bone rig with hidden cannon/mortar/crew/tank groups, four clips and per-culture palette variants
 (`src/rendering/siegeAttire.ts`). Cannon/mortar show the two crew figures and one weapon; the tank shows only
-the vehicle. It maps post-1532 artillery and mortars for the four post-colonial civs, plus the contemporary tank (and
-contemporary cavalry vehicle) for República. No siege weapon is mapped before 1532. The source is
+the vehicle. It maps post-1532 artillery and mortars for the four post-colonial civs plus the m7 late-colonial rebel
+cannon/mortar, and the contemporary tank (also used by contemporary cavalry) for República. No siege weapon is mapped before 1532. The source is
 `art-src/blender/scenes/siege_rig.blend` (Git LFS); the meshopt GLB and SHA-256 are recorded in
 `PROVENANCE.md`.
 

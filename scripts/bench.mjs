@@ -261,7 +261,8 @@ async function setupScenario(page, n) {
         } else if (scenarioName === 'mounted') {
           spawnCavalry(N, center.x, center.z);
         } else if (scenarioName === 'siege') {
-          spawnVehicle('artillery', N, center.x, center.z);
+          spawnVehicle('artillery', Math.ceil(N / 2), center.x, center.z);
+          spawnVehicle('mortar', Math.floor(N / 2), center.x, center.z);
         } else if (scenarioName === 'tank') {
           spawnVehicle('tank', N, center.x, center.z);
         } else {
