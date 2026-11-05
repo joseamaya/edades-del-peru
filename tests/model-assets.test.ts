@@ -10,6 +10,7 @@ import {
   unitModelAsset,
 } from '../src/model/defs/modelAssets';
 import { CivId, Era, HistoricalPeriod, UnitKind } from '../src/core/types';
+import { MOUNTED_SPECS } from '../src/model/defs/mountedCharacters';
 import {
   acquireRig,
   clearModelAssets,
@@ -262,8 +263,17 @@ describe('rigged model assets', () => {
     expect(rig.hasState('idle')).toBe(true);
     expect(rig.hasState('walk')).toBe(true);
     expect(rig.hasState('attack')).toBe(true);
+    expect(rig.hasDeathClip()).toBe(true);
     expect(rig.root.getObjectByName('GEO-Hat-Morion-Crown')?.visible).toBe(true);
     expect(rig.root.getObjectByName('GEO-Hat-Bicorn-Crown')?.visible).toBe(false);
+    const trousers = rig.root.getObjectByName('GEO-Merged-Rider-Trousers') as THREE.Mesh;
+    expect((trousers.material as THREE.MeshStandardMaterial).color.getHex()).toBe(
+      MOUNTED_SPECS.mounted_realistas.trousers,
+    );
+    const sword = rig.root.getObjectByName('GEO-Rider-Sword-Blade') as THREE.Mesh;
+    expect((sword.material as THREE.MeshStandardMaterial).color.getHex()).not.toBe(
+      MOUNTED_SPECS.mounted_realistas.hatColor,
+    );
     rig.dispose();
   });
 

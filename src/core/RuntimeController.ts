@@ -953,7 +953,7 @@ export class RuntimeController {
       view,
       t: 0,
       dur: building ? 1.1 : 0.6,
-      topple: building ? 0.12 : rig ? Math.PI * 0.25 : Math.PI * 0.5,
+      topple: building ? 0.12 : rig?.hasDeathClip() ? Math.PI * 0.25 : Math.PI * 0.5,
       sink: building ? radius * 0.55 : 0.06,
       baseY: view.group.position.y,
       radius,

@@ -150,7 +150,7 @@ Definition of Done and the building audit see
   overrides the region profile's `atmosphere` in `Game.applyAtmosphere` (e.g. the Chavín mist), independent of
   `MissionDef.timeOfDay` (the day/night hour, already per mission).
 - **Death/collapse FX (visual only)**: `Unit.die()`/`Building.die()` keep the model in the scene; `Game` records
-  a one-shot `deathFx` (units freeze their rig pose and topple; buildings sink + tilt with dust/fire). Units keep
+  a one-shot `deathFx` (units play a Death clip when the rig has one, otherwise freeze, and topple; buildings sink + tilt with dust/fire). Units keep
   a **corpse for 30 s** before cleanup; buildings collapse in ~1.1 s. Entities still leave `units`/`buildings`
   immediately, so AI/mission/save filters are unchanged. A building collapse also spawns **instanced debris
   chunks** (`src/rendering/Debris.ts`, fixed pool: gravity + spin + bounce). Damaged buildings use the shared
@@ -667,7 +667,7 @@ while the Caral accessories own their small per-instance attachments. `Game.dest
 then disposes units (and their rigs), and only then calls `clearModelAssets()`. That function defers disposal while
 an asset still has live rigs, so shared resources are never freed under an entity that still uses them. `?rig=1` is
 the visual harness for the pipeline. Post-1532 humanoid classes (soldier, ranged, missionary) use the same
-rig with colonial/republican coat/hat/weapon variants; mounted, artillery, mortar, tank and the Andean Amauta
+rig with colonial/republican coat/hat/weapon variants; mounted cavalry now uses `mounted_rig`, while artillery, mortar, tank and the Andean Amauta
 stay procedural until dedicated assets exist.
 
 Next iteration for the worker: a dedicated construction clip (the current build state uses `Push_Loop`), a
@@ -763,7 +763,7 @@ Match the cost of verification to the change (the full gate is in `AGENTS.md`):
 
 ## Performance benchmarks
 
-`yarn bench [--units=50,100,200,400,800] [--scenario=soldiers|mixed|mixed-ai|rigs|fauna|mixed-rigs]
+`yarn bench [--units=50,100,200,400,800] [--scenario=soldiers|mixed|mixed-ai|mounted|rigs|fauna|mixed-rigs]
 [--animals=4,8,12,16] [--seed=777] [--steps=600] [--runs=3] [--profile=1] [--gc=1] [--fog=1]
 [--assert] [--out=review/bench.json]` boots a match in Chromium (SwiftShader) and, per scale, measures
 spawn/destroy time, simulation step time (`Game.update`), heap, A* per call, target acquisition

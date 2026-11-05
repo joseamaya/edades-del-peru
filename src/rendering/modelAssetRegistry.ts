@@ -18,6 +18,8 @@ export interface ModelAssetDefinition {
   readonly yawOffset: number;
   /** Gameplay state -> clip name in the GLB. `idle` is required. */
   readonly clips: Partial<Record<RigClipState, string>>;
+  /** Optional one-shot clip used by `RigInstance.playDeath`. */
+  readonly deathClip?: string;
   /** Ground the bind-pose feet at y=0 (units and terrestrial fauna). */
   readonly ground: boolean;
   /** Extra world-space lift after grounding (avoids clip-driven foot penetration). */
@@ -85,9 +87,10 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
   mounted_rig: {
     url: MOUNTED_RIG_URL,
     scale: 1,
-    yawOffset: 0,
+    yawOffset: Math.PI,
     ground: true,
     groundClearance: 0.02,
+    deathClip: 'Death',
     clips: {
       idle: 'Idle_Loop',
       walk: 'Walk_Loop',

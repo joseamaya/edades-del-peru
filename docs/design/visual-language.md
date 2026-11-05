@@ -70,7 +70,7 @@ Distinguishing rule of thumb (the classic "biome" trap to avoid):
 
 ## Death and damage
 
-Rigged units freeze their current pose and topple over ~0.6 s; the corpse stays
+Rigged units play their Death clip when present and topple over ~0.6 s (otherwise they freeze); the corpse stays
 in the scene for 30 s before cleanup (no gameplay effect, no obstacle). Buildings
 use three readable damage states: healthy, scorched (darker materials + black
 smoke), and critical (heavier tint, fire particles, a slight lean and a small

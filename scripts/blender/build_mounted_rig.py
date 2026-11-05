@@ -40,7 +40,7 @@ def material(name: str, color: tuple[float, float, float, float], roughness: flo
     return mat
 
 
-def items(mesh, bone: str, mat) -> None:
+def bind_to_armature(mesh, bone: str, mat) -> None:
     if mesh.data.materials:
         mesh.data.materials[0] = mat
     else:
@@ -56,11 +56,11 @@ def items(mesh, bone: str, mat) -> None:
     mesh.scale = (1, 1, 1)
 
 
-def finish(mesh, name: str, bone: str, mat) -> None:
+def finalize_part(mesh, name: str, bone: str, mat) -> None:
     mesh.name = name
     bpy.context.view_layer.objects.active = mesh
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-    items(mesh, bone, mat)
+    bind_to_armature(mesh, bone, mat)
 
 
 def box(name: str, bone: str, mat, loc, scale, rot=(0, 0, 0), bevel: float = 0.0):
@@ -68,7 +68,7 @@ def box(name: str, bone: str, mat, loc, scale, rot=(0, 0, 0), bevel: float = 0.0
     obj = bpy.context.object
     obj.scale = scale
     obj.rotation_euler = rot
-    finish(obj, name, bone, mat)
+    finalize_part(obj, name, bone, mat)
     if bevel:
         mod = obj.modifiers.new('Bevel', 'BEVEL')
         mod.width = bevel
@@ -79,7 +79,7 @@ def box(name: str, bone: str, mat, loc, scale, rot=(0, 0, 0), bevel: float = 0.0
 def cylinder(name: str, bone: str, mat, loc, radius, depth, rot=(0, 0, 0), vertices: int = 12):
     bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=loc, rotation=rot)
     obj = bpy.context.object
-    finish(obj, name, bone, mat)
+    finalize_part(obj, name, bone, mat)
     return obj
 
 
@@ -90,7 +90,7 @@ def cylinder_between(name: str, bone: str, mat, start, end, radius, vertices: in
     bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=direction.length, location=(start_v + end_v) / 2)
     obj = bpy.context.object
     obj.rotation_euler = direction.to_track_quat('Z', 'Y').to_euler()
-    finish(obj, name, bone, mat)
+    finalize_part(obj, name, bone, mat)
     return obj
 
 
@@ -98,7 +98,7 @@ def sphere(name: str, bone: str, mat, loc, scale, segments: int = 12):
     bpy.ops.mesh.primitive_uv_sphere_add(segments=segments, ring_count=max(6, segments // 2), location=loc)
     obj = bpy.context.object
     obj.scale = scale
-    finish(obj, name, bone, mat)
+    finalize_part(obj, name, bone, mat)
     return obj
 
 
@@ -214,7 +214,7 @@ box('GEO-Hat-Bicorn-Trim', 'rider_head', trim, (0, 0.06, 2.00), (0.38, 0.02, 0.0
 cylinder('GEO-Hat-Morion-Brim', 'rider_head', hat_metal, (0, -0.04, 1.99), 0.23, 0.035, vertices=10)
 bpy.ops.mesh.primitive_cone_add(vertices=8, radius1=0.18, radius2=0.07, depth=0.20, location=(0, -0.04, 2.08))
 _morion = bpy.context.object
-finish(_morion, 'GEO-Hat-Morion-Crown', 'rider_head', hat_metal)
+finalize_part(_morion, 'GEO-Hat-Morion-Crown', 'rider_head', hat_metal)
 box('GEO-Hat-Morion-Comb', 'rider_head', trim, (0, -0.04, 2.18), (0.035, 0.28, 0.09), bevel=0.01)
 cylinder('GEO-Hat-Kepi-Band', 'rider_head', hat_fabric, (0, -0.04, 1.99), 0.17, 0.04, vertices=12)
 cylinder('GEO-Hat-Kepi-Crown', 'rider_head', hat_fabric, (0, -0.04, 2.06), 0.16, 0.14, vertices=12)

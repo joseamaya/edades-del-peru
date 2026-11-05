@@ -41,7 +41,7 @@ export class RigInstance {
     this.root.add(this.model);
 
     this.mixer = new THREE.AnimationMixer(this.model);
-    const deathClip = asset.clipNames.get('Death') ?? asset.clipNames.get('death');
+    const deathClip = asset.definition.deathClip ? asset.clipNames.get(asset.definition.deathClip) : undefined;
     if (deathClip) {
       this.deathAction = this.mixer.clipAction(deathClip);
       this.deathAction.setLoop(THREE.LoopOnce, 1);
@@ -75,6 +75,11 @@ export class RigInstance {
 
   get time(): number {
     return this.mixer.time;
+  }
+
+  /** Whether a dedicated death clip is registered for this asset. */
+  hasDeathClip(): boolean {
+    return this.deathAction !== null;
   }
 
   /** Whether the rig has a playable action for a state. */

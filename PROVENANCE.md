@@ -307,7 +307,7 @@ slot is absent (offline / without assets).
     `scripts/blender/build_mounted_rig.py`; no external model, texture, animation or HDRI is used.
   - Licence: project-owned (same terms as the repository); no third-party attribution is required.
   - SHA-256: `caed4f55fa36dfcc1216d88cf1b707f1f0bf74e5c66028ab84e03afea1540ab3` (193,472 bytes).
-  - Contents: one armature (30 bones), separate low-poly horse/rider meshes, 12 flat materials, four clips
+  - Contents: one armature (30 bones), separate low-poly horse/rider meshes, 12 source materials (10 after meshopt dedupe), four clips
     (`Idle_Loop`, `Walk_Loop`, `Attack`, `Death`), ~2.55k render vertices, ~2.12 m tall at the hat.
   - Historical basis: horses and firearms are post-1532 only. The horse/tack silhouette is stylized, not a
     breed or a specific historical mount; the rider palette/headwear follows the documented abstractions in

@@ -6,7 +6,10 @@ import {
   type PostColonialSpec,
 } from './postColonialCharacters';
 
-/** Uniform abstractions for post-1532 mounted units; see docs/historia/atuendos.md §6. */
+/**
+ * Uniform abstractions for post-1532 mounted units; see docs/historia/atuendos.md §6.
+ * The m7 rebel palette is an explicitly undocumented earth-tone abstraction.
+ */
 export const MOUNTED_VARIANTS = [
   'mounted_realistas',
   'mounted_patriotas',
@@ -17,15 +20,7 @@ export const MOUNTED_VARIANTS = [
 
 export type MountedRigVariant = (typeof MOUNTED_VARIANTS)[number];
 
-export type MountedHat = PostColonialSpec['hat'];
-
-export interface MountedSpec {
-  coat: number;
-  trim: number;
-  trousers: number;
-  hat: MountedHat;
-  hatColor: number;
-}
+export type MountedSpec = Pick<PostColonialSpec, 'coat' | 'trim' | 'trousers' | 'hat' | 'hatColor'>;
 
 export const MOUNTED_SPECS: Record<MountedRigVariant, MountedSpec> = {
   mounted_realistas: specFromCulture('realistas'),
@@ -42,16 +37,23 @@ export const MOUNTED_SPECS: Record<MountedRigVariant, MountedSpec> = {
 };
 
 function specFromCulture(culture: PostColonialCulture): MountedSpec {
-  const spec = POST_COLONIAL_SPECS[culture];
-  return { coat: spec.coat, trim: spec.trim, trousers: spec.trousers, hat: spec.hat, hatColor: spec.hatColor };
+  const { coat, trim, trousers, hat, hatColor } = POST_COLONIAL_SPECS[culture];
+  return { coat, trim, trousers, hat, hatColor };
 }
 
 export function isMountedVariant(variant: string): variant is MountedRigVariant {
   return (MOUNTED_VARIANTS as readonly string[]).includes(variant);
 }
 
+const MOUNTED_BY_CULTURE: Record<PostColonialCulture, MountedRigVariant> = {
+  realistas: 'mounted_realistas',
+  patriotas: 'mounted_patriotas',
+  republica: 'mounted_republica',
+  chile: 'mounted_chile',
+};
+
 export function mountedVariantForCiv(civ: CivId): MountedRigVariant | null {
   if (civ === CivId.INCA) return 'mounted_rebelde';
   const culture = postColonialCultureForCiv(civ);
-  return culture ? (`mounted_${culture}` as MountedRigVariant) : null;
+  return culture ? MOUNTED_BY_CULTURE[culture] : null;
 }
