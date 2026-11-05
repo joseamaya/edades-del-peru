@@ -4,6 +4,8 @@ import { defineConfig } from '@playwright/test';
 // Sharding across jobs provides the parallel speedup; `PW_WORKERS` overrides.
 const envWorkers = Number(process.env.PW_WORKERS);
 const workers = Number.isFinite(envWorkers) && envWorkers > 0 ? envWorkers : process.env.CI ? 1 : 2;
+const envPort = Number(process.env.PW_PORT);
+const port = Number.isFinite(envPort) && envPort > 0 ? envPort : 5173;
 
 // Heaviest specs: excluded from the `fast` project (quick local runs) and covered
 // by the `slow` project / nightly workflow. The default `yarn test:e2e` runs both.
@@ -30,7 +32,7 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: [['list']],
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: `http://localhost:${port}`,
     viewport: { width: 1280, height: 800 },
   },
   projects: [
@@ -39,8 +41,10 @@ export default defineConfig({
   ],
   webServer: {
     // serve the production build in CI (faster, closer to prod) and reuse a dev server locally
-    command: process.env.CI ? 'yarn build && yarn preview --port 5173 --strictPort' : 'yarn dev',
-    url: 'http://localhost:5173',
+    command: process.env.CI
+      ? `yarn build && yarn preview --port ${port} --strictPort`
+      : `yarn dev --port ${port} --strictPort`,
+    url: `http://localhost:${port}`,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
   },
