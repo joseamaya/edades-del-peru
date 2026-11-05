@@ -11,6 +11,7 @@ import {
 } from '../src/model/defs/modelAssets';
 import { CivId, Era, HistoricalPeriod, UnitKind } from '../src/core/types';
 import { MOUNTED_SPECS } from '../src/model/defs/mountedCharacters';
+import { siegeSpecForVariant } from '../src/model/defs/siegeCharacters';
 import {
   acquireRig,
   clearModelAssets,
@@ -24,6 +25,7 @@ import {
 const MODEL_URL = new URL('../src/assets/models/ual_mannequin.glb', import.meta.url);
 const WORKER_URL = new URL('../src/assets/models/caral_worker.glb', import.meta.url);
 const MOUNTED_URL = new URL('../src/assets/models/mounted_rig.glb', import.meta.url);
+const SIEGE_URL = new URL('../src/assets/models/siege_rig.glb', import.meta.url);
 let glb: ArrayBuffer;
 
 beforeAll(() => {
@@ -247,8 +249,14 @@ describe('rigged model assets', () => {
     expect(modelAssetIdsForMatch(HistoricalPeriod.VICEROYALTY, [CivId.REALISTAS])).toContain('mounted_rig');
     expect(modelAssetIdsForMatch(HistoricalPeriod.ARCHAIC, [CivId.CARAL])).not.toContain('mounted_rig');
     expect(unitModelAsset(UnitKind.TANK, Era.REPUBLIC, CivId.CHILE)).toBeNull();
-    expect(unitModelAsset(UnitKind.ARTILLERY, Era.REPUBLIC, CivId.CHILE)).toBeNull();
-    expect(unitModelAsset(UnitKind.MORTAR, Era.REPUBLIC, CivId.CHILE)).toBeNull();
+    expect(unitModelAsset(UnitKind.ARTILLERY, Era.REPUBLIC, CivId.CHILE)).toEqual({
+      asset: 'siege_rig',
+      variant: 'siege_cannon_chile',
+    });
+    expect(unitModelAsset(UnitKind.MORTAR, Era.REPUBLIC, CivId.CHILE)).toEqual({
+      asset: 'siege_rig',
+      variant: 'siege_mortar_chile',
+    });
     expect(unitModelAsset(UnitKind.SOLDIER, Era.CONTEMPORARY, CivId.REPUBLIC)).toBeNull();
   });
 
@@ -273,6 +281,45 @@ describe('rigged model assets', () => {
     const sword = rig.root.getObjectByName('GEO-Rider-Sword-Blade') as THREE.Mesh;
     expect((sword.material as THREE.MeshStandardMaterial).color.getHex()).not.toBe(
       MOUNTED_SPECS.mounted_realistas.hatColor,
+    );
+    rig.dispose();
+  });
+
+  it('maps and dresses the siege and tank rigs', async () => {
+    expect(unitModelAsset(UnitKind.ARTILLERY, Era.VICEROYALTY, CivId.REALISTAS)).toEqual({
+      asset: 'siege_rig',
+      variant: 'siege_cannon_realistas',
+    });
+    expect(unitModelAsset(UnitKind.MORTAR, Era.REPUBLIC, CivId.PATRIOTAS)).toEqual({
+      asset: 'siege_rig',
+      variant: 'siege_mortar_patriotas',
+    });
+    expect(unitModelAsset(UnitKind.TANK, Era.CONTEMPORARY, CivId.REPUBLIC)).toEqual({
+      asset: 'siege_rig',
+      variant: 'siege_tank_republica',
+    });
+    expect(unitModelAsset(UnitKind.ARTILLERY, Era.FORMATIVE, CivId.REALISTAS)).toBeNull();
+    expect(unitModelAsset(UnitKind.TANK, Era.VICEROYALTY, CivId.REPUBLIC)).toBeNull();
+    expect(modelAssetIdsForMatch(HistoricalPeriod.VICEROYALTY, [CivId.REALISTAS])).toEqual(
+      expect.arrayContaining(['mounted_rig', 'siege_rig']),
+    );
+    expect(modelAssetIdsForMatch(HistoricalPeriod.VICEROYALTY, [CivId.INCA])).toEqual(
+      expect.arrayContaining(['mounted_rig', 'siege_rig']),
+    );
+
+    const data = fs.readFileSync(fileURLToPath(SIEGE_URL));
+    const buffer = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer;
+    const asset = await loadModelAssetFromData('siege_rig', buffer);
+    expect(asset.clipNames.has('Attack')).toBe(true);
+    const rig = acquireRig('siege_rig', 'siege_cannon_realistas')!;
+    expect(rig.hasState('walk')).toBe(true);
+    expect(rig.hasDeathClip()).toBe(true);
+    expect(rig.root.getObjectByName('GEO-Cannon-Siege-Wood')?.visible).toBe(true);
+    expect(rig.root.getObjectByName('GEO-Crew-Crew-Coat')?.visible).toBe(true);
+    expect(rig.root.getObjectByName('GEO-Tank-Tank-Hull')?.visible).toBe(false);
+    const coat = rig.root.getObjectByName('GEO-Crew-Crew-Coat') as THREE.Mesh;
+    expect((coat.material as THREE.MeshStandardMaterial).color.getHex()).toBe(
+      siegeSpecForVariant('siege_cannon_realistas').coat,
     );
     rig.dispose();
   });

@@ -22,7 +22,7 @@ Package manager **Yarn 1** (`yarn.lock` exists — never create a `package-lock.
 - `yarn shot <name> --seed=777 --wait=8000` — screenshot into `review/`
 - `yarn audit:campaigns` — full m1–m9 briefing/tutorial/layout/victory audit into `review/audit/`
 - `yarn sim [--seeds=…] [--max=…] [--difficulty=…]` — headless AI-vs-AI match runner (AI regression baseline)
-- `yarn bench:check` — rig/fauna/mounted/mixed structural budgets (`--assert`); SwiftShader is not a GPU benchmark
+- `yarn bench:check` — rig/fauna/mounted/siege/tank/mixed structural budgets (`--assert`); SwiftShader is not a GPU benchmark
 - `yarn art:blender` — ingest the in-repo Blender renders into WebP + manifest (`--dry-run`, `--only=…`, `--force`)
 - `yarn art:models` — meshopt-compress the committed GLBs in place (`--only=…`, `--dry-run`, `--force`)
 - `yarn art:textures` — re-encode material PBR WebPs (`--only=…`, `--dry-run`, `--force`); `--terrain` downloads/verifies the CC0 terrain sources and packs `_albedo`/`_surface` (`--only=…`, `--dry-run`, `--check`)

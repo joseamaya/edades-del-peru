@@ -605,8 +605,16 @@ four post-colonial civilizations. The rider coat, trim, trousers and headwear ar
 is not a breed reconstruction. `Attack` is the mounted charge/sword swing; `Death` plays once during the topple when the rig provides it. There is no mounted mapping before 1532, and `modelAssetIdsForMatch` preloads the asset for
 the affected periods. The `.blend` source is in `art-src/blender/scenes/mounted_rig.blend` (Git LFS); the GLB
 SHA-256 is recorded in `PROVENANCE.md`. Measure it with
-`yarn bench --scenario=mounted --units=4,12,24 --assert`; `yarn bench:check` includes the mounted scenario
+`yarn bench --scenario=mounted --units=4,12,24 --assert`; `yarn bench:check` includes the mounted, siege and tank scenarios
 (the merged meshes render at ~27 draws and ~10.1k triangles per unit including the VSM shadow pass).
+
+The siege rig (`siege_rig.glb`, #241b) is the project-authored companion for `ARTILLERY`, `MORTAR` and
+`TANK`: a 27-bone rig with hidden cannon/mortar/crew/tank groups, four clips and per-culture palette variants
+(`src/rendering/siegeAttire.ts`). Cannon/mortar show the two crew figures and one weapon; the tank shows only
+the vehicle. It maps Viceroyalty/Republic artillery and mortars for the four post-colonial civs, and the
+contemporary tank for República/Chile. No siege weapon is mapped before 1532. The source is
+`art-src/blender/scenes/siege_rig.blend` (Git LFS); the meshopt GLB and SHA-256 are recorded in
+`PROVENANCE.md`.
 
 The same GLB backs the Caral **worker and scout in both genders** (`caral_worker_f/m`, `caral_scout_f/m`;
 `unitModelAsset` maps `WORKER`/`SCOUT + CARAL + FORMATIVE`). It also backs the Moche/Recuay infantry in
@@ -667,8 +675,8 @@ while the Caral accessories own their small per-instance attachments. `Game.dest
 then disposes units (and their rigs), and only then calls `clearModelAssets()`. That function defers disposal while
 an asset still has live rigs, so shared resources are never freed under an entity that still uses them. `?rig=1` is
 the visual harness for the pipeline. Post-1532 humanoid classes (soldier, ranged, missionary) use the same
-rig with colonial/republican coat/hat/weapon variants; mounted cavalry now uses `mounted_rig`, while artillery, mortar, tank and the Andean Amauta
-stay procedural until dedicated assets exist.
+rig with colonial/republican coat/hat/weapon variants; mounted cavalry uses `mounted_rig`, siege/tank use
+`siege_rig`, while the Andean Amauta stays procedural until a dedicated asset exists.
 
 Next iteration for the worker: a dedicated construction clip (the current build state uses `Push_Loop`), a
 dedicated death clip and, if needed, a worker attack clip. The mesh/outfit pilot is closed in #116; future
@@ -763,7 +771,7 @@ Match the cost of verification to the change (the full gate is in `AGENTS.md`):
 
 ## Performance benchmarks
 
-`yarn bench [--units=50,100,200,400,800] [--scenario=soldiers|mixed|mixed-ai|mounted|rigs|fauna|mixed-rigs]
+`yarn bench [--units=50,100,200,400,800] [--scenario=soldiers|mixed|mixed-ai|mounted|siege|tank|rigs|fauna|mixed-rigs]
 [--animals=4,8,12,16] [--seed=777] [--steps=600] [--runs=3] [--profile=1] [--gc=1] [--fog=1]
 [--assert] [--out=review/bench.json]` boots a match in Chromium (SwiftShader) and, per scale, measures
 spawn/destroy time, simulation step time (`Game.update`), heap, A* per call, target acquisition

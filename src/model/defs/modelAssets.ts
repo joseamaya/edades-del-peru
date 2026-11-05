@@ -17,9 +17,10 @@ import {
   type PostColonialRole,
 } from './postColonialCharacters';
 import { MOUNTED_VARIANTS, mountedVariantForCiv, type MountedRigVariant } from './mountedCharacters';
+import { SIEGE_VARIANTS, siegeVariantFor, type SiegeRigVariant } from './siegeCharacters';
 
 /** Registered rigged models. Add the id here and to the rendering registry. */
-export type ModelAssetId = 'ual_mannequin' | 'quaternius_alpaca' | 'caral_worker' | 'mounted_rig';
+export type ModelAssetId = 'ual_mannequin' | 'quaternius_alpaca' | 'caral_worker' | 'mounted_rig' | 'siege_rig';
 
 /** CC0 Quaternius mannequin: pipeline demo/fallback fixture. */
 export const MANNEQUIN_ASSET_ID: ModelAssetId = 'ual_mannequin';
@@ -27,6 +28,7 @@ export const RIG_DEMO_ASSET_ID: ModelAssetId = MANNEQUIN_ASSET_ID;
 /** Finished Caral worker asset (CC0 body/hair/clips + project-authored cotton cloth). */
 export const CARAL_WORKER_ASSET_ID: ModelAssetId = 'caral_worker';
 export const MOUNTED_RIG_ASSET_ID: ModelAssetId = 'mounted_rig';
+export const SIEGE_RIG_ASSET_ID: ModelAssetId = 'siege_rig';
 /** Eyes are too small to cast a readable shadow; the garments keep theirs. */
 export const CARAL_WORKER_SHADOW_SKIP_MESHES: readonly string[] = ['Eyes_f', 'Eyes_m'];
 
@@ -40,7 +42,8 @@ export type RigVariant =
   | 'inca_chasqui_m'
   | AndeanRigVariant
   | PostColonialRigVariant
-  | MountedRigVariant;
+  | MountedRigVariant
+  | SiegeRigVariant;
 
 /** Animation states mapped to clips; `eat` is fauna-only. A rig may omit any state except `idle`. */
 export type RigClipState = 'idle' | 'walk' | 'walk_carry' | 'gather' | 'build' | 'attack' | 'eat';
@@ -102,6 +105,18 @@ const MOUNTED_VARIANT_CLIPS = Object.fromEntries(
   MOUNTED_VARIANTS.map((variant) => [variant, MOUNTED_CLIPS] as const),
 ) as Partial<Record<MountedRigVariant, Partial<Record<RigClipState, string | null>>>>;
 
+const SIEGE_CLIPS: Partial<Record<RigClipState, string | null>> = {
+  walk: 'Walk_Loop',
+  walk_carry: 'Walk_Loop',
+  gather: null,
+  build: null,
+  attack: 'Attack',
+};
+
+const SIEGE_VARIANT_CLIPS = Object.fromEntries(
+  SIEGE_VARIANTS.map((variant) => [variant, SIEGE_CLIPS] as const),
+) as Partial<Record<SiegeRigVariant, Partial<Record<RigClipState, string | null>>>>;
+
 const ANDEAN_VARIANT_CLIPS = Object.fromEntries(
   ANDEAN_CULTURES.flatMap((culture) =>
     (['f', 'm'] as const).flatMap((gender) =>
@@ -121,6 +136,7 @@ export const RIG_VARIANT_CLIPS: Partial<Record<RigVariant, Partial<Record<RigCli
   ...ANDEAN_VARIANT_CLIPS,
   ...POST_COLONIAL_VARIANT_CLIPS,
   ...MOUNTED_VARIANT_CLIPS,
+  ...SIEGE_VARIANT_CLIPS,
 };
 
 /** Playback-rate reference for in-place walk clips (world units per second). */
@@ -180,6 +196,8 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
     const variant = mountedVariantForCiv(civ);
     if (variant) return { asset: MOUNTED_RIG_ASSET_ID, variant };
   }
+  const siegeVariant = siegeVariantFor(kind, era, civ);
+  if (siegeVariant) return { asset: SIEGE_RIG_ASSET_ID, variant: siegeVariant };
   const postColonial = postColonialCultureForCiv(civ);
   if (postColonial && era === (postColonial === 'realistas' ? Era.VICEROYALTY : Era.REPUBLIC)) {
     const role: PostColonialRole | null =
@@ -223,10 +241,13 @@ export function modelAssetIdsForMatch(period: HistoricalPeriod, civs: readonly C
     UnitKind.MISSIONARY,
     UnitKind.HUSSAR,
     UnitKind.CAVALRY,
+    UnitKind.ARTILLERY,
+    UnitKind.MORTAR,
+    UnitKind.TANK,
   ];
   const ids = new Set<ModelAssetId>();
   for (const civ of civs) {
-    if (!getCiv(civ).periods.includes(period)) continue;
+    if (civ !== CivId.INCA && !getCiv(civ).periods.includes(period)) continue;
     for (const kind of kinds) {
       const choice = unitModelAsset(kind, era, civ);
       if (choice) ids.add(choice.asset);
