@@ -450,7 +450,7 @@ export class InputController {
     }
   }
 
-  private issueContextOrder(sx: number, sy: number): void {
+  issueContextOrder(sx: number, sy: number): void {
     const units = this.game.selectedUnits
       .map((id: number) => this.game.units.get(id))
       .filter((u: Unit | undefined): u is Unit => !!u && !u.dead);

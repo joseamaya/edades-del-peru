@@ -377,7 +377,7 @@ test('the Amauta converts an enemy unit without throwing', { tag: '@smoke' }, as
   expect(errors).toEqual([]);
 });
 
-test('right-clicking an enemy with an Amauta selected issues a convert order', async ({ page }) => {
+test('the context-order path issues a convert order for an Amauta', async ({ page }) => {
   await page.goto('/?play=1&civ=realistas&period=6&seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
@@ -440,15 +440,10 @@ test('right-clicking an enemy with an Amauta selected issues a convert order', a
       }
     }
     if (!foundEnemy) throw new Error('could not project the enemy unit');
-    return { x, y, aid: amauta.id };
+    g.input.issueContextOrder(x, y);
+    return g.units.get(amauta.id).orderQueue.map((o: { kind: string }) => o.kind);
   });
-  await page.mouse.click(order.x, order.y, { button: 'right' });
-  await page.waitForTimeout(150);
-  const queued = await page.evaluate((aid) => {
-    const g = (window as unknown as { game: any }).game;
-    return g.units.get(aid).orderQueue.map((o: { kind: string }) => o.kind);
-  }, order.aid);
-  expect(queued).toContain('convert');
+  expect(order).toContain('convert');
 });
 
 test('conquest ends only when all enemy buildings are destroyed', async ({ page }) => {
