@@ -1198,7 +1198,7 @@ export class HUD {
       }
     });
     card.focus();
-    window.setTimeout(dismiss, 15000);
+    if (new URLSearchParams(location.search).get('cardhold') !== '1') window.setTimeout(dismiss, 15000);
   }
 
   /** Leave the match (respects the active campaign). */

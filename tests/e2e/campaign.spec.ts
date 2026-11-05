@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type BrowserContext } from '@playwright/test';
 
 test('starting a campaign from the menu launches the selected mission', { tag: '@smoke' }, async ({ page }) => {
   await page.goto('/?menu=1');
@@ -36,7 +36,7 @@ test('shows the campaign hub and its replayable prologue', { tag: '@smoke' }, as
 });
 
 test('the mission briefing includes context and sources', { tag: '@smoke' }, async ({ page }) => {
-  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
+  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1&cardhold=1');
   const overlay = page.locator('.ed-overlay', { hasText: 'La Ciudad Sagrada' });
   await expect(overlay).toBeVisible({ timeout: 30_000 });
   await expect(overlay).toContainText('Contexto');
@@ -99,14 +99,11 @@ test('every campaign mission shows its educational epilogue on victory', async (
 
 test('the tutorial guides in the first mission', async ({ page }) => {
   test.setTimeout(180_000);
-  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
+  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1&intro=0');
   const overlay = page.locator('.ed-overlay', { hasText: 'La Ciudad Sagrada' });
   await expect(overlay).toBeVisible({ timeout: 30_000 });
   await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
   await overlay.waitFor({ state: 'detached', timeout: 15_000 });
-  const card = page.locator('.ed-mission-card');
-  await expect(card).toBeVisible({ timeout: 60_000 });
-  await card.click({ timeout: 5_000 }).catch(() => {});
   const tutorial = page.locator('#ed-tutorial');
   // the first step appears after the card and the ~2.6s opening flight
   await expect(tutorial).toBeVisible({ timeout: 60_000 });
@@ -116,7 +113,7 @@ test('the tutorial guides in the first mission', async ({ page }) => {
 
 test('the chapter card freezes the mission clock and shows the full subtitle', async ({ page }) => {
   test.setTimeout(180_000);
-  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
+  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1&cardhold=1');
   const briefing = page.locator('.ed-overlay', { hasText: 'La Ciudad Sagrada' });
   await expect(briefing).toBeVisible({ timeout: 30_000 });
   await briefing.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
@@ -237,16 +234,8 @@ test('chapter IV tutorials open with their first step', async ({ page }) => {
   }
 });
 
-test('later campaign briefing and tutorial fit 1600x900', async ({ context }) => {
-  test.setTimeout(720_000);
-  for (const id of [
-    'm5_yahuar_pampa',
-    'm6_chimu_inca',
-    'm6b_guerra_civil',
-    'm7_tupac_amaru',
-    'm8_independencia',
-    'm9_guerra_pacifico',
-  ]) {
+async function expectCampaignLayout(context: BrowserContext, ids: string[]): Promise<void> {
+  for (const id of ids) {
     const page = await context.newPage();
     await page.setViewportSize({ width: 1600, height: 900 });
     await page.goto(`/?mission=${id}&seed=777&fog=0&low=1&intro=0`);
@@ -273,6 +262,16 @@ test('later campaign briefing and tutorial fit 1600x900', async ({ context }) =>
     expect(objectivesBox!.y + objectivesBox!.height).toBeLessThanOrEqual(900);
     await page.close();
   }
+}
+
+test('later campaign briefing and tutorial fit 1600x900 (m5-m6b)', async ({ context }) => {
+  test.setTimeout(360_000);
+  await expectCampaignLayout(context, ['m5_yahuar_pampa', 'm6_chimu_inca', 'm6b_guerra_civil']);
+});
+
+test('later campaign briefing and tutorial fit 1600x900 (m7-m9)', async ({ context }) => {
+  test.setTimeout(360_000);
+  await expectCampaignLayout(context, ['m7_tupac_amaru', 'm8_independencia', 'm9_guerra_pacifico']);
 });
 
 test('later campaign briefings show their draft intro art with art=all', async ({ page }) => {
@@ -698,7 +697,7 @@ test('the campaign hub releases all four chapters', async ({ page }) => {
 });
 
 test('Caral opens with a chapter card and chains into Chavín', async ({ page }) => {
-  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
+  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1&cardhold=1');
   const briefing = page.locator('.ed-briefing');
   await expect(briefing).toBeVisible({ timeout: 30_000 });
   await briefing.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
