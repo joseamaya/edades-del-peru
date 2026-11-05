@@ -19,7 +19,7 @@ const capture = () => {
 };
 
 test('saves and loads a campaign mission', async ({ page }) => {
-  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
+  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1&intro=0');
   await startMission(page);
   await page.waitForFunction(
     () => {
@@ -61,7 +61,7 @@ test('saves and loads a campaign mission', async ({ page }) => {
 });
 
 test('saves and loads the Chavín delivered offerings', async ({ page }) => {
-  await page.goto('/?mission=m2_chavin&seed=900&fog=0&low=1');
+  await page.goto('/?mission=m2_chavin&seed=900&fog=0&low=1&intro=0');
   await startMission(page);
   await page.waitForFunction(
     () => {
@@ -125,7 +125,7 @@ test('saves and loads the Chavín delivered offerings', async ({ page }) => {
 });
 
 test('saves and loads the Moche canal, hold and exchange', async ({ page }) => {
-  await page.goto('/?mission=m3_moche_recuay&seed=400&fog=0&low=1');
+  await page.goto('/?mission=m3_moche_recuay&seed=400&fog=0&low=1&intro=0');
   await startMission(page);
   await page.waitForFunction(
     () => {
@@ -190,7 +190,7 @@ test('saves and loads the Moche canal, hold and exchange', async ({ page }) => {
 });
 
 test('saves and loads the Wari network and frontier', async ({ page }) => {
-  await page.goto('/?mission=m4_wari&seed=777&fog=0&low=1');
+  await page.goto('/?mission=m4_wari&seed=777&fog=0&low=1&intro=0');
   await startMission(page);
   await page.waitForFunction(
     () => {

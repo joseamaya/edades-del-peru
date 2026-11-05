@@ -48,7 +48,7 @@ test('the colonial Misionero replaces the Inca Amauta after 1532', async ({ page
 });
 
 test('the Misionero converts an enemy unit', async ({ page }) => {
-  await boot(page, 6); // VICEROYALTY
+  await boot(page, 6, 'realistas'); // VICEROYALTY
   const out = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
@@ -61,10 +61,7 @@ test('the Misionero converts an enemy unit', async ({ page }) => {
     enemy.clearOrders();
     missionary.issueOrder({ kind: 'convert', entityId: enemy.id }, true);
     // the model must be the humanoid builder, not the structure fallback
-    let humanoid = false;
-    missionary.view.group.traverse((o: any) => {
-      if (o.name === 'pivot:legL') humanoid = true;
-    });
+    const humanoid = missionary.rig?.root.name === 'rig:caral_worker';
     const before = enemy.owner;
     let t = 0;
     for (let i = 0; i < 1500 && enemy.owner === before; i++) {

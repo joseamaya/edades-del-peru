@@ -124,19 +124,14 @@ test('live input is ignored during replay playback', async ({ page }) => {
   expect(accepted).toBe(false);
 });
 
-test('the main menu offers the last replay and plays it', async ({ page }) => {
+test('the campaign-only menu removes legacy skirmish replays', async ({ page }) => {
   await seedStoredReplay(page);
   await page.goto('/?menu=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });
-  const btn = page.locator('button', { hasText: 'Ver última repetición' });
-  await expect(btn).toBeVisible();
-  await btn.click();
-  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.replayActive === true, null, {
-    timeout: 30_000,
-  });
-  expect(new URL(page.url()).searchParams.get('replay')).toBe('1');
+  await expect(page.locator('button', { hasText: 'Ver última repetición' })).toHaveCount(0);
+  expect(await page.evaluate(() => localStorage.getItem('peru-replay'))).toBeNull();
 });
 
 test('the same steps hash equally when frames are batched 1 vs 8', { tag: '@smoke' }, async ({ page }) => {

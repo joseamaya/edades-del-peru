@@ -1025,6 +1025,21 @@ export class Game {
     });
   }
 
+  /** Compatibility wrapper for tests/tools that update the placement ghost. */
+  updatePlacementGhost(x: number, z: number): void {
+    this.input.updatePlacementGhost(x, z);
+  }
+
+  /** Compatibility wrapper for tests/tools that place the current placement ghost. */
+  commitPlacement(x: number, z: number): void {
+    this.input.commitPlacement(x, z);
+  }
+
+  /** Apply the cinematic/quality gate to the water material without a render pass. */
+  syncWaterRefraction(): boolean {
+    return this.runtime.syncWaterRefraction();
+  }
+
   /** Restart the match with the current configuration. */
   executeCommand(cmd: PlayerCommand, record = true): boolean {
     // no live input during playback: it would desync the replay

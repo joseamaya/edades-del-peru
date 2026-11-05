@@ -15,8 +15,10 @@ async function waitReady(page: import('@playwright/test').Page): Promise<void> {
 }
 
 test('saves from the pause menu and resumes from the main menu', async ({ page }) => {
-  await page.goto('/?play=1&seed=777&fog=0&low=1');
+  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1&intro=0');
   await waitReady(page);
+  await page.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+  await page.getByRole('button', { name: /COMENZAR MISIÓN/ }).waitFor({ state: 'detached', timeout: 15_000 });
 
   // pause (P) and save from the pause panel
   const before = await page.evaluate(() => {

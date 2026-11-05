@@ -14,22 +14,25 @@ test('starting a campaign from the menu launches the selected mission', { tag: '
   expect(url.searchParams.get('play')).toBe('1');
 });
 
-test('shows the historical prologue before the campaign', async ({ page }) => {
+test('shows the campaign hub and its replayable prologue', { tag: '@smoke' }, async ({ page }) => {
   await page.goto('/?menu=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });
   await page.getByRole('button', { name: /Campañas/ }).click();
-  const intro = page.locator('.ed-cinematic', { hasText: 'CAMPAÑA I' });
-  await expect(intro).toBeVisible();
-  await expect(intro).toContainText('una de las primeras civilizaciones del mundo');
-  await intro.getByRole('button', { name: /Ver misiones/ }).click();
   const hub = page.locator('.ed-campaign-panel');
   await expect(hub).toBeVisible();
   await expect(hub).toContainText('Culturas Preincas');
   await expect(hub.getByRole('button', { name: /Jugar La Ciudad Sagrada/ })).toBeVisible();
   await expect(hub).toContainText('Independencia y República');
   await expect(hub.getByRole('button', { name: /Jugar La Defensa de Arica/ })).toBeVisible();
+
+  await hub.getByRole('button', { name: /Prólogo: Culturas Preincas/ }).click();
+  const intro = page.locator('.ed-cinematic', { hasText: 'CULTURAS PREINCAS' });
+  await expect(intro).toBeVisible();
+  await expect(intro).toContainText('una de las primeras civilizaciones del mundo');
+  await intro.getByRole('button', { name: /Volver a campañas/ }).click();
+  await expect(hub).toBeVisible();
 });
 
 test('the mission briefing includes context and sources', { tag: '@smoke' }, async ({ page }) => {
@@ -196,7 +199,7 @@ test('chapter II tutorials open with their first step', async ({ page }) => {
     ['m6_chimu_inca', 'La Guerra del Norte'],
     ['m6b_guerra_civil', 'La Guerra Civil'],
   ]) {
-    await page.goto(`/?mission=${id}&seed=777&fog=0&low=1`);
+    await page.goto(`/?mission=${id}&seed=777&fog=0&low=1&intro=0`);
     const overlay = page.locator('.ed-overlay', { hasText: title });
     await expect(overlay).toBeVisible({ timeout: 30_000 });
     await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
@@ -207,7 +210,7 @@ test('chapter II tutorials open with their first step', async ({ page }) => {
 
 test('the chapter III tutorial opens with its first step', async ({ page }) => {
   test.setTimeout(60_000);
-  await page.goto('/?mission=m7_tupac_amaru&seed=777&fog=0&low=1');
+  await page.goto('/?mission=m7_tupac_amaru&seed=777&fog=0&low=1&intro=0');
   const overlay = page.locator('.ed-overlay', { hasText: 'La Gran Rebelión' });
   await expect(overlay).toBeVisible({ timeout: 30_000 });
   await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
@@ -221,7 +224,7 @@ test('chapter IV tutorials open with their first step', async ({ page }) => {
     ['m8_independencia', 'La Independencia', 'Paso 1 / 3'],
     ['m9_guerra_pacifico', 'La Defensa de Arica', 'Paso 1 / 2'],
   ]) {
-    await page.goto(`/?mission=${id}&seed=777&fog=0&low=1`);
+    await page.goto(`/?mission=${id}&seed=777&fog=0&low=1&intro=0`);
     const overlay = page.locator('.ed-overlay', { hasText: title });
     await expect(overlay).toBeVisible({ timeout: 30_000 });
     await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
@@ -242,7 +245,7 @@ test('later campaign briefing and tutorial fit 1600x900', async ({ context }) =>
   ]) {
     const page = await context.newPage();
     await page.setViewportSize({ width: 1600, height: 900 });
-    await page.goto(`/?mission=${id}&seed=777&fog=0&low=1`);
+    await page.goto(`/?mission=${id}&seed=777&fog=0&low=1&intro=0`);
     const briefing = page.locator('.ed-briefing');
     await expect(briefing).toBeVisible({ timeout: 30_000 });
     const briefingBox = await briefing.boundingBox();
