@@ -1,5 +1,19 @@
 import { test, expect } from '@playwright/test';
 
+test('starting a campaign from the menu launches the selected mission', async ({ page }) => {
+  await page.goto('/?menu=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  await page.getByRole('button', { name: /Campañas/ }).click();
+  await page.getByRole('button', { name: /Jugar La Ciudad Sagrada/ }).click();
+  await expect(page.locator('.ed-briefing', { hasText: 'La Ciudad Sagrada' })).toBeVisible({ timeout: 30_000 });
+  const url = new URL(page.url());
+  expect(url.searchParams.get('menu')).toBeNull();
+  expect(url.searchParams.get('mission')).toBe('m1_caral');
+  expect(url.searchParams.get('play')).toBe('1');
+});
+
 test('shows the historical prologue before the campaign', async ({ page }) => {
   await page.goto('/?menu=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {

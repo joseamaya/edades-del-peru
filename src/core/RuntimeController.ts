@@ -1145,7 +1145,9 @@ export class RuntimeController {
     // ?play=1 avoids showing the main menu again after reloading
     const url = new URL(location.href);
     url.searchParams.set('play', '1');
+    url.searchParams.delete('menu');
     url.searchParams.delete('load');
+    url.searchParams.delete('replay');
     if (this.game.settings.missionId) url.searchParams.set('mission', this.game.settings.missionId);
     else url.searchParams.delete('mission');
     location.href = url.toString();
