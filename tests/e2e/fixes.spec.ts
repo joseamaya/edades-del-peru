@@ -440,10 +440,15 @@ test('right-clicking an enemy with an Amauta selected issues a convert order', a
       }
     }
     if (!foundEnemy) throw new Error('could not project the enemy unit');
-    g.input.issueContextOrder(x, y);
-    return g.units.get(amauta.id).orderQueue.map((o: { kind: string }) => o.kind);
+    return { x, y, aid: amauta.id };
   });
-  expect(order).toContain('convert');
+  await page.mouse.click(order.x, order.y, { button: 'right' });
+  await page.waitForTimeout(150);
+  const queued = await page.evaluate((aid) => {
+    const g = (window as unknown as { game: any }).game;
+    return g.units.get(aid).orderQueue.map((o: { kind: string }) => o.kind);
+  }, order.aid);
+  expect(queued).toContain('convert');
 });
 
 test('conquest ends only when all enemy buildings are destroyed', async ({ page }) => {

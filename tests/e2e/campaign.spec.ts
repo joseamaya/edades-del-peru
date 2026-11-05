@@ -211,7 +211,7 @@ test('chapter II tutorials open with their first step', async ({ page }) => {
 
 test('the chapter III tutorial opens with its first step', async ({ page }) => {
   test.setTimeout(180_000);
-  await page.goto('/?mission=m7_tupac_amaru&seed=777&fog=0&low=1&intro=0');
+  await page.goto('/?mission=m7_tupac_amaru&seed=777&fog=0&low=1');
   const overlay = page.locator('.ed-overlay', { hasText: 'La Gran Rebelión' });
   await expect(overlay).toBeVisible({ timeout: 30_000 });
   await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();

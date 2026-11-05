@@ -4,7 +4,8 @@ import { defineConfig } from '@playwright/test';
 // Sharding across jobs provides the parallel speedup; `PW_WORKERS` overrides.
 const envWorkers = Number(process.env.PW_WORKERS);
 const workers = Number.isFinite(envWorkers) && envWorkers > 0 ? envWorkers : process.env.CI ? 1 : 2;
-const port = Number(process.env.PW_PORT ?? 5173);
+const envPort = Number(process.env.PW_PORT);
+const port = Number.isFinite(envPort) && envPort > 0 ? envPort : 5173;
 
 // Heaviest specs: excluded from the `fast` project (quick local runs) and covered
 // by the `slow` project / nightly workflow. The default `yarn test:e2e` runs both.
