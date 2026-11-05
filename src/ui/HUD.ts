@@ -37,15 +37,14 @@ import { artFigureHtml, includeUnreviewedArt } from './ArtFigure';
 import { getEducational } from '../campaign/defs/educational';
 import {
   CAMPAIGNS,
-  CAMPAIGN_SERIES_TITLE,
-  CAMPAIGN_SERIES_SUBTITLE,
   campaignProgressCount,
-  getCampaign,
   getCampaignForMission,
+  campaignNumber,
   getReleasedMission,
   nextReleasedMission,
 } from '../campaign/defs/campaigns';
 import { SERIES_INTRO } from '../campaign/defs/cinematics';
+import { CAMPAIGN_ONLY } from '../core/release';
 import { completedMissions, markMissionComplete, parseCampaignProgress } from '../campaign/progress';
 import { CinematicPlayer } from './CinematicPlayer';
 import { MENU_BACKDROP } from './menuArt';
@@ -1969,19 +1968,21 @@ export class HUD {
         this.game.loadMatch();
       }).classList.add('primary');
     }
-    addAction('☀', t('hud.menu.main.campaigns'), t('hud.menu.main.campaignsHint'), () => this.showCampaignIntro());
-    addAction('⚔', t('hud.menu.main.skirmish'), t('hud.menu.main.skirmishHint'), () => this.showSkirmishSetup());
+    addAction('☀', t('hud.menu.main.campaigns'), t('hud.menu.main.campaignsHint'), () => this.showCampaignHub());
+    if (!CAMPAIGN_ONLY) {
+      addAction('⚔', t('hud.menu.main.skirmish'), t('hud.menu.main.skirmishHint'), () => this.showSkirmishSetup());
+    }
     addAction('📖', t('hud.menu.main.codex'), t('hud.menu.main.codexHint'), () => this.showCodex());
     addAction('?', t('hud.menu.main.controls'), t('hud.menu.main.controlsHint'), () => this.showControls());
     addAction('⚙', t('hud.menu.main.options'), t('hud.menu.main.optionsHint'), () => this.showOptions('main'));
 
     const side = this.el('div', 'ed-menu-side', ov);
-    const campaign = getCampaign('preinca')!;
+    const campaign = CAMPAIGNS[0]!;
     const progress = this.readCampaignProgress();
     const done = campaignProgressCount(campaign, completedMissions(progress, campaign.id));
     const total = campaign.releasedMissionIds.length;
     side.innerHTML = `
-      <div class="side-kicker">${t('hud.menu.side.kicker')}</div>
+      <div class="side-kicker">${t('hud.menu.campaignHub.campaignNumber', { n: campaignNumber(campaign.id), total: CAMPAIGNS.length })}</div>
       <h3>${campaign.title}</h3>
       <p>${campaign.description}</p>
       <div class="progress"><i style="width:${total ? (done / total) * 100 : 0}%"></i></div>
@@ -2029,7 +2030,7 @@ export class HUD {
       this.game.audio.resume();
       if (this.game.settings.musicEnabled) this.game.audio.startMusic();
       this.game.audio.cinematicSting();
-      this.showSeriesIntro(done);
+      done();
     });
     enter.focus();
   }
@@ -2044,27 +2045,6 @@ export class HUD {
       kicker: t('app.series'),
       finalLabel: t('hud.menu.seriesIntro.final'),
       onDone: done,
-    });
-  }
-
-  /** Campaign prologue, shown once before the campaign map. */
-  showCampaignIntro(): void {
-    if (this.introSeen()) {
-      this.showCampaignHub();
-      return;
-    }
-    this.clearOverlays();
-    this.setMenuOpen(true);
-    this.game.audio.cinematicSting();
-    new CinematicPlayer(this.root, {
-      beats: getCampaign('preinca')!.prologue,
-      background: MENU_BACKDROP,
-      kicker: t('hud.menu.campaignIntro.kicker'),
-      finalLabel: t('hud.menu.campaignIntro.final'),
-      onDone: () => {
-        this.markIntroSeen();
-        this.showCampaignHub();
-      },
     });
   }
 
@@ -2291,22 +2271,6 @@ export class HUD {
     openCodex(this.root, () => this.showMainMenu());
   }
 
-  private introSeen(): boolean {
-    try {
-      return localStorage.getItem('peru-campaign-intro-preinca') === '1';
-    } catch {
-      return false;
-    }
-  }
-
-  private markIntroSeen(): void {
-    try {
-      localStorage.setItem('peru-campaign-intro-preinca', '1');
-    } catch {
-      /* noop */
-    }
-  }
-
   /** Controls and basic concepts panel. */
   showControls(): void {
     this.clearOverlays();
@@ -2407,23 +2371,25 @@ export class HUD {
     const ov = this.el('div', 'ed-overlay ed-campaign-hub');
     ov.style.backgroundImage = `linear-gradient(0deg, rgba(4,7,10,.9), rgba(4,7,10,.62)), url("${MENU_BACKDROP}")`;
     const panel = this.el('div', 'ed-panel ed-campaign-panel', ov);
+    const campaignTitles = CAMPAIGNS.map((c) => c.title).join(' · ');
+    const featuredCampaign = CAMPAIGNS[0]!;
     panel.innerHTML = `
       <div class="ed-campaign-head">
         <div>
-          <div class="ed-menu-kicker">LA SENDA DEL SOL</div>
-          <h2>${CAMPAIGN_SERIES_TITLE}</h2>
-          <div class="sub">${CAMPAIGN_SERIES_SUBTITLE}</div>
+          <div class="ed-menu-kicker">${t('app.series')}</div>
+          <h2>${t('hud.menu.campaignHub.title')}</h2>
+          <div class="sub">${t('hud.menu.campaignHub.subtitle', { campaigns: campaignTitles })}</div>
         </div>
       </div>
       <div class="ed-campaign-grid"></div>
       <div class="ed-campaign-foot">
-        <button class="ed-ghostbtn" type="button" data-action="intro">${t('hud.menu.campaignHub.intro')}</button>
+        <button class="ed-ghostbtn" type="button" data-action="intro">${t('hud.menu.campaignHub.intro', { campaign: featuredCampaign.title })}</button>
         <button class="ed-primary" type="button" data-action="back">${t('hud.menu.campaignHub.back')}</button>
       </div>
     `;
     const grid = panel.querySelector('.ed-campaign-grid') as HTMLElement;
     const progress = this.readCampaignProgress();
-    for (const campaign of CAMPAIGNS) {
+    CAMPAIGNS.forEach((campaign) => {
       const card = this.el('div', `ed-campaign-card ${campaign.status}`, grid);
       card.style.setProperty('--campaign-accent', campaign.accent);
       const completed = completedMissions(progress, campaign.id);
@@ -2431,7 +2397,7 @@ export class HUD {
       const total = campaign.releasedMissionIds.length;
       const available = campaign.status === 'available' && total > 0;
       card.innerHTML = `
-        <div class="era">${campaign.era}</div>
+        <div class="era">${t('hud.menu.campaignHub.campaignNumber', { n: campaignNumber(campaign.id), total: CAMPAIGNS.length })} · ${campaign.era}</div>
         <h3>${campaign.title}</h3>
         <p>${campaign.description}</p>
         <div class="card-meta">
@@ -2458,7 +2424,7 @@ export class HUD {
         const tag = this.el('span', 'upcoming', actions);
         tag.textContent = t('hud.menu.campaignHub.inPreparation');
       }
-    }
+    });
     panel.querySelector('[data-action="back"]')!.addEventListener('click', () => this.showMainMenu());
     panel.querySelector('[data-action="intro"]')!.addEventListener('click', () => {
       this.clearOverlays();
@@ -2476,9 +2442,15 @@ export class HUD {
     this.setMenuOpen(true);
     this.game.audio.cinematicSting();
     new CinematicPlayer(this.root, {
-      beats: getCampaign('preinca')!.prologue,
+      beats: CAMPAIGNS[0]!.prologue,
       background: MENU_BACKDROP,
-      kicker: t('hud.menu.campaignIntro.kicker'),
+      kicker: t('hud.menu.campaignIntro.kicker', {
+        number: t('hud.menu.campaignHub.campaignNumber', {
+          n: campaignNumber(CAMPAIGNS[0]!.id),
+          total: CAMPAIGNS.length,
+        }),
+        campaign: CAMPAIGNS[0]!.title.toUpperCase(),
+      }),
       finalLabel: t('hud.menu.campaignHub.introReplay'),
       onDone: () => this.showCampaignHub(),
     });

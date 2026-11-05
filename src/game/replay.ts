@@ -100,3 +100,29 @@ export function loadReplay(): Replay | null {
 export function hasReplay(): boolean {
   return loadReplay() !== null;
 }
+
+export function clearReplay(): void {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    /* storage unavailable */
+  }
+}
+
+/** Remove a legacy skirmish replay, including replays from older schema versions. */
+export function clearSkirmishReplay(): void {
+  try {
+    const replay = loadReplay();
+    if (replay) {
+      if (!replay.settings.missionId) localStorage.removeItem(STORAGE_KEY);
+      return;
+    }
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw) as { settings?: { missionId?: unknown } };
+    const missionId = parsed?.settings?.missionId;
+    if (typeof missionId !== 'string' || !missionId) localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    clearReplay();
+  }
+}

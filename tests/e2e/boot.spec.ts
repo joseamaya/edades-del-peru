@@ -29,8 +29,6 @@ test('shows the first-visit title screen', async ({ page }) => {
   });
   await expect(page.locator('.ed-title-screen')).toBeVisible();
   await page.getByRole('button', { name: 'Entrar' }).click();
-  await expect(page.locator('.ed-cinematic')).toBeVisible();
-  await page.getByRole('button', { name: /Saltar/ }).click();
   await expect(page.locator('.ed-menu-screen')).toBeVisible();
   await page.reload();
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
@@ -49,7 +47,7 @@ test('shows the main menu with a direct menu link', async ({ page }) => {
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });
-  const menu = page.locator('.ed-overlay', { hasText: 'EDADES DEL PERÚ' });
+  const menu = page.locator('.ed-menu-shell');
   await expect(menu).toBeVisible();
   await expect(page.locator('#ui-root')).toHaveClass(/menu-open/);
   await expect(page.getByRole('button', { name: /Campañas/ })).toBeVisible();

@@ -96,9 +96,9 @@ sequence: use the gate table to find the mission's own historical problem. A cam
 with no documented battle must not acquire one merely to fit the RTS template.
 
 
-## Chapter II playable status (m5–m6)
+## Campaign II playable status (m5–m6)
 
-Chapter II is released as **playable** with the historical mechanics, onboarding, real-command
+Campaign II is released as **playable** with the historical mechanics, onboarding, real-command
 victory paths, dedicated decor GLBs and save round-trips covered. It is not yet a full gold master
 because the UX evidence is local and there is no CI pixel gate.
 
@@ -118,9 +118,9 @@ because the UX evidence is local and there is no CI pixel gate.
 | Docs | Met: README, dossiers, campaign experiences and this table. | Met: README, dossiers, campaign experiences and this table. |
 
 
-## Chapter III playable status (m7)
+## Campaign III playable status (m7)
 
-Chapter III is released as **playable** with the historical choice, onboarding, real-command
+Campaign III is released as **playable** with the historical choice, onboarding, real-command
 victory path, dedicated decor GLB and save round-trip covered. It is not yet a full gold master
 because the UX evidence is local and there is no CI pixel gate.
 
@@ -140,9 +140,9 @@ because the UX evidence is local and there is no CI pixel gate.
 | Docs | Met: README, dossier, campaign experiences and this table. |
 
 
-## Chapter IV playable status (m8–m9)
+## Campaign IV playable status (m8–m9)
 
-Chapter IV is released as **playable** with the historical phases, onboarding, real-command
+Campaign IV is released as **playable** with the historical phases, onboarding, real-command
 victory paths, dedicated decor GLBs and save round-trips covered. It is not yet a full gold master
 because the UX evidence is local and there is no CI pixel gate.
 

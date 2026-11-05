@@ -13,7 +13,7 @@ The game is **historically grounded** on one key point: every match is played in
 only **coetaneous civilizations** can face each other (e.g. Moche with Recuay, Chanca with Inca, never Moche
 with Chimú).
 
-**Play all four chapters:** <https://joseamaya.github.io/edades-del-peru/>
+**Play all four campaigns:** <https://joseamaya.github.io/edades-del-peru/>
 
 ## Media
 
@@ -57,7 +57,7 @@ yarn shot name --seed=777 --wait=8000
 
 Debug URL parameters:
 
-- `?play=1` — go straight into the match (no menu); this is what scripts/E2E use
+- `?play=1` — go straight into a skirmish (debug/tests only; hidden from the release menu)
 - `?menu=1` / `?menu=0` — force showing or hiding the main menu
 - `?seed=777` — map seed
 - `?fog=0` — disable fog of war
@@ -67,17 +67,18 @@ Debug URL parameters:
 - `?mission=ID` — start a campaign mission (see the table below)
 - `?mod=ID` — load data mod(s) from `public/mods/` (comma-separated; see [`docs/modding/`](./docs/modding/))
 
-## Campaign: La Senda del Sol
+## Campaign series: La Senda del Sol
 
-The campaign is a saga of **four chapters**. All four, from _Culturas Preincas_ to
-_Independencia y República_, are playable.
+The first release is **campaign-only**. _La Senda del Sol_ is the series; it contains **four campaigns divided by
+Peruvian historical epochs**. All four, from _Culturas Preincas_ to _Independencia y República_, are playable.
+Skirmish is hidden from the menu for this release (the `?play=1` debug harness remains for tests).
 
-| Chapter | Campaign                      | Focus                                         | Release                     |
-| ------- | ----------------------------- | --------------------------------------------- | --------------------------- |
-| I       | **Culturas Preincas**         | Caral, Chavín, Moche/Recuay, Wari             | **Four missions playable**  |
-| II      | **El Tahuantinsuyo**          | Yahuar Pampa, the Chimú war and the civil war | **Three missions playable** |
-| III     | **El Virreinato**             | Túpac Amaru II and colonial Peru              | **One mission playable**    |
-| IV      | **Independencia y República** | Independence, Arica and modern Peru           | **Two missions playable**   |
+| Campaign                      | Focus                                         | Release                     |
+| ----------------------------- | --------------------------------------------- | --------------------------- |
+| **Culturas Preincas**         | Caral, Chavín, Moche/Recuay, Wari             | **Four missions playable**  |
+| **El Tahuantinsuyo**          | Yahuar Pampa, the Chimú war and the civil war | **Three missions playable** |
+| **El Virreinato**             | Túpac Amaru II and colonial Peru              | **One mission playable**    |
+| **Independencia y República** | Independence, Arica and modern Peru           | **Two missions playable**   |
 
 Mission ids remain stable (`m1_caral` … `m9_guerra_pacifico`, plus `m6b_guerra_civil`). All released missions appear in
 menus, the Codex and progress; `?mission=ID` remains available for QA.
@@ -91,7 +92,7 @@ The current release status, art gate and publish checklist are in
 
 The game teaches history while you play:
 
-- **Campaign prologue**: opening _Campañas_ presents the saga and its released chapters.
+- **Campaign selection**: _Campañas_ opens the four-campaign map, with each campaign grouped by epoch.
 - **Historical briefing**: each mission shows period and dates, geography, sides, expanded context, a
   «¿Sabías que…?» and its **sources** (collapsible).
 - **Guided tutorial**: Caral teaches selecting, building and exploring; later missions teach the

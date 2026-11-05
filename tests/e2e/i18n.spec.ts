@@ -11,13 +11,13 @@ test('the main menu keeps the Spanish UI copy', async ({ page }) => {
   await openMenu(page);
   await expect(page.getByRole('heading', { name: /EDADES\s+DEL PERÚ/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /Campañas/ })).toBeVisible();
-  await expect(page.getByRole('button', { name: /Escaramuza/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Escaramuza/ })).toHaveCount(0);
   await expect(page.getByRole('button', { name: /Cómo jugar/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /Opciones/ })).toBeVisible();
-  await expect(page.getByText(/CAMPAÑA DISPONIBLE/)).toBeVisible();
+  await expect(page.getByText(/CAMPAÑA 1 DE 4/)).toBeVisible();
 });
 
-test('options and skirmish labels come from the i18n table', async ({ page }) => {
+test('options and campaign labels come from the i18n table', async ({ page }) => {
   await openMenu(page);
   await page.getByRole('button', { name: /Opciones/ }).click();
   await expect(page.getByRole('heading', { name: 'OPCIONES' })).toBeVisible();
@@ -26,10 +26,11 @@ test('options and skirmish labels come from the i18n table', async ({ page }) =>
   await expect(page.locator('.ed-menu-kicker', { hasText: 'ATAJOS' })).toBeVisible();
   await page.getByRole('button', { name: 'Volver' }).click();
 
-  await page.getByRole('button', { name: /Escaramuza/ }).click();
-  await expect(page.getByRole('heading', { name: 'Configura tu partida' })).toBeVisible();
-  await expect(page.getByText('Periodo histórico')).toBeVisible();
-  await expect(page.getByText('Dificultad')).toBeVisible();
-  await expect(page.getByText('Rival (contemporáneo)')).toBeVisible();
-  await expect(page.getByText('Recursos iniciales')).toBeVisible();
+  await page.getByRole('button', { name: /Campañas/ }).click();
+  await expect(page.getByRole('heading', { name: 'Campañas' })).toBeVisible();
+  await expect(page.getByText('LA SENDA DEL SOL', { exact: true })).toBeVisible();
+  await expect(page.getByText(/CAMPAÑA 1 DE 4/)).toBeVisible();
+  await expect(page.getByText(/Cuatro campañas por época/)).toBeVisible();
+  await expect(page.locator('.ed-campaign-card')).toHaveCount(4);
+  await expect(page.getByText(/CAMPAÑA 4 DE 4/)).toBeVisible();
 });

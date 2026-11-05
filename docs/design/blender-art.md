@@ -322,7 +322,6 @@ Campaign intro, map, environment and tour assets get a smaller `srcset` variant.
 ## UI integration
 
 - `HUD.showBriefing()` shows the mission intro for `m1_caral`.
-- `HUD.showCampaignIntro()` falls back to the `m1_caral` intro for the campaign prologue.
 - The Codex campaign tab shows the first image for the mission.
 - Captions always include: “No es una fotografía histórica: es un render 3D del proyecto.”
 - Only `reviewed: true` assets are shown by default. Use `?art=all` (legacy `?aiart=all` also

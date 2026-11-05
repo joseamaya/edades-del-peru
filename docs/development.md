@@ -403,8 +403,8 @@ Definition of Done and the building audit see
   `ProjectileView`/`ResourceNodeView` under `src/rendering/` (building views still use `src/entities/EntityView`).
   `OrderMarker` is not covered yet.
 - Persistence in `localStorage`: `peru-settings`, `peru-campaign` (versioned campaign progress, with legacy
-  numeric migration), `peru-campaign-intro-preinca` (Caral prologue) and `peru-title-intro`
-  (first-visit title movie).
+  numeric migration) and `peru-title-intro` (first-visit title movie). Campaign-only builds also purge
+  legacy `peru-save`/`peru-replay` entries on menu entry.
 
 ## Code traps (learned the hard way)
 
