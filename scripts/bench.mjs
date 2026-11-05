@@ -8,7 +8,7 @@ import { installProbes, resetProbes, snapshotProbes, readSceneStats, readMemory,
  * Reproducible performance benchmark for entity scale.
  *
  * Usage:
- *   node scripts/bench.mjs [--units=50,100,200,400,800] [--scenario=soldiers|mixed|mixed-ai|mounted]
+ *   node scripts/bench.mjs [--units=50,100,200,400,800] [--scenario=soldiers|mixed|mixed-ai|mounted|siege|tank]
  *                          [--seed=777] [--steps=600] [--runs=3] [--profile=1] [--gc=1]
  *                          [--fog=1] [--out=review/bench.json]
  *
@@ -43,12 +43,22 @@ const outFile = cliArg('out', 'review/bench.json');
 const scales = scenario === 'fauna' ? animalScales : unitScales;
 
 if (
-  !['soldiers', 'mixed', 'mixed-ai', 'mounted', 'rigs', 'fauna', 'mixed-rigs', 'fortifications', 'group-move'].includes(
-    scenario,
-  )
+  ![
+    'soldiers',
+    'mixed',
+    'mixed-ai',
+    'mounted',
+    'siege',
+    'tank',
+    'rigs',
+    'fauna',
+    'mixed-rigs',
+    'fortifications',
+    'group-move',
+  ].includes(scenario)
 ) {
   console.error(
-    `unknown scenario "${scenario}" (use soldiers|mixed|mixed-ai|mounted|rigs|fauna|mixed-rigs|fortifications|group-move)`,
+    `unknown scenario "${scenario}" (use soldiers|mixed|mixed-ai|mounted|siege|tank|rigs|fauna|mixed-rigs|fortifications|group-move)`,
   );
   process.exit(1);
 }
@@ -60,6 +70,8 @@ const RIG_BUDGETS = {
   // consolidated alpaca (2 draws: mesh + shadow).
   worker: { drawCalls: 40, triangles: 40000 },
   mounted: { drawCalls: 40, triangles: 12000 },
+  siege: { drawCalls: 24, triangles: 12000 },
+  tank: { drawCalls: 12, triangles: 12000 },
   animal: { drawCalls: 4, triangles: 5000 },
   mixedP95Ms: 16.6,
   fortificationsP99Ms: 12,
@@ -117,6 +129,13 @@ async function setupScenario(page, n) {
           spawns.push({ id: 'llama', x: cx + Math.cos(ang) * radius, z: cz + Math.sin(ang) * radius, scale: 1 });
         }
         g.wildlife.spawn(spawns, (x, z) => g.terrain.getHeight(x, z));
+      };
+      const spawnVehicle = (kind, count, cx, cz) => {
+        for (let i = 0; i < count; i++) {
+          const ring = 4 + Math.sqrt(i + 1) * 2.4;
+          const ang = i * 2.399963229728653;
+          g.spawnScriptedUnit(kind, 0, cx + Math.cos(ang) * ring, cz + Math.sin(ang) * ring);
+        }
       };
       const spawnCavalry = (count, cx, cz) => {
         for (let i = 0; i < count; i++) {
@@ -241,6 +260,11 @@ async function setupScenario(page, n) {
           spawnWorkers(N, center.x, center.z);
         } else if (scenarioName === 'mounted') {
           spawnCavalry(N, center.x, center.z);
+        } else if (scenarioName === 'siege') {
+          spawnVehicle('artillery', Math.ceil(N / 2), center.x, center.z);
+          spawnVehicle('mortar', Math.floor(N / 2), center.x, center.z);
+        } else if (scenarioName === 'tank') {
+          spawnVehicle('tank', N, center.x, center.z);
         } else {
           spawnWorkers(N, center.x, center.z);
           spawnArmy(Math.max(0, Math.round(N / 2)), center.x, center.z);
@@ -345,9 +369,13 @@ async function measure(browser, base, n, runIndex) {
     params.set('civ', 'caral');
     params.set('period', '0');
   }
-  if (scenario === 'mounted') {
+  if (scenario === 'mounted' || scenario === 'siege') {
     params.set('civ', 'realistas');
     params.set('period', '6');
+  }
+  if (scenario === 'tank') {
+    params.set('civ', 'republica');
+    params.set('period', '9');
   }
   if (scenario === 'fauna' || scenario === 'mixed-rigs') params.set('map', 'altiplano');
   await page.goto(`${base}/?${params}`, { waitUntil: 'networkidle' });
@@ -748,14 +776,15 @@ async function main() {
           failures.push(`${r.n}: ${fmt(c.perWorkerTris, 0)} worker triangles > ${RIG_BUDGETS.worker.triangles}`);
         }
       }
-      if (scenario === 'mounted' && c.units > 0) {
+      if ((scenario === 'mounted' || scenario === 'siege' || scenario === 'tank') && c.units > 0) {
+        const budget = RIG_BUDGETS[scenario];
         if (r.riggedUnits !== r.startMilitary)
-          failures.push(`${r.n}: only ${r.riggedUnits}/${r.startMilitary} cavalry rigged`);
-        if (c.perWorkerCalls > RIG_BUDGETS.mounted.drawCalls) {
-          failures.push(`${r.n}: ${fmt(c.perWorkerCalls, 1)} mounted draw calls > ${RIG_BUDGETS.mounted.drawCalls}`);
+          failures.push(`${r.n}: only ${r.riggedUnits}/${r.startMilitary} ${scenario} units rigged`);
+        if (c.perWorkerCalls > budget.drawCalls) {
+          failures.push(`${r.n}: ${fmt(c.perWorkerCalls, 1)} ${scenario} draw calls > ${budget.drawCalls}`);
         }
-        if (c.perWorkerTris > RIG_BUDGETS.mounted.triangles) {
-          failures.push(`${r.n}: ${fmt(c.perWorkerTris, 0)} mounted triangles > ${RIG_BUDGETS.mounted.triangles}`);
+        if (c.perWorkerTris > budget.triangles) {
+          failures.push(`${r.n}: ${fmt(c.perWorkerTris, 0)} ${scenario} triangles > ${budget.triangles}`);
         }
       }
       if ((scenario === 'fauna' || scenario === 'mixed-rigs') && c.animals > 0) {

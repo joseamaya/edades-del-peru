@@ -171,9 +171,10 @@ Definition of Done and the building audit see
   from `amount / maxAmount` in `subtract` and `applySave`, so save/load and the resource simulation are
   unchanged. The herd has no entities, obstacles or collision; teardown disposes only its per-herd materials.
 - **Rigged 3D models (optional, glTF/GLB)**: `src/model/defs/modelAssets.ts` maps a unit kind to a registered
-  asset id plus an optional presentation variant. The **Caral worker** (Caral + Arcaico/Formative matches) and
-  the **mounted cavalry** (`mounted_rig`, Viceroyalty/Republic `HUSSAR`/`CAVALRY`) are mapped; all other units
-  still use the procedural path, so #109/#241 opt in progressively.
+  asset id plus an optional presentation variant. The **Caral worker** (Caral + Arcaico/Formative matches), the
+  **mounted cavalry** (`mounted_rig`, Viceroyalty/Republic `HUSSAR`/`CAVALRY`) and the **siege/tank rig**
+  (`siege_rig`, `ARTILLERY`/`MORTAR`/`TANK`) are mapped; other units still use the procedural path, so
+  #109/#241 opt in progressively.
   `modelAssetIdsForMatch` lists the models to preload during `boot()` for every participating civilization. Assets live in
   `src/assets/models/*.glb`, are resolved by `src/rendering/modelAssetRegistry.ts` (`import.meta.glob` with
   `?url`, hashed by Vite) and loaded by `src/rendering/ModelAssets.ts` with `GLTFLoader`. The shared
@@ -605,8 +606,16 @@ four post-colonial civilizations. The rider coat, trim, trousers and headwear ar
 is not a breed reconstruction. `Attack` is the mounted charge/sword swing; `Death` plays once during the topple when the rig provides it. There is no mounted mapping before 1532, and `modelAssetIdsForMatch` preloads the asset for
 the affected periods. The `.blend` source is in `art-src/blender/scenes/mounted_rig.blend` (Git LFS); the GLB
 SHA-256 is recorded in `PROVENANCE.md`. Measure it with
-`yarn bench --scenario=mounted --units=4,12,24 --assert`; `yarn bench:check` includes the mounted scenario
+`yarn bench --scenario=mounted --units=4,12,24 --assert`; `yarn bench:check` includes the mounted, siege and tank scenarios
 (the merged meshes render at ~27 draws and ~10.1k triangles per unit including the VSM shadow pass).
+
+The siege rig (`siege_rig.glb`, #241b) is the project-authored companion for `ARTILLERY`, `MORTAR` and
+`TANK`: a 33-bone rig with hidden cannon/mortar/crew/tank groups, four clips and per-culture palette variants
+(`src/rendering/siegeAttire.ts`). Cannon/mortar show the two crew figures and one weapon; the tank shows only
+the vehicle. It maps post-1532 artillery and mortars for the four post-colonial civs plus the m7 late-colonial rebel
+cannon/mortar, and the contemporary tank (also used by contemporary cavalry) for República. No siege weapon is mapped before 1532. The source is
+`art-src/blender/scenes/siege_rig.blend` (Git LFS); the meshopt GLB and SHA-256 are recorded in
+`PROVENANCE.md`.
 
 The same GLB backs the Caral **worker and scout in both genders** (`caral_worker_f/m`, `caral_scout_f/m`;
 `unitModelAsset` maps `WORKER`/`SCOUT + CARAL + FORMATIVE`). It also backs the Moche/Recuay infantry in
@@ -667,8 +676,8 @@ while the Caral accessories own their small per-instance attachments. `Game.dest
 then disposes units (and their rigs), and only then calls `clearModelAssets()`. That function defers disposal while
 an asset still has live rigs, so shared resources are never freed under an entity that still uses them. `?rig=1` is
 the visual harness for the pipeline. Post-1532 humanoid classes (soldier, ranged, missionary) use the same
-rig with colonial/republican coat/hat/weapon variants; mounted cavalry now uses `mounted_rig`, while artillery, mortar, tank and the Andean Amauta
-stay procedural until dedicated assets exist.
+rig with colonial/republican coat/hat/weapon variants; mounted cavalry uses `mounted_rig`, siege/tank use
+`siege_rig`, while the Andean Amauta stays procedural until a dedicated asset exists.
 
 Next iteration for the worker: a dedicated construction clip (the current build state uses `Push_Loop`), a
 dedicated death clip and, if needed, a worker attack clip. The mesh/outfit pilot is closed in #116; future
@@ -763,7 +772,7 @@ Match the cost of verification to the change (the full gate is in `AGENTS.md`):
 
 ## Performance benchmarks
 
-`yarn bench [--units=50,100,200,400,800] [--scenario=soldiers|mixed|mixed-ai|mounted|rigs|fauna|mixed-rigs]
+`yarn bench [--units=50,100,200,400,800] [--scenario=soldiers|mixed|mixed-ai|mounted|siege|tank|rigs|fauna|mixed-rigs]
 [--animals=4,8,12,16] [--seed=777] [--steps=600] [--runs=3] [--profile=1] [--gc=1] [--fog=1]
 [--assert] [--out=review/bench.json]` boots a match in Chromium (SwiftShader) and, per scale, measures
 spawn/destroy time, simulation step time (`Game.update`), heap, A* per call, target acquisition
