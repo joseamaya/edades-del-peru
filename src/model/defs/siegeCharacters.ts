@@ -1,5 +1,10 @@
 import { CivId, Era, UnitKind } from '../../core/types';
-import { POST_COLONIAL_SPECS, postColonialCultureForCiv, type PostColonialCulture } from './postColonialCharacters';
+import {
+  POST_COLONIAL_CULTURES,
+  POST_COLONIAL_SPECS,
+  postColonialCultureForCiv,
+  type PostColonialCulture,
+} from './postColonialCharacters';
 
 export const SIEGE_WEAPONS = ['cannon', 'mortar', 'tank'] as const;
 export type SiegeWeapon = (typeof SIEGE_WEAPONS)[number];
@@ -16,7 +21,6 @@ export const SIEGE_VARIANTS = [
   'siege_mortar_chile',
   'siege_mortar_rebelde',
   'siege_tank_republica',
-  'siege_tank_chile',
 ] as const;
 
 export type SiegeRigVariant = (typeof SIEGE_VARIANTS)[number];
@@ -31,10 +35,9 @@ export interface SiegeSpec {
 }
 
 const SIEGE_SPECS: Record<PostColonialCulture | 'rebelde', SiegeSpec> = {
-  realistas: siegeSpec('realistas', 0x5a3a1e, 0x3f4a2a, 0x151515),
-  patriotas: siegeSpec('patriotas', 0x5a3a1e, 0x3f4a2a, 0x151515),
-  republica: siegeSpec('republica', 0x5a3a1e, 0x3f4a2a, 0x151515),
-  chile: siegeSpec('chile', 0x5a3a1e, 0x3f4a2a, 0x151515),
+  ...(Object.fromEntries(
+    POST_COLONIAL_CULTURES.map((culture) => [culture, siegeSpec(culture, 0x5a3a1e, 0x3f4a2a, 0x151515)]),
+  ) as Record<PostColonialCulture, SiegeSpec>),
   rebelde: {
     coat: 0x6a3a2a,
     trim: 0xd8a040,
@@ -55,19 +58,21 @@ export function isSiegeVariant(variant: string): variant is SiegeRigVariant {
 }
 
 export function siegeVariantFor(kind: UnitKind, era: Era, civ: CivId): SiegeRigVariant | null {
-  if (kind === UnitKind.TANK) {
-    if (era !== Era.CONTEMPORARY) return null;
-    if (civ === CivId.REPUBLIC) return 'siege_tank_republica';
-    if (civ === CivId.CHILE) return 'siege_tank_chile';
-    return null;
+  if (kind === UnitKind.TANK || (kind === UnitKind.CAVALRY && era === Era.CONTEMPORARY)) {
+    if (era !== Era.CONTEMPORARY || civ !== CivId.REPUBLIC) return null;
+    return 'siege_tank_republica';
   }
   if (kind !== UnitKind.ARTILLERY && kind !== UnitKind.MORTAR) return null;
-  if (era !== Era.VICEROYALTY && era !== Era.REPUBLIC) return null;
+  if (era !== Era.VICEROYALTY && era !== Era.REPUBLIC && era !== Era.CONTEMPORARY) return null;
   const weapon: SiegeWeapon = kind === UnitKind.MORTAR ? 'mortar' : 'cannon';
   if (civ === CivId.INCA) return `siege_${weapon}_rebelde` as SiegeRigVariant;
   const culture = postColonialCultureForCiv(civ);
   if (!culture) return null;
   return `siege_${weapon}_${culture}` as SiegeRigVariant;
+}
+
+export function siegeWeaponForVariant(variant: SiegeRigVariant): SiegeWeapon {
+  return variant.split('_')[1] as SiegeWeapon;
 }
 
 export function siegeSpecForVariant(variant: SiegeRigVariant): SiegeSpec {

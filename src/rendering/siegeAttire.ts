@@ -1,5 +1,5 @@
 import type { RigVariant } from '../model/defs/modelAssets';
-import { isSiegeVariant, siegeSpecForVariant } from '../model/defs/siegeCharacters';
+import { isSiegeVariant, siegeSpecForVariant, siegeWeaponForVariant } from '../model/defs/siegeCharacters';
 import type { RigInstance } from './RigInstance';
 import { createRigAttireTools } from './rigAttire';
 import type { RigVariantHandle } from './rigVariants';
@@ -9,9 +9,13 @@ const GROUP_PREFIXES = ['GEO-Cannon-', 'GEO-Mortar-', 'GEO-Tank-', 'GEO-Crew-'] 
 export function dressSiege(rig: RigInstance, variant: RigVariant): RigVariantHandle | null {
   if (!isSiegeVariant(variant)) return null;
   const spec = siegeSpecForVariant(variant);
-  const weapon = variant.split('_')[1];
+  const weapon = siegeWeaponForVariant(variant);
   const root = rig.root;
-  const { tint, dispose } = createRigAttireTools(root);
+  const { tint: tintTarget, dispose } = createRigAttireTools(root);
+  const tint = (name: string, color: number): void => {
+    if (!root.getObjectByName(name)) console.warn(`[siege] missing palette target ${name}`);
+    tintTarget(name, color);
+  };
 
   for (const prefix of GROUP_PREFIXES) {
     const visible =

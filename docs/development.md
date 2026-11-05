@@ -171,9 +171,10 @@ Definition of Done and the building audit see
   from `amount / maxAmount` in `subtract` and `applySave`, so save/load and the resource simulation are
   unchanged. The herd has no entities, obstacles or collision; teardown disposes only its per-herd materials.
 - **Rigged 3D models (optional, glTF/GLB)**: `src/model/defs/modelAssets.ts` maps a unit kind to a registered
-  asset id plus an optional presentation variant. The **Caral worker** (Caral + Arcaico/Formative matches) and
-  the **mounted cavalry** (`mounted_rig`, Viceroyalty/Republic `HUSSAR`/`CAVALRY`) are mapped; all other units
-  still use the procedural path, so #109/#241 opt in progressively.
+  asset id plus an optional presentation variant. The **Caral worker** (Caral + Arcaico/Formative matches), the
+  **mounted cavalry** (`mounted_rig`, Viceroyalty/Republic `HUSSAR`/`CAVALRY`) and the **siege/tank rig**
+  (`siege_rig`, `ARTILLERY`/`MORTAR`/`TANK`) are mapped; other units still use the procedural path, so
+  #109/#241 opt in progressively.
   `modelAssetIdsForMatch` lists the models to preload during `boot()` for every participating civilization. Assets live in
   `src/assets/models/*.glb`, are resolved by `src/rendering/modelAssetRegistry.ts` (`import.meta.glob` with
   `?url`, hashed by Vite) and loaded by `src/rendering/ModelAssets.ts` with `GLTFLoader`. The shared
@@ -611,8 +612,8 @@ SHA-256 is recorded in `PROVENANCE.md`. Measure it with
 The siege rig (`siege_rig.glb`, #241b) is the project-authored companion for `ARTILLERY`, `MORTAR` and
 `TANK`: a 27-bone rig with hidden cannon/mortar/crew/tank groups, four clips and per-culture palette variants
 (`src/rendering/siegeAttire.ts`). Cannon/mortar show the two crew figures and one weapon; the tank shows only
-the vehicle. It maps Viceroyalty/Republic artillery and mortars for the four post-colonial civs, and the
-contemporary tank for República/Chile. No siege weapon is mapped before 1532. The source is
+the vehicle. It maps post-1532 artillery and mortars for the four post-colonial civs, plus the contemporary tank (and
+contemporary cavalry vehicle) for República. No siege weapon is mapped before 1532. The source is
 `art-src/blender/scenes/siege_rig.blend` (Git LFS); the meshopt GLB and SHA-256 are recorded in
 `PROVENANCE.md`.
 

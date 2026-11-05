@@ -148,15 +148,15 @@ def build_meshes():
     box('GEO-Cannon-Carriage', 'root', wood, (0, 0.15, 0.47), (0.55, 1.20, 0.30), bevel=0.04)
     box('GEO-Cannon-Trail', 'root', wood, (0, -0.95, 0.32), (0.28, 0.75, 0.18), rot=(math.radians(-8), 0, 0), bevel=0.03)
     for side, x in (('L', 0.62), ('R', -0.62)):
-        cylinder(f'GEO-Cannon-Wheel-{side}', f'cannon_wheel_{side}', dark, (x, 0.0, 0.45), 0.40, 0.12, rot=(0, math.pi / 2, 0), vertices=16)
-        cylinder(f'GEO-Cannon-Hub-{side}', f'cannon_wheel_{side}', metal, (x, 0.0, 0.45), 0.10, 0.16, rot=(0, math.pi / 2, 0), vertices=10)
+        cylinder(f'GEO-Cannon-Wheel-{side}', f'cannon_wheel_{side}', dark, (x, 0.0, 0.40), 0.40, 0.12, rot=(0, math.pi / 2, 0), vertices=16)
+        cylinder(f'GEO-Cannon-Hub-{side}', f'cannon_wheel_{side}', metal, (x, 0.0, 0.40), 0.10, 0.16, rot=(0, math.pi / 2, 0), vertices=10)
     cylinder('GEO-Cannon-Barrel', 'cannon_barrel', metal, (0, 0.78, 0.90), 0.11, 1.40, rot=(math.pi / 2, 0, 0), vertices=12)
     cylinder('GEO-Cannon-Muzzle', 'cannon_barrel', dark, (0, 1.48, 0.90), 0.14, 0.16, rot=(math.pi / 2, 0, 0), vertices=12)
     cylinder('GEO-Cannon-Breech', 'cannon_barrel', metal, (0, 0.08, 0.90), 0.15, 0.20, rot=(math.pi / 2, 0, 0), vertices=10)
-    box('GEO-Cannon-Axle', 'root', metal, (0, 0.0, 0.45), (1.40, 0.10, 0.09), bevel=0.02)
+    box('GEO-Cannon-Axle', 'root', metal, (0, 0.0, 0.40), (1.40, 0.10, 0.09), bevel=0.02)
 
     # Mortar group: base plate, tube and bipod.
-    cylinder('GEO-Mortar-Base', 'root', dark, (0, -0.10, 0.12), 0.55, 0.16, vertices=16)
+    cylinder('GEO-Mortar-Base', 'root', dark, (0, -0.10, 0.08), 0.55, 0.16, vertices=16)
     cylinder_between('GEO-Mortar-Tube', 'mortar_tube', metal, (0, 0.05, 0.18), (0, 0.48, 1.15), 0.16, vertices=14)
     cylinder('GEO-Mortar-Muzzle', 'mortar_tube', dark, (0, 0.50, 1.20), 0.18, 0.14, rot=(math.radians(-24), 0, 0), vertices=12)
     for side, sx in (('L', 1), ('R', -1)):
@@ -166,9 +166,9 @@ def build_meshes():
     box('GEO-Tank-Hull', 'root', tank, (0, 0.0, 0.82), (1.40, 2.40, 0.64), bevel=0.08)
     box('GEO-Tank-Glacis', 'root', tank, (0, 1.12, 0.86), (1.25, 0.30, 0.52), rot=(math.radians(-20), 0, 0), bevel=0.04)
     for side, x in (('L', 0.72), ('R', -0.72)):
-        box(f'GEO-Tank-Track-{side}', 'root', track, (x, 0.0, 0.36), (0.34, 2.55, 0.46), bevel=0.04)
+        box(f'GEO-Tank-Track-{side}', 'root', track, (x, 0.0, 0.23), (0.34, 2.55, 0.46), bevel=0.04)
         for i in range(4):
-            cylinder(f'GEO-Tank-Wheel-{side}-{i}', f'tank_wheel_{side}', dark, (x, -0.90 + i * 0.60, 0.34), 0.21, 0.12, rot=(0, math.pi / 2, 0), vertices=10)
+            cylinder(f'GEO-Tank-Wheel-{side}-{i}', f'tank_wheel_{side}', dark, (x, -0.90 + i * 0.60, 0.21), 0.21, 0.12, rot=(0, math.pi / 2, 0), vertices=10)
     cylinder('GEO-Tank-Turret', 'turret', tank, (0, -0.10, 1.34), 0.55, 0.42, vertices=12)
     box('GEO-Tank-Turret-Box', 'turret', tank, (0, -0.10, 1.50), (0.80, 0.76, 0.28), bevel=0.05)
     cylinder('GEO-Tank-Gun', 'tank_gun', metal, (0, 0.92, 1.35), 0.10, 1.40, rot=(math.pi / 2, 0, 0), vertices=12)

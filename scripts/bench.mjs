@@ -70,8 +70,8 @@ const RIG_BUDGETS = {
   // consolidated alpaca (2 draws: mesh + shadow).
   worker: { drawCalls: 40, triangles: 40000 },
   mounted: { drawCalls: 40, triangles: 12000 },
-  siege: { drawCalls: 40, triangles: 12000 },
-  tank: { drawCalls: 40, triangles: 12000 },
+  siege: { drawCalls: 24, triangles: 12000 },
+  tank: { drawCalls: 12, triangles: 12000 },
   animal: { drawCalls: 4, triangles: 5000 },
   mixedP95Ms: 16.6,
   fortificationsP99Ms: 12,
