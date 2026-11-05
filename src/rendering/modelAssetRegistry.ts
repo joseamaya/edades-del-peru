@@ -18,6 +18,8 @@ export interface ModelAssetDefinition {
   readonly yawOffset: number;
   /** Gameplay state -> clip name in the GLB. `idle` is required. */
   readonly clips: Partial<Record<RigClipState, string>>;
+  /** Optional one-shot clip used by `RigInstance.playDeath`. */
+  readonly deathClip?: string;
   /** Ground the bind-pose feet at y=0 (units and terrestrial fauna). */
   readonly ground: boolean;
   /** Extra world-space lift after grounding (avoids clip-driven foot penetration). */
@@ -31,6 +33,7 @@ export interface ModelAssetDefinition {
 const UAL_URL = modelUrls['../assets/models/ual_mannequin.glb'] ?? '';
 const ALPACA_URL = modelUrls['../assets/models/quaternius_alpaca.glb'] ?? '';
 const CARAL_WORKER_URL = modelUrls['../assets/models/caral_worker.glb'] ?? '';
+const MOUNTED_RIG_URL = modelUrls['../assets/models/mounted_rig.glb'] ?? '';
 
 /**
  * The mannequin is the pipeline's validation asset (Quaternius Universal
@@ -74,6 +77,25 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
       walk_carry: 'Walk_Carry_Loop',
       gather: 'Farm_Harvest',
       build: 'Push_Loop',
+    },
+  },
+  /**
+   * Project-authored low-poly horse and rider. The source is
+   * `art-src/blender/scenes/mounted_rig.blend`, built by
+   * `scripts/blender/build_mounted_rig.py`.
+   */
+  mounted_rig: {
+    url: MOUNTED_RIG_URL,
+    scale: 1,
+    yawOffset: Math.PI,
+    ground: true,
+    groundClearance: 0.02,
+    deathClip: 'Death',
+    clips: {
+      idle: 'Idle_Loop',
+      walk: 'Walk_Loop',
+      walk_carry: 'Walk_Loop',
+      attack: 'Attack',
     },
   },
   /**

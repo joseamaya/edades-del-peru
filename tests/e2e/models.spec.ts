@@ -74,3 +74,40 @@ test('local GLB rigs load, clone independently and animate without touching the 
   expect(afterDestroy.state).toBe('idle');
   expect(modelWarnings).toEqual([]);
 });
+
+test('m7 cavalry loads the mounted rig instead of the procedural horse', async ({ page }) => {
+  const warnings: string[] = [];
+  page.on('console', (msg) => {
+    if (msg.type() === 'warning' && msg.text().includes('[models]')) warnings.push(msg.text());
+  });
+  await page.goto('/?play=1&mission=m7_tupac_amaru&seed=1780&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  await page.getByRole('button', { name: /Comenzar misión/i }).click();
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game: { units: Map<string, { kind: string; rig: unknown }> } }).game;
+      return [...g.units.values()].filter((unit) => unit.kind === 'cavalry').every((unit) => unit.rig !== null);
+    },
+    null,
+    { timeout: 15_000 },
+  );
+  const state = await page.evaluate(() => {
+    const g = (
+      window as unknown as {
+        game: { units: Map<string, { kind: string; rig: { root: { name: string } } | null }> };
+      }
+    ).game;
+    const cavalry = [...g.units.values()].filter((unit) => unit.kind === 'cavalry');
+    const assets = (window as unknown as { __modelAssets: () => AssetStatus[] }).__modelAssets();
+    return {
+      cavalry: cavalry.map((unit) => unit.rig?.root.name ?? null),
+      mounted: assets.find((asset) => asset.id === 'mounted_rig')?.state,
+    };
+  });
+  expect(state.cavalry.length).toBeGreaterThan(0);
+  expect(state.cavalry.every((name) => name === 'rig:mounted_rig')).toBe(true);
+  expect(state.mounted).toBe('ready');
+  expect(warnings).toEqual([]);
+});

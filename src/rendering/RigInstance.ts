@@ -15,6 +15,7 @@ export class RigInstance {
   private readonly model: THREE.Object3D;
   private readonly mixer: THREE.AnimationMixer;
   private readonly actions = new Map<RigClipState, THREE.AnimationAction>();
+  private readonly deathAction: THREE.AnimationAction | null = null;
   private current: RigClipState | null = null;
   private variant: RigVariantHandle | null = null;
   readonly variantId: RigVariant | null;
@@ -40,6 +41,12 @@ export class RigInstance {
     this.root.add(this.model);
 
     this.mixer = new THREE.AnimationMixer(this.model);
+    const deathClip = asset.definition.deathClip ? asset.clipNames.get(asset.definition.deathClip) : undefined;
+    if (deathClip) {
+      this.deathAction = this.mixer.clipAction(deathClip);
+      this.deathAction.setLoop(THREE.LoopOnce, 1);
+      this.deathAction.clampWhenFinished = true;
+    }
     for (const state of RIG_CLIP_STATES) {
       const override = variant ? RIG_VARIANT_CLIPS[variant]?.[state] : undefined;
       const name = override === null ? undefined : (override ?? asset.definition.clips[state]);
@@ -68,6 +75,11 @@ export class RigInstance {
 
   get time(): number {
     return this.mixer.time;
+  }
+
+  /** Whether a dedicated death clip is registered for this asset. */
+  hasDeathClip(): boolean {
+    return this.deathAction !== null;
   }
 
   /** Whether the rig has a playable action for a state. */
@@ -101,11 +113,15 @@ export class RigInstance {
     this.variant?.setTask?.(actual);
   }
 
-  /** Freeze the current pose for a corpse; the caller topples the root. */
+  /** Play the rig's death clip when it has one, otherwise freeze the current pose. */
   playDeath(): void {
     if (this.disposed) return;
     this.mixer.stopAllAction();
     this.current = null;
+    if (!this.deathAction) return;
+    this.deathAction.reset();
+    this.deathAction.setEffectiveWeight(1);
+    this.deathAction.play();
   }
 
   /** Adjust the current clip's playback rate (walk speed matching). */

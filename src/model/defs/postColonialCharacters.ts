@@ -71,6 +71,10 @@ export function postColonialCultureForVariant(variant: string): PostColonialCult
   return culture ?? null;
 }
 
+export function postColonialCultureForCiv(civ: CivId): PostColonialCulture | null {
+  return POST_COLONIAL_CULTURES.find((culture) => POST_COLONIAL_SPECS[culture].civ === civ) ?? null;
+}
+
 export function postColonialRoleForVariant(variant: string): PostColonialRole {
   if (variant.includes('_ranged_')) return 'ranged';
   if (variant.includes('_missionary_')) return 'missionary';

@@ -10,6 +10,7 @@ import {
   unitModelAsset,
 } from '../src/model/defs/modelAssets';
 import { CivId, Era, HistoricalPeriod, UnitKind } from '../src/core/types';
+import { MOUNTED_SPECS } from '../src/model/defs/mountedCharacters';
 import {
   acquireRig,
   clearModelAssets,
@@ -22,6 +23,7 @@ import {
 
 const MODEL_URL = new URL('../src/assets/models/ual_mannequin.glb', import.meta.url);
 const WORKER_URL = new URL('../src/assets/models/caral_worker.glb', import.meta.url);
+const MOUNTED_URL = new URL('../src/assets/models/mounted_rig.glb', import.meta.url);
 let glb: ArrayBuffer;
 
 beforeAll(() => {
@@ -228,12 +230,51 @@ describe('rigged model assets', () => {
     expect(unitModelAsset(UnitKind.COMMISSAR, Era.REPUBLIC, CivId.PATRIOTAS)).toBeNull();
     expect(RIG_VARIANT_CLIPS.realistas_soldier_m?.attack).toBe('Punch_Jab');
     expect(RIG_VARIANT_CLIPS.republica_ranged_f?.attack).toBe('Punch_Jab');
-    expect(unitModelAsset(UnitKind.HUSSAR, Era.REPUBLIC, CivId.CHILE)).toBeNull();
-    expect(unitModelAsset(UnitKind.CAVALRY, Era.REPUBLIC, CivId.CHILE)).toBeNull();
+    expect(unitModelAsset(UnitKind.HUSSAR, Era.REPUBLIC, CivId.CHILE)).toEqual({
+      asset: 'mounted_rig',
+      variant: 'mounted_chile',
+    });
+    expect(unitModelAsset(UnitKind.CAVALRY, Era.VICEROYALTY, CivId.REALISTAS)).toEqual({
+      asset: 'mounted_rig',
+      variant: 'mounted_realistas',
+    });
+    expect(unitModelAsset(UnitKind.CAVALRY, Era.VICEROYALTY, CivId.INCA)).toEqual({
+      asset: 'mounted_rig',
+      variant: 'mounted_rebelde',
+    });
+    expect(unitModelAsset(UnitKind.CAVALRY, Era.CONTEMPORARY, CivId.REPUBLIC)).toBeNull();
+    expect(unitModelAsset(UnitKind.CAVALRY, Era.FORMATIVE, CivId.REALISTAS)).toBeNull();
+    expect(modelAssetIdsForMatch(HistoricalPeriod.VICEROYALTY, [CivId.REALISTAS])).toContain('mounted_rig');
+    expect(modelAssetIdsForMatch(HistoricalPeriod.ARCHAIC, [CivId.CARAL])).not.toContain('mounted_rig');
     expect(unitModelAsset(UnitKind.TANK, Era.REPUBLIC, CivId.CHILE)).toBeNull();
     expect(unitModelAsset(UnitKind.ARTILLERY, Era.REPUBLIC, CivId.CHILE)).toBeNull();
     expect(unitModelAsset(UnitKind.MORTAR, Era.REPUBLIC, CivId.CHILE)).toBeNull();
     expect(unitModelAsset(UnitKind.SOLDIER, Era.CONTEMPORARY, CivId.REPUBLIC)).toBeNull();
+  });
+
+  it('loads the mounted rig and dresses cavalry variants', async () => {
+    const data = fs.readFileSync(fileURLToPath(MOUNTED_URL));
+    const buffer = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer;
+    const asset = await loadModelAssetFromData('mounted_rig', buffer);
+    expect(asset.clipNames.has('Idle_Loop')).toBe(true);
+    expect(asset.clipNames.has('Walk_Loop')).toBe(true);
+    expect(asset.clipNames.has('Attack')).toBe(true);
+    const rig = acquireRig('mounted_rig', 'mounted_realistas')!;
+    expect(rig.hasState('idle')).toBe(true);
+    expect(rig.hasState('walk')).toBe(true);
+    expect(rig.hasState('attack')).toBe(true);
+    expect(rig.hasDeathClip()).toBe(true);
+    expect(rig.root.getObjectByName('GEO-Hat-Morion-Crown')?.visible).toBe(true);
+    expect(rig.root.getObjectByName('GEO-Hat-Bicorn-Crown')?.visible).toBe(false);
+    const trousers = rig.root.getObjectByName('GEO-Merged-Rider-Trousers') as THREE.Mesh;
+    expect((trousers.material as THREE.MeshStandardMaterial).color.getHex()).toBe(
+      MOUNTED_SPECS.mounted_realistas.trousers,
+    );
+    const sword = rig.root.getObjectByName('GEO-Rider-Sword-Blade') as THREE.Mesh;
+    expect((sword.material as THREE.MeshStandardMaterial).color.getHex()).not.toBe(
+      MOUNTED_SPECS.mounted_realistas.hatColor,
+    );
+    rig.dispose();
   });
 
   it('adds a coat, hat and firearm to a post-colonial rig', async () => {

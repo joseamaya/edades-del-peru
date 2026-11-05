@@ -12,20 +12,21 @@ import {
 import {
   POST_COLONIAL_CULTURES,
   POST_COLONIAL_ROLES,
-  POST_COLONIAL_SPECS,
-  type PostColonialCulture,
+  postColonialCultureForCiv,
   type PostColonialRigVariant,
   type PostColonialRole,
 } from './postColonialCharacters';
+import { MOUNTED_VARIANTS, mountedVariantForCiv, type MountedRigVariant } from './mountedCharacters';
 
 /** Registered rigged models. Add the id here and to the rendering registry. */
-export type ModelAssetId = 'ual_mannequin' | 'quaternius_alpaca' | 'caral_worker';
+export type ModelAssetId = 'ual_mannequin' | 'quaternius_alpaca' | 'caral_worker' | 'mounted_rig';
 
 /** CC0 Quaternius mannequin: pipeline demo/fallback fixture. */
 export const MANNEQUIN_ASSET_ID: ModelAssetId = 'ual_mannequin';
 export const RIG_DEMO_ASSET_ID: ModelAssetId = MANNEQUIN_ASSET_ID;
 /** Finished Caral worker asset (CC0 body/hair/clips + project-authored cotton cloth). */
 export const CARAL_WORKER_ASSET_ID: ModelAssetId = 'caral_worker';
+export const MOUNTED_RIG_ASSET_ID: ModelAssetId = 'mounted_rig';
 /** Eyes are too small to cast a readable shadow; the garments keep theirs. */
 export const CARAL_WORKER_SHADOW_SKIP_MESHES: readonly string[] = ['Eyes_f', 'Eyes_m'];
 
@@ -38,7 +39,8 @@ export type RigVariant =
   | 'inca_chasqui_f'
   | 'inca_chasqui_m'
   | AndeanRigVariant
-  | PostColonialRigVariant;
+  | PostColonialRigVariant
+  | MountedRigVariant;
 
 /** Animation states mapped to clips; `eat` is fauna-only. A rig may omit any state except `idle`. */
 export type RigClipState = 'idle' | 'walk' | 'walk_carry' | 'gather' | 'build' | 'attack' | 'eat';
@@ -88,6 +90,18 @@ const POST_COLONIAL_VARIANT_CLIPS = Object.fromEntries(
   ),
 ) as Partial<Record<PostColonialRigVariant, Partial<Record<RigClipState, string | null>>>>;
 
+const MOUNTED_CLIPS: Partial<Record<RigClipState, string | null>> = {
+  walk: 'Walk_Loop',
+  walk_carry: 'Walk_Loop',
+  gather: null,
+  build: null,
+  attack: 'Attack',
+};
+
+const MOUNTED_VARIANT_CLIPS = Object.fromEntries(
+  MOUNTED_VARIANTS.map((variant) => [variant, MOUNTED_CLIPS] as const),
+) as Partial<Record<MountedRigVariant, Partial<Record<RigClipState, string | null>>>>;
+
 const ANDEAN_VARIANT_CLIPS = Object.fromEntries(
   ANDEAN_CULTURES.flatMap((culture) =>
     (['f', 'm'] as const).flatMap((gender) =>
@@ -106,6 +120,7 @@ export const RIG_VARIANT_CLIPS: Partial<Record<RigVariant, Partial<Record<RigCli
   inca_chasqui_m: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
   ...ANDEAN_VARIANT_CLIPS,
   ...POST_COLONIAL_VARIANT_CLIPS,
+  ...MOUNTED_VARIANT_CLIPS,
 };
 
 /** Playback-rate reference for in-place walk clips (world units per second). */
@@ -161,6 +176,10 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
   if (kind === UnitKind.CARAVAN) {
     return { asset: 'quaternius_alpaca' };
   }
+  if ((kind === UnitKind.HUSSAR || kind === UnitKind.CAVALRY) && (era === Era.VICEROYALTY || era === Era.REPUBLIC)) {
+    const variant = mountedVariantForCiv(civ);
+    if (variant) return { asset: MOUNTED_RIG_ASSET_ID, variant };
+  }
   const postColonial = postColonialCultureForCiv(civ);
   if (postColonial && era === (postColonial === 'realistas' ? Era.VICEROYALTY : Era.REPUBLIC)) {
     const role: PostColonialRole | null =
@@ -192,10 +211,6 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
   return null;
 }
 
-function postColonialCultureForCiv(civ: CivId): PostColonialCulture | null {
-  return POST_COLONIAL_CULTURES.find((culture) => POST_COLONIAL_SPECS[culture].civ === civ) ?? null;
-}
-
 /** Models that must be ready before a match starts (all participating civs are covered). */
 export function modelAssetIdsForMatch(period: HistoricalPeriod, civs: readonly CivId[]): ModelAssetId[] {
   const era = getPeriod(period).level;
@@ -206,9 +221,17 @@ export function modelAssetIdsForMatch(period: HistoricalPeriod, civs: readonly C
     UnitKind.MUSKETEER,
     UnitKind.RIFLEMAN,
     UnitKind.MISSIONARY,
+    UnitKind.HUSSAR,
+    UnitKind.CAVALRY,
   ];
-  const rigged = civs.some(
-    (civ) => getCiv(civ).periods.includes(period) && kinds.some((kind) => unitModelAsset(kind, era, civ) !== null),
-  );
-  return [...(rigged ? [CARAL_WORKER_ASSET_ID] : []), 'quaternius_alpaca'];
+  const ids = new Set<ModelAssetId>();
+  for (const civ of civs) {
+    if (!getCiv(civ).periods.includes(period)) continue;
+    for (const kind of kinds) {
+      const choice = unitModelAsset(kind, era, civ);
+      if (choice) ids.add(choice.asset);
+    }
+  }
+  ids.add('quaternius_alpaca');
+  return [...ids];
 }

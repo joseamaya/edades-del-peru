@@ -23,6 +23,7 @@ import { applyPopulation } from '../game/systems/PopulationSystem';
 import { resolveConquest } from '../game/systems/VictorySystem';
 import { areaDamage, resolveAttackDamage, selectAreaTargets, selectNearestTarget } from '../game/systems/CombatSystem';
 import type { SaveData } from '../game/saveTypes';
+import type { RigInstance } from '../rendering/RigInstance';
 
 export interface DeathFx {
   view: EntityView;
@@ -36,6 +37,8 @@ export interface DeathFx {
   emitTimer: number;
   /** Seconds the fallen model stays in the scene before cleanup (units). */
   corpseDur?: number;
+  /** Optional rig mixer so a dedicated Death clip keeps advancing during the topple. */
+  rig?: RigInstance;
   cleanup: () => void;
 }
 
@@ -897,7 +900,7 @@ export class RuntimeController {
   cleanupDead(dt: number): void {
     for (const [id, u] of this.game.units) {
       if (u.dead) {
-        if (u.view) this.spawnDeathFx(u.view, 'unit', u.radius, () => detachUnit(u));
+        if (u.view) this.spawnDeathFx(u.view, 'unit', u.radius, () => detachUnit(u), u.rig);
         this.game.units.delete(id);
       }
     }
@@ -928,7 +931,13 @@ export class RuntimeController {
   }
 
   /** Register a topple/collapse animation for a just-removed entity's model. */
-  spawnDeathFx(view: EntityView, kind: 'unit' | 'building', radius: number, cleanup: () => void): void {
+  spawnDeathFx(
+    view: EntityView,
+    kind: 'unit' | 'building',
+    radius: number,
+    cleanup: () => void,
+    rig?: RigInstance | null,
+  ): void {
     const building = kind === 'building';
     if (building) {
       this.game.debris.spawn(
@@ -944,12 +953,13 @@ export class RuntimeController {
       view,
       t: 0,
       dur: building ? 1.1 : 0.6,
-      topple: building ? 0.12 : Math.PI * 0.5,
+      topple: building ? 0.12 : rig?.hasDeathClip() ? Math.PI * 0.25 : Math.PI * 0.5,
       sink: building ? radius * 0.55 : 0.06,
       baseY: view.group.position.y,
       radius,
       building,
       emitTimer: 0,
+      rig: rig ?? undefined,
       corpseDur: building ? undefined : 30,
       cleanup,
     });
@@ -959,6 +969,7 @@ export class RuntimeController {
     if (!this.game.deathFx.length) return;
     const alive: DeathFx[] = [];
     for (const fx of this.game.deathFx) {
+      fx.rig?.update(dt);
       fx.t += dt;
       const k = Math.min(1, fx.t / fx.dur);
       const e = k * k; // ease-in: the fall accelerates
