@@ -71,26 +71,27 @@ const ANDEAN_CLIP_OVERRIDES: Record<AndeanRole, Partial<Record<RigClipState, str
   scout: ANDEAN_NON_WORKER_CLIPS,
   soldier: { ...ANDEAN_NON_WORKER_CLIPS, attack: 'TreeChopping_Loop' },
   ranged: ANDEAN_NON_WORKER_CLIPS,
+  amauta: { ...ANDEAN_NON_WORKER_CLIPS, attack: null },
 };
 
-const POST_COLONIAL_VARIANT_CLIPS = Object.fromEntries(
-  POST_COLONIAL_CULTURES.flatMap((culture) =>
-    (['f', 'm'] as const).flatMap((gender) =>
-      POST_COLONIAL_ROLES.map(
-        (role) =>
-          [
-            `${culture}_${role}_${gender}`,
-            {
-              walk: 'Walk_Loop',
-              walk_carry: 'Walk_Loop',
-              gather: null,
-              build: null,
-              attack: role === 'missionary' ? null : 'Punch_Jab',
-            },
-          ] as const,
-      ),
-    ),
-  ),
+const POST_COLONIAL_ROLE_CLIPS: Record<PostColonialRole, Partial<Record<RigClipState, string | null>>> = {
+  soldier: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  ranged: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  missionary: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: null },
+  worker: {
+    walk: 'Walk_Loop',
+    walk_carry: 'Walk_Carry_Loop',
+    gather: 'Farm_Harvest',
+    build: 'Push_Loop',
+    attack: 'Punch_Jab',
+  },
+  scout: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+};
+
+const POST_COLONIAL_VARIANT_CLIPS = variantClips(
+  POST_COLONIAL_CULTURES,
+  POST_COLONIAL_ROLES,
+  (role) => POST_COLONIAL_ROLE_CLIPS[role],
 ) as Partial<Record<PostColonialRigVariant, Partial<Record<RigClipState, string | null>>>>;
 
 const MOUNTED_CLIPS: Partial<Record<RigClipState, string | null>> = {
@@ -117,26 +118,38 @@ const SIEGE_VARIANT_CLIPS = Object.fromEntries(
   SIEGE_VARIANTS.map((variant) => [variant, SIEGE_CLIPS] as const),
 ) as Partial<Record<SiegeRigVariant, Partial<Record<RigClipState, string | null>>>>;
 
-const ANDEAN_VARIANT_CLIPS = Object.fromEntries(
-  ANDEAN_CULTURES.flatMap((culture) =>
-    (['f', 'm'] as const).flatMap((gender) =>
-      ANDEAN_ROLES.map((role) => [`${culture}_${role}_${gender}`, ANDEAN_CLIP_OVERRIDES[role]] as const),
+function variantClips<R extends string>(
+  cultures: readonly string[],
+  roles: readonly R[],
+  clipsFor: (role: R) => Partial<Record<RigClipState, string | null>>,
+): Record<string, Partial<Record<RigClipState, string | null>>> {
+  return Object.fromEntries(
+    cultures.flatMap((culture) =>
+      (['f', 'm'] as const).flatMap((gender) =>
+        roles.map((role) => [`${culture}_${role}_${gender}`, clipsFor(role)] as const),
+      ),
     ),
-  ),
+  );
+}
+
+const ANDEAN_VARIANT_CLIPS = variantClips(
+  ANDEAN_CULTURES,
+  ANDEAN_ROLES,
+  (role) => ANDEAN_CLIP_OVERRIDES[role],
 ) as Partial<Record<AndeanRigVariant, Partial<Record<RigClipState, string | null>>>>;
 
 /** Per-variant clip overrides; `null` removes a state (falls back to idle). */
 export const RIG_VARIANT_CLIPS: Partial<Record<RigVariant, Partial<Record<RigClipState, string | null>>>> = {
+  ...ANDEAN_VARIANT_CLIPS,
+  ...POST_COLONIAL_VARIANT_CLIPS,
+  ...MOUNTED_VARIANT_CLIPS,
+  ...SIEGE_VARIANT_CLIPS,
   caral_worker_f: { attack: 'TreeChopping_Loop' },
   caral_worker_m: { attack: 'TreeChopping_Loop' },
   caral_scout_f: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
   caral_scout_m: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
   inca_chasqui_f: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
   inca_chasqui_m: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
-  ...ANDEAN_VARIANT_CLIPS,
-  ...POST_COLONIAL_VARIANT_CLIPS,
-  ...MOUNTED_VARIANT_CLIPS,
-  ...SIEGE_VARIANT_CLIPS,
 };
 
 /** Playback-rate reference for in-place walk clips (world units per second). */
@@ -171,8 +184,9 @@ export interface RigModelChoice {
 
 /**
  * Rigged model for a unit kind, or `null` to keep the procedural model.
- * The migration is progressive: Caral worker/scout, the Inca chasqui and the
- * pre-Hispanic Andean infantry share the same rig.
+ * Every pre-Hispanic Andean culture, the post-1532 humanoids and the Inca Amauta
+ * use the shared humanoid rig; contemporary Republic uniforms, its vehicles and
+ * the m7 Inca override stay procedural until a later pass.
  */
 export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): RigModelChoice | null {
   if (civ === CivId.CARAL && era === Era.FORMATIVE) {
@@ -199,7 +213,9 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
   const siegeVariant = siegeVariantFor(kind, era, civ);
   if (siegeVariant) return { asset: SIEGE_RIG_ASSET_ID, variant: siegeVariant };
   const postColonial = postColonialCultureForCiv(civ);
-  if (postColonial && era === (postColonial === 'realistas' ? Era.VICEROYALTY : Era.REPUBLIC)) {
+  const postColonialEra =
+    postColonial === 'realistas' ? era === Era.VICEROYALTY || era === Era.REPUBLIC : era === Era.REPUBLIC;
+  if (postColonial && postColonialEra) {
     const role: PostColonialRole | null =
       kind === UnitKind.SOLDIER
         ? 'soldier'
@@ -210,7 +226,11 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
           ? 'ranged'
           : kind === UnitKind.MISSIONARY
             ? 'missionary'
-            : null;
+            : kind === UnitKind.WORKER
+              ? 'worker'
+              : kind === UnitKind.SCOUT
+                ? 'scout'
+                : null;
     if (role) {
       const suffix = genderForId(id) === 'female' ? 'f' : 'm';
       return { asset: CARAL_WORKER_ASSET_ID, variant: `${postColonial}_${role}_${suffix}` };
@@ -225,6 +245,7 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
     if (kind === UnitKind.MUSKETEER || kind === UnitKind.RIFLEMAN) {
       return { asset: CARAL_WORKER_ASSET_ID, variant: variant('ranged') };
     }
+    if (kind === UnitKind.COMMISSAR) return { asset: CARAL_WORKER_ASSET_ID, variant: variant('amauta') };
   }
   return null;
 }
@@ -232,19 +253,7 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
 /** Models that must be ready before a match starts (all participating civs are covered). */
 export function modelAssetIdsForMatch(period: HistoricalPeriod, civs: readonly CivId[]): ModelAssetId[] {
   const era = getPeriod(period).level;
-  const kinds = [
-    UnitKind.WORKER,
-    UnitKind.SCOUT,
-    UnitKind.SOLDIER,
-    UnitKind.MUSKETEER,
-    UnitKind.RIFLEMAN,
-    UnitKind.MISSIONARY,
-    UnitKind.HUSSAR,
-    UnitKind.CAVALRY,
-    UnitKind.ARTILLERY,
-    UnitKind.MORTAR,
-    UnitKind.TANK,
-  ];
+  const kinds = Object.values(UnitKind);
   const ids = new Set<ModelAssetId>();
   for (const civ of civs) {
     // Campaign player civs may use a period outside their CivDef (m7 uses INCA in the Viceroyalty).

@@ -13,8 +13,14 @@ export const ANDEAN_CULTURES = [
   'chanca',
   'chimu',
   'inca',
+  'caral',
+  'cupisnique',
+  'nazca',
+  'chincha',
+  'collas_lupaca',
+  'huanca',
 ] as const;
-export const ANDEAN_ROLES = ['worker', 'scout', 'soldier', 'ranged'] as const;
+export const ANDEAN_ROLES = ['worker', 'scout', 'soldier', 'ranged', 'amauta'] as const;
 export type AndeanCulture = (typeof ANDEAN_CULTURES)[number];
 export type AndeanRole = (typeof ANDEAN_ROLES)[number];
 export type AndeanRigVariant = `${AndeanCulture}_${AndeanRole}_${'f' | 'm'}`;
@@ -45,6 +51,33 @@ export const ANDEAN_CIV: Record<AndeanCulture, CivId> = {
   chanca: CivId.CHANCA,
   chimu: CivId.CHIMU,
   inca: CivId.INCA,
+  caral: CivId.CARAL,
+  cupisnique: CivId.CUPISNIQUE,
+  nazca: CivId.NAZCA,
+  chincha: CivId.CHINCHA,
+  collas_lupaca: CivId.COLLAS_LUPACA,
+  huanca: CivId.HUANCA,
+};
+
+const GENERAL_ANDEAN_SPEC: AndeanSpec = {
+  metal: null,
+  helmet: false,
+  backflap: false,
+  ear: false,
+  belt: true,
+  shield: true,
+  manta: 'none',
+  macanaHead: 'stone',
+  pectoral: false,
+  facePaint: false,
+  shoulderSash: false,
+};
+
+const FORMATIVE_ANDEAN_SPEC: AndeanSpec = {
+  ...GENERAL_ANDEAN_SPEC,
+  belt: false,
+  shield: false,
+  manta: 'short',
 };
 
 /**
@@ -170,6 +203,12 @@ export const ANDEAN_SPECS: Record<AndeanCulture, AndeanSpec> = {
     facePaint: false,
     shoulderSash: true,
   },
+  caral: FORMATIVE_ANDEAN_SPEC,
+  cupisnique: FORMATIVE_ANDEAN_SPEC,
+  nazca: { ...GENERAL_ANDEAN_SPEC, manta: 'short' },
+  chincha: GENERAL_ANDEAN_SPEC,
+  collas_lupaca: GENERAL_ANDEAN_SPEC,
+  huanca: GENERAL_ANDEAN_SPEC,
 };
 
 export function andeanCultureForCiv(civ: CivId): AndeanCulture | null {
@@ -183,12 +222,13 @@ export function andeanCultureForEra(civ: CivId, era: Era): AndeanCulture | null 
 
 export function andeanCultureForVariant(variant: string): AndeanCulture | null {
   if (variant.startsWith('inca_chasqui_')) return null;
-  const culture = variant.split('_')[0] as AndeanCulture;
-  return (ANDEAN_CULTURES as readonly string[]).includes(culture) ? culture : null;
+  return ANDEAN_CULTURES.find((culture) => variant.startsWith(`${culture}_`)) ?? null;
 }
 
 export function andeanRoleForVariant(variant: string): AndeanRole | null {
-  const role = variant.split('_')[1] as AndeanRole;
+  const culture = andeanCultureForVariant(variant);
+  if (!culture) return null;
+  const role = variant.slice(culture.length + 1).split('_')[0] as AndeanRole;
   return ANDEAN_ROLES.includes(role) ? role : null;
 }
 

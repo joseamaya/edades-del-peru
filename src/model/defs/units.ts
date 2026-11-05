@@ -1,5 +1,6 @@
 import { CivId, Era, UnitKind, Resources, ZERO_RESOURCES, HistoricalPeriod } from '../../core/types';
 import { ERA_DEFS } from './eras';
+import { getTech, techAvailable } from './techs';
 
 export type DamageClass = 'light' | 'heavy' | 'fortified';
 
@@ -848,6 +849,17 @@ export function getUnitStats(kind: UnitKind, era: Era): UnitStats {
 /** Earliest historical period in which a unit is plausible (chronology guard). */
 export function unitMinPeriod(kind: UnitKind): HistoricalPeriod {
   return UNIT_ARCHETYPES[kind].minPeriod ?? HistoricalPeriod.ARCHAIC;
+}
+
+/** Period availability: chronology plus whether the required techs exist in that period (not researched state). */
+export function unitTrainableInPeriod(kind: UnitKind, period: HistoricalPeriod, civ?: CivId): boolean {
+  if (unitMinPeriod(kind) > period) return false;
+  const required = UNIT_ARCHETYPES[kind].requiresTech;
+  if (!required) return true;
+  return required.every((id) => {
+    const tech = getTech(id);
+    return tech !== undefined && techAvailable(tech, period, civ);
+  });
 }
 
 /** Conversion units (Amauta, Misionero) can convert enemy units. */

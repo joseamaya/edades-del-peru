@@ -10,6 +10,9 @@ import {
   unitModelAsset,
 } from '../src/model/defs/modelAssets';
 import { CivId, Era, HistoricalPeriod, UnitKind } from '../src/core/types';
+import { CIVS } from '../src/model/defs/civs';
+import { getPeriod } from '../src/model/defs/periods';
+import { unitTrainableInPeriod } from '../src/model/defs/units';
 import { MOUNTED_SPECS } from '../src/model/defs/mountedCharacters';
 import { siegeSpecForVariant } from '../src/model/defs/siegeCharacters';
 import {
@@ -261,6 +264,137 @@ describe('rigged model assets', () => {
       variant: 'siege_mortar_chile',
     });
     expect(unitModelAsset(UnitKind.SOLDIER, Era.CONTEMPORARY, CivId.REPUBLIC)).toBeNull();
+  });
+
+  it('maps the remaining pre-Hispanic cultures and the Caral infantry', () => {
+    for (const [civ, culture, era, period] of [
+      [CivId.CUPISNIQUE, 'cupisnique', Era.REGIONAL_STATES, HistoricalPeriod.EARLY_HORIZON],
+      [CivId.NAZCA, 'nazca', Era.REGIONAL_STATES, HistoricalPeriod.EARLY_INTERMEDIATE],
+      [CivId.CHINCHA, 'chincha', Era.TAHUANTINSUYO, HistoricalPeriod.LATE_INTERMEDIATE],
+      [CivId.COLLAS_LUPACA, 'collas_lupaca', Era.TAHUANTINSUYO, HistoricalPeriod.LATE_INTERMEDIATE],
+      [CivId.HUANCA, 'huanca', Era.TAHUANTINSUYO, HistoricalPeriod.LATE_INTERMEDIATE],
+    ] as const) {
+      for (const [kind, role] of [
+        [UnitKind.WORKER, 'worker'],
+        [UnitKind.SCOUT, 'scout'],
+        [UnitKind.SOLDIER, 'soldier'],
+        [UnitKind.MUSKETEER, 'ranged'],
+        [UnitKind.RIFLEMAN, 'ranged'],
+      ] as const) {
+        expect(unitModelAsset(kind, era, civ, 2)).toEqual({
+          asset: 'caral_worker',
+          variant: `${culture}_${role}_f`,
+        });
+      }
+      expect(modelAssetIdsForMatch(period, [civ])).toContain('caral_worker');
+    }
+    expect(unitModelAsset(UnitKind.SOLDIER, Era.FORMATIVE, CivId.CARAL, 3)).toEqual({
+      asset: 'caral_worker',
+      variant: 'caral_soldier_m',
+    });
+    expect(unitModelAsset(UnitKind.MUSKETEER, Era.FORMATIVE, CivId.CARAL, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'caral_ranged_f',
+    });
+  });
+
+  it('maps the Amauta to an unarmed Inca variant', () => {
+    expect(unitModelAsset(UnitKind.COMMISSAR, Era.TAHUANTINSUYO, CivId.INCA, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'inca_amauta_f',
+    });
+    expect(RIG_VARIANT_CLIPS.inca_amauta_f?.attack).toBeNull();
+    expect(modelAssetIdsForMatch(HistoricalPeriod.LATE_HORIZON, [CivId.INCA])).toContain('caral_worker');
+  });
+
+  it('covers Realistas in the Independence period and the post-1532 workers and scouts', () => {
+    expect(unitModelAsset(UnitKind.SOLDIER, Era.REPUBLIC, CivId.REALISTAS, 3)).toEqual({
+      asset: 'caral_worker',
+      variant: 'realistas_soldier_m',
+    });
+    expect(unitModelAsset(UnitKind.SNIPER, Era.REPUBLIC, CivId.REALISTAS, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'realistas_ranged_f',
+    });
+    expect(unitModelAsset(UnitKind.MISSIONARY, Era.REPUBLIC, CivId.REALISTAS, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'realistas_missionary_f',
+    });
+    expect(unitModelAsset(UnitKind.WORKER, Era.REPUBLIC, CivId.REALISTAS, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'realistas_worker_f',
+    });
+    expect(unitModelAsset(UnitKind.SCOUT, Era.REPUBLIC, CivId.REALISTAS, 3)).toEqual({
+      asset: 'caral_worker',
+      variant: 'realistas_scout_m',
+    });
+    expect(unitModelAsset(UnitKind.WORKER, Era.VICEROYALTY, CivId.REALISTAS, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'realistas_worker_f',
+    });
+    expect(unitModelAsset(UnitKind.SCOUT, Era.REPUBLIC, CivId.PATRIOTAS, 3)).toEqual({
+      asset: 'caral_worker',
+      variant: 'patriotas_scout_m',
+    });
+    expect(unitModelAsset(UnitKind.WORKER, Era.REPUBLIC, CivId.REPUBLIC, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'republica_worker_f',
+    });
+    expect(unitModelAsset(UnitKind.SCOUT, Era.REPUBLIC, CivId.CHILE, 3)).toEqual({
+      asset: 'caral_worker',
+      variant: 'chile_scout_m',
+    });
+    expect(RIG_VARIANT_CLIPS.realistas_worker_f?.gather).toBe('Farm_Harvest');
+    expect(RIG_VARIANT_CLIPS.republica_worker_m?.build).toBe('Push_Loop');
+    expect(RIG_VARIANT_CLIPS.republica_worker_m?.walk_carry).toBe('Walk_Carry_Loop');
+    expect(modelAssetIdsForMatch(HistoricalPeriod.INDEPENDENCE, [CivId.REALISTAS])).toContain('caral_worker');
+  });
+
+  it('covers every trainable unit combination or documents the deferral', () => {
+    // Contemporary Republic units (uniform and vehicles) and the m7 Inca override are deferred; see #327.
+    const contemporaryRepublic = [
+      UnitKind.WORKER,
+      UnitKind.SOLDIER,
+      UnitKind.MUSKETEER,
+      UnitKind.RIFLEMAN,
+      UnitKind.SNIPER,
+      UnitKind.SCOUT,
+      UnitKind.MISSIONARY,
+      UnitKind.HUSSAR,
+      UnitKind.ANTI_AIR,
+      UnitKind.NUCLEAR,
+    ];
+    const m7Inca = [
+      UnitKind.WORKER,
+      UnitKind.SOLDIER,
+      UnitKind.MUSKETEER,
+      UnitKind.RIFLEMAN,
+      UnitKind.SNIPER,
+      UnitKind.SCOUT,
+      UnitKind.MISSIONARY,
+    ];
+    const deferred = new Set([
+      ...contemporaryRepublic.map((kind) => `${CivId.REPUBLIC}@${HistoricalPeriod.CONTEMPORARY}:${kind}`),
+      ...m7Inca.map((kind) => `${CivId.INCA}@${HistoricalPeriod.VICEROYALTY}:${kind}`),
+    ]);
+    const combos: { civ: CivId; period: HistoricalPeriod; kind: UnitKind }[] = [];
+    for (const civ of CIVS) {
+      for (const period of civ.periods) {
+        for (const kind of Object.values(UnitKind)) {
+          if (unitTrainableInPeriod(kind, period, civ.id)) combos.push({ civ: civ.id, period, kind });
+        }
+      }
+    }
+    for (const kind of Object.values(UnitKind)) {
+      if (unitTrainableInPeriod(kind, HistoricalPeriod.VICEROYALTY, CivId.INCA)) {
+        combos.push({ civ: CivId.INCA, period: HistoricalPeriod.VICEROYALTY, kind });
+      }
+    }
+    const missing = combos.filter(
+      ({ civ, period, kind }) =>
+        unitModelAsset(kind, getPeriod(period).level, civ) === null && !deferred.has(`${civ}@${period}:${kind}`),
+    );
+    expect(missing).toEqual([]);
   });
 
   it('loads the mounted rig and dresses cavalry variants', async () => {

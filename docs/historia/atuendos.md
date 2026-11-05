@@ -125,6 +125,14 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
 
 > **Implementación riggeada (m7–m8).** Los soldados, fusileros y misioneros de Realistas/Patriotas/República/Chile usan el rig humanoide compartido con casaca, tocado y fusil (el soldado virreinal añade sable) como abstracción de la tabla de era. La caballería montada usa `mounted_rig.glb` (caballo + jinete) con la paleta y el tocado de la tabla, salvo la caballería contemporánea de la República, que usa la variante tanque de `siege_rig.glb`; la variante `mounted_rebelde` de m7 representa caballería rebelde tardocolonial y **no** un atuendo tahuantinsuyo. La artillería, el mortero y el tanque usan `siege_rig.glb` (diseño abstracto, sin una pieza o uniforme concreto). El Amauta andino (unidad `commissar`) no es un comisario colonial y también queda fuera. La revisión completa de atuendos y procedencia sigue pendiente en #241c.
 
+> **Implementación riggeada (cobertura restante, #327).** Caral, Cupisnique, Nazca, Chincha, Collas/Lupaca y
+> Huanca usan el rig andino compartido. Donde las prendas concretas no están documentadas (§2), se reutiliza
+> la abstracción general (túnica/wrap, cinta, manta simple y, cuando la tabla de era lo permite, rodela y
+> macana); no se postulan prendas específicas. El Amauta (`commissar`) usa la variante `amauta` sin armas de su
+> cultura andina; en la práctica el tech lo limita al Horizonte Tardío inca (§5bis). Los trabajadores y exploradores post-1532 usan la paleta de su cultura sin tocado
+> ni arma, y el trabajador conserva el bulto de carga; es una abstracción de indumentaria civil no documentada.
+> La República contemporánea y los vehículos contemporáneos (moto, AA, cohetes) quedan pendientes en #327.
+
 > **Implementación riggeada (m4–m6).** Wari añade el disco pectoral (pecho/espalda); Chanca, la pintura
 > facial en guerreros; Chimú, orejeras de metal; e Inca, el canesú rojo. Tiahuanaco comparte la
 > diadema/abstracción textil porque sus prendas concretas no están documentadas. La túnica/wrap, el escudo, la

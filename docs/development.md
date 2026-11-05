@@ -171,10 +171,11 @@ Definition of Done and the building audit see
   from `amount / maxAmount` in `subtract` and `applySave`, so save/load and the resource simulation are
   unchanged. The herd has no entities, obstacles or collision; teardown disposes only its per-herd materials.
 - **Rigged 3D models (optional, glTF/GLB)**: `src/model/defs/modelAssets.ts` maps a unit kind to a registered
-  asset id plus an optional presentation variant. The **Caral worker** (Caral + Arcaico/Formative matches), the
-  **mounted cavalry** (`mounted_rig`, Viceroyalty/Republic `HUSSAR`/`CAVALRY`) and the **siege/tank rig**
-  (`siege_rig`, `ARTILLERY`/`MORTAR`/`TANK`) are mapped; other units still use the procedural path, so
-  #109/#241 opt in progressively.
+  asset id plus an optional presentation variant. The **shared humanoid rig** covers the Caral worker/scout, the
+  Inca chasqui and Amauta, every pre-Hispanic Andean culture, and the post-1532 infantry, workers and scouts;
+  the **mounted cavalry** (`mounted_rig`, Viceroyalty/Republic `HUSSAR`/`CAVALRY`) and the **siege/tank rig**
+  (`siege_rig`, `ARTILLERY`/`MORTAR`/`TANK`) cover the vehicles. Contemporary Republic uniforms and its vehicles
+  (motorcycle, AA, rockets) still use the procedural path until a later #327 pass.
   `modelAssetIdsForMatch` lists the models to preload during `boot()` for every participating civilization. Assets live in
   `src/assets/models/*.glb`, are resolved by `src/rendering/modelAssetRegistry.ts` (`import.meta.glob` with
   `?url`, hashed by Vite) and loaded by `src/rendering/ModelAssets.ts` with `GLTFLoader`. The shared

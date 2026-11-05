@@ -33,7 +33,8 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   const root = rig.root;
   const chasqui = variant.startsWith('inca_chasqui');
   const scout = variant.startsWith('caral_scout');
-  const andeanCulture: AndeanCulture | null = andeanCultureForVariant(variant);
+  const finishedCaralLook = variant.startsWith('caral_worker') || variant.startsWith('caral_scout');
+  const andeanCulture: AndeanCulture | null = finishedCaralLook ? null : andeanCultureForVariant(variant);
   const spec = andeanCulture ? ANDEAN_SPECS[andeanCulture] : null;
   const palette = andeanCulture ? andeanPalette(andeanCulture) : null;
   const andean = spec !== null;
@@ -190,7 +191,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     attach('hand_r', tool, hand.clone().addScaledVector(toBody, 0.03));
   }
 
-  if (spec && palette && role !== 'worker' && role !== 'scout') {
+  if (spec && palette && role !== 'worker' && role !== 'scout' && role !== 'amauta') {
     const addMesh = (geometry: THREE.BufferGeometry, material: THREE.Material, name: string): THREE.Mesh => {
       const mesh = new THREE.Mesh(trackGeometry(geometry), material);
       mesh.name = name;
