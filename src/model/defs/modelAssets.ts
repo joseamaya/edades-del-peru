@@ -82,7 +82,7 @@ const ANDEAN_CLIP_OVERRIDES: Record<AndeanRole, Partial<Record<RigClipState, str
   amauta: { ...ANDEAN_NON_WORKER_CLIPS, attack: null },
 };
 
-const POST_COLONIAL_ROLE_CLIPS: Record<PostColonialRole, Partial<Record<RigClipState, string | null>>> = {
+const FIELD_ROLE_CLIPS = {
   soldier: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
   ranged: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
   missionary: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: null },
@@ -94,7 +94,12 @@ const POST_COLONIAL_ROLE_CLIPS: Record<PostColonialRole, Partial<Record<RigClipS
     attack: 'Punch_Jab',
   },
   scout: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
-};
+} satisfies Record<PostColonialRole, Partial<Record<RigClipState, string | null>>>;
+
+const POST_COLONIAL_ROLE_CLIPS: Record<
+  PostColonialRole,
+  Partial<Record<RigClipState, string | null>>
+> = FIELD_ROLE_CLIPS;
 
 const POST_COLONIAL_VARIANT_CLIPS = variantClips(
   POST_COLONIAL_CULTURES,
@@ -103,17 +108,8 @@ const POST_COLONIAL_VARIANT_CLIPS = variantClips(
 ) as Partial<Record<PostColonialRigVariant, Partial<Record<RigClipState, string | null>>>>;
 
 const MODERN_ROLE_CLIPS: Record<ModernRole, Partial<Record<RigClipState, string | null>>> = {
-  soldier: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
-  ranged: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
-  missionary: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: null },
-  worker: {
-    walk: 'Walk_Loop',
-    walk_carry: 'Walk_Carry_Loop',
-    gather: 'Farm_Harvest',
-    build: 'Push_Loop',
-    attack: 'Punch_Jab',
-  },
-  scout: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
+  ...FIELD_ROLE_CLIPS,
+  sniper: FIELD_ROLE_CLIPS.ranged,
 };
 
 const MODERN_VARIANT_CLIPS = variantClips(MODERN_CULTURES, MODERN_ROLES, (role) => MODERN_ROLE_CLIPS[role]) as Partial<
@@ -244,15 +240,17 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
     const role: ModernRole | null =
       kind === UnitKind.SOLDIER
         ? 'soldier'
-        : kind === UnitKind.MUSKETEER || kind === UnitKind.RIFLEMAN || kind === UnitKind.SNIPER
-          ? 'ranged'
-          : kind === UnitKind.MISSIONARY
-            ? 'missionary'
-            : kind === UnitKind.WORKER
-              ? 'worker'
-              : kind === UnitKind.SCOUT
-                ? 'scout'
-                : null;
+        : kind === UnitKind.SNIPER
+          ? 'sniper'
+          : kind === UnitKind.MUSKETEER || kind === UnitKind.RIFLEMAN
+            ? 'ranged'
+            : kind === UnitKind.MISSIONARY
+              ? 'missionary'
+              : kind === UnitKind.WORKER
+                ? 'worker'
+                : kind === UnitKind.SCOUT
+                  ? 'scout'
+                  : null;
     if (role) {
       const suffix = genderForId(id) === 'female' ? 'f' : 'm';
       return { asset: CARAL_WORKER_ASSET_ID, variant: `${modernCulture}_${role}_${suffix}` };

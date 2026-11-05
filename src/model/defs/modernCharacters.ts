@@ -1,7 +1,8 @@
 import { CivId } from '../../core/types';
+import { cultureForVariant, roleForVariant } from './variantHelpers';
 
 export const MODERN_CULTURES = ['contemporary_republica'] as const;
-export const MODERN_ROLES = ['soldier', 'ranged', 'missionary', 'worker', 'scout'] as const;
+export const MODERN_ROLES = ['soldier', 'ranged', 'sniper', 'missionary', 'worker', 'scout'] as const;
 
 export type ModernCulture = (typeof MODERN_CULTURES)[number];
 export type ModernRole = (typeof MODERN_ROLES)[number];
@@ -26,22 +27,18 @@ export const MODERN_SPECS: Record<ModernCulture, ModernSpec> = {
   },
 };
 
-export function isModernVariant(variant: string): variant is ModernRigVariant {
-  return (MODERN_CULTURES as readonly string[]).some((culture) => variant.startsWith(`${culture}_`));
+export function modernCultureForVariant(variant: string): ModernCulture | null {
+  return cultureForVariant(MODERN_CULTURES, variant);
 }
 
-export function modernCultureForVariant(variant: string): ModernCulture | null {
-  return MODERN_CULTURES.find((culture) => variant.startsWith(`${culture}_`)) ?? null;
+export function isModernVariant(variant: string): variant is ModernRigVariant {
+  return modernCultureForVariant(variant) !== null;
 }
 
 export function modernRoleForVariant(variant: string): ModernRole {
-  if (variant.includes('_ranged_')) return 'ranged';
-  if (variant.includes('_missionary_')) return 'missionary';
-  if (variant.includes('_worker_')) return 'worker';
-  if (variant.includes('_scout_')) return 'scout';
-  return 'soldier';
+  return roleForVariant(MODERN_ROLES, variant) ?? 'soldier';
 }
 
 export function modernCultureForCiv(civ: CivId): ModernCulture | null {
-  return civ === CivId.REPUBLIC ? 'contemporary_republica' : null;
+  return MODERN_CULTURES.find((culture) => MODERN_SPECS[culture].civ === civ) ?? null;
 }

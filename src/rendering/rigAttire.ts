@@ -15,6 +15,34 @@ export interface RigAttireTools {
   dispose(): void;
 }
 
+/** Show the shared humanoid body and hide every culture-specific attachment. */
+export function showSharedHumanoidBody(root: THREE.Object3D, male: boolean): void {
+  const show = (name: string, visible: boolean): void => {
+    const object = root.getObjectByName(name);
+    if (object) object.visible = visible;
+  };
+  show('Body_f', !male);
+  show('Body_m', male);
+  show('Hair_f', !male);
+  show('Hair_m', male);
+  show('Eyes_f', !male);
+  show('Eyes_m', male);
+  show('Eyebrows_f', !male);
+  show('Eyebrows_m', male);
+  show('attire_tunic_f', !male);
+  show('attire_tunic_m', male);
+  show('attire_skirt_f', !male);
+  show('attire_wrap_m', male);
+  show('attire_skirt_chasqui_f', false);
+  show('attire_belt_chasqui', false);
+  show('attire_sash', false);
+  show('attire_headband', false);
+  show('attire_mantle', false);
+  show('attire_canteen', false);
+  show('attire_carry', false);
+  show('attire_tool', false);
+}
+
 export function createRigAttireTools(root: THREE.Object3D): RigAttireTools {
   const ownedGeometries: THREE.BufferGeometry[] = [];
   const ownedMaterials: THREE.Material[] = [];

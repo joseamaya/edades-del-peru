@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import type { RigClipState, RigVariant } from '../model/defs/modelAssets';
 import type { RigInstance } from './RigInstance';
 import type { RigVariantHandle } from './rigVariants';
-import { createRigAttireTools } from './rigAttire';
+import { createRigAttireTools, showSharedHumanoidBody } from './rigAttire';
 import {
   POST_COLONIAL_SPECS,
   isPostColonialVariant,
@@ -26,28 +26,9 @@ export function dressPostColonial(rig: RigInstance, variant: RigVariant): RigVar
   const root = rig.root;
   const male = variant.endsWith('_m');
   const tools = createRigAttireTools(root);
-  const { track, material, show, tint, bonePosition, attach, dispose } = tools;
+  const { track, material, tint, bonePosition, attach, dispose } = tools;
 
-  show('Body_f', !male);
-  show('Body_m', male);
-  show('Hair_f', !male);
-  show('Hair_m', male);
-  show('Eyes_f', !male);
-  show('Eyes_m', male);
-  show('Eyebrows_f', !male);
-  show('Eyebrows_m', male);
-  show('attire_tunic_f', !male);
-  show('attire_tunic_m', male);
-  show('attire_skirt_f', !male);
-  show('attire_wrap_m', male);
-  show('attire_skirt_chasqui_f', false);
-  show('attire_belt_chasqui', false);
-  show('attire_sash', false);
-  show('attire_headband', false);
-  show('attire_mantle', false);
-  show('attire_canteen', false);
-  show('attire_carry', false);
-  show('attire_tool', false);
+  showSharedHumanoidBody(root, male);
   tint(male ? 'attire_tunic_m' : 'attire_tunic_f', spec.coat);
   tint(male ? 'attire_wrap_m' : 'attire_skirt_f', spec.trousers);
   root.updateMatrixWorld(true);

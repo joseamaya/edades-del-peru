@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import type { RigClipState, RigVariant } from '../model/defs/modelAssets';
 import type { RigInstance } from './RigInstance';
 import type { RigVariantHandle } from './rigVariants';
-import { createRigAttireTools } from './rigAttire';
+import { createRigAttireTools, showSharedHumanoidBody } from './rigAttire';
 import {
   MODERN_SPECS,
   isModernVariant,
@@ -21,32 +21,13 @@ export function dressModern(rig: RigInstance, variant: RigVariant): RigVariantHa
   if (!culture) return null;
   const spec = MODERN_SPECS[culture];
   const role = modernRoleForVariant(variant);
-  const armed = role === 'soldier' || role === 'ranged';
+  const armed = role === 'soldier' || role === 'ranged' || role === 'sniper';
   const root = rig.root;
   const male = variant.endsWith('_m');
   const tools = createRigAttireTools(root);
-  const { track, material, show, tint, bonePosition, attach, dispose } = tools;
+  const { track, material, tint, bonePosition, attach, dispose } = tools;
 
-  show('Body_f', !male);
-  show('Body_m', male);
-  show('Hair_f', !male);
-  show('Hair_m', male);
-  show('Eyes_f', !male);
-  show('Eyes_m', male);
-  show('Eyebrows_f', !male);
-  show('Eyebrows_m', male);
-  show('attire_tunic_f', !male);
-  show('attire_tunic_m', male);
-  show('attire_skirt_f', !male);
-  show('attire_wrap_m', male);
-  show('attire_skirt_chasqui_f', false);
-  show('attire_belt_chasqui', false);
-  show('attire_sash', false);
-  show('attire_headband', false);
-  show('attire_mantle', false);
-  show('attire_canteen', false);
-  show('attire_carry', false);
-  show('attire_tool', false);
+  showSharedHumanoidBody(root, male);
   tint(male ? 'attire_tunic_m' : 'attire_tunic_f', spec.uniform);
   tint(male ? 'attire_wrap_m' : 'attire_skirt_f', spec.trousers);
   root.updateMatrixWorld(true);
@@ -77,10 +58,17 @@ export function dressModern(rig: RigInstance, variant: RigVariant): RigVariantHa
   if (hand && armed) {
     const weapon = new THREE.Group();
     weapon.name = 'attire_modern_weapon';
-    const barrel = new THREE.Mesh(track(new THREE.CylinderGeometry(0.012, 0.014, 0.62, 6)), metalMat);
+    const isSniper = role === 'sniper';
+    const barrel = new THREE.Mesh(track(new THREE.CylinderGeometry(0.012, 0.014, isSniper ? 0.78 : 0.62, 6)), metalMat);
     barrel.rotation.x = Math.PI / 2;
-    barrel.position.set(0, 0.04, -0.24);
+    barrel.position.set(0, 0.04, isSniper ? -0.32 : -0.24);
     weapon.add(barrel);
+    if (isSniper) {
+      const scope = new THREE.Mesh(track(new THREE.CylinderGeometry(0.018, 0.018, 0.16, 6)), metalMat);
+      scope.rotation.x = Math.PI / 2;
+      scope.position.set(0, 0.1, 0.02);
+      weapon.add(scope);
+    }
     const receiver = new THREE.Mesh(track(new THREE.BoxGeometry(0.06, 0.08, 0.3)), metalMat);
     receiver.position.set(0, 0, 0.1);
     weapon.add(receiver);
