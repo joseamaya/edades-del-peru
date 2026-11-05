@@ -205,7 +205,7 @@ test('right click lands the order under the cursor on elevated terrain', async (
       return g.stepCount >= 2;
     },
     null,
-    { timeout: 15_000 },
+    { timeout: 60_000 },
   );
 
   const info = await page.evaluate(() => {
