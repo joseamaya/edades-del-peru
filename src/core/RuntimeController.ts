@@ -1142,7 +1142,7 @@ export class RuntimeController {
     } catch {
       /* noop */
     }
-    // ?play=1 avoids showing the main menu again after reloading
+    // A fresh match must not inherit menu/load/replay state from the previous screen.
     const url = new URL(location.href);
     url.searchParams.set('play', '1');
     url.searchParams.delete('menu');

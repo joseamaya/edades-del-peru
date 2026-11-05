@@ -724,7 +724,7 @@ rigged bird is added, and evaluate per-species LOD/update throttling at the 16-a
 - `Game` delegates input to `InputController`, selection/UI helpers to `SelectionController`, world/mission decoration to `WorldViewDecor`, opening spawns to `StartBaseBuilder`, and the simulation/render loop + save/combat plumbing to `RuntimeController`; opening spawns go through `StartBaseBuilder`.
 - `src/main.ts` exposes `window.game` (and `window.THREE`) for the console and scripts.
 - The app shows the **main menu by default**; enter the match directly with `?play=1` or any debug param.
-  `resetGame()` reloads with `?play=1`.
+  `resetGame()` reloads with `?play=1&mission=…` and clears `menu`/`load`/`replay`.
 - URL params: `?play=1`, `?menu=0/1`, `?load=1`, `?replay=1`, `?seed=`, `?fog=0`, `?low=1`, `?speed=`, `?era=N`,
   `?period=N`, `?mission=ID`, `?rig=1` (mount two independent rigged-model instances for the GLB pipeline),
   `?lod=0/1` (Caral site LOD; LOD1 by default), `?noloop=1` (do not auto-start the loop; tests drive fixed steps from step 0),

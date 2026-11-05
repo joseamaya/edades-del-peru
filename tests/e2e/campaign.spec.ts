@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('starting a campaign from the menu launches the selected mission', async ({ page }) => {
+test('starting a campaign from the menu launches the selected mission', { tag: '@smoke' }, async ({ page }) => {
   await page.goto('/?menu=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
