@@ -6,7 +6,7 @@ import { MAP_LABEL } from '../core/Config';
 import { artForMission } from '../art/manifest';
 import { artFigureHtml, includeUnreviewedArt } from './ArtFigure';
 import { techTreeHtml } from './TechTree';
-import { uniqueTechsForCiv, uniqueUnitsForCiv } from '../model/defs/unique';
+import { uniqueTechsForCiv, uniqueUnitGapForCiv, uniqueUnitsForCiv } from '../model/defs/unique';
 import { t } from '../i18n';
 
 /**
@@ -130,6 +130,7 @@ function civTab(): CodexItem[] {
       const bonus = c.bonuses.map((b) => `<li>${b}</li>`).join('');
       const units = uniqueUnitsForCiv(c.id);
       const techs = uniqueTechsForCiv(c.id);
+      const gap = uniqueUnitGapForCiv(c.id);
       const unitList = units.length
         ? units
             .map(
@@ -137,7 +138,9 @@ function civTab(): CodexItem[] {
                 `<li><b>${u.name}</b> — ${u.description} <span class="src">${t('hud.codex.source')} ${u.source ?? '—'}</span></li>`,
             )
             .join('')
-        : `<li>${t('hud.codex.noUniqueUnit')}</li>`;
+        : gap
+          ? `<li>${t('hud.codex.noUniqueUnit')} — ${gap.reason} <span class="src">${t('hud.codex.source')} ${gap.source}</span></li>`
+          : `<li>${t('hud.codex.noUniqueUnit')}</li>`;
       const techList = techs.length
         ? techs
             .map(

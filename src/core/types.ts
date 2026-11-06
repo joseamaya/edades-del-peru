@@ -92,6 +92,8 @@ export enum UnitKind {
   NUCLEAR = 'nuclear', // atomic-era tactical weapon (area)
 
   MOCHE_WARRIOR = 'moche_warrior', // unique Moche infantry
+  RECUAY_WARRIOR = 'recuay_warrior', // unique Recuay infantry
+  WARI_GUARDIAN = 'wari_guardian', // unique Wari infantry
   INCA_WARRIOR = 'inca_warrior', // unique Inca infantry
 }
 

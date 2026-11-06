@@ -27,7 +27,7 @@ import {
   unitMinPeriod,
 } from '../model/defs/units';
 import { TECHS, techAvailable } from '../model/defs/techs';
-import { uniqueTechsForCiv, uniqueUnitsForCiv } from '../model/defs/unique';
+import { uniqueTechsForCiv, uniqueUnitGapForCiv, uniqueUnitsForCiv } from '../model/defs/unique';
 import { ERA_DEFS } from '../model/defs/eras';
 import { PERIODS, getPeriod } from '../model/defs/periods';
 import { civsForPeriod, getCiv } from '../model/defs/civs';
@@ -2090,7 +2090,12 @@ export class HUD {
     const civInfo = this.el('div', 'ed-skirmish-info', panel);
     const uniqueUnits = uniqueUnitsForCiv(civ.id);
     const uniqueTechs = uniqueTechsForCiv(civ.id);
-    const uniqueUnitText = uniqueUnits.length ? uniqueUnits.map((u) => u.name).join(', ') : t('hud.codex.noUniqueUnit');
+    const gap = uniqueUnitGapForCiv(civ.id);
+    const uniqueUnitText = uniqueUnits.length
+      ? uniqueUnits.map((u) => u.name).join(', ')
+      : gap
+        ? `${t('hud.codex.noUniqueUnit')} (${gap.reason})`
+        : t('hud.codex.noUniqueUnit');
     const uniqueTechText = uniqueTechs.length
       ? uniqueTechs.map((tech) => tech.name).join(', ')
       : t('hud.codex.noUniqueTech');

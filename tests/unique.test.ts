@@ -17,9 +17,11 @@ import {
   unitTrainableInPeriod,
 } from '../src/model/defs/units';
 import { unitModelAsset } from '../src/model/defs/modelAssets';
+import { UNIQUE_UNIT_GAPS } from '../src/model/defs/unique';
 
 const uniqueUnits = Object.values(UNIT_ARCHETYPES).filter((unit) => unit.category === 'unique');
 const uniqueTechs = TECHS.filter((tech) => tech.unique === true);
+const CHAPTER_I = [CivId.CARAL, CivId.CHAVIN, CivId.PARACAS, CivId.MOCHE, CivId.RECUAY, CivId.WARI, CivId.TIAHUANACO];
 
 function expectSource(source: string | undefined): void {
   expect(source, 'unique content needs a source').toBeTruthy();
@@ -27,12 +29,15 @@ function expectSource(source: string | undefined): void {
 }
 
 describe('unique units', () => {
-  it('covers the implemented civs with a unique unit and a unique technology', () => {
-    for (const civ of [CivId.MOCHE, CivId.INCA]) {
-      expect(
-        uniqueUnits.some((unit) => unit.civs?.includes(civ)),
-        `${civ} has no unique unit`,
-      ).toBe(true);
+  it('covers chapter I with a unique unit or a documented gap, plus a unique tech', () => {
+    for (const civ of CHAPTER_I) {
+      const hasUnit = uniqueUnits.some((unit) => unit.civs?.includes(civ));
+      const gap = UNIQUE_UNIT_GAPS[civ];
+      expect(hasUnit || gap, `${civ} has neither a unique unit nor a documented gap`).toBeTruthy();
+      if (gap) {
+        expect(gap.reason.length).toBeGreaterThan(0);
+        expectSource(gap.source);
+      }
       expect(
         uniqueTechs.some((tech) => tech.civs?.includes(civ)),
         `${civ} has no unique tech`,
@@ -96,6 +101,14 @@ describe('unique units', () => {
       asset: 'caral_worker',
       variant: 'moche_soldier_f',
     });
+    expect(unitModelAsset(UnitKind.RECUAY_WARRIOR, Era.REGIONAL_STATES, CivId.RECUAY, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'recuay_soldier_f',
+    });
+    expect(unitModelAsset(UnitKind.WARI_GUARDIAN, Era.TAHUANTINSUYO, CivId.WARI, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'wari_soldier_f',
+    });
     expect(unitModelAsset(UnitKind.INCA_WARRIOR, Era.TAHUANTINSUYO, CivId.INCA, 2)).toEqual({
       asset: 'caral_worker',
       variant: 'inca_soldier_f',
@@ -109,6 +122,12 @@ describe('unique technologies', () => {
       expectSource(tech.source);
       expect(tech.civs?.length, `${tech.id} has no civ`).toBeGreaterThan(0);
       expect(tech.maxPeriod === undefined || tech.maxPeriod >= tech.minPeriod).toBe(true);
+      expect(
+        getCiv(tech.civs![0]).periods.some(
+          (period) => period >= tech.minPeriod && (tech.maxPeriod === undefined || period <= tech.maxPeriod),
+        ),
+        `${tech.id} outside its civ periods`,
+      ).toBe(true);
       expect(techAvailable(tech, tech.minPeriod, tech.civs![0]), `${tech.id} not available to its civ`).toBe(true);
       const otherCiv = CIVS.find((c) => !tech.civs!.includes(c.id))!.id;
       expect(techAvailable(tech, tech.minPeriod, otherCiv), `${tech.id} leaked to ${otherCiv}`).toBe(false);

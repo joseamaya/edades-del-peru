@@ -8,6 +8,8 @@ export const CATEGORIES: UnitCategory[] = ['melee', 'ranged', 'cavalry', 'siege'
 export const UNIT_CATEGORY: Partial<Record<UnitKind, UnitCategory>> = {
   [UnitKind.SOLDIER]: 'melee',
   [UnitKind.MOCHE_WARRIOR]: 'melee',
+  [UnitKind.RECUAY_WARRIOR]: 'melee',
+  [UnitKind.WARI_GUARDIAN]: 'melee',
   [UnitKind.INCA_WARRIOR]: 'melee',
   [UnitKind.MUSKETEER]: 'ranged',
   [UnitKind.RIFLEMAN]: 'ranged',
