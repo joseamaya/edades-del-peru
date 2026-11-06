@@ -35,6 +35,7 @@ const ALPACA_URL = modelUrls['../assets/models/quaternius_alpaca.glb'] ?? '';
 const CARAL_WORKER_URL = modelUrls['../assets/models/caral_worker.glb'] ?? '';
 const MOUNTED_RIG_URL = modelUrls['../assets/models/mounted_rig.glb'] ?? '';
 const SIEGE_RIG_URL = modelUrls['../assets/models/siege_rig.glb'] ?? '';
+const VEHICLE_RIG_URL = modelUrls['../assets/models/vehicle_rig.glb'] ?? '';
 
 /**
  * The mannequin is the pipeline's validation asset (Quaternius Universal
@@ -106,6 +107,25 @@ export const MODEL_ASSET_DEFS: Record<ModelAssetId, ModelAssetDefinition> = {
    */
   siege_rig: {
     url: SIEGE_RIG_URL,
+    scale: 1,
+    yawOffset: Math.PI,
+    ground: true,
+    groundClearance: 0.02,
+    deathClip: 'Death',
+    clips: {
+      idle: 'Idle_Loop',
+      walk: 'Walk_Loop',
+      walk_carry: 'Walk_Loop',
+      attack: 'Attack',
+    },
+  },
+  /**
+   * Project-authored contemporary vehicles (motorcycle, AA, rocket truck).
+   * The source is `art-src/blender/scenes/vehicle_rig.blend`, built by
+   * `scripts/blender/build_vehicle_rig.py`.
+   */
+  vehicle_rig: {
+    url: VEHICLE_RIG_URL,
     scale: 1,
     yawOffset: Math.PI,
     ground: true,

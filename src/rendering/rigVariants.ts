@@ -10,7 +10,9 @@ import { dressMounted } from './mountedAttire';
 import { dressSiege } from './siegeAttire';
 import { isMountedVariant } from '../model/defs/mountedCharacters';
 import { isSiegeVariant } from '../model/defs/siegeCharacters';
+import { isVehicleVariant } from '../model/defs/vehicleCharacters';
 import type { RigInstance } from './RigInstance';
+import { dressVehicle } from './vehicleAttire';
 import { dressCaralWorker } from './workerAttire';
 
 export interface RigVariantHandle {
@@ -23,6 +25,7 @@ export interface RigVariantHandle {
 export function applyRigVariant(rig: RigInstance, variant: RigVariant): RigVariantHandle | null {
   if (isMountedVariant(variant)) return dressMounted(rig, variant);
   if (isSiegeVariant(variant)) return dressSiege(rig, variant);
+  if (isVehicleVariant(variant)) return dressVehicle(rig, variant);
   if (isModernVariant(variant)) return dressModern(rig, variant);
   if (isRebeldeVariant(variant)) return dressRebelde(rig, variant);
   if (isPostColonialVariant(variant)) return dressPostColonial(rig, variant);

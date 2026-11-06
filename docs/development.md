@@ -174,9 +174,9 @@ Definition of Done and the building audit see
   asset id plus an optional presentation variant. The **shared humanoid rig** covers the Caral worker/scout, the
   Inca chasqui and Amauta, every pre-Hispanic Andean culture, the post-1532 infantry, workers and scouts, the m7
   Inca rebels (`rebelde_*`) and the contemporary Republic humanoids; the **mounted cavalry** (`mounted_rig`,
-  Viceroyalty/Republic `HUSSAR`/`CAVALRY`) and the **siege/tank rig** (`siege_rig`, `ARTILLERY`/`MORTAR`/`TANK`)
-  cover the vehicles. Contemporary Republic vehicles (motorcycle, AA, rockets) still use the procedural path
-  until a later #327 pass.
+  Viceroyalty/Republic `HUSSAR`/`CAVALRY`), the **siege/tank rig** (`siege_rig`, `ARTILLERY`/`MORTAR`/`TANK`) and
+  the **vehicle rig** (`vehicle_rig`, contemporary `HUSSAR`/`ANTI_AIR`/`NUCLEAR` as motorcycle, AA and rocket
+  truck) cover the vehicles.
   `modelAssetIdsForMatch` lists the models to preload during `boot()` for every participating civilization. Assets live in
   `src/assets/models/*.glb`, are resolved by `src/rendering/modelAssetRegistry.ts` (`import.meta.glob` with
   `?url`, hashed by Vite) and loaded by `src/rendering/ModelAssets.ts` with `GLTFLoader`. The shared

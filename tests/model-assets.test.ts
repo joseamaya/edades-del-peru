@@ -14,6 +14,7 @@ import { CIVS } from '../src/model/defs/civs';
 import { getPeriod } from '../src/model/defs/periods';
 import { unitTrainableInPeriod } from '../src/model/defs/units';
 import { MOUNTED_SPECS } from '../src/model/defs/mountedCharacters';
+import { MODERN_SPECS } from '../src/model/defs/modernCharacters';
 import { siegeSpecForVariant } from '../src/model/defs/siegeCharacters';
 import {
   acquireRig,
@@ -29,6 +30,7 @@ const MODEL_URL = new URL('../src/assets/models/ual_mannequin.glb', import.meta.
 const WORKER_URL = new URL('../src/assets/models/caral_worker.glb', import.meta.url);
 const MOUNTED_URL = new URL('../src/assets/models/mounted_rig.glb', import.meta.url);
 const SIEGE_URL = new URL('../src/assets/models/siege_rig.glb', import.meta.url);
+const VEHICLE_URL = new URL('../src/assets/models/vehicle_rig.glb', import.meta.url);
 let glb: ArrayBuffer;
 
 beforeAll(() => {
@@ -373,10 +375,9 @@ describe('rigged model assets', () => {
     expect(RIG_VARIANT_CLIPS.contemporary_republica_ranged_m?.attack).toBe('Punch_Jab');
     expect(RIG_VARIANT_CLIPS.contemporary_republica_sniper_m?.attack).toBe('Punch_Jab');
     expect(RIG_VARIANT_CLIPS.contemporary_republica_missionary_f?.attack).toBeNull();
-    expect(modelAssetIdsForMatch(HistoricalPeriod.CONTEMPORARY, [CivId.REPUBLIC])).toContain('caral_worker');
-    for (const kind of [UnitKind.HUSSAR, UnitKind.ANTI_AIR, UnitKind.NUCLEAR]) {
-      expect(unitModelAsset(kind, Era.CONTEMPORARY, CivId.REPUBLIC)).toBeNull();
-    }
+    expect(modelAssetIdsForMatch(HistoricalPeriod.CONTEMPORARY, [CivId.REPUBLIC])).toEqual(
+      expect.arrayContaining(['caral_worker', 'vehicle_rig']),
+    );
     for (const era of [Era.FORMATIVE, Era.REGIONAL_STATES, Era.TAHUANTINSUYO, Era.VICEROYALTY, Era.REPUBLIC]) {
       const choice = unitModelAsset(UnitKind.SOLDIER, era, CivId.REPUBLIC);
       expect(choice?.variant?.startsWith('contemporary_republica_') ?? false).toBe(false);
@@ -433,12 +434,7 @@ describe('rigged model assets', () => {
     expect(unitModelAsset(UnitKind.COMMISSAR, Era.VICEROYALTY, CivId.INCA)).toBeNull();
   });
 
-  it('covers every trainable unit combination or documents the deferral', () => {
-    // Contemporary Republic vehicles are deferred; see #327.
-    const contemporaryRepublic = [UnitKind.HUSSAR, UnitKind.ANTI_AIR, UnitKind.NUCLEAR];
-    const deferred = new Set(
-      contemporaryRepublic.map((kind) => `${CivId.REPUBLIC}@${HistoricalPeriod.CONTEMPORARY}:${kind}`),
-    );
+  it('covers every trainable unit combination', () => {
     const combos: { civ: CivId; period: HistoricalPeriod; kind: UnitKind }[] = [];
     for (const civ of CIVS) {
       for (const period of civ.periods) {
@@ -453,8 +449,7 @@ describe('rigged model assets', () => {
       }
     }
     const missing = combos.filter(
-      ({ civ, period, kind }) =>
-        unitModelAsset(kind, getPeriod(period).level, civ) === null && !deferred.has(`${civ}@${period}:${kind}`),
+      ({ civ, period, kind }) => unitModelAsset(kind, getPeriod(period).level, civ) === null,
     );
     expect(missing).toEqual([]);
   });
@@ -561,6 +556,58 @@ describe('rigged model assets', () => {
     );
     rebelRig.dispose();
     rig.dispose();
+  });
+
+  it('maps and dresses the contemporary vehicles', async () => {
+    expect(unitModelAsset(UnitKind.HUSSAR, Era.CONTEMPORARY, CivId.REPUBLIC)).toEqual({
+      asset: 'vehicle_rig',
+      variant: 'vehicle_motorcycle',
+    });
+    expect(unitModelAsset(UnitKind.ANTI_AIR, Era.CONTEMPORARY, CivId.REPUBLIC)).toEqual({
+      asset: 'vehicle_rig',
+      variant: 'vehicle_aa',
+    });
+    expect(unitModelAsset(UnitKind.NUCLEAR, Era.CONTEMPORARY, CivId.REPUBLIC)).toEqual({
+      asset: 'vehicle_rig',
+      variant: 'vehicle_rockets',
+    });
+    expect(unitModelAsset(UnitKind.HUSSAR, Era.REPUBLIC, CivId.REPUBLIC)).toEqual({
+      asset: 'mounted_rig',
+      variant: 'mounted_republica',
+    });
+    expect(unitModelAsset(UnitKind.HUSSAR, Era.CONTEMPORARY, CivId.CHILE)).toBeNull();
+    expect(RIG_VARIANT_CLIPS.vehicle_motorcycle?.attack).toBe('Attack');
+
+    const data = fs.readFileSync(fileURLToPath(VEHICLE_URL));
+    const buffer = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer;
+    const asset = await loadModelAssetFromData('vehicle_rig', buffer);
+    expect(asset.clipNames.has('Idle_Loop')).toBe(true);
+    expect(asset.clipNames.has('Walk_Loop')).toBe(true);
+    expect(asset.clipNames.has('Attack')).toBe(true);
+
+    const moto = acquireRig('vehicle_rig', 'vehicle_motorcycle')!;
+    expect(moto.hasState('idle')).toBe(true);
+    expect(moto.hasState('walk')).toBe(true);
+    expect(moto.hasState('attack')).toBe(true);
+    expect(moto.hasDeathClip()).toBe(true);
+    expect(moto.root.getObjectByName('GEO-Moto-Vehicle-Metal')?.visible).toBe(true);
+    expect(moto.root.getObjectByName('GEO-AA-Vehicle-Metal')?.visible).toBe(false);
+    expect(moto.root.getObjectByName('GEO-Rocket-Vehicle-Metal')?.visible).toBe(false);
+    const uniform = moto.root.getObjectByName('GEO-Moto-Rider-Uniform') as THREE.Mesh;
+    expect((uniform.material as THREE.MeshStandardMaterial).color.getHex()).toBe(
+      MODERN_SPECS.contemporary_republica.uniform,
+    );
+    moto.dispose();
+
+    const aa = acquireRig('vehicle_rig', 'vehicle_aa')!;
+    expect(aa.root.getObjectByName('GEO-AA-Vehicle-Metal')?.visible).toBe(true);
+    expect(aa.root.getObjectByName('GEO-Moto-Vehicle-Metal')?.visible).toBe(false);
+    aa.dispose();
+
+    const rockets = acquireRig('vehicle_rig', 'vehicle_rockets')!;
+    expect(rockets.root.getObjectByName('GEO-Rocket-Vehicle-Metal')?.visible).toBe(true);
+    expect(rockets.root.getObjectByName('GEO-AA-Vehicle-Metal')?.visible).toBe(false);
+    rockets.dispose();
   });
 
   it('adds a coat, hat and firearm to a post-colonial rig', async () => {

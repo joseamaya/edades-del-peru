@@ -134,7 +134,9 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
 > La República contemporánea usa una abstracción de uniforme de campaña moderno (verde) para sus humanoides:
 > soldados y tiradores llevan casco, chaleco y fusil de asalto; el misionero, el trabajador y el explorador
 > usan la indumentaria base sin casco ni armas. El ataque reutiliza el clip melee compartido (`Punch_Jab`)
-> hasta que se añada un clip de disparo. Los vehículos contemporáneos (moto, AA, cohetes) quedan pendientes en #327.
+> hasta que se añada un clip de disparo. Los vehículos contemporáneos (`vehicle_motorcycle`, `vehicle_aa`,
+> `vehicle_rockets`) usan `vehicle_rig.glb`: moto, pieza antiaérea y lanzacohetes son siluetas genéricas de la
+> República contemporánea, sin un modelo histórico concreto, y solo aparecen en la era contemporánea.
 
 > **Implementación riggeada (m4–m6).** Wari añade el disco pectoral (pecho/espalda); Chanca, la pintura
 > facial en guerreros; Chimú, orejeras de metal; e Inca, el canesú rojo. Tiahuanaco comparte la
