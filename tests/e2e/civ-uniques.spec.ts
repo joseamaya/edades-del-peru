@@ -142,3 +142,29 @@ test('post-1532 civs train their unique units', async ({ page }) => {
     expect(result.trains, `${civ} training`).toBe(true);
   }
 });
+
+test('campaign missions expose their unique infantry in the barracks', async ({ page }) => {
+  for (const [mission, name, kind] of [
+    ['m3_moche_recuay', 'Guerrero Moche', 'moche_warrior'],
+    ['m4_wari', 'Guardián Wari', 'wari_guardian'],
+    ['m5_yahuar_pampa', 'Guerrero Inca', 'inca_warrior'],
+    ['m6_chimu_inca', 'Guerrero Inca', 'inca_warrior'],
+    ['m6b_guerra_civil', 'Guerrero Inca', 'inca_warrior'],
+  ] as const) {
+    await page.goto(`/?mission=${mission}&seed=777&fog=0&low=1&noloop=1`);
+    await page.waitForFunction(() => (window as unknown as { game?: unknown }).game?.mission !== undefined, null, {
+      timeout: 30_000,
+    });
+    const barracksId = await spawnBarracks(page);
+    const result = await page.evaluate(
+      ({ id, label, unit }) => {
+        const g = (window as unknown as { game: any }).game;
+        const cards = [...document.querySelectorAll('.ed-grid .ed-card')].map((el) => el.textContent ?? '');
+        return { shows: cards.some((text) => text.includes(label)), trains: g.trainUnit(id, unit) };
+      },
+      { id: barracksId, label: name, unit: kind },
+    );
+    expect(result.shows, `${mission} card`).toBe(true);
+    expect(result.trains, `${mission} training`).toBe(true);
+  }
+});
