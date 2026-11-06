@@ -205,7 +205,8 @@ export function planCaralValleyFauna(
         x: r.x,
         z: r.z,
         rotY: rng.range(0, Math.PI * 2),
-        scale: r.deer ? rng.range(0.9, 1.1) : rng.range(0.85, 1.15),
+        // Birds are drawn about twice life size so a flock still reads from the default camera.
+        scale: r.deer ? rng.range(0.9, 1.1) : rng.range(1.8, 2.2),
       });
     }
   }

@@ -261,7 +261,7 @@ function bird(id: 'condor' | 'pelican' | 'riparian_bird'): FaunaTemplate {
  * a species). Flocks orbit close to their roost and lift and settle (large, slow bob).
  */
 function smallBird(): FaunaTemplate {
-  const color = '#3a3430';
+  const color = '#6a5c50';
   const body = capsule(0.07, 0.24);
   place(body, 0, 0, 0, Math.PI / 2);
   const head = sphere(0.055);
@@ -285,7 +285,7 @@ function smallBird(): FaunaTemplate {
       { geo: beak, color: '#b0894e' },
       { geo: tail, color },
     ]),
-    wing: mergeParts([{ geo: wing, color: '#2f2a27' }]),
+    wing: mergeParts([{ geo: wing, color: '#584c42' }]),
     hipY: 0,
     legX: 0,
     legZFront: 0,

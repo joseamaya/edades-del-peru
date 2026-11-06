@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { GLTFLoader, type GLTF } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { KIT_PROPS, KIT_TREE_VARIANTS, partsFromScene, type VegetationKitId } from '../src/rendering/vegetationKit';
-import { KIT_LOD0_RADIUS, kitLodFor } from '../src/rendering/TreeInstances';
+import { KIT_LOD0_RADIUS, KIT_LOD0_RADIUS_LOW, kitLod0RadiusFor, kitLodFor } from '../src/rendering/TreeInstances';
 import { PROP_IDS } from '../src/model/defs/props';
 
 // Per-species LOD0/LOD1 triangle budgets, docs/design/art-direction.md §7.
@@ -80,6 +80,13 @@ describe('vegetation kit mapping', () => {
     expect(kitLodFor(KIT_LOD0_RADIUS ** 2, KIT_LOD0_RADIUS)).toBe(0);
     expect(kitLodFor(KIT_LOD0_RADIUS ** 2 + 1, KIT_LOD0_RADIUS)).toBe(1);
     expect(kitLodFor(0.5, 0)).toBe(1);
+  });
+
+  it('keeps LOD0 near the camera on low quality, just in a smaller radius', () => {
+    expect(kitLod0RadiusFor(false)).toBe(KIT_LOD0_RADIUS);
+    expect(kitLod0RadiusFor(true)).toBe(KIT_LOD0_RADIUS_LOW);
+    expect(KIT_LOD0_RADIUS_LOW).toBeGreaterThan(0);
+    expect(KIT_LOD0_RADIUS_LOW).toBeLessThan(KIT_LOD0_RADIUS);
   });
 });
 

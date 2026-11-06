@@ -150,7 +150,7 @@ Only species from the dossier, built as a **Blender kit** with shared materials:
 _Status (kit v1)_: huarango, sauce, caña brava, carrizo and totora ship as LOD0/LOD1 GLBs
 (`scripts/blender/build_caral_vegetation_kit.py`, `src/assets/vegetation/caral/`). `TreeInstances` draws
 the `algarrobo` and `sauce` variants with them, packing only visible trees and switching to LOD1 beyond
-45 units from the camera focus (always LOD1 on low quality); `Props` draws totora and the m1 riverbank
+45 units from the camera focus (25 on low quality); `Props` draws totora and the m1 riverbank
 canes. Wind sway is still the CPU canopy rotation, not a vertex shader. Missing: cola de caballo, lomas
 herbs and crops as kit models.
 

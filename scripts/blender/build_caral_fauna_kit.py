@@ -42,8 +42,9 @@ C = {
     'belly': slice_kit.hex_rgb('#d9cfbf'),
     'white': slice_kit.hex_rgb('#ece6da'),
     'dark': slice_kit.hex_rgb('#2a2018'),
-    'bird': slice_kit.hex_rgb('#3a3430'),
-    'bird_wing': slice_kit.hex_rgb('#2f2a27'),
+    # Mid-value brown, not black: a dark bird vanishes against the riverbank from the RTS camera.
+    'bird': slice_kit.hex_rgb('#6a5c50'),
+    'bird_wing': slice_kit.hex_rgb('#584c42'),
     'beak': slice_kit.hex_rgb('#b0894e'),
 }
 

@@ -1,5 +1,5 @@
 import type { GameSettings } from './Config';
-import { KIT_LOD0_RADIUS } from '../rendering/TreeInstances';
+import { kitLod0RadiusFor } from '../rendering/TreeInstances';
 import { saveToStorage, serializeGame } from '../game/SaveGame';
 import * as THREE from 'three';
 import { bus } from './EventBus';
@@ -1116,7 +1116,7 @@ export class RuntimeController {
     this.game.groundCover?.setEnabled(q !== 'low' && !this.game.usesSoftwareRenderer);
     // The governor can apply a preset before the world (and its trees) exists.
     if (this.game.trees)
-      this.game.trees.kitLod0Radius = q === 'low' || this.game.usesSoftwareRenderer ? 0 : KIT_LOD0_RADIUS;
+      this.game.trees.kitLod0Radius = kitLod0RadiusFor(q === 'low' || this.game.usesSoftwareRenderer);
   }
 
   /** Force a render scale (`null` restores the default) and apply it immediately. */

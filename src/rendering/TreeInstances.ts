@@ -4,6 +4,7 @@ import { MaterialTex } from './Textures';
 import { applyGeneratedPbr } from './Biomes';
 import type { TreeVariant } from '../model/defs/profiles';
 import { disposeKitModel, type KitModel } from './vegetationKit';
+import { preserveAlphaCoverage } from './alphaCoverage';
 
 export type { TreeVariant };
 
@@ -20,6 +21,15 @@ const _swayM = new THREE.Matrix4();
 
 /** Instances further than this from the camera focus use the far (LOD1) kit model. */
 export const KIT_LOD0_RADIUS = 45;
+/**
+ * Smaller LOD0 radius on low quality / software rendering: LOD1 cards read as noisy discs up close,
+ * while LOD0 near the camera costs only ~20k triangles.
+ */
+export const KIT_LOD0_RADIUS_LOW = 25;
+
+export function kitLod0RadiusFor(lowQuality: boolean): number {
+  return lowQuality ? KIT_LOD0_RADIUS_LOW : KIT_LOD0_RADIUS;
+}
 
 /** Which kit LOD a tree at squared distance `d2` from the focus uses (radius 0 forces LOD1). */
 export function kitLodFor(d2: number, radius: number): 0 | 1 {
@@ -116,6 +126,7 @@ export class TreeInstances {
                   : '#b9c49b',
         roughness: 1,
       });
+      preserveAlphaCoverage(leafMat);
       this.materials.push(leafMat);
       const mesh = new THREE.InstancedMesh(canopyGeos[variant], leafMat, MAX);
       mesh.castShadow = true;

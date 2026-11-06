@@ -11,6 +11,7 @@ import sauceLod1 from '../assets/vegetation/caral/caral_sauce_lod1.glb?url';
 import totoraLod0 from '../assets/vegetation/caral/caral_totora_lod0.glb?url';
 import totoraLod1 from '../assets/vegetation/caral/caral_totora_lod1.glb?url';
 import { loadStaticGltf } from './StaticModel';
+import { preserveAlphaCoverage } from './alphaCoverage';
 import type { GeographicRegion, TreeVariant } from '../model/defs/profiles';
 import type { PropId } from '../model/defs/props';
 
@@ -70,6 +71,7 @@ function prepareMaterial(material: THREE.Material): boolean {
     std.alphaTest = 0.5;
     std.transparent = false;
     std.depthWrite = true;
+    preserveAlphaCoverage(std);
   }
   // Stems and trunks are open-ended tubes seen from above: keep the glTF double-sided flag.
   std.side = THREE.DoubleSide;

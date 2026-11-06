@@ -21,7 +21,7 @@ import { Building } from '../entities/Building';
 import { ResourceNode } from '../entities/ResourceNode';
 import { clearResourceCaches } from '../rendering/ResourceNodeView';
 import { OrderMarkers } from '../entities/OrderMarker';
-import { KIT_LOD0_RADIUS, TreeInstances } from '../rendering/TreeInstances';
+import { TreeInstances, kitLod0RadiusFor } from '../rendering/TreeInstances';
 import { isCoastalRegion } from '../rendering/vegetationKit';
 import { attachVegetationKit } from '../rendering/vegetationKitLoader';
 import { Props } from '../rendering/Props';
@@ -487,7 +487,7 @@ export class Game {
     this.trees = new TreeInstances(this.scene);
     this.props = new Props(this.scene);
     if (!this.headless) {
-      this.trees.kitLod0Radius = this.softwareFallback || this.settings.quality === 'low' ? 0 : KIT_LOD0_RADIUS;
+      this.trees.kitLod0Radius = kitLod0RadiusFor(this.softwareFallback || this.settings.quality === 'low');
       void attachVegetationKit(this.trees, this.props, isCoastalRegion(this.mapProfile.region));
     }
     this.wildlife = new Wildlife(this.scene);
