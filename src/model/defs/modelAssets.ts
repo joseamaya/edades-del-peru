@@ -17,7 +17,7 @@ import {
   type PostColonialRole,
 } from './postColonialCharacters';
 import { MOUNTED_VARIANTS, mountedVariantForCiv, type MountedRigVariant } from './mountedCharacters';
-import { REBELDE_ROLES, type RebeldeRigVariant } from './rebeldeCharacters';
+import type { RebeldeRigVariant } from './rebeldeCharacters';
 import {
   MODERN_CULTURES,
   MODERN_ROLES,
@@ -109,9 +109,11 @@ const POST_COLONIAL_VARIANT_CLIPS = variantClips(
   (role) => POST_COLONIAL_ROLE_CLIPS[role],
 ) as Partial<Record<PostColonialRigVariant, Partial<Record<RigClipState, string | null>>>>;
 
-const REBELDE_VARIANT_CLIPS = variantClips(['rebelde'], REBELDE_ROLES, (role) => FIELD_ROLE_CLIPS[role]) as Partial<
-  Record<RebeldeRigVariant, Partial<Record<RigClipState, string | null>>>
->;
+const REBELDE_VARIANT_CLIPS = variantClips(
+  ['rebelde'],
+  POST_COLONIAL_ROLES,
+  (role) => FIELD_ROLE_CLIPS[role],
+) as Partial<Record<RebeldeRigVariant, Partial<Record<RigClipState, string | null>>>>;
 
 const MODERN_ROLE_CLIPS: Record<ModernRole, Partial<Record<RigClipState, string | null>>> = {
   ...FIELD_ROLE_CLIPS,
@@ -212,6 +214,23 @@ export interface RigModelChoice {
   variant?: RigVariant;
 }
 
+/** Field role shared by the documented post-1532 cultures and the m7 rebels. */
+function postColonialFieldRole(kind: UnitKind): PostColonialRole | null {
+  if (kind === UnitKind.SOLDIER) return 'soldier';
+  if (
+    kind === UnitKind.MUSKETEER ||
+    kind === UnitKind.RIFLEMAN ||
+    kind === UnitKind.SNIPER ||
+    kind === UnitKind.ANTI_AIR
+  ) {
+    return 'ranged';
+  }
+  if (kind === UnitKind.MISSIONARY) return 'missionary';
+  if (kind === UnitKind.WORKER) return 'worker';
+  if (kind === UnitKind.SCOUT) return 'scout';
+  return null;
+}
+
 /**
  * Rigged model for a unit kind, or `null` to keep the procedural model.
  * Every pre-Hispanic Andean culture, the post-1532 humanoids, the m7 Inca rebels,
@@ -243,18 +262,8 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
   const siegeVariant = siegeVariantFor(kind, era, civ);
   if (siegeVariant) return { asset: SIEGE_RIG_ASSET_ID, variant: siegeVariant };
   if (civ === CivId.INCA && era === Era.VICEROYALTY) {
-    const role: PostColonialRole | null =
-      kind === UnitKind.SOLDIER
-        ? 'soldier'
-        : kind === UnitKind.MUSKETEER || kind === UnitKind.RIFLEMAN || kind === UnitKind.SNIPER
-          ? 'ranged'
-          : kind === UnitKind.MISSIONARY
-            ? 'missionary'
-            : kind === UnitKind.WORKER
-              ? 'worker'
-              : kind === UnitKind.SCOUT
-                ? 'scout'
-                : null;
+    // INCA has no Viceroyalty period; this is the m7 campaign override (1780).
+    const role = postColonialFieldRole(kind);
     if (role) {
       const suffix = genderForId(id) === 'female' ? 'f' : 'm';
       return { asset: CARAL_WORKER_ASSET_ID, variant: `rebelde_${role}_${suffix}` as RebeldeRigVariant };
@@ -285,21 +294,7 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
   const postColonialEra =
     postColonial === 'realistas' ? era === Era.VICEROYALTY || era === Era.REPUBLIC : era === Era.REPUBLIC;
   if (postColonial && postColonialEra) {
-    const role: PostColonialRole | null =
-      kind === UnitKind.SOLDIER
-        ? 'soldier'
-        : kind === UnitKind.MUSKETEER ||
-            kind === UnitKind.RIFLEMAN ||
-            kind === UnitKind.SNIPER ||
-            kind === UnitKind.ANTI_AIR
-          ? 'ranged'
-          : kind === UnitKind.MISSIONARY
-            ? 'missionary'
-            : kind === UnitKind.WORKER
-              ? 'worker'
-              : kind === UnitKind.SCOUT
-                ? 'scout'
-                : null;
+    const role = postColonialFieldRole(kind);
     if (role) {
       const suffix = genderForId(id) === 'female' ? 'f' : 'm';
       return { asset: CARAL_WORKER_ASSET_ID, variant: `${postColonial}_${role}_${suffix}` };

@@ -424,9 +424,13 @@ describe('rigged model assets', () => {
     await load();
     const rig = acquireRig('ual_mannequin', 'rebelde_soldier_m')!;
     expect(rig.root.getObjectByName('attire_post_weapon')).toBeDefined();
-    expect(rig.root.getObjectByName('attire_post_coat')).toBeUndefined();
+    expect(rig.root.getObjectByName('attire_post_coat')).toBeDefined();
     expect(rig.root.getObjectByName('attire_post_hat')).toBeUndefined();
     rig.dispose();
+
+    // The Amauta's tech is Late Horizon-only, so m7 never offers it (#327).
+    expect(unitTrainableInPeriod(UnitKind.COMMISSAR, HistoricalPeriod.VICEROYALTY, CivId.INCA)).toBe(false);
+    expect(unitModelAsset(UnitKind.COMMISSAR, Era.VICEROYALTY, CivId.INCA)).toBeNull();
   });
 
   it('covers every trainable unit combination or documents the deferral', () => {

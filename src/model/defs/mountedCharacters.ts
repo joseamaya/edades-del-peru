@@ -5,6 +5,7 @@ import {
   type PostColonialCulture,
   type PostColonialSpec,
 } from './postColonialCharacters';
+import { REBELDE_PALETTE } from './rebeldeCharacters';
 
 /**
  * Uniform abstractions for post-1532 mounted units; see docs/historia/atuendos.md §6.
@@ -28,11 +29,8 @@ export const MOUNTED_SPECS: Record<MountedRigVariant, MountedSpec> = {
   mounted_republica: specFromCulture('republica'),
   mounted_chile: specFromCulture('chile'),
   mounted_rebelde: {
-    coat: 0x6a3a2a,
-    trim: 0xd8a040,
-    trousers: 0x3a2a1a,
+    ...REBELDE_PALETTE,
     hat: 'bicorn',
-    hatColor: 0x2a1c12,
   },
 };
 

@@ -75,7 +75,7 @@ test('local GLB rigs load, clone independently and animate without touching the 
   expect(modelWarnings).toEqual([]);
 });
 
-test('m7 cavalry and artillery load their rigs instead of procedural models', async ({ page }) => {
+test('m7 cavalry, artillery and rebel infantry load their rigs instead of procedural models', async ({ page }) => {
   const warnings: string[] = [];
   page.on('console', (msg) => {
     if (msg.type() === 'warning' && msg.text().includes('[models]')) warnings.push(msg.text());
@@ -89,7 +89,7 @@ test('m7 cavalry and artillery load their rigs instead of procedural models', as
     () => {
       const g = (window as unknown as { game: { units: Map<string, { kind: string; rig: unknown }> } }).game;
       return [...g.units.values()]
-        .filter((unit) => unit.kind === 'cavalry' || unit.kind === 'artillery')
+        .filter((unit) => ['cavalry', 'artillery', 'rifleman'].includes(unit.kind))
         .every((unit) => unit.rig !== null);
     },
     null,
@@ -103,19 +103,25 @@ test('m7 cavalry and artillery load their rigs instead of procedural models', as
     ).game;
     const cavalry = [...g.units.values()].filter((unit) => unit.kind === 'cavalry');
     const artillery = [...g.units.values()].filter((unit) => unit.kind === 'artillery');
+    const infantry = [...g.units.values()].filter((unit) => unit.kind === 'rifleman');
     const assets = (window as unknown as { __modelAssets: () => AssetStatus[] }).__modelAssets();
     return {
       cavalry: cavalry.map((unit) => unit.rig?.root.name ?? null),
       artillery: artillery.map((unit) => unit.rig?.root.name ?? null),
+      infantry: infantry.map((unit) => unit.rig?.root.name ?? null),
       mounted: assets.find((asset) => asset.id === 'mounted_rig')?.state,
       siege: assets.find((asset) => asset.id === 'siege_rig')?.state,
+      worker: assets.find((asset) => asset.id === 'caral_worker')?.state,
     };
   });
   expect(state.cavalry.length).toBeGreaterThan(0);
   expect(state.cavalry.every((name) => name === 'rig:mounted_rig')).toBe(true);
   expect(state.artillery.length).toBeGreaterThan(0);
   expect(state.artillery.every((name) => name === 'rig:siege_rig')).toBe(true);
+  expect(state.infantry.length).toBeGreaterThan(0);
+  expect(state.infantry.every((name) => name === 'rig:caral_worker')).toBe(true);
   expect(state.mounted).toBe('ready');
   expect(state.siege).toBe('ready');
+  expect(state.worker).toBe('ready');
   expect(warnings).toEqual([]);
 });
