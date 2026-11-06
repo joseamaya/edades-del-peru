@@ -383,22 +383,58 @@ describe('rigged model assets', () => {
     }
   });
 
+  it('maps the m7 Inca rebels to the late-colonial rebel presentation', async () => {
+    for (const [kind, role] of [
+      [UnitKind.WORKER, 'worker'],
+      [UnitKind.SCOUT, 'scout'],
+      [UnitKind.SOLDIER, 'soldier'],
+      [UnitKind.MUSKETEER, 'ranged'],
+      [UnitKind.RIFLEMAN, 'ranged'],
+      [UnitKind.SNIPER, 'ranged'],
+      [UnitKind.MISSIONARY, 'missionary'],
+    ] as const) {
+      expect(unitModelAsset(kind, Era.VICEROYALTY, CivId.INCA, 2)).toEqual({
+        asset: 'caral_worker',
+        variant: `rebelde_${role}_f`,
+      });
+    }
+    expect(unitModelAsset(UnitKind.SOLDIER, Era.TAHUANTINSUYO, CivId.INCA, 3)).toEqual({
+      asset: 'caral_worker',
+      variant: 'inca_soldier_m',
+    });
+    expect(unitModelAsset(UnitKind.HUSSAR, Era.VICEROYALTY, CivId.INCA)).toEqual({
+      asset: 'mounted_rig',
+      variant: 'mounted_rebelde',
+    });
+    expect(unitModelAsset(UnitKind.ARTILLERY, Era.VICEROYALTY, CivId.INCA)).toEqual({
+      asset: 'siege_rig',
+      variant: 'siege_cannon_rebelde',
+    });
+    expect(unitModelAsset(UnitKind.SOLDIER, Era.VICEROYALTY, CivId.REALISTAS, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'realistas_soldier_f',
+    });
+    expect(RIG_VARIANT_CLIPS.rebelde_ranged_m?.attack).toBe('Punch_Jab');
+    expect(RIG_VARIANT_CLIPS.rebelde_worker_f?.gather).toBe('Farm_Harvest');
+    expect(RIG_VARIANT_CLIPS.rebelde_missionary_m?.attack).toBeNull();
+    expect(modelAssetIdsForMatch(HistoricalPeriod.VICEROYALTY, [CivId.INCA])).toEqual(
+      expect.arrayContaining(['caral_worker', 'mounted_rig', 'siege_rig']),
+    );
+
+    await load();
+    const rig = acquireRig('ual_mannequin', 'rebelde_soldier_m')!;
+    expect(rig.root.getObjectByName('attire_post_weapon')).toBeDefined();
+    expect(rig.root.getObjectByName('attire_post_coat')).toBeUndefined();
+    expect(rig.root.getObjectByName('attire_post_hat')).toBeUndefined();
+    rig.dispose();
+  });
+
   it('covers every trainable unit combination or documents the deferral', () => {
-    // Contemporary Republic vehicles and the m7 Inca override are deferred; see #327.
+    // Contemporary Republic vehicles are deferred; see #327.
     const contemporaryRepublic = [UnitKind.HUSSAR, UnitKind.ANTI_AIR, UnitKind.NUCLEAR];
-    const m7Inca = [
-      UnitKind.WORKER,
-      UnitKind.SOLDIER,
-      UnitKind.MUSKETEER,
-      UnitKind.RIFLEMAN,
-      UnitKind.SNIPER,
-      UnitKind.SCOUT,
-      UnitKind.MISSIONARY,
-    ];
-    const deferred = new Set([
-      ...contemporaryRepublic.map((kind) => `${CivId.REPUBLIC}@${HistoricalPeriod.CONTEMPORARY}:${kind}`),
-      ...m7Inca.map((kind) => `${CivId.INCA}@${HistoricalPeriod.VICEROYALTY}:${kind}`),
-    ]);
+    const deferred = new Set(
+      contemporaryRepublic.map((kind) => `${CivId.REPUBLIC}@${HistoricalPeriod.CONTEMPORARY}:${kind}`),
+    );
     const combos: { civ: CivId; period: HistoricalPeriod; kind: UnitKind }[] = [];
     for (const civ of CIVS) {
       for (const period of civ.periods) {

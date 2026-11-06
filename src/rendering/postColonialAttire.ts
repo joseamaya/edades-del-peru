@@ -8,6 +8,8 @@ import {
   isPostColonialVariant,
   postColonialCultureForVariant,
   postColonialRoleForVariant,
+  type PostColonialRole,
+  type PostColonialSpec,
 } from '../model/defs/postColonialCharacters';
 
 /**
@@ -19,8 +21,17 @@ export function dressPostColonial(rig: RigInstance, variant: RigVariant): RigVar
   if (!isPostColonialVariant(variant)) return null;
   const culture = postColonialCultureForVariant(variant);
   if (!culture) return null;
-  const spec = POST_COLONIAL_SPECS[culture];
-  const role = postColonialRoleForVariant(variant);
+  return dressUniform(rig, variant, POST_COLONIAL_SPECS[culture], postColonialRoleForVariant(variant));
+}
+
+/** Shared uniform dresser for the documented post-1532 cultures and the m7 rebels. */
+export function dressUniform(
+  rig: RigInstance,
+  variant: RigVariant,
+  spec: PostColonialSpec,
+  role: PostColonialRole,
+  coat = true,
+): RigVariantHandle {
   const armed = role === 'soldier' || role === 'ranged';
   const civilian = role === 'worker' || role === 'scout';
   const root = rig.root;
@@ -43,9 +54,11 @@ export function dressPostColonial(rig: RigInstance, variant: RigVariant): RigVar
 
   if (spine) {
     if (!civilian) {
-      const coat = new THREE.Mesh(track(new THREE.CylinderGeometry(0.2, 0.24, 0.58, 10, 1, true)), coatMat);
-      coat.name = 'attire_post_coat';
-      attach('spine_03', coat, new THREE.Vector3(spine.x, spine.y - 0.12, spine.z));
+      if (coat) {
+        const coatMesh = new THREE.Mesh(track(new THREE.CylinderGeometry(0.2, 0.24, 0.58, 10, 1, true)), coatMat);
+        coatMesh.name = 'attire_post_coat';
+        attach('spine_03', coatMesh, new THREE.Vector3(spine.x, spine.y - 0.12, spine.z));
+      }
       const belt = new THREE.Mesh(track(new THREE.TorusGeometry(0.21, 0.018, 5, 16)), leatherMat);
       belt.name = 'attire_post_belt';
       belt.rotation.x = Math.PI / 2;
@@ -74,7 +87,7 @@ export function dressPostColonial(rig: RigInstance, variant: RigVariant): RigVar
     }
   }
 
-  if (head && !civilian) {
+  if (head && !civilian && spec.hat !== 'none') {
     const hatMat = material(spec.hatColor, 0.7);
     let hat: THREE.Mesh;
     if (spec.hat === 'morion') {

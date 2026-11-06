@@ -1,8 +1,10 @@
 import type { RigClipState, RigVariant } from '../model/defs/modelAssets';
 import { isAndeanVariant } from '../model/defs/andeanCharacters';
 import { isPostColonialVariant } from '../model/defs/postColonialCharacters';
+import { isRebeldeVariant } from '../model/defs/rebeldeCharacters';
 import { isModernVariant } from '../model/defs/modernCharacters';
 import { dressPostColonial } from './postColonialAttire';
+import { dressRebelde } from './rebeldeAttire';
 import { dressModern } from './modernAttire';
 import { dressMounted } from './mountedAttire';
 import { dressSiege } from './siegeAttire';
@@ -22,6 +24,7 @@ export function applyRigVariant(rig: RigInstance, variant: RigVariant): RigVaria
   if (isMountedVariant(variant)) return dressMounted(rig, variant);
   if (isSiegeVariant(variant)) return dressSiege(rig, variant);
   if (isModernVariant(variant)) return dressModern(rig, variant);
+  if (isRebeldeVariant(variant)) return dressRebelde(rig, variant);
   if (isPostColonialVariant(variant)) return dressPostColonial(rig, variant);
   if (variant.startsWith('caral_') || variant.startsWith('inca_') || isAndeanVariant(variant)) {
     return dressCaralWorker(rig, variant);

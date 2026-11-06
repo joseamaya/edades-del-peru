@@ -17,6 +17,7 @@ import {
   type PostColonialRole,
 } from './postColonialCharacters';
 import { MOUNTED_VARIANTS, mountedVariantForCiv, type MountedRigVariant } from './mountedCharacters';
+import { REBELDE_ROLES, type RebeldeRigVariant } from './rebeldeCharacters';
 import {
   MODERN_CULTURES,
   MODERN_ROLES,
@@ -49,6 +50,7 @@ export type RigVariant =
   | 'inca_chasqui_m'
   | AndeanRigVariant
   | PostColonialRigVariant
+  | RebeldeRigVariant
   | ModernRigVariant
   | MountedRigVariant
   | SiegeRigVariant;
@@ -107,6 +109,10 @@ const POST_COLONIAL_VARIANT_CLIPS = variantClips(
   (role) => POST_COLONIAL_ROLE_CLIPS[role],
 ) as Partial<Record<PostColonialRigVariant, Partial<Record<RigClipState, string | null>>>>;
 
+const REBELDE_VARIANT_CLIPS = variantClips(['rebelde'], REBELDE_ROLES, (role) => FIELD_ROLE_CLIPS[role]) as Partial<
+  Record<RebeldeRigVariant, Partial<Record<RigClipState, string | null>>>
+>;
+
 const MODERN_ROLE_CLIPS: Record<ModernRole, Partial<Record<RigClipState, string | null>>> = {
   ...FIELD_ROLE_CLIPS,
   sniper: FIELD_ROLE_CLIPS.ranged,
@@ -164,6 +170,7 @@ const ANDEAN_VARIANT_CLIPS = variantClips(
 export const RIG_VARIANT_CLIPS: Partial<Record<RigVariant, Partial<Record<RigClipState, string | null>>>> = {
   ...ANDEAN_VARIANT_CLIPS,
   ...POST_COLONIAL_VARIANT_CLIPS,
+  ...REBELDE_VARIANT_CLIPS,
   ...MODERN_VARIANT_CLIPS,
   ...MOUNTED_VARIANT_CLIPS,
   ...SIEGE_VARIANT_CLIPS,
@@ -207,9 +214,9 @@ export interface RigModelChoice {
 
 /**
  * Rigged model for a unit kind, or `null` to keep the procedural model.
- * Every pre-Hispanic Andean culture, the post-1532 humanoids, the contemporary
- * Republic humanoids and the Inca Amauta use the shared humanoid rig; contemporary
- * Republic vehicles and the m7 Inca override stay procedural until a later pass.
+ * Every pre-Hispanic Andean culture, the post-1532 humanoids, the m7 Inca rebels,
+ * the contemporary Republic humanoids and the Inca Amauta use the shared humanoid
+ * rig; contemporary Republic vehicles stay procedural until a later pass.
  */
 export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): RigModelChoice | null {
   if (civ === CivId.CARAL && era === Era.FORMATIVE) {
@@ -235,6 +242,24 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
   }
   const siegeVariant = siegeVariantFor(kind, era, civ);
   if (siegeVariant) return { asset: SIEGE_RIG_ASSET_ID, variant: siegeVariant };
+  if (civ === CivId.INCA && era === Era.VICEROYALTY) {
+    const role: PostColonialRole | null =
+      kind === UnitKind.SOLDIER
+        ? 'soldier'
+        : kind === UnitKind.MUSKETEER || kind === UnitKind.RIFLEMAN || kind === UnitKind.SNIPER
+          ? 'ranged'
+          : kind === UnitKind.MISSIONARY
+            ? 'missionary'
+            : kind === UnitKind.WORKER
+              ? 'worker'
+              : kind === UnitKind.SCOUT
+                ? 'scout'
+                : null;
+    if (role) {
+      const suffix = genderForId(id) === 'female' ? 'f' : 'm';
+      return { asset: CARAL_WORKER_ASSET_ID, variant: `rebelde_${role}_${suffix}` as RebeldeRigVariant };
+    }
+  }
   const modernCulture = modernCultureForCiv(civ);
   if (modernCulture && era === Era.CONTEMPORARY) {
     const role: ModernRole | null =
