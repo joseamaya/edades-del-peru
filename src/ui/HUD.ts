@@ -1114,7 +1114,7 @@ export class HUD {
           civ: player.civ,
           colorHex: player.colorHex,
         })),
-        0,
+        { playerId: 0, combat: !peaceful },
       );
     }
     const row = this.el('div', 'row', panel);

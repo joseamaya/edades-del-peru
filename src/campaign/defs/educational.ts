@@ -71,7 +71,9 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
   },
   m3_moche_recuay: {
     briefing:
-      'Valles de Moche y Chicama, c. 300–600 d.C. El agua del canal sostiene los campos y el prestigio del valle. No hay una batalla única documentada: defiende el valle sin inventar un rey ni una guerra.',
+      'Valles de Moche y Chicama, c. 300–600 d.C. El agua del canal sostiene los campos y el prestigio ' +
+      'del valle. No hay una batalla única documentada: defiende el valle sin inventar un rey ni una guerra. ' +
+      'Cada bando alista su unidad única: el Guerrero Moche y el Guerrero Recuay.',
     context:
       'Moche dominó los valles de la costa norte (Chicama, Moche, Virú) mientras Recuay señoreaba el Callejón ' +
       'de Huaylas. Fueron coetáneos y mantuvieron interacciones de largo alcance con un componente bélico ' +
@@ -88,7 +90,9 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
   },
   m4_wari: {
     briefing:
-      'Andes centrales, c. 600–1000 d.C. Wari teje una red de centros provinciales, caminos y andenes; Tiahuanaco compite por la misma esfera de influencia sin una guerra única documentada. Conecta dos centros provinciales y sostén la esfera wari.',
+      'Andes centrales, c. 600–1000 d.C. Wari teje una red de centros provinciales, caminos y andenes; ' +
+      'Tiahuanaco compite por la misma esfera de influencia sin una guerra única documentada. Conecta dos ' +
+      'centros provinciales y sostén la esfera wari. Wari alista al Guardián Wari como unidad única.',
     context:
       'Wari (núcleo en Ayacucho) y Tiahuanaco (altiplano del Titicaca) fueron dos grandes estados ' +
       'suprarregionales coetáneos que difundieron el culto al dios de los báculos. Wari extendió ciudades ' +
@@ -105,7 +109,9 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
   },
   m5_yahuar_pampa: {
     briefing:
-      'Cusco, 1438. La confederación chanca avanza sobre la ciudad. Cusi Yupanqui organiza la defensa: sostén el Cusco, protege al príncipe y rechaza al ejército chanca.',
+      'Cusco, 1438. La confederación chanca avanza sobre la ciudad. Cusi Yupanqui organiza la defensa: ' +
+      'sostén el Cusco, protege al príncipe y rechaza al ejército chanca. El Guerrero Inca y el Guerrero ' +
+      'Chanca son las unidades únicas de cada bando.',
     context:
       'En 1438 la confederación Chanca, reunida en Andahuaylas y al mando de Anccu Hualloc, marchó sobre el ' +
       'Cusco. El inca Viracocha y el heredero Inca Urco huyeron; el príncipe Cusi Yupanqui organizó la defensa ' +
@@ -123,7 +129,9 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
   },
   m6_chimu_inca: {
     briefing:
-      'Costa norte, c. 1470. Túpac Yupanqui avanza sobre el Reino Chimú. Llega a Paramonga y corta el canal que abastece Chan Chan: el agua decide la campaña.',
+      'Costa norte, c. 1470. Túpac Yupanqui avanza sobre el Reino Chimú. Llega a Paramonga y corta el ' +
+      'canal que abastece Chan Chan: el agua decide la campaña. El Guerrero Inca y el Fixi Chimú son las ' +
+      'unidades únicas de cada bando.',
     context:
       'Hacia 1470, al mando del auqui Túpac Yupanqui, los incas avanzaron sobre el Reino Chimú de Minchancaman ' +
       'por Paramonga, Huarmey y el valle del Santa. Secaron el canal que abastecía de agua a Chan Chan; la ' +
@@ -141,7 +149,8 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
   m6b_guerra_civil: {
     briefing:
       'Sierra andina, 1529–1532. Tras la muerte de Huayna Cápac, Huáscar y Atahualpa se disputan el trono. ' +
-      'Avanza con el ejército de Atahualpa hacia Quipaipan, derrota a Huáscar y mantenlo con vida.',
+      'Avanza con el ejército de Atahualpa hacia Quipaipan, derrota a Huáscar y mantenlo con vida. Ambos ' +
+      'ejércitos alistan al Guerrero Inca.',
     context:
       'La guerra civil inca enfrentó a los partidarios de Huáscar, en el Cusco, con los de Atahualpa, en Quito. ' +
       'Las campañas de Chillopampa, Mullihambato y Chimborazo precedieron a Quipaipan (1532), donde el ejército ' +

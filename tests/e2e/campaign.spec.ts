@@ -727,6 +727,28 @@ test('Wari closes the preinca chapter', async ({ page }) => {
   await expect(victory.getByRole('button', { name: /Volver a campañas/ })).toBeVisible();
 });
 
+test('peaceful missions hide combat statistics and combat missions keep them', async ({ page }) => {
+  for (const id of ['m1_caral', 'm2_chavin', 'm4_wari']) {
+    await page.goto(`/?mission=${id}&seed=777&fog=0&low=1&noloop=1`);
+    await page.waitForFunction(() => (window as unknown as { game?: unknown }).game?.mission !== undefined, null, {
+      timeout: 30_000,
+    });
+    await page.evaluate(() => (window as unknown as { game: any }).game.showVictory(0));
+    const victory = page.locator('.ed-epilogue');
+    await expect(victory).not.toContainText('Bajas infligidas');
+    await expect(victory.getByRole('tab', { name: 'Militar' })).toHaveCount(0);
+  }
+
+  await page.goto('/?mission=m3_moche_recuay&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game?.mission !== undefined, null, {
+    timeout: 30_000,
+  });
+  await page.evaluate(() => (window as unknown as { game: any }).game.showVictory(0));
+  const victory = page.locator('.ed-epilogue');
+  await expect(victory).toContainText('Bajas infligidas');
+  await expect(victory.getByRole('tab', { name: 'Militar' })).toBeVisible();
+});
+
 test('chapter endings name the right campaign ordinal', async ({ page }) => {
   for (const [id, label] of [
     ['m6b_guerra_civil', 'Fin de la segunda campaña.'],
