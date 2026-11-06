@@ -39,6 +39,7 @@ MID_X, MID_Y0, MID_Y1, MID_STEP = 220.0, -180.0, 180.0, 2.5
 
 PYR = (14.0, 47.0)
 PYR_HALF = (17.0, 12.0)
+HEARTH_LOCAL = (1.4, -3.4)  # cooking hearth in front of each dwelling, right of the door (placement assumed)
 PYR_WORK_Z = 5.4  # top of the second platform, where the third level is being raised
 PLAZA = (14.0, 26.0)
 PLAZA_R = 4.0
@@ -494,6 +495,32 @@ def mat_shicra(name):
     return mat
 
 
+def mat_smoke(name):
+    """Hearth smoke: thin volume rising along the object's +Z, fraying with noise and fading out.
+    Needs a plume mesh whose radius grows with height (kit_smoke)."""
+    mat, nt, bsdf = new_mat(name)
+    nt.nodes.remove(bsdf)
+    out = next(n for n in nt.nodes if n.type == 'OUTPUT_MATERIAL')
+    vol = nt.nodes.new('ShaderNodeVolumePrincipled')
+    vol.inputs['Color'].default_value = (0.6, 0.59, 0.58, 1)
+    coord = nt.nodes.new('ShaderNodeTexCoord').outputs['Object']
+    sep = nt.nodes.new('ShaderNodeSeparateXYZ')
+    nt.links.new(coord, sep.inputs['Vector'])
+    radius = math_node(nt, 'MULTIPLY_ADD', sep.outputs['Z'], 0.22)
+    radius.node.inputs[2].default_value = 0.3
+    length = nt.nodes.new('ShaderNodeVectorMath')
+    length.operation = 'LENGTH'
+    nt.links.new(scaled(nt, coord, 1.0, 1.0, 0.0), length.inputs[0])
+    radial = map_range(nt, math_node(nt, 'DIVIDE', length.outputs['Value'], radius), 0.25, 0.95, 1.0, 0.0)
+    fade = map_range(nt, sep.outputs['Z'], 0.0, 5.0, 1.0, 0.0)
+    wisps = noise_tex(nt, scaled(nt, coord, 1.4, 1.4, 0.6), 1.2, 4.0, 0.6)
+    density = map_range(nt, wisps.outputs['Fac'], 0.35, 0.65, 0.6, 4.5)
+    density = math_node(nt, 'MULTIPLY', math_node(nt, 'MULTIPLY', density, radial), fade)
+    nt.links.new(density, vol.inputs['Density'])
+    nt.links.new(vol.outputs['Volume'], out.inputs['Volume'])
+    return mat
+
+
 def mat_terrain():
     """Terrain: per-vertex zone colour (``zone``) broken up with two noise scales; ``mask`` carries
     R = cultivated field, G = wetness, B = gravel; ``rowc`` is the across-row coordinate inside each
@@ -587,6 +614,11 @@ def mat_water(name, color, rough=0.06, wave_scale=2.5):
 
 def river_y(x):
     return -30.0 + 4.0 * math.sin(x * 0.035 + 0.6) + 1.5 * math.sin(x * 0.011 - 1.0)
+
+
+def river_flow(x):
+    """Half-width of the water in the mostly dry bed; <= 0.15 means a dry stretch (seasonal river)."""
+    return 0.55 + 3.0 * n2(x * 0.04, 0.0, 2.0)
 
 
 def canal_y(x):
@@ -709,7 +741,7 @@ def terrain_masks(x, y):
     if hit:
         field = 0.0 if hit[0][5] == 'fallow' else smoothstep(0.1, 0.6, hit[3])
         rowc = hit[2]
-    wet = (1 - smoothstep(0.5, 3.0, d)) * 0.9
+    wet = (1 - smoothstep(0.5, 3.0, d)) * (0.3 + 0.6 * smoothstep(0.0, 0.8, river_flow(x)))
     if in_wetland(x, y):
         wet = 1.0
     if CANAL_X[0] < x < CANAL_X[1]:
@@ -836,12 +868,13 @@ def water_strip(col, mat, x0, x1, step=2.0):
     left, right = [], []
     for x in xs:
         y = river_y(x) + 0.6 * math.sin(x * 0.2)
-        w = max(0.04, 1.3 + 1.7 * n2(x * 0.045, 0.0, 2.0))
+        w = max(0.05, river_flow(x))
         z = height_raw(x, y) + 0.12
         left.append(bm.verts.new((x, y - w, z)))
         right.append(bm.verts.new((x, y + w, z)))
     for k in range(len(xs) - 1):
-        bm.faces.new((left[k], left[k + 1], right[k + 1], right[k]))
+        if river_flow(xs[k]) > 0.15 or river_flow(xs[k + 1]) > 0.15:
+            bm.faces.new((left[k], left[k + 1], right[k + 1], right[k]))
     mesh = bpy.data.meshes.new('GEO-Slice_River')
     bm.to_mesh(mesh)
     bm.free()
@@ -1200,6 +1233,29 @@ def kit_pebbles(mats, seed):
     return kfinish(kit, f'KIT-Pebbles_{seed}', [mats['stone']])
 
 
+def kit_smoke(mats, seed):
+    """Smoke plume volume (cooking hearths and the sacred fire are documented; plume look assumed)."""
+    kit = new_kit()
+    ktube(kit, [(0, 0, 0.0), (0, 0, 1.5), (0, 0, 3.2), (0, 0, 5.2)], 0.35, 1.5, 10, 0, cap=True)
+    first = [v for v in kit['bm'].verts if abs(v.co.z) < 1e-4]
+    kit['bm'].faces.new(first)
+    bmesh.ops.recalc_face_normals(kit['bm'], faces=list(kit['bm'].faces))
+    return kfinish(kit, f'KIT-Smoke_{seed}', [mats['smoke']])
+
+
+def kit_fire(mats, seed):
+    """Small open fire: a few emissive flame tongues over embers."""
+    rng = random.Random(seed)
+    kit = new_kit()
+    for k in range(5):
+        a = k / 5 * math.tau + rng.uniform(-0.3, 0.3)
+        r = rng.uniform(0.0, 0.18)
+        kblob(kit, (math.cos(a) * r, math.sin(a) * r, 0.18), (0.09, 0.09, rng.uniform(0.2, 0.32)), 6, 4, 0.15,
+              seed + k, 0)
+    kblob(kit, (0, 0, 0.03), (0.32, 0.3, 0.06), 8, 4, 0.2, seed + 9, 1)
+    return kfinish(kit, f'KIT-Fire_{seed}', [mats['altar'], mats['ash']])
+
+
 def kit_shicra_pile(mats, seed):
     """Pile of shicra bags waiting to be laid (documented fill; pile placement assumed)."""
     rng = random.Random(seed)
@@ -1429,7 +1485,7 @@ def build_quincha_house(col, mats, center, yaw, seed, paint_key):
     add_slab(bm, -w / 2 - 0.4, w / 2 * 0.1, -d / 2 - 0.45, d / 2 + 0.4, h + 0.5, 5, 4, 0.06, 0.08, 0.14, rng, 2)
     add_slab(bm, -w / 2 * 0.25, w / 2 * 0.6, -d / 2 - 0.3, d / 2 + 0.5, h + 0.56, 4, 4, 0.06, 0.06, 0.14, rng, 2)
     # Hearth: ring of stones and ash behind the house; refuse heap; gourds by the door.
-    hx, hy = 0.6, d / 2 + 1.7
+    hx, hy = HEARTH_LOCAL
     kblob(kit, (hx, hy, 0.02), (0.55, 0.5, 0.05), 8, 4, 0.1, seed, 6)
     for k in range(7):
         a = k / 7 * math.tau
@@ -1484,19 +1540,75 @@ def build_fields(col, crop_meshes):
     return count
 
 
-def scatter(col, meshes, count, area_fn, seed, scale=(0.85, 1.2), base_name='Veg', bounds=None, z_offset=0.0):
+def area_riparian(x, y, rng):
+    d = abs(y - river_y(x))
+    dens = 0.5 + 0.5 * n2(x * 0.06, 11.0)
+    return 5.5 < d < 12.5 and not plot_at(x, y) and not in_wetland(x, y) and rng.random() < dens
+
+
+def area_riverbank(x, y, rng):
+    d = abs(y - river_y(x))
+    return 3.4 < d < 7.5 and not plot_at(x, y) and not in_wetland(x, y)
+
+
+def area_wet_edge(x, y, rng):
+    return (((x + 44) / 14.0) ** 2 + ((y + 50) / 6.4) ** 2) < 1.25 and not in_wetland(x, y) or (
+        in_wetland(x, y) and rng.random() < 0.12)
+
+
+def area_grove(x, y, rng):
+    edge = y + 1.4 * n2(x * 0.045, 4.0)
+    dens = 0.35 + 0.65 * max(0.0, n2(x * 0.05, y * 0.05, 13.0) + 0.3)
+    return 6.5 < edge < 15.0 and path_dist(x, y) > 2.5 and rng.random() < dens
+
+
+def area_lomas_scrub(x, y, rng):
+    return 24 < y < 95 and rng.random() < 0.25 and not (-8 < x < 36 and 22 < y < 62) and not (
+        -28 < x < 0 and 24 < y < 44)
+
+
+def area_terrace_ground(x, y, rng):
+    return 22 < y < 110 and rng.random() < 0.35 and not (-6 < x < 34 and 18 < y < 62) and not (
+        -28 < x < 0 and 24 < y < 44)
+
+
+def area_ok(area, x, y, rng):
+    """Scatter areas by name (MCP safe mode refuses calls through function arguments). A 'far_' prefix
+    restricts the area to outside the slice."""
+    if area.startswith('far_'):
+        if not (abs(x) > SIZE_X / 2 or abs(y) > SIZE_Y / 2):
+            return False
+        area = area[4:]
+    if area == 'riparian':
+        return area_riparian(x, y, rng)
+    if area == 'riverbank':
+        return area_riverbank(x, y, rng)
+    if area == 'wet_edge':
+        return area_wet_edge(x, y, rng)
+    if area == 'grove':
+        return area_grove(x, y, rng)
+    if area == 'wet':
+        return in_wetland(x, y)
+    if area == 'lomas_scrub':
+        return area_lomas_scrub(x, y, rng)
+    if area == 'terrace_ground':
+        return area_terrace_ground(x, y, rng)
+    return False
+
+
+def scatter(col, meshes, count, area, seed, scale=(0.85, 1.2), base_name='Veg', bounds=None, z_offset=0.0):
     rng = random.Random(seed)
     x0, x1, y0, y1 = bounds or (-SIZE_X / 2 + 2, SIZE_X / 2 - 2, -SIZE_Y / 2 + 2, SIZE_Y / 2 - 2)
     placed = tries = 0
     while placed < count and tries < count * 80:
         tries += 1
         x, y = rng.uniform(x0, x1), rng.uniform(y0, y1)
-        if not area_fn(x, y, rng):
+        if not area_ok(area, x, y, rng):
             continue
         obj = bpy.data.objects.new(base_name, meshes[rng.randrange(len(meshes))])
         obj.location = (x, y, height(x, y) + z_offset)
         obj.rotation_euler = (0, 0, rng.random() * math.tau)
-        s = rng.uniform(*scale)
+        s = rng.uniform(scale[0], scale[1])
         obj.scale = (s, s, s * rng.uniform(0.9, 1.1))
         link(obj, col)
         placed += 1
@@ -1687,8 +1799,8 @@ def build_materials():
         'shicra': mat_shicra('MAT-Slice_Shicra'),
         'deer': mat_varied('MAT-Slice_Deer', PAL['deer'], 0.8, 0.1, 3.0, 0.1),
         'bird': mat_flat('MAT-Slice_Bird', (0.04, 0.035, 0.03), 0.8),
-        'plaster_early': mat_plaster('MAT-Slice_PlasterEarly', V(PAL['plaster_early']) * V((0.7, 0.63, 0.52)),
-                                     V(PAL['stone']).lerp(V(PAL['ochre']), 0.35), 0.22, 0.32),
+        'plaster_early': mat_plaster('MAT-Slice_PlasterEarly', V(PAL['plaster_early']) * V((0.72, 0.63, 0.48)),
+                                     V(PAL['stone']).lerp(V(PAL['ochre']), 0.45), 0.24, 0.4),
         'plaster_plaza': mat_plaster('MAT-Slice_PlasterPlaza', V(PAL['plaster_early']) * V((0.68, 0.61, 0.5)),
                                      V(PAL['stone']).lerp(V(PAL['ochre']), 0.35), 0.16, 0.15),
         'quincha_white': mat_quincha('MAT-Slice_QuinchaWhite', V(PAL['plaster_early']) * 0.8),
@@ -1701,6 +1813,7 @@ def build_materials():
         'floor': mat_varied('MAT-Slice_HouseFloor', V(PAL['terrace']) * 0.9, 0.95, 0.1, 0.8, 0.15),
         'ash': mat_varied('MAT-Slice_Ash', (0.12, 0.11, 0.1), 0.95, 0.3, 3.0, 0.1),
         'gourd': mat_varied('MAT-Slice_Gourd', PAL['gourd'], 0.5, 0.1, 3.0, 0.05),
+        'smoke': mat_smoke('MAT-Slice_Smoke'),
     }
     return m
 
@@ -1735,6 +1848,7 @@ MAT_NAMES = {
     'floor': 'MAT-Slice_HouseFloor',
     'ash': 'MAT-Slice_Ash',
     'gourd': 'MAT-Slice_Gourd',
+    'smoke': 'MAT-Slice_Smoke',
     'terrain': 'MAT-Slice_Terrain',
     'river': 'MAT-Slice_RiverWater',
     'canal': 'MAT-Slice_CanalWater',
@@ -1805,6 +1919,9 @@ def build_stage_kits():
         kit_person(mats, pose)
     kit_deer(mats)
     kit_bird(mats)
+    for s in range(2):
+        kit_smoke(mats, s)
+    kit_fire(mats, 0)
     arch = collection('COL-Slice_Architecture')
     build_pyramid(arch, mats, kits('KIT-Shicras_'))
     houses = [(-22, 28.5, 0.1, 'quincha_white'), (-15.0, 30.5, -0.15, 'quincha_ochre'),
@@ -1824,55 +1941,21 @@ def build_stage_life():
     canas, carrizos, totoras = kits('KIT-CanaBrava_'), kits('KIT-Carrizo_'), kits('KIT-Totora_')
     crops = {kind: kits(f'KIT-Crop_{kind}_') for kind in ('cotton', 'squash', 'beans')}
 
-    def riparian(x, y, rng):
-        d = abs(y - river_y(x))
-        dens = 0.5 + 0.5 * n2(x * 0.06, 11.0)
-        return 5.5 < d < 12.5 and not plot_at(x, y) and not in_wetland(x, y) and rng.random() < dens
-
-    def riverbank(x, y, rng):
-        d = abs(y - river_y(x))
-        return 3.4 < d < 7.5 and not plot_at(x, y) and not in_wetland(x, y)
-
-    def wet_edge(x, y, rng):
-        return (((x + 44) / 14.0) ** 2 + ((y + 50) / 6.4) ** 2) < 1.25 and not in_wetland(x, y) or (
-            in_wetland(x, y) and rng.random() < 0.12)
-
-    def grove(x, y, rng):
-        edge = y + 1.4 * n2(x * 0.045, 4.0)
-        dens = 0.35 + 0.65 * max(0.0, n2(x * 0.05, y * 0.05, 13.0) + 0.3)
-        return 6.5 < edge < 15.0 and path_dist(x, y) > 2.5 and rng.random() < dens
-
-    def wet(x, y, rng):
-        return in_wetland(x, y)
-
-    def far(fn):
-        def wrapped(x, y, rng):
-            return (abs(x) > SIZE_X / 2 or abs(y) > SIZE_Y / 2) and fn(x, y, rng)
-        return wrapped
-
-    def lomas_scrub(x, y, rng):
-        return 24 < y < 95 and rng.random() < 0.25 and not (-8 < x < 36 and 22 < y < 62) and not (
-            -28 < x < 0 and 24 < y < 44)
-
-    def terrace_ground(x, y, rng):
-        return 22 < y < 110 and rng.random() < 0.35 and not (-6 < x < 34 and 18 < y < 62) and not (
-            -28 < x < 0 and 24 < y < 44)
-
     counts = {}
-    counts['sauce'] = scatter(veg, sauces, 46, riparian, 1, (0.85, 1.25), 'Sauce')
-    counts['cana'] = scatter(veg, canas, 80, riverbank, 2, (0.85, 1.2), 'CanaBrava')
-    counts['carrizo'] = scatter(veg, carrizos, 80, riverbank, 3, (0.8, 1.2), 'Carrizo')
-    counts['carrizo_wet'] = scatter(veg, carrizos, 18, wet_edge, 31, (0.8, 1.1), 'Carrizo')
-    counts['totora'] = scatter(veg, totoras, 36, wet, 4, (0.8, 1.2), 'Totora')
-    counts['huarango'] = scatter(veg, huarangos, 42, grove, 5, (0.85, 1.2), 'Huarango')
-    counts['huarango_rip'] = scatter(veg, huarangos, 8, riparian, 6, (0.8, 1.0), 'Huarango')
+    counts['sauce'] = scatter(veg, sauces, 46, 'riparian', 1, (0.85, 1.25), 'Sauce')
+    counts['cana'] = scatter(veg, canas, 80, 'riverbank', 2, (0.85, 1.2), 'CanaBrava')
+    counts['carrizo'] = scatter(veg, carrizos, 80, 'riverbank', 3, (0.8, 1.2), 'Carrizo')
+    counts['carrizo_wet'] = scatter(veg, carrizos, 18, 'wet_edge', 31, (0.8, 1.1), 'Carrizo')
+    counts['totora'] = scatter(veg, totoras, 90, 'wet', 4, (0.7, 1.25), 'Totora')
+    counts['huarango'] = scatter(veg, huarangos, 42, 'grove', 5, (0.85, 1.2), 'Huarango')
+    counts['huarango_rip'] = scatter(veg, huarangos, 8, 'riparian', 6, (0.8, 1.0), 'Huarango')
     counts['grass'] = scatter_grass(veg, kits('KIT-GrassTuft_'), 14000, 12)
-    counts['scrub'] = scatter(veg, carrizos, 150, lomas_scrub, 7, (0.3, 0.5), 'Scrub', (-MID_X, MID_X, 20.0, 100.0))
+    counts['scrub'] = scatter(veg, carrizos, 150, 'lomas_scrub', 7, (0.3, 0.5), 'Scrub', (-MID_X, MID_X, 20.0, 100.0))
     far_bounds = (-FAR_X * 0.6, FAR_X * 0.6, -110.0, 30.0)
-    counts['far_sauce'] = scatter(veg, sauces, 160, far(riparian), 21, (0.85, 1.25), 'FarSauce', far_bounds)
-    counts['far_huarango'] = scatter(veg, huarangos, 200, far(grove), 22, (0.85, 1.2), 'FarHuarango', far_bounds)
+    counts['far_sauce'] = scatter(veg, sauces, 160, 'far_riparian', 21, (0.85, 1.25), 'FarSauce', far_bounds)
+    counts['far_huarango'] = scatter(veg, huarangos, 200, 'far_grove', 22, (0.85, 1.2), 'FarHuarango', far_bounds)
     counts['crops'] = build_fields(veg, crops)
-    counts['pebbles'] = scatter(veg, kits('KIT-Pebbles_'), 420, terrace_ground, 8, (0.8, 1.4), 'Pebbles',
+    counts['pebbles'] = scatter(veg, kits('KIT-Pebbles_'), 420, 'terrace_ground', 8, (0.8, 1.4), 'Pebbles',
                                 (-MID_X, MID_X, 20.0, 110.0))
 
     people = {p: bpy.data.meshes[f'KIT-Person_{p}'] for p in ('stand', 'carry', 'stick')}
@@ -1918,6 +2001,45 @@ def build_stage_life():
         obj = bpy.data.objects.new('Bird', bird)
         obj.location = (-14 + k * 2.0 + rng.uniform(-1, 1), -22 + rng.uniform(-2.5, 2.5), 12 + rng.uniform(-1.5, 1.5))
         obj.rotation_euler = (rng.uniform(-0.2, 0.2), rng.uniform(-0.3, 0.3), 0.3 + rng.uniform(-0.3, 0.3))
+        link(obj, life)
+
+    # Huarangos shading the dwellings (huarango on the terraces is documented; these trees assumed).
+    huarango_spots = ((-28.5, 33.0, 0.3), (-12.5, 42.0, 1.9), (-3.0, 38.5, 4.0), (-20.5, 42.5, 2.7))
+    for k, (x, y, yaw) in enumerate(huarango_spots):
+        obj = bpy.data.objects.new('Huarango', huarangos[k % len(huarangos)])
+        obj.location = (x, y, height(x, y))
+        obj.rotation_euler = (0, 0, yaw)
+        obj.scale = (0.9, 0.9, 0.9)
+        link(obj, veg)
+    # Stone brought up for the retaining walls (stone walls documented; piles assumed).
+    for k, (x, y) in enumerate(((-5.5, 41.0), (-6.0, 46.5), (31.5, 40.0))):
+        obj = bpy.data.objects.new('StonePile', kits('KIT-Pebbles_')[k % 3])
+        obj.location = (x, y, height(x, y))
+        obj.rotation_euler = (0, 0, k * 1.3)
+        obj.scale = (2.4, 2.4, 3.2)
+        link(obj, life)
+    # Hearth fires and smoke behind the dwellings, and the sacred fire on the Pyramid Mayor.
+    fire, smokes = bpy.data.meshes['KIT-Fire_0'], kits('KIT-Smoke_')
+    hearths = []
+    for house in sorted(o.name for o in bpy.data.objects if o.name.startswith('GEO-Slice_Quincha_')):
+        obj = bpy.data.objects[house]
+        hearths.append(obj.location + obj.rotation_euler.to_matrix() @ Vector((HEARTH_LOCAL[0], HEARTH_LOCAL[1], 0.0)))
+    pyr_z = base_levels()[0]
+    altar = Vector((PYR[0] - 6.5, PYR[1] + 2.0, pyr_z + PYR_WORK_Z + 2.8 + 0.55))
+    for k, pos in enumerate(hearths[:4] + [altar]):
+        obj = bpy.data.objects.new('Fire', fire)
+        obj.location = pos
+        link(obj, life)
+        smoke = bpy.data.objects.new('Smoke', smokes[k % len(smokes)])
+        smoke.location = pos + Vector((0, 0, 0.25))
+        smoke.rotation_euler = (math.radians(-22), math.radians(30), k * 0.4)
+        s = 0.8 if k < 4 else 1.1
+        smoke.scale = (s, s, s * rng.uniform(0.85, 1.15))
+        link(smoke, life)
+    for k, pos in enumerate(hearths[:3]):
+        obj = bpy.data.objects.new('Person_stand', people['stand'])
+        obj.location = (pos.x + 1.0, pos.y - 0.5, height(pos.x + 1.0, pos.y - 0.5))
+        obj.rotation_euler = (0, 0, 2.0 + k)
         link(obj, life)
 
     place_camera(scene, 'default')
