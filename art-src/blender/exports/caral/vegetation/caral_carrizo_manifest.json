@@ -1,0 +1,66 @@
+{
+  "asset_id": "caral_carrizo",
+  "source_scene": "scenes/caral_vegetation_kit.blend",
+  "script": "scripts/blender/build_caral_vegetation_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "pivot": "trunk base at origin",
+  "budget": {
+    "LOD0": 400,
+    "LOD1": 120
+  },
+  "lods": {
+    "LOD0": {
+      "triangles": 280,
+      "draw_calls": 1,
+      "materials": [
+        "MAT-Kit_Reed"
+      ],
+      "bounds": {
+        "min": [
+          -1.3493,
+          -0.7868,
+          -0.0566
+        ],
+        "max": [
+          0.9937,
+          1.0839,
+          2.1938
+        ],
+        "size": [
+          2.343,
+          1.8706,
+          2.2505
+        ]
+      },
+      "file": "caral_carrizo_lod0.glb",
+      "bytes": 16548
+    },
+    "LOD1": {
+      "triangles": 84,
+      "draw_calls": 1,
+      "materials": [
+        "MAT-Kit_Reed"
+      ],
+      "bounds": {
+        "min": [
+          -1.1244,
+          -1.2146,
+          -0.056
+        ],
+        "max": [
+          1.0611,
+          1.0166,
+          2.1317
+        ],
+        "size": [
+          2.1855,
+          2.2311,
+          2.1876
+        ]
+      },
+      "file": "caral_carrizo_lod1.glb",
+      "bytes": 5844
+    }
+  }
+}

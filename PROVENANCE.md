@@ -135,6 +135,23 @@ slot is absent (offline / without assets).
   standing building. Hashes and sizes are recorded in
   [`art-src/blender/mission-decor/README.md`](./art-src/blender/mission-decor/README.md).
 
+### Caral vegetation kit (huarango, sauce, caña brava, carrizo, totora)
+
+- **Location**: `src/assets/vegetation/caral/caral_<species>_lod0.glb` and `_lod1.glb`.
+- **Source**: generated in Blender by `scripts/blender/build_caral_vegetation_kit.py` (shapes shared
+  with the vertical-slice diorama, `scripts/blender/build_caral_slice.py`); the kit scene is saved to
+  `art-src/blender/scenes/caral_vegetation_kit.blend` (Git LFS). Uncompressed exports and per-species
+  manifests (triangles, draw calls, bounds, budget) live in `art-src/blender/exports/caral/vegetation/`;
+  the game copies were meshopt-compressed with `yarn art:models`.
+- **Content**: project-owned procedural geometry and a generated leaf-cluster texture; no third-party
+  scans or textures. LOD0/LOD1 stay within the art-direction budgets (huarango 1500/400, sauce 1200/350,
+  caña brava 600/150, carrizo 400/120, totora 400/120 tris).
+- **Runtime**: the huarango draws the `algarrobo` tree variant (both are *Prosopis*) and the willow the
+  `sauce` variant on every map; totora props everywhere; caña brava and carrizo only along the Supe in
+  m1. Procedural geometry remains the fallback until the GLBs load.
+- **Confidence**: species and zones documented in `docs/historia/campanas/caral.md`; shapes are stylized
+  (art-direction.md §7), not botanical surveys.
+
 ### Caral Pyramid Mayor modular scenery
 
 - **Location**: `src/assets/scenery/caral/caral_pyramid_mayor_lod0.glb` and `lod1.glb`.

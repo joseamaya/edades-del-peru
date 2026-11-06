@@ -1,0 +1,68 @@
+{
+  "asset_id": "caral_huarango",
+  "source_scene": "scenes/caral_vegetation_kit.blend",
+  "script": "scripts/blender/build_caral_vegetation_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "pivot": "trunk base at origin",
+  "budget": {
+    "LOD0": 1500,
+    "LOD1": 400
+  },
+  "lods": {
+    "LOD0": {
+      "triangles": 1402,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Kit_Bark",
+        "MAT-Kit_HuarangoLeaf"
+      ],
+      "bounds": {
+        "min": [
+          -3.5818,
+          -3.6355,
+          -0.1417
+        ],
+        "max": [
+          3.9134,
+          3.4977,
+          5.9961
+        ],
+        "size": [
+          7.4952,
+          7.1332,
+          6.1378
+        ]
+      },
+      "file": "caral_huarango_lod0.glb",
+      "bytes": 160492
+    },
+    "LOD1": {
+      "triangles": 382,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Kit_Bark",
+        "MAT-Kit_HuarangoLeaf"
+      ],
+      "bounds": {
+        "min": [
+          -4.0953,
+          -4.3455,
+          -0.1283
+        ],
+        "max": [
+          3.677,
+          3.9693,
+          6.3777
+        ],
+        "size": [
+          7.7722,
+          8.3148,
+          6.506
+        ]
+      },
+      "file": "caral_huarango_lod1.glb",
+      "bytes": 78708
+    }
+  }
+}

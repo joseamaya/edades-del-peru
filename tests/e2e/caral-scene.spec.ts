@@ -91,3 +91,46 @@ test('the Caral dressing is deterministic for the same mission seed', { tag: '@s
   );
   expect(second).toBe(first);
 });
+
+test('the Blender vegetation kit replaces the procedural huarango, willow and totora', async ({ page }) => {
+  const errors = await boot(page);
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game: any }).game;
+      return g.trees.hasKit('algarrobo') && g.trees.hasKit('sauce') && !!g.scene.getObjectByName('props_kit_totora');
+    },
+    null,
+    { timeout: 30_000 },
+  );
+  const state = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const count = (name: string) => {
+      let n = 0;
+      g.scene.traverse((o: any) => {
+        if (o.name === name && o.isInstancedMesh) n = Math.max(n, o.count);
+      });
+      return n;
+    };
+    const procedural = g.scene.getObjectByName('props_totora');
+    // Picking resolves a packed kit instance back to its resource node.
+    const T = (window as unknown as { THREE: any }).THREE;
+    const tree = g.trees.slots.find((s: any) => s.used && s.visible && s.variant === 'algarrobo');
+    const ray = new T.Raycaster(new T.Vector3(tree.x + 0.3, tree.y + 20, tree.z + 0.3), new T.Vector3(0, -1, 0));
+    const hits: { id: number }[] = [];
+    g.trees.raycast(ray, hits);
+    return {
+      picked: hits.some((h) => h.id === tree.id),
+      huarango: count('trees_kit_huarango_lod0') + count('trees_kit_huarango_lod1'),
+      totoraKit: count('props_kit_totora'),
+      totora: procedural?.count ?? 0,
+      proceduralVisible: procedural?.visible ?? true,
+      canes: count('props_kit_cana_brava') + count('props_kit_carrizo'),
+    };
+  });
+  expect(state.huarango).toBeGreaterThan(0);
+  expect(state.picked).toBe(true);
+  expect(state.totoraKit).toBe(state.totora);
+  expect(state.proceduralVisible).toBe(false);
+  expect(state.canes).toBeGreaterThan(0);
+  expect(errors).toEqual([]);
+});

@@ -63,7 +63,7 @@ describe('Caral valley plan', () => {
     expect(props.length).toBeGreaterThan(8);
     expect(again).toEqual(props);
     for (const p of props) {
-      expect(['totora', 'shrub']).toContain(p.id);
+      expect(['totora', 'cana_brava', 'carrizo']).toContain(p.id);
       expect(plan.fields.some((f) => Math.hypot(f.x - p.x, f.z - p.z) < f.size / 2)).toBe(false);
     }
   });

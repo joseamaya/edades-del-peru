@@ -105,7 +105,7 @@ export function planCaralValley(
 }
 
 /**
- * Visual-only reeds and low shrubs along the Supe floodplain. Every candidate
+ * Visual-only totora and riverbank canes (caña brava, carrizo) along the Supe floodplain. Every candidate
  * must see water within a few metres, and is kept away from the fields, base,
  * canal and authored site; no collision or yield.
  */
@@ -127,8 +127,11 @@ export function planCaralValleyProps(
       if (q.isReserved(x, z)) continue;
       if (out.some((p) => Math.hypot(p.x - x, p.z - z) < VALLEY_PROP_CLEARANCE)) continue;
       const reed = rng.chance(0.72);
+      // Riverbank canes instead of generic shrubs; the species alternates by position so the
+      // random stream (and every placement) stays as before.
+      const cane = (Math.floor(x + z) & 1) === 0 ? 'cana_brava' : 'carrizo';
       out.push({
-        id: reed ? 'totora' : 'shrub',
+        id: reed ? 'totora' : cane,
         x,
         z,
         rotY: rng.range(0, Math.PI * 2),
