@@ -108,6 +108,27 @@ m2–m9 are implemented and released across the four chapters. m7 is a counterfa
 historical losses are documented, while its playable land defence of the port is an abstraction. Each
 mission remains reviewed against its dossier before it is rewritten.
 
+## Unique units in the campaign
+
+**Decision: keep the documented unique units available in m3–m6b.** They are ordinary barracks units
+already backed by [`docs/historia/unidades-unicas.md`](../historia/unidades-unicas.md), not an
+undocumented campaign bonus. No mission-specific `allowedUnits` restriction is added; the existing
+real-command playtests for m3–m6b remain green with the decision applied, and no balance change was
+needed. The campaign unit test and the `civ-uniques` E2E also check the barracks roster and the player/enemy availability. Briefings
+name the unique unit when it belongs to the player's civilization, and the Codex keeps the fuller
+source.
+
+| Mission | Player unique | Enemy unique |
+| --- | --- | --- |
+| m3 Moche–Recuay | Guerrero Moche | Guerrero Recuay |
+| m4 Wari | Guardián Wari | — (Tiahuanaco has a documented gap; the enemy is inactive) |
+| m5 Yahuar Pampa | Guerrero Inca | Guerrero Chanca |
+| m6 Chimú–Inca | Guerrero Inca | Fixi Chimú |
+| m6b Guerra Civil Inca | Guerrero Inca | Guerrero Inca |
+
+The enemy AI may train its own unique unit when the mission has an active enemy. This is the same
+civilization-scoped rule used in skirmish, not a hidden production advantage.
+
 ## Historical limits recorded by the pilot
 
 - Caral has no documented war; the mission keeps `enemy.active: false`.

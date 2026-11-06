@@ -5,6 +5,8 @@ import { tutorialForMission } from '../src/campaign/defs/tutorials';
 import { getPeriod } from '../src/model/defs/periods';
 import { getCiv } from '../src/model/defs/civs';
 import { BuildingKind, UnitKind } from '../src/core/types';
+import { BUILDING_DEFS } from '../src/model/defs/buildings';
+import { UNIT_ARCHETYPES, unitTrainableInPeriod } from '../src/model/defs/units';
 
 describe('campaign educational content', () => {
   it('the prologue is not empty', () => {
@@ -182,6 +184,32 @@ describe('campaign educational content', () => {
     expect(waveKinds(m7)).toContain(UnitKind.REALISTA_DRAGON);
     expect(waveKinds(m8)).toContain(UnitKind.REALISTA_DRAGON);
     expect(waveKinds(m9)).toContain(UnitKind.CHILE_INFANTE);
+  });
+
+  it('keeps documented unique units available and named in chapter I-II campaign missions', () => {
+    const cases: Array<[string, UnitKind, UnitKind?]> = [
+      ['m3_moche_recuay', UnitKind.MOCHE_WARRIOR, UnitKind.RECUAY_WARRIOR],
+      ['m4_wari', UnitKind.WARI_GUARDIAN],
+      ['m5_yahuar_pampa', UnitKind.INCA_WARRIOR, UnitKind.CHANCA_WARRIOR],
+      ['m6_chimu_inca', UnitKind.INCA_WARRIOR, UnitKind.CHIMU_FIXI],
+      ['m6b_guerra_civil', UnitKind.INCA_WARRIOR, UnitKind.INCA_WARRIOR],
+    ];
+    for (const [id, playerUnit, enemyUnit] of cases) {
+      const mis = MISSIONS.find((m) => m.id === id)!;
+      const edu = getEducational(id);
+      expect(mis.allowedUnits, `${id} adds a mission restriction`).toBeUndefined();
+      expect(unitTrainableInPeriod(playerUnit, mis.period, mis.playerCiv), `${id} player unique`).toBe(true);
+      expect(BUILDING_DEFS[BuildingKind.BARRACKS].trainable, `${id} barracks roster`).toContain(playerUnit);
+      expect(edu, `${id} briefing`).toBeDefined();
+      expect(edu!.briefing, `${id} briefing names its player unique`).toContain(UNIT_ARCHETYPES[playerUnit].name);
+      if (enemyUnit) {
+        expect(unitTrainableInPeriod(enemyUnit, mis.period, mis.enemyCiv), `${id} enemy unique`).toBe(true);
+        expect(BUILDING_DEFS[BuildingKind.BARRACKS].trainable, `${id} enemy barracks roster`).toContain(enemyUnit);
+        expect(edu!.briefing, `${id} briefing names its enemy unique`).toContain(UNIT_ARCHETYPES[enemyUnit].name);
+      } else {
+        expect(mis.enemy.active, `${id} has no enemy unique but an active enemy`).toBe(false);
+      }
+    }
   });
 
   it('keeps m9 as a port defense around Bolognesi', () => {
