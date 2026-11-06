@@ -132,7 +132,7 @@ test('plays m8 by holding Junín and Ayacucho with real orders', async ({ page }
     const center = g.playerCenter(0) as { x: number; z: number };
     const sucre = [...g.units.values()].find((u: any) => u.tag === 'sucre') as any;
     const cavalry = [...g.units.values()]
-      .filter((u: any) => u.owner === 0 && !u.dead && u.kind === 'cavalry')
+      .filter((u: any) => u.owner === 0 && !u.dead && (u.kind === 'cavalry' || u.kind === 'patriota_montonera'))
       .map((u: any) => u.id);
     const rifles = [...g.units.values()]
       .filter((u: any) => u.owner === 0 && !u.dead && u.kind === 'rifleman' && u.tag !== 'sucre')
@@ -172,7 +172,7 @@ test('plays m8 by holding Junín and Ayacucho with real orders', async ({ page }
   expect(errors).toEqual([]);
 });
 
-test('plays m9 by defending the port and striking the Chilean command with real orders', async ({ page }) => {
+test('plays m9 by defending the port through the final assault with real orders', async ({ page }) => {
   test.setTimeout(120_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
@@ -185,25 +185,45 @@ test('plays m9 by defending the port and striking the Chilean command with real 
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
     const m = g.mission;
-    const enemy = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'center' && !b.dead) as any;
     const fort = [...g.buildings.values()].find((b: any) => b.tag === 'puerto') as any;
     const bolognesi = [...g.units.values()].find((u: any) => u.tag === 'bolognesi') as any;
     const soldiers = [...g.units.values()]
       .filter((u: any) => u.owner === 0 && !u.dead && u.kind === 'soldier')
       .map((u: any) => u.id);
-    const rifles = [...g.units.values()]
-      .filter((u: any) => u.owner === 0 && !u.dead && u.kind === 'rifleman' && u.tag !== 'bolognesi')
+    const defenders = [...g.units.values()]
+      .filter(
+        (u: any) =>
+          u.owner === 0 &&
+          !u.dead &&
+          u.tag !== 'bolognesi' &&
+          (u.kind === 'rifleman' || u.kind === 'republica_defensor'),
+      )
       .map((u: any) => u.id);
     const move = (ids: number[], x: number, z: number) =>
       g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'move', target: { x, z } }, clear: true }, false);
-    const attack = (ids: number[], entityId: number) =>
-      g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'attack', entityId }, clear: true }, false);
+    const attackMove = (ids: number[], x: number, z: number) =>
+      g.executeCommand(
+        { kind: 'order', unitIds: ids, order: { kind: 'attack_move', target: { x, z } }, clear: true },
+        false,
+      );
     const dt = 1 / 60;
     let t = 0;
     move([bolognesi.id], fort.pos.x - 2, fort.pos.z - 2);
-    move(rifles, fort.pos.x + 4, fort.pos.z + 4);
-    attack(soldiers, enemy.id);
-    for (let i = 0; i < Math.ceil(620 / dt) && !m.ended; i++) {
+    move(defenders, fort.pos.x + 4, fort.pos.z + 4);
+    move(soldiers, fort.pos.x - 4, fort.pos.z - 4);
+    for (let i = 0; i < Math.ceil(540 / dt) && !m.ended; i++) {
+      g.update(dt, t);
+      t += dt;
+    }
+    // Intercept the last assault before it reaches the port.
+    const center = g.playerCenter(0) as { x: number; z: number };
+    const combat = [...g.units.values()]
+      .filter(
+        (u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker' && u.kind !== 'scout' && u.tag !== 'bolognesi',
+      )
+      .map((u: any) => u.id);
+    attackMove(combat, center.x + 20, center.z - 10);
+    for (let i = 0; i < Math.ceil(80 / dt) && !m.ended; i++) {
       g.update(dt, t);
       t += dt;
     }
@@ -242,19 +262,30 @@ test('plays m6b by advancing to Quipaipan and defeating Huáscar with real order
       .map((u: any) => u.id);
     const move = (ids: number[], x: number, z: number) =>
       g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'move', target: { x, z } }, clear: true }, false);
+    const attackMove = (ids: number[], x: number, z: number) =>
+      g.executeCommand(
+        { kind: 'order', unitIds: ids, order: { kind: 'attack_move', target: { x, z } }, clear: true },
+        false,
+      );
     const attack = (ids: number[], entityId: number) =>
       g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'attack', entityId }, clear: true }, false);
     move([atahualpa.id], site.x - 35, site.z + 20);
-    move(army, enemy.pos.x, enemy.pos.z + 18);
+    attackMove(army, enemy.pos.x, enemy.pos.z);
     const dt = 1 / 60;
     let t = 0;
-    for (let i = 0; i < Math.ceil(220 / dt) && !m.ended; i++) {
+    for (let i = 0; i < Math.ceil(220 / dt) && !m.ended && m.getObjectiveState('obj_avanzar') !== 'completed'; i++) {
       g.update(dt, t);
       t += dt;
     }
     const reach = m.getObjectiveState('obj_avanzar') as string;
-    attack(army, enemy.id);
+    // Clear Huáscar's defenders first; attack-moving stops at the enemy units
+    // instead of walking the army into the centre without a fight.
     for (let i = 0; i < Math.ceil(300 / dt) && !m.ended; i++) {
+      g.update(dt, t);
+      t += dt;
+    }
+    attack(army, enemy.id);
+    for (let i = 0; i < Math.ceil(200 / dt) && !m.ended; i++) {
       g.update(dt, t);
       t += dt;
     }
