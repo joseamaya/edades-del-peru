@@ -69,6 +69,8 @@ export class TreeInstances {
   private materials: THREE.Material[] = [];
   private slots: Slot[] = [];
   private free: number[] = [];
+  /** One past the highest used slot: the draw count of the procedural meshes. */
+  private highWater = 0;
   private time = 0;
   private windStrength = 0.035;
   private readonly kits = new Map<TreeVariant, KitLayer>();
@@ -106,6 +108,7 @@ export class TreeInstances {
     this.trunkMesh.receiveShadow = true;
     this.trunkMesh.frustumCulled = false;
     this.trunkMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    this.trunkMesh.name = 'trees_trunk';
     this.scene.add(this.trunkMesh);
 
     this.canopyMesh = {} as Record<TreeVariant, THREE.InstancedMesh>;
@@ -133,6 +136,7 @@ export class TreeInstances {
       mesh.receiveShadow = false;
       mesh.frustumCulled = false;
       mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      mesh.name = `trees_canopy_${variant}`;
       this.canopyMesh[variant] = mesh;
       this.scene.add(mesh);
     }
@@ -152,9 +156,12 @@ export class TreeInstances {
         visible: false,
         fallTime: 0,
       });
-      this.free.push(i);
     }
+    // Hand out low slots first so the procedural meshes only draw up to the highest slot in use
+    // (empty slots are zero-scaled but still cost their triangles, also in the shadow pass).
+    for (let i = MAX - 1; i >= 0; i--) this.free.push(i);
     this.writeAll();
+    this.syncCounts();
   }
 
   private buildTrunkGeo(): THREE.BufferGeometry {
@@ -211,6 +218,10 @@ export class TreeInstances {
     s.phase = Math.random() * Math.PI * 2;
     s.visible = true;
     s.fallTime = 0;
+    if (slot >= this.highWater) {
+      this.highWater = slot + 1;
+      this.syncCounts();
+    }
     if (this.kits.has(variant)) this.writeZero(slot);
     this.writeSlot(slot);
     this.zeroOtherCanopies(slot, variant);
@@ -236,6 +247,15 @@ export class TreeInstances {
     s.id = -1;
     this.writeZero(slot);
     this.free.push(slot);
+    if (slot === this.highWater - 1) {
+      while (this.highWater > 0 && !this.slots[this.highWater - 1].used) this.highWater--;
+      this.syncCounts();
+    }
+  }
+
+  private syncCounts(): void {
+    this.trunkMesh.count = this.highWater;
+    for (const variant of VARIANTS) this.canopyMesh[variant].count = this.highWater;
   }
 
   nodeIdAt(slot: number): number {

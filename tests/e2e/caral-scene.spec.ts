@@ -112,6 +112,8 @@ test('the Blender vegetation kit replaces the procedural huarango, willow and to
       return n;
     };
     const procedural = g.scene.getObjectByName('props_totora');
+    const trunk = g.scene.getObjectByName('trees_trunk');
+    const highestUsed = g.trees.slots.reduce((m: number, s: any, i: number) => (s.used ? i : m), -1);
     // Picking resolves a packed kit instance back to its resource node.
     const T = (window as unknown as { THREE: any }).THREE;
     const tree = g.trees.slots.find((s: any) => s.used && s.visible && s.variant === 'algarrobo');
@@ -120,6 +122,8 @@ test('the Blender vegetation kit replaces the procedural huarango, willow and to
     g.trees.raycast(ray, hits);
     return {
       picked: hits.some((h) => h.id === tree.id),
+      trunkCount: trunk?.count ?? -1,
+      highestUsed,
       huarango: count('trees_kit_huarango_lod0') + count('trees_kit_huarango_lod1'),
       totoraKit: count('props_kit_totora'),
       totora: procedural?.count ?? 0,
@@ -129,6 +133,9 @@ test('the Blender vegetation kit replaces the procedural huarango, willow and to
   });
   expect(state.huarango).toBeGreaterThan(0);
   expect(state.picked).toBe(true);
+  // Procedural tree meshes draw only up to the highest used slot, not all 700.
+  expect(state.trunkCount).toBe(state.highestUsed + 1);
+  expect(state.trunkCount).toBeLessThan(700);
   expect(state.totoraKit).toBe(state.totora);
   expect(state.proceduralVisible).toBe(false);
   expect(state.canes).toBeGreaterThan(0);
