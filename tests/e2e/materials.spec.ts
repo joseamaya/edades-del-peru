@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Models are built once per signature and cloned per instance, sharing geometry
- * but not materials. These assert that mutating one entity's materials (fade while
- * building, placement ghost tint) never leaks into another entity of the same kind.
+ * Entities may share immutable geometry/base materials, but any mutable
+ * presentation state (outfit tint, carry colour, construction fade, placement
+ * ghost) must stay per instance. These checks mutate one entity and assert the
+ * change never leaks into another entity of the same kind.
  */
 test('model materials are per instance and do not leak between entities', { tag: '@smoke' }, async ({ page }) => {
   await page.goto('/?play=1&civ=realistas&period=6&seed=777&fog=0&low=1');
@@ -37,6 +38,13 @@ test('model materials are per instance and do not leak between entities', { tag:
     const partner = pair ? rigged.find((w: any) => w !== pair && w.gender === pair.gender) : null;
     const partnerMat = partner?.rig.root.getObjectByName(tunicName)?.material ?? null;
     const shared = !!tunicMat && tunicMat === partnerMat;
+    let tunicLeak = false;
+    if (tunicMat && partnerMat) {
+      const original = tunicMat.color.getHex();
+      tunicMat.color.setHex(0xff00ff);
+      tunicLeak = partnerMat.color.getHex() === 0xff00ff;
+      tunicMat.color.setHex(original);
+    }
 
     // the carry bundle tints per resource, so its material must not use baked vertex colours
     const carryMat = (w: any) => {
@@ -44,9 +52,17 @@ test('model materials are per instance and do not leak between entities', { tag:
       const mesh = carry?.children.find((child: any) => child.isMesh);
       return mesh?.material ?? null;
     };
-    const carryVertexColors = carryMat(workers[0])?.vertexColors ?? null;
-    const carryMats = workers.slice(0, 2).map((w: any) => carryMat(w));
-    const sharedCarry = carryMats.length === 2 && carryMats[0] !== null && carryMats[0] === carryMats[1];
+    const carryA = carryMat(workers[0]);
+    const carryB = carryMat(workers[1]);
+    const carryVertexColors = carryA?.vertexColors ?? null;
+    const sharedCarry = !!carryA && carryA === carryB;
+    let carryLeak = false;
+    if (carryA && carryB) {
+      const original = carryA.color.getHex();
+      carryA.color.setHex(0xff00ff);
+      carryLeak = carryB.color.getHex() === 0xff00ff;
+      carryA.color.setHex(original);
+    }
 
     const center = [...g.buildings.values()].find((b: any) => b.kind === 'center' && b.owner === 0);
     const centerTransparentBefore = mats(center.view.group).filter((m) => m.transparent === true).length;
@@ -73,7 +89,11 @@ test('model materials are per instance and do not leak between entities', { tag:
     return {
       riggedCount: rigged.length,
       hasSameGenderPair: !!pair,
+      tunicFound: !!pair && !!tunicMat && !!partnerMat,
+      tunicLeak,
       shared,
+      carryFound: !!carryA && !!carryB,
+      carryLeak,
       sharedCarry,
       carryVertexColors,
       centerTransparentBefore,
@@ -87,8 +107,12 @@ test('model materials are per instance and do not leak between entities', { tag:
 
   expect(res.riggedCount).toBeGreaterThanOrEqual(2);
   expect(res.hasSameGenderPair).toBe(true);
+  expect(res.tunicFound).toBe(true);
   expect(res.shared).toBe(false);
+  expect(res.tunicLeak).toBe(false);
+  expect(res.carryFound).toBe(true);
   expect(res.sharedCarry).toBe(false);
+  expect(res.carryLeak).toBe(false);
   expect(res.carryVertexColors).toBe(false);
   expect(res.centerTransparentAfter).toBe(res.centerTransparentBefore);
   expect(res.houseFaded).toBe(true);

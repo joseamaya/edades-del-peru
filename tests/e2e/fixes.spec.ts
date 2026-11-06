@@ -82,30 +82,41 @@ test('the worker animates the arm while gathering', { tag: '@smoke' }, async ({ 
   });
   expect(armed).toBe(true);
 
+  const usesRig = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
+    return !!w?.rig;
+  });
+  if (usesRig) {
+    await page.waitForFunction(
+      () => {
+        const g = (window as unknown as { game: any }).game;
+        const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
+        return w?.rig?.currentClipName === 'Farm_Harvest';
+      },
+      null,
+      { timeout: 20_000 },
+    );
+  }
+
   const samples = new Set<string>();
-  const clips = new Set<string>();
-  for (let i = 0; i < 18; i++) {
-    await page.waitForTimeout(120);
-    const sample = await page.evaluate(() => {
+  for (let i = 0; i < 10; i++) {
+    await page.waitForTimeout(100);
+    const poseKey = await page.evaluate(() => {
       const g = (window as unknown as { game: any }).game;
       const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
       const bone = w?.rig?.root.getObjectByName('hand_r');
-      const pose = bone
-        ? bone.quaternion
-            .toArray()
-            .map((v: number) => v.toFixed(4))
-            .join(',')
-        : w?.unitView?.armR
-          ? w.unitView.armR.rotation.x.toFixed(3)
-          : '0';
-      return { pose, clip: w?.rig?.currentClipName ?? null };
+      if (bone)
+        return bone.quaternion
+          .toArray()
+          .map((v: number) => v.toFixed(4))
+          .join(',');
+      return w?.unitView?.armR ? w.unitView.armR.rotation.x.toFixed(3) : '0';
     });
-    samples.add(sample.pose);
-    if (sample.clip) clips.add(sample.clip);
+    samples.add(poseKey);
   }
 
   expect(samples.size).toBeGreaterThan(3);
-  expect(clips.has('Farm_Harvest')).toBe(true);
 });
 
 test('the move order creates a destination marker', async ({ page }) => {

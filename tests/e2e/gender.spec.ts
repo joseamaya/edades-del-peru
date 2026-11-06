@@ -26,6 +26,8 @@ test('rigged units get deterministic male/female variants', { tag: '@smoke' }, a
       return {
         gender: u.gender,
         variant: u.rig?.variantId ?? null,
+        bodyFound: !!body,
+        otherFound: !!other,
         bodyVisible: body?.visible ?? false,
         otherVisible: other?.visible ?? false,
         verts: body?.geometry?.attributes?.position?.count ?? 0,
@@ -36,6 +38,7 @@ test('rigged units get deterministic male/female variants', { tag: '@smoke' }, a
   expect(result.info.some((row: any) => row.gender === 'female')).toBe(true);
   expect(result.info.some((row: any) => row.gender === 'male')).toBe(true);
   expect(result.info.every((row: any) => row.variant?.endsWith(`_${row.gender[0]}`))).toBe(true);
+  expect(result.info.every((row: any) => row.bodyFound && row.otherFound)).toBe(true);
   expect(result.info.every((row: any) => row.bodyVisible && !row.otherVisible)).toBe(true);
   const female = result.info.find((row: any) => row.gender === 'female');
   const male = result.info.find((row: any) => row.gender === 'male');
