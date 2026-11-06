@@ -263,7 +263,10 @@ describe('rigged model assets', () => {
       asset: 'siege_rig',
       variant: 'siege_mortar_chile',
     });
-    expect(unitModelAsset(UnitKind.SOLDIER, Era.CONTEMPORARY, CivId.REPUBLIC)).toBeNull();
+    expect(unitModelAsset(UnitKind.SOLDIER, Era.CONTEMPORARY, CivId.REPUBLIC, 3)).toEqual({
+      asset: 'caral_worker',
+      variant: 'contemporary_republica_soldier_m',
+    });
   });
 
   it('maps the remaining pre-Hispanic cultures and the Caral infantry', () => {
@@ -350,20 +353,39 @@ describe('rigged model assets', () => {
     expect(modelAssetIdsForMatch(HistoricalPeriod.INDEPENDENCE, [CivId.REALISTAS])).toContain('caral_worker');
   });
 
+  it('maps contemporary Republic humanoids to the modern uniform', () => {
+    for (const [kind, role] of [
+      [UnitKind.WORKER, 'worker'],
+      [UnitKind.SCOUT, 'scout'],
+      [UnitKind.SOLDIER, 'soldier'],
+      [UnitKind.MUSKETEER, 'ranged'],
+      [UnitKind.RIFLEMAN, 'ranged'],
+      [UnitKind.SNIPER, 'sniper'],
+      [UnitKind.MISSIONARY, 'missionary'],
+    ] as const) {
+      expect(unitModelAsset(kind, Era.CONTEMPORARY, CivId.REPUBLIC, 2)).toEqual({
+        asset: 'caral_worker',
+        variant: `contemporary_republica_${role}_f`,
+      });
+    }
+    expect(RIG_VARIANT_CLIPS.contemporary_republica_worker_f?.gather).toBe('Farm_Harvest');
+    expect(RIG_VARIANT_CLIPS.contemporary_republica_worker_m?.walk_carry).toBe('Walk_Carry_Loop');
+    expect(RIG_VARIANT_CLIPS.contemporary_republica_ranged_m?.attack).toBe('Punch_Jab');
+    expect(RIG_VARIANT_CLIPS.contemporary_republica_sniper_m?.attack).toBe('Punch_Jab');
+    expect(RIG_VARIANT_CLIPS.contemporary_republica_missionary_f?.attack).toBeNull();
+    expect(modelAssetIdsForMatch(HistoricalPeriod.CONTEMPORARY, [CivId.REPUBLIC])).toContain('caral_worker');
+    for (const kind of [UnitKind.HUSSAR, UnitKind.ANTI_AIR, UnitKind.NUCLEAR]) {
+      expect(unitModelAsset(kind, Era.CONTEMPORARY, CivId.REPUBLIC)).toBeNull();
+    }
+    for (const era of [Era.FORMATIVE, Era.REGIONAL_STATES, Era.TAHUANTINSUYO, Era.VICEROYALTY, Era.REPUBLIC]) {
+      const choice = unitModelAsset(UnitKind.SOLDIER, era, CivId.REPUBLIC);
+      expect(choice?.variant?.startsWith('contemporary_republica_') ?? false).toBe(false);
+    }
+  });
+
   it('covers every trainable unit combination or documents the deferral', () => {
-    // Contemporary Republic units (uniform and vehicles) and the m7 Inca override are deferred; see #327.
-    const contemporaryRepublic = [
-      UnitKind.WORKER,
-      UnitKind.SOLDIER,
-      UnitKind.MUSKETEER,
-      UnitKind.RIFLEMAN,
-      UnitKind.SNIPER,
-      UnitKind.SCOUT,
-      UnitKind.MISSIONARY,
-      UnitKind.HUSSAR,
-      UnitKind.ANTI_AIR,
-      UnitKind.NUCLEAR,
-    ];
+    // Contemporary Republic vehicles and the m7 Inca override are deferred; see #327.
+    const contemporaryRepublic = [UnitKind.HUSSAR, UnitKind.ANTI_AIR, UnitKind.NUCLEAR];
     const m7Inca = [
       UnitKind.WORKER,
       UnitKind.SOLDIER,

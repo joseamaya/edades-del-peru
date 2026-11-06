@@ -1,4 +1,5 @@
 import { CivId } from '../../core/types';
+import { cultureForVariant, roleForVariant } from './variantHelpers';
 
 export const POST_COLONIAL_CULTURES = ['realistas', 'patriotas', 'republica', 'chile'] as const;
 export const POST_COLONIAL_ROLES = ['soldier', 'ranged', 'missionary', 'worker', 'scout'] as const;
@@ -62,13 +63,12 @@ export const POST_COLONIAL_SPECS: Record<PostColonialCulture, PostColonialSpec> 
   },
 };
 
-export function isPostColonialVariant(variant: string): variant is PostColonialRigVariant {
-  return (POST_COLONIAL_CULTURES as readonly string[]).some((culture) => variant.startsWith(`${culture}_`));
+export function postColonialCultureForVariant(variant: string): PostColonialCulture | null {
+  return cultureForVariant(POST_COLONIAL_CULTURES, variant);
 }
 
-export function postColonialCultureForVariant(variant: string): PostColonialCulture | null {
-  const culture = POST_COLONIAL_CULTURES.find((entry) => variant.startsWith(`${entry}_`));
-  return culture ?? null;
+export function isPostColonialVariant(variant: string): variant is PostColonialRigVariant {
+  return postColonialCultureForVariant(variant) !== null;
 }
 
 export function postColonialCultureForCiv(civ: CivId): PostColonialCulture | null {
@@ -76,9 +76,5 @@ export function postColonialCultureForCiv(civ: CivId): PostColonialCulture | nul
 }
 
 export function postColonialRoleForVariant(variant: string): PostColonialRole {
-  if (variant.includes('_ranged_')) return 'ranged';
-  if (variant.includes('_missionary_')) return 'missionary';
-  if (variant.includes('_worker_')) return 'worker';
-  if (variant.includes('_scout_')) return 'scout';
-  return 'soldier';
+  return roleForVariant(POST_COLONIAL_ROLES, variant) ?? 'soldier';
 }
