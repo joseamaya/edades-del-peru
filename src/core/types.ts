@@ -94,6 +94,8 @@ export enum UnitKind {
   MOCHE_WARRIOR = 'moche_warrior', // unique Moche infantry
   RECUAY_WARRIOR = 'recuay_warrior', // unique Recuay infantry
   WARI_GUARDIAN = 'wari_guardian', // unique Wari infantry
+  CHANCA_WARRIOR = 'chanca_warrior', // unique Chanca infantry
+  CHIMU_FIXI = 'chimu_fixi', // unique Chimú infantry
   INCA_WARRIOR = 'inca_warrior', // unique Inca infantry
 }
 

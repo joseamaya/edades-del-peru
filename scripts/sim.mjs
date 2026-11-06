@@ -9,7 +9,8 @@ import { installProbes } from './perf-probes.mjs';
  *
  * Usage:
  *   node scripts/sim.mjs [--seeds=777,778,779] [--max=1200] [--difficulty=hard] [--p1=legendary]
- *                        [--player=ai|scripted] [--metrics=1] [--sample=5] [--out=review/ai-bench.json]
+ *                        [--player=ai|scripted] [--civ=chanca] [--period=4] [--metrics=1]
+ *                        [--sample=5] [--out=review/ai-bench.json]
  *
  * Boots a skirmish, attaches an AI to both players and fast-forwards the
  * simulation (no rendering) until a side is defeated or the time cap is hit.
@@ -42,6 +43,8 @@ const player = String(cliArg('player', 'ai'));
 const metrics = cliArg('metrics', matrix ? '0' : '1') !== '0';
 const sampleSeconds = Math.max(1, Number.parseFloat(cliArg('sample', '5')));
 const debug = cliArg('debug', '0') === '1';
+const civPlayer = cliArg('civ', '');
+const period = cliArg('period', '');
 const outFile = cliArg('out', 'review/ai-bench.json');
 if (!['ai', 'scripted'].includes(player)) {
   console.error(`unknown player "${player}" (use ai|scripted)`);
@@ -67,7 +70,10 @@ async function run(browser, base, seed, diff = difficulty, diff1 = p1Difficulty)
       }
     });
   }
-  await page.goto(`${base}/?play=1&seed=${seed}&low=1&fog=0&noloop=1`, { waitUntil: 'networkidle' });
+  const params = new URLSearchParams({ play: '1', seed: String(seed), low: '1', fog: '0', noloop: '1' });
+  if (civPlayer) params.set('civ', civPlayer);
+  if (period) params.set('period', period);
+  await page.goto(`${base}/?${params}`, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => window.game !== undefined, null, { timeout: 60_000 });
 
   await page.evaluate(

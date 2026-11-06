@@ -154,6 +154,8 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
       UnitKind.MOCHE_WARRIOR,
       UnitKind.RECUAY_WARRIOR,
       UnitKind.WARI_GUARDIAN,
+      UnitKind.CHANCA_WARRIOR,
+      UnitKind.CHIMU_FIXI,
       UnitKind.INCA_WARRIOR,
       UnitKind.COMMISSAR,
       UnitKind.MISSIONARY,

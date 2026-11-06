@@ -22,6 +22,7 @@ import { UNIQUE_UNIT_GAPS } from '../src/model/defs/unique';
 const uniqueUnits = Object.values(UNIT_ARCHETYPES).filter((unit) => unit.category === 'unique');
 const uniqueTechs = TECHS.filter((tech) => tech.unique === true);
 const CHAPTER_I = [CivId.CARAL, CivId.CHAVIN, CivId.PARACAS, CivId.MOCHE, CivId.RECUAY, CivId.WARI, CivId.TIAHUANACO];
+const CHAPTER_II = [CivId.CHANCA, CivId.CHIMU, CivId.INCA];
 
 function expectSource(source: string | undefined): void {
   expect(source, 'unique content needs a source').toBeTruthy();
@@ -38,6 +39,19 @@ describe('unique units', () => {
         expect(gap.reason.length).toBeGreaterThan(0);
         expectSource(gap.source);
       }
+      expect(
+        uniqueTechs.some((tech) => tech.civs?.includes(civ)),
+        `${civ} has no unique tech`,
+      ).toBe(true);
+    }
+  });
+
+  it('covers chapter II with a unique unit and a unique tech', () => {
+    for (const civ of CHAPTER_II) {
+      expect(
+        uniqueUnits.some((unit) => unit.civs?.includes(civ)),
+        `${civ} has no unique unit`,
+      ).toBe(true);
       expect(
         uniqueTechs.some((tech) => tech.civs?.includes(civ)),
         `${civ} has no unique tech`,
@@ -93,6 +107,8 @@ describe('unique units', () => {
       const own = getUnitStats(unit.id, era);
       const base = getUnitStats(unit.baseKind!, era);
       expect(Number.isFinite(own.hp) && own.hp > 0).toBe(true);
+      expect(own.hp).toBeGreaterThanOrEqual(base.hp);
+      expect(own.attack).toBeGreaterThanOrEqual(base.attack);
       expect(own.hp !== base.hp || own.attack !== base.attack || own.cost.food !== base.cost.food).toBe(true);
       expect(unitDisplayName(unit.id, unit.civs![0], era)).toBe(unit.name);
       expect(unitModelAsset(unit.id, era, unit.civs![0])).not.toBeNull();
@@ -108,6 +124,14 @@ describe('unique units', () => {
     expect(unitModelAsset(UnitKind.WARI_GUARDIAN, Era.TAHUANTINSUYO, CivId.WARI, 2)).toEqual({
       asset: 'caral_worker',
       variant: 'wari_soldier_f',
+    });
+    expect(unitModelAsset(UnitKind.CHANCA_WARRIOR, Era.TAHUANTINSUYO, CivId.CHANCA, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'chanca_soldier_f',
+    });
+    expect(unitModelAsset(UnitKind.CHIMU_FIXI, Era.TAHUANTINSUYO, CivId.CHIMU, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'chimu_soldier_f',
     });
     expect(unitModelAsset(UnitKind.INCA_WARRIOR, Era.TAHUANTINSUYO, CivId.INCA, 2)).toEqual({
       asset: 'caral_worker',
