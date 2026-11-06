@@ -195,7 +195,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
   recuay_warrior: {
     id: UnitKind.RECUAY_WARRIOR,
     name: 'Guerrero Recuay',
-    description: 'Infantería de la sierra de Áncash con orejeras y escudo; resistente.',
+    description: 'Infantería de la sierra de Áncash con orejeras y escudo; fuerte contra infantería.',
     category: 'unique',
     baseKind: UnitKind.SOLDIER,
     civs: [CivId.RECUAY],
@@ -208,7 +208,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
   wari_guardian: {
     id: UnitKind.WARI_GUARDIAN,
     name: 'Guardián Wari',
-    description: 'Infantería imperial wari con disco pectoral; resistente contra infantería.',
+    description: 'Infantería imperial wari con disco pectoral; fuerte contra infantería.',
     category: 'unique',
     baseKind: UnitKind.SOLDIER,
     civs: [CivId.WARI],

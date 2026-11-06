@@ -29,12 +29,15 @@ function expectSource(source: string | undefined): void {
 }
 
 describe('unique units', () => {
-  it('covers the implemented civs with a unique unit and a unique technology', () => {
-    for (const civ of [CivId.MOCHE, CivId.INCA]) {
-      expect(
-        uniqueUnits.some((unit) => unit.civs?.includes(civ)),
-        `${civ} has no unique unit`,
-      ).toBe(true);
+  it('covers chapter I with a unique unit or a documented gap, plus a unique tech', () => {
+    for (const civ of CHAPTER_I) {
+      const hasUnit = uniqueUnits.some((unit) => unit.civs?.includes(civ));
+      const gap = UNIQUE_UNIT_GAPS[civ];
+      expect(hasUnit || gap, `${civ} has neither a unique unit nor a documented gap`).toBeTruthy();
+      if (gap) {
+        expect(gap.reason.length).toBeGreaterThan(0);
+        expectSource(gap.source);
+      }
       expect(
         uniqueTechs.some((tech) => tech.civs?.includes(civ)),
         `${civ} has no unique tech`,
@@ -119,6 +122,12 @@ describe('unique technologies', () => {
       expectSource(tech.source);
       expect(tech.civs?.length, `${tech.id} has no civ`).toBeGreaterThan(0);
       expect(tech.maxPeriod === undefined || tech.maxPeriod >= tech.minPeriod).toBe(true);
+      expect(
+        getCiv(tech.civs![0]).periods.some(
+          (period) => period >= tech.minPeriod && (tech.maxPeriod === undefined || period <= tech.maxPeriod),
+        ),
+        `${tech.id} outside its civ periods`,
+      ).toBe(true);
       expect(techAvailable(tech, tech.minPeriod, tech.civs![0]), `${tech.id} not available to its civ`).toBe(true);
       const otherCiv = CIVS.find((c) => !tech.civs!.includes(c.id))!.id;
       expect(techAvailable(tech, tech.minPeriod, otherCiv), `${tech.id} leaked to ${otherCiv}`).toBe(false);

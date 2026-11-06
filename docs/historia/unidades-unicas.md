@@ -12,11 +12,11 @@ inventado.
 |---|---|---|---|---|
 | Caral-Supe | — (hueco documentado) | — | Trueque Interregional | [`civilizaciones/caral.md`](./civilizaciones/caral.md) |
 | Chavín | — (hueco documentado) | — | Peregrinaje al Lanzón | [`civilizaciones/chavin.md`](./civilizaciones/chavin.md) |
-| Paracas | — (hueco documentado) | — | Fardos Funerarios | [`civilizaciones/paracas.md`](./civilizaciones/paracas.md) |
+| Paracas | — (hueco documentado) | — | Textiles de Paracas / Fardos Funerarios | [`civilizaciones/paracas.md`](./civilizaciones/paracas.md) |
 | Cultura Moche | Guerrero Moche | Guerrero (`soldier`) | Metalurgia Moche | [`civilizaciones/moche.md`](./civilizaciones/moche.md), [`atuendos.md`](./atuendos.md) §2 |
 | Cultura Recuay | Guerrero Recuay | Guerrero (`soldier`) | Orejeras de Pashash | [`civilizaciones/recuay.md`](./civilizaciones/recuay.md), [`atuendos.md`](./atuendos.md) §2 |
 | Imperio Wari | Guardián Wari | Guerrero (`soldier`) | Mitimaes | [`civilizaciones/wari.md`](./civilizaciones/wari.md), [`atuendos.md`](./atuendos.md) §2 |
-| Tiahuanaco | — (hueco documentado) | — | Puerta del Sol | [`civilizaciones/tiahuanaco.md`](./civilizaciones/tiahuanaco.md) |
+| Tiahuanaco | — (hueco documentado) | — | Monolitos de Tiahuanaco / Puerta del Sol | [`civilizaciones/tiahuanaco.md`](./civilizaciones/tiahuanaco.md) |
 
 ### Cultura Moche
 
@@ -64,10 +64,11 @@ histórica. — [`civilizaciones/inca.md`](./civilizaciones/inca.md), [`atuendos
 
 ## Balance
 
-`yarn sim --seeds=777,778,779,780 --max=900` → 4 empates (cap de 900 s), en línea con el baseline
-documentado de escenarios sin resolver. Las estadísticas de las unidades únicas se mantienen por encima de su
-base sin doblar la curva (bonus de ataque/HP moderados); no se cambia la condición de victoria. La
-verificación de balance de toda la primera tanda se repetirá al cerrar Chanca y Chimú.
+`yarn sim --seeds=777,778,779,780 --max=900` → 4 empates (cap de 900 s) tanto en el piloto como al cerrar
+el capítulo I, en línea con el baseline documentado de escenarios sin resolver. Las estadísticas de las
+unidades únicas se mantienen por encima de su base sin doblar la curva (bonus de ataque/HP moderados); no se
+cambia la condición de victoria. La verificación de balance de toda la primera tanda se repetirá al cerrar
+Chanca y Chimú.
 
 ## Criterios de implementación
 
