@@ -17,9 +17,11 @@ import {
   unitTrainableInPeriod,
 } from '../src/model/defs/units';
 import { unitModelAsset } from '../src/model/defs/modelAssets';
+import { UNIQUE_UNIT_GAPS } from '../src/model/defs/unique';
 
 const uniqueUnits = Object.values(UNIT_ARCHETYPES).filter((unit) => unit.category === 'unique');
 const uniqueTechs = TECHS.filter((tech) => tech.unique === true);
+const CHAPTER_I = [CivId.CARAL, CivId.CHAVIN, CivId.PARACAS, CivId.MOCHE, CivId.RECUAY, CivId.WARI, CivId.TIAHUANACO];
 
 function expectSource(source: string | undefined): void {
   expect(source, 'unique content needs a source').toBeTruthy();
@@ -95,6 +97,14 @@ describe('unique units', () => {
     expect(unitModelAsset(UnitKind.MOCHE_WARRIOR, Era.REGIONAL_STATES, CivId.MOCHE, 2)).toEqual({
       asset: 'caral_worker',
       variant: 'moche_soldier_f',
+    });
+    expect(unitModelAsset(UnitKind.RECUAY_WARRIOR, Era.REGIONAL_STATES, CivId.RECUAY, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'recuay_soldier_f',
+    });
+    expect(unitModelAsset(UnitKind.WARI_GUARDIAN, Era.TAHUANTINSUYO, CivId.WARI, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'wari_soldier_f',
     });
     expect(unitModelAsset(UnitKind.INCA_WARRIOR, Era.TAHUANTINSUYO, CivId.INCA, 2)).toEqual({
       asset: 'caral_worker',

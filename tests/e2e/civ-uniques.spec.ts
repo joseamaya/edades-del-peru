@@ -62,3 +62,37 @@ test('another civ cannot train or see the unique unit', async ({ page }) => {
   expect(result.showsMocheWarrior).toBe(false);
   expect(result.trainsForeign).toBe(false);
 });
+
+test('Wari trains its unique guardian', async ({ page }) => {
+  await page.goto('/?play=1&civ=wari&period=3&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  const barracksId = await spawnBarracks(page);
+  const result = await page.evaluate((id) => {
+    const g = (window as unknown as { game: any }).game;
+    const cards = [...document.querySelectorAll('.ed-grid .ed-card')].map((el) => el.textContent ?? '');
+    return { shows: cards.some((text) => text.includes('Guardián Wari')), trains: g.trainUnit(id, 'wari_guardian') };
+  }, barracksId);
+  expect(result.shows).toBe(true);
+  expect(result.trains).toBe(true);
+});
+
+test('a tech-only civ sees its unique technology', async ({ page }) => {
+  await page.goto('/?play=1&civ=caral&period=0&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  const cards = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    g.players[0].resources = { food: 9999, wood: 9999, silver: 9999, stone: 9999 };
+    const c = g.playerCenter(0);
+    const center = g.spawnScriptedBuilding('center', 0, c.x + 10, c.z + 2);
+    g.selectedUnits = [];
+    g.selectedBuilding = center.id;
+    for (let i = 0; i < 20; i++) g.update(1 / 60, i / 60);
+    return [...document.querySelectorAll('.ed-grid .ed-card')].map((el) => el.textContent ?? '');
+  });
+  expect(cards.some((text) => text.includes('Trueque Interregional'))).toBe(true);
+});

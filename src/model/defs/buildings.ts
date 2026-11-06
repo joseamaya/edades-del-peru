@@ -152,6 +152,8 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
     trainable: [
       UnitKind.SOLDIER,
       UnitKind.MOCHE_WARRIOR,
+      UnitKind.RECUAY_WARRIOR,
+      UnitKind.WARI_GUARDIAN,
       UnitKind.INCA_WARRIOR,
       UnitKind.COMMISSAR,
       UnitKind.MISSIONARY,
