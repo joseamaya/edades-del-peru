@@ -315,6 +315,14 @@ Definition of Done and the building audit see
   tech never appears for the wrong civilization or period (e.g. Inca _chasquis_ are Inca-only and do not leak
   into the Republic, colonial _obrajes_ not before 1532). Windows are sourced in
   [`docs/historia/tecnologias.md`](./historia/tecnologias.md).
+- **Unique units and technologies (#237)**: unique units are regular `UnitKind` entries with
+  `category: 'unique'`, a `baseKind` (the model/class they reuse), `civs` (only that civilization may train
+  them) and `source` (a path under `docs/historia/`). `unitModelAsset`/`getUnitModel` delegate to `baseKind`,
+  so no new rig is needed; `unitAvailableToCiv`/`unitTrainableInPeriod` gate the barracks cards, AI and
+  production. Unique technologies use the existing `TechDef.civs` + `source`; `techAvailable` already filters
+  them. `src/model/defs/unique.ts` exposes the per-civ lists used by the HUD civ panel and the Codex.
+  `tests/unique.test.ts` validates sources, chronology, civ windows and rig resolution; the table and
+  documented gaps are in [`docs/historia/unidades-unicas.md`](./historia/unidades-unicas.md).
 - **AI (`src/game/AI.ts`)**: macromanagement (workers, build plan, tech, waves) plus `defendEconomy`
   (recalls idle military when an enemy nears any AI building/worker), `microCombat` retreat of badly wounded
   units and `explore` (idle scouts patrol toward the enemy base). It only uses the same systems as the player

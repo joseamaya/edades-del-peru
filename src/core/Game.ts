@@ -76,7 +76,7 @@ import { getAuthoredSite, type AuthoredSiteDef } from '../model/defs/sites';
 import { detectSoftwareRenderer } from '../util/gpu';
 import { ERA_DEFS } from '../model/defs/eras';
 import { BUILDING_DEFS, getBuildingStats } from '../model/defs/buildings';
-import { getUnitStats, type DamageClass } from '../model/defs/units';
+import { getUnitStats, unitAvailableToCiv, type DamageClass } from '../model/defs/units';
 import { getTech } from '../model/defs/techs';
 import { AudioEngine } from '../audio/AudioEngine';
 import { Mission } from '../campaign/Mission';
@@ -1165,6 +1165,7 @@ export class Game {
     // a mission can restrict the roster (e.g. no siege train in a naval campaign)
     const allowed = this.mission?.def.allowedUnits;
     if (allowed && !allowed.includes(unit)) return false;
+    if (!unitAvailableToCiv(unit, this.players[0]?.civ)) return false;
     const stats = getUnitStats(unit, b.era);
     const p = this.players[0];
     if (p.populationUsed + stats.population > p.populationCap) return false;

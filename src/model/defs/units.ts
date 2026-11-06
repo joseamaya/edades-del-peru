@@ -84,6 +84,12 @@ export interface UnitArchetype {
   converter?: boolean;
   /** Counter table: additive damage bonus/penalty against a target class. */
   bonusVs?: Partial<Record<UnitClass, number>>;
+  /** Unique units reuse the model/class of this base kind. */
+  baseKind?: UnitKind;
+  /** Civilizations that can train this unit; omit for every civ. */
+  civs?: CivId[];
+  /** Citation/path under docs/historia for unique units. */
+  source?: string;
 }
 
 const BASE: Resources = ZERO_RESOURCES;
@@ -159,6 +165,32 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
       [Era.REPUBLIC]: { type: 'soldier_elite', scale: 1.06 },
       [Era.CONTEMPORARY]: { type: 'soldier_elite', scale: 1.12 },
     },
+  },
+  moche_warrior: {
+    id: UnitKind.MOCHE_WARRIOR,
+    name: 'Guerrero Moche',
+    description: 'Infantería de élite moche con casco y porra; fuerte contra infantería.',
+    category: 'unique',
+    baseKind: UnitKind.SOLDIER,
+    civs: [CivId.MOCHE],
+    minPeriod: HistoricalPeriod.EARLY_INTERMEDIATE,
+    source: 'docs/historia/civilizaciones/moche.md',
+    bonusVs: { infantry: 0.2, cavalry: 0.3, siege: 0.15 },
+    eraStats: { [Era.REGIONAL_STATES]: { hp: 1.2, attack: 1.3 } },
+    eraModel: { [Era.REGIONAL_STATES]: { type: 'soldier_grunt', scale: 1.06 } },
+  },
+  inca_warrior: {
+    id: UnitKind.INCA_WARRIOR,
+    name: 'Guerrero Inca',
+    description: 'Infantería imperial inca con uncu y canesú; resistente y equilibrada.',
+    category: 'unique',
+    baseKind: UnitKind.SOLDIER,
+    civs: [CivId.INCA],
+    minPeriod: HistoricalPeriod.LATE_HORIZON,
+    source: 'docs/historia/civilizaciones/inca.md',
+    bonusVs: { infantry: 0.15, cavalry: 0.3, siege: 0.15 },
+    eraStats: { [Era.TAHUANTINSUYO]: { hp: 1.2, attack: 1.15 } },
+    eraModel: { [Era.TAHUANTINSUYO]: { type: 'soldier_modern', scale: 1.04 } },
   },
   musketeer: {
     id: UnitKind.MUSKETEER,
@@ -583,6 +615,36 @@ const BASE_STATS: Record<UnitKind, UnitStats> = {
     damageType: 'light',
     projectile: 'bullet',
   },
+  moche_warrior: {
+    hp: 48,
+    attack: 6,
+    range: 0,
+    lightArmor: 0,
+    heavyArmor: 0,
+    speed: 2.5,
+    los: 5,
+    attackSpeed: 1.5,
+    cost: cost({ food: 45, wood: 25 }),
+    trainTime: 23,
+    population: 1,
+    damageType: 'light',
+    projectile: 'bullet',
+  },
+  inca_warrior: {
+    hp: 50,
+    attack: 7,
+    range: 0,
+    lightArmor: 0,
+    heavyArmor: 0,
+    speed: 2.6,
+    los: 5,
+    attackSpeed: 1.5,
+    cost: cost({ food: 45, wood: 25 }),
+    trainTime: 23,
+    population: 1,
+    damageType: 'light',
+    projectile: 'bullet',
+  },
   musketeer: {
     hp: 35,
     attack: 7,
@@ -800,6 +862,8 @@ const CLASS_BY_KIND: Record<UnitKind, UnitClass> = {
   [UnitKind.COMMISSAR]: 'special',
   [UnitKind.MISSIONARY]: 'special',
   [UnitKind.NUCLEAR]: 'siege',
+  [UnitKind.MOCHE_WARRIOR]: 'infantry',
+  [UnitKind.INCA_WARRIOR]: 'infantry',
 };
 
 export function unitClassFor(kind: UnitKind): UnitClass {
@@ -851,8 +915,20 @@ export function unitMinPeriod(kind: UnitKind): HistoricalPeriod {
   return UNIT_ARCHETYPES[kind].minPeriod ?? HistoricalPeriod.ARCHAIC;
 }
 
+/** Model/class base for a unique variant; the kind itself when it has no base. */
+export function unitBaseKind(kind: UnitKind): UnitKind {
+  return UNIT_ARCHETYPES[kind].baseKind ?? kind;
+}
+
+/** Whether a civilization may train a unit (unique units are civ-scoped). */
+export function unitAvailableToCiv(kind: UnitKind, civ?: CivId): boolean {
+  const civs = UNIT_ARCHETYPES[kind].civs;
+  return !civs || (civ !== undefined && civs.includes(civ));
+}
+
 /** Period availability: chronology plus whether the required techs exist in that period (not researched state). */
 export function unitTrainableInPeriod(kind: UnitKind, period: HistoricalPeriod, civ?: CivId): boolean {
+  if (!unitAvailableToCiv(kind, civ)) return false;
   if (unitMinPeriod(kind) > period) return false;
   const required = UNIT_ARCHETYPES[kind].requiresTech;
   if (!required) return true;
@@ -867,8 +943,10 @@ export function isConverter(kind: UnitKind): boolean {
   return UNIT_ARCHETYPES[kind].converter === true;
 }
 
-/** Model to use for a unit in an era. */
+/** Model to use for a unit in an era. Unique variants reuse their base model. */
 export function getUnitModel(kind: UnitKind, era: Era): ModelSpec {
+  const baseKind = UNIT_ARCHETYPES[kind].baseKind;
+  if (baseKind) return getUnitModel(baseKind, era);
   const m = UNIT_ARCHETYPES[kind].eraModel[era];
   if (m) return m;
   const anyEra = UNIT_ARCHETYPES[kind].eraModel;
@@ -893,6 +971,8 @@ function eraIdentityFor(kind: UnitKind, era: Era): EraIdentity | undefined {
 
 /** Ranged weapon a unit carries in an era, when the archetype defines one. */
 export function unitRangedWeapon(kind: UnitKind, era: Era): RangedWeapon | undefined {
+  const baseKind = UNIT_ARCHETYPES[kind].baseKind;
+  if (baseKind) return unitRangedWeapon(baseKind, era);
   return eraIdentityFor(kind, era)?.weapon;
 }
 
@@ -953,6 +1033,8 @@ export const UNIT_INFO: Record<UnitKind, { name: string; icon: string; category:
   commissar: { name: 'Amauta', icon: '🧙', category: 'Especial' },
   missionary: { name: 'Misionero', icon: '⛪', category: 'Especial' },
   nuclear: { name: 'Artillería de Cohetes', icon: '🚀', category: 'Asedio' },
+  moche_warrior: { name: 'Guerrero Moche', icon: '🪓', category: 'Única' },
+  inca_warrior: { name: 'Guerrero Inca', icon: '☀️', category: 'Única' },
 };
 
 /** Player-facing unit name for an era; the Chasqui label is reserved for the Inca. */

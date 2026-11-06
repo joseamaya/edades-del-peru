@@ -90,6 +90,9 @@ export enum UnitKind {
   COMMISSAR = 'commissar', // conversion (monk)
   MISSIONARY = 'missionary', // conversion (colonial/republican)
   NUCLEAR = 'nuclear', // atomic-era tactical weapon (area)
+
+  MOCHE_WARRIOR = 'moche_warrior', // unique Moche infantry
+  INCA_WARRIOR = 'inca_warrior', // unique Inca infantry
 }
 
 export enum BuildingKind {

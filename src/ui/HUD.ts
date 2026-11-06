@@ -21,11 +21,13 @@ import {
   UNIT_CLASS_LABEL,
   getUnitStats,
   unitClassFor,
+  unitAvailableToCiv,
   unitDisplayIcon,
   unitDisplayName,
   unitMinPeriod,
 } from '../model/defs/units';
 import { TECHS, techAvailable } from '../model/defs/techs';
+import { uniqueTechsForCiv, uniqueUnitsForCiv } from '../model/defs/unique';
 import { ERA_DEFS } from '../model/defs/eras';
 import { PERIODS, getPeriod } from '../model/defs/periods';
 import { civsForPeriod, getCiv } from '../model/defs/civs';
@@ -1582,6 +1584,8 @@ export class HUD {
     const allowedUnits = this.game.mission?.def.allowedUnits;
     for (const unitKind of def.trainable ?? []) {
       if (allowedUnits && !allowedUnits.includes(unitKind)) continue;
+      const ownerCiv = this.game.players[b.owner]?.civ;
+      if (!unitAvailableToCiv(unitKind, ownerCiv)) continue;
       const stats = getUnitStats(unitKind, b.era);
       const unitName = unitDisplayName(unitKind, this.game.players[b.owner]?.civ, b.era);
       const tech = UNIT_ARCHETYPES[unitKind].requiresTech?.[0];
@@ -2083,7 +2087,11 @@ export class HUD {
     `;
     const civ = getCiv(this.game.settings.civPlayer);
     const civInfo = this.el('div', 'ed-skirmish-info', panel);
-    civInfo.innerHTML = `<b>${civ.name}</b> · ${civ.description}<br><span>${civ.bonuses.join(' · ')}</span>`;
+    const uniqueUnits = uniqueUnitsForCiv(civ.id);
+    const uniqueTechs = uniqueTechsForCiv(civ.id);
+    const uniqueUnitText = uniqueUnits.length ? uniqueUnits.map((u) => u.name).join(', ') : t('hud.codex.noUniqueUnit');
+    const uniqueTechText = uniqueTechs.length ? uniqueTechs.map((tech) => tech.name).join(', ') : '—';
+    civInfo.innerHTML = `<b>${civ.name}</b> · ${civ.description}<br><span>${civ.bonuses.join(' · ')}</span><br><span>${t('hud.codex.uniqueUnit')}: ${uniqueUnitText} · ${t('hud.codex.uniqueTech')}: ${uniqueTechText}</span>`;
     const preview = document.createElement('canvas');
     preview.className = 'ed-map-preview';
     preview.width = 260;

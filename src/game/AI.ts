@@ -13,7 +13,7 @@ import { HARVEST_STAND_RANGE, MELEE_ATTACK_RANGE, type Unit } from '../entities/
 import { Building } from '../entities/Building';
 import type { ResourceNode } from '../entities/ResourceNode';
 import { CATEGORIES, UNIT_CATEGORY, armyWeightsFor, UnitCategory } from './aiComposition';
-import { unitClassFor } from '../model/defs/units';
+import { unitAvailableToCiv, unitClassFor } from '../model/defs/units';
 import { AIProfile, attackThreshold, armyTarget, profileFor, workerTarget } from './aiProfiles';
 import { aiBuildSteps } from '../model/defs/aiBuildOrders';
 
@@ -426,6 +426,7 @@ export class AI {
         const category = UNIT_CATEGORY[u];
         if (!category) continue;
         const arch = UNIT_ARCHETYPES[u];
+        if (!unitAvailableToCiv(u, p.civ)) continue;
         if (arch.requiresTech && !arch.requiresTech.every((t) => p.techs.has(t))) continue;
         if (unitMinPeriod(u) > this.game.settings.period) continue;
         if (!this.canAfford(getUnitStats(u, p.era).cost)) continue;
