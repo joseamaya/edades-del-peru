@@ -15,11 +15,12 @@ const assert = process.argv.includes('--assert');
 const outFile = cliArg('out') ?? 'review/bench-scene.json';
 
 // Ratchet: §11 targets 600k triangles and 200 draw calls per frame. m1 measured 877k / 441 before the
-// tree-instance, water and flier-shadow cuts and ~685k / 413 after them; tighten as it gets cheaper.
+// tree-instance, water and flier-shadow cuts, ~685k / 413 after them and ~497k / 414 with the terrain
+// LOD; tighten as it gets cheaper.
 const BUDGETS = {
   // Kit counts include the shadow pass; most kit draw calls are the animated fauna parts (a deer is a
   // body plus four legs).
-  m1_caral: { sceneTriangles: 720_000, sceneDrawCalls: 440, kitTriangles: 80_000, kitDrawCalls: 60 },
+  m1_caral: { sceneTriangles: 540_000, sceneDrawCalls: 440, kitTriangles: 80_000, kitDrawCalls: 60 },
 };
 const KIT_NAMES = /^(trees_kit_|props_kit_|fauna_(deer|riparian_bird)$)/;
 
@@ -48,12 +49,16 @@ try {
     g.camera.moveTo(p.x, p.z, true);
     g.camera.setHeight(54);
     g.trees.update(0, g.camera.getTarget());
+    for (let i = 0; i < 120; i++) g.camera.update(1 / 30, i / 30);
+    g.camera.camera.updateMatrixWorld();
+    g.terrain.updateLod(g.camera.camera.position, true);
     const measure = () => {
       const info = g.renderer.info;
       info.autoReset = false;
       info.reset();
       g.renderer.render(g.scene, g.camera.camera);
       const out = { calls: info.render.calls, triangles: info.render.triangles };
+      out.camera = g.camera.camera.position.toArray().map((v) => Math.round(v));
       info.autoReset = true;
       return out;
     };

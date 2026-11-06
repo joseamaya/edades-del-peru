@@ -208,11 +208,14 @@ Targets for the default view at 1600×900:
 | Draw calls per frame                 | ≤ 200 (today ~314)     |
 | Triangles per frame                  | ≤ 600 k (today ~0.8 M) |
 
-_Status (m1, opening view, shadow pass included)_: ~685k triangles / ~413 draw calls after drawing the
-procedural tree meshes only up to the highest used slot, a 128×128 water grid and shadow-free fliers
-(877k / 441 before). `yarn bench:check` now ratchets the m1 scene and the vegetation/fauna kit
-(`scripts/bench_scene.mjs`). The remaining big items are the terrain mesh (~131k, tied to the
-simulation's height field) and the units (~90k).
+_Status (m1, opening view, shadow pass included)_: ~497k triangles / ~414 draw calls, within the triangle
+target. Steps: procedural tree meshes drawn only up to the highest used slot, a 128×128 water grid and
+shadow-free fliers (877k → 685k), then a distance LOD for the terrain mesh (`src/rendering/terrainLod.ts`:
+4×4-cell blocks further than 75 units from the camera are drawn as crack-free fans over the same
+full-resolution vertices, so heights, colours, normals and the simulation's height field are unchanged;
+the terrain draws ~38k instead of 131k triangles per pass at zoom 54). `yarn bench:check` ratchets the m1
+scene and the vegetation/fauna kit (`scripts/bench_scene.mjs`). Draw calls (~414) remain the open item;
+the units are the next largest triangle cost (~90k).
 
 - Repeated assets are **instanced or merged**; no per-object draw call for vegetation, props or fauna.
 - Every model has **LOD0/LOD1**; the far LOD switches before the asset drops below ~40 px on screen.

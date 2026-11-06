@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { TERRAIN_LOD_BLOCK, TERRAIN_LOD_DISTANCE, buildTerrainLodIndex, terrainIndexCapacity } from './terrainLod';
 import { getGroundTextures, GroundTextures } from './Textures';
 import { getGroundPBR } from './Biomes';
 import { buildTerrainSplat, TERRAIN_SPLAT_SIZE, type TerrainSplat } from './terrainSplat';
@@ -60,6 +61,12 @@ export class Terrain {
   waterLevel = 2.2;
   mesh: THREE.Mesh;
   group = new THREE.Group();
+  /** Per LOD block: 1 = full detail, 0 = coarse fan (see terrainLod.ts). */
+  private lodFine!: Uint8Array;
+  private readonly lodCamera = new THREE.Vector3(Infinity, Infinity, Infinity);
+  private lodEnabled = true;
+  /** LOD block size in cells; 1 (no LOD) when the resolution is not a multiple of TERRAIN_LOD_BLOCK. */
+  private lodBlock = TERRAIN_LOD_BLOCK;
   private skirt: THREE.Mesh | null = null;
 
   private textures: GroundTextures;
@@ -292,8 +299,6 @@ export class Terrain {
     const positions = new Float32Array(n * n * 3);
     const colors = new Float32Array(n * n * 3);
     const uvs = new Float32Array(n * n * 2);
-    const indices: number[] = [];
-
     const waterLevel = this.waterLevel;
     for (let z = 0; z < n; z++) {
       for (let x = 0; x < n; x++) {
@@ -329,22 +334,24 @@ export class Terrain {
       }
     }
 
-    for (let z = 0; z < this.resolution; z++) {
-      for (let x = 0; x < this.resolution; x++) {
-        const a = z * n + x;
-        const b = z * n + x + 1;
-        const c = (z + 1) * n + x;
-        const d = (z + 1) * n + x + 1;
-        indices.push(a, c, b);
-        indices.push(b, c, d);
-      }
+    // Start fully detailed (normals are computed on the full grid and kept); update() then swaps in
+    // the distance LOD index.
+    if (this.resolution % TERRAIN_LOD_BLOCK !== 0) {
+      this.lodBlock = 1;
+      this.lodEnabled = false;
     }
+    this.lodFine = new Uint8Array((this.resolution / this.lodBlock) ** 2).fill(1);
+    const lodIndex = new Uint32Array(terrainIndexCapacity(this.resolution));
+    const count = buildTerrainLodIndex(this.resolution, this.lodFine, lodIndex, this.lodBlock);
 
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     geo.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
-    geo.setIndex(indices);
+    const indexAttr = new THREE.BufferAttribute(lodIndex, 1);
+    indexAttr.setUsage(THREE.DynamicDrawUsage);
+    geo.setIndex(indexAttr);
+    geo.setDrawRange(0, count);
     geo.computeVertexNormals();
 
     const tex = this.textures;
@@ -778,7 +785,51 @@ ${FOW_DIM_GLSL}
     mat.uniforms.time.value = time;
     if (this.camera) {
       mat.uniforms.cameraPos.value.copy(this.camera.position);
+      this.updateLod(this.camera.position);
     }
+  }
+
+  /**
+   * Re-index the mesh so blocks far from the camera are drawn coarse (see terrainLod.ts). Only runs
+   * when the camera has moved a couple of units, and only uploads the indices in use.
+   */
+  updateLod(cam: THREE.Vector3, force = false): void {
+    if (this.lodBlock === 1) return;
+    if (!force && this.lodCamera.distanceToSquared(cam) < 4) return;
+    this.lodCamera.copy(cam);
+    const blocks = this.resolution / TERRAIN_LOD_BLOCK;
+    const cell = this.size / this.resolution;
+    const d2 = TERRAIN_LOD_DISTANCE * TERRAIN_LOD_DISTANCE;
+    const n = this.resolution + 1;
+    let changed = false;
+    for (let bz = 0; bz < blocks; bz++) {
+      for (let bx = 0; bx < blocks; bx++) {
+        const vx = bx * TERRAIN_LOD_BLOCK + TERRAIN_LOD_BLOCK / 2;
+        const vz = bz * TERRAIN_LOD_BLOCK + TERRAIN_LOD_BLOCK / 2;
+        const dx = vx * cell - cam.x;
+        const dy = this.heightMap[vz * n + vx] - cam.y;
+        const dz = vz * cell - cam.z;
+        const fine = !this.lodEnabled || dx * dx + dy * dy + dz * dz < d2 ? 1 : 0;
+        if (this.lodFine[bz * blocks + bx] !== fine) {
+          this.lodFine[bz * blocks + bx] = fine;
+          changed = true;
+        }
+      }
+    }
+    if (!changed && !force) return;
+    const geo = this.mesh.geometry;
+    const index = geo.getIndex() as THREE.BufferAttribute;
+    const count = buildTerrainLodIndex(this.resolution, this.lodFine, index.array as Uint32Array);
+    geo.setDrawRange(0, count);
+    index.clearUpdateRanges();
+    index.addUpdateRange(0, count);
+    index.needsUpdate = true;
+  }
+
+  /** Draw the whole terrain at full detail (e.g. for captures that need exact geometry). */
+  setLodEnabled(on: boolean): void {
+    this.lodEnabled = on && this.lodBlock > 1;
+    if (this.camera) this.updateLod(this.camera.position, true);
   }
 
   setCloudShadow(factor: number): void {
