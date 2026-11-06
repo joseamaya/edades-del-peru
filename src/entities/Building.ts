@@ -8,7 +8,7 @@ import {
   defensiveShotCount,
   defensiveShotDamage,
 } from '../model/defs/buildings';
-import { UNIT_ARCHETYPES, getUnitStats, unitAvailableToCiv, unitMinPeriod } from '../model/defs/units';
+import { UNIT_ARCHETYPES, getUnitStats, unitAvailableInPeriod, unitAvailableToCiv } from '../model/defs/units';
 import type { EntityView } from './EntityView';
 import { allocId } from '../sim/ids';
 import { getTech, techAvailable } from '../model/defs/techs';
@@ -249,8 +249,8 @@ export class Building {
         }
       }
     }
-    // chronology guard: no firearms/horses/etc. before their historical period
-    if (this.ctx?.period !== undefined && unitMinPeriod(unit) > this.ctx.period) return false;
+    // chronology guard: no firearms/horses/etc. outside their historical window
+    if (this.ctx?.period !== undefined && !unitAvailableInPeriod(unit, this.ctx.period)) return false;
     const stats = getUnitStats(unit, this.era);
     const player = this.ctx?.players?.find((p: any) => p.id === this.owner);
     if (player && player.populationUsed + stats.population > player.populationCap) return false;

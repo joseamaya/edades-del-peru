@@ -6,7 +6,7 @@ import { RNG } from '../util/rng';
 import { BUILDING_DEFS, getBuildingStats } from '../model/defs/buildings';
 import { UNIT_ARCHETYPES } from '../model/defs/units';
 import { getUnitStats } from '../model/defs/units';
-import { unitMinPeriod } from '../model/defs/units';
+import { unitAvailableInPeriod } from '../model/defs/units';
 import { ERA_DEFS } from '../model/defs/eras';
 import type { Game } from '../core/Game';
 import { HARVEST_STAND_RANGE, MELEE_ATTACK_RANGE, type Unit } from '../entities/Unit';
@@ -428,7 +428,7 @@ export class AI {
         const arch = UNIT_ARCHETYPES[u];
         if (!unitAvailableToCiv(u, p.civ)) continue;
         if (arch.requiresTech && !arch.requiresTech.every((t) => p.techs.has(t))) continue;
-        if (unitMinPeriod(u) > this.game.settings.period) continue;
+        if (!unitAvailableInPeriod(u, this.game.settings.period)) continue;
         if (!this.canAfford(getUnitStats(u, p.era).cost)) continue;
         candidates.push({ unit: u, bld, category });
       }

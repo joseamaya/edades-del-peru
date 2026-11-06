@@ -175,7 +175,14 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
     description: 'Entrena unidades a distancia y de precisión.',
     category: 'military',
     minEra: Era.FORMATIVE,
-    trainable: [UnitKind.MUSKETEER, UnitKind.RIFLEMAN, UnitKind.SNIPER, UnitKind.ANTI_AIR],
+    trainable: [
+      UnitKind.MUSKETEER,
+      UnitKind.RIFLEMAN,
+      UnitKind.SNIPER,
+      UnitKind.ANTI_AIR,
+      UnitKind.REPUBLICA_DEFENSOR,
+      UnitKind.CHILE_INFANTE,
+    ],
     eraModel: {
       [Era.FORMATIVE]: { type: 'arsenal_steam', scale: 1 },
       [Era.REGIONAL_STATES]: { type: 'arsenal_imperial', scale: 1 },
@@ -191,7 +198,14 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
     description: 'Entrena jinetes, caballería y exploradores.',
     category: 'military',
     minEra: Era.VICEROYALTY,
-    trainable: [UnitKind.HUSSAR, UnitKind.CAVALRY, UnitKind.TANK, UnitKind.SCOUT],
+    trainable: [
+      UnitKind.HUSSAR,
+      UnitKind.CAVALRY,
+      UnitKind.TANK,
+      UnitKind.SCOUT,
+      UnitKind.REALISTA_DRAGON,
+      UnitKind.PATRIOTA_MONTONERA,
+    ],
     eraModel: {
       [Era.FORMATIVE]: { type: 'stable_steam', scale: 1 },
       [Era.REGIONAL_STATES]: { type: 'stable_imperial', scale: 1 },

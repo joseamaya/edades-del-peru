@@ -28,6 +28,10 @@ ni después/otra cultura (ámbito).
 | Momia Ancestral (`chanca_mummy`) | Intermedio Tardío, solo Chanca | Los chancas llevaban la momia de sus antepasados al combate; el efecto de ataque es una abstracción. |
 | Tumi Ceremonial (`chimu_tumi`) | Intermedio Tardío, solo Chimú | Orfebrería y tumi chimú; el efecto de ataque es una abstracción. |
 | Puerta del Sol (`tiahuanaco_gate`) | Horizonte Medio, solo Tiahuanaco | Astronomía y culto tiahuanacota; el efecto de visión es una abstracción. |
+| Plazas Fortificadas (`realista_plazas`) | Virreinato → Independencia, solo Realistas | Defensa de las plazas del ejército virreinal; el efecto de armadura es una abstracción. |
+| Campaña de la Sierra (`patriota_sierra`) | Independencia, solo Patriotas | Campaña de la sierra y montoneras; el efecto de velocidad es una abstracción. |
+| Defensa del Puerto (`republica_puerto`) | República → Contemporáneo, solo República | Defensa portuaria y de Arica (1880); el efecto de armadura es una abstracción. |
+| Escuadra Blindada (`chile_escuadra`) | República, solo Chile | Escuadra blindada chilena (Cochrane); el efecto de visión es una abstracción. |
 
 ## Suelo por cronología (`minPeriod`)
 
@@ -57,5 +61,11 @@ Horizonte Tardío) y el **Misionero** (`evangelization`, colonial/republicano, V
 - Textiles prehispánicos: Tello, J. C. (1929), *Antiguo Perú*; dossier [`civilizaciones/paracas.md`](./civilizaciones/paracas.md).
 - Obrajes coloniales: Wikipedia, [Obraje](https://es.wikipedia.org/wiki/Obraje); Assadourian, C. S., *El sistema de la economía colonial* (1982).
 - Caballo y ganadería colonial: dossier del Virreinato en [`fuentes.md`](./fuentes.md).
+- Dragones y uniformes: [`atuendos.md`](./atuendos.md) §3.
+- Montoneras y campaña de la sierra: [`civilizaciones/patriotas.md`](./civilizaciones/patriotas.md) e
+  [`campanas/independencia.md`](./campanas/independencia.md).
+- Defensa de Arica y artillería: [`civilizaciones/republica.md`](./civilizaciones/republica.md),
+  [`civilizaciones/chile.md`](./civilizaciones/chile.md) y
+  [`campanas/guerra_del_pacifico.md`](./campanas/guerra_del_pacifico.md).
 
 Véase el listado completo en [`fuentes.md`](./fuentes.md).
