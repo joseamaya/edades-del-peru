@@ -5,6 +5,7 @@ import {
   postColonialCultureForCiv,
   type PostColonialCulture,
 } from './postColonialCharacters';
+import { REBELDE_PALETTE } from './rebeldeCharacters';
 
 export const SIEGE_WEAPONS = ['cannon', 'mortar', 'tank'] as const;
 export type SiegeWeapon = (typeof SIEGE_WEAPONS)[number];
@@ -39,9 +40,9 @@ const SIEGE_SPECS: Record<PostColonialCulture | 'rebelde', SiegeSpec> = {
     POST_COLONIAL_CULTURES.map((culture) => [culture, siegeSpec(culture, 0x5a3a1e, 0x3f4a2a, 0x151515)]),
   ) as Record<PostColonialCulture, SiegeSpec>),
   rebelde: {
-    coat: 0x6a3a2a,
-    trim: 0xd8a040,
-    trousers: 0x3a2a1a,
+    coat: REBELDE_PALETTE.coat,
+    trim: REBELDE_PALETTE.trim,
+    trousers: REBELDE_PALETTE.trousers,
     wood: 0x4a2a14,
     tankHull: 0x3f4a2a,
     tankTrack: 0x151515,

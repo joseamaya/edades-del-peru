@@ -13,7 +13,7 @@ export interface PostColonialSpec {
   coat: number;
   trim: number;
   trousers: number;
-  hat: 'morion' | 'bicorn' | 'kepi';
+  hat: 'morion' | 'bicorn' | 'kepi' | 'none';
   hatColor: number;
   weapon: 'musket' | 'rifle' | 'none';
   sidearm: 'sword' | 'none';

@@ -1150,7 +1150,6 @@ export const MISSIONS: MissionDef[] = [
       UnitKind.SCOUT,
       UnitKind.ARTILLERY,
       UnitKind.MORTAR,
-      UnitKind.COMMISSAR,
       UnitKind.MISSIONARY,
     ],
     objectives: [
