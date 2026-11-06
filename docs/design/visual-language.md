@@ -451,6 +451,8 @@ structures or anachronistic materials.
 
 ## See also
 
+- [`art-direction.md`](./art-direction.md) — the stylized-realism quality target, palette, budgets and
+  quality gate, with Caral as the reference scene.
 - [`caral-sacred-city.md`](./caral-sacred-city.md) — the source-backed Caral
   scenario set-piece (Upper/Lower halves, six pyramids, river valley).
 - [`cultural-landscape.md`](./cultural-landscape.md) — design proposal for a
