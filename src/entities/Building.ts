@@ -8,11 +8,9 @@ import {
   defensiveShotCount,
   defensiveShotDamage,
 } from '../model/defs/buildings';
-import { UNIT_ARCHETYPES } from '../model/defs/units';
+import { UNIT_ARCHETYPES, getUnitStats, unitAvailableToCiv, unitMinPeriod } from '../model/defs/units';
 import type { EntityView } from './EntityView';
 import { allocId } from '../sim/ids';
-import { getUnitStats } from '../model/defs/units';
-import { unitMinPeriod } from '../model/defs/units';
 import { getTech, techAvailable } from '../model/defs/techs';
 import { clamp } from '../util/math';
 import type { BuildingSave } from '../game/saveTypes';
@@ -241,6 +239,8 @@ export class Building {
     const def = BUILDING_DEFS[this.kind];
     if (def.trainable && !def.trainable.includes(unit)) return false;
     const arch = UNIT_ARCHETYPES[unit];
+    const civ = this.ctx?.getPlayer?.(this.owner)?.civ;
+    if (!unitAvailableToCiv(unit, civ)) return false;
     if (arch.requiresTech) {
       const player = this.ctx?.players?.find((p: any) => p.id === this.owner);
       if (player) {

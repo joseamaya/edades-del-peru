@@ -303,6 +303,12 @@ export const es = {
   'hud.codex.geography': 'Geografía:',
   'hud.codex.periods': 'Periodos:',
   'hud.codex.bonuses': 'Bonificaciones',
+  'hud.codex.uniqueUnit': 'Unidad única',
+  'hud.codex.uniqueTech': 'Tecnología única',
+  'hud.codex.noUniqueUnit': 'Sin unidad única documentada',
+  'hud.codex.noUniqueTech': 'Sin tecnología única documentada',
+  'hud.techTree.unique': 'única',
+  'hud.codex.source': 'Fuente:',
   'hud.codex.sources': 'Fuentes',
 
   'hotkey.toggleHelp': 'Mostrar/ocultar ayuda',

@@ -7,6 +7,8 @@ export const CATEGORIES: UnitCategory[] = ['melee', 'ranged', 'cavalry', 'siege'
 /** Which category a trainable unit belongs to (scouts/support units have none). */
 export const UNIT_CATEGORY: Partial<Record<UnitKind, UnitCategory>> = {
   [UnitKind.SOLDIER]: 'melee',
+  [UnitKind.MOCHE_WARRIOR]: 'melee',
+  [UnitKind.INCA_WARRIOR]: 'melee',
   [UnitKind.MUSKETEER]: 'ranged',
   [UnitKind.RIFLEMAN]: 'ranged',
   [UnitKind.SNIPER]: 'ranged',

@@ -10,6 +10,7 @@ export interface TechTreeNode {
   id: string;
   name: string;
   icon: string;
+  unique?: boolean;
 }
 
 export interface TechTreeEra {
@@ -33,11 +34,17 @@ export function techTreeData(): TechTreeEra[] {
       .map((def) => ({ id: def.id, name: BUILDING_INFO[def.id].name, icon: BUILDING_INFO[def.id].icon }));
     const units = Object.values(UNIT_ARCHETYPES)
       .filter((def) => def.eraModel[era])
-      .map((def) => ({ id: def.id, name: UNIT_INFO[def.id].name, icon: unitDisplayIcon(def.id, era) }));
+      .map((def) => ({
+        id: def.id,
+        name: UNIT_INFO[def.id].name,
+        icon: unitDisplayIcon(def.id, era),
+        unique: def.category === 'unique',
+      }));
     const techs = TECHS.filter((tech) => eraForPeriod(tech.minPeriod) === era).map((tech) => ({
       id: tech.id,
       name: tech.name,
       icon: tech.icon ?? '📚',
+      unique: tech.unique === true,
     }));
     return { era, name: eraDef.name, buildings, units, techs };
   });
@@ -46,7 +53,12 @@ export function techTreeData(): TechTreeEra[] {
 function column(title: string, items: TechTreeNode[]): string {
   return `<div class="ed-tree-col"><h4>${title}</h4>${
     items.length
-      ? items.map((item) => `<div class="ed-tree-item"><span>${item.icon}</span>${item.name}</div>`).join('')
+      ? items
+          .map(
+            (item) =>
+              `<div class="ed-tree-item"><span>${item.icon}</span>${item.name}${item.unique ? `<span class="ed-tree-unique">${t('hud.techTree.unique')}</span>` : ''}</div>`,
+          )
+          .join('')
       : '<div class="ed-tree-empty">—</div>'
   }</div>`;
 }

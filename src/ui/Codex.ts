@@ -6,6 +6,7 @@ import { MAP_LABEL } from '../core/Config';
 import { artForMission } from '../art/manifest';
 import { artFigureHtml, includeUnreviewedArt } from './ArtFigure';
 import { techTreeHtml } from './TechTree';
+import { uniqueTechsForCiv, uniqueUnitsForCiv } from '../model/defs/unique';
 import { t } from '../i18n';
 
 /**
@@ -127,12 +128,34 @@ function civTab(): CodexItem[] {
     render: () => {
       const periods = c.periods.map((pid) => PERIODS.find((p) => p.id === pid)?.name ?? String(pid)).join(', ');
       const bonus = c.bonuses.map((b) => `<li>${b}</li>`).join('');
+      const units = uniqueUnitsForCiv(c.id);
+      const techs = uniqueTechsForCiv(c.id);
+      const unitList = units.length
+        ? units
+            .map(
+              (u) =>
+                `<li><b>${u.name}</b> — ${u.description} <span class="src">${t('hud.codex.source')} ${u.source ?? '—'}</span></li>`,
+            )
+            .join('')
+        : `<li>${t('hud.codex.noUniqueUnit')}</li>`;
+      const techList = techs.length
+        ? techs
+            .map(
+              (tech) =>
+                `<li><b>${tech.name}</b> — ${tech.description} <span class="src">${t('hud.codex.source')} ${tech.source ?? '—'}</span></li>`,
+            )
+            .join('')
+        : `<li>${t('hud.codex.noUniqueTech')}</li>`;
       return `
         <h3>${c.name}</h3>
         <p><b>${t('hud.codex.adjective')}</b> ${c.adjective} · <b>${t('hud.codex.geography')}</b> ${MAP_LABEL[c.geography]} · <b>${t('hud.codex.periods')}</b> ${periods}</p>
         <p>${c.description}</p>
         <h4>${t('hud.codex.bonuses')}</h4>
         <ul>${bonus || '<li>—</li>'}</ul>
+        <h4>${t('hud.codex.uniqueUnit')}</h4>
+        <ul>${unitList}</ul>
+        <h4>${t('hud.codex.uniqueTech')}</h4>
+        <ul>${techList}</ul>
       `;
     },
   }));

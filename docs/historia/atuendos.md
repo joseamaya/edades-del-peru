@@ -147,6 +147,11 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
 > (sin tocapu ni llawt'u). La pintura chanca se limita a guerreros. El mapeo por era permite que Chanca y Chimú
 > usen el rig en `m5`/`m6` aunque su periodo de definición sea Intermedio Tardío; no se cambia su roster.
 
+> **Unidades únicas (#237).** Las unidades únicas reutilizan la variante de atuendo ya documentada de su
+> civilización; no añaden prendas ni equipo nuevos. El Guerrero Moche usa el casco, la porra y la túnica con
+> backflap de la fila moche; el Guerrero Inca usa el uncu con canesú rojo de la fila inca. La ficha y las
+> fuentes están en [`unidades-unicas.md`](./unidades-unicas.md).
+
 ### Textiles por civilización (implementación)
 
 El código (`CIV_TEXTILE` en `src/model/ProceduralModel.ts`) usa una textura de **uncu** por civilización: un patrón

@@ -2,6 +2,7 @@ import { CivId, Era, HistoricalPeriod, UnitKind } from '../../core/types';
 import { getCiv } from './civs';
 import { getPeriod } from './periods';
 import { genderForId } from './people';
+import { unitBaseKind } from './units';
 import {
   ANDEAN_CULTURES,
   ANDEAN_ROLES,
@@ -240,6 +241,8 @@ function postColonialFieldRole(kind: UnitKind): PostColonialRole | null {
  * rig; contemporary Republic vehicles use the dedicated vehicle rig.
  */
 export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): RigModelChoice | null {
+  const baseKind = unitBaseKind(kind);
+  if (baseKind !== kind) return unitModelAsset(baseKind, era, civ, id);
   if (civ === CivId.CARAL && era === Era.FORMATIVE) {
     const female = genderForId(id) === 'female';
     if (kind === UnitKind.WORKER) {

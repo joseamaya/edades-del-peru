@@ -149,7 +149,13 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
     description: 'Entrena infantería y conversores (Amauta, Misionero).',
     category: 'military',
     minEra: Era.FORMATIVE,
-    trainable: [UnitKind.SOLDIER, UnitKind.COMMISSAR, UnitKind.MISSIONARY],
+    trainable: [
+      UnitKind.SOLDIER,
+      UnitKind.MOCHE_WARRIOR,
+      UnitKind.INCA_WARRIOR,
+      UnitKind.COMMISSAR,
+      UnitKind.MISSIONARY,
+    ],
     eraModel: {
       [Era.FORMATIVE]: { type: 'barracks_steam', scale: 1 },
       [Era.REGIONAL_STATES]: { type: 'barracks_imperial', scale: 1 },
