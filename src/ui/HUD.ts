@@ -24,7 +24,7 @@ import {
   unitAvailableToCiv,
   unitDisplayIcon,
   unitDisplayName,
-  unitMinPeriod,
+  unitAvailableInPeriod,
 } from '../model/defs/units';
 import { TECHS, techAvailable } from '../model/defs/techs';
 import { uniqueTechsForCiv, uniqueUnitGapForCiv, uniqueUnitsForCiv } from '../model/defs/unique';
@@ -1592,7 +1592,7 @@ export class HUD {
       const tech = UNIT_ARCHETYPES[unitKind].requiresTech?.[0];
       const techOk = !tech || this.game.players[0].techs.has(tech);
       const eraOk = !!UNIT_ARCHETYPES[unitKind].eraModel[this.game.players[0].era];
-      const periodOk = unitMinPeriod(unitKind) <= this.game.settings.period;
+      const periodOk = unitAvailableInPeriod(unitKind, this.game.settings.period);
       const fortOk = !UNIT_ARCHETYPES[unitKind].requiresFortress || b.kind === BuildingKind.FORTRESS;
       const disabled = !techOk || !eraOk || !periodOk || !fortOk || !this.canAfford(stats.cost);
       this.addCard(

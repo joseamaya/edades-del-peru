@@ -80,6 +80,8 @@ export interface UnitArchetype {
    * scripted content; the era stats models the tech level. Default: Arcaico.
    */
   minPeriod?: HistoricalPeriod;
+  /** Latest historical period (inclusive); omit for no upper bound. */
+  maxPeriod?: HistoricalPeriod;
   /** Conversion unit (can convert enemy units). */
   converter?: boolean;
   /** Counter table: additive damage bonus/penalty against a target class. */
@@ -243,6 +245,65 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
     bonusVs: { building: 0.2, infantry: 0.1, cavalry: 0.3, siege: 0.15 },
     eraStats: { [Era.TAHUANTINSUYO]: { hp: 1.5, attack: 1.55 } },
     eraModel: { [Era.TAHUANTINSUYO]: { type: 'soldier_modern', scale: 1.05 } },
+  },
+  realista_dragon: {
+    id: UnitKind.REALISTA_DRAGON,
+    name: 'Dragón Realista',
+    description: 'Caballería del ejército virreinal con sable y fusil; rápida y difícil de flanquear.',
+    category: 'unique',
+    baseKind: UnitKind.HUSSAR,
+    civs: [CivId.REALISTAS],
+    minPeriod: HistoricalPeriod.VICEROYALTY,
+    source: 'docs/historia/atuendos.md',
+    bonusVs: { ranged: 0.35, siege: 0.3, infantry: -0.1 },
+    eraStats: {
+      [Era.VICEROYALTY]: { hp: 1.9, attack: 2.2, speed: 1.18 },
+      [Era.REPUBLIC]: { hp: 2.1, attack: 2.5, speed: 1.23 },
+    },
+    eraModel: {
+      [Era.VICEROYALTY]: { type: 'hussar', scale: 1.06 },
+      [Era.REPUBLIC]: { type: 'hussar', scale: 1.1 },
+    },
+  },
+  patriota_montonera: {
+    id: UnitKind.PATRIOTA_MONTONERA,
+    name: 'Montonera',
+    description: 'Caballería ligera de las montoneras patriotas; velocísima y experta en hostigar.',
+    category: 'unique',
+    baseKind: UnitKind.HUSSAR,
+    civs: [CivId.PATRIOTAS],
+    minPeriod: HistoricalPeriod.INDEPENDENCE,
+    source: 'docs/historia/civilizaciones/patriotas.md',
+    bonusVs: { ranged: 0.3, siege: 0.35, infantry: -0.2 },
+    eraStats: { [Era.REPUBLIC]: { hp: 2.1, attack: 2.5, speed: 1.3 } },
+    eraModel: { [Era.REPUBLIC]: { type: 'hussar', scale: 1.07 } },
+  },
+  republica_defensor: {
+    id: UnitKind.REPUBLICA_DEFENSOR,
+    name: 'Defensor de Arica',
+    description: 'Infantería de línea de la República; resiste posiciones y protege el puerto.',
+    category: 'unique',
+    baseKind: UnitKind.RIFLEMAN,
+    civs: [CivId.REPUBLIC],
+    minPeriod: HistoricalPeriod.REPUBLIC,
+    maxPeriod: HistoricalPeriod.REPUBLIC,
+    source: 'docs/historia/civilizaciones/republica.md',
+    bonusVs: { infantry: 0.25, ranged: 0.2, cavalry: -0.15 },
+    eraStats: { [Era.REPUBLIC]: { hp: 2.2, attack: 2.75, range: 1.32 } },
+    eraModel: { [Era.REPUBLIC]: { type: 'advanced_rifleman', scale: 1.07 } },
+  },
+  chile_infante: {
+    id: UnitKind.CHILE_INFANTE,
+    name: 'Infante de Línea',
+    description: 'Infantería de línea chilena con fusil de retrocarga; disciplinada y precisa.',
+    category: 'unique',
+    baseKind: UnitKind.RIFLEMAN,
+    civs: [CivId.CHILE],
+    minPeriod: HistoricalPeriod.REPUBLIC,
+    source: 'docs/historia/atuendos.md',
+    bonusVs: { infantry: 0.3, ranged: 0.2, cavalry: -0.1 },
+    eraStats: { [Era.REPUBLIC]: { hp: 2.15, attack: 2.7, range: 1.35 } },
+    eraModel: { [Era.REPUBLIC]: { type: 'advanced_rifleman', scale: 1.08 } },
   },
   musketeer: {
     id: UnitKind.MUSKETEER,
@@ -620,6 +681,23 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
   },
 };
 
+/** Shared baseline for post-colonial rifle infantry. */
+const POST_COLONIAL_RIFLE_STATS: UnitStats = {
+  hp: 42,
+  attack: 8.2,
+  range: 10,
+  lightArmor: 0,
+  heavyArmor: 0,
+  speed: 2.3,
+  los: 8,
+  attackSpeed: 1.8,
+  cost: cost({ food: 42, silver: 32 }),
+  trainTime: 26,
+  population: 1,
+  damageType: 'heavy',
+  projectile: 'tracer',
+};
+
 /** Base stats per unit (VAPOR era). */
 const BASE_STATS: Record<UnitKind, UnitStats> = {
   worker: {
@@ -757,6 +835,38 @@ const BASE_STATS: Record<UnitKind, UnitStats> = {
     damageType: 'light',
     projectile: 'bullet',
   },
+  realista_dragon: {
+    hp: 54,
+    attack: 6.4,
+    range: 0,
+    lightArmor: 1,
+    heavyArmor: 0,
+    speed: 4.2,
+    los: 6,
+    attackSpeed: 1.6,
+    cost: cost({ food: 55, wood: 25 }),
+    trainTime: 27,
+    population: 1,
+    damageType: 'light',
+    projectile: 'bullet',
+  },
+  patriota_montonera: {
+    hp: 50,
+    attack: 6.2,
+    range: 0,
+    lightArmor: 1,
+    heavyArmor: 0,
+    speed: 4.4,
+    los: 6,
+    attackSpeed: 1.5,
+    cost: cost({ food: 50, wood: 20 }),
+    trainTime: 25,
+    population: 1,
+    damageType: 'light',
+    projectile: 'bullet',
+  },
+  republica_defensor: { ...POST_COLONIAL_RIFLE_STATS },
+  chile_infante: { ...POST_COLONIAL_RIFLE_STATS },
   musketeer: {
     hp: 35,
     attack: 7,
@@ -980,6 +1090,10 @@ const CLASS_BY_KIND: Record<UnitKind, UnitClass> = {
   [UnitKind.CHANCA_WARRIOR]: 'infantry',
   [UnitKind.CHIMU_FIXI]: 'infantry',
   [UnitKind.INCA_WARRIOR]: 'infantry',
+  [UnitKind.REALISTA_DRAGON]: 'cavalry',
+  [UnitKind.PATRIOTA_MONTONERA]: 'cavalry',
+  [UnitKind.REPUBLICA_DEFENSOR]: 'ranged',
+  [UnitKind.CHILE_INFANTE]: 'ranged',
 };
 
 export function unitClassFor(kind: UnitKind): UnitClass {
@@ -1031,6 +1145,17 @@ export function unitMinPeriod(kind: UnitKind): HistoricalPeriod {
   return UNIT_ARCHETYPES[kind].minPeriod ?? HistoricalPeriod.ARCHAIC;
 }
 
+/** Latest historical period in which a unit is plausible; undefined means no upper bound. */
+export function unitMaxPeriod(kind: UnitKind): HistoricalPeriod | undefined {
+  return UNIT_ARCHETYPES[kind].maxPeriod;
+}
+
+/** Chronology guard shared by production, the HUD and the AI. */
+export function unitAvailableInPeriod(kind: UnitKind, period: HistoricalPeriod): boolean {
+  const max = unitMaxPeriod(kind);
+  return unitMinPeriod(kind) <= period && (max === undefined || period <= max);
+}
+
 /** Model base for a unique variant; the kind itself when it has no base. */
 export function unitBaseKind(kind: UnitKind): UnitKind {
   return UNIT_ARCHETYPES[kind].baseKind ?? kind;
@@ -1045,7 +1170,7 @@ export function unitAvailableToCiv(kind: UnitKind, civ?: CivId): boolean {
 /** Period availability: chronology plus whether the required techs exist in that period (not researched state). */
 export function unitTrainableInPeriod(kind: UnitKind, period: HistoricalPeriod, civ?: CivId): boolean {
   if (!unitAvailableToCiv(kind, civ)) return false;
-  if (unitMinPeriod(kind) > period) return false;
+  if (!unitAvailableInPeriod(kind, period)) return false;
   const required = UNIT_ARCHETYPES[kind].requiresTech;
   if (!required) return true;
   return required.every((id) => {
@@ -1157,6 +1282,10 @@ export const UNIT_INFO: Record<UnitKind, { name: string; icon: string; category:
   chanca_warrior: { name: 'Guerrero Chanca', icon: '🎨', category: 'Única' },
   chimu_fixi: { name: 'Fixi Chimú', icon: '🗡️', category: 'Única' },
   inca_warrior: { name: 'Guerrero Inca', icon: '☀️', category: 'Única' },
+  realista_dragon: { name: 'Dragón Realista', icon: '🐎', category: 'Única' },
+  patriota_montonera: { name: 'Montonera', icon: '🐎', category: 'Única' },
+  republica_defensor: { name: 'Defensor de Arica', icon: '🎯', category: 'Única' },
+  chile_infante: { name: 'Infante de Línea', icon: '🎯', category: 'Única' },
 };
 
 /** Player-facing unit name for an era; the Chasqui label is reserved for the Inca. */

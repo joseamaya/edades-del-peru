@@ -12,6 +12,7 @@ import {
   unitAvailableToCiv,
   unitClassFor,
   unitDisplayName,
+  unitMaxPeriod,
   unitMinPeriod,
   unitRangedWeapon,
   unitTrainableInPeriod,
@@ -23,6 +24,7 @@ const uniqueUnits = Object.values(UNIT_ARCHETYPES).filter((unit) => unit.categor
 const uniqueTechs = TECHS.filter((tech) => tech.unique === true);
 const CHAPTER_I = [CivId.CARAL, CivId.CHAVIN, CivId.PARACAS, CivId.MOCHE, CivId.RECUAY, CivId.WARI, CivId.TIAHUANACO];
 const CHAPTER_II = [CivId.CHANCA, CivId.CHIMU, CivId.INCA];
+const POST_COLONIAL = [CivId.REALISTAS, CivId.PATRIOTAS, CivId.REPUBLIC, CivId.CHILE];
 
 function expectSource(source: string | undefined): void {
   expect(source, 'unique content needs a source').toBeTruthy();
@@ -48,6 +50,19 @@ describe('unique units', () => {
 
   it('covers chapter II with a unique unit and a unique tech', () => {
     for (const civ of CHAPTER_II) {
+      expect(
+        uniqueUnits.some((unit) => unit.civs?.includes(civ)),
+        `${civ} has no unique unit`,
+      ).toBe(true);
+      expect(
+        uniqueTechs.some((tech) => tech.civs?.includes(civ)),
+        `${civ} has no unique tech`,
+      ).toBe(true);
+    }
+  });
+
+  it('covers the post-1532 civs with a unique unit and a unique tech', () => {
+    for (const civ of POST_COLONIAL) {
       expect(
         uniqueUnits.some((unit) => unit.civs?.includes(civ)),
         `${civ} has no unique unit`,
@@ -89,6 +104,12 @@ describe('unique units', () => {
       const previous = unit.minPeriod! - 1;
       if (previous >= HistoricalPeriod.ARCHAIC) {
         expect(unitTrainableInPeriod(unit.id, previous, unit.civs![0]), `${unit.id} trainable before minPeriod`).toBe(
+          false,
+        );
+      }
+      const max = unitMaxPeriod(unit.id);
+      if (max !== undefined && max < HistoricalPeriod.CONTEMPORARY) {
+        expect(unitTrainableInPeriod(unit.id, max + 1, unit.civs![0]), `${unit.id} trainable after maxPeriod`).toBe(
           false,
         );
       }
@@ -137,6 +158,22 @@ describe('unique units', () => {
       asset: 'caral_worker',
       variant: 'inca_soldier_f',
     });
+    expect(unitModelAsset(UnitKind.REALISTA_DRAGON, Era.VICEROYALTY, CivId.REALISTAS, 2)).toEqual({
+      asset: 'mounted_rig',
+      variant: 'mounted_realistas',
+    });
+    expect(unitModelAsset(UnitKind.PATRIOTA_MONTONERA, Era.REPUBLIC, CivId.PATRIOTAS, 2)).toEqual({
+      asset: 'mounted_rig',
+      variant: 'mounted_patriotas',
+    });
+    expect(unitModelAsset(UnitKind.REPUBLICA_DEFENSOR, Era.REPUBLIC, CivId.REPUBLIC, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'republica_ranged_f',
+    });
+    expect(unitModelAsset(UnitKind.CHILE_INFANTE, Era.REPUBLIC, CivId.CHILE, 2)).toEqual({
+      asset: 'caral_worker',
+      variant: 'chile_ranged_f',
+    });
   });
 });
 
@@ -156,5 +193,7 @@ describe('unique technologies', () => {
       const otherCiv = CIVS.find((c) => !tech.civs!.includes(c.id))!.id;
       expect(techAvailable(tech, tech.minPeriod, otherCiv), `${tech.id} leaked to ${otherCiv}`).toBe(false);
     }
+    const puerto = TECHS.find((tech) => tech.id === 'republica_puerto')!;
+    expect(techAvailable(puerto, HistoricalPeriod.CONTEMPORARY, CivId.REPUBLIC)).toBe(true);
   });
 });

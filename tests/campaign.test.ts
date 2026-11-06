@@ -170,6 +170,20 @@ describe('campaign educational content', () => {
     expect(naval.allowedUnits!.includes(UnitKind.ARTILLERY)).toBe(false);
   });
 
+  it('fields post-1532 unique units in the independence and republic campaigns', () => {
+    const m7 = MISSIONS.find((m) => m.id === 'm7_tupac_amaru')!;
+    const m8 = MISSIONS.find((m) => m.id === 'm8_independencia')!;
+    const m9 = MISSIONS.find((m) => m.id === 'm9_guerra_pacifico')!;
+    const waveKinds = (mission: (typeof MISSIONS)[number]): UnitKind[] =>
+      mission.triggers.flatMap((t) => t.effects).flatMap((e) => (e.type === 'wave' ? e.units.map((u) => u.kind) : []));
+    expect(m8.start.units?.some((u) => u.kind === UnitKind.PATRIOTA_MONTONERA)).toBe(true);
+    expect(m9.start.units?.some((u) => u.kind === UnitKind.REPUBLICA_DEFENSOR)).toBe(true);
+    expect(m9.allowedUnits?.includes(UnitKind.REPUBLICA_DEFENSOR)).toBe(true);
+    expect(waveKinds(m7)).toContain(UnitKind.REALISTA_DRAGON);
+    expect(waveKinds(m8)).toContain(UnitKind.REALISTA_DRAGON);
+    expect(waveKinds(m9)).toContain(UnitKind.CHILE_INFANTE);
+  });
+
   it('keeps m9 as a port defense around Bolognesi', () => {
     const m9 = MISSIONS.find((m) => m.id === 'm9_guerra_pacifico')!;
     expect(m9.start.buildings?.some((b) => b.kind === BuildingKind.FORTRESS)).toBe(true);

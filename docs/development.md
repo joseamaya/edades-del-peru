@@ -317,8 +317,8 @@ Definition of Done and the building audit see
   [`docs/historia/tecnologias.md`](./historia/tecnologias.md).
 - **Unique units and technologies (#237)**: unique units are regular `UnitKind` entries with
   `category: 'unique'`, a `baseKind` (the model/class they reuse), `civs` (only that civilization may train
-  them) and `source` (a path under `docs/historia/`). `unitModelAsset`/`getUnitModel` delegate to `baseKind`,
-  so no new rig is needed; `unitAvailableToCiv`/`unitTrainableInPeriod` gate the barracks cards, AI and
+  them), `source` (a path under `docs/historia/`) and optional `minPeriod`/`maxPeriod`. `unitModelAsset`/`getUnitModel` delegate to `baseKind`,
+  so no new rig is needed; `unitAvailableToCiv`/`unitTrainableInPeriod` gate the production cards, AI and
   production. Unique technologies use the existing `TechDef.civs` + `source`; `techAvailable` already filters
   them. `src/model/defs/unique.ts` exposes the per-civ lists used by the HUD civ panel and the Codex.
   `tests/unique.test.ts` checks that each source path exists, plus chronology, civ windows and rig resolution; the table and

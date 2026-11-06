@@ -75,13 +75,69 @@ Las tecnologías únicas inca ya existían; este pase añade su fuente y restrin
 Veloces a la civ inca; Quipus y Vigías queda disponible para Wari e Inca, como documenta su ventana
 histórica. — [`civilizaciones/inca.md`](./civilizaciones/inca.md), [`atuendos.md`](./atuendos.md) §2 y §6.
 
+## Capítulo III — Virreinato e Independencia
+
+| Civ | Unidad única | Base | Tecnología única | Fuente |
+|---|---|---|---|---|
+| Realistas | Dragón Realista | Jinete (`hussar`) | Plazas Fortificadas | [`civilizaciones/realistas.md`](./civilizaciones/realistas.md), [`atuendos.md`](./atuendos.md) §3 |
+| Patriotas | Montonera | Jinete (`hussar`) | Campaña de la Sierra | [`civilizaciones/patriotas.md`](./civilizaciones/patriotas.md), [`campanas/independencia.md`](./campanas/independencia.md) |
+
+### Realistas
+
+El ejército virreinal incluía dragones (caballería) y fusileros; las plazas fuertes defendían los
+centros administrativos. El «Dragón Realista» es una caballería ligera con sable y fusil, y «Plazas
+Fortificadas» refuerza la armadura de las tropas. — [`civilizaciones/realistas.md`](./civilizaciones/realistas.md),
+[`atuendos.md`](./atuendos.md) §3.
+
+### Patriotas
+
+Las montoneras fueron la caballería irregular de la campaña de la sierra y de Junín. La «Montonera» es
+una caballería ligera y velocísima; «Campaña de la Sierra» mejora la velocidad de las unidades. —
+[`civilizaciones/patriotas.md`](./civilizaciones/patriotas.md), [`campanas/independencia.md`](./campanas/independencia.md).
+
+## Capítulo IV — República
+
+| Civ | Unidad única | Base | Tecnología única | Fuente |
+|---|---|---|---|---|
+| República del Perú | Defensor de Arica | Arquero (`rifleman`) | Defensa del Puerto (República y Contemporáneo) | [`civilizaciones/republica.md`](./civilizaciones/republica.md), [`campanas/guerra_del_pacifico.md`](./campanas/guerra_del_pacifico.md) |
+| Chile | Infante de Línea | Arquero (`rifleman`) | Escuadra Blindada | [`civilizaciones/chile.md`](./civilizaciones/chile.md), [`atuendos.md`](./atuendos.md) §4 |
+
+### República del Perú
+
+La defensa terrestre de Arica (1880) y la figura de Bolognesi son el referente de la guarnición
+republicana. El «Defensor de Arica» es una infantería de línea resistente y se limita al periodo
+República; «Defensa del Puerto» refuerza su armadura y sigue disponible en el Contemporáneo. —
+[`civilizaciones/republica.md`](./civilizaciones/republica.md),
+[`campanas/guerra_del_pacifico.md`](./campanas/guerra_del_pacifico.md), [`atuendos.md`](./atuendos.md) §4.
+
+### Chile
+
+La infantería chilena de la Guerra del Pacífico usaba uniforme de campaña y fusil de retrocarga; la
+escuadra blindada (Cochrane) dominó el mar. El «Infante de Línea» es una infantería de fuego
+disciplinada; «Escuadra Blindada» amplía la visión. — [`civilizaciones/chile.md`](./civilizaciones/chile.md),
+[`atuendos.md`](./atuendos.md) §4.
+
+> **Implementación sin arte nuevo.** Los dragones y montoneras reutilizan `mounted_rig.glb` con las
+> variantes `mounted_realistas` y `mounted_patriotas`; los infantes reutilizan el rig
+> humanoide `caral_worker` con las variantes `republica_ranged_*` y `chile_ranged_*`. No se modelan piezas
+> ni uniformes nuevos.
+
 ## Balance
 
-`yarn sim --seeds=777,778,779,780 --max=900` (Moche vs Recuay) → 4 empates (cap de 900 s), tanto en el
-piloto como al cerrar el capítulo I. `yarn sim --civ=chanca --period=4 --seeds=777,778,779,780 --max=900`
-(Chanca vs Chimú) → 4 empates, en línea con el baseline documentado de escenarios sin resolver. Las
-estadísticas de las unidades únicas se mantienen por encima de su base sin doblar la curva (bonus de
-ataque/HP moderados); no se cambia la condición de victoria.
+Corridas de 4 semillas (777–780, tope 900 s):
+
+| Cruce | Resultado |
+|---|---|
+| Moche vs Recuay (base) | 1 victoria P0, 3 sin resolver |
+| Chanca vs Chimú (`--period=4`) | 4 sin resolver |
+| Patriotas vs Realistas (`--civ=patriotas --period=7`) | 1 victoria P0, 3 sin resolver |
+| Realistas vs Patriotas (`--civ=realistas --period=7`) | 4 sin resolver |
+| República vs Chile (`--civ=republica --period=8`) | 1 victoria P0, 3 sin resolver |
+| Chile vs República (`--civ=chile --period=8`) | 4 sin resolver |
+
+Los cruces post-1532 no son espejo perfecto porque cada civ conserva sus bonus; no se observa una unidad
+única que gane por sí sola. Las estadísticas únicas se mantienen por encima de su base sin doblar la curva
+(bonus de ataque/HP moderados); no se cambia la condición de victoria.
 
 ## Criterios de implementación
 

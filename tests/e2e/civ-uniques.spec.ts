@@ -7,19 +7,23 @@ async function boot(page: Page, civ: string, period = 2): Promise<void> {
   });
 }
 
-async function spawnBarracks(page: Page): Promise<number> {
-  return page.evaluate(() => {
+async function spawnBuilding(page: Page, kind: 'barracks' | 'stable' | 'arsenal'): Promise<number> {
+  return page.evaluate((buildingKind) => {
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     g.players[0].resources = { food: 9999, wood: 9999, silver: 9999, stone: 9999 };
     g.players[0].populationCap = 200;
     const c = g.playerCenter(0);
-    const barracks = g.spawnScriptedBuilding('barracks', 0, c.x + 10, c.z + 2);
+    const building = g.spawnScriptedBuilding(buildingKind, 0, c.x + 10, c.z + 2);
     g.selectedUnits = [];
-    g.selectedBuilding = barracks.id;
+    g.selectedBuilding = building.id;
     for (let i = 0; i < 20; i++) g.update(1 / 60, i / 60);
-    return barracks.id;
-  });
+    return building.id;
+  }, kind);
+}
+
+async function spawnBarracks(page: Page): Promise<number> {
+  return spawnBuilding(page, 'barracks');
 }
 
 test('a civ trains its unique unit and the codex cites it', { tag: '@smoke' }, async ({ page }) => {
@@ -111,6 +115,28 @@ test('chapter II civs train their unique units', async ({ page }) => {
         return { shows: cards.some((text) => text.includes(label)), trains: g.trainUnit(id, unit) };
       },
       { id: barracksId, label: name, unit: kind },
+    );
+    expect(result.shows, `${civ} card`).toBe(true);
+    expect(result.trains, `${civ} training`).toBe(true);
+  }
+});
+
+test('post-1532 civs train their unique units', async ({ page }) => {
+  for (const [civ, period, building, name, kind] of [
+    ['realistas', 6, 'stable', 'Dragón Realista', 'realista_dragon'],
+    ['patriotas', 7, 'stable', 'Montonera', 'patriota_montonera'],
+    ['republica', 8, 'arsenal', 'Defensor de Arica', 'republica_defensor'],
+    ['chile', 8, 'arsenal', 'Infante de Línea', 'chile_infante'],
+  ] as const) {
+    await boot(page, civ, period);
+    const buildingId = await spawnBuilding(page, building);
+    const result = await page.evaluate(
+      ({ id, label, unit }) => {
+        const g = (window as unknown as { game: any }).game;
+        const cards = [...document.querySelectorAll('.ed-grid .ed-card')].map((el) => el.textContent ?? '');
+        return { shows: cards.some((text) => text.includes(label)), trains: g.trainUnit(id, unit) };
+      },
+      { id: buildingId, label: name, unit: kind },
     );
     expect(result.shows, `${civ} card`).toBe(true);
     expect(result.trains, `${civ} training`).toBe(true);
