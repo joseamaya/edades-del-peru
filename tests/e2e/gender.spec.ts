@@ -7,7 +7,7 @@ async function boot(page: Page, url: string): Promise<void> {
   });
 }
 
-test('procedural units get deterministic male/female variants', async ({ page }) => {
+test('rigged units get deterministic male/female variants', { tag: '@smoke' }, async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await boot(page, '/?play=1&civ=realistas&period=6&seed=777&fog=0&low=1&noloop=1');
@@ -19,16 +19,24 @@ test('procedural units get deterministic male/female variants', async ({ page })
     const workers = [];
     for (let i = 0; i < 6; i++) workers.push(g.spawnScriptedUnit('worker', 0, c.x + i, c.z + i));
     const info = workers.map((u: any) => {
-      let verts = 0;
-      u.view.group.traverse((o: any) => {
-        if (o.isMesh && o.geometry?.attributes?.position) verts += o.geometry.attributes.position.count;
-      });
-      return { gender: u.gender, verts };
+      const bodyName = u.gender === 'female' ? 'Body_f' : 'Body_m';
+      const otherName = u.gender === 'female' ? 'Body_m' : 'Body_f';
+      const body = u.rig?.root.getObjectByName(bodyName);
+      const other = u.rig?.root.getObjectByName(otherName);
+      return {
+        gender: u.gender,
+        variant: u.rig?.variantId ?? null,
+        bodyVisible: body?.visible ?? false,
+        otherVisible: other?.visible ?? false,
+        verts: body?.geometry?.attributes?.position?.count ?? 0,
+      };
     });
     return { info };
   });
   expect(result.info.some((row: any) => row.gender === 'female')).toBe(true);
   expect(result.info.some((row: any) => row.gender === 'male')).toBe(true);
+  expect(result.info.every((row: any) => row.variant?.endsWith(`_${row.gender[0]}`))).toBe(true);
+  expect(result.info.every((row: any) => row.bodyVisible && !row.otherVisible)).toBe(true);
   const female = result.info.find((row: any) => row.gender === 'female');
   const male = result.info.find((row: any) => row.gender === 'male');
   expect(female.verts).not.toBe(male.verts);

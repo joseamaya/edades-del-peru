@@ -63,7 +63,7 @@ test('the worker has a hidden carry pivot at start', { tag: '@smoke' }, async ({
   expect(info!.visible).toBe(false);
 });
 
-test('the worker animates the arm while gathering', async ({ page }) => {
+test('the worker animates the arm while gathering', { tag: '@smoke' }, async ({ page }) => {
   await page.goto('/?play=1&civ=realistas&period=6&seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
@@ -73,7 +73,8 @@ test('the worker animates the arm while gathering', async ({ page }) => {
     const g = (window as unknown as { game: any }).game;
     const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
     const node = [...g.resourceNodes.values()][0];
-    if (!w || !node || !w.unitView?.armR) return false;
+    const bone = w?.rig?.root.getObjectByName('hand_r');
+    if (!w || !node || (!bone && !w.unitView?.armR)) return false;
     const nx = node.pos.x + 1.5;
     w.pos.set(nx, g.terrain.getHeight(nx, node.pos.z), node.pos.z);
     w.issueOrder({ kind: 'gather', entityId: node.id }, true);
@@ -82,17 +83,29 @@ test('the worker animates the arm while gathering', async ({ page }) => {
   expect(armed).toBe(true);
 
   const samples = new Set<string>();
+  const clips = new Set<string>();
   for (let i = 0; i < 18; i++) {
     await page.waitForTimeout(120);
-    const r = await page.evaluate(() => {
+    const sample = await page.evaluate(() => {
       const g = (window as unknown as { game: any }).game;
       const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
-      return w?.unitView?.armR ? w.unitView.armR.rotation.x.toFixed(3) : '0';
+      const bone = w?.rig?.root.getObjectByName('hand_r');
+      const pose = bone
+        ? bone.quaternion
+            .toArray()
+            .map((v: number) => v.toFixed(4))
+            .join(',')
+        : w?.unitView?.armR
+          ? w.unitView.armR.rotation.x.toFixed(3)
+          : '0';
+      return { pose, clip: w?.rig?.currentClipName ?? null };
     });
-    samples.add(r);
+    samples.add(sample.pose);
+    if (sample.clip) clips.add(sample.clip);
   }
 
   expect(samples.size).toBeGreaterThan(3);
+  expect(clips.has('Farm_Harvest')).toBe(true);
 });
 
 test('the move order creates a destination marker', async ({ page }) => {
