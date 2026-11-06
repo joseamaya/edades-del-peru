@@ -14,6 +14,7 @@ import {
 import { OrderKind, Resources } from '../core/types';
 import { distance2D } from '../util/math';
 import { commanderFor } from '../model/defs/commanders';
+import { unitBaseKind, unitClassFor } from '../model/defs/units';
 import type { MissionSave } from '../game/saveTypes';
 
 /**
@@ -164,7 +165,9 @@ export class Mission {
         (u) =>
           u.owner === 0 &&
           !u.dead &&
-          (!o.unitKind || u.kind === o.unitKind) &&
+          (!o.unitKind ||
+            u.kind === o.unitKind ||
+            (unitBaseKind(u.kind) !== u.kind && unitClassFor(u.kind) === unitClassFor(o.unitKind))) &&
           distance2D(u.pos.x, u.pos.z, tp.x, tp.z) <= radius,
       );
       const current = this.holdTimers.get(o.id) ?? 0;

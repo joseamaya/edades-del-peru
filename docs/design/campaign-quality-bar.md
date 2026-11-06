@@ -150,7 +150,7 @@ because the UX evidence is local and there is no CI pixel gate.
 | --- | --- | --- |
 | History | Met: `independencia.md`; Junín and Ayacucho. | Met: `guerra_del_pacifico.md`; Arica land defence. |
 | Identity | Met: hold Junín, protect Sucre, hold Ayacucho. | Met: protect the port and Bolognesi, survive the assault. |
-| Play | Met: real-command playtest holds both phases. | Met: real-command playtest defends the port and strikes the command. |
+| Play | Met: real-command playtest holds both phases with the cavalry, including montoneras. | Met: real-command playtest defends the port and intercepts the final assault. |
 | Contract | Met: sequential holds plus a required protect objective. | Met: required protects and survive, with an optional counterstrike. |
 | Onboarding | Met: three-step tutorial + briefing. | Met: two-step tutorial + briefing. |
 | Terrain | Met: authored Junín–Ayacucho heightfield. | Met: authored Arica port heightfield. |
@@ -172,7 +172,7 @@ pipeline as the later campaigns.
 | History | Met: `guerra_civil_inca.md`; Huáscar vs Atahualpa. |
 | Identity | Met: advance to Quipaipan, defeat Huáscar, protect Atahualpa. |
 | Terrain | Met: authored Cusco/Quipaipan heightfield. |
-| Play | Met: real-command playtest advances and defeats Huáscar. |
+| Play | Met: real-command playtest attack-moves to Quipaipan, clears Huáscar's defenders and takes the centre. |
 | Contract | Met: reach, hidden destroy and protect objectives. |
 | Onboarding | Met: three-step tutorial + briefing. |
 | Closure | Met: epilogue and optional objectives. |
