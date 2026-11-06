@@ -31,6 +31,8 @@ export interface TechDef {
   icon?: string;
   /** Citation/path under docs/historia for civilization-specific technologies. */
   source?: string;
+  /** Marks a civilization-unique technology (shown in the civ Codex card). */
+  unique?: boolean;
 }
 
 const BASE: Resources = ZERO_RESOURCES;
@@ -176,10 +178,11 @@ export const TECHS: TechDef[] = [
     time: 60,
     minPeriod: HistoricalPeriod.MIDDLE_HORIZON,
     maxPeriod: HistoricalPeriod.LATE_HORIZON,
-    civs: [CivId.INCA],
+    civs: [CivId.INCA, CivId.WARI],
     building: BuildingKind.INSTITUTE,
     effect: { losBonus: 2 },
-    source: 'docs/historia/civilizaciones/inca.md',
+    unique: true,
+    source: 'docs/historia/tecnologias.md',
     icon: '📡',
   },
   {
@@ -206,6 +209,7 @@ export const TECHS: TechDef[] = [
     building: BuildingKind.BARRACKS,
     effect: {},
     unlocksUnits: ['commissar'],
+    unique: true,
     source: 'docs/historia/atuendos.md',
     icon: '🧙',
   },
@@ -232,22 +236,24 @@ export const TECHS: TechDef[] = [
     civs: [CivId.INCA],
     building: BuildingKind.CENTER,
     effect: { capacityBonus: 5 },
+    unique: true,
     source: 'docs/historia/civilizaciones/inca.md',
     icon: '🏃',
   },
   {
     id: 'moche_metallurgy',
     name: 'Metalurgia Moche',
-    description: 'Los talleres de la Huaca de la Luna templan las armas: +15% de armadura a las unidades.',
+    description: 'Los talleres de la Huaca de la Luna templan las armas: +10% de ataque a las unidades.',
     cost: cost({ silver: 160, wood: 100 }),
     time: 55,
     minPeriod: HistoricalPeriod.EARLY_INTERMEDIATE,
     maxPeriod: HistoricalPeriod.EARLY_INTERMEDIATE,
     civs: [CivId.MOCHE],
     building: BuildingKind.BARRACKS,
-    effect: { armorMult: 0.15 },
+    effect: { attackMult: 0.1 },
+    unique: true,
     source: 'docs/historia/civilizaciones/moche.md',
-    icon: '🛡️',
+    icon: '⚔️',
   },
   {
     id: 'armored_engineering',

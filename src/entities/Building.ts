@@ -8,11 +8,9 @@ import {
   defensiveShotCount,
   defensiveShotDamage,
 } from '../model/defs/buildings';
-import { UNIT_ARCHETYPES, unitAvailableToCiv } from '../model/defs/units';
+import { UNIT_ARCHETYPES, getUnitStats, unitAvailableToCiv, unitMinPeriod } from '../model/defs/units';
 import type { EntityView } from './EntityView';
 import { allocId } from '../sim/ids';
-import { getUnitStats } from '../model/defs/units';
-import { unitMinPeriod } from '../model/defs/units';
 import { getTech, techAvailable } from '../model/defs/techs';
 import { clamp } from '../util/math';
 import type { BuildingSave } from '../game/saveTypes';

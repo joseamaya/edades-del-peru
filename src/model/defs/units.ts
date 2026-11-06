@@ -176,7 +176,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
     minPeriod: HistoricalPeriod.EARLY_INTERMEDIATE,
     source: 'docs/historia/civilizaciones/moche.md',
     bonusVs: { infantry: 0.2, cavalry: 0.3, siege: 0.15 },
-    eraStats: { [Era.REGIONAL_STATES]: { hp: 1.2, attack: 1.3 } },
+    eraStats: { [Era.REGIONAL_STATES]: { hp: 1.15, attack: 1.2 } },
     eraModel: { [Era.REGIONAL_STATES]: { type: 'soldier_grunt', scale: 1.06 } },
   },
   inca_warrior: {
@@ -189,7 +189,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
     minPeriod: HistoricalPeriod.LATE_HORIZON,
     source: 'docs/historia/civilizaciones/inca.md',
     bonusVs: { infantry: 0.15, cavalry: 0.3, siege: 0.15 },
-    eraStats: { [Era.TAHUANTINSUYO]: { hp: 1.2, attack: 1.15 } },
+    eraStats: { [Era.TAHUANTINSUYO]: { hp: 1.15, attack: 1.1 } },
     eraModel: { [Era.TAHUANTINSUYO]: { type: 'soldier_modern', scale: 1.04 } },
   },
   musketeer: {
@@ -616,8 +616,8 @@ const BASE_STATS: Record<UnitKind, UnitStats> = {
     projectile: 'bullet',
   },
   moche_warrior: {
-    hp: 48,
-    attack: 6,
+    hp: 44,
+    attack: 5.5,
     range: 0,
     lightArmor: 0,
     heavyArmor: 0,
@@ -631,8 +631,8 @@ const BASE_STATS: Record<UnitKind, UnitStats> = {
     projectile: 'bullet',
   },
   inca_warrior: {
-    hp: 50,
-    attack: 7,
+    hp: 46,
+    attack: 6,
     range: 0,
     lightArmor: 0,
     heavyArmor: 0,
@@ -915,7 +915,7 @@ export function unitMinPeriod(kind: UnitKind): HistoricalPeriod {
   return UNIT_ARCHETYPES[kind].minPeriod ?? HistoricalPeriod.ARCHAIC;
 }
 
-/** Model/class base for a unique variant; the kind itself when it has no base. */
+/** Model base for a unique variant; the kind itself when it has no base. */
 export function unitBaseKind(kind: UnitKind): UnitKind {
   return UNIT_ARCHETYPES[kind].baseKind ?? kind;
 }
@@ -923,7 +923,7 @@ export function unitBaseKind(kind: UnitKind): UnitKind {
 /** Whether a civilization may train a unit (unique units are civ-scoped). */
 export function unitAvailableToCiv(kind: UnitKind, civ?: CivId): boolean {
   const civs = UNIT_ARCHETYPES[kind].civs;
-  return !civs || (civ !== undefined && civs.includes(civ));
+  return !civs || civ === undefined || civs.includes(civ);
 }
 
 /** Period availability: chronology plus whether the required techs exist in that period (not researched state). */
@@ -945,8 +945,10 @@ export function isConverter(kind: UnitKind): boolean {
 
 /** Model to use for a unit in an era. Unique variants reuse their base model. */
 export function getUnitModel(kind: UnitKind, era: Era): ModelSpec {
-  const baseKind = UNIT_ARCHETYPES[kind].baseKind;
-  if (baseKind) return getUnitModel(baseKind, era);
+  const own = UNIT_ARCHETYPES[kind].eraModel[era];
+  if (own) return own;
+  const baseKind = unitBaseKind(kind);
+  if (baseKind !== kind) return getUnitModel(baseKind, era);
   const m = UNIT_ARCHETYPES[kind].eraModel[era];
   if (m) return m;
   const anyEra = UNIT_ARCHETYPES[kind].eraModel;
@@ -971,8 +973,8 @@ function eraIdentityFor(kind: UnitKind, era: Era): EraIdentity | undefined {
 
 /** Ranged weapon a unit carries in an era, when the archetype defines one. */
 export function unitRangedWeapon(kind: UnitKind, era: Era): RangedWeapon | undefined {
-  const baseKind = UNIT_ARCHETYPES[kind].baseKind;
-  if (baseKind) return unitRangedWeapon(baseKind, era);
+  const baseKind = unitBaseKind(kind);
+  if (baseKind !== kind) return unitRangedWeapon(baseKind, era);
   return eraIdentityFor(kind, era)?.weapon;
 }
 

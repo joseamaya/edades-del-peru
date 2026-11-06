@@ -14,9 +14,10 @@ ni después/otra cultura (ámbito).
 | Tecnología | Ventana | Motivo |
 |---|---|---|
 | Telar Andino (`andean_loom`) | Horizonte Temprano → Horizonte Tardío | Tradición textil andina prehispánica (Paracas, Nazca, Wari, Inca). |
-| Quipus y Vigías (`quipus_watchers`) | Horizonte Medio → Horizonte Tardío | Registro por quipus de tradición andina (Wari–Inca). |
-| Palabra del Amauta (`amauta_words`) | Horizonte Tardío | El *amauta* es un sabio/maestro inca. |
+| Quipus y Vigías (`quipus_watchers`) | Horizonte Medio → Horizonte Tardío, Wari e Inca | Registro por quipus de tradición andina (Wari–Inca). |
+| Palabra del Amauta (`amauta_words`) | Horizonte Tardío, solo Inca | El *amauta* es un sabio/maestro inca. |
 | Chasquis Veloces (`swift_chasquis`) | Horizonte Tardío, solo Inca | Los *chasquis* son los correos del Estado inca; el efecto de capacidad es una abstracción logística, no una afirmación de que transportaran carga. |
+| Metalurgia Moche (`moche_metallurgy`) | Intermedio Temprano, solo Moche | Metalurgia y talleres moches; el efecto de ataque es una abstracción de sus armas de metal. |
 
 ## Suelo por cronología (`minPeriod`)
 

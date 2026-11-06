@@ -145,7 +145,7 @@ function civTab(): CodexItem[] {
                 `<li><b>${tech.name}</b> — ${tech.description} <span class="src">${t('hud.codex.source')} ${tech.source ?? '—'}</span></li>`,
             )
             .join('')
-        : '<li>—</li>';
+        : `<li>${t('hud.codex.noUniqueTech')}</li>`;
       return `
         <h3>${c.name}</h3>
         <p><b>${t('hud.codex.adjective')}</b> ${c.adjective} · <b>${t('hud.codex.geography')}</b> ${MAP_LABEL[c.geography]} · <b>${t('hud.codex.periods')}</b> ${periods}</p>

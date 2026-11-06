@@ -9,5 +9,5 @@ export function uniqueUnitsForCiv(civ: CivId): UnitArchetype[] {
 
 /** Civilization-specific technologies, in declaration order. */
 export function uniqueTechsForCiv(civ: CivId): TechDef[] {
-  return TECHS.filter((tech) => tech.civs?.includes(civ));
+  return TECHS.filter((tech) => tech.unique === true && tech.civs?.includes(civ));
 }

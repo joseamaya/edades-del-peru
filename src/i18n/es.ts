@@ -306,6 +306,8 @@ export const es = {
   'hud.codex.uniqueUnit': 'Unidad única',
   'hud.codex.uniqueTech': 'Tecnología única',
   'hud.codex.noUniqueUnit': 'Sin unidad única documentada',
+  'hud.codex.noUniqueTech': 'Sin tecnología única documentada',
+  'hud.techTree.unique': 'única',
   'hud.codex.source': 'Fuente:',
   'hud.codex.sources': 'Fuentes',
 

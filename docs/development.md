@@ -321,7 +321,7 @@ Definition of Done and the building audit see
   so no new rig is needed; `unitAvailableToCiv`/`unitTrainableInPeriod` gate the barracks cards, AI and
   production. Unique technologies use the existing `TechDef.civs` + `source`; `techAvailable` already filters
   them. `src/model/defs/unique.ts` exposes the per-civ lists used by the HUD civ panel and the Codex.
-  `tests/unique.test.ts` validates sources, chronology, civ windows and rig resolution; the table and
+  `tests/unique.test.ts` checks that each source path exists, plus chronology, civ windows and rig resolution; the table and
   documented gaps are in [`docs/historia/unidades-unicas.md`](./historia/unidades-unicas.md).
 - **AI (`src/game/AI.ts`)**: macromanagement (workers, build plan, tech, waves) plus `defendEconomy`
   (recalls idle military when an enemy nears any AI building/worker), `microCombat` retreat of badly wounded

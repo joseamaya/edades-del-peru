@@ -10,6 +10,7 @@ import {
   getUnitStats,
   isFirearmWeapon,
   unitAvailableToCiv,
+  unitClassFor,
   unitDisplayName,
   unitMinPeriod,
   unitRangedWeapon,
@@ -18,7 +19,7 @@ import {
 import { unitModelAsset } from '../src/model/defs/modelAssets';
 
 const uniqueUnits = Object.values(UNIT_ARCHETYPES).filter((unit) => unit.category === 'unique');
-const uniqueTechs = TECHS.filter((tech) => tech.civs && tech.civs.length > 0);
+const uniqueTechs = TECHS.filter((tech) => tech.unique === true);
 
 function expectSource(source: string | undefined): void {
   expect(source, 'unique content needs a source').toBeTruthy();
@@ -26,9 +27,17 @@ function expectSource(source: string | undefined): void {
 }
 
 describe('unique units', () => {
-  it('has at least one unique unit and one unique technology per implemented civ', () => {
-    expect(uniqueUnits.length).toBeGreaterThan(0);
-    expect(uniqueTechs.length).toBeGreaterThan(0);
+  it('covers the implemented civs with a unique unit and a unique technology', () => {
+    for (const civ of [CivId.MOCHE, CivId.INCA]) {
+      expect(
+        uniqueUnits.some((unit) => unit.civs?.includes(civ)),
+        `${civ} has no unique unit`,
+      ).toBe(true);
+      expect(
+        uniqueTechs.some((tech) => tech.civs?.includes(civ)),
+        `${civ} has no unique tech`,
+      ).toBe(true);
+    }
   });
 
   it('cites a real dossier and reuses a base kind', () => {
@@ -58,9 +67,18 @@ describe('unique units', () => {
         }
       }
       expect(unitTrainableInPeriod(unit.id, unit.minPeriod!, unit.civs![0])).toBe(true);
+      const previous = unit.minPeriod! - 1;
+      if (previous >= HistoricalPeriod.ARCHAIC) {
+        expect(unitTrainableInPeriod(unit.id, previous, unit.civs![0]), `${unit.id} trainable before minPeriod`).toBe(
+          false,
+        );
+      }
       const otherCiv = CIVS.find((c) => !unit.civs!.includes(c.id))!.id;
       expect(unitTrainableInPeriod(unit.id, unit.minPeriod!, otherCiv)).toBe(false);
       expect(unitAvailableToCiv(unit.id, otherCiv)).toBe(false);
+      if (unit.minPeriod! < HistoricalPeriod.VICEROYALTY) {
+        expect(['cavalry', 'siege']).not.toContain(unitClassFor(unit.id));
+      }
     }
   });
 

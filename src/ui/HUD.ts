@@ -375,6 +375,7 @@ const CSS = /* css */ `
   .ed-tree-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
   .ed-tree-col h4 { margin: 0 0 4px; color: var(--text-dim); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
   .ed-tree-item { display: flex; align-items: center; gap: 6px; font-size: 11px; padding: 2px 0; }
+  .ed-tree-unique { color: var(--gold); font-size: 10px; margin-left: 4px; }
   .ed-tree-empty { color: var(--text-dim); font-size: 11px; }
   @media (max-width: 700px) { .ed-tree-cols { grid-template-columns: 1fr; } }
   .ed-mission-card { position: absolute; inset: 0; z-index: 30; display: flex; align-items: center; justify-content: center; background: rgba(3,6,9,.56); pointer-events: auto; animation: mission-card-in .7s ease; }
@@ -2090,7 +2091,9 @@ export class HUD {
     const uniqueUnits = uniqueUnitsForCiv(civ.id);
     const uniqueTechs = uniqueTechsForCiv(civ.id);
     const uniqueUnitText = uniqueUnits.length ? uniqueUnits.map((u) => u.name).join(', ') : t('hud.codex.noUniqueUnit');
-    const uniqueTechText = uniqueTechs.length ? uniqueTechs.map((tech) => tech.name).join(', ') : '—';
+    const uniqueTechText = uniqueTechs.length
+      ? uniqueTechs.map((tech) => tech.name).join(', ')
+      : t('hud.codex.noUniqueTech');
     civInfo.innerHTML = `<b>${civ.name}</b> · ${civ.description}<br><span>${civ.bonuses.join(' · ')}</span><br><span>${t('hud.codex.uniqueUnit')}: ${uniqueUnitText} · ${t('hud.codex.uniqueTech')}: ${uniqueTechText}</span>`;
     const preview = document.createElement('canvas');
     preview.className = 'ed-map-preview';
