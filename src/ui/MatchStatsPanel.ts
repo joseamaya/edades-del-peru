@@ -106,14 +106,15 @@ function table(rows: { label: string; values: string[] }[], players: PlayerSnaps
     .join('')}</tbody></table>`;
 }
 
-function summary(samples: MatchSnapshot[], players: PlayerSnapshot[]): string {
+function summary(samples: MatchSnapshot[], players: PlayerSnapshot[], combat = true): string {
   const rows = [
-    {
-      label: t('hud.stats.kills'),
-      values: players.map((p) => String(p.kills)),
-    },
-    { label: t('hud.stats.losses'), values: players.map((p) => String(p.lost)) },
-    { label: t('hud.stats.army'), values: players.map((p) => String(p.army)) },
+    ...(combat
+      ? [
+          { label: t('hud.stats.kills'), values: players.map((p) => String(p.kills)) },
+          { label: t('hud.stats.losses'), values: players.map((p) => String(p.lost)) },
+          { label: t('hud.stats.army'), values: players.map((p) => String(p.army)) },
+        ]
+      : []),
     { label: t('hud.stats.workers'), values: players.map((p) => String(p.workers)) },
     { label: t('hud.stats.buildings'), values: players.map((p) => String(p.buildings)) },
     {
@@ -130,7 +131,11 @@ function summary(samples: MatchSnapshot[], players: PlayerSnapshot[]): string {
       (p) => `<div class="ed-stats-card">
         <b style="--player-color:${p.colorHex}">${esc(p.name)}</b>
         <span>${esc(p.civ)} · ${esc(ERA_DEFS[p.era]?.name ?? '—')}</span>
-        <strong>${p.kills}</strong><span>${t('hud.stats.killsShort', { lost: p.lost })}</span>
+        ${
+          combat
+            ? `<strong>${p.kills}</strong><span>${t('hud.stats.killsShort', { lost: p.lost })}</span>`
+            : `<strong>${p.workers}</strong><span>${t('hud.stats.workers')}</span>`
+        }
       </div>`,
     )
     .join('');
@@ -212,12 +217,19 @@ function timeline(samples: MatchSnapshot[], players: PlayerSnapshot[]): string {
   return `<div class="ed-stats-grid">${rows}</div>${chart(series, times)}`;
 }
 
+export interface MatchStatsOptions {
+  playerId?: number;
+  /** False for peaceful missions: hides the Military tab and kill/loss rows. */
+  combat?: boolean;
+}
+
 export function mountMatchStats(
   root: HTMLElement,
   samples: MatchSnapshot[],
   metas: MatchStatsPlayerMeta[],
-  playerId = 0,
+  options: MatchStatsOptions = {},
 ): void {
+  const { playerId = 0, combat = true } = options;
   const players = metas
     .map((meta) => latest(samples, meta.id) ?? null)
     .filter((player): player is PlayerSnapshot => player !== null);
@@ -237,13 +249,14 @@ export function mountMatchStats(
       button.classList.toggle('active', active);
       button.setAttribute('aria-selected', String(active));
     });
-    if (tab === 'summary') body.innerHTML = summary(samples, players);
+    if (tab === 'summary') body.innerHTML = summary(samples, players, combat);
     else if (tab === 'economy') body.innerHTML = economy(samples, players, playerId);
     else if (tab === 'military') body.innerHTML = military(samples, players);
     else if (tab === 'tech') body.innerHTML = tech(samples, players);
     else body.innerHTML = timeline(samples, players);
   };
-  for (const tab of TABS) {
+  const visibleTabs = combat ? TABS : TABS.filter((tab) => tab.id !== 'military');
+  for (const tab of visibleTabs) {
     const button = document.createElement('button');
     button.type = 'button';
     button.dataset.tab = tab.id;
