@@ -9,6 +9,7 @@ import { loadSiteModel } from '../rendering/siteModels';
 import { loadDecorModel } from '../rendering/decorModels';
 import { planProps, propCountFor } from '../model/defs/props';
 import { planWildlife, faunaCountFor } from '../model/defs/wildlife';
+import { attachFaunaKit } from '../rendering/faunaKit';
 import { BuildingKind } from '../core/types';
 import { getCiv } from '../model/defs/civs';
 import type { MissionSite } from '../campaign/types';
@@ -24,6 +25,7 @@ import { planSettlementDressing } from '../model/defs/settlementDressing';
 import {
   CARAL_VALLEY_PATH_WIDTH,
   planCaralValley,
+  planCaralValleyFauna,
   planCaralValleyProps,
   type CaralValleyPlan,
   type CaralValleyQuery,
@@ -38,6 +40,9 @@ const AMBIENT_FAUNA_SEED = 13;
 const FISHING_SCAN_MARGIN = 4;
 
 /** World/mission decoration and opening spawns. Transitional host while Game is decomposed. */
+/** Riparian fauna roosts keep this far from trees (crown radius plus their grazing orbit). */
+const FAUNA_TREE_CLEARANCE = 7;
+
 export class WorldViewDecor {
   constructor(private readonly game: any) {}
 
@@ -830,9 +835,20 @@ export class WorldViewDecor {
       placements.push(...planCaralValleyProps(this.game.settings.mapSeed, base, this.caralValleyQuery()));
       const suppressedFauna = new Set(this.game.siteDef.environs.suppressFaunaIds ?? []);
       fauna = fauna.filter((f) => !suppressedFauna.has(f.id));
+      // Riparian deer and birds first, so the wildlife cap never drops them.
+      // Keep the roosts out from under tree crowns so deer and birds stay readable from the camera.
+      const valley = this.caralValleyQuery();
+      const trees = [...this.game.resourceNodes.values()].filter((n) => n.kind === 'tree');
+      const faunaQuery: CaralValleyQuery = {
+        ...valley,
+        isReserved: (x, z) =>
+          valley.isReserved(x, z) || trees.some((t) => Math.hypot(t.pos.x - x, t.pos.z - z) < FAUNA_TREE_CLEARANCE),
+      };
+      fauna = [...planCaralValleyFauna(this.game.settings.mapSeed, base, faunaQuery), ...fauna];
     }
     this.game.props.place(placements, heightAt);
     this.game.wildlife.spawn(fauna, heightAt);
+    if (!this.game.headless) void attachFaunaKit(this.game.wildlife);
   }
 
   /** Geography-driven resource pick: profile weights, gated by height, beach, moisture and slope. */

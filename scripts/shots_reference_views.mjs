@@ -9,7 +9,8 @@ import { launchChromium, withViteServer, reviewDir, cliArg } from './lib.mjs';
  * Usage: node scripts/shots_reference_views.mjs [--mission=m1_caral] [--name=ref] [--wait=9000]
  *          [--low=1] [--wide=120] [--focus=tree]
  *
- * `--focus=tree` centres the camera on the densest tree cluster near the opening view instead;
+ * `--focus=tree` centres the camera on the densest tree cluster near the opening view instead
+ * (`--focus=deer` / `--focus=riparian_bird` on the first animal of that species);
  * `--kitlod0=1` keeps vegetation-kit LOD0 near the camera even on a software renderer (headless
  * Chromium), which otherwise falls back to LOD1 everywhere.
  */
@@ -49,6 +50,13 @@ try {
     if (root) root.style.display = 'none';
   });
   if (kitLod0) await page.evaluate(() => (window.game.trees.kitLod0Radius = 45));
+  if (focus === 'deer' || focus === 'riparian_bird') {
+    await page.evaluate((species) => {
+      const g = window.game;
+      const a = g.wildlife.debugSnapshot().find((e) => e.species === species);
+      if (a) g.camera.moveTo(a.x, a.z, true);
+    }, focus);
+  }
   if (focus === 'tree') {
     await page.evaluate(() => {
       const g = window.game;

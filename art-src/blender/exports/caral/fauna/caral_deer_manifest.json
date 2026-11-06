@@ -1,0 +1,22 @@
+{
+  "asset_id": "caral_deer",
+  "script": "scripts/blender/build_caral_fauna_kit.py",
+  "source_scene": "scenes/caral_fauna_kit.blend",
+  "file": "caral_deer.glb",
+  "bytes": 20344,
+  "parts": {
+    "body": 736,
+    "leg": 60
+  },
+  "limbs": {
+    "legs": 4
+  },
+  "pivots": {
+    "hipY": 0.78,
+    "legX": 0.1,
+    "legZFront": 0.36,
+    "legZBack": -0.38
+  },
+  "triangles_per_animal": 976,
+  "budget_per_animal": 5000
+}

@@ -81,7 +81,7 @@ function prepareMaterial(material: THREE.Material): boolean {
  * Copy every attribute to plain Float32 (meshopt GLBs use KHR_mesh_quantization: normalized
  * integers with the scale on the node), so baking the node transform cannot clip them.
  */
-function dequantize(geometry: THREE.BufferGeometry): THREE.BufferGeometry {
+export function dequantize(geometry: THREE.BufferGeometry): THREE.BufferGeometry {
   const out = new THREE.BufferGeometry();
   for (const [name, attr] of Object.entries(geometry.attributes)) {
     const src = attr as THREE.BufferAttribute | THREE.InterleavedBufferAttribute;

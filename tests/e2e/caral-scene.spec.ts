@@ -134,3 +134,34 @@ test('the Blender vegetation kit replaces the procedural huarango, willow and to
   expect(state.canes).toBeGreaterThan(0);
   expect(errors).toEqual([]);
 });
+
+test('riparian deer and bird flocks graze the Supe with the Blender fauna kit', async ({ page }) => {
+  const errors = await boot(page);
+  await page.waitForFunction(
+    () => {
+      const w = (window as unknown as { game: any }).game.wildlife;
+      return w.hasKit('deer') && w.hasKit('riparian_bird');
+    },
+    null,
+    { timeout: 30_000 },
+  );
+  const fauna = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.wildlife.update(1 / 60); // positions are set by update; the page runs with noloop
+    return g.wildlife.debugSnapshot().map((a: any) => ({
+      species: a.species,
+      water: g.terrain.isWater(a.x, a.z),
+      above: a.y - g.terrain.getHeight(a.x, a.z),
+    }));
+  });
+  const deer = fauna.filter((a: any) => a.species === 'deer');
+  const birds = fauna.filter((a: any) => a.species === 'riparian_bird');
+  expect(deer.length).toBeGreaterThanOrEqual(3);
+  expect(birds.length).toBeGreaterThanOrEqual(3);
+  for (const d of deer) {
+    expect(d.water).toBe(false);
+    expect(Math.abs(d.above)).toBeLessThan(0.2);
+  }
+  for (const b of birds) expect(b.above).toBeGreaterThan(0.2);
+  expect(errors).toEqual([]);
+});

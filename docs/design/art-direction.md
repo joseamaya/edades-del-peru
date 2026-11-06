@@ -152,7 +152,7 @@ _Status (kit v1)_: huarango, sauce, caña brava, carrizo and totora ship as LOD0
 the `algarrobo` and `sauce` variants with them, packing only visible trees and switching to LOD1 beyond
 45 units from the camera focus (always LOD1 on low quality); `Props` draws totora and the m1 riverbank
 canes. Wind sway is still the CPU canopy rotation, not a vertex shader. Missing: cola de caballo, lomas
-herbs, crops as kit models, and the fauna (deer, birds).
+herbs and crops as kit models.
 
 ## 8. Fauna
 
@@ -165,6 +165,11 @@ Only species supported by a source; add new ones only with a citation.
 | Birds        | Riparian forest         | Shady (aves)                                          | Flocks that lift and settle       |
 | Pelicans     | Coast                   | Existing wildlife set; **needs a citation** for Caral | Flights along the shore           |
 | Fish schools | Fishing spots           | Áspero fishing record                                 | Visible shimmer at resource nodes |
+
+_Status (fauna kit v1)_: deer and a generic riparian bird ship as Blender GLBs
+(`scripts/blender/build_caral_fauna_kit.py`); in m1 `planCaralValleyFauna` places deer groups on dry
+riverside ground and bird flocks that lift and settle over the water. Deer do not flee from units yet, and
+rodents are not modelled.
 
 _Target_: at least one animal group visible in each zone at default zoom; 15–30 animals per map,
 within the existing per-animal budget (4 draw calls, 5000 triangles; `yarn bench:check`).

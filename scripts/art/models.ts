@@ -62,6 +62,8 @@ export function optimizeModels(options: ModelOptimizeOptions = {}): ModelOptimiz
           'false',
           '--texture-size',
           String(textureSize),
+          // Fauna kits keep their named parts (body/leg/wing), which the game animates separately.
+          ...(id.startsWith(`fauna${path.sep}`) ? ['--join', 'false', '--flatten', 'false'] : []),
         ],
         { stdio: 'pipe' },
       );

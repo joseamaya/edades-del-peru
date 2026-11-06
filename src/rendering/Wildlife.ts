@@ -19,11 +19,19 @@ const GAIT_OFFSETS = [0, Math.PI, Math.PI, 0];
 const GRAZE_RATE = 0.3;
 const GRAZE_THRESHOLD = 0.55;
 
+/** Geometry from the Blender fauna kit that replaces a species' procedural body and limb. */
+export interface FaunaKitParts {
+  body: THREE.BufferGeometry;
+  leg?: THREE.BufferGeometry;
+  wing?: THREE.BufferGeometry;
+}
+
 interface Animal {
   species: SpeciesId;
   group: THREE.Group;
   template: FaunaTemplate;
   rig: RigInstance | null;
+  body: THREE.Mesh | null;
   legs: THREE.Group[];
   wings: { pivot: THREE.Group; side: number }[];
   homeX: number;
@@ -59,8 +67,37 @@ export class Wildlife {
     metalness: 0,
   });
   private time = 0;
+  private readonly kits = new Map<SpeciesId, FaunaKitParts>();
+  private disposed = false;
 
   constructor(private readonly scene: THREE.Scene) {}
+
+  hasKit(species: SpeciesId): boolean {
+    return this.kits.has(species);
+  }
+
+  /** Species currently alive (the fauna kit only loads what is on the map). */
+  species(): Set<SpeciesId> {
+    return new Set(this.animals.map((a) => a.species));
+  }
+
+  /**
+   * Swap a species' procedural geometry for the Blender kit (same pivots, vertex colours). Applies to
+   * the animals already spawned and to later spawns; a kit arriving after dispose is freed.
+   */
+  attachKit(species: SpeciesId, kit: FaunaKitParts): void {
+    if (this.disposed || this.kits.has(species)) {
+      disposeKit(kit);
+      return;
+    }
+    this.kits.set(species, kit);
+    for (const a of this.animals) {
+      if (a.species !== species || a.rig || !a.body) continue;
+      a.body.geometry = kit.body;
+      for (const pivot of a.legs) if (kit.leg) (pivot.children[0] as THREE.Mesh).geometry = kit.leg;
+      for (const w of a.wings) if (kit.wing) (w.pivot.children[0] as THREE.Mesh).geometry = kit.wing;
+    }
+  }
 
   spawn(spawns: WildlifeSpawn[], heightAt: (x: number, z: number) => number): void {
     // Freeze the limit: `this.animals.length` grows inside the loop, so
@@ -70,6 +107,7 @@ export class Wildlife {
       const s = spawns[i];
       const n = this.animals.length;
       const t = faunaTemplate(s.id);
+      const kit = this.kits.get(s.id);
       const choice = wildlifeModelChoice(s.id);
       const rig = choice ? acquireRig(choice.asset, choice.variant) : null;
       const group = rig ? rig.root : new THREE.Group();
@@ -78,8 +116,9 @@ export class Wildlife {
 
       const legs: THREE.Group[] = [];
       const wings: { pivot: THREE.Group; side: number }[] = [];
+      let body: THREE.Mesh | null = null;
       if (!rig) {
-        const body = new THREE.Mesh(t.body, this.material);
+        body = new THREE.Mesh(kit?.body ?? t.body, this.material);
         body.castShadow = t.ground;
         body.receiveShadow = true;
         group.add(body);
@@ -89,7 +128,7 @@ export class Wildlife {
             for (const sz of [t.legZFront, t.legZBack]) {
               const pivot = new THREE.Group();
               pivot.position.set(sx * t.legX, t.hipY, sz);
-              const mesh = new THREE.Mesh(t.leg, this.material);
+              const mesh = new THREE.Mesh(kit?.leg ?? t.leg, this.material);
               mesh.castShadow = true;
               mesh.receiveShadow = true;
               pivot.add(mesh);
@@ -103,7 +142,7 @@ export class Wildlife {
           for (const side of [-1, 1]) {
             const pivot = new THREE.Group();
             pivot.position.set(side * t.shoulderX, t.shoulderY, t.shoulderZ);
-            const mesh = new THREE.Mesh(t.wing, this.material);
+            const mesh = new THREE.Mesh(kit?.wing ?? t.wing, this.material);
             mesh.scale.x = side; // mirror the left wing
             mesh.castShadow = true;
             mesh.receiveShadow = true;
@@ -120,15 +159,17 @@ export class Wildlife {
         group,
         template: t,
         rig,
+        body,
         legs,
         wings,
         homeX: s.x,
         homeZ: s.z,
         phase: n * 2.399, // golden angle: spread the herd apart
         angle: n * 2.399,
-        radius: t.ground ? 4 + (n % 4) : 12 + (n % 5) * 2,
+        radius: t.orbit !== undefined ? t.orbit + (n % 3) * 0.8 : t.ground ? 4 + (n % 4) : 12 + (n % 5) * 2,
         angSpeed: rig ? 0.16 + (n % 3) * 0.04 : t.ground ? 0.08 + (n % 3) * 0.03 : 0.2 + (n % 2) * 0.1,
-        bobPhase: n * 1.7,
+        // A flock (same roost) lifts and settles together; other animals are desynchronised.
+        bobPhase: t.bobAmp !== undefined ? Math.floor(s.x) * 0.37 + Math.floor(s.z) * 0.61 : n * 1.7,
         heightAt,
       });
     }
@@ -160,7 +201,7 @@ export class Wildlife {
       const y = a.heightAt(x, z);
       const bob = a.template.ground
         ? Math.abs(Math.sin(this.time * 3 + a.bobPhase)) * 0.03
-        : Math.sin(this.time * 1.6 + a.bobPhase) * 0.25;
+        : Math.sin(this.time * (a.template.bobRate ?? 1.6) + a.bobPhase) * (a.template.bobAmp ?? 0.25);
       a.group.position.set(x, y + a.template.flyHeight + bob, z);
       // Orbit derivative is (-sin, cos); a +Z-facing model needs yaw = -angle.
       a.group.rotation.y = -angle;
@@ -191,6 +232,9 @@ export class Wildlife {
   }
 
   dispose(): void {
+    this.disposed = true;
+    for (const kit of this.kits.values()) disposeKit(kit);
+    this.kits.clear();
     for (const a of this.animals) {
       a.group.removeFromParent();
       a.rig?.dispose();
@@ -198,4 +242,10 @@ export class Wildlife {
     this.animals.length = 0;
     this.material.dispose();
   }
+}
+
+function disposeKit(kit: FaunaKitParts): void {
+  kit.body.dispose();
+  kit.leg?.dispose();
+  kit.wing?.dispose();
 }

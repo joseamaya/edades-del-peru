@@ -1,0 +1,21 @@
+{
+  "asset_id": "caral_bird",
+  "script": "scripts/blender/build_caral_fauna_kit.py",
+  "source_scene": "scenes/caral_fauna_kit.blend",
+  "file": "caral_bird.glb",
+  "bytes": 8736,
+  "parts": {
+    "body": 252,
+    "wing": 48
+  },
+  "limbs": {
+    "wings": 2
+  },
+  "pivots": {
+    "shoulderX": 0.05,
+    "shoulderY": 0.02,
+    "shoulderZ": 0.0
+  },
+  "triangles_per_animal": 348,
+  "budget_per_animal": 5000
+}

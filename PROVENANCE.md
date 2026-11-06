@@ -152,6 +152,22 @@ slot is absent (offline / without assets).
 - **Confidence**: species and zones documented in `docs/historia/campanas/caral.md`; shapes are stylized
   (art-direction.md §7), not botanical surveys.
 
+### Caral fauna kit (deer, riparian bird)
+
+- **Location**: `src/assets/fauna/caral/caral_deer.glb` and `caral_bird.glb`.
+- **Source**: generated in Blender by `scripts/blender/build_caral_fauna_kit.py`; kit scene
+  `art-src/blender/scenes/caral_fauna_kit.blend` (Git LFS); uncompressed exports and manifests (parts,
+  pivots, triangles per animal) in `art-src/blender/exports/caral/fauna/`. `yarn art:models` compresses
+  them without joining nodes, because the game animates the named `body`/`leg`/`wing` parts.
+- **Content**: project-owned procedural geometry with per-vertex colour; deer 976 and bird 348 triangles
+  per animal (budget 5000). The procedural templates in `src/rendering/faunaModels.ts` share the pivots and
+  remain the fallback.
+- **Runtime**: only the m1 Caral valley plan (`planCaralValleyFauna`) places them: deer groups grazing on
+  dry riverside ground and bird flocks that lift and settle over the water's edge. Visual only.
+- **Confidence**: deer and birds in the Supe riparian forest are documented (Shady, in
+  `docs/historia/campanas/caral.md`); the bird species is not named there, so the model is a generic
+  small bird. Shapes are stylized.
+
 ### Caral Pyramid Mayor modular scenery
 
 - **Location**: `src/assets/scenery/caral/caral_pyramid_mayor_lod0.glb` and `lod1.glb`.
