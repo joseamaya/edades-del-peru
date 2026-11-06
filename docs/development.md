@@ -807,7 +807,7 @@ landscape's draw calls (the layer rendered visible vs hidden). It **fails** (`ex
 VSM main+shadow passes; see [`docs/design/cultural-landscape.md`](design/cultural-landscape.md)). It writes
 the JSON to `--out` (`review/bench.json` by default) and prints a table.
 
-`yarn sim [--seeds=777,...] [--max=1200] [--metrics=1] [--sample=5] [--out=review/ai-bench.json]` is the
+`yarn sim [--seeds=777,...] [--max=1200] [--civ=chanca] [--period=4] [--metrics=1] [--sample=5] [--out=review/ai-bench.json]` is the
 deterministic AI-vs-AI runner. With `--metrics=1` it records first soldier/first attack/first barracks,
 workers/military/buildings created, gathered resources, losses, pathfinding requests/failures, AI percentiles
 and a sampled timeline (idle/blocked workers, stuck units, army, resources) without changing behaviour.

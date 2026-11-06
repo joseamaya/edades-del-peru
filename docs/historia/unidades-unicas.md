@@ -48,13 +48,26 @@ astronomía de la Puerta del Sol. — [`civilizaciones/caral.md`](./civilizacion
 [`civilizaciones/chavin.md`](./civilizaciones/chavin.md), [`civilizaciones/paracas.md`](./civilizaciones/paracas.md),
 [`civilizaciones/tiahuanaco.md`](./civilizaciones/tiahuanaco.md).
 
-## Capítulo II — Tahuantinsuyo (en curso)
+## Capítulo II — Tahuantinsuyo
 
 | Civ | Unidad única | Base | Tecnología única | Fuente |
 |---|---|---|---|---|
-| Confederación Chanca | — (pendiente) | — | — | — |
-| Reino Chimú | — (pendiente) | — | — | — |
+| Confederación Chanca | Guerrero Chanca | Guerrero (`soldier`) | Momia Ancestral | [`civilizaciones/chanca.md`](./civilizaciones/chanca.md), [`atuendos.md`](./atuendos.md) §2 |
+| Reino Chimú | Fixi Chimú | Guerrero (`soldier`) | Tumi Ceremonial | [`civilizaciones/chimu.md`](./civilizaciones/chimu.md), [`atuendos.md`](./atuendos.md) §2 |
 | Tahuantinsuyo | Guerrero Inca | Guerrero (`soldier`) | Quipus y Vigías / Palabra del Amauta / Chasquis Veloces | [`civilizaciones/inca.md`](./civilizaciones/inca.md), [`atuendos.md`](./atuendos.md) §2 y §6 |
+
+### Confederación Chanca
+
+Los chancas se pintaban el rostro y llevaban la momia de sus antepasados al combate. El «Guerrero Chanca» es
+una infantería rápida y agresiva: mantiene los bonus base contra caballería/asedio y añade +20% contra
+infantería; «Momia Ancestral» refuerza el ataque. —
+[`civilizaciones/chanca.md`](./civilizaciones/chanca.md), [`atuendos.md`](./atuendos.md) §2.
+
+### Reino Chimú
+
+El ejército chimú (**fixi**) y su orfebrería (tumi, orejeras) sostenían el expansionismo de Chan Chan. El
+«Fixi Chimú» es una infantería con bonus contra edificios; «Tumi Ceremonial» refuerza el ataque. —
+[`civilizaciones/chimu.md`](./civilizaciones/chimu.md), [`atuendos.md`](./atuendos.md) §2.
 
 El ejército imperial inca reunía infantería, honderos y chasquis; el uncu con canesú rojo y la mochila/carga
 son la base visual ya usada por el rig andino. El «Guerrero Inca» es una infantería resistente y equilibrada.
@@ -64,11 +77,11 @@ histórica. — [`civilizaciones/inca.md`](./civilizaciones/inca.md), [`atuendos
 
 ## Balance
 
-`yarn sim --seeds=777,778,779,780 --max=900` → 4 empates (cap de 900 s) tanto en el piloto como al cerrar
-el capítulo I, en línea con el baseline documentado de escenarios sin resolver. Las estadísticas de las
-unidades únicas se mantienen por encima de su base sin doblar la curva (bonus de ataque/HP moderados); no se
-cambia la condición de victoria. La verificación de balance de toda la primera tanda se repetirá al cerrar
-Chanca y Chimú.
+`yarn sim --seeds=777,778,779,780 --max=900` (Moche vs Recuay) → 4 empates (cap de 900 s), tanto en el
+piloto como al cerrar el capítulo I. `yarn sim --civ=chanca --period=4 --seeds=777,778,779,780 --max=900`
+(Chanca vs Chimú) → 4 empates, en línea con el baseline documentado de escenarios sin resolver. Las
+estadísticas de las unidades únicas se mantienen por encima de su base sin doblar la curva (bonus de
+ataque/HP moderados); no se cambia la condición de victoria.
 
 ## Criterios de implementación
 

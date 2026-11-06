@@ -150,8 +150,9 @@ era). Donde un dato no está atestiguado se indica **«no documentado»**; no se
 > **Unidades únicas (#237).** Las unidades únicas reutilizan la variante de atuendo ya documentada de su
 > civilización; no añaden prendas ni equipo nuevos. El Guerrero Moche usa el casco, la porra y la túnica con
 > backflap de la fila moche; el Guerrero Recuay, las orejeras y la rodela de la fila de Estados Regionales;
-> el Guardián Wari, el disco pectoral; el Guerrero Inca, el uncu con canesú rojo de la fila inca. La ficha y
-> las fuentes están en [`unidades-unicas.md`](./unidades-unicas.md).
+> el Guardián Wari, el disco pectoral; el Guerrero Chanca, la pintura facial; el Fixi Chimú, las orejeras de
+> metal; el Guerrero Inca, el uncu con canesú rojo de la fila inca. La ficha y las fuentes están en
+> [`unidades-unicas.md`](./unidades-unicas.md).
 
 ### Textiles por civilización (implementación)
 

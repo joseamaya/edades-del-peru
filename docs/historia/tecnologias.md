@@ -25,6 +25,8 @@ ni después/otra cultura (ámbito).
 | Orejeras de Pashash (`recuay_gold`) | Intermedio Temprano, solo Recuay | Orfebrería y orejeras de Pashash. |
 | Mitimaes (`wari_mitimaes`) | Horizonte Medio, solo Wari | Reasentamientos y red vial wari; el efecto de velocidad es una abstracción logística. |
 | Monolitos de Tiahuanaco (`tiahuanaco_monoliths`) | Intermedio Temprano, solo Tiahuanaco | Escultura lítica y monolitos tiahuanacotas; el efecto de armadura es una abstracción. |
+| Momia Ancestral (`chanca_mummy`) | Intermedio Tardío, solo Chanca | Los chancas llevaban la momia de sus antepasados al combate; el efecto de ataque es una abstracción. |
+| Tumi Ceremonial (`chimu_tumi`) | Intermedio Tardío, solo Chimú | Orfebrería y tumi chimú; el efecto de ataque es una abstracción. |
 | Puerta del Sol (`tiahuanaco_gate`) | Horizonte Medio, solo Tiahuanaco | Astronomía y culto tiahuanacota; el efecto de visión es una abstracción. |
 
 ## Suelo por cronología (`minPeriod`)

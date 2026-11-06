@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
-async function boot(page: Page, civ: string): Promise<void> {
-  await page.goto(`/?play=1&civ=${civ}&period=2&seed=777&fog=0&low=1&noloop=1`);
+async function boot(page: Page, civ: string, period = 2): Promise<void> {
+  await page.goto(`/?play=1&civ=${civ}&period=${period}&seed=777&fog=0&low=1&noloop=1`);
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });
@@ -95,4 +95,24 @@ test('a tech-only civ sees its unique technology', async ({ page }) => {
     return [...document.querySelectorAll('.ed-grid .ed-card')].map((el) => el.textContent ?? '');
   });
   expect(cards.some((text) => text.includes('Trueque Interregional'))).toBe(true);
+});
+
+test('chapter II civs train their unique units', async ({ page }) => {
+  for (const [civ, name, kind] of [
+    ['chanca', 'Guerrero Chanca', 'chanca_warrior'],
+    ['chimu', 'Fixi Chimú', 'chimu_fixi'],
+  ] as const) {
+    await boot(page, civ, 4);
+    const barracksId = await spawnBarracks(page);
+    const result = await page.evaluate(
+      ({ id, label, unit }) => {
+        const g = (window as unknown as { game: any }).game;
+        const cards = [...document.querySelectorAll('.ed-grid .ed-card')].map((el) => el.textContent ?? '');
+        return { shows: cards.some((text) => text.includes(label)), trains: g.trainUnit(id, unit) };
+      },
+      { id: barracksId, label: name, unit: kind },
+    );
+    expect(result.shows, `${civ} card`).toBe(true);
+    expect(result.trains, `${civ} training`).toBe(true);
+  }
 });
