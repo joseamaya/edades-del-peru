@@ -18,6 +18,7 @@ import {
 } from './postColonialCharacters';
 import { MOUNTED_VARIANTS, mountedVariantForCiv, type MountedRigVariant } from './mountedCharacters';
 import type { RebeldeRigVariant } from './rebeldeCharacters';
+import { VEHICLE_VARIANTS, vehicleVariantFor, type VehicleRigVariant } from './vehicleCharacters';
 import {
   MODERN_CULTURES,
   MODERN_ROLES,
@@ -28,7 +29,8 @@ import {
 import { SIEGE_VARIANTS, siegeVariantFor, type SiegeRigVariant } from './siegeCharacters';
 
 /** Registered rigged models. Add the id here and to the rendering registry. */
-export type ModelAssetId = 'ual_mannequin' | 'quaternius_alpaca' | 'caral_worker' | 'mounted_rig' | 'siege_rig';
+export type ModelAssetId =
+  'ual_mannequin' | 'quaternius_alpaca' | 'caral_worker' | 'mounted_rig' | 'siege_rig' | 'vehicle_rig';
 
 /** CC0 Quaternius mannequin: pipeline demo/fallback fixture. */
 export const MANNEQUIN_ASSET_ID: ModelAssetId = 'ual_mannequin';
@@ -37,6 +39,7 @@ export const RIG_DEMO_ASSET_ID: ModelAssetId = MANNEQUIN_ASSET_ID;
 export const CARAL_WORKER_ASSET_ID: ModelAssetId = 'caral_worker';
 export const MOUNTED_RIG_ASSET_ID: ModelAssetId = 'mounted_rig';
 export const SIEGE_RIG_ASSET_ID: ModelAssetId = 'siege_rig';
+export const VEHICLE_RIG_ASSET_ID: ModelAssetId = 'vehicle_rig';
 /** Eyes are too small to cast a readable shadow; the garments keep theirs. */
 export const CARAL_WORKER_SHADOW_SKIP_MESHES: readonly string[] = ['Eyes_f', 'Eyes_m'];
 
@@ -53,7 +56,8 @@ export type RigVariant =
   | RebeldeRigVariant
   | ModernRigVariant
   | MountedRigVariant
-  | SiegeRigVariant;
+  | SiegeRigVariant
+  | VehicleRigVariant;
 
 /** Animation states mapped to clips; `eat` is fauna-only. A rig may omit any state except `idle`. */
 export type RigClipState = 'idle' | 'walk' | 'walk_carry' | 'gather' | 'build' | 'attack' | 'eat';
@@ -124,7 +128,8 @@ const MODERN_VARIANT_CLIPS = variantClips(MODERN_CULTURES, MODERN_ROLES, (role) 
   Record<ModernRigVariant, Partial<Record<RigClipState, string | null>>>
 >;
 
-const MOUNTED_CLIPS: Partial<Record<RigClipState, string | null>> = {
+/** Shared clip set for the mounted, siege and vehicle platform rigs. */
+const PLATFORM_CLIPS: Partial<Record<RigClipState, string | null>> = {
   walk: 'Walk_Loop',
   walk_carry: 'Walk_Loop',
   gather: null,
@@ -133,20 +138,16 @@ const MOUNTED_CLIPS: Partial<Record<RigClipState, string | null>> = {
 };
 
 const MOUNTED_VARIANT_CLIPS = Object.fromEntries(
-  MOUNTED_VARIANTS.map((variant) => [variant, MOUNTED_CLIPS] as const),
+  MOUNTED_VARIANTS.map((variant) => [variant, PLATFORM_CLIPS] as const),
 ) as Partial<Record<MountedRigVariant, Partial<Record<RigClipState, string | null>>>>;
 
-const SIEGE_CLIPS: Partial<Record<RigClipState, string | null>> = {
-  walk: 'Walk_Loop',
-  walk_carry: 'Walk_Loop',
-  gather: null,
-  build: null,
-  attack: 'Attack',
-};
-
 const SIEGE_VARIANT_CLIPS = Object.fromEntries(
-  SIEGE_VARIANTS.map((variant) => [variant, SIEGE_CLIPS] as const),
+  SIEGE_VARIANTS.map((variant) => [variant, PLATFORM_CLIPS] as const),
 ) as Partial<Record<SiegeRigVariant, Partial<Record<RigClipState, string | null>>>>;
+
+const VEHICLE_VARIANT_CLIPS = Object.fromEntries(
+  VEHICLE_VARIANTS.map((variant) => [variant, PLATFORM_CLIPS] as const),
+) as Partial<Record<VehicleRigVariant, Partial<Record<RigClipState, string | null>>>>;
 
 function variantClips<R extends string>(
   cultures: readonly string[],
@@ -176,6 +177,7 @@ export const RIG_VARIANT_CLIPS: Partial<Record<RigVariant, Partial<Record<RigCli
   ...MODERN_VARIANT_CLIPS,
   ...MOUNTED_VARIANT_CLIPS,
   ...SIEGE_VARIANT_CLIPS,
+  ...VEHICLE_VARIANT_CLIPS,
   caral_worker_f: { attack: 'TreeChopping_Loop' },
   caral_worker_m: { attack: 'TreeChopping_Loop' },
   caral_scout_f: { walk: 'Walk_Loop', walk_carry: 'Walk_Loop', gather: null, build: null, attack: 'Punch_Jab' },
@@ -235,7 +237,7 @@ function postColonialFieldRole(kind: UnitKind): PostColonialRole | null {
  * Rigged model for a unit kind, or `null` to keep the procedural model.
  * Every pre-Hispanic Andean culture, the post-1532 humanoids, the m7 Inca rebels,
  * the contemporary Republic humanoids and the Inca Amauta use the shared humanoid
- * rig; contemporary Republic vehicles stay procedural until a later pass.
+ * rig; contemporary Republic vehicles use the dedicated vehicle rig.
  */
 export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): RigModelChoice | null {
   if (civ === CivId.CARAL && era === Era.FORMATIVE) {
@@ -261,6 +263,8 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
   }
   const siegeVariant = siegeVariantFor(kind, era, civ);
   if (siegeVariant) return { asset: SIEGE_RIG_ASSET_ID, variant: siegeVariant };
+  const vehicleVariant = vehicleVariantFor(kind, era, civ);
+  if (vehicleVariant) return { asset: VEHICLE_RIG_ASSET_ID, variant: vehicleVariant };
   if (civ === CivId.INCA && era === Era.VICEROYALTY) {
     // INCA has no Viceroyalty period; this is the m7 campaign override (1780).
     const role = postColonialFieldRole(kind);

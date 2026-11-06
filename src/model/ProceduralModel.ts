@@ -1008,6 +1008,28 @@ function buildAntiAir(ctx: BuildContext): THREE.Group {
   return b.finish();
 }
 
+function buildRocketLauncher(ctx: BuildContext): THREE.Group {
+  const b = new Builder(ctx);
+  // truck chassis and wheels
+  b.box(1.0, 0.34, 2.2, b.pal.darkMetal, { y: 0.24, metalness: 0.5 });
+  for (const x of [-0.56, 0.56]) {
+    for (const z of [-0.8, 0.8]) {
+      b.cyl(0.22, 0.22, 0.14, 12, b.pal.darkMetal, { x, y: 0.22, z, ry: Math.PI / 2 });
+    }
+  }
+  b.box(1.0, 0.7, 0.8, b.pal.darkMetal, { y: 0.85, z: 0.7, metalness: 0.5 });
+  // elevating six-tube launcher
+  const launcher = b.pivot('gun');
+  launcher.position.set(0, 1.0, -0.2);
+  b.boxIn(launcher, 0.95, 0.2, 0.8, b.pal.metal, { metalness: 0.6 });
+  for (const y of [0.05, 0.32]) {
+    for (const x of [-0.3, 0, 0.3]) {
+      b.cylIn(launcher, 0.08, 0.08, 1.2, 10, b.pal.darkMetal, { x, y, z: 0.35, rx: Math.PI / 2, metalness: 0.6 });
+    }
+  }
+  return b.finish();
+}
+
 function buildCannon(type: string, ctx: BuildContext): THREE.Group {
   const b = new Builder(ctx);
   const isHowitzer = type.includes('howitzer');
@@ -3615,6 +3637,7 @@ function buildModelTemplate(spec: ModelSpec, ctx: BuildContext): THREE.Group {
   else if (type === 'recon_drone') g = buildDrone(ctx);
   else if (type.startsWith('tank')) g = buildTank(type, ctx);
   else if (type.startsWith('aa')) g = buildAntiAir(ctx);
+  else if (type === 'rocket_launcher') g = buildRocketLauncher(ctx);
   else if (type === 'cannon' || type === 'artillery' || type === 'howitzer') g = buildCannon(type, ctx);
   else if (type === 'mortar') g = buildMortar(ctx);
   else if (type.startsWith('commissar')) g = buildCommisar(ctx, gender);

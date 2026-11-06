@@ -174,9 +174,9 @@ Definition of Done and the building audit see
   asset id plus an optional presentation variant. The **shared humanoid rig** covers the Caral worker/scout, the
   Inca chasqui and Amauta, every pre-Hispanic Andean culture, the post-1532 infantry, workers and scouts, the m7
   Inca rebels (`rebelde_*`) and the contemporary Republic humanoids; the **mounted cavalry** (`mounted_rig`,
-  Viceroyalty/Republic `HUSSAR`/`CAVALRY`) and the **siege/tank rig** (`siege_rig`, `ARTILLERY`/`MORTAR`/`TANK`)
-  cover the vehicles. Contemporary Republic vehicles (motorcycle, AA, rockets) still use the procedural path
-  until a later #327 pass.
+  Viceroyalty/Republic `HUSSAR`/`CAVALRY`), the **siege/tank rig** (`siege_rig`, `ARTILLERY`/`MORTAR`/`TANK`) and
+  the **vehicle rig** (`vehicle_rig`, contemporary `HUSSAR`/`ANTI_AIR`/`NUCLEAR` as motorcycle, AA and rocket
+  truck) cover the vehicles.
   `modelAssetIdsForMatch` lists the models to preload during `boot()` for every participating civilization. Assets live in
   `src/assets/models/*.glb`, are resolved by `src/rendering/modelAssetRegistry.ts` (`import.meta.glob` with
   `?url`, hashed by Vite) and loaded by `src/rendering/ModelAssets.ts` with `GLTFLoader`. The shared
@@ -608,7 +608,7 @@ four post-colonial civilizations. The rider coat, trim, trousers and headwear ar
 is not a breed reconstruction. `Attack` is the mounted charge/sword swing; `Death` plays once during the topple when the rig provides it. There is no mounted mapping before 1532, and `modelAssetIdsForMatch` preloads the asset for
 the affected periods. The `.blend` source is in `art-src/blender/scenes/mounted_rig.blend` (Git LFS); the GLB
 SHA-256 is recorded in `PROVENANCE.md`. Measure it with
-`yarn bench --scenario=mounted --units=4,12,24 --assert`; `yarn bench:check` includes the mounted, siege and tank scenarios
+`yarn bench --scenario=mounted --units=4,12,24 --assert`; `yarn bench:check` includes the mounted, siege, tank and vehicles scenarios
 (the merged meshes render at ~27 draws and ~10.1k triangles per unit including the VSM shadow pass).
 
 The siege rig (`siege_rig.glb`, #241b) is the project-authored companion for `ARTILLERY`, `MORTAR` and
@@ -618,6 +618,13 @@ the vehicle. It maps post-1532 artillery and mortars for the four post-colonial 
 cannon/mortar, and the contemporary tank (also used by contemporary cavalry) for República. No siege weapon is mapped before 1532. The source is
 `art-src/blender/scenes/siege_rig.blend` (Git LFS); the meshopt GLB and SHA-256 are recorded in
 `PROVENANCE.md`.
+
+The vehicle rig (`vehicle_rig.glb`, #327) covers the contemporary Republic `HUSSAR` (motorcycle), `ANTI_AIR`
+(twin-gun piece) and `NUCLEAR` (six-tube rocket truck): a 41-bone rig with three hidden vehicle groups, four
+clips and the modern Republic palette (`src/rendering/vehicleAttire.ts`). Only one vehicle group is visible per
+instance, and no vehicle is mapped outside the Contemporary era. The source is
+`art-src/blender/scenes/vehicle_rig.blend` (Git LFS); the meshopt GLB and SHA-256 are recorded in
+`PROVENANCE.md`. Measure it with `yarn bench --scenario=vehicles --units=4,12,24 --assert`.
 
 The same GLB backs the Caral **worker and scout in both genders** (`caral_worker_f/m`, `caral_scout_f/m`;
 `unitModelAsset` maps `WORKER`/`SCOUT + CARAL + FORMATIVE`). It also backs the Moche/Recuay infantry in
@@ -774,7 +781,7 @@ Match the cost of verification to the change (the full gate is in `AGENTS.md`):
 
 ## Performance benchmarks
 
-`yarn bench [--units=50,100,200,400,800] [--scenario=soldiers|mixed|mixed-ai|mounted|siege|tank|rigs|fauna|mixed-rigs]
+`yarn bench [--units=50,100,200,400,800] [--scenario=soldiers|mixed|mixed-ai|mounted|siege|tank|vehicles|rigs|fauna|mixed-rigs]
 [--animals=4,8,12,16] [--seed=777] [--steps=600] [--runs=3] [--profile=1] [--gc=1] [--fog=1]
 [--assert] [--out=review/bench.json]` boots a match in Chromium (SwiftShader) and, per scale, measures
 spawn/destroy time, simulation step time (`Game.update`), heap, A* per call, target acquisition
@@ -797,7 +804,7 @@ deterministic AI-vs-AI runner. With `--metrics=1` it records first soldier/first
 workers/military/buildings created, gathered resources, losses, pathfinding requests/failures, AI percentiles
 and a sampled timeline (idle/blocked workers, stuck units, army, resources) without changing behaviour.
 
-`yarn bench:check` runs the rig/fauna/mixed budgets with `--assert`: it fails when a worker or animal exceeds
+`yarn bench:check` runs the rig/fauna/mixed budgets with `--assert`: it fails when a worker, animal or vehicle exceeds
 its structural draw-call/triangle budget, when a rigged entity silently falls back to the procedural model, or
 when the mixed scenario's simulation p95 exceeds one frame (16.6 ms). It also asserts the ground-cover instance
 cap (16000) and chunk count. The budgets are machine-independent;

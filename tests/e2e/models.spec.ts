@@ -125,3 +125,45 @@ test('m7 cavalry, artillery and rebel infantry load their rigs instead of proced
   expect(state.worker).toBe('ready');
   expect(warnings).toEqual([]);
 });
+
+test('contemporary Republic vehicles load their rigs', async ({ page }) => {
+  const warnings: string[] = [];
+  page.on('console', (msg) => {
+    if (msg.type() === 'warning' && msg.text().includes('[models]')) warnings.push(msg.text());
+  });
+  await page.goto('/?play=1&period=9&civ=republica&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  const state = await page.evaluate(() => {
+    const g = (
+      window as unknown as {
+        game: {
+          playerCenter: (owner: number) => { x: number; z: number };
+          spawnScriptedUnit: (
+            kind: string,
+            owner: number,
+            x: number,
+            z: number,
+          ) => { kind: string; rig: { variantId: string | null; root: { name: string } } | null };
+        };
+      }
+    ).game;
+    const c = g.playerCenter(0);
+    return [
+      g.spawnScriptedUnit('hussar', 0, c.x - 6, c.z + 8),
+      g.spawnScriptedUnit('anti_air', 0, c.x, c.z + 8),
+      g.spawnScriptedUnit('nuclear', 0, c.x + 6, c.z + 8),
+    ].map((unit) => ({
+      kind: unit.kind,
+      variant: unit.rig?.variantId ?? null,
+      root: unit.rig?.root.name ?? null,
+    }));
+  });
+  expect(state).toEqual([
+    { kind: 'hussar', variant: 'vehicle_motorcycle', root: 'rig:vehicle_rig' },
+    { kind: 'anti_air', variant: 'vehicle_aa', root: 'rig:vehicle_rig' },
+    { kind: 'nuclear', variant: 'vehicle_rockets', root: 'rig:vehicle_rig' },
+  ]);
+  expect(warnings).toEqual([]);
+});
