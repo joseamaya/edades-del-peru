@@ -63,7 +63,7 @@ test('the worker has a hidden carry pivot at start', { tag: '@smoke' }, async ({
   expect(info!.visible).toBe(false);
 });
 
-test('the worker animates the arm while gathering', async ({ page }) => {
+test('the worker animates the arm while gathering', { tag: '@smoke' }, async ({ page }) => {
   await page.goto('/?play=1&civ=realistas&period=6&seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
@@ -73,7 +73,8 @@ test('the worker animates the arm while gathering', async ({ page }) => {
     const g = (window as unknown as { game: any }).game;
     const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
     const node = [...g.resourceNodes.values()][0];
-    if (!w || !node || !w.unitView?.armR) return false;
+    const bone = w?.rig?.root.getObjectByName('hand_r');
+    if (!w || !node || (!bone && !w.unitView?.armR)) return false;
     const nx = node.pos.x + 1.5;
     w.pos.set(nx, g.terrain.getHeight(nx, node.pos.z), node.pos.z);
     w.issueOrder({ kind: 'gather', entityId: node.id }, true);
@@ -81,15 +82,38 @@ test('the worker animates the arm while gathering', async ({ page }) => {
   });
   expect(armed).toBe(true);
 
+  const usesRig = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
+    return !!w?.rig;
+  });
+  if (usesRig) {
+    await page.waitForFunction(
+      () => {
+        const g = (window as unknown as { game: any }).game;
+        const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
+        return w?.rig?.currentClipName === 'Farm_Harvest';
+      },
+      null,
+      { timeout: 20_000 },
+    );
+  }
+
   const samples = new Set<string>();
-  for (let i = 0; i < 18; i++) {
-    await page.waitForTimeout(120);
-    const r = await page.evaluate(() => {
+  for (let i = 0; i < 10; i++) {
+    await page.waitForTimeout(100);
+    const poseKey = await page.evaluate(() => {
       const g = (window as unknown as { game: any }).game;
       const w = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
+      const bone = w?.rig?.root.getObjectByName('hand_r');
+      if (bone)
+        return bone.quaternion
+          .toArray()
+          .map((v: number) => v.toFixed(4))
+          .join(',');
       return w?.unitView?.armR ? w.unitView.armR.rotation.x.toFixed(3) : '0';
     });
-    samples.add(r);
+    samples.add(poseKey);
   }
 
   expect(samples.size).toBeGreaterThan(3);
