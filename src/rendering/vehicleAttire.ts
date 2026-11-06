@@ -5,7 +5,7 @@ import type { RigInstance } from './RigInstance';
 import type { RigVariantHandle } from './rigVariants';
 import { createRigAttireTools } from './rigAttire';
 
-const VEHICLE_GROUP: Record<VehicleRigVariant, string> = {
+const VEHICLE_MESH_PREFIX: Record<VehicleRigVariant, string> = {
   vehicle_motorcycle: 'GEO-Moto-',
   vehicle_aa: 'GEO-AA-',
   vehicle_rockets: 'GEO-Rocket-',
@@ -18,7 +18,7 @@ const VEHICLE_GROUP: Record<VehicleRigVariant, string> = {
  */
 export function dressVehicle(rig: RigInstance, variant: RigVariant): RigVariantHandle | null {
   if (!isVehicleVariant(variant)) return null;
-  const active = VEHICLE_GROUP[variant];
+  const active = VEHICLE_MESH_PREFIX[variant];
   const spec = MODERN_SPECS.contemporary_republica;
   const root = rig.root;
   const tools = createRigAttireTools(root);

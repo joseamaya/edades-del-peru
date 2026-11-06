@@ -128,7 +128,8 @@ const MODERN_VARIANT_CLIPS = variantClips(MODERN_CULTURES, MODERN_ROLES, (role) 
   Record<ModernRigVariant, Partial<Record<RigClipState, string | null>>>
 >;
 
-const MOUNTED_CLIPS: Partial<Record<RigClipState, string | null>> = {
+/** Shared clip set for the mounted, siege and vehicle platform rigs. */
+const PLATFORM_CLIPS: Partial<Record<RigClipState, string | null>> = {
   walk: 'Walk_Loop',
   walk_carry: 'Walk_Loop',
   gather: null,
@@ -137,31 +138,15 @@ const MOUNTED_CLIPS: Partial<Record<RigClipState, string | null>> = {
 };
 
 const MOUNTED_VARIANT_CLIPS = Object.fromEntries(
-  MOUNTED_VARIANTS.map((variant) => [variant, MOUNTED_CLIPS] as const),
+  MOUNTED_VARIANTS.map((variant) => [variant, PLATFORM_CLIPS] as const),
 ) as Partial<Record<MountedRigVariant, Partial<Record<RigClipState, string | null>>>>;
 
-const SIEGE_CLIPS: Partial<Record<RigClipState, string | null>> = {
-  walk: 'Walk_Loop',
-  walk_carry: 'Walk_Loop',
-  gather: null,
-  build: null,
-  attack: 'Attack',
-};
-
 const SIEGE_VARIANT_CLIPS = Object.fromEntries(
-  SIEGE_VARIANTS.map((variant) => [variant, SIEGE_CLIPS] as const),
+  SIEGE_VARIANTS.map((variant) => [variant, PLATFORM_CLIPS] as const),
 ) as Partial<Record<SiegeRigVariant, Partial<Record<RigClipState, string | null>>>>;
 
-const VEHICLE_CLIPS: Partial<Record<RigClipState, string | null>> = {
-  walk: 'Walk_Loop',
-  walk_carry: 'Walk_Loop',
-  gather: null,
-  build: null,
-  attack: 'Attack',
-};
-
 const VEHICLE_VARIANT_CLIPS = Object.fromEntries(
-  VEHICLE_VARIANTS.map((variant) => [variant, VEHICLE_CLIPS] as const),
+  VEHICLE_VARIANTS.map((variant) => [variant, PLATFORM_CLIPS] as const),
 ) as Partial<Record<VehicleRigVariant, Partial<Record<RigClipState, string | null>>>>;
 
 function variantClips<R extends string>(

@@ -201,8 +201,8 @@ def build_meshes():
     for side, sx in (('L', 1), ('R', -1)):
         box(f'GEO-AA-Gunner-Arm-{side}', f'aa_gunner_arm_{side}', uniform, (sx * 0.20, -0.72, 0.78), (0.11, 0.42, 0.12), rot=(math.radians(-18), 0, 0), bevel=0.02)
         box(f'GEO-AA-Gunner-Thigh-{side}', f'aa_gunner_thigh_{side}', uniform, (sx * 0.10, -1.04, 0.22), (0.13, 0.16, 0.28), bevel=0.02)
-        box(f'GEO-AA-Gunner-Calf-{side}', f'aa_gunner_calf_{side}', uniform, (sx * 0.13, -1.10, 0.02), (0.11, 0.13, 0.26), bevel=0.02)
-        box(f'GEO-AA-Gunner-Boot-{side}', f'aa_gunner_calf_{side}', rubber, (sx * 0.13, -1.16, -0.06), (0.12, 0.22, 0.10), bevel=0.02)
+        box(f'GEO-AA-Gunner-Calf-{side}', f'aa_gunner_calf_{side}', uniform, (sx * 0.13, -1.10, 0.14), (0.11, 0.13, 0.26), bevel=0.02)
+        box(f'GEO-AA-Gunner-Boot-{side}', f'aa_gunner_calf_{side}', rubber, (sx * 0.13, -1.16, 0.05), (0.12, 0.22, 0.10), bevel=0.02)
 
     # Rocket truck: chassis, cab, four wheels, six-tube launcher and a gunner.
     box('GEO-Rocket-Chassis', 'root', metal, (0, -0.10, 0.42), (1.16, 2.20, 0.26), bevel=0.04)
@@ -222,8 +222,8 @@ def build_meshes():
     for side, sx in (('L', 1), ('R', -1)):
         box(f'GEO-Rocket-Gunner-Arm-{side}', f'rocket_gunner_arm_{side}', uniform, (sx * 0.20, -1.06, 0.78), (0.11, 0.38, 0.12), rot=(math.radians(-12), 0, 0), bevel=0.02)
         box(f'GEO-Rocket-Gunner-Thigh-{side}', f'rocket_gunner_thigh_{side}', uniform, (sx * 0.10, -1.32, 0.22), (0.13, 0.16, 0.28), bevel=0.02)
-        box(f'GEO-Rocket-Gunner-Calf-{side}', f'rocket_gunner_calf_{side}', uniform, (sx * 0.13, -1.38, 0.02), (0.11, 0.13, 0.26), bevel=0.02)
-        box(f'GEO-Rocket-Gunner-Boot-{side}', f'rocket_gunner_calf_{side}', rubber, (sx * 0.13, -1.44, -0.06), (0.12, 0.22, 0.10), bevel=0.02)
+        box(f'GEO-Rocket-Gunner-Calf-{side}', f'rocket_gunner_calf_{side}', uniform, (sx * 0.13, -1.38, 0.14), (0.11, 0.13, 0.26), bevel=0.02)
+        box(f'GEO-Rocket-Gunner-Boot-{side}', f'rocket_gunner_calf_{side}', rubber, (sx * 0.13, -1.44, 0.05), (0.12, 0.22, 0.10), bevel=0.02)
 
 
 def merge_groups():
@@ -335,8 +335,6 @@ def export_asset():
     EXPORTS.mkdir(parents=True, exist_ok=True)
     MODELS.mkdir(parents=True, exist_ok=True)
     RENDERS.mkdir(parents=True, exist_ok=True)
-    blend = SCENES / 'vehicle_rig.blend'
-    bpy.ops.wm.save_as_mainfile(filepath=str(blend))
     glb = EXPORTS / 'vehicle_rig.glb'
     bpy.ops.export_scene.gltf(
         filepath=str(glb),
@@ -364,6 +362,8 @@ def export_asset():
     cam = bpy.context.object
     cam.rotation_euler = (math.radians(68), 0, math.radians(150))
     scene.camera = cam
+    blend = SCENES / 'vehicle_rig.blend'
+    bpy.ops.wm.save_as_mainfile(filepath=str(blend))
     for i, (loc, rot) in enumerate([
         ((3.6, 5.4, 2.6), (68, 0, 150)),
         ((0, 6.0, 2.2), (74, 0, 180)),

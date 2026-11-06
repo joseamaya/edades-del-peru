@@ -8,7 +8,7 @@ import { installProbes, resetProbes, snapshotProbes, readSceneStats, readMemory,
  * Reproducible performance benchmark for entity scale.
  *
  * Usage:
- *   node scripts/bench.mjs [--units=50,100,200,400,800] [--scenario=soldiers|mixed|mixed-ai|mounted|siege|tank]
+ *   node scripts/bench.mjs [--units=50,100,200,400,800] [--scenario=soldiers|mixed|mixed-ai|mounted|siege|tank|vehicles]
  *                          [--seed=777] [--steps=600] [--runs=3] [--profile=1] [--gc=1]
  *                          [--fog=1] [--out=review/bench.json]
  *
@@ -50,6 +50,7 @@ if (
     'mounted',
     'siege',
     'tank',
+    'vehicles',
     'rigs',
     'fauna',
     'mixed-rigs',
@@ -58,7 +59,7 @@ if (
   ].includes(scenario)
 ) {
   console.error(
-    `unknown scenario "${scenario}" (use soldiers|mixed|mixed-ai|mounted|siege|tank|rigs|fauna|mixed-rigs|fortifications|group-move)`,
+    `unknown scenario "${scenario}" (use soldiers|mixed|mixed-ai|mounted|siege|tank|vehicles|rigs|fauna|mixed-rigs|fortifications|group-move)`,
   );
   process.exit(1);
 }
@@ -72,6 +73,7 @@ const RIG_BUDGETS = {
   mounted: { drawCalls: 40, triangles: 12000 },
   siege: { drawCalls: 24, triangles: 12000 },
   tank: { drawCalls: 12, triangles: 12000 },
+  vehicles: { drawCalls: 20, triangles: 6000 },
   animal: { drawCalls: 4, triangles: 5000 },
   mixedP95Ms: 16.6,
   fortificationsP99Ms: 12,
@@ -265,6 +267,10 @@ async function setupScenario(page, n) {
           spawnVehicle('mortar', Math.floor(N / 2), center.x, center.z);
         } else if (scenarioName === 'tank') {
           spawnVehicle('tank', N, center.x, center.z);
+        } else if (scenarioName === 'vehicles') {
+          spawnVehicle('hussar', Math.ceil(N / 3), center.x, center.z);
+          spawnVehicle('anti_air', Math.floor(N / 3), center.x, center.z);
+          spawnVehicle('nuclear', Math.floor(N / 3), center.x, center.z);
         } else {
           spawnWorkers(N, center.x, center.z);
           spawnArmy(Math.max(0, Math.round(N / 2)), center.x, center.z);
@@ -373,7 +379,7 @@ async function measure(browser, base, n, runIndex) {
     params.set('civ', 'realistas');
     params.set('period', '6');
   }
-  if (scenario === 'tank') {
+  if (scenario === 'tank' || scenario === 'vehicles') {
     params.set('civ', 'republica');
     params.set('period', '9');
   }
@@ -776,7 +782,10 @@ async function main() {
           failures.push(`${r.n}: ${fmt(c.perWorkerTris, 0)} worker triangles > ${RIG_BUDGETS.worker.triangles}`);
         }
       }
-      if ((scenario === 'mounted' || scenario === 'siege' || scenario === 'tank') && c.units > 0) {
+      if (
+        (scenario === 'mounted' || scenario === 'siege' || scenario === 'tank' || scenario === 'vehicles') &&
+        c.units > 0
+      ) {
         const budget = RIG_BUDGETS[scenario];
         if (r.riggedUnits !== r.startMilitary)
           failures.push(`${r.n}: only ${r.riggedUnits}/${r.startMilitary} ${scenario} units rigged`);

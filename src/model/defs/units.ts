@@ -529,7 +529,7 @@ export const UNIT_ARCHETYPES: Record<UnitKind, UnitArchetype> = {
       [Era.CONTEMPORARY]: { hp: 1.3, attack: 9.0, range: 3.4, speed: 0.5, area: 8.0 },
     },
     eraModel: {
-      [Era.CONTEMPORARY]: { type: 'howitzer', scale: 1.15 },
+      [Era.CONTEMPORARY]: { type: 'rocket_launcher', scale: 1.15 },
     },
     requiresTech: ['rocketry'],
     requiresFortress: true,
