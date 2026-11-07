@@ -98,7 +98,9 @@ test('the Caral scenario loads the authored sacred-city site', { tag: '@smoke' }
       heritageIds: names.map((name) => [name, g.landmark?.getObjectByName(name)?.userData?.heritageId ?? null]),
       resources,
       base: base ? { x: base.pos.x, z: base.pos.z } : null,
-      baseDistLower: base ? Math.hypot(base.pos.x - 100, base.pos.z - 152.5) : null,
+      // Act I starts at Áspero, on the shore west of the valley.
+      baseNearSea: base ? g.terrain.isWater(base.pos.x - 22, base.pos.z) : null,
+      baseWest: base ? base.pos.x : null,
       riverWest: g.terrain.isWater(4, 90),
       cityDry: !g.terrain.isWater(100, 90),
       upperDry: !g.terrain.isWater(100, 30),
@@ -118,7 +120,8 @@ test('the Caral scenario loads the authored sacred-city site', { tag: '@smoke' }
   for (const [name, id] of state.heritageIds) expect(id, name).toBe(name);
   for (const count of state.resources) expect(count).toBe(0);
   expect(state.base).not.toBeNull();
-  expect(state.baseDistLower).toBeLessThan(50);
+  expect(state.baseNearSea).toBe(true);
+  expect(state.baseWest).toBeLessThan(40);
   expect(state.riverWest).toBe(true);
   expect(state.cityDry).toBe(true);
   expect(state.upperDry).toBe(true);
@@ -151,15 +154,19 @@ test('the Caral city in use replaces the ruins and follows the Pyramid Mayor pha
       });
       return n;
     };
-    const inUse = tris();
-    city.setMayorPhase('foundation');
+    // m1 opens with the Pyramid Mayor's earliest platform; act III builds the later phases.
+    const opening = city.mayorPhase;
     const foundation = tris();
-    city.setMayorPhase('in_use');
+    g.setSitePhase('in_use');
+    const inUse = tris();
+    const phase = city.mayorPhase;
+    g.setSitePhase('foundation');
     return {
       ruinsVisible: g.landmark.getObjectByName('caral_site').visible,
       lod0Meshes: lod(0).children.length,
       lod1Meshes: lod(1).children.length,
-      phase: city.mayorPhase,
+      opening,
+      phase,
       inUse,
       foundation,
       back: tris(),
@@ -169,9 +176,10 @@ test('the Caral city in use replaces the ruins and follows the Pyramid Mayor pha
   expect(state.lod0Meshes).toBeGreaterThan(0);
   expect(state.lod0Meshes).toBeLessThanOrEqual(8);
   expect(state.lod1Meshes).toBeLessThanOrEqual(8);
+  expect(state.opening).toBe('foundation');
   expect(state.phase).toBe('in_use');
   expect(state.foundation).not.toBe(state.inUse);
-  expect(state.back).toBe(state.inUse);
+  expect(state.back).toBe(state.foundation);
   expect(errors).toEqual([]);
 });
 
@@ -218,13 +226,19 @@ test('the authored site blocks monument footprints without sealing the city', as
 test('the Caral objectives reveal in acts and keep the assembly hidden until the city', async ({ page }) => {
   await boot(page);
   const objectives = page.locator('#ed-objectives');
-  await expect(objectives).toContainText('Prepara dos campos de cultivo');
-  await expect(objectives).toContainText('0/2');
-  await expect(objectives).toContainText('0/1');
-  await expect(objectives).toContainText(/0:0\d \/ 5:00/);
+  const advance = (complete: string) =>
+    page.evaluate((id: string) => {
+      const g = (window as unknown as { game: any }).game;
+      g.loop.stop();
+      g.mission.objState.set(id, 'completed');
+      g.mission.update(0.1, 0);
+      document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+      g.mission.update(0.1, 0);
+      g.hud.update(0.2, 0);
+    }, complete);
+  await expect(objectives).toContainText('Acto I · Reúne 300 de comida');
+  await expect(objectives).not.toContainText('Acto II');
   await expect(objectives).not.toContainText('Troje');
-  await expect(objectives).not.toContainText('250/500');
-  await expect(objectives).not.toContainText('canal comunal');
   await expect(objectives).not.toContainText('0/6');
   const plaza = page.locator('#ed-bottom');
   await page.evaluate(() => {
@@ -233,47 +247,29 @@ test('the Caral objectives reveal in acts and keep the assembly hidden until the
     g.hud.update(0.2, 0);
   });
   await expect(plaza).not.toContainText('Convocar asamblea');
+  await expect(plaza).not.toContainText('Entregar materiales');
 
-  await page.evaluate(() => {
-    const g = (window as unknown as { game: any }).game;
-    g.mission.objState.set('obj_agricultura', 'completed');
-    g.mission.update(0.1, 0);
-    g.hud.update(0.2, 0);
-  });
-  await expect(objectives).toContainText('Construye un depósito comunal');
-  await expect(objectives).toContainText('250/500');
-
-  await page.evaluate(() => {
-    const g = (window as unknown as { game: any }).game;
-    g.mission.objState.set('obj_almacenamiento', 'completed');
-    g.mission.update(0.1, 0);
-    g.hud.update(0.2, 0);
-  });
+  await advance('a1_pesca');
+  await expect(objectives).toContainText('Remonta el río Supe');
+  await advance('a1_valle');
+  await expect(page.locator('.ed-mission-card')).toHaveCount(0);
+  await expect(objectives).toContainText('Acto II · Prepara dos campos');
+  await advance('a2_campos');
   await expect(objectives).toContainText('Abre la compuerta del canal comunal');
-
-  await page.evaluate(() => {
-    const g = (window as unknown as { game: any }).game;
-    g.visitHeritage('caral_pyramid_mayor');
-    g.mission.objState.set('obj_complejo', 'completed');
-    g.mission.update(0.1, 0);
-    g.hud.update(0.2, 0);
-  });
-  await expect(objectives).toContainText('1/6');
+  await advance('a2_canal');
+  await expect(objectives).toContainText('Troje');
+  await advance('a2_troje');
+  await expect(objectives).toContainText('excedente de 500');
+  await advance('a2_excedente');
+  await expect(objectives).toContainText('Acto III · Entrega 150 de caña');
+  await expect(objectives).toContainText('0/6');
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     g.selectedHeritage = 'caral_pyramid_mayor';
     g.hud.update(0.2, 0);
   });
   await expect(plaza).toContainText('Convocar asamblea');
-
-  await page.evaluate(() => {
-    const g = (window as unknown as { game: any }).game;
-    g.loop.stop();
-    g.players[0].resources.food = 500;
-    g.mission.update(0.1, 0);
-    g.hud.update(0.2, 0);
-  });
-  await expect(objectives).toContainText('✔Reúne 500 de comida');
+  await expect(plaza).toContainText('Entregar materiales (50 madera) · 0/150');
 });
 
 test('the Caral base uses compound architecture for its center and houses', async ({ page }) => {
@@ -426,7 +422,7 @@ test('the Caral HUD keeps the tutorial and objectives separate at both review si
       tutorial!.x + tutorial!.width > objectives!.x &&
       tutorial!.y < objectives!.y + objectives!.height &&
       tutorial!.y + tutorial!.height > objectives!.y;
-    expect(overlap, `${viewport.width}x${viewport.height}`).toBe(false);
+    expect(overlap, `${viewport.width}x${viewport.height} ${JSON.stringify({ tutorial, objectives })}`).toBe(false);
   }
 });
 
@@ -445,8 +441,7 @@ test('a peaceful victory summarises optional achievements and offers the next mi
     ]) {
       g.visitHeritage(id);
     }
-    g.toggleCanal();
-    g.mission.objState.set('obj_riego', 'completed');
+    g.mission.objState.set('obj_asamblea', 'completed');
     g.mission.objState.set('obj_complejos', 'completed');
     g.mission.update(0.1, 0);
     g.showVictory(0);
@@ -454,7 +449,7 @@ test('a peaceful victory summarises optional achievements and offers the next mi
   const victory = page.locator('.ed-overlay', { hasText: 'VICTORIA' });
   await expect(victory).toBeVisible();
   await expect(victory).toContainText('Logros opcionales');
-  await expect(victory).toContainText('Abre la compuerta del canal comunal');
+  await expect(victory).toContainText('Convoca una asamblea comunal');
   await expect(victory).toContainText('Recorre los seis complejos piramidales');
   await expect(victory).toContainText('Continuar: El Oráculo de Chavín');
   await expect(victory).not.toContainText('Bajas infligidas');
@@ -497,7 +492,9 @@ test('a Caral Blender pyramid opens an educational field card', async ({ page })
   await expect(bottom).toContainText('Ficha registrada');
   const complexes = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    g.mission.objState.set('obj_complejo', 'completed');
+    g.mission.objState.set('a2_excedente', 'completed');
+    g.mission.update(0.1, 0);
+    document.querySelector<HTMLElement>('.ed-mission-card')?.click();
     g.mission.update(0.1, 0);
     for (const name of ['central', 'quarry', 'lesser', 'gallery', 'huanca']) {
       g.visitHeritage(`caral_pyramid_${name}`);
@@ -512,7 +509,7 @@ test('opening the Caral canal raises the yield at its banks', async ({ page }) =
   await boot(page);
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    g.mission.objState.set('obj_almacenamiento', 'completed');
+    g.mission.objState.set('a2_campos', 'completed');
     g.mission.update(0.1, 0);
   });
   const before = await page.evaluate(() => {
@@ -565,7 +562,7 @@ test('opening the Caral canal raises the yield at its banks', async ({ page }) =
   const riego = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     g.mission.update(0.2, 0);
-    return g.mission.objState.get('obj_riego');
+    return g.mission.objState.get('a2_canal');
   });
   expect(riego).toBe('completed');
 
@@ -632,8 +629,9 @@ test('the Plaza Central card activates the communal assembly', async ({ page }) 
   await boot(page);
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    g.mission.objState.set('obj_complejo', 'completed');
+    g.mission.objState.set('a2_excedente', 'completed');
     g.mission.update(0.1, 0);
+    document.querySelector<HTMLElement>('.ed-mission-card')?.click();
     g.selectedHeritage = 'caral_pyramid_mayor';
   });
   const bottom = page.locator('#ed-bottom');
@@ -680,7 +678,10 @@ test('a loaded Caral save keeps the Blender setpiece', async ({ page }) => {
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     g.visitHeritage('caral_pyramid_mayor');
-    g.mission.objState.set('obj_complejo', 'completed');
+    g.mission.objState.set('a2_excedente', 'completed');
+    g.mission.update(0.1, 0);
+    document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+    g.mission.objState.set('a3_shicras', 'completed');
     g.mission.update(0.1, 0);
     g.toggleCanal();
     g.startAssembly();
@@ -696,6 +697,7 @@ test('a loaded Caral save keeps the Blender setpiece', async ({ page }) => {
         g?.isHeritageVisited('caral_pyramid_mayor') === true &&
         g?.isCanalOpen() === true &&
         g?.getAssemblyState() === 'activo' &&
+        g?.sitePhase === 'fill' &&
         landmark?.getObjectByName('caral_site') !== undefined &&
         landmark?.getObjectByName('caral_pyramid_mayor') !== undefined &&
         landmark?.getObjectByName('caral_anfiteatro') !== undefined &&

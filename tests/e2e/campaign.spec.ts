@@ -42,11 +42,10 @@ test('the mission briefing includes context and sources', { tag: '@smoke' }, asy
   await expect(overlay).toContainText('Contexto');
   await expect(overlay).toContainText('¿Sabías que…?');
   await expect(overlay.getByText('Fuentes históricas')).toBeVisible();
-  await expect(overlay).toContainText('Observa la Gran Pirámide');
-  // the surplus, canal, tour and assembly are discoveries, not spoiled here
-  await expect(overlay).not.toContainText('Construye un depósito');
-  await expect(overlay).not.toContainText('Reúne 500');
-  await expect(overlay).not.toContainText('Abre la compuerta');
+  await expect(overlay).toContainText('Acto I · Reúne 300 de comida');
+  // later acts are discoveries, not spoiled here
+  await expect(overlay).not.toContainText('Acto II');
+  await expect(overlay).not.toContainText('Acto III ·');
   await expect(overlay).not.toContainText('Recorre los seis');
   await expect(overlay).not.toContainText('Convoca una asamblea');
 });
@@ -108,7 +107,7 @@ test('the tutorial guides in the first mission', async ({ page }) => {
   // the first step appears after the card and the ~2.6s opening flight
   await expect(tutorial).toBeVisible({ timeout: 60_000 });
   await expect(tutorial).toContainText('Selecciona a tus obreros');
-  await expect(tutorial).toContainText('Paso 1 / 6');
+  await expect(tutorial).toContainText('Paso 1 / 7');
 });
 
 test('the chapter card freezes the mission clock and shows the full subtitle', async ({ page }) => {
@@ -120,7 +119,7 @@ test('the chapter card freezes the mission clock and shows the full subtitle', a
   const card = page.locator('.ed-mission-card');
   await expect(card).toBeVisible({ timeout: 60_000 });
   const subtitle = card.locator('.place');
-  await expect(subtitle).toContainText('plazas se sostienen con trabajo comunal');
+  await expect(subtitle).toContainText('pescadores de anchoveta tejen sus redes con algodón');
   expect((await subtitle.textContent()) ?? '').not.toContain('…');
   await expect(page.locator('#ed-objectives'), 'objectives stay hidden behind the card').toBeHidden();
 
@@ -167,18 +166,11 @@ test('the Caral mission closes with a narrative epilogue, not a quiz', async ({ 
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
-    g.players[0].resources.food = 500;
-    const c = g.playerCenter(0);
-    g.spawnScriptedBuilding('farm', 0, c.x + 6, c.z + 6);
-    g.spawnScriptedBuilding('farm', 0, c.x + 9, c.z + 6);
-    g.spawnScriptedBuilding('mill', 0, c.x + 12, c.z + 6);
-    const target = g.mission.getObjectiveAnchor('obj_complejo');
-    const scout = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'scout');
-    if (target && scout) scout.pos.set(target.x, g.terrain.getHeight(target.x, target.z), target.z);
-    g.visitHeritage('caral_pyramid_mayor');
+    // Complete every act; the victory screen is what this test checks.
+    for (const o of g.mission.def.objectives) if (!o.optional) g.mission.objState.set(o.id, 'completed');
     const m = g.mission;
     const dt = 1 / 60;
-    for (let i = 0; i < Math.ceil(310 / dt) && !m.ended; i++) {
+    for (let i = 0; i < Math.ceil(5 / dt) && !m.ended; i++) {
       for (const b of g.buildings.values()) if (b.owner === 0 && !b.dead) b.hp = b.maxHp;
       for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
       g.update(dt, i * dt);

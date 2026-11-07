@@ -5,6 +5,7 @@ import { PostFX } from '../rendering/PostFX';
 import { SHADOW_MAP_SIZE } from '../rendering/shadowFrame';
 import { Sky } from '../rendering/Sky';
 import type { CaralCity } from '../rendering/architectureKit';
+import type { CaralMayorPhase } from '../model/defs/caralCity';
 import { Terrain } from '../rendering/Terrain';
 import { HeadlessTerrain } from '../sim/HeadlessTerrain';
 import { Water } from '../rendering/Water';
@@ -153,6 +154,8 @@ export class Game {
   landmarkLoadToken = 0;
   /** The Caral Sacred City in use (architecture kit), when the mission site is Caral. */
   caralCity: CaralCity | null = null;
+  /** Construction phase of the authored site's main monument (mission-driven; the city follows it). */
+  sitePhase: CaralMayorPhase = 'in_use';
   setpieceLoadToken = 0;
   /** Cultural landscape (roads, fields, plazas, canals); visual only. */
   landscape: CulturalLandscape | null = null;
@@ -956,6 +959,13 @@ export class Game {
   startAssembly(): boolean {
     return this.selection.startAssembly();
   }
+  setSitePhase(phase: CaralMayorPhase): void {
+    this.sitePhase = phase;
+    this.caralCity?.setMayorPhase(phase);
+  }
+  deliverToHeritage(id: HeritageBuildingId): boolean {
+    return this.selection.deliverToHeritage(id);
+  }
   makeOffering(id: HeritageBuildingId): boolean {
     return this.selection.makeOffering(id);
   }
@@ -1389,6 +1399,7 @@ export class Game {
       this.landmarkOwnsStatic = false;
       this.caralCity = null;
     }
+    this.sitePhase = 'in_use';
     if (this.landscape) {
       this.scene.remove(this.landscape.group);
       this.landscape.dispose();

@@ -444,7 +444,8 @@ const CSS = /* css */ `
 
   /* Tutorial */
   #ed-tutorial { position: absolute; top: 92px; left: 50%; transform: translateX(-50%); width: min(440px, 82vw); background: rgba(12,16,24,0.95); border: 1px solid var(--gold); border-radius: 6px; padding: 12px 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.6); display: none; pointer-events: auto; z-index: 5; }
-  #ed-tutorial.show { display: block; animation: toast-in 0.3s ease; }
+  #ed-tutorial.show { display: block; animation: tutorial-in 0.3s ease; }
+  @keyframes tutorial-in { from { opacity: 0; transform: translate(-50%, -8px); } to { opacity: 1; transform: translate(-50%, 0); } }
   #ed-tutorial .tut-head { display: flex; justify-content: space-between; align-items: center; font-size: 11px; letter-spacing: 2px; color: var(--gold-dim); text-transform: uppercase; }
   #ed-tutorial .tut-step { font-size: 14px; color: var(--text); line-height: 1.5; margin: 8px 0 6px; }
   #ed-tutorial .tut-actions { text-align: right; }
@@ -1167,6 +1168,16 @@ export class HUD {
     }
   }
 
+  private deliverySignature(heritageId: string): string {
+    const delivery = this.game.mission?.activeDeliveryFor(heritageId);
+    return delivery ? `:d${delivery.def.id}=${delivery.delivered}` : '';
+  }
+
+  /** Chapter card between the acts of one mission; the mission clock waits while it is open. */
+  showActCard(kicker: string, title: string, text: string): void {
+    this.showChapterCard(kicker, title, text, false);
+  }
+
   /** True while the chapter card is on screen (its absence means the mission may advance). */
   isMissionCardOpen(): boolean {
     return this.missionCard !== null && this.missionCard.isConnected;
@@ -1174,14 +1185,23 @@ export class HUD {
 
   /** Chapter title card shown over the opening camera flight. */
   private showMissionTitle(mis: MissionDef): void {
+    const [year, place] = mis.subtitle.split('·').map((part) => part.trim());
+    this.showChapterCard(
+      `${year ?? ''}${place ? ` · ${place}` : ''}`,
+      mis.title,
+      mis.history.split('\n')[0] ?? '',
+      true,
+    );
+  }
+
+  private showChapterCard(kicker: string, title: string, text: string, autoDismiss: boolean): void {
     this.missionCard?.remove();
     const card = this.el('div', 'ed-mission-card');
-    const [year, place] = mis.subtitle.split('·').map((part) => part.trim());
     card.innerHTML = `
       <div class="inner">
-        <div class="year">${year ?? ''}${place ? ` · ${place}` : ''}</div>
-        <h2>${mis.title}</h2>
-        <div class="place">${mis.history.split('\n')[0] ?? ''}</div>
+        <div class="year">${kicker}</div>
+        <h2>${title}</h2>
+        <div class="place">${text}</div>
         <div class="hint">${t('hud.missionCard.hint')}</div>
       </div>
     `;
@@ -1201,7 +1221,7 @@ export class HUD {
       }
     });
     card.focus();
-    if (new URLSearchParams(location.search).get('cardhold') !== '1') window.setTimeout(dismiss, 15000);
+    if (autoDismiss && new URLSearchParams(location.search).get('cardhold') !== '1') window.setTimeout(dismiss, 15000);
   }
 
   /** Leave the match (respects the active campaign). */
@@ -1374,6 +1394,20 @@ export class HUD {
         this.game.makeTrade(heritage.id),
       );
     }
+    const delivery = this.game.mission?.activeDeliveryFor(heritage.id);
+    if (delivery?.def.resource) {
+      const resource = delivery.def.resource;
+      const amount = Math.min(delivery.def.step ?? 50, (delivery.def.count ?? 0) - delivery.delivered);
+      this.addCommand(
+        t('hud.heritage.deliver', {
+          amount,
+          resource: RESOURCE_INFO[resource].name.toLowerCase(),
+          done: delivery.delivered,
+          total: delivery.def.count ?? 0,
+        }),
+        () => this.game.deliverToHeritage(heritage.id),
+      );
+    }
     if (heritage.operation === 'assembly') {
       const state = this.game.getAssemblyState();
       if (state === 'pendiente' && this.game.canStartAssembly()) {
@@ -1445,6 +1479,7 @@ export class HUD {
         (this.game.isHeritageVisited(heritage.id) ? ':v' : '') +
         (heritage.operation === 'toggle-canal' ? ':c' + Number(this.game.isCanalOpen()) : '') +
         (heritage.operation === 'assembly' ? ':a' + this.game.getAssemblyState() : '') +
+        this.deliverySignature(heritage.id) +
         tail
       );
     return 'idle' + tail;

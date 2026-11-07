@@ -4,7 +4,14 @@ Design proposal for rebuilding `m1_caral` as the **model mission** of the campai
 travels to the Supe valley as it was c. 3000–1800 BC, not to the ruins of today. Later missions should
 follow the same pattern.
 
-Status: **proposal**. Nothing here is implemented. The historical facts, and their certainty, live in the
+Status: **first playable pass**. `m1_caral` now runs the four acts below as one mission: Act I starts at
+Áspero on the shore, Act II opens the valley fields and the canal, Act III builds the Pyramid Mayor by
+handing materials over at its field card (`deliver` objectives with a `heritageId`; each phase swaps the
+kit model through `site_phase` trigger effects), and Act IV seals the pyramid and gathers the community on
+the beach. Acts II–IV open with a chapter card (`act` trigger effect) and every line is spoken by an
+anonymous narrator (`MissionDef.narrator`). Still open: the Áspero site model, the coast–valley exchange
+route, allied neighbour villages, fair tents, the paint-colour change per phase and the drought's
+environmental events (see *Implementation needs*). The historical facts, and their certainty, live in the
 dossier [`docs/historia/campanas/caral.md`](../historia/campanas/caral.md); this document only references
 them.
 
@@ -111,12 +118,12 @@ Dialogue speaker labels must not say "Comandante" in this mission.
 2. **Phased monument construction**: a site that grows through delivered materials and phase transitions.
    The modular Caral pyramids and Amphitheatre in `art-src/blender` are a starting point.
    The architecture kit now ships the Pyramid Mayor phase models (foundation, fill, finished, in use) and
-   `CaralCity.setMayorPhase` swaps them; the gameplay that drives the phases is still to do.
+   `CaralCity.setMayorPhase` swaps them; act III drives the phases through `Game.setSitePhase`.
 3. Local resources: cotton/fibre and reed instead of wood for Caral; no silver.
 4. Environmental events: seasonal flood, drought and sand advance.
 5. Map-specific vegetation and ambient fauna sets; remove palms from the Supe map.
 6. Narrated act cards with per-beat art (see the AoE-style intro proposal discussed for #343).
-7. Data fixes in `src/campaign/defs`: speaker label, `didYouKnow` wording, starting resources.
+7. ~~Data fixes in `src/campaign/defs`: speaker label, `didYouKnow` wording, starting resources.~~ Done.
 
 ## Certainty labelling
 

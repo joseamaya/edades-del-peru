@@ -6,6 +6,7 @@ import type { TerrainLayout } from '../model/defs/terrainLayout';
 import type { SetpieceId } from '../model/defs/setpieces';
 import type { HeritageBuildingId } from '../model/defs/heritage';
 import type { AuthoredSiteId, DecorModelId } from '../model/defs/sites';
+import type { CaralMayorPhase } from '../model/defs/caralCity';
 
 /** Normalized map point (0..1); resolved to world units from the mission map size. */
 export interface MissionAnchor {
@@ -85,6 +86,8 @@ export interface MissionSite {
   keepout?: MissionSiteKeepout[];
   /** Rectangles where player construction is forbidden (the archaeological site). */
   buildKeepout?: MissionSiteKeepout[];
+  /** Opening construction phase of the site's main monument; defaults to the finished city in use. */
+  mayorPhase?: CaralMayorPhase;
 }
 
 export interface MissionLayout {
@@ -155,6 +158,10 @@ export interface ObjectiveDef {
   resource?: keyof Resources;
   /** Heritage cards that must be visited for an `inspect` objective. */
   heritageIds?: HeritageBuildingId[];
+  /** Field card that receives a `deliver` objective's materials (shows a hand-over command). */
+  heritageId?: HeritageBuildingId;
+  /** Amount handed over per `deliver` command; defaults to 50. */
+  step?: number;
   era?: Era;
   hidden?: boolean;
   /**
@@ -193,7 +200,11 @@ export type TriggerEffect =
       radius?: number;
       objective?: 'base' | 'position';
     }
-  | { type: 'dialogue'; text: string; duration?: number }
+  | { type: 'dialogue'; text: string; duration?: number; speaker?: string }
+  /** Chapter card between acts of one mission (pauses the mission clock while open). */
+  | { type: 'act'; kicker: string; title: string; text: string }
+  /** Construction phase of the authored site's main monument (the Caral Pyramid Mayor). */
+  | { type: 'site_phase'; phase: CaralMayorPhase }
   | { type: 'resources'; player?: 0 | 1; amount: Partial<Resources> }
   | { type: 'objective'; objectiveId: string; state: 'activate' | 'complete' | 'fail'; announce?: boolean }
   | { type: 'camera'; pos: MissionPoint }
@@ -249,6 +260,8 @@ export interface MissionDef {
   defeat: string;
   /** Historical period of the mission (resolves dates and coetaneous civilizations). */
   period: HistoricalPeriod;
+  /** Speaker label for unattributed dialogue; defaults to the commander label. */
+  narrator?: string;
   /** Show the step-by-step guided tutorial at start (e.g. the Caral mission). */
   tutorial?: boolean;
   playerCiv: CivId;

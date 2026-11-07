@@ -14,13 +14,13 @@ describe('tutorial save compatibility', () => {
     const tutorial = new Tutorial(stubGame() as any, tutorialForMission('m1_caral')!);
     tutorial.applySave({
       idx: 0,
-      stepId: 'landmark',
+      stepId: 'pyramid',
       begun: true,
       finished: false,
       delay: 0,
       base,
     });
-    expect(tutorial.toSave().stepId).toBe('landmark');
+    expect(tutorial.toSave().stepId).toBe('pyramid');
   });
 
   it('maps the legacy indices to the closest current step', () => {
@@ -94,22 +94,22 @@ describe('tutorial checks', () => {
     const tutorial = tutorialAt(game, 'house');
     tutorial.update(0);
     tutorial.update(0);
-    expect(tutorial.toSave().stepId).toBe('farm');
+    expect(tutorial.toSave().stepId).toBe('valley');
   });
 
-  it('advances when a scout reaches the site', () => {
-    const game = gameForSteps();
-    game.units.set(1, { owner: 0, kind: 'scout', dead: false, pos: { x: 100, z: 30 } });
-    const tutorial = tutorialAt(game, 'landmark');
-    tutorial.update(0);
-    tutorial.update(0);
-    expect(tutorial.toSave().stepId).toBe('storage');
-  });
-
-  it('finishes after the gated communal store is completed', () => {
+  it('advances from the communal store to the pyramid construction', () => {
     const game = gameForSteps();
     game.buildings.set(1, { owner: 0, kind: 'mill', dead: false, constructionComplete: true });
     const tutorial = tutorialAt(game, 'storage');
+    tutorial.update(0);
+    tutorial.update(0);
+    expect(tutorial.toSave().stepId).toBe('pyramid');
+  });
+
+  it('finishes after the first materials reach the Pyramid Mayor', () => {
+    const game = gameForSteps();
+    game.mission.getObjectiveState = () => 'completed';
+    const tutorial = tutorialAt(game, 'pyramid');
     tutorial.update(0);
     tutorial.update(0);
     expect(tutorial.toSave().finished).toBe(true);

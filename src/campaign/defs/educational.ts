@@ -32,18 +32,20 @@ export const PROLOGUE =
 export const EDUCATIONAL: Record<string, EducationalMission> = {
   m1_caral: {
     briefing:
-      'Valle de Supe, c. 3000 a.C. Entre el mar y los Andes crece una comunidad que organiza canales, ' +
-      'campos de cultivo y plazas. No hay guerra documentada: el desafío es sostener a su gente y guardar el excedente.',
+      'Valle de Supe, c. 3000–1800 a.C. Empiezas como pescadores en Áspero, subes al valle a sembrar algodón, ' +
+      'levantas la Pirámide Mayor por fases y vives la sequía que cerró la ciudad. No hay guerra documentada.',
     context:
       'En el valle de Supe, a 182 km al norte de Lima y a 23 km del litoral, Caral fue la primera ciudad ' +
       'de América. Se formó con una economía pesquero-agraria complementaria —pesca con redes de algodón en ' +
       'Áspero y agricultura en el valle—, canales de riego y una ideología religiosa que cohesionaba a miles ' +
       'de personas. Funcionó casi un milenio (3000–1800 a.C.).',
-    didYouKnow: 'En Caral se registra uno de los usos más tempranos del quipu, mucho antes del Tahuantinsuyo.',
+    didYouKnow:
+      'En Caral se halló en 2005 un conjunto de cuerdas anudadas que se ha descrito como un posible quipu, mucho anterior al Tahuantinsuyo.',
     epilogue:
       'La comunidad de Supe sostuvo el valle combinando la pesca del litoral con la agricultura irrigada. ' +
-      'Ese excedente y la organización del trabajo hicieron posible las plazas y pirámides. Caral prosperó sin ' +
-      'guerra documentada y fue abandonada siglos después por causas que los arqueólogos todavía debaten.',
+      'Ese excedente y la organización del trabajo hicieron posible las plazas y pirámides. Hacia 1800 a.C., ' +
+      'una crisis climática llevó a sellar los edificios y a trasladarse hacia la costa, a lugares como Vichama; ' +
+      'las causas exactas aún se debaten.',
     sources: [
       { text: 'Shady Solís, R. Caral-Supe y su entorno natural y social en los orígenes de la civilización.' },
       { text: 'Zona Arqueológica Caral (Ministerio de Cultura)', url: 'https://zonacaral.gob.pe/' },

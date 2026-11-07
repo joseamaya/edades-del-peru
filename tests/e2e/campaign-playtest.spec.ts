@@ -388,12 +388,13 @@ test('plays m6 by advancing and cutting the canal with real orders', async ({ pa
 });
 
 /**
- * Caral is the campaign's gold standard: this plays the mission through the
- * ordinary command layer (build orders, gather orders and a scout move) instead
- * of satisfying objectives or spawning finished buildings directly.
+ * Caral is the campaign's gold standard: this plays its four acts through the ordinary command layer
+ * (build, gather and move orders, the canal gate and the Pyramid Mayor's hand-over command) instead of
+ * satisfying objectives or spawning finished buildings directly. A small bot re-assigns idle workers to
+ * whatever the current act needs.
  */
 test('plays m1 Caral with real construction and gathering, without objective cheats', async ({ page }) => {
-  test.setTimeout(180_000);
+  test.setTimeout(420_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
 
@@ -410,107 +411,125 @@ test('plays m1 Caral with real construction and gathering, without objective che
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
-
-    const workers = [...g.units.values()].filter((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as any[];
+    const m = g.mission;
+    const res = g.players[0].resources;
+    const state = (id: string) => m.getObjectiveState(id) as string;
+    const active = (id: string) => state(id) === 'activo';
+    const workers = () =>
+      [...g.units.values()].filter((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as any[];
     const scout = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'scout' && !u.dead) as any;
     const center = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center') as any;
-    if (!center || workers.length < 3 || !scout) return { setup: false };
+    if (!center || workers().length < 3 || !scout) return { setup: false };
 
-    const buildings: any[] = [];
-    const placeAndBuild = (kind: string, dx: number, dz: number, worker: any): boolean => {
-      const spot = g.findFreeSpot(center.pos.x + dx, center.pos.z + dz, kind === 'farm' ? 3 : 2);
-      if (!spot || !g.executeCommand({ kind: 'place', building: kind, x: spot.x, z: spot.z })) return false;
-      const building = [...g.buildings.values()].find(
-        (b: any) => b.owner === 0 && b.kind === kind && !b.dead && b.pos.x === spot.x && b.pos.z === spot.z,
+    const order = (unit: any, o: any) =>
+      g.executeCommand({ kind: 'order', unitIds: [unit.id], order: o, clear: true }, false);
+    const nearest = (from: any, filter: (n: any) => boolean) =>
+      ([...g.resourceNodes.values()].filter((n: any) => !n.dead && filter(n)) as any[]).sort(
+        (a, b) => Math.hypot(a.pos.x - from.x, a.pos.z - from.z) - Math.hypot(b.pos.x - from.x, b.pos.z - from.z),
+      )[0];
+    const placed = new Map<string, any[]>();
+    const place = (kind: string, at: { x: number; z: number }, builder: any): any => {
+      const spot = g.findFreeSpot(at.x, at.z, kind === 'farm' ? 3 : 2);
+      if (!spot || !g.executeCommand({ kind: 'place', building: kind, x: spot.x, z: spot.z })) return null;
+      const b = [...g.buildings.values()].find(
+        (c: any) => c.owner === 0 && c.kind === kind && !c.dead && c.pos.x === spot.x && c.pos.z === spot.z,
       ) as any;
-      if (!building) return false;
-      buildings.push(building);
-      g.executeCommand(
-        { kind: 'order', unitIds: [worker.id], order: { kind: 'build', entityId: building.id }, clear: true },
-        false,
-      );
-      return true;
+      if (!b) return null;
+      placed.set(kind, [...(placed.get(kind) ?? []), b]);
+      order(builder, { kind: 'build', entityId: b.id });
+      return b;
+    };
+    const site = g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 });
+    const canal = g.canalSite;
+    const gatherFrom = (unit: any, kind: string) => {
+      const node = nearest(unit.pos, (n) => n.kind === kind);
+      if (node) order(unit, { kind: 'gather', entityId: node.id });
+    };
+    const idle = (u: any) => u.orderQueue.length === 0;
+    let porter: any = null;
+    let cards = 0;
+    let deliveries = 0;
+
+    const think = () => {
+      const card = document.querySelector<HTMLElement>('.ed-mission-card');
+      if (card) {
+        card.click();
+        cards++;
+      }
+      const ws = workers();
+      if (res.food >= 50 && ws.length < 8 && center.productionQueue?.length === 0) {
+        g.executeCommand({ kind: 'train', buildingId: center.id, unit: 'worker' }, false);
+      }
+      if (active('a1_valle') && idle(scout)) {
+        const p = m.getObjectiveAnchor('a1_valle');
+        order(scout, { kind: 'move', target: { x: p.x, z: p.z } });
+      }
+      if (active('a2_campos') && (placed.get('farm')?.length ?? 0) < 2) {
+        place('farm', { x: canal.x + 6, z: canal.z + 6 }, ws[0]);
+        place('farm', { x: canal.x - 6, z: canal.z + 8 }, ws[1]);
+      }
+      if (active('a2_canal') && !g.isCanalOpen()) g.toggleCanal();
+      if (active('a2_troje') && !placed.get('mill')) place('mill', { x: canal.x, z: canal.z + 16 }, ws[2]);
+      const building = ws.filter((u) => u.orderQueue[0]?.kind === 'build');
+      const act3 = ['a3_shicras', 'a3_muros', 'a3_fuego', 'a4_sellar', 'a4_partida'].some(active);
+      if (act3 && !porter) {
+        porter = ws[ws.length - 1];
+        order(porter, { kind: 'move', target: site });
+      }
+      const delivery = m.activeDeliveryFor('caral_pyramid_mayor');
+      if (delivery && porter && g.deliverToHeritage('caral_pyramid_mayor')) deliveries++;
+      if (active('a4_partida')) {
+        const p = m.getObjectiveAnchor('a4_partida');
+        for (const u of ws) if (idle(u) || u.orderQueue[0]?.kind !== 'move') order(u, { kind: 'move', target: p });
+        return;
+      }
+      for (const u of ws) {
+        if (u === porter || building.includes(u) || !idle(u)) continue;
+        const need = delivery?.def.resource;
+        const farms = (placed.get('farm') ?? []).filter((f) => f.constructionComplete && !f.dead);
+        if (need === 'stone') gatherFrom(u, 'well');
+        else if (need === 'wood') gatherFrom(u, 'tree');
+        else if (farms.length && ws.indexOf(u) % 2 === 0) order(u, { kind: 'gather', entityId: farms[0].id });
+        else gatherFrom(u, 'fishing');
+      }
     };
 
-    if (!placeAndBuild('farm', 11, 2, workers[0])) return { setup: false };
-    if (!placeAndBuild('farm', -11, 2, workers[1])) return { setup: false };
-    if (!placeAndBuild('mill', 0, 12, workers[2])) return { setup: false };
-
-    // Keep the fourth worker on the nearest berry patch while the other three build.
-    const berry = [...g.resourceNodes.values()]
-      .filter((n: any) => !n.dead && n.resource === 'food' && n.kind === 'berry')
-      .sort(
-        (a: any, b: any) =>
-          (a.pos.x - center.pos.x) ** 2 +
-          (a.pos.z - center.pos.z) ** 2 -
-          ((b.pos.x - center.pos.x) ** 2 + (b.pos.z - center.pos.z) ** 2),
-      )[0] as any;
-    const berryWorker = workers[3];
-    if (berry && berryWorker) {
-      g.executeCommand(
-        { kind: 'order', unitIds: [berryWorker.id], order: { kind: 'gather', entityId: berry.id }, clear: true },
-        false,
-      );
-    }
-
-    const target = g.mission.getObjectiveAnchor('obj_complejo');
-    if (!target) return { setup: false };
-    g.executeCommand(
-      {
-        kind: 'order',
-        unitIds: [scout.id],
-        order: { kind: 'move', target: { x: target.x, z: target.z } },
-        clear: true,
-      },
-      false,
-    );
-
-    const dt = 1 / 60;
+    const dt = 1 / 20;
     let t = 0;
-    let observed = false;
-    for (let i = 0; i < Math.ceil(330 / dt) && !g.mission.ended; i++) {
-      if (!observed && Math.hypot(scout.pos.x - target.x, scout.pos.z - target.z) < 14) {
-        g.visitHeritage('caral_pyramid_mayor');
-        observed = true;
-      }
-      // after the three builders finish, put two of them on the farms
-      if (
-        buildings.length === 3 &&
-        buildings.every((b) => b.constructionComplete) &&
-        workers[0].orderQueue.length === 0
-      ) {
-        for (const [farmIndex, worker] of [workers[0], workers[1]].entries()) {
-          const farm = buildings[farmIndex];
-          if (farm && !farm.dead) {
-            g.executeCommand(
-              { kind: 'order', unitIds: [worker.id], order: { kind: 'gather', entityId: farm.id }, clear: true },
-              false,
-            );
-          }
-        }
-      }
+    for (let i = 0; i < Math.ceil(1800 / dt) && !m.ended; i++) {
+      if (i % 20 === 0) think();
       g.update(dt, t);
       t += dt;
     }
-
     return {
       setup: true,
-      won: g.mission.won as boolean | null,
-      ended: g.mission.ended as boolean,
-      objectives: Object.fromEntries(
-        g.mission.def.objectives.map((o: any) => [o.id, g.mission.getObjectiveState(o.id)]),
-      ),
+      minutes: Math.round(t / 6) / 10,
+      cards,
+      deliveries,
+      phase: g.sitePhase,
+      won: m.won as boolean | null,
+      ended: m.ended as boolean,
+      resources: { ...res },
+      objectives: Object.fromEntries(m.def.objectives.map((o: any) => [o.id, state(o.id)])),
     };
   });
 
   expect(out.setup, 'Caral playtest could not set up its base').toBe(true);
+  test.info().annotations.push({ type: 'caral-bot', description: `${out.minutes} min, ${out.deliveries} loads` });
   expect(out.ended, JSON.stringify(out)).toBe(true);
   expect(out.won, JSON.stringify(out)).toBe(true);
-  expect(out.objectives.obj_agricultura).toBe('completed');
-  expect(out.objectives.obj_almacenamiento).toBe('completed');
-  expect(out.objectives.obj_complejo).toBe('completed');
-  expect(out.objectives.obj_alimento).toBe('completed');
-  expect(out.objectives.obj_sostener).toBe('completed');
+  for (const id of ['a1_pesca', 'a1_valle', 'a2_campos', 'a2_canal', 'a2_troje', 'a2_excedente']) {
+    expect(out.objectives[id], id).toBe('completed');
+  }
+  for (const id of ['a3_shicras', 'a3_muros', 'a3_fuego', 'a4_sellar', 'a4_partida']) {
+    expect(out.objectives[id], id).toBe('completed');
+  }
+  expect(out.cards, 'acts II-IV open with a chapter card').toBe(3);
+  expect(out.deliveries, 'shicras, walls and sealing are handed over in 50-unit loads').toBe(8);
+  expect(out.phase).toBe('in_use');
+  // Target length of the model mission (docs/design/caral-model-mission.md): roughly 30-40 minutes for a
+  // learning player; the bot is faster, but it must not finish in a handful of minutes.
+  expect(out.minutes, JSON.stringify(out)).toBeGreaterThan(8);
   expect(errors).toEqual([]);
 });
 

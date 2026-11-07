@@ -204,6 +204,7 @@ export class WorldViewDecor {
         // Blender architecture kit: the city in use replaces the ruins GLB, which stays the fallback until
         // the kit is ready and then only keeps its (hidden, still clickable) heritage nodes.
         const city = new CaralCity(CARAL_CITY_LAYOUT, (x, z) => this.game.terrain.getHeight(x, z) - (site.y ?? 0));
+        city.setMayorPhase(this.game.sitePhase);
         this.game.caralCity = city;
         void city.load().then((ok) => {
           if (!current()) {

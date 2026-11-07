@@ -42,6 +42,7 @@ export class Mission {
     this.def = def;
     this.onEnd = onEnd;
     for (const o of def.objectives) this.objState.set(o.id, this.defaultState(o));
+    if (def.layout?.site?.mayorPhase) game.setSitePhase(def.layout.site.mayorPhase);
   }
 
   private defaultState(o: ObjectiveDef): ObjState {
@@ -366,7 +367,13 @@ export class Mission {
     }
     switch (fx.type) {
       case 'dialogue':
-        this.triggerDialogue(fx.text, fx.duration ?? 5);
+        this.triggerDialogue(fx.text, fx.duration ?? 5, fx.speaker);
+        break;
+      case 'act':
+        this.game.hud.showActCard(fx.kicker, fx.title, fx.text);
+        break;
+      case 'site_phase':
+        this.game.setSitePhase(fx.phase);
         break;
       case 'resources': {
         const p = this.game.players[fx.player ?? 0];
@@ -395,7 +402,12 @@ export class Mission {
     }
   }
 
-  private triggerDialogue(text: string, duration = 5): void {
+  private triggerDialogue(text: string, duration = 5, label?: string): void {
+    const narrator = label ?? this.def.narrator;
+    if (narrator) {
+      this.game.hud.showDialogue(narrator, text, duration);
+      return;
+    }
     // Speakers are written as `Nombre: —texto`; resolve a known commander so the
     // dialogue box can show their (stylized) portrait and drop the redundant prefix.
     const match = text.match(/^\s*([^:\n]{2,40}):\s/);
@@ -416,7 +428,7 @@ export class Mission {
     if (this.ended) return;
     this.ended = true;
     this.won = false;
-    if (text) this.game.hud.showDialogue('Comandante', text, 4);
+    if (text) this.game.hud.showDialogue(this.def.narrator ?? 'Comandante', text, 4);
     this.onEnd(false);
   }
 
@@ -424,12 +436,14 @@ export class Mission {
    * Record a resource handed over at a site. Required goals fill first, then
    * optional ones, so a single delivery is never charged to two objectives.
    */
-  recordDelivery(resource: keyof Resources, amount: number): number {
+  recordDelivery(resource: keyof Resources, amount: number, objectiveId?: string): number {
     let remaining = amount;
-    const ordered = [
-      ...this.def.objectives.filter((objective) => !objective.optional),
-      ...this.def.objectives.filter((objective) => objective.optional),
-    ];
+    const ordered = objectiveId
+      ? this.def.objectives.filter((objective) => objective.id === objectiveId)
+      : [
+          ...this.def.objectives.filter((objective) => !objective.optional),
+          ...this.def.objectives.filter((objective) => objective.optional),
+        ];
     for (const objective of ordered) {
       if (remaining <= 0) break;
       if (objective.kind !== 'deliver' || objective.resource !== resource) continue;
@@ -445,6 +459,34 @@ export class Mission {
     const recorded = amount - remaining;
     if (recorded > 0) this.checkAllComplete();
     return recorded;
+  }
+
+  /** The active `deliver` objective a field card collects materials for, if any. */
+  activeDeliveryFor(heritageId: string): { def: ObjectiveDef; delivered: number } | null {
+    const o = this.def.objectives.find(
+      (objective) =>
+        objective.kind === 'deliver' &&
+        objective.heritageId === heritageId &&
+        this.objState.get(objective.id) === 'activo',
+    );
+    return o ? { def: o, delivered: this.delivered.get(o.id) ?? 0 } : null;
+  }
+
+  /** Re-apply the latest monument phase set by an already fired trigger (after a load). */
+  private restoreSitePhase(): void {
+    let phase: Extract<TriggerEffect, { type: 'site_phase' }>['phase'] | null = null;
+    let at = -Infinity;
+    for (const tr of this.def.triggers) {
+      if (!this.fired.has(tr.id)) continue;
+      const firedAt = this.lastFired.get(tr.id) ?? 0;
+      for (const fx of tr.effects) {
+        if (fx.type === 'site_phase' && firedAt >= at) {
+          phase = fx.phase;
+          at = firedAt;
+        }
+      }
+    }
+    if (phase) this.game.setSitePhase(phase);
   }
 
   /** World anchor of an active objective, for the minimap. */
@@ -574,5 +616,6 @@ export class Mission {
     this.holdTimers = new Map(s.holdTimers ?? []);
     this.delivered = new Map(s.delivered ?? []);
     this.game.setVisitedHeritage(s.heritage ?? []);
+    this.restoreSitePhase();
   }
 }
