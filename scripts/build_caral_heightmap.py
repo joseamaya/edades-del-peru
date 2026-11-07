@@ -169,6 +169,24 @@ def height(x: float, z: float) -> float:
 GROUND_SIZE = 128
 
 
+# Cultivated ground of the valley (cotton, gourds, squash, beans): irregular patches of dark, moist
+# loam with grass, painted where src/model/defs/caralValley.ts reserves its plots (FIELD_ANCHORS).
+FIELD_PATCHES = (
+    (46, 104), (54, 96), (44, 128), (56, 136), (42, 146), (58, 112), (48, 88), (52, 72), (44, 60),
+    (56, 52), (84, 40), (90, 58), (84, 76), (92, 92), (86, 108), (92, 126), (84, 142), (90, 160),
+)
+
+
+def fertile(x: float, z: float) -> float:
+    best = 0.0
+    for k, (fx, fz) in enumerate(FIELD_PATCHES):
+        r = 6.0 + 1.5 * math.sin(k * 1.7)
+        wobble = 1.0 + 0.22 * math.sin(math.atan2(z - fz, x - fx) * 3.0 + k) + 0.1 * math.sin(x * 0.7 + z * 0.5)
+        d = math.hypot(x - fx, z - fz) / wobble
+        best = max(best, 1.0 - smoothstep(r * 0.55, r, d))
+    return best
+
+
 def ground(x: float, z: float) -> tuple[float, float, float, float]:
     h = height(x, z)
     lx, _ = city_local(x, z)
@@ -193,6 +211,11 @@ def ground(x: float, z: float) -> tuple[float, float, float, float]:
     # The coastal strip around Áspero is dry desert edge: sand and gravel, no groves.
     sand += coastal * 1.1
     dirt += coastal * 0.3
+    # Fertile plots: dark loam under a green cover.
+    f = fertile(x, z) * (1.0 - terrace) * (1.0 - high)
+    grass = grass * (1.0 - f) + f * 0.75
+    dirt = dirt * (1.0 - f) + f * 0.55
+    sand *= 1.0 - f
     grass *= 1.0 - high
     # Under water the refraction shows the bed: keep it dark so the sea and the river read as water.
     under = 1.0 - smoothstep(WATER - 0.4, WATER + 0.1, h)

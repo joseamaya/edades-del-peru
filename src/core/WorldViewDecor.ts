@@ -1067,6 +1067,9 @@ export class WorldViewDecor {
     const valley = this.game.caralValleyPlan ?? this.planCaralValleyAt(x, z);
     this.game.caralValleyPlan = valley;
     this.game.caralValleyBase ??= { x, z };
+    // The valley plots are painted fertile ground in the authored terrain (scripts/build_caral_heightmap.py),
+    // not decals: the plan only keeps their ground free of resources. Nothing is drawn here.
+    if (this.game.siteDef?.environs?.valley === 'caral') return;
     if (!valley.fields.length && !valley.roads.length) return;
     const overlay = new SettlementOverlay(
       { center: { x, z }, dwellings: [], fields: valley.fields, roads: valley.roads },

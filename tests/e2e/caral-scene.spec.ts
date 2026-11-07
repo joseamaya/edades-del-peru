@@ -35,46 +35,43 @@ test('the Caral base is dressed with visual-only household props', { tag: '@smok
   });
   expect(state.count).toBeGreaterThan(0);
   expect(state.verts).toBeGreaterThan(0);
-  expect(state.hasCrops).toBe(true);
+  // No decal plots around Áspero: the player's chacras are the only fields.
+  expect(state.hasCrops).toBe(false);
   expect(state.landmark).toBe(true);
   expect(errors).toEqual([]);
 });
 
-test('the Supe valley carries visual plots, paths and riverbank reeds', { tag: '@smoke' }, async ({ page }) => {
-  const errors = await boot(page);
-  const state = await page.evaluate(() => {
-    const g = (window as unknown as { game: any }).game;
-    const valley = (g.settlements ?? []).find((o: any) => o.group.name === 'caral-valley');
-    const fieldsMesh = valley?.group.getObjectByName('fields');
-    const crops = valley?.group.getObjectByName('crops');
-    const borders = valley?.group.getObjectByName('field-borders');
-    const paths = valley?.group.getObjectByName('roads');
-    const reeds = g.scene.getObjectByName('props_totora');
-    const fields = valley?.plan.fields ?? [];
-    const nodesInField = [...(g.resourceNodes?.values() ?? [])].filter((node: any) =>
-      fields.some(
-        (f: any) => Math.abs(node.pos.x - f.x) <= f.size / 2 + 0.4 && Math.abs(node.pos.z - f.z) <= f.size / 2 + 0.4,
-      ),
-    ).length;
-    return {
-      fields: valley?.plan.fields.length ?? 0,
-      fieldVerts: fieldsMesh?.geometry.attributes.position.count ?? 0,
-      cropVerts: crops?.geometry.attributes.position.count ?? 0,
-      borderVerts: borders?.geometry.attributes.position.count ?? 0,
-      pathVerts: paths?.geometry.attributes.position.count ?? 0,
-      reeds: reeds?.count ?? 0,
-      nodesInField,
-    };
-  });
-  expect(state.fields).toBeGreaterThanOrEqual(3);
-  expect(state.fieldVerts).toBeGreaterThan(0);
-  expect(state.cropVerts).toBeGreaterThan(0);
-  expect(state.borderVerts).toBeGreaterThan(0);
-  expect(state.pathVerts).toBeGreaterThan(0);
-  expect(state.reeds).toBeGreaterThan(5);
-  expect(state.nodesInField).toBe(0);
-  expect(errors).toEqual([]);
-});
+test(
+  'the Supe valley paints fertile ground instead of decal plots, with riverbank reeds',
+  { tag: '@smoke' },
+  async ({ page }) => {
+    const errors = await boot(page);
+    const state = await page.evaluate(() => {
+      const g = (window as unknown as { game: any }).game;
+      const fields = g.caralValleyPlan?.fields ?? [];
+      const nodesInField = [...(g.resourceNodes?.values() ?? [])].filter((node: any) =>
+        fields.some(
+          (f: any) => Math.abs(node.pos.x - f.x) <= f.size / 2 + 0.4 && Math.abs(node.pos.z - f.z) <= f.size / 2 + 0.4,
+        ),
+      ).length;
+      const ground = fields.map((f: any) => g.terrain.data.getAuthoredGround(f.x, f.z));
+      return {
+        valleyOverlay: (g.settlements ?? []).some((o: any) => o.group.name === 'caral-valley'),
+        fields: fields.length,
+        fertile: ground.filter((w: number[]) => w && w[0] + w[1] > 0.7).length,
+        reeds: g.scene.getObjectByName('props_totora')?.count ?? 0,
+        nodesInField,
+      };
+    });
+    expect(state.valleyOverlay).toBe(false);
+    expect(state.fields).toBeGreaterThanOrEqual(3);
+    // Every reserved plot sits on painted loam and grass.
+    expect(state.fertile).toBe(state.fields);
+    expect(state.reeds).toBeGreaterThan(5);
+    expect(state.nodesInField).toBe(0);
+    expect(errors).toEqual([]);
+  },
+);
 
 test('the Caral dressing is deterministic for the same mission seed', { tag: '@smoke' }, async ({ page }) => {
   await boot(page);

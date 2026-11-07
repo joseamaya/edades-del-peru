@@ -157,7 +157,8 @@ export const TERRAIN_PALETTES: Record<TerrainPaletteId, TerrainPalette> = {
     materials: {
       // The Supe valley in use: green floodplain and fields (art-direction §4, riparian #4d5a34).
       grass: '#8cc45a',
-      dirt: '#f0e0c8',
+      // Darker loam so the irrigated plots read as fertile soil, not dry sand.
+      dirt: '#c9a882',
       sand: '#fff0d8',
       rock: '#e8d8c8',
       snow: '#ffffff',
