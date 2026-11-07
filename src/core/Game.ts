@@ -1140,6 +1140,7 @@ export class Game {
 
   /** Spend and create a building for player 0 (worker assignment is a separate order). */
   private placeBuilding(kind: BuildingKind, x: number, z: number): Building | null {
+    if (!this.canBuildKind(kind)) return null;
     const stats = getBuildingStats(kind, this.players[0].era);
     if (!this.canPlace(x, z, stats.size)) return null;
     if (!this.spendResource(0, stats.cost)) return null;
@@ -1579,6 +1580,8 @@ export class Game {
    */
   canBuildKind(kind: BuildingKind): boolean {
     if (kind === BuildingKind.CENTER) return false;
+    const allowed = this.mission?.def.allowedBuildings;
+    if (allowed && !allowed.includes(kind)) return false;
     if (kind === BuildingKind.WONDER) return this.settings.victoryMode === 'wonder';
     return this.players[0].era >= BUILDING_DEFS[kind].minEra;
   }

@@ -307,6 +307,11 @@ export interface MissionDef {
    * a naval campaign with no siege train). Omit for the full roster.
    */
   allowedUnits?: UnitKind[];
+  /**
+   * If set, the player can only build these buildings (e.g. Caral: no metallurgy, no documented war,
+   * no permanent market). Omit for every building of the era.
+   */
+  allowedBuildings?: BuildingKind[];
   objectives: ObjectiveDef[];
   triggers: TriggerDef[];
 }

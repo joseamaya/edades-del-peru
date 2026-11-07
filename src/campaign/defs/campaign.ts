@@ -69,6 +69,10 @@ export const MISSIONS: MissionDef[] = [
     startingResources: { food: 150, wood: 150, silver: 0, stone: 0 },
     start: {},
     enemy: { active: false, difficulty: 'easy', aggression: 0 },
+    // Caral-Supe: no metallurgy, no documented war and no permanent market (fairs were temporary), so the
+    // player builds dwellings, storehouses and fields, and trains workers and scouts only.
+    allowedBuildings: [BuildingKind.HOUSE, BuildingKind.MILL, BuildingKind.FARM],
+    allowedUnits: [UnitKind.WORKER, UnitKind.SCOUT],
     objectives: [
       // --- Act I: Áspero, the fishing village ---
       {

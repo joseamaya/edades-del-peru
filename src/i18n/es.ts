@@ -168,7 +168,7 @@ export const es = {
   'hud.building.silver': '{amount} plata',
   'hud.building.replant': 'Replantar',
   'hud.building.house': 'Vivienda',
-  'hud.building.farm': 'Granja',
+  'hud.building.farm': 'Chacra',
   'hud.building.rally': '📍 Punto de reunión',
   'hud.building.ungarrison': '🚪 Desembarcar ({count})',
   'hud.building.armor': 'HP {hp}/{maxHp} · Blindaje {armor}',
@@ -292,6 +292,7 @@ export const es = {
 
   'hud.techTree.title': '🌳 Árbol tecnológico',
   'hud.techTree.sub': 'Edificios, unidades y tecnologías por era, generados desde los defs del juego.',
+  'hud.techTree.subMatch': 'Lo que tu civilización puede construir, entrenar e investigar en esta partida.',
   'hud.techTree.back': '← Volver',
   'hud.techTree.buildings': 'Edificios',
   'hud.techTree.units': 'Unidades',

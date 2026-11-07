@@ -443,9 +443,9 @@ const CSS = /* css */ `
   .ed-codex-content .md-h3 { font-size: 13px; color: var(--text); margin: 10px 0 3px; }
 
   /* Tutorial */
-  #ed-tutorial { position: absolute; top: 92px; left: 50%; transform: translateX(-50%); width: min(440px, 82vw); background: rgba(12,16,24,0.95); border: 1px solid var(--gold); border-radius: 6px; padding: 12px 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.6); display: none; pointer-events: auto; z-index: 5; }
+  #ed-tutorial { position: absolute; top: 92px; right: 12px; width: 232px; background: rgba(12,16,24,0.95); border: 1px solid var(--gold); border-radius: 6px; padding: 12px 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.6); display: none; pointer-events: auto; z-index: 5; }
   #ed-tutorial.show { display: block; animation: tutorial-in 0.3s ease; }
-  @keyframes tutorial-in { from { opacity: 0; transform: translate(-50%, -8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+  @keyframes tutorial-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
   #ed-tutorial .tut-head { display: flex; justify-content: space-between; align-items: center; font-size: 11px; letter-spacing: 2px; color: var(--gold-dim); text-transform: uppercase; }
   #ed-tutorial .tut-step { font-size: 14px; color: var(--text); line-height: 1.5; margin: 8px 0 6px; }
   #ed-tutorial .tut-actions { text-align: right; }
@@ -857,6 +857,16 @@ export class HUD {
     }
     this.tutorialEl.classList.add('show');
     this.root.classList.add('tutorial-open');
+    this.placeTutorial();
+  }
+
+  /** Keep the tutorial in the right-hand column, just under the objectives panel (it grows as goals reveal). */
+  private placeTutorial(): void {
+    if (!this.tutorialEl.classList.contains('show')) return;
+    const objectives = this.objPanelEl.getBoundingClientRect();
+    const rootTop = this.root.getBoundingClientRect().top;
+    const below = objectives.height > 0 ? objectives.bottom - rootTop + 10 : 56;
+    this.tutorialEl.style.top = `${Math.round(below)}px`;
   }
 
   hideTutorial(): void {
@@ -953,7 +963,23 @@ export class HUD {
   }
 
   showTechTree(): void {
-    openTechTree(this.root, () => {});
+    const p = this.game.players[0];
+    const civ = p?.civ;
+    const allowedUnits = this.game.mission?.def.allowedUnits;
+    openTechTree(
+      this.root,
+      () => {},
+      civ
+        ? {
+            civ,
+            period: this.game.settings.period,
+            era: p.era,
+            // The Plaza Mayor is never placed but always stands, and its technologies are researched there.
+            canBuild: (kind) => kind === BuildingKind.CENTER || this.game.canBuildKind(kind),
+            canTrain: (kind) => !allowedUnits || allowedUnits.includes(kind),
+          }
+        : undefined,
+    );
   }
 
   /** Show/hide the in-match shortcut panel (?). */
@@ -1177,6 +1203,19 @@ export class HUD {
   showActCard(kicker: string, title: string, text: string): void {
     this.showChapterCard(kicker, title, text, false);
   }
+
+  /** Whether the map has a node of this kind (cached per match: nodes never appear later). */
+  private resourceOnMap(kind: string): boolean {
+    let cached = this.resourceKinds;
+    if (!cached || cached.match !== this.game) {
+      const kinds = new Set<string>();
+      for (const n of this.game.resourceNodes.values()) kinds.add(n.kind);
+      cached = this.resourceKinds = { match: this.game, kinds };
+    }
+    return cached.kinds.has(kind);
+  }
+
+  private resourceKinds: { match: unknown; kinds: Set<string> } | null = null;
 
   /** True while the chapter card is on screen (its absence means the mission may advance). */
   isMissionCardOpen(): boolean {
@@ -1695,20 +1734,17 @@ export class HUD {
 
     // build more (if center, house, etc.)
     if (b.kind === BuildingKind.CENTER) {
-      this.addCard(
-        '🏠',
-        t('hud.building.house'),
-        this.costText(getBuildingStats(BuildingKind.HOUSE, b.era).cost),
-        () => this.game.startPlacement(BuildingKind.HOUSE),
-        { cat: 'econ' },
-      );
-      this.addCard(
-        '🌽',
-        t('hud.building.farm'),
-        this.costText(getBuildingStats(BuildingKind.FARM, b.era).cost),
-        () => this.game.startPlacement(BuildingKind.FARM),
-        { cat: 'econ' },
-      );
+      // Same names as the worker's build menu, and only what this match allows.
+      for (const kind of [BuildingKind.HOUSE, BuildingKind.FARM]) {
+        if (!this.game.canBuildKind(kind)) continue;
+        this.addCard(
+          BUILDING_INFO[kind].icon,
+          BUILDING_INFO[kind].name,
+          this.costText(getBuildingStats(kind, b.era).cost),
+          () => this.game.startPlacement(kind),
+          { cat: 'econ' },
+        );
+      }
     }
 
     this.addCommand(t('hud.techTree.title'), () => this.showTechTree());
@@ -2773,6 +2809,7 @@ export class HUD {
     if (this.game.mission) {
       const cardOpen = this.isMissionCardOpen();
       this.objPanelEl.style.display = cardOpen ? 'none' : 'block';
+      this.placeTutorial();
       if (!cardOpen && this.updateAcc > 0.15) this.refreshObjectives();
     } else {
       this.objPanelEl.style.display = 'none';
@@ -2787,8 +2824,15 @@ export class HUD {
         span.textContent = formatNumber(val);
         el.classList.toggle('res-low', val < 30);
       }
-      // hide resources unavailable in the period (e.g. Stone without a Quarry)
-      this.resEls.stone.classList.toggle('res-unavailable', !this.game.canBuildKind(BuildingKind.REFINERY));
+      // hide resources unavailable in the match (e.g. Stone without a Quarry or quarry nodes, Silver in Caral)
+      this.resEls.stone.classList.toggle(
+        'res-unavailable',
+        !this.game.canBuildKind(BuildingKind.REFINERY) && !this.resourceOnMap('well'),
+      );
+      this.resEls.silver.classList.toggle(
+        'res-unavailable',
+        !this.resourceOnMap('mine') && Math.floor(p.resources.silver) === 0,
+      );
       this.popEl.querySelector('span')!.textContent = `${p.populationUsed}/${p.populationCap}`;
       const period = getPeriod(this.game.settings.period);
       this.eraEl.querySelector('span:last-child')!.textContent = `${period.name} · ${period.dates}`;
