@@ -1,8 +1,8 @@
 # Caral model mission (m1 redesign)
 
 Design proposal for rebuilding `m1_caral` as the **model mission** of the campaign series: the player
-travels to the Supe valley as it was c. 3000–1800 BC, not to the ruins of today. Later missions should
-follow the same pattern.
+travels to the Supe valley as it was c. 3000–1800 BC, not to the ruins of today. Later missions follow the
+same pattern, described as a reusable method and checklist in [`model-mission-pattern.md`](./model-mission-pattern.md).
 
 Status: **complete model mission**. `m1_caral` plays the four acts below as one mission on a 256-unit
 sea-to-terrace transect, from a narrated intro to an illustrated epilogue. Act I starts at Áspero on the
