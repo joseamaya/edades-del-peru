@@ -34,7 +34,10 @@ test('shows the campaign hub and its replayable prologue', { tag: '@smoke' }, as
   await expect(hub).toContainText('Culturas Preincas');
   await expect(hub.getByRole('button', { name: /Jugar La Ciudad Sagrada/ })).toBeVisible();
   await expect(hub).toContainText('Independencia y República');
-  await expect(hub.getByRole('button', { name: /Jugar La Defensa de Arica/ })).toBeVisible();
+  // A fresh profile opens only the first mission: later campaigns and missions stay locked.
+  await expect(hub.locator('.ed-campaign-card[data-campaign="independencia"]')).toBeDisabled();
+  await expect(hub.getByRole('button', { name: /Jugar El Oráculo de Chavín/ })).toHaveCount(0);
+  await expect(hub).toContainText('Completa «La Ciudad Sagrada» para desbloquear esta misión.');
 
   await hub.getByRole('button', { name: /Prólogo: Culturas Preincas/ }).click();
   const intro = page.locator('.ed-cinematic', { hasText: 'CULTURAS PREINCAS' });
@@ -659,16 +662,17 @@ test('the campaign hub shows preinca progress and its four missions', async ({ p
   const menu = page.locator('.ed-campaign-panel');
   await expect(menu).toContainText('Culturas Preincas');
   await expect(menu).toContainText('2 / 4 misiones completadas');
-  await expect(menu).toContainText('✓ La Ciudad Sagrada');
-  await expect(menu).toContainText('✓ El Oráculo de Chavín');
+  await expect(menu.getByRole('button', { name: 'Volver a jugar La Ciudad Sagrada' })).toBeVisible();
+  await expect(menu.getByRole('button', { name: 'Volver a jugar El Oráculo de Chavín' })).toBeVisible();
   await expect(menu.getByRole('button', { name: /Jugar La Ciudad Sagrada/ })).toHaveCount(0);
   await expect(menu.getByRole('button', { name: /Jugar La Frontera de los Valles/ })).toBeVisible();
-  const inca = menu.locator('.ed-campaign-card', { hasText: 'El Tahuantinsuyo' });
-  await expect(inca).toContainText('0 / 3 misiones completadas');
-  await expect(inca.getByRole('button', { name: /Jugar Yahuar Pampa/ })).toBeVisible();
+  await expect(menu.getByRole('button', { name: /Jugar El Horizonte Medio/ })).toHaveCount(0);
+  const inca = menu.locator('.ed-campaign-card[data-campaign="inca"]');
+  await expect(inca).toBeDisabled();
+  await expect(inca).toContainText('Completa «Culturas Preincas» para desbloquearla');
 });
 
-test('the campaign hub releases all four chapters', async ({ page }) => {
+test('the campaign path opens the next campaign once the previous one is complete', async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem('peru-campaign', '9');
   });
@@ -678,25 +682,26 @@ test('the campaign hub releases all four chapters', async ({ page }) => {
   });
   await page.getByRole('button', { name: /Campañas/ }).click();
   const menu = page.locator('.ed-campaign-panel');
+  const inca = menu.locator('.ed-campaign-card[data-campaign="inca"]');
+  // The whole pre-Inca campaign is done, so the path selects the Inca campaign and its first mission.
+  await expect(inca).toBeEnabled();
+  await expect(inca).toHaveAttribute('aria-selected', 'true');
+  await expect(inca).toContainText('0 / 3 misiones completadas');
+  await expect(menu.getByRole('button', { name: /Jugar Yahuar Pampa/ })).toBeVisible();
+  await expect(menu.getByRole('button', { name: /Jugar La Guerra del Norte/ })).toHaveCount(0);
+  await expect(menu.locator('.ed-campaign-card[data-campaign="virreinato"]')).toBeDisabled();
+  await expect(menu.locator('.ed-campaign-card[data-campaign="independencia"]')).toBeDisabled();
+
+  await menu.locator('.ed-campaign-card[data-campaign="preinca"]').click();
   await expect(menu).toContainText('4 / 4 misiones completadas');
   for (const title of [
-    '✓ La Ciudad Sagrada',
-    '✓ El Oráculo de Chavín',
-    '✓ La Frontera de los Valles',
-    '✓ El Horizonte Medio',
+    'La Ciudad Sagrada',
+    'El Oráculo de Chavín',
+    'La Frontera de los Valles',
+    'El Horizonte Medio',
   ]) {
-    await expect(menu).toContainText(title);
+    await expect(menu.getByRole('button', { name: `Volver a jugar ${title}` })).toBeVisible();
   }
-  const virreinato = menu.locator('.ed-campaign-card', { hasText: 'El Virreinato' });
-  await expect(virreinato).toContainText('0 / 1 misiones completadas');
-  await expect(virreinato.getByRole('button', { name: /Jugar La Gran Rebelión/ })).toBeVisible();
-  await expect(virreinato).not.toContainText('En preparación');
-  const independencia = menu.locator('.ed-campaign-card', { hasText: 'Independencia y República' });
-  await expect(independencia).toContainText('0 / 2 misiones completadas');
-  await expect(independencia.getByRole('button', { name: /Jugar La Independencia/ })).toBeVisible();
-  await expect(independencia.getByRole('button', { name: /Jugar La Defensa de Arica/ })).toBeVisible();
-  await expect(menu).not.toContainText('En preparación');
-  await expect(menu.getByRole('button', { name: /Continuar campaña/ })).toHaveCount(0);
 });
 
 test('Caral opens with a chapter card and chains into Chavín', async ({ page }) => {

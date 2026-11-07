@@ -39,17 +39,17 @@ import { artFigureHtml, includeUnreviewedArt } from './ArtFigure';
 import { getEducational } from '../campaign/defs/educational';
 import {
   CAMPAIGNS,
-  campaignProgressCount,
   getCampaignForMission,
   campaignNumber,
-  getReleasedMission,
   nextReleasedMission,
+  type CampaignId,
 } from '../campaign/defs/campaigns';
 import { SERIES_INTRO } from '../campaign/defs/cinematics';
 import { CAMPAIGN_ONLY } from '../core/release';
-import { completedMissions, markMissionComplete, parseCampaignProgress } from '../campaign/progress';
+import { markMissionComplete, parseCampaignProgress } from '../campaign/progress';
 import { CinematicPlayer } from './CinematicPlayer';
 import { MENU_BACKDROP } from './menuArt';
+import { decorateTitleScreen, renderCampaignPath, renderMainMenu } from './SeriesMenu';
 import { publicAsset } from '../util/publicAsset';
 import type { MissionDef, ObjectiveProgress, ObjState } from '../campaign/types';
 import { COMMANDERS, type PortraitId } from '../model/defs/commanders';
@@ -268,13 +268,6 @@ const CSS = /* css */ `
   .ed-menu-btn:hover { border-left-color: var(--gold); background: linear-gradient(90deg, rgba(232,195,106,.15), rgba(16,20,25,.28)); transform: translateX(3px); }
   .ed-menu-btn.primary { border-left-color: var(--gold); background: linear-gradient(90deg, rgba(232,195,106,.22), rgba(16,20,25,.3)); }
   .ed-menu-btn[disabled] { opacity: .42; cursor: default; transform: none; }
-  .ed-menu-side { position: absolute; z-index: 1; right: clamp(20px, 4vw, 64px); bottom: clamp(28px, 6vh, 70px); width: min(320px, 28vw); padding: 18px 20px; background: linear-gradient(180deg, rgba(10,14,18,.86), rgba(10,14,18,.62)); border: 1px solid rgba(232,195,106,.22); border-radius: 6px; backdrop-filter: blur(5px); box-shadow: 0 16px 50px rgba(0,0,0,.4); }
-  .ed-menu-side .side-kicker { color: var(--gold-dim); font-size: 10px; letter-spacing: 2.4px; text-transform: uppercase; }
-  .ed-menu-side h3 { margin: 7px 0 4px; color: var(--gold); font-size: 19px; }
-  .ed-menu-side p { margin: 0 0 10px; color: var(--text-dim); font-size: 12px; line-height: 1.55; }
-  .ed-menu-side .progress { height: 4px; border-radius: 2px; background: rgba(232,195,106,.16); overflow: hidden; margin: 10px 0 7px; }
-  .ed-menu-side .progress i { display: block; height: 100%; background: var(--gold); }
-  .ed-menu-side .side-meta { color: var(--text-dim); font-size: 10px; letter-spacing: .4px; }
   .ed-menu-footer { position: relative; z-index: 1; margin-top: 22px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; color: var(--text-dim); font-size: 10px; letter-spacing: .6px; }
   .ed-menu-footer button { background: none; border: 0; color: var(--gold-dim); font: inherit; cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 3px; }
   .ed-menu-footer button:hover { color: var(--gold); }
@@ -301,22 +294,9 @@ const CSS = /* css */ `
   .ed-campaign-head { display: flex; justify-content: space-between; gap: 20px; align-items: flex-end; margin-bottom: 20px; }
   .ed-campaign-head h2 { margin: 4px 0 4px; font-size: clamp(28px, 4vw, 44px); }
   .ed-campaign-head .sub { margin: 0; }
-  .ed-campaign-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .ed-campaign-card { position: relative; display: flex; flex-direction: column; min-height: 190px; padding: 18px 20px; border: 1px solid rgba(232,195,106,.2); border-radius: 6px; background: linear-gradient(160deg, rgba(30,25,18,.84), rgba(12,15,19,.9)); overflow: hidden; }
-  .ed-campaign-card::after { content: ''; position: absolute; inset: auto 0 0; height: 3px; background: var(--campaign-accent, var(--gold)); opacity: .65; }
-  .ed-campaign-card.available { border-color: rgba(232,195,106,.5); background: linear-gradient(160deg, rgba(58,43,22,.82), rgba(14,17,21,.92)); }
-  .ed-campaign-card.coming-soon { opacity: .72; }
-  .ed-campaign-card .era { color: var(--campaign-accent, var(--gold-dim)); font-size: 10px; letter-spacing: 2.2px; text-transform: uppercase; }
-  .ed-campaign-card h3 { margin: 8px 0 5px; color: #f0dfb7; font-size: 24px; }
-  .ed-campaign-card p { margin: 0 0 12px; color: var(--text-dim); font-size: 12px; line-height: 1.55; }
-  .ed-campaign-card .card-meta { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--text-dim); font-size: 10px; letter-spacing: .4px; }
-  .ed-campaign-card .card-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-  .ed-campaign-card .ed-primary, .ed-campaign-card .ed-ghostbtn { padding: 7px 14px; font-size: 12px; }
-  .ed-campaign-card .upcoming { color: var(--gold-dim); font-size: 11px; line-height: 1.5; }
   .ed-skirmish-info { text-align: left; font-size: 12px; line-height: 1.55; color: var(--text-dim); background: rgba(232,195,106,0.06); border-left: 3px solid var(--gold-dim); border-radius: 4px; padding: 8px 12px; margin: 8px 0; }
   .ed-skirmish-info b { color: var(--gold); }
   .ed-map-preview { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto 8px; border: 1px solid var(--line); border-radius: 4px; image-rendering: auto; }
-  .ed-campaign-foot { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
 
   .ed-briefing { width: min(900px, 94vw); max-height: 90vh; overflow: auto; text-align: left; background: linear-gradient(180deg, rgba(14,18,23,.97), rgba(8,11,15,.96)); border-color: rgba(232,195,106,.32); }
   .ed-briefing h2 { text-align: left; font-size: clamp(30px, 4vw, 44px); margin-bottom: 4px; }
@@ -404,11 +384,9 @@ const CSS = /* css */ `
   }
   @media (max-width: 820px) {
     .ed-menu-shell { width: 100%; padding: 30px 22px 24px; }
-    .ed-menu-side { display: none; }
     .ed-menu-title { font-size: clamp(38px, 11vw, 62px); }
     .ed-menu-actions { max-width: none; }
     .ed-menu-screen::before { background: linear-gradient(90deg, rgba(4,7,10,.9), rgba(4,7,10,.48)), linear-gradient(0deg, rgba(4,7,10,.94), transparent 60%); }
-    .ed-campaign-grid { grid-template-columns: 1fr; }
     .ed-campaign-head { display: block; }
     .ed-cinematic { padding: 24px; }
     .ed-cinematic-footer { left: 24px; right: 24px; bottom: 20px; }
@@ -2100,71 +2078,29 @@ export class HUD {
     this.clearOverlays();
     this.setMenuOpen(true);
     const ov = this.el('div', 'ed-overlay ed-menu-screen');
-    ov.style.backgroundImage = `url("${MENU_BACKDROP}")`;
-    const shell = this.el('div', 'ed-menu-shell', ov);
-    shell.innerHTML = `
-      <div>
-        <div class="ed-menu-kicker">${t('hud.menu.main.kicker')}</div>
-        <h1 class="ed-menu-title">${t('hud.menu.main.titleTop')}<br>${t('hud.menu.main.titleBottom')}</h1>
-        <p class="ed-menu-sub">${t('hud.menu.main.sub')}</p>
-      </div>
-      <div class="ed-menu-actions"></div>
-      <div class="ed-menu-footer">
-        <span>${t('hud.menu.main.extras')}</span>
-        <span>${t('app.version')}</span>
-        <button type="button" data-action="intro">${t('hud.menu.main.intro')}</button>
-      </div>
-    `;
-    const actions = shell.querySelector('.ed-menu-actions') as HTMLElement;
-    const addAction = (icon: string, label: string, hint: string, onClick: () => void): HTMLButtonElement => {
-      const btn = this.el('button', 'ed-menu-btn', actions) as HTMLButtonElement;
-      btn.innerHTML = `<span class="ic">${icon}</span><span>${label}<small>${hint}</small></span>`;
-      btn.addEventListener('click', onClick);
-      return btn;
-    };
-    if (hasSave()) {
-      addAction('▶', t('hud.menu.main.continue'), t('hud.menu.main.continueHint'), () => {
+    renderMainMenu(ov, {
+      progress: this.readCampaignProgress(),
+      hasSave: hasSave(),
+      hasReplay: hasReplay(),
+      skirmish: !CAMPAIGN_ONLY,
+      onContinue: () => {
         this.setMenuOpen(false);
         this.clearOverlays();
         this.game.loadMatch();
-      }).classList.add('primary');
-    }
-    addAction('☀', t('hud.menu.main.campaigns'), t('hud.menu.main.campaignsHint'), () => this.showCampaignHub());
-    if (!CAMPAIGN_ONLY) {
-      addAction('⚔', t('hud.menu.main.skirmish'), t('hud.menu.main.skirmishHint'), () => this.showSkirmishSetup());
-    }
-    addAction('📖', t('hud.menu.main.codex'), t('hud.menu.main.codexHint'), () => this.showCodex());
-    addAction('?', t('hud.menu.main.controls'), t('hud.menu.main.controlsHint'), () => this.showControls());
-    addAction('⚙', t('hud.menu.main.options'), t('hud.menu.main.optionsHint'), () => this.showOptions('main'));
-
-    const side = this.el('div', 'ed-menu-side', ov);
-    const campaign = CAMPAIGNS[0]!;
-    const progress = this.readCampaignProgress();
-    const done = campaignProgressCount(campaign, completedMissions(progress, campaign.id));
-    const total = campaign.releasedMissionIds.length;
-    side.innerHTML = `
-      <div class="side-kicker">${t('hud.menu.campaignHub.campaignNumber', { n: campaignNumber(campaign.id), total: CAMPAIGNS.length })}</div>
-      <h3>${campaign.title}</h3>
-      <p>${campaign.description}</p>
-      <div class="progress"><i style="width:${total ? (done / total) * 100 : 0}%"></i></div>
-      <div class="side-meta">${t('hud.menu.side.progress', { done, total, era: campaign.era })}</div>
-    `;
-    const sideBtn = this.el('button', 'ed-primary', side) as HTMLButtonElement;
-    sideBtn.textContent = done >= total && total > 0 ? t('hud.menu.side.completed') : t('hud.menu.side.enter');
-    sideBtn.disabled = total === 0;
-    sideBtn.addEventListener('click', () => this.showCampaignHub());
-
-    const introBtn = shell.querySelector('[data-action="intro"]') as HTMLButtonElement;
-    introBtn.addEventListener('click', () => this.showSeriesIntro());
-    if (hasReplay()) {
-      const replay = this.el('button', '', shell.querySelector('.ed-menu-footer') as HTMLElement);
-      replay.textContent = t('hud.menu.main.replay');
-      replay.addEventListener('click', () => {
+      },
+      onCampaigns: () => this.showCampaignHub(),
+      onPlay: (id) => this.launchMission(id),
+      onSkirmish: () => this.showSkirmishSetup(),
+      onCodex: () => this.showCodex(),
+      onControls: () => this.showControls(),
+      onOptions: () => this.showOptions('main'),
+      onIntro: () => this.showSeriesIntro(),
+      onReplay: () => {
         this.setMenuOpen(false);
         this.clearOverlays();
         this.game.loadReplayMatch();
-      });
-    }
+      },
+    });
   }
 
   /** First-launch title gate; the click is also the audio gesture. */
@@ -2173,7 +2109,6 @@ export class HUD {
     this.clearOverlays();
     this.setMenuOpen(true);
     const ov = this.el('div', 'ed-overlay ed-title-screen');
-    ov.style.backgroundImage = `linear-gradient(180deg, rgba(3,5,8,.34), rgba(3,5,8,.76)), url("${MENU_BACKDROP}")`;
     ov.innerHTML = `
       <div class="ed-title-card">
         <div class="ed-title-ornament"></div>
@@ -2184,6 +2119,7 @@ export class HUD {
         <div class="hint">${t('hud.menu.titleIntro.hint')}</div>
       </div>
     `;
+    decorateTitleScreen(ov);
     const enter = ov.querySelector('button') as HTMLButtonElement;
     enter.addEventListener('click', () => {
       this.markTitleIntroSeen();
@@ -2536,71 +2472,18 @@ export class HUD {
     });
   }
 
-  /** Campaign map for La Senda del Sol. Only Caral is playable in this release. */
-  showCampaignHub(): void {
+  /** The campaign path of La Senda del Sol: campaigns and missions open in order. */
+  showCampaignHub(selected?: CampaignId): void {
     this.clearOverlays();
     this.setMenuOpen(true);
     const ov = this.el('div', 'ed-overlay ed-campaign-hub');
-    ov.style.backgroundImage = `linear-gradient(0deg, rgba(4,7,10,.9), rgba(4,7,10,.62)), url("${MENU_BACKDROP}")`;
-    const panel = this.el('div', 'ed-panel ed-campaign-panel', ov);
-    const campaignTitles = CAMPAIGNS.map((c) => c.title).join(' · ');
-    const featuredCampaign = CAMPAIGNS[0]!;
-    panel.innerHTML = `
-      <div class="ed-campaign-head">
-        <div>
-          <div class="ed-menu-kicker">${t('app.series')}</div>
-          <h2>${t('hud.menu.campaignHub.title')}</h2>
-          <div class="sub">${t('hud.menu.campaignHub.subtitle', { campaigns: campaignTitles })}</div>
-        </div>
-      </div>
-      <div class="ed-campaign-grid"></div>
-      <div class="ed-campaign-foot">
-        <button class="ed-ghostbtn" type="button" data-action="intro">${t('hud.menu.campaignHub.intro', { campaign: featuredCampaign.title })}</button>
-        <button class="ed-primary" type="button" data-action="back">${t('hud.menu.campaignHub.back')}</button>
-      </div>
-    `;
-    const grid = panel.querySelector('.ed-campaign-grid') as HTMLElement;
-    const progress = this.readCampaignProgress();
-    CAMPAIGNS.forEach((campaign) => {
-      const card = this.el('div', `ed-campaign-card ${campaign.status}`, grid);
-      card.style.setProperty('--campaign-accent', campaign.accent);
-      const completed = completedMissions(progress, campaign.id);
-      const done = campaignProgressCount(campaign, completed);
-      const total = campaign.releasedMissionIds.length;
-      const available = campaign.status === 'available' && total > 0;
-      card.innerHTML = `
-        <div class="era">${t('hud.menu.campaignHub.campaignNumber', { n: campaignNumber(campaign.id), total: CAMPAIGNS.length })} · ${campaign.era}</div>
-        <h3>${campaign.title}</h3>
-        <p>${campaign.description}</p>
-        <div class="card-meta">
-          <span>${available ? t('hud.menu.campaignHub.completed', { done, total }) : t('hud.menu.campaignHub.upcoming')}</span>
-          <span>${campaign.subtitle}</span>
-        </div>
-        <div class="card-actions"></div>
-      `;
-      const actions = card.querySelector('.card-actions') as HTMLElement;
-      if (available) {
-        for (const mission of campaign.releasedMissionIds) {
-          const title = this.missionTitle(mission);
-          const play = this.el('button', 'ed-primary', actions) as HTMLButtonElement;
-          play.textContent = completed.includes(mission)
-            ? t('hud.menu.campaignHub.completedMission', { title })
-            : t('hud.menu.campaignHub.play', { title });
-          play.addEventListener('click', () => this.launchMission(mission));
-        }
-        const upcoming = this.el('div', 'upcoming', card);
-        upcoming.textContent = campaign.upcoming.length
-          ? t('hud.menu.campaignHub.upcomingList', { missions: campaign.upcoming.join(', ') })
-          : '';
-      } else {
-        const tag = this.el('span', 'upcoming', actions);
-        tag.textContent = t('hud.menu.campaignHub.inPreparation');
-      }
-    });
-    panel.querySelector('[data-action="back"]')!.addEventListener('click', () => this.showMainMenu());
-    panel.querySelector('[data-action="intro"]')!.addEventListener('click', () => {
-      this.clearOverlays();
-      this.showCampaignIntroReplay();
+    renderCampaignPath(ov, {
+      progress: this.readCampaignProgress(),
+      unlockAll: new URLSearchParams(window.location.search).get('unlock') === 'all',
+      selected,
+      onPlay: (id) => this.launchMission(id),
+      onPrologue: (id) => this.showCampaignIntroReplay(id),
+      onBack: () => this.showMainMenu(),
     });
   }
 
@@ -2609,27 +2492,21 @@ export class HUD {
     this.showCampaignHub();
   }
 
-  private showCampaignIntroReplay(): void {
+  private showCampaignIntroReplay(id: CampaignId): void {
+    const campaign = CAMPAIGNS.find((c) => c.id === id) ?? CAMPAIGNS[0]!;
     this.clearOverlays();
     this.setMenuOpen(true);
     this.game.audio.cinematicSting();
     new CinematicPlayer(this.root, {
-      beats: CAMPAIGNS[0]!.prologue,
+      beats: campaign.prologue,
       background: MENU_BACKDROP,
       kicker: t('hud.menu.campaignIntro.kicker', {
-        number: t('hud.menu.campaignHub.campaignNumber', {
-          n: campaignNumber(CAMPAIGNS[0]!.id),
-          total: CAMPAIGNS.length,
-        }),
-        campaign: CAMPAIGNS[0]!.title.toUpperCase(),
+        number: t('hud.menu.campaignHub.campaignNumber', { n: campaignNumber(campaign.id), total: CAMPAIGNS.length }),
+        campaign: campaign.title.toUpperCase(),
       }),
       finalLabel: t('hud.menu.campaignHub.introReplay'),
-      onDone: () => this.showCampaignHub(),
+      onDone: () => this.showCampaignHub(campaign.id),
     });
-  }
-
-  private missionTitle(id: string): string {
-    return getReleasedMission(id)?.title ?? getReleasedMission('m1_caral')?.title ?? '';
   }
 
   private launchMission(id: string): void {
