@@ -6,6 +6,7 @@ import { applyGeneratedPbr } from './Biomes';
 import { TreeInstances, type TreeVariant } from './TreeInstances';
 import { HuntHerd } from './HuntHerd';
 import type { ResourceNode } from '../entities/ResourceNode';
+import { WATER_LEVEL } from '../model/defs/profiles';
 
 // Shared caches: geometries and materials reused between nodes (fewer draw calls and GC).
 const geoCache = new Map<string, THREE.BufferGeometry>();
@@ -322,14 +323,39 @@ export class ResourceNodeView {
   }
 
   private buildFish(rng: RNG): void {
-    const fishMat = mat('fish', { color: '#9aa7b5', metalness: 0.5, roughness: 0.4, emissive: 0x0a1418 });
+    // Fishing nodes sit at y = 0 on the bed; the shoal glints just under the surface so it reads through
+    // dark or murky water, and a ring of ripples marks the ground from the RTS camera. One translucent
+    // material keeps each fishing ground at a single draw call.
+    let shoalMat = matCache.get('fish-shoal');
+    if (!shoalMat) {
+      shoalMat = new THREE.MeshStandardMaterial({
+        color: '#dfeae8',
+        transparent: true,
+        opacity: 0.55,
+        depthWrite: false,
+        roughness: 0.6,
+        metalness: 0.2,
+        side: THREE.DoubleSide,
+      });
+      matCache.set('fish-shoal', shoalMat);
+    }
+    const surface = WATER_LEVEL - (this.node.pos.y ?? 0);
     for (let i = 0; i < 5; i++) {
-      const fish = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.5, 6), fishMat);
+      const fish = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.5, 6), shoalMat);
       fish.rotation.x = -Math.PI / 2;
       fish.rotation.z = Math.PI / 2;
-      fish.position.set(rng.range(-1.4, 1.4), -0.2, rng.range(-1.4, 1.4));
+      fish.position.set(rng.range(-1.4, 1.4), surface - 0.12, rng.range(-1.4, 1.4));
       fish.rotation.y = rng.range(0, 3);
       this.add(fish, false, false);
+    }
+    for (const [r, w] of [
+      [1.5, 0.12],
+      [2.3, 0.08],
+    ] as const) {
+      const ring = new THREE.Mesh(new THREE.RingGeometry(r - w, r, 28), shoalMat);
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.y = surface + 0.06;
+      this.add(ring, false, false);
     }
   }
 

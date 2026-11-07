@@ -204,7 +204,7 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'coast',
-        text: 'Selecciona tu explorador y recorre la orilla hasta descubrir un banco de peces; luego manda a tus obreros a pescar con clic derecho.',
+        text: 'Los bancos de peces son los círculos de ondas en el agua, junto a la orilla. Lleva tu explorador hasta uno; luego selecciona obreros y haz clic derecho sobre los círculos para pescar.',
         check: { type: 'reachFishing', radius: 16 },
       },
       {

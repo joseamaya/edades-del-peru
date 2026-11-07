@@ -61,7 +61,7 @@ export const MISSIONS: MissionDef[] = [
       culturalLandscape: null,
       groundTint: '#b7ab96',
     },
-    guaranteedFishing: 3,
+    guaranteedFishing: 4,
     timeOfDay: 'morning',
     startingEra: Era.FORMATIVE,
     // Silver has no role in Caral; stone for the monuments comes from the hills.

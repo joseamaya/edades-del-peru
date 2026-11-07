@@ -845,7 +845,11 @@ export class WorldViewDecor {
     // A guaranteed supply serves the opening: pick among the shore cells closest to the player's base.
     const layoutBase = this.game.missionLayout?.base;
     const base = layoutBase ? { x: layoutBase.x * size, z: layoutBase.z * size } : this.game.playerCenter(0);
-    candidates.sort((a, b) => distance2D(a.x, a.z, base.x, base.z) - distance2D(b.x, b.z, base.x, base.z));
+    // Open sea (deeper than a river bed) is preferred: the coast is where the anchoveta shoals are.
+    const waterLevel = this.game.terrain.waterLevel;
+    const cost = (p: { x: number; z: number }) =>
+      distance2D(p.x, p.z, base.x, base.z) + (waterLevel - this.game.terrain.getHeight(p.x, p.z) < 1.5 ? 30 : 0);
+    candidates.sort((a, b) => cost(a) - cost(b));
     const spot = rng.pick(candidates.slice(0, 24));
     const node = new ResourceNode('fishing', spot.x, spot.z, rng.range(150, 220));
     node.pos.y = 0;
