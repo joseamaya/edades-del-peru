@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { PROP_IDS } from '../../src/model/defs/props';
 
 test('ambient props and fauna are placed at boot', async ({ page }) => {
   await page.goto('/?civ=inca&period=5&seed=777&fog=0&low=1');
@@ -37,7 +38,7 @@ test('ambient props and fauna are placed at boot', async ({ page }) => {
       limbMoved,
     };
   });
-  expect(out.propKinds).toBe(4);
+  expect(out.propKinds).toBe(PROP_IDS.length);
   expect(out.instances).toBeGreaterThan(0);
   expect(out.fauna).toBeGreaterThan(0);
   expect(out.rigged).toBeGreaterThan(0); // llama pilot

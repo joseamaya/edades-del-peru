@@ -312,9 +312,11 @@ test('the Caral dwellings read at unit scale and keep the Plaza Mayor dominant',
     const center = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center' && !b.dead);
     const house = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'house' && !b.dead);
     const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.garrisonedIn);
+    // Precise bounds: a consolidated worker mesh keeps its merged parts in the anchor's bind space, so
+    // only the skinned vertex positions tell how tall the drawn worker is.
     const height = (obj: any) => {
       obj.updateWorldMatrix(true, true);
-      return new window.THREE.Box3().setFromObject(obj).getSize(new window.THREE.Vector3()).y;
+      return new window.THREE.Box3().setFromObject(obj, true).getSize(new window.THREE.Vector3()).y;
     };
     return {
       center: height(center.view.group.getObjectByName('caral_center')),
