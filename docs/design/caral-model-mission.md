@@ -173,8 +173,8 @@ bench runs without ground cover).
 3. Late-period details of Act IV (stone houses, a little maize) are not shown.
 4. The Act III fire offering is staged at the plaza, but the burial of one phase under the next is not
    shown on its own, and an empty storehouse does not pause construction.
-5. The new art (`huaca_idolos`, the phase models, the intro captures) waits for human review
-   (`reviewed: false` in the manifest).
+5. ~~Human review of the new art~~ Done: the architecture kit and the intro and menu captures were
+   approved on 2026-11-07.
 6. The other campaigns follow this pattern later; the m9 scripted playtest is known to fail meanwhile.
 
 ## Certainty labelling

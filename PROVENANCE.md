@@ -177,7 +177,7 @@ slot is absent (offline / without assets).
   with summit rooms; growth in phases with offerings documented, form and rooms assumed).
 - **Source**: generated in Blender by `scripts/blender/build_caral_architecture_kit.py`; kit scene
   `art-src/blender/scenes/caral_architecture_kit.blend` (Git LFS). Uncompressed exports and per-piece
-  manifests (triangles, materials, bounds, budget, `confidence`, sources, `reviewed: false`) live in
+  manifests (triangles, materials, bounds, budget, `confidence`, sources, review state) live in
   `art-src/blender/exports/caral/architecture/`; the game copies were meshopt-compressed with
   `yarn art:models`.
 - **Content**: project-owned procedural geometry, 8 Principled materials (plaster white/ochre/red,
@@ -189,10 +189,11 @@ slot is absent (offline / without assets).
   LOD0 ≤ 5000 and LOD1 ≤ 1500 triangles per piece.
 - **Runtime**: m1 assembles the city from `src/model/defs/caralCity.ts` and draws it in place of the ruins
   GLB (`caral_site_lod*.glb`), which stays the fallback while the kit loads and then only keeps its
-  clickable heritage nodes (hidden); pathing uses the monuments' and the kit houses' blockers. The phase models are wired for act III of
-  `docs/design/caral-model-mission.md` (`CaralCity.setMayorPhase`); m1 shows the city in use. The Áspero
-  house and the fair tent ship as pieces only (no Áspero on the map yet; tents belong to the festive
-  calendar, which m1 does not model).
+  clickable heritage nodes (hidden); pathing uses the monuments' and the kit houses' blockers. Act III of
+  `docs/design/caral-model-mission.md` raises the Pyramid Mayor through its phase models
+  (`Game.setSitePhase`, `CaralCity.setMayorPhase`), the other monuments appear with their phase, Áspero
+  (the huaca and six fishing houses) stands on the shore from act I, and the fair tents go up once the
+  city is in use.
 - **Confidence** (per piece in the manifests; evidence in `docs/historia/campanas/caral.md` and
   `docs/historia/civilizaciones/caral.md`): stepped superposed platforms, shicra fill, stone retaining
   walls, painted plaster, sunken circular plazas, quincha houses, cotton nets and gourd floats and fair
@@ -200,7 +201,9 @@ slot is absent (offline / without assets).
   platform count and proportions, the summit enclosure, the side walls of the stairs and the parapets,
   the set stone left visible at the foot of each terrace (a reading aid; the documented walls are
   plastered), roofs, the net rack and the tent's frame and cover are assumed. No scaffolding is modelled because none is attested. The models are artistic
-  reconstructions, not surveys, and stay `reviewed: false` until a human review.
+  reconstructions, not surveys. Every piece was exported `reviewed: false` and approved by a human
+  review on 2026-11-07 (Miguel Amaya; `reviewer` and `reviewedAt` in each manifest). A rebuild exports
+  the piece unreviewed again.
 
 ### Caral intro and act-card images (in-engine recreations)
 
@@ -208,8 +211,12 @@ slot is absent (offline / without assets).
   WebP q58, ~160 KB in total).
 - **Source**: captured from the game itself by `scripts/capture_caral_intro.mjs`. Each m1 scene is
   staged through the debug harness (construction phase, drought, worker orders), rendered without the HUD
-  at 1600x900 and resized with `sharp`. Regenerate them with `node scripts/capture_caral_intro.mjs`
-  after art changes.
+  at 1600x900 and resized with `sharp`; the works and the drought use a low cinematic camera. Regenerate
+  them with `node scripts/capture_caral_intro.mjs` (one with `--only=ID`) after art changes.
+- **Runtime (menu)**: the menu reuses `intro-ciudad` as the pre-Inca campaign card and `intro-aspero` as
+  m1's art in the "Tu senda" card and the briefing, captioned as an engine recreation.
+- **Review**: approved by a human review on 2026-11-07 (Miguel Amaya), after re-framing the works and
+  the drought.
 - **Content**: project-owned game renders (terrain, architecture and vegetation kits listed above). They
   are recreations of the game's own scenes: never historical photographs, and not Blender renders (so not
   in `src/art/manifest.json`).

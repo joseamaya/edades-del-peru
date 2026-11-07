@@ -15,7 +15,9 @@
     "LOD0": 5000,
     "LOD1": 1500
   },
-  "reviewed": false,
+  "reviewed": true,
+  "reviewer": "Miguel Amaya",
+  "reviewedAt": "2026-11-07T21:00:00.000Z",
   "lods": {
     "LOD0": {
       "triangles": 596,

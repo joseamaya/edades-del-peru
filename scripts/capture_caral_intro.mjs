@@ -7,7 +7,8 @@ import { cliArg, launchChromium, withViteServer } from './lib.mjs';
  * Capture the narrated m1 intro and act-card images from the game itself (an in-engine recreation, never a
  * historical photograph): Áspero, the Supe valley, the works on the Pyramid Mayor, the city in use, the
  * drought and the departure. Each scene is staged through the debug harness (phase, drought, worker
- * orders), rendered without the HUD at 1600x900 and stored as a 960x540 WebP in public/media/caral/.
+ * orders), rendered without the HUD at 1600x900 and stored as a 960x540 WebP in public/media/caral/. The
+ * works and the drought use a low cinematic camera (`eye`/`look`), the others the game's RTS camera.
  * The `menu` shot is the title/menu backdrop: a low cinematic camera over the
  * Sacred City at dawn: the Pyramid Mayor and its neighbours against the eastern hills under a low sun,
  * rendered at 1920x1080 and graded (a darker top edge and a vignette) into public/media/menu/caral-dawn.webp.
@@ -21,9 +22,9 @@ fs.mkdirSync(OUT, { recursive: true });
 const SHOTS = [
   { id: 'aspero', at: [30, 178], height: 26, setup: 'fishing' },
   { id: 'valle', at: [82, 104], height: 40, setup: 'none' },
-  { id: 'obra', at: [164, 50], height: 40, setup: 'works' },
+  { id: 'obra', setup: 'works', eye: [-34, 26, 31], look: [-14, 3, -11], fov: 46, time: 0.62 },
   { id: 'ciudad', at: [162, 78], height: 52, setup: 'city' },
-  { id: 'sequia', at: [84, 118], height: 52, setup: 'drought' },
+  { id: 'sequia', setup: 'drought', eye: [-112, 24, 85], look: [-46, 4, 39], fov: 50, time: 0.55, settle: 80 },
   { id: 'partida', at: [26, 168], height: 28, setup: 'departure' },
   // Eye and target relative to the site (the Sacred City plaza), with the field of view and time of day.
   { id: 'menu', setup: 'menu', eye: [-55, 26, 60], look: [-14, 6, -28], fov: 45, time: 0.66, size: [1920, 1080] },
@@ -66,7 +67,28 @@ try {
         }
         if (shot.setup === 'works') {
           g.setSitePhase('fill');
-          moveAll(160, 56);
+          // A crew scattered at the foot of the rising platform, around the site (the plaza).
+          const site = g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 });
+          for (let i = 0; i < 8; i++) g.spawnScriptedUnit('worker', 0, site.x - 12 + i * 2, site.z + 8);
+          const crew = [...g.units.values()].filter((u) => u.owner === 0 && u.kind === 'worker');
+          const spots = [
+            [-23, 2],
+            [-18, 4],
+            [-13, 2],
+            [-8, 5],
+            [-4, 2],
+            [-21, 7],
+            [-15, 8],
+            [-10, 9],
+            [-5, 7],
+            [-26, 5],
+            [-1, 5],
+            [-12, 11],
+          ];
+          crew.forEach((u, i) => {
+            const [dx, dz] = spots[i % spots.length];
+            order(u, { kind: 'move', target: { x: site.x + dx, z: site.z + dz } });
+          });
         }
         if (shot.setup === 'city') g.setSitePhase('in_use');
         if (shot.setup === 'menu') {
@@ -102,10 +124,10 @@ try {
         if (shot.eye) {
           const site = g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 });
           const [lx, ly, lz] = [site.x + shot.look[0], shot.look[1], site.z + shot.look[2]];
-          // The terrain, water and cover take the sky's light only in running frames.
+          // The terrain, water and cover take the sky's light (and the drought its dust) only in running frames.
           g.sky.setTimeOfDay(shot.time);
           g.camera.focusOn(lx, lz);
-          for (let i = 0; i < 4; i++) {
+          for (let i = 0; i < (shot.settle ?? 4); i++) {
             g.update(0.05, t);
             t += 0.05;
           }

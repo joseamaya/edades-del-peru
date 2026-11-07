@@ -36,6 +36,8 @@ interface Manifest {
   asset_id: string;
   wall_height?: number;
   reviewed: boolean;
+  reviewer?: string;
+  reviewedAt?: string;
   confidence: string;
   budget: { LOD0: number; LOD1: number };
   lods: Record<'LOD0' | 'LOD1', { file: string; triangles: number; materials: string[]; bounds: { size: number[] } }>;
@@ -78,7 +80,11 @@ describe('Caral architecture kit', () => {
     for (const id of IDS) {
       const m = manifest(id);
       expect(m.asset_id).toBe(`caral_${id}`);
-      expect(m.reviewed).toBe(false);
+      // The Blender script exports every piece unreviewed; a human approval records who and when.
+      if (m.reviewed) {
+        expect(m.reviewer, id).toBeTruthy();
+        expect(Number.isNaN(Date.parse(m.reviewedAt ?? '')), id).toBe(false);
+      }
       expect(['documented', 'inferred', 'assumed']).toContain(m.confidence);
       expect(m.budget).toEqual({ LOD0, LOD1 });
       expect(m.lods.LOD0.triangles).toBeLessThanOrEqual(LOD0);
