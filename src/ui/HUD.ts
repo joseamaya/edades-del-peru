@@ -158,7 +158,7 @@ const CSS = /* css */ `
   .speed-btn.active { background: var(--gold); color: #14161a; border-color: var(--gold); }
 
   /* Minimapa */
-  #ed-minimap-wrap { position: absolute; left: 12px; bottom: 12px; width: 210px; height: 210px; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.5); }
+  #ed-minimap-wrap { position: absolute; left: 12px; bottom: 12px; width: var(--minimap-size); height: var(--minimap-size); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.5); }
   #ed-minimap { width: 100%; height: 100%; display: block; cursor: crosshair; pointer-events: auto; }
   #ed-compass { position: absolute; inset: 0; pointer-events: none; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; color: rgba(255,255,255,0.9); text-shadow: 0 1px 2px rgba(0,0,0,0.9); }
   #ed-compass span { position: absolute; padding: 1px 3px; border-radius: 2px; background: rgba(6,8,12,0.55); }
@@ -167,16 +167,23 @@ const CSS = /* css */ `
   #ed-compass .s { bottom: 3px; left: 50%; transform: translateX(-50%); }
   #ed-compass .w { top: 50%; left: 3px; transform: translateY(-50%); }
 
-  /* Panel inferior */
-  #ed-bottom { position: absolute; left: 50%; transform: translateX(-50%); bottom: 12px; width: min(640px, 90vw); min-height: 118px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; pointer-events: auto; display: flex; flex-direction: column; box-shadow: 0 6px 30px rgba(0,0,0,0.55); overflow: hidden; }
-  #ed-bottom-header { padding: 6px 12px; font-size: 13px; font-weight: 700; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; background: rgba(232,195,106,0.06); background-image: var(--weave); background-repeat: repeat-x; background-position: bottom; }
-  #ed-bottom-body { padding: 6px 8px; display: flex; gap: 8px; min-height: 76px; }
-  #ed-desc { flex: 1; font-size: 12px; color: var(--text-dim); line-height: 1.4; padding-right: 8px; }
-  #ed-desc h3 { margin: 0 0 4px; font-size: 15px; color: var(--text); }
-  .ed-grid { display: flex; flex-wrap: wrap; gap: 5px; max-width: 380px; }
-  .ed-card { pointer-events: auto; width: 66px; height: 66px; border-radius: 4px; border: 1px solid var(--line); background: var(--panel-2); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; font-size: 10px; text-align: center; position: relative; transition: border-color 0.12s, transform 0.06s; }
+  /* Command bar: one low horizontal strip right of the minimap (AoE/SC2 layout). Selection info on the
+     left, actions in a row in the middle, orders on the right; it only grows when the actions wrap. */
+  #ui-root { --minimap-size: 190px; --bar-gap: 12px; }
+  #ed-bottom { position: absolute; left: calc(var(--minimap-size) + 2 * var(--bar-gap)); right: var(--bar-gap); bottom: var(--bar-gap); max-width: 1180px; margin: 0 auto; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; pointer-events: auto; display: flex; flex-direction: column; box-shadow: 0 6px 30px rgba(0,0,0,0.55); overflow: hidden; }
+  #ed-bottom-header { padding: 3px 12px; font-size: 12px; font-weight: 700; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; background: rgba(232,195,106,0.06); background-image: var(--weave); background-repeat: repeat-x; background-position: bottom; }
+  #ed-bottom-header:empty { display: none; }
+  #ed-bottom-body { padding: 6px 8px; display: flex; flex-direction: row; align-items: flex-start; gap: 10px; }
+  #ed-desc { flex: 0 0 250px; max-height: 120px; overflow-y: auto; font-size: 12px; color: var(--text-dim); line-height: 1.35; padding-right: 10px; border-right: 1px solid var(--line); }
+  #ed-desc:empty { display: none; }
+  #ed-desc h3 { margin: 0 0 3px; font-size: 14px; color: var(--text); }
+  .ed-grid { flex: 1 1 auto; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 5px; min-width: 0; }
+  #ed-commands { flex: 0 1 260px; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 4px; padding-left: 10px; border-left: 1px solid var(--line); }
+  #ed-commands:empty { display: none; }
+  #ed-commands .ed-command { padding: 4px 8px; }
+  .ed-card { pointer-events: auto; width: 60px; height: 60px; border-radius: 4px; border: 1px solid var(--line); background: var(--panel-2); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; font-size: 10px; text-align: center; position: relative; transition: border-color 0.12s, transform 0.06s; }
   .ed-card:hover { border-color: var(--gold); transform: translateY(-1px); }
-  .ed-card .ic { font-size: 24px; line-height: 1; }
+  .ed-card .ic { font-size: 21px; line-height: 1; }
   .ed-card .nm { color: var(--text); margin-top: 3px; font-weight: 600; }
   .ed-card .cost { color: var(--text-dim); font-size: 9px; }
   .ed-card.disabled { opacity: 0.35; cursor: not-allowed; }
@@ -388,6 +395,11 @@ const CSS = /* css */ `
 
   @keyframes menu-drift { from { background-position: 54% 48%; background-size: 106%; } to { background-position: 60% 54%; background-size: 110%; } }
 
+  @media (max-width: 1100px) {
+    #ui-root { --minimap-size: 160px; }
+    #ed-desc { flex-basis: 190px; }
+    #ed-commands { flex-basis: 190px; }
+  }
   @media (max-width: 820px) {
     .ed-menu-shell { width: 100%; padding: 30px 22px 24px; }
     .ed-menu-side { display: none; }
@@ -452,7 +464,7 @@ const CSS = /* css */ `
   .ed-hint-pulse { animation: hint-pulse 1.1s ease-in-out infinite; outline: 2px solid var(--gold) !important; outline-offset: 2px; border-radius: 4px; }
   @keyframes hint-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(232,195,106,0.55); } 50% { box-shadow: 0 0 0 9px rgba(232,195,106,0); } }
 
-  #ed-help { position: absolute; right: 12px; bottom: 12px; font-size: 11px; color: var(--text-dim); background: rgba(10,12,16,0.7); padding: 8px 12px; border-radius: 4px; border: 1px solid rgba(232,195,106,0.15); max-width: 220px; line-height: 1.5; }
+  #ed-help { position: absolute; right: 12px; bottom: 150px; font-size: 11px; color: var(--text-dim); background: rgba(10,12,16,0.7); padding: 8px 12px; border-radius: 4px; border: 1px solid rgba(232,195,106,0.15); max-width: 220px; line-height: 1.5; }
   #ui-root.help-collapsed #ed-help { display: none; }
   .ed-help-close { position: absolute; top: 2px; right: 4px; background: none; border: 0; color: var(--text-dim); font-size: 14px; cursor: pointer; padding: 0 3px; }
   #ed-help-open { position: absolute; right: 12px; bottom: 12px; width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(232,195,106,0.35); background: rgba(10,12,16,0.8); color: var(--gold); font-weight: 700; cursor: pointer; display: none; }
@@ -483,7 +495,7 @@ const CSS = /* css */ `
   #ed-objectives .obj.failed .mark { color: var(--red); }
 
   /* Commander dialogue box */
-  #ed-dialogue { position: absolute; left: 50%; bottom: 190px; transform: translateX(-50%); width: min(560px, 86vw); background: rgba(12,14,18,0.92); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 4px; padding: 10px 14px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; background-image: var(--weave); background-repeat: repeat-x; background-position: top; }
+  #ed-dialogue { position: absolute; left: 50%; bottom: 150px; transform: translateX(-50%); width: min(560px, 86vw); background: rgba(12,14,18,0.92); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 4px; padding: 10px 14px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; background-image: var(--weave); background-repeat: repeat-x; background-position: top; }
   #ed-dialogue.show { opacity: 1; }
   #ed-dialogue .who { font-size: 11px; letter-spacing: 1px; color: var(--gold); font-weight: 700; margin-bottom: 3px; }
   #ed-dialogue .txt { font-size: 13px; color: var(--text); line-height: 1.4; }
@@ -1495,7 +1507,11 @@ export class HUD {
         .map((u) => u.id)
         .sort((a, b) => a - b)
         .join(',');
-      return 'u:' + ids + tail;
+      const one = units.length === 1 ? units[0]! : null;
+      const live = one
+        ? `|t:${one.orderQueue[0]?.kind ?? ''}:${one.orderQueue[0]?.entityId ?? ''}:${Math.floor(one.carryCountNow())}`
+        : '';
+      return 'u:' + ids + live + tail;
     }
     if (building) {
       if (building.owner !== 0) return 'enemy:' + building.id + tail;
@@ -1582,6 +1598,10 @@ export class HUD {
       }
     }
     this.addCommand(t('hud.unit.stop'), () => this.orderStop(), 'S');
+    // A peaceful mission (no active enemy) shows no military orders to its workers and scouts.
+    const civilians = units.every((u) => u.kind === UnitKind.WORKER || u.kind === UnitKind.SCOUT);
+    const mission = this.game.mission;
+    if (civilians && mission && !mission.def.enemy.active) return;
     this.addCommand(t('hud.unit.formation'), () => this.game.cycleFormation());
     this.addCommand(t('hud.unit.attackMove'), () => this.orderAttackMove(), t('hud.unit.attackMoveHint'));
     this.addCommand(t('hud.unit.aggressive'), () => this.orderStance('agresivo'));
@@ -1590,7 +1610,44 @@ export class HUD {
     this.addCommand(t('hud.unit.patrol'), () => this.orderPatrol());
   }
 
+  /** What a worker or scout is doing, for the peaceful missions' selection card. */
+  private civilianTask(u: Unit): string {
+    const order = u.orderQueue[0];
+    if (!order) return t('hud.unit.task.idle');
+    if (order.kind === 'build') {
+      const target = this.game.buildings.get(order.entityId ?? -1);
+      return t(target?.isFarm ? 'hud.unit.task.tilling' : 'hud.unit.task.building');
+    }
+    if (order.kind === 'deliver') return t('hud.unit.task.delivering');
+    if (order.kind === 'gather') {
+      if (this.game.buildings.get(order.entityId ?? -1)?.isFarm) return t('hud.unit.task.farming');
+      const kind = this.game.resourceNodes.get(order.entityId ?? -1)?.kind;
+      if (kind === 'fishing') return t('hud.unit.task.fishing');
+      if (kind === 'tree') return t('hud.unit.task.wood');
+      if (kind === 'well') return t('hud.unit.task.stone');
+      return t('hud.unit.task.food');
+    }
+    return t('hud.unit.task.walking');
+  }
+
   private unitDesc(u: Unit): string {
+    const mission = this.game.mission;
+    if (mission && !mission.def.enemy.active && (u.kind === UnitKind.WORKER || u.kind === UnitKind.SCOUT)) {
+      const carry = u.carryCountNow();
+      return t('hud.unit.civilian', {
+        hp: Math.ceil(u.hp),
+        maxHp: Math.ceil(u.maxHp),
+        task: this.civilianTask(u),
+        carry:
+          carry > 0
+            ? t('hud.unit.carrying', {
+                amount: Math.floor(carry),
+                max: u.maxCarry,
+                resource: RESOURCE_INFO[u.carriedResource()].name.toLowerCase(),
+              })
+            : '',
+      });
+    }
     const stats = u.stats;
     const stance = STANCE_TOOLTIP[u.combatStance];
     const bonuses = Object.entries(stats.bonusVs ?? {}).map(([cls, value]) => ({
