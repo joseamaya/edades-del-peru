@@ -2,7 +2,13 @@ import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
 import { mergeStaticByMaterial } from '../src/rendering/mergeStatic';
 import { CONSOLIDATED_SOURCE_LAYER, consolidateRig } from '../src/rendering/modelConsolidation';
-import { SHADOW_FRAME_MAX, SHADOW_FRAME_MIN, fitShadowFrame, viewFootprint } from '../src/rendering/shadowFrame';
+import {
+  SHADOW_FRAME_MAX,
+  SHADOW_FRAME_MIN,
+  SHADOW_MAP_SIZE,
+  fitShadowFrame,
+  viewFootprint,
+} from '../src/rendering/shadowFrame';
 
 function box(material: THREE.Material, x: number): THREE.Mesh {
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), material);
@@ -91,6 +97,20 @@ describe('shadow frame', () => {
       expect(Math.abs(l.x)).toBeLessThanOrEqual(near.halfWidth);
       expect(Math.abs(l.y)).toBeLessThanOrEqual(near.halfHeight);
     }
+  });
+
+  it('keeps about the old shadow texel density at the default zoom with the smaller maps', () => {
+    // The game's default view: 54 units from the target at a 0.9 rad pitch.
+    camera.position.set(100, 54 * Math.sin(0.9), 100 + 54 * Math.cos(0.9));
+    camera.lookAt(100, 0, 100);
+    camera.updateMatrixWorld();
+    const frame = fitShadowFrame(viewFootprint(camera, 0), sun, SHADOW_MAP_SIZE.medium);
+    const oldDensity = 4096 / 440; // fixed ±220 frustum
+    expect(SHADOW_MAP_SIZE.medium / (2 * Math.max(frame.halfWidth, frame.halfHeight))).toBeGreaterThan(
+      oldDensity * 0.8,
+    );
+    expect(SHADOW_MAP_SIZE.high).toBeGreaterThanOrEqual(SHADOW_MAP_SIZE.medium);
+    expect(SHADOW_MAP_SIZE.medium).toBeGreaterThanOrEqual(SHADOW_MAP_SIZE.low);
   });
 
   it('snaps to whole texels so small pans do not move the frame', () => {

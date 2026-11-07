@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { bus } from './EventBus';
 import { createRenderer, createPostFX } from '../rendering/Renderer';
 import { PostFX } from '../rendering/PostFX';
+import { SHADOW_MAP_SIZE } from '../rendering/shadowFrame';
 import { Sky } from '../rendering/Sky';
 import { Terrain } from '../rendering/Terrain';
 import { HeadlessTerrain } from '../sim/HeadlessTerrain';
@@ -468,6 +469,7 @@ export class Game {
       this.canalOpen = canal.initiallyOpen ?? false;
     }
     this.sky = new Sky(this.scene);
+    this.sky.setShadowMapSize(SHADOW_MAP_SIZE[this.settings.quality]);
     // No atmospheric fog over the board: classic RTS look, sharp.
     this.scene.fog = null;
     this.setTimeOfDay(s.timeOfDay);

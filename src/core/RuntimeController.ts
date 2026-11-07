@@ -25,7 +25,7 @@ import { resolveConquest } from '../game/systems/VictorySystem';
 import { areaDamage, resolveAttackDamage, selectAreaTargets, selectNearestTarget } from '../game/systems/CombatSystem';
 import type { SaveData } from '../game/saveTypes';
 import type { RigInstance } from '../rendering/RigInstance';
-import { viewFootprint } from '../rendering/shadowFrame';
+import { SHADOW_MAP_SIZE, viewFootprint } from '../rendering/shadowFrame';
 
 export interface DeathFx {
   view: EntityView;
@@ -1122,6 +1122,7 @@ export class RuntimeController {
   applyQualityPreset(q: GameSettings['quality']): void {
     this.game.postfx.setQuality(q);
     this.game.terrain?.setLowDetail(q === 'low');
+    this.game.sky?.setShadowMapSize(SHADOW_MAP_SIZE[q]);
     this.game.groundCover?.setEnabled(q !== 'low' && !this.game.usesSoftwareRenderer);
     // The governor can apply a preset before the world (and its trees) exists.
     if (this.game.trees)

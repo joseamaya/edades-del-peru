@@ -256,6 +256,19 @@ export class Sky {
    * Fit the shadow frustum to the camera's view: `points` is the visible ground
    * (src/rendering/shadowFrame.ts), framed in light space and snapped to shadow-map texels.
    */
+  /** Change the shadow-map resolution (the map is reallocated on the next shadow pass). */
+  setShadowMapSize(size: number): void {
+    const shadow = this.light.shadow;
+    if (shadow.mapSize.x === size) return;
+    shadow.mapSize.set(size, size);
+    shadow.map?.dispose();
+    shadow.map = null;
+    // VSM keeps a second render target for the blur; three reallocates it with the map.
+    const vsm = shadow as THREE.DirectionalLightShadow & { mapPass: THREE.WebGLRenderTarget | null };
+    vsm.mapPass?.dispose();
+    vsm.mapPass = null;
+  }
+
   setShadowFrame(points: THREE.Vector3[]): void {
     const frame = fitShadowFrame(points, this.sunDir, this.light.shadow.mapSize.x);
     this.shadowCenter.set(frame.x, frame.y, frame.z);

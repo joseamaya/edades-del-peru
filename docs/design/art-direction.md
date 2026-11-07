@@ -216,6 +216,15 @@ full-resolution vertices, so heights, colours, normals and the simulation's heig
 the terrain draws ~38k instead of 131k triangles per pass at zoom 54). `yarn bench:check` ratchets the m1
 scene and the vegetation/fauna kit (`scripts/bench_scene.mjs`).
 
+_Status (FPS, real integrated GPU)_: on an Intel UHD (Raptor Lake-S) in an 895×682 browser pane, m1
+opening view, governor pinned per preset: `main` before this work 16 / 16 / 48 FPS (high / medium /
+low), now 32 / 44 / 60 (60 is the display cap). The decisive cut was the shadow map: the VSM is redrawn
+and blurred twice every frame, and at 4096² it cost more than everything else (freezing it alone took
+medium from 14 to 52 FPS). With the frustum fitted to the view, `SHADOW_MAP_SIZE` is 2048 on high and
+1024 on medium/low: at 1600×900 and the default zoom that is ≈ 9 texels per unit with 1024 (the old 4096
+over a fixed 440-unit box gave 9.3) and ≈ 18 with 2048; a close comparison showed only softer edges. SSAO is the next largest
+cost (medium 14 → 20 FPS without it, measured at 4096). Not yet measured at 1600×900 full screen.
+
 _Status (draw calls)_: ~203 per frame (414 before). Resource nodes merge their rocks, blocks and berries
 per material; the authored site merges its non-heritage meshes per material (`src/rendering/mergeStatic.ts`);
 fauna is one InstancedMesh per species and part; procedural canopies of unused or kit-drawn variants are

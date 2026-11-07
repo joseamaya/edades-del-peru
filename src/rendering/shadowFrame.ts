@@ -18,6 +18,14 @@ export interface ShadowFrame {
   halfHeight: number;
 }
 
+/**
+ * Shadow-map resolution per quality preset. The frustum fits the view (about 110 units across at the
+ * default zoom at 1600×900), so 1024 matches the old 4096 over a fixed 440-unit box (≈9 texels per
+ * unit) and 2048 doubles it; a VSM is redrawn and blurred twice every frame, so on an integrated GPU 4096² cost more than
+ * the rest of the frame (m1, Intel UHD, medium: 14 FPS at 4096, 33 at 2048, 45 at 1024).
+ */
+export const SHADOW_MAP_SIZE: Record<'high' | 'medium' | 'low', number> = { high: 2048, medium: 1024, low: 1024 };
+
 /** Extra border for the VSM blur. */
 export const SHADOW_FRAME_MARGIN = 6;
 /** Receivers stand up to this far above the ground plane (walls, pyramids, crowns). */
