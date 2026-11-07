@@ -1,8 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import { generateHeightField } from '../src/sim/heightField';
 import { MAP_PROFILES } from '../src/model/defs/profiles';
-import { CARAL_HEIGHTMAP, CARAL_HEIGHTMAP_SIZE, CARAL_HEIGHTMAP_WORLD_SIZE } from '../src/model/defs/caralHeightmap';
-import { sampleAuthoredHeight } from '../src/model/defs/authoredTerrain';
+import {
+  CARAL_GROUND,
+  CARAL_GROUND_SIZE,
+  CARAL_HEIGHTMAP,
+  CARAL_HEIGHTMAP_SIZE,
+  CARAL_HEIGHTMAP_WORLD_SIZE,
+} from '../src/model/defs/caralHeightmap';
+import { sampleAuthoredGround, sampleAuthoredHeight } from '../src/model/defs/authoredTerrain';
+
+const CARAL_GROUND_FIELD = { size: CARAL_GROUND_SIZE, weights: CARAL_GROUND };
 import { TerrainData } from '../src/sim/TerrainData';
 import { buildTerrainSplat } from '../src/rendering/terrainSplat';
 
@@ -190,39 +198,53 @@ describe('authored Caral heightfield', () => {
     heights: CARAL_HEIGHTMAP,
   };
 
-  it('covers the 192 m map at 1 m resolution', () => {
-    expect(field.size).toBe(193);
-    expect(field.worldSize).toBe(192);
-    expect(field.heights.length).toBe(193 * 193);
+  it('covers the 256 m Supe transect at 1 m resolution', () => {
+    expect(field.size).toBe(257);
+    expect(field.worldSize).toBe(256);
+    expect(field.heights.length).toBe(257 * 257);
   });
 
-  it('keeps the site terrace and base flat at 8 m, with the sunken plaza basin', () => {
-    expect(sampleAuthoredHeight(field, 100, 84)).toBeCloseTo(8, 3);
-    expect(sampleAuthoredHeight(field, 100, 30)).toBeCloseTo(8, 3);
-    expect(sampleAuthoredHeight(field, 60, 161)).toBeCloseTo(8, 3);
-    expect(sampleAuthoredHeight(field, 100, 53)).toBeCloseTo(7.45, 2);
+  // The city keeps its former 192 m layout, shifted east by 64 m.
+  it('keeps the site terrace flat at 8 m, with the sunken plaza basin', () => {
+    expect(sampleAuthoredHeight(field, 164, 84)).toBeCloseTo(8, 3);
+    expect(sampleAuthoredHeight(field, 164, 30)).toBeCloseTo(8, 3);
+    expect(sampleAuthoredHeight(field, 164, 53)).toBeCloseTo(7.45, 2);
   });
 
-  it('keeps the Supe river bed below the waterline west of the city', () => {
-    expect(sampleAuthoredHeight(field, 4, 90)).toBeLessThan(2.2);
-    expect(sampleAuthoredHeight(field, 100, 84)).toBeGreaterThan(2.2);
+  it('runs the sea, the beach and Áspero along the west edge', () => {
+    expect(sampleAuthoredHeight(field, 4, 120)).toBeLessThan(1);
+    expect(sampleAuthoredHeight(field, 42, 172)).toBeGreaterThan(4);
+    expect(sampleAuthoredHeight(field, 42, 172)).toBeLessThan(6);
   });
 
-  it('carves a broad green valley and an eroded terrace edge west of the city', () => {
-    const river = sampleAuthoredHeight(field, 4, 90);
-    const bank = sampleAuthoredHeight(field, 18, 90);
-    const floodplain = sampleAuthoredHeight(field, 30, 90);
-    const edge = sampleAuthoredHeight(field, 42, 90);
+  it('keeps the Supe below the waterline from the city to its mouth', () => {
+    for (const [x, z] of [
+      [70, 40],
+      [72, 120],
+      [70, 180],
+      [40, 208],
+      [16, 210],
+    ]) {
+      expect(sampleAuthoredHeight(field, x!, z!), `${x},${z}`).toBeLessThan(2.05);
+    }
+    expect(sampleAuthoredHeight(field, 164, 84)).toBeGreaterThan(2.2);
+  });
+
+  it('carves a green floodplain and an eroded terrace edge between the river and the city', () => {
+    const river = sampleAuthoredHeight(field, 71, 90);
+    const bank = sampleAuthoredHeight(field, 80, 90);
+    const floodplain = sampleAuthoredHeight(field, 94, 90);
+    const edge = sampleAuthoredHeight(field, 106, 90);
     expect(bank).toBeGreaterThan(river);
-    expect(floodplain).toBeGreaterThan(bank);
+    expect(floodplain).toBeGreaterThan(bank - 0.2);
     expect(edge).toBeGreaterThan(floodplain);
     expect(edge).toBeLessThan(8);
   });
 
-  it('keeps the valley/terrace seam walkable between the river and the base', () => {
+  it('keeps the floodplain/terrace seam walkable between the river and the city', () => {
     let maxStep = 0;
     for (let z = 15; z <= 160; z++) {
-      for (let x = 30; x < 52; x++) {
+      for (let x = 94; x < 116; x++) {
         maxStep = Math.max(
           maxStep,
           Math.abs(sampleAuthoredHeight(field, x + 1, z) - sampleAuthoredHeight(field, x, z)),
@@ -232,9 +254,15 @@ describe('authored Caral heightfield', () => {
     expect(maxStep).toBeLessThan(1);
   });
 
-  it('frames the valley with dry Andean foothills at the map edges', () => {
-    expect(sampleAuthoredHeight(field, 185, 100)).toBeGreaterThan(20);
-    expect(sampleAuthoredHeight(field, 100, 188)).toBeGreaterThan(18);
-    expect(sampleAuthoredHeight(field, 20, 2)).toBeGreaterThan(12);
+  it('paints the floodplain green and the terrace as desert', () => {
+    const at = (x: number, z: number) => sampleAuthoredGround({ ...field, ground: CARAL_GROUND_FIELD }, x, z)!;
+    expect(at(88, 100)[0]).toBeGreaterThan(at(170, 100)[0]);
+    expect(at(170, 100)[2]).toBeGreaterThan(at(88, 100)[2]);
+  });
+
+  it('frames the valley with dry Andean foothills and coastal lomas', () => {
+    expect(sampleAuthoredHeight(field, 249, 100)).toBeGreaterThan(20);
+    expect(sampleAuthoredHeight(field, 164, 188)).toBeGreaterThan(12);
+    expect(sampleAuthoredHeight(field, 60, 252)).toBeGreaterThan(8);
   });
 });

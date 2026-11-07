@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { SSAOPass } from 'three/addons/postprocessing/SSAOPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { VignetteShader } from 'three/addons/shaders/VignetteShader.js';
@@ -76,23 +75,26 @@ const ColorGradeShader = {
 };
 
 /**
- * AAA post-processing chain:
- * Render -> SSAO -> Bloom -> Gamma/ColorGrade -> Vignette+Aberration -> FXAA -> Output.
+ * Post-processing chain: Render -> Bloom -> Vignette+Aberration -> Output -> ColorGrade -> FXAA.
+ *
+ * There is no SSAO pass. three's SSAOPass normalises depth over the camera range (near 0.5, far 6000),
+ * so at RTS distances its depth buffer is flat and it never found any occlusion: frames with and
+ * without it were pixel-identical, while it cost a second scene render (which also redrew the VSM
+ * shadow map), the AO and blur passes (~7 ms per frame at 1600×443 on an Intel UHD). Real ambient
+ * occlusion would need a depth range that fits the view, and is an art decision of its own.
  */
 export class PostFX {
   composer: EffectComposer;
   private bloomPass: UnrealBloomPass;
-  private ssaoPass: SSAOPass;
   private vignettePass: ShaderPass;
   private fxaaPass: ShaderPass;
   private outputPass: OutputPass;
   private chromaticPass: ShaderPass;
   private colorGradePass: ShaderPass;
 
-  /** Cinematic effects (SSAO, bloom, vignette, aberration). Off = sharp classic look. */
+  /** Cinematic effects (bloom, vignette, aberration, grade). Off = sharp classic look. */
   cinematicEnabled = false;
   bloomEnabled = false;
-  ssaoEnabled = false;
   vignetteEnabled = false;
   chromaticEnabled = false;
   colorGradeEnabled = false;
@@ -103,12 +105,6 @@ export class PostFX {
     this.composer = new EffectComposer(renderer);
 
     this.composer.addPass(new RenderPass(scene, camera));
-
-    this.ssaoPass = new SSAOPass(scene, camera, width, height);
-    this.ssaoPass.kernelRadius = 8;
-    this.ssaoPass.minDistance = 1.0;
-    this.ssaoPass.maxDistance = 35.0;
-    this.composer.addPass(this.ssaoPass);
 
     this.bloomPass = new UnrealBloomPass(new THREE.Vector2(width, height), 0.35, 0.3, 0.85);
     this.composer.addPass(this.bloomPass);
@@ -136,7 +132,6 @@ export class PostFX {
   setSize(width: number, height: number): void {
     this.composer.setSize(width, height);
     const pixelRatio = this.composer.renderer.getPixelRatio();
-    this.ssaoPass.setSize(width * pixelRatio, height * pixelRatio);
     (this.fxaaPass.uniforms['resolution'].value as THREE.Vector2).set(
       1 / (width * pixelRatio),
       1 / (height * pixelRatio),
@@ -147,10 +142,8 @@ export class PostFX {
   setQuality(level: 'high' | 'medium' | 'low'): void {
     this.qualityLow = level === 'low';
     if (level === 'high') {
-      this.ssaoPass.kernelRadius = 8;
       this.bloomPass.strength = 0.35;
     } else if (level === 'medium') {
-      this.ssaoPass.kernelRadius = 4;
       this.bloomPass.strength = 0.28;
     } else {
       this.bloomPass.strength = 0.0;
@@ -160,7 +153,6 @@ export class PostFX {
   /** Enable or disable the whole cinematic effects set. */
   setCinematic(on: boolean): void {
     this.cinematicEnabled = on;
-    this.ssaoEnabled = on;
     this.bloomEnabled = on;
     this.vignetteEnabled = on;
     this.chromaticEnabled = on;
@@ -184,7 +176,6 @@ export class PostFX {
   }
 
   render(dt: number): void {
-    this.ssaoPass.enabled = this.ssaoEnabled && !this.qualityLow;
     this.bloomPass.enabled = this.bloomEnabled && !this.qualityLow;
     this.vignettePass.enabled = this.vignetteEnabled;
     this.chromaticPass.enabled = this.chromaticEnabled;

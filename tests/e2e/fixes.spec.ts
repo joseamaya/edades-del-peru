@@ -343,29 +343,28 @@ test('the Sacred Huaca is buildable in any period in wonder mode', async ({ page
   expect(r.quarryInPeriod).toBe(false);
 });
 
-test('shows Stone dimmed in periods that cannot obtain it yet', async ({ page }) => {
+test('dims Stone only when the match has no way to obtain it', async ({ page }) => {
   await page.goto('/?play=1&civ=caral&period=0&seed=777&fog=0&low=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });
-  await page.waitForFunction(
-    () => document.getElementById('ed-res-stone')?.classList.contains('res-unavailable'),
-    null,
-    { timeout: 30_000 },
-  );
-
+  await page.waitForTimeout(1500);
   const early = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
+    g.hud.update(0.2, 0);
     const stone = document.getElementById('ed-res-stone');
     return {
       era: g.players[0].era,
       stoneVisible: stone?.offsetParent !== null,
       dimmed: stone?.classList.contains('res-unavailable') ?? false,
+      quarryNodes: [...g.resourceNodes.values()].some((n: any) => n.kind === 'well'),
+      quarryBuilding: g.canBuildKind('refinery'),
     };
   });
   expect(early.era).toBeLessThan(2);
   expect(early.stoneVisible).toBe(true);
-  expect(early.dimmed).toBe(true);
+  // Stone quarries on the map (Caral's shicras need stone) make the resource available.
+  expect(early.dimmed).toBe(!early.quarryNodes && !early.quarryBuilding);
 });
 
 test('the Amauta converts an enemy unit without throwing', { tag: '@smoke' }, async ({ page }) => {
@@ -501,7 +500,7 @@ test('conquest ends only when all enemy buildings are destroyed', async ({ page 
 });
 
 test('a campaign is not lost while the player still has buildings', async ({ page }) => {
-  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
+  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1&intro=0');
   const start = page.getByRole('button', { name: /COMENZAR MISIÓN/ });
   await start.waitFor({ state: 'visible', timeout: 15_000 });
   await start.click();

@@ -13,6 +13,8 @@ export interface CampaignDef {
   title: string;
   subtitle: string;
   description: string;
+  /** Longer menu text: what the campaign covers, in the order its missions play it. */
+  summary: string;
   /** Missions authored for this campaign, including drafts that are not released yet. */
   missionIds: string[];
   /** Missions playable in the current build. */
@@ -35,6 +37,8 @@ export const CAMPAIGNS: CampaignDef[] = [
     subtitle: 'Caral, Chavín, Moche y Wari',
     description:
       'Antes de los incas, los Andes ya habían construido ciudades, templos, redes de intercambio y estados regionales.',
+    summary:
+      'Miles de años antes de los incas, los pueblos de los Andes levantaron ciudades, templos y redes de intercambio. Recorre Caral, la ciudad más antigua de América; el oráculo de Chavín; la frontera entre moches y recuay en los valles del norte; y Wari, el primer estado expansivo de los Andes.',
     missionIds: ['m1_caral', 'm2_chavin', 'm3_moche_recuay', 'm4_wari'],
     releasedMissionIds: ['m1_caral', 'm2_chavin', 'm3_moche_recuay', 'm4_wari'],
     status: 'available',
@@ -49,6 +53,8 @@ export const CAMPAIGNS: CampaignDef[] = [
     subtitle: 'Los hitos del imperio inca',
     description:
       'Desde la defensa del Cusco frente a los chancas hasta la expansión imperial por la costa y la sierra.',
+    summary:
+      'En el siglo XV, el Cusco pasó de señorío regional a cabeza del Tahuantinsuyo. Defiende el Cusco frente a los chancas en Yahuar Pampa, lleva la guerra al reino chimú en la costa norte y vive la guerra civil entre Huáscar y Atahualpa en vísperas de la conquista.',
     missionIds: ['m5_yahuar_pampa', 'm6_chimu_inca', 'm6b_guerra_civil'],
     releasedMissionIds: ['m5_yahuar_pampa', 'm6_chimu_inca', 'm6b_guerra_civil'],
     status: 'available',
@@ -62,6 +68,8 @@ export const CAMPAIGNS: CampaignDef[] = [
     title: 'El Virreinato',
     subtitle: 'El Perú colonial',
     description: 'Instituciones, sociedades y resistencias de tres siglos bajo la monarquía hispánica.',
+    summary:
+      'Durante casi tres siglos, el Perú fue el centro del poder hispánico en Sudamérica. Vive su mayor desafío: la rebelión de Túpac Amaru II, que en 1780 se alzó contra la mita, el reparto y los obrajes.',
     missionIds: ['m7_tupac_amaru'],
     releasedMissionIds: ['m7_tupac_amaru'],
     status: 'available',
@@ -75,6 +83,8 @@ export const CAMPAIGNS: CampaignDef[] = [
     title: 'Independencia y República',
     subtitle: 'Del Perú colonial al Perú contemporáneo',
     description: 'Las guerras de independencia, la construcción de la República y los desafíos del Perú moderno.',
+    summary:
+      'Tras la proclamación de 1821 en Lima, las batallas de Junín y Ayacucho sellaron en 1824 la independencia del Perú. Medio siglo después, la Guerra del Pacífico puso a prueba a la joven república en la defensa del morro de Arica.',
     missionIds: ['m8_independencia', 'm9_guerra_pacifico'],
     releasedMissionIds: ['m8_independencia', 'm9_guerra_pacifico'],
     status: 'available',

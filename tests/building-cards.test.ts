@@ -5,12 +5,12 @@ import { getBuildingCard } from '../src/model/defs/buildingCards';
 
 describe('mission economy building cards', () => {
   it('covers the two playable Caral abstractions', () => {
-    expect(getBuildingCard('m1_caral', BuildingKind.FARM)?.name).toContain('Andén');
+    expect(getBuildingCard('m1_caral', BuildingKind.FARM)?.name).toContain('Chacra');
     expect(getBuildingCard('m1_caral', BuildingKind.MILL)?.name).toContain('Troje');
   });
 
   it('keeps the cards mission-scoped', () => {
-    expect(getBuildingCard('m3_moche_recuay', BuildingKind.FARM)?.name).toContain('Andén');
+    expect(getBuildingCard('m3_moche_recuay', BuildingKind.FARM)?.name).toContain('Chacra');
     expect(getBuildingCard('m3_moche_recuay', BuildingKind.MARKET)?.name).toContain('intercambio');
     expect(getBuildingCard('m2_chavin', BuildingKind.FARM)?.name).toContain('Andén');
     expect(getBuildingCard('m2_chavin', BuildingKind.MARKET)?.name).toContain('Feria');

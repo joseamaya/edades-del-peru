@@ -1,10 +1,12 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { applyGeneratedPbr } from './Biomes';
 import type { RigClipState, RigVariant } from '../model/defs/modelAssets';
 import type { RigInstance } from './RigInstance';
 import type { RigVariantHandle } from './rigVariants';
 import { createRigAttireTools } from './rigAttire';
+import { consolidateRig } from './modelConsolidation';
 import {
   ANDEAN_SPECS,
   andeanCultureForVariant,
@@ -59,8 +61,9 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   show('Body_m', male);
   show('Hair_f', !male);
   show('Hair_m', male);
-  show('Eyes_f', !male);
-  show('Eyes_m', male);
+  // The eyes are a few pixels at any game camera distance but cost a draw call per unit.
+  show('Eyes_f', false);
+  show('Eyes_m', false);
   show('Eyebrows_f', !male);
   show('Eyebrows_m', male);
   show('attire_tunic_f', !male);
@@ -168,27 +171,65 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   }
 
   let tool: THREE.Group | null = null;
+  let net: THREE.Group | null = null;
   let carrying = false;
   let task: RigClipState = 'idle';
+  let gatherKind: string | null = null;
+  let netInHand = true;
   const syncTool = (): void => {
-    if (tool) tool.visible = !carrying && task !== 'build';
+    const fishing = gatherKind === 'fishing' && task === 'gather';
+    if (tool) tool.visible = !carrying && task !== 'build' && !fishing;
+    if (net) net.visible = !carrying && fishing && netInHand;
   };
   if (worker && hand) {
     tool = new THREE.Group();
     tool.name = 'attire_tool';
-    const shaft = new THREE.Mesh(trackGeometry(new THREE.CylinderGeometry(0.014, 0.017, 0.8, 6)), woodMat);
-    shaft.position.y = -0.2;
-    tool.add(shaft);
-    const binding = new THREE.Mesh(trackGeometry(new THREE.CylinderGeometry(0.021, 0.021, 0.06, 6)), woodMat);
-    binding.position.y = -0.56;
-    tool.add(binding);
-    const blade = new THREE.Mesh(trackGeometry(new THREE.ConeGeometry(0.042, 0.12, 5)), stoneMat);
-    blade.rotation.x = Math.PI;
-    blade.position.y = -0.67;
-    tool.add(blade);
+    // Wooden shaft, binding and stone blade in one vertex-coloured mesh: one draw call per pass.
+    const parts: [THREE.BufferGeometry, THREE.Color][] = [
+      [new THREE.CylinderGeometry(0.014, 0.017, 0.8, 6).translate(0, -0.2, 0), woodMat.color],
+      [new THREE.CylinderGeometry(0.021, 0.021, 0.06, 6).translate(0, -0.56, 0), woodMat.color],
+      [new THREE.ConeGeometry(0.042, 0.12, 5).rotateX(Math.PI).translate(0, -0.67, 0), stoneMat.color],
+    ];
+    for (const [geometry, color] of parts) {
+      const n = geometry.getAttribute('position').count;
+      const colors = new Float32Array(n * 3);
+      for (let i = 0; i < n; i++) color.toArray(colors, i * 3);
+      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    }
+    const toolGeo = mergeGeometries(
+      parts.map(([g]) => g),
+      false,
+    );
+    parts.forEach(([g]) => g.dispose());
+    const toolMat = makeMaterial(0xffffff, 0.9);
+    toolMat.vertexColors = true;
+    if (toolGeo) tool.add(new THREE.Mesh(trackGeometry(toolGeo), toolMat));
     tool.rotation.set(-0.15, 0, 0);
     const toBody = new THREE.Vector3(root.position.x - hand.x, 0, root.position.z - hand.z).normalize();
     attach('hand_r', tool, hand.clone().addScaledVector(toBody, 0.03));
+
+    // Folded cotton net with two gourd floats (both documented at Áspero), held while fishing.
+    net = new THREE.Group();
+    net.name = 'attire_net';
+    const netParts: [THREE.BufferGeometry, THREE.Color][] = [
+      [new THREE.SphereGeometry(0.11, 8, 6).scale(1, 1.5, 0.7).translate(0, -0.14, 0), new THREE.Color(0xe6dcc2)],
+      [new THREE.SphereGeometry(0.035, 6, 5).translate(0.08, -0.28, 0.02), gourdMat.color],
+      [new THREE.SphereGeometry(0.035, 6, 5).translate(-0.07, -0.3, -0.02), gourdMat.color],
+    ];
+    for (const [geometry, color] of netParts) {
+      const n = geometry.getAttribute('position').count;
+      const colors = new Float32Array(n * 3);
+      for (let i = 0; i < n; i++) color.toArray(colors, i * 3);
+      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    }
+    const netGeo = mergeGeometries(
+      netParts.map(([g]) => g),
+      false,
+    );
+    netParts.forEach(([g]) => g.dispose());
+    if (netGeo) net.add(new THREE.Mesh(trackGeometry(netGeo), toolMat));
+    net.visible = false;
+    attach('hand_r', net, hand.clone().addScaledVector(toBody, 0.03));
   }
 
   if (spec && palette && role !== 'worker' && role !== 'scout' && role !== 'amauta') {
@@ -273,6 +314,25 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     }
   }
 
+  // The variant is final: merge the static body parts into a few skinned meshes (hair, eyebrows, sash
+  // and headband in one draw call, the garments in another). The tool and the carry bundle toggle
+  // their visibility at runtime, so they stay separate.
+  const consolidated = consolidateRig(root, ['attire_headband'], variant);
+  tools.ownedGeometries.push(...consolidated.geometries);
+  tools.ownedMaterials.push(...consolidated.materials);
+  // Only the body is in the shadow pass: from the RTS camera the hair and garments add nothing to its
+  // shadow, and skinned meshes cannot be instanced, so each part was a shadow-pass draw per unit. The
+  // VSM draws receivers into the shadow map too, so both flags go.
+  const isBody = (o: THREE.Object3D): boolean => /^Body_[fm]$/.test(o.name);
+  // Only for the Caral worker GLB: a rig without its base bodies keeps its shadows.
+  if (root.getObjectByName('Body_f') || root.getObjectByName('Body_m')) {
+    root.traverse((child) => {
+      if (!(child as THREE.Mesh).isMesh || isBody(child)) return;
+      child.castShadow = false;
+      child.receiveShadow = false;
+    });
+  }
+
   return {
     setCarrying(next: boolean, color?: number): void {
       carrying = next;
@@ -282,6 +342,16 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     },
     setTask(next: RigClipState): void {
       task = next;
+      syncTool();
+    },
+    setGatherKind(kind: string | null): void {
+      if (kind === gatherKind) return;
+      gatherKind = kind;
+      syncTool();
+    },
+    setNetInHand(inHand: boolean): void {
+      if (inHand === netInHand) return;
+      netInHand = inHand;
       syncTool();
     },
     dispose(): void {

@@ -186,6 +186,8 @@ function mat(opts: MatOpts = {}): THREE.MeshStandardMaterial {
       }
     }
   }
+  // The smooth twin of a flat-shaded material (see unflatten in mergeStaticParts).
+  if (opts.flatShading) m.userData.smoothOpts = { ...opts, flatShading: false };
   matCache.set(key, m);
   return m;
 }
@@ -2067,11 +2069,50 @@ function buildAndeanFarm(b: Builder): void {
       b.box(w * 0.66, 0.06, 0.2, mixHex('#4a6a2a', b.pal.primary, 0.4), { z: i * 0.28, y: 0.16 });
     }
   } else {
-    for (let i = -1; i <= 1; i++) {
-      b.box(w * 0.62, 0.04, 0.08, mixHex(b.pal.primary, '#3a6a8a', 0.5), { z: i * 0.32, y: 0.09 });
+    buildValleyField(b);
+  }
+}
+
+/**
+ * Irrigated valley field (coast and valley floors, e.g. the Supe): a plot of moist earth inside raised
+ * earthen borders, furrow ridges planted with cotton and squash, and a small irrigation ditch along one
+ * side. Crops documented for Caral-Supe (cotton, gourds, squash, beans; docs/historia/campanas/caral.md);
+ * the plot layout is a game abstraction. Low-poly parts (5-6 sided) keep several fields cheap.
+ */
+function buildValleyField(b: Builder): void {
+  const w = 3.4;
+  const earth = '#6e5236';
+  const ridge = '#5a3f27';
+  const bank = '#8b6b47';
+  b.box(w, 0.08, w, earth, { y: 0.04, tex: 'dirt' });
+  // Raised earthen borders (bordos) that hold the irrigation water.
+  for (const side of [-1, 1]) {
+    b.box(w, 0.16, 0.22, bank, { z: side * (w / 2 - 0.11), y: 0.08, tex: 'dirt' });
+    b.box(0.22, 0.16, w - 0.44, bank, { x: side * (w / 2 - 0.11), y: 0.08, tex: 'dirt' });
+  }
+  // Irrigation ditch inside the upper border.
+  b.box(w - 0.6, 0.03, 0.18, '#35534f', { z: -w / 2 + 0.36, y: 0.1, roughness: 0.3 });
+  const rows = 6;
+  const span = w - 1.0;
+  const length = w - 1.1;
+  for (let r = 0; r < rows; r++) {
+    const x = -span / 2 + (span / (rows - 1)) * r;
+    b.box(0.26, 0.1, length, ridge, { x, y: 0.12, z: 0.12, tex: 'dirt' });
+    const cotton = r % 2 === 0;
+    const plants = cotton ? 5 : 4;
+    for (let k = 0; k < plants; k++) {
+      const z = 0.12 - length / 2 + 0.3 + ((length - 0.6) / (plants - 1)) * k;
+      if (cotton) {
+        // Cotton shrub with a few open bolls.
+        b.cyl(0.13, 0.16, 0.34, 5, '#4d7a2c', { x, y: 0.34, z });
+        b.box(0.07, 0.07, 0.07, '#f2eee3', { x: x + 0.06, y: 0.5, z: z - 0.04 });
+        b.box(0.06, 0.06, 0.06, '#f2eee3', { x: x - 0.07, y: 0.46, z: z + 0.05 });
+      } else {
+        // Squash vine: a low spread of leaves and a ripening fruit.
+        b.cyl(0.24, 0.26, 0.08, 6, '#5f8a33', { x, y: 0.2, z });
+        b.box(0.13, 0.11, 0.15, '#d08a2c', { x: x + 0.1, y: 0.22, z: z + 0.12 });
+      }
     }
-    b.cyl(0.04, 0.05, 0.24, 6, mixHex('#3a6a2a', b.pal.primary, 0.3), { x: -0.4, y: 0.18, z: 0.3 });
-    b.cyl(0.04, 0.05, 0.24, 6, mixHex('#4a8a2a', b.pal.primary, 0.2), { x: 0.3, y: 0.2, z: -0.2 });
   }
 }
 
@@ -3692,6 +3733,18 @@ function bakeVertexAO(root: THREE.Object3D): void {
   });
 }
 
+/**
+ * The material a part merges under: a flat-shaded part counts as its material's smooth twin, and the
+ * merge gives its copy faceted normals (non-indexed, one normal per face), so it looks the same and
+ * shares a draw call with the smooth parts of the same texture (a Caral house's boxy entry step and
+ * its round jar were two draw calls for one dirt texture).
+ */
+function mergeMaterial(mesh: THREE.Mesh): THREE.Material {
+  const material = mesh.material as THREE.MeshStandardMaterial;
+  const smooth = material.userData?.smoothOpts as MatOpts | undefined;
+  return material.flatShading && smooth ? mat(smooth) : material;
+}
+
 /** Merge each container's static parts by material, keeping pivot groups intact. */
 function mergeStaticParts(container: THREE.Object3D): void {
   const byMat = new Map<THREE.Material, THREE.Mesh[]>();
@@ -3700,9 +3753,10 @@ function mergeStaticParts(container: THREE.Object3D): void {
     if (!mesh.isMesh || !mesh.visible || Array.isArray(mesh.material)) continue;
     // keep transparent parts separate so their draw order stays per part
     if ((mesh.material as THREE.Material).transparent) continue;
-    const group = byMat.get(mesh.material);
+    const key = mergeMaterial(mesh);
+    const group = byMat.get(key);
     if (group) group.push(mesh);
-    else byMat.set(mesh.material, [mesh]);
+    else byMat.set(key, [mesh]);
   }
   for (const [material, meshes] of byMat) {
     if (meshes.length < 2) continue;
@@ -3715,6 +3769,7 @@ function mergeStaticParts(container: THREE.Object3D): void {
         geo.dispose();
         geo = flat;
       }
+      if (mesh.material !== material) geo.computeVertexNormals(); // faceted copy of a flat-shaded part
       ensureMergeAttrs(geo);
       geo.applyMatrix4(mesh.matrix);
       geos.push(geo);

@@ -1,6 +1,6 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../core/types';
 import { MissionDef } from '../types';
-import { CARAL_SITE_BUILD_KEEPOUT } from '../../model/defs/sites';
+import { CARAL_MAP_SIZE, CARAL_SITE_BUILD_KEEPOUT, caralKeepout } from '../../model/defs/sites';
 
 const WARI_NODE_A = { ref: 'site' as const, dx: 40, dz: -32 };
 const WARI_NODE_B = { ref: 'site' as const, dx: 38, dz: 34 };
@@ -10,48 +10,73 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm1_caral',
     title: 'La Ciudad Sagrada',
-    subtitle: 'Arcaico Tardío · c. 3000 a.C.',
+    subtitle: 'Arcaico Tardío · c. 3000–1800 a.C.',
     history:
-      'En el valle de Supe, entre el océano y los Andes, crece una de las primeras ciudades de América. ' +
-      'Sus canales, campos de cultivo y plazas se sostienen con trabajo comunal.\n' +
-      'No hay guerra documentada: organiza la agricultura, aprovecha el litoral y guarda el excedente para sostener a la comunidad.',
+      'En Áspero, junto al mar, pescadores de anchoveta tejen sus redes con algodón que no crece en la playa. Río arriba, el valle de Supe guarda agua y tierra fértil.\n' +
+      'Vive cuatro momentos de la primera ciudad de América: el pueblo pesquero, los campos del valle, la construcción de la Ciudad Sagrada y la sequía que llevó a su abandono. No hay guerra documentada.',
     victory:
-      'Caral prospera durante siglos como centro de la civilización andina. Su legado guiará a las culturas del Perú durante milenios.',
+      'La comunidad sella sus pirámides y parte hacia la costa. En Vichama, sus descendientes recordarán la crisis en relieves de barro.',
     defeat: 'El valle no logra sostener a su comunidad. La primera ciudad de América no llega a consolidarse.',
     period: HistoricalPeriod.ARCHAIC,
     tutorial: true,
+    // No rulers of Caral are known by name: an anonymous voice of the community tells the story.
+    narrator: 'Voz del valle',
+    // In-engine recreations (scripts/capture_caral_intro.mjs), never historical photographs.
+    epilogueImage: 'media/caral/intro-partida.webp',
+    intro: [
+      {
+        kicker: 'VALLE DE SUPE · c. 3000 a.C.',
+        title: 'Gente del mar',
+        text: 'En Áspero, donde el río Supe llega al océano, los pescadores sacan anchoveta con redes de algodón y flotadores de mate. Pero el algodón y los mates no crecen en la playa.',
+        seconds: 9,
+        source: 'docs/historia/campanas/caral.md',
+        image: 'media/caral/intro-aspero.webp',
+      },
+      {
+        kicker: 'RÍO ARRIBA',
+        title: 'El valle',
+        text: 'Tierra adentro, el río corre entre sauces y huarangos. Con canales, el valle puede dar algodón, mates, zapallos y frijoles: lo que la costa necesita.',
+        seconds: 9,
+        source: 'docs/historia/campanas/caral.md',
+        image: 'media/caral/intro-valle.webp',
+      },
+      {
+        kicker: 'GENERACIONES',
+        title: 'Una ciudad hecha por todos',
+        text: 'De ese intercambio nacerá, sobre una terraza del desierto, una de las primeras ciudades de América. No la levantó un rey: la levantó el trabajo comunal, plataforma sobre plataforma.',
+        seconds: 10,
+        source: 'docs/historia/campanas/caral.md',
+        image: 'media/caral/intro-ciudad.webp',
+      },
+    ],
     playerCiv: CivId.CARAL,
     enemyCiv: CivId.CARAL,
-    map: { seed: 3000, type: 'coast', size: 192 },
-    atmosphere: { fogDensity: 0.0032, sunWarmth: 0.9, skyTint: '#cdd3d2' },
+    // A compressed west-to-east transect of the Supe valley (scripts/build_caral_heightmap.py).
+    map: { seed: 3000, type: 'coast', size: CARAL_MAP_SIZE },
+    // Light coastal haze: denser fog washed the green valley out from the RTS camera.
+    atmosphere: { fogDensity: 0.0015, sunWarmth: 0.9, skyTint: '#cdd3d2' },
     layout: {
-      base: { x: 0.315, z: 0.84 },
+      // Act I starts at Áspero, on its low coastal rise north of the river mouth.
+      base: { x: 42 / CARAL_MAP_SIZE, z: 172 / CARAL_MAP_SIZE },
       site: {
         id: 'caral_site',
         y: 8,
-        focus: { x: 0.52, z: 0.277 },
-        keepout: [{ x: 0.52, z: 0.45, rx: 0.27, rz: 0.43 }],
+        focus: { x: 163.84 / CARAL_MAP_SIZE, z: 53.184 / CARAL_MAP_SIZE },
+        keepout: [caralKeepout({ x: 0.52, z: 0.45, rx: 0.27, rz: 0.43 })],
         buildKeepout: [...CARAL_SITE_BUILD_KEEPOUT],
+        // The Pyramid Mayor starts as its earliest platform; act III builds the later phases.
+        mayorPhase: 'foundation',
       },
       canal: {
         name: 'Canal comunal del valle',
-        x: 0.2,
-        z: 0.68,
+        // On the river's west bank, where the lower valley opens to fields.
+        x: 52 / CARAL_MAP_SIZE,
+        z: 120 / CARAL_MAP_SIZE,
         length: 18,
         yaw: 0.15,
         initiallyOpen: false,
         irrigation: true,
         heritageId: 'caral_canal',
-      },
-      terrain: {
-        river: {
-          z: 0.55,
-          width: 0.04,
-          valleyWidth: 0.16,
-          amplitude: 0.012,
-          phase: 0.7,
-          fords: [{ x: 0.5, width: 0.08 }],
-        },
       },
     },
     mapOverrides: {
@@ -59,67 +84,121 @@ export const MISSIONS: MissionDef[] = [
       climate: { aridity: 0.78, moisture: 0.34 },
       vegetation: { density: 0.06 },
       // Caral has no documented silver extraction or coastal vicuña herds.
-      resources: { tree: 0.35, mine: 0, hunt: 0 },
+      // The 256 m transect keeps the former tree count: groves on the floodplain, none on beach or marsh.
+      // and the scattered quarries and berry patches stay at the former 192 m map's count.
+      resources: { tree: 0.12, mine: 0, hunt: 0, scatter: 0.56 },
       culturalLandscape: null,
       groundTint: '#b7ab96',
     },
-    guaranteedFishing: 3,
+    guaranteedFishing: 4,
     timeOfDay: 'morning',
     startingEra: Era.FORMATIVE,
-    startingResources: { food: 250, wood: 120, silver: 150, stone: 80 },
+    // Silver has no role in Caral; stone for the monuments comes from the hills.
+    startingResources: { food: 150, wood: 150, silver: 0, stone: 0 },
     start: {},
     enemy: { active: false, difficulty: 'easy', aggression: 0 },
+    // Caral-Supe: no metallurgy, no documented war and no permanent market (fairs were temporary), so the
+    // player builds dwellings, storehouses and fields, and trains workers and scouts only.
+    allowedBuildings: [BuildingKind.HOUSE, BuildingKind.MILL, BuildingKind.FARM],
+    allowedUnits: [UnitKind.WORKER, UnitKind.SCOUT],
     objectives: [
+      // --- Act I: Áspero, the fishing village ---
       {
-        id: 'obj_agricultura',
+        id: 'a1_pesca',
+        kind: 'gather',
+        resource: 'food',
+        count: 300,
+        title: 'Acto I · Reúne 300 de comida pescando en el litoral de Áspero',
+      },
+      {
+        id: 'a1_valle',
+        kind: 'reach',
+        pos: { ref: 'canal', dx: 36, dz: -10 },
+        radius: 12,
+        hidden: true,
+        title: 'Acto I · Remonta el río Supe hasta el valle',
+      },
+      {
+        id: 'a1_huaca',
+        kind: 'inspect',
+        heritageIds: ['aspero_huaca_idolos'],
+        optional: true,
+        title: 'Acto I · Visita la Huaca de los Ídolos de Áspero',
+      },
+      // --- Act II: the Supe valley ---
+      {
+        id: 'a2_campos',
         kind: 'build',
         buildingKind: BuildingKind.FARM,
         count: 2,
-        title: 'Prepara dos campos de cultivo en el valle',
+        pos: { ref: 'canal', dx: 0, dz: 0 },
+        radius: 28,
+        hidden: true,
+        title: 'Acto II · Prepara dos campos de algodón y zapallo junto al canal',
       },
       {
-        id: 'obj_almacenamiento',
+        id: 'a2_canal',
+        kind: 'canal_open',
+        hidden: true,
+        title: 'Acto II · Abre la compuerta del canal comunal',
+      },
+      {
+        id: 'a2_troje',
         kind: 'build',
         buildingKind: BuildingKind.MILL,
         count: 1,
         hidden: true,
-        title: 'Construye un depósito comunal (Troje)',
+        title: 'Acto II · Construye un depósito comunal (Troje)',
       },
       {
-        id: 'obj_alimento',
+        id: 'a2_redes',
+        kind: 'research',
+        tech: 'cotton_nets',
+        hidden: true,
+        title: 'Acto II · Teje redes de algodón en la Troje para los pescadores de Áspero',
+      },
+      {
+        id: 'a2_excedente',
         kind: 'gather',
         resource: 'food',
         count: 500,
         hidden: true,
-        title: 'Reúne 500 de comida para sostener a la comunidad',
+        title: 'Acto II · Guarda un excedente de 500 de comida',
       },
+      // --- Act III: building the Sacred City ---
       {
-        id: 'obj_complejo',
-        kind: 'inspect',
+        id: 'a3_shicras',
+        kind: 'deliver',
+        resource: 'wood',
+        count: 150,
+        step: 50,
+        heritageId: 'caral_pyramid_mayor',
         pos: { ref: 'site', dx: 0, dz: 0 },
-        radius: 14,
-        heritageIds: ['caral_pyramid_mayor'],
-        title: 'Observa la Gran Pirámide y la Plaza Central',
-      },
-      { id: 'obj_sostener', kind: 'survive', time: 300, title: 'Sostén el asentamiento 5 minutos' },
-      {
-        id: 'obj_riego',
-        kind: 'canal_open',
-        optional: true,
+        radius: 20,
         hidden: true,
-        title: 'Abre la compuerta del canal comunal',
+        title: 'Acto III · Entrega 150 de caña y fibra para las shicras de la Pirámide Mayor',
       },
       {
-        id: 'obj_asamblea',
+        id: 'a3_muros',
+        kind: 'deliver',
+        resource: 'stone',
+        count: 150,
+        step: 50,
+        heritageId: 'caral_pyramid_mayor',
+        pos: { ref: 'site', dx: 0, dz: 0 },
+        radius: 20,
+        hidden: true,
+        title: 'Acto III · Entrega 150 de piedra para los muros de contención',
+      },
+      {
+        id: 'a3_fuego',
         kind: 'hold',
         pos: { ref: 'site', dx: 0, dz: 0 },
         radius: 18,
         time: 20,
         unitKind: UnitKind.WORKER,
-        requires: 'obj_complejo',
         hidden: true,
-        optional: true,
-        title: 'Convoca una asamblea comunal en la Plaza Central',
+        title: 'Acto III · Reúne a la comunidad en la Plaza para la ofrenda del fuego',
       },
       {
         id: 'obj_complejos',
@@ -136,79 +215,207 @@ export const MISSIONS: MissionDef[] = [
         hidden: true,
         title: 'Recorre los seis complejos piramidales de Caral Alto',
       },
+      {
+        id: 'obj_asamblea',
+        kind: 'hold',
+        pos: { ref: 'site', dx: 0, dz: 0 },
+        radius: 18,
+        time: 20,
+        unitKind: UnitKind.WORKER,
+        requires: 'a2_excedente',
+        hidden: true,
+        optional: true,
+        title: 'Convoca una asamblea comunal en la Plaza Central',
+      },
+      // --- Act IV: the drought ---
+      {
+        id: 'a4_sellar',
+        kind: 'deliver',
+        resource: 'stone',
+        count: 100,
+        step: 50,
+        heritageId: 'caral_pyramid_mayor',
+        pos: { ref: 'site', dx: 0, dz: 0 },
+        radius: 20,
+        hidden: true,
+        title: 'Acto IV · Sella la Pirámide Mayor bajo piedra',
+      },
+      {
+        id: 'a4_partida',
+        kind: 'hold',
+        pos: { ref: 'player', dx: -18, dz: -12 },
+        radius: 12,
+        time: 15,
+        unitKind: UnitKind.WORKER,
+        hidden: true,
+        title: 'Acto IV · Reúne a la comunidad en la playa para partir hacia Vichama',
+      },
     ],
     triggers: [
       {
-        id: 't_dial_1',
-        condition: { type: 'time', seconds: 20 },
+        id: 't_a1_inicio',
+        condition: { type: 'time', seconds: 4 },
         effects: [
           {
             type: 'dialogue',
-            text: 'El río Supe y el litoral sostienen el valle. Explorad la costa y organizad el trabajo de la comunidad.',
+            text: 'Somos gente del mar. La anchoveta nos alimenta, pero las redes se gastan: el algodón y los mates para las boyas crecen río arriba.',
+            duration: 8,
           },
         ],
       },
       {
-        id: 't_dial_2',
-        condition: { type: 'time', seconds: 150 },
+        id: 't_a1_pesca',
+        condition: { type: 'objective', objectiveId: 'a1_pesca', state: 'completed' },
         effects: [
           {
             type: 'dialogue',
-            text: 'En Áspero se pesca con redes de algodón; el valle responde con cultivos. La ciudad crece sin guerra documentada.',
+            text: 'Hay pescado de sobra. Que un explorador remonte el río Supe y busque tierra para el algodón.',
           },
+          { type: 'objective', objectiveId: 'a1_valle', state: 'activate', announce: true },
         ],
       },
       {
-        id: 't_cosecha',
-        condition: { type: 'objective', objectiveId: 'obj_agricultura', state: 'completed' },
+        id: 't_a2_acto',
+        condition: { type: 'objective', objectiveId: 'a1_valle', state: 'completed' },
         effects: [
           {
-            type: 'dialogue',
-            text: 'Los campos junto al agua y los canales rinden más. La tierra sostiene a la comunidad.',
+            type: 'act',
+            kicker: 'Acto II · Generaciones después',
+            title: 'El valle de Supe',
+            image: 'media/caral/intro-valle.webp',
+            text: 'Río arriba, el bosque de sauces y huarangos bordea un río que corre pocos meses al año. Con canales, el valle da algodón, mates, zapallos y frijoles; el pescado sube desde la costa y el algodón baja hacia las redes.',
           },
-          { type: 'objective', objectiveId: 'obj_almacenamiento', state: 'activate', announce: true },
-          { type: 'objective', objectiveId: 'obj_alimento', state: 'activate', announce: true },
+          { type: 'objective', objectiveId: 'a2_campos', state: 'activate', announce: true },
         ],
       },
       {
-        id: 't_troje',
-        condition: { type: 'objective', objectiveId: 'obj_almacenamiento', state: 'completed' },
+        id: 't_a2_campos',
+        condition: { type: 'objective', objectiveId: 'a2_campos', state: 'completed' },
         effects: [
           {
             type: 'dialogue',
-            text: 'El depósito guarda el excedente. Con trabajo comunal y reservas se levantan plazas y pirámides.',
+            text: 'Los campos esperan el agua. Abrid la compuerta del canal: la tierra húmeda rinde más.',
           },
-          { type: 'objective', objectiveId: 'obj_riego', state: 'activate', announce: true },
+          { type: 'objective', objectiveId: 'a2_canal', state: 'activate', announce: true },
         ],
       },
       {
-        id: 't_complejo',
-        condition: { type: 'objective', objectiveId: 'obj_complejo', state: 'completed' },
+        id: 't_a2_canal',
+        condition: { type: 'objective', objectiveId: 'a2_canal', state: 'completed' },
         effects: [
           {
             type: 'dialogue',
-            text: 'La escala de plazas y pirámides se asocia al excedente y al trabajo comunal; es una interpretación arqueológica, no un registro escrito. La Plaza Central permite convocar una asamblea comunal.',
+            text: 'El agua corre por el canal. Ahora hace falta un depósito para guardar lo que sobra.',
           },
+          { type: 'objective', objectiveId: 'a2_troje', state: 'activate', announce: true },
+        ],
+      },
+      {
+        id: 't_a2_troje',
+        condition: { type: 'objective', objectiveId: 'a2_troje', state: 'completed' },
+        effects: [
+          {
+            type: 'dialogue',
+            text: 'El algodón del valle baja a la costa: con él, Áspero teje sus redes. El pescado sube en pago.',
+          },
+          { type: 'objective', objectiveId: 'a2_redes', state: 'activate', announce: true },
+        ],
+      },
+      {
+        id: 't_a2_redes',
+        condition: { type: 'objective', objectiveId: 'a2_redes', state: 'completed' },
+        effects: [
+          {
+            type: 'dialogue',
+            text: 'Redes nuevas, más pesca; más pesca, más brazos para el valle. Con excedente, la comunidad puede dedicar brazos a obras que duran generaciones.',
+          },
+          { type: 'objective', objectiveId: 'a2_excedente', state: 'activate', announce: true },
+        ],
+      },
+      {
+        id: 't_a3_acto',
+        condition: { type: 'objective', objectiveId: 'a2_excedente', state: 'completed' },
+        effects: [
+          {
+            type: 'act',
+            kicker: 'Acto III · c. 2600 a.C.',
+            title: 'La Ciudad Sagrada',
+            image: 'media/caral/intro-obra.webp',
+            text: 'Sobre la terraza desértica, a salvo de las crecidas, el pueblo levanta la Pirámide Mayor por fases. Las shicras —bolsas de fibra llenas de piedras— rellenan cada plataforma.',
+          },
+          { type: 'camera', pos: { ref: 'site', dx: 0, dz: 0 } },
+          { type: 'objective', objectiveId: 'a3_shicras', state: 'activate', announce: true },
           { type: 'objective', objectiveId: 'obj_complejos', state: 'activate', announce: true },
         ],
       },
       {
-        id: 't_asamblea',
-        condition: { type: 'objective', objectiveId: 'obj_asamblea', state: 'completed' },
+        id: 't_a3_shicras',
+        condition: { type: 'objective', objectiveId: 'a3_shicras', state: 'completed' },
+        effects: [
+          { type: 'site_phase', phase: 'fill' },
+          {
+            type: 'dialogue',
+            text: 'Las shicras rellenan la plataforma. Faltan los muros de piedra que la contienen.',
+          },
+          { type: 'objective', objectiveId: 'a3_muros', state: 'activate', announce: true },
+        ],
+      },
+      {
+        id: 't_a3_muros',
+        condition: { type: 'objective', objectiveId: 'a3_muros', state: 'completed' },
+        effects: [
+          { type: 'site_phase', phase: 'finished' },
+          {
+            type: 'dialogue',
+            text: 'La pirámide está enlucida y pintada. Antes de usarla, la comunidad se reúne a quemar ofrendas en el fuego sagrado.',
+          },
+          { type: 'objective', objectiveId: 'a3_fuego', state: 'activate', announce: true },
+        ],
+      },
+      {
+        id: 't_a4_acto',
+        condition: { type: 'objective', objectiveId: 'a3_fuego', state: 'completed' },
+        effects: [
+          { type: 'site_phase', phase: 'in_use' },
+          { type: 'drought' },
+          {
+            type: 'act',
+            kicker: 'Acto IV · c. 1800 a.C.',
+            title: 'La sequía',
+            image: 'media/caral/intro-sequia.webp',
+            text: 'Tras siglos de vida, el río falla y la arena avanza sobre los campos. La comunidad decide cerrar su ciudad: entierra sus pirámides bajo piedra y parte hacia la costa.',
+          },
+          { type: 'objective', objectiveId: 'a4_sellar', state: 'activate', announce: true },
+        ],
+      },
+      {
+        id: 't_a4_sellar',
+        condition: { type: 'objective', objectiveId: 'a4_sellar', state: 'completed' },
         effects: [
           {
             type: 'dialogue',
-            text: 'La comunidad se reúne en la plaza: el trabajo comunal organiza el valle y sostiene el excedente.',
+            text: 'La pirámide queda sellada, como un último acto de cuidado. Reunid a la gente en la playa.',
+          },
+          { type: 'objective', objectiveId: 'a4_partida', state: 'activate', announce: true },
+        ],
+      },
+      {
+        id: 't_a1_huaca',
+        condition: { type: 'objective', objectiveId: 'a1_huaca', state: 'completed' },
+        effects: [
+          {
+            type: 'dialogue',
+            text: 'Nuestros abuelos levantaron esta huaca por fases: antes de cada nueva plataforma enterraron ofrendas de arcilla bajo el piso.',
           },
         ],
       },
       {
-        id: 't_abandono',
-        condition: { type: 'time', seconds: 240 },
+        id: 't_complejos',
+        condition: { type: 'objective', objectiveId: 'obj_complejos', state: 'completed' },
         effects: [
           {
             type: 'dialogue',
-            text: 'Los arqueólogos debaten el abandono de Caral: sismos o El Niño, entre otras causas. No hay ejército rival en el registro.',
+            text: 'Seis complejos piramidales: la escala se asocia al excedente y al trabajo comunal; es una interpretación arqueológica, no un registro escrito.',
           },
         ],
       },

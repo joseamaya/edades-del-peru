@@ -15,6 +15,9 @@ import { isTypingTarget } from '../util/dom';
 import { keyFor, type HotkeyAction } from './hotkeys';
 import { MarkerKind } from '../entities/OrderMarker';
 
+/** Click radius of a fishing ground: its outer ring of ripples (ResourceNodeView.buildFish). */
+const FISHING_PICK_RADIUS = 2.6;
+
 /**
  * DOM input, picking, placement and keyboard shortcuts. It drives the same
  * command layer as the HUD; the Game reference is a transitional host while the
@@ -228,7 +231,8 @@ export class InputController {
       let object: THREE.Object3D | null = hit.object;
       while (object && !object.userData.heritageId) object = object.parent;
       const def = getHeritageBuilding(object?.userData.heritageId as string | undefined);
-      if (def) return def;
+      // Monuments still to be built have no volume yet: their pick proxies must not answer clicks.
+      if (def && this.game.heritageStanding(def.id)) return def;
     }
     return null;
   }
@@ -660,6 +664,26 @@ export class InputController {
         if (n) {
           bestD = th.dist;
           best = n;
+        }
+      }
+    }
+    if (best) return best;
+    // A fishing ground is a ring of ripples on the water: a click anywhere inside the ring picks it.
+    const waterLevel = this.game.terrain.waterLevel;
+    const ray = this.raycaster.ray;
+    if (Math.abs(ray.direction.y) > 1e-4) {
+      const t = (waterLevel - ray.origin.y) / ray.direction.y;
+      if (t > 0) {
+        const x = ray.origin.x + ray.direction.x * t;
+        const z = ray.origin.z + ray.direction.z * t;
+        let nearest = FISHING_PICK_RADIUS;
+        for (const n of this.game.resourceNodes.values()) {
+          if (n.kind !== 'fishing' || n.dead) continue;
+          const d = Math.hypot(n.pos.x - x, n.pos.z - z);
+          if (d < nearest) {
+            nearest = d;
+            best = n;
+          }
         }
       }
     }

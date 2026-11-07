@@ -26,6 +26,8 @@ export interface ResourceProfile {
   /** Absolute counts of animals and fishing spots. */
   hunt: number;
   fishing: number;
+  /** Scattered nodes per 1000 m² (default 1); a large authored map can keep a smaller scatter. */
+  scatter?: number;
 }
 
 /**

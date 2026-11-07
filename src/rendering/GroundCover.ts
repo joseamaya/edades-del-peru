@@ -35,7 +35,7 @@ const COLORS: Record<GroundCoverSpecies, readonly string[]> = {
 /**
  * Instanced low ground cover: ichu/grass tufts, ferns and gravel/pebbles.
  * Deterministic from the terrain splat, moisture and slope; one draw call per
- * species. Instances fade/cull by 24 m chunk in the vertex shader and bend
+ * species. Instances fade/cull by their own distance in the vertex shader and bend
  * slightly with the wind. Visual only: no entities, no obstacles, no gameplay.
  */
 export class GroundCover {
@@ -115,7 +115,6 @@ export class GroundCover {
       mesh.castShadow = false;
       mesh.receiveShadow = false;
       mesh.frustumCulled = false;
-      const chunkCenters = new Float32Array(list.length * 2);
       const color = new THREE.Color();
       const palette = COLORS[id];
       const rng = new RNG((seed ^ (id.length * 2654435761) ^ 0x9e3779b9) >>> 0);
@@ -127,12 +126,9 @@ export class GroundCover {
         _scale.setScalar(p.scale);
         _m.compose(_pos, _q, _scale);
         mesh.setMatrixAt(i, _m);
-        chunkCenters[i * 2] = (Math.floor(p.x / chunkSize) + 0.5) * chunkSize;
-        chunkCenters[i * 2 + 1] = (Math.floor(p.z / chunkSize) + 0.5) * chunkSize;
         color.set(palette[Math.floor(rng.float() * palette.length)]);
         mesh.setColorAt(i, color);
       }
-      mesh.geometry.setAttribute('aChunkCenter', new THREE.InstancedBufferAttribute(chunkCenters, 2));
       mesh.instanceMatrix.needsUpdate = true;
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
       this.meshes.set(id, mesh);
@@ -158,7 +154,6 @@ export class GroundCover {
       },
       side: THREE.DoubleSide,
       vertexShader: `
-        attribute vec2 aChunkCenter;
         uniform float uCoverTime;
         uniform float uCoverFadeStart;
         uniform float uCoverFadeEnd;
@@ -176,7 +171,10 @@ export class GroundCover {
           vWorldPos = world.xyz;
           vNormalW = normalize(mat3(modelMatrix) * mat3(instanceMatrix) * normal);
           vColor = instanceColor;
-          float coverDist = distance(aChunkCenter, cameraPosition.xz);
+          // Fade by each instance's own distance: a per-chunk distance switched whole 24 m patches of
+          // pebbles and tufts on and off at once while the camera panned.
+          vec2 coverPos = (modelMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xz;
+          float coverDist = distance(coverPos, cameraPosition.xz);
           vCoverFade = 1.0 - smoothstep(uCoverFadeStart, uCoverFadeEnd, coverDist);
           gl_Position = projectionMatrix * viewMatrix * world;
           if (coverDist > uCoverFadeEnd) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
@@ -317,9 +315,33 @@ function tuftGeometry(blades: number, height: number, width: number, spread: num
   return geo;
 }
 
+/**
+ * A squashed icosahedron without its downward faces: the RTS camera always looks down, so they are
+ * never seen, and with ~12k pebbles and gravel on a map they were a third of the cover's triangles.
+ */
 function pebbleGeometry(radius: number, y: number): THREE.BufferGeometry {
-  const geo = new THREE.IcosahedronGeometry(radius, 0);
-  geo.scale(1.25, 0.75, 1);
-  geo.translate(0, y, 0);
+  const ico = new THREE.IcosahedronGeometry(radius, 0);
+  ico.scale(1.25, 0.75, 1);
+  ico.translate(0, y, 0);
+  const source = ico.getAttribute('position');
+  const normals = ico.getAttribute('normal');
+  const kept: number[] = [];
+  const keptNormals: number[] = [];
+  const a = new THREE.Vector3();
+  const b = new THREE.Vector3();
+  const c = new THREE.Vector3();
+  for (let i = 0; i < source.count; i += 3) {
+    a.fromBufferAttribute(source, i);
+    b.fromBufferAttribute(source, i + 1);
+    c.fromBufferAttribute(source, i + 2);
+    const normalY = c.clone().sub(b).cross(a.clone().sub(b)).y;
+    if (normalY < 0) continue;
+    kept.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
+    for (let k = i; k < i + 3; k++) keptNormals.push(normals.getX(k), normals.getY(k), normals.getZ(k));
+  }
+  ico.dispose();
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(kept, 3));
+  geo.setAttribute('normal', new THREE.Float32BufferAttribute(keptNormals, 3));
   return geo;
 }

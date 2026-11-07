@@ -58,52 +58,49 @@ describe('campaign educational content', () => {
     expect(MISSIONS[0].tutorial).toBe(true);
   });
 
-  it('the Caral pilot teaches the valley through actions, not a market or a quiz', () => {
+  it('the Caral model mission plays four acts, from Áspero to the sealing of the city', () => {
     const caral = MISSIONS.find((m) => m.id === 'm1_caral')!;
     const kinds = caral.objectives.map((o) => o.kind);
     expect(kinds).not.toContain('destroy');
+    expect(kinds).not.toContain('survive');
     expect(caral.objectives.some((o) => o.buildingKind === BuildingKind.MARKET)).toBe(false);
-    expect(caral.objectives.some((o) => o.buildingKind === BuildingKind.FARM)).toBe(true);
-    expect(caral.objectives.some((o) => o.buildingKind === BuildingKind.MILL)).toBe(true);
-    expect(caral.objectives.some((o) => o.kind === 'gather' && o.resource === 'food')).toBe(true);
-    expect(
-      caral.objectives.some(
-        (o) => o.id === 'obj_complejo' && o.kind === 'inspect' && o.heritageIds?.includes('caral_pyramid_mayor'),
+    expect(caral.startingResources.silver).toBe(0);
+    expect(caral.narrator).toBeTruthy();
+    expect(caral.layout?.site?.mayorPhase).toBe('foundation');
+
+    // Only the first goal is visible; every act unlocks the next one.
+    const required = caral.objectives.filter((o) => !o.optional);
+    expect(required[0]!.id).toBe('a1_pesca');
+    expect(required[0]!.hidden).toBeFalsy();
+    for (const o of required.slice(1)) expect(o.hidden, o.id).toBe(true);
+    const activated = new Set(
+      caral.triggers.flatMap((t) =>
+        t.effects.flatMap((fx) => (fx.type === 'objective' && fx.state === 'activate' ? [fx.objectiveId] : [])),
       ),
-    ).toBe(true);
-    expect(caral.objectives.some((o) => o.kind === 'survive')).toBe(true);
-
-    const hidden = ['obj_almacenamiento', 'obj_alimento', 'obj_riego', 'obj_asamblea', 'obj_complejos'];
-    for (const id of hidden) expect(caral.objectives.find((o) => o.id === id)?.hidden, id).toBe(true);
-    expect(caral.objectives.find((o) => o.id === 'obj_asamblea')?.requires).toBe('obj_complejo');
-    expect(caral.objectives.find((o) => o.id === 'obj_agricultura')?.hidden).toBeFalsy();
-    expect(caral.objectives.find((o) => o.id === 'obj_complejo')?.hidden).toBeFalsy();
-    expect(caral.objectives.find((o) => o.id === 'obj_sostener')?.hidden).toBeFalsy();
-
-    const trigger = (id: string) => caral.triggers.find((t) => t.id === id)!;
-    const activations = [
-      ['t_cosecha', 'obj_almacenamiento'],
-      ['t_cosecha', 'obj_alimento'],
-      ['t_troje', 'obj_riego'],
-      ['t_complejo', 'obj_complejos'],
-    ] as const;
-    for (const [triggerId, objectiveId] of activations) {
-      expect(trigger(triggerId).effects, `${triggerId}/${objectiveId}`).toContainEqual({
-        type: 'objective',
-        objectiveId,
-        state: 'activate',
-        announce: true,
-      });
+    );
+    // `requires` goals are started by the player from a field card (the communal assembly).
+    for (const o of caral.objectives.filter((objective) => objective.hidden && !objective.requires)) {
+      expect(activated.has(o.id), `${o.id} is never activated`).toBe(true);
     }
-    expect(trigger('t_complejo').effects).not.toContainEqual({
-      type: 'objective',
-      objectiveId: 'obj_asamblea',
-      state: 'activate',
-    });
+
+    // Acts II-IV open with a chapter card; act III builds the Pyramid Mayor through its phases.
+    const acts = caral.triggers.flatMap((t) => t.effects.filter((fx) => fx.type === 'act'));
+    expect(acts.map((fx) => (fx.type === 'act' ? fx.kicker.split(' ·')[0] : ''))).toEqual([
+      'Acto II',
+      'Acto III',
+      'Acto IV',
+    ]);
+    const phases = caral.triggers.flatMap((t) =>
+      t.effects.flatMap((fx) => (fx.type === 'site_phase' ? [fx.phase] : [])),
+    );
+    expect(phases).toEqual(['fill', 'finished', 'in_use']);
+    const deliveries = caral.objectives.filter((o) => o.kind === 'deliver');
+    for (const o of deliveries) expect(o.heritageId, o.id).toBe('caral_pyramid_mayor');
 
     const edu = getEducational('m1_caral')!;
     expect(edu.briefing?.length).toBeGreaterThan(20);
-    expect(edu.epilogue?.length).toBeGreaterThan(40);
+    expect(edu.epilogue).toContain('Vichama');
+    expect(edu.didYouKnow).toContain('posible quipu');
   });
 
   it('mission atmosphere overrides stay within the supported range', () => {
@@ -140,7 +137,7 @@ describe('campaign educational content', () => {
       // non-combat objectives only, and it teaches building
       const nonCombat =
         id === 'm1_caral'
-          ? ['gather', 'build', 'survive', 'hold', 'inspect', 'canal_open']
+          ? ['gather', 'build', 'reach', 'hold', 'inspect', 'canal_open', 'deliver', 'research']
           : ['gather', 'build', 'survive', 'hold', 'deliver', 'network'];
       for (const o of mis.objectives) expect(nonCombat, `${id}/${o.id}`).toContain(o.kind);
       expect(

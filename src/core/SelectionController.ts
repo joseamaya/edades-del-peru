@@ -2,10 +2,12 @@ import { type HeritageBuildingDef, type HeritageBuildingId } from '../model/defs
 import { bus } from './EventBus';
 import { Unit } from '../entities/Unit';
 import { Building } from '../entities/Building';
-import { UnitKind } from '../core/types';
+import { UnitKind, type Resources } from '../core/types';
+import type { Mission } from '../campaign/Mission';
 import { distance2D } from '../util/math';
 import { getHeritageBuilding } from '../model/defs/heritage';
 import { RESOURCE_INFO } from './Config';
+import { t } from '../i18n';
 
 /** Selection, focus, formation and heritage/assembly helpers. */
 export class SelectionController {
@@ -94,62 +96,79 @@ export class SelectionController {
     return this.game.mission?.activateObjective('obj_asamblea') ?? false;
   }
 
+  /** Hand materials to the active construction objective of a field card (e.g. the Caral Pyramid Mayor). */
+  deliverToHeritage(id: HeritageBuildingId): boolean {
+    const mission: Mission | null = this.game.mission;
+    const delivery = mission?.activeDeliveryFor(id);
+    if (!delivery?.def.resource) return false;
+    const { def } = delivery;
+    const at = def.pos ? this.game.resolveMissionPoint(def.pos) : (this.game.siteAnchor ?? this.game.siteCenter);
+    return this.handOver('construct', def.resource!, Math.min(def.step ?? 50, (def.count ?? 0) - delivery.delivered), {
+      at,
+      radius: def.radius ?? 18,
+      objectiveId: def.id,
+    });
+  }
+
+  private workerNear(anchor: { x: number; z: number } | null, radius: number): boolean {
+    if (!anchor) return false;
+    return [...this.game.units.values()].some(
+      (unit) =>
+        unit.owner === 0 &&
+        !unit.dead &&
+        unit.kind === UnitKind.WORKER &&
+        distance2D(unit.pos.x, unit.pos.z, anchor.x, anchor.z) < radius,
+    );
+  }
+
   /** Hand over a field-card offering at the authored site. */
   makeOffering(id: HeritageBuildingId): boolean {
-    return this.makeHeritageExchange(id, 'offer', 'ofrenda', 'templo');
+    return this.makeHeritageExchange(id, 'offer');
   }
 
   /** Exchange elite goods at a Moche/Recuay site card. */
   makeTrade(id: HeritageBuildingId): boolean {
-    return this.makeHeritageExchange(id, 'trade', 'intercambio', 'huacas');
+    return this.makeHeritageExchange(id, 'trade');
   }
 
-  private makeHeritageExchange(
-    id: HeritageBuildingId,
-    operation: 'offer' | 'trade',
-    noun: string,
-    place: string,
-  ): boolean {
+  private makeHeritageExchange(id: HeritageBuildingId, operation: 'offer' | 'trade'): boolean {
     const def = getHeritageBuilding(id);
     if (!def || def.operation !== operation) return false;
-    const resource = def.operationResource ?? 'silver';
-    const amount = def.operationAmount ?? 50;
-    const anchor = this.game.siteAnchor ?? this.game.siteCenter;
-    const near = anchor
-      ? [...this.game.units.values()].some(
-          (unit) =>
-            unit.owner === 0 &&
-            !unit.dead &&
-            unit.kind === UnitKind.WORKER &&
-            distance2D(unit.pos.x, unit.pos.z, anchor.x, anchor.z) < 18,
-        )
-      : false;
-    if (!near) {
+    return this.handOver(operation, def.operationResource ?? 'silver', def.operationAmount ?? 50, {
+      at: this.game.siteAnchor ?? this.game.siteCenter,
+      radius: 18,
+    });
+  }
+
+  /** Shared field-card hand-over: a worker on site, the stock to pay, and a mission goal to record it. */
+  private handOver(
+    operation: 'offer' | 'trade' | 'construct',
+    resource: keyof Resources,
+    amount: number,
+    where: { at: { x: number; z: number } | null; radius: number; objectiveId?: string },
+  ): boolean {
+    if (amount <= 0) return false;
+    const toast = (kind: 'away' | 'short' | 'none' | 'done', level: string) =>
       this.game.hud?.showToast(
-        `Acerca un obrero a las ${place} para ${operation === 'offer' ? 'entregar' : 'intercambiar'}.`,
-        'warning',
+        t(`hud.heritage.${operation}.${kind}`, { amount, resource: RESOURCE_INFO[resource].name.toLowerCase() }),
+        level,
       );
+    if (!this.workerNear(where.at, where.radius)) {
+      toast('away', 'warning');
       return false;
     }
-    const resourceName = RESOURCE_INFO[resource].name.toLowerCase();
     if (this.game.players[0].resources[resource] < amount) {
-      this.game.hud?.showToast(
-        `Necesitas ${amount} de ${resourceName} para ${operation === 'offer' ? 'la' : 'el'} ${noun}.`,
-        'warning',
-      );
+      toast('short', 'warning');
       return false;
     }
-    const recorded = this.game.mission?.recordDelivery(resource, amount) ?? 0;
+    const recorded = this.game.mission?.recordDelivery(resource, amount, where.objectiveId) ?? 0;
     if (recorded <= 0) {
-      this.game.hud?.showToast(
-        `No hay ${operation === 'offer' ? 'una' : 'un'} ${noun} pendiente en este momento.`,
-        'info',
-      );
+      toast('none', 'info');
       return false;
     }
     this.game.players[0].resources[resource] -= recorded;
     this.game.hud?.showToast(
-      `${noun[0].toUpperCase()}${noun.slice(1)} ${noun === 'ofrenda' ? 'entregada' : 'entregado'}: ${recorded} de ${resourceName}.`,
+      t(`hud.heritage.${operation}.done`, { amount: recorded, resource: RESOURCE_INFO[resource].name.toLowerCase() }),
       'success',
     );
     this.game.audio.uiClick?.();

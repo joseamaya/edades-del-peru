@@ -1,3 +1,4 @@
+import type { CinematicBeat } from './defs/cinematics';
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind, Resources, MapType } from '../core/types';
 import type { GeographicRegion, MapOverrides } from '../model/defs/profiles';
 import type { PortraitId } from '../model/defs/commanders';
@@ -6,6 +7,7 @@ import type { TerrainLayout } from '../model/defs/terrainLayout';
 import type { SetpieceId } from '../model/defs/setpieces';
 import type { HeritageBuildingId } from '../model/defs/heritage';
 import type { AuthoredSiteId, DecorModelId } from '../model/defs/sites';
+import type { CaralMayorPhase } from '../model/defs/caralCity';
 
 /** Normalized map point (0..1); resolved to world units from the mission map size. */
 export interface MissionAnchor {
@@ -85,6 +87,8 @@ export interface MissionSite {
   keepout?: MissionSiteKeepout[];
   /** Rectangles where player construction is forbidden (the archaeological site). */
   buildKeepout?: MissionSiteKeepout[];
+  /** Opening construction phase of the site's main monument; defaults to the finished city in use. */
+  mayorPhase?: CaralMayorPhase;
 }
 
 export interface MissionLayout {
@@ -124,7 +128,8 @@ export type ObjectiveKind =
   | 'inspect'
   | 'deliver'
   | 'canal_open'
-  | 'network';
+  | 'network'
+  | 'research';
 
 export type ObjState = 'pendiente' | 'activo' | 'completed' | 'failed';
 
@@ -155,6 +160,12 @@ export interface ObjectiveDef {
   resource?: keyof Resources;
   /** Heritage cards that must be visited for an `inspect` objective. */
   heritageIds?: HeritageBuildingId[];
+  /** Field card that receives a `deliver` objective's materials (shows a hand-over command). */
+  heritageId?: HeritageBuildingId;
+  /** Amount handed over per `deliver` command; defaults to 50. */
+  step?: number;
+  /** Technology a `research` objective waits for. */
+  tech?: string;
   era?: Era;
   hidden?: boolean;
   /**
@@ -193,7 +204,13 @@ export type TriggerEffect =
       radius?: number;
       objective?: 'base' | 'position';
     }
-  | { type: 'dialogue'; text: string; duration?: number }
+  | { type: 'dialogue'; text: string; duration?: number; speaker?: string }
+  /** Chapter card between acts of one mission (pauses the mission clock while open). */
+  | { type: 'act'; kicker: string; title: string; text: string; image?: string }
+  /** Construction phase of the authored site's main monument (the Caral Pyramid Mayor). */
+  | { type: 'site_phase'; phase: CaralMayorPhase }
+  /** The drought that closes Caral: the valley dries out over ~40 s (Game.startDrought). */
+  | { type: 'drought' }
   | { type: 'resources'; player?: 0 | 1; amount: Partial<Resources> }
   | { type: 'objective'; objectiveId: string; state: 'activate' | 'complete' | 'fail'; announce?: boolean }
   | { type: 'camera'; pos: MissionPoint }
@@ -249,6 +266,12 @@ export interface MissionDef {
   defeat: string;
   /** Historical period of the mission (resolves dates and coetaneous civilizations). */
   period: HistoricalPeriod;
+  /** Speaker label for unattributed dialogue; defaults to the commander label. */
+  narrator?: string;
+  /** Narrated intro played before the briefing (skipped with ?intro=0). */
+  intro?: CinematicBeat[];
+  /** Backdrop of the victory epilogue (public asset path). */
+  epilogueImage?: string;
   /** Show the step-by-step guided tutorial at start (e.g. the Caral mission). */
   tutorial?: boolean;
   playerCiv: CivId;
@@ -294,6 +317,11 @@ export interface MissionDef {
    * a naval campaign with no siege train). Omit for the full roster.
    */
   allowedUnits?: UnitKind[];
+  /**
+   * If set, the player can only build these buildings (e.g. Caral: no metallurgy, no documented war,
+   * no permanent market). Omit for every building of the era.
+   */
+  allowedBuildings?: BuildingKind[];
   objectives: ObjectiveDef[];
   triggers: TriggerDef[];
 }

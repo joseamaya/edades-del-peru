@@ -18,6 +18,10 @@ import { dressCaralWorker } from './workerAttire';
 export interface RigVariantHandle {
   setCarrying?(carrying: boolean, color?: number): void;
   setTask?(state: RigClipState): void;
+  /** Kind of the resource node being worked ('fishing' swaps the tool for a net), or null. */
+  setGatherKind?(kind: string | null): void;
+  /** Whether a fisher's net is back in the hand (it is hidden while cast; see FishingNetFx). */
+  setNetInHand?(inHand: boolean): void;
   dispose(): void;
 }
 

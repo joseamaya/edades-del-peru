@@ -29,10 +29,17 @@ export const MELEE_ATTACK_RANGE = 0.9;
 const BUILDING_ATTACK_PAD = 0.5;
 
 /** Structural view of a resource node, enough for gather retargeting. */
+/** How far a builder looks for the next unfinished building of its owner. */
+const BUILD_FOLLOWUP_RADIUS = 30;
+/** How far a worker looks for a replacement when its resource node runs out (AoE-style). */
+const GATHER_RETARGET_RADIUS = 24;
+
 interface GatherNodeRef {
   id: number;
   pos: { x: number; z: number };
   resource: keyof Resources;
+  /** Node kind (fishing, berry, tree...), so a depleted node is replaced by one of the same kind. */
+  kind?: string;
   amount?: number;
   dead?: boolean;
   depleted?: boolean;
@@ -1174,7 +1181,12 @@ export class Unit {
       }
     }
     if (!node || node.dead) {
-      // nonexistent or dead target: deliver the partial load if there is any
+      // nonexistent or dead target: move on to a nearby node of the same kind, as AoE villagers do,
+      // and deliver the partial load if there is any
+      if (this.retargetNearbyGather(order)) {
+        if (this.carryCount() > 0) this.deliverOrder();
+        return;
+      }
       if (this.carryCount() > 0) {
         this.deliverOrder();
       } else {
@@ -1188,6 +1200,10 @@ export class Unit {
         node.farm.foodAmount = 0;
       } else if (typeof node.subtract === 'function') {
         node.subtract(0);
+      }
+      if (!node.farm && this.retargetNearbyGather(order)) {
+        if (this.carryCount() > 0) this.deliverOrder();
+        return;
       }
       if (this.carryCount() > 0) {
         this.deliverOrder();
@@ -1239,6 +1255,7 @@ export class Unit {
     }
     this.vel.multiplyScalar(Math.pow(0.05, dt));
     this.targetYaw = angleTo(this.pos.x, this.pos.z, node.pos.x, node.pos.z);
+    if (!node.farm && node.kind) this.lastGather = { kind: node.kind, x: node.pos.x, z: node.pos.z };
 
     this.gatherTimer += dt;
     const interval = 1.4;
@@ -1306,6 +1323,37 @@ export class Unit {
     }
   }
 
+  /** Kind and place of the last node this unit worked, to find a replacement when it runs out. */
+  lastGather: { kind: string; x: number; z: number } | null = null;
+
+  /**
+   * Point a fishing order at the nearest live fishing ground when the one being worked runs out (within
+   * GATHER_RETARGET_RADIUS of it). Returns false when there is none, so the order ends as before. Only
+   * fishing moves on by itself: shoals run out quickly, and the other resources keep their tuned flow.
+   */
+  private retargetNearbyGather(order: Order): boolean {
+    const last = this.lastGather;
+    if (!last || last.kind !== 'fishing') return false;
+    let best: GatherNodeRef | null = null;
+    let bestD = GATHER_RETARGET_RADIUS;
+    for (const node of this.ctx.resourceNodes.values() as Iterable<GatherNodeRef>) {
+      if (node.id === order.entityId || node.dead || node.depleted || node.kind !== last.kind) continue;
+      if (node.amount !== undefined && node.amount <= 0) continue;
+      const d = distance2D(last.x, last.z, node.pos.x, node.pos.z);
+      if (d < bestD) {
+        bestD = d;
+        best = node;
+      }
+    }
+    if (!best) return false;
+    order.entityId = best.id;
+    this.path.length = 0;
+    this.pathIdx = 0;
+    this.approachTried = false;
+    this.noRouteTimer = 0;
+    return true;
+  }
+
   /**
    * A node whose free stand points are taken (or blocked by other props) should not
    * cost the whole gather order: switch to the nearest reachable node of the same
@@ -1319,6 +1367,8 @@ export class Unit {
     for (const node of this.ctx.resourceNodes.values() as Iterable<GatherNodeRef>) {
       if (node.id === current.id || node.dead || node.depleted) continue;
       if (node.resource !== current.resource) continue;
+      // A fisher stays a fisher: never switch a fishing order to a berry bush (or a farm order to fish).
+      if (current.kind && node.kind !== current.kind) continue;
       if (node.amount !== undefined && node.amount <= 0) continue;
       candidates.push(node);
     }
@@ -1436,6 +1486,7 @@ export class Unit {
     const bld = this.ctx.buildings.get(order.entityId!);
     if (!bld || bld.dead || bld.constructionComplete) {
       this.finishOrder();
+      if (bld && !bld.dead && bld.constructionComplete) this.followUpAfterBuild(bld);
       return;
     }
     const dx = bld.pos.x - this.pos.x;
@@ -1469,6 +1520,36 @@ export class Unit {
     this.vel.multiplyScalar(Math.pow(0.05, dt));
     bld.addBuildProgress(this.buildEfficiency * dt);
     this.targetYaw = angleTo(this.pos.x, this.pos.z, bld.pos.x, bld.pos.z);
+  }
+
+  /**
+   * A human player's builder with nothing queued keeps working, as in AoE: it farms the field it just
+   * prepared (when nobody else does) or helps the nearest unfinished building of its owner. AI seats
+   * keep their own economy planning, so their simulations are unchanged.
+   */
+  private followUpAfterBuild(bld: any): void {
+    if (this.kind !== UnitKind.WORKER || this.orderQueue.length > 0) return;
+    if (this.ctx.players[this.owner]?.isAI) return;
+    if (bld.isFarm && bld.owner === this.owner && bld.foodAmount > 0) {
+      const taken = [...this.ctx.unitsNear(bld.pos.x, bld.pos.z, bld.radius + 3)].some(
+        (u) => u !== this && u.orderQueue[0]?.kind === OrderKind.GATHER && u.orderQueue[0]?.entityId === bld.id,
+      );
+      if (!taken) {
+        this.issueOrder({ kind: OrderKind.GATHER, entityId: bld.id });
+        return;
+      }
+    }
+    let next: any = null;
+    let best = BUILD_FOLLOWUP_RADIUS;
+    for (const other of this.ctx.buildings.values()) {
+      if (other.owner !== this.owner || other.dead || other.constructionComplete) continue;
+      const d = distance2D(this.pos.x, this.pos.z, other.pos.x, other.pos.z);
+      if (d < best) {
+        best = d;
+        next = other;
+      }
+    }
+    if (next) this.issueOrder({ kind: OrderKind.BUILD, entityId: next.id });
   }
 
   private updateConstruct(order: Order, dt: number): void {

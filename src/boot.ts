@@ -194,7 +194,7 @@ export async function boot(): Promise<void> {
   modelIds.push(...wildlifeModelAssetIds(profile.region));
   if (params.get('rig') === '1') modelIds.push(RIG_DEMO_ASSET_ID);
   if (modelIds.length) await preloadModelAssets(modelIds);
-  const game = new Game(settings, snapshot, replay, forceCinematic);
+  const game = new Game(settings, snapshot, replay, forceCinematic, false, !(params.get('intro') === '0' || noloop));
   (window as any).game = game;
   (window as any).THREE = THREE;
   (window as any).ScriptedPlayer = ScriptedPlayer;

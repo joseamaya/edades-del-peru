@@ -2,22 +2,26 @@ import { scatterAmbient, type AmbientPlacement, type AmbientSample } from './sca
 import type { AmbientQuery } from './ambientQuery';
 import type { GeographicRegion } from './profiles';
 
-/** Scatter props (visual only): desert cacti, wetland totora, rock clusters, shrubs. */
-export type PropId = 'cactus' | 'totora' | 'rock' | 'shrub';
+/**
+ * Scatter props (visual only): desert cacti, wetland totora, rock clusters, shrubs, and the Supe
+ * riverbank canes (caña brava, carrizo; documented in docs/historia/campanas/caral.md), which only
+ * the Caral valley plan places.
+ */
+export type PropId = 'cactus' | 'totora' | 'rock' | 'shrub' | 'cana_brava' | 'carrizo';
 
-export const PROP_IDS: PropId[] = ['cactus', 'totora', 'rock', 'shrub'];
+export const PROP_IDS: PropId[] = ['cactus', 'totora', 'rock', 'shrub', 'cana_brava', 'carrizo'];
 
 export type PropPlacement = AmbientPlacement<PropId>;
 
 /** Base presence of each prop per geographic region. */
 const REGION_WEIGHTS: Record<GeographicRegion, Record<PropId, number>> = {
-  north_coast: { rock: 0.5, shrub: 0.5, cactus: 0.8, totora: 0.4 },
-  central_coast: { rock: 0.6, shrub: 0.5, cactus: 0.5, totora: 0.6 },
-  south_coast: { rock: 0.8, shrub: 0.3, cactus: 1.2, totora: 0.2 },
-  andean_valley: { rock: 0.6, shrub: 0.9, cactus: 0.4, totora: 0 },
-  high_andes: { rock: 1.0, shrub: 0.5, cactus: 0.3, totora: 0 },
-  altiplano: { rock: 0.7, shrub: 0.4, cactus: 0.3, totora: 0.7 },
-  amazon: { rock: 0.3, shrub: 0.8, cactus: 0, totora: 0 },
+  north_coast: { rock: 0.5, shrub: 0.5, cactus: 0.8, totora: 0.4, cana_brava: 0, carrizo: 0 },
+  central_coast: { rock: 0.6, shrub: 0.5, cactus: 0.5, totora: 0.6, cana_brava: 0, carrizo: 0 },
+  south_coast: { rock: 0.8, shrub: 0.3, cactus: 1.2, totora: 0.2, cana_brava: 0, carrizo: 0 },
+  andean_valley: { rock: 0.6, shrub: 0.9, cactus: 0.4, totora: 0, cana_brava: 0, carrizo: 0 },
+  high_andes: { rock: 1.0, shrub: 0.5, cactus: 0.3, totora: 0, cana_brava: 0, carrizo: 0 },
+  altiplano: { rock: 0.7, shrub: 0.4, cactus: 0.3, totora: 0.7, cana_brava: 0, carrizo: 0 },
+  amazon: { rock: 0.3, shrub: 0.8, cactus: 0, totora: 0, cana_brava: 0, carrizo: 0 },
 };
 
 /** How suitable the ground is for a prop (0 = never place). */
@@ -33,6 +37,9 @@ function suitability(id: PropId, s: AmbientSample): number {
       return 0.4 + s.slope * 1.6;
     case 'shrub':
       return 0.3 + wet * 0.9;
+    case 'cana_brava':
+    case 'carrizo':
+      return 0;
   }
 }
 

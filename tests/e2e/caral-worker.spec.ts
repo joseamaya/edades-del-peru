@@ -52,10 +52,16 @@ test('the Caral worker is rigged, animated by its orders and keeps gameplay inta
         const flags = shadows(name);
         return !!flags && !flags.cast && !flags.receive;
       }),
-      garmentsShadow: [tunic, lower, 'attire_sash'].every((name) => {
-        const flags = shadows(name);
-        return !!flags && flags.cast && flags.receive;
-      }),
+      // Only the body is in the shadow pass (the VSM draws receivers too, so garments drop both flags).
+      bodyOnlyShadow:
+        [male ? 'Body_m' : 'Body_f'].every((name) => {
+          const flags = shadows(name);
+          return !!flags && flags.cast && flags.receive;
+        }) &&
+        [tunic, lower, 'attire_sash'].every((name) => {
+          const flags = shadows(name);
+          return !!flags && !flags.cast && !flags.receive;
+        }),
       hasPickProxy: !!worker.view.pickProxy,
     };
   }, shadowSkip);
@@ -64,7 +70,7 @@ test('the Caral worker is rigged, animated by its orders and keeps gameplay inta
   expect(initial.rigged).toBe(initial.workers);
   expect(initial.attire.every(Boolean)).toBe(true);
   expect(initial.shadowSkipOk).toBe(true);
-  expect(initial.garmentsShadow).toBe(true);
+  expect(initial.bodyOnlyShadow).toBe(true);
   expect(initial.hasPickProxy).toBe(true);
 
   const simulation = await page.evaluate(() => {

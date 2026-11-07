@@ -5,6 +5,11 @@ import * as THREE from 'three';
  * and specular reflection. Dedicated ShaderMaterial.
  */
 export class Water {
+  /** Share of the region's aerial fog applied to the water (a pale sky tint washes dark water out). */
+  private fogScale = 1;
+  private baseLevel = 0;
+  /** Share of the screen-space refraction (a hazy, sunlit bed makes dark water read pale). */
+  private refractionScale = 1;
   mesh: THREE.Mesh;
   private uniforms: Record<string, THREE.IUniform>;
   private depthTexture: THREE.DataTexture;
@@ -28,7 +33,9 @@ export class Water {
     // On coastal maps the water extends beyond the map (sea/horizon).
     // On inland maps (andes/altiplano/jungle) it covers only the map (lakes and rivers).
     const span = inland ? size : size * 2.5;
-    const geo = new THREE.PlaneGeometry(span, span, 200, 200);
+    // 128 segments: the shortest wave (~26 m) still gets ~7 vertices per wavelength across the 2.5x
+    // coastal span, at 40% of the triangles of the former 200x200 grid.
+    const geo = new THREE.PlaneGeometry(span, span, 128, 128);
     geo.rotateX(-Math.PI / 2);
 
     this.uniforms = {
@@ -48,6 +55,8 @@ export class Water {
       refractionMap: { value: this.refractionRT.texture },
       refractionStrength: { value: 0.012 },
       refractionAmount: { value: 0.0 },
+      sheen: { value: 0.7 },
+      foamAmount: { value: 0.55 },
     };
 
     const mat = new THREE.ShaderMaterial({
@@ -82,6 +91,8 @@ export class Water {
         uniform vec3 sunColor;
         uniform vec3 depthColor;
         uniform vec3 shallowColor;
+        uniform float sheen;
+        uniform float foamAmount;
         uniform vec3 foamColor;
         uniform float isDay;
         uniform sampler2D depthMap;
@@ -130,13 +141,13 @@ export class Water {
           float spec = pow(max(dot(N, H), 0.0), 180.0) * 3.2;
           vec3 col = base * (0.25 + diff * 0.75);
           col += sunColor * spec * isDay;
-          col += sunColor * pow(max(dot(N, H), 0.0), 24.0) * 0.7 * isDay;
+          col += sunColor * pow(max(dot(N, H), 0.0), 24.0) * sheen * isDay;
 
           // foam on the coast (very shallow depth) and wave crests
           float shoreFoam = (1.0 - smoothstep(0.15, 0.55, depth)) * 0.35;
           float waveFoam = smoothstep(0.55, 0.95, abs(vWave)) * 0.3;
           float foam = clamp(shoreFoam + waveFoam, 0.0, 1.0);
-          col = mix(col, foamColor, foam * 0.55);
+          col = mix(col, foamColor, foam * foamAmount);
 
           // screen-space refraction of the scene behind the surface (seabed)
           if (refractionAmount > 0.001) {
@@ -162,7 +173,37 @@ export class Water {
     this.mesh = new THREE.Mesh(geo, mat);
     // the terrain is in 0..size coords; the plane must align with it
     this.mesh.position.set(size / 2, waterLevel, size / 2);
+    this.baseLevel = waterLevel;
     scene.add(this.mesh);
+  }
+
+  /** Per-site water colours and the strength of the broad sun sheen (a high sun washes dark water out). */
+  setPalette(palette: {
+    deep: string;
+    shallow: string;
+    sheen: number;
+    foam: number;
+    fog: number;
+    refraction: number;
+  }): void {
+    this.uniforms.refractionAmount.value *= palette.refraction / this.refractionScale;
+    this.refractionScale = palette.refraction;
+    this.uniforms.fogDensity.value *= palette.fog / this.fogScale;
+    this.fogScale = palette.fog;
+    (this.uniforms.depthColor.value as THREE.Color).set(palette.deep);
+    (this.uniforms.shallowColor.value as THREE.Color).set(palette.shallow);
+    this.uniforms.sheen.value = palette.sheen;
+    this.uniforms.foamAmount.value = palette.foam;
+  }
+
+  /**
+   * Visual-only drop of the water surface (m1's drought: the river shrinks to a thread between exposed
+   * banks). Gameplay water (pathing, isWater) is unchanged.
+   */
+  setLevelOffset(offset: number): void {
+    const level = this.baseLevel + offset;
+    this.mesh.position.y = level;
+    this.uniforms.waterLevel.value = level;
   }
 
   setSunDir(dir: THREE.Vector3): void {
@@ -176,13 +217,13 @@ export class Water {
   /** Region atmosphere: fog colour + aerial-perspective density for the water. */
   setFog(color: string, density: number): void {
     (this.uniforms.fogColor.value as THREE.Color).set(color);
-    this.uniforms.fogDensity.value = density;
+    this.uniforms.fogDensity.value = density * this.fogScale;
   }
 
   /** Enable or disable screen-space refraction (samples `refractionRT`). */
   setRefraction(on: boolean): void {
     this.refractionEnabled = on;
-    this.uniforms.refractionAmount.value = on ? 0.5 : 0;
+    this.uniforms.refractionAmount.value = on ? 0.5 * this.refractionScale : 0;
   }
 
   setSize(width: number, height: number): void {

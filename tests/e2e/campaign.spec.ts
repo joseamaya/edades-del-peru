@@ -1,5 +1,12 @@
 import { test, expect, type BrowserContext } from '@playwright/test';
 
+/** m1 opens with a narrated intro before the briefing; skip it. */
+async function skipCaralIntro(page: import('@playwright/test').Page): Promise<void> {
+  const skip = page.locator('.ed-cinematic-skip');
+  await skip.waitFor({ state: 'visible', timeout: 30_000 });
+  await skip.click();
+}
+
 test('starting a campaign from the menu launches the selected mission', { tag: '@smoke' }, async ({ page }) => {
   await page.goto('/?menu=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
@@ -7,6 +14,8 @@ test('starting a campaign from the menu launches the selected mission', { tag: '
   });
   await page.getByRole('button', { name: /Campañas/ }).click();
   await page.getByRole('button', { name: /Jugar La Ciudad Sagrada/ }).click();
+  await expect(page.locator('.ed-cinematic', { hasText: 'Gente del mar' })).toBeVisible({ timeout: 30_000 });
+  await skipCaralIntro(page);
   await expect(page.locator('.ed-briefing', { hasText: 'La Ciudad Sagrada' })).toBeVisible({ timeout: 30_000 });
   const url = new URL(page.url());
   expect(url.searchParams.get('menu')).toBeNull();
@@ -25,7 +34,10 @@ test('shows the campaign hub and its replayable prologue', { tag: '@smoke' }, as
   await expect(hub).toContainText('Culturas Preincas');
   await expect(hub.getByRole('button', { name: /Jugar La Ciudad Sagrada/ })).toBeVisible();
   await expect(hub).toContainText('Independencia y República');
-  await expect(hub.getByRole('button', { name: /Jugar La Defensa de Arica/ })).toBeVisible();
+  // A fresh profile opens only the first mission: later campaigns and missions stay locked.
+  await expect(hub.locator('.ed-campaign-card[data-campaign="independencia"]')).toBeDisabled();
+  await expect(hub.getByRole('button', { name: /Jugar El Oráculo de Chavín/ })).toHaveCount(0);
+  await expect(hub).toContainText('Completa «La Ciudad Sagrada» para desbloquear esta misión.');
 
   await hub.getByRole('button', { name: /Prólogo: Culturas Preincas/ }).click();
   const intro = page.locator('.ed-cinematic', { hasText: 'CULTURAS PREINCAS' });
@@ -37,16 +49,16 @@ test('shows the campaign hub and its replayable prologue', { tag: '@smoke' }, as
 
 test('the mission briefing includes context and sources', { tag: '@smoke' }, async ({ page }) => {
   await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1&cardhold=1');
+  await skipCaralIntro(page);
   const overlay = page.locator('.ed-overlay', { hasText: 'La Ciudad Sagrada' });
   await expect(overlay).toBeVisible({ timeout: 30_000 });
   await expect(overlay).toContainText('Contexto');
   await expect(overlay).toContainText('¿Sabías que…?');
   await expect(overlay.getByText('Fuentes históricas')).toBeVisible();
-  await expect(overlay).toContainText('Observa la Gran Pirámide');
-  // the surplus, canal, tour and assembly are discoveries, not spoiled here
-  await expect(overlay).not.toContainText('Construye un depósito');
-  await expect(overlay).not.toContainText('Reúne 500');
-  await expect(overlay).not.toContainText('Abre la compuerta');
+  await expect(overlay).toContainText('Acto I · Reúne 300 de comida');
+  // later acts are discoveries, not spoiled here
+  await expect(overlay).not.toContainText('Acto II');
+  await expect(overlay).not.toContainText('Acto III ·');
   await expect(overlay).not.toContainText('Recorre los seis');
   await expect(overlay).not.toContainText('Convoca una asamblea');
 });
@@ -108,19 +120,20 @@ test('the tutorial guides in the first mission', async ({ page }) => {
   // the first step appears after the card and the ~2.6s opening flight
   await expect(tutorial).toBeVisible({ timeout: 60_000 });
   await expect(tutorial).toContainText('Selecciona a tus obreros');
-  await expect(tutorial).toContainText('Paso 1 / 6');
+  await expect(tutorial).toContainText('Paso 1 / 8');
 });
 
 test('the chapter card freezes the mission clock and shows the full subtitle', async ({ page }) => {
   test.setTimeout(180_000);
   await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1&cardhold=1');
+  await skipCaralIntro(page);
   const briefing = page.locator('.ed-overlay', { hasText: 'La Ciudad Sagrada' });
   await expect(briefing).toBeVisible({ timeout: 30_000 });
   await briefing.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
   const card = page.locator('.ed-mission-card');
   await expect(card).toBeVisible({ timeout: 60_000 });
   const subtitle = card.locator('.place');
-  await expect(subtitle).toContainText('plazas se sostienen con trabajo comunal');
+  await expect(subtitle).toContainText('pescadores de anchoveta tejen sus redes con algodón');
   expect((await subtitle.textContent()) ?? '').not.toContain('…');
   await expect(page.locator('#ed-objectives'), 'objectives stay hidden behind the card').toBeHidden();
 
@@ -167,18 +180,11 @@ test('the Caral mission closes with a narrative epilogue, not a quiz', async ({ 
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
-    g.players[0].resources.food = 500;
-    const c = g.playerCenter(0);
-    g.spawnScriptedBuilding('farm', 0, c.x + 6, c.z + 6);
-    g.spawnScriptedBuilding('farm', 0, c.x + 9, c.z + 6);
-    g.spawnScriptedBuilding('mill', 0, c.x + 12, c.z + 6);
-    const target = g.mission.getObjectiveAnchor('obj_complejo');
-    const scout = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'scout');
-    if (target && scout) scout.pos.set(target.x, g.terrain.getHeight(target.x, target.z), target.z);
-    g.visitHeritage('caral_pyramid_mayor');
+    // Complete every act; the victory screen is what this test checks.
+    for (const o of g.mission.def.objectives) if (!o.optional) g.mission.objState.set(o.id, 'completed');
     const m = g.mission;
     const dt = 1 / 60;
-    for (let i = 0; i < Math.ceil(310 / dt) && !m.ended; i++) {
+    for (let i = 0; i < Math.ceil(5 / dt) && !m.ended; i++) {
       for (const b of g.buildings.values()) if (b.owner === 0 && !b.dead) b.hp = b.maxHp;
       for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
       g.update(dt, i * dt);
@@ -656,16 +662,17 @@ test('the campaign hub shows preinca progress and its four missions', async ({ p
   const menu = page.locator('.ed-campaign-panel');
   await expect(menu).toContainText('Culturas Preincas');
   await expect(menu).toContainText('2 / 4 misiones completadas');
-  await expect(menu).toContainText('✓ La Ciudad Sagrada');
-  await expect(menu).toContainText('✓ El Oráculo de Chavín');
+  await expect(menu.getByRole('button', { name: 'Volver a jugar La Ciudad Sagrada' })).toBeVisible();
+  await expect(menu.getByRole('button', { name: 'Volver a jugar El Oráculo de Chavín' })).toBeVisible();
   await expect(menu.getByRole('button', { name: /Jugar La Ciudad Sagrada/ })).toHaveCount(0);
   await expect(menu.getByRole('button', { name: /Jugar La Frontera de los Valles/ })).toBeVisible();
-  const inca = menu.locator('.ed-campaign-card', { hasText: 'El Tahuantinsuyo' });
-  await expect(inca).toContainText('0 / 3 misiones completadas');
-  await expect(inca.getByRole('button', { name: /Jugar Yahuar Pampa/ })).toBeVisible();
+  await expect(menu.getByRole('button', { name: /Jugar El Horizonte Medio/ })).toHaveCount(0);
+  const inca = menu.locator('.ed-campaign-card[data-campaign="inca"]');
+  await expect(inca).toBeDisabled();
+  await expect(inca).toContainText('Completa «Culturas Preincas» para desbloquearla');
 });
 
-test('the campaign hub releases all four chapters', async ({ page }) => {
+test('the campaign path opens the next campaign once the previous one is complete', async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem('peru-campaign', '9');
   });
@@ -675,29 +682,31 @@ test('the campaign hub releases all four chapters', async ({ page }) => {
   });
   await page.getByRole('button', { name: /Campañas/ }).click();
   const menu = page.locator('.ed-campaign-panel');
+  const inca = menu.locator('.ed-campaign-card[data-campaign="inca"]');
+  // The whole pre-Inca campaign is done, so the path selects the Inca campaign and its first mission.
+  await expect(inca).toBeEnabled();
+  await expect(inca).toHaveAttribute('aria-selected', 'true');
+  await expect(inca).toContainText('0 / 3 misiones completadas');
+  await expect(menu.getByRole('button', { name: /Jugar Yahuar Pampa/ })).toBeVisible();
+  await expect(menu.getByRole('button', { name: /Jugar La Guerra del Norte/ })).toHaveCount(0);
+  await expect(menu.locator('.ed-campaign-card[data-campaign="virreinato"]')).toBeDisabled();
+  await expect(menu.locator('.ed-campaign-card[data-campaign="independencia"]')).toBeDisabled();
+
+  await menu.locator('.ed-campaign-card[data-campaign="preinca"]').click();
   await expect(menu).toContainText('4 / 4 misiones completadas');
   for (const title of [
-    '✓ La Ciudad Sagrada',
-    '✓ El Oráculo de Chavín',
-    '✓ La Frontera de los Valles',
-    '✓ El Horizonte Medio',
+    'La Ciudad Sagrada',
+    'El Oráculo de Chavín',
+    'La Frontera de los Valles',
+    'El Horizonte Medio',
   ]) {
-    await expect(menu).toContainText(title);
+    await expect(menu.getByRole('button', { name: `Volver a jugar ${title}` })).toBeVisible();
   }
-  const virreinato = menu.locator('.ed-campaign-card', { hasText: 'El Virreinato' });
-  await expect(virreinato).toContainText('0 / 1 misiones completadas');
-  await expect(virreinato.getByRole('button', { name: /Jugar La Gran Rebelión/ })).toBeVisible();
-  await expect(virreinato).not.toContainText('En preparación');
-  const independencia = menu.locator('.ed-campaign-card', { hasText: 'Independencia y República' });
-  await expect(independencia).toContainText('0 / 2 misiones completadas');
-  await expect(independencia.getByRole('button', { name: /Jugar La Independencia/ })).toBeVisible();
-  await expect(independencia.getByRole('button', { name: /Jugar La Defensa de Arica/ })).toBeVisible();
-  await expect(menu).not.toContainText('En preparación');
-  await expect(menu.getByRole('button', { name: /Continuar campaña/ })).toHaveCount(0);
 });
 
 test('Caral opens with a chapter card and chains into Chavín', async ({ page }) => {
   await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1&cardhold=1');
+  await skipCaralIntro(page);
   const briefing = page.locator('.ed-briefing');
   await expect(briefing).toBeVisible({ timeout: 30_000 });
   await briefing.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
@@ -768,9 +777,10 @@ test('chapter endings name the right campaign ordinal', async ({ page }) => {
 test('a peaceful mission briefing shows no rival side', async ({ page }) => {
   for (const mission of ['m1_caral', 'm2_chavin', 'm4_wari']) {
     await page.goto(`/?mission=${mission}&seed=777&fog=0&low=1`);
+    if (mission === 'm1_caral') await skipCaralIntro(page);
     const overlay = page.locator('.ed-overlay').filter({ hasText: 'OBJETIVOS' });
     await expect(overlay).toBeVisible({ timeout: 30_000 });
-    await expect(overlay).toContainText('Bandos:');
+    await expect(overlay).toContainText('Bandos');
     await expect(overlay).toContainText('sin enfrentamiento documentado');
   }
 });

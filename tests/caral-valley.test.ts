@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
   planCaralValley,
+  planCaralValleyFauna,
   planCaralValleyProps,
   type CaralValleyQuery,
   type CaralValleyPlan,
 } from '../src/model/defs/caralValley';
 
-const BASE = { x: 60, z: 160 };
+const BASE = { x: 42, z: 172 };
+/** The Supe's north-south reach in the transect map. */
+const supe = (x: number) => x >= 66 && x <= 74;
 
 function valleyQuery(overrides: Partial<CaralValleyQuery> = {}): CaralValleyQuery {
   return {
@@ -52,10 +55,10 @@ describe('Caral valley plan', () => {
   });
 
   it('places deterministic riverside reeds and shrubs away from the plots', () => {
-    const river = valleyQuery({ isWater: (x) => x < 12 });
+    const river = valleyQuery({ isWater: supe });
     const plan = planCaralValley(7, BASE, river);
     const reserved = valleyQuery({
-      isWater: (x) => x < 12,
+      isWater: supe,
       isReserved: (x, z) => plan.fields.some((f) => Math.hypot(f.x - x, f.z - z) < f.size / 2),
     });
     const props = planCaralValleyProps(7, BASE, reserved);
@@ -63,9 +66,37 @@ describe('Caral valley plan', () => {
     expect(props.length).toBeGreaterThan(8);
     expect(again).toEqual(props);
     for (const p of props) {
-      expect(['totora', 'shrub']).toContain(p.id);
+      expect(['totora', 'cana_brava', 'carrizo']).toContain(p.id);
       expect(plan.fields.some((f) => Math.hypot(f.x - p.x, f.z - p.z) < f.size / 2)).toBe(false);
     }
+  });
+
+  it('places deterministic riparian deer groups and bird flocks near water, clear of the base', () => {
+    const river = valleyQuery({ isWater: supe });
+    const fauna = planCaralValleyFauna(7, BASE, river);
+    expect(planCaralValleyFauna(7, BASE, river)).toEqual(fauna);
+    const deer = fauna.filter((f) => f.id === 'deer');
+    const birds = fauna.filter((f) => f.id === 'riparian_bird');
+    expect(deer).toHaveLength(6);
+    expect(birds).toHaveLength(6);
+    const roosts = new Map<string, number>();
+    for (const f of fauna) {
+      expect(river.isWater(f.x, f.z)).toBe(false);
+      expect(Math.hypot(f.x - BASE.x, f.z - BASE.z)).toBeGreaterThanOrEqual(14);
+      const key = `${f.x},${f.z}`;
+      roosts.set(key, (roosts.get(key) ?? 0) + 1);
+    }
+    expect([...roosts.values()]).toEqual([3, 3, 3, 3]);
+    for (const d of deer) {
+      for (let i = 0; i < 12; i++) {
+        const a = (i / 12) * Math.PI * 2;
+        expect(river.isWater(d.x + Math.cos(a) * 4, d.z + Math.sin(a) * 4)).toBe(false);
+      }
+    }
+  });
+
+  it('places no riparian fauna without water nearby', () => {
+    expect(planCaralValleyFauna(7, BASE, valleyQuery())).toEqual([]);
   });
 
   it('does not invent fields on a fully reserved map', () => {

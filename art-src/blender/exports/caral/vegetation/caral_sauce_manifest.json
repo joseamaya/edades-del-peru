@@ -1,0 +1,68 @@
+{
+  "asset_id": "caral_sauce",
+  "source_scene": "scenes/caral_vegetation_kit.blend",
+  "script": "scripts/blender/build_caral_vegetation_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "pivot": "trunk base at origin",
+  "budget": {
+    "LOD0": 1200,
+    "LOD1": 350
+  },
+  "lods": {
+    "LOD0": {
+      "triangles": 1132,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Kit_Bark",
+        "MAT-Kit_WillowLeaf"
+      ],
+      "bounds": {
+        "min": [
+          -1.8255,
+          -1.5743,
+          -0.1094
+        ],
+        "max": [
+          1.8281,
+          1.8922,
+          7.6427
+        ],
+        "size": [
+          3.6536,
+          3.4665,
+          7.7521
+        ]
+      },
+      "file": "caral_sauce_lod0.glb",
+      "bytes": 115492
+    },
+    "LOD1": {
+      "triangles": 330,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Kit_Bark",
+        "MAT-Kit_WillowLeaf"
+      ],
+      "bounds": {
+        "min": [
+          -2.0069,
+          -1.6427,
+          -0.1092
+        ],
+        "max": [
+          1.8194,
+          2.3414,
+          8.1805
+        ],
+        "size": [
+          3.8263,
+          3.984,
+          8.2897
+        ]
+      },
+      "file": "caral_sauce_lod1.glb",
+      "bytes": 49464
+    }
+  }
+}

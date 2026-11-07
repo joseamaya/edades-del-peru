@@ -327,8 +327,8 @@ export const BUILDING_DEFS: Record<BuildingKind, BuildingDef> = {
   },
   farm: {
     id: BuildingKind.FARM,
-    name: 'Andén',
-    description: 'Cultivo en terrazas. Producción continua de comida que se agota con el tiempo.',
+    name: 'Chacra',
+    description: 'Campo de cultivo. Producción continua de comida que se agota con el tiempo.',
     category: 'economy',
     minEra: Era.FORMATIVE,
     eraModel: {
@@ -637,7 +637,7 @@ export const BUILDING_INFO: Record<BuildingKind, { name: string; icon: string; c
   tower: { name: 'Atalaya', icon: '🗼', category: 'Defensa' },
   market: { name: 'Mercado', icon: '💰', category: 'Economía' },
   institute: { name: 'Yachaywasi', icon: '📚', category: 'Avance' },
-  farm: { name: 'Andén', icon: '🌽', category: 'Economía' },
+  farm: { name: 'Chacra', icon: '🌽', category: 'Economía' },
   wonder: { name: 'Huaca Sagrada', icon: '🗿', category: 'Victoria' },
 };
 

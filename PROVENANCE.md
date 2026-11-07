@@ -29,17 +29,17 @@
 - **Historical note**: the dry grass/rock scan used for `puna_grass` is a visual abstraction of Andean
   ichu, not a species-specific botanical reconstruction.
 
-| Slot | Source | Author | Licence | Size | Output SHA-256 (albedo / surface) |
-|---|---|---|---|---|---|
-| `grass` | `grass_ground` | Charlotte Baglioni | CC0 1.0 | 384² | `5b01845156e8…` / `501876e4b835…` |
-| `dirt` | `brown_mud_02` | Rob Tuytel | CC0 1.0 | 384² | `b9ad3f28ed42…` / `4d61153de256…` |
-| `sand` | `coast_sand_01` | Rob Tuytel | CC0 1.0 | 384² | `7615b9b2aeee…` / `2cdc74da9ec7…` |
-| `rock` | `aerial_rocks_01` | Rob Tuytel | CC0 1.0 | 384² | `1f49ee03f780…` / `727d8e410858…` |
-| `snow` | `snow_01` | Rob Tuytel | CC0 1.0 | 384² | `57e237cf34ea…` / `f163500254f4…` |
-| `puna_grass` | `aerial_grass_rock` | Rob Tuytel | CC0 1.0 | 384² | `0f2dd5dca801…` / `bb8cb86447d6…` |
-| `coastal_gravel` | `coast_sand_03` | Rob Tuytel | CC0 1.0 | 384² | `5ad8a4a8c1d9…` / `8077da9c61f0…` |
-| `jungle_floor` | `forrest_ground_01` | Rob Tuytel | CC0 1.0 | 384² | `80ac504545e9…` / `79d63c4f1c0c…` |
-| `caral_grass` | Caral remaster v2 | José Amaya | CC BY 4.0 | 512² | `f7b7168a92fa…` / `72080e535a95…` |
+| Slot             | Source              | Author             | Licence   | Size | Output SHA-256 (albedo / surface) |
+| ---------------- | ------------------- | ------------------ | --------- | ---- | --------------------------------- |
+| `grass`          | `grass_ground`      | Charlotte Baglioni | CC0 1.0   | 384² | `5b01845156e8…` / `501876e4b835…` |
+| `dirt`           | `brown_mud_02`      | Rob Tuytel         | CC0 1.0   | 384² | `b9ad3f28ed42…` / `4d61153de256…` |
+| `sand`           | `coast_sand_01`     | Rob Tuytel         | CC0 1.0   | 384² | `7615b9b2aeee…` / `2cdc74da9ec7…` |
+| `rock`           | `aerial_rocks_01`   | Rob Tuytel         | CC0 1.0   | 384² | `1f49ee03f780…` / `727d8e410858…` |
+| `snow`           | `snow_01`           | Rob Tuytel         | CC0 1.0   | 384² | `57e237cf34ea…` / `f163500254f4…` |
+| `puna_grass`     | `aerial_grass_rock` | Rob Tuytel         | CC0 1.0   | 384² | `0f2dd5dca801…` / `bb8cb86447d6…` |
+| `coastal_gravel` | `coast_sand_03`     | Rob Tuytel         | CC0 1.0   | 384² | `5ad8a4a8c1d9…` / `8077da9c61f0…` |
+| `jungle_floor`   | `forrest_ground_01` | Rob Tuytel         | CC0 1.0   | 384² | `80ac504545e9…` / `79d63c4f1c0c…` |
+| `caral_grass`    | Caral remaster v2   | José Amaya         | CC BY 4.0 | 512² | `f7b7168a92fa…` / `72080e535a95…` |
 
 All sources were retrieved on **2026-11-03**; `scripts/terrain-textures.json` stores the date, full source
 URLs, source hashes and output hashes per slot. The old AI-generated terrain albedos/normals/roughnesses are
@@ -134,6 +134,94 @@ slot is absent (offline / without assets).
 - **Confidence**: project-owned abstractions, not surveys or reconstructions of a specific
   standing building. Hashes and sizes are recorded in
   [`art-src/blender/mission-decor/README.md`](./art-src/blender/mission-decor/README.md).
+
+### Caral vegetation kit (huarango, sauce, caña brava, carrizo, totora)
+
+- **Location**: `src/assets/vegetation/caral/caral_<species>_lod0.glb` and `_lod1.glb`.
+- **Source**: generated in Blender by `scripts/blender/build_caral_vegetation_kit.py` (shapes shared
+  with the vertical-slice diorama, `scripts/blender/build_caral_slice.py`); the kit scene is saved to
+  `art-src/blender/scenes/caral_vegetation_kit.blend` (Git LFS). Uncompressed exports and per-species
+  manifests (triangles, draw calls, bounds, budget) live in `art-src/blender/exports/caral/vegetation/`;
+  the game copies were meshopt-compressed with `yarn art:models`.
+- **Content**: project-owned procedural geometry and a generated leaf-cluster texture; no third-party
+  scans or textures. LOD0/LOD1 stay within the art-direction budgets (huarango 1500/400, sauce 1200/350,
+  caña brava 600/150, carrizo 400/120, totora 400/120 tris).
+- **Runtime**: the huarango draws the `algarrobo` tree variant (both are _Prosopis_) and the willow the
+  `sauce` variant on every map; totora props everywhere; caña brava and carrizo only along the Supe in
+  m1. Procedural geometry remains the fallback until the GLBs load.
+- **Confidence**: species and zones documented in `docs/historia/campanas/caral.md`; shapes are stylized
+  (art-direction.md §7), not botanical surveys.
+
+### Caral fauna kit (deer, riparian bird)
+
+- **Location**: `src/assets/fauna/caral/caral_deer.glb` and `caral_bird.glb`.
+- **Source**: generated in Blender by `scripts/blender/build_caral_fauna_kit.py`; kit scene
+  `art-src/blender/scenes/caral_fauna_kit.blend` (Git LFS); uncompressed exports and manifests (parts,
+  pivots, triangles per animal) in `art-src/blender/exports/caral/fauna/`. `yarn art:models` compresses
+  them without joining nodes, because the game animates the named `body`/`leg`/`wing` parts.
+- **Content**: project-owned procedural geometry with per-vertex colour; deer 976 and bird 348 triangles
+  per animal (budget 5000). The procedural templates in `src/rendering/faunaModels.ts` share the pivots and
+  remain the fallback.
+- **Runtime**: only the m1 Caral valley plan (`planCaralValleyFauna`) places them: deer groups grazing on
+  dry riverside ground and bird flocks that lift and settle over the water's edge. Visual only.
+- **Confidence**: deer and birds in the Supe riparian forest are documented (Shady, in
+  `docs/historia/campanas/caral.md`); the bird species is not named there, so the model is a generic
+  small bird. Shapes are stylized.
+
+### Caral architecture kit (the Sacred City in use)
+
+- **Location**: `src/assets/architecture/caral/caral_<piece>_lod0.glb` and `_lod1.glb`: the Pyramid Mayor in
+  use and in three construction phases (`pyramid_mayor_phase1` foundation, `_phase2` fill, `_phase3`
+  finished), a smaller pyramid, the sunken circular plaza, common and elite quincha houses, an Áspero
+  fishing house, a fair tent and Áspero's Huaca de los Ídolos (`huaca_idolos`: three superposed terraces
+  with summit rooms; growth in phases with offerings documented, form and rooms assumed).
+- **Source**: generated in Blender by `scripts/blender/build_caral_architecture_kit.py`; kit scene
+  `art-src/blender/scenes/caral_architecture_kit.blend` (Git LFS). Uncompressed exports and per-piece
+  manifests (triangles, materials, bounds, budget, `confidence`, sources, review state) live in
+  `art-src/blender/exports/caral/architecture/`; the game copies were meshopt-compressed with
+  `yarn art:models`.
+- **Content**: project-owned procedural geometry, 8 Principled materials (plaster white/ochre/red,
+  stone, shicra, earth, wood, cane mat) with world-scale box-projected UVs and a per-vertex tint (grime at
+  the foot of terraces, worn bevels, mottling); the GLBs carry no textures. At runtime the game maps the
+  shared generated sets already in `src/assets/textures/materials/` (`wall_drystone` for set stone,
+  `roof_thatch` for shicra and cane, `wood`) and the project-generated `plaster_detail` set
+  (`scripts/art/make_plaster_detail.py`, procedural, 256 px, ~9 KB) onto plaster, floors and earth.
+  LOD0 ≤ 5000 and LOD1 ≤ 1500 triangles per piece.
+- **Runtime**: m1 assembles the city from `src/model/defs/caralCity.ts` and draws it in place of the ruins
+  GLB (`caral_site_lod*.glb`), which stays the fallback while the kit loads and then only keeps its
+  clickable heritage nodes (hidden); pathing uses the monuments' and the kit houses' blockers. Act III of
+  `docs/design/caral-model-mission.md` raises the Pyramid Mayor through its phase models
+  (`Game.setSitePhase`, `CaralCity.setMayorPhase`), the other monuments appear with their phase, Áspero
+  (the huaca and six fishing houses) stands on the shore from act I, and the fair tents go up once the
+  city is in use.
+- **Confidence** (per piece in the manifests; evidence in `docs/historia/campanas/caral.md` and
+  `docs/historia/civilizaciones/caral.md`): stepped superposed platforms, shicra fill, stone retaining
+  walls, painted plaster, sunken circular plazas, quincha houses, cotton nets and gourd floats and fair
+  tents are documented; the colour of each building and the layout on the game map are inferred; the
+  platform count and proportions, the summit enclosure, the side walls of the stairs and the parapets,
+  the set stone left visible at the foot of each terrace (a reading aid; the documented walls are
+  plastered), roofs, the net rack and the tent's frame and cover are assumed. No scaffolding is modelled because none is attested. The models are artistic
+  reconstructions, not surveys. Every piece was exported `reviewed: false` and approved by a human
+  review on 2026-11-07 (Miguel Amaya; `reviewer` and `reviewedAt` in each manifest). A rebuild exports
+  the piece unreviewed again.
+
+### Caral intro and act-card images (in-engine recreations)
+
+- **Location**: `public/media/caral/intro-{aspero,valle,obra,ciudad,sequia,partida}.webp` (960x540,
+  WebP q58, ~160 KB in total).
+- **Source**: captured from the game itself by `scripts/capture_caral_intro.mjs`. Each m1 scene is
+  staged through the debug harness (construction phase, drought, worker orders), rendered without the HUD
+  at 1600x900 and resized with `sharp`; the works and the drought use a low cinematic camera. Regenerate
+  them with `node scripts/capture_caral_intro.mjs` (one with `--only=ID`) after art changes.
+- **Runtime (menu)**: the menu reuses `intro-ciudad` as the pre-Inca campaign card and `intro-aspero` as
+  m1's art in the "Tu senda" card and the briefing, captioned as an engine recreation.
+- **Review**: approved by a human review on 2026-11-07 (Miguel Amaya), after re-framing the works and
+  the drought.
+- **Content**: project-owned game renders (terrain, architecture and vegetation kits listed above). They
+  are recreations of the game's own scenes: never historical photographs, and not Blender renders (so not
+  in `src/art/manifest.json`).
+- **Runtime**: m1's narrated intro (`MissionDef.intro`), the act II-IV chapter cards (`act` effect
+  `image`) and the victory epilogue backdrop (`MissionDef.epilogueImage`).
 
 ### Caral Pyramid Mayor modular scenery
 

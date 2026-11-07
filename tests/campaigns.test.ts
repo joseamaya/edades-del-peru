@@ -15,7 +15,15 @@ import {
   PREINCA_PROLOGUE,
   VIRREINATO_PROLOGUE,
 } from '../src/campaign/defs/cinematics';
-import { completedMissions, markMissionComplete, parseCampaignProgress } from '../src/campaign/progress';
+import {
+  completedMissions,
+  isCampaignUnlocked,
+  isMissionUnlocked,
+  markMissionComplete,
+  nextSeriesMission,
+  parseCampaignProgress,
+  seriesMissions,
+} from '../src/campaign/progress';
 
 describe('campaign series', () => {
   it('groups the saga into four campaigns', () => {
@@ -114,5 +122,35 @@ describe('campaign progress', () => {
     expect(completedMissions(parseCampaignProgress('not-json'), 'preinca')).toEqual([]);
     expect(completedMissions(parseCampaignProgress('2x'), 'preinca')).toEqual([]);
     expect(completedMissions(parseCampaignProgress('{"version":2,"completed":[]}'), 'preinca')).toEqual([]);
+  });
+});
+
+describe('sequential campaign unlocks', () => {
+  it('opens only Caral on a fresh profile', () => {
+    const fresh = parseCampaignProgress(null);
+    expect(isMissionUnlocked(fresh, 'm1_caral')).toBe(true);
+    expect(isMissionUnlocked(fresh, 'm2_chavin')).toBe(false);
+    expect(isCampaignUnlocked(fresh, 'preinca')).toBe(true);
+    expect(isCampaignUnlocked(fresh, 'inca')).toBe(false);
+    expect(nextSeriesMission(fresh)?.missionId).toBe('m1_caral');
+  });
+
+  it('opens the next mission, and the next campaign after its predecessor ends', () => {
+    let progress = markMissionComplete(parseCampaignProgress(null), 'preinca', 'm1_caral');
+    expect(isMissionUnlocked(progress, 'm2_chavin')).toBe(true);
+    expect(isMissionUnlocked(progress, 'm3_moche_recuay')).toBe(false);
+    for (const id of ['m2_chavin', 'm3_moche_recuay']) progress = markMissionComplete(progress, 'preinca', id);
+    expect(isCampaignUnlocked(progress, 'inca')).toBe(false);
+    progress = markMissionComplete(progress, 'preinca', 'm4_wari');
+    expect(isCampaignUnlocked(progress, 'inca')).toBe(true);
+    expect(isCampaignUnlocked(progress, 'virreinato')).toBe(false);
+    expect(nextSeriesMission(progress)?.missionId).toBe('m5_yahuar_pampa');
+    expect(isMissionUnlocked(progress, 'm1_caral')).toBe(true);
+  });
+
+  it('reports the end of the path', () => {
+    let progress = parseCampaignProgress(null);
+    for (const m of seriesMissions()) progress = markMissionComplete(progress, m.campaignId, m.missionId);
+    expect(nextSeriesMission(progress)).toBeNull();
   });
 });

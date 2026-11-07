@@ -1,0 +1,77 @@
+{
+  "asset_id": "caral_fair_tent",
+  "source_scene": "scenes/caral_architecture_kit.blend",
+  "script": "scripts/blender/build_caral_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "confidence": "assumed",
+  "sources": [
+    "docs/historia/campanas/caral.md",
+    "docs/historia/civilizaciones/caral.md"
+  ],
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": true,
+  "reviewer": "Miguel Amaya",
+  "reviewedAt": "2026-11-07T21:00:00.000Z",
+  "lods": {
+    "LOD0": {
+      "triangles": 158,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Arch_CaneMat",
+        "MAT-Arch_Wood"
+      ],
+      "bounds": {
+        "min": [
+          -2.1,
+          -1.9,
+          -0.02
+        ],
+        "max": [
+          2.1,
+          1.8,
+          2.65
+        ],
+        "size": [
+          4.2,
+          3.7,
+          2.67
+        ]
+      },
+      "file": "caral_fair_tent_lod0.glb",
+      "bytes": 17512
+    },
+    "LOD1": {
+      "triangles": 50,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Arch_CaneMat",
+        "MAT-Arch_Wood"
+      ],
+      "bounds": {
+        "min": [
+          -2.1,
+          -1.9,
+          0.0
+        ],
+        "max": [
+          2.1,
+          1.8,
+          2.65
+        ],
+        "size": [
+          4.2,
+          3.7,
+          2.65
+        ]
+      },
+      "file": "caral_fair_tent_lod1.glb",
+      "bytes": 6760
+    }
+  }
+}

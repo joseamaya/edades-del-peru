@@ -1,0 +1,66 @@
+{
+  "asset_id": "caral_totora",
+  "source_scene": "scenes/caral_vegetation_kit.blend",
+  "script": "scripts/blender/build_caral_vegetation_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "pivot": "trunk base at origin",
+  "budget": {
+    "LOD0": 400,
+    "LOD1": 120
+  },
+  "lods": {
+    "LOD0": {
+      "triangles": 360,
+      "draw_calls": 1,
+      "materials": [
+        "MAT-Kit_Reed"
+      ],
+      "bounds": {
+        "min": [
+          -1.0461,
+          -1.132,
+          -0.2032
+        ],
+        "max": [
+          1.2105,
+          1.1916,
+          2.2051
+        ],
+        "size": [
+          2.2566,
+          2.3236,
+          2.4083
+        ]
+      },
+      "file": "caral_totora_lod0.glb",
+      "bytes": 14384
+    },
+    "LOD1": {
+      "triangles": 72,
+      "draw_calls": 1,
+      "materials": [
+        "MAT-Kit_Reed"
+      ],
+      "bounds": {
+        "min": [
+          -0.8222,
+          -0.8832,
+          -0.2038
+        ],
+        "max": [
+          1.2105,
+          1.0396,
+          2.1875
+        ],
+        "size": [
+          2.0327,
+          1.9228,
+          2.3913
+        ]
+      },
+      "file": "caral_totora_lod1.glb",
+      "bytes": 4724
+    }
+  }
+}

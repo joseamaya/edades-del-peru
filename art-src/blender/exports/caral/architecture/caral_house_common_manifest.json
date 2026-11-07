@@ -1,0 +1,83 @@
+{
+  "asset_id": "caral_house_common",
+  "source_scene": "scenes/caral_architecture_kit.blend",
+  "script": "scripts/blender/build_caral_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "confidence": "inferred",
+  "sources": [
+    "docs/historia/campanas/caral.md",
+    "docs/historia/civilizaciones/caral.md"
+  ],
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": true,
+  "reviewer": "Miguel Amaya",
+  "reviewedAt": "2026-11-07T21:00:00.000Z",
+  "lods": {
+    "LOD0": {
+      "triangles": 596,
+      "draw_calls": 5,
+      "materials": [
+        "MAT-Arch_CaneMat",
+        "MAT-Arch_Earth",
+        "MAT-Arch_PlasterWhite",
+        "MAT-Arch_Stone",
+        "MAT-Arch_Wood"
+      ],
+      "bounds": {
+        "min": [
+          -2.794,
+          -2.2,
+          -0.309
+        ],
+        "max": [
+          4.779,
+          3.68,
+          3.015
+        ],
+        "size": [
+          7.573,
+          5.88,
+          3.324
+        ]
+      },
+      "file": "caral_house_common_lod0.glb",
+      "bytes": 60564
+    },
+    "LOD1": {
+      "triangles": 156,
+      "draw_calls": 4,
+      "materials": [
+        "MAT-Arch_CaneMat",
+        "MAT-Arch_Earth",
+        "MAT-Arch_PlasterWhite",
+        "MAT-Arch_Wood"
+      ],
+      "bounds": {
+        "min": [
+          -2.794,
+          -2.2,
+          -0.12
+        ],
+        "max": [
+          2.7,
+          2.6,
+          3.015
+        ],
+        "size": [
+          5.494,
+          4.8,
+          3.135
+        ]
+      },
+      "file": "caral_house_common_lod1.glb",
+      "bytes": 17816
+    }
+  },
+  "wall_height": 2.5
+}

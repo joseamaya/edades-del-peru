@@ -53,3 +53,48 @@ export function markMissionComplete(
     completed: { ...progress.completed, [campaignId]: [...current, missionId] },
   };
 }
+
+/** One playable mission on the series path, in play order. */
+export interface SeriesMission {
+  readonly campaignId: CampaignId;
+  readonly missionId: string;
+}
+
+/** Every released mission of the series in play order: campaign by campaign, mission by mission. */
+export function seriesMissions(): SeriesMission[] {
+  return CAMPAIGNS.filter((c) => c.status === 'available').flatMap((c) =>
+    c.releasedMissionIds.map((missionId) => ({ campaignId: c.id, missionId })),
+  );
+}
+
+export function isMissionCompleted(progress: CampaignProgress, missionId: string): boolean {
+  return Object.values(progress.completed).some((list) => list.includes(missionId));
+}
+
+/**
+ * The series is played in order: the first mission is open, and every other one opens once the mission
+ * before it on the path (the previous campaign's last mission, for a campaign's first) is completed. A
+ * completed mission always stays open to replay.
+ */
+export function isMissionUnlocked(progress: CampaignProgress, missionId: string): boolean {
+  const path = seriesMissions();
+  const index = path.findIndex((m) => m.missionId === missionId);
+  if (index < 0) return false;
+  if (index === 0 || isMissionCompleted(progress, missionId)) return true;
+  return isMissionCompleted(progress, path[index - 1].missionId);
+}
+
+/** A campaign is open once its first mission is. */
+export function isCampaignUnlocked(progress: CampaignProgress, campaignId: CampaignId): boolean {
+  const first = seriesMissions().find((m) => m.campaignId === campaignId);
+  return !!first && isMissionUnlocked(progress, first.missionId);
+}
+
+/** The first open mission not yet completed, or null once the whole path is done. */
+export function nextSeriesMission(progress: CampaignProgress): SeriesMission | null {
+  return (
+    seriesMissions().find(
+      (m) => isMissionUnlocked(progress, m.missionId) && !isMissionCompleted(progress, m.missionId),
+    ) ?? null
+  );
+}

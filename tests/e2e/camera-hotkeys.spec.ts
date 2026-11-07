@@ -40,7 +40,8 @@ test('the tech tree opens from the match', { tag: '@smoke' }, async ({ page }) =
   await boot(page);
   await page.evaluate(() => (window as unknown as { game: any }).game.hud.showTechTree());
   await expect(page.locator('#ed-tech-tree')).toBeVisible();
-  await expect(page.locator('#ed-tech-tree .ed-tree-era')).toHaveCount(6);
+  // In a match the tree lists only the current era of this civilization and mission.
+  await expect(page.locator('#ed-tech-tree .ed-tree-era')).toHaveCount(1);
 });
 
 test('command panels show and respond to their keyboard binding', { tag: '@smoke' }, async ({ page }) => {

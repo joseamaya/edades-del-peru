@@ -53,6 +53,23 @@ export function buildTerrainSplat(
       const noisyHeight = h + heightJitter;
       const noisySlope = Math.min(1, Math.max(0, slope + slopeJitter));
 
+      const painted = data.getAuthoredGround(wx, wz);
+      if (painted) {
+        // Authored sites paint their own zones; jitter and slope only break up the borders.
+        const j = heightJitter * 0.18;
+        const steep = smoothstep(0.35, 0.7, noisySlope);
+        const w = [
+          Math.max(0, painted[0] + j) * (1 - steep),
+          Math.max(0, painted[1] - j * 0.5) * (1 - steep),
+          Math.max(0, painted[2] - j * 0.5) * (1 - steep),
+          painted[3] * (1 - steep) + steep,
+        ];
+        const total = Math.max(1e-6, w[0]! + w[1]! + w[2]! + w[3]!);
+        const i = (z * size + x) * 4;
+        for (let c = 0; c < 4; c++) out[i + c] = Math.round((w[c]! / total) * 255);
+        continue;
+      }
+
       const sandNear = 1 - smoothstep(water + 0.2, water + 1.8, noisyHeight);
       const sandArid = aridity * (1 - smoothstep(6, 10, noisyHeight));
       let sand = Math.max(sandNear, sandArid);

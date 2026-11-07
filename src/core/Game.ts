@@ -2,7 +2,11 @@ import * as THREE from 'three';
 import { bus } from './EventBus';
 import { createRenderer, createPostFX } from '../rendering/Renderer';
 import { PostFX } from '../rendering/PostFX';
+import { SHADOW_MAP_SIZE } from '../rendering/shadowFrame';
 import { Sky } from '../rendering/Sky';
+import type { CaralCity } from '../rendering/architectureKit';
+import { standsAt, type CaralMayorPhase } from '../model/defs/caralCity';
+import { CARAL_HERITAGE_SINCE } from '../model/defs/sites';
 import { Terrain } from '../rendering/Terrain';
 import { HeadlessTerrain } from '../sim/HeadlessTerrain';
 import { Water } from '../rendering/Water';
@@ -21,7 +25,9 @@ import { Building } from '../entities/Building';
 import { ResourceNode } from '../entities/ResourceNode';
 import { clearResourceCaches } from '../rendering/ResourceNodeView';
 import { OrderMarkers } from '../entities/OrderMarker';
-import { TreeInstances } from '../rendering/TreeInstances';
+import { TreeInstances, kitLod0RadiusFor } from '../rendering/TreeInstances';
+import { isCoastalRegion } from '../rendering/vegetationKit';
+import { attachVegetationKit } from '../rendering/vegetationKitLoader';
 import { Props } from '../rendering/Props';
 import { GroundCover } from '../rendering/GroundCover';
 import { Wildlife } from '../rendering/Wildlife';
@@ -109,7 +115,10 @@ export function setAutoStart(value: boolean): void {
 
 /** Campaign intro flyover framing, relative to the player base. */
 const INTRO_CAMERA = { offset: 34, fromHeight: 52, toZoom: 30, seconds: 2.6 } as const;
+/** How long m1's drought takes to dry the valley out. */
+const DROUGHT_SECONDS = 40;
 /** Keep guaranteed fishing searches inside the authored river and map edge. */
+
 export class Game {
   renderer!: THREE.WebGLRenderer;
   scene = new THREE.Scene();
@@ -147,6 +156,17 @@ export class Game {
   landmark: THREE.Group | null = null;
   private landmarkOwnsStatic = false;
   landmarkLoadToken = 0;
+  /** The Caral Sacred City in use (architecture kit), when the mission site is Caral. */
+  caralCity: CaralCity | null = null;
+  /** Drought of m1's act IV: 0 = the green valley, 1 = dried out (rises over DROUGHT_SECONDS). */
+  droughtLevel = 0;
+  private droughtTarget = 0;
+  private droughtShown = -1;
+  private droughtFarmsHit = false;
+  private droughtGroveCut = false;
+  private droughtBaseAtmosphere: MissionAtmosphere | undefined;
+  /** Construction phase of the authored site's main monument (mission-driven; the city follows it). */
+  sitePhase: CaralMayorPhase = 'in_use';
   setpieceLoadToken = 0;
   /** Cultural landscape (roads, fields, plazas, canals); visual only. */
   landscape: CulturalLandscape | null = null;
@@ -257,9 +277,12 @@ export class Game {
     replay: Replay | null = null,
     forceCinematic = false,
     headless = false,
+    /** False skips the mission's narrated intro and opening flight (?intro=0, ?noloop=1). */
+    intro = true,
   ) {
     this.forceCinematic = forceCinematic;
     this.headless = headless;
+    this.introEnabled = intro;
     this.settings = { ...DEFAULT_SETTINGS, ...settings };
     this.pendingSnapshot = snapshot;
     this.replay = replay ? new ReplayPlayer(replay) : null;
@@ -466,6 +489,7 @@ export class Game {
       this.canalOpen = canal.initiallyOpen ?? false;
     }
     this.sky = new Sky(this.scene);
+    this.sky.setShadowMapSize(SHADOW_MAP_SIZE[this.softwareFallback ? 'low' : this.settings.quality]);
     // No atmospheric fog over the board: classic RTS look, sharp.
     this.scene.fog = null;
     this.setTimeOfDay(s.timeOfDay);
@@ -476,6 +500,8 @@ export class Game {
       this.mapProfile.water.level,
       this.mapProfile.water.inland,
     );
+    const waterPalette = this.siteDef?.terrain?.water;
+    if (waterPalette) this.water.setPalette(waterPalette);
     this.world.applyAtmosphere();
     this.postfx.setColorGrade(resolveColorGrade(s.period, this.mapProfile));
     this.syncWaterRefractionSize();
@@ -484,6 +510,10 @@ export class Game {
     this.markers = new OrderMarkers(this.scene);
     this.trees = new TreeInstances(this.scene);
     this.props = new Props(this.scene);
+    if (!this.headless) {
+      this.trees.kitLod0Radius = kitLod0RadiusFor(this.softwareFallback || this.settings.quality === 'low');
+      void attachVegetationKit(this.trees, this.props, isCoastalRegion(this.mapProfile.region));
+    }
     this.wildlife = new Wildlife(this.scene);
     this.fow = new Fow(s.mapSize, 128);
     this.fowTexture = new FowTexture(this.fow);
@@ -945,6 +975,137 @@ export class Game {
   startAssembly(): boolean {
     return this.selection.startAssembly();
   }
+  /**
+   * Start the drought that closes Caral (act IV): the valley dries in patches, the haze turns to dust,
+   * the fields lose half their remaining harvest and part of the riverside grove dies. `instant` restores
+   * it at once (loaded saves).
+   */
+  startDrought(instant = false): void {
+    this.droughtTarget = 1;
+    this.droughtBaseAtmosphere ??= this.missionAtmosphere;
+    if (instant) {
+      // A loaded save already holds the halved harvests and the dead trees: only the look is restored.
+      this.droughtFarmsHit = true;
+      this.droughtGroveCut = true;
+      this.droughtLevel = 1;
+      this.applyDrought();
+    }
+  }
+
+  private lifeTimer = 0;
+  private lifeTurn = 0;
+
+  /**
+   * The city in use (presentation only): cooking smoke behind the dwellings near the camera, the sacred
+   * fire on the Pyramid Mayor once it is in use, and a large blaze while the community gathers for the
+   * act III fire offering. Cooking pits and sacred-fire altars are documented in the dossier.
+   */
+  updateCityLife(dt: number): void {
+    const city = this.caralCity;
+    if (!city || this.headless) return;
+    this.lifeTimer += dt;
+    if (this.lifeTimer < 0.35) return;
+    this.lifeTimer = 0;
+    this.lifeTurn++;
+    const focus = this.camera.getTarget();
+    const near = city
+      .standingHouses()
+      .filter((h) => Math.hypot(h.x - focus.x, h.z - focus.z) < 70)
+      .slice(0, 24);
+    if (near.length) {
+      const house = near[this.lifeTurn % near.length]!;
+      this.particles.emit({
+        x: house.x + 1.6,
+        y: this.terrain.getHeight(house.x, house.z) + 1.2,
+        z: house.z + 2.4,
+        count: 2,
+        color: 0x8a847a,
+        kind: 'smoke',
+        speed: 0.7,
+        life: 3.2,
+        size: 1.6,
+        grow: 1.6,
+      });
+    }
+    // Surf grows louder as the camera nears the sea on the west edge of the transect.
+    this.audio.setSurf?.(1 - Math.max(0, Math.min(1, (focus.x - 18) / 45)));
+    const mayor = this.siteDef?.anchor;
+    if (!mayor) return;
+    const offering = this.mission?.getObjectiveState('a3_fuego') === 'activo';
+    if (this.sitePhase === 'in_use' || offering) {
+      const top = offering
+        ? { x: mayor.x, y: this.terrain.getHeight(mayor.x, mayor.z + 32) + 0.4, z: mayor.z + 32 }
+        : { x: mayor.x, y: this.terrain.getHeight(mayor.x, mayor.z) + 16.6, z: mayor.z };
+      this.particles.emit({
+        ...top,
+        count: offering ? 6 : 2,
+        color: 0xff8a2a,
+        kind: 'fire',
+        speed: 0.9,
+        life: 0.9,
+        size: offering ? 1.8 : 1,
+      });
+      this.particles.emit({
+        ...top,
+        count: 1,
+        color: 0x6e6860,
+        kind: 'smoke',
+        speed: 1.1,
+        life: 3,
+        size: 1.8,
+        grow: 1.4,
+      });
+    }
+  }
+
+  updateDrought(dt: number): void {
+    if (this.droughtLevel >= this.droughtTarget) return;
+    this.droughtLevel = Math.min(this.droughtTarget, this.droughtLevel + dt / DROUGHT_SECONDS);
+    this.applyDrought();
+  }
+
+  private applyDrought(): void {
+    const level = this.droughtLevel;
+    if (level >= 0.3 && !this.droughtFarmsHit) {
+      this.droughtFarmsHit = true;
+      for (const b of this.buildings.values()) if (b.isFarm && !b.dead) b.foodAmount = Math.round(b.foodAmount * 0.5);
+    }
+    if (level >= 0.6 && !this.droughtGroveCut) {
+      this.droughtGroveCut = true;
+      // Deterministic: about one tree in three dies, in the same places on every run.
+      for (const node of this.resourceNodes.values()) {
+        if (node.kind === 'tree' && !node.dead && !node.depleted && node.id % 3 === 0) node.subtract(node.amount);
+      }
+    }
+    if (this.headless) return;
+    if (Math.abs(level - this.droughtShown) < 0.04 && level < 1) return;
+    this.droughtShown = level;
+    (this.terrain as { setDrought?(f: number): void }).setDrought?.(level);
+    this.water.setLevelOffset(-0.75 * level);
+    const base = this.droughtBaseAtmosphere ?? {};
+    const mix = (a: number, b: number) => a + (b - a) * level;
+    const sky = new THREE.Color(base.skyTint ?? '#cdd3d2').lerp(new THREE.Color('#d9c49a'), level);
+    this.missionAtmosphere = {
+      fogDensity: mix(base.fogDensity ?? 0.0015, 0.0028),
+      skyTint: `#${sky.getHexString()}`,
+      sunWarmth: mix(base.sunWarmth ?? 0.9, 1.15),
+    };
+    this.world.applyAtmosphere();
+  }
+
+  setSitePhase(phase: CaralMayorPhase): void {
+    this.sitePhase = phase;
+    this.caralCity?.setMayorPhase(phase);
+    this.world.syncSitePhase(phase);
+  }
+
+  /** Whether a heritage building already stands (m1 raises its monuments phase by phase). */
+  heritageStanding(id: HeritageBuildingId): boolean {
+    return standsAt({ since: CARAL_HERITAGE_SINCE[id] }, this.sitePhase);
+  }
+  deliverToHeritage(id: HeritageBuildingId): boolean {
+    return this.selection.deliverToHeritage(id);
+  }
   makeOffering(id: HeritageBuildingId): boolean {
     return this.selection.makeOffering(id);
   }
@@ -1110,12 +1271,15 @@ export class Game {
 
   /** Spend and create a building for player 0 (worker assignment is a separate order). */
   private placeBuilding(kind: BuildingKind, x: number, z: number): Building | null {
+    if (!this.canBuildKind(kind)) return null;
     const stats = getBuildingStats(kind, this.players[0].era);
     if (!this.canPlace(x, z, stats.size)) return null;
     if (!this.spendResource(0, stats.cost)) return null;
     const b = new Building(kind, 0, this.players[0].era);
     b.pos.set(x, this.terrain.getHeight(x, z), z);
     this.applyTerrainFarmYield(b);
+    // A field sown during the drought starts with half a harvest (placement only, never on load).
+    if (this.droughtFarmsHit && b.isFarm) b.foodAmount = Math.round(b.foodAmount * 0.5);
     this.attachBuilding(b);
     b.beginConstruction();
     if (BUILDING_DEFS[kind].instant) b.completeInstantly();
@@ -1376,7 +1540,9 @@ export class Game {
       else disposeModel(this.landmark);
       this.landmark = null;
       this.landmarkOwnsStatic = false;
+      this.caralCity = null;
     }
+    this.sitePhase = 'in_use';
     if (this.landscape) {
       this.scene.remove(this.landscape.group);
       this.landscape.dispose();
@@ -1547,6 +1713,8 @@ export class Game {
    */
   canBuildKind(kind: BuildingKind): boolean {
     if (kind === BuildingKind.CENTER) return false;
+    const allowed = this.mission?.def.allowedBuildings;
+    if (allowed && !allowed.includes(kind)) return false;
     if (kind === BuildingKind.WONDER) return this.settings.victoryMode === 'wonder';
     return this.players[0].era >= BUILDING_DEFS[kind].minEra;
   }

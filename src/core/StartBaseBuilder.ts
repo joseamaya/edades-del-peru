@@ -31,7 +31,10 @@ export class StartBaseBuilder {
         this.game.registerObstacle(b);
       },
     });
-    this.game.world.addSettlementOverlay(plan);
+    // Caral draws no decal plots around the base: the authored ground paints fertile soil and grass, and
+    // the player's chacras are the only fields (flat overlays read as stickers on the terrain).
+    const caralGround = this.game.siteDef?.environs?.valley === 'caral';
+    this.game.world.addSettlementOverlay(caralGround ? { ...plan, fields: [] } : plan);
     const civ = this.game.players[player].civ;
     if (civ === CivId.CARAL || civ === CivId.CHAVIN) {
       this.game.world.addSettlementDressing(plan, player, civ === CivId.CHAVIN ? 'chavin' : 'caral');

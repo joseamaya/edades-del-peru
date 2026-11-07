@@ -2,7 +2,14 @@ import type { AuthoredHeightField } from './authoredTerrain';
 import type { GroundPbrSlot } from './profiles';
 import type { TerrainPaletteId } from './terrainPalettes';
 import type { HeritageBuildingId } from './heritage';
-import { CARAL_HEIGHTMAP, CARAL_HEIGHTMAP_SIZE, CARAL_HEIGHTMAP_WORLD_SIZE } from './caralHeightmap';
+import type { CaralMayorPhase } from './caralCity';
+import {
+  CARAL_GROUND,
+  CARAL_GROUND_SIZE,
+  CARAL_HEIGHTMAP,
+  CARAL_HEIGHTMAP_SIZE,
+  CARAL_HEIGHTMAP_WORLD_SIZE,
+} from './caralHeightmap';
 import { CHAVIN_HEIGHTMAP, CHAVIN_HEIGHTMAP_SIZE, CHAVIN_HEIGHTMAP_WORLD_SIZE } from './chavinHeightmap';
 import { MOCHE_HEIGHTMAP, MOCHE_HEIGHTMAP_SIZE, MOCHE_HEIGHTMAP_WORLD_SIZE } from './mocheHeightmap';
 import { WARI_HEIGHTMAP, WARI_HEIGHTMAP_SIZE, WARI_HEIGHTMAP_WORLD_SIZE } from './wariHeightmap';
@@ -47,6 +54,8 @@ export interface SiteBlocker {
   z: number;
   w: number;
   d: number;
+  /** First construction phase in which it stands (m1's growing city); omitted means from the start. */
+  since?: CaralMayorPhase;
 }
 
 export interface SiteKeepoutRect {
@@ -81,6 +90,8 @@ export interface SiteTerrainStyle {
   suppressSnow: boolean;
   valleyHaze: boolean;
   moisture: SiteTerrainMoisture;
+  /** Optional sea/river colours (art-direction palette) and sun sheen. */
+  water?: { deep: string; shallow: string; sheen: number; foam: number; fog: number; refraction: number };
 }
 
 export interface SiteEnvirons {
@@ -142,11 +153,26 @@ export const DEFAULT_SITE_TERRAIN: SiteTerrainStyle = {
 /** Uniform source-to-game scale for the Ciudades Sagradas Caral remaster. */
 export const CARAL_SITE_SCALE = 0.25;
 
-/** Source origin in game coordinates; the Great Pyramid ends at (100, 30). */
-export const CARAL_SITE_ORIGIN = { x: 100, z: 69.2 } as const;
+/**
+ * The Sacred City sits on the east of the Supe-valley transect (scripts/build_caral_heightmap.py): its
+ * monuments keep the layout of the former 192 m site map, shifted east by this offset so the sea, Áspero
+ * and the lower valley fit west of it.
+ */
+export const CARAL_CITY_OFFSET_X = 64;
+
+/** World size of the m1 transect map. */
+export const CARAL_MAP_SIZE = 256;
+
+/** Shift a point given in the former 192 m site frame into the transect map. */
+export function caralCityPoint<T extends { x: number }>(p: T): T {
+  return { ...p, x: p.x + CARAL_CITY_OFFSET_X };
+}
+
+/** Source origin in game coordinates; the Great Pyramid ends at (164, 30). */
+export const CARAL_SITE_ORIGIN = caralCityPoint({ x: 100, z: 69.2 });
 
 /** Objective anchor at the Great Pyramid. */
-export const CARAL_SITE_ANCHOR = { x: 100, z: 30 } as const;
+export const CARAL_SITE_ANCHOR = caralCityPoint({ x: 100, z: 30 });
 
 /** Opening framing: wide enough to read the valley, the base and the city. */
 export const CARAL_SITE_CAMERA = { height: 54 } as const;
@@ -154,38 +180,71 @@ export const CARAL_SITE_CAMERA = { height: 54 } as const;
 export type CaralHeritageProxy = SiteHeritageProxy;
 
 /** Invisible raycast volumes for the authored site's named heritage nodes. */
-export const CARAL_HERITAGE_PROXIES: readonly CaralHeritageProxy[] = [
-  { id: 'caral_pyramid_mayor', x: 100, z: 30, w: 43.4, d: 39.8, h: 8.5 },
-  { id: 'caral_pyramid_central', x: 67.5, z: 57.5, w: 18, d: 23, h: 8 },
-  { id: 'caral_pyramid_quarry', x: 75, z: 80, w: 17, d: 11, h: 6 },
-  { id: 'caral_pyramid_lesser', x: 135, z: 20, w: 13, d: 11, h: 6 },
-  { id: 'caral_pyramid_gallery', x: 132.5, z: 45, w: 18, d: 17, h: 12 },
-  { id: 'caral_pyramid_huanca', x: 132.5, z: 67.5, w: 14, d: 13, h: 8 },
-  { id: 'caral_anfiteatro', x: 100, z: 151.65, w: 37.6, d: 22.5, h: 11 },
-];
+export const CARAL_HERITAGE_PROXIES: readonly CaralHeritageProxy[] = (
+  [
+    // h follows the architecture kit's Pyramid Mayor (6 terraces, ~8.7 people; art-direction §3).
+    { id: 'caral_pyramid_mayor', x: 100, z: 30, w: 43.4, d: 39.8, h: 16.2 },
+    { id: 'caral_pyramid_central', x: 67.5, z: 57.5, w: 18, d: 23, h: 8 },
+    { id: 'caral_pyramid_quarry', x: 75, z: 80, w: 17, d: 11, h: 6 },
+    { id: 'caral_pyramid_lesser', x: 135, z: 20, w: 13, d: 11, h: 6 },
+    { id: 'caral_pyramid_gallery', x: 132.5, z: 45, w: 18, d: 17, h: 12 },
+    { id: 'caral_pyramid_huanca', x: 132.5, z: 67.5, w: 14, d: 13, h: 8 },
+    { id: 'caral_anfiteatro', x: 100, z: 151.65, w: 37.6, d: 22.5, h: 11 },
+  ] as const
+).map((p) => caralCityPoint<CaralHeritageProxy>(p));
+
+/** Áspero's Huaca de los Ídolos, on the coast west of the city (matches ASPERO_HUACA in caralCity.ts). */
+export const ASPERO_HERITAGE_PROXY: CaralHeritageProxy = {
+  id: 'aspero_huaca_idolos',
+  x: 40,
+  z: 148,
+  w: 21.2,
+  d: 18.8,
+  h: 8.25,
+};
 
 /** The circular altar is solid but has no heritage click proxy. */
-export const CARAL_CIRCULAR_ALTAR = { x: 72.5, z: 144.55, w: 10.6, d: 7.7 };
+export const CARAL_CIRCULAR_ALTAR = caralCityPoint({ x: 72.5, z: 144.55, w: 10.6, d: 7.7 });
 
 /** Extra clearance around solid monument AABBs for unit footprints. */
 export const CARAL_SITE_BLOCKER_PADDING = 0.5;
 
+/**
+ * Phase from which each Caral monument stands (matches the `since` of its kit placement in caralCity.ts):
+ * until then it neither blocks units nor answers clicks. The Pyramid Mayor and Áspero stand throughout.
+ */
+export const CARAL_HERITAGE_SINCE: Partial<Record<HeritageBuildingId, CaralMayorPhase>> = {
+  caral_pyramid_central: 'finished',
+  caral_pyramid_quarry: 'finished',
+  caral_pyramid_lesser: 'finished',
+  caral_pyramid_gallery: 'finished',
+  caral_pyramid_huanca: 'finished',
+  caral_anfiteatro: 'in_use',
+};
+
 export const CARAL_SITE_BLOCKERS: readonly SiteBlocker[] = [
-  ...CARAL_HERITAGE_PROXIES.map(({ x, z, w, d }) => ({ x, z, w, d })),
-  CARAL_CIRCULAR_ALTAR,
+  ...CARAL_HERITAGE_PROXIES.map(({ id, x, z, w, d }) => ({ x, z, w, d, since: CARAL_HERITAGE_SINCE[id] })),
+  { x: ASPERO_HERITAGE_PROXY.x, z: ASPERO_HERITAGE_PROXY.z, w: ASPERO_HERITAGE_PROXY.w, d: ASPERO_HERITAGE_PROXY.d },
+  { ...CARAL_CIRCULAR_ALTAR, since: 'in_use' },
 ];
 
 /**
- * Normalized construction exclusion over the Upper Half, residential fabric,
- * the gap between both halves, and the Lower Half. The Caral Bajo base at
- * (0.315, 0.84) stays outside it.
+ * Normalized construction exclusion over the Upper Half, residential fabric, the gap between both
+ * halves, and the Lower Half (given in the former 192 m frame, re-normalised to the transect map).
+ * The player's Áspero base on the coast stays well outside it.
  */
 export const CARAL_SITE_BUILD_KEEPOUT: readonly SiteKeepoutRect[] = [
   { x: 0.5216, z: 0.2583, rx: 0.2174, rz: 0.1885 },
   { x: 0.5078, z: 0.501, rx: 0.2474, rz: 0.1833 },
   { x: 0.5328, z: 0.7102, rx: 0.138, rz: 0.0268 },
   { x: 0.5328, z: 0.7992, rx: 0.138, rz: 0.0612 },
-];
+].map((r) => caralKeepout(r));
+
+/** Re-normalise a rectangle given in the former 192 m site frame to the transect map. */
+export function caralKeepout(r: SiteKeepoutRect): SiteKeepoutRect {
+  const k = 192 / CARAL_MAP_SIZE;
+  return { x: r.x * k + CARAL_CITY_OFFSET_X / CARAL_MAP_SIZE, z: r.z * k, rx: r.rx * k, rz: r.rz * k };
+}
 
 export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
   caral_site: {
@@ -200,21 +259,24 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       size: CARAL_HEIGHTMAP_SIZE,
       worldSize: CARAL_HEIGHTMAP_WORLD_SIZE,
       heights: CARAL_HEIGHTMAP,
+      ground: { size: CARAL_GROUND_SIZE, weights: CARAL_GROUND },
     },
     pathCellSize: 1,
-    heritageProxies: CARAL_HERITAGE_PROXIES,
+    heritageProxies: [...CARAL_HERITAGE_PROXIES, ASPERO_HERITAGE_PROXY],
     blockers: CARAL_SITE_BLOCKERS,
     blockerPadding: CARAL_SITE_BLOCKER_PADDING,
     buildKeepout: CARAL_SITE_BUILD_KEEPOUT,
+    // No wall collision from the ruins GLB: m1 draws the city in use (architecture kit), whose houses
+    // block through CARAL_CITY_BLOCKERS; walls taken from the hidden ruins would be invisible obstacles.
     wallCollision: {
-      meshPatterns: [/Infra_(Residential|LowerHalf|UpperHalf|Props)/, /AltarCircular$/],
+      meshPatterns: [],
       maxStartYAboveBase: 1.2,
     },
     terrain: {
       ...DEFAULT_SITE_TERRAIN,
       palette: 'caral',
       pbr: {
-        grass: 'caral_grass',
+        grass: 'grass',
         dirt: 'dirt',
         sand: 'sand',
         rock: 'rock',
@@ -223,6 +285,8 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       flatNormals: false,
       suppressSnow: true,
       valleyHaze: true,
+      // art-direction §4: sea #3f5f5c -> #24413f, darkened for the high coastal sun.
+      water: { deep: '#0f2a2e', shallow: '#2a5652', sheen: 0.15, foam: 0.12, fog: 0.3, refraction: 0.2 },
     },
     environs: {
       valley: 'caral',

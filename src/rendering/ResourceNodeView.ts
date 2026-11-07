@@ -1,10 +1,12 @@
 import * as THREE from 'three';
+import { mergeStaticByMaterial } from './mergeStatic';
 import { RNG, cosmeticRandom, weightedPick } from '../util/rng';
 import { MaterialTex } from './Textures';
 import { applyGeneratedPbr } from './Biomes';
 import { TreeInstances, type TreeVariant } from './TreeInstances';
 import { HuntHerd } from './HuntHerd';
 import type { ResourceNode } from '../entities/ResourceNode';
+import { WATER_LEVEL } from '../model/defs/profiles';
 
 // Shared caches: geometries and materials reused between nodes (fewer draw calls and GC).
 const geoCache = new Map<string, THREE.BufferGeometry>();
@@ -43,6 +45,11 @@ function cardGeo(w: number, h: number): THREE.PlaneGeometry {
     geoCache.set(key, g);
   }
   return g;
+}
+
+function geoCacheHas(g: THREE.BufferGeometry): boolean {
+  for (const cached of geoCache.values()) if (cached === g) return true;
+  return false;
 }
 
 const matCache = new Map<string, THREE.MeshStandardMaterial>();
@@ -143,6 +150,7 @@ export class ResourceNodeView {
     this.view.traverse((o) => {
       if (o.userData.sway) this.swayParts.push(o);
     });
+    this.mergeStaticParts();
     this.scene.add(this.view);
   }
 
@@ -315,14 +323,39 @@ export class ResourceNodeView {
   }
 
   private buildFish(rng: RNG): void {
-    const fishMat = mat('fish', { color: '#9aa7b5', metalness: 0.5, roughness: 0.4, emissive: 0x0a1418 });
+    // Fishing nodes sit at y = 0 on the bed; the shoal glints just under the surface so it reads through
+    // dark or murky water, and a ring of ripples marks the ground from the RTS camera. One translucent
+    // material keeps each fishing ground at a single draw call.
+    let shoalMat = matCache.get('fish-shoal');
+    if (!shoalMat) {
+      shoalMat = new THREE.MeshStandardMaterial({
+        color: '#dfeae8',
+        transparent: true,
+        opacity: 0.55,
+        depthWrite: false,
+        roughness: 0.6,
+        metalness: 0.2,
+        side: THREE.DoubleSide,
+      });
+      matCache.set('fish-shoal', shoalMat);
+    }
+    const surface = WATER_LEVEL - (this.node.pos.y ?? 0);
     for (let i = 0; i < 5; i++) {
-      const fish = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.5, 6), fishMat);
+      const fish = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.5, 6), shoalMat);
       fish.rotation.x = -Math.PI / 2;
       fish.rotation.z = Math.PI / 2;
-      fish.position.set(rng.range(-1.4, 1.4), -0.2, rng.range(-1.4, 1.4));
+      fish.position.set(rng.range(-1.4, 1.4), surface - 0.12, rng.range(-1.4, 1.4));
       fish.rotation.y = rng.range(0, 3);
       this.add(fish, false, false);
+    }
+    for (const [r, w] of [
+      [1.5, 0.12],
+      [2.3, 0.08],
+    ] as const) {
+      const ring = new THREE.Mesh(new THREE.RingGeometry(r - w, r, 28), shoalMat);
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.y = surface + 0.06;
+      this.add(ring, false, false);
     }
   }
 
@@ -350,6 +383,21 @@ export class ResourceNodeView {
       berry.position.set(rng.range(-0.5, 0.5), 0.3 + rng.range(0, 0.4), rng.range(-0.5, 0.5));
       this.add(berry);
     }
+  }
+
+  /**
+   * Merge the node's static pieces per material (a quarry is 7 rocks, 3 blocks and a floor; a berry
+   * bush 8 berries): one draw call per material instead of one per piece, in the main and the shadow
+   * pass. Swaying groups merge on their own so they keep swaying; cached geometries stay alive.
+   */
+  private mergeStaticParts(): void {
+    const sways = (mesh: THREE.Mesh): boolean => {
+      for (let o = mesh.parent; o && o !== this.view; o = o.parent) if (o.userData.sway) return true;
+      return false;
+    };
+    const unshared = (g: THREE.BufferGeometry): boolean => !geoCacheHas(g);
+    mergeStaticByMaterial(this.view, sways, unshared);
+    for (const part of this.swayParts) mergeStaticByMaterial(part, () => false, unshared);
   }
 
   /** Register the tree instance once its height (y) is known. */
@@ -424,6 +472,10 @@ export class ResourceNodeView {
     }
     this.huntHerd?.dispose();
     this.huntHerd = null;
+    // The merged geometries are the only ones this view owns (pieces use shared, cached geometry).
+    this.view.traverse((o) => {
+      if ((o as THREE.Mesh).isMesh && o.name.startsWith('merged:')) (o as THREE.Mesh).geometry.dispose();
+    });
     this.scene.remove(this.view);
   }
 }

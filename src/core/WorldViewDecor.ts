@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import type { TerrainData } from '../sim/TerrainData';
 import { CulturalLandscape } from '../rendering/CulturalLandscape';
 import { SacredCity } from '../rendering/SacredCity';
 import { applyFowToObject } from '../rendering/FowMaterial';
@@ -6,9 +7,24 @@ import { ResourceNode } from '../entities/ResourceNode';
 import { disposeStaticGltf } from '../rendering/StaticModel';
 import { loadSceneryModel } from '../rendering/sceneryModels';
 import { loadSiteModel } from '../rendering/siteModels';
+import { mergeStaticByMaterial } from '../rendering/mergeStatic';
+import { CaralCity } from '../rendering/architectureKit';
+import {
+  ASPERO_BLOCKERS,
+  ASPERO_LAYOUT,
+  CARAL_FAIR_TENTS,
+  SUPE_HAMLETS,
+  SUPE_HAMLET_BLOCKERS,
+  CARAL_CITY_BLOCKERS,
+  CARAL_CITY_LAYOUT,
+  standsAt,
+  type CaralMayorPhase,
+} from '../model/defs/caralCity';
+import type { Obstacle } from '../game/Pathfinding';
 import { loadDecorModel } from '../rendering/decorModels';
 import { planProps, propCountFor } from '../model/defs/props';
 import { planWildlife, faunaCountFor } from '../model/defs/wildlife';
+import { attachFaunaKit } from '../rendering/faunaKit';
 import { BuildingKind } from '../core/types';
 import { getCiv } from '../model/defs/civs';
 import type { MissionSite } from '../campaign/types';
@@ -24,20 +40,27 @@ import { planSettlementDressing } from '../model/defs/settlementDressing';
 import {
   CARAL_VALLEY_PATH_WIDTH,
   planCaralValley,
+  planCaralCoastFauna,
+  planCaralValleyFauna,
   planCaralValleyProps,
   type CaralValleyPlan,
   type CaralValleyQuery,
 } from '../model/defs/caralValley';
 import { distance2D, distanceToSegment } from '../util/math';
 import { RNG, weightedPick } from '../util/rng';
-import { type AuthoredSiteDef, type SiteHeritageProxy } from '../model/defs/sites';
+import { type AuthoredSiteDef, type SiteBlocker, type SiteHeritageProxy } from '../model/defs/sites';
 import { getMission } from '../campaign/defs/campaign';
 
 const AMBIENT_PROP_SEED = 7;
 const AMBIENT_FAUNA_SEED = 13;
 const FISHING_SCAN_MARGIN = 4;
+/** Authored maps keep tree clusters this far from the mission's start base. */
+const GROVE_START_CLEARANCE = 72;
 
 /** World/mission decoration and opening spawns. Transitional host while Game is decomposed. */
+/** Riparian fauna roosts keep this far from trees (crown radius plus their grazing orbit). */
+const FAUNA_TREE_CLEARANCE = 7;
+
 export class WorldViewDecor {
   constructor(private readonly game: any) {}
 
@@ -64,17 +87,15 @@ export class WorldViewDecor {
   }
 
   addSiteHeritageProxies(parent: THREE.Group, proxies: readonly SiteHeritageProxy[]): void {
-    const material = new THREE.MeshBasicMaterial({
-      transparent: true,
-      opacity: 0,
-      depthWrite: false,
-      colorWrite: false,
-      side: THREE.DoubleSide,
-    });
+    // Pick-only volumes: the raycaster ignores material.visible, the renderer skips them (as an
+    // invisible transparent double-sided box each one cost two draw calls).
+    const material = new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide });
     for (const p of proxies) {
       const proxy = new THREE.Mesh(new THREE.BoxGeometry(p.w, p.h, p.d), material);
       proxy.name = p.id;
-      proxy.position.set(p.x, p.h / 2 + 0.02, p.z);
+      // Stand on the terrain (the site's terrace is above the landmark group's origin).
+      const ground = this.game.terrain.getHeight(p.x, p.z) - parent.position.y;
+      proxy.position.set(p.x, ground + p.h / 2 + 0.02, p.z);
       proxy.userData.heritageId = p.id;
       proxy.frustumCulled = false;
       parent.add(proxy);
@@ -83,13 +104,30 @@ export class WorldViewDecor {
 
   /** Block the source's monumental volumes while leaving plazas and paths walkable. */
   addSiteObstacles(def: AuthoredSiteDef): void {
-    for (const blocker of def.blockers) {
-      this.game.pathfinder.addObstacle({
-        x: blocker.x,
-        z: blocker.z,
-        w: blocker.w + def.blockerPadding * 2,
-        d: blocker.d + def.blockerPadding * 2,
-      });
+    for (const blocker of def.blockers) this.addSiteBlocker(blocker, def.blockerPadding * 2);
+  }
+
+  /** Obstacles of buildings that only stand from a construction phase on (m1's growing city). */
+  private readonly phasedBlockers: { blocker: SiteBlocker; obstacle: Obstacle; on: boolean }[] = [];
+
+  addSiteBlocker(blocker: SiteBlocker, pad: number): void {
+    const obstacle = { x: blocker.x, z: blocker.z, w: blocker.w + pad, d: blocker.d + pad };
+    if (!blocker.since) {
+      this.game.pathfinder.addObstacle(obstacle);
+      return;
+    }
+    this.phasedBlockers.push({ blocker, obstacle, on: false });
+    this.syncSitePhase(this.game.sitePhase);
+  }
+
+  /** Block exactly the buildings that stand in `phase`; the ones still to be built stay walkable. */
+  syncSitePhase(phase: CaralMayorPhase): void {
+    for (const entry of this.phasedBlockers) {
+      const stands = standsAt(entry.blocker, phase);
+      if (stands === entry.on) continue;
+      if (stands) this.game.pathfinder.addObstacle(entry.obstacle);
+      else this.game.pathfinder.removeObstacle(entry.obstacle);
+      entry.on = stands;
     }
   }
 
@@ -185,12 +223,44 @@ export class WorldViewDecor {
     this.addSiteObstacles(def);
     this.addSiteHeritageProxies(group, def.heritageProxies);
     const token = ++this.game.landmarkLoadToken;
+    const current = (): boolean => token === this.game.landmarkLoadToken && this.game.landmark === group;
+    let siteModel: THREE.Object3D | null = null;
+    let cityShown = false;
+    if (def.id === 'caral_site') {
+      // The in-use city's houses are part of the simulation (headless too), independent of the kit load.
+      for (const blocker of [...CARAL_CITY_BLOCKERS, ...ASPERO_BLOCKERS, ...SUPE_HAMLET_BLOCKERS]) {
+        this.addSiteBlocker(blocker, def.blockerPadding * 2);
+      }
+      if (!this.game.headless) {
+        // Blender architecture kit: the city in use replaces the ruins GLB, which stays the fallback until
+        // the kit is ready and then only keeps its (hidden, still clickable) heritage nodes.
+        // Áspero (act I) is baked with the city: they share the kit's materials, so it adds no draw calls.
+        const city = new CaralCity(
+          [...CARAL_CITY_LAYOUT, ...CARAL_FAIR_TENTS, ...ASPERO_LAYOUT, ...SUPE_HAMLETS],
+          (x, z) => this.game.terrain.getHeight(x, z) - (site.y ?? 0),
+        );
+        city.setMayorPhase(this.game.sitePhase);
+        this.game.caralCity = city;
+        void city.load().then((ok) => {
+          if (!current()) {
+            city.dispose();
+            return;
+          }
+          if (!ok) return;
+          group.add(city.group);
+          applyFowToObject(city.group, this.game.fowUniforms);
+          cityShown = true;
+          if (siteModel) siteModel.visible = false;
+        });
+      }
+    }
     void loadSiteModel(def.id)
       .then((model) => {
-        if (token !== this.game.landmarkLoadToken || this.game.landmark !== group) {
+        if (!current()) {
           disposeStaticGltf(model);
           return;
         }
+        siteModel = model;
         model.name = def.modelName;
         model.scale.setScalar(def.scale);
         model.position.set(def.origin.x, 0, def.origin.z);
@@ -216,6 +286,15 @@ export class WorldViewDecor {
         this.addSiteWallCollision(model, site.y ?? 0, def);
         applyFowToObject(model, this.game.fowUniforms);
         this.enableLandmarkShadows(model);
+        // After collision and heritage tagging: heritage nodes stay separate so they remain pickable.
+        mergeStaticByMaterial(model, (mesh) => {
+          for (let o: THREE.Object3D | null = mesh; o && o !== model; o = o.parent) {
+            if (o.userData.heritageId) return true;
+          }
+          return false;
+        });
+        // Hidden objects stay raycastable, so the heritage nodes still answer clicks.
+        if (cityShown) model.visible = false;
       })
       .catch((error: unknown) => {
         console.warn(`[site] failed to load authored ${def.id} site`, error);
@@ -682,7 +761,17 @@ export class WorldViewDecor {
       for (let attempt = 0; attempt < 40 && !found; attempt++) {
         cx = rng.range(18, s.mapSize - 18);
         cz = rng.range(18, s.mapSize - 18);
-        found = !this.game.terrain.isWater(cx, cz) && !this.game.isReserved(cx, cz);
+        // On authored sites groves grow where the ground is painted green (the floodplain and fields).
+        const painted = (this.game.terrain.data as TerrainData).getAuthoredGround(cx, cz);
+        // They also keep clear of an authored start (the opening view is the scene budget's worst case).
+        const start = this.game.missionLayout?.base;
+        const nearStart =
+          !!painted && !!start && distance2D(cx, cz, start.x * s.mapSize, start.z * s.mapSize) < GROVE_START_CLEARANCE;
+        found =
+          !this.game.terrain.isWater(cx, cz) &&
+          !this.game.isReserved(cx, cz) &&
+          (!painted || painted[0]! > 0.6) &&
+          !nearStart;
       }
       if (!found) continue;
       const count = 20 + Math.floor(rng.float() * 9);
@@ -691,7 +780,7 @@ export class WorldViewDecor {
         const x = cx + rng.range(-14, 14);
         const z = cz + rng.range(-14, 14);
         if (this.game.terrain.isWater(x, z) || this.game.isReserved(x, z)) continue;
-        if (!this.game.pathfinder.isWalkable(x, z)) continue;
+        if (!this.game.pathfinder.isWalkable(x, z) || this.treeless(x, z)) continue;
         // Tree obstacles cover a 3x3 cell block; keep 6.5 m between trunks so
         // every tree keeps a free stand point.
         if (trees.some((t) => distance2D(t.x, t.z, x, z) < 6.5)) continue;
@@ -712,7 +801,7 @@ export class WorldViewDecor {
         this.game.registerResourceObstacle(node.id, t.x, t.z, 'tree');
       }
     }
-    const n = Math.floor((s.mapSize * s.mapSize) / 1000);
+    const n = Math.floor(((s.mapSize * s.mapSize) / 1000) * (this.game.mapProfile.resources.scatter ?? 1));
     let placed = 0;
     let guard = 0;
     while (placed < n && guard++ < n * 4) {
@@ -784,16 +873,28 @@ export class WorldViewDecor {
       for (let z = FISHING_SCAN_MARGIN; z < size - FISHING_SCAN_MARGIN; z += 2) {
         if (!this.game.terrain.isWater(x, z)) continue;
         if (existing.some((n) => distance2D(x, z, n.pos.x, n.pos.z) < 5)) continue;
+        // A worker must be able to stand within harvest range on walkable ground (not just "not water":
+        // a wet beach below the walkable height would leave the ground unreachable).
         let nearLand = false;
-        for (let i = 0; i < 8 && !nearLand; i++) {
-          const a = (i / 8) * Math.PI * 2;
-          nearLand = !this.game.terrain.isWater(x + Math.cos(a) * 5, z + Math.sin(a) * 5);
+        for (let i = 0; i < 12 && !nearLand; i++) {
+          const a = (i / 12) * Math.PI * 2;
+          for (const r of [1.6, 2.2]) {
+            if (this.game.pathfinder.isWalkable(x + Math.cos(a) * r, z + Math.sin(a) * r)) nearLand = true;
+          }
         }
         if (nearLand) candidates.push({ x, z });
       }
     }
     if (candidates.length === 0) return false;
-    const spot = rng.pick(candidates);
+    // A guaranteed supply serves the opening: pick among the shore cells closest to the player's base.
+    const layoutBase = this.game.missionLayout?.base;
+    const base = layoutBase ? { x: layoutBase.x * size, z: layoutBase.z * size } : this.game.playerCenter(0);
+    // Open sea (deeper than a river bed) is preferred: the coast is where the anchoveta shoals are.
+    const waterLevel = this.game.terrain.waterLevel;
+    const cost = (p: { x: number; z: number }) =>
+      distance2D(p.x, p.z, base.x, base.z) + (waterLevel - this.game.terrain.getHeight(p.x, p.z) < 1.5 ? 30 : 0);
+    candidates.sort((a, b) => cost(a) - cost(b));
+    const spot = rng.pick(candidates.slice(0, 24));
     const node = new ResourceNode('fishing', spot.x, spot.z, rng.range(150, 220));
     node.pos.y = 0;
     this.game.attachResourceNode(node, this.game.mapProfile.baseMapType);
@@ -830,12 +931,38 @@ export class WorldViewDecor {
       placements.push(...planCaralValleyProps(this.game.settings.mapSeed, base, this.caralValleyQuery()));
       const suppressedFauna = new Set(this.game.siteDef.environs.suppressFaunaIds ?? []);
       fauna = fauna.filter((f) => !suppressedFauna.has(f.id));
+      // Riparian deer and birds first, so the wildlife cap never drops them.
+      // Keep the roosts out from under tree crowns so deer and birds stay readable from the camera.
+      const valley = this.caralValleyQuery();
+      const trees = [...this.game.resourceNodes.values()].filter((n) => n.kind === 'tree');
+      const faunaQuery: CaralValleyQuery = {
+        ...valley,
+        isReserved: (x, z) =>
+          valley.isReserved(x, z) || trees.some((t) => Math.hypot(t.pos.x - x, t.pos.z - z) < FAUNA_TREE_CLEARANCE),
+      };
+      fauna = [
+        ...planCaralValleyFauna(this.game.settings.mapSeed, base, faunaQuery),
+        ...planCaralCoastFauna(this.game.settings.mapSeed),
+        ...fauna,
+      ];
     }
     this.game.props.place(placements, heightAt);
     this.game.wildlife.spawn(fauna, heightAt);
+    if (!this.game.headless) void attachFaunaKit(this.game.wildlife);
   }
 
   /** Geography-driven resource pick: profile weights, gated by height, beach, moisture and slope. */
+  /**
+   * Authored sites paint where woods grow: no trees on beaches, marsh or bare rock. Rendered and
+   * headless terrains share TerrainData, so the simulation stays identical.
+   */
+  treeless(x: number, z: number): boolean {
+    const painted = (this.game.terrain.data as TerrainData).getAuthoredGround(x, z);
+    if (!painted) return false;
+    const marsh = this.game.terrain.getHeight(x, z) < this.game.terrain.waterLevel + 0.9;
+    return marsh || painted[2]! > 0.45 || painted[3]! > 0.6;
+  }
+
   pickResourceKind(rng: RNG, x: number, z: number, h: number): ResourceNode['kind'] {
     const w = this.game.mapProfile.resources;
     const beach = this.game.terrain.isBeach(x, z);
@@ -843,9 +970,10 @@ export class WorldViewDecor {
     const mid = h > 3;
     const moist = this.game.terrain.getMoisture(x, z);
     const slope = this.game.terrain.getSlope(x, z);
+    const bare = this.treeless(x, z);
     const options: Array<[ResourceNode['kind'], number]> = [
       ['mine', w.mine * (high ? 2.5 : mid ? 1.5 : 0.5) * (0.6 + slope * 1.4)],
-      ['tree', w.tree * (high ? 0.3 : 1) * (0.4 + moist)],
+      ['tree', bare ? 0 : w.tree * (high ? 0.3 : 1) * (0.4 + moist)],
       ['well', w.well * (beach ? 0.05 : 0.8) * (0.6 + slope * 1.8) * (high ? 1.4 : 1)],
       ['berry', w.berry * (beach ? 1.2 : 0.7) * (0.5 + moist)],
     ];
@@ -947,6 +1075,9 @@ export class WorldViewDecor {
     const valley = this.game.caralValleyPlan ?? this.planCaralValleyAt(x, z);
     this.game.caralValleyPlan = valley;
     this.game.caralValleyBase ??= { x, z };
+    // The valley plots are painted fertile ground in the authored terrain (scripts/build_caral_heightmap.py),
+    // not decals: the plan only keeps their ground free of resources. Nothing is drawn here.
+    if (this.game.siteDef?.environs?.valley === 'caral') return;
     if (!valley.fields.length && !valley.roads.length) return;
     const overlay = new SettlementOverlay(
       { center: { x, z }, dwellings: [], fields: valley.fields, roads: valley.roads },

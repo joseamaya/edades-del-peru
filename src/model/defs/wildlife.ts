@@ -7,10 +7,14 @@ import type { ModelAssetId, RigModelChoice } from './modelAssets';
  * Ambient Peruvian fauna (visual only): llamas and vicuñas graze the highlands,
  * condors soar over the Andes and pelicans work the coast. No entities, no
  * obstacles, no gameplay — placed deterministically from the map seed.
+ *
+ * Deer and riparian birds (documented for the Supe riparian forest, Shady; the bird species is
+ * not named, so the model is a generic small bird) are only placed by the Caral valley plan
+ * (`planCaralValleyFauna`), never by the regional scatter.
  */
-export type SpeciesId = 'llama' | 'vicuna' | 'condor' | 'pelican';
+export type SpeciesId = 'llama' | 'vicuna' | 'condor' | 'pelican' | 'deer' | 'riparian_bird';
 
-export const SPECIES_IDS: SpeciesId[] = ['llama', 'vicuna', 'condor', 'pelican'];
+export const SPECIES_IDS: SpeciesId[] = ['llama', 'vicuna', 'condor', 'pelican', 'deer', 'riparian_bird'];
 
 export type WildlifeSpawn = AmbientPlacement<SpeciesId>;
 
@@ -25,13 +29,13 @@ export function wildlifeModelChoice(id: SpeciesId): RigModelChoice | null {
 
 /** Base presence of each species per geographic region. */
 const REGION_WEIGHTS: Record<GeographicRegion, Record<SpeciesId, number>> = {
-  north_coast: { pelican: 1.2, llama: 0.2, vicuna: 0, condor: 0 },
-  central_coast: { pelican: 1.0, llama: 0.3, vicuna: 0, condor: 0 },
-  south_coast: { pelican: 0.8, llama: 0.3, vicuna: 0, condor: 0.5 },
-  andean_valley: { pelican: 0, llama: 1.0, vicuna: 0.4, condor: 0.6 },
-  high_andes: { pelican: 0, llama: 0.8, vicuna: 1.2, condor: 1.0 },
-  altiplano: { pelican: 0, llama: 1.2, vicuna: 0.8, condor: 0.4 },
-  amazon: { pelican: 0, llama: 0, vicuna: 0, condor: 0.2 },
+  north_coast: { pelican: 1.2, llama: 0.2, vicuna: 0, condor: 0, deer: 0, riparian_bird: 0 },
+  central_coast: { pelican: 1.0, llama: 0.3, vicuna: 0, condor: 0, deer: 0, riparian_bird: 0 },
+  south_coast: { pelican: 0.8, llama: 0.3, vicuna: 0, condor: 0.5, deer: 0, riparian_bird: 0 },
+  andean_valley: { pelican: 0, llama: 1.0, vicuna: 0.4, condor: 0.6, deer: 0, riparian_bird: 0 },
+  high_andes: { pelican: 0, llama: 0.8, vicuna: 1.2, condor: 1.0, deer: 0, riparian_bird: 0 },
+  altiplano: { pelican: 0, llama: 1.2, vicuna: 0.8, condor: 0.4, deer: 0, riparian_bird: 0 },
+  amazon: { pelican: 0, llama: 0, vicuna: 0, condor: 0.2, deer: 0, riparian_bird: 0 },
 };
 
 /** How many fauna a region carries (kept small: one mesh per animal). */
@@ -72,6 +76,9 @@ function suitability(id: SpeciesId, s: AmbientSample): number {
       return s.height > 4 ? 1.2 : 0;
     case 'condor':
       return s.height > 5 ? 1.3 : 0;
+    case 'deer':
+    case 'riparian_bird':
+      return 0;
   }
 }
 

@@ -1,0 +1,85 @@
+{
+  "asset_id": "caral_house_elite",
+  "source_scene": "scenes/caral_architecture_kit.blend",
+  "script": "scripts/blender/build_caral_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "confidence": "inferred",
+  "sources": [
+    "docs/historia/campanas/caral.md",
+    "docs/historia/civilizaciones/caral.md"
+  ],
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": true,
+  "reviewer": "Miguel Amaya",
+  "reviewedAt": "2026-11-07T21:00:00.000Z",
+  "lods": {
+    "LOD0": {
+      "triangles": 692,
+      "draw_calls": 6,
+      "materials": [
+        "MAT-Arch_CaneMat",
+        "MAT-Arch_Earth",
+        "MAT-Arch_PlasterRed",
+        "MAT-Arch_PlasterWhite",
+        "MAT-Arch_Stone",
+        "MAT-Arch_Wood"
+      ],
+      "bounds": {
+        "min": [
+          -4.507,
+          -3.731,
+          -0.309
+        ],
+        "max": [
+          6.079,
+          4.68,
+          3.815
+        ],
+        "size": [
+          10.586,
+          8.412,
+          4.124
+        ]
+      },
+      "file": "caral_house_elite_lod0.glb",
+      "bytes": 69656
+    },
+    "LOD1": {
+      "triangles": 180,
+      "draw_calls": 5,
+      "materials": [
+        "MAT-Arch_CaneMat",
+        "MAT-Arch_PlasterRed",
+        "MAT-Arch_PlasterWhite",
+        "MAT-Arch_Stone",
+        "MAT-Arch_Wood"
+      ],
+      "bounds": {
+        "min": [
+          -4.507,
+          -3.731,
+          -0.003
+        ],
+        "max": [
+          4.489,
+          3.713,
+          3.815
+        ],
+        "size": [
+          8.996,
+          7.444,
+          3.818
+        ]
+      },
+      "file": "caral_house_elite_lod1.glb",
+      "bytes": 21000
+    }
+  },
+  "wall_height": 2.7
+}

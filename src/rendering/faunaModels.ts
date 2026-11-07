@@ -22,6 +22,11 @@ export interface FaunaTemplate {
   flyHeight: number;
   stride: number;
   flap: number;
+  /** Orbit radius around the spawn point (default: 4-7 on the ground, 12-20 in the air). */
+  orbit?: number;
+  /** Vertical bob amplitude and rate for fliers (default 0.25 at 1.6 rad/s). */
+  bobAmp?: number;
+  bobRate?: number;
 }
 
 const cache = new Map<SpeciesId, FaunaTemplate>();
@@ -29,7 +34,7 @@ const cache = new Map<SpeciesId, FaunaTemplate>();
 export function faunaTemplate(id: SpeciesId): FaunaTemplate {
   let t = cache.get(id);
   if (!t) {
-    t = id === 'llama' ? quadruped('llama') : id === 'vicuna' ? quadruped('vicuna') : bird(id);
+    t = id === 'llama' || id === 'vicuna' || id === 'deer' ? quadruped(id) : bird(id);
     cache.set(id, t);
   }
   return t;
@@ -84,15 +89,23 @@ function mergeParts(parts: Part[]): THREE.BufferGeometry {
   return merged ?? new THREE.BufferGeometry();
 }
 
-function quadruped(id: 'llama' | 'vicuna'): FaunaTemplate {
+/** Deer pivots, shared with the Blender fauna kit (scripts/blender/build_caral_fauna_kit.py). */
+export const DEER_RIG = { hipY: 0.78, legX: 0.1, legZFront: 0.36, legZBack: -0.38 };
+/** Riparian bird shoulder, shared with the Blender fauna kit. */
+export const RIPARIAN_BIRD_RIG = { shoulderX: 0.05, shoulderY: 0.02, shoulderZ: 0 };
+
+function quadruped(id: 'llama' | 'vicuna' | 'deer'): FaunaTemplate {
   const llama = id === 'llama';
-  const r = llama ? 0.3 : 0.24;
-  const bodyLen = llama ? 0.9 : 0.78;
-  const hipY = llama ? 0.62 : 0.58;
+  const deer = id === 'deer';
+  const r = llama ? 0.3 : deer ? 0.2 : 0.24;
+  const bodyLen = llama ? 0.9 : deer ? 0.86 : 0.78;
+  const hipY = llama ? 0.62 : deer ? DEER_RIG.hipY : 0.58;
   const legLen = hipY;
   const colors = llama
     ? { body: '#8a6a4a', belly: '#b9a186', neck: '#9a7a55', head: '#6f5236', leg: '#7a5c3e', hoof: '#33281d' }
-    : { body: '#b2916a', belly: '#e3d6bf', neck: '#bb9c72', head: '#a07f57', leg: '#a0805a', hoof: '#33281d' };
+    : deer
+      ? { body: '#8a6544', belly: '#d9cfbf', neck: '#8a6544', head: '#7a5838', leg: '#8a6544', hoof: '#2a2018' }
+      : { body: '#b2916a', belly: '#e3d6bf', neck: '#bb9c72', head: '#a07f57', leg: '#a0805a', hoof: '#33281d' };
 
   const bodyTop = hipY + 2 * r * 0.9;
   const frontZ = bodyLen / 2 + r * 0.4;
@@ -153,20 +166,23 @@ function quadruped(id: 'llama' | 'vicuna'): FaunaTemplate {
     body: mergeParts(parts),
     leg: mergeParts(legParts),
     hipY,
-    legX: r * 0.62,
-    legZFront: bodyLen / 2 - 0.05,
-    legZBack: -(bodyLen / 2 - 0.05),
+    legX: deer ? DEER_RIG.legX : r * 0.62,
+    legZFront: deer ? DEER_RIG.legZFront : bodyLen / 2 - 0.05,
+    legZBack: deer ? DEER_RIG.legZBack : -(bodyLen / 2 - 0.05),
     shoulderX: 0,
     shoulderY: 0,
     shoulderZ: 0,
     ground: true,
     flyHeight: 0,
-    stride: llama ? 5.2 : 6,
+    stride: llama ? 5.2 : deer ? 6.5 : 6,
     flap: 0,
+    // Deer graze close to their riverside roost (orbit <= 3.1; the plan keeps a dry ring of 4).
+    orbit: deer ? 1.5 : undefined,
   };
 }
 
-function bird(id: 'condor' | 'pelican'): FaunaTemplate {
+function bird(id: 'condor' | 'pelican' | 'riparian_bird'): FaunaTemplate {
+  if (id === 'riparian_bird') return smallBird();
   const condor = id === 'condor';
   const parts: Part[] = [];
   const bodyColor = condor ? '#2b2b30' : '#e2e5e6';
@@ -237,5 +253,50 @@ function bird(id: 'condor' | 'pelican'): FaunaTemplate {
     flyHeight: condor ? 10 : 6.5,
     stride: 0,
     flap: condor ? 1.3 : 2.3,
+  };
+}
+
+/**
+ * Generic small riparian bird (the dossier documents "aves" in the Supe riparian forest without naming
+ * a species). Flocks orbit close to their roost and lift and settle (large, slow bob).
+ */
+function smallBird(): FaunaTemplate {
+  const color = '#6a5c50';
+  const body = capsule(0.07, 0.24);
+  place(body, 0, 0, 0, Math.PI / 2);
+  const head = sphere(0.055);
+  place(head, 0, 0.04, 0.19);
+  const beak = new THREE.ConeGeometry(0.015, 0.06, 4);
+  place(beak, 0, 0.035, 0.26, Math.PI / 2);
+  const tail = box(0.12, 0.02, 0.18, 0.005);
+  place(tail, 0, 0, -0.24);
+  const shape = new THREE.Shape();
+  shape.moveTo(0, 0.06);
+  shape.lineTo(0.38, 0.03);
+  shape.lineTo(0.34, -0.08);
+  shape.lineTo(0, -0.06);
+  shape.closePath();
+  const wing = new THREE.ExtrudeGeometry(shape, { depth: 0.02, bevelEnabled: false });
+  wing.rotateX(-Math.PI / 2);
+  return {
+    body: mergeParts([
+      { geo: body, color },
+      { geo: head, color },
+      { geo: beak, color: '#b0894e' },
+      { geo: tail, color },
+    ]),
+    wing: mergeParts([{ geo: wing, color: '#584c42' }]),
+    hipY: 0,
+    legX: 0,
+    legZFront: 0,
+    legZBack: 0,
+    ...RIPARIAN_BIRD_RIG,
+    ground: false,
+    flyHeight: 2,
+    stride: 0,
+    flap: 9,
+    orbit: 4,
+    bobAmp: 1.7,
+    bobRate: 0.35,
   };
 }

@@ -1,4 +1,5 @@
 import type { GameSettings } from './Config';
+import { kitLod0RadiusFor } from '../rendering/TreeInstances';
 import { saveToStorage, serializeGame } from '../game/SaveGame';
 import * as THREE from 'three';
 import { bus } from './EventBus';
@@ -24,6 +25,7 @@ import { resolveConquest } from '../game/systems/VictorySystem';
 import { areaDamage, resolveAttackDamage, selectAreaTargets, selectNearestTarget } from '../game/systems/CombatSystem';
 import type { SaveData } from '../game/saveTypes';
 import type { RigInstance } from '../rendering/RigInstance';
+import { SHADOW_MAP_SIZE, viewFootprint } from '../rendering/shadowFrame';
 
 export interface DeathFx {
   view: EntityView;
@@ -755,8 +757,15 @@ export class RuntimeController {
     saveReplay(this.game.lastReplay);
   }
 
-  // --- main update ---
+  /** Fit the sun's shadow frustum to the current view (src/rendering/shadowFrame.ts). */
+  frameShadows(): void {
+    const target = this.game.camera.getTarget();
+    this.game.sky.setShadowFrame(
+      viewFootprint(this.game.camera.camera, this.game.terrain.getHeight(target.x, target.z)),
+    );
+  }
 
+  // --- main update ---
   update(dt: number, time: number): boolean {
     const t = time;
     const realTime = performance.now() / 1000;
@@ -795,7 +804,7 @@ export class RuntimeController {
     this.game.particles.update(d);
     this.game.debris.update(d);
     this.game.markers.update(d);
-    this.game.trees.update(d);
+    this.game.trees.update(d, this.game.camera.getTarget());
     this.game.wildlife.update(d);
 
     // a blocking menu/modal suppresses camera panning (edge/keyboard/drag)
@@ -803,8 +812,14 @@ export class RuntimeController {
     // edge scrolling is off while the pointer is over a HUD control
     this.game.camera.setPointerOverUi(this.game.isPointerOverUi());
     this.game.camera.update(d, realTime);
+    // Fit the shadow frustum and the terrain LOD to where the camera is this frame, not the last one.
+    this.frameShadows();
+    this.game.terrain.updateLod(this.game.camera.camera.position);
+    this.game.caralCity?.update(this.game.camera.camera.position);
     this.rebuildSpatial();
 
+    this.game.updateDrought(d);
+    this.game.updateCityLife(d);
     // units
     for (const u of this.game.units.values()) {
       if (u.dead) continue;
@@ -1112,7 +1127,11 @@ export class RuntimeController {
   applyQualityPreset(q: GameSettings['quality']): void {
     this.game.postfx.setQuality(q);
     this.game.terrain?.setLowDetail(q === 'low');
+    this.game.sky?.setShadowMapSize(SHADOW_MAP_SIZE[q]);
     this.game.groundCover?.setEnabled(q !== 'low' && !this.game.usesSoftwareRenderer);
+    // The governor can apply a preset before the world (and its trees) exists.
+    if (this.game.trees)
+      this.game.trees.kitLod0Radius = kitLod0RadiusFor(q === 'low' || this.game.usesSoftwareRenderer);
   }
 
   /** Force a render scale (`null` restores the default) and apply it immediately. */

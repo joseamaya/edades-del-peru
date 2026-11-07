@@ -49,6 +49,7 @@ async function waitForOpeningFrame(page: Page): Promise<OpeningFrame> {
 test('the campaign intro flies the camera from an overview to the authored opening frame', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await boot(page, '/?play=1&mission=m1_caral&seed=777&fog=0&low=1');
+  await page.locator('.ed-cinematic-skip').click({ timeout: 30_000 });
   await dismissBriefing(page);
   await page.waitForTimeout(120);
   const start = await target(page);
@@ -66,6 +67,7 @@ test('the campaign intro flies the camera from an overview to the authored openi
 test('the authored opening frame keeps the Supe channel at 1600x900', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 900 });
   await boot(page, '/?play=1&mission=m1_caral&seed=777&fog=0&low=1');
+  await page.locator('.ed-cinematic-skip').click({ timeout: 30_000 });
   await dismissBriefing(page);
   const view = await waitForOpeningFrame(page);
   expect(view.zoom).toBeCloseTo(CARAL_SITE_CAMERA.height, 0);

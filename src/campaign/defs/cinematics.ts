@@ -6,6 +6,8 @@ export interface CinematicBeat {
   seconds?: number;
   /** Dossier or source used for this beat. */
   source?: string;
+  /** Optional backdrop for this beat (public asset path, e.g. 'media/caral/intro-aspero.webp'). */
+  image?: string;
 }
 
 /** Short first-visit prologue for the whole saga. */

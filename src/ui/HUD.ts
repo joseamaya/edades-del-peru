@@ -39,17 +39,19 @@ import { artFigureHtml, includeUnreviewedArt } from './ArtFigure';
 import { getEducational } from '../campaign/defs/educational';
 import {
   CAMPAIGNS,
-  campaignProgressCount,
   getCampaignForMission,
   campaignNumber,
-  getReleasedMission,
   nextReleasedMission,
+  type CampaignId,
 } from '../campaign/defs/campaigns';
 import { SERIES_INTRO } from '../campaign/defs/cinematics';
 import { CAMPAIGN_ONLY } from '../core/release';
-import { completedMissions, markMissionComplete, parseCampaignProgress } from '../campaign/progress';
+import { markMissionComplete, parseCampaignProgress } from '../campaign/progress';
 import { CinematicPlayer } from './CinematicPlayer';
-import { MENU_BACKDROP } from './menuArt';
+import { CAMPAIGN_ART, MENU_BACKDROP, MISSION_ART } from './menuArt';
+import { renderBriefing } from './MissionBriefing';
+import { decorateTitleScreen, renderCampaignPath, renderMainMenu } from './SeriesMenu';
+import { publicAsset } from '../util/publicAsset';
 import type { MissionDef, ObjectiveProgress, ObjState } from '../campaign/types';
 import { COMMANDERS, type PortraitId } from '../model/defs/commanders';
 import type { HeritageBuildingDef } from '../model/defs/heritage';
@@ -158,7 +160,7 @@ const CSS = /* css */ `
   .speed-btn.active { background: var(--gold); color: #14161a; border-color: var(--gold); }
 
   /* Minimapa */
-  #ed-minimap-wrap { position: absolute; left: 12px; bottom: 12px; width: 210px; height: 210px; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.5); }
+  #ed-minimap-wrap { position: absolute; left: 12px; bottom: 12px; width: var(--minimap-size); height: var(--minimap-size); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.5); }
   #ed-minimap { width: 100%; height: 100%; display: block; cursor: crosshair; pointer-events: auto; }
   #ed-compass { position: absolute; inset: 0; pointer-events: none; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; color: rgba(255,255,255,0.9); text-shadow: 0 1px 2px rgba(0,0,0,0.9); }
   #ed-compass span { position: absolute; padding: 1px 3px; border-radius: 2px; background: rgba(6,8,12,0.55); }
@@ -167,16 +169,23 @@ const CSS = /* css */ `
   #ed-compass .s { bottom: 3px; left: 50%; transform: translateX(-50%); }
   #ed-compass .w { top: 50%; left: 3px; transform: translateY(-50%); }
 
-  /* Panel inferior */
-  #ed-bottom { position: absolute; left: 50%; transform: translateX(-50%); bottom: 12px; width: min(640px, 90vw); min-height: 118px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; pointer-events: auto; display: flex; flex-direction: column; box-shadow: 0 6px 30px rgba(0,0,0,0.55); overflow: hidden; }
-  #ed-bottom-header { padding: 6px 12px; font-size: 13px; font-weight: 700; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; background: rgba(232,195,106,0.06); background-image: var(--weave); background-repeat: repeat-x; background-position: bottom; }
-  #ed-bottom-body { padding: 6px 8px; display: flex; gap: 8px; min-height: 76px; }
-  #ed-desc { flex: 1; font-size: 12px; color: var(--text-dim); line-height: 1.4; padding-right: 8px; }
-  #ed-desc h3 { margin: 0 0 4px; font-size: 15px; color: var(--text); }
-  .ed-grid { display: flex; flex-wrap: wrap; gap: 5px; max-width: 380px; }
-  .ed-card { pointer-events: auto; width: 66px; height: 66px; border-radius: 4px; border: 1px solid var(--line); background: var(--panel-2); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; font-size: 10px; text-align: center; position: relative; transition: border-color 0.12s, transform 0.06s; }
+  /* Command bar: one low horizontal strip right of the minimap (AoE/SC2 layout). Selection info on the
+     left, actions in a row in the middle, orders on the right; it only grows when the actions wrap. */
+  #ui-root { --minimap-size: 190px; --bar-gap: 12px; }
+  #ed-bottom { position: absolute; left: calc(var(--minimap-size) + 2 * var(--bar-gap)); right: var(--bar-gap); bottom: var(--bar-gap); max-width: 1180px; margin: 0 auto; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; pointer-events: auto; display: flex; flex-direction: column; box-shadow: 0 6px 30px rgba(0,0,0,0.55); overflow: hidden; }
+  #ed-bottom-header { padding: 3px 12px; font-size: 12px; font-weight: 700; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; background: rgba(232,195,106,0.06); background-image: var(--weave); background-repeat: repeat-x; background-position: bottom; }
+  #ed-bottom-header:empty { display: none; }
+  #ed-bottom-body { padding: 6px 8px; display: flex; flex-direction: row; align-items: flex-start; gap: 10px; }
+  #ed-desc { flex: 0 0 250px; max-height: 120px; overflow-y: auto; font-size: 12px; color: var(--text-dim); line-height: 1.35; padding-right: 10px; border-right: 1px solid var(--line); }
+  #ed-desc:empty { display: none; }
+  #ed-desc h3 { margin: 0 0 3px; font-size: 14px; color: var(--text); }
+  .ed-grid { flex: 1 1 auto; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 5px; min-width: 0; }
+  #ed-commands { flex: 0 1 260px; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 4px; padding-left: 10px; border-left: 1px solid var(--line); }
+  #ed-commands:empty { display: none; }
+  #ed-commands .ed-command { padding: 4px 8px; }
+  .ed-card { pointer-events: auto; width: 60px; height: 60px; border-radius: 4px; border: 1px solid var(--line); background: var(--panel-2); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; font-size: 10px; text-align: center; position: relative; transition: border-color 0.12s, transform 0.06s; }
   .ed-card:hover { border-color: var(--gold); transform: translateY(-1px); }
-  .ed-card .ic { font-size: 24px; line-height: 1; }
+  .ed-card .ic { font-size: 21px; line-height: 1; }
   .ed-card .nm { color: var(--text); margin-top: 3px; font-weight: 600; }
   .ed-card .cost { color: var(--text-dim); font-size: 9px; }
   .ed-card.disabled { opacity: 0.35; cursor: not-allowed; }
@@ -237,8 +246,6 @@ const CSS = /* css */ `
   .ed-ghostbtn:hover { border-color: var(--gold); color: var(--gold); }
 
   /* Onboarding: title, main menu, campaign hub and cinematics */
-  .ed-title-screen { background-size: 108%; background-position: 55% 50%; background-repeat: no-repeat; animation: menu-drift 30s ease-in-out infinite alternate; }
-  .ed-title-screen::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 55%, transparent 0%, rgba(3,5,8,.38) 56%, rgba(3,5,8,.92) 100%); pointer-events: none; }
   .ed-title-card { position: relative; z-index: 1; text-align: center; padding: 32px; max-width: 720px; }
   .ed-title-ornament { width: 78px; height: 34px; margin: 0 auto 18px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M10 1h4v5h5v4h4v4h-4v4h-5v5h-4v-5H5v-4H1v-4h4V6h5z' fill='%23e8c36a' fill-opacity='0.82'/%3E%3C/svg%3E") center/contain no-repeat; filter: drop-shadow(0 0 14px rgba(232,195,106,.35)); }
   .ed-title-card .kicker { font-size: 11px; letter-spacing: 5px; color: var(--gold-dim); text-transform: uppercase; }
@@ -247,8 +254,6 @@ const CSS = /* css */ `
   .ed-title-card .ed-primary { padding: 12px 42px; font-size: 15px; letter-spacing: 2px; box-shadow: 0 8px 30px rgba(232,195,106,.18); }
   .ed-title-card .hint { margin-top: 14px; color: var(--text-dim); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; }
 
-  .ed-menu-screen { align-items: stretch; justify-content: flex-start; background-size: 108%; background-position: 58% 42%; background-repeat: no-repeat; animation: menu-drift 26s ease-in-out infinite alternate; }
-  .ed-menu-screen::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(4,7,10,.95) 0%, rgba(4,7,10,.78) 31%, rgba(4,7,10,.18) 64%, rgba(4,7,10,.62) 100%), linear-gradient(0deg, rgba(4,7,10,.92), transparent 48%); pointer-events: none; }
   .ed-menu-shell { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: space-between; width: min(620px, 54vw); min-height: 100%; padding: clamp(28px, 5vw, 70px) clamp(24px, 4vw, 68px) 28px; }
   .ed-menu-kicker { color: var(--gold-dim); font-size: 11px; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 12px; }
   .ed-menu-title { margin: 0; font-size: clamp(40px, 5.2vw, 74px); line-height: .92; color: #f3e5bb; letter-spacing: 2px; text-shadow: 0 4px 28px rgba(0,0,0,.72); }
@@ -260,13 +265,6 @@ const CSS = /* css */ `
   .ed-menu-btn:hover { border-left-color: var(--gold); background: linear-gradient(90deg, rgba(232,195,106,.15), rgba(16,20,25,.28)); transform: translateX(3px); }
   .ed-menu-btn.primary { border-left-color: var(--gold); background: linear-gradient(90deg, rgba(232,195,106,.22), rgba(16,20,25,.3)); }
   .ed-menu-btn[disabled] { opacity: .42; cursor: default; transform: none; }
-  .ed-menu-side { position: absolute; z-index: 1; right: clamp(20px, 4vw, 64px); bottom: clamp(28px, 6vh, 70px); width: min(320px, 28vw); padding: 18px 20px; background: linear-gradient(180deg, rgba(10,14,18,.86), rgba(10,14,18,.62)); border: 1px solid rgba(232,195,106,.22); border-radius: 6px; backdrop-filter: blur(5px); box-shadow: 0 16px 50px rgba(0,0,0,.4); }
-  .ed-menu-side .side-kicker { color: var(--gold-dim); font-size: 10px; letter-spacing: 2.4px; text-transform: uppercase; }
-  .ed-menu-side h3 { margin: 7px 0 4px; color: var(--gold); font-size: 19px; }
-  .ed-menu-side p { margin: 0 0 10px; color: var(--text-dim); font-size: 12px; line-height: 1.55; }
-  .ed-menu-side .progress { height: 4px; border-radius: 2px; background: rgba(232,195,106,.16); overflow: hidden; margin: 10px 0 7px; }
-  .ed-menu-side .progress i { display: block; height: 100%; background: var(--gold); }
-  .ed-menu-side .side-meta { color: var(--text-dim); font-size: 10px; letter-spacing: .4px; }
   .ed-menu-footer { position: relative; z-index: 1; margin-top: 22px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; color: var(--text-dim); font-size: 10px; letter-spacing: .6px; }
   .ed-menu-footer button { background: none; border: 0; color: var(--gold-dim); font: inherit; cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 3px; }
   .ed-menu-footer button:hover { color: var(--gold); }
@@ -288,33 +286,14 @@ const CSS = /* css */ `
   .ed-cinematic-skip:hover { opacity: 1; }
   @keyframes cinematic-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
-  .ed-campaign-hub { background-size: cover; background-position: center; background-repeat: no-repeat; }
   .ed-campaign-panel { width: min(1020px, 94vw); max-height: 90vh; overflow: auto; text-align: left; background: linear-gradient(180deg, rgba(12,16,21,.96), rgba(8,11,15,.94)); border: 1px solid var(--line); border-radius: 8px; padding: clamp(22px, 3vw, 38px); box-shadow: 0 24px 70px rgba(0,0,0,.72); }
   .ed-campaign-head { display: flex; justify-content: space-between; gap: 20px; align-items: flex-end; margin-bottom: 20px; }
   .ed-campaign-head h2 { margin: 4px 0 4px; font-size: clamp(28px, 4vw, 44px); }
   .ed-campaign-head .sub { margin: 0; }
-  .ed-campaign-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .ed-campaign-card { position: relative; display: flex; flex-direction: column; min-height: 190px; padding: 18px 20px; border: 1px solid rgba(232,195,106,.2); border-radius: 6px; background: linear-gradient(160deg, rgba(30,25,18,.84), rgba(12,15,19,.9)); overflow: hidden; }
-  .ed-campaign-card::after { content: ''; position: absolute; inset: auto 0 0; height: 3px; background: var(--campaign-accent, var(--gold)); opacity: .65; }
-  .ed-campaign-card.available { border-color: rgba(232,195,106,.5); background: linear-gradient(160deg, rgba(58,43,22,.82), rgba(14,17,21,.92)); }
-  .ed-campaign-card.coming-soon { opacity: .72; }
-  .ed-campaign-card .era { color: var(--campaign-accent, var(--gold-dim)); font-size: 10px; letter-spacing: 2.2px; text-transform: uppercase; }
-  .ed-campaign-card h3 { margin: 8px 0 5px; color: #f0dfb7; font-size: 24px; }
-  .ed-campaign-card p { margin: 0 0 12px; color: var(--text-dim); font-size: 12px; line-height: 1.55; }
-  .ed-campaign-card .card-meta { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--text-dim); font-size: 10px; letter-spacing: .4px; }
-  .ed-campaign-card .card-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-  .ed-campaign-card .ed-primary, .ed-campaign-card .ed-ghostbtn { padding: 7px 14px; font-size: 12px; }
-  .ed-campaign-card .upcoming { color: var(--gold-dim); font-size: 11px; line-height: 1.5; }
   .ed-skirmish-info { text-align: left; font-size: 12px; line-height: 1.55; color: var(--text-dim); background: rgba(232,195,106,0.06); border-left: 3px solid var(--gold-dim); border-radius: 4px; padding: 8px 12px; margin: 8px 0; }
   .ed-skirmish-info b { color: var(--gold); }
   .ed-map-preview { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto 8px; border: 1px solid var(--line); border-radius: 4px; image-rendering: auto; }
-  .ed-campaign-foot { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
 
-  .ed-briefing { width: min(900px, 94vw); max-height: 90vh; overflow: auto; text-align: left; background: linear-gradient(180deg, rgba(14,18,23,.97), rgba(8,11,15,.96)); border-color: rgba(232,195,106,.32); }
-  .ed-briefing h2 { text-align: left; font-size: clamp(30px, 4vw, 44px); margin-bottom: 4px; }
-  .ed-briefing .sub { text-align: left; }
-  .ed-briefing .ed-hist { font-size: 13.5px; }
-  .ed-briefing .ed-art img { max-height: min(260px, 26vh); }
 
   .ed-epilogue { width: min(780px, 94vw); max-height: 90vh; overflow: auto; background: linear-gradient(180deg, rgba(15,18,22,.97), rgba(7,10,14,.97)); border-color: rgba(232,195,106,.34); }
   .epilogue-title { font-size: clamp(36px, 6vw, 62px); letter-spacing: 3px; }
@@ -378,6 +357,7 @@ const CSS = /* css */ `
   .ed-tree-unique { color: var(--gold); font-size: 10px; margin-left: 4px; }
   .ed-tree-empty { color: var(--text-dim); font-size: 11px; }
   @media (max-width: 700px) { .ed-tree-cols { grid-template-columns: 1fr; } }
+  .ed-mission-card.with-art { background-size: cover; background-position: center; }
   .ed-mission-card { position: absolute; inset: 0; z-index: 30; display: flex; align-items: center; justify-content: center; background: rgba(3,6,9,.56); pointer-events: auto; animation: mission-card-in .7s ease; }
   .ed-mission-card .inner { text-align: center; padding: 30px; max-width: 760px; }
   .ed-mission-card .year { color: var(--gold); font-size: 12px; letter-spacing: 4px; text-transform: uppercase; }
@@ -388,13 +368,15 @@ const CSS = /* css */ `
 
   @keyframes menu-drift { from { background-position: 54% 48%; background-size: 106%; } to { background-position: 60% 54%; background-size: 110%; } }
 
+  @media (max-width: 1100px) {
+    #ui-root { --minimap-size: 160px; }
+    #ed-desc { flex-basis: 190px; }
+    #ed-commands { flex-basis: 190px; }
+  }
   @media (max-width: 820px) {
     .ed-menu-shell { width: 100%; padding: 30px 22px 24px; }
-    .ed-menu-side { display: none; }
     .ed-menu-title { font-size: clamp(38px, 11vw, 62px); }
     .ed-menu-actions { max-width: none; }
-    .ed-menu-screen::before { background: linear-gradient(90deg, rgba(4,7,10,.9), rgba(4,7,10,.48)), linear-gradient(0deg, rgba(4,7,10,.94), transparent 60%); }
-    .ed-campaign-grid { grid-template-columns: 1fr; }
     .ed-campaign-head { display: block; }
     .ed-cinematic { padding: 24px; }
     .ed-cinematic-footer { left: 24px; right: 24px; bottom: 20px; }
@@ -402,8 +384,8 @@ const CSS = /* css */ `
     .ed-title-card h1 { letter-spacing: 1px; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .ed-title-screen, .ed-menu-screen, .ed-cinematic, .ed-campaign-hub { background-position: center; }
-    .ed-menu-screen, .ed-title-screen, .ed-cinematic { animation: none !important; background-size: cover; }
+    .ed-cinematic { background-position: center; }
+    .ed-cinematic { animation: none !important; background-size: cover; }
     .ed-cinematic-copy, .ed-menu-btn, .ed-mission-card { animation: none !important; transition: none !important; opacity: 1; transform: none; }
   }
 
@@ -443,15 +425,16 @@ const CSS = /* css */ `
   .ed-codex-content .md-h3 { font-size: 13px; color: var(--text); margin: 10px 0 3px; }
 
   /* Tutorial */
-  #ed-tutorial { position: absolute; top: 92px; left: 50%; transform: translateX(-50%); width: min(440px, 82vw); background: rgba(12,16,24,0.95); border: 1px solid var(--gold); border-radius: 6px; padding: 12px 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.6); display: none; pointer-events: auto; z-index: 5; }
-  #ed-tutorial.show { display: block; animation: toast-in 0.3s ease; }
+  #ed-tutorial { position: absolute; top: 92px; right: 12px; width: 232px; background: rgba(12,16,24,0.95); border: 1px solid var(--gold); border-radius: 6px; padding: 12px 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.6); display: none; pointer-events: auto; z-index: 5; }
+  #ed-tutorial.show { display: block; animation: tutorial-in 0.3s ease; }
+  @keyframes tutorial-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
   #ed-tutorial .tut-head { display: flex; justify-content: space-between; align-items: center; font-size: 11px; letter-spacing: 2px; color: var(--gold-dim); text-transform: uppercase; }
   #ed-tutorial .tut-step { font-size: 14px; color: var(--text); line-height: 1.5; margin: 8px 0 6px; }
   #ed-tutorial .tut-actions { text-align: right; }
   .ed-hint-pulse { animation: hint-pulse 1.1s ease-in-out infinite; outline: 2px solid var(--gold) !important; outline-offset: 2px; border-radius: 4px; }
   @keyframes hint-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(232,195,106,0.55); } 50% { box-shadow: 0 0 0 9px rgba(232,195,106,0); } }
 
-  #ed-help { position: absolute; right: 12px; bottom: 12px; font-size: 11px; color: var(--text-dim); background: rgba(10,12,16,0.7); padding: 8px 12px; border-radius: 4px; border: 1px solid rgba(232,195,106,0.15); max-width: 220px; line-height: 1.5; }
+  #ed-help { position: absolute; right: 12px; bottom: 150px; font-size: 11px; color: var(--text-dim); background: rgba(10,12,16,0.7); padding: 8px 12px; border-radius: 4px; border: 1px solid rgba(232,195,106,0.15); max-width: 220px; line-height: 1.5; }
   #ui-root.help-collapsed #ed-help { display: none; }
   .ed-help-close { position: absolute; top: 2px; right: 4px; background: none; border: 0; color: var(--text-dim); font-size: 14px; cursor: pointer; padding: 0 3px; }
   #ed-help-open { position: absolute; right: 12px; bottom: 12px; width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(232,195,106,0.35); background: rgba(10,12,16,0.8); color: var(--gold); font-weight: 700; cursor: pointer; display: none; }
@@ -482,7 +465,7 @@ const CSS = /* css */ `
   #ed-objectives .obj.failed .mark { color: var(--red); }
 
   /* Commander dialogue box */
-  #ed-dialogue { position: absolute; left: 50%; bottom: 190px; transform: translateX(-50%); width: min(560px, 86vw); background: rgba(12,14,18,0.92); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 4px; padding: 10px 14px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; background-image: var(--weave); background-repeat: repeat-x; background-position: top; }
+  #ed-dialogue { position: absolute; left: 50%; bottom: 150px; transform: translateX(-50%); width: min(560px, 86vw); background: rgba(12,14,18,0.92); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 4px; padding: 10px 14px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; background-image: var(--weave); background-repeat: repeat-x; background-position: top; }
   #ed-dialogue.show { opacity: 1; }
   #ed-dialogue .who { font-size: 11px; letter-spacing: 1px; color: var(--gold); font-weight: 700; margin-bottom: 3px; }
   #ed-dialogue .txt { font-size: 13px; color: var(--text); line-height: 1.4; }
@@ -856,6 +839,16 @@ export class HUD {
     }
     this.tutorialEl.classList.add('show');
     this.root.classList.add('tutorial-open');
+    this.placeTutorial();
+  }
+
+  /** Keep the tutorial in the right-hand column, just under the objectives panel (it grows as goals reveal). */
+  private placeTutorial(): void {
+    if (!this.tutorialEl.classList.contains('show')) return;
+    const objectives = this.objPanelEl.getBoundingClientRect();
+    const rootTop = this.root.getBoundingClientRect().top;
+    const below = objectives.height > 0 ? objectives.bottom - rootTop + 10 : 56;
+    this.tutorialEl.style.top = `${Math.round(below)}px`;
   }
 
   hideTutorial(): void {
@@ -952,7 +945,23 @@ export class HUD {
   }
 
   showTechTree(): void {
-    openTechTree(this.root, () => {});
+    const p = this.game.players[0];
+    const civ = p?.civ;
+    const allowedUnits = this.game.mission?.def.allowedUnits;
+    openTechTree(
+      this.root,
+      () => {},
+      civ
+        ? {
+            civ,
+            period: this.game.settings.period,
+            era: p.era,
+            // The Plaza Mayor is never placed but always stands, and its technologies are researched there.
+            canBuild: (kind) => kind === BuildingKind.CENTER || this.game.canBuildKind(kind),
+            canTrain: (kind) => !allowedUnits || allowedUnits.includes(kind),
+          }
+        : undefined,
+    );
   }
 
   /** Show/hide the in-match shortcut panel (?). */
@@ -1057,6 +1066,9 @@ export class HUD {
     const mis = this.game.mission?.def;
     const edu = mis ? getEducational(mis.id) : undefined;
     const campaign = mis ? getCampaignForMission(mis.id) : undefined;
+    if (victory && mis?.epilogueImage) {
+      ov.style.background = `linear-gradient(180deg, rgba(6,8,12,.55), rgba(6,8,12,.86)), url("${publicAsset(mis.epilogueImage)}") center / cover`;
+    }
     const title = victory ? t('hud.victory.title') : t('hud.victory.defeat');
     const sub =
       winText && loseText ? (victory ? winText : loseText) : victory ? t('hud.victory.win') : t('hud.victory.lose');
@@ -1167,6 +1179,48 @@ export class HUD {
     }
   }
 
+  private deliverySignature(heritageId: string): string {
+    const delivery = this.game.mission?.activeDeliveryFor(heritageId);
+    return delivery ? `:d${delivery.def.id}=${delivery.delivered}` : '';
+  }
+
+  /** Chapter card between the acts of one mission; the mission clock waits while it is open. */
+  showActCard(kicker: string, title: string, text: string, image?: string): void {
+    this.showChapterCard(kicker, title, text, false, image);
+  }
+
+  /** A mission's narrated intro (per-beat backdrops), then `done` (the briefing). */
+  playMissionIntro(mis: MissionDef, done: () => void): void {
+    const beats = mis.intro ?? [];
+    if (!beats.length) {
+      done();
+      return;
+    }
+    // The world waits behind the intro, as it does behind the briefing (the mission clock must not run).
+    if (!this.game.getPaused()) this.game.togglePause();
+    this.game.audio.cinematicSting?.();
+    new CinematicPlayer(this.root, {
+      beats,
+      background: MENU_BACKDROP,
+      kicker: mis.title.toUpperCase(),
+      finalLabel: t('hud.cinematic.toBriefing'),
+      onDone: done,
+    });
+  }
+
+  /** Whether the map has a node of this kind (cached per match: nodes never appear later). */
+  private resourceOnMap(kind: string): boolean {
+    let cached = this.resourceKinds;
+    if (!cached || cached.match !== this.game) {
+      const kinds = new Set<string>();
+      for (const n of this.game.resourceNodes.values()) kinds.add(n.kind);
+      cached = this.resourceKinds = { match: this.game, kinds };
+    }
+    return cached.kinds.has(kind);
+  }
+
+  private resourceKinds: { match: unknown; kinds: Set<string> } | null = null;
+
   /** True while the chapter card is on screen (its absence means the mission may advance). */
   isMissionCardOpen(): boolean {
     return this.missionCard !== null && this.missionCard.isConnected;
@@ -1174,14 +1228,27 @@ export class HUD {
 
   /** Chapter title card shown over the opening camera flight. */
   private showMissionTitle(mis: MissionDef): void {
+    const [year, place] = mis.subtitle.split('·').map((part) => part.trim());
+    this.showChapterCard(
+      `${year ?? ''}${place ? ` · ${place}` : ''}`,
+      mis.title,
+      mis.history.split('\n')[0] ?? '',
+      true,
+    );
+  }
+
+  private showChapterCard(kicker: string, title: string, text: string, autoDismiss: boolean, image?: string): void {
     this.missionCard?.remove();
     const card = this.el('div', 'ed-mission-card');
-    const [year, place] = mis.subtitle.split('·').map((part) => part.trim());
+    if (image) {
+      card.classList.add('with-art');
+      card.style.backgroundImage = `linear-gradient(180deg, rgba(3,6,9,.25), rgba(3,6,9,.82) 70%), url("${publicAsset(image)}")`;
+    }
     card.innerHTML = `
       <div class="inner">
-        <div class="year">${year ?? ''}${place ? ` · ${place}` : ''}</div>
-        <h2>${mis.title}</h2>
-        <div class="place">${mis.history.split('\n')[0] ?? ''}</div>
+        <div class="year">${kicker}</div>
+        <h2>${title}</h2>
+        <div class="place">${text}</div>
         <div class="hint">${t('hud.missionCard.hint')}</div>
       </div>
     `;
@@ -1201,7 +1268,7 @@ export class HUD {
       }
     });
     card.focus();
-    if (new URLSearchParams(location.search).get('cardhold') !== '1') window.setTimeout(dismiss, 15000);
+    if (autoDismiss && new URLSearchParams(location.search).get('cardhold') !== '1') window.setTimeout(dismiss, 15000);
   }
 
   /** Leave the match (respects the active campaign). */
@@ -1374,6 +1441,20 @@ export class HUD {
         this.game.makeTrade(heritage.id),
       );
     }
+    const delivery = this.game.mission?.activeDeliveryFor(heritage.id);
+    if (delivery?.def.resource) {
+      const resource = delivery.def.resource;
+      const amount = Math.min(delivery.def.step ?? 50, (delivery.def.count ?? 0) - delivery.delivered);
+      this.addCommand(
+        t('hud.heritage.deliver', {
+          amount,
+          resource: RESOURCE_INFO[resource].name.toLowerCase(),
+          done: delivery.delivered,
+          total: delivery.def.count ?? 0,
+        }),
+        () => this.game.deliverToHeritage(heritage.id),
+      );
+    }
     if (heritage.operation === 'assembly') {
       const state = this.game.getAssemblyState();
       if (state === 'pendiente' && this.game.canStartAssembly()) {
@@ -1422,7 +1503,11 @@ export class HUD {
         .map((u) => u.id)
         .sort((a, b) => a - b)
         .join(',');
-      return 'u:' + ids + tail;
+      const one = units.length === 1 ? units[0]! : null;
+      const live = one
+        ? `|t:${one.orderQueue[0]?.kind ?? ''}:${one.orderQueue[0]?.entityId ?? ''}:${Math.floor(one.carryCountNow())}`
+        : '';
+      return 'u:' + ids + live + tail;
     }
     if (building) {
       if (building.owner !== 0) return 'enemy:' + building.id + tail;
@@ -1445,6 +1530,7 @@ export class HUD {
         (this.game.isHeritageVisited(heritage.id) ? ':v' : '') +
         (heritage.operation === 'toggle-canal' ? ':c' + Number(this.game.isCanalOpen()) : '') +
         (heritage.operation === 'assembly' ? ':a' + this.game.getAssemblyState() : '') +
+        this.deliverySignature(heritage.id) +
         tail
       );
     return 'idle' + tail;
@@ -1508,6 +1594,10 @@ export class HUD {
       }
     }
     this.addCommand(t('hud.unit.stop'), () => this.orderStop(), 'S');
+    // A peaceful mission (no active enemy) shows no military orders to its workers and scouts.
+    const civilians = units.every((u) => u.kind === UnitKind.WORKER || u.kind === UnitKind.SCOUT);
+    const mission = this.game.mission;
+    if (civilians && mission && !mission.def.enemy.active) return;
     this.addCommand(t('hud.unit.formation'), () => this.game.cycleFormation());
     this.addCommand(t('hud.unit.attackMove'), () => this.orderAttackMove(), t('hud.unit.attackMoveHint'));
     this.addCommand(t('hud.unit.aggressive'), () => this.orderStance('agresivo'));
@@ -1516,7 +1606,44 @@ export class HUD {
     this.addCommand(t('hud.unit.patrol'), () => this.orderPatrol());
   }
 
+  /** What a worker or scout is doing, for the peaceful missions' selection card. */
+  private civilianTask(u: Unit): string {
+    const order = u.orderQueue[0];
+    if (!order) return t('hud.unit.task.idle');
+    if (order.kind === 'build') {
+      const target = this.game.buildings.get(order.entityId ?? -1);
+      return t(target?.isFarm ? 'hud.unit.task.tilling' : 'hud.unit.task.building');
+    }
+    if (order.kind === 'deliver') return t('hud.unit.task.delivering');
+    if (order.kind === 'gather') {
+      if (this.game.buildings.get(order.entityId ?? -1)?.isFarm) return t('hud.unit.task.farming');
+      const kind = this.game.resourceNodes.get(order.entityId ?? -1)?.kind;
+      if (kind === 'fishing') return t('hud.unit.task.fishing');
+      if (kind === 'tree') return t('hud.unit.task.wood');
+      if (kind === 'well') return t('hud.unit.task.stone');
+      return t('hud.unit.task.food');
+    }
+    return t('hud.unit.task.walking');
+  }
+
   private unitDesc(u: Unit): string {
+    const mission = this.game.mission;
+    if (mission && !mission.def.enemy.active && (u.kind === UnitKind.WORKER || u.kind === UnitKind.SCOUT)) {
+      const carry = u.carryCountNow();
+      return t('hud.unit.civilian', {
+        hp: Math.ceil(u.hp),
+        maxHp: Math.ceil(u.maxHp),
+        task: this.civilianTask(u),
+        carry:
+          carry > 0
+            ? t('hud.unit.carrying', {
+                amount: Math.floor(carry),
+                max: u.maxCarry,
+                resource: RESOURCE_INFO[u.carriedResource()].name.toLowerCase(),
+              })
+            : '',
+      });
+    }
     const stats = u.stats;
     const stance = STANCE_TOOLTIP[u.combatStance];
     const bonuses = Object.entries(stats.bonusVs ?? {}).map(([cls, value]) => ({
@@ -1660,20 +1787,17 @@ export class HUD {
 
     // build more (if center, house, etc.)
     if (b.kind === BuildingKind.CENTER) {
-      this.addCard(
-        '🏠',
-        t('hud.building.house'),
-        this.costText(getBuildingStats(BuildingKind.HOUSE, b.era).cost),
-        () => this.game.startPlacement(BuildingKind.HOUSE),
-        { cat: 'econ' },
-      );
-      this.addCard(
-        '🌽',
-        t('hud.building.farm'),
-        this.costText(getBuildingStats(BuildingKind.FARM, b.era).cost),
-        () => this.game.startPlacement(BuildingKind.FARM),
-        { cat: 'econ' },
-      );
+      // Same names as the worker's build menu, and only what this match allows.
+      for (const kind of [BuildingKind.HOUSE, BuildingKind.FARM]) {
+        if (!this.game.canBuildKind(kind)) continue;
+        this.addCard(
+          BUILDING_INFO[kind].icon,
+          BUILDING_INFO[kind].name,
+          this.costText(getBuildingStats(kind, b.era).cost),
+          () => this.game.startPlacement(kind),
+          { cat: 'econ' },
+        );
+      }
     }
 
     this.addCommand(t('hud.techTree.title'), () => this.showTechTree());
@@ -1944,71 +2068,29 @@ export class HUD {
     this.clearOverlays();
     this.setMenuOpen(true);
     const ov = this.el('div', 'ed-overlay ed-menu-screen');
-    ov.style.backgroundImage = `url("${MENU_BACKDROP}")`;
-    const shell = this.el('div', 'ed-menu-shell', ov);
-    shell.innerHTML = `
-      <div>
-        <div class="ed-menu-kicker">${t('hud.menu.main.kicker')}</div>
-        <h1 class="ed-menu-title">${t('hud.menu.main.titleTop')}<br>${t('hud.menu.main.titleBottom')}</h1>
-        <p class="ed-menu-sub">${t('hud.menu.main.sub')}</p>
-      </div>
-      <div class="ed-menu-actions"></div>
-      <div class="ed-menu-footer">
-        <span>${t('hud.menu.main.extras')}</span>
-        <span>${t('app.version')}</span>
-        <button type="button" data-action="intro">${t('hud.menu.main.intro')}</button>
-      </div>
-    `;
-    const actions = shell.querySelector('.ed-menu-actions') as HTMLElement;
-    const addAction = (icon: string, label: string, hint: string, onClick: () => void): HTMLButtonElement => {
-      const btn = this.el('button', 'ed-menu-btn', actions) as HTMLButtonElement;
-      btn.innerHTML = `<span class="ic">${icon}</span><span>${label}<small>${hint}</small></span>`;
-      btn.addEventListener('click', onClick);
-      return btn;
-    };
-    if (hasSave()) {
-      addAction('▶', t('hud.menu.main.continue'), t('hud.menu.main.continueHint'), () => {
+    renderMainMenu(ov, {
+      progress: this.readCampaignProgress(),
+      hasSave: hasSave(),
+      hasReplay: hasReplay(),
+      skirmish: !CAMPAIGN_ONLY,
+      onContinue: () => {
         this.setMenuOpen(false);
         this.clearOverlays();
         this.game.loadMatch();
-      }).classList.add('primary');
-    }
-    addAction('☀', t('hud.menu.main.campaigns'), t('hud.menu.main.campaignsHint'), () => this.showCampaignHub());
-    if (!CAMPAIGN_ONLY) {
-      addAction('⚔', t('hud.menu.main.skirmish'), t('hud.menu.main.skirmishHint'), () => this.showSkirmishSetup());
-    }
-    addAction('📖', t('hud.menu.main.codex'), t('hud.menu.main.codexHint'), () => this.showCodex());
-    addAction('?', t('hud.menu.main.controls'), t('hud.menu.main.controlsHint'), () => this.showControls());
-    addAction('⚙', t('hud.menu.main.options'), t('hud.menu.main.optionsHint'), () => this.showOptions('main'));
-
-    const side = this.el('div', 'ed-menu-side', ov);
-    const campaign = CAMPAIGNS[0]!;
-    const progress = this.readCampaignProgress();
-    const done = campaignProgressCount(campaign, completedMissions(progress, campaign.id));
-    const total = campaign.releasedMissionIds.length;
-    side.innerHTML = `
-      <div class="side-kicker">${t('hud.menu.campaignHub.campaignNumber', { n: campaignNumber(campaign.id), total: CAMPAIGNS.length })}</div>
-      <h3>${campaign.title}</h3>
-      <p>${campaign.description}</p>
-      <div class="progress"><i style="width:${total ? (done / total) * 100 : 0}%"></i></div>
-      <div class="side-meta">${t('hud.menu.side.progress', { done, total, era: campaign.era })}</div>
-    `;
-    const sideBtn = this.el('button', 'ed-primary', side) as HTMLButtonElement;
-    sideBtn.textContent = done >= total && total > 0 ? t('hud.menu.side.completed') : t('hud.menu.side.enter');
-    sideBtn.disabled = total === 0;
-    sideBtn.addEventListener('click', () => this.showCampaignHub());
-
-    const introBtn = shell.querySelector('[data-action="intro"]') as HTMLButtonElement;
-    introBtn.addEventListener('click', () => this.showSeriesIntro());
-    if (hasReplay()) {
-      const replay = this.el('button', '', shell.querySelector('.ed-menu-footer') as HTMLElement);
-      replay.textContent = t('hud.menu.main.replay');
-      replay.addEventListener('click', () => {
+      },
+      onCampaigns: () => this.showCampaignHub(),
+      onPlay: (id) => this.launchMission(id),
+      onSkirmish: () => this.showSkirmishSetup(),
+      onCodex: () => this.showCodex(),
+      onControls: () => this.showControls(),
+      onOptions: () => this.showOptions('main'),
+      onIntro: () => this.showSeriesIntro(),
+      onReplay: () => {
         this.setMenuOpen(false);
         this.clearOverlays();
         this.game.loadReplayMatch();
-      });
-    }
+      },
+    });
   }
 
   /** First-launch title gate; the click is also the audio gesture. */
@@ -2017,7 +2099,6 @@ export class HUD {
     this.clearOverlays();
     this.setMenuOpen(true);
     const ov = this.el('div', 'ed-overlay ed-title-screen');
-    ov.style.backgroundImage = `linear-gradient(180deg, rgba(3,5,8,.34), rgba(3,5,8,.76)), url("${MENU_BACKDROP}")`;
     ov.innerHTML = `
       <div class="ed-title-card">
         <div class="ed-title-ornament"></div>
@@ -2028,6 +2109,7 @@ export class HUD {
         <div class="hint">${t('hud.menu.titleIntro.hint')}</div>
       </div>
     `;
+    decorateTitleScreen(ov);
     const enter = ov.querySelector('button') as HTMLButtonElement;
     enter.addEventListener('click', () => {
       this.markTitleIntroSeen();
@@ -2308,7 +2390,6 @@ export class HUD {
     if (!this.game.getPaused()) this.game.togglePause();
     this.clearOverlays();
     const ov = this.el('div', 'ed-overlay');
-    const panel = this.el('div', 'ed-panel ed-briefing', ov);
     const period = getPeriod(mis.period);
     const player = getCiv(mis.playerCiv);
     const enemy = getCiv(mis.enemyCiv);
@@ -2321,13 +2402,13 @@ export class HUD {
         ? `<div class="ed-hist">${mis.history}</div><div class="ed-hist"><b style="color:var(--gold)">${t('hud.menu.briefing.historicalContext')}</b> ${edu.context}</div>`
         : `<div class="ed-hist">${mis.history}</div>`;
     const funFact = edu
-      ? `<div class="ed-sabias">💡 <b>${t('hud.menu.briefing.didYouKnow')}</b> ${edu.didYouKnow}</div>`
+      ? `<div class="ed-sabias"><b>${t('hud.menu.briefing.didYouKnow')}</b> ${edu.didYouKnow}</div>`
       : '';
     const playerName = mis.playerName ?? player.name;
     const enemyName = mis.enemyName ?? enemy.name;
     const sides = mis.enemy.active
-      ? `<span>${t('hud.menu.briefing.sides', { player: escapeHtml(playerName), enemy: escapeHtml(enemyName) })}</span>`
-      : `<span>${t('hud.menu.briefing.sidesSolo', { player: escapeHtml(playerName) })}</span>`;
+      ? t('hud.menu.briefing.sidesVs', { player: escapeHtml(playerName), enemy: escapeHtml(enemyName) })
+      : t('hud.menu.briefing.sidesAlone', { player: escapeHtml(playerName) });
     const sources =
       edu && edu.sources.length
         ? `<details class="ed-fuentes"><summary>${t('hud.menu.briefing.sources')}</summary><ul>${edu.sources
@@ -2348,103 +2429,62 @@ export class HUD {
           }</div></div>`,
       )
       .join('');
-    const commandersHtml = commanders ? `<div class="ed-commanders">${commanders}</div>` : '';
     const introArt = artIntroForMission(mis.id, { includeUnreviewed: includeUnreviewedArt() });
-    const art = introArt ? artFigureHtml(introArt) : '';
     const campaign = getCampaignForMission(mis.id);
-    panel.innerHTML = `
-      <div style="font-size:12px;letter-spacing:3px;color:#a8883f">${campaign ? t('hud.menu.briefing.campaign', { campaign: campaign.title }) : t('hud.menu.briefing.mission')} · ${mis.subtitle}</div>
-      <h2>${mis.title}</h2>
-      <div class="ed-meta">
-        <span>${t('hud.menu.briefing.period', { period: period.name, dates: period.dates })}</span>
-        <span>${t('hud.menu.briefing.geography', { map: MAP_LABEL[mis.map.type] })}</span>
-        ${sides}
-      </div>
-      ${commandersHtml}
-      ${art}
-      ${context}
-      ${funFact}
-      <div class="sub" style="text-align:left;font-size:12px;color:var(--text);line-height:1.7;margin-bottom:10px"><b style="color:var(--gold)">${t('hud.menu.briefing.objectives')}</b><br>${this.objectiveTitles(
-        briefingObjectives,
-      )
-        .map((t) => '• ' + t)
-        .join('<br>')}</div>
-      ${sources}
-    `;
-    const start = this.el('button', 'ed-primary', panel);
-    start.textContent = t('hud.menu.briefing.start');
-    start.addEventListener('click', () => {
-      this.clearOverlays();
-      onStart();
-      if (this.game.introEnabled) this.showMissionTitle(mis);
+    const index = campaign ? campaign.releasedMissionIds.indexOf(mis.id) : -1;
+    const kicker =
+      campaign && index >= 0
+        ? t('hud.menu.briefing.kicker', {
+            n: campaignNumber(campaign.id),
+            campaign: campaign.title,
+            mission: index + 1,
+            total: campaign.releasedMissionIds.length,
+          })
+        : t('hud.menu.briefing.mission');
+    // The objective titles carry the "alternative" prefix; the optional ones get a tag instead of a suffix.
+    const titles = this.objectiveTitles(briefingObjectives.map((o) => ({ ...o, optional: false })));
+    renderBriefing(ov, {
+      kicker,
+      title: mis.title,
+      subtitle: mis.subtitle,
+      backdrop: MISSION_ART[mis.id],
+      accent: campaign?.accent ?? '#c99a55',
+      art: introArt
+        ? artFigureHtml(introArt)
+        : MISSION_ART[mis.id]
+          ? `<figure class="ed-art"><img src="${MISSION_ART[mis.id]}" alt="${escapeHtml(mis.title)}" decoding="async"><figcaption>${t('hud.menu.briefing.captureCaption')}</figcaption></figure>`
+          : '',
+      story: context,
+      didYouKnow: funFact,
+      commanders: commanders ? `<div class="ed-commanders">${commanders}</div>` : '',
+      sources,
+      facts: [
+        { label: t('hud.menu.briefing.factPeriod'), value: `${period.name} · ${period.dates}` },
+        { label: t('hud.menu.briefing.factMap'), value: MAP_LABEL[mis.map.type] },
+        { label: t('hud.menu.briefing.factSides'), value: sides },
+      ],
+      objectives: briefingObjectives.map((o, i) => ({ title: titles[i], optional: !!o.optional })),
+      onStart: () => {
+        this.clearOverlays();
+        onStart();
+        if (this.game.introEnabled) this.showMissionTitle(mis);
+      },
+      onBack: () => this.showCampaignHub(campaign?.id),
     });
   }
 
-  /** Campaign map for La Senda del Sol. Only Caral is playable in this release. */
-  showCampaignHub(): void {
+  /** The campaign path of La Senda del Sol: campaigns and missions open in order. */
+  showCampaignHub(selected?: CampaignId): void {
     this.clearOverlays();
     this.setMenuOpen(true);
     const ov = this.el('div', 'ed-overlay ed-campaign-hub');
-    ov.style.backgroundImage = `linear-gradient(0deg, rgba(4,7,10,.9), rgba(4,7,10,.62)), url("${MENU_BACKDROP}")`;
-    const panel = this.el('div', 'ed-panel ed-campaign-panel', ov);
-    const campaignTitles = CAMPAIGNS.map((c) => c.title).join(' · ');
-    const featuredCampaign = CAMPAIGNS[0]!;
-    panel.innerHTML = `
-      <div class="ed-campaign-head">
-        <div>
-          <div class="ed-menu-kicker">${t('app.series')}</div>
-          <h2>${t('hud.menu.campaignHub.title')}</h2>
-          <div class="sub">${t('hud.menu.campaignHub.subtitle', { campaigns: campaignTitles })}</div>
-        </div>
-      </div>
-      <div class="ed-campaign-grid"></div>
-      <div class="ed-campaign-foot">
-        <button class="ed-ghostbtn" type="button" data-action="intro">${t('hud.menu.campaignHub.intro', { campaign: featuredCampaign.title })}</button>
-        <button class="ed-primary" type="button" data-action="back">${t('hud.menu.campaignHub.back')}</button>
-      </div>
-    `;
-    const grid = panel.querySelector('.ed-campaign-grid') as HTMLElement;
-    const progress = this.readCampaignProgress();
-    CAMPAIGNS.forEach((campaign) => {
-      const card = this.el('div', `ed-campaign-card ${campaign.status}`, grid);
-      card.style.setProperty('--campaign-accent', campaign.accent);
-      const completed = completedMissions(progress, campaign.id);
-      const done = campaignProgressCount(campaign, completed);
-      const total = campaign.releasedMissionIds.length;
-      const available = campaign.status === 'available' && total > 0;
-      card.innerHTML = `
-        <div class="era">${t('hud.menu.campaignHub.campaignNumber', { n: campaignNumber(campaign.id), total: CAMPAIGNS.length })} · ${campaign.era}</div>
-        <h3>${campaign.title}</h3>
-        <p>${campaign.description}</p>
-        <div class="card-meta">
-          <span>${available ? t('hud.menu.campaignHub.completed', { done, total }) : t('hud.menu.campaignHub.upcoming')}</span>
-          <span>${campaign.subtitle}</span>
-        </div>
-        <div class="card-actions"></div>
-      `;
-      const actions = card.querySelector('.card-actions') as HTMLElement;
-      if (available) {
-        for (const mission of campaign.releasedMissionIds) {
-          const title = this.missionTitle(mission);
-          const play = this.el('button', 'ed-primary', actions) as HTMLButtonElement;
-          play.textContent = completed.includes(mission)
-            ? t('hud.menu.campaignHub.completedMission', { title })
-            : t('hud.menu.campaignHub.play', { title });
-          play.addEventListener('click', () => this.launchMission(mission));
-        }
-        const upcoming = this.el('div', 'upcoming', card);
-        upcoming.textContent = campaign.upcoming.length
-          ? t('hud.menu.campaignHub.upcomingList', { missions: campaign.upcoming.join(', ') })
-          : '';
-      } else {
-        const tag = this.el('span', 'upcoming', actions);
-        tag.textContent = t('hud.menu.campaignHub.inPreparation');
-      }
-    });
-    panel.querySelector('[data-action="back"]')!.addEventListener('click', () => this.showMainMenu());
-    panel.querySelector('[data-action="intro"]')!.addEventListener('click', () => {
-      this.clearOverlays();
-      this.showCampaignIntroReplay();
+    renderCampaignPath(ov, {
+      progress: this.readCampaignProgress(),
+      unlockAll: new URLSearchParams(window.location.search).get('unlock') === 'all',
+      selected,
+      onPlay: (id) => this.launchMission(id),
+      onPrologue: (id) => this.showCampaignIntroReplay(id),
+      onBack: () => this.showMainMenu(),
     });
   }
 
@@ -2453,27 +2493,22 @@ export class HUD {
     this.showCampaignHub();
   }
 
-  private showCampaignIntroReplay(): void {
+  private showCampaignIntroReplay(id: CampaignId): void {
+    const campaign = CAMPAIGNS.find((c) => c.id === id) ?? CAMPAIGNS[0]!;
     this.clearOverlays();
     this.setMenuOpen(true);
     this.game.audio.cinematicSting();
     new CinematicPlayer(this.root, {
-      beats: CAMPAIGNS[0]!.prologue,
-      background: MENU_BACKDROP,
+      beats: campaign.prologue,
+      // Each campaign's own art only: Caral's capture is not a backdrop for the Viceroyalty.
+      background: CAMPAIGN_ART[campaign.id],
       kicker: t('hud.menu.campaignIntro.kicker', {
-        number: t('hud.menu.campaignHub.campaignNumber', {
-          n: campaignNumber(CAMPAIGNS[0]!.id),
-          total: CAMPAIGNS.length,
-        }),
-        campaign: CAMPAIGNS[0]!.title.toUpperCase(),
+        number: t('hud.menu.campaignHub.campaignNumber', { n: campaignNumber(campaign.id), total: CAMPAIGNS.length }),
+        campaign: campaign.title.toUpperCase(),
       }),
       finalLabel: t('hud.menu.campaignHub.introReplay'),
-      onDone: () => this.showCampaignHub(),
+      onDone: () => this.showCampaignHub(campaign.id),
     });
-  }
-
-  private missionTitle(id: string): string {
-    return getReleasedMission(id)?.title ?? getReleasedMission('m1_caral')?.title ?? '';
   }
 
   private launchMission(id: string): void {
@@ -2738,6 +2773,7 @@ export class HUD {
     if (this.game.mission) {
       const cardOpen = this.isMissionCardOpen();
       this.objPanelEl.style.display = cardOpen ? 'none' : 'block';
+      this.placeTutorial();
       if (!cardOpen && this.updateAcc > 0.15) this.refreshObjectives();
     } else {
       this.objPanelEl.style.display = 'none';
@@ -2752,8 +2788,15 @@ export class HUD {
         span.textContent = formatNumber(val);
         el.classList.toggle('res-low', val < 30);
       }
-      // hide resources unavailable in the period (e.g. Stone without a Quarry)
-      this.resEls.stone.classList.toggle('res-unavailable', !this.game.canBuildKind(BuildingKind.REFINERY));
+      // hide resources unavailable in the match (e.g. Stone without a Quarry or quarry nodes, Silver in Caral)
+      this.resEls.stone.classList.toggle(
+        'res-unavailable',
+        !this.game.canBuildKind(BuildingKind.REFINERY) && !this.resourceOnMap('well'),
+      );
+      this.resEls.silver.classList.toggle(
+        'res-unavailable',
+        !this.resourceOnMap('mine') && Math.floor(p.resources.silver) === 0,
+      );
       this.popEl.querySelector('span')!.textContent = `${p.populationUsed}/${p.populationCap}`;
       const period = getPeriod(this.game.settings.period);
       this.eraEl.querySelector('span:last-child')!.textContent = `${period.name} · ${period.dates}`;

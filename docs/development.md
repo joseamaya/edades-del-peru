@@ -865,6 +865,9 @@ Open `http://localhost:4174/edades-del-peru/?mission=m1_caral&seed=777&fog=0&low
 and confirm that `draco_wasm_wrapper.js`, `draco_decoder.wasm`, GLB files,
 `media/` and `mods/` return 200. Assets under `public/` must resolve through
 `src/util/publicAsset.ts`; do not hardcode `/draco/` or other root paths.
+`public/draco/` ships only the WebAssembly decoder (`draco_wasm_wrapper.js` + `draco_decoder.wasm`):
+the pure-JavaScript fallback `draco_decoder.js` (0.7 MB) was dropped from the bundle because every
+supported browser has WebAssembly, and Three's `DRACOLoader` only fetches it without WebAssembly.
 The manual `GitHub Pages build (manual)` workflow produces a downloadable `dist`
 artifact with the project base and checks the Draco files; it does not deploy.
 The `Deploy GitHub Pages` workflow is the explicit release path. Pages is now

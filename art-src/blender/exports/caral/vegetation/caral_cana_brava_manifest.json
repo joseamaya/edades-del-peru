@@ -1,0 +1,68 @@
+{
+  "asset_id": "caral_cana_brava",
+  "source_scene": "scenes/caral_vegetation_kit.blend",
+  "script": "scripts/blender/build_caral_vegetation_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "pivot": "trunk base at origin",
+  "budget": {
+    "LOD0": 600,
+    "LOD1": 150
+  },
+  "lods": {
+    "LOD0": {
+      "triangles": 360,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Kit_Plume",
+        "MAT-Kit_Reed"
+      ],
+      "bounds": {
+        "min": [
+          -1.4953,
+          -1.5131,
+          -0.0569
+        ],
+        "max": [
+          1.6538,
+          1.9294,
+          4.4142
+        ],
+        "size": [
+          3.1491,
+          3.4425,
+          4.4711
+        ]
+      },
+      "file": "caral_cana_brava_lod0.glb",
+      "bytes": 26540
+    },
+    "LOD1": {
+      "triangles": 84,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Kit_Plume",
+        "MAT-Kit_Reed"
+      ],
+      "bounds": {
+        "min": [
+          -1.2189,
+          -1.9305,
+          -0.054
+        ],
+        "max": [
+          0.867,
+          1.9294,
+          4.4174
+        ],
+        "size": [
+          2.0859,
+          3.8599,
+          4.4714
+        ]
+      },
+      "file": "caral_cana_brava_lod1.glb",
+      "bytes": 9984
+    }
+  }
+}
