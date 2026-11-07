@@ -23,6 +23,7 @@ export const CARAL_VALLEY_PATH_WIDTH = 0.65;
  * the communal canal: cotton, gourds, squash and beans in the lower valley.
  */
 const FIELD_ANCHORS: ReadonlyArray<readonly [number, number]> = [
+  // West bank, around the communal canal.
   [46, 104],
   [54, 96],
   [44, 128],
@@ -30,11 +31,23 @@ const FIELD_ANCHORS: ReadonlyArray<readonly [number, number]> = [
   [42, 146],
   [58, 112],
   [48, 88],
+  [52, 72],
+  [44, 60],
+  [56, 52],
+  // East bank: the floodplain between the river and the city's terrace.
+  [84, 40],
+  [90, 58],
+  [84, 76],
+  [92, 92],
+  [86, 108],
+  [92, 126],
+  [84, 142],
+  [90, 160],
 ];
-const VALLEY_FIELD_SIZE_MIN = 3.4;
-const VALLEY_FIELD_SIZE_MAX = 4.6;
+const VALLEY_FIELD_SIZE_MIN = 5.0;
+const VALLEY_FIELD_SIZE_MAX = 7.5;
 const VALLEY_FIELD_SLOPE_LIMIT = 0.32;
-const VALLEY_FIELD_CLEARANCE = 4.2;
+const VALLEY_FIELD_CLEARANCE = 7.5;
 export const VALLEY_FIELD_MARGIN = 0.7;
 
 /** Centreline of the Supe's north-south reach in the transect map (mirrors the heightmap generator). */

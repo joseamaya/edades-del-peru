@@ -184,8 +184,10 @@ def ground(x: float, z: float) -> tuple[float, float, float, float]:
     coastal = (1.0 - smoothstep(c + 30.0, c + 46.0, x)) * (1.0 - wet) * (1.0 - floodplain)
     # Lower valley: fields and huarango groves on the west bank, drier towards the terrace.
     valley = (1.0 - terrace) * (1.0 - beach) * (1.0 - coastal)
-    grass = valley * (0.45 + 0.5 * floodplain) + wet * 1.4
-    dirt = valley * 0.25 + aspero * 0.5 + terrace * 0.25
+    # Irrigated plots and riparian meadow make a mottled green; the floodplain is the lushest band.
+    mottle = 0.8 + 0.4 * (0.5 + 0.5 * math.sin(x * 0.11 + 1.3) * math.sin(z * 0.09 + 0.4))
+    grass = valley * (0.7 + 0.8 * floodplain) * mottle + wet * 1.4
+    dirt = valley * 0.14 * (1.6 - mottle) + aspero * 0.5 + terrace * 0.25
     sand = beach * 1.2 + terrace * 0.7 + aspero * 0.2
     rock = high * 1.1 + terrace * 0.05
     # The coastal strip around Áspero is dry desert edge: sand and gravel, no groves.

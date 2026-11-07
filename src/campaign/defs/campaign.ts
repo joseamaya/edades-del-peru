@@ -25,7 +25,8 @@ export const MISSIONS: MissionDef[] = [
     enemyCiv: CivId.CARAL,
     // A compressed west-to-east transect of the Supe valley (scripts/build_caral_heightmap.py).
     map: { seed: 3000, type: 'coast', size: CARAL_MAP_SIZE },
-    atmosphere: { fogDensity: 0.0032, sunWarmth: 0.9, skyTint: '#cdd3d2' },
+    // Light coastal haze: denser fog washed the green valley out from the RTS camera.
+    atmosphere: { fogDensity: 0.0015, sunWarmth: 0.9, skyTint: '#cdd3d2' },
     layout: {
       // Act I starts at Áspero, on its low coastal rise north of the river mouth.
       base: { x: 42 / CARAL_MAP_SIZE, z: 172 / CARAL_MAP_SIZE },

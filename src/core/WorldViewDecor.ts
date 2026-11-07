@@ -50,6 +50,8 @@ import { getMission } from '../campaign/defs/campaign';
 const AMBIENT_PROP_SEED = 7;
 const AMBIENT_FAUNA_SEED = 13;
 const FISHING_SCAN_MARGIN = 4;
+/** Authored maps keep tree clusters this far from the mission's start base. */
+const GROVE_START_CLEARANCE = 72;
 
 /** World/mission decoration and opening spawns. Transitional host while Game is decomposed. */
 /** Riparian fauna roosts keep this far from trees (crown radius plus their grazing orbit). */
@@ -755,7 +757,17 @@ export class WorldViewDecor {
       for (let attempt = 0; attempt < 40 && !found; attempt++) {
         cx = rng.range(18, s.mapSize - 18);
         cz = rng.range(18, s.mapSize - 18);
-        found = !this.game.terrain.isWater(cx, cz) && !this.game.isReserved(cx, cz);
+        // On authored sites groves grow where the ground is painted green (the floodplain and fields).
+        const painted = (this.game.terrain.data as TerrainData).getAuthoredGround(cx, cz);
+        // They also keep clear of an authored start (the opening view is the scene budget's worst case).
+        const start = this.game.missionLayout?.base;
+        const nearStart =
+          !!painted && !!start && distance2D(cx, cz, start.x * s.mapSize, start.z * s.mapSize) < GROVE_START_CLEARANCE;
+        found =
+          !this.game.terrain.isWater(cx, cz) &&
+          !this.game.isReserved(cx, cz) &&
+          (!painted || painted[0]! > 0.6) &&
+          !nearStart;
       }
       if (!found) continue;
       const count = 20 + Math.floor(rng.float() * 9);
