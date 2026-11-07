@@ -6,6 +6,7 @@ import type { RigClipState, RigVariant } from '../model/defs/modelAssets';
 import type { RigInstance } from './RigInstance';
 import type { RigVariantHandle } from './rigVariants';
 import { createRigAttireTools } from './rigAttire';
+import { consolidateRig } from './modelConsolidation';
 import {
   ANDEAN_SPECS,
   andeanCultureForVariant,
@@ -177,17 +178,26 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   if (worker && hand) {
     tool = new THREE.Group();
     tool.name = 'attire_tool';
-    // Shaft and binding share the wood material: one mesh, one draw call per pass.
-    const shaftGeo = new THREE.CylinderGeometry(0.014, 0.017, 0.8, 6).translate(0, -0.2, 0);
-    const bindingGeo = new THREE.CylinderGeometry(0.021, 0.021, 0.06, 6).translate(0, -0.56, 0);
-    const handle = mergeGeometries([shaftGeo, bindingGeo], false);
-    shaftGeo.dispose();
-    bindingGeo.dispose();
-    if (handle) tool.add(new THREE.Mesh(trackGeometry(handle), woodMat));
-    const blade = new THREE.Mesh(trackGeometry(new THREE.ConeGeometry(0.042, 0.12, 5)), stoneMat);
-    blade.rotation.x = Math.PI;
-    blade.position.y = -0.67;
-    tool.add(blade);
+    // Wooden shaft, binding and stone blade in one vertex-coloured mesh: one draw call per pass.
+    const parts: [THREE.BufferGeometry, THREE.Color][] = [
+      [new THREE.CylinderGeometry(0.014, 0.017, 0.8, 6).translate(0, -0.2, 0), woodMat.color],
+      [new THREE.CylinderGeometry(0.021, 0.021, 0.06, 6).translate(0, -0.56, 0), woodMat.color],
+      [new THREE.ConeGeometry(0.042, 0.12, 5).rotateX(Math.PI).translate(0, -0.67, 0), stoneMat.color],
+    ];
+    for (const [geometry, color] of parts) {
+      const n = geometry.getAttribute('position').count;
+      const colors = new Float32Array(n * 3);
+      for (let i = 0; i < n; i++) color.toArray(colors, i * 3);
+      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    }
+    const toolGeo = mergeGeometries(
+      parts.map(([g]) => g),
+      false,
+    );
+    parts.forEach(([g]) => g.dispose());
+    const toolMat = makeMaterial(0xffffff, 0.9);
+    toolMat.vertexColors = true;
+    if (toolGeo) tool.add(new THREE.Mesh(trackGeometry(toolGeo), toolMat));
     tool.rotation.set(-0.15, 0, 0);
     const toBody = new THREE.Vector3(root.position.x - hand.x, 0, root.position.z - hand.z).normalize();
     attach('hand_r', tool, hand.clone().addScaledVector(toBody, 0.03));
@@ -274,6 +284,13 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
       attach('hand_r', sling, new THREE.Vector3(hand.x, hand.y - 0.35, hand.z));
     }
   }
+
+  // The variant is final: merge the static body parts into a few skinned meshes (hair, eyebrows, sash
+  // and headband in one draw call, the garments in another). The tool and the carry bundle toggle
+  // their visibility at runtime, so they stay separate.
+  const consolidated = consolidateRig(root, ['attire_headband']);
+  tools.ownedGeometries.push(...consolidated.geometries);
+  tools.ownedMaterials.push(...consolidated.materials);
 
   return {
     setCarrying(next: boolean, color?: number): void {
