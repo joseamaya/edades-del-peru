@@ -1,6 +1,7 @@
 import type { Resources } from '../../core/types';
 
 export type HeritageBuildingId =
+  | 'aspero_huaca_idolos'
   | 'caral_pyramid_mayor'
   | 'caral_pyramid_central'
   | 'caral_pyramid_quarry'
@@ -30,6 +31,7 @@ export type HeritageBuildingId =
   | 'cusco_ushnu';
 
 export type HeritageSector =
+  | 'Áspero'
   | 'Caral Alto'
   | 'Caral Bajo'
   | 'Chavín'
@@ -59,6 +61,17 @@ export interface HeritageBuildingDef {
 }
 
 export const HERITAGE_BUILDINGS: Record<HeritageBuildingId, HeritageBuildingDef> = {
+  aspero_huaca_idolos: {
+    id: 'aspero_huaca_idolos',
+    name: 'Huaca de los Ídolos',
+    sector: 'Áspero',
+    role: 'Plataforma ceremonial del pueblo pesquero',
+    summary:
+      'Áspero, en la desembocadura del Supe, ocupaba 18,8 ha con 22 conjuntos arquitectónicos. En la Huaca de los Ídolos se hallaron figurillas de arcilla sin cocer bajo un piso: la huaca creció por fases, con ofrendas antes de cada nueva construcción. Las proporciones y los recintos de la cima son una reconstrucción.',
+    confidence: 'documentado: crecimiento por fases y ofrendas; forma y recintos supuestos',
+    citation: 'Dossier de Caral · Feldman 1985 · Zona Arqueológica Caral',
+    sources: ['docs/historia/campanas/caral.md'],
+  },
   caral_pyramid_mayor: {
     id: 'caral_pyramid_mayor',
     name: 'Gran Pirámide y Plaza Central',

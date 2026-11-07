@@ -407,6 +407,48 @@ def pyramid_small(mats, lod):
     return bm, [mats[k] for k in order]
 
 
+def huaca_idolos(mats, lod):
+    """Huaca de los Ídolos at Áspero: a platform mound grown in superposed phases, with rooms on top.
+
+    Documented (docs/historia/campanas/caral.md, Feldman 1985): a mound built in phases, with offerings
+    (unfired clay figurines under a floor) before each new construction; rooms on its summit. Assumed:
+    three terraces, proportions compressed for the RTS camera (~3 people tall), the stair, the room plan,
+    whitish plaster like the early Caral buildings.
+    """
+    bm = bmesh.new()
+    order = ['plaster_early', 'stone', 'earth', 'wood']
+    w, d, h = 20.0, 16.0, 1.9
+    LEDGES[:] = [k * h for k in range(3)]
+    box(bm, (0, 0, -0.25), (w + 1.2, d + 1.2, 0.6), 2)
+    tops = []
+    for k in range(3):
+        lw, ld = w - k * 3.8, d - k * 3.2
+        y = (d - ld) / 2 * 0.5
+        terrace(bm, 0.0, y, k * h, lw, ld, h, 0, 1, lod, 60 + k)
+        tops.append((lw, ld, y))
+    lw, ld, ly = tops[-1]
+    top = 3 * h
+    flight(bm, 0.0, -d / 2 - 2.2, ly - ld / 2 + 0.8, 0.0, top, 2.4, 14, 0, 1, lod)
+    # Summit rooms: two walled enclosures facing a small court (plan assumed).
+    t = 0.3
+    rh = 1.3 if lod == 0 else 1.1
+    for cx, rw in ((-lw * 0.22, lw * 0.36), (lw * 0.24, lw * 0.3)):
+        ry = ly + ld * 0.12
+        rd = ld * 0.5
+        rough_box(bm, (cx, ry + rd / 2, top + rh / 2), (rw, t, rh), 0, 1 if lod == 0 else 0, 0.03, 70)
+        rough_box(bm, (cx - rw / 2, ry, top + rh / 2), (t, rd, rh), 0, 0, 0.03, 71)
+        rough_box(bm, (cx + rw / 2, ry, top + rh / 2), (t, rd, rh), 0, 0, 0.03, 72)
+        # Front wall in two halves around a doorway.
+        box(bm, (cx - (rw / 2 + 0.6) / 2, ry - rd / 2, top + rh / 2), (rw / 2 - 0.6, t, rh), 0)
+        box(bm, (cx + (rw / 2 + 0.6) / 2, ry - rd / 2, top + rh / 2), (rw / 2 - 0.6, t, rh), 0)
+    if lod == 0:
+        # Offering pit in the court (documented offerings; this form assumed) and posts of a shade.
+        blob(bm, (0.0, ly - ld * 0.2, top + 0.02), (0.7, 0.6, 0.06), 8, 3, 0.1, 75, 2)
+        for px in (-1.2, 1.2):
+            box(bm, (px, ly - ld * 0.32, top + 1.0), (0.16, 0.16, 2.0), 3)
+    return bm, [mats[k] for k in order]
+
+
 def ring(bm, radius, z, segs, gaps, gap_half):
     """Vertices of a circle, skipping the angles inside the stair gaps (returned as arcs). A full ring
     closes on its first vertex, so smooth bands have no shading seam at 0°."""
@@ -576,6 +618,7 @@ ASSETS = {
     'house_elite': lambda mats, lod: quincha_house(mats, lod, 'elite'),
     'house_aspero': lambda mats, lod: quincha_house(mats, lod, 'aspero'),
     'fair_tent': fair_tent,
+    'huaca_idolos': huaca_idolos,
 }
 
 
@@ -700,6 +743,7 @@ CONFIDENCE = {
     'house_elite': 'inferred',
     'house_aspero': 'assumed',
     'fair_tent': 'assumed',
+    'huaca_idolos': 'inferred',
 }
 
 

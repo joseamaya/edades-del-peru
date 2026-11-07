@@ -6,6 +6,7 @@ describe('campaign heritage buildings', () => {
   it('registers every modular Caral structure with a stable id', () => {
     const ids = Object.keys(HERITAGE_BUILDINGS);
     expect(ids).toEqual([
+      'aspero_huaca_idolos',
       'caral_pyramid_mayor',
       'caral_pyramid_central',
       'caral_pyramid_quarry',

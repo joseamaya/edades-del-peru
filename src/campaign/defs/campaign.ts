@@ -85,6 +85,13 @@ export const MISSIONS: MissionDef[] = [
         hidden: true,
         title: 'Acto I · Remonta el río Supe hasta el valle',
       },
+      {
+        id: 'a1_huaca',
+        kind: 'inspect',
+        heritageIds: ['aspero_huaca_idolos'],
+        optional: true,
+        title: 'Acto I · Visita la Huaca de los Ídolos de Áspero',
+      },
       // --- Act II: the Supe valley ---
       {
         id: 'a2_campos',
@@ -335,6 +342,16 @@ export const MISSIONS: MissionDef[] = [
             text: 'La pirámide queda sellada, como un último acto de cuidado. Reunid a la gente en la playa.',
           },
           { type: 'objective', objectiveId: 'a4_partida', state: 'activate', announce: true },
+        ],
+      },
+      {
+        id: 't_a1_huaca',
+        condition: { type: 'objective', objectiveId: 'a1_huaca', state: 'completed' },
+        effects: [
+          {
+            type: 'dialogue',
+            text: 'Nuestros abuelos levantaron esta huaca por fases: antes de cada nueva plataforma enterraron ofrendas de arcilla bajo el piso.',
+          },
         ],
       },
       {

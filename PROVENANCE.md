@@ -173,7 +173,8 @@ slot is absent (offline / without assets).
 - **Location**: `src/assets/architecture/caral/caral_<piece>_lod0.glb` and `_lod1.glb`: the Pyramid Mayor in
   use and in three construction phases (`pyramid_mayor_phase1` foundation, `_phase2` fill, `_phase3`
   finished), a smaller pyramid, the sunken circular plaza, common and elite quincha houses, an Áspero
-  fishing house and a fair tent.
+  fishing house, a fair tent and Áspero's Huaca de los Ídolos (`huaca_idolos`: three superposed terraces
+  with summit rooms; growth in phases with offerings documented, form and rooms assumed).
 - **Source**: generated in Blender by `scripts/blender/build_caral_architecture_kit.py`; kit scene
   `art-src/blender/scenes/caral_architecture_kit.blend` (Git LFS). Uncompressed exports and per-piece
   manifests (triangles, materials, bounds, budget, `confidence`, sources, `reviewed: false`) live in

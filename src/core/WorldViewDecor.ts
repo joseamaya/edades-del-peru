@@ -9,7 +9,7 @@ import { loadSceneryModel } from '../rendering/sceneryModels';
 import { loadSiteModel } from '../rendering/siteModels';
 import { mergeStaticByMaterial } from '../rendering/mergeStatic';
 import { CaralCity } from '../rendering/architectureKit';
-import { CARAL_CITY_BLOCKERS, CARAL_CITY_LAYOUT } from '../model/defs/caralCity';
+import { ASPERO_BLOCKERS, ASPERO_LAYOUT, CARAL_CITY_BLOCKERS, CARAL_CITY_LAYOUT } from '../model/defs/caralCity';
 import { loadDecorModel } from '../rendering/decorModels';
 import { planProps, propCountFor } from '../model/defs/props';
 import { planWildlife, faunaCountFor } from '../model/defs/wildlife';
@@ -197,14 +197,18 @@ export class WorldViewDecor {
     let cityShown = false;
     if (def.id === 'caral_site') {
       // The in-use city's houses are part of the simulation (headless too), independent of the kit load.
-      for (const blocker of CARAL_CITY_BLOCKERS) {
+      for (const blocker of [...CARAL_CITY_BLOCKERS, ...ASPERO_BLOCKERS]) {
         const pad = def.blockerPadding * 2;
         this.game.pathfinder.addObstacle({ x: blocker.x, z: blocker.z, w: blocker.w + pad, d: blocker.d + pad });
       }
       if (!this.game.headless) {
         // Blender architecture kit: the city in use replaces the ruins GLB, which stays the fallback until
         // the kit is ready and then only keeps its (hidden, still clickable) heritage nodes.
-        const city = new CaralCity(CARAL_CITY_LAYOUT, (x, z) => this.game.terrain.getHeight(x, z) - (site.y ?? 0));
+        // Áspero (act I) is baked with the city: they share the kit's materials, so it adds no draw calls.
+        const city = new CaralCity(
+          [...CARAL_CITY_LAYOUT, ...ASPERO_LAYOUT],
+          (x, z) => this.game.terrain.getHeight(x, z) - (site.y ?? 0),
+        );
         city.setMayorPhase(this.game.sitePhase);
         this.game.caralCity = city;
         void city.load().then((ok) => {

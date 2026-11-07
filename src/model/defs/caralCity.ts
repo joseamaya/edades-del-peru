@@ -18,7 +18,8 @@ export type CaralArchAssetId =
   | 'house_common'
   | 'house_elite'
   | 'house_aspero'
-  | 'fair_tent';
+  | 'fair_tent'
+  | 'huaca_idolos';
 
 /** Construction states of the Pyramid Mayor (act III of docs/design/caral-model-mission.md). */
 export type CaralMayorPhase = 'foundation' | 'fill' | 'finished' | 'in_use';
@@ -197,4 +198,35 @@ export const CARAL_CITY_BLOCKERS: readonly SiteBlocker[] = CARAL_CITY_LAYOUT.fla
   if (!size) return [];
   const quarter = Math.abs(Math.sin(p.rotY)) > 0.5;
   return [{ x: p.x, z: p.z, w: quarter ? size.d : size.w, d: quarter ? size.w : size.d }];
+});
+
+/** Footprint of the kit's Huaca de los Ídolos (LOD0 bounds of scripts/blender/build_caral_architecture_kit.py). */
+export const HUACA_IDOLOS_SIZE = { w: 21.2, d: 18.8, h: 8.25 };
+
+/**
+ * Áspero, the fishing village at the river mouth where act I starts: the Huaca de los Ídolos north of
+ * the player's base and fishing houses with net racks around it. Its 18.8 ha and 22 architectural
+ * complexes are documented; this small cluster is a game abstraction around the start base.
+ */
+export const ASPERO_HUACA = { x: 40, z: 148 };
+
+export const ASPERO_LAYOUT: readonly CaralArchPlacement[] = [
+  { asset: 'huaca_idolos', x: ASPERO_HUACA.x, z: ASPERO_HUACA.z, rotY: 0, scale: [1, 1, 1] },
+  ...(
+    [
+      [28, 164, HALF_PI],
+      [27, 178, HALF_PI + 0.2],
+      [31, 190, 0.6],
+      [55, 188, -0.4],
+      [57, 160, -HALF_PI],
+      [53, 147, -HALF_PI + 0.2],
+    ] as const
+  ).map(([x, z, rotY]): CaralArchPlacement => ({ asset: 'house_aspero', x, z, rotY, scale: [1, 1, 1] })),
+];
+
+/** The Áspero houses block their footprints (the huaca blocks through its heritage volume). */
+export const ASPERO_BLOCKERS: readonly SiteBlocker[] = ASPERO_LAYOUT.flatMap((p) => {
+  if (p.asset !== 'house_aspero') return [];
+  const quarter = Math.abs(Math.sin(p.rotY)) > 0.5;
+  return [{ x: p.x, z: p.z, w: quarter ? 4.4 : 5.4, d: quarter ? 5.4 : 4.4 }];
 });

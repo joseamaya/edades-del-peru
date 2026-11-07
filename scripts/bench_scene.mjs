@@ -21,7 +21,9 @@ const outFile = cliArg('out') ?? 'review/bench-scene.json';
 // gets cheaper.
 const BUDGETS = {
   // Kit counts include the shadow pass; the fauna is instanced per species and part.
-  m1_caral: { sceneTriangles: 540_000, sceneDrawCalls: 215, kitTriangles: 80_000, kitDrawCalls: 36 },
+  // The Áspero opening draws its village (huaca and fishing houses, ~5 materials in the main and shadow
+  // passes) next to the base: +15 calls over the former Caral-terrace opening.
+  m1_caral: { sceneTriangles: 540_000, sceneDrawCalls: 230, kitTriangles: 80_000, kitDrawCalls: 36 },
 };
 const KIT_NAMES = /^(trees_kit_|props_kit_|fauna_(deer|riparian_bird)_(body|leg|wingL|wingR)$)/;
 

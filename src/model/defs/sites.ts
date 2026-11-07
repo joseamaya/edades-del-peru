@@ -190,6 +190,16 @@ export const CARAL_HERITAGE_PROXIES: readonly CaralHeritageProxy[] = (
   ] as const
 ).map((p) => caralCityPoint<CaralHeritageProxy>(p));
 
+/** Áspero's Huaca de los Ídolos, on the coast west of the city (matches ASPERO_HUACA in caralCity.ts). */
+export const ASPERO_HERITAGE_PROXY: CaralHeritageProxy = {
+  id: 'aspero_huaca_idolos',
+  x: 40,
+  z: 148,
+  w: 21.2,
+  d: 18.8,
+  h: 8.25,
+};
+
 /** The circular altar is solid but has no heritage click proxy. */
 export const CARAL_CIRCULAR_ALTAR = caralCityPoint({ x: 72.5, z: 144.55, w: 10.6, d: 7.7 });
 
@@ -198,6 +208,7 @@ export const CARAL_SITE_BLOCKER_PADDING = 0.5;
 
 export const CARAL_SITE_BLOCKERS: readonly SiteBlocker[] = [
   ...CARAL_HERITAGE_PROXIES.map(({ x, z, w, d }) => ({ x, z, w, d })),
+  { x: ASPERO_HERITAGE_PROXY.x, z: ASPERO_HERITAGE_PROXY.z, w: ASPERO_HERITAGE_PROXY.w, d: ASPERO_HERITAGE_PROXY.d },
   CARAL_CIRCULAR_ALTAR,
 ];
 
@@ -235,7 +246,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       ground: { size: CARAL_GROUND_SIZE, weights: CARAL_GROUND },
     },
     pathCellSize: 1,
-    heritageProxies: CARAL_HERITAGE_PROXIES,
+    heritageProxies: [...CARAL_HERITAGE_PROXIES, ASPERO_HERITAGE_PROXY],
     blockers: CARAL_SITE_BLOCKERS,
     blockerPadding: CARAL_SITE_BLOCKER_PADDING,
     buildKeepout: CARAL_SITE_BUILD_KEEPOUT,

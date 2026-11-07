@@ -1,0 +1,77 @@
+{
+  "asset_id": "caral_huaca_idolos",
+  "source_scene": "scenes/caral_architecture_kit.blend",
+  "script": "scripts/blender/build_caral_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "confidence": "inferred",
+  "sources": [
+    "docs/historia/campanas/caral.md",
+    "docs/historia/civilizaciones/caral.md"
+  ],
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 872,
+      "draw_calls": 4,
+      "materials": [
+        "MAT-Arch_Earth",
+        "MAT-Arch_PlasterWhite",
+        "MAT-Arch_Stone",
+        "MAT-Arch_Wood"
+      ],
+      "bounds": {
+        "min": [
+          -10.6,
+          -10.21,
+          -0.55
+        ],
+        "max": [
+          10.6,
+          8.6,
+          7.7
+        ],
+        "size": [
+          21.2,
+          18.81,
+          8.25
+        ]
+      },
+      "file": "caral_huaca_idolos_lod0.glb",
+      "bytes": 80116
+    },
+    "LOD1": {
+      "triangles": 174,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Arch_Earth",
+        "MAT-Arch_PlasterWhite"
+      ],
+      "bounds": {
+        "min": [
+          -10.6,
+          -10.2,
+          -0.55
+        ],
+        "max": [
+          10.6,
+          8.6,
+          6.806
+        ],
+        "size": [
+          21.2,
+          18.8,
+          7.356
+        ]
+      },
+      "file": "caral_huaca_idolos_lod1.glb",
+      "bytes": 17472
+    }
+  }
+}
