@@ -127,7 +127,8 @@ export type ObjectiveKind =
   | 'inspect'
   | 'deliver'
   | 'canal_open'
-  | 'network';
+  | 'network'
+  | 'research';
 
 export type ObjState = 'pendiente' | 'activo' | 'completed' | 'failed';
 
@@ -162,6 +163,8 @@ export interface ObjectiveDef {
   heritageId?: HeritageBuildingId;
   /** Amount handed over per `deliver` command; defaults to 50. */
   step?: number;
+  /** Technology a `research` objective waits for. */
+  tech?: string;
   era?: Era;
   hidden?: boolean;
   /**

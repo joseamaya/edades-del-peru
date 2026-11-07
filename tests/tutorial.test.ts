@@ -103,7 +103,7 @@ describe('tutorial checks', () => {
     const tutorial = tutorialAt(game, 'storage');
     tutorial.update(0);
     tutorial.update(0);
-    expect(tutorial.toSave().stepId).toBe('pyramid');
+    expect(tutorial.toSave().stepId).toBe('nets');
   });
 
   it('finishes after the first materials reach the Pyramid Mayor', () => {

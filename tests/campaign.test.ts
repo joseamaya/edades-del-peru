@@ -137,7 +137,7 @@ describe('campaign educational content', () => {
       // non-combat objectives only, and it teaches building
       const nonCombat =
         id === 'm1_caral'
-          ? ['gather', 'build', 'reach', 'hold', 'inspect', 'canal_open', 'deliver']
+          ? ['gather', 'build', 'reach', 'hold', 'inspect', 'canal_open', 'deliver', 'research']
           : ['gather', 'build', 'survive', 'hold', 'deliver', 'network'];
       for (const o of mis.objectives) expect(nonCombat, `${id}/${o.id}`).toContain(o.kind);
       expect(

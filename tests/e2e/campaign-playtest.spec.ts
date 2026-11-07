@@ -470,6 +470,10 @@ test('plays m1 Caral with real construction and gathering, without objective che
       }
       if (active('a2_canal') && !g.isCanalOpen()) g.toggleCanal();
       if (active('a2_troje') && !placed.get('mill')) place('mill', { x: canal.x, z: canal.z + 16 }, ws[2]);
+      const mill = placed.get('mill')?.[0];
+      if (active('a2_redes') && mill?.constructionComplete && mill.researchQueue.length === 0) {
+        g.executeCommand({ kind: 'research', buildingId: mill.id, tech: 'cotton_nets' }, false);
+      }
       const building = ws.filter((u) => u.orderQueue[0]?.kind === 'build');
       const act3 = ['a3_shicras', 'a3_muros', 'a3_fuego', 'a4_sellar', 'a4_partida'].some(active);
       if (act3 && !porter) {
@@ -518,7 +522,7 @@ test('plays m1 Caral with real construction and gathering, without objective che
   test.info().annotations.push({ type: 'caral-bot', description: `${out.minutes} min, ${out.deliveries} loads` });
   expect(out.ended, JSON.stringify(out)).toBe(true);
   expect(out.won, JSON.stringify(out)).toBe(true);
-  for (const id of ['a1_pesca', 'a1_valle', 'a2_campos', 'a2_canal', 'a2_troje', 'a2_excedente']) {
+  for (const id of ['a1_pesca', 'a1_valle', 'a2_campos', 'a2_canal', 'a2_troje', 'a2_redes', 'a2_excedente']) {
     expect(out.objectives[id], id).toBe('completed');
   }
   for (const id of ['a3_shicras', 'a3_muros', 'a3_fuego', 'a4_sellar', 'a4_partida']) {

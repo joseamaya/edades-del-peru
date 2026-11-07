@@ -257,6 +257,8 @@ export class Mission {
         return this.game.isCanalOpen() ? 'win' : 'ok';
       case 'reach_era':
         return p.era >= (o.era ?? 0) ? 'win' : 'ok';
+      case 'research':
+        return o.tech && p.techs.has(o.tech) ? 'win' : 'ok';
       default:
         return 'ok';
     }

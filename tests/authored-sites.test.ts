@@ -145,6 +145,7 @@ describe('authored campaign sites', () => {
       'valley',
       'farm',
       'storage',
+      'nets',
       'pyramid',
     ]);
     expect(tutorialForMission('m2_chavin')?.steps.map((s) => s.id)).toEqual([

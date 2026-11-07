@@ -123,6 +123,13 @@ export const MISSIONS: MissionDef[] = [
         title: 'Acto II · Construye un depósito comunal (Troje)',
       },
       {
+        id: 'a2_redes',
+        kind: 'research',
+        tech: 'cotton_nets',
+        hidden: true,
+        title: 'Acto II · Teje redes de algodón en la Troje para los pescadores de Áspero',
+      },
+      {
         id: 'a2_excedente',
         kind: 'gather',
         resource: 'food',
@@ -280,7 +287,18 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'Con excedente, la comunidad puede dedicar brazos a obras que duran generaciones.',
+            text: 'El algodón del valle baja a la costa: con él, Áspero teje sus redes. El pescado sube en pago.',
+          },
+          { type: 'objective', objectiveId: 'a2_redes', state: 'activate', announce: true },
+        ],
+      },
+      {
+        id: 't_a2_redes',
+        condition: { type: 'objective', objectiveId: 'a2_redes', state: 'completed' },
+        effects: [
+          {
+            type: 'dialogue',
+            text: 'Redes nuevas, más pesca; más pesca, más brazos para el valle. Con excedente, la comunidad puede dedicar brazos a obras que duran generaciones.',
           },
           { type: 'objective', objectiveId: 'a2_excedente', state: 'activate', announce: true },
         ],

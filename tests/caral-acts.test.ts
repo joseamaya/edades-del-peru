@@ -9,7 +9,7 @@ const CARAL = MISSIONS.find((m) => m.id === 'm1_caral')!;
 /** Minimal headless game: every map point resolves to the origin, so one worker stands on all of them. */
 function stubGame() {
   const game: any = {
-    players: [{ resources: { food: 0, wood: 0, silver: 0, stone: 0 }, era: Era.FORMATIVE }],
+    players: [{ resources: { food: 0, wood: 0, silver: 0, stone: 0 }, era: Era.FORMATIVE, techs: new Set<string>() }],
     units: new Map([[1, { id: 1, tag: '', owner: 0, dead: false, kind: UnitKind.WORKER, pos: { x: 0, z: 0 } }]]),
     buildings: new Map(),
     canalOpen: false,
@@ -83,6 +83,8 @@ describe('Caral model mission', () => {
     game.canalOpen = true;
     tick(2);
     build(game, BuildingKind.MILL, 1);
+    tick(2);
+    game.players[0].techs.add('cotton_nets');
     tick(2);
     game.players[0].resources.food = 500;
     tick(2);

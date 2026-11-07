@@ -234,6 +234,12 @@ const TUTORIALS: Record<string, TutorialDef> = {
         check: { type: 'build', buildingKind: BuildingKind.MILL, baseline: 'mills' },
       },
       {
+        id: 'nets',
+        text: 'Selecciona la Troje y pulsa «Redes de Algodón»: el algodón del valle se convierte en redes para Áspero.',
+        gateObjective: 'a2_redes',
+        check: { type: 'objectiveCompleted', objectiveId: 'a2_redes' },
+      },
+      {
         id: 'pyramid',
         text: 'Lleva un obrero a la Pirámide Mayor, haz clic sobre ella y pulsa «Entregar materiales». Cada entrega hace crecer la obra.',
         gateObjective: 'a3_shicras',
