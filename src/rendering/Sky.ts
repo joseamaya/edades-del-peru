@@ -252,10 +252,6 @@ export class Sky {
     this.warmth = warmth;
   }
 
-  /**
-   * Fit the shadow frustum to the camera's view: `points` is the visible ground
-   * (src/rendering/shadowFrame.ts), framed in light space and snapped to shadow-map texels.
-   */
   /** Change the shadow-map resolution (the map is reallocated on the next shadow pass). */
   setShadowMapSize(size: number): void {
     const shadow = this.light.shadow;
@@ -269,9 +265,15 @@ export class Sky {
     vsm.mapPass = null;
   }
 
+  /**
+   * Fit the shadow frustum to the camera's view: `points` is the visible ground
+   * (src/rendering/shadowFrame.ts), framed in light space and snapped to shadow-map texels. Takes
+   * effect at once, so it can run after the camera moved this frame.
+   */
   setShadowFrame(points: THREE.Vector3[]): void {
     const frame = fitShadowFrame(points, this.sunDir, this.light.shadow.mapSize.x);
     this.shadowCenter.set(frame.x, frame.y, frame.z);
+    this.placeLight();
     const cam = this.light.shadow.camera;
     if (cam.right !== frame.halfWidth || cam.top !== frame.halfHeight) {
       cam.left = -frame.halfWidth;
@@ -280,6 +282,14 @@ export class Sky {
       cam.bottom = -frame.halfHeight;
       cam.updateProjectionMatrix();
     }
+  }
+
+  /** Aim the sun at the shadow-frame centre from `sunDir`. */
+  private placeLight(): void {
+    this.light.target.position.copy(this.shadowCenter);
+    this.light.position.copy(this.sunDir).multiplyScalar(500).add(this.shadowCenter);
+    // The target is not in the scene graph, so nothing else refreshes its world matrix.
+    this.light.target.updateMatrixWorld();
   }
 
   update(time: number): void {
@@ -303,10 +313,7 @@ export class Sky {
     else if (w < 0) this._cSunTint.setRGB(1 + Math.min(0.15, -w * 1.2), 1 + Math.min(0.08, -w * 0.6), 1);
     this._cSunLit.copy(this.sunColor).multiply(this._cSunTint);
     this.light.color.copy(this._cSunLit).lerp(this._cWarm, (1 - day) * 0.5);
-    this.light.target.position.copy(this.shadowCenter);
-    this.light.position.copy(this.sunDir).multiplyScalar(500).add(this.shadowCenter);
-    // The target is not in the scene graph, so nothing else refreshes its world matrix.
-    this.light.target.updateMatrixWorld();
+    this.placeLight();
 
     this.hemi.intensity = 0.35 + day * 0.55;
     this._cSkyDay.setHex(0xbfd4ff).lerp(this._cSkyNight, 1 - day);

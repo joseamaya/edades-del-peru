@@ -785,13 +785,13 @@ ${FOW_DIM_GLSL}
     mat.uniforms.time.value = time;
     if (this.camera) {
       mat.uniforms.cameraPos.value.copy(this.camera.position);
-      this.updateLod(this.camera.position);
     }
   }
 
   /**
-   * Re-index the mesh so blocks far from the camera are drawn coarse (see terrainLod.ts). Only runs
-   * when the camera has moved a couple of units, and only uploads the indices in use.
+   * Re-index the mesh so blocks far from the camera are drawn coarse (see terrainLod.ts); the frame
+   * loop calls it after the camera moved. Only runs when the camera has moved a couple of units, and
+   * only uploads the indices in use.
    */
   updateLod(cam: THREE.Vector3, force = false): void {
     if (this.lodBlock === 1) return;

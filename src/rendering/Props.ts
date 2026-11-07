@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { PROP_IDS, type PropId, type PropPlacement } from '../model/defs/props';
-import { disposeKitModel, type KitModel } from './vegetationKit';
+import type { KitModel } from './vegetationKit';
 
 const _m = new THREE.Matrix4();
 const _q = new THREE.Quaternion();
@@ -14,7 +14,6 @@ export class Props {
   private readonly meshes = new Map<PropId, THREE.InstancedMesh>();
   private readonly materials: THREE.Material[] = [];
   private readonly kitMeshes = new Map<PropId, THREE.InstancedMesh[]>();
-  private readonly kitModels: KitModel[] = [];
   private disposed = false;
 
   constructor(private readonly scene: THREE.Scene) {
@@ -62,10 +61,8 @@ export class Props {
    */
   attachKit(id: PropId, model: KitModel): void {
     const base = this.meshes.get(id);
-    if (this.disposed || !base || this.kitMeshes.has(id)) {
-      disposeKitModel(model);
-      return;
-    }
+    // Kit models are session-cached by the loader; Props only owns its meshes.
+    if (this.disposed || !base || this.kitMeshes.has(id)) return;
     const parts = model.lods[0].map((part) => {
       const mesh = new THREE.InstancedMesh(part.geometry, part.material, base.instanceMatrix.count);
       mesh.castShadow = base.castShadow;
@@ -76,7 +73,6 @@ export class Props {
       return mesh;
     });
     this.kitMeshes.set(id, parts);
-    this.kitModels.push(model);
     base.visible = false;
     this.syncKit(id);
   }
@@ -103,7 +99,6 @@ export class Props {
     }
     this.materials.forEach((m) => m.dispose());
     for (const parts of this.kitMeshes.values()) parts.forEach((mesh) => mesh.removeFromParent());
-    this.kitModels.forEach(disposeKitModel);
   }
 }
 

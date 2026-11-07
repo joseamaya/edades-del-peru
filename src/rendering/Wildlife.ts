@@ -130,10 +130,8 @@ export class Wildlife {
    * the animals already spawned and to later spawns; a kit arriving after dispose is freed.
    */
   attachKit(species: SpeciesId, kit: FaunaKitParts): void {
-    if (this.disposed || this.kits.has(species)) {
-      disposeKit(kit);
-      return;
-    }
+    // Kit geometry is session-cached by the loader (faunaKit.ts); Wildlife only owns its meshes.
+    if (this.disposed || this.kits.has(species)) return;
     this.kits.set(species, kit);
     for (const a of this.animals) {
       if (a.species !== species || a.rig || !a.body) continue;
@@ -329,7 +327,6 @@ export class Wildlife {
 
   dispose(): void {
     this.disposed = true;
-    for (const kit of this.kits.values()) disposeKit(kit);
     this.kits.clear();
     for (const a of this.animals) {
       a.group.removeFromParent();
@@ -343,10 +340,4 @@ export class Wildlife {
     this.batches.clear();
     this.material.dispose();
   }
-}
-
-function disposeKit(kit: FaunaKitParts): void {
-  kit.body.dispose();
-  kit.leg?.dispose();
-  kit.wing?.dispose();
 }

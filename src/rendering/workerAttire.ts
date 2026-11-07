@@ -288,7 +288,7 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   // The variant is final: merge the static body parts into a few skinned meshes (hair, eyebrows, sash
   // and headband in one draw call, the garments in another). The tool and the carry bundle toggle
   // their visibility at runtime, so they stay separate.
-  const consolidated = consolidateRig(root, ['attire_headband']);
+  const consolidated = consolidateRig(root, ['attire_headband'], variant);
   tools.ownedGeometries.push(...consolidated.geometries);
   tools.ownedMaterials.push(...consolidated.materials);
 

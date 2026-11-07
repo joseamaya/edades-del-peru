@@ -469,7 +469,7 @@ export class Game {
       this.canalOpen = canal.initiallyOpen ?? false;
     }
     this.sky = new Sky(this.scene);
-    this.sky.setShadowMapSize(SHADOW_MAP_SIZE[this.settings.quality]);
+    this.sky.setShadowMapSize(SHADOW_MAP_SIZE[this.softwareFallback ? 'low' : this.settings.quality]);
     // No atmospheric fog over the board: classic RTS look, sharp.
     this.scene.fog = null;
     this.setTimeOfDay(s.timeOfDay);

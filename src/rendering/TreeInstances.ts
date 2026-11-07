@@ -3,7 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { MaterialTex } from './Textures';
 import { applyGeneratedPbr } from './Biomes';
 import type { TreeVariant } from '../model/defs/profiles';
-import { disposeKitModel, type KitModel } from './vegetationKit';
+import type { KitModel } from './vegetationKit';
 import { preserveAlphaCoverage } from './alphaCoverage';
 
 export type { TreeVariant };
@@ -305,10 +305,8 @@ export class TreeInstances {
    * are packed every update (only visible trees are drawn) and split by distance into LOD0/LOD1.
    */
   attachKit(variant: TreeVariant, model: KitModel): void {
-    if (this.disposed || this.kits.has(variant)) {
-      if (!this.kits.has(variant) || this.kits.get(variant)!.model !== model) disposeKitModel(model);
-      return;
-    }
+    // Kit models are session-cached by the loader; the instancer only owns its meshes.
+    if (this.disposed || this.kits.has(variant)) return;
     const meshes = model.lods.map((parts, lod) =>
       parts.map((part) => {
         const mesh = new THREE.InstancedMesh(part.geometry, part.material, MAX);
@@ -462,7 +460,6 @@ export class TreeInstances {
     this.materials.forEach((m) => m.dispose());
     for (const kit of this.kits.values()) {
       kit.meshes.forEach((parts) => parts.forEach((mesh) => mesh.removeFromParent()));
-      disposeKitModel(kit.model);
     }
     this.kits.clear();
   }

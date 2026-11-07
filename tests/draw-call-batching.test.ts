@@ -45,6 +45,27 @@ describe('mergeStaticByMaterial', () => {
     expect(after.max.distanceTo(before.max)).toBeLessThan(1e-5);
   });
 
+  it('never folds instanced meshes, which draw many copies of their geometry', () => {
+    const a = new THREE.MeshStandardMaterial();
+    const root = new THREE.Group();
+    const herd = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), a, 4);
+    const legs = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), a, 16);
+    root.add(herd, legs);
+    expect(mergeStaticByMaterial(root)).toBe(0);
+    expect(root.children).toEqual([herd, legs]);
+  });
+
+  it('keeps shared source geometry alive when asked', () => {
+    const a = new THREE.MeshStandardMaterial();
+    const shared = new THREE.BoxGeometry(1, 1, 1);
+    let disposed = false;
+    shared.addEventListener('dispose', () => (disposed = true));
+    const root = new THREE.Group();
+    root.add(new THREE.Mesh(shared, a), box(a, 2));
+    mergeStaticByMaterial(root, undefined, (g) => g !== shared);
+    expect(disposed).toBe(false);
+  });
+
   it('leaves hidden and kept meshes alone', () => {
     const a = new THREE.MeshStandardMaterial();
     const root = new THREE.Group();
@@ -195,6 +216,21 @@ describe('consolidateRig', () => {
     const color = merged.geometry.getAttribute('color');
     expect([color.getX(0), color.getY(0)]).toEqual([1, 0]);
     expect([color.getX(color.count - 1), color.getY(color.count - 1)]).toEqual([0, 1]);
+  });
+
+  it('shares the merged geometry between rigs of the same variant', () => {
+    const build = (): ReturnType<typeof consolidateRig> => {
+      const { root, bones } = rig();
+      root.add(part(bones, 0xff0000, new THREE.Matrix4()), part(bones, 0x00ff00, new THREE.Matrix4()));
+      return consolidateRig(root, [], 'test-variant');
+    };
+    const a = build();
+    const b = build();
+    expect(a.meshes[0].geometry).toBe(b.meshes[0].geometry);
+    expect(a.meshes[0].skeleton).not.toBe(b.meshes[0].skeleton);
+    expect(a.meshes[0].material).not.toBe(b.meshes[0].material);
+    // Cached geometry is not the caller's to dispose.
+    expect(a.geometries).toHaveLength(0);
   });
 
   it('leaves hidden and textured-differently parts alone', () => {

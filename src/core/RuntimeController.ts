@@ -782,7 +782,6 @@ export class RuntimeController {
     }
     const d = dt;
 
-    this.frameShadows();
     this.game.sky.update(realTime);
     this.game.water.setSunDir(this.game.sky.sunDir);
     this.game.water.setDayFactor(this.game.sky.getDayFactor());
@@ -813,6 +812,9 @@ export class RuntimeController {
     // edge scrolling is off while the pointer is over a HUD control
     this.game.camera.setPointerOverUi(this.game.isPointerOverUi());
     this.game.camera.update(d, realTime);
+    // Fit the shadow frustum and the terrain LOD to where the camera is this frame, not the last one.
+    this.frameShadows();
+    this.game.terrain.updateLod(this.game.camera.camera.position);
     this.rebuildSpatial();
 
     // units

@@ -106,19 +106,23 @@ export function partsFromScene(root: THREE.Object3D): KitPart[] {
   return parts;
 }
 
-export async function loadKitModel(id: VegetationKitId): Promise<KitModel> {
-  const urls = VEGETATION_KIT_URLS[id];
-  const [lod0, lod1] = await Promise.all([loadStaticGltf(urls.lod0), loadStaticGltf(urls.lod1)]);
-  return { id, lods: [partsFromScene(lod0), partsFromScene(lod1)] };
-}
+/**
+ * Prepared kit models are kept for the session (like the rigged model assets): every match reuses
+ * them instead of fetching, meshopt-decoding and merging the GLBs again. Instancers never dispose
+ * them; a failed load is forgotten so the next match retries.
+ */
+const kitCache = new Map<VegetationKitId, Promise<KitModel>>();
 
-export function disposeKitModel(model: KitModel): void {
-  for (const parts of model.lods) {
-    for (const part of parts) {
-      part.geometry.dispose();
-      const std = part.material as THREE.MeshStandardMaterial;
-      std.map?.dispose();
-      part.material.dispose();
-    }
+export function loadKitModel(id: VegetationKitId): Promise<KitModel> {
+  let model = kitCache.get(id);
+  if (!model) {
+    const urls = VEGETATION_KIT_URLS[id];
+    model = Promise.all([loadStaticGltf(urls.lod0), loadStaticGltf(urls.lod1)]).then(([lod0, lod1]): KitModel => ({
+      id,
+      lods: [partsFromScene(lod0), partsFromScene(lod1)],
+    }));
+    model.catch(() => kitCache.delete(id));
+    kitCache.set(id, model);
   }
+  return model;
 }

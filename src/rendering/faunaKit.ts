@@ -33,18 +33,30 @@ export function faunaPartsFromScene(root: THREE.Object3D): FaunaKitParts | null 
   return parts.body ? { body: parts.body, leg: parts.leg, wing: parts.wing } : null;
 }
 
+/** Prepared kit geometry per species, kept for the session; a failed load is retried next match. */
+const partsCache = new Map<SpeciesId, Promise<FaunaKitParts>>();
+
+function loadFaunaParts(id: SpeciesId, url: string): Promise<FaunaKitParts> {
+  let parts = partsCache.get(id);
+  if (!parts) {
+    parts = loadStaticGltf(url).then((root) => {
+      const found = faunaPartsFromScene(root);
+      disposeStaticGltf(root);
+      if (!found) throw new Error(`fauna kit ${id} has no body`);
+      return found;
+    });
+    parts.catch(() => partsCache.delete(id));
+    partsCache.set(id, parts);
+  }
+  return parts;
+}
+
 /** Load the kit for the species on the map; procedural models stay if a GLB fails. */
 export async function attachFaunaKit(wildlife: Wildlife): Promise<void> {
   const present = wildlife.species();
   const jobs = (Object.entries(FAUNA_KIT_URLS) as [SpeciesId, string][])
     .filter(([id]) => present.has(id) && !wildlife.hasKit(id))
-    .map(async ([id, url]) => {
-      const root = await loadStaticGltf(url);
-      const parts = faunaPartsFromScene(root);
-      disposeStaticGltf(root);
-      if (!parts) throw new Error(`fauna kit ${id} has no body`);
-      wildlife.attachKit(id, parts);
-    });
+    .map(async ([id, url]) => wildlife.attachKit(id, await loadFaunaParts(id, url)));
   for (const r of await Promise.allSettled(jobs)) {
     if (r.status === 'rejected') console.warn('[fauna-kit] model failed to load', r.reason);
   }

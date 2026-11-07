@@ -31,16 +31,23 @@ function visibleUpTo(object: THREE.Object3D, root: THREE.Object3D): boolean {
  * Merge the visible static meshes under `root` that share a material (and shadow flags and
  * attribute layout) into one mesh each, parented to `root`: an authored site exported as one node
  * per building part draws one call per material instead of one per part, in the main and the
- * shadow pass. Meshes for which `keep` returns true (and hidden, skinned or multi-material meshes)
- * are left untouched. Returns how many meshes were removed.
+ * shadow pass. Meshes for which `keep` returns true (and hidden, skinned, instanced or multi-material meshes)
+ * are left untouched. A replaced mesh's geometry is disposed unless `disposeSource` says it is shared
+ * (cached) elsewhere. The merged meshes are named `merged:…`. Returns how many meshes were removed.
  */
-export function mergeStaticByMaterial(root: THREE.Object3D, keep: (mesh: THREE.Mesh) => boolean = () => false): number {
+export function mergeStaticByMaterial(
+  root: THREE.Object3D,
+  keep: (mesh: THREE.Mesh) => boolean = () => false,
+  disposeSource: (geometry: THREE.BufferGeometry) => boolean = () => true,
+): number {
   root.updateWorldMatrix(true, true);
   const toRoot = new THREE.Matrix4().copy(root.matrixWorld).invert();
   const groups = new Map<string, THREE.Mesh[]>();
   root.traverse((object) => {
     const mesh = object as THREE.Mesh;
     if (!mesh.isMesh || (mesh as THREE.SkinnedMesh).isSkinnedMesh || Array.isArray(mesh.material)) return;
+    // Instanced meshes (a hunt herd, for one) draw many copies of their own geometry: never fold them.
+    if ((mesh as THREE.InstancedMesh).isInstancedMesh) return;
     if (!visibleUpTo(mesh, root) || keep(mesh)) return;
     const layout = Object.keys(mesh.geometry.attributes).sort().join(',');
     const key = `${mesh.material.uuid}|${mesh.castShadow}|${mesh.receiveShadow}|${layout}|${!!mesh.geometry.index}`;
@@ -68,7 +75,7 @@ export function mergeStaticByMaterial(root: THREE.Object3D, keep: (mesh: THREE.M
     root.add(out);
     for (const mesh of meshes) {
       mesh.removeFromParent();
-      mesh.geometry.dispose();
+      if (disposeSource(mesh.geometry)) mesh.geometry.dispose();
     }
     removed += meshes.length - 1;
   }
