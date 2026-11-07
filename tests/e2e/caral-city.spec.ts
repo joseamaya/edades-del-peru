@@ -672,7 +672,7 @@ test('opening the Caral canal raises the yield at its banks', async ({ page }) =
   expect(closed.food).toBeLessThan(farm!.foodOpen);
 });
 
-test('the Andén and Troje panels explain their historical abstractions', async ({ page }) => {
+test('the Chacra and Troje panels explain their historical abstractions', async ({ page }) => {
   await boot(page);
   const ids = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -699,7 +699,7 @@ test('the Andén and Troje panels explain their historical abstractions', async 
     g.selectBuilding(id);
     g.hud.update(0.2, 0);
   }, ids!.farm);
-  await expect(bottom).toContainText('Andén');
+  await expect(bottom).toContainText('Chacra');
   await expect(bottom).toContainText('abstracción jugable');
   await expect(bottom).toContainText('Dossier de Caral');
   await page.evaluate((id) => {

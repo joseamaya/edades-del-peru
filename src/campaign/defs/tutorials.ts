@@ -221,7 +221,7 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'farm',
-        text: 'Pulsa G (o el botón Andén) y coloca los campos junto al canal: la tierra húmeda rinde más.',
+        text: 'Pulsa G (o el botón Chacra) y coloca los campos junto al canal: la tierra húmeda rinde más.',
         highlight: buildBottom,
         gateObjective: 'a2_campos',
         check: { type: 'build', buildingKind: BuildingKind.FARM, baseline: 'farms' },

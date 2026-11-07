@@ -29,6 +29,8 @@ export const MELEE_ATTACK_RANGE = 0.9;
 const BUILDING_ATTACK_PAD = 0.5;
 
 /** Structural view of a resource node, enough for gather retargeting. */
+/** How far a builder looks for the next unfinished building of its owner. */
+const BUILD_FOLLOWUP_RADIUS = 30;
 /** How far a worker looks for a replacement when its resource node runs out (AoE-style). */
 const GATHER_RETARGET_RADIUS = 24;
 
@@ -1484,6 +1486,7 @@ export class Unit {
     const bld = this.ctx.buildings.get(order.entityId!);
     if (!bld || bld.dead || bld.constructionComplete) {
       this.finishOrder();
+      if (bld && !bld.dead && bld.constructionComplete) this.followUpAfterBuild(bld);
       return;
     }
     const dx = bld.pos.x - this.pos.x;
@@ -1517,6 +1520,36 @@ export class Unit {
     this.vel.multiplyScalar(Math.pow(0.05, dt));
     bld.addBuildProgress(this.buildEfficiency * dt);
     this.targetYaw = angleTo(this.pos.x, this.pos.z, bld.pos.x, bld.pos.z);
+  }
+
+  /**
+   * A human player's builder with nothing queued keeps working, as in AoE: it farms the field it just
+   * prepared (when nobody else does) or helps the nearest unfinished building of its owner. AI seats
+   * keep their own economy planning, so their simulations are unchanged.
+   */
+  private followUpAfterBuild(bld: any): void {
+    if (this.kind !== UnitKind.WORKER || this.orderQueue.length > 0) return;
+    if (this.ctx.players[this.owner]?.isAI) return;
+    if (bld.isFarm && bld.owner === this.owner && bld.foodAmount > 0) {
+      const taken = [...this.ctx.unitsNear(bld.pos.x, bld.pos.z, bld.radius + 3)].some(
+        (u) => u !== this && u.orderQueue[0]?.kind === OrderKind.GATHER && u.orderQueue[0]?.entityId === bld.id,
+      );
+      if (!taken) {
+        this.issueOrder({ kind: OrderKind.GATHER, entityId: bld.id });
+        return;
+      }
+    }
+    let next: any = null;
+    let best = BUILD_FOLLOWUP_RADIUS;
+    for (const other of this.ctx.buildings.values()) {
+      if (other.owner !== this.owner || other.dead || other.constructionComplete) continue;
+      const d = distance2D(this.pos.x, this.pos.z, other.pos.x, other.pos.z);
+      if (d < best) {
+        best = d;
+        next = other;
+      }
+    }
+    if (next) this.issueOrder({ kind: OrderKind.BUILD, entityId: next.id });
   }
 
   private updateConstruct(order: Order, dt: number): void {

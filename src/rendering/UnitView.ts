@@ -104,10 +104,12 @@ export class UnitView {
       const order = u.orderQueue[0]?.kind;
       const working = u.isWorkingNow();
       const speed = Math.hypot(u.vel.x, u.vel.z);
+      // Preparing a field is digging with the stick, not raising a building: play the work clip.
+      const tilling = working && order === 'build' && !!u.ctx?.buildings.get(u.orderQueue[0]?.entityId ?? -1)?.isFarm;
       const state = rigClipStateFor({
         moving: speed > 0.15,
-        gathering: working && order === 'gather',
-        building: working && order === 'build',
+        gathering: working && (order === 'gather' || tilling),
+        building: working && order === 'build' && !tilling,
         attacking: u.isAttackingTarget() || (order === 'attack' && u.targetEntityId !== null),
         carrying: u.carryCountNow() > 0,
       });

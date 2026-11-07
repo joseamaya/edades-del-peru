@@ -35,7 +35,7 @@ const COLORS: Record<GroundCoverSpecies, readonly string[]> = {
 /**
  * Instanced low ground cover: ichu/grass tufts, ferns and gravel/pebbles.
  * Deterministic from the terrain splat, moisture and slope; one draw call per
- * species. Instances fade/cull by 24 m chunk in the vertex shader and bend
+ * species. Instances fade/cull by their own distance in the vertex shader and bend
  * slightly with the wind. Visual only: no entities, no obstacles, no gameplay.
  */
 export class GroundCover {
@@ -115,7 +115,6 @@ export class GroundCover {
       mesh.castShadow = false;
       mesh.receiveShadow = false;
       mesh.frustumCulled = false;
-      const chunkCenters = new Float32Array(list.length * 2);
       const color = new THREE.Color();
       const palette = COLORS[id];
       const rng = new RNG((seed ^ (id.length * 2654435761) ^ 0x9e3779b9) >>> 0);
@@ -127,12 +126,9 @@ export class GroundCover {
         _scale.setScalar(p.scale);
         _m.compose(_pos, _q, _scale);
         mesh.setMatrixAt(i, _m);
-        chunkCenters[i * 2] = (Math.floor(p.x / chunkSize) + 0.5) * chunkSize;
-        chunkCenters[i * 2 + 1] = (Math.floor(p.z / chunkSize) + 0.5) * chunkSize;
         color.set(palette[Math.floor(rng.float() * palette.length)]);
         mesh.setColorAt(i, color);
       }
-      mesh.geometry.setAttribute('aChunkCenter', new THREE.InstancedBufferAttribute(chunkCenters, 2));
       mesh.instanceMatrix.needsUpdate = true;
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
       this.meshes.set(id, mesh);
@@ -158,7 +154,6 @@ export class GroundCover {
       },
       side: THREE.DoubleSide,
       vertexShader: `
-        attribute vec2 aChunkCenter;
         uniform float uCoverTime;
         uniform float uCoverFadeStart;
         uniform float uCoverFadeEnd;
@@ -176,7 +171,10 @@ export class GroundCover {
           vWorldPos = world.xyz;
           vNormalW = normalize(mat3(modelMatrix) * mat3(instanceMatrix) * normal);
           vColor = instanceColor;
-          float coverDist = distance(aChunkCenter, cameraPosition.xz);
+          // Fade by each instance's own distance: a per-chunk distance switched whole 24 m patches of
+          // pebbles and tufts on and off at once while the camera panned.
+          vec2 coverPos = (modelMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xz;
+          float coverDist = distance(coverPos, cameraPosition.xz);
           vCoverFade = 1.0 - smoothstep(uCoverFadeStart, uCoverFadeEnd, coverDist);
           gl_Position = projectionMatrix * viewMatrix * world;
           if (coverDist > uCoverFadeEnd) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
