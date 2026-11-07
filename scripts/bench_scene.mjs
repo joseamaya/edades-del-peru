@@ -16,11 +16,12 @@ const outFile = cliArg('out') ?? 'review/bench-scene.json';
 
 // Ratchet: §11 targets 600k triangles and 200 draw calls per frame. m1 measured 877k / 441 before the
 // tree-instance, water and flier-shadow cuts, ~685k / 413 after them, ~497k / 414 with the terrain
-// LOD, ~477k / 271 after batching resource nodes, the site and the fauna and ~477k / 228 with the
-// consolidated workers; tighten as it gets cheaper.
+// LOD, ~477k / 271 after batching resource nodes, the site and the fauna, ~477k / 228 with the
+// consolidated workers and ~467k / 203 after the heritage proxies and house materials; tighten as it
+// gets cheaper.
 const BUDGETS = {
   // Kit counts include the shadow pass; the fauna is instanced per species and part.
-  m1_caral: { sceneTriangles: 540_000, sceneDrawCalls: 245, kitTriangles: 80_000, kitDrawCalls: 36 },
+  m1_caral: { sceneTriangles: 540_000, sceneDrawCalls: 215, kitTriangles: 80_000, kitDrawCalls: 36 },
 };
 const KIT_NAMES = /^(trees_kit_|props_kit_|fauna_(deer|riparian_bird)_(body|leg|wingL|wingR)$)/;
 

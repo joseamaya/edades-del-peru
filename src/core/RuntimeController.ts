@@ -25,7 +25,7 @@ import { resolveConquest } from '../game/systems/VictorySystem';
 import { areaDamage, resolveAttackDamage, selectAreaTargets, selectNearestTarget } from '../game/systems/CombatSystem';
 import type { SaveData } from '../game/saveTypes';
 import type { RigInstance } from '../rendering/RigInstance';
-import { shadowFrameFor } from '../rendering/shadowFrame';
+import { viewFootprint } from '../rendering/shadowFrame';
 
 export interface DeathFx {
   view: EntityView;
@@ -761,7 +761,7 @@ export class RuntimeController {
   frameShadows(): void {
     const target = this.game.camera.getTarget();
     this.game.sky.setShadowFrame(
-      shadowFrameFor(this.game.camera.camera, this.game.terrain.getHeight(target.x, target.z)),
+      viewFootprint(this.game.camera.camera, this.game.terrain.getHeight(target.x, target.z)),
     );
   }
 

@@ -186,6 +186,8 @@ function mat(opts: MatOpts = {}): THREE.MeshStandardMaterial {
       }
     }
   }
+  // The smooth twin of a flat-shaded material (see unflatten in mergeStaticParts).
+  if (opts.flatShading) m.userData.smoothOpts = { ...opts, flatShading: false };
   matCache.set(key, m);
   return m;
 }
@@ -3692,6 +3694,18 @@ function bakeVertexAO(root: THREE.Object3D): void {
   });
 }
 
+/**
+ * The material a part merges under: a flat-shaded part counts as its material's smooth twin, and the
+ * merge gives its copy faceted normals (non-indexed, one normal per face), so it looks the same and
+ * shares a draw call with the smooth parts of the same texture (a Caral house's boxy entry step and
+ * its round jar were two draw calls for one dirt texture).
+ */
+function mergeMaterial(mesh: THREE.Mesh): THREE.Material {
+  const material = mesh.material as THREE.MeshStandardMaterial;
+  const smooth = material.userData?.smoothOpts as MatOpts | undefined;
+  return material.flatShading && smooth ? mat(smooth) : material;
+}
+
 /** Merge each container's static parts by material, keeping pivot groups intact. */
 function mergeStaticParts(container: THREE.Object3D): void {
   const byMat = new Map<THREE.Material, THREE.Mesh[]>();
@@ -3700,9 +3714,10 @@ function mergeStaticParts(container: THREE.Object3D): void {
     if (!mesh.isMesh || !mesh.visible || Array.isArray(mesh.material)) continue;
     // keep transparent parts separate so their draw order stays per part
     if ((mesh.material as THREE.Material).transparent) continue;
-    const group = byMat.get(mesh.material);
+    const key = mergeMaterial(mesh);
+    const group = byMat.get(key);
     if (group) group.push(mesh);
-    else byMat.set(mesh.material, [mesh]);
+    else byMat.set(key, [mesh]);
   }
   for (const [material, meshes] of byMat) {
     if (meshes.length < 2) continue;
@@ -3715,6 +3730,7 @@ function mergeStaticParts(container: THREE.Object3D): void {
         geo.dispose();
         geo = flat;
       }
+      if (mesh.material !== material) geo.computeVertexNormals(); // faceted copy of a flat-shaded part
       ensureMergeAttrs(geo);
       geo.applyMatrix4(mesh.matrix);
       geos.push(geo);

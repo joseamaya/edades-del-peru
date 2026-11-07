@@ -216,17 +216,21 @@ full-resolution vertices, so heights, colours, normals and the simulation's heig
 the terrain draws ~38k instead of 131k triangles per pass at zoom 54). `yarn bench:check` ratchets the m1
 scene and the vegetation/fauna kit (`scripts/bench_scene.mjs`).
 
-_Status (draw calls)_: ~228 per frame (414 before). Resource nodes merge their rocks, blocks and berries
+_Status (draw calls)_: ~203 per frame (414 before). Resource nodes merge their rocks, blocks and berries
 per material; the authored site merges its non-heritage meshes per material (`src/rendering/mergeStatic.ts`);
 fauna is one InstancedMesh per species and part; procedural canopies of unused or kit-drawn variants are
 hidden; each dressed worker merges its hair, eyebrows, sash and headband into one skinned mesh and its
 garments into another (`consolidateRig` in `src/rendering/modelConsolidation.ts`: colours baked into
 vertices, every glTF skin re-expressed on one skeleton), and its tool is one vertex-coloured mesh, so a
-worker is 5 draw calls instead of 10; the sun's shadow frustum
-follows the view (`src/rendering/shadowFrame.ts`, ±40–220 units instead of a fixed ±220, which also
-sharpens the shadows) so off-screen casters leave the shadow pass. Reaching ≤ 200 needs the per-building
-procedural houses (one material per part and building) merged, or the body and garments sharing one
-texture atlas.
+worker is 5 draw calls instead of 10; the authored site's heritage pick volumes are no longer drawn
+(two invisible transparent passes each); flat-shaded procedural parts merge with the smooth parts of
+the same texture using faceted normals (a Caral house is 4 materials instead of 5); the sun's shadow
+frustum
+follows the view (`src/rendering/shadowFrame.ts`: the light-space box of the visible ground instead of
+a fixed ±220, which also sharpens the shadows) so off-screen casters leave the shadow pass. What remains is roughly units 50,
+the site 23, houses and centre 40 (both passes), resource nodes 24, the per-entity blob shadows, terrain,
+water, sky and the two VSM blur passes; the next steps would be one texture atlas for the worker body and
+garments, or batching the blob shadows.
 
 - Repeated assets are **instanced or merged**; no per-object draw call for vegetation, props or fauna.
 - Every model has **LOD0/LOD1**; the far LOD switches before the asset drops below ~40 px on screen.

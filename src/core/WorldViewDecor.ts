@@ -70,13 +70,9 @@ export class WorldViewDecor {
   }
 
   addSiteHeritageProxies(parent: THREE.Group, proxies: readonly SiteHeritageProxy[]): void {
-    const material = new THREE.MeshBasicMaterial({
-      transparent: true,
-      opacity: 0,
-      depthWrite: false,
-      colorWrite: false,
-      side: THREE.DoubleSide,
-    });
+    // Pick-only volumes: the raycaster ignores material.visible, the renderer skips them (as an
+    // invisible transparent double-sided box each one cost two draw calls).
+    const material = new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide });
     for (const p of proxies) {
       const proxy = new THREE.Mesh(new THREE.BoxGeometry(p.w, p.h, p.d), material);
       proxy.name = p.id;

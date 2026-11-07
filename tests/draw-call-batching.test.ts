@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
 import { mergeStaticByMaterial } from '../src/rendering/mergeStatic';
 import { CONSOLIDATED_SOURCE_LAYER, consolidateRig } from '../src/rendering/modelConsolidation';
-import { SHADOW_FRAME_MAX, SHADOW_FRAME_MIN, shadowFrameFor, snapShadowFrame } from '../src/rendering/shadowFrame';
+import { SHADOW_FRAME_MAX, SHADOW_FRAME_MIN, fitShadowFrame, viewFootprint } from '../src/rendering/shadowFrame';
 
 function box(material: THREE.Material, x: number): THREE.Mesh {
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), material);
@@ -55,36 +55,53 @@ describe('mergeStaticByMaterial', () => {
 
 describe('shadow frame', () => {
   const camera = new THREE.PerspectiveCamera(48, 16 / 9, 1, 2000);
+  const sun = new THREE.Vector3(0.5, 0.7, 0.4).normalize();
 
-  function view(height: number): void {
-    camera.position.set(100, height, 100 + height / Math.tan(0.9));
-    camera.lookAt(100, 0, 100);
+  function view(height: number, x = 100): void {
+    camera.position.set(x, height, 100 + height / Math.tan(0.9));
+    camera.lookAt(x, 0, 100);
     camera.updateMatrixWorld();
   }
 
-  it('grows with the zoom, within bounds, around the visible ground', () => {
+  /** Light-space coordinates as the shadow camera sees them (looking along -sun, +Y up). */
+  function toLight(p: THREE.Vector3, frame: { x: number; y: number; z: number }): THREE.Vector3 {
+    const basis = new THREE.Matrix4().lookAt(sun, new THREE.Vector3(), new THREE.Vector3(0, 1, 0));
+    const inv = basis.clone().invert();
+    return p
+      .clone()
+      .applyMatrix4(inv)
+      .sub(new THREE.Vector3(frame.x, frame.y, frame.z).applyMatrix4(inv));
+  }
+
+  it('contains the visible ground, grows with the zoom and stays within bounds', () => {
     view(30);
-    const near = shadowFrameFor(camera, 0);
+    const nearPoints = viewFootprint(camera, 0);
+    const near = fitShadowFrame(nearPoints, sun, 4096);
     view(120);
-    const far = shadowFrameFor(camera, 0);
-    expect(far.extent).toBeGreaterThan(near.extent);
+    const far = fitShadowFrame(viewFootprint(camera, 0), sun, 4096);
+    expect(far.halfWidth * far.halfHeight).toBeGreaterThan(near.halfWidth * near.halfHeight);
     for (const f of [near, far]) {
-      expect(f.extent).toBeGreaterThanOrEqual(SHADOW_FRAME_MIN);
-      expect(f.extent).toBeLessThanOrEqual(SHADOW_FRAME_MAX);
-      // The look-at point is inside the framed square.
-      expect(Math.abs(f.x - 100)).toBeLessThan(f.extent);
-      expect(Math.abs(f.z - 100)).toBeLessThan(f.extent);
+      for (const h of [f.halfWidth, f.halfHeight]) {
+        expect(h).toBeGreaterThanOrEqual(SHADOW_FRAME_MIN);
+        expect(h).toBeLessThanOrEqual(SHADOW_FRAME_MAX);
+      }
+    }
+    for (const p of nearPoints) {
+      const l = toLight(p, near);
+      expect(Math.abs(l.x)).toBeLessThanOrEqual(near.halfWidth);
+      expect(Math.abs(l.y)).toBeLessThanOrEqual(near.halfHeight);
     }
   });
 
   it('snaps to whole texels so small pans do not move the frame', () => {
-    const sun = new THREE.Vector3(0.5, 0.7, 0.4).normalize();
-    const a = snapShadowFrame({ x: 100, y: 0, z: 100, extent: 70 }, sun, 4096);
-    const b = snapShadowFrame({ x: 100.001, y: 0, z: 100.001, extent: 70 }, sun, 4096);
-    expect(a.extent).toBe(72);
+    view(54);
+    const a = fitShadowFrame(viewFootprint(camera, 0), sun, 4096);
+    view(54, 100.001);
+    const b = fitShadowFrame(viewFootprint(camera, 0), sun, 4096);
+    expect(b.halfWidth).toBe(a.halfWidth);
     // Only the depth along the sun ray may differ, which does not move anything on the shadow map.
     const delta = new THREE.Vector3(b.x - a.x, b.y - a.y, b.z - a.z);
-    expect(delta.clone().cross(sun).length()).toBeLessThan(1e-9);
+    expect(delta.clone().cross(sun).length()).toBeLessThan(1e-6);
   });
 });
 

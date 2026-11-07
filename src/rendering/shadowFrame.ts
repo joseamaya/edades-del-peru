@@ -9,16 +9,20 @@ import * as THREE from 'three';
  * shadow map covers a smaller area (sharper shadows).
  */
 export interface ShadowFrame {
+  /** World-space centre of the shadow frustum. */
   x: number;
   y: number;
   z: number;
-  /** Half size of the square shadow frustum, in world units. */
-  extent: number;
+  /** Half width / half height of the frustum in light space (its local x / y), in world units. */
+  halfWidth: number;
+  halfHeight: number;
 }
 
-/** Extra border for the VSM blur and receivers that stand above the ground plane. */
-export const SHADOW_FRAME_MARGIN = 10;
-export const SHADOW_FRAME_MIN = 40;
+/** Extra border for the VSM blur. */
+export const SHADOW_FRAME_MARGIN = 6;
+/** Receivers stand up to this far above the ground plane (walls, pyramids, crowns). */
+export const SHADOW_FRAME_LIFT = 14;
+export const SHADOW_FRAME_MIN = 24;
 /** The old fixed frustum (±220 around the origin) is the upper bound. */
 export const SHADOW_FRAME_MAX = 220;
 
@@ -29,59 +33,67 @@ const _ndc: [number, number][] = [
   [-1, 1],
 ];
 const _ray = new THREE.Ray();
-const _p = new THREE.Vector3();
+const _hit = new THREE.Vector3();
 const _plane = new THREE.Plane();
+const _normal = new THREE.Vector3(0, 1, 0);
 
 /**
  * Where the view frustum's corner rays meet the horizontal plane `groundY` (rays that miss it are
- * clamped to `maxDistance`), framed as a centre and a radius.
+ * clamped to `maxDistance`): the visible ground as a quadrilateral.
  */
-export function shadowFrameFor(camera: THREE.PerspectiveCamera, groundY: number, maxDistance = 600): ShadowFrame {
+export function viewFootprint(camera: THREE.PerspectiveCamera, groundY: number, maxDistance = 600): THREE.Vector3[] {
   camera.updateMatrixWorld();
-  _plane.set(new THREE.Vector3(0, 1, 0), -groundY);
-  const points: THREE.Vector3[] = [];
-  for (const [nx, ny] of _ndc) {
+  _plane.set(_normal, -groundY);
+  return _ndc.map(([nx, ny]) => {
     _ray.origin.setFromMatrixPosition(camera.matrixWorld);
     _ray.direction.set(nx, ny, 0.5).unproject(camera).sub(_ray.origin).normalize();
-    const hit = _ray.intersectPlane(_plane, _p);
+    const hit = _ray.intersectPlane(_plane, _hit);
     const d = hit ? Math.min(_ray.origin.distanceTo(hit), maxDistance) : maxDistance;
-    points.push(_ray.at(d, new THREE.Vector3()));
-  }
-  let minX = Infinity;
-  let maxX = -Infinity;
-  let minZ = Infinity;
-  let maxZ = -Infinity;
-  for (const p of points) {
-    minX = Math.min(minX, p.x);
-    maxX = Math.max(maxX, p.x);
-    minZ = Math.min(minZ, p.z);
-    maxZ = Math.max(maxZ, p.z);
-  }
-  const x = (minX + maxX) / 2;
-  const z = (minZ + maxZ) / 2;
-  let radius = 0;
-  for (const p of points) radius = Math.max(radius, Math.hypot(p.x - x, p.z - z));
-  const extent = THREE.MathUtils.clamp(radius + SHADOW_FRAME_MARGIN, SHADOW_FRAME_MIN, SHADOW_FRAME_MAX);
-  return { x, y: groundY, z, extent };
+    return _ray.at(d, new THREE.Vector3());
+  });
 }
 
 const _basis = new THREE.Matrix4();
 const _inv = new THREE.Matrix4();
 const _up = new THREE.Vector3(0, 1, 0);
 const _origin = new THREE.Vector3();
+const _p = new THREE.Vector3();
 
 /**
- * Snap the frame centre to whole shadow-map texels in light space, so panning the camera does not
- * make shadow edges shimmer. `sunDir` points towards the sun; the extent is quantised too.
+ * The light-space box around `points` (each also lifted by SHADOW_FRAME_LIFT), with a margin,
+ * clamped and snapped: the centre to whole shadow-map texels and the half sizes to steps of 4, so
+ * panning the camera does not make shadow edges shimmer. `sunDir` points towards the sun; the light
+ * looks along -sunDir with +Y up, as three's DirectionalLight shadow camera does.
  */
-export function snapShadowFrame(frame: ShadowFrame, sunDir: THREE.Vector3, mapSize: number): ShadowFrame {
-  const extent = Math.ceil(frame.extent / 8) * 8;
-  const texel = (extent * 2) / mapSize;
+export function fitShadowFrame(points: THREE.Vector3[], sunDir: THREE.Vector3, mapSize: number): ShadowFrame {
   _basis.lookAt(sunDir, _origin, _up);
   _inv.copy(_basis).invert();
-  _p.set(frame.x, frame.y, frame.z).applyMatrix4(_inv);
-  _p.x = Math.round(_p.x / texel) * texel;
-  _p.y = Math.round(_p.y / texel) * texel;
-  _p.applyMatrix4(_basis);
-  return { x: _p.x, y: _p.y, z: _p.z, extent };
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  let depth = 0;
+  for (const point of points) {
+    for (const lift of [0, SHADOW_FRAME_LIFT]) {
+      _p.set(point.x, point.y + lift, point.z).applyMatrix4(_inv);
+      minX = Math.min(minX, _p.x);
+      maxX = Math.max(maxX, _p.x);
+      minY = Math.min(minY, _p.y);
+      maxY = Math.max(maxY, _p.y);
+      depth += _p.z;
+    }
+  }
+  depth /= points.length * 2;
+  const half = (size: number): number =>
+    Math.ceil(THREE.MathUtils.clamp(size / 2 + SHADOW_FRAME_MARGIN, SHADOW_FRAME_MIN, SHADOW_FRAME_MAX) / 4) * 4;
+  const halfWidth = half(maxX - minX);
+  const halfHeight = half(maxY - minY);
+  const texelX = (halfWidth * 2) / mapSize;
+  const texelY = (halfHeight * 2) / mapSize;
+  _p.set(
+    Math.round((minX + maxX) / 2 / texelX) * texelX,
+    Math.round((minY + maxY) / 2 / texelY) * texelY,
+    depth,
+  ).applyMatrix4(_basis);
+  return { x: _p.x, y: _p.y, z: _p.z, halfWidth, halfHeight };
 }

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { snapShadowFrame, type ShadowFrame } from './shadowFrame';
+import { fitShadowFrame } from './shadowFrame';
 import { fbm2 } from '../util/noise';
 
 /**
@@ -253,18 +253,18 @@ export class Sky {
   }
 
   /**
-   * Fit the shadow frustum to the camera's view (src/rendering/shadowFrame.ts): centred on `frame`,
-   * `frame.extent` units to each side, snapped to shadow-map texels.
+   * Fit the shadow frustum to the camera's view: `points` is the visible ground
+   * (src/rendering/shadowFrame.ts), framed in light space and snapped to shadow-map texels.
    */
-  setShadowFrame(frame: ShadowFrame): void {
-    const snapped = snapShadowFrame(frame, this.sunDir, this.light.shadow.mapSize.x);
-    this.shadowCenter.set(snapped.x, snapped.y, snapped.z);
+  setShadowFrame(points: THREE.Vector3[]): void {
+    const frame = fitShadowFrame(points, this.sunDir, this.light.shadow.mapSize.x);
+    this.shadowCenter.set(frame.x, frame.y, frame.z);
     const cam = this.light.shadow.camera;
-    if (cam.right !== snapped.extent) {
-      cam.left = -snapped.extent;
-      cam.right = snapped.extent;
-      cam.top = snapped.extent;
-      cam.bottom = -snapped.extent;
+    if (cam.right !== frame.halfWidth || cam.top !== frame.halfHeight) {
+      cam.left = -frame.halfWidth;
+      cam.right = frame.halfWidth;
+      cam.top = frame.halfHeight;
+      cam.bottom = -frame.halfHeight;
       cam.updateProjectionMatrix();
     }
   }
