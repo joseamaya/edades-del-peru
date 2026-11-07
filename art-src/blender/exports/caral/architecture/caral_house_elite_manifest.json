@@ -46,7 +46,7 @@
         ]
       },
       "file": "caral_house_elite_lod0.glb",
-      "bytes": 57104
+      "bytes": 69656
     },
     "LOD1": {
       "triangles": 180,
@@ -76,7 +76,7 @@
         ]
       },
       "file": "caral_house_elite_lod1.glb",
-      "bytes": 17396
+      "bytes": 21000
     }
   },
   "wall_height": 2.7

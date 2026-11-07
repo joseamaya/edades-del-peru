@@ -42,7 +42,7 @@
         ]
       },
       "file": "caral_fair_tent_lod0.glb",
-      "bytes": 14412
+      "bytes": 17512
     },
     "LOD1": {
       "triangles": 50,
@@ -69,7 +69,7 @@
         ]
       },
       "file": "caral_fair_tent_lod1.glb",
-      "bytes": 5680
+      "bytes": 6760
     }
   }
 }

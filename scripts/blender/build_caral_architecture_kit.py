@@ -58,10 +58,12 @@ LOD1_BUDGET = 1500
 
 # Pyramid Mayor: footprint of the game's heritage volume (43.4 x 39.8), height ~7.6 people.
 MAYOR_W, MAYOR_D = 43.0, 39.0
-MAYOR_LEVELS = 5
+MAYOR_LEVELS = 6
 # Quincha wall heights (art-direction §3: 1.3-1.5 people); recorded in the manifests.
 WALL_H = {'common': 2.5, 'elite': 2.7, 'aspero': 2.4}
 MAYOR_LEVEL_H = 2.7
+# Heights of the floors and terraces of the piece being built, for the grime band in tint().
+LEDGES = [0.0]
 
 
 def parse_args():
@@ -129,15 +131,6 @@ def box(bm, center, size, mat):
     rough_box(bm, center, size, mat, 0, 0.0, 0)
 
 
-def stair(bm, x, y_front, y_back, z0, z1, width, steps, mat):
-    """Straight flight from (y_front, z0) up to (y_back, z1); each step is a solid block to the ground."""
-    run = (y_back - y_front) / steps
-    rise = (z1 - z0) / steps
-    for s in range(steps):
-        top = z0 + rise * (s + 1)
-        box(bm, (x, y_front + run * (s + 0.5), (z0 + top) / 2 - 0.3), (width, abs(run) + 0.02, top - z0 + 0.6), mat)
-
-
 def ramp(bm, x, y_front, y_back, z0, z1, width, mat):
     """LOD1 stair: one sloped wedge."""
     v = [bm.verts.new(c) for c in (
@@ -187,32 +180,139 @@ def fill_bags(bm, x0, x1, y0, y1, z, height, count, seed, mat, segs=6, rings=4, 
         blob(bm, (x, y, top + 0.1), (0.62, 0.48, 0.34), segs, rings, 0.18, seed + k, mat)
 
 
-def retaining_wall(bm, x0, y0, x1, y1, z, courses_at, thick, seed, mat, lod):
-    """Stone retaining wall along a straight run, its height stepping down where work is unfinished.
-    ``courses_at(t)`` returns the wall height at fraction t along the run."""
+def bevel_box(bm, center, size, mat, offset=0.1, top_only=False, jitter=0.0, seed=0):
+    """A box with bevelled edges (one segment): edges catch light and read as hand-finished plaster or
+    dressed stone instead of CAD corners. ``top_only`` bevels just the top rim (cheaper)."""
+    tmp = bmesh.new()
+    bmesh.ops.create_cube(tmp, size=1.0)
+    for v in tmp.verts:
+        v.co = Vector((v.co.x * size[0], v.co.y * size[1], v.co.z * size[2]))
+    edges = list(tmp.edges)
+    if top_only:
+        edges = [e for e in edges if all(v.co.z > 0 for v in e.verts)]
+    off = min(offset, min(size) * 0.3)
+    bmesh.ops.bevel(tmp, geom=edges, offset=off, segments=1, profile=0.5, affect='EDGES')
+    rng = random.Random(seed)
+    for v in tmp.verts:
+        p = v.co
+        if jitter:
+            p = p + Vector((rng.uniform(-jitter, jitter), rng.uniform(-jitter, jitter), rng.uniform(-jitter, jitter) * 0.3))
+        v.co = p + Vector(center)
+    vmap = {v: bm.verts.new(v.co) for v in tmp.verts}
+    for f in tmp.faces:
+        nf = bm.faces.new([vmap[v] for v in f.verts])
+        nf.material_index = mat
+    tmp.free()
+
+
+def stone_courses(bm, x0, y0, x1, y1, z, height, thick, mat, lod, seed, course_h=0.45):
+    """A set-stone wall along a straight run, built as courses that alternate a few centimetres in and
+    out: the coursing reads in relief from the RTS camera, the texture supplies the stones."""
     rng = random.Random(seed)
     length = math.hypot(x1 - x0, y1 - y0)
-    n = max(2, int(length / (2.4 if lod == 0 else 6.0)))
+    if length < 0.05 or height < 0.05:
+        return
+    horiz = abs(y1 - y0) < 1e-3
+    n = max(1, round(height / course_h)) if lod == 0 else 1
+    ch = height / n
+    cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+    for k in range(n):
+        inset = 0.05 if k % 2 else 0.0
+        t = thick - inset * 2
+        jitter = rng.uniform(-0.03, 0.03)
+        size = (length, t + jitter, ch) if horiz else (t + jitter, length, ch)
+        box(bm, (cx, cy, z + ch * (k + 0.5)), size, mat)
+
+
+def terrace(bm, x, y, z0, w, d, h, plaster, stone, lod, seed, exposed=False):
+    """One platform of a stepped building: a set-stone footing course, the wall body (plastered, or
+    bare coursed stone while it is being built) with a bevelled top, and a thin coping on the rim."""
+    if exposed:
+        for (ax, ay), (bx, by) in (((x - w / 2, y - d / 2), (x + w / 2, y - d / 2)),
+                                   ((x - w / 2, y + d / 2), (x + w / 2, y + d / 2))):
+            stone_courses(bm, ax, ay, bx, by, z0, h, 0.6, stone, lod, seed)
+        for (ax, ay), (bx, by) in (((x - w / 2, y - d / 2 + 0.3), (x - w / 2, y + d / 2 - 0.3)),
+                                   ((x + w / 2, y - d / 2 + 0.3), (x + w / 2, y + d / 2 - 0.3))):
+            stone_courses(bm, ax, ay, bx, by, z0, h, 0.6, stone, lod, seed + 5)
+        box(bm, (x, y, z0 + h / 2 - 0.05), (w - 1.0, d - 1.0, h - 0.1), stone)
+        return
+    if lod == 0:
+        # Lower wall: set-stone retaining courses in relief, slightly proud of the plaster above (the
+        # exposed stone is a reading aid, see the dossier's certainty table); upper wall plastered.
+        stone_h = h * 0.5
+        sx, sy = w / 2 + 0.08, d / 2 + 0.08
+        for (ax, ay), (bx, by) in (((x - sx, y - sy), (x + sx, y - sy)), ((x - sx, y + sy), (x + sx, y + sy))):
+            stone_courses(bm, ax, ay, bx, by, z0, stone_h, 0.5, stone, lod, seed)
+        for (ax, ay), (bx, by) in (((x - sx, y - sy + 0.25), (x - sx, y + sy - 0.25)),
+                                   ((x + sx, y - sy + 0.25), (x + sx, y + sy - 0.25))):
+            stone_courses(bm, ax, ay, bx, by, z0, stone_h, 0.5, stone, lod, seed + 3)
+        bevel_box(bm, (x, y, z0 + stone_h + (h - stone_h) / 2), (w, d, h - stone_h), plaster, 0.14, top_only=True,
+                  jitter=0.03, seed=seed)
+        box(bm, (x, y, z0 + stone_h / 2), (w - 0.9, d - 0.9, stone_h), plaster)
+        box(bm, (x, y, z0 + h + 0.05), (w - 0.5, d - 0.5, 0.1), plaster)
+    else:
+        box(bm, (x, y, z0 + h / 2), (w, d, h), plaster)
+
+
+def flight(bm, x, y_front, y_back, z0, z1, width, steps, tread_mat, wall_mat, lod):
+    """Stair with real treads and risers between two sloped side walls (alfardas; form assumed)."""
+    if lod == 0:
+        run = (y_back - y_front) / steps
+        rise = (z1 - z0) / steps
+        for s in range(steps):
+            top = z0 + rise * (s + 1)
+            box(bm, (x, y_front + run * (s + 0.5), (z0 + top) / 2 - 0.2), (width, abs(run) + 0.02, top - z0 + 0.4),
+                tread_mat)
+        for side in (-1, 1):
+            sx = x + side * (width / 2 + 0.25)
+            v = [bm.verts.new(c) for c in (
+                (sx - 0.25, y_front, z0), (sx + 0.25, y_front, z0), (sx + 0.25, y_back, z1 - 0.1), (sx - 0.25, y_back, z1 - 0.1),
+                (sx - 0.25, y_front, z0 + 0.7), (sx + 0.25, y_front, z0 + 0.7), (sx + 0.25, y_back, z1 + 0.6),
+                (sx - 0.25, y_back, z1 + 0.6))]
+            for idx in ((0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7), (4, 5, 6, 7), (3, 2, 1, 0)):
+                bm.faces.new([v[i] for i in idx]).material_index = wall_mat
+    else:
+        ramp(bm, x, y_front, y_back, z0, z1, width + 1.0, tread_mat)
+
+
+def parapet(bm, x, y, w, d, z, h, mat, gap, lod, seed):
+    """Low wall around a terrace rim with an opening on the stair axis (front, -Y)."""
+    t = 0.4
+    x0, x1, y0, y1 = x - w / 2 + t / 2, x + w / 2 - t / 2, y - d / 2 + t / 2, y + d / 2 - t / 2
+    pieces = [((x0 + x1) / 2, y1, x1 - x0 + t, t), (x0, (y0 + y1) / 2, t, y1 - y0), (x1, (y0 + y1) / 2, t, y1 - y0)]
+    seg = ((x1 - x0) - gap) / 2
+    for side in (-1, 1):
+        pieces.append((x + side * (gap / 2 + seg / 2), y0, seg + t, t))
+    for k, (cx, cy, sx, sy) in enumerate(pieces):
+        if lod == 0:
+            bevel_box(bm, (cx, cy, z + h / 2), (sx, sy, h), mat, 0.08, top_only=True, seed=seed + k)
+        else:
+            box(bm, (cx, cy, z + h / 2), (sx, sy, h), mat)
+
+
+def retaining_wall(bm, x0, y0, x1, y1, z, courses_at, thick, seed, mat, lod):
+    """Stone retaining wall going up course by course, unfinished towards one end:
+    ``courses_at(t)`` is the wall height at fraction t along the run."""
+    length = math.hypot(x1 - x0, y1 - y0)
+    n = max(2, int(length / (3.0 if lod == 0 else 7.0)))
     for k in range(n):
         t0, t1 = k / n, (k + 1) / n
-        h = courses_at((t0 + t1) / 2) * (0.92 + 0.12 * rng.random())
-        if h < 0.12:
+        h = courses_at((t0 + t1) / 2)
+        if h < 0.2:
             continue
-        cx = x0 + (x1 - x0) * (t0 + t1) / 2
-        cy = y0 + (y1 - y0) * (t0 + t1) / 2
-        horiz = abs(y1 - y0) < 1e-3
-        size = (length / n + 0.05, thick, h) if horiz else (thick, length / n + 0.05, h)
-        rough_box(bm, (cx, cy, z + h / 2), size, mat, 1 if lod == 0 else 0, 0.05 if lod == 0 else 0.0, seed + k)
+        ax, ay = x0 + (x1 - x0) * t0, y0 + (y1 - y0) * t0
+        bx, by = x0 + (x1 - x0) * t1, y0 + (y1 - y0) * t1
+        stone_courses(bm, ax, ay, bx, by, z, h, thick, mat, lod, seed + k)
 
 
 def platform_sizes(levels):
     """Stepped levels shrinking towards the back, so the front stair climbs every terrace."""
     out = []
     for k in range(levels):
-        w = MAYOR_W - k * 6.2
-        d = MAYOR_D - k * 5.6
-        back = (MAYOR_D - d) / 2  # keep the back face nearly flush, terraces open to the front
-        out.append((w, d, 0.0, back * 0.55, k * MAYOR_LEVEL_H))
+        w = MAYOR_W - k * 4.6
+        d = MAYOR_D - k * 4.2
+        back = (MAYOR_D - d) / 2
+        out.append((w, d, 0.0, back * 0.6, k * MAYOR_LEVEL_H))
     return out
 
 
@@ -221,9 +321,7 @@ def pyramid_mayor(mats, lod, phase):
     bm = bmesh.new()
     order = ['plaster_early', 'plaster_ochre', 'stone', 'shicra', 'earth', 'plaster_red', 'cane']
     m = {k: i for i, k in enumerate(order)}
-    paint = 'plaster_ochre' if phase == 'in_use' else 'plaster_early'
-    cuts = 3 if lod == 0 else 0
-    amp = 0.18 if lod == 0 else 0.0
+    paint = m['plaster_ochre'] if phase == 'in_use' else m['plaster_early']
     levels = platform_sizes(MAYOR_LEVELS)
     if phase == 'foundation':
         built, partial = 0, 0
@@ -231,134 +329,164 @@ def pyramid_mayor(mats, lod, phase):
         built, partial = 2, 2
     else:
         built, partial = MAYOR_LEVELS, None
-    # Ground course: the levelled base the platforms rest on.
-    rough_box(bm, (0, 0, -0.25), (MAYOR_W + 2.0, MAYOR_D + 2.0, 0.7), m['earth'], 1 if lod == 0 else 0,
-              0.12 if lod == 0 else 0.0, 3)
-    face = m[paint] if phase in ('finished', 'in_use') else m['stone']
+    LEDGES[:] = [lv[4] for lv in levels]
+    # Levelled ground course the platforms rest on.
+    box(bm, (0, 0, -0.3), (MAYOR_W + 2.4, MAYOR_D + 2.4, 0.7), m['earth'])
     for k in range(built):
         w, d, x, y, z0 = levels[k]
-        rough_box(bm, (x, y, z0 + MAYOR_LEVEL_H / 2), (w, d, MAYOR_LEVEL_H), face, cuts, amp, k + 1, batter=0.025)
+        terrace(bm, x, y, z0, w, d, MAYOR_LEVEL_H, paint, m['stone'], lod, 10 + k,
+                exposed=phase in ('foundation', 'fill'))
     top_z = built * MAYOR_LEVEL_H
     if partial is not None:
-        # The level being raised: retaining walls going up, shicra fill inside, unfinished at the east.
+        # The level being raised: coursed retaining walls going up, shicra fill inside.
         w, d, x, y, z0 = levels[partial]
         x0, x1, y0, y1 = x - w / 2, x + w / 2, y - d / 2, y + d / 2
         rise = (lambda t: MAYOR_LEVEL_H * max(0.0, 1.0 - 1.15 * t))
-        full = (lambda t: MAYOR_LEVEL_H * (0.85 if t < 0.6 else 0.45))
-        retaining_wall(bm, x0, y0, x1, y0, z0, rise, 0.7, 11, m['stone'], lod)
-        retaining_wall(bm, x0, y1, x1, y1, z0, rise, 0.7, 13, m['stone'], lod)
-        retaining_wall(bm, x0, y0, x0, y1, z0, full, 0.7, 17, m['stone'], lod)
-        retaining_wall(bm, x0 + w * 0.42, y0, x0 + w * 0.42, y1, z0, full, 0.6, 19, m['stone'], lod)
-        count = 30 if lod == 0 else 10
+        full = (lambda t: MAYOR_LEVEL_H * (0.85 if t < 0.6 else 0.5))
+        retaining_wall(bm, x0, y0, x1, y0, z0, rise, 0.6, 11, m['stone'], lod)
+        retaining_wall(bm, x0, y1, x1, y1, z0, rise, 0.6, 13, m['stone'], lod)
+        retaining_wall(bm, x0, y0 + 0.3, x0, y1 - 0.3, z0, full, 0.6, 17, m['stone'], lod)
+        retaining_wall(bm, x0 + w * 0.42, y0 + 0.3, x0 + w * 0.42, y1 - 0.3, z0, full, 0.5, 19, m['stone'], lod)
+        count = 26 if lod == 0 else 8
         segs, rings = (5, 3) if lod == 0 else (4, 2)
-        fill_bags(bm, x0 + 0.4, x0 + w * 0.42, y0 + 0.4, y1 - 0.4, z0, MAYOR_LEVEL_H * 0.75, count // 2, 31,
+        fill_bags(bm, x0 + 0.5, x0 + w * 0.42, y0 + 0.5, y1 - 0.5, z0, MAYOR_LEVEL_H * 0.75, count // 2, 31,
                   m['shicra'], segs, rings, lod)
-        fill_bags(bm, x0 + w * 0.42, x1 - w * 0.22, y0 + 0.4, y1 - 0.4, z0, MAYOR_LEVEL_H * 0.4, count // 2, 37,
+        fill_bags(bm, x0 + w * 0.42, x1 - w * 0.22, y0 + 0.5, y1 - 0.5, z0, MAYOR_LEVEL_H * 0.4, count // 2, 37,
                   m['shicra'], segs, rings, lod)
-        if lod == 0 and phase == 'fill':
-            for k, (px, py) in enumerate(((x1 + 3.0, y0 + 4.0), (x1 + 2.5, y1 - 5.0), (x0 - 3.0, y0 - 2.0))):
-                bag_pile(bm, (px, py, 0.0), 10, 1.2, 50 + k, m['shicra'], 5, 3)
-    else:
-        # Central stair from the plaza (front, -Y) to the summit.
-        w0, d0 = levels[0][0], levels[0][1]
-        front = levels[0][3] - d0 / 2
-        last = levels[-1]
-        back = last[3] - last[1] / 2 + 1.0
         if lod == 0:
-            stair(bm, 0.0, front - 4.0, back, 0.0, top_z, 4.4, 24, face)
+            piles = ((x1 + 3.0, y0 + 4.0), (x1 + 2.5, y1 - 5.0), (x0 - 3.0, y0 - 2.0), (6.0, y0 - 3.5))
+            for k, (px, py) in enumerate(piles[: 4 if phase == 'foundation' else 3]):
+                bag_pile(bm, (px, py, 0.0), 7, 1.1, 50 + k, m['shicra'], 5, 3)
+    else:
+        front = levels[0][3] - levels[0][1] / 2
+        last = levels[-1]
+        back = last[3] - last[1] / 2 + 1.2
+        flight(bm, 0.0, front - 4.5, back, 0.0, top_z, 4.4, 30, paint, m['stone'], lod)
+        w, d, x, y, z0 = last
+        if phase == 'finished':
+            parapet(bm, x, y, w, d, top_z + 0.1, 0.7, paint, 4.0, lod, 60)
         else:
-            ramp(bm, 0.0, front - 4.0, back, 0.0, top_z, 4.4, face)
-        if phase == 'in_use':
-            # Summit enclosure (atrium) around a court, with the sacred-fire altar (form assumed).
-            w, d, x, y, z0 = last
-            ex0, ex1, ey0, ey1 = x - w / 2 + 0.6, x + w / 2 - 0.6, y - d / 2 + 0.6, y + d / 2 - 0.6
-            wall_h, t = 1.4, 0.45
-            gap = 2.4
-            for (a, b) in (((ex0, ey1), (ex1, ey1)), ((ex0, ey0), (ex0, ey1)), ((ex1, ey0), (ex1, ey1))):
-                cx, cy = (a[0] + b[0]) / 2, (a[1] + b[1]) / 2
-                size = (abs(b[0] - a[0]) + t, t, wall_h) if abs(b[1] - a[1]) < 1e-3 else (t, abs(b[1] - a[1]) + t, wall_h)
-                rough_box(bm, (cx, cy, top_z + wall_h / 2), size, m[paint], 1 if lod == 0 else 0, 0.04, 61)
-            for side in (-1, 1):  # front wall with the stair opening
-                seg = ((ex1 - ex0) - gap) / 2
-                cx = side * (gap / 2 + seg / 2) + x
-                rough_box(bm, (cx, ey0, top_z + wall_h / 2), (seg, t, wall_h), m[paint], 1 if lod == 0 else 0, 0.04, 67)
-            # Red band on the enclosure's crest (late colours documented; placement assumed).
-            box(bm, (x, ey1, top_z + wall_h + 0.08), (ex1 - ex0 + t, t + 0.06, 0.16), m['plaster_red'])
-            ax, ay = x - w * 0.18, y + d * 0.12
-            box(bm, (ax, ay, top_z + 0.3), (2.2, 2.2, 0.6), m['stone'])
-            box(bm, (ax, ay, top_z + 0.66), (1.1, 1.1, 0.14), m['earth'])
+            # Summit enclosure (atrium) around a court, with the sacred-fire altar (forms assumed).
+            parapet(bm, x, y, w - 1.0, d - 1.0, top_z + 0.1, 1.5, paint, 3.0, lod, 61)
+            ey1 = y + d / 2 - 0.9
+            box(bm, (x, ey1, top_z + 1.68), (w - 1.0, 0.46, 0.16), m['plaster_red'])
+            ax, ay = x - w * 0.18, y + d * 0.1
             if lod == 0:
-                # A light cane-mat shade over part of the court (roofing is a plausible assumption).
-                for px, py in ((x + w * 0.12, y + d * 0.05), (x + w * 0.3, y + d * 0.05), (x + w * 0.12, y + d * 0.3),
+                bevel_box(bm, (ax, ay, top_z + 0.35), (2.4, 2.4, 0.5), m['stone'], 0.1, seed=70)
+                bevel_box(bm, (ax, ay, top_z + 0.68), (1.4, 1.4, 0.16), m['earth'], 0.05, seed=71)
+                for px, py in ((x + w * 0.1, y + d * 0.02), (x + w * 0.3, y + d * 0.02), (x + w * 0.1, y + d * 0.3),
                                (x + w * 0.3, y + d * 0.3)):
-                    box(bm, (px, py, top_z + 1.1), (0.22, 0.22, 2.2), m['earth'])
-                box(bm, (x + w * 0.21, y + d * 0.175, top_z + 2.25), (w * 0.24, d * 0.3, 0.08), m['cane'])
+                    box(bm, (px, py, top_z + 1.2), (0.22, 0.22, 2.4), m['earth'])
+                box(bm, (x + w * 0.2, y + d * 0.16, top_z + 2.45), (w * 0.26, d * 0.34, 0.08), m['cane'])
+            else:
+                box(bm, (ax, ay, top_z + 0.4), (2.4, 2.4, 0.6), m['stone'])
     if phase == 'foundation' and lod == 0:
-        for k, (px, py) in enumerate(((MAYOR_W / 2 + 3, -6.0), (MAYOR_W / 2 + 3, 8.0), (-MAYOR_W / 2 - 3, 4.0),
-                                      (6.0, -MAYOR_D / 2 - 3.5))):
+        for k, (px, py) in enumerate(((MAYOR_W / 2 + 3, -6.0), (-MAYOR_W / 2 - 3, 4.0))):
             bag_pile(bm, (px, py, 0.0), 7, 1.1, 70 + k, m['shicra'], 5, 3)
     return bm, [mats[k] for k in order]
 
 
 def pyramid_small(mats, lod):
-    """A smaller stepped pyramid: three terraces and a front stair (scaled per building in game)."""
+    """A smaller stepped pyramid: four terraces, stair with side walls, parapet (scaled per building)."""
     bm = bmesh.new()
-    # White (early) plaster: the city's buildings date from different periods (documented colour
-    # change by period; which building wore which colour is inferred), and it keeps the ochre Pyramid
-    # Mayor the dominant mass.
-    order = ['plaster_early', 'earth']
-    w, d, h = 18.0, 16.0, 2.6
-    cuts = 2 if lod == 0 else 0
-    amp = 0.14 if lod == 0 else 0.0
-    rough_box(bm, (0, 0, -0.2), (w + 1.2, d + 1.2, 0.6), 1, 1 if lod == 0 else 0, amp * 0.6, 5)
-    for k in range(3):
-        lw, ld = w - k * 4.4, d - k * 3.8
-        y = (d - ld) / 2 * 0.5
-        rough_box(bm, (0, y, k * h + h / 2), (lw, ld, h), 0, cuts, amp, 20 + k, batter=0.03)
-    front = -d / 2
-    top_d = d - 2 * 3.8
-    back = (d - top_d) / 2 * 0.5 - top_d / 2 + 0.8  # just onto the top terrace
-    if lod == 0:
-        stair(bm, 0.0, front - 2.6, back, 0.0, 3 * h, 2.8, 14, 0)
-    else:
-        ramp(bm, 0.0, front - 2.6, back, 0.0, 3 * h, 2.8, 0)
+    # White (early) plaster: buildings of different periods (documented colour change by period; which
+    # building wore which colour is inferred), and it keeps the ochre Pyramid Mayor dominant.
+    order = ['plaster_early', 'stone', 'earth']
+    w, d, h = 18.0, 16.0, 2.4
+    LEDGES[:] = [k * h for k in range(4)]
+    box(bm, (0, 0, -0.25), (w + 1.4, d + 1.4, 0.6), 2)
+    tops = []
+    for k in range(4):
+        lw, ld = w - k * 3.4, d - k * 2.9
+        y = (d - ld) / 2 * 0.6
+        terrace(bm, 0.0, y, k * h, lw, ld, h, 0, 1, lod, 20 + k)
+        tops.append((lw, ld, y))
+    lw, ld, ly = tops[-1]
+    flight(bm, 0.0, -d / 2 - 2.6, ly - ld / 2 + 0.9, 0.0, 4 * h, 2.8, 18, 0, 1, lod)
+    parapet(bm, 0.0, ly, lw, ld, 4 * h + 0.1, 0.6, 0, 3.2, lod, 30)
     return bm, [mats[k] for k in order]
 
 
-def circular_plaza(mats, lod):
-    """Sunken circular plaza: raised rim, two steps down to a plastered floor, axial stairs."""
-    bm = bmesh.new()
-    order = ['plaster_early', 'stone']
-    r = 7.0
-    segs = 40 if lod == 0 else 16
-    rings = [(r + 1.0, 0.0, 1), (r + 1.0, 0.45, 1), (r, 0.45, 1), (r, -0.5, 0), (r - 0.9, -0.5, 0), (r - 0.9, -1.2, 0),
-             (0.0, -1.2, 0)]
-    loops = []
-    for rad, z, _ in rings:
-        if rad == 0.0:
-            loops.append([bm.verts.new((0, 0, z))])
+def ring(bm, radius, z, segs, gaps, gap_half):
+    """Vertices of a circle, skipping the angles inside the stair gaps (returned as arcs). A full ring
+    closes on its first vertex, so smooth bands have no shading seam at 0°."""
+    if not gaps:
+        verts = [bm.verts.new((math.cos(a) * radius, math.sin(a) * radius, z))
+                 for a in (k / segs * math.tau for k in range(segs))]
+        return [verts + [verts[0]]]
+    arcs = []
+    current = []
+    for k in range(segs + 1):
+        a = k / segs * math.tau
+        inside = any(abs(math.atan2(math.sin(a - g), math.cos(a - g))) < gap_half for g in gaps)
+        if inside:
+            if len(current) > 1:
+                arcs.append(current)
+            current = []
             continue
-        loops.append([bm.verts.new((math.cos(a) * rad, math.sin(a) * rad, z)) for a in (k / segs * math.tau for k in range(segs))])
-    for i in range(len(loops) - 1):
-        a, b = loops[i], loops[i + 1]
-        mat = rings[i][2] if i < 2 else 0
-        for k in range(segs):
-            if len(b) == 1:
-                f = bm.faces.new((a[k], a[(k + 1) % segs], b[0]))
-            else:
-                f = bm.faces.new((a[k], a[(k + 1) % segs], b[(k + 1) % segs], b[k]))
+        current.append(bm.verts.new((math.cos(a) * radius, math.sin(a) * radius, z)))
+    if len(current) > 1:
+        arcs.append(current)
+    return arcs
+
+
+def band(bm, r0, z0, r1, z1, segs, gaps, gap_half, mat, smooth):
+    """A surface of revolution between two circles (wall faces or treads), cut at the stair gaps."""
+    lo = ring(bm, r0, z0, segs, gaps, gap_half)
+    hi = ring(bm, r1, z1, segs, gaps, gap_half)
+    for a, b in zip(lo, hi):
+        for k in range(min(len(a), len(b)) - 1):
+            f = bm.faces.new((a[k], a[k + 1], b[k + 1], b[k]))
             f.material_index = mat
-    outer = [bm.verts.new((math.cos(a) * (r + 1.0), math.sin(a) * (r + 1.0), -0.6)) for a in (k / segs * math.tau for k in range(segs))]
-    for k in range(segs):
-        bm.faces.new((outer[(k + 1) % segs], outer[k], loops[0][k], loops[0][(k + 1) % segs])).material_index = 1
+            f.smooth = smooth
+
+
+def circular_plaza(mats, lod):
+    """Sunken circular plaza: a stone-faced ring wall with a plastered coping, two coursed steps down
+    to a compacted floor, and axial stairs cut through the rim (layout simplified; documented plazas)."""
+    bm = bmesh.new()
+    order = ['plaster_early', 'stone', 'earth']
+    r = 7.0
+    segs = 48 if lod == 0 else 20
+    gaps = (math.pi / 2, -math.pi / 2)  # stair axis +Y / -Y (game -Z / +Z)
+    half = math.radians(9.0)
+    rim_out, rim_in = r + 1.0, r
+    LEDGES[:] = [-1.2, -0.55, 0.0]
+    # Outer face of the rim (stone), coping (plaster), inner face (stone courses), steps, floor.
+    band(bm, rim_out, -0.6, rim_out, 0.45, segs, gaps, half, 1, True)
+    band(bm, rim_out, 0.45, rim_in, 0.45, segs, gaps, half, 0, False)
+    courses = 2 if lod == 0 else 1
+    zs = [0.45 - (0.45 + 0.55) * k / courses for k in range(courses + 1)]
+    for k in range(courses):
+        inset = 0.04 if k % 2 else 0.0
+        band(bm, rim_in - inset, zs[k], rim_in - inset, zs[k + 1], segs, gaps, half, 1, True)
+    band(bm, rim_in, -0.55, rim_in - 0.9, -0.55, segs, gaps, half, 0, False)
+    band(bm, rim_in - 0.9, -0.55, rim_in - 0.9, -1.2, segs, gaps, half, 1, True)
+    # Floor: concentric quad rings down to a small centre fan (no long thin fan triangles).
+    radii = [rim_in - 0.9, (rim_in - 0.9) * 0.66, (rim_in - 0.9) * 0.33] if lod == 0 else [rim_in - 0.9, 2.0]
+    for k in range(len(radii) - 1):
+        band(bm, radii[k], -1.2, radii[k + 1], -1.2, segs, (), 0.0, 2, False)
+    centre = bm.verts.new((0, 0, -1.2))
+    inner = ring(bm, radii[-1], -1.2, segs, (), 0.0)[0]
+    for k in range(len(inner) - 1):
+        bm.faces.new((inner[k], inner[k + 1], centre)).material_index = 2
+    # Stairs through the rim on the axis, with their side walls.
     for side in (-1, 1):
-        for s in range(4 if lod == 0 else 1):
-            n = 4 if lod == 0 else 1
-            depth = (s + 1) * (1.65 / n)
-            box(bm, (0.0, side * (r + 0.6 - s * (1.6 / n)), 0.45 - depth / 2), (2.2, 1.6 / n + 0.02, depth), 1)
-    for f in bm.faces:
-        f.normal_update()
-    bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
+        y_out, y_in = side * (rim_out + 0.6), side * (rim_in - 0.9)
+        steps = 6 if lod == 0 else 1
+        if lod == 0:
+            for s in range(steps):
+                t0, t1 = s / steps, (s + 1) / steps
+                ya = y_out + (y_in - y_out) * t0
+                yb = y_out + (y_in - y_out) * t1
+                top = 0.45 - (0.45 + 1.2) * (s + 0.5) / steps
+                box(bm, (0.0, (ya + yb) / 2, (top - 1.2) / 2), (2.2, abs(yb - ya) + 0.02, top + 1.2), 0)
+        else:
+            ramp(bm, 0.0, y_in, y_out, -1.2, 0.45, 2.2, 0)
+        for wx in (-1.35, 1.35):
+            box(bm, (wx, (y_out + y_in) / 2, -0.35), (0.4, abs(y_out - y_in), 1.7), 1)
+    # No recalc_face_normals: on this open surface it can flip the floor; band() winds every ring so
+    # walls face outwards/inwards and treads and the floor face up.
     return bm, [mats[k] for k in order]
 
 
@@ -451,25 +579,62 @@ ASSETS = {
 }
 
 
+# World size of one texture tile per material (game units). The game maps the shared, tileable
+# generated PBR textures (stone, plaster/floor wear, fibre, wood) onto these UVs; see
+# src/rendering/architectureKit.ts. A person is 1.86, so a stone of the 512 px dry-stone tile is ~0.3-0.5.
+TILE = {
+    'MAT-Arch_Stone': 3.2,
+    'MAT-Arch_PlasterWhite': 4.0,
+    'MAT-Arch_PlasterOchre': 4.0,
+    'MAT-Arch_PlasterRed': 4.0,
+    'MAT-Arch_Earth': 4.0,
+    'MAT-Arch_Shicra': 1.2,
+    'MAT-Arch_Wood': 1.2,
+    'MAT-Arch_CaneMat': 2.0,
+}
+
+
+def assign_uvs(bm, materials):
+    """Box-projected UVs at world scale: each face is mapped on the plane it faces most, so tiling
+    textures keep a constant texel size on every wall, tread and roof."""
+    uv = bm.loops.layers.uv.verify()
+    for f in bm.faces:
+        n = f.normal
+        tile = TILE.get(materials[f.material_index].name, 3.0)
+        ax, ay, az = abs(n.x), abs(n.y), abs(n.z)
+        for loop in f.loops:
+            co = loop.vert.co
+            if az >= ax and az >= ay:
+                u, v = co.x, co.y
+            elif ax >= ay:
+                u, v = co.y, co.z
+            else:
+                u, v = co.x, co.z
+            loop[uv].uv = (u / tile, v / tile)
+
+
 def tint(mesh):
-    """COLOR_0: darker near the ground (a cheap baked contact shadow) and a small per-face variation, so
-    flat colours read hand-made from the RTS camera."""
-    rng = random.Random(len(mesh.polygons))
+    """COLOR_0, multiplied over the material: grime at the foot of every terrace and floor (dust and
+    splash where walls meet the ground), worn bevelled edges, and low-frequency mottling of
+    hand-applied plaster; per vertex, so curved surfaces show no faceting."""
     col = mesh.color_attributes.new('Col', 'BYTE_COLOR', 'CORNER')
+    ledges = sorted(LEDGES)
     for poly in mesh.polygons:
-        face = 0.97 + 0.03 * rng.random()
+        n = poly.normal
+        bevel = 0.92 if 0.35 < abs(n.z) < 0.9 else 1.0
         for li in poly.loop_indices:
             co = mesh.vertices[mesh.loops[li].vertex_index].co
-            ground = 0.78 + 0.22 * max(0.0, min(1.0, (co.z + 0.2) / 1.6))
-            # Mottled, hand-applied plaster: low-frequency noise over the surface.
-            mottle = 0.9 + 0.1 * (noise.noise(co * 0.35) * 0.5 + 0.5)
-            c = face * ground * mottle
+            above = min((co.z - z for z in ledges if co.z >= z - 0.05), default=co.z + 0.2)
+            grime = 0.8 + 0.2 * max(0.0, min(1.0, above / 1.1))
+            mottle = 0.88 + 0.12 * (noise.noise(co * 0.3) * 0.5 + 0.5)
+            c = grime * mottle * bevel
             col.data[li].color = (c, c, c, 1.0)
     mesh.color_attributes.active_color = col
     mesh.color_attributes.render_color_index = mesh.color_attributes.find('Col')
 
 
 def build_object(asset, lod, mats):
+    LEDGES[:] = [0.0]
     bm, materials = ASSETS[asset](mats, lod)
     name = f'GEO-Arch_{asset}_LOD{lod}'
     # Keep only the material slots some face uses, so the GLB has no empty primitives.
@@ -477,13 +642,14 @@ def build_object(asset, lod, mats):
     remap = {old: new for new, old in enumerate(used)}
     for f in bm.faces:
         f.material_index = remap[f.material_index]
+    kept = [materials[i] for i in used]
+    bm.normal_update()
+    assign_uvs(bm, kept)
     mesh = bpy.data.meshes.new(name)
     bm.to_mesh(mesh)
     bm.free()
-    for i in used:
-        mesh.materials.append(materials[i])
-    for p in mesh.polygons:
-        p.use_smooth = False
+    for mat in kept:
+        mesh.materials.append(mat)
     tint(mesh)
     obj = bpy.data.objects.new(name, mesh)
     col = bpy.data.collections.get(f'COL-Arch_{asset}') or bpy.data.collections.new(f'COL-Arch_{asset}')

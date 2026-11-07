@@ -179,8 +179,12 @@ slot is absent (offline / without assets).
   manifests (triangles, materials, bounds, budget, `confidence`, sources, `reviewed: false`) live in
   `art-src/blender/exports/caral/architecture/`; the game copies were meshopt-compressed with
   `yarn art:models`.
-- **Content**: project-owned procedural geometry, 8 flat Principled materials (plaster white/ochre/red,
-  stone, shicra, earth, wood, cane mat) and a per-vertex tint; no textures, scans or third-party models.
+- **Content**: project-owned procedural geometry, 8 Principled materials (plaster white/ochre/red,
+  stone, shicra, earth, wood, cane mat) with world-scale box-projected UVs and a per-vertex tint (grime at
+  the foot of terraces, worn bevels, mottling); the GLBs carry no textures. At runtime the game maps the
+  shared generated sets already in `src/assets/textures/materials/` (`wall_drystone` for set stone,
+  `roof_thatch` for shicra and cane, `wood`) and the project-generated `plaster_detail` set
+  (`scripts/art/make_plaster_detail.py`, procedural, 256 px, ~9 KB) onto plaster, floors and earth.
   LOD0 ≤ 5000 and LOD1 ≤ 1500 triangles per piece.
 - **Runtime**: m1 assembles the city from `src/model/defs/caralCity.ts` and draws it in place of the ruins
   GLB (`caral_site_lod*.glb`), which stays the fallback while the kit loads and then only keeps its
@@ -192,8 +196,9 @@ slot is absent (offline / without assets).
   `docs/historia/civilizaciones/caral.md`): stepped superposed platforms, shicra fill, stone retaining
   walls, painted plaster, sunken circular plazas, quincha houses, cotton nets and gourd floats and fair
   tents are documented; the colour of each building and the layout on the game map are inferred; the
-  platform count and proportions, the summit enclosure, roofs, the net rack and the tent's frame and
-  cover are assumed. No scaffolding is modelled because none is attested. The models are artistic
+  platform count and proportions, the summit enclosure, the side walls of the stairs and the parapets,
+  the set stone left visible at the foot of each terrace (a reading aid; the documented walls are
+  plastered), roofs, the net rack and the tent's frame and cover are assumed. No scaffolding is modelled because none is attested. The models are artistic
   reconstructions, not surveys, and stay `reviewed: false` until a human review.
 
 ### Caral Pyramid Mayor modular scenery

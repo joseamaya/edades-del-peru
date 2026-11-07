@@ -64,6 +64,9 @@ export function optimizeModels(options: ModelOptimizeOptions = {}): ModelOptimiz
           String(textureSize),
           // Fauna kits keep their named parts (body/leg/wing), which the game animates separately.
           ...(id.startsWith(`fauna${path.sep}`) ? ['--join', 'false', '--flatten', 'false'] : []),
+          // The architecture kit has no textures of its own: the game maps shared tileable PBR sets onto
+          // its world-scale UVs at runtime, so the UVs must survive the unused-attribute prune.
+          ...(id.startsWith(`architecture${path.sep}`) ? ['--prune-attributes', 'false'] : []),
         ],
         { stdio: 'pipe' },
       );

@@ -51,11 +51,11 @@ export interface CaralArchPlacement {
 const PLAZA_FLOOR_DEPTH = 1.25;
 
 /** Kit model footprints (from the export manifests) used to fit a model onto a heritage volume. */
-const SMALL_PYRAMID_SIZE = { w: 19.2, d: 19.2, h: 8.4 };
+const SMALL_PYRAMID_SIZE = { w: 19.4, d: 19.3, h: 9.6 };
 const PLAZA_DIAMETER = 16;
 
-/** Height of the Pyramid Mayor in the kit (5 terraces of 2.7), ~7.3 people of 1.86 (art-direction §3). */
-export const CARAL_MAYOR_HEIGHT = 13.5;
+/** Height of the Pyramid Mayor's top terrace in the kit (6 terraces of 2.7), ~8.7 people of 1.86 (art-direction §3). */
+export const CARAL_MAYOR_HEIGHT = 16.2;
 
 function heritage(id: string): { x: number; z: number; w: number; d: number; h: number } {
   const p = CARAL_HERITAGE_PROXIES.find((proxy) => proxy.id === id);
@@ -65,7 +65,8 @@ function heritage(id: string): { x: number; z: number; w: number; d: number; h: 
 
 /**
  * A smaller pyramid fitted to a heritage footprint, front towards `rotY`. Heights are the volumes'
- * heights times 1.4: the kit compresses footprints more than heights (art-direction §3).
+ * heights times 1.6 (the kit compresses footprints more than heights, art-direction §3), kept below
+ * 80 % of the Pyramid Mayor so it stays the dominant mass.
  */
 function smallPyramid(id: string, rotY: number): CaralArchPlacement {
   const p = heritage(id);
@@ -77,7 +78,11 @@ function smallPyramid(id: string, rotY: number): CaralArchPlacement {
     x: p.x,
     z: p.z,
     rotY,
-    scale: [w / SMALL_PYRAMID_SIZE.w, (p.h * 1.4) / SMALL_PYRAMID_SIZE.h, d / SMALL_PYRAMID_SIZE.d],
+    scale: [
+      w / SMALL_PYRAMID_SIZE.w,
+      Math.min(p.h * 1.6, CARAL_MAYOR_HEIGHT * 0.8) / SMALL_PYRAMID_SIZE.h,
+      d / SMALL_PYRAMID_SIZE.d,
+    ],
   };
 }
 

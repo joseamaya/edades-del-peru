@@ -45,7 +45,7 @@
         ]
       },
       "file": "caral_house_common_lod0.glb",
-      "bytes": 49644
+      "bytes": 60564
     },
     "LOD1": {
       "triangles": 156,
@@ -74,7 +74,7 @@
         ]
       },
       "file": "caral_house_common_lod1.glb",
-      "bytes": 14736
+      "bytes": 17816
     }
   },
   "wall_height": 2.5

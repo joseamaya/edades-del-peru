@@ -45,7 +45,7 @@
         ]
       },
       "file": "caral_house_aspero_lod0.glb",
-      "bytes": 66300
+      "bytes": 80972
     },
     "LOD1": {
       "triangles": 204,
@@ -74,7 +74,7 @@
         ]
       },
       "file": "caral_house_aspero_lod1.glb",
-      "bytes": 18124
+      "bytes": 21964
     }
   },
   "wall_height": 2.4

@@ -87,6 +87,19 @@ describe('Caral architecture kit', () => {
     }
   });
 
+  it('keeps world-scale UVs in every game GLB for the runtime tileable textures', () => {
+    for (const id of IDS) {
+      for (const lod of [0, 1] as const) {
+        const json = glbJson(glbFile(id, lod)) as {
+          meshes: { primitives: { attributes: Record<string, number> }[] }[];
+        };
+        for (const mesh of json.meshes) {
+          for (const p of mesh.primitives) expect(p.attributes.TEXCOORD_0, `${id} LOD${lod}`).toBeDefined();
+        }
+      }
+    }
+  });
+
   it('uses at most 8 flat Principled materials across the kit (metallic 0 or 1, no textures)', () => {
     const names = new Set<string>();
     for (const id of IDS) {

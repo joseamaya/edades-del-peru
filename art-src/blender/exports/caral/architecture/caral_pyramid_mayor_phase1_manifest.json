@@ -18,7 +18,7 @@
   "reviewed": false,
   "lods": {
     "LOD0": {
-      "triangles": 4952,
+      "triangles": 4300,
       "draw_calls": 3,
       "materials": [
         "MAT-Arch_Earth",
@@ -27,26 +27,26 @@
       ],
       "bounds": {
         "min": [
-          -25.323,
-          -23.315,
-          -0.616
+          -25.777,
+          -24.195,
+          -0.65
         ],
         "max": [
-          25.684,
-          20.541,
+          25.547,
+          20.7,
           2.63
         ],
         "size": [
-          51.007,
-          43.855,
-          3.247
+          51.324,
+          44.895,
+          3.28
         ]
       },
       "file": "caral_pyramid_mayor_phase1_lod0.glb",
-      "bytes": 368332
+      "bytes": 400532
     },
     "LOD1": {
-      "triangles": 428,
+      "triangles": 364,
       "draw_calls": 3,
       "materials": [
         "MAT-Arch_Earth",
@@ -55,23 +55,23 @@
       ],
       "bounds": {
         "min": [
-          -22.5,
-          -20.5,
-          -0.6
+          -22.7,
+          -20.7,
+          -0.65
         ],
         "max": [
-          22.5,
-          20.5,
+          22.7,
+          20.7,
           2.713
         ],
         "size": [
-          45.0,
-          41.0,
-          3.313
+          45.4,
+          41.4,
+          3.363
         ]
       },
       "file": "caral_pyramid_mayor_phase1_lod1.glb",
-      "bytes": 35588
+      "bytes": 37396
     }
   }
 }

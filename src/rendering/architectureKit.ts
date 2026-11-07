@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { loadStaticGltf } from './StaticModel';
+import { getGeneratedMaterial } from './Biomes';
 import { dequantize } from './mergeStatic';
 import {
   CARAL_MAYOR_PHASE_ASSET,
@@ -85,6 +86,48 @@ function footprint(model: ArchModel): THREE.Box3 {
     footprints.set(model, box);
   }
   return box;
+}
+
+/**
+ * Surface detail per kit material from shared, tileable PBR sets in src/assets/textures/materials (the
+ * GLBs carry no textures; the only set added for the kit is the 9 KB `plaster_detail`). The kit's UVs
+ * are box-projected at world scale (TILE in the Blender script). `keepColor` keeps the material's
+ * documented paint colour under a near-white detail map; otherwise `tint` (times `lift`) colours the set.
+ */
+const ARCH_SURFACES: Record<
+  string,
+  { set: string; tint?: number; normal: number; keepColor?: boolean; lift?: number }
+> = {
+  // Set stone: the light, coursed dry-stone tile, warmed towards the local granodiorite.
+  'MAT-Arch_Stone': { set: 'wall_drystone', tint: 0xf2e4cf, normal: 0.8, lift: 1.5 },
+  // Plaster, floors and earth keep their documented colour, multiplied by the near-white, tileable
+  // plaster detail set (scripts/art/make_plaster_detail.py): trowel swirls, grit and hairline cracks.
+  'MAT-Arch_PlasterWhite': { set: 'plaster_detail', normal: 0.6, keepColor: true },
+  'MAT-Arch_PlasterOchre': { set: 'plaster_detail', normal: 0.6, keepColor: true },
+  'MAT-Arch_PlasterRed': { set: 'plaster_detail', normal: 0.6, keepColor: true },
+  'MAT-Arch_Earth': { set: 'plaster_detail', normal: 0.9, keepColor: true },
+  'MAT-Arch_Shicra': { set: 'roof_thatch', tint: 0xa8957a, normal: 0.9 },
+  'MAT-Arch_Wood': { set: 'wood', tint: 0x7a5c46, normal: 0.7 },
+  'MAT-Arch_CaneMat': { set: 'roof_thatch', tint: 0xcdbd9e, normal: 0.8 },
+};
+
+export function applyArchSurface(material: THREE.MeshStandardMaterial, name: string): void {
+  const surface = ARCH_SURFACES[name];
+  const set = surface && getGeneratedMaterial(surface.set);
+  if (!surface || !set) return;
+  material.map = set.diffuse;
+  if (!surface.keepColor) material.color.set(surface.tint ?? 0xffffff);
+  // The dry-stone tile is dark (mean ~0.42); lift it towards the light local stone.
+  if (surface.lift) material.color.multiplyScalar(surface.lift);
+  if (set.normal) {
+    material.normalMap = set.normal;
+    material.normalScale = new THREE.Vector2(surface.normal, surface.normal);
+  }
+  if (set.roughness) {
+    material.roughnessMap = set.roughness;
+    material.roughness = 1;
+  }
+  material.needsUpdate = true;
 }
 
 /** The camera is this far from the city centre before the far (LOD1) city is drawn. */
@@ -209,6 +252,7 @@ export class CaralCity {
     let material = this.materials.get(name);
     if (!material) {
       material = source.clone();
+      applyArchSurface(material as THREE.MeshStandardMaterial, name);
       this.materials.set(name, material);
     }
     return material;

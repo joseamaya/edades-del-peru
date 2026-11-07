@@ -193,8 +193,13 @@ _Status (architecture kit v1)_: `scripts/blender/build_caral_architecture_kit.py
 use (ochre plaster, summit enclosure, sacred-fire altar; 13.5 units ≈ 7.3 P tall on a 43 × 39 footprint) and in
 three construction phases (foundation with retaining walls and shicra piles, partial fill, finished white
 platform), a smaller white pyramid fitted to each heritage footprint, the sunken circular plaza, common and
-elite quincha houses, an Áspero fishing house and a fair tent: 8 flat materials, LOD0 ≤ 5k / LOD1 ≤ 1.5k
-triangles per piece. m1 bakes the city (`src/model/defs/caralCity.ts`) into one mesh per material and LOD,
+elite quincha houses, an Áspero fishing house and a fair tent: 8 materials, LOD0 ≤ 5k / LOD1 ≤ 1.5k
+triangles per piece. Detail pass: bevelled masses, terraces with set-stone courses in relief under a
+plastered upper wall and coping, stairs with real treads and risers between side walls, a parapet or
+summit enclosure, a sunken plaza with stone-faced coursed walls, stairs cut through the rim and a ring
+floor without fans; the Pyramid Mayor has 6 terraces (16.2 units ≈ 8.7 P). Surfaces reuse the shared
+tileable PBR sets plus a 9 KB plaster detail set on world-scale UVs, so the kit adds no per-building
+texture. m1 bakes the city (`src/model/defs/caralCity.ts`) into one mesh per material and LOD,
 replacing the ruins GLB once it has loaded (the ruins stay the fallback). The sealed state (act IV) is not
 modelled yet. Reference views: `node scripts/shots_reference_views.mjs --focus=site`.
 
