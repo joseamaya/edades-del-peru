@@ -780,7 +780,7 @@ test('a peaceful mission briefing shows no rival side', async ({ page }) => {
     if (mission === 'm1_caral') await skipCaralIntro(page);
     const overlay = page.locator('.ed-overlay').filter({ hasText: 'OBJETIVOS' });
     await expect(overlay).toBeVisible({ timeout: 30_000 });
-    await expect(overlay).toContainText('Bandos:');
+    await expect(overlay).toContainText('Bandos');
     await expect(overlay).toContainText('sin enfrentamiento documentado');
   }
 });

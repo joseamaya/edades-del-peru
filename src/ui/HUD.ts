@@ -48,7 +48,8 @@ import { SERIES_INTRO } from '../campaign/defs/cinematics';
 import { CAMPAIGN_ONLY } from '../core/release';
 import { markMissionComplete, parseCampaignProgress } from '../campaign/progress';
 import { CinematicPlayer } from './CinematicPlayer';
-import { MENU_BACKDROP } from './menuArt';
+import { MENU_BACKDROP, MISSION_ART } from './menuArt';
+import { renderBriefing } from './MissionBriefing';
 import { decorateTitleScreen, renderCampaignPath, renderMainMenu } from './SeriesMenu';
 import { publicAsset } from '../util/publicAsset';
 import type { MissionDef, ObjectiveProgress, ObjState } from '../campaign/types';
@@ -298,11 +299,6 @@ const CSS = /* css */ `
   .ed-skirmish-info b { color: var(--gold); }
   .ed-map-preview { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto 8px; border: 1px solid var(--line); border-radius: 4px; image-rendering: auto; }
 
-  .ed-briefing { width: min(900px, 94vw); max-height: 90vh; overflow: auto; text-align: left; background: linear-gradient(180deg, rgba(14,18,23,.97), rgba(8,11,15,.96)); border-color: rgba(232,195,106,.32); }
-  .ed-briefing h2 { text-align: left; font-size: clamp(30px, 4vw, 44px); margin-bottom: 4px; }
-  .ed-briefing .sub { text-align: left; }
-  .ed-briefing .ed-hist { font-size: 13.5px; }
-  .ed-briefing .ed-art img { max-height: min(260px, 26vh); }
 
   .ed-epilogue { width: min(780px, 94vw); max-height: 90vh; overflow: auto; background: linear-gradient(180deg, rgba(15,18,22,.97), rgba(7,10,14,.97)); border-color: rgba(232,195,106,.34); }
   .epilogue-title { font-size: clamp(36px, 6vw, 62px); letter-spacing: 3px; }
@@ -2400,7 +2396,6 @@ export class HUD {
     if (!this.game.getPaused()) this.game.togglePause();
     this.clearOverlays();
     const ov = this.el('div', 'ed-overlay');
-    const panel = this.el('div', 'ed-panel ed-briefing', ov);
     const period = getPeriod(mis.period);
     const player = getCiv(mis.playerCiv);
     const enemy = getCiv(mis.enemyCiv);
@@ -2413,13 +2408,13 @@ export class HUD {
         ? `<div class="ed-hist">${mis.history}</div><div class="ed-hist"><b style="color:var(--gold)">${t('hud.menu.briefing.historicalContext')}</b> ${edu.context}</div>`
         : `<div class="ed-hist">${mis.history}</div>`;
     const funFact = edu
-      ? `<div class="ed-sabias">💡 <b>${t('hud.menu.briefing.didYouKnow')}</b> ${edu.didYouKnow}</div>`
+      ? `<div class="ed-sabias"><b>${t('hud.menu.briefing.didYouKnow')}</b> ${edu.didYouKnow}</div>`
       : '';
     const playerName = mis.playerName ?? player.name;
     const enemyName = mis.enemyName ?? enemy.name;
     const sides = mis.enemy.active
-      ? `<span>${t('hud.menu.briefing.sides', { player: escapeHtml(playerName), enemy: escapeHtml(enemyName) })}</span>`
-      : `<span>${t('hud.menu.briefing.sidesSolo', { player: escapeHtml(playerName) })}</span>`;
+      ? t('hud.menu.briefing.sidesVs', { player: escapeHtml(playerName), enemy: escapeHtml(enemyName) })
+      : t('hud.menu.briefing.sidesAlone', { player: escapeHtml(playerName) });
     const sources =
       edu && edu.sources.length
         ? `<details class="ed-fuentes"><summary>${t('hud.menu.briefing.sources')}</summary><ul>${edu.sources
@@ -2440,35 +2435,47 @@ export class HUD {
           }</div></div>`,
       )
       .join('');
-    const commandersHtml = commanders ? `<div class="ed-commanders">${commanders}</div>` : '';
     const introArt = artIntroForMission(mis.id, { includeUnreviewed: includeUnreviewedArt() });
-    const art = introArt ? artFigureHtml(introArt) : '';
     const campaign = getCampaignForMission(mis.id);
-    panel.innerHTML = `
-      <div style="font-size:12px;letter-spacing:3px;color:#a8883f">${campaign ? t('hud.menu.briefing.campaign', { campaign: campaign.title }) : t('hud.menu.briefing.mission')} · ${mis.subtitle}</div>
-      <h2>${mis.title}</h2>
-      <div class="ed-meta">
-        <span>${t('hud.menu.briefing.period', { period: period.name, dates: period.dates })}</span>
-        <span>${t('hud.menu.briefing.geography', { map: MAP_LABEL[mis.map.type] })}</span>
-        ${sides}
-      </div>
-      ${commandersHtml}
-      ${art}
-      ${context}
-      ${funFact}
-      <div class="sub" style="text-align:left;font-size:12px;color:var(--text);line-height:1.7;margin-bottom:10px"><b style="color:var(--gold)">${t('hud.menu.briefing.objectives')}</b><br>${this.objectiveTitles(
-        briefingObjectives,
-      )
-        .map((t) => '• ' + t)
-        .join('<br>')}</div>
-      ${sources}
-    `;
-    const start = this.el('button', 'ed-primary', panel);
-    start.textContent = t('hud.menu.briefing.start');
-    start.addEventListener('click', () => {
-      this.clearOverlays();
-      onStart();
-      if (this.game.introEnabled) this.showMissionTitle(mis);
+    const index = campaign ? campaign.releasedMissionIds.indexOf(mis.id) : -1;
+    const kicker =
+      campaign && index >= 0
+        ? t('hud.menu.briefing.kicker', {
+            n: campaignNumber(campaign.id),
+            campaign: campaign.title,
+            mission: index + 1,
+            total: campaign.releasedMissionIds.length,
+          })
+        : t('hud.menu.briefing.mission');
+    // The objective titles carry the "alternative" prefix; the optional ones get a tag instead of a suffix.
+    const titles = this.objectiveTitles(briefingObjectives.map((o) => ({ ...o, optional: false })));
+    renderBriefing(ov, {
+      kicker,
+      title: mis.title,
+      subtitle: mis.subtitle,
+      backdrop: MISSION_ART[mis.id],
+      accent: campaign?.accent ?? '#c99a55',
+      art: introArt
+        ? artFigureHtml(introArt)
+        : MISSION_ART[mis.id]
+          ? `<figure class="ed-art"><img src="${MISSION_ART[mis.id]}" alt="${escapeHtml(mis.title)}" decoding="async"><figcaption>${t('hud.menu.briefing.captureCaption')}</figcaption></figure>`
+          : '',
+      story: context,
+      didYouKnow: funFact,
+      commanders: commanders ? `<div class="ed-commanders">${commanders}</div>` : '',
+      sources,
+      facts: [
+        { label: t('hud.menu.briefing.factPeriod'), value: `${period.name} · ${period.dates}` },
+        { label: t('hud.menu.briefing.factMap'), value: MAP_LABEL[mis.map.type] },
+        { label: t('hud.menu.briefing.factSides'), value: sides },
+      ],
+      objectives: briefingObjectives.map((o, i) => ({ title: titles[i], optional: !!o.optional })),
+      onStart: () => {
+        this.clearOverlays();
+        onStart();
+        if (this.game.introEnabled) this.showMissionTitle(mis);
+      },
+      onBack: () => this.showCampaignHub(campaign?.id),
     });
   }
 

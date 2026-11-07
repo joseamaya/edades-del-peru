@@ -71,12 +71,13 @@ function artStyle(url: string | undefined, accent: string): string {
   return `--campaign-accent:${accent};background-image:linear-gradient(180deg, rgba(6,8,11,.05), rgba(6,8,11,.82))${image}, radial-gradient(circle at 50% 30%, ${accent}55, transparent 70%)`;
 }
 
-function backdrop(parent: HTMLElement): void {
+/** The drifting, shaded full-screen backdrop shared by the menu screens and the mission briefing. */
+export function backdrop(parent: HTMLElement, image = MENU_BACKDROP): void {
   ensureStyles();
   parent.classList.add('ed-epic');
   const bg = document.createElement('div');
   bg.className = 'ed-epic-bg';
-  bg.style.backgroundImage = `url("${MENU_BACKDROP}")`;
+  if (image) bg.style.backgroundImage = `url("${image}")`;
   const shade = document.createElement('div');
   shade.className = 'ed-epic-shade';
   parent.append(bg, shade);
@@ -302,7 +303,7 @@ function ensureStyles(): void {
 }
 
 /** A stepped Andean fret, repeated as the gold band under the title. */
-const BAND = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='12' viewBox='0 0 36 12'%3E%3Cpath d='M0 11h6V7h6V3h6v4h-3v4h9V7h-3V3h6v4h6v4h3' fill='none' stroke='%23e8c36a' stroke-width='1.4'/%3E%3C/svg%3E")`;
+export const BAND = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='12' viewBox='0 0 36 12'%3E%3Cpath d='M0 11h6V7h6V3h6v4h-3v4h9V7h-3V3h6v4h6v4h3' fill='none' stroke='%23e8c36a' stroke-width='1.4'/%3E%3C/svg%3E")`;
 
 const CSS = /* css */ `
   .ed-epic { overflow: hidden; background: #05070a; }
