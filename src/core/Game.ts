@@ -1024,6 +1024,8 @@ export class Game {
         grow: 1.6,
       });
     }
+    // Surf grows louder as the camera nears the sea on the west edge of the transect.
+    this.audio.setSurf?.(1 - Math.max(0, Math.min(1, (focus.x - 18) / 45)));
     const mayor = this.siteDef?.anchor;
     if (!mayor) return;
     const offering = this.mission?.getObjectiveState('a3_fuego') === 'activo';

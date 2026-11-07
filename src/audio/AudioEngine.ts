@@ -17,6 +17,7 @@ export class AudioEngine {
   private noiseBuffer: AudioBuffer | null = null;
   private era = 0;
   private lastShot = 0;
+  private surf: { source: AudioBufferSourceNode; gain: GainNode; lfo: OscillatorNode } | null = null;
 
   init(): void {
     if (this.ctx) return;
@@ -178,6 +179,42 @@ export class AudioEngine {
     this.blip(300, 0.3, 'sawtooth', 0.2, 60);
   }
 
+  // --- Ambience ---
+
+  /**
+   * Surf on the shore: looped noise through a low-pass filter whose level swells like waves. `level`
+   * (0..1) follows how close the camera is to the sea; 0 keeps the loop silent.
+   */
+  setSurf(level: number): void {
+    if (!this.ctx || !this.master || !this.noiseBuffer) return;
+    const target = Math.max(0, Math.min(1, level)) * 0.16;
+    if (!this.surf) {
+      if (target <= 0.001) return;
+      const source = this.ctx.createBufferSource();
+      source.buffer = this.noiseBuffer;
+      source.loop = true;
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 520;
+      const gain = this.ctx.createGain();
+      gain.gain.value = 0;
+      // A slow swell (about one wave every seven seconds) on top of the base level.
+      const lfo = this.ctx.createOscillator();
+      lfo.frequency.value = 0.14;
+      const lfoDepth = this.ctx.createGain();
+      lfoDepth.gain.value = 0.06;
+      lfo.connect(lfoDepth);
+      lfoDepth.connect(gain.gain);
+      source.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.master);
+      source.start();
+      lfo.start();
+      this.surf = { source, gain, lfo };
+    }
+    this.surf.gain.gain.setTargetAtTime(target, this.now(), 0.8);
+  }
+
   // --- Generative music ---
 
   startMusic(): void {
@@ -201,7 +238,7 @@ export class AudioEngine {
     if (!this.ctx || !this.musicGain) return;
     // modes per era
     const scales: Record<number, number[]> = {
-      0: [220, 261.63, 293.66, 329.63, 392], // The smallest (classic)
+      0: [220, 261.63, 293.66, 329.63, 392], // pentatonic (the ancient Andes: flute timbre)
       1: [196, 246.94, 293.66, 369.99, 440],
       2: [174.61, 220, 261.63, 311.13, 392], // martial
       3: [110, 164.81, 220, 261.63, 329.63],
@@ -214,6 +251,13 @@ export class AudioEngine {
     const step = this.musicStep;
     const idx = step % scale.length;
     const freq = scale[idx];
+    // The ancient Andes (era 0): a breathy flute line in a pentatonic mode. Flutes and trumpets were
+    // found in Caral's Amphitheatre; the melody itself is generative, not a reconstruction.
+    if (this.era === 0 && step % 2 === 0) {
+      this.fluteNote(freq * 2, step % 8 === 0 ? 1.6 : 1.1);
+      this.musicStep++;
+      return;
+    }
     // occasional melodic note
     if (step % 2 === 0) {
       const o = this.ctx.createOscillator();
@@ -245,6 +289,46 @@ export class AudioEngine {
     this.musicStep++;
   }
 
+  private fluteNote(freq: number, length: number): void {
+    if (!this.ctx || !this.musicGain || !this.noiseBuffer) return;
+    const now = this.now();
+    const tone = this.ctx.createOscillator();
+    tone.type = 'sine';
+    tone.frequency.value = freq;
+    const vibrato = this.ctx.createOscillator();
+    vibrato.frequency.value = 5.2;
+    const vibratoDepth = this.ctx.createGain();
+    vibratoDepth.gain.value = freq * 0.008;
+    vibrato.connect(vibratoDepth);
+    vibratoDepth.connect(tone.frequency);
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(0.11, now + 0.12);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + length);
+    tone.connect(gain);
+    // Breath: band-passed noise around the note.
+    const breath = this.ctx.createBufferSource();
+    breath.buffer = this.noiseBuffer;
+    const band = this.ctx.createBiquadFilter();
+    band.type = 'bandpass';
+    band.frequency.value = freq;
+    band.Q.value = 6;
+    const breathGain = this.ctx.createGain();
+    breathGain.gain.setValueAtTime(0.0001, now);
+    breathGain.gain.linearRampToValueAtTime(0.05, now + 0.08);
+    breathGain.gain.exponentialRampToValueAtTime(0.0001, now + length * 0.8);
+    breath.connect(band);
+    band.connect(breathGain);
+    breathGain.connect(this.musicGain);
+    gain.connect(this.musicGain);
+    tone.start(now);
+    vibrato.start(now);
+    breath.start(now);
+    tone.stop(now + length + 0.05);
+    vibrato.stop(now + length + 0.05);
+    breath.stop(now + length);
+  }
+
   stopMusic(): void {
     if (this.musicTimer !== null) {
       clearTimeout(this.musicTimer);
@@ -254,6 +338,11 @@ export class AudioEngine {
 
   dispose(): void {
     this.stopMusic();
+    if (this.surf) {
+      this.surf.source.stop();
+      this.surf.lfo.stop();
+      this.surf = null;
+    }
     for (const t of this.timers) clearTimeout(t);
     this.timers.length = 0;
     this.ctx?.close();
