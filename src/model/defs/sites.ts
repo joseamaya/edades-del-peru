@@ -2,6 +2,7 @@ import type { AuthoredHeightField } from './authoredTerrain';
 import type { GroundPbrSlot } from './profiles';
 import type { TerrainPaletteId } from './terrainPalettes';
 import type { HeritageBuildingId } from './heritage';
+import type { CaralMayorPhase } from './caralCity';
 import {
   CARAL_GROUND,
   CARAL_GROUND_SIZE,
@@ -53,6 +54,8 @@ export interface SiteBlocker {
   z: number;
   w: number;
   d: number;
+  /** First construction phase in which it stands (m1's growing city); omitted means from the start. */
+  since?: CaralMayorPhase;
 }
 
 export interface SiteKeepoutRect {
@@ -206,10 +209,23 @@ export const CARAL_CIRCULAR_ALTAR = caralCityPoint({ x: 72.5, z: 144.55, w: 10.6
 /** Extra clearance around solid monument AABBs for unit footprints. */
 export const CARAL_SITE_BLOCKER_PADDING = 0.5;
 
+/**
+ * Phase from which each Caral monument stands (matches the `since` of its kit placement in caralCity.ts):
+ * until then it neither blocks units nor answers clicks. The Pyramid Mayor and Áspero stand throughout.
+ */
+export const CARAL_HERITAGE_SINCE: Partial<Record<HeritageBuildingId, CaralMayorPhase>> = {
+  caral_pyramid_central: 'finished',
+  caral_pyramid_quarry: 'finished',
+  caral_pyramid_lesser: 'finished',
+  caral_pyramid_gallery: 'finished',
+  caral_pyramid_huanca: 'finished',
+  caral_anfiteatro: 'in_use',
+};
+
 export const CARAL_SITE_BLOCKERS: readonly SiteBlocker[] = [
-  ...CARAL_HERITAGE_PROXIES.map(({ x, z, w, d }) => ({ x, z, w, d })),
+  ...CARAL_HERITAGE_PROXIES.map(({ id, x, z, w, d }) => ({ x, z, w, d, since: CARAL_HERITAGE_SINCE[id] })),
   { x: ASPERO_HERITAGE_PROXY.x, z: ASPERO_HERITAGE_PROXY.z, w: ASPERO_HERITAGE_PROXY.w, d: ASPERO_HERITAGE_PROXY.d },
-  CARAL_CIRCULAR_ALTAR,
+  { ...CARAL_CIRCULAR_ALTAR, since: 'in_use' },
 ];
 
 /**

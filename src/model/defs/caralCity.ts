@@ -53,7 +53,7 @@ export interface CaralArchPlacement {
 const PHASE_ORDER: readonly CaralMayorPhase[] = ['foundation', 'fill', 'finished', 'in_use'];
 
 /** Whether a placement stands while the Pyramid Mayor is in `phase`. */
-export function standsAt(p: CaralArchPlacement, phase: CaralMayorPhase): boolean {
+export function standsAt(p: { since?: CaralMayorPhase }, phase: CaralMayorPhase): boolean {
   return !p.since || PHASE_ORDER.indexOf(phase) >= PHASE_ORDER.indexOf(p.since);
 }
 
@@ -197,7 +197,7 @@ export const CARAL_CITY_BLOCKERS: readonly SiteBlocker[] = CARAL_CITY_LAYOUT.fla
   const size = HOUSE_FOOTPRINT[p.asset];
   if (!size) return [];
   const quarter = Math.abs(Math.sin(p.rotY)) > 0.5;
-  return [{ x: p.x, z: p.z, w: quarter ? size.d : size.w, d: quarter ? size.w : size.d }];
+  return [{ x: p.x, z: p.z, w: quarter ? size.d : size.w, d: quarter ? size.w : size.d, since: p.since }];
 });
 
 /** Footprint of the kit's Huaca de los Ídolos (LOD0 bounds of scripts/blender/build_caral_architecture_kit.py). */

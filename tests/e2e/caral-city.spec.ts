@@ -187,6 +187,8 @@ test('the authored site blocks monument footprints without sealing the city', as
   const errors = await boot(page);
   const state = await page.evaluate((house) => {
     const g = (window as unknown as { game: any }).game;
+    // The finished city: every monument stands.
+    g.setSitePhase('in_use');
     return {
       mayor: g.pathfinder.isWalkable(164, 30),
       anfiteatro: g.pathfinder.isWalkable(164, 152),
@@ -372,6 +374,8 @@ test('the authored site blocks every solid monument but keeps its plazas walkabl
   const state = await page.evaluate(
     ([blockers, altar]) => {
       const g = (window as unknown as { game: any }).game;
+      // Every monument stands once the city is in use.
+      g.setSitePhase('in_use');
       const p = g.pathfinder;
       const inside = (x: number, z: number) =>
         blockers.find((b: any) => Math.abs(x - b.x) <= b.w / 2 && Math.abs(z - b.z) <= b.d / 2);
@@ -397,6 +401,38 @@ test('the authored site blocks every solid monument but keeps its plazas walkabl
   expect(state.path.length).toBeGreaterThan(0);
   expect(state.pathCrosses).toBe(0);
   expect(state.aimedInside).toBe(false);
+});
+
+test('monuments still to be built neither block units nor answer clicks', async ({ page }) => {
+  await boot(page);
+  const state = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const p = g.pathfinder;
+    const read = () => ({
+      central: p.isWalkable(131.5, 57.5),
+      amphitheatre: p.isWalkable(164, 151.65),
+      mayor: p.isWalkable(164, 30),
+      huaca: p.isWalkable(40, 148),
+      centralCard: g.heritageStanding('caral_pyramid_central'),
+    });
+    const opening = { phase: g.sitePhase, ...read() };
+    g.setSitePhase('finished');
+    const finished = read();
+    g.setSitePhase('in_use');
+    const inUse = read();
+    return { opening, finished, inUse };
+  });
+  // Act I: only the Pyramid Mayor's first platform and Áspero stand.
+  expect(state.opening.phase).toBe('foundation');
+  expect(state.opening.central).toBe(true);
+  expect(state.opening.amphitheatre).toBe(true);
+  expect(state.opening.centralCard).toBe(false);
+  expect(state.opening.mayor).toBe(false);
+  expect(state.opening.huaca).toBe(false);
+  expect(state.finished.central).toBe(false);
+  expect(state.finished.centralCard).toBe(true);
+  expect(state.finished.amphitheatre).toBe(true);
+  expect(state.inUse.amphitheatre).toBe(false);
 });
 
 test('the Caral tutorial hides the shortcut help while it is open', async ({ page }) => {

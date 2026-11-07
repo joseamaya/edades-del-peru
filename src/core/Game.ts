@@ -5,7 +5,8 @@ import { PostFX } from '../rendering/PostFX';
 import { SHADOW_MAP_SIZE } from '../rendering/shadowFrame';
 import { Sky } from '../rendering/Sky';
 import type { CaralCity } from '../rendering/architectureKit';
-import type { CaralMayorPhase } from '../model/defs/caralCity';
+import { standsAt, type CaralMayorPhase } from '../model/defs/caralCity';
+import { CARAL_HERITAGE_SINCE } from '../model/defs/sites';
 import { Terrain } from '../rendering/Terrain';
 import { HeadlessTerrain } from '../sim/HeadlessTerrain';
 import { Water } from '../rendering/Water';
@@ -964,6 +965,12 @@ export class Game {
   setSitePhase(phase: CaralMayorPhase): void {
     this.sitePhase = phase;
     this.caralCity?.setMayorPhase(phase);
+    this.world.syncSitePhase(phase);
+  }
+
+  /** Whether a heritage building already stands (m1 raises its monuments phase by phase). */
+  heritageStanding(id: HeritageBuildingId): boolean {
+    return standsAt({ since: CARAL_HERITAGE_SINCE[id] }, this.sitePhase);
   }
   deliverToHeritage(id: HeritageBuildingId): boolean {
     return this.selection.deliverToHeritage(id);

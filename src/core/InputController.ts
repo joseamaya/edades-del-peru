@@ -228,7 +228,8 @@ export class InputController {
       let object: THREE.Object3D | null = hit.object;
       while (object && !object.userData.heritageId) object = object.parent;
       const def = getHeritageBuilding(object?.userData.heritageId as string | undefined);
-      if (def) return def;
+      // Monuments still to be built have no volume yet: their pick proxies must not answer clicks.
+      if (def && this.game.heritageStanding(def.id)) return def;
     }
     return null;
   }

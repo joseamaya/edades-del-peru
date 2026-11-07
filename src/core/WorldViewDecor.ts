@@ -9,7 +9,15 @@ import { loadSceneryModel } from '../rendering/sceneryModels';
 import { loadSiteModel } from '../rendering/siteModels';
 import { mergeStaticByMaterial } from '../rendering/mergeStatic';
 import { CaralCity } from '../rendering/architectureKit';
-import { ASPERO_BLOCKERS, ASPERO_LAYOUT, CARAL_CITY_BLOCKERS, CARAL_CITY_LAYOUT } from '../model/defs/caralCity';
+import {
+  ASPERO_BLOCKERS,
+  ASPERO_LAYOUT,
+  CARAL_CITY_BLOCKERS,
+  CARAL_CITY_LAYOUT,
+  standsAt,
+  type CaralMayorPhase,
+} from '../model/defs/caralCity';
+import type { Obstacle } from '../game/Pathfinding';
 import { loadDecorModel } from '../rendering/decorModels';
 import { planProps, propCountFor } from '../model/defs/props';
 import { planWildlife, faunaCountFor } from '../model/defs/wildlife';
@@ -36,7 +44,7 @@ import {
 } from '../model/defs/caralValley';
 import { distance2D, distanceToSegment } from '../util/math';
 import { RNG, weightedPick } from '../util/rng';
-import { type AuthoredSiteDef, type SiteHeritageProxy } from '../model/defs/sites';
+import { type AuthoredSiteDef, type SiteBlocker, type SiteHeritageProxy } from '../model/defs/sites';
 import { getMission } from '../campaign/defs/campaign';
 
 const AMBIENT_PROP_SEED = 7;
@@ -90,13 +98,30 @@ export class WorldViewDecor {
 
   /** Block the source's monumental volumes while leaving plazas and paths walkable. */
   addSiteObstacles(def: AuthoredSiteDef): void {
-    for (const blocker of def.blockers) {
-      this.game.pathfinder.addObstacle({
-        x: blocker.x,
-        z: blocker.z,
-        w: blocker.w + def.blockerPadding * 2,
-        d: blocker.d + def.blockerPadding * 2,
-      });
+    for (const blocker of def.blockers) this.addSiteBlocker(blocker, def.blockerPadding * 2);
+  }
+
+  /** Obstacles of buildings that only stand from a construction phase on (m1's growing city). */
+  private readonly phasedBlockers: { blocker: SiteBlocker; obstacle: Obstacle; on: boolean }[] = [];
+
+  addSiteBlocker(blocker: SiteBlocker, pad: number): void {
+    const obstacle = { x: blocker.x, z: blocker.z, w: blocker.w + pad, d: blocker.d + pad };
+    if (!blocker.since) {
+      this.game.pathfinder.addObstacle(obstacle);
+      return;
+    }
+    this.phasedBlockers.push({ blocker, obstacle, on: false });
+    this.syncSitePhase(this.game.sitePhase);
+  }
+
+  /** Block exactly the buildings that stand in `phase`; the ones still to be built stay walkable. */
+  syncSitePhase(phase: CaralMayorPhase): void {
+    for (const entry of this.phasedBlockers) {
+      const stands = standsAt(entry.blocker, phase);
+      if (stands === entry.on) continue;
+      if (stands) this.game.pathfinder.addObstacle(entry.obstacle);
+      else this.game.pathfinder.removeObstacle(entry.obstacle);
+      entry.on = stands;
     }
   }
 
@@ -198,8 +223,7 @@ export class WorldViewDecor {
     if (def.id === 'caral_site') {
       // The in-use city's houses are part of the simulation (headless too), independent of the kit load.
       for (const blocker of [...CARAL_CITY_BLOCKERS, ...ASPERO_BLOCKERS]) {
-        const pad = def.blockerPadding * 2;
-        this.game.pathfinder.addObstacle({ x: blocker.x, z: blocker.z, w: blocker.w + pad, d: blocker.d + pad });
+        this.addSiteBlocker(blocker, def.blockerPadding * 2);
       }
       if (!this.game.headless) {
         // Blender architecture kit: the city in use replaces the ruins GLB, which stays the fallback until
