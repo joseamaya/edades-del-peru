@@ -304,6 +304,7 @@ export const es = {
 
   'hud.techTree.title': '🌳 Árbol tecnológico',
   'hud.techTree.sub': 'Edificios, unidades y tecnologías por era, generados desde los defs del juego.',
+  'hud.cinematic.toBriefing': 'Comenzar ▸',
   'hud.techTree.subMatch': 'Lo que tu civilización puede construir, entrenar e investigar en esta partida.',
   'hud.techTree.back': '← Volver',
   'hud.techTree.buildings': 'Edificios',

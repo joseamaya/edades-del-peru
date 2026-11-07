@@ -1,3 +1,4 @@
+import type { CinematicBeat } from './defs/cinematics';
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind, Resources, MapType } from '../core/types';
 import type { GeographicRegion, MapOverrides } from '../model/defs/profiles';
 import type { PortraitId } from '../model/defs/commanders';
@@ -205,7 +206,7 @@ export type TriggerEffect =
     }
   | { type: 'dialogue'; text: string; duration?: number; speaker?: string }
   /** Chapter card between acts of one mission (pauses the mission clock while open). */
-  | { type: 'act'; kicker: string; title: string; text: string }
+  | { type: 'act'; kicker: string; title: string; text: string; image?: string }
   /** Construction phase of the authored site's main monument (the Caral Pyramid Mayor). */
   | { type: 'site_phase'; phase: CaralMayorPhase }
   /** The drought that closes Caral: the valley dries out over ~40 s (Game.startDrought). */
@@ -267,6 +268,10 @@ export interface MissionDef {
   period: HistoricalPeriod;
   /** Speaker label for unattributed dialogue; defaults to the commander label. */
   narrator?: string;
+  /** Narrated intro played before the briefing (skipped with ?intro=0). */
+  intro?: CinematicBeat[];
+  /** Backdrop of the victory epilogue (public asset path). */
+  epilogueImage?: string;
   /** Show the step-by-step guided tutorial at start (e.g. the Caral mission). */
   tutorial?: boolean;
   playerCiv: CivId;

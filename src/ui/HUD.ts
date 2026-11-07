@@ -50,6 +50,7 @@ import { CAMPAIGN_ONLY } from '../core/release';
 import { completedMissions, markMissionComplete, parseCampaignProgress } from '../campaign/progress';
 import { CinematicPlayer } from './CinematicPlayer';
 import { MENU_BACKDROP } from './menuArt';
+import { publicAsset } from '../util/publicAsset';
 import type { MissionDef, ObjectiveProgress, ObjState } from '../campaign/types';
 import { COMMANDERS, type PortraitId } from '../model/defs/commanders';
 import type { HeritageBuildingDef } from '../model/defs/heritage';
@@ -385,6 +386,7 @@ const CSS = /* css */ `
   .ed-tree-unique { color: var(--gold); font-size: 10px; margin-left: 4px; }
   .ed-tree-empty { color: var(--text-dim); font-size: 11px; }
   @media (max-width: 700px) { .ed-tree-cols { grid-template-columns: 1fr; } }
+  .ed-mission-card.with-art { background-size: cover; background-position: center; }
   .ed-mission-card { position: absolute; inset: 0; z-index: 30; display: flex; align-items: center; justify-content: center; background: rgba(3,6,9,.56); pointer-events: auto; animation: mission-card-in .7s ease; }
   .ed-mission-card .inner { text-align: center; padding: 30px; max-width: 760px; }
   .ed-mission-card .year { color: var(--gold); font-size: 12px; letter-spacing: 4px; text-transform: uppercase; }
@@ -1096,6 +1098,9 @@ export class HUD {
     const mis = this.game.mission?.def;
     const edu = mis ? getEducational(mis.id) : undefined;
     const campaign = mis ? getCampaignForMission(mis.id) : undefined;
+    if (victory && mis?.epilogueImage) {
+      ov.style.background = `linear-gradient(180deg, rgba(6,8,12,.55), rgba(6,8,12,.86)), url("${publicAsset(mis.epilogueImage)}") center / cover`;
+    }
     const title = victory ? t('hud.victory.title') : t('hud.victory.defeat');
     const sub =
       winText && loseText ? (victory ? winText : loseText) : victory ? t('hud.victory.win') : t('hud.victory.lose');
@@ -1212,8 +1217,27 @@ export class HUD {
   }
 
   /** Chapter card between the acts of one mission; the mission clock waits while it is open. */
-  showActCard(kicker: string, title: string, text: string): void {
-    this.showChapterCard(kicker, title, text, false);
+  showActCard(kicker: string, title: string, text: string, image?: string): void {
+    this.showChapterCard(kicker, title, text, false, image);
+  }
+
+  /** A mission's narrated intro (per-beat backdrops), then `done` (the briefing). */
+  playMissionIntro(mis: MissionDef, done: () => void): void {
+    const beats = mis.intro ?? [];
+    if (!beats.length) {
+      done();
+      return;
+    }
+    // The world waits behind the intro, as it does behind the briefing (the mission clock must not run).
+    if (!this.game.getPaused()) this.game.togglePause();
+    this.game.audio.cinematicSting?.();
+    new CinematicPlayer(this.root, {
+      beats,
+      background: MENU_BACKDROP,
+      kicker: mis.title.toUpperCase(),
+      finalLabel: t('hud.cinematic.toBriefing'),
+      onDone: done,
+    });
   }
 
   /** Whether the map has a node of this kind (cached per match: nodes never appear later). */
@@ -1245,9 +1269,13 @@ export class HUD {
     );
   }
 
-  private showChapterCard(kicker: string, title: string, text: string, autoDismiss: boolean): void {
+  private showChapterCard(kicker: string, title: string, text: string, autoDismiss: boolean, image?: string): void {
     this.missionCard?.remove();
     const card = this.el('div', 'ed-mission-card');
+    if (image) {
+      card.classList.add('with-art');
+      card.style.backgroundImage = `linear-gradient(180deg, rgba(3,6,9,.25), rgba(3,6,9,.82) 70%), url("${publicAsset(image)}")`;
+    }
     card.innerHTML = `
       <div class="inner">
         <div class="year">${kicker}</div>

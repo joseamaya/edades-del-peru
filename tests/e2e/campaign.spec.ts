@@ -1,5 +1,12 @@
 import { test, expect, type BrowserContext } from '@playwright/test';
 
+/** m1 opens with a narrated intro before the briefing; skip it. */
+async function skipCaralIntro(page: import('@playwright/test').Page): Promise<void> {
+  const skip = page.locator('.ed-cinematic-skip');
+  await skip.waitFor({ state: 'visible', timeout: 30_000 });
+  await skip.click();
+}
+
 test('starting a campaign from the menu launches the selected mission', { tag: '@smoke' }, async ({ page }) => {
   await page.goto('/?menu=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
@@ -7,6 +14,8 @@ test('starting a campaign from the menu launches the selected mission', { tag: '
   });
   await page.getByRole('button', { name: /Campañas/ }).click();
   await page.getByRole('button', { name: /Jugar La Ciudad Sagrada/ }).click();
+  await expect(page.locator('.ed-cinematic', { hasText: 'Gente del mar' })).toBeVisible({ timeout: 30_000 });
+  await skipCaralIntro(page);
   await expect(page.locator('.ed-briefing', { hasText: 'La Ciudad Sagrada' })).toBeVisible({ timeout: 30_000 });
   const url = new URL(page.url());
   expect(url.searchParams.get('menu')).toBeNull();
@@ -37,6 +46,7 @@ test('shows the campaign hub and its replayable prologue', { tag: '@smoke' }, as
 
 test('the mission briefing includes context and sources', { tag: '@smoke' }, async ({ page }) => {
   await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1&cardhold=1');
+  await skipCaralIntro(page);
   const overlay = page.locator('.ed-overlay', { hasText: 'La Ciudad Sagrada' });
   await expect(overlay).toBeVisible({ timeout: 30_000 });
   await expect(overlay).toContainText('Contexto');
@@ -113,6 +123,7 @@ test('the tutorial guides in the first mission', async ({ page }) => {
 test('the chapter card freezes the mission clock and shows the full subtitle', async ({ page }) => {
   test.setTimeout(180_000);
   await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1&cardhold=1');
+  await skipCaralIntro(page);
   const briefing = page.locator('.ed-overlay', { hasText: 'La Ciudad Sagrada' });
   await expect(briefing).toBeVisible({ timeout: 30_000 });
   await briefing.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
@@ -690,6 +701,7 @@ test('the campaign hub releases all four chapters', async ({ page }) => {
 
 test('Caral opens with a chapter card and chains into Chavín', async ({ page }) => {
   await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1&cardhold=1');
+  await skipCaralIntro(page);
   const briefing = page.locator('.ed-briefing');
   await expect(briefing).toBeVisible({ timeout: 30_000 });
   await briefing.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
@@ -760,6 +772,7 @@ test('chapter endings name the right campaign ordinal', async ({ page }) => {
 test('a peaceful mission briefing shows no rival side', async ({ page }) => {
   for (const mission of ['m1_caral', 'm2_chavin', 'm4_wari']) {
     await page.goto(`/?mission=${mission}&seed=777&fog=0&low=1`);
+    if (mission === 'm1_caral') await skipCaralIntro(page);
     const overlay = page.locator('.ed-overlay').filter({ hasText: 'OBJETIVOS' });
     await expect(overlay).toBeVisible({ timeout: 30_000 });
     await expect(overlay).toContainText('Bandos:');

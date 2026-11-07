@@ -262,6 +262,8 @@ test('the Caral objectives reveal in acts and keep the assembly hidden until the
   await advance('a2_canal');
   await expect(objectives).toContainText('Troje');
   await advance('a2_troje');
+  await expect(objectives).toContainText('Teje redes de algodón');
+  await advance('a2_redes');
   await expect(objectives).toContainText('excedente de 500');
   await advance('a2_excedente');
   await expect(objectives).toContainText('Acto III · Entrega 150 de caña');

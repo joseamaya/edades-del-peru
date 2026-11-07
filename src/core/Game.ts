@@ -277,9 +277,12 @@ export class Game {
     replay: Replay | null = null,
     forceCinematic = false,
     headless = false,
+    /** False skips the mission's narrated intro and opening flight (?intro=0, ?noloop=1). */
+    intro = true,
   ) {
     this.forceCinematic = forceCinematic;
     this.headless = headless;
+    this.introEnabled = intro;
     this.settings = { ...DEFAULT_SETTINGS, ...settings };
     this.pendingSnapshot = snapshot;
     this.replay = replay ? new ReplayPlayer(replay) : null;

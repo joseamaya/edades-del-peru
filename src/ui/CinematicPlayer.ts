@@ -1,5 +1,6 @@
 import type { CinematicBeat } from '../campaign/defs/cinematics';
 import { t } from '../i18n';
+import { publicAsset } from '../util/publicAsset';
 
 export interface CinematicOptions {
   beats: CinematicBeat[];
@@ -66,6 +67,9 @@ export class CinematicPlayer {
       this.finish();
       return;
     }
+    this.overlay.style.backgroundImage = `linear-gradient(90deg, rgba(4,7,10,.9), rgba(4,7,10,.35) 58%, rgba(4,7,10,.55)), url("${
+      beat.image ? publicAsset(beat.image) : this.options.background
+    }")`;
     this.overlay.querySelector('.ed-cinematic-kicker')!.textContent = beat.kicker ?? '';
     this.overlay.querySelector('.ed-cinematic-title')!.textContent = beat.title;
     this.overlay.querySelector('.ed-cinematic-text')!.textContent = beat.text;

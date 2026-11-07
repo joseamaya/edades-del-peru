@@ -202,6 +202,20 @@ slot is absent (offline / without assets).
   plastered), roofs, the net rack and the tent's frame and cover are assumed. No scaffolding is modelled because none is attested. The models are artistic
   reconstructions, not surveys, and stay `reviewed: false` until a human review.
 
+### Caral intro and act-card images (in-engine recreations)
+
+- **Location**: `public/media/caral/intro-{aspero,valle,obra,ciudad,sequia,partida}.webp` (960x540,
+  WebP q58, ~160 KB in total).
+- **Source**: captured from the game itself by `scripts/capture_caral_intro.mjs`. Each m1 scene is
+  staged through the debug harness (construction phase, drought, worker orders), rendered without the HUD
+  at 1600x900 and resized with `sharp`. Regenerate them with `node scripts/capture_caral_intro.mjs`
+  after art changes.
+- **Content**: project-owned game renders (terrain, architecture and vegetation kits listed above). They
+  are recreations of the game's own scenes: never historical photographs, and not Blender renders (so not
+  in `src/art/manifest.json`).
+- **Runtime**: m1's narrated intro (`MissionDef.intro`), the act II-IV chapter cards (`act` effect
+  `image`) and the victory epilogue backdrop (`MissionDef.epilogueImage`).
+
 ### Caral Pyramid Mayor modular scenery
 
 - **Location**: `src/assets/scenery/caral/caral_pyramid_mayor_lod0.glb` and `lod1.glb`.

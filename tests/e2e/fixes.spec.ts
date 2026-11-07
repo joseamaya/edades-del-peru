@@ -500,7 +500,7 @@ test('conquest ends only when all enemy buildings are destroyed', async ({ page 
 });
 
 test('a campaign is not lost while the player still has buildings', async ({ page }) => {
-  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1');
+  await page.goto('/?mission=m1_caral&seed=777&fog=0&low=1&intro=0');
   const start = page.getByRole('button', { name: /COMENZAR MISIÓN/ });
   await start.waitFor({ state: 'visible', timeout: 15_000 });
   await start.click();

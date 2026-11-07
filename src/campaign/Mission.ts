@@ -135,6 +135,13 @@ export class Mission {
       const b = [...this.game.buildings.values()].find((x) => x.owner === m.owner && x.kind === m.kind && !x.dead);
       if (b) b.tag = m.tag;
     }
+    const briefing = () => this.showBriefing();
+    if (this.def.intro?.length && this.game.introEnabled && !this.game.headless) {
+      this.game.hud.playMissionIntro(this.def, briefing);
+    } else briefing();
+  }
+
+  private showBriefing(): void {
     this.game.hud.showBriefing(this.def, () => {
       // start the match
       if (this.game.getPaused()) this.game.togglePause();
@@ -372,7 +379,7 @@ export class Mission {
         this.triggerDialogue(fx.text, fx.duration ?? 5, fx.speaker);
         break;
       case 'act':
-        this.game.hud.showActCard(fx.kicker, fx.title, fx.text);
+        this.game.hud.showActCard(fx.kicker, fx.title, fx.text, fx.image);
         break;
       case 'site_phase':
         this.game.setSitePhase(fx.phase);

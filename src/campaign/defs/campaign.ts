@@ -21,6 +21,34 @@ export const MISSIONS: MissionDef[] = [
     tutorial: true,
     // No rulers of Caral are known by name: an anonymous voice of the community tells the story.
     narrator: 'Voz del valle',
+    // In-engine recreations (scripts/capture_caral_intro.mjs), never historical photographs.
+    epilogueImage: 'media/caral/intro-partida.webp',
+    intro: [
+      {
+        kicker: 'VALLE DE SUPE · c. 3000 a.C.',
+        title: 'Gente del mar',
+        text: 'En Áspero, donde el río Supe llega al océano, los pescadores sacan anchoveta con redes de algodón y flotadores de mate. Pero el algodón y los mates no crecen en la playa.',
+        seconds: 9,
+        source: 'docs/historia/campanas/caral.md',
+        image: 'media/caral/intro-aspero.webp',
+      },
+      {
+        kicker: 'RÍO ARRIBA',
+        title: 'El valle',
+        text: 'Tierra adentro, el río corre entre sauces y huarangos. Con canales, el valle puede dar algodón, mates, zapallos y frijoles: lo que la costa necesita.',
+        seconds: 9,
+        source: 'docs/historia/campanas/caral.md',
+        image: 'media/caral/intro-valle.webp',
+      },
+      {
+        kicker: 'GENERACIONES',
+        title: 'Una ciudad hecha por todos',
+        text: 'De ese intercambio nacerá, sobre una terraza del desierto, una de las primeras ciudades de América. No la levantó un rey: la levantó el trabajo comunal, plataforma sobre plataforma.',
+        seconds: 10,
+        source: 'docs/historia/campanas/caral.md',
+        image: 'media/caral/intro-ciudad.webp',
+      },
+    ],
     playerCiv: CivId.CARAL,
     enemyCiv: CivId.CARAL,
     // A compressed west-to-east transect of the Supe valley (scripts/build_caral_heightmap.py).
@@ -254,6 +282,7 @@ export const MISSIONS: MissionDef[] = [
             type: 'act',
             kicker: 'Acto II · Generaciones después',
             title: 'El valle de Supe',
+            image: 'media/caral/intro-valle.webp',
             text: 'Río arriba, el bosque de sauces y huarangos bordea un río que corre pocos meses al año. Con canales, el valle da algodón, mates, zapallos y frijoles; el pescado sube desde la costa y el algodón baja hacia las redes.',
           },
           { type: 'objective', objectiveId: 'a2_campos', state: 'activate', announce: true },
@@ -311,6 +340,7 @@ export const MISSIONS: MissionDef[] = [
             type: 'act',
             kicker: 'Acto III · c. 2600 a.C.',
             title: 'La Ciudad Sagrada',
+            image: 'media/caral/intro-obra.webp',
             text: 'Sobre la terraza desértica, a salvo de las crecidas, el pueblo levanta la Pirámide Mayor por fases. Las shicras —bolsas de fibra llenas de piedras— rellenan cada plataforma.',
           },
           { type: 'camera', pos: { ref: 'site', dx: 0, dz: 0 } },
@@ -352,6 +382,7 @@ export const MISSIONS: MissionDef[] = [
             type: 'act',
             kicker: 'Acto IV · c. 1800 a.C.',
             title: 'La sequía',
+            image: 'media/caral/intro-sequia.webp',
             text: 'Tras siglos de vida, el río falla y la arena avanza sobre los campos. La comunidad decide cerrar su ciudad: entierra sus pirámides bajo piedra y parte hacia la costa.',
           },
           { type: 'objective', objectiveId: 'a4_sellar', state: 'activate', announce: true },
