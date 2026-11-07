@@ -7,6 +7,8 @@ import { disposeStaticGltf } from '../rendering/StaticModel';
 import { loadSceneryModel } from '../rendering/sceneryModels';
 import { loadSiteModel } from '../rendering/siteModels';
 import { mergeStaticByMaterial } from '../rendering/mergeStatic';
+import { CaralCity } from '../rendering/architectureKit';
+import { CARAL_CITY_BLOCKERS, CARAL_CITY_LAYOUT } from '../model/defs/caralCity';
 import { loadDecorModel } from '../rendering/decorModels';
 import { planProps, propCountFor } from '../model/defs/props';
 import { planWildlife, faunaCountFor } from '../model/defs/wildlife';
@@ -76,7 +78,9 @@ export class WorldViewDecor {
     for (const p of proxies) {
       const proxy = new THREE.Mesh(new THREE.BoxGeometry(p.w, p.h, p.d), material);
       proxy.name = p.id;
-      proxy.position.set(p.x, p.h / 2 + 0.02, p.z);
+      // Stand on the terrain (the site's terrace is above the landmark group's origin).
+      const ground = this.game.terrain.getHeight(p.x, p.z) - parent.position.y;
+      proxy.position.set(p.x, ground + p.h / 2 + 0.02, p.z);
       proxy.userData.heritageId = p.id;
       proxy.frustumCulled = false;
       parent.add(proxy);
@@ -187,12 +191,40 @@ export class WorldViewDecor {
     this.addSiteObstacles(def);
     this.addSiteHeritageProxies(group, def.heritageProxies);
     const token = ++this.game.landmarkLoadToken;
+    const current = (): boolean => token === this.game.landmarkLoadToken && this.game.landmark === group;
+    let siteModel: THREE.Object3D | null = null;
+    let cityShown = false;
+    if (def.id === 'caral_site') {
+      // The in-use city's houses are part of the simulation (headless too), independent of the kit load.
+      for (const blocker of CARAL_CITY_BLOCKERS) {
+        const pad = def.blockerPadding * 2;
+        this.game.pathfinder.addObstacle({ x: blocker.x, z: blocker.z, w: blocker.w + pad, d: blocker.d + pad });
+      }
+      if (!this.game.headless) {
+        // Blender architecture kit: the city in use replaces the ruins GLB, which stays the fallback until
+        // the kit is ready and then only keeps its (hidden, still clickable) heritage nodes.
+        const city = new CaralCity(CARAL_CITY_LAYOUT, (x, z) => this.game.terrain.getHeight(x, z) - (site.y ?? 0));
+        this.game.caralCity = city;
+        void city.load().then((ok) => {
+          if (!current()) {
+            city.dispose();
+            return;
+          }
+          if (!ok) return;
+          group.add(city.group);
+          applyFowToObject(city.group, this.game.fowUniforms);
+          cityShown = true;
+          if (siteModel) siteModel.visible = false;
+        });
+      }
+    }
     void loadSiteModel(def.id)
       .then((model) => {
-        if (token !== this.game.landmarkLoadToken || this.game.landmark !== group) {
+        if (!current()) {
           disposeStaticGltf(model);
           return;
         }
+        siteModel = model;
         model.name = def.modelName;
         model.scale.setScalar(def.scale);
         model.position.set(def.origin.x, 0, def.origin.z);
@@ -225,6 +257,8 @@ export class WorldViewDecor {
           }
           return false;
         });
+        // Hidden objects stay raycastable, so the heritage nodes still answer clicks.
+        if (cityShown) model.visible = false;
       })
       .catch((error: unknown) => {
         console.warn(`[site] failed to load authored ${def.id} site`, error);

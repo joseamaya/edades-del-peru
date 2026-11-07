@@ -29,17 +29,17 @@
 - **Historical note**: the dry grass/rock scan used for `puna_grass` is a visual abstraction of Andean
   ichu, not a species-specific botanical reconstruction.
 
-| Slot | Source | Author | Licence | Size | Output SHA-256 (albedo / surface) |
-|---|---|---|---|---|---|
-| `grass` | `grass_ground` | Charlotte Baglioni | CC0 1.0 | 384² | `5b01845156e8…` / `501876e4b835…` |
-| `dirt` | `brown_mud_02` | Rob Tuytel | CC0 1.0 | 384² | `b9ad3f28ed42…` / `4d61153de256…` |
-| `sand` | `coast_sand_01` | Rob Tuytel | CC0 1.0 | 384² | `7615b9b2aeee…` / `2cdc74da9ec7…` |
-| `rock` | `aerial_rocks_01` | Rob Tuytel | CC0 1.0 | 384² | `1f49ee03f780…` / `727d8e410858…` |
-| `snow` | `snow_01` | Rob Tuytel | CC0 1.0 | 384² | `57e237cf34ea…` / `f163500254f4…` |
-| `puna_grass` | `aerial_grass_rock` | Rob Tuytel | CC0 1.0 | 384² | `0f2dd5dca801…` / `bb8cb86447d6…` |
-| `coastal_gravel` | `coast_sand_03` | Rob Tuytel | CC0 1.0 | 384² | `5ad8a4a8c1d9…` / `8077da9c61f0…` |
-| `jungle_floor` | `forrest_ground_01` | Rob Tuytel | CC0 1.0 | 384² | `80ac504545e9…` / `79d63c4f1c0c…` |
-| `caral_grass` | Caral remaster v2 | José Amaya | CC BY 4.0 | 512² | `f7b7168a92fa…` / `72080e535a95…` |
+| Slot             | Source              | Author             | Licence   | Size | Output SHA-256 (albedo / surface) |
+| ---------------- | ------------------- | ------------------ | --------- | ---- | --------------------------------- |
+| `grass`          | `grass_ground`      | Charlotte Baglioni | CC0 1.0   | 384² | `5b01845156e8…` / `501876e4b835…` |
+| `dirt`           | `brown_mud_02`      | Rob Tuytel         | CC0 1.0   | 384² | `b9ad3f28ed42…` / `4d61153de256…` |
+| `sand`           | `coast_sand_01`     | Rob Tuytel         | CC0 1.0   | 384² | `7615b9b2aeee…` / `2cdc74da9ec7…` |
+| `rock`           | `aerial_rocks_01`   | Rob Tuytel         | CC0 1.0   | 384² | `1f49ee03f780…` / `727d8e410858…` |
+| `snow`           | `snow_01`           | Rob Tuytel         | CC0 1.0   | 384² | `57e237cf34ea…` / `f163500254f4…` |
+| `puna_grass`     | `aerial_grass_rock` | Rob Tuytel         | CC0 1.0   | 384² | `0f2dd5dca801…` / `bb8cb86447d6…` |
+| `coastal_gravel` | `coast_sand_03`     | Rob Tuytel         | CC0 1.0   | 384² | `5ad8a4a8c1d9…` / `8077da9c61f0…` |
+| `jungle_floor`   | `forrest_ground_01` | Rob Tuytel         | CC0 1.0   | 384² | `80ac504545e9…` / `79d63c4f1c0c…` |
+| `caral_grass`    | Caral remaster v2   | José Amaya         | CC BY 4.0 | 512² | `f7b7168a92fa…` / `72080e535a95…` |
 
 All sources were retrieved on **2026-11-03**; `scripts/terrain-textures.json` stores the date, full source
 URLs, source hashes and output hashes per slot. The old AI-generated terrain albedos/normals/roughnesses are
@@ -146,7 +146,7 @@ slot is absent (offline / without assets).
 - **Content**: project-owned procedural geometry and a generated leaf-cluster texture; no third-party
   scans or textures. LOD0/LOD1 stay within the art-direction budgets (huarango 1500/400, sauce 1200/350,
   caña brava 600/150, carrizo 400/120, totora 400/120 tris).
-- **Runtime**: the huarango draws the `algarrobo` tree variant (both are *Prosopis*) and the willow the
+- **Runtime**: the huarango draws the `algarrobo` tree variant (both are _Prosopis_) and the willow the
   `sauce` variant on every map; totora props everywhere; caña brava and carrizo only along the Supe in
   m1. Procedural geometry remains the fallback until the GLBs load.
 - **Confidence**: species and zones documented in `docs/historia/campanas/caral.md`; shapes are stylized
@@ -167,6 +167,34 @@ slot is absent (offline / without assets).
 - **Confidence**: deer and birds in the Supe riparian forest are documented (Shady, in
   `docs/historia/campanas/caral.md`); the bird species is not named there, so the model is a generic
   small bird. Shapes are stylized.
+
+### Caral architecture kit (the Sacred City in use)
+
+- **Location**: `src/assets/architecture/caral/caral_<piece>_lod0.glb` and `_lod1.glb`: the Pyramid Mayor in
+  use and in three construction phases (`pyramid_mayor_phase1` foundation, `_phase2` fill, `_phase3`
+  finished), a smaller pyramid, the sunken circular plaza, common and elite quincha houses, an Áspero
+  fishing house and a fair tent.
+- **Source**: generated in Blender by `scripts/blender/build_caral_architecture_kit.py`; kit scene
+  `art-src/blender/scenes/caral_architecture_kit.blend` (Git LFS). Uncompressed exports and per-piece
+  manifests (triangles, materials, bounds, budget, `confidence`, sources, `reviewed: false`) live in
+  `art-src/blender/exports/caral/architecture/`; the game copies were meshopt-compressed with
+  `yarn art:models`.
+- **Content**: project-owned procedural geometry, 8 flat Principled materials (plaster white/ochre/red,
+  stone, shicra, earth, wood, cane mat) and a per-vertex tint; no textures, scans or third-party models.
+  LOD0 ≤ 5000 and LOD1 ≤ 1500 triangles per piece.
+- **Runtime**: m1 assembles the city from `src/model/defs/caralCity.ts` and draws it in place of the ruins
+  GLB (`caral_site_lod*.glb`), which stays the fallback while the kit loads and then only keeps its
+  clickable heritage nodes (hidden); pathing uses the monuments' and the kit houses' blockers. The phase models are wired for act III of
+  `docs/design/caral-model-mission.md` (`CaralCity.setMayorPhase`); m1 shows the city in use. The Áspero
+  house and the fair tent ship as pieces only (no Áspero on the map yet; tents belong to the festive
+  calendar, which m1 does not model).
+- **Confidence** (per piece in the manifests; evidence in `docs/historia/campanas/caral.md` and
+  `docs/historia/civilizaciones/caral.md`): stepped superposed platforms, shicra fill, stone retaining
+  walls, painted plaster, sunken circular plazas, quincha houses, cotton nets and gourd floats and fair
+  tents are documented; the colour of each building and the layout on the game map are inferred; the
+  platform count and proportions, the summit enclosure, roofs, the net rack and the tent's frame and
+  cover are assumed. No scaffolding is modelled because none is attested. The models are artistic
+  reconstructions, not surveys, and stay `reviewed: false` until a human review.
 
 ### Caral Pyramid Mayor modular scenery
 

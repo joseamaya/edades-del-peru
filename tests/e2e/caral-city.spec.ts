@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { OPENING_BASE_CLEARANCE } from '../../src/core/Config';
 import { CARAL_CIRCULAR_ALTAR, CARAL_SITE_BLOCKERS } from '../../src/model/defs/sites';
+import { CARAL_CITY_BLOCKERS } from '../../src/model/defs/caralCity';
 
 const URL = '/?mission=m1_caral&seed=3000&fog=0&low=1&noloop=1&intro=0';
 
@@ -129,9 +130,54 @@ test('the Caral scenario loads the authored sacred-city site', { tag: '@smoke' }
   expect(errors).toEqual([]);
 });
 
+test('the Caral city in use replaces the ruins and follows the Pyramid Mayor phase', async ({ page }) => {
+  const errors = await boot(page);
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game: any }).game;
+      return !!g.landmark?.getObjectByName('caral_city') && !!g.landmark?.getObjectByName('caral_site');
+    },
+    null,
+    { timeout: 60_000 },
+  );
+  const state = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const city = g.caralCity;
+    const lod = (n: number) => g.landmark.getObjectByName(`caral_city_lod${n}`);
+    const tris = () => {
+      let n = 0;
+      lod(0).traverse((o: any) => {
+        if (o.isMesh) n += (o.geometry.index?.count ?? o.geometry.attributes.position.count) / 3;
+      });
+      return n;
+    };
+    const inUse = tris();
+    city.setMayorPhase('foundation');
+    const foundation = tris();
+    city.setMayorPhase('in_use');
+    return {
+      ruinsVisible: g.landmark.getObjectByName('caral_site').visible,
+      lod0Meshes: lod(0).children.length,
+      lod1Meshes: lod(1).children.length,
+      phase: city.mayorPhase,
+      inUse,
+      foundation,
+      back: tris(),
+    };
+  });
+  expect(state.ruinsVisible).toBe(false);
+  expect(state.lod0Meshes).toBeGreaterThan(0);
+  expect(state.lod0Meshes).toBeLessThanOrEqual(8);
+  expect(state.lod1Meshes).toBeLessThanOrEqual(8);
+  expect(state.phase).toBe('in_use');
+  expect(state.foundation).not.toBe(state.inUse);
+  expect(state.back).toBe(state.inUse);
+  expect(errors).toEqual([]);
+});
+
 test('the authored site blocks monument footprints without sealing the city', async ({ page }) => {
   const errors = await boot(page);
-  const state = await page.evaluate(() => {
+  const state = await page.evaluate((house) => {
     const g = (window as unknown as { game: any }).game;
     return {
       mayor: g.pathfinder.isWalkable(100, 30),
@@ -142,7 +188,8 @@ test('the authored site blocks monument footprints without sealing the city', as
       buildOnMayor: g.canPlace(100, 30, 4),
       buildInValley: g.canPlace(30, 120, 4),
       buildInGap: g.canPlace(102, 136.5, 4),
-      residentialWall: g.pathfinder.isWalkable(100, 110),
+      // The city in use: a quincha house of the architecture kit blocks its footprint.
+      residentialWall: g.pathfinder.isWalkable(house.x, house.z),
       openValley: g.pathfinder.isWalkable(30, 120),
       baseBuildable: !!g.findFreeSpot(60.5, 161.3, 4),
       commandBlocked: (() => {
@@ -151,7 +198,7 @@ test('the authored site blocks monument footprints without sealing the city', as
         return { ok, before, after: g.buildings.size };
       })(),
     };
-  });
+  }, CARAL_CITY_BLOCKERS[0]);
   expect(state.mayor).toBe(false);
   expect(state.anfiteatro).toBe(false);
   expect(state.plaza).toBe(true);
@@ -430,8 +477,9 @@ test('a Caral Blender pyramid opens an educational field card', async ({ page })
     const g = (window as unknown as { game: any }).game;
     const model = g.landmark.getObjectByName('caral_pyramid_mayor');
     const box = new window.THREE.Box3().setFromObject(model);
+    // Mid-height of the heritage volume: its top (the 7-person-tall in-use pyramid) can fall off-screen
+    // with this close test camera.
     const center = box.getCenter(new window.THREE.Vector3());
-    center.y = box.max.y - 0.5;
     const projected = center.project(g.camera.camera);
     return { x: (projected.x * 0.5 + 0.5) * window.innerWidth, y: (-projected.y * 0.5 + 0.5) * window.innerHeight };
   });
@@ -487,8 +535,9 @@ test('opening the Caral canal raises the yield at its banks', async ({ page }) =
   const point = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     const box = new window.THREE.Box3().setFromObject(g.canalGroup);
+    // Mid-height of the heritage volume: its top (the 7-person-tall in-use pyramid) can fall off-screen
+    // with this close test camera.
     const center = box.getCenter(new window.THREE.Vector3());
-    center.y = box.max.y - 0.5;
     const projected = center.project(g.camera.camera);
     return { x: (projected.x * 0.5 + 0.5) * window.innerWidth, y: (-projected.y * 0.5 + 0.5) * window.innerHeight };
   });

@@ -815,6 +815,7 @@ export class RuntimeController {
     // Fit the shadow frustum and the terrain LOD to where the camera is this frame, not the last one.
     this.frameShadows();
     this.game.terrain.updateLod(this.game.camera.camera.position);
+    this.game.caralCity?.update(this.game.camera.camera.position);
     this.rebuildSpatial();
 
     // units

@@ -153,6 +153,14 @@ Estas afirmaciones deben presentarse como **interpretaciones**, no como hechos c
 | Shicras, plataformas superpuestas y enterramiento ritual por fases                | Documentado                       |
 | Color exacto de cada edificio en cada período                                     | Inferido                          |
 | Techos y remates de los edificios                                                 | Supuesto plausible                |
+| Plazas circulares hundidas (la mayor en el Templo del Anfiteatro)                 | Documentado                       |
+| Color de cada pirámide en el modelo del juego (Mayor ocre, menores blancas)       | Inferido                          |
+| Número de plataformas y proporciones de la Pirámide Mayor en el juego             | Supuesto plausible                |
+| Recinto en la cima de la Pirámide Mayor y forma del altar del fuego               | Supuesto plausible                |
+| Andamios durante la construcción                                                  | No documentado; no se modelan     |
+| Tendal de redes y lugar de los mates en la casa de Áspero                         | Supuesto plausible                |
+| Armazón y cubierta de las tiendas de feria (solo los postes están documentados)   | Supuesto plausible                |
+| Disposición de casas y plazas en el mapa del juego                                | Abstracción del juego             |
 | Vestimenta (más allá del uso de algodón)                                          | No documentado; mantener sencillo |
 | Nombres de personas                                                               | No documentado; no se inventan    |
 

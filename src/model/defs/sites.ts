@@ -155,7 +155,8 @@ export type CaralHeritageProxy = SiteHeritageProxy;
 
 /** Invisible raycast volumes for the authored site's named heritage nodes. */
 export const CARAL_HERITAGE_PROXIES: readonly CaralHeritageProxy[] = [
-  { id: 'caral_pyramid_mayor', x: 100, z: 30, w: 43.4, d: 39.8, h: 8.5 },
+  // h follows the architecture kit's Pyramid Mayor (5 terraces, ~7.3 people; art-direction §3).
+  { id: 'caral_pyramid_mayor', x: 100, z: 30, w: 43.4, d: 39.8, h: 13.5 },
   { id: 'caral_pyramid_central', x: 67.5, z: 57.5, w: 18, d: 23, h: 8 },
   { id: 'caral_pyramid_quarry', x: 75, z: 80, w: 17, d: 11, h: 6 },
   { id: 'caral_pyramid_lesser', x: 135, z: 20, w: 13, d: 11, h: 6 },
@@ -206,8 +207,10 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     blockers: CARAL_SITE_BLOCKERS,
     blockerPadding: CARAL_SITE_BLOCKER_PADDING,
     buildKeepout: CARAL_SITE_BUILD_KEEPOUT,
+    // No wall collision from the ruins GLB: m1 draws the city in use (architecture kit), whose houses
+    // block through CARAL_CITY_BLOCKERS; walls taken from the hidden ruins would be invisible obstacles.
     wallCollision: {
-      meshPatterns: [/Infra_(Residential|LowerHalf|UpperHalf|Props)/, /AltarCircular$/],
+      meshPatterns: [],
       maxStartYAboveBase: 1.2,
     },
     terrain: {

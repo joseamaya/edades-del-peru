@@ -110,6 +110,8 @@ Dialogue speaker labels must not say "Comandante" in this mission.
 1. Áspero site model (platforms, quincha houses, Huaca de los Ídolos) in Blender.
 2. **Phased monument construction**: a site that grows through delivered materials and phase transitions.
    The modular Caral pyramids and Amphitheatre in `art-src/blender` are a starting point.
+   The architecture kit now ships the Pyramid Mayor phase models (foundation, fill, finished, in use) and
+   `CaralCity.setMayorPhase` swaps them; the gameplay that drives the phases is still to do.
 3. Local resources: cotton/fibre and reed instead of wood for Caral; no silver.
 4. Environmental events: seasonal flood, drought and sand advance.
 5. Map-specific vegetation and ambient fauna sets; remove palms from the Supe map.

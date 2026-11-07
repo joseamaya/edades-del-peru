@@ -189,6 +189,15 @@ within the existing per-animal budget (4 draw calls, 5000 triangles; `yarn bench
 - **Construction states** (phased pyramid, scaffold-free shicra piles, sealed state) follow the
   [mission design](./caral-model-mission.md).
 
+_Status (architecture kit v1)_: `scripts/blender/build_caral_architecture_kit.py` builds the Pyramid Mayor in
+use (ochre plaster, summit enclosure, sacred-fire altar; 13.5 units ≈ 7.3 P tall on a 43 × 39 footprint) and in
+three construction phases (foundation with retaining walls and shicra piles, partial fill, finished white
+platform), a smaller white pyramid fitted to each heritage footprint, the sunken circular plaza, common and
+elite quincha houses, an Áspero fishing house and a fair tent: 8 flat materials, LOD0 ≤ 5k / LOD1 ≤ 1.5k
+triangles per piece. m1 bakes the city (`src/model/defs/caralCity.ts`) into one mesh per material and LOD,
+replacing the ruins GLB once it has loaded (the ruins stay the fallback). The sealed state (act IV) is not
+modelled yet. Reference views: `node scripts/shots_reference_views.mjs --focus=site`.
+
 ## 10. Light and atmosphere
 
 - **Default: morning**, low warm sun from the east/north-east, long soft shadows that model the steps of

@@ -1,0 +1,75 @@
+{
+  "asset_id": "caral_circular_plaza",
+  "source_scene": "scenes/caral_architecture_kit.blend",
+  "script": "scripts/blender/build_caral_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "confidence": "documented",
+  "sources": [
+    "docs/historia/campanas/caral.md",
+    "docs/historia/civilizaciones/caral.md"
+  ],
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 616,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Arch_PlasterWhite",
+        "MAT-Arch_Stone"
+      ],
+      "bounds": {
+        "min": [
+          -8.0,
+          -8.0,
+          -1.2
+        ],
+        "max": [
+          8.0,
+          8.0,
+          0.45
+        ],
+        "size": [
+          16.0,
+          16.0,
+          1.65
+        ]
+      },
+      "file": "caral_circular_plaza_lod0.glb",
+      "bytes": 42684
+    },
+    "LOD1": {
+      "triangles": 232,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Arch_PlasterWhite",
+        "MAT-Arch_Stone"
+      ],
+      "bounds": {
+        "min": [
+          -8.0,
+          -8.41,
+          -1.2
+        ],
+        "max": [
+          8.0,
+          8.41,
+          0.45
+        ],
+        "size": [
+          16.0,
+          16.82,
+          1.65
+        ]
+      },
+      "file": "caral_circular_plaza_lod1.glb",
+      "bytes": 17332
+    }
+  }
+}

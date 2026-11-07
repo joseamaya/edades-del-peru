@@ -1,0 +1,77 @@
+{
+  "asset_id": "caral_pyramid_mayor_phase1",
+  "source_scene": "scenes/caral_architecture_kit.blend",
+  "script": "scripts/blender/build_caral_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "confidence": "inferred",
+  "sources": [
+    "docs/historia/campanas/caral.md",
+    "docs/historia/civilizaciones/caral.md"
+  ],
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 4952,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Arch_Earth",
+        "MAT-Arch_Shicra",
+        "MAT-Arch_Stone"
+      ],
+      "bounds": {
+        "min": [
+          -25.323,
+          -23.315,
+          -0.616
+        ],
+        "max": [
+          25.684,
+          20.541,
+          2.63
+        ],
+        "size": [
+          51.007,
+          43.855,
+          3.247
+        ]
+      },
+      "file": "caral_pyramid_mayor_phase1_lod0.glb",
+      "bytes": 368332
+    },
+    "LOD1": {
+      "triangles": 428,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Arch_Earth",
+        "MAT-Arch_Shicra",
+        "MAT-Arch_Stone"
+      ],
+      "bounds": {
+        "min": [
+          -22.5,
+          -20.5,
+          -0.6
+        ],
+        "max": [
+          22.5,
+          20.5,
+          2.713
+        ],
+        "size": [
+          45.0,
+          41.0,
+          3.313
+        ]
+      },
+      "file": "caral_pyramid_mayor_phase1_lod1.glb",
+      "bytes": 35588
+    }
+  }
+}

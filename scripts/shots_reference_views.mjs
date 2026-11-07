@@ -9,6 +9,7 @@ import { launchChromium, withViteServer, reviewDir, cliArg } from './lib.mjs';
  * Usage: node scripts/shots_reference_views.mjs [--mission=m1_caral] [--name=ref] [--wait=9000]
  *          [--low=1] [--wide=120] [--focus=tree]
  *
+ * `--focus=site` centres the camera on the mission site (the Caral city), `--at=x,z` on a map point;
  * `--focus=tree` centres the camera on the densest tree cluster near the opening view instead
  * (`--focus=deer` / `--focus=riparian_bird` on the first animal of that species);
  * `--kitlod0=1` keeps vegetation-kit LOD0 near the camera even on a software renderer (headless
@@ -20,6 +21,7 @@ const wait = Number(cliArg('wait') ?? 9000);
 const low = cliArg('low') === '1';
 const wide = Number(cliArg('wide') ?? 120);
 const focus = cliArg('focus');
+const at = cliArg('at')?.split(',').map(Number);
 const kitLod0 = cliArg('kitlod0') === '1';
 const views = { close: 28, default: 54, wide };
 
@@ -56,6 +58,16 @@ try {
       const a = g.wildlife.debugSnapshot().find((e) => e.species === species);
       if (a) g.camera.moveTo(a.x, a.z, true);
     }, focus);
+  }
+  if (at) {
+    await page.evaluate(([x, z]) => window.game.camera.moveTo(x, z, true), at);
+  }
+  if (focus === 'site') {
+    await page.evaluate(() => {
+      const g = window.game;
+      const f = g.siteFocus ?? g.siteAnchor;
+      if (f) g.camera.moveTo(f.x, f.z, true);
+    });
   }
   if (focus === 'tree') {
     await page.evaluate(() => {

@@ -19,7 +19,8 @@ describe('authored campaign sites', () => {
     expect(caral.heightField?.worldSize).toBe(192);
     expect(caral.heritageProxies.map((p) => p.id)).toContain('caral_pyramid_mayor');
     expect(caral.buildKeepout.length).toBe(4);
-    expect(caral.wallCollision.meshPatterns.length).toBeGreaterThan(0);
+    // The city in use (architecture kit) blocks through its own house footprints, not the hidden ruins.
+    expect(caral.wallCollision.meshPatterns).toEqual([]);
     expect(caral.terrain.palette).toBe('caral');
     expect(caral.environs?.valley).toBe('caral');
   });
