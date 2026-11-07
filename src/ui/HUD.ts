@@ -48,7 +48,7 @@ import { SERIES_INTRO } from '../campaign/defs/cinematics';
 import { CAMPAIGN_ONLY } from '../core/release';
 import { markMissionComplete, parseCampaignProgress } from '../campaign/progress';
 import { CinematicPlayer } from './CinematicPlayer';
-import { MENU_BACKDROP, MISSION_ART } from './menuArt';
+import { CAMPAIGN_ART, MENU_BACKDROP, MISSION_ART } from './menuArt';
 import { renderBriefing } from './MissionBriefing';
 import { decorateTitleScreen, renderCampaignPath, renderMainMenu } from './SeriesMenu';
 import { publicAsset } from '../util/publicAsset';
@@ -246,8 +246,6 @@ const CSS = /* css */ `
   .ed-ghostbtn:hover { border-color: var(--gold); color: var(--gold); }
 
   /* Onboarding: title, main menu, campaign hub and cinematics */
-  .ed-title-screen { background-size: 108%; background-position: 55% 50%; background-repeat: no-repeat; animation: menu-drift 30s ease-in-out infinite alternate; }
-  .ed-title-screen::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 55%, transparent 0%, rgba(3,5,8,.38) 56%, rgba(3,5,8,.92) 100%); pointer-events: none; }
   .ed-title-card { position: relative; z-index: 1; text-align: center; padding: 32px; max-width: 720px; }
   .ed-title-ornament { width: 78px; height: 34px; margin: 0 auto 18px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M10 1h4v5h5v4h4v4h-4v4h-5v5h-4v-5H5v-4H1v-4h4V6h5z' fill='%23e8c36a' fill-opacity='0.82'/%3E%3C/svg%3E") center/contain no-repeat; filter: drop-shadow(0 0 14px rgba(232,195,106,.35)); }
   .ed-title-card .kicker { font-size: 11px; letter-spacing: 5px; color: var(--gold-dim); text-transform: uppercase; }
@@ -256,8 +254,6 @@ const CSS = /* css */ `
   .ed-title-card .ed-primary { padding: 12px 42px; font-size: 15px; letter-spacing: 2px; box-shadow: 0 8px 30px rgba(232,195,106,.18); }
   .ed-title-card .hint { margin-top: 14px; color: var(--text-dim); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; }
 
-  .ed-menu-screen { align-items: stretch; justify-content: flex-start; background-size: 108%; background-position: 58% 42%; background-repeat: no-repeat; animation: menu-drift 26s ease-in-out infinite alternate; }
-  .ed-menu-screen::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(4,7,10,.95) 0%, rgba(4,7,10,.78) 31%, rgba(4,7,10,.18) 64%, rgba(4,7,10,.62) 100%), linear-gradient(0deg, rgba(4,7,10,.92), transparent 48%); pointer-events: none; }
   .ed-menu-shell { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: space-between; width: min(620px, 54vw); min-height: 100%; padding: clamp(28px, 5vw, 70px) clamp(24px, 4vw, 68px) 28px; }
   .ed-menu-kicker { color: var(--gold-dim); font-size: 11px; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 12px; }
   .ed-menu-title { margin: 0; font-size: clamp(40px, 5.2vw, 74px); line-height: .92; color: #f3e5bb; letter-spacing: 2px; text-shadow: 0 4px 28px rgba(0,0,0,.72); }
@@ -290,7 +286,6 @@ const CSS = /* css */ `
   .ed-cinematic-skip:hover { opacity: 1; }
   @keyframes cinematic-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
-  .ed-campaign-hub { background-size: cover; background-position: center; background-repeat: no-repeat; }
   .ed-campaign-panel { width: min(1020px, 94vw); max-height: 90vh; overflow: auto; text-align: left; background: linear-gradient(180deg, rgba(12,16,21,.96), rgba(8,11,15,.94)); border: 1px solid var(--line); border-radius: 8px; padding: clamp(22px, 3vw, 38px); box-shadow: 0 24px 70px rgba(0,0,0,.72); }
   .ed-campaign-head { display: flex; justify-content: space-between; gap: 20px; align-items: flex-end; margin-bottom: 20px; }
   .ed-campaign-head h2 { margin: 4px 0 4px; font-size: clamp(28px, 4vw, 44px); }
@@ -382,7 +377,6 @@ const CSS = /* css */ `
     .ed-menu-shell { width: 100%; padding: 30px 22px 24px; }
     .ed-menu-title { font-size: clamp(38px, 11vw, 62px); }
     .ed-menu-actions { max-width: none; }
-    .ed-menu-screen::before { background: linear-gradient(90deg, rgba(4,7,10,.9), rgba(4,7,10,.48)), linear-gradient(0deg, rgba(4,7,10,.94), transparent 60%); }
     .ed-campaign-head { display: block; }
     .ed-cinematic { padding: 24px; }
     .ed-cinematic-footer { left: 24px; right: 24px; bottom: 20px; }
@@ -390,8 +384,8 @@ const CSS = /* css */ `
     .ed-title-card h1 { letter-spacing: 1px; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .ed-title-screen, .ed-menu-screen, .ed-cinematic, .ed-campaign-hub { background-position: center; }
-    .ed-menu-screen, .ed-title-screen, .ed-cinematic { animation: none !important; background-size: cover; }
+    .ed-cinematic { background-position: center; }
+    .ed-cinematic { animation: none !important; background-size: cover; }
     .ed-cinematic-copy, .ed-menu-btn, .ed-mission-card { animation: none !important; transition: none !important; opacity: 1; transform: none; }
   }
 
@@ -2506,7 +2500,8 @@ export class HUD {
     this.game.audio.cinematicSting();
     new CinematicPlayer(this.root, {
       beats: campaign.prologue,
-      background: MENU_BACKDROP,
+      // Each campaign's own art only: Caral's capture is not a backdrop for the Viceroyalty.
+      background: CAMPAIGN_ART[campaign.id],
       kicker: t('hud.menu.campaignIntro.kicker', {
         number: t('hud.menu.campaignHub.campaignNumber', { n: campaignNumber(campaign.id), total: CAMPAIGNS.length }),
         campaign: campaign.title.toUpperCase(),

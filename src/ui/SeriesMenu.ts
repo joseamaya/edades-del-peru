@@ -58,8 +58,9 @@ function roman(campaign: CampaignDef): string {
 function missionBlurb(missionId: string): string {
   const history = getReleasedMission(missionId)?.history ?? '';
   const first = history.split('\n')[0] ?? '';
-  const sentences = first.match(/[^.!?]+[.!?]+/g) ?? [first];
-  return sentences.slice(0, 2).join('').trim();
+  // A sentence ends at . ! ? followed by a capital, so 'c. 3000 a.C.' is not cut.
+  const sentences = first.split(/(?<=[.!?])\s+(?=[A-ZÁÉÍÓÚÑ¿¡])/u);
+  return sentences.slice(0, 2).join(' ').trim();
 }
 
 function missionTitle(missionId: string): string {
@@ -97,7 +98,8 @@ export function renderMainMenu(overlay: HTMLElement, a: MainMenuActions): void {
   const path = seriesMissions();
   const next = nextSeriesMission(a.progress);
   const done = path.filter((m) => isMissionCompleted(a.progress, m.missionId)).length;
-  const campaign = CAMPAIGNS.find((c) => c.id === (next?.campaignId ?? path[path.length - 1]?.campaignId))!;
+  const campaign =
+    CAMPAIGNS.find((c) => c.id === (next?.campaignId ?? path[path.length - 1]?.campaignId)) ?? CAMPAIGNS[0]!;
 
   const shell = document.createElement('div');
   shell.className = 'ed-menu-shell';
@@ -316,16 +318,13 @@ const CSS = /* css */ `
   @keyframes ed-epic-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) { .ed-epic-bg, .ed-epic .ed-menu-shell > *, .ed-senda-card { animation: none !important; } }
 
-  .ed-epic.ed-title-screen { background-image: none !important; animation: none; }
-  .ed-epic.ed-title-screen::before { display: none; }
   .ed-epic.ed-title-screen .ed-epic-shade { background: radial-gradient(ellipse at 50% 52%, rgba(4,6,9,.78) 0%, rgba(4,6,9,.55) 40%, rgba(4,6,9,.9) 100%); }
   .ed-epic .ed-title-card { z-index: 2; animation: ed-epic-rise 1.1s ease-out both; }
   .ed-epic .ed-title-card h1 { background: linear-gradient(180deg, #fff3cf 0%, #f0d48a 45%, #b9873a 100%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 6px 26px rgba(0,0,0,.85)); letter-spacing: 5px; }
   .ed-epic .ed-title-card .kicker { color: var(--gold); opacity: .85; letter-spacing: 7px; }
   .ed-epic .ed-title-card .sub { color: #d8d0bd; font-size: 15px; }
   .ed-epic .ed-title-card .ed-epic-band { margin: 6px auto 18px; -webkit-mask: linear-gradient(90deg, transparent, #000 25%, #000 75%, transparent); mask: linear-gradient(90deg, transparent, #000 25%, #000 75%, transparent); }
-  .ed-epic.ed-menu-screen { background-image: none !important; animation: none; }
-  .ed-epic.ed-menu-screen::before { display: none; }
+  .ed-epic.ed-menu-screen { align-items: stretch; justify-content: flex-start; }
   .ed-epic .ed-menu-shell { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 22px; width: min(640px, 56vw); padding: clamp(30px, 6vh, 72px) clamp(24px, 5vw, 76px) 26px; }
   .ed-epic .ed-menu-shell > * { animation: ed-epic-rise .9s ease-out both; }
   .ed-epic .ed-menu-shell > nav { animation-delay: .25s; }
@@ -366,7 +365,7 @@ const CSS = /* css */ `
   .ed-senda-card .chapter.locked { opacity: .45; }
   .ed-senda-card .ed-primary { width: 100%; padding: 12px 16px; }
 
-  .ed-epic.ed-campaign-hub { background-image: none !important; align-items: stretch; justify-content: center; }
+  .ed-epic.ed-campaign-hub { align-items: stretch; justify-content: center; }
   .ed-epic .ed-campaign-panel { box-sizing: border-box; position: relative; z-index: 1; width: min(1240px, 96vw); max-height: none; height: 100%; overflow: auto; background: none; border: 0; box-shadow: none; display: flex; flex-direction: column; gap: 14px; padding: clamp(18px, 3vh, 40px) clamp(16px, 3vw, 40px); }
   .ed-epic.ed-campaign-hub .ed-epic-shade { background: radial-gradient(ellipse at 50% 30%, rgba(4,6,9,.45), rgba(4,6,9,.9) 75%), linear-gradient(0deg, rgba(4,6,9,.85), rgba(4,6,9,.35)); }
   .ed-epic .ed-campaign-head { align-items: flex-end; margin: 0; }

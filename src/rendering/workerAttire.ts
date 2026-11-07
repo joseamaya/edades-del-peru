@@ -323,11 +323,15 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   // Only the body is in the shadow pass: from the RTS camera the hair and garments add nothing to its
   // shadow, and skinned meshes cannot be instanced, so each part was a shadow-pass draw per unit. The
   // VSM draws receivers into the shadow map too, so both flags go.
-  root.traverse((child) => {
-    if (!(child as THREE.Mesh).isMesh || /^Body_[fm]$/.test(child.name)) return;
-    child.castShadow = false;
-    child.receiveShadow = false;
-  });
+  const isBody = (o: THREE.Object3D): boolean => /^Body_[fm]$/.test(o.name);
+  // Only for the Caral worker GLB: a rig without its base bodies keeps its shadows.
+  if (root.getObjectByName('Body_f') || root.getObjectByName('Body_m')) {
+    root.traverse((child) => {
+      if (!(child as THREE.Mesh).isMesh || isBody(child)) return;
+      child.castShadow = false;
+      child.receiveShadow = false;
+    });
+  }
 
   return {
     setCarrying(next: boolean, color?: number): void {

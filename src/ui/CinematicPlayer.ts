@@ -4,7 +4,8 @@ import { publicAsset } from '../util/publicAsset';
 
 export interface CinematicOptions {
   beats: CinematicBeat[];
-  background: string;
+  /** Backdrop image; omitted, the cinematic plays over its dark gradient. */
+  background?: string;
   kicker?: string;
   title?: string;
   finalLabel?: string;
@@ -26,7 +27,9 @@ export class CinematicPlayer {
     this.overlay.className = 'ed-overlay ed-cinematic';
     this.overlay.setAttribute('role', 'dialog');
     this.overlay.setAttribute('aria-modal', 'true');
-    this.overlay.style.backgroundImage = `linear-gradient(90deg, rgba(4,7,10,.94), rgba(4,7,10,.52) 56%, rgba(4,7,10,.72)), url("${options.background}")`;
+    this.overlay.style.backgroundImage = `linear-gradient(90deg, rgba(4,7,10,.94), rgba(4,7,10,.52) 56%, rgba(4,7,10,.72))${
+      options.background ? `, url("${options.background}")` : ''
+    }`;
     this.overlay.innerHTML = `
       <div class="ed-cinematic-copy">
         <div class="ed-cinematic-series">${escapeHtml(options.kicker ?? t('app.series'))}</div>
@@ -67,9 +70,10 @@ export class CinematicPlayer {
       this.finish();
       return;
     }
-    this.overlay.style.backgroundImage = `linear-gradient(90deg, rgba(4,7,10,.9), rgba(4,7,10,.35) 58%, rgba(4,7,10,.55)), url("${
-      beat.image ? publicAsset(beat.image) : this.options.background
-    }")`;
+    const image = beat.image ? publicAsset(beat.image) : this.options.background;
+    this.overlay.style.backgroundImage = `linear-gradient(90deg, rgba(4,7,10,.9), rgba(4,7,10,.35) 58%, rgba(4,7,10,.55))${
+      image ? `, url("${image}")` : ''
+    }`;
     this.overlay.querySelector('.ed-cinematic-kicker')!.textContent = beat.kicker ?? '';
     this.overlay.querySelector('.ed-cinematic-title')!.textContent = beat.title;
     this.overlay.querySelector('.ed-cinematic-text')!.textContent = beat.text;
