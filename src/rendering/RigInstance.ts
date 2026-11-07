@@ -136,6 +136,15 @@ export class RigInstance {
     this.variant?.setCarrying?.(carrying, color);
   }
 
+  /** Kind of the node being gathered (presentation: a fisher holds a net instead of the tool). */
+  setGatherKind(kind: string | null): void {
+    this.variant?.setGatherKind?.(kind);
+  }
+
+  setNetInHand(inHand: boolean): void {
+    this.variant?.setNetInHand?.(inHand);
+  }
+
   update(dt: number): void {
     if (this.disposed) return;
     this.mixer.update(dt);

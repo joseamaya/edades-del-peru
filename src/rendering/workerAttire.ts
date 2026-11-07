@@ -170,10 +170,15 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   }
 
   let tool: THREE.Group | null = null;
+  let net: THREE.Group | null = null;
   let carrying = false;
   let task: RigClipState = 'idle';
+  let gatherKind: string | null = null;
+  let netInHand = true;
   const syncTool = (): void => {
-    if (tool) tool.visible = !carrying && task !== 'build';
+    const fishing = gatherKind === 'fishing' && task === 'gather';
+    if (tool) tool.visible = !carrying && task !== 'build' && !fishing;
+    if (net) net.visible = !carrying && fishing && netInHand;
   };
   if (worker && hand) {
     tool = new THREE.Group();
@@ -201,6 +206,29 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     tool.rotation.set(-0.15, 0, 0);
     const toBody = new THREE.Vector3(root.position.x - hand.x, 0, root.position.z - hand.z).normalize();
     attach('hand_r', tool, hand.clone().addScaledVector(toBody, 0.03));
+
+    // Folded cotton net with two gourd floats (both documented at Áspero), held while fishing.
+    net = new THREE.Group();
+    net.name = 'attire_net';
+    const netParts: [THREE.BufferGeometry, THREE.Color][] = [
+      [new THREE.SphereGeometry(0.11, 8, 6).scale(1, 1.5, 0.7).translate(0, -0.14, 0), new THREE.Color(0xe6dcc2)],
+      [new THREE.SphereGeometry(0.035, 6, 5).translate(0.08, -0.28, 0.02), gourdMat.color],
+      [new THREE.SphereGeometry(0.035, 6, 5).translate(-0.07, -0.3, -0.02), gourdMat.color],
+    ];
+    for (const [geometry, color] of netParts) {
+      const n = geometry.getAttribute('position').count;
+      const colors = new Float32Array(n * 3);
+      for (let i = 0; i < n; i++) color.toArray(colors, i * 3);
+      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    }
+    const netGeo = mergeGeometries(
+      netParts.map(([g]) => g),
+      false,
+    );
+    netParts.forEach(([g]) => g.dispose());
+    if (netGeo) net.add(new THREE.Mesh(trackGeometry(netGeo), toolMat));
+    net.visible = false;
+    attach('hand_r', net, hand.clone().addScaledVector(toBody, 0.03));
   }
 
   if (spec && palette && role !== 'worker' && role !== 'scout' && role !== 'amauta') {
@@ -301,6 +329,16 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
     },
     setTask(next: RigClipState): void {
       task = next;
+      syncTool();
+    },
+    setGatherKind(kind: string | null): void {
+      if (kind === gatherKind) return;
+      gatherKind = kind;
+      syncTool();
+    },
+    setNetInHand(inHand: boolean): void {
+      if (inHand === netInHand) return;
+      netInHand = inHand;
       syncTool();
     },
     dispose(): void {

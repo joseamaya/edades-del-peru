@@ -435,6 +435,56 @@ test('monuments still to be built neither block units nor answer clicks', async 
   expect(state.inUse.amphitheatre).toBe(false);
 });
 
+test('Áspero fishers cast a net and move on when a fishing ground runs out', async ({ page }) => {
+  await boot(page);
+  const state = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const base = g.playerCenter(0);
+    const grounds = [...g.resourceNodes.values()]
+      .filter((n: any) => n.kind === 'fishing')
+      .sort(
+        (a: any, b: any) =>
+          Math.hypot(a.pos.x - base.x, a.pos.z - base.z) - Math.hypot(b.pos.x - base.x, b.pos.z - base.z),
+      ) as any[];
+    const first = grounds[0];
+    const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker') as any;
+    g.executeCommand(
+      { kind: 'order', unitIds: [worker.id], order: { kind: 'gather', entityId: first.id }, clear: true },
+      false,
+    );
+    let t = 0;
+    let netSeen = false;
+    for (let i = 0; i < 20 * 40; i++) {
+      g.update(0.05, t);
+      t += 0.05;
+      g.scene.traverse((o: any) => {
+        if (o.name === 'fishing_net' && o.visible) netSeen = true;
+      });
+    }
+    const fishingFirst = worker.lastGather?.kind;
+    first.amount = 0.5;
+    for (let i = 0; i < 20 * 60; i++) {
+      g.update(0.05, t);
+      t += 0.05;
+    }
+    const order = worker.orderQueue.find((o: any) => o.kind === 'gather');
+    return {
+      fishingFirst,
+      netSeen,
+      grounds: grounds.length,
+      retargeted: !!order && order.entityId !== first.id,
+      targetKind: order ? g.resourceNodes.get(order.entityId)?.kind : null,
+    };
+  });
+  expect(state.grounds).toBeGreaterThan(1);
+  expect(state.fishingFirst).toBe('fishing');
+  expect(state.netSeen).toBe(true);
+  expect(state.retargeted).toBe(true);
+  expect(state.targetKind).toBe('fishing');
+});
+
 test('the Caral tutorial hides the shortcut help while it is open', async ({ page }) => {
   await boot(page);
   await expect(page.locator('#ed-tutorial')).toBeVisible({ timeout: 30_000 });

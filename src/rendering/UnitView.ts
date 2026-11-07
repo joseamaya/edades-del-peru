@@ -12,6 +12,7 @@ import {
   WALK_CLIP_RATE_MAX,
 } from '../model/defs/modelAssets';
 import type { Unit } from '../entities/Unit';
+import { FishingNetFx } from './FishingNetFx';
 import { clamp } from '../util/math';
 import type { Resources } from '../core/types';
 
@@ -38,6 +39,8 @@ export class UnitView {
   private gunBaseZ = 0;
   private workAnim = 0;
   private bobY = 0;
+  private scene: THREE.Scene | null = null;
+  private net: FishingNetFx | null = null;
 
   constructor(
     private readonly unit: Unit,
@@ -53,6 +56,7 @@ export class UnitView {
   }
 
   attach(scene: THREE.Scene): void {
+    this.scene = scene;
     this.view.attachTo(scene);
     this.view.setPosition(this.unit.pos.x, this.unit.pos.y, this.unit.pos.z);
   }
@@ -108,6 +112,7 @@ export class UnitView {
         carrying: u.carryCountNow() > 0,
       });
       this.rig.play(state);
+      this.animateFishing(state === 'gather', time);
       this.rig.setPlaybackRate(
         state === 'walk' || state === 'walk_carry'
           ? clamp(speed / WALK_CLIP_REFERENCE_SPEED, WALK_CLIP_RATE_MIN, WALK_CLIP_RATE_MAX)
@@ -170,6 +175,19 @@ export class UnitView {
     }
   }
 
+  /** A fisher casts a cotton net over the fishing ground and drags it back (presentation only). */
+  private animateFishing(gathering: boolean, time: number): void {
+    const u = this.unit;
+    const ground = gathering && u.lastGather?.kind === 'fishing' ? u.lastGather : null;
+    this.rig?.setGatherKind(ground ? 'fishing' : (u.lastGather?.kind ?? null));
+    if (!ground || !this.scene) {
+      this.net?.hide();
+      return;
+    }
+    this.net ??= new FishingNetFx(this.scene);
+    this.rig?.setNetInHand(this.net.update(time, u.id, u.pos, ground));
+  }
+
   private carry(): void {
     const u = this.unit;
     const carrying = u.carryCountNow() > 0;
@@ -181,6 +199,8 @@ export class UnitView {
   }
 
   dispose(): void {
+    this.net?.dispose();
+    this.net = null;
     if (this.view.group.parent) this.view.group.parent.remove(this.view.group);
     this.view.dispose();
     if (this.rig) {

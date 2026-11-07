@@ -857,10 +857,14 @@ export class WorldViewDecor {
       for (let z = FISHING_SCAN_MARGIN; z < size - FISHING_SCAN_MARGIN; z += 2) {
         if (!this.game.terrain.isWater(x, z)) continue;
         if (existing.some((n) => distance2D(x, z, n.pos.x, n.pos.z) < 5)) continue;
+        // A worker must be able to stand within harvest range on walkable ground (not just "not water":
+        // a wet beach below the walkable height would leave the ground unreachable).
         let nearLand = false;
-        for (let i = 0; i < 8 && !nearLand; i++) {
-          const a = (i / 8) * Math.PI * 2;
-          nearLand = !this.game.terrain.isWater(x + Math.cos(a) * 5, z + Math.sin(a) * 5);
+        for (let i = 0; i < 12 && !nearLand; i++) {
+          const a = (i / 12) * Math.PI * 2;
+          for (const r of [1.6, 2.2]) {
+            if (this.game.pathfinder.isWalkable(x + Math.cos(a) * r, z + Math.sin(a) * r)) nearLand = true;
+          }
         }
         if (nearLand) candidates.push({ x, z });
       }
