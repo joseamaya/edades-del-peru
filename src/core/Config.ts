@@ -23,7 +23,7 @@ export interface GameSettings {
   showHints: boolean;
   /** Persistent FPS/quality overlay (also `?fps=1` for debugging). */
   showFps: boolean;
-  /** Cinematic effects (SSAO, bloom, vignette, aberration). Off = sharp classic look. */
+  /** Cinematic effects (bloom, vignette, aberration, grade). Off = sharp classic look. */
   cinematic: boolean;
   /** Post-processing quality preset (also auto-lowered by the quality governor). */
   quality: 'high' | 'medium' | 'low';

@@ -219,12 +219,16 @@ scene and the vegetation/fauna kit (`scripts/bench_scene.mjs`).
 _Status (FPS, real integrated GPU)_: on an Intel UHD (Raptor Lake-S) in an 895×682 browser pane, m1
 opening view, governor pinned per preset: `main` before this work 16 / 16 / 48 FPS (high / medium /
 low), now 32 / 44 / 60 (60 is the display cap). In Chrome at 1600×695 (2.3× the pixels): `main` 13 / 13 /
-41, now 23 / 29 / 60, steady while panning or at zoom 120; disabling SSAO takes medium to 43. The decisive cut was the shadow map: the VSM is redrawn
+41, now 23 / 29 / 60, steady while panning or at zoom 120. The SSAO pass was then removed: with the
+camera range (near 0.5, far 6000) its depth buffer was flat and it never found occlusion (frames with
+and without it were pixel-identical) while costing a second scene render that also redrew the shadow
+map. GPU time per frame at a fixed 1600×900 buffer (frames driven manually, so independent of vsync and
+window throttling): `main` 50.7 / 50.7 / 23.3 ms, now 17.8 / 14.9 / 11.3 ms (high / medium / low). The decisive cut was the shadow map: the VSM is redrawn
 and blurred twice every frame, and at 4096² it cost more than everything else (freezing it alone took
 medium from 14 to 52 FPS). With the frustum fitted to the view, `SHADOW_MAP_SIZE` is 2048 on high and
 1024 on medium/low: at 1600×900 and the default zoom that is ≈ 9 texels per unit with 1024 (the old 4096
-over a fixed 440-unit box gave 9.3) and ≈ 18 with 2048; a close comparison showed only softer edges. SSAO is the next largest
-cost (medium 14 → 20 FPS without it, measured at 4096).
+over a fixed 440-unit box gave 9.3) and ≈ 18 with 2048; a close comparison showed only softer edges. SSAO was the next largest
+cost; it has since been removed (see below).
 
 _Status (draw calls)_: ~203 per frame (414 before). Resource nodes merge their rocks, blocks and berries
 per material; the authored site merges its non-heritage meshes per material (`src/rendering/mergeStatic.ts`);
