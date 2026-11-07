@@ -36,6 +36,8 @@ function stubGame() {
     getVisitedHeritage: () => [],
     setVisitedHeritage: () => {},
     setSitePhase: (phase: CaralMayorPhase) => (game.sitePhase = phase),
+    drought: 0,
+    startDrought: () => (game.drought = 1),
     resolveMissionPoint: () => ({ x: 0, z: 0 }),
   };
   return game;
@@ -98,7 +100,8 @@ describe('Caral model mission', () => {
     expect(game.sitePhase).toBe('in_use');
     expect(game.acts).toHaveLength(3);
 
-    // Act IV: seal the pyramid and gather on the beach.
+    // Act IV: the drought starts; seal the pyramid and gather on the beach.
+    expect(game.drought).toBe(1);
     deliverAll(mission, game);
     tick(1);
     expect(won).toBeNull();

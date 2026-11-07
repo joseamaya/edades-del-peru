@@ -375,6 +375,9 @@ export class Mission {
       case 'site_phase':
         this.game.setSitePhase(fx.phase);
         break;
+      case 'drought':
+        this.game.startDrought();
+        break;
       case 'resources': {
         const p = this.game.players[fx.player ?? 0];
         if (p) {
@@ -487,6 +490,10 @@ export class Mission {
       }
     }
     if (phase) this.game.setSitePhase(phase);
+    const drought = this.def.triggers.some(
+      (tr) => this.fired.has(tr.id) && tr.effects.some((fx) => fx.type === 'drought'),
+    );
+    if (drought) this.game.startDrought(true);
   }
 
   /** World anchor of an active objective, for the minimap. */

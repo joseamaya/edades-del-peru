@@ -205,6 +205,8 @@ export type TriggerEffect =
   | { type: 'act'; kicker: string; title: string; text: string }
   /** Construction phase of the authored site's main monument (the Caral Pyramid Mayor). */
   | { type: 'site_phase'; phase: CaralMayorPhase }
+  /** The drought that closes Caral: the valley dries out over ~40 s (Game.startDrought). */
+  | { type: 'drought' }
   | { type: 'resources'; player?: 0 | 1; amount: Partial<Resources> }
   | { type: 'objective'; objectiveId: string; state: 'activate' | 'complete' | 'fail'; announce?: boolean }
   | { type: 'camera'; pos: MissionPoint }

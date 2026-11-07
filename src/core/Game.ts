@@ -116,6 +116,9 @@ export function setAutoStart(value: boolean): void {
 /** Campaign intro flyover framing, relative to the player base. */
 const INTRO_CAMERA = { offset: 34, fromHeight: 52, toZoom: 30, seconds: 2.6 } as const;
 /** Keep guaranteed fishing searches inside the authored river and map edge. */
+/** How long m1's drought takes to dry the valley out. */
+const DROUGHT_SECONDS = 40;
+
 export class Game {
   renderer!: THREE.WebGLRenderer;
   scene = new THREE.Scene();
@@ -155,6 +158,13 @@ export class Game {
   landmarkLoadToken = 0;
   /** The Caral Sacred City in use (architecture kit), when the mission site is Caral. */
   caralCity: CaralCity | null = null;
+  /** Drought of m1's act IV: 0 = the green valley, 1 = dried out (rises over DROUGHT_SECONDS). */
+  droughtLevel = 0;
+  private droughtTarget = 0;
+  private droughtShown = -1;
+  private droughtFarmsHit = false;
+  private droughtGroveCut = false;
+  private droughtBaseAtmosphere: MissionAtmosphere | undefined;
   /** Construction phase of the authored site's main monument (mission-driven; the city follows it). */
   sitePhase: CaralMayorPhase = 'in_use';
   setpieceLoadToken = 0;
@@ -962,6 +972,55 @@ export class Game {
   startAssembly(): boolean {
     return this.selection.startAssembly();
   }
+  /**
+   * Start the drought that closes Caral (act IV): the valley dries in patches, the haze turns to dust,
+   * the fields lose half their remaining harvest and part of the riverside grove dies. `instant` restores
+   * it at once (loaded saves).
+   */
+  startDrought(instant = false): void {
+    this.droughtTarget = 1;
+    this.droughtBaseAtmosphere ??= this.missionAtmosphere;
+    if (instant) {
+      this.droughtLevel = 1;
+      this.applyDrought();
+    }
+  }
+
+  updateDrought(dt: number): void {
+    if (this.droughtLevel >= this.droughtTarget) return;
+    this.droughtLevel = Math.min(this.droughtTarget, this.droughtLevel + dt / DROUGHT_SECONDS);
+    this.applyDrought();
+  }
+
+  private applyDrought(): void {
+    const level = this.droughtLevel;
+    if (level >= 0.3 && !this.droughtFarmsHit) {
+      this.droughtFarmsHit = true;
+      for (const b of this.buildings.values()) if (b.isFarm && !b.dead) b.foodAmount = Math.round(b.foodAmount * 0.5);
+    }
+    if (level >= 0.6 && !this.droughtGroveCut) {
+      this.droughtGroveCut = true;
+      // Deterministic: about one tree in three dies, in the same places on every run.
+      for (const node of this.resourceNodes.values()) {
+        if (node.kind === 'tree' && !node.dead && !node.depleted && node.id % 3 === 0) node.subtract(node.amount);
+      }
+    }
+    if (this.headless) return;
+    if (Math.abs(level - this.droughtShown) < 0.04 && level < 1) return;
+    this.droughtShown = level;
+    (this.terrain as { setDrought?(f: number): void }).setDrought?.(level);
+    this.water.setLevelOffset(-0.75 * level);
+    const base = this.droughtBaseAtmosphere ?? {};
+    const mix = (a: number, b: number) => a + (b - a) * level;
+    const sky = new THREE.Color(base.skyTint ?? '#cdd3d2').lerp(new THREE.Color('#d9c49a'), level);
+    this.missionAtmosphere = {
+      fogDensity: mix(base.fogDensity ?? 0.0015, 0.0028),
+      skyTint: `#${sky.getHexString()}`,
+      sunWarmth: mix(base.sunWarmth ?? 0.9, 1.15),
+    };
+    this.world.applyAtmosphere();
+  }
+
   setSitePhase(phase: CaralMayorPhase): void {
     this.sitePhase = phase;
     this.caralCity?.setMayorPhase(phase);
@@ -1161,6 +1220,8 @@ export class Game {
    */
   applyTerrainFarmYield(b: Building): void {
     b.applyTerrainYield(this.farmYieldAt(b.pos.x, b.pos.z));
+    // A field sown during the drought starts with half a harvest.
+    if (this.droughtFarmsHit && b.isFarm) b.foodAmount = Math.round(b.foodAmount * 0.5);
   }
 
   /** Terrain multiplier for a farm at (x, z), shared by the simulation and the HUD. */

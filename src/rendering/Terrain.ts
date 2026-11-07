@@ -930,6 +930,48 @@ ${FOW_DIM_GLSL}
     }
   }
 
+  /** Splat before any drought, so the drying is computed from it (not accumulated frame after frame). */
+  private preDrought: Uint8Array | null = null;
+
+  /**
+   * Dry the valley (0 = as painted, 1 = full drought): green ground turns to sand and dry earth in
+   * irregular patches, the wettest ground last. Purely visual; the farms' yield is handled by the game.
+   */
+  setDrought(level: number): void {
+    const f = Math.max(0, Math.min(1, level));
+    const out = this.splat.data;
+    if (!this.preDrought) {
+      if (f === 0) return;
+      this.preDrought = new Uint8Array(out);
+    }
+    const src = this.preDrought;
+    const size = this.splat.size;
+    const cell = this.size / size;
+    for (let tz = 0; tz < size; tz++) {
+      const wz = (tz + 0.5) * cell;
+      for (let tx = 0; tx < size; tx++) {
+        const wx = (tx + 0.5) * cell;
+        const i = (tz * size + tx) * 4;
+        // Patches dry at different moments; the moist floodplain holds out longest.
+        const patch = fbm2(wx * 0.06 + 3, wz * 0.06 - 5, 3);
+        const moist = this.data.getMoisture(wx, wz);
+        const dry = Math.max(0, Math.min(1, f * 1.6 - patch * 0.5 - moist * 0.35));
+        const grass = src[i]! / 255;
+        const lost = grass * dry * 0.85;
+        const g = grass - lost;
+        const d = src[i + 1]! / 255 + lost * 0.35;
+        const sd = src[i + 2]! / 255 + lost * 0.65;
+        const r = src[i + 3]! / 255;
+        const sum = Math.max(1e-6, g + d + sd + r);
+        out[i] = Math.round((g / sum) * 255);
+        out[i + 1] = Math.round((d / sum) * 255);
+        out[i + 2] = Math.round((sd / sum) * 255);
+        out[i + 3] = Math.round((r / sum) * 255);
+      }
+    }
+    this.splatTexture.needsUpdate = true;
+  }
+
   private paintSplatRegion(
     bounds: { minX: number; maxX: number; minZ: number; maxZ: number },
     distance: (wx: number, wz: number) => number,

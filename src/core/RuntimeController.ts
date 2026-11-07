@@ -818,6 +818,7 @@ export class RuntimeController {
     this.game.caralCity?.update(this.game.camera.camera.position);
     this.rebuildSpatial();
 
+    this.game.updateDrought(d);
     // units
     for (const u of this.game.units.values()) {
       if (u.dead) continue;

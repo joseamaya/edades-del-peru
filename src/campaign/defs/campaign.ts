@@ -329,6 +329,7 @@ export const MISSIONS: MissionDef[] = [
         condition: { type: 'objective', objectiveId: 'a3_fuego', state: 'completed' },
         effects: [
           { type: 'site_phase', phase: 'in_use' },
+          { type: 'drought' },
           {
             type: 'act',
             kicker: 'Acto IV · c. 1800 a.C.',

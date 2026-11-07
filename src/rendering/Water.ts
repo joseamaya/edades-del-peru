@@ -7,6 +7,7 @@ import * as THREE from 'three';
 export class Water {
   /** Share of the region's aerial fog applied to the water (a pale sky tint washes dark water out). */
   private fogScale = 1;
+  private baseLevel = 0;
   /** Share of the screen-space refraction (a hazy, sunlit bed makes dark water read pale). */
   private refractionScale = 1;
   mesh: THREE.Mesh;
@@ -172,6 +173,7 @@ export class Water {
     this.mesh = new THREE.Mesh(geo, mat);
     // the terrain is in 0..size coords; the plane must align with it
     this.mesh.position.set(size / 2, waterLevel, size / 2);
+    this.baseLevel = waterLevel;
     scene.add(this.mesh);
   }
 
@@ -192,6 +194,16 @@ export class Water {
     (this.uniforms.shallowColor.value as THREE.Color).set(palette.shallow);
     this.uniforms.sheen.value = palette.sheen;
     this.uniforms.foamAmount.value = palette.foam;
+  }
+
+  /**
+   * Visual-only drop of the water surface (m1's drought: the river shrinks to a thread between exposed
+   * banks). Gameplay water (pathing, isWater) is unchanged.
+   */
+  setLevelOffset(offset: number): void {
+    const level = this.baseLevel + offset;
+    this.mesh.position.y = level;
+    this.uniforms.waterLevel.value = level;
   }
 
   setSunDir(dir: THREE.Vector3): void {
