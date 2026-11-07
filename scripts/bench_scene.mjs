@@ -15,14 +15,13 @@ const assert = process.argv.includes('--assert');
 const outFile = cliArg('out') ?? 'review/bench-scene.json';
 
 // Ratchet: §11 targets 600k triangles and 200 draw calls per frame. m1 measured 877k / 441 before the
-// tree-instance, water and flier-shadow cuts, ~685k / 413 after them and ~497k / 414 with the terrain
-// LOD; tighten as it gets cheaper.
+// tree-instance, water and flier-shadow cuts, ~685k / 413 after them, ~497k / 414 with the terrain
+// LOD and ~477k / 271 after batching resource nodes, the site and the fauna; tighten as it gets cheaper.
 const BUDGETS = {
-  // Kit counts include the shadow pass; most kit draw calls are the animated fauna parts (a deer is a
-  // body plus four legs).
-  m1_caral: { sceneTriangles: 540_000, sceneDrawCalls: 440, kitTriangles: 80_000, kitDrawCalls: 60 },
+  // Kit counts include the shadow pass; the fauna is instanced per species and part.
+  m1_caral: { sceneTriangles: 540_000, sceneDrawCalls: 290, kitTriangles: 80_000, kitDrawCalls: 36 },
 };
-const KIT_NAMES = /^(trees_kit_|props_kit_|fauna_(deer|riparian_bird)$)/;
+const KIT_NAMES = /^(trees_kit_|props_kit_|fauna_(deer|riparian_bird)_(body|leg|wingL|wingR)$)/;
 
 const { base, close } = await withViteServer();
 const browser = await launchChromium();
@@ -52,6 +51,9 @@ try {
     for (let i = 0; i < 120; i++) g.camera.update(1 / 30, i / 30);
     g.camera.camera.updateMatrixWorld();
     g.terrain.updateLod(g.camera.camera.position, true);
+    // Refit the sun's shadow frustum to this view, as the frame loop does.
+    g.runtime.frameShadows();
+    g.sky.update(0);
     const measure = () => {
       const info = g.renderer.info;
       info.autoReset = false;

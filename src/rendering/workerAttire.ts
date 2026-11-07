@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { applyGeneratedPbr } from './Biomes';
 import type { RigClipState, RigVariant } from '../model/defs/modelAssets';
 import type { RigInstance } from './RigInstance';
@@ -176,12 +177,13 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   if (worker && hand) {
     tool = new THREE.Group();
     tool.name = 'attire_tool';
-    const shaft = new THREE.Mesh(trackGeometry(new THREE.CylinderGeometry(0.014, 0.017, 0.8, 6)), woodMat);
-    shaft.position.y = -0.2;
-    tool.add(shaft);
-    const binding = new THREE.Mesh(trackGeometry(new THREE.CylinderGeometry(0.021, 0.021, 0.06, 6)), woodMat);
-    binding.position.y = -0.56;
-    tool.add(binding);
+    // Shaft and binding share the wood material: one mesh, one draw call per pass.
+    const shaftGeo = new THREE.CylinderGeometry(0.014, 0.017, 0.8, 6).translate(0, -0.2, 0);
+    const bindingGeo = new THREE.CylinderGeometry(0.021, 0.021, 0.06, 6).translate(0, -0.56, 0);
+    const handle = mergeGeometries([shaftGeo, bindingGeo], false);
+    shaftGeo.dispose();
+    bindingGeo.dispose();
+    if (handle) tool.add(new THREE.Mesh(trackGeometry(handle), woodMat));
     const blade = new THREE.Mesh(trackGeometry(new THREE.ConeGeometry(0.042, 0.12, 5)), stoneMat);
     blade.rotation.x = Math.PI;
     blade.position.y = -0.67;

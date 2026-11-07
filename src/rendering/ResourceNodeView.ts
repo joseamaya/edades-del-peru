@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RNG, cosmeticRandom, weightedPick } from '../util/rng';
 import { MaterialTex } from './Textures';
 import { applyGeneratedPbr } from './Biomes';
@@ -43,6 +44,11 @@ function cardGeo(w: number, h: number): THREE.PlaneGeometry {
     geoCache.set(key, g);
   }
   return g;
+}
+
+function geoCacheHas(g: THREE.BufferGeometry): boolean {
+  for (const cached of geoCache.values()) if (cached === g) return true;
+  return false;
 }
 
 const matCache = new Map<string, THREE.MeshStandardMaterial>();
@@ -99,6 +105,7 @@ export class ResourceNodeView {
   private readonly swaySeed = cosmeticRandom() * Math.PI * 2;
   private readonly timers: ReturnType<typeof setTimeout>[] = [];
   private readonly swayParts: THREE.Object3D[] = [];
+  private readonly ownedGeometries: THREE.BufferGeometry[] = [];
   private readonly mapType: string;
   private readonly treeMgr?: TreeInstances;
   private readonly treeVariants?: TreeVariants;
@@ -143,6 +150,8 @@ export class ResourceNodeView {
     this.view.traverse((o) => {
       if (o.userData.sway) this.swayParts.push(o);
     });
+    this.mergeStaticParts(this.view);
+    for (const part of this.swayParts) this.mergeStaticParts(part);
     this.scene.add(this.view);
   }
 
@@ -352,6 +361,47 @@ export class ResourceNodeView {
     }
   }
 
+  /**
+   * Merge the direct child meshes of `parent` that share a material and shadow flags into one mesh
+   * (a quarry is 7 rocks, 3 blocks and a floor; a berry bush 8 berries): one draw call per material
+   * instead of one per piece, in the main and the shadow pass.
+   */
+  private mergeStaticParts(parent: THREE.Object3D): void {
+    const groups = new Map<string, THREE.Mesh[]>();
+    for (const child of parent.children) {
+      const mesh = child as THREE.Mesh;
+      if (!mesh.isMesh || Array.isArray(mesh.material) || mesh.userData.sway) continue;
+      const key = `${mesh.material.uuid}:${mesh.castShadow}:${mesh.receiveShadow}`;
+      const list = groups.get(key) ?? [];
+      list.push(mesh);
+      groups.set(key, list);
+    }
+    for (const meshes of groups.values()) {
+      if (meshes.length < 2) continue;
+      const parts = meshes.map((m) => {
+        m.updateMatrix();
+        const g = m.geometry.index ? m.geometry.toNonIndexed() : m.geometry.clone();
+        for (const name of Object.keys(g.attributes)) {
+          if (name !== 'position' && name !== 'normal' && name !== 'uv') g.deleteAttribute(name);
+        }
+        return g.applyMatrix4(m.matrix);
+      });
+      const merged = mergeGeometries(parts, false);
+      parts.forEach((g) => g.dispose());
+      if (!merged) continue;
+      const first = meshes[0];
+      const out = new THREE.Mesh(merged, first.material);
+      out.castShadow = first.castShadow;
+      out.receiveShadow = first.receiveShadow;
+      for (const m of meshes) {
+        parent.remove(m);
+        if (!geoCacheHas(m.geometry)) m.geometry.dispose();
+      }
+      parent.add(out);
+      this.ownedGeometries.push(merged);
+    }
+  }
+
   /** Register the tree instance once its height (y) is known. */
   placeTreeInstance(y: number): void {
     if (this.node.kind !== 'tree' || !this.treeMgr || this.node.treeSlot >= 0) return;
@@ -424,6 +474,8 @@ export class ResourceNodeView {
     }
     this.huntHerd?.dispose();
     this.huntHerd = null;
+    this.ownedGeometries.forEach((g) => g.dispose());
+    this.ownedGeometries.length = 0;
     this.scene.remove(this.view);
   }
 }

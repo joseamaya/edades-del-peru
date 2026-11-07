@@ -71,6 +71,8 @@ export class TreeInstances {
   private free: number[] = [];
   /** One past the highest used slot: the draw count of the procedural meshes. */
   private highWater = 0;
+  /** Registered slots per variant: procedural meshes of unused (or kit-drawn) variants are hidden. */
+  private readonly variantUse = new Map<TreeVariant, number>();
   private time = 0;
   private windStrength = 0.035;
   private readonly kits = new Map<TreeVariant, KitLayer>();
@@ -218,10 +220,9 @@ export class TreeInstances {
     s.phase = Math.random() * Math.PI * 2;
     s.visible = true;
     s.fallTime = 0;
-    if (slot >= this.highWater) {
-      this.highWater = slot + 1;
-      this.syncCounts();
-    }
+    this.variantUse.set(variant, (this.variantUse.get(variant) ?? 0) + 1);
+    if (slot >= this.highWater) this.highWater = slot + 1;
+    this.syncCounts();
     if (this.kits.has(variant)) this.writeZero(slot);
     this.writeSlot(slot);
     this.zeroOtherCanopies(slot, variant);
@@ -245,17 +246,26 @@ export class TreeInstances {
     if (!s || !s.used) return;
     s.used = false;
     s.id = -1;
+    this.variantUse.set(s.variant, (this.variantUse.get(s.variant) ?? 1) - 1);
     this.writeZero(slot);
     this.free.push(slot);
     if (slot === this.highWater - 1) {
       while (this.highWater > 0 && !this.slots[this.highWater - 1].used) this.highWater--;
-      this.syncCounts();
     }
+    this.syncCounts();
   }
 
   private syncCounts(): void {
-    this.trunkMesh.count = this.highWater;
-    for (const variant of VARIANTS) this.canopyMesh[variant].count = this.highWater;
+    let trunks = false;
+    for (const variant of VARIANTS) {
+      const drawn = (this.variantUse.get(variant) ?? 0) > 0 && !this.kits.has(variant);
+      trunks ||= drawn;
+      // Hidden meshes are skipped outright (with count 0 the renderer would still set up their programs).
+      this.canopyMesh[variant].visible = drawn;
+      this.canopyMesh[variant].count = drawn ? this.highWater : 0;
+    }
+    this.trunkMesh.visible = trunks;
+    this.trunkMesh.count = trunks ? this.highWater : 0;
   }
 
   nodeIdAt(slot: number): number {
@@ -313,6 +323,7 @@ export class TreeInstances {
       }),
     );
     this.kits.set(variant, { model, meshes, slots: [[], []] });
+    this.syncCounts();
     for (let i = 0; i < this.slots.length; i++) {
       if (this.slots[i].used && this.slots[i].variant === variant) this.writeZero(i);
     }

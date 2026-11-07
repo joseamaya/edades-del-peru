@@ -41,8 +41,11 @@ export const CARAL_WORKER_ASSET_ID: ModelAssetId = 'caral_worker';
 export const MOUNTED_RIG_ASSET_ID: ModelAssetId = 'mounted_rig';
 export const SIEGE_RIG_ASSET_ID: ModelAssetId = 'siege_rig';
 export const VEHICLE_RIG_ASSET_ID: ModelAssetId = 'vehicle_rig';
-/** Eyes are too small to cast a readable shadow; the garments keep theirs. */
-export const CARAL_WORKER_SHADOW_SKIP_MESHES: readonly string[] = ['Eyes_f', 'Eyes_m'];
+/**
+ * Eyes and eyebrows are too small to cast a readable shadow (and each would cost a shadow-pass draw
+ * call per unit); the garments keep theirs.
+ */
+export const CARAL_WORKER_SHADOW_SKIP_MESHES: readonly string[] = ['Eyes_f', 'Eyes_m', 'Eyebrows_f', 'Eyebrows_m'];
 
 /** Presentation variants applied on top of a shared rigged asset. */
 export type RigVariant =

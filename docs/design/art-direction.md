@@ -214,8 +214,16 @@ shadow-free fliers (877k → 685k), then a distance LOD for the terrain mesh (`s
 4×4-cell blocks further than 75 units from the camera are drawn as crack-free fans over the same
 full-resolution vertices, so heights, colours, normals and the simulation's height field are unchanged;
 the terrain draws ~38k instead of 131k triangles per pass at zoom 54). `yarn bench:check` ratchets the m1
-scene and the vegetation/fauna kit (`scripts/bench_scene.mjs`). Draw calls (~414) remain the open item;
-the units are the next largest triangle cost (~90k).
+scene and the vegetation/fauna kit (`scripts/bench_scene.mjs`).
+
+_Status (draw calls)_: ~271 per frame (414 before). Resource nodes merge their rocks, blocks and berries
+per material; the authored site merges its non-heritage meshes per material (`src/rendering/mergeStatic.ts`);
+fauna is one InstancedMesh per species and part; procedural canopies of unused or kit-drawn variants are
+hidden; worker eyebrows skip the shadow pass and the tool handle is one mesh; the sun's shadow frustum
+follows the view (`src/rendering/shadowFrame.ts`, ±40–220 units instead of a fixed ±220, which also
+sharpens the shadows) so off-screen casters leave the shadow pass. The rest is mostly the rigged units
+(~9 meshes per worker, both passes) and the per-building procedural houses: reaching ≤ 200 needs unit
+mesh consolidation (one skinned mesh per variant) or instanced crowds.
 
 - Repeated assets are **instanced or merged**; no per-object draw call for vegetation, props or fauna.
 - Every model has **LOD0/LOD1**; the far LOD switches before the asset drops below ~40 px on screen.

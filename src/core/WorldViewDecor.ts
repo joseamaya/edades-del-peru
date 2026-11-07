@@ -6,6 +6,7 @@ import { ResourceNode } from '../entities/ResourceNode';
 import { disposeStaticGltf } from '../rendering/StaticModel';
 import { loadSceneryModel } from '../rendering/sceneryModels';
 import { loadSiteModel } from '../rendering/siteModels';
+import { mergeStaticByMaterial } from '../rendering/mergeStatic';
 import { loadDecorModel } from '../rendering/decorModels';
 import { planProps, propCountFor } from '../model/defs/props';
 import { planWildlife, faunaCountFor } from '../model/defs/wildlife';
@@ -221,6 +222,13 @@ export class WorldViewDecor {
         this.addSiteWallCollision(model, site.y ?? 0, def);
         applyFowToObject(model, this.game.fowUniforms);
         this.enableLandmarkShadows(model);
+        // After collision and heritage tagging: heritage nodes stay separate so they remain pickable.
+        mergeStaticByMaterial(model, (mesh) => {
+          for (let o: THREE.Object3D | null = mesh; o && o !== model; o = o.parent) {
+            if (o.userData.heritageId) return true;
+          }
+          return false;
+        });
       })
       .catch((error: unknown) => {
         console.warn(`[site] failed to load authored ${def.id} site`, error);

@@ -26,6 +26,49 @@ export interface FaunaKitParts {
   wing?: THREE.BufferGeometry;
 }
 
+type PartRole = 'body' | 'leg' | 'wingR' | 'wingL';
+
+/**
+ * One InstancedMesh per species and part: the animals keep their transform hierarchy (hidden part
+ * meshes under pivots) and only their world matrices are drawn, so a flock is a few draw calls
+ * instead of one per body, leg and wing.
+ */
+interface Batch {
+  mesh: THREE.InstancedMesh;
+  parts: THREE.Mesh[];
+  /** Left wings draw a pre-mirrored geometry, so their mirror is cancelled in the instance matrix. */
+  mirrored: boolean;
+}
+
+/** Mirror across X with the triangle winding restored, so it renders front-facing unmirrored. */
+function mirrorX(geometry: THREE.BufferGeometry): THREE.BufferGeometry {
+  const out = geometry.clone().scale(-1, 1, 1);
+  const index = out.index;
+  if (index) {
+    for (let i = 0; i < index.count; i += 3) {
+      const b = index.getX(i + 1);
+      index.setX(i + 1, index.getX(i + 2));
+      index.setX(i + 2, b);
+    }
+  } else {
+    const pos = out.getAttribute('position');
+    for (const attr of Object.values(out.attributes)) {
+      const a = attr as THREE.BufferAttribute;
+      for (let i = 0; i < pos.count; i += 3) {
+        for (let c = 0; c < a.itemSize; c++) {
+          const t = a.getComponent(i + 1, c);
+          a.setComponent(i + 1, c, a.getComponent(i + 2, c));
+          a.setComponent(i + 2, c, t);
+        }
+      }
+    }
+  }
+  return out;
+}
+
+const _mirror = new THREE.Matrix4().makeScale(-1, 1, 1);
+const _m = new THREE.Matrix4();
+
 interface Animal {
   species: SpeciesId;
   group: THREE.Group;
@@ -68,6 +111,7 @@ export class Wildlife {
   });
   private time = 0;
   private readonly kits = new Map<SpeciesId, FaunaKitParts>();
+  private readonly batches = new Map<string, Batch>();
   private disposed = false;
 
   constructor(private readonly scene: THREE.Scene) {}
@@ -97,6 +141,44 @@ export class Wildlife {
       for (const pivot of a.legs) if (kit.leg) (pivot.children[0] as THREE.Mesh).geometry = kit.leg;
       for (const w of a.wings) if (kit.wing) (w.pivot.children[0] as THREE.Mesh).geometry = kit.wing;
     }
+    const swap = (role: PartRole, geometry: THREE.BufferGeometry | undefined): void => {
+      const batch = this.batches.get(`${species}:${role}`);
+      if (!batch || !geometry) return;
+      const old = batch.mesh.geometry;
+      batch.mesh.geometry = batch.mirrored ? mirrorX(geometry) : geometry;
+      if (batch.mirrored) old.dispose();
+    };
+    swap('body', kit.body);
+    swap('leg', kit.leg);
+    swap('wingR', kit.wing);
+    swap('wingL', kit.wing);
+  }
+
+  /** Register a part mesh with its species' batch (the part itself is hidden). */
+  private batch(species: SpeciesId, role: PartRole, part: THREE.Mesh): void {
+    const key = `${species}:${role}`;
+    let batch = this.batches.get(key);
+    if (!batch) {
+      const mirrored = role === 'wingL';
+      const perAnimal = role === 'leg' ? 4 : 1;
+      const mesh = new THREE.InstancedMesh(
+        mirrored ? mirrorX(part.geometry) : part.geometry,
+        this.material,
+        MAX_ANIMALS * perAnimal,
+      );
+      mesh.name = `fauna_${species}_${role}`;
+      mesh.count = 0;
+      mesh.castShadow = part.castShadow;
+      mesh.receiveShadow = part.receiveShadow;
+      // Instances orbit across the map; their union is not worth a bounding sphere per frame.
+      mesh.frustumCulled = false;
+      mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      this.scene.add(mesh);
+      batch = { mesh, parts: [], mirrored };
+      this.batches.set(key, batch);
+    }
+    part.visible = false;
+    batch.parts.push(part);
   }
 
   spawn(spawns: WildlifeSpawn[], heightAt: (x: number, z: number) => number): void {
@@ -122,6 +204,7 @@ export class Wildlife {
         body.castShadow = t.ground;
         body.receiveShadow = t.ground;
         group.add(body);
+        this.batch(s.id, 'body', body);
 
         if (t.leg) {
           for (const sx of [-1, 1]) {
@@ -134,6 +217,7 @@ export class Wildlife {
               pivot.add(mesh);
               group.add(pivot);
               legs.push(pivot);
+              this.batch(s.id, 'leg', mesh);
             }
           }
         }
@@ -151,6 +235,7 @@ export class Wildlife {
             pivot.add(mesh);
             group.add(pivot);
             wings.push({ pivot, side });
+            this.batch(s.id, side < 0 ? 'wingL' : 'wingR', mesh);
           }
         }
       }
@@ -218,6 +303,15 @@ export class Wildlife {
         const base = 0.12; // slight dihedral so the wings read as wings
         w.pivot.rotation.z = w.side * (base + Math.sin(this.time * a.template.flap + a.bobPhase) * 0.5);
       }
+      a.group.updateMatrixWorld(true);
+    }
+    for (const batch of this.batches.values()) {
+      batch.parts.forEach((part, i) => {
+        if (batch.mirrored) batch.mesh.setMatrixAt(i, _m.multiplyMatrices(part.matrixWorld, _mirror));
+        else batch.mesh.setMatrixAt(i, part.matrixWorld);
+      });
+      batch.mesh.count = batch.parts.length;
+      batch.mesh.instanceMatrix.needsUpdate = true;
     }
   }
 
@@ -242,6 +336,11 @@ export class Wildlife {
       a.rig?.dispose();
     }
     this.animals.length = 0;
+    for (const batch of this.batches.values()) {
+      batch.mesh.removeFromParent();
+      if (batch.mirrored) batch.mesh.geometry.dispose();
+    }
+    this.batches.clear();
     this.material.dispose();
   }
 }

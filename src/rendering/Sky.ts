@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { snapShadowFrame, type ShadowFrame } from './shadowFrame';
 import { fbm2 } from '../util/noise';
 
 /**
@@ -19,6 +20,8 @@ export class Sky {
   sunDir = new THREE.Vector3(0.5, 0.7, 0.4).normalize();
   sunColor = new THREE.Color(0xfff2dd);
   timeOfDay = 0.5; // 0 night .. 1 day
+  /** Centre of the sun's shadow frustum (see setShadowFrame); the origin until a view frames it. */
+  private readonly shadowCenter = new THREE.Vector3();
   /** Region atmosphere: horizon tint and sun warmth (1 = neutral). */
   private atmTint = new THREE.Color(0xffffff);
   private warmth = 1;
@@ -249,6 +252,23 @@ export class Sky {
     this.warmth = warmth;
   }
 
+  /**
+   * Fit the shadow frustum to the camera's view (src/rendering/shadowFrame.ts): centred on `frame`,
+   * `frame.extent` units to each side, snapped to shadow-map texels.
+   */
+  setShadowFrame(frame: ShadowFrame): void {
+    const snapped = snapShadowFrame(frame, this.sunDir, this.light.shadow.mapSize.x);
+    this.shadowCenter.set(snapped.x, snapped.y, snapped.z);
+    const cam = this.light.shadow.camera;
+    if (cam.right !== snapped.extent) {
+      cam.left = -snapped.extent;
+      cam.right = snapped.extent;
+      cam.top = snapped.extent;
+      cam.bottom = -snapped.extent;
+      cam.updateProjectionMatrix();
+    }
+  }
+
   update(time: number): void {
     // The sun orbits with a maximum elevation ~55° for lateral lighting
     const t = this.timeOfDay;
@@ -270,8 +290,10 @@ export class Sky {
     else if (w < 0) this._cSunTint.setRGB(1 + Math.min(0.15, -w * 1.2), 1 + Math.min(0.08, -w * 0.6), 1);
     this._cSunLit.copy(this.sunColor).multiply(this._cSunTint);
     this.light.color.copy(this._cSunLit).lerp(this._cWarm, (1 - day) * 0.5);
-    this.light.position.copy(this.sunDir).multiplyScalar(500);
-    this.light.target.position.set(0, 0, 0);
+    this.light.target.position.copy(this.shadowCenter);
+    this.light.position.copy(this.sunDir).multiplyScalar(500).add(this.shadowCenter);
+    // The target is not in the scene graph, so nothing else refreshes its world matrix.
+    this.light.target.updateMatrixWorld();
 
     this.hemi.intensity = 0.35 + day * 0.55;
     this._cSkyDay.setHex(0xbfd4ff).lerp(this._cSkyNight, 1 - day);

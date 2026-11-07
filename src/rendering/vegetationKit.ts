@@ -12,6 +12,7 @@ import totoraLod0 from '../assets/vegetation/caral/caral_totora_lod0.glb?url';
 import totoraLod1 from '../assets/vegetation/caral/caral_totora_lod1.glb?url';
 import { loadStaticGltf } from './StaticModel';
 import { preserveAlphaCoverage } from './alphaCoverage';
+import { dequantize } from './mergeStatic';
 import type { GeographicRegion, TreeVariant } from '../model/defs/profiles';
 import type { PropId } from '../model/defs/props';
 
@@ -77,24 +78,6 @@ function prepareMaterial(material: THREE.Material): boolean {
   std.side = THREE.DoubleSide;
   material.needsUpdate = true;
   return leaf;
-}
-
-/**
- * Copy every attribute to plain Float32 (meshopt GLBs use KHR_mesh_quantization: normalized
- * integers with the scale on the node), so baking the node transform cannot clip them.
- */
-export function dequantize(geometry: THREE.BufferGeometry): THREE.BufferGeometry {
-  const out = new THREE.BufferGeometry();
-  for (const [name, attr] of Object.entries(geometry.attributes)) {
-    const src = attr as THREE.BufferAttribute | THREE.InterleavedBufferAttribute;
-    const data = new Float32Array(src.count * src.itemSize);
-    for (let i = 0; i < src.count; i++) {
-      for (let c = 0; c < src.itemSize; c++) data[i * src.itemSize + c] = src.getComponent(i, c);
-    }
-    out.setAttribute(name, new THREE.BufferAttribute(data, src.itemSize));
-  }
-  if (geometry.index) out.setIndex(Array.from(geometry.index.array as ArrayLike<number>));
-  return out;
 }
 
 /** Bake every mesh of a loaded GLB into one geometry per material. */

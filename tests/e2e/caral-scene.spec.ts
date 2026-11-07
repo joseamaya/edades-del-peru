@@ -123,6 +123,7 @@ test('the Blender vegetation kit replaces the procedural huarango, willow and to
     return {
       picked: hits.some((h) => h.id === tree.id),
       trunkCount: trunk?.count ?? -1,
+      kitCanopyVisible: g.scene.getObjectByName('trees_canopy_algarrobo')?.visible ?? true,
       highestUsed,
       huarango: count('trees_kit_huarango_lod0') + count('trees_kit_huarango_lod1'),
       totoraKit: count('props_kit_totora'),
@@ -136,6 +137,8 @@ test('the Blender vegetation kit replaces the procedural huarango, willow and to
   // Procedural tree meshes draw only up to the highest used slot, not all 700.
   expect(state.trunkCount).toBe(state.highestUsed + 1);
   expect(state.trunkCount).toBeLessThan(700);
+  // The procedural canopy of a kit-drawn variant is hidden, so it costs no draw call.
+  expect(state.kitCanopyVisible).toBe(false);
   expect(state.totoraKit).toBe(state.totora);
   expect(state.proceduralVisible).toBe(false);
   expect(state.canes).toBeGreaterThan(0);

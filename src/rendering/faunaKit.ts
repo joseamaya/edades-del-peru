@@ -3,7 +3,7 @@ import birdUrl from '../assets/fauna/caral/caral_bird.glb?url';
 import deerUrl from '../assets/fauna/caral/caral_deer.glb?url';
 import type { SpeciesId } from '../model/defs/wildlife';
 import { disposeStaticGltf, loadStaticGltf } from './StaticModel';
-import { dequantize } from './vegetationKit';
+import { dequantize } from './mergeStatic';
 import type { FaunaKitParts, Wildlife } from './Wildlife';
 
 /**

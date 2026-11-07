@@ -25,6 +25,7 @@ import { resolveConquest } from '../game/systems/VictorySystem';
 import { areaDamage, resolveAttackDamage, selectAreaTargets, selectNearestTarget } from '../game/systems/CombatSystem';
 import type { SaveData } from '../game/saveTypes';
 import type { RigInstance } from '../rendering/RigInstance';
+import { shadowFrameFor } from '../rendering/shadowFrame';
 
 export interface DeathFx {
   view: EntityView;
@@ -756,8 +757,15 @@ export class RuntimeController {
     saveReplay(this.game.lastReplay);
   }
 
-  // --- main update ---
+  /** Fit the sun's shadow frustum to the current view (src/rendering/shadowFrame.ts). */
+  frameShadows(): void {
+    const target = this.game.camera.getTarget();
+    this.game.sky.setShadowFrame(
+      shadowFrameFor(this.game.camera.camera, this.game.terrain.getHeight(target.x, target.z)),
+    );
+  }
 
+  // --- main update ---
   update(dt: number, time: number): boolean {
     const t = time;
     const realTime = performance.now() / 1000;
@@ -774,6 +782,7 @@ export class RuntimeController {
     }
     const d = dt;
 
+    this.frameShadows();
     this.game.sky.update(realTime);
     this.game.water.setSunDir(this.game.sky.sunDir);
     this.game.water.setDayFactor(this.game.sky.getDayFactor());
