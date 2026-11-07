@@ -115,9 +115,9 @@ export function setAutoStart(value: boolean): void {
 
 /** Campaign intro flyover framing, relative to the player base. */
 const INTRO_CAMERA = { offset: 34, fromHeight: 52, toZoom: 30, seconds: 2.6 } as const;
-/** Keep guaranteed fishing searches inside the authored river and map edge. */
 /** How long m1's drought takes to dry the valley out. */
 const DROUGHT_SECONDS = 40;
+/** Keep guaranteed fishing searches inside the authored river and map edge. */
 
 export class Game {
   renderer!: THREE.WebGLRenderer;
@@ -984,6 +984,9 @@ export class Game {
     this.droughtTarget = 1;
     this.droughtBaseAtmosphere ??= this.missionAtmosphere;
     if (instant) {
+      // A loaded save already holds the halved harvests and the dead trees: only the look is restored.
+      this.droughtFarmsHit = true;
+      this.droughtGroveCut = true;
       this.droughtLevel = 1;
       this.applyDrought();
     }
@@ -1275,6 +1278,8 @@ export class Game {
     const b = new Building(kind, 0, this.players[0].era);
     b.pos.set(x, this.terrain.getHeight(x, z), z);
     this.applyTerrainFarmYield(b);
+    // A field sown during the drought starts with half a harvest (placement only, never on load).
+    if (this.droughtFarmsHit && b.isFarm) b.foodAmount = Math.round(b.foodAmount * 0.5);
     this.attachBuilding(b);
     b.beginConstruction();
     if (BUILDING_DEFS[kind].instant) b.completeInstantly();
@@ -1289,8 +1294,6 @@ export class Game {
    */
   applyTerrainFarmYield(b: Building): void {
     b.applyTerrainYield(this.farmYieldAt(b.pos.x, b.pos.z));
-    // A field sown during the drought starts with half a harvest.
-    if (this.droughtFarmsHit && b.isFarm) b.foodAmount = Math.round(b.foodAmount * 0.5);
   }
 
   /** Terrain multiplier for a farm at (x, z), shared by the simulation and the HUD. */

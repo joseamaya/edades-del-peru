@@ -37,7 +37,11 @@ function stubGame() {
     setVisitedHeritage: () => {},
     setSitePhase: (phase: CaralMayorPhase) => (game.sitePhase = phase),
     drought: 0,
-    startDrought: () => (game.drought = 1),
+    droughtInstant: false,
+    startDrought: (instant = false) => {
+      game.drought = 1;
+      game.droughtInstant = instant;
+    },
     resolveMissionPoint: () => ({ x: 0, z: 0 }),
   };
   return game;
@@ -146,5 +150,13 @@ describe('Caral model mission', () => {
       ],
     });
     expect(game.sitePhase).toBe('fill');
+  });
+
+  it('restores the drought of a save that passed act IV without replaying its effects', () => {
+    const game = stubGame();
+    const mission = new Mission(game, CARAL, () => {});
+    mission.applySave({ ...mission.toSave(), fired: ['t_a4_acto'] });
+    expect(game.drought).toBe(1);
+    expect(game.droughtInstant).toBe(true);
   });
 });
