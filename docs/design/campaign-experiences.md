@@ -20,52 +20,39 @@ those things happened in the scenario, not because a screen asked about them aft
 
 ## Caral pilot (m1)
 
-Historical idea: Caral sustained a large community by combining valley agriculture with coastal fishing, by
+Historical idea: Caral sustained a large community by combining coastal fishing with valley agriculture, by
 organising communal work and by storing surplus. Monumentality depended on that surplus, not on a documented
-war.
+war, and the city ended with a drought and its abandonment. Caral is the model mission: its design and status
+are in [`caral-model-mission.md`](./caral-model-mission.md), the reusable method in
+[`model-mission-pattern.md`](./model-mission-pattern.md).
 
-What the player does:
+What the player does, in four acts introduced by a narrated intro and chapter cards:
 
-1. Starts with three visible goals: prepare two fields, observe the Gran Pirámide / Plaza Central and
-   sustain the settlement. Explores the valley and finds the coast; the tutorial completes when the
-   scout discovers a fishing ground.
-2. Places two fields (the game's Andén building). Fields near moisture or a canal hold more food, and
-   the HUD shows the reserve and terrain bonus. When both fields are complete, the surplus goals open:
-   build the communal store and gather 500 food.
-3. Builds a communal store (the game's Troje) to represent the surplus. Both names are gameplay
-   abstractions, not attested Caral terms; selecting either building shows its historical field card.
-   Completing the Troje reveals the optional canal goal.
-4. Observes the ceremonial complex; the required `obj_complejo` completes when a player unit reaches
-   the Plaza Central and the Gran Pirámide / Plaza Central field card is opened, making the monumental
-   sector part of the victory. At that point the six-pyramid tour is revealed and the Plaza card
-   starts offering the communal assembly (it is not activated until the player convokes it).
-5. Reaches the food target and keeps the settlement standing for five minutes.
-6. Optional: opens the communal canal gate; nearby Andenes gain irrigation yield and the `obj_riego`
-   bonus completes.
-7. Optional: clicks the six Upper-Half pyramids, reads their field cards and can record each visit;
-   the recorded visits complete the `obj_complejos` bonus without gating progress.
-8. Optional: after observing the complex, the Plaza Central card offers the communal assembly; a
-   worker must hold the plaza for 20 seconds. It teaches communal organisation through time rather
-   than a resource buff.
+1. **Áspero, the fishing village.** Fishing in the sea with a cast cotton net, quincha houses, and an
+   optional visit to the Huaca de los Ídolos. The tension: nets need cotton and gourds, which do not grow on
+   the beach. The act ends by scouting up the Supe river to the valley.
+2. **The Supe valley.** Two chacras on the fertile floodplain, the communal canal gate, a Troje to hold the
+   surplus, and the cotton nets researched there with valley food and wood: cotton goes down to the coast,
+   fish comes up. The act closes with a food surplus.
+3. **The Sacred City.** The Pyramid Mayor rises in phases (foundation, fill, finished, in use) as the player
+   hands shicra fibre and stone over at its field card; the community gathers at the plaza for the fire
+   offering. Optional: tour the six pyramid complexes and call a communal assembly.
+4. **The drought.** The valley dries in front of the player (sand advances, the river shrinks, harvests
+   halve, riverside trees die); the community seals the pyramid under stone and gathers on the beach to
+   leave for Vichama. The epilogue shows the departure.
 
-The reveal chain is the mission's pacing: the panel starts with three goals, grows after the fields,
-after the store and after the ceremonial visit. The Caral trigger effects announce each new goal with a toast when it is still
-pending; a goal already satisfied before its reveal is marked complete instead,
-so a hidden objective never becomes an unexplained moving goalpost. The assembly stays optional and
-the five-minute survival clock remains the final pressure; a fast player can finish the productive
-goals early, but the mission does not wait on an arbitrary mid-game timer.
+The reveal chain is the pacing: each act's goals stay hidden until the previous act ends, so the briefing
+never spoils them, and a goal already satisfied before its reveal is marked complete instead of becoming an
+unexplained moving goalpost. There is no survival timer: the ending is the documented abandonment, framed
+as history, not as the player's failure.
 
-Decisions: where to farm, how many workers to send to the coast, where to store food, whether to grow the
-settlement or accumulate reserves. These use existing mechanics (terrain-aware farms, resource nodes,
-dropsites, housing) and need no fictional enemy.
+Decisions: how many workers fish and how many farm, where to place fields, when to research the nets, how
+to split hands between surplus and construction. These use existing mechanics (terrain-aware farms,
+resource nodes, dropsites, housing) and need no fictional enemy.
 
-The mission has no market objective. There is no attested market building at Caral; the exchange is represented
-by the coast/valley complementarity and by moving goods and workers, not by a market placeholder.
-
-Monumentality is discovered by reaching the documented ceremonial complex. Clicking a modular pyramid or the
-Anfiteatro opens a field card with its sector, role, confidence and sources; the optional visit records the card
-without gating progress. The game does not claim that the player builds the pyramids; the epilogue connects the
-surviving architecture with the surplus and communal work the player has just organised.
+The mission has no market objective. There is no attested market building at Caral; exchange is the
+coast–valley complementarity and the hand-overs, and the fair tents that appear once the city is in use are
+temporary and seasonal. The Troje is a gameplay name, not an attested Caral term, as its field card says.
 
 ## Chavín pilot (m2)
 
@@ -92,17 +79,17 @@ as an abstraction and says so in its field card.
 
 ## Progression for the other missions
 
-| Mission                | Historical idea                          | Player action                                     | Decision                           | Consequence                   |
-| ---------------------- | ---------------------------------------- | ------------------------------------------------- | ---------------------------------- | ----------------------------- |
-| m2 Chavín              | Ceremonial prestige and pilgrimage       | Deliver offerings, receive pilgrims, open feria   | Ceremony vs subsistence            | Prestige and continuity       |
-| m3 Moche–Recuay        | Valleys, canals and attested conflict    | Open the canal, hold the huacas, exchange silver  | Defend vs counter-raid             | Control or loss of the valley |
-| m4 Wari                | Planned expansion and provincial centres | Connect two centres, stockpile, hold the frontier | Expand vs consolidate              | Frontier influence            |
-| m5 Yahuar Pampa        | Defence of Cusco                         | Hold Cusco, protect Cusi Yupanqui, counter-attack | Resist vs sortie                   | Survival or fall              |
-| m6 Chimú–Inca          | Water as power                           | Advance, cut the canal, force surrender           | Assault vs siege                   | Chan Chan capitulates         |
+| Mission                | Historical idea                          | Player action                                     | Decision                           | Consequence                            |
+| ---------------------- | ---------------------------------------- | ------------------------------------------------- | ---------------------------------- | -------------------------------------- |
+| m2 Chavín              | Ceremonial prestige and pilgrimage       | Deliver offerings, receive pilgrims, open feria   | Ceremony vs subsistence            | Prestige and continuity                |
+| m3 Moche–Recuay        | Valleys, canals and attested conflict    | Open the canal, hold the huacas, exchange silver  | Defend vs counter-raid             | Control or loss of the valley          |
+| m4 Wari                | Planned expansion and provincial centres | Connect two centres, stockpile, hold the frontier | Expand vs consolidate              | Frontier influence                     |
+| m5 Yahuar Pampa        | Defence of Cusco                         | Hold Cusco, protect Cusi Yupanqui, counter-attack | Resist vs sortie                   | Survival or fall                       |
+| m6 Chimú–Inca          | Water as power                           | Advance, cut the canal, force surrender           | Assault vs siege                   | Chan Chan capitulates                  |
 | m6b Guerra Civil Inca  | Dynastic war and division                | Advance to Quipaipan, defeat Huáscar              | Advance vs consolidate             | Atahualpa wins; the empire is weakened |
-| m7 Túpac Amaru         | Rebellion and repression                 | Sustain communities, choose assault or siege      | Explicit counterfactual            | Defeat and legacy             |
-| m8 Independencia       | Campaign logistics and coordination      | Move, take the royalist centre, hold              | Timing and concentration           | Patriotic victory             |
-| m9 Guerra del Pacífico | Sea control and port defence             | Protect the port, raid, intercept                 | Risk the squadron vs hold the port | Loss of the Huáscar and Grau  |
+| m7 Túpac Amaru         | Rebellion and repression                 | Sustain communities, choose assault or siege      | Explicit counterfactual            | Defeat and legacy                      |
+| m8 Independencia       | Campaign logistics and coordination      | Move, take the royalist centre, hold              | Timing and concentration           | Patriotic victory                      |
+| m9 Guerra del Pacífico | Sea control and port defence             | Protect the port, raid, intercept                 | Risk the squadron vs hold the port | Loss of the Huáscar and Grau           |
 
 m2–m9 are implemented and released across the four chapters. m7 is a counterfactual licence; m9's
 historical losses are documented, while its playable land defence of the port is an abstraction. Each
@@ -118,13 +105,13 @@ needed. The campaign unit test and the `civ-uniques` E2E also check the barracks
 name the unique unit when it belongs to the player's civilization, and the Codex keeps the fuller
 source.
 
-| Mission | Player unique | Enemy unique |
-| --- | --- | --- |
-| m3 Moche–Recuay | Guerrero Moche | Guerrero Recuay |
-| m4 Wari | Guardián Wari | — (Tiahuanaco has a documented gap; the enemy is inactive) |
-| m5 Yahuar Pampa | Guerrero Inca | Guerrero Chanca |
-| m6 Chimú–Inca | Guerrero Inca | Fixi Chimú |
-| m6b Guerra Civil Inca | Guerrero Inca | Guerrero Inca |
+| Mission               | Player unique  | Enemy unique                                               |
+| --------------------- | -------------- | ---------------------------------------------------------- |
+| m3 Moche–Recuay       | Guerrero Moche | Guerrero Recuay                                            |
+| m4 Wari               | Guardián Wari  | — (Tiahuanaco has a documented gap; the enemy is inactive) |
+| m5 Yahuar Pampa       | Guerrero Inca  | Guerrero Chanca                                            |
+| m6 Chimú–Inca         | Guerrero Inca  | Fixi Chimú                                                 |
+| m6b Guerra Civil Inca | Guerrero Inca  | Guerrero Inca                                              |
 
 The enemy AI may train its own unique unit when the mission has an active enemy. This is the same
 civilization-scoped rule used in skirmish, not a hidden production advantage.
