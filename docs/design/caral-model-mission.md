@@ -4,16 +4,13 @@ Design proposal for rebuilding `m1_caral` as the **model mission** of the campai
 travels to the Supe valley as it was c. 3000–1800 BC, not to the ruins of today. Later missions should
 follow the same pattern.
 
-Status: **first playable pass**. `m1_caral` now runs the four acts below as one mission: Act I starts at
-Áspero on the shore, Act II opens the valley fields and the canal, Act III builds the Pyramid Mayor by
-handing materials over at its field card (`deliver` objectives with a `heritageId`; each phase swaps the
-kit model through `site_phase` trigger effects), and Act IV seals the pyramid and gathers the community on
-the beach. Acts II–IV open with a chapter card (`act` trigger effect) and every line is spoken by an
-anonymous narrator (`MissionDef.narrator`). Still open: the Áspero site model, the coast–valley exchange
-route, allied neighbour villages, fair tents, the paint-colour change per phase and the drought's
-environmental events (see *Implementation needs*). The historical facts, and their certainty, live in the
-dossier [`docs/historia/campanas/caral.md`](../historia/campanas/caral.md); this document only references
-them.
+Status: **complete model mission**. `m1_caral` plays the four acts below as one mission on a 256-unit
+sea-to-terrace transect, from a narrated intro to an illustrated epilogue. Act I starts at Áspero on the
+shore, Act II opens the valley fields, the canal and the coast–valley exchange, Act III builds the Pyramid
+Mayor in phases by handing materials over at its field card, and Act IV brings the drought, seals the
+pyramid and gathers the community on the beach. What was built, and what is still open, is listed in
+_As built_ and _Open items_ below. The historical facts, and their certainty, live in the dossier
+[`docs/historia/campanas/caral.md`](../historia/campanas/caral.md); this document only references them.
 
 ## Goals
 
@@ -27,9 +24,11 @@ them.
 4. **End with the documented outcome.** Abandonment is how this story ends; the mission does not let the
    player "save" Caral and does not frame the ending as a defeat.
 
-## Gaps in the current m1
+## Gaps in the original m1
 
-| Area            | Today                                                           | Problem                                                                   |
+These motivated the redesign; every row is now addressed (see _As built_).
+
+| Area            | Before the redesign                                             | Problem                                                                   |
 | --------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------- |
 | City            | Static GLB, fully built; the player only inspects it            | Hides the central fact: centuries of communal construction in phases      |
 | Áspero          | Only named in a dialogue                                        | Half of the story (the coast) is missing                                  |
@@ -95,7 +94,7 @@ sea | beach + Áspero + wetlands (totora) + lomas | lower valley (El Molino)
 
 - River dry most of the year with groundwater and springs; seasonal flood brings fish and shrimp.
 - Vegetation set: willow, giant reed (caña brava), carrizo, horsetail, huarango; totora and junco in the
-  wetlands. Remove palms from this map.
+  wetlands. No palms on this map.
 - Fauna (ambient): deer, rodents, birds in the riparian forest; sea birds on the coast.
 - Lomas turn green in the foggy winter season.
 
@@ -111,7 +110,7 @@ of the mouth. Ground zones (beach, marsh, floodplain, terrace desert, rock) are 
 - Cooking smoke behind houses (pachamanca pits), refuse heaps outside them.
 - Fire on the sacred-fire altars; flute music near the Amphitheatre during ceremonies.
 - People walking between plazas and houses; pilgrims during fairs.
-- Player-built quincha houses use the paint colour of the current phase.
+- Player-built quincha houses use the paint colour of the current phase (open, see _Open items_).
 
 ## Narration
 
@@ -119,18 +118,64 @@ No names are known, so no character is invented. The narrator is an anonymous vo
 (e.g. "a fisherwoman of Áspero" or "the elders of the valley") who tells the story across generations.
 Dialogue speaker labels must not say "Comandante" in this mission.
 
-## Implementation needs (later work)
+## As built
 
-1. Áspero site model (platforms, quincha houses, Huaca de los Ídolos) in Blender.
-2. **Phased monument construction**: a site that grows through delivered materials and phase transitions.
-   The modular Caral pyramids and Amphitheatre in `art-src/blender` are a starting point.
-   The architecture kit now ships the Pyramid Mayor phase models (foundation, fill, finished, in use) and
-   `CaralCity.setMayorPhase` swaps them; act III drives the phases through `Game.setSitePhase`.
-3. Local resources: cotton/fibre and reed instead of wood for Caral; no silver.
-4. Environmental events: seasonal flood, drought and sand advance.
-5. Map-specific vegetation and ambient fauna sets; remove palms from the Supe map.
-6. Narrated act cards with per-beat art (see the AoE-style intro proposal discussed for #343).
-7. ~~Data fixes in `src/campaign/defs`: speaker label, `didYouKnow` wording, starting resources.~~ Done.
+- **Mission engine** (`src/campaign/Mission.ts`): objectives can start hidden and be revealed by triggers.
+  Kinds used by m1: `deliver` with a `heritageId` (hand-over at a field card, shared by offerings, trades
+  and construction), `hold`, `reach`, `inspect`, `canal_open` and `research`. Trigger effects: `act` (a
+  chapter card with an image; the mission clock and tutorial wait for it), `site_phase`, `drought` and
+  `dialogue`. A loaded save restores the latest site phase and the drought without re-applying its losses.
+- **Intro and epilogue**: `MissionDef.intro` plays three narrated beats (Áspero, the valley, the city to
+  come) over a paused world; the Act II–IV cards and the victory epilogue carry images. All six are
+  in-engine recreations captured by `scripts/capture_caral_intro.mjs` and recorded in `PROVENANCE.md` as
+  game captures, never historical photographs. `?intro=0` and headless runs skip the intro.
+- **Áspero**: the `huaca_idolos` kit piece (three superposed terraces) and six fishing houses with net
+  racks and gourd floats (`ASPERO_LAYOUT`), baked with the city in one `CaralCity`. Fishing grounds lie in
+  the sea; a worker casts and drags a cotton net (`FishingNetFx`) and keeps fishing nearby grounds.
+- **Phased Pyramid Mayor**: foundation, fill, finished and in use (`Game.setSitePhase`); the other
+  monuments appear with their phase (`CARAL_HERITAGE_SINCE`) and only block and answer clicks once built.
+- **Valley economy**: chacras on painted fertile ground, the canal, the Troje and the exchange: the
+  `cotton_nets` technology, researched at the Troje with valley food and wood, stands for cotton going down
+  to the coast. Caral sees only its own buildings, units and technologies (`allowedBuildings`,
+  `allowedUnits`, the match-filtered tech tree); there is no silver.
+- **Living valley**: cooking smoke behind dwellings, the sacred fire on the Pyramid Mayor and a blaze for
+  the Act III offering, temporary fair tents once the city is in use, two allied hamlets up the valley,
+  riparian deer and birds, pelicans off Áspero, surf on the shore and a flute line for the era.
+- **Drought** (`Game.startDrought`, 40 s): the green turns to sand in patches, the river surface drops,
+  the haze turns dusty, fields lose half their harvest and about one riverside tree in three dies.
+- **Narration**: an anonymous narrator (`MissionDef.narrator`); no "Comandante" label, no invented names.
+- **Tutorial**: eight steps (select, coast, house, valley, field, storage, nets, pyramid) docked under the
+  objectives.
+
+## Performance
+
+The scene budgets of `docs/design/art-direction.md` §11 are checked by `yarn bench:check`
+(`scripts/bench_scene.mjs`), both for the opening and, with `--stage=late`, for the end game: the city in
+use, the drought and 35 workers in view over the Sacred City.
+
+| View    | Before the worker cuts | Now          | Budget     |
+| ------- | ---------------------- | ------------ | ---------- |
+| Opening | 474k tris / 224 calls  | ~332k / ~204 | 400k / 230 |
+| Late    | 1.57M tris / 396 calls | ~582k / ~261 | 600k / 275 |
+
+The workers dominated the late view. `scripts/simplify_caral_worker.mjs` (run by `yarn models:build`)
+simplifies the base bodies from ~12k to ~2.5k triangles and the long hair and tunics by half or more;
+they are mostly under the garments and the difference is invisible at game camera distances. Only the
+body is in the shadow pass, and the eyes are hidden. Skinned workers cannot be instanced, so each one in
+view still costs about six draws; that is why the late call budget sits above the opening's. Pebbles and
+gravel drop their downward faces, a third of the ground cover's triangles on a GPU (the software-rendered
+bench runs without ground cover).
+
+## Open items
+
+1. The city's paint colour per phase (documented as changing by period) is not yet shown.
+2. Seasonal flood, sand advance and green winter lomas are not simulated.
+3. Late-period details of Act IV (stone houses, a little maize) are not shown.
+4. The Act III fire offering is staged at the plaza, but the burial of one phase under the next is not
+   shown on its own, and an empty storehouse does not pause construction.
+5. The new art (`huaca_idolos`, the phase models, the intro captures) waits for human review
+   (`reviewed: false` in the manifest).
+6. The other campaigns follow this pattern later; the m9 scripted playtest is known to fail meanwhile.
 
 ## Certainty labelling
 

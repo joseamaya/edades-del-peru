@@ -61,8 +61,9 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   show('Body_m', male);
   show('Hair_f', !male);
   show('Hair_m', male);
-  show('Eyes_f', !male);
-  show('Eyes_m', male);
+  // The eyes are a few pixels at any game camera distance but cost a draw call per unit.
+  show('Eyes_f', false);
+  show('Eyes_m', false);
   show('Eyebrows_f', !male);
   show('Eyebrows_m', male);
   show('attire_tunic_f', !male);
@@ -319,6 +320,14 @@ export function dressCaralWorker(rig: RigInstance, variant: RigVariant = 'caral_
   const consolidated = consolidateRig(root, ['attire_headband'], variant);
   tools.ownedGeometries.push(...consolidated.geometries);
   tools.ownedMaterials.push(...consolidated.materials);
+  // Only the body is in the shadow pass: from the RTS camera the hair and garments add nothing to its
+  // shadow, and skinned meshes cannot be instanced, so each part was a shadow-pass draw per unit. The
+  // VSM draws receivers into the shadow map too, so both flags go.
+  root.traverse((child) => {
+    if (!(child as THREE.Mesh).isMesh || /^Body_[fm]$/.test(child.name)) return;
+    child.castShadow = false;
+    child.receiveShadow = false;
+  });
 
   return {
     setCarrying(next: boolean, color?: number): void {

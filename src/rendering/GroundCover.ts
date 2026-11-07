@@ -315,9 +315,33 @@ function tuftGeometry(blades: number, height: number, width: number, spread: num
   return geo;
 }
 
+/**
+ * A squashed icosahedron without its downward faces: the RTS camera always looks down, so they are
+ * never seen, and with ~12k pebbles and gravel on a map they were a third of the cover's triangles.
+ */
 function pebbleGeometry(radius: number, y: number): THREE.BufferGeometry {
-  const geo = new THREE.IcosahedronGeometry(radius, 0);
-  geo.scale(1.25, 0.75, 1);
-  geo.translate(0, y, 0);
+  const ico = new THREE.IcosahedronGeometry(radius, 0);
+  ico.scale(1.25, 0.75, 1);
+  ico.translate(0, y, 0);
+  const source = ico.getAttribute('position');
+  const normals = ico.getAttribute('normal');
+  const kept: number[] = [];
+  const keptNormals: number[] = [];
+  const a = new THREE.Vector3();
+  const b = new THREE.Vector3();
+  const c = new THREE.Vector3();
+  for (let i = 0; i < source.count; i += 3) {
+    a.fromBufferAttribute(source, i);
+    b.fromBufferAttribute(source, i + 1);
+    c.fromBufferAttribute(source, i + 2);
+    const normalY = c.clone().sub(b).cross(a.clone().sub(b)).y;
+    if (normalY < 0) continue;
+    kept.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
+    for (let k = i; k < i + 3; k++) keptNormals.push(normals.getX(k), normals.getY(k), normals.getZ(k));
+  }
+  ico.dispose();
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(kept, 3));
+  geo.setAttribute('normal', new THREE.Float32BufferAttribute(keptNormals, 3));
   return geo;
 }
