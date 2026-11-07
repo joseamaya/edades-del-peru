@@ -8,6 +8,7 @@ import {
   type CaralArchAssetId,
   type CaralArchPlacement,
   type CaralMayorPhase,
+  standsAt,
 } from '../model/defs/caralCity';
 
 /**
@@ -218,6 +219,7 @@ export class CaralCity {
       }
       const byName = new Map<string, { material: THREE.Material; geometries: THREE.BufferGeometry[] }>();
       for (const p of this.placements) {
+        if (!standsAt(p, this.phase)) continue;
         const asset = p.mayor ? CARAL_MAYOR_PHASE_ASSET[this.phase] : p.asset;
         const model = this.models.get(asset);
         if (!model) continue;

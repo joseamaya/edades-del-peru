@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import type { TerrainData } from '../sim/TerrainData';
 import { CulturalLandscape } from '../rendering/CulturalLandscape';
 import { SacredCity } from '../rendering/SacredCity';
 import { applyFowToObject } from '../rendering/FowMaterial';
@@ -735,7 +736,7 @@ export class WorldViewDecor {
         const x = cx + rng.range(-14, 14);
         const z = cz + rng.range(-14, 14);
         if (this.game.terrain.isWater(x, z) || this.game.isReserved(x, z)) continue;
-        if (!this.game.pathfinder.isWalkable(x, z)) continue;
+        if (!this.game.pathfinder.isWalkable(x, z) || this.treeless(x, z)) continue;
         // Tree obstacles cover a 3x3 cell block; keep 6.5 m between trunks so
         // every tree keeps a free stand point.
         if (trees.some((t) => distance2D(t.x, t.z, x, z) < 6.5)) continue;
@@ -756,7 +757,7 @@ export class WorldViewDecor {
         this.game.registerResourceObstacle(node.id, t.x, t.z, 'tree');
       }
     }
-    const n = Math.floor((s.mapSize * s.mapSize) / 1000);
+    const n = Math.floor(((s.mapSize * s.mapSize) / 1000) * (this.game.mapProfile.resources.scatter ?? 1));
     let placed = 0;
     let guard = 0;
     while (placed < n && guard++ < n * 4) {
@@ -837,7 +838,11 @@ export class WorldViewDecor {
       }
     }
     if (candidates.length === 0) return false;
-    const spot = rng.pick(candidates);
+    // A guaranteed supply serves the opening: pick among the shore cells closest to the player's base.
+    const layoutBase = this.game.missionLayout?.base;
+    const base = layoutBase ? { x: layoutBase.x * size, z: layoutBase.z * size } : this.game.playerCenter(0);
+    candidates.sort((a, b) => distance2D(a.x, a.z, base.x, base.z) - distance2D(b.x, b.z, base.x, base.z));
+    const spot = rng.pick(candidates.slice(0, 24));
     const node = new ResourceNode('fishing', spot.x, spot.z, rng.range(150, 220));
     node.pos.y = 0;
     this.game.attachResourceNode(node, this.game.mapProfile.baseMapType);
@@ -891,6 +896,17 @@ export class WorldViewDecor {
   }
 
   /** Geography-driven resource pick: profile weights, gated by height, beach, moisture and slope. */
+  /**
+   * Authored sites paint where woods grow: no trees on beaches, marsh or bare rock. Rendered and
+   * headless terrains share TerrainData, so the simulation stays identical.
+   */
+  treeless(x: number, z: number): boolean {
+    const painted = (this.game.terrain.data as TerrainData).getAuthoredGround(x, z);
+    if (!painted) return false;
+    const marsh = this.game.terrain.getHeight(x, z) < this.game.terrain.waterLevel + 0.9;
+    return marsh || painted[2]! > 0.45 || painted[3]! > 0.6;
+  }
+
   pickResourceKind(rng: RNG, x: number, z: number, h: number): ResourceNode['kind'] {
     const w = this.game.mapProfile.resources;
     const beach = this.game.terrain.isBeach(x, z);
@@ -898,9 +914,10 @@ export class WorldViewDecor {
     const mid = h > 3;
     const moist = this.game.terrain.getMoisture(x, z);
     const slope = this.game.terrain.getSlope(x, z);
+    const bare = this.treeless(x, z);
     const options: Array<[ResourceNode['kind'], number]> = [
       ['mine', w.mine * (high ? 2.5 : mid ? 1.5 : 0.5) * (0.6 + slope * 1.4)],
-      ['tree', w.tree * (high ? 0.3 : 1) * (0.4 + moist)],
+      ['tree', bare ? 0 : w.tree * (high ? 0.3 : 1) * (0.4 + moist)],
       ['well', w.well * (beach ? 0.05 : 0.8) * (0.6 + slope * 1.8) * (high ? 1.4 : 1)],
       ['berry', w.berry * (beach ? 1.2 : 0.7) * (0.5 + moist)],
     ];

@@ -99,17 +99,17 @@ test('the Caral scenario loads the authored sacred-city site', { tag: '@smoke' }
       resources,
       base: base ? { x: base.pos.x, z: base.pos.z } : null,
       // Act I starts at Áspero, on the shore west of the valley.
-      baseNearSea: base ? g.terrain.isWater(base.pos.x - 22, base.pos.z) : null,
+      baseNearSea: base ? g.terrain.isWater(base.pos.x - 30, base.pos.z) : null,
       baseWest: base ? base.pos.x : null,
       riverWest: g.terrain.isWater(4, 90),
-      cityDry: !g.terrain.isWater(100, 90),
-      upperDry: !g.terrain.isWater(100, 30),
-      lowerDry: !g.terrain.isWater(100, 152),
+      cityDry: !g.terrain.isWater(164, 90),
+      upperDry: !g.terrain.isWater(164, 30),
+      lowerDry: !g.terrain.isWater(164, 152),
     };
   });
   expect(state.siteId).toBe('caral_site');
-  expect(state.focusX).toBeCloseTo(0.52, 3);
-  expect(state.focusZ).toBeCloseTo(0.277, 3);
+  expect(state.focusX).toBeCloseTo(163.84 / 256, 3);
+  expect(state.focusZ).toBeCloseTo(53.184 / 256, 3);
   expect(state.modelName).toBe('caral_site');
   expect(state.modelScale).toBeCloseTo(0.25, 3);
   expect(state.hiddenSourceLayers).toBe(0);
@@ -121,14 +121,14 @@ test('the Caral scenario loads the authored sacred-city site', { tag: '@smoke' }
   for (const count of state.resources) expect(count).toBe(0);
   expect(state.base).not.toBeNull();
   expect(state.baseNearSea).toBe(true);
-  expect(state.baseWest).toBeLessThan(40);
+  expect(state.baseWest).toBeLessThan(50);
   expect(state.riverWest).toBe(true);
   expect(state.cityDry).toBe(true);
   expect(state.upperDry).toBe(true);
   expect(state.lowerDry).toBe(true);
   expect(state.landmarkX).toBe(0);
   expect(state.landmarkZ).toBe(0);
-  expect(state.anchorX).toBe(100);
+  expect(state.anchorX).toBe(164);
   expect(state.anchorZ).toBe(30);
   expect(errors).toEqual([]);
 });
@@ -188,21 +188,22 @@ test('the authored site blocks monument footprints without sealing the city', as
   const state = await page.evaluate((house) => {
     const g = (window as unknown as { game: any }).game;
     return {
-      mayor: g.pathfinder.isWalkable(100, 30),
-      anfiteatro: g.pathfinder.isWalkable(100, 152),
-      plaza: g.pathfinder.isWalkable(100, 53),
-      base: g.pathfinder.isWalkable(52, 161),
-      route: g.pathfinder.pathfind(52, 161, 100, 53).length,
-      buildOnMayor: g.canPlace(100, 30, 4),
-      buildInValley: g.canPlace(30, 120, 4),
-      buildInGap: g.canPlace(102, 136.5, 4),
+      mayor: g.pathfinder.isWalkable(164, 30),
+      anfiteatro: g.pathfinder.isWalkable(164, 152),
+      plaza: g.pathfinder.isWalkable(164, 53),
+      base: g.pathfinder.isWalkable(34, 172),
+      // From Áspero across a ford of the Supe to the city.
+      route: g.pathfinder.pathfind(34, 172, 164, 53).length,
+      buildOnMayor: g.canPlace(164, 30, 4),
+      buildInValley: g.canPlace(48, 120, 4),
+      buildInGap: g.canPlace(166, 136.5, 4),
       // The city in use: a quincha house of the architecture kit blocks its footprint.
       residentialWall: g.pathfinder.isWalkable(house.x, house.z),
-      openValley: g.pathfinder.isWalkable(30, 120),
-      baseBuildable: !!g.findFreeSpot(60.5, 161.3, 4),
+      openValley: g.pathfinder.isWalkable(48, 120),
+      baseBuildable: !!g.findFreeSpot(46, 165, 4),
       commandBlocked: (() => {
         const before = g.buildings.size;
-        const ok = g.executeCommand({ kind: 'place', building: 'house', x: 100, z: 30 });
+        const ok = g.executeCommand({ kind: 'place', building: 'house', x: 164, z: 30 });
         return { ok, before, after: g.buildings.size };
       })(),
     };
@@ -374,14 +375,14 @@ test('the authored site blocks every solid monument but keeps its plazas walkabl
       const p = g.pathfinder;
       const inside = (x: number, z: number) =>
         blockers.find((b: any) => Math.abs(x - b.x) <= b.w / 2 && Math.abs(z - b.z) <= b.d / 2);
-      const path = p.pathfind(75, 30, 125, 30);
-      const aimed = p.pathfind(75, 30, 100, 30);
+      const path = p.pathfind(139, 30, 189, 30);
+      const aimed = p.pathfind(139, 30, 164, 30);
       const aimedEnd = aimed[aimed.length - 1];
       return {
         navCell: p.grid.cell,
         monuments: blockers.filter((b: any) => !p.isWalkable(b.x, b.z)).length,
         path: path.map((pt: any) => ({ x: pt.x, z: pt.z })),
-        open: p.isWalkable(100, 100) && p.isWalkable(100, 53),
+        open: p.isWalkable(164, 100) && p.isWalkable(164, 53),
         altar: p.isWalkable(altar.x, altar.z),
         pathCrosses: path.filter((pt: any) => inside(pt.x, pt.z)).length,
         aimedInside: aimedEnd ? !!inside(aimedEnd.x, aimedEnd.z) : false,
@@ -463,7 +464,7 @@ test('a Caral Blender pyramid opens an educational field card', async ({ page })
   await page.evaluate(() => document.querySelector('#ed-tutorial')?.remove());
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    g.camera.moveTo(100, 34, true);
+    g.camera.moveTo(164, 34, true);
     g.camera.setHeight(48);
     g.camera.update(1, 0);
   });

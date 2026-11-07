@@ -155,7 +155,8 @@ export const TERRAIN_PALETTES: Record<TerrainPaletteId, TerrainPalette> = {
   },
   caral: {
     materials: {
-      grass: '#f8e8b0',
+      // The Supe valley in use: green floodplain and fields (art-direction §4, riparian #4d5a34).
+      grass: '#b4cc86',
       dirt: '#f0e0c8',
       sand: '#fff0d8',
       rock: '#e8d8c8',

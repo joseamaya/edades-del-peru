@@ -57,7 +57,8 @@ describe('campaign authored geography', () => {
     const caral = MISSIONS.find((m) => m.id === 'm1_caral')!;
     expect(caral.layout?.setpiece).toBeUndefined();
     expect(caral.layout?.site?.id).toBe('caral_site');
-    expect(caral.layout?.terrain?.river).toBeDefined();
+    // The authored transect heightfield carves the sea, the Supe and its mouth.
+    expect(caral.map.size).toBe(256);
     expect(caral.layout?.site?.buildKeepout?.length).toBe(4);
     const base = caral.layout!.base!;
     for (const rect of caral.layout!.site!.buildKeepout!) {

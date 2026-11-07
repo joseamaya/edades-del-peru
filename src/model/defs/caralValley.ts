@@ -18,13 +18,18 @@ export interface CaralValleyPlan {
 /** Narrow dirt paths, visually distinct from the settlement's wider roads. */
 export const CARAL_VALLEY_PATH_WIDTH = 0.65;
 
+/**
+ * Plots on the west-bank floodplain of the Supe transect map (scripts/build_caral_heightmap.py), around
+ * the communal canal: cotton, gourds, squash and beans in the lower valley.
+ */
 const FIELD_ANCHORS: ReadonlyArray<readonly [number, number]> = [
-  [15, 118],
-  [23, 127],
-  [14, 141],
-  [27, 150],
-  [19, 160],
-  [34, 155],
+  [46, 104],
+  [54, 96],
+  [44, 128],
+  [56, 136],
+  [42, 146],
+  [58, 112],
+  [48, 88],
 ];
 const VALLEY_FIELD_SIZE_MIN = 3.4;
 const VALLEY_FIELD_SIZE_MAX = 4.6;
@@ -32,35 +37,27 @@ const VALLEY_FIELD_SLOPE_LIMIT = 0.32;
 const VALLEY_FIELD_CLEARANCE = 4.2;
 export const VALLEY_FIELD_MARGIN = 0.7;
 
-const REED_ANCHORS: ReadonlyArray<readonly [number, number]> = [
-  [9.5, 70],
-  [11, 82],
-  [10, 94],
-  [12, 106],
-  [9.5, 118],
-  [13, 130],
-  [10, 142],
-  [14, 154],
-  [11, 166],
-  [15, 178],
-  [17, 90],
-  [19, 116],
-  [18, 146],
-  [21, 162],
-  [16, 130],
-  [20, 174],
-  [12, 62],
-  [14, 74],
-  [13, 98],
-  [15, 122],
-  [12.5, 136],
-  [16, 150],
-  [12.5, 158],
-  [16, 170],
-  [18, 66],
-  [20, 102],
-  [19, 126],
-  [21, 150],
+/** Centreline of the Supe's north-south reach in the transect map (mirrors the heightmap generator). */
+function supeX(z: number): number {
+  return 70 + 3 * Math.sin(z * 0.06 + 0.4);
+}
+
+/** Canes along both banks of the Supe, then totora across the wetlands at its mouth. */
+const BANK_ANCHORS: ReadonlyArray<readonly [number, number]> = Array.from({ length: 14 }, (_, i) => {
+  const z = 30 + i * 12;
+  return [
+    [supeX(z) - 6.5, z],
+    [supeX(z + 6) + 6.5, z + 6],
+  ] as const;
+}).flat();
+const WETLAND_ANCHORS: ReadonlyArray<readonly [number, number]> = Array.from({ length: 24 }, (_, i) => {
+  const col = i % 6;
+  const row = Math.floor(i / 6);
+  return [22 + col * 6 + (row % 2) * 3, 198 + row * 7] as const;
+});
+const REED_ANCHORS: ReadonlyArray<readonly [number, number, 'bank' | 'wetland']> = [
+  ...BANK_ANCHORS.map(([x, z]) => [x, z, 'bank'] as const),
+  ...WETLAND_ANCHORS.map(([x, z]) => [x, z, 'wetland'] as const),
 ];
 const VALLEY_PROP_CLEARANCE = 1.8;
 const VALLEY_PROP_SLOPE_LIMIT = 0.35;
@@ -117,7 +114,7 @@ export function planCaralValleyProps(
 ): PropPlacement[] {
   const rng = new RNG((seed * 2246822519 + 23) >>> 0);
   const out: PropPlacement[] = [];
-  for (const [ax, az] of REED_ANCHORS) {
+  for (const [ax, az, zone] of REED_ANCHORS) {
     for (let attempt = 0; attempt < 10; attempt++) {
       const x = ax + rng.range(-2, 2);
       const z = az + rng.range(-2, 2);
@@ -127,7 +124,7 @@ export function planCaralValleyProps(
       if (Math.hypot(x - base.x, z - base.z) < 8) continue;
       if (q.isReserved(x, z)) continue;
       if (out.some((p) => Math.hypot(p.x - x, p.z - z) < VALLEY_PROP_CLEARANCE)) continue;
-      const reed = rng.chance(0.72);
+      const reed = zone === 'wetland' || rng.chance(0.4);
       // Riverbank canes instead of generic shrubs; the species alternates by position so the
       // random stream (and every placement) stays as before.
       const cane = (Math.floor(x + z) & 1) === 0 ? 'cana_brava' : 'carrizo';

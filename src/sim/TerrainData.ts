@@ -2,7 +2,7 @@ import { generateHeightField, CANAL_WIDTH_CELLS } from './heightField';
 import { terrainSlope } from '../util/math';
 import type { HistoricalMapProfile } from '../model/defs/profiles';
 import type { TerrainLayout } from '../model/defs/terrainLayout';
-import { sampleAuthoredHeight, type AuthoredHeightField } from '../model/defs/authoredTerrain';
+import { sampleAuthoredGround, sampleAuthoredHeight, type AuthoredHeightField } from '../model/defs/authoredTerrain';
 import type { AuthoredSiteDef, SiteTerrainStyle } from '../model/defs/sites';
 
 function authoredHeightField(
@@ -47,6 +47,7 @@ export class TerrainData {
   readonly canalPaths: { x: number; z: number }[][];
   readonly canalWidth: number;
   readonly waterLevel: number;
+  private readonly authored: AuthoredHeightField | null;
 
   constructor(
     size: number,
@@ -60,6 +61,7 @@ export class TerrainData {
     this.resolution = resolution;
     const authored = site?.heightField;
     const style = site?.terrain;
+    this.authored = authored && style ? authored : null;
     const field =
       authored && style
         ? authoredHeightField(resolution, size, profile, authored, style)
@@ -95,6 +97,11 @@ export class TerrainData {
     const a = h00 + (h10 - h00) * fx;
     const b = h01 + (h11 - h01) * fx;
     return a + (b - a) * fz;
+  }
+
+  /** Painted ground weights of an authored site (grass, dirt, sand, rock), or null for procedural maps. */
+  getAuthoredGround(wx: number, wz: number): [number, number, number, number] | null {
+    return this.authored ? sampleAuthoredGround(this.authored, wx, wz) : null;
   }
 
   getHeight(wx: number, wz: number): number {

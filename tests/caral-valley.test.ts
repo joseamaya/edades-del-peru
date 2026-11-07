@@ -7,7 +7,9 @@ import {
   type CaralValleyPlan,
 } from '../src/model/defs/caralValley';
 
-const BASE = { x: 60, z: 160 };
+const BASE = { x: 42, z: 172 };
+/** The Supe's north-south reach in the transect map. */
+const supe = (x: number) => x >= 66 && x <= 74;
 
 function valleyQuery(overrides: Partial<CaralValleyQuery> = {}): CaralValleyQuery {
   return {
@@ -53,10 +55,10 @@ describe('Caral valley plan', () => {
   });
 
   it('places deterministic riverside reeds and shrubs away from the plots', () => {
-    const river = valleyQuery({ isWater: (x) => x < 12 });
+    const river = valleyQuery({ isWater: supe });
     const plan = planCaralValley(7, BASE, river);
     const reserved = valleyQuery({
-      isWater: (x) => x < 12,
+      isWater: supe,
       isReserved: (x, z) => plan.fields.some((f) => Math.hypot(f.x - x, f.z - z) < f.size / 2),
     });
     const props = planCaralValleyProps(7, BASE, reserved);
@@ -70,7 +72,7 @@ describe('Caral valley plan', () => {
   });
 
   it('places deterministic riparian deer groups and bird flocks near water, clear of the base', () => {
-    const river = valleyQuery({ isWater: (x) => x < 12 });
+    const river = valleyQuery({ isWater: supe });
     const fauna = planCaralValleyFauna(7, BASE, river);
     expect(planCaralValleyFauna(7, BASE, river)).toEqual(fauna);
     const deer = fauna.filter((f) => f.id === 'deer');

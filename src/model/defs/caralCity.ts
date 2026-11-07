@@ -1,4 +1,4 @@
-import { CARAL_CIRCULAR_ALTAR, CARAL_HERITAGE_PROXIES, type SiteBlocker } from './sites';
+import { CARAL_CIRCULAR_ALTAR, CARAL_CITY_OFFSET_X, CARAL_HERITAGE_PROXIES, type SiteBlocker } from './sites';
 
 /**
  * The Sacred City of Caral in use (c. 2600–2000 BC), assembled from the Blender architecture kit
@@ -42,6 +42,18 @@ export interface CaralArchPlacement {
   mayor?: boolean;
   /** Raise the model above the ground it sits on (model units, before scaling). */
   lift?: number;
+  /**
+   * First Pyramid Mayor phase in which this piece stands. m1 opens with an empty terrace and the city
+   * grows with the Mayor through act III; omitted means it stands from the start.
+   */
+  since?: CaralMayorPhase;
+}
+
+const PHASE_ORDER: readonly CaralMayorPhase[] = ['foundation', 'fill', 'finished', 'in_use'];
+
+/** Whether a placement stands while the Pyramid Mayor is in `phase`. */
+export function standsAt(p: CaralArchPlacement, phase: CaralMayorPhase): boolean {
+  return !p.since || PHASE_ORDER.indexOf(phase) >= PHASE_ORDER.indexOf(p.since);
 }
 
 /**
@@ -75,6 +87,7 @@ function smallPyramid(id: string, rotY: number): CaralArchPlacement {
   const d = quarter ? p.w : p.d;
   return {
     asset: 'pyramid_small',
+    since: 'finished',
     x: p.x,
     z: p.z,
     rotY,
@@ -121,6 +134,7 @@ export const CARAL_CITY_LAYOUT: readonly CaralArchPlacement[] = [
     rotY: 0,
     scale: [1, 1, 1],
     lift: PLAZA_FLOOR_DEPTH,
+    since: 'fill',
   },
   smallPyramid('caral_pyramid_central', HALF_PI),
   smallPyramid('caral_pyramid_quarry', 0),
@@ -130,6 +144,7 @@ export const CARAL_CITY_LAYOUT: readonly CaralArchPlacement[] = [
   // Templo del Anfiteatro: a temple platform behind the largest sunken circular plaza (layout assumed).
   {
     asset: 'pyramid_small',
+    since: 'in_use',
     x: amphitheatre.x,
     z: amphitheatre.z + 6,
     rotY: Math.PI,
@@ -137,6 +152,7 @@ export const CARAL_CITY_LAYOUT: readonly CaralArchPlacement[] = [
   },
   {
     asset: 'circular_plaza',
+    since: 'in_use',
     x: amphitheatre.x,
     z: amphitheatre.z - 10,
     rotY: 0,
@@ -146,13 +162,28 @@ export const CARAL_CITY_LAYOUT: readonly CaralArchPlacement[] = [
   // Pirámide del Altar Redondo (Caral Bajo), on the site's circular-altar footprint.
   {
     asset: 'pyramid_small',
+    since: 'in_use',
     x: CARAL_CIRCULAR_ALTAR.x,
     z: CARAL_CIRCULAR_ALTAR.z,
     rotY: 0,
     scale: [CARAL_CIRCULAR_ALTAR.w / SMALL_PYRAMID_SIZE.w, 0.55, CARAL_CIRCULAR_ALTAR.d / SMALL_PYRAMID_SIZE.d],
   },
-  ...ELITE_HOUSES.map(([x, z, rotY]): CaralArchPlacement => ({ asset: 'house_elite', x, z, rotY, scale: [1, 1, 1] })),
-  ...COMMON_HOUSES.map(([x, z, rotY]): CaralArchPlacement => ({ asset: 'house_common', x, z, rotY, scale: [1, 1, 1] })),
+  ...ELITE_HOUSES.map(([x, z, rotY]): CaralArchPlacement => ({
+    asset: 'house_elite',
+    since: 'finished',
+    x: x + CARAL_CITY_OFFSET_X,
+    z,
+    rotY,
+    scale: [1, 1, 1],
+  })),
+  ...COMMON_HOUSES.map(([x, z, rotY]): CaralArchPlacement => ({
+    asset: 'house_common',
+    since: 'fill',
+    x: x + CARAL_CITY_OFFSET_X,
+    z,
+    rotY,
+    scale: [1, 1, 1],
+  })),
 ];
 
 /** Footprints of the kit houses (walls plus platform), so units walk around them. */

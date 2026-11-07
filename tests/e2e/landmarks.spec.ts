@@ -79,9 +79,9 @@ test('the Caral mission uses the authored site instead of a modular landmark', a
   expect(state.model).toBe('caral_site');
   expect(state.modular).toBe('caral_pyramid_mayor');
   expect(state.pad).toBeNull();
-  expect(state.anchor).toEqual({ x: 100, z: 30 });
-  expect(state.center?.x).toBeCloseTo(0.52 * 192, 5);
-  expect(state.center?.z).toBeCloseTo(0.277 * 192, 5);
+  expect(state.anchor).toEqual({ x: 164, z: 30 });
+  expect(state.center?.x).toBeCloseTo(163.84, 5);
+  expect(state.center?.z).toBeCloseTo(53.184, 5);
   expect(state.setpiece).toBe(false);
   await page.evaluate(() => (window as unknown as { game: { destroy(): void } }).game.destroy());
 });

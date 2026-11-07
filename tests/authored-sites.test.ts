@@ -15,8 +15,10 @@ describe('authored campaign sites', () => {
   it('keeps Caral on its source-backed transform, terrain and collision data', () => {
     const caral = getAuthoredSite('caral_site')!;
     expect(caral.scale).toBe(0.25);
-    expect(caral.anchor).toEqual({ x: 100, z: 30 });
-    expect(caral.heightField?.worldSize).toBe(192);
+    // The city sits on the east of the 256 m Supe transect (former 192 m layout shifted 64 m east).
+    expect(caral.anchor).toEqual({ x: 164, z: 30 });
+    expect(caral.heightField?.worldSize).toBe(256);
+    expect(caral.heightField?.ground?.size).toBe(128);
     expect(caral.heritageProxies.map((p) => p.id)).toContain('caral_pyramid_mayor');
     expect(caral.buildKeepout.length).toBe(4);
     // The city in use (architecture kit) blocks through its own house footprints, not the hidden ruins.

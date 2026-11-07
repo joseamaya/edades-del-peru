@@ -486,6 +486,8 @@ export class Game {
       this.mapProfile.water.level,
       this.mapProfile.water.inland,
     );
+    const waterPalette = this.siteDef?.terrain?.water;
+    if (waterPalette) this.water.setPalette(waterPalette);
     this.world.applyAtmosphere();
     this.postfx.setColorGrade(resolveColorGrade(s.period, this.mapProfile));
     this.syncWaterRefractionSize();

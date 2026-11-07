@@ -1,6 +1,6 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../core/types';
 import { MissionDef } from '../types';
-import { CARAL_SITE_BUILD_KEEPOUT } from '../../model/defs/sites';
+import { CARAL_MAP_SIZE, CARAL_SITE_BUILD_KEEPOUT, caralKeepout } from '../../model/defs/sites';
 
 const WARI_NODE_A = { ref: 'site' as const, dx: 40, dz: -32 };
 const WARI_NODE_B = { ref: 'site' as const, dx: 38, dz: 34 };
@@ -23,39 +23,31 @@ export const MISSIONS: MissionDef[] = [
     narrator: 'Voz del valle',
     playerCiv: CivId.CARAL,
     enemyCiv: CivId.CARAL,
-    map: { seed: 3000, type: 'coast', size: 192 },
+    // A compressed west-to-east transect of the Supe valley (scripts/build_caral_heightmap.py).
+    map: { seed: 3000, type: 'coast', size: CARAL_MAP_SIZE },
     atmosphere: { fogDensity: 0.0032, sunWarmth: 0.9, skyTint: '#cdd3d2' },
     layout: {
-      // Act I starts at Áspero, on the shore near the river mouth.
-      base: { x: 0.13, z: 0.86 },
+      // Act I starts at Áspero, on its low coastal rise north of the river mouth.
+      base: { x: 42 / CARAL_MAP_SIZE, z: 172 / CARAL_MAP_SIZE },
       site: {
         id: 'caral_site',
         y: 8,
-        focus: { x: 0.52, z: 0.277 },
-        keepout: [{ x: 0.52, z: 0.45, rx: 0.27, rz: 0.43 }],
+        focus: { x: 163.84 / CARAL_MAP_SIZE, z: 53.184 / CARAL_MAP_SIZE },
+        keepout: [caralKeepout({ x: 0.52, z: 0.45, rx: 0.27, rz: 0.43 })],
         buildKeepout: [...CARAL_SITE_BUILD_KEEPOUT],
         // The Pyramid Mayor starts as its earliest platform; act III builds the later phases.
         mayorPhase: 'foundation',
       },
       canal: {
         name: 'Canal comunal del valle',
-        x: 0.2,
-        z: 0.68,
+        // On the river's west bank, where the lower valley opens to fields.
+        x: 52 / CARAL_MAP_SIZE,
+        z: 120 / CARAL_MAP_SIZE,
         length: 18,
         yaw: 0.15,
         initiallyOpen: false,
         irrigation: true,
         heritageId: 'caral_canal',
-      },
-      terrain: {
-        river: {
-          z: 0.55,
-          width: 0.04,
-          valleyWidth: 0.16,
-          amplitude: 0.012,
-          phase: 0.7,
-          fords: [{ x: 0.5, width: 0.08 }],
-        },
       },
     },
     mapOverrides: {
@@ -63,7 +55,9 @@ export const MISSIONS: MissionDef[] = [
       climate: { aridity: 0.78, moisture: 0.34 },
       vegetation: { density: 0.06 },
       // Caral has no documented silver extraction or coastal vicuña herds.
-      resources: { tree: 0.35, mine: 0, hunt: 0 },
+      // The 256 m transect keeps the former tree count: groves on the floodplain, none on beach or marsh.
+      // and the scattered quarries and berry patches stay at the former 192 m map's count.
+      resources: { tree: 0.12, mine: 0, hunt: 0, scatter: 0.56 },
       culturalLandscape: null,
       groundTint: '#b7ab96',
     },
@@ -86,7 +80,7 @@ export const MISSIONS: MissionDef[] = [
       {
         id: 'a1_valle',
         kind: 'reach',
-        pos: { ref: 'canal', dx: 20, dz: -20 },
+        pos: { ref: 'canal', dx: 36, dz: -10 },
         radius: 12,
         hidden: true,
         title: 'Acto I · Remonta el río Supe hasta el valle',
@@ -202,7 +196,7 @@ export const MISSIONS: MissionDef[] = [
       {
         id: 'a4_partida',
         kind: 'hold',
-        pos: { ref: 'player', dx: -4, dz: -40 },
+        pos: { ref: 'player', dx: -18, dz: -12 },
         radius: 12,
         time: 15,
         unitKind: UnitKind.WORKER,

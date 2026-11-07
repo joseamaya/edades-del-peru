@@ -84,8 +84,8 @@ separate missions.
 
 ## Geography
 
-The 192-unit map is a compressed **west-to-east transect** of the valley. The real 23 km are not to scale;
-what matters is the readable sequence:
+The 256-unit map (`scripts/build_caral_heightmap.py`) is a compressed **west-to-east transect** of the
+valley. The real 23 km are not to scale; what matters is the readable sequence:
 
 ```text
 sea | beach + Áspero + wetlands (totora) + lomas | lower valley (El Molino)
@@ -98,6 +98,13 @@ sea | beach + Áspero + wetlands (totora) + lomas | lower valley (El Molino)
   wetlands. Remove palms from this map.
 - Fauna (ambient): deer, rodents, birds in the riparian forest; sea birds on the coast.
 - Lomas turn green in the foggy winter season.
+
+As built: the sea and a curving beach run along the west edge; Áspero sits on a low dry rise north of the
+river mouth; the Supe runs south past the city's west flank, then turns west through totora wetlands into
+the sea; two gravel fords cross it; the Sacred City keeps its former layout on the desert terrace, shifted
+64 m east (`CARAL_CITY_OFFSET_X`); dry foothills frame the north, east and south, with coastal lomas south
+of the mouth. Ground zones (beach, marsh, floodplain, terrace desert, rock) are painted by the same script
+(`CARAL_GROUND`), and trees only grow where that paint allows.
 
 ## Living city
 
