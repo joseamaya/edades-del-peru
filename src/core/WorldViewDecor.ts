@@ -12,6 +12,9 @@ import { CaralCity } from '../rendering/architectureKit';
 import {
   ASPERO_BLOCKERS,
   ASPERO_LAYOUT,
+  CARAL_FAIR_TENTS,
+  SUPE_HAMLETS,
+  SUPE_HAMLET_BLOCKERS,
   CARAL_CITY_BLOCKERS,
   CARAL_CITY_LAYOUT,
   standsAt,
@@ -37,6 +40,7 @@ import { planSettlementDressing } from '../model/defs/settlementDressing';
 import {
   CARAL_VALLEY_PATH_WIDTH,
   planCaralValley,
+  planCaralCoastFauna,
   planCaralValleyFauna,
   planCaralValleyProps,
   type CaralValleyPlan,
@@ -224,7 +228,7 @@ export class WorldViewDecor {
     let cityShown = false;
     if (def.id === 'caral_site') {
       // The in-use city's houses are part of the simulation (headless too), independent of the kit load.
-      for (const blocker of [...CARAL_CITY_BLOCKERS, ...ASPERO_BLOCKERS]) {
+      for (const blocker of [...CARAL_CITY_BLOCKERS, ...ASPERO_BLOCKERS, ...SUPE_HAMLET_BLOCKERS]) {
         this.addSiteBlocker(blocker, def.blockerPadding * 2);
       }
       if (!this.game.headless) {
@@ -232,7 +236,7 @@ export class WorldViewDecor {
         // the kit is ready and then only keeps its (hidden, still clickable) heritage nodes.
         // Áspero (act I) is baked with the city: they share the kit's materials, so it adds no draw calls.
         const city = new CaralCity(
-          [...CARAL_CITY_LAYOUT, ...ASPERO_LAYOUT],
+          [...CARAL_CITY_LAYOUT, ...CARAL_FAIR_TENTS, ...ASPERO_LAYOUT, ...SUPE_HAMLETS],
           (x, z) => this.game.terrain.getHeight(x, z) - (site.y ?? 0),
         );
         city.setMayorPhase(this.game.sitePhase);
@@ -936,7 +940,11 @@ export class WorldViewDecor {
         isReserved: (x, z) =>
           valley.isReserved(x, z) || trees.some((t) => Math.hypot(t.pos.x - x, t.pos.z - z) < FAUNA_TREE_CLEARANCE),
       };
-      fauna = [...planCaralValleyFauna(this.game.settings.mapSeed, base, faunaQuery), ...fauna];
+      fauna = [
+        ...planCaralValleyFauna(this.game.settings.mapSeed, base, faunaQuery),
+        ...planCaralCoastFauna(this.game.settings.mapSeed),
+        ...fauna,
+      ];
     }
     this.game.props.place(placements, heightAt);
     this.game.wildlife.spawn(fauna, heightAt);

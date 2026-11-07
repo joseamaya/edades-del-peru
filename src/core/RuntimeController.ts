@@ -819,6 +819,7 @@ export class RuntimeController {
     this.rebuildSpatial();
 
     this.game.updateDrought(d);
+    this.game.updateCityLife(d);
     // units
     for (const u of this.game.units.values()) {
       if (u.dead) continue;

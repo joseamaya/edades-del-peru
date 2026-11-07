@@ -193,6 +193,13 @@ export class CaralCity {
     return true;
   }
 
+  /** Dwellings standing in the current phase (cooking smoke rises behind them). */
+  standingHouses(): { x: number; z: number }[] {
+    return this.placements
+      .filter((p) => p.asset.startsWith('house_') && standsAt(p, this.phase))
+      .map((p) => ({ x: p.x, z: p.z }));
+  }
+
   get mayorPhase(): CaralMayorPhase {
     return this.phase;
   }

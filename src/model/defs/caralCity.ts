@@ -230,3 +230,41 @@ export const ASPERO_BLOCKERS: readonly SiteBlocker[] = ASPERO_LAYOUT.flatMap((p)
   const quarter = Math.abs(Math.sin(p.rotY)) > 0.5;
   return [{ x: p.x, z: p.z, w: quarter ? 4.4 : 5.4, d: quarter ? 5.4 : 4.4 }];
 });
+
+/**
+ * Temporary fair tents in the open ground between the Pyramid Mayor and the residences, raised once the
+ * city is in use. Shady documents postholes of temporary tents in the open plazas, for fairs with
+ * pilgrims and traders; their frame and cover are assumed (see the architecture kit).
+ */
+export const CARAL_FAIR_TENTS: readonly CaralArchPlacement[] = (
+  [
+    [150, 84, 0.2],
+    [157, 88, -0.1],
+    [171, 86, 0.15],
+    [178, 90, -0.2],
+    [164, 92, 0],
+  ] as const
+).map(([x, z, rotY]) => ({ asset: 'fair_tent', x, z, rotY, scale: [1, 1, 1], since: 'in_use' }));
+
+/**
+ * Neighbouring settlements of the Supe valley (the dossier names several, e.g. Chupacigarro and Miraya),
+ * drawn as small allied hamlets of quincha houses. Positions are a game abstraction.
+ */
+export const SUPE_HAMLETS: readonly CaralArchPlacement[] = (
+  [
+    [36, 30, 0.3],
+    [42, 24, -0.2],
+    [30, 22, 1.4],
+    [90, 18, 0.1],
+    [97, 24, -1.3],
+    [84, 26, 0.6],
+  ] as const
+).map(([x, z, rotY]) => ({ asset: 'house_common', x, z, rotY, scale: [1, 1, 1] }));
+
+/** Footprints of the hamlet houses (same as the city's common houses). */
+export const SUPE_HAMLET_BLOCKERS: readonly SiteBlocker[] = SUPE_HAMLETS.map((p) => ({
+  x: p.x,
+  z: p.z,
+  w: 5.4,
+  d: 4.4,
+}));

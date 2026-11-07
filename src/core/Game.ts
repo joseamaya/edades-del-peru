@@ -986,6 +986,70 @@ export class Game {
     }
   }
 
+  private lifeTimer = 0;
+  private lifeTurn = 0;
+
+  /**
+   * The city in use (presentation only): cooking smoke behind the dwellings near the camera, the sacred
+   * fire on the Pyramid Mayor once it is in use, and a large blaze while the community gathers for the
+   * act III fire offering. Cooking pits and sacred-fire altars are documented in the dossier.
+   */
+  updateCityLife(dt: number): void {
+    const city = this.caralCity;
+    if (!city || this.headless) return;
+    this.lifeTimer += dt;
+    if (this.lifeTimer < 0.35) return;
+    this.lifeTimer = 0;
+    this.lifeTurn++;
+    const focus = this.camera.getTarget();
+    const near = city
+      .standingHouses()
+      .filter((h) => Math.hypot(h.x - focus.x, h.z - focus.z) < 70)
+      .slice(0, 24);
+    if (near.length) {
+      const house = near[this.lifeTurn % near.length]!;
+      this.particles.emit({
+        x: house.x + 1.6,
+        y: this.terrain.getHeight(house.x, house.z) + 1.2,
+        z: house.z + 2.4,
+        count: 2,
+        color: 0x8a847a,
+        kind: 'smoke',
+        speed: 0.7,
+        life: 3.2,
+        size: 1.6,
+        grow: 1.6,
+      });
+    }
+    const mayor = this.siteDef?.anchor;
+    if (!mayor) return;
+    const offering = this.mission?.getObjectiveState('a3_fuego') === 'activo';
+    if (this.sitePhase === 'in_use' || offering) {
+      const top = offering
+        ? { x: mayor.x, y: this.terrain.getHeight(mayor.x, mayor.z + 32) + 0.4, z: mayor.z + 32 }
+        : { x: mayor.x, y: this.terrain.getHeight(mayor.x, mayor.z) + 16.6, z: mayor.z };
+      this.particles.emit({
+        ...top,
+        count: offering ? 6 : 2,
+        color: 0xff8a2a,
+        kind: 'fire',
+        speed: 0.9,
+        life: 0.9,
+        size: offering ? 1.8 : 1,
+      });
+      this.particles.emit({
+        ...top,
+        count: 1,
+        color: 0x6e6860,
+        kind: 'smoke',
+        speed: 1.1,
+        life: 3,
+        size: 1.8,
+        grow: 1.4,
+      });
+    }
+  }
+
   updateDrought(dt: number): void {
     if (this.droughtLevel >= this.droughtTarget) return;
     this.droughtLevel = Math.min(this.droughtTarget, this.droughtLevel + dt / DROUGHT_SECONDS);

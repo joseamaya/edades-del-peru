@@ -223,6 +223,25 @@ export function planCaralValleyFauna(
   return out;
 }
 
+/** Pelicans working the sea off Áspero (the anchoveta shoals that fed the fishing village). */
+export function planCaralCoastFauna(seed: number): WildlifeSpawn[] {
+  const rng = new RNG((seed * 2246822519 + 71) >>> 0);
+  const out: WildlifeSpawn[] = [];
+  for (const [px, pz] of PELICAN_ROOSTS) {
+    for (let m = 0; m < PELICANS_PER_FLOCK; m++) {
+      out.push({ id: 'pelican', x: px, z: pz, rotY: rng.range(0, Math.PI * 2), scale: rng.range(0.9, 1.1) });
+    }
+  }
+  return out;
+}
+
+/** Two pelican flocks over the sea west of Áspero (transect map of scripts/build_caral_heightmap.py). */
+const PELICAN_ROOSTS: ReadonlyArray<readonly [number, number]> = [
+  [8, 160],
+  [6, 196],
+];
+const PELICANS_PER_FLOCK = 3;
+
 function ringHasWater(x: number, z: number, radius: number, q: CaralValleyQuery): boolean {
   for (let i = 0; i < 12; i++) {
     const a = (i / 12) * Math.PI * 2;
