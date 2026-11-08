@@ -99,11 +99,18 @@ describe('Chavín model mission', () => {
     expect(game.acts).toHaveLength(3);
     expect(game.sitePhase).toBe('apogee');
 
-    // Act IV: the last offering and the farewell.
+    // Act IV: walk the ceremonial centre's record.
     tick(2);
-    deliver(mission, game, 'chavin_edificio_b', 'silver', 4);
+    for (const id of [
+      'chavin_plaza_circular',
+      'chavin_edificio_b',
+      'chavin_edificio_a',
+      'chavin_portada',
+      'chavin_galeria',
+    ]) {
+      game.visited.add(id);
+    }
     tick(2);
-    tick(31);
     expect(won).toBe(true);
   });
 

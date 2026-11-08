@@ -227,6 +227,21 @@ export class WorldViewDecor {
     const current = (): boolean => token === this.game.landmarkLoadToken && this.game.landmark === group;
     let siteModel: THREE.Object3D | null = null;
     let cityShown = false;
+    const attachCity = (city: ArchitectureCity, assign: () => void): void => {
+      city.setPhase(this.game.sitePhase);
+      assign();
+      void city.load().then((ok) => {
+        if (!current()) {
+          city.dispose();
+          return;
+        }
+        if (!ok) return;
+        group.add(city.group);
+        applyFowToObject(city.group, this.game.fowUniforms);
+        cityShown = true;
+        if (siteModel) siteModel.visible = false;
+      });
+    };
     if (def.id === 'caral_site') {
       // The in-use city's houses are part of the simulation (headless too), independent of the kit load.
       for (const blocker of [...CARAL_CITY_BLOCKERS, ...ASPERO_BLOCKERS, ...SUPE_HAMLET_BLOCKERS]) {
@@ -240,19 +255,7 @@ export class WorldViewDecor {
           [...CARAL_CITY_LAYOUT, ...CARAL_FAIR_TENTS, ...ASPERO_LAYOUT, ...SUPE_HAMLETS],
           (x, z) => this.game.terrain.getHeight(x, z) - (site.y ?? 0),
         );
-        city.setMayorPhase(this.game.sitePhase);
-        this.game.caralCity = city;
-        void city.load().then((ok) => {
-          if (!current()) {
-            city.dispose();
-            return;
-          }
-          if (!ok) return;
-          group.add(city.group);
-          applyFowToObject(city.group, this.game.fowUniforms);
-          cityShown = true;
-          if (siteModel) siteModel.visible = false;
-        });
+        attachCity(city, () => (this.game.caralCity = city));
       }
     }
     if (def.id === 'chavin_site') {
@@ -266,19 +269,7 @@ export class WorldViewDecor {
           (x, z) => this.game.terrain.getHeight(x, z) - (site.y ?? 0),
           CHAVIN_PHASE_PLAN,
         );
-        city.setPhase(this.game.sitePhase);
-        this.game.chavinCity = city;
-        void city.load().then((ok) => {
-          if (!current()) {
-            city.dispose();
-            return;
-          }
-          if (!ok) return;
-          group.add(city.group);
-          applyFowToObject(city.group, this.game.fowUniforms);
-          cityShown = true;
-          if (siteModel) siteModel.visible = false;
-        });
+        attachCity(city, () => (this.game.chavinCity = city));
       }
     }
     void loadSiteModel(def.id)

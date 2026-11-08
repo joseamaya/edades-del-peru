@@ -7,7 +7,7 @@ import { launchChromium, withViteServer } from './lib.mjs';
  * Capture the Chavín intro, chapter-card and epilogue images from the game itself (an in-engine
  * recreation, never a historical photograph): the Mosna valley, the Old Temple, the pilgrimage, the
  * New Temple and the final decline. Staged through the debug harness, rendered without the HUD at
- * 1600x900 and stored as 960x540 WebP in public/media/chavin/.
+ * 1600x900 and stored as 800x450 WebP in public/media/chavin/.
  *
  * Usage: node scripts/capture_chavin_intro.mjs
  */
@@ -63,8 +63,8 @@ try {
     const png = path.join(OUT, `${shot.id}.png`);
     await page.screenshot({ path: png });
     await sharp(png)
-      .resize(960, 540, { fit: 'cover' })
-      .webp({ quality: 60 })
+      .resize(800, 450, { fit: 'cover' })
+      .webp({ quality: 35 })
       .toFile(path.join(OUT, `${shot.id}.webp`));
     fs.unlinkSync(png);
     console.log(`captured ${shot.id}`);

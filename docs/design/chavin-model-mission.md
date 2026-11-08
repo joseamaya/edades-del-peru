@@ -24,7 +24,7 @@ Target length: 30–40 minutes. Four acts inside one `MissionDef` (`src/campaign
 | I   | c. 900 a.C.  | The oracle receives pilgrims and gifts   | Reach the site; hand over the first offerings | `old_temple_foundation`       |
 | II  | Generations  | The Old Temple and the Lanzón gallery    | Hand over stone; hold the plaza; build fair   | `old_temple`                  |
 | III | c. 500 a.C.  | The New Temple and long-distance exchange | Expand Edificio A; research; great pilgrimage | `new_temple_foundation` → `new_temple` |
-| IV  | c. 500–200 a.C. | Influence fragments; documented decline | Last offering and farewell                    | `apogee`                      |
+| IV  | c. 500–200 a.C. | Influence fragments; documented decline | Tour the centre and its record                | `apogee`                      |
 
 - Act objectives start `hidden: true` except Act I and are revealed by triggers.
 - Chapter cards (`act` effect) open between acts and pause the mission clock.
@@ -74,7 +74,7 @@ building exists. The hidden source GLB keeps the click proxies; the kit draws th
 
 ## Tutorial
 
-Nine non-blocking steps: select, site, offering, farm, Old Temple, pilgrimage, fair, New Temple, farewell.
+Nine non-blocking steps: select, site, offering, farm, Old Temple, pilgrimage, fair, New Temple, record.
 They advance on what the player does and never repeat the briefing.
 
 ## Art and provenance
@@ -90,7 +90,7 @@ They advance on what the player does and never repeat the briefing.
 
 - `scripts/bench_scene.mjs` includes the Chavín opening and late (apogee) views; `yarn bench:check`
   asserts both.
-- Measured: opening ~372k triangles / 176 calls; late ~507k / 275 calls, within the 600k target.
+- Measured: opening ~372k triangles / 176 calls; late ~507k / 277 calls, within the 600k target.
 
 ## Open items
 

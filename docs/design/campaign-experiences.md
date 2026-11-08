@@ -65,8 +65,8 @@ What the player does:
 2. Hands stone over at the Old Temple, receives pilgrims in the Plaza Circular and builds the fair.
 3. Expands the New Temple (Edificio A and the Portada de las Falcónidas), researches the pilgrimage
    technology and receives the great pilgrimage.
-4. Delivers the last offering and says farewell to the community; the epilogue connects the documented
-   decline with the fragmentation of Chavín's influence.
+4. Tours the Plaza, the Old Temple, the New Temple and the Portada as the centre's record; the epilogue
+   connects the documented decline with the fragmentation of Chavín's influence.
 
 The mission deliberately does **not** add a Chavín–Paracas war: Paracas is a coetaneous reference, not an
 enemy. The feria uses the game's `Mercado` building as an abstraction and says so in its field card.

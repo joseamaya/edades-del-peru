@@ -118,7 +118,6 @@ try {
         }
         // Re-apply the drought last: the quality preset can rebuild the terrain material after it.
         if (shot.setup === 'drought' || shot.setup === 'departure') {
-          g.droughtShown = -1;
           g.startEnvironmentalEvent('drought', true);
         }
         if (shot.eye) {

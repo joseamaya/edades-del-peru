@@ -213,6 +213,48 @@ def decimate(obj, target):
     print(f'CHAVIN_KIT decimated {obj.name}: {tris} -> {sum(len(p.vertices) - 2 for p in obj.data.polygons)}')
 
 
+def build_pilgrims(mats, lod):
+    """Eight low-poly pilgrims and a few offering bundles on the open plaza (presentation only)."""
+    bm = bmesh.new()
+    uv = bm.loops.layers.uv.new('UVMap')
+    mat_index = {m: i for i, m in enumerate(MATERIALS)}
+    people = 8 if lod == 0 else 5
+    for i in range(people):
+        x = -4.5 + (i % 4) * 3.0
+        y = -2.5 + (i // 4) * 5.0
+        before = set(bm.faces)
+        body = bmesh.ops.create_cone(
+            bm, cap_ends=True, cap_tris=False, segments=6, radius1=0.30, radius2=0.20, depth=1.0
+        )
+        for v in body['verts']:
+            v.co += Vector((x, y, 0.55))
+        head = bmesh.ops.create_uvsphere(bm, u_segments=6, v_segments=4, radius=0.16)
+        for v in head['verts']:
+            v.co += Vector((x, y, 1.22))
+        for f in [f for f in bm.faces if f not in before]:
+            f.material_index = mat_index['MAT-Arch_ChavinPlaster']
+            for loop in f.loops:
+                loop[uv].uv = (loop.vert.co.x * 0.5, loop.vert.co.z * 0.5)
+    for i in range(3):
+        before = set(bm.faces)
+        bundle = bmesh.ops.create_cube(bm, size=1.0)
+        for v in bundle['verts']:
+            v.co = Vector((v.co.x * 0.45, v.co.y * 0.3, v.co.z * 0.22)) + Vector((-1.8 + i * 1.8, 2.6, 0.11))
+        for f in [f for f in bm.faces if f not in before]:
+            f.material_index = mat_index['MAT-Arch_ChavinEarth']
+            for loop in f.loops:
+                loop[uv].uv = (loop.vert.co.x * 0.5, loop.vert.co.y * 0.5)
+    bm.normal_update()
+    mesh = bpy.data.meshes.new('chavin_pilgrims')
+    bm.to_mesh(mesh)
+    bm.free()
+    for name in MATERIALS:
+        mesh.materials.append(mats[name])
+    obj = bpy.data.objects.new('chavin_pilgrims', mesh)
+    bpy.context.scene.collection.objects.link(obj)
+    return obj
+
+
 def mesh_stats(obj):
     mesh = obj.data
     triangles = sum(len(p.vertices) - 2 for p in mesh.polygons)
@@ -299,6 +341,9 @@ def main():
         pieces['edificio_b_foundation'] = foundation_from(
             pieces['edificio_b'], 'chavin_edificio_b_foundation', 1.8, 1.2, mats, args.lod
         )
+
+    if not args.only or args.only == 'pilgrims':
+        pieces['pilgrims'] = build_pilgrims(mats, args.lod)
 
     for asset_id, obj in pieces.items():
         export(obj, asset_id, args.lod)

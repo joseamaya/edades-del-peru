@@ -157,7 +157,7 @@ describe('authored campaign sites', () => {
       'pilgrimage',
       'feria',
       'new_temple',
-      'farewell',
+      'record',
     ]);
     expect(tutorialForMission('m3_moche_recuay')?.steps.map((s) => s.id)).toEqual([
       'select',

@@ -105,6 +105,10 @@ export interface SiteTerrainStyle {
 export interface SiteLife {
   /** Height of the sacred fire above the site anchor, in world metres. */
   fireHeight?: number;
+  /** Phase in which the sacred fire burns. */
+  firePhase?: string;
+  /** Mission objective whose activation lights the large offering blaze. */
+  offeringObjective?: string;
 }
 
 export interface SiteEnvirons {
@@ -309,7 +313,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       // art-direction §4: sea #3f5f5c -> #24413f, darkened for the high coastal sun.
       water: { deep: '#0f2a2e', shallow: '#2a5652', sheen: 0.15, foam: 0.12, fog: 0.3, refraction: 0.2 },
     },
-    life: { fireHeight: 16.6 },
+    life: { fireHeight: 16.6, firePhase: 'in_use', offeringObjective: 'a3_fuego' },
     environs: {
       valley: 'caral',
       opening: 'caral',
@@ -365,7 +369,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       valleyHaze: true,
       water: { deep: '#204a4a', shallow: '#4f7d72', sheen: 0.12, foam: 0.12, fog: 0.25, refraction: 0.15 },
     },
-    life: { fireHeight: 6.2 },
+    life: { fireHeight: 6.2, firePhase: 'apogee' },
     environs: { suppressPropIds: ['cactus'] },
     hideNodePatterns: [/Chavin_LOD[01]_(Terrain|Reference)/],
   },

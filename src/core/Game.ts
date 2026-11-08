@@ -7,6 +7,7 @@ import { Sky } from '../rendering/Sky';
 import type { ArchitectureCity, CaralCity } from '../rendering/architectureKit';
 import { isKnownPhase, standsAt, SINGLE_PHASE } from '../model/defs/sitePhases';
 import { ENVIRONMENT_EVENTS, type EnvironmentEventId } from './environment';
+import { t } from '../i18n';
 import { Terrain } from '../rendering/Terrain';
 import { HeadlessTerrain } from '../sim/HeadlessTerrain';
 import { Water } from '../rendering/Water';
@@ -164,8 +165,6 @@ export class Game {
   environment: Record<string, number> = {};
   private environmentTargets: Record<string, number> = {};
   private environmentShown: Record<string, number> = {};
-  /** Drought of m1's act IV: 0 = the green valley, 1 = dried out (rises over its duration). */
-  droughtLevel = 0;
   private droughtFarmsHit = false;
   private droughtGroveCut = false;
   private droughtBaseAtmosphere: MissionAtmosphere | undefined;
@@ -996,7 +995,7 @@ export class Game {
   startEnvironmentalEvent(event: string, instant = false): void {
     const definition = ENVIRONMENT_EVENTS[event as EnvironmentEventId];
     if (!definition) return;
-    if (!instant) this.hud.showToast(definition.label, 'info');
+    if (!instant) this.hud.showToast(t(definition.labelKey), 'info');
     this.environmentTargets[event] = 1;
     this.environment[event] ??= 0;
     if (event === 'drought') {
@@ -1006,7 +1005,6 @@ export class Game {
         this.droughtFarmsHit = true;
         this.droughtGroveCut = true;
         this.environment.drought = 1;
-        this.droughtLevel = 1;
         this.applyEnvironmentalEvent('drought', 1);
       }
     }
@@ -1023,7 +1021,6 @@ export class Game {
         this.droughtBaseAtmosphere ??= this.missionAtmosphere;
         if (level >= 0.3) this.droughtFarmsHit = true;
         if (level >= 0.6) this.droughtGroveCut = true;
-        this.droughtLevel = level;
       }
       this.applyEnvironmentalEvent(event, level);
     }
@@ -1070,8 +1067,9 @@ export class Game {
     }
     const mayor = this.siteDef?.anchor;
     if (!mayor) return;
-    const offering = this.mission?.getObjectiveState('a3_fuego') === 'activo';
-    const firePhase = this.siteDef?.phases?.phases.at(-1) ?? 'in_use';
+    const offeringObjective = this.siteDef?.life?.offeringObjective;
+    const offering = offeringObjective ? this.mission?.getObjectiveState(offeringObjective) === 'activo' : false;
+    const firePhase = this.siteDef?.life?.firePhase ?? 'in_use';
     if (this.sitePhase === firePhase || offering) {
       const fireHeight = this.siteDef?.life?.fireHeight ?? 16.6;
       const top = offering
@@ -1107,7 +1105,6 @@ export class Game {
       this.environment[event] = Math.min(target, current + dt / (definition?.duration ?? DROUGHT_SECONDS));
       this.applyEnvironmentalEvent(event, this.environment[event]);
     }
-    this.droughtLevel = this.environment.drought ?? 0;
   }
 
   private applyEnvironmentalEvent(event: string, level: number): void {
@@ -1398,11 +1395,17 @@ export class Game {
   }
 
   /** Queue a technology in a building of player 0. */
+  /** Whether the mission's technology restriction allows this research. */
+  canResearchTech(techId: string): boolean {
+    const allowed = this.mission?.def.allowedTechs;
+    return !allowed || allowed.includes(techId);
+  }
+
   researchTech(buildingId: number, techId: string): boolean {
     const b = this.buildings.get(buildingId);
     if (!b || b.dead || b.owner !== 0) return false;
     const tech = getTech(techId);
-    if (!tech) return false;
+    if (!tech || !this.canResearchTech(techId)) return false;
     if (!this.spendResource(0, tech.cost)) return false;
     if (!b.queueTech(techId)) {
       this.addResource(0, tech.cost);

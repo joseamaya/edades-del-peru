@@ -161,9 +161,9 @@ const TUTORIALS: Record<string, TutorialDef> = {
         check: { type: 'objectiveCompleted', objectiveId: 'a3_templo' },
       },
       {
-        id: 'farewell',
-        text: 'Recibe la gran peregrinación y despide a la comunidad en la Plaza Circular.',
-        check: { type: 'objectiveCompleted', objectiveId: 'a4_despedida' },
+        id: 'record',
+        text: 'Recorre la Plaza, el Templo Viejo, el Templo Nuevo y la Portada para cerrar el registro.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a4_registro' },
       },
     ],
   },

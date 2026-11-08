@@ -1,5 +1,6 @@
 import { CARAL_CIRCULAR_ALTAR, CARAL_CITY_OFFSET_X, CARAL_HERITAGE_PROXIES, type SiteBlocker } from './sites';
 import { CARAL_PHASE_PLAN, standsAt, type CaralMayorPhase } from './caralPhases';
+import type { ArchPlacement } from './architectureKit';
 
 export { CARAL_PHASE_PLAN, standsAt, type CaralMayorPhase };
 
@@ -32,18 +33,10 @@ export const CARAL_MAYOR_PHASE_ASSET: Record<CaralMayorPhase, CaralArchAssetId> 
   in_use: 'pyramid_mayor',
 };
 
-export interface CaralArchPlacement {
+export interface CaralArchPlacement extends ArchPlacement {
   asset: CaralArchAssetId;
-  x: number;
-  z: number;
-  /** Yaw in radians; the models face +Z. */
-  rotY: number;
-  /** Non-uniform scale (x, y, z) of the model. */
-  scale: [number, number, number];
   /** Marks the Pyramid Mayor, whose model follows the construction phase. */
   mayor?: boolean;
-  /** Raise the model above the ground it sits on (model units, before scaling). */
-  lift?: number;
   /**
    * First Pyramid Mayor phase in which this piece stands. m1 opens with an empty terrace and the city
    * grows with the Mayor through act III; omitted means it stands from the start.

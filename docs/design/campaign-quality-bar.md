@@ -58,19 +58,19 @@ Reviewed 2026-11-07 against the model-mission gates. Status is honest about the 
 | ----------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | History     | Met                  | `docs/historia/campanas/chavin.md` with its certainty table; UNESCO 330, Plan de Manejo 2020, Rick et al., Burger/Kembel; no invented war. |
 | Identity    | Met                  | Ceremonial prestige: offerings fund the temple, pilgrimage fills the plaza, the fair links long-distance exchange.                          |
-| Play        | Met (automatizado)   | `campaign-playtest.spec.ts` reaches victory through the four acts; the market and offerings use real commands, stone hand-over uses `Mission.recordDelivery`. Manual playtest pending. |
+| Play        | Met (automated)   | `campaign-playtest.spec.ts` reaches victory through the four acts; the market and offerings use real commands, stone hand-over uses `Mission.recordDelivery`. Manual playtest pending. |
 | Contract    | Met                  | Acts II–IV start hidden and are revealed by triggers; optional Plaza, gallery, Portada and major offering never gate victory.               |
 | Onboarding  | Met                  | Nine-step non-blocking Chavín tutorial, briefing and Codex; the briefing shows Act I only.                                                 |
 | Closure     | Met                  | Decline epilogue with its own capture and optional-achievement summary; “Continuar” to m3.                                                 |
 | UX          | Met locally          | Briefing, tutorial and objectives checked at 1280×800 and 1600×900; no CI pixel gate.                                                      |
 | Visuals     | Met locally          | Source-derived Chavín kit, phased temple, highland palette and current RTS captures in `public/media/chavin/`.                             |
 | Persistence | Met                  | `save-campaign.spec.ts` restores the site phase, offerings and tutorial step.                                                              |
-| Tests       | Met (automatizado)   | Data, site, tutorial, E2E mission, save/load and automated playtest; the manual playtest is pending.                                       |
+| Tests       | Met (automated)   | Data, site, tutorial, E2E mission, save/load and automated playtest; the manual playtest is pending.                                       |
 | Docs        | Met                  | Dossier, `chavin-model-mission.md`, this table, `chavin-sacred-site.md`, PROVENANCE and README aligned.                                    |
 | Structure   | Met                  | Four acts, hidden objectives revealed per act, chapter cards with images, optional goals, documented decline.                              |
 | Opening     | Met                  | Three-beat narrated intro and briefing with the mission's own art; chapter-card and epilogue captures from `capture_chavin_intro.mjs`.     |
 | Art         | Pending human review | Kit and captures are exported with `reviewed: false`; a human review must record `reviewer`/`reviewedAt` before this gate is Met.          |
-| Performance | Met                  | `bench_scene.mjs` opening ~372k tris / 176 calls and late ~507k / 275, within the 600k target.                                             |
+| Performance | Met                  | `bench_scene.mjs` opening ~372k tris / 176 calls and late ~507k / 277, within the 600k target.                                             |
 
 ## Moche gold-master status
 

@@ -339,7 +339,7 @@ slot is absent (offline / without assets).
 - **Review state**: every piece and capture starts `reviewed: false`; a human review must record
   `reviewer` and `reviewedAt` in the manifests before the Art gate is Met.
 - **Captures**: `public/media/chavin/intro-{valle,templo,peregrinos,nuevo,declive}.webp`, generated from
-  the running game by `scripts/capture_chavin_intro.mjs` (1600×900, resized to 960×540 WebP). They are
+  the running game by `scripts/capture_chavin_intro.mjs` (1600×900, resized to 800×450 WebP). They are
   in-engine recreations, **never historical photographs**; they are used by the narrated intro, the
   chapter cards and the epilogue.
 - **Historical caveat**: representative centre, not a survey. Roofs, heights, the exact construction

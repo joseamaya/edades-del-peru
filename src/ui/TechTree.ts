@@ -36,6 +36,8 @@ export interface TechTreeMatch {
   era: Era;
   canBuild(kind: BuildingKind): boolean;
   canTrain(kind: UnitKind): boolean;
+  /** Optional mission technology allowlist. */
+  canResearch?(techId: string): boolean;
 }
 
 /** The tech tree is generated from the defs; it never duplicates balance data. */
@@ -57,7 +59,9 @@ export function techTreeData(match?: TechTreeMatch): TechTreeEra[] {
             icon: unitDisplayIcon(def.id, match.era),
             unique: def.category === 'unique',
           })),
-        techs: TECHS.filter((tech) => techAvailable(tech, match.period, match.civ)).map((tech) => ({
+        techs: TECHS.filter(
+          (tech) => techAvailable(tech, match.period, match.civ) && (!match.canResearch || match.canResearch(tech.id)),
+        ).map((tech) => ({
           id: tech.id,
           name: tech.name,
           icon: tech.icon ?? '📚',

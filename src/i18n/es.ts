@@ -368,6 +368,7 @@ export const es = {
   'hotkey.space': 'Espacio',
   'hotkey.rotateSuffix': ' (si está activada)',
 
+  'hud.environment.drought': 'Sequía',
   'hud.cinematic.skip': 'Saltar',
   'hud.cinematic.continue': 'Continuar',
   'hud.cinematic.next': 'Siguiente',

@@ -820,11 +820,19 @@ test('a bonus objective does not gate victory', async ({ page }) => {
     tick(2);
     g.players[0].techs.add('chavin_pilgrimage');
     tick(92);
-    for (let i = 0; i < 4; i++) m.recordDelivery('silver', 50);
-    tick(32);
+    for (const id of [
+      'chavin_plaza_circular',
+      'chavin_edificio_b',
+      'chavin_edificio_a',
+      'chavin_portada',
+      'chavin_galeria',
+    ]) {
+      g.visitHeritage(id);
+    }
+    tick(2);
     return {
       won: m.won as boolean | null,
-      required: m.getObjectiveState('a4_despedida') as string,
+      required: m.getObjectiveState('a4_registro') as string,
       bonus: m.getObjectiveState('bonus_ofrenda_mayor') as string,
     };
   });

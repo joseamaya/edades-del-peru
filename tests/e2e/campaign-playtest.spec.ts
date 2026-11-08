@@ -609,10 +609,17 @@ test('plays m2 Chavín through the four acts with real construction and offering
     g.players[0].techs.add('chavin_pilgrimage');
     tick(2);
     tick(91);
-    // Act IV: last offering and farewell.
-    for (let i = 0; i < 4; i++) m.recordDelivery('silver', 50);
+    // Act IV: walk the ceremonial centre's record.
+    for (const id of [
+      'chavin_plaza_circular',
+      'chavin_edificio_b',
+      'chavin_edificio_a',
+      'chavin_portada',
+      'chavin_galeria',
+    ]) {
+      g.visitHeritage(id);
+    }
     tick(2);
-    tick(31);
     return {
       setup: true,
       reached,
@@ -636,7 +643,7 @@ test('plays m2 Chavín through the four acts with real construction and offering
   expect(out.states.a3_templo).toBe('completed');
   expect(out.states.a3_intercambio).toBe('completed');
   expect(out.states.a3_peregrinaje).toBe('completed');
-  expect(out.states.a4_despedida).toBe('completed');
+  expect(out.states.a4_registro).toBe('completed');
   expect(out.phases).toBe('apogee');
   expect(out.won, JSON.stringify(out)).toBe(true);
   expect(errors).toEqual([]);

@@ -87,10 +87,7 @@ test('m2 plays the four acts from the offering to the documented decline', async
     m.recordDelivery('silver', 50);
     m.recordDelivery('silver', 50);
     tick(2);
-    const actI = {
-      offer: m.getObjectiveState('a1_ofrenda'),
-      acts: g.mission.def.triggers.length,
-    };
+    const actI = { offer: m.getObjectiveState('a1_ofrenda') };
     // Act II: Old Temple, fair and pilgrimage.
     m.recordDelivery('stone', 50);
     m.recordDelivery('stone', 50);
@@ -112,13 +109,17 @@ test('m2 plays the four acts from the offering to the documented decline', async
     tick(2);
     tick(91);
     recordPhase();
-    // Act IV: last offering and farewell.
-    m.recordDelivery('silver', 50);
-    m.recordDelivery('silver', 50);
-    m.recordDelivery('silver', 50);
-    m.recordDelivery('silver', 50);
+    // Act IV: tour the centre's record.
+    for (const id of [
+      'chavin_plaza_circular',
+      'chavin_edificio_b',
+      'chavin_edificio_a',
+      'chavin_portada',
+      'chavin_galeria',
+    ]) {
+      g.visitHeritage(id);
+    }
     tick(2);
-    tick(31);
     return {
       actI,
       phases,
@@ -132,7 +133,7 @@ test('m2 plays the four acts from the offering to the documented decline', async
   expect(out.states.a2_peregrinaje).toBe('completed');
   expect(out.states.a2_feria).toBe('completed');
   expect(out.states.a3_intercambio).toBe('completed');
-  expect(out.states.a4_despedida).toBe('completed');
+  expect(out.states.a4_registro).toBe('completed');
   expect(out.won).toBe(true);
   expect(out.ended).toBe(true);
 });

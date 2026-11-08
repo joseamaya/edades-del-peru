@@ -4,9 +4,10 @@ import { EDUCATIONAL, PROLOGUE, getEducational } from '../src/campaign/defs/educ
 import { tutorialForMission } from '../src/campaign/defs/tutorials';
 import { getPeriod } from '../src/model/defs/periods';
 import { getCiv } from '../src/model/defs/civs';
-import { BuildingKind, UnitKind } from '../src/core/types';
+import { BuildingKind, CivId, HistoricalPeriod, UnitKind } from '../src/core/types';
 import { BUILDING_DEFS } from '../src/model/defs/buildings';
 import { UNIT_ARCHETYPES, unitTrainableInPeriod } from '../src/model/defs/units';
+import { getTech, techAvailable } from '../src/model/defs/techs';
 
 describe('campaign educational content', () => {
   it('the prologue is not empty', () => {
@@ -292,6 +293,12 @@ describe('campaign educational content', () => {
     expect(m2.layout?.site?.phase).toBe('old_temple_foundation');
     expect(m2.allowedBuildings).toContain(BuildingKind.MARKET);
     expect(m2.allowedUnits).toContain(UnitKind.WORKER);
+    expect(m2.allowedTechs).toContain('chavin_pilgrimage');
+    for (const id of m2.allowedTechs ?? []) {
+      const tech = getTech(id);
+      expect(tech, id).toBeDefined();
+      expect(techAvailable(tech!, HistoricalPeriod.EARLY_HORIZON, CivId.CHAVIN), id).toBe(true);
+    }
   });
 
   it('chapter IV has briefings and guided tutorials', () => {

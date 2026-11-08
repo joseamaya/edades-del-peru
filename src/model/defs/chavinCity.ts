@@ -3,8 +3,6 @@ import type { SitePhasePlan } from './sitePhases';
 import type { SiteBlocker } from './sites';
 import type { HeritageBuildingId } from './heritage';
 
-export type ChavinPhase = 'old_temple_foundation' | 'old_temple' | 'new_temple_foundation' | 'new_temple' | 'apogee';
-
 export const CHAVIN_PHASE_PLAN: SitePhasePlan = {
   phases: ['old_temple_foundation', 'old_temple', 'new_temple_foundation', 'new_temple', 'apogee'],
   initial: 'old_temple_foundation',
@@ -28,6 +26,8 @@ export const CHAVIN_CITY_LAYOUT: readonly ArchPlacement[] = [
   { asset: 'fair_tent', x: 92, z: 104, rotY: 0.2, scale: [1, 1, 1], since: 'apogee' },
   { asset: 'fair_tent', x: 104, z: 106, rotY: -0.35, scale: [1, 1, 1], since: 'apogee' },
   { asset: 'fair_tent', x: 112, z: 96, rotY: 0.55, scale: [1, 1, 1], since: 'apogee' },
+  // Pilgrims and offering bundles are presentation-only; they stand once the centre is at its apogee.
+  { asset: 'pilgrims', x: 100, z: 98, rotY: 0, scale: [1, 1, 1], since: 'apogee' },
 ];
 
 export const CHAVIN_CITY_BLOCKERS: readonly SiteBlocker[] = [

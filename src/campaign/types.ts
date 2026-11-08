@@ -323,6 +323,8 @@ export interface MissionDef {
    * no permanent market). Omit for every building of the era.
    */
   allowedBuildings?: BuildingKind[];
+  /** If set, only these technologies may be researched in the match. */
+  allowedTechs?: string[];
   objectives: ObjectiveDef[];
   triggers: TriggerDef[];
 }

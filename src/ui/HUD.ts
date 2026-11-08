@@ -959,6 +959,7 @@ export class HUD {
             // The Plaza Mayor is never placed but always stands, and its technologies are researched there.
             canBuild: (kind) => kind === BuildingKind.CENTER || this.game.canBuildKind(kind),
             canTrain: (kind) => !allowedUnits || allowedUnits.includes(kind),
+            canResearch: (techId) => this.game.canResearchTech(techId),
           }
         : undefined,
     );

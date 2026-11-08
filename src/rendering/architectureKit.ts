@@ -157,12 +157,6 @@ const _scale = new THREE.Vector3();
 const _up = new THREE.Vector3(0, 1, 0);
 
 /**
- * The assembled city: every placement baked into one mesh per material and LOD (the city is static,
- * so the whole of it is ~8 draw calls per pass instead of one per building and material). The Pyramid
- * Mayor follows the construction phase; changing the phase re-bakes.
- */
-
-/**
  * An authored city assembled from a Blender architecture kit. Every placement is baked into one mesh
  * per material and LOD (the city is static, so the whole of it is a handful of draw calls per pass
  * instead of one per building and material). Pieces follow the site's construction phase.
