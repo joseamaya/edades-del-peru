@@ -815,7 +815,6 @@ export class RuntimeController {
     // a blocking menu/modal suppresses camera panning (edge/keyboard/drag)
     this.game.camera.setUiCaptured(this.game.hud.hasBlockingOverlay());
     // edge scrolling is off while the pointer is over a HUD panel or control
-    this.game.camera.setEdgeTopInset(this.game.hud.edgeTopInset());
     this.game.camera.setPointerOverUi(this.game.isPointerOverUi());
     this.game.camera.update(d, realTime);
     // Fit the shadow frustum and the terrain LOD to where the camera is this frame, not the last one.
