@@ -13,6 +13,7 @@ interface Marker {
   ring: THREE.Mesh;
   dot: THREE.Mesh;
   mat: THREE.MeshBasicMaterial;
+  kind: MarkerKind;
   age: number;
   life: number;
   active: boolean;
@@ -52,7 +53,7 @@ export class OrderMarkers {
       dot.visible = false;
       dot.renderOrder = 6;
       this.scene.add(dot);
-      this.pool.push({ ring, dot, mat, age: 0, life: 1, active: false });
+      this.pool.push({ ring, dot, mat, kind: 'move', age: 0, life: 1, active: false });
     }
   }
 
@@ -66,6 +67,7 @@ export class OrderMarkers {
     m.active = true;
     m.age = 0;
     m.life = 1.1;
+    m.kind = kind;
     m.mat.color.setHex(COLORS[kind]);
     m.mat.opacity = 0.95;
     m.ring.position.set(x, y + 0.08, z);
@@ -96,6 +98,11 @@ export class OrderMarkers {
 
   get activeCount(): number {
     return this.active.length;
+  }
+
+  /** Kind of the most recently spawned marker (telemetry and tests). */
+  get lastKind(): MarkerKind | null {
+    return this.active.at(-1)?.kind ?? null;
   }
 
   dispose(): void {

@@ -14,6 +14,7 @@ import { isTypingTarget } from '../util/dom';
 
 import { keyFor, type HotkeyAction } from './hotkeys';
 import { MarkerKind } from '../entities/OrderMarker';
+import { t } from '../i18n';
 
 /** Click radius of a fishing ground: its outer ring of ripples (ResourceNodeView.buildFish). */
 const FISHING_PICK_RADIUS = 2.6;
@@ -243,12 +244,20 @@ export class InputController {
     return null;
   }
 
+  /** Whether the current selection includes at least one living worker. */
+  private hasSelectedWorker(): boolean {
+    return this.game.selectedUnits.some((id: number) => {
+      const u = this.game.units.get(id);
+      return !!u && !u.dead && u.kind === UnitKind.WORKER;
+    });
+  }
+
   /** Contextual action icon according to what is under the cursor and the selection. */
   private hoverAction(picked: PickResult): string | null {
     if (this.placingBuilding) return '🚧';
     if (picked.resource) {
-      const hasWorker = this.game.selectedUnits.some((id: number) => this.game.units.get(id)?.kind === UnitKind.WORKER);
-      return hasWorker ? '⛏️' : null;
+      if (this.game.selectedUnits.length === 0) return null;
+      return this.hasSelectedWorker() ? '⛏️' : '🚫';
     }
     if (picked.unit) {
       if (picked.unit.owner === 0) return null;
@@ -267,10 +276,13 @@ export class InputController {
     if (picked.resource) {
       const node = picked.resource;
       const ni = NODE_INFO[node.kind];
+      const cannotGather = this.game.selectedUnits.length > 0 && !this.hasSelectedWorker();
       return {
         icon: ni.icon,
         title: ni.name,
-        detalle: `${Math.ceil(node.amount)} ${RESOURCE_INFO[node.resource].name}`,
+        detalle:
+          `${Math.ceil(node.amount)} ${RESOURCE_INFO[node.resource].name}` +
+          (cannotGather ? ` · ${t('hud.toast.noGather')}` : ''),
       };
     }
     if (picked.unit) {
@@ -460,6 +472,28 @@ export class InputController {
     }
   }
 
+  /**
+   * Only workers harvest. A selection without workers moves instead and warns, because a gather
+   * marker followed by a plain move reads as a failed order.
+   */
+  private orderGather(units: Unit[], entityId: number, target: OrderTarget): void {
+    const workers = units.filter((u) => u.kind === UnitKind.WORKER);
+    if (workers.length === 0) {
+      this.markOrder(target, 'move');
+      this.issueMoveFormation(units, target);
+      this.game.hud?.showToast(t('hud.toast.noGather'), 'warning');
+      this.game.audio.order();
+      return;
+    }
+    this.markOrder(target, 'gather');
+    for (const u of workers) {
+      this.game.orderUnit(u, { kind: OrderKind.GATHER, entityId }, !this.shiftQueue);
+    }
+    const others = units.filter((u) => u.kind !== UnitKind.WORKER);
+    if (others.length > 0) this.issueMoveFormation(others, target);
+    this.game.audio.order();
+  }
+
   issueContextOrder(sx: number, sy: number): void {
     const units = this.game.selectedUnits
       .map((id: number) => this.game.units.get(id))
@@ -469,31 +503,18 @@ export class InputController {
     const wp = this.screenToWorld(sx, sy);
     const target: OrderTarget = wp ? { x: wp.x, z: wp.z } : { x: this.mouse.x, z: this.mouse.y };
 
-    // click on a resource node -> gather
+    // click on a resource node -> only workers gather; everyone else moves. Without a worker
+    // the order would silently look like a failed gather, so warn and show the move marker.
     const node = this.pickResource(sx, sy);
     if (node) {
-      this.markOrder(target, 'gather');
-      for (const u of units) {
-        if (u.kind === UnitKind.WORKER) {
-          this.game.orderUnit(u, { kind: OrderKind.GATHER, entityId: node.id }, !this.shiftQueue);
-        } else {
-          this.game.orderUnit(u, { kind: OrderKind.ATTACK_MOVE, target }, !this.shiftQueue);
-        }
-      }
+      this.orderGather(units, node.id, target);
       return;
     }
     if (picked.building) {
       const b = picked.building;
       // farm: workers gather food from it (only if it is complete)
       if (b.owner === 0 && b.isFarm && b.constructionComplete && b.foodAmount > 0) {
-        for (const u of units) {
-          if (u.kind === UnitKind.WORKER) {
-            this.game.orderUnit(u, { kind: OrderKind.GATHER, entityId: b.id }, !this.shiftQueue);
-          } else {
-            this.game.orderUnit(u, { kind: OrderKind.ATTACK_MOVE, target }, !this.shiftQueue);
-          }
-        }
-        this.game.audio.order();
+        this.orderGather(units, b.id, target);
         return;
       }
       if (b.owner !== 0) {
@@ -700,11 +721,7 @@ export class InputController {
 
   startPlacement(kind: BuildingKind): void {
     // RTS standard: building requires selected workers
-    const hasWorker = this.game.selectedUnits.some((id: number) => {
-      const u = this.game.units.get(id);
-      return !!u && !u.dead && u.kind === UnitKind.WORKER;
-    });
-    if (!hasWorker) {
+    if (!this.hasSelectedWorker()) {
       this.game.hud.showToast('Selecciona obreros para construir', 'warning');
       return;
     }

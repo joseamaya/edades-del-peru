@@ -79,6 +79,7 @@ export const es = {
   'hud.pause.options': '⚙️ Opciones',
   'hud.pause.mainMenu': '🏠 Menú principal',
   'hud.pause.quit': '🏳 Abandonar',
+  'hud.toast.noGather': 'Solo los obreros pueden recolectar',
   'hud.toast.saved': 'Partida guardada',
   'hud.toast.saveFailed': 'No se pudo guardar la partida',
   'hud.toast.maxPopulation': 'Población máxima alcanzada',
