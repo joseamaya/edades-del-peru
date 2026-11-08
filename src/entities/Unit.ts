@@ -419,6 +419,7 @@ export class Unit {
     this.path.length = 0;
     this.targetEntityId = null;
     this.currentResource = null;
+    this.lastGather = null;
     this.convertProgress = 0;
     this.attackingTarget = false;
     this.moveSpeedLimit = null;
@@ -455,6 +456,7 @@ export class Unit {
     this.noDropsiteTimer = 0;
     this.resetApproachState();
     this.moveSpeedLimit = null;
+    this.rememberGatherOrder(order);
     switch (order.kind) {
       case OrderKind.MOVE:
         if (this.combatStance === 'defensivo' && order.target) this.leashOrigin = { ...order.target };
@@ -491,6 +493,24 @@ export class Unit {
         if (order.entityId !== undefined) this.setPathToEntity(order.entityId);
         break;
     }
+  }
+
+  /**
+   * Tie retargeting and the fisher's net to the order being started, never to the previous task: a
+   * worker ordered from fishing to wood must not fall back to the old fishing ground when its tree
+   * turns out to be gone.
+   */
+  private rememberGatherOrder(order: Order): void {
+    if (order.kind !== OrderKind.GATHER || order.entityId === undefined) {
+      this.lastGather = null;
+      return;
+    }
+    this.rememberGatherNode(this.ctx.resourceNodes.get(order.entityId) as GatherNodeRef | undefined);
+  }
+
+  /** Single writer for the retarget anchor, shared by the order start and the arrival at the node. */
+  private rememberGatherNode(node: GatherNodeRef | undefined | null): void {
+    this.lastGather = node?.kind ? { kind: node.kind, x: node.pos.x, z: node.pos.z } : null;
   }
 
   /**
@@ -1255,7 +1275,7 @@ export class Unit {
     }
     this.vel.multiplyScalar(Math.pow(0.05, dt));
     this.targetYaw = angleTo(this.pos.x, this.pos.z, node.pos.x, node.pos.z);
-    if (!node.farm && node.kind) this.lastGather = { kind: node.kind, x: node.pos.x, z: node.pos.z };
+    if (!node.farm) this.rememberGatherNode(node);
 
     this.gatherTimer += dt;
     const interval = 1.4;
@@ -1323,7 +1343,11 @@ export class Unit {
     }
   }
 
-  /** Kind and place of the last node this unit worked, to find a replacement when it runs out. */
+  /**
+   * Kind and place of the node this unit is working or heading to, so a replacement can be found
+   * when it runs out. Kept in step with the current gather order (`startOrder`) and written again
+   * when the worker reaches the node.
+   */
   lastGather: { kind: string; x: number; z: number } | null = null;
 
   /**
@@ -1407,7 +1431,7 @@ export class Unit {
   }
 
   private deliverOrder(): void {
-    const res = this.currentResource;
+    const res = this.carryCount() > 0 ? this.carriedResource() : null;
     if (!res) return;
     const dropsite = this.findDropsite(res);
     if (dropsite) {

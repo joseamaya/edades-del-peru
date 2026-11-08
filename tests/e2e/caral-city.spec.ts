@@ -489,6 +489,89 @@ test('Áspero fishers cast a net and move on when a fishing ground runs out', as
   expect(state.targetKind).toBe('fishing');
 });
 
+test('a fisher ordered to a tree does not return to the sea when the tree is taken', async ({ page }) => {
+  await boot(page);
+  const state = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const base = g.playerCenter(0);
+    const grounds = [...g.resourceNodes.values()]
+      .filter((n: any) => n.kind === 'fishing' && !n.dead)
+      .sort(
+        (a: any, b: any) =>
+          Math.hypot(a.pos.x - base.x, a.pos.z - base.z) - Math.hypot(b.pos.x - base.x, b.pos.z - base.z),
+      ) as any[];
+    const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as any;
+    if (!worker || grounds.length === 0) return { ok: false, reason: 'missing worker or fishing ground' };
+
+    g.executeCommand(
+      { kind: 'order', unitIds: [worker.id], order: { kind: 'gather', entityId: grounds[0].id }, clear: true },
+      false,
+    );
+    let t = 0;
+    for (let i = 0; i < 20 * 60 && worker.lastGather?.kind !== 'fishing'; i++) {
+      g.update(0.05, t);
+      t += 0.05;
+    }
+    const fishingFirst = worker.lastGather?.kind;
+
+    const tree = [...g.resourceNodes.values()]
+      .filter((n: any) => n.kind === 'tree' && !n.dead && n.amount > 0)
+      .sort(
+        (a: any, b: any) =>
+          Math.hypot(a.pos.x - worker.pos.x, a.pos.z - worker.pos.z) -
+          Math.hypot(b.pos.x - worker.pos.x, b.pos.z - worker.pos.z),
+      )[0] as any;
+    if (!tree) return { ok: false, reason: 'no tree' };
+    g.executeCommand(
+      { kind: 'order', unitIds: [worker.id], order: { kind: 'gather', entityId: tree.id }, clear: true },
+      false,
+    );
+    const lastGatherAfterOrder = worker.lastGather?.kind;
+    // Another worker fells the tree before this fisher arrives.
+    tree.amount = 0;
+    for (let i = 0; i < 20 * 10; i++) {
+      g.update(0.05, t);
+      t += 0.05;
+    }
+    const order = worker.orderQueue.find((o: any) => o.kind === 'gather');
+    const stillFishing = order ? g.resourceNodes.get(order.entityId)?.kind === 'fishing' : false;
+    const lastGatherKind = worker.lastGather?.kind ?? null;
+
+    const liveTree = [...g.resourceNodes.values()]
+      .filter((n: any) => n.kind === 'tree' && !n.dead && n.amount > 0)
+      .sort(
+        (a: any, b: any) =>
+          Math.hypot(a.pos.x - worker.pos.x, a.pos.z - worker.pos.z) -
+          Math.hypot(b.pos.x - worker.pos.x, b.pos.z - worker.pos.z),
+      )[0] as any;
+    if (!liveTree) return { ok: false, reason: 'no live tree' };
+    g.executeCommand(
+      { kind: 'order', unitIds: [worker.id], order: { kind: 'gather', entityId: liveTree.id }, clear: true },
+      false,
+    );
+    for (let i = 0; i < 20 * 40 && worker.gatherCarry.wood <= 0; i++) {
+      g.update(0.05, t);
+      t += 0.05;
+    }
+    return {
+      ok: true,
+      fishingFirst,
+      lastGatherAfterOrder,
+      lastGatherKind,
+      stillFishing,
+      woodGathered: worker.gatherCarry.wood,
+    };
+  });
+  expect(state.ok, state.reason ?? '').toBe(true);
+  expect(state.fishingFirst).toBe('fishing');
+  expect(state.lastGatherAfterOrder).toBe('tree');
+  expect(state.lastGatherKind).not.toBe('fishing');
+  expect(state.stillFishing, 'the fisher must not go back to the sea').toBe(false);
+  expect(state.woodGathered, 'the fisher must chop the new tree').toBeGreaterThan(0);
+});
+
 test('the Caral tutorial hides the shortcut help while it is open', async ({ page }) => {
   await boot(page);
   await expect(page.locator('#ed-tutorial')).toBeVisible({ timeout: 30_000 });
