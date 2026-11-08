@@ -32,6 +32,7 @@ import { attachVegetationKit } from '../rendering/vegetationKitLoader';
 import { Props } from '../rendering/Props';
 import { GroundCover } from '../rendering/GroundCover';
 import { MapLabels } from '../rendering/MapLabels';
+import { Discoveries } from '../game/Discoveries';
 import { Wildlife } from '../rendering/Wildlife';
 import { clearFaunaTemplates } from '../rendering/faunaModels';
 import { clearModelAssets } from '../rendering/ModelAssets';
@@ -152,6 +153,8 @@ export class Game {
   siteCenter: { x: number; z: number } | null = null;
   /** Named geography of the mission, drawn on the board and the minimap. */
   mapLabels: MapLabels | null = null;
+  /** Fog-clearing "zone discovered" announcements for authored sites. */
+  discoveries: Discoveries | null = null;
   /** Authored canal target in world units (mission mechanic + visual). */
   canalSite: { x: number; z: number } | null = null;
   private canalGroup: THREE.Group | null = null;
@@ -540,6 +543,7 @@ export class Game {
     this.fowUniforms.mapSize.value = s.mapSize;
     this.fowUniforms.fowEnabled.value = s.fogOfWar ? 1 : 0;
     this.mapLabels = new MapLabels(this.scene, this.placeNames, this.terrain, s.mapSize);
+    this.discoveries = new Discoveries(this.missionLayout?.discoveries, this.siteDef, !!this.pendingSnapshot);
     // The authored site has thin walls and doors; 1 m cells keep them solid
     // without closing the narrow residential openings.
     this.pathfinder = new Pathfinder(s.mapSize, this.siteDef?.pathCellSize ?? 2);
@@ -870,7 +874,7 @@ export class Game {
   }
 
   reframeMissionOpening(): void {
-    if (!this.missionLayout?.site) return;
+    if (!this.missionLayout?.site && !this.missionLayout?.opening) return;
     const c = this.playerCenter(0);
     this.world.frameAuthoredSite(c.x, c.z);
   }
@@ -1601,6 +1605,7 @@ export class Game {
     this.markers.dispose();
     this.mapLabels?.dispose();
     this.mapLabels = null;
+    this.discoveries = null;
     for (const node of this.resourceNodes.values()) node.remove();
     this.resourceNodes.clear();
     this.trees.dispose();

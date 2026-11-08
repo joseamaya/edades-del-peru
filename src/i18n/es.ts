@@ -53,6 +53,7 @@ export const es = {
   'hud.topbar.pauseTitle': 'Pausa (P)',
   'hud.topbar.menu': '☰ Menú',
   'hud.objectives.title': '🎯 Objetivos',
+  'hud.discovery': 'Zona descubierta: {name}',
   'hud.objectives.alternative': 'o ',
   'hud.objectives.optionalSuffix': ' (opcional)',
   'hud.tutorial.title': '🎓 Tutorial',

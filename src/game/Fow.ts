@@ -30,8 +30,17 @@ export class Fow {
     };
   }
 
-  /** Reveal a circular vision area. */
+  /** Reveal a circular vision area (live vision). */
   reveal(cx: number, cz: number, radius: number): void {
+    this.markCircle(cx, cz, radius, 2);
+  }
+
+  /** Mark a circular area as explored without granting live vision (no enemy reveal). */
+  explore(cx: number, cz: number, radius: number): void {
+    this.markCircle(cx, cz, radius, 1);
+  }
+
+  private markCircle(cx: number, cz: number, radius: number, level: 1 | 2): void {
     const { x, z } = this.toCell(cx, cz);
     const r = Math.ceil(radius / this.cell);
     const r2 = r * r;
@@ -42,8 +51,8 @@ export class Fow {
         const nz = z + dz;
         if (nx < 0 || nz < 0 || nx >= this.cells || nz >= this.cells) continue;
         const i = nz * this.cells + nx;
-        if (this.grid[i] < 2) {
-          this.grid[i] = 2;
+        if (this.grid[i] < level) {
+          this.grid[i] = level;
           this.dirty = true;
         }
       }

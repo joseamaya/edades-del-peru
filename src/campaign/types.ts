@@ -99,9 +99,22 @@ export interface MissionLabel {
   kind?: 'water' | 'settlement' | 'region';
 }
 
+/** A site revealed with a short "zone discovered" fog animation. */
+export interface MissionDiscovery {
+  heritageId: HeritageBuildingId;
+  /** Reveal at mission start (a visible objective) instead of waiting for exploration. */
+  initial?: boolean;
+  /** Fog-clear radius in world units; defaults to the heritage footprint plus a margin. */
+  radius?: number;
+}
+
 export interface MissionLayout {
   /** Named geography of the scenario, e.g. the Supe river and its settlements. */
   labels?: MissionLabel[];
+  /** Opening camera focus (normalized); defaults to the player base. */
+  opening?: MissionAnchor;
+  /** Sites that announce themselves when explored. */
+  discoveries?: MissionDiscovery[];
   base?: MissionAnchor;
   /** Fixed enemy opening base; defaults to the procedural skirmish placement. */
   enemyBase?: MissionAnchor;

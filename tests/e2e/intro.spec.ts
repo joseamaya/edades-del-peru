@@ -29,15 +29,25 @@ function base(page: Page): Promise<{ x: number; z: number }> {
 
 type OpeningFrame = { zoom: number; rect: { x: number; z: number; w: number; d: number } };
 
+async function openingFocus(page: Page): Promise<{ x: number; z: number }> {
+  return page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const opening = g.missionLayout?.opening;
+    if (opening) return { x: opening.x * g.settings.mapSize, z: opening.z * g.settings.mapSize };
+    const c = [...g.buildings.values()].find((x: any) => x.owner === 0 && x.kind === 'center');
+    return { x: c.pos.x, z: c.pos.z };
+  });
+}
+
 async function waitForOpeningFrame(page: Page): Promise<OpeningFrame> {
+  const focus = await openingFocus(page);
   await page.waitForFunction(
-    () => {
+    (focus) => {
       const g = (window as unknown as { game: any }).game;
-      const c = [...g.buildings.values()].find((x: any) => x.owner === 0 && x.kind === 'center');
       const t = g.camera.getTarget();
-      return Math.hypot(t.x - c.pos.x, t.z - c.pos.z) < 1.5;
+      return Math.hypot(t.x - focus.x, t.z - focus.z) < 1.5;
     },
-    null,
+    focus,
     { timeout: 10_000 },
   );
   return page.evaluate(() => {
@@ -59,9 +69,15 @@ test('the campaign intro flies the camera from an overview to the authored openi
   // real-time flight (~2.6 s); poll until it settles on the base
   const view = await waitForOpeningFrame(page);
   const end = await target(page);
-  expect(Math.hypot(end.x - b.x, end.z - b.z)).toBeLessThan(1.5);
+  const focus = await openingFocus(page);
+  expect(Math.hypot(end.x - focus.x, end.z - focus.z)).toBeLessThan(1.5);
   expect(view.zoom).toBeCloseTo(CARAL_SITE_CAMERA.height, 0);
   expect(view.rect.x).toBeLessThan(8); // the Supe channel runs at x≈8; keep it in frame
+  // The opening focus moved north to include the huaca; the base must still be framed.
+  expect(b.x).toBeGreaterThanOrEqual(view.rect.x);
+  expect(b.x).toBeLessThanOrEqual(view.rect.x + view.rect.w);
+  expect(b.z).toBeGreaterThanOrEqual(view.rect.z);
+  expect(b.z).toBeLessThanOrEqual(view.rect.z + view.rect.d);
 });
 
 test('the authored opening frame keeps the Supe channel at 1600x900', async ({ page }) => {
@@ -74,14 +90,15 @@ test('the authored opening frame keeps the Supe channel at 1600x900', async ({ p
   expect(view.rect.x).toBeLessThan(8);
 });
 
-test('?intro=0 disables the flyover and leaves the camera at the base', async ({ page }) => {
+test('?intro=0 disables the flyover and keeps the authored opening focus', async ({ page }) => {
   await boot(page, '/?play=1&mission=m1_caral&seed=777&fog=0&low=1&intro=0');
   expect(await page.evaluate(() => (window as unknown as { game: any }).game.introEnabled)).toBe(false);
   await dismissBriefing(page);
   await page.waitForTimeout(300);
   const t = await target(page);
-  const b = await base(page);
-  expect(Math.hypot(t.x - b.x, t.z - b.z)).toBeLessThan(3); // never flew away
+  const focus = await openingFocus(page);
+  expect(Math.hypot(t.x - focus.x, t.z - focus.z)).toBeLessThan(3); // jumped straight to the frame
+  expect(await page.evaluate(() => (window as unknown as { game: any }).game.camera.isFlying())).toBe(false);
 });
 
 test('skirmish has no intro', async ({ page }) => {

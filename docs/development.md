@@ -413,7 +413,13 @@ Definition of Done and the building audit see
 - **Campaign intro (visual only)**: `Mission.start` calls `Game.playIntro()` from the briefing's onStart
   callback, which frames an overview and runs `RTSCamera.flyTo(x, z, zoom, seconds)` down to the player base;
   for the authored Caral site it settles at `CARAL_SITE_CAMERA.height` so the valley, base and city share the opening.
-  Skipped with `?intro=0` (and under `?noloop=1`, since tests drive fixed steps).
+  Skipped with `?intro=0` (and under `?noloop=1`, since tests drive fixed steps). `layout.opening` overrides the
+  normalized opening focus without moving the base; m1 uses it to frame the Huaca de los Ídolos beside Áspero.
+- **Site discoveries**: `layout.discoveries` names heritage sites that clear the fog in a growing radius (1.2 s)
+  and announce themselves with a toast and a minimap ping (`src/game/Discoveries.ts`). `initial` sites reveal at
+  mission start (visible objectives); the rest trigger on the first vision contact. They wait for the intro/card,
+  never pause the match, only mark fog as **explored** (never live vision), and are skipped with the fog off. On a
+  restored save, a site whose fog is already explored counts as discovered and does not replay the reveal.
 - **Construction (RTS standard)**: placing a building **requires selected workers** (`Game.startPlacement` warns
   if none). Only those workers build: `commitPlacement` emits `issueOrder(BUILD, clear=true)` (the order
   **interrupts** their current task) and **keeps the selection**. Do not reintroduce auto-assignment of builders:
