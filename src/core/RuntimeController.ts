@@ -18,6 +18,7 @@ import { BUILDING_INFO } from '../model/defs/buildings';
 import { getUnitStats, DamageClass, unitClassFor } from '../model/defs/units';
 import { getTech } from '../model/defs/techs';
 import { saveReplay } from '../game/replay';
+import type { DiscoverySite } from '../game/Discoveries';
 import { applyMarketSave, tickMarket, type MarketState } from '../game/market';
 import type { MissionDef } from '../campaign/types';
 import { applyPopulation } from '../game/systems/PopulationSystem';
@@ -660,8 +661,9 @@ export class RuntimeController {
 
   // --- fog of war ---
 
-  updateFow(): void {
-    if (!this.game.settings.fogOfWar) return;
+  updateFow(dt: number): void {
+    const fogOn = this.game.settings.fogOfWar;
+    if (!fogOn) return;
     for (const u of this.game.units.values()) {
       if (u.owner !== 0 || u.dead) continue;
       this.game.fow.reveal(u.pos.x, u.pos.z, u.stats.los + 2);
@@ -670,6 +672,9 @@ export class RuntimeController {
       if (b.owner !== 0 || b.dead) continue;
       this.game.fow.reveal(b.pos.x, b.pos.z, b.stats.los + 2);
     }
+    this.game.discoveries?.update(dt, this.game.fow, fogOn, this.game.isCinematicActive(), (site: DiscoverySite) => {
+      this.game.hud?.showDiscovery(site.name, site.x, site.z);
+    });
     // hide enemy entities that are not visible
     for (const u of this.game.units.values()) {
       if (u.owner === 0) continue;
@@ -857,7 +862,7 @@ export class RuntimeController {
     this.game.projectiles = this.game.projectiles.filter((p: { dead: boolean }) => !p.dead);
     updateProjectilePools(d);
 
-    this.updateFow();
+    this.updateFow(d);
     this.game.mapLabels?.update(this.game.camera, this.game.fow, this.game.settings.fogOfWar);
     this.applyLod();
     this.updatePopulation();

@@ -530,7 +530,7 @@ export class HUD {
   private damage!: DamageNumbers;
   private cursorEl!: HTMLElement;
   private alertsEl!: HTMLElement;
-  private alertPings: { x: number; z: number; until: number }[] = [];
+  private alertPings: { x: number; z: number; until: number; discovery?: boolean }[] = [];
   /** Last time each unit/reason alert was shown, to avoid notification spam. */
   private alertLastAt = new Map<string, number>();
   private tutorialEl!: HTMLElement;
@@ -635,8 +635,18 @@ export class HUD {
     });
     this.alertsEl.prepend(el);
     while (this.alertsEl.children.length > 5) this.alertsEl.lastChild?.remove();
-    this.alertPings.push({ x: info.x, z: info.z, until: now + 6000 });
+    this.pingMap(info.x, info.z);
     setTimeout(() => el.remove(), 9000);
+  }
+
+  private pingMap(x: number, z: number, discovery = false): void {
+    this.alertPings.push({ x, z, until: performance.now() + 6000, discovery });
+  }
+
+  /** Announce a newly revealed site and ping it on the minimap without covering the objectives. */
+  showDiscovery(name: string, x: number, z: number): void {
+    this.showToast(t('hud.discovery', { name }), 'info');
+    this.pingMap(x, z, true);
   }
 
   /** Show/hide the tooltip of the entity or resource under the cursor. */
@@ -2089,7 +2099,9 @@ export class HUD {
       for (const p of this.alertPings) {
         const ax = (p.x / s) * w;
         const az = (p.z / s) * w;
-        ctx.strokeStyle = `rgba(255,70,70,${0.35 + pulse * 0.55})`;
+        ctx.strokeStyle = p.discovery
+          ? `rgba(232,195,106,${0.35 + pulse * 0.55})`
+          : `rgba(255,70,70,${0.35 + pulse * 0.55})`;
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(ax, az, 5 + pulse * 3, 0, Math.PI * 2);

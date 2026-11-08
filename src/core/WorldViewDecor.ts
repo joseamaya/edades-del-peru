@@ -321,6 +321,11 @@ export class WorldViewDecor {
 
   /** Frame the base, or the base/site midpoint for sites that need both in shot. */
   missionFraming(x: number, z: number): { x: number; z: number; height?: number } {
+    const opening = this.game.missionLayout?.opening;
+    if (opening) {
+      const size = this.game.settings.mapSize;
+      return { x: opening.x * size, z: opening.z * size, height: this.game.siteDef?.cameraHeight };
+    }
     const focus = this.game.siteFocus;
     if (this.game.siteDef?.framing === 'midpoint' && focus) {
       return { x: (x + focus.x) / 2, z: (z + focus.z) / 2, height: this.game.siteDef.cameraHeight };

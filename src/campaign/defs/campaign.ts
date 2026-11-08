@@ -70,8 +70,11 @@ export const MISSIONS: MissionDef[] = [
           kind: 'settlement',
         },
       ],
-      // Act I starts at Áspero, on its low coastal rise north of the river mouth.
+      // Act I starts at Áspero, on its low coastal rise north of the river mouth. The opening
+      // focus sits between the base and the Huaca de los Ídolos so its summit reads from the start.
       base: { x: 42 / CARAL_MAP_SIZE, z: 172 / CARAL_MAP_SIZE },
+      opening: { x: 42 / CARAL_MAP_SIZE, z: 160 / CARAL_MAP_SIZE },
+      discoveries: [{ heritageId: 'aspero_huaca_idolos', initial: true }],
       site: {
         id: 'caral_site',
         y: 8,

@@ -12,6 +12,17 @@ describe('Fow grid', () => {
     expect(fow.isExplored(0, 0)).toBe(false);
   });
 
+  it('explores without granting live vision', () => {
+    const fow = new Fow(100, 10);
+    fow.explore(50, 50, 12);
+    expect(fow.isExplored(50, 50)).toBe(true);
+    expect(fow.isVisible(50, 50)).toBe(false);
+
+    fow.reveal(50, 50, 12);
+    fow.explore(50, 50, 12);
+    expect(fow.isVisible(50, 50)).toBe(true);
+  });
+
   it('flushes RGBA once per change', () => {
     const fow = new Fow(100, 10);
     expect(fow.flush()).toBe(true);
