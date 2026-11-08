@@ -66,7 +66,7 @@ describe('campaign educational content', () => {
     expect(caral.objectives.some((o) => o.buildingKind === BuildingKind.MARKET)).toBe(false);
     expect(caral.startingResources.silver).toBe(0);
     expect(caral.narrator).toBeTruthy();
-    expect(caral.layout?.site?.mayorPhase).toBe('foundation');
+    expect(caral.layout?.site?.phase).toBe('foundation');
 
     // Only the first goal is visible; every act unlocks the next one.
     const required = caral.objectives.filter((o) => !o.optional);
@@ -138,7 +138,7 @@ describe('campaign educational content', () => {
       const nonCombat =
         id === 'm1_caral'
           ? ['gather', 'build', 'reach', 'hold', 'inspect', 'canal_open', 'deliver', 'research']
-          : ['gather', 'build', 'survive', 'hold', 'deliver', 'network'];
+          : ['gather', 'build', 'survive', 'hold', 'deliver', 'network', 'reach', 'inspect', 'research'];
       for (const o of mis.objectives) expect(nonCombat, `${id}/${o.id}`).toContain(o.kind);
       expect(
         mis.objectives.some((o) => o.kind === 'build'),
@@ -281,14 +281,17 @@ describe('campaign educational content', () => {
 
   it('m2 has a pilgrimage hold, offerings and an oracle reward', () => {
     const m2 = MISSIONS.find((m) => m.id === 'm2_chavin')!;
-    expect(m2.objectives.some((o) => o.id === 'obj_peregrinaje' && o.kind === 'hold')).toBe(true);
-    expect(m2.objectives.some((o) => o.id === 'obj_ofrendas' && o.kind === 'deliver' && o.resource === 'silver')).toBe(
+    expect(m2.objectives.some((o) => o.id === 'a2_peregrinaje' && o.kind === 'hold')).toBe(true);
+    expect(m2.objectives.some((o) => o.id === 'a1_ofrenda' && o.kind === 'deliver' && o.resource === 'silver')).toBe(
       true,
     );
-    expect(m2.objectives.find((o) => o.id === 'obj_peregrinaje')?.hidden).toBe(true);
-    expect(m2.objectives.find((o) => o.id === 'obj_feria')?.hidden).toBe(true);
-    expect(m2.triggers.some((t) => t.id === 't_ofrendas')).toBe(true);
-    expect(m2.triggers.some((t) => t.id === 't_peregrinaje')).toBe(true);
+    expect(m2.objectives.find((o) => o.id === 'a2_peregrinaje')?.hidden).toBe(true);
+    expect(m2.objectives.find((o) => o.id === 'a2_feria')?.hidden).toBe(true);
+    expect(m2.triggers.some((t) => t.id === 't_a1_ofrenda')).toBe(true);
+    expect(m2.triggers.some((t) => t.id === 't_a2_peregrinaje')).toBe(true);
+    expect(m2.layout?.site?.phase).toBe('old_temple_foundation');
+    expect(m2.allowedBuildings).toContain(BuildingKind.MARKET);
+    expect(m2.allowedUnits).toContain(UnitKind.WORKER);
   });
 
   it('chapter IV has briefings and guided tutorials', () => {

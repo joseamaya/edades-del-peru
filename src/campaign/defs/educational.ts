@@ -54,13 +54,14 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
   },
   m2_chavin: {
     briefing:
-      'Chavín de Huántar, c. 900–500 a.C. El templo y su oráculo atraen peregrinos y ofrendas de buena parte de los Andes. Entrega ofrendas en el Edificio B, recibe a los peregrinos y sostén el prestigio del centro ceremonial.',
+      'Chavín de Huántar, c. 900–200 a.C. El templo y su oráculo atraen peregrinos y ofrendas de buena parte de los Andes. Acompaña el crecimiento del Templo Viejo y del Templo Nuevo, recibe peregrinos, abre la feria y sostén el prestigio del centro ceremonial hasta su declive documentado.',
     context:
       'Chavín de Huántar, a 3180 msnm en el Callejón de Conchucos (Áncash), fue el gran centro ceremonial y ' +
       'de peregrinaje de los Andes. Su oráculo atraía ofrendas de lejos y su arte se difundió por buena parte ' +
-      'de los Andes centrales. Fue una sociedad teocrática liderada por una casta sacerdotal.',
+      'de los Andes centrales. Fue una sociedad teocrática liderada por una casta sacerdotal; no se conocen ' +
+      'nombres de gobernantes.',
     didYouKnow:
-      'No hay guerra directa documentada entre Chavín y Paracas: su emparejamiento en el juego es de coetaneidad.',
+      'No hay guerra directa documentada entre Chavín y Paracas: su emparejamiento en el juego es de coetaneidad. La cronología de las fases del templo sigue siendo debatida por los arqueólogos.',
     epilogue:
       'Chavín declinó hacia 500–200 a.C.; su influencia artística y religiosa se fragmentó y dio paso a las ' +
       'culturas regionales del Intermedio Temprano. El centro ceremonial dejó de ser el eje del poder andino.',
@@ -68,6 +69,9 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       { text: 'UNESCO: Chavín (Archaeological Site)', url: 'https://whc.unesco.org/en/list/330/' },
       { text: 'Ministerio de Cultura: Plan de Manejo 2020 de Chavín.' },
       { text: 'Rick, J. W. et al. (1998). La arquitectura del complejo ceremonial de Chavín de Huántar.' },
+      {
+        text: 'Rick, J. W. et al. (2009). La cronología de Chavín de Huántar y sus implicancias para el Periodo Formativo.',
+      },
       { text: 'Burger, R. (1995). Chavín and the Origins of Andean Civilization.' },
     ],
   },

@@ -1,0 +1,28 @@
+{
+  "asset_id": "chavin_edificio_b_foundation",
+  "source": "chavin_lod0_clean.blend",
+  "reviewed": false,
+  "reviewer": null,
+  "reviewedAt": null,
+  "confidence": "inferred",
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "lods": {
+    "LOD0": {
+      "file": "chavin_edificio_b_foundation_lod0.glb",
+      "triangles": 24,
+      "materials": [
+        "MAT-Arch_ChavinStone"
+      ],
+      "bounds": {
+        "size": [
+          80.909,
+          8.182,
+          132.909
+        ]
+      }
+    }
+  }
+}

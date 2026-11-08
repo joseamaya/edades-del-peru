@@ -106,6 +106,11 @@ export class RuntimeController {
   applySnapshot(data: SaveData): void {
     this.game.rng.setState(data.rngState);
     this.game.canalOpen = data.canalOpen ?? this.game.canalOpen;
+    if (data.sitePhase) {
+      this.game.setSitePhase(data.sitePhase);
+      this.game.sitePhaseRestored = true;
+    }
+    if (data.environment) this.game.restoreEnvironment(data.environment);
 
     for (const ps of data.players) {
       const p = this.game.players[ps.id];
@@ -816,9 +821,10 @@ export class RuntimeController {
     this.frameShadows();
     this.game.terrain.updateLod(this.game.camera.camera.position);
     this.game.caralCity?.update(this.game.camera.camera.position);
+    this.game.chavinCity?.update(this.game.camera.camera.position);
     this.rebuildSpatial();
 
-    this.game.updateDrought(d);
+    this.game.updateEnvironment(d);
     this.game.updateCityLife(d);
     // units
     for (const u of this.game.units.values()) {

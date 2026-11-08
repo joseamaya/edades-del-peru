@@ -59,31 +59,36 @@ photograph.
 
 ## Mission flow
 
-1. Start with the offering goal and the survival clock.
-2. Move a worker to the ceremonial centre; the tutorial and field cards explain
-   the Plaza Circular, Edificio A/B, Portada and gallery.
-3. Deliver five offerings of 50 silver at Edificio B. The `t_ofrendas` trigger
-   reveals the pilgrimage, the feria and the optional major offering.
-4. Receive pilgrims for 60 seconds in the Plaza Circular and build the feria
-   outside the site keep-out.
-5. Keep the centre standing for seven minutes. The epilogue connects the
-   documented decline with the end of Chavín's regional prestige.
+1. Act I starts with the Old Temple foundation, the Plaza Circular and Edificio B. The player reaches the
+   site and hands over the first offerings at Edificio B.
+2. Act II completes the Old Temple by handing over stone, receives pilgrims in the Plaza Circular and
+   opens the fair.
+3. Act III reveals the New Temple: Edificio A and the Portada de las Falcónidas stand as the player hands
+   over stone; the pilgrimage technology and the great pilgrimage complete the apogee.
+4. Act IV is the documented decline: the last offering and the community's farewell, then the epilogue.
+
+The site advances through `old_temple_foundation → old_temple → new_temple_foundation → new_temple →
+apogee` (`CHAVIN_PHASE_PLAN`, `Game.setSitePhase`). Heritage cards and blockers follow the same phases.
 
 ## Implementation
 
-- Mission data: `src/campaign/defs/campaign.ts`.
-- Site registry: `src/model/defs/sites.ts`.
-- Site loader: `src/rendering/siteModels.ts`.
+- Mission data: `src/campaign/defs/campaign.ts`; design: `chavin-model-mission.md`.
+- Site registry: `src/model/defs/sites.ts`; phases and kit layout: `src/model/defs/chavinCity.ts`.
+- Architecture kit: `scripts/blender/build_chavin_architecture_kit.py`, exported to
+  `src/assets/architecture/chavin/`, assembled by `src/rendering/chavinCity.ts`.
+- Site loader: `src/rendering/siteModels.ts`; the source GLB stays hidden and keeps the click proxies.
 - Heritage cards and the `offer` operation: `src/model/defs/heritage.ts`.
 - Economy cards: `src/model/defs/buildingCards.ts`.
 - Tutorial: `src/campaign/defs/tutorials.ts`.
-- Tests: `tests/e2e/chavin-campaign.spec.ts`, `tests/e2e/campaign.spec.ts`,
-  `tests/e2e/campaign-playtest.spec.ts`, `tests/e2e/save-campaign.spec.ts`.
+- Intro/chapter/epilogue captures: `scripts/capture_chavin_intro.mjs` → `public/media/chavin/`.
+- Tests: `tests/chavin-acts.test.ts`, `tests/chavin-architecture-kit.test.ts`,
+  `tests/e2e/chavin-campaign.spec.ts`, `campaign.spec.ts`, `campaign-playtest.spec.ts`,
+  `save-campaign.spec.ts`.
 
 ## Status
 
-The site, offering flow, staged objectives, tutorial, feria, save/load and a
-real-command playtest are implemented. Current captures are local review
-artifacts in `review/`; there is no CI pixel gate. The model remains a
-representative reconstruction and the historical limits above stay visible in
-the Codex and dossier.
+The site, four acts, phased kit, offering/pilgrimage/fair loop, tutorial, captures, save/load and a
+real-command playtest are implemented. The kit and captures are exported `reviewed: false`: the human
+art review is still pending. The model remains a representative reconstruction and the historical limits
+above stay visible in the Codex and dossier. Performance: opening ~372k triangles / 176 calls, late
+~507k / 275, within the 600k target.

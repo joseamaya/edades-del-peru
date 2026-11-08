@@ -326,6 +326,26 @@ slot is absent (offline / without assets).
   some reliefs are inferred; the Lanzón is an interpretation, not the scan. See
   `docs/design/chavin-sacred-site.md`.
 
+### Chavín architecture kit and in-engine captures (m2)
+
+- **Kit**: `src/assets/architecture/chavin/chavin_<piece>_lod{0,1}.glb`.
+- **Source**: `art-src/blender/chavin/chavin_lod0_clean.blend` / `chavin_lod1_clean.blend` (LFS),
+  derived from the project's Chavín preview and re-exported with
+  `scripts/blender/build_chavin_architecture_kit.py`. The script splits the source city by the game's
+  heritage proxies (Edificio A/B, Portada, Plaza, terraces), normalises the materials to
+  `MAT-Arch_Chavin*`, adds low foundation pieces and decimates LOD0 to the kit budget.
+- **Licence cleanup**: the CyArk-derived Lanzón geometry and material were removed before this source was
+  committed; the game uses the project-owned low-poly interpretation.
+- **Review state**: every piece and capture starts `reviewed: false`; a human review must record
+  `reviewer` and `reviewedAt` in the manifests before the Art gate is Met.
+- **Captures**: `public/media/chavin/intro-{valle,templo,peregrinos,nuevo,declive}.webp`, generated from
+  the running game by `scripts/capture_chavin_intro.mjs` (1600×900, resized to 960×540 WebP). They are
+  in-engine recreations, **never historical photographs**; they are used by the narrated intro, the
+  chapter cards and the epilogue.
+- **Historical caveat**: representative centre, not a survey. Roofs, heights, the exact construction
+  sequence and some reliefs are inferred; the Lanzón is an interpretation, not the scan. See
+  `docs/design/chavin-sacred-site.md` and `docs/design/chavin-model-mission.md`.
+
 ## Rigged 3D models
 
 - **Location**: `src/assets/models/*.glb` (loaded by `src/rendering/ModelAssets.ts`).

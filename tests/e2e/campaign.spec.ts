@@ -454,7 +454,7 @@ test('authored campaign geography spawns its local base and features', async ({ 
   }
 });
 
-test('m2 offerings open the pilgrimage and reward the oracle', async ({ page }) => {
+test('m2 offerings open the Old Temple act', async ({ page }) => {
   await page.goto('/?mission=m2_chavin&seed=777&fog=0&low=1&noloop=1');
   await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
     timeout: 30_000,
@@ -468,34 +468,35 @@ test('m2 offerings open the pilgrimage and reward the oracle', async ({ page }) 
     const unit = [...g.units.values()].find((u: any) => u.owner === 0 && !u.dead) as any;
     if (!anchor || !unit) return { anchor: false, unit: false };
     unit.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
-    for (let i = 0; i < 5; i++) g.makeOffering('chavin_edificio_b');
-    g.update(1 / 60, 0);
-    const afterOffers = {
-      silver: g.players[0].resources.silver as number,
-      offerings: m.getObjectiveState('obj_ofrendas') as string,
-      pilgrimage: m.getObjectiveState('obj_peregrinaje') as string,
-      feria: m.getObjectiveState('obj_feria') as string,
+    let t = 0;
+    const tick = (seconds: number) => {
+      const dt = 1 / 60;
+      for (let i = 0; i < Math.ceil(seconds / dt) && !m.ended; i++) {
+        document.querySelector('.ed-mission-card')?.remove();
+        unit.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+        g.update(dt, t);
+        t += dt;
+      }
     };
-    const dt = 1 / 60;
-    for (let i = 0; i < Math.ceil(65 / dt) && !m.ended; i++) {
-      unit.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
-      g.update(dt, i * dt);
-    }
+    tick(5);
+    m.recordDelivery('silver', 50);
+    m.recordDelivery('silver', 50);
+    tick(2);
     return {
       anchor: true,
       unit: true,
-      afterOffers,
-      pilgrimage: m.getObjectiveState('obj_peregrinaje') as string,
-      silver: g.players[0].resources.silver as number,
+      offerings: m.getObjectiveState('a1_ofrenda') as string,
+      oldTemple: m.getObjectiveState('a2_templo') as string,
+      feria: m.getObjectiveState('a2_feria') as string,
+      phase: g.sitePhase as string,
     };
   });
   expect(out.anchor).toBe(true);
   expect(out.unit).toBe(true);
-  expect(out.afterOffers.offerings).toBe('completed');
-  expect(out.afterOffers.pilgrimage).toBe('activo');
-  expect(out.afterOffers.feria).toBe('activo');
-  expect(out.pilgrimage).toBe('completed');
-  expect(out.silver).toBeGreaterThan(out.afterOffers.silver);
+  expect(out.offerings).toBe('completed');
+  expect(out.oldTemple).toBe('activo');
+  expect(out.feria).toBe('activo');
+  expect(out.phase).toBe('old_temple_foundation');
 });
 
 test('m4 network opens the contested frontier', async ({ page }) => {
@@ -795,30 +796,38 @@ test('a bonus objective does not gate victory', async ({ page }) => {
     const m = g.mission;
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
-    const anchor = g.siteAnchor as { x: number; z: number } | null;
-    const unit = [...g.units.values()].find((u: any) => u.owner === 0 && !u.dead) as any;
-    if (!anchor || !unit) return { setup: false };
-    unit.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
-    for (let i = 0; i < 5; i++) g.makeOffering('chavin_edificio_b');
-    g.update(1 / 60, 0);
-    g.spawnScriptedBuilding('market', 0, anchor.x, anchor.z + 34);
-    const dt = 1 / 60;
+    const anchor = g.siteAnchor as { x: number; z: number };
+    const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as any;
     let t = 0;
-    for (let i = 0; i < Math.ceil(500 / dt) && !m.ended; i++) {
-      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
-      for (const b of g.buildings.values()) if (b.owner === 0 && !b.dead) b.hp = b.maxHp;
-      unit.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
-      g.update(dt, t);
-      t += dt;
-    }
+    const tick = (seconds: number) => {
+      const dt = 1 / 60;
+      for (let i = 0; i < Math.ceil(seconds / dt) && !m.ended; i++) {
+        document.querySelector('.ed-mission-card')?.remove();
+        worker.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+        g.update(dt, t);
+        t += dt;
+      }
+    };
+    tick(5);
+    g.makeOffering('chavin_edificio_b');
+    g.makeOffering('chavin_edificio_b');
+    tick(2);
+    for (let i = 0; i < 3; i++) m.recordDelivery('stone', 50);
+    tick(2);
+    g.spawnScriptedBuilding('market', 0, anchor.x, anchor.z + 34);
+    tick(62);
+    for (let i = 0; i < 4; i++) m.recordDelivery('stone', 50);
+    tick(2);
+    g.players[0].techs.add('chavin_pilgrimage');
+    tick(92);
+    for (let i = 0; i < 4; i++) m.recordDelivery('silver', 50);
+    tick(32);
     return {
-      setup: true,
       won: m.won as boolean | null,
-      required: m.getObjectiveState('obj_ofrendas') as string,
+      required: m.getObjectiveState('a4_despedida') as string,
       bonus: m.getObjectiveState('bonus_ofrenda_mayor') as string,
     };
   });
-  expect(out.setup).toBe(true);
   expect(out.required).toBe('completed');
   expect(out.bonus).not.toBe('completed');
   expect(out.won).toBe(true);

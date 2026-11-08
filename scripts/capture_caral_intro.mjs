@@ -100,7 +100,7 @@ try {
         }
         if (shot.setup === 'drought' || shot.setup === 'departure') {
           g.setSitePhase('in_use');
-          g.startDrought(true);
+          g.startEnvironmentalEvent('drought', true);
         }
         if (shot.setup === 'departure') moveAll(24, 166);
         let t = 1;
@@ -119,7 +119,7 @@ try {
         // Re-apply the drought last: the quality preset can rebuild the terrain material after it.
         if (shot.setup === 'drought' || shot.setup === 'departure') {
           g.droughtShown = -1;
-          g.startDrought(true);
+          g.startEnvironmentalEvent('drought', true);
         }
         if (shot.eye) {
           const site = g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 });

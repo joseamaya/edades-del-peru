@@ -90,8 +90,8 @@ test('clicking the ground places the previewed building', { tag: '@smoke' }, asy
 });
 
 test('a single click on the train card queues the unit', { tag: '@smoke' }, async ({ page }) => {
-  // m1 (Caral) trains workers and scouts only; Chavín still has warriors.
-  await page.goto('/?mission=m2_chavin&seed=777&fog=0&low=1&intro=0');
+  // Moche has a military roster; Caral and Chavín train workers and scouts only.
+  await page.goto('/?mission=m3_moche_recuay&seed=777&fog=0&low=1&intro=0');
   await startMission(page);
   const id = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;

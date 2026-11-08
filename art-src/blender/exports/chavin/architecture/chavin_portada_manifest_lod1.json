@@ -1,0 +1,30 @@
+{
+  "asset_id": "chavin_portada",
+  "source": "chavin_lod1_clean.blend",
+  "reviewed": false,
+  "reviewer": null,
+  "reviewedAt": null,
+  "confidence": "inferred",
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "lods": {
+    "LOD1": {
+      "file": "chavin_portada_lod1.glb",
+      "triangles": 152,
+      "materials": [
+        "MAT-Arch_ChavinDark",
+        "MAT-Arch_ChavinPlaster",
+        "MAT-Arch_ChavinStone"
+      ],
+      "bounds": {
+        "size": [
+          72.575,
+          9.0,
+          42.5
+        ]
+      }
+    }
+  }
+}

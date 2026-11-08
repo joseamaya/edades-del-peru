@@ -296,6 +296,13 @@ Definition of Done and the building audit see
   `layout.site` for the exact Caral site plus its own heightfield and keep-out; m6 keeps the Chan Chan
   canal/compound and m9 the Arica port terrace/Chilean naval station as visual-only decor. Every mission now has an educational `epilogue` shown on victory;
   `tests/campaign-layout.test.ts` and the campaign E2E guard the layout data and the victory overlay.
+- **Phased sites and named environmental events**: a mission's `layout.site.phase` selects the opening
+  construction phase; `AuthoredSiteDef.phases` (`SitePhasePlan`) orders the phases and `heritageSince` says
+  when each heritage card stands. Caral (`foundation → fill → finished → in_use`) and Chavín
+  (`old_temple_foundation → old_temple → new_temple_foundation → new_temple → apogee`) share the generic
+  `standsAt` rule. `{ type: 'environment', event: 'drought' }` starts a named event from
+  `src/core/environment.ts`; the event state (`Game.environment`) and `Game.sitePhase` round-trip through
+  saves, and old saves fall back to reconstructing them from fired triggers.
 - **Chronology of units**: `UnitArchetype.minPeriod` (`src/model/defs/units.ts`) is the earliest historical
   period a unit is plausible in (default Arcaico). `tests/history.test.ts` forbids any campaign — including
   scripted waves/reinforcements — from spawning a unit before its `minPeriod` (no firearms, horses, vehicles

@@ -1,0 +1,30 @@
+{
+  "asset_id": "chavin_terraces",
+  "source": "chavin_lod1_clean.blend",
+  "reviewed": false,
+  "reviewer": null,
+  "reviewedAt": null,
+  "confidence": "inferred",
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "lods": {
+    "LOD1": {
+      "file": "chavin_terraces_lod1.glb",
+      "triangles": 2826,
+      "materials": [
+        "MAT-Arch_ChavinDark",
+        "MAT-Arch_ChavinPlaster",
+        "MAT-Arch_ChavinStone"
+      ],
+      "bounds": {
+        "size": [
+          242.0,
+          18.0,
+          157.0
+        ]
+      }
+    }
+  }
+}

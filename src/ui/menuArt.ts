@@ -14,4 +14,5 @@ export const CAMPAIGN_ART: Partial<Record<CampaignId, string>> = {
 
 export const MISSION_ART: Partial<Record<string, string>> = {
   m1_caral: publicAsset('media/caral/intro-aspero.webp'),
+  m2_chavin: publicAsset('media/chavin/intro-templo.webp'),
 };

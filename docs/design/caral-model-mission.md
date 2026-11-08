@@ -141,7 +141,7 @@ Dialogue speaker labels must not say "Comandante" in this mission.
 - **Living valley**: cooking smoke behind dwellings, the sacred fire on the Pyramid Mayor and a blaze for
   the Act III offering, temporary fair tents once the city is in use, two allied hamlets up the valley,
   riparian deer and birds, pelicans off Áspero, surf on the shore and a flute line for the era.
-- **Drought** (`Game.startDrought`, 40 s): the green turns to sand in patches, the river surface drops,
+- **Drought** (`Game.startEnvironmentalEvent('drought')`, 40 s): the green turns to sand in patches, the river surface drops,
   the haze turns dusty, fields lose half their harvest and about one riverside tree in three dies.
 - **Narration**: an anonymous narrator (`MissionDef.narrator`); no "Comandante" label, no invented names.
 - **Tutorial**: eight steps (select, coast, house, valley, field, storage, nets, pyramid) docked under the

@@ -8,7 +8,7 @@ import { disposeStaticGltf } from '../rendering/StaticModel';
 import { loadSceneryModel } from '../rendering/sceneryModels';
 import { loadSiteModel } from '../rendering/siteModels';
 import { mergeStaticByMaterial } from '../rendering/mergeStatic';
-import { CaralCity } from '../rendering/architectureKit';
+import { ArchitectureCity, CaralCity } from '../rendering/architectureKit';
 import {
   ASPERO_BLOCKERS,
   ASPERO_LAYOUT,
@@ -17,9 +17,9 @@ import {
   SUPE_HAMLET_BLOCKERS,
   CARAL_CITY_BLOCKERS,
   CARAL_CITY_LAYOUT,
-  standsAt,
-  type CaralMayorPhase,
 } from '../model/defs/caralCity';
+import { CHAVIN_CITY_LAYOUT, CHAVIN_PHASE_PLAN } from '../model/defs/chavinCity';
+import { standsAt } from '../model/defs/sitePhases';
 import type { Obstacle } from '../game/Pathfinding';
 import { loadDecorModel } from '../rendering/decorModels';
 import { planProps, propCountFor } from '../model/defs/props';
@@ -121,9 +121,10 @@ export class WorldViewDecor {
   }
 
   /** Block exactly the buildings that stand in `phase`; the ones still to be built stay walkable. */
-  syncSitePhase(phase: CaralMayorPhase): void {
+  syncSitePhase(phase: string): void {
+    const plan = this.game.siteDef?.phases;
     for (const entry of this.phasedBlockers) {
-      const stands = standsAt(entry.blocker, phase);
+      const stands = standsAt(entry.blocker.since, phase, plan);
       if (stands === entry.on) continue;
       if (stands) this.game.pathfinder.addObstacle(entry.obstacle);
       else this.game.pathfinder.removeObstacle(entry.obstacle);
@@ -241,6 +242,32 @@ export class WorldViewDecor {
         );
         city.setMayorPhase(this.game.sitePhase);
         this.game.caralCity = city;
+        void city.load().then((ok) => {
+          if (!current()) {
+            city.dispose();
+            return;
+          }
+          if (!ok) return;
+          group.add(city.group);
+          applyFowToObject(city.group, this.game.fowUniforms);
+          cityShown = true;
+          if (siteModel) siteModel.visible = false;
+        });
+      }
+    }
+    if (def.id === 'chavin_site') {
+      if (!this.game.headless) {
+        // The kit draws the temple in its construction phase; the source GLB stays hidden and keeps the
+        // heritage click proxies.
+        const city = new ArchitectureCity(
+          'chavin_city',
+          'chavin',
+          [...CHAVIN_CITY_LAYOUT],
+          (x, z) => this.game.terrain.getHeight(x, z) - (site.y ?? 0),
+          CHAVIN_PHASE_PLAN,
+        );
+        city.setPhase(this.game.sitePhase);
+        this.game.chavinCity = city;
         void city.load().then((ok) => {
           if (!current()) {
             city.dispose();

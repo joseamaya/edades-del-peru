@@ -54,28 +54,22 @@ The mission has no market objective. There is no attested market building at Car
 coast–valley complementarity and the hand-overs, and the fair tents that appear once the city is in use are
 temporary and seasonal. The Troje is a gameplay name, not an attested Caral term, as its field card says.
 
-## Chavín pilot (m2)
+## Chavín model mission (m2)
 
-Historical idea: Chavín's power was ceremonial prestige, not a documented war.
-Pilgrims and long-distance offerings sustained the temple, and the feria linked
-the sanctuary to exchange networks.
+Historical idea: Chavín's power was ceremonial prestige, not a documented war. Pilgrims and
+long-distance offerings sustained the temple, and the fair linked the sanctuary to exchange networks.
 
 What the player does:
 
-1. Reaches the authored Chavín site and reads the Plaza Circular, Edificio A/B,
-   Portada and gallery field cards.
-2. Delivers five offerings of 50 silver at Edificio B. A worker must be near the
-   temple; the offering is consumed and tracked as delivered, not merely held.
-3. Completing the offering goal reveals the pilgrimage, the feria and the optional
-   major offering.
-4. Holds the Plaza Circular for 60 seconds with a worker to receive pilgrims, and
-   builds the feria outside the archaeological keep-out.
-5. Sustains the centre for seven minutes. The epilogue connects the documented
+1. Reaches the ceremonial centre and delivers the first offerings at Edificio B.
+2. Hands stone over at the Old Temple, receives pilgrims in the Plaza Circular and builds the fair.
+3. Expands the New Temple (Edificio A and the Portada de las Falcónidas), researches the pilgrimage
+   technology and receives the great pilgrimage.
+4. Delivers the last offering and says farewell to the community; the epilogue connects the documented
    decline with the fragmentation of Chavín's influence.
 
-The mission deliberately does **not** add a Chavín–Paracas war: Paracas is a
-coetaneous reference, not an enemy. The feria uses the game's `Mercado` building
-as an abstraction and says so in its field card.
+The mission deliberately does **not** add a Chavín–Paracas war: Paracas is a coetaneous reference, not an
+enemy. The feria uses the game's `Mercado` building as an abstraction and says so in its field card.
 
 ## Progression for the other missions
 

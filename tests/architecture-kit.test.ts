@@ -70,8 +70,8 @@ const triangles = (geometry: THREE.BufferGeometry): number =>
 describe('Caral architecture kit', () => {
   it('ships every piece and phase as two LODs the game can resolve', () => {
     for (const id of IDS) {
-      expect(archKitUrl(id, 0), id).toBeTruthy();
-      expect(archKitUrl(id, 1), id).toBeTruthy();
+      expect(archKitUrl('caral', id, 0), id).toBeTruthy();
+      expect(archKitUrl('caral', id, 1), id).toBeTruthy();
     }
     for (const id of Object.values(CARAL_MAYOR_PHASE_ASSET)) expect(IDS).toContain(id);
   });

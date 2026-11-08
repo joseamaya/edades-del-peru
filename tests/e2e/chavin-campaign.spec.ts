@@ -11,7 +11,7 @@ async function startMission(page: Page): Promise<void> {
   await overlay.waitFor({ state: 'detached', timeout: 15_000 });
 }
 
-test('m2 loads the authored Chavín site without the CyArk Lanzón', async ({ page }) => {
+test('m2 loads the authored Chavín site and its phased kit without the CyArk Lanzón', async ({ page }) => {
   await page.goto(URL);
   await startMission(page);
   await page.waitForFunction(
@@ -35,6 +35,9 @@ test('m2 loads the authored Chavín site without the CyArk Lanzón', async ({ pa
       model: landmark.getObjectByName('chavin_site')?.name ?? null,
       anchor: g.siteAnchor,
       center: g.siteCenter,
+      phase: g.sitePhase,
+      kit: !!g.chavinCity,
+      siteVisible: landmark.getObjectByName('chavin_site')?.visible,
       hidden,
       materials: [...materials],
     };
@@ -43,12 +46,15 @@ test('m2 loads the authored Chavín site without the CyArk Lanzón', async ({ pa
   expect(out.anchor).toEqual({ x: 98, z: 87.5 });
   expect(out.center?.x).toBeCloseTo(0.51 * 192, 5);
   expect(out.center?.z).toBeCloseTo(0.456 * 192, 5);
+  expect(out.phase).toBe('old_temple_foundation');
+  expect(out.kit).toBe(true);
+  expect(out.siteVisible).toBe(false);
   expect(Object.values(out.hidden).length).toBeGreaterThan(0);
   expect(Object.values(out.hidden).every((visible) => visible === false)).toBe(true);
   expect(out.materials.some((name) => /Lanzon_Scan/.test(name))).toBe(false);
 });
 
-test('m2 offering flow opens the pilgrimage and completes the mission', async ({ page }) => {
+test('m2 plays the four acts from the offering to the documented decline', async ({ page }) => {
   test.setTimeout(120_000);
   await page.goto(URL);
   await startMission(page);
@@ -60,61 +66,89 @@ test('m2 offering flow opens the pilgrimage and completes the mission', async ({
     const anchor = g.siteAnchor as { x: number; z: number };
     const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as any;
     worker.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
-    g.visitHeritage('chavin_edificio_b');
-    const offers = [];
-    for (let i = 0; i < 5; i++) offers.push(g.makeOffering('chavin_edificio_b'));
-    g.update(1 / 60, 0);
-    const afterOffers = {
-      offers,
-      progress: m.getObjectiveProgress('obj_ofrendas'),
-      state: m.getObjectiveState('obj_ofrendas'),
-      pilgrimage: m.getObjectiveState('obj_peregrinaje'),
-      feria: m.getObjectiveState('obj_feria'),
-      silver: g.players[0].resources.silver,
-    };
-    g.spawnScriptedBuilding('market', 0, anchor.x, anchor.z + 34);
-    const dt = 1 / 60;
     let t = 0;
-    for (let i = 0; i < Math.ceil(500 / dt) && !m.ended; i++) {
-      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
-      for (const b of g.buildings.values()) if (b.owner === 0 && !b.dead) b.hp = b.maxHp;
-      worker.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
-      g.update(dt, t);
-      t += dt;
-    }
+    const tick = (seconds: number) => {
+      const dt = 1 / 60;
+      for (let i = 0; i < Math.ceil(seconds / dt) && !m.ended; i++) {
+        document.querySelector('.ed-mission-card')?.remove();
+        worker.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+        for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
+        for (const b of g.buildings.values()) if (b.owner === 0 && !b.dead) b.hp = b.maxHp;
+        g.update(dt, t);
+        t += dt;
+      }
+    };
+    const phases: string[] = [g.sitePhase];
+    const recordPhase = () => {
+      if (phases[phases.length - 1] !== g.sitePhase) phases.push(g.sitePhase);
+    };
+    tick(5);
+    // Act I: reach and first offering.
+    m.recordDelivery('silver', 50);
+    m.recordDelivery('silver', 50);
+    tick(2);
+    const actI = {
+      offer: m.getObjectiveState('a1_ofrenda'),
+      acts: g.mission.def.triggers.length,
+    };
+    // Act II: Old Temple, fair and pilgrimage.
+    m.recordDelivery('stone', 50);
+    m.recordDelivery('stone', 50);
+    m.recordDelivery('stone', 50);
+    tick(2);
+    recordPhase();
+    g.spawnScriptedBuilding('market', 0, anchor.x, anchor.z + 34);
+    tick(2);
+    tick(61);
+    recordPhase();
+    // Act III: New Temple, research and great pilgrimage.
+    m.recordDelivery('stone', 50);
+    m.recordDelivery('stone', 50);
+    m.recordDelivery('stone', 50);
+    m.recordDelivery('stone', 50);
+    tick(2);
+    recordPhase();
+    g.players[0].techs.add('chavin_pilgrimage');
+    tick(2);
+    tick(91);
+    recordPhase();
+    // Act IV: last offering and farewell.
+    m.recordDelivery('silver', 50);
+    m.recordDelivery('silver', 50);
+    m.recordDelivery('silver', 50);
+    m.recordDelivery('silver', 50);
+    tick(2);
+    tick(31);
     return {
-      afterOffers,
+      actI,
+      phases,
       won: m.won,
       ended: m.ended,
       states: Object.fromEntries(m.def.objectives.map((o: any) => [o.id, m.getObjectiveState(o.id)])),
     };
   });
-  expect(out.afterOffers.offers).toEqual([true, true, true, true, true]);
-  expect(out.afterOffers.progress).toEqual({ current: 250, target: 250, format: 'count' });
-  expect(out.afterOffers.state).toBe('completed');
-  expect(out.afterOffers.pilgrimage).toBe('activo');
-  expect(out.afterOffers.feria).toBe('activo');
-  expect(out.afterOffers.silver).toBe(50);
-  expect(out.states.obj_peregrinaje).toBe('completed');
-  expect(out.states.obj_feria).toBe('completed');
-  expect(out.states.obj_sostener).toBe('completed');
+  expect(out.actI.offer).toBe('completed');
+  expect(out.phases).toEqual(['old_temple_foundation', 'old_temple', 'new_temple_foundation', 'new_temple', 'apogee']);
+  expect(out.states.a2_peregrinaje).toBe('completed');
+  expect(out.states.a2_feria).toBe('completed');
+  expect(out.states.a3_intercambio).toBe('completed');
+  expect(out.states.a4_despedida).toBe('completed');
   expect(out.won).toBe(true);
   expect(out.ended).toBe(true);
 });
 
-test('m2 tutorial advances through the offering gate without skipping steps', async ({ page }) => {
-  test.setTimeout(120_000);
+test('m2 briefing hides later acts and the tutorial starts with nine non-blocking steps', async ({ page }) => {
   await page.goto(URL);
   const briefing = page.locator('.ed-overlay', { hasText: 'El Oráculo de Chavín' });
   await expect(briefing).toBeVisible({ timeout: 30_000 });
   await expect(briefing).not.toContainText('Recibe a los peregrinos');
   await expect(briefing).not.toContainText('Abre la feria');
-  await expect(briefing).toContainText('Entrega 250 de plata');
+  await expect(briefing).toContainText('Entrega 100 de plata');
   await briefing.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
   const tutorial = page.locator('#ed-tutorial');
   await expect(tutorial).toBeVisible({ timeout: 30_000 });
   await expect(tutorial).toContainText('Selecciona a tus obreros');
-  await expect(tutorial).toContainText('Paso 1 / 5');
+  await expect(tutorial).toContainText('Paso 1 / 9');
 
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -129,34 +163,7 @@ test('m2 tutorial advances through the offering gate without skipping steps', as
     const anchor = g.siteAnchor as { x: number; z: number };
     const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as any;
     worker.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
-  });
-  await expect(tutorial).toContainText('entrega una ofrenda', { timeout: 10_000 });
-
-  await page.evaluate(() => {
-    const g = (window as unknown as { game: any }).game;
-    for (let i = 0; i < 5; i++) g.makeOffering('chavin_edificio_b');
     g.update(1 / 60, 0);
   });
-  await expect(tutorial).toContainText('Abre la feria', { timeout: 10_000 });
-
-  await page.evaluate(() => {
-    const g = (window as unknown as { game: any }).game;
-    const anchor = g.siteAnchor as { x: number; z: number };
-    g.spawnScriptedBuilding('market', 0, anchor.x, anchor.z + 34);
-  });
-  await expect(tutorial).toContainText('Mantén un obrero', { timeout: 10_000 });
-
-  await page.evaluate(() => {
-    const g = (window as unknown as { game: any }).game;
-    const anchor = g.siteAnchor as { x: number; z: number };
-    const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as any;
-    const dt = 1 / 60;
-    let t = 0;
-    for (let i = 0; i < Math.ceil(70 / dt); i++) {
-      worker.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
-      g.update(dt, t);
-      t += dt;
-    }
-  });
-  await expect(tutorial).not.toBeVisible({ timeout: 10_000 });
+  await expect(tutorial).toContainText('entrega una ofrenda', { timeout: 10_000 });
 });

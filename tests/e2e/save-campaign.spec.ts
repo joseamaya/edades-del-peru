@@ -60,7 +60,7 @@ test('saves and loads a campaign mission', async ({ page }) => {
   expect(new URL(page.url()).searchParams.has('load')).toBe(false);
 });
 
-test('saves and loads the Chavín delivered offerings', async ({ page }) => {
+test('saves and loads the Chavín offerings and site phase', async ({ page }) => {
   await page.goto('/?mission=m2_chavin&seed=900&fog=0&low=1&intro=0');
   await startMission(page);
   await page.waitForFunction(
@@ -74,30 +74,40 @@ test('saves and loads the Chavín delivered offerings', async ({ page }) => {
   const before = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
     const anchor = g.siteAnchor as { x: number; z: number };
     const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as any;
     worker.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
-    for (let i = 0; i < 5; i++) g.makeOffering('chavin_edificio_b');
-    g.update(1 / 60, 0);
-    const dt = 1 / 60;
     let t = 0;
-    for (let i = 0; i < Math.ceil(10 / dt); i++) {
-      worker.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
-      g.update(dt, t);
-      t += dt;
-    }
+    const tick = (seconds: number) => {
+      const dt = 1 / 60;
+      for (let i = 0; i < Math.ceil(seconds / dt) && !m.ended; i++) {
+        document.querySelector('.ed-mission-card')?.remove();
+        worker.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+        g.update(dt, t);
+        t += dt;
+      }
+    };
+    tick(5);
+    g.makeOffering('chavin_edificio_b');
+    g.makeOffering('chavin_edificio_b');
+    tick(2);
+    for (let i = 0; i < 3; i++) m.recordDelivery('stone', 50);
+    tick(2);
     g.saveMatch();
     return {
-      progress: g.mission.getObjectiveProgress('obj_ofrendas'),
-      pilgrimage: g.mission.getObjectiveProgress('obj_peregrinaje'),
+      phase: g.sitePhase as string,
+      offering: m.getObjectiveProgress('a1_ofrenda'),
+      oldTemple: m.getObjectiveState('a2_templo') as string,
       tutorialStep: g.tutorial?.toSave().stepId ?? null,
       silver: g.players[0].resources.silver,
     };
   });
-  expect(before.progress.current).toBe(250);
-  expect(before.pilgrimage?.current).toBeGreaterThan(0);
+  expect(before.phase).toBe('old_temple');
+  expect(before.offering?.current).toBe(100);
+  expect(before.oldTemple).toBe('completed');
   expect(before.tutorialStep).not.toBeNull();
-  expect(before.silver).toBe(50);
 
   await page.goto('/?load=1');
   await page.waitForFunction(
@@ -112,14 +122,16 @@ test('saves and loads the Chavín delivered offerings', async ({ page }) => {
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     return {
-      progress: g.mission.getObjectiveProgress('obj_ofrendas'),
-      pilgrimage: g.mission.getObjectiveProgress('obj_peregrinaje'),
+      phase: g.sitePhase as string,
+      offering: g.mission.getObjectiveProgress('a1_ofrenda'),
+      oldTemple: g.mission.getObjectiveState('a2_templo') as string,
       tutorialStep: g.tutorial?.toSave().stepId ?? null,
       silver: g.players[0].resources.silver,
     };
   });
-  expect(after.progress).toEqual(before.progress);
-  expect(after.pilgrimage).toEqual(before.pilgrimage);
+  expect(after.phase).toBe(before.phase);
+  expect(after.offering).toEqual(before.offering);
+  expect(after.oldTemple).toBe(before.oldTemple);
   expect(after.tutorialStep).toBe(before.tutorialStep);
   expect(after.silver).toBe(before.silver);
 });
