@@ -3,6 +3,7 @@ import {
   clampFocusToMap,
   dragToWorld,
   edgeFactor,
+  edgeSpeedFactor,
   edgeVector,
   keyPanVector,
   maxZoomForMap,
@@ -73,6 +74,21 @@ describe('edge scrolling', () => {
     expect(edgeFactor(-100, 0, 800, 36)).toBe(-1);
     expect(edgeFactor(900, 0, 800, 36)).toBe(1);
     expect(edgeFactor(400, 0, 800, 36)).toBe(0);
+  });
+});
+
+describe('edge-scroll ramp', () => {
+  it('stays still during the delay', () => {
+    expect(edgeSpeedFactor(0, 0.25, 0.4)).toBe(0);
+    expect(edgeSpeedFactor(0.25, 0.25, 0.4)).toBe(0);
+  });
+
+  it('accelerates smoothly to full speed', () => {
+    const mid = edgeSpeedFactor(0.45, 0.25, 0.4);
+    expect(mid).toBeGreaterThan(0);
+    expect(mid).toBeLessThan(1);
+    expect(edgeSpeedFactor(0.65, 0.25, 0.4)).toBe(1);
+    expect(edgeSpeedFactor(5, 0.25, 0.4)).toBe(1);
   });
 });
 

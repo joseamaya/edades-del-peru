@@ -1,10 +1,31 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
-async function bootMatch(page: import('@playwright/test').Page): Promise<void> {
+async function bootMatch(page: Page): Promise<void> {
   await page.goto('/?play=1&seed=777&fog=0&low=1&noloop=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });
+}
+
+/** Stop the render loop so tests drive fixed camera updates. */
+async function stopLoop(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+  });
+}
+
+/** Reset the camera to the map centre and return how far it panned over `frames` updates. */
+async function panFrames(page: Page, frames: number): Promise<number> {
+  return page.evaluate((count) => {
+    const g = (window as unknown as { game: any }).game;
+    g.camera.moveTo(g.settings.mapSize / 2, g.settings.mapSize / 2, true);
+    const t0 = g.camera.getTarget();
+    for (let i = 0; i < count; i++) g.update(1 / 60, i / 60);
+    const t1 = g.camera.getTarget();
+    return Math.hypot(t1.x - t0.x, t1.z - t0.z);
+  }, frames);
 }
 
 test('edge scrolling pans the camera toward the border', { tag: '@smoke' }, async ({ page }) => {
@@ -134,6 +155,90 @@ test('edge scrolling is suppressed while the pointer is over a HUD control', asy
   });
   expect(out.overUi).toBe(true);
   expect(out.moved).toBe(0);
+});
+
+test('edge scrolling ignores the whole top bar and starts just below it', { tag: '@smoke' }, async ({ page }) => {
+  await bootMatch(page);
+  const bar = await page.evaluate(() => {
+    const r = document.querySelector('.ed-topbar')!.getBoundingClientRect();
+    return { top: r.top, height: r.height, width: r.width, left: r.left };
+  });
+  const x = Math.round(bar.left + bar.width / 2);
+  await page.mouse.move(x, Math.round(bar.top + bar.height / 2));
+  await stopLoop(page);
+  const overBar = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    return {
+      overUi: g.hud.isPointerOverUi(g.mouseScreen.x, g.mouseScreen.y),
+      onCanvas: document.elementFromPoint(g.mouseScreen.x, g.mouseScreen.y) === g.renderer.domElement,
+    };
+  });
+  // No control is under the cursor (the bar background is pointer-events:none), so the panel rect is what guards it.
+  expect(overBar.overUi).toBe(true);
+  expect(overBar.onCanvas).toBe(true);
+  expect(await panFrames(page, 30)).toBe(0);
+
+  await page.mouse.move(x, Math.round(bar.top + bar.height + 2));
+  expect(await panFrames(page, 30)).toBeGreaterThan(0.5);
+});
+
+test('edge scrolling waits for a short delay before moving', async ({ page }) => {
+  await bootMatch(page);
+  await page.mouse.move(2, 300);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    g.camera.moveTo(g.settings.mapSize / 2, g.settings.mapSize / 2, true);
+    const t0 = g.camera.getTarget();
+    for (let i = 0; i < 6; i++) g.update(1 / 60, i / 60);
+    const early = Math.hypot(g.camera.getTarget().x - t0.x, g.camera.getTarget().z - t0.z);
+    for (let i = 0; i < 40; i++) g.update(1 / 60, i / 60);
+    const late = Math.hypot(g.camera.getTarget().x - t0.x, g.camera.getTarget().z - t0.z);
+    return { early, late };
+  });
+  expect(out.early).toBe(0);
+  expect(out.late).toBeGreaterThan(0.5);
+});
+
+test('moving from the bottom edge onto the command bar stops the camera', async ({ page }) => {
+  await bootMatch(page);
+  const bar = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead);
+    g.selectedUnits = [worker.id];
+    g.hud.renderBottom();
+    const r = document.querySelector('#ed-bottom')!.getBoundingClientRect();
+    return { left: r.left, right: r.right, top: r.top, innerHeight: window.innerHeight };
+  });
+  await stopLoop(page);
+  const x = Math.round((bar.left + bar.right) / 2);
+  await page.mouse.move(x, bar.innerHeight - 4);
+  expect(await panFrames(page, 30)).toBeGreaterThan(0.5);
+
+  await page.mouse.move(x, Math.round(bar.top + 10));
+  expect(await panFrames(page, 30)).toBe(0);
+});
+
+test('the edge-scroll option disables panning and persists across reloads', async ({ page }) => {
+  await bootMatch(page);
+  await page.evaluate(() => (window as unknown as { game: any }).game.hud.showOptions('main'));
+  await page.locator('.ed-field', { hasText: 'Desplazar con los bordes' }).locator('button').click();
+  const saved = await page.evaluate(() => {
+    const raw = localStorage.getItem('peru-settings');
+    return raw ? JSON.parse(raw).edgeScroll : null;
+  });
+  expect(saved).toBe(false);
+
+  await page.reload();
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  await page.mouse.move(2, 300);
+  await stopLoop(page);
+  const setting = await page.evaluate(() => (window as unknown as { game: any }).game.settings.edgeScroll);
+  expect(setting).toBe(false);
+  expect(await panFrames(page, 60)).toBe(0);
 });
 
 test('the camera speed scale changes keyboard pan distance', async ({ page }) => {

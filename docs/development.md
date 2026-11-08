@@ -395,10 +395,14 @@ Definition of Done and the building audit see
   slightly past the map; `Terrain.buildSkirt` adds a low-detail apron (with corner caps) around the playable edge so
   the sky/clear color never shows there. Panning is suppressed while **paused** (the loop skips `camera.update`) or
   while a
-  **blocking overlay** is open (`camera.setUiCaptured`); **edge scrolling is also off while the pointer is over a
-  HUD control** (`hud.isPointerOverUi` — `#ui-root` is `pointer-events:none`, only real
-  controls set `auto`). Tuning lives in `CAMERA_CONFIG`; the pure math is unit-tested (`tests/camera.test.ts`), the
-  wiring in `tests/e2e/camera.spec.ts`. The **camera speed** option (Baja/Normal/Alta, `settings.cameraSpeed` →
+  **blocking overlay** is open (`camera.setUiCaptured`); **edge scrolling is off while the pointer is over any HUD
+  panel or control** (`hud.isPointerOverUi` — panel rects plus `document.elementFromPoint`, because `#ui-root` is
+  `pointer-events:none`). Its trigger is a narrow **10 px** band at the edge of the visible play field
+  (`hud.edgeTopInset` → `camera.setEdgeTopInset`, i.e. just below the top bar; the bottom bars are guarded
+  panels), it starts after a **0.25 s** delay and ramps to full speed over 0.4 s (`edgeSpeedFactor`), and it can
+  be turned off from Options (`settings.edgeScroll`, persisted in `peru-settings`). Tuning lives in
+  `CAMERA_CONFIG`; the pure math is unit-tested (`tests/camera.test.ts`), the wiring in
+  `tests/e2e/camera.spec.ts`. The **camera speed** option (Baja/Normal/Alta, `settings.cameraSpeed` →
   `CAMERA_SPEED_SCALE`) scales the keyboard/edge speed only (the middle-drag is direct manipulation).
 - **Campaign intro (visual only)**: `Mission.start` calls `Game.playIntro()` from the briefing's onStart
   callback, which frames an overview and runs `RTSCamera.flyTo(x, z, zoom, seconds)` down to the player base;

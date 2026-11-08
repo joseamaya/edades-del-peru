@@ -17,8 +17,12 @@ export interface Vec2 {
 
 /** Centralized camera tuning: no scattered magic numbers. */
 export const CAMERA_CONFIG = {
-  /** Distance from a viewport edge (px) at which edge scrolling begins. */
-  edgeZone: 36,
+  /** Distance from the play-area edge (px) at which edge scrolling begins. */
+  edgeZone: 10,
+  /** Delay before edge scrolling starts (s), so reaching a HUD panel does not pan by accident. */
+  edgeDelay: 0.25,
+  /** Time to reach full edge-scroll speed after the delay (s). */
+  edgeRampTime: 0.4,
   /** Edge-scroll speed, as a multiple of zoom (world units per second). */
   edgeSpeed: 1.6,
   /** Keyboard pan speed, as a multiple of zoom. */
@@ -73,6 +77,16 @@ export function edgeVector(px: number, py: number, rect: Rect, zone: number): Ve
   if (len < 1e-6) return { x: 0, y: 0 };
   const mag = Math.min(1, len);
   return { x: (fx / len) * mag, y: (fy / len) * mag };
+}
+
+/**
+ * Edge-scroll speed factor in [0, 1]: 0 during `delaySeconds`, then a smoothstep to full speed
+ * over `rampSeconds`. Crossing the edge on the way to a HUD panel should not move the camera.
+ */
+export function edgeSpeedFactor(heldSeconds: number, delaySeconds: number, rampSeconds: number): number {
+  if (heldSeconds <= delaySeconds) return 0;
+  const t = Math.min(1, (heldSeconds - delaySeconds) / rampSeconds);
+  return t * t * (3 - 2 * t);
 }
 
 /** Keyboard pan direction (screen space: +y = down), normalized for diagonals. */

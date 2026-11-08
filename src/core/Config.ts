@@ -35,6 +35,8 @@ export interface GameSettings {
   hotkeys: HotkeyMap;
   /** Camera pan speed preset (keyboard + edge scroll). */
   cameraSpeed: 'slow' | 'normal' | 'fast';
+  /** Pan the camera when the pointer reaches the edge of the play field. */
+  edgeScroll: boolean;
   victoryMode: 'conquest' | 'wonder';
   /** Mod ids loaded at boot (data patches over the defs); later ones win. */
   activeMods: string[];
@@ -84,6 +86,7 @@ export const DEFAULT_SETTINGS: GameSettings = {
   rotateCamera: false,
   hotkeys: { ...DEFAULT_KEYMAP },
   cameraSpeed: 'normal',
+  edgeScroll: true,
   victoryMode: 'conquest',
   activeMods: [],
 };

@@ -280,6 +280,7 @@ export const es = {
   'hud.menu.options.cinematic': 'Efectos cinematográficos',
   'hud.menu.options.rotate': 'Rotar cámara (Z/X)',
   'hud.menu.options.cameraSpeed': 'Velocidad de cámara',
+  'hud.menu.options.edgeScroll': 'Desplazar con los bordes',
   'hud.menu.options.fog': 'Niebla de guerra',
   'hud.menu.options.sound': 'Sonido',
   'hud.menu.options.music': 'Música',

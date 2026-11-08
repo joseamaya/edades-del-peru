@@ -13,4 +13,8 @@ describe('game settings defaults', () => {
   it('carries the current schema version', () => {
     expect(DEFAULT_SETTINGS.settingsVersion).toBe(SETTINGS_VERSION);
   });
+
+  it('enables edge scrolling by default', () => {
+    expect(DEFAULT_SETTINGS.edgeScroll).toBe(true);
+  });
 });

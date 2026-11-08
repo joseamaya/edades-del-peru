@@ -489,6 +489,14 @@ const CSS = /* css */ `
   @keyframes alert-in { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }
 `;
 
+/**
+ * Persistent HUD panels that must stop edge scrolling even though the HUD root is
+ * `pointer-events:none`: `elementFromPoint` only sees controls whose own `pointer-events` is `auto`.
+ * Add any new always-on panel here.
+ */
+const EDGE_GUARD_SELECTOR =
+  '.ed-topbar, #ed-bottom, #ed-minimap-wrap, #ed-objectives, #ed-tutorial, #ed-help, #ed-help-open, #ed-fps, #ed-toasts, #ed-alerts, #ed-dialogue';
+
 export class HUD {
   game: Game;
   private root: HTMLDivElement;
@@ -499,6 +507,9 @@ export class HUD {
   private eraDot!: HTMLElement;
   private bottomEl!: HTMLElement;
   private bottomHeader!: HTMLElement;
+  private topbarEl!: HTMLElement;
+  /** Persistent HUD panels that swallow edge scrolling even when they are pointer-events:none. */
+  private edgeGuardEls: HTMLElement[] = [];
   private descEl!: HTMLElement;
   private gridEl!: HTMLElement;
   private commandsEl!: HTMLElement;
@@ -546,6 +557,7 @@ export class HUD {
     this.buildHover();
     this.buildDamageCursor();
     this.buildAlerts();
+    this.edgeGuardEls = Array.from(this.root.querySelectorAll<HTMLElement>(EDGE_GUARD_SELECTOR));
     bus.on('alert', (info) => this.pushAlert(info));
   }
 
@@ -660,6 +672,7 @@ export class HUD {
 
   private buildTopBar(): void {
     const top = this.el('div', 'ed-topbar');
+    this.topbarEl = top;
     const logo = this.el('div', 'ed-logo');
     logo.innerHTML = `<svg viewBox="0 0 32 32" fill="none"><path d="M16 3l2.6 7.8L26 13l-7.4 2.2L16 23l-2.6-7.8L6 13l7.4-2.2z" fill="#e8c36a"/><path d="M16 18v9M12 27h8" stroke="#e8c36a" stroke-width="1.6"/></svg> ${t('app.title')}`;
     top.appendChild(logo);
@@ -1049,13 +1062,22 @@ export class HUD {
   }
 
   /**
-   * True if the pointer is over a HUD control (not the game view). `#ui-root` is
-   * `pointer-events:none` and only real controls set `auto`, so any element under
-   * the cursor that lives in the HUD is a control (0 A.D.-style edge guard).
+   * True if the pointer is over a HUD panel or control (not the game view). `#ui-root` is
+   * `pointer-events:none`, so `elementFromPoint` only sees real controls; the persistent panels
+   * are hit-tested by their rects because their backgrounds and gaps would otherwise leak through.
    */
   isPointerOverUi(x: number, y: number): boolean {
+    for (const panel of this.edgeGuardEls) {
+      const r = panel.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0 && x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return true;
+    }
     const el = document.elementFromPoint(x, y);
     return !!el && this.root.contains(el);
+  }
+
+  /** Height the top bar takes from the viewport, for the camera's edge trigger. */
+  edgeTopInset(): number {
+    return this.topbarEl.getBoundingClientRect().height;
   }
 
   showVictory(victory: boolean, winText?: string, loseText?: string): void {
@@ -2602,6 +2624,17 @@ export class HUD {
           },
         ),
       ),
+    );
+    this.toggle(
+      row,
+      t('hud.menu.options.edgeScroll'),
+      [t('toggle.onM'), t('toggle.offM')],
+      () => this.game.settings.edgeScroll,
+      (v) => {
+        this.game.settings.edgeScroll = v;
+        this.game.camera.setEdgeScroll(v);
+        this.game.saveSettings();
+      },
     );
     this.toggle(
       row,
