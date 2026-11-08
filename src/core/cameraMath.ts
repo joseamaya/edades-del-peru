@@ -127,6 +127,48 @@ export function dragToWorld(screenDx: number, screenDy: number, yaw: number, wpp
 }
 
 /**
+ * Ground point (y = 0) under a screen NDC position, as an XZ offset from the camera target.
+ * The camera orbits `target` at `zoom` with `pitch`/`yaw` and looks at it, so the ray through the
+ * cursor can be intersected with the ground plane exactly (perspective included, not a per-pixel
+ * approximation). Used by zoom-to-cursor and the direct middle-drag.
+ */
+export function groundOffsetAtNdc(
+  nx: number,
+  ny: number,
+  aspect: number,
+  pitch: number,
+  yaw: number,
+  fovRad: number,
+  zoom: number,
+): Vec2 {
+  const sinY = Math.sin(yaw);
+  const cosY = Math.cos(yaw);
+  const sinP = Math.sin(pitch);
+  const cosP = Math.cos(pitch);
+  const tanY = Math.tan(fovRad / 2);
+  const tanX = tanY * aspect;
+  // Camera basis: forward (towards the target), right and up.
+  const fx = -sinY * cosP;
+  const fy = -sinP;
+  const fz = -cosY * cosP;
+  const rx = cosY;
+  const rz = -sinY;
+  const ux = -sinY * sinP;
+  const uy = cosP;
+  const uz = -cosY * sinP;
+  const dx = fx + nx * tanX * rx + ny * tanY * ux;
+  const dy = fy + ny * tanY * uy;
+  const dz = fz + nx * tanX * rz + ny * tanY * uz;
+  // Camera position relative to the target (the camera looks at the target on the ground).
+  const cx = sinY * cosP * zoom;
+  const cy = sinP * zoom;
+  const cz = cosY * cosP * zoom;
+  if (dy >= -1e-6) return { x: 0, y: 0 };
+  const t = -cy / dy;
+  return { x: cx + t * dx, y: cz + t * dz };
+}
+
+/**
  * Clamp the camera focus (screen-center ground point) near the map edge.
  * Unlike a viewport clamp this still lets the camera follow units into corners;
  * the view may show the map edge/backdrop, as in 0 A.D.

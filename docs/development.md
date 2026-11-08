@@ -382,14 +382,17 @@ Definition of Done and the building audit see
   The bottom **command panel** (`#ed-bottom`) is hidden unless a **unit or building is selected** (0 A.D.-style):
   building therefore starts from a selected worker (or the H/F/G/V shortcuts), not from an idle panel.
 - **Camera panning (`src/core/Camera.ts` + `src/core/cameraMath.ts`)**: the camera orbits a ground target; its
-  ground basis is `forward = (−sin yaw, −cos yaw)`, `right = (cos yaw, −sin yaw)`, and **every pan input is rotated
-  by that basis** (`rotateToWorld`, a rotation by `−yaw`). The default is **north-up** (`yaw = 0`), so `W`/arriba =
-  north and the main map matches the north-up minimap; Z/X rotation is optional (`settings.rotateCamera`). Edge
-  scrolling is **progressive** (0 at the zone edge, ±1 at the border) and every pan vector is **normalized** (a
-  diagonal is not faster than an axis); middle-drag uses a **geometric** world-per-pixel
-  (`2·tan(fov/2)·zoom/viewportH`) with the "grab the map" metaphor (the content follows the cursor). Inputs only
-  move `desiredTarget`; `update` damps toward it. The zoom-out limit is **derived from map size, aspect and yaw**
-  (`maxZoomForMap`/`viewHalfExtents`) to avoid an absurdly distant camera. The target (screen-center ground point)
+  ground basis is `forward = (−sin yaw, −cos yaw)`, `right = (cos yaw, −sin yaw)`, and **keyboard/edge pan vectors
+  are rotated by that basis** (`rotateToWorld`, a rotation by `−yaw`). The default is **north-up** (`yaw = 0`), so
+  `W`/arriba = north and the main map matches the north-up minimap; Z/X rotation is optional
+  (`settings.rotateCamera`). Edge scrolling is **progressive** (0 at the zone edge, ±1 at the border) and every pan
+  vector is **normalized** (a diagonal is not faster than an axis). The **wheel zooms toward the ground point under
+  the cursor** (`groundOffsetAtNdc`: exact ray/plane `y=0` intersection, perspective included; anchored on the
+  previous *desired* zoom so repeated wheel events telescope), and the **middle-drag applies the ground-offset
+  difference between successive cursor positions** (pitch/perspective corrected) with the target **snapped while
+  dragging**, so the map follows the hand without the pan damping. Inputs otherwise move `desiredTarget`; `update`
+  damps toward it (the scripted flight sets the framing directly). The zoom-out limit is **derived from map size,
+  aspect and yaw** (`maxZoomForMap`/`viewHalfExtents`) to avoid an absurdly distant camera. The target (screen-center ground point)
   is clamped **0 A.D.-style** to `edgeMargin` units from the map edge (`clampFocusToMap`), **not** by the viewport
   footprint: a unit can be followed into a corner and stays near the screen center. The view may therefore show
   slightly past the map; `Terrain.buildSkirt` adds a low-detail apron (with corner caps) around the playable edge so
