@@ -157,30 +157,49 @@ test('edge scrolling is suppressed while the pointer is over a HUD control', asy
   expect(out.moved).toBe(0);
 });
 
-test('edge scrolling ignores the whole top bar and starts just below it', { tag: '@smoke' }, async ({ page }) => {
-  await bootMatch(page);
-  const bar = await page.evaluate(() => {
-    const r = document.querySelector('.ed-topbar')!.getBoundingClientRect();
-    return { top: r.top, height: r.height, width: r.width, left: r.left };
-  });
-  const x = Math.round(bar.left + bar.width / 2);
-  await page.mouse.move(x, Math.round(bar.top + bar.height / 2));
-  await stopLoop(page);
-  const overBar = await page.evaluate(() => {
-    const g = (window as unknown as { game: any }).game;
-    return {
-      overUi: g.hud.isPointerOverUi(g.mouseScreen.x, g.mouseScreen.y),
-      onCanvas: document.elementFromPoint(g.mouseScreen.x, g.mouseScreen.y) === g.renderer.domElement,
-    };
-  });
-  // No control is under the cursor (the bar background is pointer-events:none), so the panel rect is what guards it.
-  expect(overBar.overUi).toBe(true);
-  expect(overBar.onCanvas).toBe(true);
-  expect(await panFrames(page, 30)).toBe(0);
+test(
+  'edge scrolling pans from the physical top edge and not from the bar content',
+  { tag: '@smoke' },
+  async ({ page }) => {
+    await bootMatch(page);
+    const bar = await page.evaluate(() => {
+      const r = document.querySelector('.ed-topbar')!.getBoundingClientRect();
+      return { top: r.top, height: r.height, width: r.width, left: r.left };
+    });
+    const x = Math.round(bar.left + bar.width / 2);
 
-  await page.mouse.move(x, Math.round(bar.top + bar.height + 2));
-  expect(await panFrames(page, 30)).toBeGreaterThan(0.5);
-});
+    // Physical top edge, even where the bar is drawn: this is how players ask to go north.
+    await page.mouse.move(x, 2);
+    await stopLoop(page);
+    expect(await panFrames(page, 30)).toBeGreaterThan(0.5);
+
+    // The bar content (resources, buttons) sits below the 10 px band, so it does not pan.
+    await page.mouse.move(x, Math.round(bar.top + bar.height / 2));
+    const onCanvas = await page.evaluate(() => {
+      const g = (window as unknown as { game: any }).game;
+      return document.elementFromPoint(g.mouseScreen.x, g.mouseScreen.y) === g.renderer.domElement;
+    });
+    expect(onCanvas).toBe(true);
+    expect(await panFrames(page, 30)).toBe(0);
+
+    // A real control that overlaps the band (the speed buttons start ~9 px from the top) is guarded.
+    const control = await page.evaluate(() => {
+      const r = document.querySelector('#ed-speed .speed-btn')!.getBoundingClientRect();
+      return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
+    });
+    await page.mouse.move(control.x, control.y);
+    const overControl = await page.evaluate(() => {
+      const g = (window as unknown as { game: any }).game;
+      return {
+        overUi: g.hud.isPointerOverUi(g.mouseScreen.x, g.mouseScreen.y),
+        onControl: document.elementFromPoint(g.mouseScreen.x, g.mouseScreen.y) !== g.renderer.domElement,
+      };
+    });
+    expect(overControl.overUi).toBe(true);
+    expect(overControl.onControl).toBe(true);
+    expect(await panFrames(page, 30)).toBe(0);
+  },
+);
 
 test('edge scrolling waits for a short delay before moving', async ({ page }) => {
   await bootMatch(page);

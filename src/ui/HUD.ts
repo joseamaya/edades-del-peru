@@ -492,10 +492,11 @@ const CSS = /* css */ `
 /**
  * Persistent HUD panels that must stop edge scrolling even though the HUD root is
  * `pointer-events:none`: `elementFromPoint` only sees controls whose own `pointer-events` is `auto`.
- * Add any new always-on panel here.
+ * Add any new always-on panel here. The top bar is deliberately absent: its top edge is the physical
+ * screen edge, and its buttons keep `pointer-events:auto`, so hovering them still blocks the pan.
  */
 const EDGE_GUARD_SELECTOR =
-  '.ed-topbar, #ed-bottom, #ed-minimap-wrap, #ed-objectives, #ed-tutorial, #ed-help, #ed-help-open, #ed-fps, #ed-toasts, #ed-alerts, #ed-dialogue';
+  '#ed-bottom, #ed-minimap-wrap, #ed-objectives, #ed-tutorial, #ed-help, #ed-help-open, #ed-fps, #ed-toasts, #ed-alerts, #ed-dialogue';
 
 export class HUD {
   game: Game;
@@ -507,7 +508,6 @@ export class HUD {
   private eraDot!: HTMLElement;
   private bottomEl!: HTMLElement;
   private bottomHeader!: HTMLElement;
-  private topbarEl!: HTMLElement;
   /** Persistent HUD panels that swallow edge scrolling even when they are pointer-events:none. */
   private edgeGuardEls: HTMLElement[] = [];
   private descEl!: HTMLElement;
@@ -672,7 +672,6 @@ export class HUD {
 
   private buildTopBar(): void {
     const top = this.el('div', 'ed-topbar');
-    this.topbarEl = top;
     const logo = this.el('div', 'ed-logo');
     logo.innerHTML = `<svg viewBox="0 0 32 32" fill="none"><path d="M16 3l2.6 7.8L26 13l-7.4 2.2L16 23l-2.6-7.8L6 13l7.4-2.2z" fill="#e8c36a"/><path d="M16 18v9M12 27h8" stroke="#e8c36a" stroke-width="1.6"/></svg> ${t('app.title')}`;
     top.appendChild(logo);
@@ -1073,11 +1072,6 @@ export class HUD {
     }
     const el = document.elementFromPoint(x, y);
     return !!el && this.root.contains(el);
-  }
-
-  /** Height the top bar takes from the viewport, for the camera's edge trigger. */
-  edgeTopInset(): number {
-    return this.topbarEl.getBoundingClientRect().height;
   }
 
   showVictory(victory: boolean, winText?: string, loseText?: string): void {
