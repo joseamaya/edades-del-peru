@@ -779,11 +779,6 @@ export const MISSIONS: MissionDef[] = [
         ],
       },
       {
-        id: 't_a4_despedida',
-        condition: { type: 'objective', objectiveId: 'a4_despedida', state: 'completed' },
-        effects: [{ type: 'victory' }],
-      },
-      {
         id: 't_a1_plaza',
         condition: { type: 'objective', objectiveId: 'a1_plaza', state: 'completed' },
         effects: [
