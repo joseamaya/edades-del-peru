@@ -33,6 +33,7 @@ import { PERIODS, getPeriod } from '../model/defs/periods';
 import { civsForPeriod, getCiv } from '../model/defs/civs';
 import { RESOURCE_INFO, MAP_LABEL, GameSettings, CAMERA_SPEED_SCALE, STARTING_RESOURCES } from '../core/Config';
 import { formatNumber, formatStat } from '../util/math';
+import { LABEL_COLORS, LABEL_OPACITY } from '../rendering/MapLabels';
 import { t } from '../i18n';
 import { artIntroForMission } from '../art/manifest';
 import { artFigureHtml, includeUnreviewedArt } from './ArtFigure';
@@ -1971,6 +1972,26 @@ export class HUD {
           ctx.fillRect(x, y, step, step);
         }
       }
+    }
+
+    // place names, under the resource/unit dots so they never hide the board state
+    for (const label of this.game.placeNames) {
+      const wx = label.x * s;
+      const wz = label.z * s;
+      if (fogOn && !fow.isExplored(wx, wz)) continue;
+      const kind = label.kind ?? 'region';
+      ctx.save();
+      ctx.font = 'italic 9px Georgia, "Times New Roman", serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = 'rgba(4, 6, 8, 0.8)';
+      ctx.strokeText(label.text, label.x * w, label.z * w);
+      // The minimap is a dense 190 px board: keep a legibility floor even for dim region names.
+      ctx.globalAlpha = Math.max(LABEL_OPACITY[kind], 0.72);
+      ctx.fillStyle = LABEL_COLORS[kind];
+      ctx.fillText(label.text, label.x * w, label.z * w);
+      ctx.restore();
     }
 
     // resources

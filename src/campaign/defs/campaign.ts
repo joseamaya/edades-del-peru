@@ -1,6 +1,6 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../core/types';
 import { MissionDef } from '../types';
-import { CARAL_MAP_SIZE, CARAL_SITE_BUILD_KEEPOUT, caralKeepout } from '../../model/defs/sites';
+import { CARAL_MAP_SIZE, CARAL_SITE_BUILD_KEEPOUT, CARAL_SITE_ORIGIN, caralKeepout } from '../../model/defs/sites';
 
 const WARI_NODE_A = { ref: 'site' as const, dx: 40, dz: -32 };
 const WARI_NODE_B = { ref: 'site' as const, dx: 38, dz: 34 };
@@ -56,6 +56,20 @@ export const MISSIONS: MissionDef[] = [
     // Light coastal haze: denser fog washed the green valley out from the RTS camera.
     atmosphere: { fogDensity: 0.0015, sunWarmth: 0.9, skyTint: '#cdd3d2' },
     layout: {
+      // Geography of the west-to-east transect (docs/historia/campanas/caral.md, mapas.md):
+      // the Supe runs south past Caral, then west through the wetlands to the Pacific. The sea
+      // strip is too narrow for a readable label, so only the river, valley and settlements are named.
+      labels: [
+        { text: 'Río Supe', x: 70 / CARAL_MAP_SIZE, z: 100 / CARAL_MAP_SIZE, kind: 'water' },
+        { text: 'Valle de Supe', x: 104 / CARAL_MAP_SIZE, z: 138 / CARAL_MAP_SIZE, kind: 'region' },
+        { text: 'Áspero', x: 44 / CARAL_MAP_SIZE, z: 160 / CARAL_MAP_SIZE, kind: 'settlement' },
+        {
+          text: 'Caral',
+          x: CARAL_SITE_ORIGIN.x / CARAL_MAP_SIZE,
+          z: CARAL_SITE_ORIGIN.z / CARAL_MAP_SIZE,
+          kind: 'settlement',
+        },
+      ],
       // Act I starts at Áspero, on its low coastal rise north of the river mouth.
       base: { x: 42 / CARAL_MAP_SIZE, z: 172 / CARAL_MAP_SIZE },
       site: {
