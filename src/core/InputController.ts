@@ -52,6 +52,9 @@ export class InputController {
     canvas.addEventListener('mousedown', this.onMouseDown);
     window.addEventListener('mouseup', this.onMouseUp);
     canvas.addEventListener('mousemove', this.onMouseMove);
+    // Track the pointer everywhere (including over pointer-events:auto HUD controls) so the
+    // camera's UI guard and edge scrolling always use the real position.
+    window.addEventListener('mousemove', this.onWindowMouseMove);
     window.addEventListener('keydown', this.onKeyDown);
     window.addEventListener('keyup', this.onKeyUp);
   }
@@ -173,9 +176,12 @@ export class InputController {
   private hoverRaf = 0;
   private pendingHover = new THREE.Vector2();
 
-  private onMouseMove = (e: MouseEvent): void => {
+  private onWindowMouseMove = (e: MouseEvent): void => {
     this.mouseScreen.set(e.clientX, e.clientY);
     this.game.camera.updateMouse(e.clientX, e.clientY);
+  };
+
+  private onMouseMove = (e: MouseEvent): void => {
     const wp = this.screenToWorld(e.clientX, e.clientY);
     if (wp) {
       this.mouse.set(wp.x, wp.z);
@@ -973,6 +979,7 @@ export class InputController {
     canvas.removeEventListener('mousedown', this.onMouseDown);
     window.removeEventListener('mouseup', this.onMouseUp);
     canvas.removeEventListener('mousemove', this.onMouseMove);
+    window.removeEventListener('mousemove', this.onWindowMouseMove);
     window.removeEventListener('keydown', this.onKeyDown);
     window.removeEventListener('keyup', this.onKeyUp);
     if (this.hoverRaf) cancelAnimationFrame(this.hoverRaf);

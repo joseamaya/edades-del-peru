@@ -8,6 +8,7 @@ import {
   CAMERA_PITCH,
   clampFocusToMap,
   dragToWorld,
+  edgeSpeedFactor,
   edgeVector,
   keyPanVector,
   maxZoomForMap,
@@ -42,6 +43,10 @@ export class RTSCamera {
   private followId: number | null = null;
   private followResolver: ((id: number) => CameraTarget | null | undefined) | null = null;
   private edgeScroll = true;
+  /** Height of the top HUD bar; the edge trigger starts just past it, over the visible play field. */
+  private edgeTopInset = 0;
+  /** Seconds the pointer has been held in the edge zone, for the start delay and ramp. */
+  private edgeHeldSeconds = 0;
   private rotationEnabled = false;
   /** While true (a blocking menu/modal is open) panning is suppressed. */
   private uiCaptured = false;
@@ -136,6 +141,17 @@ export class RTSCamera {
   /** Suppress edge scrolling while the pointer is over a HUD control (0 A.D.-style). */
   setPointerOverUi(on: boolean): void {
     this.pointerOverUi = on;
+  }
+
+  /** Enable/disable edge scrolling from the player settings. */
+  setEdgeScroll(enabled: boolean): void {
+    this.edgeScroll = enabled;
+    if (!enabled) this.edgeHeldSeconds = 0;
+  }
+
+  /** Height of the top HUD bar: the edge trigger starts just below it, not under it. */
+  setEdgeTopInset(px: number): void {
+    this.edgeTopInset = Math.max(0, px);
   }
 
   /** Scale keyboard/edge pan speed (the middle-drag is direct manipulation). */
@@ -261,13 +277,28 @@ export class RTSCamera {
   }
 
   private edgePan(dt: number): void {
-    if (!this.edgeScroll || this.dragging || this.uiCaptured || this.pointerOverUi) return;
+    if (!this.edgeScroll || this.dragging || this.uiCaptured || this.pointerOverUi) {
+      this.edgeHeldSeconds = 0;
+      return;
+    }
     if (!this.hasMousePos) return;
-    const rect = this.canvas.getBoundingClientRect();
+    const canvas = this.canvas.getBoundingClientRect();
+    const rect = {
+      left: canvas.left,
+      top: canvas.top + this.edgeTopInset,
+      right: canvas.right,
+      bottom: canvas.bottom,
+    };
     const ev = edgeVector(this.lastMouseX, this.lastMouseY, rect, CAMERA_CONFIG.edgeZone);
-    if (ev.x === 0 && ev.y === 0) return;
+    if (ev.x === 0 && ev.y === 0) {
+      this.edgeHeldSeconds = 0;
+      return;
+    }
+    this.edgeHeldSeconds += dt;
+    const factor = edgeSpeedFactor(this.edgeHeldSeconds, CAMERA_CONFIG.edgeDelay, CAMERA_CONFIG.edgeRampTime);
+    if (factor <= 0) return;
     const w = rotateToWorld(ev.x, ev.y, this.yaw);
-    const speed = this.zoom * CAMERA_CONFIG.edgeSpeed * this.speedScale;
+    const speed = this.zoom * CAMERA_CONFIG.edgeSpeed * this.speedScale * factor;
     this.desiredTarget.x += w.x * speed * dt;
     this.desiredTarget.z += w.y * speed * dt;
   }

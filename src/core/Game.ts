@@ -403,6 +403,7 @@ export class Game {
     this.camera.setKeymap(this.settings.hotkeys);
     this.camera.setRotationEnabled(this.settings.rotateCamera);
     this.camera.setSpeedScale(CAMERA_SPEED_SCALE[this.settings.cameraSpeed]);
+    this.camera.setEdgeScroll(this.settings.edgeScroll);
     this.camera.setFollowResolver((id) => {
       const e = this.units.get(id) ?? this.buildings.get(id);
       return e ? { x: e.pos.x, z: e.pos.z } : null;

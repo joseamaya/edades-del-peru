@@ -75,6 +75,7 @@ function sanitizeSettings(raw: unknown): GameSettings {
   if (['slow', 'normal', 'fast'].includes(r.cameraSpeed as string)) {
     s.cameraSpeed = r.cameraSpeed as GameSettings['cameraSpeed'];
   }
+  if (typeof r.edgeScroll === 'boolean') s.edgeScroll = r.edgeScroll;
   if (VICTORY_MODES.includes(r.victoryMode as string)) s.victoryMode = r.victoryMode as GameSettings['victoryMode'];
   if (typeof r.missionId === 'string' && r.missionId) s.missionId = r.missionId;
   if (Array.isArray(r.activeMods)) s.activeMods = r.activeMods.filter((x): x is string => typeof x === 'string');
@@ -140,6 +141,8 @@ export async function boot(): Promise<void> {
   const snapshot = wantsLoad ? loadFromStorage() : null;
   const replay = wantsReplay ? loadReplay() : null;
   const settings = snapshot ? { ...snapshot.settings } : replay ? { ...replay.settings } : loadSettings();
+  // Settings restored from a pre-#356 save/replay have no edgeScroll field.
+  settings.edgeScroll = settings.edgeScroll !== false;
   if (!snapshot && !replay) {
     if (params.get('mission')) settings.missionId = params.get('mission')!;
     if (params.get('fog') === '0') settings.fogOfWar = false;
