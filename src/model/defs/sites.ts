@@ -2,7 +2,9 @@ import type { AuthoredHeightField } from './authoredTerrain';
 import type { GroundPbrSlot } from './profiles';
 import type { TerrainPaletteId } from './terrainPalettes';
 import type { HeritageBuildingId } from './heritage';
-import type { CaralMayorPhase } from './caralCity';
+import { CARAL_PHASE_PLAN } from './caralPhases';
+import { CHAVIN_CITY_BLOCKERS, CHAVIN_HERITAGE_SINCE, CHAVIN_PHASE_PLAN } from './chavinCity';
+import type { SitePhasePlan } from './sitePhases';
 import {
   CARAL_GROUND,
   CARAL_GROUND_SIZE,
@@ -10,7 +12,13 @@ import {
   CARAL_HEIGHTMAP_SIZE,
   CARAL_HEIGHTMAP_WORLD_SIZE,
 } from './caralHeightmap';
-import { CHAVIN_HEIGHTMAP, CHAVIN_HEIGHTMAP_SIZE, CHAVIN_HEIGHTMAP_WORLD_SIZE } from './chavinHeightmap';
+import {
+  CHAVIN_GROUND,
+  CHAVIN_GROUND_SIZE,
+  CHAVIN_HEIGHTMAP,
+  CHAVIN_HEIGHTMAP_SIZE,
+  CHAVIN_HEIGHTMAP_WORLD_SIZE,
+} from './chavinHeightmap';
 import { MOCHE_HEIGHTMAP, MOCHE_HEIGHTMAP_SIZE, MOCHE_HEIGHTMAP_WORLD_SIZE } from './mocheHeightmap';
 import { WARI_HEIGHTMAP, WARI_HEIGHTMAP_SIZE, WARI_HEIGHTMAP_WORLD_SIZE } from './wariHeightmap';
 import { CHANCA_HEIGHTMAP, CHANCA_HEIGHTMAP_SIZE, CHANCA_HEIGHTMAP_WORLD_SIZE } from './chancaHeightmap';
@@ -54,8 +62,8 @@ export interface SiteBlocker {
   z: number;
   w: number;
   d: number;
-  /** First construction phase in which it stands (m1's growing city); omitted means from the start. */
-  since?: CaralMayorPhase;
+  /** First construction phase in which it stands; omitted means from the opening. */
+  since?: string;
 }
 
 export interface SiteKeepoutRect {
@@ -94,6 +102,15 @@ export interface SiteTerrainStyle {
   water?: { deep: string; shallow: string; sheen: number; foam: number; fog: number; refraction: number };
 }
 
+export interface SiteLife {
+  /** Height of the sacred fire above the site anchor, in world metres. */
+  fireHeight?: number;
+  /** Phase in which the sacred fire burns. */
+  firePhase?: string;
+  /** Mission objective whose activation lights the large offering blaze. */
+  offeringObjective?: string;
+}
+
 export interface SiteEnvirons {
   /** The only current authored valley fabric: Caral's floodplain plots and paths. */
   valley?: 'caral';
@@ -126,12 +143,18 @@ export interface AuthoredSiteDef {
   heightField?: AuthoredHeightField;
   pathCellSize: number;
   heritageProxies: readonly SiteHeritageProxy[];
+  /** Ordered construction phases of the site's main monument; omitted for a static site. */
+  phases?: SitePhasePlan;
+  /** Phase from which each heritage card stands; omitted entries stand from the opening. */
+  heritageSince?: Partial<Record<HeritageBuildingId, string>>;
   blockers: readonly SiteBlocker[];
   blockerPadding: number;
   buildKeepout: readonly SiteKeepoutRect[];
   wallCollision: SiteWallCollision;
   terrain: SiteTerrainStyle;
   environs?: SiteEnvirons;
+  /** Presentation-only living details (fire, smoke, fairground). */
+  life?: SiteLife;
   /** Source meshes hidden because the game heightfield/scene owns that layer. */
   hideNodePatterns?: readonly RegExp[];
   /** Clears an approach strip from the player base to the site anchor. */
@@ -213,7 +236,7 @@ export const CARAL_SITE_BLOCKER_PADDING = 0.5;
  * Phase from which each Caral monument stands (matches the `since` of its kit placement in caralCity.ts):
  * until then it neither blocks units nor answers clicks. The Pyramid Mayor and Áspero stand throughout.
  */
-export const CARAL_HERITAGE_SINCE: Partial<Record<HeritageBuildingId, CaralMayorPhase>> = {
+export const CARAL_HERITAGE_SINCE: Partial<Record<HeritageBuildingId, string>> = {
   caral_pyramid_central: 'finished',
   caral_pyramid_quarry: 'finished',
   caral_pyramid_lesser: 'finished',
@@ -263,6 +286,8 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     },
     pathCellSize: 1,
     heritageProxies: [...CARAL_HERITAGE_PROXIES, ASPERO_HERITAGE_PROXY],
+    phases: CARAL_PHASE_PLAN,
+    heritageSince: CARAL_HERITAGE_SINCE,
     blockers: CARAL_SITE_BLOCKERS,
     blockerPadding: CARAL_SITE_BLOCKER_PADDING,
     buildKeepout: CARAL_SITE_BUILD_KEEPOUT,
@@ -288,6 +313,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       // art-direction §4: sea #3f5f5c -> #24413f, darkened for the high coastal sun.
       water: { deep: '#0f2a2e', shallow: '#2a5652', sheen: 0.15, foam: 0.12, fog: 0.3, refraction: 0.2 },
     },
+    life: { fireHeight: 16.6, firePhase: 'in_use', offeringObjective: 'a3_fuego' },
     environs: {
       valley: 'caral',
       opening: 'caral',
@@ -314,6 +340,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       size: CHAVIN_HEIGHTMAP_SIZE,
       worldSize: CHAVIN_HEIGHTMAP_WORLD_SIZE,
       heights: CHAVIN_HEIGHTMAP,
+      ground: { size: CHAVIN_GROUND_SIZE, weights: CHAVIN_GROUND },
     },
     pathCellSize: 1,
     heritageProxies: [
@@ -323,15 +350,27 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       { id: 'chavin_portada', x: 110, z: 85, w: 9, d: 7, h: 8 },
       { id: 'chavin_galeria', x: 92, z: 86, w: 8, d: 10, h: 6 },
     ],
-    blockers: [],
+    phases: CHAVIN_PHASE_PLAN,
+    heritageSince: CHAVIN_HERITAGE_SINCE,
+    blockers: CHAVIN_CITY_BLOCKERS,
     blockerPadding: 0.5,
     buildKeepout: [{ x: 0.51, z: 0.456, rx: 0.17, rz: 0.14 }],
+    // The kit draws the city; walls taken from the hidden source GLB would be invisible obstacles.
     wallCollision: {
-      meshPatterns: [/Chavin_LOD[01]_City/],
+      meshPatterns: [],
       maxStartYAboveBase: 1.2,
     },
     walkableCorridor: { width: 8 },
-    terrain: { ...DEFAULT_SITE_TERRAIN },
+    terrain: {
+      ...DEFAULT_SITE_TERRAIN,
+      palette: 'andean_valley',
+      flatNormals: true,
+      suppressSnow: true,
+      valleyHaze: true,
+      water: { deep: '#204a4a', shallow: '#4f7d72', sheen: 0.12, foam: 0.12, fog: 0.25, refraction: 0.15 },
+    },
+    life: { fireHeight: 6.2, firePhase: 'apogee' },
+    environs: { suppressPropIds: ['cactus'] },
     hideNodePatterns: [/Chavin_LOD[01]_(Terrain|Reference)/],
   },
   moche_site: {

@@ -7,7 +7,6 @@ import type { TerrainLayout } from '../model/defs/terrainLayout';
 import type { SetpieceId } from '../model/defs/setpieces';
 import type { HeritageBuildingId } from '../model/defs/heritage';
 import type { AuthoredSiteId, DecorModelId } from '../model/defs/sites';
-import type { CaralMayorPhase } from '../model/defs/caralCity';
 
 /** Normalized map point (0..1); resolved to world units from the mission map size. */
 export interface MissionAnchor {
@@ -87,8 +86,8 @@ export interface MissionSite {
   keepout?: MissionSiteKeepout[];
   /** Rectangles where player construction is forbidden (the archaeological site). */
   buildKeepout?: MissionSiteKeepout[];
-  /** Opening construction phase of the site's main monument; defaults to the finished city in use. */
-  mayorPhase?: CaralMayorPhase;
+  /** Opening construction phase of the site's main monument. */
+  phase?: string;
 }
 
 export interface MissionLayout {
@@ -207,10 +206,10 @@ export type TriggerEffect =
   | { type: 'dialogue'; text: string; duration?: number; speaker?: string }
   /** Chapter card between acts of one mission (pauses the mission clock while open). */
   | { type: 'act'; kicker: string; title: string; text: string; image?: string }
-  /** Construction phase of the authored site's main monument (the Caral Pyramid Mayor). */
-  | { type: 'site_phase'; phase: CaralMayorPhase }
-  /** The drought that closes Caral: the valley dries out over ~40 s (Game.startDrought). */
-  | { type: 'drought' }
+  /** Construction phase of the authored site's main monument. */
+  | { type: 'site_phase'; phase: string }
+  /** A named environmental event (drought, flood, ...). */
+  | { type: 'environment'; event: string }
   | { type: 'resources'; player?: 0 | 1; amount: Partial<Resources> }
   | { type: 'objective'; objectiveId: string; state: 'activate' | 'complete' | 'fail'; announce?: boolean }
   | { type: 'camera'; pos: MissionPoint }
@@ -266,6 +265,8 @@ export interface MissionDef {
   defeat: string;
   /** Historical period of the mission (resolves dates and coetaneous civilizations). */
   period: HistoricalPeriod;
+  /** Optional clarification when the mission covers only part of its historical period. */
+  periodNote?: string;
   /** Speaker label for unattributed dialogue; defaults to the commander label. */
   narrator?: string;
   /** Narrated intro played before the briefing (skipped with ?intro=0). */
@@ -322,6 +323,8 @@ export interface MissionDef {
    * no permanent market). Omit for every building of the era.
    */
   allowedBuildings?: BuildingKind[];
+  /** If set, only these technologies may be researched in the match. */
+  allowedTechs?: string[];
   objectives: ObjectiveDef[];
   triggers: TriggerDef[];
 }

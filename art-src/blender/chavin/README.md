@@ -37,3 +37,17 @@ This is a representative ceremonial centre, not a survey or a 1:1 reconstruction
 Roofs, heights, colours and some reliefs are inferred; the source's terrain mesh is
 hidden at runtime and the game heightfield owns the ground. See
 `docs/design/chavin-sacred-site.md` and the historical dossiers.
+
+## Architecture kit (m2 phases)
+
+`scripts/blender/build_chavin_architecture_kit.py` derives a phase kit from the same cleaned sources:
+
+- `--lod=0` / `--lod=1` exports LOD0/LOD1 pieces to `src/assets/architecture/chavin/`.
+- Pieces: Edificio A/B and foundations, Portada, Plaza Circular, terraces and the fair tent.
+- The city mesh is split by the game's heritage proxies; materials are normalised to
+  `MAT-Arch_Chavin*` and LOD0 is decimated to the kit budget.
+- Every piece starts `reviewed: false` in `art-src/blender/exports/chavin/architecture/`.
+- Run `yarn art:models --only=architecture/chavin/...` afterwards to meshopt-compress the GLBs.
+
+The fair tent is copied from the Caral kit (a documented gameplay abstraction) and is not a new
+historical reconstruction.

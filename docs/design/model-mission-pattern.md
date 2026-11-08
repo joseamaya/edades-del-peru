@@ -77,9 +77,10 @@ cotton nets) → III building the Pyramid Mayor in phases → IV the drought, th
   lowers the water, turns the haze dusty, halves harvests and kills a third of the riverside trees). A
   loaded save restores them without re-applying their losses.
 
-`site_phase` and `drought` are Caral-specific today (`CaralMayorPhase`, `Game.startDrought`). The second
-mission that needs a phased monument or an environmental event should generalise them (a per-site phase
-list, a named event) rather than copy them.
+`site_phase` and the environmental events are generic now: a per-site `SitePhasePlan` orders the phases
+(Caral and Chavín use it) and `{ type: 'environment', event }` starts a named event from
+`src/core/environment.ts`. Do not add a new site-specific phase type or a new `startX` method; extend the
+definitions instead.
 
 ## 5. Economy and units of the period
 

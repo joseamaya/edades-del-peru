@@ -3,34 +3,44 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { loadStaticGltf } from './StaticModel';
 import { getGeneratedMaterial } from './Biomes';
 import { dequantize } from './mergeStatic';
-import {
-  CARAL_MAYOR_PHASE_ASSET,
-  type CaralArchAssetId,
-  type CaralArchPlacement,
-  type CaralMayorPhase,
-  standsAt,
-} from '../model/defs/caralCity';
+import { CARAL_MAYOR_PHASE_ASSET, type CaralArchPlacement } from '../model/defs/caralCity';
+import { CARAL_PHASE_PLAN, type CaralMayorPhase } from '../model/defs/caralPhases';
+import { standsAt, type SitePhasePlan } from '../model/defs/sitePhases';
 
 /**
- * Blender architecture kit for the Caral Sacred City (scripts/blender/build_caral_architecture_kit.py,
+ * Blender architecture kits (scripts/blender/build_*_architecture_kit.py,
  * docs/design/art-direction.md §9). Every piece ships a LOD0 and a LOD1 GLB with flat Principled
  * materials and a COLOR_0 tint.
  */
-const urls = import.meta.glob('../assets/architecture/caral/*.glb', {
+import type { ArchAssetId, ArchPlacement, ArchitectureKitId } from '../model/defs/architectureKit';
+
+export type { ArchAssetId, ArchPlacement, ArchitectureKitId } from '../model/defs/architectureKit';
+
+const caralUrls = import.meta.glob('../assets/architecture/caral/*.glb', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+}) as Record<string, string>;
+const chavinUrls = import.meta.glob('../assets/architecture/chavin/*.glb', {
   eager: true,
   query: '?url',
   import: 'default',
 }) as Record<string, string>;
 
-export function archKitUrl(id: CaralArchAssetId, lod: 0 | 1): string | undefined {
-  return urls[`../assets/architecture/caral/caral_${id}_lod${lod}.glb`];
+const KIT_URLS: Record<ArchitectureKitId, Record<string, string>> = {
+  caral: caralUrls,
+  chavin: chavinUrls,
+};
+
+export function archKitUrl(kit: ArchitectureKitId, id: ArchAssetId, lod: 0 | 1): string | undefined {
+  return KIT_URLS[kit][`../assets/architecture/${kit}/${kit}_${id}_lod${lod}.glb`];
 }
 
 /** One merged geometry per material name (all kit GLBs share the same material names). */
 export type ArchParts = Map<string, { geometry: THREE.BufferGeometry; material: THREE.Material }>;
 
 export interface ArchModel {
-  id: CaralArchAssetId;
+  id: ArchAssetId;
   lods: [ArchParts, ArchParts];
 }
 
@@ -55,20 +65,21 @@ export function archPartsFromScene(root: THREE.Object3D): ArchParts {
 }
 
 /** Prepared models are kept for the session, like the vegetation kit; a failed load is retried. */
-const modelCache = new Map<CaralArchAssetId, Promise<ArchModel>>();
+const modelCache = new Map<string, Promise<ArchModel>>();
 
-export function loadArchModel(id: CaralArchAssetId): Promise<ArchModel> {
-  let model = modelCache.get(id);
+export function loadArchModel(kit: ArchitectureKitId, id: ArchAssetId): Promise<ArchModel> {
+  const key = `${kit}:${id}`;
+  let model = modelCache.get(key);
   if (!model) {
-    const lod0 = archKitUrl(id, 0);
-    const lod1 = archKitUrl(id, 1);
-    if (!lod0 || !lod1) return Promise.reject(new Error(`architecture kit has no GLB for ${id}`));
+    const lod0 = archKitUrl(kit, id, 0);
+    const lod1 = archKitUrl(kit, id, 1);
+    if (!lod0 || !lod1) return Promise.reject(new Error(`architecture kit ${kit} has no GLB for ${id}`));
     model = Promise.all([loadStaticGltf(lod0), loadStaticGltf(lod1)]).then(([a, b]): ArchModel => ({
       id,
       lods: [archPartsFromScene(a), archPartsFromScene(b)],
     }));
-    model.catch(() => modelCache.delete(id));
-    modelCache.set(id, model);
+    model.catch(() => modelCache.delete(key));
+    modelCache.set(key, model);
   }
   return model;
 }
@@ -110,6 +121,11 @@ const ARCH_SURFACES: Record<
   'MAT-Arch_Shicra': { set: 'roof_thatch', tint: 0xa8957a, normal: 0.9 },
   'MAT-Arch_Wood': { set: 'wood', tint: 0x7a5c46, normal: 0.7 },
   'MAT-Arch_CaneMat': { set: 'roof_thatch', tint: 0xcdbd9e, normal: 0.8 },
+  // Chavín: grey Andean stone with the gallery interiors kept darker than the facades.
+  'MAT-Arch_ChavinStone': { set: 'plaster_detail', normal: 0.7, keepColor: true },
+  'MAT-Arch_ChavinDark': { set: 'plaster_detail', normal: 0.7, keepColor: true },
+  'MAT-Arch_ChavinPlaster': { set: 'plaster_detail', normal: 0.6, keepColor: true },
+  'MAT-Arch_ChavinEarth': { set: 'plaster_detail', normal: 0.9, keepColor: true },
 };
 
 export function applyArchSurface(material: THREE.MeshStandardMaterial, name: string): void {
@@ -141,27 +157,31 @@ const _scale = new THREE.Vector3();
 const _up = new THREE.Vector3(0, 1, 0);
 
 /**
- * The assembled city: every placement baked into one mesh per material and LOD (the city is static,
- * so the whole of it is ~8 draw calls per pass instead of one per building and material). The Pyramid
- * Mayor follows the construction phase; changing the phase re-bakes.
+ * An authored city assembled from a Blender architecture kit. Every placement is baked into one mesh
+ * per material and LOD (the city is static, so the whole of it is a handful of draw calls per pass
+ * instead of one per building and material). Pieces follow the site's construction phase.
  */
-export class CaralCity {
+export class ArchitectureCity {
   readonly group = new THREE.Group();
   private readonly lodGroups: [THREE.Group, THREE.Group] = [new THREE.Group(), new THREE.Group()];
-  private phase: CaralMayorPhase = 'in_use';
-  private models = new Map<CaralArchAssetId, ArchModel>();
+  protected phase: string;
+  private models = new Map<ArchAssetId, ArchModel>();
   /** Per-city material clones: the cached kit materials are shared by every match, while fog of war
    * patches a material's shader with this match's uniforms. */
   private readonly materials = new Map<string, THREE.Material>();
   private readonly center = new THREE.Vector3();
 
   constructor(
-    private readonly placements: readonly CaralArchPlacement[],
+    readonly name: string,
+    private readonly kit: ArchitectureKitId,
+    private readonly placements: readonly ArchPlacement[],
     private readonly heightAt: (x: number, z: number) => number,
+    private readonly plan: SitePhasePlan,
   ) {
-    this.group.name = 'caral_city';
+    this.phase = plan.initial;
+    this.group.name = name;
     this.lodGroups.forEach((g, lod) => {
-      g.name = `caral_city_lod${lod}`;
+      g.name = `${name}_lod${lod}`;
       this.group.add(g);
     });
     this.lodGroups[1].visible = false;
@@ -170,25 +190,27 @@ export class CaralCity {
     this.center.set((Math.min(...xs) + Math.max(...xs)) / 2, 0, (Math.min(...zs) + Math.max(...zs)) / 2);
   }
 
-  /** The kit pieces this city needs (all Mayor phases, so phase changes need no new load). */
-  assets(): CaralArchAssetId[] {
-    const ids = new Set<CaralArchAssetId>(this.placements.map((p) => p.asset));
-    for (const id of Object.values(CARAL_MAYOR_PHASE_ASSET)) ids.add(id);
+  /** The kit pieces this city needs (all phase assets, so phase changes need no new load). */
+  assets(): ArchAssetId[] {
+    const ids = new Set<ArchAssetId>();
+    for (const p of this.placements) {
+      ids.add(p.asset);
+      for (const id of Object.values(p.phaseAssets ?? {})) if (id) ids.add(id);
+    }
     return [...ids];
   }
 
   /**
    * Load the kit and bake the city; resolves false when a piece the layout needs right now failed to
-   * load (the other Mayor phases are optional until a phase change asks for them).
+   * load (the other phase assets are optional until a phase change asks for them).
    */
   async load(): Promise<boolean> {
-    const results = await Promise.allSettled(this.assets().map((id) => loadArchModel(id)));
+    const results = await Promise.allSettled(this.assets().map((id) => loadArchModel(this.kit, id)));
     for (const r of results) {
       if (r.status === 'fulfilled') this.models.set(r.value.id, r.value);
       else console.warn('[architecture-kit] model failed to load', r.reason);
     }
-    const needed = this.placements.map((p) => (p.mayor ? CARAL_MAYOR_PHASE_ASSET[this.phase] : p.asset));
-    if (needed.some((id) => !this.models.has(id))) return false;
+    if (this.placements.some((p) => !this.models.has(this.assetFor(p)))) return false;
     this.bake();
     return true;
   }
@@ -196,15 +218,15 @@ export class CaralCity {
   /** Dwellings standing in the current phase (cooking smoke rises behind them). */
   standingHouses(): { x: number; z: number }[] {
     return this.placements
-      .filter((p) => p.asset.startsWith('house_') && standsAt(p, this.phase))
+      .filter((p) => p.asset.startsWith('house_') && standsAt(p.since, this.phase, this.plan))
       .map((p) => ({ x: p.x, z: p.z }));
   }
 
-  get mayorPhase(): CaralMayorPhase {
+  get currentPhase(): string {
     return this.phase;
   }
 
-  setMayorPhase(phase: CaralMayorPhase): void {
+  setPhase(phase: string): void {
     if (phase === this.phase) return;
     this.phase = phase;
     if (this.models.size) this.bake();
@@ -217,6 +239,17 @@ export class CaralCity {
     this.lodGroups[1].visible = far;
   }
 
+  private assetFor(p: ArchPlacement): ArchAssetId {
+    if (!p.phaseAssets) return p.asset;
+    let asset = p.asset;
+    const current = this.plan.phases.indexOf(this.phase);
+    for (let i = 0; i <= current; i++) {
+      const id = p.phaseAssets[this.plan.phases[i]!];
+      if (id) asset = id;
+    }
+    return asset;
+  }
+
   private bake(): void {
     for (let lod = 0; lod < 2; lod++) {
       const target = this.lodGroups[lod];
@@ -226,9 +259,8 @@ export class CaralCity {
       }
       const byName = new Map<string, { material: THREE.Material; geometries: THREE.BufferGeometry[] }>();
       for (const p of this.placements) {
-        if (!standsAt(p, this.phase)) continue;
-        const asset = p.mayor ? CARAL_MAYOR_PHASE_ASSET[this.phase] : p.asset;
-        const model = this.models.get(asset);
+        if (!standsAt(p.since, this.phase, this.plan)) continue;
+        const model = this.models.get(this.assetFor(p));
         if (!model) continue;
         // Buildings sit on the lowest ground under their footprint (slightly sunk, never floating);
         // lifted pieces (a plaza seated by its floor) on the highest, so the floor clears the terrain.
@@ -249,7 +281,7 @@ export class CaralCity {
         if (!geometry) continue;
         geometry.computeBoundingSphere();
         const mesh = new THREE.Mesh(geometry, material);
-        mesh.name = `caral_city_${name}`;
+        mesh.name = `${this.name}_${name}`;
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         target.add(mesh);
@@ -268,7 +300,7 @@ export class CaralCity {
   }
 
   /** Ground height under the placed model's footprint: its centre, corners and edge midpoints. */
-  private groundUnder(p: CaralArchPlacement, model: ArchModel, pick: (a: number, b: number) => number): number {
+  private groundUnder(p: ArchPlacement, model: ArchModel, pick: (a: number, b: number) => number): number {
     const box = footprint(model);
     const cos = Math.cos(p.rotY);
     const sin = Math.sin(p.rotY);
@@ -288,5 +320,26 @@ export class CaralCity {
     for (const g of this.lodGroups) for (const child of g.children) (child as THREE.Mesh).geometry.dispose();
     this.materials.forEach((m) => m.dispose());
     this.group.removeFromParent();
+  }
+}
+
+/** The Caral Sacred City in use, built from the Caral architecture kit. */
+export class CaralCity extends ArchitectureCity {
+  constructor(placements: readonly CaralArchPlacement[], heightAt: (x: number, z: number) => number) {
+    super(
+      'caral_city',
+      'caral',
+      placements.map((p) => (p.mayor ? { ...p, phaseAssets: CARAL_MAYOR_PHASE_ASSET } : p)),
+      heightAt,
+      CARAL_PHASE_PLAN,
+    );
+  }
+
+  get mayorPhase(): CaralMayorPhase {
+    return this.phase as CaralMayorPhase;
+  }
+
+  setMayorPhase(phase: CaralMayorPhase): void {
+    this.setPhase(phase);
   }
 }

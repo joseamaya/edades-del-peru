@@ -1,4 +1,8 @@
 import { CARAL_CIRCULAR_ALTAR, CARAL_CITY_OFFSET_X, CARAL_HERITAGE_PROXIES, type SiteBlocker } from './sites';
+import { CARAL_PHASE_PLAN, standsAt, type CaralMayorPhase } from './caralPhases';
+import type { ArchPlacement } from './architectureKit';
+
+export { CARAL_PHASE_PLAN, standsAt, type CaralMayorPhase };
 
 /**
  * The Sacred City of Caral in use (c. 2600–2000 BC), assembled from the Blender architecture kit
@@ -22,8 +26,6 @@ export type CaralArchAssetId =
   | 'huaca_idolos';
 
 /** Construction states of the Pyramid Mayor (act III of docs/design/caral-model-mission.md). */
-export type CaralMayorPhase = 'foundation' | 'fill' | 'finished' | 'in_use';
-
 export const CARAL_MAYOR_PHASE_ASSET: Record<CaralMayorPhase, CaralArchAssetId> = {
   foundation: 'pyramid_mayor_phase1',
   fill: 'pyramid_mayor_phase2',
@@ -31,30 +33,15 @@ export const CARAL_MAYOR_PHASE_ASSET: Record<CaralMayorPhase, CaralArchAssetId> 
   in_use: 'pyramid_mayor',
 };
 
-export interface CaralArchPlacement {
+export interface CaralArchPlacement extends ArchPlacement {
   asset: CaralArchAssetId;
-  x: number;
-  z: number;
-  /** Yaw in radians; the models face +Z. */
-  rotY: number;
-  /** Non-uniform scale (x, y, z) of the model. */
-  scale: [number, number, number];
   /** Marks the Pyramid Mayor, whose model follows the construction phase. */
   mayor?: boolean;
-  /** Raise the model above the ground it sits on (model units, before scaling). */
-  lift?: number;
   /**
    * First Pyramid Mayor phase in which this piece stands. m1 opens with an empty terrace and the city
    * grows with the Mayor through act III; omitted means it stands from the start.
    */
   since?: CaralMayorPhase;
-}
-
-const PHASE_ORDER: readonly CaralMayorPhase[] = ['foundation', 'fill', 'finished', 'in_use'];
-
-/** Whether a placement stands while the Pyramid Mayor is in `phase`. */
-export function standsAt(p: { since?: CaralMayorPhase }, phase: CaralMayorPhase): boolean {
-  return !p.since || PHASE_ORDER.indexOf(phase) >= PHASE_ORDER.indexOf(p.since);
 }
 
 /**

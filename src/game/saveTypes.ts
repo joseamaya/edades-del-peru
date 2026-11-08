@@ -142,6 +142,10 @@ export interface SaveData {
   tutorial?: TutorialSave;
   /** Authored irrigation gate state (optional; absent in older saves). */
   canalOpen?: boolean;
+  /** Construction phase of the authored site's main monument (optional; absent in older saves). */
+  sitePhase?: string;
+  /** Named environmental event progress (optional; absent in older saves). */
+  environment?: Record<string, number>;
   /** Post-game samples; excluded from stateHash. */
   matchStats?: MatchStatsSave;
   /** Market pressure per player (optional for older saves). */

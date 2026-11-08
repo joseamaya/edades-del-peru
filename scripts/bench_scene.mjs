@@ -34,6 +34,9 @@ const BUDGETS = {
   // each one in view is ~6 draws (body, hair, garments, tool, team ring, body shadow) on top of the
   // opening's scene: the call budget allows that crowd over the opening's 230.
   m1_caral_late: { sceneTriangles: 600_000, sceneDrawCalls: 275, kitTriangles: 80_000, kitDrawCalls: 36 },
+  // Chavín opening: the phased kit, highland vegetation and the base. Measure first, then ratchet down.
+  m2_chavin: { sceneTriangles: 450_000, sceneDrawCalls: 220, kitTriangles: 100_000, kitDrawCalls: 40 },
+  m2_chavin_late: { sceneTriangles: 600_000, sceneDrawCalls: 310, kitTriangles: 100_000, kitDrawCalls: 40 },
 };
 const KIT_NAMES = /^(trees_kit_|props_kit_|fauna_(deer|riparian_bird)_(body|leg|wingL|wingR)$)/;
 
@@ -45,7 +48,16 @@ try {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(`${base}/?mission=${mission}&intro=0&fog=0&seed=777`, { waitUntil: 'networkidle' });
-  await page.waitForFunction(() => window.game?.trees?.hasKit?.('algarrobo'), null, { timeout: 90_000 });
+  await page.waitForFunction(
+    (id) => {
+      const g = window.game;
+      if (!g?.mission) return false;
+      if (id === 'm2_chavin') return (g.scene.getObjectByName?.('chavin_city_lod0')?.children.length ?? 0) > 0;
+      return g.trees?.hasKit?.('algarrobo');
+    },
+    mission,
+    { timeout: 90_000 },
+  );
   await page
     .locator('.ed-primary', { hasText: 'COMENZAR' })
     .first()
@@ -53,7 +65,7 @@ try {
     .catch(() => {});
   await page.waitForTimeout(2000);
   const result = await page.evaluate(
-    ({ kitPattern, stage }) => {
+    ({ kitPattern, stage, mission }) => {
       const g = window.game;
       const kit = new RegExp(kitPattern);
       // Pin the high preset and its LOD radius (the governor drops quality on a software renderer).
@@ -61,9 +73,10 @@ try {
       g.trees.kitLod0Radius = 45;
       let p = g.playerCenter(0);
       if (stage === 'late') {
-        g.setSitePhase('in_use');
+        g.setSitePhase(mission === 'm2_chavin' ? 'apogee' : 'in_use');
         const site = g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 });
-        for (let i = 0; i < 30; i++) {
+        const crowd = mission === 'm2_chavin' ? 20 : 30;
+        for (let i = 0; i < crowd; i++) {
           g.spawnScriptedUnit('worker', 0, site.x - 12 + (i % 6) * 4, site.z + 18 + Math.floor(i / 6) * 3);
         }
         let t = 1;
@@ -71,7 +84,7 @@ try {
           g.update(0.05, t);
           t += 0.05;
         }
-        g.startDrought(true);
+        if (mission === 'm1_caral') g.startEnvironmentalEvent('drought', true);
         g.camera.moveTo(site.x, site.z + 20, true);
         for (let i = 0; i < 40; i++) {
           g.update(0.05, t);
@@ -112,7 +125,7 @@ try {
         kitObjects: kitObjects.length,
       };
     },
-    { kitPattern: KIT_NAMES.source, stage },
+    { kitPattern: KIT_NAMES.source, stage, mission },
   );
   const budget = BUDGETS[stage === 'late' ? `${mission}_late` : mission];
   const report = { mission, ...result, budget, errors };

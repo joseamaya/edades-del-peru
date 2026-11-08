@@ -959,6 +959,7 @@ export class HUD {
             // The Plaza Mayor is never placed but always stands, and its technologies are researched there.
             canBuild: (kind) => kind === BuildingKind.CENTER || this.game.canBuildKind(kind),
             canTrain: (kind) => !allowedUnits || allowedUnits.includes(kind),
+            canResearch: (techId) => this.game.canResearchTech(techId),
           }
         : undefined,
     );
@@ -2459,7 +2460,10 @@ export class HUD {
       commanders: commanders ? `<div class="ed-commanders">${commanders}</div>` : '',
       sources,
       facts: [
-        { label: t('hud.menu.briefing.factPeriod'), value: `${period.name} · ${period.dates}` },
+        {
+          label: t('hud.menu.briefing.factPeriod'),
+          value: `${period.name} · ${period.dates}${mis.periodNote ? ` · ${mis.periodNote}` : ''}`,
+        },
         { label: t('hud.menu.briefing.factMap'), value: MAP_LABEL[mis.map.type] },
         { label: t('hud.menu.briefing.factSides'), value: sides },
       ],

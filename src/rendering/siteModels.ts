@@ -1,7 +1,6 @@
 import type * as THREE from 'three';
 import siteLod0Url from '../assets/sites/caral/caral_site_lod0.glb?url';
 import siteLod1Url from '../assets/sites/caral/caral_site_lod1.glb?url';
-import chavinLod0Url from '../assets/sites/chavin/chavin_site_lod0.glb?url';
 import chavinLod1Url from '../assets/sites/chavin/chavin_site_lod1.glb?url';
 import mocheLod0Url from '../assets/sites/moche/moche_site_lod0.glb?url';
 import mocheLod1Url from '../assets/sites/moche/moche_site_lod1.glb?url';
@@ -24,7 +23,8 @@ import type { AuthoredSiteId } from '../model/defs/sites';
 
 const SITE_MODEL_URLS: Partial<Record<AuthoredSiteId, { lod0: string; lod1: string }>> = {
   caral_site: { lod0: siteLod0Url, lod1: siteLod1Url },
-  chavin_site: { lod0: chavinLod0Url, lod1: chavinLod1Url },
+  // The phased kit draws the visible temple; the source GLB is only the hidden click-proxy fallback.
+  chavin_site: { lod0: chavinLod1Url, lod1: chavinLod1Url },
   moche_site: { lod0: mocheLod0Url, lod1: mocheLod1Url },
   wari_site: { lod0: wariLod0Url, lod1: wariLod1Url },
   chanca_site: { lod0: chancaLod0Url, lod1: chancaLod1Url },

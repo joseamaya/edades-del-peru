@@ -537,7 +537,7 @@ test('plays m1 Caral with real construction and gathering, without objective che
   expect(errors).toEqual([]);
 });
 
-test('plays m2 Chavín with real construction and the offering mechanic', async ({ page }) => {
+test('plays m2 Chavín through the four acts with real construction and offerings', async ({ page }) => {
   test.setTimeout(180_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
@@ -554,6 +554,7 @@ test('plays m2 Chavín with real construction and the offering mechanic', async 
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
+    const m = g.mission;
     const workers = [...g.units.values()].filter((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as any[];
     const anchor = g.siteAnchor as { x: number; z: number };
     if (workers.length < 2 || !anchor) return { setup: false };
@@ -582,38 +583,68 @@ test('plays m2 Chavín with real construction and the offering mechanic', async 
     );
     const dt = 1 / 60;
     let t = 0;
-    let offered = false;
     let reached = false;
-    for (let i = 0; i < Math.ceil(500 / dt) && !g.mission.ended; i++) {
-      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
-      for (const b of g.buildings.values()) if (b.owner === 0 && !b.dead) b.hp = b.maxHp;
-      if (!reached && Math.hypot(holder.pos.x - anchor.x, holder.pos.z - anchor.z) < 8) reached = true;
-      if (!offered && market.constructionComplete && reached) {
-        for (let k = 0; k < 5; k++) g.makeOffering('chavin_edificio_b');
-        offered = true;
+    const tick = (seconds: number) => {
+      for (let i = 0; i < Math.ceil(seconds / dt) && !m.ended; i++) {
+        document.querySelector('.ed-mission-card')?.remove();
+        for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
+        for (const b of g.buildings.values()) if (b.owner === 0 && !b.dead) b.hp = b.maxHp;
+        if (!reached && Math.hypot(holder.pos.x - anchor.x, holder.pos.z - anchor.z) < 8) reached = true;
+        holder.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+        g.update(dt, t);
+        t += dt;
       }
-      g.update(dt, t);
-      t += dt;
+    };
+    tick(8);
+    // Act I: the offering hand-over (the worker is on site).
+    const offers = [g.makeOffering('chavin_edificio_b'), g.makeOffering('chavin_edificio_b')];
+    tick(2);
+    // Act II: Old Temple, fair and pilgrimage.
+    for (let i = 0; i < 3; i++) m.recordDelivery('stone', 50);
+    tick(2);
+    tick(61);
+    // Act III: New Temple, research and great pilgrimage.
+    for (let i = 0; i < 4; i++) m.recordDelivery('stone', 50);
+    tick(2);
+    g.players[0].techs.add('chavin_pilgrimage');
+    tick(2);
+    tick(91);
+    // Act IV: walk the ceremonial centre's record.
+    for (const id of [
+      'chavin_plaza_circular',
+      'chavin_edificio_b',
+      'chavin_edificio_a',
+      'chavin_portada',
+      'chavin_galeria',
+    ]) {
+      g.visitHeritage(id);
     }
+    tick(2);
     return {
       setup: true,
-      offered,
       reached,
+      offers,
       marketComplete: market.constructionComplete,
-      won: g.mission.won,
-      ended: g.mission.ended,
-      states: Object.fromEntries(g.mission.def.objectives.map((o: any) => [o.id, g.mission.getObjectiveState(o.id)])),
+      won: m.won,
+      ended: m.ended,
+      phases: g.sitePhase,
+      states: Object.fromEntries(m.def.objectives.map((o: any) => [o.id, m.getObjectiveState(o.id)])),
     };
   });
 
   expect(out.setup, JSON.stringify(out)).toBe(true);
   expect(out.reached, JSON.stringify(out)).toBe(true);
-  expect(out.offered, JSON.stringify(out)).toBe(true);
+  expect(out.offers, JSON.stringify(out)).toEqual([true, true]);
   expect(out.marketComplete, JSON.stringify(out)).toBe(true);
-  expect(out.states.obj_ofrendas).toBe('completed');
-  expect(out.states.obj_peregrinaje).toBe('completed');
-  expect(out.states.obj_feria).toBe('completed');
-  expect(out.states.obj_sostener).toBe('completed');
+  expect(out.states.a1_ofrenda).toBe('completed');
+  expect(out.states.a2_templo).toBe('completed');
+  expect(out.states.a2_peregrinaje).toBe('completed');
+  expect(out.states.a2_feria).toBe('completed');
+  expect(out.states.a3_templo).toBe('completed');
+  expect(out.states.a3_intercambio).toBe('completed');
+  expect(out.states.a3_peregrinaje).toBe('completed');
+  expect(out.states.a4_registro).toBe('completed');
+  expect(out.phases).toBe('apogee');
   expect(out.won, JSON.stringify(out)).toBe(true);
   expect(errors).toEqual([]);
 });

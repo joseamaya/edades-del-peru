@@ -150,10 +150,14 @@ describe('authored campaign sites', () => {
     ]);
     expect(tutorialForMission('m2_chavin')?.steps.map((s) => s.id)).toEqual([
       'select',
-      'temple',
+      'site',
       'offer',
-      'market',
+      'farm',
+      'old_temple',
       'pilgrimage',
+      'feria',
+      'new_temple',
+      'record',
     ]);
     expect(tutorialForMission('m3_moche_recuay')?.steps.map((s) => s.id)).toEqual([
       'select',

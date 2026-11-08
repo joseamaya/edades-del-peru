@@ -38,7 +38,8 @@ function stubGame() {
     setSitePhase: (phase: CaralMayorPhase) => (game.sitePhase = phase),
     drought: 0,
     droughtInstant: false,
-    startDrought: (instant = false) => {
+    startEnvironmentalEvent: (event: string, instant = false) => {
+      if (event !== 'drought') return;
       game.drought = 1;
       game.droughtInstant = instant;
     },

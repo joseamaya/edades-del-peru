@@ -42,7 +42,7 @@ export class Mission {
     this.def = def;
     this.onEnd = onEnd;
     for (const o of def.objectives) this.objState.set(o.id, this.defaultState(o));
-    if (def.layout?.site?.mayorPhase) game.setSitePhase(def.layout.site.mayorPhase);
+    if (def.layout?.site?.phase) game.setSitePhase(def.layout.site.phase);
   }
 
   private defaultState(o: ObjectiveDef): ObjState {
@@ -384,8 +384,8 @@ export class Mission {
       case 'site_phase':
         this.game.setSitePhase(fx.phase);
         break;
-      case 'drought':
-        this.game.startDrought();
+      case 'environment':
+        this.game.startEnvironmentalEvent(fx.event);
         break;
       case 'resources': {
         const p = this.game.players[fx.player ?? 0];
@@ -486,6 +486,7 @@ export class Mission {
 
   /** Re-apply the latest monument phase set by an already fired trigger (after a load). */
   private restoreSitePhase(): void {
+    if (this.game.sitePhaseRestored) return;
     let phase: Extract<TriggerEffect, { type: 'site_phase' }>['phase'] | null = null;
     let at = -Infinity;
     for (const tr of this.def.triggers) {
@@ -499,10 +500,12 @@ export class Mission {
       }
     }
     if (phase) this.game.setSitePhase(phase);
-    const drought = this.def.triggers.some(
-      (tr) => this.fired.has(tr.id) && tr.effects.some((fx) => fx.type === 'drought'),
-    );
-    if (drought) this.game.startDrought(true);
+    const events = new Set<string>();
+    for (const tr of this.def.triggers) {
+      if (!this.fired.has(tr.id)) continue;
+      for (const fx of tr.effects) if (fx.type === 'environment') events.add(fx.event);
+    }
+    if (!this.game.environmentRestored) for (const event of events) this.game.startEnvironmentalEvent(event, true);
   }
 
   /** World anchor of an active objective, for the minimap. */
@@ -593,6 +596,8 @@ export class Mission {
         return { current: this.reached(o) ? 1 : 0, target: 1, format: 'count' };
       case 'reach_era':
         return { current: p.era, target: o.era ?? 0, format: 'count' };
+      case 'research':
+        return { current: o.tech && p.techs.has(o.tech) ? 1 : 0, target: 1, format: 'count' };
       default:
         return null;
     }

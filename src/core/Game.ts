@@ -4,9 +4,10 @@ import { createRenderer, createPostFX } from '../rendering/Renderer';
 import { PostFX } from '../rendering/PostFX';
 import { SHADOW_MAP_SIZE } from '../rendering/shadowFrame';
 import { Sky } from '../rendering/Sky';
-import type { CaralCity } from '../rendering/architectureKit';
-import { standsAt, type CaralMayorPhase } from '../model/defs/caralCity';
-import { CARAL_HERITAGE_SINCE } from '../model/defs/sites';
+import type { ArchitectureCity, CaralCity } from '../rendering/architectureKit';
+import { isKnownPhase, standsAt, SINGLE_PHASE } from '../model/defs/sitePhases';
+import { ENVIRONMENT_EVENTS, type EnvironmentEventId } from './environment';
+import { t } from '../i18n';
 import { Terrain } from '../rendering/Terrain';
 import { HeadlessTerrain } from '../sim/HeadlessTerrain';
 import { Water } from '../rendering/Water';
@@ -158,15 +159,20 @@ export class Game {
   landmarkLoadToken = 0;
   /** The Caral Sacred City in use (architecture kit), when the mission site is Caral. */
   caralCity: CaralCity | null = null;
-  /** Drought of m1's act IV: 0 = the green valley, 1 = dried out (rises over DROUGHT_SECONDS). */
-  droughtLevel = 0;
-  private droughtTarget = 0;
-  private droughtShown = -1;
+  /** The Chavín ceremonial centre built by phases, when the mission site is Chavín. */
+  chavinCity: ArchitectureCity | null = null;
+  /** Named environmental events and their progress (0 = off, 1 = fully applied). */
+  environment: Record<string, number> = {};
+  private environmentTargets: Record<string, number> = {};
+  private environmentShown: Record<string, number> = {};
   private droughtFarmsHit = false;
   private droughtGroveCut = false;
   private droughtBaseAtmosphere: MissionAtmosphere | undefined;
   /** Construction phase of the authored site's main monument (mission-driven; the city follows it). */
-  sitePhase: CaralMayorPhase = 'in_use';
+  sitePhase = 'in_use';
+  /** True when a loaded save supplied the phase/events, so trigger replay must not rewind them. */
+  sitePhaseRestored = false;
+  environmentRestored = false;
   setpieceLoadToken = 0;
   /** Cultural landscape (roads, fields, plazas, canals); visual only. */
   landscape: CulturalLandscape | null = null;
@@ -305,6 +311,7 @@ export class Game {
     this.missionAtmosphere = mis?.atmosphere;
     this.missionLayout = mis?.layout;
     this.siteDef = getAuthoredSite(this.missionLayout?.site?.id);
+    this.sitePhase = this.siteDef?.phases?.initial ?? 'in_use';
     this.enemyActive = !mis || mis.enemy.active;
     this.rng = new RNG((this.settings.mapSeed * 2654435761) >>> 0);
     // Cosmetic-only randomness must not consume the simulation sequence.
@@ -975,20 +982,47 @@ export class Game {
   startAssembly(): boolean {
     return this.selection.startAssembly();
   }
+  /** Ordered phases of the authored site's main monument. */
+  get sitePhasePlan() {
+    return this.siteDef?.phases ?? SINGLE_PHASE;
+  }
+
   /**
-   * Start the drought that closes Caral (act IV): the valley dries in patches, the haze turns to dust,
-   * the fields lose half their remaining harvest and part of the riverside grove dies. `instant` restores
-   * it at once (loaded saves).
+   * Start a named environmental event. `drought` closes Caral: the valley dries in patches, the haze
+   * turns to dust, the fields lose half their remaining harvest and part of the riverside grove dies.
+   * `instant` restores it at once (loaded saves).
    */
-  startDrought(instant = false): void {
-    this.droughtTarget = 1;
-    this.droughtBaseAtmosphere ??= this.missionAtmosphere;
-    if (instant) {
-      // A loaded save already holds the halved harvests and the dead trees: only the look is restored.
-      this.droughtFarmsHit = true;
-      this.droughtGroveCut = true;
-      this.droughtLevel = 1;
-      this.applyDrought();
+  startEnvironmentalEvent(event: string, instant = false): void {
+    const definition = ENVIRONMENT_EVENTS[event as EnvironmentEventId];
+    if (!definition) return;
+    if (!instant) this.hud.showToast(t(definition.labelKey), 'info');
+    this.environmentTargets[event] = 1;
+    this.environment[event] ??= 0;
+    if (event === 'drought') {
+      this.droughtBaseAtmosphere ??= this.missionAtmosphere;
+      if (instant) {
+        // A loaded save already holds the halved harvests and the dead trees: only the look is restored.
+        this.droughtFarmsHit = true;
+        this.droughtGroveCut = true;
+        this.environment.drought = 1;
+        this.applyEnvironmentalEvent('drought', 1);
+      }
+    }
+  }
+
+  /** Restore named events from a save without re-applying their losses. */
+  restoreEnvironment(state: Record<string, number>): void {
+    this.environmentRestored = true;
+    for (const [event, level] of Object.entries(state)) {
+      if (!(event in ENVIRONMENT_EVENTS)) continue;
+      this.environment[event] = level;
+      this.environmentTargets[event] = level;
+      if (event === 'drought') {
+        this.droughtBaseAtmosphere ??= this.missionAtmosphere;
+        if (level >= 0.3) this.droughtFarmsHit = true;
+        if (level >= 0.6) this.droughtGroveCut = true;
+      }
+      this.applyEnvironmentalEvent(event, level);
     }
   }
 
@@ -1001,7 +1035,7 @@ export class Game {
    * act III fire offering. Cooking pits and sacred-fire altars are documented in the dossier.
    */
   updateCityLife(dt: number): void {
-    const city = this.caralCity;
+    const city = this.caralCity ?? this.chavinCity;
     if (!city || this.headless) return;
     this.lifeTimer += dt;
     if (this.lifeTimer < 0.35) return;
@@ -1027,15 +1061,20 @@ export class Game {
         grow: 1.6,
       });
     }
-    // Surf grows louder as the camera nears the sea on the west edge of the transect.
-    this.audio.setSurf?.(1 - Math.max(0, Math.min(1, (focus.x - 18) / 45)));
+    // Surf grows louder as the camera nears the sea on Caral's west edge, never on the highlands.
+    if (this.siteDef?.environs?.valley === 'caral') {
+      this.audio.setSurf?.(1 - Math.max(0, Math.min(1, (focus.x - 18) / 45)));
+    }
     const mayor = this.siteDef?.anchor;
     if (!mayor) return;
-    const offering = this.mission?.getObjectiveState('a3_fuego') === 'activo';
-    if (this.sitePhase === 'in_use' || offering) {
+    const offeringObjective = this.siteDef?.life?.offeringObjective;
+    const offering = offeringObjective ? this.mission?.getObjectiveState(offeringObjective) === 'activo' : false;
+    const firePhase = this.siteDef?.life?.firePhase ?? 'in_use';
+    if (this.sitePhase === firePhase || offering) {
+      const fireHeight = this.siteDef?.life?.fireHeight ?? 16.6;
       const top = offering
         ? { x: mayor.x, y: this.terrain.getHeight(mayor.x, mayor.z + 32) + 0.4, z: mayor.z + 32 }
-        : { x: mayor.x, y: this.terrain.getHeight(mayor.x, mayor.z) + 16.6, z: mayor.z };
+        : { x: mayor.x, y: this.terrain.getHeight(mayor.x, mayor.z) + fireHeight, z: mayor.z };
       this.particles.emit({
         ...top,
         count: offering ? 6 : 2,
@@ -1058,14 +1097,21 @@ export class Game {
     }
   }
 
-  updateDrought(dt: number): void {
-    if (this.droughtLevel >= this.droughtTarget) return;
-    this.droughtLevel = Math.min(this.droughtTarget, this.droughtLevel + dt / DROUGHT_SECONDS);
-    this.applyDrought();
+  updateEnvironment(dt: number): void {
+    for (const [event, target] of Object.entries(this.environmentTargets)) {
+      const current = this.environment[event] ?? 0;
+      if (current >= target) continue;
+      const definition = ENVIRONMENT_EVENTS[event as EnvironmentEventId];
+      this.environment[event] = Math.min(target, current + dt / (definition?.duration ?? DROUGHT_SECONDS));
+      this.applyEnvironmentalEvent(event, this.environment[event]);
+    }
   }
 
-  private applyDrought(): void {
-    const level = this.droughtLevel;
+  private applyEnvironmentalEvent(event: string, level: number): void {
+    if (event === 'drought') this.applyDrought(level);
+  }
+
+  private applyDrought(level: number): void {
     if (level >= 0.3 && !this.droughtFarmsHit) {
       this.droughtFarmsHit = true;
       for (const b of this.buildings.values()) if (b.isFarm && !b.dead) b.foodAmount = Math.round(b.foodAmount * 0.5);
@@ -1078,8 +1124,9 @@ export class Game {
       }
     }
     if (this.headless) return;
-    if (Math.abs(level - this.droughtShown) < 0.04 && level < 1) return;
-    this.droughtShown = level;
+    const shown = this.environmentShown.drought ?? -1;
+    if (Math.abs(level - shown) < 0.04 && level < 1) return;
+    this.environmentShown.drought = level;
     (this.terrain as { setDrought?(f: number): void }).setDrought?.(level);
     this.water.setLevelOffset(-0.75 * level);
     const base = this.droughtBaseAtmosphere ?? {};
@@ -1093,15 +1140,21 @@ export class Game {
     this.world.applyAtmosphere();
   }
 
-  setSitePhase(phase: CaralMayorPhase): void {
+  setSitePhase(phase: string): void {
+    if (!isKnownPhase(this.sitePhasePlan, phase)) {
+      console.warn(`[site] unknown phase ${phase} for ${this.siteDef?.id ?? 'no site'}`);
+      return;
+    }
     this.sitePhase = phase;
-    this.caralCity?.setMayorPhase(phase);
+    this.caralCity?.setPhase(phase);
+    this.chavinCity?.setPhase(phase);
     this.world.syncSitePhase(phase);
   }
 
-  /** Whether a heritage building already stands (m1 raises its monuments phase by phase). */
+  /** Whether a heritage building already stands (the site raises its monuments phase by phase). */
   heritageStanding(id: HeritageBuildingId): boolean {
-    return standsAt({ since: CARAL_HERITAGE_SINCE[id] }, this.sitePhase);
+    const since = this.siteDef?.heritageSince?.[id];
+    return standsAt(since, this.sitePhase, this.siteDef?.phases);
   }
   deliverToHeritage(id: HeritageBuildingId): boolean {
     return this.selection.deliverToHeritage(id);
@@ -1342,11 +1395,17 @@ export class Game {
   }
 
   /** Queue a technology in a building of player 0. */
+  /** Whether the mission's technology restriction allows this research. */
+  canResearchTech(techId: string): boolean {
+    const allowed = this.mission?.def.allowedTechs;
+    return !allowed || allowed.includes(techId);
+  }
+
   researchTech(buildingId: number, techId: string): boolean {
     const b = this.buildings.get(buildingId);
     if (!b || b.dead || b.owner !== 0) return false;
     const tech = getTech(techId);
-    if (!tech) return false;
+    if (!tech || !this.canResearchTech(techId)) return false;
     if (!this.spendResource(0, tech.cost)) return false;
     if (!b.queueTech(techId)) {
       this.addResource(0, tech.cost);
@@ -1541,8 +1600,14 @@ export class Game {
       this.landmark = null;
       this.landmarkOwnsStatic = false;
       this.caralCity = null;
+      this.chavinCity = null;
     }
-    this.sitePhase = 'in_use';
+    this.sitePhase = this.siteDef?.phases?.initial ?? 'in_use';
+    this.sitePhaseRestored = false;
+    this.environmentRestored = false;
+    this.environment = {};
+    this.environmentTargets = {};
+    this.environmentShown = {};
     if (this.landscape) {
       this.scene.remove(this.landscape.group);
       this.landscape.dispose();

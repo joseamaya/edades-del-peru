@@ -4,6 +4,7 @@ import { BUILDING_DEFS } from '../src/model/defs/buildings';
 import { UNIT_ARCHETYPES } from '../src/model/defs/units';
 import { TECHS } from '../src/model/defs/techs';
 import { PERIODS } from '../src/model/defs/periods';
+import { CivId, Era, HistoricalPeriod } from '../src/core/types';
 
 describe('tech tree', () => {
   it('is generated from the defs without losing any unlock', () => {
@@ -20,6 +21,18 @@ describe('tech tree', () => {
       const era = PERIODS.find((period) => period.id === tech.minPeriod)?.level ?? 0;
       expect(tree[era].techs.some((node) => node.id === tech.id)).toBe(true);
     }
+  });
+
+  it('honours a mission technology allowlist', () => {
+    const tree = techTreeData({
+      civ: CivId.CHAVIN,
+      period: HistoricalPeriod.EARLY_HORIZON,
+      era: Era.REGIONAL_STATES,
+      canBuild: () => true,
+      canTrain: () => true,
+      canResearch: (id) => id === 'chavin_pilgrimage',
+    });
+    expect(tree[0]?.techs.map((node) => node.id)).toEqual(['chavin_pilgrimage']);
   });
 
   it('has one column per era and unique ids inside each column', () => {

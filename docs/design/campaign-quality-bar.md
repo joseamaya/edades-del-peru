@@ -2,10 +2,11 @@
 
 This is the definition of done for a historical campaign. Caral (`m1_caral`) is the **model mission**: it
 meets every gate below and sets the pattern the other missions follow
-([`model-mission-pattern.md`](./model-mission-pattern.md) is the how-to and checklist). Chavín (`m2_chavin`)
-met the earlier version of these gates; it and the other missions are reviewed again against this one, and
-rebuilt to the pattern, before they are called complete. A mission is not done because it boots or because
-its objectives can be satisfied by a test harness.
+([`model-mission-pattern.md`](./model-mission-pattern.md) is the how-to and checklist). Chavín
+(`m2_chavin`) has been rebuilt to the same pattern; its table below records the evidence, with the human
+art review still pending. The other missions are reviewed again against this one before they are called
+complete. A mission is not done because it boots or because its objectives can be satisfied by a test
+harness.
 
 ## Gates
 
@@ -51,20 +52,25 @@ Reviewed 2026-11-07 after the four-act rebuild (design and status: [`caral-model
 
 ## Chavín gold-master status
 
-| Gate        | Status      | Evidence                                                                                                                                            |
-| ----------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| History     | Met         | `docs/historia/campanas/chavin.md`; UNESCO 330, Plan de Manejo 2020, Rick et al.; no invented war.                                                  |
-| Identity    | Met         | Authored Chavín site, plaza/atrio, Edificio A/B, Portada and gallery cards; offering + pilgrimage + feria loop.                                     |
-| Terrain     | Met         | Authored Mosna valley heightfield (`chavinHeightmap.ts`): ceremonial terrace, river and highland ridges.                                            |
-| Play        | Met         | `tests/e2e/campaign-playtest.spec.ts` builds the feria with ordinary commands, delivers offerings through the mission mechanic and reaches victory. |
-| Contract    | Met         | Offerings, pilgrimage, feria and survival; pilgrimage/feria/bonus are staged; hidden goals stay out of the briefing.                                |
-| Onboarding  | Met         | Five-step Chavín tutorial, briefing, Codex and minimap destination pips.                                                                            |
-| Closure     | Met         | Chavín epilogue, optional major offering and “Continuar” to m3.                                                                                     |
-| UX          | Met locally | Briefing and tutorial reviewed at 1280×800/1600×900; no current CI pixel gate.                                                                      |
-| Visuals     | Met locally | Authored GLB, highland palette and current RTS captures in `review/`; Lanzón scan removed.                                                          |
-| Persistence | Met         | Delivered offerings and mission state round-trip through `save-campaign.spec.ts`.                                                                   |
-| Tests       | Met         | Data, tutorial, mission, site, real-command playtest and save/load coverage.                                                                        |
-| Docs        | Met         | This document, dossier, quality bar, README and campaign experiences aligned.                                                                       |
+Reviewed 2026-11-07 against the model-mission gates. Status is honest about the human art gate.
+
+| Gate        | Status               | Evidence                                                                                                                                   |
+| ----------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| History     | Met                  | `docs/historia/campanas/chavin.md` with its certainty table; UNESCO 330, Plan de Manejo 2020, Rick et al., Burger/Kembel; no invented war. |
+| Identity    | Met                  | Ceremonial prestige: offerings fund the temple, pilgrimage fills the plaza, the fair links long-distance exchange.                          |
+| Play        | Met (automated)   | `campaign-playtest.spec.ts` reaches victory through the four acts; the market and offerings use real commands, stone hand-over uses `Mission.recordDelivery`. Manual playtest pending. |
+| Contract    | Met                  | Acts II–IV start hidden and are revealed by triggers; optional Plaza, gallery, Portada and major offering never gate victory.               |
+| Onboarding  | Met                  | Nine-step non-blocking Chavín tutorial, briefing and Codex; the briefing shows Act I only.                                                 |
+| Closure     | Met                  | Decline epilogue with its own capture and optional-achievement summary; “Continuar” to m3.                                                 |
+| UX          | Met locally          | Briefing, tutorial and objectives checked at 1280×800 and 1600×900; no CI pixel gate.                                                      |
+| Visuals     | Met locally          | Source-derived Chavín kit, phased temple, highland palette and current RTS captures in `public/media/chavin/`.                             |
+| Persistence | Met                  | `save-campaign.spec.ts` restores the site phase, offerings and tutorial step.                                                              |
+| Tests       | Met (automated)   | Data, site, tutorial, E2E mission, save/load and automated playtest; the manual playtest is pending.                                       |
+| Docs        | Met                  | Dossier, `chavin-model-mission.md`, this table, `chavin-sacred-site.md`, PROVENANCE and README aligned.                                    |
+| Structure   | Met                  | Four acts, hidden objectives revealed per act, chapter cards with images, optional goals, documented decline.                              |
+| Opening     | Met                  | Three-beat narrated intro and briefing with the mission's own art; chapter-card and epilogue captures from `capture_chavin_intro.mjs`.     |
+| Art         | Pending human review | Kit and captures are exported with `reviewed: false`; a human review must record `reviewer`/`reviewedAt` before this gate is Met.          |
+| Performance | Met                  | `bench_scene.mjs` opening ~372k tris / 176 calls and late ~507k / 277, within the 600k target.                                             |
 
 ## Moche gold-master status
 
