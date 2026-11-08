@@ -31,6 +31,7 @@ import { isCoastalRegion } from '../rendering/vegetationKit';
 import { attachVegetationKit } from '../rendering/vegetationKitLoader';
 import { Props } from '../rendering/Props';
 import { GroundCover } from '../rendering/GroundCover';
+import { MapLabels } from '../rendering/MapLabels';
 import { Wildlife } from '../rendering/Wildlife';
 import { clearFaunaTemplates } from '../rendering/faunaModels';
 import { clearModelAssets } from '../rendering/ModelAssets';
@@ -93,7 +94,7 @@ import { PlayerCommand, Replay, ReplayPlayer, ReplayRecorder } from '../game/rep
 import { MatchStatsCollector } from '../game/matchStats';
 import { applyMarketTrade, createMarketState, marketQuote, type MarketQuote, type MarketState } from '../game/market';
 import { getMission } from '../campaign/defs/campaign';
-import type { MissionDef, MissionAtmosphere, MissionLayout, MissionPoint } from '../campaign/types';
+import type { MissionDef, MissionAtmosphere, MissionLayout, MissionLabel, MissionPoint } from '../campaign/types';
 import { CommandProcessor } from '../game/CommandProcessor';
 import { InputController } from './InputController';
 import { WorldViewDecor } from './WorldViewDecor';
@@ -113,6 +114,9 @@ export function setAutoStart(value: boolean): void {
 /** A death animation: animates a detached model, then frees it. */
 
 /** Seed multipliers so ambient scatter does not correlate with the map/replay RNG. */
+
+/** Shared empty list so matches without place names do not allocate one per frame. */
+const NO_PLACE_NAMES: readonly MissionLabel[] = [];
 
 /** Campaign intro flyover framing, relative to the player base. */
 const INTRO_CAMERA = { offset: 34, fromHeight: 52, toZoom: 30, seconds: 2.6 } as const;
@@ -146,6 +150,8 @@ export class Game {
   /** Objective anchors for the authored site (world units). */
   siteAnchor: { x: number; z: number } | null = null;
   siteCenter: { x: number; z: number } | null = null;
+  /** Named geography of the mission, drawn on the board and the minimap. */
+  mapLabels: MapLabels | null = null;
   /** Authored canal target in world units (mission mechanic + visual). */
   canalSite: { x: number; z: number } | null = null;
   private canalGroup: THREE.Group | null = null;
@@ -272,6 +278,10 @@ export class Game {
   /** True when the renderer fell back to the software-safe profile. */
   get usesSoftwareRenderer(): boolean {
     return this.softwareFallback;
+  }
+  /** Source-backed place names of the current mission (normalized map coordinates). */
+  get placeNames(): readonly MissionLabel[] {
+    return this.missionLayout?.labels ?? NO_PLACE_NAMES;
   }
   /** One-shot death animations that outlive their entity (topple / collapse). */
   deathFx: DeathFx[] = [];
@@ -529,6 +539,7 @@ export class Game {
     this.fowUniforms.fowMap.value = this.fowTexture.texture;
     this.fowUniforms.mapSize.value = s.mapSize;
     this.fowUniforms.fowEnabled.value = s.fogOfWar ? 1 : 0;
+    this.mapLabels = new MapLabels(this.scene, this.placeNames, this.terrain, s.mapSize);
     // The authored site has thin walls and doors; 1 m cells keep them solid
     // without closing the narrow residential openings.
     this.pathfinder = new Pathfinder(s.mapSize, this.siteDef?.pathCellSize ?? 2);
@@ -1588,6 +1599,8 @@ export class Game {
     this.particles.dispose();
     this.debris.dispose();
     this.markers.dispose();
+    this.mapLabels?.dispose();
+    this.mapLabels = null;
     for (const node of this.resourceNodes.values()) node.remove();
     this.resourceNodes.clear();
     this.trees.dispose();

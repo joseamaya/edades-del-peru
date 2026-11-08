@@ -858,6 +858,7 @@ export class RuntimeController {
     updateProjectilePools(d);
 
     this.updateFow();
+    this.game.mapLabels?.update(this.game.camera, this.game.fow, this.game.settings.fogOfWar);
     this.applyLod();
     this.updatePopulation();
 

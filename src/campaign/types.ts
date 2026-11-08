@@ -90,7 +90,18 @@ export interface MissionSite {
   phase?: string;
 }
 
+/** Source-backed geography named on the map and minimap (toponyms are proper nouns, never translated). */
+export interface MissionLabel {
+  text: string;
+  /** Normalized map position (0..1). */
+  x: number;
+  z: number;
+  kind?: 'water' | 'settlement' | 'region';
+}
+
 export interface MissionLayout {
+  /** Named geography of the scenario, e.g. the Supe river and its settlements. */
+  labels?: MissionLabel[];
   base?: MissionAnchor;
   /** Fixed enemy opening base; defaults to the procedural skirmish placement. */
   enemyBase?: MissionAnchor;
