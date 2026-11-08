@@ -5,6 +5,7 @@ import {
   edgeFactor,
   edgeSpeedFactor,
   edgeVector,
+  groundOffsetAtNdc,
   keyPanVector,
   maxZoomForMap,
   normalize2D,
@@ -74,6 +75,52 @@ describe('edge scrolling', () => {
     expect(edgeFactor(-100, 0, 800, 36)).toBe(-1);
     expect(edgeFactor(900, 0, 800, 36)).toBe(1);
     expect(edgeFactor(400, 0, 800, 36)).toBe(0);
+  });
+});
+
+describe('ground point under the cursor', () => {
+  const aspect = 1280 / 800;
+  const pitch = CAMERA_PITCH;
+  const fov = CAMERA_FOV_RAD;
+
+  it('is the target at the screen centre', () => {
+    const o = groundOffsetAtNdc(0, 0, aspect, pitch, 0, fov, 34);
+    expect(o.x).toBeCloseTo(0, 6);
+    expect(o.y).toBeCloseTo(0, 6);
+  });
+
+  it('grows with distance from the centre and mirrors left/right', () => {
+    const right = groundOffsetAtNdc(0.5, 0, aspect, pitch, 0, fov, 34);
+    const left = groundOffsetAtNdc(-0.5, 0, aspect, pitch, 0, fov, 34);
+    expect(right.x).toBeGreaterThan(0);
+    expect(right.x).toBeCloseTo(-left.x, 6);
+    expect(right.y).toBeCloseTo(0, 6);
+  });
+
+  it('looks farther north at the top of the screen', () => {
+    const up = groundOffsetAtNdc(0, 0.5, aspect, pitch, 0, fov, 34);
+    expect(up.y).toBeLessThan(0);
+    expect(up.x).toBeCloseTo(0, 6);
+  });
+
+  it('stretches the vertical offset (same pixel count) by the pitch', () => {
+    const right = groundOffsetAtNdc((2 * 100) / 1280, 0, aspect, pitch, 0, fov, 34);
+    const up = groundOffsetAtNdc(0, (2 * 100) / 800, aspect, pitch, 0, fov, 34);
+    expect(Math.abs(up.y)).toBeGreaterThan(right.x);
+  });
+
+  it('rotates with the yaw', () => {
+    const north = groundOffsetAtNdc(0, 0.5, aspect, pitch, 0, fov, 34);
+    const rotated = groundOffsetAtNdc(0, 0.5, aspect, pitch, Math.PI / 2, fov, 34);
+    expect(rotated.x).toBeCloseTo(north.y, 5);
+    expect(rotated.y).toBeCloseTo(0, 5);
+  });
+
+  it('scales linearly with zoom', () => {
+    const near = groundOffsetAtNdc(0.4, -0.3, aspect, pitch, 0.6, fov, 34);
+    const far = groundOffsetAtNdc(0.4, -0.3, aspect, pitch, 0.6, fov, 68);
+    expect(far.x).toBeCloseTo(near.x * 2, 5);
+    expect(far.y).toBeCloseTo(near.y * 2, 5);
   });
 });
 

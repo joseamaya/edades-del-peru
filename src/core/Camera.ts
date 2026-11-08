@@ -7,14 +7,13 @@ import {
   CAMERA_FOV_RAD,
   CAMERA_PITCH,
   clampFocusToMap,
-  dragToWorld,
   edgeSpeedFactor,
   edgeVector,
+  groundOffsetAtNdc,
   keyPanVector,
   maxZoomForMap,
   rotateToWorld,
   viewGroundQuad,
-  worldPerPixel,
   type Vec2,
 } from './cameraMath';
 
@@ -27,9 +26,9 @@ export interface CameraTarget {
  * RTS camera: orbits a ground point with zoom, Z/X rotation,
  * WASD/edge-scroll/middle-drag panning, and smoothed follow.
  *
- * Inputs only move `desiredTarget`; the camera keeps interpolating toward it
- * (damping). The one exception is a scripted `flyTo` (intro), which eases the
- * framing directly in real time and then hands control back to the damping.
+ * Inputs move `desiredTarget` and the camera interpolates toward it (damping). The scripted
+ * `flyTo` (intro) and the middle-drag are the exceptions: both set the framing directly, the
+ * latter so the map follows the hand without lag.
  */
 export class RTSCamera {
   readonly camera: THREE.PerspectiveCamera;
@@ -173,7 +172,15 @@ export class RTSCamera {
 
   private onWheel = (e: WheelEvent): void => {
     e.preventDefault();
-    this.desiredZoom = clamp(this.desiredZoom + e.deltaY * CAMERA_CONFIG.zoomWheelStep, this.minZoom, this.maxZoom);
+    if (this.uiCaptured) return;
+    // Anchor on the previous *desired* zoom so consecutive events (trackpads) telescope: each
+    // step assumes the previous target already applies the previous zoom.
+    const before = this.groundOffsetAt(e.clientX, e.clientY, this.desiredZoom);
+    const next = clamp(this.desiredZoom + e.deltaY * CAMERA_CONFIG.zoomWheelStep, this.minZoom, this.maxZoom);
+    if (next === this.desiredZoom) return;
+    const after = this.groundOffsetAt(e.clientX, e.clientY, next);
+    this.panGroundOffsets(before, after);
+    this.desiredZoom = next;
   };
 
   private onMouseDown = (e: MouseEvent): void => {
@@ -185,29 +192,36 @@ export class RTSCamera {
   };
 
   private onMouseMove = (e: MouseEvent): void => {
-    if (this.dragging && !this.uiCaptured) {
-      const dx = e.clientX - this.dragLast.x;
-      const dy = e.clientY - this.dragLast.y;
-      this.dragLast.set(e.clientX, e.clientY);
-      this.panBy(dx, dy);
-    }
+    if (!this.dragging) return;
+    const fromX = this.dragLast.x;
+    const fromY = this.dragLast.y;
+    this.dragLast.set(e.clientX, e.clientY);
+    if (this.uiCaptured) return;
+    // The map follows the hand exactly: move the target by the ground offset between both cursor
+    // positions (perspective included), not by a per-pixel approximation.
+    const from = this.groundOffsetAt(fromX, fromY, this.zoom);
+    const to = this.groundOffsetAt(e.clientX, e.clientY, this.zoom);
+    this.panGroundOffsets(from, to);
   };
 
   private onMouseUp = (e: MouseEvent): void => {
     if (e.button === 1) this.dragging = false;
   };
 
-  /** Middle-drag pan: the map follows the cursor (geometry-based, zoom/yaw aware). */
-  private panBy(screenDx: number, screenDy: number): void {
-    const wpp = worldPerPixel(this.zoom, this.fovRad, this.viewportH);
-    const w = dragToWorld(screenDx, screenDy, this.yaw, wpp);
-    this.desiredTarget.x += w.x;
-    this.desiredTarget.z += w.y;
+  /** Move the target so the ground point under `to` takes the place of the one under `from`. */
+  private panGroundOffsets(from: Vec2, to: Vec2): void {
+    this.desiredTarget.x += from.x - to.x;
+    this.desiredTarget.z += from.y - to.y;
   }
 
-  /** Pan from external input (e.g. an explicit drag). */
-  panScreen(screenDx: number, screenDy: number): void {
-    this.panBy(screenDx, screenDy);
+  /** Ground point under a client-space position, as an XZ offset from the target. */
+  private groundOffsetAt(clientX: number, clientY: number, zoom: number): Vec2 {
+    const rect = this.canvas.getBoundingClientRect();
+    const w = rect.width || this.canvas.clientWidth || 1;
+    const h = rect.height || this.viewportH || 1;
+    const nx = ((clientX - rect.left) / w) * 2 - 1;
+    const ny = 1 - ((clientY - rect.top) / h) * 2;
+    return groundOffsetAtNdc(nx, ny, this.camera.aspect, this.pitch, this.yaw, this.fovRad, zoom);
   }
 
   getTarget(): CameraTarget {
@@ -355,8 +369,14 @@ export class RTSCamera {
       if (this.fly.startTime !== null && (time - this.fly.startTime) / this.fly.dur >= 1) this.fly = null;
     } else {
       this.zoom = damp(this.zoom, this.desiredZoom, CAMERA_CONFIG.zoomLambda, dt);
-      this.target.x = damp(this.target.x, this.desiredTarget.x, CAMERA_CONFIG.panLambda, dt);
-      this.target.z = damp(this.target.z, this.desiredTarget.z, CAMERA_CONFIG.panLambda, dt);
+      if (this.dragging) {
+        // Direct manipulation: the map follows the hand instead of lagging behind the damping.
+        this.target.x = this.desiredTarget.x;
+        this.target.z = this.desiredTarget.z;
+      } else {
+        this.target.x = damp(this.target.x, this.desiredTarget.x, CAMERA_CONFIG.panLambda, dt);
+        this.target.z = damp(this.target.z, this.desiredTarget.z, CAMERA_CONFIG.panLambda, dt);
+      }
     }
 
     const dist = this.zoom;

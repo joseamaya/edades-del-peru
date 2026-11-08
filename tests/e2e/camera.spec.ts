@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { CAMERA_CONFIG, CAMERA_FOV_RAD, CAMERA_PITCH, groundOffsetAtNdc } from '../../src/core/cameraMath';
 
 async function bootMatch(page: Page): Promise<void> {
   await page.goto('/?play=1&seed=777&fog=0&low=1&noloop=1');
@@ -26,6 +27,46 @@ async function panFrames(page: Page, frames: number): Promise<number> {
     const t1 = g.camera.getTarget();
     return Math.hypot(t1.x - t0.x, t1.z - t0.z);
   }, frames);
+}
+
+/** Ground point (y = 0) under a client-space position, using the live camera matrices. */
+async function groundUnderCursor(page: Page, x: number, y: number): Promise<{ x: number; z: number }> {
+  return page.evaluate(
+    ({ x, y }) => {
+      const w = window as unknown as { game: any; THREE: any };
+      w.game.camera.camera.updateMatrixWorld();
+      const ndc = new w.THREE.Vector2((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1);
+      const ray = new w.THREE.Raycaster();
+      ray.setFromCamera(ndc, w.game.camera.camera);
+      const hit = new w.THREE.Vector3();
+      ray.ray.intersectPlane(new w.THREE.Plane(new w.THREE.Vector3(0, 1, 0), 0), hit);
+      return { x: hit.x, z: hit.z };
+    },
+    { x, y },
+  );
+}
+
+/** Project a ground point back to client pixels with the live camera matrices. */
+async function projectGround(page: Page, world: { x: number; z: number }): Promise<{ x: number; y: number }> {
+  return page.evaluate((world) => {
+    const w = window as unknown as { game: any; THREE: any };
+    w.game.camera.camera.updateMatrixWorld();
+    const p = new w.THREE.Vector3(world.x, 0, world.z).project(w.game.camera.camera);
+    return { x: ((p.x + 1) / 2) * window.innerWidth, y: ((1 - p.y) / 2) * window.innerHeight };
+  }, world);
+}
+
+/** Dispatch a wheel event on the canvas at a client-space position. */
+async function wheelAt(page: Page, x: number, y: number, deltaY: number): Promise<void> {
+  await page.evaluate(
+    ({ x, y, deltaY }) => {
+      const g = (window as unknown as { game: any }).game;
+      g.renderer.domElement.dispatchEvent(
+        new WheelEvent('wheel', { deltaY, clientX: x, clientY: y, bubbles: true, cancelable: true }),
+      );
+    },
+    { x, y, deltaY },
+  );
 }
 
 test('edge scrolling pans the camera toward the border', { tag: '@smoke' }, async ({ page }) => {
@@ -237,6 +278,99 @@ test('moving from the bottom edge onto the command bar stops the camera', async 
 
   await page.mouse.move(x, Math.round(bar.top + 10));
   expect(await panFrames(page, 30)).toBe(0);
+});
+
+test('wheel zoom keeps the ground point under the cursor', { tag: '@smoke' }, async ({ page }) => {
+  await bootMatch(page);
+  await stopLoop(page);
+  const cursor = { x: 960, y: 500 };
+
+  const anchorError = async (yaw: number): Promise<number> => {
+    await page.evaluate((yaw) => {
+      const g = (window as unknown as { game: any }).game;
+      g.camera.setYaw(yaw);
+      g.camera.moveTo(g.settings.mapSize / 2, g.settings.mapSize / 2, true);
+      g.camera.setHeight(80);
+      for (let i = 0; i < 60; i++) g.update(1 / 60, i / 60);
+    }, yaw);
+    const before = await groundUnderCursor(page, cursor.x, cursor.y);
+    // Three events without a frame between them: the anchor must telescope (trackpad-style).
+    await wheelAt(page, cursor.x, cursor.y, -40);
+    await wheelAt(page, cursor.x, cursor.y, -40);
+    await wheelAt(page, cursor.x, cursor.y, -40);
+    await page.evaluate(() => {
+      const g = (window as unknown as { game: any }).game;
+      for (let i = 0; i < 60; i++) g.update(1 / 60, i / 60);
+    });
+    const screen = await projectGround(page, before);
+    return Math.hypot(screen.x - cursor.x, screen.y - cursor.y);
+  };
+
+  expect(await anchorError(0)).toBeLessThan(2);
+  expect(await anchorError(Math.PI / 2)).toBeLessThan(2);
+});
+
+test('middle-drag follows the hand without damping', async ({ page }) => {
+  await bootMatch(page);
+  await stopLoop(page);
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.camera.moveTo(g.settings.mapSize / 2, g.settings.mapSize / 2, true);
+    g.camera.setHeight(60);
+    for (let i = 0; i < 60; i++) g.update(1 / 60, i / 60);
+  });
+
+  const drag = async (dx: number, dy: number) => {
+    const before = await page.evaluate(() => (window as unknown as { game: any }).game.camera.getTarget());
+    await page.mouse.move(640, 400);
+    await page.mouse.down({ button: 'middle' });
+    await page.mouse.move(640 + dx, 400 + dy, { steps: 8 });
+    const during = await page.evaluate(() => {
+      const g = (window as unknown as { game: any }).game;
+      g.update(1 / 60, 0);
+      return { target: g.camera.getTarget(), zoom: g.camera.getZoom() };
+    });
+    const visible = await groundUnderCursor(page, 640, 400);
+    await page.mouse.up({ button: 'middle' });
+    return { before, during, visible };
+  };
+
+  const aspect = 1280 / 800;
+  const horizontal = await drag(120, 0);
+  const expectedX =
+    groundOffsetAtNdc(0, 0, aspect, CAMERA_PITCH, 0, CAMERA_FOV_RAD, horizontal.during.zoom).x -
+    groundOffsetAtNdc((2 * 120) / 1280, 0, aspect, CAMERA_PITCH, 0, CAMERA_FOV_RAD, horizontal.during.zoom).x;
+  expect(horizontal.during.target.x - horizontal.before.x).toBeCloseTo(expectedX, 1);
+  expect(Math.abs(horizontal.visible.x - horizontal.during.target.x)).toBeLessThan(0.01);
+  expect(Math.abs(horizontal.visible.z - horizontal.during.target.z)).toBeLessThan(0.01);
+
+  const vertical = await drag(0, 100);
+  const expectedZ =
+    groundOffsetAtNdc(0, 0, aspect, CAMERA_PITCH, 0, CAMERA_FOV_RAD, vertical.during.zoom).y -
+    groundOffsetAtNdc(0, -(2 * 100) / 800, aspect, CAMERA_PITCH, 0, CAMERA_FOV_RAD, vertical.during.zoom).y;
+  expect(vertical.during.target.z - vertical.before.z).toBeCloseTo(expectedZ, 1);
+  expect(Math.abs(vertical.visible.z - vertical.during.target.z)).toBeLessThan(0.01);
+});
+
+test('middle-drag still clamps at the map edge', async ({ page }) => {
+  await bootMatch(page);
+  await stopLoop(page);
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.camera.moveTo(10, g.settings.mapSize / 2, true);
+    g.camera.setHeight(60);
+    for (let i = 0; i < 60; i++) g.update(1 / 60, i / 60);
+  });
+  await page.mouse.move(200, 400);
+  await page.mouse.down({ button: 'middle' });
+  await page.mouse.move(900, 400, { steps: 8 });
+  const target = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.update(1 / 60, 0);
+    return g.camera.getTarget();
+  });
+  await page.mouse.up({ button: 'middle' });
+  expect(target.x).toBeCloseTo(CAMERA_CONFIG.edgeMargin, 1);
 });
 
 test('the edge-scroll option disables panning and persists across reloads', async ({ page }) => {
