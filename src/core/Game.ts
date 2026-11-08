@@ -1602,6 +1602,9 @@ export class Game {
     this.sitePhase = this.siteDef?.phases?.initial ?? 'in_use';
     this.sitePhaseRestored = false;
     this.environmentRestored = false;
+    this.environment = {};
+    this.environmentTargets = {};
+    this.environmentShown = {};
     if (this.landscape) {
       this.scene.remove(this.landscape.group);
       this.landscape.dispose();
