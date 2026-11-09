@@ -17,6 +17,8 @@ export class Tutorial {
   private finished = false;
   private delay = 0;
   private visible = false;
+  /** Time the current step has been on screen, for informational `elapsed` steps. */
+  private stepTime = 0;
   private base: TutorialBase;
 
   constructor(game: Game, def: TutorialDef) {
@@ -62,8 +64,10 @@ export class Tutorial {
       this.show();
       return;
     }
+    this.stepTime += dt;
     if (this.checkStep(paso)) {
       this.idx++;
+      this.stepTime = 0;
       if (this.idx >= this.pasos.length) {
         this.finish();
         return;
@@ -104,6 +108,23 @@ export class Tutorial {
         const group = paso.check.group;
         return (
           game.mission?.activeObjectives.some(({ def, state }) => def.group === group && state === 'completed') ?? false
+        );
+      }
+      case 'elapsed':
+        return this.stepTime >= paso.check.seconds;
+      case 'unitNearEntity': {
+        const check = paso.check;
+        const target = [...game.units.values(), ...game.buildings.values()].find(
+          (e) => e.tag === check.entityTag && !e.dead,
+        );
+        if (!target) return false;
+        const kind = check.unitKind;
+        return [...game.units.values()].some(
+          (u) =>
+            u.owner === 0 &&
+            !u.dead &&
+            (!kind || u.kind === kind) &&
+            distance2D(u.pos.x, u.pos.z, target.pos.x, target.pos.z) < check.radius,
         );
       }
       case 'approachSite': {
@@ -157,6 +178,7 @@ export class Tutorial {
       finished: this.finished,
       delay: this.delay,
       base: { ...this.base },
+      stepTime: this.stepTime,
     };
   }
 
@@ -170,6 +192,7 @@ export class Tutorial {
     this.begun = s.begun;
     this.finished = s.finished;
     this.delay = s.delay;
+    this.stepTime = s.stepTime ?? 0;
     this.base = {
       ...s.base,
       farms: s.base.farms ?? 0,

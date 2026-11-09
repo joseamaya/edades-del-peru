@@ -12,6 +12,11 @@ const TUTORIALS: Record<string, TutorialDef> = {
         check: { type: 'selectUnit', unitKind: UnitKind.CAVALRY },
       },
       {
+        id: 'montoneras',
+        text: 'Las montoneras son caballería ligera: hostigan y persiguen, pero no aguantan un choque frontal. Úsalas para flanquear.',
+        check: { type: 'elapsed', seconds: 12 },
+      },
+      {
         id: 'junin',
         text: 'Sostén la posición de Junín con la caballería durante 90 segundos. Sucre debe seguir con vida.',
         highlight: '#ed-objectives',
@@ -30,6 +35,23 @@ const TUTORIALS: Record<string, TutorialDef> = {
         id: 'select',
         text: 'Selecciona a los defensores de Arica. Bolognesi y el puerto deben resistir el asalto.',
         check: { type: 'selectUnit', unitKind: UnitKind.RIFLEMAN },
+      },
+      {
+        id: 'battery',
+        text: 'La batería es el fuerte que cubre el puerto: su cañón dispara a las oleadas. Lleva fusileros junto a ella y no dejes que la asalten.',
+        highlight: '#ed-objectives',
+        check: { type: 'unitNearEntity', entityTag: 'puerto', unitKind: UnitKind.RIFLEMAN, radius: 8 },
+      },
+      {
+        id: 'bolognesi',
+        text: 'Francisco Bolognesi manda la defensa: mantenlo con vida y lejos del asalto. Si cae, Arica cae con él.',
+        highlight: '#ed-objectives',
+        check: { type: 'elapsed', seconds: 12 },
+      },
+      {
+        id: 'counter',
+        text: 'La contraofensiva es opcional: si el asalto flaquea, golpea el mando chileno para quebrarlo antes de la noche.',
+        check: { type: 'elapsed', seconds: 12 },
       },
       {
         id: 'resist',
@@ -67,8 +89,30 @@ const TUTORIALS: Record<string, TutorialDef> = {
         check: { type: 'selectUnit', unitKind: UnitKind.RIFLEMAN },
       },
       {
+        id: 'choice',
+        text: 'Dos rutas de victoria: asalta el centro de mando realista o resiste el cerco. Solo el cerco tiene contador: diez minutos en el panel de objetivos.',
+        highlight: '#ed-objectives',
+        check: { type: 'elapsed', seconds: 14 },
+      },
+      {
+        id: 'cavalry',
+        text: 'Selecciona la caballería patriota: carga sobre los dragones realistas y persigue a los que huyan.',
+        check: { type: 'selectUnit', unitKind: UnitKind.CAVALRY },
+      },
+      {
+        id: 'artillery',
+        text: 'Selecciona la artillería: derriba el centro de mando desde lejos. Es lenta y frágil; protégela mientras recarga.',
+        check: { type: 'selectUnit', unitKind: UnitKind.ARTILLERY },
+      },
+      {
+        id: 'protect',
+        text: 'Túpac Amaru II debe sobrevivir: mantenlo detrás de la línea y fuera del alcance de la artillería realista.',
+        highlight: '#ed-objectives',
+        check: { type: 'elapsed', seconds: 12 },
+      },
+      {
         id: 'victory',
-        text: 'Túpac Amaru II debe sobrevivir. Asalta el centro realista del Cusco o resiste el cerco diez minutos: ambas rutas ganan.',
+        text: 'Elige tu ruta: asalta el centro realista del Cusco o resiste el cerco. La rebelión gana por cualquiera de las dos.',
         highlight: '#ed-objectives',
         check: { type: 'objectiveGroupCompleted', group: 'victoria' },
       },
@@ -106,6 +150,11 @@ const TUTORIALS: Record<string, TutorialDef> = {
         text: 'Avanza con Túpac Yupanqui hasta Paramonga, al norte del campamento chimú.',
         highlight: '#ed-objectives',
         check: { type: 'objectiveCompleted', objectiveId: 'obj_avanzar' },
+      },
+      {
+        id: 'chan_chan',
+        text: 'Tomar Chan Chan es opcional y debe hacerse antes de cortar el agua: en cuanto caiga el canal, la ciudad se rinde y la misión termina. No sacrifiques a Túpac Yupanqui por ello.',
+        check: { type: 'elapsed', seconds: 12 },
       },
       {
         id: 'canal',

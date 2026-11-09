@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { Tutorial } from '../src/campaign/Tutorial';
 import { tutorialForMission } from '../src/campaign/defs/tutorials';
 import type { TutorialDef } from '../src/campaign/types';
+import { UnitKind } from '../src/core/types';
 
 function stubGame() {
   return { buildings: new Map(), units: new Map() };
@@ -28,6 +29,59 @@ describe('tutorial save compatibility', () => {
     // Legacy index 3 was the removed market step; the coast is its closest replacement.
     tutorial.applySave({ idx: 3, begun: true, finished: false, delay: 0, base });
     expect(tutorial.toSave().stepId).toBe('coast');
+  });
+
+  it('keeps the elapsed time of an informational step across save/load', () => {
+    const def: TutorialDef = {
+      steps: [
+        { id: 'info', text: 'lee esto', check: { type: 'elapsed', seconds: 5 } },
+        { id: 'select', text: 'selecciona', check: { type: 'selectUnit', unitKind: UnitKind.WORKER } },
+      ],
+    };
+    const tutorial = new Tutorial(gameForSteps() as any, def);
+    tutorial.applySave({ idx: 0, stepId: 'info', begun: true, finished: false, delay: 0, base });
+    tutorial.update(0);
+    tutorial.update(2);
+    expect(tutorial.toSave().stepTime).toBeCloseTo(2, 6);
+
+    const loaded = new Tutorial(gameForSteps() as any, def);
+    loaded.applySave(tutorial.toSave());
+    loaded.update(0);
+    expect(loaded.toSave().stepId).toBe('info');
+    loaded.update(3.1);
+    expect(loaded.toSave().stepId).toBe('select');
+  });
+
+  it('advances a positioning step when a unit reaches the tagged entity', () => {
+    const game = gameForSteps();
+    game.buildings.set(10, {
+      owner: 0,
+      kind: 'fortress',
+      dead: false,
+      constructionComplete: true,
+      tag: 'puerto',
+      pos: { x: 0, z: 0 },
+    } as never);
+    game.units.set(1, { owner: 0, kind: 'rifleman', dead: false, pos: { x: 12, z: 0 } });
+    const def: TutorialDef = {
+      steps: [
+        {
+          id: 'battery',
+          text: 'lleva fusileros a la batería',
+          check: { type: 'unitNearEntity', entityTag: 'puerto', unitKind: UnitKind.RIFLEMAN, radius: 8 },
+        },
+        { id: 'next', text: 'siguiente', check: { type: 'elapsed', seconds: 1 } },
+      ],
+    };
+    const tutorial = new Tutorial(game as any, def);
+    tutorial.applySave({ idx: 0, stepId: 'battery', begun: true, finished: false, delay: 0, base });
+    tutorial.update(0);
+    tutorial.update(0.1);
+    expect(tutorial.toSave().stepId).toBe('battery');
+
+    game.units.get(1)!.pos = { x: 4, z: 0 };
+    tutorial.update(0.1);
+    expect(tutorial.toSave().stepId).toBe('next');
   });
 });
 

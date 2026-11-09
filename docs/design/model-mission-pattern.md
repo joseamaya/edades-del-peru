@@ -117,7 +117,10 @@ definitions instead.
 
 A short, non-blocking step list in `src/campaign/defs/tutorials.ts`, docked under the objectives, one step
 per new action, advancing on what the player does (Caral: select, coast, house, valley, field, storage,
-nets, pyramid). It never blocks input and never repeats the briefing.
+nets, pyramid). It never blocks input and never repeats the briefing. For mechanics that need explaining
+before the player can act (a choice of victory routes, the role of a defensive battery, an optional
+counterattack) use an informational `{ type: 'elapsed', seconds }` step: it advances on its own, so it
+never gates the rest of the tutorial.
 
 ## 8. Art and provenance
 
