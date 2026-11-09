@@ -805,7 +805,9 @@ Match the cost of verification to the change (the full gate is in `AGENTS.md`):
 - **CI** — the **fast** E2E project on `main` is **sharded 4×** (~5–7 min), and the PR `@smoke` subset
   **sharded 2×**. The heavy specs (`ai`, `campaign-completable`, `campaign-playtest`, `caral-city`, `caral-scene`,
   `caral-worker`, `settlement`, `save`) run **nightly**
-  (`test:e2e:slow`).
+  (`test:e2e:slow`). A nightly failure opens or comments a `[nightly]` issue with the run and the failing
+  specs; the issue closes automatically on the next green run. The campaign playtests stay in the nightly
+  for now; revisit moving `campaign-completable` to `main` once the nightly has been stable for a week.
 - **E2E parallelism**: 2 workers locally (`PW_WORKERS=n` overrides) and **1 per CI shard** — the software-WebGL
   runners are CPU-bound and two workers starve them; sharding (4× full, 2× smoke) provides the parallelism.
   If a change only touches one area, run that spec instead of the suite.

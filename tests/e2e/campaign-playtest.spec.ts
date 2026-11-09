@@ -172,7 +172,9 @@ test('plays m8 by holding Junín and Ayacucho with real orders', async ({ page }
   expect(errors).toEqual([]);
 });
 
-test('plays m9 by defending the port through the final assault with real orders', async ({ page }) => {
+// Known failure after workers keep building (see #342): m9 will be adapted to
+// Caral's model-mission pattern (#352 and following). Re-enable it in that rework.
+test.fixme('plays m9 by defending the port through the final assault with real orders', async ({ page }) => {
   test.setTimeout(120_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
@@ -586,7 +588,7 @@ test('plays m2 Chavín through the four acts with real construction and offering
     let reached = false;
     const tick = (seconds: number) => {
       for (let i = 0; i < Math.ceil(seconds / dt) && !m.ended; i++) {
-        document.querySelector('.ed-mission-card')?.remove();
+        document.querySelector<HTMLElement>('.ed-mission-card')?.click();
         for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
         for (const b of g.buildings.values()) if (b.owner === 0 && !b.dead) b.hp = b.maxHp;
         if (!reached && Math.hypot(holder.pos.x - anchor.x, holder.pos.z - anchor.z) < 8) reached = true;

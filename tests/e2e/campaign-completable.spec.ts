@@ -45,6 +45,9 @@ for (const mis of COMPLETABLE_MISSIONS) {
       const maxSteps = Math.ceil(660 / dt);
       let t = 0;
       for (let i = 0; i < maxSteps && !m.ended; i++) {
+        // Act cards hold the mission clock; this loop runs synchronously so their
+        // dismiss timer never fires and the mission would never advance.
+        if (g.hud.isMissionCardOpen()) document.querySelector<HTMLElement>('.ed-mission-card')?.click();
         // keep the player alive: waves would otherwise defeat it during the clock
         for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
         for (const b of g.buildings.values()) if (b.owner === 0 && !b.dead) b.hp = b.maxHp;
@@ -195,8 +198,15 @@ for (const mis of COMPLETABLE_MISSIONS) {
               for (let k = have; k < need; k++) g.spawnScriptedBuilding(o.buildingKind, 0, bx + k * 2, bz);
               break;
             }
+            case 'research':
+              if (o.tech) g.players[0].techs.add(o.tech);
+              break;
+            case 'survive':
+            case 'defend':
+            case 'protect':
+              break; // satisfied by the clock / staying alive
             default:
-              break; // survive / defend / protect: satisfied by the clock / staying alive
+              throw new Error(`unsupported objective kind in ${def.id}: ${o.kind}`);
           }
         }
 

@@ -70,7 +70,7 @@ test('m2 plays the four acts from the offering to the documented decline', async
     const tick = (seconds: number) => {
       const dt = 1 / 60;
       for (let i = 0; i < Math.ceil(seconds / dt) && !m.ended; i++) {
-        document.querySelector('.ed-mission-card')?.remove();
+        document.querySelector<HTMLElement>('.ed-mission-card')?.click();
         worker.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
         for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
         for (const b of g.buildings.values()) if (b.owner === 0 && !b.dead) b.hp = b.maxHp;
@@ -139,6 +139,18 @@ test('m2 plays the four acts from the offering to the documented decline', async
 });
 
 test('m2 briefing hides later acts and the tutorial starts with nine non-blocking steps', async ({ page }) => {
+  const tick = (seconds: number) =>
+    page.evaluate((duration: number) => {
+      const g = (window as unknown as { game: any }).game;
+      g.loop.stop();
+      if (g.getPaused()) g.togglePause();
+      let t = 0;
+      for (let i = 0; i < Math.ceil(duration * 60); i++) {
+        document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+        g.update(1 / 60, t);
+        t += 1 / 60;
+      }
+    }, seconds);
   await page.goto(URL);
   const briefing = page.locator('.ed-overlay', { hasText: 'El Oráculo de Chavín' });
   await expect(briefing).toBeVisible({ timeout: 30_000 });
@@ -146,6 +158,7 @@ test('m2 briefing hides later acts and the tutorial starts with nine non-blockin
   await expect(briefing).not.toContainText('Abre la feria');
   await expect(briefing).toContainText('Entrega 100 de plata');
   await briefing.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+  await tick(2);
   const tutorial = page.locator('#ed-tutorial');
   await expect(tutorial).toBeVisible({ timeout: 30_000 });
   await expect(tutorial).toContainText('Selecciona a tus obreros');
@@ -153,10 +166,10 @@ test('m2 briefing hides later acts and the tutorial starts with nine non-blockin
 
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    g.loop.start();
     const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as any;
     g.selectedUnits = [worker.id];
   });
+  await tick(0.2);
   await expect(tutorial).toContainText('Lleva un obrero', { timeout: 10_000 });
 
   await page.evaluate(() => {
@@ -164,7 +177,7 @@ test('m2 briefing hides later acts and the tutorial starts with nine non-blockin
     const anchor = g.siteAnchor as { x: number; z: number };
     const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as any;
     worker.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
-    g.update(1 / 60, 0);
   });
+  await tick(0.2);
   await expect(tutorial).toContainText('entrega una ofrenda', { timeout: 10_000 });
 });

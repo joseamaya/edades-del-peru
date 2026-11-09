@@ -257,7 +257,10 @@ test('the AI commits a smaller force when it has no known enemy army', async ({ 
     for (const u of g.units.values()) if (u.owner === 1) u.die();
     ai.seenUnits.clear();
     ai.attackStall = 2;
-    const enemy = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'center');
+    // The AI only knows a nearby house: with no enemy army in sight it commits the
+    // small force, even though it is below the normal attack threshold.
+    const enemy = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'house' && !b.dead);
+    ai.seenBuildings.clear();
     ai.seenBuildings.add(enemy.id);
     const soldiers = [
       g.spawnScriptedUnit('soldier', 0, enemy.pos.x + 8, enemy.pos.z),
