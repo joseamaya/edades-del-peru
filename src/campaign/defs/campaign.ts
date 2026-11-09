@@ -540,7 +540,7 @@ export const MISSIONS: MissionDef[] = [
     tutorial: true,
     playerCiv: CivId.CHAVIN,
     enemyCiv: CivId.PARACAS,
-    map: { seed: 900, type: 'andes', size: 192 },
+    map: { seed: 900, type: 'andes', size: 256 },
     timeOfDay: 'noon',
     // Callejón de Conchucos: cool highland mist around the ceremonial center.
     atmosphere: { fogDensity: 0.0042, skyTint: '#c8d6d0', sunWarmth: 0.9 },
@@ -578,6 +578,8 @@ export const MISSIONS: MissionDef[] = [
       groundTint: '#b9d29a',
     },
     startingEra: Era.REGIONAL_STATES,
+    // Same 256 m transect and crossing band as Caral (see caral-model-mission.md §Pacing).
+    unitSpeedScale: 0.5,
     // Chavín has no documented war: dwellings, storehouses, fields and the pilgrimage fair, no army.
     allowedBuildings: [BuildingKind.HOUSE, BuildingKind.MILL, BuildingKind.FARM, BuildingKind.MARKET],
     allowedUnits: [UnitKind.WORKER, UnitKind.SCOUT],

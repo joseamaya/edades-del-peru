@@ -27,6 +27,7 @@ harness.
 | Opening     | A narrated intro and a briefing with the mission's own art (or a neutral backdrop), chapter-card and epilogue images captured in engine and documented as such.                              |
 | Art         | New models and images carry `confidence` and pass a recorded human review; PROVENANCE and the dossier certainty table agree.                                                                 |
 | Performance | The mission's opening (and, when its late game fills the screen, its late view) is in `scripts/bench_scene.mjs` and passes `yarn bench:check`; `dist/` stays under its budget.               |
+| Scale       | A model mission uses a 256 m map and painted ground sampled every 2 m; its worker crosses in 180–240 s. `tests/campaign-scale.test.ts` enforces it for every mission on the model list.       |
 
 ## Caral gold-master status
 
@@ -49,6 +50,7 @@ Reviewed 2026-11-07 after the four-act rebuild (design and status: [`caral-model
 | Opening     | Met    | Three-beat narrated intro; briefing with Áspero's capture; act and epilogue images from `scripts/capture_caral_intro.mjs`.                                                 |
 | Art         | Met    | Architecture kit and captures approved by human review on 2026-11-07 (`reviewer`/`reviewedAt` in the manifests, PROVENANCE).                                               |
 | Performance | Met    | `bench_scene.mjs` re-run 2026-11-09: opening 331,766 tris / 205 calls; late 581,611 / 262; within the 400k / 600k budgets.                                                     |
+| Scale       | Met    | 256 m map, painted ground every 2 m (128 over 256) and `unitSpeedScale: 0.5` → worker crossing ≈3:33; `tests/campaign-scale.test.ts`.                                       |
 
 Updated 2026-11-09: phase paint evidence, the burial ritual and the Troje-fed construction work turns were
 added (see `caral-model-mission.md` Open items); the unit speed scale (0.5) now paces the 256 m transect.
@@ -73,7 +75,8 @@ Reviewed 2026-11-07 against the model-mission gates. Status is honest about the 
 | Structure   | Met                  | Four acts, hidden objectives revealed per act, chapter cards with images, optional goals, documented decline.                              |
 | Opening     | Met                  | Three-beat narrated intro and briefing with the mission's own art; chapter-card and epilogue captures from `capture_chavin_intro.mjs`.     |
 | Art         | Pending human review | Kit and captures are exported with `reviewed: false`; a human review must record `reviewer`/`reviewedAt` before this gate is Met.          |
-| Performance | Met                  | `bench_scene.mjs` re-run 2026-11-09: opening 372,286 tris / 176 calls; late 507,718 / 277; both within the 600k target. |
+| Performance | Met                  | `bench_scene.mjs` re-run 2026-11-09 after the resize: opening 409,497 tris / 166 calls; late 458,935 / 224; within the 450k / 600k budgets. |
+| Scale       | Met                  | 256 m map, painted ground every 2 m (128 over 256) and `unitSpeedScale: 0.5` → worker crossing ≈3:33; `tests/campaign-scale.test.ts`. |
 
 ## Moche gold-master status
 

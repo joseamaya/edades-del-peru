@@ -656,7 +656,7 @@ test('plays m2 Chavín through the four acts with real construction and offering
   expect(out.states.a2_peregrinaje).toBe('completed');
   expect(out.states.a2_feria).toBe('completed');
   expect(out.states.a3_templo).toBe('completed');
-  expect(out.states.a3_intercambio).toBe('completed');
+  expect(out.states.a3_intercambio, JSON.stringify(out)).toBe('completed');
   expect(out.states.a3_peregrinaje).toBe('completed');
   expect(out.states.a4_registro).toBe('completed');
   expect(out.phases).toBe('apogee');

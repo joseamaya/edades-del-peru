@@ -43,9 +43,9 @@ test('m2 loads the authored Chavín site and its phased kit without the CyArk La
     };
   });
   expect(out.model).toBe('chavin_site');
-  expect(out.anchor).toEqual({ x: 98, z: 87.5 });
-  expect(out.center?.x).toBeCloseTo(0.51 * 192, 5);
-  expect(out.center?.z).toBeCloseTo(0.456 * 192, 5);
+  expect(out.anchor).toEqual({ x: 130.7, z: 116.7 });
+  expect(out.center?.x).toBeCloseTo(0.51 * 256, 5);
+  expect(out.center?.z).toBeCloseTo(0.456 * 256, 5);
   expect(out.phase).toBe('old_temple_foundation');
   expect(out.kit).toBe(true);
   expect(out.siteVisible).toBe(false);

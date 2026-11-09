@@ -37,6 +37,8 @@ export class Mission {
   private spawnedCount = new Map<string, number>();
   private holdTimers = new Map<string, number>();
   private stalledHolds = new Set<string>();
+  /** Activations a one-shot trigger requested before their `requires` prerequisite completed. */
+  private deferredActivations = new Map<string, boolean>();
   private delivered = new Map<string, number>();
   private onEnd: (win: boolean) => void;
 
@@ -218,6 +220,7 @@ export class Mission {
     this.objState.set(id, 'completed');
     this.game.hud.showToast('✔ Objetivo completado: ' + this.objective(id)?.title, 'success');
     this.game.audio?.uiClick?.();
+    this.retryDeferredActivations();
   }
 
   private fail(id: string): void {
@@ -597,7 +600,13 @@ export class Mission {
   /** Shared activation path; triggers can opt out of the new-goal toast. */
   private activate(id: string, announce: boolean): boolean {
     const def = this.objective(id);
-    if (!def || !this.canActivateObjective(id)) return false;
+    if (!def || this.objState.get(id) !== 'pendiente') return false;
+    if (def.requires && this.objState.get(def.requires) !== 'completed') {
+      // A one-shot trigger may fire before the objective it gates on completes; retry on that completion.
+      this.deferredActivations.set(id, announce);
+      return false;
+    }
+    this.deferredActivations.delete(id);
     this.objState.set(id, 'activo');
     if (this.evalObjective(def) === 'win') {
       this.complete(id);
@@ -605,6 +614,11 @@ export class Mission {
     }
     if (announce) this.game.hud?.showToast('Nuevo objetivo: ' + def.title, 'info');
     return true;
+  }
+
+  /** Activate any objective whose prerequisite completed after its trigger had already fired. */
+  private retryDeferredActivations(): void {
+    for (const [id, announce] of [...this.deferredActivations]) this.activate(id, announce);
   }
 
   /** Numeric progress for the HUD, or null for objectives without a meter. */
@@ -683,6 +697,7 @@ export class Mission {
     this.spawnedCount = new Map(s.spawnedCount);
     this.holdTimers = new Map(s.holdTimers ?? []);
     this.stalledHolds.clear();
+    this.deferredActivations.clear();
     this.delivered = new Map(s.delivered ?? []);
     this.game.setVisitedHeritage(s.heritage ?? []);
     this.restoreSitePhase();

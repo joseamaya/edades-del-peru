@@ -9,7 +9,7 @@ export const CHAVIN_PHASE_PLAN: SitePhasePlan = {
 };
 
 /** The source kit keeps the original site frame: every piece is placed at the site origin and scaled. */
-const KIT = { x: 96, z: 96, scale: [0.22, 0.22, 0.22] as [number, number, number] };
+const KIT = { x: 128, z: 128, scale: [0.22, 0.22, 0.22] as [number, number, number] };
 
 /**
  * The ceremonial centre assembled from the Chavín architecture kit. The source is a representative
@@ -23,17 +23,17 @@ export const CHAVIN_CITY_LAYOUT: readonly ArchPlacement[] = [
   { asset: 'edificio_a_foundation', phaseAssets: { new_temple: 'edificio_a' }, ...KIT, rotY: 0 },
   { asset: 'portada', ...KIT, rotY: 0, since: 'new_temple' },
   // Fair tents use the game-unit Caral tent geometry, placed on the open ground outside the temple.
-  { asset: 'fair_tent', x: 92, z: 104, rotY: 0.2, scale: [1, 1, 1], since: 'apogee' },
-  { asset: 'fair_tent', x: 104, z: 106, rotY: -0.35, scale: [1, 1, 1], since: 'apogee' },
-  { asset: 'fair_tent', x: 112, z: 96, rotY: 0.55, scale: [1, 1, 1], since: 'apogee' },
+  { asset: 'fair_tent', x: 122.7, z: 138.7, rotY: 0.2, scale: [1, 1, 1], since: 'apogee' },
+  { asset: 'fair_tent', x: 138.7, z: 141.3, rotY: -0.35, scale: [1, 1, 1], since: 'apogee' },
+  { asset: 'fair_tent', x: 149.3, z: 128, rotY: 0.55, scale: [1, 1, 1], since: 'apogee' },
   // Pilgrims and offering bundles are presentation-only; they stand once the centre is at its apogee.
-  { asset: 'pilgrims', x: 100, z: 98, rotY: 0, scale: [1, 1, 1], since: 'apogee' },
+  { asset: 'pilgrims', x: 133.3, z: 130.7, rotY: 0, scale: [1, 1, 1], since: 'apogee' },
 ];
 
 export const CHAVIN_CITY_BLOCKERS: readonly SiteBlocker[] = [
-  { x: 90, z: 91, w: 20, d: 19, since: 'old_temple_foundation' },
-  { x: 107, z: 80, w: 25, d: 22, since: 'new_temple_foundation' },
-  { x: 110, z: 85, w: 9, d: 7, since: 'new_temple' },
+  { x: 120, z: 121.3, w: 20, d: 19, since: 'old_temple_foundation' },
+  { x: 142.7, z: 106.7, w: 25, d: 22, since: 'new_temple_foundation' },
+  { x: 146.7, z: 113.3, w: 9, d: 7, since: 'new_temple' },
 ];
 
 /** Phase from which each heritage card stands; omitted cards stand from the opening. */

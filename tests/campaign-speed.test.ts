@@ -46,14 +46,14 @@ describe('campaign unit speed scale', () => {
   });
 
   it('leaves missions without a scale at the skirmish speed', () => {
-    const chavin = headlessFor('m2_chavin');
+    const moche = headlessFor('m3_moche_recuay');
     try {
-      expect(chavin.unitSpeedScale).toBe(1);
+      expect(moche.unitSpeedScale).toBe(1);
       const base = getUnitStats(UnitKind.WORKER, Era.REGIONAL_STATES).speed;
-      const worker = chavin.spawnScriptedUnit(UnitKind.WORKER, 0, 20, 20);
+      const worker = moche.spawnScriptedUnit(UnitKind.WORKER, 0, 20, 20);
       expect(worker.stats.speed).toBeCloseTo(base, 6);
     } finally {
-      chavin.destroy();
+      moche.destroy();
       setAutoStart(true);
     }
   });
