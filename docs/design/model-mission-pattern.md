@@ -50,6 +50,11 @@ cotton nets) → III building the Pyramid Mayor in phases → IV the drought, th
 
 ## 3. The map: a geographic transect
 
+- **Scale**: a model mission uses a **256 m** map and painted ground sampled every **2 m** (Caral and
+  Chavín: `GROUND_SIZE = 128` over 256 m). A worker must cross it in **180–240 s**; both use
+  `MissionDef.unitSpeedScale: 0.5` (1.2 m/s, ≈3:33), between AoE2's and 0 A.D.'s villager pace. Any
+  exception is documented here, and `tests/campaign-scale.test.ts` enforces the numbers for the missions
+  listed as model missions.
 - Build the heightmap with a per-mission script (`scripts/build_<site>_heightmap.py`), like
   `build_caral_heightmap.py`: a compressed transect that reads in order (Caral: sea → beach and Áspero →
   wetlands → valley → desert terrace with the city → foothills). Real distances are not to scale; the
@@ -149,7 +154,7 @@ nets, pyramid). It never blocks input and never repeats the briefing.
 | Design doc  | `docs/design/<mission>-model-mission.md` with acts, geography, open items (copy Caral's layout)   |
 | Acts        | Hidden objectives per act, chapter cards, optional goals, documented ending                       |
 | Narrator    | `narrator` set; no invented names or titles                                                       |
-| Map         | Transect heightmap script, painted ground zones, water palette, fords, region flora and fauna     |
+| Map         | 256 m, painted ground every 2 m, worker crossing 180–240 s, transect script, fords, region flora/fauna |
 | Site        | Phased kit pieces, phase effect, monuments appear and block by phase, living details              |
 | Economy     | `allowedBuildings`, `allowedUnits`, period techs only, the mission's own mechanic                 |
 | Intro       | Three narrated beats with captured images; chapter-card and epilogue images                       |

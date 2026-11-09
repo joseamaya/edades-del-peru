@@ -1,6 +1,7 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../core/types';
 import { MissionDef } from '../types';
 import { CARAL_MAP_SIZE, CARAL_SITE_BUILD_KEEPOUT, CARAL_SITE_ORIGIN, caralKeepout } from '../../model/defs/sites';
+import { chavinKeepout } from '../../model/defs/chavinCity';
 
 const WARI_NODE_A = { ref: 'site' as const, dx: 40, dz: -32 };
 const WARI_NODE_B = { ref: 'site' as const, dx: 38, dz: 34 };
@@ -22,6 +23,7 @@ export const MISSIONS: MissionDef[] = [
     defeat: 'El valle no logra sostener a su comunidad. La primera ciudad de América no llega a consolidarse.',
     period: HistoricalPeriod.ARCHAIC,
     tutorial: true,
+    modelMission: true,
     // No rulers of Caral are known by name: an anonymous voice of the community tells the story.
     narrator: 'Voz del valle',
     // Saves written before the site phase was persisted restore the latest completed act.
@@ -119,7 +121,7 @@ export const MISSIONS: MissionDef[] = [
     guaranteedFishing: 4,
     timeOfDay: 'morning',
     startingEra: Era.FORMATIVE,
-    // Half the skirmish speed so the 256 m transect reads as travel (see caral-model-mission.md §Pacing).
+    // Half the skirmish speed so the 256 m transect reads as travel (see caral-model-mission.md §Pacing and map scale).
     unitSpeedScale: 0.5,
     // Silver has no role in Caral; stone for the monuments comes from the hills.
     startingResources: { food: 150, wood: 150, silver: 0, stone: 0 },
@@ -538,9 +540,10 @@ export const MISSIONS: MissionDef[] = [
       },
     ],
     tutorial: true,
+    modelMission: true,
     playerCiv: CivId.CHAVIN,
     enemyCiv: CivId.PARACAS,
-    map: { seed: 900, type: 'andes', size: 192 },
+    map: { seed: 900, type: 'andes', size: 256 },
     timeOfDay: 'noon',
     // Callejón de Conchucos: cool highland mist around the ceremonial center.
     atmosphere: { fogDensity: 0.0042, skyTint: '#c8d6d0', sunWarmth: 0.9 },
@@ -550,8 +553,8 @@ export const MISSIONS: MissionDef[] = [
         id: 'chavin_site',
         y: 4.6,
         focus: { x: 0.51, z: 0.456 },
-        keepout: [{ x: 0.51, z: 0.456, rx: 0.19, rz: 0.17 }],
-        buildKeepout: [{ x: 0.51, z: 0.456, rx: 0.17, rz: 0.14 }],
+        keepout: [chavinKeepout({ x: 0.51, z: 0.456, rx: 0.19, rz: 0.17 })],
+        buildKeepout: [chavinKeepout({ x: 0.51, z: 0.456, rx: 0.17, rz: 0.14 })],
         // The Old Temple starts as a foundation; acts II and III complete it and raise the New Temple.
         phase: 'old_temple_foundation',
       },
@@ -578,6 +581,8 @@ export const MISSIONS: MissionDef[] = [
       groundTint: '#b9d29a',
     },
     startingEra: Era.REGIONAL_STATES,
+    // Same 256 m transect and crossing band as Caral (see caral-model-mission.md §Pacing and map scale).
+    unitSpeedScale: 0.5,
     // Chavín has no documented war: dwellings, storehouses, fields and the pilgrimage fair, no army.
     allowedBuildings: [BuildingKind.HOUSE, BuildingKind.MILL, BuildingKind.FARM, BuildingKind.MARKET],
     allowedUnits: [UnitKind.WORKER, UnitKind.SCOUT],

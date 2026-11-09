@@ -318,6 +318,8 @@ export interface MissionDef {
   epilogueImage?: string;
   /** Show the step-by-step guided tutorial at start (e.g. the Caral mission). */
   tutorial?: boolean;
+  /** Promoted to the model-mission pattern; `tests/campaign-scale.test.ts` enforces its map values. */
+  modelMission?: boolean;
   playerCiv: CivId;
   enemyCiv: CivId;
   /** Optional player-facing faction names for civil wars or coalitions. */

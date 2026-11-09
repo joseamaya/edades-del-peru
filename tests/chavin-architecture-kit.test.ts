@@ -54,6 +54,26 @@ describe('Chavín architecture kit', () => {
     }
   });
 
+  it('keeps the kit, the heritage proxies and the blockers in the same site frame', () => {
+    const site = AUTHORED_SITES.chavin_site;
+    const origin = site.origin!;
+    expect(origin).toEqual({ x: 128, z: 128 });
+    // Every phase piece is placed at the site origin; a resize must move the kit and the proxies together.
+    for (const piece of CHAVIN_CITY_LAYOUT.filter((p) => p.since === undefined)) {
+      expect({ x: piece.x, z: piece.z }, piece.asset).toEqual(origin);
+    }
+    for (const proxy of site.heritageProxies) {
+      expect(Math.abs(proxy.x - origin.x), `${proxy.id} x offset`).toBeLessThan(16);
+      expect(Math.abs(proxy.z - origin.z), `${proxy.id} z offset`).toBeLessThan(18);
+    }
+    for (const blocker of CHAVIN_CITY_BLOCKERS) {
+      const matchesProxy = site.heritageProxies.some(
+        (p) => Math.abs(p.x - blocker.x) < 2 && Math.abs(p.z - blocker.z) < 2,
+      );
+      expect(matchesProxy, `blocker ${blocker.x},${blocker.z} has no heritage proxy`).toBe(true);
+    }
+  });
+
   it('paints the valley ground and reserves the highland flora', () => {
     const site = AUTHORED_SITES.chavin_site;
     expect(site.heightField?.ground?.size).toBeGreaterThan(0);

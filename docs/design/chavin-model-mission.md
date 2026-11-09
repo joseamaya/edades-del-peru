@@ -38,7 +38,8 @@ the period, as the dossier explains.
 
 ## Map
 
-- 192 m `andes` transect, built by `scripts/build_chavin_heightmap.py`.
+- 256 m `andes` transect with painted ground every 2 m (128 samples), built by
+  `scripts/build_chavin_heightmap.py`; the site kit and heritage proxies moved with the new site origin.
 - Sequence: highland ridges → Mosna river → valley floor → ceremonial terrace → foothills.
 - The site keeps its authored heightfield, river, fords and ceremonial terrace; the kit draws the temple
   by phases.
@@ -94,7 +95,8 @@ They advance on what the player does and never repeat the briefing.
 
 - `scripts/bench_scene.mjs` includes the Chavín opening and late (apogee) views; `yarn bench:check`
   asserts both.
-- Measured: opening ~372k triangles / 176 calls; late ~507k / 277 calls, within the 600k target.
+- Measured after the 256 m resize: opening ~413k triangles / 160 calls; late ~463k / 223 calls, both
+  within the 450k / 600k budgets.
 
 ## Open items
 

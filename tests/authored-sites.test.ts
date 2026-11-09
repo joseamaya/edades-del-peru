@@ -28,7 +28,11 @@ describe('authored campaign sites', () => {
   });
 
   it('gives the Chavín, Moche and Wari sites their own authored heightfields', () => {
-    for (const id of ['chavin_site', 'moche_site', 'wari_site'] as const) {
+    const chavin = getAuthoredSite('chavin_site')!;
+    expect(chavin.heightField?.worldSize, 'chavin_site heightfield world size').toBe(256);
+    expect(chavin.heightField?.size, 'chavin_site heightfield sample grid').toBe(257);
+    expect(chavin.heightField?.ground?.size, 'chavin_site painted ground grid').toBe(128);
+    for (const id of ['moche_site', 'wari_site'] as const) {
       const site = getAuthoredSite(id)!;
       expect(site.heightField?.worldSize, `${id} heightfield world size`).toBe(192);
       expect(site.heightField?.size, `${id} heightfield sample grid`).toBe(193);

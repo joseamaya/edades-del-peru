@@ -116,6 +116,8 @@ export interface MissionSave {
   delivered?: [string, number][];
   /** Optional heritage field cards recorded during the mission. */
   heritage?: HeritageBuildingId[];
+  /** Triggers that requested an objective whose prerequisite was still pending (optional for older saves). */
+  deferredActivations?: [string, boolean][];
 }
 
 export interface TutorialSave {

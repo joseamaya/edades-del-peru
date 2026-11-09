@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the authored Chavín de Huántar heightfield (m2, 192 m map)."""
+"""Generate the authored Chavín de Huántar heightfield (m2, 256 m map)."""
 
 from __future__ import annotations
 
@@ -7,7 +7,10 @@ import base64
 import math
 from pathlib import Path
 
-SIZE = 192
+SIZE = 256
+# The transect was authored for the former 192 m map. Sample it in that frame so the 256 m map keeps the
+# same composition, with the river, terrace and ridges 4/3 larger in metres instead of a bare margin.
+SOURCE_SIZE = 192
 N = SIZE + 1
 SITE_Y = 4.6
 RIVER = 1.15
@@ -62,7 +65,7 @@ def height(x: float, z: float) -> float:
     return max(0.9, h)
 
 
-GROUND_SIZE = 32
+GROUND_SIZE = 128
 
 
 def ground_weights(x: float, z: float) -> tuple[float, float, float, float]:
@@ -94,7 +97,7 @@ for iz in range(GROUND_SIZE):
     z = iz * SIZE / (GROUND_SIZE - 1)
     for ix in range(GROUND_SIZE):
         x = ix * SIZE / (GROUND_SIZE - 1)
-        weights = ground_weights(x, z)
+        weights = ground_weights(x * SOURCE_SIZE / SIZE, z * SOURCE_SIZE / SIZE)
         for w in weights:
             ground_values.append(max(0, min(255, round(w * 255))))
 
@@ -106,7 +109,7 @@ for iz in range(N):
     z = iz * SIZE / (N - 1)
     for ix in range(N):
         x = ix * SIZE / (N - 1)
-        values.append(round(height(x, z) * 1000.0))
+        values.append(round(height(x * SOURCE_SIZE / SIZE, z * SOURCE_SIZE / SIZE) * 1000.0))
 
 raw = bytearray()
 for v in values:
