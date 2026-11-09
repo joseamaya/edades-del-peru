@@ -610,6 +610,7 @@ export class RuntimeController {
     this.game.hud.showToast(`Tecnología completada: ${tech?.name ?? techId}`, 'info');
   };
 
+  /** Apply the player's bonuses to a freshly built unit (stats straight from `getUnitStats`), once. */
   applyPlayerBonuses(u: Unit, p: PlayerState): void {
     u.attackMultiplier += p.bonus.attack;
     u.armorMultiplier += p.bonus.armor;
@@ -620,7 +621,7 @@ export class RuntimeController {
     if (p.bonus.carry) u.setCarryCapacity(u.maxCarry + p.bonus.carry);
     u.stats.los += p.bonus.los;
     if (u.stats.range > 0) u.stats.range += p.bonus.range;
-    u.stats.speed += p.bonus.speed;
+    u.stats.speed = u.stats.speed * this.game.unitSpeedScale + p.bonus.speed;
   }
 
   applyAttackBonus(playerId: number, mult: number): void {

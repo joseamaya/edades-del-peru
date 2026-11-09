@@ -348,6 +348,11 @@ export interface MissionDef {
   commanders?: PortraitId[];
   timeOfDay: 'morning' | 'noon' | 'dusk' | 'night';
   startingEra: Era;
+  /**
+   * Multiplier on every unit's base speed for campaign pacing (1 = the skirmish speeds). Caral halves it so
+   * the 256 m transect reads as travel; the scout and every other unit scale in proportion.
+   */
+  unitSpeedScale?: number;
   startingResources: Resources;
   start: {
     buildings?: { kind: BuildingKind; dx: number; dz: number; tag?: string }[];
