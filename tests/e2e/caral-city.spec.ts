@@ -37,6 +37,18 @@ async function boot(page: import('@playwright/test').Page, requireModules = true
       timeout: 30_000,
     },
   );
+  // Settle one frame: the HUD must have rendered the opening objectives and the
+  // skinned worker must have its skeleton matrices before tests read either.
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const dismiss = () => document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+    dismiss();
+    if (g.getPaused()) g.togglePause();
+    g.update(1 / 60, 0);
+    dismiss();
+    g.hud.update(0.2, 0);
+    g.runtime.render();
+  });
   return errors;
 }
 
@@ -807,6 +819,7 @@ test('the Plaza Central card activates the communal assembly', async ({ page }) 
     g.mission.update(0.1, 0);
     document.querySelector<HTMLElement>('.ed-mission-card')?.click();
     g.selectedHeritage = 'caral_pyramid_mayor';
+    g.hud.update(0.2, 0);
   });
   const bottom = page.locator('#ed-bottom');
   await expect(bottom).toContainText('Gran Pirámide y Plaza Central');
