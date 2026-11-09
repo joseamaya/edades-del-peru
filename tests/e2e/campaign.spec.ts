@@ -120,7 +120,7 @@ test('the tutorial guides in the first mission', async ({ page }) => {
   // the first step appears after the card and the ~2.6s opening flight
   await expect(tutorial).toBeVisible({ timeout: 60_000 });
   await expect(tutorial).toContainText('Selecciona a tus obreros');
-  await expect(tutorial).toContainText('Paso 1 / 8');
+  await expect(tutorial).toContainText('Paso 1 / 9');
 });
 
 test('the chapter card freezes the mission clock and shows the full subtitle', async ({ page }) => {
