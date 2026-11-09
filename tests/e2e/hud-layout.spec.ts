@@ -28,6 +28,8 @@ interface Snapshots {
   initial: State;
   dialogue: State;
   build: State;
+  building: State;
+  postTutorial: State;
 }
 
 /** Boot a campaign mission, start it from the briefing and dismiss its chapter card. */
@@ -51,15 +53,21 @@ async function bootMission(page: Page, missionId: string): Promise<void> {
     { timeout: 30_000, polling: 100 },
   );
   expect(await ready.jsonValue()).toBe(true);
+  // measure the mission's own first tutorial step, not a fixture
+  await page.waitForSelector('#ed-tutorial.show', { timeout: 30_000 });
 }
 
-/** Stop the simulation and snapshot the HUD in the start state, with dialogue and with a build panel. */
+/**
+ * Stop the simulation and snapshot the HUD: the real start state, with dialogue, with a worker's
+ * build panel, with a building panel, and after the tutorial closes (which reveals the help box).
+ */
 async function snapshots(page: Page): Promise<Snapshots> {
   return page.evaluate(async (panels) => {
     const g = (window as unknown as { game: any }).game;
     const settle = () => new Promise<void>((resolve) => setTimeout(resolve, 60));
     g.loop.stop();
 
+    const shownByClass = new Set(['ed-dialogue', 'ed-tutorial']);
     const read = () => {
       const out: Record<string, { x: number; y: number; w: number; h: number } | null> = {};
       for (const id of panels) {
@@ -70,7 +78,12 @@ async function snapshots(page: Page): Promise<Snapshots> {
         }
         const style = getComputedStyle(el);
         const rect = el.getBoundingClientRect();
-        const hidden = style.display === 'none' || style.visibility === 'hidden' || rect.width <= 0 || rect.height <= 0;
+        const hidden =
+          style.display === 'none' ||
+          style.visibility === 'hidden' ||
+          rect.width <= 0 ||
+          rect.height <= 0 ||
+          (shownByClass.has(id) && !el.classList.contains('show'));
         out[id] = hidden ? null : { x: rect.left, y: rect.top, w: rect.width, h: rect.height };
       }
       return out;
@@ -84,7 +97,6 @@ async function snapshots(page: Page): Promise<Snapshots> {
       await settle();
     };
 
-    g.hud.showTutorialStep('Selecciona un obrero y construye una casa.', 0, 3);
     await render();
     const initial = read();
 
@@ -102,14 +114,26 @@ async function snapshots(page: Page): Promise<Snapshots> {
     await render();
     const build = read();
 
-    return { initial, dialogue, build };
+    const building = [...g.buildings.values()].find((b: any) => b.owner === 0 && !b.dead) as { id: number } | undefined;
+    if (!building) throw new Error('the mission has no player building to open its panel');
+    g.selectBuilding(building.id);
+    await render();
+    const buildingSnap = read();
+
+    // The help box is hidden while the tutorial is open; closing it exposes the panel that used to
+    // sit under a tall command bar.
+    g.hud.hideTutorial();
+    await render();
+    const postTutorial = read();
+
+    return { initial, dialogue, build, building: buildingSnap, postTutorial };
   }, PANELS);
 }
 
 function overlaps(a: Box, b: Box): boolean {
   const width = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x);
   const height = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
-  return width > 1 && height > 1;
+  return width > 0.5 && height > 0.5;
 }
 
 function violations(state: State): string[] {
@@ -132,7 +156,7 @@ for (const { width, height } of RESOLUTIONS) {
     test.use({ viewport: { width, height } });
 
     for (const missionId of MISSION_IDS) {
-      test(`the HUD panels do not overlap in ${missionId}`, async ({ page }) => {
+      test(`the HUD panels do not overlap in ${missionId}`, { tag: '@smoke' }, async ({ page }) => {
         test.setTimeout(120_000);
         const errors: string[] = [];
         page.on('pageerror', (e) => errors.push(e.message));
@@ -146,10 +170,14 @@ for (const { width, height } of RESOLUTIONS) {
         expect(snap.initial['ed-minimap-wrap'], 'minimap is not visible').not.toBeNull();
         expect(snap.dialogue['ed-dialogue'], 'dialogue box is not visible').not.toBeNull();
         expect(snap.build['ed-bottom'], 'command panel is not visible with a worker selected').not.toBeNull();
+        expect(snap.building['ed-bottom'], 'command panel is not visible with a building selected').not.toBeNull();
+        expect(snap.postTutorial['ed-help'], 'help box is not visible after the tutorial closes').not.toBeNull();
 
         expect(violations(snap.initial), 'start state').toEqual([]);
         expect(violations(snap.dialogue), 'dialogue over the command panel').toEqual([]);
         expect(violations(snap.build), 'worker build panel').toEqual([]);
+        expect(violations(snap.building), 'building panel').toEqual([]);
+        expect(violations(snap.postTutorial), 'help over the command panel').toEqual([]);
         expect(errors).toEqual([]);
       });
     }

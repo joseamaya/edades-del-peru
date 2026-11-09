@@ -172,7 +172,7 @@ const CSS = /* css */ `
 
   /* Command bar: one low horizontal strip right of the minimap (AoE/SC2 layout). Selection info on the
      left, actions in a row in the middle, orders on the right; it only grows when the actions wrap. */
-  #ui-root { --minimap-size: 190px; --bar-gap: 12px; }
+  #ui-root { --minimap-size: 190px; --bar-gap: 12px; --panel-floor: 150px; }
   #ed-bottom { position: absolute; left: calc(var(--minimap-size) + 2 * var(--bar-gap)); right: var(--bar-gap); bottom: var(--bar-gap); max-width: 1180px; margin: 0 auto; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; pointer-events: auto; display: flex; flex-direction: column; box-shadow: 0 6px 30px rgba(0,0,0,0.55); overflow: hidden; }
   #ed-bottom-header { padding: 3px 12px; font-size: 12px; font-weight: 700; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; background: rgba(232,195,106,0.06); background-image: var(--weave); background-repeat: repeat-x; background-position: bottom; }
   #ed-bottom-header:empty { display: none; }
@@ -435,7 +435,7 @@ const CSS = /* css */ `
   .ed-hint-pulse { animation: hint-pulse 1.1s ease-in-out infinite; outline: 2px solid var(--gold) !important; outline-offset: 2px; border-radius: 4px; }
   @keyframes hint-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(232,195,106,0.55); } 50% { box-shadow: 0 0 0 9px rgba(232,195,106,0); } }
 
-  #ed-help { position: absolute; right: 12px; bottom: max(150px, calc(var(--ed-bottom-h, 0px) + 24px)); font-size: 11px; color: var(--text-dim); background: rgba(10,12,16,0.7); padding: 8px 12px; border-radius: 4px; border: 1px solid rgba(232,195,106,0.15); max-width: 220px; line-height: 1.5; }
+  #ed-help { position: absolute; right: 12px; font-size: 11px; color: var(--text-dim); background: rgba(10,12,16,0.7); padding: 8px 12px; border-radius: 4px; border: 1px solid rgba(232,195,106,0.15); max-width: 220px; line-height: 1.5; }
   #ui-root.help-collapsed #ed-help { display: none; }
   .ed-help-close { position: absolute; top: 2px; right: 4px; background: none; border: 0; color: var(--text-dim); font-size: 14px; cursor: pointer; padding: 0 3px; }
   #ed-help-open { position: absolute; right: 12px; bottom: 12px; width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(232,195,106,0.35); background: rgba(10,12,16,0.8); color: var(--gold); font-weight: 700; cursor: pointer; display: none; }
@@ -465,9 +465,10 @@ const CSS = /* css */ `
   #ed-objectives .obj.failed { color: var(--red); }
   #ed-objectives .obj.failed .mark { color: var(--red); }
 
-  /* The dialogue sits above the command bar, whose height depends on the selected panel; keep a floor
-     so it does not drop over the minimap while nothing is selected. */
-  #ed-dialogue { position: absolute; left: 50%; bottom: max(150px, calc(var(--ed-bottom-h, 0px) + 24px)); transform: translateX(-50%); width: min(560px, 86vw); background: rgba(12,14,18,0.92); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 4px; padding: 10px 14px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; background-image: var(--weave); background-repeat: repeat-x; background-position: top; }
+  #ed-dialogue { position: absolute; left: 50%; transform: translateX(-50%); width: min(560px, 86vw); background: rgba(12,14,18,0.92); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 4px; padding: 10px 14px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; background-image: var(--weave); background-repeat: repeat-x; background-position: top; }
+  /* The dialogue and help panels sit above the command bar, whose height changes with the selected
+     panel; the floor keeps them clear of the minimap while nothing is selected. */
+  #ed-help, #ed-dialogue { bottom: max(var(--panel-floor), calc(var(--ed-command-bar-h, 0px) + 2 * var(--bar-gap))); }
   #ed-dialogue.show { opacity: 1; }
   #ed-dialogue .who { font-size: 11px; letter-spacing: 1px; color: var(--gold); font-weight: 700; margin-bottom: 3px; }
   #ed-dialogue .txt { font-size: 13px; color: var(--text); line-height: 1.4; }
@@ -538,7 +539,7 @@ export class HUD {
   private tutorialStepEl!: HTMLElement;
   private tutorialCountEl!: HTMLElement;
   private missionCard: HTMLElement | null = null;
-  private bottomObserver!: ResizeObserver;
+  private commandBarObserver!: ResizeObserver;
 
   constructor(game: Game) {
     this.game = game;
@@ -560,18 +561,23 @@ export class HUD {
     this.buildHover();
     this.buildDamageCursor();
     this.buildAlerts();
-    this.bottomObserver = new ResizeObserver(() => this.syncBottomInset());
-    this.bottomObserver.observe(this.bottomEl);
-    this.syncBottomInset();
+    this.commandBarObserver = new ResizeObserver(() => this.syncCommandBarHeight());
+    this.commandBarObserver.observe(this.bottomEl);
+    this.syncCommandBarHeight();
     this.edgeGuardEls = Array.from(this.root.querySelectorAll<HTMLElement>(EDGE_GUARD_SELECTOR));
     bus.on('alert', (info) => this.pushAlert(info));
+    game.onDestroy(() => this.dispose());
+  }
+
+  dispose(): void {
+    this.commandBarObserver.disconnect();
   }
 
   /** Publish the command bar height so the dialogue and help panels can sit above it. */
-  private syncBottomInset(): void {
+  private syncCommandBarHeight(): void {
     const visible = this.bottomEl.style.display !== 'none';
     const height = visible ? Math.ceil(this.bottomEl.getBoundingClientRect().height) : 0;
-    this.root.style.setProperty('--ed-bottom-h', `${height}px`);
+    this.root.style.setProperty('--ed-command-bar-h', `${height}px`);
   }
 
   private buildHover(): void {
