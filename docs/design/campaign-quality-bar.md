@@ -36,7 +36,7 @@ Reviewed 2026-11-07 after the four-act rebuild (design and status: [`caral-model
 | ----------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | History     | Met    | `docs/historia/campanas/caral.md` with its certainty table; no documented war; anonymous narrator; Vichama as the epilogue's memory of the crisis.                         |
 | Identity    | Met    | Coast–valley complementarity (valley cotton becomes Áspero's nets), the Pyramid Mayor built in phases by hand-overs and fed by the Troje, the drought that ends the city.     |
-| Play        | Met    | `tests/e2e/campaign-playtest.spec.ts` reaches victory with ordinary commands; `caral-city.spec.ts` covers the hand-over and the field cards.                               |
+| Play        | Met    | `tests/e2e/campaign-playtest.spec.ts` reaches victory with ordinary commands and locks the bot pacing at 15–25 min; `caral-city.spec.ts` covers the hand-over and the field cards. |
 | Contract    | Met    | Act objectives start hidden and are revealed by triggers (`tests/caral-acts.test.ts`); construction work turns consume food and pause when the Troje is empty; the briefing shows Act I only; optional Huaca visit, six-complex tour and assembly. |
 | Onboarding  | Met    | Nine-step tutorial docked under the objectives (select, coast, house, valley, field, storage, nets, pyramid, works); briefing; Codex optional.                             |
 | Closure     | Met    | Departure epilogue with its image, optional-achievement summary, "Continuar" to m2, which the campaign path then unlocks.                                                  |
@@ -51,7 +51,7 @@ Reviewed 2026-11-07 after the four-act rebuild (design and status: [`caral-model
 | Performance | Met    | `bench_scene.mjs` re-run 2026-11-09: opening 331,766 tris / 205 calls; late 581,611 / 262; within the 400k / 600k budgets.                                                     |
 
 Updated 2026-11-09: phase paint evidence, the burial ritual and the Troje-fed construction work turns were
-added (see `caral-model-mission.md` Open items).
+added (see `caral-model-mission.md` Open items); the unit speed scale (0.5) now paces the 256 m transect.
 
 ## Chavín gold-master status
 

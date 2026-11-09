@@ -620,7 +620,7 @@ export class RuntimeController {
     if (p.bonus.carry) u.setCarryCapacity(u.maxCarry + p.bonus.carry);
     u.stats.los += p.bonus.los;
     if (u.stats.range > 0) u.stats.range += p.bonus.range;
-    u.stats.speed += p.bonus.speed;
+    u.stats.speed = u.stats.speed * this.game.unitSpeedScale + p.bonus.speed;
   }
 
   applyAttackBonus(playerId: number, mult: number): void {

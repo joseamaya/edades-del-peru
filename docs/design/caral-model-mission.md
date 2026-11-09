@@ -155,6 +155,16 @@ Dialogue speaker labels must not say "Comandante" in this mission.
 - **Tutorial**: nine steps (select, coast, house, valley, field, storage, nets, pyramid, works) docked under
   the objectives; the last one explains the Troje supply during construction.
 
+## Pacing and map scale
+
+The 256 m sea-to-terrace transect is huge in AoE2 terms (64 town centres across), so the mission halves every
+unit's base speed with `MissionDef.unitSpeedScale: 0.5`: workers walk at 1.2 m/s and scouts at 1.44, and the
+full crossing takes ≈3:33 (0.30 centres/s, between 0 A.D.'s 0.28 and AoE2's 0.20). The real-command playtest
+completes the four acts in ≈20 min of bot time; a learning player needs the 30–40 min the dossier targets.
+
+The scale is per mission and stays at 1 for the rest of the campaigns until each is rebuilt: Chavín adopts it
+together with its 256 m map.
+
 ## Performance
 
 The scene budgets of `docs/design/art-direction.md` §11 are checked by `yarn bench:check`

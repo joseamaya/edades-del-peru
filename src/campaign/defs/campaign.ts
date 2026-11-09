@@ -119,6 +119,9 @@ export const MISSIONS: MissionDef[] = [
     guaranteedFishing: 4,
     timeOfDay: 'morning',
     startingEra: Era.FORMATIVE,
+    // Half the skirmish speed: the 256 m sea-to-terrace transect crosses in ~3:33 (0.30 city-centres/s,
+    // close to 0 A.D.'s 0.28) instead of ~1:47, so the acts read as travel.
+    unitSpeedScale: 0.5,
     // Silver has no role in Caral; stone for the monuments comes from the hills.
     startingResources: { food: 150, wood: 150, silver: 0, stone: 0 },
     start: {},

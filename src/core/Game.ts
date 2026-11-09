@@ -138,6 +138,8 @@ export class Game {
   /** Explicit map region of the current mission, if any. */
   private missionRegion?: GeographicRegion;
   missionAtmosphere?: MissionAtmosphere;
+  /** Campaign pacing multiplier applied to every unit's base speed (1 = the skirmish speeds). */
+  readonly unitSpeedScale: number;
   /** Authored scenario config (base, terrain, setpiece), if any. */
   private readonly missionDef?: MissionDef;
   private readonly missionLayout?: MissionLayout;
@@ -320,6 +322,7 @@ export class Game {
       this.settings.victoryMode = 'conquest'; // the campaign does not use wonder victory
     }
     this.missionDef = mis;
+    this.unitSpeedScale = mis?.unitSpeedScale ?? 1;
     this.missionRegion = mis?.region;
     this.missionAtmosphere = mis?.atmosphere;
     this.missionLayout = mis?.layout;

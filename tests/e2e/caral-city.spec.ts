@@ -602,7 +602,7 @@ test('a fisher ordered to a tree does not return to the sea when the tree is tak
       { kind: 'order', unitIds: [worker.id], order: { kind: 'gather', entityId: liveTree.id }, clear: true },
       false,
     );
-    for (let i = 0; i < 20 * 40 && worker.gatherCarry.wood <= 0; i++) {
+    for (let i = 0; i < 20 * 90 && worker.gatherCarry.wood <= 0; i++) {
       g.update(0.05, t);
       t += 0.05;
     }
