@@ -1,5 +1,16 @@
 import { test, expect } from '@playwright/test';
 
+/** Caral's Act III and IV objective ids, used by the real-command playtest. */
+const CARAL_ACTS_III_IV = [
+  'a3_shicras',
+  'a3_obra_relleno',
+  'a3_muros',
+  'a3_obra_muros',
+  'a3_fuego',
+  'a4_sellar',
+  'a4_partida',
+] as const;
+
 /**
  * A bounded campaign playtest that does not satisfy objectives directly.
  * It issues ordinary gather commands to the player's workers and lets the
@@ -409,7 +420,7 @@ test('plays m1 Caral with real construction and gathering, without objective che
     timeout: 30_000,
   });
 
-  const out = await page.evaluate(() => {
+  const out = await page.evaluate((act3Ids: readonly string[]) => {
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
@@ -477,7 +488,7 @@ test('plays m1 Caral with real construction and gathering, without objective che
         g.executeCommand({ kind: 'research', buildingId: mill.id, tech: 'cotton_nets' }, false);
       }
       const building = ws.filter((u) => u.orderQueue[0]?.kind === 'build');
-      const act3 = ['a3_shicras', 'a3_muros', 'a3_fuego', 'a4_sellar', 'a4_partida'].some(active);
+      const act3 = act3Ids.some(active);
       if (act3 && !porter) {
         porter = ws[ws.length - 1];
         order(porter, { kind: 'move', target: site });
@@ -518,7 +529,7 @@ test('plays m1 Caral with real construction and gathering, without objective che
       resources: { ...res },
       objectives: Object.fromEntries(m.def.objectives.map((o: any) => [o.id, state(o.id)])),
     };
-  });
+  }, CARAL_ACTS_III_IV);
 
   expect(out.setup, 'Caral playtest could not set up its base').toBe(true);
   test.info().annotations.push({ type: 'caral-bot', description: `${out.minutes} min, ${out.deliveries} loads` });
@@ -527,7 +538,7 @@ test('plays m1 Caral with real construction and gathering, without objective che
   for (const id of ['a1_pesca', 'a1_valle', 'a2_campos', 'a2_canal', 'a2_troje', 'a2_redes', 'a2_excedente']) {
     expect(out.objectives[id], id).toBe('completed');
   }
-  for (const id of ['a3_shicras', 'a3_muros', 'a3_fuego', 'a4_sellar', 'a4_partida']) {
+  for (const id of CARAL_ACTS_III_IV) {
     expect(out.objectives[id], id).toBe('completed');
   }
   expect(out.cards, 'acts II-IV open with a chapter card').toBe(3);

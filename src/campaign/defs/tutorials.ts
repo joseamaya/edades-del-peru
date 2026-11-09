@@ -262,9 +262,15 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'pyramid',
-        text: 'Lleva un obrero a la Pirámide Mayor, haz clic sobre ella y pulsa «Entregar materiales». Cada entrega hace crecer la obra.',
+        text: 'Lleva un obrero a la Pirámide Mayor, haz clic sobre ella y pulsa «Entregar materiales». Cada entrega y cada turno de obra hacen crecer la pirámide.',
         gateObjective: 'a3_shicras',
         check: { type: 'objectiveCompleted', objectiveId: 'a3_shicras' },
+      },
+      {
+        id: 'works',
+        text: 'Mantén un obrero en la obra y la Troje con comida: si se vacía, la construcción se detiene hasta reponerla.',
+        gateObjective: 'a3_obra_relleno',
+        check: { type: 'objectiveCompleted', objectiveId: 'a3_obra_relleno' },
       },
     ],
   },

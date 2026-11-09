@@ -289,6 +289,45 @@ test('the Caral objectives reveal in acts and keep the assembly hidden until the
   await expect(plaza).toContainText('Entregar materiales (50 madera) · 0/150');
 });
 
+test('an empty Troje pauses the pyramid work turn until food returns', async ({ page }) => {
+  await boot(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
+    // Complete the delivery objective; its trigger activates the first work turn.
+    m.objState.set('a3_shicras', 'completed');
+    m.update(0.1, 0);
+    const site = g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 });
+    const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as any;
+    worker.pos.set(site.x, g.terrain.getHeight(site.x, site.z), site.z);
+    g.players[0].resources.food = 0;
+    let t = 0;
+    for (let i = 0; i < 21; i++) {
+      g.update(1, t);
+      t += 1;
+    }
+    const paused = m.getObjectiveProgress('a3_obra_relleno')?.current ?? -1;
+    const phaseWhilePaused = g.sitePhase;
+    g.players[0].resources.food = 100;
+    for (let i = 0; i < 20; i++) {
+      g.update(1, t);
+      t += 1;
+    }
+    return {
+      paused,
+      phaseWhilePaused,
+      state: m.getObjectiveState('a3_obra_relleno') as string,
+      phase: g.sitePhase,
+    };
+  });
+  expect(out.paused).toBe(0);
+  expect(out.phaseWhilePaused).toBe('foundation');
+  expect(out.state).toBe('completed');
+  expect(out.phase).toBe('fill');
+});
+
 test('the Caral base uses compound architecture for its center and houses', async ({ page }) => {
   await boot(page);
   const state = await page.evaluate(() => {
@@ -869,6 +908,8 @@ test('a loaded Caral save keeps the Blender setpiece', async ({ page }) => {
     g.mission.update(0.1, 0);
     document.querySelector<HTMLElement>('.ed-mission-card')?.click();
     g.mission.objState.set('a3_shicras', 'completed');
+    g.mission.update(0.1, 0);
+    g.mission.objState.set('a3_obra_relleno', 'completed');
     g.mission.update(0.1, 0);
     g.toggleCanal();
     g.startAssembly();

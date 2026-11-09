@@ -32,6 +32,10 @@ Target length: 30–40 minutes. Four acts inside one `MissionDef` (`src/campaign
   victory and are summarised in the epilogue.
 - `narrator: 'Voz de los peregrinos'`; no invented speaker.
 
+The briefing subtitle uses the mission window **c. 900–200 a.C.**; the period badge shows the full
+**Horizonte Temprano · 1200–200 a.C.** Both are intentional: the mission covers the monumental stretch of
+the period, as the dossier explains.
+
 ## Map
 
 - 192 m `andes` transect, built by `scripts/build_chavin_heightmap.py`.

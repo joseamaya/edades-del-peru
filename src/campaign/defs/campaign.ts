@@ -6,6 +6,9 @@ const WARI_NODE_A = { ref: 'site' as const, dx: 40, dz: -32 };
 const WARI_NODE_B = { ref: 'site' as const, dx: 38, dz: 34 };
 const WARI_BONUS_NODE = { ref: 'site' as const, dx: -40, dz: 0 };
 
+/** Caral's Act III work turns: a worker holds the site while the Troje feeds the crew. */
+const CARAL_WORK_TURN = { time: 20, consume: { resource: 'food', perSecond: 1.5 } } as const;
+
 export const MISSIONS: MissionDef[] = [
   {
     id: 'm1_caral',
@@ -21,6 +24,12 @@ export const MISSIONS: MissionDef[] = [
     tutorial: true,
     // No rulers of Caral are known by name: an anonymous voice of the community tells the story.
     narrator: 'Voz del valle',
+    // Saves written before the site phase was persisted restore the latest completed act.
+    legacyPhases: [
+      { objectiveId: 'a3_shicras', phase: 'fill' },
+      { objectiveId: 'a3_muros', phase: 'finished' },
+      { objectiveId: 'a3_fuego', phase: 'in_use' },
+    ],
     // In-engine recreations (scripts/capture_caral_intro.mjs), never historical photographs.
     epilogueImage: 'media/caral/intro-partida.webp',
     intro: [
@@ -196,6 +205,18 @@ export const MISSIONS: MissionDef[] = [
         title: 'Acto III · Entrega 150 de caña y fibra para las shicras de la Pirámide Mayor',
       },
       {
+        id: 'a3_obra_relleno',
+        kind: 'hold',
+        pos: { ref: 'site', dx: 0, dz: 0 },
+        radius: 18,
+        ...CARAL_WORK_TURN,
+        unitKind: UnitKind.WORKER,
+        requires: 'a3_shicras',
+        afterPhase: 'fill',
+        hidden: true,
+        title: 'Acto III · Rellena la plataforma con shicras (la Troje alimenta a la cuadrilla)',
+      },
+      {
         id: 'a3_muros',
         kind: 'deliver',
         resource: 'stone',
@@ -206,6 +227,18 @@ export const MISSIONS: MissionDef[] = [
         radius: 20,
         hidden: true,
         title: 'Acto III · Entrega 150 de piedra para los muros de contención',
+      },
+      {
+        id: 'a3_obra_muros',
+        kind: 'hold',
+        pos: { ref: 'site', dx: 0, dz: 0 },
+        radius: 18,
+        ...CARAL_WORK_TURN,
+        unitKind: UnitKind.WORKER,
+        requires: 'a3_muros',
+        afterPhase: 'finished',
+        hidden: true,
+        title: 'Acto III · Levanta los muros de contención (la Troje alimenta a la cuadrilla)',
       },
       {
         id: 'a3_fuego',
@@ -369,10 +402,22 @@ export const MISSIONS: MissionDef[] = [
         id: 't_a3_shicras',
         condition: { type: 'objective', objectiveId: 'a3_shicras', state: 'completed' },
         effects: [
+          {
+            type: 'dialogue',
+            text: 'Las shicras están listas. Reúne a la cuadrilla en la pirámide: la obra consume el excedente de la Troje.',
+          },
+          { type: 'objective', objectiveId: 'a3_obra_relleno', state: 'activate', announce: true },
+        ],
+      },
+      {
+        id: 't_a3_obra_relleno',
+        condition: { type: 'objective', objectiveId: 'a3_obra_relleno', state: 'completed' },
+        effects: [
+          { type: 'ritual', pos: { ref: 'site', dx: 0, dz: 0 } },
           { type: 'site_phase', phase: 'fill' },
           {
             type: 'dialogue',
-            text: 'Las shicras rellenan la plataforma. Faltan los muros de piedra que la contienen.',
+            text: 'Bajo la nueva plataforma, la comunidad entierra las ofrendas quemadas antes de levantar la siguiente. Faltan los muros de piedra que la contienen.',
           },
           { type: 'objective', objectiveId: 'a3_muros', state: 'activate', announce: true },
         ],
@@ -381,6 +426,18 @@ export const MISSIONS: MissionDef[] = [
         id: 't_a3_muros',
         condition: { type: 'objective', objectiveId: 'a3_muros', state: 'completed' },
         effects: [
+          {
+            type: 'dialogue',
+            text: 'La piedra está lista. Otra vez la Troje debe sostener a la cuadrilla mientras se levantan los muros.',
+          },
+          { type: 'objective', objectiveId: 'a3_obra_muros', state: 'activate', announce: true },
+        ],
+      },
+      {
+        id: 't_a3_obra_muros',
+        condition: { type: 'objective', objectiveId: 'a3_obra_muros', state: 'completed' },
+        effects: [
+          { type: 'ritual', pos: { ref: 'site', dx: 0, dz: 0 } },
           { type: 'site_phase', phase: 'finished' },
           {
             type: 'dialogue',
