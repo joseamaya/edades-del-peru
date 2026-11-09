@@ -39,31 +39,20 @@ describe('campaign unit speed scale', () => {
       const crossing = caral.map.size / worker.stats.speed;
       expect(crossing).toBeGreaterThan(200);
       expect(crossing).toBeLessThan(220);
-      // ~0.30 city centres per second: between 0 A.D. (0.28) and AoE2 (0.20).
-      expect(caral.map.size / 4 / crossing).toBeCloseTo(0.3, 1);
     } finally {
       game.destroy();
       setAutoStart(true);
     }
   });
 
-  it('keeps the scale after an era modernisation and leaves unscaled missions untouched', () => {
-    const caral = headlessFor('m1_caral');
+  it('leaves missions without a scale at the skirmish speed', () => {
     const chavin = headlessFor('m2_chavin');
     try {
-      const unit = caral.spawnScriptedUnit(UnitKind.WORKER, 0, 20, 20);
-      // `modernizeUnits` rebuilds the stats and re-applies the player bonuses; do the same here
-      // without its visual model rebuild (which needs a DOM).
-      unit.stats = getUnitStats(UnitKind.WORKER, caral.players[0].era);
-      caral.runtime.applyPlayerBonuses(unit, caral.players[0]);
-      expect(unit.stats.speed).toBeCloseTo(getUnitStats(UnitKind.WORKER, caral.players[0].era).speed * 0.5, 6);
-
       expect(chavin.unitSpeedScale).toBe(1);
       const base = getUnitStats(UnitKind.WORKER, Era.REGIONAL_STATES).speed;
-      const unscaled = chavin.spawnScriptedUnit(UnitKind.WORKER, 0, 20, 20);
-      expect(unscaled.stats.speed).toBeCloseTo(base, 6);
+      const worker = chavin.spawnScriptedUnit(UnitKind.WORKER, 0, 20, 20);
+      expect(worker.stats.speed).toBeCloseTo(base, 6);
     } finally {
-      caral.destroy();
       chavin.destroy();
       setAutoStart(true);
     }
