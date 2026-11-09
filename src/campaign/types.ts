@@ -280,7 +280,9 @@ export type TutorialCheck =
   | { type: 'objectiveGroupCompleted'; group: string }
   | { type: 'approachSite'; radius: number; unitKind?: UnitKind }
   /** Informational step that advances on its own after `seconds` of play (non-blocking). */
-  | { type: 'elapsed'; seconds: number };
+  | { type: 'elapsed'; seconds: number }
+  /** Step that completes when a player unit stands next to the entity carrying `entityTag`. */
+  | { type: 'unitNearEntity'; entityTag: string; unitKind?: UnitKind; radius: number };
 
 export interface TutorialStepDef {
   id: string;

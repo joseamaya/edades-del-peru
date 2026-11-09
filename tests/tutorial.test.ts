@@ -51,6 +51,38 @@ describe('tutorial save compatibility', () => {
     loaded.update(3.1);
     expect(loaded.toSave().stepId).toBe('select');
   });
+
+  it('advances a positioning step when a unit reaches the tagged entity', () => {
+    const game = gameForSteps();
+    game.buildings.set(10, {
+      owner: 0,
+      kind: 'fortress',
+      dead: false,
+      constructionComplete: true,
+      tag: 'puerto',
+      pos: { x: 0, z: 0 },
+    } as never);
+    game.units.set(1, { owner: 0, kind: 'rifleman', dead: false, pos: { x: 12, z: 0 } });
+    const def: TutorialDef = {
+      steps: [
+        {
+          id: 'battery',
+          text: 'lleva fusileros a la batería',
+          check: { type: 'unitNearEntity', entityTag: 'puerto', unitKind: UnitKind.RIFLEMAN, radius: 8 },
+        },
+        { id: 'next', text: 'siguiente', check: { type: 'elapsed', seconds: 1 } },
+      ],
+    };
+    const tutorial = new Tutorial(game as any, def);
+    tutorial.applySave({ idx: 0, stepId: 'battery', begun: true, finished: false, delay: 0, base });
+    tutorial.update(0);
+    tutorial.update(0.1);
+    expect(tutorial.toSave().stepId).toBe('battery');
+
+    game.units.get(1)!.pos = { x: 4, z: 0 };
+    tutorial.update(0.1);
+    expect(tutorial.toSave().stepId).toBe('next');
+  });
 });
 
 function gameForSteps() {

@@ -1,4 +1,7 @@
 import { test, expect, type BrowserContext } from '@playwright/test';
+import { tutorialForMission } from '../../src/campaign/defs/tutorials';
+
+const tutorialSteps = (id: string): number => tutorialForMission(id)?.steps.length ?? 0;
 
 /** Missions with a narrated intro open with the cinematic before the briefing; skip it. */
 async function skipMissionIntro(page: import('@playwright/test').Page): Promise<void> {
@@ -120,7 +123,7 @@ test('the tutorial guides in the first mission', async ({ page }) => {
   // the first step appears after the card and the ~2.6s opening flight
   await expect(tutorial).toBeVisible({ timeout: 60_000 });
   await expect(tutorial).toContainText('Selecciona a tus obreros');
-  await expect(tutorial).toContainText('Paso 1 / 9');
+  await expect(tutorial).toContainText(`Paso 1 / ${tutorialSteps('m1_caral')}`);
 });
 
 test('the chapter card freezes the mission clock and shows the full subtitle', async ({ page }) => {
@@ -201,17 +204,19 @@ test('the Caral mission closes with a narrative epilogue, not a quiz', async ({ 
 
 test('chapter II tutorials open with their first step', async ({ page }) => {
   test.setTimeout(240_000);
-  for (const [id, title, step] of [
-    ['m5_yahuar_pampa', 'Yahuar Pampa', 'Paso 1 / 3'],
-    ['m6_chimu_inca', 'La Guerra del Norte', 'Paso 1 / 4'],
-    ['m6b_guerra_civil', 'La Guerra Civil', 'Paso 1 / 3'],
+  for (const [id, title] of [
+    ['m5_yahuar_pampa', 'Yahuar Pampa'],
+    ['m6_chimu_inca', 'La Guerra del Norte'],
+    ['m6b_guerra_civil', 'La Guerra Civil'],
   ]) {
     await page.goto(`/?mission=${id}&seed=777&fog=0&low=1&intro=0`);
     const overlay = page.locator('.ed-overlay', { hasText: title });
     await expect(overlay).toBeVisible({ timeout: 30_000 });
     await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
     await overlay.waitFor({ state: 'detached', timeout: 15_000 });
-    await expect(page.locator('#ed-tutorial.show')).toContainText(step, { timeout: 60_000 });
+    await expect(page.locator('#ed-tutorial.show')).toContainText(`Paso 1 / ${tutorialSteps(id)}`, {
+      timeout: 60_000,
+    });
   }
 });
 
@@ -222,21 +227,53 @@ test('the chapter III tutorial opens with its first step', async ({ page }) => {
   await expect(overlay).toBeVisible({ timeout: 30_000 });
   await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
   await overlay.waitFor({ state: 'detached', timeout: 15_000 });
-  await expect(page.locator('#ed-tutorial.show')).toContainText('Paso 1 / 6', { timeout: 60_000 });
+  await expect(page.locator('#ed-tutorial.show')).toContainText(`Paso 1 / ${tutorialSteps('m7_tupac_amaru')}`, {
+    timeout: 60_000,
+  });
+});
+
+test('an informational tutorial step advances on its own', async ({ page }) => {
+  test.setTimeout(180_000);
+  await page.goto('/?mission=m7_tupac_amaru&seed=777&fog=0&low=1&intro=0');
+  const overlay = page.locator('.ed-overlay', { hasText: 'La Gran Rebelión' });
+  await expect(overlay).toBeVisible({ timeout: 30_000 });
+  await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+  await overlay.waitFor({ state: 'detached', timeout: 15_000 });
+  const tutorial = page.locator('#ed-tutorial');
+  await expect(tutorial).toContainText('Paso 1 /', { timeout: 60_000 });
+
+  // Select a rifleman to reach the informational choice step, then run the tutorial clock: the
+  // step advances by itself after 14 s of play without waiting for any order.
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const rifle = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'rifleman' && !u.dead);
+    g.selectUnits([rifle.id]);
+  });
+  await expect(tutorial).toContainText('Paso 2 /', { timeout: 20_000 });
+  await expect(tutorial).toContainText('Dos rutas de victoria');
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    g.tutorial.update(15);
+  });
+  await expect(tutorial).toContainText('Paso 3 /', { timeout: 5_000 });
+  await expect(tutorial).toContainText('caballería patriota');
 });
 
 test('chapter IV tutorials open with their first step', async ({ page }) => {
   test.setTimeout(240_000);
-  for (const [id, title, step] of [
-    ['m8_independencia', 'La Independencia', 'Paso 1 / 3'],
-    ['m9_guerra_pacifico', 'La Defensa de Arica', 'Paso 1 / 5'],
+  for (const [id, title] of [
+    ['m8_independencia', 'La Independencia'],
+    ['m9_guerra_pacifico', 'La Defensa de Arica'],
   ]) {
     await page.goto(`/?mission=${id}&seed=777&fog=0&low=1&intro=0`);
     const overlay = page.locator('.ed-overlay', { hasText: title });
     await expect(overlay).toBeVisible({ timeout: 30_000 });
     await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
     await overlay.waitFor({ state: 'detached', timeout: 15_000 });
-    await expect(page.locator('#ed-tutorial.show')).toContainText(step, { timeout: 60_000 });
+    await expect(page.locator('#ed-tutorial.show')).toContainText(`Paso 1 / ${tutorialSteps(id)}`, {
+      timeout: 60_000,
+    });
   }
 });
 

@@ -12,6 +12,11 @@ const TUTORIALS: Record<string, TutorialDef> = {
         check: { type: 'selectUnit', unitKind: UnitKind.CAVALRY },
       },
       {
+        id: 'montoneras',
+        text: 'Las montoneras son caballería ligera: hostigan y persiguen, pero no aguantan un choque frontal. Úsalas para flanquear.',
+        check: { type: 'elapsed', seconds: 12 },
+      },
+      {
         id: 'junin',
         text: 'Sostén la posición de Junín con la caballería durante 90 segundos. Sucre debe seguir con vida.',
         highlight: '#ed-objectives',
@@ -33,9 +38,9 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'battery',
-        text: 'La batería es el fuerte del puerto: mantén tiradores y defensores a su lado. Su cañón cubre la bahía y frena las oleadas.',
+        text: 'La batería es el fuerte que cubre el puerto: su cañón dispara a las oleadas. Lleva fusileros junto a ella y no dejes que la asalten.',
         highlight: '#ed-objectives',
-        check: { type: 'elapsed', seconds: 14 },
+        check: { type: 'unitNearEntity', entityTag: 'puerto', unitKind: UnitKind.RIFLEMAN, radius: 8 },
       },
       {
         id: 'bolognesi',
@@ -85,7 +90,7 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'choice',
-        text: 'Dos rutas de victoria: asalta el centro de mando realista o resiste el cerco diez minutos. El panel de objetivos marca el contador de ambas; elige la que mejor encaje con tu ejército.',
+        text: 'Dos rutas de victoria: asalta el centro de mando realista o resiste el cerco. Solo el cerco tiene contador: diez minutos en el panel de objetivos.',
         highlight: '#ed-objectives',
         check: { type: 'elapsed', seconds: 14 },
       },
@@ -101,13 +106,13 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'protect',
-        text: 'Túpac Amaru II debe sobrevivir: no lo mandes a la vanguardia. Si cae, la rebelión termina.',
+        text: 'Túpac Amaru II debe sobrevivir: mantenlo detrás de la línea y fuera del alcance de la artillería realista.',
         highlight: '#ed-objectives',
         check: { type: 'elapsed', seconds: 12 },
       },
       {
         id: 'victory',
-        text: 'Túpac Amaru II debe sobrevivir. Asalta el centro realista del Cusco o resiste el cerco diez minutos: ambas rutas ganan.',
+        text: 'Elige tu ruta: asalta el centro realista del Cusco o resiste el cerco. La rebelión gana por cualquiera de las dos.',
         highlight: '#ed-objectives',
         check: { type: 'objectiveGroupCompleted', group: 'victoria' },
       },
@@ -148,7 +153,7 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'chan_chan',
-        text: 'Si Chan Chan resiste tras cortar el agua, tomarla es opcional. No sacrifiques a Túpac Yupanqui por ello.',
+        text: 'Tomar Chan Chan es opcional y debe hacerse antes de cortar el agua: en cuanto caiga el canal, la ciudad se rinde y la misión termina. No sacrifiques a Túpac Yupanqui por ello.',
         check: { type: 'elapsed', seconds: 12 },
       },
       {

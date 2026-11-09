@@ -112,6 +112,21 @@ export class Tutorial {
       }
       case 'elapsed':
         return this.stepTime >= paso.check.seconds;
+      case 'unitNearEntity': {
+        const check = paso.check;
+        const target = [...game.units.values(), ...game.buildings.values()].find(
+          (e) => e.tag === check.entityTag && !e.dead,
+        );
+        if (!target) return false;
+        const kind = check.unitKind;
+        return [...game.units.values()].some(
+          (u) =>
+            u.owner === 0 &&
+            !u.dead &&
+            (!kind || u.kind === kind) &&
+            distance2D(u.pos.x, u.pos.z, target.pos.x, target.pos.z) < check.radius,
+        );
+      }
       case 'approachSite': {
         const landmark = game.landmark;
         if (!landmark) return false;

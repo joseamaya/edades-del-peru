@@ -303,7 +303,7 @@ describe('campaign educational content', () => {
 
   it('chapter IV has briefings and guided tutorials', () => {
     for (const [id, steps] of [
-      ['m8_independencia', 3],
+      ['m8_independencia', 4],
       ['m9_guerra_pacifico', 5],
     ] as const) {
       const mis = MISSIONS.find((m) => m.id === id)!;
