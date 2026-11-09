@@ -304,7 +304,7 @@ describe('campaign educational content', () => {
   it('chapter IV has briefings and guided tutorials', () => {
     for (const [id, steps] of [
       ['m8_independencia', 3],
-      ['m9_guerra_pacifico', 2],
+      ['m9_guerra_pacifico', 5],
     ] as const) {
       const mis = MISSIONS.find((m) => m.id === id)!;
       expect(mis.tutorial, `${id} tutorial flag`).toBe(true);
@@ -313,11 +313,11 @@ describe('campaign educational content', () => {
     }
   });
 
-  it('chapter III has a briefing and a two-step guided tutorial', () => {
+  it('chapter III has a briefing and a six-step guided tutorial', () => {
     const mis = MISSIONS.find((m) => m.id === 'm7_tupac_amaru')!;
     expect(mis.tutorial).toBe(true);
     expect(getEducational(mis.id)?.briefing?.length).toBeGreaterThan(40);
-    expect(tutorialForMission(mis.id)?.steps.length).toBe(2);
+    expect(tutorialForMission(mis.id)?.steps.length).toBe(6);
   });
 
   it('m3 briefing does not spoil its hidden huaca or exchange goals', () => {

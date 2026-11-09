@@ -278,7 +278,9 @@ export type TutorialCheck =
   | { type: 'build'; buildingKind: BuildingKind; baseline: TutorialBuildBaseline }
   | { type: 'objectiveCompleted'; objectiveId: string }
   | { type: 'objectiveGroupCompleted'; group: string }
-  | { type: 'approachSite'; radius: number; unitKind?: UnitKind };
+  | { type: 'approachSite'; radius: number; unitKind?: UnitKind }
+  /** Informational step that advances on its own after `seconds` of play (non-blocking). */
+  | { type: 'elapsed'; seconds: number };
 
 export interface TutorialStepDef {
   id: string;

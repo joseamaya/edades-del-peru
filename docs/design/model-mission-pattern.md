@@ -117,7 +117,10 @@ definitions instead.
 
 A short, non-blocking step list in `src/campaign/defs/tutorials.ts`, docked under the objectives, one step
 per new action, advancing on what the player does (Caral: select, coast, house, valley, field, storage,
-nets, pyramid). It never blocks input and never repeats the briefing.
+nets, pyramid). It never blocks input and never repeats the briefing. For mechanics that need explaining
+before the player can act (a choice of victory routes, positioning artillery, an optional counterattack)
+use an informational `{ type: 'elapsed', seconds }` step: it advances on its own, so it never gates the
+rest of the tutorial.
 
 ## 8. Art and provenance
 
@@ -148,19 +151,19 @@ nets, pyramid). It never blocks input and never repeats the briefing.
 
 ## 11. Checklist
 
-| Area        | Done when                                                                                         |
-| ----------- | ------------------------------------------------------------------------------------------------- |
-| Dossier     | `docs/historia/campanas/<mission>.md` lists sources and a certainty table for every element shown |
-| Design doc  | `docs/design/<mission>-model-mission.md` with acts, geography, open items (copy Caral's layout)   |
-| Acts        | Hidden objectives per act, chapter cards, optional goals, documented ending                       |
-| Narrator    | `narrator` set; no invented names or titles                                                       |
+| Area        | Done when                                                                                              |
+| ----------- | ------------------------------------------------------------------------------------------------------ |
+| Dossier     | `docs/historia/campanas/<mission>.md` lists sources and a certainty table for every element shown      |
+| Design doc  | `docs/design/<mission>-model-mission.md` with acts, geography, open items (copy Caral's layout)        |
+| Acts        | Hidden objectives per act, chapter cards, optional goals, documented ending                            |
+| Narrator    | `narrator` set; no invented names or titles                                                            |
 | Map         | 256 m, painted ground every 2 m, worker crossing 180–240 s, transect script, fords, region flora/fauna |
-| Site        | Phased kit pieces, phase effect, monuments appear and block by phase, living details              |
-| Economy     | `allowedBuildings`, `allowedUnits`, period techs only, the mission's own mechanic                 |
-| Intro       | Three narrated beats with captured images; chapter-card and epilogue images                       |
-| Briefing    | `MISSION_ART` registered; facts, objectives and sources read well                                 |
-| Tutorial    | Step list for the new actions, non-blocking                                                       |
-| Art         | Manifests with `confidence`, human review recorded, PROVENANCE updated                            |
-| Performance | Opening (and late) view in `bench_scene.mjs`, budgets pass, dist under 25 MB                      |
-| Tests       | Data, E2E and playtest; `verify:fast` and the mission's E2E green                                 |
-| Quality bar | Its gold-master table in `campaign-quality-bar.md` filled with evidence                           |
+| Site        | Phased kit pieces, phase effect, monuments appear and block by phase, living details                   |
+| Economy     | `allowedBuildings`, `allowedUnits`, period techs only, the mission's own mechanic                      |
+| Intro       | Three narrated beats with captured images; chapter-card and epilogue images                            |
+| Briefing    | `MISSION_ART` registered; facts, objectives and sources read well                                      |
+| Tutorial    | Step list for the new actions, non-blocking                                                            |
+| Art         | Manifests with `confidence`, human review recorded, PROVENANCE updated                                 |
+| Performance | Opening (and late) view in `bench_scene.mjs`, budgets pass, dist under 25 MB                           |
+| Tests       | Data, E2E and playtest; `verify:fast` and the mission's E2E green                                      |
+| Quality bar | Its gold-master table in `campaign-quality-bar.md` filled with evidence                                |

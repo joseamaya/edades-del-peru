@@ -17,6 +17,8 @@ export class Tutorial {
   private finished = false;
   private delay = 0;
   private visible = false;
+  /** Time the current step has been on screen, for informational `elapsed` steps. */
+  private stepTime = 0;
   private base: TutorialBase;
 
   constructor(game: Game, def: TutorialDef) {
@@ -62,8 +64,10 @@ export class Tutorial {
       this.show();
       return;
     }
+    this.stepTime += dt;
     if (this.checkStep(paso)) {
       this.idx++;
+      this.stepTime = 0;
       if (this.idx >= this.pasos.length) {
         this.finish();
         return;
@@ -106,6 +110,8 @@ export class Tutorial {
           game.mission?.activeObjectives.some(({ def, state }) => def.group === group && state === 'completed') ?? false
         );
       }
+      case 'elapsed':
+        return this.stepTime >= paso.check.seconds;
       case 'approachSite': {
         const landmark = game.landmark;
         if (!landmark) return false;
@@ -157,6 +163,7 @@ export class Tutorial {
       finished: this.finished,
       delay: this.delay,
       base: { ...this.base },
+      stepTime: this.stepTime,
     };
   }
 
@@ -170,6 +177,7 @@ export class Tutorial {
     this.begun = s.begun;
     this.finished = s.finished;
     this.delay = s.delay;
+    this.stepTime = s.stepTime ?? 0;
     this.base = {
       ...s.base,
       farms: s.base.farms ?? 0,

@@ -128,6 +128,8 @@ export interface TutorialSave {
   finished: boolean;
   delay: number;
   base: TutorialBase;
+  /** Time the current step has been visible (optional for older saves; used by `elapsed` steps). */
+  stepTime?: number;
 }
 
 export interface SaveData {

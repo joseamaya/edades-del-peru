@@ -133,7 +133,7 @@ geometry gate (`tests/e2e/hud-layout.spec.ts`).
 | Terrain     | Met: authored Yahuar Pampa heightfield.                     | Met: authored Chimú coastal heightfield.                         |
 | Play        | Met: real-command playtest holds and counterattacks.        | Met: real-command playtest advances and cuts the canal.          |
 | Contract    | Met: defend, destroy, protect; waves and timer.             | Met: staged Paramonga/canal objectives; optional Chan Chan/hold. |
-| Onboarding  | Met: three-step tutorial + briefing.                        | Met: three-step tutorial + briefing.                             |
+| Onboarding  | Met: three-step tutorial + briefing.                        | Met: four-step tutorial + briefing.                              |
 | Closure     | Met: epilogue and optional achievements.                    | Met: epilogue and optional objectives.                           |
 | UX          | Met: briefing reviewed in the browser; `hud-layout.spec.ts` checks the panels at 1280×800/1600×900. | Met: briefing reviewed in the browser; `hud-layout.spec.ts` checks the panels at 1280×800/1600×900. |
 | Visuals     | Met locally: authored Chanca site GLB + heightfield.        | Met locally: authored Chimú site GLB + heightfield + canal.      |
@@ -154,7 +154,7 @@ geometry gate (`tests/e2e/hud-layout.spec.ts`).
 | Identity    | Met: sustain the rebellion, protect Túpac Amaru, choose assault or siege. |
 | Play        | Met: real-command playtest assaults the realista command post.            |
 | Contract    | Met: alternative assault/siege victory plus a required protect objective. |
-| Onboarding  | Met: two-step tutorial + briefing.                                        |
+| Onboarding  | Met: six-step tutorial + briefing.                                       |
 | Terrain     | Met: authored Cusco colonial heightfield.                                 |
 | Closure     | Met: epilogue and optional objectives.                                    |
 | UX          | Met: briefing reviewed in the browser; `hud-layout.spec.ts` checks the panels at 1280×800/1600×900. |
@@ -176,7 +176,7 @@ geometry gate (`tests/e2e/hud-layout.spec.ts`).
 | Identity    | Met: hold Junín, protect Sucre, hold Ayacucho.                                       | Met: protect the port and Bolognesi, survive the assault.                     |
 | Play        | Met: real-command playtest holds both phases with the cavalry, including montoneras. | Met: real-command playtest defends the port and intercepts the final assault. |
 | Contract    | Met: sequential holds plus a required protect objective.                             | Met: required protects and survive, with an optional counterstrike.           |
-| Onboarding  | Met: three-step tutorial + briefing.                                                 | Met: two-step tutorial + briefing.                                            |
+| Onboarding  | Met: three-step tutorial + briefing.                                                 | Met: five-step tutorial + briefing.                                          |
 | Terrain     | Met: authored Junín–Ayacucho heightfield.                                            | Met: authored Arica port heightfield.                                         |
 | Closure     | Met: epilogue and optional objectives.                                               | Met: epilogue and optional objective.                                         |
 | UX          | Met: briefing reviewed in the browser; `hud-layout.spec.ts` checks the panels at 1280×800/1600×900.                                    | Met: briefing reviewed in the browser; `hud-layout.spec.ts` checks the panels at 1280×800/1600×900.                             |
