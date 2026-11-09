@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { Mission } from '../src/campaign/Mission';
 import { MISSIONS } from '../src/campaign/defs/campaign';
 import { BuildingKind, Era, UnitKind } from '../src/core/types';
-import type { CaralMayorPhase } from '../src/model/defs/caralCity';
+import { CARAL_PHASE_PLAN, type CaralMayorPhase } from '../src/model/defs/caralCity';
 
 const CARAL = MISSIONS.find((m) => m.id === 'm1_caral')!;
 
@@ -14,8 +14,10 @@ function stubGame() {
     buildings: new Map(),
     canalOpen: false,
     sitePhase: 'in_use' as CaralMayorPhase,
+    sitePhasePlan: CARAL_PHASE_PLAN,
     acts: [] as string[],
     dialogues: [] as string[],
+    rituals: [] as string[],
     hasBuildings: () => true,
     getPaused: () => false,
     isCinematicActive: () => false,
@@ -36,6 +38,7 @@ function stubGame() {
     getVisitedHeritage: () => [],
     setVisitedHeritage: () => {},
     setSitePhase: (phase: CaralMayorPhase) => (game.sitePhase = phase),
+    playSiteRitual: () => game.rituals.push('burial'),
     drought: 0,
     droughtInstant: false,
     startEnvironmentalEvent: (event: string, instant = false) => {
@@ -98,14 +101,15 @@ describe('Caral model mission', () => {
 
     // Act III: shicras, retaining walls, then the fire offering with the community gathered.
     deliverAll(mission, game);
-    tick(1);
+    tick(21);
     expect(game.sitePhase).toBe('fill');
     deliverAll(mission, game);
-    tick(1);
+    tick(21);
     expect(game.sitePhase).toBe('finished');
     tick(25);
     expect(game.sitePhase).toBe('in_use');
     expect(game.acts).toHaveLength(3);
+    expect(game.rituals).toEqual(['burial', 'burial']);
 
     // Act IV: the drought starts; seal the pyramid and gather on the beach.
     expect(game.drought).toBe(1);
@@ -116,11 +120,97 @@ describe('Caral model mission', () => {
     expect(won).toBe(true);
   });
 
+  it('pauses construction while the communal store is empty and resumes when refilled', () => {
+    const game = stubGame();
+    game.players[0].resources.food = 0;
+    const mission = new Mission(game, CARAL, () => {});
+    mission.start();
+    const save = mission.toSave();
+    mission.applySave({
+      ...save,
+      objState: save.objState.map(([id, st]) => [id, id === 'a3_obra_relleno' ? 'activo' : st]),
+    });
+    const progress = () => mission.getObjectiveProgress('a3_obra_relleno')?.current ?? -1;
+
+    for (let i = 0; i < 21; i++) mission.update(1, 0);
+    expect(progress()).toBe(0);
+    expect(mission.getObjectiveState('a3_obra_relleno')).toBe('activo');
+
+    game.players[0].resources.food = 31;
+    for (let i = 0; i < 20; i++) mission.update(1, 0);
+    expect(progress()).toBe(20);
+    expect(mission.getObjectiveState('a3_obra_relleno')).toBe('completed');
+    expect(game.sitePhase).toBe('fill');
+    expect(game.players[0].resources.food).toBeCloseTo(1, 5);
+  });
+
+  it('does not replay the new work-trigger effects when an old save is past them', () => {
+    const game = stubGame();
+    const mission = new Mission(game, CARAL, () => {});
+    mission.start();
+    game.sitePhase = 'in_use';
+    game.sitePhaseRestored = true;
+    const save = mission.toSave();
+    const moved = save.objState.map(([id, st]) => [
+      id,
+      ['a3_shicras', 'a3_muros', 'a3_fuego'].includes(id) ? 'completed' : id.startsWith('a3_obra_') ? 'pendiente' : st,
+    ]);
+    mission.applySave({
+      ...save,
+      objState: moved,
+      fired: ['t_a3_shicras', 't_a3_muros', 't_a4_acto'],
+    });
+    expect(mission.getObjectiveState('a3_obra_relleno')).toBe('completed');
+    expect(mission.getObjectiveState('a3_obra_muros')).toBe('completed');
+    expect(mission.toSave().fired).toEqual(expect.arrayContaining(['t_a3_obra_relleno', 't_a3_obra_muros']));
+    mission.update(0.1, 0);
+    expect(game.sitePhase).toBe('in_use');
+    expect(game.rituals).toEqual([]);
+  });
+
+  it('restores an older save phase from the latest completed act', () => {
+    const game = stubGame();
+    const mission = new Mission(game, CARAL, () => {});
+    const save = mission.toSave();
+    mission.applySave({
+      ...save,
+      fired: ['t_a3_shicras', 't_a3_muros'],
+      objState: save.objState.map(([id, st]) => [id, ['a3_shicras', 'a3_muros'].includes(id) ? 'completed' : st]),
+    });
+    expect(game.sitePhase).toBe('finished');
+  });
+
+  it('repairs a pre-hold save from the saved site phase', () => {
+    const game = stubGame();
+    const mission = new Mission(game, CARAL, () => {});
+    game.sitePhase = 'fill';
+    const save = mission.toSave();
+    mission.applySave({
+      ...save,
+      objState: save.objState.map(([id, st]) => [id, id.startsWith('a3_obra_') ? 'pendiente' : st]),
+    });
+    expect(mission.getObjectiveState('a3_obra_relleno')).toBe('completed');
+    expect(mission.getObjectiveState('a3_obra_muros')).toBe('pendiente');
+  });
+
+  it('activates a new work turn when its prerequisite completed before the phase advanced', () => {
+    const game = stubGame();
+    const mission = new Mission(game, CARAL, () => {});
+    game.sitePhase = 'foundation';
+    game.sitePhaseRestored = true;
+    const save = mission.toSave();
+    mission.applySave({
+      ...save,
+      objState: save.objState.map(([id, st]) => [id, id === 'a3_shicras' ? 'completed' : st]),
+    });
+    expect(mission.getObjectiveState('a3_obra_relleno')).toBe('activo');
+  });
+
   it('restores the pyramid phase from the fired triggers of a save', () => {
     const game = stubGame();
     const mission = new Mission(game, CARAL, () => {});
     const save = mission.toSave();
-    mission.applySave({ ...save, fired: ['t_a3_shicras', 't_a3_muros'] });
+    mission.applySave({ ...save, fired: ['t_a3_obra_relleno', 't_a3_obra_muros'] });
     expect(game.sitePhase).toBe('finished');
   });
 
@@ -144,10 +234,10 @@ describe('Caral model mission', () => {
     const save = mission.toSave();
     mission.applySave({
       ...save,
-      fired: ['t_a3_shicras', 't_a3_muros'],
+      fired: ['t_a3_obra_relleno', 't_a3_obra_muros'],
       lastFired: [
-        ['t_a3_shicras', 900],
-        ['t_a3_muros', 600],
+        ['t_a3_obra_relleno', 900],
+        ['t_a3_obra_muros', 600],
       ],
     });
     expect(game.sitePhase).toBe('fill');

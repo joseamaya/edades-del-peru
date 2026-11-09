@@ -35,20 +35,23 @@ Reviewed 2026-11-07 after the four-act rebuild (design and status: [`caral-model
 | Gate        | Status | Evidence                                                                                                                                                                   |
 | ----------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | History     | Met    | `docs/historia/campanas/caral.md` with its certainty table; no documented war; anonymous narrator; Vichama as the epilogue's memory of the crisis.                         |
-| Identity    | Met    | Coast–valley complementarity (valley cotton becomes Áspero's nets), the Pyramid Mayor built in phases by hand-overs, the drought that ends the city.                       |
+| Identity    | Met    | Coast–valley complementarity (valley cotton becomes Áspero's nets), the Pyramid Mayor built in phases by hand-overs and fed by the Troje, the drought that ends the city.     |
 | Play        | Met    | `tests/e2e/campaign-playtest.spec.ts` reaches victory with ordinary commands; `caral-city.spec.ts` covers the hand-over and the field cards.                               |
-| Contract    | Met    | Act objectives start hidden and are revealed by triggers (`tests/caral-acts.test.ts`); the briefing shows Act I only; optional Huaca visit, six-complex tour and assembly. |
-| Onboarding  | Met    | Eight-step tutorial docked under the objectives (select, coast, house, valley, field, storage, nets, pyramid); briefing; Codex optional.                                   |
+| Contract    | Met    | Act objectives start hidden and are revealed by triggers (`tests/caral-acts.test.ts`); construction work turns consume food and pause when the Troje is empty; the briefing shows Act I only; optional Huaca visit, six-complex tour and assembly. |
+| Onboarding  | Met    | Nine-step tutorial docked under the objectives (select, coast, house, valley, field, storage, nets, pyramid, works); briefing; Codex optional.                             |
 | Closure     | Met    | Departure epilogue with its image, optional-achievement summary, "Continuar" to m2, which the campaign path then unlocks.                                                  |
 | UX          | Met    | Horizontal command bar, tutorial on the right; the full-screen briefing and the HUD checked in the browser at 1440×860 and 1600×900.                                       |
-| Visuals     | Met    | 256 m sea-to-terrace transect, Blender architecture kit by phase, Áspero, painted fertile ground, region flora and fauna, living-city details.                             |
-| Persistence | Met    | Save/load restores the site phase and the drought without re-applying its losses; tutorial, canal and hold timers round-trip.                                              |
-| Tests       | Met    | Data, acts and E2E specs, real-command playtest; `yarn verify:fast` and CI green.                                                                                          |
+| Visuals     | Met    | 256 m sea-to-terrace transect, Blender architecture kit by phase (white finished plaster; ochre/red in use, exact colours inferred), burial dust/fire, Áspero, painted fertile ground, region flora and fauna, living-city details. |
+| Persistence | Met    | Save/load restores the site phase and the drought without re-applying its losses; tutorial, canal, construction and hold timers round-trip.                                |
+| Tests       | Met    | Data, acts (including the empty-Troje pause), E2E specs and real-command playtest; `yarn verify:fast` and CI green.                                                        |
 | Docs        | Met    | Dossier, `caral-model-mission.md`, `model-mission-pattern.md`, PROVENANCE aligned.                                                                                         |
 | Structure   | Met    | Four acts: Áspero, the valley, the Sacred City, the drought; chapter cards with images.                                                                                    |
 | Opening     | Met    | Three-beat narrated intro; briefing with Áspero's capture; act and epilogue images from `scripts/capture_caral_intro.mjs`.                                                 |
 | Art         | Met    | Architecture kit and captures approved by human review on 2026-11-07 (`reviewer`/`reviewedAt` in the manifests, PROVENANCE).                                               |
-| Performance | Met    | `bench_scene.mjs` opening ~332k triangles / 204 calls and late view ~582k / 261, within their budgets.                                                                     |
+| Performance | Met    | `bench_scene.mjs` re-run 2026-11-09: opening 331,766 tris / 205 calls; late 581,611 / 262; within the 400k / 600k budgets.                                                     |
+
+Updated 2026-11-09: phase paint evidence, the burial ritual and the Troje-fed construction work turns were
+added (see `caral-model-mission.md` Open items).
 
 ## Chavín gold-master status
 
@@ -70,7 +73,7 @@ Reviewed 2026-11-07 against the model-mission gates. Status is honest about the 
 | Structure   | Met                  | Four acts, hidden objectives revealed per act, chapter cards with images, optional goals, documented decline.                              |
 | Opening     | Met                  | Three-beat narrated intro and briefing with the mission's own art; chapter-card and epilogue captures from `capture_chavin_intro.mjs`.     |
 | Art         | Pending human review | Kit and captures are exported with `reviewed: false`; a human review must record `reviewer`/`reviewedAt` before this gate is Met.          |
-| Performance | Met                  | `bench_scene.mjs` opening ~372k tris / 176 calls and late ~507k / 277, within the 600k target.                                             |
+| Performance | Met                  | `bench_scene.mjs` re-run 2026-11-09: opening 372,286 tris / 176 calls; late 507,718 / 277; both within the 600k target. |
 
 ## Moche gold-master status
 

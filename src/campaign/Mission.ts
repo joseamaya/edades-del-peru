@@ -13,8 +13,10 @@ import {
 } from './types';
 import { OrderKind, Resources } from '../core/types';
 import { distance2D } from '../util/math';
+import { t } from '../i18n';
 import { commanderFor } from '../model/defs/commanders';
 import { unitBaseKind, unitClassFor } from '../model/defs/units';
+import { phaseOrder } from '../model/defs/sitePhases';
 import type { MissionSave } from '../game/saveTypes';
 
 /**
@@ -34,6 +36,7 @@ export class Mission {
   private lastFired = new Map<string, number>();
   private spawnedCount = new Map<string, number>();
   private holdTimers = new Map<string, number>();
+  private stalledHolds = new Set<string>();
   private delivered = new Map<string, number>();
   private onEnd: (win: boolean) => void;
 
@@ -179,8 +182,35 @@ export class Mission {
           distance2D(u.pos.x, u.pos.z, tp.x, tp.z) <= radius,
       );
       const current = this.holdTimers.get(o.id) ?? 0;
-      this.holdTimers.set(o.id, held ? Math.min(o.time ?? 0, current + dt) : 0);
+      if (!held) {
+        this.holdTimers.set(o.id, 0);
+        this.stalledHolds.delete(o.id);
+        continue;
+      }
+      const advance = current >= (o.time ?? 0) || this.payHoldCost(o, dt, (o.time ?? 0) - current);
+      if (advance) {
+        this.stalledHolds.delete(o.id);
+        this.holdTimers.set(o.id, Math.min(o.time ?? 0, current + dt));
+      } else {
+        this.holdTimers.set(o.id, current);
+      }
     }
+  }
+
+  /** Charge a work turn's upkeep; false when the store cannot pay and the turn must wait. */
+  private payHoldCost(o: ObjectiveDef, dt: number, remaining: number): boolean {
+    if (!o.consume) return true;
+    const player = this.game.players[0];
+    const cost = o.consume.perSecond * Math.min(dt, remaining);
+    if (player && player.resources[o.consume.resource] >= cost) {
+      player.resources[o.consume.resource] -= cost;
+      return true;
+    }
+    if (!this.stalledHolds.has(o.id)) {
+      this.stalledHolds.add(o.id);
+      this.game.hud.showToast(t('hud.toast.constructionStalled'), 'warning');
+    }
+    return false;
   }
 
   private complete(id: string): void {
@@ -384,6 +414,11 @@ export class Mission {
       case 'site_phase':
         this.game.setSitePhase(fx.phase);
         break;
+      case 'ritual': {
+        const p = this.resolvePoint(fx.pos);
+        this.game.playSiteRitual(p.x, p.z);
+        break;
+      }
       case 'environment':
         this.game.startEnvironmentalEvent(fx.event);
         break;
@@ -500,6 +535,18 @@ export class Mission {
       }
     }
     if (phase) this.game.setSitePhase(phase);
+    else {
+      let best = -1;
+      for (const rule of this.def.legacyPhases ?? []) {
+        if (this.objState.get(rule.objectiveId) !== 'completed') continue;
+        const order = phaseOrder(this.game.sitePhasePlan, rule.phase);
+        if (order > best) {
+          phase = rule.phase;
+          best = order;
+        }
+      }
+      if (phase) this.game.setSitePhase(phase);
+    }
     const events = new Set<string>();
     for (const tr of this.def.triggers) {
       if (!this.fired.has(tr.id)) continue;
@@ -635,8 +682,43 @@ export class Mission {
     this.lastFired = new Map(s.lastFired);
     this.spawnedCount = new Map(s.spawnedCount);
     this.holdTimers = new Map(s.holdTimers ?? []);
+    this.stalledHolds.clear();
     this.delivered = new Map(s.delivered ?? []);
     this.game.setVisitedHeritage(s.heritage ?? []);
     this.restoreSitePhase();
+    // New hidden objectives can be added after a save was written. Their activation trigger may
+    // already be in `fired`, so repair them from the saved site phase or their prerequisite.
+    const repaired = new Set<string>();
+    for (const o of this.def.objectives) {
+      if (this.objState.get(o.id) !== 'pendiente') continue;
+      if (o.afterPhase && this.phaseReached(o.afterPhase)) {
+        this.objState.set(o.id, 'completed');
+        repaired.add(o.id);
+      } else if (o.requires && this.objState.get(o.requires) === 'completed') {
+        this.objState.set(o.id, 'activo');
+        repaired.add(o.id);
+      }
+    }
+    // A repaired objective must not replay the one-shot trigger that already produced its state.
+    for (const id of repaired) {
+      if (this.objState.get(id) !== 'completed') continue;
+      for (const tr of this.def.triggers) {
+        if (
+          tr.condition.type === 'objective' &&
+          tr.condition.objectiveId === id &&
+          tr.condition.state === 'completed'
+        ) {
+          this.fired.add(tr.id);
+        }
+      }
+    }
+  }
+
+  /** Whether the authored site stands at `phase` or later. */
+  private phaseReached(phase: string): boolean {
+    const plan = this.game.sitePhasePlan;
+    if (!plan) return false;
+    const target = phaseOrder(plan, phase);
+    return target >= 0 && phaseOrder(plan, this.game.sitePhase) >= target;
   }
 }

@@ -106,10 +106,19 @@ describe('tutorial checks', () => {
     expect(tutorial.toSave().stepId).toBe('nets');
   });
 
-  it('finishes after the first materials reach the Pyramid Mayor', () => {
+  it('advances from the first materials to the construction supply step', () => {
     const game = gameForSteps();
     game.mission.getObjectiveState = () => 'completed';
     const tutorial = tutorialAt(game, 'pyramid');
+    tutorial.update(0);
+    tutorial.update(0);
+    expect(tutorial.toSave().stepId).toBe('works');
+  });
+
+  it('finishes after the construction work turn', () => {
+    const game = gameForSteps();
+    game.mission.getObjectiveState = () => 'completed';
+    const tutorial = tutorialAt(game, 'works');
     tutorial.update(0);
     tutorial.update(0);
     expect(tutorial.toSave().finished).toBe(true);

@@ -1167,6 +1167,38 @@ export class Game {
     this.world.syncSitePhase(phase);
   }
 
+  /** Presentation-only ritual beat at the authored site (e.g. the burial between construction phases). */
+  playSiteRitual(x: number, z: number): void {
+    if (this.headless) return;
+    const y = this.terrain.getHeight(x, z);
+    this.particles.emit({
+      x,
+      y: y + 0.6,
+      z,
+      count: 20,
+      color: 0xc9b89a,
+      kind: 'dust',
+      speed: 0.8,
+      life: 2.4,
+      size: 2.2,
+      grow: 1.6,
+      spread: 7,
+    });
+    this.particles.emit({
+      x,
+      y: y + 1,
+      z,
+      count: 6,
+      color: 0xff8a2a,
+      kind: 'fire',
+      speed: 0.6,
+      life: 1.1,
+      size: 1.2,
+      spread: 2,
+    });
+    this.camera.addShake(0.12);
+  }
+
   /** Whether a heritage building already stands (the site raises its monuments phase by phase). */
   heritageStanding(id: HeritageBuildingId): boolean {
     const since = this.siteDef?.heritageSince?.[id];

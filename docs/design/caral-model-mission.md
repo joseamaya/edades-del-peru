@@ -122,8 +122,9 @@ Dialogue speaker labels must not say "Comandante" in this mission.
 
 - **Mission engine** (`src/campaign/Mission.ts`): objectives can start hidden and be revealed by triggers.
   Kinds used by m1: `deliver` with a `heritageId` (hand-over at a field card, shared by offerings, trades
-  and construction), `hold`, `reach`, `inspect`, `canal_open` and `research`. Trigger effects: `act` (a
-  chapter card with an image; the mission clock and tutorial wait for it), `site_phase`, `drought` and
+  and construction), `hold` (optionally `consume`-ing food per second while it advances), `reach`,
+  `inspect`, `canal_open` and `research`. Trigger effects: `act` (a chapter card with an image; the mission
+  clock and tutorial wait for it), `site_phase`, `ritual` (a presentation-only burial beat), `drought` and
   `dialogue`. A loaded save restores the latest site phase and the drought without re-applying its losses.
 - **Intro and epilogue**: `MissionDef.intro` plays three narrated beats (Áspero, the valley, the city to
   come) over a paused world; the Act II–IV cards and the victory epilogue carry images. All six are
@@ -134,6 +135,13 @@ Dialogue speaker labels must not say "Comandante" in this mission.
   the sea; a worker casts and drags a cotton net (`FishingNetFx`) and keeps fishing nearby grounds.
 - **Phased Pyramid Mayor**: foundation, fill, finished and in use (`Game.setSitePhase`); the other
   monuments appear with their phase (`CARAL_HERITAGE_SINCE`) and only block and answer clicks once built.
+  The finished plaster is white; the in-use phase swaps the Mayor to the documented palette
+  (white, ochre, red; the exact per-building colours are inferred) via `CARAL_MAYOR_PHASE_ASSET`, checked by
+  `tests/architecture-kit.test.ts`.
+- **Communal construction**: after each material hand-over, a worker must hold the site for a 20 s work
+  turn. The turn consumes food from the communal store; if the store is empty the timer pauses (it does not
+  reset) and a warning explains why, so the Troje really feeds the builders. Each completed turn plays a
+  burial ritual (`ritual` effect) and advances the Mayor phase.
 - **Valley economy**: chacras on painted fertile ground, the canal, the Troje and the exchange: the
   `cotton_nets` technology, researched at the Troje with valley food and wood, stands for cotton going down
   to the coast. Caral sees only its own buildings, units and technologies (`allowedBuildings`,
@@ -144,8 +152,8 @@ Dialogue speaker labels must not say "Comandante" in this mission.
 - **Drought** (`Game.startEnvironmentalEvent('drought')`, 40 s): the green turns to sand in patches, the river surface drops,
   the haze turns dusty, fields lose half their harvest and about one riverside tree in three dies.
 - **Narration**: an anonymous narrator (`MissionDef.narrator`); no "Comandante" label, no invented names.
-- **Tutorial**: eight steps (select, coast, house, valley, field, storage, nets, pyramid) docked under the
-  objectives.
+- **Tutorial**: nine steps (select, coast, house, valley, field, storage, nets, pyramid, works) docked under
+  the objectives; the last one explains the Troje supply during construction.
 
 ## Performance
 
@@ -155,8 +163,8 @@ use, the drought and 35 workers in view over the Sacred City.
 
 | View    | Before the worker cuts | Now          | Budget     |
 | ------- | ---------------------- | ------------ | ---------- |
-| Opening | 474k tris / 224 calls  | ~332k / ~204 | 400k / 230 |
-| Late    | 1.57M tris / 396 calls | ~582k / ~261 | 600k / 275 |
+| Opening | 474k tris / 224 calls  | ~332k / ~205 | 400k / 230 |
+| Late    | 1.57M tris / 396 calls | ~582k / ~262 | 600k / 275 |
 
 The workers dominated the late view. `scripts/simplify_caral_worker.mjs` (run by `yarn models:build`)
 simplifies the base bodies from ~12k to ~2.5k triangles and the long hair and tunics by half or more;
@@ -168,11 +176,14 @@ bench runs without ground cover).
 
 ## Open items
 
-1. The city's paint colour per phase (documented as changing by period) is not yet shown.
+1. ~~The city's paint colour per phase (documented as changing by period) is not yet shown.~~ Done for
+   the model: the finished Mayor wears white and the in-use phase swaps to ochre/red; the smaller pyramids
+   and houses keep the documented white/red palette. The exact per-building colours are inferred.
 2. Seasonal flood, sand advance and green winter lomas are not simulated.
 3. Late-period details of Act IV (stone houses, a little maize) are not shown.
-4. The Act III fire offering is staged at the plaza, but the burial of one phase under the next is not
-   shown on its own, and an empty storehouse does not pause construction.
+4. ~~The Act III fire offering is staged at the plaza, but the burial of one phase under the next is not
+   shown on its own, and an empty storehouse does not pause construction.~~ Done: the `ritual` effect
+   stages the burial between phases and the `hold.consume` work turns pause when the Troje is empty.
 5. ~~Human review of the new art~~ Done: the architecture kit and the intro and menu captures were
    approved on 2026-11-07.
 6. The other campaigns follow this pattern later; the m9 scripted playtest is known to fail meanwhile.

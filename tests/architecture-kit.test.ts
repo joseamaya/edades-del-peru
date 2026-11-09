@@ -93,6 +93,19 @@ describe('Caral architecture kit', () => {
     }
   });
 
+  it('paints the Mayor white while finished and ochre/red once in use (dossier colours)', () => {
+    expect(CARAL_MAYOR_PHASE_ASSET.finished).toBe('pyramid_mayor_phase3');
+    expect(CARAL_MAYOR_PHASE_ASSET.in_use).toBe('pyramid_mayor');
+    const foundation = manifest('pyramid_mayor_phase1').lods.LOD0.materials;
+    const finished = manifest('pyramid_mayor_phase3').lods.LOD0.materials;
+    const inUse = manifest('pyramid_mayor').lods.LOD0.materials;
+    expect(foundation).not.toContain('MAT-Arch_PlasterWhite');
+    expect(finished).toContain('MAT-Arch_PlasterWhite');
+    expect(finished).not.toContain('MAT-Arch_PlasterOchre');
+    expect(inUse).toContain('MAT-Arch_PlasterOchre');
+    expect(inUse).toContain('MAT-Arch_PlasterRed');
+  });
+
   it('keeps world-scale UVs in every game GLB for the runtime tileable textures', () => {
     for (const id of IDS) {
       for (const lod of [0, 1] as const) {

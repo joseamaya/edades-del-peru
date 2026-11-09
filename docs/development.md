@@ -275,8 +275,11 @@ Definition of Done and the building audit see
   `resolveMapProfile` so a scenario carries its own geography rather than the player's (e.g. m6 = the Inca on the
   Chimú `north_coast`). Objectives may be **bonus/optional** (`ObjectiveDef.optional`): they are evaluated and
   can be completed, but never gate victory nor cause defeat when failed. A `hold` objective keeps a
-  player unit inside a radius for `time` seconds (m8 Junín/Ayacucho); `holdTimers` are saved. Campaign
-  fichas in [`docs/historia/fichas_campana.md`](./historia/fichas_campana.md), validated by
+  player unit inside a radius for `time` seconds (m8 Junín/Ayacucho); `holdTimers` are saved. A `hold`
+  may also `consume` a resource per second (Caral's construction turns pause when the Troje is empty),
+  and new hidden objectives declare `afterPhase`/`requires` so a save written before they existed repairs
+  itself on load; `legacyPhases` restores the authored phase for saves written before it was persisted.
+  Campaign fichas in [`docs/historia/fichas_campana.md`](./historia/fichas_campana.md), validated by
   `tests/campaign-profiles.test.ts`.
 - **Campaign contract**: hidden objectives are omitted from the briefing until activated; `Mission.getObjectiveProgress`
   feeds live count/time meters to the objectives panel; active objective anchors are drawn as gold pips on the

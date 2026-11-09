@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { MISSIONS } from '../src/campaign/defs/campaign';
+import { getAuthoredSite } from '../src/model/defs/sites';
 
 const authoredIds = MISSIONS.filter((m) => m.id !== 'm1_caral').map((m) => m.id);
 const BASE_MARGIN = 0.1;
@@ -31,6 +32,17 @@ describe('campaign authored geography', () => {
         layout!.canal?.name,
       ].filter(Boolean);
       expect(named.length, `${id} geography is unnamed`).toBeGreaterThan(0);
+    }
+  });
+
+  it('pins every save-repair phase to the authored site plan', () => {
+    for (const mission of MISSIONS) {
+      const site = getAuthoredSite(mission.layout?.site?.id);
+      for (const objective of mission.objectives) {
+        if (!objective.afterPhase) continue;
+        expect(site, `${mission.id}/${objective.id} has no authored site`).toBeDefined();
+        expect(site!.phases?.phases, `${mission.id}/${objective.id} afterPhase`).toContain(objective.afterPhase);
+      }
     }
   });
 

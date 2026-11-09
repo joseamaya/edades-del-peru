@@ -176,6 +176,18 @@ export interface ObjectiveDef {
   radius?: number;
   /** Unit kind that must hold the position (optional; all player units by default). */
   unitKind?: UnitKind;
+  /**
+   * For `hold` with `time`: consume a resource per second while the hold advances. The timer pauses (it
+   * does not reset) when the player cannot pay, so an empty communal store stalls construction until
+   * refilled.
+   */
+  consume?: { resource: keyof Resources; perSecond: number };
+  /**
+   * Save-compatibility guard for a hidden objective added after a save was written: if the authored site
+   * already stands at this phase or later, the objective is marked completed instead of waiting for a
+   * trigger that already fired.
+   */
+  afterPhase?: string;
   /** Another objective id that must be completed before this one can activate. */
   requires?: string;
   time?: number;
@@ -232,6 +244,8 @@ export type TriggerEffect =
   | { type: 'act'; kicker: string; title: string; text: string; image?: string }
   /** Construction phase of the authored site's main monument. */
   | { type: 'site_phase'; phase: string }
+  /** Presentation-only ritual beat at the authored site (e.g. the burial between construction phases). */
+  | { type: 'ritual'; pos: MissionPoint }
   /** A named environmental event (drought, flood, ...). */
   | { type: 'environment'; event: string }
   | { type: 'resources'; player?: 0 | 1; amount: Partial<Resources> }
@@ -293,6 +307,11 @@ export interface MissionDef {
   periodNote?: string;
   /** Speaker label for unattributed dialogue; defaults to the commander label. */
   narrator?: string;
+  /**
+   * Fallback for saves written before the site phase was persisted: the latest completed objective in
+   * this list restores the authored phase.
+   */
+  legacyPhases?: { objectiveId: string; phase: string }[];
   /** Narrated intro played before the briefing (skipped with ?intro=0). */
   intro?: CinematicBeat[];
   /** Backdrop of the victory epilogue (public asset path). */
