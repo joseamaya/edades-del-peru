@@ -16,10 +16,10 @@ fs.mkdirSync(OUT, { recursive: true });
 
 const SHOTS = [
   { id: 'intro-valle', phase: 'old_temple_foundation', at: [82.7, 160], height: 52, people: 0 },
-  { id: 'intro-templo', phase: 'old_temple', at: [125.3, 126.7], height: 38, people: 5 },
-  { id: 'intro-peregrinos', phase: 'new_temple', at: [130.7, 133.3], height: 44, people: 12 },
-  { id: 'intro-nuevo', phase: 'apogee', at: [133.3, 128], height: 40, people: 10 },
-  { id: 'intro-declive', phase: 'apogee', at: [130.7, 125.3], height: 50, people: 2 },
+  { id: 'intro-templo', phase: 'old_temple', at: [126, 127], height: 38, people: 5 },
+  { id: 'intro-peregrinos', phase: 'new_temple', at: [130, 132], height: 44, people: 12 },
+  { id: 'intro-nuevo', phase: 'apogee', at: [132, 128], height: 40, people: 10 },
+  { id: 'intro-declive', phase: 'apogee', at: [130, 126], height: 50, people: 2 },
 ];
 
 const { base, close } = await withViteServer();
@@ -47,7 +47,7 @@ try {
         g.trees.kitLod0Radius = 70;
         g.setSitePhase(shot.phase);
         for (let i = 0; i < shot.people; i++) {
-          g.spawnScriptedUnit('worker', 0, 120 + (i % 6) * 4, 133.3 + Math.floor(i / 6) * 3);
+          g.spawnScriptedUnit('worker', 0, 122 + (i % 6) * 4, 132 + Math.floor(i / 6) * 3);
         }
         g.camera.moveTo(shot.at[0], shot.at[1], true);
         g.camera.setHeight(shot.height);

@@ -7,33 +7,33 @@ import { UnitKind } from '../src/core/types';
 /**
  * The model-mission pattern (`docs/design/model-mission-pattern.md` §3) fixes the scale of a rebuilt
  * mission: a 256 m map, painted ground at ~2 m per point and a worker crossing inside the AoE2/0 A.D.
- * band. Add a mission here when it is promoted to model-mission status; do not relax the numbers for a
- * single mission without documenting the exception in that guide.
+ * band. Mark a promoted mission with `modelMission: true`; the guard follows the flag, not a list.
  */
-const MODEL_MISSION_IDS = ['m1_caral', 'm2_chavin'] as const;
-
 const CROSSING_MIN = 180;
 const CROSSING_MAX = 240;
 
 describe('model-mission scale', () => {
-  for (const id of MODEL_MISSION_IDS) {
-    it(`${id} keeps the 256 m map, 2 m ground and crossing band`, () => {
-      const mission = MISSIONS.find((m) => m.id === id)!;
-      expect(mission, `${id} is missing from the campaign defs`).toBeDefined();
-      expect(mission.map.size, `${id} map size`).toBe(256);
+  for (const mission of MISSIONS.filter((m) => m.modelMission)) {
+    it(`${mission.id} keeps the 256 m map, 2 m ground and crossing band`, () => {
+      expect(mission.map.size, `${mission.id} map size`).toBe(256);
 
       const siteId = mission.layout?.site?.id;
-      expect(siteId, `${id} has no authored site`).toBeTruthy();
+      expect(siteId, `${mission.id} has no authored site`).toBeTruthy();
       const site = getAuthoredSite(siteId!)!;
       const field = site.heightField!;
-      expect(field.worldSize, `${id} heightfield world size`).toBe(256);
+      expect(field.worldSize, `${mission.id} heightfield world size`).toBe(256);
+      expect(field.ground?.size, `${mission.id} painted ground samples`).toBe(128);
       const groundStep = field.worldSize / ((field.ground?.size ?? 0) - 1);
-      expect(groundStep, `${id} painted ground spacing`).toBeLessThanOrEqual(2.5);
+      expect(groundStep, `${mission.id} painted ground spacing`).toBeLessThanOrEqual(2.1);
 
       const speed = getUnitStats(UnitKind.WORKER, mission.startingEra).speed * (mission.unitSpeedScale ?? 1);
       const crossing = mission.map.size / speed;
-      expect(crossing, `${id} worker crossing time`).toBeGreaterThanOrEqual(CROSSING_MIN);
-      expect(crossing, `${id} worker crossing time`).toBeLessThanOrEqual(CROSSING_MAX);
+      expect(crossing, `${mission.id} worker crossing time`).toBeGreaterThanOrEqual(CROSSING_MIN);
+      expect(crossing, `${mission.id} worker crossing time`).toBeLessThanOrEqual(CROSSING_MAX);
     });
   }
+
+  it('marks the rebuilt model missions', () => {
+    expect(MISSIONS.filter((m) => m.modelMission).map((m) => m.id)).toEqual(['m1_caral', 'm2_chavin']);
+  });
 });

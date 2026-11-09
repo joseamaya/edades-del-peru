@@ -601,7 +601,7 @@ export class Mission {
   private activate(id: string, announce: boolean): boolean {
     const def = this.objective(id);
     if (!def || this.objState.get(id) !== 'pendiente') return false;
-    if (def.requires && this.objState.get(def.requires) !== 'completed') {
+    if (!this.canActivateObjective(id)) {
       // A one-shot trigger may fire before the objective it gates on completes; retry on that completion.
       this.deferredActivations.set(id, announce);
       return false;
@@ -618,7 +618,13 @@ export class Mission {
 
   /** Activate any objective whose prerequisite completed after its trigger had already fired. */
   private retryDeferredActivations(): void {
-    for (const [id, announce] of [...this.deferredActivations]) this.activate(id, announce);
+    for (const [id, announce] of [...this.deferredActivations]) {
+      if (this.objState.get(id) !== 'pendiente') {
+        this.deferredActivations.delete(id);
+        continue;
+      }
+      this.activate(id, announce);
+    }
   }
 
   /** Numeric progress for the HUD, or null for objectives without a meter. */
@@ -678,6 +684,7 @@ export class Mission {
       holdTimers: [...this.holdTimers.entries()],
       delivered: [...this.delivered.entries()],
       heritage: this.game.getVisitedHeritage(),
+      deferredActivations: [...this.deferredActivations.entries()],
     };
   }
 
@@ -697,7 +704,7 @@ export class Mission {
     this.spawnedCount = new Map(s.spawnedCount);
     this.holdTimers = new Map(s.holdTimers ?? []);
     this.stalledHolds.clear();
-    this.deferredActivations.clear();
+    this.deferredActivations = new Map(s.deferredActivations ?? []);
     this.delivered = new Map(s.delivered ?? []);
     this.game.setVisitedHeritage(s.heritage ?? []);
     this.restoreSitePhase();

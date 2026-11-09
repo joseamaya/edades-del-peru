@@ -345,4 +345,39 @@ describe('mission delivery objectives', () => {
     expect(m.getObjectiveState('prereq')).toBe('completed');
     expect(m.getObjectiveState('gated')).toBe('activo');
   });
+
+  it('restores a deferred activation across save/load', () => {
+    const unit = { id: 1, tag: 'guarda', owner: 0, dead: false, kind: UnitKind.WORKER };
+    const game = stubGame(unit) as any;
+    const gatedDef: MissionDef = {
+      ...def,
+      objectives: [
+        { id: 'prereq', kind: 'gather', resource: 'food', count: 1, title: 'prereq' },
+        { id: 'trigger', kind: 'gather', resource: 'wood', count: 1, title: 'trigger' },
+        { id: 'gated', kind: 'gather', resource: 'silver', count: 1, requires: 'prereq', hidden: true, title: 'gated' },
+      ],
+      triggers: [
+        {
+          id: 't_gate',
+          condition: { type: 'objective', objectiveId: 'trigger', state: 'completed' },
+          effects: [{ type: 'objective', objectiveId: 'gated', state: 'activate' }],
+        },
+      ],
+    };
+    const m = new Mission(game, gatedDef, () => {});
+    m.start();
+    game.players[0].resources.wood = 1;
+    m.update(0.1, 0);
+    expect(m.getObjectiveState('gated')).toBe('pendiente');
+    const save = m.toSave();
+
+    // The trigger already fired, so a loaded match must not rely on it firing again.
+    const loaded = new Mission(game, gatedDef, () => {});
+    loaded.start();
+    loaded.applySave(save);
+    game.players[0].resources.food = 1;
+    loaded.update(0.1, 0);
+    expect(loaded.getObjectiveState('prereq')).toBe('completed');
+    expect(loaded.getObjectiveState('gated')).toBe('activo');
+  });
 });

@@ -95,7 +95,7 @@ They advance on what the player does and never repeat the briefing.
 
 - `scripts/bench_scene.mjs` includes the Chavín opening and late (apogee) views; `yarn bench:check`
   asserts both.
-- Measured after the 256 m resize: opening ~409k triangles / 166 calls; late ~459k / 224 calls, both
+- Measured after the 256 m resize: opening ~413k triangles / 160 calls; late ~463k / 223 calls, both
   within the 450k / 600k budgets.
 
 ## Open items

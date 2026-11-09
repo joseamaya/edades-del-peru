@@ -75,7 +75,7 @@ Reviewed 2026-11-07 against the model-mission gates. Status is honest about the 
 | Structure   | Met                  | Four acts, hidden objectives revealed per act, chapter cards with images, optional goals, documented decline.                              |
 | Opening     | Met                  | Three-beat narrated intro and briefing with the mission's own art; chapter-card and epilogue captures from `capture_chavin_intro.mjs`.     |
 | Art         | Pending human review | Kit and captures are exported with `reviewed: false`; a human review must record `reviewer`/`reviewedAt` before this gate is Met.          |
-| Performance | Met                  | `bench_scene.mjs` re-run 2026-11-09 after the resize: opening 409,497 tris / 166 calls; late 458,935 / 224; within the 450k / 600k budgets. |
+| Performance | Met                  | `bench_scene.mjs` re-run 2026-11-09 after the resize: opening 413,433 tris / 160 calls; late 462,835 / 223; within the 450k / 600k budgets. |
 | Scale       | Met                  | 256 m map, painted ground every 2 m (128 over 256) and `unitSpeedScale: 0.5` → worker crossing ≈3:33; `tests/campaign-scale.test.ts`. |
 
 ## Moche gold-master status

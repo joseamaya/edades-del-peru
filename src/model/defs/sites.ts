@@ -3,7 +3,13 @@ import type { GroundPbrSlot } from './profiles';
 import type { TerrainPaletteId } from './terrainPalettes';
 import type { HeritageBuildingId } from './heritage';
 import { CARAL_PHASE_PLAN } from './caralPhases';
-import { CHAVIN_CITY_BLOCKERS, CHAVIN_HERITAGE_SINCE, CHAVIN_PHASE_PLAN } from './chavinCity';
+import {
+  CHAVIN_CITY_BLOCKERS,
+  CHAVIN_HERITAGE_SINCE,
+  CHAVIN_PHASE_PLAN,
+  chavinKeepout,
+  chavinPoint,
+} from './chavinCity';
 import type { SitePhasePlan } from './sitePhases';
 import {
   CARAL_GROUND,
@@ -332,8 +338,8 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     label: 'Chavín de Huántar',
     modelName: 'chavin_site',
     scale: 0.22,
-    origin: { x: 128, z: 128 },
-    anchor: { x: 130.7, z: 116.7 },
+    origin: chavinPoint({ x: 96, z: 96 }),
+    anchor: chavinPoint({ x: 98, z: 87.5 }),
     cameraHeight: 60,
     framing: 'site-biased',
     heightField: {
@@ -344,17 +350,17 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     },
     pathCellSize: 1,
     heritageProxies: [
-      { id: 'chavin_plaza_circular', x: 130.7, z: 114.7, w: 18, d: 15, h: 5 },
-      { id: 'chavin_edificio_a', x: 142.7, z: 106.7, w: 25, d: 22, h: 18 },
-      { id: 'chavin_edificio_b', x: 120, z: 121.3, w: 20, d: 19, h: 13 },
-      { id: 'chavin_portada', x: 146.7, z: 113.3, w: 9, d: 7, h: 8 },
-      { id: 'chavin_galeria', x: 122.7, z: 114.7, w: 8, d: 10, h: 6 },
+      { ...chavinPoint({ x: 98, z: 86 }), id: 'chavin_plaza_circular', w: 18, d: 15, h: 5 },
+      { ...chavinPoint({ x: 107, z: 80 }), id: 'chavin_edificio_a', w: 25, d: 22, h: 18 },
+      { ...chavinPoint({ x: 90, z: 91 }), id: 'chavin_edificio_b', w: 20, d: 19, h: 13 },
+      { ...chavinPoint({ x: 110, z: 85 }), id: 'chavin_portada', w: 9, d: 7, h: 8 },
+      { ...chavinPoint({ x: 92, z: 86 }), id: 'chavin_galeria', w: 8, d: 10, h: 6 },
     ],
     phases: CHAVIN_PHASE_PLAN,
     heritageSince: CHAVIN_HERITAGE_SINCE,
     blockers: CHAVIN_CITY_BLOCKERS,
     blockerPadding: 0.5,
-    buildKeepout: [{ x: 0.51, z: 0.456, rx: 0.17, rz: 0.14 }],
+    buildKeepout: [chavinKeepout({ x: 0.51, z: 0.456, rx: 0.17, rz: 0.14 })],
     // The kit draws the city; walls taken from the hidden source GLB would be invisible obstacles.
     wallCollision: {
       meshPatterns: [],
