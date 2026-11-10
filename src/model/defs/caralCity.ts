@@ -31,6 +31,9 @@ export const CARAL_MAYOR_PHASE_ASSET: Record<CaralMayorPhase, CaralArchAssetId> 
   fill: 'pyramid_mayor_phase2',
   finished: 'pyramid_mayor_phase3',
   in_use: 'pyramid_mayor',
+  // Sealed under stone: the bare plaster reads as the buried monument; the fire, the smoke and the
+  // fair go out with the phase.
+  sealed: 'pyramid_mayor_phase3',
 };
 
 export interface CaralArchPlacement extends ArchPlacement {
@@ -231,7 +234,15 @@ export const CARAL_FAIR_TENTS: readonly CaralArchPlacement[] = (
     [178, 90, -0.2],
     [164, 92, 0],
   ] as const
-).map(([x, z, rotY]) => ({ asset: 'fair_tent', x, z, rotY, scale: [1, 1, 1], since: 'in_use' }));
+).map(([x, z, rotY]) => ({
+  asset: 'fair_tent',
+  x,
+  z,
+  rotY,
+  scale: [1, 1, 1],
+  since: 'in_use',
+  until: 'sealed',
+}));
 
 /**
  * Neighbouring settlements of the Supe valley (the dossier names several, e.g. Chupacigarro and Miraya),

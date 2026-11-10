@@ -110,6 +110,8 @@ export class ResourceNodeView {
   private readonly treeMgr?: TreeInstances;
   private readonly treeVariants?: TreeVariants;
   private treeVariant: TreeVariant = 'broad';
+  /** The drought killed this tree standing: bare wood, no canopy, kit instance hidden. */
+  private dry = false;
   private huntHerd: HuntHerd | null = null;
 
   constructor(
@@ -420,9 +422,38 @@ export class ResourceNodeView {
 
   setVisible(v: boolean): void {
     if (this.node.kind === 'tree' && this.treeMgr && this.node.treeSlot >= 0) {
-      this.treeMgr.setVisible(this.node.treeSlot, v);
+      // A dry tree keeps its bare model: the kit instance never comes back on with the fog.
+      this.treeMgr.setVisible(this.node.treeSlot, v && !this.dry);
     } else {
       this.view.visible = v;
+    }
+  }
+
+  /**
+   * Kill the tree standing (the drought's riparian grove): hide the leafy model or its kit instance
+   * and leave a bare trunk with branches, so it reads as dry rather than logged. Idempotent.
+   */
+  setDry(): void {
+    if (this.node.kind !== 'tree' || this.dry) return;
+    this.dry = true;
+    if (this.treeMgr && this.node.treeSlot >= 0) {
+      this.treeMgr.setVisible(this.node.treeSlot, false);
+    } else {
+      for (const child of [...this.view.children]) child.visible = false;
+    }
+    const wood = mat('dry-wood', { map: MaterialTex.bark(), color: '#6f6152', roughness: 1 });
+    const trunkHeight = 4.1;
+    const trunk = new THREE.Mesh(cylGeo(0.2, 0.42, trunkHeight, 6), wood);
+    trunk.position.y = trunkHeight / 2;
+    this.add(trunk);
+    for (let i = 0; i < 4; i++) {
+      const a = (i / 4) * Math.PI * 2 + 0.4;
+      const length = 1.4 + (i % 2) * 0.5;
+      const branch = new THREE.Mesh(cylGeo(0.06, 0.14, length, 5), wood);
+      branch.position.set(Math.cos(a) * 0.4, trunkHeight * (0.55 + i * 0.09), Math.sin(a) * 0.4);
+      branch.rotation.z = 0.85 + (i % 2) * 0.15;
+      branch.rotation.y = a;
+      this.add(branch);
     }
   }
 

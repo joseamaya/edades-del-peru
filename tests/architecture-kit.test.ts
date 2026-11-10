@@ -9,10 +9,13 @@ import { archPartsFromScene, archKitUrl } from '../src/rendering/architectureKit
 import {
   CARAL_CITY_BLOCKERS,
   CARAL_CITY_LAYOUT,
+  CARAL_FAIR_TENTS,
   CARAL_MAYOR_HEIGHT,
   CARAL_MAYOR_PHASE_ASSET,
+  CARAL_PHASE_PLAN,
   type CaralArchAssetId,
 } from '../src/model/defs/caralCity';
+import { standsIn } from '../src/model/defs/sitePhases';
 import { CARAL_HERITAGE_PROXIES, CARAL_SITE_BLOCKERS } from '../src/model/defs/sites';
 
 // blender-game-assets contract: LOD0 <= 5k, LOD1 <= 1.5k triangles per building; <= 8 kit materials.
@@ -104,6 +107,18 @@ describe('Caral architecture kit', () => {
     expect(finished).not.toContain('MAT-Arch_PlasterOchre');
     expect(inUse).toContain('MAT-Arch_PlasterOchre');
     expect(inUse).toContain('MAT-Arch_PlasterRed');
+  });
+
+  it('seals the Mayor back to bare plaster and retires the fair tents', () => {
+    expect(CARAL_PHASE_PLAN.phases).toContain('sealed');
+    expect(CARAL_MAYOR_PHASE_ASSET.sealed).toBe('pyramid_mayor_phase3');
+    expect(standsIn('in_use', 'sealed', 'in_use', CARAL_PHASE_PLAN)).toBe(true);
+    expect(standsIn('in_use', 'sealed', 'sealed', CARAL_PHASE_PLAN)).toBe(false);
+    const tent = CARAL_FAIR_TENTS.find((p) => p.asset === 'fair_tent');
+    expect(tent?.until).toBe('sealed');
+    // No red paint in the sealed look: bare plaster, like the finished phase.
+    const sealed = manifest('pyramid_mayor_phase3').lods.LOD0.materials;
+    expect(sealed).not.toContain('MAT-Arch_PlasterRed');
   });
 
   it('keeps world-scale UVs in every game GLB for the runtime tileable textures', () => {

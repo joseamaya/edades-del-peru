@@ -1,10 +1,10 @@
 import { standsAt as genericStandsAt, type SitePhasePlan } from './sitePhases';
 
 /** Construction states of the Caral Pyramid Mayor (act III of docs/design/caral-model-mission.md). */
-export type CaralMayorPhase = 'foundation' | 'fill' | 'finished' | 'in_use';
+export type CaralMayorPhase = 'foundation' | 'fill' | 'finished' | 'in_use' | 'sealed';
 
 export const CARAL_PHASE_PLAN: SitePhasePlan = {
-  phases: ['foundation', 'fill', 'finished', 'in_use'],
+  phases: ['foundation', 'fill', 'finished', 'in_use', 'sealed'],
   initial: 'in_use',
 };
 

@@ -190,7 +190,7 @@ export class Game {
   private environmentShown: Record<string, number> = {};
   /** Drought level whose yield factor is already folded into the standing farms. */
   private droughtFarmLevel = 0;
-  private droughtGroveCut = false;
+  private droughtGroveDry = false;
   private droughtBaseAtmosphere: MissionAtmosphere | undefined;
   /** Construction phase of the authored site's main monument (mission-driven; the city follows it). */
   sitePhase = 'in_use';
@@ -1063,10 +1063,11 @@ export class Game {
     if (event === 'drought') {
       this.droughtBaseAtmosphere ??= this.missionAtmosphere;
       if (instant) {
-        // A loaded save already holds the dried harvests and the dead trees: only the look is restored.
-        this.droughtGroveCut = true;
+        // A loaded save already holds the dried harvests: rebuild the dry grove and the look.
+        this.droughtGroveDry = true;
         this.environment.drought = 1;
         this.applyEnvironmentalEvent('drought', 1);
+        this.dryRiparianGrove();
       }
     } else if (event === 'wet_season' && instant) {
       this.environment.wet_season = 1;
@@ -1083,9 +1084,22 @@ export class Game {
       this.environmentTargets[event] = level;
       if (event === 'drought') {
         this.droughtBaseAtmosphere ??= this.missionAtmosphere;
-        if (level >= 0.6) this.droughtGroveCut = true;
+        if (level >= 0.6) this.droughtGroveDry = true;
       }
       this.applyEnvironmentalEvent(event, level);
+    }
+  }
+
+  /**
+   * The drought dries the riparian grove: the trees along the Supe die standing (bare wood), never a
+   * map-wide falling forest. Visual only; the trees stay harvestable and a loaded save rebuilds them.
+   */
+  dryRiparianGrove(): void {
+    const river = this.siteDef?.heightField?.river;
+    for (const node of this.resourceNodes.values()) {
+      if (node.kind !== 'tree' || node.dead || node.depleted) continue;
+      if (river && distanceToPolyline(node.pos.x, node.pos.z, river.path) > 26) continue;
+      node.nodeView?.setDry();
     }
   }
 
@@ -1105,10 +1119,13 @@ export class Game {
     this.lifeTimer = 0;
     this.lifeTurn++;
     const focus = this.camera.getTarget();
-    const near = city
-      .standingHouses()
-      .filter((h) => Math.hypot(h.x - focus.x, h.z - focus.z) < 70)
-      .slice(0, 24);
+    const near =
+      this.sitePhase === 'sealed'
+        ? []
+        : city
+            .standingHouses()
+            .filter((h) => Math.hypot(h.x - focus.x, h.z - focus.z) < 70)
+            .slice(0, 24);
     if (near.length) {
       const house = near[this.lifeTurn % near.length]!;
       this.particles.emit({
@@ -1195,12 +1212,9 @@ export class Game {
       this.droughtFarmLevel = level;
       this.refreshFarmYields();
     }
-    if (level >= 0.6 && !this.droughtGroveCut) {
-      this.droughtGroveCut = true;
-      // Deterministic: about one tree in three dies, in the same places on every run.
-      for (const node of this.resourceNodes.values()) {
-        if (node.kind === 'tree' && !node.dead && !node.depleted && node.id % 3 === 0) node.subtract(node.amount);
-      }
+    if (level >= 0.6 && !this.droughtGroveDry) {
+      this.droughtGroveDry = true;
+      this.dryRiparianGrove();
     }
     if (this.headless) return;
     const shown = this.environmentShown.drought ?? -1;

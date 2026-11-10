@@ -14,6 +14,8 @@ export interface ArchPlacement {
   lift?: number;
   /** First phase in which the piece stands; omitted means from the opening. */
   since?: string;
+  /** First phase in which the piece is gone again (e.g. Caral's fair tents under the sealed city). */
+  until?: string;
   /** Asset used instead of `asset` in each phase (e.g. the Caral Pyramid Mayor). */
   phaseAssets?: Partial<Record<string, ArchAssetId>>;
 }

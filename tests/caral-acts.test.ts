@@ -132,9 +132,12 @@ describe('Caral model mission', () => {
     tick(21);
     expect(game.sitePhase).toBe('finished');
     tick(25);
+    // The city is in use first: the fair, the pilgrims and the sacred fire exist before the drought.
     expect(game.sitePhase).toBe('in_use');
-    expect(game.acts).toHaveLength(3);
+    expect(game.acts).toHaveLength(2);
     expect(game.rituals).toEqual(['burial', 'burial']);
+    tick(25);
+    expect(game.acts).toHaveLength(3);
 
     // Act IV: the drought starts; seal the pyramid and gather on the beach.
     expect(game.drought).toBe(1);
@@ -143,6 +146,7 @@ describe('Caral model mission', () => {
     tick(1);
     expect(won).toBeNull();
     tick(20);
+    expect(game.sitePhase).toBe('sealed');
     expect(won).toBe(true);
   });
 
@@ -174,6 +178,8 @@ describe('Caral model mission', () => {
     const mission = new Mission(game, CARAL, () => {});
     mission.start();
     game.mission = mission;
+    // Announced with Act III, not listed from the opening.
+    expect(mission.activeObjectives.map((o) => o.def.id)).not.toContain('obj_asamblea');
     const save = mission.toSave();
     mission.applySave({
       ...save,

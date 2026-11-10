@@ -207,6 +207,8 @@ export class RuntimeController {
       if (!data.mission.started) this.game.mission.start();
     }
     if (data.tutorial && this.game.tutorial) this.game.tutorial.applySave(data.tutorial);
+    // The dry grove is visual state rebuilt from the drought, never saved: nodes exist only now.
+    if ((this.game.environment.drought ?? 0) >= 0.6) this.game.dryRiparianGrove();
     // A save taken before the gate was gated cannot leave it running ahead of its objective.
     const canalLock = this.game.missionLayout?.canal?.lockedUntilObjective;
     if (canalLock) {

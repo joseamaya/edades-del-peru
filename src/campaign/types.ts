@@ -163,6 +163,8 @@ export type ObjectiveKind =
   | 'destroy'
   | 'eliminate_all'
   | 'survive'
+  /** Elapsed time since the objective was activated (a beat, not a defence). */
+  | 'wait'
   | 'reach'
   | 'hold'
   | 'defend'

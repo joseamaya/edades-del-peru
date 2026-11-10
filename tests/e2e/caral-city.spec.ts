@@ -1029,6 +1029,74 @@ test('the Act III reveal clears the fog over the whole city with the fog on', as
   expect(out.explored, 'the label and the upper half are visible').toBe(true);
 });
 
+test('the city lives in use before the drought and is sealed afterwards', async ({ page }) => {
+  await boot(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    const finish = (id: string) => {
+      g.mission.objState.set(id, 'completed');
+      g.mission.update(0.1, 0);
+      document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+      g.mission.update(0.1, 0);
+    };
+    finish('a2_excedente');
+    finish('a3_shicras');
+    finish('a3_obra_relleno');
+    finish('a3_muros');
+    finish('a3_obra_muros');
+    finish('a3_fuego');
+    const afterFire = { phase: g.sitePhase as string, drought: (g.environment.drought ?? 0) as number };
+    for (let i = 0; i < 25; i++) g.update(1, i);
+    const afterBeat = { phase: g.sitePhase as string, drought: (g.environment.drought ?? 0) as number };
+    document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+    g.mission.update(0.1, 0);
+    g.mission.objState.set('a4_sellar', 'completed');
+    g.mission.update(0.1, 0);
+    return { afterFire, afterBeat, sealed: g.sitePhase as string };
+  });
+  expect(out.afterFire.phase, 'the fair and the sacred fire exist before the crisis').toBe('in_use');
+  expect(out.afterFire.drought, 'no drought during the prosperity beat').toBe(0);
+  expect(out.afterBeat.drought, 'the drought comes after the city has lived').toBeGreaterThan(0);
+  expect(out.sealed, 'sealing the Mayor changes the phase').toBe('sealed');
+});
+
+test('a drought save restores the sealed city and the dry grove', async ({ page }) => {
+  await boot(page);
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    g.setSitePhase('sealed');
+    g.startEnvironmentalEvent('drought');
+    for (let i = 0; i < 60; i++) g.updateEnvironment(1);
+    g.saveMatch();
+  });
+  await page.goto('/?load=1&fog=0&low=1&noloop=1');
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      if (g?.sitePhase !== 'sealed' || g?.environment?.drought !== 1) return false;
+      const river = g.siteDef?.heightField?.river;
+      return [...g.resourceNodes.values()].some(
+        (node: any) =>
+          node.kind === 'tree' &&
+          node.nodeView?.dry === true &&
+          Math.hypot(node.pos.x - river.path[0][0], node.pos.z - river.path[0][1]) < 40,
+      );
+    },
+    null,
+    { timeout: 30_000 },
+  );
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const dry = [...g.resourceNodes.values()].filter((n: any) => n.kind === 'tree' && n.nodeView?.dry).length;
+    return { phase: g.sitePhase as string, drought: g.environment.drought as number, dry };
+  });
+  expect(out.phase).toBe('sealed');
+  expect(out.drought).toBe(1);
+  expect(out.dry, 'the riparian grove is still dry, not leafy').toBeGreaterThan(0);
+});
+
 test('the canal gate only answers once Act II asks for it', async ({ page }) => {
   await boot(page);
   const out = await page.evaluate(() => {

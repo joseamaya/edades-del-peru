@@ -94,7 +94,7 @@ describe('campaign educational content', () => {
     const phases = caral.triggers.flatMap((t) =>
       t.effects.flatMap((fx) => (fx.type === 'site_phase' ? [fx.phase] : [])),
     );
-    expect(phases).toEqual(['fill', 'finished', 'in_use']);
+    expect(phases).toEqual(['fill', 'finished', 'in_use', 'sealed']);
     const deliveries = caral.objectives.filter((o) => o.kind === 'deliver');
     for (const o of deliveries) expect(o.heritageId, o.id).toBe('caral_pyramid_mayor');
 
@@ -138,7 +138,7 @@ describe('campaign educational content', () => {
       // non-combat objectives only, and it teaches building
       const nonCombat =
         id === 'm1_caral'
-          ? ['gather', 'build', 'reach', 'hold', 'inspect', 'canal_open', 'deliver', 'research']
+          ? ['gather', 'build', 'reach', 'hold', 'inspect', 'canal_open', 'deliver', 'research', 'wait']
           : ['gather', 'build', 'survive', 'hold', 'deliver', 'network', 'reach', 'inspect', 'research'];
       for (const o of mis.objectives) expect(nonCombat, `${id}/${o.id}`).toContain(o.kind);
       expect(

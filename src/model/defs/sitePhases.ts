@@ -24,6 +24,12 @@ export function standsAt(since: string | undefined, phase: string, plan?: SitePh
   return phaseOrder(plan, phase) >= phaseOrder(plan, since);
 }
 
+/** Whether a piece that stands from `since` is still there in `phase` (it may leave at `until`). */
+export function standsIn(since: string | undefined, until: string | undefined, phase: string, plan?: SitePhasePlan): boolean {
+  if (!standsAt(since, phase, plan)) return false;
+  return !until || phaseOrder(plan, phase) < phaseOrder(plan, until);
+}
+
 export function isKnownPhase(plan: SitePhasePlan | undefined, phase: string): boolean {
   return !plan || plan.phases.includes(phase);
 }
