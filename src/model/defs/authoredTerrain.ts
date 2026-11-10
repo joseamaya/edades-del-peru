@@ -14,6 +14,11 @@ export interface AuthoredHeightField {
   river?: { path: Polyline; halfWidth: number };
   /** Optional coastline as the waterline x sampled every `step` metres along z. */
   coast?: { step: number; x: readonly number[] };
+  /**
+   * Optional shallow fords over the `river`: z centre and half-width in metres. The bed sits under the
+   * waterline, so the pathfinder must treat these cells as walkable water.
+   */
+  fords?: readonly { z: number; halfWidth: number }[];
 }
 
 /** Bilinear lookup of the painted ground weights (grass, dirt, sand, rock; 0..1), or null. */

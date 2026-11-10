@@ -417,6 +417,8 @@ export class Terrain {
         fogCapBoost: { value: this.palette.fogCapBoost ?? 0 },
         suppressSnow: { value: this.suppressSnow ? 1 : 0 },
         valleyHaze: { value: this.valleyHaze ? 1 : 0 },
+        seasonDry: { value: 0 },
+        seasonWet: { value: 0 },
       },
       vertexShader: /* glsl */ `
         attribute vec3 color;
@@ -486,6 +488,8 @@ export class Terrain {
         uniform float fogCapBoost;
         uniform float suppressSnow;
         uniform float valleyHaze;
+        uniform float seasonDry;
+        uniform float seasonWet;
         varying vec3 vColor;
         varying vec3 vWorldPos;
         varying vec2 vUv;
@@ -720,6 +724,9 @@ ${FOW_DIM_GLSL}
           float lomaMask = smoothstep(10.0, 20.0, vHeight);
           float fogCap = 0.30 + fogCapBoost * lomaMask;
           vec3 outCol = mix(lit, fogColor, clamp(max(fogAmt, edgeAmt), 0.0, fogCap));
+          // Season grade: the drought bleaches the ground warm and flat, the flood cools it.
+          outCol = mix(outCol, outCol * vec3(1.07, 0.99, 0.84), seasonDry);
+          outCol = mix(outCol, outCol * vec3(0.97, 1.03, 0.97), seasonWet);
           // Low morning haze pools over the Supe floodplain and separates it
           // from the dry terrace without washing out the fields.
           float valleyMask = (1.0 - smoothstep(waterLevel + 1.0, waterLevel + 6.0, vHeight)) * (1.0 - smoothstep(0.08, 0.42, slope));
@@ -953,6 +960,9 @@ ${FOW_DIM_GLSL}
   setDrought(level: number): void {
     const f = Math.max(0, Math.min(1, level));
     this.droughtLevel = f;
+    const uniforms = (this.mesh.material as THREE.ShaderMaterial).uniforms;
+    uniforms.seasonDry.value = f;
+    if (f > 0) uniforms.seasonWet.value = 0;
     const out = this.splat.data;
     if (!this.preDrought) {
       if (f === 0) return;
@@ -973,7 +983,7 @@ ${FOW_DIM_GLSL}
         const moist = this.data.getMoisture(wx, wz);
         const dry = Math.max(0, Math.min(1, f * 1.6 - patch * 0.5 - moist * 0.35));
         const grass = src[i]! / 255;
-        const lost = grass * dry * 0.85;
+        const lost = grass * dry * 0.95;
         const g = grass - lost;
         const d = src[i + 1]! / 255 + lost * 0.35;
         const sd = src[i + 2]! / 255 + lost * 0.65;
@@ -992,6 +1002,7 @@ ${FOW_DIM_GLSL}
   setWetSeason(level: number): void {
     if (this.droughtLevel > 0) return;
     const f = Math.max(0, Math.min(1, level));
+    (this.mesh.material as THREE.ShaderMaterial).uniforms.seasonWet.value = f;
     const out = this.splat.data;
     if (f === 0) {
       if (this.wetApplied) this.restoreWetPaint();

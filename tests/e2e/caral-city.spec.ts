@@ -928,7 +928,6 @@ test('the drought dries the irrigated field and the replanted one is not a fresh
     g.loop.stop();
     const canal = g.canalPath?.[2];
     if (!canal) return null;
-    const center = [...g.buildings.values()].find((b: any) => b.kind === 'center' && b.owner === 0);
     const spot = g.findFreeSpot(canal.x + 1.5, canal.z, 3);
     const farm = g.placeBuilding('farm', spot.x, spot.z);
     if (!farm) return null;
@@ -949,6 +948,32 @@ test('the drought dries the irrigated field and the replanted one is not a fresh
   expect(out!.dry, 'the dried field loses the canal bonus and half its potential').toBeLessThan(out!.wet * 0.5);
   expect(out!.dryReserve).toBeLessThan(out!.wetReserve);
   expect(out!.replanted).toBeLessThan(out!.wetReserve);
+});
+
+test('the sea keeps its level while the Supe follows the drought and the flood', async ({ page }) => {
+  await boot(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    const seaY = g.water.mesh.position.y as number;
+    g.startEnvironmentalEvent('drought');
+    for (let i = 0; i < 60; i++) g.updateEnvironment(1);
+    return {
+      seaY,
+      meshY: g.water.mesh.position.y as number,
+      offset: g.water.uniforms.inlandOffset.value as number,
+      seaSurface: g.waterSurfaceAt(10, 128) as number,
+      riverSurface: g.waterSurfaceAt(70, 128) as number,
+      fordWater: g.terrain.isWater(70, 64) as boolean,
+      fordWalkable: g.pathfinder.isWalkable(70, 64) as boolean,
+    };
+  });
+  expect(out.meshY, 'the water plane is not moved as a whole').toBe(out.seaY);
+  expect(out.offset).toBeLessThan(0);
+  expect(out.seaSurface, 'the Pacific does not dry with the Supe').toBe(out.seaY);
+  expect(out.riverSurface).toBeLessThan(out.seaY);
+  expect(out.fordWater, 'the ford is shallow water').toBe(true);
+  expect(out.fordWalkable, 'and the pathfinder wades it').toBe(true);
 });
 
 test('the Chacra and communal-store panels explain their historical abstractions', async ({ page }) => {

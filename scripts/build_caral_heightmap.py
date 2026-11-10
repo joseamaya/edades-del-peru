@@ -11,7 +11,8 @@ The map is a compressed west-to-east transect of the valley as it was in use
 Game metres, 256 x 256, 1 m grid. The Sacred City keeps the geometry it had on
 the former 192 m site map, shifted east by CITY_OFFSET_X (sites.ts uses the
 same offset for the city model, its blockers and heritage cards). Heights are
-serialised as a base64 Uint16 array so the browser decodes them synchronously.
+serialised as a base64 Uint16 array so the browser decodes them synchronously. The emitted TS is
+Prettier-formatted afterwards (`npx prettier --write src/model/defs/caralHeightmap.ts`).
 """
 from __future__ import annotations
 
@@ -31,7 +32,11 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'src/model/defs/caralHeightmap.ts'
 
 # Fords across the north-south reach of the Supe (z), linking Áspero and the valley with the city.
+# They are shallow gravel bars: the bed sits just under the water so the river reads as continuous and
+# units wade across (the pathfinder marks these cells walkable).
 FORDS_Z = (64.0, 150.0)
+FORD_HALF_WIDTH = 4.5
+FORD_DEPTH = 0.22
 
 # Áspero sits on a low coastal rise north of the river mouth.
 ASPERO = (42.0, 176.0)
@@ -136,10 +141,12 @@ def height(x: float, z: float) -> float:
     h = h * (1.0 - bank) + (VALLEY - 0.6) * bank
     h = h * (1.0 - channel) + RIVER * channel
 
-    # Fords: shallow gravel bars where people and llama-less caravans cross the Supe on foot.
+    # Fords: shallow gravel bars where people and llama-less caravans cross the Supe on foot. The bed
+    # stays just under the waterline, so the river is continuous there and a thin sheet of water marks
+    # the crossing.
     for fz in FORDS_Z:
-        ford = math.exp(-((z - fz) / 6.0) ** 4) * (1.0 - smoothstep(10.0, 14.0, d))
-        h = max(h, h * (1.0 - ford) + (WATER + 0.7) * ford)
+        ford = math.exp(-((z - fz) / FORD_HALF_WIDTH) ** 4) * (1.0 - smoothstep(10.0, 14.0, d))
+        h = max(h, h * (1.0 - ford) + (WATER - FORD_DEPTH) * ford)
 
     # Beach and sea.
     c = coast(z)
@@ -283,6 +290,10 @@ OUT.write_text(
     '/** Waterline x sampled every CARAL_COAST_STEP metres along z; west of it is sea. */\n'
     'export const CARAL_COAST_STEP = ' + str(coast_step) + ';\n'
     'export const CARAL_COAST_X: readonly number[] = [\n' + coast_lines + '\n];\n'
+    '/** Shallow fords over the Supe: z centre and half-width (metres); their cells are walkable water. */\n'
+    'export const CARAL_FORDS: readonly { z: number; halfWidth: number }[] = [\n'
+    + ''.join(f'  {{ z: {_num(fz)}, halfWidth: {_num(FORD_HALF_WIDTH)} }},\n' for fz in FORDS_Z)
+    + '];\n'
     '/** RGBA ground weights (grass, dirt, sand, rock) on a ' + str(GROUND_SIZE) + ' x ' + str(GROUND_SIZE) + ' grid. */\n'
     'export const CARAL_GROUND_SIZE = ' + str(GROUND_SIZE) + ';\n'
     'export const CARAL_GROUND = Uint8Array.from(\n'

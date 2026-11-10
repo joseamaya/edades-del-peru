@@ -75,3 +75,63 @@ describe('drought on standing fields', () => {
     setAutoStart(true);
   });
 });
+
+describe('seasonal water', () => {
+  it('keeps the sea level while the Supe follows the drought', () => {
+    setAutoStart(false);
+    const game = new Game(
+      {
+        ...DEFAULT_SETTINGS,
+        missionId: 'm1_caral',
+        fogOfWar: false,
+        cinematic: false,
+        showHints: false,
+        soundEnabled: false,
+      },
+      null,
+      null,
+      false,
+      true,
+    );
+    game.ais.length = 0;
+    const sea = game.mapProfile.water.level;
+    expect(game.waterSurfaceAt(10, 128), 'the Pacific starts at sea level').toBe(sea);
+    game.startEnvironmentalEvent('drought');
+    for (let i = 0; i < 45; i++) game.updateEnvironment(1);
+    expect(game.environment.drought).toBe(1);
+    expect(game.waterSurfaceAt(10, 128), 'the Pacific does not follow the Supe').toBe(sea);
+    expect(game.waterSurfaceAt(70, 128), 'the river does drop').toBeLessThan(sea);
+    game.destroy();
+    setAutoStart(true);
+  });
+});
+
+describe('Supe fords', () => {
+  it('keeps the river continuous and walkable at the crossings', () => {
+    setAutoStart(false);
+    const game = new Game(
+      {
+        ...DEFAULT_SETTINGS,
+        missionId: 'm1_caral',
+        fogOfWar: false,
+        cinematic: false,
+        showHints: false,
+        soundEnabled: false,
+      },
+      null,
+      null,
+      false,
+      true,
+    );
+    game.ais.length = 0;
+    // The bar sits under the waterline (so the river reads as continuous) but the pathfinder wades it.
+    expect(game.isFordAt(70, 64)).toBe(true);
+    expect(game.terrain.isWater(70, 64)).toBe(true);
+    expect(game.pathfinder.isWalkable(70, 64), 'the ford is crossable').toBe(true);
+    // Off the ford the channel is open water and stays impassable.
+    expect(game.isFordAt(70, 54)).toBe(false);
+    expect(game.pathfinder.isWalkable(70, 54), 'deep water is not').toBe(false);
+    game.destroy();
+    setAutoStart(true);
+  });
+});
