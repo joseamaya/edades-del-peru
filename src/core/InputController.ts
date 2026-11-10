@@ -596,7 +596,10 @@ export class InputController {
    */
   private groundGoal(target: OrderTarget, from: Unit): OrderTarget {
     const pathfinder = this.game.pathfinder;
-    if (pathfinder.isWalkable(target.x, target.z, from.owner)) return target;
+    // Only water is clamped: a blocked entity/resource keeps its point (the pathfinder approaches it).
+    if (pathfinder.isWalkable(target.x, target.z, from.owner) || !pathfinder.isWaterAt(target.x, target.z)) {
+      return target;
+    }
     const component = pathfinder.componentAt(from.pos.x, from.pos.z);
     // Never snap to the far bank: without a component (unit embedded in an obstacle) search the map.
     const safe = component

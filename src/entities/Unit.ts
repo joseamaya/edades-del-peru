@@ -73,6 +73,8 @@ export interface UnitContext {
   ): boolean;
   /** Terrain navigability (water/steep/obstacles); guards the pathless fallback. */
   isWalkable(x: number, z: number, owner?: number): boolean;
+  /** Terrain-only water test (ignores obstacles and gates), for clamping orders off the sea. */
+  isWater(x: number, z: number): boolean;
   /**
    * Nearest walkable point used to resolve a unit embedded in a solid footprint. Passing the
    * unit's `fromX`/`fromZ` restricts the search to its reachable pathfinding component; a blocked
@@ -330,13 +332,16 @@ export class Unit {
   }
 
   /**
-   * Goal of a move order. A point that is not walkable (the sea, a cliff, a bank on the far side)
-   * is replaced by the nearest walkable ground the unit can reach, so the order finishes on the
-   * shore instead of holding the unit busy forever.
+   * Goal of a move order into the sea (the sea next to a fishing bank, the far bank): it moves to
+   * the nearest walkable ground the unit can reach, so the order finishes on the shore instead of
+   * holding the unit busy forever. Other blocked goals (a building, a resource) keep their point:
+   * the pathfinder already accepts any cell within `GOAL_PROXIMITY` of them.
    */
   private resolveMoveGoal(target: OrderTarget): OrderTarget {
-    if (this.ctx.isWalkable(target.x, target.z, this.owner)) return target;
-    return this.nearestReachable(target.x, target.z) ?? target;
+    if (!this.ctx.isWalkable(target.x, target.z, this.owner) && this.ctx.isWater(target.x, target.z)) {
+      return this.nearestReachable(target.x, target.z) ?? target;
+    }
+    return target;
   }
 
   /** Warn the player once per order that it cannot make progress. */
@@ -585,7 +590,7 @@ export class Unit {
     clear = true,
   ): void {
     let goal = { x: target.x + offset.x, z: target.z + offset.z };
-    if (!this.ctx.isWalkable(goal.x, goal.z, this.owner)) {
+    if (!this.ctx.isWalkable(goal.x, goal.z, this.owner) && this.ctx.isWater(goal.x, goal.z)) {
       goal = this.nearestReachable(goal.x, goal.z) ?? goal;
     }
     if (!clear && this.orderQueue.length > 0) {

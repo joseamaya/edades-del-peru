@@ -18,10 +18,13 @@ function harness(opts: {
   waterX?: number;
   shore?: { x: number; z: number } | null;
   wall?: { from: number; to: number };
+  /** A solid footprint (a building or resource node): blocked, but not water. */
+  building?: { x: number; z: number; r: number };
 }): Harness {
   const waterX = opts.waterX ?? Infinity;
   const shore = opts.shore ?? null;
   const wall = opts.wall;
+  const building = opts.building;
   const nearestCalls: Harness['nearestCalls'] = [];
   const ctx = {
     getHeight: () => 0,
@@ -33,10 +36,12 @@ function harness(opts: {
     findApproachPath: () => [],
     reachableToNode: () => true,
     isWalkable: (x: number, z: number) => {
+      if (building && Math.hypot(x - building.x, z - building.z) < building.r) return false;
       if (wall && x >= wall.from && x <= wall.to) return false;
       if (x >= waterX) return !!shore && Math.abs(x - shore.x) < 0.6 && Math.abs(z - shore.z) < 0.6;
       return true;
     },
+    isWater: (x: number) => x >= waterX,
     nearestWalkable: (x: number, z: number, fromX?: number, fromZ?: number) => {
       nearestCalls.push({ x, z, fromX, fromZ });
       return x >= waterX && shore ? { ...shore } : null;
@@ -103,6 +108,17 @@ describe('move orders to unwalkable ground', () => {
     step(unit, 8);
     expect(unit.orderQueue).toHaveLength(0);
     expect(unit.pos.x).toBeLessThan(18);
+  });
+
+  it('leaves a blocked entity goal alone, so the pathfinder can approach it', () => {
+    const { unit, nearestCalls } = harness({
+      x: 10,
+      z: 10,
+      building: { x: 30, z: 10, r: 3 },
+    });
+    unit.issueOrder({ kind: OrderKind.MOVE, target: { x: 30, z: 10 } });
+    expect(unit.orderQueue[0]?.target).toEqual({ x: 30, z: 10 });
+    expect(nearestCalls, 'no water clamp for a building').toHaveLength(0);
   });
 
   it('drops an unreachable order instead of holding it forever', () => {
