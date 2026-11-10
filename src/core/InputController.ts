@@ -576,15 +576,36 @@ export class InputController {
     }
     if (this.ctrlQueue) {
       // attack-move
-      this.markOrder(target, 'attack');
+      const goal = this.groundGoal(target, units[0]);
+      this.markOrder(goal, 'attack');
       for (const u of units) {
-        this.game.orderUnit(u, { kind: OrderKind.ATTACK_MOVE, target }, !this.shiftQueue);
+        this.game.orderUnit(u, { kind: OrderKind.ATTACK_MOVE, target: goal }, !this.shiftQueue);
       }
     } else {
-      this.markOrder(target, 'move');
-      this.issueMoveFormation(units, target);
+      const goal = this.groundGoal(target, units[0]);
+      this.markOrder(goal, 'move');
+      this.issueMoveFormation(units, goal);
     }
     this.game.audio.order();
+  }
+
+  /**
+   * Destination of a move/attack-move order. A click on the sea (next to a fishing bank, or the far
+   * bank of the Supe) goes to the nearest walkable point the unit can reach, so the order finishes
+   * on the shore instead of holding the unit "busy" forever. Blocked entity goals keep their point.
+   */
+  private groundGoal(target: OrderTarget, from: Unit): OrderTarget {
+    const pathfinder = this.game.pathfinder;
+    // Only water is clamped: a blocked entity/resource keeps its point (the pathfinder approaches it).
+    if (pathfinder.isWalkable(target.x, target.z, from.owner) || !pathfinder.isWaterAt(target.x, target.z)) {
+      return target;
+    }
+    const component = pathfinder.componentAt(from.pos.x, from.pos.z);
+    // Never snap to the far bank: without a component (unit embedded in an obstacle) search the map.
+    const safe = component
+      ? pathfinder.nearestWalkablePoint(target.x, target.z, 0, component, from.owner)
+      : pathfinder.nearestWalkablePoint(target.x, target.z, 0, undefined, from.owner);
+    return safe ?? target;
   }
 
   /** Visually mark the destination of an order on the ground. */
@@ -599,7 +620,7 @@ export class InputController {
       .map((id: number) => this.game.units.get(id))
       .filter((u: Unit | undefined): u is Unit => !!u && !u.dead);
     if (units.length === 0) return;
-    const target: OrderTarget = { x, z };
+    const target = this.groundGoal({ x, z }, units[0]);
     if (ctrlQueue) {
       this.markOrder(target, 'attack');
       for (const u of units) this.game.orderUnit(u, { kind: OrderKind.ATTACK_MOVE, target }, !shiftQueue);
@@ -637,18 +658,7 @@ export class InputController {
           z: Math.sin(yaw) * r * spread + Math.cos(yaw) * c * spread,
         };
       }
-      const gx = target.x + offset.x;
-      const gz = target.z + offset.z;
-      if (!this.game.pathfinder.isWalkable(gx, gz, owner)) {
-        const safe = this.game.pathfinder.nearestWalkablePoint(
-          gx,
-          gz,
-          this.game.pathfinder.grid.cols,
-          undefined,
-          owner,
-        );
-        if (safe) offset = { x: safe.x - target.x, z: safe.z - target.z };
-      }
+      // `issueGroupMove` clamps an unwalkable final goal in the unit's own component.
       u.issueGroupMove(target, shared, offset, slowest, !this.shiftQueue);
     }
   }
