@@ -43,7 +43,7 @@ describe('hotkey map', () => {
     const help = formatHotkeys();
     expect(help).toContain('Z: Rotar cámara a la izquierda');
     expect(help).toContain('X: Rotar cámara a la derecha');
-    expect(help).toContain('H: Centrar Plaza Mayor');
+    expect(help).toContain('H: Centrar la ciudad');
     expect(help).not.toContain('H/F/G/V: edificios');
   });
 });

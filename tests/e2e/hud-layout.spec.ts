@@ -101,7 +101,7 @@ async function snapshots(page: Page): Promise<Snapshots> {
     const initial = read();
 
     g.mission.triggerDialogue(
-      'Comandante: —La obra no puede parar; defended el Andén mientras llega la comida de la Troje.',
+      'Voz del valle: —La obra no puede parar; defiende la chacra mientras llega la comida del depósito comunal.',
       600,
     );
     await render();

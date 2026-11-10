@@ -38,6 +38,9 @@ export interface TechTreeMatch {
   canTrain(kind: UnitKind): boolean;
   /** Optional mission technology allowlist. */
   canResearch?(techId: string): boolean;
+  /** Optional mission-scoped building labels (Caral's «Depósito comunal»). */
+  buildingName?(kind: BuildingKind): string;
+  buildingIcon?(kind: BuildingKind): string;
 }
 
 /** The tech tree is generated from the defs; it never duplicates balance data. */
@@ -50,7 +53,11 @@ export function techTreeData(match?: TechTreeMatch): TechTreeEra[] {
         name: eraDef.name,
         buildings: Object.values(BUILDING_DEFS)
           .filter((def) => match.canBuild(def.id))
-          .map((def) => ({ id: def.id, name: BUILDING_INFO[def.id].name, icon: BUILDING_INFO[def.id].icon })),
+          .map((def) => ({
+            id: def.id,
+            name: match.buildingName?.(def.id) ?? BUILDING_INFO[def.id].name,
+            icon: match.buildingIcon?.(def.id) ?? BUILDING_INFO[def.id].icon,
+          })),
         units: Object.values(UNIT_ARCHETYPES)
           .filter((def) => def.eraModel[match.era] && unitAvailableToCiv(def.id, match.civ) && match.canTrain(def.id))
           .map((def) => ({

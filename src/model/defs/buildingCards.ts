@@ -18,7 +18,7 @@ const MISSION_ECONOMY_CARDS: BuildingCardDef[] = [
     name: 'Chacra · campo de cultivo del valle',
     role: 'Producción de alimentos',
     summary:
-      'La chacra representa los campos irrigados del valle de Supe: algodón, mates, zapallos y frijoles. La humedad del suelo y el canal comunal elevan su reserva de alimentos. «Chacra» es la palabra de origen quechua que hoy se usa en el Perú; no es un término atestiguado en Caral. Los andenes son terrazas de cultivo de la sierra; en Caral los campos estaban en el fondo irrigado del valle.',
+      'La chacra representa los campos irrigados del valle de Supe: algodón, mates, zapallos y frijoles. La humedad del suelo y el canal comunal elevan su reserva de alimentos. «Chacra» es la palabra de origen quechua que hoy se usa en el Perú; no es un término atestiguado en Caral. En Caral los campos estaban en el fondo irrigado del valle, no en terrazas de altura.',
     confidence: 'abstracción jugable',
     citation: 'Dossier de Caral · Zona Arqueológica Caral',
     sources: ['docs/historia/campanas/caral.md', 'docs/historia/civilizaciones/caral.md'],
@@ -26,10 +26,10 @@ const MISSION_ECONOMY_CARDS: BuildingCardDef[] = [
   {
     building: BuildingKind.MILL,
     missionId: 'm1_caral',
-    name: 'Troje · depósito comunal',
+    name: 'Depósito comunal',
     role: 'Almacenamiento de excedentes',
     summary:
-      'El Troje representa el depósito comunal donde se guarda el excedente. Los obreros entregan aquí la comida recolectada. No es un término atestiguado en Caral: es una abstracción jugable.',
+      'El depósito comunal guarda el excedente de la comunidad. Los obreros entregan aquí la comida recolectada. Es una abstracción jugable: el término histórico no está atestiguado en Caral.',
     confidence: 'abstracción jugable',
     citation: 'Dossier de Caral · Zona Arqueológica Caral',
     sources: ['docs/historia/campanas/caral.md', 'docs/historia/civilizaciones/caral.md'],

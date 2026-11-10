@@ -114,7 +114,7 @@ The game teaches history while you play:
 | Queue orders / rally point   | Shift + Right button                  |
 | Pan                          | WASD / arrows / edges / middle button |
 | Zoom                         | Wheel                                 |
-| Last battle / center base    | Space / **H** (Plaza Mayor)           |
+| Last battle / center base    | Space / **H** (centro de la ciudad)           |
 | Build platform / dwelling    | G / V                                 |
 | Rotate camera (optional)     | Z / X                                 |
 | Follow unit                  | **F**                                 |

@@ -15,7 +15,6 @@ import { elevationDamageMultiplier, ArmorProfile } from '../game/combat';
 import { Resources, PlayerState, UnitKind, BuildingKind, OrderKind, OrderTarget, RESOURCE_KEYS } from '../core/types';
 import { distance2D } from '../util/math';
 import { CANAL_DRY_DROUGHT, CANAL_WET_FLOW, canalIrrigationAt } from '../model/defs/canal';
-import { BUILDING_INFO } from '../model/defs/buildings';
 import { getUnitStats, DamageClass, unitClassFor } from '../model/defs/units';
 import { getTech } from '../model/defs/techs';
 import { saveReplay } from '../game/replay';
@@ -420,7 +419,7 @@ export class RuntimeController {
         this.game.lastBaseAlert = now;
         bus.emit('alert', {
           icon: '🚨',
-          text: `¡${BUILDING_INFO[target.kind].name} atacada!`,
+          text: `¡${this.game.buildingName(target.kind)} bajo ataque!`,
           x: target.pos.x,
           z: target.pos.z,
           warn: true,

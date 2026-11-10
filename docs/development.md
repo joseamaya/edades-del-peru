@@ -58,7 +58,7 @@ Definition of Done and the building audit see
   heightfield and invisible heritage proxies. See
   [`docs/design/caral-sacred-city.md`](design/caral-sacred-city.md).
 - **Caral modular scenery**: `src/assets/scenery/caral/caral_pyramid_mayor_lod0.glb` /
-  `lod1.glb` (Pyramid Mayor + Plaza Mayor; 6,044/2,408 tris, 7 draw calls, footprint 13.9 × 15.5),
+  `lod1.glb` (Pyramid Mayor + Plaza Central; 6,044/2,408 tris, 7 draw calls, footprint 13.9 × 15.5),
   five Upper-Half pyramid modules (`central`, `quarry`, `lesser`, `gallery`, `huanca`; 792–924 LOD0
   tris each) and `caral_anfiteatro_lod0.glb` / `lod1.glb` (Templo Anfiteatro + Altar + Banqueta;
   3,520/1,403 tris, 7 draw calls, footprint 19.7 × 7.2). All are rebuilt by
@@ -73,7 +73,7 @@ Definition of Done and the building audit see
   panel, and `Game.visitHeritage` records the optional visit; all six Upper-Half visits complete the optional
   `obj_complejos` bonus. The canal card exposes the gate operation, which raises the authored irrigation yield
   along Caral's canal trace (nearby chacras) and completes `obj_riego`. The cards are educational overlays, not construction
-  mechanics. The player-owned Andén and Troje panels use the mission-scoped cards in
+  mechanics. The player-owned Chacra and communal-store panels use the mission-scoped cards in
   `src/model/defs/buildingCards.ts` to state that both names are gameplay abstractions. The Plaza
   Central card exposes `startAssembly()` once `obj_complejo` is complete, which activates the hidden
   optional `obj_asamblea` hold; a worker must remain in the plaza for 20 seconds.
@@ -276,7 +276,7 @@ Definition of Done and the building audit see
   Chimú `north_coast`). Objectives may be **bonus/optional** (`ObjectiveDef.optional`): they are evaluated and
   can be completed, but never gate victory nor cause defeat when failed. A `hold` objective keeps a
   player unit inside a radius for `time` seconds (m8 Junín/Ayacucho); `holdTimers` are saved. A `hold`
-  may also `consume` a resource per second (Caral's construction turns pause when the Troje is empty),
+  may also `consume` a resource per second (Caral's construction turns pause when the communal store is empty),
   and new hidden objectives declare `afterPhase`/`requires` so a save written before they existed repairs
   itself on load. The `requires` repair only runs when the trigger that activates the objective is already
   in `fired`; command-only objectives (the optional Plaza assembly) and triggers still to fire are left for
@@ -458,9 +458,14 @@ Definition of Done and the building audit see
   activating trigger is already in `fired`, keeping command-only objectives (the optional Plaza assembly)
   pending until the player calls them. This changes Caral's simulation, so `REPLAY_VERSION` is 25; guarded by
   `tests/caral-acts.test.ts` and `tests/e2e/caral-city.spec.ts`.
+- **Caral period labels and texts** (issue 386): m1 overrides the global building names/icons through
+  `MissionDef.buildingNames`/`buildingIcons` («Recinto comunal», «Depósito comunal», neutral farm icon) and
+  narrows the tech tree with `allowedTechs` (the generic irrigation tech is excluded because the canal gate
+  already provides it). The tech restriction changes the match, so `REPLAY_VERSION` is 26; the text guard is
+  `tests/caral-texts.test.ts` and `tests/e2e/caral-city.spec.ts`.
 - **Victory/defeat (conquest)**: a player is defeated only when **no building of theirs remains** (`Game.hasBuildings`),
   in both skirmish (`resolveConquest` via `Game.checkVictory`) and campaign (`Mission.checkBaseLost`). Do not go back to "losing the
-  Plaza Mayor ends the match": a full base with army must survive the loss of its center.
+  civic center ends the match": a full base with army must survive the loss of its center.
 - **External reference**: [VOIDSTRIKE](https://github.com/braedonsaunders/voidstrike) (MIT) is used only as
   technique inspiration (damage numbers, instancing, culling); its code is neither sold nor copied.
 - Import Three addons as `three/addons/...` (not `three/examples/jsm/...`).

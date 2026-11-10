@@ -4,7 +4,7 @@ import { Unit } from '../entities/Unit';
 import { Building } from '../entities/Building';
 import { ResourceNode } from '../entities/ResourceNode';
 import { bus } from './EventBus';
-import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../model/defs/buildings';
+import { BUILDING_DEFS, getBuildingStats } from '../model/defs/buildings';
 import { RESOURCE_INFO } from './Config';
 import { isConverter, unitDisplayDescription, unitDisplayIcon, unitDisplayName } from '../model/defs/units';
 import { getHeritageBuilding, type HeritageBuildingDef } from '../model/defs/heritage';
@@ -298,14 +298,13 @@ export class InputController {
       };
     }
     if (picked.building) {
-      const bi = BUILDING_INFO[picked.building.kind];
       const own = picked.building.owner === 0 ? 'Tú' : (this.game.players[picked.building.owner]?.name ?? 'Enemigo');
       const state = picked.building.constructionComplete
         ? ''
         : ` · Construyendo ${Math.floor(picked.building.buildRatio * 100)}%`;
       return {
-        icon: bi.icon,
-        title: bi.name,
+        icon: this.game.buildingIcon(picked.building.kind),
+        title: this.game.buildingName(picked.building.kind),
         detalle: `${own} · HP ${Math.ceil(picked.building.hp)}/${Math.ceil(picked.building.maxHp)}${state}`,
       };
     }

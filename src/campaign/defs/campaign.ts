@@ -7,7 +7,7 @@ const WARI_NODE_A = { ref: 'site' as const, dx: 40, dz: -32 };
 const WARI_NODE_B = { ref: 'site' as const, dx: 38, dz: 34 };
 const WARI_BONUS_NODE = { ref: 'site' as const, dx: -40, dz: 0 };
 
-/** Caral's Act III work turns: a worker holds the site while the Troje feeds the crew. */
+/** Caral's Act III work turns: a worker holds the site while the communal store feeds the crew. */
 const CARAL_WORK_TURN = { time: 20, consume: { resource: 'food', perSecond: 1.5 } } as const;
 
 export const MISSIONS: MissionDef[] = [
@@ -17,10 +17,11 @@ export const MISSIONS: MissionDef[] = [
     subtitle: 'Arcaico Tardío · c. 3000–1800 a.C.',
     history:
       'En Áspero, junto al mar, pescadores de anchoveta tejen sus redes con algodón que no crece en la playa. Río arriba, el valle de Supe guarda agua y tierra fértil.\n' +
-      'Vive cuatro momentos de la primera ciudad de América: el pueblo pesquero, los campos del valle, la construcción de la Ciudad Sagrada y la sequía que llevó a su abandono. No hay guerra documentada.',
+      'Vive cuatro momentos de una de las ciudades más antiguas de América: el pueblo pesquero, los campos del valle, la construcción de la Ciudad Sagrada y la sequía que llevó a su abandono. No hay guerra documentada.',
     victory:
-      'La comunidad sella sus pirámides y parte hacia la costa. En Vichama, sus descendientes recordarán la crisis en relieves de barro.',
-    defeat: 'El valle no logra sostener a su comunidad. La primera ciudad de América no llega a consolidarse.',
+      'La comunidad sella la Pirámide Mayor y parte hacia la costa. En Vichama, los relieves de barro se interpretan como memoria de la crisis.',
+    defeat:
+      'El valle no logra sostener a su comunidad. Una de las ciudades más antiguas de América no llega a consolidarse.',
     period: HistoricalPeriod.ARCHAIC,
     tutorial: true,
     modelMission: true,
@@ -54,7 +55,7 @@ export const MISSIONS: MissionDef[] = [
       {
         kicker: 'GENERACIONES',
         title: 'Una ciudad hecha por todos',
-        text: 'De ese intercambio nacerá, sobre una terraza del desierto, una de las primeras ciudades de América. No la levantó un rey: la levantó el trabajo comunal, plataforma sobre plataforma.',
+        text: 'De ese intercambio nacerá, sobre una terraza del desierto, una de las ciudades más antiguas de América. No se conocen los nombres de sus autoridades; la levantó el trabajo organizado de generaciones, plataforma sobre plataforma.',
         seconds: 10,
         source: 'docs/historia/campanas/caral.md',
         image: 'media/caral/intro-ciudad.webp',
@@ -155,6 +156,18 @@ export const MISSIONS: MissionDef[] = [
     // player builds dwellings, storehouses and fields, and trains workers and scouts only.
     allowedBuildings: [BuildingKind.HOUSE, BuildingKind.MILL, BuildingKind.FARM],
     allowedUnits: [UnitKind.WORKER, UnitKind.SCOUT],
+    // The canal gate is the irrigation mechanic; the generic «Canal de Regadío» tech would duplicate it.
+    allowedTechs: ['cotton_nets', 'caral_shicras', 'caral_trade'],
+    // «Troje» is a highland-storage word and «Plaza Mayor» a colonial urban term; Caral's fields were
+    // chacras in the irrigated valley and its store a communal deposit.
+    buildingNames: {
+      [BuildingKind.CENTER]: 'Recinto comunal',
+      [BuildingKind.MILL]: 'Depósito comunal',
+    },
+    buildingIcons: {
+      [BuildingKind.CENTER]: '🏘️',
+      [BuildingKind.FARM]: '🌱',
+    },
     objectives: [
       // --- Act I: Áspero, the fishing village ---
       {
@@ -203,14 +216,14 @@ export const MISSIONS: MissionDef[] = [
         buildingKind: BuildingKind.MILL,
         count: 1,
         hidden: true,
-        title: 'Acto II · Construye un depósito comunal (Troje)',
+        title: 'Acto II · Construye un depósito comunal',
       },
       {
         id: 'a2_redes',
         kind: 'research',
         tech: 'cotton_nets',
         hidden: true,
-        title: 'Acto II · Teje redes de algodón en la Troje para los pescadores de Áspero',
+        title: 'Acto II · Teje redes de algodón en el depósito comunal para los pescadores de Áspero',
       },
       {
         id: 'a2_excedente',
@@ -231,7 +244,7 @@ export const MISSIONS: MissionDef[] = [
         pos: { ref: 'site', dx: 0, dz: 0 },
         radius: 20,
         hidden: true,
-        title: 'Acto III · Entrega 150 de caña y fibra para las shicras de la Pirámide Mayor',
+        title: 'Acto III · Entrega 150 de madera para las shicras de la Pirámide Mayor',
       },
       {
         id: 'a3_obra_relleno',
@@ -243,7 +256,7 @@ export const MISSIONS: MissionDef[] = [
         requires: 'a3_shicras',
         afterPhase: 'fill',
         hidden: true,
-        title: 'Acto III · Rellena la plataforma con shicras (la Troje alimenta a la cuadrilla)',
+        title: 'Acto III · Rellena la plataforma con shicras (el depósito comunal alimenta a la cuadrilla)',
       },
       {
         id: 'a3_muros',
@@ -267,7 +280,7 @@ export const MISSIONS: MissionDef[] = [
         requires: 'a3_muros',
         afterPhase: 'finished',
         hidden: true,
-        title: 'Acto III · Levanta los muros de contención (la Troje alimenta a la cuadrilla)',
+        title: 'Acto III · Levanta los muros de contención (el depósito comunal alimenta a la cuadrilla)',
       },
       {
         id: 'a3_fuego',
@@ -304,7 +317,7 @@ export const MISSIONS: MissionDef[] = [
         requires: 'a2_excedente',
         hidden: true,
         optional: true,
-        title: 'Convoca una asamblea comunal en la Plaza Central',
+        title: 'Convoca una asamblea comunal (abstracción jugable) en la Plaza Central',
       },
       // --- Act IV: the drought ---
       {
@@ -340,7 +353,7 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'Somos gente del mar. La anchoveta nos alimenta, pero las redes se gastan: el algodón y los mates para las boyas crecen río arriba.',
+            text: 'Somos gente del mar. La anchoveta nos alimenta, pero las redes se gastan: el algodón y los mates crecen en el valle, río arriba.',
             duration: 8,
           },
         ],
@@ -351,7 +364,7 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'Hay pescado de sobra. Que un explorador remonte el río Supe y busque tierra para el algodón.',
+            text: 'Hay pescado de sobra. Que un explorador remonte el río Supe y busque tierra fértil en el valle para el algodón.',
           },
           { type: 'objective', objectiveId: 'a1_valle', state: 'activate', announce: true },
         ],
@@ -376,7 +389,7 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'Los campos esperan el agua. Abrid la compuerta del canal: la tierra húmeda rinde más.',
+            text: 'Los campos esperan el agua. Abre la compuerta del canal: la tierra húmeda rinde más.',
           },
           { type: 'objective', objectiveId: 'a2_canal', state: 'activate', announce: true },
         ],
@@ -385,11 +398,12 @@ export const MISSIONS: MissionDef[] = [
         id: 't_a2_canal',
         condition: { type: 'objective', objectiveId: 'a2_canal', state: 'completed' },
         effects: [
-          // Winter flood: the Supe rises and the lomas green with the fog (the drought reverses it in act IV).
+          // Summer flood: the Supe rises with the sierra rains (the drought reverses it in act IV). The lomas
+          // green with winter fog separately; the visual event tints both as a shorthand.
           { type: 'environment', event: 'wet_season' },
           {
             type: 'dialogue',
-            text: 'La crecida del Supe cubre la vega y la niebla devuelve el verde a las lomas. El agua corre por el canal; ahora hace falta un depósito para guardar lo que sobra.',
+            text: 'La crecida del Supe cubre la vega y el agua corre por el canal; ahora hace falta un depósito comunal para guardar lo que sobra.',
           },
           { type: 'objective', objectiveId: 'a2_troje', state: 'activate', announce: true },
         ],
@@ -400,7 +414,7 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'El algodón del valle baja a la costa: con él, Áspero teje sus redes. El pescado sube en pago.',
+            text: 'El algodón del valle baja a la costa: con él, Áspero teje sus redes. El pescado sube a cambio.',
           },
           { type: 'objective', objectiveId: 'a2_redes', state: 'activate', announce: true },
         ],
@@ -438,7 +452,7 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'Las shicras están listas. Reúne a la cuadrilla en la pirámide: la obra consume el excedente de la Troje.',
+            text: 'Las shicras están listas. Reúne a la cuadrilla en la pirámide: la obra consume el excedente del depósito comunal.',
           },
           { type: 'objective', objectiveId: 'a3_obra_relleno', state: 'activate', announce: true },
         ],
@@ -462,7 +476,7 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'La piedra está lista. Otra vez la Troje debe sostener a la cuadrilla mientras se levantan los muros.',
+            text: 'La piedra está lista. Otra vez el depósito comunal debe sostener a la cuadrilla mientras se levantan los muros.',
           },
           { type: 'objective', objectiveId: 'a3_obra_muros', state: 'activate', announce: true },
         ],
@@ -502,7 +516,7 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'La pirámide queda sellada, como un último acto de cuidado. Reunid a la gente en la playa.',
+            text: 'La pirámide queda sellada, como un último acto de cuidado. Reúne a la gente en la playa.',
           },
           { type: 'objective', objectiveId: 'a4_partida', state: 'activate', announce: true },
         ],
@@ -918,7 +932,7 @@ export const MISSIONS: MissionDef[] = [
     subtitle: 'Intermedio Temprano · c. 300–600 d.C.',
     history:
       'Los señores de Moche dominan los valles de Chicama, Moche y Virú. Desde el Callejón de Huaylas, los Recuay presionan la frontera.\n' +
-      'Asegurad los valles y sus canales, defended las huacas y sostened el intercambio de élite con la sierra.',
+      'Asegura los valles y sus canales, defiende las huacas y sostén el intercambio de élite con la sierra.',
     victory:
       'Moche impone su dominio sobre la costa norte. Sus huacas y su cerámica marcan el apogeo del Intermedio Temprano.',
     defeat: 'Los valles caen ante las incursiones de la sierra y el poder moche se desmorona.',
@@ -1043,7 +1057,7 @@ export const MISSIONS: MissionDef[] = [
             pos: { ref: 'site', dx: -20, dz: -26 },
             radius: 6,
           },
-          { type: 'dialogue', text: '¡Recuay cruza la quebrada por el norte! ¡Defended la plaza!' },
+          { type: 'dialogue', text: '¡Recuay cruza la quebrada por el norte! ¡Defiende la plaza!' },
         ],
       },
       {
@@ -1060,7 +1074,7 @@ export const MISSIONS: MissionDef[] = [
             pos: { ref: 'site', dx: 22, dz: -24 },
             radius: 6,
           },
-          { type: 'dialogue', text: 'Otra columna baja desde el Callejón de Huaylas. ¡Reforzad el flanco este!' },
+          { type: 'dialogue', text: 'Otra columna baja desde el Callejón de Huaylas. ¡Refuerza el flanco este!' },
         ],
       },
       {
@@ -1208,7 +1222,7 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'La despensa está corta, pero nuestros caminos no. Reunid suministros y conectad dos centros provinciales.',
+            text: 'La despensa está corta, pero nuestros caminos no. Reúne suministros y conecta dos centros provinciales.',
           },
         ],
       },
@@ -1262,7 +1276,7 @@ export const MISSIONS: MissionDef[] = [
     subtitle: 'Cusco · 1438',
     history:
       'La confederación Chanca, al mando de Anccu Hualloc, marcha sobre el Cusco. El inca Viracocha y su heredero huyen; el príncipe Cusi Yupanqui organiza la defensa.\n' +
-      'Resistid el asedio y repeled al ejército chanca. De esta batalla nacerá el Tahuantinsuyo.',
+      'Resiste el asedio y repele al ejército chanca. De esta batalla nacerá el Tahuantinsuyo.',
     victory:
       'Cusi Yupanqui vence en Yahuar Pampa y asume el poder como Pachacútec, el que transforma el mundo. Comienza el imperio.',
     defeat: 'El Cusco cae ante los chancas y el imperio no llega a nacer.',
@@ -1365,7 +1379,7 @@ export const MISSIONS: MissionDef[] = [
     subtitle: 'Costa norte · c. 1470',
     history:
       'El Tahuantinsuyo ya domina el Collao, Cajamarca y la costa sur. Solo falta el poderoso Reino Chimú de Minchancaman.\n' +
-      'Al mando del auqui Túpac Yupanqui, avanzad por Paramonga y el valle del Santa. Cortad el canal que abastece de agua a Chan Chan: sin agua, la ciudad no puede resistir.',
+      'Al mando del auqui Túpac Yupanqui, avanza por Paramonga y el valle del Santa. Corta el canal que abastece de agua a Chan Chan: sin agua, la ciudad no puede resistir.',
     victory:
       'El canal está cortado y Chan Chan capitula. Minchancaman es llevado al Cusco y el Tahuantinsuyo se extiende por la costa norte.',
     defeat: 'La resistencia chimú detiene al ejército inca y la costa norte permanece libre.',
@@ -1414,7 +1428,7 @@ export const MISSIONS: MissionDef[] = [
         entityTag: 'tupac_yupanqui',
         pos: { ref: 'enemy', dx: -18, dz: 0 },
         radius: 8,
-        title: 'Avanzad hasta Paramonga',
+        title: 'Avanza hasta Paramonga',
       },
       {
         id: 'obj_canal',
@@ -1447,7 +1461,7 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'Túpac Yupanqui: —Minchancaman no se someterá. Avanzad por los valles y cortadle el agua a Chan Chan.',
+            text: 'Túpac Yupanqui: —Minchancaman no se someterá. Avanza por los valles y córtale el agua a Chan Chan.',
           },
         ],
       },
@@ -1479,7 +1493,7 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'Túpac Yupanqui: —¡Paramonga ha caído! Avanzad por el valle del Santa hacia Chan Chan.',
+            text: 'Túpac Yupanqui: —¡Paramonga ha caído! Avanza por el valle del Santa hacia Chan Chan.',
           },
           { type: 'objective', objectiveId: 'obj_canal', state: 'activate' },
         ],
@@ -1579,7 +1593,7 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'Atahualpa: —El Cusco no reconocerá mi mando mientras Huáscar viva. ¡Avanzad a Quipaipan!',
+            text: 'Atahualpa: —El Cusco no reconocerá mi mando mientras Huáscar viva. ¡Avanza a Quipaipan!',
           },
         ],
       },
@@ -1636,7 +1650,7 @@ export const MISSIONS: MissionDef[] = [
     subtitle: 'Virreinato · 1780–1781',
     history:
       'José Gabriel Condorcanqui, Túpac Amaru II, se alza contra los abusos del Virreinato: la mita, el reparto y los obrajes. Micaela Bastidas organiza el avituallamiento.\n' +
-      'Sostened la rebelión y tomad el centro de mando realista.',
+      'Sostén la rebelión y toma el centro de mando realista.',
     victory: 'El centro realista cae. La rebelión sacude el Virreinato y enciende el camino hacia la independencia.',
     defeat: 'La rebelión se ahoga en sangre. El Virreinato perdura una generación más.',
     period: HistoricalPeriod.VICEROYALTY,
@@ -1746,7 +1760,7 @@ export const MISSIONS: MissionDef[] = [
     subtitle: 'Junín–Ayacucho · 1824',
     history:
       'San Martín proclama la independencia en Lima en 1821. La campaña final se libra en la sierra: la caballería patriota sostiene Junín (6 de agosto de 1824) y, meses después, el ejército de Sucre resiste en Ayacucho (9 de diciembre de 1824).\n' +
-      'Sostened Junín, proteged a Sucre y resistid en Ayacucho hasta la rendición realista.',
+      'Sostén Junín, protege a Sucre y resiste en Ayacucho hasta la rendición realista.',
     victory: 'La victoria de Ayacucho sella la independencia del Perú y el fin del poder español.',
     defeat: 'La campaña de la sierra se pierde y la independencia queda en suspenso.',
     period: HistoricalPeriod.INDEPENDENCE,
@@ -1827,7 +1841,7 @@ export const MISSIONS: MissionDef[] = [
         effects: [
           {
             type: 'dialogue',
-            text: 'General patriota: —La independencia se decide en la sierra. ¡Sostened Junín y proteged a Sucre!',
+            text: 'General patriota: —La independencia se decide en la sierra. ¡Sostén Junín y protege a Sucre!',
           },
         ],
       },
@@ -1886,7 +1900,7 @@ export const MISSIONS: MissionDef[] = [
     subtitle: 'Arica · 1880',
     history:
       'Tras el combate de Angamos (8 de octubre de 1879), la Guerra del Pacífico continúa en tierra. En Arica, la guarnición peruana al mando de Francisco Bolognesi resiste el asalto chileno del 7 de junio de 1880.\n' +
-      'Defended el puerto y mantened con vida a Bolognesi hasta que termine el asalto.',
+      'Defiende el puerto y mantén con vida a Bolognesi hasta que termine el asalto.',
     victory: 'La defensa de Arica resiste el asalto y se convierte en símbolo de la resistencia peruana.',
     defeat: 'Arica cae ante el asalto chileno. La resistencia se pierde y el puerto queda en manos enemigas.',
     period: HistoricalPeriod.REPUBLIC,
@@ -2002,7 +2016,7 @@ export const MISSIONS: MissionDef[] = [
             pos: { ref: 'player', dx: -12, dz: 20 },
             radius: 7,
           },
-          { type: 'dialogue', text: '¡Refuerzos chilenos! ¡Sostened la línea!' },
+          { type: 'dialogue', text: '¡Refuerzos chilenos! ¡Sostén la línea!' },
         ],
       },
       {

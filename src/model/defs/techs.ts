@@ -289,7 +289,7 @@ export const TECHS: TechDef[] = [
   },
   {
     id: 'caral_trade',
-    name: 'Trueque Interregional',
+    name: 'Intercambio Interregional',
     description:
       'Las rutas de Caral-Supe mueven pescado, algodón y productos de la sierra y la selva: +10% de recolección de comida y madera.',
     cost: cost({ food: 120, wood: 80 }),

@@ -40,12 +40,12 @@ Target length 30–40 minutes. Acts are sequential objectives inside one `Missio
 - **Objective kinds** (`ObjectiveKind` in `src/campaign/types.ts`): `deliver` with a `heritageId` (hand
   materials over at a monument's field card; offerings, trades and construction share it), `hold`, `reach`,
   `inspect`, `canal_open`, `research` and the classic `build`/`gather`/`survive`. A `hold` may also
-  `consume` a resource per second while it advances; Caral uses it so an empty Troje pauses construction
+  `consume` a resource per second while it advances; Caral uses it so an empty communal store pauses construction
   instead of resetting it. Prefer ones that need the mission's mechanic.
 - **Narration**: `MissionDef.narrator` names the speaker of every `dialogue` effect. Never "Comandante"
   for a society with no known rulers.
 
-Caral's acts, as a reference: I Áspero, the fishing village → II the Supe valley (fields, canal, Troje,
+Caral's acts, as a reference: I Áspero, the fishing village → II the Supe valley (fields, canal, communal store,
 cotton nets) → III building the Pyramid Mayor in phases → IV the drought, the sealing and the departure.
 
 ## 3. The map: a geographic transect
@@ -93,8 +93,9 @@ definitions instead.
 - Restrict the match to what the society had: `MissionDef.allowedBuildings`, `allowedUnits`, and the
   technologies the period knew (the tech tree is filtered to the match, `TechTreeMatch`). Caral has no
   silver, no military and no Inca andenes (its fields are chacras).
-- Local resources and technologies with a historical reading (Caral: `cotton_nets` at the Troje is the
-  coast–valley exchange; `irrigation_canal`, `caral_shicras`, `caral_trade`).
+- Local resources and technologies with a historical reading (Caral: `cotton_nets` at the communal store is the
+  coast–valley exchange; `caral_shicras`, `caral_trade`; the generic `irrigation_canal` is excluded because
+  the canal gate already owns that bonus).
 - Workers behave as the player expects: they keep working after a build (farm the new field or help the
   nearest site) and show the right tool or net for the task.
 

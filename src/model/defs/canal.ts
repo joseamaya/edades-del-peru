@@ -6,7 +6,7 @@ export const DEFAULT_CANAL_WIDTH = 2.2;
 export const CANAL_IRRIGATION_REACH = 2.5;
 /** Channel is dry (and its stone plug back in place) from this drought level. */
 export const CANAL_DRY_DROUGHT = 0.35;
-/** The winter flood fills the channel from this wet-season level. */
+/** The summer flood (sierra rains) fills the channel from this wet-season level. */
 export const CANAL_WET_FLOW = 0.35;
 /** Extra bed width beyond the water ribbon (m). */
 export const CANAL_BED_EXTRA = 1;

@@ -10,7 +10,7 @@ inventado.
 
 | Civ | Unidad única | Base | Tecnología única | Fuente |
 |---|---|---|---|---|
-| Caral-Supe | — (hueco documentado) | — | Trueque Interregional | [`civilizaciones/caral.md`](./civilizaciones/caral.md) |
+| Caral-Supe | — (hueco documentado) | — | Intercambio Interregional | [`civilizaciones/caral.md`](./civilizaciones/caral.md) |
 | Chavín | — (hueco documentado) | — | Peregrinaje al Lanzón | [`civilizaciones/chavin.md`](./civilizaciones/chavin.md) |
 | Paracas | — (hueco documentado) | — | Textiles de Paracas / Fardos Funerarios | [`civilizaciones/paracas.md`](./civilizaciones/paracas.md) |
 | Cultura Moche | Guerrero Moche | Guerrero (`soldier`) | Metalurgia Moche | [`civilizaciones/moche.md`](./civilizaciones/moche.md), [`atuendos.md`](./atuendos.md) §2 |
@@ -42,7 +42,7 @@ El «Guardián Wari» es una infantería resistente; «Mitimaes» mejora la velo
 ### Caral-Supe, Chavín, Paracas y Tiahuanaco
 
 No hay una unidad militar concreta documentada para estas civs; se evita inventarla. Caral se apoya en su
-trueque interregional y su sociedad estatal sin ejército documentado; Chavín, en el oráculo y el peregrinaje
+intercambio interregional y su sociedad estatal sin ejército documentado; Chavín, en el oráculo y el peregrinaje
 de su centro ceremonial; Paracas, en sus fardos funerarios y textiles; Tiahuanaco, en el culto y la
 astronomía de la Puerta del Sol. — [`civilizaciones/caral.md`](./civilizaciones/caral.md),
 [`civilizaciones/chavin.md`](./civilizaciones/chavin.md), [`civilizaciones/paracas.md`](./civilizaciones/paracas.md),

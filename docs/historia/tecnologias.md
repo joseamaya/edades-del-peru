@@ -18,7 +18,7 @@ ni después/otra cultura (ámbito).
 | Palabra del Amauta (`amauta_words`) | Horizonte Tardío, solo Inca | El *amauta* es un sabio/maestro inca. |
 | Chasquis Veloces (`swift_chasquis`) | Horizonte Tardío, solo Inca | Los *chasquis* son los correos del Estado inca; el efecto de capacidad es una abstracción logística, no una afirmación de que transportaran carga. |
 | Metalurgia Moche (`moche_metallurgy`) | Intermedio Temprano, solo Moche | Metalurgia y talleres moches; el efecto de ataque es una abstracción de sus armas de metal. |
-| Trueque Interregional (`caral_trade`) | Arcaico Tardío, solo Caral | Intercambio costa-sierra-selva documentado para Caral-Supe. |
+| Intercambio Interregional (`caral_trade`) | Arcaico Tardío, solo Caral | Intercambio costa-sierra-selva documentado para Caral-Supe. |
 | Peregrinaje al Lanzón (`chavin_pilgrimage`) | Horizonte Temprano, solo Chavín | Centro ceremonial y oráculo de Chavín; el efecto económico es una abstracción del peregrinaje. |
 | Textiles de Paracas (`paracas_textiles`) | Horizonte Temprano, solo Paracas | Textilería paracas y su intercambio; el efecto de capacidad es una abstracción. |
 | Fardos Funerarios (`paracas_funeral`) | Intermedio Temprano, solo Paracas | Fardos funerarios paracas; el efecto de armadura es una abstracción. |

@@ -38,7 +38,7 @@ export const CAMPAIGNS: CampaignDef[] = [
     description:
       'Antes de los incas, los Andes ya habían construido ciudades, templos, redes de intercambio y estados regionales.',
     summary:
-      'Miles de años antes de los incas, los pueblos de los Andes levantaron ciudades, templos y redes de intercambio. Recorre Caral, la ciudad más antigua de América; el oráculo de Chavín; la frontera entre moches y recuay en los valles del norte; y Wari, el primer estado expansivo de los Andes.',
+      'Miles de años antes de los incas, los pueblos de los Andes levantaron ciudades, templos y redes de intercambio. Recorre Caral, una de las ciudades más antiguas de América; el oráculo de Chavín; la frontera entre moches y recuay en los valles del norte; y Wari, el primer estado expansivo de los Andes.',
     missionIds: ['m1_caral', 'm2_chavin', 'm3_moche_recuay', 'm4_wari'],
     releasedMissionIds: ['m1_caral', 'm2_chavin', 'm3_moche_recuay', 'm4_wari'],
     status: 'available',

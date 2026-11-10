@@ -23,7 +23,7 @@ export interface EducationalMission {
 
 /** High-level saga prologue retained for the Codex and legacy callers. */
 export const PROLOGUE =
-  'En el Perú nació una de las primeras civilizaciones del mundo y la más antigua de América. ' +
+  'En el Perú nació una de las primeras civilizaciones del mundo y una de las más antiguas de América. ' +
   'Hace cinco mil años, en el valle de Supe, se levantó Caral, con sus pirámides, plazas y canales.\n' +
   'La Senda del Sol recorre esa historia en cuatro campañas: Culturas Preincas, El Tahuantinsuyo, ' +
   'El Virreinato e Independencia y República. Cada escenario revive un hecho documentado —sin inventar ' +
@@ -35,12 +35,12 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       'Valle de Supe, c. 3000–1800 a.C. Empiezas como pescadores en Áspero, subes al valle a sembrar algodón, ' +
       'levantas la Pirámide Mayor por fases y vives la sequía que cerró la ciudad. No hay guerra documentada.',
     context:
-      'En el valle de Supe, a 182 km al norte de Lima y a 23 km del litoral, Caral fue la primera ciudad ' +
-      'de América. Se formó con una economía pesquero-agraria complementaria —pesca con redes de algodón en ' +
-      'Áspero y agricultura en el valle—, canales de riego y una ideología religiosa que cohesionaba a miles ' +
-      'de personas. Funcionó casi un milenio (3000–1800 a.C.).',
+      'En el valle de Supe, a 182 km al norte de Lima y a 23 km del litoral, Caral fue una de las ciudades ' +
+      'más antiguas de América. Se formó con una economía pesquero-agraria complementaria —pesca con redes de algodón en ' +
+      'Áspero y agricultura en el valle—, canales de riego y una ideología religiosa que cohesionaba a una ' +
+      'población estimada en miles de personas. Funcionó casi un milenio (3000–1800 a.C.).',
     didYouKnow:
-      'En Caral se halló en 2005 un conjunto de cuerdas anudadas que se ha descrito como un posible quipu, mucho anterior al Tahuantinsuyo.',
+      'En Caral se halló en 2005 un conjunto de cuerdas de algodón enrolladas en varillas, descrito como un posible quipu, mucho anterior al Tahuantinsuyo.',
     epilogue:
       'La comunidad de Supe sostuvo el valle combinando la pesca del litoral con la agricultura irrigada. ' +
       'Ese excedente y la organización del trabajo hicieron posible las plazas y pirámides. Hacia 1800 a.C., ' +

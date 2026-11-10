@@ -4,7 +4,7 @@
 - **Geografía**: valle medio-inferior del **río Supe** (a 182 km al norte de Lima y 23 km del litoral,
   350 msnm), área norcentral del Perú; asentamiento costero de **Áspero** en el litoral.
 - **Núcleo**: la **Ciudad Sagrada de Caral**, ~66 ha, 32 estructuras, seis pirámides escalonadas y plazas
-  circulares hundidas. Se organiza en **Caral Alto** (Gran Pirámide, Pirámide Central, de la Cantera, Menor,
+  circulares hundidas. Se organiza en **Caral Alto** (Pirámide Mayor, Pirámide Central, de la Cantera, Menor,
   de la Galería y de la Huanca; Plaza Central; Plaza de la Huanca con su monolito; unidades residenciales
   B1/B2/B5 y edificios E2-E3) y **Caral Bajo** (Templo del Anfiteatro con la mayor plaza circular hundida,
   Pirámide del Altar Redondo, Templo de la Banqueta, residencia Q, Complejo Residencial Menor y taller
@@ -17,7 +17,7 @@
 - **Tecnología**: arquitectura monumental de piedra, barro y fibras vegetales usando **shicras** (cestas con
   piedras); sin alfarería.
 - **Personajes**: **no se conocen nombres** de gobernantes (sociedad sin escritura). Se evita inventarlos.
-- **Legado**: considerada la civilización más antigua de América y cultura matriz de los Andes.
+- **Legado**: considerada una de las civilizaciones más antiguas de América y cultura matriz de los Andes.
 - **En el juego**: mapa `costa` con río Supe y humedales; nodos de pesca (litoral) y algodón/baya (valle).
 
 ## Fuentes
