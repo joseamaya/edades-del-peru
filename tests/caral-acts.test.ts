@@ -181,7 +181,10 @@ describe('Caral model mission', () => {
     });
     mission.update(0.1, 0);
     expect(mission.getObjectiveState('obj_asamblea'), 'the assembly is announced, not started').toBe('pendiente');
-    expect(mission.activeObjectives.map((o) => o.def.id), 'and listed for the player').toContain('obj_asamblea');
+    expect(
+      mission.activeObjectives.map((o) => o.def.id),
+      'and listed for the player',
+    ).toContain('obj_asamblea');
     expect(mission.getObjectiveState('obj_complejos'), 'no tour before its monuments exist').toBe('pendiente');
     expect(mission.inspectRadiusFor('caral_pyramid_mayor')).toBeNull();
 

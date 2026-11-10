@@ -25,10 +25,7 @@ describe('mission goal rings', () => {
 
   it('keeps the quest marker over fog and pulses its material', () => {
     const scene = new THREE.Scene();
-    const ringsFx = new MissionRings(
-      scene,
-      () => 2,
-    );
+    const ringsFx = new MissionRings(scene, () => 2);
     ringsFx.sync([{ id: 'a1_valle', x: 10, z: 10, radius: 8 }]);
     expect(rings(scene), 'the marker guides the player without revealing terrain').toHaveLength(1);
     const material = (rings(scene)[0] as THREE.Mesh).material as THREE.MeshBasicMaterial;
