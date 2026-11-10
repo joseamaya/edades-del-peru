@@ -1594,7 +1594,9 @@ export class Game {
     if (!field?.river || !fords?.length) return false;
     // Cheap z test first: the polyline distance runs for every path cell at bake time.
     if (!fords.some((ford) => Math.abs(z - ford.z) <= ford.halfWidth)) return false;
-    return distanceToPolyline(x, z, field.river.path) <= field.river.halfWidth + 2;
+    if (distanceToPolyline(x, z, field.river.path) > field.river.halfWidth + 2) return false;
+    // Only the shallow bar is wadeable: a ford never makes a deep channel walkable.
+    return this.terrain.getHeight(x, z) > this.terrain.waterLevel - 0.75;
   }
 
   /**
@@ -1603,13 +1605,15 @@ export class Game {
    */
   waterSurfaceAt(x: number, z: number): number {
     const sea = this.mapProfile.water.level;
-    const coast = this.siteDef?.heightField?.coast;
-    if (!coast) return sea + waterLevelOffset(this.environment);
+    const field = this.siteDef?.heightField;
+    const coast = field?.coast;
+    if (!field || !coast) return sea + waterLevelOffset(this.environment);
     const n = coast.x.length;
-    const world = this.siteDef?.heightField?.worldSize ?? this.terrain.size;
-    const t = Math.max(0, Math.min(1, z / world));
+    const t = Math.max(0, Math.min(1, z / field.worldSize));
     const coastX = coast.x[Math.min(n - 1, Math.round(t * (n - 1)))] ?? sea;
-    return x <= coastX ? sea : sea + waterLevelOffset(this.environment);
+    // Same 1..4 m shoreline ramp as the shader mask.
+    const k = Math.max(0, Math.min(1, (x - coastX - 1) / 3));
+    return sea + waterLevelOffset(this.environment) * k * k * (3 - 2 * k);
   }
 
   toggleCanal(): boolean {

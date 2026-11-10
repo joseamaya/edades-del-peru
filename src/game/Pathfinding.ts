@@ -137,7 +137,10 @@ export class Pathfinder {
   private closed: Uint8Array;
   /** Terrain-only blockage (water/steep), kept so `rebuild` does not lose it. */
   private terrainBlocked: Uint8Array | null = null;
-  /** Terrain-only water cells (a subset of `terrainBlocked`); approach lines may cross them. */
+  /**
+   * Terrain-only water cells that block movement (a subset of `terrainBlocked`); approach lines may
+   * cross them. Shallow fords are walkable and therefore not part of this mask.
+   */
   private waterMask: Uint8Array | null = null;
   /** Static site geometry mask (walls/ruins) that must survive obstacle rebuilds. */
   private staticBlocked: Uint8Array | null = null;

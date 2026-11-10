@@ -49,8 +49,10 @@ export class Water {
       THREE.FloatType,
     );
     if (coast) {
-      coastTexture.magFilter = THREE.LinearFilter;
-      coastTexture.minFilter = THREE.LinearFilter;
+      // Nearest: float textures are not guaranteed to offer linear filtering without an extension.
+      // The coastline samples are 2 m apart and the shader ramps the mask over 3 m, so steps are fine.
+      coastTexture.magFilter = THREE.NearestFilter;
+      coastTexture.minFilter = THREE.NearestFilter;
       coastTexture.needsUpdate = true;
     }
 
@@ -291,6 +293,7 @@ export class Water {
     this.mesh.geometry.dispose();
     (this.mesh.material as THREE.Material).dispose();
     this.depthTexture.dispose();
+    (this.uniforms.coastMap?.value as THREE.DataTexture | undefined)?.dispose();
     this.refractionRT.dispose();
   }
 }

@@ -952,6 +952,8 @@ ${FOW_DIM_GLSL}
   private wetApplied = false;
   /** Current drought strength; a running drought owns the paint and blocks the flood. */
   private droughtLevel = 0;
+  /** Last wet-season grade, restored if a drought ever recedes. */
+  private wetLevel = 0;
 
   /**
    * Dry the valley (0 = as painted, 1 = full drought): green ground turns to sand and dry earth in
@@ -962,7 +964,7 @@ ${FOW_DIM_GLSL}
     this.droughtLevel = f;
     const uniforms = (this.mesh.material as THREE.ShaderMaterial).uniforms;
     uniforms.seasonDry.value = f;
-    if (f > 0) uniforms.seasonWet.value = 0;
+    uniforms.seasonWet.value = f > 0 ? 0 : this.wetLevel;
     const out = this.splat.data;
     if (!this.preDrought) {
       if (f === 0) return;
@@ -1002,6 +1004,7 @@ ${FOW_DIM_GLSL}
   setWetSeason(level: number): void {
     if (this.droughtLevel > 0) return;
     const f = Math.max(0, Math.min(1, level));
+    this.wetLevel = f;
     (this.mesh.material as THREE.ShaderMaterial).uniforms.seasonWet.value = f;
     const out = this.splat.data;
     if (f === 0) {

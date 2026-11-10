@@ -962,6 +962,8 @@ test('the sea keeps its level while the Supe follows the drought and the flood',
       seaY,
       meshY: g.water.mesh.position.y as number,
       offset: g.water.uniforms.inlandOffset.value as number,
+      useCoast: g.water.uniforms.useCoast.value as number,
+      seasonDry: g.terrain.mesh.material.uniforms.seasonDry.value as number,
       seaSurface: g.waterSurfaceAt(10, 128) as number,
       riverSurface: g.waterSurfaceAt(70, 128) as number,
       fordWater: g.terrain.isWater(70, 64) as boolean,
@@ -969,6 +971,8 @@ test('the sea keeps its level while the Supe follows the drought and the flood',
     };
   });
   expect(out.meshY, 'the water plane is not moved as a whole').toBe(out.seaY);
+  expect(out.useCoast, 'the coastline mask is bound to the shader').toBe(1);
+  expect(out.seasonDry, 'the drought grades the terrain').toBe(1);
   expect(out.offset).toBeLessThan(0);
   expect(out.seaSurface, 'the Pacific does not dry with the Supe').toBe(out.seaY);
   expect(out.riverSurface).toBeLessThan(out.seaY);
