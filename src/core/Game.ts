@@ -1331,6 +1331,8 @@ export class Game {
     // no live input during playback: it would desync the replay
     if (this.replay && record) return false;
     if (record && this.recorder) this.recorder.record(this.stepCount, cmd);
+    // A group fishing order is spread over nearby banks before the generic per-unit dispatch;
+    // the recorded command stays the single group order, so replays run the same distribution.
     if (cmd.kind === 'order' && cmd.order.kind === OrderKind.GATHER && cmd.order.entityId !== undefined) {
       if (this.distributeFishingOrder(cmd.unitIds, cmd.order.entityId, cmd.clear)) return true;
     }
@@ -1389,18 +1391,19 @@ export class Game {
       pf.reachableToNode(unit.pos.x, unit.pos.z, node.pos.x, node.pos.z, HARVEST_STAND_RANGE, owner, fishingApproach());
     for (const worker of queue) {
       const ranked = [...all].sort((a, b) => {
-        const aFree = a.free > 0 ? 0 : 1;
-        const bFree = b.free > 0 ? 0 : 1;
-        if (aFree !== bFree) return aFree - bFree;
-        if (a.node.id === target.id) return -1;
-        if (b.node.id === target.id) return 1;
-        return dist(a.node, worker.pos) - dist(b.node, worker.pos) || a.node.id - b.node.id;
+        const aFree = a.free > 0 ? 1 : 0;
+        const bFree = b.free > 0 ? 1 : 0;
+        if (aFree !== bFree) return bFree - aFree;
+        // Fill the clicked bank first; when every bank is full, spread the overflow evenly.
+        if (aFree && a.node.id === target.id) return -1;
+        if (aFree && b.node.id === target.id) return 1;
+        return b.free - a.free || dist(a.node, worker.pos) - dist(b.node, worker.pos) || a.node.id - b.node.id;
       });
       const picked =
         ranked.find((c) => c.free > 0 && reachable(worker, c.node)) ??
         ranked.find((c) => reachable(worker, c.node)) ??
         ranked[0];
-      picked.free = Math.max(0, picked.free - 1);
+      picked.free--;
       worker.issueOrder({ kind: OrderKind.GATHER, entityId: picked.node.id }, clear);
     }
     return true;
