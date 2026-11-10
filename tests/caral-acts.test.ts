@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Mission } from '../src/campaign/Mission';
 import { MISSIONS } from '../src/campaign/defs/campaign';
-import { BuildingKind, Era, UnitKind } from '../src/core/types';
+import { BuildingKind, Era, UnitKind, type ResourceKind } from '../src/core/types';
 import { CARAL_PHASE_PLAN, type CaralMayorPhase } from '../src/model/defs/caralCity';
 
 const CARAL = MISSIONS.find((m) => m.id === 'm1_caral')!;
@@ -10,8 +10,13 @@ const CARAL = MISSIONS.find((m) => m.id === 'm1_caral')!;
 function stubGame() {
   const game: any = {
     players: [{ resources: { food: 0, wood: 0, silver: 0, stone: 0 }, era: Era.FORMATIVE, techs: new Set<string>() }],
-    harvested: new Map<number, Map<string, number>>(),
-    harvestedBy: (owner: number, kind: string) => game.harvested.get(owner)?.get(kind) ?? 0,
+    harvested: new Map<number, Map<ResourceKind, number>>(),
+    harvestedBy: (owner: number, kind: ResourceKind) => game.harvested.get(owner)?.get(kind) ?? 0,
+    recordHarvest: (owner: number, kind: ResourceKind, amount: number) =>
+      game.harvested.set(
+        owner,
+        (game.harvested.get(owner) ?? new Map()).set(kind, (game.harvested.get(owner)?.get(kind) ?? 0) + amount),
+      ),
     units: new Map([[1, { id: 1, tag: '', owner: 0, dead: false, kind: UnitKind.WORKER, pos: { x: 0, z: 0 } }]]),
     buildings: new Map(),
     canalOpen: false,
@@ -91,7 +96,7 @@ describe('Caral model mission', () => {
     game.players[0].resources.food = 150;
     tick(2);
     expect(mission.getObjectiveProgress('a1_pesca')?.current).toBe(0);
-    game.harvested.set(0, new Map([['fishing', 300]]));
+    game.recordHarvest(0, 'fishing', 300);
     tick(2);
     expect(game.acts).toEqual(['Acto II · Generaciones después']);
 

@@ -10,6 +10,7 @@ import {
   HistoricalPeriod,
   CombatStance,
   AlertReason,
+  ResourceKind,
 } from '../core/types';
 import { getUnitStats, UnitStats, DamageClass, UnitClass } from '../model/defs/units';
 import type { BuildContext } from '../model/ProceduralModel';
@@ -21,8 +22,8 @@ import { Order, OrderKind, OrderTarget } from '../core/types';
 import { angleDelta, angleTo, distance2D, clamp, facingRotation, lerp } from '../util/math';
 import { tradeIncomeForDistance } from '../game/market';
 import { genderForId, type PersonGender } from '../model/defs/people';
-import type { UnitSave, ResourceKind } from '../game/saveTypes';
-import type { ApproachOptions } from '../game/Pathfinding';
+import type { UnitSave } from '../game/saveTypes';
+import { fishingApproach, type ApproachOptions } from '../game/Pathfinding';
 
 /** Reach of a melee attack from the edge of the target footprint. */
 export const MELEE_ATTACK_RANGE = 0.9;
@@ -1284,7 +1285,7 @@ export class Unit {
             node.pos.z,
             standRadius,
             this.owner,
-            node.kind === 'fishing' ? { allowWater: true, slot: this.id } : undefined,
+            node.kind === 'fishing' ? fishingApproach({ slot: this.id }) : undefined,
           );
           if (pts.length > 0) {
             this.followApproachPath(pts);
@@ -1387,24 +1388,41 @@ export class Unit {
   private retargetNearbyGather(order: Order): boolean {
     const last = this.lastGather;
     if (!last || last.kind !== 'fishing') return false;
-    let best: GatherNodeRef | null = null;
-    let bestD = GATHER_RETARGET_RADIUS;
+    const options: { node: GatherNodeRef; d: number; room: boolean }[] = [];
     for (const node of this.ctx.resourceNodes.values() as Iterable<GatherNodeRef>) {
       if (node.id === order.entityId || node.dead || node.depleted || node.kind !== last.kind) continue;
       if (node.amount !== undefined && node.amount <= 0) continue;
+      if (this.fishingNodeBlocked(node)) continue;
       const d = distance2D(last.x, last.z, node.pos.x, node.pos.z);
-      if (d < bestD) {
-        bestD = d;
-        best = node;
-      }
+      if (d >= GATHER_RETARGET_RADIUS) continue;
+      options.push({ node, d, room: this.fishingNodeHasRoom(node) });
     }
-    if (!best) return false;
+    if (options.length === 0) return false;
+    // Prefer a bank with room, then the closest one; do not pile a depleted group on one node.
+    options.sort((a, b) => (a.room === b.room ? 0 : a.room ? -1 : 1) || a.d - b.d);
+    const best = options[0].node;
     order.entityId = best.id;
     this.path.length = 0;
     this.pathIdx = 0;
     this.approachTried = false;
     this.noRouteTimer = 0;
     return true;
+  }
+
+  /** A fishing bank that just stranded this worker is skipped while its grace window lasts. */
+  private fishingNodeBlocked(node: GatherNodeRef): boolean {
+    return node.kind === 'fishing' && node.id === this.failedGatherNodeId && this.orderTime < this.failedGatherUntil;
+  }
+
+  /** True when a fishing bank still has a free fisher slot (AoE-style crowd control). */
+  private fishingNodeHasRoom(node: GatherNodeRef): boolean {
+    if (node.kind !== 'fishing') return true;
+    let count = 0;
+    for (const other of this.ctx.unitsNear(node.pos.x, node.pos.z, 32)) {
+      if (other.dead || other.owner !== this.owner) continue;
+      if (other.orderQueue.some((o) => o.kind === OrderKind.GATHER && o.entityId === node.id)) count++;
+    }
+    return count < FISHERS_PER_GROUND;
   }
 
   /**
@@ -1416,24 +1434,29 @@ export class Unit {
   private tryAlternativeGatherNode(order: Order): boolean {
     const current = this.ctx.resourceNodes.get(order.entityId!) as GatherNodeRef | undefined;
     if (!current) return false;
-    const candidates: GatherNodeRef[] = [];
+    const options: { node: GatherNodeRef; d: number; room: boolean }[] = [];
     for (const node of this.ctx.resourceNodes.values() as Iterable<GatherNodeRef>) {
       if (node.id === current.id || node.dead || node.depleted) continue;
       if (node.resource !== current.resource) continue;
       // A fisher stays a fisher: never switch a fishing order to a berry bush (or a farm order to fish).
       if (current.kind && node.kind !== current.kind) continue;
       if (node.amount !== undefined && node.amount <= 0) continue;
-      candidates.push(node);
+      if (this.fishingNodeBlocked(node)) continue;
+      options.push({
+        node,
+        d: distance2D(this.pos.x, this.pos.z, node.pos.x, node.pos.z),
+        room: this.fishingNodeHasRoom(node),
+      });
     }
-    const distTo = (node: GatherNodeRef): number => distance2D(this.pos.x, this.pos.z, node.pos.x, node.pos.z);
-    candidates.sort((a, b) => distTo(a) - distTo(b));
-    const opts = current.kind === 'fishing' ? { allowWater: true, slot: this.id } : undefined;
-    for (const node of candidates) {
+    // A bank with a free slot first, then the closest reachable one.
+    options.sort((a, b) => (a.room === b.room ? 0 : a.room ? -1 : 1) || a.d - b.d);
+    const opts = current.kind === 'fishing' ? fishingApproach({ slot: this.id }) : undefined;
+    for (const { node, d } of options) {
       if (
         !this.ctx.reachableToNode(this.pos.x, this.pos.z, node.pos.x, node.pos.z, HARVEST_STAND_RANGE, this.owner, opts)
       )
         continue;
-      if (distTo(node) <= HARVEST_RANGE) {
+      if (d <= HARVEST_RANGE) {
         order.entityId = node.id;
         this.path.length = 0;
         this.pathIdx = 0;

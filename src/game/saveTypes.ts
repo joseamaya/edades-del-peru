@@ -2,6 +2,7 @@ import type {
   Order,
   OrderTarget,
   Resources,
+  ResourceKind,
   UnitKind,
   BuildingKind,
   Era,
@@ -16,7 +17,7 @@ import type { MatchStatsSave } from './matchStats';
 /** Bump on a breaking snapshot change; adding optional fields is fine. */
 export const SAVE_VERSION = 3;
 
-export type ResourceKind = 'tree' | 'mine' | 'well' | 'hunt' | 'fishing' | 'berry';
+export type { ResourceKind };
 
 /** One row of the monotonic harvest ledger: player, node kind, amount. */
 export type HarvestLedgerRow = [number, ResourceKind, number];

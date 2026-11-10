@@ -50,6 +50,11 @@ export interface HashStateInput {
   harvested?: HarvestLedgerRow[];
 }
 
+/** Stable order for the harvest ledger in the state hash (no locale-dependent comparison). */
+function compareHarvestRows(a: HarvestLedgerRow, b: HarvestLedgerRow): number {
+  return a[0] - b[0] || (a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0);
+}
+
 /** Stable 32-bit hash of the fields that define replay/gameplay state. */
 export function stateHashOf(input: HashStateInput): number {
   const units = [...input.units]
@@ -106,7 +111,7 @@ export function stateHashOf(input: HashStateInput): number {
     nodes,
     players,
     markets: input.markets ?? [],
-    harvested: (input.harvested ?? []).slice().sort((a, b) => a[0] - b[0] || (a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0)),
+    harvested: (input.harvested ?? []).slice().sort(compareHarvestRows),
     rng: input.rngState,
   });
   for (let i = 0; i < text.length; i++) hash = (Math.imul(hash, 31) + text.charCodeAt(i)) | 0;

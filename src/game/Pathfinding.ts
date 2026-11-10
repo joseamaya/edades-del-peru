@@ -62,6 +62,11 @@ interface StandCandidate {
  */
 export const MAX_WALKABLE_SLOPE = 0.5;
 
+/** Stand-point search rules for a fishing ground: the shoal sits in water. */
+export function fishingApproach(opts: { slot?: number; component?: number } = {}): ApproachOptions {
+  return { allowWater: true, ...opts };
+}
+
 /** Reusable min binary heap (avoids O(n) forEach per iteration). */
 class MinHeap {
   private idx: number[] = [];

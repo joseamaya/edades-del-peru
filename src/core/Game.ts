@@ -19,7 +19,7 @@ import { RTSCamera } from './Camera';
 import { GameLoop } from './GameLoop';
 import { Fow } from '../game/Fow';
 import { FowTexture } from '../rendering/FowTexture';
-import { Pathfinder, MAX_WALKABLE_SLOPE } from '../game/Pathfinding';
+import { Pathfinder, MAX_WALKABLE_SLOPE, fishingApproach } from '../game/Pathfinding';
 import { planStartSettlement } from '../sim/WorldBuilder';
 import { Unit, UnitContext, HARVEST_STAND_RANGE, FISHERS_PER_GROUND } from '../entities/Unit';
 import { Building } from '../entities/Building';
@@ -57,6 +57,7 @@ import {
   OrderTarget,
   Team,
   RESOURCE_KEYS,
+  ResourceKind,
 } from '../core/types';
 import { getCiv } from '../model/defs/civs';
 import { RNG } from '../util/rng';
@@ -104,7 +105,7 @@ import { RuntimeController, type DeathFx } from './RuntimeController';
 import { StartBaseBuilder } from './StartBaseBuilder';
 import { SelectionController } from './SelectionController';
 import { stateHashOf } from '../game/stateHash';
-import type { SaveData, ResourceKind, HarvestLedgerRow } from '../game/saveTypes';
+import type { SaveData, HarvestLedgerRow } from '../game/saveTypes';
 
 /** When false the main loop does not auto-start, so tests can drive fixed steps from step 0. */
 let autoStart = true;
@@ -1359,17 +1360,19 @@ export class Game {
     const busy = new Map<number, number>();
     for (const u of this.units.values()) {
       if (u.dead || u.owner !== owner || group.has(u.id)) continue;
-      const order = u.orderQueue[0];
-      if (order?.kind !== OrderKind.GATHER || order.entityId === undefined) continue;
-      busy.set(order.entityId, (busy.get(order.entityId) ?? 0) + 1);
+      // Count every queued gather target, not just the front order: a fisher carrying a load
+      // back to the dropsite still holds a slot at its bank.
+      const seen = new Set<number>();
+      for (const order of u.orderQueue) {
+        if (order.kind !== OrderKind.GATHER || order.entityId === undefined || seen.has(order.entityId)) continue;
+        seen.add(order.entityId);
+        busy.set(order.entityId, (busy.get(order.entityId) ?? 0) + 1);
+      }
     }
     const all = [...this.resourceNodes.values()]
       .filter((n) => n.kind === 'fishing' && !n.dead && !n.depleted && (n.amount ?? 0) > 0)
       .map((n) => {
-        const capacity = pf.standCapacity(n.pos.x, n.pos.z, HARVEST_STAND_RANGE, owner, {
-          allowWater: true,
-          component,
-        });
+        const capacity = pf.standCapacity(n.pos.x, n.pos.z, HARVEST_STAND_RANGE, owner, fishingApproach({ component }));
         const free = Math.max(0, Math.min(FISHERS_PER_GROUND, capacity) - (busy.get(n.id) ?? 0));
         return { node: n, free };
       });
@@ -1383,9 +1386,7 @@ export class Game {
     const dist = (node: { pos: { x: number; z: number } }, p: { x: number; z: number }): number =>
       distance2D(node.pos.x, node.pos.z, p.x, p.z);
     const reachable = (unit: Unit, node: { pos: { x: number; z: number } }): boolean =>
-      pf.reachableToNode(unit.pos.x, unit.pos.z, node.pos.x, node.pos.z, HARVEST_STAND_RANGE, owner, {
-        allowWater: true,
-      });
+      pf.reachableToNode(unit.pos.x, unit.pos.z, node.pos.x, node.pos.z, HARVEST_STAND_RANGE, owner, fishingApproach());
     for (const worker of queue) {
       const ranked = [...all].sort((a, b) => {
         const aFree = a.free > 0 ? 0 : 1;

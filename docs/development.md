@@ -512,8 +512,9 @@ Definition of Done and the building audit see
 - **Fishing grounds and the harvest ledger** (issue 378): a fishing node sits in water, so the approach check
   must let the line of sight cross water (`ApproachOptions.allowWater`) while the stand point stays on walkable
   land; without it `reachableToNode`/`findApproachPath` reject every bank and `tryAlternativeGatherNode` can
-  never run. Fishing banks are placed at pathfinder cell centres and must expose `FISHERS_PER_GROUND`
-  stand cells in the main component; mission layouts can pin authored banks (`MissionLayout.fishing`). A
+  never run. Procedural fishing banks are placed at pathfinder cell centres and must expose
+  `FISHERS_PER_GROUND` stand cells in the main component; mission layouts can pin authored banks
+  (`MissionLayout.fishing`), which are validated against the same capacity rule. A
   group ordered to fish is spread over nearby banks (max `FISHERS_PER_GROUND` each) and each fisher gets a
   rotating stand cell, so eight workers do not pile on one point. Abandoned gather orders (no route or the
   movement watchdog) deliver a carried load and remember the failed bank for a short grace window. Act

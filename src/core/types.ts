@@ -179,6 +179,9 @@ export interface CivBonuses {
 /** Numeric civilization bonuses (a partial set of player bonuses). */
 export type CivEffects = Partial<CivBonuses>;
 
+/** Kinds of harvestable world nodes (tree, mine, ...). */
+export type ResourceKind = 'tree' | 'mine' | 'well' | 'hunt' | 'fishing' | 'berry';
+
 export interface PlayerState {
   id: number;
   name: string;

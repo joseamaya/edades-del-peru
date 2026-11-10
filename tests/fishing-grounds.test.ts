@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { Game, setAutoStart } from '../src/core/Game';
 import { DEFAULT_SETTINGS } from '../src/core/Config';
 import { MISSIONS } from '../src/campaign/defs/campaign';
-import { FISHERS_PER_GROUND, HARVEST_STAND_RANGE } from '../src/entities/Unit';
+import { FISHERS_PER_GROUND, HARVEST_STAND_RANGE, type Unit } from '../src/entities/Unit';
 import { OrderKind, UnitKind } from '../src/core/types';
 
 const CARAL = MISSIONS.find((mission) => mission.id === 'm1_caral')!;
@@ -82,7 +82,7 @@ describe('Caral fishing grounds', () => {
 
   it('spreads a group of eight fishers over nearby banks and keeps them working', () => {
     const base = game.playerCenter(0);
-    const workers = [];
+    const workers: Unit[] = [];
     for (let i = 0; i < 8; i++) {
       workers.push(
         game.spawnScriptedUnit(UnitKind.WORKER, 0, base.x + (i % 3) * 1.5 - 1.5, base.z + Math.floor(i / 3) * 1.5),
@@ -122,5 +122,15 @@ describe('Caral fishing grounds', () => {
       }
     }
     expect(reserveNow(), 'the group keeps harvesting').toBeLessThan(before);
+
+    // Let the clicked bank run out: its fishers must spill to a bank with room, not pile on one.
+    sea.amount = 0.5;
+    for (let i = 0; i < 20 * 60; i++) game.update(1 / 20, 90 + i / 20);
+    for (const worker of workers) {
+      expect(worker.isBusy(), `worker ${worker.id} abandoned after the bank ran out`).toBe(true);
+      if (worker.carryCountNow() > 0) {
+        expect(worker.orderQueue[0]?.kind, `worker ${worker.id} idles with a load after depletion`).not.toBeUndefined();
+      }
+    }
   });
 });

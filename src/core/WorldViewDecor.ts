@@ -21,7 +21,7 @@ import {
 } from '../model/defs/caralCity';
 import { CHAVIN_CITY_LAYOUT, CHAVIN_PHASE_PLAN } from '../model/defs/chavinCity';
 import { standsAt } from '../model/defs/sitePhases';
-import type { Obstacle } from '../game/Pathfinding';
+import { fishingApproach, type Obstacle } from '../game/Pathfinding';
 import { loadDecorModel } from '../rendering/decorModels';
 import { planProps, propCountFor } from '../model/defs/props';
 import { planWildlife, faunaCountFor } from '../model/defs/wildlife';
@@ -884,13 +884,13 @@ export class WorldViewDecor {
   }
 
   private fishingGroundUsable(node: { pos: { x: number; z: number } }): boolean {
+    return this.fishingCapacity(node.pos.x, node.pos.z) >= FISHERS_PER_GROUND;
+  }
+
+  /** Stand cells a bank at (x, z) offers in the main component; shared by placement and the tests. */
+  private fishingCapacity(x: number, z: number): number {
     const pf = this.game.pathfinder;
-    return (
-      pf.standCapacity(node.pos.x, node.pos.z, HARVEST_STAND_RANGE, undefined, {
-        allowWater: true,
-        component: pf.mainComponent(),
-      }) >= FISHERS_PER_GROUND
-    );
+    return pf.standCapacity(x, z, HARVEST_STAND_RANGE, undefined, fishingApproach({ component: pf.mainComponent() }));
   }
 
   private addFishingNode(x: number, z: number, amount: number): void {
@@ -937,7 +937,6 @@ export class WorldViewDecor {
     const pf = this.game.pathfinder;
     const cell = pf.grid.cell;
     const cols = pf.grid.cols;
-    const component = pf.mainComponent();
     const existing = this.fishingNodes();
     const candidates: { x: number; z: number }[] = [];
     for (let cz = 0; cz < cols; cz++) {
@@ -948,7 +947,7 @@ export class WorldViewDecor {
         if (x > size - FISHING_SCAN_MARGIN || z > size - FISHING_SCAN_MARGIN) continue;
         if (!this.game.terrain.isWater(x, z)) continue;
         if (existing.some((n) => distance2D(x, z, n.pos.x, n.pos.z) < 5)) continue;
-        const capacity = pf.standCapacity(x, z, HARVEST_STAND_RANGE, undefined, { allowWater: true, component });
+        const capacity = this.fishingCapacity(x, z);
         if (capacity < FISHERS_PER_GROUND) continue;
         candidates.push({ x, z });
       }

@@ -1,5 +1,5 @@
 import type { CinematicBeat } from './defs/cinematics';
-import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind, Resources, MapType } from '../core/types';
+import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind, Resources, ResourceKind, MapType } from '../core/types';
 import type { GeographicRegion, MapOverrides } from '../model/defs/profiles';
 import type { PortraitId } from '../model/defs/commanders';
 import type { LandmarkId } from '../model/defs/landmarks';
@@ -7,7 +7,6 @@ import type { TerrainLayout } from '../model/defs/terrainLayout';
 import type { SetpieceId } from '../model/defs/setpieces';
 import type { HeritageBuildingId } from '../model/defs/heritage';
 import type { AuthoredSiteId, DecorModelId } from '../model/defs/sites';
-import type { ResourceKind } from '../game/saveTypes';
 
 /** Normalized map point (0..1); resolved to world units from the mission map size. */
 export interface MissionAnchor {
