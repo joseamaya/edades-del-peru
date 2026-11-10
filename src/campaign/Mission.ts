@@ -286,6 +286,9 @@ export class Mission {
       case 'network':
         return this.countNetwork(o) >= (o.count ?? o.nodes?.length ?? 0) ? 'win' : 'ok';
       case 'gather':
+        if (o.fromNode) {
+          return this.game.harvestedBy(0, o.fromNode) >= (o.count ?? 0) ? 'win' : 'ok';
+        }
         return p.resources[o.resource ?? 'food'] >= (o.count ?? 0) ? 'win' : 'ok';
       case 'inspect': {
         const ids = o.heritageIds ?? [];
@@ -634,7 +637,11 @@ export class Mission {
     const p = this.game.players[0];
     switch (o.kind) {
       case 'gather':
-        return { current: p.resources[o.resource ?? 'food'], target: o.count ?? 0, format: 'count' };
+        return {
+          current: o.fromNode ? this.game.harvestedBy(0, o.fromNode) : p.resources[o.resource ?? 'food'],
+          target: o.count ?? 0,
+          format: 'count',
+        };
       case 'build':
         return { current: this.countBuilt(o), target: o.count ?? 1, format: 'count' };
       case 'deliver':

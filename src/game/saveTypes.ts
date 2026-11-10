@@ -154,4 +154,6 @@ export interface SaveData {
   matchStats?: MatchStatsSave;
   /** Market pressure per player (optional for older saves). */
   markets?: Resources[];
+  /** Monotonic harvest ledger by node kind (optional for older saves). */
+  harvested?: [number, string, number][];
 }

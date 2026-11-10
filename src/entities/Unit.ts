@@ -22,6 +22,7 @@ import { angleDelta, angleTo, distance2D, clamp, facingRotation, lerp } from '..
 import { tradeIncomeForDistance } from '../game/market';
 import { genderForId, type PersonGender } from '../model/defs/people';
 import type { UnitSave } from '../game/saveTypes';
+import type { ApproachOptions } from '../game/Pathfinding';
 
 /** Reach of a melee attack from the edge of the target footprint. */
 export const MELEE_ATTACK_RANGE = 0.9;
@@ -57,9 +58,18 @@ export interface UnitContext {
     tz: number,
     standRadius: number,
     owner?: number,
+    opts?: ApproachOptions,
   ): { x: number; z: number }[];
   /** Cheap reachability test using the same stand-point criteria as `findApproachPath`. */
-  reachableToNode(sx: number, sz: number, tx: number, tz: number, standRadius: number, owner?: number): boolean;
+  reachableToNode(
+    sx: number,
+    sz: number,
+    tx: number,
+    tz: number,
+    standRadius: number,
+    owner?: number,
+    opts?: ApproachOptions,
+  ): boolean;
   /** Terrain navigability (water/steep/obstacles); guards the pathless fallback. */
   isWalkable(x: number, z: number, owner?: number): boolean;
   /** Nearest walkable point used to resolve a unit embedded in a solid footprint. */
@@ -90,6 +100,8 @@ export interface UnitContext {
   getPlayer(playerId: number): PlayerState;
   event<K extends keyof GameEvents>(name: K, payload: GameEvents[K]): void;
   gather(nodeId: number, unitId: number, amount: number, resource: string): void;
+  /** Monotonic harvest ledger by node kind (missions count e.g. only fished food). */
+  recordHarvest(owner: number, kind: string, amount: number): void;
   tradeIncome(owner: number, amount: number, x: number, z: number): void;
   worldSize: number;
   /** The match's historical period (for the chronology guard on training). */
@@ -1257,6 +1269,7 @@ export class Unit {
             node.pos.z,
             standRadius,
             this.owner,
+            { allowWater: node.kind === 'fishing', slot: this.id },
           );
           if (pts.length > 0) {
             this.followApproachPath(pts);
@@ -1268,7 +1281,7 @@ export class Unit {
         if (this.noRouteTimer > NO_ROUTE_GIVEUP_ECONOMY) {
           if (this.tryAlternativeGatherNode(order)) return;
           this.notifyNoRoute();
-          this.finishOrder();
+          this.abandonGatherOrder();
         }
       }
       return;
@@ -1294,6 +1307,7 @@ export class Unit {
         node.amount -= amount;
       }
       this.gatherCarry[node.resource as keyof Resources] += amount;
+      if (node.kind) this.ctx.recordHarvest(this.owner, node.kind, amount);
       if (node.resource === 'wood') this.ctx.event?.('fx:wood', {});
       else if (node.resource === 'silver' || node.resource === 'stone') this.ctx.event?.('fx:mine', {});
       else this.ctx.event?.('fx:wood', {});
@@ -1398,8 +1412,11 @@ export class Unit {
     }
     const distTo = (node: GatherNodeRef): number => distance2D(this.pos.x, this.pos.z, node.pos.x, node.pos.z);
     candidates.sort((a, b) => distTo(a) - distTo(b));
+    const opts = { allowWater: current.kind === 'fishing', slot: this.id };
     for (const node of candidates) {
-      if (!this.ctx.reachableToNode(this.pos.x, this.pos.z, node.pos.x, node.pos.z, HARVEST_STAND_RANGE, this.owner))
+      if (
+        !this.ctx.reachableToNode(this.pos.x, this.pos.z, node.pos.x, node.pos.z, HARVEST_STAND_RANGE, this.owner, opts)
+      )
         continue;
       if (distTo(node) <= HARVEST_RANGE) {
         order.entityId = node.id;
@@ -1416,6 +1433,7 @@ export class Unit {
         node.pos.z,
         HARVEST_STAND_RANGE,
         this.owner,
+        opts,
       );
       if (pts.length === 0) continue;
       order.entityId = node.id;
@@ -1428,6 +1446,16 @@ export class Unit {
 
   private carryCount(): number {
     return this.gatherCarry.food + this.gatherCarry.wood + this.gatherCarry.silver + this.gatherCarry.stone;
+  }
+
+  /**
+   * Drop a gather order that cannot make progress. Unlike `finishOrder`, a worker holding
+   * a load queues the delivery first instead of standing idle with it (issue 378).
+   */
+  private abandonGatherOrder(): void {
+    this.orderQueue.shift();
+    if (this.carryCount() > 0) this.deliverOrder();
+    if (this.orderQueue.length > 0) this.startOrder();
   }
 
   private deliverOrder(): void {

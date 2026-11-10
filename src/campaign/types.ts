@@ -7,6 +7,7 @@ import type { TerrainLayout } from '../model/defs/terrainLayout';
 import type { SetpieceId } from '../model/defs/setpieces';
 import type { HeritageBuildingId } from '../model/defs/heritage';
 import type { AuthoredSiteId, DecorModelId } from '../model/defs/sites';
+import type { ResourceKind } from '../game/saveTypes';
 
 /** Normalized map point (0..1); resolved to world units from the mission map size. */
 export interface MissionAnchor {
@@ -124,6 +125,11 @@ export interface MissionLayout {
   terrain?: TerrainLayout;
   /** Authored canal used by a mission mechanic (visual-only geometry + a reach target). */
   canal?: MissionCanal;
+  /**
+   * Authored fishing grounds (normalized). Placed before the procedural supply so a coastal
+   * scenario's first banks sit in the intended water and opening sightline (issue 378).
+   */
+  fishing?: MissionAnchor[];
   /** Visual-only landmark/decor placed relative to a base. */
   decor?: MissionDecor;
   /** Visual-only roads that read the provincial network. */
@@ -193,6 +199,11 @@ export interface ObjectiveDef {
   time?: number;
   buildingKind?: BuildingKind;
   resource?: keyof Resources;
+  /**
+   * For a `gather` objective: count only what was harvested from this node kind (e.g. `fishing`).
+   * The counter is monotonic, so spending or training units never moves it backwards.
+   */
+  fromNode?: ResourceKind;
   /** Heritage cards that must be visited for an `inspect` objective. */
   heritageIds?: HeritageBuildingId[];
   /** Field card that receives a `deliver` objective's materials (shows a hand-over command). */

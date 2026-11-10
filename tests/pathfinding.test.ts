@@ -143,6 +143,31 @@ describe('Pathfinder', () => {
     gapped.bakeTerrain((x, z) => (x > 28 && x < 34 && !(z > 5 && z < 20) ? 100 : 10), 0);
     expect(gapped.pathfind(10, 40, 60, 40).length).toBeGreaterThan(0);
   });
+
+  it('lets a fishing stand point cross the water between the shore and the shoal', () => {
+    const pf = new Pathfinder(40, 1);
+    // A gentle beach: 0.4 m of drop per metre (under the walkable slope), so water starts
+    // around x=12 while the last land cell (x=11) stays walkable.
+    pf.bakeTerrain((x) => 10 - x * 0.4, 5);
+    const target = { x: 13.5, z: 20.5 };
+    expect(pf.findApproachPath(8.5, 20.5, target.x, target.z, 2.2)).toEqual([]);
+    const approach = pf.findApproachPath(8.5, 20.5, target.x, target.z, 2.2, undefined, { allowWater: true });
+    expect(approach.length).toBeGreaterThan(0);
+    expect(pf.standCapacity(target.x, target.z, 2.2, undefined, { allowWater: true })).toBeGreaterThan(0);
+    expect(pf.standCapacity(target.x, target.z, 2.2)).toBe(0);
+  });
+
+  it('rotates stand cells so a group does not pile on the same spot', () => {
+    const pf = new Pathfinder(80, 1);
+    pf.bakeTerrain(() => 10, 0);
+    const target = { x: 40.5, z: 40.5 };
+    const a = pf.findApproachPath(30, 40, target.x, target.z, 2.2, undefined, { slot: 0 });
+    const b = pf.findApproachPath(30, 40, target.x, target.z, 2.2, undefined, { slot: 2 });
+    expect(a.length).toBeGreaterThan(0);
+    expect(b.length).toBeGreaterThan(0);
+    expect(b[b.length - 1]).not.toEqual(a[a.length - 1]);
+    expect(pf.standCapacity(target.x, target.z, 2.2)).toBeGreaterThan(1);
+  });
 });
 
 describe('Pathfinder reachability cache', () => {

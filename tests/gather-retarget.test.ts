@@ -11,7 +11,13 @@ interface Harness {
 }
 
 /** A worker on flat, fully walkable ground with only the entities a gather order needs. */
-function harness(opts: { nodes: ResourceNode[]; buildings?: Building[]; x?: number; z?: number }): Harness {
+function harness(opts: {
+  nodes: ResourceNode[];
+  buildings?: Building[];
+  x?: number;
+  z?: number;
+  walkable?: boolean;
+}): Harness {
   const nodes = new Map(opts.nodes.map((node) => [node.id, node]));
   const buildings = new Map((opts.buildings ?? []).map((building) => [building.id, building]));
   const delivered: Array<{ amount: number; resource: string }> = [];
@@ -20,7 +26,7 @@ function harness(opts: { nodes: ResourceNode[]; buildings?: Building[]; x?: numb
     findPath: () => [],
     findApproachPath: () => [],
     reachableToNode: () => true,
-    isWalkable: () => true,
+    isWalkable: () => opts.walkable ?? true,
     nearestWalkable: () => null,
     unitsNear: () => [],
     enemiesNear: () => [],
@@ -36,6 +42,7 @@ function harness(opts: { nodes: ResourceNode[]; buildings?: Building[]; x?: numb
     gather: (_nodeId: number, _unitId: number, amount: number, resource: string) => {
       if (amount > 0) delivered.push({ amount, resource });
     },
+    recordHarvest: () => {},
     tradeIncome: () => {},
     worldSize: 128,
     period: 0,
@@ -107,5 +114,26 @@ describe('worker gather transitions', () => {
     expect(delivered).toContainEqual({ amount: carried, resource: 'food' });
     expect(unit.gatherCarry.food).toBe(0);
     expect(unit.orderQueue[0]?.kind).toBe(OrderKind.GATHER);
+  });
+
+  it('walks its load to a dropsite instead of idling when a gather order has no route', () => {
+    const fishing = new ResourceNode('fishing', 40, 40, 100);
+    const center = new Building(BuildingKind.CENTER, 0, Era.FORMATIVE);
+    center.pos.set(11, 0, 10);
+    center.constructionComplete = true;
+    const { unit, delivered } = harness({
+      nodes: [fishing],
+      buildings: [center],
+      x: 10,
+      z: 10,
+      walkable: false,
+    });
+    unit.gatherCarry.food = 5;
+
+    unit.issueOrder({ kind: OrderKind.GATHER, entityId: fishing.id });
+    step(unit, 6);
+
+    expect(delivered, 'the abandoned gather delivers its load').toContainEqual({ amount: 5, resource: 'food' });
+    expect(unit.gatherCarry.food).toBe(0);
   });
 });

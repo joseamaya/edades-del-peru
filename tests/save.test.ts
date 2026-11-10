@@ -40,4 +40,21 @@ describe('validateSave', () => {
     };
     expect(validateSave(data)).toBe(data);
   });
+
+  it('validates the optional harvest ledger', () => {
+    const base = {
+      version: SAVE_VERSION,
+      settings: {},
+      rngState: 0,
+      camera: { x: 0, z: 0, zoom: 100, yaw: 0 },
+      fog: '',
+      players: [],
+      units: [],
+      buildings: [],
+      resourceNodes: [],
+    };
+    expect(validateSave({ ...base, harvested: [[0, 'fishing', 120]] })).not.toBeNull();
+    expect(validateSave({ ...base, harvested: [[0, 'fishing']] })).toBeNull();
+    expect(validateSave({ ...base, harvested: 'nope' })).toBeNull();
+  });
 });

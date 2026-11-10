@@ -130,6 +130,7 @@ export class RuntimeController {
     }
 
     this.game.matchStats.applySave(data.matchStats);
+    this.game.restoreHarvested(data.harvested);
 
     this.game.markets.forEach((market: MarketState, index: number) => applyMarketSave(market, data.markets?.[index]));
     let maxId = 0;
@@ -210,10 +211,10 @@ export class RuntimeController {
     return {
       getHeight: (x: number, z: number) => this.game.terrain.getHeight(x, z),
       findPath: (sx, sz, tx, tz, owner) => this.game.pathfinder.pathfind(sx, sz, tx, tz, owner),
-      findApproachPath: (sx, sz, tx, tz, standRadius: number, owner?: number) =>
-        this.game.pathfinder.findApproachPath(sx, sz, tx, tz, standRadius, owner),
-      reachableToNode: (sx, sz, tx, tz, standRadius: number, owner?: number) =>
-        this.game.pathfinder.reachableToNode(sx, sz, tx, tz, standRadius, owner),
+      findApproachPath: (sx, sz, tx, tz, standRadius: number, owner?: number, opts?) =>
+        this.game.pathfinder.findApproachPath(sx, sz, tx, tz, standRadius, owner, opts),
+      reachableToNode: (sx, sz, tx, tz, standRadius: number, owner?: number, opts?) =>
+        this.game.pathfinder.reachableToNode(sx, sz, tx, tz, standRadius, owner, opts),
       isWalkable: (x, z, owner) => this.game.pathfinder.isWalkable(x, z, owner),
       nearestWalkable: (x, z) => this.game.pathfinder.nearestWalkablePoint(x, z),
       unitsNear: (x, z, radius) => this.unitsNear(x, z, radius),
@@ -227,6 +228,7 @@ export class RuntimeController {
       getPlayer: (id) => this.game.players[id],
       event: (name, payload) => bus.emit(name, payload),
       gather: (dropId, unitId, amount, resource) => this.deliverGather(dropId, unitId, amount, resource),
+      recordHarvest: (owner, kind, amount) => this.game.recordHarvest(owner, kind, amount),
       tradeIncome: (owner, amount) => this.tradeIncome(owner, amount),
       worldSize: this.game.settings.mapSize,
       period: this.game.settings.period,

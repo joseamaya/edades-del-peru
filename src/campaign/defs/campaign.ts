@@ -85,6 +85,15 @@ export const MISSIONS: MissionDef[] = [
       // focus sits between the base and the Huaca de los Ídolos so its summit reads from the start.
       base: { x: 42 / CARAL_MAP_SIZE, z: 172 / CARAL_MAP_SIZE },
       opening: { x: 42 / CARAL_MAP_SIZE, z: 160 / CARAL_MAP_SIZE },
+      // Anchoveta shoals off Áspero (sea, west) and a couple of river grounds. Sea anchors sit
+      // north of the base so the opening camera shows them above the minimap (issue 378).
+      fishing: [
+        { x: 16.5 / CARAL_MAP_SIZE, z: 166.5 / CARAL_MAP_SIZE },
+        { x: 15.5 / CARAL_MAP_SIZE, z: 162.5 / CARAL_MAP_SIZE },
+        { x: 18.5 / CARAL_MAP_SIZE, z: 173.5 / CARAL_MAP_SIZE },
+        { x: 63.5 / CARAL_MAP_SIZE, z: 168.5 / CARAL_MAP_SIZE },
+        { x: 63.5 / CARAL_MAP_SIZE, z: 185.5 / CARAL_MAP_SIZE },
+      ],
       discoveries: [{ heritageId: 'aspero_huaca_idolos', initial: true }],
       site: {
         id: 'caral_site',
@@ -118,7 +127,7 @@ export const MISSIONS: MissionDef[] = [
       culturalLandscape: null,
       groundTint: '#b7ab96',
     },
-    guaranteedFishing: 4,
+    guaranteedFishing: 8,
     timeOfDay: 'morning',
     startingEra: Era.FORMATIVE,
     // Half the skirmish speed so the 256 m transect reads as travel (see caral-model-mission.md §Pacing and map scale).
@@ -137,6 +146,7 @@ export const MISSIONS: MissionDef[] = [
         id: 'a1_pesca',
         kind: 'gather',
         resource: 'food',
+        fromNode: 'fishing',
         count: 300,
         title: 'Acto I · Reúne 300 de comida pescando en el litoral de Áspero',
       },

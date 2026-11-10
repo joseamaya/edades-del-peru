@@ -21,7 +21,7 @@ import { Fow } from '../game/Fow';
 import { FowTexture } from '../rendering/FowTexture';
 import { Pathfinder, MAX_WALKABLE_SLOPE } from '../game/Pathfinding';
 import { planStartSettlement } from '../sim/WorldBuilder';
-import { Unit, UnitContext } from '../entities/Unit';
+import { Unit, UnitContext, HARVEST_STAND_RANGE } from '../entities/Unit';
 import { Building } from '../entities/Building';
 import { ResourceNode } from '../entities/ResourceNode';
 import { clearResourceCaches } from '../rendering/ResourceNodeView';
@@ -53,6 +53,7 @@ import {
   UnitKind,
   BuildingKind,
   Order,
+  OrderKind,
   OrderTarget,
   Team,
   RESOURCE_KEYS,
@@ -123,6 +124,8 @@ const NO_PLACE_NAMES: readonly MissionLabel[] = [];
 const INTRO_CAMERA = { offset: 34, fromHeight: 52, toZoom: 30, seconds: 2.6 } as const;
 /** How long m1's drought takes to dry the valley out. */
 const DROUGHT_SECONDS = 40;
+/** Fishers assigned per bank when a group is ordered to fish (issue 378). */
+const FISHER_SLOTS_PER_GROUND = 4;
 /** Keep guaranteed fishing searches inside the authored river and map edge. */
 
 export class Game {
@@ -267,6 +270,11 @@ export class Game {
   /** Simulation step counter (fixed 60Hz ticks), used to time recorded commands. */
   stepCount = 0;
   readonly matchStats = new MatchStatsCollector();
+  /**
+   * Monotonic amount harvested per player and node kind. Missions use it to count e.g. only
+   * food fished (issue 378); unlike `resources` it never goes down when units are trained.
+   */
+  readonly harvested = new Map<number, Map<string, number>>();
   markets: MarketState[] = [];
   /** Last finished/abandoned replay, kept for the post-game action. */
   lastReplay: Replay | null = null;
@@ -1324,7 +1332,80 @@ export class Game {
     // no live input during playback: it would desync the replay
     if (this.replay && record) return false;
     if (record && this.recorder) this.recorder.record(this.stepCount, cmd);
+    if (cmd.kind === 'order' && cmd.order.kind === OrderKind.GATHER && cmd.order.entityId !== undefined) {
+      if (this.distributeFishingOrder(cmd.unitIds, cmd.order.entityId, cmd.clear)) return true;
+    }
     return this.commandProcessor.apply(cmd);
+  }
+
+  /**
+   * Spread a group ordered to fish over the clicked bank and the nearby ones it cannot all
+   * fit on. Returns false (leaving the order untouched) when this is not a pure fishing group.
+   */
+  private distributeFishingOrder(unitIds: number[], entityId: number, clear: boolean): boolean {
+    const target = this.resourceNodes.get(entityId);
+    if (!target || target.dead || target.kind !== 'fishing' || unitIds.length < 2) return false;
+    const units: Unit[] = [];
+    for (const id of unitIds) {
+      const u = this.units.get(id);
+      if (!u || u.dead) continue;
+      if (u.kind !== UnitKind.WORKER) return false;
+      units.push(u);
+    }
+    if (units.length < 2) return false;
+    const owner = units[0].owner;
+    if (units.some((u) => u.owner !== owner)) return false;
+    const pf = this.pathfinder;
+    const component = pf.mainComponent();
+    const group = new Set(units.map((u) => u.id));
+    const busy = new Map<number, number>();
+    for (const u of this.units.values()) {
+      if (u.dead || u.owner !== owner || group.has(u.id)) continue;
+      const order = u.orderQueue[0];
+      if (order?.kind !== OrderKind.GATHER || order.entityId === undefined) continue;
+      busy.set(order.entityId, (busy.get(order.entityId) ?? 0) + 1);
+    }
+    const candidates = [...this.resourceNodes.values()]
+      .filter((n) => n.kind === 'fishing' && !n.dead && !n.depleted && (n.amount ?? 0) > 0)
+      .map((n) => {
+        const capacity = pf.standCapacity(n.pos.x, n.pos.z, HARVEST_STAND_RANGE, owner, {
+          allowWater: true,
+          component,
+        });
+        const free = Math.max(0, Math.min(FISHER_SLOTS_PER_GROUND, capacity) - (busy.get(n.id) ?? 0));
+        return { node: n, free };
+      })
+      .filter((c) => c.free > 0);
+    if (candidates.length === 0) return false;
+    // The clicked bank is the anchor: workers closest to it fill it first, the rest spill over.
+    const dist = (a: { pos: { x: number; z: number } }, b: { x: number; z: number }): number =>
+      distance2D(a.pos.x, a.pos.z, b.x, b.z);
+    const queue = [...units].sort(
+      (a, b) =>
+        distance2D(a.pos.x, a.pos.z, target.pos.x, target.pos.z) -
+          distance2D(b.pos.x, b.pos.z, target.pos.x, target.pos.z) || a.id - b.id,
+    );
+    for (const unit of queue) {
+      const options = candidates
+        .filter((c) => c.free > 0)
+        .sort(
+          (a, b) =>
+            (a.node.id === target.id ? -1 : b.node.id === target.id ? 1 : 0) ||
+            dist(a.node, unit.pos) - dist(b.node, unit.pos) ||
+            a.node.id - b.node.id,
+        );
+      let picked = options.find((c) =>
+        pf.reachableToNode(unit.pos.x, unit.pos.z, c.node.pos.x, c.node.pos.z, HARVEST_STAND_RANGE, owner, {
+          allowWater: true,
+        }),
+      );
+      // Every bank is unreachable from this spot: keep the intended target so the worker
+      // reports the failure and can retry once the shore frees up.
+      if (!picked) picked = options[0] ?? { node: target, free: 1 };
+      picked.free--;
+      unit.issueOrder({ kind: OrderKind.GATHER, entityId: picked.node.id }, clear);
+    }
+    return true;
   }
 
   /** Create and attach a unit view from the current build context. */
@@ -1369,7 +1450,45 @@ export class Game {
       players: this.players,
       rngState: this.rng.getState(),
       markets: this.markets.map((market) => market.pressure),
+      harvested: this.harvestedSave(),
     });
+  }
+
+  /** Record a harvest into the monotonic ledger (see `harvested`). */
+  recordHarvest(owner: number, kind: string, amount: number): void {
+    if (!(amount > 0)) return;
+    let byKind = this.harvested.get(owner);
+    if (!byKind) {
+      byKind = new Map();
+      this.harvested.set(owner, byKind);
+    }
+    byKind.set(kind, (byKind.get(kind) ?? 0) + amount);
+  }
+
+  /** Total amount of one node kind harvested by a player. */
+  harvestedBy(owner: number, kind: string): number {
+    return this.harvested.get(owner)?.get(kind) ?? 0;
+  }
+
+  harvestedSave(): [number, string, number][] {
+    const out: [number, string, number][] = [];
+    for (const [player, byKind] of this.harvested) {
+      for (const [kind, amount] of byKind) out.push([player, kind, amount]);
+    }
+    return out;
+  }
+
+  restoreHarvested(entries: [number, string, number][] | undefined): void {
+    this.harvested.clear();
+    for (const [player, kind, amount] of entries ?? []) {
+      if (!Number.isFinite(amount) || amount <= 0) continue;
+      let byKind = this.harvested.get(player);
+      if (!byKind) {
+        byKind = new Map();
+        this.harvested.set(player, byKind);
+      }
+      byKind.set(kind, (byKind.get(kind) ?? 0) + amount);
+    }
   }
 
   /** The replay recorded so far (skirmish only), or null. */

@@ -10,6 +10,8 @@ const CARAL = MISSIONS.find((m) => m.id === 'm1_caral')!;
 function stubGame() {
   const game: any = {
     players: [{ resources: { food: 0, wood: 0, silver: 0, stone: 0 }, era: Era.FORMATIVE, techs: new Set<string>() }],
+    harvested: new Map<string, number>(),
+    harvestedBy: (_owner: number, kind: string) => game.harvested.get(kind) ?? 0,
     units: new Map([[1, { id: 1, tag: '', owner: 0, dead: false, kind: UnitKind.WORKER, pos: { x: 0, z: 0 } }]]),
     buildings: new Map(),
     canalOpen: false,
@@ -82,8 +84,14 @@ describe('Caral model mission', () => {
     tick(5);
     expect(game.dialogues[0]).toBe('Voz del valle');
 
-    // Act I: fishing surplus, then the scout finds the valley.
+    // Act I: fishing surplus, not a food balance (issue 378).
     game.players[0].resources.food = 300;
+    tick(2);
+    expect(mission.getObjectiveState('a1_pesca'), 'food in the bank is not fishing').toBe('activo');
+    game.players[0].resources.food = 150;
+    tick(2);
+    expect(mission.getObjectiveProgress('a1_pesca')?.current).toBe(0);
+    game.harvested.set('fishing', 300);
     tick(2);
     expect(game.acts).toEqual(['Acto II · Generaciones después']);
 

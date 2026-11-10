@@ -549,10 +549,10 @@ test('plays m1 Caral with real construction and gathering, without objective che
   expect(out.environment.wet_season).toBe(1);
   expect(out.environment.drought).toBe(1);
   // Target length of the model mission (docs/design/caral-model-mission.md): roughly 30-40 minutes for a
-  // learning player. The bot is faster but, with the Caral speed scale (0.5), it needs ~20 min: lock the
-  // pacing so a reverted scale or a shortened mission fails here.
+  // learning player. The bot is faster but, with the Caral speed scale (0.5) and Act I's real fishing
+  // count (issue 378), it needs ~26 min: lock the pacing so a reverted scale or a shortened mission fails.
   expect(out.minutes, JSON.stringify(out)).toBeGreaterThan(15);
-  expect(out.minutes, JSON.stringify(out)).toBeLessThan(25);
+  expect(out.minutes, JSON.stringify(out)).toBeLessThan(28);
   expect(errors).toEqual([]);
 });
 

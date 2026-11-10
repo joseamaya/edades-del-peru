@@ -45,6 +45,8 @@ export interface HashStateInput {
   players: HashPlayer[];
   rngState: number;
   markets?: { food: number; wood: number; silver: number; stone: number }[];
+  /** Monotonic harvest ledger by node kind (see Game.harvested). */
+  harvested?: [number, string, number][];
 }
 
 /** Stable 32-bit hash of the fields that define replay/gameplay state. */
@@ -97,7 +99,15 @@ export function stateHashOf(input: HashStateInput): number {
     player.alive,
   ]);
   let hash = 0;
-  const text = JSON.stringify({ units, buildings, nodes, players, markets: input.markets ?? [], rng: input.rngState });
+  const text = JSON.stringify({
+    units,
+    buildings,
+    nodes,
+    players,
+    markets: input.markets ?? [],
+    harvested: (input.harvested ?? []).slice().sort((a, b) => a[0] - b[0] || a[1].localeCompare(b[1])),
+    rng: input.rngState,
+  });
   for (let i = 0; i < text.length; i++) hash = (Math.imul(hash, 31) + text.charCodeAt(i)) | 0;
   return hash >>> 0;
 }

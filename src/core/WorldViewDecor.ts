@@ -4,6 +4,7 @@ import { CulturalLandscape } from '../rendering/CulturalLandscape';
 import { SacredCity } from '../rendering/SacredCity';
 import { applyFowToObject } from '../rendering/FowMaterial';
 import { ResourceNode } from '../entities/ResourceNode';
+import { HARVEST_STAND_RANGE } from '../entities/Unit';
 import { disposeStaticGltf } from '../rendering/StaticModel';
 import { loadSceneryModel } from '../rendering/sceneryModels';
 import { loadSiteModel } from '../rendering/siteModels';
@@ -864,64 +865,110 @@ export class WorldViewDecor {
       this.game.attachResourceNode(node, mapType, undefined, variants);
       this.game.resourceNodes.set(node.id, node);
     }
-    const fishingCount = Math.round(this.game.mapProfile.resources.fishing);
-    for (let i = 0; i < fishingCount; i++) {
-      const x = rng.range(20, s.mapSize - 20);
-      const z = rng.range(20, s.mapSize - 20);
-      if (!this.game.terrain.isWater(x, z)) continue;
-      const node = new ResourceNode('fishing', x, z, rng.range(150, 220));
-      node.pos.y = 0;
-      this.game.attachResourceNode(node, mapType);
-      this.game.resourceNodes.set(node.id, node);
-    }
-    // The random coastal samples can miss the few water cells near shore; a
-    // scenario that depends on fishing asks for a guaranteed reachable supply.
     const mis = s.missionId ? getMission(s.missionId) : undefined;
-    for (let i = 0; i < (mis?.guaranteedFishing ?? 0); i++) this.spawnFishingNearShore(rng);
-  }
-
-  /** Fill a scenario's minimum fishing supply after loading an older save. */
-  ensureFishingGrounds(min: number): void {
-    const have = [...this.game.resourceNodes.values()].filter((n) => n.kind === 'fishing' && !n.dead).length;
-    if (have >= min) return;
-    const rng = new RNG((this.game.settings.mapSeed * 2654435761 + 97) >>> 0);
-    for (let i = have; i < min; i++) this.spawnFishingNearShore(rng);
-  }
-
-  spawnFishingNearShore(rng: RNG): boolean {
-    const size = this.game.settings.mapSize;
-    const candidates: { x: number; z: number }[] = [];
-    const existing = [...this.game.resourceNodes.values()].filter((n) => n.kind === 'fishing' && !n.dead);
-    for (let x = FISHING_SCAN_MARGIN; x < size - FISHING_SCAN_MARGIN; x += 2) {
-      for (let z = FISHING_SCAN_MARGIN; z < size - FISHING_SCAN_MARGIN; z += 2) {
+    // A scenario with a guaranteed supply places every bank on a checked shore; the random
+    // samples only exist for skirmish maps, where no mission validation runs.
+    if (!mis?.guaranteedFishing) {
+      const fishingCount = Math.round(this.game.mapProfile.resources.fishing);
+      for (let i = 0; i < fishingCount; i++) {
+        const x = rng.range(20, s.mapSize - 20);
+        const z = rng.range(20, s.mapSize - 20);
         if (!this.game.terrain.isWater(x, z)) continue;
-        if (existing.some((n) => distance2D(x, z, n.pos.x, n.pos.z) < 5)) continue;
-        // A worker must be able to stand within harvest range on walkable ground (not just "not water":
-        // a wet beach below the walkable height would leave the ground unreachable).
-        let nearLand = false;
-        for (let i = 0; i < 12 && !nearLand; i++) {
-          const a = (i / 12) * Math.PI * 2;
-          for (const r of [1.6, 2.2]) {
-            if (this.game.pathfinder.isWalkable(x + Math.cos(a) * r, z + Math.sin(a) * r)) nearLand = true;
-          }
-        }
-        if (nearLand) candidates.push({ x, z });
+        const node = new ResourceNode('fishing', x, z, rng.range(150, 220));
+        node.pos.y = 0;
+        this.game.attachResourceNode(node, mapType);
+        this.game.resourceNodes.set(node.id, node);
       }
+    } else {
+      this.ensureFishingGrounds(mis.guaranteedFishing);
     }
-    if (candidates.length === 0) return false;
-    // A guaranteed supply serves the opening: pick among the shore cells closest to the player's base.
-    const layoutBase = this.game.missionLayout?.base;
-    const base = layoutBase ? { x: layoutBase.x * size, z: layoutBase.z * size } : this.game.playerCenter(0);
-    // Open sea (deeper than a river bed) is preferred: the coast is where the anchoveta shoals are.
-    const waterLevel = this.game.terrain.waterLevel;
-    const cost = (p: { x: number; z: number }) =>
-      distance2D(p.x, p.z, base.x, base.z) + (waterLevel - this.game.terrain.getHeight(p.x, p.z) < 1.5 ? 30 : 0);
-    candidates.sort((a, b) => cost(a) - cost(b));
-    const spot = rng.pick(candidates.slice(0, 24));
-    const node = new ResourceNode('fishing', spot.x, spot.z, rng.range(150, 220));
+  }
+
+  /** A bank must offer several walkable stand cells, not just one lucky harvest spot. */
+  private readonly minFishingStandCells = 4;
+
+  /** Fishing banks keep a large reserve: the anchoveta shoals off Áspero fed the village. */
+  private static readonly FISHING_RESERVE = { min: 280, max: 380 } as const;
+
+  private fishingGroundUsable(node: { pos: { x: number; z: number } }): boolean {
+    const pf = this.game.pathfinder;
+    return (
+      pf.standCapacity(node.pos.x, node.pos.z, HARVEST_STAND_RANGE, undefined, {
+        allowWater: true,
+        component: pf.mainComponent(),
+      }) >= this.minFishingStandCells
+    );
+  }
+
+  private addFishingGround(x: number, z: number, rng: RNG): void {
+    const node = new ResourceNode(
+      'fishing',
+      x,
+      z,
+      rng.range(WorldViewDecor.FISHING_RESERVE.min, WorldViewDecor.FISHING_RESERVE.max),
+    );
     node.pos.y = 0;
     this.game.attachResourceNode(node, this.game.mapProfile.baseMapType);
     this.game.resourceNodes.set(node.id, node);
+  }
+
+  private fishingNodes(): ResourceNode[] {
+    return [...this.game.resourceNodes.values()].filter((n) => n.kind === 'fishing' && !n.dead);
+  }
+
+  /**
+   * Place the mission's authored banks first (the Caral coast anchors), then fill the
+   * remaining guaranteed supply procedurally. Safe to call on an older save.
+   */
+  ensureFishingGrounds(min: number): void {
+    const rng = new RNG((this.game.settings.mapSeed * 2654435761 + 97) >>> 0);
+    const size = this.game.settings.mapSize;
+    for (const anchor of this.game.missionLayout?.fishing ?? []) {
+      const x = anchor.x * size;
+      const z = anchor.z * size;
+      if (this.fishingNodes().some((n) => distance2D(x, z, n.pos.x, n.pos.z) < 3)) continue;
+      if (!this.game.terrain.isWater(x, z)) continue;
+      if (!this.fishingGroundUsable({ pos: { x, z } })) continue;
+      this.addFishingGround(x, z, rng);
+    }
+    const usable = () => this.fishingNodes().filter((n) => this.fishingGroundUsable(n)).length;
+    let placed = usable();
+    for (let guard = 0; placed < min && guard < min * 4; guard++) {
+      if (!this.spawnFishingNearShore(rng)) break;
+      placed = usable();
+    }
+  }
+
+  /** Place one checked fishing bank near the player's base. */
+  spawnFishingNearShore(rng: RNG): boolean {
+    const size = this.game.settings.mapSize;
+    const pf = this.game.pathfinder;
+    const cell = pf.grid.cell;
+    const cols = pf.grid.cols;
+    const component = pf.mainComponent();
+    const existing = this.fishingNodes();
+    const candidates: { x: number; z: number }[] = [];
+    for (let cz = 0; cz < cols; cz++) {
+      for (let cx = 0; cx < cols; cx++) {
+        const x = (cx + 0.5) * cell;
+        const z = (cz + 0.5) * cell;
+        if (x < FISHING_SCAN_MARGIN || z < FISHING_SCAN_MARGIN) continue;
+        if (x > size - FISHING_SCAN_MARGIN || z > size - FISHING_SCAN_MARGIN) continue;
+        if (!this.game.terrain.isWater(x, z)) continue;
+        if (existing.some((n) => distance2D(x, z, n.pos.x, n.pos.z) < 5)) continue;
+        const capacity = pf.standCapacity(x, z, HARVEST_STAND_RANGE, undefined, { allowWater: true, component });
+        if (capacity < this.minFishingStandCells) continue;
+        candidates.push({ x, z });
+      }
+    }
+    if (candidates.length === 0) return false;
+    // A guaranteed supply serves the opening: pick among the best shores closest to the base.
+    const layoutBase = this.game.missionLayout?.base;
+    const base = layoutBase ? { x: layoutBase.x * size, z: layoutBase.z * size } : this.game.playerCenter(0);
+    const cost = (p: { x: number; z: number }) => distance2D(p.x, p.z, base.x, base.z);
+    candidates.sort((a, b) => cost(a) - cost(b));
+    const spot = rng.pick(candidates.slice(0, 12));
+    this.addFishingGround(spot.x, spot.z, rng);
     return true;
   }
 
