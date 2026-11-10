@@ -150,6 +150,24 @@ describe('Caral model mission', () => {
     expect(won).toBe(true);
   });
 
+  it('keeps the prosperity beat across a load and never completes it instantly', () => {
+    const game = stubGame();
+    const mission = new Mission(game, CARAL, () => {});
+    mission.start();
+    const save = mission.toSave();
+    mission.applySave({
+      ...save,
+      timer: 100,
+      objState: save.objState.map(([id, st]) => [id, id === 'a3_prosperidad' ? 'activo' : st]),
+      activatedAt: undefined,
+    });
+    expect(mission.getObjectiveState('a3_prosperidad')).toBe('activo');
+    for (let i = 0; i < 5; i++) mission.update(1, 0);
+    expect(mission.getObjectiveState('a3_prosperidad'), 'an older save restarts the beat').toBe('activo');
+    for (let i = 0; i < 20; i++) mission.update(1, 0);
+    expect(mission.getObjectiveState('a3_prosperidad')).toBe('completed');
+  });
+
   it('waits for a beach cohort before the community departs', () => {
     const game = stubGame();
     const mission = new Mission(game, CARAL, () => {});

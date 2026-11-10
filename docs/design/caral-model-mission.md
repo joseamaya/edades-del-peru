@@ -192,8 +192,9 @@ Dialogue speaker labels must not say "Comandante" in this mission.
   (bare trunk, no canopy) within 26 m of the Supe; the rest of the map keeps its trees, and a loaded save
   rebuilds the dry grove from the drought level instead of replaying the loss. Flood and drought are meant to
   be told apart at a glance from the normal camera.
-- **Act flow**: the city enters `in_use` when the fire offering ends (fair tents, pilgrims and the sacred
-  fire), and stays there through a 20 s `wait` beat (`a3_prosperidad`) before the drought card opens Act IV.
+- **Act flow**: the city enters `in_use` when the fire offering ends (fair tents, the sacred fire and the
+  ochre/red Mayor; the pilgrims are narrative), and stays there through a 20 s `wait` beat
+  (`a3_prosperidad`) before the drought card opens Act IV.
   Act III reveals the city with the discovery animation (`reveal` effect), so the camera does not open on
   unexplored fog. The assembly is announced with Act III (listed, still awaiting the call), and the pyramid tour (`obj_complejos`)
   waits until the walls are finished, when all six complexes stand; each card needs a unit at its own

@@ -1096,9 +1096,10 @@ export class Game {
    */
   dryRiparianGrove(): void {
     const river = this.siteDef?.heightField?.river;
+    const reach = this.siteDef?.life?.dryGroveRadius ?? 26;
     for (const node of this.resourceNodes.values()) {
       if (node.kind !== 'tree' || node.dead || node.depleted) continue;
-      if (river && distanceToPolyline(node.pos.x, node.pos.z, river.path) > 26) continue;
+      if (river && distanceToPolyline(node.pos.x, node.pos.z, river.path) > reach) continue;
       node.nodeView?.setDry();
     }
   }
@@ -1119,8 +1120,9 @@ export class Game {
     this.lifeTimer = 0;
     this.lifeTurn++;
     const focus = this.camera.getTarget();
+    const quietPhase = this.siteDef?.life?.quietPhase;
     const near =
-      this.sitePhase === 'sealed'
+      quietPhase && this.sitePhase === quietPhase
         ? []
         : city
             .standingHouses()

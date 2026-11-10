@@ -759,6 +759,7 @@ export class Mission {
       lastFired: [...this.lastFired.entries()],
       spawnedCount: [...this.spawnedCount.entries()],
       holdTimers: [...this.holdTimers.entries()],
+      activatedAt: [...this.activatedAt.entries()],
       delivered: [...this.delivered.entries()],
       heritage: this.game.getVisitedHeritage(),
       deferredActivations: [...this.deferredActivations.entries()],
@@ -780,6 +781,13 @@ export class Mission {
     this.lastFired = new Map(s.lastFired);
     this.spawnedCount = new Map(s.spawnedCount);
     this.holdTimers = new Map(s.holdTimers ?? []);
+    this.activatedAt = new Map(s.activatedAt ?? []);
+    // Older saves have no timestamps: a beat that was already running restarts from the load, never
+    // completing instantly.
+    for (const o of this.def.objectives) {
+      if (o.kind !== 'wait' || this.objState.get(o.id) !== 'activo') continue;
+      if (!this.activatedAt.has(o.id)) this.activatedAt.set(o.id, this.timer);
+    }
     this.stalledHolds.clear();
     this.deferredActivations = new Map(s.deferredActivations ?? []);
     this.delivered = new Map(s.delivered ?? []);
@@ -800,6 +808,13 @@ export class Mission {
         this.objState.set(o.id, 'activo');
         repaired.add(o.id);
       }
+    }
+    // A save whose site already reached a phase must not replay the trigger that raised it.
+    const plan = this.game.sitePhasePlan;
+    for (const tr of this.def.triggers) {
+      const phase = tr.effects.find((fx) => fx.type === 'site_phase');
+      if (phase?.type !== 'site_phase') continue;
+      if (phaseOrder(plan, this.game.sitePhase) >= phaseOrder(plan, phase.phase)) this.fired.add(tr.id);
     }
     // A repaired objective must not replay the one-shot trigger that already produced its state.
     for (const id of repaired) {

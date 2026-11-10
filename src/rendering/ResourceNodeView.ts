@@ -421,11 +421,11 @@ export class ResourceNodeView {
   }
 
   setVisible(v: boolean): void {
+    // The view also holds the bare model of a dry tree, so it follows the fog/LOD in every case.
+    this.view.visible = v;
     if (this.node.kind === 'tree' && this.treeMgr && this.node.treeSlot >= 0) {
-      // A dry tree keeps its bare model: the kit instance never comes back on with the fog.
+      // A dry tree never brings its leafy kit instance back with the fog.
       this.treeMgr.setVisible(this.node.treeSlot, v && !this.dry);
-    } else {
-      this.view.visible = v;
     }
   }
 

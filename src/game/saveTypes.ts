@@ -119,6 +119,8 @@ export interface MissionSave {
   spawnedCount: [string, number][];
   /** Per-hold-objective elapsed time (optional for older saves). */
   holdTimers?: [string, number][];
+  /** Mission time each objective was activated (for `wait` beats; optional for older saves). */
+  activatedAt?: [string, number][];
   /** Per-deliver-objective amount already handed over (optional for older saves). */
   delivered?: [string, number][];
   /** Optional heritage field cards recorded during the mission. */
