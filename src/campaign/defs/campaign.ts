@@ -357,9 +357,11 @@ export const MISSIONS: MissionDef[] = [
         id: 't_a2_canal',
         condition: { type: 'objective', objectiveId: 'a2_canal', state: 'completed' },
         effects: [
+          // Winter flood: the Supe rises and the lomas green with the fog (the drought reverses it in act IV).
+          { type: 'environment', event: 'wet_season' },
           {
             type: 'dialogue',
-            text: 'El agua corre por el canal. Ahora hace falta un depósito para guardar lo que sobra.',
+            text: 'La crecida del Supe cubre la vega y la niebla devuelve el verde a las lomas. El agua corre por el canal; ahora hace falta un depósito para guardar lo que sobra.',
           },
           { type: 'objective', objectiveId: 'a2_troje', state: 'activate', announce: true },
         ],

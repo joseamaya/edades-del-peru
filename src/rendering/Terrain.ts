@@ -932,6 +932,9 @@ ${FOW_DIM_GLSL}
 
   /** Splat before any drought, so the drying is computed from it (not accumulated frame after frame). */
   private preDrought: Uint8Array | null = null;
+  /** Paint before the winter flood, restored when the season ends or the drought takes over. */
+  private preWet: Uint8Array | null = null;
+  private wetApplied = false;
 
   /**
    * Dry the valley (0 = as painted, 1 = full drought): green ground turns to sand and dry earth in
@@ -942,6 +945,8 @@ ${FOW_DIM_GLSL}
     const out = this.splat.data;
     if (!this.preDrought) {
       if (f === 0) return;
+      // The flood paint is a season, not a new baseline: undo it before the drought reads the ground.
+      if (this.wetApplied) this.restoreWetPaint();
       this.preDrought = new Uint8Array(out);
     }
     const src = this.preDrought;
@@ -970,6 +975,59 @@ ${FOW_DIM_GLSL}
       }
     }
     this.splatTexture.needsUpdate = true;
+  }
+
+  /**
+   * Winter flood (0 = as painted, 1 = full wet season): the floodplain and the riverbanks green up and
+   * the lomas take on the fog-fed green they show in the wet months. Purely visual; the drought wins.
+   */
+  setWetSeason(level: number): void {
+    if (this.preDrought) return;
+    const f = Math.max(0, Math.min(1, level));
+    const out = this.splat.data;
+    if (f === 0) {
+      if (this.wetApplied) this.restoreWetPaint();
+      return;
+    }
+    if (!this.preWet) this.preWet = new Uint8Array(out);
+    this.wetApplied = true;
+    const src = this.preWet;
+    const size = this.splat.size;
+    const cell = this.size / size;
+    for (let tz = 0; tz < size; tz++) {
+      const wz = (tz + 0.5) * cell;
+      for (let tx = 0; tx < size; tx++) {
+        const wx = (tx + 0.5) * cell;
+        const i = (tz * size + tx) * 4;
+        const patch = fbm2(wx * 0.05 + 11, wz * 0.05 + 7, 3);
+        const moist = this.data.getMoisture(wx, wz);
+        const grass = src[i]! / 255;
+        const dirt = src[i + 1]! / 255;
+        const sand = src[i + 2]! / 255;
+        const rock = src[i + 3]! / 255;
+        const wet = f * (0.25 + moist * 0.75);
+        // The lomas answer to the winter fog, not only to the river: green the rock patches.
+        const loma = Math.max(0, patch - 0.08) * 2;
+        const g = Math.min(1, grass + sand * 0.8 * wet + dirt * 0.6 * wet + rock * 0.5 * wet * loma);
+        const d = dirt * (1 - 0.2 * wet);
+        const sd = sand * (1 - 0.35 * wet);
+        const r = rock * (1 - Math.min(1, 0.5 * wet * loma));
+        const sum = Math.max(1e-6, g + d + sd + r);
+        out[i] = Math.round((g / sum) * 255);
+        out[i + 1] = Math.round((d / sum) * 255);
+        out[i + 2] = Math.round((sd / sum) * 255);
+        out[i + 3] = Math.round((r / sum) * 255);
+      }
+    }
+    this.splatTexture.needsUpdate = true;
+  }
+
+  private restoreWetPaint(): void {
+    if (this.preWet) {
+      this.splat.data.set(this.preWet);
+      this.splatTexture.needsUpdate = true;
+    }
+    this.wetApplied = false;
   }
 
   private paintSplatRegion(

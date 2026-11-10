@@ -18,6 +18,7 @@ function stubGame() {
     acts: [] as string[],
     dialogues: [] as string[],
     rituals: [] as string[],
+    environmentEvents: [] as string[],
     hasBuildings: () => true,
     getPaused: () => false,
     isCinematicActive: () => false,
@@ -42,6 +43,7 @@ function stubGame() {
     drought: 0,
     droughtInstant: false,
     startEnvironmentalEvent: (event: string, instant = false) => {
+      game.environmentEvents.push(event);
       if (event !== 'drought') return;
       game.drought = 1;
       game.droughtInstant = instant;
@@ -90,6 +92,7 @@ describe('Caral model mission', () => {
     tick(2);
     game.canalOpen = true;
     tick(2);
+    expect(game.environmentEvents).toContain('wet_season');
     build(game, BuildingKind.MILL, 1);
     tick(2);
     game.players[0].techs.add('cotton_nets');
@@ -113,6 +116,7 @@ describe('Caral model mission', () => {
 
     // Act IV: the drought starts; seal the pyramid and gather on the beach.
     expect(game.drought).toBe(1);
+    expect(game.environmentEvents).toContain('drought');
     deliverAll(mission, game);
     tick(1);
     expect(won).toBeNull();
@@ -241,6 +245,13 @@ describe('Caral model mission', () => {
       ],
     });
     expect(game.sitePhase).toBe('fill');
+  });
+
+  it('restores the winter flood from a save that already opened the canal', () => {
+    const game = stubGame();
+    const mission = new Mission(game, CARAL, () => {});
+    mission.applySave({ ...mission.toSave(), fired: ['t_a2_canal'] });
+    expect(game.environmentEvents).toContain('wet_season');
   });
 
   it('restores the drought of a save that passed act IV without replaying its effects', () => {

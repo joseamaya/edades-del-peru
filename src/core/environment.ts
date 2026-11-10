@@ -12,6 +12,8 @@ export interface EnvironmentEventDef {
 
 export const ENVIRONMENT_EVENTS = {
   drought: { labelKey: 'hud.environment.drought', duration: 40 },
+  /** The Supe's winter flood: the river rises and the lomas green with the fog. */
+  wet_season: { labelKey: 'hud.environment.wetSeason', duration: 30 },
 } as const satisfies Record<string, EnvironmentEventDef>;
 
 export type EnvironmentEventId = keyof typeof ENVIRONMENT_EVENTS;

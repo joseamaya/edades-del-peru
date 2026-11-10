@@ -1128,6 +1128,14 @@ export class Game {
 
   private applyEnvironmentalEvent(event: string, level: number): void {
     if (event === 'drought') this.applyDrought(level);
+    else if (event === 'wet_season') this.applyWetSeason(level);
+  }
+
+  /** Winter flood: the river rises and the valley and lomas green up (purely visual). */
+  private applyWetSeason(level: number): void {
+    if (this.headless) return;
+    this.terrain.setWetSeason(level);
+    this.water.setLevelOffset(0.45 * level - 0.75 * (this.environment.drought ?? 0));
   }
 
   private applyDrought(level: number): void {
@@ -1147,7 +1155,7 @@ export class Game {
     if (Math.abs(level - shown) < 0.04 && level < 1) return;
     this.environmentShown.drought = level;
     (this.terrain as { setDrought?(f: number): void }).setDrought?.(level);
-    this.water.setLevelOffset(-0.75 * level);
+    this.water.setLevelOffset(0.45 * (this.environment.wet_season ?? 0) - 0.75 * level);
     const base = this.droughtBaseAtmosphere ?? {};
     const mix = (a: number, b: number) => a + (b - a) * level;
     const sky = new THREE.Color(base.skyTint ?? '#cdd3d2').lerp(new THREE.Color('#d9c49a'), level);
