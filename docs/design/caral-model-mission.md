@@ -148,11 +148,12 @@ Dialogue speaker labels must not say "Comandante" in this mission.
   (white, ochre, red; the exact per-building colours are inferred) via `CARAL_MAYOR_PHASE_ASSET`, checked by
   `tests/architecture-kit.test.ts`.
 - **Communal construction**: after each material hand-over, a worker must hold the site for a 20 s work
-  turn. The turn consumes food from the village reserve and needs the communal store standing
-  (`consume.store: BuildingKind.MILL`); if the store is missing or empty the timer pauses (it does not
-  reset) and a warning explains why, so the communal store really feeds the builders. Stepping out of the
-  radius pauses the turn too, instead of restarting a turn whose food was already paid. Each completed turn
-  plays a burial ritual (`ritual` effect) and advances the Mayor phase.
+  turn. The turn's upkeep comes from the village food reserve (the communal store is where the community
+  keeps it) and a finished store must stand (`consume.store: BuildingKind.MILL`); if the store is missing
+  or the reserve is empty the timer pauses (it does not reset) and a warning explains why, so the communal
+  store really feeds the builders. Stepping out of the radius pauses the turn too, instead of restarting a
+  turn whose food was already paid. Each completed turn plays a burial ritual (`ritual` effect) and
+  advances the Mayor phase.
 - **Valley economy**: chacras on painted fertile ground, the canal, the communal store and the exchange: the
   `cotton_nets` technology, researched at the communal store with valley food and wood, stands for cotton going down
   to the coast. Caral sees only its own buildings, units and technologies (`allowedBuildings`,

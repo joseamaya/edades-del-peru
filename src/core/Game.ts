@@ -126,6 +126,8 @@ const NO_PLACE_NAMES: readonly MissionLabel[] = [];
 const INTRO_CAMERA = { offset: 34, fromHeight: 52, toZoom: 30, seconds: 2.6 } as const;
 /** How long m1's drought takes to dry the valley out. */
 const DROUGHT_SECONDS = 40;
+/** Drought level change that deserves a farm-yield rescale (about half a dozen steps per ramp). */
+const DROUGHT_YIELD_STEP = 0.05;
 /** Keep guaranteed fishing searches inside the authored river and map edge. */
 
 export class Game {
@@ -1172,12 +1174,10 @@ export class Game {
 
   private applyDrought(level: number): void {
     // The yield factor is continuous (see `farmYieldAt`): rescale the standing reserves whenever the
-    // drought moves enough to matter, so fields sown before it dry out with it.
-    if (
-      Math.abs(level - this.droughtFarmLevel) >= 0.05 ||
-      (level >= 1 && this.droughtFarmLevel < 1) ||
-      (level === 0 && this.droughtFarmLevel !== 0)
-    ) {
+    // drought moves enough to matter (and at either end of the ramp), so fields sown before it dry out
+    // with it. Rescaling is ratio-based, so repeating it at the same level is a no-op (load path).
+    const step = Math.abs(level - this.droughtFarmLevel);
+    if (step >= DROUGHT_YIELD_STEP || (level >= 1 && this.droughtFarmLevel < 1) || (level === 0 && step > 0)) {
       this.droughtFarmLevel = level;
       this.refreshFarmYields();
     }
@@ -1825,6 +1825,7 @@ export class Game {
     this.environment = {};
     this.environmentTargets = {};
     this.environmentShown = {};
+    this.droughtFarmLevel = 0;
     if (this.landscape) {
       this.scene.remove(this.landscape.group);
       this.landscape.dispose();

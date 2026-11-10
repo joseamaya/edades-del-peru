@@ -209,7 +209,7 @@ export class Mission {
   /** Charge a work turn's upkeep; false when the store cannot pay and the turn must wait. */
   private payHoldCost(o: ObjectiveDef, dt: number, remaining: number): boolean {
     if (!o.consume) return true;
-    if (o.consume.store && !this.hasStore(o.consume.store)) {
+    if (o.consume.store && !this.ownsFinished(o.consume.store)) {
       return this.stall(o, t('hud.toast.workTurnNeedsStore', { store: this.game.buildingName(o.consume.store) }));
     }
     const player = this.game.players[0];
@@ -221,8 +221,8 @@ export class Mission {
     return this.stall(o, t('hud.toast.constructionStalled'));
   }
 
-  /** Whether the player owns a finished building of this kind (Caral's communal store feeds the crew). */
-  private hasStore(kind: BuildingKind): boolean {
+  /** Whether player 0 owns a finished building of this kind (Caral's communal store feeds the crew). */
+  private ownsFinished(kind: BuildingKind): boolean {
     for (const b of this.game.buildings.values()) {
       if (b.owner === 0 && b.kind === kind && b.constructionComplete && !b.dead) return true;
     }

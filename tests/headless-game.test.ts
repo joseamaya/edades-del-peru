@@ -64,8 +64,12 @@ describe('drought on standing fields', () => {
     game.players[0].resources.wood = 100;
     expect(game.replantFarm(farm.id)).toBe(true);
     expect(farm.foodAmount).toBeGreaterThan(0);
-    expect(farm.foodAmount).toBeLessThanOrEqual(dry);
+    expect(farm.foodAmount).toBeLessThan(dry);
     expect(farm.foodAmount).toBeLessThan(before);
+    // The rescale is ratio-based: applying it again (the load path does) does not dry the field twice.
+    const once = farm.foodAmount;
+    game.refreshFarmYields();
+    expect(farm.foodAmount).toBe(once);
 
     game.destroy();
     setAutoStart(true);

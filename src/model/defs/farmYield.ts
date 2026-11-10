@@ -19,7 +19,7 @@ const TERRACE_BONUS = 0.8;
 const MOISTURE_BONUS = 0.4;
 const CANAL_BONUS = 0.6;
 /** Share of the potential yield lost at full drought (Caral's Act IV). */
-export const DROUGHT_YIELD_LOSS = 0.5;
+const DROUGHT_YIELD_LOSS = 0.5;
 /** How far a canal waters a farm (world units). */
 export const CANAL_REACH = 2.5;
 

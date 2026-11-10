@@ -290,7 +290,7 @@ test('the Caral objectives reveal in acts and keep the assembly hidden until the
   await expect(plaza).toContainText('Entregar materiales (50 madera) · 0/150');
 });
 
-test('an empty communal store pauses the pyramid work turn until food returns', async ({ page }) => {
+test('an empty communal store pauses the pyramid work turn until the store is back and fed', async ({ page }) => {
   await boot(page);
   const out = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -919,6 +919,36 @@ test('the Caral canal water follows the gate, the flood and the drought', async 
   expect(states.wet.gate, 'the flood runs through even with the gate closed').toBe(false);
   expect(states.drought.gate, 'the drought dries the channel and brings the plug back').toBe(true);
   expect(states.drought.color).toBe(states.closed.color);
+});
+
+test('the drought dries the irrigated field and the replanted one is not a fresh harvest', async ({ page }) => {
+  await boot(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    const canal = g.canalPath?.[2];
+    if (!canal) return null;
+    const center = [...g.buildings.values()].find((b: any) => b.kind === 'center' && b.owner === 0);
+    const spot = g.findFreeSpot(canal.x + 1.5, canal.z, 3);
+    const farm = g.placeBuilding('farm', spot.x, spot.z);
+    if (!farm) return null;
+    if (!g.isCanalOpen()) g.toggleCanal();
+    // The yield on the trace itself carries the irrigation bonus; the farm may sit on the bank.
+    const wet = g.farmYieldAt(canal.x, canal.z);
+    const wetReserve = farm.foodAmount as number;
+    g.startEnvironmentalEvent('drought');
+    for (let i = 0; i < 45; i++) g.updateEnvironment(1);
+    const dry = g.farmYieldAt(canal.x, canal.z);
+    const dryReserve = farm.foodAmount as number;
+    farm.foodAmount = 0;
+    g.players[0].resources.wood = 100;
+    g.replantFarm(farm.id);
+    return { wet, dry, wetReserve, dryReserve, replanted: farm.foodAmount as number };
+  });
+  expect(out).not.toBeNull();
+  expect(out!.dry, 'the dried field loses the canal bonus and half its potential').toBeLessThan(out!.wet * 0.5);
+  expect(out!.dryReserve).toBeLessThan(out!.wetReserve);
+  expect(out!.replanted).toBeLessThan(out!.wetReserve);
 });
 
 test('the Chacra and communal-store panels explain their historical abstractions', async ({ page }) => {

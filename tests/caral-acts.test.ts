@@ -38,9 +38,10 @@ function stubGame() {
     togglePause: () => {},
     playIntro: () => {},
     loop: { start: () => {} },
+    toasts: [] as string[],
     hud: {
       showBriefing: (_d: unknown, cb: () => void) => cb(),
-      showToast: () => {},
+      showToast: (text: string) => game.toasts.push(text),
       showDialogue: (name: string) => game.dialogues.push(name),
       showActCard: (kicker: string) => game.acts.push(kicker),
     },
@@ -262,6 +263,8 @@ describe('Caral model mission', () => {
     for (let i = 0; i < 21; i++) mission.update(1, 0);
     expect(progress()).toBe(0);
     expect(game.players[0].resources.food).toBe(100);
+    expect(game.toasts).toHaveLength(1);
+    expect(game.toasts[0]).toContain('Depósito comunal');
 
     build(game, BuildingKind.MILL, 1);
     for (let i = 0; i < 21; i++) mission.update(1, 0);
