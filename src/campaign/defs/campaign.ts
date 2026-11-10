@@ -109,7 +109,20 @@ export const MISSIONS: MissionDef[] = [
         x: 52 / CARAL_MAP_SIZE,
         z: 120 / CARAL_MAP_SIZE,
         length: 18,
-        yaw: 0.15,
+        // Intake at the Supe's west bank, then a contour trace past the valley fields. The exact
+        // trace is a game abstraction; the sources document irrigation canals without a mapped line.
+        path: [
+          { x: 68.5 / CARAL_MAP_SIZE, z: 118 / CARAL_MAP_SIZE },
+          { x: 62 / CARAL_MAP_SIZE, z: 118.6 / CARAL_MAP_SIZE },
+          { x: 57 / CARAL_MAP_SIZE, z: 119.2 / CARAL_MAP_SIZE },
+          { x: 52 / CARAL_MAP_SIZE, z: 120 / CARAL_MAP_SIZE },
+          { x: 48 / CARAL_MAP_SIZE, z: 121.5 / CARAL_MAP_SIZE },
+          { x: 45 / CARAL_MAP_SIZE, z: 125 / CARAL_MAP_SIZE },
+          { x: 43 / CARAL_MAP_SIZE, z: 130 / CARAL_MAP_SIZE },
+          { x: 41 / CARAL_MAP_SIZE, z: 136 / CARAL_MAP_SIZE },
+          { x: 41.5 / CARAL_MAP_SIZE, z: 145 / CARAL_MAP_SIZE },
+        ],
+        width: 1.8,
         initiallyOpen: false,
         irrigation: true,
         heritageId: 'caral_canal',

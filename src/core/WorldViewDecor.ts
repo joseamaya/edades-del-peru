@@ -23,12 +23,14 @@ import { CHAVIN_CITY_LAYOUT, CHAVIN_PHASE_PLAN } from '../model/defs/chavinCity'
 import { standsAt } from '../model/defs/sitePhases';
 import { fishingApproach, type Obstacle } from '../game/Pathfinding';
 import { loadDecorModel } from '../rendering/decorModels';
+import { buildCanalGeometry } from '../rendering/canal';
+import { DEFAULT_CANAL_WIDTH } from '../model/defs/canal';
 import { planProps, propCountFor } from '../model/defs/props';
 import { planWildlife, faunaCountFor } from '../model/defs/wildlife';
 import { attachFaunaKit } from '../rendering/faunaKit';
 import { BuildingKind } from '../core/types';
 import { getCiv } from '../model/defs/civs';
-import type { MissionSite } from '../campaign/types';
+import type { MissionCanal, MissionSite } from '../campaign/types';
 import { archProfileFor } from '../model/defs/architecture';
 import { LANDMARKS, PadSize, setpiecePadRadius } from '../model/defs/landmarks';
 import { getPeriod } from '../model/defs/periods';
@@ -726,12 +728,57 @@ export class WorldViewDecor {
     const group = new THREE.Group();
     group.name = 'canal';
     if (spec.heritageId) group.userData.heritageId = spec.heritageId;
-    const length = spec.length ?? 24;
-    group.position.set(
-      this.game.canalSite.x,
-      this.game.terrain.getHeight(this.game.canalSite.x, this.game.canalSite.z),
-      this.game.canalSite.z,
+    const authored = this.game.canalPath ? this.spawnAuthoredCanal(group, spec) : false;
+    if (!authored) this.spawnStraightCanal(group, spec);
+    applyFowToObject(group, this.game.fowUniforms);
+    this.game.scene.add(group);
+    this.game.canalGroup = group;
+    this.game.updateCanalVisual();
+  }
+
+  /** Earth acequia along the authored polyline: bed, water, berms and a stone plug at the intake. */
+  private spawnAuthoredCanal(group: THREE.Group, spec: MissionCanal): boolean {
+    const path = this.game.canalPath;
+    if (!path || path.length < 2) return false;
+    const width = spec.width ?? DEFAULT_CANAL_WIDTH;
+    const geometry = buildCanalGeometry(path, width, (x, z) => this.game.terrain.getHeight(x, z));
+    if (!geometry) return false;
+    const material = (color: number, roughness: number) =>
+      new THREE.MeshStandardMaterial({ color, roughness, metalness: 0, side: THREE.DoubleSide });
+    const bed = new THREE.Mesh(geometry.bed, material(0x6b5a42, 1));
+    bed.name = 'canal_bed';
+    bed.receiveShadow = true;
+    const water = new THREE.Mesh(
+      geometry.water,
+      new THREE.MeshStandardMaterial({
+        color: 0x2f6f7a,
+        roughness: 0.45,
+        metalness: 0.1,
+        transparent: true,
+        side: THREE.DoubleSide,
+      }),
     );
+    water.name = 'canal_water';
+    water.receiveShadow = true;
+    const banks = new THREE.Mesh(geometry.banks, material(0x8a7454, 1));
+    banks.name = 'canal_bank';
+    banks.castShadow = true;
+    banks.receiveShadow = true;
+    const gate = new THREE.Mesh(geometry.gate, material(0x8a8275, 0.95));
+    gate.name = 'canal_gate';
+    gate.castShadow = true;
+    gate.receiveShadow = true;
+    group.add(bed, water, banks, gate);
+    this.game.canalWater = water;
+    this.game.canalGate = gate;
+    return true;
+  }
+
+  /** Legacy straight canal for missions that have not authored a trace yet (m3, m6). */
+  private spawnStraightCanal(group: THREE.Group, spec: MissionCanal): void {
+    const site = this.game.canalSite!;
+    const length = spec.length ?? 24;
+    group.position.set(site.x, this.game.terrain.getHeight(site.x, site.z), site.z);
     group.rotation.y = spec.yaw ?? 0;
     const water = new THREE.Mesh(
       new THREE.BoxGeometry(length, 0.12, 2.2),
@@ -756,12 +803,8 @@ export class WorldViewDecor {
     gate.castShadow = true;
     gate.receiveShadow = true;
     group.add(gate);
-    this.game.canalGate = gate;
-    applyFowToObject(group, this.game.fowUniforms);
-    this.game.scene.add(group);
-    this.game.canalGroup = group;
     this.game.canalWater = water;
-    this.game.updateCanalVisual();
+    this.game.canalGate = gate;
   }
 
   spawnCulturalLandscape(): void {

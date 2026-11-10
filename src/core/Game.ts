@@ -60,8 +60,9 @@ import {
   ResourceKind,
 } from '../core/types';
 import { getCiv } from '../model/defs/civs';
+import { CANAL_PROP_MARGIN, DEFAULT_CANAL_WIDTH, canalEdgeHalfWidth } from '../model/defs/canal';
 import { RNG } from '../util/rng';
-import { distance2D } from '../util/math';
+import { distance2D, distanceToPath, smoothPolyline } from '../util/math';
 import { archProfileFor } from '../model/defs/architecture';
 import { createFowUniforms } from '../rendering/FowMaterial';
 import type { HeritageBuildingDef, HeritageBuildingId } from '../model/defs/heritage';
@@ -161,6 +162,8 @@ export class Game {
   discoveries: Discoveries | null = null;
   /** Authored canal target in world units (mission mechanic + visual). */
   canalSite: { x: number; z: number } | null = null;
+  /** Authored canal polyline in world units (intake first), when the mission defines one. */
+  canalPath: { x: number; z: number }[] | null = null;
   private canalGroup: THREE.Group | null = null;
   canalWater: THREE.Mesh | null = null;
   canalGate: THREE.Mesh | null = null;
@@ -517,6 +520,12 @@ export class Game {
         }
       }
       this.canalSite = { x: cx, z: cz };
+      this.canalPath = canal.path
+        ? smoothPolyline(
+            canal.path.map((p) => ({ x: p.x * s.mapSize, z: p.z * s.mapSize })),
+            2,
+          )
+        : null;
       this.canalOpen = canal.initiallyOpen ?? false;
     }
     this.sky = new Sky(this.scene);
@@ -753,6 +762,10 @@ export class Game {
     if (this.canalSite) {
       const length = this.missionLayout?.canal?.length ?? 24;
       if (Math.hypot(x - this.canalSite.x, z - this.canalSite.z) < length / 2 + 6) return true;
+    }
+    if (this.canalPath) {
+      const width = this.missionLayout?.canal?.width ?? DEFAULT_CANAL_WIDTH;
+      if (distanceToPath(x, z, this.canalPath) < canalEdgeHalfWidth(width) + CANAL_PROP_MARGIN) return true;
     }
     for (const field of this.caralValleyPlan?.fields ?? []) {
       const radius = field.size / 2 + VALLEY_FIELD_MARGIN;
@@ -1149,6 +1162,7 @@ export class Game {
     this.environmentShown.wet_season = level;
     this.terrain.setWetSeason(level);
     this.water.setLevelOffset(waterLevelOffset(this.environment));
+    this.updateCanalVisual();
   }
 
   private applyDrought(level: number): void {
@@ -1169,6 +1183,7 @@ export class Game {
     this.environmentShown.drought = level;
     (this.terrain as { setDrought?(f: number): void }).setDrought?.(level);
     this.water.setLevelOffset(waterLevelOffset(this.environment));
+    this.updateCanalVisual();
     const base = this.droughtBaseAtmosphere ?? {};
     const mix = (a: number, b: number) => a + (b - a) * level;
     const sky = new THREE.Color(base.skyTint ?? '#cdd3d2').lerp(new THREE.Color('#d9c49a'), level);
@@ -1553,7 +1568,7 @@ export class Game {
       if (b.isFarm) b.applyTerrainYield(this.farmYieldAt(b.pos.x, b.pos.z));
     }
     this.hud?.showToast(
-      this.canalOpen ? 'Compuerta abierta: los andenes cercanos riegan mejor' : 'Compuerta cerrada',
+      this.canalOpen ? 'Compuerta abierta: las chacras cercanas riegan mejor' : 'Compuerta cerrada',
       this.canalOpen ? 'success' : 'info',
     );
     return this.canalOpen;
@@ -1808,6 +1823,7 @@ export class Game {
       disposeStaticGltf(this.canalGroup);
       this.canalGroup = null;
       this.canalSite = null;
+      this.canalPath = null;
     }
     if (this.scenarioDecor) {
       this.scene.remove(this.scenarioDecor);
@@ -1865,6 +1881,10 @@ export class Game {
     if (this.terrain.isWater(x, z) || !this.terrain.isBuildable(x, z)) return false;
     // keep placement on ground units can reach (same slope limit as the nav mesh)
     if (this.terrain.getSlope(x, z) > MAX_WALKABLE_SLOPE) return false;
+    if (this.canalPath) {
+      const width = this.missionLayout?.canal?.width ?? DEFAULT_CANAL_WIDTH;
+      if (distanceToPath(x, z, this.canalPath) < canalEdgeHalfWidth(width) + r) return false;
+    }
     if (this.siteBlocksConstruction(x, z, r)) return false;
     for (let dx = -r; dx <= r; dx += 1.2) {
       for (let dz = -r; dz <= r; dz += 1.2) {

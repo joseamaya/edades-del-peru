@@ -14,6 +14,7 @@ import { detachBuilding, detachUnit, modernizeUnit } from '../rendering/RenderSy
 import { elevationDamageMultiplier, ArmorProfile } from '../game/combat';
 import { Resources, PlayerState, UnitKind, BuildingKind, OrderKind, OrderTarget, RESOURCE_KEYS } from '../core/types';
 import { distance2D } from '../util/math';
+import { CANAL_DRY_DROUGHT, CANAL_WET_FLOW, canalIrrigationAt } from '../model/defs/canal';
 import { BUILDING_INFO } from '../model/defs/buildings';
 import { getUnitStats, DamageClass, unitClassFor } from '../model/defs/units';
 import { getTech } from '../model/defs/techs';
@@ -83,7 +84,14 @@ export class RuntimeController {
 
   authoredCanalAt(x: number, z: number): number {
     const spec = this.game.missionLayout?.canal;
-    if (!this.game.canalOpen || !spec?.irrigation || !this.game.canalSite) return 0;
+    if (!spec?.irrigation) return 0;
+    const path = this.game.canalPath;
+    if (path && path.length >= 2) {
+      if (!this.game.canalOpen) return 0;
+      if ((this.game.environment.drought ?? 0) >= CANAL_DRY_DROUGHT) return 0;
+      return canalIrrigationAt(path, x, z);
+    }
+    if (!this.game.canalOpen || !this.game.canalSite) return 0;
     const yaw = spec.yaw ?? 0;
     const dx = x - this.game.canalSite.x;
     const dz = z - this.game.canalSite.z;
@@ -96,11 +104,20 @@ export class RuntimeController {
   updateCanalVisual(): void {
     if (!this.game.canalWater) return;
     const material = this.game.canalWater.material as THREE.MeshStandardMaterial;
-    material.opacity = this.game.canalOpen ? 0.82 : 0.38;
-    material.color.setHex(this.game.canalOpen ? 0x2f6f7a : 0x5c4a33);
+    const authored = !!this.game.canalPath;
+    const drought = this.game.environment.drought ?? 0;
+    const wet = this.game.environment.wet_season ?? 0;
+    const flowing = authored
+      ? drought < CANAL_DRY_DROUGHT && (this.game.canalOpen || wet > CANAL_WET_FLOW)
+      : this.game.canalOpen;
+    material.opacity = flowing ? 0.82 : authored ? 0.32 : 0.38;
+    material.color.setHex(flowing ? 0x2f6f7a : 0x5c4a33);
     material.transparent = true;
     material.needsUpdate = true;
-    if (this.game.canalGate) this.game.canalGate.position.y = this.game.canalOpen ? 1.55 : 0.8;
+    if (this.game.canalGate) {
+      if (authored) this.game.canalGate.visible = !flowing;
+      else this.game.canalGate.position.y = this.game.canalOpen ? 1.55 : 0.8;
+    }
   }
 
   /** Train a unit in a completed building of player 0. */

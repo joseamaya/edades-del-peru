@@ -42,6 +42,35 @@ export function distanceToPolyline(x: number, z: number, path: Polyline): number
   return best;
 }
 
+/** Shortest XZ distance from a point to a polyline of object points. */
+export function distanceToPath(x: number, z: number, path: readonly { x: number; z: number }[]): number {
+  let best = Infinity;
+  for (let i = 1; i < path.length; i++) {
+    best = Math.min(best, distanceToSegment(x, z, path[i - 1], path[i]));
+  }
+  return best;
+}
+
+/** Chaikin corner-cutting: smooth a polyline while keeping both endpoints. */
+export function smoothPolyline(
+  points: readonly { x: number; z: number }[],
+  iterations = 2,
+): { x: number; z: number }[] {
+  let out = points.map((p) => ({ ...p }));
+  for (let k = 0; k < iterations && out.length > 1; k++) {
+    const next = [out[0]];
+    for (let i = 0; i < out.length - 1; i++) {
+      const a = out[i];
+      const b = out[i + 1];
+      next.push({ x: a.x * 0.75 + b.x * 0.25, z: a.z * 0.75 + b.z * 0.25 });
+      next.push({ x: a.x * 0.25 + b.x * 0.75, z: a.z * 0.25 + b.z * 0.75 });
+    }
+    next.push(out[out.length - 1]);
+    out = next;
+  }
+  return out;
+}
+
 /**
  * Terrain slope magnitude (0 flat .. 1 cliff) from neighbour height samples at
  * distance `d`. Shared by `Terrain.getSlope` and `Pathfinder.bakeTerrain` so the

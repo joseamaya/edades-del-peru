@@ -72,7 +72,7 @@ Definition of Done and the building audit see
   `Game.pickHeritage` raycasts the authored site and canal, `Game.getSelectedHeritage` drives the HUD
   panel, and `Game.visitHeritage` records the optional visit; all six Upper-Half visits complete the optional
   `obj_complejos` bonus. The canal card exposes the gate operation, which raises the authored irrigation yield
-  for nearby Andenes and completes `obj_riego`. The cards are educational overlays, not construction
+  along Caral's canal trace (nearby chacras) and completes `obj_riego`. The cards are educational overlays, not construction
   mechanics. The player-owned Andén and Troje panels use the mission-scoped cards in
   `src/model/defs/buildingCards.ts` to state that both names are gameplay abstractions. The Plaza
   Central card exposes `startAssembly()` once `obj_complejo` is complete, which activates the hidden
@@ -84,7 +84,7 @@ Definition of Done and the building audit see
   The mission uses the `trade` heritage operation at the Huaca de la Luna and `recordDelivery` fills required
   `deliver` goals before optional ones. See `docs/design/moche-sacred-site.md`.
 - **Wari network**: `m4_wari` loads `wari_site` and uses the `network` objective (`ObjectiveDef.nodes`) to require a completed `Mercado` at each frontier node. `MissionLayout.roads` draws terrain-following, visual-only ribbons with `SettlementOverlay` (`Game.spawnMissionRoads`). The frontier hold is gated by the network; there is no active enemy. Source and export live in `art-src/blender/wari/` and `scripts/blender/build_wari_site.py`. See `docs/design/wari-sacred-site.md`.
-- **Mission canals**: `MissionLayout.canal` (`src/campaign/types.ts`) gives a normalized canal site; `Game.spawnCanal` builds the visual water/stones and reserves the footprint, while `MissionPoint.ref: 'canal'` resolves the site for a `reach` objective. m1 adds a closed communal gate whose card operation raises `farmYieldAt` for nearby Andenes; m6 uses the canal as the Chan Chan surrender target. The canal is visual-only and has no pathfinding obstacle. See `tests/e2e/campaign.spec.ts` and `tests/e2e/caral-city.spec.ts`.
+- **Mission canals**: `MissionLayout.canal` (`src/campaign/types.ts`) gives a normalized canal site and, optionally, an authored `path`; `Game.spawnCanal` builds relief-following ribbons (`src/rendering/canal.ts`) when the path exists, or the legacy straight box for m3/m6. `MissionPoint.ref: 'canal'` resolves the site for a `reach` objective; `canalIrrigationAt` measures the farm bonus along the trace and `Game.canPlace`/`isReserved` keep buildings and props off the channel. m1's closed communal gate raises `farmYieldAt` along the trace; m6 uses the canal as the Chan Chan surrender target. The canal has no pathfinding obstacle. See `tests/canal.test.ts`, `tests/e2e/campaign.spec.ts` and `tests/e2e/caral-city.spec.ts`.
 - **Building/unit materials are AI-overridable**: `mat()` (`ProceduralModel.ts`) maps a `TexKind` to an
   AI-generated material via `TEX_GEN` (e.g. `adobe → wall_adobe`, `brick → wall_brick`, `roof → tile`,
   `thatch → roof_thatch`, `textile_inca → textile_inca`); the architecture profile (`archProfileFor`) picks the
@@ -433,6 +433,12 @@ Definition of Done and the building audit see
   unit — before helping the nearest site or farming the field it just built. AI seats keep their own economy
   planning. This changed the simulation, so `REPLAY_VERSION` is 22 (issue 381); guarded by
   `tests/gather-retarget.test.ts` and `tests/e2e/campaign-playtest.spec.ts`.
+- **Authored canal traces** (issue 384): `MissionCanal.path` (normalized) becomes `Game.canalPath` in world
+  units; `canalIrrigationAt` measures the farm bonus by distance to the trace, `Game.canPlace` keeps buildings
+  out of the channel, `Game.isReserved` keeps props out, and `spawnCanal` builds relief-following ribbons plus a
+  merged stone plug (`src/rendering/canal.ts`) instead of boxes. Missions without `path` keep the legacy
+  straight box (m3/m6). This changes Caral's irrigation and placement, so `REPLAY_VERSION` is 24; guarded by `tests/canal.test.ts`
+  and `tests/e2e/caral-city.spec.ts`.
 - **Victory/defeat (conquest)**: a player is defeated only when **no building of theirs remains** (`Game.hasBuildings`),
   in both skirmish (`resolveConquest` via `Game.checkVictory`) and campaign (`Mission.checkBaseLost`). Do not go back to "losing the
   Plaza Mayor ends the match": a full base with army must survive the loss of its center.

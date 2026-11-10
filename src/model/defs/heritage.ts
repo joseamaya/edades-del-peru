@@ -145,7 +145,7 @@ export const HERITAGE_BUILDINGS: Record<HeritageBuildingId, HeritageBuildingDef>
     sector: 'Caral Bajo',
     role: 'Infraestructura agrícola',
     summary:
-      'Los canales de riego llevaban agua del valle a los campos. Abrir la compuerta aumenta el rendimiento de los andenes cercanos; es una abstracción jugable del riego documentado.',
+      'Los canales de riego llevaban agua del valle a los campos. Abrir la compuerta aumenta el rendimiento de las chacras cercanas; es una abstracción jugable del riego documentado.',
     confidence: 'documentado; trazado y compuerta abstraídos',
     citation: 'Dossier de Caral · Zona Arqueológica Caral',
     operation: 'toggle-canal',
