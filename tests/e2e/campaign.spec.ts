@@ -161,13 +161,15 @@ test('Caral guarantees coastal fishing grounds for the tutorial', async ({ page 
   await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
     timeout: 30_000,
   });
-  const fish = await page.evaluate(
-    () =>
-      [...(window as unknown as { game: any }).game.resourceNodes.values()].filter(
-        (n: any) => n.kind === 'fishing' && !n.dead,
-      ).length,
-  );
-  expect(fish).toBeGreaterThan(0);
+  const state = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    const fish = [...g.resourceNodes.values()].filter((n: any) => n.kind === 'fishing' && !n.dead) as any[];
+    const sea = fish.filter((n: any) => n.pos.x < 30);
+    return { count: fish.length, sea: sea.length };
+  });
+  expect(state.count, 'the guaranteed supply is eight checked banks').toBeGreaterThanOrEqual(8);
+  expect(state.sea, 'the coast of Áspero has its own banks, not only the river').toBeGreaterThanOrEqual(3);
 });
 
 test('the Caral mission closes with a narrative epilogue, not a quiz', async ({ page }) => {

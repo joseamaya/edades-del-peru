@@ -32,6 +32,7 @@ describe('headless simulation entities', () => {
       getPlayer: () => ({}) as never,
       event: () => {},
       gather: () => {},
+      recordHarvest: () => {},
       worldSize: 128,
       period: 0,
       unitSpawn: () => false,

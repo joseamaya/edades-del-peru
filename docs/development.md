@@ -393,7 +393,7 @@ Definition of Done and the building audit see
   (`settings.rotateCamera`). Edge scrolling is **progressive** (0 at the zone edge, ±1 at the border) and every pan
   vector is **normalized** (a diagonal is not faster than an axis). The **wheel zooms toward the ground point under
   the cursor** (`groundOffsetAtNdc`: exact ray/plane `y=0` intersection, perspective included; anchored on the
-  previous *desired* zoom so repeated wheel events telescope), and the **middle-drag applies the ground-offset
+  previous _desired_ zoom so repeated wheel events telescope), and the **middle-drag applies the ground-offset
   difference between successive cursor positions** (pitch/perspective corrected) with the target **snapped while
   dragging**, so the map follows the hand without the pan damping. Inputs otherwise move `desiredTarget`; `update`
   damps toward it (the scripted flight sets the framing directly). The zoom-out limit is **derived from map size,
@@ -509,6 +509,19 @@ Definition of Done and the building audit see
   And `Unit.updateAttack` closes in directly whenever its route is **exhausted** (`pathIdx >= path.length`), not
   only on an empty route: a building's goal cell is not walkable, so the path can stop a couple of cells short
   and a melee unit would otherwise stall out of range (worst with a tight cluster).
+- **Fishing grounds and the harvest ledger** (issue 378): a fishing node sits in water, so the approach check
+  must let the line of sight cross water (`ApproachOptions.allowWater`) while the stand point stays on walkable
+  land; without it `reachableToNode`/`findApproachPath` reject every bank and `tryAlternativeGatherNode` can
+  never run. Procedural fishing banks are placed at pathfinder cell centres and must expose
+  `FISHERS_PER_GROUND` stand cells in the main component; mission layouts can pin authored banks
+  (`MissionLayout.fishing`), which are validated against the same capacity rule. A
+  group ordered to fish is spread over nearby banks (max `FISHERS_PER_GROUND` each) and each fisher gets a
+  rotating stand cell, so eight workers do not pile on one point. Abandoned gather orders (no route or the
+  movement watchdog) deliver a carried load and remember the failed bank for a short grace window. Act
+  `gather` objectives can read the monotonic `Game.harvested` ledger by node kind (`ObjectiveDef.fromNode`)
+  instead of the resource balance, so spending food never rewinds progress. This changed the simulation, so
+  `REPLAY_VERSION` is 21. Guarded by `tests/fishing-grounds.test.ts`, `tests/gather-retarget.test.ts`,
+  `tests/pathfinding.test.ts` and `tests/e2e/campaign-playtest.spec.ts`.
 - **Spawn points must share a walkable component**: `Game.spawnPointAround` tries several angles/radii
   around a building and keeps only cells in the main component (or the rally point's component), falling back
   to `nearestWalkablePoint(..., cols, component)` over the whole map. Initial units (`mainComponentSpot`),

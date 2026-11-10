@@ -9,6 +9,16 @@ export interface PathGrid {
   walkable: Uint8Array;
 }
 
+/** Optional stand-point search rules. */
+export interface ApproachOptions {
+  /** Let the line of sight cross water (fishing grounds sit offshore). */
+  allowWater?: boolean;
+  /** Rotate the candidate list so a group spreads over several stand cells. */
+  slot?: number;
+  /** Only count stand cells in this walkable component (for placement checks). */
+  component?: number;
+}
+
 export type Obstacle =
   | { x: number; z: number; radius: number; w?: never; d?: never }
   | { x: number; z: number; w: number; d: number; radius?: never };
@@ -51,6 +61,11 @@ interface StandCandidate {
  * ~0.4–3.6% of land cells exceed it (valleys/terraces are well below).
  */
 export const MAX_WALKABLE_SLOPE = 0.5;
+
+/** Stand-point search rules for a fishing ground: the shoal sits in water. */
+export function fishingApproach(opts: { slot?: number; component?: number } = {}): ApproachOptions {
+  return { allowWater: true, ...opts };
+}
 
 /** Reusable min binary heap (avoids O(n) forEach per iteration). */
 class MinHeap {
@@ -122,6 +137,8 @@ export class Pathfinder {
   private closed: Uint8Array;
   /** Terrain-only blockage (water/steep), kept so `rebuild` does not lose it. */
   private terrainBlocked: Uint8Array | null = null;
+  /** Terrain-only water cells (a subset of `terrainBlocked`); approach lines may cross them. */
+  private waterMask: Uint8Array | null = null;
   /** Static site geometry mask (walls/ruins) that must survive obstacle rebuilds. */
   private staticBlocked: Uint8Array | null = null;
   /** Connected components of walkable cells, recomputed lazily per revision. */
@@ -261,6 +278,7 @@ export class Pathfinder {
   bakeTerrain(heightFn: (x: number, z: number) => number, waterLevel: number): void {
     const { cols, cell } = this.grid;
     this.grid.walkable.fill(1);
+    this.waterMask = new Uint8Array(cols * cols);
     for (let z = 0; z < cols; z++) {
       for (let x = 0; x < cols; x++) {
         const wx = x * cell + cell / 2;
@@ -268,6 +286,7 @@ export class Pathfinder {
         const h = heightFn(wx, wz);
         // same scale as Terrain.getSlope (shared helper)
         const slope = terrainSlope(heightFn, wx, wz, cell);
+        if (h < waterLevel + 0.35) this.waterMask[z * cols + x] = 1;
         if (h < waterLevel + 0.35 || slope > MAX_WALKABLE_SLOPE) {
           this.grid.walkable[z * cols + x] = 0;
         }
@@ -500,8 +519,9 @@ export class Pathfinder {
     tz: number,
     standRadius: number,
     owner?: number,
+    opts?: ApproachOptions,
   ): { x: number; z: number }[] {
-    for (const candidate of this.orderedApproachCandidates(sx, sz, tx, tz, standRadius, owner)) {
+    for (const candidate of this.orderedApproachCandidates(sx, sz, tx, tz, standRadius, owner, opts)) {
       const path = this.pathfind(sx, sz, candidate.centerX, candidate.centerZ, owner);
       if (path.length === 0) continue;
       const last = path[path.length - 1];
@@ -511,6 +531,20 @@ export class Pathfinder {
       return path;
     }
     return [];
+  }
+
+  /**
+   * Number of distinct walkable, approachable stand cells within `standRadius` of a target.
+   * Used to validate fishing-ground placement: a node whose shore only offers one cell
+   * cannot feed a group of fishers.
+   */
+  standCapacity(tx: number, tz: number, standRadius: number, owner?: number, opts?: ApproachOptions): number {
+    const cells = new Set<string>();
+    for (const candidate of this.standCandidates(tx, tz, tx, tz, standRadius, owner, opts?.allowWater)) {
+      if (opts?.component && this.componentAt(candidate.centerX, candidate.centerZ) !== opts.component) continue;
+      cells.add(candidate.centerX + ',' + candidate.centerZ);
+    }
+    return cells.size;
   }
 
   /**
@@ -525,6 +559,7 @@ export class Pathfinder {
     tz: number,
     standRadius: number,
     owner?: number,
+    allowWater = false,
   ): StandCandidate[] {
     const { cols, cell } = this.grid;
     const candidates: StandCandidate[] = [];
@@ -563,7 +598,7 @@ export class Pathfinder {
           standZ = tz + (dz / targetDist) * standDist;
         }
         if (!this.isWalkable(standX, standZ, owner)) continue;
-        if (!this.approachClear(tx, tz, standX, standZ, owner)) continue;
+        if (!this.approachClear(tx, tz, standX, standZ, owner, allowWater)) continue;
         candidates.push({
           x: standX,
           z: standZ,
@@ -584,12 +619,20 @@ export class Pathfinder {
    * reachable by A*), so it can reject unreachable nodes without an A* search while
    * preserving the node the caller would otherwise have picked.
    */
-  reachableToNode(sx: number, sz: number, tx: number, tz: number, standRadius: number, owner?: number): boolean {
+  reachableToNode(
+    sx: number,
+    sz: number,
+    tx: number,
+    tz: number,
+    standRadius: number,
+    owner?: number,
+    opts?: ApproachOptions,
+  ): boolean {
     const start = this.resolveComponent(sx, sz, this.reachCells());
     if (start === 0) return false;
     const comp = this.ensureComponents();
     const { cols } = this.grid;
-    for (const c of this.orderedApproachCandidates(sx, sz, tx, tz, standRadius, owner)) {
+    for (const c of this.orderedApproachCandidates(sx, sz, tx, tz, standRadius, owner, opts)) {
       if (comp[this.clampCell(c.z) * cols + this.clampCell(c.x)] === start) return true;
     }
     return false;
@@ -607,9 +650,10 @@ export class Pathfinder {
     tz: number,
     standRadius: number,
     owner?: number,
+    opts?: ApproachOptions,
   ): StandCandidate[] {
     if (!(standRadius > 0)) return [];
-    const candidates = this.standCandidates(sx, sz, tx, tz, standRadius, owner);
+    const candidates = this.standCandidates(sx, sz, tx, tz, standRadius, owner, opts?.allowWater);
     candidates.sort((a, b) => a.targetDist - b.targetDist || a.startDist - b.startDist);
     const tried = new Set<string>();
     const ordered: StandCandidate[] = [];
@@ -620,6 +664,12 @@ export class Pathfinder {
       ordered.push(candidate);
       if (ordered.length >= MAX_APPROACH_ATTEMPTS) break;
     }
+    // A group ordered to one node would otherwise all path to the nearest cell and shove
+    // each other out of harvest range. Rotating by a stable per-unit slot spreads them.
+    if (opts?.slot !== undefined && ordered.length > 1) {
+      const k = Math.abs(Math.floor(opts.slot)) % ordered.length;
+      ordered.push(...ordered.splice(0, k));
+    }
     return ordered;
   }
 
@@ -627,9 +677,10 @@ export class Pathfinder {
    * Line of sight from a stand point toward a blocked target, ignoring the
    * target's own blocked cell (the worker stops at harvest range and never
    * enters it). A wall between the stand cell and the target cell rejects the
-   * candidate, so a worker cannot harvest through a building.
+   * candidate, so a worker cannot harvest through a building. Fishing grounds
+   * opt into crossing water, which is not a wall between the shore and the shoal.
    */
-  private approachClear(tx: number, tz: number, sx: number, sz: number, owner?: number): boolean {
+  private approachClear(tx: number, tz: number, sx: number, sz: number, owner?: number, allowWater = false): boolean {
     const { cell } = this.grid;
     const targetCx = Math.floor(tx / cell);
     const targetCz = Math.floor(tz / cell);
@@ -641,9 +692,21 @@ export class Pathfinder {
       const x = tx + ((sx - tx) / dist) * s;
       const z = tz + ((sz - tz) / dist) * s;
       if (Math.floor(x / cell) === targetCx && Math.floor(z / cell) === targetCz) break;
-      if (!this.isWalkable(x, z, owner)) return false;
+      if (this.isWalkable(x, z, owner)) continue;
+      if (allowWater && this.isWaterAt(x, z)) continue;
+      return false;
     }
     return true;
+  }
+
+  /** Terrain-only water test (wet beach and open water); ignores obstacles and gates. */
+  isWaterAt(wx: number, wz: number): boolean {
+    if (!this.waterMask) return false;
+    const { cols, cell } = this.grid;
+    const x = Math.floor(wx / cell);
+    const z = Math.floor(wz / cell);
+    if (x < 0 || z < 0 || x >= cols || z >= cols) return false;
+    return this.waterMask[z * cols + x] === 1;
   }
 
   private heuristic(x: number, z: number, gx: number, gz: number): number {

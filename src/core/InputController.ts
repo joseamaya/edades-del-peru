@@ -486,9 +486,12 @@ export class InputController {
       return;
     }
     this.markOrder(target, 'gather');
-    for (const u of workers) {
-      this.game.orderUnit(u, { kind: OrderKind.GATHER, entityId }, !this.shiftQueue);
-    }
+    this.game.executeCommand({
+      kind: 'order',
+      unitIds: workers.map((u) => u.id),
+      order: { kind: OrderKind.GATHER, entityId },
+      clear: !this.shiftQueue,
+    });
     const others = units.filter((u) => u.kind !== UnitKind.WORKER);
     if (others.length > 0) this.issueMoveFormation(others, target);
     this.game.audio.order();

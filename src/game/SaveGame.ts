@@ -44,6 +44,7 @@ export function serializeGame(game: Game): SaveData {
     tutorial: game.tutorial?.toSave(),
     matchStats: game.matchStats.toSave(),
     markets: game.markets.map(serializeMarket),
+    harvested: game.harvestedSave(),
   };
 }
 
@@ -62,6 +63,20 @@ export function validateSave(raw: unknown): SaveData | null {
     const stats = r.matchStats as { elapsed?: unknown; samples?: unknown; gathered?: unknown };
     if (!stats || typeof stats.elapsed !== 'number' || !Array.isArray(stats.samples) || !Array.isArray(stats.gathered))
       return null;
+  }
+  if (r.harvested !== undefined) {
+    const ledger = r.harvested;
+    if (!Array.isArray(ledger)) return null;
+    for (const row of ledger) {
+      if (
+        !Array.isArray(row) ||
+        row.length !== 3 ||
+        typeof row[0] !== 'number' ||
+        typeof row[1] !== 'string' ||
+        typeof row[2] !== 'number'
+      )
+        return null;
+    }
   }
   return raw as SaveData;
 }

@@ -133,6 +133,11 @@ Dialogue speaker labels must not say "Comandante" in this mission.
 - **Áspero**: the `huaca_idolos` kit piece (three superposed terraces) and six fishing houses with net
   racks and gourd floats (`ASPERO_LAYOUT`), baked with the city in one `CaralCity`. Fishing grounds lie in
   the sea; a worker casts and drags a cotton net (`FishingNetFx`) and keeps fishing nearby grounds.
+- **Fishing supply**: eight checked banks (three authored sea grounds off Áspero plus river grounds), each
+  with at least four walkable stand cells and a 280–380 reserve. The total (≈2.8k food) keeps the coast and
+  the Act II cotton nets meaningful through acts II–IV without turning the shoals into an infinite source;
+  the banks still deplete if the community over-fishes them, as the dossier's seasonal river and marine
+  record implies.
 - **Phased Pyramid Mayor**: foundation, fill, finished and in use (`Game.setSitePhase`); the other
   monuments appear with their phase (`CARAL_HERITAGE_SINCE`) and only block and answer clicks once built.
   The finished plaster is white; the in-use phase swaps the Mayor to the documented palette
@@ -166,8 +171,9 @@ Dialogue speaker labels must not say "Comandante" in this mission.
 The 256 m sea-to-terrace transect is huge in AoE2 terms (64 town centres across), so the mission halves every
 unit's base speed with `MissionDef.unitSpeedScale: 0.5`: workers walk at 1.2 m/s and scouts at 2.7, and the
 full crossing takes ≈3:33 (0.30 centres/s, just above 0 A.D.'s 0.28 and far below the previous 0.6; AoE2 sits
-at 0.20). The real-command playtest completes the four acts in ≈20 min of bot time with its eight deliveries,
-which is the pacing lower bound; a learning player needs the 30–40 min the dossier targets.
+at 0.20). The real-command playtest completes the four acts in ≈25–28 min of bot time with its eight
+deliveries (Act I now counts only food caught fishing, so the 300-food goal is a real fishing goal), which is
+the pacing lower bound; a learning player needs the 30–40 min the dossier targets.
 
 The scale is per mission and stays at 1 for the rest of the campaigns until their own pacing decision;
 Chavín takes it together with its 256 m map.

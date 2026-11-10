@@ -19,9 +19,9 @@ import { RTSCamera } from './Camera';
 import { GameLoop } from './GameLoop';
 import { Fow } from '../game/Fow';
 import { FowTexture } from '../rendering/FowTexture';
-import { Pathfinder, MAX_WALKABLE_SLOPE } from '../game/Pathfinding';
+import { Pathfinder, MAX_WALKABLE_SLOPE, fishingApproach } from '../game/Pathfinding';
 import { planStartSettlement } from '../sim/WorldBuilder';
-import { Unit, UnitContext } from '../entities/Unit';
+import { Unit, UnitContext, HARVEST_STAND_RANGE, FISHERS_PER_GROUND } from '../entities/Unit';
 import { Building } from '../entities/Building';
 import { ResourceNode } from '../entities/ResourceNode';
 import { clearResourceCaches } from '../rendering/ResourceNodeView';
@@ -53,9 +53,11 @@ import {
   UnitKind,
   BuildingKind,
   Order,
+  OrderKind,
   OrderTarget,
   Team,
   RESOURCE_KEYS,
+  ResourceKind,
 } from '../core/types';
 import { getCiv } from '../model/defs/civs';
 import { RNG } from '../util/rng';
@@ -103,7 +105,7 @@ import { RuntimeController, type DeathFx } from './RuntimeController';
 import { StartBaseBuilder } from './StartBaseBuilder';
 import { SelectionController } from './SelectionController';
 import { stateHashOf } from '../game/stateHash';
-import type { SaveData } from '../game/saveTypes';
+import type { SaveData, HarvestLedgerRow } from '../game/saveTypes';
 
 /** When false the main loop does not auto-start, so tests can drive fixed steps from step 0. */
 let autoStart = true;
@@ -267,6 +269,11 @@ export class Game {
   /** Simulation step counter (fixed 60Hz ticks), used to time recorded commands. */
   stepCount = 0;
   readonly matchStats = new MatchStatsCollector();
+  /**
+   * Monotonic amount harvested per player and node kind. Missions use it to count e.g. only
+   * food fished (issue 378); unlike `resources` it never goes down when units are trained.
+   */
+  readonly harvested = new Map<number, Map<ResourceKind, number>>();
   markets: MarketState[] = [];
   /** Last finished/abandoned replay, kept for the post-game action. */
   lastReplay: Replay | null = null;
@@ -1324,7 +1331,82 @@ export class Game {
     // no live input during playback: it would desync the replay
     if (this.replay && record) return false;
     if (record && this.recorder) this.recorder.record(this.stepCount, cmd);
+    // A group fishing order is spread over nearby banks before the generic per-unit dispatch;
+    // the recorded command stays the single group order, so replays run the same distribution.
+    if (cmd.kind === 'order' && cmd.order.kind === OrderKind.GATHER && cmd.order.entityId !== undefined) {
+      if (this.distributeFishingOrder(cmd.unitIds, cmd.order.entityId, cmd.clear)) return true;
+    }
     return this.commandProcessor.apply(cmd);
+  }
+
+  /**
+   * Spread a group ordered to fish over the clicked bank and the nearby ones it cannot all
+   * fit on. Returns false (leaving the order untouched) when this is not a pure fishing group.
+   */
+  private distributeFishingOrder(unitIds: number[], entityId: number, clear: boolean): boolean {
+    const target = this.resourceNodes.get(entityId);
+    if (!target || target.dead || target.kind !== 'fishing' || unitIds.length < 2) return false;
+    const units: Unit[] = [];
+    for (const id of unitIds) {
+      const u = this.units.get(id);
+      if (!u || u.dead) continue;
+      if (u.kind !== UnitKind.WORKER) return false;
+      units.push(u);
+    }
+    if (units.length < 2) return false;
+    const owner = units[0].owner;
+    if (units.some((u) => u.owner !== owner)) return false;
+    const pf = this.pathfinder;
+    const component = pf.mainComponent();
+    const group = new Set(units.map((u) => u.id));
+    const busy = new Map<number, number>();
+    for (const u of this.units.values()) {
+      if (u.dead || u.owner !== owner || group.has(u.id)) continue;
+      // Count every queued gather target, not just the front order: a fisher carrying a load
+      // back to the dropsite still holds a slot at its bank.
+      const seen = new Set<number>();
+      for (const order of u.orderQueue) {
+        if (order.kind !== OrderKind.GATHER || order.entityId === undefined || seen.has(order.entityId)) continue;
+        seen.add(order.entityId);
+        busy.set(order.entityId, (busy.get(order.entityId) ?? 0) + 1);
+      }
+    }
+    const all = [...this.resourceNodes.values()]
+      .filter((n) => n.kind === 'fishing' && !n.dead && !n.depleted && (n.amount ?? 0) > 0)
+      .map((n) => {
+        const capacity = pf.standCapacity(n.pos.x, n.pos.z, HARVEST_STAND_RANGE, owner, fishingApproach({ component }));
+        const free = Math.max(0, Math.min(FISHERS_PER_GROUND, capacity) - (busy.get(n.id) ?? 0));
+        return { node: n, free };
+      });
+    if (all.length === 0) return false;
+    // The clicked bank is the anchor: workers closest to it fill it first, the rest spill over.
+    const queue = [...units].sort(
+      (a, b) =>
+        distance2D(a.pos.x, a.pos.z, target.pos.x, target.pos.z) -
+          distance2D(b.pos.x, b.pos.z, target.pos.x, target.pos.z) || a.id - b.id,
+    );
+    const dist = (node: { pos: { x: number; z: number } }, p: { x: number; z: number }): number =>
+      distance2D(node.pos.x, node.pos.z, p.x, p.z);
+    const reachable = (unit: Unit, node: { pos: { x: number; z: number } }): boolean =>
+      pf.reachableToNode(unit.pos.x, unit.pos.z, node.pos.x, node.pos.z, HARVEST_STAND_RANGE, owner, fishingApproach());
+    for (const worker of queue) {
+      const ranked = [...all].sort((a, b) => {
+        const aFree = a.free > 0 ? 1 : 0;
+        const bFree = b.free > 0 ? 1 : 0;
+        if (aFree !== bFree) return bFree - aFree;
+        // Fill the clicked bank first; when every bank is full, spread the overflow evenly.
+        if (aFree && a.node.id === target.id) return -1;
+        if (aFree && b.node.id === target.id) return 1;
+        return b.free - a.free || dist(a.node, worker.pos) - dist(b.node, worker.pos) || a.node.id - b.node.id;
+      });
+      const picked =
+        ranked.find((c) => c.free > 0 && reachable(worker, c.node)) ??
+        ranked.find((c) => reachable(worker, c.node)) ??
+        ranked[0];
+      picked.free--;
+      worker.issueOrder({ kind: OrderKind.GATHER, entityId: picked.node.id }, clear);
+    }
+    return true;
   }
 
   /** Create and attach a unit view from the current build context. */
@@ -1369,7 +1451,43 @@ export class Game {
       players: this.players,
       rngState: this.rng.getState(),
       markets: this.markets.map((market) => market.pressure),
+      harvested: this.harvestedSave(),
     });
+  }
+
+  /** Record a harvest into the monotonic ledger (see `harvested`). */
+  recordHarvest(owner: number, kind: ResourceKind, amount: number): void {
+    if (amount > 0) this.addHarvested(owner, kind, amount);
+  }
+
+  private addHarvested(owner: number, kind: ResourceKind, amount: number): void {
+    let byKind = this.harvested.get(owner);
+    if (!byKind) {
+      byKind = new Map();
+      this.harvested.set(owner, byKind);
+    }
+    byKind.set(kind, (byKind.get(kind) ?? 0) + amount);
+  }
+
+  /** Total amount of one node kind harvested by a player. */
+  harvestedBy(owner: number, kind: ResourceKind): number {
+    return this.harvested.get(owner)?.get(kind) ?? 0;
+  }
+
+  harvestedSave(): HarvestLedgerRow[] {
+    const out: HarvestLedgerRow[] = [];
+    for (const [player, byKind] of this.harvested) {
+      for (const [kind, amount] of byKind) out.push([player, kind, amount]);
+    }
+    return out;
+  }
+
+  restoreHarvested(entries: HarvestLedgerRow[] | undefined): void {
+    this.harvested.clear();
+    for (const [player, kind, amount] of entries ?? []) {
+      if (!Number.isFinite(amount) || amount <= 0) continue;
+      this.addHarvested(player, kind, amount);
+    }
   }
 
   /** The replay recorded so far (skirmish only), or null. */

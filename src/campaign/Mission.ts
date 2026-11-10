@@ -243,6 +243,12 @@ export class Mission {
     this.checkBaseLost();
   }
 
+  /** Current value of a `gather` objective: fished/harvested from its node kind, or the resource reserve. */
+  private gatherCurrent(o: ObjectiveDef): number {
+    if (o.fromNode) return this.game.harvestedBy(0, o.fromNode);
+    return this.game.players[0].resources[o.resource ?? 'food'];
+  }
+
   private evalObjective(o: ObjectiveDef): 'ok' | 'win' | 'fail' {
     const p = this.game.players[0];
     switch (o.kind as ObjectiveKind) {
@@ -286,7 +292,7 @@ export class Mission {
       case 'network':
         return this.countNetwork(o) >= (o.count ?? o.nodes?.length ?? 0) ? 'win' : 'ok';
       case 'gather':
-        return p.resources[o.resource ?? 'food'] >= (o.count ?? 0) ? 'win' : 'ok';
+        return this.gatherCurrent(o) >= (o.count ?? 0) ? 'win' : 'ok';
       case 'inspect': {
         const ids = o.heritageIds ?? [];
         const visited = ids.length > 0 && ids.every((id) => this.game.isHeritageVisited(id));
@@ -634,7 +640,11 @@ export class Mission {
     const p = this.game.players[0];
     switch (o.kind) {
       case 'gather':
-        return { current: p.resources[o.resource ?? 'food'], target: o.count ?? 0, format: 'count' };
+        return {
+          current: this.gatherCurrent(o),
+          target: o.count ?? 0,
+          format: 'count',
+        };
       case 'build':
         return { current: this.countBuilt(o), target: o.count ?? 1, format: 'count' };
       case 'deliver':
