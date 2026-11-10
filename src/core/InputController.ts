@@ -835,6 +835,8 @@ export class InputController {
 
   private onKeyDown = (e: KeyboardEvent): void => {
     if (isTypingTarget(e.target)) return;
+    // Holding an order key must not fire it ~30 times per second (issue 387).
+    if (e.repeat) return;
     const k = e.key.toLowerCase();
     if (this.game.gameEnded) return;
     if (k === this.key('pause')) {

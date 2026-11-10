@@ -386,6 +386,14 @@ Definition of Done and the building audit see
   clicking it selects and focuses the unit. The HUD also deduplicates the same unit/reason for six seconds.
   The bottom **command panel** (`#ed-bottom`) is hidden unless a **unit or building is selected** (0 A.D.-style):
   building therefore starts from a selected worker (or the H/F/G/V shortcuts), not from an idle panel.
+- **HUD feedback (`tests/e2e/hud-feedback.spec.ts`)**: `HUD.showToast` keys toasts by type + text, so a
+  repeated message refreshes the same toast and shows `×N`, and the stack is capped at four (fading nodes are
+  trimmed too). `InputController` ignores `e.repeat`, so holding an order key fires it once. Decorative cards opt
+  out of hotkeys with `hotkey: false` (the heritage «Certeza» chip no longer takes Q) while real commands keep
+  their slot when disabled, so keys stay stable as stock changes. The tutorial writes `{key:buildHouse}` /
+  `{key:buildFarm}` from `settings.hotkeys` instead of literal V/G. The field-card delivery button uses
+  `SelectionController.deliveryGate` (a worker near the site and enough stock) and is disabled with the amount and
+  the reason appended when it cannot run.
 - **Camera panning (`src/core/Camera.ts` + `src/core/cameraMath.ts`)**: the camera orbits a ground target; its
   ground basis is `forward = (−sin yaw, −cos yaw)`, `right = (cos yaw, −sin yaw)`, and **keyboard/edge pan vectors
   are rotated by that basis** (`rotateToWorld`, a rotation by `−yaw`). The default is **north-up** (`yaw = 0`), so

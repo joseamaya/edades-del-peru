@@ -984,6 +984,84 @@ test('the Plaza Central card activates the communal assembly', async ({ page }) 
   expect(state).toBe('completed');
 });
 
+test(
+  'the heritage panel skips the disabled certainty chip when binding hotkeys',
+  { tag: '@smoke' },
+  async ({ page }) => {
+    await boot(page);
+    await page.evaluate(() => {
+      const g = (window as unknown as { game: any }).game;
+      g.selectedUnits = [];
+      g.selectedBuilding = null;
+      g.selectedHeritage = 'caral_pyramid_mayor';
+      g.hud.update(0.2, 0);
+    });
+    const bottom = page.locator('#ed-bottom');
+    await expect(bottom.locator('.ed-card.disabled .ed-hotkey')).toHaveCount(0);
+    await expect(bottom.locator('#ed-commands .ed-command').first().locator('.ed-hotkey')).toHaveText('Q');
+  },
+);
+
+test('the deliver button is disabled and explains what is missing', { tag: '@smoke' }, async ({ page }) => {
+  await boot(page);
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    g.mission.objState.set('a3_muros', 'activo');
+    g.players[0].resources.stone = 0;
+    g.selectedUnits = [];
+    g.selectedBuilding = null;
+    g.selectedHeritage = 'caral_pyramid_mayor';
+    const site = g.siteCenter;
+    for (const u of g.units.values()) {
+      if (u.owner === 0 && u.kind === 'worker') u.pos.set(site.x + 60, u.pos.y, site.z + 60);
+    }
+    g.hud.update(0.2, 0);
+  });
+  const disabled = page.locator('#ed-commands .ed-command.disabled');
+  await expect(disabled).toContainText('Acerca un obrero a la obra');
+
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const site = g.siteCenter;
+    const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker');
+    if (!worker) throw new Error('no worker');
+    worker.pos.set(site.x, g.terrain.getHeight(site.x, site.z), site.z);
+    g.hud.update(0.2, 0);
+  });
+  await expect(page.locator('#ed-commands .ed-command.disabled')).toContainText('Faltan 50 de piedra');
+
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.players[0].resources.stone = 60;
+    g.hud.update(0.2, 0);
+  });
+  await expect(page.locator('#ed-commands .ed-command').first()).toContainText('Entregar materiales');
+  await expect(page.locator('#ed-commands .ed-command.disabled')).toHaveCount(0);
+});
+
+test('the tutorial names the configured build keys', { tag: '@smoke' }, async ({ page }) => {
+  await boot(page);
+  const text = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.settings.hotkeys = { ...g.settings.hotkeys, buildHouse: 'z' };
+    g.camera.setKeymap(g.settings.hotkeys);
+    g.tutorial.applySave({
+      idx: 0,
+      stepId: 'house',
+      begun: true,
+      finished: false,
+      delay: 0,
+      stepTime: 0,
+      base: { houses: 0, barracks: 0, soldiers: 0, farms: 0, mills: 0, markets: 0 },
+    });
+    g.tutorial.update(0);
+    return document.getElementById('ed-tutorial')?.textContent ?? '';
+  });
+  expect(text).toContain('Z');
+  expect(text).not.toContain('{key:');
+});
+
 test('the Caral site uses the source LOD and has no procedural fallback mesh', async ({ page }) => {
   await boot(page);
   const state = await page.evaluate(() => {

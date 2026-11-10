@@ -156,6 +156,8 @@ export const es = {
   'hud.heritage.construct.none': 'No hay una entrega pendiente en este momento.',
   'hud.heritage.construct.done': 'Materiales entregados: {amount} de {resource}.',
   'hud.heritage.deliver': '🧺 Entregar materiales ({amount} {resource}) · {done}/{total}',
+  'hud.heritage.deliverAway': 'Acerca un obrero a la obra',
+  'hud.heritage.deliverShort': 'Faltan {amount} de {resource}',
   'hud.heritage.trade': '🪶 Intercambiar ({amount} {resource})',
   'hud.heritage.assemblyCall': '🏛️ Convocar asamblea',
   'hud.heritage.assemblyActive': '⏳ Asamblea en curso',

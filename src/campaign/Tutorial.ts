@@ -1,8 +1,22 @@
 import type { Game } from '../core/Game';
 import { BuildingKind, UnitKind } from '../core/types';
+import { DEFAULT_KEYMAP, keyFor, type HotkeyAction, type HotkeyMap } from '../core/hotkeys';
 import { distance2D } from '../util/math';
 import type { TutorialSave, TutorialBase } from '../game/saveTypes';
 import type { TutorialDef, TutorialStepDef } from './types';
+
+/**
+ * Replace `{key:action}` placeholders with the player's current binding. Tutorial steps name the
+ * configured key, not the default one (issue 387).
+ */
+export function tutorialText(text: string, hotkeys: HotkeyMap = DEFAULT_KEYMAP): string {
+  return text.replace(/\{key:(\w+)\}/g, (placeholder, action: string) => {
+    if (!(action in DEFAULT_KEYMAP)) return placeholder;
+    const key = keyFor(action as HotkeyAction, hotkeys);
+    if (!key) return placeholder;
+    return key === ' ' ? '␣' : key.toUpperCase();
+  });
+}
 
 /**
  * Data-driven guided tutorial. It observes the game state and advances when the
@@ -156,7 +170,8 @@ export class Tutorial {
       return;
     }
     this.visible = true;
-    this.game.hud.showTutorialStep(paso.text, this.idx, this.pasos.length, () => this.finish());
+    const text = tutorialText(paso.text, this.game.settings.hotkeys);
+    this.game.hud.showTutorialStep(text, this.idx, this.pasos.length, () => this.finish());
     if (paso.highlight) this.game.hud.highlightHud(paso.highlight);
     else this.game.hud.clearHudHighlight();
   }

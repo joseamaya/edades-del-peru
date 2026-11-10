@@ -4,10 +4,21 @@ import { Unit } from '../entities/Unit';
 import { Building } from '../entities/Building';
 import { UnitKind, type Resources } from '../core/types';
 import type { Mission } from '../campaign/Mission';
+import type { ObjectiveDef } from '../campaign/types';
 import { distance2D } from '../util/math';
 import { getHeritageBuilding } from '../model/defs/heritage';
 import { RESOURCE_INFO } from './Config';
 import { t } from '../i18n';
+
+/** Whether a field card can take materials, and why it cannot (drives the HUD button too). */
+export interface DeliveryGate {
+  ok: boolean;
+  amount: number;
+  resource: keyof Resources | null;
+  reason: 'away' | 'short' | null;
+  /** How much of `resource` is still missing when `reason` is `short`. */
+  missing: number;
+}
 
 /** Selection, focus, formation and heritage/assembly helpers. */
 export class SelectionController {
@@ -102,12 +113,35 @@ export class SelectionController {
     const delivery = mission?.activeDeliveryFor(id);
     if (!delivery?.def.resource) return false;
     const { def } = delivery;
-    const at = def.pos ? this.game.resolveMissionPoint(def.pos) : (this.game.siteAnchor ?? this.game.siteCenter);
-    return this.handOver('construct', def.resource!, Math.min(def.step ?? 50, (def.count ?? 0) - delivery.delivered), {
-      at,
+    return this.handOver('construct', def.resource!, this.deliveryGate(id).amount, {
+      at: this.deliveryAnchor(def),
       radius: def.radius ?? 18,
       objectiveId: def.id,
     });
+  }
+
+  /**
+   * Why the active delivery of a field card can or cannot take materials now. The HUD uses it to
+   * disable the button with a reason instead of letting the player click into a toast (issue 387).
+   */
+  deliveryGate(id: HeritageBuildingId): DeliveryGate {
+    const delivery = this.game.mission?.activeDeliveryFor(id);
+    const def = delivery?.def;
+    if (!delivery || !def?.resource) return { ok: false, amount: 0, resource: null, reason: null, missing: 0 };
+    const resource = def.resource;
+    const amount = Math.min(def.step ?? 50, (def.count ?? 0) - delivery.delivered);
+    if (amount <= 0) return { ok: false, amount: 0, resource, reason: null, missing: 0 };
+    if (!this.workerNear(this.deliveryAnchor(def), def.radius ?? 18)) {
+      return { ok: false, amount, resource, reason: 'away', missing: 0 };
+    }
+    const have = this.game.players[0].resources[resource];
+    if (have < amount) return { ok: false, amount, resource, reason: 'short', missing: amount - have };
+    return { ok: true, amount, resource, reason: null, missing: 0 };
+  }
+
+  /** Where a delivery objective hands materials over. */
+  private deliveryAnchor(def: ObjectiveDef): { x: number; z: number } {
+    return def.pos ? this.game.resolveMissionPoint(def.pos) : (this.game.siteAnchor ?? this.game.siteCenter);
   }
 
   private workerNear(anchor: { x: number; z: number } | null, radius: number): boolean {
