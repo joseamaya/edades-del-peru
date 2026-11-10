@@ -20,7 +20,8 @@ test('a move order into water ends on the nearest shore and frees the unit', asy
     let shore: { x: number; z: number } | null = null;
     for (let x = 4; x < size - 4 && !water; x += 2) {
       for (let z = 4; z < size - 4; z += 2) {
-        if (!g.terrain.isWater(x, z)) continue;
+        // The pathfinder's water mask (not the terrain's shallower threshold) marks the sea cells.
+        if (!pathfinder.isWaterAt(x, z) || pathfinder.isWalkable(x, z, 0)) continue;
         const safe = pathfinder.nearestWalkablePoint(x, z, 0, main) as { x: number; z: number } | null;
         if (!safe || Math.hypot(safe.x - x, safe.z - z) > 8) continue;
         water = { x, z };
