@@ -243,7 +243,14 @@ export class RuntimeController {
       reachableToNode: (sx, sz, tx, tz, standRadius: number, owner?: number, opts?) =>
         this.game.pathfinder.reachableToNode(sx, sz, tx, tz, standRadius, owner, opts),
       isWalkable: (x, z, owner) => this.game.pathfinder.isWalkable(x, z, owner),
-      nearestWalkable: (x, z) => this.game.pathfinder.nearestWalkablePoint(x, z),
+      nearestWalkable: (x, z, fromX?, fromZ?) => {
+        const component =
+          fromX === undefined || fromZ === undefined ? 0 : this.game.pathfinder.componentAt(fromX, fromZ);
+        return (
+          this.game.pathfinder.nearestWalkablePoint(x, z, 0, component || undefined) ??
+          this.game.pathfinder.nearestWalkablePoint(x, z)
+        );
+      },
       unitsNear: (x, z, radius) => this.unitsNear(x, z, radius),
       entitiesById: this.game.units,
       resourceNodes: this.game.resourceNodes,

@@ -639,6 +639,49 @@ test('a fisher ordered to a tree does not return to the sea when the tree is tak
   expect(state.woodGathered, 'the fisher must chop the new tree').toBeGreaterThan(0);
 });
 
+test('a move order into the sea ends on the shore and leaves the scout idle', async ({ page }) => {
+  await boot(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    const scout = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'scout' && !u.dead) as any;
+    if (!scout) return { ok: false as const, reason: 'missing opening scout' };
+    // A water point a few metres from the scout along the coast (where a player may click by mistake).
+    let water: { x: number; z: number } | null = null;
+    for (let r = 3; r <= 30 && !water; r += 1.5) {
+      for (let a = 0; a < 24; a++) {
+        const x = scout.pos.x + Math.cos((a / 24) * Math.PI * 2) * r;
+        const z = scout.pos.z + Math.sin((a / 24) * Math.PI * 2) * r;
+        if (g.terrain.isWater(x, z)) {
+          water = { x, z };
+          break;
+        }
+      }
+    }
+    if (!water) return { ok: false as const, reason: 'no water near the scout' };
+    g.executeCommand({ kind: 'order', unitIds: [scout.id], order: { kind: 'move', target: water } });
+    const ordered = scout.orderQueue[0]?.target as { x: number; z: number } | undefined;
+    let t = 0;
+    for (let i = 0; i < 300 && scout.isBusy(); i++) {
+      g.update(0.1, t);
+      t += 0.1;
+    }
+    return {
+      ok: true as const,
+      snapDist: ordered ? Math.hypot(ordered.x - water.x, ordered.z - water.z) : -1,
+      busy: scout.isBusy() as boolean,
+      inWater: g.terrain.isWater(scout.pos.x, scout.pos.z) as boolean,
+      distance: Math.hypot(scout.pos.x - water.x, scout.pos.z - water.z),
+    };
+  });
+  expect(out.ok, out.ok ? '' : out.reason).toBe(true);
+  if (!out.ok) return;
+  expect(out.snapDist, 'the destination moves to the shore').toBeGreaterThan(0);
+  expect(out.busy, 'the order ends once the shore is reached').toBe(false);
+  expect(out.inWater, 'the unit never stands in the sea').toBe(false);
+  expect(out.distance, 'it stops close to the clicked spot').toBeLessThan(12);
+});
+
 test('the Caral tutorial hides the shortcut help while it is open', async ({ page }) => {
   await boot(page);
   await expect(page.locator('#ed-tutorial')).toBeVisible({ timeout: 30_000 });

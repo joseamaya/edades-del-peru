@@ -73,8 +73,11 @@ export interface UnitContext {
   ): boolean;
   /** Terrain navigability (water/steep/obstacles); guards the pathless fallback. */
   isWalkable(x: number, z: number, owner?: number): boolean;
-  /** Nearest walkable point used to resolve a unit embedded in a solid footprint. */
-  nearestWalkable(x: number, z: number): { x: number; z: number } | null;
+  /**
+   * Nearest walkable point used to resolve a unit embedded in a solid footprint. Passing the
+   * unit's `fromX`/`fromZ` restricts the search to its reachable pathfinding component.
+   */
+  nearestWalkable(x: number, z: number, fromX?: number, fromZ?: number): { x: number; z: number } | null;
   unitsNear(x: number, z: number, radius: number): Unit[];
   enemiesNear(x: number, z: number, radius: number, owner: number): Unit[];
   entitiesById: Map<number, any>;
@@ -320,6 +323,21 @@ export class Unit {
     return true;
   }
 
+  /** Nearest walkable point to (x, z) inside this unit's reachable component. */
+  private nearestReachable(x: number, z: number): { x: number; z: number } | null {
+    return this.ctx.nearestWalkable(x, z, this.pos.x, this.pos.z);
+  }
+
+  /**
+   * Goal of a move order. A point that is not walkable (the sea, a cliff, a bank on the far side)
+   * is replaced by the nearest walkable ground the unit can reach, so the order finishes on the
+   * shore instead of holding the unit busy forever.
+   */
+  private resolveMoveGoal(target: OrderTarget): OrderTarget {
+    if (this.ctx.isWalkable(target.x, target.z, this.owner)) return target;
+    return this.nearestReachable(target.x, target.z) ?? target;
+  }
+
   /** Warn the player once per order that it cannot make progress. */
   private notifyBlocked(reason: AlertReason): void {
     if (this.owner !== 0 || this.dead || this.blockedNotified) return;
@@ -483,14 +501,20 @@ export class Unit {
     this.moveSpeedLimit = null;
     this.rememberGatherOrder(order);
     switch (order.kind) {
-      case OrderKind.MOVE:
-        if (this.combatStance === 'defensivo' && order.target) this.leashOrigin = { ...order.target };
-        this.setPath(order.target!.x, order.target!.z);
+      case OrderKind.MOVE: {
+        const goal = this.resolveMoveGoal(order.target!);
+        order.target = goal;
+        if (this.combatStance === 'defensivo') this.leashOrigin = { ...goal };
+        this.setPath(goal.x, goal.z);
         break;
-      case OrderKind.ATTACK_MOVE:
-        if (this.combatStance === 'defensivo' && order.target) this.leashOrigin = { ...order.target };
-        this.setPath(order.target!.x, order.target!.z);
+      }
+      case OrderKind.ATTACK_MOVE: {
+        const goal = this.resolveMoveGoal(order.target!);
+        order.target = goal;
+        if (this.combatStance === 'defensivo') this.leashOrigin = { ...goal };
+        this.setPath(goal.x, goal.z);
         break;
+      }
       case OrderKind.GATHER:
         if (order.entityId !== undefined) this.setPathToEntity(order.entityId);
         break;
@@ -549,7 +573,10 @@ export class Unit {
     speedLimit: number,
     clear = true,
   ): void {
-    const goal = { x: target.x + offset.x, z: target.z + offset.z };
+    let goal = { x: target.x + offset.x, z: target.z + offset.z };
+    if (!this.ctx.isWalkable(goal.x, goal.z, this.owner)) {
+      goal = this.nearestReachable(goal.x, goal.z) ?? goal;
+    }
     if (!clear && this.orderQueue.length > 0) {
       this.orderQueue.push({ kind: OrderKind.MOVE, target: goal });
       return;
@@ -997,7 +1024,13 @@ export class Unit {
     // still no route: only head straight in over walkable ground, else wait and warn
     if (this.directStep(t.x, t.z)) return;
     this.noRouteTimer += dt;
-    if (this.noRouteTimer > NO_ROUTE_GIVEUP) this.notifyNoRoute();
+    if (this.noRouteTimer <= NO_ROUTE_GIVEUP) return;
+    // No route at all: end the order where the unit got to. Keeping it queued would hide the unit
+    // from the idle-worker button and from anything that waits for `isBusy() === false`.
+    this.notifyNoRoute();
+    this.path.length = 0;
+    this.pathIdx = 0;
+    this.finishOrder();
   }
 
   private updateAttackMove(order: Order, dt: number, time: number): void {

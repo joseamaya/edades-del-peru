@@ -576,15 +576,32 @@ export class InputController {
     }
     if (this.ctrlQueue) {
       // attack-move
-      this.markOrder(target, 'attack');
+      const goal = this.groundGoal(target, units[0]);
+      this.markOrder(goal, 'attack');
       for (const u of units) {
-        this.game.orderUnit(u, { kind: OrderKind.ATTACK_MOVE, target }, !this.shiftQueue);
+        this.game.orderUnit(u, { kind: OrderKind.ATTACK_MOVE, target: goal }, !this.shiftQueue);
       }
     } else {
-      this.markOrder(target, 'move');
-      this.issueMoveFormation(units, target);
+      const goal = this.groundGoal(target, units[0]);
+      this.markOrder(goal, 'move');
+      this.issueMoveFormation(units, goal);
     }
     this.game.audio.order();
+  }
+
+  /**
+   * Destination of a move/attack-move order. A click on unwalkable ground (the sea, a cliff, the far
+   * bank of the Supe) goes to the nearest walkable point the unit can reach, so the order finishes on
+   * the shore instead of holding the unit "busy" forever.
+   */
+  private groundGoal(target: OrderTarget, from: Unit): OrderTarget {
+    const pathfinder = this.game.pathfinder;
+    if (pathfinder.isWalkable(target.x, target.z, from.owner)) return target;
+    const component = pathfinder.componentAt(from.pos.x, from.pos.z);
+    const safe =
+      pathfinder.nearestWalkablePoint(target.x, target.z, 0, component || undefined, from.owner) ??
+      pathfinder.nearestWalkablePoint(target.x, target.z, 0, undefined, from.owner);
+    return safe ?? target;
   }
 
   /** Visually mark the destination of an order on the ground. */
@@ -599,7 +616,7 @@ export class InputController {
       .map((id: number) => this.game.units.get(id))
       .filter((u: Unit | undefined): u is Unit => !!u && !u.dead);
     if (units.length === 0) return;
-    const target: OrderTarget = { x, z };
+    const target = this.groundGoal({ x, z }, units[0]);
     if (ctrlQueue) {
       this.markOrder(target, 'attack');
       for (const u of units) this.game.orderUnit(u, { kind: OrderKind.ATTACK_MOVE, target }, !shiftQueue);
