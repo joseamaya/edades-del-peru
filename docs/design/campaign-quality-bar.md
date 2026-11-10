@@ -6,7 +6,9 @@ meets every gate below and sets the pattern the other missions follow
 (`m2_chavin`) has been rebuilt to the same pattern; its table below records the evidence, with the human
 art review still pending. The other missions are reviewed again against this one before they are called
 complete. A mission is not done because it boots or because its objectives can be satisfied by a test
-harness.
+harness. The HUD geometry gate (`tests/e2e/hud-layout.spec.ts`) runs at 1280×720, 1600×900 and
+1920×1080, including a late-mission objective list with the archive folded and expanded and the shortcuts
+panel open.
 
 ## Gates
 
@@ -41,7 +43,7 @@ Reviewed 2026-11-07 after the four-act rebuild (design and status: [`caral-model
 | Contract    | Met    | Act objectives start hidden and are revealed by triggers (`tests/caral-acts.test.ts`); construction work turns consume food and pause when the communal store is empty; the briefing shows Act I only; optional Huaca visit, six-complex tour and assembly.                                        |
 | Onboarding  | Met    | Nine-step tutorial docked under the objectives (select, coast, house, valley, field, storage, nets, pyramid, works); briefing; Codex optional.                                                                                                                                                     |
 | Closure     | Met    | Departure epilogue with its image, optional-achievement summary, "Continuar" to m2, which the campaign path then unlocks.                                                                                                                                                                          |
-| UX          | Met    | Horizontal command bar, tutorial on the right; `tests/e2e/hud-layout.spec.ts` checks the HUD panels geometrically at 1280×720, 1600×900 and 1920×1080; the full-screen briefing was checked in a browser.                                                                                          |
+| UX          | Met    | Horizontal command bar, tutorial on the right; `tests/e2e/hud-layout.spec.ts` checks the HUD panels geometrically at 1280×800 and 1600×900; the full-screen briefing was checked in a browser.                                                                                                     |
 | Visuals     | Met    | 256 m sea-to-terrace transect, Blender architecture kit by phase (white finished plaster; ochre/red in use, exact colours inferred), burial dust/fire, summer flood and drought (valley/lomas paint and river level), Áspero, painted fertile ground, region flora and fauna, living-city details. |
 | Persistence | Met    | Save/load restores the site phase and the drought without re-applying its losses; tutorial, canal, construction and hold timers round-trip.                                                                                                                                                        |
 | Tests       | Met    | Data, acts (including the empty-store pause), E2E specs and real-command playtest; `yarn verify:fast` and CI green.                                                                                                                                                                                |
@@ -67,7 +69,7 @@ Reviewed 2026-11-07 against the model-mission gates. Status is honest about the 
 | Contract    | Met                  | Acts II–IV start hidden and are revealed by triggers; optional Plaza, gallery, Portada and major offering never gate victory.                                                          |
 | Onboarding  | Met                  | Nine-step non-blocking Chavín tutorial, briefing and Codex; the briefing shows Act I only.                                                                                             |
 | Closure     | Met                  | Decline epilogue with its own capture and optional-achievement summary; “Continuar” to m3.                                                                                             |
-| UX          | Met                  | `tests/e2e/hud-layout.spec.ts` checks the panels geometrically at 1280×720, 1600×900 and 1920×1080.                                                                                    |
+| UX          | Met                  | `tests/e2e/hud-layout.spec.ts` checks the panels geometrically at 1280×800 and 1600×900.                                                                                               |
 | Visuals     | Met locally          | Source-derived Chavín kit, phased temple, highland palette and current RTS captures in `public/media/chavin/`.                                                                         |
 | Persistence | Met                  | `save-campaign.spec.ts` restores the site phase, offerings and tutorial step.                                                                                                          |
 | Tests       | Met (automated)      | Data, site, tutorial, E2E mission, save/load and automated playtest; the manual playtest is pending.                                                                                   |
@@ -89,7 +91,7 @@ Reviewed 2026-11-07 against the model-mission gates. Status is honest about the 
 | Contract    | Met         | Canal, hold, required 250 and optional 400 silver; hidden goals stay out of the briefing (covered by `campaign.test.ts`).                                                                    |
 | Onboarding  | Met         | Four-step Moche tutorial, briefing, Codex and minimap pips.                                                                                                                                  |
 | Closure     | Met         | Mission epilogue and optional elite-exchange summary.                                                                                                                                        |
-| UX          | Met         | `tests/e2e/hud-layout.spec.ts` checks the panels geometrically at 1280×720, 1600×900 and 1920×1080.                                                                                          |
+| UX          | Met         | `tests/e2e/hud-layout.spec.ts` checks the panels geometrically at 1280×800 and 1600×900.                                                                                                     |
 | Visuals     | Met locally | Authored site GLB, desert palette and current RTS captures in `review/`.                                                                                                                     |
 | Persistence | Met         | Canal, hold timer, delivered silver and tutorial round-trip in `save-campaign.spec.ts`.                                                                                                      |
 | Tests       | Met         | Data, site/proxy collision, tutorial, mission, HUD, real-command playtest and save/load coverage.                                                                                            |
@@ -106,7 +108,7 @@ Reviewed 2026-11-07 against the model-mission gates. Status is honest about the 
 | Contract    | Met         | Network progress, hidden frontier, optional third centre and live timers.                                                                                          |
 | Onboarding  | Met         | Four-step Wari tutorial, briefing, Codex and minimap pips.                                                                                                         |
 | Closure     | Met         | Epilogue connects the network with the 1000–1100 CE collapse.                                                                                                      |
-| UX          | Met         | `tests/e2e/hud-layout.spec.ts` checks the panels geometrically at 1280×720, 1600×900 and 1920×1080.                                                                |
+| UX          | Met         | `tests/e2e/hud-layout.spec.ts` checks the panels geometrically at 1280×800 and 1600×900.                                                                           |
 | Visuals     | Met locally | Authored site GLB, terrain-following road ribbons, highland palette and current RTS captures in `review/`.                                                         |
 | Persistence | Met         | Network, hold and mission state use the shared save/load path.                                                                                                     |
 | Tests       | Met         | Data, site, network, real-command playtest, save/load and completability coverage.                                                                                 |
@@ -126,20 +128,20 @@ victory paths, dedicated decor GLBs and save round-trips covered. It is not yet 
 because the visual evidence is still local (review captures), although the HUD layout now has a CI
 geometry gate (`tests/e2e/hud-layout.spec.ts`).
 
-| Gate        | m5 Yahuar Pampa                                                                                               | m6 Chimú–Inca                                                                                                 |
-| ----------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| History     | Met: `yahuar_pampa.md`; no invented battle.                                                                   | Met: `chimu_inca.md`; water/canal campaign.                                                                   |
-| Identity    | Met: defend Cusco, protect Cusi, counterattack.                                                               | Met: advance to Paramonga, cut the canal, force surrender.                                                    |
-| Terrain     | Met: authored Yahuar Pampa heightfield.                                                                       | Met: authored Chimú coastal heightfield.                                                                      |
-| Play        | Met: real-command playtest holds and counterattacks.                                                          | Met: real-command playtest advances and cuts the canal.                                                       |
-| Contract    | Met: defend, destroy, protect; waves and timer.                                                               | Met: staged Paramonga/canal objectives; optional Chan Chan/hold.                                              |
-| Onboarding  | Met: three-step tutorial + briefing.                                                                          | Met: four-step tutorial + briefing.                                                                           |
-| Closure     | Met: epilogue and optional achievements.                                                                      | Met: epilogue and optional objectives.                                                                        |
-| UX          | Met: briefing reviewed in the browser; `hud-layout.spec.ts` checks the panels at 1280×720/1600×900/1920×1080. | Met: briefing reviewed in the browser; `hud-layout.spec.ts` checks the panels at 1280×720/1600×900/1920×1080. |
-| Visuals     | Met locally: authored Chanca site GLB + heightfield.                                                          | Met locally: authored Chimú site GLB + heightfield + canal.                                                   |
-| Persistence | Met: save/load round-trip.                                                                                    | Met: save/load round-trip.                                                                                    |
-| Tests       | Met: data, completability, real-command playtest.                                                             | Met: data, completability, real-command playtest.                                                             |
-| Docs        | Met: README, dossiers, campaign experiences and this table.                                                   | Met: README, dossiers, campaign experiences and this table.                                                   |
+| Gate        | m5 Yahuar Pampa                                                                                     | m6 Chimú–Inca                                                                                       |
+| ----------- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| History     | Met: `yahuar_pampa.md`; no invented battle.                                                         | Met: `chimu_inca.md`; water/canal campaign.                                                         |
+| Identity    | Met: defend Cusco, protect Cusi, counterattack.                                                     | Met: advance to Paramonga, cut the canal, force surrender.                                          |
+| Terrain     | Met: authored Yahuar Pampa heightfield.                                                             | Met: authored Chimú coastal heightfield.                                                            |
+| Play        | Met: real-command playtest holds and counterattacks.                                                | Met: real-command playtest advances and cuts the canal.                                             |
+| Contract    | Met: defend, destroy, protect; waves and timer.                                                     | Met: staged Paramonga/canal objectives; optional Chan Chan/hold.                                    |
+| Onboarding  | Met: three-step tutorial + briefing.                                                                | Met: four-step tutorial + briefing.                                                                 |
+| Closure     | Met: epilogue and optional achievements.                                                            | Met: epilogue and optional objectives.                                                              |
+| UX          | Met: briefing reviewed in the browser; `hud-layout.spec.ts` checks the panels at 1280×800/1600×900. | Met: briefing reviewed in the browser; `hud-layout.spec.ts` checks the panels at 1280×800/1600×900. |
+| Visuals     | Met locally: authored Chanca site GLB + heightfield.                                                | Met locally: authored Chimú site GLB + heightfield + canal.                                         |
+| Persistence | Met: save/load round-trip.                                                                          | Met: save/load round-trip.                                                                          |
+| Tests       | Met: data, completability, real-command playtest.                                                   | Met: data, completability, real-command playtest.                                                   |
+| Docs        | Met: README, dossiers, campaign experiences and this table.                                         | Met: README, dossiers, campaign experiences and this table.                                         |
 
 ## Campaign III playable status (m7)
 
@@ -148,20 +150,20 @@ victory path, dedicated decor GLB and save round-trip covered. It is not yet a f
 because the visual evidence is still local (review captures), although the HUD layout now has a CI
 geometry gate (`tests/e2e/hud-layout.spec.ts`).
 
-| Gate        | m7 Túpac Amaru                                                                                                |
-| ----------- | ------------------------------------------------------------------------------------------------------------- |
-| History     | Met: `tupac_amaru.md`; rebellion, Sangarará and repression.                                                   |
-| Identity    | Met: sustain the rebellion, protect Túpac Amaru, choose assault or siege.                                     |
-| Play        | Met: real-command playtest assaults the realista command post.                                                |
-| Contract    | Met: alternative assault/siege victory plus a required protect objective.                                     |
-| Onboarding  | Met: six-step tutorial + briefing.                                                                            |
-| Terrain     | Met: authored Cusco colonial heightfield.                                                                     |
-| Closure     | Met: epilogue and optional objectives.                                                                        |
-| UX          | Met: briefing reviewed in the browser; `hud-layout.spec.ts` checks the panels at 1280×720/1600×900/1920×1080. |
-| Visuals     | Met locally: authored colonial site GLB + heightfield.                                                        |
-| Persistence | Met: save/load round-trip.                                                                                    |
-| Tests       | Met: data, completability, branch choice and real-command playtest.                                           |
-| Docs        | Met: README, dossier, campaign experiences and this table.                                                    |
+| Gate        | m7 Túpac Amaru                                                                                      |
+| ----------- | --------------------------------------------------------------------------------------------------- |
+| History     | Met: `tupac_amaru.md`; rebellion, Sangarará and repression.                                         |
+| Identity    | Met: sustain the rebellion, protect Túpac Amaru, choose assault or siege.                           |
+| Play        | Met: real-command playtest assaults the realista command post.                                      |
+| Contract    | Met: alternative assault/siege victory plus a required protect objective.                           |
+| Onboarding  | Met: six-step tutorial + briefing.                                                                  |
+| Terrain     | Met: authored Cusco colonial heightfield.                                                           |
+| Closure     | Met: epilogue and optional objectives.                                                              |
+| UX          | Met: briefing reviewed in the browser; `hud-layout.spec.ts` checks the panels at 1280×800/1600×900. |
+| Visuals     | Met locally: authored colonial site GLB + heightfield.                                              |
+| Persistence | Met: save/load round-trip.                                                                          |
+| Tests       | Met: data, completability, branch choice and real-command playtest.                                 |
+| Docs        | Met: README, dossier, campaign experiences and this table.                                          |
 
 ## Campaign IV playable status (m8–m9)
 
@@ -170,37 +172,37 @@ victory paths, dedicated decor GLBs and save round-trips covered. It is not yet 
 because the visual evidence is still local (review captures), although the HUD layout now has a CI
 geometry gate (`tests/e2e/hud-layout.spec.ts`).
 
-| Gate        | m8 La Independencia                                                                                           | m9 La Defensa de Arica                                                                                        |
-| ----------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| History     | Met: `independencia.md`; Junín and Ayacucho.                                                                  | Met: `guerra_del_pacifico.md`; Arica land defence.                                                            |
-| Identity    | Met: hold Junín, protect Sucre, hold Ayacucho.                                                                | Met: protect the port and Bolognesi, survive the assault.                                                     |
-| Play        | Met: real-command playtest holds both phases with the cavalry, including montoneras.                          | Met: real-command playtest defends the port and intercepts the final assault.                                 |
-| Contract    | Met: sequential holds plus a required protect objective.                                                      | Met: required protects and survive, with an optional counterstrike.                                           |
-| Onboarding  | Met: four-step tutorial + briefing.                                                                           | Met: five-step tutorial + briefing.                                                                           |
-| Terrain     | Met: authored Junín–Ayacucho heightfield.                                                                     | Met: authored Arica port heightfield.                                                                         |
-| Closure     | Met: epilogue and optional objectives.                                                                        | Met: epilogue and optional objective.                                                                         |
-| UX          | Met: briefing reviewed in the browser; `hud-layout.spec.ts` checks the panels at 1280×720/1600×900/1920×1080. | Met: briefing reviewed in the browser; `hud-layout.spec.ts` checks the panels at 1280×720/1600×900/1920×1080. |
-| Visuals     | Met locally: authored independence site GLB + heightfield.                                                    | Met locally: dedicated Arica battery GLB + authored port terrace.                                             |
-| Persistence | Met: save/load round-trip.                                                                                    | Met: save/load round-trip.                                                                                    |
-| Tests       | Met: data, completability and real-command playtest.                                                          | Met: data, failure path, completability and real-command playtest.                                            |
-| Docs        | Met: README, dossier, campaign experiences and this table.                                                    | Met: README, dossier, campaign experiences and this table.                                                    |
+| Gate        | m8 La Independencia                                                                                 | m9 La Defensa de Arica                                                                              |
+| ----------- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| History     | Met: `independencia.md`; Junín and Ayacucho.                                                        | Met: `guerra_del_pacifico.md`; Arica land defence.                                                  |
+| Identity    | Met: hold Junín, protect Sucre, hold Ayacucho.                                                      | Met: protect the port and Bolognesi, survive the assault.                                           |
+| Play        | Met: real-command playtest holds both phases with the cavalry, including montoneras.                | Met: real-command playtest defends the port and intercepts the final assault.                       |
+| Contract    | Met: sequential holds plus a required protect objective.                                            | Met: required protects and survive, with an optional counterstrike.                                 |
+| Onboarding  | Met: four-step tutorial + briefing.                                                                 | Met: five-step tutorial + briefing.                                                                 |
+| Terrain     | Met: authored Junín–Ayacucho heightfield.                                                           | Met: authored Arica port heightfield.                                                               |
+| Closure     | Met: epilogue and optional objectives.                                                              | Met: epilogue and optional objective.                                                               |
+| UX          | Met: briefing reviewed in the browser; `hud-layout.spec.ts` checks the panels at 1280×800/1600×900. | Met: briefing reviewed in the browser; `hud-layout.spec.ts` checks the panels at 1280×800/1600×900. |
+| Visuals     | Met locally: authored independence site GLB + heightfield.                                          | Met locally: dedicated Arica battery GLB + authored port terrace.                                   |
+| Persistence | Met: save/load round-trip.                                                                          | Met: save/load round-trip.                                                                          |
+| Tests       | Met: data, completability and real-command playtest.                                                | Met: data, failure path, completability and real-command playtest.                                  |
+| Docs        | Met: README, dossier, campaign experiences and this table.                                          | Met: README, dossier, campaign experiences and this table.                                          |
 
 ## Inca civil war playable status (m6b)
 
 `m6b_guerra_civil` is released as **playable**. It uses the same authored-site
 pipeline as the later campaigns.
 
-| Gate        | m6b La Guerra Civil                                                                                           |
-| ----------- | ------------------------------------------------------------------------------------------------------------- |
-| History     | Met: `guerra_civil_inca.md`; Huáscar vs Atahualpa.                                                            |
-| Identity    | Met: advance to Quipaipan, defeat Huáscar, protect Atahualpa.                                                 |
-| Terrain     | Met: authored Cusco/Quipaipan heightfield.                                                                    |
-| Play        | Met: real-command playtest attack-moves to Quipaipan, clears Huáscar's defenders and takes the centre.        |
-| Contract    | Met: reach, hidden destroy and protect objectives.                                                            |
-| Onboarding  | Met: three-step tutorial + briefing.                                                                          |
-| Closure     | Met: epilogue and optional objectives.                                                                        |
-| UX          | Met: briefing reviewed in the browser; `hud-layout.spec.ts` checks the panels at 1280×720/1600×900/1920×1080. |
-| Visuals     | Met locally: authored Cusco site GLB + heightfield; intro render pending.                                     |
-| Persistence | Met: save/load round-trip.                                                                                    |
-| Tests       | Met: data, completability and real-command playtest.                                                          |
-| Docs        | Met: README, dossier, experiences and this table.                                                             |
+| Gate        | m6b La Guerra Civil                                                                                    |
+| ----------- | ------------------------------------------------------------------------------------------------------ |
+| History     | Met: `guerra_civil_inca.md`; Huáscar vs Atahualpa.                                                     |
+| Identity    | Met: advance to Quipaipan, defeat Huáscar, protect Atahualpa.                                          |
+| Terrain     | Met: authored Cusco/Quipaipan heightfield.                                                             |
+| Play        | Met: real-command playtest attack-moves to Quipaipan, clears Huáscar's defenders and takes the centre. |
+| Contract    | Met: reach, hidden destroy and protect objectives.                                                     |
+| Onboarding  | Met: three-step tutorial + briefing.                                                                   |
+| Closure     | Met: epilogue and optional objectives.                                                                 |
+| UX          | Met: briefing reviewed in the browser; `hud-layout.spec.ts` checks the panels at 1280×800/1600×900.    |
+| Visuals     | Met locally: authored Cusco site GLB + heightfield; intro render pending.                              |
+| Persistence | Met: save/load round-trip.                                                                             |
+| Tests       | Met: data, completability and real-command playtest.                                                   |
+| Docs        | Met: README, dossier, experiences and this table.                                                      |

@@ -429,7 +429,7 @@ const CSS = /* css */ `
   .ed-codex-content .md-h3 { font-size: 13px; color: var(--text); margin: 10px 0 3px; }
 
   /* Tutorial */
-  #ed-tutorial { position: static; order: 1; flex: none; width: 100%; background: rgba(12,16,24,0.95); border: 1px solid var(--gold); border-radius: 6px; padding: 12px 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.6); display: none; pointer-events: auto; z-index: 5; }
+  #ed-tutorial { position: static; order: 1; flex: 0 1 auto; max-height: 40%; overflow-y: auto; width: 100%; background: rgba(12,16,24,0.95); border: 1px solid var(--gold); border-radius: 6px; padding: 12px 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.6); display: none; pointer-events: auto; }
   #ed-tutorial.show { display: block; animation: tutorial-in 0.3s ease; }
   @keyframes tutorial-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
   #ed-tutorial .tut-head { display: flex; justify-content: space-between; align-items: center; font-size: 11px; letter-spacing: 2px; color: var(--gold-dim); text-transform: uppercase; }
@@ -438,12 +438,12 @@ const CSS = /* css */ `
   .ed-hint-pulse { animation: hint-pulse 1.1s ease-in-out infinite; outline: 2px solid var(--gold) !important; outline-offset: 2px; border-radius: 4px; }
   @keyframes hint-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(232,195,106,0.55); } 50% { box-shadow: 0 0 0 9px rgba(232,195,106,0); } }
 
-  #ed-help { position: relative; order: 2; flex: none; margin-top: auto; width: 100%; max-height: 45%; overflow-y: auto; font-size: 11px; color: var(--text-dim); background: rgba(10,12,16,0.7); padding: 8px 12px; border-radius: 4px; border: 1px solid rgba(232,195,106,0.15); line-height: 1.5; }
+  #ed-help { position: relative; order: 2; flex: 0 1 auto; min-height: 0; margin-top: auto; width: 100%; max-height: 35%; overflow-y: auto; font-size: 11px; color: var(--text-dim); background: rgba(10,12,16,0.7); padding: 8px 12px; border-radius: 4px; border: 1px solid rgba(232,195,106,0.15); line-height: 1.5; }
   #ui-root.help-collapsed #ed-help { display: none; }
   .ed-help-close { position: absolute; top: 2px; right: 4px; background: none; border: 0; color: var(--text-dim); font-size: 14px; cursor: pointer; padding: 0 3px; }
   #ed-help-open { position: static; order: 3; align-self: flex-end; margin-top: auto; width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(232,195,106,0.35); background: rgba(10,12,16,0.8); color: var(--gold); font-weight: 700; cursor: pointer; display: none; }
   #ui-root.help-collapsed #ed-help-open { display: block; }
-  #ui-root.menu-open #ed-help-open, #ui-root.tutorial-open #ed-help-open { display: none; }
+  #ui-root.menu-open #ed-help-open { display: none; }
   #ed-cursor { position: absolute; width: 20px; height: 20px; pointer-events: none; }
   .ed-error { color: var(--red); font-size: 12px; margin-top: 8px; min-height: 16px; }
   #ed-fps { position: absolute; top: 52px; right: 12px; font-size: 11px; color: var(--text-dim); background: rgba(0,0,0,0.4); padding: 2px 8px; border-radius: 3px; }
@@ -453,8 +453,7 @@ const CSS = /* css */ `
   #ui-root.menu-open #ed-minimap-wrap,
   #ui-root.menu-open #ed-help,
   #ui-root.menu-open #ed-objectives,
-  #ui-root.menu-open #ed-fps,
-  #ui-root.tutorial-open #ed-help { display: none; }
+  #ui-root.menu-open #ed-fps { display: none; }
   .ed-keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; font-size: 13px; color: var(--text-dim); text-align: left; }
   .ed-keys b { color: var(--gold); font-weight: 700; }
 
@@ -463,9 +462,12 @@ const CSS = /* css */ `
      other nor reach the command bar (issues 401 and 402). */
   #ed-right-column { position: absolute; top: 56px; right: 12px; width: 240px; bottom: calc(var(--ed-command-bar-h, 0px) + 2 * var(--bar-gap)); display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
   #ed-right-column > * { pointer-events: auto; }
-  #ed-objectives { position: static; order: 0; flex: 0 1 auto; min-height: 0; display: flex; flex-direction: column; width: 100%; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-  #ed-objectives .obj-list { min-height: 0; overflow-y: auto; padding-right: 2px; }
-  #ed-objectives details.obj-archive { margin-top: 4px; border-top: 1px solid var(--line); padding-top: 4px; }
+  #ed-objectives { position: static; order: 0; flex: 1 1 auto; min-height: 104px; display: flex; flex-direction: column; width: 100%; overflow: hidden; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+  #ed-objectives .obj-list { display: flex; flex-direction: column; min-height: 0; overflow: hidden; padding-right: 2px; }
+  #ed-objectives .obj-current { flex: 0 1 auto; min-height: 56px; overflow-y: auto; }
+  #ed-objectives .obj-current:empty { display: none; }
+  #ed-objectives details.obj-archive { display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; margin-top: 4px; border-top: 1px solid var(--line); padding-top: 4px; }
+  #ed-objectives .obj-archive-list { min-height: 0; overflow-y: auto; }
   #ed-objectives details.obj-archive > summary { cursor: pointer; font-size: 11px; color: var(--text-dim); list-style: none; line-height: 1.4; }
   #ed-objectives details.obj-archive > summary::-webkit-details-marker { display: none; }
   #ed-objectives details.obj-archive[open] > summary { color: var(--green); }
@@ -547,6 +549,8 @@ export class HUD {
   private objListEl!: HTMLElement;
   /** Objective state last rendered, so the archive `<details>` survives the 0.15 s refresh. */
   private objSignature = '';
+  /** The campaign-only folded-shortcuts default is applied when the mission first exists. */
+  private helpDefaultApplied = false;
   private dialogueEl!: HTMLElement;
   private dialogueTimer = 0;
   private hoverEl!: HTMLElement;
@@ -955,30 +959,37 @@ export class HUD {
       return `<div class="obj ${cls}"><span class="mark">${this.objectiveMark(row.state)}</span><span>${row.title}${suffix}</span></div>`;
     };
     const archive = done.length
-      ? `<details class="obj-archive"${archiveWasOpen ? ' open' : ''}><summary>${this.archiveSummary(rows, done.length)}</summary>${done
+      ? `<details class="obj-archive"${archiveWasOpen ? ' open' : ''}><summary>${this.archiveSummary(rows, done.length)}</summary><div class="obj-archive-list">${done
           .map(rowHtml)
-          .join('')}</details>`
+          .join('')}</div></details>`
       : '';
-    this.objListEl.innerHTML = current.map(rowHtml).join('') + archive;
-    // The first open happened before the rebuild; restore it after replacing the subtree.
-    if (archiveWasOpen) this.objListEl.querySelector('details')!.open = true;
+    // The current goals live in their own region: expanding the archive never scrolls them away.
+    this.objListEl.innerHTML = `<div class="obj-current">${current.map(rowHtml).join('')}</div>` + archive;
   }
 
-  /** One line for the finished goals, grouped by act: "Cumplidos (7) · Acto I ✔ 2/2 · Acto II ✔ 3/5". */
+  /**
+   * One line for the finished goals, grouped by act: "Finalizados (7) · Acto I ✔ 2/2 · Acto II ✔ 3/5".
+   * Only acts that appear in the titles are grouped; a failure is marked, never counted as a success.
+   */
   private archiveSummary(rows: { def: { title: string }; state: ObjState }[], finished: number): string {
-    const acts = new Map<string, { done: number; total: number }>();
+    const acts = new Map<string, { done: number; failed: number; total: number }>();
     for (const row of rows) {
-      const act = /^(Acto [IVX]+) ·/.exec(row.def.title)?.[1] ?? t('hud.objectives.archiveOther');
-      const counts = acts.get(act) ?? { done: 0, total: 0 };
+      const act = /^(Acto [IVX]+) ·/.exec(row.def.title)?.[1];
+      if (!act) continue;
+      const counts = acts.get(act) ?? { done: 0, failed: 0, total: 0 };
       counts.total++;
-      if (row.state === 'completed' || row.state === 'failed') counts.done++;
+      if (row.state === 'completed') counts.done++;
+      else if (row.state === 'failed') counts.failed++;
       acts.set(act, counts);
     }
     const parts = [...acts]
-      .filter(([, counts]) => counts.done > 0)
-      .map(([act, counts]) => `${escapeHtml(act)} ✔ ${counts.done}/${counts.total}`);
-    const head = t('hud.objectives.archive', { count: finished });
-    return parts.length ? `${head} · ${parts.join(' · ')}` : head;
+      .filter(([, counts]) => counts.done + counts.failed > 0)
+      .map(([act, counts]) => `${act} ✔ ${counts.done}/${counts.total}${counts.failed ? ` · ✖ ${counts.failed}` : ''}`);
+    if (!parts.length) return t('hud.objectives.archive', { count: finished });
+    const others = rows.filter((row) => !/^(Acto [IVX]+) ·/.test(row.def.title));
+    const otherDone = others.filter((row) => row.state === 'completed').length;
+    if (otherDone > 0) parts.push(`${t('hud.objectives.archiveOther')} ✔ ${otherDone}/${others.length}`);
+    return `${t('hud.objectives.archive', { count: finished })} · ${parts.join(' · ')}`;
   }
 
   private objectiveMark(state: ObjState): string {
@@ -1032,9 +1043,6 @@ export class HUD {
     open.textContent = '?';
     open.title = t('hud.help.openTitle');
     open.addEventListener('click', () => this.toggleHelp());
-    // In a campaign the right column already carries the objectives and the tutorial: start the
-    // shortcuts collapsed behind the "?" button so three panels never fight for the same space.
-    if (this.game.settings.missionId) this.root.classList.add('help-collapsed');
   }
 
   private refreshHelp(): void {
@@ -2993,6 +3001,12 @@ export class HUD {
     // campaign objectives panel (tick shared with the minimap); the chapter card
     // owns the screen until the player dismisses it
     if (this.game.mission) {
+      if (!this.helpDefaultApplied) {
+        // In a campaign the column already carries the objectives and the tutorial: start the
+        // shortcuts folded behind the "?" button so three panels never fight for the same space.
+        this.helpDefaultApplied = true;
+        this.root.classList.add('help-collapsed');
+      }
       const cardOpen = this.isMissionCardOpen();
       this.objPanelEl.style.display = cardOpen ? 'none' : '';
       if (!cardOpen && this.updateAcc > 0.15) this.refreshObjectives();

@@ -179,7 +179,7 @@ function violations(state: State): string[] {
   return found;
 }
 
-/** The objectives panel must end above the command bar, and its active goal must be fully visible. */
+/** The objectives panel must end above the command bar. */
 function objectivesFit(state: State): string[] {
   const found: string[] = [];
   const panel = state['ed-objectives'];
@@ -226,21 +226,22 @@ for (const { width, height } of RESOLUTIONS) {
         expect(objectivesFit(snap.archive), 'expanded objectives reach the command bar').toEqual([]);
         expect(objectivesFit(snap.helpOpen), 'objectives reach the command bar with the shortcuts open').toEqual([]);
 
-        // The active goal is the first row and stays inside the visible list, even with the archive open.
+        // The active goal is the first current row and stays wholly visible, even with the archive open.
         const fit = await page.evaluate(() => {
+          const g = (window as unknown as { game: any }).game;
           const panel = document.getElementById('ed-objectives')!;
-          const list = panel.querySelector('.obj-list')!;
-          const active = panel.querySelector('.obj:not(.done):not(.failed)');
+          const current = panel.querySelector('.obj-current')!;
+          const active = current.querySelector('.obj');
           const pr = panel.getBoundingClientRect();
-          const lr = list.getBoundingClientRect();
+          const cr = current.getBoundingClientRect();
           const ar = active?.getBoundingClientRect() ?? null;
           return {
-            active: !!ar,
-            inside: !!ar && ar.top >= lr.top - 0.5 && ar.bottom <= lr.bottom + 0.5 && ar.bottom <= pr.bottom + 0.5,
-            scrolls: list.scrollHeight > list.clientHeight + 1,
+            expected: g.mission.def.objectives[0].title as string,
+            text: active?.textContent ?? '',
+            inside: !!ar && ar.top >= cr.top - 0.5 && ar.bottom <= cr.bottom + 0.5 && ar.bottom <= pr.bottom + 0.5,
           };
         });
-        expect(fit.active, 'the late mission keeps one active objective').toBe(true);
+        expect(fit.text, 'the late mission keeps its first objective visible').toContain(fit.expected);
         expect(fit.inside, 'the active objective is fully visible').toBe(true);
         expect(errors).toEqual([]);
       });
