@@ -93,6 +93,9 @@ export const MISSIONS: MissionDef[] = [
         { x: 15.5 / CARAL_MAP_SIZE, z: 162.5 / CARAL_MAP_SIZE },
         { x: 18.5 / CARAL_MAP_SIZE, z: 173.5 / CARAL_MAP_SIZE },
       ],
+      // Act IV departure marker on the open beach south of the anchoveta banks; fishing placement
+      // keeps this clear so fishers working the shoals cannot satisfy the hold by presence alone.
+      departure: { x: 26 / CARAL_MAP_SIZE, z: 190 / CARAL_MAP_SIZE },
       discoveries: [{ heritageId: 'aspero_huaca_idolos', initial: true }],
       site: {
         id: 'caral_site',
@@ -319,12 +322,15 @@ export const MISSIONS: MissionDef[] = [
       {
         id: 'a4_partida',
         kind: 'hold',
-        pos: { ref: 'player', dx: -18, dz: -12 },
-        radius: 12,
+        // A dedicated beach marker south of the fishing banks: the fishers working the anchoveta
+        // shoals must not complete the departure on their own.
+        pos: { ref: 'departure', dx: 0, dz: 0 },
+        radius: 10,
         time: 15,
+        minUnits: 3,
         unitKind: UnitKind.WORKER,
         hidden: true,
-        title: 'Acto IV · Reúne a la comunidad en la playa para partir hacia Vichama',
+        title: 'Acto IV · Reúne a la comunidad (3 obreros) en la playa para partir hacia Vichama',
       },
     ],
     triggers: [

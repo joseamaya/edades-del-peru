@@ -1062,6 +1062,67 @@ test('the tutorial names the configured build keys', { tag: '@smoke' }, async ({
   expect(text).not.toContain('{key:');
 });
 
+test('the Act IV departure waits for the beach cohort, not the fishers', { tag: '@smoke' }, async ({ page }) => {
+  await boot(page);
+  const state = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    const mission = g.mission;
+    mission.objState.set('a4_partida', 'activo');
+    const workers = [...g.units.values()].filter((u: any) => u.owner === 0 && u.kind === 'worker');
+    const banks = [...g.resourceNodes.values()].filter((n: any) => n.kind === 'fishing');
+    const anchor = mission.getObjectiveAnchor('a4_partida');
+    const dist = (n: any) => Math.hypot(anchor.x - n.pos.x, anchor.z - n.pos.z);
+    const nearest = [...banks].sort((a: any, b: any) => dist(a) - dist(b))[0];
+    // Worst case: the whole crew works the bank closest to the departure marker.
+    workers.forEach((u: any) => {
+      u.pos.set(nearest.pos.x, g.terrain.getHeight(nearest.pos.x, nearest.pos.z), nearest.pos.z);
+    });
+    for (let i = 0; i < 20 * 20; i++) mission.update(1 / 20, i / 20);
+    const afterFishers = mission.getObjectiveState('a4_partida');
+    // Three of the community walk to the dedicated departure marker.
+    workers.slice(0, 3).forEach((u: any) => {
+      u.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+    });
+    for (let i = 0; i < 20 * 20; i++) mission.update(1 / 20, i / 20);
+    return {
+      afterFishers,
+      afterCohort: mission.getObjectiveState('a4_partida'),
+      anchor,
+      walkable: g.pathfinder.isWalkable(anchor.x, anchor.z),
+      workers: workers.length,
+      nearestBank: dist(nearest),
+      banks: banks.length,
+    };
+  });
+  expect(state.afterFishers, 'fishers on the banks must not end the mission').toBe('activo');
+  expect(state.walkable, 'the departure marker sits on walkable beach').toBe(true);
+  expect(state.workers).toBeGreaterThanOrEqual(3);
+  expect(state.banks).toBeGreaterThanOrEqual(3);
+  expect(state.nearestBank, 'even the closest bank is outside the hold').toBeGreaterThan(15);
+  expect(state.afterCohort).toBe('completed');
+});
+
+test('a load keeps the optional assembly waiting for the player', { tag: '@smoke' }, async ({ page }) => {
+  await boot(page);
+  const state = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    g.mission.objState.set('a2_excedente', 'completed');
+    const save = g.mission.toSave();
+    g.mission.applySave({
+      ...save,
+      objState: save.objState.map(([id, st]: [string, string]) => [id, id === 'a2_excedente' ? 'completed' : st]),
+    });
+    return {
+      pending: g.mission.getObjectiveState('obj_asamblea'),
+      canCall: g.mission.canActivateObjective('obj_asamblea'),
+    };
+  });
+  expect(state.pending).toBe('pendiente');
+  expect(state.canCall).toBe(true);
+});
+
 test('the Caral site uses the source LOD and has no procedural fallback mesh', async ({ page }) => {
   await boot(page);
   const state = await page.evaluate(() => {

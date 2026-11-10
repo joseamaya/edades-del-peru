@@ -132,6 +132,11 @@ export interface MissionLayout {
   /** Authored canal used by a mission mechanic (visual-only geometry + a reach target). */
   canal?: MissionCanal;
   /**
+   * Authored departure/rendezvous point (normalized), e.g. Caral's Act IV beach. Fishing banks keep
+   * clear of it so workers already on the shore cannot satisfy a `hold` objective by accident.
+   */
+  departure?: MissionAnchor;
+  /**
    * Authored fishing grounds (normalized). Placed before the procedural supply so a coastal
    * scenario's first banks sit in the intended water and opening sightline (issue 378).
    */
@@ -142,9 +147,9 @@ export interface MissionLayout {
   roads?: MissionRoad[];
 }
 
-/** World point. `ref` anchors to the player/enemy center, canal or landmark; without it, absolute. */
+/** World point. `ref` anchors to the player/enemy center, canal, landmark, site or departure point; without it, absolute. */
 export interface MissionPoint {
-  ref?: 'player' | 'enemy' | 'canal' | 'landmark' | 'site';
+  ref?: 'player' | 'enemy' | 'canal' | 'landmark' | 'site' | 'departure';
   dx: number;
   dz: number;
 }
@@ -203,6 +208,12 @@ export interface ObjectiveDef {
   /** Another objective id that must be completed before this one can activate. */
   requires?: string;
   time?: number;
+  /**
+   * For a `hold` objective: how many qualifying units must stand inside `radius` before the timer
+   * advances. Defaults to 1. Caral's Act IV departure uses three so the fishers already working the
+   * anchoveta banks cannot end the act on their own.
+   */
+  minUnits?: number;
   buildingKind?: BuildingKind;
   resource?: keyof Resources;
   /**

@@ -17,7 +17,12 @@ function stubGame() {
         owner,
         (game.harvested.get(owner) ?? new Map()).set(kind, (game.harvested.get(owner)?.get(kind) ?? 0) + amount),
       ),
-    units: new Map([[1, { id: 1, tag: '', owner: 0, dead: false, kind: UnitKind.WORKER, pos: { x: 0, z: 0 } }]]),
+    units: new Map(
+      [1, 2, 3, 4].map((id) => [
+        id,
+        { id, tag: '', owner: 0, dead: false, kind: UnitKind.WORKER, pos: { x: 0, z: 0 } },
+      ]),
+    ),
     buildings: new Map(),
     canalOpen: false,
     sitePhase: 'in_use' as CaralMayorPhase,
@@ -137,6 +142,54 @@ describe('Caral model mission', () => {
     expect(won).toBe(true);
   });
 
+  it('waits for a beach cohort before the community departs', () => {
+    const game = stubGame();
+    const mission = new Mission(game, CARAL, () => {});
+    expect(CARAL.objectives.find((o) => o.id === 'a4_partida')?.minUnits).toBe(3);
+    mission.start();
+    const save = mission.toSave();
+    mission.applySave({
+      ...save,
+      objState: save.objState.map(([id, st]) => [id, id === 'a4_partida' ? 'activo' : st]),
+    });
+    // One fisher at the anchor is not the community.
+    for (const id of [2, 3, 4]) game.units.delete(id);
+    for (let i = 0; i < 20; i++) mission.update(1, 0);
+    expect(mission.getObjectiveState('a4_partida')).toBe('activo');
+    expect(mission.getObjectiveProgress('a4_partida')?.current).toBe(0);
+    // Three workers gathered on the beach do complete it.
+    for (const id of [2, 3]) {
+      game.units.set(id, { id, tag: '', owner: 0, dead: false, kind: UnitKind.WORKER, pos: { x: 0, z: 0 } });
+    }
+    for (let i = 0; i < 16; i++) mission.update(1, 0);
+    expect(mission.getObjectiveState('a4_partida')).toBe('completed');
+  });
+
+  it('keeps the optional assembly pending across a load', () => {
+    const game = stubGame();
+    const mission = new Mission(game, CARAL, () => {});
+    const save = mission.toSave();
+    mission.applySave({
+      ...save,
+      objState: save.objState.map(([id, st]) => [id, id === 'a2_excedente' ? 'completed' : st]),
+    });
+    expect(mission.getObjectiveState('obj_asamblea')).toBe('pendiente');
+    // The plaza card can still invite the player to call it.
+    expect(mission.canActivateObjective('obj_asamblea')).toBe(true);
+  });
+
+  it('puts the departure beach away from the fishing banks', () => {
+    const size = CARAL.map.size;
+    const departure = CARAL.objectives.find((o) => o.id === 'a4_partida')!;
+    const anchor = CARAL.layout!.departure!;
+    const point = { x: anchor.x * size, z: anchor.z * size };
+    expect(departure.pos?.ref).toBe('departure');
+    for (const bank of CARAL.layout!.fishing ?? []) {
+      const distance = Math.hypot(point.x - bank.x * size, point.z - bank.z * size);
+      expect(distance, `bank at ${bank.x},${bank.z}`).toBeGreaterThan((departure.radius ?? 8) + 4);
+    }
+  });
+
   it('pauses construction while the communal store is empty and resumes when refilled', () => {
     const game = stubGame();
     game.players[0].resources.food = 0;
@@ -218,6 +271,7 @@ describe('Caral model mission', () => {
     const save = mission.toSave();
     mission.applySave({
       ...save,
+      fired: ['t_a3_shicras'],
       objState: save.objState.map(([id, st]) => [id, id === 'a3_shicras' ? 'completed' : st]),
     });
     expect(mission.getObjectiveState('a3_obra_relleno')).toBe('activo');

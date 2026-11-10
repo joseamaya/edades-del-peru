@@ -59,6 +59,8 @@ const AMBIENT_FAUNA_SEED = 13;
 const FISHING_SCAN_MARGIN = 4;
 /** Fishing banks keep a large reserve: the anchoveta shoals off Áspero fed the village. */
 const FISHING_RESERVE = { min: 280, max: 380 } as const;
+/** Procedural banks keep this far from an authored departure anchor (m). */
+const DEPARTURE_FISHING_CLEARANCE = 22;
 /** Authored maps keep tree clusters this far from the mission's start base. */
 const GROVE_START_CLEARANCE = 72;
 
@@ -983,6 +985,8 @@ export class WorldViewDecor {
     const cell = pf.grid.cell;
     const cols = pf.grid.cols;
     const existing = this.fishingNodes();
+    const departure = this.game.missionLayout?.departure;
+    const departurePoint = departure ? { x: departure.x * size, z: departure.z * size } : null;
     const candidates: { x: number; z: number }[] = [];
     for (let cz = 0; cz < cols; cz++) {
       for (let cx = 0; cx < cols; cx++) {
@@ -993,6 +997,9 @@ export class WorldViewDecor {
         if (!this.game.terrain.isSea(x, z)) continue;
         if (this.game.terrain.isRiver(x, z)) continue;
         if (existing.some((n) => distance2D(x, z, n.pos.x, n.pos.z) < 5)) continue;
+        if (departurePoint && distance2D(x, z, departurePoint.x, departurePoint.z) < DEPARTURE_FISHING_CLEARANCE) {
+          continue;
+        }
         const capacity = this.fishingCapacity(x, z);
         if (capacity < FISHERS_PER_GROUND) continue;
         candidates.push({ x, z });
