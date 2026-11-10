@@ -99,12 +99,12 @@ describe('site discoveries', () => {
     expect(onStart).toHaveBeenCalledOnce();
   });
 
-  it('does nothing while the fog of war is off', () => {
+  it('needs no reveal while the fog of war is off', () => {
     const discoveries = new Discoveries([{ heritageId: 'aspero_huaca_idolos', initial: true }], caral);
     const fow = fakeFow(false);
     const onStart = vi.fn();
     discoveries.update(0.1, fow, false, false, onStart);
-    expect(discoveries.sites[0].state).toBe('pending');
+    expect(discoveries.sites[0].state, 'nothing to clear, nothing left hanging').toBe('done');
     expect(onStart).not.toHaveBeenCalled();
     expect(fow.exploredAreas).toHaveLength(0);
   });

@@ -118,7 +118,7 @@ for (const mis of COMPLETABLE_MISSIONS) {
               }
               for (const id of o.heritageIds ?? []) {
                 // A gated tour needs a unit at each monument before the card is registered.
-                if (o.near) {
+                if (o.inspectRadius) {
                   const proxy = g.siteDef?.heritageProxies.find((p: any) => p.id === id);
                   const u = [...g.units.values()].find((unit: any) => unit.owner === 0 && !unit.dead) as any;
                   if (proxy && u) u.pos.set(proxy.x, g.terrain.getHeight(proxy.x, proxy.z), proxy.z);

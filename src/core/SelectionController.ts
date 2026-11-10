@@ -222,9 +222,12 @@ export class SelectionController {
     for (const id of ids) if (getHeritageBuilding(id)) this.game.visitedHeritage.add(id);
   }
 
-  /** Whether a living player unit stands within `radius` of a heritage card's proxy. */
+  /**
+   * Whether the local player has a unit within `radius` of a heritage card's proxy. Cards without a
+   * proxy (sites that do not author one) cannot be walked to, so they do not gate the visit.
+   */
   unitNearHeritage(id: HeritageBuildingId, radius: number): boolean {
-    const proxy = this.game.siteDef?.heritageProxies.find((p: { id: string }) => p.id === id);
+    const proxy = this.game.siteDef?.heritageProxies.find((entry: { id: string }) => entry.id === id);
     if (!proxy) return true;
     for (const u of this.game.units.values()) {
       if (u.owner === 0 && !u.dead && distance2D(u.pos.x, u.pos.z, proxy.x, proxy.z) <= radius) return true;

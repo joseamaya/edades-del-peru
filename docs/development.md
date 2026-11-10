@@ -480,12 +480,13 @@ Definition of Done and the building audit see
   Guarded by `tests/headless-game.test.ts` (sea/river levels, ford walkability) and
   `tests/e2e/caral-city.spec.ts` (the mask wired in the renderer, the drought vs the sea).
 - **Caral objective flow** (issue 390): `obj_complejos` activates on `t_a3_obra_muros` (all six monuments
-  stand) and gates each visit on `ObjectiveDef.near` (a player unit within 18 m of the card's proxy);
+  stand) and gates each visit on `ObjectiveDef.inspectRadius` (a player unit within 18 m of the card's proxy);
   `obj_asamblea` is announced with Act III; the Act III camera reveal is a `reveal` trigger effect that plays
   the discovery animation over the Pyramid Mayor. `MissionCanal.lockedUntilObjective` keeps the gate inert
   until `a2_canal`, and `MissionRings` draws a ground ring under the active `reach`/`hold` goals. Guards:
-  `tests/caral-acts.test.ts`, `tests/discoveries.test.ts`, `tests/tutorial.test.ts` and
-  `tests/e2e/caral-city.spec.ts`. No simulation rule changed, so the replay/save versions stay.
+  `tests/caral-acts.test.ts`, `tests/discoveries.test.ts`, `tests/mission-rings.test.ts`,
+  `tests/tutorial.test.ts` and `tests/e2e/caral-city.spec.ts`. No new simulation state or command
+  semantics, so the replay/save versions stay.
 - **Victory/defeat (conquest)**: a player is defeated only when **no building of theirs remains** (`Game.hasBuildings`),
   in both skirmish (`resolveConquest` via `Game.checkVictory`) and campaign (`Mission.checkBaseLost`). Do not go back to "losing the
   civic center ends the match": a full base with army must survive the loss of its center.

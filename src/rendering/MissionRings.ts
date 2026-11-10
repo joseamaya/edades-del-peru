@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import type { MissionGoal } from '../campaign/types';
 
 /**
  * Ground rings under the active `reach`/`hold` objectives: the tutorial says "the valley marker",
@@ -7,6 +8,7 @@ import * as THREE from 'three';
 export class MissionRings {
   private readonly group = new THREE.Group();
   private readonly rings = new Map<string, THREE.Mesh>();
+  private signature = '';
   private readonly geometry = new THREE.RingGeometry(0.82, 1, 48);
   private readonly material = new THREE.MeshBasicMaterial({
     color: 0xffd166,
@@ -27,10 +29,13 @@ export class MissionRings {
   }
 
   /** Create, move and drop rings so they match the mission's active goals. */
-  sync(goals: readonly { id: string; x: number; z: number; radius: number }[]): void {
+  sync(goals: readonly MissionGoal[]): void {
+    const visible = this.explored ? goals.filter((goal) => this.explored!(goal.x, goal.z)) : goals;
+    const signature = visible.map((g) => `${g.id}:${g.x.toFixed(1)}:${g.z.toFixed(1)}:${g.radius}`).join('|');
+    if (signature === this.signature) return;
+    this.signature = signature;
     const seen = new Set<string>();
-    for (const goal of goals) {
-      if (this.explored && !this.explored(goal.x, goal.z)) continue;
+    for (const goal of visible) {
       seen.add(goal.id);
       let ring = this.rings.get(goal.id);
       if (!ring) {
@@ -50,7 +55,8 @@ export class MissionRings {
     }
   }
 
-  update(time: number): void {
+  /** Pulse the shared material; the rings themselves only move when `sync` runs. */
+  pulse(time: number): void {
     this.material.opacity = 0.42 + Math.sin(time * 2.2) * 0.12;
   }
 

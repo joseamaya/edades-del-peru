@@ -163,7 +163,7 @@ export class Game {
   mapLabels: MapLabels | null = null;
   /** Fog-clearing "zone discovered" announcements for authored sites. */
   discoveries: Discoveries | null = null;
-  /** Ground rings under the active reach/hold objectives (presentation only). */
+  /** Ground rings under the active reach/hold objectives (presentation only; follows the live fog). */
   missionRings: MissionRings | null = null;
   /** Authored canal target in world units (mission mechanic + visual). */
   canalSite: { x: number; z: number } | null = null;
@@ -577,7 +577,7 @@ export class Game {
     this.missionRings = new MissionRings(
       this.scene,
       (x, z) => this.terrain.getHeight(x, z),
-      s.fogOfWar ? (x, z) => this.fow.isExplored(x, z) : null,
+      (x, z) => !this.settings.fogOfWar || this.fow.isExplored(x, z),
     );
     // The authored site has thin walls and doors; 1 m cells keep them solid
     // without closing the narrow residential openings.
@@ -1638,7 +1638,8 @@ export class Game {
   toggleCanal(): boolean {
     if (!this.canalSite) return false;
     const locked = this.missionLayout?.canal?.lockedUntilObjective;
-    if (locked && this.mission?.getObjectiveState(locked) === 'pendiente') {
+    const lockState = locked ? this.mission?.getObjectiveState(locked) : 'activo';
+    if (lockState !== 'activo' && lockState !== 'completed') {
       this.hud?.showToast(t('hud.toast.canalLocked'), 'info');
       return this.canalOpen;
     }
@@ -2016,7 +2017,7 @@ export class Game {
     const running = this.runtime.update(dt, time);
     if (this.missionRings) {
       this.missionRings.sync(this.mission?.activeGoals() ?? []);
-      this.missionRings.update(time);
+      this.missionRings.pulse(time);
     }
     return running;
   }

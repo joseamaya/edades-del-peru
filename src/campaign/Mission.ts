@@ -10,6 +10,7 @@ import {
   TriggerDef,
   TriggerEffect,
   MissionPoint,
+  MissionGoal,
 } from './types';
 import type { HeritageBuildingId } from '../model/defs/heritage';
 import { BuildingKind, OrderKind, Resources } from '../core/types';
@@ -70,8 +71,8 @@ export class Mission {
    * Active `reach`/`hold` objectives with a ground point, for the world markers. The tutorial text
    * ("hasta la marca del valle") only makes sense if the marker is drawn.
    */
-  activeGoals(): { id: string; x: number; z: number; radius: number }[] {
-    const goals: { id: string; x: number; z: number; radius: number }[] = [];
+  activeGoals(): MissionGoal[] {
+    const goals: MissionGoal[] = [];
     for (const o of this.def.objectives) {
       if (!o.pos || (o.kind !== 'reach' && o.kind !== 'hold')) continue;
       if (this.objState.get(o.id) !== 'activo') continue;
@@ -84,8 +85,8 @@ export class Mission {
   /** Radius an active `inspect` objective demands around a card, or null when the visit is free. */
   inspectRadiusFor(id: HeritageBuildingId): number | null {
     for (const o of this.def.objectives) {
-      if (o.kind !== 'inspect' || !o.near || !(o.heritageIds ?? []).includes(id)) continue;
-      if (this.objState.get(o.id) === 'activo') return o.near;
+      if (o.kind !== 'inspect' || !o.inspectRadius || !(o.heritageIds ?? []).includes(id)) continue;
+      if (this.objState.get(o.id) === 'activo') return o.inspectRadius;
     }
     return null;
   }

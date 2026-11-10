@@ -317,7 +317,7 @@ export const MISSIONS: MissionDef[] = [
         hidden: true,
         // The pyramids only stand once the walls are finished, and the visit is a walk through them,
         // not a click from the beach.
-        near: 18,
+        inspectRadius: 18,
         title: 'Recorre los seis complejos piramidales de Caral Alto',
       },
       {

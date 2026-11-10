@@ -183,20 +183,14 @@ Dialogue speaker labels must not say "Comandante" in this mission.
   them. The depth, duration and the extent of the green are inferred staging: the dossier documents the
   El Niño floods, the dunes and the lomas as an ecological zone.
 - **Drought** (`Game.startEnvironmentalEvent('drought')`, 40 s): the green turns to sand in patches (the
-<<<<<<< HEAD
   documented sand advance), a warm grade bleaches the ground, the river surface drops to a thread, the haze
   turns dusty, the yield of every standing field dries with the level (`farmYieldMultiplier`) so a field sown
   again during the drought never returns to its irrigated harvest, and about one riverside tree in three dies.
   Flood and drought are meant to be told apart at a glance from the normal camera.
-=======
-  documented sand advance), the river surface drops, the haze turns dusty, the yield of every standing
-  field dries with the level (`farmYieldMultiplier`), so a field sown again during the drought never
-  returns to its irrigated harvest, and about one riverside tree in three dies.
 - **Act flow**: Act III reveals the city with the discovery animation (`reveal` effect), so the camera does
   not open on unexplored fog. The assembly is announced with Act III, and the pyramid tour (`obj_complejos`)
   waits until the walls are finished, when all six complexes stand; each card needs a unit at its own
-  monument (`ObjectiveDef.near`), so the tour is a walk through the city, not a click from the beach.
->>>>>>> 9c6164c (fix(caral): gate the pyramid tour, announce the assembly and reveal the city (#390))
+  monument (`ObjectiveDef.inspectRadius`), so the tour is a walk through the city, not a click from the beach.
 - **Narration**: an anonymous narrator (`MissionDef.narrator`); no "Comandante" label, no invented names.
 - **Tutorial**: ten steps (select, coast, house, valley, field, canal, storage, nets, pyramid, works) docked
   under the objectives; the canal step explains the gate and the last one the communal-store supply during

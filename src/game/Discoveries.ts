@@ -77,7 +77,11 @@ export class Discoveries {
     cinematic: boolean,
     onStart: (site: DiscoverySite) => void,
   ): void {
-    if (!fogOn) return;
+    if (!fogOn) {
+      // With the fog off there is nothing to clear: a scripted reveal still counts as done.
+      for (const site of this.sites) if (site.state !== 'done') site.state = 'done';
+      return;
+    }
     if (this.restored) {
       // Only the fog restored at load counts as "already discovered"; later exploration still animates.
       this.restored = false;

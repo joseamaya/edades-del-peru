@@ -184,6 +184,14 @@ export interface ObjectiveProgress {
   format: 'count' | 'time';
 }
 
+/** Ground marker for an active objective (`Mission.activeGoals` → `MissionRings`). */
+export interface MissionGoal {
+  id: string;
+  x: number;
+  z: number;
+  radius: number;
+}
+
 export interface ObjectiveDef {
   id: string;
   kind: ObjectiveKind;
@@ -233,7 +241,7 @@ export interface ObjectiveDef {
    * `inspect` only: a player unit must be this close (world metres) to the card being visited, so
    * the objective cannot be completed from the other side of the map.
    */
-  near?: number;
+  inspectRadius?: number;
   /** Field card that receives a `deliver` objective's materials (shows a hand-over command). */
   heritageId?: HeritageBuildingId;
   /** Amount handed over per `deliver` command; defaults to 50. */

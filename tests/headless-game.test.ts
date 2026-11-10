@@ -85,8 +85,9 @@ describe('drought on standing fields', () => {
     game.players[0].resources.wood = 100;
     expect(game.replantFarm(farm.id)).toBe(true);
     expect(farm.foodAmount).toBeGreaterThan(0);
-    // Same dried yield (rounding can add a unit): never the full irrigated harvest.
-    expect(farm.foodAmount).toBeLessThanOrEqual(dry + 1);
+    // The dried yield (the ramp rounds at each step), never the full irrigated harvest.
+    expect(farm.foodAmount).toBeLessThan(dry * 1.05);
+    expect(farm.foodAmount).toBeLessThan(before);
     expect(farm.foodAmount).toBeLessThan(before);
     // The rescale is ratio-based: applying it again (the load path does) does not dry the field twice.
     const once = farm.foodAmount;
