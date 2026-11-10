@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { mergeStaticByMaterial } from './mergeStatic';
 import { RNG, cosmeticRandom, weightedPick } from '../util/rng';
 import { MaterialTex } from './Textures';
@@ -443,17 +444,25 @@ export class ResourceNodeView {
     }
     const wood = mat('dry-wood', { map: MaterialTex.bark(), color: '#6f6152', roughness: 1 });
     const trunkHeight = 4.1;
-    const trunk = new THREE.Mesh(cylGeo(0.2, 0.42, trunkHeight, 6), wood);
-    trunk.position.y = trunkHeight / 2;
-    this.add(trunk);
+    const parts: THREE.BufferGeometry[] = [];
+    const trunk = cylGeo(0.2, 0.42, trunkHeight, 6).clone();
+    trunk.translate(0, trunkHeight / 2, 0);
+    parts.push(trunk);
     for (let i = 0; i < 4; i++) {
       const a = (i / 4) * Math.PI * 2 + 0.4;
       const length = 1.4 + (i % 2) * 0.5;
-      const branch = new THREE.Mesh(cylGeo(0.06, 0.14, length, 5), wood);
-      branch.position.set(Math.cos(a) * 0.4, trunkHeight * (0.55 + i * 0.09), Math.sin(a) * 0.4);
-      branch.rotation.z = 0.85 + (i % 2) * 0.15;
-      branch.rotation.y = a;
-      this.add(branch);
+      const branch = cylGeo(0.06, 0.14, length, 5).clone();
+      branch.rotateZ(0.85 + (i % 2) * 0.15);
+      branch.rotateY(a);
+      branch.translate(Math.cos(a) * 0.4, trunkHeight * (0.55 + i * 0.09), Math.sin(a) * 0.4);
+      parts.push(branch);
+    }
+    // One merged mesh: a bare tree must not add five draw calls to the grove.
+    const bare = mergeGeometries(parts, false);
+    parts.forEach((geometry) => geometry.dispose());
+    if (bare) {
+      bare.computeBoundingSphere();
+      this.add(new THREE.Mesh(bare, wood));
     }
   }
 
@@ -463,6 +472,11 @@ export class ResourceNodeView {
 
   /** Play the depletion animation; the node marks itself dead when it ends. */
   deplete(): void {
+    if (this.dry) {
+      // A dry tree has no leafy instance to drop: it just goes.
+      this.node.remove();
+      return;
+    }
     if (this.node.kind === 'tree') {
       if (this.treeMgr && this.node.treeSlot >= 0) {
         this.treeMgr.startFall(this.node.treeSlot);

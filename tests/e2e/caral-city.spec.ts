@@ -1049,16 +1049,28 @@ test('the city lives in use before the drought and is sealed afterwards', async 
     const afterFire = { phase: g.sitePhase as string, drought: (g.environment.drought ?? 0) as number };
     for (let i = 0; i < 25; i++) g.update(1, i);
     const afterBeat = { phase: g.sitePhase as string, drought: (g.environment.drought ?? 0) as number };
+    const beatListed = (document.querySelector('#ed-objectives')?.textContent ?? '').includes('La ciudad en uso');
     document.querySelector<HTMLElement>('.ed-mission-card')?.click();
     g.mission.update(0.1, 0);
+    const capBefore = g.scene.getObjectByName('sealed_summit') !== undefined;
     g.mission.objState.set('a4_sellar', 'completed');
     g.mission.update(0.1, 0);
-    return { afterFire, afterBeat, sealed: g.sitePhase as string };
+    return {
+      afterFire,
+      afterBeat,
+      beatListed,
+      capBefore,
+      sealed: g.sitePhase as string,
+      capAfter: g.scene.getObjectByName('sealed_summit') !== undefined,
+    };
   });
   expect(out.afterFire.phase, 'the fair and the sacred fire exist before the crisis').toBe('in_use');
   expect(out.afterFire.drought, 'no drought during the prosperity beat').toBe(0);
   expect(out.afterBeat.drought, 'the drought comes after the city has lived').toBeGreaterThan(0);
+  expect(out.beatListed, 'a beat is not a listed objective').toBe(false);
+  expect(out.capBefore).toBe(false);
   expect(out.sealed, 'sealing the Mayor changes the phase').toBe('sealed');
+  expect(out.capAfter, 'and buries the summit under stone').toBe(true);
 });
 
 test('a drought save restores the sealed city and the dry grove', async ({ page }) => {

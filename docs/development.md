@@ -491,10 +491,12 @@ Definition of Done and the building audit see
   completes (fair, pilgrims, sacred fire) and Act IV waits for a 20 s `wait` objective (`a3_prosperidad`),
   so the prosperous city exists before the crisis; `activatedAt` (saved with the mission) makes the beat
   resume rather than complete instantly on an older save. Completing `a4_sellar` moves the site to the new
-  `sealed` phase (`CARAL_PHASE_PLAN`), which restores the bare-plaster Mayor, hides the fair tents through
-  `ArchPlacement.until` (`standsIn`) and stops the fire and the cooking smoke. The drought only dries the
+  `sealed` phase (`CARAL_PHASE_PLAN`), which restores the bare-plaster Mayor, buries its summit under a
+  stone mound (`sealed_summit`, `Game.syncSealCap`), hides the fair tents through `ArchPlacement.until`
+  (`standsIn`) and stops the fire and the cooking smoke (`SiteLife.quietPhase`). The drought only dries the
   riparian grove (`ResourceNodeView.setDry`, bare trunk, no fall) instead of killing trees map-wide, and
-  `RuntimeController.applySnapshot` rebuilds it from the drought level. Guards: `tests/caral-acts.test.ts`,
+  `RuntimeController.applySnapshot` rebuilds it from the drought level. A `wait` beat counts from
+  `activatedAt`, which the mission save persists. Guards: `tests/caral-acts.test.ts`,
   `tests/architecture-kit.test.ts`, `tests/headless-game.test.ts` and `tests/e2e/caral-city.spec.ts` (the
   prosperity beat and a sealed/dry save).
 - **Victory/defeat (conquest)**: a player is defeated only when **no building of theirs remains** (`Game.hasBuildings`),

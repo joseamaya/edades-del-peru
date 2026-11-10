@@ -926,7 +926,8 @@ export class HUD {
     const mis = this.game.mission;
     if (!mis || this.isMissionCardOpen()) return;
     this.objPanelEl.style.display = 'block';
-    const items = mis.activeObjectives;
+    // `wait` beats (Caral's prosperity) are narrative; a countdown would read as a chore.
+    const items = mis.activeObjectives.filter(({ def }) => def.kind !== 'wait');
     const titles = this.objectiveTitles(items.map(({ def }) => def));
     this.objListEl.innerHTML = items
       .map(({ def, state }, i) => {

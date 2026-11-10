@@ -170,8 +170,9 @@ Dialogue speaker labels must not say "Comandante" in this mission.
   the Act III offering, temporary fair tents once the city is in use, two allied hamlets up the valley,
   riparian deer and birds, pelicans off Áspero, surf on the shore and a flute line for the era.
 - **Sealing**: completing `a4_sellar` moves the site to the `sealed` phase, which puts the bare-plaster
-  Mayor back, retires the fair tents (`ArchPlacement.until`) and stops the summit fire and the cooking smoke:
-  the abandonment is visible instead of implied.
+  Mayor back, buries its summit under a stone mound (`sealed_summit`), retires the fair tents
+  (`ArchPlacement.until`) and stops the summit fire and the cooking smoke: the abandonment is visible
+  instead of implied.
 - **Water**: the sea keeps its level all year; only the Supe (and any inland water) follows the seasons.
   `Water` masks the visual offset with the authored coastline (`caralHeightmap.ts`), so the Pacific neither
   floods nor dries with the river, and the fishing banks (always placed in the sea) keep their rings and nets
