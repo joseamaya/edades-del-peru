@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { OPENING_BASE_CLEARANCE } from '../../src/core/Config';
 import { CARAL_CIRCULAR_ALTAR, CARAL_SITE_BLOCKERS } from '../../src/model/defs/sites';
 import { CARAL_CITY_BLOCKERS } from '../../src/model/defs/caralCity';
+import { CANAL_WATER_LIFT } from '../../src/rendering/canal';
 
 const URL = '/?mission=m1_caral&seed=3000&fog=0&low=1&noloop=1&intro=0';
 
@@ -209,7 +210,7 @@ test('the authored site blocks monument footprints without sealing the city', as
       // From Áspero across a ford of the Supe to the city.
       route: g.pathfinder.pathfind(34, 172, 164, 53).length,
       buildOnMayor: g.canPlace(164, 30, 4),
-      buildInValley: g.canPlace(48, 120, 4),
+      buildInValley: g.canPlace(48, 110, 4),
       buildInGap: g.canPlace(166, 136.5, 4),
       // The city in use: a quincha house of the architecture kit blocks its footprint.
       residentialWall: g.pathfinder.isWalkable(house.x, house.z),
@@ -732,6 +733,45 @@ test('a Caral Blender pyramid opens an educational field card', async ({ page })
   expect(complexes).toBe('completed');
 });
 
+test('the Caral canal is an earth trace that follows the relief', async ({ page }) => {
+  await boot(page);
+  const state = await page.evaluate((waterLift) => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    const group = g.canalGroup;
+    const children = group ? [...group.children] : [];
+    const water = group?.getObjectByName('canal_water');
+    const position = water?.geometry?.attributes?.position;
+    let maxError = 0;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    if (position) {
+      for (let i = 0; i < position.count; i++) {
+        const x = position.getX(i);
+        const y = position.getY(i);
+        const z = position.getZ(i);
+        maxError = Math.max(maxError, Math.abs(y - g.terrain.getHeight(x, z) - waterLift));
+        minY = Math.min(minY, y);
+        maxY = Math.max(maxY, y);
+      }
+    }
+    return {
+      path: g.canalPath?.length ?? 0,
+      names: children.map((child: any) => child.name),
+      boxes: children.filter((child: any) => child.geometry?.type === 'BoxGeometry').length,
+      maxError,
+      span: maxY - minY,
+      hasGate: !!group?.getObjectByName('canal_gate'),
+    };
+  }, CANAL_WATER_LIFT);
+  expect(state.path).toBeGreaterThanOrEqual(4);
+  expect(state.names).toEqual(expect.arrayContaining(['canal_bed', 'canal_water', 'canal_bank', 'canal_gate']));
+  expect(state.boxes, 'Caral must not use the legacy canal boxes').toBe(0);
+  expect(state.maxError, 'the water ribbon follows the terrain').toBeLessThan(0.02);
+  expect(state.span).toBeGreaterThan(0.1);
+  expect(state.hasGate).toBe(true);
+});
+
 test('opening the Caral canal raises the yield at its banks', async ({ page }) => {
   await boot(page);
   await page.evaluate(() => {
@@ -741,16 +781,20 @@ test('opening the Caral canal raises the yield at its banks', async ({ page }) =
   });
   const before = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
+    const path = (g.canalPath ?? []) as Array<{ x: number; z: number }>;
     return {
       site: g.canalSite,
       open: g.isCanalOpen(),
       yield: g.farmYieldAt(g.canalSite.x, g.canalSite.z),
       waterColor: g.canalWater.material.color.getHex(),
-      gateY: g.canalGate.position.y,
+      gateVisible: g.canalGate.visible,
+      irrigation: path.map((p) => g.authoredCanalAt(p.x, p.z)),
     };
   });
   expect(before.site).not.toBeNull();
   expect(before.open).toBe(false);
+  expect(before.irrigation.length).toBeGreaterThanOrEqual(4);
+  expect(before.irrigation.every((value: number) => value === 0)).toBe(true);
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     g.camera.moveTo(g.canalSite.x, g.canalSite.z, true);
@@ -758,16 +802,16 @@ test('opening the Caral canal raises the yield at its banks', async ({ page }) =
   await page.waitForTimeout(800);
   const point = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    const box = new window.THREE.Box3().setFromObject(g.canalGroup);
-    // Mid-height of the heritage volume: its top (the 7-person-tall in-use pyramid) can fall off-screen
-    // with this close test camera.
-    const center = box.getCenter(new window.THREE.Vector3());
-    const projected = center.project(g.camera.camera);
+    const path = (g.canalPath ?? []) as Array<{ x: number; z: number }>;
+    const p = path[Math.floor(path.length / 2)] ?? g.canalSite;
+    const water = new window.THREE.Vector3(p.x, g.terrain.getHeight(p.x, p.z) + 0.1, p.z);
+    const projected = water.project(g.camera.camera);
     return { x: (projected.x * 0.5 + 0.5) * window.innerWidth, y: (-projected.y * 0.5 + 0.5) * window.innerHeight };
   });
   await page.mouse.click(point.x, point.y);
   await expect(page.locator('#ed-bottom')).toContainText('Canal comunal del valle');
   await page.getByRole('button', { name: /Abrir compuerta/ }).dispatchEvent('pointerdown', { button: 0 });
+  await expect(page.locator('.ed-toast', { hasText: 'chacras' })).toBeVisible();
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     g.mission.update(0.1, 0);
@@ -775,17 +819,20 @@ test('opening the Caral canal raises the yield at its banks', async ({ page }) =
   });
   const after = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
+    const path = (g.canalPath ?? []) as Array<{ x: number; z: number }>;
     return {
       open: g.isCanalOpen(),
       yield: g.farmYieldAt(g.canalSite.x, g.canalSite.z),
       waterColor: g.canalWater.material.color.getHex(),
-      gateY: g.canalGate.position.y,
+      gateVisible: g.canalGate.visible,
+      irrigation: path.map((p) => g.authoredCanalAt(p.x, p.z)),
     };
   });
   expect(after.open).toBe(true);
   expect(after.yield).toBeGreaterThan(before.yield);
   expect(after.waterColor).not.toBe(before.waterColor);
-  expect(after.gateY).toBeGreaterThan(before.gateY);
+  expect(after.gateVisible).toBe(false);
+  expect(after.irrigation.every((value: number) => value > 0.9)).toBe(true);
   const riego = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     g.mission.update(0.2, 0);
@@ -793,11 +840,36 @@ test('opening the Caral canal raises the yield at its banks', async ({ page }) =
   });
   expect(riego).toBe('completed');
 
+  const guards = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const path = (g.canalPath ?? []) as Array<{ x: number; z: number }>;
+    const p = path[Math.floor(path.length / 2)];
+    const spot = g.findFreeSpot(g.canalSite.x + 10, g.canalSite.z + 10, 4);
+    return { onCanal: g.canPlace(p.x, p.z, 4), reserved: g.isReserved(p.x, p.z), offCanal: !!spot };
+  });
+  expect(guards.onCanal, 'a building cannot sit in the channel').toBe(false);
+  expect(guards.reserved, 'props stay off the canal corridor').toBe(true);
+  expect(guards.offCanal, 'the valley beside the canal remains buildable').toBe(true);
+
   const farm = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
-    const site = g.canalSite;
-    if (!g.executeCommand({ kind: 'place', building: 'farm', x: site.x, z: site.z })) return null;
-    const placed = [...g.buildings.values()].find((b: any) => b.kind === 'farm' && b.owner === 0);
+    const path = (g.canalPath ?? []) as Array<{ x: number; z: number }>;
+    const i = Math.floor(path.length / 2);
+    const a = path[i - 1] ?? path[i];
+    const b = path[i + 1] ?? path[i];
+    const dx = b.x - a.x;
+    const dz = b.z - a.z;
+    const len = Math.hypot(dx, dz) || 1;
+    let placed: any = null;
+    for (const side of [-4, 4]) {
+      const x = path[i].x - (dz / len) * side;
+      const z = path[i].z + (dx / len) * side;
+      if (!g.executeCommand({ kind: 'place', building: 'farm', x, z })) continue;
+      placed = [...g.buildings.values()].find(
+        (candidate: any) => candidate.kind === 'farm' && candidate.owner === 0 && candidate.pos.x === x,
+      );
+      if (placed) break;
+    }
     if (!placed) return null;
     placed.constructionComplete = true;
     return { id: placed.id as number, foodOpen: placed.foodAmount as number };
@@ -810,6 +882,40 @@ test('opening the Caral canal raises the yield at its banks', async ({ page }) =
   }, farm!.id);
   expect(closed.open).toBe(false);
   expect(closed.food).toBeLessThan(farm!.foodOpen);
+});
+
+test('the Caral canal water follows the gate, the flood and the drought', async ({ page }) => {
+  await boot(page);
+  const states = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    const snap = () => ({
+      gate: g.canalGate.visible as boolean,
+      color: g.canalWater.material.color.getHex() as number,
+      opacity: g.canalWater.material.opacity as number,
+    });
+    g.environment.wet_season = 0;
+    g.environment.drought = 0;
+    if (g.isCanalOpen()) g.toggleCanal();
+    g.updateCanalVisual();
+    const closed = snap();
+    g.toggleCanal();
+    const open = snap();
+    g.toggleCanal();
+    g.startEnvironmentalEvent('wet_season');
+    g.updateEnvironment(100);
+    const wet = snap();
+    g.startEnvironmentalEvent('drought');
+    g.updateEnvironment(100);
+    const drought = snap();
+    return { closed, open, wet, drought };
+  });
+  expect(states.closed.gate, 'the stone plug is in place when the gate is closed').toBe(true);
+  expect(states.open.gate, 'the plug is removed when the gate opens').toBe(false);
+  expect(states.open.color).not.toBe(states.closed.color);
+  expect(states.wet.gate, 'the flood runs through even with the gate closed').toBe(false);
+  expect(states.drought.gate, 'the drought dries the channel and brings the plug back').toBe(true);
+  expect(states.drought.color).toBe(states.closed.color);
 });
 
 test('the Chacra and Troje panels explain their historical abstractions', async ({ page }) => {

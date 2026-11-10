@@ -57,3 +57,15 @@ export function buildRibbon(
   geo.computeVertexNormals();
   return geo;
 }
+
+/** Shift a polyline sideways by `distance` (positive = left of the direction of travel). */
+export function offsetPolyline(points: { x: number; z: number }[], distance: number): { x: number; z: number }[] {
+  return points.map((p, i) => {
+    const prev = points[i - 1] ?? p;
+    const next = points[i + 1] ?? p;
+    const dx = next.x - prev.x;
+    const dz = next.z - prev.z;
+    const len = Math.hypot(dx, dz) || 1;
+    return { x: p.x - (dz / len) * distance, z: p.z + (dx / len) * distance };
+  });
+}

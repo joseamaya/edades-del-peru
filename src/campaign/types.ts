@@ -40,6 +40,13 @@ export interface MissionCanal {
   length?: number;
   /** Rotation of the canal axis (radians). */
   yaw?: number;
+  /**
+   * Optional normalized polyline from the intake to the fields. When present, the canal follows
+   * this trace instead of the straight box; the first point is the intake and the gate.
+   */
+  path?: MissionAnchor[];
+  /** Channel width in world units for the authored trace; defaults to 2.2. */
+  width?: number;
   /** Initial gate state; defaults to closed. */
   initiallyOpen?: boolean;
   /** Whether the authored canal contributes irrigation yield to nearby farms. */

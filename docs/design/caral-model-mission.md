@@ -152,6 +152,12 @@ Dialogue speaker labels must not say "Comandante" in this mission.
   `cotton_nets` technology, researched at the Troje with valley food and wood, stands for cotton going down
   to the coast. Caral sees only its own buildings, units and technologies (`allowedBuildings`,
   `allowedUnits`, the match-filtered tech tree); there is no silver.
+- **Communal canal**: an earth acequia from the Supe's west bank along the valley floor past the chacras
+  (`layout.canal.path`), built as ribbons that sample the relief (no factory walls or boxes). It has low earth
+  berms and a low stone plug at the intake; the water runs when the gate is open or the winter flood
+  comes and dries in the act IV drought. Opening it boosts farms within 2.5 m of the trace. The trace and the
+  plug are game abstractions: the sources document irrigation canals and springs but no mapped channel.
+  m3 and m6 still use the legacy straight canal.
 - **Living valley**: cooking smoke behind dwellings, the sacred fire on the Pyramid Mayor and a blaze for
   the Act III offering, temporary fair tents once the city is in use, two allied hamlets up the valley,
   riparian deer and birds, pelicans off Áspero, surf on the shore and a flute line for the era.

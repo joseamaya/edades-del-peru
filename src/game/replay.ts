@@ -3,7 +3,7 @@ import type { Resources } from '../core/types';
 import type { BuildingKind, CombatStance, Order, OrderTarget, UnitKind } from '../core/types';
 
 /** Bump when the replay schema or the simulation changes in a breaking way. */
-export const REPLAY_VERSION = 23;
+export const REPLAY_VERSION = 24;
 
 /** Stable localStorage key (see AGENTS: keep storage keys stable). */
 const STORAGE_KEY = 'peru-replay';
