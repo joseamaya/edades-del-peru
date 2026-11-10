@@ -223,14 +223,20 @@ export class SelectionController {
   }
 
   /**
-   * Whether the local player has a unit within `radius` of a heritage card's proxy. Cards without a
-   * proxy (sites that do not author one) cannot be walked to, so they do not gate the visit.
+   * Whether the local player has a unit within `radius` of a heritage card's footprint. The distance
+   * is measured to the proxy rectangle, not its centre: a large pyramid centre is unreachable. Cards
+   * without a proxy (sites that do not author one) cannot be walked to, so they do not gate the visit.
    */
   unitNearHeritage(id: HeritageBuildingId, radius: number): boolean {
     const proxy = this.game.siteDef?.heritageProxies.find((entry: { id: string }) => entry.id === id);
     if (!proxy) return true;
+    const halfW = proxy.w / 2;
+    const halfD = proxy.d / 2;
     for (const u of this.game.units.values()) {
-      if (u.owner === 0 && !u.dead && distance2D(u.pos.x, u.pos.z, proxy.x, proxy.z) <= radius) return true;
+      if (u.owner !== 0 || u.dead) continue;
+      const dx = Math.max(0, Math.abs(u.pos.x - proxy.x) - halfW);
+      const dz = Math.max(0, Math.abs(u.pos.z - proxy.z) - halfD);
+      if (Math.hypot(dx, dz) <= radius) return true;
     }
     return false;
   }

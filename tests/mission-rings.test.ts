@@ -23,19 +23,14 @@ describe('mission goal rings', () => {
     ringsFx.dispose();
   });
 
-  it('hides a goal under unexplored fog and pulses the shared material', () => {
+  it('keeps the quest marker over fog and pulses its material', () => {
     const scene = new THREE.Scene();
-    let explored = false;
     const ringsFx = new MissionRings(
       scene,
       () => 2,
-      () => explored,
     );
     ringsFx.sync([{ id: 'a1_valle', x: 10, z: 10, radius: 8 }]);
-    expect(rings(scene)).toHaveLength(0);
-    explored = true;
-    ringsFx.sync([{ id: 'a1_valle', x: 10, z: 10, radius: 8 }]);
-    expect(rings(scene)).toHaveLength(1);
+    expect(rings(scene), 'the marker guides the player without revealing terrain').toHaveLength(1);
     const material = (rings(scene)[0] as THREE.Mesh).material as THREE.MeshBasicMaterial;
     ringsFx.pulse(0);
     const atZero = material.opacity;

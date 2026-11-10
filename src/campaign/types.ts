@@ -251,6 +251,11 @@ export interface ObjectiveDef {
   era?: Era;
   hidden?: boolean;
   /**
+   * Starts pending but listed in the objective panel, so the player knows an optional action is
+   * available (Caral's communal assembly) and only calls it from its card.
+   */
+  awaitsCall?: boolean;
+  /**
    * Objectives sharing a group are alternatives: the group is satisfied when
    * any member is (a strategic choice, e.g. assault *or* besiege). Omit for a
    * required objective.

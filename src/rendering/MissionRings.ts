@@ -21,8 +21,6 @@ export class MissionRings {
   constructor(
     scene: THREE.Scene,
     private readonly groundAt: (x: number, z: number) => number,
-    /** Fog lookup; rings hide while their ground is unexplored. */
-    private readonly explored: ((x: number, z: number) => boolean) | null,
   ) {
     this.group.name = 'mission-rings';
     scene.add(this.group);
@@ -30,12 +28,11 @@ export class MissionRings {
 
   /** Create, move and drop rings so they match the mission's active goals. */
   sync(goals: readonly MissionGoal[]): void {
-    const visible = this.explored ? goals.filter((goal) => this.explored!(goal.x, goal.z)) : goals;
-    const signature = visible.map((g) => `${g.id}:${g.x.toFixed(1)}:${g.z.toFixed(1)}:${g.radius}`).join('|');
+    const signature = goals.map((g) => `${g.id}:${g.x.toFixed(1)}:${g.z.toFixed(1)}:${g.radius}`).join('|');
     if (signature === this.signature) return;
     this.signature = signature;
     const seen = new Set<string>();
-    for (const goal of visible) {
+    for (const goal of goals) {
       seen.add(goal.id);
       let ring = this.rings.get(goal.id);
       if (!ring) {

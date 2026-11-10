@@ -574,11 +574,8 @@ export class Game {
     this.fowUniforms.fowEnabled.value = s.fogOfWar ? 1 : 0;
     this.mapLabels = new MapLabels(this.scene, this.placeNames, this.terrain, s.mapSize);
     this.discoveries = new Discoveries(this.missionLayout?.discoveries, this.siteDef, !!this.pendingSnapshot);
-    this.missionRings = new MissionRings(
-      this.scene,
-      (x, z) => this.terrain.getHeight(x, z),
-      (x, z) => !this.settings.fogOfWar || this.fow.isExplored(x, z),
-    );
+    // Quest markers stay visible over fog: they guide the player without revealing the terrain.
+    this.missionRings = new MissionRings(this.scene, (x, z) => this.terrain.getHeight(x, z));
     // The authored site has thin walls and doors; 1 m cells keep them solid
     // without closing the narrow residential openings.
     this.pathfinder = new Pathfinder(s.mapSize, this.siteDef?.pathCellSize ?? 2);

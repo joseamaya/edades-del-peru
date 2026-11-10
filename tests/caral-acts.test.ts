@@ -180,7 +180,8 @@ describe('Caral model mission', () => {
       objState: save.objState.map(([id, st]) => [id, id === 'a2_excedente' ? 'completed' : st]),
     });
     mission.update(0.1, 0);
-    expect(mission.getObjectiveState('obj_asamblea'), 'the assembly is announced').toBe('activo');
+    expect(mission.getObjectiveState('obj_asamblea'), 'the assembly is announced, not started').toBe('pendiente');
+    expect(mission.activeObjectives.map((o) => o.def.id), 'and listed for the player').toContain('obj_asamblea');
     expect(mission.getObjectiveState('obj_complejos'), 'no tour before its monuments exist').toBe('pendiente');
     expect(mission.inspectRadiusFor('caral_pyramid_mayor')).toBeNull();
 
@@ -188,7 +189,7 @@ describe('Caral model mission', () => {
     mission.objState.set('a3_obra_muros', 'completed');
     mission.update(0.1, 0);
     expect(mission.getObjectiveState('obj_complejos')).toBe('activo');
-    expect(mission.inspectRadiusFor('caral_pyramid_mayor')).toBe(18);
+    expect(mission.inspectRadiusFor('caral_pyramid_mayor')).toBe(8);
     expect(game.revealed).toContain('caral_pyramid_mayor');
   });
 

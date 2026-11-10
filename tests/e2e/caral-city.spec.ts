@@ -289,8 +289,9 @@ test('the Caral objectives reveal in acts, announce the assembly with the city a
     g.selectedHeritage = 'caral_pyramid_mayor';
     g.hud.update(0.2, 0);
   });
-  // Act III announces the assembly, so the card reports it instead of inviting the call.
-  await expect(plaza).toContainText('Asamblea en curso');
+  // Act III announces the assembly: it is listed and the card still offers the call.
+  await expect(objectives).toContainText('Convoca una asamblea');
+  await expect(plaza).toContainText('Convocar asamblea');
   await expect(plaza).toContainText('Entregar materiales (50 madera) · 0/150');
   await advance('a3_shicras');
   await advance('a3_obra_relleno');
@@ -744,7 +745,9 @@ test('a Caral Blender pyramid opens an educational field card', async ({ page })
     for (const name of ['central', 'quarry', 'lesser', 'gallery', 'huanca']) {
       const id = `caral_pyramid_${name}`;
       const proxy = g.siteDef.heritageProxies.find((p: any) => p.id === id);
-      worker.pos.set(proxy.x, g.terrain.getHeight(proxy.x, proxy.z), proxy.z);
+      // Beside the footprint, where a player can actually stand (not inside the monument).
+      const x = proxy.x + proxy.w / 2 + 4;
+      worker.pos.set(x, g.terrain.getHeight(x, proxy.z), proxy.z);
       g.visitHeritage(id);
     }
     g.mission.update(0.1, 0);
@@ -1000,6 +1003,32 @@ test('the sea keeps its level while the Supe follows the drought and the flood',
   expect(out.fordWalkable, 'and the pathfinder wades it').toBe(true);
 });
 
+test('the Act III reveal clears the fog over the whole city with the fog on', async ({ page }) => {
+  await page.goto('/?mission=m1_caral&seed=3000&low=1&noloop=1&intro=0&fog=1');
+  const overlay = page.locator('.ed-overlay', { hasText: 'La Ciudad Sagrada' });
+  await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+  await overlay.waitFor({ state: 'detached', timeout: 20_000 });
+  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.landmark !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    const label = g.siteDef?.placeName ?? { x: 164, z: 69.2 };
+    const before = g.fow.isExplored(label.x, label.z) as boolean;
+    g.mission.objState.set('a2_excedente', 'completed');
+    g.mission.update(0.1, 0);
+    document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+    g.mission.update(0.1, 0);
+    for (let i = 0; i < 30; i++) g.update(0.1, i * 0.1);
+    const site = g.discoveries.sites.find((entry: { id: string }) => entry.id === 'caral_pyramid_mayor');
+    return { before, state: site?.state as string, explored: g.fow.isExplored(label.x, label.z) as boolean };
+  });
+  expect(out.before, 'the city starts under fog').toBe(false);
+  expect(out.state, 'the discovery animation runs to the end').toBe('done');
+  expect(out.explored, 'the label and the upper half are visible').toBe(true);
+});
+
 test('the canal gate only answers once Act II asks for it', async ({ page }) => {
   await boot(page);
   const out = await page.evaluate(() => {
@@ -1054,7 +1083,9 @@ test('the pyramid tour waits for the walls, needs a unit in the city and the ass
       'caral_pyramid_huanca',
     ]) {
       const proxy = g.siteDef.heritageProxies.find((p: any) => p.id === id);
-      worker.pos.set(proxy.x, g.terrain.getHeight(proxy.x, proxy.z), proxy.z);
+      // Beside the footprint, where a player can actually stand (not inside the monument).
+      const x = proxy.x + proxy.w / 2 + 4;
+      worker.pos.set(x, g.terrain.getHeight(x, proxy.z), proxy.z);
       g.visitHeritage(id);
     }
     g.mission.update(0.1, 0);
@@ -1069,7 +1100,7 @@ test('the pyramid tour waits for the walls, needs a unit in the city and the ass
   });
   expect(out.atActStart, 'the tour is not announced before its monuments exist').toBe('pendiente');
   expect(out.afterWalls, 'the walls finish the six complexes').toBe('activo');
-  expect(out.assembly, 'the assembly is announced with Act III').toBe('activo');
+  expect(out.assembly, 'the assembly is announced but still waits for the call').toBe('pendiente');
   expect(out.farVisit, 'visiting from the beach is refused').toBe(false);
   expect(out.farState).toBe('activo');
   expect(out.state, 'a unit in the city completes the tour').toBe('completed');
@@ -1127,11 +1158,11 @@ test('the Plaza Central card announces the communal assembly', async ({ page }) 
   });
   const bottom = page.locator('#ed-bottom');
   await expect(bottom).toContainText('Pirámide Mayor y Plaza Central');
-  // Act III announces the assembly, so the card shows it running instead of inviting the call.
-  await expect(bottom).toContainText('Asamblea en curso');
+  await expect(page.getByRole('button', { name: /Convocar asamblea/ })).toHaveCount(1);
   const state = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
+    if (!g.startAssembly()) return 'not-started';
     const worker = [...g.units.values()].find((u: any) => u.kind === 'worker' && u.owner === 0);
     if (!worker) return 'no-worker';
     worker.pos.set(g.siteCenter.x, g.landmark.position.y, g.siteCenter.z);

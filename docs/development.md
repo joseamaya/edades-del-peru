@@ -480,8 +480,8 @@ Definition of Done and the building audit see
   Guarded by `tests/headless-game.test.ts` (sea/river levels, ford walkability) and
   `tests/e2e/caral-city.spec.ts` (the mask wired in the renderer, the drought vs the sea).
 - **Caral objective flow** (issue 390): `obj_complejos` activates on `t_a3_obra_muros` (all six monuments
-  stand) and gates each visit on `ObjectiveDef.inspectRadius` (a player unit within 18 m of the card's proxy);
-  `obj_asamblea` is announced with Act III; the Act III camera reveal is a `reveal` trigger effect that plays
+  stand) and gates each visit on `ObjectiveDef.inspectRadius` (a player unit within 8 m of the card's footprint);
+  `obj_asamblea` is announced with Act III (`awaitsCall`: listed but pending until the player calls it); the Act III camera reveal is a `reveal` trigger effect that plays
   the discovery animation over the Pyramid Mayor. `MissionCanal.lockedUntilObjective` keeps the gate inert
   until `a2_canal`, and `MissionRings` draws a ground ring under the active `reach`/`hold` goals. Guards:
   `tests/caral-acts.test.ts`, `tests/discoveries.test.ts`, `tests/mission-rings.test.ts`,

@@ -188,9 +188,11 @@ Dialogue speaker labels must not say "Comandante" in this mission.
   again during the drought never returns to its irrigated harvest, and about one riverside tree in three dies.
   Flood and drought are meant to be told apart at a glance from the normal camera.
 - **Act flow**: Act III reveals the city with the discovery animation (`reveal` effect), so the camera does
-  not open on unexplored fog. The assembly is announced with Act III, and the pyramid tour (`obj_complejos`)
+  not open on unexplored fog. The assembly is announced with Act III (listed, still awaiting the call), and the pyramid tour (`obj_complejos`)
   waits until the walls are finished, when all six complexes stand; each card needs a unit at its own
-  monument (`ObjectiveDef.inspectRadius`), so the tour is a walk through the city, not a click from the beach.
+  monument (`ObjectiveDef.inspectRadius`, 8 m from its footprint), so the tour is a walk through the city,
+  not a click from the beach. The assembly is listed as an optional objective (awaiting the player's call)
+  and stays pending until the card's button starts it.
 - **Narration**: an anonymous narrator (`MissionDef.narrator`); no "Comandante" label, no invented names.
 - **Tutorial**: ten steps (select, coast, house, valley, field, canal, storage, nets, pyramid, works) docked
   under the objectives; the canal step explains the gate and the last one the communal-store supply during

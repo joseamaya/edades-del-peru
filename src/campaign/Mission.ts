@@ -53,7 +53,7 @@ export class Mission {
   }
 
   private defaultState(o: ObjectiveDef): ObjState {
-    return o.hidden ? 'pendiente' : 'activo';
+    return o.hidden || o.awaitsCall ? 'pendiente' : 'activo';
   }
 
   get activeObjectives(): { def: ObjectiveDef; state: ObjState }[] {
@@ -62,7 +62,8 @@ export class Mission {
         (o) =>
           this.objState.get(o.id) === 'activo' ||
           this.objState.get(o.id) === 'completed' ||
-          this.objState.get(o.id) === 'failed',
+          this.objState.get(o.id) === 'failed' ||
+          (o.awaitsCall === true && this.objState.get(o.id) === 'pendiente'),
       )
       .map((o) => ({ def: o, state: this.objState.get(o.id) as ObjState }));
   }
