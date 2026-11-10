@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { Tutorial } from '../src/campaign/Tutorial';
+import { Tutorial, tutorialText } from '../src/campaign/Tutorial';
+import { DEFAULT_KEYMAP } from '../src/core/hotkeys';
 import { tutorialForMission } from '../src/campaign/defs/tutorials';
 import type { TutorialDef } from '../src/campaign/types';
 import { UnitKind } from '../src/core/types';
@@ -11,6 +12,11 @@ function stubGame() {
 const base = { houses: 0, barracks: 0, soldiers: 0 };
 
 describe('tutorial save compatibility', () => {
+  it('writes the configured build keys instead of the defaults', () => {
+    expect(tutorialText('pulsa {key:buildHouse}', { ...DEFAULT_KEYMAP, buildHouse: 'z' })).toBe('pulsa Z');
+    expect(tutorialText('pulsa {key:buildFarm}', DEFAULT_KEYMAP)).toBe('pulsa G');
+    expect(tutorialText('sin marcadores')).toBe('sin marcadores');
+  });
   it('restores a save by step id after the step list changes', () => {
     const tutorial = new Tutorial(stubGame() as any, tutorialForMission('m1_caral')!);
     tutorial.applySave({
@@ -100,6 +106,7 @@ function gameForSteps() {
   };
   return {
     hud,
+    settings: { hotkeys: DEFAULT_KEYMAP },
     selectedUnits: [] as number[],
     units: new Map<number, { owner: number; kind: string; dead: boolean; pos: { x: number; z: number } }>(),
     buildings: new Map<number, { owner: number; kind: string; dead: boolean; constructionComplete: boolean }>(),
@@ -239,5 +246,14 @@ describe('tutorial gates', () => {
     state = 'completed';
     tutorial.update(0);
     expect(tutorial.toSave().finished).toBe(true);
+  });
+
+  it('shows the remapped build key in the step text', () => {
+    const game = gameForSteps() as any;
+    game.settings = { hotkeys: { ...DEFAULT_KEYMAP, buildHouse: 'z' } };
+    const tutorial = tutorialAt(game, 'house');
+    tutorial.update(0);
+    expect(game.hud.last).toContain('Z');
+    expect(game.hud.last).not.toContain('{key:');
   });
 });

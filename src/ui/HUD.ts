@@ -55,7 +55,7 @@ import { decorateTitleScreen, renderCampaignPath, renderMainMenu } from './Serie
 import { publicAsset } from '../util/publicAsset';
 import type { MissionDef, ObjectiveProgress, ObjState } from '../campaign/types';
 import { COMMANDERS, type PortraitId } from '../model/defs/commanders';
-import type { HeritageBuildingDef } from '../model/defs/heritage';
+import type { HeritageBuildingDef, HeritageBuildingId } from '../model/defs/heritage';
 import { portraitSvg } from './Portrait';
 import { DamageNumbers } from './DamageNumbers';
 import { openCodex } from './Codex';
@@ -203,6 +203,8 @@ const CSS = /* css */ `
   .ed-group { display: flex; gap: 6px; margin-top: 6px; }
   .ed-command { pointer-events: auto; border: 1px solid var(--line); background: var(--panel-2); color: var(--text); border-radius: 4px; padding: 5px 9px; font-size: 11px; cursor: pointer; font-weight: 600; }
   .ed-command:hover { border-color: var(--gold); color: var(--gold); }
+  .ed-command.disabled { opacity: 0.55; cursor: not-allowed; border-style: dashed; }
+  .ed-command.disabled:hover { border-color: var(--line); color: var(--text); }
 
   /* Toast */
   #ed-toasts { position: absolute; top: 56px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 6px; align-items: center; }
@@ -501,6 +503,11 @@ const CSS = /* css */ `
 const EDGE_GUARD_SELECTOR =
   '#ed-bottom, #ed-minimap-wrap, #ed-objectives, #ed-tutorial, #ed-help, #ed-help-open, #ed-fps, #ed-toasts, #ed-alerts, #ed-dialogue';
 
+/** Visible toast stack cap: repeated events refresh one toast instead of flooding the screen. */
+const MAX_TOASTS = 4;
+/** How long an idle toast stays before fading (ms). */
+const TOAST_LIFETIME = 2600;
+
 export class HUD {
   game: Game;
   private root: HTMLDivElement;
@@ -517,6 +524,8 @@ export class HUD {
   private gridEl!: HTMLElement;
   private commandsEl!: HTMLElement;
   private toastsEl!: HTMLElement;
+  /** Live toasts keyed by type + message: repeats refresh the timer and show ×N. */
+  private toasts = new Map<string, { el: HTMLElement; count: number; timer: number }>();
   private minimapCanvas!: HTMLCanvasElement;
   private minimapCtx!: CanvasRenderingContext2D;
   private bannerEl!: HTMLElement;
@@ -571,6 +580,9 @@ export class HUD {
 
   dispose(): void {
     this.commandBarObserver.disconnect();
+    for (const entry of this.toasts.values()) window.clearTimeout(entry.timer);
+    this.toasts.clear();
+    this.toastsEl?.replaceChildren();
   }
 
   /** Publish the command bar height so the dialogue and help panels can sit above it. */
@@ -1028,14 +1040,54 @@ export class HUD {
   }
 
   showToast(msg: string, type: 'info' | 'success' | 'warning' | 'error' | 'danger' = 'info'): void {
-    const toast = this.el('div', 'ed-toast ' + type);
-    toast.textContent = msg;
-    this.toastsEl.appendChild(toast);
-    setTimeout(() => {
-      toast.style.transition = 'opacity 0.4s';
-      toast.style.opacity = '0';
-      setTimeout(() => toast.remove(), 400);
-    }, 2600);
+    const key = type + '|' + msg;
+    const existing = this.toasts.get(key);
+    const entry =
+      existing && existing.el.isConnected ? existing : { el: this.el('div', 'ed-toast ' + type), count: 0, timer: 0 };
+    entry.count++;
+    entry.el.textContent = entry.count > 1 ? `${msg} ×${entry.count}` : msg;
+    window.clearTimeout(entry.timer);
+    entry.timer = window.setTimeout(() => {
+      // A newer toast may have reused this key while the old one was being replaced.
+      if (this.toasts.get(key) === entry) this.dismissToast(key);
+    }, TOAST_LIFETIME);
+    // The most recently refreshed toast sits at the bottom, so the cap drops the least recent one.
+    this.toasts.delete(key);
+    this.toasts.set(key, entry);
+    this.toastsEl.appendChild(entry.el);
+    while (this.toasts.size > MAX_TOASTS) {
+      const oldest = this.toasts.keys().next().value;
+      if (oldest === undefined) break;
+      this.dismissToast(oldest, true);
+    }
+    this.trimToasts();
+  }
+
+  /** Keep the DOM stack at `MAX_TOASTS`, dropping faded nodes that are no longer tracked. */
+  private trimToasts(): void {
+    const live = new Set([...this.toasts.values()].map((entry) => entry.el));
+    for (const el of [...this.toastsEl.children]) {
+      if (this.toastsEl.children.length <= MAX_TOASTS) break;
+      if (!live.has(el as HTMLElement)) el.remove();
+    }
+  }
+
+  /** Remove a toast now (`immediate`) or after its fade. */
+  private dismissToast(key: string, immediate = false): void {
+    const entry = this.toasts.get(key);
+    if (!entry) return;
+    this.toasts.delete(key);
+    window.clearTimeout(entry.timer);
+    if (immediate) {
+      entry.el.remove();
+      return;
+    }
+    entry.el.style.transition = 'opacity 0.4s';
+    entry.el.style.opacity = '0';
+    window.setTimeout(() => {
+      entry.el.remove();
+      this.trimToasts();
+    }, 400);
   }
 
   showEraBanner(era: Era): void {
@@ -1225,9 +1277,14 @@ export class HUD {
     }
   }
 
-  private deliverySignature(heritageId: string): string {
+  private deliverySignature(heritageId: HeritageBuildingId): string {
     const delivery = this.game.mission?.activeDeliveryFor(heritageId);
-    return delivery ? `:d${delivery.def.id}=${delivery.delivered}` : '';
+    if (!delivery) return '';
+    // The gate includes the worker proximity and the shortfall, so the button re-enables as soon
+    // as a worker arrives or the stock is topped up (issue 387).
+    const gate = this.game.deliveryGate(heritageId);
+    const state = gate.ok ? 'ok' : `${gate.reason}:${gate.missing}`;
+    return `:d${delivery.def.id}=${delivery.delivered}:g${state}`;
   }
 
   /** Chapter card between the acts of one mission; the mission clock waits while it is open. */
@@ -1340,6 +1397,10 @@ export class HUD {
 
   private applyHotkey(el: HTMLElement): void {
     if (this.hotkeySlot >= COMMAND_SLOT_COUNT) return;
+    // Decorative chips opt out so they neither take a slot nor show a key (the heritage
+    // «Certeza» card used to eat Q). Real commands keep their slot when disabled, so keys
+    // stay stable as stock changes (issue 387).
+    if (el.dataset.noHotkey === '1') return;
     const action = `command${this.hotkeySlot + 1}` as HotkeyAction;
     const key = keyFor(action, this.game.settings.hotkeys);
     this.hotkeySlot++;
@@ -1365,7 +1426,7 @@ export class HUD {
     name: string,
     costText: string,
     onClick: () => void,
-    opts: { disabled?: boolean; afford?: boolean; cat?: string; progress?: number } = {},
+    opts: { disabled?: boolean; afford?: boolean; cat?: string; progress?: number; hotkey?: boolean } = {},
   ): HTMLElement {
     const card = this.el(
       'div',
@@ -1374,6 +1435,7 @@ export class HUD {
         (opts.afford ? ' afford' : '') +
         (opts.cat ? ' cat-' + opts.cat : ''),
     );
+    if (opts.hotkey === false) card.dataset.noHotkey = '1';
     card.innerHTML = `<span class="ic">${icon}</span><span class="nm">${name}</span><span class="cost">${costText}</span>`;
     if (opts.progress !== undefined) {
       card.classList.add('progress');
@@ -1392,14 +1454,25 @@ export class HUD {
     return card;
   }
 
-  private addCommand(label: string, onClick: () => void, title = ''): void {
+  private addCommand(
+    label: string,
+    onClick: () => void,
+    title = '',
+    opts: { disabled?: boolean; hotkey?: boolean } = {},
+  ): void {
     const btn = this.el('button', 'ed-command') as HTMLButtonElement;
     btn.textContent = label;
     btn.title = title;
-    btn.addEventListener('pointerdown', (e) => {
-      if (e.button !== 0) return;
-      onClick();
-    });
+    if (opts.hotkey === false) btn.dataset.noHotkey = '1';
+    if (opts.disabled) {
+      btn.classList.add('disabled');
+      btn.disabled = true;
+    } else {
+      btn.addEventListener('pointerdown', (e) => {
+        if (e.button !== 0) return;
+        onClick();
+      });
+    }
     this.applyHotkey(btn);
     this.commandsEl.appendChild(btn);
   }
@@ -1466,6 +1539,7 @@ export class HUD {
       {
         disabled: true,
         cat: 'sel',
+        hotkey: false,
       },
     );
     if (heritage.operation === 'toggle-canal') {
@@ -1490,16 +1564,26 @@ export class HUD {
     const delivery = this.game.mission?.activeDeliveryFor(heritage.id);
     if (delivery?.def.resource) {
       const resource = delivery.def.resource;
-      const amount = Math.min(delivery.def.step ?? 50, (delivery.def.count ?? 0) - delivery.delivered);
-      this.addCommand(
-        t('hud.heritage.deliver', {
-          amount,
-          resource: RESOURCE_INFO[resource].name.toLowerCase(),
-          done: delivery.delivered,
-          total: delivery.def.count ?? 0,
-        }),
-        () => this.game.deliverToHeritage(heritage.id),
-      );
+      const gate = this.game.deliveryGate(heritage.id);
+      const label = t('hud.heritage.deliver', {
+        amount: gate.amount,
+        resource: RESOURCE_INFO[resource].name.toLowerCase(),
+        done: delivery.delivered,
+        total: delivery.def.count ?? 0,
+      });
+      if (gate.ok) {
+        this.addCommand(label, () => this.game.deliverToHeritage(heritage.id));
+      } else {
+        // Keep the amount/progress visible and append why the button cannot run.
+        const reason =
+          gate.reason === 'away'
+            ? t('hud.heritage.deliverAway')
+            : t('hud.heritage.deliverShort', {
+                amount: gate.missing,
+                resource: RESOURCE_INFO[resource].name.toLowerCase(),
+              });
+        this.addCommand(`${label} · ${reason}`, () => {}, '', { disabled: true });
+      }
     }
     if (heritage.operation === 'assembly') {
       const state = this.game.getAssemblyState();
@@ -1732,6 +1816,7 @@ export class HUD {
         {
           disabled: true,
           progress: b.buildRatio,
+          hotkey: false,
         },
       );
       buildCard.dataset.buildCard = '1';

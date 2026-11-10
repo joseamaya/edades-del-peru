@@ -279,7 +279,7 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'house',
-        text: 'Con obreros seleccionados, pulsa V (o el botón Vivienda) y haz clic en el suelo para construir una vivienda de quincha.',
+        text: 'Con obreros seleccionados, pulsa {key:buildHouse} (o el botón Vivienda) y haz clic en el suelo para construir una vivienda de quincha.',
         highlight: buildBottom,
         check: { type: 'build', buildingKind: BuildingKind.HOUSE, baseline: 'houses' },
       },
@@ -291,7 +291,7 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'farm',
-        text: 'Pulsa G (o el botón Chacra) y coloca los campos junto al canal: la tierra húmeda rinde más.',
+        text: 'Pulsa {key:buildFarm} (o el botón Chacra) y coloca los campos junto al canal: la tierra húmeda rinde más.',
         highlight: buildBottom,
         gateObjective: 'a2_campos',
         check: { type: 'build', buildingKind: BuildingKind.FARM, baseline: 'farms' },

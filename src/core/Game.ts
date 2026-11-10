@@ -104,7 +104,7 @@ import { InputController } from './InputController';
 import { WorldViewDecor } from './WorldViewDecor';
 import { RuntimeController, type DeathFx } from './RuntimeController';
 import { StartBaseBuilder } from './StartBaseBuilder';
-import { SelectionController } from './SelectionController';
+import { SelectionController, type DeliveryGate } from './SelectionController';
 import { stateHashOf } from '../game/stateHash';
 import type { SaveData, HarvestLedgerRow } from '../game/saveTypes';
 
@@ -1245,6 +1245,9 @@ export class Game {
   }
   deliverToHeritage(id: HeritageBuildingId): boolean {
     return this.selection.deliverToHeritage(id);
+  }
+  deliveryGate(id: HeritageBuildingId): DeliveryGate {
+    return this.selection.deliveryGate(id);
   }
   makeOffering(id: HeritageBuildingId): boolean {
     return this.selection.makeOffering(id);
