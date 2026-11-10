@@ -105,6 +105,58 @@ describe('worker gather transitions', () => {
     expect(unit.gatherCarry.wood).toBeGreaterThan(0);
   });
 
+  it('delivers the load and resumes its resource after finishing a non-agricultural building', () => {
+    const fishing = new ResourceNode('fishing', 10, 12, 100);
+    const mill = new Building(BuildingKind.MILL, 0, Era.FORMATIVE);
+    mill.pos.set(11, 0, 10);
+    const { unit, delivered } = harness({ nodes: [fishing], buildings: [mill], x: 10, z: 10 });
+
+    unit.issueOrder({ kind: OrderKind.GATHER, entityId: fishing.id });
+    step(unit, 1.6);
+    const load = unit.gatherCarry.food;
+    expect(load).toBeGreaterThan(0);
+
+    unit.issueOrder({ kind: OrderKind.BUILD, entityId: mill.id });
+    expect(unit.lastGather?.kind, 'a build order keeps the gather anchor').toBe('fishing');
+    mill.constructionComplete = true;
+    step(unit, 4);
+
+    expect(delivered).toContainEqual({ amount: load, resource: 'food' });
+    expect(unit.orderQueue[0]?.kind).toBe(OrderKind.GATHER);
+    expect(unit.orderQueue[0]?.entityId).toBe(fishing.id);
+  });
+
+  it('keeps the gather anchor across a save and load', () => {
+    const fishing = new ResourceNode('fishing', 10, 12, 100);
+    const { unit } = harness({ nodes: [fishing], x: 10, z: 10 });
+    unit.issueOrder({ kind: OrderKind.GATHER, entityId: fishing.id });
+    expect(unit.lastGather).toEqual({ id: fishing.id, kind: 'fishing', x: 10, z: 12 });
+
+    const loaded = new Unit(UnitKind.WORKER, 0, Era.FORMATIVE, {} as never);
+    loaded.setContext(unit.ctx);
+    loaded.applySave(unit.toSave());
+
+    expect(loaded.lastGather).toEqual(unit.lastGather);
+  });
+
+  it('delivers the load instead of idling when a build finishes with no gather memory', () => {
+    const house = new Building(BuildingKind.HOUSE, 0, Era.FORMATIVE);
+    house.pos.set(11, 0, 10);
+    const center = new Building(BuildingKind.CENTER, 0, Era.FORMATIVE);
+    center.pos.set(12, 0, 10);
+    center.constructionComplete = true;
+    const { unit, delivered } = harness({ nodes: [], buildings: [house, center], x: 10, z: 10 });
+    unit.gatherCarry.food = 6;
+
+    unit.issueOrder({ kind: OrderKind.BUILD, entityId: house.id });
+    house.constructionComplete = true;
+    step(unit, 3);
+
+    expect(delivered).toContainEqual({ amount: 6, resource: 'food' });
+    expect(unit.gatherCarry.food).toBe(0);
+    expect(unit.isBusy()).toBe(false);
+  });
+
   it('delivers a full load instead of stalling when a new gather order arrives', () => {
     const tree = new ResourceNode('tree', 14, 10, 100);
     const center = new Building(BuildingKind.CENTER, 0, Era.FORMATIVE);

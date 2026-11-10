@@ -428,7 +428,11 @@ Definition of Done and the building audit see
   **interrupts** their current task) and **keeps the selection**. Do not reintroduce auto-assignment of builders:
   with every worker gathering, none were ever free and builds stayed at 0%. The build gate is
   `Game.canBuildKind` (era per period; the **Huaca Sagrada** depends on the victory mode, not the era, so
-  wonder victory is reachable in any period).
+  wonder victory is reachable in any period). `followUpAfterBuild` keeps human builders working: it delivers a
+  carried load and resumes the resource in `lastGather` — which survives the `BUILD` order and is saved with the
+  unit — before helping the nearest site or farming the field it just built. AI seats keep their own economy
+  planning. This changed the simulation, so `REPLAY_VERSION` is 22 (issue 381); guarded by
+  `tests/gather-retarget.test.ts` and `tests/e2e/campaign-playtest.spec.ts`.
 - **Victory/defeat (conquest)**: a player is defeated only when **no building of theirs remains** (`Game.hasBuildings`),
   in both skirmish (`resolveConquest` via `Game.checkVictory`) and campaign (`Mission.checkBaseLost`). Do not go back to "losing the
   Plaza Mayor ends the match": a full base with army must survive the loss of its center.

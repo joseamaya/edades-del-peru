@@ -18,7 +18,7 @@ import type { RigInstance } from '../rendering/RigInstance';
 import type { UnitView } from '../rendering/UnitView';
 import type { EntityView } from '../entities/EntityView';
 import { allocId } from '../sim/ids';
-import { Order, OrderKind, OrderTarget } from '../core/types';
+import { Order, OrderKind, OrderTarget, GatherAnchor } from '../core/types';
 import { angleDelta, angleTo, distance2D, clamp, facingRotation, lerp } from '../util/math';
 import { tradeIncomeForDistance } from '../game/market';
 import { genderForId, type PersonGender } from '../model/defs/people';
@@ -462,7 +462,10 @@ export class Unit {
 
   issueOrder(order: Order, clear = true): void {
     if (clear) {
+      // A build keeps the gather anchor so the worker can resume work afterwards (issue 381).
+      const anchor = order.kind === OrderKind.BUILD ? this.lastGather : null;
       this.clearOrders();
+      this.lastGather = anchor;
       this.orderQueue.push(order);
     } else {
       this.orderQueue.push(order);
@@ -523,16 +526,16 @@ export class Unit {
    * turns out to be gone.
    */
   private rememberGatherOrder(order: Order): void {
-    if (order.kind !== OrderKind.GATHER || order.entityId === undefined) {
-      this.lastGather = null;
+    if (order.kind === OrderKind.GATHER && order.entityId !== undefined) {
+      this.rememberGatherNode(this.ctx.resourceNodes.get(order.entityId) as GatherNodeRef | undefined);
       return;
     }
-    this.rememberGatherNode(this.ctx.resourceNodes.get(order.entityId) as GatherNodeRef | undefined);
+    if (order.kind !== OrderKind.BUILD) this.lastGather = null;
   }
 
   /** Single writer for the retarget anchor, shared by the order start and the arrival at the node. */
   private rememberGatherNode(node: GatherNodeRef | undefined | null): void {
-    this.lastGather = node?.kind ? { kind: node.kind, x: node.pos.x, z: node.pos.z } : null;
+    this.lastGather = node?.kind ? { id: node.id, kind: node.kind, x: node.pos.x, z: node.pos.z } : null;
   }
 
   /**
@@ -1378,7 +1381,7 @@ export class Unit {
    * when it runs out. Kept in step with the current gather order (`startOrder`) and written again
    * when the worker reaches the node.
    */
-  lastGather: { kind: string; x: number; z: number } | null = null;
+  lastGather: GatherAnchor | null = null;
 
   /**
    * Point a fishing order at the nearest live fishing ground when the one being worked runs out (within
@@ -1402,6 +1405,7 @@ export class Unit {
     options.sort((a, b) => (a.room === b.room ? 0 : a.room ? -1 : 1) || a.d - b.d);
     const best = options[0].node;
     order.entityId = best.id;
+    this.rememberGatherNode(best);
     this.path.length = 0;
     this.pathIdx = 0;
     this.approachTried = false;
@@ -1617,14 +1621,47 @@ export class Unit {
     this.targetYaw = angleTo(this.pos.x, this.pos.z, bld.pos.x, bld.pos.z);
   }
 
+  /** The node the worker was harvesting before the build, when it is still alive and reachable. */
+  private resumeGatherNode(): number | null {
+    const last = this.lastGather;
+    if (!last) return null;
+    const node = this.ctx.resourceNodes.get(last.id) as GatherNodeRef | undefined;
+    if (!node || node.dead || node.depleted || (node.amount !== undefined && node.amount <= 0)) return null;
+    const opts = node.kind === 'fishing' ? fishingApproach({ slot: this.id }) : undefined;
+    return this.ctx.reachableToNode(
+      this.pos.x,
+      this.pos.z,
+      node.pos.x,
+      node.pos.z,
+      HARVEST_STAND_RANGE,
+      this.owner,
+      opts,
+    )
+      ? node.id
+      : null;
+  }
+
   /**
-   * A human player's builder with nothing queued keeps working, as in AoE: it farms the field it just
-   * prepared (when nobody else does) or helps the nearest unfinished building of its owner. AI seats
-   * keep their own economy planning, so their simulations are unchanged.
+   * A human player's builder with nothing queued keeps working, as in AoE: it delivers the load it was
+   * carrying, goes back to the resource it was harvesting, farms the field it just prepared (when nobody
+   * else does) or helps the nearest unfinished building of its owner. AI seats keep their own economy
+   * planning, so their simulations are unchanged.
    */
   private followUpAfterBuild(bld: any): void {
     if (this.kind !== UnitKind.WORKER || this.orderQueue.length > 0) return;
     if (this.ctx.players[this.owner]?.isAI) return;
+    const resume = this.resumeGatherNode();
+    if (this.carryCount() > 0) {
+      this.deliverOrder();
+      if (resume !== null) this.orderQueue.push({ kind: OrderKind.GATHER, entityId: resume });
+      if (this.orderQueue.length > 0) {
+        this.startOrder();
+        return;
+      }
+    } else if (resume !== null) {
+      this.issueOrder({ kind: OrderKind.GATHER, entityId: resume });
+      return;
+    }
     if (bld.isFarm && bld.owner === this.owner && bld.foodAmount > 0) {
       const taken = [...this.ctx.unitsNear(bld.pos.x, bld.pos.z, bld.radius + 3)].some(
         (u) => u !== this && u.orderQueue[0]?.kind === OrderKind.GATHER && u.orderQueue[0]?.entityId === bld.id,
@@ -1817,6 +1854,7 @@ export class Unit {
       attackMultiplier: this.attackMultiplier,
       armorMultiplier: this.armorMultiplier,
       tag: this.tag,
+      lastGather: this.lastGather ? { ...this.lastGather } : null,
     };
   }
 
@@ -1845,6 +1883,7 @@ export class Unit {
     this.gatherMultiplier = s.gatherMultiplier;
     this.attackMultiplier = s.attackMultiplier;
     this.armorMultiplier = s.armorMultiplier;
+    this.lastGather = s.lastGather ? { ...s.lastGather } : null;
     if (s.tag) this.tag = s.tag;
     this.view?.setPosition(this.pos.x, this.pos.y, this.pos.z);
     this.view?.setFacing(this.yaw);
