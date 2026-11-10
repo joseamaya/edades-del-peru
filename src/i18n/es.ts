@@ -86,6 +86,7 @@ export const es = {
   'hud.toast.maxPopulation': 'Población máxima alcanzada',
   'hud.toast.insufficientResources': 'Recursos insuficientes',
   'hud.toast.constructionStalled': 'La obra se detiene: faltan suministros en el depósito.',
+  'hud.toast.workTurnNeedsStore': 'La cuadrilla no tiene dónde comer: levanta {store} para reanudar la obra.',
   'hud.toast.stance': 'Postura: {stance}',
   'hud.toast.rallyHint': 'Usa Shift+Botón derecho en el suelo',
   'hud.toast.hotkeyConflict': 'Esa tecla ya está asignada',
@@ -192,6 +193,7 @@ export const es = {
   'hud.building.training': ' · Entrenando: {unit}',
   'hud.building.foodReserve': ' · Reserva de alimentos: {amount}',
   'hud.building.terrainBonus': ' · +{percent}% por el terreno',
+  'hud.building.droughtPenalty': ' · Sequía: −{percent}% de cosecha',
   'hud.building.role': '{role}: {summary}',
   'hud.building.source': 'Fuente: {citation} · {confidence}',
 

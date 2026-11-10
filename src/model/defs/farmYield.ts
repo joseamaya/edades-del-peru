@@ -11,19 +11,28 @@ export interface FarmYieldFactors {
   moisture: number;
   /** Irrigation canal strength near the farm (0 none .. 1). */
   canal: number;
+  /** Drought strength (0 none .. 1). The crops wither and the irrigation is gone; defaults to 0. */
+  drought?: number;
 }
 
 const TERRACE_BONUS = 0.8;
 const MOISTURE_BONUS = 0.4;
 const CANAL_BONUS = 0.6;
+/** Share of the potential yield lost at full drought (Caral's Act IV). */
+const DROUGHT_YIELD_LOSS = 0.5;
 /** How far a canal waters a farm (world units). */
 export const CANAL_REACH = 2.5;
 
-/** Multiplier applied to a farm's food reserve (>= 1). Max ~2.44 on real terrain. */
+/** Share of the terrain yield a drought leaves standing (1 no drought .. 0.5 at full drought). */
+export function droughtYieldFactor(drought: number): number {
+  return 1 - DROUGHT_YIELD_LOSS * clamp01(drought);
+}
+
+/** Multiplier applied to a farm's food reserve. Max ~2.44 on real terrain, 0.5 at full drought. */
 export function farmYieldMultiplier(t: FarmYieldFactors): number {
   const bonus =
     TERRACE_BONUS * clamp01(t.terrace) + MOISTURE_BONUS * clamp01(t.moisture) + CANAL_BONUS * clamp01(t.canal);
-  return 1 + bonus;
+  return (1 + bonus) * droughtYieldFactor(t.drought ?? 0);
 }
 
 /** Strongest canal within reach of a point (8 directions, so a diagonal canal still counts). */

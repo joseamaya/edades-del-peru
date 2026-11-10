@@ -195,10 +195,11 @@ export interface ObjectiveDef {
   unitKind?: UnitKind;
   /**
    * For `hold` with `time`: consume a resource per second while the hold advances. The timer pauses (it
-   * does not reset) when the player cannot pay, so an empty communal store stalls construction until
-   * refilled.
+   * does not reset) when the player cannot pay or the crew steps out of the radius, so an empty communal
+   * store stalls construction until refilled. `store` names the building that must stand for the crew to
+   * be fed (Caral's communal store).
    */
-  consume?: { resource: keyof Resources; perSecond: number };
+  consume?: { resource: keyof Resources; perSecond: number; store?: BuildingKind };
   /**
    * Save-compatibility guard for a hidden objective added after a save was written: if the authored site
    * already stands at this phase or later, the objective is marked completed instead of waiting for a

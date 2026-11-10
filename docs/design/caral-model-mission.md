@@ -148,9 +148,12 @@ Dialogue speaker labels must not say "Comandante" in this mission.
   (white, ochre, red; the exact per-building colours are inferred) via `CARAL_MAYOR_PHASE_ASSET`, checked by
   `tests/architecture-kit.test.ts`.
 - **Communal construction**: after each material hand-over, a worker must hold the site for a 20 s work
-  turn. The turn consumes food from the communal store; if the store is empty the timer pauses (it does not
-  reset) and a warning explains why, so the communal store really feeds the builders. Each completed turn plays a
-  burial ritual (`ritual` effect) and advances the Mayor phase.
+  turn. The turn's upkeep comes from the village food reserve (the communal store is where the community
+  keeps it) and a finished store must stand (`consume.store: BuildingKind.MILL`); if the store is missing
+  or the reserve is empty the timer pauses (it does not reset) and a warning explains why, so the communal
+  store really feeds the builders. Stepping out of the radius pauses the turn too, instead of restarting a
+  turn whose food was already paid. Each completed turn plays a burial ritual (`ritual` effect) and
+  advances the Mayor phase.
 - **Valley economy**: chacras on painted fertile ground, the canal, the communal store and the exchange: the
   `cotton_nets` technology, researched at the communal store with valley food and wood, stands for cotton going down
   to the coast. Caral sees only its own buildings, units and technologies (`allowedBuildings`,
@@ -172,8 +175,9 @@ Dialogue speaker labels must not say "Comandante" in this mission.
   them. The depth, duration and the extent of the green are inferred staging: the dossier documents the
   El Niño floods, the dunes and the lomas as an ecological zone.
 - **Drought** (`Game.startEnvironmentalEvent('drought')`, 40 s): the green turns to sand in patches (the
-  documented sand advance), the river surface drops, the haze turns dusty, fields lose half their harvest
-  and about one riverside tree in three dies.
+  documented sand advance), the river surface drops, the haze turns dusty, the yield of every standing
+  field dries with the level (`farmYieldMultiplier`), so a field sown again during the drought never
+  returns to its irrigated harvest, and about one riverside tree in three dies.
 - **Narration**: an anonymous narrator (`MissionDef.narrator`); no "Comandante" label, no invented names.
 - **Tutorial**: nine steps (select, coast, house, valley, field, storage, nets, pyramid, works) docked under
   the objectives; the last one explains the communal-store supply during construction.

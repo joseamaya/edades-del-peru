@@ -24,6 +24,7 @@ function stubGame() {
       ]),
     ),
     buildings: new Map(),
+    buildingName: (kind: BuildingKind) => (kind === BuildingKind.MILL ? 'Depósito comunal' : String(kind)),
     canalOpen: false,
     sitePhase: 'in_use' as CaralMayorPhase,
     sitePhasePlan: CARAL_PHASE_PLAN,
@@ -37,9 +38,10 @@ function stubGame() {
     togglePause: () => {},
     playIntro: () => {},
     loop: { start: () => {} },
+    toasts: [] as string[],
     hud: {
       showBriefing: (_d: unknown, cb: () => void) => cb(),
-      showToast: () => {},
+      showToast: (text: string) => game.toasts.push(text),
       showDialogue: (name: string) => game.dialogues.push(name),
       showActCard: (kicker: string) => game.acts.push(kicker),
     },
@@ -192,6 +194,7 @@ describe('Caral model mission', () => {
 
   it('pauses construction while the communal store is empty and resumes when refilled', () => {
     const game = stubGame();
+    build(game, BuildingKind.MILL, 1);
     game.players[0].resources.food = 0;
     const mission = new Mission(game, CARAL, () => {});
     mission.start();
@@ -212,6 +215,61 @@ describe('Caral model mission', () => {
     expect(mission.getObjectiveState('a3_obra_relleno')).toBe('completed');
     expect(game.sitePhase).toBe('fill');
     expect(game.players[0].resources.food).toBeCloseTo(1, 5);
+  });
+
+  it('keeps the work turn progress when the crew steps away and resumes on return', () => {
+    const game = stubGame();
+    build(game, BuildingKind.MILL, 1);
+    game.players[0].resources.food = 100;
+    const mission = new Mission(game, CARAL, () => {});
+    mission.start();
+    const save = mission.toSave();
+    mission.applySave({
+      ...save,
+      objState: save.objState.map(([id, st]) => [id, id === 'a3_obra_relleno' ? 'activo' : st]),
+    });
+    const progress = () => mission.getObjectiveProgress('a3_obra_relleno')?.current ?? -1;
+
+    for (let i = 0; i < 8; i++) mission.update(1, 0);
+    expect(progress()).toBe(8);
+    const paid = 100 - game.players[0].resources.food;
+    // The crew leaves to gather: the turn pauses instead of restarting and charging again.
+    game.units.clear();
+    for (let i = 0; i < 10; i++) mission.update(1, 0);
+    expect(progress()).toBe(8);
+    expect(100 - game.players[0].resources.food).toBeCloseTo(paid, 5);
+    // Three workers back on site finish the turn with the food already paid plus the rest.
+    for (const id of [1, 2, 3]) {
+      game.units.set(id, { id, tag: '', owner: 0, dead: false, kind: UnitKind.WORKER, pos: { x: 0, z: 0 } });
+    }
+    for (let i = 0; i < 12; i++) mission.update(1, 0);
+    expect(progress()).toBe(20);
+    expect(mission.getObjectiveState('a3_obra_relleno')).toBe('completed');
+    expect(100 - game.players[0].resources.food).toBeCloseTo(30, 5);
+  });
+
+  it('waits for the communal store before feeding the work turn', () => {
+    const game = stubGame();
+    game.players[0].resources.food = 100;
+    const mission = new Mission(game, CARAL, () => {});
+    mission.start();
+    const save = mission.toSave();
+    mission.applySave({
+      ...save,
+      objState: save.objState.map(([id, st]) => [id, id === 'a3_obra_relleno' ? 'activo' : st]),
+    });
+    const progress = () => mission.getObjectiveProgress('a3_obra_relleno')?.current ?? -1;
+
+    for (let i = 0; i < 21; i++) mission.update(1, 0);
+    expect(progress()).toBe(0);
+    expect(game.players[0].resources.food).toBe(100);
+    expect(game.toasts).toHaveLength(1);
+    expect(game.toasts[0]).toContain('Depósito comunal');
+
+    build(game, BuildingKind.MILL, 1);
+    for (let i = 0; i < 21; i++) mission.update(1, 0);
+    expect(progress()).toBe(20);
+    expect(mission.getObjectiveState('a3_obra_relleno')).toBe('completed');
   });
 
   it('does not replay the new work-trigger effects when an old save is past them', () => {

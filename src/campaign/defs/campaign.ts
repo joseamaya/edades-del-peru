@@ -8,7 +8,11 @@ const WARI_NODE_B = { ref: 'site' as const, dx: 38, dz: 34 };
 const WARI_BONUS_NODE = { ref: 'site' as const, dx: -40, dz: 0 };
 
 /** Caral's Act III work turns: a worker holds the site while the communal store feeds the crew. */
-const CARAL_WORK_TURN = { time: 20, consume: { resource: 'food', perSecond: 1.5 } } as const;
+const CARAL_WORK_TURN = {
+  time: 20,
+  // The communal store must stand for the crew to be fed; the food itself comes from the village reserve.
+  consume: { resource: 'food', perSecond: 1.5, store: BuildingKind.MILL },
+} as const;
 
 export const MISSIONS: MissionDef[] = [
   {

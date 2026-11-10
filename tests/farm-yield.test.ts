@@ -13,7 +13,24 @@ describe('farm yield from terrain', () => {
     expect(farmYieldMultiplier({ terrace: 0, moisture: 0, canal: 0.5 })).toBeGreaterThan(base);
   });
 
-  it('clamps out-of-range inputs and never drops below 1', () => {
+  it('withers the crops as the drought sets in', () => {
+    expect(farmYieldMultiplier({ terrace: 0, moisture: 0, canal: 0, drought: 0 })).toBe(1);
+    expect(farmYieldMultiplier({ terrace: 0, moisture: 0, canal: 0, drought: 1 })).toBe(0.5);
+    expect(farmYieldMultiplier({ terrace: 0, moisture: 0, canal: 0, drought: 0.5 })).toBeCloseTo(0.75, 6);
+    expect(farmYieldMultiplier({ terrace: 0.5, moisture: 0.5, canal: 0.5, drought: 1 })).toBeLessThan(
+      farmYieldMultiplier({ terrace: 0.5, moisture: 0.5, canal: 0.5 }),
+    );
+  });
+
+  it('scales the whole potential harvest with the drought', () => {
+    const wet = farmYieldMultiplier({ terrace: 0, moisture: 0.34, canal: 1, drought: 0 });
+    expect(farmYieldMultiplier({ terrace: 0, moisture: 0.34, canal: 1, drought: 0.5 })).toBeCloseTo(wet * 0.75, 6);
+    expect(farmYieldMultiplier({ terrace: 0, moisture: 0.34, canal: 1, drought: 1 })).toBeCloseTo(wet * 0.5, 6);
+    // A dry canal removes its bonus first (Game-level cutoff), so the dried field falls below that.
+    expect(farmYieldMultiplier({ terrace: 0, moisture: 0.34, canal: 0, drought: 1 })).toBeLessThan(wet * 0.5);
+  });
+
+  it('clamps out-of-range terrain inputs and keeps the plain yield at or above 1', () => {
     expect(farmYieldMultiplier({ terrace: 5, moisture: 5, canal: 5 })).toBeCloseTo(1 + 0.8 + 0.4 + 0.6, 6);
     expect(farmYieldMultiplier({ terrace: -1, moisture: -1, canal: -1 })).toBe(1);
     expect(farmYieldMultiplier({ terrace: NaN, moisture: NaN, canal: NaN })).toBe(1);
