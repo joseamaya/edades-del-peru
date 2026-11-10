@@ -3,14 +3,24 @@ import { MISSIONS } from '../../src/campaign/defs/campaign';
 
 /**
  * Geometric check of the in-match HUD: the persistent panels must never cover each other at the
- * two reference resolutions. It compares bounding boxes (not pixels) so it stays deterministic
- * under software WebGL.
+ * reference resolutions, including late in a mission (many finished objectives, archive expanded,
+ * shortcuts open). It compares bounding boxes (not pixels) so it stays deterministic under
+ * software WebGL.
  */
-const PANELS = ['ed-dialogue', 'ed-bottom', 'ed-minimap-wrap', 'ed-objectives', 'ed-tutorial', 'ed-help'] as const;
+const PANELS = [
+  'ed-dialogue',
+  'ed-bottom',
+  'ed-minimap-wrap',
+  'ed-objectives',
+  'ed-tutorial',
+  'ed-help',
+  'ed-help-open',
+] as const;
 
 const RESOLUTIONS = [
-  { width: 1280, height: 800 },
+  { width: 1280, height: 720 },
   { width: 1600, height: 900 },
+  { width: 1920, height: 1080 },
 ] as const;
 
 const MISSION_IDS = MISSIONS.map((m) => m.id);
@@ -30,6 +40,9 @@ interface Snapshots {
   build: State;
   building: State;
   postTutorial: State;
+  advanced: State;
+  archive: State;
+  helpOpen: State;
 }
 
 /** Boot a campaign mission, start it from the briefing and dismiss its chapter card. */
@@ -59,7 +72,8 @@ async function bootMission(page: Page, missionId: string): Promise<void> {
 
 /**
  * Stop the simulation and snapshot the HUD: the real start state, with dialogue, with a worker's
- * build panel, with a building panel, and after the tutorial closes (which reveals the help box).
+ * build panel, with a building panel, after the tutorial closes, with a late-mission objective list
+ * (archive folded and expanded) and with the shortcuts panel open.
  */
 async function snapshots(page: Page): Promise<Snapshots> {
   return page.evaluate(async (panels) => {
@@ -89,8 +103,6 @@ async function snapshots(page: Page): Promise<Snapshots> {
       return out;
     };
     const render = async () => {
-      // Two passes: the objectives panel grows after its first refresh, and the tutorial is placed
-      // from the previous frame's height (the real loop runs at 60 Hz, so this is its steady state).
       g.hud.update(0.2, 0);
       await settle();
       g.hud.update(0.2, 0);
@@ -120,13 +132,29 @@ async function snapshots(page: Page): Promise<Snapshots> {
     await render();
     const buildingSnap = read();
 
-    // The help box is hidden while the tutorial is open; closing it exposes the panel that used to
-    // sit under a tall command bar.
+    // The shortcuts start folded in a campaign; closing the tutorial must not reveal them.
     g.hud.hideTutorial();
     await render();
     const postTutorial = read();
 
-    return { initial, dialogue, build, building: buildingSnap, postTutorial };
+    // Late mission: every objective finished except the first, which stays active.
+    const defs = g.mission.def.objectives as { id: string }[];
+    for (const o of defs) g.mission.objState.set(o.id, 'completed');
+    g.mission.objState.set(defs[0].id, 'activo');
+    await render();
+    const advanced = read();
+
+    // The finished goals are folded into one archive line that expands on click.
+    document.querySelector('#ed-objectives details')?.setAttribute('open', '');
+    await render();
+    const archive = read();
+
+    // Opening the shortcuts must still leave every panel in its own place.
+    g.hud.toggleHelp();
+    await render();
+    const helpOpen = read();
+
+    return { initial, dialogue, build, building: buildingSnap, postTutorial, advanced, archive, helpOpen };
   }, PANELS);
 }
 
@@ -151,6 +179,17 @@ function violations(state: State): string[] {
   return found;
 }
 
+/** The objectives panel must end above the command bar, and its active goal must be fully visible. */
+function objectivesFit(state: State): string[] {
+  const found: string[] = [];
+  const panel = state['ed-objectives'];
+  const bar = state['ed-bottom'];
+  if (panel && bar && panel.y + panel.h > bar.y + 0.5) {
+    found.push(`objectives end at ${panel.y + panel.h} over the command bar at ${bar.y}`);
+  }
+  return found;
+}
+
 for (const { width, height } of RESOLUTIONS) {
   test.describe(`${width}x${height}`, () => {
     test.use({ viewport: { width, height } });
@@ -171,13 +210,38 @@ for (const { width, height } of RESOLUTIONS) {
         expect(snap.dialogue['ed-dialogue'], 'dialogue box is not visible').not.toBeNull();
         expect(snap.build['ed-bottom'], 'command panel is not visible with a worker selected').not.toBeNull();
         expect(snap.building['ed-bottom'], 'command panel is not visible with a building selected').not.toBeNull();
-        expect(snap.postTutorial['ed-help'], 'help box is not visible after the tutorial closes').not.toBeNull();
+        expect(snap.postTutorial['ed-help'], 'the shortcuts start folded in a campaign (issue 402)').toBeNull();
+        expect(snap.postTutorial['ed-help-open'], 'the "?" button gives access to the shortcuts').not.toBeNull();
+        expect(snap.helpOpen['ed-help'], 'the shortcuts open on demand').not.toBeNull();
+        expect(snap.archive['ed-objectives'], 'the late-mission objectives are visible').not.toBeNull();
 
         expect(violations(snap.initial), 'start state').toEqual([]);
         expect(violations(snap.dialogue), 'dialogue over the command panel').toEqual([]);
         expect(violations(snap.build), 'worker build panel').toEqual([]);
         expect(violations(snap.building), 'building panel').toEqual([]);
-        expect(violations(snap.postTutorial), 'help over the command panel').toEqual([]);
+        expect(violations(snap.postTutorial), 'shortcuts folded').toEqual([]);
+        expect(violations(snap.advanced), 'late mission, archive folded').toEqual([]);
+        expect(violations(snap.archive), 'late mission, archive expanded').toEqual([]);
+        expect(violations(snap.helpOpen), 'shortcuts open over a long objective list').toEqual([]);
+        expect(objectivesFit(snap.archive), 'expanded objectives reach the command bar').toEqual([]);
+        expect(objectivesFit(snap.helpOpen), 'objectives reach the command bar with the shortcuts open').toEqual([]);
+
+        // The active goal is the first row and stays inside the visible list, even with the archive open.
+        const fit = await page.evaluate(() => {
+          const panel = document.getElementById('ed-objectives')!;
+          const list = panel.querySelector('.obj-list')!;
+          const active = panel.querySelector('.obj:not(.done):not(.failed)');
+          const pr = panel.getBoundingClientRect();
+          const lr = list.getBoundingClientRect();
+          const ar = active?.getBoundingClientRect() ?? null;
+          return {
+            active: !!ar,
+            inside: !!ar && ar.top >= lr.top - 0.5 && ar.bottom <= lr.bottom + 0.5 && ar.bottom <= pr.bottom + 0.5,
+            scrolls: list.scrollHeight > list.clientHeight + 1,
+          };
+        });
+        expect(fit.active, 'the late mission keeps one active objective').toBe(true);
+        expect(fit.inside, 'the active objective is fully visible').toBe(true);
         expect(errors).toEqual([]);
       });
     }
