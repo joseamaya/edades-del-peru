@@ -108,4 +108,11 @@ describe('site discoveries', () => {
     expect(onStart).not.toHaveBeenCalled();
     expect(fow.exploredAreas).toHaveLength(0);
   });
+
+  it('reveals a pending site on demand (a mission effect), once', () => {
+    const discoveries = new Discoveries([{ heritageId: 'caral_pyramid_mayor' }], caral);
+    expect(discoveries.reveal('caral_pyramid_mayor')).toBe(true);
+    expect(discoveries.sites[0]!.state).toBe('revealing');
+    expect(discoveries.reveal('caral_pyramid_mayor')).toBe(false);
+  });
 });

@@ -56,6 +56,15 @@ export class Discoveries {
     }
   }
 
+  /** Force a pending site to reveal now (a mission effect), with the same animation. */
+  reveal(id: HeritageBuildingId): boolean {
+    const site = this.sites.find((s) => s.id === id);
+    if (!site || site.state !== 'pending') return false;
+    site.state = 'revealing';
+    site.elapsed = 0;
+    return true;
+  }
+
   /**
    * Advance pending discoveries. `onStart` fires once per site, when its clearing begins.
    * Discoveries are fog-only: with the fog off the sites are already visible and no animation runs.

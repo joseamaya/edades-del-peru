@@ -297,6 +297,13 @@ const TUTORIALS: Record<string, TutorialDef> = {
         check: { type: 'build', buildingKind: BuildingKind.FARM, baseline: 'farms' },
       },
       {
+        id: 'canal',
+        text: 'Haz clic en la compuerta del canal del valle y ábrela: el agua corre a las chacras y el río crece.',
+        highlight: buildBottom,
+        gateObjective: 'a2_canal',
+        check: { type: 'objectiveCompleted', objectiveId: 'a2_canal' },
+      },
+      {
         id: 'storage',
         text: 'Construye un depósito comunal para guardar el excedente de la comunidad.',
         highlight: buildBottom,

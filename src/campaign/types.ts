@@ -51,6 +51,11 @@ export interface MissionCanal {
   initiallyOpen?: boolean;
   /** Whether the authored canal contributes irrigation yield to nearby farms. */
   irrigation?: boolean;
+  /**
+   * Objective that must be active before the gate answers (Caral's Act II canal). Until then the
+   * gate is scenery: opening it would complete the objective the moment it appears.
+   */
+  lockedUntilObjective?: string;
   /** Optional heritage field card exposed by clicking the canal. */
   heritageId?: HeritageBuildingId;
 }
@@ -224,6 +229,11 @@ export interface ObjectiveDef {
   fromNode?: ResourceKind;
   /** Heritage cards that must be visited for an `inspect` objective. */
   heritageIds?: HeritageBuildingId[];
+  /**
+   * `inspect` only: a player unit must be this close (world metres) to the card being visited, so
+   * the objective cannot be completed from the other side of the map.
+   */
+  near?: number;
   /** Field card that receives a `deliver` objective's materials (shows a hand-over command). */
   heritageId?: HeritageBuildingId;
   /** Amount handed over per `deliver` command; defaults to 50. */
@@ -273,6 +283,8 @@ export type TriggerEffect =
   | { type: 'act'; kicker: string; title: string; text: string; image?: string }
   /** Construction phase of the authored site's main monument. */
   | { type: 'site_phase'; phase: string }
+  /** Clear (or force) the fog animation over an authored discovery. */
+  | { type: 'reveal'; heritageId: HeritageBuildingId }
   /** Presentation-only ritual beat at the authored site (e.g. the burial between construction phases). */
   | { type: 'ritual'; pos: MissionPoint }
   /** A named environmental event (drought, flood, ...). */

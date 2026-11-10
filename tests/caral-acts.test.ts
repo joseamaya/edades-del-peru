@@ -31,6 +31,7 @@ function stubGame() {
     acts: [] as string[],
     dialogues: [] as string[],
     rituals: [] as string[],
+    revealed: [] as string[],
     environmentEvents: [] as string[],
     hasBuildings: () => true,
     getPaused: () => false,
@@ -54,6 +55,7 @@ function stubGame() {
     setVisitedHeritage: () => {},
     setSitePhase: (phase: CaralMayorPhase) => (game.sitePhase = phase),
     playSiteRitual: () => game.rituals.push('burial'),
+    revealDiscovery: (id: string) => game.revealed.push(id),
     drought: 0,
     droughtInstant: false,
     startEnvironmentalEvent: (event: string, instant = false) => {
@@ -165,6 +167,45 @@ describe('Caral model mission', () => {
     }
     for (let i = 0; i < 16; i++) mission.update(1, 0);
     expect(mission.getObjectiveState('a4_partida')).toBe('completed');
+  });
+
+  it('announces the assembly with Act III and the pyramid tour only once the walls stand', () => {
+    const game = stubGame();
+    const mission = new Mission(game, CARAL, () => {});
+    mission.start();
+    game.mission = mission;
+    const save = mission.toSave();
+    mission.applySave({
+      ...save,
+      objState: save.objState.map(([id, st]) => [id, id === 'a2_excedente' ? 'completed' : st]),
+    });
+    mission.update(0.1, 0);
+    expect(mission.getObjectiveState('obj_asamblea'), 'the assembly is announced').toBe('activo');
+    expect(mission.getObjectiveState('obj_complejos'), 'no tour before its monuments exist').toBe('pendiente');
+    expect(mission.inspectRadiusFor('caral_pyramid_mayor')).toBeNull();
+
+    game.sitePhase = 'finished';
+    mission.objState.set('a3_obra_muros', 'completed');
+    mission.update(0.1, 0);
+    expect(mission.getObjectiveState('obj_complejos')).toBe('activo');
+    expect(mission.inspectRadiusFor('caral_pyramid_mayor')).toBe(18);
+    expect(game.revealed).toContain('caral_pyramid_mayor');
+  });
+
+  it('draws a goal marker for the active reach and hold objectives', () => {
+    const game = stubGame();
+    const mission = new Mission(game, CARAL, () => {});
+    mission.start();
+    const save = mission.toSave();
+    mission.applySave({
+      ...save,
+      objState: save.objState.map(([id, st]) => [id, id === 'a1_valle' ? 'activo' : st]),
+    });
+    const ids = mission.activeGoals().map((goal) => goal.id);
+    expect(ids).toContain('a1_valle');
+    expect(
+      ids.every((id) => CARAL.objectives.some((o) => o.id === id && (o.kind === 'reach' || o.kind === 'hold'))),
+    ).toBe(true);
   });
 
   it('keeps the optional assembly pending across a load', () => {

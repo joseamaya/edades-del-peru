@@ -222,6 +222,16 @@ export class SelectionController {
     for (const id of ids) if (getHeritageBuilding(id)) this.game.visitedHeritage.add(id);
   }
 
+  /** Whether a living player unit stands within `radius` of a heritage card's proxy. */
+  unitNearHeritage(id: HeritageBuildingId, radius: number): boolean {
+    const proxy = this.game.siteDef?.heritageProxies.find((p: { id: string }) => p.id === id);
+    if (!proxy) return true;
+    for (const u of this.game.units.values()) {
+      if (u.owner === 0 && !u.dead && distance2D(u.pos.x, u.pos.z, proxy.x, proxy.z) <= radius) return true;
+    }
+    return false;
+  }
+
   visitHeritage(id: HeritageBuildingId): void {
     const def = getHeritageBuilding(id);
     if (!def) return;
