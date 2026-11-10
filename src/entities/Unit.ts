@@ -75,7 +75,8 @@ export interface UnitContext {
   isWalkable(x: number, z: number, owner?: number): boolean;
   /**
    * Nearest walkable point used to resolve a unit embedded in a solid footprint. Passing the
-   * unit's `fromX`/`fromZ` restricts the search to its reachable pathfinding component.
+   * unit's `fromX`/`fromZ` restricts the search to its reachable pathfinding component; a blocked
+   * or missing origin (`0`) falls back to the whole map.
    */
   nearestWalkable(x: number, z: number, fromX?: number, fromZ?: number): { x: number; z: number } | null;
   unitsNear(x: number, z: number, radius: number): Unit[];
@@ -479,14 +480,21 @@ export class Unit {
   }
 
   issueOrder(order: Order, clear = true): void {
+    // Every unit owns its order: `startOrder` resolves a move goal in the unit's own reachable
+    // component, while a command (and its recorded replay) is shared by the whole selection.
+    const owned: Order = {
+      ...order,
+      target: order.target ? { ...order.target } : undefined,
+      origin: order.origin ? { ...order.origin } : undefined,
+    };
     if (clear) {
       // A build keeps the gather anchor so the worker can resume work afterwards (issue 381).
       const anchor = order.kind === OrderKind.BUILD ? this.lastGather : null;
       this.clearOrders();
       this.lastGather = anchor;
-      this.orderQueue.push(order);
+      this.orderQueue.push(owned);
     } else {
-      this.orderQueue.push(order);
+      this.orderQueue.push(owned);
     }
     this.startOrder();
   }
@@ -521,10 +529,13 @@ export class Unit {
       case OrderKind.BUILD:
         if (order.entityId !== undefined) this.setPathToEntity(order.entityId);
         break;
-      case OrderKind.PATROL:
+      case OrderKind.PATROL: {
         order.origin = { x: this.pos.x, z: this.pos.z };
-        this.setPath(order.target!.x, order.target!.z);
+        const goal = this.resolveMoveGoal(order.target!);
+        order.target = goal;
+        this.setPath(goal.x, goal.z);
         break;
+      }
       case OrderKind.ATTACK:
         this.targetEntityId = order.entityId ?? null;
         break;

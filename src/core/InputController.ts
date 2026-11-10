@@ -598,9 +598,10 @@ export class InputController {
     const pathfinder = this.game.pathfinder;
     if (pathfinder.isWalkable(target.x, target.z, from.owner)) return target;
     const component = pathfinder.componentAt(from.pos.x, from.pos.z);
-    const safe =
-      pathfinder.nearestWalkablePoint(target.x, target.z, 0, component || undefined, from.owner) ??
-      pathfinder.nearestWalkablePoint(target.x, target.z, 0, undefined, from.owner);
+    // Never snap to the far bank: without a component (unit embedded in an obstacle) search the map.
+    const safe = component
+      ? pathfinder.nearestWalkablePoint(target.x, target.z, 0, component, from.owner)
+      : pathfinder.nearestWalkablePoint(target.x, target.z, 0, undefined, from.owner);
     return safe ?? target;
   }
 
@@ -654,18 +655,7 @@ export class InputController {
           z: Math.sin(yaw) * r * spread + Math.cos(yaw) * c * spread,
         };
       }
-      const gx = target.x + offset.x;
-      const gz = target.z + offset.z;
-      if (!this.game.pathfinder.isWalkable(gx, gz, owner)) {
-        const safe = this.game.pathfinder.nearestWalkablePoint(
-          gx,
-          gz,
-          this.game.pathfinder.grid.cols,
-          undefined,
-          owner,
-        );
-        if (safe) offset = { x: safe.x - target.x, z: safe.z - target.z };
-      }
+      // `issueGroupMove` clamps an unwalkable final goal in the unit's own component.
       u.issueGroupMove(target, shared, offset, slowest, !this.shiftQueue);
     }
   }

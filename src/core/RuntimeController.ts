@@ -246,10 +246,11 @@ export class RuntimeController {
       nearestWalkable: (x, z, fromX?, fromZ?) => {
         const component =
           fromX === undefined || fromZ === undefined ? 0 : this.game.pathfinder.componentAt(fromX, fromZ);
-        return (
-          this.game.pathfinder.nearestWalkablePoint(x, z, 0, component || undefined) ??
-          this.game.pathfinder.nearestWalkablePoint(x, z)
-        );
+        // Without a component (an embedded or missing unit) a whole-map search is the escape hatch;
+        // with one, never fall back to land on the other side of the river.
+        return component
+          ? this.game.pathfinder.nearestWalkablePoint(x, z, 0, component)
+          : this.game.pathfinder.nearestWalkablePoint(x, z);
       },
       unitsNear: (x, z, radius) => this.unitsNear(x, z, radius),
       entitiesById: this.game.units,
