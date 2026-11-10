@@ -150,8 +150,10 @@ Dialogue speaker labels must not say "Comandante" in this mission.
   the Act III offering, temporary fair tents once the city is in use, two allied hamlets up the valley,
   riparian deer and birds, pelicans off Áspero, surf on the shore and a flute line for the era.
 - **Winter flood** (`Game.startEnvironmentalEvent('wet_season')`, 30 s, fired when the canal opens): the Supe
-  rises, the floodplain greens and the lomas take on the fog-fed green of the wet months. Purely visual; the
-  paint returns to the dry baseline when the season ends.
+  rises 0.45 m, the floodplain greens and the lomas take on the fog-fed green of the wet months. Purely
+  visual; the paint and the river stay wet for the rest of the mission until the act IV drought overrides
+  them. The depth, duration and the extent of the green are inferred staging: the dossier documents the
+  El Niño floods, the dunes and the lomas as an ecological zone.
 - **Drought** (`Game.startEnvironmentalEvent('drought')`, 40 s): the green turns to sand in patches (the
   documented sand advance), the river surface drops, the haze turns dusty, fields lose half their harvest
   and about one riverside tree in three dies.

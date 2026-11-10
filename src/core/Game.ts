@@ -6,7 +6,7 @@ import { SHADOW_MAP_SIZE } from '../rendering/shadowFrame';
 import { Sky } from '../rendering/Sky';
 import type { ArchitectureCity, CaralCity } from '../rendering/architectureKit';
 import { isKnownPhase, standsAt, SINGLE_PHASE } from '../model/defs/sitePhases';
-import { ENVIRONMENT_EVENTS, type EnvironmentEventId } from './environment';
+import { ENVIRONMENT_EVENTS, waterLevelOffset, type EnvironmentEventId } from './environment';
 import { t } from '../i18n';
 import { Terrain } from '../rendering/Terrain';
 import { HeadlessTerrain } from '../sim/HeadlessTerrain';
@@ -1026,6 +1026,9 @@ export class Game {
         this.environment.drought = 1;
         this.applyEnvironmentalEvent('drought', 1);
       }
+    } else if (event === 'wet_season' && instant) {
+      this.environment.wet_season = 1;
+      this.applyWetSeason(1);
     }
   }
 
@@ -1134,8 +1137,11 @@ export class Game {
   /** Winter flood: the river rises and the valley and lomas green up (purely visual). */
   private applyWetSeason(level: number): void {
     if (this.headless) return;
+    const shown = this.environmentShown.wet_season ?? -1;
+    if (Math.abs(level - shown) < 0.04 && level < 1) return;
+    this.environmentShown.wet_season = level;
     this.terrain.setWetSeason(level);
-    this.water.setLevelOffset(0.45 * level - 0.75 * (this.environment.drought ?? 0));
+    this.water.setLevelOffset(waterLevelOffset(this.environment));
   }
 
   private applyDrought(level: number): void {
@@ -1155,7 +1161,7 @@ export class Game {
     if (Math.abs(level - shown) < 0.04 && level < 1) return;
     this.environmentShown.drought = level;
     (this.terrain as { setDrought?(f: number): void }).setDrought?.(level);
-    this.water.setLevelOffset(0.45 * (this.environment.wet_season ?? 0) - 0.75 * level);
+    this.water.setLevelOffset(waterLevelOffset(this.environment));
     const base = this.droughtBaseAtmosphere ?? {};
     const mix = (a: number, b: number) => a + (b - a) * level;
     const sky = new THREE.Color(base.skyTint ?? '#cdd3d2').lerp(new THREE.Color('#d9c49a'), level);

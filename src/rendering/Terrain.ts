@@ -935,6 +935,8 @@ ${FOW_DIM_GLSL}
   /** Paint before the winter flood, restored when the season ends or the drought takes over. */
   private preWet: Uint8Array | null = null;
   private wetApplied = false;
+  /** Current drought strength; a running drought owns the paint and blocks the flood. */
+  private droughtLevel = 0;
 
   /**
    * Dry the valley (0 = as painted, 1 = full drought): green ground turns to sand and dry earth in
@@ -942,6 +944,7 @@ ${FOW_DIM_GLSL}
    */
   setDrought(level: number): void {
     const f = Math.max(0, Math.min(1, level));
+    this.droughtLevel = f;
     const out = this.splat.data;
     if (!this.preDrought) {
       if (f === 0) return;
@@ -967,11 +970,7 @@ ${FOW_DIM_GLSL}
         const d = src[i + 1]! / 255 + lost * 0.35;
         const sd = src[i + 2]! / 255 + lost * 0.65;
         const r = src[i + 3]! / 255;
-        const sum = Math.max(1e-6, g + d + sd + r);
-        out[i] = Math.round((g / sum) * 255);
-        out[i + 1] = Math.round((d / sum) * 255);
-        out[i + 2] = Math.round((sd / sum) * 255);
-        out[i + 3] = Math.round((r / sum) * 255);
+        writeSplat(out, i, g, d, sd, r);
       }
     }
     this.splatTexture.needsUpdate = true;
@@ -982,16 +981,17 @@ ${FOW_DIM_GLSL}
    * the lomas take on the fog-fed green they show in the wet months. Purely visual; the drought wins.
    */
   setWetSeason(level: number): void {
-    if (this.preDrought) return;
+    if (this.droughtLevel > 0) return;
     const f = Math.max(0, Math.min(1, level));
     const out = this.splat.data;
     if (f === 0) {
       if (this.wetApplied) this.restoreWetPaint();
       return;
     }
-    if (!this.preWet) this.preWet = new Uint8Array(out);
+    if (!this.wetApplied) this.preWet = new Uint8Array(out);
     this.wetApplied = true;
     const src = this.preWet;
+    if (!src) return;
     const size = this.splat.size;
     const cell = this.size / size;
     for (let tz = 0; tz < size; tz++) {
@@ -1012,11 +1012,7 @@ ${FOW_DIM_GLSL}
         const d = dirt * (1 - 0.2 * wet);
         const sd = sand * (1 - 0.35 * wet);
         const r = rock * (1 - Math.min(1, 0.5 * wet * loma));
-        const sum = Math.max(1e-6, g + d + sd + r);
-        out[i] = Math.round((g / sum) * 255);
-        out[i + 1] = Math.round((d / sum) * 255);
-        out[i + 2] = Math.round((sd / sum) * 255);
-        out[i + 3] = Math.round((r / sum) * 255);
+        writeSplat(out, i, g, d, sd, r);
       }
     }
     this.splatTexture.needsUpdate = true;
@@ -1100,4 +1096,13 @@ ${FOW_DIM_GLSL}
     this.splatTexture.dispose();
     this.group.removeFromParent();
   }
+}
+
+/** Normalise and store one splat texel (grass, dirt, sand, rock). */
+function writeSplat(out: Uint8Array, i: number, g: number, d: number, sd: number, r: number): void {
+  const sum = Math.max(1e-6, g + d + sd + r);
+  out[i] = Math.round((g / sum) * 255);
+  out[i + 1] = Math.round((d / sum) * 255);
+  out[i + 2] = Math.round((sd / sum) * 255);
+  out[i + 3] = Math.round((r / sum) * 255);
 }
