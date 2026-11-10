@@ -279,8 +279,8 @@ Definition of Done and the building audit see
   may also `consume` a resource per second (Caral's construction turns pause when the communal store is empty),
   and new hidden objectives declare `afterPhase`/`requires` so a save written before they existed repairs
   itself on load. The `requires` repair only runs when the trigger that activates the objective is already
-  in `fired`; command-only objectives (the optional Plaza assembly) and triggers still to fire are left for
-  the normal evaluation. `ObjectiveDef.minUnits` makes a `hold` wait for a crew (Caral's Act IV departure
+  in `fired`; objectives that no trigger activates (optional card actions) and triggers still to fire are
+  left for the normal evaluation. `ObjectiveDef.minUnits` makes a `hold` wait for a crew (Caral's Act IV departure
   needs three workers on its own beach marker, away from the fishing banks); `legacyPhases` restores the
   authored phase for saves written before it was persisted.
   Campaign fichas in [`docs/historia/fichas_campana.md`](./historia/fichas_campana.md), validated by
@@ -455,8 +455,8 @@ Definition of Done and the building audit see
   marker (resolved through `MissionPoint.ref: 'departure'`), and procedural fishing banks keep 22 m clear
   of it, so the fishers working the anchoveta shoals cannot end the act. `a4_partida` also sets
   `ObjectiveDef.minUnits = 3`. `Mission.applySave` only repairs a pending `requires` objective when its
-  activating trigger is already in `fired`, keeping command-only objectives (the optional Plaza assembly)
-  pending until the player calls them. This changes Caral's simulation, so `REPLAY_VERSION` is 25; guarded by
+  activating trigger is already in `fired`, keeping objectives that no trigger activates pending until
+  the player calls them. This changes Caral's simulation, so `REPLAY_VERSION` is 25; guarded by
   `tests/caral-acts.test.ts` and `tests/e2e/caral-city.spec.ts`.
 - **Caral period labels and texts** (issue 386): m1 overrides the global building names/icons through
   `MissionDef.buildingNames`/`buildingIcons` («Recinto comunal», «Depósito comunal», neutral farm icon) and
