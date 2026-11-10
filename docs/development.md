@@ -570,7 +570,19 @@ Definition of Done and the building audit see
   any cell within `GOAL_PROXIMITY` of the original goal cell. Keep that when touching goal handling.
   A move order must still cope with an empty route from a blocked **start** cell: `Unit.updateMove` (used by
   MOVE and, on an empty path, ATTACK_MOVE) only completes within `MOVE_ARRIVAL_DIST` of the target and otherwise
-  re-paths or heads straight for it, so a unit never finishes its order and freezes far from the destination.
+  re-paths or heads straight for it, so a unit does not freeze in place while a route exists.
+- **Move order to water** (issue 400): clicking the sea next to a fishing bank (or the far bank) must not leave
+  the unit busy forever. `InputController.groundGoal` (click and minimap) and `Unit.resolveMoveGoal`/
+  `issueGroupMove` replace a **water** destination with the nearest walkable point in the unit's reachable
+  pathfinding component (`UnitContext.nearestWalkable(x, z, fromX, fromZ)`), so the marker and the order agree;
+  with a valid component the search never falls back to the far bank, and an embedded unit still gets the
+  whole-map escape. Do **not** clamp other blocked goals (a building, a resource): `Pathfinder.pathfind`
+  already accepts any cell within `GOAL_PROXIMITY` of them, and snapping those changed AI paths. When there is
+  genuinely no route, `Unit.updateMove` warns and **ends** the order after `NO_ROUTE_GIVEUP` (clearing the path)
+  instead of keeping it queued, which used to hide the unit from the idle-worker button. `Unit.issueOrder`
+  copies the order per unit, because the resolved goal is per component and the command (and its recorded
+  replay) is shared by the whole selection. The command semantics changed, so `REPLAY_VERSION` is 29. Guarded
+  by `tests/move-orders.test.ts` and `tests/e2e/move-orders.spec.ts`.
   Two related traps: `Pathfinder.rebuild()` (on obstacle removal, e.g. a razed building) restores the grid from
   a stored `terrainBlocked` mask — filling with 1 would silently turn water **or too-steep** cells back into
   walkable ground (`bakeTerrain` marks both: height below the waterline, or a slope above `MAX_WALKABLE_SLOPE = 0.5`,
