@@ -58,6 +58,12 @@ export class HeadlessTerrain {
   isBeach(x: number, z: number): boolean {
     return this.data.isBeach(x, z);
   }
+  isRiver(x: number, z: number): boolean {
+    return this.data.isRiver(x, z);
+  }
+  isSea(x: number, z: number): boolean {
+    return this.data.isSea(x, z);
+  }
   isBuildable(x: number, z: number): boolean {
     return this.data.isBuildable(x, z);
   }

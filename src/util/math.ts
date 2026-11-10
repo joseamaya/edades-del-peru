@@ -1,5 +1,9 @@
 /** Math and color utilities. */
 
+/** An XZ point as a tuple, for compact authored polylines. */
+export type XZPoint = readonly [number, number];
+export type Polyline = readonly XZPoint[];
+
 export function clamp(v: number, min: number, max: number): number {
   return v < min ? min : v > max ? max : v;
 }
@@ -21,6 +25,21 @@ export function distance2D(ax: number, az: number, bx: number, bz: number): numb
   const dx = bx - ax;
   const dz = bz - az;
   return Math.sqrt(dx * dx + dz * dz);
+}
+
+/** Shortest XZ distance from a point to a polyline. */
+export function distanceToPolyline(x: number, z: number, path: Polyline): number {
+  const from = { x: 0, z: 0 };
+  const to = { x: 0, z: 0 };
+  let best = Infinity;
+  for (let i = 1; i < path.length; i++) {
+    from.x = path[i - 1][0];
+    from.z = path[i - 1][1];
+    to.x = path[i][0];
+    to.z = path[i][1];
+    best = Math.min(best, distanceToSegment(x, z, from, to));
+  }
+  return best;
 }
 
 /**

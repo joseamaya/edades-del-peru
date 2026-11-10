@@ -133,11 +133,12 @@ Dialogue speaker labels must not say "Comandante" in this mission.
 - **Áspero**: the `huaca_idolos` kit piece (three superposed terraces) and six fishing houses with net
   racks and gourd floats (`ASPERO_LAYOUT`), baked with the city in one `CaralCity`. Fishing grounds lie in
   the sea; a worker casts and drags a cotton net (`FishingNetFx`) and keeps fishing nearby grounds.
-- **Fishing supply**: eight checked banks (three authored sea grounds off Áspero plus river grounds), each
-  with at least four walkable stand cells and a 280–380 reserve. The total (≈2.8k food) keeps the coast and
-  the Act II cotton nets meaningful through acts II–IV without turning the shoals into an infinite source;
-  the banks still deplete if the community over-fishes them, as the dossier's seasonal river and marine
-  record implies.
+- **Fishing supply**: eight checked banks, all in the sea off Áspero (three authored anchors plus checked
+  coastal fill), each with at least four walkable stand cells and a 280–380 reserve. The Supe runs dry most
+  of the year and the dossier only records seasonal fish and shrimp, so the game places no permanent river
+  grounds. The total (≈2.8k food) keeps the coast and the Act II cotton nets meaningful through acts II–IV
+  without turning the shoals into an infinite source; the banks still deplete if the community over-fishes
+  them, as the dossier's marine record implies.
 - **Phased Pyramid Mayor**: foundation, fill, finished and in use (`Game.setSitePhase`); the other
   monuments appear with their phase (`CARAL_HERITAGE_SINCE`) and only block and answer clicks once built.
   The finished plaster is white; the in-use phase swaps the Mayor to the documented palette

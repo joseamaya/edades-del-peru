@@ -163,6 +163,8 @@ Estas afirmaciones deben presentarse como **interpretaciones**, no como hechos c
 | Tendal de redes y lugar de los mates en la casa de Áspero                           | Supuesto plausible                |
 | Huaca de los Ídolos: tres plataformas y recintos en la cima (forma en el juego)     | Supuesto plausible                |
 | Pesca en el juego: lanzar la red de algodón con flotadores de mate y arrastrarla    | Supuesto plausible                |
+| Anchoveta pescada en el litoral de Áspero, sin bancos permanentes en el río Supe    | Documentado (el Supe es irregular) |
+| Peces y camarones del Supe como recurso estacional                                  | No modelado; el juego deja el río sin bancos |
 | Armazón y cubierta de las tiendas de feria (solo los postes están documentados)     | Supuesto plausible                |
 | Disposición de casas y plazas en el mapa del juego                                  | Abstracción del juego             |
 | Vestimenta (más allá del uso de algodón)                                            | No documentado; mantener sencillo |

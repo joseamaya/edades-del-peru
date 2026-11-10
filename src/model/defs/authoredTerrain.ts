@@ -1,4 +1,6 @@
 /** A heightfield authored in metres for a campaign site (not procedural noise). */
+import type { Polyline } from '../../util/math';
+
 export interface AuthoredHeightField {
   /** Number of samples per side. */
   size: number;
@@ -8,6 +10,10 @@ export interface AuthoredHeightField {
   heights: Float32Array;
   /** Optional painted ground: RGBA (grass, dirt, sand, rock) weights on a `size` x `size` grid. */
   ground?: { size: number; weights: Uint8Array };
+  /** Optional carved river channel: centreline in world metres and its half-width. */
+  river?: { path: Polyline; halfWidth: number };
+  /** Optional coastline as the waterline x sampled every `step` metres along z. */
+  coast?: { step: number; x: readonly number[] };
 }
 
 /** Bilinear lookup of the painted ground weights (grass, dirt, sand, rock; 0..1), or null. */

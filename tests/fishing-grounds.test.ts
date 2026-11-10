@@ -47,6 +47,24 @@ describe('Caral fishing grounds', () => {
     expect(sea.length, 'the coast of Áspero needs its own grounds').toBeGreaterThanOrEqual(3);
   });
 
+  it('keeps every initial Caral bank in the sea, out of the Supe', () => {
+    const fish = [...game.resourceNodes.values()].filter((node) => node.kind === 'fishing' && !node.dead);
+    expect(fish.length).toBeGreaterThanOrEqual(8);
+    for (const node of fish) {
+      expect(game.terrain.isSea(node.pos.x, node.pos.z), `bank ${node.id} is not in the sea`).toBe(true);
+      expect(game.terrain.isRiver(node.pos.x, node.pos.z), `bank ${node.id} sits in the Supe`).toBe(false);
+    }
+    for (const anchor of CARAL.layout?.fishing ?? []) {
+      const x = anchor.x * game.settings.mapSize;
+      const z = anchor.z * game.settings.mapSize;
+      expect(game.terrain.isSea(x, z), 'the authored banks are on the coast').toBe(true);
+    }
+    expect(game.terrain.isSea(10, 165), 'the Áspero coast is sea').toBe(true);
+    expect(game.terrain.isSea(70, 90), 'the Supe channel is not sea').toBe(false);
+    expect(game.terrain.isRiver(70, 90), 'the Supe channel is river water').toBe(true);
+    expect(game.terrain.isRiver(10, 165), 'the Áspero sea is not river water').toBe(false);
+  });
+
   it('gives every bank room for a fishing group and enough reserve for acts II-IV', () => {
     const fish = [...game.resourceNodes.values()].filter((node) => node.kind === 'fishing' && !node.dead);
     expect(fish.length).toBeGreaterThanOrEqual(8);

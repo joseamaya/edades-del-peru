@@ -909,8 +909,9 @@ export class WorldViewDecor {
   }
 
   /**
-   * Place the mission's authored banks first (the Caral coast anchors), then fill the
-   * remaining guaranteed supply procedurally. Safe to call on an older save.
+   * Place the mission's authored banks first (the Caral coast anchors), then fill the remaining
+   * guaranteed supply procedurally from the sea, never from an authored river channel. Safe to call on
+   * an older save.
    */
   ensureFishingGrounds(min: number): void {
     const rng = new RNG((this.game.settings.mapSeed * 2654435761 + 97) >>> 0);
@@ -919,7 +920,8 @@ export class WorldViewDecor {
       const x = anchor.x * size;
       const z = anchor.z * size;
       if (this.fishingNodes().some((n) => distance2D(x, z, n.pos.x, n.pos.z) < 3)) continue;
-      if (!this.game.terrain.isWater(x, z)) continue;
+      if (!this.game.terrain.isSea(x, z)) continue;
+      if (this.game.terrain.isRiver(x, z)) continue;
       if (!this.fishingGroundUsable({ pos: { x, z } })) continue;
       this.addFishingGround(x, z, rng);
     }
@@ -945,7 +947,8 @@ export class WorldViewDecor {
         const z = (cz + 0.5) * cell;
         if (x < FISHING_SCAN_MARGIN || z < FISHING_SCAN_MARGIN) continue;
         if (x > size - FISHING_SCAN_MARGIN || z > size - FISHING_SCAN_MARGIN) continue;
-        if (!this.game.terrain.isWater(x, z)) continue;
+        if (!this.game.terrain.isSea(x, z)) continue;
+        if (this.game.terrain.isRiver(x, z)) continue;
         if (existing.some((n) => distance2D(x, z, n.pos.x, n.pos.z) < 5)) continue;
         const capacity = this.fishingCapacity(x, z);
         if (capacity < FISHERS_PER_GROUND) continue;
