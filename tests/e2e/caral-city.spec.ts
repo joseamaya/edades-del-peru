@@ -300,6 +300,9 @@ test('an empty communal store pauses the pyramid work turn until food returns', 
     // Complete the delivery objective; its trigger activates the first work turn.
     m.objState.set('a3_shicras', 'completed');
     m.update(0.1, 0);
+    // The crew is fed from the communal store, so it must stand before the turn can advance.
+    const c = g.playerCenter(0);
+    g.spawnScriptedBuilding('mill', 0, c.x + 6, c.z);
     const site = g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 });
     const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as any;
     worker.pos.set(site.x, g.terrain.getHeight(site.x, site.z), site.z);

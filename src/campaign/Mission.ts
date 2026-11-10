@@ -11,7 +11,7 @@ import {
   TriggerEffect,
   MissionPoint,
 } from './types';
-import { OrderKind, Resources } from '../core/types';
+import { BuildingKind, OrderKind, Resources } from '../core/types';
 import { distance2D } from '../util/math';
 import { t } from '../i18n';
 import { commanderFor } from '../model/defs/commanders';
@@ -190,7 +190,9 @@ export class Mission {
       const held = crew >= (o.minUnits ?? 1);
       const current = this.holdTimers.get(o.id) ?? 0;
       if (!held) {
-        this.holdTimers.set(o.id, 0);
+        // A work turn that already paid its upkeep keeps its progress while the crew steps away; only
+        // objectives without an upkeep restart from zero.
+        if (!o.consume) this.holdTimers.set(o.id, 0);
         this.stalledHolds.delete(o.id);
         continue;
       }
@@ -207,15 +209,31 @@ export class Mission {
   /** Charge a work turn's upkeep; false when the store cannot pay and the turn must wait. */
   private payHoldCost(o: ObjectiveDef, dt: number, remaining: number): boolean {
     if (!o.consume) return true;
+    if (o.consume.store && !this.hasStore(o.consume.store)) {
+      return this.stall(o, t('hud.toast.workTurnNeedsStore', { store: this.game.buildingName(o.consume.store) }));
+    }
     const player = this.game.players[0];
     const cost = o.consume.perSecond * Math.min(dt, remaining);
     if (player && player.resources[o.consume.resource] >= cost) {
       player.resources[o.consume.resource] -= cost;
       return true;
     }
+    return this.stall(o, t('hud.toast.constructionStalled'));
+  }
+
+  /** Whether the player owns a finished building of this kind (Caral's communal store feeds the crew). */
+  private hasStore(kind: BuildingKind): boolean {
+    for (const b of this.game.buildings.values()) {
+      if (b.owner === 0 && b.kind === kind && b.constructionComplete && !b.dead) return true;
+    }
+    return false;
+  }
+
+  /** Announce a stalled turn once, until it moves again. */
+  private stall(o: ObjectiveDef, message: string): false {
     if (!this.stalledHolds.has(o.id)) {
       this.stalledHolds.add(o.id);
-      this.game.hud.showToast(t('hud.toast.constructionStalled'), 'warning');
+      this.game.hud.showToast(message, 'warning');
     }
     return false;
   }

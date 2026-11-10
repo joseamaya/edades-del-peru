@@ -463,6 +463,14 @@ Definition of Done and the building audit see
   narrows the tech tree with `allowedTechs` (the generic irrigation tech is excluded because the canal gate
   already provides it). The tech restriction changes the match, so `REPLAY_VERSION` is 26; the text guard is
   `tests/caral-texts.test.ts` and `tests/e2e/caral-city.spec.ts`.
+- **Caral work turns and drought yields** (issue 389): a `hold` with `consume` keeps its timer when the crew
+  steps out of the radius (only a turn without an upkeep restarts from zero), and `consume.store` names the
+  building that must stand (`BuildingKind.MILL`, the communal store) or the turn waits with its own toast.
+  Farm yield now carries a drought factor (`farmYieldMultiplier`), so `Game.farmYieldAt` dries with
+  `environment.drought`, every standing field is rescaled when the level moves (and at full drought), and
+  `replantFarm` restores the dried reserve instead of a full irrigated crop. Farm reserves and the save
+  meaning changed, so `SAVE_VERSION` is 4 and `REPLAY_VERSION` is 27; guarded by `tests/caral-acts.test.ts`,
+  `tests/farm-yield.test.ts` and `tests/headless-game.test.ts`.
 - **Victory/defeat (conquest)**: a player is defeated only when **no building of theirs remains** (`Game.hasBuildings`),
   in both skirmish (`resolveConquest` via `Game.checkVictory`) and campaign (`Mission.checkBaseLost`). Do not go back to "losing the
   civic center ends the match": a full base with army must survive the loss of its center.

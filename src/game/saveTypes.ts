@@ -16,7 +16,7 @@ import type { HeritageBuildingId } from '../model/defs/heritage';
 import type { MatchStatsSave } from './matchStats';
 
 /** Bump on a breaking snapshot change; adding optional fields is fine. */
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 export type { ResourceKind };
 

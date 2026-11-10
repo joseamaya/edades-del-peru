@@ -15,6 +15,7 @@ import {
   MapType,
 } from '../core/types';
 import { BUILDING_DEFS, getBuildingStats } from '../model/defs/buildings';
+import { droughtYieldFactor } from '../model/defs/farmYield';
 import { getBuildingCard } from '../model/defs/buildingCards';
 import {
   UNIT_ARCHETYPES,
@@ -1958,6 +1959,10 @@ export class HUD {
       const mult = this.game.farmYieldAt(b.pos.x, b.pos.z);
       s += t('hud.building.foodReserve', { amount: Math.ceil(b.foodAmount) });
       if (mult > 1.001) s += t('hud.building.terrainBonus', { percent: Math.round((mult - 1) * 100) });
+      const drought = this.game.environment.drought ?? 0;
+      if (drought > 0.01) {
+        s += t('hud.building.droughtPenalty', { percent: Math.round((1 - droughtYieldFactor(drought)) * 100) });
+      }
     }
     const card = getBuildingCard(this.game.mission?.def.id, b.kind);
     if (card) {

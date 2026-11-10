@@ -183,7 +183,8 @@ export class Game {
   environment: Record<string, number> = {};
   private environmentTargets: Record<string, number> = {};
   private environmentShown: Record<string, number> = {};
-  private droughtFarmsHit = false;
+  /** Drought level whose yield factor is already folded into the standing farms. */
+  private droughtFarmLevel = 0;
   private droughtGroveCut = false;
   private droughtBaseAtmosphere: MissionAtmosphere | undefined;
   /** Construction phase of the authored site's main monument (mission-driven; the city follows it). */
@@ -1046,8 +1047,7 @@ export class Game {
     if (event === 'drought') {
       this.droughtBaseAtmosphere ??= this.missionAtmosphere;
       if (instant) {
-        // A loaded save already holds the halved harvests and the dead trees: only the look is restored.
-        this.droughtFarmsHit = true;
+        // A loaded save already holds the dried harvests and the dead trees: only the look is restored.
         this.droughtGroveCut = true;
         this.environment.drought = 1;
         this.applyEnvironmentalEvent('drought', 1);
@@ -1067,7 +1067,6 @@ export class Game {
       this.environmentTargets[event] = level;
       if (event === 'drought') {
         this.droughtBaseAtmosphere ??= this.missionAtmosphere;
-        if (level >= 0.3) this.droughtFarmsHit = true;
         if (level >= 0.6) this.droughtGroveCut = true;
       }
       this.applyEnvironmentalEvent(event, level);
@@ -1172,9 +1171,15 @@ export class Game {
   }
 
   private applyDrought(level: number): void {
-    if (level >= 0.3 && !this.droughtFarmsHit) {
-      this.droughtFarmsHit = true;
-      for (const b of this.buildings.values()) if (b.isFarm && !b.dead) b.foodAmount = Math.round(b.foodAmount * 0.5);
+    // The yield factor is continuous (see `farmYieldAt`): rescale the standing reserves whenever the
+    // drought moves enough to matter, so fields sown before it dry out with it.
+    if (
+      Math.abs(level - this.droughtFarmLevel) >= 0.05 ||
+      (level >= 1 && this.droughtFarmLevel < 1) ||
+      (level === 0 && this.droughtFarmLevel !== 0)
+    ) {
+      this.droughtFarmLevel = level;
+      this.refreshFarmYields();
     }
     if (level >= 0.6 && !this.droughtGroveCut) {
       this.droughtGroveCut = true;
@@ -1538,8 +1543,6 @@ export class Game {
     const b = new Building(kind, 0, this.players[0].era);
     b.pos.set(x, this.terrain.getHeight(x, z), z);
     this.applyTerrainFarmYield(b);
-    // A field sown during the drought starts with half a harvest (placement only, never on load).
-    if (this.droughtFarmsHit && b.isFarm) b.foodAmount = Math.round(b.foodAmount * 0.5);
     this.attachBuilding(b);
     b.beginConstruction();
     if (BUILDING_DEFS[kind].instant) b.completeInstantly();
@@ -1556,12 +1559,18 @@ export class Game {
     b.applyTerrainYield(this.farmYieldAt(b.pos.x, b.pos.z));
   }
 
+  /** Rescale every standing field to the current terrain, irrigation and drought. */
+  refreshFarmYields(): void {
+    for (const b of this.buildings.values()) if (b.isFarm && !b.dead) this.applyTerrainFarmYield(b);
+  }
+
   /** Terrain multiplier for a farm at (x, z), shared by the simulation and the HUD. */
   farmYieldAt(x: number, z: number): number {
     return farmYieldMultiplier({
       terrace: this.terrain.getTerrace(x, z),
       moisture: this.terrain.getMoisture(x, z),
       canal: nearbyCanal((cx, cz) => Math.max(this.terrain.getCanal(cx, cz), this.authoredCanalAt(cx, cz)), x, z),
+      drought: this.environment.drought ?? 0,
     });
   }
 
@@ -1573,9 +1582,7 @@ export class Game {
     if (!this.canalSite) return false;
     this.canalOpen = !this.canalOpen;
     this.updateCanalVisual();
-    for (const b of this.buildings.values()) {
-      if (b.isFarm) b.applyTerrainYield(this.farmYieldAt(b.pos.x, b.pos.z));
-    }
+    this.refreshFarmYields();
     this.hud?.showToast(
       this.canalOpen ? 'Compuerta abierta: las chacras cercanas riegan mejor' : 'Compuerta cerrada',
       this.canalOpen ? 'success' : 'info',

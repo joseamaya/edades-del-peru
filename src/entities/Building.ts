@@ -90,8 +90,7 @@ export class Building {
     return this.ctx?.players?.find((p: any) => p.id === this.owner)?.team ?? 0;
   }
 
-  /** Rebase the farm's food reserve to the current terrain/irrigation multiplier. */
-  /** Replant a depleted farm, restoring the reserve at its current terrain yield. */
+  /** Replant a depleted farm, restoring the reserve at its current terrain/irrigation/drought yield. */
   replant(): boolean {
     if (!this.isFarm || this.foodAmount > 0) return false;
     this.foodAmount = Math.max(1, Math.round((500 + this.era * 200) * this.terrainYield));
@@ -100,7 +99,8 @@ export class Building {
 
   applyTerrainYield(multiplier: number): void {
     if (!this.isFarm) return;
-    const next = Math.max(1, multiplier);
+    // Drought can push the multiplier under 1, so the floor only guards against a zero reserve.
+    const next = Math.max(0.1, multiplier);
     if (Math.abs(next - this.terrainYield) < 0.001) return;
     this.foodAmount = Math.round((this.foodAmount / this.terrainYield) * next);
     this.terrainYield = next;
