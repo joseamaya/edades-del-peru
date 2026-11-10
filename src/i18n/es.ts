@@ -373,6 +373,7 @@ export const es = {
   'hotkey.rotateSuffix': ' (si está activada)',
 
   'hud.environment.drought': 'Sequía',
+  'hud.environment.wetSeason': 'Crecida estacional',
   'hud.cinematic.skip': 'Saltar',
   'hud.cinematic.continue': 'Continuar',
   'hud.cinematic.next': 'Siguiente',

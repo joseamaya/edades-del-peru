@@ -149,8 +149,14 @@ Dialogue speaker labels must not say "Comandante" in this mission.
 - **Living valley**: cooking smoke behind dwellings, the sacred fire on the Pyramid Mayor and a blaze for
   the Act III offering, temporary fair tents once the city is in use, two allied hamlets up the valley,
   riparian deer and birds, pelicans off Áspero, surf on the shore and a flute line for the era.
-- **Drought** (`Game.startEnvironmentalEvent('drought')`, 40 s): the green turns to sand in patches, the river surface drops,
-  the haze turns dusty, fields lose half their harvest and about one riverside tree in three dies.
+- **Winter flood** (`Game.startEnvironmentalEvent('wet_season')`, 30 s, fired when the canal opens): the Supe
+  rises 0.45 m, the floodplain greens and the lomas take on the fog-fed green of the wet months. Purely
+  visual; the paint and the river stay wet for the rest of the mission until the act IV drought overrides
+  them. The depth, duration and the extent of the green are inferred staging: the dossier documents the
+  El Niño floods, the dunes and the lomas as an ecological zone.
+- **Drought** (`Game.startEnvironmentalEvent('drought')`, 40 s): the green turns to sand in patches (the
+  documented sand advance), the river surface drops, the haze turns dusty, fields lose half their harvest
+  and about one riverside tree in three dies.
 - **Narration**: an anonymous narrator (`MissionDef.narrator`); no "Comandante" label, no invented names.
 - **Tutorial**: nine steps (select, coast, house, valley, field, storage, nets, pyramid, works) docked under
   the objectives; the last one explains the Troje supply during construction.
@@ -190,7 +196,8 @@ bench runs without ground cover).
 1. ~~The city's paint colour per phase (documented as changing by period) is not yet shown.~~ Done for
    the model: the finished Mayor wears white and the in-use phase swaps to ochre/red; the smaller pyramids
    and houses keep the documented white/red palette. The exact per-building colours are inferred.
-2. Seasonal flood, sand advance and green winter lomas are not simulated.
+2. ~~Seasonal flood, sand advance and green winter lomas are not simulated.~~ Done: the `wet_season` event
+   raises the river and greens the valley and lomas; the drought's dry phase is the documented sand advance.
 3. Late-period details of Act IV (stone houses, a little maize) are not shown.
 4. ~~The Act III fire offering is staged at the plaza, but the burial of one phase under the next is not
    shown on its own, and an empty storehouse does not pause construction.~~ Done: the `ritual` effect

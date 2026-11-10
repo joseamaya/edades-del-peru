@@ -524,6 +524,7 @@ test('plays m1 Caral with real construction and gathering, without objective che
       cards,
       deliveries,
       phase: g.sitePhase,
+      environment: { ...g.environment },
       won: m.won as boolean | null,
       ended: m.ended as boolean,
       resources: { ...res },
@@ -544,6 +545,9 @@ test('plays m1 Caral with real construction and gathering, without objective che
   expect(out.cards, 'acts II-IV open with a chapter card').toBe(3);
   expect(out.deliveries, 'shicras, walls and sealing are handed over in 50-unit loads').toBe(8);
   expect(out.phase).toBe('in_use');
+  // The winter flood greens the valley in act II; the drought closes act IV.
+  expect(out.environment.wet_season).toBe(1);
+  expect(out.environment.drought).toBe(1);
   // Target length of the model mission (docs/design/caral-model-mission.md): roughly 30-40 minutes for a
   // learning player. The bot is faster but, with the Caral speed scale (0.5), it needs ~20 min: lock the
   // pacing so a reverted scale or a shortened mission fails here.
