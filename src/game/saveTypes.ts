@@ -17,6 +17,9 @@ import type { MatchStatsSave } from './matchStats';
 export const SAVE_VERSION = 3;
 
 export type ResourceKind = 'tree' | 'mine' | 'well' | 'hunt' | 'fishing' | 'berry';
+
+/** One row of the monotonic harvest ledger: player, node kind, amount. */
+export type HarvestLedgerRow = [number, ResourceKind, number];
 export interface TutorialBase {
   houses: number;
   barracks: number;
@@ -155,5 +158,5 @@ export interface SaveData {
   /** Market pressure per player (optional for older saves). */
   markets?: Resources[];
   /** Monotonic harvest ledger by node kind (optional for older saves). */
-  harvested?: [number, string, number][];
+  harvested?: HarvestLedgerRow[];
 }

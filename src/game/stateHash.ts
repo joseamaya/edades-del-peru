@@ -1,4 +1,5 @@
 import type { BuildingKind, Era, Order, UnitKind } from '../core/types';
+import type { HarvestLedgerRow } from './saveTypes';
 
 export interface HashUnit {
   id: number;
@@ -46,7 +47,7 @@ export interface HashStateInput {
   rngState: number;
   markets?: { food: number; wood: number; silver: number; stone: number }[];
   /** Monotonic harvest ledger by node kind (see Game.harvested). */
-  harvested?: [number, string, number][];
+  harvested?: HarvestLedgerRow[];
 }
 
 /** Stable 32-bit hash of the fields that define replay/gameplay state. */
@@ -105,7 +106,7 @@ export function stateHashOf(input: HashStateInput): number {
     nodes,
     players,
     markets: input.markets ?? [],
-    harvested: (input.harvested ?? []).slice().sort((a, b) => a[0] - b[0] || a[1].localeCompare(b[1])),
+    harvested: (input.harvested ?? []).slice().sort((a, b) => a[0] - b[0] || (a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0)),
     rng: input.rngState,
   });
   for (let i = 0; i < text.length; i++) hash = (Math.imul(hash, 31) + text.charCodeAt(i)) | 0;

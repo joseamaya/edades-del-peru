@@ -21,7 +21,7 @@ import { Order, OrderKind, OrderTarget } from '../core/types';
 import { angleDelta, angleTo, distance2D, clamp, facingRotation, lerp } from '../util/math';
 import { tradeIncomeForDistance } from '../game/market';
 import { genderForId, type PersonGender } from '../model/defs/people';
-import type { UnitSave } from '../game/saveTypes';
+import type { UnitSave, ResourceKind } from '../game/saveTypes';
 import type { ApproachOptions } from '../game/Pathfinding';
 
 /** Reach of a melee attack from the edge of the target footprint. */
@@ -101,7 +101,7 @@ export interface UnitContext {
   event<K extends keyof GameEvents>(name: K, payload: GameEvents[K]): void;
   gather(nodeId: number, unitId: number, amount: number, resource: string): void;
   /** Monotonic harvest ledger by node kind (missions count e.g. only fished food). */
-  recordHarvest(owner: number, kind: string, amount: number): void;
+  recordHarvest(owner: number, kind: ResourceKind, amount: number): void;
   tradeIncome(owner: number, amount: number, x: number, z: number): void;
   worldSize: number;
   /** The match's historical period (for the chronology guard on training). */
@@ -115,6 +115,8 @@ const MOVE_STOP_DIST = 0.6;
 export const HARVEST_RANGE = 2.8;
 /** Stand point inside a walkable cell: close enough that the final 0.6 stop still harvests. */
 export const HARVEST_STAND_RANGE = HARVEST_RANGE - MOVE_STOP_DIST;
+/** Fishers a checked bank must fit, and the cap a group order assigns to one bank (issue 378). */
+export const FISHERS_PER_GROUND = 4;
 /** Distance at which a plain move/attack-move order counts as arrived. */
 const MOVE_ARRIVAL_DIST = 1.2;
 const SEPARATION = 1.4;
@@ -126,6 +128,8 @@ const NO_ROUTE_GIVEUP = 1.5;
 const NO_ROUTE_GIVEUP_ECONOMY = 4.5;
 /** Consecutive failed re-routes before a stuck economy order is dropped. */
 const STUCK_GIVEUP_RETRIES = 3;
+/** Seconds a failed fishing bank is avoided when the worker is ordered back to it (issue 378). */
+const FAILED_GATHER_MEMORY = 20;
 /** Seconds with a full load and no dropsite before warning the player. */
 const NO_DROPSITE_GIVEUP = 2.5;
 /** Minimum defensive leash around the stance origin. */
@@ -175,6 +179,11 @@ export class Unit {
   private approachTried = false;
   private attackApproachTried = false;
   private buildApproachTried = false;
+  /** Last fishing bank that could not be reached, and the simulation time to avoid it until. */
+  private failedGatherNodeId: number | null = null;
+  private failedGatherUntil = 0;
+  /** Simulation time of the order currently executing (for the failed-bank grace window). */
+  private orderTime = 0;
 
   targetEntityId: number | null = null;
   attackCooldown = 0;
@@ -762,6 +771,7 @@ export class Unit {
   }
 
   private executeOrder(order: Order, dt: number, time: number): void {
+    this.orderTime = time;
     switch (order.kind) {
       case OrderKind.MOVE:
         this.updateMove(order, dt);
@@ -832,7 +842,8 @@ export class Unit {
         this.notifyBlocked('stuck');
         this.path.length = 0;
         this.pathIdx = 0;
-        this.finishOrder();
+        if (o.kind === OrderKind.GATHER) this.abandonGatherOrder();
+        else this.finishOrder();
       } else if (target) {
         this.setPath(target.x, target.z);
       } else if (o.entityId !== undefined) {
@@ -1204,6 +1215,10 @@ export class Unit {
       }
       return;
     }
+    // A bank that just stranded this worker is skipped while the grace window lasts (issue 378).
+    if (order.entityId === this.failedGatherNodeId && this.orderTime < this.failedGatherUntil) {
+      if (this.tryAlternativeGatherNode(order)) return;
+    }
     // the target can be a resource node or a farm (building)
     let node: any = this.ctx.resourceNodes.get(order.entityId!);
     if ((!node || node.depleted || node.dead) && this.ctx.buildings.has(order.entityId!)) {
@@ -1269,7 +1284,7 @@ export class Unit {
             node.pos.z,
             standRadius,
             this.owner,
-            { allowWater: node.kind === 'fishing', slot: this.id },
+            node.kind === 'fishing' ? { allowWater: true, slot: this.id } : undefined,
           );
           if (pts.length > 0) {
             this.followApproachPath(pts);
@@ -1412,7 +1427,7 @@ export class Unit {
     }
     const distTo = (node: GatherNodeRef): number => distance2D(this.pos.x, this.pos.z, node.pos.x, node.pos.z);
     candidates.sort((a, b) => distTo(a) - distTo(b));
-    const opts = { allowWater: current.kind === 'fishing', slot: this.id };
+    const opts = current.kind === 'fishing' ? { allowWater: true, slot: this.id } : undefined;
     for (const node of candidates) {
       if (
         !this.ctx.reachableToNode(this.pos.x, this.pos.z, node.pos.x, node.pos.z, HARVEST_STAND_RANGE, this.owner, opts)
@@ -1453,6 +1468,11 @@ export class Unit {
    * a load queues the delivery first instead of standing idle with it (issue 378).
    */
   private abandonGatherOrder(): void {
+    const failed = this.orderQueue[0]?.entityId;
+    if (failed !== undefined) {
+      this.failedGatherNodeId = failed;
+      this.failedGatherUntil = this.orderTime + FAILED_GATHER_MEMORY;
+    }
     this.orderQueue.shift();
     if (this.carryCount() > 0) this.deliverOrder();
     if (this.orderQueue.length > 0) this.startOrder();

@@ -2,13 +2,10 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { Game, setAutoStart } from '../src/core/Game';
 import { DEFAULT_SETTINGS } from '../src/core/Config';
 import { MISSIONS } from '../src/campaign/defs/campaign';
-import { HARVEST_STAND_RANGE } from '../src/entities/Unit';
+import { FISHERS_PER_GROUND, HARVEST_STAND_RANGE } from '../src/entities/Unit';
 import { OrderKind, UnitKind } from '../src/core/types';
 
 const CARAL = MISSIONS.find((mission) => mission.id === 'm1_caral')!;
-
-/** A bank must feed a group, not just one lucky fisher. */
-const MIN_FISHERS_PER_GROUND = 4;
 
 describe('Caral fishing grounds', () => {
   let game: Game;
@@ -59,9 +56,7 @@ describe('Caral fishing grounds', () => {
         allowWater: true,
         component,
       });
-      expect(capacity, `bank ${node.id} at (${node.pos.x}, ${node.pos.z})`).toBeGreaterThanOrEqual(
-        MIN_FISHERS_PER_GROUND,
-      );
+      expect(capacity, `bank ${node.id} at (${node.pos.x}, ${node.pos.z})`).toBeGreaterThanOrEqual(FISHERS_PER_GROUND);
     }
     const reserve = fish.reduce((sum, node) => sum + node.amount, 0);
     expect(reserve).toBeGreaterThanOrEqual(2400);

@@ -4,7 +4,7 @@ import { CulturalLandscape } from '../rendering/CulturalLandscape';
 import { SacredCity } from '../rendering/SacredCity';
 import { applyFowToObject } from '../rendering/FowMaterial';
 import { ResourceNode } from '../entities/ResourceNode';
-import { HARVEST_STAND_RANGE } from '../entities/Unit';
+import { FISHERS_PER_GROUND, HARVEST_STAND_RANGE } from '../entities/Unit';
 import { disposeStaticGltf } from '../rendering/StaticModel';
 import { loadSceneryModel } from '../rendering/sceneryModels';
 import { loadSiteModel } from '../rendering/siteModels';
@@ -55,6 +55,8 @@ import { getMission } from '../campaign/defs/campaign';
 const AMBIENT_PROP_SEED = 7;
 const AMBIENT_FAUNA_SEED = 13;
 const FISHING_SCAN_MARGIN = 4;
+/** Fishing banks keep a large reserve: the anchoveta shoals off Áspero fed the village. */
+const FISHING_RESERVE = { min: 280, max: 380 } as const;
 /** Authored maps keep tree clusters this far from the mission's start base. */
 const GROVE_START_CLEARANCE = 72;
 
@@ -874,21 +876,12 @@ export class WorldViewDecor {
         const x = rng.range(20, s.mapSize - 20);
         const z = rng.range(20, s.mapSize - 20);
         if (!this.game.terrain.isWater(x, z)) continue;
-        const node = new ResourceNode('fishing', x, z, rng.range(150, 220));
-        node.pos.y = 0;
-        this.game.attachResourceNode(node, mapType);
-        this.game.resourceNodes.set(node.id, node);
+        this.addFishingNode(x, z, rng.range(150, 220));
       }
     } else {
       this.ensureFishingGrounds(mis.guaranteedFishing);
     }
   }
-
-  /** A bank must offer several walkable stand cells, not just one lucky harvest spot. */
-  private readonly minFishingStandCells = 4;
-
-  /** Fishing banks keep a large reserve: the anchoveta shoals off Áspero fed the village. */
-  private static readonly FISHING_RESERVE = { min: 280, max: 380 } as const;
 
   private fishingGroundUsable(node: { pos: { x: number; z: number } }): boolean {
     const pf = this.game.pathfinder;
@@ -896,20 +889,19 @@ export class WorldViewDecor {
       pf.standCapacity(node.pos.x, node.pos.z, HARVEST_STAND_RANGE, undefined, {
         allowWater: true,
         component: pf.mainComponent(),
-      }) >= this.minFishingStandCells
+      }) >= FISHERS_PER_GROUND
     );
   }
 
-  private addFishingGround(x: number, z: number, rng: RNG): void {
-    const node = new ResourceNode(
-      'fishing',
-      x,
-      z,
-      rng.range(WorldViewDecor.FISHING_RESERVE.min, WorldViewDecor.FISHING_RESERVE.max),
-    );
+  private addFishingNode(x: number, z: number, amount: number): void {
+    const node = new ResourceNode('fishing', x, z, amount);
     node.pos.y = 0;
     this.game.attachResourceNode(node, this.game.mapProfile.baseMapType);
     this.game.resourceNodes.set(node.id, node);
+  }
+
+  private addFishingGround(x: number, z: number, rng: RNG): void {
+    this.addFishingNode(x, z, rng.range(FISHING_RESERVE.min, FISHING_RESERVE.max));
   }
 
   private fishingNodes(): ResourceNode[] {
@@ -957,7 +949,7 @@ export class WorldViewDecor {
         if (!this.game.terrain.isWater(x, z)) continue;
         if (existing.some((n) => distance2D(x, z, n.pos.x, n.pos.z) < 5)) continue;
         const capacity = pf.standCapacity(x, z, HARVEST_STAND_RANGE, undefined, { allowWater: true, component });
-        if (capacity < this.minFishingStandCells) continue;
+        if (capacity < FISHERS_PER_GROUND) continue;
         candidates.push({ x, z });
       }
     }
