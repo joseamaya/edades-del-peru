@@ -940,7 +940,7 @@ ${FOW_DIM_GLSL}
 
   /** Splat before any drought, so the drying is computed from it (not accumulated frame after frame). */
   private preDrought: Uint8Array | null = null;
-  /** Paint before the winter flood, restored when the season ends or the drought takes over. */
+  /** Paint before the summer flood (sierra rains), restored when the season ends or the drought takes over. */
   private preWet: Uint8Array | null = null;
   private wetApplied = false;
   /** Current drought strength; a running drought owns the paint and blocks the flood. */
@@ -985,8 +985,9 @@ ${FOW_DIM_GLSL}
   }
 
   /**
-   * Winter flood (0 = as painted, 1 = full wet season): the floodplain and the riverbanks green up and
-   * the lomas take on the fog-fed green they show in the wet months. Purely visual; the drought wins.
+   * Summer flood (0 = as painted, 1 = full wet season): the floodplain and the riverbanks green up.
+   * The lomas also take the fog-fed green of the wet months because the event tints both; that verdor is
+   * a winter-fog cue, not part of the summer flood. Purely visual; the drought wins.
    */
   setWetSeason(level: number): void {
     if (this.droughtLevel > 0) return;

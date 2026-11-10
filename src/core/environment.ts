@@ -12,7 +12,7 @@ export interface EnvironmentEventDef {
 
 export const ENVIRONMENT_EVENTS = {
   drought: { labelKey: 'hud.environment.drought', duration: 40 },
-  /** The Supe's winter flood: the river rises and the lomas green with the fog. */
+  /** The Supe's summer flood (sierra rains). The winter-fog lomas green is a separate visual cue. */
   wet_season: { labelKey: 'hud.environment.wetSeason', duration: 30 },
 } as const satisfies Record<string, EnvironmentEventDef>;
 

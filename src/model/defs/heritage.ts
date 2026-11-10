@@ -34,6 +34,7 @@ export type HeritageSector =
   | 'Áspero'
   | 'Caral Alto'
   | 'Caral Bajo'
+  | 'Valle de Supe'
   | 'Chavín'
   | 'Moche'
   | 'Wari'
@@ -74,11 +75,11 @@ export const HERITAGE_BUILDINGS: Record<HeritageBuildingId, HeritageBuildingDef>
   },
   caral_pyramid_mayor: {
     id: 'caral_pyramid_mayor',
-    name: 'Gran Pirámide y Plaza Central',
+    name: 'Pirámide Mayor y Plaza Central',
     sector: 'Caral Alto',
     role: 'Complejo ceremonial principal',
     summary:
-      'La Gran Pirámide y la Plaza Central articulan el sector ceremonial del Caral Alto. La reconstrucción combina la planta documentada con remates y techos inferidos. La plaza permite convocar una asamblea comunal como abstracción jugable.',
+      'La Pirámide Mayor y la Plaza Central articulan el sector ceremonial del Caral Alto. La reconstrucción combina la planta documentada con remates y techos inferidos. La plaza permite convocar una asamblea comunal como abstracción jugable.',
     confidence: 'documentado en planta; remates inferidos',
     citation: 'Dossier de Caral · UNESCO / Zona Arqueológica Caral',
     operation: 'assembly',
@@ -99,7 +100,7 @@ export const HERITAGE_BUILDINGS: Record<HeritageBuildingId, HeritageBuildingDef>
     id: 'caral_pyramid_quarry',
     name: 'Pirámide de la Cantera',
     sector: 'Caral Alto',
-    role: 'Complejo ceremonial y cantera',
+    role: 'Complejo ceremonial asociado a la cantera',
     summary:
       'La pirámide asociada al sector de la cantera. Su posición y escala relativa se conservan dentro del conjunto ceremonial.',
     confidence: 'plausible',
@@ -142,7 +143,7 @@ export const HERITAGE_BUILDINGS: Record<HeritageBuildingId, HeritageBuildingDef>
   caral_canal: {
     id: 'caral_canal',
     name: 'Canal comunal del valle',
-    sector: 'Caral Bajo',
+    sector: 'Valle de Supe',
     role: 'Infraestructura agrícola',
     summary:
       'Los canales de riego llevaban agua del valle a los campos. Abrir la compuerta aumenta el rendimiento de las chacras cercanas; es una abstracción jugable del riego documentado.',

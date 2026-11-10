@@ -405,6 +405,10 @@ export interface MissionDef {
    * no permanent market). Omit for every building of the era.
    */
   allowedBuildings?: BuildingKind[];
+  /** Player-facing building labels for this scenario (e.g. Caral's «Depósito comunal»). */
+  buildingNames?: Partial<Record<BuildingKind, string>>;
+  /** Period-appropriate building icons that override the global defaults (e.g. Caral's neutral farm). */
+  buildingIcons?: Partial<Record<BuildingKind, string>>;
   /** If set, only these technologies may be researched in the match. */
   allowedTechs?: string[];
   objectives: ObjectiveDef[];

@@ -6,7 +6,7 @@ import { getBuildingCard } from '../src/model/defs/buildingCards';
 describe('mission economy building cards', () => {
   it('covers the two playable Caral abstractions', () => {
     expect(getBuildingCard('m1_caral', BuildingKind.FARM)?.name).toContain('Chacra');
-    expect(getBuildingCard('m1_caral', BuildingKind.MILL)?.name).toContain('Troje');
+    expect(getBuildingCard('m1_caral', BuildingKind.MILL)?.name).toBe('Depósito comunal');
   });
 
   it('keeps the cards mission-scoped', () => {

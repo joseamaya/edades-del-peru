@@ -46,14 +46,10 @@ export const CIVS: CivDef[] = [
     colors: { primary: '#b0885a', secondary: '#d8c8a0', accent: '#8a6a3a' },
     periods: [HistoricalPeriod.ARCHAIC],
     geography: 'coast',
-    bonuses: [
-      'Canales y humedales: granjas más productivas',
-      'Pesca del litoral (Áspero) mejorada',
-      'Edificios más resistentes',
-    ],
+    bonuses: ['Canales y humedales: granjas más productivas', 'Pesca del litoral (Áspero) mejorada'],
     effects: { gathering: { food: 0.2 } },
     description:
-      'La primera ciudad de América. En el valle de Supe, Caral organizó miles de personas con canales, comercio y religión.',
+      'Una de las ciudades más antiguas de América. En el valle de Supe, Caral organizó una población estimada en miles de personas con canales, intercambio y religión.',
   },
   {
     id: CivId.CHAVIN,

@@ -14,7 +14,7 @@ import {
   CombatStance,
   MapType,
 } from '../core/types';
-import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../model/defs/buildings';
+import { BUILDING_DEFS, getBuildingStats } from '../model/defs/buildings';
 import { getBuildingCard } from '../model/defs/buildingCards';
 import {
   UNIT_ARCHETYPES,
@@ -1009,10 +1009,12 @@ export class HUD {
             civ,
             period: this.game.settings.period,
             era: p.era,
-            // The Plaza Mayor is never placed but always stands, and its technologies are researched there.
+            // The civic center is never placed but always stands, and its technologies are researched there.
             canBuild: (kind) => kind === BuildingKind.CENTER || this.game.canBuildKind(kind),
             canTrain: (kind) => !allowedUnits || allowedUnits.includes(kind),
             canResearch: (techId) => this.game.canResearchTech(techId),
+            buildingName: (kind) => this.game.buildingName(kind),
+            buildingIcon: (kind) => this.game.buildingIcon(kind),
           }
         : undefined,
     );
@@ -1513,7 +1515,7 @@ export class HUD {
     } else if (building && building.owner !== 0) {
       this.setDesc(
         '🏰',
-        BUILDING_INFO[building.kind].name,
+        this.game.buildingName(building.kind),
         t('hud.heritage.enemyBase', { hp: Math.ceil(building.hp), maxHp: Math.ceil(building.maxHp) }),
       );
       this.clearGrid();
@@ -1716,11 +1718,13 @@ export class HUD {
       for (const kind of BUILDABLE_KINDS) {
         if (!this.game.canBuildKind(kind)) continue;
         const stats = getBuildingStats(kind, this.game.players[0].era);
-        const infoB = BUILDING_INFO[kind];
-        this.addCard(infoB.icon, infoB.name, this.costText(stats.cost), () => this.game.startPlacement(kind), {
-          afford: this.canAfford(stats.cost),
-          cat: 'econ',
-        });
+        this.addCard(
+          this.game.buildingIcon(kind),
+          this.game.buildingName(kind),
+          this.costText(stats.cost),
+          () => this.game.startPlacement(kind),
+          { afford: this.canAfford(stats.cost), cat: 'econ' },
+        );
       }
     }
     this.addCommand(t('hud.unit.stop'), () => this.orderStop(), 'S');
@@ -1802,9 +1806,8 @@ export class HUD {
   }
 
   private renderBuildingPanel(b: Building): void {
-    const info = BUILDING_INFO[b.kind];
     const def = BUILDING_DEFS[b.kind];
-    this.setDesc(info.icon, info.name, this.buildingDesc(b));
+    this.setDesc(this.game.buildingIcon(b.kind), this.game.buildingName(b.kind), this.buildingDesc(b));
     this.clearGrid();
 
     if (!b.constructionComplete) {
@@ -1871,6 +1874,7 @@ export class HUD {
       (t) =>
         t.building === b.kind &&
         techAvailable(t, this.game.settings.period, this.game.players[b.owner]?.civ) &&
+        this.game.canResearchTech(t.id) &&
         !this.game.players[0].techs.has(t.id) &&
         (!t.requirements || t.requirements.every((r) => this.game.players[0].techs.has(r))),
     );
@@ -1922,8 +1926,8 @@ export class HUD {
       for (const kind of [BuildingKind.HOUSE, BuildingKind.FARM]) {
         if (!this.game.canBuildKind(kind)) continue;
         this.addCard(
-          BUILDING_INFO[kind].icon,
-          BUILDING_INFO[kind].name,
+          this.game.buildingIcon(kind),
+          this.game.buildingName(kind),
           this.costText(getBuildingStats(kind, b.era).cost),
           () => this.game.startPlacement(kind),
           { cat: 'econ' },

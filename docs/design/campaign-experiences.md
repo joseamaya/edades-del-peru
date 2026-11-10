@@ -31,7 +31,7 @@ What the player does, in four acts introduced by a narrated intro and chapter ca
 1. **Áspero, the fishing village.** Fishing in the sea with a cast cotton net, quincha houses, and an
    optional visit to the Huaca de los Ídolos. The tension: nets need cotton and gourds, which do not grow on
    the beach. The act ends by scouting up the Supe river to the valley.
-2. **The Supe valley.** Two chacras on the fertile floodplain, the communal canal gate, a Troje to hold the
+2. **The Supe valley.** Two chacras on the fertile floodplain, the communal canal gate, a communal store to hold the
    surplus, and the cotton nets researched there with valley food and wood: cotton goes down to the coast,
    fish comes up. The act closes with a food surplus.
 3. **The Sacred City.** The Pyramid Mayor rises in phases (foundation, fill, finished, in use) as the player
@@ -52,7 +52,7 @@ resource nodes, dropsites, housing) and need no fictional enemy.
 
 The mission has no market objective. There is no attested market building at Caral; exchange is the
 coast–valley complementarity and the hand-overs, and the fair tents that appear once the city is in use are
-temporary and seasonal. The Troje is a gameplay name, not an attested Caral term, as its field card says.
+temporary and seasonal. The communal store is a gameplay abstraction, not an attested Caral term, as its field card says.
 
 ## Chavín model mission (m2)
 

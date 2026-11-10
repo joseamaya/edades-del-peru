@@ -98,7 +98,7 @@ test('a tech-only civ sees its unique technology', async ({ page }) => {
     for (let i = 0; i < 20; i++) g.update(1 / 60, i / 60);
     return [...document.querySelectorAll('.ed-grid .ed-card')].map((el) => el.textContent ?? '');
   });
-  expect(cards.some((text) => text.includes('Trueque Interregional'))).toBe(true);
+  expect(cards.some((text) => text.includes('Intercambio Interregional'))).toBe(true);
 });
 
 test('chapter II civs train their unique units', async ({ page }) => {

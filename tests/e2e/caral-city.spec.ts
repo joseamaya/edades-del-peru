@@ -254,7 +254,7 @@ test('the Caral objectives reveal in acts and keep the assembly hidden until the
     }, complete);
   await expect(objectives).toContainText('Acto I · Reúne 300 de comida');
   await expect(objectives).not.toContainText('Acto II');
-  await expect(objectives).not.toContainText('Troje');
+  await expect(objectives).not.toContainText('depósito comunal');
   await expect(objectives).not.toContainText('0/6');
   const plaza = page.locator('#ed-bottom');
   await page.evaluate(() => {
@@ -273,13 +273,13 @@ test('the Caral objectives reveal in acts and keep the assembly hidden until the
   await advance('a2_campos');
   await expect(objectives).toContainText('Abre la compuerta del canal comunal');
   await advance('a2_canal');
-  await expect(objectives).toContainText('Troje');
+  await expect(objectives).toContainText('depósito comunal');
   await advance('a2_troje');
   await expect(objectives).toContainText('Teje redes de algodón');
   await advance('a2_redes');
   await expect(objectives).toContainText('excedente de 500');
   await advance('a2_excedente');
-  await expect(objectives).toContainText('Acto III · Entrega 150 de caña');
+  await expect(objectives).toContainText('Acto III · Entrega 150 de madera');
   await expect(objectives).toContainText('0/6');
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -290,7 +290,7 @@ test('the Caral objectives reveal in acts and keep the assembly hidden until the
   await expect(plaza).toContainText('Entregar materiales (50 madera) · 0/150');
 });
 
-test('an empty Troje pauses the pyramid work turn until food returns', async ({ page }) => {
+test('an empty communal store pauses the pyramid work turn until food returns', async ({ page }) => {
   await boot(page);
   const out = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -357,7 +357,7 @@ test('the Caral base uses compound architecture for its center and houses', asyn
   expect(state.houseRoof.patioOpen).toBe(true);
 });
 
-test('the Caral dwellings read at unit scale and keep the Plaza Mayor dominant', async ({ page }) => {
+test('the Caral dwellings read at unit scale and keep the central plaza dominant', async ({ page }) => {
   await boot(page);
   const heights = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -709,7 +709,7 @@ test('a Caral Blender pyramid opens an educational field card', async ({ page })
   await page.mouse.click(point.x, point.y);
   const bottom = page.locator('#ed-bottom');
   await expect(bottom).toBeVisible();
-  await expect(bottom).toContainText('Gran Pirámide y Plaza Central');
+  await expect(bottom).toContainText('Pirámide Mayor y Plaza Central');
   await expect(bottom).toContainText('Caral Alto');
   await expect(bottom).toContainText('documentado');
   await expect(bottom).toContainText('Dossier de Caral');
@@ -918,7 +918,7 @@ test('the Caral canal water follows the gate, the flood and the drought', async 
   expect(states.drought.color).toBe(states.closed.color);
 });
 
-test('the Chacra and Troje panels explain their historical abstractions', async ({ page }) => {
+test('the Chacra and communal-store panels explain their historical abstractions', async ({ page }) => {
   await boot(page);
   const ids = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -953,7 +953,7 @@ test('the Chacra and Troje panels explain their historical abstractions', async 
     g.selectBuilding(id);
     g.hud.update(0.2, 0);
   }, ids!.mill);
-  await expect(bottom).toContainText('Troje');
+  await expect(bottom).toContainText('Depósito comunal');
   await expect(bottom).toContainText('depósito comunal');
   await expect(bottom).toContainText('Dossier de Caral');
 });
@@ -969,7 +969,7 @@ test('the Plaza Central card activates the communal assembly', async ({ page }) 
     g.hud.update(0.2, 0);
   });
   const bottom = page.locator('#ed-bottom');
-  await expect(bottom).toContainText('Gran Pirámide y Plaza Central');
+  await expect(bottom).toContainText('Pirámide Mayor y Plaza Central');
   await expect(page.getByRole('button', { name: /Convocar asamblea/ })).toHaveCount(1);
   const state = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -1121,6 +1121,39 @@ test('a load keeps the optional assembly waiting for the player', { tag: '@smoke
   });
   expect(state.pending).toBe('pendiente');
   expect(state.canCall).toBe(true);
+});
+
+test('the Caral build menu uses period names and icons', { tag: '@smoke' }, async ({ page }) => {
+  await boot(page);
+  const state = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker');
+    g.selectedUnits = [worker.id];
+    g.selectedBuilding = null;
+    g.selectedHeritage = null;
+    g.hud.renderBottom();
+    const cards = [...document.querySelectorAll('#ed-bottom .ed-card')].map((el) => ({
+      name: el.querySelector('.nm')?.textContent ?? '',
+      icon: el.querySelector('.ic')?.textContent ?? '',
+    }));
+    const center = [...g.buildings.values()].find((b: any) => b.owner === 0 && b.kind === 'center');
+    g.selectedUnits = [];
+    g.selectedBuilding = center.id;
+    g.hud.renderBottom();
+    const title = document.querySelector('#ed-bottom h3')?.textContent ?? '';
+    const centerCards = [...document.querySelectorAll('#ed-bottom .ed-card .nm')].map((el) => el.textContent ?? '');
+    return { cards, title, centerCards };
+  });
+  const mill = state.cards.find((card) => card.name.includes('Depósito comunal'));
+  const farm = state.cards.find((card) => card.name.includes('Chacra'));
+  expect(mill, 'the mill is the communal store').toBeTruthy();
+  expect(farm?.icon, 'Caral does not use the maize icon').toBe('🌱');
+  expect(state.cards.some((card) => card.name.includes('Troje'))).toBe(false);
+  expect(state.title).toContain('Recinto comunal');
+  expect(state.title).not.toContain('Plaza Mayor');
+  expect(state.centerCards).not.toContain('Canal de Regadío');
+  expect(state.centerCards.some((name) => name.includes('Shicras'))).toBe(true);
 });
 
 test('the Caral site uses the source LOD and has no procedural fallback mesh', async ({ page }) => {

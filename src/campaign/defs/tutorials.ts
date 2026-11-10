@@ -298,14 +298,14 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'storage',
-        text: 'Construye un depósito comunal (Troje) para guardar el excedente de la comunidad.',
+        text: 'Construye un depósito comunal para guardar el excedente de la comunidad.',
         highlight: buildBottom,
         gateObjective: 'a2_troje',
         check: { type: 'build', buildingKind: BuildingKind.MILL, baseline: 'mills' },
       },
       {
         id: 'nets',
-        text: 'Selecciona la Troje y pulsa «Redes de Algodón»: el algodón del valle se convierte en redes para Áspero.',
+        text: 'Selecciona el depósito comunal y pulsa «Redes de Algodón»: el algodón del valle se convierte en redes para Áspero.',
         gateObjective: 'a2_redes',
         check: { type: 'objectiveCompleted', objectiveId: 'a2_redes' },
       },
@@ -317,7 +317,7 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'works',
-        text: 'Mantén un obrero en la obra y la Troje con comida: si se vacía, la construcción se detiene hasta reponerla.',
+        text: 'Mantén un obrero en la obra y el depósito comunal con comida: si se vacía, la construcción se detiene hasta reponerla.',
         gateObjective: 'a3_obra_relleno',
         check: { type: 'objectiveCompleted', objectiveId: 'a3_obra_relleno' },
       },

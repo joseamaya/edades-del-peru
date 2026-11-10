@@ -87,7 +87,7 @@ import { farmYieldMultiplier, nearbyCanal } from '../model/defs/farmYield';
 import { getAuthoredSite, type AuthoredSiteDef } from '../model/defs/sites';
 import { detectSoftwareRenderer } from '../util/gpu';
 import { ERA_DEFS } from '../model/defs/eras';
-import { BUILDING_DEFS, getBuildingStats } from '../model/defs/buildings';
+import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../model/defs/buildings';
 import { getUnitStats, unitAvailableToCiv, type DamageClass } from '../model/defs/units';
 import { getTech } from '../model/defs/techs';
 import { AudioEngine } from '../audio/AudioEngine';
@@ -1160,7 +1160,7 @@ export class Game {
     else if (event === 'wet_season') this.applyWetSeason(level);
   }
 
-  /** Winter flood: the river rises and the valley and lomas green up (purely visual). */
+  /** Summer flood (sierra rains): the river rises; the lomas green is a separate winter-fog cue (purely visual). */
   private applyWetSeason(level: number): void {
     if (this.headless) return;
     const shown = this.environmentShown.wet_season ?? -1;
@@ -1985,6 +1985,16 @@ export class Game {
 
   saveRecording(): void {
     this.runtime.saveRecording();
+  }
+
+  /** Player-facing building name, honouring the mission's period-specific override. */
+  buildingName(kind: BuildingKind): string {
+    return this.missionDef?.buildingNames?.[kind] ?? BUILDING_INFO[kind].name;
+  }
+
+  /** Player-facing building icon, honouring the mission's period-specific override. */
+  buildingIcon(kind: BuildingKind): string {
+    return this.missionDef?.buildingIcons?.[kind] ?? BUILDING_INFO[kind].icon;
   }
 
   /**

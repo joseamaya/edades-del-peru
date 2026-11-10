@@ -149,24 +149,26 @@ Dialogue speaker labels must not say "Comandante" in this mission.
   `tests/architecture-kit.test.ts`.
 - **Communal construction**: after each material hand-over, a worker must hold the site for a 20 s work
   turn. The turn consumes food from the communal store; if the store is empty the timer pauses (it does not
-  reset) and a warning explains why, so the Troje really feeds the builders. Each completed turn plays a
+  reset) and a warning explains why, so the communal store really feeds the builders. Each completed turn plays a
   burial ritual (`ritual` effect) and advances the Mayor phase.
-- **Valley economy**: chacras on painted fertile ground, the canal, the Troje and the exchange: the
-  `cotton_nets` technology, researched at the Troje with valley food and wood, stands for cotton going down
+- **Valley economy**: chacras on painted fertile ground, the canal, the communal store and the exchange: the
+  `cotton_nets` technology, researched at the communal store with valley food and wood, stands for cotton going down
   to the coast. Caral sees only its own buildings, units and technologies (`allowedBuildings`,
-  `allowedUnits`, the match-filtered tech tree); there is no silver.
+  `allowedUnits`, `allowedTechs`, the match-filtered tech tree); the generic irrigation tech is excluded because
+  the canal gate already provides that bonus, and there is no silver.
 - **Communal canal**: an earth acequia from the Supe's west bank along the valley floor past the chacras
   (`layout.canal.path`), built as ribbons that sample the relief (no factory walls or boxes). It has low earth
-  berms and a low stone plug at the intake; the water runs when the gate is open or the winter flood
+  berms and a low stone plug at the intake; the water runs when the gate is open or the summer flood
   comes and dries in the act IV drought. Opening it boosts farms within 2.5 m of the trace. The trace and the
   plug are game abstractions: the sources document irrigation canals and springs but no mapped channel.
   m3 and m6 still use the legacy straight canal.
 - **Living valley**: cooking smoke behind dwellings, the sacred fire on the Pyramid Mayor and a blaze for
   the Act III offering, temporary fair tents once the city is in use, two allied hamlets up the valley,
   riparian deer and birds, pelicans off Áspero, surf on the shore and a flute line for the era.
-- **Winter flood** (`Game.startEnvironmentalEvent('wet_season')`, 30 s, fired when the canal opens): the Supe
-  rises 0.45 m, the floodplain greens and the lomas take on the fog-fed green of the wet months. Purely
-  visual; the paint and the river stay wet for the rest of the mission until the act IV drought overrides
+- **Summer flood** (`Game.startEnvironmentalEvent('wet_season')`, 30 s, fired when the canal opens): the Supe
+  rises 0.45 m with the sierra rains and the floodplain greens. The lomas also take the fog-fed green of the
+  wet months as a separate winter cue that the visual event tints; the text no longer presents both as one
+  season. Purely visual; the paint and the river stay wet for the rest of the mission until the act IV drought overrides
   them. The depth, duration and the extent of the green are inferred staging: the dossier documents the
   El Niño floods, the dunes and the lomas as an ecological zone.
 - **Drought** (`Game.startEnvironmentalEvent('drought')`, 40 s): the green turns to sand in patches (the
@@ -174,7 +176,7 @@ Dialogue speaker labels must not say "Comandante" in this mission.
   and about one riverside tree in three dies.
 - **Narration**: an anonymous narrator (`MissionDef.narrator`); no "Comandante" label, no invented names.
 - **Tutorial**: nine steps (select, coast, house, valley, field, storage, nets, pyramid, works) docked under
-  the objectives; the last one explains the Troje supply during construction.
+  the objectives; the last one explains the communal-store supply during construction.
 
 ## Pacing and map scale
 
@@ -213,11 +215,12 @@ bench runs without ground cover).
    the model: the finished Mayor wears white and the in-use phase swaps to ochre/red; the smaller pyramids
    and houses keep the documented white/red palette. The exact per-building colours are inferred.
 2. ~~Seasonal flood, sand advance and green winter lomas are not simulated.~~ Done: the `wet_season` event
-   raises the river and greens the valley and lomas; the drought's dry phase is the documented sand advance.
+   raises the river and greens the valley; the lomas are a separate winter-fog cue tinted by the same event.
+   The drought's dry phase is the documented sand advance.
 3. Late-period details of Act IV (stone houses, a little maize) are not shown.
 4. ~~The Act III fire offering is staged at the plaza, but the burial of one phase under the next is not
    shown on its own, and an empty storehouse does not pause construction.~~ Done: the `ritual` effect
-   stages the burial between phases and the `hold.consume` work turns pause when the Troje is empty.
+   stages the burial between phases and the `hold.consume` work turns pause when the communal store is empty.
 5. ~~Human review of the new art~~ Done: the architecture kit and the intro and menu captures were
    approved on 2026-11-07.
 6. The other campaigns follow this pattern later; the m9 scripted playtest is known to fail meanwhile.

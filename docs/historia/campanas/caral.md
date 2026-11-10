@@ -6,13 +6,13 @@
   costero de **Áspero**.
 - **Bandos**: la sociedad de **Caral-Supe** (jugador). **Sin rival documentado** (no hay guerra atestiguada).
 - **Comandantes**: **no se conocen nombres** (sociedad sin escritura). No se inventan personajes.
-- **Contexto histórico**: una de las primeras civilizaciones del mundo y la más antigua de América; se
+- **Contexto histórico**: una de las primeras civilizaciones del mundo y una de las más antiguas de América; se
   formó en el área norcentral mediante una economía pesquero-agraria complementaria, canales de riego y
   una ideología religiosa cohesionadora.
 - **Objetivos históricos (adaptados al juego)**:
   1. **Explorar** el valle y el litoral para descubrir la complementariedad costa-valle.
   2. Preparar **campos de cultivo** y aprovechar la humedad y los canales.
-  3. **Almacenar** el excedente en un depósito comunal (el Troje del juego es una abstracción).
+  3. **Almacenar** el excedente en un depósito comunal (el del juego es una abstracción).
   4. **Recorrer y observar** el complejo ceremonial para comprender su escala y su relación con el valle.
   5. **Sostener** a la comunidad en el tiempo.
 - **Mapa**: `costa` — valle del Supe, humedales, litoral y pampa desértica.
@@ -25,8 +25,8 @@
   están documentadas **ferias temporales** en las plazas abiertas durante el calendario festivo (ver «La
   ciudad en uso»). El intercambio se representa mediante la pesca del litoral, los cultivos del valle y la
   circulación de recursos. La monumentalidad se descubre recorriendo el complejo ceremonial, no inventando
-  una guerra. El **Andén** y el **Troje** son abstracciones jugables de campos de cultivo y almacenamiento,
-  no términos atestiguados en Caral.
+  una guerra. La **chacra** y el **depósito comunal** son abstracciones jugables de los campos de cultivo y del
+  almacenamiento; «andén» y «troje» no son términos atestiguados en Caral.
 
 ## El paisaje antiguo del valle de Supe
 
@@ -169,6 +169,10 @@ Estas afirmaciones deben presentarse como **interpretaciones**, no como hechos c
 | Armazón y cubierta de las tiendas de feria (solo los postes están documentados)     | Supuesto plausible                |
 | Disposición de casas y plazas en el mapa del juego                                  | Abstracción del juego             |
 | Vestimenta (más allá del uso de algodón)                                            | No documentado; mantener sencillo |
+| Nombre «depósito comunal» para el almacén de Caral                                  | Abstracción del juego; «troje» no está atestiguado |
+| Asamblea comunal en la Plaza Central                                                | Abstracción del juego; las plazas documentadas albergaron reuniones y ferias |
+| Población de Caral (1000–3000 personas)                                             | Estimación según el autor         |
+| Madera del juego como caña brava y fibra vegetal de las shicras                     | Abstracción del recurso           |
 | Nombres de personas                                                                 | No documentado; no se inventan    |
 
 ## Fuentes
