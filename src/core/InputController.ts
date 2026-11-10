@@ -658,7 +658,7 @@ export class InputController {
           z: Math.sin(yaw) * r * spread + Math.cos(yaw) * c * spread,
         };
       }
-      // `issueGroupMove` clamps an unwalkable final goal in the unit's own component.
+      // `issueGroupMove` clamps a water goal in the unit's own component.
       u.issueGroupMove(target, shared, offset, slowest, !this.shiftQueue);
     }
   }

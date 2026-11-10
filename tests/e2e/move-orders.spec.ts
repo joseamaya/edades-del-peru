@@ -57,3 +57,50 @@ test('a move order into water ends on the nearest shore and frees the unit', asy
   expect(out.distance, 'it stops close to the clicked spot').toBeLessThan(12);
   expect(errors).toEqual([]);
 });
+
+test('a sea click snaps the shared order goal to the shore in the unit component', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto(URL);
+  await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    const pathfinder = g.pathfinder;
+    const main = pathfinder.mainComponent();
+    const size = g.settings.mapSize;
+    let water: { x: number; z: number } | null = null;
+    let shore: { x: number; z: number } | null = null;
+    for (let x = 4; x < size - 4 && !water; x += 2) {
+      for (let z = 4; z < size - 4; z += 2) {
+        if (!pathfinder.isWaterAt(x, z) || pathfinder.isWalkable(x, z, 0)) continue;
+        const safe = pathfinder.nearestWalkablePoint(x, z, 0, main) as { x: number; z: number } | null;
+        if (!safe || Math.hypot(safe.x - x, safe.z - z) > 8) continue;
+        water = { x, z };
+        shore = safe;
+        break;
+      }
+    }
+    if (!water || !shore) return { ok: false as const, reason: 'no coastal water found' };
+
+    const scout = g.spawnScriptedUnit('scout', 0, shore.x, shore.z);
+    // `groundGoal` is the shared entry point of right-click and minimap orders; the marker uses it.
+    const goal = g.input.groundGoal({ x: water.x, z: water.z }, scout) as { x: number; z: number };
+    return {
+      ok: true as const,
+      inWater: pathfinder.isWaterAt(goal.x, goal.z) as boolean,
+      walkable: pathfinder.isWalkable(goal.x, goal.z, 0) as boolean,
+      sameComponent: pathfinder.componentAt(goal.x, goal.z) === pathfinder.componentAt(scout.pos.x, scout.pos.z),
+      shoreDistance: Math.hypot(goal.x - shore.x, goal.z - shore.z),
+    };
+  });
+  expect(out.ok, out.ok ? '' : out.reason).toBe(true);
+  if (!out.ok) return;
+  expect(out.inWater, 'the destination never stays in the sea').toBe(false);
+  expect(out.walkable, 'the destination is walkable').toBe(true);
+  expect(out.sameComponent, 'it stays on the unit reachable shore, not the far bank').toBe(true);
+  expect(out.shoreDistance, 'it is the nearest shore found by the pathfinder').toBeLessThan(1);
+  expect(errors).toEqual([]);
+});
