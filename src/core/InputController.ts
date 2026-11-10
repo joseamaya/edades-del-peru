@@ -590,9 +590,9 @@ export class InputController {
   }
 
   /**
-   * Destination of a move/attack-move order. A click on unwalkable ground (the sea, a cliff, the far
-   * bank of the Supe) goes to the nearest walkable point the unit can reach, so the order finishes on
-   * the shore instead of holding the unit "busy" forever.
+   * Destination of a move/attack-move order. A click on the sea (next to a fishing bank, or the far
+   * bank of the Supe) goes to the nearest walkable point the unit can reach, so the order finishes
+   * on the shore instead of holding the unit "busy" forever. Blocked entity goals keep their point.
    */
   private groundGoal(target: OrderTarget, from: Unit): OrderTarget {
     const pathfinder = this.game.pathfinder;
