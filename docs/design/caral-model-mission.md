@@ -79,6 +79,9 @@ separate missions.
   houses, a little maize).
 - Victory is the documented closure: **seal the pyramids under stone** and lead the community toward the
   coast (Vichama).
+- The departure is a distinct beach marker south of the anchoveta banks (`layout.departure`): three workers
+  must gather there, and fishing placement keeps a 22 m clearance around it, so the fishers already working
+  the shoals do not end the act on their own.
 - Epilogue: the Vichama reliefs as the memory of the crisis.
 
 ## Geography

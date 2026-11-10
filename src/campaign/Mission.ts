@@ -174,15 +174,20 @@ export class Mission {
       if (o.kind !== 'hold' || this.objState.get(o.id) !== 'activo' || !o.pos) continue;
       const tp = this.resolvePoint(o.pos);
       const radius = o.radius ?? 8;
-      const held = [...this.game.units.values()].some(
-        (u) =>
+      let crew = 0;
+      for (const u of this.game.units.values()) {
+        if (
           u.owner === 0 &&
           !u.dead &&
           (!o.unitKind ||
             u.kind === o.unitKind ||
             (unitBaseKind(u.kind) !== u.kind && unitClassFor(u.kind) === unitClassFor(o.unitKind))) &&
-          distance2D(u.pos.x, u.pos.z, tp.x, tp.z) <= radius,
-      );
+          distance2D(u.pos.x, u.pos.z, tp.x, tp.z) <= radius
+        ) {
+          crew++;
+        }
+      }
+      const held = crew >= (o.minUnits ?? 1);
       const current = this.holdTimers.get(o.id) ?? 0;
       if (!held) {
         this.holdTimers.set(o.id, 0);
@@ -719,14 +724,17 @@ export class Mission {
     this.game.setVisitedHeritage(s.heritage ?? []);
     this.restoreSitePhase();
     // New hidden objectives can be added after a save was written. Their activation trigger may
-    // already be in `fired`, so repair them from the saved site phase or their prerequisite.
+    // already be in `fired`, so repair them from the saved site phase or their prerequisite. The
+    // prerequisite branch only fires when the activating trigger already ran; otherwise the normal
+    // trigger evaluation will activate it on the next update (and command-only objectives like the
+    // optional assembly stay pending until the player asks for them).
     const repaired = new Set<string>();
     for (const o of this.def.objectives) {
       if (this.objState.get(o.id) !== 'pendiente') continue;
       if (o.afterPhase && this.phaseReached(o.afterPhase)) {
         this.objState.set(o.id, 'completed');
         repaired.add(o.id);
-      } else if (o.requires && this.objState.get(o.requires) === 'completed') {
+      } else if (o.requires && this.objState.get(o.requires) === 'completed' && this.activationTriggerFired(o.id)) {
         this.objState.set(o.id, 'activo');
         repaired.add(o.id);
       }
@@ -744,6 +752,15 @@ export class Mission {
         }
       }
     }
+  }
+
+  /** Whether a one-shot trigger that activates this objective already fired in the save. */
+  private activationTriggerFired(id: string): boolean {
+    return this.def.triggers.some(
+      (tr) =>
+        this.fired.has(tr.id) &&
+        tr.effects.some((fx) => fx.type === 'objective' && fx.objectiveId === id && fx.state === 'activate'),
+    );
   }
 
   /** Whether the authored site stands at `phase` or later. */

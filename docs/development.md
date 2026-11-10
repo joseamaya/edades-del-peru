@@ -278,7 +278,11 @@ Definition of Done and the building audit see
   player unit inside a radius for `time` seconds (m8 Junín/Ayacucho); `holdTimers` are saved. A `hold`
   may also `consume` a resource per second (Caral's construction turns pause when the Troje is empty),
   and new hidden objectives declare `afterPhase`/`requires` so a save written before they existed repairs
-  itself on load; `legacyPhases` restores the authored phase for saves written before it was persisted.
+  itself on load. The `requires` repair only runs when the trigger that activates the objective is already
+  in `fired`; command-only objectives (the optional Plaza assembly) and triggers still to fire are left for
+  the normal evaluation. `ObjectiveDef.minUnits` makes a `hold` wait for a crew (Caral's Act IV departure
+  needs three workers on its own beach marker, away from the fishing banks); `legacyPhases` restores the
+  authored phase for saves written before it was persisted.
   Campaign fichas in [`docs/historia/fichas_campana.md`](./historia/fichas_campana.md), validated by
   `tests/campaign-profiles.test.ts`.
 - **Campaign contract**: hidden objectives are omitted from the briefing until activated; `Mission.getObjectiveProgress`
@@ -447,6 +451,13 @@ Definition of Done and the building audit see
   merged stone plug (`src/rendering/canal.ts`) instead of boxes. Missions without `path` keep the legacy
   straight box (m3/m6). This changes Caral's irrigation and placement, so `REPLAY_VERSION` is 24; guarded by `tests/canal.test.ts`
   and `tests/e2e/caral-city.spec.ts`.
+- **Act IV departure and save repair** (issue 388): `MissionLayout.departure` is the authored beach
+  marker (resolved through `MissionPoint.ref: 'departure'`), and procedural fishing banks keep 22 m clear
+  of it, so the fishers working the anchoveta shoals cannot end the act. `a4_partida` also sets
+  `ObjectiveDef.minUnits = 3`. `Mission.applySave` only repairs a pending `requires` objective when its
+  activating trigger is already in `fired`, keeping command-only objectives (the optional Plaza assembly)
+  pending until the player calls them. This changes Caral's simulation, so `REPLAY_VERSION` is 25; guarded by
+  `tests/caral-acts.test.ts` and `tests/e2e/caral-city.spec.ts`.
 - **Victory/defeat (conquest)**: a player is defeated only when **no building of theirs remains** (`Game.hasBuildings`),
   in both skirmish (`resolveConquest` via `Game.checkVictory`) and campaign (`Mission.checkBaseLost`). Do not go back to "losing the
   Plaza Mayor ends the match": a full base with army must survive the loss of its center.

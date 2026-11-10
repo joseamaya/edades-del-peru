@@ -162,6 +162,8 @@ export class Game {
   discoveries: Discoveries | null = null;
   /** Authored canal target in world units (mission mechanic + visual). */
   canalSite: { x: number; z: number } | null = null;
+  /** Authored departure/rendezvous anchor in world units (e.g. Caral's Act IV beach). */
+  departureSite: { x: number; z: number } | null = null;
   /** Authored canal polyline in world units (intake first), when the mission defines one. */
   canalPath: { x: number; z: number }[] | null = null;
   private canalGroup: THREE.Group | null = null;
@@ -528,6 +530,8 @@ export class Game {
         : null;
       this.canalOpen = canal.initiallyOpen ?? false;
     }
+    const departure = this.missionLayout?.departure;
+    if (departure) this.departureSite = { x: departure.x * s.mapSize, z: departure.z * s.mapSize };
     this.sky = new Sky(this.scene);
     this.sky.setShadowMapSize(SHADOW_MAP_SIZE[this.softwareFallback ? 'low' : this.settings.quality]);
     // No atmospheric fog over the board: classic RTS look, sharp.
@@ -785,9 +789,11 @@ export class Game {
             ? (this.canalSite ?? centre)
             : p.ref === 'site'
               ? (this.siteCenter ?? centre)
-              : p.ref === 'landmark'
-                ? (this.siteAnchor ?? this.landmark?.position ?? centre)
-                : { x: 0, z: 0 };
+              : p.ref === 'departure'
+                ? (this.departureSite ?? centre)
+                : p.ref === 'landmark'
+                  ? (this.siteAnchor ?? this.landmark?.position ?? centre)
+                  : { x: 0, z: 0 };
     return { x: ref.x + p.dx, z: ref.z + p.dz };
   }
 
@@ -1828,6 +1834,7 @@ export class Game {
       this.canalSite = null;
       this.canalPath = null;
     }
+    this.departureSite = null;
     if (this.scenarioDecor) {
       this.scene.remove(this.scenarioDecor);
       disposeModel(this.scenarioDecor);
