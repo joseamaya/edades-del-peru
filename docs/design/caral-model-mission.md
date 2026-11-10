@@ -169,6 +169,10 @@ Dialogue speaker labels must not say "Comandante" in this mission.
 - **Living valley**: cooking smoke behind dwellings, the sacred fire on the Pyramid Mayor and a blaze for
   the Act III offering, temporary fair tents once the city is in use, two allied hamlets up the valley,
   riparian deer and birds, pelicans off Áspero, surf on the shore and a flute line for the era.
+- **Sealing**: completing `a4_sellar` moves the site to the `sealed` phase, which puts the bare-plaster
+  Mayor back, buries its summit under a stone mound (`sealed_summit`), retires the fair tents
+  (`ArchPlacement.until`) and stops the summit fire and the cooking smoke: the abandonment is visible
+  instead of implied.
 - **Water**: the sea keeps its level all year; only the Supe (and any inland water) follows the seasons.
   `Water` masks the visual offset with the authored coastline (`caralHeightmap.ts`), so the Pacific neither
   floods nor dries with the river, and the fishing banks (always placed in the sea) keep their rings and nets
@@ -184,11 +188,16 @@ Dialogue speaker labels must not say "Comandante" in this mission.
   El Niño floods, the dunes and the lomas as an ecological zone.
 - **Drought** (`Game.startEnvironmentalEvent('drought')`, 40 s): the green turns to sand in patches (the
   documented sand advance), a warm grade bleaches the ground, the river surface drops to a thread, the haze
-  turns dusty, the yield of every standing field dries with the level (`farmYieldMultiplier`) so a field sown
-  again during the drought never returns to its irrigated harvest, and about one riverside tree in three dies.
-  Flood and drought are meant to be told apart at a glance from the normal camera.
-- **Act flow**: Act III reveals the city with the discovery animation (`reveal` effect), so the camera does
-  not open on unexplored fog. The assembly is announced with Act III (listed, still awaiting the call), and the pyramid tour (`obj_complejos`)
+  turns dusty, and the yield of every standing field dries with the level (`farmYieldMultiplier`) so a field
+  sown again during the drought never returns to its irrigated harvest. The riparian grove dies **standing**
+  (bare trunk, no canopy) within 26 m of the Supe; the rest of the map keeps its trees, and a loaded save
+  rebuilds the dry grove from the drought level instead of replaying the loss. Flood and drought are meant to
+  be told apart at a glance from the normal camera.
+- **Act flow**: the city enters `in_use` when the fire offering ends (fair tents, the sacred fire and the
+  ochre/red Mayor; the pilgrims are narrative), and stays there through a 20 s `wait` beat
+  (`a3_prosperidad`) before the drought card opens Act IV.
+  Act III reveals the city with the discovery animation (`reveal` effect), so the camera does not open on
+  unexplored fog. The assembly is announced with Act III (listed, still awaiting the call), and the pyramid tour (`obj_complejos`)
   waits until the walls are finished, when all six complexes stand; each card needs a unit at its own
   monument (`ObjectiveDef.inspectRadius`, 8 m from its footprint), so the tour is a walk through the city,
   not a click from the beach. The assembly is listed as an optional objective (awaiting the player's call)

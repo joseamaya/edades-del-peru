@@ -337,6 +337,13 @@ export const MISSIONS: MissionDef[] = [
         awaitsCall: true,
         title: 'Convoca una asamblea comunal (abstracción jugable) en la Plaza Central',
       },
+      {
+        id: 'a3_prosperidad',
+        kind: 'wait',
+        time: 20,
+        hidden: true,
+        title: 'Acto III · La ciudad en uso: feria, peregrinos y fuego sagrado',
+      },
       // --- Act IV: the drought ---
       {
         id: 'a4_sellar',
@@ -520,10 +527,23 @@ export const MISSIONS: MissionDef[] = [
         ],
       },
       {
-        id: 't_a4_acto',
+        id: 't_a3_feria',
         condition: { type: 'objective', objectiveId: 'a3_fuego', state: 'completed' },
         effects: [
+          // The city lives before it dies: the fair, the pilgrims, the sacred fire and the painted
+          // Mayor exist from this phase, not from the drought that closes it.
           { type: 'site_phase', phase: 'in_use' },
+          {
+            type: 'dialogue',
+            text: 'La ciudad está en uso: se abren las tiendas de la feria, llegan peregrinos de los valles y el fuego sagrado arde en la cima.',
+          },
+          { type: 'objective', objectiveId: 'a3_prosperidad', state: 'activate', announce: true },
+        ],
+      },
+      {
+        id: 't_a4_acto',
+        condition: { type: 'objective', objectiveId: 'a3_prosperidad', state: 'completed' },
+        effects: [
           { type: 'environment', event: 'drought' },
           {
             type: 'act',
@@ -539,9 +559,11 @@ export const MISSIONS: MissionDef[] = [
         id: 't_a4_sellar',
         condition: { type: 'objective', objectiveId: 'a4_sellar', state: 'completed' },
         effects: [
+          // Buried under stone: the fire, the smoke and the fair go out with the phase.
+          { type: 'site_phase', phase: 'sealed' },
           {
             type: 'dialogue',
-            text: 'La pirámide queda sellada, como un último acto de cuidado. Reúne a la gente en la playa.',
+            text: 'La pirámide queda sellada bajo piedra y arena, como un último acto de cuidado. Reúne a la gente en la playa.',
           },
           { type: 'objective', objectiveId: 'a4_partida', state: 'activate', announce: true },
         ],

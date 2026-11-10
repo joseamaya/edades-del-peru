@@ -165,6 +165,8 @@ export class Game {
   discoveries: Discoveries | null = null;
   /** Ground rings under the active reach/hold objectives (presentation only; follows the live fog). */
   missionRings: MissionRings | null = null;
+  /** Stone mound that buries the Mayor's summit once the city is sealed. */
+  private sealCap: THREE.Mesh | null = null;
   /** Authored canal target in world units (mission mechanic + visual). */
   canalSite: { x: number; z: number } | null = null;
   /** Authored departure/rendezvous anchor in world units (e.g. Caral's Act IV beach). */
@@ -190,7 +192,6 @@ export class Game {
   private environmentShown: Record<string, number> = {};
   /** Drought level whose yield factor is already folded into the standing farms. */
   private droughtFarmLevel = 0;
-  private droughtGroveCut = false;
   private droughtBaseAtmosphere: MissionAtmosphere | undefined;
   /** Construction phase of the authored site's main monument (mission-driven; the city follows it). */
   sitePhase = 'in_use';
@@ -1063,10 +1064,10 @@ export class Game {
     if (event === 'drought') {
       this.droughtBaseAtmosphere ??= this.missionAtmosphere;
       if (instant) {
-        // A loaded save already holds the dried harvests and the dead trees: only the look is restored.
-        this.droughtGroveCut = true;
+        // A loaded save already holds the dried harvests: rebuild the dry grove and the look.
         this.environment.drought = 1;
         this.applyEnvironmentalEvent('drought', 1);
+        this.dryRiparianGrove();
       }
     } else if (event === 'wet_season' && instant) {
       this.environment.wet_season = 1;
@@ -1083,9 +1084,24 @@ export class Game {
       this.environmentTargets[event] = level;
       if (event === 'drought') {
         this.droughtBaseAtmosphere ??= this.missionAtmosphere;
-        if (level >= 0.6) this.droughtGroveCut = true;
       }
       this.applyEnvironmentalEvent(event, level);
+    }
+  }
+
+  /**
+   * The drought dries the riparian grove: the trees along the Supe die standing (bare wood), never a
+   * map-wide falling forest. Visual only; the trees stay harvestable and a loaded save rebuilds them.
+   */
+  dryRiparianGrove(): void {
+    const river = this.siteDef?.heightField?.river;
+    // No authored river means no riparian grove: never dry the whole map.
+    if (!river) return;
+    const reach = this.siteDef?.life?.dryGroveRadius ?? 26;
+    for (const node of this.resourceNodes.values()) {
+      if (node.kind !== 'tree' || node.dead || node.depleted) continue;
+      if (distanceToPolyline(node.pos.x, node.pos.z, river.path) > reach) continue;
+      node.nodeView?.setDry();
     }
   }
 
@@ -1105,10 +1121,14 @@ export class Game {
     this.lifeTimer = 0;
     this.lifeTurn++;
     const focus = this.camera.getTarget();
-    const near = city
-      .standingHouses()
-      .filter((h) => Math.hypot(h.x - focus.x, h.z - focus.z) < 70)
-      .slice(0, 24);
+    const quietPhase = this.siteDef?.life?.quietPhase;
+    const near =
+      quietPhase && this.sitePhase === quietPhase
+        ? []
+        : city
+            .standingHouses()
+            .filter((h) => Math.hypot(h.x - focus.x, h.z - focus.z) < 70)
+            .slice(0, 24);
     if (near.length) {
       const house = near[this.lifeTurn % near.length]!;
       this.particles.emit({
@@ -1195,13 +1215,8 @@ export class Game {
       this.droughtFarmLevel = level;
       this.refreshFarmYields();
     }
-    if (level >= 0.6 && !this.droughtGroveCut) {
-      this.droughtGroveCut = true;
-      // Deterministic: about one tree in three dies, in the same places on every run.
-      for (const node of this.resourceNodes.values()) {
-        if (node.kind === 'tree' && !node.dead && !node.depleted && node.id % 3 === 0) node.subtract(node.amount);
-      }
-    }
+    // Idempotent (setDry bails out): also re-dries trees whose view was rebuilt at a lower quality.
+    if (level >= 0.6) this.dryRiparianGrove();
     if (this.headless) return;
     const shown = this.environmentShown.drought ?? -1;
     if (Math.abs(level - shown) < 0.04 && level < 1) return;
@@ -1229,6 +1244,37 @@ export class Game {
     this.caralCity?.setPhase(phase);
     this.chavinCity?.setPhase(phase);
     this.world.syncSitePhase(phase);
+    this.syncSealCap(phase === 'sealed');
+  }
+
+  /**
+   * Bury the Mayor's summit under a stone mound when the city is sealed (the model itself only swaps
+   * back to bare plaster), and clear it if a save or a phase change brings the city back.
+   */
+  private syncSealCap(on: boolean): void {
+    if (this.headless) return;
+    if (!on) {
+      if (!this.sealCap) return;
+      this.scene.remove(this.sealCap);
+      this.sealCap.geometry.dispose();
+      (this.sealCap.material as THREE.Material).dispose();
+      this.sealCap = null;
+      return;
+    }
+    const anchor = this.siteDef?.anchor;
+    if (this.sealCap || !anchor) return;
+    const height = this.terrain.getHeight(anchor.x, anchor.z) + (this.siteDef?.life?.fireHeight ?? 16.6);
+    const geometry = new THREE.ConeGeometry(5.4, 2.3, 7);
+    geometry.translate(0, 0.55, 0);
+    const material = new THREE.MeshStandardMaterial({ color: 0xa1977f, roughness: 1, flatShading: true });
+    const cap = new THREE.Mesh(geometry, material);
+    cap.name = 'sealed_summit';
+    cap.position.set(anchor.x, height, anchor.z);
+    cap.rotation.y = 0.4;
+    cap.castShadow = true;
+    cap.receiveShadow = true;
+    this.scene.add(cap);
+    this.sealCap = cap;
   }
 
   /** Presentation-only ritual beat at the authored site (e.g. the burial between construction phases). */
@@ -1866,6 +1912,7 @@ export class Game {
     this.discoveries = null;
     this.missionRings?.dispose();
     this.missionRings = null;
+    this.syncSealCap(false);
     for (const node of this.resourceNodes.values()) node.remove();
     this.resourceNodes.clear();
     this.trees.dispose();

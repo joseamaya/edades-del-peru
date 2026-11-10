@@ -5,7 +5,7 @@ import { getGeneratedMaterial } from './Biomes';
 import { dequantize } from './mergeStatic';
 import { CARAL_MAYOR_PHASE_ASSET, type CaralArchPlacement } from '../model/defs/caralCity';
 import { CARAL_PHASE_PLAN, type CaralMayorPhase } from '../model/defs/caralPhases';
-import { standsAt, type SitePhasePlan } from '../model/defs/sitePhases';
+import { standsIn, type SitePhasePlan } from '../model/defs/sitePhases';
 
 /**
  * Blender architecture kits (scripts/blender/build_*_architecture_kit.py,
@@ -218,7 +218,7 @@ export class ArchitectureCity {
   /** Dwellings standing in the current phase (cooking smoke rises behind them). */
   standingHouses(): { x: number; z: number }[] {
     return this.placements
-      .filter((p) => p.asset.startsWith('house_') && standsAt(p.since, this.phase, this.plan))
+      .filter((p) => p.asset.startsWith('house_') && standsIn(p.since, p.until, this.phase, this.plan))
       .map((p) => ({ x: p.x, z: p.z }));
   }
 
@@ -259,7 +259,7 @@ export class ArchitectureCity {
       }
       const byName = new Map<string, { material: THREE.Material; geometries: THREE.BufferGeometry[] }>();
       for (const p of this.placements) {
-        if (!standsAt(p.since, this.phase, this.plan)) continue;
+        if (!standsIn(p.since, p.until, this.phase, this.plan)) continue;
         const model = this.models.get(this.assetFor(p));
         if (!model) continue;
         // Buildings sit on the lowest ground under their footprint (slightly sunk, never floating);

@@ -38,6 +38,8 @@ export class Mission {
   private lastFired = new Map<string, number>();
   private spawnedCount = new Map<string, number>();
   private holdTimers = new Map<string, number>();
+  /** Mission time at which each objective was activated (for `wait` beats). */
+  private activatedAt = new Map<string, number>();
   private stalledHolds = new Set<string>();
   /** Activations a one-shot trigger requested before their `requires` prerequisite completed. */
   private deferredActivations = new Map<string, boolean>();
@@ -63,7 +65,9 @@ export class Mission {
           this.objState.get(o.id) === 'activo' ||
           this.objState.get(o.id) === 'completed' ||
           this.objState.get(o.id) === 'failed' ||
-          (o.awaitsCall === true && this.objState.get(o.id) === 'pendiente'),
+          (o.awaitsCall === true &&
+            this.objState.get(o.id) === 'pendiente' &&
+            (!o.requires || this.objState.get(o.requires) === 'completed')),
       )
       .map((o) => ({ def: o, state: this.objState.get(o.id) as ObjState }));
   }
@@ -318,6 +322,9 @@ export class Mission {
       }
       case 'survive':
         return this.timer >= (o.time ?? 0) ? 'win' : 'ok';
+      case 'wait':
+        // A beat measured from activation, not from the mission start.
+        return this.timer - (this.activatedAt.get(o.id) ?? 0) >= (o.time ?? 0) ? 'win' : 'ok';
       case 'reach': {
         if (!o.pos) return 'ok';
         return this.reached(o) ? 'win' : 'ok';
@@ -666,6 +673,7 @@ export class Mission {
       return false;
     }
     this.deferredActivations.delete(id);
+    this.activatedAt.set(id, this.timer);
     this.objState.set(id, 'activo');
     if (this.evalObjective(def) === 'win') {
       this.complete(id);
@@ -708,6 +716,12 @@ export class Mission {
         };
       case 'network':
         return { current: this.countNetwork(o), target: o.count ?? o.nodes?.length ?? 0, format: 'count' };
+      case 'wait':
+        return {
+          current: Math.min(this.timer - (this.activatedAt.get(o.id) ?? 0), o.time ?? 0),
+          target: o.time ?? 0,
+          format: 'time',
+        };
       case 'survive':
       case 'defend':
         return { current: Math.min(this.timer, o.time ?? 0), target: o.time ?? 0, format: 'time' };
@@ -745,6 +759,7 @@ export class Mission {
       lastFired: [...this.lastFired.entries()],
       spawnedCount: [...this.spawnedCount.entries()],
       holdTimers: [...this.holdTimers.entries()],
+      activatedAt: [...this.activatedAt.entries()],
       delivered: [...this.delivered.entries()],
       heritage: this.game.getVisitedHeritage(),
       deferredActivations: [...this.deferredActivations.entries()],
@@ -766,6 +781,13 @@ export class Mission {
     this.lastFired = new Map(s.lastFired);
     this.spawnedCount = new Map(s.spawnedCount);
     this.holdTimers = new Map(s.holdTimers ?? []);
+    this.activatedAt = new Map(s.activatedAt ?? []);
+    // Older saves have no timestamps: a beat that was already running restarts from the load, never
+    // completing instantly.
+    for (const o of this.def.objectives) {
+      if (o.kind !== 'wait' || this.objState.get(o.id) !== 'activo') continue;
+      if (!this.activatedAt.has(o.id)) this.activatedAt.set(o.id, this.timer);
+    }
     this.stalledHolds.clear();
     this.deferredActivations = new Map(s.deferredActivations ?? []);
     this.delivered = new Map(s.delivered ?? []);
@@ -786,6 +808,13 @@ export class Mission {
         this.objState.set(o.id, 'activo');
         repaired.add(o.id);
       }
+    }
+    // A save whose site already reached a phase must not replay the trigger that raised it.
+    const plan = this.game.sitePhasePlan;
+    for (const tr of this.def.triggers) {
+      const phase = tr.effects.find((fx) => fx.type === 'site_phase');
+      if (phase?.type !== 'site_phase') continue;
+      if (phaseOrder(plan, this.game.sitePhase) >= phaseOrder(plan, phase.phase)) this.fired.add(tr.id);
     }
     // A repaired objective must not replay the one-shot trigger that already produced its state.
     for (const id of repaired) {

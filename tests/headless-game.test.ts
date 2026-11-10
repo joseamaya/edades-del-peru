@@ -58,6 +58,37 @@ function caralGame(): Game {
   return game;
 }
 
+describe('drought grove', () => {
+  it('dries only the riparian trees and leaves them standing', () => {
+    const game = caralGame();
+    const make = (id: number, x: number, z: number): { dry: boolean } => {
+      const view = {
+        dry: false,
+        setDry(): void {
+          this.dry = true;
+        },
+      };
+      game.resourceNodes.set(id, {
+        id,
+        kind: 'tree',
+        dead: false,
+        depleted: false,
+        pos: { x, y: 0, z },
+        nodeView: view,
+      } as never);
+      return view;
+    };
+    const river = make(1, 70, 64);
+    const desert = make(2, 230, 20);
+    game.dryRiparianGrove();
+    expect(river.dry, 'the grove along the Supe dies').toBe(true);
+    expect(desert.dry, 'the desert keeps its trees').toBe(false);
+    game.resourceNodes.clear();
+    game.destroy();
+    setAutoStart(true);
+  });
+});
+
 describe('drought on standing fields', () => {
   it('dries the harvest down and replanting does not refill it', () => {
     setAutoStart(false);

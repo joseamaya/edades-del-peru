@@ -118,6 +118,10 @@ export interface SiteLife {
   fireHeight?: number;
   /** Phase in which the sacred fire burns. */
   firePhase?: string;
+  /** Phase from which the daily life stops (cooking smoke); e.g. Caral's sealed city. */
+  quietPhase?: string;
+  /** Distance from the authored river within which the drought dries the riparian grove (m). */
+  dryGroveRadius?: number;
   /** Mission objective whose activation lights the large offering blaze. */
   offeringObjective?: string;
 }
@@ -327,7 +331,13 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       // art-direction §4: sea #3f5f5c -> #24413f, darkened for the high coastal sun.
       water: { deep: '#0f2a2e', shallow: '#2a5652', sheen: 0.15, foam: 0.12, fog: 0.3, refraction: 0.2 },
     },
-    life: { fireHeight: 16.6, firePhase: 'in_use', offeringObjective: 'a3_fuego' },
+    life: {
+      fireHeight: 16.6,
+      firePhase: 'in_use',
+      quietPhase: 'sealed',
+      dryGroveRadius: 26,
+      offeringObjective: 'a3_fuego',
+    },
     environs: {
       valley: 'caral',
       opening: 'caral',

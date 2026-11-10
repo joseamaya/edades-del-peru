@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { mergeStaticByMaterial } from './mergeStatic';
 import { RNG, cosmeticRandom, weightedPick } from '../util/rng';
 import { MaterialTex } from './Textures';
@@ -110,6 +111,8 @@ export class ResourceNodeView {
   private readonly treeMgr?: TreeInstances;
   private readonly treeVariants?: TreeVariants;
   private treeVariant: TreeVariant = 'broad';
+  /** The drought killed this tree standing: bare wood, no canopy, kit instance hidden. */
+  private dry = false;
   private huntHerd: HuntHerd | null = null;
 
   constructor(
@@ -419,10 +422,47 @@ export class ResourceNodeView {
   }
 
   setVisible(v: boolean): void {
+    // The view also holds the bare model of a dry tree, so it follows the fog/LOD in every case.
+    this.view.visible = v;
     if (this.node.kind === 'tree' && this.treeMgr && this.node.treeSlot >= 0) {
-      this.treeMgr.setVisible(this.node.treeSlot, v);
+      // A dry tree never brings its leafy kit instance back with the fog.
+      this.treeMgr.setVisible(this.node.treeSlot, v && !this.dry);
+    }
+  }
+
+  /**
+   * Kill the tree standing (the drought's riparian grove): hide the leafy model or its kit instance
+   * and leave a bare trunk with branches, so it reads as dry rather than logged. Idempotent.
+   */
+  setDry(): void {
+    if (this.node.kind !== 'tree' || this.dry) return;
+    this.dry = true;
+    if (this.treeMgr && this.node.treeSlot >= 0) {
+      this.treeMgr.setVisible(this.node.treeSlot, false);
     } else {
-      this.view.visible = v;
+      for (const child of [...this.view.children]) child.visible = false;
+    }
+    const wood = mat('dry-wood', { map: MaterialTex.bark(), color: '#6f6152', roughness: 1 });
+    const trunkHeight = 4.1;
+    const parts: THREE.BufferGeometry[] = [];
+    const trunk = cylGeo(0.2, 0.42, trunkHeight, 6).clone();
+    trunk.translate(0, trunkHeight / 2, 0);
+    parts.push(trunk);
+    for (let i = 0; i < 4; i++) {
+      const a = (i / 4) * Math.PI * 2 + 0.4;
+      const length = 1.4 + (i % 2) * 0.5;
+      const branch = cylGeo(0.06, 0.14, length, 5).clone();
+      branch.rotateZ(0.85 + (i % 2) * 0.15);
+      branch.rotateY(a);
+      branch.translate(Math.cos(a) * 0.4, trunkHeight * (0.55 + i * 0.09), Math.sin(a) * 0.4);
+      parts.push(branch);
+    }
+    // One merged mesh: a bare tree must not add five draw calls to the grove.
+    const bare = mergeGeometries(parts, false);
+    parts.forEach((geometry) => geometry.dispose());
+    if (bare) {
+      bare.computeBoundingSphere();
+      this.add(new THREE.Mesh(bare, wood));
     }
   }
 
@@ -432,6 +472,11 @@ export class ResourceNodeView {
 
   /** Play the depletion animation; the node marks itself dead when it ends. */
   deplete(): void {
+    if (this.dry) {
+      // A dry tree has no leafy instance to drop: it just goes.
+      this.node.remove();
+      return;
+    }
     if (this.node.kind === 'tree') {
       if (this.treeMgr && this.node.treeSlot >= 0) {
         this.treeMgr.startFall(this.node.treeSlot);
