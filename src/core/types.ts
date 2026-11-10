@@ -153,6 +153,14 @@ export interface Order {
   origin?: OrderTarget;
 }
 
+/** Where a worker was harvesting, kept across a build so it can go back to work (issue 381). */
+export interface GatherAnchor {
+  id: number;
+  kind: string;
+  x: number;
+  z: number;
+}
+
 export type CombatStance = 'agresivo' | 'defensivo' | 'pasivo';
 
 export type Team = 0 | 1;

@@ -8,6 +8,7 @@ import type {
   Era,
   CivBonuses,
   CombatStance,
+  GatherAnchor,
 } from '../core/types';
 import type { GameSettings } from '../core/Config';
 import type { ObjState } from '../campaign/types';
@@ -55,6 +56,8 @@ export interface UnitSave {
   attackMultiplier: number;
   armorMultiplier: number;
   tag?: string;
+  /** Gather anchor kept across a BUILD order (optional for older saves). */
+  lastGather?: GatherAnchor | null;
 }
 
 export interface BuildingSave {

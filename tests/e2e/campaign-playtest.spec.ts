@@ -500,29 +500,55 @@ test('plays m1 Caral with real construction and gathering, without objective che
         for (const u of ws) if (idle(u) || u.orderQueue[0]?.kind !== 'move') order(u, { kind: 'move', target: p });
         return;
       }
+      const need = delivery?.def.resource;
+      const needKind = need === 'stone' ? 'well' : need === 'wood' ? 'tree' : null;
+      const farms = (placed.get('farm') ?? []).filter((f) => f.constructionComplete && !f.dead);
       for (const u of ws) {
         if (u === porter || building.includes(u) || !idle(u)) continue;
-        const need = delivery?.def.resource;
-        const farms = (placed.get('farm') ?? []).filter((f) => f.constructionComplete && !f.dead);
-        if (need === 'stone') gatherFrom(u, 'well');
-        else if (need === 'wood') gatherFrom(u, 'tree');
+        if (needKind) gatherFrom(u, needKind);
         else if (farms.length && ws.indexOf(u) % 2 === 0) order(u, { kind: 'gather', entityId: farms[0].id });
         else gatherFrom(u, 'fishing');
+      }
+      // A worker that returns to its old resource after a build no longer frees up for the
+      // hand-over's resource (issue 381); keep two workers on the current need, as a player would.
+      if (needKind) {
+        const onNeed = (u: any) => {
+          const id = u.orderQueue[0]?.entityId;
+          return id !== undefined && g.resourceNodes.get(id)?.kind === needKind;
+        };
+        if (ws.filter(onNeed).length < 2) {
+          const spare = ws.find(
+            (u) => u !== porter && !building.includes(u) && !onNeed(u) && u.orderQueue[0]?.kind === 'gather',
+          );
+          if (spare) gatherFrom(spare, needKind);
+        }
       }
     };
 
     const dt = 1 / 20;
     let t = 0;
+    let idleCarriers = 0;
+    let parked = false;
     for (let i = 0; i < Math.ceil(1800 / dt) && !m.ended; i++) {
       if (i % 20 === 0) think();
       g.update(dt, t);
       t += dt;
+      // Act IV parks the community on the beach on purpose; that is not an idle carrier.
+      parked = parked || active('a4_partida');
+      if (parked) continue;
+      for (const u of g.units.values()) {
+        // The porter is parked on site for the hand-overs, not an economy worker.
+        if (u === porter || u.owner !== 0 || u.kind !== 'worker' || u.dead || u.orderQueue.length > 0) continue;
+        const carry = u.gatherCarry.food + u.gatherCarry.wood + u.gatherCarry.silver + u.gatherCarry.stone;
+        if (carry > 0) idleCarriers++;
+      }
     }
     return {
       setup: true,
       minutes: Math.round(t / 6) / 10,
       cards,
       deliveries,
+      idleCarriers,
       phase: g.sitePhase,
       environment: { ...g.environment },
       won: m.won as boolean | null,
@@ -544,13 +570,15 @@ test('plays m1 Caral with real construction and gathering, without objective che
   }
   expect(out.cards, 'acts II-IV open with a chapter card').toBe(3);
   expect(out.deliveries, 'shicras, walls and sealing are handed over in 50-unit loads').toBe(8);
+  expect(out.idleCarriers, 'no worker stands idle holding a load').toBe(0);
   expect(out.phase).toBe('in_use');
   // The winter flood greens the valley in act II; the drought closes act IV.
   expect(out.environment.wet_season).toBe(1);
   expect(out.environment.drought).toBe(1);
   // Target length of the model mission (docs/design/caral-model-mission.md): roughly 30-40 minutes for a
-  // learning player. The bot is faster but, with the Caral speed scale (0.5) and Act I's real fishing
-  // count (issue 378), it needs ~26 min: lock the pacing so a reverted scale or a shortened mission fails.
+  // learning player. The bot is faster (it staffs each hand-over's resource itself) and needs ~17 min with
+  // the Caral speed scale (0.5) and Act I's real fishing count (issue 378): lock the pacing so a reverted
+  // scale or a shortened mission fails.
   expect(out.minutes, JSON.stringify(out)).toBeGreaterThan(15);
   expect(out.minutes, JSON.stringify(out)).toBeLessThan(30);
   expect(errors).toEqual([]);
