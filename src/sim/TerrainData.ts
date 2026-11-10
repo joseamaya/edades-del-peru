@@ -1,5 +1,5 @@
 import { generateHeightField, CANAL_WIDTH_CELLS } from './heightField';
-import { terrainSlope } from '../util/math';
+import { clamp, distanceToPolyline, lerp, terrainSlope } from '../util/math';
 import type { HistoricalMapProfile } from '../model/defs/profiles';
 import type { TerrainLayout } from '../model/defs/terrainLayout';
 import { sampleAuthoredGround, sampleAuthoredHeight, type AuthoredHeightField } from '../model/defs/authoredTerrain';
@@ -48,6 +48,8 @@ export class TerrainData {
   readonly canalWidth: number;
   readonly waterLevel: number;
   private readonly authored: AuthoredHeightField | null;
+  private readonly river: AuthoredHeightField['river'];
+  private readonly coast: AuthoredHeightField['coast'];
 
   constructor(
     size: number,
@@ -62,6 +64,8 @@ export class TerrainData {
     const authored = site?.heightField;
     const style = site?.terrain;
     this.authored = authored && style ? authored : null;
+    this.river = this.authored?.river;
+    this.coast = this.authored?.coast;
     const field =
       authored && style
         ? authoredHeightField(resolution, size, profile, authored, style)
@@ -115,6 +119,23 @@ export class TerrainData {
   isBeach(wx: number, wz: number): boolean {
     const h = this.getHeight(wx, wz);
     return h >= this.waterLevel - 0.15 && h < this.waterLevel + 0.9;
+  }
+
+  /** Water inside an authored river channel (the Supe in Caral), as opposed to the sea. */
+  isRiver(wx: number, wz: number): boolean {
+    const river = this.river;
+    if (!river || !this.isWater(wx, wz)) return false;
+    return distanceToPolyline(wx, wz, river.path) <= river.halfWidth;
+  }
+
+  /** Water west of the authored coastline; without an authored coast every water cell is sea. */
+  isSea(wx: number, wz: number): boolean {
+    if (!this.isWater(wx, wz)) return false;
+    const coast = this.coast;
+    if (!coast || coast.step <= 0 || coast.x.length < 2) return true;
+    const t = wz / coast.step;
+    const i = Math.max(0, Math.min(coast.x.length - 2, Math.floor(t)));
+    return wx <= lerp(coast.x[i], coast.x[i + 1], clamp(t - i, 0, 1));
   }
 
   isBuildable(wx: number, wz: number): boolean {

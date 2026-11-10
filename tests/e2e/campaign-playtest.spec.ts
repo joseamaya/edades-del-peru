@@ -551,6 +551,7 @@ test('plays m1 Caral with real construction and gathering, without objective che
       idleCarriers,
       phase: g.sitePhase,
       environment: { ...g.environment },
+      droughtTarget: g.environmentTargets?.drought ?? 0,
       won: m.won as boolean | null,
       ended: m.ended as boolean,
       resources: { ...res },
@@ -572,9 +573,11 @@ test('plays m1 Caral with real construction and gathering, without objective che
   expect(out.deliveries, 'shicras, walls and sealing are handed over in 50-unit loads').toBe(8);
   expect(out.idleCarriers, 'no worker stands idle holding a load').toBe(0);
   expect(out.phase).toBe('in_use');
-  // The winter flood greens the valley in act II; the drought closes act IV.
+  // The winter flood greens the valley in act II; act IV starts the drought. Its 40 s visual ramp can still
+  // be running when the match ends, so assert the event plus an in-progress level instead of a full ramp.
   expect(out.environment.wet_season).toBe(1);
-  expect(out.environment.drought).toBe(1);
+  expect(out.droughtTarget, 'act IV starts the drought event').toBe(1);
+  expect(out.environment.drought).toBeGreaterThan(0);
   // Target length of the model mission (docs/design/caral-model-mission.md): roughly 30-40 minutes for a
   // learning player. The bot is faster (it staffs each hand-over's resource itself) and needs ~17 min with
   // the Caral speed scale (0.5) and Act I's real fishing count (issue 378): lock the pacing so a reverted

@@ -255,6 +255,14 @@ export class Terrain {
     return this.data.isBeach(wx, wz);
   }
 
+  isRiver(wx: number, wz: number): boolean {
+    return this.data.isRiver(wx, wz);
+  }
+
+  isSea(wx: number, wz: number): boolean {
+    return this.data.isSea(wx, wz);
+  }
+
   isBuildable(wx: number, wz: number): boolean {
     return this.data.isBuildable(wx, wz);
   }

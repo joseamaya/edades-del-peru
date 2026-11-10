@@ -523,8 +523,12 @@ Definition of Done and the building audit see
   rotating stand cell, so eight workers do not pile on one point. Abandoned gather orders (no route or the
   movement watchdog) deliver a carried load and remember the failed bank for a short grace window. Act
   `gather` objectives can read the monotonic `Game.harvested` ledger by node kind (`ObjectiveDef.fromNode`)
-  instead of the resource balance, so spending food never rewinds progress. This changed the simulation, so
-  `REPLAY_VERSION` is 21. Guarded by `tests/fishing-grounds.test.ts`, `tests/gather-retarget.test.ts`,
+  instead of the resource balance, so spending food never rewinds progress. Authored sites can name their
+  carved river channel (`AuthoredHeightField.river`) and coastline (`AuthoredHeightField.coast`);
+  `Terrain.isSea` keeps guaranteed fishing grounds on the marine side and `Terrain.isRiver` rejects the channel.
+  Caral's banks are sea-only because the Supe is dry most of the year, so `spawnFishingNearShore` requires
+  `isSea` and the layout has no river anchors (issue 382). This changed the simulation, so
+  `REPLAY_VERSION` is 23. Guarded by `tests/fishing-grounds.test.ts`, `tests/gather-retarget.test.ts`,
   `tests/pathfinding.test.ts` and `tests/e2e/campaign-playtest.spec.ts`.
 - **Spawn points must share a walkable component**: `Game.spawnPointAround` tries several angles/radii
   around a building and keeps only cells in the main component (or the rally point's component), falling back
