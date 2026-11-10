@@ -17,7 +17,15 @@ export class Water {
   readonly refractionRT: THREE.WebGLRenderTarget;
   refractionEnabled = false;
 
-  constructor(scene: THREE.Scene, heightMap: Float32Array, size: number, waterLevel = 2.2, inland = false) {
+  constructor(
+    scene: THREE.Scene,
+    heightMap: Float32Array,
+    size: number,
+    waterLevel = 2.2,
+    inland = false,
+    /** Waterline x sampled along z (world metres); west of it is sea that must not follow the seasons. */
+    coastX: readonly number[] | null = null,
+  ) {
     const n = Math.round(Math.sqrt(heightMap.length));
     const depthData = new Uint8Array(n * n);
     for (let i = 0; i < heightMap.length; i++) {
@@ -29,6 +37,24 @@ export class Water {
     this.depthTexture.needsUpdate = true;
 
     this.refractionRT = new THREE.WebGLRenderTarget(1024, 1024);
+
+    // One texel per coastline sample (x in world metres, sampled along z). The sea west of it keeps
+    // its level while the river follows the flood and the drought.
+    const coast = coastX && coastX.length > 1 ? coastX : null;
+    const coastTexture = new THREE.DataTexture(
+      new Float32Array(coast ?? [0]),
+      Math.max(1, coast?.length ?? 1),
+      1,
+      THREE.RedFormat,
+      THREE.FloatType,
+    );
+    if (coast) {
+      // Nearest: float textures are not guaranteed to offer linear filtering without an extension.
+      // The coastline samples are 2 m apart and the shader ramps the mask over 3 m, so steps are fine.
+      coastTexture.magFilter = THREE.NearestFilter;
+      coastTexture.minFilter = THREE.NearestFilter;
+      coastTexture.needsUpdate = true;
+    }
 
     // On coastal maps the water extends beyond the map (sea/horizon).
     // On inland maps (andes/altiplano/jungle) it covers only the map (lakes and rivers).
@@ -49,6 +75,11 @@ export class Water {
       isDay: { value: 1.0 },
       depthMap: { value: this.depthTexture },
       waterLevel: { value: waterLevel },
+      coastMap: { value: coastTexture },
+      useCoast: { value: coast ? 1 : 0 },
+      mapSize: { value: size },
+      /** Visual offset of the inland water (the river); the sea ignores it. */
+      inlandOffset: { value: 0 },
       depthScale: { value: inland ? 1 : 0.4 },
       fogColor: { value: new THREE.Color(0.8, 0.85, 0.9) },
       fogDensity: { value: 0.0 },
@@ -66,9 +97,15 @@ export class Water {
       vertexShader: /* glsl */ `
         uniform float time;
         uniform float waveHeight;
+        uniform float waterLevel;
+        uniform float inlandOffset;
+        uniform sampler2D coastMap;
+        uniform float useCoast;
+        uniform float mapSize;
         varying vec3 vWorldPos;
         varying vec2 vUv;
         varying float vWave;
+        varying float vLevel;
         varying vec2 vScreen;
         void main() {
           vUv = uv;
@@ -80,6 +117,13 @@ export class Water {
           p.y += disp;
           vWave = w1 + w2;
           vec4 wp = modelMatrix * vec4(p, 1.0);
+          // The sea stays put: only inland water (east of the authored coastline) follows the season.
+          vec2 muv = wp.xz / mapSize;
+          float inMap = step(0.0, muv.x) * step(muv.x, 1.0) * step(0.0, muv.y) * step(muv.y, 1.0);
+          float coast = texture2D(coastMap, vec2(clamp(muv.y, 0.0, 1.0), 0.5)).r;
+          float inland = mix(1.0, inMap * smoothstep(coast + 1.0, coast + 4.0, wp.x), useCoast);
+          wp.y += inlandOffset * inland;
+          vLevel = waterLevel + inlandOffset * inland;
           vWorldPos = wp.xyz;
           gl_Position = projectionMatrix * viewMatrix * wp;
           vScreen = gl_Position.xy / gl_Position.w * 0.5 + 0.5;
@@ -96,7 +140,6 @@ export class Water {
         uniform vec3 foamColor;
         uniform float isDay;
         uniform sampler2D depthMap;
-        uniform float waterLevel;
         uniform float depthScale;
         uniform vec3 fogColor;
         uniform float fogDensity;
@@ -106,6 +149,7 @@ export class Water {
         varying vec3 vWorldPos;
         varying vec2 vUv;
         varying float vWave;
+        varying float vLevel;
         varying vec2 vScreen;
 
         float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -125,7 +169,7 @@ export class Water {
           vec2 duv = vec2((vUv.x - 0.5) / depthScale + 0.5, (0.5 - vUv.y) / depthScale + 0.5);
           float inMap = step(0.0, duv.x) * step(duv.x, 1.0) * step(0.0, duv.y) * step(duv.y, 1.0);
           float landH = mix(0.0, texture2D(depthMap, clamp(duv, 0.0, 1.0)).r * 45.0, inMap);
-          float depth = waterLevel - landH;
+          float depth = vLevel - landH;
           // do not draw water over solid land (avoids covering the terrain)
           if (inMap > 0.5 && depth < 0.05) discard;
           float deep = smoothstep(0.4, 2.2, depth);
@@ -177,6 +221,11 @@ export class Water {
     scene.add(this.mesh);
   }
 
+  /** Sea level: the inland water follows the seasons, the sea does not. */
+  get seaLevel(): number {
+    return this.baseLevel;
+  }
+
   /** Per-site water colours and the strength of the broad sun sheen (a high sun washes dark water out). */
   setPalette(palette: {
     deep: string;
@@ -201,9 +250,8 @@ export class Water {
    * banks). Gameplay water (pathing, isWater) is unchanged.
    */
   setLevelOffset(offset: number): void {
-    const level = this.baseLevel + offset;
-    this.mesh.position.y = level;
-    this.uniforms.waterLevel.value = level;
+    // The mesh and the sea stay at `baseLevel`; the shader applies the offset to the inland water only.
+    this.uniforms.inlandOffset.value = offset;
   }
 
   setSunDir(dir: THREE.Vector3): void {
@@ -245,6 +293,7 @@ export class Water {
     this.mesh.geometry.dispose();
     (this.mesh.material as THREE.Material).dispose();
     this.depthTexture.dispose();
+    (this.uniforms.coastMap?.value as THREE.DataTexture | undefined)?.dispose();
     this.refractionRT.dispose();
   }
 }

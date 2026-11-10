@@ -62,7 +62,7 @@ import {
 import { getCiv } from '../model/defs/civs';
 import { CANAL_PROP_MARGIN, DEFAULT_CANAL_WIDTH, canalEdgeHalfWidth } from '../model/defs/canal';
 import { RNG } from '../util/rng';
-import { distance2D, distanceToPath, smoothPolyline } from '../util/math';
+import { distance2D, distanceToPath, distanceToPolyline, smoothPolyline } from '../util/math';
 import { archProfileFor } from '../model/defs/architecture';
 import { createFowUniforms } from '../rendering/FowMaterial';
 import type { HeritageBuildingDef, HeritageBuildingId } from '../model/defs/heritage';
@@ -546,6 +546,7 @@ export class Game {
       s.mapSize,
       this.mapProfile.water.level,
       this.mapProfile.water.inland,
+      this.siteDef?.heightField?.coast?.x ?? null,
     );
     const waterPalette = this.siteDef?.terrain?.water;
     if (waterPalette) this.water.setPalette(waterPalette);
@@ -573,7 +574,11 @@ export class Game {
     // The authored site has thin walls and doors; 1 m cells keep them solid
     // without closing the narrow residential openings.
     this.pathfinder = new Pathfinder(s.mapSize, this.siteDef?.pathCellSize ?? 2);
-    this.pathfinder.bakeTerrain((x, z) => this.terrain.getHeight(x, z), this.terrain.waterLevel);
+    this.pathfinder.bakeTerrain(
+      (x, z) => this.terrain.getHeight(x, z),
+      this.terrain.waterLevel,
+      (x, z) => this.isFordAt(x, z),
+    );
     this.startSpots = this.planStartSpots();
     if (!this.pendingSnapshot) {
       this.world.reserveCaralValley();
@@ -633,7 +638,11 @@ export class Game {
       this.siteDef,
     ) as unknown as Terrain;
     this.pathfinder = new Pathfinder(s.mapSize, this.siteDef?.pathCellSize ?? 2);
-    this.pathfinder.bakeTerrain((x, z) => this.terrain.getHeight(x, z), this.terrain.waterLevel);
+    this.pathfinder.bakeTerrain(
+      (x, z) => this.terrain.getHeight(x, z),
+      this.terrain.waterLevel,
+      (x, z) => this.isFordAt(x, z),
+    );
     this.fow = new Fow(s.mapSize, 128);
     this.startSpots = this.planStartSpots();
     if (!this.pendingSnapshot) this.world.spawnResources();
@@ -1576,6 +1585,35 @@ export class Game {
 
   isCanalOpen(): boolean {
     return this.canalOpen;
+  }
+
+  /** Shallow ford over the site's river: walkable water that links both banks (Caral's Supe). */
+  isFordAt(x: number, z: number): boolean {
+    const field = this.siteDef?.heightField;
+    const fords = field?.fords;
+    if (!field?.river || !fords?.length) return false;
+    // Cheap z test first: the polyline distance runs for every path cell at bake time.
+    if (!fords.some((ford) => Math.abs(z - ford.z) <= ford.halfWidth)) return false;
+    if (distanceToPolyline(x, z, field.river.path) > field.river.halfWidth + 2) return false;
+    // Only the shallow bar is wadeable: a ford never makes a deep channel walkable.
+    return this.terrain.getHeight(x, z) > this.terrain.waterLevel - 0.75;
+  }
+
+  /**
+   * Water surface height at a point (world metres). The sea keeps its level all year; inland water
+   * (east of the authored coastline) follows the flood and the drought, exactly like the shader.
+   */
+  waterSurfaceAt(x: number, z: number): number {
+    const sea = this.mapProfile.water.level;
+    const field = this.siteDef?.heightField;
+    const coast = field?.coast;
+    if (!field || !coast) return sea + waterLevelOffset(this.environment);
+    const n = coast.x.length;
+    const t = Math.max(0, Math.min(1, z / field.worldSize));
+    const coastX = coast.x[Math.min(n - 1, Math.round(t * (n - 1)))] ?? sea;
+    // Same 1..4 m shoreline ramp as the shader mask.
+    const k = Math.max(0, Math.min(1, (x - coastX - 1) / 3));
+    return sea + waterLevelOffset(this.environment) * k * k * (3 - 2 * k);
   }
 
   toggleCanal(): boolean {

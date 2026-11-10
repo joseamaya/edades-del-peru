@@ -339,6 +339,8 @@ export class ResourceNodeView {
       });
       matCache.set('fish-shoal', shoalMat);
     }
+    // Fishing banks are placed in the sea, which keeps `WATER_LEVEL` all year (the river is the only
+    // water that follows the seasons), so the shoal and its rings stay on the surface.
     const surface = WATER_LEVEL - (this.node.pos.y ?? 0);
     for (let i = 0; i < 5; i++) {
       const fish = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.5, 6), shoalMat);

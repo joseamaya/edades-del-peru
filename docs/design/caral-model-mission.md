@@ -168,6 +168,13 @@ Dialogue speaker labels must not say "Comandante" in this mission.
 - **Living valley**: cooking smoke behind dwellings, the sacred fire on the Pyramid Mayor and a blaze for
   the Act III offering, temporary fair tents once the city is in use, two allied hamlets up the valley,
   riparian deer and birds, pelicans off Áspero, surf on the shore and a flute line for the era.
+- **Water**: the sea keeps its level all year; only the Supe (and any inland water) follows the seasons.
+  `Water` masks the visual offset with the authored coastline (`caralHeightmap.ts`), so the Pacific neither
+  floods nor dries with the river, and the fishing banks (always placed in the sea) keep their rings and nets
+  on the surface. `Game.waterSurfaceAt` exposes the same rule to gameplay code and tests.
+- **Fords**: the two crossings are shallow gravel bars whose bed sits 0.22 m under the waterline
+  (`AuthoredHeightField.fords`), so the river reads as continuous; the pathfinder wades them (`bakeTerrain`
+  `wade`), while the rest of the channel stays impassable.
 - **Summer flood** (`Game.startEnvironmentalEvent('wet_season')`, 30 s, fired when the canal opens): the Supe
   rises 0.45 m with the sierra rains and the floodplain greens. The lomas also take the fog-fed green of the
   wet months as a separate winter cue that the visual event tints; the text no longer presents both as one
@@ -175,9 +182,10 @@ Dialogue speaker labels must not say "Comandante" in this mission.
   them. The depth, duration and the extent of the green are inferred staging: the dossier documents the
   El Niño floods, the dunes and the lomas as an ecological zone.
 - **Drought** (`Game.startEnvironmentalEvent('drought')`, 40 s): the green turns to sand in patches (the
-  documented sand advance), the river surface drops, the haze turns dusty, the yield of every standing
-  field dries with the level (`farmYieldMultiplier`), so a field sown again during the drought never
-  returns to its irrigated harvest, and about one riverside tree in three dies.
+  documented sand advance), a warm grade bleaches the ground, the river surface drops to a thread, the haze
+  turns dusty, the yield of every standing field dries with the level (`farmYieldMultiplier`) so a field sown
+  again during the drought never returns to its irrigated harvest, and about one riverside tree in three dies.
+  Flood and drought are meant to be told apart at a glance from the normal camera.
 - **Narration**: an anonymous narrator (`MissionDef.narrator`); no "Comandante" label, no invented names.
 - **Tutorial**: nine steps (select, coast, house, valley, field, storage, nets, pyramid, works) docked under
   the objectives; the last one explains the communal-store supply during construction.

@@ -14,6 +14,7 @@ import type { SitePhasePlan } from './sitePhases';
 import {
   CARAL_COAST_STEP,
   CARAL_COAST_X,
+  CARAL_FORDS,
   CARAL_GROUND,
   CARAL_GROUND_SIZE,
   CARAL_HEIGHTMAP,
@@ -295,6 +296,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       ground: { size: CARAL_GROUND_SIZE, weights: CARAL_GROUND },
       river: { path: CARAL_RIVER_PATH, halfWidth: CARAL_RIVER_HALF_WIDTH },
       coast: { step: CARAL_COAST_STEP, x: CARAL_COAST_X },
+      fords: CARAL_FORDS,
     },
     pathCellSize: 1,
     heritageProxies: [...CARAL_HERITAGE_PROXIES, ASPERO_HERITAGE_PROXY],

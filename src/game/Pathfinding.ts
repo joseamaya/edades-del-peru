@@ -137,7 +137,10 @@ export class Pathfinder {
   private closed: Uint8Array;
   /** Terrain-only blockage (water/steep), kept so `rebuild` does not lose it. */
   private terrainBlocked: Uint8Array | null = null;
-  /** Terrain-only water cells (a subset of `terrainBlocked`); approach lines may cross them. */
+  /**
+   * Terrain-only water cells that block movement (a subset of `terrainBlocked`); approach lines may
+   * cross them. Shallow fords are walkable and therefore not part of this mask.
+   */
   private waterMask: Uint8Array | null = null;
   /** Static site geometry mask (walls/ruins) that must survive obstacle rebuilds. */
   private staticBlocked: Uint8Array | null = null;
@@ -274,8 +277,15 @@ export class Pathfinder {
     for (const o of this.obstacles) this.rasterize(o);
   }
 
-  /** Mark cells non-traversable due to water or too-steep terrain (call with terrain height). */
-  bakeTerrain(heightFn: (x: number, z: number) => number, waterLevel: number): void {
+  /**
+   * Mark cells non-traversable due to water or too-steep terrain (call with terrain height). `wade`
+   * exempts shallow fords: their bed is under the waterline but units cross them on foot.
+   */
+  bakeTerrain(
+    heightFn: (x: number, z: number) => number,
+    waterLevel: number,
+    wade?: (x: number, z: number) => boolean,
+  ): void {
     const { cols, cell } = this.grid;
     this.grid.walkable.fill(1);
     this.waterMask = new Uint8Array(cols * cols);
@@ -286,8 +296,9 @@ export class Pathfinder {
         const h = heightFn(wx, wz);
         // same scale as Terrain.getSlope (shared helper)
         const slope = terrainSlope(heightFn, wx, wz, cell);
-        if (h < waterLevel + 0.35) this.waterMask[z * cols + x] = 1;
-        if (h < waterLevel + 0.35 || slope > MAX_WALKABLE_SLOPE) {
+        const shallow = h < waterLevel + 0.35 && !(wade?.(wx, wz) ?? false);
+        if (shallow) this.waterMask[z * cols + x] = 1;
+        if (shallow || slope > MAX_WALKABLE_SLOPE) {
           this.grid.walkable[z * cols + x] = 0;
         }
       }

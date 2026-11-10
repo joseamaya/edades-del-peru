@@ -37,6 +37,27 @@ describe('headless Game', () => {
   });
 });
 
+/** Headless Caral match: the authored valley, its river and its fords. */
+function caralGame(): Game {
+  setAutoStart(false);
+  const game = new Game(
+    {
+      ...DEFAULT_SETTINGS,
+      missionId: 'm1_caral',
+      fogOfWar: false,
+      cinematic: false,
+      showHints: false,
+      soundEnabled: false,
+    },
+    null,
+    null,
+    false,
+    true,
+  );
+  game.ais.length = 0;
+  return game;
+}
+
 describe('drought on standing fields', () => {
   it('dries the harvest down and replanting does not refill it', () => {
     setAutoStart(false);
@@ -71,6 +92,43 @@ describe('drought on standing fields', () => {
     game.refreshFarmYields();
     expect(farm.foodAmount).toBe(once);
 
+    game.destroy();
+    setAutoStart(true);
+  });
+});
+
+describe('seasonal water', () => {
+  it('keeps the sea level while the Supe follows the drought', () => {
+    const game = caralGame();
+    const sea = game.mapProfile.water.level;
+    expect(game.waterSurfaceAt(10, 128), 'the Pacific starts at sea level').toBe(sea);
+    game.startEnvironmentalEvent('drought');
+    for (let i = 0; i < 45; i++) game.updateEnvironment(1);
+    expect(game.environment.drought).toBe(1);
+    expect(game.waterSurfaceAt(10, 128), 'the Pacific does not follow the Supe').toBe(sea);
+    expect(game.waterSurfaceAt(70, 128), 'the river does drop').toBeLessThan(sea);
+    game.destroy();
+    setAutoStart(true);
+  });
+});
+
+describe('Supe fords', () => {
+  it('keeps the river continuous and walkable at the crossings', () => {
+    const game = caralGame();
+    // The bar sits under the waterline (so the river reads as continuous) but the pathfinder wades it.
+    expect(game.isFordAt(70, 64)).toBe(true);
+    expect(game.terrain.isWater(70, 64)).toBe(true);
+    expect(game.pathfinder.isWalkable(70, 64), 'the ford is crossable').toBe(true);
+    // Off the ford the channel is open water and stays impassable.
+    expect(game.isFordAt(70, 54)).toBe(false);
+    expect(game.pathfinder.isWalkable(70, 54), 'deep water is not').toBe(false);
+    // Bank to bank: the route the units take crosses the ford instead of stopping at the water.
+    const route = game.pathfinder.pathfind(55, 64, 85, 64);
+    expect(route.length, 'a route exists across the Supe').toBeGreaterThan(0);
+    expect(
+      route.some((point) => Math.abs(point.z - 64) <= 4.5),
+      'it crosses on the ford',
+    ).toBe(true);
     game.destroy();
     setAutoStart(true);
   });

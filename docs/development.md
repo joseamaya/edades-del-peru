@@ -471,6 +471,14 @@ Definition of Done and the building audit see
   `replantFarm` restores the dried reserve instead of a full irrigated crop. Farm reserves and the save
   meaning changed, so `SAVE_VERSION` is 4 and `REPLAY_VERSION` is 27; guarded by `tests/caral-acts.test.ts`,
   `tests/farm-yield.test.ts` and `tests/headless-game.test.ts`.
+- **Caral water and fords** (issue 391): `Water` takes the authored coastline and applies the seasonal
+  offset only inland, so the sea stays at `WATER_LEVEL` while the Supe follows the flood and the drought;
+  `Game.waterSurfaceAt` mirrors that rule. The Supe fords are shallow gravel bars under the waterline
+  (`AuthoredHeightField.fords`), exempted from the pathfinder's water block through `bakeTerrain(..., wade)`,
+  so the river is continuous and still crossable. The heightfield is regenerated with
+  `scripts/build_caral_heightmap.py`; the ford cells change walkability, so `REPLAY_VERSION` is 28.
+  Guarded by `tests/headless-game.test.ts` (sea/river levels, ford walkability) and
+  `tests/e2e/caral-city.spec.ts` (the mask wired in the renderer, the drought vs the sea).
 - **Victory/defeat (conquest)**: a player is defeated only when **no building of theirs remains** (`Game.hasBuildings`),
   in both skirmish (`resolveConquest` via `Game.checkVictory`) and campaign (`Mission.checkBaseLost`). Do not go back to "losing the
   civic center ends the match": a full base with army must survive the loss of its center.

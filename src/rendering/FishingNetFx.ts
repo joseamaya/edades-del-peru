@@ -103,6 +103,7 @@ export class FishingNetFx {
     const len = Math.max(0.001, Math.hypot(dx, dz));
     const ux = dx / len;
     const uz = dz / len;
+    // Sea-only fishing and a sea level that never moves: the net lands on the fixed surface.
     const water = WATER_LEVEL + 0.04;
     _from.set(from.x + ux * 0.4, from.y + 1.45, from.z + uz * 0.4);
     _land.set(ground.x - ux * 0.4, water, ground.z - uz * 0.4);
