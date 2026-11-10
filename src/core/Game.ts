@@ -105,6 +105,7 @@ import { WorldViewDecor } from './WorldViewDecor';
 import { RuntimeController, type DeathFx } from './RuntimeController';
 import { StartBaseBuilder } from './StartBaseBuilder';
 import { SelectionController, type DeliveryGate } from './SelectionController';
+import { MissionRings } from '../rendering/MissionRings';
 import { stateHashOf } from '../game/stateHash';
 import type { SaveData, HarvestLedgerRow } from '../game/saveTypes';
 
@@ -162,6 +163,8 @@ export class Game {
   mapLabels: MapLabels | null = null;
   /** Fog-clearing "zone discovered" announcements for authored sites. */
   discoveries: Discoveries | null = null;
+  /** Ground rings under the active reach/hold objectives (presentation only; follows the live fog). */
+  missionRings: MissionRings | null = null;
   /** Authored canal target in world units (mission mechanic + visual). */
   canalSite: { x: number; z: number } | null = null;
   /** Authored departure/rendezvous anchor in world units (e.g. Caral's Act IV beach). */
@@ -571,6 +574,8 @@ export class Game {
     this.fowUniforms.fowEnabled.value = s.fogOfWar ? 1 : 0;
     this.mapLabels = new MapLabels(this.scene, this.placeNames, this.terrain, s.mapSize);
     this.discoveries = new Discoveries(this.missionLayout?.discoveries, this.siteDef, !!this.pendingSnapshot);
+    // Quest markers stay visible over fog: they guide the player without revealing the terrain.
+    this.missionRings = new MissionRings(this.scene, (x, z) => this.terrain.getHeight(x, z));
     // The authored site has thin walls and doors; 1 m cells keep them solid
     // without closing the narrow residential openings.
     this.pathfinder = new Pathfinder(s.mapSize, this.siteDef?.pathCellSize ?? 2);
@@ -1284,8 +1289,19 @@ export class Game {
   setVisitedHeritage(ids: HeritageBuildingId[]): void {
     this.selection.setVisitedHeritage(ids);
   }
-  visitHeritage(id: HeritageBuildingId): void {
+  visitHeritage(id: HeritageBuildingId): boolean {
+    const near = this.mission?.inspectRadiusFor(id) ?? null;
+    if (near !== null && !this.selection.unitNearHeritage(id, near)) {
+      this.hud?.showToast(t('hud.heritage.visit.away'), 'warning');
+      return false;
+    }
     this.selection.visitHeritage(id);
+    return true;
+  }
+
+  /** Play the fog-clearing animation over an authored discovery (mission effect). */
+  revealDiscovery(id: HeritageBuildingId): void {
+    this.discoveries?.reveal(id);
   }
   selectBuilding(id: number): void {
     this.selection.selectBuilding(id);
@@ -1618,6 +1634,12 @@ export class Game {
 
   toggleCanal(): boolean {
     if (!this.canalSite) return false;
+    const locked = this.missionLayout?.canal?.lockedUntilObjective;
+    const lockState = locked ? this.mission?.getObjectiveState(locked) : 'activo';
+    if (lockState !== 'activo' && lockState !== 'completed') {
+      this.hud?.showToast(t('hud.toast.canalLocked'), 'info');
+      return this.canalOpen;
+    }
     this.canalOpen = !this.canalOpen;
     this.updateCanalVisual();
     this.refreshFarmYields();
@@ -1842,6 +1864,8 @@ export class Game {
     this.mapLabels?.dispose();
     this.mapLabels = null;
     this.discoveries = null;
+    this.missionRings?.dispose();
+    this.missionRings = null;
     for (const node of this.resourceNodes.values()) node.remove();
     this.resourceNodes.clear();
     this.trees.dispose();
@@ -1987,7 +2011,12 @@ export class Game {
   }
 
   update(dt: number, time: number): boolean {
-    return this.runtime.update(dt, time);
+    const running = this.runtime.update(dt, time);
+    if (this.missionRings) {
+      this.missionRings.sync(this.mission?.activeGoals() ?? []);
+      this.missionRings.pulse(time);
+    }
+    return running;
   }
 
   private render(): void {

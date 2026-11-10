@@ -10,7 +10,9 @@ import {
   TriggerDef,
   TriggerEffect,
   MissionPoint,
+  MissionGoal,
 } from './types';
+import type { HeritageBuildingId } from '../model/defs/heritage';
 import { BuildingKind, OrderKind, Resources } from '../core/types';
 import { distance2D } from '../util/math';
 import { t } from '../i18n';
@@ -51,7 +53,7 @@ export class Mission {
   }
 
   private defaultState(o: ObjectiveDef): ObjState {
-    return o.hidden ? 'pendiente' : 'activo';
+    return o.hidden || o.awaitsCall ? 'pendiente' : 'activo';
   }
 
   get activeObjectives(): { def: ObjectiveDef; state: ObjState }[] {
@@ -60,9 +62,34 @@ export class Mission {
         (o) =>
           this.objState.get(o.id) === 'activo' ||
           this.objState.get(o.id) === 'completed' ||
-          this.objState.get(o.id) === 'failed',
+          this.objState.get(o.id) === 'failed' ||
+          (o.awaitsCall === true && this.objState.get(o.id) === 'pendiente'),
       )
       .map((o) => ({ def: o, state: this.objState.get(o.id) as ObjState }));
+  }
+
+  /**
+   * Active `reach`/`hold` objectives with a ground point, for the world markers. The tutorial text
+   * ("hasta la marca del valle") only makes sense if the marker is drawn.
+   */
+  activeGoals(): MissionGoal[] {
+    const goals: MissionGoal[] = [];
+    for (const o of this.def.objectives) {
+      if (!o.pos || (o.kind !== 'reach' && o.kind !== 'hold')) continue;
+      if (this.objState.get(o.id) !== 'activo') continue;
+      const p = this.resolvePoint(o.pos);
+      goals.push({ id: o.id, x: p.x, z: p.z, radius: o.radius ?? 8 });
+    }
+    return goals;
+  }
+
+  /** Radius an active `inspect` objective demands around a card, or null when the visit is free. */
+  inspectRadiusFor(id: HeritageBuildingId): number | null {
+    for (const o of this.def.objectives) {
+      if (o.kind !== 'inspect' || !o.inspectRadius || !(o.heritageIds ?? []).includes(id)) continue;
+      if (this.objState.get(o.id) === 'activo') return o.inspectRadius;
+    }
+    return null;
   }
 
   private resolvePoint(p: MissionPoint): { x: number; z: number } {
@@ -445,6 +472,9 @@ export class Mission {
         break;
       case 'site_phase':
         this.game.setSitePhase(fx.phase);
+        break;
+      case 'reveal':
+        this.game.revealDiscovery(fx.heritageId);
         break;
       case 'ritual': {
         const p = this.resolvePoint(fx.pos);

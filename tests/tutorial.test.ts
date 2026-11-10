@@ -257,3 +257,9 @@ describe('tutorial gates', () => {
     expect(game.hud.last).not.toContain('{key:');
   });
 });
+
+it('walks the player through the canal gate in Caral', () => {
+  const canal = tutorialForMission('m1_caral')!.steps.find((step) => step.id === 'canal');
+  expect(canal?.gateObjective).toBe('a2_canal');
+  expect(canal?.check).toMatchObject({ type: 'objectiveCompleted', objectiveId: 'a2_canal' });
+});

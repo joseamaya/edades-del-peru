@@ -159,7 +159,8 @@ Dialogue speaker labels must not say "Comandante" in this mission.
   to the coast. Caral sees only its own buildings, units and technologies (`allowedBuildings`,
   `allowedUnits`, `allowedTechs`, the match-filtered tech tree); the generic irrigation tech is excluded because
   the canal gate already provides that bonus, and there is no silver.
-- **Communal canal**: an earth acequia from the Supe's west bank along the valley floor past the chacras
+- **Communal canal**: the gate is scenery until Act II asks for it (`lockedUntilObjective: 'a2_canal'`),
+  so it cannot complete the goal the moment the goal appears. An earth acequia from the Supe's west bank along the valley floor past the chacras
   (`layout.canal.path`), built as ribbons that sample the relief (no factory walls or boxes). It has low earth
   berms and a low stone plug at the intake; the water runs when the gate is open or the summer flood
   comes and dries in the act IV drought. Opening it boosts farms within 2.5 m of the trace. The trace and the
@@ -186,9 +187,17 @@ Dialogue speaker labels must not say "Comandante" in this mission.
   turns dusty, the yield of every standing field dries with the level (`farmYieldMultiplier`) so a field sown
   again during the drought never returns to its irrigated harvest, and about one riverside tree in three dies.
   Flood and drought are meant to be told apart at a glance from the normal camera.
+- **Act flow**: Act III reveals the city with the discovery animation (`reveal` effect), so the camera does
+  not open on unexplored fog. The assembly is announced with Act III (listed, still awaiting the call), and the pyramid tour (`obj_complejos`)
+  waits until the walls are finished, when all six complexes stand; each card needs a unit at its own
+  monument (`ObjectiveDef.inspectRadius`, 8 m from its footprint), so the tour is a walk through the city,
+  not a click from the beach. The assembly is listed as an optional objective (awaiting the player's call)
+  and stays pending until the card's button starts it.
 - **Narration**: an anonymous narrator (`MissionDef.narrator`); no "Comandante" label, no invented names.
-- **Tutorial**: nine steps (select, coast, house, valley, field, storage, nets, pyramid, works) docked under
-  the objectives; the last one explains the communal-store supply during construction.
+- **Tutorial**: ten steps (select, coast, house, valley, field, canal, storage, nets, pyramid, works) docked
+  under the objectives; the canal step explains the gate and the last one the communal-store supply during
+  construction. Active `reach`/`hold` goals draw a pulsing ring on the ground (`MissionRings`), so "the valley
+  marker" the tutorial mentions exists in the world and not only on the minimap.
 
 ## Pacing and map scale
 

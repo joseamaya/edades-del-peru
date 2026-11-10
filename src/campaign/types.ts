@@ -51,6 +51,11 @@ export interface MissionCanal {
   initiallyOpen?: boolean;
   /** Whether the authored canal contributes irrigation yield to nearby farms. */
   irrigation?: boolean;
+  /**
+   * Objective that must be active before the gate answers (Caral's Act II canal). Until then the
+   * gate is scenery: opening it would complete the objective the moment it appears.
+   */
+  lockedUntilObjective?: string;
   /** Optional heritage field card exposed by clicking the canal. */
   heritageId?: HeritageBuildingId;
 }
@@ -179,6 +184,14 @@ export interface ObjectiveProgress {
   format: 'count' | 'time';
 }
 
+/** Ground marker for an active objective (`Mission.activeGoals` → `MissionRings`). */
+export interface MissionGoal {
+  id: string;
+  x: number;
+  z: number;
+  radius: number;
+}
+
 export interface ObjectiveDef {
   id: string;
   kind: ObjectiveKind;
@@ -224,6 +237,11 @@ export interface ObjectiveDef {
   fromNode?: ResourceKind;
   /** Heritage cards that must be visited for an `inspect` objective. */
   heritageIds?: HeritageBuildingId[];
+  /**
+   * `inspect` only: a player unit must be this close (world metres) to the card being visited, so
+   * the objective cannot be completed from the other side of the map.
+   */
+  inspectRadius?: number;
   /** Field card that receives a `deliver` objective's materials (shows a hand-over command). */
   heritageId?: HeritageBuildingId;
   /** Amount handed over per `deliver` command; defaults to 50. */
@@ -232,6 +250,11 @@ export interface ObjectiveDef {
   tech?: string;
   era?: Era;
   hidden?: boolean;
+  /**
+   * Starts pending but listed in the objective panel, so the player knows an optional action is
+   * available (Caral's communal assembly) and only calls it from its card.
+   */
+  awaitsCall?: boolean;
   /**
    * Objectives sharing a group are alternatives: the group is satisfied when
    * any member is (a strategic choice, e.g. assault *or* besiege). Omit for a
@@ -273,6 +296,8 @@ export type TriggerEffect =
   | { type: 'act'; kicker: string; title: string; text: string; image?: string }
   /** Construction phase of the authored site's main monument. */
   | { type: 'site_phase'; phase: string }
+  /** Clear (or force) the fog animation over an authored discovery. */
+  | { type: 'reveal'; heritageId: HeritageBuildingId }
   /** Presentation-only ritual beat at the authored site (e.g. the burial between construction phases). */
   | { type: 'ritual'; pos: MissionPoint }
   /** A named environmental event (drought, flood, ...). */

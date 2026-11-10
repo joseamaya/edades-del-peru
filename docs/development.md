@@ -279,8 +279,8 @@ Definition of Done and the building audit see
   may also `consume` a resource per second (Caral's construction turns pause when the communal store is empty),
   and new hidden objectives declare `afterPhase`/`requires` so a save written before they existed repairs
   itself on load. The `requires` repair only runs when the trigger that activates the objective is already
-  in `fired`; command-only objectives (the optional Plaza assembly) and triggers still to fire are left for
-  the normal evaluation. `ObjectiveDef.minUnits` makes a `hold` wait for a crew (Caral's Act IV departure
+  in `fired`; objectives that no trigger activates (optional card actions) and triggers still to fire are
+  left for the normal evaluation. `ObjectiveDef.minUnits` makes a `hold` wait for a crew (Caral's Act IV departure
   needs three workers on its own beach marker, away from the fishing banks); `legacyPhases` restores the
   authored phase for saves written before it was persisted.
   Campaign fichas in [`docs/historia/fichas_campana.md`](./historia/fichas_campana.md), validated by
@@ -455,8 +455,8 @@ Definition of Done and the building audit see
   marker (resolved through `MissionPoint.ref: 'departure'`), and procedural fishing banks keep 22 m clear
   of it, so the fishers working the anchoveta shoals cannot end the act. `a4_partida` also sets
   `ObjectiveDef.minUnits = 3`. `Mission.applySave` only repairs a pending `requires` objective when its
-  activating trigger is already in `fired`, keeping command-only objectives (the optional Plaza assembly)
-  pending until the player calls them. This changes Caral's simulation, so `REPLAY_VERSION` is 25; guarded by
+  activating trigger is already in `fired`, keeping objectives that no trigger activates pending until
+  the player calls them. This changes Caral's simulation, so `REPLAY_VERSION` is 25; guarded by
   `tests/caral-acts.test.ts` and `tests/e2e/caral-city.spec.ts`.
 - **Caral period labels and texts** (issue 386): m1 overrides the global building names/icons through
   `MissionDef.buildingNames`/`buildingIcons` («Recinto comunal», «Depósito comunal», neutral farm icon) and
@@ -479,6 +479,14 @@ Definition of Done and the building audit see
   `scripts/build_caral_heightmap.py`; the ford cells change walkability, so `REPLAY_VERSION` is 28.
   Guarded by `tests/headless-game.test.ts` (sea/river levels, ford walkability) and
   `tests/e2e/caral-city.spec.ts` (the mask wired in the renderer, the drought vs the sea).
+- **Caral objective flow** (issue 390): `obj_complejos` activates on `t_a3_obra_muros` (all six monuments
+  stand) and gates each visit on `ObjectiveDef.inspectRadius` (a player unit within 8 m of the card's footprint);
+  `obj_asamblea` is announced with Act III (`awaitsCall`: listed but pending until the player calls it); the Act III camera reveal is a `reveal` trigger effect that plays
+  the discovery animation over the Pyramid Mayor. `MissionCanal.lockedUntilObjective` keeps the gate inert
+  until `a2_canal`, and `MissionRings` draws a ground ring under the active `reach`/`hold` goals. Guards:
+  `tests/caral-acts.test.ts`, `tests/discoveries.test.ts`, `tests/mission-rings.test.ts`,
+  `tests/tutorial.test.ts` and `tests/e2e/caral-city.spec.ts`. No new simulation state or command
+  semantics, so the replay/save versions stay.
 - **Victory/defeat (conquest)**: a player is defeated only when **no building of theirs remains** (`Game.hasBuildings`),
   in both skirmish (`resolveConquest` via `Game.checkVictory`) and campaign (`Mission.checkBaseLost`). Do not go back to "losing the
   civic center ends the match": a full base with army must survive the loss of its center.

@@ -148,6 +148,7 @@ describe('authored campaign sites', () => {
       'house',
       'valley',
       'farm',
+      'canal',
       'storage',
       'nets',
       'pyramid',

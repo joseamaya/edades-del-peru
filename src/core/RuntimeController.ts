@@ -207,6 +207,15 @@ export class RuntimeController {
       if (!data.mission.started) this.game.mission.start();
     }
     if (data.tutorial && this.game.tutorial) this.game.tutorial.applySave(data.tutorial);
+    // A save taken before the gate was gated cannot leave it running ahead of its objective.
+    const canalLock = this.game.missionLayout?.canal?.lockedUntilObjective;
+    if (canalLock) {
+      const lockState = this.game.mission?.getObjectiveState(canalLock) ?? 'pendiente';
+      if (lockState !== 'activo' && lockState !== 'completed') {
+        this.game.canalOpen = false;
+        this.updateCanalVisual();
+      }
+    }
     if (this.game.canalSite) {
       this.updateCanalVisual();
       const savedById = new Map(data.buildings.map((saved) => [saved.id, saved]));

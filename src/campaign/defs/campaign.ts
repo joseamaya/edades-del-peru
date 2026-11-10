@@ -101,7 +101,12 @@ export const MISSIONS: MissionDef[] = [
       // Act IV departure marker on the open beach south of the anchoveta banks; fishing placement
       // keeps this clear so fishers working the shoals cannot satisfy the hold by presence alone.
       departure: { x: 26 / CARAL_MAP_SIZE, z: 190 / CARAL_MAP_SIZE },
-      discoveries: [{ heritageId: 'aspero_huaca_idolos', initial: true }],
+      discoveries: [
+        { heritageId: 'aspero_huaca_idolos', initial: true },
+        // Act III reveals the city with the camera (wide enough for the label and the whole upper half);
+        // walking there early still rewards the scout.
+        { heritageId: 'caral_pyramid_mayor', radius: 55 },
+      ],
       site: {
         id: 'caral_site',
         y: 8,
@@ -134,6 +139,8 @@ export const MISSIONS: MissionDef[] = [
         initiallyOpen: false,
         irrigation: true,
         heritageId: 'caral_canal',
+        // The gate answers once the fields are ready; before that it would complete the goal on sight.
+        lockedUntilObjective: 'a2_canal',
       },
     },
     mapOverrides: {
@@ -309,6 +316,10 @@ export const MISSIONS: MissionDef[] = [
         ],
         optional: true,
         hidden: true,
+        // The pyramids only stand once the walls are finished, and the visit is a walk through them,
+        // not a click from the beach.
+        requires: 'a3_obra_muros',
+        inspectRadius: 8,
         title: 'Recorre los seis complejos piramidales de Caral Alto',
       },
       {
@@ -321,6 +332,9 @@ export const MISSIONS: MissionDef[] = [
         requires: 'a2_excedente',
         hidden: true,
         optional: true,
+        // Announced with Act III (listed in the panel and called from the pyramid card), but the
+        // assembly only starts when the player calls it.
+        awaitsCall: true,
         title: 'Convoca una asamblea comunal (abstracción jugable) en la Plaza Central',
       },
       // --- Act IV: the drought ---
@@ -445,9 +459,14 @@ export const MISSIONS: MissionDef[] = [
             image: 'media/caral/intro-obra.webp',
             text: 'Sobre la terraza desértica, a salvo de las crecidas, el pueblo levanta la Pirámide Mayor por fases. Las shicras —bolsas de fibra llenas de piedras— rellenan cada plataforma.',
           },
+          {
+            type: 'dialogue',
+            text: 'Con la ciudad en pie, la comunidad puede reunirse en la Plaza Central: convoca la asamblea desde la ficha de la Pirámide Mayor.',
+          },
           { type: 'camera', pos: { ref: 'site', dx: 0, dz: 0 } },
+          // The camera opens on the city: clear its fog with the discovery animation, not a black screen.
+          { type: 'reveal', heritageId: 'caral_pyramid_mayor' },
           { type: 'objective', objectiveId: 'a3_shicras', state: 'activate', announce: true },
-          { type: 'objective', objectiveId: 'obj_complejos', state: 'activate', announce: true },
         ],
       },
       {
@@ -496,6 +515,8 @@ export const MISSIONS: MissionDef[] = [
             text: 'La pirámide está enlucida y pintada. Antes de usarla, la comunidad se reúne a quemar ofrendas en el fuego sagrado.',
           },
           { type: 'objective', objectiveId: 'a3_fuego', state: 'activate', announce: true },
+          // All six complexes stand now, so the tour can be announced with something to visit.
+          { type: 'objective', objectiveId: 'obj_complejos', state: 'activate', announce: true },
         ],
       },
       {

@@ -239,7 +239,9 @@ test('the authored site blocks monument footprints without sealing the city', as
   expect(errors).toEqual([]);
 });
 
-test('the Caral objectives reveal in acts and keep the assembly hidden until the city', async ({ page }) => {
+test('the Caral objectives reveal in acts, announce the assembly with the city and the tour after the walls', async ({
+  page,
+}) => {
   await boot(page);
   const objectives = page.locator('#ed-objectives');
   const advance = (complete: string) =>
@@ -280,14 +282,22 @@ test('the Caral objectives reveal in acts and keep the assembly hidden until the
   await expect(objectives).toContainText('excedente de 500');
   await advance('a2_excedente');
   await expect(objectives).toContainText('Acto III · Entrega 150 de madera');
-  await expect(objectives).toContainText('0/6');
+  // The tour waits for the walls: five complexes do not stand yet.
+  await expect(objectives).not.toContainText('0/6');
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     g.selectedHeritage = 'caral_pyramid_mayor';
     g.hud.update(0.2, 0);
   });
+  // Act III announces the assembly: it is listed and the card still offers the call.
+  await expect(objectives).toContainText('Convoca una asamblea');
   await expect(plaza).toContainText('Convocar asamblea');
   await expect(plaza).toContainText('Entregar materiales (50 madera) · 0/150');
+  await advance('a3_shicras');
+  await advance('a3_obra_relleno');
+  await advance('a3_muros');
+  await advance('a3_obra_muros');
+  await expect(objectives).toContainText('0/6');
 });
 
 test('an empty communal store pauses the pyramid work turn until the store is back and fed', async ({ page }) => {
@@ -727,8 +737,18 @@ test('a Caral Blender pyramid opens an educational field card', async ({ page })
     g.mission.update(0.1, 0);
     document.querySelector<HTMLElement>('.ed-mission-card')?.click();
     g.mission.update(0.1, 0);
+    // The tour opens once the walls are finished and all six complexes stand.
+    g.mission.objState.set('a3_obra_muros', 'completed');
+    g.mission.update(0.1, 0);
+    // The visit is a walk through the city: a unit has to reach each monument.
+    const worker = [...g.units.values()].find((u: any) => u.owner === 0 && !u.dead) as any;
     for (const name of ['central', 'quarry', 'lesser', 'gallery', 'huanca']) {
-      g.visitHeritage(`caral_pyramid_${name}`);
+      const id = `caral_pyramid_${name}`;
+      const proxy = g.siteDef.heritageProxies.find((p: any) => p.id === id);
+      // Beside the footprint, where a player can actually stand (not inside the monument).
+      const x = proxy.x + proxy.w / 2 + 4;
+      worker.pos.set(x, g.terrain.getHeight(x, proxy.z), proxy.z);
+      g.visitHeritage(id);
     }
     g.mission.update(0.1, 0);
     return g.mission.getObjectiveState('obj_complejos');
@@ -899,6 +919,8 @@ test('the Caral canal water follows the gate, the flood and the drought', async 
     });
     g.environment.wet_season = 0;
     g.environment.drought = 0;
+    // The gate is inert until Act II asks for it.
+    g.mission.objState.set('a2_canal', 'activo');
     if (g.isCanalOpen()) g.toggleCanal();
     g.updateCanalVisual();
     const closed = snap();
@@ -931,6 +953,7 @@ test('the drought dries the irrigated field and the replanted one is not a fresh
     const spot = g.findFreeSpot(canal.x + 1.5, canal.z, 3);
     const farm = g.placeBuilding('farm', spot.x, spot.z);
     if (!farm) return null;
+    g.mission.objState.set('a2_canal', 'activo');
     if (!g.isCanalOpen()) g.toggleCanal();
     // The yield on the trace itself carries the irrigation bonus; the farm may sit on the bank.
     const wet = g.farmYieldAt(canal.x, canal.z);
@@ -980,6 +1003,109 @@ test('the sea keeps its level while the Supe follows the drought and the flood',
   expect(out.fordWalkable, 'and the pathfinder wades it').toBe(true);
 });
 
+test('the Act III reveal clears the fog over the whole city with the fog on', async ({ page }) => {
+  await page.goto('/?mission=m1_caral&seed=3000&low=1&noloop=1&intro=0&fog=1');
+  const overlay = page.locator('.ed-overlay', { hasText: 'La Ciudad Sagrada' });
+  await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+  await overlay.waitFor({ state: 'detached', timeout: 20_000 });
+  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.landmark !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    const label = g.siteDef?.placeName ?? { x: 164, z: 69.2 };
+    const before = g.fow.isExplored(label.x, label.z) as boolean;
+    g.mission.objState.set('a2_excedente', 'completed');
+    g.mission.update(0.1, 0);
+    document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+    g.mission.update(0.1, 0);
+    for (let i = 0; i < 30; i++) g.update(0.1, i * 0.1);
+    const site = g.discoveries.sites.find((entry: { id: string }) => entry.id === 'caral_pyramid_mayor');
+    return { before, state: site?.state as string, explored: g.fow.isExplored(label.x, label.z) as boolean };
+  });
+  expect(out.before, 'the city starts under fog').toBe(false);
+  expect(out.state, 'the discovery animation runs to the end').toBe('done');
+  expect(out.explored, 'the label and the upper half are visible').toBe(true);
+});
+
+test('the canal gate only answers once Act II asks for it', async ({ page }) => {
+  await boot(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    const before = g.isCanalOpen() as boolean;
+    const early = g.toggleCanal() as boolean;
+    const lockedState = g.mission.getObjectiveState('a2_canal') as string;
+    g.mission.objState.set('a2_campos', 'completed');
+    g.mission.update(0.1, 0);
+    const askedState = g.mission.getObjectiveState('a2_canal') as string;
+    const opened = g.toggleCanal() as boolean;
+    g.mission.update(0.1, 0);
+    return { before, early, lockedState, askedState, opened, after: g.mission.getObjectiveState('a2_canal') as string };
+  });
+  expect(out.before).toBe(false);
+  expect(out.lockedState).toBe('pendiente');
+  expect(out.early, 'the gate is scenery until the objective appears').toBe(false);
+  expect(out.askedState).toBe('activo');
+  expect(out.opened).toBe(true);
+  expect(out.after).toBe('completed');
+});
+
+test('the pyramid tour waits for the walls, needs a unit in the city and the assembly is announced', async ({
+  page,
+}) => {
+  await boot(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    g.mission.objState.set('a2_excedente', 'completed');
+    g.mission.update(0.1, 0);
+    document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+    g.mission.update(0.1, 0);
+    const atActStart = g.mission.getObjectiveState('obj_complejos') as string;
+    const assembly = g.mission.getObjectiveState('obj_asamblea') as string;
+    g.mission.objState.set('a3_obra_muros', 'completed');
+    g.mission.update(0.1, 0);
+    const afterWalls = g.mission.getObjectiveState('obj_complejos') as string;
+    // A unit on the beach cannot register the cards from across the valley.
+    const worker = [...g.units.values()].find((u: any) => u.owner === 0 && !u.dead) as any;
+    worker.pos.set(26, g.terrain.getHeight(26, 190), 190);
+    const farVisit = g.visitHeritage('caral_pyramid_mayor') as boolean;
+    const farState = g.mission.getObjectiveState('obj_complejos') as string;
+    // Walking the city: each card registers with a unit at its own monument.
+    for (const id of [
+      'caral_pyramid_mayor',
+      'caral_pyramid_central',
+      'caral_pyramid_quarry',
+      'caral_pyramid_lesser',
+      'caral_pyramid_gallery',
+      'caral_pyramid_huanca',
+    ]) {
+      const proxy = g.siteDef.heritageProxies.find((p: any) => p.id === id);
+      // Beside the footprint, where a player can actually stand (not inside the monument).
+      const x = proxy.x + proxy.w / 2 + 4;
+      worker.pos.set(x, g.terrain.getHeight(x, proxy.z), proxy.z);
+      g.visitHeritage(id);
+    }
+    g.mission.update(0.1, 0);
+    return {
+      atActStart,
+      afterWalls,
+      assembly,
+      farVisit,
+      farState,
+      state: g.mission.getObjectiveState('obj_complejos') as string,
+    };
+  });
+  expect(out.atActStart, 'the tour is not announced before its monuments exist').toBe('pendiente');
+  expect(out.afterWalls, 'the walls finish the six complexes').toBe('activo');
+  expect(out.assembly, 'the assembly is announced but still waits for the call').toBe('pendiente');
+  expect(out.farVisit, 'visiting from the beach is refused').toBe(false);
+  expect(out.farState).toBe('activo');
+  expect(out.state, 'a unit in the city completes the tour').toBe('completed');
+});
+
 test('the Chacra and communal-store panels explain their historical abstractions', async ({ page }) => {
   await boot(page);
   const ids = await page.evaluate(() => {
@@ -1020,7 +1146,7 @@ test('the Chacra and communal-store panels explain their historical abstractions
   await expect(bottom).toContainText('Dossier de Caral');
 });
 
-test('the Plaza Central card activates the communal assembly', async ({ page }) => {
+test('the Plaza Central card announces the communal assembly', async ({ page }) => {
   await boot(page);
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -1253,6 +1379,7 @@ test('a loaded Caral save keeps the Blender setpiece', async ({ page }) => {
     g.mission.update(0.1, 0);
     g.mission.objState.set('a3_obra_relleno', 'completed');
     g.mission.update(0.1, 0);
+    g.mission.objState.set('a2_canal', 'activo');
     g.toggleCanal();
     g.startAssembly();
     g.saveMatch();
