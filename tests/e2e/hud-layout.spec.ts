@@ -17,13 +17,18 @@ const PANELS = [
   'ed-help-open',
 ] as const;
 
-const RESOLUTIONS = [
-  { width: 1280, height: 720 },
-  { width: 1600, height: 900 },
-  { width: 1920, height: 1080 },
-] as const;
-
 const MISSION_IDS = MISSIONS.map((m) => m.id);
+
+/**
+ * Every mission runs at the smallest reference size; the larger review sizes boot only Caral, the
+ * model mission and the one the issue measured (m1_caral). Software WebGL makes a 1920×1080 boot
+ * expensive, and ten of them starved the CI shard.
+ */
+const RESOLUTIONS = [
+  { width: 1280, height: 720, missions: MISSION_IDS },
+  { width: 1600, height: 900, missions: ['m1_caral'] },
+  { width: 1920, height: 1080, missions: ['m1_caral'] },
+] as const;
 
 interface Box {
   x: number;
@@ -66,8 +71,8 @@ async function bootMission(page: Page, missionId: string): Promise<void> {
     { timeout: 30_000, polling: 100 },
   );
   expect(await ready.jsonValue()).toBe(true);
-  // measure the mission's own first tutorial step, not a fixture
-  await page.waitForSelector('#ed-tutorial.show', { timeout: 30_000 });
+  // measure the mission's own first tutorial step, not a fixture (CI software WebGL is slow)
+  await page.waitForSelector('#ed-tutorial.show', { timeout: 60_000 });
 }
 
 /**
@@ -190,11 +195,11 @@ function objectivesFit(state: State): string[] {
   return found;
 }
 
-for (const { width, height } of RESOLUTIONS) {
+for (const { width, height, missions } of RESOLUTIONS) {
   test.describe(`${width}x${height}`, () => {
     test.use({ viewport: { width, height } });
 
-    for (const missionId of MISSION_IDS) {
+    for (const missionId of missions) {
       test(`the HUD panels do not overlap in ${missionId}`, { tag: '@smoke' }, async ({ page }) => {
         test.setTimeout(120_000);
         const errors: string[] = [];

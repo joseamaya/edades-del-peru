@@ -6,9 +6,9 @@ meets every gate below and sets the pattern the other missions follow
 (`m2_chavin`) has been rebuilt to the same pattern; its table below records the evidence, with the human
 art review still pending. The other missions are reviewed again against this one before they are called
 complete. A mission is not done because it boots or because its objectives can be satisfied by a test
-harness. The HUD geometry gate (`tests/e2e/hud-layout.spec.ts`) runs at 1280×720, 1600×900 and
-1920×1080, including a late-mission objective list with the archive folded and expanded and the shortcuts
-panel open.
+harness. The HUD geometry gate (`tests/e2e/hud-layout.spec.ts`) runs every mission at 1280×720 and Caral at
+1600×900 and 1920×1080, including a late-mission objective list with the archive folded and expanded and the
+shortcuts panel open.
 
 ## Gates
 
