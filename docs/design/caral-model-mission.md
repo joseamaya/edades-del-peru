@@ -109,7 +109,9 @@ river mouth; the Supe runs south past the city's west flank, then turns west thr
 the sea; two gravel fords cross it; the Sacred City keeps its former layout on the desert terrace, shifted
 64 m east (`CARAL_CITY_OFFSET_X`); dry foothills frame the north, east and south, with coastal lomas south
 of the mouth. Ground zones (beach, marsh, floodplain, terrace desert, rock) are painted by the same script
-(`CARAL_GROUND`), and trees only grow where that paint allows.
+(`CARAL_GROUND`), and trees only grow where that paint allows. The floodplain/terrace edge meanders
+with a deterministic boundary shift instead of a straight line; the terrain apron outside the map
+uses a few near rings and a dark haze frame so the camera never sees the old cream void.
 
 ## Living city
 

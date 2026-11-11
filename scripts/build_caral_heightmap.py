@@ -92,7 +92,9 @@ def city_local(x: float, z: float) -> tuple[float, float]:
 
 def city_mask(x: float, z: float) -> float:
     lx, lz = city_local(x, z)
-    return smoothstep(43.0, 48.0, lx) * (1.0 - smoothstep(166.0, 170.0, lz)) * (1.0 - smoothstep(145.5, 148.5, lx))
+    # The west edge is wide: it overlaps the meandering terrace scarp, and a narrow blend there added a
+    # second steep step on top of the scarp (the pathfinder seam must stay below 1 m per cell).
+    return smoothstep(40.0, 52.0, lx) * (1.0 - smoothstep(166.0, 170.0, lz)) * (1.0 - smoothstep(145.5, 148.5, lx))
 
 
 def height(x: float, z: float) -> float:
@@ -101,8 +103,9 @@ def height(x: float, z: float) -> float:
     # Valley floor everywhere west of the terrace, with low relief.
     h = VALLEY + 0.18 * noise(x * 0.8, z * 0.8)
 
-    # Desert terrace of the Sacred City (its edge descends over ~12 m to the floodplain).
-    edge = smoothstep(38.0, 50.0, lx)
+    # Desert terrace of the Sacred City (its edge descends over ~12 m to the floodplain). The scarp
+    # meanders with the same shift as the painted ground so grass never climbs the terrace wall.
+    edge = smoothstep(36.0 + boundary_shift(z), 52.0 + boundary_shift(z), lx)
     h = h * (1.0 - edge) + TERRACE * edge
 
     # Dry Andean foothills frame the city north, east and south (east of the river only).
@@ -194,17 +197,29 @@ def fertile(x: float, z: float) -> float:
     return best
 
 
+def boundary_shift(z: float) -> float:
+    """Meander of the valley/terrace edge; the paint must not be a vertical line."""
+    return (
+        6.0 * math.sin(z * 0.055 + 0.7)
+        + 2.5 * math.sin(z * 0.13 - 0.9)
+        + 1.2 * math.sin(z * 0.31 + 0.3)
+    )
+
+
 def ground(x: float, z: float) -> tuple[float, float, float, float]:
     h = height(x, z)
     lx, _ = city_local(x, z)
     c = coast(z)
     d = river_distance(x, z)
+    shift = boundary_shift(z)
     floodplain = 1.0 - smoothstep(6.0, 22.0, d)
     wet = 1.0 - smoothstep(18.0, 30.0, math.hypot((x - 34.0) * 0.8, z - 208.0))
     beach = (1.0 - smoothstep(c + 2.0, c + 13.0, x)) * (1.0 - wet * 0.8)
     ax, az = ASPERO
     aspero = 1.0 - smoothstep(8.0, 16.0, math.hypot(x - ax, z - az))
-    terrace = smoothstep(40.0, 50.0, lx)
+    # Warped edge: the green floodplain gives way to the ochre terrace in inlets and spurs, not a ruler line.
+    # The beach and coastal bands keep their authored width: carving them changes the opening's node mix.
+    terrace = smoothstep(40.0 + shift, 52.0 + shift, lx)
     high = smoothstep(9.0, 14.0, h)
     coastal = (1.0 - smoothstep(c + 30.0, c + 46.0, x)) * (1.0 - wet) * (1.0 - floodplain)
     # Lower valley: fields and huarango groves on the west bank, drier towards the terrace.

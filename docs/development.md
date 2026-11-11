@@ -492,6 +492,10 @@ Definition of Done and the building audit see
   `scripts/build_caral_heightmap.py`; the ford cells change walkability, so `REPLAY_VERSION` is 28.
   Guarded by `tests/headless-game.test.ts` (sea/river levels, ford walkability) and
   `tests/e2e/caral-city.spec.ts` (the mask wired in the renderer, the drought vs the sea).
+- **Caral terrain edges** (issue 393): the painted floodplain/terrace boundary and the height scarp
+  meander together with `boundary_shift(z)`; the apron outside the map uses near rings and a dark haze
+  frame instead of the flat cream plane. The changed heightfield relocates resource nodes, so
+  `REPLAY_VERSION` is 30. Guarded by `tests/terrain.test.ts`, `tests/terrain-skirt.test.ts` and the Caral E2E.
 - **Caral objective flow** (issue 390): `obj_complejos` activates on `t_a3_obra_muros` (all six monuments
   stand) and gates each visit on `ObjectiveDef.inspectRadius` (a player unit within 8 m of the card's footprint);
   `obj_asamblea` is announced with Act III (`awaitsCall`: listed but pending until the player calls it); the Act III camera reveal is a `reveal` trigger effect that plays
