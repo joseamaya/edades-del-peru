@@ -1219,10 +1219,13 @@ export class HUD {
     `;
     const statsRoot = panel.querySelector<HTMLElement>('#ed-stats-panel');
     if (statsRoot) {
+      // A mission without an active enemy has no rival to compare against: the empty "(IA)" column
+      // only made it look like a player who did nothing (issue 403).
+      const compared = peaceful ? this.game.players.filter((player) => player.id === 0) : this.game.players;
       mountMatchStats(
         statsRoot,
         this.game.matchStats.samples,
-        this.game.players.map((player) => ({
+        compared.map((player) => ({
           id: player.id,
           name: player.name,
           civ: player.civ,

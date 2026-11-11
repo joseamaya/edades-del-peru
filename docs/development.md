@@ -499,6 +499,12 @@ Definition of Done and the building audit see
   `activatedAt`, which the mission save persists. Guards: `tests/caral-acts.test.ts`,
   `tests/architecture-kit.test.ts`, `tests/headless-game.test.ts` and `tests/e2e/caral-city.spec.ts` (the
   prosperity beat and a sealed/dry save).
+- **Victory summary (issue 403)**: `HUD.showVictory` mounts the post-game stats with one column per
+  player, but a mission without an active enemy (`MissionDef.enemy.active === false`) has no rival to
+  compare against. Pass only player 0 to `mountMatchStats` in that case; an empty «(IA)» column read as a
+  rival that did nothing and contradicted the mission card. Skirmishes and missions with an enemy keep both
+  seats. Guarded by `tests/e2e/post-game-stats.spec.ts` (skirmish) and `tests/e2e/caral-city.spec.ts`
+  (Caral). No simulation change, so the replay/save versions stay.
 - **Victory/defeat (conquest)**: a player is defeated only when **no building of theirs remains** (`Game.hasBuildings`),
   in both skirmish (`resolveConquest` via `Game.checkVictory`) and campaign (`Mission.checkBaseLost`). Do not go back to "losing the
   civic center ends the match": a full base with army must survive the loss of its center.
