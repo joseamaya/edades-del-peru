@@ -332,3 +332,94 @@ for (const { width, height, missions } of RESOLUTIONS) {
     }
   });
 }
+
+test.describe('final screen layering', () => {
+  test.use({ viewport: { width: 1280, height: 720 } });
+
+  /**
+   * Issue 415: the archive summary is `position: sticky; z-index: 1`, so it out-painted the final
+   * screen veil while `.ed-overlay` had no z-index. Probe the archived line (and the column under
+   * it) with elementFromPoint while the pause menu, victory and defeat own the screen.
+   */
+  test(
+    'the objectives column never paints over the pause menu, victory or defeat',
+    { tag: '@smoke' },
+    async ({ page }) => {
+      test.setTimeout(120_000);
+      const errors: string[] = [];
+      page.on('pageerror', (e) => errors.push(e.message));
+      await bootMission(page, 'm1_caral');
+      await expect(page.locator('.ed-overlay')).toHaveCount(0);
+
+      const state = await page.evaluate(async () => {
+        const g = (window as unknown as { game: any }).game;
+        const settle = () =>
+          new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+        g.loop.stop();
+
+        // The recording's state: Acts I-III finished, the Act IV goals still active.
+        const defs = g.mission.def.objectives as { id: string; title: string }[];
+        const remaining = defs.filter((o) => /^Acto IV ·/.test(o.title));
+        for (const o of defs) g.mission.objState.set(o.id, remaining.includes(o) ? 'activo' : 'completed');
+        g.hud.update(0.2, 0);
+        await settle();
+        g.hud.update(0.2, 0);
+
+        const summary = document.querySelector<HTMLElement>('#ed-objectives details > summary');
+        if (!summary) throw new Error('the late mission has no archive summary');
+        summary.click();
+        await settle();
+        const box = summary.getBoundingClientRect();
+        const point = { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+        const column = document.getElementById('ed-right-column')!;
+        const probe = () => {
+          const hit = document.elementFromPoint(point.x, point.y);
+          const overlay = document.querySelector<HTMLElement>('.ed-overlay:not(.hidden)');
+          return {
+            overlay: !!overlay,
+            title: overlay?.querySelector('.epilogue-title')?.textContent ?? null,
+            insideColumn: !!hit && column.contains(hit),
+            insideOverlay: !!overlay && !!hit && (hit === overlay || overlay.contains(hit)),
+            hit: hit ? `${hit.tagName.toLowerCase()}#${hit.id}.${String(hit.className)}` : null,
+          };
+        };
+
+        const open = probe();
+        if (!g.getPaused()) g.togglePause();
+        await settle();
+        const paused = probe();
+        if (g.getPaused()) g.togglePause();
+        await settle();
+        const resumed = probe();
+        g.showVictory(0);
+        await settle();
+        const victory = probe();
+        g.showVictory(1);
+        await settle();
+        const defeat = probe();
+
+        return { summary: summary.textContent ?? '', open, paused, resumed, victory, defeat };
+      });
+
+      expect(state.summary, 'the archive summary is the line the issue names').toMatch(
+        /Finalizados \(\d+\) · Acto I ✔ \d+\/\d+/,
+      );
+      expect(state.open.insideColumn, 'the probe starts over the objectives column').toBe(true);
+      expect(state.open.overlay, 'no overlay is open before the pause').toBe(false);
+      expect(state.victory.title, 'the winner gets the victory screen').toBe('VICTORIA');
+      expect(state.defeat.title, 'the loser gets the defeat screen').toBe('DERROTA');
+      for (const [name, probe] of [
+        ['the pause menu', state.paused],
+        ['victory', state.victory],
+        ['defeat', state.defeat],
+      ] as const) {
+        expect(probe.overlay, `${name} owns the screen`).toBe(true);
+        expect(probe.insideColumn, `${name}: no objectives element paints over the veil (${probe.hit})`).toBe(false);
+        expect(probe.insideOverlay, `${name}: the veil owns that point (${probe.hit})`).toBe(true);
+      }
+      expect(state.resumed.overlay, 'closing the pause menu removes its veil').toBe(false);
+      expect(state.resumed.insideColumn, 'the objectives column returns when the pause closes').toBe(true);
+      expect(errors).toEqual([]);
+    },
+  );
+});
