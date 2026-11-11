@@ -7,7 +7,7 @@ import { applyGeneratedPbr } from './Biomes';
 import { TreeInstances, type TreeVariant } from './TreeInstances';
 import { HuntHerd } from './HuntHerd';
 import type { ResourceNode } from '../entities/ResourceNode';
-import { WATER_LEVEL } from '../model/defs/profiles';
+import { WATER_LEVEL, type BerryShrubId } from '../model/defs/profiles';
 
 // Shared caches: geometries and materials reused between nodes (fewer draw calls and GC).
 const geoCache = new Map<string, THREE.BufferGeometry>();
@@ -110,6 +110,7 @@ export class ResourceNodeView {
   private readonly mapType: string;
   private readonly treeMgr?: TreeInstances;
   private readonly treeVariants?: TreeVariants;
+  private readonly berryShrub?: BerryShrubId;
   private treeVariant: TreeVariant = 'broad';
   /** The drought killed this tree standing: bare wood, no canopy, kit instance hidden. */
   private dry = false;
@@ -121,10 +122,12 @@ export class ResourceNodeView {
     mapType = 'andes',
     treeMgr?: TreeInstances,
     treeVariants?: TreeVariants,
+    berryShrub?: BerryShrubId,
   ) {
     this.mapType = mapType;
     this.treeMgr = treeMgr;
     this.treeVariants = treeVariants;
+    this.berryShrub = berryShrub;
     this.buildModel();
   }
 
@@ -147,7 +150,8 @@ export class ResourceNodeView {
         this.buildFish(rng);
         break;
       case 'berry':
-        this.buildBush(rng);
+        if (this.berryShrub) this.buildFruitShrub(rng);
+        else this.buildBush(rng);
         break;
     }
     this.view.traverse((o) => {
@@ -171,14 +175,15 @@ export class ResourceNodeView {
     kind: 'broad' | 'needle' | 'frond' | 'bush' | 'algarrobo' | 'molle' | 'sauce' | 'pacay',
     radius: number,
     height: number,
+    tint = '#b9c49b',
   ): void {
     const tex = MaterialTex.foliage(kind);
-    const leafMat = mat('leaf-' + kind, {
+    const leafMat = mat('leaf-' + kind + '-' + tint, {
       map: tex,
       alphaTest: 0.45,
       side: THREE.DoubleSide,
       roughness: 1,
-      color: '#b9c49b',
+      color: tint,
     });
     const w = radius * 2.3;
     const h = height;
@@ -387,6 +392,57 @@ export class ResourceNodeView {
       const berry = new THREE.Mesh(sphereGeo(0.05, 6, 5), berryMat);
       berry.position.set(rng.range(-0.5, 0.5), 0.3 + rng.range(0, 0.4), rng.range(-0.5, 0.5));
       this.add(berry);
+    }
+  }
+
+  /**
+   * Documented food shrub for authored scenarios (Caral: pacae/guayaba, dossier's edible plants).
+   * Multi-stemmed, low and broad, with the fruit hanging under the canopy; the generic red-berry
+   * billboard read as a placeholder from the RTS camera.
+   */
+  private buildFruitShrub(rng: RNG): void {
+    const bark = mat('shrub-bark', { map: MaterialTex.bark(), color: '#8a6f52', roughness: 1 });
+    const canopy = new THREE.Group();
+    canopy.position.y = 0.6;
+    canopy.userData.sway = 1;
+    this.view.add(canopy);
+
+    // Short multi-stem base: the crown must cover the branches, or the shrub reads as a pole.
+    for (let i = 0; i < 6; i++) {
+      const angle = (i / 6) * Math.PI * 2 + rng.range(-0.25, 0.25);
+      const reach = rng.range(0.5, 0.9);
+      const tip = new THREE.Vector3(Math.cos(angle) * reach, rng.range(0.5, 0.8), Math.sin(angle) * reach);
+      const length = tip.length();
+      const geo = new THREE.CylinderGeometry(0.03, 0.075, length, 5);
+      geo.translate(0, length / 2, 0);
+      const stem = new THREE.Mesh(geo, bark);
+      stem.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), tip.clone().normalize());
+      stem.castShadow = true;
+      stem.receiveShadow = true;
+      this.view.add(stem);
+    }
+
+    for (const [x, z, scale] of [
+      [-0.38, 0.08, 0.9],
+      [0.4, -0.1, 0.8],
+      [0.02, 0.4, 0.65],
+    ] as const) {
+      const cluster = new THREE.Group();
+      cluster.position.set(x, 0, z);
+      cluster.scale.setScalar(scale);
+      canopy.add(cluster);
+      this.addFoliage(cluster, rng, 'pacay', 1.0, 1.15, '#94a26b');
+    }
+
+    const podMat = mat('pacae-pod', { color: '#a3a052', roughness: 0.9 });
+    for (let i = 0; i < 12; i++) {
+      const angle = rng.range(0, Math.PI * 2);
+      const radius = rng.range(1.25, 1.65);
+      const pod = new THREE.Mesh(cylGeo(0.03, 0.05, 0.4, 5), podMat);
+      pod.position.set(Math.cos(angle) * radius, rng.range(-0.05, 0.2), Math.sin(angle) * radius);
+      pod.rotation.set(rng.range(-0.3, 0.3), rng.range(0, 3), rng.range(1.0, 1.4));
+      pod.castShadow = true;
+      canopy.add(pod);
     }
   }
 

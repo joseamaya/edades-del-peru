@@ -146,10 +146,13 @@ export const MISSIONS: MissionDef[] = [
     mapOverrides: {
       terrain: { terraceChance: 0.08, riverCount: 0 },
       climate: { aridity: 0.78, moisture: 0.34 },
-      vegetation: { density: 0.06 },
+      // Only the kit-backed species: molle and pacay have no Blender tree kit and read as a different
+      // art style. The pacae shrub is the food node instead (docs/historia/campanas/caral.md).
+      vegetation: { density: 0.06, variants: { algarrobo: 0.7, sauce: 0.3, molle: 0, pacay: 0 } },
+      berryShrub: 'pacae',
       // Caral has no documented silver extraction or coastal vicuña herds.
-      // The 256 m transect keeps the former tree count: groves on the floodplain, none on beach or marsh.
-      // and the scattered quarries and berry patches stay at the former 192 m map's count.
+      // The 256 m transect keeps the former tree count: groves on the floodplain, none on beach or marsh,
+      // and the scattered quarries stay at the former 192 m map's count.
       resources: { tree: 0.12, mine: 0, hunt: 0, scatter: 0.56 },
       culturalLandscape: null,
       groundTint: '#b7ab96',

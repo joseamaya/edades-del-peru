@@ -75,6 +75,8 @@ export interface SiteBlocker {
   d: number;
   /** First construction phase in which it stands; omitted means from the opening. */
   since?: string;
+  /** Last phase in which it still stands (e.g. temporary fair tents); omitted means forever. */
+  until?: string;
 }
 
 export interface SiteKeepoutRect {

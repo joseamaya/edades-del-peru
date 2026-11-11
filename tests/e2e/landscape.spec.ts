@@ -39,6 +39,19 @@ test('a coastal map carries its cultural landscape', async ({ page }) => {
   expect(s.names).toContain('plaza');
 });
 
+test('procedural tree meshes draw only the used slots on maps with non-kit species', async ({ page }) => {
+  await boot(page, '/?civ=moche&period=2&seed=777&fog=0&low=1&noloop=1');
+  const state = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const trunk = g.scene.getObjectByName('trees_trunk');
+    const highest = g.trees.slots.reduce((m: number, s: any, i: number) => (s.used ? i : m), -1);
+    return { count: trunk?.count ?? -1, visible: trunk?.visible ?? false, highest };
+  });
+  expect(state.visible, 'the Moche map still has procedural broadleaf trees').toBe(true);
+  expect(state.count).toBe(state.highest + 1);
+  expect(state.count).toBeLessThan(700);
+});
+
 test('the high Andes carry terraces and the altiplano corrals', async ({ page }) => {
   await boot(page, '/?civ=inca&period=5&seed=777&fog=0&low=1&noloop=1');
   const andes = await landscapeSig(page);

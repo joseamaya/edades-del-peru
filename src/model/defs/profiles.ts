@@ -17,6 +17,9 @@ export type SoilKind = 'sandy' | 'loam' | 'clay' | 'peaty' | 'rocky';
 /** Tree/foliage variant (shared with the instancing manager). */
 export type TreeVariant = 'broad' | 'needle' | 'frond' | 'algarrobo' | 'molle' | 'sauce' | 'pacay';
 
+/** Documented fruit shrub that replaces the generic berry bush on authored scenarios. */
+export type BerryShrubId = 'pacae';
+
 export interface ResourceProfile {
   /** Relative weight of each gatherable node (tree/mine/well/berry). */
   tree: number;
@@ -84,6 +87,8 @@ export interface HistoricalMapProfile {
     density: number;
     variants: Partial<Record<TreeVariant, number>>;
   };
+  /** A documented fruit shrub for the food nodes; omitted keeps the generic berry bush. */
+  berryShrub?: BerryShrubId;
   resources: ResourceProfile;
   atmosphere: {
     /** Aerial-perspective density fed to the terrain/water shaders (~1e-3; 0 = crystal clear). */
@@ -116,6 +121,7 @@ export interface MapOverrides {
   terrain?: Partial<HistoricalMapProfile['terrain']>;
   climate?: Partial<HistoricalMapProfile['climate']>;
   vegetation?: Partial<HistoricalMapProfile['vegetation']>;
+  berryShrub?: BerryShrubId;
   resources?: Partial<HistoricalMapProfile['resources']>;
   /** Replace or disable the generic cultural landscape (authored scenes). */
   culturalLandscape?: CulturalLandscapeProfile | null;
@@ -138,6 +144,7 @@ export function applyMapOverrides(
       ...overrides.vegetation,
       variants: { ...profile.vegetation.variants, ...overrides.vegetation?.variants },
     },
+    berryShrub: overrides.berryShrub ?? profile.berryShrub,
     resources: { ...profile.resources, ...overrides.resources },
     culturalLandscape:
       overrides.culturalLandscape === null ? undefined : (overrides.culturalLandscape ?? profile.culturalLandscape),

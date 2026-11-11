@@ -152,7 +152,8 @@ _Status (kit v1)_: huarango, sauce, caña brava, carrizo and totora ship as LOD0
 the `algarrobo` and `sauce` variants with them, packing only visible trees and switching to LOD1 beyond
 45 units from the camera focus (25 on low quality); `Props` draws totora and the m1 riverbank
 canes. Wind sway is still the CPU canopy rotation, not a vertex shader. Missing: cola de caballo, lomas
-herbs and crops as kit models.
+herbs and crops as kit models. The Caral food node uses a procedural pacae shrub as an interim until the
+kit ships it (issue 393); the generic berry bush is disabled on that map.
 
 ## 8. Fauna
 

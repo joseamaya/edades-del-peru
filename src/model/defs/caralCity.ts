@@ -183,11 +183,26 @@ const HOUSE_FOOTPRINT: Partial<Record<CaralArchAssetId, { w: number; d: number }
   house_elite: { w: 9.0, d: 7.4 },
 };
 
-export const CARAL_CITY_BLOCKERS: readonly SiteBlocker[] = CARAL_CITY_LAYOUT.flatMap((p) => {
+/** Fair tent footprint (posts, cover and a small clearance); the runtime adds the site padding. */
+const FAIR_TENT_FOOTPRINT = { w: 4.2, d: 3.7 };
+
+function rotatedBlocker(
+  x: number,
+  z: number,
+  w: number,
+  d: number,
+  rotY: number,
+  since?: string,
+  until?: string,
+): SiteBlocker {
+  const quarter = Math.abs(Math.sin(rotY)) > 0.5;
+  return { x, z, w: quarter ? d : w, d: quarter ? w : d, since, until };
+}
+
+export const CARAL_CITY_HOUSE_BLOCKERS: readonly SiteBlocker[] = CARAL_CITY_LAYOUT.flatMap((p) => {
   const size = HOUSE_FOOTPRINT[p.asset];
   if (!size) return [];
-  const quarter = Math.abs(Math.sin(p.rotY)) > 0.5;
-  return [{ x: p.x, z: p.z, w: quarter ? size.d : size.w, d: quarter ? size.w : size.d, since: p.since }];
+  return [rotatedBlocker(p.x, p.z, size.w, size.d, p.rotY, p.since)];
 });
 
 /** Footprint of the kit's Huaca de los Ídolos (LOD0 bounds of scripts/blender/build_caral_architecture_kit.py). */
@@ -217,8 +232,7 @@ export const ASPERO_LAYOUT: readonly CaralArchPlacement[] = [
 /** The Áspero houses block their footprints (the huaca blocks through its heritage volume). */
 export const ASPERO_BLOCKERS: readonly SiteBlocker[] = ASPERO_LAYOUT.flatMap((p) => {
   if (p.asset !== 'house_aspero') return [];
-  const quarter = Math.abs(Math.sin(p.rotY)) > 0.5;
-  return [{ x: p.x, z: p.z, w: quarter ? 4.4 : 5.4, d: quarter ? 5.4 : 4.4 }];
+  return [rotatedBlocker(p.x, p.z, 5.4, 4.4, p.rotY)];
 });
 
 /**
@@ -243,6 +257,21 @@ export const CARAL_FAIR_TENTS: readonly CaralArchPlacement[] = (
   since: 'in_use',
   until: 'sealed',
 }));
+
+/**
+ * Everything in the kit city that units must walk around: house walls, the sunken circular plazas
+ * (their rims are a hard edge, so the whole basin is blocked) and the temporary fair tents, which
+ * stand only between `in_use` and `sealed` (issue 393).
+ */
+export const CARAL_CITY_BLOCKERS: readonly SiteBlocker[] = [
+  ...CARAL_CITY_HOUSE_BLOCKERS,
+  ...CARAL_FAIR_TENTS.map((p) =>
+    rotatedBlocker(p.x, p.z, FAIR_TENT_FOOTPRINT.w, FAIR_TENT_FOOTPRINT.d, p.rotY, p.since, p.until),
+  ),
+  ...CARAL_CITY_LAYOUT.filter((p) => p.asset === 'circular_plaza').map((p) =>
+    rotatedBlocker(p.x, p.z, PLAZA_DIAMETER * p.scale[0], PLAZA_DIAMETER * p.scale[2], p.rotY, p.since),
+  ),
+];
 
 /**
  * Neighbouring settlements of the Supe valley (the dossier names several, e.g. Chupacigarro and Miraya),
