@@ -151,11 +151,12 @@ async function snapshots(page: Page): Promise<Snapshots> {
     await render();
     const postTutorial = read();
 
-    // Late mission: every objective finished except Caral's Act IV goal, the one issue 401 reports cut off.
+    // Late mission as the issue describes it: acts I-III finished and the Act IV goals still active.
     const defs = g.mission.def.objectives as { id: string; title: string }[];
-    for (const o of defs) g.mission.objState.set(o.id, 'completed');
-    const active = defs.find((o) => o.id === 'a4_sellar') ?? defs[defs.length - 1];
-    g.mission.objState.set(active.id, 'activo');
+    const lastAct = defs.filter((o) => /^Acto IV ·/.test(o.title));
+    const remaining = lastAct.length ? lastAct : defs.slice(-2);
+    for (const o of defs) g.mission.objState.set(o.id, remaining.includes(o) ? 'activo' : 'completed');
+    const active = remaining[0];
     await render();
     const advanced = read();
 
@@ -279,43 +280,50 @@ for (const { width, height, missions } of RESOLUTIONS) {
           const panel = document.getElementById('ed-objectives')!;
           const details = panel.querySelector('details') as HTMLDetailsElement | null;
           if (!details) return null;
-          const rows = [...details.querySelectorAll<HTMLElement>('.obj')];
-          const last = rows[rows.length - 1];
           const fits = details.scrollHeight <= details.clientHeight + 1;
           details.scrollTop = details.scrollHeight;
           const scrolled = details.scrollTop;
-          const dr = details.getBoundingClientRect();
+          // A re-render must keep the archive open and its scroll: flip a finished, non-filtered goal.
+          const g = (window as unknown as { game: any }).game;
+          const witness = (g.mission.def.objectives as { id: string; kind: string }[]).find(
+            (o) => o.kind !== 'wait' && g.mission.objState.get(o.id) === 'completed',
+          );
+          if (!witness) return { missingWitness: true as const };
+          g.mission.objState.set(witness.id, 'failed');
+          g.hud.update(1, 0);
+          const rebuilt = panel.querySelector('details') as HTMLDetailsElement | null;
+          if (!rebuilt) return { missingRebuild: true as const };
+          const rows = [...rebuilt.querySelectorAll<HTMLElement>('.obj')];
+          const last = rows[rows.length - 1];
+          const dr = rebuilt.getBoundingClientRect();
           const pr = panel.getBoundingClientRect();
           const rr = last?.getBoundingClientRect();
-          // A re-render (a time goal ticks every displayed second) must keep the archive scroll.
-          const g = (window as unknown as { game: any }).game;
-          const other = (g.mission.def.objectives as { id: string }[]).find(
-            (o) => g.mission.objState.get(o.id) === 'completed',
-          );
-          if (other) {
-            g.mission.objState.set(other.id, 'failed');
-            g.hud.update(1, 0);
-          }
-          const rebuilt = panel.querySelector('details') as HTMLDetailsElement | null;
           return {
-            open: details.open,
             fits,
             scrolled,
-            scrollKept: scrolled === (rebuilt?.scrollTop ?? -1),
-            summary: (details.querySelector('summary') as HTMLElement | null)?.textContent ?? '',
+            rebuilt: rebuilt !== details,
+            scrollKept: scrolled === rebuilt.scrollTop,
+            open: rebuilt.open,
+            summary: (rebuilt.querySelector('summary') as HTMLElement | null)?.textContent ?? '',
             rows: rows.length,
             text: last?.textContent ?? '',
             lastVisible: !!rr && rr.bottom <= Math.min(dr.bottom, pr.bottom) + 1 && rr.top >= dr.top - 1,
           };
         });
         expect(archive, 'the finished objectives fold into an archive').not.toBeNull();
-        expect(archive!.open, 'clicking the summary expands the archive').toBe(true);
-        expect(archive!.summary).toContain('Finalizados');
-        expect(archive!.rows).toBeGreaterThan(0);
-        expect(archive!.text.length).toBeGreaterThan(0);
-        expect(archive!.lastVisible, 'the last finished objective is reachable').toBe(true);
-        if (!archive!.fits) expect(archive!.scrolled, 'the archive scrolls when it does not fit').toBeGreaterThan(0);
-        expect(archive!.scrollKept, 'a re-render keeps the archive scroll position').toBe(true);
+        expect(archive && 'missingWitness' in archive, 'a finished goal to force a re-render').toBe(false);
+        expect(archive && 'missingRebuild' in archive, 'the archive is rebuilt').toBe(false);
+        const built = archive as Exclude<typeof archive, null>;
+        expect(built.rebuilt, 'the objective refresh replaced the details node').toBe(true);
+        expect(built.open, 'a re-render keeps the archive open').toBe(true);
+        expect(built.summary).toContain('Finalizados');
+        expect(built.rows).toBeGreaterThan(0);
+        expect(built.text.length).toBeGreaterThan(0);
+        expect(built.lastVisible, 'the last finished objective is reachable').toBe(true);
+        if (!built.fits) {
+          expect(built.scrolled, 'the archive scrolls when it does not fit').toBeGreaterThan(0);
+          expect(built.scrollKept, 'a re-render keeps the archive scroll position').toBe(true);
+        }
 
         const helpText = await page.evaluate(() => document.getElementById('ed-help')?.textContent ?? '');
         expect(helpText, 'the "?" opens the real shortcut body').toContain('Atajos');
