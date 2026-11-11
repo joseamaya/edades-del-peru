@@ -1,0 +1,75 @@
+{
+  "asset_id": "caral_hearth",
+  "source_scene": "scenes/caral_props_kit.blend",
+  "script": "scripts/blender/build_caral_props_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "confidence": "documented",
+  "sources": [
+    "docs/historia/campanas/caral.md",
+    "docs/historia/civilizaciones/caral.md"
+  ],
+  "budget": {
+    "LOD0": 600,
+    "LOD1": 180
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 316,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Arch_Stone",
+        "MAT-Arch_Wood"
+      ],
+      "bounds": {
+        "min": [
+          -0.597,
+          -0.588,
+          -0.041
+        ],
+        "max": [
+          0.564,
+          0.583,
+          0.202
+        ],
+        "size": [
+          1.16,
+          1.171,
+          0.243
+        ]
+      },
+      "file": "caral_hearth_lod0.glb",
+      "bytes": 34312
+    },
+    "LOD1": {
+      "triangles": 132,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Arch_Stone",
+        "MAT-Arch_Wood"
+      ],
+      "bounds": {
+        "min": [
+          -0.517,
+          -0.597,
+          -0.023
+        ],
+        "max": [
+          0.583,
+          0.542,
+          0.167
+        ],
+        "size": [
+          1.101,
+          1.139,
+          0.19
+        ]
+      },
+      "file": "caral_hearth_lod1.glb",
+      "bytes": 15996
+    }
+  }
+}

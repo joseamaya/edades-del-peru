@@ -21,6 +21,9 @@ export function createFowUniforms(): FowUniforms {
  * shared, so toggling fog updates every patched material at once.
  */
 export function applyFow(material: THREE.Material, u: FowUniforms): void {
+  // Patching twice would declare the varyings twice and break the shader (e.g. a group re-decorated
+  // after its kit model arrives).
+  if (material.userData.fow) return;
   const previous = material.onBeforeCompile;
   material.onBeforeCompile = (shader, renderer) => {
     previous.call(material, shader, renderer);

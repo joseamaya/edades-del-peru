@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { DressingPlacement } from '../model/defs/settlementDressing';
+import type { DressingKit, DressingPropId, PropsKitModel } from './propsKit';
 
 const STONE = '#8f8678';
 const DARK_STONE = '#6f665a';
@@ -13,13 +14,33 @@ const CHAVIN_LIGHT = '#c8c0ae';
 const SPONDYLUS = '#c86f78';
 const OBSIDIAN = '#26221f';
 
-/** Terrain-conforming household props, merged into one draw call per base. */
+/** Beyond this distance from the camera focus a settlement uses the far (LOD1) household kit. */
+const LOD1_DISTANCE = 30;
+
+/** Terrain-conforming household props, merged per material, with the Blender kit on top. */
 export class SettlementDressing {
   readonly group = new THREE.Group();
   private material: THREE.MeshStandardMaterial | null = null;
+  private procedural: THREE.Mesh | null = null;
+  private readonly kitMaterials = new Map<string, THREE.MeshStandardMaterial>();
+  private readonly lodMeshes: [THREE.Mesh[], THREE.Mesh[]] = [[], []];
+  private lod: 0 | 1 = 0;
+  private readonly center = { x: 0, z: 0 };
+  private disposed = false;
 
-  constructor(placements: DressingPlacement[], heightAt: (x: number, z: number) => number) {
+  constructor(
+    private readonly placements: DressingPlacement[],
+    private readonly heightAt: (x: number, z: number) => number,
+  ) {
     this.group.name = 'settlement-dressing';
+    let sx = 0;
+    let sz = 0;
+    for (const p of placements) {
+      sx += p.x;
+      sz += p.z;
+    }
+    this.center.x = sx / Math.max(1, placements.length);
+    this.center.z = sz / Math.max(1, placements.length);
     const parts: THREE.BufferGeometry[] = [];
     for (const p of placements) parts.push(...buildProp(p, heightAt(p.x, p.z)));
     if (!parts.length) return;
@@ -35,16 +56,104 @@ export class SettlementDressing {
     mesh.name = 'dressing';
     mesh.castShadow = true;
     mesh.receiveShadow = true;
+    this.procedural = mesh;
     this.group.add(mesh);
   }
 
+  /**
+   * Replace the procedural props with the Blender household kit. One merged mesh per material and
+   * LOD; the tiny pieces skip the shadow pass, which the buildings and units already anchor.
+   * Returns false when the dressing was disposed or the kit had nothing to bake.
+   */
+  attachKit(kit: DressingKit): boolean {
+    if (this.disposed || this.kitMaterials.size > 0) return false;
+    const sources = new Map<string, THREE.MeshStandardMaterial>();
+    for (const model of kit.values()) {
+      for (const part of model.lods[0]) sources.set(part.material.name, part.material);
+    }
+    const baked: [THREE.Mesh[], THREE.Mesh[]] = [this.bake(kit, 0, sources), this.bake(kit, 1, sources)];
+    if (!baked[0].length) return false;
+    this.lodMeshes[0] = baked[0];
+    this.lodMeshes[1] = baked[1];
+    for (const mesh of baked[1]) mesh.visible = false;
+    for (const mesh of baked[0]) this.group.add(mesh);
+    for (const mesh of baked[1]) this.group.add(mesh);
+    this.procedural?.removeFromParent();
+    this.procedural?.geometry.dispose();
+    this.procedural = null;
+    this.material?.dispose();
+    this.material = null;
+    return true;
+  }
+
+  /** Swap the near and far kit meshes as the camera focus moves. */
+  update(focus: { x: number; z: number }): void {
+    if (this.disposed || !this.lodMeshes[0].length) return;
+    const far = Math.hypot(this.center.x - focus.x, this.center.z - focus.z) > LOD1_DISTANCE;
+    const lod = far ? 1 : 0;
+    if (lod === this.lod) return;
+    this.lod = lod;
+    for (const mesh of this.lodMeshes[0]) mesh.visible = lod === 0;
+    for (const mesh of this.lodMeshes[1]) mesh.visible = lod === 1;
+  }
+
+  private bake(kit: DressingKit, lod: 0 | 1, sources: Map<string, THREE.MeshStandardMaterial>): THREE.Mesh[] {
+    const byMaterial = new Map<string, THREE.BufferGeometry[]>();
+    for (const p of this.placements) {
+      const model: PropsKitModel | undefined = kit.get(p.kind as DressingPropId);
+      if (!model) continue;
+      const place = new THREE.Matrix4().compose(
+        new THREE.Vector3(p.x, this.heightAt(p.x, p.z), p.z),
+        new THREE.Quaternion().setFromEuler(new THREE.Euler(0, p.yaw, 0)),
+        new THREE.Vector3(p.scale, p.scale, p.scale),
+      );
+      for (const part of model.lods[lod]) {
+        const name = part.material.name;
+        const list = byMaterial.get(name) ?? [];
+        // The kit geometry is session-cached: clone before baking the placement into it.
+        list.push(part.geometry.clone().applyMatrix4(place));
+        byMaterial.set(name, list);
+      }
+    }
+    const meshes: THREE.Mesh[] = [];
+    for (const [name, parts] of byMaterial) {
+      const merged = mergeGeometries(parts, false);
+      parts.forEach((g) => g.dispose());
+      if (!merged) continue;
+      let material = this.kitMaterials.get(name);
+      if (!material) {
+        const source = sources.get(name);
+        if (!source) continue;
+        // Clone per base: fog-of-war patches the material shader, and the kit materials are shared.
+        material = source.clone();
+        this.kitMaterials.set(name, material);
+      }
+      const mesh = new THREE.Mesh(merged, material);
+      mesh.name = `props_kit_dressing_${name.replace(/^MAT-Arch_/, '').toLowerCase()}_lod${lod}`;
+      mesh.castShadow = false;
+      mesh.receiveShadow = true;
+      meshes.push(mesh);
+    }
+    return meshes;
+  }
+
   dispose(): void {
+    this.disposed = true;
+    for (const mesh of [...this.lodMeshes[0], ...this.lodMeshes[1]]) {
+      mesh.geometry.dispose();
+      mesh.removeFromParent();
+    }
+    this.lodMeshes[0] = [];
+    this.lodMeshes[1] = [];
     this.group.traverse((o) => {
       const mesh = o as THREE.Mesh;
       if (mesh.isMesh) mesh.geometry.dispose();
     });
     this.material?.dispose();
     this.material = null;
+    for (const material of this.kitMaterials.values()) material.dispose();
+    this.kitMaterials.clear();
+    this.procedural = null;
     this.group.removeFromParent();
   }
 }

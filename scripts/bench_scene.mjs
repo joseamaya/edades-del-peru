@@ -28,7 +28,9 @@ const BUDGETS = {
   // Kit counts include the shadow pass; the fauna is instanced per species and part.
   // The Áspero opening draws its village (huaca and fishing houses, ~5 materials in the main and shadow
   // passes) next to the base: +15 calls over the former Caral-terrace opening.
-  m1_caral: { sceneTriangles: 400_000, sceneDrawCalls: 230, kitTriangles: 80_000, kitDrawCalls: 36 },
+  // The household props kit adds 8 calls: four shared materials per base, two bases, no shadow
+  // pass (the pieces are sub-metre). Triangles stay inside the same 80k cap.
+  m1_caral: { sceneTriangles: 400_000, sceneDrawCalls: 230, kitTriangles: 80_000, kitDrawCalls: 40 },
   // End game over the city with 35 workers in view: art-direction §11 (600k triangles). It measured
   // 1.57M / 396 before the worker cuts and ~582k / 261 after. Skinned workers cannot be instanced, so
   // each one in view is ~6 draws (body, hair, garments, tool, team ring, body shadow) on top of the

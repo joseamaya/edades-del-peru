@@ -225,18 +225,36 @@ blender --background art-src/blender/scenes/caral_rts_kit.blend \
 ## Caral prop kit
 
 Small scenery pieces for `m1_caral`, authored by `scripts/blender/build_caral_props_kit.py` and exported
-to `src/assets/props/caral/`. The first piece is the granodiorite quarry outcrop (issue 393):
+to `src/assets/props/caral/`. The granodiorite outcrop replaces the primitive quarry node; the household
+pieces replace the primitive enseres of an Áspero base (issue 393):
 
-| Asset                | LOD  | Size X × Y × Z (game axes) | Tris | Draw calls | Bytes  | Materials        |
-| -------------------- | ---- | -------------------------- | ---- | ---------- | ------ | ---------------- |
-| `caral_granodiorite` | LOD0 | 6.49 × 2.145 × 4.918       | 420  | 1          | 19,364 | `MAT-Arch_Stone` |
-| `caral_granodiorite` | LOD1 | 5.871 × 2.199 × 4.146      | 80   | 1          | 6,240  | `MAT-Arch_Stone` |
+| Asset                | LOD  | Size X × Y × Z (game axes) | Tris | Draw calls | Bytes  | Materials                                                          |
+| -------------------- | ---- | -------------------------- | ---- | ---------- | ------ | ------------------------------------------------------------------ |
+| `caral_granodiorite` | LOD0 | 6.49 × 2.145 × 4.918       | 420  | 1          | 19,348 | `MAT-Arch_Stone`                                                   |
+| `caral_granodiorite` | LOD1 | 5.871 × 2.199 × 4.146      | 80   | 1          | 6,240  | `MAT-Arch_Stone`                                                   |
+| `caral_hearth`       | LOD0 | 1.16 × 0.243 × 1.171       | 316  | 2          | 16,472 | `MAT-Arch_Stone`, `MAT-Arch_Wood`                                  |
+| `caral_hearth`       | LOD1 | 1.101 × 0.19 × 1.139       | 132  | 2          | 9,604  | `MAT-Arch_Stone`, `MAT-Arch_Wood`                                  |
+| `caral_drying_rack`  | LOD0 | 1.303 × 1.07 × 0.59        | 220  | 2          | 12,008 | `MAT-Arch_CaneMat`, `MAT-Arch_Wood`                                |
+| `caral_drying_rack`  | LOD1 | 1.298 × 1.069 × 0.545      | 96   | 2          | 7,980  | `MAT-Arch_CaneMat`, `MAT-Arch_Wood`                                |
+| `caral_basket`       | LOD0 | 0.54 × 0.456 × 0.54        | 188  | 2          | 10,788 | `MAT-Arch_CaneMat`, `MAT-Arch_Stone`                               |
+| `caral_basket`       | LOD1 | 0.54 × 0.449 × 0.54        | 88   | 2          | 7,236  | `MAT-Arch_CaneMat`, `MAT-Arch_Stone`                               |
+| `caral_gourd`        | LOD0 | 0.542 × 0.293 × 0.498      | 152  | 2          | 9,968  | `MAT-Arch_PlasterWhite`, `MAT-Arch_Wood`                           |
+| `caral_gourd`        | LOD1 | 0.413 × 0.29 × 0.261       | 56   | 2          | 6,836  | `MAT-Arch_PlasterWhite`, `MAT-Arch_Wood`                           |
+| `caral_bench`        | LOD0 | 1.013 × 0.375 × 0.347      | 132  | 1          | 7,288  | `MAT-Arch_Stone`                                                   |
+| `caral_bench`        | LOD1 | 1.0 × 0.39 × 0.34          | 24   | 1          | 3,196  | `MAT-Arch_Stone`                                                   |
+| `caral_windbreak`    | LOD0 | 1.22 × 1.106 × 0.114       | 108  | 2          | 7,748  | `MAT-Arch_CaneMat`, `MAT-Arch_Wood`                                |
+| `caral_windbreak`    | LOD1 | 1.22 × 1.106 × 0.097       | 64   | 2          | 6,480  | `MAT-Arch_CaneMat`, `MAT-Arch_Wood`                                |
+| `caral_cotton`       | LOD0 | 0.788 × 0.339 × 0.499      | 168  | 3          | 12,816 | `MAT-Arch_CaneMat`, `MAT-Arch_PlasterWhite`, `MAT-Arch_Wood`       |
+| `caral_cotton`       | LOD1 | 0.788 × 0.339 × 0.499      | 72   | 3          | 8,940  | `MAT-Arch_CaneMat`, `MAT-Arch_PlasterWhite`, `MAT-Arch_Wood`       |
 
-- Pivot: footprint centre at ground level; the chunks extend below zero so the instancer can sink them.
+- Pivot: footprint centre at ground level; the outcrop chunks extend below zero so the instancer can sink them.
+- The household pieces reuse the shared architecture materials with finer UV tiles (0.7-1.5 m) and a
+  per-piece `COLOR_0` tone, so the set adds no texture and only four materials per base.
 - Manifests: `art-src/blender/exports/caral/props/`; the game copies are meshopt-compressed with
   `yarn art:models` (the optimizer keeps the world-scale UVs for `props/`).
 - Runtime: `QuarryInstances` draws every stone node of m1 as one instanced mesh, tilted to the terrain
-  normal; `src/rendering/propsKit.ts` loads and prepares the shared parts.
+  normal; `SettlementDressing` bakes each base into one mesh per material and LOD and skips the shadow
+  pass for the sub-metre props. `src/rendering/propsKit.ts` loads and prepares both sets.
 
 ## Source manifest
 

@@ -1,0 +1,75 @@
+{
+  "asset_id": "caral_gourd",
+  "source_scene": "scenes/caral_props_kit.blend",
+  "script": "scripts/blender/build_caral_props_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "confidence": "documented",
+  "sources": [
+    "docs/historia/campanas/caral.md",
+    "docs/historia/civilizaciones/caral.md"
+  ],
+  "budget": {
+    "LOD0": 380,
+    "LOD1": 120
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 152,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Arch_PlasterWhite",
+        "MAT-Arch_Wood"
+      ],
+      "bounds": {
+        "min": [
+          -0.248,
+          -0.33,
+          -0.009
+        ],
+        "max": [
+          0.294,
+          0.168,
+          0.284
+        ],
+        "size": [
+          0.542,
+          0.498,
+          0.293
+        ]
+      },
+      "file": "caral_gourd_lod0.glb",
+      "bytes": 16924
+    },
+    "LOD1": {
+      "triangles": 56,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Arch_PlasterWhite",
+        "MAT-Arch_Wood"
+      ],
+      "bounds": {
+        "min": [
+          -0.117,
+          -0.132,
+          -0.006
+        ],
+        "max": [
+          0.296,
+          0.13,
+          0.284
+        ],
+        "size": [
+          0.413,
+          0.261,
+          0.29
+        ]
+      },
+      "file": "caral_gourd_lod1.glb",
+      "bytes": 8180
+    }
+  }
+}

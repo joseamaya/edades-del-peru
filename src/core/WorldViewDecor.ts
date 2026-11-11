@@ -40,6 +40,7 @@ import { type CaralCityPlan } from '../model/defs/setpieces';
 import { SettlementOverlay } from '../rendering/SettlementOverlay';
 import { SettlementDressing } from '../rendering/SettlementDressing';
 import { planSettlementDressing } from '../model/defs/settlementDressing';
+import { loadDressingKit } from '../rendering/propsKit';
 import {
   CARAL_VALLEY_PATH_WIDTH,
   planCaralValley,
@@ -1155,6 +1156,15 @@ export class WorldViewDecor {
     applyFowToObject(dressing.group, this.game.fowUniforms);
     this.game.scene.add(dressing.group);
     this.game.settlementDressing.push(dressing);
+    // Chavín's ritual set has no kit yet; the Caral household pieces replace the primitives when the
+    // batch arrives (one GLB per piece, cached for the match).
+    if (profile === 'caral') {
+      void loadDressingKit()
+        .then((kit) => {
+          if (dressing.attachKit(kit)) applyFowToObject(dressing.group, this.game.fowUniforms);
+        })
+        .catch((error) => console.warn('[props-kit] household dressing failed to load', error));
+    }
   }
 
   caralValleyQuery(): CaralValleyQuery {

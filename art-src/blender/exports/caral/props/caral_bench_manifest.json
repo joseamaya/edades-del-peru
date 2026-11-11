@@ -1,0 +1,73 @@
+{
+  "asset_id": "caral_bench",
+  "source_scene": "scenes/caral_props_kit.blend",
+  "script": "scripts/blender/build_caral_props_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "confidence": "assumed",
+  "sources": [
+    "docs/historia/campanas/caral.md",
+    "docs/historia/civilizaciones/caral.md"
+  ],
+  "budget": {
+    "LOD0": 420,
+    "LOD1": 130
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 132,
+      "draw_calls": 1,
+      "materials": [
+        "MAT-Arch_Stone"
+      ],
+      "bounds": {
+        "min": [
+          -0.508,
+          -0.172,
+          0.007
+        ],
+        "max": [
+          0.506,
+          0.175,
+          0.382
+        ],
+        "size": [
+          1.013,
+          0.347,
+          0.375
+        ]
+      },
+      "file": "caral_bench_lod0.glb",
+      "bytes": 13724
+    },
+    "LOD1": {
+      "triangles": 24,
+      "draw_calls": 1,
+      "materials": [
+        "MAT-Arch_Stone"
+      ],
+      "bounds": {
+        "min": [
+          -0.5,
+          -0.17,
+          0.0
+        ],
+        "max": [
+          0.5,
+          0.17,
+          0.39
+        ],
+        "size": [
+          1.0,
+          0.34,
+          0.39
+        ]
+      },
+      "file": "caral_bench_lod1.glb",
+      "bytes": 3416
+    }
+  }
+}

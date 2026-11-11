@@ -1,16 +1,54 @@
 import * as THREE from 'three';
 import granodioriteLod0 from '../assets/props/caral/caral_granodiorite_lod0.glb?url';
 import granodioriteLod1 from '../assets/props/caral/caral_granodiorite_lod1.glb?url';
+import hearthLod0 from '../assets/props/caral/caral_hearth_lod0.glb?url';
+import hearthLod1 from '../assets/props/caral/caral_hearth_lod1.glb?url';
+import dryingRackLod0 from '../assets/props/caral/caral_drying_rack_lod0.glb?url';
+import dryingRackLod1 from '../assets/props/caral/caral_drying_rack_lod1.glb?url';
+import basketLod0 from '../assets/props/caral/caral_basket_lod0.glb?url';
+import basketLod1 from '../assets/props/caral/caral_basket_lod1.glb?url';
+import gourdLod0 from '../assets/props/caral/caral_gourd_lod0.glb?url';
+import gourdLod1 from '../assets/props/caral/caral_gourd_lod1.glb?url';
+import benchLod0 from '../assets/props/caral/caral_bench_lod0.glb?url';
+import benchLod1 from '../assets/props/caral/caral_bench_lod1.glb?url';
+import windbreakLod0 from '../assets/props/caral/caral_windbreak_lod0.glb?url';
+import windbreakLod1 from '../assets/props/caral/caral_windbreak_lod1.glb?url';
+import cottonLod0 from '../assets/props/caral/caral_cotton_lod0.glb?url';
+import cottonLod1 from '../assets/props/caral/caral_cotton_lod1.glb?url';
 import { applyArchSurface, archPartsFromScene } from './architectureKit';
 import { loadStaticGltf } from './StaticModel';
 import type { QuarryStyle } from '../model/defs/profiles';
+import type { DressingKind } from '../model/defs/settlementDressing';
 
 /** Blender prop kit (scripts/blender/build_caral_props_kit.py). */
-export type PropsKitId = QuarryStyle;
+export type PropsKitId = QuarryStyle | DressingPropId;
+
+/** Household pieces of the Caral prop kit; every id is a `DressingKind` the planner may place. */
+export type DressingPropId = Extract<
+  DressingKind,
+  'hearth' | 'drying_rack' | 'basket' | 'gourd' | 'bench' | 'windbreak' | 'cotton'
+>;
 
 const URLS: Record<PropsKitId, { lod0: string; lod1: string }> = {
   granodiorite: { lod0: granodioriteLod0, lod1: granodioriteLod1 },
+  hearth: { lod0: hearthLod0, lod1: hearthLod1 },
+  drying_rack: { lod0: dryingRackLod0, lod1: dryingRackLod1 },
+  basket: { lod0: basketLod0, lod1: basketLod1 },
+  gourd: { lod0: gourdLod0, lod1: gourdLod1 },
+  bench: { lod0: benchLod0, lod1: benchLod1 },
+  windbreak: { lod0: windbreakLod0, lod1: windbreakLod1 },
+  cotton: { lod0: cottonLod0, lod1: cottonLod1 },
 };
+
+export const DRESSING_PROP_IDS: DressingPropId[] = [
+  'hearth',
+  'drying_rack',
+  'basket',
+  'gourd',
+  'bench',
+  'windbreak',
+  'cotton',
+];
 
 export interface PropsKitPart {
   geometry: THREE.BufferGeometry;
@@ -47,4 +85,25 @@ export function loadPropsKit(id: PropsKitId): Promise<PropsKitModel> {
     cache.set(id, model);
   }
   return model;
+}
+
+export type DressingKit = Map<DressingPropId, PropsKitModel>;
+
+const dressingCache = new Map<string, Promise<DressingKit>>();
+
+/**
+ * Load the whole household set. One missing GLB rejects the batch, so a settlement keeps its
+ * procedural dressing instead of showing a half-kitted base.
+ */
+export function loadDressingKit(): Promise<DressingKit> {
+  const key = 'caral';
+  let kit = dressingCache.get(key);
+  if (!kit) {
+    kit = Promise.all(DRESSING_PROP_IDS.map(loadPropsKit)).then(
+      (models) => new Map(models.map((model) => [model.id as DressingPropId, model])),
+    );
+    kit.catch(() => dressingCache.delete(key));
+    dressingCache.set(key, kit);
+  }
+  return kit;
 }

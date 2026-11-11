@@ -120,6 +120,9 @@ uses a few near rings and a dark haze frame so the camera never sees the old cre
 - People walking between plazas and houses; pilgrims during fairs.
 - Stone nodes draw the granodiorite outcrop kit, tilted to the terrain and instanced (one mesh per
   material), instead of a disc of floating primitives.
+- Household dressing (hearth, drying rack, basket, gourds/mates, bench, windbreak, cotton) uses the
+  prop kit: one merged mesh per shared material and LOD, LOD1 beyond 30 units, no shadow pass (the pieces
+  are sub-metre). The procedural set remains the fallback when a GLB fails.
 - Player-built quincha houses use the paint colour of the current phase (open, see _Open items_).
 
 ## Narration
