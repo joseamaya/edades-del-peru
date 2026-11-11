@@ -16,7 +16,10 @@ const BUDGETS: Record<VegetationKitId, [number, number]> = {
   cana_brava: [600, 150],
   carrizo: [400, 120],
   totora: [400, 120],
+  pacae: [1100, 320],
 };
+/** Bark + leaf cards; the pacae adds hanging pods. */
+const MAX_PARTS: Partial<Record<VegetationKitId, number>> = { pacae: 3 };
 const IDS = Object.keys(BUDGETS) as VegetationKitId[];
 
 interface KitManifest {
@@ -105,14 +108,14 @@ describe.each(IDS)('%s kit GLB', (id) => {
     expect(m.lods.LOD0.triangles).toBeLessThanOrEqual(BUDGETS[id][0]);
     expect(m.lods.LOD1.triangles).toBeLessThanOrEqual(BUDGETS[id][1]);
     expect(m.lods.LOD1.triangles).toBeLessThan(m.lods.LOD0.triangles);
-    expect(m.lods.LOD0.draw_calls).toBeLessThanOrEqual(2);
+    expect(m.lods.LOD0.draw_calls).toBeLessThanOrEqual(MAX_PARTS[id] ?? 2);
   });
 
   it('bakes into at most two parts per LOD within budget, at game scale', () => {
     const near = partsFromScene(lod0.scene);
     const far = partsFromScene(lod1.scene);
     expect(near.length).toBeGreaterThan(0);
-    expect(near.length).toBeLessThanOrEqual(2);
+    expect(near.length).toBeLessThanOrEqual(MAX_PARTS[id] ?? 2);
     expect(far.length).toBe(near.length);
     expect(triangles(near)).toBeLessThanOrEqual(BUDGETS[id][0]);
     expect(triangles(far)).toBeLessThanOrEqual(BUDGETS[id][1]);

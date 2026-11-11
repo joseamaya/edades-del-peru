@@ -1,0 +1,70 @@
+{
+  "asset_id": "caral_pacae",
+  "source_scene": "scenes/caral_vegetation_kit.blend",
+  "script": "scripts/blender/build_caral_vegetation_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "pivot": "trunk base at origin",
+  "budget": {
+    "LOD0": 1100,
+    "LOD1": 320
+  },
+  "lods": {
+    "LOD0": {
+      "triangles": 900,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Kit_Bark",
+        "MAT-Kit_PacaeLeaf",
+        "MAT-Kit_PacaePod"
+      ],
+      "bounds": {
+        "min": [
+          -0.9524,
+          -1.0326,
+          -0.1041
+        ],
+        "max": [
+          0.9675,
+          1.0378,
+          1.3692
+        ],
+        "size": [
+          1.9199,
+          2.0704,
+          1.4733
+        ]
+      },
+      "file": "caral_pacae_lod0.glb",
+      "bytes": 107940
+    },
+    "LOD1": {
+      "triangles": 236,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Kit_Bark",
+        "MAT-Kit_PacaeLeaf",
+        "MAT-Kit_PacaePod"
+      ],
+      "bounds": {
+        "min": [
+          -1.3369,
+          -1.2901,
+          -0.1112
+        ],
+        "max": [
+          1.3493,
+          1.4068,
+          1.6414
+        ],
+        "size": [
+          2.6862,
+          2.6969,
+          1.7525
+        ]
+      },
+      "file": "caral_pacae_lod1.glb",
+      "bytes": 56496
+    }
+  }
+}

@@ -30,8 +30,9 @@ const BUDGETS = {
   // passes) next to the base: +15 calls over the former Caral-terrace opening.
   // The household props kit adds 8 calls (four shared materials per base, two bases, no shadow pass:
   // the pieces are sub-metre); pinning every LOD manager to the measured framing adds the quarry's
-  // shadow pass (+2). Measured opening: 339 591 tris / 189 calls, kit 79 240 / 39.
-  m1_caral: { sceneTriangles: 400_000, sceneDrawCalls: 230, kitTriangles: 80_000, kitDrawCalls: 40 },
+  // shadow pass (+2), and the pacae shrubs add 3 materials x 2 LODs with their shadows (up to +12).
+  // Measured opening: 350 623 tris / 169 calls, kit 94 496-95 156 / 51 (one shrub sits on the LOD edge).
+  m1_caral: { sceneTriangles: 400_000, sceneDrawCalls: 230, kitTriangles: 100_000, kitDrawCalls: 56 },
   // End game over the city with 35 workers in view: art-direction §11 (600k triangles). It measured
   // 1.57M / 396 before the worker cuts and ~582k / 261 after. Skinned workers cannot be instanced, so
   // each one in view is ~6 draws (body, hair, garments, tool, team ring, body shadow) on top of the
@@ -59,6 +60,7 @@ try {
       // Wait for every kit family the scene draws: a half-loaded batch measured a different scene.
       if (!g.trees?.hasKit?.('algarrobo') || !g.trees.hasKit('sauce')) return false;
       if (g.mapProfile?.quarryStyle && !g.quarries?.model) return false;
+      if (g.mapProfile?.berryShrub === 'pacae' && !g.pacae?.model) return false;
       return (g.settlementDressing ?? []).every((d) => d.attached !== false);
     },
     mission,
@@ -105,6 +107,7 @@ try {
       const focus = g.camera.getTarget();
       g.trees.update(0, focus);
       g.quarries?.update(focus);
+      g.pacae?.update(focus);
       for (const d of g.settlementDressing ?? []) d.update(focus);
       for (let i = 0; i < 120; i++) g.camera.update(1 / 30, i / 30);
       g.camera.camera.updateMatrixWorld();

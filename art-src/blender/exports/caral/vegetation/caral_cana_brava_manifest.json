@@ -35,7 +35,7 @@
         ]
       },
       "file": "caral_cana_brava_lod0.glb",
-      "bytes": 26540
+      "bytes": 26900
     },
     "LOD1": {
       "triangles": 84,
@@ -62,7 +62,7 @@
         ]
       },
       "file": "caral_cana_brava_lod1.glb",
-      "bytes": 9984
+      "bytes": 10344
     }
   }
 }

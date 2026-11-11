@@ -35,7 +35,7 @@
         ]
       },
       "file": "caral_sauce_lod0.glb",
-      "bytes": 115492
+      "bytes": 115852
     },
     "LOD1": {
       "triangles": 330,
@@ -62,7 +62,7 @@
         ]
       },
       "file": "caral_sauce_lod1.glb",
-      "bytes": 49464
+      "bytes": 49824
     }
   }
 }

@@ -135,6 +135,7 @@ Only species from the dossier, built as a **Blender kit** with shared materials:
 | ------------------------------------ | --------------------- | ------------------------------ | --------------------------- |
 | Huarango (_Prosopis_)                | Terraces, valley edge | Wide crown, twisted dark trunk | 1500 / 400                  |
 | Sauce (willow)                       | Riverbank             | Tall, drooping                 | 1200 / 350                  |
+| Pacae / guaba                        | Terraces, valley edge | Multi-stem shrub, edible pods  | 1100 / 320                  |
 | Caña brava                           | Riverbank             | Dense clumps, plume tips       | 600 / 150                   |
 | Carrizo                              | Riverbank, wetland    | Lower clumps                   | 400 / 120                   |
 | Cola de caballo                      | Wet ground            | Ground cover                   | 200 / —                     |
@@ -147,13 +148,13 @@ Only species from the dossier, built as a **Blender kit** with shared materials:
   singles.
 - Every tree is instanced with **wind sway** in the vertex shader and at least two LODs.
 
-_Status (kit v1)_: huarango, sauce, caña brava, carrizo and totora ship as LOD0/LOD1 GLBs
+_Status (kit v1)_: huarango, sauce, pacae, caña brava, carrizo and totora ship as LOD0/LOD1 GLBs
 (`scripts/blender/build_caral_vegetation_kit.py`, `src/assets/vegetation/caral/`). `TreeInstances` draws
 the `algarrobo` and `sauce` variants with them, packing only visible trees and switching to LOD1 beyond
 45 units from the camera focus (25 on low quality); `Props` draws totora and the m1 riverbank
-canes. Wind sway is still the CPU canopy rotation, not a vertex shader. Missing: cola de caballo, lomas
-herbs and crops as kit models. The Caral food node uses a procedural pacae shrub as an interim until the
-kit ships it (issue 393); the generic berry bush is disabled on that map.
+canes. `PropKitInstances` draws the Caral food nodes as instanced pacae shrubs (LOD1 beyond 30 units,
+upright on the terrain); the generic berry bush is disabled on that map. Wind sway is still the CPU
+canopy rotation, not a vertex shader. Missing: cola de caballo, lomas herbs and crops as kit models.
 
 ## 8. Fauna
 
@@ -205,7 +206,7 @@ replacing the ruins GLB once it has loaded (the ruins stay the fallback). The se
 modelled yet. Reference views: `node scripts/shots_reference_views.mjs --focus=site`.
 
 _Status (props kit v1)_: the granodiorite outcrop ships as LOD0/LOD1 GLBs
-(`scripts/blender/build_caral_props_kit.py`, `src/assets/props/caral/`); `QuarryInstances` draws every
+(`scripts/blender/build_caral_props_kit.py`, `src/assets/props/caral/`); `PropKitInstances` draws every
 Caral stone node with one instanced mesh, tilted to the terrain. The seven household pieces of an Áspero
 base (hearth, drying rack, basket, gourds/mates, stone bench, windbreak and cotton on its mat) ship in the
 same kit: `SettlementDressing` bakes them into one mesh per shared material and LOD, skips the shadow pass

@@ -698,6 +698,7 @@ export class InputController {
     const treeHits: { dist: number; id: number }[] = [];
     this.game.trees.raycast(this.raycaster, treeHits);
     this.game.quarries?.raycast(this.raycaster, treeHits);
+    this.game.pacae?.raycast(this.raycaster, treeHits);
     for (const th of treeHits) {
       if (th.dist < bestD) {
         const n = this.game.resourceNodes.get(th.id);

@@ -599,6 +599,43 @@ const SCENES = {
       { name: 'rts', mode: 'rts', height: 30, centerSubject: true },
     ],
   },
+  'caral-pacae': {
+    url: '/?mission=m1_caral&intro=0&fog=0&low=1&noloop=1',
+    start: true,
+    prepare: async () => {
+      const g = window.game;
+      g.loop.stop();
+      const deadline = performance.now() + 20_000;
+      while (!g.pacae?.model && performance.now() < deadline) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+      if (!g.pacae?.model) throw new Error('pacae kit did not load');
+      for (const unit of [...g.units.values()]) {
+        unit.removeFromScene();
+        g.units.delete(unit.id);
+      }
+      // The nearest visible shrub keeps the sea and the far shore out of the frame.
+      const base = g.playerCenter(0);
+      const shrubs = [...g.pacae.ordered[0], ...g.pacae.ordered[1]];
+      shrubs.sort((a, b) => Math.hypot(a.x - base.x, a.z - base.z) - Math.hypot(b.x - base.x, b.z - base.z));
+      const shrub = shrubs[0];
+      // Let the mission settle, then drive the stopped loop and hide the place names.
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+      for (let i = 0; i < 120; i++) g.loop.onUpdate(1 / 60, i / 60);
+      g.scene.traverse((o) => {
+        if (o.name?.startsWith('geo-label:')) o.visible = false;
+      });
+      g.renderer.render(g.scene, g.camera.camera);
+      return {
+        center: { x: shrub.x, z: shrub.z },
+        subject: { x: shrub.x, y: g.terrain.getHeight(shrub.x, shrub.z), z: shrub.z },
+      };
+    },
+    views: [
+      { name: 'close', mode: 'close', offset: { x: 2.1, y: 1.5, z: 2.1 }, lookHeight: 0.7 },
+      { name: 'rts', mode: 'rts', height: 30, centerSubject: true },
+    ],
+  },
   'fauna-perf': {
     url: '/?play=1&civ=caral&period=0&map=altiplano&seed=777&fog=0&low=1&noloop=1',
     prepare: () => {

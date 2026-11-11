@@ -35,7 +35,7 @@
         ]
       },
       "file": "caral_huarango_lod0.glb",
-      "bytes": 160492
+      "bytes": 160852
     },
     "LOD1": {
       "triangles": 382,
@@ -62,7 +62,7 @@
         ]
       },
       "file": "caral_huarango_lod1.glb",
-      "bytes": 78708
+      "bytes": 79068
     }
   }
 }

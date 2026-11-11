@@ -8,6 +8,8 @@ import huarangoLod0 from '../assets/vegetation/caral/caral_huarango_lod0.glb?url
 import huarangoLod1 from '../assets/vegetation/caral/caral_huarango_lod1.glb?url';
 import sauceLod0 from '../assets/vegetation/caral/caral_sauce_lod0.glb?url';
 import sauceLod1 from '../assets/vegetation/caral/caral_sauce_lod1.glb?url';
+import pacaeLod0 from '../assets/vegetation/caral/caral_pacae_lod0.glb?url';
+import pacaeLod1 from '../assets/vegetation/caral/caral_pacae_lod1.glb?url';
 import totoraLod0 from '../assets/vegetation/caral/caral_totora_lod0.glb?url';
 import totoraLod1 from '../assets/vegetation/caral/caral_totora_lod1.glb?url';
 import { loadStaticGltf } from './StaticModel';
@@ -21,7 +23,7 @@ import type { PropId } from '../model/defs/props';
  * docs/design/art-direction.md §7). Each species ships a LOD0 and a LOD1 GLB; every LOD holds one
  * mesh per material (bark/stems and alpha-masked leaf or plume cards).
  */
-export type VegetationKitId = 'huarango' | 'sauce' | 'cana_brava' | 'carrizo' | 'totora';
+export type VegetationKitId = 'huarango' | 'sauce' | 'cana_brava' | 'carrizo' | 'totora' | 'pacae';
 
 export const VEGETATION_KIT_URLS: Record<VegetationKitId, { lod0: string; lod1: string }> = {
   huarango: { lod0: huarangoLod0, lod1: huarangoLod1 },
@@ -29,6 +31,7 @@ export const VEGETATION_KIT_URLS: Record<VegetationKitId, { lod0: string; lod1: 
   cana_brava: { lod0: canaBravaLod0, lod1: canaBravaLod1 },
   carrizo: { lod0: carrizoLod0, lod1: carrizoLod1 },
   totora: { lod0: totoraLod0, lod1: totoraLod1 },
+  pacae: { lod0: pacaeLod0, lod1: pacaeLod1 },
 };
 
 /**

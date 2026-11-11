@@ -27,9 +27,9 @@ import { ResourceNode } from '../entities/ResourceNode';
 import { clearResourceCaches } from '../rendering/ResourceNodeView';
 import { OrderMarkers } from '../entities/OrderMarker';
 import { TreeInstances, kitLod0RadiusFor } from '../rendering/TreeInstances';
-import { QuarryInstances } from '../rendering/QuarryInstances';
+import { PropKitInstances } from '../rendering/PropKitInstances';
 import { loadPropsKit } from '../rendering/propsKit';
-import { isCoastalRegion } from '../rendering/vegetationKit';
+import { isCoastalRegion, loadKitModel } from '../rendering/vegetationKit';
 import { attachVegetationKit } from '../rendering/vegetationKitLoader';
 import { Props } from '../rendering/Props';
 import { GroundCover } from '../rendering/GroundCover';
@@ -224,7 +224,9 @@ export class Game {
   trees!: TreeInstances;
   props!: Props;
   /** Instanced kit outcrops for stone nodes on authored scenarios; null in headless runs. */
-  quarries: QuarryInstances | null = null;
+  quarries: PropKitInstances | null = null;
+  /** Instanced pacae shrubs for the Caral food nodes; null elsewhere or in headless runs. */
+  pacae: PropKitInstances | null = null;
   wildlife!: Wildlife;
   loop = new GameLoop();
   hud!: HUD;
@@ -567,12 +569,22 @@ export class Game {
     this.trees = new TreeInstances(this.scene);
     this.props = new Props(this.scene);
     if (!this.headless) {
-      this.quarries = new QuarryInstances(this.scene, (x, z) => this.terrain.getHeight(x, z), this.camera.getTarget());
+      this.quarries = new PropKitInstances(this.scene, (x, z) => this.terrain.getHeight(x, z), this.camera.getTarget());
       if (this.mapProfile.quarryStyle) {
         const style = this.mapProfile.quarryStyle;
         void loadPropsKit(style)
           .then((model) => this.quarries?.attachKit(model))
           .catch((error) => console.warn(`[props-kit] ${style} failed to load; using the procedural quarry`, error));
+      }
+      // The pacae shrub keeps its trunk vertical: a tilted shrub reads as fallen.
+      this.pacae = new PropKitInstances(this.scene, (x, z) => this.terrain.getHeight(x, z), this.camera.getTarget(), {
+        tilt: false,
+        sink: 0.06,
+      });
+      if (this.mapProfile.berryShrub === 'pacae') {
+        void loadKitModel('pacae')
+          .then((model) => this.pacae?.attachKit(model))
+          .catch((error) => console.warn('[vegetation-kit] pacae failed to load; using the procedural shrub', error));
       }
     }
     if (!this.headless) {
@@ -1558,6 +1570,7 @@ export class Game {
         treeVariants: variants,
         berryShrub: this.mapProfile.berryShrub,
         quarryMgr: this.quarries ?? undefined,
+        pacaeMgr: this.pacae ?? undefined,
         quarryStyle: this.mapProfile.quarryStyle,
       });
     }
@@ -1939,6 +1952,7 @@ export class Game {
     this.trees.dispose();
     this.props.dispose();
     this.quarries?.dispose();
+    this.pacae?.dispose();
     this.wildlife.dispose();
     if (this.landmark) {
       this.landmarkLoadToken++;
