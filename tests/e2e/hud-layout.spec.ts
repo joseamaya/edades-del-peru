@@ -44,10 +44,12 @@ interface Snapshots {
   dialogue: State;
   build: State;
   building: State;
+  threePanels: State;
   postTutorial: State;
   advanced: State;
   archive: State;
   helpOpen: State;
+  activeTitle: string;
 }
 
 /** Boot a campaign mission, start it from the briefing and dismiss its chapter card. */
@@ -137,15 +139,23 @@ async function snapshots(page: Page): Promise<Snapshots> {
     await render();
     const buildingSnap = read();
 
+    // Issue 402: with the tutorial open, opening the shortcuts must keep three panels in the column.
+    (document.getElementById('ed-help-open') as HTMLElement | null)?.click();
+    await render();
+    const threePanels = read();
+    document.querySelector<HTMLElement>('#ed-help .ed-help-close')?.click();
+    await render();
+
     // The shortcuts start folded in a campaign; closing the tutorial must not reveal them.
     g.hud.hideTutorial();
     await render();
     const postTutorial = read();
 
-    // Late mission: every objective finished except the first, which stays active.
-    const defs = g.mission.def.objectives as { id: string }[];
+    // Late mission: every objective finished except Caral's Act IV goal, the one issue 401 reports cut off.
+    const defs = g.mission.def.objectives as { id: string; title: string }[];
     for (const o of defs) g.mission.objState.set(o.id, 'completed');
-    g.mission.objState.set(defs[0].id, 'activo');
+    const active = defs.find((o) => o.id === 'a4_sellar') ?? defs[defs.length - 1];
+    g.mission.objState.set(active.id, 'activo');
     await render();
     const advanced = read();
 
@@ -154,12 +164,23 @@ async function snapshots(page: Page): Promise<Snapshots> {
     await render();
     const archive = read();
 
-    // Opening the shortcuts must still leave every panel in its own place.
-    g.hud.toggleHelp();
+    // Opening the shortcuts with the real button must still leave every panel in its own place.
+    (document.getElementById('ed-help-open') as HTMLElement | null)?.click();
     await render();
     const helpOpen = read();
 
-    return { initial, dialogue, build, building: buildingSnap, postTutorial, advanced, archive, helpOpen };
+    return {
+      initial,
+      dialogue,
+      build,
+      building: buildingSnap,
+      threePanels,
+      postTutorial,
+      advanced,
+      archive,
+      helpOpen,
+      activeTitle: active.title,
+    };
   }, PANELS);
 }
 
@@ -219,11 +240,16 @@ for (const { width, height, missions } of RESOLUTIONS) {
         expect(snap.postTutorial['ed-help-open'], 'the "?" button gives access to the shortcuts').not.toBeNull();
         expect(snap.helpOpen['ed-help'], 'the shortcuts open on demand').not.toBeNull();
         expect(snap.archive['ed-objectives'], 'the late-mission objectives are visible').not.toBeNull();
+        // Issue 402: objectives, tutorial and shortcuts coexist without overlapping.
+        expect(snap.threePanels['ed-objectives']).not.toBeNull();
+        expect(snap.threePanels['ed-tutorial']).not.toBeNull();
+        expect(snap.threePanels['ed-help']).not.toBeNull();
 
         expect(violations(snap.initial), 'start state').toEqual([]);
         expect(violations(snap.dialogue), 'dialogue over the command panel').toEqual([]);
         expect(violations(snap.build), 'worker build panel').toEqual([]);
         expect(violations(snap.building), 'building panel').toEqual([]);
+        expect(violations(snap.threePanels), 'objectives, tutorial and shortcuts together').toEqual([]);
         expect(violations(snap.postTutorial), 'shortcuts folded').toEqual([]);
         expect(violations(snap.advanced), 'late mission, archive folded').toEqual([]);
         expect(violations(snap.archive), 'late mission, archive expanded').toEqual([]);
@@ -231,9 +257,8 @@ for (const { width, height, missions } of RESOLUTIONS) {
         expect(objectivesFit(snap.archive), 'expanded objectives reach the command bar').toEqual([]);
         expect(objectivesFit(snap.helpOpen), 'objectives reach the command bar with the shortcuts open').toEqual([]);
 
-        // The active goal is the first current row and stays wholly visible, even with the archive open.
+        // The real Act IV goal stays wholly visible, even with the archive open.
         const fit = await page.evaluate(() => {
-          const g = (window as unknown as { game: any }).game;
           const panel = document.getElementById('ed-objectives')!;
           const current = panel.querySelector('.obj-current')!;
           const active = current.querySelector('.obj');
@@ -241,13 +266,40 @@ for (const { width, height, missions } of RESOLUTIONS) {
           const cr = current.getBoundingClientRect();
           const ar = active?.getBoundingClientRect() ?? null;
           return {
-            expected: g.mission.def.objectives[0].title as string,
             text: active?.textContent ?? '',
             inside: !!ar && ar.top >= cr.top - 0.5 && ar.bottom <= cr.bottom + 0.5 && ar.bottom <= pr.bottom + 0.5,
           };
         });
-        expect(fit.text, 'the late mission keeps its first objective visible').toContain(fit.expected);
+        expect(fit.text, 'the late mission keeps its Act IV goal visible').toContain(snap.activeTitle);
         expect(fit.inside, 'the active objective is fully visible').toBe(true);
+
+        // The archive expands on click, keeps a per-act summary and its last row can be reached.
+        const archive = await page.evaluate(() => {
+          const details = document.querySelector('#ed-objectives details') as HTMLDetailsElement | null;
+          const list = details?.querySelector('.obj-archive-list') as HTMLElement | null;
+          if (!details || !list) return null;
+          list.scrollTop = list.scrollHeight;
+          const rows = [...list.querySelectorAll<HTMLElement>('.obj')];
+          const last = rows[rows.length - 1];
+          const lr = list.getBoundingClientRect();
+          const rr = last?.getBoundingClientRect();
+          return {
+            open: details.open,
+            summary: (details.querySelector('summary') as HTMLElement | null)?.textContent ?? '',
+            rows: rows.length,
+            text: last?.textContent ?? '',
+            lastVisible: !!rr && rr.bottom <= lr.bottom + 1 && rr.top >= lr.top - 1,
+          };
+        });
+        expect(archive, 'the finished objectives fold into an archive').not.toBeNull();
+        expect(archive!.open).toBe(true);
+        expect(archive!.summary).toContain('Finalizados');
+        expect(archive!.rows).toBeGreaterThan(0);
+        expect(archive!.text.length).toBeGreaterThan(0);
+        expect(archive!.lastVisible, 'the last finished objective is reachable').toBe(true);
+
+        const helpText = await page.evaluate(() => document.getElementById('ed-help')?.textContent ?? '');
+        expect(helpText, 'the "?" opens the real shortcut body').toContain('Atajos');
         expect(errors).toEqual([]);
       });
     }

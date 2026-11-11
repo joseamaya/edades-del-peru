@@ -76,6 +76,8 @@ import {
   type HotkeyAction,
 } from '../core/hotkeys';
 
+const ACT_TITLE = /^(Acto [IVXL]+) ·/;
+
 const STANCE_TOOLTIP: Record<CombatStance, string> = {
   agresivo: t('hud.stance.agresivo'),
   defensivo: t('hud.stance.defensivo'),
@@ -462,12 +464,12 @@ const CSS = /* css */ `
      other nor reach the command bar (issues 401 and 402). */
   #ed-right-column { position: absolute; top: 56px; right: 12px; width: 240px; bottom: calc(var(--ed-command-bar-h, 0px) + 2 * var(--bar-gap)); display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
   #ed-right-column > * { pointer-events: auto; }
-  #ed-objectives { position: static; order: 0; flex: 1 1 auto; min-height: 104px; display: flex; flex-direction: column; width: 100%; overflow: hidden; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-  #ed-objectives .obj-list { display: flex; flex-direction: column; min-height: 0; overflow: hidden; padding-right: 2px; }
+  #ed-objectives { position: static; order: 0; flex: 0 1 auto; max-height: 100%; min-height: 104px; display: flex; flex-direction: column; width: 100%; overflow: hidden; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+  #ed-objectives .obj-list { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow: hidden; padding-right: 2px; }
   #ed-objectives .obj-current { flex: 0 1 auto; min-height: 56px; overflow-y: auto; }
   #ed-objectives .obj-current:empty { display: none; }
   #ed-objectives details.obj-archive { display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; margin-top: 4px; border-top: 1px solid var(--line); padding-top: 4px; }
-  #ed-objectives .obj-archive-list { min-height: 0; overflow-y: auto; }
+  #ed-objectives .obj-archive-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
   #ed-objectives details.obj-archive > summary { cursor: pointer; font-size: 11px; color: var(--text-dim); list-style: none; line-height: 1.4; }
   #ed-objectives details.obj-archive > summary::-webkit-details-marker { display: none; }
   #ed-objectives details.obj-archive[open] > summary { color: var(--green); }
@@ -480,7 +482,7 @@ const CSS = /* css */ `
   #ed-objectives .obj.failed .mark { color: var(--red); }
 
   #ed-dialogue { position: absolute; left: 50%; transform: translateX(-50%); width: min(560px, 86vw); background: rgba(12,14,18,0.92); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 4px; padding: 10px 14px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; background-image: var(--weave); background-repeat: repeat-x; background-position: top; }
-  /* The dialogue and help panels sit above the command bar, whose height changes with the selected
+  /* The dialogue sits above the command bar, whose height changes with the selected
      panel; the floor keeps them clear of the minimap while nothing is selected. */
   #ed-dialogue { bottom: max(var(--panel-floor), calc(var(--ed-command-bar-h, 0px) + 2 * var(--bar-gap))); }
   #ed-dialogue.show { opacity: 1; }
@@ -605,7 +607,7 @@ export class HUD {
     this.toastsEl?.replaceChildren();
   }
 
-  /** Publish the command bar height so the dialogue and help panels can sit above it. */
+  /** Publish the command bar height so the dialogue can sit above it. */
   private syncCommandBarHeight(): void {
     const visible = this.bottomEl.style.display !== 'none';
     const height = visible ? Math.ceil(this.bottomEl.getBoundingClientRect().height) : 0;
@@ -911,12 +913,10 @@ export class HUD {
       actions.appendChild(skip);
     }
     this.tutorialEl.classList.add('show');
-    this.root.classList.add('tutorial-open');
   }
 
   hideTutorial(): void {
     this.tutorialEl.classList.remove('show');
-    this.root.classList.remove('tutorial-open');
     this.clearHudHighlight();
   }
 
@@ -946,11 +946,19 @@ export class HUD {
     }));
     // Re-render only when something visible changes, so the archive's open state is not lost.
     const signature = rows
-      .map((row) => `${row.def.id}:${row.state}:${row.progress ? row.progress.current.toFixed(1) : ''}`)
+      .map((row) => {
+        const p = row.progress;
+        // Time goals rebuild once per displayed second, not on every tick.
+        const value = p ? (p.format === 'time' ? Math.ceil(p.current) : Math.floor(p.current)) : '';
+        return `${row.def.id}:${row.state}:${p ? `${p.format}:${value}/${p.target}` : ''}`;
+      })
       .join('|');
     if (signature === this.objSignature) return;
     this.objSignature = signature;
-    const archiveWasOpen = this.objListEl.querySelector('details')?.open ?? false;
+    const archiveDetails = this.objListEl.querySelector('details');
+    const archiveWasOpen = archiveDetails?.open ?? false;
+    const archiveScroll = (archiveDetails?.querySelector('.obj-archive-list') as HTMLElement | null)?.scrollTop ?? 0;
+    const currentScroll = (this.objListEl.querySelector('.obj-current') as HTMLElement | null)?.scrollTop ?? 0;
     const current = rows.filter((row) => row.state === 'activo' || row.state === 'pendiente');
     const done = rows.filter((row) => row.state !== 'activo' && row.state !== 'pendiente');
     const rowHtml = (row: (typeof rows)[number]): string => {
@@ -965,6 +973,10 @@ export class HUD {
       : '';
     // The current goals live in their own region: expanding the archive never scrolls them away.
     this.objListEl.innerHTML = `<div class="obj-current">${current.map(rowHtml).join('')}</div>` + archive;
+    const list = this.objListEl.querySelector('.obj-archive-list') as HTMLElement | null;
+    if (list) list.scrollTop = archiveScroll;
+    const currentEl = this.objListEl.querySelector('.obj-current') as HTMLElement | null;
+    if (currentEl) currentEl.scrollTop = currentScroll;
   }
 
   /**
@@ -974,7 +986,7 @@ export class HUD {
   private archiveSummary(rows: { def: { title: string }; state: ObjState }[], finished: number): string {
     const acts = new Map<string, { done: number; failed: number; total: number }>();
     for (const row of rows) {
-      const act = /^(Acto [IVX]+) ·/.exec(row.def.title)?.[1];
+      const act = ACT_TITLE.exec(row.def.title)?.[1];
       if (!act) continue;
       const counts = acts.get(act) ?? { done: 0, failed: 0, total: 0 };
       counts.total++;
@@ -986,7 +998,7 @@ export class HUD {
       .filter(([, counts]) => counts.done + counts.failed > 0)
       .map(([act, counts]) => `${act} ✔ ${counts.done}/${counts.total}${counts.failed ? ` · ✖ ${counts.failed}` : ''}`);
     if (!parts.length) return t('hud.objectives.archive', { count: finished });
-    const others = rows.filter((row) => !/^(Acto [IVX]+) ·/.test(row.def.title));
+    const others = rows.filter((row) => !ACT_TITLE.test(row.def.title));
     const otherDone = others.filter((row) => row.state === 'completed').length;
     if (otherDone > 0) parts.push(`${t('hud.objectives.archiveOther')} ✔ ${otherDone}/${others.length}`);
     return `${t('hud.objectives.archive', { count: finished })} · ${parts.join(' · ')}`;
