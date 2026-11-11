@@ -7,7 +7,8 @@ import { applyGeneratedPbr } from './Biomes';
 import { TreeInstances, type TreeVariant } from './TreeInstances';
 import { HuntHerd } from './HuntHerd';
 import type { ResourceNode } from '../entities/ResourceNode';
-import { WATER_LEVEL, type BerryShrubId } from '../model/defs/profiles';
+import { WATER_LEVEL, type BerryShrubId, type QuarryStyle } from '../model/defs/profiles';
+import type { QuarryInstances } from './QuarryInstances';
 
 // Shared caches: geometries and materials reused between nodes (fewer draw calls and GC).
 const geoCache = new Map<string, THREE.BufferGeometry>();
@@ -94,6 +95,15 @@ export function clearResourceCaches(): void {
 
 type TreeVariants = Partial<Record<TreeVariant, number>>;
 const TREE_VARIANTS: TreeVariant[] = ['broad', 'needle', 'frond', 'algarrobo', 'molle', 'sauce', 'pacay'];
+
+/** Visual-only look of a map's resource nodes: kit managers and documented skins. */
+export interface ResourceLook {
+  treeMgr?: TreeInstances;
+  treeVariants?: TreeVariants;
+  berryShrub?: BerryShrubId;
+  quarryMgr?: QuarryInstances;
+  quarryStyle?: QuarryStyle;
+}
 function variantForMap(mapType: string): TreeVariant {
   if (mapType === 'altiplano') return 'needle';
   if (mapType === 'jungle') return 'frond';
@@ -111,6 +121,10 @@ export class ResourceNodeView {
   private readonly treeMgr?: TreeInstances;
   private readonly treeVariants?: TreeVariants;
   private readonly berryShrub?: BerryShrubId;
+  private readonly quarryMgr?: QuarryInstances;
+  private readonly quarryStyle?: QuarryStyle;
+  private quarryRegistered = false;
+  private disposed = false;
   private treeVariant: TreeVariant = 'broad';
   /** The drought killed this tree standing: bare wood, no canopy, kit instance hidden. */
   private dry = false;
@@ -120,14 +134,14 @@ export class ResourceNodeView {
     private readonly scene: THREE.Scene,
     private readonly node: ResourceNode,
     mapType = 'andes',
-    treeMgr?: TreeInstances,
-    treeVariants?: TreeVariants,
-    berryShrub?: BerryShrubId,
+    look: ResourceLook = {},
   ) {
     this.mapType = mapType;
-    this.treeMgr = treeMgr;
-    this.treeVariants = treeVariants;
-    this.berryShrub = berryShrub;
+    this.treeMgr = look.treeMgr;
+    this.treeVariants = look.treeVariants;
+    this.berryShrub = look.berryShrub;
+    this.quarryMgr = look.quarryMgr;
+    this.quarryStyle = look.quarryStyle;
     this.buildModel();
   }
 
@@ -141,7 +155,8 @@ export class ResourceNodeView {
         this.buildMine(rng);
         break;
       case 'well':
-        this.buildQuarry(rng);
+        if (this.quarryMgr && this.quarryStyle) this.buildQuarryKit(rng);
+        else this.buildQuarry(rng);
         break;
       case 'hunt':
         this.buildHunt(rng);
@@ -162,9 +177,13 @@ export class ResourceNodeView {
   }
 
   private add(mesh: THREE.Mesh, castShadow = true, receiveShadow = true): THREE.Mesh {
+    return this.addTo(this.view, mesh, castShadow, receiveShadow);
+  }
+
+  private addTo(parent: THREE.Object3D, mesh: THREE.Mesh, castShadow = true, receiveShadow = true): THREE.Mesh {
     mesh.castShadow = castShadow;
     mesh.receiveShadow = receiveShadow;
-    this.view.add(mesh);
+    parent.add(mesh);
     return mesh;
   }
 
@@ -291,7 +310,37 @@ export class ResourceNodeView {
     }
   }
 
-  private buildQuarry(rng: RNG): void {
+  /**
+   * Kit-backed stone node. The outcrop is drawn by `QuarryInstances`; the procedural version stays
+   * as a fallback until the GLB arrives (or forever if it fails), and is hidden once the kit is on.
+   */
+  private buildQuarryKit(rng: RNG): void {
+    const fallback = new THREE.Group();
+    this.view.add(fallback);
+    this.buildQuarry(rng, fallback);
+    // Fold the fallback into one mesh per material inside its own group: hiding the group still
+    // works, and a failed GLB costs three draws instead of one per rock.
+    mergeStaticByMaterial(
+      fallback,
+      () => false,
+      (geometry) => !geoCacheHas(geometry),
+    );
+    fallback.traverse((object) => {
+      if ((object as THREE.Mesh).isMesh) object.userData.keep = true;
+    });
+    const scale = 0.6 + cosmeticRandom() * 0.2;
+    const yaw = cosmeticRandom() * Math.PI * 2;
+    this.quarryRegistered = this.quarryMgr!.register(this.node.id, this.node.pos.x, this.node.pos.z, yaw, scale, () => {
+      if (this.disposed) return;
+      fallback.traverse((object) => {
+        const mesh = object as THREE.Mesh;
+        if (mesh.isMesh && mesh.name.startsWith('merged:')) mesh.geometry.dispose();
+      });
+      fallback.removeFromParent();
+    });
+  }
+
+  private buildQuarry(rng: RNG, parent: THREE.Object3D = this.view): void {
     const rockMat = mat('rock-quarry', {
       map: MaterialTex.stone(),
       normalMap: MaterialTex.normal(33),
@@ -307,7 +356,7 @@ export class ResourceNodeView {
     });
     const floor = new THREE.Mesh(cylGeo(0.62, 0.74, 0.1, 12), mat('quarry-floor', { color: '#6f675a', roughness: 1 }));
     floor.position.y = 0.05;
-    this.add(floor);
+    this.addTo(parent, floor);
     for (let i = 0; i < 7; i++) {
       const a = (i / 7) * Math.PI * 2 + rng.range(-0.15, 0.15);
       const r = rng.range(0.48, 1.02);
@@ -315,13 +364,13 @@ export class ResourceNodeView {
       rock.position.set(Math.cos(a) * r, rng.range(0.2, 0.45), Math.sin(a) * r);
       rock.scale.y = rng.range(0.65, 1.2);
       rock.rotation.set(rng.range(0, 3), rng.range(0, 3), rng.range(0, 3));
-      this.add(rock);
+      this.addTo(parent, rock);
     }
     for (let i = 0; i < 3; i++) {
       const block = new THREE.Mesh(boxGeo(0.48, 0.28, 0.34), blockMat);
       block.position.set(-0.5 + i * 0.5, 0.14 + (i % 2) * 0.12, 0.52);
       block.rotation.y = rng.range(-0.25, 0.25);
-      this.add(block);
+      this.addTo(parent, block);
     }
   }
 
@@ -457,7 +506,9 @@ export class ResourceNodeView {
       return false;
     };
     const unshared = (g: THREE.BufferGeometry): boolean => !geoCacheHas(g);
-    mergeStaticByMaterial(this.view, sways, unshared);
+    // The quarry fallback stays unmerged so it can be hidden as a group once the instanced kit is on.
+    const keep = (mesh: THREE.Mesh): boolean => mesh.userData.keep === true || sways(mesh);
+    mergeStaticByMaterial(this.view, keep, unshared);
     for (const part of this.swayParts) mergeStaticByMaterial(part, () => false, unshared);
   }
 
@@ -484,6 +535,7 @@ export class ResourceNodeView {
       // A dry tree never brings its leafy kit instance back with the fog.
       this.treeMgr.setVisible(this.node.treeSlot, v && !this.dry);
     }
+    if (this.node.kind === 'well' && this.quarryRegistered) this.quarryMgr?.setVisible(this.node.id, v);
   }
 
   /**
@@ -567,8 +619,13 @@ export class ResourceNodeView {
   }
 
   dispose(): void {
+    this.disposed = true;
     for (const t of this.timers) clearTimeout(t);
     this.timers.length = 0;
+    if (this.quarryRegistered) {
+      this.quarryMgr?.unregister(this.node.id);
+      this.quarryRegistered = false;
+    }
     if (this.treeMgr && this.node.treeSlot >= 0) {
       this.treeMgr.unregister(this.node.treeSlot);
       this.node.treeSlot = -1;

@@ -92,6 +92,7 @@ describe('campaign map profiles', () => {
     const mis = MISSIONS.find((m) => m.id === 'm1_caral')!;
     const map = applyMapOverrides(resolve(mis), mis.mapOverrides);
     expect(map.berryShrub).toBe('pacae');
+    expect(map.quarryStyle).toBe('granodiorite');
     expect(map.vegetation.variants.molle ?? 0).toBe(0);
     expect(map.vegetation.variants.pacay ?? 0).toBe(0);
     // KIT_TREE_VARIANTS only ships the huarango (algarrobo) and the willow (sauce).

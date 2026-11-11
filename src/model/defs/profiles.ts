@@ -20,6 +20,9 @@ export type TreeVariant = 'broad' | 'needle' | 'frond' | 'algarrobo' | 'molle' |
 /** Documented fruit shrub that replaces the generic berry bush on authored scenarios. */
 export type BerryShrubId = 'pacae';
 
+/** Blender kit used for the stone nodes of an authored scenario. */
+export type QuarryStyle = 'granodiorite';
+
 export interface ResourceProfile {
   /** Relative weight of each gatherable node (tree/mine/well/berry). */
   tree: number;
@@ -89,6 +92,8 @@ export interface HistoricalMapProfile {
   };
   /** A documented fruit shrub for the food nodes; omitted keeps the generic berry bush. */
   berryShrub?: BerryShrubId;
+  /** A Blender kit outcrop for stone nodes; omitted keeps the procedural quarry. */
+  quarryStyle?: QuarryStyle;
   resources: ResourceProfile;
   atmosphere: {
     /** Aerial-perspective density fed to the terrain/water shaders (~1e-3; 0 = crystal clear). */
@@ -122,6 +127,7 @@ export interface MapOverrides {
   climate?: Partial<HistoricalMapProfile['climate']>;
   vegetation?: Partial<HistoricalMapProfile['vegetation']>;
   berryShrub?: BerryShrubId;
+  quarryStyle?: QuarryStyle;
   resources?: Partial<HistoricalMapProfile['resources']>;
   /** Replace or disable the generic cultural landscape (authored scenes). */
   culturalLandscape?: CulturalLandscapeProfile | null;
@@ -145,6 +151,7 @@ export function applyMapOverrides(
       variants: { ...profile.vegetation.variants, ...overrides.vegetation?.variants },
     },
     berryShrub: overrides.berryShrub ?? profile.berryShrub,
+    quarryStyle: overrides.quarryStyle ?? profile.quarryStyle,
     resources: { ...profile.resources, ...overrides.resources },
     culturalLandscape:
       overrides.culturalLandscape === null ? undefined : (overrides.culturalLandscape ?? profile.culturalLandscape),

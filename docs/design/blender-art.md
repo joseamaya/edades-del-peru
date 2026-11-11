@@ -222,6 +222,22 @@ blender --background art-src/blender/scenes/caral_rts_kit.blend \
 - Showcase only. `m1_caral` no longer places the modular Anfiteatro; its exact counterpart is part
   of the sacred-site GLB. The scenery demo remains visual-only and has no collision or pathfinding.
 
+## Caral prop kit
+
+Small scenery pieces for `m1_caral`, authored by `scripts/blender/build_caral_props_kit.py` and exported
+to `src/assets/props/caral/`. The first piece is the granodiorite quarry outcrop (issue 393):
+
+| Asset                | LOD  | Size X × Y × Z (game axes) | Tris | Draw calls | Bytes  | Materials        |
+| -------------------- | ---- | -------------------------- | ---- | ---------- | ------ | ---------------- |
+| `caral_granodiorite` | LOD0 | 6.49 × 2.145 × 4.918       | 420  | 1          | 19,364 | `MAT-Arch_Stone` |
+| `caral_granodiorite` | LOD1 | 5.871 × 2.199 × 4.146      | 80   | 1          | 6,240  | `MAT-Arch_Stone` |
+
+- Pivot: footprint centre at ground level; the chunks extend below zero so the instancer can sink them.
+- Manifests: `art-src/blender/exports/caral/props/`; the game copies are meshopt-compressed with
+  `yarn art:models` (the optimizer keeps the world-scale UVs for `props/`).
+- Runtime: `QuarryInstances` draws every stone node of m1 as one instanced mesh, tilted to the terrain
+  normal; `src/rendering/propsKit.ts` loads and prepares the shared parts.
+
 ## Source manifest
 
 `art-src/blender/caral/renders.json`:

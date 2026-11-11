@@ -204,6 +204,11 @@ texture. m1 bakes the city (`src/model/defs/caralCity.ts`) into one mesh per mat
 replacing the ruins GLB once it has loaded (the ruins stay the fallback). The sealed state (act IV) is not
 modelled yet. Reference views: `node scripts/shots_reference_views.mjs --focus=site`.
 
+_Status (props kit v1)_: the granodiorite outcrop ships as LOD0/LOD1 GLBs
+(`scripts/blender/build_caral_props_kit.py`, `src/assets/props/caral/`); `QuarryInstances` draws every
+Caral stone node with one instanced mesh, tilted to the terrain. The household props (hearth, drying
+rack, baskets, mates, bench, windbreak) are still procedural and pending.
+
 ## 10. Light and atmosphere
 
 - **Default: morning**, low warm sun from the east/north-east, long soft shadows that model the steps of

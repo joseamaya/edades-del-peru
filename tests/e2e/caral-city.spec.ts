@@ -439,6 +439,60 @@ test('the Caral opening keeps the base clear of mines, wells, cacti and vicuñas
   expect(state.cacti).toBe(0);
 });
 
+test('the Caral stone nodes use the granodiorite kit and sit on the terrain', async ({ page }) => {
+  await boot(page);
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game: any }).game;
+      return (
+        g.quarries &&
+        (g.scene.getObjectByName('props_kit_granodiorite_lod0')?.count ?? 0) +
+          (g.scene.getObjectByName('props_kit_granodiorite_lod1')?.count ?? 0) >
+          0
+      );
+    },
+    null,
+    { timeout: 30_000 },
+  );
+  const state = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const T = (window as unknown as { THREE: any }).THREE;
+    const wells = [...g.resourceNodes.values()].filter((n: any) => n.kind === 'well');
+    const lists = g.quarries.ordered as any[][];
+    const lod = lists[0].length > 0 ? 0 : 1;
+    const mesh = g.scene.getObjectByName(`props_kit_granodiorite_lod${lod}`) as any;
+    const ordered = lists[lod];
+    const matrix = new T.Matrix4();
+    mesh.getMatrixAt(0, matrix);
+    const pos = new T.Vector3();
+    const quat = new T.Quaternion();
+    const scale = new T.Vector3();
+    matrix.decompose(pos, quat, scale);
+    const first = ordered[0];
+    const fallback = wells[0]?.nodeView?.view.children.find(
+      (child: any) => child.isGroup && child.children.some((part: any) => part.userData.keep),
+    );
+    return {
+      style: g.mapProfile.quarryStyle,
+      wells: wells.length,
+      instances:
+        (g.scene.getObjectByName('props_kit_granodiorite_lod0')?.count ?? 0) +
+        (g.scene.getObjectByName('props_kit_granodiorite_lod1')?.count ?? 0),
+      ordered: lists[0].length + lists[1].length,
+      // The base is seated on the lowest corner minus a small sink, never above the centre.
+      centerError: first ? g.terrain.getHeight(first.x, first.z) - pos.y : -1,
+      fallbackRemoved: fallback === undefined,
+    };
+  });
+  expect(state.style).toBe('granodiorite');
+  expect(state.wells).toBeGreaterThan(0);
+  expect(state.instances).toBe(state.ordered);
+  expect(state.instances).toBeGreaterThan(0);
+  expect(state.centerError).toBeGreaterThan(-0.05);
+  expect(state.centerError).toBeLessThan(1.5);
+  expect(state.fallbackRemoved, 'the procedural quarry is removed once the kit loads').toBe(true);
+});
+
 test('the Caral food nodes are documented pacae shrubs and its trees use only kit species', async ({ page }) => {
   await boot(page);
   const state = await page.evaluate(() => {
@@ -1155,6 +1209,25 @@ test('a drought save restores the sealed city and the dry grove', async ({ page 
     null,
     { timeout: 30_000 },
   );
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return (
+        (g?.scene.getObjectByName('props_kit_granodiorite_lod0')?.count ?? 0) +
+          (g?.scene.getObjectByName('props_kit_granodiorite_lod1')?.count ?? 0) >
+        0
+      );
+    },
+    null,
+    { timeout: 30_000 },
+  );
+  const quarryIds = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const ids = [...g.quarries.placements.keys()] as number[];
+    return { ids, registered: ids.every((id) => g.resourceNodes.has(id)) };
+  });
+  expect(quarryIds.ids.length).toBeGreaterThan(0);
+  expect(quarryIds.registered, 'loaded quarry instances keep the saved node ids').toBe(true);
   const out = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     const dry = [...g.resourceNodes.values()].filter((n: any) => n.kind === 'tree' && n.nodeView?.dry).length;
