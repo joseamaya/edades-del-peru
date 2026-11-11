@@ -927,6 +927,9 @@ Match the cost of verification to the change (the full gate is in `AGENTS.md`):
   (excludes the heavy AI/campaign-completable/campaign-playtest/Caral scenario-visual/settlement/save specs).
 - **Before merge** — **do not run the full suite locally**: CI owns it. `yarn visual:update` **only if the
   change is visual** (otherwise `yarn visual:check`); `yarn bench` if it is performance-sensitive.
+- **Visible change** — `yarn evidence` lists the captures the diff needs (HUD, rendering, models, campaign,
+  art provenance) as a PR-ready block; attach the PNG to the PR, because `review/` is gitignored. Audio has
+  no screenshot: name the HUD state that triggers it and what to listen for.
 - **CI** — the **fast** E2E project on `main` is **sharded 4×** (~5–7 min), and the PR `@smoke` subset
   **sharded 2×**. The heavy specs (`ai`, `campaign-completable`, `campaign-playtest`, `caral-city`, `caral-scene`,
   `caral-worker`, `settlement`, `save`) run **nightly**

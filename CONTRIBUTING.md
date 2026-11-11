@@ -35,6 +35,7 @@ The app shows the **main menu** by default. To jump straight into the match use 
 | `yarn test:e2e`       | E2E suite (Playwright). Requires `npx playwright install chromium`.                     |
 | `yarn test:e2e:smoke` | Fast `@smoke` subset of the E2E suite (used on PRs).                                    |
 | `yarn shot <name>`    | Screenshot into `review/` for visual review.                                            |
+| `yarn evidence`       | List the captures a branch needs, as a PR-ready markdown block.                          |
 | `yarn shots:periods`  | Capture the period/region snapshots into `review/periods/`.                             |
 | `yarn visual:check`   | Re-capture and fail if a period/region scene drifts from the baseline.                  |
 | `yarn visual:update`  | Refresh the visual baseline (`tests/visual/baseline.json`) after an intentional change. |
@@ -97,7 +98,8 @@ Details on subsystems, controls and code "traps" are in
 1. Create a descriptive branch: `feat/…`, `fix/…`, `docs/…`.
 2. Make small commits with clear messages in the imperative.
 3. Make sure `typecheck`, `lint`, `test` and `build` pass.
-4. Open a Pull Request explaining **what** and **why**, with screenshots if it changes anything visual.
+4. Run `yarn evidence` and open a Pull Request with the **what**, the **why** and the captures it lists
+   (or a line saying why nothing visible changed).
 
 ## Reporting problems
 
