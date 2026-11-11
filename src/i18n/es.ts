@@ -54,6 +54,8 @@ export const es = {
   'hud.topbar.menu': '☰ Menú',
   'hud.objectives.title': '🎯 Objetivos',
   'hud.discovery': 'Zona descubierta: {name}',
+  'hud.objectives.archive': 'Finalizados ({count})',
+  'hud.objectives.archiveOther': 'Otros',
   'hud.objectives.alternative': 'o ',
   'hud.objectives.optionalSuffix': ' (opcional)',
   'hud.tutorial.title': '🎓 Tutorial',

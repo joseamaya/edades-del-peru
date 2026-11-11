@@ -204,6 +204,15 @@ Definition of Done and the building audit see
   stylized portrait medallions (`src/ui/Portrait.ts`: SVG, civilization palette + emblem + initials);
   `MissionDef.commanders` shows portrait cards in the briefing, and `Mission.triggerDialogue` resolves the
   `Nombre:` prefix to a portrait. `status: 'abstraction'` marks stylistic reconstructions (never likenesses).
+- **HUD right column** (issues 401–402): `#ed-objectives`, `#ed-tutorial` and `#ed-help` share one
+  `#ed-right-column` flex stack whose bottom is the live command-bar height (`--ed-command-bar-h`), so the
+  panels can never cover each other or reach the bar. The objectives panel shrinks and scrolls (its own
+  `.obj-list`), finished goals fold into one `<details>` line grouped by act («Cumplidos (N) · Acto I ✔ 2/2»)
+  while the active goals stay first, and `refreshObjectives` only re-renders when the visible state/progress
+  changes so the archive keeps its open state. Campaigns start with the shortcuts folded (`help-collapsed`,
+  the «?» button opens them); the tutorial is placed by the flex flow, not by JS measuring the panel. Guarded
+  by `tests/e2e/hud-layout.spec.ts` for every mission at 1280×720 and for Caral at 1600×900 and 1920×1080,
+  including a late mission with the archive folded and expanded and the shortcuts open.
 - **Water refraction**: `Water` renders the scene with its mesh hidden into a `WebGLRenderTarget`
   (`Game.renderWaterRefraction`) and the shader samples the seabed, offset by the wave normal and faded by the
   viewing angle (fresnel). It costs an extra scene pass, so it only runs with the cinematic set on and the
