@@ -466,11 +466,12 @@ const CSS = /* css */ `
   #ed-right-column > * { pointer-events: auto; }
   #ed-objectives { position: static; order: 0; flex: 0 1 auto; max-height: 100%; min-height: 104px; display: flex; flex-direction: column; width: 100%; overflow: hidden; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
   #ed-objectives .obj-list { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow: hidden; padding-right: 2px; }
-  #ed-objectives .obj-current { flex: 0 1 auto; min-height: 56px; overflow-y: auto; }
+  #ed-objectives .obj-current { flex: 0 1 auto; max-height: 60%; min-height: 56px; overflow-y: auto; }
   #ed-objectives .obj-current:empty { display: none; }
-  #ed-objectives details.obj-archive { display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; margin-top: 4px; border-top: 1px solid var(--line); padding-top: 4px; }
-  #ed-objectives .obj-archive-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
-  #ed-objectives details.obj-archive > summary { cursor: pointer; font-size: 11px; color: var(--text-dim); list-style: none; line-height: 1.4; }
+  /* The <details> itself is the scroll container: Chromium does not lay out its slotted children as
+     flex items, so a nested flex scroller would overflow the panel instead of scrolling. */
+  #ed-objectives details.obj-archive { display: block; flex: 1 1 auto; min-height: 0; overflow-y: auto; margin-top: 4px; border-top: 1px solid var(--line); padding-top: 4px; }
+  #ed-objectives details.obj-archive > summary { position: sticky; top: 0; z-index: 1; background: var(--panel); cursor: pointer; font-size: 11px; color: var(--text-dim); list-style: none; line-height: 1.4; }
   #ed-objectives details.obj-archive > summary::-webkit-details-marker { display: none; }
   #ed-objectives details.obj-archive > summary:focus-visible { outline: 1px solid var(--gold); outline-offset: 2px; }
   #ed-objectives details.obj-archive[open] > summary { color: var(--green); }
