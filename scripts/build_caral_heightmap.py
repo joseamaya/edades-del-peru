@@ -92,7 +92,9 @@ def city_local(x: float, z: float) -> tuple[float, float]:
 
 def city_mask(x: float, z: float) -> float:
     lx, lz = city_local(x, z)
-    return smoothstep(43.0, 48.0, lx) * (1.0 - smoothstep(166.0, 170.0, lz)) * (1.0 - smoothstep(145.5, 148.5, lx))
+    # The west edge is wide: it overlaps the meandering terrace scarp, and a narrow blend there added a
+    # second steep step on top of the scarp (the pathfinder seam must stay below 1 m per cell).
+    return smoothstep(40.0, 52.0, lx) * (1.0 - smoothstep(166.0, 170.0, lz)) * (1.0 - smoothstep(145.5, 148.5, lx))
 
 
 def height(x: float, z: float) -> float:
@@ -101,8 +103,9 @@ def height(x: float, z: float) -> float:
     # Valley floor everywhere west of the terrace, with low relief.
     h = VALLEY + 0.18 * noise(x * 0.8, z * 0.8)
 
-    # Desert terrace of the Sacred City (its edge descends over ~12 m to the floodplain).
-    edge = smoothstep(38.0, 50.0, lx)
+    # Desert terrace of the Sacred City (its edge descends over ~12 m to the floodplain). The scarp
+    # meanders with the same shift as the painted ground so grass never climbs the terrace wall.
+    edge = smoothstep(36.0 + boundary_shift(z), 52.0 + boundary_shift(z), lx)
     h = h * (1.0 - edge) + TERRACE * edge
 
     # Dry Andean foothills frame the city north, east and south (east of the river only).
@@ -195,7 +198,7 @@ def fertile(x: float, z: float) -> float:
 
 
 def boundary_shift(z: float) -> float:
-    """Meander of the valley/terrace and dry-coast edges; the paint must not be a vertical line."""
+    """Meander of the valley/terrace edge; the paint must not be a vertical line."""
     return (
         6.0 * math.sin(z * 0.055 + 0.7)
         + 2.5 * math.sin(z * 0.13 - 0.9)

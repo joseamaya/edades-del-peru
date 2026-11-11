@@ -4,9 +4,10 @@ import { smoothstep } from '../util/math';
  * the camera sees the first few hundred metres outside the map, not the far horizon. */
 export const SKIRT_RINGS = [0.005, 0.015, 0.04, 0.1, 0.22, 0.5, 1] as const;
 
-/** 1 on the sea edge, 0 on the land edges; blends across the north/south coasts. */
-export function skirtSea(x: number): number {
-  return 1 - smoothstep(18, 40, x);
+/** 1 on the sea edge, 0 on the land edges; blends across the north/south coasts. Inland maps have no
+ * sea edge, so every side gets the land ridge instead of a trough. */
+export function skirtSea(x: number, coastal = true): number {
+  return coastal ? 1 - smoothstep(18, 40, x) : 0;
 }
 
 /** Deterministic low-frequency relief along the apron. */

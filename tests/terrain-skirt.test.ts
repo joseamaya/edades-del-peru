@@ -20,11 +20,12 @@ describe('terrain apron', () => {
     expect(blends[blends.length - 1]).toBe(1);
   });
 
-  it('treats the west edge as sea and the playable interior as land', () => {
+  it('treats the west edge as sea on coastal maps and as land inland', () => {
     expect(skirtSea(0)).toBe(1);
     expect(skirtSea(40)).toBe(0);
     expect(skirtSea(28)).toBeGreaterThan(0);
     expect(skirtSea(28)).toBeLessThan(1);
+    expect(skirtSea(0, false)).toBe(0);
   });
 
   it('keeps the relief wave deterministic and bounded', () => {

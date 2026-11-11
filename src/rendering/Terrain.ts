@@ -151,6 +151,7 @@ export class Terrain {
     const indices: number[] = [];
     const fog = (this.mesh.material as THREE.ShaderMaterial).uniforms.fogColor.value as THREE.Color;
     const haze = fog.clone().multiplyScalar(0.66).lerp(new THREE.Color(0x5a5248), 0.45);
+    const coastal = !this.profile.water.inland;
     const ts = [0, ...SKIRT_RINGS];
     const rings = ts.length;
     const coords = ts.map((t) => t * width);
@@ -187,7 +188,7 @@ export class Terrain {
         const z = side.z(i);
         const y = this.mesh.geometry.getAttribute('position').getY(src);
         const edge = new THREE.Color(color.getX(src), color.getY(src), color.getZ(src));
-        const sea = skirtSea(x);
+        const sea = skirtSea(x, coastal);
         const wave = skirtWave(x, z);
         for (const t of ts) {
           const { lift, blend } = skirtRing(t, wave, sea);
@@ -218,7 +219,7 @@ export class Terrain {
       const base = positions.length / 3;
       const y = this.mesh.geometry.getAttribute('position').getY(c.src);
       const edge = new THREE.Color(color.getX(c.src), color.getY(c.src), color.getZ(c.src));
-      const sea = skirtSea(c.x);
+      const sea = skirtSea(c.x, coastal);
       const wave = skirtWave(c.x, c.z);
       for (const a of coords) {
         for (const b of coords) {
@@ -242,7 +243,6 @@ export class Terrain {
     geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
     geo.setIndex(indices);
-    geo.computeVertexNormals();
     // Unlit apron: a dark atmospheric frame rather than a cream plane. The rings still raise a low
     // silhouette and the vertex colours add a little haze variation towards the horizon.
     const mat = new THREE.MeshBasicMaterial({
@@ -873,6 +873,15 @@ ${FOW_DIM_GLSL}
   setFogColor(color: THREE.Color): void {
     const mat = this.mesh.material as THREE.ShaderMaterial;
     mat.uniforms.fogColor.value.copy(color);
+    // The apron bakes the haze colour into its vertices; rebuild it so the mission atmosphere is not
+    // frozen to the default fog used at construction.
+    if (this.skirt) {
+      this.skirt.geometry.dispose();
+      (this.skirt.material as THREE.Material).dispose();
+      this.skirt.removeFromParent();
+      this.skirt = null;
+      this.buildSkirt();
+    }
   }
 
   /** Aerial-perspective density (0 = off; region atmosphere). */
