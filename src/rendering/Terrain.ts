@@ -3,6 +3,7 @@ import { TERRAIN_LOD_BLOCK, TERRAIN_LOD_DISTANCE, buildTerrainLodIndex, terrainI
 import { getGroundTextures, GroundTextures } from './Textures';
 import { getGroundPBR } from './Biomes';
 import { buildTerrainSplat, TERRAIN_SPLAT_SIZE, type TerrainSplat } from './terrainSplat';
+import { SKIRT_RINGS, skirtRing, skirtSea, skirtWave } from './terrainSkirt';
 import { TerrainData } from '../sim/TerrainData';
 import type { GroundCoverWeights } from '../model/defs/groundCover';
 import { smoothstep } from '../util/math';
@@ -149,19 +150,32 @@ export class Terrain {
     const colors: number[] = [];
     const indices: number[] = [];
     const fog = (this.mesh.material as THREE.ShaderMaterial).uniforms.fogColor.value as THREE.Color;
-    const far = [fog.r, fog.g, fog.b];
-    const sides: { inner: (i: number) => number; x: (i: number) => number; z: (i: number) => number }[] = [
-      { inner: (i) => i, x: (i) => (i / this.resolution) * this.size, z: () => 0 },
+    const haze = fog.clone().multiplyScalar(0.66).lerp(new THREE.Color(0x5a5248), 0.45);
+    const ts = [0, ...SKIRT_RINGS];
+    const rings = ts.length;
+    const coords = ts.map((t) => t * width);
+    const sides: {
+      inner: (i: number) => number;
+      x: (i: number) => number;
+      z: (i: number) => number;
+      dx: number;
+      dz: number;
+    }[] = [
+      { inner: (i) => i, x: (i) => (i / this.resolution) * this.size, z: () => 0, dx: 0, dz: -1 },
       {
         inner: (i) => this.resolution * n + i,
         x: (i) => (i / this.resolution) * this.size,
         z: () => this.size,
+        dx: 0,
+        dz: 1,
       },
-      { inner: (i) => i * n, x: () => 0, z: (i) => (i / this.resolution) * this.size },
+      { inner: (i) => i * n, x: () => 0, z: (i) => (i / this.resolution) * this.size, dx: -1, dz: 0 },
       {
         inner: (i) => i * n + this.resolution,
         x: () => this.size,
         z: (i) => (i / this.resolution) * this.size,
+        dx: 1,
+        dz: 0,
       },
     ];
 
@@ -172,23 +186,28 @@ export class Terrain {
         const x = side.x(i);
         const z = side.z(i);
         const y = this.mesh.geometry.getAttribute('position').getY(src);
-        const dx = x === 0 ? -width : x === this.size ? width : 0;
-        const dz = z === 0 ? -width : z === this.size ? width : 0;
-        positions.push(x, y, z, x + dx, y, z + dz);
-        colors.push(color.getX(src), color.getY(src), color.getZ(src));
-        colors.push(far[0], far[1], far[2]);
+        const edge = new THREE.Color(color.getX(src), color.getY(src), color.getZ(src));
+        const sea = skirtSea(x);
+        const wave = skirtWave(x, z);
+        for (const t of ts) {
+          const { lift, blend } = skirtRing(t, wave, sea);
+          positions.push(x + side.dx * width * t, y + lift, z + side.dz * width * t);
+          const c = edge.clone().lerp(haze, blend);
+          const shade = 0.94 + 0.06 * (wave * 0.5 + 0.5);
+          colors.push(c.r * shade, c.g * shade, c.b * shade);
+        }
       }
       for (let i = 0; i < this.resolution; i++) {
-        const a = base + i * 2;
-        const b = a + 1;
-        const c = a + 2;
-        const d = a + 3;
-        indices.push(a, b, c, c, b, d);
+        for (let r = 0; r < rings - 1; r++) {
+          const a = base + i * rings + r;
+          const b = base + (i + 1) * rings + r;
+          indices.push(a, b, a + 1, a + 1, b, b + 1);
+        }
       }
     }
 
-    // Fill the four diagonal corner quadrants (the side strips only cover
-    // the axis-aligned bands).
+    // Diagonal corner patches connect the two side strips. Coordinates are the same ring offsets on
+    // both axes, so the axis vertices match the side strips and there is no seam.
     const corners = [
       { src: 0, x: 0, z: 0, dx: -1, dz: -1 },
       { src: this.resolution, x: this.size, z: 0, dx: 1, dz: -1 },
@@ -198,25 +217,25 @@ export class Terrain {
     for (const c of corners) {
       const base = positions.length / 3;
       const y = this.mesh.geometry.getAttribute('position').getY(c.src);
-      const cr = color.getX(c.src);
-      const cg = color.getY(c.src);
-      const cb = color.getZ(c.src);
-      positions.push(
-        c.x,
-        y,
-        c.z,
-        c.x + c.dx * width,
-        y,
-        c.z,
-        c.x,
-        y,
-        c.z + c.dz * width,
-        c.x + c.dx * width,
-        y,
-        c.z + c.dz * width,
-      );
-      colors.push(cr, cg, cb, far[0], far[1], far[2], far[0], far[1], far[2], far[0], far[1], far[2]);
-      indices.push(base, base + 1, base + 2, base + 2, base + 1, base + 3);
+      const edge = new THREE.Color(color.getX(c.src), color.getY(c.src), color.getZ(c.src));
+      const sea = skirtSea(c.x);
+      const wave = skirtWave(c.x, c.z);
+      for (const a of coords) {
+        for (const b of coords) {
+          const { lift, blend } = skirtRing(Math.max(a, b) / width, wave, sea);
+          positions.push(c.x + c.dx * a, y + lift, c.z + c.dz * b);
+          const col = edge.clone().lerp(haze, blend);
+          const shade = 0.94 + 0.06 * (wave * 0.5 + 0.5);
+          colors.push(col.r * shade, col.g * shade, col.b * shade);
+        }
+      }
+      for (let i = 0; i < coords.length - 1; i++) {
+        for (let j = 0; j < coords.length - 1; j++) {
+          const a = base + i * rings + j;
+          const b = base + (i + 1) * rings + j;
+          indices.push(a, b, a + 1, a + 1, b, b + 1);
+        }
+      }
     }
 
     const geo = new THREE.BufferGeometry();
@@ -224,9 +243,8 @@ export class Terrain {
     geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
     geo.setIndex(indices);
     geo.computeVertexNormals();
-    // Unlit apron: the skirt's normals face away from the camera, so a lit
-    // material renders the edge as a black void. Fade the outer ring to the
-    // terrain's own atmospheric colour so the seam disappears.
+    // Unlit apron: a dark atmospheric frame rather than a cream plane. The rings still raise a low
+    // silhouette and the vertex colours add a little haze variation towards the horizon.
     const mat = new THREE.MeshBasicMaterial({
       vertexColors: true,
       side: THREE.DoubleSide,

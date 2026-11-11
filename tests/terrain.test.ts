@@ -260,6 +260,20 @@ describe('authored Caral heightfield', () => {
     expect(at(170, 100)[2]).toBeGreaterThan(at(88, 100)[2]);
   });
 
+  it('paints the green/desert boundary with inlets instead of a ruler line', () => {
+    const at = (x: number, z: number) => sampleAuthoredGround({ ...field, ground: CARAL_GROUND_FIELD }, x, z)!;
+    // Walk east until sand overtakes grass: the crossing must move with z.
+    const boundary = (z: number): number => {
+      for (let x = 80; x <= 140; x++) {
+        const w = at(x, z);
+        if (w[0] <= w[2]) return x;
+      }
+      return 140;
+    };
+    const xs = [30, 60, 90, 120, 150].map(boundary);
+    expect(Math.max(...xs) - Math.min(...xs)).toBeGreaterThan(6);
+  });
+
   it('frames the valley with dry Andean foothills and coastal lomas', () => {
     expect(sampleAuthoredHeight(field, 249, 100)).toBeGreaterThan(20);
     expect(sampleAuthoredHeight(field, 164, 188)).toBeGreaterThan(12);
