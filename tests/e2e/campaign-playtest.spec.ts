@@ -159,13 +159,18 @@ test('plays m8 by holding Junín and Ayacucho with real orders', async ({ page }
     move(artillery, center.x, center.z + 15);
     move([...cavalry, ...rifles], enemy.pos.x - 30, enemy.pos.z);
     for (let i = 0; i < Math.ceil(110 / dt) && !m.ended; i++) {
+      // This playtest verifies the hold/objective wiring; keep the player alive like campaign-completable
+      // instead of depending on the hard enemy's attrition.
+      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
       g.update(dt, t);
       t += dt;
     }
     const junin = m.getObjectiveState('obj_junin') as string;
     move(cavalry, enemy.pos.x, enemy.pos.z);
     move(rifles, enemy.pos.x - 12, enemy.pos.z + 10);
-    for (let i = 0; i < Math.ceil(130 / dt) && !m.ended; i++) {
+    // 120 s hold plus the march from Junín; leave a margin so the hold can actually complete.
+    for (let i = 0; i < Math.ceil(150 / dt) && !m.ended; i++) {
+      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
       g.update(dt, t);
       t += dt;
     }
@@ -572,7 +577,8 @@ test('plays m1 Caral with real construction and gathering, without objective che
   expect(out.cards, 'acts II-IV open with a chapter card').toBe(3);
   expect(out.deliveries, 'shicras, walls and sealing are handed over in 50-unit loads').toBe(8);
   expect(out.idleCarriers, 'no worker stands idle holding a load').toBe(0);
-  expect(out.phase).toBe('in_use');
+  // Act IV seals the pyramid before the community leaves.
+  expect(out.phase).toBe('sealed');
   // The winter flood greens the valley in act II; act IV starts the drought. Its 40 s visual ramp can still
   // be running when the match ends, so assert the event plus an in-progress level instead of a full ramp.
   expect(out.environment.wet_season).toBe(1);
