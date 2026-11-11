@@ -28,8 +28,9 @@ const BUDGETS = {
   // Kit counts include the shadow pass; the fauna is instanced per species and part.
   // The Áspero opening draws its village (huaca and fishing houses, ~5 materials in the main and shadow
   // passes) next to the base: +15 calls over the former Caral-terrace opening.
-  // The household props kit adds 8 calls: four shared materials per base, two bases, no shadow pass
-  // (the pieces are sub-metre). Measured opening: 339 591 tris / 189 calls, kit 79 240 / 39.
+  // The household props kit adds 8 calls (four shared materials per base, two bases, no shadow pass:
+  // the pieces are sub-metre); pinning every LOD manager to the measured framing adds the quarry's
+  // shadow pass (+2). Measured opening: 339 591 tris / 189 calls, kit 79 240 / 39.
   m1_caral: { sceneTriangles: 400_000, sceneDrawCalls: 230, kitTriangles: 80_000, kitDrawCalls: 40 },
   // End game over the city with 35 workers in view: art-direction §11 (600k triangles). It measured
   // 1.57M / 396 before the worker cuts and ~582k / 261 after. Skinned workers cannot be instanced, so
