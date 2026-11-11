@@ -11,7 +11,7 @@ const model: PropsKitModel = {
   ],
 };
 
-const meshOf = (mgr: THREE.Scene, name = 'quarries_kit_granodiorite'): THREE.InstancedMesh => {
+const meshOf = (mgr: THREE.Scene, name = 'props_kit_granodiorite_lod0'): THREE.InstancedMesh => {
   const mesh = mgr.getObjectByName(name);
   if (!mesh) throw new Error('missing quarry instanced mesh');
   return mesh as THREE.InstancedMesh;
@@ -41,11 +41,25 @@ describe('quarry instancing', () => {
     const quat = new THREE.Quaternion();
     const scale = new THREE.Vector3();
     matrix.decompose(pos, quat, scale);
-    expect(pos.y).toBeCloseTo(10 * 0.5 + 4 * 0.1 - 0.32, 5);
+    // Seated on the lowest corner of the footprint, not just the centre.
+    const centre = 10 * 0.5 + 4 * 0.1;
+    expect(pos.y).toBeLessThan(centre - 0.1);
+    expect(pos.y).toBeGreaterThan(centre - 1.6);
     const up = new THREE.Vector3(0, 1, 0).applyQuaternion(quat);
     expect(up.y).toBeLessThan(1);
     expect(Math.abs(up.x)).toBeGreaterThan(0.01);
     expect(scale.x).toBeCloseTo(1, 5);
+    mgr.dispose();
+  });
+
+  it('switches far outcrops to LOD1', () => {
+    const scene = new THREE.Scene();
+    const mgr = new QuarryInstances(scene, () => 0);
+    mgr.attachKit(model);
+    mgr.register(1, 100, 0, 0, 1);
+    mgr.update({ x: 0, z: 0 });
+    expect(meshOf(scene, 'props_kit_granodiorite_lod0').count).toBe(0);
+    expect(meshOf(scene, 'props_kit_granodiorite_lod1').count).toBe(1);
     mgr.dispose();
   });
 

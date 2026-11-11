@@ -3,9 +3,10 @@ import granodioriteLod0 from '../assets/props/caral/caral_granodiorite_lod0.glb?
 import granodioriteLod1 from '../assets/props/caral/caral_granodiorite_lod1.glb?url';
 import { applyArchSurface, archPartsFromScene } from './architectureKit';
 import { loadStaticGltf } from './StaticModel';
+import type { QuarryStyle } from '../model/defs/profiles';
 
 /** Blender prop kit (scripts/blender/build_caral_props_kit.py). */
-export type PropsKitId = 'granodiorite';
+export type PropsKitId = QuarryStyle;
 
 const URLS: Record<PropsKitId, { lod0: string; lod1: string }> = {
   granodiorite: { lod0: granodioriteLod0, lod1: granodioriteLod1 },

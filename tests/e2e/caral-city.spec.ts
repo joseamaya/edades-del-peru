@@ -444,7 +444,12 @@ test('the Caral stone nodes use the granodiorite kit and sit on the terrain', as
   await page.waitForFunction(
     () => {
       const g = (window as unknown as { game: any }).game;
-      return g.quarries && (g.scene.getObjectByName('quarries_kit_granodiorite')?.count ?? 0) > 0;
+      return (
+        g.quarries &&
+        (g.scene.getObjectByName('props_kit_granodiorite_lod0')?.count ?? 0) +
+          (g.scene.getObjectByName('props_kit_granodiorite_lod1')?.count ?? 0) >
+          0
+      );
     },
     null,
     { timeout: 30_000 },
@@ -453,8 +458,10 @@ test('the Caral stone nodes use the granodiorite kit and sit on the terrain', as
     const g = (window as unknown as { game: any }).game;
     const T = (window as unknown as { THREE: any }).THREE;
     const wells = [...g.resourceNodes.values()].filter((n: any) => n.kind === 'well');
-    const mesh = g.scene.getObjectByName('quarries_kit_granodiorite') as any;
-    const ordered = g.quarries.ordered as any[];
+    const lists = g.quarries.ordered as any[][];
+    const lod = lists[0].length > 0 ? 0 : 1;
+    const mesh = g.scene.getObjectByName(`props_kit_granodiorite_lod${lod}`) as any;
+    const ordered = lists[lod];
     const matrix = new T.Matrix4();
     mesh.getMatrixAt(0, matrix);
     const pos = new T.Vector3();
@@ -468,18 +475,22 @@ test('the Caral stone nodes use the granodiorite kit and sit on the terrain', as
     return {
       style: g.mapProfile.quarryStyle,
       wells: wells.length,
-      instances: mesh.count,
-      ordered: ordered.length,
-      heightError: first ? Math.abs(pos.y - (g.terrain.getHeight(first.x, first.z) - 0.32 * first.scale)) : -1,
-      fallbackHidden: fallback ? !fallback.visible : null,
+      instances:
+        (g.scene.getObjectByName('props_kit_granodiorite_lod0')?.count ?? 0) +
+        (g.scene.getObjectByName('props_kit_granodiorite_lod1')?.count ?? 0),
+      ordered: lists[0].length + lists[1].length,
+      // The base is seated on the lowest corner minus a small sink, never above the centre.
+      centerError: first ? g.terrain.getHeight(first.x, first.z) - pos.y : -1,
+      fallbackRemoved: fallback === undefined,
     };
   });
   expect(state.style).toBe('granodiorite');
   expect(state.wells).toBeGreaterThan(0);
   expect(state.instances).toBe(state.ordered);
   expect(state.instances).toBeGreaterThan(0);
-  expect(state.heightError).toBeLessThan(0.05);
-  expect(state.fallbackHidden, 'the procedural quarry is hidden once the kit loads').toBe(true);
+  expect(state.centerError).toBeGreaterThan(-0.05);
+  expect(state.centerError).toBeLessThan(1.5);
+  expect(state.fallbackRemoved, 'the procedural quarry is removed once the kit loads').toBe(true);
 });
 
 test('the Caral food nodes are documented pacae shrubs and its trees use only kit species', async ({ page }) => {
@@ -1198,6 +1209,25 @@ test('a drought save restores the sealed city and the dry grove', async ({ page 
     null,
     { timeout: 30_000 },
   );
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return (
+        (g?.scene.getObjectByName('props_kit_granodiorite_lod0')?.count ?? 0) +
+          (g?.scene.getObjectByName('props_kit_granodiorite_lod1')?.count ?? 0) >
+        0
+      );
+    },
+    null,
+    { timeout: 30_000 },
+  );
+  const quarryIds = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const ids = [...g.quarries.placements.keys()] as number[];
+    return { ids, registered: ids.every((id) => g.resourceNodes.has(id)) };
+  });
+  expect(quarryIds.ids.length).toBeGreaterThan(0);
+  expect(quarryIds.registered, 'loaded quarry instances keep the saved node ids').toBe(true);
   const out = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     const dry = [...g.resourceNodes.values()].filter((n: any) => n.kind === 'tree' && n.nodeView?.dry).length;

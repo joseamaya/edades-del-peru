@@ -567,7 +567,7 @@ export class Game {
     this.trees = new TreeInstances(this.scene);
     this.props = new Props(this.scene);
     if (!this.headless) {
-      this.quarries = new QuarryInstances(this.scene, (x, z) => this.terrain.getHeight(x, z));
+      this.quarries = new QuarryInstances(this.scene, (x, z) => this.terrain.getHeight(x, z), this.camera.getTarget());
       if (this.mapProfile.quarryStyle) {
         const style = this.mapProfile.quarryStyle;
         void loadPropsKit(style)

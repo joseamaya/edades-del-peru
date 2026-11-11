@@ -7,7 +7,7 @@ import { applyGeneratedPbr } from './Biomes';
 import { TreeInstances, type TreeVariant } from './TreeInstances';
 import { HuntHerd } from './HuntHerd';
 import type { ResourceNode } from '../entities/ResourceNode';
-import { WATER_LEVEL, type BerryShrubId } from '../model/defs/profiles';
+import { WATER_LEVEL, type BerryShrubId, type QuarryStyle } from '../model/defs/profiles';
 import type { QuarryInstances } from './QuarryInstances';
 
 // Shared caches: geometries and materials reused between nodes (fewer draw calls and GC).
@@ -102,7 +102,7 @@ export interface ResourceLook {
   treeVariants?: TreeVariants;
   berryShrub?: BerryShrubId;
   quarryMgr?: QuarryInstances;
-  quarryStyle?: 'granodiorite';
+  quarryStyle?: QuarryStyle;
 }
 function variantForMap(mapType: string): TreeVariant {
   if (mapType === 'altiplano') return 'needle';
@@ -122,7 +122,7 @@ export class ResourceNodeView {
   private readonly treeVariants?: TreeVariants;
   private readonly berryShrub?: BerryShrubId;
   private readonly quarryMgr?: QuarryInstances;
-  private readonly quarryStyle?: 'granodiorite';
+  private readonly quarryStyle?: QuarryStyle;
   private quarryRegistered = false;
   private disposed = false;
   private treeVariant: TreeVariant = 'broad';
@@ -318,15 +318,26 @@ export class ResourceNodeView {
     const fallback = new THREE.Group();
     this.view.add(fallback);
     this.buildQuarry(rng, fallback);
+    // Fold the fallback into one mesh per material inside its own group: hiding the group still
+    // works, and a failed GLB costs three draws instead of one per rock.
+    mergeStaticByMaterial(
+      fallback,
+      () => false,
+      (geometry) => !geoCacheHas(geometry),
+    );
     fallback.traverse((object) => {
       if ((object as THREE.Mesh).isMesh) object.userData.keep = true;
     });
     const scale = 0.6 + cosmeticRandom() * 0.2;
     const yaw = cosmeticRandom() * Math.PI * 2;
-    this.quarryMgr!.register(this.node.id, this.node.pos.x, this.node.pos.z, yaw, scale, () => {
-      if (!this.disposed) fallback.visible = false;
+    this.quarryRegistered = this.quarryMgr!.register(this.node.id, this.node.pos.x, this.node.pos.z, yaw, scale, () => {
+      if (this.disposed) return;
+      fallback.traverse((object) => {
+        const mesh = object as THREE.Mesh;
+        if (mesh.isMesh && mesh.name.startsWith('merged:')) mesh.geometry.dispose();
+      });
+      fallback.removeFromParent();
     });
-    this.quarryRegistered = true;
   }
 
   private buildQuarry(rng: RNG, parent: THREE.Object3D = this.view): void {

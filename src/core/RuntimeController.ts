@@ -158,13 +158,14 @@ export class RuntimeController {
     for (const ns of data.resourceNodes) {
       const node = new ResourceNode(ns.kind, ns.x, ns.z, ns.amount);
       node.pos.y = ns.kind === 'fishing' ? 0 : this.game.terrain.getHeight(ns.x, ns.z);
+      // Restore the saved id before attaching the view: the quarry instancer registers by node id.
+      node.applySave(ns);
       this.game.attachResourceNode(
         node,
         this.game.mapProfile.baseMapType,
         this.game.trees,
         this.game.mapProfile.vegetation.variants,
       );
-      node.applySave(ns);
       this.game.resourceNodes.set(node.id, node);
       this.game.registerResourceObstacle(node.id, ns.x, ns.z, ns.kind);
     }
@@ -854,6 +855,7 @@ export class RuntimeController {
     this.game.debris.update(d);
     this.game.markers.update(d);
     this.game.trees.update(d, this.game.camera.getTarget());
+    this.game.quarries?.update(this.game.camera.getTarget());
     this.game.wildlife.update(d);
 
     // a blocking menu/modal suppresses camera panning (edge/keyboard/drag)
