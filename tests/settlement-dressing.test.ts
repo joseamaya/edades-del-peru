@@ -33,7 +33,8 @@ describe('Caral settlement dressing', () => {
     expect(out.some((p) => p.kind === 'hearth')).toBe(true);
     expect(out.some((p) => p.kind === 'drying_rack')).toBe(true);
     for (const p of out) {
-      for (const a of anchors) expect(Math.hypot(a.x - p.x, a.z - p.z)).toBeGreaterThanOrEqual(1.55);
+      // The rendered walls overhang the 2-grid footprint; the clearance grows with the prop's radius.
+      for (const a of anchors) expect(Math.hypot(a.x - p.x, a.z - p.z)).toBeGreaterThanOrEqual(2.3);
       for (const q of out) {
         if (q === p) continue;
         expect(Math.hypot(q.x - p.x, q.z - p.z)).toBeGreaterThanOrEqual(0.8);
@@ -76,7 +77,8 @@ describe('Chavín settlement dressing', () => {
   it('keeps props clear of the buildings and each other', () => {
     const out = planSettlementDressing(plan, 7, flat, 'chavin');
     for (const p of out) {
-      for (const a of anchors) expect(Math.hypot(a.x - p.x, a.z - p.z)).toBeGreaterThanOrEqual(1.55);
+      // The rendered walls overhang the 2-grid footprint; the clearance grows with the prop's radius.
+      for (const a of anchors) expect(Math.hypot(a.x - p.x, a.z - p.z)).toBeGreaterThanOrEqual(2.3);
       for (const q of out) {
         if (q === p) continue;
         expect(Math.hypot(q.x - p.x, q.z - p.z)).toBeGreaterThanOrEqual(0.8);

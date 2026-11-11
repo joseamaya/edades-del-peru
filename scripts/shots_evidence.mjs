@@ -572,12 +572,16 @@ const SCENES = {
       while (!(g.settlementDressing ?? []).some((d) => d.attached) && performance.now() < deadline) {
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
-      const dressing = (g.settlementDressing ?? []).find((d) => d.attached);
-      if (!dressing) throw new Error('household kit did not load');
+      // Player 0 spawns first; the kit attaches to both bases of the mirror match.
+      const dressing = g.settlementDressing?.[0];
+      if (!dressing?.attached) throw new Error('household kit did not load');
       const prop = dressing.placements.find((p) => p.kind === 'drying_rack') ?? dressing.placements[0];
       // Settle the mission's lighting and sky: the loop is stopped, so drive it by hand.
       for (let i = 0; i < 60; i++) g.loop.onUpdate(1 / 60, i / 60);
-      g.sky.update(0);
+      // Place names are map labels, not props: hide them (the loop update re-shows them).
+      g.scene.traverse((o) => {
+        if (o.name?.startsWith('geo-label:')) o.visible = false;
+      });
       g.renderer.render(g.scene, g.camera.camera);
       return {
         center: { x: dressing.center.x, z: dressing.center.z },
@@ -585,7 +589,7 @@ const SCENES = {
       };
     },
     views: [
-      { name: 'close', mode: 'close', offset: { x: 2.6, y: 1.8, z: 2.6 }, lookHeight: 0.8 },
+      { name: 'close', mode: 'close', offset: { x: 1.9, y: 1.5, z: 1.9 }, lookHeight: 0.6 },
       { name: 'rts', mode: 'rts', height: 30, centerSubject: true },
     ],
   },
