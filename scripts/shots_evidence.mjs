@@ -561,6 +561,34 @@ const SCENES = {
       { name: 'rts', mode: 'rts', target: 'landmark', height: 32 },
     ],
   },
+  'caral-household': {
+    url: '/?mission=m1_caral&intro=0&fog=0&low=1&noloop=1',
+    start: true,
+    prepare: async () => {
+      const g = window.game;
+      g.loop.stop();
+      // The household kit arrives asynchronously; the capture must not race the procedural fallback.
+      const deadline = performance.now() + 20_000;
+      while (!(g.settlementDressing ?? []).some((d) => d.attached) && performance.now() < deadline) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+      const dressing = (g.settlementDressing ?? []).find((d) => d.attached);
+      if (!dressing) throw new Error('household kit did not load');
+      const prop = dressing.placements.find((p) => p.kind === 'drying_rack') ?? dressing.placements[0];
+      // Settle the mission's lighting and sky: the loop is stopped, so drive it by hand.
+      for (let i = 0; i < 60; i++) g.loop.onUpdate(1 / 60, i / 60);
+      g.sky.update(0);
+      g.renderer.render(g.scene, g.camera.camera);
+      return {
+        center: { x: dressing.center.x, z: dressing.center.z },
+        subject: { x: prop.x, y: g.terrain.getHeight(prop.x, prop.z), z: prop.z },
+      };
+    },
+    views: [
+      { name: 'close', mode: 'close', offset: { x: 2.6, y: 1.8, z: 2.6 }, lookHeight: 0.8 },
+      { name: 'rts', mode: 'rts', height: 30, centerSubject: true },
+    ],
+  },
   'fauna-perf': {
     url: '/?play=1&civ=caral&period=0&map=altiplano&seed=777&fog=0&low=1&noloop=1',
     prepare: () => {

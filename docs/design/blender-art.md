@@ -255,6 +255,8 @@ pieces replace the primitive enseres of an Áspero base (issue 393):
 - Runtime: `QuarryInstances` draws every stone node of m1 as one instanced mesh, tilted to the terrain
   normal; `SettlementDressing` bakes each base into one mesh per material and LOD and skips the shadow
   pass for the sub-metre props. `src/rendering/propsKit.ts` loads and prepares both sets.
+- Evidence: `node scripts/shots_evidence.mjs --scene=caral-household` captures the base in the RTS view
+  and a close-up of the drying rack (`docs/media/caral-household-props.webp`).
 
 ## Source manifest
 
