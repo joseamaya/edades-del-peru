@@ -3044,16 +3044,16 @@ function buildCaralHouse(b: Builder, size: number): void {
   b.group.name = 'caral_house';
 }
 
-const CARAL_DEPOT_WALL_HEIGHT = 1.35;
+const CARAL_DEPOT_WALL_HEIGHT = 1.15;
 
 /**
- * Caral's communal store: a walled patio with a covered rear room, stone-footed quincha walls and
- * no heraldic banner. The dossier describes the store as a game abstraction; the form follows the
- * documented compound language (docs/historia/campanas/caral.md).
+ * Caral's communal store: a wide, low walled patio with a covered rear room, stone and plaster
+ * walls, an open cane porch and no heraldic banner. The dossier describes the store as a game
+ * abstraction; the form follows the documented compound language (docs/historia/campanas/caral.md).
  */
 function buildCaralDepot(b: Builder, size: number): void {
-  const w = size * 1.9;
-  const d = size * 1.5;
+  const w = size * 2.1;
+  const d = size * 1.65;
   buildCaralCompound(b, {
     x: 0,
     y: 0,
@@ -3061,16 +3061,24 @@ function buildCaralDepot(b: Builder, size: number): void {
     yaw: 0,
     width: w,
     depth: d,
-    rooms: 4,
+    rooms: 3,
     elite: false,
     wallHeight: CARAL_DEPOT_WALL_HEIGHT,
     wallThickness: 0.24,
-    doorHeadHeight: 1.0,
+    doorHeadHeight: 0.95,
   });
   const { stone, earth } = caralColors(b);
   const f = caralFrame(0, 0, 0, 0);
   caralCompoundRoof(b, w, d, CARAL_DEPOT_WALL_HEIGHT, 0.1, 0.24);
   caralEntryStep(b, w, d, stone);
+  // The open porch is the store's readable feature: four posts and a cane-mat awning over the
+  // sorting floor, where the surplus is weighed before it goes into the rear room.
+  for (const x of [-w * 0.24, w * 0.24]) {
+    for (const z of [d * 0.12, d * 0.4]) {
+      b.cyl(0.06, 0.08, 1.12, 6, mixHex(earth, '#7a5c3e', 0.35), { x, y: 0.56, z, tex: 'wood' });
+    }
+  }
+  b.box(w * 0.6, 0.06, d * 0.36, andeanThatch(b), { y: 1.16, z: d * 0.27, tex: 'thatch', texScale: 2 });
   // Stored surplus: large mates in the patio and bundles of shicra fibre along the front.
   for (const [x, z, r] of [
     [-w * 0.2, d * 0.08, 0.2],
@@ -3079,17 +3087,17 @@ function buildCaralDepot(b: Builder, size: number): void {
   ] as const) {
     caralCyl(b, f, r * 1.15, r * 1.4, r * 1.5, 10, mixHex(earth, '#8a7450', 0.35), x, r * 0.75, z, 'dirt');
   }
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 5; i++) {
     caralBox(
       b,
       f,
-      w * 0.2,
+      w * 0.16,
       0.16,
       0.26,
       mixHex(earth, '#c2a05c', 0.35),
-      -w * 0.28 + i * w * 0.28,
+      -w * 0.32 + i * w * 0.16,
       0.08,
-      d * 0.3,
+      d * 0.32,
       undefined,
     );
   }

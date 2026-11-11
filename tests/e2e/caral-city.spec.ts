@@ -448,13 +448,13 @@ test('the Caral food nodes are documented pacae shrubs and its trees use only ki
     return {
       berryShrub: g.mapProfile.berryShrub,
       berries: berries.length,
-      berryMarkers: berries.map((n: any) => n.nodeView?.view.userData.berryShrub ?? null),
+      berryViews: berries.map((n: any) => n.nodeView?.berryShrub ?? null),
       treeVariants: [...new Set(trees.map((n: any) => n.nodeView?.treeVariant))],
     };
   });
   expect(state.berryShrub).toBe('pacae');
   expect(state.berries).toBeGreaterThan(0);
-  expect(state.berryMarkers.every((marker: string | null) => marker === 'pacae')).toBe(true);
+  expect(state.berryViews.every((view: string | null) => view === 'pacae')).toBe(true);
   expect(state.treeVariants.every((variant: string) => variant === 'algarrobo' || variant === 'sauce')).toBe(true);
 });
 
@@ -464,15 +464,30 @@ test('the fair tents and sunken circular plazas block unit paths', async ({ page
     ([tents, plazas]) => {
       const g = (window as unknown as { game: any }).game;
       g.setSitePhase('in_use');
+      const p = g.pathfinder;
+      const inside = (pt: any, blocks: any[]) =>
+        blocks.some((b) => Math.abs(pt.x - b.x) <= b.w / 2 && Math.abs(pt.z - b.z) <= b.d / 2);
+      const tent = tents[0];
+      const tentPath = p.pathfind(tent.x - 9, tent.z, tent.x + 9, tent.z);
+      const plaza = plazas[0];
+      const plazaPath = p.pathfind(plaza.x, plaza.z - 10, plaza.x, plaza.z + 10);
       return {
-        tents: tents.map((t: any) => g.pathfinder.isWalkable(t.x, t.z)),
-        plazas: plazas.map((p: any) => g.pathfinder.isWalkable(p.x, p.z)),
+        tentsWalkable: tents.map((t: any) => p.isWalkable(t.x, t.z)),
+        plazasWalkable: plazas.map((pl: any) => p.isWalkable(pl.x, pl.z)),
+        tentPath,
+        plazaPath,
+        tentCrosses: tentPath.filter((pt: any) => inside(pt, tents)).length,
+        plazaCrosses: plazaPath.filter((pt: any) => inside(pt, [plaza])).length,
       };
     },
     [CARAL_FAIR_TENTS, CARAL_CITY_LAYOUT.filter((p) => p.asset === 'circular_plaza')],
   );
-  expect(state.tents).toEqual(CARAL_FAIR_TENTS.map(() => false));
-  expect(state.plazas).toEqual(CARAL_CITY_LAYOUT.filter((p) => p.asset === 'circular_plaza').map(() => false));
+  expect(state.tentsWalkable).toEqual(CARAL_FAIR_TENTS.map(() => false));
+  expect(state.plazasWalkable).toEqual(CARAL_CITY_LAYOUT.filter((p) => p.asset === 'circular_plaza').map(() => false));
+  expect(state.tentPath.length).toBeGreaterThan(0);
+  expect(state.plazaPath.length).toBeGreaterThan(0);
+  expect(state.tentCrosses).toBe(0);
+  expect(state.plazaCrosses).toBe(0);
 });
 
 test('the authored site blocks every solid monument and leaves the plaza ring walkable', async ({ page }) => {

@@ -183,8 +183,6 @@ const HOUSE_FOOTPRINT: Partial<Record<CaralArchAssetId, { w: number; d: number }
   house_elite: { w: 9.0, d: 7.4 },
 };
 
-/** Kit circular plaza basin (LOD0 of scripts/blender/build_caral_architecture_kit.py); the site padding covers the rim. */
-const PLAZA_FOOTPRINT = { w: 16, d: 16 };
 /** Fair tent footprint (posts, cover and a small clearance); the runtime adds the site padding. */
 const FAIR_TENT_FOOTPRINT = { w: 4.2, d: 3.7 };
 
@@ -234,8 +232,7 @@ export const ASPERO_LAYOUT: readonly CaralArchPlacement[] = [
 /** The Áspero houses block their footprints (the huaca blocks through its heritage volume). */
 export const ASPERO_BLOCKERS: readonly SiteBlocker[] = ASPERO_LAYOUT.flatMap((p) => {
   if (p.asset !== 'house_aspero') return [];
-  const quarter = Math.abs(Math.sin(p.rotY)) > 0.5;
-  return [{ x: p.x, z: p.z, w: quarter ? 4.4 : 5.4, d: quarter ? 5.4 : 4.4 }];
+  return [rotatedBlocker(p.x, p.z, 5.4, 4.4, p.rotY)];
 });
 
 /**
@@ -272,7 +269,7 @@ export const CARAL_CITY_BLOCKERS: readonly SiteBlocker[] = [
     rotatedBlocker(p.x, p.z, FAIR_TENT_FOOTPRINT.w, FAIR_TENT_FOOTPRINT.d, p.rotY, p.since, p.until),
   ),
   ...CARAL_CITY_LAYOUT.filter((p) => p.asset === 'circular_plaza').map((p) =>
-    rotatedBlocker(p.x, p.z, PLAZA_FOOTPRINT.w * p.scale[0], PLAZA_FOOTPRINT.d * p.scale[2], p.rotY, p.since),
+    rotatedBlocker(p.x, p.z, PLAZA_DIAMETER * p.scale[0], PLAZA_DIAMETER * p.scale[2], p.rotY, p.since),
   ),
 ];
 

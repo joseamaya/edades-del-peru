@@ -229,7 +229,9 @@ describe('Caral city layout', () => {
     const plazas = CARAL_CITY_LAYOUT.filter((p) => p.asset === 'circular_plaza');
     expect(plazas.length).toBeGreaterThanOrEqual(2);
     for (const plaza of plazas) expect(covers(plaza), `plaza at ${plaza.x},${plaza.z}`).toBe(true);
-    const tentBlocker = CARAL_CITY_BLOCKERS.find((b) => Math.abs(b.x - CARAL_FAIR_TENTS[0].x) < 0.01);
+    const tentBlocker = CARAL_CITY_BLOCKERS.find((b) => Math.abs(b.x - CARAL_FAIR_TENTS[0].x) < 0.01)!;
     expect(tentBlocker).toMatchObject({ since: 'in_use', until: 'sealed' });
+    expect(standsIn(tentBlocker.since, tentBlocker.until, 'in_use', CARAL_PHASE_PLAN)).toBe(true);
+    expect(standsIn(tentBlocker.since, tentBlocker.until, 'sealed', CARAL_PHASE_PLAN)).toBe(false);
   });
 });

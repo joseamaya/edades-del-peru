@@ -17,8 +17,8 @@ export type SoilKind = 'sandy' | 'loam' | 'clay' | 'peaty' | 'rocky';
 /** Tree/foliage variant (shared with the instancing manager). */
 export type TreeVariant = 'broad' | 'needle' | 'frond' | 'algarrobo' | 'molle' | 'sauce' | 'pacay';
 
-/** Documented fruit shrubs that replace the generic berry bush on authored scenarios. */
-export type BerryShrubId = 'pacae' | 'guayaba';
+/** Documented fruit shrub that replaces the generic berry bush on authored scenarios. */
+export type BerryShrubId = 'pacae';
 
 export interface ResourceProfile {
   /** Relative weight of each gatherable node (tree/mine/well/berry). */

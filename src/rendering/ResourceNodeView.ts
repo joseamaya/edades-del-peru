@@ -150,7 +150,7 @@ export class ResourceNodeView {
         this.buildFish(rng);
         break;
       case 'berry':
-        if (this.berryShrub) this.buildFruitShrub(rng, this.berryShrub);
+        if (this.berryShrub) this.buildFruitShrub(rng);
         else this.buildBush(rng);
         break;
     }
@@ -400,8 +400,7 @@ export class ResourceNodeView {
    * Multi-stemmed, low and broad, with the fruit hanging under the canopy; the generic red-berry
    * billboard read as a placeholder from the RTS camera.
    */
-  private buildFruitShrub(rng: RNG, kind: BerryShrubId): void {
-    this.view.userData.berryShrub = kind;
+  private buildFruitShrub(rng: RNG): void {
     const bark = mat('shrub-bark', { map: MaterialTex.bark(), color: '#8a6f52', roughness: 1 });
     const canopy = new THREE.Group();
     canopy.position.y = 0.6;
@@ -435,27 +434,15 @@ export class ResourceNodeView {
       this.addFoliage(cluster, rng, 'pacay', 1.0, 1.15, '#94a26b');
     }
 
-    if (kind === 'pacae') {
-      const podMat = mat('pacae-pod', { color: '#87964a', roughness: 0.9 });
-      for (let i = 0; i < 12; i++) {
-        const angle = rng.range(0, Math.PI * 2);
-        const radius = rng.range(0.9, 1.3);
-        const pod = new THREE.Mesh(cylGeo(0.025, 0.045, 0.34, 5), podMat);
-        pod.position.set(Math.cos(angle) * radius, rng.range(0.0, 0.35), Math.sin(angle) * radius);
-        pod.rotation.set(rng.range(-0.3, 0.3), rng.range(0, 3), rng.range(1.0, 1.4));
-        pod.castShadow = true;
-        canopy.add(pod);
-      }
-    } else {
-      const fruitMat = mat('guayaba-fruit', { color: '#c4b24f', roughness: 0.7 });
-      for (let i = 0; i < 8; i++) {
-        const angle = rng.range(0, Math.PI * 2);
-        const radius = rng.range(0.75, 1.1);
-        const fruit = new THREE.Mesh(sphereGeo(0.075, 6, 5), fruitMat);
-        fruit.position.set(Math.cos(angle) * radius, rng.range(0.05, 0.45), Math.sin(angle) * radius);
-        fruit.castShadow = true;
-        canopy.add(fruit);
-      }
+    const podMat = mat('pacae-pod', { color: '#a3a052', roughness: 0.9 });
+    for (let i = 0; i < 12; i++) {
+      const angle = rng.range(0, Math.PI * 2);
+      const radius = rng.range(1.25, 1.65);
+      const pod = new THREE.Mesh(cylGeo(0.03, 0.05, 0.4, 5), podMat);
+      pod.position.set(Math.cos(angle) * radius, rng.range(-0.05, 0.2), Math.sin(angle) * radius);
+      pod.rotation.set(rng.range(-0.3, 0.3), rng.range(0, 3), rng.range(1.0, 1.4));
+      pod.castShadow = true;
+      canopy.add(pod);
     }
   }
 
