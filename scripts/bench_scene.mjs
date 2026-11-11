@@ -28,7 +28,10 @@ const BUDGETS = {
   // Kit counts include the shadow pass; the fauna is instanced per species and part.
   // The Áspero opening draws its village (huaca and fishing houses, ~5 materials in the main and shadow
   // passes) next to the base: +15 calls over the former Caral-terrace opening.
-  m1_caral: { sceneTriangles: 400_000, sceneDrawCalls: 230, kitTriangles: 80_000, kitDrawCalls: 36 },
+  // The household props kit adds 8 calls (four shared materials per base, two bases, no shadow pass:
+  // the pieces are sub-metre); pinning every LOD manager to the measured framing adds the quarry's
+  // shadow pass (+2). Measured opening: 339 591 tris / 189 calls, kit 79 240 / 39.
+  m1_caral: { sceneTriangles: 400_000, sceneDrawCalls: 230, kitTriangles: 80_000, kitDrawCalls: 40 },
   // End game over the city with 35 workers in view: art-direction §11 (600k triangles). It measured
   // 1.57M / 396 before the worker cuts and ~582k / 261 after. Skinned workers cannot be instanced, so
   // each one in view is ~6 draws (body, hair, garments, tool, team ring, body shadow) on top of the
@@ -53,7 +56,10 @@ try {
       const g = window.game;
       if (!g?.mission) return false;
       if (id === 'm2_chavin') return (g.scene.getObjectByName?.('chavin_city_lod0')?.children.length ?? 0) > 0;
-      return g.trees?.hasKit?.('algarrobo');
+      // Wait for every kit family the scene draws: a half-loaded batch measured a different scene.
+      if (!g.trees?.hasKit?.('algarrobo') || !g.trees.hasKit('sauce')) return false;
+      if (g.mapProfile?.quarryStyle && !g.quarries?.model) return false;
+      return (g.settlementDressing ?? []).every((d) => d.attached !== false);
     },
     mission,
     { timeout: 90_000 },
@@ -94,7 +100,12 @@ try {
       }
       g.camera.moveTo(p.x, p.z, true);
       g.camera.setHeight(54);
-      g.trees.update(0, g.camera.getTarget());
+      // Pin every LOD manager to the measured framing, like the trees: their per-frame update depends
+      // on where the camera happened to be when the loop last ran.
+      const focus = g.camera.getTarget();
+      g.trees.update(0, focus);
+      g.quarries?.update(focus);
+      for (const d of g.settlementDressing ?? []) d.update(focus);
       for (let i = 0; i < 120; i++) g.camera.update(1 / 30, i / 30);
       g.camera.camera.updateMatrixWorld();
       g.terrain.updateLod(g.camera.camera.position, true);

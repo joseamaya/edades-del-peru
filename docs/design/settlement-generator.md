@@ -88,13 +88,15 @@ All angles/offsets come from a dedicated `RNG(seed * k + c)` stream.
   (`cropGeometry`) over the planned fields, and Caral/Chavín bases add a deterministic
   household or ritual layer (`planSettlementDressing` → `SettlementDressing`). Caral
   uses hearths, racks, baskets, gourds and cotton; Chavín adds stelae, stone heads,
-  spondylus/obsidian offerings and megaliths. Both are visual-only, merged into one
-  mesh each, and carry no obstacles or entities.
+  spondylus/obsidian offerings and megaliths. Both are visual-only and carry no obstacles or
+  entities; Caral draws its set from the Blender prop kit (one merged mesh per material and LOD,
+  procedural fallback), Chavín still uses one procedural mesh.
 
 ## Determinism & performance
 
 - Pure function; same request → same plan (unit test).
-- Cost is O(candidates) at boot only; runs once per base, off the frame budget.
+- Cost is O(candidates) at boot only; the per-frame work is a distance check per base to swap the
+  dressing kit's LOD.
 - Headless test uses a fake `query`, no WebGL.
 
 ## Risks

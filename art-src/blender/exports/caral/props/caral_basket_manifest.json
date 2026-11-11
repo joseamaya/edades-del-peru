@@ -1,0 +1,75 @@
+{
+  "asset_id": "caral_basket",
+  "source_scene": "scenes/caral_props_kit.blend",
+  "script": "scripts/blender/build_caral_props_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "confidence": "inferred",
+  "sources": [
+    "docs/historia/campanas/caral.md",
+    "docs/historia/civilizaciones/caral.md"
+  ],
+  "budget": {
+    "LOD0": 420,
+    "LOD1": 130
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 188,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Arch_CaneMat",
+        "MAT-Arch_Stone"
+      ],
+      "bounds": {
+        "min": [
+          -0.27,
+          -0.27,
+          0.0
+        ],
+        "max": [
+          0.27,
+          0.27,
+          0.456
+        ],
+        "size": [
+          0.54,
+          0.54,
+          0.456
+        ]
+      },
+      "file": "caral_basket_lod0.glb",
+      "bytes": 19384
+    },
+    "LOD1": {
+      "triangles": 88,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Arch_CaneMat",
+        "MAT-Arch_Stone"
+      ],
+      "bounds": {
+        "min": [
+          -0.27,
+          -0.27,
+          0.0
+        ],
+        "max": [
+          0.27,
+          0.27,
+          0.449
+        ],
+        "size": [
+          0.54,
+          0.54,
+          0.449
+        ]
+      },
+      "file": "caral_basket_lod1.glb",
+      "bytes": 10044
+    }
+  }
+}

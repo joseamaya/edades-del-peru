@@ -637,13 +637,15 @@ TILE = {
 }
 
 
-def assign_uvs(bm, materials):
+def assign_uvs(bm, materials, tile=None):
     """Box-projected UVs at world scale: each face is mapped on the plane it faces most, so tiling
-    textures keep a constant texel size on every wall, tread and roof."""
+    textures keep a constant texel size on every wall, tread and roof. ``tile`` overrides the shared
+    per-material tile size (small props use a finer weave)."""
     uv = bm.loops.layers.uv.verify()
+    tiles = tile or TILE
     for f in bm.faces:
         n = f.normal
-        tile = TILE.get(materials[f.material_index].name, 3.0)
+        size = tiles.get(materials[f.material_index].name, 3.0)
         ax, ay, az = abs(n.x), abs(n.y), abs(n.z)
         for loop in f.loops:
             co = loop.vert.co
@@ -653,25 +655,28 @@ def assign_uvs(bm, materials):
                 u, v = co.y, co.z
             else:
                 u, v = co.x, co.z
-            loop[uv].uv = (u / tile, v / tile)
+            loop[uv].uv = (u / size, v / size)
 
 
-def tint(mesh):
+def tint(mesh, rgb=(1.0, 1.0, 1.0)):
     """COLOR_0, multiplied over the material: grime at the foot of every terrace and floor (dust and
     splash where walls meet the ground), worn bevelled edges, and low-frequency mottling of
-    hand-applied plaster; per vertex, so curved surfaces show no faceting."""
+    hand-applied plaster; per vertex, so curved surfaces show no faceting. ``rgb`` is an optional
+    per-piece tone (a tuple, or a material-name dict), so small props can share a palette and still
+    read as ash, raw cotton or a pale gourd."""
     col = mesh.color_attributes.new('Col', 'BYTE_COLOR', 'CORNER')
     ledges = sorted(LEDGES)
     for poly in mesh.polygons:
         n = poly.normal
         bevel = 0.92 if 0.35 < abs(n.z) < 0.9 else 1.0
+        tone = rgb.get(mesh.materials[poly.material_index].name, (1.0, 1.0, 1.0)) if isinstance(rgb, dict) else rgb
         for li in poly.loop_indices:
             co = mesh.vertices[mesh.loops[li].vertex_index].co
             above = min((co.z - z for z in ledges if co.z >= z - 0.05), default=co.z + 0.2)
             grime = 0.8 + 0.2 * max(0.0, min(1.0, above / 1.1))
             mottle = 0.88 + 0.12 * (noise.noise(co * 0.3) * 0.5 + 0.5)
             c = grime * mottle * bevel
-            col.data[li].color = (c, c, c, 1.0)
+            col.data[li].color = (c * tone[0], c * tone[1], c * tone[2], 1.0)
     mesh.color_attributes.active_color = col
     mesh.color_attributes.render_color_index = mesh.color_attributes.find('Col')
 

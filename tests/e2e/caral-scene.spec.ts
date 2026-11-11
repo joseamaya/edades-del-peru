@@ -16,8 +16,18 @@ async function boot(page: import('@playwright/test').Page) {
   return errors;
 }
 
-test('the Caral base is dressed with visual-only household props', { tag: '@smoke' }, async ({ page }) => {
+test('the Caral base is dressed with the household prop kit', { tag: '@smoke' }, async ({ page }) => {
   const errors = await boot(page);
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return (g?.settlementDressing ?? []).some((d: any) =>
+        d.group.children.some((c: any) => c.name.startsWith('props_kit_dressing_')),
+      );
+    },
+    null,
+    { timeout: 30_000 },
+  );
   const state = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     const dressing = g.settlementDressing ?? [];
@@ -25,15 +35,29 @@ test('the Caral base is dressed with visual-only household props', { tag: '@smok
     const hasCrops = overlays.some((o: any) =>
       o.group.children.some((c: any) => c.name === 'crops' && c.geometry?.attributes?.position),
     );
-    const mesh = dressing[0]?.group.children[0];
+    const kitMeshes = dressing.flatMap((d: any) =>
+      d.group.children.filter((c: any) => c.name.startsWith('props_kit_dressing_')),
+    );
+    const visible = kitMeshes.filter((m: any) => m.visible);
     return {
       count: dressing.length,
-      verts: mesh?.geometry?.attributes?.position?.count ?? 0,
+      procedural: dressing.filter((d: any) => d.group.children.some((c: any) => c.name === 'dressing')).length,
+      materials: [...new Set(kitMeshes.map((m: any) => m.name.replace(/^props_kit_dressing_|_lod[01]$/g, '')))].sort(),
+      lods: [...new Set(kitMeshes.map((m: any) => m.name.slice(-4)))].sort(),
+      visible: visible.length,
+      shadows: kitMeshes.filter((m: any) => m.castShadow).length,
+      verts: visible.reduce((n: number, m: any) => n + m.geometry.attributes.position.count, 0),
       hasCrops,
       landmark: !!g.landmark,
     };
   });
   expect(state.count).toBeGreaterThan(0);
+  expect(state.procedural, 'the primitives are gone once the kit loads').toBe(0);
+  expect(state.materials).toEqual(['canemat', 'plasterwhite', 'stone', 'wood']);
+  expect(state.lods).toEqual(['lod0', 'lod1']);
+  expect(state.visible).toBe(state.count * 4);
+  // Sub-metre props skip the shadow pass: the buildings and units already anchor the shadows.
+  expect(state.shadows).toBe(0);
   expect(state.verts).toBeGreaterThan(0);
   // No decal plots around Áspero: the player's chacras are the only fields.
   expect(state.hasCrops).toBe(false);

@@ -854,8 +854,10 @@ export class RuntimeController {
     this.game.particles.update(d);
     this.game.debris.update(d);
     this.game.markers.update(d);
-    this.game.trees.update(d, this.game.camera.getTarget());
-    this.game.quarries?.update(this.game.camera.getTarget());
+    const focus = this.game.camera.getTarget();
+    this.game.trees.update(d, focus);
+    this.game.quarries?.update(focus);
+    for (const dressing of this.game.settlementDressing) dressing.update(focus);
     this.game.wildlife.update(d);
 
     // a blocking menu/modal suppresses camera panning (edge/keyboard/drag)

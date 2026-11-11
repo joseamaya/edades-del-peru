@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { DressingPlacement } from '../model/defs/settlementDressing';
+import type { DressingKit } from './propsKit';
+import { kitLodFor, showKitLod } from './kitLod';
 
 const STONE = '#8f8678';
 const DARK_STONE = '#6f665a';
@@ -13,13 +15,31 @@ const CHAVIN_LIGHT = '#c8c0ae';
 const SPONDYLUS = '#c86f78';
 const OBSIDIAN = '#26221f';
 
-/** Terrain-conforming household props, merged into one draw call per base. */
+/** Terrain-conforming household props, merged per material, with the Blender kit on top. */
 export class SettlementDressing {
   readonly group = new THREE.Group();
   private material: THREE.MeshStandardMaterial | null = null;
+  private procedural: THREE.Mesh | null = null;
+  private readonly kitMaterials = new Map<string, THREE.MeshStandardMaterial>();
+  private readonly lodMeshes: [THREE.Mesh[], THREE.Mesh[]] = [[], []];
+  private lod: 0 | 1 = 0;
+  private readonly center = { x: 0, z: 0 };
+  private attached = false;
+  private disposed = false;
 
-  constructor(placements: DressingPlacement[], heightAt: (x: number, z: number) => number) {
+  constructor(
+    private readonly placements: DressingPlacement[],
+    private readonly heightAt: (x: number, z: number) => number,
+  ) {
     this.group.name = 'settlement-dressing';
+    let sx = 0;
+    let sz = 0;
+    for (const p of placements) {
+      sx += p.x;
+      sz += p.z;
+    }
+    this.center.x = sx / Math.max(1, placements.length);
+    this.center.z = sz / Math.max(1, placements.length);
     const parts: THREE.BufferGeometry[] = [];
     for (const p of placements) parts.push(...buildProp(p, heightAt(p.x, p.z)));
     if (!parts.length) return;
@@ -35,28 +55,139 @@ export class SettlementDressing {
     mesh.name = 'dressing';
     mesh.castShadow = true;
     mesh.receiveShadow = true;
+    this.procedural = mesh;
     this.group.add(mesh);
   }
 
+  /**
+   * Replace the procedural props with the Blender household kit. One merged mesh per material and
+   * LOD; the tiny pieces skip the shadow pass, which the buildings and units already anchor. The swap
+   * is all-or-nothing: a missing piece or a failed merge keeps the procedural set.
+   */
+  attachKit(kit: DressingKit): boolean {
+    if (this.disposed || this.attached) return false;
+    const sources = new Map<string, THREE.MeshStandardMaterial>();
+    for (const model of kit.values()) {
+      for (const part of model.lods[0]) sources.set(part.material.name, part.material);
+    }
+    const near = this.bake(kit, 0, sources);
+    const far = near ? this.bake(kit, 1, sources) : null;
+    if (!near || !far) {
+      for (const mesh of near ?? []) mesh.geometry.dispose();
+      for (const material of this.kitMaterials.values()) material.dispose();
+      this.kitMaterials.clear();
+      return false;
+    }
+    this.lodMeshes[0] = near;
+    this.lodMeshes[1] = far;
+    for (const mesh of near) this.group.add(mesh);
+    for (const mesh of far) this.group.add(mesh);
+    showKitLod(this.lodMeshes, 0);
+    this.attached = true;
+    this.procedural?.removeFromParent();
+    this.procedural?.geometry.dispose();
+    this.procedural = null;
+    this.material?.dispose();
+    this.material = null;
+    return true;
+  }
+
+  /** Swap the near and far kit meshes as the camera focus moves. */
+  update(focus: { x: number; z: number }): void {
+    if (this.disposed || !this.attached) return;
+    const lod = kitLodFor(this.center.x, this.center.z, focus);
+    if (lod === this.lod) return;
+    this.lod = lod;
+    showKitLod(this.lodMeshes, lod);
+  }
+
+  /**
+   * Bake the placements of one LOD into one merged geometry per material. Returns null (and disposes
+   * its partial work) when a placement has no kit piece or a merge fails.
+   */
+  private bake(kit: DressingKit, lod: 0 | 1, sources: Map<string, THREE.MeshStandardMaterial>): THREE.Mesh[] | null {
+    const byMaterial = new Map<string, THREE.BufferGeometry[]>();
+    for (const p of this.placements) {
+      const model = kit.get(p.kind);
+      if (!model) {
+        for (const parts of byMaterial.values()) parts.forEach((g) => g.dispose());
+        return null;
+      }
+      const place = placementMatrix(p, this.heightAt(p.x, p.z));
+      for (const part of model.lods[lod]) {
+        const list = byMaterial.get(part.material.name) ?? [];
+        // The kit geometry is session-cached: clone before baking the placement into it.
+        list.push(part.geometry.clone().applyMatrix4(place));
+        byMaterial.set(part.material.name, list);
+      }
+    }
+    const merged: { name: string; geometry: THREE.BufferGeometry }[] = [];
+    for (const [name, parts] of byMaterial) {
+      const geometry = mergeGeometries(parts, false);
+      parts.forEach((g) => g.dispose());
+      if (!geometry) {
+        for (const entry of merged) entry.geometry.dispose();
+        return null;
+      }
+      merged.push({ name, geometry });
+    }
+    const meshes: THREE.Mesh[] = [];
+    for (const { name, geometry } of merged) {
+      let material = this.kitMaterials.get(name);
+      if (!material) {
+        const source = sources.get(name);
+        if (!source) {
+          geometry.dispose();
+          for (const entry of merged) entry.geometry.dispose();
+          for (const created of meshes) created.geometry.dispose();
+          return null;
+        }
+        // Clone per base: fog-of-war patches the material shader, and the kit materials are shared.
+        material = source.clone();
+        this.kitMaterials.set(name, material);
+      }
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.name = `props_kit_dressing_${name.replace(/^MAT-Arch_/, '').toLowerCase()}_lod${lod}`;
+      mesh.castShadow = false;
+      mesh.receiveShadow = true;
+      meshes.push(mesh);
+    }
+    return meshes;
+  }
+
   dispose(): void {
+    this.disposed = true;
+    this.attached = false;
+    for (const mesh of [...this.lodMeshes[0], ...this.lodMeshes[1]]) {
+      mesh.geometry.dispose();
+      mesh.removeFromParent();
+    }
+    this.lodMeshes[0] = [];
+    this.lodMeshes[1] = [];
     this.group.traverse((o) => {
       const mesh = o as THREE.Mesh;
       if (mesh.isMesh) mesh.geometry.dispose();
     });
     this.material?.dispose();
     this.material = null;
+    for (const material of this.kitMaterials.values()) material.dispose();
+    this.kitMaterials.clear();
+    this.procedural = null;
     this.group.removeFromParent();
   }
 }
 
-function buildProp(p: DressingPlacement, y: number): THREE.BufferGeometry[] {
-  const parts: THREE.BufferGeometry[] = [];
-  const place = new THREE.Matrix4().compose(
+function placementMatrix(p: DressingPlacement, y: number): THREE.Matrix4 {
+  return new THREE.Matrix4().compose(
     new THREE.Vector3(p.x, y, p.z),
     new THREE.Quaternion().setFromEuler(new THREE.Euler(0, p.yaw, 0)),
     new THREE.Vector3(p.scale, p.scale, p.scale),
   );
-  const b = new PartBatch(parts, place);
+}
+
+function buildProp(p: DressingPlacement, y: number): THREE.BufferGeometry[] {
+  const parts: THREE.BufferGeometry[] = [];
+  const b = new PartBatch(parts, placementMatrix(p, y));
   switch (p.kind) {
     case 'hearth':
       hearth(b);

@@ -1,0 +1,77 @@
+{
+  "asset_id": "caral_cotton",
+  "source_scene": "scenes/caral_props_kit.blend",
+  "script": "scripts/blender/build_caral_props_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "confidence": "documented",
+  "sources": [
+    "docs/historia/campanas/caral.md",
+    "docs/historia/civilizaciones/caral.md"
+  ],
+  "budget": {
+    "LOD0": 400,
+    "LOD1": 120
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 168,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Arch_CaneMat",
+        "MAT-Arch_PlasterWhite",
+        "MAT-Arch_Wood"
+      ],
+      "bounds": {
+        "min": [
+          -0.36,
+          -0.23,
+          0.005
+        ],
+        "max": [
+          0.428,
+          0.269,
+          0.344
+        ],
+        "size": [
+          0.788,
+          0.499,
+          0.339
+        ]
+      },
+      "file": "caral_cotton_lod0.glb",
+      "bytes": 20916
+    },
+    "LOD1": {
+      "triangles": 72,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Arch_CaneMat",
+        "MAT-Arch_PlasterWhite",
+        "MAT-Arch_Wood"
+      ],
+      "bounds": {
+        "min": [
+          -0.36,
+          -0.23,
+          0.005
+        ],
+        "max": [
+          0.428,
+          0.269,
+          0.344
+        ],
+        "size": [
+          0.788,
+          0.499,
+          0.339
+        ]
+      },
+      "file": "caral_cotton_lod1.glb",
+      "bytes": 10728
+    }
+  }
+}

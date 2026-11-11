@@ -13,6 +13,9 @@ export function createFowUniforms(): FowUniforms {
   return { fowMap: { value: null }, fowEnabled: { value: 0 }, mapSize: { value: 0 } };
 }
 
+/** Materials already patched; the uniforms are shared, so a second call would duplicate the shader. */
+const patched = new WeakSet<THREE.Material>();
+
 /**
  * Dim `material` with the fog-of-war grid, matching the terrain shader
  * (`Terrain.ts`, via the shared `FOW_DIM_GLSL`): unexplored black, explored
@@ -21,6 +24,10 @@ export function createFowUniforms(): FowUniforms {
  * shared, so toggling fog updates every patched material at once.
  */
 export function applyFow(material: THREE.Material, u: FowUniforms): void {
+  // A second patch would declare the varyings twice and break the shader (a group can be decorated
+  // again when its kit model arrives). The uniforms are per match, so the first one wins.
+  if (patched.has(material)) return;
+  patched.add(material);
   const previous = material.onBeforeCompile;
   material.onBeforeCompile = (shader, renderer) => {
     previous.call(material, shader, renderer);

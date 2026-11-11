@@ -1,0 +1,75 @@
+{
+  "asset_id": "caral_drying_rack",
+  "source_scene": "scenes/caral_props_kit.blend",
+  "script": "scripts/blender/build_caral_props_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "confidence": "assumed",
+  "sources": [
+    "docs/historia/campanas/caral.md",
+    "docs/historia/civilizaciones/caral.md"
+  ],
+  "budget": {
+    "LOD0": 650,
+    "LOD1": 200
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 220,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Arch_CaneMat",
+        "MAT-Arch_Wood"
+      ],
+      "bounds": {
+        "min": [
+          -0.651,
+          -0.295,
+          -0.044
+        ],
+        "max": [
+          0.651,
+          0.295,
+          1.026
+        ],
+        "size": [
+          1.303,
+          0.59,
+          1.07
+        ]
+      },
+      "file": "caral_drying_rack_lod0.glb",
+      "bytes": 22528
+    },
+    "LOD1": {
+      "triangles": 96,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Arch_CaneMat",
+        "MAT-Arch_Wood"
+      ],
+      "bounds": {
+        "min": [
+          -0.649,
+          -0.295,
+          -0.044
+        ],
+        "max": [
+          0.649,
+          0.25,
+          1.025
+        ],
+        "size": [
+          1.298,
+          0.545,
+          1.069
+        ]
+      },
+      "file": "caral_drying_rack_lod1.glb",
+      "bytes": 11692
+    }
+  }
+}

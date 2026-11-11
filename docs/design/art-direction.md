@@ -206,8 +206,11 @@ modelled yet. Reference views: `node scripts/shots_reference_views.mjs --focus=s
 
 _Status (props kit v1)_: the granodiorite outcrop ships as LOD0/LOD1 GLBs
 (`scripts/blender/build_caral_props_kit.py`, `src/assets/props/caral/`); `QuarryInstances` draws every
-Caral stone node with one instanced mesh, tilted to the terrain. The household props (hearth, drying
-rack, baskets, mates, bench, windbreak) are still procedural and pending.
+Caral stone node with one instanced mesh, tilted to the terrain. The seven household pieces of an Áspero
+base (hearth, drying rack, basket, gourds/mates, stone bench, windbreak and cotton on its mat) ship in the
+same kit: `SettlementDressing` bakes them into one mesh per shared material and LOD, skips the shadow pass
+for the sub-metre props and swaps LOD1 at 30 units; the procedural set stays as the fallback and keeps
+serving Chavín, whose ritual set has no kit yet.
 
 ## 10. Light and atmosphere
 

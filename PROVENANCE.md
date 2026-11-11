@@ -205,19 +205,29 @@ slot is absent (offline / without assets).
   review on 2026-11-07 (Miguel Amaya; `reviewer` and `reviewedAt` in each manifest). A rebuild exports
   the piece unreviewed again.
 
-### Caral prop kit (granodiorite quarries)
+### Caral prop kit (quarries and household goods)
 
-- **Location**: `src/assets/props/caral/caral_granodiorite_lod{0,1}.glb`.
+- **Location**: `src/assets/props/caral/caral_<piece>_lod{0,1}.glb`: the `granodiorite` quarry outcrop and
+  the seven household pieces of an Áspero base (`hearth`, `drying_rack`, `basket`, `gourd`, `bench`,
+  `windbreak`, `cotton`).
 - **Source**: generated in Blender by `scripts/blender/build_caral_props_kit.py`; kit scene
   `art-src/blender/scenes/caral_props_kit.blend` (Git LFS). Per-piece manifests live in
   `art-src/blender/exports/caral/props/`; the game copies were meshopt-compressed with `yarn art:models`.
-- **Content**: a low, fractured granodiorite outcrop (5 main chunks and up to 5 loose blocks at LOD0;
-  420/80 triangles) with one shared architecture material (`MAT-Arch_Stone`), world-scale box-projected
-  UVs and the usual vertex-colour grime. `QuarryInstances` draws every Caral stone node with one instanced
-  mesh, tilts it to the sampled terrain normal and sinks it slightly so no chunk floats on a slope.
-- **Confidence**: the dossier documents granodiorite as the late-period stone and the quarries in the
-  hills; the outcrop's shape and the loose blocks are inferred. The piece ships `reviewed: false` until
-  a human review records `reviewer` and `reviewedAt`; a rebuild exports it unreviewed again.
+- **Content**: the household set shares four architecture materials (`MAT-Arch_Stone`, `_Wood`,
+  `_CaneMat`, `_PlasterWhite`) with world-scale box-projected UVs re-scaled for sub-metre props, plus a
+  per-piece and per-material `COLOR_0` tone (ash-dark hearth, pale gourds, raw cotton) over the usual
+  grime. `SettlementDressing` bakes every placement of a base into one mesh per material and LOD (no
+  shadow pass: the pieces are 0.2-1.2 m and the buildings already anchor the shadows) and swaps LOD1 at
+  30 units from the camera focus. If a GLB fails, the base keeps its procedural dressing.
+- **Confidence** (the dossier's own scale, `docs/historia/campanas/caral.md`): `hearth` and `cotton` are
+  `documented` (stone-heated cooking pits and the cotton crop are in the dossier; the ring form and the
+  mat-and-spindle arrangement are the reconstruction). `basket` and `gourd` are `inferred`: shicra bags
+  are documented as construction fill, and calabaza and the mates as net floats are documented, but the
+  domestic basket and the cut mate bowl are inferred uses of them. `drying_rack`, `bench` and
+  `windbreak` are `assumed` (plausible reconstructions of documented materials; the net rack and the
+  mates' place in the fishing house are listed as such). The outcrop's shape is `inferred`. Every piece
+  ships `reviewed: false` until a human review records `reviewer` and `reviewedAt`; a rebuild exports it
+  unreviewed again.
 
 ### Caral intro and act-card images (in-engine recreations)
 

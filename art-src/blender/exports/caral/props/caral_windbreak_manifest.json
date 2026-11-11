@@ -1,0 +1,75 @@
+{
+  "asset_id": "caral_windbreak",
+  "source_scene": "scenes/caral_props_kit.blend",
+  "script": "scripts/blender/build_caral_props_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "confidence": "assumed",
+  "sources": [
+    "docs/historia/campanas/caral.md",
+    "docs/historia/civilizaciones/caral.md"
+  ],
+  "budget": {
+    "LOD0": 560,
+    "LOD1": 180
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 108,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Arch_CaneMat",
+        "MAT-Arch_Wood"
+      ],
+      "bounds": {
+        "min": [
+          -0.61,
+          -0.045,
+          -0.051
+        ],
+        "max": [
+          0.61,
+          0.069,
+          1.055
+        ],
+        "size": [
+          1.22,
+          0.114,
+          1.106
+        ]
+      },
+      "file": "caral_windbreak_lod0.glb",
+      "bytes": 11556
+    },
+    "LOD1": {
+      "triangles": 64,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Arch_CaneMat",
+        "MAT-Arch_Wood"
+      ],
+      "bounds": {
+        "min": [
+          -0.61,
+          -0.042,
+          -0.051
+        ],
+        "max": [
+          0.61,
+          0.055,
+          1.055
+        ],
+        "size": [
+          1.22,
+          0.097,
+          1.106
+        ]
+      },
+      "file": "caral_windbreak_lod1.glb",
+      "bytes": 7920
+    }
+  }
+}
