@@ -27,6 +27,8 @@ import { ResourceNode } from '../entities/ResourceNode';
 import { clearResourceCaches } from '../rendering/ResourceNodeView';
 import { OrderMarkers } from '../entities/OrderMarker';
 import { TreeInstances, kitLod0RadiusFor } from '../rendering/TreeInstances';
+import { QuarryInstances } from '../rendering/QuarryInstances';
+import { loadPropsKit } from '../rendering/propsKit';
 import { isCoastalRegion } from '../rendering/vegetationKit';
 import { attachVegetationKit } from '../rendering/vegetationKitLoader';
 import { Props } from '../rendering/Props';
@@ -221,6 +223,8 @@ export class Game {
   markers!: OrderMarkers;
   trees!: TreeInstances;
   props!: Props;
+  /** Instanced kit outcrops for stone nodes on authored scenarios; null in headless runs. */
+  quarries: QuarryInstances | null = null;
   wildlife!: Wildlife;
   loop = new GameLoop();
   hud!: HUD;
@@ -562,6 +566,15 @@ export class Game {
     this.markers = new OrderMarkers(this.scene);
     this.trees = new TreeInstances(this.scene);
     this.props = new Props(this.scene);
+    if (!this.headless) {
+      this.quarries = new QuarryInstances(this.scene, (x, z) => this.terrain.getHeight(x, z));
+      if (this.mapProfile.quarryStyle) {
+        const style = this.mapProfile.quarryStyle;
+        void loadPropsKit(style)
+          .then((model) => this.quarries?.attachKit(model))
+          .catch((error) => console.warn(`[props-kit] ${style} failed to load; using the procedural quarry`, error));
+      }
+    }
     if (!this.headless) {
       this.trees.kitLod0Radius = kitLod0RadiusFor(this.softwareFallback || this.settings.quality === 'low');
       void attachVegetationKit(this.trees, this.props, isCoastalRegion(this.mapProfile.region));
@@ -1540,7 +1553,13 @@ export class Game {
     variants?: typeof this.mapProfile.vegetation.variants,
   ): void {
     if (!this.headless) {
-      attachResource(this.scene, node, mapType, trees, variants, this.mapProfile.berryShrub);
+      attachResource(this.scene, node, mapType, {
+        treeMgr: trees,
+        treeVariants: variants,
+        berryShrub: this.mapProfile.berryShrub,
+        quarryMgr: this.quarries ?? undefined,
+        quarryStyle: this.mapProfile.quarryStyle,
+      });
     }
   }
 
@@ -1919,6 +1938,7 @@ export class Game {
     this.resourceNodes.clear();
     this.trees.dispose();
     this.props.dispose();
+    this.quarries?.dispose();
     this.wildlife.dispose();
     if (this.landmark) {
       this.landmarkLoadToken++;

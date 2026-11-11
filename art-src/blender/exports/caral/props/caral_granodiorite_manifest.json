@@ -1,0 +1,73 @@
+{
+  "asset_id": "caral_granodiorite",
+  "source_scene": "scenes/caral_props_kit.blend",
+  "script": "scripts/blender/build_caral_props_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "confidence": "inferred",
+  "sources": [
+    "docs/historia/campanas/caral.md",
+    "docs/historia/civilizaciones/caral.md"
+  ],
+  "budget": {
+    "LOD0": 1500,
+    "LOD1": 400
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 420,
+      "draw_calls": 1,
+      "materials": [
+        "MAT-Arch_Stone"
+      ],
+      "bounds": {
+        "min": [
+          -3.288,
+          -2.386,
+          -0.676
+        ],
+        "max": [
+          3.202,
+          2.532,
+          1.469
+        ],
+        "size": [
+          6.49,
+          4.918,
+          2.145
+        ]
+      },
+      "file": "caral_granodiorite_lod0.glb",
+      "bytes": 43148
+    },
+    "LOD1": {
+      "triangles": 80,
+      "draw_calls": 1,
+      "materials": [
+        "MAT-Arch_Stone"
+      ],
+      "bounds": {
+        "min": [
+          -2.917,
+          -1.717,
+          -0.59
+        ],
+        "max": [
+          2.955,
+          2.429,
+          1.608
+        ],
+        "size": [
+          5.871,
+          4.146,
+          2.199
+        ]
+      },
+      "file": "caral_granodiorite_lod1.glb",
+      "bytes": 9904
+    }
+  }
+}

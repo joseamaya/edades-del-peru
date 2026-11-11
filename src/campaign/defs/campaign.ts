@@ -150,6 +150,7 @@ export const MISSIONS: MissionDef[] = [
       // art style. The pacae shrub is the food node instead (docs/historia/campanas/caral.md).
       vegetation: { density: 0.06, variants: { algarrobo: 0.7, sauce: 0.3, molle: 0, pacay: 0 } },
       berryShrub: 'pacae',
+      quarryStyle: 'granodiorite',
       // Caral has no documented silver extraction or coastal vicuña herds.
       // The 256 m transect keeps the former tree count: groves on the floodplain, none on beach or marsh,
       // and the scattered quarries stay at the former 192 m map's count.

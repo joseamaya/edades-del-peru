@@ -118,6 +118,8 @@ uses a few near rings and a dark haze frame so the camera never sees the old cre
 - Cooking smoke behind houses (pachamanca pits), refuse heaps outside them.
 - Fire on the sacred-fire altars; flute music near the Amphitheatre during ceremonies.
 - People walking between plazas and houses; pilgrims during fairs.
+- Stone nodes draw the granodiorite outcrop kit, tilted to the terrain and instanced (one mesh per
+  material), instead of a disc of floating primitives.
 - Player-built quincha houses use the paint colour of the current phase (open, see _Open items_).
 
 ## Narration

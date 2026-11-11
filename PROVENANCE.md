@@ -205,6 +205,20 @@ slot is absent (offline / without assets).
   review on 2026-11-07 (Miguel Amaya; `reviewer` and `reviewedAt` in each manifest). A rebuild exports
   the piece unreviewed again.
 
+### Caral prop kit (granodiorite quarries)
+
+- **Location**: `src/assets/props/caral/caral_granodiorite_lod{0,1}.glb`.
+- **Source**: generated in Blender by `scripts/blender/build_caral_props_kit.py`; kit scene
+  `art-src/blender/scenes/caral_props_kit.blend` (Git LFS). Per-piece manifests live in
+  `art-src/blender/exports/caral/props/`; the game copies were meshopt-compressed with `yarn art:models`.
+- **Content**: a low, fractured granodiorite outcrop (5 main chunks and up to 5 loose blocks at LOD0;
+  420/80 triangles) with one shared architecture material (`MAT-Arch_Stone`), world-scale box-projected
+  UVs and the usual vertex-colour grime. `QuarryInstances` draws every Caral stone node with one instanced
+  mesh, tilts it to the sampled terrain normal and sinks it slightly so no chunk floats on a slope.
+- **Confidence**: the dossier documents granodiorite as the late-period stone and the quarries in the
+  hills; the outcrop's shape and the loose blocks are inferred. The piece ships `reviewed: false` until
+  a human review records `reviewer` and `reviewedAt`; a rebuild exports it unreviewed again.
+
 ### Caral intro and act-card images (in-engine recreations)
 
 - **Location**: `public/media/caral/intro-{aspero,valle,obra,ciudad,sequia,partida}.webp` (960x540,
