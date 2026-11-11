@@ -110,7 +110,7 @@ test('the Blender vegetation kit replaces the procedural huarango, willow and to
     };
     const procedural = g.scene.getObjectByName('props_totora');
     const trunk = g.scene.getObjectByName('trees_trunk');
-    const highestUsed = g.trees.slots.reduce((m: number, s: any, i: number) => (s.used ? i : m), -1);
+    const variants = [...new Set(g.trees.slots.filter((s: any) => s.used).map((s: any) => s.variant))];
     // Picking resolves a packed kit instance back to its resource node.
     const T = (window as unknown as { THREE: any }).THREE;
     const tree = g.trees.slots.find((s: any) => s.used && s.visible && s.variant === 'algarrobo');
@@ -120,8 +120,9 @@ test('the Blender vegetation kit replaces the procedural huarango, willow and to
     return {
       picked: hits.some((h) => h.id === tree.id),
       trunkCount: trunk?.count ?? -1,
+      trunkVisible: trunk?.visible ?? true,
+      variants,
       kitCanopyVisible: g.scene.getObjectByName('trees_canopy_algarrobo')?.visible ?? true,
-      highestUsed,
       huarango: count('trees_kit_huarango_lod0') + count('trees_kit_huarango_lod1'),
       totoraKit: count('props_kit_totora'),
       totora: procedural?.count ?? 0,
@@ -131,9 +132,11 @@ test('the Blender vegetation kit replaces the procedural huarango, willow and to
   });
   expect(state.huarango).toBeGreaterThan(0);
   expect(state.picked).toBe(true);
-  // Procedural tree meshes draw only up to the highest used slot, not all 700.
-  expect(state.trunkCount).toBe(state.highestUsed + 1);
-  expect(state.trunkCount).toBeLessThan(700);
+  // Issue 393: Caral keeps only the kit-backed species, so it has no procedural tree mesh at all.
+  expect(state.variants.length).toBeGreaterThan(0);
+  expect(state.variants.every((variant: string) => variant === 'algarrobo' || variant === 'sauce')).toBe(true);
+  expect(state.trunkVisible).toBe(false);
+  expect(state.trunkCount).toBe(0);
   // The procedural canopy of a kit-drawn variant is hidden, so it costs no draw call.
   expect(state.kitCanopyVisible).toBe(false);
   expect(state.totoraKit).toBe(state.totora);

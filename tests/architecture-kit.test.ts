@@ -8,6 +8,7 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { archPartsFromScene, archKitUrl } from '../src/rendering/architectureKit';
 import {
   CARAL_CITY_BLOCKERS,
+  CARAL_CITY_HOUSE_BLOCKERS,
   CARAL_CITY_LAYOUT,
   CARAL_FAIR_TENTS,
   CARAL_MAYOR_HEIGHT,
@@ -209,15 +210,26 @@ describe('Caral city layout', () => {
 
   it('keeps houses off the monuments, off each other and away from the player base', () => {
     const base = { x: 60.5, z: 161.3 };
-    CARAL_CITY_BLOCKERS.forEach((house, i) => {
+    CARAL_CITY_HOUSE_BLOCKERS.forEach((house, i) => {
       for (const monument of CARAL_SITE_BLOCKERS) expect(overlaps(house, monument), `house ${i}`).toBe(false);
-      CARAL_CITY_BLOCKERS.forEach((other, j) => {
+      CARAL_CITY_HOUSE_BLOCKERS.forEach((other, j) => {
         if (j > i) expect(overlaps(house, other), `houses ${i}/${j}`).toBe(false);
       });
       expect(Math.hypot(house.x - base.x, house.z - base.z)).toBeGreaterThan(25);
     });
-    expect(CARAL_CITY_BLOCKERS.length).toBe(
+    expect(CARAL_CITY_HOUSE_BLOCKERS.length).toBe(
       CARAL_CITY_LAYOUT.filter((p) => p.asset === 'house_common' || p.asset === 'house_elite').length,
     );
+  });
+
+  it('blocks every fair tent and circular plaza for its whole standing phase', () => {
+    const covers = (p: { x: number; z: number }): boolean =>
+      CARAL_CITY_BLOCKERS.some((b) => Math.abs(b.x - p.x) <= b.w / 2 && Math.abs(b.z - p.z) <= b.d / 2);
+    for (const tent of CARAL_FAIR_TENTS) expect(covers(tent), `tent at ${tent.x},${tent.z}`).toBe(true);
+    const plazas = CARAL_CITY_LAYOUT.filter((p) => p.asset === 'circular_plaza');
+    expect(plazas.length).toBeGreaterThanOrEqual(2);
+    for (const plaza of plazas) expect(covers(plaza), `plaza at ${plaza.x},${plaza.z}`).toBe(true);
+    const tentBlocker = CARAL_CITY_BLOCKERS.find((b) => Math.abs(b.x - CARAL_FAIR_TENTS[0].x) < 0.01);
+    expect(tentBlocker).toMatchObject({ since: 'in_use', until: 'sealed' });
   });
 });

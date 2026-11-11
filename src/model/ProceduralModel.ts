@@ -1133,7 +1133,8 @@ function buildStructure(type: string, ctx: BuildContext): THREE.Group {
       break;
 
     case 'mill_steam':
-      buildDropsite(b, 1.9, 'wood');
+      if (b.civId === CivId.CARAL) buildCaralDepot(b, 1.9);
+      else buildDropsite(b, 1.9, 'wood');
       break;
     case 'mill_imperial':
       buildDropsite(b, 2.0, 'brick');
@@ -3041,6 +3042,58 @@ function buildCaralHouse(b: Builder, size: number): void {
     tex: 'dirt',
   });
   b.group.name = 'caral_house';
+}
+
+const CARAL_DEPOT_WALL_HEIGHT = 1.35;
+
+/**
+ * Caral's communal store: a walled patio with a covered rear room, stone-footed quincha walls and
+ * no heraldic banner. The dossier describes the store as a game abstraction; the form follows the
+ * documented compound language (docs/historia/campanas/caral.md).
+ */
+function buildCaralDepot(b: Builder, size: number): void {
+  const w = size * 1.9;
+  const d = size * 1.5;
+  buildCaralCompound(b, {
+    x: 0,
+    y: 0,
+    z: 0,
+    yaw: 0,
+    width: w,
+    depth: d,
+    rooms: 4,
+    elite: false,
+    wallHeight: CARAL_DEPOT_WALL_HEIGHT,
+    wallThickness: 0.24,
+    doorHeadHeight: 1.0,
+  });
+  const { stone, earth } = caralColors(b);
+  const f = caralFrame(0, 0, 0, 0);
+  caralCompoundRoof(b, w, d, CARAL_DEPOT_WALL_HEIGHT, 0.1, 0.24);
+  caralEntryStep(b, w, d, stone);
+  // Stored surplus: large mates in the patio and bundles of shicra fibre along the front.
+  for (const [x, z, r] of [
+    [-w * 0.2, d * 0.08, 0.2],
+    [w * 0.02, d * 0.12, 0.17],
+    [w * 0.22, d * 0.02, 0.22],
+  ] as const) {
+    caralCyl(b, f, r * 1.15, r * 1.4, r * 1.5, 10, mixHex(earth, '#8a7450', 0.35), x, r * 0.75, z, 'dirt');
+  }
+  for (let i = 0; i < 3; i++) {
+    caralBox(
+      b,
+      f,
+      w * 0.2,
+      0.16,
+      0.26,
+      mixHex(earth, '#c2a05c', 0.35),
+      -w * 0.28 + i * w * 0.28,
+      0.08,
+      d * 0.3,
+      undefined,
+    );
+  }
+  b.group.name = 'caral_depot';
 }
 
 /** The player's Plaza Mayor: a low civic compound with a central hearth-altar and banner. */

@@ -8,6 +8,7 @@ import type { Unit } from '../entities/Unit';
 import { ResourceNodeView } from './ResourceNodeView';
 import type { ResourceNode } from '../entities/ResourceNode';
 import type { TreeInstances, TreeVariant } from './TreeInstances';
+import type { BerryShrubId } from '../model/defs/profiles';
 
 function makeView(building: Building, ctx: BuildContext): EntityView {
   const model = buildModel(getBuildingModel(building.kind, building.era), ctx);
@@ -85,8 +86,9 @@ export function attachResource(
   mapType: string,
   trees?: TreeInstances,
   variants?: Partial<Record<TreeVariant, number>>,
+  berryShrub?: BerryShrubId,
 ): void {
-  const view = new ResourceNodeView(scene, node, mapType, trees, variants);
+  const view = new ResourceNodeView(scene, node, mapType, trees, variants, berryShrub);
   node.nodeView = view;
   view.setPosition(node.pos.x, node.pos.y, node.pos.z);
   if (node.kind === 'tree') view.placeTreeInstance(node.pos.y);

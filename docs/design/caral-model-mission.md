@@ -97,7 +97,9 @@ sea | beach + Áspero + wetlands (totora) + lomas | lower valley (El Molino)
 
 - River dry most of the year with groundwater and springs; seasonal flood brings fish and shrimp.
 - Vegetation set: willow, giant reed (caña brava), carrizo, horsetail, huarango; totora and junco in the
-  wetlands. No palms on this map.
+  wetlands. No palms on this map. Trees use only the two kit-backed variants (huarango/algarrobo and
+  sauce); the generic molle/pacay billboards are disabled in the mission overrides.
+- Food nodes: the dossier's pacae/guayaba shrubs replace the generic red-berry bush (issue 393).
 - Fauna (ambient): deer, rodents, birds in the riparian forest; sea birds on the coast.
 - Lomas turn green in the foggy winter season.
 

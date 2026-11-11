@@ -20,7 +20,7 @@ import {
   CARAL_CITY_LAYOUT,
 } from '../model/defs/caralCity';
 import { CHAVIN_CITY_LAYOUT, CHAVIN_PHASE_PLAN } from '../model/defs/chavinCity';
-import { standsAt } from '../model/defs/sitePhases';
+import { standsIn } from '../model/defs/sitePhases';
 import { fishingApproach, type Obstacle } from '../game/Pathfinding';
 import { loadDecorModel } from '../rendering/decorModels';
 import { buildCanalGeometry } from '../rendering/canal';
@@ -131,7 +131,7 @@ export class WorldViewDecor {
   syncSitePhase(phase: string): void {
     const plan = this.game.siteDef?.phases;
     for (const entry of this.phasedBlockers) {
-      const stands = standsAt(entry.blocker.since, phase, plan);
+      const stands = standsIn(entry.blocker.since, entry.blocker.until, phase, plan);
       if (stands === entry.on) continue;
       if (stands) this.game.pathfinder.addObstacle(entry.obstacle);
       else this.game.pathfinder.removeObstacle(entry.obstacle);

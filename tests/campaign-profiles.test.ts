@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { MISSIONS } from '../src/campaign/defs/campaign';
 import {
+  applyMapOverrides,
   resolveMapProfile,
   resolveWorldProfile,
   regionDefaultMap,
@@ -85,5 +86,19 @@ describe('campaign map profiles', () => {
 
   it('every mission references a valid period', () => {
     for (const mis of MISSIONS) expect(getPeriod(mis.period), mis.id).toBeDefined();
+  });
+
+  it('gives Caral only the kit-backed tree species and a documented fruit shrub', () => {
+    const mis = MISSIONS.find((m) => m.id === 'm1_caral')!;
+    const map = applyMapOverrides(resolve(mis), mis.mapOverrides);
+    expect(map.berryShrub).toBe('pacae');
+    expect(map.vegetation.variants.molle ?? 0).toBe(0);
+    expect(map.vegetation.variants.pacay ?? 0).toBe(0);
+    // KIT_TREE_VARIANTS only ships the huarango (algarrobo) and the willow (sauce).
+    const positive = Object.entries(map.vegetation.variants)
+      .filter(([, weight]) => (weight ?? 0) > 0)
+      .map(([variant]) => variant)
+      .sort();
+    expect(positive).toEqual(['algarrobo', 'sauce']);
   });
 });

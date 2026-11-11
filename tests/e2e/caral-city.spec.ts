@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { OPENING_BASE_CLEARANCE } from '../../src/core/Config';
 import { CARAL_CIRCULAR_ALTAR, CARAL_SITE_BLOCKERS } from '../../src/model/defs/sites';
-import { CARAL_CITY_BLOCKERS } from '../../src/model/defs/caralCity';
+import { CARAL_CITY_BLOCKERS, CARAL_CITY_LAYOUT, CARAL_FAIR_TENTS } from '../../src/model/defs/caralCity';
 import { CANAL_WATER_LIFT } from '../../src/rendering/canal';
 
 const URL = '/?mission=m1_caral&seed=3000&fog=0&low=1&noloop=1&intro=0';
@@ -205,10 +205,11 @@ test('the authored site blocks monument footprints without sealing the city', as
     return {
       mayor: g.pathfinder.isWalkable(164, 30),
       anfiteatro: g.pathfinder.isWalkable(164, 152),
-      plaza: g.pathfinder.isWalkable(164, 53),
+      // The sunken circular plaza is blocked (issue 393); the ring north of its rim is open.
+      plaza: g.pathfinder.isWalkable(164, 52),
       base: g.pathfinder.isWalkable(34, 172),
       // From Áspero across a ford of the Supe to the city.
-      route: g.pathfinder.pathfind(34, 172, 164, 53).length,
+      route: g.pathfinder.pathfind(34, 172, 164, 52).length,
       buildOnMayor: g.canPlace(164, 30, 4),
       buildInValley: g.canPlace(48, 110, 4),
       buildInGap: g.canPlace(166, 136.5, 4),
@@ -438,7 +439,43 @@ test('the Caral opening keeps the base clear of mines, wells, cacti and vicuñas
   expect(state.cacti).toBe(0);
 });
 
-test('the authored site blocks every solid monument but keeps its plazas walkable', async ({ page }) => {
+test('the Caral food nodes are documented pacae shrubs and its trees use only kit species', async ({ page }) => {
+  await boot(page);
+  const state = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const berries = [...g.resourceNodes.values()].filter((n: any) => n.kind === 'berry' && !n.dead);
+    const trees = [...g.resourceNodes.values()].filter((n: any) => n.kind === 'tree' && !n.dead);
+    return {
+      berryShrub: g.mapProfile.berryShrub,
+      berries: berries.length,
+      berryMarkers: berries.map((n: any) => n.nodeView?.view.userData.berryShrub ?? null),
+      treeVariants: [...new Set(trees.map((n: any) => n.nodeView?.treeVariant))],
+    };
+  });
+  expect(state.berryShrub).toBe('pacae');
+  expect(state.berries).toBeGreaterThan(0);
+  expect(state.berryMarkers.every((marker: string | null) => marker === 'pacae')).toBe(true);
+  expect(state.treeVariants.every((variant: string) => variant === 'algarrobo' || variant === 'sauce')).toBe(true);
+});
+
+test('the fair tents and sunken circular plazas block unit paths', async ({ page }) => {
+  await boot(page);
+  const state = await page.evaluate(
+    ([tents, plazas]) => {
+      const g = (window as unknown as { game: any }).game;
+      g.setSitePhase('in_use');
+      return {
+        tents: tents.map((t: any) => g.pathfinder.isWalkable(t.x, t.z)),
+        plazas: plazas.map((p: any) => g.pathfinder.isWalkable(p.x, p.z)),
+      };
+    },
+    [CARAL_FAIR_TENTS, CARAL_CITY_LAYOUT.filter((p) => p.asset === 'circular_plaza')],
+  );
+  expect(state.tents).toEqual(CARAL_FAIR_TENTS.map(() => false));
+  expect(state.plazas).toEqual(CARAL_CITY_LAYOUT.filter((p) => p.asset === 'circular_plaza').map(() => false));
+});
+
+test('the authored site blocks every solid monument and leaves the plaza ring walkable', async ({ page }) => {
   await boot(page);
   const state = await page.evaluate(
     ([blockers, altar]) => {
@@ -455,7 +492,8 @@ test('the authored site blocks every solid monument but keeps its plazas walkabl
         navCell: p.grid.cell,
         monuments: blockers.filter((b: any) => !p.isWalkable(b.x, b.z)).length,
         path: path.map((pt: any) => ({ x: pt.x, z: pt.z })),
-        open: p.isWalkable(164, 100) && p.isWalkable(164, 53),
+        // The sunken circular plaza is blocked (issue 393); the approach north of its rim stays open.
+        open: p.isWalkable(164, 100) && p.isWalkable(164, 52),
         altar: p.isWalkable(altar.x, altar.z),
         pathCrosses: path.filter((pt: any) => inside(pt.x, pt.z)).length,
         aimedInside: aimedEnd ? !!inside(aimedEnd.x, aimedEnd.z) : false,
@@ -1210,6 +1248,11 @@ test('the Chacra and communal-store panels explain their historical abstractions
   expect(ids).not.toBeNull();
   expect(ids!.farm).not.toBeNull();
   expect(ids!.mill).not.toBeNull();
+  const depot = await page.evaluate((id) => {
+    const g = (window as unknown as { game: any }).game;
+    return g.buildings.get(id)?.view?.group.getObjectByName('caral_depot') !== undefined;
+  }, ids!.mill);
+  expect(depot, 'the communal store uses the Caral depot model').toBe(true);
   const bottom = page.locator('#ed-bottom');
   await page.evaluate((id) => {
     const g = (window as unknown as { game: any }).game;

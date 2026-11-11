@@ -1539,7 +1539,9 @@ export class Game {
     trees?: typeof this.trees,
     variants?: typeof this.mapProfile.vegetation.variants,
   ): void {
-    if (!this.headless) attachResource(this.scene, node, mapType, trees, variants);
+    if (!this.headless) {
+      attachResource(this.scene, node, mapType, trees, variants, this.mapProfile.berryShrub);
+    }
   }
 
   /** A stable hash of the gameplay state (replay/determinism verification). */
