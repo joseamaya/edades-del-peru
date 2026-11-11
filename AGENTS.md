@@ -20,6 +20,7 @@ Package manager **Yarn 1** (`yarn.lock` exists — never create a `package-lock.
   `yarn test:e2e:slow` — those heavy specs (nightly).
   `PW_WORKERS=N` overrides workers.
 - `yarn shot <name> --seed=777 --wait=8000` — screenshot into `review/`
+- `yarn evidence` — list the captures a branch needs, as a PR-ready markdown block (warn-only)
 - `yarn audit:campaigns` — full m1–m9 briefing/tutorial/layout/victory audit into `review/audit/`
 - `yarn sim [--seeds=…] [--max=…] [--difficulty=…]` — headless AI-vs-AI match runner (AI regression baseline)
 - `yarn bench:check` — rig/fauna/mounted/siege/tank/vehicle/mixed structural budgets (`--assert`); SwiftShader is not a GPU benchmark
@@ -56,6 +57,9 @@ explicit approval described below.
 
 - **Never commit directly to `main`.** Create a descriptive branch (`feat/…`, `fix/…`, `docs/…`), make the
   changes there and open a PR.
+- **A change the player can see is not done until it was captured.** `yarn evidence` lists the captures the
+  diff needs; attach the PNG to the PR and keep the command that produced it. `review/` is gitignored, so a
+  path alone is not evidence — a docs/tests-only diff says "no visible change, because …" instead.
 - **Run the `code-review` skill before merging** (standards + spec/issue axes). If the skill is unavailable,
   perform an equivalent independent review of the diff.
 - **Fix the review findings, rerun the tests/CI, then merge.** The user has explicitly authorized this
