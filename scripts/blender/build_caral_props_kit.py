@@ -40,7 +40,7 @@ BUDGETS = {
     'hearth': (600, 180),
     'drying_rack': (650, 200),
     'basket': (420, 130),
-    'gourd': (380, 120),
+    'gourd': (380, 150),
     'bench': (420, 130),
     'windbreak': (560, 180),
     'cotton': (400, 120),
@@ -50,8 +50,8 @@ CONFIDENCE = {
     'granodiorite': 'inferred',
     'hearth': 'documented',
     'drying_rack': 'assumed',
-    'basket': 'documented',
-    'gourd': 'documented',
+    'basket': 'inferred',
+    'gourd': 'inferred',
     'bench': 'assumed',
     'windbreak': 'assumed',
     'cotton': 'documented',
@@ -220,8 +220,8 @@ def drying_rack(mats, lod):
 
 
 def basket(mats, lod):
-    """Shicra-style fibre basket with a few gathered stones (baskets filled with stones are the
-    documented shicra; this is the household container, inferred)."""
+    """Fibre basket with a few gathered stones. Shicra bags are documented as construction fill
+    (stones in a reed net); the domestic container is an inferred use of the same craft."""
     bm = bmesh.new()
     cane, stone = 0, 1
     sides = 12 if lod == 0 else 8
@@ -246,15 +246,18 @@ def basket(mats, lod):
 
 
 def gourd(mats, lod):
-    """Gourds and mates: dried calabash floats and a cut bowl, both documented in the fishing kit."""
+    """Gourds and mates: the dossier documents calabaza as a crop and mates as net floats; the cut
+    bowl is an inferred household use, so the piece is `inferred`."""
     bm = bmesh.new()
     shell, wood = 0, 1
     ball(bm, (0, 0, 0.1), (0.15, 0.14, 0.11), 8 if lod == 0 else 6, 4 if lod == 0 else 3, 0.12, 60, shell)
     ball(bm, (0.21, 0.05, 0.075), (0.1, 0.09, 0.08), 7 if lod == 0 else 5, 3, 0.12, 61, shell)
     if lod == 0:
         ball(bm, (-0.18, 0.09, 0.06), (0.08, 0.08, 0.065), 6, 3, 0.14, 62, shell)
-        # cut mate bowl: a squat ring of fibre with a dark hollow read from the rim
-        cone(bm, (-0.02, -0.2, 0.045), 0.11, 0.13, 0.09, 8, shell)
+    # cut mate bowl: a squat ring of fibre with a dark hollow read from the rim. It is the far corner
+    # of the footprint, so LOD1 keeps it to avoid a pop when the base switches at 30 units.
+    cone(bm, (-0.02, -0.2, 0.045), 0.11, 0.13, 0.09, 8 if lod == 0 else 6, shell)
+    if lod == 0:
         timber(bm, (0.02, -0.2, 0.08), (0.02, -0.2, 0.15), 0.018, 0.014, 4, wood)
     timber(bm, (0.02, 0.0, 0.17), (0.05, 0.02, 0.28), 0.02, 0.012, 4, wood)
     return bm, [mats['plaster_early'], mats['wood']]
@@ -330,14 +333,7 @@ def build_object(asset, lod, mats):
         f.material_index = remap[f.material_index]
     kept = [materials[i] for i in used]
     bm.normal_update()
-    tiles = dict(arch_kit.TILE)
-    if asset != 'granodiorite':
-        arch_kit.TILE.update(HOUSEHOLD_TILE)
-    try:
-        arch_kit.assign_uvs(bm, kept)
-    finally:
-        arch_kit.TILE.clear()
-        arch_kit.TILE.update(tiles)
+    arch_kit.assign_uvs(bm, kept, None if asset == 'granodiorite' else HOUSEHOLD_TILE)
     mesh = bpy.data.meshes.new(f'GEO-Props_{asset}_LOD{lod}')
     bm.to_mesh(mesh)
     bm.free()

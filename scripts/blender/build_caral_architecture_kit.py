@@ -637,13 +637,15 @@ TILE = {
 }
 
 
-def assign_uvs(bm, materials):
+def assign_uvs(bm, materials, tile=None):
     """Box-projected UVs at world scale: each face is mapped on the plane it faces most, so tiling
-    textures keep a constant texel size on every wall, tread and roof."""
+    textures keep a constant texel size on every wall, tread and roof. ``tile`` overrides the shared
+    per-material tile size (small props use a finer weave)."""
     uv = bm.loops.layers.uv.verify()
+    tiles = tile or TILE
     for f in bm.faces:
         n = f.normal
-        tile = TILE.get(materials[f.material_index].name, 3.0)
+        size = tiles.get(materials[f.material_index].name, 3.0)
         ax, ay, az = abs(n.x), abs(n.y), abs(n.z)
         for loop in f.loops:
             co = loop.vert.co
@@ -653,7 +655,7 @@ def assign_uvs(bm, materials):
                 u, v = co.y, co.z
             else:
                 u, v = co.x, co.z
-            loop[uv].uv = (u / tile, v / tile)
+            loop[uv].uv = (u / size, v / size)
 
 
 def tint(mesh, rgb=(1.0, 1.0, 1.0)):

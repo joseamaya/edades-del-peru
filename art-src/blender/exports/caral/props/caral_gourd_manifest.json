@@ -6,14 +6,14 @@
   "up": "Y",
   "front": "+Z",
   "pivot": "footprint centre at ground level",
-  "confidence": "documented",
+  "confidence": "inferred",
   "sources": [
     "docs/historia/campanas/caral.md",
     "docs/historia/civilizaciones/caral.md"
   ],
   "budget": {
     "LOD0": 380,
-    "LOD1": 120
+    "LOD1": 150
   },
   "reviewed": false,
   "lods": {
@@ -45,7 +45,7 @@
       "bytes": 16924
     },
     "LOD1": {
-      "triangles": 56,
+      "triangles": 76,
       "draw_calls": 2,
       "materials": [
         "MAT-Arch_PlasterWhite",
@@ -53,8 +53,8 @@
       ],
       "bounds": {
         "min": [
-          -0.117,
-          -0.132,
+          -0.133,
+          -0.33,
           -0.006
         ],
         "max": [
@@ -63,13 +63,13 @@
           0.284
         ],
         "size": [
-          0.413,
-          0.261,
+          0.429,
+          0.46,
           0.29
         ]
       },
       "file": "caral_gourd_lod1.glb",
-      "bytes": 8180
+      "bytes": 9744
     }
   }
 }

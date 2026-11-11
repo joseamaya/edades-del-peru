@@ -2,21 +2,21 @@ import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
 import { SettlementDressing } from '../src/rendering/SettlementDressing';
 import type { DressingKit, DressingPropId, PropsKitModel } from '../src/rendering/propsKit';
-import type { DressingPlacement } from '../src/model/defs/settlementDressing';
+import type { DressingKind, DressingPlacement } from '../src/model/defs/settlementDressing';
 
 const PLACEMENTS: DressingPlacement[] = [
   { kind: 'hearth', x: 2, z: 0, yaw: 0, scale: 1 },
   { kind: 'basket', x: 5, z: 0, yaw: 1, scale: 1 },
 ];
 
-function model(id: DressingPropId, material: THREE.MeshStandardMaterial): PropsKitModel {
-  const lod = (size: number) => [{ geometry: new THREE.BoxGeometry(size, size, size), material }];
-  return { id, lods: [lod(1), lod(0.5)] };
+function model(id: DressingPropId, material: THREE.MeshStandardMaterial, far = 0.5): PropsKitModel {
+  const part = (size: number) => [{ geometry: new THREE.BoxGeometry(size, size, size), material }];
+  return { id, lods: [part(1), far > 0 ? part(far) : []] };
 }
 
 function kit(stone = new THREE.MeshStandardMaterial({ name: 'MAT-Arch_Stone' })): DressingKit {
   const cane = new THREE.MeshStandardMaterial({ name: 'MAT-Arch_CaneMat' });
-  return new Map([
+  return new Map<DressingKind, PropsKitModel>([
     ['hearth', model('hearth', stone)],
     ['basket', model('basket', cane)],
   ]);
@@ -45,15 +45,46 @@ describe('settlement dressing kit', () => {
     dressing.dispose();
   });
 
-  it('starts on LOD0 and switches to the far LOD with the camera focus', () => {
+  it('starts on LOD0, switches with the camera focus and refuses a second attach', () => {
     const dressing = new SettlementDressing(PLACEMENTS, () => 0);
-    dressing.attachKit(kit());
+    expect(dressing.attachKit(kit())).toBe(true);
+    expect(dressing.attachKit(kit())).toBe(false);
     dressing.update({ x: 3.5, z: 0 });
     expect(named(dressing, 'lod0').every((m) => m.visible)).toBe(true);
     expect(named(dressing, 'lod1').every((m) => !m.visible)).toBe(true);
     dressing.update({ x: 80, z: 80 });
     expect(named(dressing, 'lod0').every((m) => !m.visible)).toBe(true);
     expect(named(dressing, 'lod1').every((m) => m.visible)).toBe(true);
+    dressing.dispose();
+  });
+
+  it('keeps the near LOD when the kit has no far LOD', () => {
+    const dressing = new SettlementDressing(PLACEMENTS, () => 0);
+    const cane = new THREE.MeshStandardMaterial({ name: 'MAT-Arch_CaneMat' });
+    const nearOnly = new Map<DressingKind, PropsKitModel>([
+      ['hearth', model('hearth', cane, 0)],
+      ['basket', model('basket', cane, 0)],
+    ]);
+    expect(dressing.attachKit(nearOnly)).toBe(true);
+    expect(named(dressing, 'lod1')).toHaveLength(0);
+    dressing.update({ x: 200, z: 200 });
+    expect(named(dressing, 'lod0').every((m) => m.visible)).toBe(true);
+    dressing.dispose();
+  });
+
+  it('bakes the placement transform (yaw, scale and terrain height)', () => {
+    const dressing = new SettlementDressing([{ kind: 'hearth', x: 10, z: 4, yaw: 0, scale: 2 }], () => 5);
+    const stone = new THREE.MeshStandardMaterial({ name: 'MAT-Arch_Stone' });
+    dressing.attachKit(new Map<DressingKind, PropsKitModel>([['hearth', model('hearth', stone)]]));
+    const mesh = named(dressing, 'lod0')[0]!;
+    mesh.geometry.computeBoundingBox();
+    const box = mesh.geometry.boundingBox!;
+    expect(box.min.x).toBeCloseTo(9, 4);
+    expect(box.max.x).toBeCloseTo(11, 4);
+    expect(box.min.y).toBeCloseTo(4, 4);
+    expect(box.max.y).toBeCloseTo(6, 4);
+    expect(box.min.z).toBeCloseTo(3, 4);
+    expect(box.max.z).toBeCloseTo(5, 4);
     dressing.dispose();
   });
 
@@ -72,7 +103,9 @@ describe('settlement dressing kit', () => {
   });
 
   it('keeps the procedural fallback when a piece is missing and after disposal', () => {
-    const partial: DressingKit = new Map([['hearth', model('hearth', new THREE.MeshStandardMaterial())]]);
+    const partial = new Map<DressingKind, PropsKitModel>([
+      ['hearth', model('hearth', new THREE.MeshStandardMaterial())],
+    ]);
     const incomplete = new SettlementDressing([{ kind: 'stela', x: 0, z: 0, yaw: 0, scale: 1 }], () => 0);
     expect(incomplete.attachKit(partial)).toBe(false);
     expect(incomplete.group.children[0]?.name).toBe('dressing');

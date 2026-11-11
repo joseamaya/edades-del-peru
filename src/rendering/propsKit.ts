@@ -40,7 +40,7 @@ const URLS: Record<PropsKitId, { lod0: string; lod1: string }> = {
   cotton: { lod0: cottonLod0, lod1: cottonLod1 },
 };
 
-export const DRESSING_PROP_IDS: DressingPropId[] = [
+const DRESSING_PROP_IDS: DressingPropId[] = [
   'hearth',
   'drying_rack',
   'basket',
@@ -87,23 +87,23 @@ export function loadPropsKit(id: PropsKitId): Promise<PropsKitModel> {
   return model;
 }
 
-export type DressingKit = Map<DressingPropId, PropsKitModel>;
+/** The household pieces, keyed by the dressing kind the planner places. */
+export type DressingKit = Map<DressingKind, PropsKitModel>;
 
-const dressingCache = new Map<string, Promise<DressingKit>>();
+let dressingKit: Promise<DressingKit> | null = null;
 
 /**
  * Load the whole household set. One missing GLB rejects the batch, so a settlement keeps its
- * procedural dressing instead of showing a half-kitted base.
+ * procedural dressing instead of showing a half-kitted base. A failed batch is retried next match.
  */
 export function loadDressingKit(): Promise<DressingKit> {
-  const key = 'caral';
-  let kit = dressingCache.get(key);
-  if (!kit) {
-    kit = Promise.all(DRESSING_PROP_IDS.map(loadPropsKit)).then(
-      (models) => new Map(models.map((model) => [model.id as DressingPropId, model])),
+  if (!dressingKit) {
+    dressingKit = Promise.all(DRESSING_PROP_IDS.map(loadPropsKit)).then(
+      (models) => new Map(models.map((model) => [model.id as DressingKind, model])),
     );
-    kit.catch(() => dressingCache.delete(key));
-    dressingCache.set(key, kit);
+    dressingKit.catch(() => {
+      dressingKit = null;
+    });
   }
-  return kit;
+  return dressingKit;
 }

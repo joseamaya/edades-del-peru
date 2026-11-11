@@ -237,9 +237,9 @@ pieces replace the primitive enseres of an Áspero base (issue 393):
 | `caral_drying_rack`  | LOD0 | 1.303 × 1.07 × 0.59        | 220  | 2          | 12,008 | `MAT-Arch_CaneMat`, `MAT-Arch_Wood`                                |
 | `caral_drying_rack`  | LOD1 | 1.298 × 1.069 × 0.545      | 96   | 2          | 7,980  | `MAT-Arch_CaneMat`, `MAT-Arch_Wood`                                |
 | `caral_basket`       | LOD0 | 0.54 × 0.456 × 0.54        | 188  | 2          | 10,788 | `MAT-Arch_CaneMat`, `MAT-Arch_Stone`                               |
-| `caral_basket`       | LOD1 | 0.54 × 0.449 × 0.54        | 88   | 2          | 7,236  | `MAT-Arch_CaneMat`, `MAT-Arch_Stone`                               |
-| `caral_gourd`        | LOD0 | 0.542 × 0.293 × 0.498      | 152  | 2          | 9,968  | `MAT-Arch_PlasterWhite`, `MAT-Arch_Wood`                           |
-| `caral_gourd`        | LOD1 | 0.413 × 0.29 × 0.261       | 56   | 2          | 6,836  | `MAT-Arch_PlasterWhite`, `MAT-Arch_Wood`                           |
+| `caral_basket`       | LOD1 | 0.54 × 0.449 × 0.54        | 88   | 2          | 7,224  | `MAT-Arch_CaneMat`, `MAT-Arch_Stone`                               |
+| `caral_gourd`        | LOD0 | 0.542 × 0.293 × 0.498      | 152  | 2          | 9,884  | `MAT-Arch_PlasterWhite`, `MAT-Arch_Wood`                           |
+| `caral_gourd`        | LOD1 | 0.429 × 0.29 × 0.46        | 76   | 2          | 7,404  | `MAT-Arch_PlasterWhite`, `MAT-Arch_Wood`                           |
 | `caral_bench`        | LOD0 | 1.013 × 0.375 × 0.347      | 132  | 1          | 7,288  | `MAT-Arch_Stone`                                                   |
 | `caral_bench`        | LOD1 | 1.0 × 0.39 × 0.34          | 24   | 1          | 3,196  | `MAT-Arch_Stone`                                                   |
 | `caral_windbreak`    | LOD0 | 1.22 × 1.106 × 0.114       | 108  | 2          | 7,748  | `MAT-Arch_CaneMat`, `MAT-Arch_Wood`                                |

@@ -20,10 +20,14 @@ export function createFowUniforms(): FowUniforms {
  * dims glued to the relief without a second visibility system. The uniforms are
  * shared, so toggling fog updates every patched material at once.
  */
+/** Materials already patched; the uniforms are shared, so a second call would duplicate the shader. */
+const patched = new WeakSet<THREE.Material>();
+
 export function applyFow(material: THREE.Material, u: FowUniforms): void {
-  // Patching twice would declare the varyings twice and break the shader (e.g. a group re-decorated
-  // after its kit model arrives).
-  if (material.userData.fow) return;
+  // A second patch would declare the varyings twice and break the shader (a group can be decorated
+  // again when its kit model arrives). The uniforms are per match, so the first one wins.
+  if (patched.has(material)) return;
+  patched.add(material);
   const previous = material.onBeforeCompile;
   material.onBeforeCompile = (shader, renderer) => {
     previous.call(material, shader, renderer);

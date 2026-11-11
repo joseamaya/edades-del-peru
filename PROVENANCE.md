@@ -219,12 +219,15 @@ slot is absent (offline / without assets).
   grime. `SettlementDressing` bakes every placement of a base into one mesh per material and LOD (no
   shadow pass: the pieces are 0.2-1.2 m and the buildings already anchor the shadows) and swaps LOD1 at
   30 units from the camera focus. If a GLB fails, the base keeps its procedural dressing.
-- **Confidence** (the dossier's own scale, `docs/historia/campanas/caral.md`): `hearth`, `basket`, `gourd`
-  and `cotton` are `documented` (stone-heated cooking pits, shicra baskets, mates as net floats, the cotton
-  crop); `drying_rack`, `bench` and `windbreak` are `assumed` (plausible reconstructions of documented
-  materials; the net rack and the mates' place in the fishing house are listed as such); the outcrop's
-  shape is `inferred`. Every piece ships `reviewed: false` until a human review records `reviewer` and
-  `reviewedAt`; a rebuild exports it unreviewed again.
+- **Confidence** (the dossier's own scale, `docs/historia/campanas/caral.md`): `hearth` and `cotton` are
+  `documented` (stone-heated cooking pits and the cotton crop are in the dossier; the ring form and the
+  mat-and-spindle arrangement are the reconstruction). `basket` and `gourd` are `inferred`: shicra bags
+  are documented as construction fill, and calabaza and the mates as net floats are documented, but the
+  domestic basket and the cut mate bowl are inferred uses of them. `drying_rack`, `bench` and
+  `windbreak` are `assumed` (plausible reconstructions of documented materials; the net rack and the
+  mates' place in the fishing house are listed as such). The outcrop's shape is `inferred`. Every piece
+  ships `reviewed: false` until a human review records `reviewer` and `reviewedAt`; a rebuild exports it
+  unreviewed again.
 
 ### Caral intro and act-card images (in-engine recreations)
 

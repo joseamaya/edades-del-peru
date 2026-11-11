@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import type { PropsKitModel } from './propsKit';
+import { kitLodFor } from './kitLod';
 
 const MAX = 256;
-const LOD_RADIUS = 30;
 const UP = new THREE.Vector3(0, 1, 0);
 const _m = new THREE.Matrix4();
 const _pos = new THREE.Vector3();
@@ -24,7 +24,7 @@ interface Placement {
 /**
  * Instanced granodiorite outcrops for the Caral stone nodes. Each matrix follows the terrain: the
  * model is seated on the lowest ground under its footprint, tilted to the sampled normal and sunk
- * slightly so no chunk floats on a slope. LOD1 takes over beyond `LOD_RADIUS` from the camera focus.
+ * slightly so no chunk floats on a slope. LOD1 takes over beyond `KIT_LOD1_DISTANCE` from the focus.
  */
 export class QuarryInstances {
   private readonly placements = new Map<number, Placement>();
@@ -110,9 +110,7 @@ export class QuarryInstances {
     const lists: [Placement[], Placement[]] = [[], []];
     for (const p of this.placements.values()) {
       if (!p.visible) continue;
-      const dx = p.x - this.focus.x;
-      const dz = p.z - this.focus.z;
-      lists[dx * dx + dz * dz <= LOD_RADIUS * LOD_RADIUS ? 0 : 1].push(p);
+      lists[kitLodFor(p.x, p.z, this.focus)].push(p);
     }
     this.ordered = lists;
     for (let lod = 0; lod < 2; lod++) {

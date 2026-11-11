@@ -95,7 +95,8 @@ All angles/offsets come from a dedicated `RNG(seed * k + c)` stream.
 ## Determinism & performance
 
 - Pure function; same request → same plan (unit test).
-- Cost is O(candidates) at boot only; runs once per base, off the frame budget.
+- Cost is O(candidates) at boot only; the per-frame work is a distance check per base to swap the
+  dressing kit's LOD.
 - Headless test uses a fake `query`, no WebGL.
 
 ## Risks

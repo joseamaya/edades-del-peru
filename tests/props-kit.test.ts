@@ -47,14 +47,14 @@ const PIECES: Piece[] = [
   {
     id: 'basket',
     budget: [420, 130],
-    confidence: 'documented',
+    confidence: 'inferred',
     materials: ['MAT-Arch_CaneMat', 'MAT-Arch_Stone'],
     maxSize: 0.8,
   },
   {
     id: 'gourd',
-    budget: [380, 120],
-    confidence: 'documented',
+    budget: [380, 150],
+    confidence: 'inferred',
     materials: ['MAT-Arch_PlasterWhite', 'MAT-Arch_Wood'],
     maxSize: 0.8,
   },
