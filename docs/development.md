@@ -211,9 +211,12 @@ Definition of Done and the building audit see
   («Finalizados (N) · Acto I ✔ 2/2»), and that `<details>` is the archive's scroll container (a nested flex
   scroller does not receive a height inside `details`). `refreshObjectives` only re-renders when the visible
   state/progress changes and restores the archive's open state and `scrollTop`. Campaigns start with the shortcuts folded (`help-collapsed`,
-  the «?» button opens them); the tutorial is placed by the flex flow, not by JS measuring the panel. Guarded
-  by `tests/e2e/hud-layout.spec.ts` for every mission at 1280×720 and for Caral at 1600×900 and 1920×1080,
-  including a late mission with the archive folded and expanded and the shortcuts open.
+  the «?» button opens them); the tutorial is placed by the flex flow, not by JS measuring the panel. While any
+  `.ed-overlay` is open, `:has()` hides the whole column so its sticky archive summary cannot paint over the
+  veil; the overlay sits at `z-index: 70`, above every in-game HUD layer (issue 415). Guarded by
+  `tests/e2e/hud-layout.spec.ts` for every mission at 1280×720 and for Caral at 1600×900 and 1920×1080,
+  including a late mission with the archive folded and expanded, the shortcuts open, the Act IV pause menu,
+  and the victory and defeat screens at 1280×720.
 - **Water refraction**: `Water` renders the scene with its mesh hidden into a `WebGLRenderTarget`
   (`Game.renderWaterRefraction`) and the shader samples the seabed, offset by the wave normal and faded by the
   viewing angle (fresnel). It costs an extra scene pass, so it only runs with the cinematic set on and the

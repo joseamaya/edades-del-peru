@@ -227,8 +227,8 @@ const CSS = /* css */ `
   @keyframes banner { 0% { opacity: 0; transform: translate(-50%,-50%) scale(1.08); } 12% { opacity: 1; transform: translate(-50%,-50%) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%,-50%) scale(0.98); } }
 
   /* Overlays */
-  /* Above every in-game HUD layer (alerts 57, damage 58, hover 60, cursor 62): a positioned
-     child with z-index used to paint over the veil despite coming earlier in the DOM (issue 415). */
+  /* Above every in-game HUD layer (alerts, damage numbers, tooltip and cursor): a positioned child
+     with z-index used to paint over the veil despite coming earlier in the DOM (issue 415). */
   .ed-overlay { position: absolute; inset: 0; z-index: 70; display: flex; align-items: center; justify-content: center; background: rgba(6,8,12,0.82); backdrop-filter: blur(3px); pointer-events: auto; }
   .ed-overlay.hidden { display: none; }
   .ed-panel { width: min(520px, 92vw); background: linear-gradient(180deg, #16181d, #101216); border: 1px solid var(--line); border-radius: 8px; padding: 26px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.7); }
