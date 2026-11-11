@@ -959,7 +959,7 @@ export class HUD {
     this.objSignature = signature;
     const archiveDetails = this.objListEl.querySelector('details');
     const archiveWasOpen = archiveDetails?.open ?? false;
-    const archiveScroll = (archiveDetails?.querySelector('.obj-archive-list') as HTMLElement | null)?.scrollTop ?? 0;
+    const archiveScroll = archiveDetails?.scrollTop ?? 0;
     const currentScroll = (this.objListEl.querySelector('.obj-current') as HTMLElement | null)?.scrollTop ?? 0;
     const current = rows.filter((row) => row.state === 'activo' || row.state === 'pendiente');
     const done = rows.filter((row) => row.state !== 'activo' && row.state !== 'pendiente');
@@ -969,14 +969,14 @@ export class HUD {
       return `<div class="obj ${cls}"><span class="mark">${this.objectiveMark(row.state)}</span><span>${row.title}${suffix}</span></div>`;
     };
     const archive = done.length
-      ? `<details class="obj-archive"${archiveWasOpen ? ' open' : ''}><summary>${this.archiveSummary(rows, done.length)}</summary><div class="obj-archive-list">${done
+      ? `<details class="obj-archive"${archiveWasOpen ? ' open' : ''}><summary>${this.archiveSummary(rows, done.length)}</summary>${done
           .map(rowHtml)
-          .join('')}</div></details>`
+          .join('')}</details>`
       : '';
     // The current goals live in their own region: expanding the archive never scrolls them away.
     this.objListEl.innerHTML = `<div class="obj-current">${current.map(rowHtml).join('')}</div>` + archive;
-    const list = this.objListEl.querySelector('.obj-archive-list') as HTMLElement | null;
-    if (list) list.scrollTop = archiveScroll;
+    const details = this.objListEl.querySelector('details');
+    if (details) details.scrollTop = archiveScroll;
     const currentEl = this.objListEl.querySelector('.obj-current') as HTMLElement | null;
     if (currentEl) currentEl.scrollTop = currentScroll;
   }

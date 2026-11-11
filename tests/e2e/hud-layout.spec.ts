@@ -283,13 +283,25 @@ for (const { width, height, missions } of RESOLUTIONS) {
           const last = rows[rows.length - 1];
           const fits = details.scrollHeight <= details.clientHeight + 1;
           details.scrollTop = details.scrollHeight;
+          const scrolled = details.scrollTop;
           const dr = details.getBoundingClientRect();
           const pr = panel.getBoundingClientRect();
           const rr = last?.getBoundingClientRect();
+          // A re-render (a time goal ticks every displayed second) must keep the archive scroll.
+          const g = (window as unknown as { game: any }).game;
+          const other = (g.mission.def.objectives as { id: string }[]).find(
+            (o) => g.mission.objState.get(o.id) === 'completed',
+          );
+          if (other) {
+            g.mission.objState.set(other.id, 'failed');
+            g.hud.update(1, 0);
+          }
+          const rebuilt = panel.querySelector('details') as HTMLDetailsElement | null;
           return {
             open: details.open,
             fits,
-            scrolled: details.scrollTop,
+            scrolled,
+            scrollKept: scrolled === (rebuilt?.scrollTop ?? -1),
             summary: (details.querySelector('summary') as HTMLElement | null)?.textContent ?? '',
             rows: rows.length,
             text: last?.textContent ?? '',
@@ -303,6 +315,7 @@ for (const { width, height, missions } of RESOLUTIONS) {
         expect(archive!.text.length).toBeGreaterThan(0);
         expect(archive!.lastVisible, 'the last finished objective is reachable').toBe(true);
         if (!archive!.fits) expect(archive!.scrolled, 'the archive scrolls when it does not fit').toBeGreaterThan(0);
+        expect(archive!.scrollKept, 'a re-render keeps the archive scroll position').toBe(true);
 
         const helpText = await page.evaluate(() => document.getElementById('ed-help')?.textContent ?? '');
         expect(helpText, 'the "?" opens the real shortcut body').toContain('Atajos');
