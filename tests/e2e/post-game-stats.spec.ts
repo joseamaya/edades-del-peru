@@ -20,6 +20,9 @@ test('post-game stats open every tab and expose the replay actions', { tag: '@sm
     g.endGame(0);
   });
   await expect(page.locator('.ed-overlay', { hasText: 'VICTORIA' })).toBeVisible();
+  // A skirmish keeps both seats: the comparison with the AI is meaningful here.
+  await expect(page.locator('#ed-stats-panel .ed-stats-table thead th')).toHaveCount(3);
+  await expect(page.locator('#ed-stats-panel')).toContainText('(IA)');
   const tabs = page.locator('.ed-stats-tabs button');
   await expect(tabs).toHaveCount(5);
   await tabs.filter({ hasText: 'Economía' }).click();

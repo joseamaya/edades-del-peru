@@ -689,6 +689,9 @@ test('a peaceful victory summarises optional achievements and offers the next mi
   });
   const victory = page.locator('.ed-overlay', { hasText: 'VICTORIA' });
   await expect(victory).toBeVisible();
+  // Caral has no enemy: one column, never an empty «(IA)» rival (issue 403).
+  await expect(page.locator('#ed-stats-panel .ed-stats-table thead th')).toHaveCount(2);
+  await expect(page.locator('#ed-stats-panel')).not.toContainText('(IA)');
   await expect(victory).toContainText('Logros opcionales');
   await expect(victory).toContainText('Convoca una asamblea comunal');
   await expect(victory).toContainText('Recorre los seis complejos piramidales');
