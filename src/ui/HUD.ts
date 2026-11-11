@@ -472,6 +472,7 @@ const CSS = /* css */ `
   #ed-objectives .obj-archive-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
   #ed-objectives details.obj-archive > summary { cursor: pointer; font-size: 11px; color: var(--text-dim); list-style: none; line-height: 1.4; }
   #ed-objectives details.obj-archive > summary::-webkit-details-marker { display: none; }
+  #ed-objectives details.obj-archive > summary:focus-visible { outline: 1px solid var(--gold); outline-offset: 2px; }
   #ed-objectives details.obj-archive[open] > summary { color: var(--green); }
   #ed-objectives h4 { margin: 0 0 8px; font-size: 12px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; }
   #ed-objectives .obj { display: flex; gap: 8px; align-items: flex-start; font-size: 12px; color: var(--text-dim); padding: 3px 0; line-height: 1.35; }
@@ -1054,6 +1055,7 @@ export class HUD {
     open.type = 'button';
     open.textContent = '?';
     open.title = t('hud.help.openTitle');
+    open.setAttribute('aria-label', t('hud.help.openTitle'));
     open.addEventListener('click', () => this.toggleHelp());
   }
 
