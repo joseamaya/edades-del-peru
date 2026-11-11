@@ -160,7 +160,7 @@ async function snapshots(page: Page): Promise<Snapshots> {
     const advanced = read();
 
     // The finished goals are folded into one archive line that expands on click.
-    document.querySelector('#ed-objectives details')?.setAttribute('open', '');
+    document.querySelector<HTMLElement>('#ed-objectives details > summary')?.click();
     await render();
     const archive = read();
 
@@ -273,30 +273,36 @@ for (const { width, height, missions } of RESOLUTIONS) {
         expect(fit.text, 'the late mission keeps its Act IV goal visible').toContain(snap.activeTitle);
         expect(fit.inside, 'the active objective is fully visible').toBe(true);
 
-        // The archive expands on click, keeps a per-act summary and its last row can be reached.
+        // The archive opened with a real click on its summary, keeps a per-act summary and, when it
+        // does not fit, actually scrolls so its last row is reachable inside the panel.
         const archive = await page.evaluate(() => {
-          const details = document.querySelector('#ed-objectives details') as HTMLDetailsElement | null;
-          const list = details?.querySelector('.obj-archive-list') as HTMLElement | null;
-          if (!details || !list) return null;
-          list.scrollTop = list.scrollHeight;
-          const rows = [...list.querySelectorAll<HTMLElement>('.obj')];
+          const panel = document.getElementById('ed-objectives')!;
+          const details = panel.querySelector('details') as HTMLDetailsElement | null;
+          if (!details) return null;
+          const rows = [...details.querySelectorAll<HTMLElement>('.obj')];
           const last = rows[rows.length - 1];
-          const lr = list.getBoundingClientRect();
+          const fits = details.scrollHeight <= details.clientHeight + 1;
+          details.scrollTop = details.scrollHeight;
+          const dr = details.getBoundingClientRect();
+          const pr = panel.getBoundingClientRect();
           const rr = last?.getBoundingClientRect();
           return {
             open: details.open,
+            fits,
+            scrolled: details.scrollTop,
             summary: (details.querySelector('summary') as HTMLElement | null)?.textContent ?? '',
             rows: rows.length,
             text: last?.textContent ?? '',
-            lastVisible: !!rr && rr.bottom <= lr.bottom + 1 && rr.top >= lr.top - 1,
+            lastVisible: !!rr && rr.bottom <= Math.min(dr.bottom, pr.bottom) + 1 && rr.top >= dr.top - 1,
           };
         });
         expect(archive, 'the finished objectives fold into an archive').not.toBeNull();
-        expect(archive!.open).toBe(true);
+        expect(archive!.open, 'clicking the summary expands the archive').toBe(true);
         expect(archive!.summary).toContain('Finalizados');
         expect(archive!.rows).toBeGreaterThan(0);
         expect(archive!.text.length).toBeGreaterThan(0);
         expect(archive!.lastVisible, 'the last finished objective is reachable').toBe(true);
+        if (!archive!.fits) expect(archive!.scrolled, 'the archive scrolls when it does not fit').toBeGreaterThan(0);
 
         const helpText = await page.evaluate(() => document.getElementById('ed-help')?.textContent ?? '');
         expect(helpText, 'the "?" opens the real shortcut body').toContain('Atajos');
