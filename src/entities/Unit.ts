@@ -589,10 +589,7 @@ export class Unit {
     speedLimit: number,
     clear = true,
   ): void {
-    let goal = { x: target.x + offset.x, z: target.z + offset.z };
-    if (!this.ctx.isWalkable(goal.x, goal.z, this.owner) && this.ctx.isWater(goal.x, goal.z)) {
-      goal = this.nearestReachable(goal.x, goal.z) ?? goal;
-    }
+    const goal = this.resolveMoveGoal({ x: target.x + offset.x, z: target.z + offset.z });
     if (!clear && this.orderQueue.length > 0) {
       this.orderQueue.push({ kind: OrderKind.MOVE, target: goal });
       return;

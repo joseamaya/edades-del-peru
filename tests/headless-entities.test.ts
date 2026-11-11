@@ -19,6 +19,7 @@ describe('headless simulation entities', () => {
       findApproachPath: () => [],
       reachableToNode: () => false,
       isWalkable: () => true,
+      isWater: () => false,
       nearestWalkable: () => null,
       unitsNear: () => [],
       enemiesNear: () => [],

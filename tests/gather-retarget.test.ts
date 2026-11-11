@@ -28,6 +28,7 @@ function harness(opts: {
     findApproachPath: () => [],
     reachableToNode: () => true,
     isWalkable: () => opts.walkable ?? true,
+    isWater: () => false,
     nearestWalkable: () => null,
     unitsNear: () => [],
     enemiesNear: () => [],

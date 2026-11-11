@@ -92,11 +92,17 @@ describe('move orders to unwalkable ground', () => {
     // The lookup is restricted to the unit's component, never the far bank.
     expect(nearestCalls[0]).toMatchObject({ fromX: 10, fromZ: 10 });
 
-    step(unit, 8);
+    // Walk to the shore, then give the order at most two seconds to end.
+    let t = 0;
+    for (let i = 0; i < 200 && Math.hypot(unit.pos.x - shore.x, unit.pos.z - shore.z) >= 1.5; i++) {
+      unit.update(0.1, t);
+      t += 0.1;
+    }
+    expect(Math.hypot(unit.pos.x - shore.x, unit.pos.z - shore.z)).toBeLessThan(1.5);
+    step(unit, 2);
     expect(unit.isBusy(), 'the order must end once the unit reaches the shore').toBe(false);
     expect(unit.orderQueue).toHaveLength(0);
     expect(unit.pos.x).toBeLessThan(18);
-    expect(Math.hypot(unit.pos.x - shore.x, unit.pos.z - shore.z)).toBeLessThan(2);
   });
 
   it('ends an attack-move into the water on the shore too', () => {
@@ -139,5 +145,30 @@ describe('move orders to unwalkable ground', () => {
     unit.issueGroupMove({ x: 20, z: 10 }, [{ x: 20, z: 10 }], { x: 1, z: 1 }, 3);
     expect(unit.orderQueue[0]?.target).toEqual({ x: 21, z: 11 });
     expect(unit.orderQueue[0]?.kind).toBe(OrderKind.MOVE);
+  });
+
+  it('clamps a group move whose formation offset lands in the water', () => {
+    const shore = { x: 17.5, z: 10 };
+    const { unit } = harness({ x: 10, z: 10, waterX: 18, shore });
+    unit.issueGroupMove({ x: 21, z: 10 }, [{ x: 21, z: 10 }], { x: 1, z: 0 }, 3);
+    expect(unit.orderQueue[0]?.target).toEqual(shore);
+  });
+
+  it('clamps a patrol destination into the water', () => {
+    const shore = { x: 17.5, z: 10 };
+    const { unit } = harness({ x: 10, z: 10, waterX: 18, shore });
+    unit.issueOrder({ kind: OrderKind.PATROL, target: { x: 22, z: 10 } });
+    expect(unit.orderQueue[0]?.target).toEqual(shore);
+  });
+
+  it('does not mutate a shared order while each unit resolves its own goal', () => {
+    const a = harness({ x: 10, z: 10, waterX: 18, shore: { x: 17.5, z: 10 } });
+    const b = harness({ x: 10, z: 30, waterX: 18, shore: { x: 17.5, z: 10 } });
+    const order = { kind: OrderKind.MOVE, target: { x: 22, z: 10 } };
+    a.unit.issueOrder(order);
+    b.unit.issueOrder(order);
+    expect(order.target).toEqual({ x: 22, z: 10 });
+    expect(a.unit.orderQueue[0]?.target).toEqual({ x: 17.5, z: 10 });
+    expect(b.unit.orderQueue[0]?.target).toEqual({ x: 17.5, z: 10 });
   });
 });
