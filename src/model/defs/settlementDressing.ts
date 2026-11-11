@@ -74,15 +74,16 @@ const SEQUENCES: Record<SettlementDressingProfile, DressingKind[]> = {
 
 const MAX_SLOPE = 0.42;
 /**
- * The rendered houses overhang their 2-grid footprint (the quincha walls read ~2.5 wide), so props
- * keep clear of the *walls*, not just the anchor: the clearance grows with the prop's own radius
- * (a 1.3 m drying rack needs more room than a basket).
+ * The rendered houses overhang their 2-grid footprint (the Caral quincha house reads ~3.2 x 2.8, with
+ * a plinth), so props keep clear of the *walls*, not just the anchor: the radius covers the footprint's
+ * half-diagonal and grows with the prop's own, at the largest scale the planner draws (1.15).
  */
-const BUILDING_CLEARANCE = 2.0;
+export const BUILDING_CLEARANCE = 2.45;
+const MAX_PROP_SCALE = 1.15;
 const PROP_CLEARANCE = 0.8;
 
-/** Half-width of each prop at its default scale, in game metres. */
-const PROP_RADIUS: Record<DressingKind, number> = {
+/** Half-width of each prop at unit scale, in game metres. */
+export const PROP_RADIUS: Record<DressingKind, number> = {
   hearth: 0.6,
   drying_rack: 0.75,
   basket: 0.4,
@@ -95,6 +96,11 @@ const PROP_RADIUS: Record<DressingKind, number> = {
   stone_head: 0.45,
   megalith: 0.65,
 };
+
+/** Centre-to-anchor distance below which a prop would touch the rendered walls. */
+export function propClearance(kind: DressingKind, scale = MAX_PROP_SCALE): number {
+  return BUILDING_CLEARANCE + PROP_RADIUS[kind] * scale;
+}
 
 /** Deterministic household props for a planned base. */
 export function planSettlementDressing(
@@ -115,7 +121,7 @@ export function planSettlementDressing(
   const free = (x: number, z: number, kind: DressingKind): boolean => {
     if (query.isWater(x, z) || !query.isBuildable(x, z)) return false;
     if (query.getSlope(x, z) > MAX_SLOPE) return false;
-    const reach = BUILDING_CLEARANCE + PROP_RADIUS[kind];
+    const reach = propClearance(kind);
     if (anchors.some((a) => Math.hypot(a.x - x, a.z - z) < reach)) return false;
     if (placed.some((p) => Math.hypot(p.x - x, p.z - z) < PROP_CLEARANCE)) return false;
     return true;
@@ -124,10 +130,10 @@ export function planSettlementDressing(
   for (const kind of sequence) {
     const central = kind === 'hearth' || kind === 'stela';
     const pool = central ? [anchors[0]] : houses.length ? houses : anchors;
-    for (let attempt = 0; attempt < 28; attempt++) {
+    for (let attempt = 0; attempt < 40; attempt++) {
       const anchor = rng.pick(pool);
       const a = rng.range(0, Math.PI * 2);
-      const radius = anchor.center ? rng.range(3.4, 5.0) : rng.range(2.4, 3.6);
+      const radius = anchor.center ? rng.range(4.2, 5.8) : rng.range(3.5, 5.1);
       const x = anchor.x + Math.cos(a) * radius;
       const z = anchor.z + Math.sin(a) * radius;
       if (!free(x, z, kind)) continue;

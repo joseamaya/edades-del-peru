@@ -575,7 +575,13 @@ const SCENES = {
       // Player 0 spawns first; the kit attaches to both bases of the mirror match.
       const dressing = g.settlementDressing?.[0];
       if (!dressing?.attached) throw new Error('household kit did not load');
-      const prop = dressing.placements.find((p) => p.kind === 'drying_rack') ?? dressing.placements[0];
+      // Units wander through the props; the subject is the kit, so take them out of the shot.
+      for (const unit of [...g.units.values()]) {
+        unit.removeFromScene();
+        g.units.delete(unit.id);
+      }
+      const racks = dressing.placements.filter((p) => p.kind === 'drying_rack');
+      const prop = racks[racks.length - 1] ?? dressing.placements[0];
       // Settle the mission's lighting and sky: the loop is stopped, so drive it by hand.
       for (let i = 0; i < 60; i++) g.loop.onUpdate(1 / 60, i / 60);
       // Place names are map labels, not props: hide them (the loop update re-shows them).
