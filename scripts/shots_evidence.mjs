@@ -561,6 +561,44 @@ const SCENES = {
       { name: 'rts', mode: 'rts', target: 'landmark', height: 32 },
     ],
   },
+  'caral-household': {
+    url: '/?mission=m1_caral&intro=0&fog=0&low=1&noloop=1',
+    start: true,
+    prepare: async () => {
+      const g = window.game;
+      g.loop.stop();
+      // The household kit arrives asynchronously; the capture must not race the procedural fallback.
+      const deadline = performance.now() + 20_000;
+      while (!(g.settlementDressing ?? []).some((d) => d.attached) && performance.now() < deadline) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+      // Player 0 spawns first; the kit attaches to both bases of the mirror match.
+      const dressing = g.settlementDressing?.[0];
+      if (!dressing?.attached) throw new Error('household kit did not load');
+      // Units wander through the props; the subject is the kit, so take them out of the shot.
+      for (const unit of [...g.units.values()]) {
+        unit.removeFromScene();
+        g.units.delete(unit.id);
+      }
+      const racks = dressing.placements.filter((p) => p.kind === 'drying_rack');
+      const prop = racks[racks.length - 1] ?? dressing.placements[0];
+      // Settle the mission's lighting and sky: the loop is stopped, so drive it by hand.
+      for (let i = 0; i < 60; i++) g.loop.onUpdate(1 / 60, i / 60);
+      // Place names are map labels, not props: hide them (the loop update re-shows them).
+      g.scene.traverse((o) => {
+        if (o.name?.startsWith('geo-label:')) o.visible = false;
+      });
+      g.renderer.render(g.scene, g.camera.camera);
+      return {
+        center: { x: dressing.center.x, z: dressing.center.z },
+        subject: { x: prop.x, y: g.terrain.getHeight(prop.x, prop.z), z: prop.z },
+      };
+    },
+    views: [
+      { name: 'close', mode: 'close', offset: { x: 1.9, y: 1.5, z: 1.9 }, lookHeight: 0.6 },
+      { name: 'rts', mode: 'rts', height: 30, centerSubject: true },
+    ],
+  },
   'fauna-perf': {
     url: '/?play=1&civ=caral&period=0&map=altiplano&seed=777&fog=0&low=1&noloop=1',
     prepare: () => {
