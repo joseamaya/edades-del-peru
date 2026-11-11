@@ -79,6 +79,7 @@ const MAX_SLOPE = 0.42;
  * half-diagonal and grows with the prop's own, at the largest scale the planner draws (1.15).
  */
 export const BUILDING_CLEARANCE = 2.45;
+const MIN_PROP_SCALE = 0.85;
 const MAX_PROP_SCALE = 1.15;
 const PROP_CLEARANCE = 0.8;
 
@@ -137,7 +138,7 @@ export function planSettlementDressing(
       const x = anchor.x + Math.cos(a) * radius;
       const z = anchor.z + Math.sin(a) * radius;
       if (!free(x, z, kind)) continue;
-      placed.push({ kind, x, z, yaw: rng.range(0, Math.PI * 2), scale: rng.range(0.85, 1.15) });
+      placed.push({ kind, x, z, yaw: rng.range(0, Math.PI * 2), scale: rng.range(MIN_PROP_SCALE, MAX_PROP_SCALE) });
       break;
     }
   }
