@@ -227,7 +227,9 @@ const CSS = /* css */ `
   @keyframes banner { 0% { opacity: 0; transform: translate(-50%,-50%) scale(1.08); } 12% { opacity: 1; transform: translate(-50%,-50%) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%,-50%) scale(0.98); } }
 
   /* Overlays */
-  .ed-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(6,8,12,0.82); backdrop-filter: blur(3px); pointer-events: auto; }
+  /* Above every in-game HUD layer (alerts 57, damage 58, hover 60, cursor 62): a positioned
+     child with z-index used to paint over the veil despite coming earlier in the DOM (issue 415). */
+  .ed-overlay { position: absolute; inset: 0; z-index: 70; display: flex; align-items: center; justify-content: center; background: rgba(6,8,12,0.82); backdrop-filter: blur(3px); pointer-events: auto; }
   .ed-overlay.hidden { display: none; }
   .ed-panel { width: min(520px, 92vw); background: linear-gradient(180deg, #16181d, #101216); border: 1px solid var(--line); border-radius: 8px; padding: 26px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.7); }
   .ed-panel h2 { color: var(--gold); font-size: 26px; margin: 0 0 6px; letter-spacing: 1px; }
@@ -445,7 +447,6 @@ const CSS = /* css */ `
   .ed-help-close { position: absolute; top: 2px; right: 4px; background: none; border: 0; color: var(--text-dim); font-size: 14px; cursor: pointer; padding: 0 3px; }
   #ed-help-open { position: static; order: 3; align-self: flex-end; margin-top: auto; width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(232,195,106,0.35); background: rgba(10,12,16,0.8); color: var(--gold); font-weight: 700; cursor: pointer; display: none; }
   #ui-root.help-collapsed #ed-help-open { display: block; }
-  #ui-root.menu-open #ed-help-open { display: none; }
   #ed-cursor { position: absolute; width: 20px; height: 20px; pointer-events: none; }
   .ed-error { color: var(--red); font-size: 12px; margin-top: 8px; min-height: 16px; }
   #ed-fps { position: absolute; top: 52px; right: 12px; font-size: 11px; color: var(--text-dim); background: rgba(0,0,0,0.4); padding: 2px 8px; border-radius: 3px; }
@@ -453,8 +454,7 @@ const CSS = /* css */ `
   #ui-root.menu-open .ed-topbar,
   #ui-root.menu-open #ed-bottom,
   #ui-root.menu-open #ed-minimap-wrap,
-  #ui-root.menu-open #ed-help,
-  #ui-root.menu-open #ed-objectives,
+  #ui-root.menu-open #ed-right-column,
   #ui-root.menu-open #ed-fps { display: none; }
   .ed-keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; font-size: 13px; color: var(--text-dim); text-align: left; }
   .ed-keys b { color: var(--gold); font-weight: 700; }
@@ -464,6 +464,9 @@ const CSS = /* css */ `
      other nor reach the command bar (issues 401 and 402). */
   #ed-right-column { position: absolute; top: 56px; right: 12px; width: 240px; bottom: calc(var(--ed-command-bar-h, 0px) + 2 * var(--bar-gap)); display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
   #ed-right-column > * { pointer-events: auto; }
+  /* Final screens, the pause menu and every other modal own the screen: the objectives column
+     must not show through the veil, not even its sticky archive summary (issue 415). */
+  #ui-root:has(> .ed-overlay:not(.hidden)) #ed-right-column { display: none; }
   #ed-objectives { position: static; order: 0; flex: 0 1 auto; max-height: 100%; min-height: 104px; display: flex; flex-direction: column; width: 100%; overflow: hidden; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
   #ed-objectives .obj-list { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow: hidden; padding-right: 2px; }
   #ed-objectives .obj-current { flex: 0 1 auto; max-height: 60%; min-height: 56px; overflow-y: auto; }
