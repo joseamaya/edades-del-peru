@@ -155,6 +155,8 @@ Estas afirmaciones deben presentarse como **interpretaciones**, no como hechos c
 | Forma del arranque (plataforma baja con relleno de shicras)                         | Inferido                          |
 | Replanteo de las plazas con estacas y cordel                                        | No documentado; reconstrucción    |
 | Campamento de obra y cuadrilla de acarreadores                                      | Supuesto plausible                |
+| Caminos de aproximación desde el valle y Áspero hasta la terraza                    | Abstracción del juego; caminos documentados sin trazado |
+| Disposición de los grupos de algarrobos y sauces junto al camino                    | Abstracción del juego             |
 | Color exacto de cada edificio en cada período                                       | Inferido                          |
 | Techos y remates de los edificios                                                   | Supuesto plausible                |
 | Plazas circulares hundidas (la mayor en el Templo del Anfiteatro)                   | Documentado                       |

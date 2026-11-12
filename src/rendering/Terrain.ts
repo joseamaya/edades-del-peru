@@ -936,8 +936,22 @@ ${FOW_DIM_GLSL}
     );
   }
 
+  /** Paint a lighter compacted-gravel trail, readable on both the green valley and the ochre terrace. */
+  paintTrail(points: { x: number; z: number }[], width: number, strength = 0.8): void {
+    this.paintStroke(points, width, strength, 'trail');
+  }
+
   /** Paint a dirt/gravel path under a polyline (settlement and mission roads). */
   paintPath(points: { x: number; z: number }[], width: number, strength = 0.8): void {
+    this.paintStroke(points, width, strength, 'wear');
+  }
+
+  private paintStroke(
+    points: { x: number; z: number }[],
+    width: number,
+    strength: number,
+    mode: 'wear' | 'trail',
+  ): void {
     if (points.length < 2) return;
     const radius = Math.max(0.35, width / 2);
     const pad = radius * 1.35;
@@ -967,6 +981,7 @@ ${FOW_DIM_GLSL}
           },
           radius,
           strength,
+          mode,
         );
       }
     }
@@ -1076,12 +1091,26 @@ ${FOW_DIM_GLSL}
     this.wetApplied = false;
   }
 
+  /** Pale compacted gravel that reads over green valley and dry terrace alike. */
+  private blendTrail(out: Uint8Array, i: number, mix: number): void {
+    const grass = (out[i]! / 255) * (1 - mix) + 0.01 * mix;
+    const dirt = (out[i + 1]! / 255) * (1 - mix) + 0.14 * mix;
+    const sand = (out[i + 2]! / 255) * (1 - mix) + 0.83 * mix;
+    const rock = (out[i + 3]! / 255) * (1 - mix) + 0.02 * mix;
+    const sum = grass + dirt + sand + rock;
+    const inv = sum > 0 ? 1 / sum : 1;
+    out[i] = Math.round(grass * inv * 255);
+    out[i + 1] = Math.round(dirt * inv * 255);
+    out[i + 2] = Math.round(sand * inv * 255);
+    out[i + 3] = Math.round(rock * inv * 255);
+  }
+
   private paintSplatRegion(
     bounds: { minX: number; maxX: number; minZ: number; maxZ: number },
     distance: (wx: number, wz: number) => number,
     radius: number,
     strength: number,
-    mode: 'wear' | 'clear' = 'wear',
+    mode: 'wear' | 'clear' | 'trail' = 'wear',
   ): void {
     const size = this.splat.size;
     const worldSize = this.size;
@@ -1108,6 +1137,15 @@ ${FOW_DIM_GLSL}
           out[i + 1] = Math.round(base[i + 1] + (out[i + 1] - base[i + 1]) * keep);
           out[i + 2] = Math.round(base[i + 2] + (out[i + 2] - base[i + 2]) * keep);
           out[i + 3] = Math.round(base[i + 3] + (out[i + 3] - base[i + 3]) * keep);
+          changed = true;
+          continue;
+        }
+        if (mode === 'trail') {
+          this.blendTrail(out, i, Math.min(1, weight));
+          // A trail painted after a restored drought/flood must also live in that season's baseline;
+          // otherwise the next setDrought/setWetSeason call would erase it.
+          if (this.preDrought) this.blendTrail(this.preDrought, i, Math.min(1, weight));
+          if (this.preWet) this.blendTrail(this.preWet, i, Math.min(1, weight));
           changed = true;
           continue;
         }

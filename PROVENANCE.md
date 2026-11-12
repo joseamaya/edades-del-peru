@@ -216,10 +216,20 @@ slot is absent (offline / without assets).
   platforms and shicra fill are documented; that the five were started alongside the Mayor, the cord
   survey and the exact construction form are inferred. The Anfiteatro temple and the Altar Redondo still
   appear whole at `in_use` (their plaza is staked); starting them is left for a later pass.
+- **Approaches and valley edge (issue 433)**: from `foundation`, one compacted-gravel approach is painted
+  into the terrain splat from Áspero's base across the Supe's southern ford (`CARAL_FORDS`) to the
+  western foot of Caral Alto (`src/model/defs/caralValley.ts`). It reuses the settlement road mechanism
+  (`Terrain.paintTrail`) and adds no ribbon, obstacle or pathfinding entry. Small groups of decorative
+  algarrobos and willows grow along the west edge of the valley, clear of the city keep-out, the
+  camp, fields and existing resource nodes. They share the vegetation kit and tree batch, but have no
+  `ResourceNode`, yield, obstacle or picking id. The exact route and the grove positions are inferred
+  game abstractions; the valley paths, riparian grove and huarango terraces are documented.
 - **Evidence**: `node scripts/shots_evidence.mjs --scene=caral-camp --out=review/evidence/caral-camp`
-  captures the Act III camp close up, in a medium RTS view, the staked plaza, the issue frame (`act3`)
-  and a wide context frame; stitch `close.png` + `camp.png` for `docs/media/caral-camp.webp` and
-  `close.png` + `act3.png` for `docs/media/caral-act3.webp`, at 3200 × 900 and quality 82.
+  captures the camp close up, the medium RTS camp, the staked plaza, the Act III works (`act3`), the
+  painted approach, the edge groves and a wide context frame. Stitch `close.png` + `camp.png` for
+  `docs/media/caral-camp.webp`, `close.png` + `act3.png` for `docs/media/caral-act3.webp` (both
+  3200 × 900, quality 82) and `approach.png` + `grove.png` + `act3.png` + `rts.png` into
+  `docs/media/caral-approaches.webp` (3200 × 1800, quality 80).
 - **Confidence** (per piece in the manifests; evidence in `docs/historia/campanas/caral.md` and
   `docs/historia/civilizaciones/caral.md`): stepped superposed platforms, shicra fill, stone retaining
   walls, painted plaster, sunken circular plazas, quincha houses, cotton nets and gourd floats and fair
