@@ -24,6 +24,9 @@ const IDS = Object.keys(BUDGETS) as VegetationKitId[];
 
 interface KitManifest {
   asset_id: string;
+  reviewed: boolean;
+  confidence: string;
+  sources: string[];
   budget: { LOD0: number; LOD1: number };
   lods: Record<'LOD0' | 'LOD1', { file: string; triangles: number; draw_calls: number; bounds: { size: number[] } }>;
 }
@@ -101,9 +104,12 @@ describe.each(IDS)('%s kit GLB', (id) => {
     [lod0, lod1] = await Promise.all([parse(glbUrl(id, 0)), parse(glbUrl(id, 1))]);
   });
 
-  it('records the art-direction budget and stays within it in the manifest', () => {
+  it('records the art-direction budget, the provenance gate and its certainty', () => {
     const m = manifest(id);
     expect(m.asset_id).toBe(`caral_${id}`);
+    expect(m.reviewed).toBe(false);
+    expect(m.confidence).toBe(id === 'pacae' ? 'inferred' : 'documented');
+    expect(m.sources.length).toBeGreaterThan(0);
     expect(m.budget).toEqual({ LOD0: BUDGETS[id][0], LOD1: BUDGETS[id][1] });
     expect(m.lods.LOD0.triangles).toBeLessThanOrEqual(BUDGETS[id][0]);
     expect(m.lods.LOD1.triangles).toBeLessThanOrEqual(BUDGETS[id][1]);
