@@ -72,9 +72,10 @@ export function isMissionCompleted(progress: CampaignProgress, missionId: string
 }
 
 /**
- * Missions open in order inside their campaign, and every campaign opens with its first mission: a fresh
- * profile can start any chapter, then each mission there opens once the previous one is completed. A
- * completed mission always stays open to replay.
+ * Missions open in order. A campaign's first mission opens the chapter as soon as it is released: the
+ * player can start any chapter whose opening exists, and the rest of that chapter follows the mission
+ * before it. A campaign whose first mission is still planned waits for the previous chapter. A completed
+ * mission always stays open to replay.
  */
 export function isMissionUnlocked(progress: CampaignProgress, missionId: string): boolean {
   const path = seriesMissions();
@@ -85,27 +86,20 @@ export function isMissionUnlocked(progress: CampaignProgress, missionId: string)
   return isMissionCompleted(progress, path[index - 1].missionId);
 }
 
-/** Whether this is the first released mission of its campaign. */
+/** Whether this is the released opening of its campaign, as opposed to a later mission on its path. */
 function isCampaignOpening(missionId: string): boolean {
-  return CAMPAIGNS.some((campaign) => campaign.releasedMissionIds[0] === missionId);
+  return CAMPAIGNS.some(
+    (campaign) => campaign.path[0] === missionId && campaign.releasedMissionIds.includes(missionId),
+  );
 }
 
-/** A campaign is open once its first mission is; every campaign has an open first mission. */
+/** A campaign is open once its first mission is. */
 export function isCampaignUnlocked(progress: CampaignProgress, campaignId: CampaignId): boolean {
   const first = seriesMissions().find((m) => m.campaignId === campaignId);
   return !!first && isMissionUnlocked(progress, first.missionId);
 }
 
-/**
- * The next mission of the main line: the first unfinished mission whose predecessor is completed, or null
- * once the whole path is done. The campaign openings are shortcuts for the menu, not the main line.
- */
+/** The first unfinished mission on the series path, or null once the whole path is done. */
 export function nextSeriesMission(progress: CampaignProgress): SeriesMission | null {
-  const path = seriesMissions();
-  for (let i = 0; i < path.length; i++) {
-    const mission = path[i]!;
-    if (isMissionCompleted(progress, mission.missionId)) continue;
-    if (i === 0 || isMissionCompleted(progress, path[i - 1]!.missionId)) return mission;
-  }
-  return null;
+  return seriesMissions().find((m) => !isMissionCompleted(progress, m.missionId)) ?? null;
 }
