@@ -26,7 +26,9 @@ export type CaralArchAssetId =
   | 'huaca_idolos'
   | 'camp_shelter'
   | 'shicra_stack'
-  | 'stone_yard';
+  | 'stone_yard'
+  | 'pyramid_small_phase1'
+  | 'survey_stake';
 
 /** Construction states of the Pyramid Mayor (act III of docs/design/caral-model-mission.md). */
 export const CARAL_MAYOR_PHASE_ASSET: Record<CaralMayorPhase, CaralArchAssetId> = {
@@ -81,7 +83,12 @@ function smallPyramid(id: string, rotY: number): CaralArchPlacement {
   const d = quarter ? p.w : p.d;
   return {
     asset: 'pyramid_small',
-    since: 'finished',
+    since: 'foundation',
+    phaseAssets: {
+      foundation: 'pyramid_small_phase1',
+      fill: 'pyramid_small_phase1',
+      finished: 'pyramid_small',
+    },
     x: p.x,
     z: p.z,
     rotY,
@@ -184,13 +191,44 @@ export const CARAL_CAMP_STATIONS: readonly { x: number; z: number; yaw: number }
   { x: 139.8, z: 30.0, yaw: Math.PI / 2 },
 ];
 
+/**
+ * The future plazas staked on the ground while the city is under construction: a stake every ~3.2 m
+ * with a cord segment, removed when the plaza itself stands. The stake-and-cord reading is inferred
+ * (no survey tooling is documented; issue 422).
+ */
+function surveyCircle(center: { x: number; z: number }, radius: number, until: CaralMayorPhase): CaralArchPlacement[] {
+  const count = Math.max(12, Math.round((2 * Math.PI * radius) / 3.2));
+  return Array.from({ length: count }, (_, i) => {
+    const a = (i / count) * Math.PI * 2;
+    return {
+      asset: 'survey_stake',
+      since: 'foundation',
+      until,
+      x: center.x + Math.cos(a) * radius,
+      z: center.z + Math.sin(a) * radius,
+      rotY: -a - Math.PI / 2,
+      scale: [1, 1, 1],
+    };
+  });
+}
+
+/** The main sunken plaza in front of the Mayor's stair and the larger one at the amphitheatre. */
+const MAIN_PLAZA = { x: mayor.x, z: mayor.z + mayor.d / 2 + 12.5, radius: PLAZA_DIAMETER / 2 };
+const AMPH_PLAZA = { x: amphitheatre.x, z: amphitheatre.z - 10, radius: 21 / 2 };
+
+/** Traces of the main plaza (until `fill`) and the amphitheatre plaza (until `in_use`). */
+export const CARAL_SURVEY_LAYOUT: readonly CaralArchPlacement[] = [
+  ...surveyCircle(MAIN_PLAZA, MAIN_PLAZA.radius, 'fill'),
+  ...surveyCircle(AMPH_PLAZA, AMPH_PLAZA.radius, 'in_use'),
+];
+
 export const CARAL_CITY_LAYOUT: readonly CaralArchPlacement[] = [
   { asset: 'pyramid_mayor', x: mayor.x, z: mayor.z, rotY: 0, scale: [1, 1, 1], mayor: true },
   // Sunken circular plaza in front of the Pyramid Mayor's stair (the stair foot is ~4 beyond the base).
   {
     asset: 'circular_plaza',
-    x: mayor.x,
-    z: mayor.z + mayor.d / 2 + 12.5,
+    x: MAIN_PLAZA.x,
+    z: MAIN_PLAZA.z,
     rotY: 0,
     scale: [1, 1, 1],
     lift: PLAZA_FLOOR_DEPTH,
@@ -213,8 +251,8 @@ export const CARAL_CITY_LAYOUT: readonly CaralArchPlacement[] = [
   {
     asset: 'circular_plaza',
     since: 'in_use',
-    x: amphitheatre.x,
-    z: amphitheatre.z - 10,
+    x: AMPH_PLAZA.x,
+    z: AMPH_PLAZA.z,
     rotY: 0,
     scale: [21 / PLAZA_DIAMETER, 1, 21 / PLAZA_DIAMETER],
     lift: PLAZA_FLOOR_DEPTH,
@@ -245,6 +283,7 @@ export const CARAL_CITY_LAYOUT: readonly CaralArchPlacement[] = [
     scale: [1, 1, 1],
   })),
   ...CARAL_CAMP_LAYOUT,
+  ...CARAL_SURVEY_LAYOUT,
 ];
 
 /** Footprints of the kit houses (walls plus platform), so units walk around them. */

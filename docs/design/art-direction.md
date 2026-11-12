@@ -196,10 +196,11 @@ _Status (architecture kit v1)_: `scripts/blender/build_caral_architecture_kit.py
 use (ochre plaster, summit enclosure, sacred-fire altar; 13.5 units ≈ 7.3 P tall on a 43 × 39 footprint) and in
 three construction phases (foundation with retaining walls and shicra piles, partial fill, finished white
 platform), a smaller white pyramid fitted to each heritage footprint, the sunken circular plaza, common and
-elite quincha houses, an Áspero fishing house, a fair tent and the Act III construction camp (two cane
+elite quincha houses, an Áspero fishing house, a fair tent, the Act III construction camp (two cane
 ramadas, three shicra heaps and a dressed-stone yard; no scaffolding or ramp, which the dossier lists as
-undocumented): 8 materials, LOD0 ≤ 5k / LOD1 ≤ 1.5k triangles per piece. A `SiteCrew` of worker rigs
-carries shicra bags at ground level; it is presentation-only and shrinks with the phase. Detail pass: bevelled masses, terraces with set-stone courses in relief under a
+undocumented), the five smaller complexes in a phase-1 construction state and the staked future plazas:
+8 materials, LOD0 ≤ 5k / LOD1 ≤ 1.5k triangles per piece. A `SiteCrew` of worker rigs carries shicra bags
+at ground level; it is presentation-only and shrinks with the phase. Detail pass: bevelled masses, terraces with set-stone courses in relief under a
 plastered upper wall and coping, stairs with real treads and risers between side walls, a parapet or
 summit enclosure, a sunken plaza with stone-faced coursed walls, stairs cut through the rim and a ring
 floor without fans; the Pyramid Mayor has 6 terraces (16.2 units ≈ 8.7 P). Surfaces reuse the shared

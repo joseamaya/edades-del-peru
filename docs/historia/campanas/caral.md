@@ -151,6 +151,10 @@ Estas afirmaciones deben presentarse como **interpretaciones**, no como hechos c
 | Quincha de caña brava en el período antiguo, piedra en el tardío                    | Documentado                       |
 | Ferias temporales con tiendas en las plazas abiertas                                | Documentado                       |
 | Shicras, plataformas superpuestas y enterramiento ritual por fases                  | Documentado                       |
+| Arranque de los cinco complejos menores junto a la Pirámide Mayor                   | Inferido                          |
+| Forma del arranque (plataforma baja con relleno de shicras)                         | Inferido                          |
+| Replanteo de las plazas con estacas y cordel                                        | No documentado; reconstrucción    |
+| Campamento de obra y cuadrilla de acarreadores                                      | Supuesto plausible                |
 | Color exacto de cada edificio en cada período                                       | Inferido                          |
 | Techos y remates de los edificios                                                   | Supuesto plausible                |
 | Plazas circulares hundidas (la mayor en el Templo del Anfiteatro)                   | Documentado                       |

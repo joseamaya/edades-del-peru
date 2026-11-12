@@ -1,0 +1,75 @@
+{
+  "asset_id": "caral_survey_stake",
+  "source_scene": "scenes/caral_architecture_kit.blend",
+  "script": "scripts/blender/build_caral_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "stake base at ground level; cord along +X",
+  "confidence": "inferred",
+  "sources": [
+    "docs/historia/campanas/caral.md",
+    "docs/historia/civilizaciones/caral.md"
+  ],
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 36,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Arch_CaneMat",
+        "MAT-Arch_Wood"
+      ],
+      "bounds": {
+        "min": [
+          -0.045,
+          -0.08,
+          0.0
+        ],
+        "max": [
+          3.2,
+          0.08,
+          1.0
+        ],
+        "size": [
+          3.245,
+          0.16,
+          1.0
+        ]
+      },
+      "file": "caral_survey_stake_lod0.glb",
+      "bytes": 5536
+    },
+    "LOD1": {
+      "triangles": 24,
+      "draw_calls": 2,
+      "materials": [
+        "MAT-Arch_CaneMat",
+        "MAT-Arch_Wood"
+      ],
+      "bounds": {
+        "min": [
+          -0.045,
+          -0.045,
+          0.0
+        ],
+        "max": [
+          3.2,
+          0.045,
+          1.0
+        ],
+        "size": [
+          3.245,
+          0.09,
+          1.0
+        ]
+      },
+      "file": "caral_survey_stake_lod1.glb",
+      "bytes": 4304
+    }
+  }
+}

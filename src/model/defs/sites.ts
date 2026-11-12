@@ -250,8 +250,9 @@ export const CARAL_CIRCULAR_ALTAR = caralCityPoint({ x: 72.5, z: 144.55, w: 10.6
 export const CARAL_SITE_BLOCKER_PADDING = 0.5;
 
 /**
- * Phase from which each Caral monument stands (matches the `since` of its kit placement in caralCity.ts):
- * until then it neither blocks units nor answers clicks. The Pyramid Mayor and Áspero stand throughout.
+ * Phase from which each Caral monument answers clicks and shows its card. The physical blockers use
+ * `CARAL_HERITAGE_BLOCK_SINCE` instead: the five smaller complexes block from foundation (their started
+ * platform exists) but their cards wait for the finished model. The Mayor and Áspero stand throughout.
  */
 export const CARAL_HERITAGE_SINCE: Partial<Record<HeritageBuildingId, string>> = {
   caral_pyramid_central: 'finished',
@@ -262,8 +263,21 @@ export const CARAL_HERITAGE_SINCE: Partial<Record<HeritageBuildingId, string>> =
   caral_anfiteatro: 'in_use',
 };
 
+/**
+ * Act III starts the five smaller complexes with a low platform at foundation; their own cards still
+ * wait for the finished model (the click surface and the physical obstacle are separate decisions).
+ */
+export const CARAL_HERITAGE_BLOCK_SINCE: Partial<Record<HeritageBuildingId, string>> = {
+  ...CARAL_HERITAGE_SINCE,
+  caral_pyramid_central: 'foundation',
+  caral_pyramid_quarry: 'foundation',
+  caral_pyramid_lesser: 'foundation',
+  caral_pyramid_gallery: 'foundation',
+  caral_pyramid_huanca: 'foundation',
+};
+
 export const CARAL_SITE_BLOCKERS: readonly SiteBlocker[] = [
-  ...CARAL_HERITAGE_PROXIES.map(({ id, x, z, w, d }) => ({ x, z, w, d, since: CARAL_HERITAGE_SINCE[id] })),
+  ...CARAL_HERITAGE_PROXIES.map(({ id, x, z, w, d }) => ({ x, z, w, d, since: CARAL_HERITAGE_BLOCK_SINCE[id] })),
   { x: ASPERO_HERITAGE_PROXY.x, z: ASPERO_HERITAGE_PROXY.z, w: ASPERO_HERITAGE_PROXY.w, d: ASPERO_HERITAGE_PROXY.d },
   { ...CARAL_CIRCULAR_ALTAR, since: 'in_use' },
 ];

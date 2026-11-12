@@ -646,7 +646,10 @@ const SCENES = {
       g.loop.stop();
       g.setSitePhase('foundation');
       const deadline = performance.now() + 20_000;
-      while ((g.siteCrew?.count ?? 0) === 0 && performance.now() < deadline) {
+      while (
+        ((g.siteCrew?.count ?? 0) === 0 || !g.landmark?.getObjectByName('caral_city_lod0')) &&
+        performance.now() < deadline
+      ) {
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
       if (!g.siteCrew?.count) throw new Error('construction crew did not load');
@@ -668,7 +671,9 @@ const SCENES = {
     views: [
       { name: 'close', mode: 'close', offset: { x: 4.5, y: 5.5, z: 5.5 }, lookHeight: 0.9 },
       { name: 'camp', mode: 'rts', height: 20, center: { x: 138, z: 30.5 } },
-      { name: 'rts', mode: 'rts', height: 80 },
+      { name: 'trace', mode: 'rts', height: 42, center: { x: 160, z: 54 } },
+      { name: 'act3', mode: 'rts', height: 55, center: { x: 150, z: 44 } },
+      { name: 'rts', mode: 'rts', height: 85, center: { x: 152, z: 40 } },
     ],
   },
   'hud-objectives-act3': {

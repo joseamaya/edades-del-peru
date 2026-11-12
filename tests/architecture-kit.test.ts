@@ -11,13 +11,19 @@ import {
   CARAL_CITY_HOUSE_BLOCKERS,
   CARAL_CITY_LAYOUT,
   CARAL_FAIR_TENTS,
+  CARAL_SURVEY_LAYOUT,
   CARAL_MAYOR_HEIGHT,
   CARAL_MAYOR_PHASE_ASSET,
   CARAL_PHASE_PLAN,
   type CaralArchAssetId,
 } from '../src/model/defs/caralCity';
 import { standsIn } from '../src/model/defs/sitePhases';
-import { CARAL_HERITAGE_PROXIES, CARAL_SITE_BLOCKERS } from '../src/model/defs/sites';
+import {
+  CARAL_HERITAGE_BLOCK_SINCE,
+  CARAL_HERITAGE_PROXIES,
+  CARAL_HERITAGE_SINCE,
+  CARAL_SITE_BLOCKERS,
+} from '../src/model/defs/sites';
 
 // blender-game-assets contract: LOD0 <= 5k, LOD1 <= 1.5k triangles per building; <= 8 kit materials.
 const LOD0 = 5000;
@@ -36,6 +42,8 @@ const IDS: CaralArchAssetId[] = [
   'camp_shelter',
   'shicra_stack',
   'stone_yard',
+  'pyramid_small_phase1',
+  'survey_stake',
 ];
 const PERSON = 1.86;
 
@@ -223,6 +231,45 @@ describe('Caral city layout', () => {
     expect(CARAL_CITY_HOUSE_BLOCKERS.length).toBe(
       CARAL_CITY_LAYOUT.filter((p) => p.asset === 'house_common' || p.asset === 'house_elite').length,
     );
+  });
+
+  it('starts the five smaller complexes at foundation and upgrades them at finished', () => {
+    const started = CARAL_CITY_LAYOUT.filter((p) => p.asset === 'pyramid_small' && p.phaseAssets);
+    expect(started).toHaveLength(5);
+    for (const p of started) {
+      expect(p.since, `${p.x},${p.z}`).toBe('foundation');
+      expect(p.phaseAssets?.foundation).toBe('pyramid_small_phase1');
+      expect(p.phaseAssets?.fill).toBe('pyramid_small_phase1');
+      expect(p.phaseAssets?.finished).toBe('pyramid_small');
+      expect(standsIn(p.since, undefined, 'foundation', CARAL_PHASE_PLAN)).toBe(true);
+    }
+    for (const id of [
+      'caral_pyramid_central',
+      'caral_pyramid_quarry',
+      'caral_pyramid_lesser',
+      'caral_pyramid_gallery',
+      'caral_pyramid_huanca',
+    ] as const) {
+      expect(CARAL_HERITAGE_BLOCK_SINCE[id], id).toBe('foundation');
+      // The monument card still waits for the finished model.
+      expect(CARAL_HERITAGE_SINCE[id], id).toBe('finished');
+    }
+  });
+
+  it('stakes the future plazas until the plaza stands', () => {
+    expect(CARAL_SURVEY_LAYOUT.length).toBeGreaterThan(30);
+    for (const p of CARAL_SURVEY_LAYOUT) {
+      expect(p.asset).toBe('survey_stake');
+      expect(standsIn(p.since, p.until, 'foundation', CARAL_PHASE_PLAN)).toBe(true);
+    }
+    const atFill = CARAL_SURVEY_LAYOUT.filter((p) => standsIn(p.since, p.until, 'fill', CARAL_PHASE_PLAN));
+    expect(atFill.length).toBeGreaterThan(0);
+    expect(
+      atFill.every((p) => p.until === 'in_use'),
+      'only the amphitheatre trace survives fill',
+    ).toBe(true);
+    expect(CARAL_SURVEY_LAYOUT.some((p) => p.until === 'fill')).toBe(true);
+    expect(CARAL_SURVEY_LAYOUT.some((p) => p.until === 'in_use')).toBe(true);
   });
 
   it('blocks every fair tent and circular plaza for its whole standing phase', () => {

@@ -164,6 +164,12 @@ Dialogue speaker labels must not say "Comandante" in this mission.
   `finished`; it is presentation-only (never a `Unit`, no pathfinding, no selection) and stays at ground
   level, because the dossier explicitly records scaffolding as undocumented and not modelled. The camp and
   crew are an abstraction; their evidence is `node scripts/shots_evidence.mjs --scene=caral-camp`.
+- **The future city**: the five smaller complexes stand from `foundation` as low walled platforms with
+  shicra fill (`pyramid_small_phase1`) and swap to the finished model at `finished`; the main plaza is
+  staked with cord and stakes until `fill`, and the amphitheatre plaza until `in_use`. The started
+  platforms block pathing from the start (`CARAL_HERITAGE_BLOCK_SINCE`), but their cards and the
+  six-complex tour wait for `finished` (`CARAL_HERITAGE_SINCE`), so the optional objective cannot be
+  completed from a construction platform. Evidence: `caral-camp` → `docs/media/caral-act3.webp`.
 - **Communal construction**: after each material hand-over, a worker must hold the site for a 20 s work
   turn. The turn's upkeep comes from the village food reserve (the communal store is where the community
   keeps it) and a finished store must stand (`consume.store: BuildingKind.MILL`); if the store is missing
