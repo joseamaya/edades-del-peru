@@ -636,6 +636,45 @@ const SCENES = {
       { name: 'rts', mode: 'rts', height: 30, centerSubject: true },
     ],
   },
+  'hud-objectives-act3': {
+    url: '/?mission=m1_caral&intro=0&fog=0&low=1&noloop=1',
+    start: true,
+    hud: true,
+    viewport: { width: 1280, height: 720 },
+    prepare: async () => {
+      const g = window.game;
+      g.loop.stop();
+      document.getElementById('ed-dialogue')?.classList.remove('show');
+      // The recorded Act III frame: two optional goals and the wood delivery at 100/150.
+      const active = new Set(['a1_huaca', 'a3_shicras', 'obj_asamblea']);
+      for (const o of g.mission.def.objectives) {
+        g.mission.objState.set(o.id, active.has(o.id) ? 'activo' : 'completed');
+      }
+      g.mission.delivered.set('a3_shicras', 100);
+      const worker = [...g.units.values()].find((u) => u.owner === 0 && u.kind === 'worker' && !u.dead);
+      if (!worker) throw new Error('no player worker');
+      g.selectUnits([worker.id]);
+      // A real frame of the base behind the HUD, not the sky where the opening camera left it.
+      const base = g.playerCenter(0);
+      g.camera.moveTo(base.x, base.z, true);
+      g.camera.setHeight(44);
+      for (let i = 0; i < 90; i++) g.camera.update(1 / 60);
+      g.renderer.render(g.scene, g.camera.camera);
+      g.hud.showTutorialStep(
+        'Lleva un obrero a la Pirámide Mayor, haz clic sobre ella y pulsa «Entregar materiales». ' +
+          'Cada entrega y cada turno de obra hacen crecer la pirámide: primero el relleno de shicras, ' +
+          'después los muros de contención y al final la plataforma terminada.',
+        8,
+        10,
+      );
+      for (let i = 0; i < 3; i++) {
+        g.hud.update(0.2, 0);
+        await new Promise((resolve) => setTimeout(resolve, 80));
+      }
+      return null;
+    },
+    views: [],
+  },
   'fauna-perf': {
     url: '/?play=1&civ=caral&period=0&map=altiplano&seed=777&fog=0&low=1&noloop=1',
     prepare: () => {
@@ -678,8 +717,9 @@ async function main() {
   fs.mkdirSync(outDir, { recursive: true });
   const { base, close } = await withViteServer();
   const browser = await launchChromium();
+  const viewport = config.viewport ?? { width: WIDTH, height: HEIGHT };
   const context = await browser.newContext({
-    viewport: { width: WIDTH, height: HEIGHT },
+    viewport,
     deviceScaleFactor: 1,
   });
   const page = await context.newPage();
@@ -700,11 +740,28 @@ async function main() {
         .catch(() => {});
     }
     await page.waitForTimeout(250);
-    await page.evaluate(() => {
-      const root = document.getElementById('ui-root');
-      if (root) root.style.display = 'none';
-    });
+    if (!config.hud) {
+      await page.evaluate(() => {
+        const root = document.getElementById('ui-root');
+        if (root) root.style.display = 'none';
+      });
+    }
     const target = config.live ? null : await page.evaluate(config.prepare);
+    if (config.hud) {
+      await page.waitForTimeout(250);
+      await page.screenshot({ path: path.join(outDir, 'hud.png') });
+      const commit = execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim();
+      fs.writeFileSync(
+        path.join(outDir, 'manifest.json'),
+        JSON.stringify({ scene, commit, url: config.url, ...viewport, views: ['hud'] }, null, 2),
+      );
+      console.log(`${scene}: hud -> ${outDir}`);
+      if (errors.length) {
+        console.error(`page errors: ${errors.slice(0, 2).join(' | ')}`);
+        process.exitCode = 1;
+      }
+      return;
+    }
     for (const view of config.views) {
       await page.evaluate(
         ({ target, view, live }) => {

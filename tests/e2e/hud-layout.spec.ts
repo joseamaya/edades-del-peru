@@ -333,6 +333,91 @@ for (const { width, height, missions } of RESOLUTIONS) {
   });
 }
 
+test.describe('objectives at 1280x720', () => {
+  test.use({ viewport: { width: 1280, height: 720 } });
+
+  /**
+   * Issue 421: with three active goals and a long tutorial (Act III, step 9 of 10), `.obj-current`
+   * used to be capped at 60 % of a shrunken panel and cut a row through the middle. The active list
+   * must now size to its content, or show a real scroll affordance instead of a silent cut.
+   */
+  test('the Act III goals stay whole above the archive', { tag: '@smoke' }, async ({ page }) => {
+    test.setTimeout(120_000);
+    await bootMission(page, 'm1_caral');
+    const state = await page.evaluate(async () => {
+      const g = (window as unknown as { game: any }).game;
+      g.loop.stop();
+      // The recorded Act III state: the two optional goals and the wood delivery at 100/150.
+      const active = new Set(['a1_huaca', 'a3_shicras', 'obj_asamblea']);
+      for (const o of g.mission.def.objectives as { id: string }[]) {
+        g.mission.objState.set(o.id, active.has(o.id) ? 'activo' : 'completed');
+      }
+      g.mission.delivered.set('a3_shicras', 100);
+      // The recorded frame has the command bar open: select a worker so its height is part of the layout.
+      const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as
+        { id: number } | undefined;
+      if (!worker) throw new Error('the mission has no player worker');
+      g.selectUnits([worker.id]);
+      g.hud.showTutorialStep(
+        'Lleva un obrero a la Pirámide Mayor, haz clic sobre ella y pulsa «Entregar materiales». ' +
+          'Cada entrega y cada turno de obra hacen crecer la pirámide: primero el relleno de shicras, ' +
+          'después los muros de contención y al final la plataforma terminada.',
+        8,
+        10,
+      );
+      const settle = () => new Promise<void>((resolve) => setTimeout(resolve, 80));
+      for (let i = 0; i < 3; i++) {
+        g.hud.update(0.2, 0);
+        await settle();
+      }
+      const panel = document.getElementById('ed-objectives')!;
+      const current = panel.querySelector<HTMLElement>('.obj-current')!;
+      const tutorial = document.getElementById('ed-tutorial')!;
+      const bar = document.getElementById('ed-bottom')!;
+      const cr = current.getBoundingClientRect();
+      const pr = panel.getBoundingClientRect();
+      const tr = tutorial.getBoundingClientRect();
+      const br = bar.getBoundingClientRect();
+      const rows = [...current.querySelectorAll<HTMLElement>('.obj')].map((el) => {
+        const r = el.getBoundingClientRect();
+        return {
+          text: el.textContent ?? '',
+          top: r.top,
+          bottom: r.bottom,
+          inside: r.top >= cr.top - 0.5 && r.bottom <= cr.bottom + 0.5,
+        };
+      });
+      return {
+        rows,
+        texts: rows.map((row) => row.text),
+        current: { top: cr.top, bottom: cr.bottom, height: cr.height, scrollHeight: current.scrollHeight },
+        panel: { top: pr.top, bottom: pr.bottom },
+        tutorial: { top: tr.top, bottom: tr.bottom },
+        bar: { top: br.top },
+        scrollable: current.dataset.scrollable === 'true',
+        scrollbar: getComputedStyle(current).scrollbarWidth,
+        overlap: pr.bottom > tr.top + 0.5 && pr.top < tr.bottom - 0.5,
+      };
+    });
+    expect(state.texts.join(' | ')).toContain('Visita la Huaca de los Ídolos');
+    expect(state.texts.join(' | ')).toContain('Entrega 150 de madera');
+    expect(state.texts.join(' | ')).toContain('Convoca una asamblea comunal');
+    expect(state.rows).toHaveLength(3);
+    // The panel uses the column's free space and never reaches the command bar or the tutorial.
+    expect(state.overlap, 'objectives overlap the tutorial').toBe(false);
+    expect(state.panel.bottom).toBeLessThanOrEqual(state.tutorial.top + 1);
+    expect(state.panel.bottom).toBeLessThanOrEqual(state.bar.top + 1);
+    const allInside = state.rows.every((row) => row.inside);
+    // Either every active goal is whole, or the cut edge advertises its scroll (thin thumb + fade).
+    if (!allInside) {
+      expect(state.scrollable, 'a clipped active list must advertise its scroll').toBe(true);
+      expect(state.scrollbar).not.toBe('none');
+      expect(state.current.scrollHeight).toBeGreaterThan(state.current.height);
+    }
+    expect(allInside || state.scrollable).toBe(true);
+  });
+});
+
 test.describe('final screen layering', () => {
   test.use({ viewport: { width: 1280, height: 720 } });
 

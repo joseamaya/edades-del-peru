@@ -467,19 +467,27 @@ const CSS = /* css */ `
   /* Final screens, the pause menu and every other modal own the screen: the objectives column
      must not show through the veil, not even its sticky archive summary (issue 415). */
   #ui-root:has(> .ed-overlay:not(.hidden)) #ed-right-column { display: none; }
-  #ed-objectives { position: static; order: 0; flex: 0 1 auto; max-height: 100%; min-height: 104px; display: flex; flex-direction: column; width: 100%; overflow: hidden; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+  #ed-objectives { position: static; order: 0; flex: 1 1 auto; max-height: 100%; min-height: 104px; display: flex; flex-direction: column; width: 100%; overflow: hidden; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
   #ed-objectives .obj-list { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow: hidden; padding-right: 2px; }
-  #ed-objectives .obj-current { flex: 0 1 auto; max-height: 60%; min-height: 56px; overflow-y: auto; }
+  /* Active goals size to their content: the panel grows into the column's free space and the archive
+     yields first. A percentage cap here cut the list through a line (issue 421). */
+  #ed-objectives .obj-current { flex: 1 1 auto; max-height: none; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--gold-dim) rgba(0,0,0,0.25); scroll-snap-type: y proximity; }
+  #ed-objectives .obj-current::-webkit-scrollbar { width: 6px; }
+  #ed-objectives .obj-current::-webkit-scrollbar-track { background: rgba(0,0,0,0.25); border-radius: 3px; }
+  #ed-objectives .obj-current::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 3px; }
+  /* When the column is too short even for the active goals, fade the cut edge so the player sees the
+     list continues; the thumb above stays visible. */
+  #ed-objectives .obj-current.is-scrollable { -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 14px), transparent); mask-image: linear-gradient(180deg, #000 calc(100% - 14px), transparent); }
   #ed-objectives .obj-current:empty { display: none; }
   /* The <details> itself is the scroll container: Chromium does not lay out its slotted children as
      flex items, so a nested flex scroller would overflow the panel instead of scrolling. */
-  #ed-objectives details.obj-archive { display: block; flex: 1 1 auto; min-height: 0; overflow-y: auto; margin-top: 4px; border-top: 1px solid var(--line); padding-top: 4px; }
+  #ed-objectives details.obj-archive { display: block; flex: 0 1 auto; max-height: 40%; min-height: 1.4em; overflow-y: auto; margin-top: 4px; border-top: 1px solid var(--line); padding-top: 4px; }
   #ed-objectives details.obj-archive > summary { position: sticky; top: 0; z-index: 1; background: var(--panel); cursor: pointer; font-size: 11px; color: var(--text-dim); list-style: none; line-height: 1.4; }
   #ed-objectives details.obj-archive > summary::-webkit-details-marker { display: none; }
   #ed-objectives details.obj-archive > summary:focus-visible { outline: 1px solid var(--gold); outline-offset: 2px; }
   #ed-objectives details.obj-archive[open] > summary { color: var(--green); }
   #ed-objectives h4 { margin: 0 0 8px; font-size: 12px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; }
-  #ed-objectives .obj { display: flex; gap: 8px; align-items: flex-start; font-size: 12px; color: var(--text-dim); padding: 3px 0; line-height: 1.35; }
+  #ed-objectives .obj { display: flex; gap: 8px; align-items: flex-start; font-size: 12px; color: var(--text-dim); padding: 3px 0; line-height: 1.35; scroll-snap-align: start; }
   #ed-objectives .obj .mark { min-width: 16px; text-align: center; color: var(--text-dim); }
   #ed-objectives .obj.done { color: var(--green); }
   #ed-objectives .obj.done .mark { color: var(--green); }
@@ -573,6 +581,8 @@ export class HUD {
   private tutorialCountEl!: HTMLElement;
   private missionCard: HTMLElement | null = null;
   private commandBarObserver!: ResizeObserver;
+  /** Re-evaluates the objectives scroll affordance when the column, tutorial or list changes size. */
+  private objectivesObserver!: ResizeObserver;
 
   constructor(game: Game) {
     this.game = game;
@@ -600,6 +610,9 @@ export class HUD {
     this.commandBarObserver = new ResizeObserver(() => this.syncCommandBarHeight());
     this.commandBarObserver.observe(this.bottomEl);
     this.syncCommandBarHeight();
+    this.objectivesObserver = new ResizeObserver(() => this.syncObjectivesScroll());
+    this.objectivesObserver.observe(this.objListEl);
+    this.syncObjectivesScroll();
     this.edgeGuardEls = Array.from(this.root.querySelectorAll<HTMLElement>(EDGE_GUARD_SELECTOR));
     bus.on('alert', (info) => this.pushAlert(info));
     game.onDestroy(() => this.dispose());
@@ -607,6 +620,7 @@ export class HUD {
 
   dispose(): void {
     this.commandBarObserver.disconnect();
+    this.objectivesObserver.disconnect();
     for (const entry of this.toasts.values()) window.clearTimeout(entry.timer);
     this.toasts.clear();
     this.toastsEl?.replaceChildren();
@@ -982,6 +996,19 @@ export class HUD {
     if (details) details.scrollTop = archiveScroll;
     const currentEl = this.objListEl.querySelector('.obj-current') as HTMLElement | null;
     if (currentEl) currentEl.scrollTop = currentScroll;
+    this.syncObjectivesScroll();
+  }
+
+  /**
+   * Flag the active list when it really scrolls, so the cut edge gets a fade and the thumb is not the
+   * only hint (issue 421). `data-scrollable` is what the HUD e2e asserts.
+   */
+  private syncObjectivesScroll(): void {
+    const current = this.objListEl.querySelector('.obj-current') as HTMLElement | null;
+    if (!current) return;
+    const scrollable = current.scrollHeight > current.clientHeight + 1;
+    current.classList.toggle('is-scrollable', scrollable);
+    current.dataset.scrollable = scrollable ? 'true' : 'false';
   }
 
   /**
