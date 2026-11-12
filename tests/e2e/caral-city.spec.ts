@@ -500,6 +500,70 @@ test('the Caral stone nodes use the granodiorite kit and sit on the terrain', as
 });
 
 test(
+  'the quarry obstacle covers the visible outcrop and still allows gathering',
+  { tag: '@smoke' },
+  async ({ page }) => {
+    await boot(page);
+    await page.waitForFunction(
+      () => {
+        const g = (window as unknown as { game?: any }).game;
+        return [...(g?.resourceNodes?.values() ?? [])].some((n: any) => n.kind === 'well' && n.navRadius > 3);
+      },
+      null,
+      { timeout: 30_000 },
+    );
+    const state = await page.evaluate(() => {
+      const g = (window as unknown as { game: any }).game;
+      const base = g.playerCenter(0);
+      const node = [...g.resourceNodes.values()]
+        .filter((n: any) => n.kind === 'well')
+        .sort(
+          (a: any, b: any) =>
+            Math.hypot(a.pos.x - base.x, a.pos.z - base.z) - Math.hypot(b.pos.x - base.x, b.pos.z - base.z),
+        )[0];
+      const start = g.findLandNear(node.pos.x - 12, node.pos.z, 10);
+      const end = g.findLandNear(node.pos.x + 12, node.pos.z, 10);
+      const cross = g.pathfinder.pathfind(start.x, start.z, end.x, end.z);
+      const inside = cross.filter(
+        (point: any) => Math.hypot(point.x - node.pos.x, point.z - node.pos.z) < node.navRadius - 0.05,
+      );
+      const approach = g.pathfinder.findApproachPath(
+        start.x,
+        start.z,
+        node.pos.x,
+        node.pos.z,
+        node.navRadius + 0.4,
+        undefined,
+        { footprintRadius: node.navRadius },
+      );
+      const last = approach[approach.length - 1];
+      const departure = g.resolveMissionPoint({ ref: 'departure', dx: 0, dz: 0 });
+      return {
+        opening: { x: node.pos.x, z: node.pos.z },
+        departureDistance: Math.hypot(node.pos.x - departure.x, node.pos.z - departure.z),
+        navRadius: node.navRadius,
+        centerBlocked: !g.pathfinder.isWalkable(node.pos.x, node.pos.z),
+        pathLength: cross.length,
+        inside: inside.length,
+        approachLength: approach.length,
+        standDistance: last ? Math.hypot(last.x - node.pos.x, last.z - node.pos.z) : -1,
+      };
+    });
+    expect(state.navRadius).toBeGreaterThan(3);
+    expect(state.opening.x).toBeCloseTo(50, 3);
+    expect(state.opening.z).toBeCloseTo(192, 3);
+    expect(state.departureDistance, 'the opening quarry clears the Act IV departure').toBeGreaterThan(
+      state.navRadius + 1,
+    );
+    expect(state.centerBlocked, 'the outcrop centre is not walkable').toBe(true);
+    expect(state.pathLength).toBeGreaterThan(0);
+    expect(state.inside, 'a route never cuts through the visible rock').toBe(0);
+    expect(state.approachLength, 'workers still find a stand point outside the outcrop').toBeGreaterThan(0);
+    expect(state.standDistance).toBeGreaterThan(state.navRadius - 0.3);
+  },
+);
+
+test(
   'the Caral food nodes use the pacae kit and its trees use only kit species',
   { tag: '@smoke' },
   async ({ page }) => {
@@ -1828,8 +1892,10 @@ test('a loaded Caral save keeps the Blender setpiece and the same valley scenery
   );
   const loaded = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
+    const wells = [...g.resourceNodes.values()].filter((n: any) => n.kind === 'well');
     return {
       groves: g.caralGroves.length as number,
+      quarryRadius: Math.min(...wells.map((n: any) => n.navRadius)),
       inField: g.caralGroves.some((grove: any) =>
         g.caralValleyPlan.fields.some(
           (field: any) =>
@@ -1840,6 +1906,7 @@ test('a loaded Caral save keeps the Blender setpiece and the same valley scenery
   });
   expect(loaded.groves, 'the deterministic grove layout survives a load').toBe(fresh.groves);
   expect(loaded.inField, 'no grove grows inside a reserved valley field').toBe(false);
+  expect(loaded.quarryRadius, 'saved quarry nodes rebuild their larger obstacle').toBe(4);
 });
 
 test('the authored Caral geometry is deterministic for the same mission seed', async ({ page }) => {

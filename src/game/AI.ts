@@ -9,7 +9,7 @@ import { getUnitStats } from '../model/defs/units';
 import { unitAvailableInPeriod } from '../model/defs/units';
 import { ERA_DEFS } from '../model/defs/eras';
 import type { Game } from '../core/Game';
-import { HARVEST_STAND_RANGE, MELEE_ATTACK_RANGE, type Unit } from '../entities/Unit';
+import { MELEE_ATTACK_RANGE, gatherApproachFor, gatherStandRangeFor, type Unit } from '../entities/Unit';
 import { Building } from '../entities/Building';
 import type { ResourceNode } from '../entities/ResourceNode';
 import { CATEGORIES, UNIT_CATEGORY, armyWeightsFor, UnitCategory } from './aiComposition';
@@ -259,15 +259,24 @@ export class AI {
       const list = nodes.filter((n) => n.resource === k).sort((a, b) => distTo(a) - distTo(b));
       for (const n of list) {
         if (this.isUnreachable(w, n)) continue;
-        const farm = n.farm;
-        const standRadius = farm ? Math.max(0.5, (farm.radius ?? 1.5) + 1.4 - 0.6) : HARVEST_STAND_RANGE;
+        const standRadius = gatherStandRangeFor(n);
+        const opts = gatherApproachFor(n);
         // cheap component test first: skip without A*; do not blacklist on this
         // check alone, because a stand point blocked from one worker can be
         // reachable from another worker or from a different side.
-        if (!this.game.pathfinder.reachableToNode(w.pos.x, w.pos.z, n.pos.x, n.pos.z, standRadius, w.owner)) continue;
+        if (!this.game.pathfinder.reachableToNode(w.pos.x, w.pos.z, n.pos.x, n.pos.z, standRadius, w.owner, opts))
+          continue;
         if (this.pathBudget <= 0) return null;
         this.pathBudget--;
-        const path = this.game.pathfinder.findApproachPath(w.pos.x, w.pos.z, n.pos.x, n.pos.z, standRadius, w.owner);
+        const path = this.game.pathfinder.findApproachPath(
+          w.pos.x,
+          w.pos.z,
+          n.pos.x,
+          n.pos.z,
+          standRadius,
+          w.owner,
+          opts,
+        );
         if (path.length > 0) return n;
         this.markUnreachable(w, n);
       }

@@ -17,6 +17,8 @@ export interface ApproachOptions {
   slot?: number;
   /** Only count stand cells in this walkable component (for placement checks). */
   component?: number;
+  /** Blocked cells inside this radius belong to the target's own footprint, not to a wall. */
+  footprintRadius?: number;
 }
 
 export type Obstacle =
@@ -571,6 +573,7 @@ export class Pathfinder {
     standRadius: number,
     owner?: number,
     allowWater = false,
+    footprintRadius = 0,
   ): StandCandidate[] {
     const { cols, cell } = this.grid;
     const candidates: StandCandidate[] = [];
@@ -609,7 +612,8 @@ export class Pathfinder {
           standZ = tz + (dz / targetDist) * standDist;
         }
         if (!this.isWalkable(standX, standZ, owner)) continue;
-        if (!this.approachClear(tx, tz, standX, standZ, owner, allowWater)) continue;
+        if (footprintRadius > 0 && Math.hypot(standX - tx, standZ - tz) <= footprintRadius) continue;
+        if (!this.approachClear(tx, tz, standX, standZ, owner, allowWater, footprintRadius)) continue;
         candidates.push({
           x: standX,
           z: standZ,
@@ -664,7 +668,16 @@ export class Pathfinder {
     opts?: ApproachOptions,
   ): StandCandidate[] {
     if (!(standRadius > 0)) return [];
-    const candidates = this.standCandidates(sx, sz, tx, tz, standRadius, owner, opts?.allowWater);
+    const candidates = this.standCandidates(
+      sx,
+      sz,
+      tx,
+      tz,
+      standRadius,
+      owner,
+      opts?.allowWater,
+      opts?.footprintRadius,
+    );
     candidates.sort((a, b) => a.targetDist - b.targetDist || a.startDist - b.startDist);
     const tried = new Set<string>();
     const ordered: StandCandidate[] = [];
@@ -686,12 +699,21 @@ export class Pathfinder {
 
   /**
    * Line of sight from a stand point toward a blocked target, ignoring the
-   * target's own blocked cell (the worker stops at harvest range and never
-   * enters it). A wall between the stand cell and the target cell rejects the
-   * candidate, so a worker cannot harvest through a building. Fishing grounds
-   * opt into crossing water, which is not a wall between the shore and the shoal.
+   * target's own blocked cells (the worker stops at harvest range and never
+   * enters it). `footprintRadius` extends that allowance over a large resource
+   * node's own rasterized footprint; any wall just outside it still rejects the
+   * candidate. Fishing grounds opt into crossing water, which is not a wall
+   * between the shore and the shoal.
    */
-  private approachClear(tx: number, tz: number, sx: number, sz: number, owner?: number, allowWater = false): boolean {
+  private approachClear(
+    tx: number,
+    tz: number,
+    sx: number,
+    sz: number,
+    owner?: number,
+    allowWater = false,
+    footprintRadius = 0,
+  ): boolean {
     const { cell } = this.grid;
     const targetCx = Math.floor(tx / cell);
     const targetCz = Math.floor(tz / cell);
@@ -702,7 +724,16 @@ export class Pathfinder {
       const s = (dist * i) / steps;
       const x = tx + ((sx - tx) / dist) * s;
       const z = tz + ((sz - tz) / dist) * s;
-      if (Math.floor(x / cell) === targetCx && Math.floor(z / cell) === targetCz) break;
+      const sampleCx = Math.floor(x / cell);
+      const sampleCz = Math.floor(z / cell);
+      if (sampleCx === targetCx && sampleCz === targetCz) break;
+      if (footprintRadius > 0) {
+        // Only cells owned by the target's own rasterized footprint are ignored; a wall just outside
+        // it still blocks the harvest line of sight.
+        const cx = (sampleCx + 0.5) * cell;
+        const cz = (sampleCz + 0.5) * cell;
+        if (Math.hypot(cx - tx, cz - tz) <= footprintRadius + 1e-6) continue;
+      }
       if (this.isWalkable(x, z, owner)) continue;
       if (allowWater && this.isWaterAt(x, z)) continue;
       return false;

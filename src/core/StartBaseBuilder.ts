@@ -110,7 +110,7 @@ export class StartBaseBuilder {
     }
     for (const n of this.game.resourceNodes.values()) {
       if (n.dead) continue;
-      if (distance2D(x, z, n.pos.x, n.pos.z) < n.radius + 0.6) return false;
+      if (distance2D(x, z, n.pos.x, n.pos.z) < Math.max(n.radius, n.navRadius) + 0.6) return false;
     }
     return used.every((p) => distance2D(x, z, p.x, p.z) >= 1.1);
   }

@@ -44,7 +44,8 @@ export function placeStartResources(options: StartResourceOptions): void {
     for (let i = 0; i < 5; i++) {
       place('tree', rng.range(140, 200), -18 + rng.range(-1.5, 1.5), rng.range(-1.5, 1.5));
     }
-    place('well', 400, -18, 20);
+    // Clear of the Act IV departure marker: the granodiorite footprint is much larger than a generic well.
+    place('well', 400, 8, 20);
     place('berry', 150, 20, 20);
   } else if (options.setpieceLower) {
     const grove = options.setpieceLower;

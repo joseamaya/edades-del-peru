@@ -14,6 +14,8 @@ export class ResourceNode {
   depleted = false;
   dead = false;
   radius = 0;
+  /** Pathfinding footprint set when the obstacle is registered (0 until then). */
+  navRadius = 0;
   kind: 'tree' | 'mine' | 'well' | 'hunt' | 'fishing' | 'berry';
   treeSlot = -1;
   nodeView: ResourceNodeView | null = null;

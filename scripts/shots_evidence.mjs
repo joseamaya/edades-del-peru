@@ -638,6 +638,62 @@ const SCENES = {
       { name: 'rts', mode: 'rts', height: 30, centerSubject: true },
     ],
   },
+  'caral-quarry': {
+    url: '/?mission=m1_caral&intro=0&fog=0&low=1&noloop=1',
+    start: true,
+    prepare: async () => {
+      const g = window.game;
+      g.loop.stop();
+      const deadline = performance.now() + 20_000;
+      while (
+        (g.scene.getObjectByName('props_kit_granodiorite_lod0')?.count ?? 0) +
+          (g.scene.getObjectByName('props_kit_granodiorite_lod1')?.count ?? 0) ===
+        0
+      ) {
+        if (performance.now() > deadline) throw new Error('granodiorite kit did not load');
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+      const base = g.playerCenter(0);
+      const node = [...g.resourceNodes.values()]
+        .filter((n) => n.kind === 'well')
+        .sort(
+          (a, b) => Math.hypot(a.pos.x - base.x, a.pos.z - base.z) - Math.hypot(b.pos.x - base.x, b.pos.z - base.z),
+        )[0];
+      if (!node) throw new Error('no Caral quarry node');
+      for (const unit of [...g.units.values()]) {
+        unit.removeFromScene();
+        g.units.delete(unit.id);
+      }
+      for (let i = 0; i < 90; i++) g.loop.onUpdate(1 / 60, i / 60);
+      g.scene.traverse((o) => {
+        if (o.name?.startsWith('geo-label:')) o.visible = false;
+      });
+      // Debug-only footprint ring: the game never draws it; it makes the collision radius reviewable.
+      const points = [];
+      for (let i = 0; i < 64; i++) {
+        const a = (i / 64) * Math.PI * 2;
+        const x = node.pos.x + Math.cos(a) * node.navRadius;
+        const z = node.pos.z + Math.sin(a) * node.navRadius;
+        points.push(new window.THREE.Vector3(x, g.terrain.getHeight(x, z) + 0.12, z));
+      }
+      const ring = new window.THREE.LineLoop(
+        new window.THREE.BufferGeometry().setFromPoints(points),
+        new window.THREE.LineBasicMaterial({ color: 0xffd34a, transparent: true, opacity: 0.9, depthTest: false }),
+      );
+      ring.name = 'debug:quarry-footprint';
+      ring.renderOrder = 20;
+      g.scene.add(ring);
+      g.renderer.render(g.scene, g.camera.camera);
+      return {
+        center: { x: node.pos.x, z: node.pos.z },
+        subject: { x: node.pos.x, y: g.terrain.getHeight(node.pos.x, node.pos.z), z: node.pos.z },
+      };
+    },
+    views: [
+      { name: 'quarry', mode: 'rts', height: 26 },
+      { name: 'close', mode: 'close', offset: { x: 6, y: 5, z: 7 }, lookHeight: 0.8 },
+    ],
+  },
   'caral-camp': {
     url: '/?mission=m1_caral&intro=0&fog=0&low=1&noloop=1',
     start: true,

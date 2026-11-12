@@ -1218,8 +1218,10 @@ export class WorldViewDecor {
             Math.abs(px - blocker.x) <= blocker.w / 2 + 3 && Math.abs(pz - blocker.z) <= blocker.d / 2 + 3,
         ) ||
         [...this.game.resourceNodes.values()].some(
-          (node: { pos: { x: number; z: number }; kind: string; dead: boolean }) =>
-            !node.dead && Math.hypot(node.pos.x - px, node.pos.z - pz) < (node.kind === 'tree' ? 7.2 : 2.8),
+          (node: { pos: { x: number; z: number }; kind: string; dead: boolean; navRadius: number }) =>
+            !node.dead &&
+            Math.hypot(node.pos.x - px, node.pos.z - pz) <
+              (node.kind === 'tree' ? 7.2 : Math.max(2.8, node.navRadius + 2.4)),
         ),
     };
   }

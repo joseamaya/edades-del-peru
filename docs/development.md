@@ -508,6 +508,16 @@ Definition of Done and the building audit see
   obstacle, no simulation entry); the groves register through `TreeInstances.registerVisual`, which
   shares the batch but gives every tree id `-1`, so picking ignores it. Replanned after the opening
   resources and before the ground cover. Guarded by `tests/caral-valley.test.ts` and the Caral E2E.
+- **Caral quarry footprint** (issue 428): a `well` node using the granodiorite kit blocks a 4.0 m
+  radius (`QUARRY_OBSTACLE_RADIUS`) instead of the generic 1.1 m. The radius covers the kit's largest
+  half-diagonal (3.25 m) plus the 0.71 m half-diagonal of a nav cell, so every point of a walkable cell
+  stays outside the visible hull.
+  The node's `navRadius` raises its gather/stand reach and `ApproachOptions.footprintRadius` lets the
+  resource's own blocked footprint be crossed by the approach line; walls outside it still reject the
+  stand point. The Caral opening quarry node moves from `(-18, 20)` to `(8, 20)` relative to the base so its
+  footprint no longer covers the Act IV departure marker. Other maps keep 1.1 m. This changes Caral
+  pathing, so `REPLAY_VERSION` is 31; guarded by `tests/quarry-obstacle.test.ts`,
+  `tests/props-kit.test.ts`, `tests/world-builder.test.ts` and the Caral E2E.
 - **Caral objective flow** (issue 390): `obj_complejos` activates on `t_a3_obra_muros` (all six monuments
   stand) and gates each visit on `ObjectiveDef.inspectRadius` (a player unit within 8 m of the card's footprint);
   `obj_asamblea` is announced with Act III (`awaitsCall`: listed but pending until the player calls it); the Act III camera reveal is a `reveal` trigger effect that plays
