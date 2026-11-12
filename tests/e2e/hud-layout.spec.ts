@@ -336,32 +336,26 @@ for (const { width, height, missions } of RESOLUTIONS) {
 test.describe('objectives at 1280x720', () => {
   test.use({ viewport: { width: 1280, height: 720 } });
 
-  /**
-   * Issue 421: with three active goals and a long tutorial (Act III, step 9 of 10), `.obj-current`
-   * used to be capped at 60 % of a shrunken panel and cut a row through the middle. The active list
-   * must now size to its content, or show a real scroll affordance instead of a silent cut.
-   */
-  test('the Act III goals stay whole above the archive', { tag: '@smoke' }, async ({ page }) => {
-    test.setTimeout(120_000);
-    await bootMission(page, 'm1_caral');
-    const state = await page.evaluate(async () => {
-      const g = (window as unknown as { game: any }).game;
+  /** Put the mission in the recorded Act III state and show the real step 9 of 10. */
+  const act3State = (page: Page) =>
+    page.evaluate(async () => {
+      const g = (window as unknown as { game: any }).game as any;
       g.loop.stop();
-      // The recorded Act III state: the two optional goals and the wood delivery at 100/150.
+      document.getElementById('ed-dialogue')?.classList.remove('show');
       const active = new Set(['a1_huaca', 'a3_shicras', 'obj_asamblea']);
-      for (const o of g.mission.def.objectives as { id: string }[]) {
-        g.mission.objState.set(o.id, active.has(o.id) ? 'activo' : 'completed');
+      for (const o of g.mission.def.objectives as { id: string; title: string }[]) {
+        // Later acts are still pending, not archived as finished; Act I/II are done.
+        const state = active.has(o.id) ? 'activo' : /^Acto (III|IV) ·/.test(o.title) ? 'pendiente' : 'completed';
+        g.mission.objState.set(o.id, state);
       }
       g.mission.delivered.set('a3_shicras', 100);
-      // The recorded frame has the command bar open: select a worker so its height is part of the layout.
       const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as
         { id: number } | undefined;
       if (!worker) throw new Error('the mission has no player worker');
       g.selectUnits([worker.id]);
       g.hud.showTutorialStep(
         'Lleva un obrero a la Pirámide Mayor, haz clic sobre ella y pulsa «Entregar materiales». ' +
-          'Cada entrega y cada turno de obra hacen crecer la pirámide: primero el relleno de shicras, ' +
-          'después los muros de contención y al final la plataforma terminada.',
+          'Cada entrega y cada turno de obra hacen crecer la pirámide.',
         8,
         10,
       );
@@ -391,30 +385,154 @@ test.describe('objectives at 1280x720', () => {
         rows,
         texts: rows.map((row) => row.text),
         current: { top: cr.top, bottom: cr.bottom, height: cr.height, scrollHeight: current.scrollHeight },
-        panel: { top: pr.top, bottom: pr.bottom },
+        panel: { top: pr.top, bottom: pr.bottom, height: pr.height },
         tutorial: { top: tr.top, bottom: tr.bottom },
         bar: { top: br.top },
-        scrollable: current.dataset.scrollable === 'true',
+        scrollable: current.classList.contains('is-scrollable'),
         scrollbar: getComputedStyle(current).scrollbarWidth,
+        straddling: rows.filter((row) => row.top < cr.bottom - 0.5 && row.bottom > cr.bottom + 0.5).length,
         overlap: pr.bottom > tr.top + 0.5 && pr.top < tr.bottom - 0.5,
       };
     });
+
+  /**
+   * Issue 421: with three active goals and a long tutorial (Act III, step 9 of 10), `.obj-current`
+   * used to be capped at 60 % of a shrunken panel and cut a row through the middle. The active list
+   * must now size to its content, or show a real scroll affordance instead of a silent cut.
+   */
+  test('the Act III goals stay whole above the archive', { tag: '@smoke' }, async ({ page }) => {
+    test.setTimeout(120_000);
+    await bootMission(page, 'm1_caral');
+    const state = await act3State(page);
     expect(state.texts.join(' | ')).toContain('Visita la Huaca de los Ídolos');
     expect(state.texts.join(' | ')).toContain('Entrega 150 de madera');
     expect(state.texts.join(' | ')).toContain('Convoca una asamblea comunal');
     expect(state.rows).toHaveLength(3);
-    // The panel uses the column's free space and never reaches the command bar or the tutorial.
+    // The panel hugs its content and never reaches the command bar or the tutorial.
     expect(state.overlap, 'objectives overlap the tutorial').toBe(false);
     expect(state.panel.bottom).toBeLessThanOrEqual(state.tutorial.top + 1);
     expect(state.panel.bottom).toBeLessThanOrEqual(state.bar.top + 1);
+    expect(state.panel.height, 'the panel should not stretch to the whole column').toBeLessThan(420);
     const allInside = state.rows.every((row) => row.inside);
-    // Either every active goal is whole, or the cut edge advertises its scroll (thin thumb + fade).
     if (!allInside) {
       expect(state.scrollable, 'a clipped active list must advertise its scroll').toBe(true);
       expect(state.scrollbar).not.toBe('none');
       expect(state.current.scrollHeight).toBeGreaterThan(state.current.height);
     }
     expect(allInside || state.scrollable).toBe(true);
+    // Whatever the height, a row is never painted half outside the list at rest.
+    expect(state.straddling, 'no active row is cut through the middle').toBe(0);
+  });
+
+  /** A long Act III list must scroll without ever resting on a half row. */
+  test('an overflowing goal list ends on a whole row and keeps a visible scroll signal', async ({ page }) => {
+    test.setTimeout(120_000);
+    await bootMission(page, 'm1_caral');
+    const state = await page.evaluate(async () => {
+      const g = (window as unknown as { game: any }).game as any;
+      g.loop.stop();
+      const defs = g.mission.def.objectives as { id: string; title: string; kind: string }[];
+      const act3 = defs.filter((o) => /^Acto III ·/.test(o.title) && o.kind !== 'wait').slice(0, 6);
+      const active = new Set(['a1_huaca', 'obj_asamblea', ...act3.map((o) => o.id)]);
+      for (const o of defs) g.mission.objState.set(o.id, active.has(o.id) ? 'activo' : 'completed');
+      const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as
+        { id: number } | undefined;
+      if (!worker) throw new Error('the mission has no player worker');
+      g.selectUnits([worker.id]);
+      g.hud.showTutorialStep(
+        'Lleva un obrero a la Pirámide Mayor, haz clic sobre ella y pulsa «Entregar materiales». ' +
+          'Cada entrega y cada turno de obra hacen crecer la pirámide. Mantén el depósito con comida.',
+        8,
+        10,
+      );
+      const settle = () => new Promise<void>((resolve) => setTimeout(resolve, 80));
+      for (let i = 0; i < 3; i++) {
+        g.hud.update(0.2, 0);
+        await settle();
+      }
+      const current = document.querySelector<HTMLElement>('#ed-objectives .obj-current')!;
+      // The list may have restored a scroll from an earlier render; start from the top like the issue.
+      current.scrollTop = 0;
+      await settle();
+      const measure = () => {
+        const cr = current.getBoundingClientRect();
+        const rows = [...current.querySelectorAll<HTMLElement>('.obj')].map((el) => {
+          const r = el.getBoundingClientRect();
+          return {
+            top: r.top,
+            bottom: r.bottom,
+            inside: r.top >= cr.top - 0.5 && r.bottom <= cr.bottom + 0.5,
+          };
+        });
+        return {
+          bottom: cr.bottom,
+          rows,
+          scrollable: current.classList.contains('is-scrollable'),
+          scrollbar: getComputedStyle(current).scrollbarWidth,
+          scrollHeight: current.scrollHeight,
+          clientHeight: current.clientHeight,
+          maxHeight: current.style.maxHeight,
+          className: current.className,
+        };
+      };
+      const before = measure();
+      current.scrollTop = current.scrollHeight;
+      await settle();
+      const atEnd = measure();
+      const last = atEnd.rows[atEnd.rows.length - 1];
+      const panel = document.getElementById('ed-objectives')!;
+      const bar = document.getElementById('ed-bottom')!;
+      return {
+        before,
+        atEnd,
+        panelBottom: panel.getBoundingClientRect().bottom,
+        barTop: bar.getBoundingClientRect().top,
+        active: before.rows.length,
+        lastVisibleAtEnd: !!last && last.bottom <= atEnd.bottom + 1,
+      };
+    });
+    expect(state.active).toBeGreaterThanOrEqual(6);
+    expect(state.before.scrollable, 'the overflow list advertises its scroll').toBe(true);
+    expect(state.before.scrollbar).not.toBe('none');
+    expect(state.before.scrollHeight).toBeGreaterThan(state.before.clientHeight);
+    expect(
+      state.before.rows.filter((row) => row.top < state.before.bottom - 0.5 && row.bottom > state.before.bottom + 0.5),
+      'the list rests on a row boundary, not on half a line',
+    ).toHaveLength(0);
+    expect(state.lastVisibleAtEnd, 'the last goal is reachable by scrolling').toBe(true);
+    expect(state.panelBottom).toBeLessThanOrEqual(state.barTop + 1);
+  });
+
+  /** Fixing the overflow must not make a one-goal panel stretch to the command bar. */
+  test('a short goal list keeps the panel at its content height', { tag: '@smoke' }, async ({ page }) => {
+    test.setTimeout(120_000);
+    await bootMission(page, 'm1_caral');
+    const state = await page.evaluate(async () => {
+      const g = (window as unknown as { game: any }).game as any;
+      g.loop.stop();
+      for (const o of g.mission.def.objectives as { id: string }[]) {
+        g.mission.objState.set(o.id, o.id === 'a3_shicras' ? 'activo' : 'completed');
+      }
+      g.hud.hideTutorial();
+      const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as
+        { id: number } | undefined;
+      if (!worker) throw new Error('the mission has no player worker');
+      g.selectUnits([worker.id]);
+      g.hud.update(0.2, 0);
+      await new Promise<void>((resolve) => setTimeout(resolve, 120));
+      g.hud.update(0.2, 0);
+      const panel = document.getElementById('ed-objectives')!.getBoundingClientRect();
+      const bar = document.getElementById('ed-bottom')!.getBoundingClientRect();
+      return {
+        panelHeight: panel.height,
+        panelBottom: panel.bottom,
+        barTop: bar.top,
+        scrollable: document.querySelector('#ed-objectives .obj-current')!.classList.contains('is-scrollable'),
+      };
+    });
+    expect(state.scrollable).toBe(false);
+    expect(state.panelHeight, 'one goal should not produce an empty full-column panel').toBeLessThan(220);
+    expect(state.panelBottom).toBeLessThanOrEqual(state.barTop + 1);
   });
 });
 

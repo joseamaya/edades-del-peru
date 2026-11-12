@@ -206,10 +206,11 @@ Definition of Done and the building audit see
   `Nombre:` prefix to a portrait. `status: 'abstraction'` marks stylistic reconstructions (never likenesses).
 - **HUD right column** (issues 401–402): `#ed-objectives`, `#ed-tutorial` and `#ed-help` share one
   `#ed-right-column` flex stack whose bottom is the live command-bar height (`--ed-command-bar-h`), so the
-  panels can never cover each other or reach the bar. The objectives panel grows into the column's free
-  space and the active goals size to their content, so they are never capped at a fraction of a shrunken
-  list (issue 421); the archive yields first. When even the active list does not fit, it scrolls with a thin
-  thumb and a faded bottom edge (`data-scrollable`), so the cut never reads as a silent end. Finished goals
+  panels can never cover each other or reach the bar. The objectives panel hugs its content and the
+  active goals size to theirs, so they are never capped at a fraction of a shrunken list (issue 421); the
+  archive, not the active list, is the flex item that yields. When even the active list does not fit, it
+  scrolls with a thin thumb and a faded bottom edge (`is-scrollable`), and its height ends on a row
+  boundary, so it never rests on half a line. Finished goals
   fold into one `<details>` line grouped by act
   («Finalizados (N) · Acto I ✔ 2/2»), and that `<details>` is the archive's scroll container (a nested flex
   scroller does not receive a height inside `details`). `refreshObjectives` only re-renders when the visible
@@ -221,7 +222,8 @@ Definition of Done and the building audit see
   including a late mission with the archive folded and expanded, the shortcuts open, the Act IV pause menu,
   and the victory and defeat screens at 1280×720. The Act III frame of the issue is reproducible with
   `node scripts/shots_evidence.mjs --scene=hud-objectives-act3 --out=review/evidence/hud-objectives-act3`
-  (1280×720, UI kept visible) and is committed as `docs/media/caral-objectives-act3.webp`.
+  (1280×720, UI kept visible); convert its `hud.png` to WebP (quality 84) for
+  `docs/media/caral-objectives-act3.webp`.
 - **Water refraction**: `Water` renders the scene with its mesh hidden into a `WebGLRenderTarget`
   (`Game.renderWaterRefraction`) and the shader samples the seabed, offset by the wave normal and faded by the
   viewing angle (fresnel). It costs an extra scene pass, so it only runs with the cinematic set on and the

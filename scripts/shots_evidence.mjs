@@ -648,7 +648,11 @@ const SCENES = {
       // The recorded Act III frame: two optional goals and the wood delivery at 100/150.
       const active = new Set(['a1_huaca', 'a3_shicras', 'obj_asamblea']);
       for (const o of g.mission.def.objectives) {
-        g.mission.objState.set(o.id, active.has(o.id) ? 'activo' : 'completed');
+        // Later acts are still pending, not archived as finished; Act I/II are done.
+        g.mission.objState.set(
+          o.id,
+          active.has(o.id) ? 'activo' : /^Acto (III|IV) ·/.test(o.title) ? 'pendiente' : 'completed',
+        );
       }
       g.mission.delivered.set('a3_shicras', 100);
       const worker = [...g.units.values()].find((u) => u.owner === 0 && u.kind === 'worker' && !u.dead);
@@ -662,8 +666,7 @@ const SCENES = {
       g.renderer.render(g.scene, g.camera.camera);
       g.hud.showTutorialStep(
         'Lleva un obrero a la Pirámide Mayor, haz clic sobre ella y pulsa «Entregar materiales». ' +
-          'Cada entrega y cada turno de obra hacen crecer la pirámide: primero el relleno de shicras, ' +
-          'después los muros de contención y al final la plataforma terminada.',
+          'Cada entrega y cada turno de obra hacen crecer la pirámide.',
         8,
         10,
       );
