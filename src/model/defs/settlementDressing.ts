@@ -74,14 +74,17 @@ const SEQUENCES: Record<SettlementDressingProfile, DressingKind[]> = {
 
 const MAX_SLOPE = 0.42;
 /**
- * The rendered houses overhang their 2-grid footprint (the Caral quincha house reads ~3.2 x 2.8, with
- * a plinth), so props keep clear of the *walls*, not just the anchor: the radius covers the footprint's
- * half-diagonal and grows with the prop's own, at the largest scale the planner draws (1.15).
+ * The rendered buildings overhang their grid footprint, so props keep clear of the *walls*, not just the
+ * anchor: the clearance covers the footprint's half-diagonal and grows with the prop's own radius.
+ * Dwellings read ~3.2 x 2.8 with a plinth; the Plaza Mayor reads 6.46 x 5.27, and its plinth reaches
+ * ~4.7 from the centre. Central props are kept outside that footprint (the courtyard stays empty).
  */
 export const BUILDING_CLEARANCE = 2.45;
+export const CENTER_CLEARANCE = 4.8;
 const MIN_PROP_SCALE = 0.85;
 const MAX_PROP_SCALE = 1.15;
-const PROP_CLEARANCE = 0.8;
+/** Air between two props on top of their radii, so touching boxes do not read as one. */
+const PROP_MARGIN = 0.1;
 
 /** Half-width of each prop at unit scale, in game metres. */
 export const PROP_RADIUS: Record<DressingKind, number> = {
@@ -93,14 +96,23 @@ export const PROP_RADIUS: Record<DressingKind, number> = {
   bench: 0.6,
   windbreak: 0.7,
   stela: 0.5,
-  offering: 0.6,
+  offering: 0.7,
   stone_head: 0.45,
-  megalith: 0.65,
+  megalith: 0.75,
 };
 
 /** Centre-to-anchor distance below which a prop would touch the rendered walls. */
-export function propClearance(kind: DressingKind, scale = MAX_PROP_SCALE): number {
-  return BUILDING_CLEARANCE + PROP_RADIUS[kind] * scale;
+export function propClearance(
+  kind: DressingKind,
+  scale = MAX_PROP_SCALE,
+  anchor: 'dwelling' | 'center' = 'dwelling',
+): number {
+  return (anchor === 'center' ? CENTER_CLEARANCE : BUILDING_CLEARANCE) + PROP_RADIUS[kind] * scale;
+}
+
+/** Centre-to-centre distance below which two props overlap (radii plus a small air gap). */
+export function propSeparation(a: DressingKind, aScale: number, b: DressingKind, bScale: number): number {
+  return PROP_RADIUS[a] * aScale + PROP_RADIUS[b] * bScale + PROP_MARGIN;
 }
 
 /** Deterministic household props for a planned base. */
@@ -119,26 +131,30 @@ export function planSettlementDressing(
   const houses = anchors.filter((a) => !a.center);
   const placed: DressingPlacement[] = [];
 
-  const free = (x: number, z: number, kind: DressingKind): boolean => {
+  const free = (x: number, z: number, kind: DressingKind, scale: number): boolean => {
     if (query.isWater(x, z) || !query.isBuildable(x, z)) return false;
     if (query.getSlope(x, z) > MAX_SLOPE) return false;
-    const reach = propClearance(kind);
-    if (anchors.some((a) => Math.hypot(a.x - x, a.z - z) < reach)) return false;
-    if (placed.some((p) => Math.hypot(p.x - x, p.z - z) < PROP_CLEARANCE)) return false;
+    if (
+      anchors.some((a) => Math.hypot(a.x - x, a.z - z) < propClearance(kind, scale, a.center ? 'center' : 'dwelling'))
+    )
+      return false;
+    if (placed.some((p) => Math.hypot(p.x - x, p.z - z) < propSeparation(p.kind, p.scale, kind, scale))) return false;
     return true;
   };
 
   for (const kind of sequence) {
     const central = kind === 'hearth' || kind === 'stela';
     const pool = central ? [anchors[0]] : houses.length ? houses : anchors;
-    for (let attempt = 0; attempt < 40; attempt++) {
+    for (let attempt = 0; attempt < 60; attempt++) {
       const anchor = rng.pick(pool);
       const a = rng.range(0, Math.PI * 2);
-      const radius = anchor.center ? rng.range(4.2, 5.8) : rng.range(3.5, 5.1);
+      // Central props are outside the plaza's plinth; the centre-to-anchor distance starts there.
+      const radius = anchor.center ? rng.range(6.0, 7.6) : rng.range(3.5, 5.1);
       const x = anchor.x + Math.cos(a) * radius;
       const z = anchor.z + Math.sin(a) * radius;
-      if (!free(x, z, kind)) continue;
-      placed.push({ kind, x, z, yaw: rng.range(0, Math.PI * 2), scale: rng.range(MIN_PROP_SCALE, MAX_PROP_SCALE) });
+      const scale = rng.range(MIN_PROP_SCALE, MAX_PROP_SCALE);
+      if (!free(x, z, kind, scale)) continue;
+      placed.push({ kind, x, z, yaw: rng.range(0, Math.PI * 2), scale });
       break;
     }
   }
