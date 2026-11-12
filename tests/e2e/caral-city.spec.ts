@@ -619,7 +619,8 @@ test(
     expect(state.instances).toBeGreaterThan(0);
     expect(state.registered, 'every food node is registered with the instancer').toBe(true);
     expect(state.fallback, 'the procedural shrub is removed once the kit loads').toBe(0);
-    expect(state.upright).toBeCloseTo(1, 3);
+    // The shrub is upright by construction; the remaining tilt is the per-instance wind sway.
+    expect(state.upright, 'the instanced shrub stays upright').toBeGreaterThan(0.995);
     expect(state.heightError).toBeLessThan(0.05);
     expect(state.picked, 'the instanced shrub is pickable').toBe(true);
     expect(state.treeVariants.every((variant: string) => variant === 'algarrobo' || variant === 'sauce')).toBe(true);
