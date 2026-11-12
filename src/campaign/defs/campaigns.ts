@@ -177,10 +177,6 @@ export function nextReleasedMission(id: string): MissionDef | undefined {
   return nextId ? getMission(nextId) : undefined;
 }
 
-export function campaignProgressCount(campaign: CampaignDef, completed: readonly string[]): number {
-  return campaign.releasedMissionIds.filter((id) => completed.includes(id)).length;
-}
-
 /** One step of a chapter in play order: a released mission or one announced as in development. */
 export type CampaignStep =
   { kind: 'released'; id: string; mission: MissionDef } | { kind: 'planned'; id: string; planned: PlannedMission };
