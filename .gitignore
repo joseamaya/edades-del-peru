@@ -27,3 +27,7 @@ skills-lock.json
 scripts/.cloudflare.json
 scripts/_textures_raw/
 scripts/_refs/
+
+# Python bytecode from the Blender authoring scripts
+__pycache__/
+*.pyc
