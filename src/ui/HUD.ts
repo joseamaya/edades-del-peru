@@ -433,7 +433,7 @@ const CSS = /* css */ `
   .ed-codex-content .md-h3 { font-size: 13px; color: var(--text); margin: 10px 0 3px; }
 
   /* Tutorial */
-  #ed-tutorial { position: static; order: 1; flex: 0 1 auto; max-height: 40%; overflow-y: auto; width: 100%; background: rgba(12,16,24,0.95); border: 1px solid var(--gold); border-radius: 6px; padding: 12px 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.6); display: none; pointer-events: auto; }
+  #ed-tutorial { position: static; order: 1; flex: 0 0 auto; max-height: 40%; overflow-y: auto; width: 100%; background: rgba(12,16,24,0.95); border: 1px solid var(--gold); border-radius: 6px; padding: 12px 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.6); display: none; pointer-events: auto; }
   #ed-tutorial.show { display: block; animation: tutorial-in 0.3s ease; }
   @keyframes tutorial-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
   #ed-tutorial .tut-head { display: flex; justify-content: space-between; align-items: center; font-size: 11px; letter-spacing: 2px; color: var(--gold-dim); text-transform: uppercase; }
@@ -469,11 +469,20 @@ const CSS = /* css */ `
   #ui-root:has(> .ed-overlay:not(.hidden)) #ed-right-column { display: none; }
   #ed-objectives { position: static; order: 0; flex: 0 1 auto; max-height: 100%; min-height: 104px; display: flex; flex-direction: column; width: 100%; overflow: hidden; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
   #ed-objectives .obj-list { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow: hidden; padding-right: 2px; }
-  #ed-objectives .obj-current { flex: 0 1 auto; max-height: 60%; min-height: 56px; overflow-y: auto; }
+  /* Active goals size to their content: the panel grows into the column's free space and the archive
+     yields first. A percentage cap here cut the list through a line (issue 421). */
+  #ed-objectives .obj-current { flex: 1 1 auto; max-height: none; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--gold-dim) rgba(0,0,0,0.25); }
+  #ed-objectives .obj-current::-webkit-scrollbar { width: 6px; }
+  #ed-objectives .obj-current::-webkit-scrollbar-track { background: rgba(0,0,0,0.25); border-radius: 3px; }
+  #ed-objectives .obj-current::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 3px; }
+  /* When the column is too short even for the active goals, fade the cut edge so the player sees the
+     list continues; the thumb above stays visible. */
+  #ed-objectives .obj-current.is-scrollable:not(.is-at-end) { -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 14px), transparent); mask-image: linear-gradient(180deg, #000 calc(100% - 14px), transparent); }
+  #ed-objectives .obj-current:focus-visible { outline: 1px solid var(--gold); outline-offset: 2px; }
   #ed-objectives .obj-current:empty { display: none; }
   /* The <details> itself is the scroll container: Chromium does not lay out its slotted children as
      flex items, so a nested flex scroller would overflow the panel instead of scrolling. */
-  #ed-objectives details.obj-archive { display: block; flex: 1 1 auto; min-height: 0; overflow-y: auto; margin-top: 4px; border-top: 1px solid var(--line); padding-top: 4px; }
+  #ed-objectives details.obj-archive { display: block; flex: 0 1 auto; max-height: 40%; min-height: 1.4em; overflow-y: auto; margin-top: 4px; border-top: 1px solid var(--line); padding-top: 4px; }
   #ed-objectives details.obj-archive > summary { position: sticky; top: 0; z-index: 1; background: var(--panel); cursor: pointer; font-size: 11px; color: var(--text-dim); list-style: none; line-height: 1.4; }
   #ed-objectives details.obj-archive > summary::-webkit-details-marker { display: none; }
   #ed-objectives details.obj-archive > summary:focus-visible { outline: 1px solid var(--gold); outline-offset: 2px; }
@@ -573,6 +582,8 @@ export class HUD {
   private tutorialCountEl!: HTMLElement;
   private missionCard: HTMLElement | null = null;
   private commandBarObserver!: ResizeObserver;
+  /** Re-evaluates the objectives scroll affordance when the column, tutorial or list changes size. */
+  private objectivesObserver!: ResizeObserver;
 
   constructor(game: Game) {
     this.game = game;
@@ -600,6 +611,9 @@ export class HUD {
     this.commandBarObserver = new ResizeObserver(() => this.syncCommandBarHeight());
     this.commandBarObserver.observe(this.bottomEl);
     this.syncCommandBarHeight();
+    this.objectivesObserver = new ResizeObserver(() => this.syncObjectivesScroll());
+    this.objectivesObserver.observe(this.objListEl);
+    this.syncObjectivesScroll();
     this.edgeGuardEls = Array.from(this.root.querySelectorAll<HTMLElement>(EDGE_GUARD_SELECTOR));
     bus.on('alert', (info) => this.pushAlert(info));
     game.onDestroy(() => this.dispose());
@@ -607,6 +621,7 @@ export class HUD {
 
   dispose(): void {
     this.commandBarObserver.disconnect();
+    this.objectivesObserver.disconnect();
     for (const entry of this.toasts.values()) window.clearTimeout(entry.timer);
     this.toasts.clear();
     this.toastsEl?.replaceChildren();
@@ -877,6 +892,8 @@ export class HUD {
     this.objPanelEl.style.display = 'none';
     this.objPanelEl.innerHTML = `<h4>${t('hud.objectives.title')}</h4>`;
     this.objListEl = this.el('div', 'obj-list', this.objPanelEl);
+    // The active list is rebuilt on every refresh, so listen on the stable container (capture).
+    this.objListEl.addEventListener('scroll', () => this.syncObjectivesFade(), true);
   }
 
   private buildDialogue(): void {
@@ -977,11 +994,51 @@ export class HUD {
           .join('')}</details>`
       : '';
     // The current goals live in their own region: expanding the archive never scrolls them away.
-    this.objListEl.innerHTML = `<div class="obj-current">${current.map(rowHtml).join('')}</div>` + archive;
+    this.objListEl.innerHTML =
+      `<div class="obj-current" role="region" tabindex="0" aria-label="${t('hud.objectives.active')}">${current
+        .map(rowHtml)
+        .join('')}</div>` + archive;
     const details = this.objListEl.querySelector('details');
     if (details) details.scrollTop = archiveScroll;
     const currentEl = this.objListEl.querySelector('.obj-current') as HTMLElement | null;
     if (currentEl) currentEl.scrollTop = currentScroll;
+    this.syncObjectivesScroll();
+  }
+
+  /**
+   * Flag the active list when it really scrolls (thin thumb + faded cut edge) and end the visible area
+   * on a whole row, so a long list never shows half a line at rest (issue 421).
+   */
+  private syncObjectivesScroll(): void {
+    const current = this.objListEl.querySelector('.obj-current') as HTMLElement | null;
+    if (!current) return;
+    current.style.removeProperty('max-height');
+    const available = current.clientHeight;
+    const overflowing = current.scrollHeight > available + 1;
+    if (!overflowing) {
+      current.classList.remove('is-scrollable', 'is-at-end');
+      return;
+    }
+    const top = current.getBoundingClientRect().top;
+    let whole = 0;
+    for (const row of current.querySelectorAll<HTMLElement>('.obj')) {
+      const rect = row.getBoundingClientRect();
+      const bottom = rect.bottom - top + current.scrollTop;
+      if (bottom <= available + 0.5) whole = Math.max(whole, bottom);
+    }
+    // Stop half a pixel short of the next row so its padding cannot peek under the fade.
+    if (whole > 0) current.style.maxHeight = `${Math.max(0, whole - 0.5)}px`;
+    current.classList.add('is-scrollable');
+    this.syncObjectivesFade();
+  }
+
+  /** The bottom fade disappears once the list is scrolled to its end, so the last row is not dimmed. */
+  private syncObjectivesFade(): void {
+    const current = this.objListEl.querySelector('.obj-current') as HTMLElement | null;
+    if (!current) return;
+    const atEnd = current.scrollTop + current.clientHeight >= current.scrollHeight - 1;
+    current.classList.toggle('is-at-end', atEnd);
+    current.classList.toggle('is-scrollable', current.scrollHeight > current.clientHeight + 1);
   }
 
   /**
