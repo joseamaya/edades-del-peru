@@ -177,8 +177,9 @@ slot is absent (offline / without assets).
 - **Location**: `src/assets/architecture/caral/caral_<piece>_lod0.glb` and `_lod1.glb`: the Pyramid Mayor in
   use and in three construction phases (`pyramid_mayor_phase1` foundation, `_phase2` fill, `_phase3`
   finished), a smaller pyramid, the sunken circular plaza, common and elite quincha houses, an Áspero
-  fishing house, a fair tent and Áspero's Huaca de los Ídolos (`huaca_idolos`: three superposed terraces
-  with summit rooms; growth in phases with offerings documented, form and rooms assumed).
+  fishing house, a fair tent, Áspero's Huaca de los Ídolos (`huaca_idolos`: three superposed terraces
+  with summit rooms; growth in phases with offerings documented, form and rooms assumed) and the Act III
+  construction camp (`camp_shelter`, `shicra_stack`, `stone_yard`).
 - **Source**: generated in Blender by `scripts/blender/build_caral_architecture_kit.py`; kit scene
   `art-src/blender/scenes/caral_architecture_kit.blend` (Git LFS). Uncompressed exports and per-piece
   manifests (triangles, materials, bounds, budget, `confidence`, sources, review state) live in
@@ -198,6 +199,15 @@ slot is absent (offline / without assets).
   (`Game.setSitePhase`, `CaralCity.setMayorPhase`), the other monuments appear with their phase, Áspero
   (the huaca and six fishing houses) stands on the shore from act I, and the fair tents go up once the
   city is in use.
+- **Construction camp (issue 422)**: from `foundation` until `in_use`, `CARAL_CAMP_LAYOUT` places two cane
+  ramadas, three shicra heaps and a dressed-stone yard on the Mayor's west apron; they bake into the city's
+  existing materials and their footprints block pathing while they stand. `SiteCrew` (issue 422) adds six
+  presentation-only `caral_worker` rigs that carry bags from the heap to the wall and shrink to three at
+  `finished`; they are not units, carry no selection or obstacles, and stay on the ground because the
+  dossier explicitly lists scaffolding as undocumented and not modelled. The shicra fill and the phased
+  platforms are documented; the camp's form, the crew and its route are assumed/inferred.
+- **Evidence**: `node scripts/shots_evidence.mjs --scene=caral-camp --out=review/evidence/caral-camp`
+  captures the Act III camp close up and in the RTS view (`docs/media/caral-camp.webp`).
 - **Confidence** (per piece in the manifests; evidence in `docs/historia/campanas/caral.md` and
   `docs/historia/civilizaciones/caral.md`): stepped superposed platforms, shicra fill, stone retaining
   walls, painted plaster, sunken circular plazas, quincha houses, cotton nets and gourd floats and fair

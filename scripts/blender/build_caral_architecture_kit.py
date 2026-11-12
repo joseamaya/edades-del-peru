@@ -607,6 +607,97 @@ def fair_tent(mats, lod):
     return bm, [mats[k] for k in order]
 
 
+def camp_shelter(mats, lod):
+    """Construction-camp ramada: four posts, a cane roof, a stone hearth, a pot and a mate.
+
+    The dossier documents shicras, phased platforms and the cotton/gourd crops; the camp's form and its
+    arrangement are inferred, and no scaffolding is modelled (explicitly undocumented, art-direction).
+    """
+    bm = bmesh.new()
+    order = ['wood', 'cane', 'stone', 'earth']
+    wood, cane, stone, earth = 0, 1, 2, 3
+    w, d, h = 2.8, 2.2, 1.9
+    for px in (-w / 2, w / 2):
+        for py in (-d / 2, d / 2):
+            box(bm, (px, py, h / 2), (0.13, 0.13, h), wood)
+    # A shallow cane roof, slightly higher at the back (rain runs to the patio).
+    v = [
+        bm.verts.new(c)
+        for c in (
+            (-w / 2 - 0.2, -d / 2 - 0.2, h),
+            (w / 2 + 0.2, -d / 2 - 0.2, h),
+            (w / 2 + 0.2, d / 2 + 0.2, h + 0.18),
+            (-w / 2 - 0.2, d / 2 + 0.2, h + 0.18),
+            (-w / 2 - 0.1, -d / 2 - 0.1, h + 0.06),
+            (w / 2 + 0.1, -d / 2 - 0.1, h + 0.06),
+            (w / 2 + 0.1, d / 2 + 0.1, h + 0.24),
+            (-w / 2 - 0.1, d / 2 + 0.1, h + 0.24),
+        )
+    ]
+    for face in ((0, 1, 2, 3), (4, 5, 6, 7), (0, 4, 7, 3), (1, 2, 6, 5)):
+        bm.faces.new([v[i] for i in face]).material_index = cane
+    if lod == 0:
+        box(bm, (0, -d / 2 - 0.1, h + 0.04), (0.08, d + 0.2, 0.08), wood)
+    # Hearth: a ring of burnt stones around an ash bed.
+    rng = random.Random(71)
+    ball_count = 7 if lod == 0 else 5
+    for k in range(ball_count):
+        a = k / ball_count * math.tau + rng.uniform(-0.12, 0.12)
+        r = 0.52 + rng.uniform(-0.02, 0.03)
+        blob(
+            bm,
+            (math.cos(a) * r - 0.35, math.sin(a) * r * 0.8, 0.09),
+            (rng.uniform(0.1, 0.14), rng.uniform(0.09, 0.13), rng.uniform(0.07, 0.1)),
+            6 if lod == 0 else 4,
+            3,
+            0.3,
+            72 + k,
+            stone,
+        )
+    if lod == 0:
+        blob(bm, (-0.35, 0, 0.02), (0.42, 0.34, 0.035), 8, 3, 0.06, 79, earth)
+        # A jar and a mate under the roof, the household scale of the camp.
+        blob(bm, (0.55, 0.3, 0.26), (0.2, 0.18, 0.26), 8, 5, 0.08, 80, earth)
+        blob(bm, (0.55, 0.3, 0.52), (0.12, 0.11, 0.06), 7, 3, 0.05, 81, earth)
+        blob(bm, (-0.15, 0.5, 0.1), (0.13, 0.11, 0.12), 6, 4, 0.06, 82, earth)
+    return bm, [mats[k] for k in order]
+
+
+def shicra_stack(mats, lod):
+    """A working heap of shicra bags and a few stones, waiting to be laid (fill documented)."""
+    bm = bmesh.new()
+    order = ['shicra', 'stone', 'earth']
+    # Three layers so the heap reads as a stack of bags, not a flat stone ring at RTS zoom.
+    count = 14 if lod == 0 else 6
+    segs, rings = (6, 4) if lod == 0 else (4, 3)
+    bag_pile(bm, (0, 0, 0), count // 2, 1.25, 91, 0, segs, rings)
+    bag_pile(bm, (0.15, 0.1, 0.52), count // 3, 0.85, 95, 0, segs, rings)
+    bag_pile(bm, (-0.1, -0.1, 0.9), max(1, count // 5), 0.5, 99, 0, segs, rings)
+    if lod == 0:
+        blob(bm, (0, 0, 0.02), (1.45, 1.2, 0.08), 9, 3, 0.06, 92, 2)
+        for k, (px, py) in enumerate(((-1.1, 0.7), (1.0, -0.75), (0.95, 0.8))):
+            blob(bm, (px, py, 0.16), (0.24, 0.2, 0.15), 5, 3, 0.25, 93 + k, 1)
+    return bm, [mats[k] for k in order]
+
+
+def stone_yard(mats, lod):
+    """Dressed granodiorite blocks laid out for the retaining walls (late-period stone documented)."""
+    bm = bmesh.new()
+    blocks = 10 if lod == 0 else 4
+    rng = random.Random(101)
+    for k in range(blocks):
+        col = k % 4
+        row = k // 4
+        x = -1.25 + col * 0.82 + rng.uniform(-0.04, 0.04)
+        y = -0.6 + row * 0.72 + rng.uniform(-0.04, 0.04)
+        z = 0.22 + (0.45 if row == 2 else 0.0)
+        if lod == 0:
+            bevel_box(bm, (x, y, z), (0.68, 0.5, 0.42), 0, offset=0.04, jitter=0.025, seed=102 + k)
+        else:
+            box(bm, (x, y, z), (0.68, 0.5, 0.42), 0)
+    return bm, [mats['stone']]
+
+
 ASSETS = {
     'pyramid_mayor': lambda mats, lod: pyramid_mayor(mats, lod, 'in_use'),
     'pyramid_mayor_phase1': lambda mats, lod: pyramid_mayor(mats, lod, 'foundation'),
@@ -619,6 +710,9 @@ ASSETS = {
     'house_aspero': lambda mats, lod: quincha_house(mats, lod, 'aspero'),
     'fair_tent': fair_tent,
     'huaca_idolos': huaca_idolos,
+    'camp_shelter': camp_shelter,
+    'shicra_stack': shicra_stack,
+    'stone_yard': stone_yard,
 }
 
 
@@ -749,6 +843,9 @@ CONFIDENCE = {
     'house_aspero': 'assumed',
     'fair_tent': 'assumed',
     'huaca_idolos': 'inferred',
+    'camp_shelter': 'assumed',
+    'shicra_stack': 'documented',
+    'stone_yard': 'documented',
 }
 
 

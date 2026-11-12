@@ -12,6 +12,8 @@ import { launchChromium, withViteServer, cliArg } from './lib.mjs';
  *
  * `--stage=late` measures m1's end game instead of its opening: the whole city in use (fair tents, sacred
  * fire, cooking smoke), the act IV drought and 30 extra workers, viewed over the Sacred City.
+ * `--stage=camp` measures Act III at `foundation`: the Pyramid Mayor under construction, the camp and
+ * its six-worker crew, viewed from the south-west.
  */
 const mission = cliArg('mission') ?? 'm1_caral';
 const stage = cliArg('stage') ?? 'opening';
@@ -39,6 +41,10 @@ const BUDGETS = {
   // each one in view is ~6 draws (body, hair, garments, tool, team ring, body shadow) on top of the
   // opening's scene: the call budget allows that crowd over the opening's 230.
   m1_caral_late: { sceneTriangles: 600_000, sceneDrawCalls: 275, kitTriangles: 80_000, kitDrawCalls: 36 },
+  // Act III at foundation: the phase-1 Mayor, the camp and six rigs. Measured 340 977-349 561 tris /
+  // 81-82 calls, kit 76 908-85 492 / 31; the camera sees fewer trees than the opening because it looks
+  // at the terrace, and the range is how many fall inside the frame.
+  m1_caral_camp: { sceneTriangles: 380_000, sceneDrawCalls: 110, kitTriangles: 100_000, kitDrawCalls: 40 },
   // Chavín opening: the phased kit, highland vegetation and the base. Measure first, then ratchet down.
   m2_chavin: { sceneTriangles: 450_000, sceneDrawCalls: 220, kitTriangles: 100_000, kitDrawCalls: 40 },
   m2_chavin_late: { sceneTriangles: 600_000, sceneDrawCalls: 310, kitTriangles: 100_000, kitDrawCalls: 40 },
@@ -81,6 +87,11 @@ try {
       g.applyQualityPreset('high');
       g.trees.kitLod0Radius = 45;
       let p = g.playerCenter(0);
+      if (stage === 'camp') {
+        g.setSitePhase('foundation');
+        const site = g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 });
+        p = { x: site.x - 10, z: site.z + 30 };
+      }
       if (stage === 'late') {
         g.setSitePhase(mission === 'm2_chavin' ? 'apogee' : 'in_use');
         const site = g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 });
@@ -142,7 +153,8 @@ try {
     },
     { kitPattern: KIT_NAMES.source, stage, mission },
   );
-  const budget = BUDGETS[stage === 'late' ? `${mission}_late` : mission];
+  const budget =
+    stage === 'late' ? BUDGETS[`${mission}_late`] : stage === 'camp' ? BUDGETS[`${mission}_camp`] : BUDGETS[mission];
   const report = { mission, ...result, budget, errors };
   fs.mkdirSync(path.dirname(outFile), { recursive: true });
   fs.writeFileSync(outFile, JSON.stringify(report, null, 2) + '\n');

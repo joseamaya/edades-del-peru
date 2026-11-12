@@ -1,0 +1,75 @@
+{
+  "asset_id": "caral_shicra_stack",
+  "source_scene": "scenes/caral_architecture_kit.blend",
+  "script": "scripts/blender/build_caral_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "confidence": "documented",
+  "sources": [
+    "docs/historia/campanas/caral.md",
+    "docs/historia/civilizaciones/caral.md"
+  ],
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 564,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Arch_Earth",
+        "MAT-Arch_Shicra",
+        "MAT-Arch_Stone"
+      ],
+      "bounds": {
+        "min": [
+          -1.5,
+          -1.204,
+          -0.061
+        ],
+        "max": [
+          1.281,
+          1.285,
+          1.452
+        ],
+        "size": [
+          2.782,
+          2.489,
+          1.513
+        ]
+      },
+      "file": "caral_shicra_stack_lod0.glb",
+      "bytes": 60260
+    },
+    "LOD1": {
+      "triangles": 96,
+      "draw_calls": 1,
+      "materials": [
+        "MAT-Arch_Shicra"
+      ],
+      "bounds": {
+        "min": [
+          -0.906,
+          -0.85,
+          0.03
+        ],
+        "max": [
+          0.931,
+          1.28,
+          1.408
+        ],
+        "size": [
+          1.837,
+          2.13,
+          1.378
+        ]
+      },
+      "file": "caral_shicra_stack_lod1.glb",
+      "bytes": 11596
+    }
+  }
+}

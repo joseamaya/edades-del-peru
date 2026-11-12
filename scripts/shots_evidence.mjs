@@ -638,6 +638,38 @@ const SCENES = {
       { name: 'rts', mode: 'rts', height: 30, centerSubject: true },
     ],
   },
+  'caral-camp': {
+    url: '/?mission=m1_caral&intro=0&fog=0&low=1&noloop=1',
+    start: true,
+    prepare: async () => {
+      const g = window.game;
+      g.loop.stop();
+      g.setSitePhase('foundation');
+      const deadline = performance.now() + 20_000;
+      while ((g.siteCrew?.count ?? 0) === 0 && performance.now() < deadline) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+      if (!g.siteCrew?.count) throw new Error('construction crew did not load');
+      for (const unit of [...g.units.values()]) {
+        unit.removeFromScene();
+        g.units.delete(unit.id);
+      }
+      for (let i = 0; i < 120; i++) g.loop.onUpdate(1 / 60, i / 60);
+      g.scene.traverse((o) => {
+        if (o.name?.startsWith('geo-label:')) o.visible = false;
+      });
+      g.renderer.render(g.scene, g.camera.camera);
+      const y = g.terrain.getHeight(140.4, 29.0);
+      return {
+        center: { x: 150, z: 32 },
+        subject: { x: 140.4, y, z: 29.0 },
+      };
+    },
+    views: [
+      { name: 'close', mode: 'close', offset: { x: 4.5, y: 5.5, z: 5.5 }, lookHeight: 0.9 },
+      { name: 'rts', mode: 'rts', height: 80 },
+    ],
+  },
   'hud-objectives-act3': {
     url: '/?mission=m1_caral&intro=0&fog=0&low=1&noloop=1',
     start: true,
@@ -804,6 +836,13 @@ async function main() {
               }
             }
           }
+          // A crew only draws near the camera: re-evaluate it after the framing move. A close view
+          // moves the raw camera, so the RTS target is still the old one.
+          const crewFocus =
+            view.mode === 'close' && active?.subject
+              ? { x: active.subject.x, z: active.subject.z }
+              : g.camera.getTarget();
+          g.siteCrew?.update(0, crewFocus);
           g.renderer.render(g.scene, g.camera.camera);
         },
         { target, view, live: config.live === true },

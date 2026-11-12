@@ -1,7 +1,12 @@
 import { expect, test } from '@playwright/test';
 import { OPENING_BASE_CLEARANCE } from '../../src/core/Config';
 import { CARAL_CIRCULAR_ALTAR, CARAL_SITE_BLOCKERS } from '../../src/model/defs/sites';
-import { CARAL_CITY_BLOCKERS, CARAL_CITY_LAYOUT, CARAL_FAIR_TENTS } from '../../src/model/defs/caralCity';
+import {
+  CARAL_CAMP_BLOCKERS,
+  CARAL_CITY_BLOCKERS,
+  CARAL_CITY_LAYOUT,
+  CARAL_FAIR_TENTS,
+} from '../../src/model/defs/caralCity';
 import { CANAL_WATER_LIFT } from '../../src/rendering/canal';
 
 const URL = '/?mission=m1_caral&seed=3000&fog=0&low=1&noloop=1&intro=0';
@@ -555,6 +560,77 @@ test(
     expect(state.treeVariants.every((variant: string) => variant === 'algarrobo' || variant === 'sauce')).toBe(true);
   },
 );
+
+test('the Act III camp dresses the Mayor with a working crew', { tag: '@smoke' }, async ({ page }) => {
+  const errors = await boot(page);
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return (g?.siteCrew?.count ?? 0) > 0 && !!g.landmark?.getObjectByName('caral_city_lod0');
+    },
+    null,
+    { timeout: 30_000 },
+  );
+  const blocker = CARAL_CAMP_BLOCKERS[0]!;
+  const state = await page.evaluate(
+    async ({ bx, bz }) => {
+      const g = (window as unknown as { game: any }).game;
+      const crew = g.siteCrew;
+      // The camera starts at the Act I base; the crew only draws near the works.
+      const site = g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 });
+      g.camera.moveTo(site.x, site.z, true);
+      for (let i = 0; i < 60; i++) g.camera.update(1 / 60);
+      crew.update(0.1, g.camera.getTarget());
+      const first = (): { x: number; z: number } => crew['actors'][0].rig.root.position;
+      const focus = g.camera.getTarget();
+      const before = { ...first() };
+      for (let i = 0; i < 30; i++) crew.update(0.1, focus);
+      const after = { ...first() };
+      return {
+        count: crew.count,
+        phase: crew.currentPhase,
+        visible: crew.group.visible,
+        rigs: crew.group.children.length,
+        moved: Math.hypot(after.x - before.x, after.z - before.z),
+        foundationBlocked: !g.pathfinder.isWalkable(bx, bz),
+        campMeshes: ['MAT-Arch_Wood', 'MAT-Arch_CaneMat', 'MAT-Arch_Shicra'].every(
+          (name) => g.landmark.getObjectByName(`caral_city_${name}`) !== undefined,
+        ),
+        units: g.units.size,
+        campInUnits: [...g.units.values()].some((u: any) => u.view?.rig?.root === crew.group.children[0]),
+      };
+    },
+    { bx: blocker.x, bz: blocker.z },
+  );
+  expect(state.count).toBe(6);
+  expect(state.phase).toBe('foundation');
+  expect(state.visible).toBe(true);
+  expect(state.rigs).toBe(6);
+  expect(state.moved, 'the carriers move along the camp route').toBeGreaterThan(0.05);
+  expect(state.foundationBlocked, 'the supply pile is an obstacle during the works').toBe(true);
+  expect(state.campMeshes, 'the cane shelter and the shicra heaps are baked into the city').toBe(true);
+  expect(state.campInUnits, 'the crew is not a simulated unit').toBe(false);
+
+  const after = await page.evaluate(
+    ({ bx, bz }) => {
+      const g = (window as unknown as { game: any }).game;
+      g.setSitePhase('in_use');
+      const crew = g.siteCrew;
+      const state = {
+        count: crew.count,
+        visible: crew.group.visible,
+        blocked: !g.pathfinder.isWalkable(bx, bz),
+      };
+      g.setSitePhase('foundation');
+      return state;
+    },
+    { bx: blocker.x, bz: blocker.z },
+  );
+  expect(after.count, 'the camp is gone once the city is in use').toBe(0);
+  expect(after.visible).toBe(false);
+  expect(after.blocked, 'the camp obstacle is lifted with the camp').toBe(false);
+  expect(errors).toEqual([]);
+});
 
 test('the fair tents and sunken circular plazas block unit paths', async ({ page }) => {
   await boot(page);
