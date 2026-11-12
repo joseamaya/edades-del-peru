@@ -15,6 +15,9 @@ export const PORTRAIT_IDS = [
   'bolognesi',
   'atahualpa',
   'huascar',
+  'pumacahua',
+  'melgar',
+  'ramirez_orozco',
 ] as const;
 
 export type PortraitId = (typeof PORTRAIT_IDS)[number];
@@ -139,6 +142,30 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     civ: CivId.INCA,
     status: 'abstraction',
     source: 'docs/historia/campanas/guerra_civil_inca.md',
+  },
+  pumacahua: {
+    id: 'pumacahua',
+    name: 'Mateo García Pumacahua',
+    role: 'Junta del Cusco · Chinchero',
+    civ: CivId.PATRIOTAS,
+    status: 'documented',
+    source: 'docs/historia/campanas/junta_cusco.md',
+  },
+  melgar: {
+    id: 'melgar',
+    name: 'Mariano Melgar',
+    role: 'Junta del Cusco · auditor de guerra',
+    civ: CivId.PATRIOTAS,
+    status: 'documented',
+    source: 'docs/historia/campanas/junta_cusco.md',
+  },
+  ramirez_orozco: {
+    id: 'ramirez_orozco',
+    name: 'Juan Ramírez Orozco',
+    role: 'Realistas · Alto Perú',
+    civ: CivId.REALISTAS,
+    status: 'documented',
+    source: 'docs/historia/campanas/junta_cusco.md',
   },
 };
 

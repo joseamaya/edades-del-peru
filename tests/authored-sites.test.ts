@@ -84,6 +84,20 @@ describe('authored campaign sites', () => {
     expect(mission.layout?.site?.id).toBe('independence_site');
   });
 
+  it('keeps La Junta del Cusco on its own 256 m transect and the colonial cabildo', () => {
+    const site = getAuthoredSite('cusco_junta_site')!;
+    expect(site.scale).toBe(0.65);
+    expect(site.anchor).toEqual({ x: 72, z: 58 });
+    expect(site.heightField?.worldSize).toBe(256);
+    expect(site.heightField?.size).toBe(257);
+    expect(site.heightField?.ground?.size).toBe(128);
+    expect(site.heightField?.river?.halfWidth).toBe(4.5);
+    expect(site.heritageProxies.map((p) => p.id)).toEqual(['colonial_church']);
+    expect(site.walkableCorridor?.width).toBe(8);
+    const mission = MISSIONS.find((m) => m.id === 'm_junta_cusco')!;
+    expect(mission.layout?.site?.id).toBe('cusco_junta_site');
+  });
+
   it('keeps the Inca civil war on its authored Cusco site and heightfield', () => {
     const site = getAuthoredSite('cusco_inca_site')!;
     expect(site.scale).toBe(0.7);

@@ -197,6 +197,34 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       },
     ],
   },
+  m_junta_cusco: {
+    briefing:
+      'Cusco, 1814. El cabildo constitucional y la Real Audiencia chocan; los hermanos Angulo forman una junta y ' +
+      'Pumacahua la dirige militarmente. La rebelión se extiende al altiplano y termina en Umachiri (1815).',
+    context:
+      'La revolución del Cusco de 1814 nació del conflicto entre el cabildo constitucional de Cádiz y la Real ' +
+      'Audiencia. La Junta, presidida por José Angulo y con Mateo García Pumacahua como capitán general, envió ' +
+      'expediciones a Puno, La Paz, Huamanga y Arequipa. Pumacahua venció en La Apacheta (10 de noviembre de 1814) ' +
+      'y ocupó Arequipa, pero la división de Juan Ramírez Orozco, veterana del Alto Perú, derrotó a los rebeldes ' +
+      'en Umachiri (11 de marzo de 1815). La historiografía debate si el movimiento fue separatista o autonomista ' +
+      'dentro de la monarquía; sus líderes fueron ejecutados y Mariano Melgar, fusilado.',
+    didYouKnow:
+      'Pumacahua había combatido contra Túpac Amaru II en 1780–1781; en 1814 encabezó la mayor rebelión del sur andino desde entonces.',
+    epilogue:
+      'Umachiri fue una derrota. La división de Ramírez dispersó a la Junta; Pumacahua fue ejecutado en Sicuani y ' +
+      'los hermanos Angulo y Béjar en el Cusco, y Melgar fue fusilado. La campaña permite resistir el tiempo ' +
+      'suficiente para retirar a los líderes, pero no cambia el desenlace documentado: el virreinato recuperó el Cusco. ' +
+      'La rebelión dejó una memoria que la independencia de 1821 recogería.',
+    sources: [
+      {
+        text: 'Wikipedia: Rebelión del Cuzco de 1814',
+        url: 'https://es.wikipedia.org/wiki/Rebeli%C3%B3n_del_Cuzco_de_1814',
+      },
+      { text: 'Wikipedia: Batalla de Umachiri', url: 'https://es.wikipedia.org/wiki/Batalla_de_Umachiri' },
+      { text: "O'Phelan Godoy, S. La independencia en los Andes (2014)." },
+      { text: 'Basadre, J. Historia de la República del Perú.' },
+    ],
+  },
   m8_independencia: {
     briefing:
       'Sierra del Perú, 1824. Tras la proclamación de Lima, la campaña final se decide en dos encuentros: ' +

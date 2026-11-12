@@ -1,8 +1,8 @@
 # Release status
 
 Status: **published on GitHub Pages** at <https://joseamaya.github.io/edades-del-peru/>; itch upload
-deferred until the end of the campaign work. Date: 2026-10-30. Scope: all four campaigns
-(_Culturas Preincas_, _El Tahuantinsuyo_, _El Virreinato_ and _Independencia y República_),
+deferred until the end of the campaign work. Date: 2026-10-30. Scope: all five campaigns
+(_Culturas Preincas_, _El Tahuantinsuyo_, _El Virreinato_, _La Independencia_ and _La República_),
 missions m1 Caral through m9 Guerra del Pacífico, plus m6b La Guerra Civil.
 
 ## Verified

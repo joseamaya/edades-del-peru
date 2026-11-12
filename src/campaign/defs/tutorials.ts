@@ -4,6 +4,41 @@ import type { TutorialDef } from '../types';
 const buildBottom = '#ed-bottom';
 
 const TUTORIALS: Record<string, TutorialDef> = {
+  m_junta_cusco: {
+    steps: [
+      {
+        id: 'select',
+        text: 'Selecciona la infantería de la Junta: será el núcleo de las columnas.',
+        check: { type: 'selectUnit', unitKind: UnitKind.SOLDIER },
+      },
+      {
+        id: 'cabildo',
+        text: 'Lleva una unidad al Cabildo del Cusco y abre su ficha para reunir la Junta.',
+        highlight: '#ed-objectives',
+        check: { type: 'objectiveCompleted', objectiveId: 'a1_cabildo' },
+      },
+      {
+        id: 'cuartel',
+        text: 'Levanta un cuartel: la Junta necesita instruir milicias antes de marchar.',
+        check: { type: 'build', buildingKind: BuildingKind.BARRACKS, baseline: 'houses' },
+      },
+      {
+        id: 'fusiles',
+        text: 'Los fusiles son pocos: la infantería de línea aguanta, las montoneras flanquean y hostigan. No las mandes de frente.',
+        check: { type: 'elapsed', seconds: 12 },
+      },
+      {
+        id: 'apacheta',
+        text: 'Marcha a La Apacheta y sostén la posición con al menos seis unidades.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a2_batalla' },
+      },
+      {
+        id: 'umachiri',
+        text: 'En Umachiri no se gana el campo: resiste 120 segundos y mantén con vida a Pumacahua.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a3_resistir' },
+      },
+    ],
+  },
   m8_independencia: {
     steps: [
       {

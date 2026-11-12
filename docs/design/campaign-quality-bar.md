@@ -187,6 +187,29 @@ geometry gate (`tests/e2e/hud-layout.spec.ts`).
 | Tests       | Met: data, completability and real-command playtest.                                                | Met: data, failure path, completability and real-command playtest.                                  |
 | Docs        | Met: README, dossier, campaign experiences and this table.                                          | Met: README, dossier, campaign experiences and this table.                                          |
 
+
+## La Junta del Cusco playable status (m_junta_cusco)
+
+`m_junta_cusco` is the released opening of La Independencia. It is the first mission built after the
+redesign and the first one to use the 256 m Cusco–Umachiri transect. The table is honest about the visual
+and capture pass, which is still open.
+
+| Gate        | m_junta_cusco                                                                                         |
+| ----------- | ------------------------------------------------------------------------------------------------------ |
+| History     | Met: `docs/historia/campanas/junta_cusco.md` with a certainty table; the epilogue tells the documented defeat. |
+| Identity    | Met: many people and few firearms; the player delays Ramírez and saves the leaders, not the war.       |
+| Play        | Met (automated): the mission chain completes with real commands; a manual 30–40 minute playtest is pending. |
+| Contract    | Met: Acts II–III hidden, optional Melgar and royalist headquarters never gate victory, Pumacahua protected from the start. |
+| Onboarding  | Met: six-step non-blocking tutorial, briefing and Codex.                                               |
+| Closure     | Met: epilogue states Umachiri, the executions and Melgar; no counterfactual is hidden.                 |
+| UX          | Met: `hud-layout.spec.ts` at 1280×720 and the later-campaign layout check at 1600×900.                 |
+| Visuals     | Partial: authored 256 m transect, painted ground and the colonial plaza/cabildo; the Cusco city overlay and the intro/chapter/epilogue captures are open. |
+| Persistence | Met: save/load round-trip in `save-campaign.spec.ts`.                                                  |
+| Tests       | Met: `tests/junta-cusco.test.ts`, scale, campaign path and the campaign E2E specs.                     |
+| Docs        | Met: dossier, `junta-cusco-model-mission.md`, this table and the redesign status.                      |
+| Performance | Pending: the opening view is not yet in `bench_scene.mjs`; the mission boots within the existing budget. |
+| Art         | N/A for new models: the mission reuses the colonial plaza GLB. Captures are pending.                   |
+
 ## Inca civil war playable status (m6b)
 
 `m6b_guerra_civil` is released as **playable**. It uses the same authored-site

@@ -87,6 +87,7 @@ describe('campaign series', () => {
       'm6_chimu_inca',
       'm6b_guerra_civil',
       'm7_tupac_amaru',
+      'm_junta_cusco',
       'm8_independencia',
       'm9_guerra_pacifico',
     ]);
@@ -99,6 +100,7 @@ describe('campaign series', () => {
     expect(nextReleasedMission('m6_chimu_inca')?.id).toBe('m6b_guerra_civil');
     expect(nextReleasedMission('m6b_guerra_civil')).toBeUndefined();
     expect(nextReleasedMission('m7_tupac_amaru')).toBeUndefined();
+    expect(nextReleasedMission('m_junta_cusco')?.id).toBe('m8_independencia');
     expect(nextReleasedMission('m8_independencia')).toBeUndefined();
     expect(nextReleasedMission('m9_guerra_pacifico')).toBeUndefined();
   });
@@ -108,6 +110,7 @@ describe('campaign series', () => {
     expect(getCampaignForMission('m5_yahuar_pampa')?.id).toBe('inca');
     expect(getCampaignForMission('m6b_guerra_civil')?.id).toBe('inca');
     expect(getCampaignForMission('m7_tupac_amaru')?.id).toBe('virreinato');
+    expect(getCampaignForMission('m_junta_cusco')?.id).toBe('independencia');
     expect(getCampaignForMission('m8_independencia')?.id).toBe('independencia');
     expect(getCampaignForMission('m9_guerra_pacifico')?.id).toBe('republica');
     expect(getCampaign('preinca')?.missionIds).toEqual(['m1_caral', 'm2_chavin', 'm3_moche_recuay', 'm4_wari']);
@@ -170,12 +173,15 @@ describe('campaign progress', () => {
 describe('campaign unlocks', () => {
   it('opens the released opening of a campaign, and waits when that opening is still planned', () => {
     const fresh = parseCampaignProgress(null);
-    // Preinca's opening is released, so its chapter is open.
+    // Preinca and Independencia publish their opening, so their chapters are open.
     expect(isMissionUnlocked(fresh, 'm1_caral')).toBe(true);
     expect(isMissionUnlocked(fresh, 'm2_chavin')).toBe(false);
+    expect(isMissionUnlocked(fresh, 'm_junta_cusco')).toBe(true);
+    expect(isMissionUnlocked(fresh, 'm8_independencia')).toBe(false);
     expect(isCampaignUnlocked(fresh, 'preinca')).toBe(true);
-    // The other chapters still open with a planned mission: their released missions wait for the predecessor.
-    for (const campaign of CAMPAIGNS.filter((c) => c.id !== 'preinca')) {
+    expect(isCampaignUnlocked(fresh, 'independencia')).toBe(true);
+    // The chapters still opening with a planned mission wait for the predecessor.
+    for (const campaign of CAMPAIGNS.filter((c) => c.id !== 'preinca' && c.id !== 'independencia')) {
       expect(isMissionUnlocked(fresh, campaign.releasedMissionIds[0]!), campaign.id).toBe(false);
       expect(isCampaignUnlocked(fresh, campaign.id), campaign.id).toBe(false);
     }
