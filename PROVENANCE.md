@@ -218,7 +218,7 @@ slot is absent (offline / without assets).
   appear whole at `in_use` (their plaza is staked); starting them is left for a later pass.
 - **Approaches and valley edge (issue 433)**: from `foundation`, one compacted-gravel approach is painted
   into the terrain splat from Áspero's base across the Supe's southern ford (`CARAL_FORDS`) to the
-  western foot of Caral Alto (`src/model/defs/caralValley.ts`). It reuses the settlement road mechanism
+  valley foot of the Lower Half, west of the Anfiteatro (`src/model/defs/caralValley.ts`). It reuses the settlement road mechanism
   (`Terrain.paintTrail`) and adds no ribbon, obstacle or pathfinding entry. Small groups of decorative
   algarrobos and willows grow along the west edge of the valley, clear of the city keep-out, the
   camp, fields and existing resource nodes. They share the vegetation kit and tree batch, but have no

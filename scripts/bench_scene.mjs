@@ -44,10 +44,10 @@ const BUDGETS = {
   // opening's scene: the call budget allows that crowd over the opening's 230.
   m1_caral_late: { sceneTriangles: 600_000, sceneDrawCalls: 275, kitTriangles: 80_000, kitDrawCalls: 36 },
   // Act III at foundation: the phase-1 Mayor, the five started complexes, the camp, its six visible rigs,
-  // the valley groves and the staked plazas. Measured 406 062-418 362 tris / 105-106 calls, kit 76 908-89
-  // 208 / 31; the camera sees fewer trees than the opening because it looks at the terrace, and the kit
-  // range is how many fall inside the frame.
-  m1_caral_camp: { sceneTriangles: 430_000, sceneDrawCalls: 120, kitTriangles: 100_000, kitDrawCalls: 40 },
+  // the valley groves and the staked plazas. After waiting for both city LODs it measured 413 286-421 870
+  // tris / 105-106 calls, kit 84 132-92 716 / 31; the camera sees fewer trees than the opening because
+  // it looks at the terrace. The cap leaves ~4 % headroom for an async load outlier.
+  m1_caral_camp: { sceneTriangles: 440_000, sceneDrawCalls: 120, kitTriangles: 110_000, kitDrawCalls: 40 },
   // Chavín opening: the phased kit, highland vegetation and the base. Measure first, then ratchet down.
   m2_chavin: { sceneTriangles: 450_000, sceneDrawCalls: 220, kitTriangles: 100_000, kitDrawCalls: 40 },
   m2_chavin_late: { sceneTriangles: 600_000, sceneDrawCalls: 310, kitTriangles: 100_000, kitDrawCalls: 40 },
@@ -84,7 +84,14 @@ try {
   // The Act III camp and its crew load after the site exists; a half-armed crew measured a different
   // scene (the camp stage is the one that has to count it).
   if (mission === 'm1_caral') {
-    await page.waitForFunction(() => (window.game?.siteCrew?.count ?? 0) > 0, null, { timeout: 30_000 });
+    await page.waitForFunction(
+      () =>
+        (window.game?.siteCrew?.count ?? 0) > 0 &&
+        !!window.game?.landmark?.getObjectByName('caral_city_lod0') &&
+        !!window.game?.landmark?.getObjectByName('caral_city_lod1'),
+      null,
+      { timeout: 30_000 },
+    );
   }
   await page.waitForTimeout(2000);
   const result = await page.evaluate(

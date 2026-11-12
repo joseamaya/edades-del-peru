@@ -171,7 +171,7 @@ Dialogue speaker labels must not say "Comandante" in this mission.
   six-complex tour wait for `finished` (`CARAL_HERITAGE_SINCE`), so the optional objective cannot be
   completed from a construction platform. Evidence: `caral-camp` → `docs/media/caral-act3.webp`.
 - **Approaches and the valley edge**: a compacted-gravel track is painted into the terrain splat from the
-  Áspero base across the Supe's southern ford to the western foot of the city; it has no ribbon,
+  Áspero base across the Supe's southern ford to the valley foot west of the Anfiteatro; it has no ribbon,
   obstacle or pathfinding entry. Small groups of algarrobos and willows line the west edge of the valley,
   clear of the city keep-out, the camp, the fields and the resource nodes. The groves reuse the existing
   vegetation kit through `TreeInstances.registerVisual`: no `ResourceNode`, no yield, no picking id and
