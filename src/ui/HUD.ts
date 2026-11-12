@@ -44,6 +44,7 @@ import {
   getCampaignForMission,
   campaignNumber,
   nextReleasedMission,
+  missionPosition,
   type CampaignId,
 } from '../campaign/defs/campaigns';
 import { SERIES_INTRO } from '../campaign/defs/cinematics';
@@ -90,7 +91,13 @@ const STANCE_LABEL: Record<CombatStance, string> = {
   pasivo: t('hud.stance.pasivoLabel'),
 };
 
-const ORDINAL_KEYS = ['hud.ordinal.first', 'hud.ordinal.second', 'hud.ordinal.third', 'hud.ordinal.fourth'] as const;
+const ORDINAL_KEYS = [
+  'hud.ordinal.first',
+  'hud.ordinal.second',
+  'hud.ordinal.third',
+  'hud.ordinal.fourth',
+  'hud.ordinal.fifth',
+] as const;
 
 function escapeHtml(s: string): string {
   const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
@@ -2725,14 +2732,15 @@ export class HUD {
       .join('');
     const introArt = artIntroForMission(mis.id, { includeUnreviewed: includeUnreviewedArt() });
     const campaign = getCampaignForMission(mis.id);
-    const index = campaign ? campaign.releasedMissionIds.indexOf(mis.id) : -1;
+    // Numbered on the chapter's full path, as in the campaign menu (planned missions count).
+    const position = missionPosition(mis.id);
     const kicker =
-      campaign && index >= 0
+      campaign && position
         ? t('hud.menu.briefing.kicker', {
             n: campaignNumber(campaign.id),
             campaign: campaign.title,
-            mission: index + 1,
-            total: campaign.releasedMissionIds.length,
+            mission: position.n,
+            total: position.total,
           })
         : t('hud.menu.briefing.mission');
     // The objective titles carry the "alternative" prefix; the optional ones get a tag instead of a suffix.

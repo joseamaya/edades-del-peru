@@ -163,6 +163,13 @@ Engine gaps that gate missions: **water and ships** (Virreinato 7, República 2,
 
 ## Rollout
 
+The campaign menu already shows the full structure: each chapter's `path` in
+`src/campaign/defs/campaigns.ts` interleaves released missions with the planned ones of
+`src/campaign/defs/plannedMissions.ts`, which appear in order as «En desarrollo», never playable. Briefings
+number a mission on that path («Misión 2 de 10»). Optional missions are not listed until they are scheduled;
+La República starts its menu era at 1866 because Socabaya (1836) is optional. When a scenario ships, its
+planned id in `path` is replaced by the released mission id.
+
 The chapters cannot all be rebuilt at once, and every mission has to reach Caral's quality bar. Proposed
 order, one mission at a time through the model-mission pattern:
 
