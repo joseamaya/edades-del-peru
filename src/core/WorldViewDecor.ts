@@ -49,6 +49,7 @@ import { loadDressingKit } from '../rendering/propsKit';
 import {
   CARAL_VALLEY_PATH_WIDTH,
   planCaralValley,
+  planCaralValleyScenery,
   planCaralCoastFauna,
   planCaralValleyFauna,
   planCaralValleyProps,
@@ -75,6 +76,9 @@ const GROVE_START_CLEARANCE = 72;
 const FAUNA_TREE_CLEARANCE = 7;
 
 export class WorldViewDecor {
+  /** The deterministic valley scenery is drawn once (opening base or loaded save), never twice. */
+  private caralValleyDrawn = false;
+
   constructor(private readonly game: any) {}
 
   reserveCaralValley(): void {
@@ -1201,6 +1205,22 @@ export class WorldViewDecor {
       isBuildable: (px, pz) => this.game.terrain.isBuildable(px, pz),
       getSlope: (px, pz) => this.game.terrain.getSlope(px, pz),
       isReserved: (px, pz) => this.game.isReserved(px, pz),
+      isWalkable: (px, pz) => this.game.pathfinder.isWalkable(px, pz),
+      getHeight: (px, pz) => this.game.terrain.getHeight(px, pz),
+      isOccupied: (px, pz) =>
+        [
+          ...(this.game.siteDef?.blockers ?? []),
+          ...CARAL_CITY_BLOCKERS,
+          ...CARAL_CAMP_BLOCKERS,
+          ...ASPERO_BLOCKERS,
+        ].some(
+          (blocker: { x: number; z: number; w: number; d: number }) =>
+            Math.abs(px - blocker.x) <= blocker.w / 2 + 3 && Math.abs(pz - blocker.z) <= blocker.d / 2 + 3,
+        ) ||
+        [...this.game.resourceNodes.values()].some(
+          (node: { pos: { x: number; z: number }; kind: string; dead: boolean }) =>
+            !node.dead && Math.hypot(node.pos.x - px, node.pos.z - pz) < (node.kind === 'tree' ? 7.2 : 2.8),
+        ),
     };
   }
 
@@ -1213,6 +1233,20 @@ export class WorldViewDecor {
     );
   }
 
+  /** Recompute the decorative pieces once the base, resources and buildings are in place. */
+  refreshCaralValleyScenery(x: number, z: number, plan: CaralValleyPlan): CaralValleyPlan {
+    return {
+      ...plan,
+      ...planCaralValleyScenery(
+        this.game.settings.mapSeed * 97 + 31,
+        { x, z },
+        this.caralValleySiteTarget() ?? undefined,
+        plan.fields,
+        this.caralValleyQuery(),
+      ),
+    };
+  }
+
   /** Open ground just west of the Anfiteatro, derived from the authored proxy. */
   caralValleySiteTarget(): { x: number; z: number } | null {
     const anf = this.game.siteDef?.heritageProxies.find(
@@ -1221,14 +1255,32 @@ export class WorldViewDecor {
     return anf ? { x: anf.x - anf.w / 2 - 4, z: anf.z } : null;
   }
 
-  /** Visual-only riverside fields and paths; no entities, obstacles or yields. */
+  /** Visual-only riverside fields, approach paths and groves; no entities, obstacles or yields. */
   addCaralValley(x: number, z: number): void {
     if (this.game.headless) return;
-    const valley = this.game.caralValleyPlan ?? this.planCaralValleyAt(x, z);
+    const initial: CaralValleyPlan = this.game.caralValleyPlan ?? this.planCaralValleyAt(x, z);
+    const planned = this.caralValleyDrawn ? initial : this.refreshCaralValleyScenery(x, z, initial);
+    // Obstacles can still appear between the plan and this pass (the opening base is built in several
+    // steps). Keep the final plan equal to what is actually drawn, never a tree on a blocked cell.
+    const groves = planned.groves.filter((grove) => this.game.pathfinder.isWalkable(grove.x, grove.z));
+    const valley = groves.length === planned.groves.length ? planned : { ...planned, groves };
     this.game.caralValleyPlan = valley;
     this.game.caralValleyBase ??= { x, z };
+    if (!this.caralValleyDrawn) {
+      this.caralValleyDrawn = true;
+      // Approaches are painted channels in the terrain splat, the same mechanism as settlement roads;
+      // they add no ribbon, collision or pathfinding entry.
+      for (const approach of valley.approaches) this.game.terrain.paintTrail(approach.points, approach.width, 0.98);
+      // Decorative groves share the tree batch and its wind/LOD, but never become resource nodes.
+      for (const grove of valley.groves) {
+        const y = this.game.terrain.getHeight(grove.x, grove.z);
+        const slot = this.game.trees.registerVisual(grove.species, grove.x, y, grove.z, grove.scale, grove.rotY);
+        if (slot >= 0) this.game.caralGroves.push({ slot, x: grove.x, z: grove.z });
+      }
+    }
     // The valley plots are painted fertile ground in the authored terrain (scripts/build_caral_heightmap.py),
-    // not decals: the plan only keeps their ground free of resources. Nothing is drawn here.
+    // not decals: the plan only keeps their ground free of resources. The approach paths and groves are
+    // the decoration; no field overlay is drawn on this map.
     if (this.game.siteDef?.environs?.valley === 'caral') return;
     if (!valley.fields.length && !valley.roads.length) return;
     const overlay = new SettlementOverlay(

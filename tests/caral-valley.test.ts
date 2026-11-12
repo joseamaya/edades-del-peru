@@ -38,6 +38,56 @@ describe('Caral valley plan', () => {
     expect(sitePath.to).toEqual(siteTarget);
   });
 
+  it('paints one approach through the southern Supe ford, clear of the fields', () => {
+    const river = valleyQuery({ isWater: (x, z) => x >= 66 && x <= 74 && Math.abs(z - 150) > 4.5 });
+    const plan = planCaralValley(7, BASE, river, { x: 141, z: 151 });
+    expect(plan.approaches).toHaveLength(1);
+    const route = plan.approaches[0]!;
+    expect(route.id).toBe('aspero');
+    expect(route.points.length).toBeGreaterThan(5);
+    expect(route.points.some((p) => Math.abs(p.z - 150) < 0.01 && Math.abs(p.x - 70) < 1)).toBe(true);
+    for (let i = 1; i < route.points.length; i++) {
+      const from = route.points[i - 1]!;
+      const to = route.points[i]!;
+      const steps = Math.ceil(Math.hypot(to.x - from.x, to.z - from.z));
+      for (let step = 0; step <= steps; step++) {
+        const t = step / steps;
+        const x = from.x + (to.x - from.x) * t;
+        const z = from.z + (to.z - from.z) * t;
+        if (Math.abs(z - 150) > 4.5) expect(river.isWater(x, z), `${x},${z}`).toBe(false);
+        for (const field of plan.fields) {
+          expect(Math.max(Math.abs(x - field.x), Math.abs(z - field.z))).toBeGreaterThan(field.size / 2 + 1.2);
+        }
+      }
+    }
+  });
+
+  it('grows two small tree species on the valley edge, outside the approach and other props', () => {
+    const plan = planCaralValley(7, BASE, valleyQuery(), { x: 141, z: 151 });
+    expect(plan.groves.length).toBeGreaterThan(12);
+    expect(new Set(plan.groves.map((g) => g.species))).toEqual(new Set(['algarrobo', 'sauce']));
+    expect(planCaralValley(7, BASE, valleyQuery(), { x: 141, z: 151 }).groves).toEqual(plan.groves);
+    const route = plan.approaches[0]!;
+    for (const grove of plan.groves) {
+      expect(grove.scale).toBeGreaterThan(0.8);
+      expect(grove.scale).toBeLessThan(1.2);
+      for (let i = 1; i < route.points.length; i++) {
+        const from = route.points[i - 1]!;
+        const to = route.points[i]!;
+        const len2 = (to.x - from.x) ** 2 + (to.z - from.z) ** 2;
+        const t = Math.max(
+          0,
+          Math.min(1, ((grove.x - from.x) * (to.x - from.x) + (grove.z - from.z) * (to.z - from.z)) / len2),
+        );
+        expect(
+          Math.hypot(grove.x - (from.x + (to.x - from.x) * t), grove.z - (from.z + (to.z - from.z) * t)),
+        ).toBeGreaterThan(3.3);
+      }
+    }
+    const occupied = planCaralValley(7, BASE, valleyQuery({ isOccupied: () => true }), { x: 141, z: 151 });
+    expect(occupied.groves).toHaveLength(0);
+  });
+
   it('drops plots over water, reserved ground or steep slopes', () => {
     const plan = planCaralValley(
       7,

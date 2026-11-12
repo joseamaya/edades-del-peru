@@ -41,7 +41,9 @@ mixes the band colour with the tinted PBR albedo by `textureMix`, so biomes diff
 in luminance and hue rather than by a chain of tint multipliers. Buildings paint
 soft dirt wear into the same splatmap; roads/paths are painted as dirt channels
 (with only a translucent relief ribbon), and a low-roughness band around the
-waterline reads as wet sand. Lighting uses the
+waterline reads as wet sand. A pale compacted-gravel variant (`paintTrail`) keeps
+the Caral Act III approach readable over both the green valley and the ochre
+terrace without adding geometry. Lighting uses the
 sun plus the scene hemisphere light (`Sky`), and the region `atmosphere`
 (`skyTint`, `fogDensity`, `sunWarmth`) still supplies aerial perspective — an
 **abstraction** of the documented geography.

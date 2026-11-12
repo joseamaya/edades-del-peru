@@ -673,6 +673,8 @@ const SCENES = {
       { name: 'camp', mode: 'rts', height: 20, center: { x: 138, z: 30.5 } },
       { name: 'trace', mode: 'rts', height: 42, center: { x: 160, z: 54 } },
       { name: 'act3', mode: 'rts', height: 55, center: { x: 150, z: 44 } },
+      { name: 'approach', mode: 'rts', height: 55, center: { x: 96, z: 162 } },
+      { name: 'grove', mode: 'rts', height: 44, center: { x: 62, z: 132 } },
       { name: 'rts', mode: 'rts', height: 85, center: { x: 152, z: 40 } },
     ],
   },

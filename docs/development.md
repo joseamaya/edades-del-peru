@@ -503,6 +503,11 @@ Definition of Done and the building audit see
   meander together with `boundary_shift(z)`; the apron outside the map uses near rings and a dark haze
   frame instead of the flat cream plane. The changed heightfield relocates resource nodes, so
   `REPLAY_VERSION` is 30. Guarded by `tests/terrain.test.ts`, `tests/terrain-skirt.test.ts` and the Caral E2E.
+- **Caral Act III approaches** (issue 433): `planCaralValley` also emits the Áspero approach and small
+  valley-edge groves. `Terrain.paintTrail` paints a pale gravel channel into the splat (no ribbon, no
+  obstacle, no simulation entry); the groves register through `TreeInstances.registerVisual`, which
+  shares the batch but gives every tree id `-1`, so picking ignores it. Replanned after the opening
+  resources and before the ground cover. Guarded by `tests/caral-valley.test.ts` and the Caral E2E.
 - **Caral objective flow** (issue 390): `obj_complejos` activates on `t_a3_obra_muros` (all six monuments
   stand) and gates each visit on `ObjectiveDef.inspectRadius` (a player unit within 8 m of the card's footprint);
   `obj_asamblea` is announced with Act III (`awaitsCall`: listed but pending until the player calls it); the Act III camera reveal is a `reveal` trigger effect that plays

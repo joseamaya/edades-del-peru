@@ -39,9 +39,10 @@ export class StartBaseBuilder {
     if (civ === CivId.CARAL || civ === CivId.CHAVIN) {
       this.game.world.addSettlementDressing(plan, player, civ === CivId.CHAVIN ? 'chavin' : 'caral');
     }
-    if (player === 0 && this.game.siteDef?.environs?.valley === 'caral') this.game.world.addCaralValley(x, z);
     // nearby resources to start
     this.spawnStartResources(player, x, z);
+    // After the opening nodes: the valley groves keep clear of every existing resource.
+    if (player === 0 && this.game.siteDef?.environs?.valley === 'caral') this.game.world.addCaralValley(x, z);
     // The Caral opening deploys outside the civic core, on the camera-facing
     // side where the frame reads. Other matches and AI seats keep their ring.
     const startingSpots =

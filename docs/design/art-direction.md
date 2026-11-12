@@ -145,7 +145,8 @@ Only species from the dossier, built as a **Blender kit** with shared materials:
 
 - **No palms and no generic `broad`/`frond` trees on the Supe map.**
 - Trees grow in **groups that read as forests** (riparian band, huarango grove), not evenly scattered
-  singles.
+  singles. The Act III approach adds small algarrobo and willow groups at the valley edge; they are
+  visual-only and keep clear of the city, camp and resource nodes.
 - Every tree is instanced with **wind sway** in the vertex shader and at least two LODs.
 
 _Status (kit v1)_: huarango, sauce, pacae, caña brava, carrizo and totora ship as LOD0/LOD1 GLBs

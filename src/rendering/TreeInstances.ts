@@ -206,6 +206,26 @@ export class TreeInstances {
 
   /** Reserve an instance for a tree. Returns the slot or -1 if full. */
   register(id: number, variant: TreeVariant, x: number, y: number, z: number, scale: number, rotY: number): number {
+    return this.claim(id, variant, x, y, z, scale, rotY);
+  }
+
+  /**
+   * Reserve a decorative tree that is not a resource: it shares the batch and wind, but its id is
+   * `-1`, so picking skips it and no obstacle or resource entry is created.
+   */
+  registerVisual(variant: TreeVariant, x: number, y: number, z: number, scale: number, rotY: number): number {
+    return this.claim(-1, variant, x, y, z, scale, rotY);
+  }
+
+  private claim(
+    id: number,
+    variant: TreeVariant,
+    x: number,
+    y: number,
+    z: number,
+    scale: number,
+    rotY: number,
+  ): number {
     const slot = this.free.pop();
     if (slot === undefined) return -1;
     const s = this.slots[slot];

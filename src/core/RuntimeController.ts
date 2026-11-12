@@ -742,6 +742,14 @@ export class RuntimeController {
       const near = dx * dx + dz * dz <= lod2;
       n.setVisibleEx(near && (!fog || this.game.fow.isExplored(n.pos.x, n.pos.z)));
     }
+    // Decorative valley groves follow the same distance/fog rule as resource trees, but never fade
+    // their resources or obstacles because they have none.
+    for (const grove of this.game.caralGroves) {
+      const dx = grove.x - t.x;
+      const dz = grove.z - t.z;
+      const near = dx * dx + dz * dz <= lod2;
+      this.game.trees.setVisible(grove.slot, near && (!fog || this.game.fow.isExplored(grove.x, grove.z)));
+    }
   }
 
   /** Enable/disable fog of war and reflect the change on the terrain. */
@@ -754,6 +762,7 @@ export class RuntimeController {
       for (const u of this.game.units.values()) if (u.view) u.view.group.visible = true;
       for (const b of this.game.buildings.values()) if (b.view) b.view.group.visible = true;
       for (const n of this.game.resourceNodes.values()) n.setVisibleEx(true);
+      for (const grove of this.game.caralGroves) this.game.trees.setVisible(grove.slot, true);
     }
   }
 

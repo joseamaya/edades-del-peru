@@ -33,20 +33,21 @@ const BUDGETS = {
   // The household props kit adds 8 calls (four shared materials per base, two bases, no shadow pass:
   // the pieces are sub-metre); pinning every LOD manager to the measured framing adds the quarry's
   // shadow pass (+2), and the pacae shrubs add 3 materials x 2 LODs with their shadows (up to +12).
-  // Measured opening: 371 147-373 995 tris / 170 calls, kit 92 512-95 360 / 51; the five started complexes at foundation
-  // add ~25k tris to the opening view. The kit range is how many pacae shrubs fall inside the 30 m LOD0
+  // Measured opening: 371 147-383 567 tris / 170-173 calls, kit 92 512-104 932 / 51-55; the five
+  // started complexes at foundation add ~25k tris and the Act III valley groves add ~9k more to the
+  // opening view. The kit range is how many pacae shrubs and grove trees fall inside the 30 m LOD0
   // ring when the frame is measured.
-  m1_caral: { sceneTriangles: 400_000, sceneDrawCalls: 230, kitTriangles: 100_000, kitDrawCalls: 56 },
+  m1_caral: { sceneTriangles: 400_000, sceneDrawCalls: 230, kitTriangles: 110_000, kitDrawCalls: 56 },
   // End game over the city with 35 workers in view: art-direction §11 (600k triangles). It measured
   // 1.57M / 396 before the worker cuts and ~582k / 261 after. Skinned workers cannot be instanced, so
   // each one in view is ~6 draws (body, hair, garments, tool, team ring, body shadow) on top of the
   // opening's scene: the call budget allows that crowd over the opening's 230.
   m1_caral_late: { sceneTriangles: 600_000, sceneDrawCalls: 275, kitTriangles: 80_000, kitDrawCalls: 36 },
-  // Act III at foundation: the phase-1 Mayor, the five started complexes, the camp, its six visible rigs
-  // and the staked plazas. Measured 406 062-414 646 tris / 105-106 calls, kit 76 908-85 492 / 31; the
-  // camera sees fewer trees than the opening because it looks at the terrace, and the kit range is how
-  // many fall inside the frame.
-  m1_caral_camp: { sceneTriangles: 430_000, sceneDrawCalls: 120, kitTriangles: 100_000, kitDrawCalls: 40 },
+  // Act III at foundation: the phase-1 Mayor, the five started complexes, the camp, its six visible rigs,
+  // the valley groves and the staked plazas. After waiting for both city LODs it measured 413 286-421 870
+  // tris / 105-106 calls, kit 84 132-92 716 / 31; the camera sees fewer trees than the opening because
+  // it looks at the terrace. The cap leaves ~4 % headroom for an async load outlier.
+  m1_caral_camp: { sceneTriangles: 440_000, sceneDrawCalls: 120, kitTriangles: 110_000, kitDrawCalls: 40 },
   // Chavín opening: the phased kit, highland vegetation and the base. Measure first, then ratchet down.
   m2_chavin: { sceneTriangles: 450_000, sceneDrawCalls: 220, kitTriangles: 100_000, kitDrawCalls: 40 },
   m2_chavin_late: { sceneTriangles: 600_000, sceneDrawCalls: 310, kitTriangles: 100_000, kitDrawCalls: 40 },
@@ -83,7 +84,14 @@ try {
   // The Act III camp and its crew load after the site exists; a half-armed crew measured a different
   // scene (the camp stage is the one that has to count it).
   if (mission === 'm1_caral') {
-    await page.waitForFunction(() => (window.game?.siteCrew?.count ?? 0) > 0, null, { timeout: 30_000 });
+    await page.waitForFunction(
+      () =>
+        (window.game?.siteCrew?.count ?? 0) > 0 &&
+        !!window.game?.landmark?.getObjectByName('caral_city_lod0') &&
+        !!window.game?.landmark?.getObjectByName('caral_city_lod1'),
+      null,
+      { timeout: 30_000 },
+    );
   }
   await page.waitForTimeout(2000);
   const result = await page.evaluate(

@@ -1,4 +1,6 @@
 import { RNG } from '../../util/rng';
+import { distanceToPath } from '../../util/math';
+import { CARAL_FORDS, CARAL_RIVER_PATH } from './caralHeightmap';
 import type { PropPlacement } from './props';
 import type { WildlifeSpawn } from './wildlife';
 import type { SettlementField, SettlementRoad } from './settlementPlan';
@@ -8,15 +10,43 @@ import type { TerrainQuery } from './terrainQuery';
 /** Terrain and reservation queries used by the visual Caral valley plan. */
 export interface CaralValleyQuery extends TerrainQuery {
   isReserved(x: number, z: number): boolean;
+  /** Blockers and resource nodes a decorative tree must not grow through; optional for pure tests. */
+  isOccupied?(x: number, z: number): boolean;
+  /** Ground a decorative tree may stand on; it never adds its own obstacle. */
+  isWalkable?(x: number, z: number): boolean;
+  /** Terrain height, used to stop the approach at the foot of the terrace. */
+  getHeight?(x: number, z: number): number;
+}
+
+export interface CaralApproach {
+  id: 'aspero';
+  /** Painted centreline, from the base across the Supe ford to the Lower Half. */
+  points: { x: number; z: number }[];
+  width: number;
+}
+
+export interface CaralGrovePlacement {
+  /** The two tree variants the Caral vegetation kit draws (huarango/algarrobo and sauce). */
+  species: 'algarrobo' | 'sauce';
+  x: number;
+  z: number;
+  rotY: number;
+  scale: number;
 }
 
 export interface CaralValleyPlan {
   fields: SettlementField[];
   roads: SettlementRoad[];
+  approaches: CaralApproach[];
+  groves: CaralGrovePlacement[];
 }
 
 /** Narrow dirt paths, visually distinct from the settlement's wider roads. */
 export const CARAL_VALLEY_PATH_WIDTH = 0.65;
+/** A road-scale painted approach, readable from the RTS camera without becoming a highway. */
+export const CARAL_APPROACH_WIDTH = 2.8;
+/** Keep canopy and ground cover clear of a painted approach. */
+export const CARAL_APPROACH_CLEARANCE = 3.4;
 
 /**
  * Plots on the west-bank floodplain of the Supe transect map (scripts/build_caral_heightmap.py), around
@@ -49,6 +79,35 @@ const VALLEY_FIELD_SIZE_MAX = 7.5;
 const VALLEY_FIELD_SLOPE_LIMIT = 0.32;
 const VALLEY_FIELD_CLEARANCE = 7.5;
 export const VALLEY_FIELD_MARGIN = 0.7;
+
+/**
+ * Small groves on the west edge of the valley, outside the city keep-out: algarrobos on the dry
+ * terrace margin and willows along the Supe's bank. Counts are deliberately small so they read as
+ * groves and stay inside the scene budget.
+ */
+const GROVE_CLUSTERS: ReadonlyArray<{
+  x: number;
+  z: number;
+  species: CaralGrovePlacement['species'];
+  count: number;
+}> = [
+  { x: 50, z: 160, species: 'algarrobo', count: 4 },
+  { x: 55, z: 148, species: 'algarrobo', count: 3 },
+  { x: 60, z: 164, species: 'sauce', count: 4 },
+  { x: 60, z: 145, species: 'sauce', count: 3 },
+  { x: 48, z: 126, species: 'algarrobo', count: 4 },
+  { x: 59, z: 122, species: 'sauce', count: 3 },
+  { x: 50, z: 106, species: 'algarrobo', count: 3 },
+  { x: 60, z: 98, species: 'sauce', count: 3 },
+  { x: 46, z: 112, species: 'algarrobo', count: 3 },
+  { x: 58, z: 86, species: 'sauce', count: 3 },
+  { x: 47, z: 76, species: 'algarrobo', count: 3 },
+  { x: 58, z: 62, species: 'sauce', count: 3 },
+  { x: 46, z: 52, species: 'algarrobo', count: 3 },
+  { x: 57, z: 44, species: 'sauce', count: 3 },
+];
+const GROVE_SLOPE_LIMIT = 0.35;
+const GROVE_CLEARANCE = 4.2;
 
 /** Centreline of the Supe's north-south reach in the transect map (mirrors the heightmap generator). */
 function supeX(z: number): number {
@@ -112,7 +171,22 @@ export function planCaralValley(
     if (segmentIsOpen(base, to, q)) roads.push({ from: base, to });
   }
   if (siteTarget && segmentIsOpen(base, siteTarget, q)) roads.push({ from: base, to: siteTarget });
-  return { fields, roads };
+  return { fields, roads, ...planCaralValleyScenery(seed, base, siteTarget, fields, q) };
+}
+
+/**
+ * The occupancy-sensitive part of the plan: approaches and groves are recomputed after the opening
+ * base, resources and buildings exist, while the reserved fields stay exactly where they were planned.
+ */
+export function planCaralValleyScenery(
+  seed: number,
+  base: { x: number; z: number },
+  siteTarget: { x: number; z: number } | undefined,
+  fields: readonly SettlementField[],
+  q: CaralValleyQuery,
+): Pick<CaralValleyPlan, 'approaches' | 'groves'> {
+  const approaches = siteTarget ? planApproaches(base, siteTarget, fields, q) : [];
+  return { approaches, groves: planGrovePlacements(seed, approaches, fields, q) };
 }
 
 /**
@@ -256,6 +330,132 @@ function ringIsDry(x: number, z: number, radius: number, q: CaralValleyQuery): b
     if (q.isWater(x + Math.cos(a) * radius, z + Math.sin(a) * radius)) return false;
   }
   return true;
+}
+
+/**
+ * The southern crossing: the approach from Áspero enters the city from the lower valley. Its x is
+ * interpolated from the authored Supe centreline, so the painted route and the walkable ford share
+ * the same data.
+ */
+function southernFord(): { x: number; z: number; halfWidth: number } {
+  const ford = CARAL_FORDS.reduce((south, f) => (f.z > south.z ? f : south), CARAL_FORDS[0]!);
+  for (let i = 1; i < CARAL_RIVER_PATH.length; i++) {
+    const [x0, z0] = CARAL_RIVER_PATH[i - 1]!;
+    const [x1, z1] = CARAL_RIVER_PATH[i]!;
+    if (ford.z < z0 || ford.z > z1) continue;
+    const t = z1 === z0 ? 0 : (ford.z - z0) / (z1 - z0);
+    return { x: x0 + (x1 - x0) * t, z: ford.z, halfWidth: ford.halfWidth };
+  }
+  return { x: CARAL_RIVER_PATH[0]![0], z: ford.z, halfWidth: ford.halfWidth };
+}
+
+/**
+ * Stop at the foot of the terrace instead of painting up the escarpment. Scan west from the Lower
+ * Half on the valley side; the first two-metre drop marks the scarp, so the path ends on the low side.
+ */
+function approachFoot(siteTarget: { x: number; z: number }, q: CaralValleyQuery): { x: number; z: number } {
+  const z = siteTarget.z + 12;
+  const high = q.getHeight?.(siteTarget.x, z);
+  if (high !== undefined) {
+    for (let x = siteTarget.x - 1; x >= siteTarget.x - 55; x--) {
+      const h = q.getHeight?.(x, z);
+      if (h !== undefined && high - h >= 2) return { x: x + 1, z };
+    }
+  }
+  return { x: siteTarget.x - 30, z };
+}
+
+/** One painted approach from the base, across the Supe's southern ford, to the terrace foot. */
+function planApproaches(
+  base: { x: number; z: number },
+  siteTarget: { x: number; z: number },
+  fields: readonly SettlementField[],
+  q: CaralValleyQuery,
+): CaralApproach[] {
+  const ford = southernFord();
+  const foot = approachFoot(siteTarget, q);
+  const points = [
+    { x: base.x + 8, z: base.z },
+    { x: base.x + 16, z: base.z - 2 },
+    { x: ford.x - 9, z: ford.z + 6 },
+    { x: ford.x, z: ford.z },
+    { x: ford.x + 10, z: ford.z + 4 },
+    { x: ford.x + 14, z: ford.z + 20 },
+    { x: ford.x + 24, z: ford.z + 22 },
+    { x: foot.x, z: foot.z },
+  ];
+  if (!approachIsOpen(points, fields, q)) return [];
+  return [{ id: 'aspero', points, width: CARAL_APPROACH_WIDTH }];
+}
+
+/**
+ * The path must stay on buildable dry ground except across the ford, and must not cut a field.
+ * The last stretch enters the city keep-out, which is expected: it leads to the terrace foot.
+ */
+function approachIsOpen(
+  points: readonly { x: number; z: number }[],
+  fields: readonly SettlementField[],
+  q: CaralValleyQuery,
+): boolean {
+  const ford = southernFord();
+  for (let i = 1; i < points.length; i++) {
+    const from = points[i - 1]!;
+    const to = points[i]!;
+    const steps = Math.max(2, Math.ceil(Math.hypot(to.x - from.x, to.z - from.z)));
+    for (let step = 1; step <= steps; step++) {
+      const t = step / steps;
+      const x = from.x + (to.x - from.x) * t;
+      const z = from.z + (to.z - from.z) * t;
+      const atFord = Math.abs(z - ford.z) <= ford.halfWidth;
+      if (!atFord && (q.isWater(x, z) || !q.isBuildable(x, z))) return false;
+      if (fields.some((f) => Math.abs(x - f.x) <= f.size / 2 + 1.2 && Math.abs(z - f.z) <= f.size / 2 + 1.2)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+/** Algarrobo and willow groups on the valley edge, clear of the painted approach and existing props. */
+function planGrovePlacements(
+  seed: number,
+  approaches: readonly CaralApproach[],
+  fields: readonly SettlementField[],
+  q: CaralValleyQuery,
+): CaralGrovePlacement[] {
+  const rng = new RNG((seed * 1103515245 + 0x433) >>> 0);
+  const out: CaralGrovePlacement[] = [];
+  for (const cluster of GROVE_CLUSTERS) {
+    for (let i = 0; i < cluster.count; i++) {
+      for (let attempt = 0; attempt < 40; attempt++) {
+        const x = cluster.x + rng.range(-4.2, 4.2);
+        const z = cluster.z + rng.range(-4.2, 4.2);
+        if (q.isWater(x, z) || !q.isBuildable(x, z) || q.isReserved(x, z)) continue;
+        if (q.getSlope(x, z) > GROVE_SLOPE_LIMIT || q.isWalkable?.(x, z) === false) continue;
+        if (q.isOccupied?.(x, z)) continue;
+        if (
+          fields.some(
+            (f) =>
+              Math.abs(x - f.x) <= f.size / 2 + VALLEY_FIELD_MARGIN &&
+              Math.abs(z - f.z) <= f.size / 2 + VALLEY_FIELD_MARGIN,
+          )
+        ) {
+          continue;
+        }
+        if (approaches.some((a) => distanceToPath(x, z, a.points) <= CARAL_APPROACH_CLEARANCE)) continue;
+        if (out.some((p) => Math.hypot(p.x - x, p.z - z) < GROVE_CLEARANCE)) continue;
+        out.push({
+          species: cluster.species,
+          x,
+          z,
+          rotY: rng.range(0, Math.PI * 2),
+          scale: rng.range(0.82, 1.18),
+        });
+        break;
+      }
+    }
+  }
+  return out;
 }
 
 /** Point on the field edge nearest the base, so a path never cuts the crops. */

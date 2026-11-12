@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { OPENING_BASE_CLEARANCE } from '../../src/core/Config';
+import { CARAL_FORDS } from '../../src/model/defs/caralHeightmap';
 import { CARAL_CIRCULAR_ALTAR, CARAL_SITE_BLOCKERS } from '../../src/model/defs/sites';
 import {
   CARAL_CAMP_BLOCKERS,
@@ -636,6 +637,75 @@ test('the Act III camp dresses the Mayor with a working crew', { tag: '@smoke' }
   expect(after.count, 'the camp is gone once the city is in use').toBe(0);
   expect(after.visible).toBe(false);
   expect(after.blocked, 'the camp obstacle is lifted with the camp').toBe(false);
+  expect(errors).toEqual([]);
+});
+
+test('the valley paints the Áspero approach and grows edge groves without gameplay', async ({ page }) => {
+  const errors = await boot(page);
+  const state = await page.evaluate(
+    ({ fords }) => {
+      const g = (window as unknown as { game: any }).game;
+      const valley = g.caralValleyPlan;
+      const route = valley.approaches[0];
+      const size = g.settings.mapSize;
+      const inKeepout = (x: number, z: number) =>
+        g.missionLayout.site.keepout.some(
+          (r: any) => Math.abs(x - r.x * size) <= r.rx * size && Math.abs(z - r.z * size) <= r.rz * size,
+        );
+      let wetOutsideFord = 0;
+      if (route) {
+        for (let i = 1; i < route.points.length; i++) {
+          const from = route.points[i - 1];
+          const to = route.points[i];
+          const steps = Math.ceil(Math.hypot(to.x - from.x, to.z - from.z));
+          for (let step = 0; step <= steps; step++) {
+            const t = step / steps;
+            const x = from.x + (to.x - from.x) * t;
+            const z = from.z + (to.z - from.z) * t;
+            const atFord = fords.some((ford: any) => Math.abs(z - ford.z) <= ford.halfWidth);
+            if (g.terrain.isWater(x, z) && !atFord) wetOutsideFord++;
+          }
+        }
+      }
+      const sample = route.points[Math.max(1, route.points.length - 2)];
+      const path = g.terrain.getSplatWeights(sample.x, sample.z);
+      const offPath = g.terrain.getSplatWeights(sample.x, sample.z - 8);
+      const end = route.points[route.points.length - 1];
+      const target = g.world.caralValleySiteTarget();
+      return {
+        approaches: valley.approaches.length,
+        groves: valley.groves.length,
+        species: [...new Set(valley.groves.map((grove: any) => grove.species))].sort(),
+        placed: g.caralGroves.length,
+        slotIds: g.caralGroves.map((grove: any) => g.trees.nodeIdAt(grove.slot)),
+        unwalkable: g.caralGroves
+          .filter((grove: any) => !g.pathfinder.isWalkable(grove.x, grove.z))
+          .map((grove: any) => [grove.x, grove.z]),
+        inKeepout: g.caralGroves.some((grove: any) => inKeepout(grove.x, grove.z)),
+        negativeResources: [...g.resourceNodes.keys()].some((id: number) => id < 0),
+        wetOutsideFord,
+        pathSand: path.sand,
+        offPathSand: offPath.sand,
+        footHeight: g.terrain.getHeight(end.x, end.z),
+        targetHeight: g.terrain.getHeight(target.x, target.z),
+      };
+    },
+    { fords: CARAL_FORDS },
+  );
+  expect(state.approaches).toBe(1);
+  expect(state.groves).toBeGreaterThanOrEqual(8);
+  expect(state.species).toEqual(['algarrobo', 'sauce']);
+  expect(state.placed).toBe(state.groves);
+  expect(
+    state.slotIds.every((id: number) => id === -1),
+    'decorative trees are not pickable resources',
+  ).toBe(true);
+  expect(state.unwalkable, 'decorative groves stand on walkable ground').toEqual([]);
+  expect(state.inKeepout, 'groves stay outside the city keep-out').toBe(false);
+  expect(state.negativeResources).toBe(false);
+  expect(state.wetOutsideFord, 'the approach crosses the Supe only at its ford').toBe(0);
+  expect(state.pathSand, 'the painted approach reads as a compacted trail').toBeGreaterThan(state.offPathSand + 0.1);
+  expect(state.footHeight, 'the approach stops at the foot of the terrace').toBeLessThan(state.targetHeight - 1);
   expect(errors).toEqual([]);
 });
 
@@ -1713,9 +1783,9 @@ test('the Caral site uses the source LOD and has no procedural fallback mesh', a
   expect(state.meshes).toBeGreaterThan(3);
 });
 
-test('a loaded Caral save keeps the Blender setpiece', async ({ page }) => {
+test('a loaded Caral save keeps the Blender setpiece and the same valley scenery', async ({ page }) => {
   await boot(page);
-  await page.evaluate(() => {
+  const fresh = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     g.visitHeritage('caral_pyramid_mayor');
@@ -1730,6 +1800,7 @@ test('a loaded Caral save keeps the Blender setpiece', async ({ page }) => {
     g.toggleCanal();
     g.startAssembly();
     g.saveMatch();
+    return { groves: g.caralGroves.length as number };
   });
   await page.goto('/?load=1&fog=0&low=1&noloop=1');
   await page.waitForFunction(
@@ -1742,6 +1813,8 @@ test('a loaded Caral save keeps the Blender setpiece', async ({ page }) => {
         g?.isCanalOpen() === true &&
         g?.getAssemblyState() === 'activo' &&
         g?.sitePhase === 'fill' &&
+        g?.caralValleyPlan?.approaches.length === 1 &&
+        g?.caralGroves?.length > 0 &&
         landmark?.getObjectByName('caral_site') !== undefined &&
         landmark?.getObjectByName('caral_pyramid_mayor') !== undefined &&
         landmark?.getObjectByName('caral_anfiteatro') !== undefined &&
@@ -1753,6 +1826,20 @@ test('a loaded Caral save keeps the Blender setpiece', async ({ page }) => {
     null,
     { timeout: 30_000 },
   );
+  const loaded = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    return {
+      groves: g.caralGroves.length as number,
+      inField: g.caralGroves.some((grove: any) =>
+        g.caralValleyPlan.fields.some(
+          (field: any) =>
+            Math.abs(grove.x - field.x) <= field.size / 2 && Math.abs(grove.z - field.z) <= field.size / 2,
+        ),
+      ),
+    };
+  });
+  expect(loaded.groves, 'the deterministic grove layout survives a load').toBe(fresh.groves);
+  expect(loaded.inField, 'no grove grows inside a reserved valley field').toBe(false);
 });
 
 test('the authored Caral geometry is deterministic for the same mission seed', async ({ page }) => {

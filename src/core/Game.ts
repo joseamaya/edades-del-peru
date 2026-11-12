@@ -216,6 +216,8 @@ export class Game {
   /** Visual-only valley plan; reserved before resources/props scatter. */
   private caralValleyPlan: CaralValleyPlan | null = null;
   caralValleyBase: { x: number; z: number } | null = null;
+  /** Decorative Caral groves: instanced tree slots with no resource or obstacle behind them. */
+  caralGroves: { slot: number; x: number; z: number }[] = [];
   private startSpots: [number, number][] = [];
   particles!: Particles;
   debris!: Debris;
@@ -422,7 +424,15 @@ export class Game {
       this.initAudio();
     }
     if (mis && !this.pendingSnapshot && !this.headless) this.applyMissionSetup(mis);
-    if (this.pendingSnapshot) this.applySnapshot(this.pendingSnapshot);
+    if (this.pendingSnapshot) {
+      this.applySnapshot(this.pendingSnapshot);
+      // A loaded Caral save skips the opening-base pass that usually draws the valley: regenerate the
+      // deterministic scenery here, before the ground cover is planned.
+      const base = this.missionLayout?.base;
+      if (!this.headless && base && this.siteDef?.environs?.valley === 'caral') {
+        this.world.addCaralValley(base.x * this.settings.mapSize, base.z * this.settings.mapSize);
+      }
+    }
     if (!this.headless) this.initGroundCover();
     if (mis?.guaranteedFishing) this.world.ensureFishingGrounds(mis.guaranteedFishing);
     this.loop.onUpdate = (dt, t) => this.update(dt, t);
@@ -616,10 +626,10 @@ export class Game {
       (x, z) => this.isFordAt(x, z),
     );
     this.startSpots = this.planStartSpots();
-    if (!this.pendingSnapshot) {
-      this.world.reserveCaralValley();
-      this.world.spawnResources();
-    }
+    // Reserve the valley plan even on a loaded save: its fields are the stable base the deterministic
+    // scenery is replanned against, and the saved nodes must not move into them.
+    this.world.reserveCaralValley();
+    if (!this.pendingSnapshot) this.world.spawnResources();
     this.world.spawnAmbient();
   }
 
@@ -640,6 +650,9 @@ export class Game {
   private isGroundCoverExcluded(x: number, z: number): boolean {
     if (this.terrain.isWater(x, z) || this.terrain.getCanal(x, z) > 0.1) return true;
     if (this.isReserved(x, z, false)) return true;
+    for (const approach of this.caralValleyPlan?.approaches ?? []) {
+      if (distanceToPath(x, z, approach.points) <= approach.width / 2 + 0.6) return true;
+    }
     for (const b of this.buildings.values()) {
       if (Math.hypot(x - b.pos.x, z - b.pos.z) < b.radius + 0.7) return true;
     }
