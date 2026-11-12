@@ -115,7 +115,10 @@ async function caralLateField() {
   };
 }
 
-/** The Act IV evidence pair: the same field before and after the drought. */
+/**
+ * The Act IV evidence pair: the same field before and after the drought. Both frames are game states of
+ * one commit (the URL carries `late=1`), not before/after code states.
+ */
 function caralLateScenes() {
   const views = [
     { name: 'field', mode: 'close', offset: { x: 2.6, y: 1.9, z: 3.2 }, lookHeight: 0.5 },

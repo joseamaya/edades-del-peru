@@ -230,6 +230,15 @@ slot is absent (offline / without assets).
   `docs/media/caral-camp.webp`, `close.png` + `act3.png` for `docs/media/caral-act3.webp` (both
   3200 × 900, quality 82) and `approach.png` + `grove.png` + `act3.png` + `rts.png` into
   `docs/media/caral-approaches.webp` (3200 × 1800, quality 80).
+- **Late-period maize** (issue 353): during the Act IV drought one ridge of the player's valley field
+  sows maize instead of squash (`isLatePeriod` in `model/defs/sites.ts`, `BuildContext.caralLate` in
+  `buildValleyField`). Maize is documented for the late period and in little quantity; the amount, rows
+  and plant shape are inferred game abstractions.
+- **Evidence**: `node scripts/shots_evidence.mjs --scene=caral-late-field-before --out=review/evidence/caral-late-field-before`
+  and `--scene=caral-late-field` capture the same field without and with the drought (two game states of
+  one commit, not two code states; the scene places its own field and hides units and place labels).
+  Stitch `field.png` (both) over `field-rts.png` (both) into `docs/media/caral-late-maize.webp`
+  (3200 × 1800, quality 80).
 - **Confidence** (per piece in the manifests; evidence in `docs/historia/campanas/caral.md` and
   `docs/historia/civilizaciones/caral.md`): stepped superposed platforms, shicra fill, stone retaining
   walls, painted plaster, sunken circular plazas, quincha houses, cotton nets and gourd floats and fair

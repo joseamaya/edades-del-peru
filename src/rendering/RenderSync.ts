@@ -29,6 +29,7 @@ export function rebuildBuilding(building: Building, ctx: BuildContext): void {
   const model = buildModel(getBuildingModel(building.kind, building.era), ctx);
   model.position.copy(old.group.position);
   model.rotation.copy(old.group.rotation);
+  model.scale.copy(old.group.scale); // a building under construction keeps its partial height
   if (old.group.parent) {
     old.group.parent.add(model);
     old.group.parent.remove(old.group);

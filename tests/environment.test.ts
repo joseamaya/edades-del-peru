@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ENVIRONMENT_EVENTS, WATER_LEVEL_OFFSET, isLateCity, waterLevelOffset } from '../src/core/environment';
+import { ENVIRONMENT_EVENTS, WATER_LEVEL_OFFSET, waterLevelOffset } from '../src/core/environment';
 
 describe('environment events', () => {
   it('moves the water plane for the winter flood and lets the drought override it', () => {
@@ -13,14 +13,5 @@ describe('environment events', () => {
 
   it('gives every event a duration', () => {
     for (const def of Object.values(ENVIRONMENT_EVENTS)) expect(def.duration).toBeGreaterThan(0);
-  });
-
-  it('marks only the Caral drought as the late city', () => {
-    expect(isLateCity('caral_site', { drought: 1 })).toBe(true);
-    expect(isLateCity('caral_site', { drought: 0.1 })).toBe(true);
-    expect(isLateCity('caral_site', { wet_season: 1 })).toBe(false);
-    expect(isLateCity('caral_site', {})).toBe(false);
-    expect(isLateCity('chavin_site', { drought: 1 })).toBe(false);
-    expect(isLateCity(undefined, { drought: 1 })).toBe(false);
   });
 });

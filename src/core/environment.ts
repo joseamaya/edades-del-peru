@@ -21,15 +21,6 @@ export type EnvironmentEventId = keyof typeof ENVIRONMENT_EVENTS;
 /** Metres the water plane moves per event at full strength (the drought overrides the flood). */
 export const WATER_LEVEL_OFFSET = { drought: -0.75, wetSeason: 0.45 } as const;
 
-/**
- * Whether an authored city is in its late period. Caral's Act IV drought is the documented cue for the
- * final period (granodiorite dwellings and a little maize; docs/historia/campanas/caral.md), so no other
- * site reads this and it needs no extra save field.
- */
-export function isLateCity(siteId: string | undefined, environment: Record<string, number>): boolean {
-  return siteId === 'caral_site' && (environment.drought ?? 0) > 0;
-}
-
 /** Water-plane offset for the current environment; a full drought wins over any flood still on. */
 export function waterLevelOffset(environment: Record<string, number>): number {
   const drought = Math.max(0, Math.min(1, environment.drought ?? 0));

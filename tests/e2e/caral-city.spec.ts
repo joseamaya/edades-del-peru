@@ -1553,6 +1553,50 @@ test('a drought save restores the sealed city and the dry grove', async ({ page 
   expect(out.dry, 'the riparian grove is still dry, not leafy').toBeGreaterThan(0);
 });
 
+test('a drought save restores the late field', async ({ page }) => {
+  await boot(page);
+  const before = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    g.players[0].resources.food = 400;
+    g.players[0].resources.wood = 200;
+    const base = g.playerCenter(0);
+    const spot = g.findFreeSpot(base.x + 10, base.z + 10, 4);
+    if (!spot) return null;
+    const farm = g.placeBuilding('farm', spot.x, spot.z);
+    if (!farm) return null;
+    g.startEnvironmentalEvent('drought', true);
+    let verts = 0;
+    farm.view.group.traverse((o: any) => {
+      if (o.isMesh) verts += o.geometry.attributes.position.count;
+    });
+    g.saveMatch();
+    return { id: farm.id as number, verts, late: g.caralLate as boolean };
+  });
+  expect(before).not.toBeNull();
+  expect(before!.late, 'the drought marks the late period before saving').toBe(true);
+  await page.goto('/?load=1&fog=0&low=1&noloop=1');
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return g?.caralLate === true && [...g.buildings.values()].some((b: any) => b.kind === 'farm' && b.view);
+    },
+    null,
+    { timeout: 30_000 },
+  );
+  const after = await page.evaluate((id: number) => {
+    const g = (window as unknown as { game: any }).game;
+    const farm = g.buildings.get(id) ?? [...g.buildings.values()].find((b: any) => b.kind === 'farm');
+    let verts = 0;
+    farm.view.group.traverse((o: any) => {
+      if (o.isMesh) verts += o.geometry.attributes.position.count;
+    });
+    return { verts, late: g.caralLate as boolean };
+  }, before!.id);
+  expect(after.late, 'the loaded save restores the late period from the drought').toBe(true);
+  expect(after.verts, 'the loaded field keeps the late crop model').toBe(before!.verts);
+});
+
 test('the canal gate only answers once Act II asks for it', async ({ page }) => {
   await boot(page);
   const out = await page.evaluate(() => {

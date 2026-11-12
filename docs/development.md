@@ -518,13 +518,15 @@ Definition of Done and the building audit see
   footprint no longer covers the Act IV departure marker. Other maps keep 1.1 m. This changes Caral
   pathing, so `REPLAY_VERSION` is 31; guarded by `tests/quarry-obstacle.test.ts`,
   `tests/props-kit.test.ts`, `tests/world-builder.test.ts` and the Caral E2E.
-- **Caral late period** (issue 353): the Act IV drought is the late-period signal (`isLateCity`), so it
+- **Caral late period** (issue 353): the Act IV drought is the late-period signal (`isLatePeriod` in
+  `model/defs/sites.ts`; any drought level counts, because the event marks the start of the period), so it
   needs no save field of its own and a restored save rebuilds it from the environment state.
-  `BuildContext.caralLate` enters the procedural model cache key and only changes the valley field (one
-  ridge of maize instead of squash, reusing the field's colours so it adds no materials);
-  `Game.refreshLateFields()` rebuilds the standing farms when the drought starts. The dwellings stay
-  quincha: the kit wall material swapped to stone reads as rubble at that wall scale, so the stone late
-  houses need their own asset (issue 436). Guarded by `tests/environment.test.ts` and the Caral E2E.
+  `BuildContext.caralLate` enters the model cache key only for the valley field (one ridge of maize
+  instead of squash; the maize uses the field's colours and no texture options, so it shares the merged
+  material); `Game.refreshLateFields()` rebuilds the standing farms when the drought starts. The
+  dwellings stay quincha: the kit wall material swapped to stone reads as rubble at that wall scale, so
+  the stone late houses need their own asset (issue 436). Guarded by `tests/authored-sites.test.ts` and
+  the Caral E2E.
 - **Caral objective flow** (issue 390): `obj_complejos` activates on `t_a3_obra_muros` (all six monuments
   stand) and gates each visit on `ObjectiveDef.inspectRadius` (a player unit within 8 m of the card's footprint);
   `obj_asamblea` is announced with Act III (`awaitsCall`: listed but pending until the player calls it); the Act III camera reveal is a `reveal` trigger effect that plays
@@ -724,10 +726,10 @@ Definition of Done and the building audit see
 - **Picking is one proxy per entity** (`EntityView.pickProxy`): an invisible box the size of the model, tagged
   `userData.owner` (the `EntityView` owner argument is required). `Game.pickEntity` raycasts the flat proxy list
   non-recursively and resolves the entity in O(1); it does **not** walk the real meshes (~80 per unit). The proxy
-  is built in the model's local frame, so anything that swaps a view (`RenderSync.modernizeBuilding`, `Game.modernizeUnits`)
+  is built in the model's local frame, so anything that swaps a view (`RenderSync.rebuildBuilding`, `Game.modernizeUnits`)
   must pass the entity as the owner so the new proxy is re-tagged and not offset.
 - **Models are built once, cloned per instance** (`buildModel`): a template is cached by
-  `type|scale|barrel|era|civ`; `bakeVertexAO` bakes each part's **colour × AO into vertex colours** and
+  `type|scale|barrel|era|civ` (plus `|late` for the late valley field only); `bakeVertexAO` bakes each part's **colour × AO into vertex colours** and
   `mergeStaticParts` merges each container's static parts **by material** (pivots stay separate so animation
   works); the instance is a `clone()` with **per-instance materials**. `mat()` keys only on the PBR params/texture
   (colour is in the vertex colours), so parts that differ only by colour share one material and merge; box UV
@@ -770,7 +772,8 @@ asset id to its bundled URL, scale, yaw offset and **clip names**; the game stat
 `src/model/defs/modelAssets.ts`; `eat` is used by fauna). Only `idle` is mandatory; a missing state falls back to
 `idle`, and a requested attack with no action logs a `[rig]` warning instead of failing silently. Death uses the rig's `Death` clip when present (`RigInstance.playDeath`) and the shared topple/corpse FX; rigs without one freeze their current pose.
 
-Audit of the path this pipeline mirrors: procedural templates are cached by `type|scale|barrel|civ|era`,
+Audit of the path this pipeline mirrors: procedural templates are cached by `type|scale|barrel|civ|era`
+(plus a `|late` suffix on the late-period farm),
 `instantiateTemplate` clones them with per-instance materials, buildings modernize by swapping the whole model,
 units animate named pivots, `disposeModel` frees only materials and `clearModelCaches` owns shared geometry.
 The glTF path keeps the same split: a shared asset cache plus a per-instance skeleton/mixer clone. The Caral

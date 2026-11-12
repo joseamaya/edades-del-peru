@@ -3718,8 +3718,9 @@ function instantiateTemplate(template: THREE.Group): THREE.Group {
 
 /** Build a parametric model. Returns a clone that owns its materials (geometry is shared). */
 export function buildModel(spec: ModelSpec, ctx: BuildContext): THREE.Group {
-  // The late city sows a different field, so it needs its own cached template.
-  const late = ctx.caralLate ? '|late' : '';
+  // Only the valley field changes with the late period (see buildValleyField), so only it needs a second
+  // cached template.
+  const late = ctx.caralLate && spec.type === 'farm' ? '|late' : '';
   const key = `${spec.type}|${spec.scale ?? 1}|${spec.barrel ?? ''}|${spec.gender ?? ''}|${ctx.era}|${ctx.civ.id}${late}`;
   let template = modelCache.get(key);
   if (!template) {

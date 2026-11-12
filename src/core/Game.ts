@@ -6,7 +6,7 @@ import { SHADOW_MAP_SIZE } from '../rendering/shadowFrame';
 import { Sky } from '../rendering/Sky';
 import type { ArchitectureCity, CaralCity } from '../rendering/architectureKit';
 import { isKnownPhase, standsAt, SINGLE_PHASE } from '../model/defs/sitePhases';
-import { ENVIRONMENT_EVENTS, isLateCity, waterLevelOffset, type EnvironmentEventId } from './environment';
+import { ENVIRONMENT_EVENTS, waterLevelOffset, type EnvironmentEventId } from './environment';
 import { t } from '../i18n';
 import { Terrain } from '../rendering/Terrain';
 import { HeadlessTerrain } from '../sim/HeadlessTerrain';
@@ -89,7 +89,7 @@ import { SettlementOverlay } from '../rendering/SettlementOverlay';
 import { SettlementDressing } from '../rendering/SettlementDressing';
 import { VALLEY_FIELD_MARGIN, type CaralValleyPlan } from '../model/defs/caralValley';
 import { farmYieldMultiplier, nearbyCanal } from '../model/defs/farmYield';
-import { getAuthoredSite, type AuthoredSiteDef } from '../model/defs/sites';
+import { getAuthoredSite, isLatePeriod, type AuthoredSiteDef } from '../model/defs/sites';
 import { detectSoftwareRenderer } from '../util/gpu';
 import { ERA_DEFS } from '../model/defs/eras';
 import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../model/defs/buildings';
@@ -1100,9 +1100,12 @@ export class Game {
     return this.siteDef?.phases ?? SINGLE_PHASE;
   }
 
-  /** The late city: the Act IV drought marks the final period of Caral (the fields sow a little maize). */
+  /**
+   * The late city: the Act IV drought marks the final period of Caral and the fields sow a little maize.
+   * Any drought level counts: the event itself starts the period, so the fields change with Act IV.
+   */
   get caralLate(): boolean {
-    return isLateCity(this.siteDef?.id, this.environment);
+    return isLatePeriod(this.siteDef?.id, this.environment);
   }
 
   /**
@@ -1296,7 +1299,7 @@ export class Game {
     this.world.applyAtmosphere();
   }
 
-  /** Rebuild the standing fields when the late period starts (or ends). */
+  /** Rebuild the standing fields when the late period starts. */
   private refreshLateFields(): void {
     if (this.headless) return;
     for (const b of this.buildings.values()) {
