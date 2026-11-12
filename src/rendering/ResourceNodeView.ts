@@ -8,7 +8,7 @@ import { TreeInstances, type TreeVariant } from './TreeInstances';
 import { HuntHerd } from './HuntHerd';
 import type { ResourceNode } from '../entities/ResourceNode';
 import { WATER_LEVEL, type BerryShrubId, type QuarryStyle } from '../model/defs/profiles';
-import type { QuarryInstances } from './QuarryInstances';
+import type { PropKitInstances } from './PropKitInstances';
 
 // Shared caches: geometries and materials reused between nodes (fewer draw calls and GC).
 const geoCache = new Map<string, THREE.BufferGeometry>();
@@ -101,8 +101,9 @@ export interface ResourceLook {
   treeMgr?: TreeInstances;
   treeVariants?: TreeVariants;
   berryShrub?: BerryShrubId;
-  quarryMgr?: QuarryInstances;
+  quarryMgr?: PropKitInstances;
   quarryStyle?: QuarryStyle;
+  pacaeMgr?: PropKitInstances;
 }
 function variantForMap(mapType: string): TreeVariant {
   if (mapType === 'altiplano') return 'needle';
@@ -121,9 +122,11 @@ export class ResourceNodeView {
   private readonly treeMgr?: TreeInstances;
   private readonly treeVariants?: TreeVariants;
   private readonly berryShrub?: BerryShrubId;
-  private readonly quarryMgr?: QuarryInstances;
+  private readonly quarryMgr?: PropKitInstances;
   private readonly quarryStyle?: QuarryStyle;
+  private readonly pacaeMgr?: PropKitInstances;
   private quarryRegistered = false;
+  private pacaeRegistered = false;
   private disposed = false;
   private treeVariant: TreeVariant = 'broad';
   /** The drought killed this tree standing: bare wood, no canopy, kit instance hidden. */
@@ -142,6 +145,7 @@ export class ResourceNodeView {
     this.berryShrub = look.berryShrub;
     this.quarryMgr = look.quarryMgr;
     this.quarryStyle = look.quarryStyle;
+    this.pacaeMgr = look.pacaeMgr;
     this.buildModel();
   }
 
@@ -165,7 +169,8 @@ export class ResourceNodeView {
         this.buildFish(rng);
         break;
       case 'berry':
-        if (this.berryShrub) this.buildFruitShrub(rng);
+        if (this.berryShrub === 'pacae' && this.pacaeMgr) this.buildFruitShrubKit(rng);
+        else if (this.berryShrub) this.buildFruitShrub(rng, this.view);
         else this.buildBush(rng);
         break;
     }
@@ -311,15 +316,22 @@ export class ResourceNodeView {
   }
 
   /**
-   * Kit-backed stone node. The outcrop is drawn by `QuarryInstances`; the procedural version stays
+   * Kit-backed stone node. The outcrop is drawn by `PropKitInstances`; the procedural version stays
    * as a fallback until the GLB arrives (or forever if it fails), and is hidden once the kit is on.
    */
   private buildQuarryKit(rng: RNG): void {
     const fallback = new THREE.Group();
     this.view.add(fallback);
     this.buildQuarry(rng, fallback);
-    // Fold the fallback into one mesh per material inside its own group: hiding the group still
-    // works, and a failed GLB costs three draws instead of one per rock.
+    this.quarryRegistered = this.registerKitFallback(fallback, this.quarryMgr, 0.6);
+  }
+
+  /**
+   * Merge a procedural fallback into one mesh per material inside its own group (a failed GLB then
+   * costs one draw per material instead of one per rock) and register the node with its instancer.
+   * The current view visibility seeds the instance so a fog-hidden node does not pop back.
+   */
+  private registerKitFallback(fallback: THREE.Group, mgr: PropKitInstances | undefined, minScale: number): boolean {
     mergeStaticByMaterial(
       fallback,
       () => false,
@@ -328,16 +340,26 @@ export class ResourceNodeView {
     fallback.traverse((object) => {
       if ((object as THREE.Mesh).isMesh) object.userData.keep = true;
     });
-    const scale = 0.6 + cosmeticRandom() * 0.2;
+    const scale = minScale + cosmeticRandom() * 0.2;
     const yaw = cosmeticRandom() * Math.PI * 2;
-    this.quarryRegistered = this.quarryMgr!.register(this.node.id, this.node.pos.x, this.node.pos.z, yaw, scale, () => {
-      if (this.disposed) return;
-      fallback.traverse((object) => {
-        const mesh = object as THREE.Mesh;
-        if (mesh.isMesh && mesh.name.startsWith('merged:')) mesh.geometry.dispose();
-      });
-      fallback.removeFromParent();
-    });
+    return (
+      mgr?.register(
+        this.node.id,
+        this.node.pos.x,
+        this.node.pos.z,
+        yaw,
+        scale,
+        () => {
+          if (this.disposed) return;
+          fallback.traverse((object) => {
+            const mesh = object as THREE.Mesh;
+            if (mesh.isMesh && mesh.name.startsWith('merged:')) mesh.geometry.dispose();
+          });
+          fallback.removeFromParent();
+        },
+        this.view.visible,
+      ) ?? false
+    );
   }
 
   private buildQuarry(rng: RNG, parent: THREE.Object3D = this.view): void {
@@ -445,16 +467,27 @@ export class ResourceNodeView {
   }
 
   /**
+   * Kit-backed food shrub: the instanced pacae replaces the procedural shrub when its GLB arrives; a
+   * failed load keeps the fallback. Like the quarry, the fallback is unmerged until the swap.
+   */
+  private buildFruitShrubKit(rng: RNG): void {
+    const fallback = new THREE.Group();
+    this.view.add(fallback);
+    this.buildFruitShrub(rng, fallback);
+    this.pacaeRegistered = this.registerKitFallback(fallback, this.pacaeMgr, 0.9);
+  }
+
+  /**
    * Documented food shrub for authored scenarios (Caral: pacae/guayaba, dossier's edible plants).
    * Multi-stemmed, low and broad, with the fruit hanging under the canopy; the generic red-berry
    * billboard read as a placeholder from the RTS camera.
    */
-  private buildFruitShrub(rng: RNG): void {
+  private buildFruitShrub(rng: RNG, parent: THREE.Object3D): void {
     const bark = mat('shrub-bark', { map: MaterialTex.bark(), color: '#8a6f52', roughness: 1 });
     const canopy = new THREE.Group();
     canopy.position.y = 0.6;
     canopy.userData.sway = 1;
-    this.view.add(canopy);
+    parent.add(canopy);
 
     // Short multi-stem base: the crown must cover the branches, or the shrub reads as a pole.
     for (let i = 0; i < 6; i++) {
@@ -468,7 +501,7 @@ export class ResourceNodeView {
       stem.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), tip.clone().normalize());
       stem.castShadow = true;
       stem.receiveShadow = true;
-      this.view.add(stem);
+      this.addTo(parent, stem);
     }
 
     for (const [x, z, scale] of [
@@ -536,6 +569,7 @@ export class ResourceNodeView {
       this.treeMgr.setVisible(this.node.treeSlot, v && !this.dry);
     }
     if (this.node.kind === 'well' && this.quarryRegistered) this.quarryMgr?.setVisible(this.node.id, v);
+    if (this.node.kind === 'berry' && this.pacaeRegistered) this.pacaeMgr?.setVisible(this.node.id, v);
   }
 
   /**
@@ -625,6 +659,10 @@ export class ResourceNodeView {
     if (this.quarryRegistered) {
       this.quarryMgr?.unregister(this.node.id);
       this.quarryRegistered = false;
+    }
+    if (this.pacaeRegistered) {
+      this.pacaeMgr?.unregister(this.node.id);
+      this.pacaeRegistered = false;
     }
     if (this.treeMgr && this.node.treeSlot >= 0) {
       this.treeMgr.unregister(this.node.treeSlot);

@@ -493,24 +493,68 @@ test('the Caral stone nodes use the granodiorite kit and sit on the terrain', as
   expect(state.fallbackRemoved, 'the procedural quarry is removed once the kit loads').toBe(true);
 });
 
-test('the Caral food nodes are documented pacae shrubs and its trees use only kit species', async ({ page }) => {
-  await boot(page);
-  const state = await page.evaluate(() => {
-    const g = (window as unknown as { game: any }).game;
-    const berries = [...g.resourceNodes.values()].filter((n: any) => n.kind === 'berry' && !n.dead);
-    const trees = [...g.resourceNodes.values()].filter((n: any) => n.kind === 'tree' && !n.dead);
-    return {
-      berryShrub: g.mapProfile.berryShrub,
-      berries: berries.length,
-      berryViews: berries.map((n: any) => n.nodeView?.berryShrub ?? null),
-      treeVariants: [...new Set(trees.map((n: any) => n.nodeView?.treeVariant))],
-    };
-  });
-  expect(state.berryShrub).toBe('pacae');
-  expect(state.berries).toBeGreaterThan(0);
-  expect(state.berryViews.every((view: string | null) => view === 'pacae')).toBe(true);
-  expect(state.treeVariants.every((variant: string) => variant === 'algarrobo' || variant === 'sauce')).toBe(true);
-});
+test(
+  'the Caral food nodes use the pacae kit and its trees use only kit species',
+  { tag: '@smoke' },
+  async ({ page }) => {
+    await boot(page);
+    await page.waitForFunction(
+      () => {
+        const g = (window as unknown as { game?: any }).game;
+        return (g?.scene.getObjectByName('props_kit_pacae_lod0')?.count ?? 0) > 0;
+      },
+      null,
+      { timeout: 30_000 },
+    );
+    const state = await page.evaluate(() => {
+      const g = (window as unknown as { game: any }).game;
+      const T = (window as unknown as { THREE: any }).THREE;
+      const berries = [...g.resourceNodes.values()].filter((n: any) => n.kind === 'berry' && !n.dead);
+      const trees = [...g.resourceNodes.values()].filter((n: any) => n.kind === 'tree' && !n.dead);
+      const lod0 = g.scene.getObjectByName('props_kit_pacae_lod0');
+      const lod1 = g.scene.getObjectByName('props_kit_pacae_lod1');
+      // Fog/LOD visibility hides some instances: pick the first one in the visible LOD set and read
+      // the matrix from that LOD's own mesh (each material has a mesh, all with the same instances).
+      const lists = g.pacae.ordered as any[][];
+      const lod = lists[0].length > 0 ? 0 : 1;
+      const first = lists[lod][0];
+      const matrix = new T.Matrix4();
+      (lod === 0 ? lod0 : lod1).getMatrixAt(0, matrix);
+      const pos = new T.Vector3();
+      const quat = new T.Quaternion();
+      matrix.decompose(pos, quat, new T.Vector3());
+      const up = new T.Vector3(0, 1, 0).applyQuaternion(quat);
+      const ray = new T.Raycaster(
+        new T.Vector3(first.x, g.terrain.getHeight(first.x, first.z) + 30, first.z),
+        new T.Vector3(0, -1, 0),
+      );
+      const hits: { id: number }[] = [];
+      g.pacae.raycast(ray, hits);
+      return {
+        berryShrub: g.mapProfile.berryShrub,
+        berries: berries.length,
+        berryViews: berries.map((n: any) => n.nodeView?.berryShrub ?? null),
+        instances: (lod0?.count ?? 0) + (lod1?.count ?? 0),
+        registered: berries.every((n: any) => g.pacae.placements.has(n.id)),
+        fallback: berries.filter((n: any) => (n.nodeView?.view.children.length ?? 0) > 0).length,
+        upright: up.y,
+        heightError: first ? Math.abs(pos.y - (g.terrain.getHeight(first.x, first.z) - 0.06 * first.scale)) : -1,
+        picked: hits.some((hit) => hit.id === first.id),
+        treeVariants: [...new Set(trees.map((n: any) => n.nodeView?.treeVariant))],
+      };
+    });
+    expect(state.berryShrub).toBe('pacae');
+    expect(state.berries).toBeGreaterThan(0);
+    expect(state.berryViews.every((view: string | null) => view === 'pacae')).toBe(true);
+    expect(state.instances).toBeGreaterThan(0);
+    expect(state.registered, 'every food node is registered with the instancer').toBe(true);
+    expect(state.fallback, 'the procedural shrub is removed once the kit loads').toBe(0);
+    expect(state.upright).toBeCloseTo(1, 3);
+    expect(state.heightError).toBeLessThan(0.05);
+    expect(state.picked, 'the instanced shrub is pickable').toBe(true);
+    expect(state.treeVariants.every((variant: string) => variant === 'algarrobo' || variant === 'sauce')).toBe(true);
+  },
+);
 
 test('the fair tents and sunken circular plazas block unit paths', async ({ page }) => {
   await boot(page);

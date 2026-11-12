@@ -5,10 +5,16 @@
   "scale": 1.0,
   "up": "Y",
   "pivot": "trunk base at origin",
+  "confidence": "documented",
+  "sources": [
+    "docs/historia/campanas/caral.md",
+    "docs/historia/civilizaciones/caral.md"
+  ],
   "budget": {
     "LOD0": 600,
     "LOD1": 150
   },
+  "reviewed": false,
   "lods": {
     "LOD0": {
       "triangles": 360,
@@ -35,7 +41,7 @@
         ]
       },
       "file": "caral_cana_brava_lod0.glb",
-      "bytes": 26540
+      "bytes": 26900
     },
     "LOD1": {
       "triangles": 84,
@@ -62,7 +68,7 @@
         ]
       },
       "file": "caral_cana_brava_lod1.glb",
-      "bytes": 9984
+      "bytes": 10344
     }
   }
 }

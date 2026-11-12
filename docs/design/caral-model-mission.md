@@ -99,8 +99,9 @@ sea | beach + Áspero + wetlands (totora) + lomas | lower valley (El Molino)
 - Vegetation set: willow, giant reed (caña brava), carrizo, horsetail, huarango; totora and junco in the
   wetlands. No palms on this map. Trees use only the two kit-backed variants (huarango/algarrobo and
   sauce); the generic molle/pacay billboards are disabled in the mission overrides.
-- Food nodes: a procedural pacae shrub replaces the generic red-berry bush (issue 393). It is an interim
-  stand-in until the Blender vegetation kit ships the species; the dossier also lists guayaba.
+- Food nodes: the pacae shrub of the Blender vegetation kit replaces the generic red-berry bush (issue
+  393) and is drawn instanced by `PropKitInstances`, upright, with LOD1 beyond 30 units; the dossier also
+  lists guayaba.
 - Fauna (ambient): deer, rodents, birds in the riparian forest; sea birds on the coast.
 - Lomas turn green in the foggy winter season.
 

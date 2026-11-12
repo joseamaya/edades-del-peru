@@ -1,0 +1,76 @@
+{
+  "asset_id": "caral_pacae",
+  "source_scene": "scenes/caral_vegetation_kit.blend",
+  "script": "scripts/blender/build_caral_vegetation_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "pivot": "trunk base at origin",
+  "confidence": "inferred",
+  "sources": [
+    "docs/historia/campanas/caral.md",
+    "docs/historia/civilizaciones/caral.md"
+  ],
+  "budget": {
+    "LOD0": 1100,
+    "LOD1": 320
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 900,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Kit_Bark",
+        "MAT-Kit_PacaeLeaf",
+        "MAT-Kit_PacaePod"
+      ],
+      "bounds": {
+        "min": [
+          -0.9524,
+          -1.0326,
+          -0.1041
+        ],
+        "max": [
+          0.9675,
+          1.0378,
+          1.3692
+        ],
+        "size": [
+          1.9199,
+          2.0704,
+          1.4733
+        ]
+      },
+      "file": "caral_pacae_lod0.glb",
+      "bytes": 107940
+    },
+    "LOD1": {
+      "triangles": 246,
+      "draw_calls": 3,
+      "materials": [
+        "MAT-Kit_Bark",
+        "MAT-Kit_PacaeLeaf",
+        "MAT-Kit_PacaePod"
+      ],
+      "bounds": {
+        "min": [
+          -0.9988,
+          -0.9005,
+          -0.107
+        ],
+        "max": [
+          1.0189,
+          1.0501,
+          1.4305
+        ],
+        "size": [
+          2.0178,
+          1.9506,
+          1.5375
+        ]
+      },
+      "file": "caral_pacae_lod1.glb",
+      "bytes": 57036
+    }
+  }
+}

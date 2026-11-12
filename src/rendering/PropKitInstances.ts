@@ -1,6 +1,25 @@
 import * as THREE from 'three';
-import type { PropsKitModel } from './propsKit';
 import { kitLodFor } from './kitLod';
+
+/** The minimum a kit model needs to be instanced: an id for the mesh names and two LOD part lists. */
+export interface InstancedKitPart {
+  geometry: THREE.BufferGeometry;
+  material: THREE.Material;
+}
+
+export interface InstancedKit {
+  id: string;
+  lods: [InstancedKitPart[], InstancedKitPart[]];
+}
+
+/** Props sit on the ground and tilt with the slope; shrubs stand upright and bend with the wind. */
+export interface PropKitOptions {
+  tilt?: boolean;
+  /** Metres the model sinks into the ground at unit scale. */
+  sink?: number;
+  /** Per-instance lean (radians) driven by `update`'s time; only upright models use it. */
+  sway?: number;
+}
 
 const MAX = 256;
 const UP = new THREE.Vector3(0, 1, 0);
@@ -10,6 +29,8 @@ const _scale = new THREE.Vector3();
 const _normal = new THREE.Vector3();
 const _tilt = new THREE.Quaternion();
 const _yaw = new THREE.Quaternion();
+const _bend = new THREE.Quaternion();
+const _bendAxis = new THREE.Vector3(1, 0, 0);
 
 interface Placement {
   id: number;
@@ -22,28 +43,31 @@ interface Placement {
 }
 
 /**
- * Instanced granodiorite outcrops for the Caral stone nodes. Each matrix follows the terrain: the
- * model is seated on the lowest ground under its footprint, tilted to the sampled normal and sunk
- * slightly so no chunk floats on a slope. LOD1 takes over beyond `KIT_LOD1_DISTANCE` from the focus.
+ * Instanced natural props (the granodiorite outcrops and the pacae shrubs). Each matrix follows the
+ * terrain: outcrops are seated on the lowest ground under their footprint, tilted to the sampled
+ * normal and sunk slightly; shrubs keep their trunk vertical. LOD1 takes over beyond
+ * `KIT_LOD1_DISTANCE` from the camera focus, and picking resolves `instanceId` back to the node.
  */
-export class QuarryInstances {
+export class PropKitInstances {
   private readonly placements = new Map<number, Placement>();
   private ordered: [Placement[], Placement[]] = [[], []];
   private meshes: [THREE.InstancedMesh[], THREE.InstancedMesh[]] = [[], []];
-  private model: PropsKitModel | null = null;
+  private model: InstancedKit | null = null;
   private focus = { x: 0, z: 0 };
+  private time = 0;
   private disposed = false;
 
   constructor(
     private readonly scene: THREE.Scene,
     private readonly heightAt: (x: number, z: number) => number,
     focus: { x: number; z: number } = { x: 0, z: 0 },
+    private readonly options: PropKitOptions = {},
   ) {
     this.focus = { ...focus };
   }
 
   /** Attach the loaded kit; files that fail to load keep the procedural fallback in each node. */
-  attachKit(model: PropsKitModel): void {
+  attachKit(model: InstancedKit): void {
     if (this.disposed || this.model) return;
     this.model = model;
     const built = model.lods.map((parts, lod) =>
@@ -64,9 +88,17 @@ export class QuarryInstances {
   }
 
   /** Returns false when the instancer is full, so the node can keep its procedural fallback. */
-  register(id: number, x: number, z: number, yaw: number, scale: number, onReady?: () => void): boolean {
+  register(
+    id: number,
+    x: number,
+    z: number,
+    yaw: number,
+    scale: number,
+    onReady?: () => void,
+    visible = true,
+  ): boolean {
     if (this.disposed || this.placements.size >= MAX) return false;
-    this.placements.set(id, { id, x, z, yaw, scale, visible: true, onReady });
+    this.placements.set(id, { id, x, z, yaw, scale, visible, onReady });
     this.repack();
     if (this.model) onReady?.();
     return true;
@@ -84,10 +116,13 @@ export class QuarryInstances {
     this.repack();
   }
 
-  /** Re-pack the LOD split as the camera focus moves. */
-  update(focus: { x: number; z: number }): void {
-    if (this.disposed || (focus.x === this.focus.x && focus.z === this.focus.z)) return;
+  /** Re-pack the LOD split as the camera focus moves; upright props also animate their sway. */
+  update(focus: { x: number; z: number }, time = 0): void {
+    if (this.disposed) return;
+    const moved = focus.x !== this.focus.x || focus.z !== this.focus.z;
+    if (!moved && !this.options.sway) return;
     this.focus = { ...focus };
+    this.time = time;
     this.repack();
   }
 
@@ -127,6 +162,27 @@ export class QuarryInstances {
   }
 
   private matrixFor(p: Placement, out: THREE.Matrix4): void {
+    const sink = (this.options.sink ?? 0.18) * p.scale;
+    if (this.options.tilt === false) {
+      // The shrub keeps its trunk vertical, but it still seats on the lowest ground of its footprint
+      // so the downhill stems do not hover on a terrace.
+      const half = 0.6 * p.scale;
+      const ground = Math.min(
+        this.heightAt(p.x, p.z),
+        this.heightAt(p.x - half, p.z),
+        this.heightAt(p.x + half, p.z),
+        this.heightAt(p.x, p.z - half),
+        this.heightAt(p.x, p.z + half),
+      );
+      _pos.set(p.x, ground - sink, p.z);
+      _yaw.setFromAxisAngle(UP, p.yaw);
+      const sway = this.options.sway ? Math.sin(this.time * 1.3 + p.id * 0.7) * this.options.sway : 0;
+      _bend.setFromAxisAngle(_bendAxis, sway);
+      _bend.multiply(_yaw);
+      _scale.setScalar(p.scale);
+      out.compose(_pos, _bend, _scale);
+      return;
+    }
     // Seat the whole footprint on its lowest ground, not just the centre: on a slope the uphill
     // half is buried and the downhill edge cannot float.
     const half = 2.4 * p.scale;
@@ -146,7 +202,7 @@ export class QuarryInstances {
     _tilt.setFromUnitVectors(UP, _normal);
     _yaw.setFromAxisAngle(UP, p.yaw);
     _tilt.multiply(_yaw);
-    _pos.set(p.x, ground - 0.18 * p.scale, p.z);
+    _pos.set(p.x, ground - sink, p.z);
     _scale.setScalar(p.scale);
     out.compose(_pos, _tilt, _scale);
   }

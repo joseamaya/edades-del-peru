@@ -135,7 +135,7 @@ slot is absent (offline / without assets).
   standing building. Hashes and sizes are recorded in
   [`art-src/blender/mission-decor/README.md`](./art-src/blender/mission-decor/README.md).
 
-### Caral vegetation kit (huarango, sauce, caña brava, carrizo, totora)
+### Caral vegetation kit (huarango, sauce, pacae, caña brava, carrizo, totora)
 
 - **Location**: `src/assets/vegetation/caral/caral_<species>_lod0.glb` and `_lod1.glb`.
 - **Source**: generated in Blender by `scripts/blender/build_caral_vegetation_kit.py` (shapes shared
@@ -145,12 +145,16 @@ slot is absent (offline / without assets).
   the game copies were meshopt-compressed with `yarn art:models`.
 - **Content**: project-owned procedural geometry and a generated leaf-cluster texture; no third-party
   scans or textures. LOD0/LOD1 stay within the art-direction budgets (huarango 1500/400, sauce 1200/350,
-  caña brava 600/150, carrizo 400/120, totora 400/120 tris).
+  pacae 1100/320, caña brava 600/150, carrizo 400/120, totora 400/120 tris).
 - **Runtime**: the huarango draws the `algarrobo` tree variant (both are _Prosopis_) and the willow the
   `sauce` variant on every map; totora props everywhere; caña brava and carrizo only along the Supe in
-  m1. Procedural geometry remains the fallback until the GLBs load.
+  m1. The Caral food nodes are instanced pacae shrubs (`PropKitInstances`), upright on the terrain and
+  with LOD1 beyond 30 units. Procedural geometry remains the fallback until the GLBs load.
 - **Confidence**: species and zones documented in `docs/historia/campanas/caral.md`; shapes are stylized
-  (art-direction.md §7), not botanical surveys.
+  (art-direction.md §7), not botanical surveys. The pacae (guaba) fruit is listed among the documented
+  valley crops; its shrub form, the leaf atlas and the pod placement are inferred.
+- **Evidence**: `node scripts/shots_evidence.mjs --scene=caral-pacae --out=review/evidence/caral-pacae`
+  captures a close-up and the RTS view; the two frames compose `docs/media/caral-pacae.webp`.
 
 ### Caral fauna kit (deer, riparian bird)
 

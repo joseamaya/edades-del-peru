@@ -5,10 +5,16 @@
   "scale": 1.0,
   "up": "Y",
   "pivot": "trunk base at origin",
+  "confidence": "documented",
+  "sources": [
+    "docs/historia/campanas/caral.md",
+    "docs/historia/civilizaciones/caral.md"
+  ],
   "budget": {
     "LOD0": 1500,
     "LOD1": 400
   },
+  "reviewed": false,
   "lods": {
     "LOD0": {
       "triangles": 1402,
@@ -35,7 +41,7 @@
         ]
       },
       "file": "caral_huarango_lod0.glb",
-      "bytes": 160492
+      "bytes": 160852
     },
     "LOD1": {
       "triangles": 382,
@@ -62,7 +68,7 @@
         ]
       },
       "file": "caral_huarango_lod1.glb",
-      "bytes": 78708
+      "bytes": 79068
     }
   }
 }

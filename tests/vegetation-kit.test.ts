@@ -16,11 +16,17 @@ const BUDGETS: Record<VegetationKitId, [number, number]> = {
   cana_brava: [600, 150],
   carrizo: [400, 120],
   totora: [400, 120],
+  pacae: [1100, 320],
 };
+/** Bark + leaf cards; the pacae adds hanging pods. */
+const MAX_PARTS: Partial<Record<VegetationKitId, number>> = { pacae: 3 };
 const IDS = Object.keys(BUDGETS) as VegetationKitId[];
 
 interface KitManifest {
   asset_id: string;
+  reviewed: boolean;
+  confidence: string;
+  sources: string[];
   budget: { LOD0: number; LOD1: number };
   lods: Record<'LOD0' | 'LOD1', { file: string; triangles: number; draw_calls: number; bounds: { size: number[] } }>;
 }
@@ -98,21 +104,44 @@ describe.each(IDS)('%s kit GLB', (id) => {
     [lod0, lod1] = await Promise.all([parse(glbUrl(id, 0)), parse(glbUrl(id, 1))]);
   });
 
-  it('records the art-direction budget and stays within it in the manifest', () => {
+  it('records the art-direction budget, the provenance gate and its certainty', () => {
     const m = manifest(id);
     expect(m.asset_id).toBe(`caral_${id}`);
+    expect(m.reviewed).toBe(false);
+    expect(m.confidence).toBe(id === 'pacae' ? 'inferred' : 'documented');
+    expect(m.sources.length).toBeGreaterThan(0);
     expect(m.budget).toEqual({ LOD0: BUDGETS[id][0], LOD1: BUDGETS[id][1] });
     expect(m.lods.LOD0.triangles).toBeLessThanOrEqual(BUDGETS[id][0]);
     expect(m.lods.LOD1.triangles).toBeLessThanOrEqual(BUDGETS[id][1]);
     expect(m.lods.LOD1.triangles).toBeLessThan(m.lods.LOD0.triangles);
-    expect(m.lods.LOD0.draw_calls).toBeLessThanOrEqual(2);
+    expect(m.lods.LOD0.draw_calls).toBeLessThanOrEqual(MAX_PARTS[id] ?? 2);
+  });
+
+  it('keeps the far LOD footprint close to the near one so the swap does not pop', () => {
+    // Clumps legitimately thin out at LOD1; trees and the pacae shrub keep their silhouette.
+    if (!['huarango', 'sauce', 'pacae'].includes(id)) return;
+    const near = partsFromScene(lod0.scene);
+    const far = partsFromScene(lod1.scene);
+    const size = (parts: { geometry: THREE.BufferGeometry }[]): THREE.Vector3 => {
+      const box = new THREE.Box3();
+      for (const part of parts) {
+        part.geometry.computeBoundingBox();
+        box.union(part.geometry.boundingBox!);
+      }
+      return box.getSize(new THREE.Vector3());
+    };
+    const a = size(near);
+    const b = size(far);
+    for (const axis of ['x', 'y', 'z'] as const) {
+      expect(Math.abs(b[axis] - a[axis]) / a[axis]).toBeLessThan(0.2);
+    }
   });
 
   it('bakes into at most two parts per LOD within budget, at game scale', () => {
     const near = partsFromScene(lod0.scene);
     const far = partsFromScene(lod1.scene);
     expect(near.length).toBeGreaterThan(0);
-    expect(near.length).toBeLessThanOrEqual(2);
+    expect(near.length).toBeLessThanOrEqual(MAX_PARTS[id] ?? 2);
     expect(far.length).toBe(near.length);
     expect(triangles(near)).toBeLessThanOrEqual(BUDGETS[id][0]);
     expect(triangles(far)).toBeLessThanOrEqual(BUDGETS[id][1]);
