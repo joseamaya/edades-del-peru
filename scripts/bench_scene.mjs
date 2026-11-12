@@ -33,11 +33,10 @@ const BUDGETS = {
   // The household props kit adds 8 calls (four shared materials per base, two bases, no shadow pass:
   // the pieces are sub-metre); pinning every LOD manager to the measured framing adds the quarry's
   // shadow pass (+2), and the pacae shrubs add 3 materials x 2 LODs with their shadows (up to +12).
-  // Measured opening: 371 147-383 567 tris / 170-173 calls, kit 92 512-104 932 / 51-55; the five
-  // started complexes at foundation add ~25k tris and the Act III valley groves add ~9k more to the
-  // opening view. The kit range is how many pacae shrubs and grove trees fall inside the 30 m LOD0
-  // ring when the frame is measured.
-  m1_caral: { sceneTriangles: 400_000, sceneDrawCalls: 230, kitTriangles: 110_000, kitDrawCalls: 56 },
+  // Measured opening: 371 147-390 999 tris / 170-174 calls, kit 92 512-112 364 / 51-55; the five
+  // started complexes at foundation add ~25k tris and the Act III valley groves add ~9-17k more,
+  // depending on which clusters fall inside the 30 m LOD0 ring. Cap keeps ~7 % headroom.
+  m1_caral: { sceneTriangles: 400_000, sceneDrawCalls: 230, kitTriangles: 120_000, kitDrawCalls: 56 },
   // End game over the city with 35 workers in view: art-direction §11 (600k triangles). It measured
   // 1.57M / 396 before the worker cuts and ~582k / 261 after. Skinned workers cannot be instanced, so
   // each one in view is ~6 draws (body, hair, garments, tool, team ring, body shadow) on top of the

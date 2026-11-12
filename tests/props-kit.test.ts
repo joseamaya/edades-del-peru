@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { QUARRY_OBSTACLE_RADIUS } from '../src/model/defs/profiles';
 
 interface Manifest {
   asset_id: string;
@@ -142,5 +143,8 @@ describe('granodiorite outcrop', () => {
     expect(size[1]).toBeGreaterThanOrEqual(2.5);
     expect(size[2]).toBeGreaterThanOrEqual(1.2);
     expect(size[2]).toBeLessThanOrEqual(3);
+    // The largest kit instance (scale 0.8) must fit inside the circular pathfinding footprint.
+    const halfDiagonal = (Math.hypot(size[0]!, size[1]!) / 2) * 0.8;
+    expect(halfDiagonal).toBeLessThanOrEqual(QUARRY_OBSTACLE_RADIUS.granodiorite);
   });
 });

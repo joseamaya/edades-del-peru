@@ -76,6 +76,7 @@ import { CAMERA_SPEED_SCALE, DEFAULT_SETTINGS, GameSettings, OPENING_BASE_CLEARA
 import { QualityGovernor } from './QualityGovernor';
 import {
   applyMapOverrides,
+  quarryObstacleRadius,
   resolveMapProfile,
   type HistoricalMapProfile,
   type GeographicRegion,
@@ -657,7 +658,7 @@ export class Game {
       if (Math.hypot(x - b.pos.x, z - b.pos.z) < b.radius + 0.7) return true;
     }
     for (const n of this.resourceNodes.values()) {
-      if (Math.hypot(x - n.pos.x, z - n.pos.z) < n.radius + 0.4) return true;
+      if (Math.hypot(x - n.pos.x, z - n.pos.z) < Math.max(n.radius, n.navRadius) + 0.4) return true;
     }
     for (const overlay of this.settlements) {
       if (overlay.blocksGroundCover(x, z)) return true;
@@ -877,7 +878,10 @@ export class Game {
   /** Register a solid resource node as a pathfinding obstacle (animals/fish are not). */
   registerResourceObstacle(id: number, x: number, z: number, kind: ResourceNode['kind']): void {
     if (kind === 'hunt' || kind === 'fishing') return;
-    const handle = { x, z, radius: kind === 'tree' ? 0.5 : 1.1 };
+    const radius = kind === 'tree' ? 0.5 : kind === 'well' ? quarryObstacleRadius(this.mapProfile.quarryStyle) : 1.1;
+    const node = this.resourceNodes.get(id);
+    if (node) node.navRadius = radius;
+    const handle = { x, z, radius };
     this.obstacleHandles.set(id, handle);
     this.pathfinder.addObstacle(handle);
   }
@@ -2081,7 +2085,7 @@ export class Game {
     }
     for (const n of this.resourceNodes.values()) {
       if (n.dead) continue;
-      if (distance2D(x, z, n.pos.x, n.pos.z) < n.radius + r * 0.9) return false;
+      if (distance2D(x, z, n.pos.x, n.pos.z) < Math.max(n.radius, n.navRadius) + r * 0.9) return false;
     }
     return true;
   }

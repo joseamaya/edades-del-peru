@@ -23,6 +23,18 @@ export type BerryShrubId = 'pacae';
 /** Blender kit used for the stone nodes of an authored scenario. */
 export type QuarryStyle = 'granodiorite';
 
+/**
+ * Circular pathfinding footprint of each kit outcrop, in game metres. Granodiorite LOD0 measures
+ * 6.49 × 4.92 m and is scaled 0.6-0.8, so its largest half-diagonal is 3.25 m. Adding the 0.71 m
+ * half-diagonal of a 1 m nav cell keeps every point of a walkable cell outside the visible hull.
+ */
+export const QUARRY_OBSTACLE_RADIUS: Record<QuarryStyle, number> = { granodiorite: 4.0 };
+
+/** Generic stone-node radius for maps without a kit outcrop. */
+export function quarryObstacleRadius(style?: QuarryStyle): number {
+  return style ? QUARRY_OBSTACLE_RADIUS[style] : 1.1;
+}
+
 export interface ResourceProfile {
   /** Relative weight of each gatherable node (tree/mine/well/berry). */
   tree: number;

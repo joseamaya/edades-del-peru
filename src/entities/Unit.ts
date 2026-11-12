@@ -45,6 +45,9 @@ interface GatherNodeRef {
   amount?: number;
   dead?: boolean;
   depleted?: boolean;
+  /** Pathfinding footprint when it is larger than a standard resource. */
+  navRadius?: number;
+  farm?: { radius?: number };
 }
 
 /** Context that Game provides to units (avoids circular dependencies). */
@@ -122,6 +125,28 @@ const MOVE_STOP_DIST = 0.6;
 export const HARVEST_RANGE = 2.8;
 /** Stand point inside a walkable cell: close enough that the final 0.6 stop still harvests. */
 export const HARVEST_STAND_RANGE = HARVEST_RANGE - MOVE_STOP_DIST;
+
+/** Reach at which a worker can use a node, widened when its visible footprint needs a bigger obstacle. */
+export function gatherRangeFor(node: Pick<GatherNodeRef, 'farm' | 'navRadius'>): number {
+  if (node.farm) return (node.farm.radius ?? 1.5) + 1.4;
+  return Math.max(HARVEST_RANGE, (node.navRadius ?? 0) + 1.0);
+}
+
+/** Walkable stand radius outside the node footprint; farms keep their old edge margin. */
+export function gatherStandRangeFor(node: Pick<GatherNodeRef, 'farm' | 'navRadius'>): number {
+  return Math.max(node.farm ? 0.5 : HARVEST_STAND_RANGE, gatherRangeFor(node) - MOVE_STOP_DIST);
+}
+
+/** Approach rules for a resource node: fishing crosses water; a large outcrop owns its footprint. */
+export function gatherApproachFor(
+  node: Pick<GatherNodeRef, 'kind' | 'navRadius'>,
+  slot?: number,
+  allowWater = false,
+): ApproachOptions | undefined {
+  const fishing = allowWater && node.kind === 'fishing' ? fishingApproach({ slot }) : undefined;
+  if ((node.navRadius ?? 0) <= 1.1) return fishing;
+  return { ...fishing, footprintRadius: node.navRadius };
+}
 /** Fishers a checked bank must fit, and the cap a group order assigns to one bank (issue 378). */
 export const FISHERS_PER_GROUND = 4;
 /** Distance at which a plain move/attack-move order counts as arrived. */
@@ -1312,7 +1337,7 @@ export class Unit {
     const dx = node.pos.x - this.pos.x;
     const dz = node.pos.z - this.pos.z;
     const dist = Math.sqrt(dx * dx + dz * dz);
-    const harvestRange = node.farm ? (node.farm.radius ?? 1.5) + 1.4 : HARVEST_RANGE;
+    const harvestRange = gatherRangeFor(node);
 
     if (dist > harvestRange) {
       if (this.pathIdx >= this.path.length && this.repathTimer <= 0) {
@@ -1326,7 +1351,7 @@ export class Unit {
         // outside harvest range: path to a stand point inside range instead.
         if (!this.approachTried) {
           this.approachTried = true;
-          const standRadius = node.farm ? Math.max(0.5, harvestRange - MOVE_STOP_DIST) : HARVEST_STAND_RANGE;
+          const standRadius = gatherStandRangeFor(node);
           const pts = this.ctx.findApproachPath(
             this.pos.x,
             this.pos.z,
@@ -1334,7 +1359,7 @@ export class Unit {
             node.pos.z,
             standRadius,
             this.owner,
-            node.kind === 'fishing' ? fishingApproach({ slot: this.id }) : undefined,
+            gatherApproachFor(node, this.id, true),
           );
           if (pts.length > 0) {
             this.followApproachPath(pts);
@@ -1500,13 +1525,21 @@ export class Unit {
     }
     // A bank with a free slot first, then the closest reachable one.
     options.sort((a, b) => (a.room === b.room ? 0 : a.room ? -1 : 1) || a.d - b.d);
-    const opts = current.kind === 'fishing' ? fishingApproach({ slot: this.id }) : undefined;
     for (const { node, d } of options) {
+      const opts = gatherApproachFor(node, this.id, true);
       if (
-        !this.ctx.reachableToNode(this.pos.x, this.pos.z, node.pos.x, node.pos.z, HARVEST_STAND_RANGE, this.owner, opts)
+        !this.ctx.reachableToNode(
+          this.pos.x,
+          this.pos.z,
+          node.pos.x,
+          node.pos.z,
+          gatherStandRangeFor(node),
+          this.owner,
+          opts,
+        )
       )
         continue;
-      if (d <= HARVEST_RANGE) {
+      if (d <= gatherRangeFor(node)) {
         order.entityId = node.id;
         this.path.length = 0;
         this.pathIdx = 0;
@@ -1519,7 +1552,7 @@ export class Unit {
         this.pos.z,
         node.pos.x,
         node.pos.z,
-        HARVEST_STAND_RANGE,
+        gatherStandRangeFor(node),
         this.owner,
         opts,
       );
@@ -1673,15 +1706,14 @@ export class Unit {
     if (!last) return null;
     const node = this.ctx.resourceNodes.get(last.id) as GatherNodeRef | undefined;
     if (!node || node.dead || node.depleted || (node.amount !== undefined && node.amount <= 0)) return null;
-    const opts = node.kind === 'fishing' ? fishingApproach({ slot: this.id }) : undefined;
     return this.ctx.reachableToNode(
       this.pos.x,
       this.pos.z,
       node.pos.x,
       node.pos.z,
-      HARVEST_STAND_RANGE,
+      gatherStandRangeFor(node),
       this.owner,
-      opts,
+      gatherApproachFor(node, this.id, true),
     )
       ? node.id
       : null;

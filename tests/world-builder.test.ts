@@ -54,7 +54,7 @@ describe('placeStartResources', () => {
       add: (kind, _amount, x, z) => added.push({ kind, x, z }),
     });
     expect(added.filter((n) => n.kind === 'tree')).toHaveLength(5);
-    expect(added.find((n) => n.kind === 'well')?.x).toBeCloseTo(46);
+    expect(added.find((n) => n.kind === 'well')).toMatchObject({ x: 72, z: 84 });
     expect(added.find((n) => n.kind === 'berry')?.x).toBeCloseTo(84);
   });
 });
