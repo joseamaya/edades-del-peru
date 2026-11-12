@@ -915,6 +915,8 @@ def main():
                     'budget': {'LOD0': LOD0_BUDGET, 'LOD1': LOD1_BUDGET}, 'reviewed': False, 'lods': {}}
         if asset.startswith('house_'):
             manifest['wall_height'] = WALL_H[asset.split('_', 1)[1]]
+        if asset == 'survey_stake':
+            manifest['pivot'] = 'stake base at ground level; cord along +X'
         for lod in (0, 1):
             obj = build_object(asset, lod, mats)
             info = stats(obj)

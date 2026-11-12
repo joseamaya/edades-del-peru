@@ -250,8 +250,9 @@ export const CARAL_CIRCULAR_ALTAR = caralCityPoint({ x: 72.5, z: 144.55, w: 10.6
 export const CARAL_SITE_BLOCKER_PADDING = 0.5;
 
 /**
- * Phase from which each Caral monument stands (matches the `since` of its kit placement in caralCity.ts):
- * until then it neither blocks units nor answers clicks. The Pyramid Mayor and Áspero stand throughout.
+ * Phase from which each Caral monument answers clicks and shows its card. The physical blockers use
+ * `CARAL_HERITAGE_BLOCK_SINCE` instead: the five smaller complexes block from foundation (their started
+ * platform exists) but their cards wait for the finished model. The Mayor and Áspero stand throughout.
  */
 export const CARAL_HERITAGE_SINCE: Partial<Record<HeritageBuildingId, string>> = {
   caral_pyramid_central: 'finished',

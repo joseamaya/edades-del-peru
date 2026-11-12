@@ -214,11 +214,12 @@ slot is absent (offline / without assets).
   `in_use`. The started platforms block from foundation, but their monument cards and the six-complex
   tour still wait for `finished` (`CARAL_HERITAGE_BLOCK_SINCE` vs `CARAL_HERITAGE_SINCE`). Phased
   platforms and shicra fill are documented; that the five were started alongside the Mayor, the cord
-  survey and the exact construction form are inferred.
+  survey and the exact construction form are inferred. The Anfiteatro temple and the Altar Redondo still
+  appear whole at `in_use` (their plaza is staked); starting them is left for a later pass.
 - **Evidence**: `node scripts/shots_evidence.mjs --scene=caral-camp --out=review/evidence/caral-camp`
-  captures the Act III camp close up, in a medium RTS view, the staked plaza and a wide context frame;
-  stitch `close.png` and `camp.png` for `docs/media/caral-camp.webp` and `camp.png` + `rts.png` for
-  `docs/media/caral-act3.webp`, at 3200 × 900 and quality 82.
+  captures the Act III camp close up, in a medium RTS view, the staked plaza, the issue frame (`act3`)
+  and a wide context frame; stitch `close.png` + `camp.png` for `docs/media/caral-camp.webp` and
+  `camp.png` + `act3.png` for `docs/media/caral-act3.webp`, at 3200 × 900 and quality 82.
 - **Confidence** (per piece in the manifests; evidence in `docs/historia/campanas/caral.md` and
   `docs/historia/civilizaciones/caral.md`): stepped superposed platforms, shicra fill, stone retaining
   walls, painted plaster, sunken circular plazas, quincha houses, cotton nets and gourd floats and fair

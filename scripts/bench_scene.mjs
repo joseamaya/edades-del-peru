@@ -33,8 +33,9 @@ const BUDGETS = {
   // The household props kit adds 8 calls (four shared materials per base, two bases, no shadow pass:
   // the pieces are sub-metre); pinning every LOD manager to the measured framing adds the quarry's
   // shadow pass (+2), and the pacae shrubs add 3 materials x 2 LODs with their shadows (up to +12).
-  // Measured opening: 371 147 tris / 170 calls, kit 92 512 / 51; the five started complexes at foundation\n  // add ~25k tris to the opening view. The kit range is
-  // how many pacae shrubs fall inside the 30 m LOD0 ring when the frame is measured.
+  // Measured opening: 371 147-373 995 tris / 170 calls, kit 92 512-95 360 / 51; the five started complexes at foundation
+  // add ~25k tris to the opening view. The kit range is how many pacae shrubs fall inside the 30 m LOD0
+  // ring when the frame is measured.
   m1_caral: { sceneTriangles: 400_000, sceneDrawCalls: 230, kitTriangles: 100_000, kitDrawCalls: 56 },
   // End game over the city with 35 workers in view: art-direction §11 (600k triangles). It measured
   // 1.57M / 396 before the worker cuts and ~582k / 261 after. Skinned workers cannot be instanced, so
@@ -42,7 +43,7 @@ const BUDGETS = {
   // opening's scene: the call budget allows that crowd over the opening's 230.
   m1_caral_late: { sceneTriangles: 600_000, sceneDrawCalls: 275, kitTriangles: 80_000, kitDrawCalls: 36 },
   // Act III at foundation: the phase-1 Mayor, the five started complexes, the camp, its six visible rigs
-  // and the staked plazas. Measured 411 138-414 646 tris / 105-106 calls, kit 76 908-85 492 / 31; the
+  // and the staked plazas. Measured 406 062-414 646 tris / 105-106 calls, kit 76 908-85 492 / 31; the
   // camera sees fewer trees than the opening because it looks at the terrace, and the kit range is how
   // many fall inside the frame.
   m1_caral_camp: { sceneTriangles: 430_000, sceneDrawCalls: 120, kitTriangles: 100_000, kitDrawCalls: 40 },

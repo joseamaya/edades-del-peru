@@ -708,6 +708,10 @@ test('the authored site blocks every solid monument and leaves the plaza ring wa
 
 test('the started complexes block from foundation; their cards wait for finished', async ({ page }) => {
   await boot(page);
+  const assets = await page.evaluate(() =>
+    (window as unknown as { game: { caralCity: { assets(): string[] } } }).game.caralCity.assets(),
+  );
+  expect(assets).toEqual(expect.arrayContaining(['pyramid_small_phase1', 'survey_stake']));
   const state = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     const p = g.pathfinder;

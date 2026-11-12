@@ -212,10 +212,14 @@ function surveyCircle(center: { x: number; z: number }, radius: number, until: C
   });
 }
 
-/** Traces of the main sunken plaza (until `fill`) and the amphitheatre plaza (until `in_use`). */
+/** The main sunken plaza in front of the Mayor's stair and the larger one at the amphitheatre. */
+const MAIN_PLAZA = { x: mayor.x, z: mayor.z + mayor.d / 2 + 12.5, radius: PLAZA_DIAMETER / 2 };
+const AMPH_PLAZA = { x: amphitheatre.x, z: amphitheatre.z - 10, radius: 21 / 2 };
+
+/** Traces of the main plaza (until `fill`) and the amphitheatre plaza (until `in_use`). */
 export const CARAL_SURVEY_LAYOUT: readonly CaralArchPlacement[] = [
-  ...surveyCircle({ x: mayor.x, z: mayor.z + mayor.d / 2 + 12.5 }, PLAZA_DIAMETER / 2, 'fill'),
-  ...surveyCircle({ x: amphitheatre.x, z: amphitheatre.z - 10 }, (PLAZA_DIAMETER * 21) / 16 / 2, 'in_use'),
+  ...surveyCircle(MAIN_PLAZA, MAIN_PLAZA.radius, 'fill'),
+  ...surveyCircle(AMPH_PLAZA, AMPH_PLAZA.radius, 'in_use'),
 ];
 
 export const CARAL_CITY_LAYOUT: readonly CaralArchPlacement[] = [
@@ -223,8 +227,8 @@ export const CARAL_CITY_LAYOUT: readonly CaralArchPlacement[] = [
   // Sunken circular plaza in front of the Pyramid Mayor's stair (the stair foot is ~4 beyond the base).
   {
     asset: 'circular_plaza',
-    x: mayor.x,
-    z: mayor.z + mayor.d / 2 + 12.5,
+    x: MAIN_PLAZA.x,
+    z: MAIN_PLAZA.z,
     rotY: 0,
     scale: [1, 1, 1],
     lift: PLAZA_FLOOR_DEPTH,
@@ -247,8 +251,8 @@ export const CARAL_CITY_LAYOUT: readonly CaralArchPlacement[] = [
   {
     asset: 'circular_plaza',
     since: 'in_use',
-    x: amphitheatre.x,
-    z: amphitheatre.z - 10,
+    x: AMPH_PLAZA.x,
+    z: AMPH_PLAZA.z,
     rotY: 0,
     scale: [21 / PLAZA_DIAMETER, 1, 21 / PLAZA_DIAMETER],
     lift: PLAZA_FLOOR_DEPTH,
