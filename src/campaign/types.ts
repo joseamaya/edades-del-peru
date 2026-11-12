@@ -411,8 +411,8 @@ export interface MissionDef {
   timeOfDay: 'morning' | 'noon' | 'dusk' | 'night';
   startingEra: Era;
   /**
-   * Multiplier on every unit's base speed for campaign pacing (1 = the skirmish speeds). Caral halves it so
-   * the 256 m transect reads as travel; the scout and every other unit scale in proportion.
+   * Multiplier on every unit's base speed for campaign pacing (1 = the skirmish speeds). Caral and Chavín use 0.75
+   * so the 256 m transect reads as travel; the scout and every other unit scale in proportion.
    */
   unitSpeedScale?: number;
   startingResources: Resources;

@@ -161,8 +161,9 @@ export const MISSIONS: MissionDef[] = [
     guaranteedFishing: 8,
     timeOfDay: 'morning',
     startingEra: Era.FORMATIVE,
-    // Half the skirmish speed so the 256 m transect reads as travel (see caral-model-mission.md §Pacing and map scale).
-    unitSpeedScale: 0.5,
+    // Three quarters of the skirmish speed: the 256 m transect still reads as travel without the walk dragging
+    // (see caral-model-mission.md §Pacing and map scale).
+    unitSpeedScale: 0.75,
     // Silver has no role in Caral; stone for the monuments comes from the hills.
     startingResources: { food: 150, wood: 150, silver: 0, stone: 0 },
     start: {},
@@ -677,7 +678,7 @@ export const MISSIONS: MissionDef[] = [
     },
     startingEra: Era.REGIONAL_STATES,
     // Same 256 m transect and crossing band as Caral (see caral-model-mission.md §Pacing and map scale).
-    unitSpeedScale: 0.5,
+    unitSpeedScale: 0.75,
     // Chavín has no documented war: dwellings, storehouses, fields and the pilgrimage fair, no army.
     allowedBuildings: [BuildingKind.HOUSE, BuildingKind.MILL, BuildingKind.FARM, BuildingKind.MARKET],
     allowedUnits: [UnitKind.WORKER, UnitKind.SCOUT],

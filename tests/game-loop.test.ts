@@ -65,4 +65,14 @@ describe('GameLoop simulation clock', () => {
     expect(times.slice(-6).map((t) => t.toFixed(6))).toEqual([0, 1, 2, 3, 4, 5].map((k) => (k / 60).toFixed(6)));
     loop.stop();
   });
+
+  it('keeps 3x speed on a slow frame instead of capping it at 8 steps', () => {
+    const { loop, times, advance } = harness();
+    loop.speed = 3;
+    // 10 fps at 3x owes 0.3 s of game time per frame: 18 steps, all of them simulated
+    advance(100);
+    advance(100);
+    expect(times.length).toBeGreaterThanOrEqual(35);
+    loop.stop();
+  });
 });

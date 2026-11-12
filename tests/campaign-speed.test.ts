@@ -25,20 +25,20 @@ function headlessFor(missionId: string): Game {
 }
 
 describe('campaign unit speed scale', () => {
-  it('halves every Caral unit so the 256 m transect takes about 3:33 to cross', () => {
+  it('slows every Caral unit to 0.75 so the 256 m transect takes about 2:22 to cross', () => {
     const caral = MISSIONS.find((m) => m.id === 'm1_caral')!;
     const game = headlessFor('m1_caral');
     try {
-      expect(game.unitSpeedScale).toBe(0.5);
+      expect(game.unitSpeedScale).toBe(0.75);
       for (const kind of [UnitKind.WORKER, UnitKind.SCOUT]) {
         const unit = game.spawnScriptedUnit(kind, 0, 20, 20);
         const base = getUnitStats(kind, Era.FORMATIVE).speed;
-        expect(unit.stats.speed).toBeCloseTo(base * 0.5, 6);
+        expect(unit.stats.speed).toBeCloseTo(base * 0.75, 6);
       }
       const worker = [...game.units.values()].find((u) => u.kind === UnitKind.WORKER)!;
       const crossing = caral.map.size / worker.stats.speed;
-      expect(crossing).toBeGreaterThan(200);
-      expect(crossing).toBeLessThan(220);
+      expect(crossing).toBeGreaterThan(135);
+      expect(crossing).toBeLessThan(150);
     } finally {
       game.destroy();
       setAutoStart(true);

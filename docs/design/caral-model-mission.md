@@ -241,12 +241,13 @@ Dialogue speaker labels must not say "Comandante" in this mission.
 
 ## Pacing and map scale
 
-The 256 m sea-to-terrace transect is huge in AoE2 terms (64 town centres across), so the mission halves every
-unit's base speed with `MissionDef.unitSpeedScale: 0.5`: workers walk at 1.2 m/s and scouts at 2.7, and the
-full crossing takes ≈3:33 (0.30 centres/s, just above 0 A.D.'s 0.28 and far below the previous 0.6; AoE2 sits
-at 0.20). The real-command playtest completes the four acts in ≈25–28 min of bot time with its eight
-deliveries (Act I now counts only food caught fishing, so the 300-food goal is a real fishing goal), which is
-the pacing lower bound; a learning player needs the 30–40 min the dossier targets.
+The 256 m sea-to-terrace transect is huge in AoE2 terms (64 town centres across), so the mission slows every
+unit's base speed with `MissionDef.unitSpeedScale: 0.75`: workers walk at 1.8 m/s and scouts at ≈4.1, and the
+full crossing takes ≈2:22 (0.45 centres/s, between 0 A.D.'s 0.28 and the skirmish 0.6). The first pass used
+0.5 (1.2 m/s, ≈3:33); in play the walks between Áspero, the valley and the city felt slow, so it was raised on
+2026-11-12. The real-command playtest completes the four acts in ≈20 min of bot time at both scales (19.3 min
+at 0.5, 19.8 at 0.75): the length comes from the works and the act timers, not from walking. A learning player
+needs the 30–40 min the dossier targets.
 
 The scale is per mission and stays at 1 for the rest of the campaigns until their own pacing decision;
 Chavín takes it together with its 256 m map.
