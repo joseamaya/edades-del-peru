@@ -467,14 +467,22 @@ export class ResourceNodeView {
     });
     const scale = 0.9 + cosmeticRandom() * 0.2;
     const yaw = cosmeticRandom() * Math.PI * 2;
-    this.pacaeRegistered = this.pacaeMgr!.register(this.node.id, this.node.pos.x, this.node.pos.z, yaw, scale, () => {
-      if (this.disposed) return;
-      fallback.traverse((object) => {
-        const mesh = object as THREE.Mesh;
-        if (mesh.isMesh && mesh.name.startsWith('merged:')) mesh.geometry.dispose();
-      });
-      fallback.removeFromParent();
-    });
+    this.pacaeRegistered = this.pacaeMgr!.register(
+      this.node.id,
+      this.node.pos.x,
+      this.node.pos.z,
+      yaw,
+      scale,
+      () => {
+        if (this.disposed) return;
+        fallback.traverse((object) => {
+          const mesh = object as THREE.Mesh;
+          if (mesh.isMesh && mesh.name.startsWith('merged:')) mesh.geometry.dispose();
+        });
+        fallback.removeFromParent();
+      },
+      this.view.visible,
+    );
   }
 
   /**

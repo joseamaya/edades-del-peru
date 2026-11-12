@@ -5,10 +5,16 @@
   "scale": 1.0,
   "up": "Y",
   "pivot": "trunk base at origin",
+  "confidence": "inferred",
+  "sources": [
+    "docs/historia/campanas/caral.md",
+    "docs/historia/civilizaciones/caral.md"
+  ],
   "budget": {
     "LOD0": 1100,
     "LOD1": 320
   },
+  "reviewed": false,
   "lods": {
     "LOD0": {
       "triangles": 900,
@@ -39,7 +45,7 @@
       "bytes": 107940
     },
     "LOD1": {
-      "triangles": 236,
+      "triangles": 246,
       "draw_calls": 3,
       "materials": [
         "MAT-Kit_Bark",
@@ -48,23 +54,23 @@
       ],
       "bounds": {
         "min": [
-          -1.3369,
-          -1.2901,
-          -0.1112
+          -0.9988,
+          -0.9005,
+          -0.107
         ],
         "max": [
-          1.3493,
-          1.4068,
-          1.6414
+          1.0189,
+          1.0501,
+          1.4305
         ],
         "size": [
-          2.6862,
-          2.6969,
-          1.7525
+          2.0178,
+          1.9506,
+          1.5375
         ]
       },
       "file": "caral_pacae_lod1.glb",
-      "bytes": 56496
+      "bytes": 57036
     }
   }
 }

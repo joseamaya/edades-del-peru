@@ -73,7 +73,8 @@ describe('quarry instancing', () => {
     const pos = new THREE.Vector3();
     const quat = new THREE.Quaternion();
     matrix.decompose(pos, quat, new THREE.Vector3());
-    expect(pos.y).toBeCloseTo(10 * 0.5 + 4 * 0.1 - 0.06, 5);
+    // Seated on the lowest ground under the 0.6 m footprint, not just the centre.
+    expect(pos.y).toBeCloseTo((10 - 0.6) * 0.5 + 4 * 0.1 - 0.06, 5);
     const up = new THREE.Vector3(0, 1, 0).applyQuaternion(quat);
     expect(up.y).toBeCloseTo(1, 5);
     // The yaw still applies around the vertical.

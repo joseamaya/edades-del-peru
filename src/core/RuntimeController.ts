@@ -857,7 +857,7 @@ export class RuntimeController {
     const focus = this.game.camera.getTarget();
     this.game.trees.update(d, focus);
     this.game.quarries?.update(focus);
-    this.game.pacae?.update(focus);
+    this.game.pacae?.update(focus, realTime);
     for (const dressing of this.game.settlementDressing) dressing.update(focus);
     this.game.wildlife.update(d);
 

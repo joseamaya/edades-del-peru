@@ -45,6 +45,18 @@ BUDGETS = {
     'pacae': (1100, 320),
 }
 
+# The provenance gate: species and zones come from the dossier; the pacae shrub itself is a
+# reconstruction of a documented crop, so it is the only piece labelled `inferred`.
+CONFIDENCE = {
+    'huarango': 'documented',
+    'sauce': 'documented',
+    'cana_brava': 'documented',
+    'carrizo': 'documented',
+    'totora': 'documented',
+    'pacae': 'inferred',
+}
+SOURCES = ['docs/historia/campanas/caral.md', 'docs/historia/civilizaciones/caral.md']
+
 
 def parse_args():
     argv = sys.argv[sys.argv.index('--') + 1 :] if '--' in sys.argv else []
@@ -138,7 +150,7 @@ def build_materials():
         'reed': mat_basic('MAT-Kit_Reed', PAL['reed_green'], 0.8),
         'plume': mat_cards('MAT-Kit_Plume', V(PAL['cane']).lerp(V(PAL['cotton']), 0.35), plume_tex),
         'pacae_leaf': mat_cards('MAT-Kit_PacaeLeaf', V(PAL['huarango']) * 1.35, pacae_tex),
-        'pacae_pod': mat_basic('MAT-Kit_PacaePod', V(PAL['reed_green']) * 1.2, 0.8),
+        'pacae_pod': mat_basic('MAT-Kit_PacaePod', V(PAL['reed_green']) * 1.45, 0.8),
     }
 
 
@@ -224,8 +236,9 @@ def pacae(mats, lod):
     the fruit among the valley crops; the shrub's form is inferred."""
     rng = random.Random(16)
     kit = slice_kit.new_kit()
-    stems = 6 if lod == 0 else 4
-    sides = 5 if lod == 0 else 4
+    # Same stems and crown blobs at both LODs: a smaller LOD1 crown would pop at the 30 m swap.
+    stems = 6
+    sides = 5 if lod == 0 else 3
     tips = []
     for k in range(stems):
         a = k / stems * math.tau + rng.uniform(-0.2, 0.2)
@@ -238,18 +251,18 @@ def pacae(mats, lod):
     blobs = []
     for tip in tips:
         blobs.append((tuple(tip + Vector((0, 0, 0.12))), (0.42, 0.4, 0.3)))
-        if lod == 0:
-            blobs.append((tuple(tip * 0.5 + Vector((0, 0, 0.55))), (0.3, 0.3, 0.24)))
+        blobs.append((tuple(tip * 0.5 + Vector((0, 0, 0.55))), (0.3, 0.3, 0.24)))
     crown = sum((Vector(b[0]) for b in blobs), Vector()) / len(blobs)
-    cards, size = (360, 0.42) if lod == 0 else (90, 0.85)
+    cards, size = (360, 0.42) if lod == 0 else (90, 0.5)
     slice_kit.kcrown(kit, blobs, cards, size, rng, 1, aspect=0.8, surface=0.45)
-    pods = 10 if lod == 0 else 4
+    # Pods hang on the outer crown where they read as the fruit, not lost under the leaves.
+    pods = 10 if lod == 0 else 5
     for k in range(pods):
-        a = rng.random() * math.tau
-        r = rng.uniform(0.3, 0.52)
-        base = (math.cos(a) * r, math.sin(a) * r, rng.uniform(0.5, 0.62))
-        lean = (math.cos(a) * 0.07, math.sin(a) * 0.07)
-        slice_kit.kblade(kit, base, rng.uniform(0.26, 0.36), lean, 0.045, 2, bend=0.7)
+        a = k / pods * math.tau + rng.uniform(-0.25, 0.25)
+        r = rng.uniform(0.5, 0.64)
+        base = (math.cos(a) * r, math.sin(a) * r, rng.uniform(0.42, 0.56))
+        lean = (math.cos(a) * 0.08, math.sin(a) * 0.08)
+        slice_kit.kblade(kit, base, rng.uniform(0.3, 0.42), lean, 0.05, 2, bend=0.7)
     return kit, [mats['bark'], mats['pacae_leaf'], mats['pacae_pod']], crown
 
 
@@ -362,8 +375,9 @@ def main():
     for asset in only:
         manifest = {'asset_id': f'caral_{asset}', 'source_scene': 'scenes/caral_vegetation_kit.blend',
                     'script': 'scripts/blender/build_caral_vegetation_kit.py', 'scale': 1.0, 'up': 'Y',
-                    'pivot': 'trunk base at origin', 'budget': {'LOD0': BUDGETS[asset][0], 'LOD1': BUDGETS[asset][1]},
-                    'lods': {}}
+                    'pivot': 'trunk base at origin', 'confidence': CONFIDENCE[asset], 'sources': SOURCES,
+                    'budget': {'LOD0': BUDGETS[asset][0], 'LOD1': BUDGETS[asset][1]},
+                    'reviewed': False, 'lods': {}}
         for lod in (0, 1):
             obj = build_object(asset, lod, mats)
             info = stats(obj)

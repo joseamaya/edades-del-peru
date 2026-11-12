@@ -111,6 +111,26 @@ describe.each(IDS)('%s kit GLB', (id) => {
     expect(m.lods.LOD0.draw_calls).toBeLessThanOrEqual(MAX_PARTS[id] ?? 2);
   });
 
+  it('keeps the far LOD footprint close to the near one so the swap does not pop', () => {
+    // Clumps legitimately thin out at LOD1; trees and the pacae shrub keep their silhouette.
+    if (!['huarango', 'sauce', 'pacae'].includes(id)) return;
+    const near = partsFromScene(lod0.scene);
+    const far = partsFromScene(lod1.scene);
+    const size = (parts: { geometry: THREE.BufferGeometry }[]): THREE.Vector3 => {
+      const box = new THREE.Box3();
+      for (const part of parts) {
+        part.geometry.computeBoundingBox();
+        box.union(part.geometry.boundingBox!);
+      }
+      return box.getSize(new THREE.Vector3());
+    };
+    const a = size(near);
+    const b = size(far);
+    for (const axis of ['x', 'y', 'z'] as const) {
+      expect(Math.abs(b[axis] - a[axis]) / a[axis]).toBeLessThan(0.2);
+    }
+  });
+
   it('bakes into at most two parts per LOD within budget, at game scale', () => {
     const near = partsFromScene(lod0.scene);
     const far = partsFromScene(lod1.scene);

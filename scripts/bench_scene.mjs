@@ -31,7 +31,8 @@ const BUDGETS = {
   // The household props kit adds 8 calls (four shared materials per base, two bases, no shadow pass:
   // the pieces are sub-metre); pinning every LOD manager to the measured framing adds the quarry's
   // shadow pass (+2), and the pacae shrubs add 3 materials x 2 LODs with their shadows (up to +12).
-  // Measured opening: 350 623 tris / 169 calls, kit 94 496-95 156 / 51 (one shrub sits on the LOD edge).
+  // Measured opening: 342 903-350 623 tris / 168-169 calls, kit 86 776-95 156 / 51: the kit range is
+  // how many pacae shrubs fall inside the 30 m LOD0 ring when the frame is measured.
   m1_caral: { sceneTriangles: 400_000, sceneDrawCalls: 230, kitTriangles: 100_000, kitDrawCalls: 56 },
   // End game over the city with 35 workers in view: art-direction §11 (600k triangles). It measured
   // 1.57M / 396 before the worker cuts and ~582k / 261 after. Skinned workers cannot be instanced, so

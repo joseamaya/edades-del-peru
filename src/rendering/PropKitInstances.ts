@@ -12,11 +12,13 @@ export interface InstancedKit {
   lods: [InstancedKitPart[], InstancedKitPart[]];
 }
 
-/** Props sit on the ground and tilt with the slope; shrubs stand upright and only follow the height. */
+/** Props sit on the ground and tilt with the slope; shrubs stand upright and bend with the wind. */
 export interface PropKitOptions {
   tilt?: boolean;
   /** Metres the model sinks into the ground at unit scale. */
   sink?: number;
+  /** Per-instance lean (radians) driven by `update`'s time; only upright models use it. */
+  sway?: number;
 }
 
 const MAX = 256;
@@ -27,6 +29,8 @@ const _scale = new THREE.Vector3();
 const _normal = new THREE.Vector3();
 const _tilt = new THREE.Quaternion();
 const _yaw = new THREE.Quaternion();
+const _bend = new THREE.Quaternion();
+const _bendAxis = new THREE.Vector3(1, 0, 0);
 
 interface Placement {
   id: number;
@@ -50,6 +54,7 @@ export class PropKitInstances {
   private meshes: [THREE.InstancedMesh[], THREE.InstancedMesh[]] = [[], []];
   private model: InstancedKit | null = null;
   private focus = { x: 0, z: 0 };
+  private time = 0;
   private disposed = false;
 
   constructor(
@@ -83,9 +88,17 @@ export class PropKitInstances {
   }
 
   /** Returns false when the instancer is full, so the node can keep its procedural fallback. */
-  register(id: number, x: number, z: number, yaw: number, scale: number, onReady?: () => void): boolean {
+  register(
+    id: number,
+    x: number,
+    z: number,
+    yaw: number,
+    scale: number,
+    onReady?: () => void,
+    visible = true,
+  ): boolean {
     if (this.disposed || this.placements.size >= MAX) return false;
-    this.placements.set(id, { id, x, z, yaw, scale, visible: true, onReady });
+    this.placements.set(id, { id, x, z, yaw, scale, visible, onReady });
     this.repack();
     if (this.model) onReady?.();
     return true;
@@ -103,10 +116,13 @@ export class PropKitInstances {
     this.repack();
   }
 
-  /** Re-pack the LOD split as the camera focus moves. */
-  update(focus: { x: number; z: number }): void {
-    if (this.disposed || (focus.x === this.focus.x && focus.z === this.focus.z)) return;
+  /** Re-pack the LOD split as the camera focus moves; upright props also animate their sway. */
+  update(focus: { x: number; z: number }, time = 0): void {
+    if (this.disposed) return;
+    const moved = focus.x !== this.focus.x || focus.z !== this.focus.z;
+    if (!moved && !this.options.sway) return;
     this.focus = { ...focus };
+    this.time = time;
     this.repack();
   }
 
@@ -148,11 +164,23 @@ export class PropKitInstances {
   private matrixFor(p: Placement, out: THREE.Matrix4): void {
     const sink = (this.options.sink ?? 0.18) * p.scale;
     if (this.options.tilt === false) {
-      // A shrub keeps its trunk vertical: sample the centre and sink it a little.
-      _pos.set(p.x, this.heightAt(p.x, p.z) - sink, p.z);
+      // The shrub keeps its trunk vertical, but it still seats on the lowest ground of its footprint
+      // so the downhill stems do not hover on a terrace.
+      const half = 0.6 * p.scale;
+      const ground = Math.min(
+        this.heightAt(p.x, p.z),
+        this.heightAt(p.x - half, p.z),
+        this.heightAt(p.x + half, p.z),
+        this.heightAt(p.x, p.z - half),
+        this.heightAt(p.x, p.z + half),
+      );
+      _pos.set(p.x, ground - sink, p.z);
       _yaw.setFromAxisAngle(UP, p.yaw);
+      const sway = this.options.sway ? Math.sin(this.time * 1.3 + p.id * 0.7) * this.options.sway : 0;
+      _bend.setFromAxisAngle(_bendAxis, sway);
+      _bend.multiply(_yaw);
       _scale.setScalar(p.scale);
-      out.compose(_pos, _yaw, _scale);
+      out.compose(_pos, _bend, _scale);
       return;
     }
     // Seat the whole footprint on its lowest ground, not just the centre: on a slope the uphill

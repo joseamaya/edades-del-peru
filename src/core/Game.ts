@@ -225,7 +225,7 @@ export class Game {
   props!: Props;
   /** Instanced kit outcrops for stone nodes on authored scenarios; null in headless runs. */
   quarries: PropKitInstances | null = null;
-  /** Instanced pacae shrubs for the Caral food nodes; null elsewhere or in headless runs. */
+  /** Instanced pacae shrubs; it exists on every rendered map but only Caral profiles feed it. */
   pacae: PropKitInstances | null = null;
   wildlife!: Wildlife;
   loop = new GameLoop();
@@ -580,6 +580,7 @@ export class Game {
       this.pacae = new PropKitInstances(this.scene, (x, z) => this.terrain.getHeight(x, z), this.camera.getTarget(), {
         tilt: false,
         sink: 0.06,
+        sway: 0.035,
       });
       if (this.mapProfile.berryShrub === 'pacae') {
         void loadKitModel('pacae')

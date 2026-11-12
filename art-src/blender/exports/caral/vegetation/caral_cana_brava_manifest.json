@@ -5,10 +5,16 @@
   "scale": 1.0,
   "up": "Y",
   "pivot": "trunk base at origin",
+  "confidence": "documented",
+  "sources": [
+    "docs/historia/campanas/caral.md",
+    "docs/historia/civilizaciones/caral.md"
+  ],
   "budget": {
     "LOD0": 600,
     "LOD1": 150
   },
+  "reviewed": false,
   "lods": {
     "LOD0": {
       "triangles": 360,

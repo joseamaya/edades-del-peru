@@ -153,8 +153,9 @@ _Status (kit v1)_: huarango, sauce, pacae, caña brava, carrizo and totora ship 
 the `algarrobo` and `sauce` variants with them, packing only visible trees and switching to LOD1 beyond
 45 units from the camera focus (25 on low quality); `Props` draws totora and the m1 riverbank
 canes. `PropKitInstances` draws the Caral food nodes as instanced pacae shrubs (LOD1 beyond 30 units,
-upright on the terrain); the generic berry bush is disabled on that map. Wind sway is still the CPU
-canopy rotation, not a vertex shader. Missing: cola de caballo, lomas herbs and crops as kit models.
+upright on the terrain and bending per instance); the generic berry bush is disabled on that map. Wind
+sway is still the CPU canopy rotation for trees, not a vertex shader. Missing: cola de caballo, lomas
+herbs and the field crops (cotton, gourd, squash, beans) as kit models.
 
 ## 8. Fauna
 
