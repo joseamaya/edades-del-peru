@@ -79,7 +79,8 @@ const MAX_SLOPE = 0.42;
  * Dwellings read ~3.2 x 2.8 with a plinth; the Plaza Mayor reads 6.46 x 5.27, and its plinth reaches
  * ~4.7 from the centre. Central props are kept outside that footprint (the courtyard stays empty).
  */
-export const BUILDING_CLEARANCE = 2.45;
+export const DWELLING_CLEARANCE = 2.45;
+/** `buildCaralCenter(3.4)`: 6.46 x 5.27 walls, the plinth adds 12 % per side -> half-diagonal 4.67. */
 export const CENTER_CLEARANCE = 4.8;
 const MIN_PROP_SCALE = 0.85;
 const MAX_PROP_SCALE = 1.15;
@@ -95,9 +96,9 @@ export const PROP_RADIUS: Record<DressingKind, number> = {
   cotton: 0.5,
   bench: 0.6,
   windbreak: 0.7,
-  stela: 0.5,
+  stela: 0.55,
   offering: 0.7,
-  stone_head: 0.45,
+  stone_head: 0.5,
   megalith: 0.75,
 };
 
@@ -107,7 +108,7 @@ export function propClearance(
   scale = MAX_PROP_SCALE,
   anchor: 'dwelling' | 'center' = 'dwelling',
 ): number {
-  return (anchor === 'center' ? CENTER_CLEARANCE : BUILDING_CLEARANCE) + PROP_RADIUS[kind] * scale;
+  return (anchor === 'center' ? CENTER_CLEARANCE : DWELLING_CLEARANCE) + PROP_RADIUS[kind] * scale;
 }
 
 /** Centre-to-centre distance below which two props overlap (radii plus a small air gap). */
@@ -148,8 +149,10 @@ export function planSettlementDressing(
     for (let attempt = 0; attempt < 60; attempt++) {
       const anchor = rng.pick(pool);
       const a = rng.range(0, Math.PI * 2);
-      // Central props are outside the plaza's plinth; the centre-to-anchor distance starts there.
-      const radius = anchor.center ? rng.range(6.0, 7.6) : rng.range(3.5, 5.1);
+      // Central props are outside the plaza's plinth; the band starts at the clearance for the
+      // largest scale the planner draws, plus a head of room, and never sits on the dwelling ring.
+      const centerMin = CENTER_CLEARANCE + PROP_RADIUS[kind] * MAX_PROP_SCALE + PROP_MARGIN;
+      const radius = anchor.center ? rng.range(centerMin, centerMin + 1.6) : rng.range(3.5, 5.1);
       const x = anchor.x + Math.cos(a) * radius;
       const z = anchor.z + Math.sin(a) * radius;
       const scale = rng.range(MIN_PROP_SCALE, MAX_PROP_SCALE);

@@ -91,10 +91,12 @@ All angles/offsets come from a dedicated `RNG(seed * k + c)` stream.
   spondylus/obsidian offerings and megaliths. Both are visual-only and carry no obstacles or
   entities; Caral draws its set from the Blender prop kit (one merged mesh per material and LOD,
   procedural fallback), Chavín still uses one procedural mesh. Placement keeps each prop clear
-  of the rendered walls (2.45 m around a dwelling, 4.8 m around the Plaza Mayor's plinth, plus the
-  prop's own radius at the drawn scale) and two props at least the sum of their radii plus 0.1 m
-  apart. Central hearths and stelae stay outside the plaza's courtyard, which is left empty; a
-  1,000-seed test locks the invariant for both cultures.
+  of the rendered walls (2.45 m around a dwelling, 4.8 m around the settlement centre's plinth — the
+  Caral Plaza Mayor; Chavín's centre is smaller, so the same value is conservative — plus the prop's
+  own radius at the drawn scale) and two props at least the sum of their radii plus 0.1 m apart.
+  Central hearths and stelae stay outside the courtyard, so no dressing prop sits inside it (the
+  Plaza Mayor keeps its own built dais); a 1,000-seed test locks the invariant for both cultures and
+  another 1,000 cases run over generated plans.
 
 ## Determinism & performance
 

@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+  CENTER_CLEARANCE,
   planSettlementDressing,
   propClearance,
   propSeparation,
   type DressingQuery,
 } from '../src/model/defs/settlementDressing';
-import type { SettlementPlan } from '../src/model/defs/settlementPlan';
+import { planSettlementSite, type SettlementPlan, type SettlementQuery } from '../src/model/defs/settlementPlan';
 
 const plan: SettlementPlan = {
   center: { x: 50, z: 50 },
@@ -73,6 +74,12 @@ describe('Caral settlement dressing', () => {
     expect(planSettlementDressing(plan, 7, flat)).not.toEqual(planSettlementDressing(plan, 8, flat));
   });
 
+  it('keeps the central clearance above the real Plaza Mayor plinth', () => {
+    // `buildCaralCenter(3.4)` makes 6.46 x 5.27 walls; the plinth is 1.12x per side.
+    const halfDiagonal = Math.hypot((3.4 * 1.9 * 1.12) / 2, (3.4 * 1.55 * 1.12) / 2);
+    expect(CENTER_CLEARANCE).toBeGreaterThanOrEqual(halfDiagonal);
+  });
+
   it('never overlaps a wall or another prop across 1,000 seeds', () => {
     let violation = '';
     for (const profile of ['caral', 'chavin'] as const) {
@@ -105,6 +112,54 @@ describe('Caral settlement dressing', () => {
         if (violation) break;
       }
       if (violation) break;
+    }
+    expect(violation).toBe('');
+  });
+
+  it('keeps the rule on 1,000 generated settlement plans', () => {
+    const siteQuery: SettlementQuery = {
+      ...flat,
+      getMoisture: () => 0.6,
+      getTerrace: () => 0.2,
+      getCanal: () => 0.1,
+    };
+    let violation = '';
+    for (let siteSeed = 1; siteSeed <= 10 && !violation; siteSeed++) {
+      const generated = planSettlementSite(
+        { shape: 'riverside', seed: siteSeed, anchor: { x: 100, z: 100 }, count: 4 },
+        siteQuery,
+      );
+      const genAnchors = [
+        { ...generated.center, center: true },
+        ...generated.dwellings.map((d) => ({ ...d, center: false })),
+      ];
+      for (let seed = 1; seed <= 100 && !violation; seed++) {
+        const profile = seed % 2 ? 'caral' : 'chavin';
+        const out = planSettlementDressing(generated, seed, flat, profile);
+        if (!out.length) {
+          violation = `${profile} site ${siteSeed} seed ${seed}: no props`;
+          break;
+        }
+        for (const p of out) {
+          for (const a of genAnchors) {
+            const clearance = propClearance(p.kind, p.scale, a.center ? 'center' : 'dwelling');
+            if (Math.hypot(a.x - p.x, a.z - p.z) < clearance - 1e-6) {
+              violation = `${profile} site ${siteSeed} seed ${seed}: ${p.kind} wall`;
+              break;
+            }
+          }
+          if (violation) break;
+          for (const q of out) {
+            if (q === p) continue;
+            const separation = propSeparation(p.kind, p.scale, q.kind, q.scale);
+            if (Math.hypot(q.x - p.x, q.z - p.z) < separation - 1e-6) {
+              violation = `${profile} site ${siteSeed} seed ${seed}: ${p.kind}/${q.kind}`;
+              break;
+            }
+          }
+          if (violation) break;
+        }
+      }
     }
     expect(violation).toBe('');
   });

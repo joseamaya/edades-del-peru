@@ -598,7 +598,7 @@ const SCENES = {
     views: [
       { name: 'close', mode: 'close', offset: { x: 1.9, y: 1.5, z: 1.9 }, lookHeight: 0.6 },
       { name: 'rts', mode: 'rts', height: 30, centerSubject: true },
-      { name: 'base', mode: 'rts', height: 46 },
+      { name: 'base', mode: 'rts', height: 32 },
     ],
   },
   'caral-pacae': {
