@@ -86,7 +86,59 @@ function andeanShowcase(url) {
   };
 }
 
+/** A standing field near the base, sown with the late crops when `late=1`. */
+async function caralLateField() {
+  const g = window.game;
+  g.loop.stop();
+  const late = new URLSearchParams(location.search).get('late') === '1';
+  for (const unit of [...g.units.values()]) {
+    unit.removeFromScene();
+    g.units.delete(unit.id);
+  }
+  g.players[0].resources.food = 500;
+  g.players[0].resources.wood = 500;
+  const base = g.playerCenter(0);
+  const spot = g.findFreeSpot(base.x + 10, base.z + 10, 4);
+  if (!spot) throw new Error('no free farm spot');
+  const farm = g.placeBuilding('farm', spot.x, spot.z);
+  if (!farm) throw new Error('the field could not be placed');
+  farm.completeInstantly();
+  if (late) g.startEnvironmentalEvent('drought', true);
+  for (let i = 0; i < 120; i++) g.loop.onUpdate(1 / 60, i / 60);
+  g.scene.traverse((o) => {
+    if (o.name?.startsWith('geo-label:')) o.visible = false;
+  });
+  g.renderer.render(g.scene, g.camera.camera);
+  return {
+    center: { x: spot.x, z: spot.z },
+    subject: { x: spot.x, y: g.terrain.getHeight(spot.x, spot.z), z: spot.z },
+  };
+}
+
+/** The Act IV evidence pair: the same field before and after the drought. */
+function caralLateScenes() {
+  const views = [
+    { name: 'field', mode: 'close', offset: { x: 2.6, y: 1.9, z: 3.2 }, lookHeight: 0.5 },
+    { name: 'field-rts', mode: 'rts', height: 16, centerSubject: true },
+  ];
+  return {
+    'caral-late-field': {
+      url: '/?mission=m1_caral&intro=0&fog=0&low=1&noloop=1&late=1',
+      start: true,
+      prepare: caralLateField,
+      views,
+    },
+    'caral-late-field-before': {
+      url: '/?mission=m1_caral&intro=0&fog=0&low=1&noloop=1',
+      start: true,
+      prepare: caralLateField,
+      views,
+    },
+  };
+}
+
 const SCENES = {
+  ...caralLateScenes(),
   'caral-worker': {
     url: '/?mission=m1_caral&intro=0&fog=0&low=1&noloop=1',
     start: true,

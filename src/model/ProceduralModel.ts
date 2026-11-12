@@ -54,6 +54,8 @@ export interface BuildContext {
   arch: HistoricalArchitectureProfile;
   /** True while building the authored Caral set-piece mission. */
   caralSetpiece?: boolean;
+  /** The late city (Caral Act IV): the fields sow a little maize. */
+  caralLate?: boolean;
 }
 
 const sharedGeo: Record<string, THREE.BufferGeometry> = {};
@@ -2078,7 +2080,8 @@ function buildAndeanFarm(b: Builder): void {
  * Irrigated valley field (coast and valley floors, e.g. the Supe): a plot of moist earth inside raised
  * earthen borders, furrow ridges planted with cotton and squash, and a small irrigation ditch along one
  * side. Crops documented for Caral-Supe (cotton, gourds, squash, beans; docs/historia/campanas/caral.md);
- * the plot layout is a game abstraction. Low-poly parts (5-6 sided) keep several fields cheap.
+ * the plot layout is a game abstraction. Low-poly parts (5-6 sided) keep several fields cheap. In the late
+ * city one ridge carries the little maize the dossier records for the final period instead of squash.
  */
 function buildValleyField(b: Builder): void {
   const w = 3.4;
@@ -2100,10 +2103,20 @@ function buildValleyField(b: Builder): void {
     const x = -span / 2 + (span / (rows - 1)) * r;
     b.box(0.26, 0.1, length, ridge, { x, y: 0.12, z: 0.12, tex: 'dirt' });
     const cotton = r % 2 === 0;
+    // The late city grows a little maize in place of one squash ridge (documented for the last period).
+    const maize = b.context.caralLate === true && r === rows - 1;
     const plants = cotton ? 5 : 4;
     for (let k = 0; k < plants; k++) {
       const z = 0.12 - length / 2 + 0.3 + ((length - 0.6) / (plants - 1)) * k;
-      if (cotton) {
+      if (maize) {
+        // Maize plant: a stalk, two drooping leaves, one cob and the tassel. It reuses the field's existing
+        // crop colours so the late variant adds no materials (and no draw calls) to the merged model.
+        b.cyl(0.045, 0.085, 0.72, 5, '#4d7a2c', { x, y: 0.53, z });
+        b.box(0.05, 0.22, 0.11, '#5f8a33', { x: x + 0.09, y: 0.5, z, rz: 0.5 });
+        b.box(0.05, 0.22, 0.11, '#5f8a33', { x: x - 0.09, y: 0.62, z, rz: -0.5 });
+        b.box(0.06, 0.14, 0.06, '#d08a2c', { x: x + 0.05, y: 0.6, z: z + 0.03 });
+        b.box(0.03, 0.1, 0.03, '#f2eee3', { x, y: 0.93, z });
+      } else if (cotton) {
         // Cotton shrub with a few open bolls.
         b.cyl(0.13, 0.16, 0.34, 5, '#4d7a2c', { x, y: 0.34, z });
         b.box(0.07, 0.07, 0.07, '#f2eee3', { x: x + 0.06, y: 0.5, z: z - 0.04 });
@@ -3705,7 +3718,9 @@ function instantiateTemplate(template: THREE.Group): THREE.Group {
 
 /** Build a parametric model. Returns a clone that owns its materials (geometry is shared). */
 export function buildModel(spec: ModelSpec, ctx: BuildContext): THREE.Group {
-  const key = `${spec.type}|${spec.scale ?? 1}|${spec.barrel ?? ''}|${spec.gender ?? ''}|${ctx.era}|${ctx.civ.id}`;
+  // The late city sows a different field, so it needs its own cached template.
+  const late = ctx.caralLate ? '|late' : '';
+  const key = `${spec.type}|${spec.scale ?? 1}|${spec.barrel ?? ''}|${spec.gender ?? ''}|${ctx.era}|${ctx.civ.id}${late}`;
   let template = modelCache.get(key);
   if (!template) {
     template = buildModelTemplate(spec, ctx);

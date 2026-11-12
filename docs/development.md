@@ -518,6 +518,13 @@ Definition of Done and the building audit see
   footprint no longer covers the Act IV departure marker. Other maps keep 1.1 m. This changes Caral
   pathing, so `REPLAY_VERSION` is 31; guarded by `tests/quarry-obstacle.test.ts`,
   `tests/props-kit.test.ts`, `tests/world-builder.test.ts` and the Caral E2E.
+- **Caral late period** (issue 353): the Act IV drought is the late-period signal (`isLateCity`), so it
+  needs no save field of its own and a restored save rebuilds it from the environment state.
+  `BuildContext.caralLate` enters the procedural model cache key and only changes the valley field (one
+  ridge of maize instead of squash, reusing the field's colours so it adds no materials);
+  `Game.refreshLateFields()` rebuilds the standing farms when the drought starts. The dwellings stay
+  quincha: the kit wall material swapped to stone reads as rubble at that wall scale, so the stone late
+  houses need their own asset (issue 436). Guarded by `tests/environment.test.ts` and the Caral E2E.
 - **Caral objective flow** (issue 390): `obj_complejos` activates on `t_a3_obra_muros` (all six monuments
   stand) and gates each visit on `ObjectiveDef.inspectRadius` (a player unit within 8 m of the card's footprint);
   `obj_asamblea` is announced with Act III (`awaitsCall`: listed but pending until the player calls it); the Act III camera reveal is a `reveal` trigger effect that plays

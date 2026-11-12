@@ -1407,6 +1407,53 @@ test('the Act III reveal clears the fog over the whole city with the fog on', as
   expect(out.explored, 'the label and the upper half are visible').toBe(true);
 });
 
+test('the late city sows a little maize in the standing fields', { tag: '@smoke' }, async ({ page }) => {
+  await boot(page);
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    // The field merges its parts by material, so the late maize shows up as extra geometry; the close
+    // capture in docs/media/caral-late-maize.webp is the visual check.
+    const farmVerts = (farm: any): number => {
+      let total = 0;
+      farm.view.group.traverse((o: any) => {
+        if (o.isMesh) total += o.geometry.attributes.position.count;
+      });
+      return total;
+    };
+    g.players[0].resources.food = 800;
+    g.players[0].resources.wood = 400;
+    const base = g.playerCenter(0);
+    const early = g.findFreeSpot(base.x + 10, base.z + 10, 4);
+    if (!early) return null;
+    const farm = g.placeBuilding('farm', early.x, early.z);
+    if (!farm) return null;
+    const earlyVerts = farmVerts(farm);
+    const lateBefore = g.caralLate as boolean;
+    g.startEnvironmentalEvent('drought', true);
+    const rebuiltVerts = farmVerts(farm);
+    const lateAfter = g.caralLate as boolean;
+    const spot = g.findFreeSpot(base.x + 18, base.z + 6, 4);
+    if (!spot) return null;
+    const newFarm = g.placeBuilding('farm', spot.x, spot.z);
+    if (!newFarm) return null;
+    return {
+      earlyVerts,
+      rebuiltVerts,
+      newVerts: farmVerts(newFarm),
+      lateBefore,
+      lateAfter,
+      kind: newFarm.kind as string,
+    };
+  });
+  expect(out).not.toBeNull();
+  expect(out!.lateBefore, 'the opening city is not the late period').toBe(false);
+  expect(out!.lateAfter, 'the Act IV drought marks the late period').toBe(true);
+  expect(out!.kind).toBe('farm');
+  expect(out!.rebuiltVerts, 'a field sown before the drought is resown').toBeGreaterThan(out!.earlyVerts);
+  expect(out!.newVerts, 'a field sown in the late period carries the same crops').toBe(out!.rebuiltVerts);
+});
+
 test('the city lives in use before the drought and is sealed afterwards', async ({ page }) => {
   await boot(page);
   const out = await page.evaluate(() => {

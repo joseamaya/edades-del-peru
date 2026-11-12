@@ -157,6 +157,7 @@ Estas afirmaciones deben presentarse como **interpretaciones**, no como hechos c
 | Campamento de obra y cuadrilla de acarreadores                                      | Supuesto plausible                |
 | Caminos de aproximación desde el valle y Áspero hasta la terraza                    | Abstracción del juego; caminos documentados sin trazado |
 | Disposición de los grupos de algarrobos y sauces junto al camino                    | Abstracción del juego             |
+| Maíz tardío en una hilera de la chacra del juego                                    | Documentado; la cantidad es inferida |
 | Color exacto de cada edificio en cada período                                       | Inferido                          |
 | Techos y remates de los edificios                                                   | Supuesto plausible                |
 | Plazas circulares hundidas (la mayor en el Templo del Anfiteatro)                   | Documentado                       |

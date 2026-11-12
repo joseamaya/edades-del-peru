@@ -107,6 +107,7 @@ instead of the modular landmark or a hand-built schematic:
 | Stone retaining walls, mud mortar, `shicras` fill, painted plaster  | Documented          | Cream plaster, stone cornices and restrained ochre/red bands.                        |
 | No defensive walls, weapons or warrior class                        | Documented absence  | No fortifications or military props in the site.                                     |
 | No attested market at Caral                                         | Documented absence  | The site contains no market stalls; the plaza-gathering abstraction is not a market. |
+| Late maize, late and scarce                                         | Documented          | During the Act IV drought one ridge of the valley field sows maize; how much is inferred. |
 
 ## Deliberate abstractions
 
