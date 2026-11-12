@@ -323,8 +323,15 @@ export class ResourceNodeView {
     const fallback = new THREE.Group();
     this.view.add(fallback);
     this.buildQuarry(rng, fallback);
-    // Fold the fallback into one mesh per material inside its own group: hiding the group still
-    // works, and a failed GLB costs three draws instead of one per rock.
+    this.quarryRegistered = this.registerKitFallback(fallback, this.quarryMgr, 0.6);
+  }
+
+  /**
+   * Merge a procedural fallback into one mesh per material inside its own group (a failed GLB then
+   * costs one draw per material instead of one per rock) and register the node with its instancer.
+   * The current view visibility seeds the instance so a fog-hidden node does not pop back.
+   */
+  private registerKitFallback(fallback: THREE.Group, mgr: PropKitInstances | undefined, minScale: number): boolean {
     mergeStaticByMaterial(
       fallback,
       () => false,
@@ -333,16 +340,26 @@ export class ResourceNodeView {
     fallback.traverse((object) => {
       if ((object as THREE.Mesh).isMesh) object.userData.keep = true;
     });
-    const scale = 0.6 + cosmeticRandom() * 0.2;
+    const scale = minScale + cosmeticRandom() * 0.2;
     const yaw = cosmeticRandom() * Math.PI * 2;
-    this.quarryRegistered = this.quarryMgr!.register(this.node.id, this.node.pos.x, this.node.pos.z, yaw, scale, () => {
-      if (this.disposed) return;
-      fallback.traverse((object) => {
-        const mesh = object as THREE.Mesh;
-        if (mesh.isMesh && mesh.name.startsWith('merged:')) mesh.geometry.dispose();
-      });
-      fallback.removeFromParent();
-    });
+    return (
+      mgr?.register(
+        this.node.id,
+        this.node.pos.x,
+        this.node.pos.z,
+        yaw,
+        scale,
+        () => {
+          if (this.disposed) return;
+          fallback.traverse((object) => {
+            const mesh = object as THREE.Mesh;
+            if (mesh.isMesh && mesh.name.startsWith('merged:')) mesh.geometry.dispose();
+          });
+          fallback.removeFromParent();
+        },
+        this.view.visible,
+      ) ?? false
+    );
   }
 
   private buildQuarry(rng: RNG, parent: THREE.Object3D = this.view): void {
@@ -457,32 +474,7 @@ export class ResourceNodeView {
     const fallback = new THREE.Group();
     this.view.add(fallback);
     this.buildFruitShrub(rng, fallback);
-    mergeStaticByMaterial(
-      fallback,
-      () => false,
-      (geometry) => !geoCacheHas(geometry),
-    );
-    fallback.traverse((object) => {
-      if ((object as THREE.Mesh).isMesh) object.userData.keep = true;
-    });
-    const scale = 0.9 + cosmeticRandom() * 0.2;
-    const yaw = cosmeticRandom() * Math.PI * 2;
-    this.pacaeRegistered = this.pacaeMgr!.register(
-      this.node.id,
-      this.node.pos.x,
-      this.node.pos.z,
-      yaw,
-      scale,
-      () => {
-        if (this.disposed) return;
-        fallback.traverse((object) => {
-          const mesh = object as THREE.Mesh;
-          if (mesh.isMesh && mesh.name.startsWith('merged:')) mesh.geometry.dispose();
-        });
-        fallback.removeFromParent();
-      },
-      this.view.visible,
-    );
+    this.pacaeRegistered = this.registerKitFallback(fallback, this.pacaeMgr, 0.9);
   }
 
   /**
