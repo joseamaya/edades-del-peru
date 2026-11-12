@@ -611,8 +611,10 @@ def pyramid_small_phase1(mats, lod):
     segs, rings = (5, 3) if lod == 0 else (4, 2)
     fill_bags(bm, x0 + 0.6, x1 - 0.6, y0 + 0.6, y1 - 0.6, 0.0, h * 0.55, count, 105, 2, segs, rings, lod)
     if lod == 0:
-        for k, (px, py) in enumerate(((x1 + 1.6, y0 + 2.2), (x0 - 1.4, y1 - 2.0))):
-            bag_pile(bm, (px, py, 0.0), 5, 0.9, 110 + k, 2, 5, 3)
+        # Keep the heaps inside the footprint: the finished model is scaled from 19.4 wide, so a
+        # pile outside the base would make the started platform wider than its heritage volume.
+        for k, (px, py) in enumerate(((x1 - 2.0, y0 + 2.2), (x0 + 2.0, y1 - 2.0))):
+            bag_pile(bm, (px, py, 0.0), 5, 0.8, 110 + k, 2, 5, 3)
     return bm, [mats[k] for k in order]
 
 
