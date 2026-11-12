@@ -614,18 +614,25 @@ test('the Act III camp dresses the Mayor with a working crew', { tag: '@smoke' }
   const after = await page.evaluate(
     ({ bx, bz }) => {
       const g = (window as unknown as { game: any }).game;
-      g.setSitePhase('in_use');
+      g.setSitePhase('finished');
       const crew = g.siteCrew;
+      const finished = {
+        count: crew.count,
+        modes: (crew['actors'] as { mode: string }[]).map((actor) => actor.mode).sort(),
+      };
+      g.setSitePhase('in_use');
       const state = {
         count: crew.count,
         visible: crew.group.visible,
         blocked: !g.pathfinder.isWalkable(bx, bz),
       };
       g.setSitePhase('foundation');
-      return state;
+      return { ...state, finished };
     },
     { bx: blocker.x, bz: blocker.z },
   );
+  expect(after.finished.count, 'the crew shrinks with the works').toBe(3);
+  expect(after.finished.modes, 'two carriers and one worker remain at finished').toEqual(['carry', 'carry', 'work']);
   expect(after.count, 'the camp is gone once the city is in use').toBe(0);
   expect(after.visible).toBe(false);
   expect(after.blocked, 'the camp obstacle is lifted with the camp').toBe(false);

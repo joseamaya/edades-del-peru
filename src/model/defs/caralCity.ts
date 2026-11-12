@@ -174,13 +174,13 @@ export const CARAL_CAMP_LAYOUT: readonly CaralArchPlacement[] = [
 
 /** The carriers' loop: from the north shicra heap to the Mayor's west retaining wall and back. */
 export const CARAL_CAMP_ROUTE: readonly { x: number; z: number }[] = [
-  { x: 139.4, z: 26.2 },
+  { x: 139.4, z: 26.8 },
   { x: 140.0, z: 29.6 },
 ];
 
 /** Where the two stationary workers stand: one at the heap, one at the wall. */
 export const CARAL_CAMP_STATIONS: readonly { x: number; z: number; yaw: number }[] = [
-  { x: 139.0, z: 25.6, yaw: Math.PI },
+  { x: 139.0, z: 27.0, yaw: Math.PI },
   { x: 139.8, z: 30.0, yaw: Math.PI / 2 },
 ];
 

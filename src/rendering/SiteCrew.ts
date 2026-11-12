@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { acquireRig, loadModelAsset } from './ModelAssets';
 import type { RigInstance } from './RigInstance';
-import type { RigVariant } from '../model/defs/modelAssets';
+import { CARAL_WORKER_ASSET_ID, type RigVariant } from '../model/defs/modelAssets';
 import type { CaralMayorPhase } from '../model/defs/caralPhases';
 
 /** Workers on the Caral construction site in each phase (the camp is gone once the city is in use). */
@@ -68,11 +68,11 @@ export class SiteCrew {
 
   /** Load the worker rig once; the camp stays empty if the asset is unavailable. */
   async load(): Promise<boolean> {
-    const asset = await loadModelAsset('caral_worker');
+    const asset = await loadModelAsset(CARAL_WORKER_ASSET_ID);
     if (!asset || this.disposed) return false;
     this.loaded = true;
     this.syncActors();
-    return this.actors.length > 0;
+    return this.actors.length > 0 || crewCountForPhase(this.phase) === 0;
   }
 
   setPhase(phase: CaralMayorPhase): void {
@@ -114,25 +114,41 @@ export class SiteCrew {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
+    this.loaded = false;
+    this.group.visible = false;
     for (const actor of this.actors) actor.rig.dispose();
     this.actors = [];
     this.group.removeFromParent();
   }
 
+  /**
+   * Rebuild the crew when the phase changes. A phase transition is rare (foundation -> fill -> finished
+   * -> in_use), and rebuilding keeps the carriers/workers split correct when the camp shrinks and grows
+   * again after a save.
+   */
   private syncActors(): void {
+    if (this.disposed) return;
     const target = crewCountForPhase(this.phase);
-    while (this.actors.length > target) {
-      this.actors.pop()!.rig.dispose();
+    if (this.actors.length === target) {
+      if (!target) this.group.visible = false;
+      return;
     }
-    while (this.actors.length < target) {
-      const index = this.actors.length;
+    for (const actor of this.actors) actor.rig.dispose();
+    this.actors = [];
+    if (!target) {
+      this.group.visible = false;
+      return;
+    }
+    // Four carriers and two kneeling workers at the full camp; two carriers and one worker when reduced.
+    const workers = target >= 6 ? 2 : target >= 3 ? 1 : 0;
+    const carriers = target - workers;
+    for (let index = 0; index < target; index++) {
       const variant: RigVariant = index % 2 === 0 ? 'caral_worker_m' : 'caral_worker_f';
-      const rig = acquireRig('caral_worker', variant);
+      const rig = acquireRig(CARAL_WORKER_ASSET_ID, variant);
       if (!rig) break;
       this.group.add(rig.root);
-      // Four carriers and two kneeling workers at the full camp; one worker with the reduced crew.
-      const mode: Actor['mode'] = index < Math.min(4, target - 1) ? 'carry' : 'work';
-      const station = this.stations[index % this.stations.length] ?? {
+      const mode: Actor['mode'] = index < carriers ? 'carry' : 'work';
+      const station = this.stations[(index - carriers) % this.stations.length] ?? {
         x: this.route[0]!.x,
         z: this.route[0]!.z,
         yaw: 0,
@@ -140,7 +156,7 @@ export class SiteCrew {
       const actor: Actor = {
         rig,
         mode,
-        progress: mode === 'carry' ? (index % 4) / 4 : 0,
+        progress: mode === 'carry' ? (index % Math.max(1, carriers)) / Math.max(1, carriers) : 0,
         dir: index % 2 === 0 ? 1 : -1,
         dwell: 0,
         station,

@@ -667,6 +667,7 @@ const SCENES = {
     },
     views: [
       { name: 'close', mode: 'close', offset: { x: 4.5, y: 5.5, z: 5.5 }, lookHeight: 0.9 },
+      { name: 'camp', mode: 'rts', height: 20, center: { x: 138, z: 30.5 } },
       { name: 'rts', mode: 'rts', height: 80 },
     ],
   },
@@ -816,7 +817,8 @@ async function main() {
             g.camera.camera.lookAt(s.x, s.y + (view.lookHeight ?? 1.1), s.z);
           } else {
             g.camera.setYaw(0);
-            g.camera.moveTo(active.center.x, active.center.z, true);
+            const center = view.center ?? active.center;
+            g.camera.moveTo(center.x, center.z, true);
             g.camera.setHeight(view.height);
             for (let i = 0; i < 60; i++) g.camera.update(1 / 60);
             if (view.centerSubject && active.subject) {

@@ -638,6 +638,11 @@ def camp_shelter(mats, lod):
         bm.faces.new([v[i] for i in face]).material_index = cane
     if lod == 0:
         box(bm, (0, -d / 2 - 0.1, h + 0.04), (0.08, d + 0.2, 0.08), wood)
+    # Cane walls on the back and one side: the ramada reads as a shelter, not a table, and the
+    # hearth/pot stay visible from the open front.
+    box(bm, (0, d / 2, 0.55), (w, 0.04, 1.0), cane)
+    if lod == 0:
+        box(bm, (-w / 2, -0.15, 0.55), (0.04, d * 0.55, 1.0), cane)
     # Hearth: a ring of burnt stones around an ash bed.
     rng = random.Random(71)
     ball_count = 7 if lod == 0 else 5
@@ -844,8 +849,8 @@ CONFIDENCE = {
     'fair_tent': 'assumed',
     'huaca_idolos': 'inferred',
     'camp_shelter': 'assumed',
-    'shicra_stack': 'documented',
-    'stone_yard': 'documented',
+    'shicra_stack': 'inferred',
+    'stone_yard': 'inferred',
 }
 
 

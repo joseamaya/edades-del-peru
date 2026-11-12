@@ -205,9 +205,11 @@ slot is absent (offline / without assets).
   presentation-only `caral_worker` rigs that carry bags from the heap to the wall and shrink to three at
   `finished`; they are not units, carry no selection or obstacles, and stay on the ground because the
   dossier explicitly lists scaffolding as undocumented and not modelled. The shicra fill and the phased
-  platforms are documented; the camp's form, the crew and its route are assumed/inferred.
+  platforms are documented; the camp's form, the crew and its route are assumed, and the shicra heap and
+  the dressed-stone yard are inferred arrangements of documented materials.
 - **Evidence**: `node scripts/shots_evidence.mjs --scene=caral-camp --out=review/evidence/caral-camp`
-  captures the Act III camp close up and in the RTS view (`docs/media/caral-camp.webp`).
+  captures the Act III camp close up and in a medium RTS view (plus a wide context frame); stitch
+  `close.png` and `camp.png` side by side and encode the 3200 × 900 WebP (`docs/media/caral-camp.webp`).
 - **Confidence** (per piece in the manifests; evidence in `docs/historia/campanas/caral.md` and
   `docs/historia/civilizaciones/caral.md`): stepped superposed platforms, shicra fill, stone retaining
   walls, painted plaster, sunken circular plazas, quincha houses, cotton nets and gourd floats and fair
@@ -215,9 +217,10 @@ slot is absent (offline / without assets).
   platform count and proportions, the summit enclosure, the side walls of the stairs and the parapets,
   the set stone left visible at the foot of each terrace (a reading aid; the documented walls are
   plastered), roofs, the net rack and the tent's frame and cover are assumed. No scaffolding is modelled because none is attested. The models are artistic
-  reconstructions, not surveys. Every piece was exported `reviewed: false` and approved by a human
-  review on 2026-11-07 (Miguel Amaya; `reviewer` and `reviewedAt` in each manifest). A rebuild exports
-  the piece unreviewed again.
+  reconstructions, not surveys. The original city pieces were exported `reviewed: false` and approved by a
+  human review on 2026-11-07 (Miguel Amaya; `reviewer` and `reviewedAt` in each manifest). The three camp
+  pieces are new and ship `reviewed: false` until a human review records `reviewer` and `reviewedAt`; a
+  rebuild exports every piece unreviewed again.
 
 ### Caral prop kit (quarries and household goods)
 

@@ -18,7 +18,7 @@
   "reviewed": false,
   "lods": {
     "LOD0": {
-      "triangles": 396,
+      "triangles": 420,
       "draw_calls": 4,
       "materials": [
         "MAT-Arch_CaneMat",
@@ -44,10 +44,10 @@
         ]
       },
       "file": "caral_camp_shelter_lod0.glb",
-      "bytes": 44392
+      "bytes": 46460
     },
     "LOD1": {
-      "triangles": 136,
+      "triangles": 148,
       "draw_calls": 3,
       "materials": [
         "MAT-Arch_CaneMat",
@@ -72,7 +72,7 @@
         ]
       },
       "file": "caral_camp_shelter_lod1.glb",
-      "bytes": 16856
+      "bytes": 17892
     }
   }
 }

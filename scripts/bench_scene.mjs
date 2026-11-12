@@ -41,10 +41,10 @@ const BUDGETS = {
   // each one in view is ~6 draws (body, hair, garments, tool, team ring, body shadow) on top of the
   // opening's scene: the call budget allows that crowd over the opening's 230.
   m1_caral_late: { sceneTriangles: 600_000, sceneDrawCalls: 275, kitTriangles: 80_000, kitDrawCalls: 36 },
-  // Act III at foundation: the phase-1 Mayor, the camp and six rigs. Measured 340 977-349 561 tris /
-  // 81-82 calls, kit 76 908-85 492 / 31; the camera sees fewer trees than the opening because it looks
-  // at the terrace, and the range is how many fall inside the frame.
-  m1_caral_camp: { sceneTriangles: 380_000, sceneDrawCalls: 110, kitTriangles: 100_000, kitDrawCalls: 40 },
+  // Act III at foundation: the phase-1 Mayor, the camp and its six visible rigs. Measured 385 062 tris /
+  // 105 calls, kit 76 908-85 492 / 31; the camera sees fewer trees than the opening because it looks at
+  // the terrace, and the kit range is how many fall inside the frame.
+  m1_caral_camp: { sceneTriangles: 410_000, sceneDrawCalls: 120, kitTriangles: 100_000, kitDrawCalls: 40 },
   // Chavín opening: the phased kit, highland vegetation and the base. Measure first, then ratchet down.
   m2_chavin: { sceneTriangles: 450_000, sceneDrawCalls: 220, kitTriangles: 100_000, kitDrawCalls: 40 },
   m2_chavin_late: { sceneTriangles: 600_000, sceneDrawCalls: 310, kitTriangles: 100_000, kitDrawCalls: 40 },
@@ -78,6 +78,11 @@ try {
     .first()
     .click({ timeout: 5000 })
     .catch(() => {});
+  // The Act III camp and its crew load after the site exists; a half-armed crew measured a different
+  // scene (the camp stage is the one that has to count it).
+  if (mission === 'm1_caral') {
+    await page.waitForFunction(() => (window.game?.siteCrew?.count ?? 0) > 0, null, { timeout: 30_000 });
+  }
   await page.waitForTimeout(2000);
   const result = await page.evaluate(
     ({ kitPattern, stage, mission }) => {
@@ -120,6 +125,7 @@ try {
       g.trees.update(0, focus);
       g.quarries?.update(focus);
       g.pacae?.update(focus);
+      g.siteCrew?.update(0, focus);
       for (const d of g.settlementDressing ?? []) d.update(focus);
       for (let i = 0; i < 120; i++) g.camera.update(1 / 30, i / 30);
       g.camera.camera.updateMatrixWorld();
