@@ -28,8 +28,8 @@ export const SERIES_INTRO: CinematicBeat[] = [
   },
   {
     kicker: 'LA SENDA DEL SOL',
-    title: 'Cuatro campañas',
-    text: 'Culturas Preincas, El Tahuantinsuyo, El Virreinato e Independencia y República. La primera comienza en Caral.',
+    title: 'Cinco campañas',
+    text: 'Culturas Preincas, El Tahuantinsuyo, El Virreinato, La Independencia y La República. La primera comienza en Caral.',
     seconds: 6,
     source: 'docs/historia/periodizacion.md',
   },
@@ -127,6 +127,13 @@ export const VIRREINATO_PROLOGUE: CinematicBeat[] = [
 /** Prologue for the fourth released campaign, Independencia y República. */
 export const INDEPENDENCIA_PROLOGUE: CinematicBeat[] = [
   {
+    kicker: 'CUSCO · 1814',
+    title: 'La Junta del Cusco',
+    text: 'En agosto de 1814 el Cusco forma una junta. Mateo Pumacahua, que había combatido contra Túpac Amaru en 1780, se une a los hermanos Angulo. La rebelión cae en Umachiri en marzo de 1815.',
+    seconds: 8,
+    source: 'docs/historia/propuestas/independencia-republica.md',
+  },
+  {
     kicker: 'LIMA · 28 DE JULIO DE 1821',
     title: 'La independencia proclamada',
     text: 'San Martín proclama la independencia del Perú en Lima. La guerra no termina allí: la campaña final se libra en la sierra, con Bolívar y Sucre al mando de los ejércitos patriotas.',
@@ -139,6 +146,16 @@ export const INDEPENDENCIA_PROLOGUE: CinematicBeat[] = [
     text: 'La caballería patriota sostiene Junín el 6 de agosto de 1824. El 9 de diciembre, el ejército de Sucre resiste en Ayacucho y sella la independencia del Perú.',
     seconds: 8,
     source: 'docs/historia/campanas/independencia.md',
+  },
+];
+
+export const REPUBLICA_PROLOGUE: CinematicBeat[] = [
+  {
+    kicker: 'CALLAO · 2 DE MAYO DE 1866',
+    title: 'Las baterías del Callao',
+    text: 'La escuadra española bombardea el Callao y las baterías de la costa responden. La escuadra se retira del puerto y ambos bandos se atribuyen la victoria.',
+    seconds: 8,
+    source: 'docs/historia/propuestas/independencia-republica.md',
   },
   {
     kicker: 'ARICA · 7 DE JUNIO DE 1880',

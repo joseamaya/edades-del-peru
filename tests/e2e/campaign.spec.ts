@@ -36,9 +36,11 @@ test('shows the campaign hub and its replayable prologue', { tag: '@smoke' }, as
   await expect(hub).toBeVisible();
   await expect(hub).toContainText('Culturas Preincas');
   await expect(hub.getByRole('button', { name: /Jugar La Ciudad Sagrada/ })).toBeVisible();
-  await expect(hub).toContainText('Independencia y República');
+  await expect(hub).toContainText('La Independencia');
+  await expect(hub).toContainText('La República');
   // A fresh profile opens only the first mission: later campaigns and missions stay locked.
   await expect(hub.locator('.ed-campaign-card[data-campaign="independencia"]')).toBeDisabled();
+  await expect(hub.locator('.ed-campaign-card[data-campaign="republica"]')).toBeDisabled();
   await expect(hub.getByRole('button', { name: /Jugar El Oráculo de Chavín/ })).toHaveCount(0);
   await expect(hub).toContainText('Completa «La Ciudad Sagrada» para desbloquear esta misión.');
 
@@ -731,6 +733,19 @@ test('the campaign path opens the next campaign once the previous one is complet
   await expect(menu.getByRole('button', { name: /Jugar La Guerra del Norte/ })).toHaveCount(0);
   await expect(menu.locator('.ed-campaign-card[data-campaign="virreinato"]')).toBeDisabled();
   await expect(menu.locator('.ed-campaign-card[data-campaign="independencia"]')).toBeDisabled();
+  await expect(menu.locator('.ed-campaign-card[data-campaign="republica"]')).toBeDisabled();
+  await expect(inca).toContainText('7 en desarrollo');
+  // The redesigned chapter shows its planned missions in play order, without a play button.
+  const rows = menu.locator('.ed-senda-mission');
+  await expect(rows).toHaveCount(10);
+  await expect(rows.nth(0)).toHaveClass(/planned/);
+  await expect(rows.nth(0)).toContainText('Los hijos de Tambotoco');
+  await expect(rows.nth(0)).toContainText('Leyenda');
+  await expect(rows.nth(0)).toContainText('En desarrollo');
+  await expect(rows.nth(0).getByRole('button')).toHaveCount(0);
+  await expect(rows.nth(1)).toContainText('Yahuar Pampa');
+  await expect(rows.nth(9)).toContainText('La Guerra Civil');
+  await expect(menu.locator('.ed-senda-mission.planned')).toHaveCount(7);
 
   await menu.locator('.ed-campaign-card[data-campaign="preinca"]').click();
   await expect(menu).toContainText('4 / 4 misiones completadas');
@@ -804,7 +819,8 @@ test('chapter endings name the right campaign ordinal', async ({ page }) => {
   for (const [id, label] of [
     ['m6b_guerra_civil', 'Fin de la segunda campaña.'],
     ['m7_tupac_amaru', 'Fin de la tercera campaña.'],
-    ['m9_guerra_pacifico', 'Fin de la cuarta campaña.'],
+    ['m8_independencia', 'Fin de la cuarta campaña.'],
+    ['m9_guerra_pacifico', 'Fin de la quinta campaña.'],
   ]) {
     await page.goto(`/?mission=${id}&seed=777&fog=0&low=1&noloop=1`);
     await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {

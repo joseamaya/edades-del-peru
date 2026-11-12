@@ -25,8 +25,8 @@ export interface EducationalMission {
 export const PROLOGUE =
   'En el Perú nació una de las primeras civilizaciones del mundo y una de las más antiguas de América. ' +
   'Hace cinco mil años, en el valle de Supe, se levantó Caral, con sus pirámides, plazas y canales.\n' +
-  'La Senda del Sol recorre esa historia en cuatro campañas: Culturas Preincas, El Tahuantinsuyo, ' +
-  'El Virreinato e Independencia y República. Cada escenario revive un hecho documentado —sin inventar ' +
+  'La Senda del Sol recorre esa historia en cinco campañas: Culturas Preincas, El Tahuantinsuyo, ' +
+  'El Virreinato, La Independencia y La República. Cada escenario revive un hecho documentado —sin inventar ' +
   'nombres ni batallas— para comprender cómo se construyó el Perú.';
 
 export const EDUCATIONAL: Record<string, EducationalMission> = {

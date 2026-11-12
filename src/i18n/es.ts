@@ -123,6 +123,7 @@ export const es = {
   'hud.ordinal.second': 'segunda',
   'hud.ordinal.third': 'tercera',
   'hud.ordinal.fourth': 'cuarta',
+  'hud.ordinal.fifth': 'quinta',
 
   'hud.missionCard.hint': 'Haz clic para continuar',
   'hud.missionCard.aria': 'Continuar a la misión',
@@ -264,7 +265,7 @@ export const es = {
   'hud.menu.campaignHub.intro': 'Prólogo: {campaign}',
   'hud.menu.campaignHub.title': 'Campañas',
   'hud.menu.campaignHub.subtitle':
-    'Cuatro capítulos de la historia del Perú. Cada campaña se abre al completar la anterior.',
+    'Cinco capítulos de la historia del Perú. Cada campaña se abre al completar la anterior.',
   'hud.menu.campaignHub.campaignNumber': 'CAMPAÑA {n} DE {total}',
   'hud.menu.campaignHub.back': '← Menú principal',
   'hud.menu.campaignHub.completed': '{done} / {total} misiones completadas',
@@ -273,6 +274,8 @@ export const es = {
   'hud.menu.campaignHub.replay': '↻ Volver a jugar',
   'hud.menu.campaignHub.replayAria': 'Volver a jugar {title}',
   'hud.menu.campaignHub.missionNumber': 'Misión {n}',
+  'hud.menu.campaignHub.planned': 'En desarrollo',
+  'hud.menu.campaignHub.plannedCount': '{n} en desarrollo',
   'hud.menu.campaignHub.missionLocked': 'Completa «{title}» para desbloquear esta misión.',
   'hud.menu.campaignHub.lockedHint': '🔒 Completa «{campaign}» para desbloquearla',
   'hud.menu.campaignHub.state.locked': 'Bloqueada',

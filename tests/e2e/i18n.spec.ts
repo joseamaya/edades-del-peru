@@ -14,7 +14,7 @@ test('the main menu keeps the Spanish UI copy', async ({ page }) => {
   await expect(page.getByRole('button', { name: /Escaramuza/ })).toHaveCount(0);
   await expect(page.getByRole('button', { name: /Cómo jugar/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /Opciones/ })).toBeVisible();
-  await expect(page.getByText('Tu senda · Campaña I de IV')).toBeVisible();
+  await expect(page.getByText('Tu senda · Campaña I de V')).toBeVisible();
   await expect(page.getByRole('button', { name: '▶ Jugar La Ciudad Sagrada' })).toBeVisible();
 });
 
@@ -30,8 +30,8 @@ test('options and campaign labels come from the i18n table', async ({ page }) =>
   await page.getByRole('button', { name: /Campañas/ }).click();
   await expect(page.getByRole('heading', { name: 'Campañas' })).toBeVisible();
   await expect(page.getByText('LA SENDA DEL SOL', { exact: true })).toBeVisible();
-  await expect(page.getByText(/CAMPAÑA 1 DE 4/)).toBeVisible();
-  await expect(page.getByText(/Cuatro capítulos de la historia del Perú/)).toBeVisible();
-  await expect(page.locator('.ed-campaign-card')).toHaveCount(4);
-  await expect(page.getByText(/CAMPAÑA 4 DE 4/)).toBeVisible();
+  await expect(page.getByText(/CAMPAÑA 1 DE 5/)).toBeVisible();
+  await expect(page.getByText(/Cinco capítulos de la historia del Perú/)).toBeVisible();
+  await expect(page.locator('.ed-campaign-card')).toHaveCount(5);
+  await expect(page.getByText(/CAMPAÑA 5 DE 5/)).toBeVisible();
 });

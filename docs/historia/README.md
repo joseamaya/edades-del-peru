@@ -25,6 +25,7 @@ en lugar de inventarlo.
 - [`fuentes.md`](./fuentes.md) — bibliografía y fuentes por dossier.
 - [`civilizaciones/`](./civilizaciones/) — un dossier por civilización/facción.
 - [`campanas/`](./campanas/) — un dossier por misión de campaña.
+- [`propuestas/`](./propuestas/) — investigación para el rediseño de campañas (Tahuantinsuyo, Virreinato, Independencia y República).
 
 ## Convenciones de datos
 

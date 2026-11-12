@@ -186,7 +186,7 @@ async function auditGlobal(browser, base) {
   const buttons = await hub.getByRole('button').allTextContents();
   const preparing = await hub.getByText('En preparación').count();
   report.global.hub = { cards, buttons, preparing };
-  if (cards !== 4) issue('hub', 'content', `expected 4 campaign cards, got ${cards}`);
+  if (cards !== 5) issue('hub', 'content', `expected 5 campaign cards, got ${cards}`);
   if (preparing !== 0) issue('hub', 'content', `found ${preparing} "En preparación" labels`);
   await page.screenshot({ path: path.join(outDir, 'hub.png') });
 

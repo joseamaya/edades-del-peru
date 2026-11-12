@@ -1,7 +1,6 @@
-import { CAMPAIGNS, campaignNumber, campaignProgressCount, getReleasedMission } from '../campaign/defs/campaigns';
+import { CAMPAIGNS, campaignNumber, campaignSteps, getReleasedMission } from '../campaign/defs/campaigns';
 import type { CampaignDef, CampaignId } from '../campaign/defs/campaigns';
 import {
-  completedMissions,
   isCampaignUnlocked,
   isMissionCompleted,
   isMissionUnlocked,
@@ -209,8 +208,10 @@ export function renderCampaignPath(overlay: HTMLElement, a: CampaignPathActions)
   const cards = new Map<CampaignId, HTMLButtonElement>();
   CAMPAIGNS.forEach((campaign, i) => {
     const open = unlocked(campaign.id);
-    const done = campaignProgressCount(campaign, completedMissions(a.progress, campaign.id));
+    // Completion is looked up across the whole save: a mission keeps its progress if it moves chapter.
+    const done = campaign.releasedMissionIds.filter((id) => isMissionCompleted(a.progress, id)).length;
     const total = campaign.releasedMissionIds.length;
+    const planned = campaign.path.length - total;
     const state = !open ? 'locked' : done >= total ? 'done' : done > 0 ? 'progress' : 'open';
     const card = document.createElement('button');
     card.type = 'button';
@@ -232,7 +233,7 @@ export function renderCampaignPath(overlay: HTMLElement, a: CampaignPathActions)
         open
           ? t('hud.menu.campaignHub.completed', { done, total })
           : t('hud.menu.campaignHub.lockedHint', { campaign: previous?.title ?? '' })
-      }</div>
+      }${planned > 0 ? ` · ${t('hud.menu.campaignHub.plannedCount', { n: planned })}` : ''}</div>
     `;
     card.addEventListener('click', () => select(campaign.id));
     track.appendChild(card);
@@ -259,7 +260,26 @@ export function renderCampaignPath(overlay: HTMLElement, a: CampaignPathActions)
     detail.querySelector('[data-action="prologue"]')!.addEventListener('click', () => a.onPrologue(campaign.id));
     const list = detail.querySelector('.ed-senda-missions') as HTMLElement;
     const path = seriesMissions();
-    campaign.releasedMissionIds.forEach((missionId, n) => {
+    campaignSteps(campaign).forEach((step, n) => {
+      if (step.kind === 'planned') {
+        // Announced, not built: its place in the chapter, no play button and no lock to clear.
+        const p = step.planned;
+        const row = document.createElement('li');
+        row.className = 'ed-senda-mission planned';
+        row.dataset.planned = p.id;
+        row.innerHTML = `
+          <span class="node">${n + 1}</span>
+          <div class="info">
+            <div class="label">${t('hud.menu.campaignHub.missionNumber', { n: n + 1 })} · ${esc(p.subtitle)}${p.label ? ` · <em>${esc(p.label)}</em>` : ''}</div>
+            <b>${esc(p.title)}</b>
+            <p>${esc(p.summary)}</p>
+          </div>
+          <span class="planned-tag">${t('hud.menu.campaignHub.planned')}</span>
+        `;
+        list.appendChild(row);
+        return;
+      }
+      const missionId = step.id;
       const completed = isMissionCompleted(a.progress, missionId);
       const open = missionOpen(missionId);
       const state = completed ? 'done' : open ? 'open' : 'locked';
@@ -372,7 +392,7 @@ const CSS = /* css */ `
   .ed-epic .ed-campaign-head .ed-ghostbtn { border: 1px solid rgba(232,195,106,.45); color: var(--gold); padding: 9px 18px; background: rgba(8,10,14,.6); }
   .ed-epic .ed-campaign-head h2 { font-size: clamp(34px, 4.4vw, 56px); color: #f3e5bb; text-shadow: 0 4px 24px rgba(0,0,0,.8); margin: 4px 0; }
   .ed-epic .ed-campaign-head .sub { color: #d0c8b5; font-size: 13px; }
-  .ed-senda-track { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+  .ed-senda-track { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
   .ed-epic .ed-campaign-card { position: relative; display: flex; flex-direction: column; overflow: hidden; pointer-events: auto; cursor: pointer; text-align: left; font: inherit; color: inherit; min-height: 0; padding: 0 0 14px; border: 1px solid rgba(232,195,106,.22); border-radius: 8px; background: linear-gradient(180deg, rgba(14,17,22,.92), rgba(8,10,14,.9)); transition: transform .2s, border-color .2s, box-shadow .2s; }
   .ed-epic .ed-campaign-card:hover:not([disabled]) { transform: translateY(-3px); border-color: rgba(232,195,106,.6); }
   .ed-epic .ed-campaign-card.selected { border-color: var(--campaign-accent, var(--gold)); box-shadow: 0 0 0 1px var(--campaign-accent, var(--gold)), 0 18px 50px rgba(0,0,0,.55), 0 0 30px rgba(232,195,106,.16); }
@@ -406,6 +426,11 @@ const CSS = /* css */ `
   .ed-senda-mission .label { color: var(--gold-dim); font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase; }
   .ed-senda-mission b { display: block; color: #f0dfb7; font-family: Georgia, serif; font-size: 16px; margin: 2px 0; }
   .ed-senda-mission p { margin: 0; color: var(--text-dim); font-size: 12px; line-height: 1.5; }
+  .ed-senda-mission.planned { background: transparent; border-style: dashed; border-color: rgba(232,195,106,.18); }
+  .ed-senda-mission.planned .node { border-style: dashed; border-color: rgba(232,195,106,.35); color: var(--gold-dim); }
+  .ed-senda-mission.planned b { color: #cfc2a3; }
+  .ed-senda-mission.planned em { font-style: normal; color: var(--gold); }
+  .ed-senda-mission .planned-tag { white-space: nowrap; padding: 4px 10px; border-radius: 999px; border: 1px dashed rgba(232,195,106,.35); color: var(--gold-dim); font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; }
   .ed-senda-mission .ed-primary, .ed-senda-mission .ed-ghostbtn { white-space: nowrap; padding: 8px 16px; font-size: 13px; }
   @media (max-width: 900px) {
     .ed-senda-track { grid-template-columns: repeat(2, minmax(0, 1fr)); }
