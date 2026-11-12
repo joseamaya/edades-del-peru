@@ -72,29 +72,40 @@ export function isMissionCompleted(progress: CampaignProgress, missionId: string
 }
 
 /**
- * The series is played in order: the first mission is open, and every other one opens once the mission
- * before it on the path (the previous campaign's last mission, for a campaign's first) is completed. A
+ * Missions open in order inside their campaign, and every campaign opens with its first mission: a fresh
+ * profile can start any chapter, then each mission there opens once the previous one is completed. A
  * completed mission always stays open to replay.
  */
 export function isMissionUnlocked(progress: CampaignProgress, missionId: string): boolean {
   const path = seriesMissions();
   const index = path.findIndex((m) => m.missionId === missionId);
   if (index < 0) return false;
-  if (index === 0 || isMissionCompleted(progress, missionId)) return true;
+  if (isMissionCompleted(progress, missionId)) return true;
+  if (isCampaignOpening(missionId)) return true;
   return isMissionCompleted(progress, path[index - 1].missionId);
 }
 
-/** A campaign is open once its first mission is. */
+/** Whether this is the first released mission of its campaign. */
+function isCampaignOpening(missionId: string): boolean {
+  return CAMPAIGNS.some((campaign) => campaign.releasedMissionIds[0] === missionId);
+}
+
+/** A campaign is open once its first mission is; every campaign has an open first mission. */
 export function isCampaignUnlocked(progress: CampaignProgress, campaignId: CampaignId): boolean {
   const first = seriesMissions().find((m) => m.campaignId === campaignId);
   return !!first && isMissionUnlocked(progress, first.missionId);
 }
 
-/** The first open mission not yet completed, or null once the whole path is done. */
+/**
+ * The next mission of the main line: the first unfinished mission whose predecessor is completed, or null
+ * once the whole path is done. The campaign openings are shortcuts for the menu, not the main line.
+ */
 export function nextSeriesMission(progress: CampaignProgress): SeriesMission | null {
-  return (
-    seriesMissions().find(
-      (m) => isMissionUnlocked(progress, m.missionId) && !isMissionCompleted(progress, m.missionId),
-    ) ?? null
-  );
+  const path = seriesMissions();
+  for (let i = 0; i < path.length; i++) {
+    const mission = path[i]!;
+    if (isMissionCompleted(progress, mission.missionId)) continue;
+    if (i === 0 || isMissionCompleted(progress, path[i - 1]!.missionId)) return mission;
+  }
+  return null;
 }

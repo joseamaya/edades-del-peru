@@ -41,10 +41,11 @@ state badge: Disponible, En curso, Completada, Bloqueada). Selecting an open car
 (`CampaignDef.summary`), its prologue and its missions in order, each with its number, subtitle, a short
 blurb from the mission history and a play or replay button.
 
-**Campaigns and missions open in order** (`isMissionUnlocked` in `src/campaign/progress.ts`): a fresh
-profile can only play Caral; each mission opens once the previous one on the series path is completed, and
-a campaign once the previous campaign's last mission is. Completed missions stay open to replay. Locked
-cards and missions are disabled and say what to complete. `?menu=1&unlock=all` opens everything for testing.
+**Every campaign opens with its first mission** (`isMissionUnlocked` in `src/campaign/progress.ts`): a fresh
+profile can start any chapter, and inside a campaign each mission opens once the previous one is completed.
+The main menu's "next" stays on the series main line, so completing a campaign opening does not skip the
+missions before it. Completed missions stay open to replay. Locked cards and missions are disabled and say
+what to complete. `?menu=1&unlock=all` opens everything for testing.
 
 Progress lives in `peru-campaign` as a versioned JSON object. The old numeric value is migrated to the
 released mission order (legacy `2` becomes Caral + Chavín); old draft missions are not deleted from the code,

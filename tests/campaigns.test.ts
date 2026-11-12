@@ -167,27 +167,38 @@ describe('campaign progress', () => {
   });
 });
 
-describe('sequential campaign unlocks', () => {
-  it('opens only Caral on a fresh profile', () => {
+describe('campaign unlocks', () => {
+  it('opens the first mission of every campaign on a fresh profile', () => {
     const fresh = parseCampaignProgress(null);
     expect(isMissionUnlocked(fresh, 'm1_caral')).toBe(true);
     expect(isMissionUnlocked(fresh, 'm2_chavin')).toBe(false);
-    expect(isCampaignUnlocked(fresh, 'preinca')).toBe(true);
-    expect(isCampaignUnlocked(fresh, 'inca')).toBe(false);
+    for (const campaign of CAMPAIGNS) {
+      expect(isCampaignUnlocked(fresh, campaign.id), campaign.id).toBe(true);
+      expect(isMissionUnlocked(fresh, campaign.releasedMissionIds[0]!), campaign.id).toBe(true);
+    }
     expect(nextSeriesMission(fresh)?.missionId).toBe('m1_caral');
   });
 
-  it('opens the next mission, and the next campaign after its predecessor ends', () => {
+  it('opens the next mission inside a campaign, and keeps the main line in order', () => {
     let progress = markMissionComplete(parseCampaignProgress(null), 'preinca', 'm1_caral');
     expect(isMissionUnlocked(progress, 'm2_chavin')).toBe(true);
     expect(isMissionUnlocked(progress, 'm3_moche_recuay')).toBe(false);
+    expect(nextSeriesMission(progress)?.missionId).toBe('m2_chavin');
     for (const id of ['m2_chavin', 'm3_moche_recuay']) progress = markMissionComplete(progress, 'preinca', id);
-    expect(isCampaignUnlocked(progress, 'inca')).toBe(false);
+    expect(nextSeriesMission(progress)?.missionId).toBe('m4_wari');
     progress = markMissionComplete(progress, 'preinca', 'm4_wari');
-    expect(isCampaignUnlocked(progress, 'inca')).toBe(true);
-    expect(isCampaignUnlocked(progress, 'virreinato')).toBe(false);
     expect(nextSeriesMission(progress)?.missionId).toBe('m5_yahuar_pampa');
+    expect(isMissionUnlocked(progress, 'm6_chimu_inca')).toBe(false);
     expect(isMissionUnlocked(progress, 'm1_caral')).toBe(true);
+  });
+
+  it('keeps the campaign openings out of the main line', () => {
+    let progress = markMissionComplete(parseCampaignProgress(null), 'inca', 'm5_yahuar_pampa');
+    // Completing the Inca opening does not skip Chavín on the main line.
+    expect(nextSeriesMission(progress)?.missionId).toBe('m1_caral');
+    expect(isMissionUnlocked(progress, 'm6_chimu_inca')).toBe(true);
+    progress = markMissionComplete(progress, 'inca', 'm6_chimu_inca');
+    expect(nextSeriesMission(progress)?.missionId).toBe('m1_caral');
   });
 
   it('reports the end of the path', () => {

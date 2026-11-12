@@ -105,7 +105,8 @@ explicit approval described below.
   `?scenery=caral-anfiteatro` the Anfiteatro showcase (`window.__sceneryDemo`) instead of booting a match. `?rig=1` mounts the rigged-model demo
   (`window.__rigDemo`, `window.__modelAssets`). `?probe=1` mounts a blank page that exposes `window.__createHeadlessGame` for parity tests; `?replay=1` plays
   the stored replay (`localStorage['peru-replay']`) and `?noloop=1` skips auto-starting the loop (tests drive fixed
-  steps). Campaigns and missions open in order (`isMissionUnlocked` in `src/campaign/progress.ts`); `?menu=1&unlock=all`
+  steps). Every campaign opens with its first mission and the rest open in order (`isMissionUnlocked` in
+  `src/campaign/progress.ts`); `?menu=1&unlock=all`
   opens every one in the campaign menu.
 - `yarn shot` and the scripts write generated PNG/JSON to `review/` (gitignored) — never edit those by hand.
 
