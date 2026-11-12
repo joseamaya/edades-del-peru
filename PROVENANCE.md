@@ -178,8 +178,9 @@ slot is absent (offline / without assets).
   use and in three construction phases (`pyramid_mayor_phase1` foundation, `_phase2` fill, `_phase3`
   finished), a smaller pyramid, the sunken circular plaza, common and elite quincha houses, an Áspero
   fishing house, a fair tent, Áspero's Huaca de los Ídolos (`huaca_idolos`: three superposed terraces
-  with summit rooms; growth in phases with offerings documented, form and rooms assumed) and the Act III
-  construction camp (`camp_shelter`, `shicra_stack`, `stone_yard`).
+  with summit rooms; growth in phases with offerings documented, form and rooms assumed), the Act III
+  construction camp (`camp_shelter`, `shicra_stack`, `stone_yard`) and the future-city pieces
+  (`pyramid_small_phase1`, `survey_stake`).
 - **Source**: generated in Blender by `scripts/blender/build_caral_architecture_kit.py`; kit scene
   `art-src/blender/scenes/caral_architecture_kit.blend` (Git LFS). Uncompressed exports and per-piece
   manifests (triangles, materials, bounds, budget, `confidence`, sources, review state) live in
@@ -207,9 +208,17 @@ slot is absent (offline / without assets).
   dossier explicitly lists scaffolding as undocumented and not modelled. The shicra fill and the phased
   platforms are documented; the camp's form, the crew and its route are assumed, and the shicra heap and
   the dressed-stone yard are inferred arrangements of documented materials.
+- **Future city (issue 422)**: from `foundation`, the five smaller complexes stand as low walled
+  platforms with shicra fill (`pyramid_small_phase1`) and swap to the finished model at `finished`; the
+  main sunken plaza is staked with cord and stakes until `fill`, and the amphitheatre plaza until
+  `in_use`. The started platforms block from foundation, but their monument cards and the six-complex
+  tour still wait for `finished` (`CARAL_HERITAGE_BLOCK_SINCE` vs `CARAL_HERITAGE_SINCE`). Phased
+  platforms and shicra fill are documented; that the five were started alongside the Mayor, the cord
+  survey and the exact construction form are inferred.
 - **Evidence**: `node scripts/shots_evidence.mjs --scene=caral-camp --out=review/evidence/caral-camp`
-  captures the Act III camp close up and in a medium RTS view (plus a wide context frame); stitch
-  `close.png` and `camp.png` side by side and encode the 3200 × 900 WebP (`docs/media/caral-camp.webp`).
+  captures the Act III camp close up, in a medium RTS view, the staked plaza and a wide context frame;
+  stitch `close.png` and `camp.png` for `docs/media/caral-camp.webp` and `camp.png` + `rts.png` for
+  `docs/media/caral-act3.webp`, at 3200 × 900 and quality 82.
 - **Confidence** (per piece in the manifests; evidence in `docs/historia/campanas/caral.md` and
   `docs/historia/civilizaciones/caral.md`): stepped superposed platforms, shicra fill, stone retaining
   walls, painted plaster, sunken circular plazas, quincha houses, cotton nets and gourd floats and fair

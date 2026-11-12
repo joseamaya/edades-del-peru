@@ -706,7 +706,7 @@ test('the authored site blocks every solid monument and leaves the plaza ring wa
   expect(state.aimedInside).toBe(false);
 });
 
-test('monuments still to be built neither block units nor answer clicks', async ({ page }) => {
+test('the started complexes block from foundation; their cards wait for finished', async ({ page }) => {
   await boot(page);
   const state = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
@@ -725,9 +725,11 @@ test('monuments still to be built neither block units nor answer clicks', async 
     const inUse = read();
     return { opening, finished, inUse };
   });
-  // Act I: only the Pyramid Mayor's first platform and Áspero stand.
+  // Act I: the Mayor's first platform, the five started complexes and Áspero stand; the amphitheatre
+  // and its plaza still wait for in_use. The started platforms block, but their cards wait for
+  // finished so the tour objective cannot be completed from a construction platform.
   expect(state.opening.phase).toBe('foundation');
-  expect(state.opening.central).toBe(true);
+  expect(state.opening.central).toBe(false);
   expect(state.opening.amphitheatre).toBe(true);
   expect(state.opening.centralCard).toBe(false);
   expect(state.opening.mayor).toBe(false);

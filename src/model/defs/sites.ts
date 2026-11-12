@@ -262,8 +262,21 @@ export const CARAL_HERITAGE_SINCE: Partial<Record<HeritageBuildingId, string>> =
   caral_anfiteatro: 'in_use',
 };
 
+/**
+ * Act III starts the five smaller complexes with a low platform at foundation; their own cards still
+ * wait for the finished model (the click surface and the physical obstacle are separate decisions).
+ */
+export const CARAL_HERITAGE_BLOCK_SINCE: Partial<Record<HeritageBuildingId, string>> = {
+  ...CARAL_HERITAGE_SINCE,
+  caral_pyramid_central: 'foundation',
+  caral_pyramid_quarry: 'foundation',
+  caral_pyramid_lesser: 'foundation',
+  caral_pyramid_gallery: 'foundation',
+  caral_pyramid_huanca: 'foundation',
+};
+
 export const CARAL_SITE_BLOCKERS: readonly SiteBlocker[] = [
-  ...CARAL_HERITAGE_PROXIES.map(({ id, x, z, w, d }) => ({ x, z, w, d, since: CARAL_HERITAGE_SINCE[id] })),
+  ...CARAL_HERITAGE_PROXIES.map(({ id, x, z, w, d }) => ({ x, z, w, d, since: CARAL_HERITAGE_BLOCK_SINCE[id] })),
   { x: ASPERO_HERITAGE_PROXY.x, z: ASPERO_HERITAGE_PROXY.z, w: ASPERO_HERITAGE_PROXY.w, d: ASPERO_HERITAGE_PROXY.d },
   { ...CARAL_CIRCULAR_ALTAR, since: 'in_use' },
 ];

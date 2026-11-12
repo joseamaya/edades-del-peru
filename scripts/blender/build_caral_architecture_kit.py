@@ -590,6 +590,46 @@ def quincha_house(mats, lod, kind):
     return bm, [mats[k] for k in order]
 
 
+def pyramid_small_phase1(mats, lod):
+    """A smaller complex started: a low walled platform with shicra fill and no stair yet.
+
+    Superposed platforms and shicra fill are documented; that the five smaller complexes were started
+    while the Mayor rose is the Act III reading, and their exact construction form is inferred.
+    """
+    bm = bmesh.new()
+    order = ['plaster_early', 'stone', 'shicra', 'earth']
+    w, d, h = 18.0, 16.0, 2.4
+    LEDGES[:] = [0.0, h * 0.55]
+    box(bm, (0, 0, -0.25), (w + 1.4, d + 1.4, 0.6), 3)
+    x0, x1, y0, y1 = -w / 2, w / 2, -d / 2, d / 2
+    rise = lambda t: h * max(0.0, 1.0 - 1.1 * t)
+    retaining_wall(bm, x0, y0, x1, y0, 0.0, rise, 0.55, 101, 1, lod)
+    retaining_wall(bm, x0, y1, x1, y1, 0.0, rise, 0.55, 102, 1, lod)
+    retaining_wall(bm, x0, y0 + 0.3, x0, y1 - 0.3, 0.0, lambda t: h * 0.7, 0.55, 103, 1, lod)
+    retaining_wall(bm, x1, y0 + 0.3, x1, y1 - 0.3, 0.0, lambda t: h * 0.55, 0.55, 104, 1, lod)
+    count = 20 if lod == 0 else 6
+    segs, rings = (5, 3) if lod == 0 else (4, 2)
+    fill_bags(bm, x0 + 0.6, x1 - 0.6, y0 + 0.6, y1 - 0.6, 0.0, h * 0.55, count, 105, 2, segs, rings, lod)
+    if lod == 0:
+        for k, (px, py) in enumerate(((x1 + 1.6, y0 + 2.2), (x0 - 1.4, y1 - 2.0))):
+            bag_pile(bm, (px, py, 0.0), 5, 0.9, 110 + k, 2, 5, 3)
+    return bm, [mats[k] for k in order]
+
+
+def survey_stake(mats, lod):
+    """A survey stake with a cord segment: the future plaza is staked on the ground during the works.
+
+    No survey tooling is documented; the stake-and-cord reading is inferred (issue 422).
+    """
+    bm = bmesh.new()
+    order = ['wood', 'cane']
+    box(bm, (0, 0, 0.5), (0.09, 0.09, 1.0), 0)
+    box(bm, (1.6, 0, 0.48), (3.2, 0.03, 0.03), 1)
+    if lod == 0:
+        box(bm, (1.6, 0.0, 0.47), (0.02, 0.16, 0.02), 1)
+    return bm, [mats[k] for k in order]
+
+
 def fair_tent(mats, lod):
     """Temporary fair tent: four posts and a cover (postholes documented; frame and cover assumed)."""
     bm = bmesh.new()
@@ -718,6 +758,8 @@ ASSETS = {
     'camp_shelter': camp_shelter,
     'shicra_stack': shicra_stack,
     'stone_yard': stone_yard,
+    'pyramid_small_phase1': pyramid_small_phase1,
+    'survey_stake': survey_stake,
 }
 
 
@@ -851,6 +893,8 @@ CONFIDENCE = {
     'camp_shelter': 'assumed',
     'shicra_stack': 'inferred',
     'stone_yard': 'inferred',
+    'pyramid_small_phase1': 'inferred',
+    'survey_stake': 'inferred',
 }
 
 
