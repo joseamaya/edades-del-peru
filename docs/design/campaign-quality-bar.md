@@ -52,10 +52,10 @@ Reviewed 2026-11-07 after the four-act rebuild (design and status: [`caral-model
 | Opening     | Met    | Three-beat narrated intro; briefing with Áspero's capture; act and epilogue images from `scripts/capture_caral_intro.mjs`.                                                                                                                                                                         |
 | Art         | Met    | Architecture kit and captures approved by human review on 2026-11-07 (`reviewer`/`reviewedAt` in the manifests, PROVENANCE).                                                                                                                                                                       |
 | Performance | Met    | `bench_scene.mjs` re-run 2026-11-09: opening 331,766 tris / 205 calls; late 581,611 / 262; within the 400k / 600k budgets.                                                                                                                                                                         |
-| Scale       | Met    | 256 m map, painted ground every 2 m (128 over 256) and `unitSpeedScale: 0.5` → worker crossing ≈3:33; `tests/campaign-scale.test.ts`.                                                                                                                                                              |
+| Scale       | Met    | 256 m map, painted ground every 2 m (128 over 256) and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                                                                                                                             |
 
 Updated 2026-11-09: phase paint evidence, the burial ritual and the communal-store-fed construction work turns were
-added (see `caral-model-mission.md` Open items); the unit speed scale (0.5) now paces the 256 m transect.
+added (see `caral-model-mission.md` Open items); the unit speed scale paces the 256 m transect (0.5 at the time, 0.75 since 2026-11-12).
 
 ## Chavín gold-master status
 
@@ -78,7 +78,7 @@ Reviewed 2026-11-07 against the model-mission gates. Status is honest about the 
 | Opening     | Met                  | Three-beat narrated intro and briefing with the mission's own art; chapter-card and epilogue captures from `capture_chavin_intro.mjs`.                                                 |
 | Art         | Pending human review | Kit and captures are exported with `reviewed: false`; a human review must record `reviewer`/`reviewedAt` before this gate is Met.                                                      |
 | Performance | Met                  | `bench_scene.mjs` re-run 2026-11-09 after the resize: opening 413,433 tris / 160 calls; late 462,835 / 223; within the 450k / 600k budgets.                                            |
-| Scale       | Met                  | 256 m map, painted ground every 2 m (128 over 256) and `unitSpeedScale: 0.5` → worker crossing ≈3:33; `tests/campaign-scale.test.ts`.                                                  |
+| Scale       | Met                  | 256 m map, painted ground every 2 m (128 over 256) and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                 |
 
 ## Moche gold-master status
 

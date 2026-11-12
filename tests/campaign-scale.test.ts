@@ -9,8 +9,8 @@ import { UnitKind } from '../src/core/types';
  * mission: a 256 m map, painted ground at ~2 m per point and a worker crossing inside the AoE2/0 A.D.
  * band. Mark a promoted mission with `modelMission: true`; the guard follows the flag, not a list.
  */
-const CROSSING_MIN = 180;
-const CROSSING_MAX = 240;
+const CROSSING_MIN = 130;
+const CROSSING_MAX = 160;
 
 describe('model-mission scale', () => {
   for (const mission of MISSIONS.filter((m) => m.modelMission)) {

@@ -51,8 +51,9 @@ cotton nets) → III building the Pyramid Mayor in phases → IV the drought, th
 ## 3. The map: a geographic transect
 
 - **Scale**: a model mission uses a **256 m** map and painted ground sampled every **2 m** (Caral and
-  Chavín: `GROUND_SIZE = 128` over 256 m). A worker must cross it in **180–240 s**; both use
-  `MissionDef.unitSpeedScale: 0.5` (1.2 m/s, ≈3:33), between AoE2's and 0 A.D.'s villager pace. Any
+  Chavín: `GROUND_SIZE = 128` over 256 m). A worker must cross it in **130–160 s**; both use
+  `MissionDef.unitSpeedScale: 0.75` (1.8 m/s, ≈2:22): the transect still reads as travel, but walking
+  no longer drags (the 0.5 of the first pass, 3:33, felt slow in play). Any
   exception is documented here, and `tests/campaign-scale.test.ts` enforces the numbers for the missions
   listed as model missions.
 - Build the heightmap with a per-mission script (`scripts/build_<site>_heightmap.py`), like
