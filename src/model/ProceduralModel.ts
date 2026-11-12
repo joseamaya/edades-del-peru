@@ -2082,6 +2082,7 @@ function buildAndeanFarm(b: Builder): void {
  * side. Crops documented for Caral-Supe (cotton, gourds, squash, beans; docs/historia/campanas/caral.md);
  * the plot layout is a game abstraction. Low-poly parts (5-6 sided) keep several fields cheap. In the late
  * city one ridge carries the little maize the dossier records for the final period instead of squash.
+ * Caral's mission has no enemy farms, so the field does not need an owner check.
  */
 function buildValleyField(b: Builder): void {
   const w = 3.4;

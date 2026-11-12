@@ -11,6 +11,10 @@ import { launchChromium, withViteServer, cliArg } from './lib.mjs';
  *
  * The same scene is captured from a clean worktree (before) and the feature
  * branch (after) with the same seed, viewport, camera and fixed steps.
+ *
+ * Two game states of one commit can also be compared when the change is a moment of the match rather
+ * than a code change: those scenes read a URL flag (e.g. `late=1`) that only the capture honours, and
+ * their `prepare` labels it as such.
  */
 const scene = cliArg('scene', 'fauna-perf');
 const outDir = path.resolve(cliArg('out', 'review/evidence/fauna'));
