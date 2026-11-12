@@ -151,6 +151,10 @@ instead of the modular landmark or a hand-built schematic:
 - Terrain palette: `caral_grass` comes from the remaster dry-grass source; `sand`, `dirt` and `rock` use
   the CC0 terrain scans with the mission's warm `groundTint`. Height/slope bands still separate the green
   valley floor, pale terrace and warm lomas.
+- Late period: during the Act IV drought one ridge of the player's valley field sows maize instead of
+  squash (`Game.caralLate` → `BuildContext.caralLate`, `buildValleyField`). Maize is documented for the
+  late period and in little quantity; the amount and rows are inferred. Evidence:
+  `docs/media/caral-late-maize.webp` (`--scene=caral-late-field-before` and `--scene=caral-late-field`).
 - Valley fabric: `src/model/defs/caralValley.ts` plans the floodplain plots and
   riverside props; `SettlementOverlay` draws the plots, crop rows, low borders and
   narrow paths, and `Props` carries the reeds/shrubs. Every placement is

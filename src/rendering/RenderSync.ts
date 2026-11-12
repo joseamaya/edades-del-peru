@@ -22,13 +22,14 @@ export function attachBuilding(scene: THREE.Scene, building: Building, ctx: Buil
   view.setRotationY(building.yaw);
 }
 
-/** Replace a building's model when its era advances. */
-export function modernizeBuilding(building: Building, ctx: BuildContext): void {
+/** Rebuild a building's model in place (era advance or a late-period dressing change). */
+export function rebuildBuilding(building: Building, ctx: BuildContext): void {
   const old = building.view;
   if (!old) return;
   const model = buildModel(getBuildingModel(building.kind, building.era), ctx);
   model.position.copy(old.group.position);
   model.rotation.copy(old.group.rotation);
+  model.scale.copy(old.group.scale); // a building under construction keeps its partial height
   if (old.group.parent) {
     old.group.parent.add(model);
     old.group.parent.remove(old.group);

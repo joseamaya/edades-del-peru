@@ -124,7 +124,8 @@ uses a few near rings and a dark haze frame so the camera never sees the old cre
 - Household dressing (hearth, drying rack, basket, gourds/mates, bench, windbreak, cotton) uses the
   prop kit: one merged mesh per shared material and LOD, LOD1 beyond 30 units, no shadow pass (the pieces
   are sub-metre). The procedural set remains the fallback when a GLB fails.
-- Player-built quincha houses use the paint colour of the current phase (open, see _Open items_).
+- Player-built quincha houses keep the documented white/red palette; the phase paint belongs to the
+  authored city (see _Open items_ 1).
 
 ## Narration
 
@@ -277,7 +278,11 @@ bench runs without ground cover).
 2. ~~Seasonal flood, sand advance and green winter lomas are not simulated.~~ Done: the `wet_season` event
    raises the river and greens the valley; the lomas are a separate winter-fog cue tinted by the same event.
    The drought's dry phase is the documented sand advance.
-3. Late-period details of Act IV (stone houses, a little maize) are not shown.
+3. ~~Late-period details of Act IV (stone houses, a little maize) are not shown.~~ The little late maize
+   is done: from the Act IV drought, one ridge of the player's valley field sows maize instead of squash
+   (the dossier records maize only for the late period, in little quantity). The stone late dwellings are
+   not shown: swapping the kit wall material to stone reads as rubble at that wall scale, so they need
+   their own kit asset ([#436](https://github.com/joseamaya/edades-del-peru/issues/436)).
 4. ~~The Act III fire offering is staged at the plaza, but the burial of one phase under the next is not
    shown on its own, and an empty storehouse does not pause construction.~~ Done: the `ritual` effect
    stages the burial between phases and the `hold.consume` work turns pause when the communal store is empty.

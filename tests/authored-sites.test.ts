@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { MISSIONS } from '../src/campaign/defs/campaign';
 import { tutorialForMission } from '../src/campaign/defs/tutorials';
-import { AUTHORED_SITES, getAuthoredSite } from '../src/model/defs/sites';
+import { AUTHORED_SITES, getAuthoredSite, isLatePeriod } from '../src/model/defs/sites';
 
 describe('authored campaign sites', () => {
   it('resolves every site referenced by a mission layout', () => {
@@ -172,6 +172,15 @@ describe('authored campaign sites', () => {
       'trade',
     ]);
     expect(tutorialForMission('m4_wari')?.steps.map((s) => s.id)).toEqual(['select', 'farm', 'network', 'frontier']);
+  });
+
+  it('marks only the Caral drought as the site late period', () => {
+    expect(isLatePeriod('caral_site', { drought: 1 })).toBe(true);
+    expect(isLatePeriod('caral_site', { drought: 0.1 })).toBe(true);
+    expect(isLatePeriod('caral_site', { wet_season: 1 })).toBe(false);
+    expect(isLatePeriod('caral_site', {})).toBe(false);
+    expect(isLatePeriod('chavin_site', { drought: 1 })).toBe(false);
+    expect(isLatePeriod(undefined, { drought: 1 })).toBe(false);
   });
 
   it('registers sites with unique ids and sensible defaults', () => {

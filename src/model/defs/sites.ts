@@ -682,3 +682,12 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
 export function getAuthoredSite(id: AuthoredSiteId | null | undefined): AuthoredSiteDef | undefined {
   return id ? AUTHORED_SITES[id] : undefined;
 }
+
+/**
+ * Whether an authored site is in its late period. Caral's Act IV drought is the documented cue for the
+ * final period (granodiorite dwellings and a little maize; docs/historia/campanas/caral.md). No other site
+ * reads it, so it derives from the saved environment state instead of adding a field of its own.
+ */
+export function isLatePeriod(siteId: AuthoredSiteId | undefined, environment: Record<string, number>): boolean {
+  return siteId === 'caral_site' && (environment.drought ?? 0) > 0;
+}

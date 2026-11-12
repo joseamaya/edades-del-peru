@@ -43,7 +43,7 @@ import { clearModelAssets } from '../rendering/ModelAssets';
 import { disposeStaticGltf } from '../rendering/StaticModel';
 import { Projectile } from '../entities/Projectile';
 import { ProjectileView } from '../rendering/ProjectileView';
-import { attachBuilding, attachResource, attachUnit, detachUnit, modernizeBuilding } from '../rendering/RenderSync';
+import { attachBuilding, attachResource, attachUnit, detachUnit, rebuildBuilding } from '../rendering/RenderSync';
 import { AI } from '../game/AI';
 import type { Difficulty } from './Config';
 import { Economy } from '../game/Economy';
@@ -89,7 +89,7 @@ import { SettlementOverlay } from '../rendering/SettlementOverlay';
 import { SettlementDressing } from '../rendering/SettlementDressing';
 import { VALLEY_FIELD_MARGIN, type CaralValleyPlan } from '../model/defs/caralValley';
 import { farmYieldMultiplier, nearbyCanal } from '../model/defs/farmYield';
-import { getAuthoredSite, type AuthoredSiteDef } from '../model/defs/sites';
+import { getAuthoredSite, isLatePeriod, type AuthoredSiteDef } from '../model/defs/sites';
 import { detectSoftwareRenderer } from '../util/gpu';
 import { ERA_DEFS } from '../model/defs/eras';
 import { BUILDING_DEFS, BUILDING_INFO, getBuildingStats } from '../model/defs/buildings';
@@ -199,6 +199,8 @@ export class Game {
   private environmentShown: Record<string, number> = {};
   /** Drought level whose yield factor is already folded into the standing farms. */
   private droughtFarmLevel = 0;
+  /** Whether the standing fields are drawn with the late crops. */
+  private caralLateShown = false;
   private droughtBaseAtmosphere: MissionAtmosphere | undefined;
   /** Construction phase of the authored site's main monument (mission-driven; the city follows it). */
   sitePhase = 'in_use';
@@ -906,6 +908,7 @@ export class Game {
       playerColor: new THREE.Color(civ.colors.primary),
       arch: archProfileFor(civ.id, p.era),
       caralSetpiece: !!this.setpiecePlan || !!this.missionLayout?.site,
+      caralLate: this.caralLate,
     };
   }
 
@@ -1098,6 +1101,14 @@ export class Game {
   }
 
   /**
+   * The late city: the Act IV drought marks the final period of Caral and the fields sow a little maize.
+   * Any drought level counts: the event itself starts the period, so the fields change with Act IV.
+   */
+  get caralLate(): boolean {
+    return isLatePeriod(this.siteDef?.id, this.environment);
+  }
+
+  /**
    * Start a named environmental event. `drought` closes Caral: the valley dries in patches, the haze
    * turns to dust, the fields lose half their remaining harvest and part of the riverside grove dies.
    * `instant` restores it at once (loaded saves).
@@ -1264,6 +1275,12 @@ export class Game {
     }
     // Idempotent (setDry bails out): also re-dries trees whose view was rebuilt at a lower quality.
     if (level >= 0.6) this.dryRiparianGrove();
+    // The drought is Caral's late period: the standing fields are resown with the little late maize.
+    const late = this.caralLate;
+    if (late !== this.caralLateShown) {
+      this.caralLateShown = late;
+      this.refreshLateFields();
+    }
     if (this.headless) return;
     const shown = this.environmentShown.drought ?? -1;
     if (Math.abs(level - shown) < 0.04 && level < 1) return;
@@ -1280,6 +1297,15 @@ export class Game {
       sunWarmth: mix(base.sunWarmth ?? 0.9, 1.15),
     };
     this.world.applyAtmosphere();
+  }
+
+  /** Rebuild the standing fields when the late period starts. */
+  private refreshLateFields(): void {
+    if (this.headless) return;
+    for (const b of this.buildings.values()) {
+      if (b.dead || !b.view || b.kind !== BuildingKind.FARM) continue;
+      rebuildBuilding(b, this.makeBuildContext(b.owner));
+    }
   }
 
   setSitePhase(phase: string): void {
@@ -1920,7 +1946,7 @@ export class Game {
     for (const b of this.buildings.values()) {
       if (b.owner === player && b.era !== p.era) {
         b.era = p.era;
-        modernizeBuilding(b, ctx);
+        rebuildBuilding(b, ctx);
       }
     }
     // modernize units in the field
@@ -1996,6 +2022,7 @@ export class Game {
     this.environmentTargets = {};
     this.environmentShown = {};
     this.droughtFarmLevel = 0;
+    this.caralLateShown = false;
     if (this.landscape) {
       this.scene.remove(this.landscape.group);
       this.landscape.dispose();

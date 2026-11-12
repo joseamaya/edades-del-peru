@@ -18,7 +18,7 @@ const MISSION_ECONOMY_CARDS: BuildingCardDef[] = [
     name: 'Chacra · campo de cultivo del valle',
     role: 'Producción de alimentos',
     summary:
-      'La chacra representa los campos irrigados del valle de Supe: algodón, mates, zapallos y frijoles. La humedad del suelo y el canal comunal elevan su reserva de alimentos. «Chacra» es la palabra de origen quechua que hoy se usa en el Perú; no es un término atestiguado en Caral. En Caral los campos estaban en el fondo irrigado del valle, no en terrazas de altura.',
+      'La chacra representa los campos irrigados del valle de Supe: algodón, mates, zapallos y frijoles. La humedad del suelo y el canal comunal elevan su reserva de alimentos. «Chacra» es la palabra de origen quechua que hoy se usa en el Perú; no es un término atestiguado en Caral. En Caral los campos estaban en el fondo irrigado del valle, no en terrazas de altura. En el período tardío, una hilera siembra algo de maíz: el dossier lo registra solo para esa fase y en poca cantidad.',
     confidence: 'abstracción jugable',
     citation: 'Dossier de Caral · Zona Arqueológica Caral',
     sources: ['docs/historia/campanas/caral.md', 'docs/historia/civilizaciones/caral.md'],
