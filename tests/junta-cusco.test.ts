@@ -45,7 +45,7 @@ describe('La Junta del Cusco', () => {
       ),
     );
     expect(activated).toEqual(
-      new Set(['a1_cuartel', 'a2_apacheta', 'a2_batalla', 'a3_umachiri', 'a3_resistir', 'a3_melgar', 'a3_cuartel']),
+      new Set(['a1_cuartel', 'a2_apacheta', 'a2_batalla', 'a3_umachiri', 'a3_resistir', 'a3_melgar', 'a3_artilleria']),
     );
   });
 
@@ -60,7 +60,7 @@ describe('La Junta del Cusco', () => {
     expect(JUNTA.objectives.find((o) => o.id === 'a3_melgar')!.optional).toBe(true);
     // The optional goals never gate victory.
     const required = JUNTA.objectives.filter((o) => !o.optional).map((o) => o.id);
-    expect(required).not.toContain('a3_cuartel');
+    expect(required).not.toContain('a3_artilleria');
   });
 
   it('keeps the roster inside the Independence period', () => {

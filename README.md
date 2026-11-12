@@ -70,9 +70,10 @@ Debug URL parameters:
 ## Campaign series: La Senda del Sol
 
 The first release is **campaign-only**. _La Senda del Sol_ is the series; it contains **five campaigns divided by
-Peruvian historical epochs**. All five, from _Culturas Preincas_ to _La República_, are playable, and each chapter
-opens with its first mission. Skirmish is hidden from the menu for this release (the `?play=1` debug harness
-remains for tests).
+Peruvian historical epochs**. All five, from _Culturas Preincas_ to _La República_, are playable. A chapter
+whose first mission is already released opens from the start (Culturas Preincas and La Independencia today);
+the rest open with the previous chapter until their first mission ships. Skirmish is hidden from the menu for
+this release (the `?play=1` debug harness remains for tests).
 
 | Campaign                      | Focus                                         | Release                     |
 | ----------------------------- | --------------------------------------------- | --------------------------- |
@@ -85,8 +86,8 @@ remains for tests).
 Mission ids remain stable (`m1_caral` … `m9_guerra_pacifico`, plus `m6b_guerra_civil` and `m_junta_cusco`). All released missions appear in
 menus, the Codex and progress; `?mission=ID` remains available for QA.
 The campaign [quality bar](./docs/design/campaign-quality-bar.md) records the gates a mission must meet.
-Caral, Chavín, Moche and Wari have authored, source-backed sites; m5–m9, m6b and `m_junta_cusco` add dedicated
-low-poly GLB landmarks over authored terrain.
+Caral, Chavín, Moche and Wari have authored, source-backed sites; m5–m9 and m6b add dedicated low-poly GLB
+landmarks over authored terrain, and `m_junta_cusco` reuses the colonial Cusco plaza on its own 256 m transect.
 
 The current release status, art gate and publish checklist are in
 [`docs/design/release-candidate.md`](./docs/design/release-candidate.md).

@@ -704,6 +704,8 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       heights: JUNTA_HEIGHTMAP,
       ground: { size: JUNTA_GROUND_SIZE, weights: JUNTA_GROUND },
       river: { path: JUNTA_RIVER_PATH, halfWidth: JUNTA_RIVER_HALF_WIDTH },
+      // The crossing at Umachiri keeps the Lalli walkable on the campaign route.
+      fords: [{ z: 200, halfWidth: 12 }],
     },
     pathCellSize: 1,
     heritageProxies: [{ id: 'colonial_church', x: 72, z: 58, w: 9, d: 9, h: 6 }],
@@ -721,6 +723,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       suppressSnow: true,
       // The Cusco basin (5.7 m) reads wet, the altiplano (4.0 m) reads as puna grass.
       moisture: { valleyHeight: 7.6, valleyRange: 3.4, bankStart: 0.12, bankRange: 0.1 },
+      water: { deep: '#1c3a44', shallow: '#4f7a74', sheen: 0.12, foam: 0.1, fog: 0.22, refraction: 0.15 },
     },
   },
 };

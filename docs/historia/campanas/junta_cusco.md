@@ -11,7 +11,7 @@
   - Realistas: el virrey **José Fernando de Abascal**, **Juan Ramírez Orozco** (vencedor en Umachiri),
     **Francisco Picoaga** y **Pío Tristán**.
 - **Contexto histórico**: el conflicto nació entre el cabildo constitucional de Cádiz (1812) y la Real
-  Audiencia del Cusco. La Junta tomó el gobierno, nombró a Pumacahua capitán general y envió expediciones a
+  Audiencia del Cusco. La Junta tomó el gobierno, nombró capitán general a José Angulo, jefe militar a Pumacahua y envió expediciones a
   Puno, La Paz, Huamanga y Arequipa.
 - **Hitos**: Puno (26 ago 1814); La Paz (24 set 1814); **La Apacheta** (10 nov 1814), victoria de Pumacahua y
   ocupación de Arequipa; **Umachiri** (11 mar 1815), derrota decisiva; ejecuciones de los líderes en 1815.
@@ -27,7 +27,7 @@
 | Elemento | Estado | Fuente / nota |
 | --- | --- | --- |
 | Junta del Cusco y sus fechas | Documentado | Actas y correspondencia citadas en la bibliografía; O'Phelan. |
-| Pumacahua como jefe militar | Documentado | Nombrado capitán general por la Junta. |
+| Pumacahua como jefe militar | Documentado | La Junta lo nombró jefe militar; José Angulo quedó como capitán general. |
 | La Apacheta (10 nov 1814) | Documentado | Parte de la acción y bibliografía. |
 | Umachiri (11 mar 1815) | Documentado | Parte de Ramírez; cifras aproximadas y discutidas. |
 | Cifras de tropas | Aproximado | Las fuentes varían entre 12 000 y 36 000 rebeldes; no se muestran como dato duro. |

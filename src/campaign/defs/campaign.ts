@@ -1619,7 +1619,7 @@ export const MISSIONS: MissionDef[] = [
       ],
     },
     mark: [{ tag: 'huascar', kind: BuildingKind.CENTER, owner: 1 }],
-    enemy: { active: true, difficulty: 'normal', aggression: 0.8 },
+    enemy: { active: true, difficulty: 'normal', aggression: 0.6 },
     objectives: [
       {
         id: 'obj_avanzar',
@@ -1740,6 +1740,7 @@ export const MISSIONS: MissionDef[] = [
     enemy: { active: true, difficulty: 'hard', aggression: 1.3 },
     tutorial: true,
     // 1780: no arcabuceros; the rebel and royalist line use muskets and rifles.
+    epilogueImage: 'media/junta/intro-epilogo.webp',
     allowedUnits: [
       UnitKind.WORKER,
       UnitKind.SOLDIER,
@@ -1811,10 +1812,10 @@ export const MISSIONS: MissionDef[] = [
     title: 'La Junta del Cusco',
     subtitle: 'Cusco–Umachiri · 1814–1815',
     history:
-      'En 1814 el Cusco se levanta contra la Real Audiencia: la junta de los hermanos Angulo nombra capitán general a Mateo García Pumacahua y envía columnas a Puno, La Paz, Huamanga y Arequipa.\n' +
+      'En 1814 el Cusco se levanta contra la Real Audiencia: la junta de los hermanos Angulo nombra capitán general a José Angulo y jefe militar a Mateo García Pumacahua, y envía columnas a Puno, La Paz, Huamanga y Arequipa.\n' +
       'La campaña se juega como la Junta la vivió: sostener el Cusco, ganar La Apacheta y resistir en Umachiri el tiempo suficiente para que los líderes no caigan todos. La historia terminó en derrota; el epílogo la cuenta.',
     victory:
-      'La columna de Ramírez se detiene en Umachiri. La Junta gana tiempo para retirar a sus líderes, aunque la historia documentada sigue su curso: la rebelión será derrotada y sus jefes ejecutados.',
+      'La resistencia en Umachiri gana el tiempo que la Junta necesita para retirarse del campo. La historia documentada sigue su curso: la rebelión será derrotada, Pumacahua ejecutado en Sicuani y Melgar fusilado.',
     defeat:
       'La Junta se deshace en Umachiri. La represión realista alcanza a sus líderes y el Cusco vuelve al control virreinal.',
     period: HistoricalPeriod.INDEPENDENCE,
@@ -1836,6 +1837,8 @@ export const MISSIONS: MissionDef[] = [
       opening: { x: 66 / 256, z: 80 / 256 },
       enemyBase: { x: 222 / 256, z: 238 / 256 },
       discoveries: [{ heritageId: 'colonial_church', initial: true }],
+      // The Junta's camp at La Apacheta gives the pass a visual anchor and a documented military presence.
+      decor: { model: 'patriotas_camp', at: 'player', dx: 72, dz: 70, yaw: 0.6, scale: 0.9 },
       terrain: {
         flats: [
           { name: 'Valle del Cusco', x: 72 / 256, z: 58 / 256, rx: 0.18, rz: 0.16 },
@@ -1863,26 +1866,27 @@ export const MISSIONS: MissionDef[] = [
     start: {
       units: [
         { kind: UnitKind.WORKER, dx: 4, dz: 4, count: 5 },
-        { kind: UnitKind.SOLDIER, dx: 8, dz: 0, count: 12 },
+        { kind: UnitKind.SOLDIER, dx: 8, dz: 0, count: 14 },
         { kind: UnitKind.MUSKETEER, dx: 10, dz: 2, count: 3 },
         { kind: UnitKind.RIFLEMAN, dx: 10, dz: -2, count: 2 },
         { kind: UnitKind.PATRIOTA_MONTONERA, dx: 14, dz: 0, count: 3 },
-        { kind: UnitKind.ARTILLERY, dx: 6, dz: 8, count: 1 },
+        { kind: UnitKind.ARTILLERY, dx: 6, dz: 8, count: 1, tag: 'artilleria_junta' },
         { kind: UnitKind.CAVALRY, dx: 6, dz: 0, count: 1, tag: 'pumacahua' },
         { kind: UnitKind.RIFLEMAN, dx: 7, dz: 0, count: 1, tag: 'melgar' },
       ],
     },
     mark: [{ tag: 'centro_realista', kind: BuildingKind.CENTER, owner: 1 }],
-    enemy: { active: true, difficulty: 'normal', aggression: 0.8 },
+    enemy: { active: true, difficulty: 'normal', aggression: 0.6 },
     tutorial: true,
     modelMission: true,
     intro: [
       {
         kicker: 'CUSCO · 3 DE AGOSTO DE 1814',
         title: 'La Junta',
-        text: 'El cabildo constitucional de Cádiz y la Real Audiencia chocan en el Cusco. Los hermanos Angulo toman el gobierno y nombran capitán general a Mateo García Pumacahua, cacique de Chinchero.',
+        text: 'El cabildo constitucional de Cádiz y la Real Audiencia chocan en el Cusco. Los hermanos Angulo toman el gobierno y nombran capitán general a José Angulo; Mateo García Pumacahua, cacique de Chinchero, dirige la fuerza militar.',
         seconds: 9,
         source: 'docs/historia/campanas/junta_cusco.md',
+        image: 'media/junta/intro-cabildo.webp',
       },
       {
         kicker: 'EXPEDICIONES · 1814',
@@ -1890,6 +1894,7 @@ export const MISSIONS: MissionDef[] = [
         text: 'La Junta envía columnas a Puno, La Paz, Huamanga y Arequipa. Con pocos fusiles y mucha gente, la causa se juega en la sierra y en el altiplano.',
         seconds: 9,
         source: 'docs/historia/campanas/junta_cusco.md',
+        image: 'media/junta/intro-apacheta.webp',
       },
       {
         kicker: 'UMACHIRI · 11 DE MARZO DE 1815',
@@ -1897,13 +1902,14 @@ export const MISSIONS: MissionDef[] = [
         text: 'La división de Ramírez baja del Alto Perú. En Umachiri, la Junta presenta batalla con miles de hombres mal armados frente a una tropa veterana con artillería y caballería.',
         seconds: 10,
         source: 'docs/historia/campanas/junta_cusco.md',
+        image: 'media/junta/intro-umachiri.webp',
       },
     ],
+    epilogueImage: 'media/junta/intro-epilogo.webp',
     allowedUnits: [
       UnitKind.WORKER,
       UnitKind.SOLDIER,
       UnitKind.MUSKETEER,
-      UnitKind.RIFLEMAN,
       UnitKind.PATRIOTA_MONTONERA,
       UnitKind.CAVALRY,
       UnitKind.HUSSAR,
@@ -1959,9 +1965,9 @@ export const MISSIONS: MissionDef[] = [
         id: 'a2_batalla',
         kind: 'hold',
         pos: { dx: 140, dz: 168 },
-        radius: 16,
-        time: 60,
-        minUnits: 6,
+        radius: 18,
+        time: 45,
+        minUnits: 5,
         hidden: true,
         title: 'Sostén La Apacheta con la columna de Pumacahua',
       },
@@ -1977,17 +1983,17 @@ export const MISSIONS: MissionDef[] = [
         id: 'a3_resistir',
         kind: 'hold',
         pos: { dx: 198, dz: 214 },
-        radius: 18,
-        time: 120,
-        minUnits: 5,
+        radius: 20,
+        time: 90,
+        minUnits: 4,
         hidden: true,
-        title: 'Resiste en Umachiri hasta que la columna se detenga',
+        title: 'Resiste en Umachiri el tiempo que la Junta necesita para retirarse',
       },
       {
         id: 'a3_pumacahua',
         kind: 'protect',
         entityTag: 'pumacahua',
-        title: 'Mantén con vida a Mateo Pumacahua',
+        title: 'Mantén con vida a Mateo Pumacahua durante la batalla',
       },
       {
         id: 'a3_melgar',
@@ -1998,12 +2004,12 @@ export const MISSIONS: MissionDef[] = [
         title: 'Protege a Mariano Melgar',
       },
       {
-        id: 'a3_cuartel',
-        kind: 'destroy',
-        entityTag: 'centro_realista',
+        id: 'a3_artilleria',
+        kind: 'protect',
+        entityTag: 'artilleria_junta',
         optional: true,
         hidden: true,
-        title: 'Toma el cuartel realista si resiste',
+        title: 'Conserva la artillería de la Junta',
       },
     ],
     triggers: [
@@ -2040,6 +2046,7 @@ export const MISSIONS: MissionDef[] = [
             type: 'act',
             kicker: 'Acto II · 10 de noviembre de 1814',
             title: 'La Apacheta',
+            image: 'media/junta/intro-apacheta.webp',
             text: 'La columna de Pumacahua marcha sobre Arequipa. En La Apacheta derrota a la vanguardia de Picoaga; la ciudad se rinde, pero el ejército de Ramírez ya baja del Alto Perú.',
           },
           { type: 'objective', objectiveId: 'a2_apacheta', state: 'activate', announce: true },
@@ -2060,8 +2067,8 @@ export const MISSIONS: MissionDef[] = [
             type: 'wave',
             owner: 1,
             units: [
-              { kind: UnitKind.SOLDIER, count: 6 },
-              { kind: UnitKind.RIFLEMAN, count: 2 },
+              { kind: UnitKind.SOLDIER, count: 4 },
+              { kind: UnitKind.RIFLEMAN, count: 1 },
               { kind: UnitKind.REALISTA_DRAGON, count: 1 },
             ],
             pos: { dx: 140, dz: 168 },
@@ -2078,11 +2085,12 @@ export const MISSIONS: MissionDef[] = [
             type: 'act',
             kicker: 'Acto III · 11 de marzo de 1815',
             title: 'Umachiri',
+            image: 'media/junta/intro-umachiri.webp',
             text: 'La división de Ramírez, veterana del Alto Perú, alcanza a la Junta en el llano de Umachiri. Los rebeldes son muchos, pero tienen pocos fusiles; la artillería y la caballería realistas deciden el campo.',
           },
           { type: 'objective', objectiveId: 'a3_umachiri', state: 'activate', announce: true },
           { type: 'objective', objectiveId: 'a3_melgar', state: 'activate' },
-          { type: 'objective', objectiveId: 'a3_cuartel', state: 'activate' },
+          { type: 'objective', objectiveId: 'a3_artilleria', state: 'activate' },
         ],
       },
       {
@@ -2100,8 +2108,8 @@ export const MISSIONS: MissionDef[] = [
             type: 'wave',
             owner: 1,
             units: [
-              { kind: UnitKind.SOLDIER, count: 5 },
-              { kind: UnitKind.RIFLEMAN, count: 2 },
+              { kind: UnitKind.SOLDIER, count: 4 },
+              { kind: UnitKind.RIFLEMAN, count: 1 },
               { kind: UnitKind.REALISTA_DRAGON, count: 1 },
             ],
             pos: { dx: 198, dz: 214 },
@@ -2299,6 +2307,7 @@ export const MISSIONS: MissionDef[] = [
     enemy: { active: true, difficulty: 'hard', aggression: 1.4 },
     tutorial: true,
     // A land defense of the port: no siege train in this scenario.
+    epilogueImage: 'media/junta/intro-epilogo.webp',
     allowedUnits: [
       UnitKind.WORKER,
       UnitKind.SOLDIER,

@@ -293,6 +293,23 @@ slot is absent (offline / without assets).
 - **Runtime**: m1's narrated intro (`MissionDef.intro`), the act II-IV chapter cards (`act` effect
   `image`) and the victory epilogue backdrop (`MissionDef.epilogueImage`).
 
+### La Junta del Cusco intro, chapter and epilogue images (in-engine recreations)
+
+- **Location**: `public/media/junta/intro-{cabildo,apacheta,umachiri,epilogo}.webp` (960x540, WebP q58,
+  ~56 KB in total).
+- **Source**: captured from the game itself by `scripts/capture_junta_intro.mjs`. The Cusco cabildo and the
+  La Apacheta/Umachiri views are staged through the debug harness, rendered without the HUD at 1600x900 and
+  resized with `sharp`; the epilogue uses a low cinematic camera over Umachiri at dusk. Regenerate them with
+  `node scripts/capture_junta_intro.mjs` (one with `--only=ID`) after art changes.
+- **Runtime (menu)**: the briefing and the "Tu senda" card use `intro-cabildo`; the campaign card for La
+  Independencia reuses it. The intro beats, the Act II/III chapter cards and the victory epilogue use the
+  other three captures.
+- **Content**: project-owned game renders (authored terrain, the reused `colonial_site` plaza and the
+  procedural patriot camp). They are recreations of the game's own scenes: never historical photographs,
+  and not Blender renders (so not in `src/art/manifest.json`).
+- **Review**: no human art-review gate applies to in-engine captures; the reused colonial plaza GLB keeps
+  its own review status in `src/art/manifest.json`.
+
 ### Caral Pyramid Mayor modular scenery
 
 - **Location**: `src/assets/scenery/caral/caral_pyramid_mayor_lod0.glb` and `lod1.glb`.

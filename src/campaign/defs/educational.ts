@@ -203,7 +203,7 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       'Pumacahua la dirige militarmente. La rebelión se extiende al altiplano y termina en Umachiri (1815).',
     context:
       'La revolución del Cusco de 1814 nació del conflicto entre el cabildo constitucional de Cádiz y la Real ' +
-      'Audiencia. La Junta, presidida por José Angulo y con Mateo García Pumacahua como capitán general, envió ' +
+      'Audiencia. La Junta, presidida por José Angulo y con Mateo García Pumacahua como jefe militar, envió ' +
       'expediciones a Puno, La Paz, Huamanga y Arequipa. Pumacahua venció en La Apacheta (10 de noviembre de 1814) ' +
       'y ocupó Arequipa, pero la división de Juan Ramírez Orozco, veterana del Alto Perú, derrotó a los rebeldes ' +
       'en Umachiri (11 de marzo de 1815). La historiografía debate si el movimiento fue separatista o autonomista ' +

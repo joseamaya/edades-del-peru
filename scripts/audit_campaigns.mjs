@@ -11,6 +11,7 @@ const MISSIONS = [
   ['m6_chimu_inca', 'La Guerra del Norte'],
   ['m6b_guerra_civil', 'La Guerra Civil'],
   ['m7_tupac_amaru', 'La Gran Rebelión'],
+  ['m_junta_cusco', 'La Junta del Cusco'],
   ['m8_independencia', 'La Independencia'],
   ['m9_guerra_pacifico', 'La Defensa de Arica'],
 ];
@@ -142,6 +143,8 @@ async function auditChapterCard(browser, base) {
   await start.click();
   const card = page.locator('.ed-mission-card');
   await card.waitFor({ state: 'visible', timeout: 15_000 });
+  // The HUD hides the objectives on the next frame; check the settled layout, not the same tick.
+  await page.waitForTimeout(120);
   const box = await card.boundingBox();
   const objectives = page.locator('#ed-objectives');
   const objectivesDuringCard = await objectives.isVisible().catch(() => false);

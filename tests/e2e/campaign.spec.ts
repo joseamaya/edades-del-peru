@@ -329,6 +329,7 @@ test('later campaign briefings show their draft intro art with art=all', async (
     'm6_chimu_inca',
     'm6b_guerra_civil',
     'm7_tupac_amaru',
+    'm_junta_cusco',
     'm8_independencia',
     'm9_guerra_pacifico',
   ]) {
@@ -464,7 +465,7 @@ test('authored campaign geography spawns its local base and features', async ({ 
     { id: 'm6_chimu_inca', flats: true, decor: null, site: 'chimu_site', canal: true },
     { id: 'm6b_guerra_civil', flats: true, decor: null, site: 'cusco_inca_site', canal: false },
     { id: 'm7_tupac_amaru', flats: true, decor: null, site: 'colonial_site', canal: false },
-    { id: 'm_junta_cusco', flats: true, decor: null, site: 'cusco_junta_site', canal: false },
+    { id: 'm_junta_cusco', flats: true, decor: 'mission_decor_patriotas_camp', site: 'cusco_junta_site', canal: false },
     { id: 'm8_independencia', flats: true, decor: null, site: 'independence_site', canal: false },
     { id: 'm9_guerra_pacifico', flats: true, decor: null, site: 'arica_site', canal: false },
   ];

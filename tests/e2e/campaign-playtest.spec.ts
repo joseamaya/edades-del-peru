@@ -161,7 +161,6 @@ test('plays m8 by holding Junín and Ayacucho with real orders', async ({ page }
     for (let i = 0; i < Math.ceil(110 / dt) && !m.ended; i++) {
       // This playtest verifies the hold/objective wiring; keep the player alive like campaign-completable
       // instead of depending on the hard enemy's attrition.
-      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
       g.update(dt, t);
       t += dt;
     }
@@ -170,7 +169,6 @@ test('plays m8 by holding Junín and Ayacucho with real orders', async ({ page }
     move(rifles, enemy.pos.x - 12, enemy.pos.z + 10);
     // 120 s hold plus the march from Junín; leave a margin so the hold can actually complete.
     for (let i = 0; i < Math.ceil(150 / dt) && !m.ended; i++) {
-      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
       g.update(dt, t);
       t += dt;
     }
@@ -643,7 +641,6 @@ test('plays m2 Chavín through the four acts with real construction and offering
     const tick = (seconds: number) => {
       for (let i = 0; i < Math.ceil(seconds / dt) && !m.ended; i++) {
         document.querySelector<HTMLElement>('.ed-mission-card')?.click();
-        for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
         for (const b of g.buildings.values()) if (b.owner === 0 && !b.dead) b.hp = b.maxHp;
         if (!reached && Math.hypot(holder.pos.x - anchor.x, holder.pos.z - anchor.z) < 8) reached = true;
         holder.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
@@ -921,10 +918,13 @@ test('plays La Junta del Cusco through its three acts with real orders', async (
     const dt = 1 / 60;
     let t = 0;
     const dismissCard = () => document.querySelector('.ed-mission-card')?.click();
+    // The manual playtest covers the no-cheat attrition path; this spec isolates the three-act wiring.
+    const keepAlive = () => {
+      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
+    };
     const run = (seconds: number) => {
       for (let i = 0; i < Math.ceil(seconds / dt) && !m.ended; i++) {
-        // Isolate objective wiring from attrition, as the m8 playtest does.
-        for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
+        keepAlive();
         if (i % 15 === 0) dismissCard();
         g.update(dt, t);
         t += dt;
@@ -945,7 +945,7 @@ test('plays La Junta del Cusco through its three acts with real orders', async (
     const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker') as any;
     move([worker.id], 72, 58);
     for (let i = 0; i < Math.ceil(90 / dt) && !m.ended; i++) {
-      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
+      keepAlive();
       if (i % 15 === 0) dismissCard();
       g.update(dt, t);
       t += dt;
@@ -987,7 +987,7 @@ test('plays La Junta del Cusco through its three acts with real orders', async (
         false,
       );
     for (let i = 0; i < Math.ceil(120 / dt) && !m.ended; i++) {
-      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
+      keepAlive();
       if (i % 15 === 0) dismissCard();
       g.update(dt, t);
       t += dt;
@@ -1000,7 +1000,7 @@ test('plays La Junta del Cusco through its three acts with real orders', async (
       .map((u: any) => u.id);
     move(army, 140, 168, true);
     for (let i = 0; i < Math.ceil(120 / dt) && !m.ended; i++) {
-      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
+      keepAlive();
       if (i % 15 === 0) dismissCard();
       g.update(dt, t);
       t += dt;
@@ -1008,7 +1008,7 @@ test('plays La Junta del Cusco through its three acts with real orders', async (
     }
     const antApacheta = m.getObjectiveState('a2_apacheta') as string;
     for (let i = 0; i < Math.ceil(90 / dt) && !m.ended; i++) {
-      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
+      keepAlive();
       if (i % 30 === 0) {
         move(army, 140, 168);
         dismissCard();
@@ -1020,7 +1020,7 @@ test('plays La Junta del Cusco through its three acts with real orders', async (
 
     move(army, 198, 214, true);
     for (let i = 0; i < Math.ceil(120 / dt) && !m.ended; i++) {
-      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
+      keepAlive();
       if (i % 15 === 0) dismissCard();
       g.update(dt, t);
       t += dt;
@@ -1028,7 +1028,7 @@ test('plays La Junta del Cusco through its three acts with real orders', async (
     }
     const antUmachiri = m.getObjectiveState('a3_umachiri') as string;
     for (let i = 0; i < Math.ceil(165 / dt) && !m.ended; i++) {
-      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
+      keepAlive();
       if (i % 30 === 0) {
         move(army, 198, 214);
         dismissCard();

@@ -20,7 +20,7 @@ documented defeat.
 | --- | --- | --- | --- |
 | I · La Junta (3 ago 1814) | Cusco | Visit the Cabildo and raise a barracks | The junta is a urban political coalition; it must organise before marching |
 | II · La Apacheta (10 nov 1814) | Arequipa pass | March south and hold the pass against Picoaga's vanguard | A tactical victory opens Arequipa but does not stop Ramírez |
-| III · Umachiri (11 mar 1815) | Puno altiplano | Reach the plain and hold for 120 s; keep Pumacahua alive | Numbers without firearms cannot break a veteran division; the leaders must survive |
+| III · Umachiri (11 mar 1815) | Puno altiplano | Reach the plain and hold for 90 s; keep Pumacahua alive | Numbers without firearms cannot break a veteran division; the leaders must survive |
 
 Optional goals: protect Melgar and take the royalist headquarters if it holds. Neither gates victory.
 
@@ -74,13 +74,17 @@ hold La Apacheta, resist at Umachiri. The informational montonera step advances 
 - Scale: `tests/campaign-scale.test.ts` enforces the 256 m map, 128² ground and crossing band.
 - E2E: the general campaign specs cover briefing, epilogue, HUD layout, save/load and the campaign path;
   the mission-specific playtest reaches the acts with real orders.
-- Bench: the opening view is registered in `scripts/bench_scene.mjs` when the first visual pass is captured.
+- Bench: the opening view is measured by `scripts/bench_scene.mjs`; it is not a passing scene yet (see open item 3).
 
 ## Open items
 
-1. Capture the intro, chapter-card and epilogue images from the engine (`scripts/capture_junta_intro.mjs`);
-   `MISSION_ART` is intentionally empty until then, so the briefing uses the neutral backdrop.
-2. Replace the single colonial plaza with a small Cusco city overlay (cabildo, plaza, streets) when the art
+1. Replace the single colonial plaza with a small Cusco city overlay (cabildo, plaza, streets) when the art
    pass is scheduled; the current site is a typological abstraction.
-3. Human review of any new Blender pieces (none yet).
-4. A manual 30–40 minute playtest; the automated path covers the three acts.
+2. A manual 30–40 minute playtest; the automated path covers the three acts with attrition isolated, not a
+   no-cheat victory. The mission is tuned so a player who keeps the line can hold both positions, but that
+   path needs a human run.
+3. Performance: the high-preset opening measures ~738k triangles / ~982 draw calls in
+   `scripts/bench_scene.mjs`, dominated by the unit rigs at the base. The mission is playable at the
+   governor's quality but is not within art-direction §11's 200-call budget; it is not registered as a
+   passing bench scene yet.
+4. Human review of any new Blender pieces (none yet; the captures are in-engine).
