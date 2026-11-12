@@ -350,7 +350,11 @@ didactic pauses, and the simulation/plan is untouched. Two layers changed:
   `src/rendering/SettlementDressing.ts`) dresses the starting base with a deterministic set of
   household props: stone hearths, fish drying racks, baskets/shicras, gourds, cotton bundles,
   benches and reed windbreaks. They ship as Blender kit pieces (`scripts/blender/build_caral_props_kit.py`)
-  and are baked per base into one mesh per shared material and LOD. The landmark spawn now requires a
+  and are baked per base into one mesh per shared material and LOD. The planner keeps them outside the
+  rendered walls and outside the settlement centre's plinth (the Caral Plaza Mayor; Chavín's centre is
+  smaller, so the value is conservative), leaves no dressing prop inside the courtyard (the Mayor keeps
+  its own built dais), and separates them by the sum of their radii plus 0.1 m; see
+  `propClearance`/`propSeparation` in `settlementDressing.ts`. The landmark spawn now requires a
   broad, gentle footprint so the complex no longer clips through cliffs (`Game.spawnLandmark`).
 - **Shared builders (affect every region).** The Andean thatch gable was fixed (it used to render
   as a crossed X) and given a deeper eave and a ridge bundle; adobe walls gained a stone base

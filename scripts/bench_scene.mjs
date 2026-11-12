@@ -31,7 +31,7 @@ const BUDGETS = {
   // The household props kit adds 8 calls (four shared materials per base, two bases, no shadow pass:
   // the pieces are sub-metre); pinning every LOD manager to the measured framing adds the quarry's
   // shadow pass (+2), and the pacae shrubs add 3 materials x 2 LODs with their shadows (up to +12).
-  // Measured opening: 342 903-350 623 tris / 168-169 calls, kit 86 776-95 156 / 51: the kit range is
+  // Measured opening: 342 903-351 487 tris / 168-169 calls, kit 86 776-95 360 / 51: the kit range is
   // how many pacae shrubs fall inside the 30 m LOD0 ring when the frame is measured.
   m1_caral: { sceneTriangles: 400_000, sceneDrawCalls: 230, kitTriangles: 100_000, kitDrawCalls: 56 },
   // End game over the city with 35 workers in view: art-direction §11 (600k triangles). It measured

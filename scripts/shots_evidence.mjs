@@ -582,6 +582,7 @@ const SCENES = {
       }
       const racks = dressing.placements.filter((p) => p.kind === 'drying_rack');
       const prop = racks[racks.length - 1] ?? dressing.placements[0];
+      const base = g.playerCenter(0);
       // Settle the mission's lighting and sky: the loop is stopped, so drive it by hand.
       for (let i = 0; i < 60; i++) g.loop.onUpdate(1 / 60, i / 60);
       // Place names are map labels, not props: hide them (the loop update re-shows them).
@@ -590,13 +591,14 @@ const SCENES = {
       });
       g.renderer.render(g.scene, g.camera.camera);
       return {
-        center: { x: dressing.center.x, z: dressing.center.z },
+        center: { x: base.x, z: base.z },
         subject: { x: prop.x, y: g.terrain.getHeight(prop.x, prop.z), z: prop.z },
       };
     },
     views: [
       { name: 'close', mode: 'close', offset: { x: 1.9, y: 1.5, z: 1.9 }, lookHeight: 0.6 },
       { name: 'rts', mode: 'rts', height: 30, centerSubject: true },
+      { name: 'base', mode: 'rts', height: 32 },
     ],
   },
   'caral-pacae': {
