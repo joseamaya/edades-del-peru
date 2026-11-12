@@ -13,6 +13,9 @@ import { ArchitectureCity, CaralCity } from '../rendering/architectureKit';
 import {
   ASPERO_BLOCKERS,
   ASPERO_LAYOUT,
+  CARAL_CAMP_BLOCKERS,
+  CARAL_CAMP_ROUTE,
+  CARAL_CAMP_STATIONS,
   CARAL_FAIR_TENTS,
   SUPE_HAMLETS,
   SUPE_HAMLET_BLOCKERS,
@@ -23,6 +26,8 @@ import { CHAVIN_CITY_LAYOUT, CHAVIN_PHASE_PLAN } from '../model/defs/chavinCity'
 import { standsIn } from '../model/defs/sitePhases';
 import { fishingApproach, type Obstacle } from '../game/Pathfinding';
 import { loadDecorModel } from '../rendering/decorModels';
+import { SiteCrew } from '../rendering/SiteCrew';
+import type { CaralMayorPhase } from '../model/defs/caralPhases';
 import { buildCanalGeometry } from '../rendering/canal';
 import { DEFAULT_CANAL_WIDTH } from '../model/defs/canal';
 import { planProps, propCountFor } from '../model/defs/props';
@@ -252,7 +257,12 @@ export class WorldViewDecor {
     };
     if (def.id === 'caral_site') {
       // The in-use city's houses are part of the simulation (headless too), independent of the kit load.
-      for (const blocker of [...CARAL_CITY_BLOCKERS, ...ASPERO_BLOCKERS, ...SUPE_HAMLET_BLOCKERS]) {
+      for (const blocker of [
+        ...CARAL_CITY_BLOCKERS,
+        ...CARAL_CAMP_BLOCKERS,
+        ...ASPERO_BLOCKERS,
+        ...SUPE_HAMLET_BLOCKERS,
+      ]) {
         this.addSiteBlocker(blocker, def.blockerPadding * 2);
       }
       if (!this.game.headless) {
@@ -264,6 +274,24 @@ export class WorldViewDecor {
           (x, z) => this.game.terrain.getHeight(x, z) - (site.y ?? 0),
         );
         attachCity(city, () => (this.game.caralCity = city));
+        // Presentation-only crew: rigs in the scene, never units or obstacles (issue 422).
+        this.game.siteCrew?.dispose();
+        const crew = new SiteCrew(
+          this.game.scene,
+          (x, z) => this.game.terrain.getHeight(x, z),
+          CARAL_CAMP_ROUTE,
+          CARAL_CAMP_STATIONS,
+        );
+        this.game.siteCrew = crew;
+        crew.setPhase(this.game.sitePhase as CaralMayorPhase);
+        void crew.load().then((ok) => {
+          if (!current()) {
+            crew.dispose();
+            if (this.game.siteCrew === crew) this.game.siteCrew = null;
+            return;
+          }
+          if (!ok) console.warn('[site-crew] the worker rig did not load; the camp stays empty');
+        });
       }
     }
     if (def.id === 'chavin_site') {

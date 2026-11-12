@@ -23,7 +23,10 @@ export type CaralArchAssetId =
   | 'house_elite'
   | 'house_aspero'
   | 'fair_tent'
-  | 'huaca_idolos';
+  | 'huaca_idolos'
+  | 'camp_shelter'
+  | 'shicra_stack'
+  | 'stone_yard';
 
 /** Construction states of the Pyramid Mayor (act III of docs/design/caral-model-mission.md). */
 export const CARAL_MAYOR_PHASE_ASSET: Record<CaralMayorPhase, CaralArchAssetId> = {
@@ -115,6 +118,72 @@ const ELITE_HOUSES: readonly [number, number, number][] = [
   [84, 100, -HALF_PI],
 ];
 
+/**
+ * The construction camp on the west apron of the Pyramid Mayor. It stands from `foundation` until
+ * `in_use` and is entirely visual: no scaffolding (explicitly undocumented in the dossier), only the
+ * shicra heaps, the dressed stone and a cane ramada the crew uses. Positions are a game abstraction.
+ */
+export const CARAL_CAMP_LAYOUT: readonly CaralArchPlacement[] = [
+  { asset: 'camp_shelter', x: 137.2, z: 33.2, rotY: 0.2, scale: [1, 1, 1], since: 'foundation', until: 'in_use' },
+  {
+    asset: 'shicra_stack',
+    x: 139.4,
+    z: 24.8,
+    rotY: 0.35,
+    scale: [1, 1, 1],
+    since: 'foundation',
+    until: 'in_use',
+  },
+  {
+    asset: 'shicra_stack',
+    x: 136.4,
+    z: 38.4,
+    rotY: -0.3,
+    scale: [1, 1, 1],
+    since: 'foundation',
+    until: 'in_use',
+  },
+  {
+    asset: 'camp_shelter',
+    x: 135.8,
+    z: 26.5,
+    rotY: -0.4,
+    scale: [1, 1, 1],
+    since: 'foundation',
+    until: 'in_use',
+  },
+  {
+    asset: 'shicra_stack',
+    x: 135.5,
+    z: 37.5,
+    rotY: -0.2,
+    scale: [1, 1, 1],
+    since: 'foundation',
+    until: 'in_use',
+  },
+  {
+    asset: 'stone_yard',
+    x: 132.2,
+    z: 30.0,
+    rotY: 0.1,
+    scale: [1, 1, 1],
+    since: 'foundation',
+    until: 'in_use',
+  },
+];
+
+/** The carriers' loop: from the north shicra heap to the Mayor's west retaining wall and back. */
+export const CARAL_CAMP_ROUTE: readonly { x: number; z: number }[] = [
+  { x: 139.4, z: 26.8 },
+  { x: 140.0, z: 29.6 },
+];
+
+/** Where the two stationary workers stand: one at the heap, one at the wall. */
+export const CARAL_CAMP_STATIONS: readonly { x: number; z: number; yaw: number }[] = [
+  { x: 139.0, z: 27.0, yaw: Math.PI },
+  { x: 139.8, z: 30.0, yaw: Math.PI / 2 },
+];
+
 export const CARAL_CITY_LAYOUT: readonly CaralArchPlacement[] = [
   { asset: 'pyramid_mayor', x: mayor.x, z: mayor.z, rotY: 0, scale: [1, 1, 1], mayor: true },
   // Sunken circular plaza in front of the Pyramid Mayor's stair (the stair foot is ~4 beyond the base).
@@ -175,6 +244,7 @@ export const CARAL_CITY_LAYOUT: readonly CaralArchPlacement[] = [
     rotY,
     scale: [1, 1, 1],
   })),
+  ...CARAL_CAMP_LAYOUT,
 ];
 
 /** Footprints of the kit houses (walls plus platform), so units walk around them. */
@@ -272,6 +342,20 @@ export const CARAL_CITY_BLOCKERS: readonly SiteBlocker[] = [
     rotatedBlocker(p.x, p.z, PLAZA_DIAMETER * p.scale[0], PLAZA_DIAMETER * p.scale[2], p.rotY, p.since),
   ),
 ];
+
+/** Footprints of the camp pieces that feed the pathfinder while the camp stands. */
+const CAMP_FOOTPRINT: Partial<Record<CaralArchAssetId, { w: number; d: number }>> = {
+  camp_shelter: { w: 3.2, d: 3.7 },
+  shicra_stack: { w: 2.8, d: 2.5 },
+  stone_yard: { w: 3.2, d: 2.0 },
+};
+
+/** The camp stores block their footprint from `foundation` until the city is in use. */
+export const CARAL_CAMP_BLOCKERS: readonly SiteBlocker[] = CARAL_CAMP_LAYOUT.flatMap((p) => {
+  const size = CAMP_FOOTPRINT[p.asset];
+  if (!size) return [];
+  return [rotatedBlocker(p.x, p.z, size.w, size.d, p.rotY, p.since, p.until)];
+});
 
 /**
  * Neighbouring settlements of the Supe valley (the dossier names several, e.g. Chupacigarro and Miraya),

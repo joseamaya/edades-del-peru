@@ -158,6 +158,12 @@ Dialogue speaker labels must not say "Comandante" in this mission.
   The finished plaster is white; the in-use phase swaps the Mayor to the documented palette
   (white, ochre, red; the exact per-building colours are inferred) via `CARAL_MAYOR_PHASE_ASSET`, checked by
   `tests/architecture-kit.test.ts`.
+- **Act III camp**: from `foundation` until `in_use` the Mayor's west apron carries two cane ramadas, three
+  shicra heaps and a dressed-stone yard (`CARAL_CAMP_LAYOUT`); their footprints block pathing while they
+  stand. A six-rig `SiteCrew` carries bags from the heap to the retaining wall and shrinks to three at
+  `finished`; it is presentation-only (never a `Unit`, no pathfinding, no selection) and stays at ground
+  level, because the dossier explicitly records scaffolding as undocumented and not modelled. The camp and
+  crew are an abstraction; their evidence is `node scripts/shots_evidence.mjs --scene=caral-camp`.
 - **Communal construction**: after each material hand-over, a worker must hold the site for a 20 s work
   turn. The turn's upkeep comes from the village food reserve (the communal store is where the community
   keeps it) and a finished store must stand (`consume.store: BuildingKind.MILL`); if the store is missing

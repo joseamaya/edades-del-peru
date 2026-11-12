@@ -33,6 +33,9 @@ const IDS: CaralArchAssetId[] = [
   'house_elite',
   'house_aspero',
   'fair_tent',
+  'camp_shelter',
+  'shicra_stack',
+  'stone_yard',
 ];
 const PERSON = 1.86;
 

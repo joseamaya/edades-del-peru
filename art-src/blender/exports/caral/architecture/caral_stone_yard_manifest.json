@@ -1,0 +1,73 @@
+{
+  "asset_id": "caral_stone_yard",
+  "source_scene": "scenes/caral_architecture_kit.blend",
+  "script": "scripts/blender/build_caral_architecture_kit.py",
+  "scale": 1.0,
+  "up": "Y",
+  "front": "+Z",
+  "pivot": "footprint centre at ground level",
+  "confidence": "inferred",
+  "sources": [
+    "docs/historia/campanas/caral.md",
+    "docs/historia/civilizaciones/caral.md"
+  ],
+  "budget": {
+    "LOD0": 5000,
+    "LOD1": 1500
+  },
+  "reviewed": false,
+  "lods": {
+    "LOD0": {
+      "triangles": 440,
+      "draw_calls": 1,
+      "materials": [
+        "MAT-Arch_Stone"
+      ],
+      "bounds": {
+        "min": [
+          -1.618,
+          -0.89,
+          0.003
+        ],
+        "max": [
+          1.54,
+          1.124,
+          0.887
+        ],
+        "size": [
+          3.158,
+          2.013,
+          0.884
+        ]
+      },
+      "file": "caral_stone_yard_lod0.glb",
+      "bytes": 42464
+    },
+    "LOD1": {
+      "triangles": 48,
+      "draw_calls": 1,
+      "materials": [
+        "MAT-Arch_Stone"
+      ],
+      "bounds": {
+        "min": [
+          -1.584,
+          -0.874,
+          0.01
+        ],
+        "max": [
+          1.527,
+          -0.316,
+          0.43
+        ],
+        "size": [
+          3.111,
+          0.558,
+          0.42
+        ]
+      },
+      "file": "caral_stone_yard_lod1.glb",
+      "bytes": 5536
+    }
+  }
+}

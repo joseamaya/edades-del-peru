@@ -28,6 +28,8 @@ import { clearResourceCaches } from '../rendering/ResourceNodeView';
 import { OrderMarkers } from '../entities/OrderMarker';
 import { TreeInstances, kitLod0RadiusFor } from '../rendering/TreeInstances';
 import { PropKitInstances } from '../rendering/PropKitInstances';
+import type { SiteCrew } from '../rendering/SiteCrew';
+import type { CaralMayorPhase } from '../model/defs/caralPhases';
 import { loadPropsKit } from '../rendering/propsKit';
 import { isCoastalRegion, loadKitModel } from '../rendering/vegetationKit';
 import { attachVegetationKit } from '../rendering/vegetationKitLoader';
@@ -188,6 +190,8 @@ export class Game {
   caralCity: CaralCity | null = null;
   /** The Chavín ceremonial centre built by phases, when the mission site is Chavín. */
   chavinCity: ArchitectureCity | null = null;
+  /** Presentation-only construction crew in the Caral camp (issue 422); null elsewhere. */
+  siteCrew: SiteCrew | null = null;
   /** Named environmental events and their progress (0 = off, 1 = fully applied). */
   environment: Record<string, number> = {};
   private environmentTargets: Record<string, number> = {};
@@ -1269,6 +1273,7 @@ export class Game {
     this.sitePhase = phase;
     this.caralCity?.setPhase(phase);
     this.chavinCity?.setPhase(phase);
+    this.siteCrew?.setPhase(phase as CaralMayorPhase);
     this.world.syncSitePhase(phase);
     this.syncSealCap(phase === 'sealed');
   }
@@ -1954,6 +1959,8 @@ export class Game {
     this.props.dispose();
     this.quarries?.dispose();
     this.pacae?.dispose();
+    this.siteCrew?.dispose();
+    this.siteCrew = null;
     this.wildlife.dispose();
     if (this.landmark) {
       this.landmarkLoadToken++;
