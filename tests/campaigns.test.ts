@@ -167,26 +167,32 @@ describe('campaign progress', () => {
   });
 });
 
-describe('sequential campaign unlocks', () => {
-  it('opens only Caral on a fresh profile', () => {
+describe('campaign unlocks', () => {
+  it('opens the released opening of a campaign, and waits when that opening is still planned', () => {
     const fresh = parseCampaignProgress(null);
+    // Preinca's opening is released, so its chapter is open.
     expect(isMissionUnlocked(fresh, 'm1_caral')).toBe(true);
     expect(isMissionUnlocked(fresh, 'm2_chavin')).toBe(false);
     expect(isCampaignUnlocked(fresh, 'preinca')).toBe(true);
-    expect(isCampaignUnlocked(fresh, 'inca')).toBe(false);
+    // The other chapters still open with a planned mission: their released missions wait for the predecessor.
+    for (const campaign of CAMPAIGNS.filter((c) => c.id !== 'preinca')) {
+      expect(isMissionUnlocked(fresh, campaign.releasedMissionIds[0]!), campaign.id).toBe(false);
+      expect(isCampaignUnlocked(fresh, campaign.id), campaign.id).toBe(false);
+    }
     expect(nextSeriesMission(fresh)?.missionId).toBe('m1_caral');
   });
 
-  it('opens the next mission, and the next campaign after its predecessor ends', () => {
+  it('opens the next mission inside a campaign, and the next campaign after its predecessor ends', () => {
     let progress = markMissionComplete(parseCampaignProgress(null), 'preinca', 'm1_caral');
     expect(isMissionUnlocked(progress, 'm2_chavin')).toBe(true);
     expect(isMissionUnlocked(progress, 'm3_moche_recuay')).toBe(false);
+    expect(nextSeriesMission(progress)?.missionId).toBe('m2_chavin');
     for (const id of ['m2_chavin', 'm3_moche_recuay']) progress = markMissionComplete(progress, 'preinca', id);
-    expect(isCampaignUnlocked(progress, 'inca')).toBe(false);
+    expect(nextSeriesMission(progress)?.missionId).toBe('m4_wari');
     progress = markMissionComplete(progress, 'preinca', 'm4_wari');
     expect(isCampaignUnlocked(progress, 'inca')).toBe(true);
-    expect(isCampaignUnlocked(progress, 'virreinato')).toBe(false);
     expect(nextSeriesMission(progress)?.missionId).toBe('m5_yahuar_pampa');
+    expect(isMissionUnlocked(progress, 'm6_chimu_inca')).toBe(false);
     expect(isMissionUnlocked(progress, 'm1_caral')).toBe(true);
   });
 

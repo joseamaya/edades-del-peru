@@ -159,7 +159,7 @@ never gates the rest of the tutorial.
 | Design doc  | `docs/design/<mission>-model-mission.md` with acts, geography, open items (copy Caral's layout)   |
 | Acts        | Hidden objectives per act, chapter cards, optional goals, documented ending                       |
 | Narrator    | `narrator` set; no invented names or titles                                                       |
-| Map         | 256 m, painted ground every 2 m, worker crossing 180–240 s, transect script, fords, region flora/fauna |
+| Map         | 256 m, painted ground every 2 m, worker crossing 130–160 s, transect script, fords, region flora/fauna |
 | Site        | Phased kit pieces, phase effect, monuments appear and block by phase, living details              |
 | Economy     | `allowedBuildings`, `allowedUnits`, period techs only, the mission's own mechanic                 |
 | Intro       | Three narrated beats with captured images; chapter-card and epilogue images                       |

@@ -29,7 +29,7 @@ shortcuts panel open.
 | Opening     | A narrated intro and a briefing with the mission's own art (or a neutral backdrop), chapter-card and epilogue images captured in engine and documented as such.                              |
 | Art         | New models and images carry `confidence` and pass a recorded human review; PROVENANCE and the dossier certainty table agree.                                                                 |
 | Performance | The mission's opening (and, when its late game fills the screen, its late view) is in `scripts/bench_scene.mjs` and passes `yarn bench:check`; `dist/` stays under its budget.               |
-| Scale       | A model mission uses a 256 m map and painted ground sampled every 2 m; its worker crosses in 180–240 s. `tests/campaign-scale.test.ts` enforces it for every mission on the model list.      |
+| Scale       | A model mission uses a 256 m map and painted ground sampled every 2 m; its worker crosses in 130–160 s. `tests/campaign-scale.test.ts` enforces it for every mission on the model list.      |
 
 ## Caral gold-master status
 

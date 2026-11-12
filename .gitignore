@@ -22,6 +22,7 @@ playwright-report/
 *.xcf~
 # config for AI agent tooling (not part of the game)
 opencode.json
+.mcp.json
 skills-lock.json
 # local credentials for texture generation
 scripts/.cloudflare.json

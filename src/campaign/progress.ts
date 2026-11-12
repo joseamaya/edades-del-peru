@@ -72,16 +72,25 @@ export function isMissionCompleted(progress: CampaignProgress, missionId: string
 }
 
 /**
- * The series is played in order: the first mission is open, and every other one opens once the mission
- * before it on the path (the previous campaign's last mission, for a campaign's first) is completed. A
- * completed mission always stays open to replay.
+ * Missions open in order. A campaign's first mission opens the chapter as soon as it is released: the
+ * player can start any chapter whose opening exists, and the rest of that chapter follows the mission
+ * before it. A campaign whose first mission is still planned waits for the previous chapter. A completed
+ * mission always stays open to replay.
  */
 export function isMissionUnlocked(progress: CampaignProgress, missionId: string): boolean {
   const path = seriesMissions();
   const index = path.findIndex((m) => m.missionId === missionId);
   if (index < 0) return false;
-  if (index === 0 || isMissionCompleted(progress, missionId)) return true;
+  if (isMissionCompleted(progress, missionId)) return true;
+  if (isCampaignOpening(missionId)) return true;
   return isMissionCompleted(progress, path[index - 1].missionId);
+}
+
+/** Whether this is the released opening of its campaign, as opposed to a later mission on its path. */
+function isCampaignOpening(missionId: string): boolean {
+  return CAMPAIGNS.some(
+    (campaign) => campaign.path[0] === missionId && campaign.releasedMissionIds.includes(missionId),
+  );
 }
 
 /** A campaign is open once its first mission is. */
@@ -90,11 +99,7 @@ export function isCampaignUnlocked(progress: CampaignProgress, campaignId: Campa
   return !!first && isMissionUnlocked(progress, first.missionId);
 }
 
-/** The first open mission not yet completed, or null once the whole path is done. */
+/** The first unfinished mission on the series path, or null once the whole path is done. */
 export function nextSeriesMission(progress: CampaignProgress): SeriesMission | null {
-  return (
-    seriesMissions().find(
-      (m) => isMissionUnlocked(progress, m.missionId) && !isMissionCompleted(progress, m.missionId),
-    ) ?? null
-  );
+  return seriesMissions().find((m) => !isMissionCompleted(progress, m.missionId)) ?? null;
 }
