@@ -2403,6 +2403,7 @@ export const MISSIONS: MissionDef[] = [
     defeat:
       'La Junta se deshace en Umachiri. La represión realista alcanza a sus líderes y el Cusco vuelve al control virreinal.',
     period: HistoricalPeriod.INDEPENDENCE,
+    periodNote: 'La misión se sitúa en 1814–1815',
     narrator: 'Junta del Cusco',
     playerCiv: CivId.PATRIOTAS,
     enemyCiv: CivId.REALISTAS,

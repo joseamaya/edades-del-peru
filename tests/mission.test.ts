@@ -131,6 +131,20 @@ describe('mission optional (bonus) objectives', () => {
     game.players[0].resources.food = 1;
     m.update(0.1, 0);
     expect(m.won).toBe(true);
+    expect(m.getObjectiveState('bonus'), 'a failed protect goal stays failed').toBe('failed');
+  });
+
+  it('credits a protect goal whose unit survives to victory', () => {
+    const unit = { id: 1, tag: 'guarda', owner: 0, dead: false, kind: UnitKind.WORKER };
+    const game = stubGame(unit);
+    const m = new Mission(game as any, def, () => {});
+    m.start();
+    m.update(0.1, 0);
+    expect(m.getObjectiveState('bonus')).toBe('activo');
+    game.players[0].resources.food = 1;
+    m.update(0.1, 0);
+    expect(m.won).toBe(true);
+    expect(m.getObjectiveState('bonus')).toBe('completed');
   });
 });
 

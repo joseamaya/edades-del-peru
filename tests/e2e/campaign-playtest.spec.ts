@@ -1046,6 +1046,8 @@ test('plays La Junta del Cusco through its three acts with real orders', async (
       resistir: m.getObjectiveState('a3_resistir') as string,
       pumacahua: m.getObjectiveState('a3_pumacahua') as string,
       won: m.won as boolean | null,
+      royalistLost: g.players[1].totalLost as number,
+      royalistKilledByPlayer: g.players[0].kills as number,
     };
   });
   expect(out.cabildo).toBe('completed');
@@ -1054,8 +1056,12 @@ test('plays La Junta del Cusco through its three acts with real orders', async (
   expect(out.apacheta).toBe('completed');
   expect(out.antUmachiri).toBe('completed');
   expect(out.resistir).toBe('completed');
-  expect(out.pumacahua).not.toBe('failed');
+  // Pumacahua survives to victory, so his protect goal is credited as achieved.
+  expect(out.pumacahua).toBe('completed');
   expect(out.won).toBe(true);
+  // The victory table reads totalLost as "Pérdidas": every royalist the player killed is a royalist loss.
+  expect(out.royalistLost).toBeGreaterThanOrEqual(out.royalistKilledByPlayer);
+  expect(out.royalistLost).toBeGreaterThan(0);
   expect(errors).toEqual([]);
 });
 

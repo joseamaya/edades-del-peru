@@ -15,6 +15,8 @@ describe('La Junta del Cusco', () => {
     expect(JUNTA.map.type).toBe('andes');
     expect(JUNTA.unitSpeedScale).toBe(0.75);
     expect(JUNTA.period).toBe(HistoricalPeriod.INDEPENDENCE);
+    // The period card reads 1821–1824; the mission itself is 1814–1815.
+    expect(JUNTA.periodNote).toContain('1814–1815');
     expect(JUNTA.startingEra).toBe(Era.REPUBLIC);
     expect(JUNTA.playerCiv).toBe(CivId.PATRIOTAS);
     expect(JUNTA.enemyCiv).toBe(CivId.REALISTAS);
