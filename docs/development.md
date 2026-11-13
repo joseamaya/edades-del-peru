@@ -1054,7 +1054,10 @@ original **~81k baseline to ~34k** (‑58%; the previous merge step was ~56k, so
 model's static parts by material and baking part colours into vertex colours. ~34 per unit remains (the shadow
 pass roughly doubles them, and units still have no instancing) — reaching ~15-20 needs **instancing** (or
 collapsing per-part PBR params), which is not done. Frame time is dominated by the software renderer, so use draw
-calls as the actionable signal.
+calls as the actionable signal. Those are 2026-10-20 SwiftShader numbers on the audited commit; the on-GPU run of
+2026-11-13 (`--gpu`, the same `mixed` scenario) measures **8–10 draw calls per unit** at 100–500 units and
+**17 with post-processing**, so read the ~34/unit figure as history, not as today's rate
+([`performance-audit.md`](development/performance-audit.md) §"Render en GPU real").
 
 Post-processing is **off** in these runs (`?low=1`). The cinematic set (default on) adds SSAO/bloom/grading and,
 when quality ≠ `low`, one extra full-scene pass for water refraction — the `QualityGovernor` drops to `low`
