@@ -1495,7 +1495,7 @@ export const MISSIONS: MissionDef[] = [
         kind: 'reach',
         pos: { dx: 60, dz: 92 },
         radius: 9,
-        title: 'Sal de Tambotoco con los ocho',
+        title: 'Sal de Tambotoco y toma el camino',
       },
       {
         id: 'a1_caza',

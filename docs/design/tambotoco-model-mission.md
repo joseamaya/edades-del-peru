@@ -80,13 +80,16 @@ The legend is about eight siblings, so all eight are on the board from the start
 ## Opening and closing
 
 - The opening camera holds the cave mouth (with torches and a path) and flies down to the camp; the first
-  objective is `Sal de Tambotoco con los ocho`, not a generic camp start.
+  objective is `Sal de Tambotoco y toma el camino`, not a generic camp start. The reach is satisfied by
+  any party unit, so the objective does not promise a head count it cannot measure; the tutorial and the
+  briefing name the eight.
 - The cave clearing is lit while the opening holds it and stays explored afterwards, so the landmark the
   story starts from never sits under black or blue-tinted fog.
 - The ayllu site is exempt from the injected fog shader: that shader whitens the merged vertex-coloured
   site on software rendering (SwiftShader), which is how the captures and recordings are produced.
 - Three narrated beats: the cave, Huanacaure, the valley.
-- Three chapter cards: Ayar Uchu en Huanacaure, el agua de los alcabizas and Ayar Auca en Inticancha.
+- Three chapter cards open the act that follows: Ayar Uchu en Huanacaure, el agua de los alcabizas and
+  Ayar Auca en Inticancha.
 - Victory: Inticancha and its four canchas; the epilogue tells the foundation as tradition and names the
   disagreement between Sarmiento and Garcilaso.
 - Defeat: the valley ayllus reject the newcomers.
