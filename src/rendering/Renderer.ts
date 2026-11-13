@@ -11,6 +11,10 @@ export function createRenderer(): THREE.WebGLRenderer {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.VSMShadowMap;
+  // The map is redrawn once per frame from `RuntimeController.frameShadows`: a frame with
+  // post-processing renders the scene twice (water refraction + composer) and three would otherwise
+  // run the whole shadow pass inside each of them.
+  renderer.shadowMap.autoUpdate = false;
   renderer.toneMapping = THREE.NeutralToneMapping;
   renderer.toneMappingExposure = 1.0;
   renderer.outputColorSpace = THREE.SRGBColorSpace;

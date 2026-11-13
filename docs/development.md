@@ -570,6 +570,12 @@ Definition of Done and the building audit see
 
 ## Code traps (learned the hard way)
 
+- **The shadow map is drawn once per frame, not once per `renderer.render`**: `Renderer.ts` sets
+  `shadowMap.autoUpdate = false` and `RuntimeController.frameShadows()` raises `needsUpdate`, because a
+  post-processed frame renders the scene twice (water refraction + composer) and three would run the shadow
+  pass inside each call. Any code that renders outside the loop (benchmarks, showcases, captures) must call
+  `runtime.frameShadows()` before sampling or the map is stale and its draw calls vanish; `bench.mjs` and
+  `bench_scene.mjs` already do. Guarded by `yarn visual:check` and the draw-call budgets (#455).
 - **Unit yaw is a movement angle, not a Three.js rotation**: `angleTo` returns the angle from +X, and models are
   built facing +Z. `EntityView.setFacing(yaw)` applies `facingRotation(yaw) = atan2(cos yaw, sin yaw)`; keep
   `setRotationY` for buildings/objects with a raw rotation. Turrets and the muzzle offset use the same helper

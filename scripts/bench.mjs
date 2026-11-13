@@ -613,6 +613,8 @@ async function measure(browser, base, n, runIndex) {
           g.loop.stop();
           const frameOnce = () => {
             pending = empty();
+            // Same per-frame call the loop makes: it fits the frustum and flags the single shadow update.
+            runtime.frameShadows();
             const t0 = performance.now();
             runtime.render();
             pending.frame.ms = performance.now() - t0;
@@ -706,6 +708,7 @@ async function measure(browser, base, n, runIndex) {
     const g = window.game;
     const info = g.renderer.info;
     g.loop.stop();
+    g.runtime.frameShadows();
     info.autoReset = false;
     info.reset();
     g.runtime.render();
@@ -741,6 +744,7 @@ async function measure(browser, base, n, runIndex) {
     g.loop.stop();
     window.__directRender = true;
     g.camera.setHeight(1e9);
+    g.runtime.frameShadows();
     const unitRoots = [...g.units.values()].filter((u) => !u.dead && u.rig).map((u) => u.rig.root);
     const animalRoots = g.wildlife.animals.filter((a) => a.rig).map((a) => a.group);
     const sample = () => {
@@ -789,6 +793,7 @@ async function measure(browser, base, n, runIndex) {
     g.loop.stop();
     window.__directRender = true;
     g.camera.setHeight(1e9);
+    g.runtime.frameShadows();
     const sample = () => {
       g.renderer.render(g.scene, g.camera.camera);
       return { calls: g.renderer.info.render.calls, tris: g.renderer.info.render.triangles };

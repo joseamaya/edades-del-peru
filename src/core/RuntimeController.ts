@@ -828,6 +828,8 @@ export class RuntimeController {
     this.game.sky.setShadowFrame(
       viewFootprint(this.game.camera.camera, this.game.terrain.getHeight(target.x, target.z)),
     );
+    // `shadowMap.autoUpdate` is off: the frustum just moved, so this is the frame that redraws the map.
+    this.game.renderer.shadowMap.needsUpdate = true;
   }
 
   // --- main update ---

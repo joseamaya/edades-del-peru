@@ -84,11 +84,13 @@ escena no se reduce (#449).
    aún tiene una parte sensible al relleno) y un 6 % a 300; a 500 no baja, incluso sube ~6 % por el ruido del
    host. Si el coste fuera de relleno, el frame caería cerca de 4×. A 2 437 draws, 21.4 ms de submit del pase
    principal ≈ **9 µs por draw call**; a 3 638 draws, ≈10 µs.
-2. **Las sombras se dibujan dos veces con post-proceso.** 714 draws ≈ 2 × 364 (las del frame directo a 300
-   unidades): `three` ejecuta el pase de sombras dentro de **cada** `renderer.render`, y el frame con
-   post-proceso hace dos pases de escena (refracción y compositor); las 40 muestras lo confirman
-   (`shadowFrames.refraction = 40`). `shadowMap.autoUpdate = false` + un `needsUpdate` por frame ahorra un pase
-   completo sin cambiar el look: el arreglo más barato del #240.
+2. **Las sombras se dibujaban dos veces con post-proceso** (medido antes de #455). 714 draws ≈ 2 × 364 (las del
+   frame directo a 300 unidades): `three` ejecuta el pase de sombras dentro de **cada** `renderer.render`, y el
+   frame con post-proceso hace dos pases de escena (refracción y compositor); las 40 muestras lo confirmaban
+   (`shadowFrames.refraction = 40`). **Corregido en #455**: el mapa se actualiza una vez por frame desde
+   `frameShadows` (`shadowMap.autoUpdate = false`), sin cambio visual. Tras el arreglo, a 300 unidades con
+   post-proceso: sombras 358 draws / 6.5 ms (antes 714 / 13.6), submit 54.8 ms (antes 61.7) y frame p50 97.6 ms
+   (antes 102.3); en m1_caral, frame p50 35.6 ms (antes 40.3).
 3. **La refracción del agua cuesta otro pase de escena completo**: 24,0 ms y 2 312 draws, prácticamente los
    mismos draws que la escena principal y más tiempo, y solo alimenta el shader del agua. Desactivarla, bajarla a
    media resolución o reutilizar el render del compositor recupera ~1/4 del frame con post-proceso.
