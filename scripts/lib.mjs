@@ -12,7 +12,8 @@ const GPU_ARGS = ['--ignore-gpu-blocklist', '--enable-gpu-rasterization', '--ena
 /** Renderer strings that mean "no GPU": keep in sync with `isSoftwareRenderer` in `src/util/gpu.ts`. */
 const SOFTWARE_RENDERERS = ['swiftshader', 'llvmpipe', 'softpipe', 'software rasterizer', 'microsoft basic render'];
 
-/** True when a hardware-GPU run was requested (`--gpu` or `GPU=1`). */
+/** True when a hardware-GPU run was requested (`--gpu` or `GPU=1`).
+ * Every script that calls `launchChromium` honours it (shots, audits, bench...). */
 export function useGpu() {
   return process.argv.includes('--gpu') || process.env.GPU === '1' || process.env.GPU === 'true';
 }
@@ -24,7 +25,7 @@ export function isSoftwareRenderer(name) {
 
 /** Optional backend override: `--gl=egl`, `--gl=angle-vulkan`, `--gl=angle-gl`, `--gl=auto`... */
 function glArgs() {
-  const value = process.env.GPU_GL || cliArg('gl', '');
+  const value = cliArg('gl', '') || process.env.GPU_GL || '';
   if (!value) {
     // ANGLE Vulkan is the backend that reaches the host GPU in headless Chromium (Linux/Windows);
     // letting Chrome choose falls back to SwiftShader. macOS uses Metal.
@@ -51,7 +52,8 @@ export async function launchChromium(opts = {}) {
   });
 }
 
-/** Unmasked WebGL renderer/vendor for the page, plus the software flag. */
+/** Unmasked WebGL renderer/vendor for a page that already booted the game (`window.game`);
+ * callers compare the result against `isSoftwareRenderer`. */
 export async function readGlRenderer(page) {
   return page.evaluate(() => {
     const g = window.game;

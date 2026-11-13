@@ -12,56 +12,62 @@
 
 ## Render en GPU real (#447)
 
-Primera medición del render con hardware real (`yarn bench --gpu`, que desactiva SwiftShader y falla si el
-navegador vuelve a renderizar en software). Desbloquea el pendiente de las secciones anteriores: *"el render no
-se puede certificar con SwiftShader"*. Los **draw calls y triángulos son estructurales** (comparables entre
-máquinas); los **tiempos dependen del host** y quedan registrados con su `loadavg` en el JSON.
+Primera medición del render con hardware real: `yarn bench --gpu` desactiva SwiftShader y **falla** si el
+navegador vuelve a renderizar en software, así que un número ya no puede fingir que es hardware. Desbloquea el
+pendiente de las secciones anteriores (*"hace falta una pasada con GPU real"*).
 
-Entorno de esta tanda: Linux x64, **Intel Graphics (RPL-S) iGPU** vía ANGLE/Vulkan en Chromium headless,
-viewport 1280×800 (1920×1080 donde se indica), `mixed`, seed 777, 300 pasos, **máquina compartida**
-(load average 3–17 durante la tanda), así que los tiempos son un **límite inferior**.
+Host de esta tanda: Linux x64, **Intel Graphics (RPL-S) iGPU** vía ANGLE/Vulkan en Chromium headless,
+`mixed`, seed 777, 300 pasos, 300 unidades. El host estaba **compartido** (load average 10–13 durante toda la
+tanda), así que **los tiempos son indicativos y no comparables**: los draw calls y triángulos sí son
+estructurales y no dependen del host. El JSON guarda `loadavgBefore`/`loadavgAfter` para no repetir el error.
 
-| uds | draw calls | tris | submit main | submit shadow | frame p50/p95 (directo) | calls/ud |
-| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 100 | 1 077 | 1.05M | 10.6 ms | 2.9 ms | 29.7/41.4 ms | 9.8 |
-| 300 | 2 792 | 2.46M | 34.3 ms | 8.7 ms | 97.0/126.0 ms | 9.0 |
-| 500 | 4 006 | 3.79M | 33.7 ms | 9.4 ms | 157.4/178.2 ms | 7.9 |
-| 300 (postfx, 1080p) | 5 112 | 4.30M | 29.8 ms | 7.7 ms | 68.9/122.8 ms | 16.5 |
+| configuración | draw calls | tris | draw/ud | frame avg/p95/p99 | submit (mediana) | submit/frame |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| directo, 1280×800, overview, low | 2 795 | 2.48M | 9.0 | 99.5/134.2/134.2 ms | 57.8 ms | 60 % |
+| postfx, 1920×1080, mid, high | 5 243 | 5.11M | 16.9 | 127.5/150.2/150.2 ms | 84.1 ms | 67 % |
 
-Desglose del frame con post-proceso (300 uds, 1920×1080, `--postfx=1 --framing=mid`):
+Desglose por pase (mediana de submit y draw calls por frame; `main` y `refraction` descuentan las sombras que
+contienen):
 
-| pase | submit ms | draw calls |
+| pase | directo | postfx |
 | --- | ---: | ---: |
-| escena principal | 29.8 | 2 370 |
-| sombras (dentro de la escena) | 7.7 | 355 |
-| **refracción del agua** | **31.6** | **2 369** |
-| post-proceso (quads) | 0.1 | 18 |
-| JS/GL restante | 0.0 | — |
+| escena principal | 45.7 ms / 2 434 | 31.1 ms / 2 257 |
+| sombras | 12.8 ms / 361 | **17.7 ms / 712** |
+| refracción del agua | — | **34.5 ms / 2 256** |
+| quads de post-proceso | — | 0.2 ms / 18 |
+| JS/GL restante | ≈0 | ≈0.1 |
 
 Lectura:
 
-1. **El frame está dominado por submit de CPU, no por GPU.** El barrido de resolución
-   (`--scale-sweep`) apenas mejora al bajar a 0.5×: 121.4 → 125.9 ms a 300 uds y postfx, y 30.0 → 21.5 ms a
-   100 uds en directo. Si el coste fuera de relleno (GPU), el frame caería ~4×. Concretamente, 2 792 draw calls
-   cuestan **34 ms de submit**, ≈12 µs por draw call: la pared clásica de WebGL, no una GPU lenta.
-2. **La refracción del agua duplica el coste del frame**: es un pase de escena completo (2 369 draws, 31.6 ms)
-   que solo sirve para el shader del agua. Es el ahorro más barato disponible (desactivarla, bajarla a media
-   resolución o compartir el render con el pase principal).
-3. **9–16 draw calls por unidad** confirma la hipótesis del #240: el coste escala con los **materiales distintos
+1. **Las sombras se dibujan dos veces con post-proceso.** 712 draws ≈ 2 × 356: `three` ejecuta el pase de sombras
+   dentro de **cada** `renderer.render`, y el frame con post-proceso hace dos pases de escena (refracción +
+   compositor). Fijar `shadowMap.autoUpdate = false` y pedir `needsUpdate` una vez por frame ahorra un pase
+   completo sin cambiar el look — es el arreglo más barato del #240.
+2. **La refracción del agua cuesta otro pase de escena completo**: 2 256 draws y 34.5 ms, más que la escena
+   principal. Solo alimenta el shader del agua: desactivarla, bajarla a media resolución o reutilizar el render
+   del compositor recupera ~1/3 del frame con post-proceso.
+3. **9–17 draw calls por unidad** confirma la hipótesis del #240: el coste escala con los **materiales distintos
    por unidad** (que además se clonan por instancia), no con el número de mallas.
-4. **La simulación no es el problema.** Sus p50 (3.1/8.5/27.3 ms) están inflados por el host compartido; el
-   baseline en reposo de las secciones anteriores (1.7 ms/paso a 1000 uds) sigue siendo la referencia.
+4. **El submit es la mayor parte del frame** (60–67 %), pero el barrido de resolución no sirvió para separar
+   CPU de GPU en esta tanda: 1× → 0.75× → 0.5× dio 96.4 → 96.5 → 148.4 ms, sin relación monótona, porque el host
+   estaba saturado. Hace falta repetirlo en una máquina libre:
+   `yarn bench:gpu --units=300 --passes=1 --scale-sweep=1` (el barrido solo corre en modo directo: el
+   `EffectComposer` mantiene su propio pixel ratio, #449).
+5. **La simulación no es el problema.** Sus p50 (8.9–12.0 ms) están inflados por el host; el baseline en reposo
+   de las secciones anteriores (1.7 ms/paso a 1000 uds) sigue siendo la referencia.
 
-Consecuencia para el plan: el orden de ataque pasa a ser (1) pase de refracción, (2) materiales compartidos +
-atlas por arquetipo, (3) instancing, (4) sombras — ver #240. Y descarta que la GPU del equipo sea el techo: la
-CPU de dibujado lo es.
+Consecuencia para el plan: el orden de ataque del #240 pasa a ser (1) sombra única por frame, (2) matar o
+abaratar la refracción, (3) materiales compartidos + atlas por arquetipo, (4) instancing. Ninguno de los dos
+primeros cuesta una semana y los dos son medibles con este mismo bench.
 
-Reproducir: `yarn bench --gpu --assert --postfx=0 --units=100,300,500` y
-`yarn bench:gpu --units=300`. Sin `--gpu` los mismos comandos vuelven a SwiftShader (y `--assert` falla).
+Reproducir:
 
+```bash
+yarn bench --gpu --units=300 --scenario=mixed --steps=300 --passes=1 --scale-sweep=1
+yarn bench:gpu --units=300   # frame real (postfx, 1080p, mid) con pases y barrido
+```
 
-
----
+Sin `--gpu`, los mismos comandos vuelven a SwiftShader (y el run falla igualmente al detectarlo).
 
 ## Assets y carga (#246)
 

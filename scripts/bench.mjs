@@ -22,12 +22,16 @@ import { installProbes, resetProbes, snapshotProbes, readSceneStats, readMemory,
  * exact counters without changing game behaviour. Numbers are only comparable
  * on the same machine/browser.
  *
- * Render side: `--gpu` (or `GPU=1`) runs on the host GPU instead of SwiftShader and
- * `--gpu --assert` refuses a software renderer. `--postfx=1` measures the shipped
- * frame (post-processing and water refraction on), `--framing=overview|mid|close`
- * sets the camera, `--viewport=WxH` the canvas, and `--passes=0` skips the
- * per-pass breakdown (main/shadow/refraction/post + CPU submit ms).
+ * Render side: `--gpu` (or `GPU=1`) runs on the host GPU instead of SwiftShader and makes the
+ * run fail when the page still renders in software (with or without `--assert`). `--postfx=1`
+ * measures the shipped frame (post-processing and water refraction on), `--framing=overview|mid|close`
+ * sets the camera and `--viewport=WxH` the canvas. Off by default because `bench:check` runs many
+ * rows: `--passes=1` adds the per-pass breakdown (main/shadow/refraction/quads + submit ms) and
+ * `--scale-sweep=1` the pixel-ratio sweep (direct mode only).
  */
+
+const cpuModel = os.cpus()[0]?.model ?? 'unknown';
+const cpuCount = os.cpus().length;
 
 const unitScales = String(cliArg('units', '50,100,200,400,800'))
   .split(',')
@@ -53,8 +57,8 @@ const framing = String(cliArg('framing', 'overview'));
 const [viewportWidth, viewportHeight] = String(cliArg('viewport', '1280x800'))
   .split('x')
   .map((v) => Number.parseInt(v, 10));
-const measurePasses = cliArg('passes', '1') !== '0';
-const scaleSweep = cliArg('scale-sweep', '1') !== '0';
+const measurePasses = cliArg('passes', '0') === '1';
+const scaleSweep = cliArg('scale-sweep', '0') === '1';
 
 if (!['overview', 'mid', 'close'].includes(framing)) {
   console.error(`unknown framing "${framing}" (use overview|mid|close)`);
@@ -414,6 +418,9 @@ async function measure(browser, base, n, runIndex) {
     params.set('period', '9');
   }
   if (scenario === 'fauna' || scenario === 'mixed-rigs') params.set('map', 'altiplano');
+  // The software fallback turns the cinematic set off before the bench pins quality; `?cine=1`
+  // keeps `--postfx` measuring the shipped frame (bloom, grading and water refraction).
+  if (postfx) params.set('cine', '1');
   await page.goto(`${base}/?${params}`, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => window.game !== undefined, null, { timeout: 60_000 });
   await page.waitForTimeout(1200);
@@ -470,7 +477,7 @@ async function measure(browser, base, n, runIndex) {
   await page.waitForTimeout(500);
   if (profile) await resetProbes(page);
   const frame = await page.evaluate(
-    async ({ sweep }) => {
+    async ({ sweep, reason }) => {
       const g = window.game;
       const longTasks = [];
       try {
@@ -506,27 +513,37 @@ async function measure(browser, base, n, runIndex) {
           };
           requestAnimationFrame(step);
         });
-      // Scaling the drawing buffer separates GPU-bound (frame time follows the pixels) from
-      // CPU/submit-bound (frame time barely moves).
+      // Scaling the drawing buffer separates GPU-bound (frame follows the pixels) from
+      // submit/CPU-bound (frame barely moves). Only valid when the scene renders straight to
+      // the canvas: EffectComposer keeps its own pixel ratio, so with post-processing on the
+      // geometry and bloom targets would not shrink (see #449).
       const ratios = sweep ? [1, 0.75, 0.5] : [1];
+      const previous = g.pixelRatioOverride;
       const byScale = [];
       for (const ratio of ratios) {
-        g.pixelRatioOverride = ratio;
-        g.runtime.onResize();
+        g.runtime.setPixelRatioOverride(ratio);
         await new Promise((done) => setTimeout(done, 250));
         byScale.push({ ratio, ...(await sample(1200)) });
       }
-      g.pixelRatioOverride = null;
-      g.runtime.onResize();
+      g.runtime.setPixelRatioOverride(previous);
       return {
         ...byScale[0],
         byScale,
+        sweepSkipped: sweep ? null : reason,
         longTasks: longTasks.length,
         longTaskMs: longTasks.reduce((s, x) => s + x, 0),
       };
     },
-    { sweep: scaleSweep },
+    {
+      sweep: scaleSweep && !postfx,
+      reason: !scaleSweep
+        ? null
+        : postfx
+          ? 'post-processing keeps the EffectComposer resolution (#449)'
+          : 'the sweep was disabled',
+    },
   );
+
   const render = profile ? await snapshotProbes(page) : null;
 
   // Per-pass breakdown: wrap the render entry points for a few frames and keep the median.
@@ -539,24 +556,19 @@ async function measure(browser, base, n, runIndex) {
           const runtime = g.runtime;
           const info = g.renderer.info;
           const waterTarget = g.water?.refractionRT ?? null;
-          // One shadow update per frame, like `frameShadows()` does in the loop, so the shadow
-          // cost is attributed the same way whether or not post-processing runs.
-          const shadowMap = g.renderer.shadowMap;
-          const prevAutoUpdate = shadowMap.autoUpdate;
-          shadowMap.autoUpdate = false;
           info.autoReset = false;
 
+          const zero = () => ({ ms: 0, calls: 0, tris: 0 });
           const empty = () => ({
-            frame: { ms: 0, calls: 0, tris: 0 },
-            scene: { ms: 0, calls: 0, tris: 0 },
-            refraction: { ms: 0, calls: 0, tris: 0 },
-            quad: { ms: 0, calls: 0, tris: 0 },
-            shadow: { ms: 0, calls: 0, tris: 0 },
-            postfx: { ms: 0, calls: 0, tris: 0 },
+            frame: zero(),
+            scene: zero(),
+            refraction: zero(),
+            quad: zero(),
+            shadowScene: zero(),
+            shadowRefraction: zero(),
           });
           let pending = empty();
           let current = 'scene';
-          let shadowHost = null;
           const samples = [];
           const hit = (key, ms, calls, tris) => {
             const b = pending[key];
@@ -578,6 +590,8 @@ async function measure(browser, base, n, runIndex) {
             return out;
           };
 
+          // three runs the shadow map inside every `renderer.render`, so a post-processed frame
+          // pays for it twice. Measure that as the game does it instead of forcing one update.
           const shadow = g.renderer.shadowMap;
           const origShadow = shadow.render.bind(shadow);
           shadow.render = (...args) => {
@@ -586,29 +600,22 @@ async function measure(browser, base, n, runIndex) {
             const tr0 = info.render.triangles;
             const out = origShadow(...args);
             const calls = info.render.calls - c0;
-            // The pass only counts once it actually drew: an early frame can run it with no lights.
-            if (calls > 0) shadowHost = current;
-            hit('shadow', performance.now() - t0, calls, info.render.triangles - tr0);
-            return out;
-          };
-
-          const origPost = g.postfx.render.bind(g.postfx);
-          g.postfx.render = (...args) => {
-            const t0 = performance.now();
-            const out = origPost(...args);
-            hit('postfx', performance.now() - t0, 0, 0);
+            if (calls > 0)
+              hit(
+                current === 'refraction' ? 'shadowRefraction' : 'shadowScene',
+                performance.now() - t0,
+                calls,
+                info.render.triangles - tr0,
+              );
             return out;
           };
 
           g.loop.stop();
           const frameOnce = () => {
             pending = empty();
-            shadowHost = null;
-            shadowMap.needsUpdate = true;
             const t0 = performance.now();
             runtime.render();
             pending.frame.ms = performance.now() - t0;
-            pending.shadowHost = shadowHost;
             samples.push(pending);
           };
           for (let i = 0; i < 5; i++) frameOnce();
@@ -617,31 +624,45 @@ async function measure(browser, base, n, runIndex) {
 
           g.renderer.render = origRender;
           shadow.render = origShadow;
-          shadowMap.autoUpdate = prevAutoUpdate;
-          g.postfx.render = origPost;
           info.autoReset = true;
           info.reset();
 
+          // Derive one row per frame, then take medians: medians of different keys are not the
+          // medians of their sum, so `other` is computed per frame instead of as a residual.
           const rows = samples.map((s) => {
-            const host = s.shadowHost ?? 'scene';
-            const shadowMs = s.shadow.ms;
-            const shadowCalls = s.shadow.calls;
-            const shadowTris = s.shadow.tris;
+            const main = {
+              ms: Math.max(0, s.scene.ms - s.shadowScene.ms),
+              calls: Math.max(0, s.scene.calls - s.shadowScene.calls),
+              tris: Math.max(0, s.scene.tris - s.shadowScene.tris),
+            };
+            const refraction = {
+              ms: Math.max(0, s.refraction.ms - s.shadowRefraction.ms),
+              calls: Math.max(0, s.refraction.calls - s.shadowRefraction.calls),
+              tris: Math.max(0, s.refraction.tris - s.shadowRefraction.tris),
+            };
+            const shadow = {
+              ms: s.shadowScene.ms + s.shadowRefraction.ms,
+              calls: s.shadowScene.calls + s.shadowRefraction.calls,
+              tris: s.shadowScene.tris + s.shadowRefraction.tris,
+            };
             return {
               frame: s.frame.ms,
-              sceneMs: s.scene.ms,
-              mainMs: Math.max(0, s.scene.ms - (host === 'scene' ? shadowMs : 0)),
-              mainCalls: Math.max(0, s.scene.calls - (host === 'scene' ? shadowCalls : 0)),
-              mainTris: Math.max(0, s.scene.tris - (host === 'scene' ? shadowTris : 0)),
-              refractionMs: Math.max(0, s.refraction.ms - (host === 'refraction' ? shadowMs : 0)),
-              refractionCalls: Math.max(0, s.refraction.calls - (host === 'refraction' ? shadowCalls : 0)),
-              refractionTris: Math.max(0, s.refraction.tris - (host === 'refraction' ? shadowTris : 0)),
-              shadowMs,
-              shadowCalls,
-              shadowTris,
+              mainMs: main.ms,
+              mainCalls: main.calls,
+              mainTris: main.tris,
+              refractionMs: refraction.ms,
+              refractionCalls: refraction.calls,
+              refractionTris: refraction.tris,
+              shadowMs: shadow.ms,
+              shadowCalls: shadow.calls,
+              shadowTris: shadow.tris,
               quadMs: s.quad.ms,
               quadCalls: s.quad.calls,
               quadTris: s.quad.tris,
+              otherMs: Math.max(0, s.frame.ms - main.ms - refraction.ms - shadow.ms - s.quad.ms),
+              totalCalls: s.scene.calls + s.refraction.calls + s.quad.calls,
+              totalTris: s.scene.tris + s.refraction.tris + s.quad.tris,
+              shadowInRefraction: s.shadowRefraction.calls > 0,
             };
           });
           const median = (key) => {
@@ -658,39 +679,44 @@ async function measure(browser, base, n, runIndex) {
             calls: Math.round(median(callsKey)),
             tris: Math.round(median(trisKey)),
           });
-          const main = cell('mainMs', 'mainCalls', 'mainTris');
-          const shadowPass = cell('shadowMs', 'shadowCalls', 'shadowTris');
-          const refraction = cell('refractionMs', 'refractionCalls', 'refractionTris');
-          const quad = cell('quadMs', 'quadCalls', 'quadTris');
-          const frameTotal = { ms: median('frame'), msP95: percentile('frame', 0.95) };
-          const accounted = main.ms + shadowPass.ms + refraction.ms + quad.ms;
           return {
             samples: frames,
             mode: window.__directRender ? 'direct' : 'postfx',
             framing,
-            frame: frameTotal,
-            main,
-            shadow: shadowPass,
-            refraction,
-            quad,
-            other: Math.max(0, frameTotal.ms - accounted),
-            totals: {
-              calls: main.calls + shadowPass.calls + refraction.calls + quad.calls,
-              tris: main.tris + shadowPass.tris + refraction.tris + quad.tris,
+            frame: { ms: median('frame'), msP95: percentile('frame', 0.95) },
+            main: cell('mainMs', 'mainCalls', 'mainTris'),
+            shadow: cell('shadowMs', 'shadowCalls', 'shadowTris'),
+            refraction: cell('refractionMs', 'refractionCalls', 'refractionTris'),
+            quad: cell('quadMs', 'quadCalls', 'quadTris'),
+            other: { ms: median('otherMs'), msP95: percentile('otherMs', 0.95) },
+            shadowFrames: {
+              refraction: rows.filter((r) => r.shadowInRefraction).length,
+              total: rows.length,
             },
+            totals: { calls: Math.round(median('totalCalls')), tris: Math.round(median('totalTris')) },
           };
         },
         { frames: 40, framing },
       )
     : null;
 
+  // One instrumented-free frame for the total counts: reset, render once, read. In postfx mode
+  // `info` after the loop only describes the last quad pass, so it cannot be read as-is.
   const renderInfo = await page.evaluate(() => {
     const g = window.game;
     const info = g.renderer.info;
+    g.loop.stop();
+    info.autoReset = false;
+    info.reset();
+    g.runtime.render();
+    const drawCalls = info.render.calls;
+    const triangles = info.render.triangles;
+    info.autoReset = true;
+    info.reset();
     return {
       fps: g.loop.getFps(),
-      drawCalls: info.render.calls,
-      triangles: info.render.triangles,
+      drawCalls,
+      triangles,
       geometries: info.memory.geometries,
       textures: info.memory.textures,
       programs: info.programs ? info.programs.length : null,
@@ -862,6 +888,7 @@ function medianRow(rows) {
 }
 
 async function main() {
+  const loadBefore = os.loadavg().map((v) => Math.round(v * 100) / 100);
   const { base, close } = await withViteServer();
   const browser = await launchChromium(useGc ? { args: ['--js-flags=--expose-gc'] } : {});
   const rows = [];
@@ -899,10 +926,11 @@ async function main() {
       node: process.version,
       platform: process.platform,
       arch: process.arch,
-      cpu: os.cpus()[0]?.model ?? 'unknown',
-      cpuCount: os.cpus().length,
-      // Timing rows are only comparable when the host is idle: record it.
-      loadavg: os.loadavg().map((v) => Math.round(v * 100) / 100),
+      cpu: cpuModel,
+      cpuCount: cpuCount,
+      // Timing rows are only comparable when the host is idle: record it at both ends.
+      loadavgBefore: loadBefore,
+      loadavgAfter: os.loadavg().map((v) => Math.round(v * 100) / 100),
       commit: process.env.GIT_COMMIT ?? null,
     },
     rows,
@@ -916,7 +944,7 @@ async function main() {
   const firstGpu = rows[0]?.gpu;
   if (firstGpu) {
     console.log(
-      `\nrenderer: ${firstGpu.renderer} (${firstGpu.software ? 'software' : 'hardware'}), quality=${firstGpu.quality}, mode=${postfx ? 'postfx' : 'direct'}, framing=${framing}, viewport=${viewportWidth}x${viewportHeight}`,
+      `\nrenderer: ${firstGpu.renderer} (${firstGpu.software ? 'software' : 'hardware'}), quality=${firstGpu.quality}, cinematic=${firstGpu.cinematic}, mode=${postfx ? 'postfx' : 'direct'}, framing=${framing}, viewport=${viewportWidth}x${viewportHeight}`,
     );
   }
   if (gpu && rows.some((r) => r.gpu.software)) {
@@ -926,7 +954,7 @@ async function main() {
     process.exitCode = 1;
   }
   console.log(
-    '\nn | sim p50/p95/p99 ms | AI p50/p95/p99 ms | path p50/p95/p99 ms | units/workers/military | animals | paths/req/fail | fps | frame avg/p95 | draws | tris | heap MB',
+    '\nn | sim p50/p95/p99 ms | AI p50/p95/p99 ms | path p50/p95/p99 ms | units/workers/military | animals | paths/req/fail | fps | frame avg/p95/p99 | draws (full frame) | tris | heap MB',
   );
   for (const r of rows) {
     const labels = r.sim?.labels ?? {};
@@ -945,7 +973,7 @@ async function main() {
         `${r.animals ?? 0}`,
         `${counts.activePaths ?? '-'}/${r.counters?.pathRequests ?? '-'}/${r.counters?.pathFailures ?? '-'}`,
         r.gpu.fps,
-        `${fmt(r.frame.frameMsAvg, 1)}/${fmt(r.frame.frameMsP95, 1)}`,
+        `${fmt(r.frame.frameMsAvg, 1)}/${fmt(r.frame.frameMsP95, 1)}/${fmt(r.frame.frameMsP99, 1)}`,
         r.gpu.drawCalls,
         r.gpu.triangles,
         fmt(r.memory.afterGcMB, 1),
@@ -955,8 +983,10 @@ async function main() {
 
   if (rows.some((r) => r.passes)) {
     const cell = (b, unit = '') => (b ? `${fmt(b.ms, 2)}/${Math.round(b.calls)}${unit}` : '-');
-    console.log('\npasses (median submit ms / draw calls per frame; main excludes the shadow pass it contains):');
-    console.log('n | frame | main | shadow | refraction | post quad | other (js/gl) | calls/unit');
+    console.log(
+      '\npasses (median CPU submit ms / draw calls per frame; main and refraction exclude the shadow pass they contain):',
+    );
+    console.log('n | submit | main | shadow | refraction | post quad | other (js/gl) | submit/frame | draws/unit');
     for (const r of rows) {
       const p = r.passes;
       if (!p) continue;
@@ -969,7 +999,8 @@ async function main() {
           cell(p.shadow),
           cell(p.refraction),
           cell(p.quad),
-          fmt(p.other, 2),
+          fmt(p.other.ms, 2),
+          `${fmt((100 * p.frame.ms) / (r.frame.frameMsP50 || p.frame.ms), 0)}%`,
           fmt(p.totals.calls / units, 1),
         ].join(' | '),
       );
@@ -980,6 +1011,8 @@ async function main() {
   if (sweepRow) {
     const fmtScale = (s) => `${s.ratio}x: p50 ${fmt(s.frameMsP50, 1)} / p95 ${fmt(s.frameMsP95, 1)} ms`;
     console.log(`\nscale sweep (${sweepRow.n} units): ${sweepRow.frame.byScale.map(fmtScale).join(' | ')}`);
+  } else if (rows[0]?.frame?.sweepSkipped) {
+    console.log(`\nscale sweep skipped: ${rows[0].frame.sweepSkipped}`);
   }
 
   const rigRows = rows.filter((r) => (r.rigCost?.units ?? 0) + (r.rigCost?.animals ?? 0) > 0);

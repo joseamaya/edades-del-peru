@@ -993,20 +993,25 @@ VSM main+shadow passes; see [`docs/design/cultural-landscape.md`](design/cultura
 the JSON to `--out` (`review/bench.json` by default) and prints a table.
 
 **Hardware GPU and per-pass breakdown.** `--gpu` (or `GPU=1`) drops `--use-gl=swiftshader` and launches with
-ANGLE's Vulkan backend (`--gl=metal` on macOS, `--gl=auto` to let Chromium choose); `--gpu --assert` **fails**
-when the page still renders in software, so a run can never claim hardware while using SwiftShader. The renderer
-string and `software` flag are recorded in the JSON and printed. `--postfx=1` measures the shipped frame
-(post-processing and the water refraction pass on, quality pinned high) instead of `window.__directRender`;
-`--framing=overview|mid|close` sets the camera, `--viewport=WxH` the canvas (default 1280x800) and `--passes=0`
-skips the breakdown. With `--passes=1` (default) it wraps the render entry points for 40 frames and records the
-median CPU submit time and draw calls per pass — `main`, `shadow`, `refraction`, `post` quads and `other` (JS/GL
-overhead) — plus a scale sweep of the frame rate at 1×/0.75×/0.5× pixel ratio. That sweep is the CPU-vs-GPU
+ANGLE's Vulkan backend (`--gl=angle-metal` on macOS, `--gl=auto` to let Chromium choose); when the page still
+renders in software the run **fails**, so a measurement can never claim hardware while using SwiftShader
+(`--assert` is not required for that check, on purpose: `bench:check` must keep working on SwiftShader). The
+renderer string, `software` flag and `cinematic` state are recorded in the JSON and printed. `--postfx=1`
+measures the shipped frame (bloom, grading and the water refraction pass on, quality pinned high, `?cine=1`
+forced) instead of `window.__directRender`; `--framing=overview|mid|close` sets the camera and `--viewport=WxH`
+the canvas (default 1280x800).
+
+Two opt-in instruments, both off by default because `bench:check` runs many rows: `--passes=1` wraps the render
+entry points for 40 frames and records the median CPU submit time and draw calls per pass — `main`, `shadow`,
+`refraction`, the post-processing quads and `other` (JS/GL overhead) — computed per frame, so the buckets add up
+to the frame; and `--scale-sweep=1` samples the frame rate at 1×/0.75×/0.5× pixel ratio, which is the CPU-vs-GPU
 discriminator: if the frame time follows the pixels the workload is GPU-bound, if it barely moves it is
-submit/CPU-bound. The `QualityGovernor` is pinned during the sample so an automatic downgrade cannot describe a
-different scene than the one requested.
+submit/CPU-bound. The sweep only runs in direct mode: `EffectComposer` keeps its own pixel ratio, so with
+post-processing on the scene and bloom targets would not shrink (see #449). The `QualityGovernor` is pinned
+during the sample so an automatic downgrade cannot describe a different scene than the one requested.
 
 `yarn bench:gpu` is the shorthand for the shipped frame on the host GPU
-(`--gpu --assert --postfx=1 --framing=mid --viewport=1920x1080`).
+(`--gpu --assert --postfx=1 --framing=mid --viewport=1920x1080 --passes=1 --scale-sweep=1`).
 
 `yarn sim [--seeds=777,...] [--max=1200] [--civ=chanca] [--period=4] [--metrics=1] [--sample=5] [--out=review/ai-bench.json]` is the
 deterministic AI-vs-AI runner. With `--metrics=1` it records first soldier/first attack/first barracks,
