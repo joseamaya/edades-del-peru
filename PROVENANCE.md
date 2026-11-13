@@ -311,7 +311,7 @@ slot is absent (offline / without assets).
 ### Los hijos de Tambotoco intro, chapter and epilogue images (in-engine recreations)
 
 - **Location**: `public/media/tambotoco/intro-{cueva,huanacaure,valle,epilogo}.webp` (960x540, WebP q58,
-  ~78 KB in total).
+  ~71 KB in total).
 - **Source**: captured from the game itself by `scripts/capture_tambotoco_intro.mjs`. The cave/settlement,
   the Huanacaure huaca and the valley are staged through the debug harness, rendered without the HUD at
   1600x900 and resized with `sharp`; the epilogue uses a low cinematic camera over the valley at dusk.

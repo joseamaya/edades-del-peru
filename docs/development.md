@@ -785,7 +785,9 @@ used because the worker is pre-metal; the attack uses the worker's own digging s
 per-instance accessories (headband, carry bundle, digging stick) are the deliberate exception to the shared-cache rule: they
 carry the variant's tint and bone attachments and are disposed with the rig. The digging stick hides while
 carrying and during build work, so it never crosses the body or a placed load. The body, face, hair, tunic, skirt
-and sash are shared GLB geometry/materials. The order-driven poses are captured by
+and sash are shared GLB geometry/materials. Campaign heroes are the deliberate exception: `UnitView` clones the
+visible tunic and the macana material to tint them with the commander accent, and disposes those clones with the
+view; the shared rig geometry is untouched. The order-driven poses are captured by
 `node scripts/shots_evidence.mjs --scene=caral-worker-tasks --out=review/evidence/caral-worker-tasks`.
 
 The mounted rig (`mounted_rig.glb`, #241a) is a project-authored low-poly horse and rider built by
