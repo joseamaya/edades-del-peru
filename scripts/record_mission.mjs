@@ -270,29 +270,38 @@ async function look(page, point, zoom, who = 'all') {
       let x = point?.x ?? 0;
       let z = point?.z ?? 0;
       if (!point) {
-        let n = 0;
-        let minX = Infinity;
-        let maxX = -Infinity;
-        let minZ = Infinity;
-        let maxZ = -Infinity;
+        const group = [];
         for (const u of g.units.values()) {
           if (u.owner !== 0 || u.dead) continue;
           if (who === 'workers' && u.kind !== 'worker') continue;
           if (who === 'army' && u.kind === 'worker') continue;
-          x += u.pos.x;
-          z += u.pos.z;
-          minX = Math.min(minX, u.pos.x);
-          maxX = Math.max(maxX, u.pos.x);
-          minZ = Math.min(minZ, u.pos.z);
-          maxZ = Math.max(maxZ, u.pos.z);
-          n++;
+          group.push(u);
         }
-        if (n) {
-          x /= n;
-          z /= n;
-          // Frame the whole group instead of its centroid, so no unit is left off-screen.
-          const spread = Math.max(maxX - minX, maxZ - minZ);
-          zoom = Math.max(zoom, Math.min(72, spread * 1.1 + 6));
+        if (group.length) {
+          if (who === 'all') {
+            // Frame the whole party once, at the opening.
+            let minX = Infinity;
+            let maxX = -Infinity;
+            let minZ = Infinity;
+            let maxZ = -Infinity;
+            for (const u of group) {
+              x += u.pos.x;
+              z += u.pos.z;
+              minX = Math.min(minX, u.pos.x);
+              maxX = Math.max(maxX, u.pos.x);
+              minZ = Math.min(minZ, u.pos.z);
+              maxZ = Math.max(maxZ, u.pos.z);
+            }
+            x /= group.length;
+            z /= group.length;
+            const spread = Math.max(maxX - minX, maxZ - minZ);
+            zoom = Math.max(zoom, Math.min(72, spread * 1.1 + 6));
+          } else {
+            // Follow a working unit, not the empty centroid of a spread group.
+            const lead = group[0];
+            x = lead.pos.x;
+            z = lead.pos.z;
+          }
         } else {
           const c = g.playerCenter(0);
           x = c.x;
