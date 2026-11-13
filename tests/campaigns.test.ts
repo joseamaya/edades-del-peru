@@ -91,6 +91,7 @@ describe('campaign series', () => {
       'm5_yahuar_pampa',
       'm6_chimu_inca',
       'm6b_guerra_civil',
+      'm_lima',
       'm7_tupac_amaru',
       'm_junta_cusco',
       'm8_independencia',
@@ -105,6 +106,7 @@ describe('campaign series', () => {
     expect(nextReleasedMission('m5_yahuar_pampa')?.id).toBe('m6_chimu_inca');
     expect(nextReleasedMission('m6_chimu_inca')?.id).toBe('m6b_guerra_civil');
     expect(nextReleasedMission('m6b_guerra_civil')).toBeUndefined();
+    expect(nextReleasedMission('m_lima')?.id).toBe('m7_tupac_amaru');
     expect(nextReleasedMission('m7_tupac_amaru')).toBeUndefined();
     expect(nextReleasedMission('m_junta_cusco')?.id).toBe('m8_independencia');
     expect(nextReleasedMission('m8_independencia')).toBeUndefined();
@@ -184,12 +186,15 @@ describe('campaign unlocks', () => {
     expect(isMissionUnlocked(fresh, 'm2_chavin')).toBe(false);
     expect(isMissionUnlocked(fresh, 'm_junta_cusco')).toBe(true);
     expect(isMissionUnlocked(fresh, 'm_tambotoco')).toBe(true);
+    expect(isMissionUnlocked(fresh, 'm_lima')).toBe(true);
     expect(isMissionUnlocked(fresh, 'm8_independencia')).toBe(false);
     expect(isCampaignUnlocked(fresh, 'preinca')).toBe(true);
     expect(isCampaignUnlocked(fresh, 'independencia')).toBe(true);
     expect(isCampaignUnlocked(fresh, 'inca')).toBe(true);
     // The chapters still opening with a planned mission wait for the predecessor.
-    for (const campaign of CAMPAIGNS.filter((c) => c.id !== 'preinca' && c.id !== 'independencia' && c.id !== 'inca')) {
+    for (const campaign of CAMPAIGNS.filter(
+      (c) => c.id !== 'preinca' && c.id !== 'independencia' && c.id !== 'inca' && c.id !== 'virreinato',
+    )) {
       expect(isMissionUnlocked(fresh, campaign.releasedMissionIds[0]!), campaign.id).toBe(false);
       expect(isCampaignUnlocked(fresh, campaign.id), campaign.id).toBe(false);
     }

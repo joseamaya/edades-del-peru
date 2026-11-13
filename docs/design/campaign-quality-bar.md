@@ -213,6 +213,32 @@ art and performance passes, which are still open.
 | Opening     | Met: three narrated beats with in-engine captures, two act cards and the epilogue backdrop.              |
 | Scale       | Met: 256 m transect, 128² painted ground and worker crossing ≈2:22 (`tests/campaign-scale.test.ts`).     |
 
+## La Ciudad de los Reyes playable status (m_lima)
+
+`m_lima` is the released opening of El Virreinato. It uses a 256 m coast transect (sea, Rímac, Lima plain,
+Quizu's hills) and reuses the colonial plaza GLB for the traza. The table separates what is implemented
+from the art and performance passes still open.
+
+| Gate        | m_lima                                                                                                |
+| ----------- | ------------------------------------------------------------------------------------------------------ |
+| History     | Met: `docs/historia/campanas/lima.md` with a certainty table; the valley was inhabited and the defence relied on Andean allies. |
+| Identity    | Met: found the city and hold the siege; the curaca pact is optional.                                  |
+| Play        | Met (automated): three acts complete with real move/build/attack orders; a manual playtest is pending. |
+| Contract    | Met: Act II–III hidden, the curaca pact optional, Pizarro protected from the start.                    |
+| Onboarding  | Met: six-step tutorial, briefing and Codex.                                                           |
+| Closure     | Met: the epilogue states that Cusco remains besieged; no counterfactual is hidden.                     |
+| UX          | Met: the campaign layout check at 1600×900 and `hud-layout.spec.ts` at 1280×720.                       |
+| Visuals     | Partial: authored 256 m coast transect, the reused colonial plaza and in-engine captures; no Lima traza kit. |
+| Site        | Partial: the plaza/church is the reused colonial GLB; no phase plan or living traza.                     |
+| Persistence | Met: save/load round-trip in `save-campaign.spec.ts`.                                                  |
+| Tests       | Met: `tests/lima.test.ts`, scale, campaign path and the campaign E2E specs.                            |
+| Docs        | Met: dossier, `lima-model-mission.md`, this table and the redesign status.                             |
+| Performance | Met within its first-pass budget: ~763k triangles / ~839 draw calls, under the 860-call cap; tightening to 200 is the follow-up. |
+| Art         | N/A for new models: the plaza is the reused colonial GLB; captures are in-engine and documented.       |
+| Structure   | Met: three acts with hidden objectives, two chapter cards and the documented siege.                    |
+| Opening     | Met: three narrated beats with in-engine captures, two act cards and the epilogue backdrop.            |
+| Scale       | Met: 256 m transect, 128² painted ground and worker crossing ≈2:22 (`tests/campaign-scale.test.ts`).    |
+
 ## Los hijos de Tambotoco playable status (m_tambotoco)
 
 `m_tambotoco` is the released opening of El Tahuantinsuyo and the first **Leyenda** mission. It is built on

@@ -11,6 +11,7 @@ const MISSIONS = [
   ['m5_yahuar_pampa', 'Yahuar Pampa'],
   ['m6_chimu_inca', 'La Guerra del Norte'],
   ['m6b_guerra_civil', 'La Guerra Civil'],
+  ['m_lima', 'La Ciudad de los Reyes'],
   ['m7_tupac_amaru', 'La Gran Rebelión'],
   ['m_junta_cusco', 'La Junta del Cusco'],
   ['m8_independencia', 'La Independencia'],

@@ -56,13 +56,6 @@ export const PLANNED_MISSIONS: Record<string, PlannedMission> = {
     summary: 'Huayna Cápac enfrenta a caranquis y cayambes en la frontera norte del Tahuantinsuyo.',
   },
   // El Virreinato
-  p_vir_lima: {
-    id: 'p_vir_lima',
-    title: 'La Ciudad de los Reyes',
-    subtitle: 'Lima · 1535–1536',
-    summary:
-      'Lima se funda junto al Rímac y resiste el cerco del general inca Quizu Yupanqui, con aliados andinos de ambos lados.',
-  },
   p_vir_cusco: {
     id: 'p_vir_cusco',
     title: 'Cusco en llamas',

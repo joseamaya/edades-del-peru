@@ -60,6 +60,15 @@ import {
   TAMBOTOCO_STREAM_HALF_WIDTH,
   TAMBOTOCO_STREAM_PATH,
 } from './tambotocoHeightmap';
+import {
+  LIMA_GROUND,
+  LIMA_GROUND_SIZE,
+  LIMA_HEIGHTMAP,
+  LIMA_HEIGHTMAP_SIZE,
+  LIMA_HEIGHTMAP_WORLD_SIZE,
+  LIMA_RIVER_HALF_WIDTH,
+  LIMA_RIVER_PATH,
+} from './limaHeightmap';
 
 export type AuthoredSiteId =
   | 'caral_site'
@@ -73,7 +82,8 @@ export type AuthoredSiteId =
   | 'arica_site'
   | 'cusco_inca_site'
   | 'cusco_junta_site'
-  | 'tambotoco_site';
+  | 'tambotoco_site'
+  | 'lima_site';
 
 /** Dedicated visual-only decor GLBs for the later campaigns. */
 export type DecorModelId =
@@ -212,6 +222,9 @@ export const DEFAULT_SITE_TERRAIN: SiteTerrainStyle = {
 
 /** Uniform source-to-game scale for the Ciudades Sagradas Caral remaster. */
 export const CARAL_SITE_SCALE = 0.25;
+
+/** Lima's plaza and cabildo: shared by the mission layout and the authored site. */
+export const LIMA_SITE_ORIGIN = { x: 90, z: 150 } as const;
 
 /**
  * The Sacred City sits on the east of the Supe-valley transect (scripts/build_caral_heightmap.py): its
@@ -734,6 +747,41 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       // The Cusco basin (5.7 m) reads wet, the altiplano (4.0 m) reads as puna grass.
       moisture: { valleyHeight: 7.6, valleyRange: 3.4, bankStart: 0.12, bankRange: 0.1 },
       water: { deep: '#1c3a44', shallow: '#4f7a74', sheen: 0.12, foam: 0.1, fog: 0.22, refraction: 0.15 },
+    },
+  },
+  // Lima (1535) reuses the colonial plaza/church model on a new 256 m coast transect.
+  lima_site: {
+    id: 'lima_site',
+    label: 'La Ciudad de los Reyes y el Rímac',
+    modelName: 'colonial_site',
+    scale: 0.65,
+    origin: { ...LIMA_SITE_ORIGIN },
+    anchor: { ...LIMA_SITE_ORIGIN },
+    cameraHeight: 56,
+    framing: 'site-biased',
+    heightField: {
+      size: LIMA_HEIGHTMAP_SIZE,
+      worldSize: LIMA_HEIGHTMAP_WORLD_SIZE,
+      heights: LIMA_HEIGHTMAP,
+      ground: { size: LIMA_GROUND_SIZE, weights: LIMA_GROUND },
+      river: { path: LIMA_RIVER_PATH, halfWidth: LIMA_RIVER_HALF_WIDTH },
+    },
+    pathCellSize: 1,
+    heritageProxies: [{ id: 'lima_plaza', x: LIMA_SITE_ORIGIN.x, z: LIMA_SITE_ORIGIN.z, w: 12, d: 10, h: 6 }],
+    blockers: [{ x: LIMA_SITE_ORIGIN.x, z: LIMA_SITE_ORIGIN.z, w: 12, d: 10 }],
+    blockerPadding: 0.5,
+    buildKeepout: [{ x: LIMA_SITE_ORIGIN.x / 256, z: LIMA_SITE_ORIGIN.z / 256, rx: 0.07, rz: 0.065 }],
+    wallCollision: {
+      meshPatterns: [/colonial/i],
+      maxStartYAboveBase: 1.2,
+    },
+    walkableCorridor: { width: 8 },
+    terrain: {
+      ...DEFAULT_SITE_TERRAIN,
+      flatNormals: true,
+      suppressSnow: true,
+      moisture: { valleyHeight: 6.2, valleyRange: 3.2, bankStart: 0.12, bankRange: 0.1 },
+      water: { deep: '#0f2a2e', shallow: '#2a5652', sheen: 0.15, foam: 0.12, fog: 0.3, refraction: 0.2 },
     },
   },
   // Huanacaure (legendary Ayar route) on a new 256 m Pacaritambo–Cusco transect. The chanca pucará GLB

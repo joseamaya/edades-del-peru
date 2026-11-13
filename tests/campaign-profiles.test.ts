@@ -21,6 +21,7 @@ const EXPECTED_REGION: Record<string, GeographicRegion> = {
   m5_yahuar_pampa: 'high_andes',
   m6_chimu_inca: 'north_coast',
   m6b_guerra_civil: 'high_andes',
+  m_lima: 'central_coast',
   m7_tupac_amaru: 'high_andes',
   m_junta_cusco: 'andean_valley',
   m8_independencia: 'andean_valley',

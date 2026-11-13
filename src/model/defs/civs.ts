@@ -294,6 +294,19 @@ export const CIVS: CivDef[] = [
     description: 'Los Hijos del Sol. Del Cusco al Qhapaq Ñan, su imperio unió los Andes con piedra, andenes y quipus.',
   },
   {
+    id: CivId.HUESTE_INDIANA,
+    visual: { arch: 'colonial', emblem: 'cross' },
+    name: 'Hueste indiana',
+    adjective: 'conquistador',
+    colors: { primary: '#8a2a2a', secondary: '#d8c8a0', accent: '#c8a040' },
+    periods: [HistoricalPeriod.VICEROYALTY],
+    geography: 'coast',
+    bonuses: ['Jinetes y rodeleros', 'Arcabuces escasos', 'Alianzas con curacas'],
+    effects: { attack: 0.1, speed: 0.05 },
+    description:
+      'La hueste de la conquista: pizarristas, almagristas y sus aliados andinos. Caballos, acero y pocos arcabuces frente a un valle ya habitado.',
+  },
+  {
     id: CivId.REALISTAS,
     visual: { arch: 'colonial', emblem: 'cross' },
     name: 'Realistas (España)',

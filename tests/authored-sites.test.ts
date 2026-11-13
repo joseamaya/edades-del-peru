@@ -84,6 +84,18 @@ describe('authored campaign sites', () => {
     expect(mission.layout?.site?.id).toBe('independence_site');
   });
 
+  it('keeps Lima on its own 256 m coast transect and the Plaza Mayor', () => {
+    const site = getAuthoredSite('lima_site')!;
+    expect(site.scale).toBe(0.65);
+    expect(site.anchor).toEqual({ x: 90, z: 150 });
+    expect(site.heightField?.worldSize).toBe(256);
+    expect(site.heightField?.size).toBe(129);
+    expect(site.heightField?.ground?.size).toBe(128);
+    expect(site.heritageProxies.map((p) => p.id)).toEqual(['lima_plaza']);
+    const mission = MISSIONS.find((m) => m.id === 'm_lima')!;
+    expect(mission.layout?.site?.id).toBe('lima_site');
+  });
+
   it('keeps Tambotoco on its own 256 m transect and the Huanacaure huaca', () => {
     const site = getAuthoredSite('tambotoco_site')!;
     expect(site.scale).toBe(0.7);
