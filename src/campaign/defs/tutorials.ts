@@ -29,12 +29,12 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'apacheta',
-        text: 'Marcha a La Apacheta y sostén la posición con al menos seis unidades.',
+        text: 'Marcha a La Apacheta y sostén la posición con al menos cinco unidades.',
         check: { type: 'objectiveCompleted', objectiveId: 'a2_batalla' },
       },
       {
         id: 'umachiri',
-        text: 'En Umachiri no se gana el campo: resiste 120 segundos y mantén con vida a Pumacahua.',
+        text: 'En Umachiri no se gana el campo: resiste 90 segundos y mantén con vida a Pumacahua.',
         check: { type: 'objectiveCompleted', objectiveId: 'a3_resistir' },
       },
     ],
