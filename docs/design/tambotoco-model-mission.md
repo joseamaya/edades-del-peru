@@ -97,7 +97,7 @@ open the acequia, lay out the canchas.
 ## Open items
 
 1. Performance: the opening measures ~540k triangles / ~324–327 draw calls in `bench_scene.mjs` (eight Ayar
-   nameplates included) and passes the first-pass 340-call cap; the next pass should tighten it toward
+   nameplates included) and passes the first-pass 330-call cap; the next pass should tighten it toward
    art-direction §11's 200 calls. The mission starts with a small force (5 workers, 7 militia, 2 slingers,
    1 scout) to keep the rig count down.
 2. The Huanacaure huaca is a reused pucará GLB; a small shrine kit would read better.

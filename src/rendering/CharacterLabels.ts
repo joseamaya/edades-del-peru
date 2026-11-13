@@ -7,7 +7,7 @@ import { labelFade } from './MapLabels';
 import { labelSprite, type LabelSprite } from './textSprite';
 
 /** Screen height a nameplate keeps while zooming (the world height follows the camera). */
-const NAME_SCREEN_FACTOR = 0.013;
+const NAME_SCREEN_FACTOR = 0.018;
 /** Vertical offset per unit id, so a tight group does not stack every name on the same line. */
 const NAME_STAGGER = 0.32;
 

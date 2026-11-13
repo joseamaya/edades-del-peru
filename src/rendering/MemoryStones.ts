@@ -75,8 +75,13 @@ export class MemoryStones {
     ringMesh.position.y = 0.06;
     stone.add(ringMesh);
 
-    const labelBillboard = labelSprite(label, { fontSize: 44, color: '#f2dfae', paddingX: 16, paddingY: 8 });
-    labelBillboard.material.opacity = 1;
+    const labelBillboard = labelSprite(label, {
+      fontSize: 44,
+      color: '#f2dfae',
+      paddingX: 16,
+      paddingY: 8,
+      opacity: 1,
+    });
     labelBillboard.sprite.scale.set(0.7 * labelBillboard.aspect, 0.7, 1);
     labelBillboard.sprite.position.y = 2.6;
     stone.add(labelBillboard.sprite);

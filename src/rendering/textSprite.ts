@@ -45,6 +45,11 @@ export function textTexture(
   return { texture, aspect: canvas.width / canvas.height };
 }
 
+export interface LabelSpriteStyle extends TextTextureStyle {
+  /** Starting opacity; nameplates fade in, permanent markers start visible. */
+  opacity?: number;
+}
+
 export interface LabelSprite {
   readonly sprite: THREE.Sprite;
   readonly material: THREE.SpriteMaterial;
@@ -54,14 +59,15 @@ export interface LabelSprite {
 
 /**
  * A ground-anchored name billboard: the shared setup for character nameplates and huaca markers.
- * The caller owns positioning, scale and visibility; opacity starts at 0 so it can fade in.
+ * The caller owns positioning, scale and visibility; opacity defaults to 0 so a nameplate can fade
+ * in, while a permanent marker sets `opacity: 1`.
  */
-export function labelSprite(text: string, style: TextTextureStyle = {}, renderOrder = 3): LabelSprite {
+export function labelSprite(text: string, style: LabelSpriteStyle = {}, renderOrder = 3): LabelSprite {
   const { texture, aspect } = textTexture(text, style);
   const material = new THREE.SpriteMaterial({
     map: texture,
     transparent: true,
-    opacity: 0,
+    opacity: style.opacity ?? 0,
     depthWrite: false,
     depthTest: true,
     fog: false,

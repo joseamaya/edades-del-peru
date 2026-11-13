@@ -180,30 +180,43 @@ async function playMission(page, plan) {
     throw new Error('full mode autoplays the m_tambotoco act shape; use --mode=clip for another mission');
   }
 
+  await look(page, null, 40);
   const worker = await firstUnit(page, 'worker');
   if (worker) await move(page, [worker], plan.start);
-  await waitObjective(page, 'a1_salida', 'completed', 120_000, deadline);
+  await waitObjective(page, 'a1_salida', 'completed', 120_000, deadline, () => look(page, null, 38));
   if (await hasEnded(page)) return;
 
+  if (plan.tamboQuiro) {
+    await look(page, { x: plan.tamboQuiro.x + 2, z: plan.tamboQuiro.z - 5 }, 26);
+    await page.waitForTimeout(4000);
+  }
   await gather(page);
-  await waitObjective(page, 'a1_caza', 'completed', 420_000, deadline);
+  await waitObjective(page, 'a1_caza', 'completed', 420_000, deadline, () => look(page, null, 38));
   if (await hasEnded(page)) return;
 
   const army = (await units(page)).filter((u) => u.kind !== 'worker').map((u) => u.id);
   await move(page, army, plan.heritage, true);
-  await visitWhenClose(page, plan.heritageId, plan.heritage, 15, 240_000, deadline);
+  await visitWhenClose(page, plan.heritageId, plan.heritage, 15, 240_000, deadline, () => look(page, null, 36));
   await waitObjective(page, 'a2_huanacaure', 'completed', 30_000, deadline);
   if (await hasEnded(page)) return;
+
+  await look(page, { x: plan.heritage.x, z: plan.heritage.z + 3 }, 28);
+  await page.waitForTimeout(4000);
 
   await page.evaluate(() => window.game.toggleCanal());
   await waitObjective(page, 'a3_acequia', 'completed', 30_000, deadline);
   if (await hasEnded(page)) return;
 
   const workers = (await units(page, 'worker')).map((u) => u.id);
+  await look(page, plan.inticancha, 38);
   const mill = await place(page, 'mill', plan.inticancha);
   if (mill) await issue(page, { kind: 'build', entityId: mill }, workers);
-  await waitObjective(page, 'a4_inticancha', 'completed', 240_000, deadline);
+  await waitObjective(page, 'a4_inticancha', 'completed', 240_000, deadline, () => look(page, null, 36));
   if (await hasEnded(page)) return;
+
+  await look(page, { x: plan.inticancha.x + 6, z: plan.inticancha.z + 6 }, 26);
+  await page.waitForTimeout(4000);
+  await look(page, plan.inticancha, 38);
 
   for (const node of plan.canchas) {
     const house = await place(page, 'house', node);
@@ -214,7 +227,7 @@ async function playMission(page, plan) {
     if (builder === undefined) break;
     await issue(page, { kind: 'build', entityId: house }, [builder]);
   }
-  await waitObjective(page, 'a4_canchas', 'completed', 300_000, deadline);
+  await waitObjective(page, 'a4_canchas', 'completed', 300_000, deadline, () => look(page, plan.inticancha, 36));
   await page.waitForFunction(() => window.game.gameEnded === true, null, { timeout: 60_000 }).catch(() => {});
 }
 
@@ -226,7 +239,7 @@ async function hasEnded(page) {
 async function readPlan(page) {
   return page.evaluate(() => {
     const m = window.game.mission;
-    const point = (p) => (p ? m.resolvePoint(p) : null);
+    const point = (p) => (p ? window.game.resolveMissionPoint(p) : null);
     const objective = (id) => m.def.objectives.find((o) => o.id === id);
     const memory = (tag) =>
       m.def.triggers.flatMap((t) => t.effects).find((fx) => fx.type === 'memory' && fx.tag === tag);
@@ -354,9 +367,14 @@ async function place(page, kind, point) {
   );
 }
 
-async function visitWhenClose(page, heritageId, point, radius, timeoutMs, deadline) {
+async function visitWhenClose(page, heritageId, point, radius, timeoutMs, deadline, onTick = null) {
   const until = Math.min(Date.now() + timeoutMs, deadline);
+  let lastLook = 0;
   while (Date.now() < until) {
+    if (onTick && Date.now() - lastLook > 8000) {
+      lastLook = Date.now();
+      await onTick();
+    }
     const close = await page.evaluate(
       ({ heritageId, point, radius }) => {
         const g = window.game;
@@ -378,10 +396,15 @@ async function visitWhenClose(page, heritageId, point, radius, timeoutMs, deadli
  * Wait for an objective, recording every state change and letting the player read the chapter
  * cards (the mission clock pauses while one is open, so they must be dismissed to advance).
  */
-async function waitObjective(page, id, state, timeoutMs, deadline = Infinity) {
+async function waitObjective(page, id, state, timeoutMs, deadline = Infinity, onTick = null) {
   const until = Math.min(Date.now() + timeoutMs, deadline);
   let current = null;
+  let lastTick = 0;
   while (Date.now() < until) {
+    if (onTick && Date.now() - lastTick > 8000) {
+      lastTick = Date.now();
+      await onTick();
+    }
     const snapshot = await page.evaluate(() => {
       const g = window.game;
       const m = g.mission;
@@ -411,6 +434,7 @@ async function waitObjective(page, id, state, timeoutMs, deadline = Infinity) {
 try {
   await main();
 } catch (error) {
+  fs.rmSync(frameDir, { recursive: true, force: true });
   console.error('[record]', error);
   process.exitCode = 1;
 }
