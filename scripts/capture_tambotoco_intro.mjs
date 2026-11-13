@@ -14,7 +14,7 @@ const OUT = path.join(process.cwd(), 'public', 'media', 'tambotoco');
 fs.mkdirSync(OUT, { recursive: true });
 
 const SHOTS = [
-  { id: 'cueva', at: [48, 72], height: 38, time: 0.58 },
+  { id: 'cueva', at: [44, 62], height: 34, time: 0.58 },
   { id: 'huanacaure', at: [116, 102], height: 42, time: 0.52 },
   { id: 'valle', at: [180, 196], height: 44, time: 0.62 },
   {
