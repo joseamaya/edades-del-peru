@@ -18,6 +18,8 @@ export const PORTRAIT_IDS = [
   'pumacahua',
   'melgar',
   'ramirez_orozco',
+  'manco_capac',
+  'mama_huaco',
 ] as const;
 
 export type PortraitId = (typeof PORTRAIT_IDS)[number];
@@ -166,6 +168,22 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     civ: CivId.REALISTAS,
     status: 'documented',
     source: 'docs/historia/campanas/junta_cusco.md',
+  },
+  manco_capac: {
+    id: 'manco_capac',
+    name: 'Manco Cápac',
+    role: 'Ayar Manco · peregrinación',
+    civ: CivId.INCA_KILLKE,
+    status: 'abstraction',
+    source: 'docs/historia/campanas/tambotoco.md',
+  },
+  mama_huaco: {
+    id: 'mama_huaco',
+    name: 'Mama Huaco',
+    role: 'Ayar · fuerza y mando',
+    civ: CivId.INCA_KILLKE,
+    status: 'abstraction',
+    source: 'docs/historia/campanas/tambotoco.md',
   },
 };
 

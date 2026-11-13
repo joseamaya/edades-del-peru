@@ -1058,3 +1058,154 @@ test('plays La Junta del Cusco through its three acts with real orders', async (
   expect(out.won).toBe(true);
   expect(errors).toEqual([]);
 });
+
+test('plays Los hijos de Tambotoco through its four acts with real orders', async ({ page }) => {
+  test.setTimeout(240_000);
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/?mission=m_tambotoco&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
+    const dt = 1 / 60;
+    let t = 0;
+    const dismissCard = () => document.querySelector('.ed-mission-card')?.click();
+    const keepAlive = () => {
+      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
+    };
+    const step = (seconds: number) => {
+      for (let i = 0; i < Math.ceil(seconds / dt) && !m.ended; i++) {
+        keepAlive();
+        if (i % 15 === 0) dismissCard();
+        g.update(dt, t);
+        t += dt;
+      }
+      dismissCard();
+    };
+    const move = (ids: number[], x: number, z: number) =>
+      g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'move', target: { x, z } }, clear: true }, false);
+    const gather = (ids: number[], entityId: number) =>
+      g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'gather', entityId }, clear: true }, false);
+    const build = (ids: number[], entityId: number) =>
+      g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'build', entityId }, clear: true }, false);
+
+    const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker') as any;
+    move([worker.id], 60, 92);
+    for (let i = 0; i < Math.ceil(60 / dt) && !m.ended; i++) {
+      keepAlive();
+      if (i % 15 === 0) dismissCard();
+      g.update(dt, t);
+      t += dt;
+      if (Math.hypot(worker.pos.x - 60, worker.pos.z - 92) <= 9) break;
+    }
+    const salida = m.getObjectiveState('a1_salida') as string;
+
+    const workers = [...g.units.values()]
+      .filter((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead)
+      .map((u: any) => u.id);
+    const hunts = [...g.resourceNodes.values()].filter((n: any) => !n.dead && n.kind === 'hunt') as any[];
+    if (hunts.length) {
+      for (const [i, id] of workers.entries()) {
+        const node = hunts[i % hunts.length];
+        gather([id], node.id);
+      }
+    }
+    for (let i = 0; i < Math.ceil(210 / dt) && !m.ended; i++) {
+      keepAlive();
+      if (i % 15 === 0) dismissCard();
+      g.update(dt, t);
+      t += dt;
+      if (m.getObjectiveState('a1_caza') === 'completed') break;
+    }
+    const caza = m.getObjectiveState('a1_caza') as string;
+
+    const army = [...g.units.values()]
+      .filter((u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker')
+      .map((u: any) => u.id);
+    move([...army, ...workers], 120, 106);
+    for (let i = 0; i < Math.ceil(120 / dt) && !m.ended; i++) {
+      keepAlive();
+      if (i % 15 === 0) dismissCard();
+      g.update(dt, t);
+      t += dt;
+      if (m.getObjectiveState('a2_huanacaure') === 'active') break;
+      for (const u of g.units.values())
+        if (u.owner === 0 && !u.dead && Math.hypot(u.pos.x - 120, u.pos.z - 106) <= 15) {
+          g.visitHeritage('tambotoco_huanacaure');
+          break;
+        }
+    }
+    g.visitHeritage('tambotoco_huanacaure');
+    step(2);
+    const huanacaure = m.getObjectiveState('a2_huanacaure') as string;
+
+    g.toggleCanal();
+    step(2);
+    const acequia = m.getObjectiveState('a3_acequia') as string;
+
+    const placeNear = (kind: string, x: number, z: number) => {
+      for (const [ox, oz] of [
+        [0, 0],
+        [4, 0],
+        [-4, 0],
+        [0, 4],
+        [0, -4],
+        [7, 7],
+        [-7, -7],
+      ]) {
+        const placed = g.placeBuilding(kind, x + ox, z + oz);
+        if (placed) return placed;
+      }
+      return null;
+    };
+    const mill = placeNear('mill', 168, 190);
+    if (mill) build(workers, mill.id);
+    for (let i = 0; i < Math.ceil(150 / dt) && !m.ended; i++) {
+      keepAlive();
+      if (i % 15 === 0) dismissCard();
+      g.update(dt, t);
+      t += dt;
+      if (m.getObjectiveState('a4_inticancha') === 'completed') break;
+    }
+    const inticancha = m.getObjectiveState('a4_inticancha') as string;
+
+    for (const [x, z] of [
+      [156, 190],
+      [180, 190],
+      [168, 178],
+      [168, 202],
+    ]) {
+      const house = placeNear('house', x, z);
+      if (house) build(workers, house.id);
+    }
+    for (let i = 0; i < Math.ceil(180 / dt) && !m.ended; i++) {
+      keepAlive();
+      if (i % 15 === 0) dismissCard();
+      g.update(dt, t);
+      t += dt;
+      if (m.getObjectiveState('a4_canchas') === 'completed') break;
+    }
+    return {
+      salida,
+      caza,
+      huanacaure,
+      acequia,
+      inticancha,
+      canchas: m.getObjectiveState('a4_canchas') as string,
+      won: m.won as boolean | null,
+    };
+  });
+  expect(out.salida).toBe('completed');
+  expect(out.caza).toBe('completed');
+  expect(out.huanacaure).toBe('completed');
+  expect(out.acequia).toBe('completed');
+  expect(out.inticancha).toBe('completed');
+  expect(out.canchas).toBe('completed');
+  expect(out.won).toBe(true);
+  expect(errors).toEqual([]);
+});

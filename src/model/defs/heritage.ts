@@ -28,7 +28,9 @@ export type HeritageBuildingId =
   | 'colonial_church'
   | 'independence_chapel'
   | 'arica_battery'
-  | 'cusco_ushnu';
+  | 'cusco_ushnu'
+  | 'tambotoco_huanacaure'
+  | 'tambotoco_acequia';
 
 export type HeritageSector =
   | 'Áspero'
@@ -43,7 +45,8 @@ export type HeritageSector =
   | 'Virreinato'
   | 'Independencia'
   | 'República'
-  | 'Guerra Civil Inca';
+  | 'Guerra Civil Inca'
+  | 'Cusco';
 
 export interface HeritageBuildingDef {
   id: HeritageBuildingId;
@@ -378,6 +381,29 @@ export const HERITAGE_BUILDINGS: Record<HeritageBuildingId, HeritageBuildingDef>
     confidence: 'tipología documentada; planta y remates plausibles',
     citation: 'Dossier de la Guerra Civil Inca · crónicas y arqueología del Cusco',
     sources: ['docs/historia/civilizaciones/inca.md', 'docs/historia/campanas/guerra_civil_inca.md'],
+  },
+  tambotoco_huanacaure: {
+    id: 'tambotoco_huanacaure',
+    name: 'Huanacaure',
+    sector: 'Cusco',
+    role: 'Huaca de la peregrinación de los Ayar',
+    summary:
+      'Huanacaure es el cerro donde Ayar Uchu se convierte en piedra según la tradición recogida por Sarmiento. La ficha lo presenta como huaca de la peregrinación, no como un santuario excavado: la identificación del cerro y su culto son tradición y lectura arqueológica.',
+    confidence: 'tradición documentada; identificación del cerro, plausible',
+    citation: 'Dossier de Tambotoco · Sarmiento, Cieza y Betanzos',
+    sources: ['docs/historia/campanas/tambotoco.md', 'docs/historia/arquitectura.md'],
+  },
+  tambotoco_acequia: {
+    id: 'tambotoco_acequia',
+    name: 'Acequia de los alcabizas',
+    sector: 'Cusco',
+    role: 'Riego de valle y palanca política',
+    summary:
+      'Las crónicas cuentan que los recién llegados quitaron el agua a los alcabizas para obligarlos a ceder tierras. La acequia es una abstracción jugable del riego andino y del control del agua como poder.',
+    confidence: 'tradición documentada; trazado y compuerta abstraídos',
+    citation: 'Dossier de Tambotoco · Sarmiento, segundo cap. XIV',
+    operation: 'toggle-canal',
+    sources: ['docs/historia/campanas/tambotoco.md', 'docs/historia/arquitectura.md'],
   },
 };
 

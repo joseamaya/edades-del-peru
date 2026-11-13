@@ -84,6 +84,20 @@ describe('authored campaign sites', () => {
     expect(mission.layout?.site?.id).toBe('independence_site');
   });
 
+  it('keeps Tambotoco on its own 256 m transect and the Huanacaure huaca', () => {
+    const site = getAuthoredSite('tambotoco_site')!;
+    expect(site.scale).toBe(0.7);
+    expect(site.anchor).toEqual({ x: 120, z: 106 });
+    expect(site.heightField?.worldSize).toBe(256);
+    expect(site.heightField?.size).toBe(129);
+    expect(site.heightField?.ground?.size).toBe(128);
+    expect(site.heightField?.river?.halfWidth).toBe(3.5);
+    expect(site.heritageProxies.map((p) => p.id)).toEqual(['tambotoco_huanacaure']);
+    expect(site.walkableCorridor?.width).toBe(8);
+    const mission = MISSIONS.find((m) => m.id === 'm_tambotoco')!;
+    expect(mission.layout?.site?.id).toBe('tambotoco_site');
+  });
+
   it('keeps La Junta del Cusco on its own 256 m transect and the colonial cabildo', () => {
     const site = getAuthoredSite('cusco_junta_site')!;
     expect(site.scale).toBe(0.65);

@@ -50,6 +50,9 @@ const BUDGETS = {
   // Chavín opening: the phased kit, highland vegetation and the base. Measure first, then ratchet down.
   m2_chavin: { sceneTriangles: 450_000, sceneDrawCalls: 220, kitTriangles: 100_000, kitDrawCalls: 40 },
   m2_chavin_late: { sceneTriangles: 600_000, sceneDrawCalls: 310, kitTriangles: 100_000, kitDrawCalls: 40 },
+  // Tambotoco opening: small ayllu force on the new 256 m transect. First-pass cap measured 540k / 298;
+  // tighten toward the 200-call art-direction target after the unit-rig pass.
+  m_tambotoco: { sceneTriangles: 600_000, sceneDrawCalls: 320, kitTriangles: 0, kitDrawCalls: 0 },
 };
 const KIT_NAMES = /^(trees_kit_|props_kit_|fauna_(deer|riparian_bird)_(body|leg|wingL|wingR)$)/;
 
@@ -67,6 +70,7 @@ try {
       if (!g?.mission) return false;
       if (id === 'm2_chavin') return (g.scene.getObjectByName?.('chavin_city_lod0')?.children.length ?? 0) > 0;
       if (id === 'm_junta_cusco') return !!g.landmark?.getObjectByName('colonial_site');
+      if (id === 'm_tambotoco') return !!g.landmark?.getObjectByName('chanca_site');
       // Wait for every kit family the scene draws: a half-loaded batch measured a different scene.
       if (!g.trees?.hasKit?.('algarrobo') || !g.trees.hasKit('sauce')) return false;
       if (g.mapProfile?.quarryStyle && !g.quarries?.model) return false;

@@ -213,6 +213,31 @@ art and performance passes, which are still open.
 | Opening     | Met: three narrated beats with in-engine captures, two act cards and the epilogue backdrop.              |
 | Scale       | Met: 256 m transect, 128² painted ground and worker crossing ≈2:22 (`tests/campaign-scale.test.ts`).     |
 
+## Los hijos de Tambotoco playable status (m_tambotoco)
+
+`m_tambotoco` is the released opening of El Tahuantinsuyo and the first **Leyenda** mission. It is built on
+the 256 m Pacaritambo–Huanacaure–Cusco transect and reuses the chanca pucará GLB as the Huanacaure huaca.
+The table separates what is implemented from the art and performance passes that are still open.
+
+| Gate        | m_tambotoco                                                                                          |
+| ----------- | ---------------------------------------------------------------------------------------------------- |
+| History     | Met: `docs/historia/campanas/tambotoco.md` with a certainty table; the dossier states that Sarmiento is hostile and Garcilaso gives another version. |
+| Identity    | Met: water and land as leverage, not a pitched battle; the four canchas order the foundation.        |
+| Play        | Met (automated): the four acts complete with real move/build/canal orders; a manual playtest is pending. |
+| Contract    | Met: Acts II–IV hidden, the hualla visit is optional, and the acequia is the only required water step. |
+| Onboarding  | Met: six-step tutorial, briefing and Codex.                                                          |
+| Closure     | Met: the epilogue tells the foundation as tradition and names both versions; no counterfactual is hidden. |
+| UX          | Met: the campaign layout check at 1600×900 and `hud-layout.spec.ts` at 1280×720.                     |
+| Visuals     | Partial: authored 256 m transect, the Huanacaure huaca and in-engine intro/chapter/epilogue captures; the huaca is a reused pucará. |
+| Persistence | Met: save/load round-trip in `save-campaign.spec.ts`.                                                |
+| Tests       | Met: `tests/tambotoco.test.ts`, scale, campaign path and the campaign E2E specs.                     |
+| Docs        | Met: dossier, `tambotoco-model-mission.md`, this table and the redesign status.                      |
+| Performance | Met within its first-pass budget: ~540k triangles / ~298 draw calls, under the 320-call cap in `bench_scene.mjs`; tightening to art-direction §11's 200 calls is the follow-up. |
+| Art         | N/A for new models: the huaca reuses the chanca pucará; captures are in-engine and documented in PROVENANCE. |
+| Structure   | Met: four acts with hidden objectives, three chapter cards and the documented foundation.             |
+| Opening     | Met: three narrated beats with in-engine captures, three act cards and the epilogue backdrop.          |
+| Scale       | Met: 256 m transect, 128² painted ground and worker crossing ≈2:22 (`tests/campaign-scale.test.ts`).  |
+
 ## Inca civil war playable status (m6b)
 
 `m6b_guerra_civil` is released as **playable**. It uses the same authored-site

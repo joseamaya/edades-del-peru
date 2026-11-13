@@ -93,6 +93,7 @@ test('every campaign mission shows its educational epilogue on victory', async (
     'm2_chavin',
     'm3_moche_recuay',
     'm4_wari',
+    'm_tambotoco',
     'm5_yahuar_pampa',
     'm6_chimu_inca',
     'm6b_guerra_civil',
@@ -314,7 +315,7 @@ async function expectCampaignLayout(context: BrowserContext, ids: string[]): Pro
 
 test('later campaign briefing and tutorial fit 1600x900 (m5-m6b)', async ({ context }) => {
   test.setTimeout(360_000);
-  await expectCampaignLayout(context, ['m5_yahuar_pampa', 'm6_chimu_inca', 'm6b_guerra_civil']);
+  await expectCampaignLayout(context, ['m_tambotoco', 'm5_yahuar_pampa', 'm6_chimu_inca', 'm6b_guerra_civil']);
 });
 
 test('later campaign briefing and tutorial fit 1600x900 (m7-m9)', async ({ context }) => {
@@ -325,6 +326,7 @@ test('later campaign briefing and tutorial fit 1600x900 (m7-m9)', async ({ conte
 test('later campaign briefings show their draft intro art with art=all', async ({ page }) => {
   test.setTimeout(120_000);
   for (const id of [
+    'm_tambotoco',
     'm5_yahuar_pampa',
     'm6_chimu_inca',
     'm6b_guerra_civil',
@@ -333,7 +335,7 @@ test('later campaign briefings show their draft intro art with art=all', async (
     'm8_independencia',
     'm9_guerra_pacifico',
   ]) {
-    await page.goto(`/?mission=${id}&seed=777&fog=0&low=1&art=all`);
+    await page.goto(`/?mission=${id}&seed=777&fog=0&low=1&art=all&intro=0`);
     const img = page.locator('.ed-briefing .ed-art img');
     await expect(img).toBeVisible({ timeout: 30_000 });
     await expect(img).toHaveJSProperty('complete', true);
@@ -347,6 +349,7 @@ test('the missions with corrected rosters boot with units and no errors', async 
   page.on('pageerror', (e) => errors.push(e.message));
   const ids = [
     'm3_moche_recuay',
+    'm_tambotoco',
     'm5_yahuar_pampa',
     'm6_chimu_inca',
     'm6b_guerra_civil',
@@ -461,6 +464,7 @@ test('authored campaign geography spawns its local base and features', async ({ 
     { id: 'm2_chavin', river: true, decor: null, canal: false },
     { id: 'm3_moche_recuay', flats: true, decor: 'mission_decor_recuay_pashash', canal: true },
     { id: 'm4_wari', flats: true, decor: null, canal: false },
+    { id: 'm_tambotoco', flats: true, decor: null, site: 'tambotoco_site', canal: true },
     { id: 'm5_yahuar_pampa', flats: true, decor: null, site: 'chanca_site', canal: false },
     { id: 'm6_chimu_inca', flats: true, decor: null, site: 'chimu_site', canal: true },
     { id: 'm6b_guerra_civil', flats: true, decor: null, site: 'cusco_inca_site', canal: false },
@@ -714,8 +718,8 @@ test('the campaign hub shows preinca progress and its four missions', async ({ p
   await expect(menu.getByRole('button', { name: /Jugar La Frontera de los Valles/ })).toBeVisible();
   await expect(menu.getByRole('button', { name: /Jugar El Horizonte Medio/ })).toHaveCount(0);
   const inca = menu.locator('.ed-campaign-card[data-campaign="inca"]');
-  await expect(inca).toBeDisabled();
-  await expect(inca).toContainText('Completa «Culturas Preincas» para desbloquearla');
+  await expect(inca).toBeEnabled();
+  await expect(inca).toContainText('0 / 4 misiones completadas');
 });
 
 test('the campaign path opens the next campaign once the previous one is complete', async ({ page }) => {
@@ -732,24 +736,23 @@ test('the campaign path opens the next campaign once the previous one is complet
   // The whole pre-Inca campaign is done, so the path selects the Inca campaign and its first mission.
   await expect(inca).toBeEnabled();
   await expect(inca).toHaveAttribute('aria-selected', 'true');
-  await expect(inca).toContainText('0 / 3 misiones completadas');
-  await expect(menu.getByRole('button', { name: /Jugar Yahuar Pampa/ })).toBeVisible();
+  await expect(inca).toContainText('0 / 4 misiones completadas');
+  await expect(menu.getByRole('button', { name: /Jugar Los hijos de Tambotoco/ })).toBeVisible();
   await expect(menu.getByRole('button', { name: /Jugar La Guerra del Norte/ })).toHaveCount(0);
   await expect(menu.locator('.ed-campaign-card[data-campaign="virreinato"]')).toBeDisabled();
   await expect(menu.locator('.ed-campaign-card[data-campaign="independencia"]')).toBeEnabled();
   await expect(menu.locator('.ed-campaign-card[data-campaign="republica"]')).toBeDisabled();
-  await expect(inca).toContainText('7 en desarrollo');
+  await expect(inca).toContainText('6 en desarrollo');
   // The redesigned chapter shows its planned missions in play order, without a play button.
   const rows = menu.locator('.ed-senda-mission');
   await expect(rows).toHaveCount(10);
-  await expect(rows.nth(0)).toHaveClass(/planned/);
+  await expect(rows.nth(0)).not.toHaveClass(/planned/);
   await expect(rows.nth(0)).toContainText('Los hijos de Tambotoco');
   await expect(rows.nth(0)).toContainText('Leyenda');
-  await expect(rows.nth(0)).toContainText('En desarrollo');
-  await expect(rows.nth(0).getByRole('button')).toHaveCount(0);
+  await expect(rows.nth(0).getByRole('button', { name: /Jugar Los hijos de Tambotoco/ })).toBeVisible();
   await expect(rows.nth(1)).toContainText('Yahuar Pampa');
   await expect(rows.nth(9)).toContainText('La Guerra Civil');
-  await expect(menu.locator('.ed-senda-mission.planned')).toHaveCount(7);
+  await expect(menu.locator('.ed-senda-mission.planned')).toHaveCount(6);
 
   await menu.locator('.ed-campaign-card[data-campaign="preinca"]').click();
   await expect(menu).toContainText('4 / 4 misiones completadas');

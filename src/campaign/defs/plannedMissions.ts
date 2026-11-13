@@ -17,14 +17,6 @@ export interface PlannedMission {
 
 export const PLANNED_MISSIONS: Record<string, PlannedMission> = {
   // El Tahuantinsuyo
-  p_inca_tambotoco: {
-    id: 'p_inca_tambotoco',
-    title: 'Los hijos de Tambotoco',
-    subtitle: 'Siglos XII–XIV',
-    label: 'Leyenda',
-    summary:
-      'Los hermanos Ayar salen de Pacaritambo y buscan tierra fértil. En el valle del Cusco viven ya huallas, sauaseray y alcabizas: tendrás que ganarte el valle.',
-  },
   p_inca_collao: {
     id: 'p_inca_collao',
     title: 'El señor del Collao',

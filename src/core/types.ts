@@ -41,6 +41,8 @@ export enum CivId {
   CHANCA = 'chanca',
   COLLAS_LUPACA = 'collas_lupaca',
   HUANCA = 'huanca',
+  INCA_KILLKE = 'inca_killke',
+  AYLLUS = 'ayllus',
   INCA = 'inca',
   // Historical (post-Hispanic)
   REALISTAS = 'realistas',
