@@ -184,7 +184,10 @@ export class Mission {
       this.game.loop.start();
       this.game.reframeMissionOpening?.();
       this.game.playIntro();
-      this.triggerDialogue(this.def.history.split('\n')[0] ?? 'Comienza la misión.', 4);
+      // With the intro on, the title card narrates this line; without it, the dialogue carries the start.
+      if (!this.game.introEnabled) {
+        this.triggerDialogue(this.def.history.split('\n')[0] ?? 'Comienza la misión.', 4);
+      }
     });
   }
 
