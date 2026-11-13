@@ -129,9 +129,17 @@ export class PostFX {
     this.composer.addPass(this.fxaaPass);
   }
 
-  setSize(width: number, height: number): void {
+  /**
+   * Size the chain to the canvas. `EffectComposer` caches its own pixel ratio in the constructor
+   * (1) and `setSize` only multiplies by it, so without passing the renderer's the scene and the
+   * bloom mips are rendered at CSS resolution and upscaled — blurrier than the classic path and,
+   * more importantly, immune to the governor's render scale.
+   */
+  setSize(width: number, height: number, pixelRatio = this.composer.renderer.getPixelRatio()): void {
+    // The composer caches the ratio it saw at construction and `setSize` keeps using it, so a render
+    // scale change (governor, `?low=1`) would never reach the post-processing targets.
+    this.composer.setPixelRatio(pixelRatio);
     this.composer.setSize(width, height);
-    const pixelRatio = this.composer.renderer.getPixelRatio();
     (this.fxaaPass.uniforms['resolution'].value as THREE.Vector2).set(
       1 / (width * pixelRatio),
       1 / (height * pixelRatio),

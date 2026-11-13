@@ -166,6 +166,12 @@ Desglose de m1_caral apertura (sobre los 45.6 ms de la media de los dos controle
 Preset bajo en la misma misión: **19.2 ms** (52 fps) y **16.6 ms** con `--direct`, que es el tope de `requestAnimationFrame`
 (60 Hz), no holgura.
 
+**Escala de render y post-proceso (#449).** Las cifras de arriba son a `pixelRatio` 1. En una pantalla 2× (portátiles
+Retina, lo más común) el mismo frame de m1_caral mide **65.5 ms** a escala nativa y **27.7 ms** con la escala forzada
+a 1: antes de #449 el `EffectComposer` conservaba su ratio de construcción y esa caída **no llegaba al
+post-proceso**, así que el governor no podía recuperar una máquina HiDPI débil. Ahora sigue al renderer
+(`PostFX.setSize` reenvía el ratio) y `?low=1` lo aplica también.
+
 ### Lectura
 
 1. **La refracción del agua cuesta el 34–44 % del frame de campaña en las seis misiones medidas.** Es el mayor

@@ -570,6 +570,12 @@ Definition of Done and the building audit see
 
 ## Code traps (learned the hard way)
 
+- **`EffectComposer` caches the pixel ratio it saw at construction**: `setSize` multiplies by that cached
+  value, so changing `renderer.setPixelRatio()` (the governor's render-scale drop, `?low=1`) never reached the
+  post-processing targets and the "drop" cost nothing. `PostFX.setSize(w, h, ratio)` now forwards the ratio and
+  `RuntimeController.onResize` passes it; any new resize path must do the same (#449). On a 2× display the
+  difference is large: at DPR 2 in m1_caral the frame is 65.5 ms at native scale and 27.7 ms at scale 1, so
+  without this the governor could not recover a weak HiDPI machine.
 - **The shadow map is drawn once per frame, not once per `renderer.render`**: `Renderer.ts` sets
   `shadowMap.autoUpdate = false` and `RuntimeController.frameShadows()` raises `needsUpdate`, because a
   post-processed frame renders the scene twice (water refraction + composer) and three would run the shadow

@@ -226,8 +226,8 @@ export async function boot(): Promise<void> {
   }
   if (replay) game.hud.showToast('🎬 Repetición', 'info');
   if (params.get('low') === '1') {
-    game.pixelRatioOverride = 1;
-    game.renderer.setPixelRatio(1);
+    // Through the controller: it is the call that also resizes the post-processing targets.
+    game.runtime.setPixelRatioOverride(1);
     game.settings.cinematic = false;
     game.postfx.setCinematic(false);
     game.setQuality('low');
