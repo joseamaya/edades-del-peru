@@ -537,6 +537,11 @@ export class Mission {
     if (this.ended) return;
     this.ended = true;
     this.won = true;
+    // A protect goal can only fail while the match runs; reaching victory with the
+    // escort alive is what completes it, so the victory card credits it as achieved.
+    for (const o of this.def.objectives) {
+      if (o.kind === 'protect' && this.objState.get(o.id) === 'activo') this.objState.set(o.id, 'completed');
+    }
     this.onEnd(true);
   }
 

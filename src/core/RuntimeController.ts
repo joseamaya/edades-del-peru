@@ -423,6 +423,11 @@ export class RuntimeController {
     if (owner === 0) {
       this.game.lastBattleEvent = targetId;
     }
+    if (target.dead) {
+      // The mirror of `kills`: the victory table reads it as "Pérdidas".
+      const victim = this.game.players[target.owner];
+      if (victim) victim.totalLost++;
+    }
     if (target.dead && owner !== -1) {
       const attackerPlayer = this.game.players[owner];
       if (attackerPlayer) {
@@ -646,7 +651,8 @@ export class RuntimeController {
         p.bonus.training += tech.effect.priceDiscount;
       }
     }
-    this.game.hud.showToast(`Tecnología completada: ${tech?.name ?? techId}`, 'info');
+    // Only the human player's research is news; the AI researches silently.
+    if (playerId === 0) this.game.hud.showToast(`Tecnología completada: ${tech?.name ?? techId}`, 'info');
   };
 
   /** Apply the player's bonuses to a freshly built unit (stats straight from `getUnitStats`), once. */
