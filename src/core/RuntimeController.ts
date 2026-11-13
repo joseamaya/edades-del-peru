@@ -1209,6 +1209,9 @@ export class RuntimeController {
     this.game.postfx.setQuality(q);
     this.game.terrain?.setLowDetail(q === 'low');
     this.game.sky?.setShadowMapSize(SHADOW_MAP_SIZE[q]);
+    // A new map size disposes the map; if the game is paused nothing else will re-flag the pass and the
+    // world would render unshadowed until it resumes.
+    if (this.game.renderer) this.game.renderer.shadowMap.needsUpdate = true;
     this.game.groundCover?.setEnabled(q !== 'low' && !this.game.usesSoftwareRenderer);
     // The governor can apply a preset before the world (and its trees) exists.
     if (this.game.trees)

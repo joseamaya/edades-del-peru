@@ -40,6 +40,10 @@ try {
   const url = `${base}/?mission=${mission}&intro=0&fog=0&seed=777${low ? '&low=1' : ''}`;
   await page.goto(url, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => window.game !== undefined, null, { timeout: 60000 });
+  // These views render outside the loop: refresh the shadow map on every render.
+  await page.evaluate(() => {
+    window.game.renderer.shadowMap.autoUpdate = true;
+  });
   await page.waitForTimeout(wait);
   await page
     .locator('.ed-primary', { hasText: 'COMENZAR' })

@@ -744,10 +744,14 @@ async function measure(browser, base, n, runIndex) {
     g.loop.stop();
     window.__directRender = true;
     g.camera.setHeight(1e9);
-    g.runtime.frameShadows();
+    for (let i = 0; i < 30; i++) g.camera.update(1 / 30, i / 30);
+    g.camera.camera.updateMatrixWorld();
     const unitRoots = [...g.units.values()].filter((u) => !u.dead && u.rig).map((u) => u.rig.root);
     const animalRoots = g.wildlife.animals.filter((a) => a.rig).map((a) => a.group);
+    // Every sample draws the shadow pass, so the shown/hidden delta cancels it instead of
+    // attributing the whole shadow pass to the isolated group.
     const sample = () => {
+      g.runtime.frameShadows();
       g.renderer.render(g.scene, g.camera.camera);
       return { calls: g.renderer.info.render.calls, tris: g.renderer.info.render.triangles };
     };
@@ -793,8 +797,10 @@ async function measure(browser, base, n, runIndex) {
     g.loop.stop();
     window.__directRender = true;
     g.camera.setHeight(1e9);
-    g.runtime.frameShadows();
+    for (let i = 0; i < 30; i++) g.camera.update(1 / 30, i / 30);
+    g.camera.camera.updateMatrixWorld();
     const sample = () => {
+      g.runtime.frameShadows();
       g.renderer.render(g.scene, g.camera.camera);
       return { calls: g.renderer.info.render.calls, tris: g.renderer.info.render.triangles };
     };
