@@ -950,6 +950,8 @@ test('the Ayar cast is on the board and named after the briefing', async ({ page
     const manco = tagged.find((u: any) => u.tag === 'manco_capac')!;
     g.selectUnits([manco.id]);
     for (let i = 0; i < 20; i++) g.update(1 / 60, i / 60);
+    const heroMarkers = g.heroMarkers ? (g.heroMarkers.rings.count as number) : 0;
+    const heroScale = manco.unitView?.view.group.scale.x ?? 0;
     const single = document.querySelector('#ed-desc')?.textContent ?? '';
     g.selectUnits(tagged.map((u: any) => u.id));
     for (let i = 0; i < 20; i++) g.update(1 / 60, 20 / 60 + i / 60);
@@ -959,6 +961,8 @@ test('the Ayar cast is on the board and named after the briefing', async ({ page
       labels: labels.length,
       visibleLabels: labels.filter((l: { sprite: { visible: boolean } }) => l.sprite.visible).length,
       single,
+      heroMarkers,
+      heroScale,
       party: document.querySelector('#ed-desc')?.textContent ?? '',
     };
   });
@@ -977,6 +981,9 @@ test('the Ayar cast is on the board and named after the briefing', async ({ page
   expect(info.labels).toBe(8);
   expect(info.visibleLabels, 'nameplates must show at the default zoom').toBe(8);
   expect(info.single).toContain('Ayar Manco');
+  expect(info.heroMarkers).toBe(8);
+  expect(info.heroScale).toBeGreaterThan(1.15);
+  expect(info.single).toContain('★');
   // A box selection of the party still names its characters (not just "Soldado ×7").
   expect(info.party).toContain('Grupo ×8');
   expect(info.party).toContain('Ayar Manco');

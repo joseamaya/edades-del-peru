@@ -37,9 +37,9 @@ export class CharacterLabels {
       let label = this.labels.get(unit.id);
       if (!label) {
         if (fade <= 0.02) continue;
-        label = labelSprite(commander.name, {
+        label = labelSprite(commander.hero ? `★ ${commander.name}` : commander.name, {
           fontSize: 44,
-          color: unit.owner === 0 ? '#f6e7bf' : '#e8b7a0',
+          color: commander.accent ?? (unit.owner === 0 ? '#f6e7bf' : '#e8b7a0'),
           paddingX: 16,
           paddingY: 8,
         });

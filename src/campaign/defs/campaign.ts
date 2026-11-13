@@ -1385,8 +1385,8 @@ export const MISSIONS: MissionDef[] = [
         { text: 'Huanacaure', x: TAMBOTOCO_HUANACAURE.x / 256, z: TAMBOTOCO_HUANACAURE.z / 256, kind: 'region' },
         { text: 'Valle del Cusco', x: 196 / 256, z: 190 / 256, kind: 'region' },
       ],
-      base: { x: 44 / 256, z: 62 / 256 },
-      opening: { x: 62 / 256, z: 84 / 256 },
+      base: { x: 46 / 256, z: 74 / 256 },
+      opening: { x: 41 / 256, z: 60 / 256 },
       enemyBase: { x: TAMBOTOCO_ENEMY.x / 256, z: TAMBOTOCO_ENEMY.z / 256 },
       discoveries: [{ heritageId: 'tambotoco_huanacaure' }],
       terrain: {
@@ -1495,7 +1495,7 @@ export const MISSIONS: MissionDef[] = [
         kind: 'reach',
         pos: { dx: 60, dz: 92 },
         radius: 9,
-        title: 'Sal de Tambotoco y toma el camino al valle',
+        title: 'Sal de Tambotoco con los ocho',
       },
       {
         id: 'a1_caza',
@@ -1503,7 +1503,7 @@ export const MISSIONS: MissionDef[] = [
         fromNode: 'hunt',
         count: 120,
         hidden: true,
-        title: 'Consigue 120 de comida cazando',
+        title: 'Sostén a las familias con la honda de Cachi',
       },
       {
         id: 'a1_manco',
@@ -1596,7 +1596,7 @@ export const MISSIONS: MissionDef[] = [
           {
             type: 'act',
             kicker: 'Acto II · La peregrinación',
-            title: 'Huanacaure',
+            title: 'Ayar Uchu en Huanacaure',
             image: 'media/tambotoco/intro-huanacaure.webp',
             text: 'El camino sube al cerro de Huanacaure. La tradición cuenta que allí Ayar Uchu se convierte en piedra y queda como huaca: el lugar marca el paso de la peregrinación al valle.',
           },
@@ -1650,7 +1650,7 @@ export const MISSIONS: MissionDef[] = [
           {
             type: 'act',
             kicker: 'Acto IV · La fundación',
-            title: 'Inticancha',
+            title: 'Ayar Auca en Inticancha',
             image: 'media/tambotoco/intro-epilogo.webp',
             text: 'Con el agua y la tierra aseguradas, los ayllus fundan Inticancha y ordenan el sitio en cuatro canchas. La leyenda del Cusco empieza aquí.',
           },

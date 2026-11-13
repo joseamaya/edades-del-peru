@@ -189,7 +189,10 @@ function cave(parts: Parts, y: number): void {
     [1.4, 0, 1.5, 1.3],
   ];
   for (const [dx, dy, dz, r] of rocks) rock(parts, TAMBOTOCO_CAVE.x + dx, y + dy - 0.35, TAMBOTOCO_CAVE.z + dz, r);
-  box(parts, MOUTH, TAMBOTOCO_CAVE.x, y, TAMBOTOCO_CAVE.z - 0.35, 1.3, 3.4, 4.0);
+  // The mouth is a wide dark recess facing the camp; the lintel and side walls frame it.
+  box(parts, MOUTH, TAMBOTOCO_CAVE.x, y, TAMBOTOCO_CAVE.z + 0.45, 3.2, 3.8, 1.5);
+  box(parts, DARK_STONE, TAMBOTOCO_CAVE.x, y + 3.8, TAMBOTOCO_CAVE.z + 0.3, 5.4, 0.6, 2.2);
+  box(parts, EARTH, TAMBOTOCO_CAVE.x + 0.6, y - 0.04, TAMBOTOCO_CAVE.z + 4.2, 3.2, 0.06, 7);
   villagers(parts, TAMBOTOCO_CAVE.x - 2.2, y, TAMBOTOCO_CAVE.z + 3, 2);
 }
 
@@ -239,12 +242,21 @@ export class AylluSite {
           kind: 'smoke',
         });
     }
+    for (const dx of [-2.4, 2.4]) {
+      this.life.push({
+        x: TAMBOTOCO_CAVE.x + dx,
+        z: TAMBOTOCO_CAVE.z + 2.6,
+        y: this.heightAt(TAMBOTOCO_CAVE.x + dx, TAMBOTOCO_CAVE.z + 2.6) + 0.8,
+        phase: PHASE_CAVE,
+        kind: 'fire',
+      });
+    }
     this.life.push({
       x: TAMBOTOCO_CAVE.x,
-      z: TAMBOTOCO_CAVE.z + 2.6,
-      y: this.heightAt(TAMBOTOCO_CAVE.x, TAMBOTOCO_CAVE.z + 2.6) + 0.8,
+      z: TAMBOTOCO_CAVE.z + 1.2,
+      y: this.heightAt(TAMBOTOCO_CAVE.x, TAMBOTOCO_CAVE.z + 1.2) + 3.6,
       phase: PHASE_CAVE,
-      kind: 'fire',
+      kind: 'smoke',
     });
     shrinePlatform(caveParts, ground(TAMBOTOCO_SHRINE.x, TAMBOTOCO_SHRINE.z));
     for (const h of TAMBOTOCO_SHRINE_HUTS) {

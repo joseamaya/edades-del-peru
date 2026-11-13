@@ -37,6 +37,7 @@ import { Props } from '../rendering/Props';
 import { GroundCover } from '../rendering/GroundCover';
 import { MapLabels } from '../rendering/MapLabels';
 import { CharacterLabels } from '../rendering/CharacterLabels';
+import { HeroMarkers } from '../rendering/HeroMarkers';
 import type { AylluSite } from '../rendering/AylluSite';
 import type { ColonialLife } from '../rendering/ColonialLife';
 import { MemoryStones } from '../rendering/MemoryStones';
@@ -172,6 +173,8 @@ export class Game {
   mapLabels: MapLabels | null = null;
   /** Nameplates over campaign characters (a unit tag that matches a commander). */
   characterLabels: CharacterLabels | null = null;
+  /** Hero rings and banners over the Ayar. */
+  heroMarkers: HeroMarkers | null = null;
   /** Huacas raised by myth beats, with the name of the character they remember. */
   memoryStones: MemoryStones | null = null;
   /** Fog-clearing "zone discovered" announcements for authored sites. */
@@ -632,6 +635,7 @@ export class Game {
     this.fowUniforms.fowEnabled.value = s.fogOfWar ? 1 : 0;
     this.mapLabels = new MapLabels(this.scene, this.placeNames, this.terrain, s.mapSize);
     this.characterLabels = new CharacterLabels(this.scene);
+    this.heroMarkers = new HeroMarkers(this.scene);
     this.memoryStones = new MemoryStones(
       this.scene,
       (x, z) => this.terrain.getHeight(x, z),
@@ -966,8 +970,9 @@ export class Game {
     u.pos.set(spot.x, this.terrain.getHeight(spot.x, spot.z), spot.z);
     u.setContext(this.unitContext);
     if (this.players[owner]) this.applyPlayerBonuses(u, this.players[owner]);
-    this.attachUnit(u);
+    // The tag is hero identity: the view reads it when it is created, so set it before attaching.
     if (tag) u.tag = tag;
+    this.attachUnit(u);
     this.units.set(u.id, u);
     const p = this.players[owner];
     if (p) p.populationUsed += u.stats.population;
@@ -1026,6 +1031,15 @@ export class Game {
   playIntro(): void {
     if (!this.introEnabled) return;
     const c = this.playerCenter(0);
+    const opening = this.missionLayout?.opening;
+    if (opening && this.siteDef?.style === 'ayllu') {
+      // The legend starts in the cave: hold it, then fly down to the camp.
+      const size = this.settings.mapSize;
+      this.camera.moveTo(opening.x * size, opening.z * size, true);
+      this.camera.setHeight(34);
+      this.camera.flyTo(c.x, c.z, 44, INTRO_CAMERA.seconds);
+      return;
+    }
     const city = this.siteFocus ?? this.setpiecePlan?.upper;
     if (city) {
       this.camera.moveTo(city.x, city.z, true);
@@ -2049,6 +2063,8 @@ export class Game {
     this.mapLabels = null;
     this.characterLabels?.dispose();
     this.characterLabels = null;
+    this.heroMarkers?.dispose();
+    this.heroMarkers = null;
     this.memoryStones?.dispose();
     this.memoryStones = null;
     this.discoveries = null;

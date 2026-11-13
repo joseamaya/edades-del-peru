@@ -921,6 +921,8 @@ test('plays La Junta del Cusco through its three acts with real orders', async (
     // The manual playtest covers the no-cheat attrition path; this spec isolates the three-act wiring.
     const keepAlive = () => {
       for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
+      // The playtest isolates attrition: a lost cancha house would test the AI, not the objective wiring.
+      for (const b of g.buildings.values()) if (b.owner === 0 && !b.dead) b.hp = b.maxHp;
     };
     const run = (seconds: number) => {
       for (let i = 0; i < Math.ceil(seconds / dt) && !m.ended; i++) {
@@ -1180,6 +1182,7 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
     }
     const inticancha = m.getObjectiveState('a4_inticancha') as string;
 
+    const canchaHouses: number[] = [];
     for (const [x, z] of [
       [156, 190],
       [180, 190],
@@ -1187,9 +1190,11 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
       [168, 202],
     ]) {
       const house = placeNear('house', x, z);
-      if (house) build(workers, house.id);
+      if (house) canchaHouses.push(house.id);
     }
-    for (let i = 0; i < Math.ceil(180 / dt) && !m.ended; i++) {
+    // One worker per plot: re-issuing the same build order to every worker would abandon all but the last.
+    for (const [i, id] of canchaHouses.entries()) build([workers[i % workers.length]], id);
+    for (let i = 0; i < Math.ceil(240 / dt) && !m.ended; i++) {
       keepAlive();
       if (i % 15 === 0) dismissCard();
       g.update(dt, t);

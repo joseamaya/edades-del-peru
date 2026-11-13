@@ -14,7 +14,7 @@ const OUT = path.join(process.cwd(), 'public', 'media', 'tambotoco');
 fs.mkdirSync(OUT, { recursive: true });
 
 const SHOTS = [
-  { id: 'cueva', at: [44, 62], height: 30, time: 0.58, phase: 'cave' },
+  { id: 'cueva', at: [42, 60], height: 28, time: 0.58, phase: 'cave' },
   {
     id: 'huanacaure',
     cinematic: { center: [120, 106], eye: [0, 24, 40], look: [0, 11, 0], fov: 48, time: 0.52 },

@@ -48,6 +48,27 @@ describe('campaign commanders', () => {
     expect(commanderById(undefined)).toBeUndefined();
   });
 
+  it('marks the eight Ayar as heroes with distinct presentation accents', () => {
+    const ayars = [
+      'manco_capac',
+      'ayar_auca',
+      'ayar_cachi',
+      'ayar_uchu',
+      'mama_huaco',
+      'mama_ocllo',
+      'mama_ipacura',
+      'mama_raua',
+    ];
+    const accents = new Set<string>();
+    for (const id of ayars) {
+      const commander = commanderById(id)!;
+      expect(commander.hero, id).toBe(true);
+      expect(commander.accent, id).toMatch(/^#[0-9a-f]{6}$/i);
+      accents.add(commander.accent!);
+    }
+    expect(accents.size).toBe(8);
+  });
+
   it('the late-campaign missions carry portraits', () => {
     for (const id of [
       'm_tambotoco',

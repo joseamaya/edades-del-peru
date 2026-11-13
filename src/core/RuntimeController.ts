@@ -930,6 +930,7 @@ export class RuntimeController {
       this.game.fow,
       this.game.settings.fogOfWar,
     );
+    this.game.heroMarkers?.sync(this.game.units.values());
     this.game.memoryStones?.update(t);
     this.applyLod();
     this.updatePopulation();

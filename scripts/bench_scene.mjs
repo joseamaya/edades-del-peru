@@ -71,7 +71,8 @@ const BUDGETS = {
   m2_chavin_late: { sceneTriangles: 600_000, sceneDrawCalls: 310, kitTriangles: 100_000, kitDrawCalls: 40 },
   // Tambotoco opening: the procedural ayllu site adds three merged phase draws and eight nameplates;
   // measured ~562k / 337. Tighten with a merged kit pass.
-  m_tambotoco: { sceneTriangles: 600_000, sceneDrawCalls: 340, kitTriangles: 0, kitDrawCalls: 0 },
+  // Hero rings/banners and the per-hero tunic accent add ~10 draws; first-pass regression cap.
+  m_tambotoco: { sceneTriangles: 600_000, sceneDrawCalls: 350, kitTriangles: 0, kitDrawCalls: 0 },
   // Inticancha stands at Act IV; it must not blow the same first-pass budget.
   m_tambotoco_late: { sceneTriangles: 620_000, sceneDrawCalls: 360, kitTriangles: 0, kitDrawCalls: 0 },
   // Lima opening: the hueste with horses and artillery. First-pass cap measured ~763k / 839; tighten after

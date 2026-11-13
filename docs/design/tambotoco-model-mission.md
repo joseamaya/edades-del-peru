@@ -61,11 +61,12 @@ and the only "engine" of the mission is water.
 
 ## Characters
 
-The legend is about eight siblings, so all eight are on the board from the start:
+The legend is about eight siblings, so all eight are on the board from the start and read as leads:
 
 - **In the party**: Ayar Manco, Ayar Auca, Ayar Cachi, Ayar Uchu, Mama Huaco, Mama Ocllo, Mama Ipacura and
-  Mama Raua are tagged start units. The tag is the commander id, so each one carries a nameplate in the
-  world and its name and role in the selection panel (a box selection lists them).
+  Mama Raua are tagged start units. Each carries a gold hero ring, a banner pole with an accent crest, a
+  `★` nameplate and a tinted tunic in its commander accent; the selection panel shows the portrait, name,
+  role and hero badge. The 3D body is still the shared ayllu rig; unique outfits are the next art pass.
 - **In the briefing**: the eight portraits (Ayar Manco, Ayar Auca, Ayar Cachi, Ayar Uchu, Mama Huaco, Mama
   Ocllo, Mama Ipacura, Mama Raua) use the procedural stylized medallions; no new art is needed.
 - **Myth beats**: Ayar Cachi is retired at Tambo Quiro, Ayar Uchu at Huanacaure and Ayar Auca at Inticancha.
@@ -76,8 +77,10 @@ The legend is about eight siblings, so all eight are on the board from the start
 
 ## Opening and closing
 
+- The opening camera holds the cave mouth (with torches and a path) and flies down to the camp; the first
+  objective is `Sal de Tambotoco con los ocho`, not a generic camp start.
 - Three narrated beats: the cave, Huanacaure, the valley.
-- Three chapter cards (Acts II–IV).
+- Three chapter cards: Ayar Uchu en Huanacaure, el agua de los alcabizas and Ayar Auca en Inticancha.
 - Victory: Inticancha and its four canchas; the epilogue tells the foundation as tradition and names the
   disagreement between Sarmiento and Garcilaso.
 - Defeat: the valley ayllus reject the newcomers.
@@ -99,10 +102,10 @@ open the acequia, lay out the canchas.
 
 ## Open items
 
-1. Performance: the opening measures ~562k triangles / ~337 draw calls in `bench_scene.mjs` (ayllu site
-   and eight nameplates) under the 600k/340 first-pass cap; the Act IV Inticancha view measures 472k/217.
-   The next pass should tighten toward art-direction §11's 200 calls. The mission starts with a small
-   force (5 workers, 7 militia, 2 slingers, 1 scout) to keep the rig count down.
+1. Performance: the opening measures ~575k triangles / ~347 draw calls in `bench_scene.mjs` (ayllu site,
+   eight nameplates, hero rings/banners and tunic accents) under the 600k/350 first-pass cap; the Act IV
+   Inticancha view measures 472k/217. The next pass should tighten toward art-direction §11's 200 calls.
+   The mission starts with a small force (5 workers, 7 militia, 2 slingers, 1 scout) to keep the rig count down.
 2. The ayllu site is procedural in-engine geometry (no GLB, no manifest entry); a Blender architecture
    kit (cave, shrine, houses, terraces) is the next art pass.
 3. A manual 30–40 minute playtest without isolated attrition, checking that the eight nameplates stay
