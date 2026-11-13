@@ -89,7 +89,8 @@ open the acequia, lay out the canchas.
 - `tests/tambotoco.test.ts`: acts, hidden objectives, chapter cards, scale, roster, the Leyenda label,
   the eight-portrait cast, the eight tagged siblings and the three huaca beats.
 - `tests/campaign-scale.test.ts`: 256 m, 128² ground, crossing band.
-- Campaign E2E: briefing, epilogue, intro art, geography, layout, save/load and the campaign path.
+- Campaign E2E: briefing (eight cards, no scroll at 1280×720), visible nameplates, a named party
+  selection, epilogue, intro art, geography, layout, save/load and the campaign path.
 - A real-command playtest through the four acts.
 - `yarn record --mission=m_tambotoco --mode=clip|full`: in-engine recording for review, with a JSON timeline.
 

@@ -254,7 +254,7 @@ The table separates what is implemented from the art and performance passes that
 | Contract    | Met: Acts II–IV hidden, the hualla visit is optional, and the acequia is the only required water step. |
 | Onboarding  | Met: seven-step tutorial, briefing with the eight siblings and Codex.                                |
 | Closure     | Met: the epilogue tells the foundation as tradition and names both versions; no counterfactual is hidden. |
-| UX          | Met: the campaign layout check at 1600×900 and `hud-layout.spec.ts` at 1280×720.                     |
+| UX          | Met: campaign layout at 1600×900, the eight-card briefing at 1280×720 and `hud-layout.spec.ts`.       |
 | Visuals     | Partial: authored 256 m transect, the Huanacaure huaca and in-engine intro/chapter/epilogue captures; the huaca is a reused pucará. |
 | Persistence | Met: save/load round-trip in `save-campaign.spec.ts`.                                                |
 | Tests       | Met: `tests/tambotoco.test.ts` (cast, tags, huaca beats), scale, campaign path and the campaign E2E specs. |
