@@ -242,7 +242,8 @@ from the art and performance passes still open.
 ## Los hijos de Tambotoco playable status (m_tambotoco)
 
 `m_tambotoco` is the released opening of El Tahuantinsuyo and the first **Leyenda** mission. It is built on
-the 256 m Pacaritambo–Huanacaure–Cusco transect and reuses the chanca pucará GLB as the Huanacaure huaca.
+the 256 m Pacaritambo–Huanacaure–Cusco transect and draws its own ayllu kit (cave, shrine, hamlets and the
+planned Inticancha).
 The table separates what is implemented from the art and performance passes that are still open.
 
 | Gate        | m_tambotoco                                                                                          |

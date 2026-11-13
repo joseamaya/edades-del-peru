@@ -41,8 +41,10 @@ Painted ground is sampled at 128 × 128 over 256 m; the worker crosses in ≈2:2
 
 ## Site and factions
 
-`tambotoco_site` reuses the chanca pucará GLB as the hilltop huaca of Huanacaure (a typological
-abstraction), with a new heritage card. The valley villages and Inticancha are simulation buildings.
+`tambotoco_site` is drawn by `AylluSite`: the cave mouth, the Huanacaure shrine, three valley hamlets and
+the planned Inticancha (plaza, four cancha plots, terraces and fields), with smoke, fires, villagers and
+llamas. Inticancha still grows through the player's store and four houses; the site marks the plots so they
+read as the founded settlement.
 
 - **Señorío del Cusco (Killke)**: the player; a new LATE_INTERMEDIATE civilization with a circular-plaza
   silhouette. No imperial Inca units or buildings.
