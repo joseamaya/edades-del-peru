@@ -1530,8 +1530,8 @@ export const MISSIONS: MissionDef[] = [
       {
         id: 'a3_hualla',
         kind: 'reach',
-        pos: { dx: TAMBOTOCO_VILLAGES[0]!.x, dz: TAMBOTOCO_VILLAGES[0]!.z },
-        radius: 12,
+        pos: { dx: TAMBOTOCO_VILLAGES[0]!.x - 8, dz: TAMBOTOCO_VILLAGES[0]!.z },
+        radius: 10,
         optional: true,
         hidden: true,
         title: 'Visita la aldea hualla',

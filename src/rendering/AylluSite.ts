@@ -230,24 +230,45 @@ export class AylluSite {
     cave(caveParts, ground(TAMBOTOCO_CAVE.x, TAMBOTOCO_CAVE.z));
     for (const h of TAMBOTOCO_CAVE_HUTS) {
       hut(caveParts, h, ground(h.x, h.z));
-      if (h.smoke) this.life.push({ x: h.x, z: h.z, y: ground(h.x, h.z) + 2.6, phase: PHASE_CAVE, kind: 'smoke' });
+      if (h.smoke)
+        this.life.push({
+          x: h.x,
+          z: h.z,
+          y: this.heightAt(h.x, h.z) + 0.35 + h.wall * 2.35,
+          phase: PHASE_CAVE,
+          kind: 'smoke',
+        });
     }
     this.life.push({
       x: TAMBOTOCO_CAVE.x,
       z: TAMBOTOCO_CAVE.z + 2.6,
-      y: ground(TAMBOTOCO_CAVE.x, TAMBOTOCO_CAVE.z + 2.6),
+      y: this.heightAt(TAMBOTOCO_CAVE.x, TAMBOTOCO_CAVE.z + 2.6) + 0.8,
       phase: PHASE_CAVE,
       kind: 'fire',
     });
     shrinePlatform(caveParts, ground(TAMBOTOCO_SHRINE.x, TAMBOTOCO_SHRINE.z));
     for (const h of TAMBOTOCO_SHRINE_HUTS) {
       hut(caveParts, h, ground(h.x, h.z));
-      if (h.smoke) this.life.push({ x: h.x, z: h.z, y: ground(h.x, h.z) + 2.2, phase: PHASE_CAVE, kind: 'smoke' });
+      if (h.smoke)
+        this.life.push({
+          x: h.x,
+          z: h.z,
+          y: this.heightAt(h.x, h.z) + 0.35 + h.wall * 2.35,
+          phase: PHASE_CAVE,
+          kind: 'smoke',
+        });
     }
     for (const village of TAMBOTOCO_VILLAGES) {
       for (const h of village.huts) {
         hut(caveParts, h, ground(h.x, h.z));
-        if (h.smoke) this.life.push({ x: h.x, z: h.z, y: ground(h.x, h.z) + 2.5, phase: PHASE_CAVE, kind: 'smoke' });
+        if (h.smoke)
+          this.life.push({
+            x: h.x,
+            z: h.z,
+            y: this.heightAt(h.x, h.z) + 0.35 + h.wall * 2.35,
+            phase: PHASE_CAVE,
+            kind: 'smoke',
+          });
       }
       villagers(caveParts, village.x, ground(village.x, village.z), village.z, 3);
       field(caveParts, village.field, ground(village.field.x, village.field.z));
@@ -260,7 +281,7 @@ export class AylluSite {
     this.life.push({
       x: TAMBOTOCO_SHRINE.x,
       z: TAMBOTOCO_SHRINE.z - 1.8,
-      y: ground(TAMBOTOCO_SHRINE.x, TAMBOTOCO_SHRINE.z - 1.8) + 1.5,
+      y: this.heightAt(TAMBOTOCO_SHRINE.x, TAMBOTOCO_SHRINE.z - 1.8) + 3.3,
       phase: PHASE_SHRINE,
       kind: 'fire',
     });
@@ -305,13 +326,19 @@ export class AylluSite {
     for (const h of TAMBOTOCO_INTICANCHA_HUTS) {
       hut(inticancha, h, ground(h.x, h.z));
       if (h.smoke)
-        this.life.push({ x: h.x, z: h.z, y: ground(h.x, h.z) + 2.6, phase: PHASE_INTICANCHA, kind: 'smoke' });
+        this.life.push({
+          x: h.x,
+          z: h.z,
+          y: this.heightAt(h.x, h.z) + 0.35 + h.wall * 2.35,
+          phase: PHASE_INTICANCHA,
+          kind: 'smoke',
+        });
     }
     villagers(inticancha, TAMBOTOCO_INTICANCHA.x, plazaY, TAMBOTOCO_INTICANCHA.z - 4, 3);
     this.life.push({
       x: TAMBOTOCO_INTICANCHA.x,
       z: TAMBOTOCO_INTICANCHA.z - 5,
-      y: plazaY + 1.7,
+      y: this.heightAt(TAMBOTOCO_INTICANCHA.x, TAMBOTOCO_INTICANCHA.z) + 3.2,
       phase: PHASE_INTICANCHA,
       kind: 'fire',
     });
