@@ -38,6 +38,7 @@ import { GroundCover } from '../rendering/GroundCover';
 import { MapLabels } from '../rendering/MapLabels';
 import { CharacterLabels } from '../rendering/CharacterLabels';
 import type { AylluSite } from '../rendering/AylluSite';
+import type { ColonialLife } from '../rendering/ColonialLife';
 import { MemoryStones } from '../rendering/MemoryStones';
 import { Discoveries } from '../game/Discoveries';
 import { Wildlife } from '../rendering/Wildlife';
@@ -200,6 +201,10 @@ export class Game {
   chavinCity: ArchitectureCity | null = null;
   /** The ayllu world of Tambotoco (cave, shrine, hamlets, planned Inticancha); null elsewhere. */
   aylluSite: AylluSite | null = null;
+  /** The colonial life around Lima/Cusco (houses, market, people); null elsewhere. */
+  colonialSite: ColonialLife | null = null;
+  /** The loaded authored site GLB, so a founding can hide it until the city phase. */
+  siteModel: THREE.Group | null = null;
   /** Presentation-only construction crew in the Caral camp (issue 422); null elsewhere. */
   siteCrew: SiteCrew | null = null;
   /** Named environmental events and their progress (0 = off, 1 = fully applied). */
@@ -1217,6 +1222,7 @@ export class Game {
     // The ayllu kit owns its life sources (huts, altars) and reuses this presentation tick, so it
     // inherits the same 70 m camera cap as Caral's cooking smoke.
     this.aylluSite?.updateLife(focus, this.particles, this.lifeTurn);
+    this.colonialSite?.updateLife(focus, this.particles, this.lifeTurn);
     const city = this.caralCity ?? this.chavinCity;
     if (!city) return;
     const quietPhase = this.siteDef?.life?.quietPhase;
@@ -1348,6 +1354,12 @@ export class Game {
     }
   }
 
+  /** Lima starts as a traced plaza: the colonial GLB appears once the cabildo is raised. */
+  syncSiteModelVisibility(): void {
+    if (!this.siteModel || this.siteDef?.style !== 'colonial') return;
+    this.siteModel.visible = !(this.siteDef.id === 'lima_site' && this.sitePhase === 'traza');
+  }
+
   setSitePhase(phase: string): void {
     if (!isKnownPhase(this.sitePhasePlan, phase)) {
       console.warn(`[site] unknown phase ${phase} for ${this.siteDef?.id ?? 'no site'}`);
@@ -1357,6 +1369,8 @@ export class Game {
     this.caralCity?.setPhase(phase);
     this.chavinCity?.setPhase(phase);
     this.aylluSite?.setPhase(phase);
+    this.colonialSite?.setPhase(phase);
+    this.syncSiteModelVisibility();
     this.siteCrew?.setPhase(phase as CaralMayorPhase);
     this.world.syncSitePhase(phase);
     this.syncSealCap(phase === 'sealed');
@@ -2051,6 +2065,9 @@ export class Game {
     this.siteCrew = null;
     this.aylluSite?.dispose();
     this.aylluSite = null;
+    this.colonialSite?.dispose();
+    this.colonialSite = null;
+    this.siteModel = null;
     this.wildlife.dispose();
     if (this.landmark) {
       this.landmarkLoadToken++;

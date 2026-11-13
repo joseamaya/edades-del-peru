@@ -2263,6 +2263,7 @@ export const MISSIONS: MissionDef[] = [
             image: 'media/lima/intro-rimac.webp',
             text: 'Las columnas de socorro al Cusco se pierden en la sierra. Quizu Yupanqui baja de los cerros con el ejército de Manco Inca. Lima debe resistir.',
           },
+          { type: 'site_phase', phase: 'ciudad' },
           { type: 'objective', objectiveId: 'a2_cerco', state: 'activate', announce: true },
           { type: 'objective', objectiveId: 'a2_curacas', state: 'activate', announce: true },
           {

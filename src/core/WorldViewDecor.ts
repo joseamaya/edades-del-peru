@@ -11,6 +11,8 @@ import { loadSiteModel } from '../rendering/siteModels';
 import { mergeStaticByMaterial } from '../rendering/mergeStatic';
 import { ArchitectureCity, CaralCity } from '../rendering/architectureKit';
 import { AylluSite } from '../rendering/AylluSite';
+import { ColonialLife } from '../rendering/ColonialLife';
+import { COLONIAL_LAYOUTS } from '../model/defs/colonialLayout';
 import {
   ASPERO_BLOCKERS,
   ASPERO_LAYOUT,
@@ -260,6 +262,22 @@ export class WorldViewDecor {
         if (siteModel) siteModel.visible = false;
       });
     };
+    if (def.style === 'colonial') {
+      const layout = COLONIAL_LAYOUTS[def.id as keyof typeof COLONIAL_LAYOUTS];
+      if (layout && !this.game.headless) {
+        this.game.colonialSite?.dispose();
+        const colonial = new ColonialLife(
+          group,
+          (x, z) => this.game.terrain.getHeight(x, z),
+          site.y ?? 0,
+          layout,
+          def.phases ?? { phases: ['ciudad'], initial: 'ciudad' },
+        );
+        colonial.setPhase(this.game.sitePhase);
+        applyFowToObject(colonial.group, this.game.fowUniforms);
+        this.game.colonialSite = colonial;
+      }
+    }
     if (def.style === 'ayllu') {
       // The legend has its own places: a cave mouth, the Huanacaure shrine, the valley hamlets and
       // the planned Inticancha. The reused chanca pucará is no longer loaded for this site.
@@ -371,6 +389,8 @@ export class WorldViewDecor {
         });
         // Hidden objects stay raycastable, so the heritage nodes still answer clicks.
         if (cityShown) model.visible = false;
+        this.game.siteModel = model;
+        this.game.syncSiteModelVisibility();
       })
       .catch((error: unknown) => {
         console.warn(`[site] failed to load authored ${def.id} site`, error);

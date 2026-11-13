@@ -27,6 +27,12 @@ describe('La Ciudad de los Reyes', () => {
     expect(site?.heightField?.size).toBe(129);
     expect(site?.heightField?.ground?.size).toBe(128);
     expect(site?.heritageProxies.map((p) => p.id)).toEqual(['lima_plaza']);
+    expect(site?.style).toBe('colonial');
+    expect(site?.phases?.phases).toEqual(['traza', 'ciudad']);
+    const phases = LIMA.triggers.flatMap((t) =>
+      t.effects.filter((fx) => fx.type === 'site_phase').map((fx) => (fx.type === 'site_phase' ? fx.phase : '')),
+    );
+    expect(phases).toEqual(['ciudad']);
   });
 
   it('plays three acts: found, hold and break the siege', () => {

@@ -1076,3 +1076,58 @@ test('the ayllu site grows through its phases', async ({ page }) => {
   expect(states.lifeCalls).toBeGreaterThan(0);
   expect(errors).toEqual([]);
 });
+
+test('Lima grows from a traced plaza into the colonial city', async ({ page }) => {
+  test.setTimeout(120_000);
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/?mission=m_lima&seed=777&fog=0&low=1&intro=0&noloop=1');
+  const briefing = page.locator('.ed-briefing');
+  await briefing.waitFor({ state: 'visible', timeout: 30_000 });
+  await briefing.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+  await briefing.waitFor({ state: 'detached' });
+  await page.waitForFunction(
+    () => (window as unknown as { game?: { siteModel?: unknown } }).game?.siteModel != null,
+    null,
+    { timeout: 60_000 },
+  );
+  await page.waitForFunction(
+    () => !(window as unknown as { game: { isCinematicActive(): boolean } }).game.isCinematicActive(),
+    null,
+    { timeout: 60_000 },
+  );
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const groups = (): { name: string; visible: boolean }[] =>
+      (g.colonialSite.group.children as { visible: boolean; children: { name: string }[] }[]).map((group) => ({
+        name: group.children[0]?.name ?? '?',
+        visible: group.visible,
+      }));
+    const before = { phase: g.sitePhase, groups: groups(), model: g.siteModel?.visible ?? null };
+    let lifeCalls = 0;
+    const life = g.colonialSite.updateLife.bind(g.colonialSite);
+    g.colonialSite.updateLife = (...args: unknown[]) => {
+      lifeCalls++;
+      life(...args);
+    };
+    for (let i = 0; i < 60; i++) g.update(1 / 60, i / 60);
+    g.setSitePhase('ciudad');
+    const after = { phase: g.sitePhase, groups: groups(), model: g.siteModel?.visible ?? null };
+    return { before, after, lifeCalls };
+  });
+  expect(out.before.phase).toBe('traza');
+  expect(out.before.groups).toEqual([
+    { name: 'colonial:traza', visible: true },
+    { name: 'colonial:ciudad', visible: false },
+  ]);
+  expect(out.before.model).toBe(false);
+  expect(out.after.groups).toEqual([
+    { name: 'colonial:traza', visible: false },
+    { name: 'colonial:ciudad', visible: true },
+  ]);
+  expect(out.after.model).toBe(true);
+  expect(out.lifeCalls).toBeGreaterThan(0);
+  expect(errors).toEqual([]);
+});

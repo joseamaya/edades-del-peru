@@ -51,6 +51,7 @@ try {
         const ui = document.getElementById('ui-root');
         if (ui) ui.style.display = 'none';
         if (g.getPaused()) g.togglePause();
+        g.setSitePhase('ciudad');
         g.applyQualityPreset('high');
         g.trees.kitLod0Radius = 60;
         g.sky.setTimeOfDay(shot.time ?? 0.5);

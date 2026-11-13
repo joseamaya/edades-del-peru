@@ -87,7 +87,7 @@ Mission ids remain stable (`m1_caral` … `m9_guerra_pacifico`, plus `m6b_guerra
 menus, the Codex and progress; `?mission=ID` remains available for QA.
 The campaign [quality bar](./docs/design/campaign-quality-bar.md) records the gates a mission must meet.
 Caral, Chavín, Moche and Wari have authored, source-backed sites; m5–m9 and m6b add dedicated low-poly GLB
-landmarks over authored terrain; `m_junta_cusco` and `m_lima` reuse the colonial plaza and `m_tambotoco` has its own ayllu site, each on its own 256 m transect.
+landmarks over authored terrain; `m_junta_cusco` and `m_lima` reuse the colonial plaza with a procedural street life, and `m_tambotoco` has its own ayllu site, each on its own 256 m transect.
 
 The current release status, art gate and publish checklist are in
 [`docs/design/release-candidate.md`](./docs/design/release-candidate.md).
