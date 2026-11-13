@@ -50,20 +50,23 @@ A 500 unidades el bucle agota el presupuesto de 40 ms por frame y **descarta bac
 del tiempo real. La simulación ocupa aproximadamente la mitad del frame en las escalas altas, no una fracción
 despreciable.
 
-### Frame con post-proceso (1920×1080, `--framing=mid`, calidad high)
+### Frame con post-proceso (1920×1080, `--framing=mid`, calidad high), 300 unidades
 
-300 unidades, 5 357 draw calls (17.3 por unidad), frame p50/p95/p99 **102.3/112.7/112.7 ms**, submit 61.7 ms (60 %).
-
-| pase | submit | draw calls |
+| | antes de #455 | después de #455 |
 | --- | ---: | ---: |
-| escena principal | 23.3 ms | 2 313 |
-| sombras | 13.6 ms | **714** |
-| refracción del agua | 24.0 ms | 2 312 |
-| quads de post-proceso | 0.1 ms | 18 |
-| JS/GL restante | 0.1 ms | — |
+| draw calls del frame | 5 357 | **5 035** |
+| frame p50/p95 | 102.3/112.7 ms | 100.1/105.1 ms |
+| submit | 61.7 ms | **57.9 ms** |
+| escena principal | 23.3 ms / 2 313 | 25.4 ms / 2 330 |
+| sombras | 13.6 ms / **714** | **6.9 ms / 358** |
+| refracción del agua | 24.0 ms / 2 312 | 25.5 ms / 2 329 |
+| quads de post-proceso | 0.1 ms / 18 | 0.1 ms / 18 |
 
-Los pases suman 61,1 ms frente a los 61,7 del frame: cada columna es la mediana de su pase, no una descomposición
-exacta de la mediana del frame.
+El frame es una sola muestra de 1,5 s con carga variable: los ±2 ms de frame y de escena son ruido. La señal es
+estructural y no depende de la máquina: **el pase de sombras pasó de dibujarse dos veces a una** (714 → 358 draws,
+13.6 → 6.9 ms), y el submit bajó 6.9 ms, exactamente lo que costaba la mitad sobrante. Los pases suman 57,9 ms
+frente a 57,9 del frame: cada columna es la mediana de su pase, no una descomposición exacta de la mediana del
+frame.
 
 ### Barrido de resolución (el discriminador CPU vs GPU)
 
@@ -75,8 +78,8 @@ Mismo frame con menos píxeles (1× → 0.5× del buffer de dibujo, es decir 4×
 | 300 | 53.7 ms | 51.2 ms | 50.7 ms | −6 % |
 | 500 | 90.1 ms | 91.9 ms | 95.6 ms | **+6 %** |
 
-El barrido solo corre en modo directo: con post-proceso el `EffectComposer` mantiene su propio pixel ratio y la
-escena no se reduce (#449).
+El barrido es válido también con post-proceso: `setPixelRatioOverride` llega al renderer, a los targets del
+post-proceso y al de refracción (#458).
 
 ### Lectura
 
@@ -84,14 +87,18 @@ escena no se reduce (#449).
    aún tiene una parte sensible al relleno) y un 6 % a 300; a 500 no baja, incluso sube ~6 % por el ruido del
    host. Si el coste fuera de relleno, el frame caería cerca de 4×. A 2 437 draws, 21.4 ms de submit del pase
    principal ≈ **9 µs por draw call**; a 3 638 draws, ≈10 µs.
-2. **Las sombras se dibujan dos veces con post-proceso.** 714 draws ≈ 2 × 364 (las del frame directo a 300
-   unidades): `three` ejecuta el pase de sombras dentro de **cada** `renderer.render`, y el frame con
-   post-proceso hace dos pases de escena (refracción y compositor); las 40 muestras lo confirman
-   (`shadowFrames.refraction = 40`). `shadowMap.autoUpdate = false` + un `needsUpdate` por frame ahorra un pase
-   completo sin cambiar el look: el arreglo más barato del #240.
-3. **La refracción del agua cuesta otro pase de escena completo**: 24,0 ms y 2 312 draws, prácticamente los
-   mismos draws que la escena principal y más tiempo, y solo alimenta el shader del agua. Desactivarla, bajarla a
-   media resolución o reutilizar el render del compositor recupera ~1/4 del frame con post-proceso.
+2. **Las sombras se dibujaban dos veces con post-proceso** (medido antes de #455). 714 draws ≈ 2 × 364 (las del
+   frame directo a 300 unidades): `three` ejecuta el pase de sombras dentro de **cada** `renderer.render`, y el
+   frame con post-proceso hace dos pases de escena (refracción y compositor). **Corregido en #455**: el mapa se
+   actualiza una vez por frame desde
+   `frameShadows` (`shadowMap.autoUpdate = false`). Tras el arreglo, a 300 unidades con post-proceso: sombras
+   358 draws / 6.9 ms (antes 714 / 13.6) y submit 57.9 ms (antes 61.7); en m1_caral, frame p50 34.8–35.6 ms
+   (antes 40.3). El discriminador es ahora el conteo (358 ≈ 1 × 364 del frame directo), no la columna
+   `shadowFrames`.
+3. **La refracción del agua costaba otro pase de escena completo** (medido antes de #460): 24,0 ms y 2 312
+   draws, prácticamente los mismos draws que la escena principal y más tiempo, y solo alimenta el shader del agua.
+   El `refractionRT` se dimensionaba al drawing buffer y ahora va a la mitad (ver §"Refracción a media
+   resolución"); el pase sigue dibujando lo mismo, lo que baja es su relleno.
 4. **8–10 draw calls por unidad en directo y 17 con post-proceso.** La escena tiene 3 780 materiales únicos para
    309 unidades: el coste escala con los **materiales distintos por unidad** (que además se clonan por
    instancia), no con el número de mallas. La diferencia 8 → 17 es el pase extra de refracción, no más
@@ -104,6 +111,34 @@ Consecuencia para el plan: el orden de ataque del #240 pasa a ser (1) sombra ún
 abaratar la refracción, (3) materiales compartidos + atlas por arquetipo, (4) instancing. Y por separado, el
 presupuesto de simulación por frame (PATH-1) vuelve a estar en la lista para 500+ unidades, porque a esa escala
 ya se come la mitad del frame.
+
+### Refracción a media resolución (#460)
+
+El pase de refracción re-renderiza la escena entera, pero el agua solo usa el resultado para un desplazamiento de
+UV suave (`refractionStrength` 0.012) mezclado por `(1 - fresnel)`; nadie mira esa imagen de cerca. El
+`refractionRT` pasa a la mitad del drawing buffer.
+
+m1_caral, 1600×900, calidad alta, muestras **intercaladas** en la misma página:
+
+| `refractionRT` | frame p50 | Δ vs 44.4 ms |
+| --- | ---: | ---: |
+| completo (1600×900) | 44.4 / 41.8 ms | — |
+| mitad (800×450) | 39.0 ms | −12 % |
+| cuarto (400×225) | 35.1 ms | −20 % |
+| sin refracción | 31.2 / 28.1 ms | −33 % |
+
+Diferencia de píxeles contra el frame completo (misma cámara y semilla):
+
+| variante | media /255 | píxeles con Δ > 12 |
+| --- | ---: | ---: |
+| mitad | 0.04 | 0.03 % |
+| cuarto | 0.05 | 0.05 % |
+| sin refracción | 1.79 | 7.9 % |
+
+Reducir la resolución es indistinguible a ojo (la distorsión es sutil y suave); quitar la refracción sí se nota.
+Medido en el juego: m1_caral p50 pasa de la banda 34.8–35.6 ms (dos corridas tras #455) a **32.0 ms**, ≈−9 %
+(corridas separadas con carga similar: indicativo, no par intercalado). El cuarto de resolución queda como opción
+documentada: solo está validado con dos encuadres, igual que la mitad.
 
 ### Reproducir
 
@@ -131,18 +166,19 @@ post-proceso ni refracción, y `--no-refraction` deja el post-proceso y quita so
 (load average 2.5–3.5 en la tanda buena, 10–12 en otras), así que los valores absolutos son de esta máquina y no
 de una GPU dedicada; el `loadavg` va en el JSON.
 
-| misión | draws escena | tris escena | draws frame | alta p50/p95/p99 | alta sin refracción | Δ refracción |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| m1_caral apertura | 177 | 588k | 371 | 40.3/45.3/64.2 ms | 26.5 ms | 13.8 ms (34 %) |
-| m1_caral `late` | 271 | 771k | 559 | 54.1/63.4/64.6 ms | 31.9 ms | 22.2 ms (41 %) |
-| m1_caral `camp` | 109 | 618k | 235 | 44.1/49.3/66.4 ms | 26.9 ms | 17.2 ms (39 %) |
-| m2_chavin apertura | 167 | 662k | 351 | 45.7/50.7/75.4 ms | 25.8 ms | 19.9 ms (44 %) |
-| m_tambotoco apertura | 331 | 759k | 679 | 43.8/47.2/57.3 ms | 26.7 ms | 17.1 ms (39 %) |
-| m_lima apertura | 843 | 973k | 1 703 | 50.6/63.7/74.5 ms | 31.8 ms | 18.8 ms (37 %) |
+| misión | draws escena | tris escena | alta p50/p95/p99 | alta sin refracción | Δ refracción |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| m1_caral apertura | 177 | 588k | 40.3/45.3/64.2 ms | 26.5 ms | 13.8 ms (34 %) |
+| m1_caral `late` | 271 | 771k | 54.1/63.4/64.6 ms | 31.9 ms | 22.2 ms (41 %) |
+| m1_caral `camp` | 109 | 618k | 44.1/49.3/66.4 ms | 26.9 ms | 17.2 ms (39 %) |
+| m2_chavin apertura | 167 | 662k | 45.7/50.7/75.4 ms | 25.8 ms | 19.9 ms (44 %) |
+| m_tambotoco apertura | 331 | 759k | 43.8/47.2/57.3 ms | 26.7 ms | 17.1 ms (39 %) |
+| m_lima apertura | 843 | 973k | 50.6/63.7/74.5 ms | 31.8 ms | 18.8 ms (37 %) |
 
-`draws escena` es un solo pase de escena (con sombras) y es el número estructural comparable con los presupuestos
-de `bench_scene`; `draws frame` es el frame completo que ve el jugador (pases de refracción y compositor
-incluidos). El frame con post-proceso dibuja **dos veces la escena**: 371 = 2 × 177 + quads.
+`draws escena` es un solo pase de escena (con su pase de sombras) y es el número estructural comparable con los
+presupuestos de `bench_scene`. Desde #455 el frame con post-proceso dibuja la escena **dos veces** (refracción y
+compositor) y el pase de sombras **una**: en m1_caral el frame mide 309 draws ≈ 2 × 116 de escena + 61 de sombras
++ quads.
 
 Control de repetibilidad (m1_caral apertura, las cuatro configuraciones seguidas para que la carga sea la misma):
 alta **47.8 ms** → `--direct` **22.9 ms** → sin refracción **28.0 ms** → alta otra vez **43.4 ms**. El primer y el
@@ -158,6 +194,14 @@ Desglose de m1_caral apertura (sobre los 45.6 ms de la media de los dos controle
 
 Preset bajo en la misma misión: **19.2 ms** (52 fps) y **16.6 ms** con `--direct`, que es el tope de `requestAnimationFrame`
 (60 Hz), no holgura.
+
+**Escala de render y post-proceso (#449).** Las cifras de las tablas son a `pixelRatio` 1. En una pantalla 2×
+(portátiles Retina, lo más común) m1_caral a **1280×720 CSS con `deviceScaleFactor` 2** mide **65.5 ms** a escala
+nativa y **27.7 ms** con la escala forzada a 1 (muestras intercaladas): antes de #449 el `EffectComposer`
+conservaba su ratio de construcción y esa caída **no llegaba al post-proceso** —solo encogía el canvas y el target
+de refracción—, así que el governor no podía recuperar una máquina HiDPI débil. Ahora sigue al renderer
+(`PostFX.setSize` reenvía el ratio) y `?low=1` lo aplica también. El viewport de estas dos cifras es el de la
+prueba (1280×720 a 2×), no el 1600×900 de la tabla.
 
 ### Lectura
 
@@ -185,6 +229,14 @@ node scripts/bench_scene.mjs --mission=m1_caral --gpu --frames --quality=low --o
 ```
 
 Añadir `--stage=late|camp` para las otras dos filas de m1_caral, y cambiar `--mission=` para el resto.
+Las dos tablas de arriba salen de un A/B en la misma sesión (misma semilla y cámara), forzando el tamaño en la
+página antes de medir y comparando las capturas píxel a píxel:
+
+```js
+const db = g.renderer.getDrawingBufferSize(new THREE.Vector2());
+g.water.refractionRT.setSize(Math.floor(db.x * s), Math.floor(db.y * s)); // s = 1, 0.5, 0.25
+g.runtime.render();                                                      // con el bucle parado
+```
 
 ## Assets y carga (#246)
 

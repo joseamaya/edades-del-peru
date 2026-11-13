@@ -4,6 +4,14 @@ import * as THREE from 'three';
  * Water with Gerstner waves, fresnel, sun glints, shore foam
  * and specular reflection. Dedicated ShaderMaterial.
  */
+
+/**
+ * Resolution of the refraction source relative to the drawing buffer. The pass re-renders the whole scene
+ * (same draw calls), so only its fill cost shrinks: half resolution saves ~12 % of the campaign frame.
+ * The water samples it as a normalized-UV distortion and a background mix, and the captures disagree with
+ * the full-resolution frame on 0.03 % of pixels (mean 0.04/255), so half is visually free (#460).
+ */
+const REFRACTION_SCALE = 0.5;
 export class Water {
   /** Share of the region's aerial fog applied to the water (a pale sky tint washes dark water out). */
   private fogScale = 1;
@@ -36,6 +44,7 @@ export class Water {
     this.depthTexture.minFilter = THREE.LinearFilter;
     this.depthTexture.needsUpdate = true;
 
+    // Placeholder: `Game` sizes it from the drawing buffer right after construction (Water.setSize).
     this.refractionRT = new THREE.WebGLRenderTarget(1024, 1024);
 
     // One texel per coastline sample (x in world metres, sampled along z). The sea west of it keeps
@@ -275,7 +284,10 @@ export class Water {
   }
 
   setSize(width: number, height: number): void {
-    this.refractionRT.setSize(Math.max(1, Math.floor(width)), Math.max(1, Math.floor(height)));
+    this.refractionRT.setSize(
+      Math.max(1, Math.floor(width * REFRACTION_SCALE)),
+      Math.max(1, Math.floor(height * REFRACTION_SCALE)),
+    );
   }
 
   update(time: number): void {

@@ -51,3 +51,38 @@ test('software renderers start in the safe profile; ?cine=1 overrides', async ({
   expect(forced.wantedRefraction).toBe(true);
   expect(forced.appliedRefraction).toBe(true);
 });
+
+test.describe('post-processing render scale (#449)', () => {
+  // The bug is invisible at DPR 1, so this is the only place that can tell the fix from a revert.
+  test.use({ deviceScaleFactor: 2 });
+
+  test('the composer follows the renderer pixel ratio in both directions', async ({ page }) => {
+    await page.goto('/?play=1&seed=777&fog=0&noloop=1');
+    await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
+      timeout: 30_000,
+    });
+    const sizes = await page.evaluate(() => {
+      const g = (window as unknown as { game: any }).game;
+      const read = () => ({
+        target: g.postfx.composer.renderTarget1.width as number,
+        ratio: g.renderer.getPixelRatio() as number,
+        width: window.innerWidth,
+        // #460: the refraction source is half the drawing buffer, in every scale
+        refraction: g.water.refractionRT.width as number,
+        buffer: g.renderer.getDrawingBufferSize(new window.THREE.Vector2()).x as number,
+      });
+      g.runtime.setPixelRatioOverride(2);
+      const at2 = read();
+      g.runtime.setPixelRatioOverride(1);
+      const at1 = read();
+      g.runtime.setPixelRatioOverride(null);
+      return { at2, at1 };
+    });
+    expect(sizes.at2.ratio).toBe(2);
+    expect(sizes.at2.target).toBe(sizes.at2.width * 2);
+    expect(sizes.at2.refraction).toBe(Math.floor(sizes.at2.buffer / 2));
+    expect(sizes.at1.ratio).toBe(1);
+    expect(sizes.at1.target).toBe(sizes.at1.width);
+    expect(sizes.at1.refraction).toBe(Math.floor(sizes.at1.buffer / 2));
+  });
+});

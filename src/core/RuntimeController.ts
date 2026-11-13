@@ -829,6 +829,8 @@ export class RuntimeController {
     this.game.sky.setShadowFrame(
       viewFootprint(this.game.camera.camera, this.game.terrain.getHeight(target.x, target.z)),
     );
+    // `shadowMap.autoUpdate` is off: the frustum just moved, so this is the frame that redraws the map.
+    this.game.renderer.shadowMap.needsUpdate = true;
   }
 
   // --- main update ---
@@ -1192,7 +1194,7 @@ export class RuntimeController {
     const ratio = this.game.pixelRatioOverride ?? Math.min(window.devicePixelRatio, 2);
     this.game.renderer.setPixelRatio(ratio);
     this.game.camera.resize(window.innerWidth, window.innerHeight);
-    this.game.postfx.setSize(window.innerWidth, window.innerHeight);
+    this.game.postfx.setSize(window.innerWidth, window.innerHeight, ratio);
     this.game.renderer.setSize(window.innerWidth, window.innerHeight);
     this.syncWaterRefractionSize();
   }
@@ -1213,6 +1215,9 @@ export class RuntimeController {
     this.game.postfx.setQuality(q);
     this.game.terrain?.setLowDetail(q === 'low');
     this.game.sky?.setShadowMapSize(SHADOW_MAP_SIZE[q]);
+    // A new map size disposes the map; if the game is paused nothing else will re-flag the pass and the
+    // world would render unshadowed until it resumes.
+    if (this.game.renderer) this.game.renderer.shadowMap.needsUpdate = true;
     this.game.groundCover?.setEnabled(q !== 'low' && !this.game.usesSoftwareRenderer);
     // The governor can apply a preset before the world (and its trees) exists.
     if (this.game.trees)

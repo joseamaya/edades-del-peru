@@ -38,6 +38,9 @@ async function waitForSceneReady(page) {
   await page.evaluate(async () => {
     const g = window.game;
     g.loop.stop();
+    // Captures render outside the loop, so they refresh the map on every render (the game does it
+    // once per frame from `frameShadows`); a capture must photograph the scene it just changed.
+    g.renderer.shadowMap.autoUpdate = true;
     g.renderer.render(g.scene, g.camera.camera);
     await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     g.renderer.render(g.scene, g.camera.camera);

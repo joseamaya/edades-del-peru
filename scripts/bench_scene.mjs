@@ -202,6 +202,9 @@ try {
       g.sky.update(0);
       const measure = () => {
         const info = g.renderer.info;
+        // Per sample: the shadow pass must be in both the full and the kit-hidden numbers, so the
+        // difference isolates the kit instead of dropping the whole shadow pass.
+        g.runtime.frameShadows();
         info.autoReset = false;
         info.reset();
         g.renderer.render(g.scene, g.camera.camera);
@@ -265,6 +268,7 @@ try {
           // `renderer.info` after a post-processed frame describes only the last quad, so count the whole
           // frame on its own (same trap bench.mjs documents).
           g.loop.stop();
+          g.runtime.frameShadows();
           const info = g.renderer.info;
           info.autoReset = false;
           info.reset();
