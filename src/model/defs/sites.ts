@@ -550,7 +550,8 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     blockerPadding: 0.5,
     buildKeepout: [{ x: 0.7025, z: 0.38, rx: 0.085, rz: 0.075 }],
     wallCollision: {
-      meshPatterns: [/chanca/i],
+      // The ayllu kit owns its own merged geometry and blockers; the hidden GLB is no longer loaded.
+      meshPatterns: [],
       maxStartYAboveBase: 1.2,
     },
     walkableCorridor: { width: 8 },
@@ -784,12 +785,12 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       water: { deep: '#0f2a2e', shallow: '#2a5652', sheen: 0.15, foam: 0.12, fog: 0.3, refraction: 0.2 },
     },
   },
-  // Huanacaure (legendary Ayar route) on a new 256 m Pacaritambo–Cusco transect. The chanca pucará GLB
-  // is reused as a hilltop huaca; the valley villages and Inticancha are simulation buildings.
+  // Huanacaure (legendary Ayar route) on a new 256 m Pacaritambo–Cusco transect. The ayllu world is
+  // drawn by `AylluSite`: cave mouth, Huanacaure shrine, valley hamlets and the planned Inticancha.
   tambotoco_site: {
     id: 'tambotoco_site',
     label: 'Huanacaure y el valle del Cusco',
-    modelName: 'chanca_site',
+    modelName: 'ayllu_site',
     scale: 0.7,
     origin: { x: 120, z: 106 },
     anchor: { x: 120, z: 106 },
@@ -804,12 +805,29 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       fords: [{ z: 190, halfWidth: 10 }],
     },
     pathCellSize: 1,
+    phases: { phases: ['cave', 'huanacaure', 'inticancha'], initial: 'cave' },
     heritageProxies: [{ id: 'tambotoco_huanacaure', x: 120, z: 106, w: 12, d: 10, h: 5 }],
-    blockers: [{ x: 120, z: 106, w: 12, d: 10 }],
+    blockers: [
+      { x: 120, z: 106, w: 12, d: 10 },
+      { x: 40, z: 55, w: 11, d: 9 },
+      ...[32, 50, 36].map((x, i) => ({ x, z: [58, 58, 70][i]!, w: 5, d: 5 })),
+      ...[
+        [134, 160],
+        [142, 161],
+        [138, 167],
+        [184, 212],
+        [192, 213],
+        [187, 219],
+        [194, 164],
+        [202, 165],
+        [197, 171],
+      ].map(([x, z]) => ({ x, z, w: 4.5, d: 4.5 })),
+    ],
     blockerPadding: 0.5,
     buildKeepout: [{ x: 120 / 256, z: 106 / 256, rx: 0.07, rz: 0.065 }],
     wallCollision: {
-      meshPatterns: [/chanca/i],
+      // The ayllu kit owns its own merged geometry and blockers; the hidden GLB is no longer loaded.
+      meshPatterns: [],
       maxStartYAboveBase: 1.2,
     },
     walkableCorridor: { width: 8 },

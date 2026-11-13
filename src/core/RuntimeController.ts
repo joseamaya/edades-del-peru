@@ -931,6 +931,7 @@ export class RuntimeController {
       this.game.settings.fogOfWar,
     );
     this.game.memoryStones?.update(t);
+    this.game.aylluSite?.update(d);
     this.applyLod();
     this.updatePopulation();
 

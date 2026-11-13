@@ -255,12 +255,12 @@ The table separates what is implemented from the art and performance passes that
 | Onboarding  | Met: seven-step tutorial, briefing with the eight siblings and Codex.                                |
 | Closure     | Met: the epilogue tells the foundation as tradition and names both versions; no counterfactual is hidden. |
 | UX          | Met: campaign layout at 1600×900, the eight-card briefing at 1280×720 and `hud-layout.spec.ts`.       |
-| Visuals     | Partial: authored 256 m transect, the Huanacaure huaca and in-engine intro/chapter/epilogue captures; the huaca is a reused pucará. |
+| Visuals     | Partial: 256 m transect and an in-engine ayllu kit (cave, shrine, hamlets, Inticancha); the kit is procedural and a Blender art pass is pending. |
 | Persistence | Met: save/load round-trip in `save-campaign.spec.ts`.                                                |
 | Tests       | Met: `tests/tambotoco.test.ts` (cast, tags, huaca beats), scale, campaign path and the campaign E2E specs. |
 | Docs        | Met: dossier, `tambotoco-model-mission.md`, this table and the redesign status.                      |
-| Performance | Met within its first-pass budget: ~540k triangles / ~324–327 draw calls (eight Ayar nameplates included), under the 330-call cap in `bench_scene.mjs`; tightening to art-direction §11's 200 calls is the follow-up. |
-| Art         | N/A for new models: the huaca reuses the chanca pucará; captures are in-engine and documented in PROVENANCE. |
+| Performance | Met within its first-pass budget: ~562k triangles / ~341 draw calls (ayllu site, fires and eight nameplates), under the 350-call cap in `bench_scene.mjs`; tightening to art-direction §11's 200 calls is the follow-up. |
+| Art         | N/A for new Blender models: the ayllu kit is procedural; captures are in-engine and documented in PROVENANCE. |
 | Structure   | Met: four acts with hidden objectives, three chapter cards and the documented foundation.             |
 | Opening     | Met: three narrated beats with in-engine captures, three act cards and the epilogue backdrop.          |
 | Scale       | Met: 256 m transect, 128² painted ground and worker crossing ≈2:22 (`tests/campaign-scale.test.ts`).  |

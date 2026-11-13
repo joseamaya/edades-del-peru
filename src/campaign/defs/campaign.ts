@@ -1615,6 +1615,7 @@ export const MISSIONS: MissionDef[] = [
             pos: { dx: TAMBOTOCO_HUANACAURE.x, dz: TAMBOTOCO_HUANACAURE.z + 7 },
             label: 'Huaca de Ayar Uchu',
           },
+          { type: 'site_phase', phase: 'huanacaure' },
           {
             type: 'dialogue',
             speaker: 'Memoria de los Ayar',
@@ -1655,6 +1656,7 @@ export const MISSIONS: MissionDef[] = [
             image: 'media/tambotoco/intro-epilogo.webp',
             text: 'Con el agua y la tierra aseguradas, los ayllus fundan Inticancha y ordenan el sitio en cuatro canchas. La leyenda del Cusco empieza aquí.',
           },
+          { type: 'site_phase', phase: 'inticancha' },
           { type: 'camera', pos: { dx: TAMBOTOCO_INTICANCHA.x, dz: TAMBOTOCO_INTICANCHA.z } },
           { type: 'objective', objectiveId: 'a4_inticancha', state: 'activate', announce: true },
         ],

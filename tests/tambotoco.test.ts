@@ -130,6 +130,16 @@ describe('Los hijos de Tambotoco', () => {
     expect(protect.optional).toBe(true);
   });
 
+  it('grows the ayllu site with the acts and replaces the reused pucará', () => {
+    const phases = TAMBOTOCO.triggers.flatMap((t) =>
+      t.effects.filter((fx) => fx.type === 'site_phase').map((fx) => (fx.type === 'site_phase' ? fx.phase : '')),
+    );
+    expect(phases).toEqual(['huanacaure', 'inticancha']);
+    const site = getAuthoredSite('tambotoco_site')!;
+    expect(site.modelName).toBe('ayllu_site');
+    expect(site.phases?.phases).toEqual(['cave', 'huanacaure', 'inticancha']);
+  });
+
   it('raises a huaca when the legend leaves a sibling behind', () => {
     const memories = TAMBOTOCO.triggers.flatMap((t) => t.effects.filter((fx) => fx.type === 'memory'));
     expect(memories.map((fx) => (fx.type === 'memory' ? fx.tag : ''))).toEqual([

@@ -149,6 +149,8 @@ async function waitForPlay(page) {
 /** A camera tour of the legend: the party, the huaca and the valley the mission defines. */
 async function recordClip(page, plan) {
   const hold = (seconds) => page.waitForTimeout(seconds * 1000);
+  // Select the party like a player: the tutorial's first step must advance on camera.
+  await selectAll(page);
   await hold(4);
   await look(page, null, 42);
   await hold(9);
@@ -180,6 +182,7 @@ async function playMission(page, plan) {
     throw new Error('full mode autoplays the m_tambotoco act shape; use --mode=clip for another mission');
   }
 
+  await selectAll(page);
   await look(page, null, 36, 'all');
   const worker = await firstUnit(page, 'worker');
   if (worker) await move(page, [worker], plan.start);
@@ -195,6 +198,7 @@ async function playMission(page, plan) {
   if (await hasEnded(page)) return;
 
   const army = (await units(page)).filter((u) => u.kind !== 'worker').map((u) => u.id);
+  await select(page, army);
   await move(page, army, plan.heritage, true);
   await visitWhenClose(page, plan.heritageId, plan.heritage, 15, 240_000, deadline, () => look(page, null, 30, 'army'));
   await waitObjective(page, 'a2_huanacaure', 'completed', 30_000, deadline);
@@ -209,6 +213,7 @@ async function playMission(page, plan) {
   if (await hasEnded(page)) return;
 
   const workers = (await units(page, 'worker')).map((u) => u.id);
+  await select(page, workers);
   await look(page, plan.inticancha, 32);
   const mill = await place(page, 'mill', plan.inticancha);
   if (mill) await issue(page, { kind: 'build', entityId: mill }, workers);
@@ -265,17 +270,28 @@ async function look(page, point, zoom, who = 'all') {
       let z = point?.z ?? 0;
       if (!point) {
         let n = 0;
+        let minX = Infinity;
+        let maxX = -Infinity;
+        let minZ = Infinity;
+        let maxZ = -Infinity;
         for (const u of g.units.values()) {
           if (u.owner !== 0 || u.dead) continue;
           if (who === 'workers' && u.kind !== 'worker') continue;
           if (who === 'army' && u.kind === 'worker') continue;
           x += u.pos.x;
           z += u.pos.z;
+          minX = Math.min(minX, u.pos.x);
+          maxX = Math.max(maxX, u.pos.x);
+          minZ = Math.min(minZ, u.pos.z);
+          maxZ = Math.max(maxZ, u.pos.z);
           n++;
         }
         if (n) {
           x /= n;
           z /= n;
+          // Frame the whole group instead of its centroid, so no unit is left off-screen.
+          const spread = Math.max(maxX - minX, maxZ - minZ);
+          zoom = Math.max(zoom, Math.min(72, spread * 1.1 + 6));
         } else {
           const c = g.playerCenter(0);
           x = c.x;
@@ -296,6 +312,18 @@ async function units(page, kind = null) {
       .filter((u) => u.owner === 0 && !u.dead && (kind === null || u.kind === kind))
       .map((u) => ({ id: u.id, kind: u.kind, tag: u.tag ?? null, x: u.pos.x, z: u.pos.z }));
   }, kind);
+}
+
+async function selectAll(page) {
+  await page.evaluate(() => {
+    const g = window.game;
+    g.selectUnits([...g.units.values()].filter((u) => u.owner === 0 && !u.dead).map((u) => u.id));
+  });
+}
+
+async function select(page, ids) {
+  if (!ids.length) return;
+  await page.evaluate((ids) => window.game.selectUnits(ids), ids);
 }
 
 async function firstUnit(page, kind) {

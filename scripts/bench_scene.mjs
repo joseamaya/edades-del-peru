@@ -51,9 +51,9 @@ const BUDGETS = {
   // Chavín opening: the phased kit, highland vegetation and the base. Measure first, then ratchet down.
   m2_chavin: { sceneTriangles: 450_000, sceneDrawCalls: 220, kitTriangles: 100_000, kitDrawCalls: 40 },
   m2_chavin_late: { sceneTriangles: 600_000, sceneDrawCalls: 310, kitTriangles: 100_000, kitDrawCalls: 40 },
-  // Tambotoco opening: small ayllu force on the new 256 m transect. Measured 540k / ~324–327 with the eight Ayar
-  // nameplates (one sprite each); tighten toward the 200-call art-direction target after the unit-rig pass.
-  m_tambotoco: { sceneTriangles: 600_000, sceneDrawCalls: 330, kitTriangles: 0, kitDrawCalls: 0 },
+  // Tambotoco opening: the procedural ayllu site (cave, shrine, hamlets, Inticancha) adds nine static draws
+  // plus fires and eight nameplates; measured ~562k / 341. Tighten with a merged kit pass.
+  m_tambotoco: { sceneTriangles: 620_000, sceneDrawCalls: 350, kitTriangles: 0, kitDrawCalls: 0 },
   // Lima opening: the hueste with horses and artillery. First-pass cap measured ~763k / 839; tighten after
   // the unit-rig pass (art-direction §11 targets 200 calls).
   m_lima: { sceneTriangles: 800_000, sceneDrawCalls: 860, kitTriangles: 140_000, kitDrawCalls: 25 },
@@ -74,7 +74,7 @@ try {
       if (!g?.mission) return false;
       if (id === 'm2_chavin') return (g.scene.getObjectByName?.('chavin_city_lod0')?.children.length ?? 0) > 0;
       if (id === 'm_junta_cusco') return !!g.landmark?.getObjectByName('colonial_site');
-      if (id === 'm_tambotoco') return !!g.landmark?.getObjectByName('chanca_site');
+      if (id === 'm_tambotoco') return !!g.landmark?.getObjectByName('ayllu_site');
       if (id === 'm_lima') return !!g.landmark?.getObjectByName('colonial_site');
       // Wait for every kit family the scene draws: a half-loaded batch measured a different scene.
       if (!g.trees?.hasKit?.('algarrobo') || !g.trees.hasKit('sauce')) return false;
