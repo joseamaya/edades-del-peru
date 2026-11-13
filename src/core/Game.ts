@@ -37,6 +37,7 @@ import { Props } from '../rendering/Props';
 import { GroundCover } from '../rendering/GroundCover';
 import { MapLabels } from '../rendering/MapLabels';
 import { CharacterLabels } from '../rendering/CharacterLabels';
+import { HeroMarkers } from '../rendering/HeroMarkers';
 import type { AylluSite } from '../rendering/AylluSite';
 import type { ColonialLife } from '../rendering/ColonialLife';
 import { MemoryStones } from '../rendering/MemoryStones';
@@ -172,6 +173,8 @@ export class Game {
   mapLabels: MapLabels | null = null;
   /** Nameplates over campaign characters (a unit tag that matches a commander). */
   characterLabels: CharacterLabels | null = null;
+  /** Hero rings and banners over the Ayar. */
+  heroMarkers: HeroMarkers | null = null;
   /** Huacas raised by myth beats, with the name of the character they remember. */
   memoryStones: MemoryStones | null = null;
   /** Fog-clearing "zone discovered" announcements for authored sites. */
@@ -625,6 +628,15 @@ export class Game {
     }
     this.wildlife = new Wildlife(this.scene);
     this.fow = new Fow(s.mapSize, 128);
+    const opening = this.missionLayout?.opening;
+    if (opening && this.siteDef?.openingHeight) {
+      // The opening frames the cave before the camp units can see it: light it for the hold and keep
+      // its clearing explored afterwards so it never sits under black fog.
+      const x = opening.x * s.mapSize;
+      const z = opening.z * s.mapSize;
+      this.fow.reveal(x, z, 26);
+      this.fow.explore(x, z, 40);
+    }
     this.fowTexture = new FowTexture(this.fow);
     this.terrain.setFow(this.fowTexture.texture, s.fogOfWar);
     this.fowUniforms.fowMap.value = this.fowTexture.texture;
@@ -632,6 +644,7 @@ export class Game {
     this.fowUniforms.fowEnabled.value = s.fogOfWar ? 1 : 0;
     this.mapLabels = new MapLabels(this.scene, this.placeNames, this.terrain, s.mapSize);
     this.characterLabels = new CharacterLabels(this.scene);
+    this.heroMarkers = new HeroMarkers(this.scene);
     this.memoryStones = new MemoryStones(
       this.scene,
       (x, z) => this.terrain.getHeight(x, z),
@@ -966,8 +979,9 @@ export class Game {
     u.pos.set(spot.x, this.terrain.getHeight(spot.x, spot.z), spot.z);
     u.setContext(this.unitContext);
     if (this.players[owner]) this.applyPlayerBonuses(u, this.players[owner]);
-    this.attachUnit(u);
+    // The tag is hero identity: the view reads it when it is created, so set it before attaching.
     if (tag) u.tag = tag;
+    this.attachUnit(u);
     this.units.set(u.id, u);
     const p = this.players[owner];
     if (p) p.populationUsed += u.stats.population;
@@ -1014,6 +1028,15 @@ export class Game {
   reframeMissionOpening(): void {
     if (!this.missionLayout?.site && !this.missionLayout?.opening) return;
     const c = this.playerCenter(0);
+    const opening = this.missionLayout?.opening;
+    if (this.introEnabled && opening && this.siteDef?.openingHeight) {
+      // The title card and the opening flight hold the cave, not the camp: the legend starts there.
+      // Without the intro the player starts looking at the camp, not at a cave they already left.
+      const size = this.settings.mapSize;
+      this.camera.moveTo(opening.x * size, opening.z * size, true);
+      this.camera.setHeight(this.siteDef.openingHeight);
+      return;
+    }
     this.world.frameAuthoredSite(c.x, c.z);
   }
 
@@ -1022,10 +1045,31 @@ export class Game {
     return this.camera.isFlying() || this.hud.isMissionCardOpen();
   }
 
+  /**
+   * Keep the cave lit while the opening holds it. Fog decays visible cells to explored every frame and
+   * no unit stands at the cave yet, so without this the story's landmark is born under a blue fog tint.
+   */
+  revealOpeningWhileCinematic(): void {
+    if (!this.introEnabled || !this.isCinematicActive()) return;
+    const opening = this.missionLayout?.opening;
+    if (!opening || !this.siteDef?.openingHeight) return;
+    const size = this.settings.mapSize;
+    this.fow.reveal(opening.x * size, opening.z * size, 26);
+  }
+
   /** Campaign intro: a short overview flight down to the player's base. */
   playIntro(): void {
     if (!this.introEnabled) return;
     const c = this.playerCenter(0);
+    const opening = this.missionLayout?.opening;
+    if (opening && this.siteDef?.openingHeight) {
+      // The legend starts in the cave: hold it, then fly down to the camp.
+      const size = this.settings.mapSize;
+      this.camera.moveTo(opening.x * size, opening.z * size, true);
+      this.camera.setHeight(this.siteDef.openingHeight);
+      this.camera.flyTo(c.x, c.z, this.siteDef.cameraHeight, INTRO_CAMERA.seconds);
+      return;
+    }
     const city = this.siteFocus ?? this.setpiecePlan?.upper;
     if (city) {
       this.camera.moveTo(city.x, city.z, true);
@@ -2049,6 +2093,8 @@ export class Game {
     this.mapLabels = null;
     this.characterLabels?.dispose();
     this.characterLabels = null;
+    this.heroMarkers?.dispose();
+    this.heroMarkers = null;
     this.memoryStones?.dispose();
     this.memoryStones = null;
     this.discoveries = null;

@@ -32,6 +32,9 @@ export const PORTRAIT_IDS = [
 
 export type PortraitId = (typeof PORTRAIT_IDS)[number];
 
+/** Accent used when a hero has none declared (all current Ayar declare one). */
+export const DEFAULT_HERO_ACCENT = '#e0b84a';
+
 /**
  * Campaign commanders shown in briefings and dialogue. Portraits are stylized
  * medallions (not attested likenesses): pre-Hispanic figures have no documented
@@ -46,6 +49,10 @@ export interface CommanderDef {
   /** `documented` = an attested likeness exists; `abstraction` = stylized. */
   status: 'documented' | 'abstraction';
   source?: string;
+  /** Lead figure: gets a field banner, a hero ring and the hero card in the HUD. */
+  hero?: boolean;
+  /** Presentation accent for the field marker, nameplate and unit panel (not a historical colour). */
+  accent?: string;
 }
 
 export const COMMANDERS: Record<PortraitId, CommanderDef> = {
@@ -182,6 +189,8 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     name: 'Ayar Manco',
     role: 'Ayar · jefe de la peregrinación',
     civ: CivId.INCA_KILLKE,
+    hero: true,
+    accent: '#e0b84a',
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
   },
@@ -190,6 +199,8 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     name: 'Ayar Auca',
     role: 'Ayar · nombre del Cusco',
     civ: CivId.INCA_KILLKE,
+    hero: true,
+    accent: '#4a9a5a',
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
   },
@@ -198,6 +209,8 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     name: 'Ayar Cachi',
     role: 'Ayar · sepultado en Tambo Quiro',
     civ: CivId.INCA_KILLKE,
+    hero: true,
+    accent: '#c98a3a',
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
   },
@@ -206,6 +219,8 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     name: 'Ayar Uchu',
     role: 'Ayar · piedra de Huanacaure',
     civ: CivId.INCA_KILLKE,
+    hero: true,
+    accent: '#4a7ab6',
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
   },
@@ -214,6 +229,8 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     name: 'Mama Huaco',
     role: 'Ayar · hermana de la peregrinación',
     civ: CivId.INCA_KILLKE,
+    hero: true,
+    accent: '#b64a3a',
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
   },
@@ -222,6 +239,8 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     name: 'Mama Ocllo',
     role: 'Ayar · hermana de la peregrinación',
     civ: CivId.INCA_KILLKE,
+    hero: true,
+    accent: '#8a5aa8',
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
   },
@@ -230,6 +249,8 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     name: 'Mama Ipacura',
     role: 'Ayar · hermana de la peregrinación',
     civ: CivId.INCA_KILLKE,
+    hero: true,
+    accent: '#3a9a9a',
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
   },
@@ -238,6 +259,8 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     name: 'Mama Raua',
     role: 'Ayar · hermana de la peregrinación',
     civ: CivId.INCA_KILLKE,
+    hero: true,
+    accent: '#c86a2a',
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
   },
@@ -285,4 +308,9 @@ export function commanderFor(name: string): CommanderDef | undefined {
  */
 export function commanderById(id: string | undefined): CommanderDef | undefined {
   return id ? BY_ID.get(id) : undefined;
+}
+
+/** Nameplate / HUD title for a commander; heroes carry the star. */
+export function commanderLabel(commander: CommanderDef): string {
+  return commander.hero ? `★ ${commander.name}` : commander.name;
 }

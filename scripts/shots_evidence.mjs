@@ -149,6 +149,73 @@ function caralLateScenes() {
 
 const SCENES = {
   ...caralLateScenes(),
+  // The cave and the eight Ayar carry Tambotoco's legend: the cave must read with fog on and the
+  // heroes must be distinguishable at RTS distance, not only in the selection panel.
+  'tambotoco-cave': {
+    // The actual opening hold (intro on, fog on), framed on the cave so the mouth reads.
+    url: '/?mission=m_tambotoco&seed=777&intro=1&noloop=1',
+    start: true,
+    prepare: async () => {
+      const g = window.game;
+      g.loop.stop();
+      if (g.getPaused()) g.togglePause();
+      for (let i = 0; i < 36; i++) g.update(1 / 60, i / 60);
+      g.applyQualityPreset('high');
+      // The authored site's material textures load asynchronously; render after they are ready.
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+      const x = 40;
+      const z = 55;
+      g.camera.moveTo(x, z, true);
+      g.camera.setHeight(24);
+      for (let i = 0; i < 20; i++) g.camera.update(1 / 60);
+      g.runtime.render();
+      return { center: { x, z }, subject: { x, y: g.terrain.getHeight(x, z), z } };
+    },
+    views: [{ name: 'cave', mode: 'rts', height: 24 }],
+  },
+  'tambotoco-heroes': {
+    url: '/?mission=m_tambotoco&seed=777&fog=0&low=1&intro=0&noloop=1',
+    start: true,
+    prepare: () => {
+      const g = window.game;
+      g.loop.stop();
+      const ids = [
+        'manco_capac',
+        'ayar_auca',
+        'ayar_cachi',
+        'ayar_uchu',
+        'mama_huaco',
+        'mama_ocllo',
+        'mama_ipacura',
+        'mama_raua',
+      ];
+      const heroes = ids.map((id) => [...g.units.values()].find((u) => u.tag === id)).filter(Boolean);
+      const base = g.playerCenter(0);
+      const c = g.findLandNear(base.x - 20, base.z + 20, 24);
+      // Two spaced rows so every nameplate reads: the evidence must show eight distinct leads, not a pile.
+      for (const [i, unit] of heroes.entries()) {
+        const col = i % 4;
+        const row = Math.floor(i / 4);
+        const x = c.x + (col - 1.5) * 12;
+        const z = c.z + (row - 0.5) * 9;
+        unit.clearOrders();
+        unit.pos.set(x, g.terrain.getHeight(x, z), z);
+        unit.view.setRotationY(0);
+      }
+      for (let i = 0; i < 6; i++) g.update(1 / 60, 1 + i / 60);
+      g.camera.moveTo(c.x, c.z, true);
+      g.renderer.render(g.scene, g.camera.camera);
+      const manco = heroes[0];
+      return {
+        center: { x: c.x, z: c.z },
+        subject: { x: manco.pos.x, y: g.terrain.getHeight(manco.pos.x, manco.pos.z), z: manco.pos.z },
+      };
+    },
+    views: [
+      { name: 'rts', mode: 'rts', height: 42 },
+      { name: 'close', mode: 'close', offset: { x: 1.9, y: 1.5, z: 2.9 }, lookHeight: 1.05 },
+    ],
+  },
   'caral-worker': {
     url: '/?mission=m1_caral&intro=0&fog=0&low=1&noloop=1',
     start: true,

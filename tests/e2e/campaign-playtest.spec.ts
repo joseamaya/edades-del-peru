@@ -1180,6 +1180,7 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
     }
     const inticancha = m.getObjectiveState('a4_inticancha') as string;
 
+    const canchaHouses: number[] = [];
     for (const [x, z] of [
       [156, 190],
       [180, 190],
@@ -1187,9 +1188,11 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
       [168, 202],
     ]) {
       const house = placeNear('house', x, z);
-      if (house) build(workers, house.id);
+      if (house) canchaHouses.push(house.id);
     }
-    for (let i = 0; i < Math.ceil(180 / dt) && !m.ended; i++) {
+    // One worker per plot: re-issuing the same build order to every worker would abandon all but the last.
+    for (const [i, id] of canchaHouses.entries()) build([workers[i % workers.length]], id);
+    for (let i = 0; i < Math.ceil(240 / dt) && !m.ended; i++) {
       keepAlive();
       if (i % 15 === 0) dismissCard();
       g.update(dt, t);

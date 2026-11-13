@@ -108,6 +108,9 @@ When the mission is about named people, put them on the board instead of only in
   world nameplate (`CharacterLabels`) and the selection panel shows the commander's name and role. The same
   ids feed the briefing portraits and dialogue.
 - Brief the whole cast the story needs; `commanders` is not limited to two figures.
+- Named characters need field identity, not only a tag: a hero ring/banner, an accent on the tunic or
+  portrait, a `★` nameplate and a hero card in the selection panel. Professional RTS leads are readable at
+  a glance; a name over a generic soldier is not enough.
 - If the legend loses a character on the way, stage the loss: the `memory` trigger effect retires the unit
   without a death animation and raises a named huaca at the scripted spot (`MemoryStones`).
 - Never invent a likeness: nameplates and medallions say who the person is and are labelled `abstraction`

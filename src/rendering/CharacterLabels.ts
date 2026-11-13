@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import type { RTSCamera } from '../core/Camera';
 import type { Unit } from '../entities/Unit';
 import type { Fow } from '../game/Fow';
-import { commanderById } from '../model/defs/commanders';
+import { commanderById, commanderLabel } from '../model/defs/commanders';
 import { labelFade } from './MapLabels';
 import { labelSprite, type LabelSprite } from './textSprite';
 
@@ -24,6 +24,11 @@ export class CharacterLabels {
     scene.add(this.group);
   }
 
+  /** Hide every plate (mission title card or opening flight). */
+  setVisible(visible: boolean): void {
+    this.group.visible = visible;
+  }
+
   /** Follow living characters; enemy names only show while the fog lets the player see them. */
   sync(units: Iterable<Unit>, camera: RTSCamera, fow: Fow, fogOn: boolean): void {
     const zoom = camera.getZoom();
@@ -37,8 +42,9 @@ export class CharacterLabels {
       let label = this.labels.get(unit.id);
       if (!label) {
         if (fade <= 0.02) continue;
-        label = labelSprite(commander.name, {
+        label = labelSprite(commanderLabel(commander), {
           fontSize: 44,
+          // The accent lives on the hero ring, crest and HUD portrait; the name stays legible.
           color: unit.owner === 0 ? '#f6e7bf' : '#e8b7a0',
           paddingX: 16,
           paddingY: 8,

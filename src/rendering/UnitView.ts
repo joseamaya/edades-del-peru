@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { EntityView } from '../entities/EntityView';
+import { commanderById, DEFAULT_HERO_ACCENT } from '../model/defs/commanders';
 import { acquireRig } from './ModelAssets';
 import type { RigInstance } from './RigInstance';
 import { buildModel, disposeModel, type BuildContext } from '../model/ProceduralModel';
@@ -41,6 +42,8 @@ export class UnitView {
   private bobY = 0;
   private scene: THREE.Scene | null = null;
   private net: FishingNetFx | null = null;
+  private readonly heroMaterials: THREE.Material[] = [];
+  private heroDressed = false;
 
   constructor(
     private readonly unit: Unit,
@@ -53,6 +56,35 @@ export class UnitView {
       : buildModel({ ...getUnitModel(unit.kind, unit.era), gender: unit.gender }, ctx);
     this.view = new EntityView(model, unit.radius, unit, this.rig ? 'radius' : 'model');
     if (!this.rig) this.findPivots(model);
+    this.ensureHeroIdentity();
+  }
+
+  /** Apply the hero identity once, also for units whose tag arrives after the view (save/load). */
+  private ensureHeroIdentity(): void {
+    if (this.heroDressed) return;
+    const commander = commanderById(this.unit.tag);
+    if (!commander?.hero) return;
+    this.heroDressed = true;
+    this.view.group.scale.multiplyScalar(1.16);
+    this.dressHero(commander.accent ?? DEFAULT_HERO_ACCENT);
+  }
+
+  /** Hero attire on the shared ayllu rig: accent tunic, headband and macana, no new model. */
+  private dressHero(accent: string): void {
+    const root = this.rig?.root;
+    if (!root) return;
+    const color = new THREE.Color(accent);
+    const tunic = this.unit.gender === 'female' ? 'attire_tunic_f' : 'attire_tunic_m';
+    for (const name of [tunic, 'attire_headband', 'attire_andean_macana', 'attire_andean_macana_head']) {
+      const mesh = root.getObjectByName(name) as THREE.Mesh | null;
+      if (!mesh?.isMesh) continue;
+      mesh.visible = true;
+      const material = (mesh.material as THREE.MeshStandardMaterial).clone();
+      material.color.copy(color);
+      mesh.material = material;
+      if (name.startsWith('attire_andean_macana')) mesh.scale.multiplyScalar(1.25);
+      this.heroMaterials.push(material);
+    }
   }
 
   attach(scene: THREE.Scene): void {
@@ -89,6 +121,7 @@ export class UnitView {
   }
 
   sync(dt: number, time: number): void {
+    this.ensureHeroIdentity();
     const u = this.unit;
     this.animate(dt, time);
     this.carry();
@@ -211,5 +244,7 @@ export class UnitView {
     } else {
       disposeModel(this.view.group);
     }
+    for (const material of this.heroMaterials) material.dispose();
+    this.heroMaterials.length = 0;
   }
 }

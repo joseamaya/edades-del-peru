@@ -61,11 +61,14 @@ and the only "engine" of the mission is water.
 
 ## Characters
 
-The legend is about eight siblings, so all eight are on the board from the start:
+The legend is about eight siblings, so all eight are on the board from the start and read as leads:
 
 - **In the party**: Ayar Manco, Ayar Auca, Ayar Cachi, Ayar Uchu, Mama Huaco, Mama Ocllo, Mama Ipacura and
-  Mama Raua are tagged start units. The tag is the commander id, so each one carries a nameplate in the
-  world and its name and role in the selection panel (a box selection lists them).
+  Mama Raua are tagged start units. Each carries a gold hero ring, a banner pole (standing beside the
+  figure) with an accent crest, a `★` nameplate in the legible parchment colour and a tunic, headband and
+  macana tinted with its commander accent; the selection panel shows the portrait, name, hero badge and
+  role. The accent is a presentation device to tell the eight apart, **not** a claim about Inca attire: the
+  bodies are still the shared ayllu rig, and unique outfits are the next art pass.
 - **In the briefing**: the eight portraits (Ayar Manco, Ayar Auca, Ayar Cachi, Ayar Uchu, Mama Huaco, Mama
   Ocllo, Mama Ipacura, Mama Raua) use the procedural stylized medallions; no new art is needed.
 - **Myth beats**: Ayar Cachi is retired at Tambo Quiro, Ayar Uchu at Huanacaure and Ayar Auca at Inticancha.
@@ -76,8 +79,17 @@ The legend is about eight siblings, so all eight are on the board from the start
 
 ## Opening and closing
 
+- The opening camera holds the cave mouth (with torches and a path) and flies down to the camp; the first
+  objective is `Sal de Tambotoco y toma el camino`, not a generic camp start. The reach is satisfied by
+  any party unit, so the objective does not promise a head count it cannot measure; the tutorial and the
+  briefing name the eight.
+- The cave clearing is lit while the opening holds it and stays explored afterwards, so the landmark the
+  story starts from never sits under black or blue-tinted fog.
+- The ayllu site is exempt from the injected fog shader: that shader whitens the merged vertex-coloured
+  site on software rendering (SwiftShader), which is how the captures and recordings are produced.
 - Three narrated beats: the cave, Huanacaure, the valley.
-- Three chapter cards (Acts II–IV).
+- Three chapter cards open the act that follows: Ayar Uchu en Huanacaure, el agua de los alcabizas and
+  Ayar Auca en Inticancha.
 - Victory: Inticancha and its four canchas; the epilogue tells the foundation as tradition and names the
   disagreement between Sarmiento and Garcilaso.
 - Defeat: the valley ayllus reject the newcomers.
@@ -97,12 +109,20 @@ open the acequia, lay out the canchas.
 - A real-command playtest through the four acts.
 - `yarn record --mission=m_tambotoco --mode=clip|full`: in-engine recording for review, with a JSON timeline.
 
+## Evidence
+
+- `node scripts/shots_evidence.mjs --scene=tambotoco-cave` → `docs/media/tambotoco-cave.webp`: the cave
+  with fog on, at the opening hold.
+- `node scripts/shots_evidence.mjs --scene=tambotoco-heroes` → `docs/media/tambotoco-heroes.webp` (close)
+  and `docs/media/tambotoco-heroes-rts.webp` (field markers). Both scenes render at 1600×900 and the WebP
+  copies are resized to 960×540, WebP q58.
+
 ## Open items
 
-1. Performance: the opening measures ~562k triangles / ~337 draw calls in `bench_scene.mjs` (ayllu site
-   and eight nameplates) under the 600k/340 first-pass cap; the Act IV Inticancha view measures 472k/217.
-   The next pass should tighten toward art-direction §11's 200 calls. The mission starts with a small
-   force (5 workers, 7 militia, 2 slingers, 1 scout) to keep the rig count down.
+1. Performance: the opening measures ~567k triangles / ~339 draw calls in `bench_scene.mjs` (ayllu site,
+   eight nameplates, hero rings/banners and tunic accents) under the 600k/340 first-pass cap; the Act IV
+   Inticancha view measures 472k/217. The next pass should tighten toward art-direction §11's 200 calls.
+   The mission starts with a small force (5 workers, 7 militia, 2 slingers, 1 scout) to keep the rig count down.
 2. The ayllu site is procedural in-engine geometry (no GLB, no manifest entry); a Blender architecture
    kit (cave, shrine, houses, terraces) is the next art pass.
 3. A manual 30–40 minute playtest without isolated attrition, checking that the eight nameplates stay

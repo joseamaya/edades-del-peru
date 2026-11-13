@@ -290,7 +290,9 @@ export class WorldViewDecor {
           def.phases ?? { phases: ['cave'], initial: 'cave' },
         );
         ayllu.setPhase(this.game.sitePhase);
-        applyFowToObject(ayllu.group, this.game.fowUniforms);
+        // No fog patch here: the injected shader whitens the merged vertex-coloured site on software
+        // rendering, and the cave is the mission's opening image. The site phases follow the cast, so
+        // their geometry is explored when it appears.
         this.game.aylluSite = ayllu;
       }
       return;

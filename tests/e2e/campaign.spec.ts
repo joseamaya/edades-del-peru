@@ -950,6 +950,8 @@ test('the Ayar cast is on the board and named after the briefing', async ({ page
     const manco = tagged.find((u: any) => u.tag === 'manco_capac')!;
     g.selectUnits([manco.id]);
     for (let i = 0; i < 20; i++) g.update(1 / 60, i / 60);
+    const heroMarkers = g.heroMarkers ? (g.heroMarkers.rings.count as number) : 0;
+    const heroScale = manco.unitView?.view.group.scale.x ?? 0;
     const single = document.querySelector('#ed-desc')?.textContent ?? '';
     g.selectUnits(tagged.map((u: any) => u.id));
     for (let i = 0; i < 20; i++) g.update(1 / 60, 20 / 60 + i / 60);
@@ -959,6 +961,8 @@ test('the Ayar cast is on the board and named after the briefing', async ({ page
       labels: labels.length,
       visibleLabels: labels.filter((l: { sprite: { visible: boolean } }) => l.sprite.visible).length,
       single,
+      heroMarkers,
+      heroScale,
       party: document.querySelector('#ed-desc')?.textContent ?? '',
     };
   });
@@ -977,6 +981,9 @@ test('the Ayar cast is on the board and named after the briefing', async ({ page
   expect(info.labels).toBe(8);
   expect(info.visibleLabels, 'nameplates must show at the default zoom').toBe(8);
   expect(info.single).toContain('Ayar Manco');
+  expect(info.heroMarkers).toBe(8);
+  expect(info.heroScale).toBeGreaterThan(1.15);
+  expect(info.single).toContain('★');
   // A box selection of the party still names its characters (not just "Soldado ×7").
   expect(info.party).toContain('Grupo ×8');
   expect(info.party).toContain('Ayar Manco');
@@ -1130,4 +1137,37 @@ test('Lima grows from a traced plaza into the colonial city', async ({ page }) =
   expect(out.after.model).toBe(true);
   expect(out.lifeCalls).toBeGreaterThan(0);
   expect(errors).toEqual([]);
+});
+
+test('the cave is explored with fog on and the intro is what frames it', async ({ page }) => {
+  test.setTimeout(90_000);
+  await page.goto('/?mission=m_tambotoco&seed=777&low=1&intro=0&noloop=1');
+  const briefing = page.locator('.ed-briefing');
+  await briefing.waitFor({ state: 'visible', timeout: 30_000 });
+  await briefing.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+  await briefing.waitFor({ state: 'detached' });
+  await page.waitForFunction(
+    () => (window as unknown as { game?: { mission?: { started: boolean } } }).game?.mission?.started === true,
+    null,
+    { timeout: 30_000 },
+  );
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const opening = g.missionLayout?.opening;
+    return {
+      fogOn: g.settings.fogOfWar,
+      explored: opening
+        ? (g.fow.isExplored(opening.x * g.settings.mapSize, opening.z * g.settings.mapSize) as boolean)
+        : null,
+      caveExplored: g.fow.isExplored(40, 55) as boolean,
+      openingHeight: g.siteDef?.openingHeight ?? null,
+      baseZ: (g.missionLayout?.base.z ?? 0) * g.settings.mapSize,
+      camera: g.camera.getTarget(),
+    };
+  });
+  expect(out.fogOn).toBe(true);
+  expect(out.caveExplored, 'the cave must not sit under unexplored fog').toBe(true);
+  expect(out.openingHeight).toBe(30);
+  // ?intro=0 skips the cave hold: the skipped intro must not leave the player parked at the cave.
+  expect(out.camera.z).toBeGreaterThan(out.baseZ - 25);
 });

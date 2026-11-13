@@ -245,25 +245,25 @@ the 256 m Pacaritambo–Huanacaure–Cusco transect and draws its own ayllu kit 
 planned Inticancha).
 The table separates what is implemented from the art and performance passes that are still open.
 
-| Gate        | m_tambotoco                                                                                                                                                                     |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| History     | Met: `docs/historia/campanas/tambotoco.md` with a certainty table; the dossier states that Sarmiento is hostile and Garcilaso gives another version.                            |
-| Identity    | Met: water and land as leverage, not a pitched battle; the four canchas order the foundation.                                                                                   |
-| Characters  | Met: the eight siblings march as named units; Cachi, Uchu and Auca leave a named huaca.                                                                                         |
-| Play        | Met: the four acts complete with real orders and a recorded run reaches victory; a manual playtest is pending.                                                                  |
-| Contract    | Met: Acts II–IV hidden, the hualla visit is optional, and the acequia is the only required water step.                                                                          |
-| Onboarding  | Met: seven-step tutorial, briefing with the eight siblings and Codex.                                                                                                           |
-| Closure     | Met: the epilogue tells the foundation as tradition and names both versions; no counterfactual is hidden.                                                                       |
-| UX          | Met: campaign layout at 1600×900, the eight-card briefing at 1280×720 and `hud-layout.spec.ts`.                                                                                 |
-| Visuals     | Partial: 256 m transect and an in-engine ayllu kit (cave, shrine, hamlets, Inticancha); the kit is procedural and a Blender art pass is pending.                                |
-| Persistence | Met: save/load round-trip in `save-campaign.spec.ts`.                                                                                                                           |
-| Tests       | Met: `tests/tambotoco.test.ts` (cast, tags, huaca beats), scale, campaign path and the campaign E2E specs.                                                                      |
-| Docs        | Met: dossier, `tambotoco-model-mission.md`, this table and the redesign status.                                                                                                 |
-| Performance | Met: opening ~562k triangles / ~337 calls under 600k/340, and the Act IV Inticancha view 472k/217 under 620k/360; tightening to art-direction §11's 200 calls is the follow-up. |
-| Art         | N/A for new Blender models: the ayllu kit is procedural; captures are in-engine and documented in PROVENANCE.                                                                   |
-| Structure   | Met: four acts with hidden objectives, three chapter cards and the documented foundation.                                                                                       |
-| Opening     | Met: three narrated beats with in-engine captures, three act cards and the epilogue backdrop.                                                                                   |
-| Scale       | Met: 256 m transect, 128² painted ground and worker crossing ≈2:22 (`tests/campaign-scale.test.ts`).                                                                            |
+| Gate        | m_tambotoco                                                                                                                                                                    |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| History     | Met: `docs/historia/campanas/tambotoco.md` with a certainty table; the dossier states that Sarmiento is hostile and Garcilaso gives another version.                           |
+| Identity    | Met: water and land as leverage, not a pitched battle; the four canchas order the foundation.                                                                                  |
+| Characters  | Met: the eight siblings march as named units; Cachi, Uchu and Auca leave a named huaca.                                                                                        |
+| Play        | Met: the four acts complete with real orders and a recorded run reaches victory; a manual playtest is pending.                                                                 |
+| Contract    | Met: Acts II–IV hidden, the hualla visit is optional, and the acequia is the only required water step.                                                                         |
+| Onboarding  | Met: seven-step tutorial, briefing with the eight siblings and Codex.                                                                                                          |
+| Closure     | Met: the epilogue tells the foundation as tradition and names both versions; no counterfactual is hidden.                                                                      |
+| UX          | Met: campaign layout at 1600×900, the eight-card briefing at 1280×720 and `hud-layout.spec.ts`.                                                                                |
+| Visuals     | Partial: 256 m transect and an in-engine ayllu kit (cave, shrine, hamlets, Inticancha); the kit is procedural and a Blender art pass is pending.                               |
+| Persistence | Met: save/load round-trip in `save-campaign.spec.ts`.                                                                                                                          |
+| Tests       | Met: `tests/tambotoco.test.ts` (cast, tags, huaca beats), scale, campaign path and the campaign E2E specs.                                                                     |
+| Docs        | Met: dossier, `tambotoco-model-mission.md`, this table and the redesign status.                                                                                                |
+| Performance | Partial: opening ~567k triangles / ~339 calls under 600k/340 (hero markers and accents), Act IV 472k/217 under 620k/360; still over art-direction §11's 200-call target. |
+| Art         | N/A for new Blender models: the ayllu kit is procedural; captures are in-engine and documented in PROVENANCE.                                                                  |
+| Structure   | Met: four acts with hidden objectives, three chapter cards and the documented foundation.                                                                                      |
+| Opening     | Met: three narrated beats with in-engine captures, three act cards and the epilogue backdrop.                                                                                  |
+| Scale       | Met: 256 m transect, 128² painted ground and worker crossing ≈2:22 (`tests/campaign-scale.test.ts`).                                                                           |
 
 ## Inca civil war playable status (m6b)
 
