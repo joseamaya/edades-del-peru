@@ -107,6 +107,12 @@ const CSS = /* css */ `
   .ed-briefing .brief-story .ed-hist b { color: var(--gold); }
   .ed-briefing .ed-sabias { margin: 4px 0 16px; padding: 12px 16px; font-size: 13px; line-height: 1.6; background: rgba(232,195,106,.08); border-left: 3px solid var(--gold); border-radius: 0 6px 6px 0; }
   .ed-briefing .ed-commanders { justify-content: flex-start; }
+  .ed-briefing .ed-commanders--cast { gap: 6px; }
+  .ed-briefing .ed-commanders--cast .ed-cmd-card { flex: 1 1 132px; min-width: 0; max-width: 180px; padding: 4px 6px; gap: 6px; }
+  .ed-briefing .ed-commanders--cast .ed-portrait { width: 34px; height: 34px; }
+  .ed-briefing .ed-commanders--cast .ed-cmd-info b { font-size: 11.5px; }
+  .ed-briefing .ed-commanders--cast .ed-cmd-info span { font-size: 9.5px; line-height: 1.25; }
+  .ed-briefing .ed-commanders--cast .ed-cmd-info em { font-size: 8px; }
   .ed-briefing .ed-fuentes { margin: 8px 0 0; }
   .ed-briefing .brief-sheet { position: sticky; top: 0; display: flex; flex-direction: column; gap: 14px; padding: 20px 22px; border: 1px solid rgba(232,195,106,.28); border-top: 3px solid var(--gold); border-radius: 8px; background: linear-gradient(180deg, rgba(14,17,22,.94), rgba(8,10,14,.9)); backdrop-filter: blur(6px); box-shadow: 0 20px 60px rgba(0,0,0,.5); }
   .ed-briefing .brief-facts { display: grid; gap: 10px; margin: 0; }

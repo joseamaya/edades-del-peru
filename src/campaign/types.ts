@@ -302,6 +302,8 @@ export type TriggerEffect =
   | { type: 'reveal'; heritageId: HeritageBuildingId }
   /** Presentation-only ritual beat at the authored site (e.g. the burial between construction phases). */
   | { type: 'ritual'; pos: MissionPoint }
+  /** A named character leaves the board and becomes a huaca at `pos` (default: where they stood). */
+  | { type: 'memory'; tag: string; pos?: MissionPoint; label: string }
   /** A named environmental event (drought, flood, ...). */
   | { type: 'environment'; event: string }
   | { type: 'resources'; player?: 0 | 1; amount: Partial<Resources> }

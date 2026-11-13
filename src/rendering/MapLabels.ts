@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { MissionLabel } from '../campaign/types';
 import type { RTSCamera } from '../core/Camera';
 import type { Fow } from '../game/Fow';
+import { textTexture } from './textSprite';
 import type { Terrain } from './Terrain';
 
 type LabelKind = NonNullable<MissionLabel['kind']>;
@@ -44,30 +45,7 @@ interface LabelItem {
 }
 
 function makeTexture(label: MissionLabel, kind: LabelKind): { texture: THREE.CanvasTexture; aspect: number } {
-  const fontSize = 64;
-  const font = `600 ${fontSize}px Georgia, "Times New Roman", serif`;
-  const measure = document.createElement('canvas').getContext('2d')!;
-  measure.font = font;
-  const padX = 22;
-  const padY = 10;
-  const canvas = document.createElement('canvas');
-  canvas.width = Math.ceil(measure.measureText(label.text).width) + padX * 2;
-  canvas.height = fontSize + padY * 2;
-  const ctx = canvas.getContext('2d')!;
-  ctx.font = font;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.lineWidth = Math.max(2, fontSize * 0.09);
-  ctx.strokeStyle = 'rgba(6, 8, 10, 0.85)';
-  ctx.strokeText(label.text, canvas.width / 2, canvas.height / 2);
-  ctx.fillStyle = LABEL_COLORS[kind];
-  ctx.fillText(label.text, canvas.width / 2, canvas.height / 2);
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.minFilter = THREE.LinearFilter;
-  texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = false;
-  return { texture, aspect: canvas.width / canvas.height };
+  return textTexture(label.text, { fontSize: 64, color: LABEL_COLORS[kind], paddingX: 22, paddingY: 10 });
 }
 
 /**

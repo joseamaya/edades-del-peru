@@ -488,6 +488,12 @@ export class Mission {
         this.game.playSiteRitual(p.x, p.z);
         break;
       }
+      case 'memory': {
+        const retired = this.game.retireCharacter(fx.tag) as { x: number; z: number } | null;
+        const p = fx.pos ? this.resolvePoint(fx.pos) : retired;
+        if (p) this.game.raiseMemoryStone(fx.tag, p.x, p.z, fx.label);
+        break;
+      }
       case 'environment':
         this.game.startEnvironmentalEvent(fx.event);
         break;
@@ -519,7 +525,13 @@ export class Mission {
   }
 
   private triggerDialogue(text: string, duration = 5, label?: string): void {
-    const narrator = label ?? this.def.narrator;
+    if (label) {
+      // A named speaker keeps their (stylized) portrait even when the mission has a narrator.
+      const cmd = commanderFor(label);
+      this.game.hud.showDialogue(cmd?.name ?? label, text, duration, cmd?.id);
+      return;
+    }
+    const narrator = this.def.narrator;
     if (narrator) {
       this.game.hud.showDialogue(narrator, text, duration);
       return;
@@ -798,6 +810,16 @@ export class Mission {
     this.delivered = new Map(s.delivered ?? []);
     this.game.setVisitedHeritage(s.heritage ?? []);
     this.restoreSitePhase();
+    // The huaca markers are presentation only and are not saved: rebuild the ones whose trigger
+    // already ran, so a loaded match keeps the legend's places on the board.
+    for (const trigger of this.def.triggers) {
+      if (!this.fired.has(trigger.id)) continue;
+      for (const fx of trigger.effects) {
+        if (fx.type !== 'memory' || !fx.pos) continue;
+        const p = this.resolvePoint(fx.pos);
+        this.game.raiseMemoryStone(fx.tag, p.x, p.z, fx.label);
+      }
+    }
     // New hidden objectives can be added after a save was written. Their activation trigger may
     // already be in `fired`, so repair them from the saved site phase or their prerequisite. The
     // prerequisite branch only fires when the activating trigger already ran; otherwise the normal

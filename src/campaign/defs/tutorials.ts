@@ -12,6 +12,11 @@ const TUTORIALS: Record<string, TutorialDef> = {
         check: { type: 'selectUnit', unitKind: UnitKind.SOLDIER },
       },
       {
+        id: 'ayar',
+        text: 'Ayar Manco, Mama Huaco y Ayar Auca marchan contigo: sus nombres van sobre la unidad. Ayar Cachi y Ayar Uchu quedarán en el camino.',
+        check: { type: 'elapsed', seconds: 12 },
+      },
+      {
         id: 'salida',
         text: 'Sal de la cueva de Tambotoco y busca el camino al valle.',
         check: { type: 'objectiveCompleted', objectiveId: 'a1_salida' },

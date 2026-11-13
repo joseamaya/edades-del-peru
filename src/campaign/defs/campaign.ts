@@ -21,6 +21,7 @@ const JUNTA_UMACHIRI = { x: 198, z: 214 } as const;
 const JUNTA_ENEMY = { x: 222, z: 238 } as const;
 // Los hijos de Tambotoco: the cave, the Huanacaure huaca, the valley and Inticancha.
 const TAMBOTOCO_CAVE = { x: 40, z: 52 } as const;
+const TAMBOTOCO_TAMBO_QUIRO = { x: 70, z: 91 } as const;
 const TAMBOTOCO_HUANACAURE = { x: 120, z: 106 } as const;
 const TAMBOTOCO_INTICANCHA = { x: 168, z: 190 } as const;
 const TAMBOTOCO_ENEMY = { x: 212, z: 200 } as const;
@@ -1351,7 +1352,16 @@ export const MISSIONS: MissionDef[] = [
   },
   {
     id: 'm_tambotoco',
-    commanders: ['manco_capac', 'mama_huaco'],
+    commanders: [
+      'manco_capac',
+      'ayar_auca',
+      'ayar_cachi',
+      'ayar_uchu',
+      'mama_huaco',
+      'mama_ocllo',
+      'mama_ipacura',
+      'mama_raua',
+    ],
     title: 'Los hijos de Tambotoco',
     subtitle: 'Pacaritambo–Cusco · Leyenda',
     history:
@@ -1373,6 +1383,7 @@ export const MISSIONS: MissionDef[] = [
       labels: [
         { text: 'Pacaritambo', x: 40 / 256, z: 58 / 256, kind: 'region' },
         { text: 'Tambotoco', x: TAMBOTOCO_CAVE.x / 256, z: TAMBOTOCO_CAVE.z / 256, kind: 'settlement' },
+        { text: 'Tambo Quiro', x: TAMBOTOCO_TAMBO_QUIRO.x / 256, z: TAMBOTOCO_TAMBO_QUIRO.z / 256, kind: 'region' },
         { text: 'Huanacaure', x: TAMBOTOCO_HUANACAURE.x / 256, z: TAMBOTOCO_HUANACAURE.z / 256, kind: 'region' },
         { text: 'Valle del Cusco', x: 196 / 256, z: 190 / 256, kind: 'region' },
       ],
@@ -1424,9 +1435,13 @@ export const MISSIONS: MissionDef[] = [
     start: {
       units: [
         { kind: UnitKind.WORKER, dx: 4, dz: 4, count: 5 },
-        { kind: UnitKind.SOLDIER, dx: 8, dz: 0, count: 6 },
-        { kind: UnitKind.MUSKETEER, dx: 10, dz: 2, count: 2 },
-        { kind: UnitKind.SCOUT, dx: 12, dz: -2, count: 1 },
+        { kind: UnitKind.SOLDIER, dx: 8, dz: 0, count: 3 },
+        { kind: UnitKind.SOLDIER, dx: 9, dz: 1, count: 1, tag: 'manco_capac' },
+        { kind: UnitKind.SOLDIER, dx: 6, dz: -2, count: 1, tag: 'mama_huaco' },
+        { kind: UnitKind.SOLDIER, dx: 10, dz: -3, count: 1, tag: 'ayar_cachi' },
+        { kind: UnitKind.SOLDIER, dx: 9, dz: 3, count: 1, tag: 'ayar_uchu' },
+        { kind: UnitKind.MUSKETEER, dx: 11, dz: 3, count: 2 },
+        { kind: UnitKind.SCOUT, dx: 13, dz: -1, count: 1, tag: 'ayar_auca' },
       ],
     },
     enemy: { active: true, difficulty: 'normal', aggression: 0.7 },
@@ -1488,6 +1503,13 @@ export const MISSIONS: MissionDef[] = [
         count: 120,
         hidden: true,
         title: 'Consigue 120 de comida cazando',
+      },
+      {
+        id: 'a1_manco',
+        kind: 'protect',
+        entityTag: 'manco_capac',
+        optional: true,
+        title: 'Mantén con vida a Ayar Manco',
       },
       {
         id: 'a2_huanacaure',
@@ -1557,6 +1579,12 @@ export const MISSIONS: MissionDef[] = [
             duration: 8,
             text: 'Ayar Cachi queda atrás, sepultado por engaño en Tambo Quiro; su memoria será una huaca. La peregrinación sigue.',
           },
+          {
+            type: 'memory',
+            tag: 'ayar_cachi',
+            pos: { dx: TAMBOTOCO_TAMBO_QUIRO.x, dz: TAMBOTOCO_TAMBO_QUIRO.z },
+            label: 'Huaca de Ayar Cachi',
+          },
           { type: 'objective', objectiveId: 'a1_caza', state: 'activate', announce: true },
         ],
       },
@@ -1578,6 +1606,18 @@ export const MISSIONS: MissionDef[] = [
         id: 't_huanacaure',
         condition: { type: 'objective', objectiveId: 'a2_huanacaure', state: 'completed' },
         effects: [
+          {
+            type: 'memory',
+            tag: 'ayar_uchu',
+            pos: { dx: TAMBOTOCO_HUANACAURE.x, dz: TAMBOTOCO_HUANACAURE.z + 7 },
+            label: 'Huaca de Ayar Uchu',
+          },
+          {
+            type: 'dialogue',
+            speaker: 'Memoria de los Ayar',
+            duration: 8,
+            text: 'Ayar Uchu se ha vuelto piedra en Huanacaure. La huaca queda a la vista y el camino sigue al valle.',
+          },
           {
             type: 'act',
             kicker: 'Acto III · El valle',
@@ -1625,6 +1665,12 @@ export const MISSIONS: MissionDef[] = [
             speaker: 'Memoria de los Ayar',
             duration: 8,
             text: 'Ayar Auca se convierte en piedra en el sitio y le da nombre. Inticancha se ordena en cuatro canchas: el valle ya tiene un centro.',
+          },
+          {
+            type: 'memory',
+            tag: 'ayar_auca',
+            pos: { dx: TAMBOTOCO_INTICANCHA.x + 6, dz: TAMBOTOCO_INTICANCHA.z + 6 },
+            label: 'Piedra de Ayar Auca',
           },
           { type: 'objective', objectiveId: 'a4_canchas', state: 'activate', announce: true },
         ],

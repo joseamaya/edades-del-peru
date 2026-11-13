@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { COMMANDERS, commanderFor, normalizeCommanderName } from '../src/model/defs/commanders';
+import { COMMANDERS, commanderById, commanderFor, normalizeCommanderName } from '../src/model/defs/commanders';
 import { portraitSvg } from '../src/ui/Portrait';
 import { MISSIONS } from '../src/campaign/defs/campaign';
 import { getCiv } from '../src/model/defs/civs';
@@ -39,6 +39,13 @@ describe('campaign commanders', () => {
     expect(commanderFor('Micaela Bastidas')?.id).toBe('micaela_bastidas');
     expect(commanderFor('general patriota')).toBeUndefined();
     expect(normalizeCommanderName('  Túpac   Yupanqui ')).toBe('tupac yupanqui');
+  });
+
+  it('resolves a commander by the tag a scripted unit carries', () => {
+    expect(commanderById('pizarro')?.name).toBe('Francisco Pizarro');
+    expect(commanderById('ayar_uchu')?.name).toBe('Ayar Uchu');
+    expect(commanderById('centro_realista')).toBeUndefined();
+    expect(commanderById(undefined)).toBeUndefined();
   });
 
   it('the late-campaign missions carry portraits', () => {

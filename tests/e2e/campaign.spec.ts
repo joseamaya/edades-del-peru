@@ -915,3 +915,47 @@ test('a bonus objective does not gate victory', async ({ page }) => {
   expect(out.bonus).not.toBe('completed');
   expect(out.won).toBe(true);
 });
+
+test('the Ayar cast is on the board and named after the briefing', async ({ page }) => {
+  test.setTimeout(120_000);
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/?mission=m_tambotoco&seed=777&fog=0&low=1&intro=0&noloop=1');
+  const briefing = page.locator('.ed-briefing');
+  await briefing.waitFor({ state: 'visible', timeout: 30_000 });
+  // Eight siblings: the briefing is the legend's cast list, not two generic commanders.
+  await expect(briefing.locator('.ed-cmd-card')).toHaveCount(8);
+  await expect(briefing.locator('.ed-cmd-card', { hasText: 'Ayar Manco' })).toBeVisible();
+  await briefing.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+  await briefing.waitFor({ state: 'detached' });
+  await page.waitForFunction(
+    () => (window as unknown as { game?: { mission?: { started: boolean } } }).game?.mission?.started === true,
+    null,
+    { timeout: 30_000 },
+  );
+  await page.waitForFunction(
+    () => !(window as unknown as { game: { isCinematicActive(): boolean } }).game.isCinematicActive(),
+    null,
+    { timeout: 60_000 },
+  );
+  const info = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const tags = [...g.units.values()].filter((u: any) => u.owner === 0 && u.tag).map((u: any) => u.tag as string);
+    const manco = [...g.units.values()].find((u: any) => u.tag === 'manco_capac') as any;
+    g.selectUnits([manco.id]);
+    for (let i = 0; i < 20; i++) g.update(1 / 60, i / 60);
+    return {
+      tags,
+      labels: g.characterLabels ? (g.characterLabels.labels.size as number) : 0,
+      title: document.querySelector('#ed-desc h3')?.textContent ?? '',
+    };
+  });
+  expect(info.tags).toEqual(
+    expect.arrayContaining(['manco_capac', 'mama_huaco', 'ayar_cachi', 'ayar_uchu', 'ayar_auca']),
+  );
+  expect(info.labels).toBeGreaterThan(0);
+  expect(info.title).toContain('Ayar Manco');
+  expect(errors).toEqual([]);
+});

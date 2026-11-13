@@ -924,6 +924,13 @@ export class RuntimeController {
 
     this.updateFow(d);
     this.game.mapLabels?.update(this.game.camera, this.game.fow, this.game.settings.fogOfWar);
+    this.game.characterLabels?.sync(
+      this.game.units.values(),
+      this.game.camera,
+      this.game.fow,
+      this.game.settings.fogOfWar,
+    );
+    this.game.memoryStones?.update(t);
     this.applyLod();
     this.updatePopulation();
 

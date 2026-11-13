@@ -20,6 +20,8 @@ Package manager **Yarn 1** (`yarn.lock` exists — never create a `package-lock.
   `yarn test:e2e:slow` — those heavy specs (nightly).
   `PW_WORKERS=N` overrides workers.
 - `yarn shot <name> --seed=777 --wait=8000` — screenshot into `review/`
+- `yarn record --mission=m_tambotoco --mode=clip` — simulated gameplay recording (MP4 + JSON in
+  `review/`; `--mode=full` plays the whole mission with real orders and no cheats)
 - `yarn evidence` — list the captures a branch needs, as a PR-ready markdown block (warn-only)
 - `yarn audit:campaigns` — full m1–m9 briefing/tutorial/layout/victory audit into `review/audit/`
 - `yarn sim [--seeds=…] [--max=…] [--difficulty=…]` — headless AI-vs-AI match runner (AI regression baseline)

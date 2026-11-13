@@ -56,7 +56,7 @@ import { renderBriefing } from './MissionBriefing';
 import { decorateTitleScreen, renderCampaignPath, renderMainMenu } from './SeriesMenu';
 import { publicAsset } from '../util/publicAsset';
 import type { MissionDef, ObjectiveProgress, ObjState } from '../campaign/types';
-import { COMMANDERS, type PortraitId } from '../model/defs/commanders';
+import { COMMANDERS, commanderById, type PortraitId } from '../model/defs/commanders';
 import type { HeritageBuildingDef, HeritageBuildingId } from '../model/defs/heritage';
 import { portraitSvg } from './Portrait';
 import { DamageNumbers } from './DamageNumbers';
@@ -1834,10 +1834,11 @@ export class HUD {
   private renderUnitPanel(units: Unit[]): void {
     const first = units[0];
     const civ = this.game.players[first.owner]?.civ;
+    const commander = units.length === 1 ? commanderById(first.tag) : undefined;
     this.setDesc(
       unitDisplayIcon(first.kind, first.era),
-      `${unitDisplayName(first.kind, civ, first.era)} ×${units.length}`,
-      this.unitDesc(first),
+      commander?.name ?? `${unitDisplayName(first.kind, civ, first.era)} ×${units.length}`,
+      commander ? `${commander.role}<br>${this.unitDesc(first)}` : this.unitDesc(first),
     );
     this.clearGrid();
     // summary by type (click = select only that type) — AoE2 style
@@ -2758,7 +2759,9 @@ export class HUD {
           : '',
       story: context,
       didYouKnow: funFact,
-      commanders: commanders ? `<div class="ed-commanders">${commanders}</div>` : '',
+      commanders: commanders
+        ? `<div class="ed-commanders${(mis.commanders?.length ?? 0) > 4 ? ' ed-commanders--cast' : ''}">${commanders}</div>`
+        : '',
       sources,
       facts: [
         {

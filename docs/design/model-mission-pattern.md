@@ -100,6 +100,19 @@ definitions instead.
 - Workers behave as the player expects: they keep working after a build (farm the new field or help the
   nearest site) and show the right tool or net for the task.
 
+## 5b. Named characters
+
+When the mission is about named people, put them on the board instead of only in the narration.
+
+- A unit's mission `tag` doubles as the commander id (`src/model/defs/commanders.ts`): tagged units get a
+  world nameplate (`CharacterLabels`) and the selection panel shows the commander's name and role. The same
+  ids feed the briefing portraits and dialogue.
+- Brief the whole cast the story needs; `commanders` is not limited to two figures.
+- If the legend loses a character on the way, stage the loss: the `memory` trigger effect retires the unit
+  without a death animation and raises a named huaca at the scripted spot (`MemoryStones`).
+- Never invent a likeness: nameplates and medallions say who the person is and are labelled `abstraction`
+  when no attested portrait exists.
+
 ## 6. Opening, briefing and closing
 
 - **Narrated intro** (`MissionDef.intro`, `CinematicBeat[]` with an `image` each): three beats that set the
@@ -165,6 +178,7 @@ never gates the rest of the tutorial.
 | Intro       | Three narrated beats with captured images; chapter-card and epilogue images                       |
 | Briefing    | `MISSION_ART` registered; facts, objectives and sources read well                                 |
 | Tutorial    | Step list for the new actions, non-blocking                                                       |
+| Cast        | Story characters tagged as units, named in the world and in the briefing; losses staged            |
 | Art         | Manifests with `confidence`, human review recorded, PROVENANCE updated                            |
 | Performance | Opening (and late) view in `bench_scene.mjs`, budgets pass, dist under 25 MB                      |
 | Tests       | Data, E2E and playtest; `verify:fast` and the mission's E2E green                                 |

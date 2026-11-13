@@ -23,7 +23,8 @@ history.
 | III · El agua | Cusco valley | Open the acequia to force the alcabizas to cede land | Water as political leverage (Sarmiento) |
 | IV · Inticancha | Cusco valley | Build the communal store and lay out four canchas | The ayllu settlement becomes the future Cusco |
 
-Optional: visit the hualla village. Victory = Inticancha founded and four canchas built.
+Optional: keep Ayar Manco alive and visit the hualla village. Victory = Inticancha founded and four canchas
+built.
 
 ## Map
 
@@ -55,6 +56,21 @@ Workers, militia, slingers and a scout. Buildings: center, house, farm, storehou
 fortress, walls, gate and tower. No market, silver, stable or artillery: the economy is an ayllu economy,
 and the only "engine" of the mission is water.
 
+## Characters
+
+The legend is about eight siblings, so five of them are on the board and all eight are briefed:
+
+- **In the party**: Ayar Manco, Mama Huaco, Ayar Cachi, Ayar Uchu and Ayar Auca are tagged start units. The
+  tag is the commander id, so each one carries a nameplate in the world and its name and role in the
+  selection panel.
+- **In the briefing**: the eight portraits (Ayar Manco, Ayar Auca, Ayar Cachi, Ayar Uchu, Mama Huaco, Mama
+  Ocllo, Mama Ipacura, Mama Raua) use the procedural stylized medallions; no new art is needed.
+- **Myth beats**: Ayar Cachi is retired at Tambo Quiro, Ayar Uchu at Huanacaure and Ayar Auca at Inticancha.
+  Each `memory` effect removes the unit without a death animation and raises a named huaca marker
+  (`MemoryStones`); the narration explains the transformation.
+- **Optional goal**: keeping Ayar Manco alive is a bonus, not a defeat condition, so the mission stays
+  playable without a healer.
+
 ## Opening and closing
 
 - Three narrated beats: the cave, Huanacaure, the valley.
@@ -65,20 +81,24 @@ and the only "engine" of the mission is water.
 
 ## Tutorial
 
-Six non-blocking steps: select militia, leave the cave, hunt, visit Huanacaure, open the acequia, lay out
-the canchas.
+Seven non-blocking steps: select militia, meet the Ayar cast, leave the cave, hunt, visit Huanacaure, open
+the acequia, lay out the canchas.
 
 ## Tests
 
-- `tests/tambotoco.test.ts`: acts, hidden objectives, chapter cards, scale, roster and the Leyenda label.
+- `tests/tambotoco.test.ts`: acts, hidden objectives, chapter cards, scale, roster, the Leyenda label,
+  the eight-portrait cast, the tagged Ayar units and the three huaca beats.
 - `tests/campaign-scale.test.ts`: 256 m, 128² ground, crossing band.
 - Campaign E2E: briefing, epilogue, intro art, geography, layout, save/load and the campaign path.
 - A real-command playtest through the four acts.
+- `yarn record --mission=m_tambotoco --mode=clip|full`: in-engine recording for review, with a JSON timeline.
 
 ## Open items
 
-1. Performance: the opening measures ~540k triangles / ~298 draw calls in `bench_scene.mjs` and passes the
-   first-pass 320-call cap; the next pass should tighten it toward art-direction §11's 200 calls. The
-   mission starts with a small force (5 workers, 6 militia, 2 slingers, 1 scout) to keep the rig count down.
+1. Performance: the opening measures ~540k triangles / ~319–324 draw calls in `bench_scene.mjs` (five Ayar
+   nameplates included) and passes the first-pass 330-call cap; the next pass should tighten it toward
+   art-direction §11's 200 calls. The mission starts with a small force (5 workers, 7 militia, 2 slingers,
+   1 scout) to keep the rig count down.
 2. The Huanacaure huaca is a reused pucará GLB; a small shrine kit would read better.
-3. A manual 30–40 minute playtest without isolated attrition.
+3. A manual 30–40 minute playtest without isolated attrition, checking that the five nameplates stay readable
+   at the default zoom.
