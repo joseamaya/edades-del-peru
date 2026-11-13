@@ -571,11 +571,13 @@ Definition of Done and the building audit see
 ## Code traps (learned the hard way)
 
 - **`EffectComposer` caches the pixel ratio it saw at construction**: `setSize` multiplies by that cached
-  value, so changing `renderer.setPixelRatio()` (the governor's render-scale drop, `?low=1`) never reached the
-  post-processing targets and the "drop" cost nothing. `PostFX.setSize(w, h, ratio)` now forwards the ratio and
-  `RuntimeController.onResize` passes it; any new resize path must do the same (#449). On a 2× display the
-  difference is large: at DPR 2 in m1_caral the frame is 65.5 ms at native scale and 27.7 ms at scale 1, so
-  without this the governor could not recover a weak HiDPI machine.
+  value, so changing `renderer.setPixelRatio()` (the governor's render-scale drop, `?low=1`) only shrank the
+  canvas and the refraction target; the composer kept rendering the scene, bloom and FXAA at the startup scale.
+  `PostFX.setSize(w, h, ratio)` forwards the ratio and `RuntimeController.onResize` passes it; any new resize path
+  must do the same (#449). On a 2× display the difference is large: at DPR 2 in m1_caral the frame is 65.5 ms at
+  native scale and 27.7 ms at scale 1, so without this the governor could not recover a weak HiDPI machine. The
+  scale change reallocates the composer targets, so it happens on governor steps (a one-frame hitch in an already
+  degraded state) and not per frame.
 - **The shadow map is drawn once per frame, not once per `renderer.render`**: `Renderer.ts` sets
   `shadowMap.autoUpdate = false` and `RuntimeController.frameShadows()` raises `needsUpdate`, because a
   post-processed frame renders the scene twice (water refraction + composer) and three would run the shadow
@@ -1025,8 +1027,8 @@ entry points for 40 frames and records the median CPU submit time and draw calls
 `refraction`, the post-processing quads and `other` (JS/GL overhead) — computed per frame, so the buckets add up
 to the frame; and `--scale-sweep=1` samples the frame rate at 1×/0.75×/0.5× pixel ratio, which is the CPU-vs-GPU
 discriminator: if the frame time follows the pixels the workload is GPU-bound, if it barely moves it is
-submit/CPU-bound. The sweep only runs in direct mode: `EffectComposer` keeps its own pixel ratio, so with
-post-processing on the scene and bloom targets would not shrink (see #449). The `QualityGovernor` is pinned
+submit/CPU-bound. `setPixelRatioOverride` reaches the renderer, the post-processing targets and the water
+refraction target, so the sweep is valid with `--postfx` too (#458). The `QualityGovernor` is pinned
 during the sample so an automatic downgrade cannot describe a different scene than the one requested.
 
 `yarn bench:gpu` is the shorthand for the shipped frame on the host GPU

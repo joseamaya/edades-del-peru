@@ -100,9 +100,11 @@ export class PostFX {
   colorGradeEnabled = false;
   /** The `low` preset drops the expensive passes entirely (not just their strength). */
   private qualityLow = false;
+  private appliedRatio: number;
 
   constructor(renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.Camera, width: number, height: number) {
     this.composer = new EffectComposer(renderer);
+    this.appliedRatio = renderer.getPixelRatio();
 
     this.composer.addPass(new RenderPass(scene, camera));
 
@@ -130,15 +132,18 @@ export class PostFX {
   }
 
   /**
-   * Size the chain to the canvas. `EffectComposer` caches its own pixel ratio in the constructor
-   * (1) and `setSize` only multiplies by it, so without passing the renderer's the scene and the
-   * bloom mips are rendered at CSS resolution and upscaled — blurrier than the classic path and,
-   * more importantly, immune to the governor's render scale.
+   * Size the chain to the canvas. `EffectComposer` caches the renderer's pixel ratio at construction
+   * and `setSize` only multiplies by that cached value, so a later render-scale change (governor,
+   * `?low=1`) never reached the post-processing targets: the drop only saved the final blit. Passing
+   * the ratio here is what makes the scale change mean something.
    */
   setSize(width: number, height: number, pixelRatio = this.composer.renderer.getPixelRatio()): void {
-    // The composer caches the ratio it saw at construction and `setSize` keeps using it, so a render
-    // scale change (governor, `?low=1`) would never reach the post-processing targets.
-    this.composer.setPixelRatio(pixelRatio);
+    // `setPixelRatio` resizes with the previous logical size; skip it when nothing changed so a
+    // plain window resize does not reallocate twice.
+    if (pixelRatio !== this.appliedRatio) {
+      this.appliedRatio = pixelRatio;
+      this.composer.setPixelRatio(pixelRatio);
+    }
     this.composer.setSize(width, height);
     (this.fxaaPass.uniforms['resolution'].value as THREE.Vector2).set(
       1 / (width * pixelRatio),

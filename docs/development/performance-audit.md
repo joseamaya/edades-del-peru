@@ -78,8 +78,8 @@ Mismo frame con menos píxeles (1× → 0.5× del buffer de dibujo, es decir 4×
 | 300 | 53.7 ms | 51.2 ms | 50.7 ms | −6 % |
 | 500 | 90.1 ms | 91.9 ms | 95.6 ms | **+6 %** |
 
-El barrido solo corre en modo directo: con post-proceso el `EffectComposer` mantiene su propio pixel ratio y la
-escena no se reduce (#449).
+El barrido es válido también con post-proceso: `setPixelRatioOverride` llega al renderer, a los targets del
+post-proceso y al de refracción (#458).
 
 ### Lectura
 
@@ -166,11 +166,13 @@ Desglose de m1_caral apertura (sobre los 45.6 ms de la media de los dos controle
 Preset bajo en la misma misión: **19.2 ms** (52 fps) y **16.6 ms** con `--direct`, que es el tope de `requestAnimationFrame`
 (60 Hz), no holgura.
 
-**Escala de render y post-proceso (#449).** Las cifras de arriba son a `pixelRatio` 1. En una pantalla 2× (portátiles
-Retina, lo más común) el mismo frame de m1_caral mide **65.5 ms** a escala nativa y **27.7 ms** con la escala forzada
-a 1: antes de #449 el `EffectComposer` conservaba su ratio de construcción y esa caída **no llegaba al
-post-proceso**, así que el governor no podía recuperar una máquina HiDPI débil. Ahora sigue al renderer
-(`PostFX.setSize` reenvía el ratio) y `?low=1` lo aplica también.
+**Escala de render y post-proceso (#449).** Las cifras de las tablas son a `pixelRatio` 1. En una pantalla 2×
+(portátiles Retina, lo más común) m1_caral a **1280×720 CSS con `deviceScaleFactor` 2** mide **65.5 ms** a escala
+nativa y **27.7 ms** con la escala forzada a 1 (muestras intercaladas): antes de #449 el `EffectComposer`
+conservaba su ratio de construcción y esa caída **no llegaba al post-proceso** —solo encogía el canvas y el target
+de refracción—, así que el governor no podía recuperar una máquina HiDPI débil. Ahora sigue al renderer
+(`PostFX.setSize` reenvía el ratio) y `?low=1` lo aplica también. El viewport de estas dos cifras es el de la
+prueba (1280×720 a 2×), no el 1600×900 de la tabla.
 
 ### Lectura
 
