@@ -1354,10 +1354,10 @@ export class Game {
     }
   }
 
-  /** Lima starts as a traced plaza: the colonial GLB appears once the cabildo is raised. */
+  /** The authored GLB appears at its `modelSince` phase (Lima: the city after the cabildo). */
   syncSiteModelVisibility(): void {
-    if (!this.siteModel || this.siteDef?.style !== 'colonial') return;
-    this.siteModel.visible = !(this.siteDef.id === 'lima_site' && this.sitePhase === 'traza');
+    if (!this.siteModel || !this.siteDef?.modelSince) return;
+    this.siteModel.visible = standsAt(this.siteDef.modelSince, this.sitePhase, this.sitePhasePlan);
   }
 
   setSitePhase(phase: string): void {

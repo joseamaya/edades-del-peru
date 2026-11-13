@@ -95,6 +95,7 @@ describe('authored campaign sites', () => {
     expect(site.style).toBe('colonial');
     expect(site.phases?.phases).toEqual(['traza', 'ciudad']);
     expect(site.phases?.initial).toBe('traza');
+    expect(site.modelSince).toBe('ciudad');
     expect(site.blockers.filter((b) => b.since === 'ciudad').length).toBeGreaterThan(10);
     const mission = MISSIONS.find((m) => m.id === 'm_lima')!;
     expect(mission.layout?.site?.id).toBe('lima_site');

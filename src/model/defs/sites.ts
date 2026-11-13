@@ -210,6 +210,8 @@ export interface AuthoredSiteDef {
   environs?: SiteEnvirons;
   /** Presentation-only living details (fire, smoke, fairground). */
   life?: SiteLife;
+  /** Phase from which the authored GLB stands; omitted means from the opening. */
+  modelSince?: string;
   /** Authored presentation family; the renderer picks the overlay from it. */
   style?: 'ayllu' | 'colonial';
   /** Source meshes hidden because the game heightfield/scene owns that layer. */
@@ -795,6 +797,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     label: 'La Ciudad de los Reyes y el Rímac',
     modelName: 'colonial_site',
     style: 'colonial',
+    modelSince: 'ciudad',
     scale: 0.65,
     origin: { ...LIMA_SITE_ORIGIN },
     anchor: { ...LIMA_SITE_ORIGIN },
