@@ -628,6 +628,11 @@ export class Game {
     }
     this.wildlife = new Wildlife(this.scene);
     this.fow = new Fow(s.mapSize, 128);
+    const opening = this.missionLayout?.opening;
+    if (opening && this.siteDef?.openingHeight) {
+      // The opening frames the cave before the camp units can see it: mark its clearing explored.
+      this.fow.explore(opening.x * s.mapSize, opening.z * s.mapSize, 40);
+    }
     this.fowTexture = new FowTexture(this.fow);
     this.terrain.setFow(this.fowTexture.texture, s.fogOfWar);
     this.fowUniforms.fowMap.value = this.fowTexture.texture;
@@ -1019,6 +1024,14 @@ export class Game {
   reframeMissionOpening(): void {
     if (!this.missionLayout?.site && !this.missionLayout?.opening) return;
     const c = this.playerCenter(0);
+    const opening = this.missionLayout?.opening;
+    if (opening && this.siteDef?.openingHeight) {
+      // The title card and the opening hold the cave, not the camp: the legend starts there.
+      const size = this.settings.mapSize;
+      this.camera.moveTo(opening.x * size, opening.z * size, true);
+      this.camera.setHeight(this.siteDef.openingHeight);
+      return;
+    }
     this.world.frameAuthoredSite(c.x, c.z);
   }
 
@@ -1032,12 +1045,12 @@ export class Game {
     if (!this.introEnabled) return;
     const c = this.playerCenter(0);
     const opening = this.missionLayout?.opening;
-    if (opening && this.siteDef?.style === 'ayllu') {
+    if (opening && this.siteDef?.openingHeight) {
       // The legend starts in the cave: hold it, then fly down to the camp.
       const size = this.settings.mapSize;
       this.camera.moveTo(opening.x * size, opening.z * size, true);
-      this.camera.setHeight(34);
-      this.camera.flyTo(c.x, c.z, 44, INTRO_CAMERA.seconds);
+      this.camera.setHeight(this.siteDef.openingHeight);
+      this.camera.flyTo(c.x, c.z, this.siteDef.cameraHeight, INTRO_CAMERA.seconds);
       return;
     }
     const city = this.siteFocus ?? this.setpiecePlan?.upper;

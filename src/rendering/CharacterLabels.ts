@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import type { RTSCamera } from '../core/Camera';
 import type { Unit } from '../entities/Unit';
 import type { Fow } from '../game/Fow';
-import { commanderById } from '../model/defs/commanders';
+import { commanderById, commanderLabel } from '../model/defs/commanders';
 import { labelFade } from './MapLabels';
 import { labelSprite, type LabelSprite } from './textSprite';
 
@@ -37,7 +37,7 @@ export class CharacterLabels {
       let label = this.labels.get(unit.id);
       if (!label) {
         if (fade <= 0.02) continue;
-        label = labelSprite(commander.hero ? `★ ${commander.name}` : commander.name, {
+        label = labelSprite(commanderLabel(commander), {
           fontSize: 44,
           color: commander.accent ?? (unit.owner === 0 ? '#f6e7bf' : '#e8b7a0'),
           paddingX: 16,

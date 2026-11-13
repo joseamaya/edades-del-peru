@@ -32,6 +32,9 @@ export const PORTRAIT_IDS = [
 
 export type PortraitId = (typeof PORTRAIT_IDS)[number];
 
+/** Accent used when a hero has none declared (all current Ayar declare one). */
+export const DEFAULT_HERO_ACCENT = '#e0b84a';
+
 /**
  * Campaign commanders shown in briefings and dialogue. Portraits are stylized
  * medallions (not attested likenesses): pre-Hispanic figures have no documented
@@ -305,4 +308,9 @@ export function commanderFor(name: string): CommanderDef | undefined {
  */
 export function commanderById(id: string | undefined): CommanderDef | undefined {
   return id ? BY_ID.get(id) : undefined;
+}
+
+/** Nameplate / HUD title for a commander; heroes carry the star. */
+export function commanderLabel(commander: CommanderDef): string {
+  return commander.hero ? `★ ${commander.name}` : commander.name;
 }

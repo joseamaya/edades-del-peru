@@ -921,8 +921,6 @@ test('plays La Junta del Cusco through its three acts with real orders', async (
     // The manual playtest covers the no-cheat attrition path; this spec isolates the three-act wiring.
     const keepAlive = () => {
       for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
-      // The playtest isolates attrition: a lost cancha house would test the AI, not the objective wiring.
-      for (const b of g.buildings.values()) if (b.owner === 0 && !b.dead) b.hp = b.maxHp;
     };
     const run = (seconds: number) => {
       for (let i = 0; i < Math.ceil(seconds / dt) && !m.ended; i++) {

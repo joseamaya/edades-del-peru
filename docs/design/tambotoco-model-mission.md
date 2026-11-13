@@ -102,8 +102,8 @@ open the acequia, lay out the canchas.
 
 ## Open items
 
-1. Performance: the opening measures ~575k triangles / ~347 draw calls in `bench_scene.mjs` (ayllu site,
-   eight nameplates, hero rings/banners and tunic accents) under the 600k/350 first-pass cap; the Act IV
+1. Performance: the opening measures ~567k triangles / ~339 draw calls in `bench_scene.mjs` (ayllu site,
+   eight nameplates, hero rings/banners and tunic accents) under the 600k/340 first-pass cap; the Act IV
    Inticancha view measures 472k/217. The next pass should tighten toward art-direction §11's 200 calls.
    The mission starts with a small force (5 workers, 7 militia, 2 slingers, 1 scout) to keep the rig count down.
 2. The ayllu site is procedural in-engine geometry (no GLB, no manifest entry); a Blender architecture

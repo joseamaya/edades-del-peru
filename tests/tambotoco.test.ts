@@ -132,9 +132,9 @@ describe('Los hijos de Tambotoco', () => {
 
   it('opens at the cave with the eight siblings and names the myth in the acts', () => {
     expect(TAMBOTOCO.layout?.base).toEqual({ x: 46 / 256, z: 74 / 256 });
-    expect(TAMBOTOCO.layout?.opening).toEqual({ x: 41 / 256, z: 60 / 256 });
+    expect(TAMBOTOCO.layout?.opening).toEqual({ x: 41 / 256, z: 62 / 256 });
     expect(TAMBOTOCO.objectives.find((o) => o.id === 'a1_salida')!.title).toContain('ocho');
-    expect(TAMBOTOCO.objectives.find((o) => o.id === 'a1_caza')!.title).toContain('Cachi');
+    expect(TAMBOTOCO.objectives.find((o) => o.id === 'a1_caza')!.title).toContain('familias');
     const acts = TAMBOTOCO.triggers.flatMap((t) => t.effects.filter((fx) => fx.type === 'act'));
     expect(acts.map((fx) => (fx.type === 'act' ? fx.title : ''))).toEqual([
       'Ayar Uchu en Huanacaure',

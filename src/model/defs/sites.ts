@@ -193,6 +193,8 @@ export interface AuthoredSiteDef {
   anchor: { x: number; z: number };
   /** Opening/intro camera height. */
   cameraHeight: number;
+  /** Height of the opening hold (cave/title) before the flight to the base; defaults to cameraHeight. */
+  openingHeight?: number;
   /** Frame the base alone or the midpoint between base and site. */
   framing?: 'midpoint' | 'site-biased' | 'site';
   heightField?: AuthoredHeightField;
@@ -843,6 +845,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     origin: { x: TAMBOTOCO_SHRINE.x, z: TAMBOTOCO_SHRINE.z },
     anchor: { x: TAMBOTOCO_SHRINE.x, z: TAMBOTOCO_SHRINE.z },
     cameraHeight: 56,
+    openingHeight: 30,
     framing: 'site-biased',
     heightField: {
       size: TAMBOTOCO_HEIGHTMAP_SIZE,

@@ -259,7 +259,7 @@ The table separates what is implemented from the art and performance passes that
 | Persistence | Met: save/load round-trip in `save-campaign.spec.ts`.                                                                                                                          |
 | Tests       | Met: `tests/tambotoco.test.ts` (cast, tags, huaca beats), scale, campaign path and the campaign E2E specs.                                                                     |
 | Docs        | Met: dossier, `tambotoco-model-mission.md`, this table and the redesign status.                                                                                                |
-| Performance | Partial: opening ~575k triangles / ~347 calls under 600k/350 (hero markers and tunic accents), Act IV 472k/217 under 620k/360; still over art-direction §11's 200-call target. |
+| Performance | Partial: opening ~567k triangles / ~339 calls under 600k/340 (hero markers and accents), Act IV 472k/217 under 620k/360; still over art-direction §11's 200-call target. |
 | Art         | N/A for new Blender models: the ayllu kit is procedural; captures are in-engine and documented in PROVENANCE.                                                                  |
 | Structure   | Met: four acts with hidden objectives, three chapter cards and the documented foundation.                                                                                      |
 | Opening     | Met: three narrated beats with in-engine captures, three act cards and the epilogue backdrop.                                                                                  |

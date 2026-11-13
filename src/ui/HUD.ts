@@ -56,7 +56,7 @@ import { renderBriefing } from './MissionBriefing';
 import { decorateTitleScreen, renderCampaignPath, renderMainMenu } from './SeriesMenu';
 import { publicAsset } from '../util/publicAsset';
 import type { MissionDef, ObjectiveProgress, ObjState } from '../campaign/types';
-import { COMMANDERS, commanderById, type PortraitId } from '../model/defs/commanders';
+import { COMMANDERS, commanderById, commanderLabel, type PortraitId } from '../model/defs/commanders';
 import type { HeritageBuildingDef, HeritageBuildingId } from '../model/defs/heritage';
 import { portraitSvg } from './Portrait';
 import { DamageNumbers } from './DamageNumbers';
@@ -1846,14 +1846,16 @@ export class HUD {
       commander || cast.length === 0 ? '' : `<b>${t('hud.unit.cast')}:</b> ${cast.map((c) => c.name).join(' · ')}<br>`;
     const mixed = new Set(units.map((u) => u.kind)).size > 1;
     const title = commander
-      ? `${commander.hero ? '★ ' : ''}${commander.name}`
+      ? commanderLabel(commander)
       : mixed
         ? `${t('hud.unit.group')} ×${units.length}`
         : `${unitDisplayName(first.kind, civ, first.era)} ×${units.length}`;
     this.setDesc(
       commander ? portraitSvg(commander, 30) : mixed ? '👥' : unitDisplayIcon(first.kind, first.era),
       title,
-      commander ? `${commander.role}<br>${this.unitDesc(first)}` : `${castLine}${this.unitDesc(first)}`,
+      commander
+        ? `${commander.hero ? `${t('hud.unit.hero')} · ` : ''}${commander.role}<br>${this.unitDesc(first)}`
+        : `${castLine}${this.unitDesc(first)}`,
     );
     this.clearGrid();
     // summary by type (click = select only that type) — AoE2 style

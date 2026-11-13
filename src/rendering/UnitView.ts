@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { EntityView } from '../entities/EntityView';
-import { commanderById } from '../model/defs/commanders';
+import { commanderById, DEFAULT_HERO_ACCENT } from '../model/defs/commanders';
 import { acquireRig } from './ModelAssets';
 import type { RigInstance } from './RigInstance';
 import { buildModel, disposeModel, type BuildContext } from '../model/ProceduralModel';
@@ -66,21 +66,23 @@ export class UnitView {
     if (!commander?.hero) return;
     this.heroDressed = true;
     this.view.group.scale.multiplyScalar(1.16);
-    this.dressHero(commander.accent ?? '#e0b84a');
+    this.dressHero(commander.accent ?? DEFAULT_HERO_ACCENT);
   }
 
-  /** Hero attire on the shared ayllu rig: an accent tunic, a mantle and a headband, no new model. */
+  /** Hero attire on the shared ayllu rig: an accent tunic, no new model. */
   private dressHero(accent: string): void {
     const root = this.rig?.root;
     if (!root) return;
     const color = new THREE.Color(accent);
-    for (const name of ['attire_tunic_m', 'attire_tunic_f']) {
+    const tunic = this.unit.gender === 'female' ? 'attire_tunic_f' : 'attire_tunic_m';
+    for (const name of [tunic, 'attire_andean_macana']) {
       const mesh = root.getObjectByName(name) as THREE.Mesh | null;
       if (!mesh?.isMesh) continue;
       mesh.visible = true;
       const material = (mesh.material as THREE.MeshStandardMaterial).clone();
       material.color.copy(color);
       mesh.material = material;
+      if (name === 'attire_andean_macana') mesh.scale.multiplyScalar(1.25);
       this.heroMaterials.push(material);
     }
   }

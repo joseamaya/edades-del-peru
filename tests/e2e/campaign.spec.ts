@@ -1138,3 +1138,35 @@ test('Lima grows from a traced plaza into the colonial city', async ({ page }) =
   expect(out.lifeCalls).toBeGreaterThan(0);
   expect(errors).toEqual([]);
 });
+
+test('the cave is explored and framed at the Tambotoco opening with fog on', async ({ page }) => {
+  test.setTimeout(90_000);
+  await page.goto('/?mission=m_tambotoco&seed=777&low=1&intro=0&noloop=1');
+  const briefing = page.locator('.ed-briefing');
+  await briefing.waitFor({ state: 'visible', timeout: 30_000 });
+  await briefing.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+  await briefing.waitFor({ state: 'detached' });
+  await page.waitForFunction(
+    () => (window as unknown as { game?: { mission?: { started: boolean } } }).game?.mission?.started === true,
+    null,
+    { timeout: 30_000 },
+  );
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const opening = g.missionLayout?.opening;
+    return {
+      fogOn: g.settings.fogOfWar,
+      explored: opening
+        ? (g.fow.isExplored(opening.x * g.settings.mapSize, opening.z * g.settings.mapSize) as boolean)
+        : null,
+      caveExplored: g.fow.isExplored(40, 55) as boolean,
+      openingHeight: g.siteDef?.openingHeight ?? null,
+      camera: g.camera.getTarget(),
+    };
+  });
+  expect(out.fogOn).toBe(true);
+  expect(out.caveExplored, 'the cave must not sit under unexplored fog').toBe(true);
+  expect(out.openingHeight).toBe(30);
+  expect(out.camera.z).toBeGreaterThan(55);
+  expect(out.camera.z).toBeLessThan(70);
+});

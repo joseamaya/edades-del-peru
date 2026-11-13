@@ -1,12 +1,11 @@
 import * as THREE from 'three';
 import type { Unit } from '../entities/Unit';
-import { commanderById } from '../model/defs/commanders';
+import { COMMANDERS, commanderById, DEFAULT_HERO_ACCENT } from '../model/defs/commanders';
 
-const MAX_HEROES = 8;
+const MAX_HEROES = Object.values(COMMANDERS).filter((commander) => commander.hero).length;
 const _dummy = new THREE.Object3D();
 const _color = new THREE.Color();
 const GOLD = new THREE.Color('#ffd166');
-const _identity = new THREE.Quaternion();
 
 /**
  * Field identity for the Ayar: a gold hero ring, a banner pole and a cloth flag in the commander's
@@ -55,7 +54,7 @@ export class HeroMarkers {
       if (unit.dead || unit.owner !== 0) continue;
       const commander = commanderById(unit.tag);
       if (!commander?.hero) continue;
-      heroes.push({ unit, accent: commander.accent ?? '#ffd166' });
+      heroes.push({ unit, accent: commander.accent ?? DEFAULT_HERO_ACCENT });
       if (heroes.length === MAX_HEROES) break;
     }
     for (const [i, hero] of heroes.entries()) {
@@ -74,7 +73,7 @@ export class HeroMarkers {
       this.poles.setMatrixAt(i, _dummy.matrix);
 
       _dummy.position.set(unit.pos.x, unit.pos.y + 3.02, unit.pos.z);
-      _dummy.quaternion.copy(_identity);
+      _dummy.rotation.set(0, 0, 0);
       _dummy.updateMatrix();
       this.crests.setMatrixAt(i, _dummy.matrix);
       this.crests.setColorAt(i, _color);

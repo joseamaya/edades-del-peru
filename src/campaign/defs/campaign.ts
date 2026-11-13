@@ -1386,7 +1386,7 @@ export const MISSIONS: MissionDef[] = [
         { text: 'Valle del Cusco', x: 196 / 256, z: 190 / 256, kind: 'region' },
       ],
       base: { x: 46 / 256, z: 74 / 256 },
-      opening: { x: 41 / 256, z: 60 / 256 },
+      opening: { x: 41 / 256, z: 62 / 256 },
       enemyBase: { x: TAMBOTOCO_ENEMY.x / 256, z: TAMBOTOCO_ENEMY.z / 256 },
       discoveries: [{ heritageId: 'tambotoco_huanacaure' }],
       terrain: {
@@ -1503,7 +1503,7 @@ export const MISSIONS: MissionDef[] = [
         fromNode: 'hunt',
         count: 120,
         hidden: true,
-        title: 'Sostén a las familias con la honda de Cachi',
+        title: 'Sostén a las familias en el camino',
       },
       {
         id: 'a1_manco',
@@ -1531,7 +1531,7 @@ export const MISSIONS: MissionDef[] = [
       {
         id: 'a3_hualla',
         kind: 'reach',
-        pos: { dx: TAMBOTOCO_VILLAGES[0]!.x - 8, dz: TAMBOTOCO_VILLAGES[0]!.z },
+        pos: { dx: TAMBOTOCO_VILLAGES[0]!.x, dz: TAMBOTOCO_VILLAGES[0]!.z + 12 },
         radius: 10,
         optional: true,
         hidden: true,
