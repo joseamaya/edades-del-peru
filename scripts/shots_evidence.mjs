@@ -160,7 +160,7 @@ const SCENES = {
       g.applyQualityPreset('high');
       // The authored site's material textures load asynchronously; render after they are ready.
       await new Promise((resolve) => setTimeout(resolve, 1200));
-      const x = g.landmark ? 40 : 40;
+      const x = 40;
       const z = 55;
       g.camera.moveTo(x, z, true);
       g.camera.setHeight(24);

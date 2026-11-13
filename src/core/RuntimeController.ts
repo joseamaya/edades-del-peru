@@ -932,6 +932,10 @@ export class RuntimeController {
       this.game.settings.fogOfWar,
     );
     this.game.heroMarkers?.sync(this.game.units.values());
+    // The mission card and the opening flight own the screen: plates and banners over the text are noise.
+    const cinematic = this.game.isCinematicActive();
+    this.game.characterLabels?.setVisible(!cinematic);
+    if (cinematic && this.game.heroMarkers) this.game.heroMarkers.group.visible = false;
     this.game.memoryStones?.update(t);
     this.applyLod();
     this.updatePopulation();

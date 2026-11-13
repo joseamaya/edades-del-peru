@@ -24,6 +24,11 @@ export class CharacterLabels {
     scene.add(this.group);
   }
 
+  /** Hide every plate (mission title card or opening flight). */
+  setVisible(visible: boolean): void {
+    this.group.visible = visible;
+  }
+
   /** Follow living characters; enemy names only show while the fog lets the player see them. */
   sync(units: Iterable<Unit>, camera: RTSCamera, fow: Fow, fogOn: boolean): void {
     const zoom = camera.getZoom();
