@@ -1022,6 +1022,12 @@ deterministic AI-vs-AI runner. With `--metrics=1` it records first soldier/first
 workers/military/buildings created, gathered resources, losses, pathfinding requests/failures, AI percentiles
 and a sampled timeline (idle/blocked workers, stuck units, army, resources) without changing behaviour.
 
+`node scripts/bench_scene.mjs --mission=<id> --gpu --frames` measures the **frame the player actually sees** in a
+mission (loop running, post-processing on, `QualityGovernor` pinned, 2 s of rAF samples) at the pinned framing,
+next to the structural draw-call/triangle counts; `--direct` removes post-processing and water refraction and
+`--no-refraction` removes only the water pass, which is how the per-pass cost is attributed
+([`performance-audit.md`](development/performance-audit.md) §"Campaña en GPU real").
+
 `yarn bench:check` runs the rig/fauna/mixed budgets with `--assert`: it fails when a worker, animal or vehicle exceeds
 its structural draw-call/triangle budget, when a rigged entity silently falls back to the procedural model, or
 when the mixed scenario's simulation p95 exceeds one frame (16.6 ms). It also asserts the ground-cover instance

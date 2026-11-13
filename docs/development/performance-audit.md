@@ -120,6 +120,61 @@ software (`bench:check` sigue funcionando en software a propósito).
 > son del commit auditado y no son comparables con esta tanda: miden otro código y otro escenario. La frase
 > "no se puede juzgar el render sin GPU" de las secciones siguientes queda **sustituida** por esta medición.
 
+## Campaña en GPU real (#447)
+
+El frame que ve el jugador en v1 es el de una misión, no el de `mixed` a 500 unidades. `bench_scene.mjs --frames`
+mide ese frame con el bucle activo, el post-proceso del jugador y el `QualityGovernor` **fijado** (si no, baja a
+medium al segundo y la muestra describe otra escena); `--direct` mide escena + sombras sin post-proceso ni
+refracción, y `--no-refraction` deja el post-proceso y quita solo el pase del agua.
+
+1600×900, `pixelRatio` 1, Intel iGPU, calidad **alta**, 2 s de muestras por configuración. Host **compartido**
+(load average 10–12 durante toda la tanda), así que los valores absolutos son un **límite inferior**; los
+cocientes entre configuraciones medidas con minutos de diferencia bajo la misma carga coinciden además con la
+corrida limpia de `mixed`, que los respalda.
+
+| misión | draws | tris | alta | alta sin refracción | Δ refracción |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| m1_caral apertura | 177 | 588k | 44.1 ms (22 fps) | 25.7 ms (39 fps) | 18.4 ms (42 %) |
+| m1_caral Acto III | 271 | 771k | 52.6 ms (19 fps) | 30.8 ms (33 fps) | 21.8 ms (41 %) |
+| m1_caral campamento | 109 | 618k | 42.5 ms (23 fps) | 26.1 ms (38 fps) | 16.4 ms (39 %) |
+| m2_chavin apertura | 167 | 662k | 43.3 ms (23 fps) | 27.8 ms (33 fps) | 15.5 ms (36 %) |
+| m_tambotoco apertura | 331 | 759k | 46.1 ms (22 fps) | 27.9 ms (36 fps) | 18.2 ms (39 %) |
+| m_lima apertura | 843 | 973k | 51.1 ms (19 fps) | 27.9 ms directo | ≈23 ms (45 %) |
+
+Desglose de m1_caral apertura (todas las piezas medidas, no restadas entre escenas distintas):
+
+| configuración | frame p50 | qué añade |
+| --- | ---: | --- |
+| alta, tal cual | 44.1 ms | frame del jugador |
+| alta sin refracción | 25.7 ms | −18.4 ms: solo el pase del agua |
+| alta `--direct` | 23.2 ms | −2.5 ms más: post-proceso (bloom, grading, FXAA) |
+| baja, tal cual | 19.4 ms | preset bajo (LOD de terreno, sombra menor, sin refracción) |
+| baja `--direct` | 16.7 ms | suelo de la escena a ese LOD |
+
+### Lectura
+
+1. **La refracción del agua cuesta el 36–45 % del frame de campaña en todas las misiones.** Es el mayor coste
+   aislado del juego y no depende de los draw calls: m1_caral campamento tiene 109 draws y pierde 16.4 ms en ese
+   pase. Coincide con `mixed` (24.0 ms de refracción frente a 23.3 ms de escena principal a 300 unidades).
+2. **El post-proceso en sí es barato**: ≈2.5 ms para bloom + grading + FXAA. No es el problema y no hay que
+   tocarlo.
+3. **Sin post-proceso la campaña tampoco llega a 60 fps en esta iGPU**: 23.2 ms (43 fps) con 588k triángulos a
+   1600×900. El techo de "alta" en gráficos integrados es ~40–45 fps; el de "baja" es 60 fps justos
+   (16.7 ms `--direct`).
+4. **Los draw calls no son el cuello de la campaña** (109–843 por misión): atlas e instancing atacan el problema
+   de la escaramuza (#240), no el de v1.
+5. **El governor tapa parte del problema**: a 22 fps baja de preset en segundos, así que el jugador acaba viendo
+   "baja" (~50 fps) con menos LOD, no "alta" a 22 fps. Arrancar en medio en GPUs integradas, en vez de esperar la
+   caída automática, es una decisión de producto pendiente.
+
+Reproducir (el binario debía ser el mismo en todas las filas; `--quality=high|low`, `--direct`, `--no-refraction`):
+
+```bash
+yarn node scripts/bench_scene.mjs --mission=m1_caral --gpu --frames --quality=high
+yarn node scripts/bench_scene.mjs --mission=m1_caral --gpu --frames --quality=high --no-refraction
+yarn node scripts/bench_scene.mjs --mission=m1_caral --gpu --frames --quality=high --direct
+```
+
 ## Assets y carga (#246)
 
 Medición local (Linux, Chromium/SwiftShader, `vite preview`). La landing se mide sin `navigator.webdriver`
