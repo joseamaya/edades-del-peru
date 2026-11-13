@@ -1,6 +1,6 @@
 # Campaign redesign: Tahuantinsuyo, Virreinato, Independencia and República
 
-Status: **approved design** (decisions taken 2026-11-12), not implemented. Culturas Preincas (m1–m4) is out of scope and stays as it is.
+Status: **approved design** (decisions taken 2026-11-12). La Independencia is the first chapter being implemented: its opening mission, `m_junta_cusco`, is playable. Culturas Preincas (m1–m4) is out of scope and stays as it is.
 
 This document reorganises the three later chapters of *La Senda del Sol* around documented, playable
 milestones. The historical research behind every mission, with sources and certainty labels, lives in
@@ -111,7 +111,7 @@ merge 2+3 and 4+5 into six missions.
 
 | # | Mission | Date | Player vs rival | Type | Status |
 |---|---|---|---|---|---|
-| 1 | **La Junta del Cusco**: Pumacahua and the Angulo brothers, La Apacheta and Umachiri | 1814–1815 | Cusco rebels vs royalists | rebellion; history lost | new |
+| 1 | **La Junta del Cusco**: Pumacahua and the Angulo brothers, La Apacheta and Umachiri | 1814–1815 | Cusco rebels vs royalists | rebellion; history lost | **m_junta_cusco** |
 | 2 | **De Pisco a Pasco**: landing at Paracas, Arenales's sierra campaign | Sep–Dec 1820 | San Martín, Arenales vs royalists | landing + raid | new |
 | 3 | **El cerco de Lima**: montoneras, proclamation (28 Jul) and the first siege of Callao | Jul–Sep 1821 | patriots and montoneras vs royalists | siege + guerrilla | new |
 | 4 | **Intermedios**: Torata and Moquegua (optional) | Jan 1823 | patriots vs Valdés, Canterac | fighting withdrawal | new (optional) |

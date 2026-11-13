@@ -34,6 +34,6 @@ describe('model-mission scale', () => {
   }
 
   it('marks the rebuilt model missions', () => {
-    expect(MISSIONS.filter((m) => m.modelMission).map((m) => m.id)).toEqual(['m1_caral', 'm2_chavin']);
+    expect(MISSIONS.filter((m) => m.modelMission).map((m) => m.id)).toEqual(['m1_caral', 'm2_chavin', 'm_junta_cusco']);
   });
 });

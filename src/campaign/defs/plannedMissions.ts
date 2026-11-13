@@ -118,12 +118,6 @@ export const PLANNED_MISSIONS: Record<string, PlannedMission> = {
       'Juan Santos Atahualpa y los asháninka levantan la selva central contra los fuertes de la frontera virreinal.',
   },
   // La Independencia
-  p_ind_cusco: {
-    id: 'p_ind_cusco',
-    title: 'La Junta del Cusco',
-    subtitle: 'Cusco · 1814–1815',
-    summary: 'Pumacahua y los hermanos Angulo alzan el Cusco. La rebelión cae en Umachiri, pero anuncia lo que vendrá.',
-  },
   p_ind_pisco: {
     id: 'p_ind_pisco',
     title: 'De Pisco a Pasco',

@@ -161,7 +161,6 @@ test('plays m8 by holding Junín and Ayacucho with real orders', async ({ page }
     for (let i = 0; i < Math.ceil(110 / dt) && !m.ended; i++) {
       // This playtest verifies the hold/objective wiring; keep the player alive like campaign-completable
       // instead of depending on the hard enemy's attrition.
-      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
       g.update(dt, t);
       t += dt;
     }
@@ -170,7 +169,6 @@ test('plays m8 by holding Junín and Ayacucho with real orders', async ({ page }
     move(rifles, enemy.pos.x - 12, enemy.pos.z + 10);
     // 120 s hold plus the march from Junín; leave a margin so the hold can actually complete.
     for (let i = 0; i < Math.ceil(150 / dt) && !m.ended; i++) {
-      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
       g.update(dt, t);
       t += dt;
     }
@@ -643,7 +641,6 @@ test('plays m2 Chavín through the four acts with real construction and offering
     const tick = (seconds: number) => {
       for (let i = 0; i < Math.ceil(seconds / dt) && !m.ended; i++) {
         document.querySelector<HTMLElement>('.ed-mission-card')?.click();
-        for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
         for (const b of g.buildings.values()) if (b.owner === 0 && !b.dead) b.hp = b.maxHp;
         if (!reached && Math.hypot(holder.pos.x - anchor.x, holder.pos.z - anchor.z) < 8) reached = true;
         holder.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
@@ -902,5 +899,162 @@ test('plays m4 Wari with real construction and the provincial network', async ({
   expect(out.objectives.obj_frontera).toBe('completed');
   expect(out.objectives.obj_sostener).toBe('completed');
   expect(out.won, JSON.stringify(out)).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('plays La Junta del Cusco through its three acts with real orders', async ({ page }) => {
+  test.setTimeout(180_000);
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/?mission=m_junta_cusco&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
+    const dt = 1 / 60;
+    let t = 0;
+    const dismissCard = () => document.querySelector('.ed-mission-card')?.click();
+    // The manual playtest covers the no-cheat attrition path; this spec isolates the three-act wiring.
+    const keepAlive = () => {
+      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
+    };
+    const run = (seconds: number) => {
+      for (let i = 0; i < Math.ceil(seconds / dt) && !m.ended; i++) {
+        keepAlive();
+        if (i % 15 === 0) dismissCard();
+        g.update(dt, t);
+        t += dt;
+      }
+      dismissCard();
+    };
+    const move = (ids: number[], x: number, z: number, attack = false) =>
+      g.executeCommand(
+        {
+          kind: 'order',
+          unitIds: ids,
+          order: { kind: attack ? 'attack_move' : 'move', target: { x, z } },
+          clear: true,
+        },
+        false,
+      );
+
+    const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker') as any;
+    move([worker.id], 72, 58);
+    for (let i = 0; i < Math.ceil(90 / dt) && !m.ended; i++) {
+      keepAlive();
+      if (i % 15 === 0) dismissCard();
+      g.update(dt, t);
+      t += dt;
+      if (Math.hypot(worker.pos.x - 72, worker.pos.z - 58) <= 15) break;
+    }
+    g.visitHeritage('colonial_church');
+    run(2);
+    const cabildo = m.getObjectiveState('a1_cabildo') as string;
+
+    const base = g.playerCenter(0) as { x: number; z: number };
+    const workers = [...g.units.values()]
+      .filter((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead)
+      .map((u: any) => u.id);
+    let barracks: any = null;
+    for (const [dx, dz] of [
+      [12, 12],
+      [-12, 12],
+      [14, 0],
+      [0, 14],
+      [-14, 0],
+      [0, -14],
+    ]) {
+      if (g.executeCommand({ kind: 'place', building: 'barracks', x: base.x + dx, z: base.z + dz }, false)) {
+        barracks = [...g.buildings.values()]
+          .filter((b: any) => b.owner === 0 && b.kind === 'barracks' && !b.dead)
+          .sort((a: any, b: any) => b.id - a.id)[0];
+        break;
+      }
+    }
+    if (barracks) move(workers.slice(0, 4), barracks.pos.x, barracks.pos.z);
+    if (barracks)
+      g.executeCommand(
+        {
+          kind: 'order',
+          unitIds: workers.slice(0, 4),
+          order: { kind: 'build', entityId: barracks.id },
+          clear: true,
+        },
+        false,
+      );
+    for (let i = 0; i < Math.ceil(120 / dt) && !m.ended; i++) {
+      keepAlive();
+      if (i % 15 === 0) dismissCard();
+      g.update(dt, t);
+      t += dt;
+      if (m.getObjectiveState('a1_cuartel') === 'completed') break;
+    }
+    const cuartel = m.getObjectiveState('a1_cuartel') as string;
+
+    const army = [...g.units.values()]
+      .filter((u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker')
+      .map((u: any) => u.id);
+    move(army, 140, 168, true);
+    for (let i = 0; i < Math.ceil(120 / dt) && !m.ended; i++) {
+      keepAlive();
+      if (i % 15 === 0) dismissCard();
+      g.update(dt, t);
+      t += dt;
+      if (m.getObjectiveState('a2_apacheta') === 'completed') break;
+    }
+    const antApacheta = m.getObjectiveState('a2_apacheta') as string;
+    for (let i = 0; i < Math.ceil(90 / dt) && !m.ended; i++) {
+      keepAlive();
+      if (i % 30 === 0) {
+        move(army, 140, 168);
+        dismissCard();
+      }
+      g.update(dt, t);
+      t += dt;
+    }
+    const apacheta = m.getObjectiveState('a2_batalla') as string;
+
+    move(army, 198, 214, true);
+    for (let i = 0; i < Math.ceil(120 / dt) && !m.ended; i++) {
+      keepAlive();
+      if (i % 15 === 0) dismissCard();
+      g.update(dt, t);
+      t += dt;
+      if (m.getObjectiveState('a3_umachiri') === 'completed') break;
+    }
+    const antUmachiri = m.getObjectiveState('a3_umachiri') as string;
+    for (let i = 0; i < Math.ceil(165 / dt) && !m.ended; i++) {
+      keepAlive();
+      if (i % 30 === 0) {
+        move(army, 198, 214);
+        dismissCard();
+      }
+      g.update(dt, t);
+      t += dt;
+    }
+    return {
+      cabildo,
+      cuartel,
+      antApacheta,
+      apacheta,
+      antUmachiri,
+      umachiri: m.getObjectiveState('a3_umachiri') as string,
+      resistir: m.getObjectiveState('a3_resistir') as string,
+      pumacahua: m.getObjectiveState('a3_pumacahua') as string,
+      won: m.won as boolean | null,
+    };
+  });
+  expect(out.cabildo).toBe('completed');
+  expect(out.cuartel).toBe('completed');
+  expect(out.antApacheta).toBe('completed');
+  expect(out.apacheta).toBe('completed');
+  expect(out.antUmachiri).toBe('completed');
+  expect(out.resistir).toBe('completed');
+  expect(out.pumacahua).not.toBe('failed');
+  expect(out.won).toBe(true);
   expect(errors).toEqual([]);
 });

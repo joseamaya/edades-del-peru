@@ -42,6 +42,15 @@ import {
 } from './independenceHeightmap';
 import { ARICA_HEIGHTMAP, ARICA_HEIGHTMAP_SIZE, ARICA_HEIGHTMAP_WORLD_SIZE } from './aricaHeightmap';
 import { CUSCO_HEIGHTMAP, CUSCO_HEIGHTMAP_SIZE, CUSCO_HEIGHTMAP_WORLD_SIZE } from './cuscoHeightmap';
+import {
+  JUNTA_GROUND,
+  JUNTA_GROUND_SIZE,
+  JUNTA_HEIGHTMAP,
+  JUNTA_HEIGHTMAP_SIZE,
+  JUNTA_HEIGHTMAP_WORLD_SIZE,
+  JUNTA_RIVER_HALF_WIDTH,
+  JUNTA_RIVER_PATH,
+} from './juntaHeightmap';
 
 export type AuthoredSiteId =
   | 'caral_site'
@@ -53,7 +62,8 @@ export type AuthoredSiteId =
   | 'colonial_site'
   | 'independence_site'
   | 'arica_site'
-  | 'cusco_inca_site';
+  | 'cusco_inca_site'
+  | 'cusco_junta_site';
 
 /** Dedicated visual-only decor GLBs for the later campaigns. */
 export type DecorModelId =
@@ -675,6 +685,45 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       ...DEFAULT_SITE_TERRAIN,
       flatNormals: true,
       suppressSnow: true,
+    },
+  },
+  // 1814 Cusco reuses the colonial plaza model on a new 256 m Cusco–Umachiri transect
+  // (scripts/build_junta_heightmap.py). The temple is the Junta's cabildo card.
+  cusco_junta_site: {
+    id: 'cusco_junta_site',
+    label: 'Cusco y el camino de Umachiri',
+    modelName: 'colonial_site',
+    scale: 0.65,
+    origin: { x: 72, z: 58 },
+    anchor: { x: 72, z: 58 },
+    cameraHeight: 56,
+    framing: 'site-biased',
+    heightField: {
+      size: JUNTA_HEIGHTMAP_SIZE,
+      worldSize: JUNTA_HEIGHTMAP_WORLD_SIZE,
+      heights: JUNTA_HEIGHTMAP,
+      ground: { size: JUNTA_GROUND_SIZE, weights: JUNTA_GROUND },
+      river: { path: JUNTA_RIVER_PATH, halfWidth: JUNTA_RIVER_HALF_WIDTH },
+      // The crossing at Umachiri keeps the Lalli walkable on the campaign route.
+      fords: [{ z: 200, halfWidth: 12 }],
+    },
+    pathCellSize: 1,
+    heritageProxies: [{ id: 'colonial_church', x: 72, z: 58, w: 9, d: 9, h: 6 }],
+    blockers: [{ x: 72, z: 58, w: 9, d: 9 }],
+    blockerPadding: 0.5,
+    buildKeepout: [{ x: 72 / 256, z: 58 / 256, rx: 0.065, rz: 0.065 }],
+    wallCollision: {
+      meshPatterns: [/colonial/i],
+      maxStartYAboveBase: 1.2,
+    },
+    walkableCorridor: { width: 8 },
+    terrain: {
+      ...DEFAULT_SITE_TERRAIN,
+      flatNormals: true,
+      suppressSnow: true,
+      // The Cusco basin (5.7 m) reads wet, the altiplano (4.0 m) reads as puna grass.
+      moisture: { valleyHeight: 7.6, valleyRange: 3.4, bankStart: 0.12, bankRange: 0.1 },
+      water: { deep: '#1c3a44', shallow: '#4f7a74', sheen: 0.12, foam: 0.1, fog: 0.22, refraction: 0.15 },
     },
   },
 };

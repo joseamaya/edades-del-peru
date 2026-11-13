@@ -38,8 +38,8 @@ test('shows the campaign hub and its replayable prologue', { tag: '@smoke' }, as
   await expect(hub.getByRole('button', { name: /Jugar La Ciudad Sagrada/ })).toBeVisible();
   await expect(hub).toContainText('La Independencia');
   await expect(hub).toContainText('La República');
-  // A fresh profile opens only the first mission: later campaigns and missions stay locked.
-  await expect(hub.locator('.ed-campaign-card[data-campaign="independencia"]')).toBeDisabled();
+  // A fresh profile opens Caral and the released opening of La Independencia; the rest stay locked.
+  await expect(hub.locator('.ed-campaign-card[data-campaign="independencia"]')).toBeEnabled();
   await expect(hub.locator('.ed-campaign-card[data-campaign="republica"]')).toBeDisabled();
   await expect(hub.getByRole('button', { name: /Jugar El Oráculo de Chavín/ })).toHaveCount(0);
   await expect(hub).toContainText('Completa «La Ciudad Sagrada» para desbloquear esta misión.');
@@ -97,6 +97,7 @@ test('every campaign mission shows its educational epilogue on victory', async (
     'm6_chimu_inca',
     'm6b_guerra_civil',
     'm7_tupac_amaru',
+    'm_junta_cusco',
     'm8_independencia',
     'm9_guerra_pacifico',
   ]) {
@@ -318,7 +319,7 @@ test('later campaign briefing and tutorial fit 1600x900 (m5-m6b)', async ({ cont
 
 test('later campaign briefing and tutorial fit 1600x900 (m7-m9)', async ({ context }) => {
   test.setTimeout(360_000);
-  await expectCampaignLayout(context, ['m7_tupac_amaru', 'm8_independencia', 'm9_guerra_pacifico']);
+  await expectCampaignLayout(context, ['m7_tupac_amaru', 'm_junta_cusco', 'm8_independencia', 'm9_guerra_pacifico']);
 });
 
 test('later campaign briefings show their draft intro art with art=all', async ({ page }) => {
@@ -328,6 +329,7 @@ test('later campaign briefings show their draft intro art with art=all', async (
     'm6_chimu_inca',
     'm6b_guerra_civil',
     'm7_tupac_amaru',
+    'm_junta_cusco',
     'm8_independencia',
     'm9_guerra_pacifico',
   ]) {
@@ -349,6 +351,7 @@ test('the missions with corrected rosters boot with units and no errors', async 
     'm6_chimu_inca',
     'm6b_guerra_civil',
     'm7_tupac_amaru',
+    'm_junta_cusco',
     'm9_guerra_pacifico',
   ];
   for (const id of ids) {
@@ -462,6 +465,7 @@ test('authored campaign geography spawns its local base and features', async ({ 
     { id: 'm6_chimu_inca', flats: true, decor: null, site: 'chimu_site', canal: true },
     { id: 'm6b_guerra_civil', flats: true, decor: null, site: 'cusco_inca_site', canal: false },
     { id: 'm7_tupac_amaru', flats: true, decor: null, site: 'colonial_site', canal: false },
+    { id: 'm_junta_cusco', flats: true, decor: 'mission_decor_patriotas_camp', site: 'cusco_junta_site', canal: false },
     { id: 'm8_independencia', flats: true, decor: null, site: 'independence_site', canal: false },
     { id: 'm9_guerra_pacifico', flats: true, decor: null, site: 'arica_site', canal: false },
   ];
@@ -732,7 +736,7 @@ test('the campaign path opens the next campaign once the previous one is complet
   await expect(menu.getByRole('button', { name: /Jugar Yahuar Pampa/ })).toBeVisible();
   await expect(menu.getByRole('button', { name: /Jugar La Guerra del Norte/ })).toHaveCount(0);
   await expect(menu.locator('.ed-campaign-card[data-campaign="virreinato"]')).toBeDisabled();
-  await expect(menu.locator('.ed-campaign-card[data-campaign="independencia"]')).toBeDisabled();
+  await expect(menu.locator('.ed-campaign-card[data-campaign="independencia"]')).toBeEnabled();
   await expect(menu.locator('.ed-campaign-card[data-campaign="republica"]')).toBeDisabled();
   await expect(inca).toContainText('7 en desarrollo');
   // The redesigned chapter shows its planned missions in play order, without a play button.

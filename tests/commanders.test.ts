@@ -47,6 +47,7 @@ describe('campaign commanders', () => {
       'm6_chimu_inca',
       'm6b_guerra_civil',
       'm7_tupac_amaru',
+      'm_junta_cusco',
       'm8_independencia',
       'm9_guerra_pacifico',
     ]) {

@@ -187,6 +187,32 @@ geometry gate (`tests/e2e/hud-layout.spec.ts`).
 | Tests       | Met: data, completability and real-command playtest.                                                | Met: data, failure path, completability and real-command playtest.                                  |
 | Docs        | Met: README, dossier, campaign experiences and this table.                                          | Met: README, dossier, campaign experiences and this table.                                          |
 
+
+## La Junta del Cusco playable status (m_junta_cusco)
+
+`m_junta_cusco` is the released opening of La Independencia. It is the first mission built after the
+redesign and the first one to use the 256 m Cusco–Umachiri transect. The table is honest about the city
+art and performance passes, which are still open.
+
+| Gate        | m_junta_cusco                                                                                         |
+| ----------- | ------------------------------------------------------------------------------------------------------ |
+| History     | Met: `docs/historia/campanas/junta_cusco.md` with a certainty table; the epilogue tells the documented defeat. |
+| Identity    | Met: many people and few firearms; the player delays Ramírez and saves the leaders, not the war.       |
+| Play        | Met (automated wiring): the three-act chain completes with move/build/attack orders; attrition is isolated in the test and the no-cheat manual playtest is pending. |
+| Contract    | Met: Acts II–III hidden, optional Melgar and the Junta's artillery never gate victory, Pumacahua protected from the start. |
+| Onboarding  | Met: six-step non-blocking tutorial, briefing and Codex.                                               |
+| Closure     | Met: epilogue states Umachiri, the executions and Melgar; no counterfactual is hidden.                 |
+| UX          | Met: `hud-layout.spec.ts` at 1280×720 and the later-campaign layout check at 1600×900.                 |
+| Visuals     | Partial: authored 256 m transect, painted ground, the colonial plaza/cabildo and in-engine intro/chapter/epilogue captures; the Cusco city overlay is still a typological abstraction. |
+| Persistence | Met: save/load round-trip in `save-campaign.spec.ts`.                                                  |
+| Tests       | Met: `tests/junta-cusco.test.ts`, scale, campaign path and the campaign E2E specs.                     |
+| Docs        | Met: dossier, `junta-cusco-model-mission.md`, this table and the redesign status.                      |
+| Performance | Pending: high-preset opening ~738k triangles / ~982 draw calls, dominated by unit rigs; over art-direction §11's 600k/200 budget and not registered as a passing bench scene. |
+| Art         | N/A for new models: the mission reuses the colonial plaza GLB; the captures are in-engine and documented in PROVENANCE. |
+| Structure   | Met: three acts with hidden objectives, two chapter cards, optional Melgar/artillery goals and the documented ending. |
+| Opening     | Met: three narrated beats with in-engine captures, two act cards and the epilogue backdrop.              |
+| Scale       | Met: 256 m transect, 128² painted ground and worker crossing ≈2:22 (`tests/campaign-scale.test.ts`).     |
+
 ## Inca civil war playable status (m6b)
 
 `m6b_guerra_civil` is released as **playable**. It uses the same authored-site
