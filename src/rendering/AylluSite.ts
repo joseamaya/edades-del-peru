@@ -1,70 +1,53 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { isKnownPhase, phaseOrder, type SitePhasePlan } from '../model/defs/sitePhases';
+import {
+  TAMBOTOCO_CAVE,
+  TAMBOTOCO_CAVE_HUTS,
+  TAMBOTOCO_CANCHAS,
+  TAMBOTOCO_FIELDS,
+  TAMBOTOCO_INTICANCHA,
+  TAMBOTOCO_INTICANCHA_HUTS,
+  TAMBOTOCO_SHRINE,
+  TAMBOTOCO_SHRINE_HUTS,
+  TAMBOTOCO_TERRACES,
+  TAMBOTOCO_VILLAGES,
+  type AylluField,
+  type AylluHut,
+} from '../model/defs/tambotocoLayout';
 import { MaterialTex } from './Textures';
 import type { Particles } from './Particles';
-
-/** Positions are world metres on the Tambotoco transect (see `scripts/build_tambotoco_heightmap.py`). */
-const CAVE = { x: 40, z: 55 };
-const CAVE_HUTS = [
-  { x: 32, z: 58 },
-  { x: 50, z: 58 },
-  { x: 36, z: 70 },
-];
-const SHRINE = { x: 120, z: 106 };
-const SHRINE_HUTS = [
-  { x: 112, z: 100 },
-  { x: 128, z: 101 },
-];
-const INTICANCHA = { x: 168, z: 190 };
-const CANCHAS = [
-  { x: 156, z: 190 },
-  { x: 180, z: 190 },
-  { x: 168, z: 178 },
-  { x: 168, z: 202 },
-];
-const TERRACES = [
-  { x: 150, z: 201, w: 22, d: 1.1, ry: 0.06 },
-  { x: 187, z: 201, w: 20, d: 1.1, ry: -0.08 },
-  { x: 151, z: 176, w: 18, d: 1.1, ry: -0.04 },
-];
-const VILLAGES = [
-  { name: 'hualla', x: 138, z: 162 },
-  { name: 'sauaseray', x: 188, z: 214 },
-  { name: 'alcabizas', x: 198, z: 166 },
-];
 
 const STONE = new THREE.Color('#b3a894');
 const DARK_STONE = new THREE.Color('#948a78');
 const THATCH = new THREE.Color('#c39a4e');
 const EARTH = new THREE.Color('#9a7650');
 const CROP = new THREE.Color('#8fa84e');
-const GOLD = new THREE.Color('#d9b25c');
 const MOUTH = new THREE.Color('#0a0a0c');
 const CLOTH = new THREE.Color('#9a5a3a');
 const SKIN = new THREE.Color('#8a6446');
-const PHASES = ['cave', 'huanacaure', 'inticancha'] as const;
-type Phase = (typeof PHASES)[number];
-type MaterialKey = 'stone' | 'thatch' | 'earth';
-type Parts = Record<MaterialKey, THREE.BufferGeometry[]>;
+const PHASE_CAVE = 'cave';
+const PHASE_SHRINE = 'huanacaure';
+const PHASE_INTICANCHA = 'inticancha';
 
-interface SmokeSource {
+interface LifeSource {
   readonly x: number;
   readonly z: number;
   readonly y: number;
-  readonly phase: Phase;
+  readonly phase: string;
+  readonly kind: 'smoke' | 'fire';
 }
 
 interface PhaseGroup {
-  readonly phase: Phase;
+  readonly phase: string;
   readonly group: THREE.Group;
 }
 
-function emptyParts(): Parts {
-  return { stone: [], thatch: [], earth: [] };
-}
+type Parts = THREE.BufferGeometry[];
 
 function paint(geometry: THREE.BufferGeometry, color: THREE.Color): THREE.BufferGeometry {
   const nonIndexed = geometry.index ? geometry.toNonIndexed() : geometry;
+  if (nonIndexed !== geometry) geometry.dispose();
   const count = nonIndexed.attributes.position.count;
   const colors = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
@@ -78,7 +61,6 @@ function paint(geometry: THREE.BufferGeometry, color: THREE.Color): THREE.Buffer
 
 function box(
   parts: Parts,
-  key: MaterialKey,
   color: THREE.Color,
   x: number,
   y: number,
@@ -91,12 +73,11 @@ function box(
   const g = new THREE.BoxGeometry(w, h, d);
   if (ry) g.rotateY(ry);
   g.translate(x, y + h / 2, z);
-  parts[key].push(paint(g, color));
+  parts.push(paint(g, color));
 }
 
 function cylinder(
   parts: Parts,
-  key: MaterialKey,
   color: THREE.Color,
   x: number,
   y: number,
@@ -108,12 +89,11 @@ function cylinder(
 ): void {
   const g = new THREE.CylinderGeometry(rTop, rBottom, h, segments);
   g.translate(x, y + h / 2, z);
-  parts[key].push(paint(g, color));
+  parts.push(paint(g, color));
 }
 
 function cone(
   parts: Parts,
-  key: MaterialKey,
   color: THREE.Color,
   x: number,
   y: number,
@@ -126,41 +106,39 @@ function cone(
   const g = new THREE.ConeGeometry(r, h, segments);
   if (ry) g.rotateY(ry);
   g.translate(x, y + h / 2, z);
-  parts[key].push(paint(g, color));
+  parts.push(paint(g, color));
 }
 
-function sphere(parts: Parts, key: MaterialKey, color: THREE.Color, x: number, y: number, z: number, r: number): void {
+function sphere(parts: Parts, color: THREE.Color, x: number, y: number, z: number, r: number): void {
   const g = new THREE.SphereGeometry(r, 6, 5);
   g.translate(x, y, z);
-  parts[key].push(paint(g, color));
+  parts.push(paint(g, color));
 }
 
 function rock(parts: Parts, x: number, y: number, z: number, r: number, color = STONE): void {
   const g = new THREE.DodecahedronGeometry(r, 0);
   g.scale(1, 0.8, 1);
   g.translate(x, y + r * 0.45, z);
-  parts.stone.push(paint(g, color));
+  parts.push(paint(g, color));
 }
 
-/** A small ayllu house: rectangular fieldstone walls, a thatch hip roof, a door and a smoke hole. */
-function hut(parts: Parts, x: number, y: number, z: number, w: number, d: number, wall: number): void {
-  box(parts, 'stone', STONE, x, y, z, w + 0.35, 0.35, d + 0.35);
-  box(parts, 'earth', EARTH, x, y + 0.35, z, w, wall, d);
-  // Four-sided hip roof with a small overhang; the smoke hole is the chimney marker.
-  cone(parts, 'thatch', THATCH, x, y + 0.35 + wall, z, Math.max(w, d) * 0.78, wall * 0.95, 4, Math.PI / 4);
-  box(parts, 'earth', MOUTH, x, y + 0.35, z + d / 2 + 0.01, 0.7, wall * 0.62, 0.08);
-  box(parts, 'earth', MOUTH, x, y + 0.35 + wall + wall * 0.7, z, 0.22, 0.22, 0.22);
+/** A small ayllu house: rectangular fieldstone walls, a thatch hip roof and a door. */
+function hut(parts: Parts, h: AylluHut, y: number): void {
+  box(parts, STONE, h.x, y, h.z, h.w + 0.35, 0.35, h.d + 0.35);
+  box(parts, EARTH, h.x, y + 0.35, h.z, h.w, h.wall, h.d);
+  cone(parts, THATCH, h.x, y + 0.35 + h.wall, h.z, Math.max(h.w, h.d) * 0.78, h.wall * 0.95, 4, Math.PI / 4);
+  box(parts, MOUTH, h.x, y + 0.35, h.z + h.d / 2 + 0.01, 0.7, h.wall * 0.62, 0.08);
 }
 
 /** A terraced plot with rows; the ayllu economy made visible. */
-function field(parts: Parts, x: number, y: number, z: number, w: number, d: number, rows: number): void {
-  box(parts, 'earth', EARTH, x, y, z, w, 0.12, d);
-  for (let i = 0; i < rows; i++) {
-    const offset = (i - (rows - 1) / 2) * (d / rows);
-    box(parts, 'earth', CROP, x, y + 0.12, z + offset, w * 0.9, 0.18, d / rows / 2.6);
+function field(parts: Parts, f: AylluField, y: number): void {
+  box(parts, EARTH, f.x, y, f.z, f.w, 0.12, f.d);
+  for (let i = 0; i < f.rows; i++) {
+    const offset = (i - (f.rows - 1) / 2) * (f.d / f.rows);
+    box(parts, CROP, f.x, y + 0.12, f.z + offset, f.w * 0.9, 0.18, f.d / f.rows / 2.6);
   }
-  box(parts, 'stone', DARK_STONE, x, y, z - d / 2, w, 0.26, 0.26);
-  box(parts, 'stone', DARK_STONE, x, y, z + d / 2, w, 0.26, 0.26);
+  box(parts, DARK_STONE, f.x, y, f.z - f.d / 2, f.w, 0.26, 0.26);
+  box(parts, DARK_STONE, f.x, y, f.z + f.d / 2, f.w, 0.26, 0.26);
 }
 
 /** Two or three villagers: enough to read a lived-in place at RTS distance. */
@@ -174,28 +152,31 @@ function villagers(parts: Parts, x: number, y: number, z: number, count: number)
     const [dx, dz] = offsets[i % offsets.length]!;
     const px = x + dx;
     const pz = z + dz;
-    cylinder(parts, 'earth', CLOTH, px, y, pz, 0.16, 0.22, 0.9, 6);
-    sphere(parts, 'earth', SKIN, px, y + 1.02, pz, 0.16);
-    cone(parts, 'earth', CLOTH, px, y + 0.1, pz, 0.3, 0.5, 6);
+    cylinder(parts, CLOTH, px, y, pz, 0.16, 0.22, 0.9, 6);
+    sphere(parts, SKIN, px, y + 1.02, pz, 0.16);
+    cone(parts, CLOTH, px, y + 0.1, pz, 0.3, 0.5, 6);
   }
 }
 
-function shrine(parts: Parts, y: number): void {
-  // A stepped huaca platform with the tall stone the pilgrimage marks: not a fortress.
-  box(parts, 'stone', STONE, SHRINE.x, y, SHRINE.z, 11, 0.9, 9);
-  box(parts, 'stone', DARK_STONE, SHRINE.x, y + 0.9, SHRINE.z, 8.5, 0.9, 6.8);
-  box(parts, 'stone', STONE, SHRINE.x, y + 1.8, SHRINE.z, 6, 0.9, 4.8);
-  box(parts, 'stone', DARK_STONE, SHRINE.x, y, SHRINE.z + 4.5, 4, 0.45, 1.8);
-  box(parts, 'stone', DARK_STONE, SHRINE.x, y + 0.45, SHRINE.z + 4.0, 3.4, 0.45, 1.8);
-  box(parts, 'stone', DARK_STONE, SHRINE.x, y + 0.9, SHRINE.z + 3.5, 2.8, 0.45, 1.8);
-  box(parts, 'stone', DARK_STONE, SHRINE.x, y + 2.7, SHRINE.z, 2.4, 6.4, 1.5, 0.18);
-  box(parts, 'earth', MOUTH, SHRINE.x, y + 4.0, SHRINE.z + 0.78, 1.0, 2.2, 0.2, 0.18);
-  box(parts, 'earth', GOLD, SHRINE.x, y + 8.9, SHRINE.z, 1.9, 0.2, 1.15, 0.18);
-  villagers(parts, SHRINE.x - 1.8, y + 2.7, SHRINE.z + 1.8, 2);
+/** The stepped platform of Huanacaure; the huaca stone itself appears with the Act II phase. */
+function shrinePlatform(parts: Parts, y: number): void {
+  box(parts, STONE, TAMBOTOCO_SHRINE.x, y, TAMBOTOCO_SHRINE.z, 11, 0.9, 9);
+  box(parts, DARK_STONE, TAMBOTOCO_SHRINE.x, y + 0.9, TAMBOTOCO_SHRINE.z, 8.5, 0.9, 6.8);
+  box(parts, STONE, TAMBOTOCO_SHRINE.x, y + 1.8, TAMBOTOCO_SHRINE.z, 6, 0.9, 4.8);
+  box(parts, DARK_STONE, TAMBOTOCO_SHRINE.x, y, TAMBOTOCO_SHRINE.z + 4.5, 4, 0.45, 1.8);
+  box(parts, DARK_STONE, TAMBOTOCO_SHRINE.x, y + 0.45, TAMBOTOCO_SHRINE.z + 4.0, 3.4, 0.45, 1.8);
+  box(parts, DARK_STONE, TAMBOTOCO_SHRINE.x, y + 0.9, TAMBOTOCO_SHRINE.z + 3.5, 2.8, 0.45, 1.8);
+  villagers(parts, TAMBOTOCO_SHRINE.x - 1.8, y + 1.8, TAMBOTOCO_SHRINE.z + 1.8, 2);
+}
+
+/** The huaca stone of Ayar Uchu: it appears when the pilgrimage reaches Huanacaure. */
+function shrineStone(parts: Parts, y: number): void {
+  box(parts, DARK_STONE, TAMBOTOCO_SHRINE.x, y + 2.7, TAMBOTOCO_SHRINE.z, 2.4, 6.4, 1.5, 0.18);
+  box(parts, MOUTH, TAMBOTOCO_SHRINE.x, y + 4.0, TAMBOTOCO_SHRINE.z + 0.78, 1.0, 2.2, 0.2, 0.18);
+  box(parts, STONE, TAMBOTOCO_SHRINE.x, y + 8.9, TAMBOTOCO_SHRINE.z, 1.9, 0.2, 1.15, 0.18);
 }
 
 function cave(parts: Parts, y: number): void {
-  // A rock arch around a dark mouth, open toward the base camp; rocks sink into the slope.
   const rocks: [number, number, number, number][] = [
     [-3.6, 0, 0, 2.2],
     [-2.6, 1.6, 0, 1.9],
@@ -207,112 +188,109 @@ function cave(parts: Parts, y: number): void {
     [-1.4, 0, 1.5, 1.3],
     [1.4, 0, 1.5, 1.3],
   ];
-  for (const [dx, dy, dz, r] of rocks) rock(parts, CAVE.x + dx, y + dy - 0.35, CAVE.z + dz, r);
-  box(parts, 'earth', MOUTH, CAVE.x, y, CAVE.z - 0.35, 1.3, 3.4, 4.0);
-  villagers(parts, CAVE.x - 2.2, y, CAVE.z + 3, 2);
+  for (const [dx, dy, dz, r] of rocks) rock(parts, TAMBOTOCO_CAVE.x + dx, y + dy - 0.35, TAMBOTOCO_CAVE.z + dz, r);
+  box(parts, MOUTH, TAMBOTOCO_CAVE.x, y, TAMBOTOCO_CAVE.z - 0.35, 1.3, 3.4, 4.0);
+  villagers(parts, TAMBOTOCO_CAVE.x - 2.2, y, TAMBOTOCO_CAVE.z + 3, 2);
+}
+
+/** The central platform of the plaza: a stone table, not an imperial ushnu. */
+function plazaPlatform(parts: Parts, y: number): void {
+  box(parts, STONE, TAMBOTOCO_INTICANCHA.x, y, TAMBOTOCO_INTICANCHA.z + 4, 3.4, 0.5, 3.4);
+  box(parts, DARK_STONE, TAMBOTOCO_INTICANCHA.x, y + 0.5, TAMBOTOCO_INTICANCHA.z + 4, 2.4, 0.6, 2.4);
+  box(parts, DARK_STONE, TAMBOTOCO_INTICANCHA.x, y + 1.1, TAMBOTOCO_INTICANCHA.z + 4, 1.1, 1.4, 1.1, 0.25);
 }
 
 /**
- * The ayllu world of the Tambotoco mission: the cave mouth, the Huanacaure shrine, the valley
+ * The ayllu world of the Tambotoco mission: the cave mouth, the Huanacaure shrine, three valley
  * hamlets and the planned Inticancha. Stylized in-engine architecture (fieldstone, earth, thatch)
- * with the shared generated textures; it replaces the reused chanca pucará so the legend has its
- * own places. Presentation only: smoke and fire are particles and the static geometry is merged by
- * material and phase.
+ * whose positions live in `model/defs/tambotocoLayout.ts`; it replaces the reused chanca pucará.
+ * Presentation only: the static geometry is merged per phase and the life particles are emitted
+ * from `Game.updateCityLife`.
  */
 export class AylluSite {
   readonly group = new THREE.Group();
   private readonly phases: PhaseGroup[] = [];
-  private readonly smoke: SmokeSource[] = [];
-  private readonly fires: { x: number; z: number; y: number; phase: Phase }[] = [];
-  private readonly materials: Record<MaterialKey, THREE.Material>;
-  private readonly fireMaterial = new THREE.MeshBasicMaterial({ color: 0xff8a2a, transparent: true, opacity: 0.9 });
-  private readonly fireGeometry = new THREE.ConeGeometry(0.28, 0.95, 5);
+  private readonly life: LifeSource[] = [];
+  private readonly material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.96, metalness: 0 });
   private readonly geometries: THREE.BufferGeometry[] = [];
-  private readonly fireMeshes: THREE.Mesh[] = [];
-  private phase: Phase = 'cave';
-  private smokeTimer = 0;
-  private fireTimer = 0;
+  private phase = PHASE_CAVE;
 
   constructor(
     parent: THREE.Object3D,
     private readonly heightAt: (x: number, z: number) => number,
     baseY: number,
-    private readonly particles: Particles | null,
+    private readonly plan: SitePhasePlan,
   ) {
     this.group.name = 'ayllu_site';
     parent.add(this.group);
-    const stone = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.96, metalness: 0 });
-    stone.map = MaterialTex.fieldstone();
-    const thatch = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 0 });
-    thatch.map = MaterialTex.thatch();
-    const earth = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 0 });
-    earth.map = MaterialTex.dirt();
-    this.materials = { stone, thatch, earth };
+    this.material.map = MaterialTex.dirt();
     const ground = (x: number, z: number): number => this.heightAt(x, z) - baseY;
 
-    // Stable: cave and shrine stand from the opening; the shrine is the huaca the player visits.
-    const stable = emptyParts();
-    cave(stable, ground(CAVE.x, CAVE.z));
-    for (const h of CAVE_HUTS) {
-      hut(stable, h.x, ground(h.x, h.z), h.z, 3.2, 2.8, 1.5);
-      this.smoke.push({ x: h.x, z: h.z, y: ground(h.x, h.z) + 2.6, phase: 'cave' });
+    const caveParts: Parts = [];
+    cave(caveParts, ground(TAMBOTOCO_CAVE.x, TAMBOTOCO_CAVE.z));
+    for (const h of TAMBOTOCO_CAVE_HUTS) {
+      hut(caveParts, h, ground(h.x, h.z));
+      if (h.smoke) this.life.push({ x: h.x, z: h.z, y: ground(h.x, h.z) + 2.6, phase: PHASE_CAVE, kind: 'smoke' });
     }
-    this.fires.push({ x: CAVE.x, z: CAVE.z + 2.6, y: ground(CAVE.x, CAVE.z + 2.6), phase: 'cave' });
-    shrine(stable, ground(SHRINE.x, SHRINE.z));
-    for (const h of SHRINE_HUTS) {
-      hut(stable, h.x, ground(h.x, h.z), h.z, 2.6, 2.3, 1.3);
-      this.smoke.push({ x: h.x, z: h.z, y: ground(h.x, h.z) + 2.2, phase: 'cave' });
+    this.life.push({
+      x: TAMBOTOCO_CAVE.x,
+      z: TAMBOTOCO_CAVE.z + 2.6,
+      y: ground(TAMBOTOCO_CAVE.x, TAMBOTOCO_CAVE.z + 2.6),
+      phase: PHASE_CAVE,
+      kind: 'fire',
+    });
+    shrinePlatform(caveParts, ground(TAMBOTOCO_SHRINE.x, TAMBOTOCO_SHRINE.z));
+    for (const h of TAMBOTOCO_SHRINE_HUTS) {
+      hut(caveParts, h, ground(h.x, h.z));
+      if (h.smoke) this.life.push({ x: h.x, z: h.z, y: ground(h.x, h.z) + 2.2, phase: PHASE_CAVE, kind: 'smoke' });
     }
-    this.fires.push({ x: SHRINE.x, z: SHRINE.z - 1.8, y: ground(SHRINE.x, SHRINE.z - 1.8) + 1.5, phase: 'cave' });
-
-    for (const [i, village] of VILLAGES.entries()) {
-      for (const [j, [dx, dz]] of [
-        [-4, -2],
-        [4, 1],
-        [0, 5],
-        [-2, 6],
-      ].entries()) {
-        const x = village.x + dx;
-        const z = village.z + dz;
-        hut(stable, x, ground(x, z), z, i === 1 && j === 1 ? 3.8 : 3, 2.6, 1.4);
-        if (j < 2) this.smoke.push({ x, z, y: ground(x, z) + 2.5, phase: 'cave' });
+    for (const village of TAMBOTOCO_VILLAGES) {
+      for (const h of village.huts) {
+        hut(caveParts, h, ground(h.x, h.z));
+        if (h.smoke) this.life.push({ x: h.x, z: h.z, y: ground(h.x, h.z) + 2.5, phase: PHASE_CAVE, kind: 'smoke' });
       }
-      villagers(stable, village.x, ground(village.x, village.z), village.z, 3);
-      field(stable, village.x + 9, ground(village.x + 9, village.z - 5), village.z - 5, 10, 7, 5);
+      villagers(caveParts, village.x, ground(village.x, village.z), village.z, 3);
+      field(caveParts, village.field, ground(village.field.x, village.field.z));
     }
-    this.addPhase('cave', stable);
+    this.addPhase(PHASE_CAVE, caveParts);
+
+    // The huaca stone appears with the pilgrimage's arrival: the phase is the deed, not a label.
+    const shrineParts: Parts = [];
+    shrineStone(shrineParts, ground(TAMBOTOCO_SHRINE.x, TAMBOTOCO_SHRINE.z));
+    this.life.push({
+      x: TAMBOTOCO_SHRINE.x,
+      z: TAMBOTOCO_SHRINE.z - 1.8,
+      y: ground(TAMBOTOCO_SHRINE.x, TAMBOTOCO_SHRINE.z - 1.8) + 1.5,
+      phase: PHASE_SHRINE,
+      kind: 'fire',
+    });
+    this.addPhase(PHASE_SHRINE, shrineParts);
 
     // Inticancha: the planned settlement appears when the ayllus found it. The player still builds
     // the store and the four cancha houses; the site marks the plaza, the plots and the terraces.
-    const inticancha = emptyParts();
+    const inticancha: Parts = [];
+    const plazaY = ground(TAMBOTOCO_INTICANCHA.x, TAMBOTOCO_INTICANCHA.z);
     const plaza = new THREE.CylinderGeometry(7.2, 7.2, 0.1, 32);
-    plaza.translate(INTICANCHA.x, ground(INTICANCHA.x, INTICANCHA.z) + 0.05, INTICANCHA.z);
-    inticancha.earth.push(paint(plaza, EARTH));
-    // Ushnu: the central stone platform of the plaza.
-    const uy = ground(INTICANCHA.x, INTICANCHA.z + 4);
-    box(inticancha, 'stone', STONE, INTICANCHA.x, uy, INTICANCHA.z + 4, 3.4, 0.5, 3.4);
-    box(inticancha, 'stone', DARK_STONE, INTICANCHA.x, uy + 0.5, INTICANCHA.z + 4, 2.4, 0.6, 2.4);
-    box(inticancha, 'stone', DARK_STONE, INTICANCHA.x, uy + 1.1, INTICANCHA.z + 4, 1.1, 1.4, 1.1, 0.25);
-    // A low stone curb frames the plaza; the canchas and the road stay open.
+    plaza.translate(TAMBOTOCO_INTICANCHA.x, plazaY + 0.05, TAMBOTOCO_INTICANCHA.z);
+    inticancha.push(paint(plaza, EARTH));
+    plazaPlatform(inticancha, plazaY + 0.1);
     for (let i = 0; i < 28; i++) {
       const a = (i / 28) * Math.PI * 2;
-      const wx = INTICANCHA.x + Math.cos(a) * 7.4;
-      const wz = INTICANCHA.z + Math.sin(a) * 7.4;
-      box(inticancha, 'stone', DARK_STONE, wx, ground(wx, wz), wz, 1.2, 0.35, 0.35, -a);
+      const wx = TAMBOTOCO_INTICANCHA.x + Math.cos(a) * 7.4;
+      const wz = TAMBOTOCO_INTICANCHA.z + Math.sin(a) * 7.4;
+      box(inticancha, DARK_STONE, wx, ground(wx, wz), wz, 1.2, 0.35, 0.35, -a);
     }
-    for (const [i, cancha] of CANCHAS.entries()) {
-      const y = ground(cancha.x, cancha.z);
-      // A low stone footprint and three walls mark the plot; the player raises the house inside.
-      box(inticancha, 'stone', STONE, cancha.x, y, cancha.z, 5.4, 0.3, 4.2);
-      box(inticancha, 'stone', STONE, cancha.x, y + 0.3, cancha.z - 2.1, 5.4, 0.55, 0.3);
-      box(inticancha, 'stone', STONE, cancha.x - 2.7, y + 0.3, cancha.z, 0.3, 0.55, 4.2);
-      box(inticancha, 'stone', STONE, cancha.x + 2.7, y + 0.3, cancha.z, 0.3, 0.55, 4.2);
-      if (i % 2 === 0) villagers(inticancha, cancha.x, y + 0.28, cancha.z, 1);
+    for (const [i, cancha] of TAMBOTOCO_CANCHAS.entries()) {
+      const y = ground(cancha.dx, cancha.dz);
+      box(inticancha, STONE, cancha.dx, y, cancha.dz, 5.4, 0.3, 4.2);
+      box(inticancha, STONE, cancha.dx, y + 0.3, cancha.dz - 2.1, 5.4, 0.55, 0.3);
+      box(inticancha, STONE, cancha.dx - 2.7, y + 0.3, cancha.dz, 0.3, 0.55, 4.2);
+      box(inticancha, STONE, cancha.dx + 2.7, y + 0.3, cancha.dz, 0.3, 0.55, 4.2);
+      if (i % 2 === 0) villagers(inticancha, cancha.dx, y + 0.3, cancha.dz, 1);
     }
-    for (const terrace of TERRACES) {
+    for (const terrace of TAMBOTOCO_TERRACES) {
       box(
         inticancha,
-        'stone',
         DARK_STONE,
         terrace.x,
         ground(terrace.x, terrace.z),
@@ -323,135 +301,80 @@ export class AylluSite {
         terrace.ry,
       );
     }
-    field(inticancha, INTICANCHA.x - 22, ground(INTICANCHA.x - 22, INTICANCHA.z + 2), INTICANCHA.z + 2, 12, 8, 6);
-    field(inticancha, INTICANCHA.x + 22, ground(INTICANCHA.x + 22, INTICANCHA.z + 2), INTICANCHA.z + 2, 12, 8, 6);
-    // A ring of ayllu houses outside the four cancha plots: the settlement is inhabited before the
-    // player finishes the store, and the cancha plots stay free for the houses the mission asks for.
-    for (const [i, [dx, dz]] of [
-      [-12, -14],
-      [12, -14],
-      [-13, 13],
-      [13, 13],
-      [0, -18],
-      [0, 20],
-    ].entries()) {
-      const x = INTICANCHA.x + dx;
-      const z = INTICANCHA.z + dz;
-      hut(inticancha, x, ground(x, z), z, i === 4 ? 4.2 : 3.2, 2.8, 1.5);
-      if (i % 2 === 0) this.smoke.push({ x, z, y: ground(x, z) + 2.6, phase: 'inticancha' });
-      if (i % 3 === 0) villagers(inticancha, x + 2, ground(x, z), z, 2);
+    for (const f of TAMBOTOCO_FIELDS) field(inticancha, f, ground(f.x, f.z));
+    for (const h of TAMBOTOCO_INTICANCHA_HUTS) {
+      hut(inticancha, h, ground(h.x, h.z));
+      if (h.smoke)
+        this.life.push({ x: h.x, z: h.z, y: ground(h.x, h.z) + 2.6, phase: PHASE_INTICANCHA, kind: 'smoke' });
     }
-    villagers(inticancha, INTICANCHA.x, ground(INTICANCHA.x, INTICANCHA.z), INTICANCHA.z - 4, 3);
-    this.fires.push({
-      x: INTICANCHA.x,
-      z: INTICANCHA.z,
-      y: ground(INTICANCHA.x, INTICANCHA.z) + 1.7,
-      phase: 'inticancha',
+    villagers(inticancha, TAMBOTOCO_INTICANCHA.x, plazaY, TAMBOTOCO_INTICANCHA.z - 4, 3);
+    this.life.push({
+      x: TAMBOTOCO_INTICANCHA.x,
+      z: TAMBOTOCO_INTICANCHA.z,
+      y: plazaY + 1.7,
+      phase: PHASE_INTICANCHA,
+      kind: 'fire',
     });
-    this.addPhase('inticancha', inticancha);
+    this.addPhase(PHASE_INTICANCHA, inticancha);
 
-    for (const fire of this.fires) {
-      const mesh = new THREE.Mesh(this.fireGeometry, this.fireMaterial);
-      mesh.name = 'ayllu:fire';
-      mesh.position.set(fire.x, fire.y + 0.45, fire.z);
-      this.group.add(mesh);
-      this.fireMeshes.push(mesh);
-    }
-    this.syncFires();
-    this.setPhase('cave');
+    this.setPhase(this.plan.initial);
   }
 
-  private addPhase(phase: Phase, parts: Parts): void {
+  private addPhase(phase: string, parts: Parts): void {
+    if (!parts.length) return;
+    const merged = mergeGeometries(parts, false);
+    parts.forEach((g) => g.dispose());
+    if (!merged) return;
+    const mesh = new THREE.Mesh(merged, this.material);
+    mesh.name = `ayllu:${phase}`;
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
     const group = new THREE.Group();
-    for (const key of Object.keys(parts) as MaterialKey[]) {
-      if (!parts[key].length) continue;
-      const merged = mergeGeometries(parts[key], false);
-      parts[key].forEach((g) => g.dispose());
-      if (!merged) continue;
-      const mesh = new THREE.Mesh(merged, this.materials[key]);
-      mesh.name = `ayllu:${phase}:${key}`;
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      group.add(mesh);
-      this.geometries.push(merged);
-    }
+    group.add(mesh);
     this.group.add(group);
+    this.geometries.push(merged);
     this.phases.push({ phase, group });
   }
 
-  /** Show the pieces whose phase has been reached (the phase plan is the site's, not the engine's). */
+  /** Show the pieces whose phase has been reached; the order is the site plan's, not the engine's. */
   setPhase(phase: string): void {
-    this.phase = PHASES.includes(phase as Phase) ? (phase as Phase) : 'cave';
+    this.phase = isKnownPhase(this.plan, phase) ? phase : this.plan.initial;
     for (const entry of this.phases) {
-      entry.group.visible = phaseOrder(entry.phase) <= phaseOrder(this.phase);
-    }
-    this.syncFires();
-  }
-
-  private syncFires(): void {
-    for (const [i, fire] of this.fires.entries()) {
-      const mesh = this.fireMeshes[i];
-      if (mesh) mesh.visible = phaseOrder(fire.phase) <= phaseOrder(this.phase);
+      entry.group.visible = phaseOrder(this.plan, entry.phase) <= phaseOrder(this.plan, this.phase);
     }
   }
 
-  /** Cooking smoke and altar fire; presentation only, at a bounded rate. */
-  update(dt: number): void {
-    if (!this.particles) return;
-    this.smokeTimer += dt;
-    this.fireTimer += dt;
-    if (this.smokeTimer >= 1.4) {
-      this.smokeTimer = 0;
-      for (const source of this.smoke) {
-        if (phaseOrder(source.phase) > phaseOrder(this.phase)) continue;
-        this.particles.emit({
-          x: source.x,
-          y: source.y,
-          z: source.z,
-          count: 1,
-          color: 0x9a958a,
-          kind: 'smoke',
-          speed: 0.35,
-          life: 2.8,
-          size: 1.1,
-          grow: 1.5,
-          spread: 0.5,
-        });
-      }
-    }
-    if (this.fireTimer >= 0.45) {
-      this.fireTimer = 0;
-      for (const fire of this.fires) {
-        if (phaseOrder(fire.phase) > phaseOrder(this.phase)) continue;
-        this.particles.emit({
-          x: fire.x,
-          y: fire.y,
-          z: fire.z,
-          count: 1,
-          color: 0xff8a2a,
-          kind: 'fire',
-          speed: 0.45,
-          life: 0.9,
-          size: 0.65,
-          spread: 0.3,
-        });
-      }
-      const pulse = 0.85 + 0.18 * Math.sin(this.smokeTimer * 9 + this.fireTimer);
-      this.fireMaterial.opacity = 0.72 + 0.16 * Math.sin(this.fireTimer * 7);
-      for (const mesh of this.fireMeshes) mesh.scale.setScalar(pulse);
-    }
+  /**
+   * Emit one cooking puff or altar flame near the camera, round-robin. Called from `Game.updateCityLife`
+   * (the same presentation path as Caral), so the site inherits its distance cap and quiet phases.
+   */
+  updateLife(focus: { x: number; z: number }, particles: Particles, lifeTurn: number): void {
+    const available = this.life.filter(
+      (s) =>
+        phaseOrder(this.plan, s.phase) <= phaseOrder(this.plan, this.phase) &&
+        Math.hypot(s.x - focus.x, s.z - focus.z) < 70,
+    );
+    if (!available.length) return;
+    const source = available[lifeTurn % available.length]!;
+    particles.emit({
+      x: source.x,
+      y: source.y,
+      z: source.z,
+      count: source.kind === 'fire' ? 1 : 2,
+      color: source.kind === 'fire' ? 0xff8a2a : 0x9a958a,
+      kind: source.kind,
+      speed: source.kind === 'fire' ? 0.45 : 0.7,
+      life: source.kind === 'fire' ? 0.9 : 3,
+      size: source.kind === 'fire' ? 0.7 : 1.2,
+      grow: source.kind === 'fire' ? 1 : 1.5,
+      spread: source.kind === 'fire' ? 0.3 : 0.5,
+    });
   }
 
   dispose(): void {
     this.group.removeFromParent();
     for (const g of this.geometries) g.dispose();
     this.geometries.length = 0;
-    for (const material of Object.values(this.materials)) material.dispose();
-    this.fireMaterial.dispose();
-    this.fireGeometry.dispose();
+    this.material.dispose();
   }
-}
-
-function phaseOrder(phase: Phase): number {
-  return PHASES.indexOf(phase);
 }

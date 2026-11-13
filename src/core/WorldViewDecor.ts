@@ -260,7 +260,7 @@ export class WorldViewDecor {
         if (siteModel) siteModel.visible = false;
       });
     };
-    if (def.id === 'tambotoco_site') {
+    if (def.style === 'ayllu') {
       // The legend has its own places: a cave mouth, the Huanacaure shrine, the valley hamlets and
       // the planned Inticancha. The reused chanca pucará is no longer loaded for this site.
       if (!this.game.headless) {
@@ -269,7 +269,7 @@ export class WorldViewDecor {
           group,
           (x, z) => this.game.terrain.getHeight(x, z),
           site.y ?? 0,
-          this.game.particles,
+          def.phases ?? { phases: ['cave'], initial: 'cave' },
         );
         ayllu.setPhase(this.game.sitePhase);
         applyFowToObject(ayllu.group, this.game.fowUniforms);
@@ -1111,7 +1111,7 @@ export class WorldViewDecor {
         ...fauna,
       ];
     }
-    if (this.game.siteDef?.id === 'tambotoco_site') {
+    if (this.game.siteDef?.style === 'ayllu') {
       // A few llamas at the inhabited places: the ayllu world reads as lived-in, not as a set.
       fauna = [
         ...fauna,

@@ -426,6 +426,36 @@ function mythSetup() {
   return { game, calls, mythDef };
 }
 
+describe('mission site phases', () => {
+  it('restores the site phase of a trigger that already fired', () => {
+    const unit = { id: 1, tag: '', owner: 0, dead: false, kind: UnitKind.WORKER, pos: { x: 0, z: 0 } };
+    const game = stubGame(unit) as any;
+    const phases: string[] = [];
+    game.setSitePhase = (phase: string) => phases.push(phase);
+    game.sitePhasePlan = { phases: ['cave', 'huanacaure'], initial: 'cave' };
+    const siteDef: MissionDef = {
+      ...def,
+      objectives: [{ id: 'wait', kind: 'wait', time: 60, title: 'esperar' }],
+      triggers: [
+        {
+          id: 't_huaca',
+          condition: { type: 'time', seconds: 1 },
+          effects: [{ type: 'site_phase', phase: 'huanacaure' }],
+        },
+      ],
+    };
+    const m = new Mission(game, siteDef, () => {});
+    m.start();
+    m.update(1.2, 0);
+    const save = m.toSave();
+    phases.length = 0;
+    const loaded = new Mission(game, siteDef, () => {});
+    loaded.start();
+    loaded.applySave(save);
+    expect(phases).toEqual(['huanacaure']);
+  });
+});
+
 describe('mission myth beats', () => {
   it('retires the character and raises the huaca at the scripted point', () => {
     const { game, calls, mythDef } = mythSetup();

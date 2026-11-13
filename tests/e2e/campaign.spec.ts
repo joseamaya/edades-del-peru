@@ -1023,3 +1023,47 @@ test('the Tambotoco tutorial advances with the player actions', async ({ page })
   expect(out.panel).toContain('Sal de la cueva');
   expect(errors).toEqual([]);
 });
+
+test('the ayllu site grows through its phases', async ({ page }) => {
+  test.setTimeout(90_000);
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/?mission=m_tambotoco&seed=777&fog=0&low=1&intro=0&noloop=1');
+  const briefing = page.locator('.ed-briefing');
+  await briefing.waitFor({ state: 'visible', timeout: 30_000 });
+  await briefing.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+  await briefing.waitFor({ state: 'detached' });
+  await page.waitForFunction(
+    () => (window as unknown as { game?: { mission?: { started: boolean } } }).game?.mission?.started === true,
+    null,
+    { timeout: 30_000 },
+  );
+  const states = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const visible = (): { name: string; visible: boolean }[] =>
+      (g.aylluSite.group.children as { visible: boolean; children: { name: string }[] }[]).map((group) => ({
+        name: group.children[0]?.name ?? '?',
+        visible: group.visible,
+      }));
+    const at = (phase: string) => {
+      g.setSitePhase(phase);
+      return visible();
+    };
+    const before = at('cave');
+    const shrine = at('huanacaure');
+    const inticancha = at('inticancha');
+    g.setSitePhase('bogus');
+    return { before, shrine, inticancha, afterBogus: g.sitePhase };
+  });
+  expect(states.before).toEqual([
+    { name: 'ayllu:cave', visible: true },
+    { name: 'ayllu:huanacaure', visible: false },
+    { name: 'ayllu:inticancha', visible: false },
+  ]);
+  expect(states.shrine.map((s) => s.visible)).toEqual([true, true, false]);
+  expect(states.inticancha.map((s) => s.visible)).toEqual([true, true, true]);
+  expect(states.afterBogus).toBe('inticancha');
+  expect(errors).toEqual([]);
+});

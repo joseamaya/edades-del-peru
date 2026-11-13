@@ -61,6 +61,13 @@ import {
   TAMBOTOCO_STREAM_PATH,
 } from './tambotocoHeightmap';
 import {
+  TAMBOTOCO_CAVE,
+  TAMBOTOCO_CAVE_HUTS,
+  TAMBOTOCO_INTICANCHA_HUTS,
+  TAMBOTOCO_SHRINE,
+  TAMBOTOCO_VILLAGES,
+} from './tambotocoLayout';
+import {
   LIMA_GROUND,
   LIMA_GROUND_SIZE,
   LIMA_HEIGHTMAP,
@@ -202,6 +209,8 @@ export interface AuthoredSiteDef {
   environs?: SiteEnvirons;
   /** Presentation-only living details (fire, smoke, fairground). */
   life?: SiteLife;
+  /** Authored presentation family; the renderer picks the overlay from it. */
+  style?: 'ayllu' | 'colonial';
   /** Source meshes hidden because the game heightfield/scene owns that layer. */
   hideNodePatterns?: readonly RegExp[];
   /** Clears an approach strip from the player base to the site anchor. */
@@ -791,9 +800,11 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     id: 'tambotoco_site',
     label: 'Huanacaure y el valle del Cusco',
     modelName: 'ayllu_site',
+    style: 'ayllu',
+    // Kept for the site contract; the procedural kit draws in world coordinates.
     scale: 0.7,
-    origin: { x: 120, z: 106 },
-    anchor: { x: 120, z: 106 },
+    origin: { x: TAMBOTOCO_SHRINE.x, z: TAMBOTOCO_SHRINE.z },
+    anchor: { x: TAMBOTOCO_SHRINE.x, z: TAMBOTOCO_SHRINE.z },
     cameraHeight: 56,
     framing: 'site-biased',
     heightField: {
@@ -806,25 +817,22 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     },
     pathCellSize: 1,
     phases: { phases: ['cave', 'huanacaure', 'inticancha'], initial: 'cave' },
-    heritageProxies: [{ id: 'tambotoco_huanacaure', x: 120, z: 106, w: 12, d: 10, h: 5 }],
+    heritageProxies: [{ id: 'tambotoco_huanacaure', x: TAMBOTOCO_SHRINE.x, z: TAMBOTOCO_SHRINE.z, w: 12, d: 10, h: 5 }],
     blockers: [
-      { x: 120, z: 106, w: 12, d: 10 },
-      { x: 40, z: 55, w: 11, d: 9 },
-      ...[32, 50, 36].map((x, i) => ({ x, z: [58, 58, 70][i]!, w: 5, d: 5 })),
-      ...[
-        [134, 160],
-        [142, 161],
-        [138, 167],
-        [184, 212],
-        [192, 213],
-        [187, 219],
-        [194, 164],
-        [202, 165],
-        [197, 171],
-      ].map(([x, z]) => ({ x, z, w: 4.5, d: 4.5 })),
+      { x: TAMBOTOCO_SHRINE.x, z: TAMBOTOCO_SHRINE.z, w: 12, d: 10 },
+      { x: TAMBOTOCO_CAVE.x, z: TAMBOTOCO_CAVE.z, w: 11, d: 9 },
+      ...TAMBOTOCO_CAVE_HUTS.map((h) => ({ x: h.x, z: h.z, w: h.w + 1.4, d: h.d + 1.4 })),
+      ...TAMBOTOCO_VILLAGES.flatMap((v) => v.huts.map((h) => ({ x: h.x, z: h.z, w: h.w + 1.4, d: h.d + 1.4 }))),
+      ...TAMBOTOCO_INTICANCHA_HUTS.map((h) => ({
+        x: h.x,
+        z: h.z,
+        w: h.w + 1.4,
+        d: h.d + 1.4,
+        since: 'inticancha',
+      })),
     ],
     blockerPadding: 0.5,
-    buildKeepout: [{ x: 120 / 256, z: 106 / 256, rx: 0.07, rz: 0.065 }],
+    buildKeepout: [{ x: TAMBOTOCO_SHRINE.x / 256, z: TAMBOTOCO_SHRINE.z / 256, rx: 0.07, rz: 0.065 }],
     wallCollision: {
       // The ayllu kit owns its own merged geometry and blockers; the hidden GLB is no longer loaded.
       meshPatterns: [],

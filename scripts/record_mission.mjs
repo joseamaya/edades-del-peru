@@ -156,7 +156,7 @@ async function recordClip(page, plan) {
   await hold(9);
   if (plan.start) {
     await move(page, [await firstUnit(page, 'worker')], plan.start);
-    await waitObjective(page, 'a1_salida', 'completed', 120_000);
+    await waitObjective(page, 'a1_salida', 'completed', 120_000, Infinity, () => look(page, null, 30, 'workers'));
   }
   if (plan.tamboQuiro) {
     // Keep the stone below the objective toasts at the top of the screen.

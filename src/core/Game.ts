@@ -1215,6 +1215,9 @@ export class Game {
     this.lifeTimer = 0;
     this.lifeTurn++;
     const focus = this.camera.getTarget();
+    // The ayllu kit owns its life sources (huts, altars) and reuses this presentation tick, so it
+    // inherits the same 70 m camera cap as Caral's cooking smoke.
+    this.aylluSite?.updateLife(focus, this.particles, this.lifeTurn);
     const quietPhase = this.siteDef?.life?.quietPhase;
     const near =
       quietPhase && this.sitePhase === quietPhase

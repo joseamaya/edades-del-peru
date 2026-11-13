@@ -16,12 +16,12 @@ history.
 
 ## Acts
 
-| Act | Place | Player action | Historical idea |
-| --- | --- | --- | --- |
-| I · La cueva | Tambotoco / Pacaritambo | Leave the cave and hunt 120 food | The peregrination starts as a movement of families, not an army |
-| II · Huanacaure | Huanacaure hill | Reach and visit the huaca | Ayar Uchu becomes stone; the huaca marks the route |
-| III · El agua | Cusco valley | Open the acequia to force the alcabizas to cede land | Water as political leverage (Sarmiento) |
-| IV · Inticancha | Cusco valley | Build the communal store and lay out four canchas | The ayllu settlement becomes the future Cusco |
+| Act             | Place                   | Player action                                        | Historical idea                                                 |
+| --------------- | ----------------------- | ---------------------------------------------------- | --------------------------------------------------------------- |
+| I · La cueva    | Tambotoco / Pacaritambo | Leave the cave and hunt 120 food                     | The peregrination starts as a movement of families, not an army |
+| II · Huanacaure | Huanacaure hill         | Reach and visit the huaca                            | Ayar Uchu becomes stone; the huaca marks the route              |
+| III · El agua   | Cusco valley            | Open the acequia to force the alcabizas to cede land | Water as political leverage (Sarmiento)                         |
+| IV · Inticancha | Cusco valley            | Build the communal store and lay out four canchas    | The ayllu settlement becomes the future Cusco                   |
 
 Optional: keep Ayar Manco alive and visit the hualla village. Victory = Inticancha founded and four canchas
 built.
@@ -44,7 +44,8 @@ Painted ground is sampled at 128 × 128 over 256 m; the worker crosses in ≈2:2
 `tambotoco_site` is drawn by `AylluSite`: the cave mouth, the Huanacaure shrine, three valley hamlets and
 the planned Inticancha (plaza, four cancha plots, terraces and fields), with smoke, fires, villagers and
 llamas. Inticancha still grows through the player's store and four houses; the site marks the plots so they
-read as the founded settlement.
+read as the founded settlement. The plaza and the four cancha plots stay walkable and buildable; the ring
+houses block from the `inticancha` phase.
 
 - **Señorío del Cusco (Killke)**: the player; a new LATE_INTERMEDIATE civilization with a circular-plaza
   silhouette. No imperial Inca units or buildings.
@@ -98,11 +99,11 @@ open the acequia, lay out the canchas.
 
 ## Open items
 
-1. Performance: the opening measures ~562k triangles / ~341 draw calls in `bench_scene.mjs` (ayllu site,
-   fires and eight nameplates) and passes the first-pass 350-call cap; the next pass should tighten it
-   toward art-direction §11's 200 calls. The mission starts with a small force (5 workers, 7 militia,
-   2 slingers, 1 scout) to keep the rig count down.
-2. The ayllu site is procedural in-engine geometry; a Blender architecture kit (cave, shrine, houses,
-   terraces) is the next art pass.
+1. Performance: the opening measures ~562k triangles / ~337 draw calls in `bench_scene.mjs` (ayllu site
+   and eight nameplates) under the 600k/340 first-pass cap; the Act IV Inticancha view measures 472k/217.
+   The next pass should tighten toward art-direction §11's 200 calls. The mission starts with a small
+   force (5 workers, 7 militia, 2 slingers, 1 scout) to keep the rig count down.
+2. The ayllu site is procedural in-engine geometry (no GLB, no manifest entry); a Blender architecture
+   kit (cave, shrine, houses, terraces) is the next art pass.
 3. A manual 30–40 minute playtest without isolated attrition, checking that the eight nameplates stay
    readable at the default zoom.

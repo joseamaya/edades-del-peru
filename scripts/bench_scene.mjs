@@ -53,7 +53,9 @@ const BUDGETS = {
   m2_chavin_late: { sceneTriangles: 600_000, sceneDrawCalls: 310, kitTriangles: 100_000, kitDrawCalls: 40 },
   // Tambotoco opening: the procedural ayllu site (cave, shrine, hamlets, Inticancha) adds nine static draws
   // plus fires and eight nameplates; measured ~562k / 341. Tighten with a merged kit pass.
-  m_tambotoco: { sceneTriangles: 620_000, sceneDrawCalls: 350, kitTriangles: 0, kitDrawCalls: 0 },
+  m_tambotoco: { sceneTriangles: 600_000, sceneDrawCalls: 340, kitTriangles: 0, kitDrawCalls: 0 },
+  // Inticancha stands at Act IV; it must not blow the same first-pass budget.
+  m_tambotoco_late: { sceneTriangles: 620_000, sceneDrawCalls: 360, kitTriangles: 0, kitDrawCalls: 0 },
   // Lima opening: the hueste with horses and artillery. First-pass cap measured ~763k / 839; tighten after
   // the unit-rig pass (art-direction §11 targets 200 calls).
   m_lima: { sceneTriangles: 800_000, sceneDrawCalls: 860, kitTriangles: 140_000, kitDrawCalls: 25 },
@@ -117,11 +119,13 @@ try {
         p = { x: site.x - 10, z: site.z + 30 };
       }
       if (stage === 'late') {
-        g.setSitePhase(mission === 'm2_chavin' ? 'apogee' : 'in_use');
+        g.setSitePhase(mission === 'm2_chavin' ? 'apogee' : mission === 'm_tambotoco' ? 'inticancha' : 'in_use');
         const site = g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 });
-        const crowd = mission === 'm2_chavin' ? 20 : 30;
-        for (let i = 0; i < crowd; i++) {
-          g.spawnScriptedUnit('worker', 0, site.x - 12 + (i % 6) * 4, site.z + 18 + Math.floor(i / 6) * 3);
+        if (mission !== 'm_tambotoco') {
+          const crowd = mission === 'm2_chavin' ? 20 : 30;
+          for (let i = 0; i < crowd; i++) {
+            g.spawnScriptedUnit('worker', 0, site.x - 12 + (i % 6) * 4, site.z + 18 + Math.floor(i / 6) * 3);
+          }
         }
         let t = 1;
         for (let i = 0; i < 60; i++) {
