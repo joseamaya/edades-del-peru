@@ -13,6 +13,7 @@ const TAMBOTOCO_CAVE = { x: 40, z: 52 } as const;
 const TAMBOTOCO_HUANACAURE = { x: 120, z: 106 } as const;
 const TAMBOTOCO_INTICANCHA = { x: 168, z: 190 } as const;
 const TAMBOTOCO_ENEMY = { x: 212, z: 200 } as const;
+// Absolute metres (no `ref`): the four cancha nodes around Inticancha.
 const TAMBOTOCO_CANCHAS = [
   { dx: TAMBOTOCO_INTICANCHA.x - 12, dz: TAMBOTOCO_INTICANCHA.z },
   { dx: TAMBOTOCO_INTICANCHA.x + 12, dz: TAMBOTOCO_INTICANCHA.z },

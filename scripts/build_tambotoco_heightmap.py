@@ -69,10 +69,14 @@ def stream_x(z: float) -> float:
     return 150.0 + 5.0 * math.sin(z * 0.035 + 0.4)
 
 
+def valley_mask(x: float, z: float) -> float:
+    return 1.0 - smoothstep(0.55, 1.0, ellipse(x, z, VALLEY[0], VALLEY[1], 62.0, 48.0))
+
+
 def height(x: float, z: float) -> float:
     h = 4.8 + 0.45 * noise(x, z)
 
-    valley = 1.0 - smoothstep(0.55, 1.0, ellipse(x, z, VALLEY[0], VALLEY[1], 62.0, 48.0))
+    valley = valley_mask(x, z)
     h = h * (1.0 - valley) + 4.0 * valley
 
     # Huanacaure: a rounded hill with a flat summit for the huaca.
@@ -110,7 +114,7 @@ def height(x: float, z: float) -> float:
 
 def ground(x: float, z: float) -> tuple[float, float, float, float]:
     h = height(x, z)
-    valley = 1.0 - smoothstep(0.55, 1.0, ellipse(x, z, VALLEY[0], VALLEY[1], 62.0, 48.0))
+    valley = valley_mask(x, z)
     corridor, _ = route_distance(x, z)
     cave = 1.0 - smoothstep(8.0, 20.0, math.hypot(x - CAVE[0], z - CAVE[1]))
     hill = 1.0 - smoothstep(10.0, 26.0, math.hypot(x - SITE[0], z - SITE[1]))
