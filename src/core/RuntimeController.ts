@@ -1226,6 +1226,8 @@ export class RuntimeController {
 
   /** Whether the water refraction pass runs this frame. */
   shouldRenderWaterRefraction(): boolean {
+    // `__noWaterRefraction` isolates the water pass for the scene bench (#447); `__directRender` skips it too.
+    if ((window as unknown as { __noWaterRefraction?: boolean }).__noWaterRefraction) return false;
     return this.game.postfx.cinematicEnabled && this.getAppliedQuality() !== 'low';
   }
 

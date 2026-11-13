@@ -1,15 +1,20 @@
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { launchChromium, withViteServer, cliArg, useGpu, isSoftwareRenderer, readGlRenderer } from './lib.mjs';
 
 /**
  * Scene budget for a mission's opening view (docs/design/art-direction.md §11): one plain scene render
  * (shadow pass included, post-processing excluded) at 1600x900 and zoom 54, plus the Blender
- * vegetation/fauna kit isolated by hiding it. Triangle and draw-call counts are machine-independent,
+ * vegetation/fauna kit isolated by hiding it. `--frames` additionally samples the shipped frame, so the
+ * structural pass and the player-visible frame are reported side by side. Triangle and draw-call counts are machine-independent,
  * unlike FPS: headless Chromium renders in software unless `--gpu` (or `GPU=1`) asks for the host GPU.
  *
  * Usage: node scripts/bench_scene.mjs [--mission=m1_caral] [--stage=late] [--assert] [--out=review/bench-scene.json]
- *        [--gpu] [--gl=egl|angle-vulkan|...]
+ *        [--gpu] [--gl=egl|angle-vulkan|...] [--frames] [--quality=high|low] [--direct] [--no-refraction]
+ *
+ * `--frames` also measures the shipped frame (loop running, post-processing on, 2 s of rAF samples) at the pinned
+ * framing: that is the frame the player actually sees in a mission, unlike the structural draws-only pass.
  *
  * `--stage=late` measures m1's end game instead of its opening: the whole city in use (fair tents, sacred
  * fire, cooking smoke), the act IV drought and 30 extra workers, viewed over the Sacred City.
@@ -19,6 +24,19 @@ import { launchChromium, withViteServer, cliArg, useGpu, isSoftwareRenderer, rea
 const mission = cliArg('mission') ?? 'm1_caral';
 const stage = cliArg('stage') ?? 'opening';
 const assert = process.argv.includes('--assert');
+const frames = process.argv.includes('--frames');
+const quality = String(cliArg('quality', 'high'));
+if (!['high', 'medium', 'low'].includes(quality)) {
+  console.error(`invalid --quality "${quality}" (use high|medium|low)`);
+  process.exit(1);
+}
+// Skips post-processing and the water refraction pass, so the frame shows the scene + shadows alone.
+const direct = process.argv.includes('--direct');
+if ((direct || process.argv.includes('--no-refraction')) && !frames) {
+  console.warn('--direct and --no-refraction only affect the --frames sample; ignoring them');
+}
+// Keeps post-processing but skips the extra full-scene refraction pass.
+const noRefraction = process.argv.includes('--no-refraction');
 const outFile = cliArg('out') ?? 'review/bench-scene.json';
 
 // Ratchet: §11 targets 600k triangles and 200 draw calls per frame. m1 measured 877k / 441 before the
@@ -104,12 +122,14 @@ try {
   }
   await page.waitForTimeout(2000);
   const result = await page.evaluate(
-    ({ kitPattern, stage, mission }) => {
+    ({ kitPattern, stage, mission, quality }) => {
       const g = window.game;
       const kit = new RegExp(kitPattern);
-      // Pin the high preset and its LOD radius (the governor drops quality on a software renderer).
-      g.applyQualityPreset('high');
-      g.trees.kitLod0Radius = 45;
+      // Pin the requested preset (same call as bench.mjs: it does not persist the choice) and freeze the
+      // governor, which would otherwise downgrade before the sample starts.
+      g.qualityGovernor.setUserQuality(quality);
+      g.qualityGovernor.update = () => {};
+      g.trees.kitLod0Radius = quality === 'low' ? 25 : 45;
       let p = g.playerCenter(0);
       if (stage === 'camp') {
         g.setSitePhase('foundation');
@@ -176,13 +196,95 @@ try {
         kitObjects: kitObjects.length,
       };
     },
-    { kitPattern: KIT_NAMES.source, stage, mission },
+    { kitPattern: KIT_NAMES.source, stage, mission, quality },
   );
+  const frame = frames
+    ? await page.evaluate(
+        async ({ ms, direct, noRefraction }) => {
+          const g = window.game;
+          window.__directRender = direct;
+          if (noRefraction) window.__noWaterRefraction = true;
+          g.loop.stop();
+          g.loop.start();
+          const longTasks = [];
+          try {
+            const po = new PerformanceObserver((list) => {
+              for (const entry of list.getEntries()) longTasks.push(entry.duration);
+            });
+            po.observe({ type: 'longtask' });
+          } catch {
+            /* longtask unsupported */
+          }
+          const times = [];
+          await new Promise((done) => {
+            let last = performance.now();
+            const end = last + ms;
+            let first = true;
+            const step = () => {
+              const now = performance.now();
+              if (!first) times.push(now - last);
+              first = false;
+              last = now;
+              if (now >= end) done();
+              else requestAnimationFrame(step);
+            };
+            requestAnimationFrame(step);
+          });
+          times.sort((a, b) => a - b);
+          const at = (p) => times[Math.min(times.length - 1, Math.floor(times.length * p))];
+          const p50 = at(0.5);
+          const loopFps = g.loop.getFps();
+          // `renderer.info` after a post-processed frame describes only the last quad, so count the whole
+          // frame on its own (same trap bench.mjs documents).
+          g.loop.stop();
+          const info = g.renderer.info;
+          info.autoReset = false;
+          info.reset();
+          g.runtime.render();
+          const drawCalls = info.render.calls;
+          const triangles = info.render.triangles;
+          info.autoReset = true;
+          info.reset();
+          return {
+            samples: times.length,
+            loopFps,
+            fpsP50: 1000 / p50,
+            frameMsAvg: times.reduce((s, x) => s + x, 0) / times.length,
+            frameMsP50: p50,
+            frameMsP95: at(0.95),
+            frameMsP99: at(0.99),
+            framesAt60Hz: p50 / (1000 / 60),
+            quality: g.runtime.getAppliedQuality(),
+            cinematic: g.postfx.cinematicEnabled,
+            direct,
+            refraction: !direct && g.shouldRenderWaterRefraction(),
+            pixelRatio: g.renderer.getPixelRatio(),
+            drawCalls,
+            triangles,
+            camera: g.camera.camera.position.toArray().map((v) => Math.round(v)),
+            longTasks: longTasks.length,
+            longTaskMs: longTasks.reduce((s, x) => s + x, 0),
+          };
+        },
+        { ms: 2000, direct, noRefraction },
+      )
+    : null;
+
   const budget =
     stage === 'late' ? BUDGETS[`${mission}_late`] : stage === 'camp' ? BUDGETS[`${mission}_camp`] : BUDGETS[mission];
   const gl = await readGlRenderer(page);
   const gpuInfo = { ...gl, software: isSoftwareRenderer(`${gl.renderer} ${gl.vendor}`) };
-  const report = { mission, ...result, budget, gpu: gpuInfo, errors };
+  const report = {
+    mission,
+    stage,
+    quality,
+    ...result,
+    frame,
+    budget,
+    gpu: gpuInfo,
+    loadavg: os.loadavg().map((v) => Math.round(v * 100) / 100),
+    errors,
+  };
   fs.mkdirSync(path.dirname(outFile), { recursive: true });
   fs.writeFileSync(outFile, JSON.stringify(report, null, 2) + '\n');
   console.log(
@@ -190,6 +292,14 @@ try {
       `vegetation+fauna kit ${result.kit.triangles} tris / ${result.kit.calls} calls (${result.kitObjects} objects)`,
   );
   console.log(`renderer: ${gpuInfo.renderer} (${gpuInfo.software ? 'software' : 'hardware'})`);
+  if (frame) {
+    console.log(
+      `frame: p50/p95/p99 ${frame.frameMsP50.toFixed(1)}/${frame.frameMsP95.toFixed(1)}/${frame.frameMsP99.toFixed(1)} ms ` +
+        `(fps ${frame.fpsP50.toFixed(0)} from p50, loop counter ${frame.loopFps}, ${frame.framesAt60Hz.toFixed(1)} frames at 60 Hz, ` +
+        `quality=${frame.quality}, cinematic=${frame.cinematic}, refraction=${frame.refraction}, ` +
+        `pixelRatio=${frame.pixelRatio}, long tasks ${frame.longTasks}/${frame.longTaskMs.toFixed(0)} ms)`,
+    );
+  }
   if (useGpu() && gpuInfo.software) {
     console.error(
       `--gpu was requested but the page rendered in software (${gpuInfo.renderer}). Try --gl=egl, --gl=angle-vulkan or run with a display.`,
