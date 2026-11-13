@@ -250,7 +250,7 @@ The table separates what is implemented from the art and performance passes that
 | History     | Met: `docs/historia/campanas/tambotoco.md` with a certainty table; the dossier states that Sarmiento is hostile and Garcilaso gives another version. |
 | Identity    | Met: water and land as leverage, not a pitched battle; the four canchas order the foundation.        |
 | Characters  | Met: the eight siblings march as named units; Cachi, Uchu and Auca leave a named huaca.                |
-| Play        | Met (automated): the four acts complete with real move/build/canal orders; a manual playtest is pending. |
+| Play        | Met: the four acts complete with real orders and a recorded run reaches victory; a manual playtest is pending. |
 | Contract    | Met: Acts II–IV hidden, the hualla visit is optional, and the acequia is the only required water step. |
 | Onboarding  | Met: seven-step tutorial, briefing with the eight siblings and Codex.                                |
 | Closure     | Met: the epilogue tells the foundation as tradition and names both versions; no counterfactual is hidden. |
