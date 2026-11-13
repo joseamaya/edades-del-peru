@@ -38,6 +38,40 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
     ],
   },
+  m_lima: {
+    steps: [
+      {
+        id: 'select',
+        text: 'Selecciona la infantería de la hueste: rodeleros y arcabuces sostienen la plaza.',
+        check: { type: 'selectUnit', unitKind: UnitKind.SOLDIER },
+      },
+      {
+        id: 'traza',
+        text: 'Lleva una unidad a la Plaza Mayor y abre su ficha para trazar la ciudad.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a1_traza' },
+      },
+      {
+        id: 'cabildo',
+        text: 'Levanta el cabildo y la plaza junto al Rímac.',
+        check: { type: 'build', buildingKind: BuildingKind.MARKET, baseline: 'houses' },
+      },
+      {
+        id: 'jinetes',
+        text: 'La caballería decide en el llano; los curacas del valle son aliados, no súbditos. Visítalos si puedes.',
+        check: { type: 'elapsed', seconds: 12 },
+      },
+      {
+        id: 'cerco',
+        text: 'Sostén la plaza durante el cerco y mantén con vida a Pizarro.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a2_cerco' },
+      },
+      {
+        id: 'ruptura',
+        text: 'Pasa al ataque y toma el campamento de Quizu en los cerros.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a3_ruptura' },
+      },
+    ],
+  },
   m_junta_cusco: {
     steps: [
       {

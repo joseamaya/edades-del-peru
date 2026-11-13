@@ -35,6 +35,7 @@ describe('campaign heritage buildings', () => {
       'arica_battery',
       'cusco_ushnu',
       'tambotoco_huanacaure',
+      'lima_plaza',
       'tambotoco_acequia',
     ]);
     for (const id of ids) {

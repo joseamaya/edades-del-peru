@@ -71,7 +71,7 @@ Debug URL parameters:
 
 The first release is **campaign-only**. _La Senda del Sol_ is the series; it contains **five campaigns divided by
 Peruvian historical epochs**. All five, from _Culturas Preincas_ to _La República_, are playable. A chapter
-whose first mission is already released opens from the start (Culturas Preincas, El Tahuantinsuyo and La Independencia today);
+whose first mission is already released opens from the start (Culturas Preincas, El Tahuantinsuyo, El Virreinato and La Independencia today);
 the rest open with the previous chapter until their first mission ships. Skirmish is hidden from the menu for
 this release (the `?play=1` debug harness remains for tests).
 
@@ -79,15 +79,15 @@ this release (the `?play=1` debug harness remains for tests).
 | ----------------------------- | --------------------------------------------- | --------------------------- |
 | **Culturas Preincas**         | Caral, Chavín, Moche/Recuay, Wari             | **Four missions playable**  |
 | **El Tahuantinsuyo**          | From the Ayar myth to the civil war           | **Four missions playable**  |
-| **El Virreinato**             | Túpac Amaru II and colonial Peru              | **One mission playable**    |
+| **El Virreinato**             | From the founding of Lima to Túpac Amaru II   | **Two missions playable**   |
 | **La Independencia**          | La Junta del Cusco and Ayacucho               | **Two missions playable**   |
 | **La República**              | Arica and the War of the Pacific              | **One mission playable**    |
 
-Mission ids remain stable (`m1_caral` … `m9_guerra_pacifico`, plus `m6b_guerra_civil`, `m_junta_cusco` and `m_tambotoco`). All released missions appear in
+Mission ids remain stable (`m1_caral` … `m9_guerra_pacifico`, plus `m6b_guerra_civil`, `m_junta_cusco`, `m_tambotoco` and `m_lima`). All released missions appear in
 menus, the Codex and progress; `?mission=ID` remains available for QA.
 The campaign [quality bar](./docs/design/campaign-quality-bar.md) records the gates a mission must meet.
 Caral, Chavín, Moche and Wari have authored, source-backed sites; m5–m9 and m6b add dedicated low-poly GLB
-landmarks over authored terrain; `m_junta_cusco` reuses the colonial Cusco plaza and `m_tambotoco` the chanca pucará, each on its own 256 m transect.
+landmarks over authored terrain; `m_junta_cusco` and `m_lima` reuse the colonial plaza and `m_tambotoco` the chanca pucará, each on its own 256 m transect.
 
 The current release status, art gate and publish checklist are in
 [`docs/design/release-candidate.md`](./docs/design/release-candidate.md).

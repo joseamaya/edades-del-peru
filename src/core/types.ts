@@ -45,6 +45,7 @@ export enum CivId {
   AYLLUS = 'ayllus',
   INCA = 'inca',
   // Historical (post-Hispanic)
+  HUESTE_INDIANA = 'hueste_indiana',
   REALISTAS = 'realistas',
   PATRIOTAS = 'patriotas',
   REPUBLIC = 'republica',

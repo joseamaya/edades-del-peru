@@ -1209,3 +1209,127 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
   expect(out.won).toBe(true);
   expect(errors).toEqual([]);
 });
+
+test('plays La Ciudad de los Reyes through its three acts with real orders', async ({ page }) => {
+  test.setTimeout(240_000);
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/?mission=m_lima&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
+    const dt = 1 / 60;
+    let t = 0;
+    const dismissCard = () => document.querySelector('.ed-mission-card')?.click();
+    // Isolate objective wiring from attrition, as the other campaign playtests do.
+    const keepAlive = () => {
+      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
+    };
+    const step = (seconds: number) => {
+      for (let i = 0; i < Math.ceil(seconds / dt) && !m.ended; i++) {
+        keepAlive();
+        if (i % 15 === 0) dismissCard();
+        g.update(dt, t);
+        t += dt;
+      }
+      dismissCard();
+    };
+    const move = (ids: number[], x: number, z: number, attack = false) =>
+      g.executeCommand(
+        {
+          kind: 'order',
+          unitIds: ids,
+          order: { kind: attack ? 'attack_move' : 'move', target: { x, z } },
+          clear: true,
+        },
+        false,
+      );
+    const build = (ids: number[], entityId: number) =>
+      g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'build', entityId }, clear: true }, false);
+
+    const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker') as any;
+    move([worker.id], 90, 152);
+    for (let i = 0; i < Math.ceil(60 / dt) && !m.ended; i++) {
+      keepAlive();
+      if (i % 15 === 0) dismissCard();
+      g.update(dt, t);
+      t += dt;
+      if (Math.hypot(worker.pos.x - 90, worker.pos.z - 150) <= 14) break;
+    }
+    g.visitHeritage('lima_plaza');
+    step(2);
+    const traza = m.getObjectiveState('a1_traza') as string;
+
+    const workers = [...g.units.values()]
+      .filter((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead)
+      .map((u: any) => u.id);
+    let market: any = null;
+    for (const [x, z] of [
+      [108, 160],
+      [104, 158],
+      [110, 150],
+      [100, 168],
+      [90, 176],
+    ]) {
+      market = g.placeBuilding('market', x, z);
+      if (market) break;
+    }
+    if (market) build(workers, market.id);
+    for (let i = 0; i < Math.ceil(120 / dt) && !m.ended; i++) {
+      keepAlive();
+      if (i % 15 === 0) dismissCard();
+      g.update(dt, t);
+      t += dt;
+      if (m.getObjectiveState('a1_cabildo') === 'completed') break;
+    }
+    const cabildo = m.getObjectiveState('a1_cabildo') as string;
+
+    const army = [...g.units.values()]
+      .filter((u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker')
+      .map((u: any) => u.id);
+    for (let i = 0; i < Math.ceil(105 / dt) && !m.ended; i++) {
+      keepAlive();
+      if (i % 30 === 0) {
+        move(army, 90, 150);
+        dismissCard();
+      }
+      g.update(dt, t);
+      t += dt;
+    }
+    const cerco = m.getObjectiveState('a2_cerco') as string;
+
+    const camp = [...g.buildings.values()].find((b: any) => b.tag === 'campamento_quizu' && !b.dead) as any;
+    if (camp) {
+      g.executeCommand(
+        { kind: 'order', unitIds: army, order: { kind: 'attack', entityId: camp.id }, clear: true },
+        false,
+      );
+    }
+    for (let i = 0; i < Math.ceil(220 / dt) && !m.ended; i++) {
+      keepAlive();
+      if (i % 30 === 0) dismissCard();
+      g.update(dt, t);
+      t += dt;
+    }
+    return {
+      traza,
+      cabildo,
+      cerco,
+      ruptura: m.getObjectiveState('a3_ruptura') as string,
+      pizarro: m.getObjectiveState('a3_pizarro') as string,
+      won: m.won as boolean | null,
+    };
+  });
+  expect(out.traza).toBe('completed');
+  expect(out.cabildo).toBe('completed');
+  expect(out.cerco).toBe('completed');
+  expect(out.ruptura).toBe('completed');
+  expect(out.pizarro).not.toBe('failed');
+  expect(out.won).toBe(true);
+  expect(errors).toEqual([]);
+});

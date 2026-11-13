@@ -306,6 +306,7 @@ export const CIV_LANDMARK: Partial<Record<CivId, LandmarkId>> = {
   [CivId.INCA_KILLKE]: 'inca_killke_center',
   [CivId.AYLLUS]: 'ayllus_village',
   [CivId.INCA]: 'inca_ushnu',
+  [CivId.HUESTE_INDIANA]: 'colonial_church',
   [CivId.REALISTAS]: 'colonial_church',
   [CivId.PATRIOTAS]: 'patriotas_camp',
   [CivId.REPUBLIC]: 'republican_fort',

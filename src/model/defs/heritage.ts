@@ -30,7 +30,8 @@ export type HeritageBuildingId =
   | 'arica_battery'
   | 'cusco_ushnu'
   | 'tambotoco_huanacaure'
-  | 'tambotoco_acequia';
+  | 'tambotoco_acequia'
+  | 'lima_plaza';
 
 export type HeritageSector =
   | 'Áspero'
@@ -392,6 +393,17 @@ export const HERITAGE_BUILDINGS: Record<HeritageBuildingId, HeritageBuildingDef>
     confidence: 'tradición documentada; identificación del cerro, plausible',
     citation: 'Dossier de Tambotoco · Sarmiento, Cieza y Betanzos',
     sources: ['docs/historia/campanas/tambotoco.md', 'docs/historia/arquitectura.md'],
+  },
+  lima_plaza: {
+    id: 'lima_plaza',
+    name: 'Plaza Mayor de Lima',
+    sector: 'Virreinato',
+    role: 'Traza, cabildo e iglesia de la Ciudad de los Reyes',
+    summary:
+      'Lima se fundó en 1535 junto al Rímac, sobre señoríos del curacazgo de Lima. La plaza, el cabildo y la iglesia son una abstracción de la traza colonial; el valle ya estaba habitado y la ciudad se levantó con aliados andinos, no sobre un vacío.',
+    confidence: 'fundación documentada; planta y edificios, abstracción',
+    citation: 'Dossier de La Ciudad de los Reyes · actas de fundación y crónicas',
+    sources: ['docs/historia/campanas/lima.md', 'docs/historia/arquitectura.md'],
   },
   tambotoco_acequia: {
     id: 'tambotoco_acequia',

@@ -20,6 +20,8 @@ export const PORTRAIT_IDS = [
   'ramirez_orozco',
   'manco_capac',
   'mama_huaco',
+  'pizarro',
+  'quizu_yupanqui',
 ] as const;
 
 export type PortraitId = (typeof PORTRAIT_IDS)[number];
@@ -184,6 +186,22 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
     civ: CivId.INCA_KILLKE,
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
+  },
+  pizarro: {
+    id: 'pizarro',
+    name: 'Francisco Pizarro',
+    role: 'Hueste indiana · Ciudad de los Reyes',
+    civ: CivId.HUESTE_INDIANA,
+    status: 'documented',
+    source: 'docs/historia/campanas/lima.md',
+  },
+  quizu_yupanqui: {
+    id: 'quizu_yupanqui',
+    name: 'Quizu Yupanqui',
+    role: 'Inca · general del cerco',
+    civ: CivId.INCA,
+    status: 'abstraction',
+    source: 'docs/historia/campanas/lima.md',
   },
 };
 

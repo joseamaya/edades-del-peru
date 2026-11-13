@@ -205,6 +205,27 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       { text: 'Cieza de León, P. Crónica del Perú.' },
     ],
   },
+  m_lima: {
+    briefing:
+      'Lima, 1535–1536. Pizarro funda la Ciudad de los Reyes junto al Rímac, en tierras del curacazgo de Lima. ' +
+      'En 1536 el ejército de Quizu Yupanqui baja de los cerros para destruirla.',
+    context:
+      'Pizarro fundó Lima el 18 de enero de 1535, con aliados andinos y sobre un valle ya habitado. En agosto de ' +
+      '1536, Manco Inca envió a Quizu Yupanqui contra la ciudad; sus columnas destruyeron los socorros que Pizarro ' +
+      'mandaba al Cusco. El asalto fracasó en el llano, terreno favorable a la caballería, y Quizu murió. La ' +
+      'victoria no terminó la guerra: el Cusco seguía cercado. Las cifras del ejército inca son discutidas.',
+    didYouKnow:
+      'Lima no se fundó en un valle vacío: ocupó tierras del curacazgo de Lima y se sostuvo con aliados andinos, un punto que las crónicas tienden a minimizar.',
+    epilogue:
+      'El cerco de Lima se rompió y Quizu Yupanqui murió, pero la guerra siguió: el Cusco continuaba cercado y la ' +
+      'conquista no estaba decidida. La misión permite romper el cerco, no cambiar el resto de la campaña.',
+    sources: [
+      { text: 'Pedro Pizarro. Relación del descubrimiento y conquista de los reinos del Perú (1571).' },
+      { text: 'Zárate, A. de. Historia del descubrimiento y conquista del Perú (1555).' },
+      { text: 'Hemming, J. The Conquest of the Incas (1970).' },
+      { text: 'Wikipedia: Cerco de Lima', url: 'https://es.wikipedia.org/wiki/Cerco_de_Lima' },
+    ],
+  },
   m7_tupac_amaru: {
     briefing:
       'Sur andino, 1780. Túpac Amaru II se alza contra el reparto, la mita y los obrajes del Virreinato. ' +

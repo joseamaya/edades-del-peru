@@ -38,6 +38,7 @@ describe('model-mission scale', () => {
       'm1_caral',
       'm2_chavin',
       'm_tambotoco',
+      'm_lima',
       'm_junta_cusco',
     ]);
   });

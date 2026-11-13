@@ -97,6 +97,7 @@ test('every campaign mission shows its educational epilogue on victory', async (
     'm5_yahuar_pampa',
     'm6_chimu_inca',
     'm6b_guerra_civil',
+    'm_lima',
     'm7_tupac_amaru',
     'm_junta_cusco',
     'm8_independencia',
@@ -320,7 +321,13 @@ test('later campaign briefing and tutorial fit 1600x900 (m5-m6b)', async ({ cont
 
 test('later campaign briefing and tutorial fit 1600x900 (m7-m9)', async ({ context }) => {
   test.setTimeout(360_000);
-  await expectCampaignLayout(context, ['m7_tupac_amaru', 'm_junta_cusco', 'm8_independencia', 'm9_guerra_pacifico']);
+  await expectCampaignLayout(context, [
+    'm_lima',
+    'm7_tupac_amaru',
+    'm_junta_cusco',
+    'm8_independencia',
+    'm9_guerra_pacifico',
+  ]);
 });
 
 test('later campaign briefings show their draft intro art with art=all', async ({ page }) => {
@@ -330,6 +337,7 @@ test('later campaign briefings show their draft intro art with art=all', async (
     'm5_yahuar_pampa',
     'm6_chimu_inca',
     'm6b_guerra_civil',
+    'm_lima',
     'm7_tupac_amaru',
     'm_junta_cusco',
     'm8_independencia',
@@ -353,6 +361,7 @@ test('the missions with corrected rosters boot with units and no errors', async 
     'm5_yahuar_pampa',
     'm6_chimu_inca',
     'm6b_guerra_civil',
+    'm_lima',
     'm7_tupac_amaru',
     'm_junta_cusco',
     'm9_guerra_pacifico',
@@ -468,6 +477,7 @@ test('authored campaign geography spawns its local base and features', async ({ 
     { id: 'm5_yahuar_pampa', flats: true, decor: null, site: 'chanca_site', canal: false },
     { id: 'm6_chimu_inca', flats: true, decor: null, site: 'chimu_site', canal: true },
     { id: 'm6b_guerra_civil', flats: true, decor: null, site: 'cusco_inca_site', canal: false },
+    { id: 'm_lima', flats: true, decor: null, site: 'lima_site', canal: false },
     { id: 'm7_tupac_amaru', flats: true, decor: null, site: 'colonial_site', canal: false },
     { id: 'm_junta_cusco', flats: true, decor: 'mission_decor_patriotas_camp', site: 'cusco_junta_site', canal: false },
     { id: 'm8_independencia', flats: true, decor: null, site: 'independence_site', canal: false },
@@ -739,7 +749,7 @@ test('the campaign path opens the next campaign once the previous one is complet
   await expect(inca).toContainText('0 / 4 misiones completadas');
   await expect(menu.getByRole('button', { name: /Jugar Los hijos de Tambotoco/ })).toBeVisible();
   await expect(menu.getByRole('button', { name: /Jugar La Guerra del Norte/ })).toHaveCount(0);
-  await expect(menu.locator('.ed-campaign-card[data-campaign="virreinato"]')).toBeDisabled();
+  await expect(menu.locator('.ed-campaign-card[data-campaign="virreinato"]')).toBeEnabled();
   await expect(menu.locator('.ed-campaign-card[data-campaign="independencia"]')).toBeEnabled();
   await expect(menu.locator('.ed-campaign-card[data-campaign="republica"]')).toBeDisabled();
   await expect(inca).toContainText('6 en desarrollo');

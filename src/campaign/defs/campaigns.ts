@@ -92,14 +92,14 @@ export const CAMPAIGNS: CampaignDef[] = [
       'La conquista, las guerras civiles, la resistencia inca y las rebeliones de dos siglos y medio de dominio hispánico.',
     summary:
       'Tras Cajamarca, Lima se funda junto al Rímac y Manco Inca se alza contra los conquistadores. Pizarristas y almagristas se enfrentan entre sí, nace el Virreinato y la resistencia inca sobrevive en Vilcabamba hasta 1572. Defiende el Callao de las flotas extranjeras, vive la rebelión de Juan Santos Atahualpa en la selva central y el mayor desafío al poder colonial: la rebelión de Túpac Amaru II en 1780.',
-    missionIds: ['m7_tupac_amaru'],
-    releasedMissionIds: ['m7_tupac_amaru'],
+    missionIds: ['m_lima', 'm7_tupac_amaru'],
+    releasedMissionIds: ['m_lima', 'm7_tupac_amaru'],
     status: 'available',
     era: '1535 — 1781',
     accent: '#9d7a4c',
     prologue: VIRREINATO_PROLOGUE,
     path: [
-      'p_vir_lima',
+      'm_lima',
       'p_vir_cusco',
       'p_vir_ollantaytambo',
       'p_vir_salinas',
