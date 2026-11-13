@@ -77,9 +77,9 @@ const BUDGETS = {
   // Lima opening: the hueste with horses and artillery. First-pass cap measured ~763k / 839; tighten after
   // the unit-rig pass (art-direction §11 targets 200 calls).
   m_lima: { sceneTriangles: 800_000, sceneDrawCalls: 860, kitTriangles: 140_000, kitDrawCalls: 25 },
-  // Lima in use: the colonial houses and the cabildo join the hueste.
-  m_lima_late: { sceneTriangles: 900_000, sceneDrawCalls: 980, kitTriangles: 140_000, kitDrawCalls: 25 },
-  // La Junta's opening army is large; measure first, then ratchet down.
+  // Lima in use: the colonial city and the siege crowd; a regression cap, still over §11's target.
+  m_lima_late: { sceneTriangles: 1_100_000, sceneDrawCalls: 1_250, kitTriangles: 140_000, kitDrawCalls: 25 },
+  // La Junta's opening army is large; a regression cap, still over §11's target.
   m_junta_cusco: { sceneTriangles: 780_000, sceneDrawCalls: 1000, kitTriangles: 0, kitDrawCalls: 0 },
 };
 const KIT_NAMES = /^(trees_kit_|props_kit_|fauna_(deer|riparian_bird)_(body|leg|wingL|wingR)$)/;
@@ -153,7 +153,7 @@ try {
                 : 'in_use',
         );
         const site = g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 });
-        if (mission !== 'm_tambotoco' && mission !== 'm_lima') {
+        if (mission !== 'm_tambotoco') {
           const crowd = mission === 'm2_chavin' ? 20 : 30;
           for (let i = 0; i < crowd; i++) {
             g.spawnScriptedUnit('worker', 0, site.x - 12 + (i % 6) * 4, site.z + 18 + Math.floor(i / 6) * 3);

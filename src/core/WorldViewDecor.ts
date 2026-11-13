@@ -264,14 +264,14 @@ export class WorldViewDecor {
     };
     if (def.style === 'colonial') {
       const layout = COLONIAL_LAYOUTS[def.id as keyof typeof COLONIAL_LAYOUTS];
-      if (layout && !this.game.headless) {
+      if (layout && def.phases && !this.game.headless) {
         this.game.colonialSite?.dispose();
         const colonial = new ColonialLife(
           group,
           (x, z) => this.game.terrain.getHeight(x, z),
           site.y ?? 0,
           layout,
-          def.phases ?? { phases: ['ciudad'], initial: 'ciudad' },
+          def.phases,
         );
         colonial.setPhase(this.game.sitePhase);
         applyFowToObject(colonial.group, this.game.fowUniforms);

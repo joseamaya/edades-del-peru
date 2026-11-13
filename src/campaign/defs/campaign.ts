@@ -14,6 +14,7 @@ import {
   TAMBOTOCO_SHRINE as TAMBOTOCO_HUANACAURE,
   TAMBOTOCO_VILLAGES,
 } from '../../model/defs/tambotocoLayout';
+import { CUSCO_COLONIAL } from '../../model/defs/colonialLayout';
 import { chavinKeepout } from '../../model/defs/chavinCity';
 
 // La Ciudad de los Reyes: the plaza, the Rímac bridge and Quizu's camp in the hills.
@@ -22,7 +23,7 @@ const LIMA_BRIDGE = { x: 120, z: 124 } as const;
 const LIMA_ENEMY = { x: 205, z: 70 } as const;
 const LIMA_CURACAS = { x: 55, z: 200 } as const;
 // La Junta del Cusco: the Cusco cabildo, the Apacheta pass, Umachiri and the royalist base.
-const JUNTA_CUSCO = { x: 72, z: 58 } as const;
+const JUNTA_CUSCO = CUSCO_COLONIAL.center;
 const JUNTA_APACHETA = { x: 140, z: 168 } as const;
 const JUNTA_UMACHIRI = { x: 198, z: 214 } as const;
 const JUNTA_ENEMY = { x: 222, z: 238 } as const;

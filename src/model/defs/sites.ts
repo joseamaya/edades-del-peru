@@ -252,19 +252,12 @@ function colonialBlockers(layout: typeof LIMA_COLONIAL, phases: boolean): SiteBl
       d: h.d + 0.6,
       ...(phases ? { since: 'ciudad' } : {}),
     })),
-    ...layout.stalls.map((s) => ({
-      x: s.x,
-      z: s.z,
-      w: 3,
-      d: 2.4,
-      ...(phases ? { since: 'ciudad' } : {}),
-    })),
     { x: layout.well.x, z: layout.well.z, w: 2.4, d: 2.4, ...(phases ? { since: 'ciudad' } : {}) },
   ];
 }
 
 /** Lima's plaza and cabildo: shared by the mission layout and the authored site. */
-export const LIMA_SITE_ORIGIN = { x: 90, z: 150 } as const;
+export const LIMA_SITE_ORIGIN = LIMA_COLONIAL.center;
 
 /**
  * The Sacred City sits on the east of the Supe-valley transect (scripts/build_caral_heightmap.py): its
@@ -759,8 +752,8 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     modelName: 'colonial_site',
     style: 'colonial',
     scale: 0.65,
-    origin: { x: 72, z: 58 },
-    anchor: { x: 72, z: 58 },
+    origin: { ...CUSCO_COLONIAL.center },
+    anchor: { ...CUSCO_COLONIAL.center },
     cameraHeight: 56,
     framing: 'site-biased',
     heightField: {
@@ -773,8 +766,14 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       fords: [{ z: 200, halfWidth: 12 }],
     },
     pathCellSize: 1,
-    heritageProxies: [{ id: 'colonial_church', x: 72, z: 58, w: 9, d: 9, h: 6 }],
-    blockers: [{ x: 72, z: 58, w: 9, d: 9 }, ...colonialBlockers(CUSCO_COLONIAL, false)],
+    heritageProxies: [
+      { id: 'colonial_church', x: CUSCO_COLONIAL.center.x, z: CUSCO_COLONIAL.center.z, w: 9, d: 9, h: 6 },
+    ],
+    phases: { phases: ['ciudad'], initial: 'ciudad' },
+    blockers: [
+      { x: CUSCO_COLONIAL.center.x, z: CUSCO_COLONIAL.center.z, w: 9, d: 9 },
+      ...colonialBlockers(CUSCO_COLONIAL, false),
+    ],
     blockerPadding: 0.5,
     buildKeepout: [{ x: 72 / 256, z: 58 / 256, rx: 0.065, rz: 0.065 }],
     wallCollision: {

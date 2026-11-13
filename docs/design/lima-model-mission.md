@@ -14,11 +14,11 @@ Quizu's camp. The epilogue does not hide the rest: Cusco is still under siege.
 
 ## Acts
 
-| Act | Place | Player action | Historical idea |
-| --- | --- | --- | --- |
-| I · La traza (1535) | Lima plain | Visit the plaza, build the cabildo and the plaza | The city is a political foundation, not a lone fort |
-| II · El cerco (ago 1536) | Lima | Hold the plaza for 90 s and keep Pizarro alive; optional curacas | The relief columns to Cusco are lost; Lima must resist |
-| III · La ruptura | Lima and the hills | Take Quizu's camp | The cavalry and the allies break the siege in the plain |
+| Act                      | Place              | Player action                                                    | Historical idea                                         |
+| ------------------------ | ------------------ | ---------------------------------------------------------------- | ------------------------------------------------------- |
+| I · La traza (1535)      | Lima plain         | Visit the plaza, build the cabildo and the plaza                 | The city is a political foundation, not a lone fort     |
+| II · El cerco (ago 1536) | Lima               | Hold the plaza for 90 s and keep Pizarro alive; optional curacas | The relief columns to Cusco are lost; Lima must resist  |
+| III · La ruptura         | Lima and the hills | Take Quizu's camp                                                | The cavalry and the allies break the siege in the plain |
 
 Victory = the camp falls and the siege lifts. Optional: the curaca pact.
 
@@ -37,8 +37,10 @@ The heightfield is 129² over 256 m (2 m per sample), the painted ground 128². 
 
 ## Site and factions
 
-`lima_site` reuses the colonial plaza/church GLB on the new transect; the plaza card (`lima_plaza`)
-represents the traza, cabildo and first church. The city is a typological abstraction.
+`lima_site` starts as a **traced plaza** (packed earth, cord lines, stakes and provisional shelters) and
+switches to the colonial church plus a procedural street overlay (ten adobe houses, market stalls, a well
+and people) when the cabildo is completed. The plaza card (`lima_plaza`) represents the traza, cabildo and
+first church; the church GLB is hidden until the `ciudad` phase.
 
 - **Hueste indiana**: a new VICEROYALTY civilization (pizarristas and allies), with rodeleros, arcabuces
   escasos, jinetes and light artillery. It shares the realista outfit kit.
@@ -71,7 +73,8 @@ siege, take the camp.
 ## Open items
 
 1. In-engine captures and `MISSION_ART` are shipped; regenerate them with `scripts/capture_lima_intro.mjs` after art changes.
-2. Performance: the opening measures ~763k triangles / ~839 draw calls and passes the first-pass 860-call
-   cap; tighten toward art-direction §11's 200 calls after the unit-rig pass.
-3. The site is the reused colonial plaza, not a Lima city overlay; a small traza kit would read better.
+2. Performance: the opening measures ~767k triangles / ~834 draw calls under the 800k/860 first-pass cap;
+   the city with the siege crowd measures ~1.06M / ~1,227 under the 1.1M/1,250 regression cap. Both remain
+   over art-direction §11's 600k/200 target.
+3. The colonial overlay is procedural; a Blender street kit (houses, portals, market) is the next art pass.
 4. A manual 30–40 minute playtest.
