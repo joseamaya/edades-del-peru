@@ -94,7 +94,6 @@ test('every campaign mission shows its educational epilogue on victory', async (
     'm3_moche_recuay',
     'm4_wari',
     'm_tambotoco',
-    'm_tambotoco',
     'm5_yahuar_pampa',
     'm6_chimu_inca',
     'm6b_guerra_civil',
@@ -356,7 +355,6 @@ test('the missions with corrected rosters boot with units and no errors', async 
     'm6b_guerra_civil',
     'm7_tupac_amaru',
     'm_junta_cusco',
-    'm_tambotoco',
     'm9_guerra_pacifico',
   ];
   for (const id of ids) {

@@ -157,7 +157,7 @@ export const LANDMARKS: Record<LandmarkId, LandmarkDef> = {
     period: HistoricalPeriod.LATE_INTERMEDIATE,
     region: 'andean_valley',
     status: 'abstraction',
-    source: 'docs/historia/arquitectura.md (Cusco preimperial; Killke)',
+    source: 'docs/historia/campanas/tambotoco.md (Cusco preimperial; Killke)',
   },
   ayllus_village: {
     id: 'ayllus_village',
@@ -166,7 +166,7 @@ export const LANDMARKS: Record<LandmarkId, LandmarkDef> = {
     period: HistoricalPeriod.LATE_INTERMEDIATE,
     region: 'andean_valley',
     status: 'abstraction',
-    source: 'docs/historia/arquitectura.md (aldeas de altura; huallas, sauaseray, alcabizas)',
+    source: 'docs/historia/campanas/tambotoco.md (aldeas de altura; huallas, sauaseray, alcabizas)',
   },
   inca_ushnu: {
     id: 'inca_ushnu',

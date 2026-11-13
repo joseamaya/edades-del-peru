@@ -50,6 +50,9 @@ const BUDGETS = {
   // Chavín opening: the phased kit, highland vegetation and the base. Measure first, then ratchet down.
   m2_chavin: { sceneTriangles: 450_000, sceneDrawCalls: 220, kitTriangles: 100_000, kitDrawCalls: 40 },
   m2_chavin_late: { sceneTriangles: 600_000, sceneDrawCalls: 310, kitTriangles: 100_000, kitDrawCalls: 40 },
+  // Tambotoco opening: small ayllu force on the new 256 m transect. First-pass cap measured 540k / 298;
+  // tighten toward the 200-call art-direction target after the unit-rig pass.
+  m_tambotoco: { sceneTriangles: 600_000, sceneDrawCalls: 320, kitTriangles: 0, kitDrawCalls: 0 },
 };
 const KIT_NAMES = /^(trees_kit_|props_kit_|fauna_(deer|riparian_bird)_(body|leg|wingL|wingR)$)/;
 

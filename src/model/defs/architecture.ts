@@ -201,8 +201,8 @@ const CIV_ARCH_SOURCE: Partial<Record<CivId, string>> = {
   [CivId.HUANCA]: 'docs/historia/civilizaciones/huanca.md',
   [CivId.COLLAS_LUPACA]: 'docs/historia/civilizaciones/collas_lupaca.md',
   [CivId.INCA]: 'docs/historia/civilizaciones/inca.md',
-  [CivId.INCA_KILLKE]: 'docs/historia/arquitectura.md',
-  [CivId.AYLLUS]: 'docs/historia/arquitectura.md',
+  [CivId.INCA_KILLKE]: 'docs/historia/campanas/tambotoco.md',
+  [CivId.AYLLUS]: 'docs/historia/campanas/tambotoco.md',
 };
 
 const PROFILE_CACHE = new Map<string, HistoricalArchitectureProfile>();

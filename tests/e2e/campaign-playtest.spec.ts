@@ -1095,13 +1095,13 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
       g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'build', entityId }, clear: true }, false);
 
     const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker') as any;
-    move([worker.id], 40, 54);
+    move([worker.id], 60, 92);
     for (let i = 0; i < Math.ceil(60 / dt) && !m.ended; i++) {
       keepAlive();
       if (i % 15 === 0) dismissCard();
       g.update(dt, t);
       t += dt;
-      if (Math.hypot(worker.pos.x - 40, worker.pos.z - 52) <= 9) break;
+      if (Math.hypot(worker.pos.x - 60, worker.pos.z - 92) <= 9) break;
     }
     const salida = m.getObjectiveState('a1_salida') as string;
 

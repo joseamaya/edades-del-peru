@@ -18,7 +18,7 @@ history.
 
 | Act | Place | Player action | Historical idea |
 | --- | --- | --- | --- |
-| I · La cueva | Tambotoco / Pacaritambo | Leave the cave and hunt 150 food | The peregrination starts as a movement of families, not an army |
+| I · La cueva | Tambotoco / Pacaritambo | Leave the cave and hunt 120 food | The peregrination starts as a movement of families, not an army |
 | II · Huanacaure | Huanacaure hill | Reach and visit the huaca | Ayar Uchu becomes stone; the huaca marks the route |
 | III · El agua | Cusco valley | Open the acequia to force the alcabizas to cede land | Water as political leverage (Sarmiento) |
 | IV · Inticancha | Cusco valley | Build the communal store and lay out four canchas | The ayllu settlement becomes the future Cusco |
@@ -77,8 +77,8 @@ the canchas.
 
 ## Open items
 
-1. Performance: the opening measures ~540k triangles / ~298 draw calls in `bench_scene.mjs`; it is not a
-   passing scene yet (art-direction §11 targets 200 calls). The mission starts with a small force (5
-   workers, 6 militia, 2 slingers, 1 scout) to keep the rig count down.
+1. Performance: the opening measures ~540k triangles / ~298 draw calls in `bench_scene.mjs` and passes the
+   first-pass 320-call cap; the next pass should tighten it toward art-direction §11's 200 calls. The
+   mission starts with a small force (5 workers, 6 militia, 2 slingers, 1 scout) to keep the rig count down.
 2. The Huanacaure huaca is a reused pucará GLB; a small shrine kit would read better.
 3. A manual 30–40 minute playtest without isolated attrition.

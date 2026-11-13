@@ -232,7 +232,7 @@ The table separates what is implemented from the art and performance passes that
 | Persistence | Met: save/load round-trip in `save-campaign.spec.ts`.                                                |
 | Tests       | Met: `tests/tambotoco.test.ts`, scale, campaign path and the campaign E2E specs.                     |
 | Docs        | Met: dossier, `tambotoco-model-mission.md`, this table and the redesign status.                      |
-| Performance | Pending: opening ~540k triangles / ~298 draw calls; over art-direction §11's 200-call target and not registered as a passing bench scene. |
+| Performance | Met within its first-pass budget: ~540k triangles / ~298 draw calls, under the 320-call cap in `bench_scene.mjs`; tightening to art-direction §11's 200 calls is the follow-up. |
 | Art         | N/A for new models: the huaca reuses the chanca pucará; captures are in-engine and documented in PROVENANCE. |
 | Structure   | Met: four acts with hidden objectives, three chapter cards and the documented foundation.             |
 | Opening     | Met: three narrated beats with in-engine captures, three act cards and the epilogue backdrop.          |

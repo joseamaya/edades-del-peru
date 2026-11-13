@@ -53,7 +53,6 @@ try {
         if (g.getPaused()) g.togglePause();
         g.applyQualityPreset('high');
         g.trees.kitLod0Radius = 60;
-        const site = g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 });
         g.sky.setTimeOfDay(shot.time ?? 0.5);
         let t = 1;
         for (let i = 0; i < 30; i++) {
@@ -92,7 +91,6 @@ try {
           }
           g.trees.update(0, g.camera.getTarget());
         }
-        void site;
         g.runtime.render();
       },
       { shot },

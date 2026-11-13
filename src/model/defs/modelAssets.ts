@@ -247,7 +247,7 @@ export function unitModelAsset(kind: UnitKind, era: Era, civ: CivId, id = 0): Ri
   const baseKind = unitBaseKind(kind);
   if (baseKind !== kind) return unitModelAsset(baseKind, era, civ, id);
   // The Killke señorío and the valley ayllus share the Inca/Chanca kits until they get their own.
-  if (civ === CivId.INCA_KILLKE) return unitModelAsset(kind, era, CivId.INCA, id);
+  if (civ === CivId.INCA_KILLKE) return unitModelAsset(kind, era, CivId.CHANCA, id);
   if (civ === CivId.AYLLUS) return unitModelAsset(kind, era, CivId.CHANCA, id);
   if (civ === CivId.CARAL && era === Era.FORMATIVE) {
     const female = genderForId(id) === 'female';

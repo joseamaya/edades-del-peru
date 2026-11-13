@@ -18,7 +18,7 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'caza',
-        text: 'Caza para sostener a las familias: reúne 150 de comida.',
+        text: 'Caza para sostener a las familias: reúne 120 de comida.',
         check: { type: 'objectiveCompleted', objectiveId: 'a1_caza' },
       },
       {
