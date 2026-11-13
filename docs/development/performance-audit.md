@@ -123,57 +123,68 @@ software (`bench:check` sigue funcionando en software a propósito).
 ## Campaña en GPU real (#447)
 
 El frame que ve el jugador en v1 es el de una misión, no el de `mixed` a 500 unidades. `bench_scene.mjs --frames`
-mide ese frame con el bucle activo, el post-proceso del jugador y el `QualityGovernor` **fijado** (si no, baja a
-medium al segundo y la muestra describe otra escena); `--direct` mide escena + sombras sin post-proceso ni
-refracción, y `--no-refraction` deja el post-proceso y quita solo el pase del agua.
+mide ese frame con el bucle activo, el post-proceso del jugador y el `QualityGovernor` **fijado** (si no, baja de
+preset durante la carga de la página y la muestra describe otra escena); `--direct` mide escena + sombras sin
+post-proceso ni refracción, y `--no-refraction` deja el post-proceso y quita solo el pase del agua.
 
-1600×900, `pixelRatio` 1, Intel iGPU, calidad **alta**, 2 s de muestras por configuración. Host **compartido**
-(load average 10–12 durante toda la tanda), así que los valores absolutos son un **límite inferior**; los
-cocientes entre configuraciones medidas con minutos de diferencia bajo la misma carga coinciden además con la
-corrida limpia de `mixed`, que los respalda.
+1600×900, `pixelRatio` 1, Intel iGPU, calidad **alta**, 2 s de muestras por configuración. Host compartido
+(load average 2.5–3.5 en la tanda buena, 10–12 en otras), así que los valores absolutos son de esta máquina y no
+de una GPU dedicada; el `loadavg` va en el JSON.
 
-| misión | draws | tris | alta | alta sin refracción | Δ refracción |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| m1_caral apertura | 177 | 588k | 44.1 ms (22 fps) | 25.7 ms (39 fps) | 18.4 ms (42 %) |
-| m1_caral Acto III | 271 | 771k | 52.6 ms (19 fps) | 30.8 ms (33 fps) | 21.8 ms (41 %) |
-| m1_caral campamento | 109 | 618k | 42.5 ms (23 fps) | 26.1 ms (38 fps) | 16.4 ms (39 %) |
-| m2_chavin apertura | 167 | 662k | 43.3 ms (23 fps) | 27.8 ms (33 fps) | 15.5 ms (36 %) |
-| m_tambotoco apertura | 331 | 759k | 46.1 ms (22 fps) | 27.9 ms (36 fps) | 18.2 ms (39 %) |
-| m_lima apertura | 843 | 973k | 51.1 ms (19 fps) | 27.9 ms directo | ≈23 ms (45 %) |
+| misión | draws escena | tris escena | draws frame | alta p50/p95/p99 | alta sin refracción | Δ refracción |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| m1_caral apertura | 177 | 588k | 371 | 40.3/45.3/64.2 ms | 26.5 ms | 13.8 ms (34 %) |
+| m1_caral `late` | 271 | 771k | 559 | 54.1/63.4/64.6 ms | 31.9 ms | 22.2 ms (41 %) |
+| m1_caral `camp` | 109 | 618k | 235 | 44.1/49.3/66.4 ms | 26.9 ms | 17.2 ms (39 %) |
+| m2_chavin apertura | 167 | 662k | 351 | 45.7/50.7/75.4 ms | 25.8 ms | 19.9 ms (44 %) |
+| m_tambotoco apertura | 331 | 759k | 679 | 43.8/47.2/57.3 ms | 26.7 ms | 17.1 ms (39 %) |
+| m_lima apertura | 843 | 973k | 1 703 | 50.6/63.7/74.5 ms | 31.8 ms | 18.8 ms (37 %) |
 
-Desglose de m1_caral apertura (todas las piezas medidas, no restadas entre escenas distintas):
+`draws escena` es un solo pase de escena (con sombras) y es el número estructural comparable con los presupuestos
+de `bench_scene`; `draws frame` es el frame completo que ve el jugador (pases de refracción y compositor
+incluidos). El frame con post-proceso dibuja **dos veces la escena**: 371 = 2 × 177 + quads.
 
-| configuración | frame p50 | qué añade |
-| --- | ---: | --- |
-| alta, tal cual | 44.1 ms | frame del jugador |
-| alta sin refracción | 25.7 ms | −18.4 ms: solo el pase del agua |
-| alta `--direct` | 23.2 ms | −2.5 ms más: post-proceso (bloom, grading, FXAA) |
-| baja, tal cual | 19.4 ms | preset bajo (LOD de terreno, sombra menor, sin refracción) |
-| baja `--direct` | 16.7 ms | suelo de la escena a ese LOD |
+Control de repetibilidad (m1_caral apertura, las cuatro configuraciones seguidas para que la carga sea la misma):
+alta **47.8 ms** → `--direct` **22.9 ms** → sin refracción **28.0 ms** → alta otra vez **43.4 ms**. El primer y el
+último control difieren un 10 %, así que los deltas de abajo valen ±20 %, no más.
+
+Desglose de m1_caral apertura (sobre los 45.6 ms de la media de los dos controles):
+
+| pieza | coste | parte del frame |
+| --- | ---: | ---: |
+| escena + sombras | 22.9 ms | 50 % |
+| refracción del agua | 17.6 ms | 39 % |
+| post-proceso (bloom, grading, FXAA) | 5.1 ms | 11 % |
+
+Preset bajo en la misma misión: **19.2 ms** (52 fps) y **16.6 ms** con `--direct`, que es el tope de `requestAnimationFrame`
+(60 Hz), no holgura.
 
 ### Lectura
 
-1. **La refracción del agua cuesta el 36–45 % del frame de campaña en todas las misiones.** Es el mayor coste
-   aislado del juego y no depende de los draw calls: m1_caral campamento tiene 109 draws y pierde 16.4 ms en ese
-   pase. Coincide con `mixed` (24.0 ms de refracción frente a 23.3 ms de escena principal a 300 unidades).
-2. **El post-proceso en sí es barato**: ≈2.5 ms para bloom + grading + FXAA. No es el problema y no hay que
-   tocarlo.
-3. **Sin post-proceso la campaña tampoco llega a 60 fps en esta iGPU**: 23.2 ms (43 fps) con 588k triángulos a
-   1600×900. El techo de "alta" en gráficos integrados es ~40–45 fps; el de "baja" es 60 fps justos
-   (16.7 ms `--direct`).
-4. **Los draw calls no son el cuello de la campaña** (109–843 por misión): atlas e instancing atacan el problema
+1. **La refracción del agua cuesta el 34–44 % del frame de campaña en las seis misiones medidas.** Es el mayor
+   coste aislado del juego y no depende de los draw calls: m1_caral `camp` tiene 109 draws de escena y pierde
+   17.2 ms en ese pase. Coincide con `mixed` (24.0 ms de refracción frente a 23.3 ms de escena principal a 300
+   unidades).
+2. **El post-proceso en sí cuesta ≈4–5 ms** (m1_caral 5.1 ms, m_lima 4.2 ms). No es el problema.
+3. **Sin post-proceso la campaña sigue lejos de 60 fps en esta iGPU**: 22.9 ms (44 fps) con 588k triángulos a
+   1600×900. Es decir, el techo de "alta" aquí no lo pone el post-proceso sino la escena.
+4. **Los draw calls no son el cuello de la campaña** (109–843 por escena): atlas e instancing atacan el problema
    de la escaramuza (#240), no el de v1.
-5. **El governor tapa parte del problema**: a 22 fps baja de preset en segundos, así que el jugador acaba viendo
-   "baja" (~50 fps) con menos LOD, no "alta" a 22 fps. Arrancar en medio en GPUs integradas, en vez de esperar la
-   caída automática, es una decisión de producto pendiente.
+5. **El governor tapa parte del problema**: necesita dos ventanas de 3 s por debajo de 45 fps (~6 s) para bajar de
+   preset, así que el jugador ve "alta" a ~22 fps durante varios segundos y luego "baja" (~52 fps) con menos LOD.
+   Arrancar en medio en GPUs integradas, en vez de esperar la caída automática, es una decisión de producto
+   pendiente.
 
-Reproducir (el binario debía ser el mismo en todas las filas; `--quality=high|low`, `--direct`, `--no-refraction`):
+### Reproducir
 
 ```bash
-yarn node scripts/bench_scene.mjs --mission=m1_caral --gpu --frames --quality=high
-yarn node scripts/bench_scene.mjs --mission=m1_caral --gpu --frames --quality=high --no-refraction
-yarn node scripts/bench_scene.mjs --mission=m1_caral --gpu --frames --quality=high --direct
+node scripts/bench_scene.mjs --mission=m1_caral --gpu --frames --out=review/camp-high.json
+node scripts/bench_scene.mjs --mission=m1_caral --gpu --frames --no-refraction --out=review/camp-noref.json
+node scripts/bench_scene.mjs --mission=m1_caral --gpu --frames --direct --out=review/camp-direct.json
+node scripts/bench_scene.mjs --mission=m1_caral --gpu --frames --quality=low --out=review/camp-low.json
 ```
+
+Añadir `--stage=late|camp` para las otras dos filas de m1_caral, y cambiar `--mission=` para el resto.
 
 ## Assets y carga (#246)
 

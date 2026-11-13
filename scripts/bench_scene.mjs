@@ -1,11 +1,13 @@
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { launchChromium, withViteServer, cliArg, useGpu, isSoftwareRenderer, readGlRenderer } from './lib.mjs';
 
 /**
  * Scene budget for a mission's opening view (docs/design/art-direction.md §11): one plain scene render
  * (shadow pass included, post-processing excluded) at 1600x900 and zoom 54, plus the Blender
- * vegetation/fauna kit isolated by hiding it. Triangle and draw-call counts are machine-independent,
+ * vegetation/fauna kit isolated by hiding it. `--frames` additionally samples the shipped frame, so the
+ * structural pass and the player-visible frame are reported side by side. Triangle and draw-call counts are machine-independent,
  * unlike FPS: headless Chromium renders in software unless `--gpu` (or `GPU=1`) asks for the host GPU.
  *
  * Usage: node scripts/bench_scene.mjs [--mission=m1_caral] [--stage=late] [--assert] [--out=review/bench-scene.json]
@@ -24,8 +26,15 @@ const stage = cliArg('stage') ?? 'opening';
 const assert = process.argv.includes('--assert');
 const frames = process.argv.includes('--frames');
 const quality = String(cliArg('quality', 'high'));
+if (!['high', 'medium', 'low'].includes(quality)) {
+  console.error(`invalid --quality "${quality}" (use high|medium|low)`);
+  process.exit(1);
+}
 // Skips post-processing and the water refraction pass, so the frame shows the scene + shadows alone.
 const direct = process.argv.includes('--direct');
+if ((direct || process.argv.includes('--no-refraction')) && !frames) {
+  console.warn('--direct and --no-refraction only affect the --frames sample; ignoring them');
+}
 // Keeps post-processing but skips the extra full-scene refraction pass.
 const noRefraction = process.argv.includes('--no-refraction');
 const outFile = cliArg('out') ?? 'review/bench-scene.json';
@@ -116,10 +125,11 @@ try {
     ({ kitPattern, stage, mission, quality }) => {
       const g = window.game;
       const kit = new RegExp(kitPattern);
-      // Pin the requested preset and its LOD radius (the governor drops quality on a slow frame).
-      g.setQuality(quality);
+      // Pin the requested preset (same call as bench.mjs: it does not persist the choice) and freeze the
+      // governor, which would otherwise downgrade before the sample starts.
+      g.qualityGovernor.setUserQuality(quality);
       g.qualityGovernor.update = () => {};
-      g.trees.kitLod0Radius = 45;
+      g.trees.kitLod0Radius = quality === 'low' ? 25 : 45;
       let p = g.playerCenter(0);
       if (stage === 'camp') {
         g.setSitePhase('foundation');
@@ -193,7 +203,7 @@ try {
         async ({ ms, direct, noRefraction }) => {
           const g = window.game;
           window.__directRender = direct;
-          if (noRefraction) g.shouldRenderWaterRefraction = () => false;
+          if (noRefraction) window.__noWaterRefraction = true;
           g.loop.stop();
           g.loop.start();
           const longTasks = [];
@@ -223,20 +233,35 @@ try {
           times.sort((a, b) => a - b);
           const at = (p) => times[Math.min(times.length - 1, Math.floor(times.length * p))];
           const p50 = at(0.5);
+          const loopFps = g.loop.getFps();
+          // `renderer.info` after a post-processed frame describes only the last quad, so count the whole
+          // frame on its own (same trap bench.mjs documents).
+          g.loop.stop();
+          const info = g.renderer.info;
+          info.autoReset = false;
+          info.reset();
+          g.runtime.render();
+          const drawCalls = info.render.calls;
+          const triangles = info.render.triangles;
+          info.autoReset = true;
+          info.reset();
           return {
             samples: times.length,
-            fps: g.loop.getFps(),
+            loopFps,
+            fpsP50: 1000 / p50,
             frameMsAvg: times.reduce((s, x) => s + x, 0) / times.length,
             frameMsP50: p50,
             frameMsP95: at(0.95),
             frameMsP99: at(0.99),
-            stepsPerFrame: p50 / (1000 / 60),
+            framesAt60Hz: p50 / (1000 / 60),
             quality: g.runtime.getAppliedQuality(),
             cinematic: g.postfx.cinematicEnabled,
             direct,
             refraction: !direct && g.shouldRenderWaterRefraction(),
             pixelRatio: g.renderer.getPixelRatio(),
-            drawCalls: g.renderer.info.render.calls,
+            drawCalls,
+            triangles,
+            camera: g.camera.camera.position.toArray().map((v) => Math.round(v)),
             longTasks: longTasks.length,
             longTaskMs: longTasks.reduce((s, x) => s + x, 0),
           };
@@ -249,7 +274,17 @@ try {
     stage === 'late' ? BUDGETS[`${mission}_late`] : stage === 'camp' ? BUDGETS[`${mission}_camp`] : BUDGETS[mission];
   const gl = await readGlRenderer(page);
   const gpuInfo = { ...gl, software: isSoftwareRenderer(`${gl.renderer} ${gl.vendor}`) };
-  const report = { mission, stage, quality, ...result, frame, budget, gpu: gpuInfo, errors };
+  const report = {
+    mission,
+    stage,
+    quality,
+    ...result,
+    frame,
+    budget,
+    gpu: gpuInfo,
+    loadavg: os.loadavg().map((v) => Math.round(v * 100) / 100),
+    errors,
+  };
   fs.mkdirSync(path.dirname(outFile), { recursive: true });
   fs.writeFileSync(outFile, JSON.stringify(report, null, 2) + '\n');
   console.log(
@@ -260,7 +295,8 @@ try {
   if (frame) {
     console.log(
       `frame: p50/p95/p99 ${frame.frameMsP50.toFixed(1)}/${frame.frameMsP95.toFixed(1)}/${frame.frameMsP99.toFixed(1)} ms ` +
-        `(fps ${frame.fps}, ${frame.stepsPerFrame.toFixed(1)} steps/frame, quality=${frame.quality}, cinematic=${frame.cinematic}, ` +
+        `(fps ${frame.fpsP50.toFixed(0)} from p50, loop counter ${frame.loopFps}, ${frame.framesAt60Hz.toFixed(1)} frames at 60 Hz, ` +
+        `quality=${frame.quality}, cinematic=${frame.cinematic}, refraction=${frame.refraction}, ` +
         `pixelRatio=${frame.pixelRatio}, long tasks ${frame.longTasks}/${frame.longTaskMs.toFixed(0)} ms)`,
     );
   }
