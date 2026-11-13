@@ -29,7 +29,7 @@ export type PortraitId = (typeof PORTRAIT_IDS)[number];
 /**
  * Campaign commanders shown in briefings and dialogue. Portraits are stylized
  * medallions (not attested likenesses): pre-Hispanic figures have no documented
- * face, so they are marked `abstraction`; post-1532 figures are `documented`.
+ * face, and pre-Hispanic or early-conquest figures without an attested likeness are `abstraction`.
  */
 export interface CommanderDef {
   id: PortraitId;

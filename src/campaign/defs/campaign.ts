@@ -1,10 +1,16 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../core/types';
 import { MissionDef } from '../types';
-import { CARAL_MAP_SIZE, CARAL_SITE_BUILD_KEEPOUT, CARAL_SITE_ORIGIN, caralKeepout } from '../../model/defs/sites';
+import {
+  CARAL_MAP_SIZE,
+  CARAL_SITE_BUILD_KEEPOUT,
+  CARAL_SITE_ORIGIN,
+  LIMA_SITE_ORIGIN,
+  caralKeepout,
+} from '../../model/defs/sites';
 import { chavinKeepout } from '../../model/defs/chavinCity';
 
 // La Ciudad de los Reyes: the plaza, the Rímac bridge and Quizu's camp in the hills.
-const LIMA_CITY = { x: 90, z: 150 } as const;
+const LIMA_CITY = LIMA_SITE_ORIGIN;
 const LIMA_BRIDGE = { x: 120, z: 124 } as const;
 const LIMA_ENEMY = { x: 205, z: 70 } as const;
 const LIMA_CURACAS = { x: 55, z: 200 } as const;
@@ -1970,10 +1976,7 @@ export const MISSIONS: MissionDef[] = [
           {
             type: 'wave',
             owner: 1,
-            units: [
-              { kind: UnitKind.SOLDIER, count: 6 },
-              { kind: UnitKind.MUSKETEER, count: 2 },
-            ],
+            units: [{ kind: UnitKind.SOLDIER, count: 6 }],
             pos: { ref: 'enemy', dx: 0, dz: 0 },
             radius: 7,
             objective: 'position',
@@ -2029,7 +2032,7 @@ export const MISSIONS: MissionDef[] = [
       base: { x: 70 / 256, z: 170 / 256 },
       opening: { x: 96 / 256, z: 150 / 256 },
       enemyBase: { x: LIMA_ENEMY.x / 256, z: LIMA_ENEMY.z / 256 },
-      discoveries: [{ heritageId: 'lima_plaza', initial: true }],
+      discoveries: [{ heritageId: 'lima_plaza' }],
       terrain: {
         flats: [
           { name: 'Llano de Lima', x: LIMA_CITY.x / 256, z: LIMA_CITY.z / 256, rx: 0.2, rz: 0.16 },
@@ -2217,10 +2220,7 @@ export const MISSIONS: MissionDef[] = [
           {
             type: 'wave',
             owner: 1,
-            units: [
-              { kind: UnitKind.SOLDIER, count: 6 },
-              { kind: UnitKind.MUSKETEER, count: 2 },
-            ],
+            units: [{ kind: UnitKind.SOLDIER, count: 6 }],
             pos: { dx: LIMA_ENEMY.x, dz: LIMA_ENEMY.z },
             radius: 10,
             objective: 'position',
@@ -2251,6 +2251,14 @@ export const MISSIONS: MissionDef[] = [
             duration: 7,
             text: '—Los curacas del valle se suman. Sin sus hombres, Lima no aguanta el cerco.',
           },
+          {
+            type: 'reinforce',
+            owner: 0,
+            units: [{ kind: UnitKind.SOLDIER, count: 3 }],
+            pos: { dx: LIMA_CITY.x, dz: LIMA_CITY.z },
+            radius: 10,
+            objective: 'position',
+          },
         ],
       },
       {
@@ -2262,10 +2270,7 @@ export const MISSIONS: MissionDef[] = [
           {
             type: 'wave',
             owner: 1,
-            units: [
-              { kind: UnitKind.SOLDIER, count: 3 },
-              { kind: UnitKind.MUSKETEER, count: 1 },
-            ],
+            units: [{ kind: UnitKind.SOLDIER, count: 3 }],
             pos: { dx: LIMA_ENEMY.x, dz: LIMA_ENEMY.z },
             radius: 10,
             objective: 'position',

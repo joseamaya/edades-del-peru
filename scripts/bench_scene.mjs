@@ -53,7 +53,7 @@ const BUDGETS = {
   // Tambotoco opening: small ayllu force on the new 256 m transect. First-pass cap measured 540k / 298;
   // tighten toward the 200-call art-direction target after the unit-rig pass.
   m_tambotoco: { sceneTriangles: 600_000, sceneDrawCalls: 320, kitTriangles: 0, kitDrawCalls: 0 },
-  // Lima opening: the hueste with horses and artillery. First-pass cap measured 749k / 839; tighten after
+  // Lima opening: the hueste with horses and artillery. First-pass cap measured ~763k / 839; tighten after
   // the unit-rig pass (art-direction §11 targets 200 calls).
   m_lima: { sceneTriangles: 800_000, sceneDrawCalls: 860, kitTriangles: 140_000, kitDrawCalls: 25 },
 };

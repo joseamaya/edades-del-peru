@@ -1,6 +1,6 @@
 # Campaign redesign: Tahuantinsuyo, Virreinato, Independencia and República
 
-Status: **approved design** (decisions taken 2026-11-12). Tres capítulos ya tienen su primera misión: `m_tambotoco` (Tahuantinsuyo), `m_lima` (Virreinato) y `m_junta_cusco` (Independencia). Culturas Preincas (m1–m4) is out of scope and stays as it is.
+Status: **approved design** (decisions taken 2026-11-12). Three chapters already have their opening mission: `m_tambotoco` (Tahuantinsuyo), `m_lima` (Virreinato) and `m_junta_cusco` (Independencia). Culturas Preincas (m1–m4) is out of scope and stays as it is.
 
 This document reorganises the three later chapters of *La Senda del Sol* around documented, playable
 milestones. The historical research behind every mission, with sources and certainty labels, lives in

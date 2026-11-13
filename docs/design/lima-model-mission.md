@@ -70,7 +70,7 @@ siege, take the camp.
 
 ## Open items
 
-1. In-engine captures of intro/chapter/epilogue and `MISSION_ART` (same pipeline as the previous missions).
+1. In-engine captures and `MISSION_ART` are shipped; regenerate them with `scripts/capture_lima_intro.mjs` after art changes.
 2. Performance: the opening measures ~763k triangles / ~839 draw calls and passes the first-pass 860-call
    cap; tighten toward art-direction §11's 200 calls after the unit-rig pass.
 3. The site is the reused colonial plaza, not a Lima city overlay; a small traza kit would read better.

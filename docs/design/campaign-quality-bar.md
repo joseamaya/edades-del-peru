@@ -229,6 +229,7 @@ from the art and performance passes still open.
 | Closure     | Met: the epilogue states that Cusco remains besieged; no counterfactual is hidden.                     |
 | UX          | Met: the campaign layout check at 1600×900 and `hud-layout.spec.ts` at 1280×720.                       |
 | Visuals     | Partial: authored 256 m coast transect, the reused colonial plaza and in-engine captures; no Lima traza kit. |
+| Site        | Partial: the plaza/church is the reused colonial GLB; no phase plan or living traza.                     |
 | Persistence | Met: save/load round-trip in `save-campaign.spec.ts`.                                                  |
 | Tests       | Met: `tests/lima.test.ts`, scale, campaign path and the campaign E2E specs.                            |
 | Docs        | Met: dossier, `lima-model-mission.md`, this table and the redesign status.                             |

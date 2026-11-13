@@ -31,6 +31,7 @@
 | Cifras del ejército inca | Aproximado | Las fuentes varían; no se muestran como dato duro. |
 | Aliados andinos en la defensa | Documentado en lo general | Hemming y la historiografía reciente los subrayan. |
 | Caballería decisiva en el llano | Documentado / interpretación | El terreno favoreció a los jinetes; el peso relativo se debate. |
+| Periodo del modelo | Aproximación | El motor no tiene un periodo de conquista; la misión usa P6 (1542–1821) con la nota 1535–1536. |
 
 ## Fuentes
 

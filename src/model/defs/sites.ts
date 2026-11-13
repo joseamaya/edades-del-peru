@@ -223,6 +223,9 @@ export const DEFAULT_SITE_TERRAIN: SiteTerrainStyle = {
 /** Uniform source-to-game scale for the Ciudades Sagradas Caral remaster. */
 export const CARAL_SITE_SCALE = 0.25;
 
+/** Lima's plaza and cabildo: shared by the mission layout and the authored site. */
+export const LIMA_SITE_ORIGIN = { x: 90, z: 150 } as const;
+
 /**
  * The Sacred City sits on the east of the Supe-valley transect (scripts/build_caral_heightmap.py): its
  * monuments keep the layout of the former 192 m site map, shifted east by this offset so the sea, Áspero
@@ -752,8 +755,8 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     label: 'La Ciudad de los Reyes y el Rímac',
     modelName: 'colonial_site',
     scale: 0.65,
-    origin: { x: 90, z: 150 },
-    anchor: { x: 90, z: 150 },
+    origin: { ...LIMA_SITE_ORIGIN },
+    anchor: { ...LIMA_SITE_ORIGIN },
     cameraHeight: 56,
     framing: 'site-biased',
     heightField: {
@@ -764,10 +767,10 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       river: { path: LIMA_RIVER_PATH, halfWidth: LIMA_RIVER_HALF_WIDTH },
     },
     pathCellSize: 1,
-    heritageProxies: [{ id: 'lima_plaza', x: 90, z: 150, w: 12, d: 10, h: 6 }],
-    blockers: [{ x: 90, z: 150, w: 12, d: 10 }],
+    heritageProxies: [{ id: 'lima_plaza', x: LIMA_SITE_ORIGIN.x, z: LIMA_SITE_ORIGIN.z, w: 12, d: 10, h: 6 }],
+    blockers: [{ x: LIMA_SITE_ORIGIN.x, z: LIMA_SITE_ORIGIN.z, w: 12, d: 10 }],
     blockerPadding: 0.5,
-    buildKeepout: [{ x: 90 / 256, z: 150 / 256, rx: 0.07, rz: 0.065 }],
+    buildKeepout: [{ x: LIMA_SITE_ORIGIN.x / 256, z: LIMA_SITE_ORIGIN.z / 256, rx: 0.07, rz: 0.065 }],
     wallCollision: {
       meshPatterns: [/colonial/i],
       maxStartYAboveBase: 1.2,
