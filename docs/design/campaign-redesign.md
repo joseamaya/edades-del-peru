@@ -1,6 +1,6 @@
 # Campaign redesign: Tahuantinsuyo, Virreinato, Independencia and República
 
-Status: **approved design** (decisions taken 2026-11-12). La Independencia is the first chapter being implemented: its opening mission, `m_junta_cusco`, is playable. Culturas Preincas (m1–m4) is out of scope and stays as it is.
+Status: **approved design** (decisions taken 2026-11-12). La Independencia and El Tahuantinsuyo are the first chapters being implemented: `m_junta_cusco` and `m_tambotoco` are playable. Culturas Preincas (m1–m4) is out of scope and stays as it is.
 
 This document reorganises the three later chapters of *La Senda del Sol* around documented, playable
 milestones. The historical research behind every mission, with sources and certainty labels, lives in
@@ -57,7 +57,7 @@ for new missions are placeholders; existing ids keep their save keys.
 
 | # | Mission | Date | Player vs rival | Type | Certainty | Status |
 |---|---|---|---|---|---|---|
-| 1 | **Los hijos de Tambotoco**: the Ayar brothers' exodus from Pacaritambo and the taking of the Cusco valley (huallas, sauaseray, alcabizas) | mythic, s. XII–XIV | Ayar ayllus vs valley ayllus | exodus + local conquest, water as leverage | MITO/TRAD — labelled **Leyenda** | new |
+| 1 | **Los hijos de Tambotoco**: the Ayar brothers' exodus from Pacaritambo and the taking of the Cusco valley (huallas, sauaseray, alcabizas) | mythic, s. XII–XIV | Ayar ayllus vs valley ayllus | exodus + local conquest, water as leverage | MITO/TRAD — labelled **Leyenda** | **m_tambotoco** |
 | 2 | **Yahuar Pampa** | 1438 | Cusi Yupanqui vs Chanca | defence | TRAD/DOC | **m5** |
 | 3 | **El señor del Collao**: pact with the Lupaca (Cari) and fall of Hatun Colla (Chuchi Cápac) | c. 1440–1460 | Inca vs Colla | diplomacy + assault | TRAD | new |
 | 4 | **Cusco renacido**: rebuilding the capital, Sacsayhuamán, Qhapaq Ñan, chasquis and mitmas | 1438–c. 1500 | — | economy / construction (Caral-like) | DOC/TRAD | new |

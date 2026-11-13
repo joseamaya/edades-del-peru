@@ -67,6 +67,7 @@ try {
       if (!g?.mission) return false;
       if (id === 'm2_chavin') return (g.scene.getObjectByName?.('chavin_city_lod0')?.children.length ?? 0) > 0;
       if (id === 'm_junta_cusco') return !!g.landmark?.getObjectByName('colonial_site');
+      if (id === 'm_tambotoco') return !!g.landmark?.getObjectByName('chanca_site');
       // Wait for every kit family the scene draws: a half-loaded batch measured a different scene.
       if (!g.trees?.hasKit?.('algarrobo') || !g.trees.hasKit('sauce')) return false;
       if (g.mapProfile?.quarryStyle && !g.quarries?.model) return false;

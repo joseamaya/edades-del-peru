@@ -269,6 +269,7 @@ test('saves and loads the Wari network and frontier', async ({ page }) => {
 test('saves and loads the later campaign missions', async ({ context }) => {
   test.setTimeout(180_000);
   for (const id of [
+    'm_tambotoco',
     'm5_yahuar_pampa',
     'm6_chimu_inca',
     'm6b_guerra_civil',

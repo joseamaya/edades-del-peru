@@ -163,6 +163,18 @@ const CIV_ARCH: Partial<Record<CivId, Partial<ArchBase>>> = {
     ornament: { megalithBlocks: true },
     silhouette: 'chullpa',
   },
+  // Killke/early Cusco: small circular-plaza centers before the imperial ushnu
+  [CivId.INCA_KILLKE]: {
+    monumentalTiers: 2,
+    ornament: { niches: true },
+    silhouette: 'circular-plaza',
+  },
+  // Ayllus: low terraced village walls with a perimeter enclosure
+  [CivId.AYLLUS]: {
+    monumentalTiers: 2,
+    ornament: {},
+    silhouette: 'perimeter-wall',
+  },
   [CivId.INCA]: {
     wall: 'cut-stone',
     roof: 'thatch',
@@ -189,6 +201,8 @@ const CIV_ARCH_SOURCE: Partial<Record<CivId, string>> = {
   [CivId.HUANCA]: 'docs/historia/civilizaciones/huanca.md',
   [CivId.COLLAS_LUPACA]: 'docs/historia/civilizaciones/collas_lupaca.md',
   [CivId.INCA]: 'docs/historia/civilizaciones/inca.md',
+  [CivId.INCA_KILLKE]: 'docs/historia/arquitectura.md',
+  [CivId.AYLLUS]: 'docs/historia/arquitectura.md',
 };
 
 const PROFILE_CACHE = new Map<string, HistoricalArchitectureProfile>();

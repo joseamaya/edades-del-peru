@@ -23,6 +23,8 @@ export type LandmarkId =
   | 'collas_chullpa'
   | 'huanca_center'
   | 'recuay_pashash'
+  | 'inca_killke_center'
+  | 'ayllus_village'
   | 'inca_ushnu'
   | 'colonial_church'
   | 'patriotas_camp'
@@ -147,6 +149,24 @@ export const LANDMARKS: Record<LandmarkId, LandmarkDef> = {
     region: 'north_coast',
     status: 'documented',
     source: 'docs/historia/civilizaciones/chimu.md (Chan Chan, ciudadelas; UNESCO)',
+  },
+  inca_killke_center: {
+    id: 'inca_killke_center',
+    name: 'Centro del señorío Killke',
+    civ: CivId.INCA_KILLKE,
+    period: HistoricalPeriod.LATE_INTERMEDIATE,
+    region: 'andean_valley',
+    status: 'abstraction',
+    source: 'docs/historia/arquitectura.md (Cusco preimperial; Killke)',
+  },
+  ayllus_village: {
+    id: 'ayllus_village',
+    name: 'Aldea de ayllu',
+    civ: CivId.AYLLUS,
+    period: HistoricalPeriod.LATE_INTERMEDIATE,
+    region: 'andean_valley',
+    status: 'abstraction',
+    source: 'docs/historia/arquitectura.md (aldeas de altura; huallas, sauaseray, alcabizas)',
   },
   inca_ushnu: {
     id: 'inca_ushnu',
@@ -283,6 +303,8 @@ export const CIV_LANDMARK: Partial<Record<CivId, LandmarkId>> = {
   [CivId.COLLAS_LUPACA]: 'collas_chullpa',
   [CivId.HUANCA]: 'huanca_center',
   [CivId.RECUAY]: 'recuay_pashash',
+  [CivId.INCA_KILLKE]: 'inca_killke_center',
+  [CivId.AYLLUS]: 'ayllus_village',
   [CivId.INCA]: 'inca_ushnu',
   [CivId.REALISTAS]: 'colonial_church',
   [CivId.PATRIOTAS]: 'patriotas_camp',

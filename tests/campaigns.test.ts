@@ -19,6 +19,8 @@ import {
   VIRREINATO_PROLOGUE,
 } from '../src/campaign/defs/cinematics';
 import { PLANNED_MISSIONS } from '../src/campaign/defs/plannedMissions';
+import { MISSIONS } from '../src/campaign/defs/campaign';
+import { HistoricalPeriod } from '../src/core/types';
 import {
   completedMissions,
   isCampaignUnlocked,
@@ -64,8 +66,10 @@ describe('campaign series', () => {
 
   it('labels the Inca foundation myth as legend', () => {
     const inca = getCampaign('inca')!;
-    expect(inca.path[0]).toBe('p_inca_tambotoco');
-    expect(PLANNED_MISSIONS.p_inca_tambotoco.label).toBe('Leyenda');
+    expect(inca.path[0]).toBe('m_tambotoco');
+    const myth = MISSIONS.find((m) => m.id === 'm_tambotoco')!;
+    expect(myth.subtitle).toContain('Leyenda');
+    expect(myth.period).toBe(HistoricalPeriod.LATE_INTERMEDIATE);
   });
 
   it('numbers a mission on its chapter path', () => {
@@ -83,6 +87,7 @@ describe('campaign series', () => {
       'm2_chavin',
       'm3_moche_recuay',
       'm4_wari',
+      'm_tambotoco',
       'm5_yahuar_pampa',
       'm6_chimu_inca',
       'm6b_guerra_civil',
@@ -96,6 +101,7 @@ describe('campaign series', () => {
     expect(getReleasedMission('m5_yahuar_pampa')?.title).toBe('Yahuar Pampa');
     expect(nextReleasedMission('m1_caral')?.id).toBe('m2_chavin');
     expect(nextReleasedMission('m4_wari')).toBeUndefined();
+    expect(nextReleasedMission('m_tambotoco')?.id).toBe('m5_yahuar_pampa');
     expect(nextReleasedMission('m5_yahuar_pampa')?.id).toBe('m6_chimu_inca');
     expect(nextReleasedMission('m6_chimu_inca')?.id).toBe('m6b_guerra_civil');
     expect(nextReleasedMission('m6b_guerra_civil')).toBeUndefined();
@@ -177,11 +183,13 @@ describe('campaign unlocks', () => {
     expect(isMissionUnlocked(fresh, 'm1_caral')).toBe(true);
     expect(isMissionUnlocked(fresh, 'm2_chavin')).toBe(false);
     expect(isMissionUnlocked(fresh, 'm_junta_cusco')).toBe(true);
+    expect(isMissionUnlocked(fresh, 'm_tambotoco')).toBe(true);
     expect(isMissionUnlocked(fresh, 'm8_independencia')).toBe(false);
     expect(isCampaignUnlocked(fresh, 'preinca')).toBe(true);
     expect(isCampaignUnlocked(fresh, 'independencia')).toBe(true);
+    expect(isCampaignUnlocked(fresh, 'inca')).toBe(true);
     // The chapters still opening with a planned mission wait for the predecessor.
-    for (const campaign of CAMPAIGNS.filter((c) => c.id !== 'preinca' && c.id !== 'independencia')) {
+    for (const campaign of CAMPAIGNS.filter((c) => c.id !== 'preinca' && c.id !== 'independencia' && c.id !== 'inca')) {
       expect(isMissionUnlocked(fresh, campaign.releasedMissionIds[0]!), campaign.id).toBe(false);
       expect(isCampaignUnlocked(fresh, campaign.id), campaign.id).toBe(false);
     }
@@ -197,8 +205,8 @@ describe('campaign unlocks', () => {
     expect(nextSeriesMission(progress)?.missionId).toBe('m4_wari');
     progress = markMissionComplete(progress, 'preinca', 'm4_wari');
     expect(isCampaignUnlocked(progress, 'inca')).toBe(true);
-    expect(nextSeriesMission(progress)?.missionId).toBe('m5_yahuar_pampa');
-    expect(isMissionUnlocked(progress, 'm6_chimu_inca')).toBe(false);
+    expect(nextSeriesMission(progress)?.missionId).toBe('m_tambotoco');
+    expect(isMissionUnlocked(progress, 'm5_yahuar_pampa')).toBe(false);
     expect(isMissionUnlocked(progress, 'm1_caral')).toBe(true);
   });
 

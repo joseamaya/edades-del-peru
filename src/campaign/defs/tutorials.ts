@@ -4,6 +4,40 @@ import type { TutorialDef } from '../types';
 const buildBottom = '#ed-bottom';
 
 const TUTORIALS: Record<string, TutorialDef> = {
+  m_tambotoco: {
+    steps: [
+      {
+        id: 'select',
+        text: 'Selecciona la milicia de los ayllus: la peregrinación necesita brazos, no un ejército imperial.',
+        check: { type: 'selectUnit', unitKind: UnitKind.SOLDIER },
+      },
+      {
+        id: 'salida',
+        text: 'Sal de la cueva de Tambotoco y busca el camino al valle.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a1_salida' },
+      },
+      {
+        id: 'caza',
+        text: 'Caza para sostener a las familias: reúne 150 de comida.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a1_caza' },
+      },
+      {
+        id: 'huanacaure',
+        text: 'Sube a Huanacaure y abre la ficha de la huaca. La tradición hace de este cerro el paso al valle.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a2_huanacaure' },
+      },
+      {
+        id: 'agua',
+        text: 'El agua es la palanca: abre la acequia de los alcabizas desde su ficha para forzar la cesión de tierras.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a3_acequia' },
+      },
+      {
+        id: 'canchas',
+        text: 'Funda Inticancha y ordena cuatro casas en las canchas alrededor del centro.',
+        check: { type: 'objectiveCompleted', objectiveId: 'a4_canchas' },
+      },
+    ],
+  },
   m_junta_cusco: {
     steps: [
       {

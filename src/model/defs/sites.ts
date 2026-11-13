@@ -51,6 +51,15 @@ import {
   JUNTA_RIVER_HALF_WIDTH,
   JUNTA_RIVER_PATH,
 } from './juntaHeightmap';
+import {
+  TAMBOTOCO_GROUND,
+  TAMBOTOCO_GROUND_SIZE,
+  TAMBOTOCO_HEIGHTMAP,
+  TAMBOTOCO_HEIGHTMAP_SIZE,
+  TAMBOTOCO_HEIGHTMAP_WORLD_SIZE,
+  TAMBOTOCO_STREAM_HALF_WIDTH,
+  TAMBOTOCO_STREAM_PATH,
+} from './tambotocoHeightmap';
 
 export type AuthoredSiteId =
   | 'caral_site'
@@ -63,7 +72,8 @@ export type AuthoredSiteId =
   | 'independence_site'
   | 'arica_site'
   | 'cusco_inca_site'
-  | 'cusco_junta_site';
+  | 'cusco_junta_site'
+  | 'tambotoco_site';
 
 /** Dedicated visual-only decor GLBs for the later campaigns. */
 export type DecorModelId =
@@ -723,6 +733,43 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       suppressSnow: true,
       // The Cusco basin (5.7 m) reads wet, the altiplano (4.0 m) reads as puna grass.
       moisture: { valleyHeight: 7.6, valleyRange: 3.4, bankStart: 0.12, bankRange: 0.1 },
+      water: { deep: '#1c3a44', shallow: '#4f7a74', sheen: 0.12, foam: 0.1, fog: 0.22, refraction: 0.15 },
+    },
+  },
+  // Huanacaure (legendary Ayar route) on a new 256 m Pacaritambo–Cusco transect. The chanca pucará GLB
+  // is reused as a hilltop huaca; the valley villages and Inticancha are simulation buildings.
+  tambotoco_site: {
+    id: 'tambotoco_site',
+    label: 'Huanacaure y el valle del Cusco',
+    modelName: 'chanca_site',
+    scale: 0.7,
+    origin: { x: 120, z: 106 },
+    anchor: { x: 120, z: 106 },
+    cameraHeight: 56,
+    framing: 'site-biased',
+    heightField: {
+      size: TAMBOTOCO_HEIGHTMAP_SIZE,
+      worldSize: TAMBOTOCO_HEIGHTMAP_WORLD_SIZE,
+      heights: TAMBOTOCO_HEIGHTMAP,
+      ground: { size: TAMBOTOCO_GROUND_SIZE, weights: TAMBOTOCO_GROUND },
+      river: { path: TAMBOTOCO_STREAM_PATH, halfWidth: TAMBOTOCO_STREAM_HALF_WIDTH },
+      fords: [{ z: 190, halfWidth: 10 }],
+    },
+    pathCellSize: 1,
+    heritageProxies: [{ id: 'tambotoco_huanacaure', x: 120, z: 106, w: 12, d: 10, h: 5 }],
+    blockers: [{ x: 120, z: 106, w: 12, d: 10 }],
+    blockerPadding: 0.5,
+    buildKeepout: [{ x: 120 / 256, z: 106 / 256, rx: 0.07, rz: 0.065 }],
+    wallCollision: {
+      meshPatterns: [/chanca/i],
+      maxStartYAboveBase: 1.2,
+    },
+    walkableCorridor: { width: 8 },
+    terrain: {
+      ...DEFAULT_SITE_TERRAIN,
+      flatNormals: true,
+      suppressSnow: true,
+      moisture: { valleyHeight: 6.4, valleyRange: 3.2, bankStart: 0.12, bankRange: 0.1 },
       water: { deep: '#1c3a44', shallow: '#4f7a74', sheen: 0.12, foam: 0.1, fog: 0.22, refraction: 0.15 },
     },
   },

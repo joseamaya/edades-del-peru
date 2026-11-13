@@ -252,6 +252,32 @@ export const CIVS: CivDef[] = [
       'Los huanca del valle del Mantaro (Junín), organizados en una confederación de ayllus, en la pugna de la sierra central entre chancas e incas.',
   },
   {
+    id: CivId.INCA_KILLKE,
+    visual: { arch: 'andean-masonry', emblem: 'sun' },
+    name: 'Señorío del Cusco',
+    adjective: 'killke',
+    colors: { primary: '#b08a4a', secondary: '#d8c8a0', accent: '#8a5a32' },
+    periods: [HistoricalPeriod.LATE_INTERMEDIATE],
+    geography: 'andes',
+    bonuses: ['Ayllus del valle: mano de obra comunal', 'Honderos y porras: guerra de señoríos', 'Riego de valle'],
+    effects: { gathering: { food: 0.1 }, training: 0.05 },
+    description:
+      'El señorío del Cusco anterior al imperio (cultura Killke). Un mosaico de ayllus en el valle, sin ejército imperial ni conquistas lejanas.',
+  },
+  {
+    id: CivId.AYLLUS,
+    visual: { arch: 'highland-terraced', emblem: 'geometric' },
+    name: 'Ayllus del valle',
+    adjective: 'ayllu',
+    colors: { primary: '#6a7a3a', secondary: '#d8c8a0', accent: '#9a5a32' },
+    periods: [HistoricalPeriod.LATE_INTERMEDIATE],
+    geography: 'andes',
+    bonuses: ['Aldeas de altura: honderos', 'Defensas de piedra y terraza', 'Sin ejército profesional'],
+    effects: { armor: 0.05 },
+    description:
+      'Los pueblos que ya vivían en el valle del Cusco antes del señorío: huallas, sauaseray y alcabizas. Aldeas con honderos y porras, no un ejército imperial.',
+  },
+  {
     id: CivId.INCA,
     visual: { arch: 'andean-masonry', emblem: 'sun' },
     name: 'Tahuantinsuyo',

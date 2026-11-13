@@ -7,6 +7,7 @@ const MISSIONS = [
   ['m2_chavin', 'El Oráculo de Chavín'],
   ['m3_moche_recuay', 'La Frontera de los Valles'],
   ['m4_wari', 'El Horizonte Medio'],
+  ['m_tambotoco', 'Los hijos de Tambotoco'],
   ['m5_yahuar_pampa', 'Yahuar Pampa'],
   ['m6_chimu_inca', 'La Guerra del Norte'],
   ['m6b_guerra_civil', 'La Guerra Civil'],

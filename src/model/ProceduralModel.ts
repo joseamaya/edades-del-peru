@@ -3676,6 +3676,10 @@ function buildLandmarkStructure(type: LandmarkId, ctx: BuildContext): THREE.Grou
     case 'recuay_pashash':
       buildRecuayPashash(b);
       break;
+    case 'inca_killke_center':
+    case 'ayllus_village':
+      buildHuancaCenter(b);
+      break;
     case 'inca_ushnu':
       buildIncaLandmark(b);
       break;

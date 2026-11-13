@@ -113,6 +113,37 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
       { text: 'Wikipedia: Cultura wari', url: 'https://es.wikipedia.org/wiki/Cultura_wari' },
     ],
   },
+  m_tambotoco: {
+    briefing:
+      'Pacaritambo, tiempo de la leyenda. Ocho hermanos salen de la cueva de Tambotoco en busca de tierra. ' +
+      'En el valle del Cusco ya viven huallas, sauaseray y alcabizas; el agua decide quién se queda.',
+    context:
+      'La tradición recogida por Sarmiento (1572), Cieza y Betanzos (1551) cuenta la salida de los ocho hermanos ' +
+      'de Tambotoco y su peregrinación hasta el valle del Cusco. Ayar Cachi es sepultado por engaño, Ayar Uchu se ' +
+      'convierte en piedra en Huanacaure y Ayar Auca da nombre al sitio. Los recién llegados toman tierras de los ' +
+      'sauaseray, quitan el agua a los alcabizas y fundan Inticancha. La arqueología sitúa una ocupación Killke en ' +
+      'el valle c. 1000–1400, anterior al imperio; el relato no tiene fecha histórica. Garcilaso (1609) da otra ' +
+      'versión, la de Manco Cápac y Mama Ocllo saliendo del Titicaca.',
+    didYouKnow:
+      'Sarmiento de Gamboa escribió su crónica por encargo del virrey Toledo para demostrar la «tiranía» de los incas: su versión de la fundación es hostil y debe leerse con ese contexto.',
+    epilogue:
+      'Inticancha quedó fundada y el sitio se ordenó en cuatro canchas. La historia no puede fechar la ' +
+      'peregrinación: es leyenda. Sarmiento la cuenta como una toma violenta de tierras y agua; Garcilaso, ' +
+      'como una misión civilizadora desde el Titicaca. El juego muestra la versión de Sarmiento y advierte ' +
+      'en el Códice que no es la única ni una crónica neutral.',
+    sources: [
+      {
+        text: 'Sarmiento de Gamboa, P. Historia de los Incas (1572), caps. IX–XIV',
+        url: 'https://www.gutenberg.org/ebooks/20218',
+      },
+      {
+        text: 'Cieza de León, P. El señorío de los Incas, caps. VI–VIII',
+        url: 'https://www.gutenberg.org/ebooks/48785',
+      },
+      { text: 'Betanzos, J. de. Suma y narración de los incas (1551)' },
+      { text: 'Bauer, B. y Covey, R. A. (2002). Processes of State Formation in the Inca Heartland.' },
+    ],
+  },
   m5_yahuar_pampa: {
     briefing:
       'Cusco, 1438. La confederación chanca avanza sobre la ciudad. Cusi Yupanqui organiza la defensa: ' +

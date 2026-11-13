@@ -8,6 +8,17 @@ const JUNTA_CUSCO = { x: 72, z: 58 } as const;
 const JUNTA_APACHETA = { x: 140, z: 168 } as const;
 const JUNTA_UMACHIRI = { x: 198, z: 214 } as const;
 const JUNTA_ENEMY = { x: 222, z: 238 } as const;
+// Los hijos de Tambotoco: the cave, the Huanacaure huaca, the valley and Inticancha.
+const TAMBOTOCO_CAVE = { x: 40, z: 52 } as const;
+const TAMBOTOCO_HUANACAURE = { x: 120, z: 106 } as const;
+const TAMBOTOCO_INTICANCHA = { x: 168, z: 190 } as const;
+const TAMBOTOCO_ENEMY = { x: 212, z: 200 } as const;
+const TAMBOTOCO_CANCHAS = [
+  { dx: TAMBOTOCO_INTICANCHA.x - 12, dz: TAMBOTOCO_INTICANCHA.z },
+  { dx: TAMBOTOCO_INTICANCHA.x + 12, dz: TAMBOTOCO_INTICANCHA.z },
+  { dx: TAMBOTOCO_INTICANCHA.x, dz: TAMBOTOCO_INTICANCHA.z - 12 },
+  { dx: TAMBOTOCO_INTICANCHA.x, dz: TAMBOTOCO_INTICANCHA.z + 12 },
+];
 const WARI_NODE_A = { ref: 'site' as const, dx: 40, dz: -32 };
 const WARI_NODE_B = { ref: 'site' as const, dx: 38, dz: 34 };
 const WARI_BONUS_NODE = { ref: 'site' as const, dx: -40, dz: 0 };
@@ -1322,6 +1333,287 @@ export const MISSIONS: MissionDef[] = [
             type: 'dialogue',
             text: 'Hacia 1000–1100 d.C. Wari y Tiahuanaco colapsan. El Horizonte Medio deja paso al Intermedio Tardío.',
           },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'm_tambotoco',
+    commanders: ['manco_capac', 'mama_huaco'],
+    title: 'Los hijos de Tambotoco',
+    subtitle: 'Pacaritambo–Cusco · Leyenda',
+    history:
+      'La tradición recogida por Sarmiento, Cieza y Betanzos cuenta que ocho hermanos salieron de la cueva de Tambotoco, en Pacaritambo. En el camino Ayar Cachi fue sepultado por engaño, Ayar Uchu se convirtió en piedra en Huanacaure y Ayar Auca dio nombre al sitio del Cusco.\n' +
+      'En el valle ya vivían huallas, sauaseray y alcabizas. Los recién llegados tomaron tierras, quitaron el agua a los alcabizas y fundaron Inticancha. La misión lo cuenta como Leyenda: el Códice señala que Sarmiento escribió para desacreditar a los incas y que Garcilaso da otra versión.',
+    victory:
+      'Inticancha queda fundada y las cuatro canchas ordenan el sitio. La leyenda continúa: el señorío del Cusco crecerá hasta el Tahuantinsuyo. El epílogo distingue la tradición de Sarmiento de la versión de Garcilaso y no las presenta como historia comprobada.',
+    defeat:
+      'Los ayllus del valle rechazan a los recién llegados. Sin tierras ni agua, la peregrinación no funda Inticancha y la leyenda se pierde en la sierra.',
+    period: HistoricalPeriod.LATE_INTERMEDIATE,
+    narrator: 'Memoria de los Ayar',
+    playerCiv: CivId.INCA_KILLKE,
+    enemyCiv: CivId.AYLLUS,
+    playerName: 'Ayllus de Ayar',
+    enemyName: 'Ayllus del valle',
+    map: { seed: 1200, type: 'andes', size: 256 },
+    layout: {
+      labels: [
+        { text: 'Pacaritambo', x: 40 / 256, z: 58 / 256, kind: 'region' },
+        { text: 'Tambotoco', x: TAMBOTOCO_CAVE.x / 256, z: TAMBOTOCO_CAVE.z / 256, kind: 'settlement' },
+        { text: 'Huanacaure', x: TAMBOTOCO_HUANACAURE.x / 256, z: TAMBOTOCO_HUANACAURE.z / 256, kind: 'region' },
+        { text: 'Valle del Cusco', x: 196 / 256, z: 190 / 256, kind: 'region' },
+      ],
+      base: { x: 44 / 256, z: 84 / 256 },
+      opening: { x: 62 / 256, z: 84 / 256 },
+      enemyBase: { x: TAMBOTOCO_ENEMY.x / 256, z: TAMBOTOCO_ENEMY.z / 256 },
+      discoveries: [{ heritageId: 'tambotoco_huanacaure', initial: true }],
+      terrain: {
+        flats: [
+          { name: 'Tambotoco', x: 44 / 256, z: 70 / 256, rx: 0.1, rz: 0.1 },
+          { name: 'Huanacaure', x: TAMBOTOCO_HUANACAURE.x / 256, z: TAMBOTOCO_HUANACAURE.z / 256, rx: 0.1, rz: 0.09 },
+          { name: 'Valle del Cusco', x: 186 / 256, z: 196 / 256, rx: 0.2, rz: 0.15 },
+        ],
+      },
+      site: {
+        id: 'tambotoco_site',
+        y: 12.4,
+        focus: { x: TAMBOTOCO_HUANACAURE.x / 256, z: TAMBOTOCO_HUANACAURE.z / 256 },
+        keepout: [{ x: TAMBOTOCO_HUANACAURE.x / 256, z: TAMBOTOCO_HUANACAURE.z / 256, rx: 0.08, rz: 0.07 }],
+        buildKeepout: [{ x: TAMBOTOCO_HUANACAURE.x / 256, z: TAMBOTOCO_HUANACAURE.z / 256, rx: 0.07, rz: 0.065 }],
+      },
+      canal: {
+        name: 'Acequia de los alcabizas',
+        x: 158 / 256,
+        z: 176 / 256,
+        width: 1.6,
+        path: [
+          { x: 152 / 256, z: 160 / 256 },
+          { x: 156 / 256, z: 168 / 256 },
+          { x: 162 / 256, z: 178 / 256 },
+          { x: 172 / 256, z: 188 / 256 },
+          { x: 182 / 256, z: 194 / 256 },
+        ],
+        initiallyOpen: false,
+        irrigation: true,
+        heritageId: 'tambotoco_acequia',
+        lockedUntilObjective: 'a3_acequia',
+      },
+      roads: [
+        { from: { dx: 44, dz: 84 }, to: { dx: TAMBOTOCO_HUANACAURE.x, dz: TAMBOTOCO_HUANACAURE.z }, width: 3 },
+        { from: { dx: TAMBOTOCO_HUANACAURE.x, dz: TAMBOTOCO_HUANACAURE.z }, to: { dx: 186, dz: 196 }, width: 3 },
+      ],
+    },
+    timeOfDay: 'morning',
+    startingEra: Era.TAHUANTINSUYO,
+    // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.
+    unitSpeedScale: 0.75,
+    startingResources: { food: 700, wood: 500, silver: 0, stone: 300 },
+    start: {
+      units: [
+        { kind: UnitKind.WORKER, dx: 4, dz: 4, count: 5 },
+        { kind: UnitKind.SOLDIER, dx: 8, dz: 0, count: 6 },
+        { kind: UnitKind.MUSKETEER, dx: 10, dz: 2, count: 2 },
+        { kind: UnitKind.SCOUT, dx: 12, dz: -2, count: 1 },
+      ],
+    },
+    mark: [{ tag: 'centro_ayllus', kind: BuildingKind.CENTER, owner: 1 }],
+    enemy: { active: true, difficulty: 'normal', aggression: 0.7 },
+    tutorial: true,
+    modelMission: true,
+    intro: [
+      {
+        kicker: 'PACARITAMBO · TIEMPO DE LA LEYENDA',
+        title: 'La cueva de Tambotoco',
+        text: 'Ocho hermanos salen de la cueva de Tambotoco: Manco, Auca, Cachi y Uchu, con Mama Ocllo, Mama Huaco, Mama Ipacura y Mama Raua. Buscan tierra fértil. La tradición no tiene fecha; el relato se cuenta como leyenda.',
+        seconds: 10,
+        source: 'docs/historia/campanas/tambotoco.md',
+        image: 'media/tambotoco/intro-cueva.webp',
+      },
+      {
+        kicker: 'HUANACAURE',
+        title: 'La huaca',
+        text: 'En el cerro de Huanacaure, Ayar Uchu se convierte en piedra y queda como huaca de la peregrinación. El episodio pertenece al mito; el juego lo escenifica sin presentarlo como un hecho comprobado.',
+        seconds: 9,
+        source: 'docs/historia/campanas/tambotoco.md',
+        image: 'media/tambotoco/intro-huanacaure.webp',
+      },
+      {
+        kicker: 'VALLE DEL CUSCO',
+        title: 'Inticancha',
+        text: 'El valle ya está habitado por huallas, sauaseray y alcabizas. Los recién llegados necesitan tierras y agua: la tradición cuenta que quitaron el agua a los alcabizas para forzar la cesión.',
+        seconds: 10,
+        source: 'docs/historia/campanas/tambotoco.md',
+        image: 'media/tambotoco/intro-valle.webp',
+      },
+    ],
+    epilogueImage: 'media/tambotoco/intro-epilogo.webp',
+    allowedUnits: [UnitKind.WORKER, UnitKind.SOLDIER, UnitKind.MUSKETEER, UnitKind.SCOUT],
+    allowedBuildings: [
+      BuildingKind.CENTER,
+      BuildingKind.HOUSE,
+      BuildingKind.FARM,
+      BuildingKind.MILL,
+      BuildingKind.SAWMILL,
+      BuildingKind.BARRACKS,
+      BuildingKind.FORTRESS,
+      BuildingKind.WALL,
+      BuildingKind.GATE,
+      BuildingKind.TOWER,
+    ],
+    objectives: [
+      {
+        id: 'a1_salida',
+        kind: 'reach',
+        pos: { dx: TAMBOTOCO_CAVE.x, dz: TAMBOTOCO_CAVE.z },
+        radius: 9,
+        title: 'Sal de la cueva de Tambotoco',
+      },
+      {
+        id: 'a1_caza',
+        kind: 'gather',
+        fromNode: 'hunt',
+        count: 150,
+        hidden: true,
+        title: 'Consigue 150 de comida cazando',
+      },
+      {
+        id: 'a2_huanacaure',
+        kind: 'inspect',
+        heritageIds: ['tambotoco_huanacaure'],
+        inspectRadius: 14,
+        pos: { dx: TAMBOTOCO_HUANACAURE.x, dz: TAMBOTOCO_HUANACAURE.z },
+        radius: 18,
+        hidden: true,
+        title: 'Llega a la huaca de Huanacaure',
+      },
+      {
+        id: 'a3_acequia',
+        kind: 'canal_open',
+        hidden: true,
+        title: 'Abre la acequia de los alcabizas',
+      },
+      {
+        id: 'a3_hualla',
+        kind: 'reach',
+        pos: { dx: 160, dz: 180 },
+        radius: 10,
+        optional: true,
+        hidden: true,
+        title: 'Visita la aldea hualla',
+      },
+      {
+        id: 'a4_inticancha',
+        kind: 'build',
+        buildingKind: BuildingKind.MILL,
+        pos: { dx: TAMBOTOCO_INTICANCHA.x, dz: TAMBOTOCO_INTICANCHA.z },
+        radius: 16,
+        hidden: true,
+        title: 'Funda Inticancha con su depósito comunal',
+      },
+      {
+        id: 'a4_canchas',
+        kind: 'network',
+        buildingKind: BuildingKind.HOUSE,
+        nodes: TAMBOTOCO_CANCHAS,
+        radius: 9,
+        count: 4,
+        hidden: true,
+        title: 'Ordena las cuatro canchas alrededor de Inticancha',
+      },
+    ],
+    triggers: [
+      {
+        id: 't_intro',
+        condition: { type: 'time', seconds: 6 },
+        effects: [
+          {
+            type: 'dialogue',
+            speaker: 'Mama Huaco',
+            duration: 9,
+            text: '—La cueva nos queda atrás. Busquemos tierra y agua: donde el valle se abra, fundaremos.',
+          },
+        ],
+      },
+      {
+        id: 't_salida',
+        condition: { type: 'objective', objectiveId: 'a1_salida', state: 'completed' },
+        effects: [
+          {
+            type: 'dialogue',
+            speaker: 'Memoria de los Ayar',
+            duration: 8,
+            text: 'Ayar Cachi queda atrás, sepultado por engaño en Tambo Quiro; su memoria será una huaca. La peregrinación sigue.',
+          },
+          { type: 'objective', objectiveId: 'a1_caza', state: 'activate', announce: true },
+        ],
+      },
+      {
+        id: 't_caza',
+        condition: { type: 'objective', objectiveId: 'a1_caza', state: 'completed' },
+        effects: [
+          {
+            type: 'act',
+            kicker: 'Acto II · La peregrinación',
+            title: 'Huanacaure',
+            image: 'media/tambotoco/intro-huanacaure.webp',
+            text: 'El camino sube al cerro de Huanacaure. La tradición cuenta que allí Ayar Uchu se convierte en piedra y queda como huaca: el lugar marca el paso de la peregrinación al valle.',
+          },
+          { type: 'objective', objectiveId: 'a2_huanacaure', state: 'activate', announce: true },
+        ],
+      },
+      {
+        id: 't_huanacaure',
+        condition: { type: 'objective', objectiveId: 'a2_huanacaure', state: 'completed' },
+        effects: [
+          {
+            type: 'act',
+            kicker: 'Acto III · El valle',
+            title: 'El agua de los alcabizas',
+            image: 'media/tambotoco/intro-valle.webp',
+            text: 'El valle del Cusco ya tiene ayllus: huallas, sauaseray y alcabizas. La tradición cuenta que los recién llegados quitaron el agua a los alcabizas para obligarlos a ceder tierras. El agua es la palanca.',
+          },
+          { type: 'camera', pos: { dx: 170, dz: 186 } },
+          { type: 'objective', objectiveId: 'a3_acequia', state: 'activate', announce: true },
+          { type: 'objective', objectiveId: 'a3_hualla', state: 'activate', announce: true },
+          {
+            type: 'wave',
+            owner: 1,
+            units: [
+              { kind: UnitKind.SOLDIER, count: 3 },
+              { kind: UnitKind.MUSKETEER, count: 2 },
+            ],
+            pos: { dx: TAMBOTOCO_ENEMY.x, dz: TAMBOTOCO_ENEMY.z },
+            radius: 10,
+            objective: 'position',
+          },
+        ],
+      },
+      {
+        id: 't_acequia',
+        condition: { type: 'objective', objectiveId: 'a3_acequia', state: 'completed' },
+        effects: [
+          {
+            type: 'act',
+            kicker: 'Acto IV · La fundación',
+            title: 'Inticancha',
+            image: 'media/tambotoco/intro-epilogo.webp',
+            text: 'Con el agua y la tierra aseguradas, los ayllus fundan Inticancha y ordenan el sitio en cuatro canchas. La leyenda del Cusco empieza aquí.',
+          },
+          { type: 'camera', pos: { dx: TAMBOTOCO_INTICANCHA.x, dz: TAMBOTOCO_INTICANCHA.z } },
+          { type: 'objective', objectiveId: 'a4_inticancha', state: 'activate', announce: true },
+        ],
+      },
+      {
+        id: 't_inticancha',
+        condition: { type: 'objective', objectiveId: 'a4_inticancha', state: 'completed' },
+        effects: [
+          {
+            type: 'dialogue',
+            speaker: 'Memoria de los Ayar',
+            duration: 8,
+            text: 'Ayar Auca se convierte en piedra en el sitio y le da nombre. Inticancha se ordena en cuatro canchas: el valle ya tiene un centro.',
+          },
+          { type: 'objective', objectiveId: 'a4_canchas', state: 'activate', announce: true },
         ],
       },
     ],

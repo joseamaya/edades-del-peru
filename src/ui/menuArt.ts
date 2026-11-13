@@ -10,6 +10,7 @@ export const MENU_BACKDROP = publicAsset('media/menu/caral-dawn.webp');
 
 export const CAMPAIGN_ART: Partial<Record<CampaignId, string>> = {
   preinca: publicAsset('media/caral/intro-ciudad.webp'),
+  inca: publicAsset('media/tambotoco/intro-huanacaure.webp'),
   independencia: publicAsset('media/junta/intro-cabildo.webp'),
 };
 
@@ -17,4 +18,5 @@ export const MISSION_ART: Partial<Record<string, string>> = {
   m1_caral: publicAsset('media/caral/intro-aspero.webp'),
   m2_chavin: publicAsset('media/chavin/intro-templo.webp'),
   m_junta_cusco: publicAsset('media/junta/intro-cabildo.webp'),
+  m_tambotoco: publicAsset('media/tambotoco/intro-cueva.webp'),
 };

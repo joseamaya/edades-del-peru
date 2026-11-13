@@ -65,14 +65,14 @@ export const CAMPAIGNS: CampaignDef[] = [
       'Del valle del Cusco al imperio más extenso de América: la leyenda de origen, la expansión por los cuatro suyos y la guerra entre Huáscar y Atahualpa.',
     summary:
       'Según la leyenda, los hermanos Ayar salieron de Pacaritambo y tomaron el valle del Cusco. En el siglo XV, el Cusco pasó de señorío regional a cabeza del Tahuantinsuyo: defiende la ciudad frente a los chancas, gana el Collao, reconstruye la capital, lleva la guerra al reino chimú y a la costa sur, abre la frontera norte y vive la guerra civil entre Huáscar y Atahualpa en vísperas de la conquista.',
-    missionIds: ['m5_yahuar_pampa', 'm6_chimu_inca', 'm6b_guerra_civil'],
-    releasedMissionIds: ['m5_yahuar_pampa', 'm6_chimu_inca', 'm6b_guerra_civil'],
+    missionIds: ['m_tambotoco', 'm5_yahuar_pampa', 'm6_chimu_inca', 'm6b_guerra_civil'],
+    releasedMissionIds: ['m_tambotoco', 'm5_yahuar_pampa', 'm6_chimu_inca', 'm6b_guerra_civil'],
     status: 'available',
     era: 'Leyenda — 1532',
     accent: '#d8b35a',
     prologue: INCA_PROLOGUE,
     path: [
-      'p_inca_tambotoco',
+      'm_tambotoco',
       'm5_yahuar_pampa',
       'p_inca_collao',
       'p_inca_cusco',
