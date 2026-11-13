@@ -992,6 +992,27 @@ landscape's draw calls (the layer rendered visible vs hidden). It **fails** (`ex
 VSM main+shadow passes; see [`docs/design/cultural-landscape.md`](design/cultural-landscape.md)). It writes
 the JSON to `--out` (`review/bench.json` by default) and prints a table.
 
+**Hardware GPU and per-pass breakdown.** `--gpu` (or `GPU=1`) drops `--use-gl=swiftshader` and launches with
+ANGLE's Vulkan backend (`--gl=angle-metal` on macOS, `--gl=auto` to let Chromium choose); when the page still
+renders in software the run **fails**, so a measurement can never claim hardware while using SwiftShader
+(`--assert` is not required for that check, on purpose: `bench:check` must keep working on SwiftShader). The
+renderer string, `software` flag and `cinematic` state are recorded in the JSON and printed. `--postfx=1`
+measures the shipped frame (bloom, grading and the water refraction pass on, quality pinned high, `?cine=1`
+forced) instead of `window.__directRender`; `--framing=overview|mid|close` sets the camera and `--viewport=WxH`
+the canvas (default 1280x800).
+
+Two opt-in instruments, both off by default because `bench:check` runs many rows: `--passes=1` wraps the render
+entry points for 40 frames and records the median CPU submit time and draw calls per pass — `main`, `shadow`,
+`refraction`, the post-processing quads and `other` (JS/GL overhead) — computed per frame, so the buckets add up
+to the frame; and `--scale-sweep=1` samples the frame rate at 1×/0.75×/0.5× pixel ratio, which is the CPU-vs-GPU
+discriminator: if the frame time follows the pixels the workload is GPU-bound, if it barely moves it is
+submit/CPU-bound. The sweep only runs in direct mode: `EffectComposer` keeps its own pixel ratio, so with
+post-processing on the scene and bloom targets would not shrink (see #449). The `QualityGovernor` is pinned
+during the sample so an automatic downgrade cannot describe a different scene than the one requested.
+
+`yarn bench:gpu` is the shorthand for the shipped frame on the host GPU
+(`--gpu --assert --postfx=1 --framing=mid --viewport=1920x1080 --passes=1 --scale-sweep=1`).
+
 `yarn sim [--seeds=777,...] [--max=1200] [--civ=chanca] [--period=4] [--metrics=1] [--sample=5] [--out=review/ai-bench.json]` is the
 deterministic AI-vs-AI runner. With `--metrics=1` it records first soldier/first attack/first barracks,
 workers/military/buildings created, gathered resources, losses, pathfinding requests/failures, AI percentiles
@@ -1001,7 +1022,8 @@ and a sampled timeline (idle/blocked workers, stuck units, army, resources) with
 its structural draw-call/triangle budget, when a rigged entity silently falls back to the procedural model, or
 when the mixed scenario's simulation p95 exceeds one frame (16.6 ms). It also asserts the ground-cover instance
 cap (16000) and chunk count. The budgets are machine-independent;
-FPS is not asserted because SwiftShader is not representative of a GPU.
+FPS is not asserted because SwiftShader is not representative of a GPU, so FPS numbers only mean something with
+`--gpu` on a machine that is otherwise idle (the JSON records the host `loadavg`).
 
 The full audit with 50/100/200/400/800 results, 20 AI seeds and the prioritized issue list is in
 [`docs/development/performance-audit.md`](development/performance-audit.md). It records the baseline and the

@@ -1,7 +1,7 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { launchChromium, withViteServer, cliArg } from './lib.mjs';
+import { launchChromium, withViteServer, cliArg, useGpu, isSoftwareRenderer, readGlRenderer } from './lib.mjs';
 import { installProbes, resetProbes, snapshotProbes, readSceneStats, readMemory, forceGc } from './perf-probes.mjs';
 
 /**
@@ -20,8 +20,18 @@ import { installProbes, resetProbes, snapshotProbes, readSceneStats, readMemory,
  * With `--profile=1` it installs `scripts/perf-probes.mjs`, which measures
  * per-step section timings (AI, pathfinding, units, FOW, rendering, ...) and
  * exact counters without changing game behaviour. Numbers are only comparable
- * on the same machine/browser; the FPS column is software-renderer-bound.
+ * on the same machine/browser.
+ *
+ * Render side: `--gpu` (or `GPU=1`) runs on the host GPU instead of SwiftShader and makes the
+ * run fail when the page still renders in software (with or without `--assert`). `--postfx=1`
+ * measures the shipped frame (post-processing and water refraction on), `--framing=overview|mid|close`
+ * sets the camera and `--viewport=WxH` the canvas. Off by default because `bench:check` runs many
+ * rows: `--passes=1` adds the per-pass breakdown (main/shadow/refraction/quads + submit ms) and
+ * `--scale-sweep=1` the pixel-ratio sweep (direct mode only).
  */
+
+const cpuModel = os.cpus()[0]?.model ?? 'unknown';
+const cpuCount = os.cpus().length;
 
 const unitScales = String(cliArg('units', '50,100,200,400,800'))
   .split(',')
@@ -41,6 +51,23 @@ const useGc = cliArg('gc', '1') !== '0';
 const fog = cliArg('fog', '1') !== '0' ? 1 : 0;
 const outFile = cliArg('out', 'review/bench.json');
 const scales = scenario === 'fauna' ? animalScales : unitScales;
+const gpu = useGpu();
+const postfx = cliArg('postfx', '0') === '1';
+const framing = String(cliArg('framing', 'overview'));
+const [viewportWidth, viewportHeight] = String(cliArg('viewport', '1280x800'))
+  .split('x')
+  .map((v) => Number.parseInt(v, 10));
+const measurePasses = cliArg('passes', '0') === '1';
+const scaleSweep = cliArg('scale-sweep', '0') === '1';
+
+if (!['overview', 'mid', 'close'].includes(framing)) {
+  console.error(`unknown framing "${framing}" (use overview|mid|close)`);
+  process.exit(1);
+}
+if (!(viewportWidth > 0) || !(viewportHeight > 0)) {
+  console.error('invalid --viewport (use WxH, e.g. 1920x1080)');
+  process.exit(1);
+}
 
 if (
   ![
@@ -365,12 +392,19 @@ async function runSteps(page) {
 }
 
 async function measure(browser, base, n, runIndex) {
-  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const context = await browser.newContext({
+    viewport: { width: viewportWidth, height: viewportHeight },
+  });
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
 
-  const params = new URLSearchParams({ play: '1', seed: String(seed), low: '1', fog: String(fog) });
+  const params = new URLSearchParams({
+    play: '1',
+    seed: String(seed),
+    low: postfx ? '0' : '1',
+    fog: String(fog),
+  });
   if (scenario === 'rigs' || scenario === 'mixed-rigs') {
     params.set('civ', 'caral');
     params.set('period', '0');
@@ -384,9 +418,23 @@ async function measure(browser, base, n, runIndex) {
     params.set('period', '9');
   }
   if (scenario === 'fauna' || scenario === 'mixed-rigs') params.set('map', 'altiplano');
+  // The software fallback turns the cinematic set off before the bench pins quality; `?cine=1`
+  // keeps `--postfx` measuring the shipped frame (bloom, grading and water refraction).
+  if (postfx) params.set('cine', '1');
   await page.goto(`${base}/?${params}`, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => window.game !== undefined, null, { timeout: 60_000 });
   await page.waitForTimeout(1200);
+
+  // Pin the requested preset: the governor would otherwise downgrade mid-sample on a slow
+  // machine and the row would describe a different scene than the one requested.
+  await page.evaluate(
+    (quality) => {
+      const g = window.game;
+      g.qualityGovernor.setUserQuality(quality);
+      g.qualityGovernor.update = () => {};
+    },
+    postfx ? 'high' : 'low',
+  );
 
   const setup = await setupScenario(page, n);
 
@@ -413,71 +461,278 @@ async function measure(browser, base, n, runIndex) {
   const sim = profile ? await snapshotProbes(page) : null;
   const scene = await readSceneStats(page);
 
-  // Render pass: max zoom, direct renderer so renderer.info is meaningful.
-  await page.evaluate(() => {
-    const g = window.game;
-    g.camera.setHeight(1e9);
-    window.__directRender = true;
-    g.loop.start();
-  });
+  // Render pass at the requested framing. `renderer.info` only describes the last render call
+  // of a frame, so the draw calls used below come from the per-pass breakdown.
+  await page.evaluate(
+    ({ framing, direct }) => {
+      const g = window.game;
+      window.__directRender = direct;
+      g.camera.setHeight(framing === 'overview' ? 1e9 : framing === 'mid' ? 90 : 24);
+      for (let i = 0; i < 30; i++) g.camera.update(1 / 30, i / 30);
+      g.camera.camera.updateMatrixWorld();
+      g.loop.start();
+    },
+    { framing, direct: !postfx },
+  );
   await page.waitForTimeout(500);
   if (profile) await resetProbes(page);
   const frame = await page.evaluate(
-    () =>
-      new Promise((resolve) => {
-        const longTasks = [];
-        try {
-          const po = new PerformanceObserver((list) => {
-            for (const entry of list.getEntries()) longTasks.push(entry.duration);
-          });
-          po.observe({ type: 'longtask' });
-        } catch {
-          /* longtask unsupported */
-        }
-        const times = [];
-        let last = performance.now();
-        const end = last + 1500;
-        const step = () => {
-          const now = performance.now();
-          times.push(now - last);
-          last = now;
-          if (now >= end) {
-            times.sort((a, b) => a - b);
-            const at = (p) => times[Math.min(times.length - 1, Math.floor(times.length * p))];
-            resolve({
-              samples: times.length,
-              frameMsAvg: times.reduce((s, x) => s + x, 0) / times.length,
-              frameMsP50: at(0.5),
-              frameMsP95: at(0.95),
-              frameMsP99: at(0.99),
-              longTasks: longTasks.length,
-              longTaskMs: longTasks.reduce((s, x) => s + x, 0),
-            });
-          } else requestAnimationFrame(step);
+    async ({ sweep, reason }) => {
+      const g = window.game;
+      const longTasks = [];
+      try {
+        const po = new PerformanceObserver((list) => {
+          for (const entry of list.getEntries()) longTasks.push(entry.duration);
+        });
+        po.observe({ type: 'longtask' });
+      } catch {
+        /* longtask unsupported */
+      }
+      const stats = (times) => {
+        times.sort((a, b) => a - b);
+        const at = (p) => times[Math.min(times.length - 1, Math.floor(times.length * p))];
+        return {
+          samples: times.length,
+          frameMsAvg: times.reduce((s, x) => s + x, 0) / times.length,
+          frameMsP50: at(0.5),
+          frameMsP95: at(0.95),
+          frameMsP99: at(0.99),
         };
-        requestAnimationFrame(step);
-      }),
+      };
+      const sample = (ms) =>
+        new Promise((done) => {
+          const times = [];
+          let last = performance.now();
+          const end = last + ms;
+          const step = () => {
+            const now = performance.now();
+            times.push(now - last);
+            last = now;
+            if (now >= end) done(stats(times));
+            else requestAnimationFrame(step);
+          };
+          requestAnimationFrame(step);
+        });
+      // Scaling the drawing buffer separates GPU-bound (frame follows the pixels) from
+      // submit/CPU-bound (frame barely moves). Only valid when the scene renders straight to
+      // the canvas: EffectComposer keeps its own pixel ratio, so with post-processing on the
+      // geometry and bloom targets would not shrink (see #449).
+      const ratios = sweep ? [1, 0.75, 0.5] : [1];
+      const previous = g.pixelRatioOverride;
+      const byScale = [];
+      for (const ratio of ratios) {
+        g.runtime.setPixelRatioOverride(ratio);
+        await new Promise((done) => setTimeout(done, 250));
+        byScale.push({ ratio, ...(await sample(1200)) });
+      }
+      g.runtime.setPixelRatioOverride(previous);
+      return {
+        ...byScale[0],
+        byScale,
+        sweepSkipped: sweep ? null : reason,
+        longTasks: longTasks.length,
+        longTaskMs: longTasks.reduce((s, x) => s + x, 0),
+      };
+    },
+    {
+      sweep: scaleSweep && !postfx,
+      reason: !scaleSweep
+        ? null
+        : postfx
+          ? 'post-processing keeps the EffectComposer resolution (#449)'
+          : 'the sweep was disabled',
+    },
   );
+
   const render = profile ? await snapshotProbes(page) : null;
+
+  // Per-pass breakdown: wrap the render entry points for a few frames and keep the median.
+  // `scene` includes the shadow pass; `main` is what is left of it, so the buckets add up to
+  // the frame instead of double counting the shadow map.
+  const passes = measurePasses
+    ? await page.evaluate(
+        ({ frames, framing }) => {
+          const g = window.game;
+          const runtime = g.runtime;
+          const info = g.renderer.info;
+          const waterTarget = g.water?.refractionRT ?? null;
+          info.autoReset = false;
+
+          const zero = () => ({ ms: 0, calls: 0, tris: 0 });
+          const empty = () => ({
+            frame: zero(),
+            scene: zero(),
+            refraction: zero(),
+            quad: zero(),
+            shadowScene: zero(),
+            shadowRefraction: zero(),
+          });
+          let pending = empty();
+          let current = 'scene';
+          const samples = [];
+          const hit = (key, ms, calls, tris) => {
+            const b = pending[key];
+            b.ms += ms;
+            b.calls += calls;
+            b.tris += tris;
+          };
+
+          const origRender = g.renderer.render.bind(g.renderer);
+          g.renderer.render = (scene, camera) => {
+            const target = g.renderer.getRenderTarget();
+            const key = scene === g.scene ? (waterTarget && target === waterTarget ? 'refraction' : 'scene') : 'quad';
+            current = key;
+            const t0 = performance.now();
+            const c0 = info.render.calls;
+            const tr0 = info.render.triangles;
+            const out = origRender(scene, camera);
+            hit(key, performance.now() - t0, info.render.calls - c0, info.render.triangles - tr0);
+            return out;
+          };
+
+          // three runs the shadow map inside every `renderer.render`, so a post-processed frame
+          // pays for it twice. Measure that as the game does it instead of forcing one update.
+          const shadow = g.renderer.shadowMap;
+          const origShadow = shadow.render.bind(shadow);
+          shadow.render = (...args) => {
+            const t0 = performance.now();
+            const c0 = info.render.calls;
+            const tr0 = info.render.triangles;
+            const out = origShadow(...args);
+            const calls = info.render.calls - c0;
+            if (calls > 0)
+              hit(
+                current === 'refraction' ? 'shadowRefraction' : 'shadowScene',
+                performance.now() - t0,
+                calls,
+                info.render.triangles - tr0,
+              );
+            return out;
+          };
+
+          g.loop.stop();
+          const frameOnce = () => {
+            pending = empty();
+            const t0 = performance.now();
+            runtime.render();
+            pending.frame.ms = performance.now() - t0;
+            samples.push(pending);
+          };
+          for (let i = 0; i < 5; i++) frameOnce();
+          samples.length = 0;
+          for (let i = 0; i < frames; i++) frameOnce();
+
+          g.renderer.render = origRender;
+          shadow.render = origShadow;
+          info.autoReset = true;
+          info.reset();
+
+          // Derive one row per frame, then take medians: medians of different keys are not the
+          // medians of their sum, so `other` is computed per frame instead of as a residual.
+          const rows = samples.map((s) => {
+            const main = {
+              ms: Math.max(0, s.scene.ms - s.shadowScene.ms),
+              calls: Math.max(0, s.scene.calls - s.shadowScene.calls),
+              tris: Math.max(0, s.scene.tris - s.shadowScene.tris),
+            };
+            const refraction = {
+              ms: Math.max(0, s.refraction.ms - s.shadowRefraction.ms),
+              calls: Math.max(0, s.refraction.calls - s.shadowRefraction.calls),
+              tris: Math.max(0, s.refraction.tris - s.shadowRefraction.tris),
+            };
+            const shadow = {
+              ms: s.shadowScene.ms + s.shadowRefraction.ms,
+              calls: s.shadowScene.calls + s.shadowRefraction.calls,
+              tris: s.shadowScene.tris + s.shadowRefraction.tris,
+            };
+            return {
+              frame: s.frame.ms,
+              mainMs: main.ms,
+              mainCalls: main.calls,
+              mainTris: main.tris,
+              refractionMs: refraction.ms,
+              refractionCalls: refraction.calls,
+              refractionTris: refraction.tris,
+              shadowMs: shadow.ms,
+              shadowCalls: shadow.calls,
+              shadowTris: shadow.tris,
+              quadMs: s.quad.ms,
+              quadCalls: s.quad.calls,
+              quadTris: s.quad.tris,
+              otherMs: Math.max(0, s.frame.ms - main.ms - refraction.ms - shadow.ms - s.quad.ms),
+              totalCalls: s.scene.calls + s.refraction.calls + s.quad.calls,
+              totalTris: s.scene.tris + s.refraction.tris + s.quad.tris,
+              shadowInRefraction: s.shadowRefraction.calls > 0,
+            };
+          });
+          const median = (key) => {
+            const values = rows.map((r) => r[key]).sort((a, b) => a - b);
+            return values[Math.floor(values.length / 2)] ?? 0;
+          };
+          const percentile = (key, p) => {
+            const values = rows.map((r) => r[key]).sort((a, b) => a - b);
+            return values[Math.min(values.length - 1, Math.floor(values.length * p))] ?? 0;
+          };
+          const cell = (msKey, callsKey, trisKey) => ({
+            ms: median(msKey),
+            msP95: percentile(msKey, 0.95),
+            calls: Math.round(median(callsKey)),
+            tris: Math.round(median(trisKey)),
+          });
+          return {
+            samples: frames,
+            mode: window.__directRender ? 'direct' : 'postfx',
+            framing,
+            frame: { ms: median('frame'), msP95: percentile('frame', 0.95) },
+            main: cell('mainMs', 'mainCalls', 'mainTris'),
+            shadow: cell('shadowMs', 'shadowCalls', 'shadowTris'),
+            refraction: cell('refractionMs', 'refractionCalls', 'refractionTris'),
+            quad: cell('quadMs', 'quadCalls', 'quadTris'),
+            other: { ms: median('otherMs'), msP95: percentile('otherMs', 0.95) },
+            shadowFrames: {
+              refraction: rows.filter((r) => r.shadowInRefraction).length,
+              total: rows.length,
+            },
+            totals: { calls: Math.round(median('totalCalls')), tris: Math.round(median('totalTris')) },
+          };
+        },
+        { frames: 40, framing },
+      )
+    : null;
+
+  // One instrumented-free frame for the total counts: reset, render once, read. In postfx mode
+  // `info` after the loop only describes the last quad pass, so it cannot be read as-is.
   const renderInfo = await page.evaluate(() => {
     const g = window.game;
     const info = g.renderer.info;
-    const gl = g.renderer.getContext();
-    const debug = gl.getExtension('WEBGL_debug_renderer_info');
-    const renderer = debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
-    const vendor = debug ? gl.getParameter(debug.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR);
+    g.loop.stop();
+    info.autoReset = false;
+    info.reset();
+    g.runtime.render();
+    const drawCalls = info.render.calls;
+    const triangles = info.render.triangles;
+    info.autoReset = true;
+    info.reset();
     return {
       fps: g.loop.getFps(),
-      drawCalls: info.render.calls,
-      triangles: info.render.triangles,
+      drawCalls,
+      triangles,
       geometries: info.memory.geometries,
       textures: info.memory.textures,
-      quality: g.settings.quality,
-      renderer,
-      vendor,
-      software: /swiftshader|llvmpipe|software/i.test(`${renderer} ${vendor}`),
+      programs: info.programs ? info.programs.length : null,
+      quality: g.qualityGovernor.applied,
+      requestedQuality: g.settings.quality,
+      cinematic: g.postfx.cinematicEnabled,
     };
   });
+  const gl = await readGlRenderer(page);
+  renderInfo.renderer = gl.renderer;
+  renderInfo.vendor = gl.vendor;
+  renderInfo.software = isSoftwareRenderer(`${gl.renderer} ${gl.vendor}`);
+  if (passes) {
+    renderInfo.drawCalls = passes.totals.calls;
+    renderInfo.triangles = passes.totals.tris;
+  }
 
   // Isolate the animated rigs' draw calls/triangles by hiding the unit and fauna
   // groups (visible vs hidden) at max zoom, keeping shadows/post-processing the same.
@@ -616,6 +871,7 @@ async function measure(browser, base, n, runIndex) {
     frame,
     renderMs: render ? render.labels.render : null,
     renderCounts: render ? render.counts : null,
+    passes,
     gpu: renderInfo,
     rigCost,
     scene,
@@ -632,6 +888,7 @@ function medianRow(rows) {
 }
 
 async function main() {
+  const loadBefore = os.loadavg().map((v) => Math.round(v * 100) / 100);
   const { base, close } = await withViteServer();
   const browser = await launchChromium(useGc ? { args: ['--js-flags=--expose-gc'] } : {});
   const rows = [];
@@ -660,11 +917,20 @@ async function main() {
       runs,
       profile,
       fog,
-      viewport: '1280x800',
+      viewport: `${viewportWidth}x${viewportHeight}`,
+      gpu,
+      postfx,
+      framing,
+      passes: measurePasses,
+      scaleSweep,
       node: process.version,
       platform: process.platform,
       arch: process.arch,
-      cpu: os.cpus()[0]?.model ?? 'unknown',
+      cpu: cpuModel,
+      cpuCount: cpuCount,
+      // Timing rows are only comparable when the host is idle: record it at both ends.
+      loadavgBefore: loadBefore,
+      loadavgAfter: os.loadavg().map((v) => Math.round(v * 100) / 100),
       commit: process.env.GIT_COMMIT ?? null,
     },
     rows,
@@ -678,11 +944,17 @@ async function main() {
   const firstGpu = rows[0]?.gpu;
   if (firstGpu) {
     console.log(
-      `\nrenderer: ${firstGpu.renderer} (${firstGpu.software ? 'software' : 'hardware'}), quality=${firstGpu.quality}`,
+      `\nrenderer: ${firstGpu.renderer} (${firstGpu.software ? 'software' : 'hardware'}), quality=${firstGpu.quality}, cinematic=${firstGpu.cinematic}, mode=${postfx ? 'postfx' : 'direct'}, framing=${framing}, viewport=${viewportWidth}x${viewportHeight}`,
     );
   }
+  if (gpu && rows.some((r) => r.gpu.software)) {
+    console.error(
+      `--gpu was requested but the page rendered in software (${firstGpu.renderer}). Try --gl=egl, --gl=angle-vulkan or run with a display.`,
+    );
+    process.exitCode = 1;
+  }
   console.log(
-    '\nn | sim p50/p95/p99 ms | AI p50/p95/p99 ms | path p50/p95/p99 ms | units/workers/military | animals | paths/req/fail | fps | frame avg/p95 | draws | tris | heap MB',
+    '\nn | sim p50/p95/p99 ms | AI p50/p95/p99 ms | path p50/p95/p99 ms | units/workers/military | animals | paths/req/fail | fps | frame avg/p95/p99 | draws (full frame) | tris | heap MB',
   );
   for (const r of rows) {
     const labels = r.sim?.labels ?? {};
@@ -701,12 +973,46 @@ async function main() {
         `${r.animals ?? 0}`,
         `${counts.activePaths ?? '-'}/${r.counters?.pathRequests ?? '-'}/${r.counters?.pathFailures ?? '-'}`,
         r.gpu.fps,
-        `${fmt(r.frame.frameMsAvg, 1)}/${fmt(r.frame.frameMsP95, 1)}`,
+        `${fmt(r.frame.frameMsAvg, 1)}/${fmt(r.frame.frameMsP95, 1)}/${fmt(r.frame.frameMsP99, 1)}`,
         r.gpu.drawCalls,
         r.gpu.triangles,
         fmt(r.memory.afterGcMB, 1),
       ].join(' | '),
     );
+  }
+
+  if (rows.some((r) => r.passes)) {
+    const cell = (b, unit = '') => (b ? `${fmt(b.ms, 2)}/${Math.round(b.calls)}${unit}` : '-');
+    console.log(
+      '\npasses (median CPU submit ms / draw calls per frame; main and refraction exclude the shadow pass they contain):',
+    );
+    console.log('n | submit | main | shadow | refraction | post quad | other (js/gl) | submit/frame | draws/unit');
+    for (const r of rows) {
+      const p = r.passes;
+      if (!p) continue;
+      const units = r.startUnits || r.n;
+      console.log(
+        [
+          r.n,
+          `${fmt(p.frame.ms, 2)}`,
+          cell(p.main),
+          cell(p.shadow),
+          cell(p.refraction),
+          cell(p.quad),
+          fmt(p.other.ms, 2),
+          `${fmt((100 * p.frame.ms) / (r.frame.frameMsP50 || p.frame.ms), 0)}%`,
+          fmt(p.totals.calls / units, 1),
+        ].join(' | '),
+      );
+    }
+  }
+
+  const sweepRow = rows.find((r) => (r.frame?.byScale?.length ?? 0) > 1);
+  if (sweepRow) {
+    const fmtScale = (s) => `${s.ratio}x: p50 ${fmt(s.frameMsP50, 1)} / p95 ${fmt(s.frameMsP95, 1)} ms`;
+    console.log(`\nscale sweep (${sweepRow.n} units): ${sweepRow.frame.byScale.map(fmtScale).join(' | ')}`);
+  } else if (rows[0]?.frame?.sweepSkipped) {
+    console.log(`\nscale sweep skipped: ${rows[0].frame.sweepSkipped}`);
   }
 
   const rigRows = rows.filter((r) => (r.rigCost?.units ?? 0) + (r.rigCost?.animals ?? 0) > 0);

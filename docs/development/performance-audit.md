@@ -8,9 +8,66 @@
 > Entorno: Linux x64, Intel i7-13700 (24 hilos), Node 22.23.2, Chromium/SwiftShader (sin GPU),
 > viewport 1280×800, `?low=1`, niebla activada, seed 777 (escala) y seeds 777–796 (IA).
 
-
-
 ---
+
+## Render en GPU real (#447)
+
+Primera medición del render con hardware real: `yarn bench --gpu` desactiva SwiftShader y **falla** si el
+navegador vuelve a renderizar en software, así que un número ya no puede fingir que es hardware. Desbloquea el
+pendiente de las secciones anteriores (*"hace falta una pasada con GPU real"*).
+
+Host de esta tanda: Linux x64, **Intel Graphics (RPL-S) iGPU** vía ANGLE/Vulkan en Chromium headless,
+`mixed`, seed 777, 300 pasos, 300 unidades. El host estaba **compartido** (load average 10–13 durante toda la
+tanda), así que **los tiempos son indicativos y no comparables**: los draw calls y triángulos sí son
+estructurales y no dependen del host. El JSON guarda `loadavgBefore`/`loadavgAfter` para no repetir el error.
+
+| configuración | draw calls | tris | draw/ud | frame avg/p95/p99 | submit (mediana) | submit/frame |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| directo, 1280×800, overview, low | 2 795 | 2.48M | 9.0 | 99.5/134.2/134.2 ms | 57.8 ms | 60 % |
+| postfx, 1920×1080, mid, high | 5 243 | 5.11M | 16.9 | 127.5/150.2/150.2 ms | 84.1 ms | 67 % |
+
+Desglose por pase (mediana de submit y draw calls por frame; `main` y `refraction` descuentan las sombras que
+contienen):
+
+| pase | directo | postfx |
+| --- | ---: | ---: |
+| escena principal | 45.7 ms / 2 434 | 31.1 ms / 2 257 |
+| sombras | 12.8 ms / 361 | **17.7 ms / 712** |
+| refracción del agua | — | **34.5 ms / 2 256** |
+| quads de post-proceso | — | 0.2 ms / 18 |
+| JS/GL restante | ≈0 | ≈0.1 |
+
+Lectura:
+
+1. **Las sombras se dibujan dos veces con post-proceso.** 712 draws ≈ 2 × 356: `three` ejecuta el pase de sombras
+   dentro de **cada** `renderer.render`, y el frame con post-proceso hace dos pases de escena (refracción +
+   compositor). Fijar `shadowMap.autoUpdate = false` y pedir `needsUpdate` una vez por frame ahorra un pase
+   completo sin cambiar el look — es el arreglo más barato del #240.
+2. **La refracción del agua cuesta otro pase de escena completo**: 2 256 draws y 34.5 ms, más que la escena
+   principal. Solo alimenta el shader del agua: desactivarla, bajarla a media resolución o reutilizar el render
+   del compositor recupera ~1/3 del frame con post-proceso.
+3. **9–17 draw calls por unidad** confirma la hipótesis del #240: el coste escala con los **materiales distintos
+   por unidad** (que además se clonan por instancia), no con el número de mallas.
+4. **El submit es la mayor parte del frame** (60–67 %), pero el barrido de resolución no sirvió para separar
+   CPU de GPU en esta tanda: 1× → 0.75× → 0.5× dio 96.4 → 96.5 → 148.4 ms, sin relación monótona, porque el host
+   estaba saturado. Hace falta repetirlo en una máquina libre:
+   `yarn bench:gpu --units=300 --passes=1 --scale-sweep=1` (el barrido solo corre en modo directo: el
+   `EffectComposer` mantiene su propio pixel ratio, #449).
+5. **La simulación no es el problema.** Sus p50 (8.9–12.0 ms) están inflados por el host; el baseline en reposo
+   de las secciones anteriores (1.7 ms/paso a 1000 uds) sigue siendo la referencia.
+
+Consecuencia para el plan: el orden de ataque del #240 pasa a ser (1) sombra única por frame, (2) matar o
+abaratar la refracción, (3) materiales compartidos + atlas por arquetipo, (4) instancing. Ninguno de los dos
+primeros cuesta una semana y los dos son medibles con este mismo bench.
+
+Reproducir:
+
+```bash
+yarn bench --gpu --units=300 --scenario=mixed --steps=300 --passes=1 --scale-sweep=1
+yarn bench:gpu --units=300   # frame real (postfx, 1080p, mid) con pases y barrido
+```
+
+Sin `--gpu`, los mismos comandos vuelven a SwiftShader (y el run falla igualmente al detectarlo).
 
 ## Assets y carga (#246)
 
