@@ -732,6 +732,7 @@ export class RuntimeController {
       const vis = this.game.fow.isVisible(b.pos.x, b.pos.z) || !this.game.settings.fogOfWar;
       if (b.view) b.view.group.visible = vis;
     }
+    this.game.revealOpeningWhileCinematic();
     this.game.fowTexture.upload();
     this.game.fow.decay();
   }

@@ -64,9 +64,11 @@ and the only "engine" of the mission is water.
 The legend is about eight siblings, so all eight are on the board from the start and read as leads:
 
 - **In the party**: Ayar Manco, Ayar Auca, Ayar Cachi, Ayar Uchu, Mama Huaco, Mama Ocllo, Mama Ipacura and
-  Mama Raua are tagged start units. Each carries a gold hero ring, a banner pole with an accent crest, a
-  `★` nameplate and a tinted tunic in its commander accent; the selection panel shows the portrait, name,
-  role and hero badge. The 3D body is still the shared ayllu rig; unique outfits are the next art pass.
+  Mama Raua are tagged start units. Each carries a gold hero ring, a banner pole (standing beside the
+  figure) with an accent crest, a `★` nameplate in the legible parchment colour and a tunic, headband and
+  macana tinted with its commander accent; the selection panel shows the portrait, name, hero badge and
+  role. The accent is a presentation device to tell the eight apart, **not** a claim about Inca attire: the
+  bodies are still the shared ayllu rig, and unique outfits are the next art pass.
 - **In the briefing**: the eight portraits (Ayar Manco, Ayar Auca, Ayar Cachi, Ayar Uchu, Mama Huaco, Mama
   Ocllo, Mama Ipacura, Mama Raua) use the procedural stylized medallions; no new art is needed.
 - **Myth beats**: Ayar Cachi is retired at Tambo Quiro, Ayar Uchu at Huanacaure and Ayar Auca at Inticancha.
@@ -79,6 +81,10 @@ The legend is about eight siblings, so all eight are on the board from the start
 
 - The opening camera holds the cave mouth (with torches and a path) and flies down to the camp; the first
   objective is `Sal de Tambotoco con los ocho`, not a generic camp start.
+- The cave clearing is lit while the opening holds it and stays explored afterwards, so the landmark the
+  story starts from never sits under black or blue-tinted fog.
+- The ayllu site is exempt from the injected fog shader: that shader whitens the merged vertex-coloured
+  site on software rendering (SwiftShader), which is how the captures and recordings are produced.
 - Three narrated beats: the cave, Huanacaure, the valley.
 - Three chapter cards: Ayar Uchu en Huanacaure, el agua de los alcabizas and Ayar Auca en Inticancha.
 - Victory: Inticancha and its four canchas; the epilogue tells the foundation as tradition and names the
@@ -99,6 +105,14 @@ open the acequia, lay out the canchas.
   selection, epilogue, intro art, geography, layout, save/load and the campaign path.
 - A real-command playtest through the four acts.
 - `yarn record --mission=m_tambotoco --mode=clip|full`: in-engine recording for review, with a JSON timeline.
+
+## Evidence
+
+- `node scripts/shots_evidence.mjs --scene=tambotoco-cave` → `docs/media/tambotoco-cave.webp`: the cave
+  with fog on, at the opening hold.
+- `node scripts/shots_evidence.mjs --scene=tambotoco-heroes` → `docs/media/tambotoco-heroes.webp` (close)
+  and `docs/media/tambotoco-heroes-rts.webp` (field markers). Both scenes render at 1600×900 and the WebP
+  copies are resized to 960×540, WebP q58.
 
 ## Open items
 

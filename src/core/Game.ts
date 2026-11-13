@@ -630,8 +630,12 @@ export class Game {
     this.fow = new Fow(s.mapSize, 128);
     const opening = this.missionLayout?.opening;
     if (opening && this.siteDef?.openingHeight) {
-      // The opening frames the cave before the camp units can see it: mark its clearing explored.
-      this.fow.explore(opening.x * s.mapSize, opening.z * s.mapSize, 40);
+      // The opening frames the cave before the camp units can see it: light it for the hold and keep
+      // its clearing explored afterwards so it never sits under black fog.
+      const x = opening.x * s.mapSize;
+      const z = opening.z * s.mapSize;
+      this.fow.reveal(x, z, 26);
+      this.fow.explore(x, z, 40);
     }
     this.fowTexture = new FowTexture(this.fow);
     this.terrain.setFow(this.fowTexture.texture, s.fogOfWar);
@@ -1025,8 +1029,9 @@ export class Game {
     if (!this.missionLayout?.site && !this.missionLayout?.opening) return;
     const c = this.playerCenter(0);
     const opening = this.missionLayout?.opening;
-    if (opening && this.siteDef?.openingHeight) {
-      // The title card and the opening hold the cave, not the camp: the legend starts there.
+    if (this.introEnabled && opening && this.siteDef?.openingHeight) {
+      // The title card and the opening flight hold the cave, not the camp: the legend starts there.
+      // Without the intro the player starts looking at the camp, not at a cave they already left.
       const size = this.settings.mapSize;
       this.camera.moveTo(opening.x * size, opening.z * size, true);
       this.camera.setHeight(this.siteDef.openingHeight);
@@ -1038,6 +1043,18 @@ export class Game {
   /** True while the opening flight or the chapter title card is holding the mission clock. */
   isCinematicActive(): boolean {
     return this.camera.isFlying() || this.hud.isMissionCardOpen();
+  }
+
+  /**
+   * Keep the cave lit while the opening holds it. Fog decays visible cells to explored every frame and
+   * no unit stands at the cave yet, so without this the story's landmark is born under a blue fog tint.
+   */
+  revealOpeningWhileCinematic(): void {
+    if (!this.introEnabled || !this.isCinematicActive()) return;
+    const opening = this.missionLayout?.opening;
+    if (!opening || !this.siteDef?.openingHeight) return;
+    const size = this.settings.mapSize;
+    this.fow.reveal(opening.x * size, opening.z * size, 26);
   }
 
   /** Campaign intro: a short overview flight down to the player's base. */

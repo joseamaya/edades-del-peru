@@ -39,7 +39,8 @@ export class CharacterLabels {
         if (fade <= 0.02) continue;
         label = labelSprite(commanderLabel(commander), {
           fontSize: 44,
-          color: commander.accent ?? (unit.owner === 0 ? '#f6e7bf' : '#e8b7a0'),
+          // The accent lives on the hero ring, crest and HUD portrait; the name stays legible.
+          color: unit.owner === 0 ? '#f6e7bf' : '#e8b7a0',
           paddingX: 16,
           paddingY: 8,
         });

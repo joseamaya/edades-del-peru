@@ -67,12 +67,13 @@ export class HeroMarkers {
       this.rings.setMatrixAt(i, _dummy.matrix);
       this.rings.setColorAt(i, GOLD);
 
-      _dummy.position.set(unit.pos.x, unit.pos.y + 1.3, unit.pos.z);
+      // The pole stands beside the hero, not through the body; the ring stays under the feet.
+      _dummy.position.set(unit.pos.x + 0.85, unit.pos.y + 1.3, unit.pos.z - 0.25);
       _dummy.scale.set(1, 1, 1);
       _dummy.updateMatrix();
       this.poles.setMatrixAt(i, _dummy.matrix);
 
-      _dummy.position.set(unit.pos.x, unit.pos.y + 3.02, unit.pos.z);
+      _dummy.position.set(unit.pos.x + 0.85, unit.pos.y + 3.02, unit.pos.z - 0.25);
       _dummy.rotation.set(0, 0, 0);
       _dummy.updateMatrix();
       this.crests.setMatrixAt(i, _dummy.matrix);

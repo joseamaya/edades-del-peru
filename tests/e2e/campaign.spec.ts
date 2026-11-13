@@ -1139,7 +1139,7 @@ test('Lima grows from a traced plaza into the colonial city', async ({ page }) =
   expect(errors).toEqual([]);
 });
 
-test('the cave is explored and framed at the Tambotoco opening with fog on', async ({ page }) => {
+test('the cave is explored with fog on and the intro is what frames it', async ({ page }) => {
   test.setTimeout(90_000);
   await page.goto('/?mission=m_tambotoco&seed=777&low=1&intro=0&noloop=1');
   const briefing = page.locator('.ed-briefing');
@@ -1161,12 +1161,13 @@ test('the cave is explored and framed at the Tambotoco opening with fog on', asy
         : null,
       caveExplored: g.fow.isExplored(40, 55) as boolean,
       openingHeight: g.siteDef?.openingHeight ?? null,
+      baseZ: (g.missionLayout?.base.z ?? 0) * g.settings.mapSize,
       camera: g.camera.getTarget(),
     };
   });
   expect(out.fogOn).toBe(true);
   expect(out.caveExplored, 'the cave must not sit under unexplored fog').toBe(true);
   expect(out.openingHeight).toBe(30);
-  expect(out.camera.z).toBeGreaterThan(55);
-  expect(out.camera.z).toBeLessThan(70);
+  // ?intro=0 skips the cave hold: the skipped intro must not leave the player parked at the cave.
+  expect(out.camera.z).toBeGreaterThan(out.baseZ - 25);
 });
