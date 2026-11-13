@@ -180,10 +180,10 @@ async function playMission(page, plan) {
     throw new Error('full mode autoplays the m_tambotoco act shape; use --mode=clip for another mission');
   }
 
-  await look(page, null, 40);
+  await look(page, null, 36, 'all');
   const worker = await firstUnit(page, 'worker');
   if (worker) await move(page, [worker], plan.start);
-  await waitObjective(page, 'a1_salida', 'completed', 120_000, deadline, () => look(page, null, 38));
+  await waitObjective(page, 'a1_salida', 'completed', 120_000, deadline, () => look(page, null, 32, 'workers'));
   if (await hasEnded(page)) return;
 
   if (plan.tamboQuiro) {
@@ -191,12 +191,12 @@ async function playMission(page, plan) {
     await page.waitForTimeout(4000);
   }
   await gather(page);
-  await waitObjective(page, 'a1_caza', 'completed', 420_000, deadline, () => look(page, null, 38));
+  await waitObjective(page, 'a1_caza', 'completed', 420_000, deadline, () => look(page, null, 31, 'workers'));
   if (await hasEnded(page)) return;
 
   const army = (await units(page)).filter((u) => u.kind !== 'worker').map((u) => u.id);
   await move(page, army, plan.heritage, true);
-  await visitWhenClose(page, plan.heritageId, plan.heritage, 15, 240_000, deadline, () => look(page, null, 36));
+  await visitWhenClose(page, plan.heritageId, plan.heritage, 15, 240_000, deadline, () => look(page, null, 30, 'army'));
   await waitObjective(page, 'a2_huanacaure', 'completed', 30_000, deadline);
   if (await hasEnded(page)) return;
 
@@ -204,19 +204,20 @@ async function playMission(page, plan) {
   await page.waitForTimeout(4000);
 
   await page.evaluate(() => window.game.toggleCanal());
+  await look(page, null, 31, 'workers');
   await waitObjective(page, 'a3_acequia', 'completed', 30_000, deadline);
   if (await hasEnded(page)) return;
 
   const workers = (await units(page, 'worker')).map((u) => u.id);
-  await look(page, plan.inticancha, 38);
+  await look(page, plan.inticancha, 32);
   const mill = await place(page, 'mill', plan.inticancha);
   if (mill) await issue(page, { kind: 'build', entityId: mill }, workers);
-  await waitObjective(page, 'a4_inticancha', 'completed', 240_000, deadline, () => look(page, null, 36));
+  await waitObjective(page, 'a4_inticancha', 'completed', 240_000, deadline, () => look(page, null, 30, 'workers'));
   if (await hasEnded(page)) return;
 
-  await look(page, { x: plan.inticancha.x + 6, z: plan.inticancha.z + 6 }, 26);
+  await look(page, { x: plan.inticancha.x + 6, z: plan.inticancha.z + 6 }, 24);
   await page.waitForTimeout(4000);
-  await look(page, plan.inticancha, 38);
+  await look(page, plan.inticancha, 32);
 
   for (const node of plan.canchas) {
     const house = await place(page, 'house', node);
@@ -227,7 +228,7 @@ async function playMission(page, plan) {
     if (builder === undefined) break;
     await issue(page, { kind: 'build', entityId: house }, [builder]);
   }
-  await waitObjective(page, 'a4_canchas', 'completed', 300_000, deadline, () => look(page, plan.inticancha, 36));
+  await waitObjective(page, 'a4_canchas', 'completed', 300_000, deadline, () => look(page, plan.inticancha, 30));
   await page.waitForFunction(() => window.game.gameEnded === true, null, { timeout: 60_000 }).catch(() => {});
 }
 
@@ -256,9 +257,9 @@ async function readPlan(page) {
 }
 
 /** Point the camera at the party (point null) or at a place, at a readable height. */
-async function look(page, point, zoom) {
+async function look(page, point, zoom, who = 'all') {
   await page.evaluate(
-    ({ point, zoom }) => {
+    ({ point, zoom, who }) => {
       const g = window.game;
       let x = point?.x ?? 0;
       let z = point?.z ?? 0;
@@ -266,6 +267,8 @@ async function look(page, point, zoom) {
         let n = 0;
         for (const u of g.units.values()) {
           if (u.owner !== 0 || u.dead) continue;
+          if (who === 'workers' && u.kind !== 'worker') continue;
+          if (who === 'army' && u.kind === 'worker') continue;
           x += u.pos.x;
           z += u.pos.z;
           n++;
@@ -282,7 +285,7 @@ async function look(page, point, zoom) {
       g.camera.focusOn(x, z);
       g.camera.setHeight(zoom);
     },
-    { point, zoom },
+    { point, zoom, who },
   );
 }
 
