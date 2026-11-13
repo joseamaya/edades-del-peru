@@ -95,7 +95,9 @@ The showcase exposes `bounds`, `lod0Triangles`, `lod1Triangles`, `drawCalls`, `m
   a dedicated placement rule and a decision between visual-only and obstacle.
 - The height (2.814) may read too flat at RTS zoom; this needs an in-game capture before integration.
 - The full-city GLB is **showcase only**. `m1_caral` now uses the exact Ciudades Sagradas
-  sacred-site GLB (`caral_site_lod0/1.glb`), not this showcase export and not the modular scenery.
+  sacred-site GLB (`caral_site_lod0/1.glb`), not this showcase export and not the modular scenery. The
+  release bundle imports only `caral_site_lod1.glb`; the 3.3 MB LOD0 is an authoring/preview source and
+  stays out of `dist/`. `?lod=0` falls back to LOD1 for this site (and reports `sourceLod = 1`).
 
 ## Chavín site source
 

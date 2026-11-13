@@ -1,5 +1,4 @@
 import type * as THREE from 'three';
-import siteLod0Url from '../assets/sites/caral/caral_site_lod0.glb?url';
 import siteLod1Url from '../assets/sites/caral/caral_site_lod1.glb?url';
 import chavinLod1Url from '../assets/sites/chavin/chavin_site_lod1.glb?url';
 import mocheLod0Url from '../assets/sites/moche/moche_site_lod0.glb?url';
@@ -22,7 +21,9 @@ import { loadStaticGltf } from './StaticModel';
 import type { AuthoredSiteId } from '../model/defs/sites';
 
 const SITE_MODEL_URLS: Partial<Record<AuthoredSiteId, { lod0: string; lod1: string }>> = {
-  caral_site: { lod0: siteLod0Url, lod1: siteLod1Url },
+  // The release bundle ships LOD1 only: Caral's 3.3 MB LOD0 preview stays in the repo for authoring
+  // but would eat the 25 MB dist budget. `?lod=0` falls back to LOD1 for this site.
+  caral_site: { lod0: siteLod1Url, lod1: siteLod1Url },
   // The phased kit draws the visible temple; the source GLB is only the hidden click-proxy fallback.
   chavin_site: { lod0: chavinLod1Url, lod1: chavinLod1Url },
   moche_site: { lod0: mocheLod0Url, lod1: mocheLod1Url },
@@ -39,7 +40,7 @@ const SITE_MODEL_URLS: Partial<Record<AuthoredSiteId, { lod0: string; lod1: stri
   tambotoco_site: { lod0: chancaLod0Url, lod1: chancaLod1Url },
 };
 
-/** Load the campaign site; LOD1 is the RTS default, `?lod=0` previews the master. */
+/** Load the campaign site; LOD1 is the RTS default, `?lod=0` previews the master when the bundle ships it. */
 export async function loadSiteModel(id: AuthoredSiteId): Promise<THREE.Group> {
   const params = new URLSearchParams(window.location.search);
   const requested = params.get('lod');
@@ -47,6 +48,7 @@ export async function loadSiteModel(id: AuthoredSiteId): Promise<THREE.Group> {
   const urls = SITE_MODEL_URLS[id];
   if (!urls) throw new Error(`[site] no model registered for ${id}`);
   const model = await loadStaticGltf(level === 0 ? urls.lod0 : urls.lod1, { draco: true });
-  model.userData.sourceLod = level;
+  // Caral ships only LOD1 (the 3.3 MB LOD0 is authoring-only), so do not report a master that is not there.
+  model.userData.sourceLod = level === 0 && urls.lod0 === urls.lod1 ? 1 : level;
   return model;
 }
