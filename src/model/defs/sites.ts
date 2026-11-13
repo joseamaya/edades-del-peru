@@ -67,6 +67,7 @@ import {
   TAMBOTOCO_SHRINE,
   TAMBOTOCO_VILLAGES,
 } from './tambotocoLayout';
+import { CUSCO_COLONIAL, LIMA_COLONIAL } from './colonialLayout';
 import {
   LIMA_GROUND,
   LIMA_GROUND_SIZE,
@@ -209,6 +210,8 @@ export interface AuthoredSiteDef {
   environs?: SiteEnvirons;
   /** Presentation-only living details (fire, smoke, fairground). */
   life?: SiteLife;
+  /** Phase from which the authored GLB stands; omitted means from the opening. */
+  modelSince?: string;
   /** Authored presentation family; the renderer picks the overlay from it. */
   style?: 'ayllu' | 'colonial';
   /** Source meshes hidden because the game heightfield/scene owns that layer. */
@@ -232,8 +235,29 @@ export const DEFAULT_SITE_TERRAIN: SiteTerrainStyle = {
 /** Uniform source-to-game scale for the Ciudades Sagradas Caral remaster. */
 export const CARAL_SITE_SCALE = 0.25;
 
+/** Houses and stalls of the colonial overlay block from their phase; the plaza itself stays open. */
+function colonialBlockers(layout: typeof LIMA_COLONIAL, phases: boolean): SiteBlocker[] {
+  return [
+    ...layout.traza.map((h) => ({
+      x: h.x,
+      z: h.z,
+      w: h.w + 0.6,
+      d: h.d + 0.6,
+      ...(phases ? { since: 'traza', until: 'ciudad' } : {}),
+    })),
+    ...layout.houses.map((h) => ({
+      x: h.x,
+      z: h.z,
+      w: h.w + 0.6,
+      d: h.d + 0.6,
+      ...(phases ? { since: 'ciudad' } : {}),
+    })),
+    { x: layout.well.x, z: layout.well.z, w: 2.4, d: 2.4, ...(phases ? { since: 'ciudad' } : {}) },
+  ];
+}
+
 /** Lima's plaza and cabildo: shared by the mission layout and the authored site. */
-export const LIMA_SITE_ORIGIN = { x: 90, z: 150 } as const;
+export const LIMA_SITE_ORIGIN = LIMA_COLONIAL.center;
 
 /**
  * The Sacred City sits on the east of the Supe-valley transect (scripts/build_caral_heightmap.py): its
@@ -726,9 +750,10 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     id: 'cusco_junta_site',
     label: 'Cusco y el camino de Umachiri',
     modelName: 'colonial_site',
+    style: 'colonial',
     scale: 0.65,
-    origin: { x: 72, z: 58 },
-    anchor: { x: 72, z: 58 },
+    origin: { ...CUSCO_COLONIAL.center },
+    anchor: { ...CUSCO_COLONIAL.center },
     cameraHeight: 56,
     framing: 'site-biased',
     heightField: {
@@ -741,8 +766,14 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       fords: [{ z: 200, halfWidth: 12 }],
     },
     pathCellSize: 1,
-    heritageProxies: [{ id: 'colonial_church', x: 72, z: 58, w: 9, d: 9, h: 6 }],
-    blockers: [{ x: 72, z: 58, w: 9, d: 9 }],
+    heritageProxies: [
+      { id: 'colonial_church', x: CUSCO_COLONIAL.center.x, z: CUSCO_COLONIAL.center.z, w: 9, d: 9, h: 6 },
+    ],
+    phases: { phases: ['ciudad'], initial: 'ciudad' },
+    blockers: [
+      { x: CUSCO_COLONIAL.center.x, z: CUSCO_COLONIAL.center.z, w: 9, d: 9 },
+      ...colonialBlockers(CUSCO_COLONIAL, false),
+    ],
     blockerPadding: 0.5,
     buildKeepout: [{ x: 72 / 256, z: 58 / 256, rx: 0.065, rz: 0.065 }],
     wallCollision: {
@@ -764,6 +795,8 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     id: 'lima_site',
     label: 'La Ciudad de los Reyes y el Rímac',
     modelName: 'colonial_site',
+    style: 'colonial',
+    modelSince: 'ciudad',
     scale: 0.65,
     origin: { ...LIMA_SITE_ORIGIN },
     anchor: { ...LIMA_SITE_ORIGIN },
@@ -777,8 +810,12 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       river: { path: LIMA_RIVER_PATH, halfWidth: LIMA_RIVER_HALF_WIDTH },
     },
     pathCellSize: 1,
+    phases: { phases: ['traza', 'ciudad'], initial: 'traza' },
     heritageProxies: [{ id: 'lima_plaza', x: LIMA_SITE_ORIGIN.x, z: LIMA_SITE_ORIGIN.z, w: 12, d: 10, h: 6 }],
-    blockers: [{ x: LIMA_SITE_ORIGIN.x, z: LIMA_SITE_ORIGIN.z, w: 12, d: 10 }],
+    blockers: [
+      { x: LIMA_SITE_ORIGIN.x, z: LIMA_SITE_ORIGIN.z, w: 12, d: 10 },
+      ...colonialBlockers(LIMA_COLONIAL, true),
+    ],
     blockerPadding: 0.5,
     buildKeepout: [{ x: LIMA_SITE_ORIGIN.x / 256, z: LIMA_SITE_ORIGIN.z / 256, rx: 0.07, rz: 0.065 }],
     wallCollision: {

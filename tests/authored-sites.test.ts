@@ -92,6 +92,11 @@ describe('authored campaign sites', () => {
     expect(site.heightField?.size).toBe(129);
     expect(site.heightField?.ground?.size).toBe(128);
     expect(site.heritageProxies.map((p) => p.id)).toEqual(['lima_plaza']);
+    expect(site.style).toBe('colonial');
+    expect(site.phases?.phases).toEqual(['traza', 'ciudad']);
+    expect(site.phases?.initial).toBe('traza');
+    expect(site.modelSince).toBe('ciudad');
+    expect(site.blockers.filter((b) => b.since === 'ciudad').length).toBeGreaterThan(10);
     const mission = MISSIONS.find((m) => m.id === 'm_lima')!;
     expect(mission.layout?.site?.id).toBe('lima_site');
   });
@@ -124,6 +129,7 @@ describe('authored campaign sites', () => {
     expect(site.heightField?.river?.halfWidth).toBe(4.5);
     expect(site.heritageProxies.map((p) => p.id)).toEqual(['colonial_church']);
     expect(site.walkableCorridor?.width).toBe(8);
+    expect(site.style).toBe('colonial');
     const mission = MISSIONS.find((m) => m.id === 'm_junta_cusco')!;
     expect(mission.layout?.site?.id).toBe('cusco_junta_site');
   });

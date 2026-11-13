@@ -171,6 +171,15 @@ async function recordClip(page, plan) {
     await look(page, { x: plan.inticancha.x, z: plan.inticancha.z + 4 }, 42);
     await hold(8);
   }
+  if (plan.site) {
+    await look(page, plan.site, 34);
+    await hold(6);
+    if (mission === 'm_lima') {
+      await page.evaluate(() => window.game.setSitePhase('ciudad'));
+      await look(page, plan.site, 34);
+      await hold(8);
+    }
+  }
   await look(page, null, 36);
   await hold(5);
 }
@@ -258,6 +267,7 @@ async function readPlan(page) {
       canchas: objective('a4_canchas')?.nodes?.map(point) ?? [],
       tamboQuiro: memory('ayar_cachi')?.pos ? point(memory('ayar_cachi').pos) : null,
       hualla: objective('a3_hualla')?.pos ? point(objective('a3_hualla').pos) : null,
+      site: window.game.siteCenter ? { ...window.game.siteCenter } : null,
     };
   });
 }

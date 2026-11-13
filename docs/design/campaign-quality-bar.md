@@ -190,53 +190,53 @@ geometry gate (`tests/e2e/hud-layout.spec.ts`).
 ## La Junta del Cusco playable status (m_junta_cusco)
 
 `m_junta_cusco` is the released opening of La Independencia. It is the first mission built after the
-redesign and the first one to use the 256 m Cusco–Umachiri transect. The table is honest about the city
-art and performance passes, which are still open.
+redesign and the first one to use the 256 m Cusco–Umachiri transect; its colonial city is dressed with a
+procedural life overlay (houses, market, well and people).
 
-| Gate        | m_junta_cusco                                                                                                                                                                          |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| History     | Met: `docs/historia/campanas/junta_cusco.md` with a certainty table; the epilogue tells the documented defeat.                                                                         |
-| Identity    | Met: many people and few firearms; the player delays Ramírez and saves the leaders, not the war.                                                                                       |
-| Play        | Met (automated wiring): the three-act chain completes with move/build/attack orders; attrition is isolated in the test and the no-cheat manual playtest is pending.                    |
-| Contract    | Met: Acts II–III hidden, optional Melgar and the Junta's artillery never gate victory, Pumacahua protected from the start.                                                             |
-| Onboarding  | Met: six-step non-blocking tutorial, briefing and Codex.                                                                                                                               |
-| Closure     | Met: epilogue states Umachiri, the executions and Melgar; no counterfactual is hidden.                                                                                                 |
-| UX          | Met: `hud-layout.spec.ts` at 1280×720 and the later-campaign layout check at 1600×900.                                                                                                 |
-| Visuals     | Partial: authored 256 m transect, painted ground, the colonial plaza/cabildo and in-engine intro/chapter/epilogue captures; the Cusco city overlay is still a typological abstraction. |
-| Persistence | Met: save/load round-trip in `save-campaign.spec.ts`.                                                                                                                                  |
-| Tests       | Met: `tests/junta-cusco.test.ts`, scale, campaign path and the campaign E2E specs.                                                                                                     |
-| Docs        | Met: dossier, `junta-cusco-model-mission.md`, this table and the redesign status.                                                                                                      |
-| Performance | Pending: high-preset opening ~738k triangles / ~982 draw calls, dominated by unit rigs; over art-direction §11's 600k/200 budget and not registered as a passing bench scene.          |
-| Art         | N/A for new models: the mission reuses the colonial plaza GLB; the captures are in-engine and documented in PROVENANCE.                                                                |
-| Structure   | Met: three acts with hidden objectives, two chapter cards, optional Melgar/artillery goals and the documented ending.                                                                  |
-| Opening     | Met: three narrated beats with in-engine captures, two act cards and the epilogue backdrop.                                                                                            |
-| Scale       | Met: 256 m transect, 128² painted ground and worker crossing ≈2:22 (`tests/campaign-scale.test.ts`).                                                                                   |
+| Gate        | m_junta_cusco                                                                                                                                                                               |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| History     | Met: `docs/historia/campanas/junta_cusco.md` with a certainty table; the epilogue tells the documented defeat.                                                                              |
+| Identity    | Met: many people and few firearms; the player delays Ramírez and saves the leaders, not the war.                                                                                            |
+| Play        | Met (automated wiring): the three-act chain completes with move/build/attack orders; attrition is isolated in the test and the no-cheat manual playtest is pending.                         |
+| Contract    | Met: Acts II–III hidden, optional Melgar and the Junta's artillery never gate victory, Pumacahua protected from the start.                                                                  |
+| Onboarding  | Met: six-step non-blocking tutorial, briefing and Codex.                                                                                                                                    |
+| Closure     | Met: epilogue states Umachiri, the executions and Melgar; no counterfactual is hidden.                                                                                                      |
+| UX          | Met: `hud-layout.spec.ts` at 1280×720 and the later-campaign layout check at 1600×900.                                                                                                      |
+| Visuals     | Partial: authored 256 m transect, painted ground, the colonial plaza/cabildo, the procedural colonial streets and in-engine captures; the kit is an abstraction, a Blender pass is pending. |
+| Site        | Met: the colonial city stands from the opening (the historical Cusco predates the Junta), with houses, stalls, a well and people; no construction phase is invented.                        |
+| Persistence | Met: save/load round-trip in `save-campaign.spec.ts`.                                                                                                                                       |
+| Tests       | Met: `tests/junta-cusco.test.ts`, scale, campaign path and the campaign E2E specs.                                                                                                          |
+| Docs        | Met: dossier, `junta-cusco-model-mission.md`, this table and the redesign status.                                                                                                           |
+| Performance | Partial: ~741k triangles / ~986 draw calls, dominated by unit rigs; passes the 780k/1000 regression cap but remains over art-direction §11's 600k/200 target.                               |
+| Art         | N/A for new models: the mission reuses the colonial plaza GLB; the captures are in-engine and documented in PROVENANCE.                                                                     |
+| Structure   | Met: three acts with hidden objectives, two chapter cards, optional Melgar/artillery goals and the documented ending.                                                                       |
+| Opening     | Met: three narrated beats with in-engine captures, two act cards and the epilogue backdrop.                                                                                                 |
+| Scale       | Met: 256 m transect, 128² painted ground and worker crossing ≈2:22 (`tests/campaign-scale.test.ts`).                                                                                        |
 
 ## La Ciudad de los Reyes playable status (m_lima)
 
 `m_lima` is the released opening of El Virreinato. It uses a 256 m coast transect (sea, Rímac, Lima plain,
-Quizu's hills) and reuses the colonial plaza GLB for the traza. The table separates what is implemented
-from the art and performance passes still open.
+Quizu's hills) and starts as the traced plaza; the colonial church and the streets appear with the cabildo.
 
-| Gate        | m_lima                                                                                                                           |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| History     | Met: `docs/historia/campanas/lima.md` with a certainty table; the valley was inhabited and the defence relied on Andean allies.  |
-| Identity    | Met: found the city and hold the siege; the curaca pact is optional.                                                             |
-| Play        | Met (automated): three acts complete with real move/build/attack orders; a manual playtest is pending.                           |
-| Contract    | Met: Act II–III hidden, the curaca pact optional, Pizarro protected from the start.                                              |
-| Onboarding  | Met: six-step tutorial, briefing and Codex.                                                                                      |
-| Closure     | Met: the epilogue states that Cusco remains besieged; no counterfactual is hidden.                                               |
-| UX          | Met: the campaign layout check at 1600×900 and `hud-layout.spec.ts` at 1280×720.                                                 |
-| Visuals     | Partial: authored 256 m coast transect, the reused colonial plaza and in-engine captures; no Lima traza kit.                     |
-| Site        | Partial: the plaza/church is the reused colonial GLB; no phase plan or living traza.                                             |
-| Persistence | Met: save/load round-trip in `save-campaign.spec.ts`.                                                                            |
-| Tests       | Met: `tests/lima.test.ts`, scale, campaign path and the campaign E2E specs.                                                      |
-| Docs        | Met: dossier, `lima-model-mission.md`, this table and the redesign status.                                                       |
-| Performance | Met within its first-pass budget: ~763k triangles / ~839 draw calls, under the 860-call cap; tightening to 200 is the follow-up. |
-| Art         | N/A for new models: the plaza is the reused colonial GLB; captures are in-engine and documented.                                 |
-| Structure   | Met: three acts with hidden objectives, two chapter cards and the documented siege.                                              |
-| Opening     | Met: three narrated beats with in-engine captures, two act cards and the epilogue backdrop.                                      |
-| Scale       | Met: 256 m transect, 128² painted ground and worker crossing ≈2:22 (`tests/campaign-scale.test.ts`).                             |
+| Gate        | m_lima                                                                                                                                                                |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| History     | Met: `docs/historia/campanas/lima.md` with a certainty table; the valley was inhabited and the defence relied on Andean allies.                                       |
+| Identity    | Met: found the city and hold the siege; the curaca pact is optional.                                                                                                  |
+| Play        | Met (automated): three acts complete with real move/build/attack orders; a manual playtest is pending.                                                                |
+| Contract    | Met: Act II–III hidden, the curaca pact optional, Pizarro protected from the start.                                                                                   |
+| Onboarding  | Met: six-step tutorial, briefing and Codex.                                                                                                                           |
+| Closure     | Met: the epilogue states that Cusco remains besieged; no counterfactual is hidden.                                                                                    |
+| UX          | Met: the campaign layout check at 1600×900 and `hud-layout.spec.ts` at 1280×720.                                                                                      |
+| Visuals     | Partial: authored 256 m coast transect, a traced plaza phase, the colonial church and houses/stalls/people; the kit is procedural and a Blender pass is pending.      |
+| Site        | Met: `traza` (cord, packed plaza, provisional shelters) → `ciudad` (church, ten houses, market, well, people) triggered by the cabildo.                               |
+| Persistence | Met: save/load round-trip in `save-campaign.spec.ts`.                                                                                                                 |
+| Tests       | Met: `tests/lima.test.ts`, scale, campaign path and the campaign E2E specs.                                                                                           |
+| Docs        | Met: dossier, `lima-model-mission.md`, this table and the redesign status.                                                                                            |
+| Performance | Partial: opening ~767k / ~834 under 800k/860; the city with the siege crowd is ~1.06M / ~1,227 under the 1.1M/1,250 regression cap, still over §11's 600k/200 target. |
+| Art         | N/A for new Blender models: the plaza is the reused colonial GLB and the streets are procedural; captures are in-engine.                                              |
+| Structure   | Met: three acts with hidden objectives, two chapter cards and the documented siege.                                                                                   |
+| Opening     | Met: three narrated beats with in-engine captures, two act cards and the epilogue backdrop.                                                                           |
+| Scale       | Met: 256 m transect, 128² painted ground and worker crossing ≈2:22 (`tests/campaign-scale.test.ts`).                                                                  |
 
 ## Los hijos de Tambotoco playable status (m_tambotoco)
 
