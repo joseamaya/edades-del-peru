@@ -26,8 +26,8 @@ instead of the modular landmark or a hand-built schematic:
 - **Source**: `ciudades-sagradas/public/cities/caral/model_lod0.glb` and
   `model_lod1.glb`, from the `caral_remaster_v2.blend` source scene.
 - **Assets**: copied to `src/assets/sites/caral/caral_site_lod0.glb` and
-  `caral_site_lod1.glb`; LOD1 is the default runtime mesh, `?lod=0` previews the
-  LOD0 detail mesh.
+  `caral_site_lod1.glb`; LOD1 is the default runtime mesh and the only site LOD shipped in `dist/`
+  (the 3.3 MB LOD0 is authoring-only, so `?lod=0` falls back to LOD1).
 - **Loader**: `src/rendering/siteModels.ts` and `src/rendering/StaticModel.ts`
   decode Draco + WebP. `Infra_Terrain` and `Infra_Reference` are hidden.
 - **Transform**: the source is scaled uniformly by `0.25` and translated so the

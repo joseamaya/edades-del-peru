@@ -97,7 +97,7 @@ The showcase exposes `bounds`, `lod0Triangles`, `lod1Triangles`, `drawCalls`, `m
 - The full-city GLB is **showcase only**. `m1_caral` now uses the exact Ciudades Sagradas
   sacred-site GLB (`caral_site_lod0/1.glb`), not this showcase export and not the modular scenery. The
   release bundle imports only `caral_site_lod1.glb`; the 3.3 MB LOD0 is an authoring/preview source and
-  stays out of `dist/`. `?lod=0` falls back to LOD1 for this site.
+  stays out of `dist/`. `?lod=0` falls back to LOD1 for this site (and reports `sourceLod = 1`).
 
 ## Chavín site source
 

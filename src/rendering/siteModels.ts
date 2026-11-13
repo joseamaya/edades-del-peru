@@ -40,7 +40,7 @@ const SITE_MODEL_URLS: Partial<Record<AuthoredSiteId, { lod0: string; lod1: stri
   tambotoco_site: { lod0: chancaLod0Url, lod1: chancaLod1Url },
 };
 
-/** Load the campaign site; LOD1 is the RTS default, `?lod=0` previews the master. */
+/** Load the campaign site; LOD1 is the RTS default, `?lod=0` previews the master when the bundle ships it. */
 export async function loadSiteModel(id: AuthoredSiteId): Promise<THREE.Group> {
   const params = new URLSearchParams(window.location.search);
   const requested = params.get('lod');
@@ -48,6 +48,7 @@ export async function loadSiteModel(id: AuthoredSiteId): Promise<THREE.Group> {
   const urls = SITE_MODEL_URLS[id];
   if (!urls) throw new Error(`[site] no model registered for ${id}`);
   const model = await loadStaticGltf(level === 0 ? urls.lod0 : urls.lod1, { draco: true });
-  model.userData.sourceLod = level;
+  // Caral ships only LOD1 (the 3.3 MB LOD0 is authoring-only), so do not report a master that is not there.
+  model.userData.sourceLod = level === 0 && urls.lod0 === urls.lod1 ? 1 : level;
   return model;
 }
