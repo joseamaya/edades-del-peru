@@ -4,6 +4,14 @@ import * as THREE from 'three';
  * Water with Gerstner waves, fresnel, sun glints, shore foam
  * and specular reflection. Dedicated ShaderMaterial.
  */
+
+/**
+ * Resolution of the refraction source relative to the drawing buffer. The pass re-renders the whole
+ * scene, so it is the most expensive single thing the frame does; the water only uses it for a subtle
+ * screen-space distortion of the seabed, and half resolution is indistinguishable in the captures
+ * (mean pixel delta 0.04/255) while removing ~a third of the pass (#460).
+ */
+const REFRACTION_SCALE = 0.5;
 export class Water {
   /** Share of the region's aerial fog applied to the water (a pale sky tint washes dark water out). */
   private fogScale = 1;
@@ -275,7 +283,10 @@ export class Water {
   }
 
   setSize(width: number, height: number): void {
-    this.refractionRT.setSize(Math.max(1, Math.floor(width)), Math.max(1, Math.floor(height)));
+    this.refractionRT.setSize(
+      Math.max(1, Math.floor(width * REFRACTION_SCALE)),
+      Math.max(1, Math.floor(height * REFRACTION_SCALE)),
+    );
   }
 
   update(time: number): void {

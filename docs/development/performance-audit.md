@@ -96,8 +96,8 @@ post-proceso y al de refracción (#458).
    (antes 40.3). El discriminador es ahora el conteo (358 ≈ 1 × 364 del frame directo), no la columna
    `shadowFrames`.
 3. **La refracción del agua cuesta otro pase de escena completo**: 24,0 ms y 2 312 draws, prácticamente los
-   mismos draws que la escena principal y más tiempo, y solo alimenta el shader del agua. Desactivarla, bajarla a
-   media resolución o reutilizar el render del compositor recupera ~1/4 del frame con post-proceso.
+   mismos draws que la escena principal y más tiempo, y solo alimenta el shader del agua. **Atacado en #460**: el
+   `refractionRT` se dimensionaba al drawing buffer y ahora va a la mitad (ver §"Refracción a media resolución").
 4. **8–10 draw calls por unidad en directo y 17 con post-proceso.** La escena tiene 3 780 materiales únicos para
    309 unidades: el coste escala con los **materiales distintos por unidad** (que además se clonan por
    instancia), no con el número de mallas. La diferencia 8 → 17 es el pase extra de refracción, no más
@@ -110,6 +110,34 @@ Consecuencia para el plan: el orden de ataque del #240 pasa a ser (1) sombra ún
 abaratar la refracción, (3) materiales compartidos + atlas por arquetipo, (4) instancing. Y por separado, el
 presupuesto de simulación por frame (PATH-1) vuelve a estar en la lista para 500+ unidades, porque a esa escala
 ya se come la mitad del frame.
+
+### Refracción a media resolución (#460)
+
+El pase de refracción re-renderiza la escena entera, pero el agua solo usa el resultado para un desplazamiento de
+UV suave (`refractionStrength` 0.012) mezclado por `(1 - fresnel)`; nadie mira esa imagen de cerca. El
+`refractionRT` pasa a la mitad del drawing buffer.
+
+m1_caral, 1600×900, calidad alta, muestras **intercaladas** en la misma página:
+
+| `refractionRT` | frame p50 | Δ |
+| --- | ---: | ---: |
+| completo (1600×900) | 44.4 / 41.8 ms | — |
+| mitad (800×450) | 39.0 ms | −12 % |
+| cuarto (400×225) | 35.1 ms | −20 % |
+| sin refracción | 31.2 / 28.1 ms | −33 % |
+
+Diferencia de píxeles contra el frame completo (misma cámara y semilla):
+
+| variante | media /255 | píxeles con Δ > 12 |
+| --- | ---: | ---: |
+| mitad | 0.04 | 0.03 % |
+| cuarto | 0.05 | 0.05 % |
+| sin refracción | 1.79 | 7.9 % |
+
+Reducir la resolución es indistinguible a ojo (la distorsión es sutil y suave); quitar la refracción sí se nota.
+Medido en el juego: m1_caral pasa de 34.8 a **32.0 ms** p50 y de 59.6 a **43.0 ms** p99 (corridas separadas, misma
+carga aproximada, así que vale como indicativo). El cuarto de resolución queda como opción documentada: solo está
+validado con dos encuadres.
 
 ### Reproducir
 
