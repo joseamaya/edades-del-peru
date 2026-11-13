@@ -395,3 +395,59 @@ describe('mission delivery objectives', () => {
     expect(loaded.getObjectiveState('gated')).toBe('activo');
   });
 });
+
+function mythSetup() {
+  const unit = {
+    id: 1,
+    tag: 'ayar_cachi',
+    owner: 0,
+    dead: false,
+    kind: UnitKind.SOLDIER,
+    pos: { x: 4, z: 5 },
+  };
+  const game = stubGame(unit) as any;
+  const calls = { retired: [] as string[], stones: [] as { id: string; x: number; z: number; label: string }[] };
+  game.retireCharacter = (tag: string) => {
+    calls.retired.push(tag);
+    return { x: 70, z: 91 };
+  };
+  game.raiseMemoryStone = (id: string, x: number, z: number, label: string) => calls.stones.push({ id, x, z, label });
+  const mythDef: MissionDef = {
+    ...def,
+    objectives: [{ id: 'wait', kind: 'wait', time: 60, title: 'esperar' }],
+    triggers: [
+      {
+        id: 't_cachi',
+        condition: { type: 'time', seconds: 1 },
+        effects: [{ type: 'memory', tag: 'ayar_cachi', pos: { dx: 70, dz: 91 }, label: 'Huaca de Ayar Cachi' }],
+      },
+    ],
+  };
+  return { game, calls, mythDef };
+}
+
+describe('mission myth beats', () => {
+  it('retires the character and raises the huaca at the scripted point', () => {
+    const { game, calls, mythDef } = mythSetup();
+    const m = new Mission(game, mythDef, () => {});
+    m.start();
+    m.update(1.2, 0);
+    expect(calls.retired).toEqual(['ayar_cachi']);
+    expect(calls.stones).toEqual([{ id: 'ayar_cachi', x: 70, z: 91, label: 'Huaca de Ayar Cachi' }]);
+  });
+
+  it('rebuilds the huaca markers of triggers that already ran on load', () => {
+    const { game, calls, mythDef } = mythSetup();
+    const m = new Mission(game, mythDef, () => {});
+    m.start();
+    m.update(1.2, 0);
+    const save = m.toSave();
+    calls.retired.length = 0;
+    calls.stones.length = 0;
+
+    const loaded = new Mission(game, mythDef, () => {});
+    loaded.start();
+    loaded.applySave(save);
+    expect(calls.stones).toEqual([{ id: 'ayar_cachi', x: 70, z: 91, label: 'Huaca de Ayar Cachi' }]);
+  });
+});

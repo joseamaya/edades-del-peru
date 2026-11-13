@@ -915,3 +915,71 @@ test('a bonus objective does not gate victory', async ({ page }) => {
   expect(out.bonus).not.toBe('completed');
   expect(out.won).toBe(true);
 });
+
+test('the Ayar cast is on the board and named after the briefing', async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 1280, height: 720 });
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/?mission=m_tambotoco&seed=777&fog=0&low=1&intro=0&noloop=1');
+  const briefing = page.locator('.ed-briefing');
+  await briefing.waitFor({ state: 'visible', timeout: 30_000 });
+  // Eight siblings: the briefing is the legend's cast list, not two generic commanders.
+  await expect(briefing.locator('.ed-cmd-card')).toHaveCount(8);
+  await expect(briefing.locator('.ed-cmd-card', { hasText: 'Ayar Manco' })).toBeVisible();
+  // At 1280×720 the whole briefing fits without a hidden cast row.
+  const box = await briefing.evaluate((el) => ({ scroll: el.scrollHeight, client: el.clientHeight }));
+  expect(box.scroll, 'the briefing scrolls at 1280×720').toBeLessThanOrEqual(box.client + 1);
+  await briefing.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+  await briefing.waitFor({ state: 'detached' });
+  await page.waitForFunction(
+    () => (window as unknown as { game?: { mission?: { started: boolean } } }).game?.mission?.started === true,
+    null,
+    { timeout: 30_000 },
+  );
+  await page.waitForFunction(
+    () => !(window as unknown as { game: { isCinematicActive(): boolean } }).game.isCinematicActive(),
+    null,
+    { timeout: 60_000 },
+  );
+  const info = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const tagged = [...g.units.values()].filter((u: any) => u.owner === 0 && u.tag) as any[];
+    const manco = tagged.find((u: any) => u.tag === 'manco_capac')!;
+    g.selectUnits([manco.id]);
+    for (let i = 0; i < 20; i++) g.update(1 / 60, i / 60);
+    const single = document.querySelector('#ed-desc')?.textContent ?? '';
+    g.selectUnits(tagged.map((u: any) => u.id));
+    for (let i = 0; i < 20; i++) g.update(1 / 60, 20 / 60 + i / 60);
+    const labels = g.characterLabels ? [...g.characterLabels.labels.values()] : [];
+    return {
+      tags: tagged.map((u: any) => u.tag as string),
+      labels: labels.length,
+      visibleLabels: labels.filter((l: { sprite: { visible: boolean } }) => l.sprite.visible).length,
+      single,
+      party: document.querySelector('#ed-desc')?.textContent ?? '',
+    };
+  });
+  expect(info.tags).toEqual(
+    expect.arrayContaining([
+      'manco_capac',
+      'mama_huaco',
+      'ayar_cachi',
+      'ayar_uchu',
+      'ayar_auca',
+      'mama_ocllo',
+      'mama_ipacura',
+      'mama_raua',
+    ]),
+  );
+  expect(info.labels).toBe(8);
+  expect(info.visibleLabels, 'nameplates must show at the default zoom').toBe(8);
+  expect(info.single).toContain('Ayar Manco');
+  // A box selection of the party still names its characters (not just "Soldado ×7").
+  expect(info.party).toContain('Grupo ×8');
+  expect(info.party).toContain('Ayar Manco');
+  expect(info.party).toContain('Mama Ocllo');
+  expect(errors).toEqual([]);
+});

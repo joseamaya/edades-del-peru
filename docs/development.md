@@ -932,6 +932,10 @@ rigged bird is added, and evaluate per-species LOD/update throttling at the 16-a
   free port and Chromium with SwiftShader; they use `CHROME_PATH` or `chromium.executablePath()`. Run captures
   with `?low=1`.
 - `review/` holds generated PNG/JSON (gitignored); do not edit them by hand.
+- **Gameplay recordings**: `yarn record --mission=<id> --mode=clip|full` records the running game to
+  `review/<mission>-<mode>.mp4` with a JSON timeline and a contact sheet. `clip` tours the opening;
+  `full` plays the mission with real move/gather/build orders and no cheats, so a loss is recorded as a
+  loss. It needs ffmpeg and uses the software renderer (`low=1`); expect roughly real time.
 - **Release media**: `yarn shots:media` writes the curated stills to `docs/media/`; `yarn gif` captures the
   mission intro and writes `docs/media/gameplay.gif` (needs `ffmpeg`). `yarn package:itch` zips the **contents**
   of `dist/` into `review/edades-del-peru-itch.zip` (root `index.html`, relative asset paths) for `butler push`.

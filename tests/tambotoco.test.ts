@@ -3,6 +3,7 @@ import { MISSIONS } from '../src/campaign/defs/campaign';
 import { getEducational } from '../src/campaign/defs/educational';
 import { tutorialForMission } from '../src/campaign/defs/tutorials';
 import { getAuthoredSite } from '../src/model/defs/sites';
+import { commanderById } from '../src/model/defs/commanders';
 import { unitTrainableInPeriod } from '../src/model/defs/units';
 import { BuildingKind, CivId, Era, HistoricalPeriod, UnitKind } from '../src/core/types';
 
@@ -80,10 +81,71 @@ describe('Los hijos de Tambotoco', () => {
     const ids = tutorial.steps.map((step) => step.id);
     expect(ids).toContain('huanacaure');
     expect(ids).toContain('canchas');
+    expect(ids).toContain('ayar');
     const edu = getEducational('m_tambotoco')!;
     expect(edu.epilogue).toContain('Sarmiento');
     expect(edu.epilogue).toContain('Garcilaso');
     expect(edu.sources.length).toBeGreaterThan(0);
-    expect(TAMBOTOCO.commanders).toEqual(['manco_capac', 'mama_huaco']);
+  });
+
+  it('puts the eight siblings in the briefing', () => {
+    expect(TAMBOTOCO.commanders).toEqual([
+      'manco_capac',
+      'ayar_auca',
+      'ayar_cachi',
+      'ayar_uchu',
+      'mama_huaco',
+      'mama_ocllo',
+      'mama_ipacura',
+      'mama_raua',
+    ]);
+    for (const id of TAMBOTOCO.commanders!) {
+      expect(commanderById(id)?.civ).toBe(CivId.INCA_KILLKE);
+    }
+    expect(commanderById('manco_capac')?.name).toBe('Ayar Manco');
+  });
+
+  it('marches the eight siblings with the party', () => {
+    const tagged = (TAMBOTOCO.start.units ?? []).filter((u) => u.tag);
+    expect(tagged.map((u) => u.tag)).toEqual([
+      'mama_ocllo',
+      'mama_ipacura',
+      'mama_raua',
+      'manco_capac',
+      'mama_huaco',
+      'ayar_cachi',
+      'ayar_uchu',
+      'ayar_auca',
+    ]);
+    for (const id of TAMBOTOCO.commanders!) {
+      expect(
+        tagged.some((u) => u.tag === id),
+        id,
+      ).toBe(true);
+    }
+    for (const unit of tagged) expect(unit.count, unit.tag).toBe(1);
+    const protect = TAMBOTOCO.objectives.find((o) => o.id === 'a1_manco')!;
+    expect(protect.kind).toBe('protect');
+    expect(protect.entityTag).toBe('manco_capac');
+    expect(protect.optional).toBe(true);
+  });
+
+  it('raises a huaca when the legend leaves a sibling behind', () => {
+    const memories = TAMBOTOCO.triggers.flatMap((t) => t.effects.filter((fx) => fx.type === 'memory'));
+    expect(memories.map((fx) => (fx.type === 'memory' ? fx.tag : ''))).toEqual([
+      'ayar_cachi',
+      'ayar_uchu',
+      'ayar_auca',
+    ]);
+    expect(memories.map((fx) => (fx.type === 'memory' ? fx.label : ''))).toEqual([
+      'Huaca de Ayar Cachi',
+      'Huaca de Ayar Uchu',
+      'Piedra de Ayar Auca',
+    ]);
+    for (const fx of memories) {
+      if (fx.type !== 'memory') continue;
+      expect(fx.pos, fx.tag).toBeDefined();
+      expect(commanderById(fx.tag), fx.tag).toBeDefined();
+    }
   });
 });

@@ -56,7 +56,7 @@ import { renderBriefing } from './MissionBriefing';
 import { decorateTitleScreen, renderCampaignPath, renderMainMenu } from './SeriesMenu';
 import { publicAsset } from '../util/publicAsset';
 import type { MissionDef, ObjectiveProgress, ObjState } from '../campaign/types';
-import { COMMANDERS, type PortraitId } from '../model/defs/commanders';
+import { COMMANDERS, commanderById, type PortraitId } from '../model/defs/commanders';
 import type { HeritageBuildingDef, HeritageBuildingId } from '../model/defs/heritage';
 import { portraitSvg } from './Portrait';
 import { DamageNumbers } from './DamageNumbers';
@@ -78,6 +78,9 @@ import {
 } from '../core/hotkeys';
 
 const ACT_TITLE = /^(Acto [IVXL]+) ·/;
+
+/** Briefings with this many named characters switch to the compact cast grid. */
+const CAST_LAYOUT_MIN = 5;
 
 const STANCE_TOOLTIP: Record<CombatStance, string> = {
   agresivo: t('hud.stance.agresivo'),
@@ -1834,10 +1837,23 @@ export class HUD {
   private renderUnitPanel(units: Unit[]): void {
     const first = units[0];
     const civ = this.game.players[first.owner]?.civ;
+    const commander = units.length === 1 ? commanderById(first.tag) : undefined;
+    const cast = units.flatMap((u) => {
+      const c = commanderById(u.tag);
+      return c ? [c] : [];
+    });
+    const castLine =
+      commander || cast.length === 0 ? '' : `<b>${t('hud.unit.cast')}:</b> ${cast.map((c) => c.name).join(' · ')}<br>`;
+    const mixed = new Set(units.map((u) => u.kind)).size > 1;
+    const title =
+      commander?.name ??
+      (mixed
+        ? `${t('hud.unit.group')} ×${units.length}`
+        : `${unitDisplayName(first.kind, civ, first.era)} ×${units.length}`);
     this.setDesc(
-      unitDisplayIcon(first.kind, first.era),
-      `${unitDisplayName(first.kind, civ, first.era)} ×${units.length}`,
-      this.unitDesc(first),
+      mixed ? '👥' : unitDisplayIcon(first.kind, first.era),
+      title,
+      commander ? `${commander.role}<br>${this.unitDesc(first)}` : `${castLine}${this.unitDesc(first)}`,
     );
     this.clearGrid();
     // summary by type (click = select only that type) — AoE2 style
@@ -2758,7 +2774,9 @@ export class HUD {
           : '',
       story: context,
       didYouKnow: funFact,
-      commanders: commanders ? `<div class="ed-commanders">${commanders}</div>` : '',
+      commanders: commanders
+        ? `<div class="ed-commanders${(mis.commanders?.length ?? 0) >= CAST_LAYOUT_MIN ? ' ed-commanders--cast' : ''}">${commanders}</div>`
+        : '',
       sources,
       facts: [
         {

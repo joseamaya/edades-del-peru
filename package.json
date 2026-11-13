@@ -51,6 +51,7 @@
     "diagnose:resources": "node scripts/diagnose-resources.mjs",
     "evidence": "node scripts/pr_evidence.mjs",
     "shot": "node scripts/screenshot.mjs",
+    "record": "node scripts/record_mission.mjs",
     "shot:analyze": "node scripts/analyze.mjs",
     "shot:ascii": "node scripts/ascii.mjs",
     "shots:eras": "node scripts/shots_eras.mjs",

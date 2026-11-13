@@ -36,6 +36,8 @@ import { attachVegetationKit } from '../rendering/vegetationKitLoader';
 import { Props } from '../rendering/Props';
 import { GroundCover } from '../rendering/GroundCover';
 import { MapLabels } from '../rendering/MapLabels';
+import { CharacterLabels } from '../rendering/CharacterLabels';
+import { MemoryStones } from '../rendering/MemoryStones';
 import { Discoveries } from '../game/Discoveries';
 import { Wildlife } from '../rendering/Wildlife';
 import { clearFaunaTemplates } from '../rendering/faunaModels';
@@ -68,7 +70,7 @@ import { CANAL_PROP_MARGIN, DEFAULT_CANAL_WIDTH, canalEdgeHalfWidth } from '../m
 import { RNG } from '../util/rng';
 import { distance2D, distanceToPath, distanceToPolyline, smoothPolyline } from '../util/math';
 import { archProfileFor } from '../model/defs/architecture';
-import { createFowUniforms } from '../rendering/FowMaterial';
+import { createFowUniforms, applyFowToObject } from '../rendering/FowMaterial';
 import type { HeritageBuildingDef, HeritageBuildingId } from '../model/defs/heritage';
 import { BuildContext, disposeModel, clearModelCaches } from '../model/ProceduralModel';
 import { clearTextureCache } from '../rendering/Textures';
@@ -166,6 +168,10 @@ export class Game {
   siteCenter: { x: number; z: number } | null = null;
   /** Named geography of the mission, drawn on the board and the minimap. */
   mapLabels: MapLabels | null = null;
+  /** Nameplates over campaign characters (a unit tag that matches a commander). */
+  characterLabels: CharacterLabels | null = null;
+  /** Huacas raised by myth beats, with the name of the character they remember. */
+  memoryStones: MemoryStones | null = null;
   /** Fog-clearing "zone discovered" announcements for authored sites. */
   discoveries: Discoveries | null = null;
   /** Ground rings under the active reach/hold objectives (presentation only; follows the live fog). */
@@ -617,6 +623,12 @@ export class Game {
     this.fowUniforms.mapSize.value = s.mapSize;
     this.fowUniforms.fowEnabled.value = s.fogOfWar ? 1 : 0;
     this.mapLabels = new MapLabels(this.scene, this.placeNames, this.terrain, s.mapSize);
+    this.characterLabels = new CharacterLabels(this.scene);
+    this.memoryStones = new MemoryStones(
+      this.scene,
+      (x, z) => this.terrain.getHeight(x, z),
+      (root) => applyFowToObject(root, this.fowUniforms),
+    );
     this.discoveries = new Discoveries(this.missionLayout?.discoveries, this.siteDef, !!this.pendingSnapshot);
     // Quest markers stay visible over fog: they guide the player without revealing the terrain.
     this.missionRings = new MissionRings(this.scene, (x, z) => this.terrain.getHeight(x, z));
@@ -952,6 +964,27 @@ export class Game {
     const p = this.players[owner];
     if (p) p.populationUsed += u.stats.population;
     return u;
+  }
+
+  /**
+   * Remove a scripted character from the board without the death animation: the mission script
+   * turns Ayar Uchu to stone and buries Ayar Cachi, so a toppling corpse would be the wrong beat.
+   */
+  retireCharacter(tag: string): { x: number; z: number } | null {
+    const unit = [...this.units.values()].find((u) => u.tag === tag && !u.dead);
+    if (!unit) return null;
+    const at = { x: unit.pos.x, z: unit.pos.z };
+    unit.dead = true;
+    detachUnit(unit);
+    this.units.delete(unit.id);
+    this.selectedUnits = this.selectedUnits.filter((id) => id !== unit.id);
+    return at;
+  }
+
+  /** Raise a memory stone (huaca) for a character the legend leaves behind. */
+  raiseMemoryStone(id: string, x: number, z: number, label: string): void {
+    this.memoryStones?.add(id, x, z, label);
+    this.playSiteRitual(x, z);
   }
 
   /** Create a scripted building (campaign), already finished. */
@@ -1992,6 +2025,10 @@ export class Game {
     this.markers.dispose();
     this.mapLabels?.dispose();
     this.mapLabels = null;
+    this.characterLabels?.dispose();
+    this.characterLabels = null;
+    this.memoryStones?.dispose();
+    this.memoryStones = null;
     this.discoveries = null;
     this.missionRings?.dispose();
     this.missionRings = null;

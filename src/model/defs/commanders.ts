@@ -19,7 +19,13 @@ export const PORTRAIT_IDS = [
   'melgar',
   'ramirez_orozco',
   'manco_capac',
+  'ayar_auca',
+  'ayar_cachi',
+  'ayar_uchu',
   'mama_huaco',
+  'mama_ocllo',
+  'mama_ipacura',
+  'mama_raua',
   'pizarro',
   'quizu_yupanqui',
 ] as const;
@@ -173,8 +179,32 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
   },
   manco_capac: {
     id: 'manco_capac',
-    name: 'Manco Cápac',
-    role: 'Ayar Manco · peregrinación',
+    name: 'Ayar Manco',
+    role: 'Ayar · jefe de la peregrinación',
+    civ: CivId.INCA_KILLKE,
+    status: 'abstraction',
+    source: 'docs/historia/campanas/tambotoco.md',
+  },
+  ayar_auca: {
+    id: 'ayar_auca',
+    name: 'Ayar Auca',
+    role: 'Ayar · nombre del Cusco',
+    civ: CivId.INCA_KILLKE,
+    status: 'abstraction',
+    source: 'docs/historia/campanas/tambotoco.md',
+  },
+  ayar_cachi: {
+    id: 'ayar_cachi',
+    name: 'Ayar Cachi',
+    role: 'Ayar · sepultado en Tambo Quiro',
+    civ: CivId.INCA_KILLKE,
+    status: 'abstraction',
+    source: 'docs/historia/campanas/tambotoco.md',
+  },
+  ayar_uchu: {
+    id: 'ayar_uchu',
+    name: 'Ayar Uchu',
+    role: 'Ayar · piedra de Huanacaure',
     civ: CivId.INCA_KILLKE,
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
@@ -182,7 +212,31 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
   mama_huaco: {
     id: 'mama_huaco',
     name: 'Mama Huaco',
-    role: 'Ayar · fuerza y mando',
+    role: 'Ayar · hermana de la peregrinación',
+    civ: CivId.INCA_KILLKE,
+    status: 'abstraction',
+    source: 'docs/historia/campanas/tambotoco.md',
+  },
+  mama_ocllo: {
+    id: 'mama_ocllo',
+    name: 'Mama Ocllo',
+    role: 'Ayar · hermana de la peregrinación',
+    civ: CivId.INCA_KILLKE,
+    status: 'abstraction',
+    source: 'docs/historia/campanas/tambotoco.md',
+  },
+  mama_ipacura: {
+    id: 'mama_ipacura',
+    name: 'Mama Ipacura',
+    role: 'Ayar · hermana de la peregrinación',
+    civ: CivId.INCA_KILLKE,
+    status: 'abstraction',
+    source: 'docs/historia/campanas/tambotoco.md',
+  },
+  mama_raua: {
+    id: 'mama_raua',
+    name: 'Mama Raua',
+    role: 'Ayar · hermana de la peregrinación',
     civ: CivId.INCA_KILLKE,
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
@@ -218,7 +272,17 @@ export function normalizeCommanderName(name: string): string {
 const BY_NAME = new Map<string, CommanderDef>();
 for (const c of Object.values(COMMANDERS)) BY_NAME.set(normalizeCommanderName(c.name), c);
 
+const BY_ID = new Map<string, CommanderDef>(Object.values(COMMANDERS).map((c) => [c.id, c]));
+
 /** Resolve a commander by display name (accent/case insensitive). */
 export function commanderFor(name: string): CommanderDef | undefined {
   return BY_NAME.get(normalizeCommanderName(name));
+}
+
+/**
+ * Resolve a commander by id. A unit's mission tag uses the same id, so a named
+ * character can be labelled in the world and in the selection panel.
+ */
+export function commanderById(id: string | undefined): CommanderDef | undefined {
+  return id ? BY_ID.get(id) : undefined;
 }

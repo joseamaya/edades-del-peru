@@ -129,6 +129,8 @@ export const es = {
   'hud.missionCard.aria': 'Continuar a la misión',
 
   'hud.unit.civilian': 'HP {hp}/{maxHp} · {task}{carry}',
+  'hud.unit.cast': 'Personajes',
+  'hud.unit.group': 'Grupo',
   'hud.unit.carrying': ' · Carga: {amount}/{max} de {resource}',
   'hud.unit.task.idle': 'Sin tarea',
   'hud.unit.task.walking': 'En camino',
