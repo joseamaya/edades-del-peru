@@ -3,6 +3,11 @@ import { MissionDef } from '../types';
 import { CARAL_MAP_SIZE, CARAL_SITE_BUILD_KEEPOUT, CARAL_SITE_ORIGIN, caralKeepout } from '../../model/defs/sites';
 import { chavinKeepout } from '../../model/defs/chavinCity';
 
+// La Junta del Cusco: the Cusco cabildo, the Apacheta pass, Umachiri and the royalist base.
+const JUNTA_CUSCO = { x: 72, z: 58 } as const;
+const JUNTA_APACHETA = { x: 140, z: 168 } as const;
+const JUNTA_UMACHIRI = { x: 198, z: 214 } as const;
+const JUNTA_ENEMY = { x: 222, z: 238 } as const;
 const WARI_NODE_A = { ref: 'site' as const, dx: 40, dz: -32 };
 const WARI_NODE_B = { ref: 'site' as const, dx: 38, dz: 34 };
 const WARI_BONUS_NODE = { ref: 'site' as const, dx: -40, dz: 0 };
@@ -1827,35 +1832,43 @@ export const MISSIONS: MissionDef[] = [
     map: { seed: 1814, type: 'andes', size: 256 },
     layout: {
       labels: [
-        { text: 'Cusco', x: 72 / 256, z: 58 / 256, kind: 'settlement' },
-        { text: 'La Apacheta', x: 140 / 256, z: 168 / 256, kind: 'region' },
-        { text: 'Umachiri', x: 198 / 256, z: 214 / 256, kind: 'region' },
+        { text: 'Cusco', x: JUNTA_CUSCO.x / 256, z: JUNTA_CUSCO.z / 256, kind: 'settlement' },
+        { text: 'La Apacheta', x: JUNTA_APACHETA.x / 256, z: JUNTA_APACHETA.z / 256, kind: 'region' },
+        { text: 'Umachiri', x: JUNTA_UMACHIRI.x / 256, z: JUNTA_UMACHIRI.z / 256, kind: 'region' },
         { text: 'Río Lalli', x: 178 / 256, z: 200 / 256, kind: 'water' },
         { text: 'Altiplano de Puno', x: 210 / 256, z: 240 / 256, kind: 'region' },
       ],
       base: { x: 52 / 256, z: 96 / 256 },
       opening: { x: 66 / 256, z: 80 / 256 },
-      enemyBase: { x: 222 / 256, z: 238 / 256 },
+      enemyBase: { x: JUNTA_ENEMY.x / 256, z: JUNTA_ENEMY.z / 256 },
       discoveries: [{ heritageId: 'colonial_church', initial: true }],
       // The Junta's camp at La Apacheta gives the pass a visual anchor and a documented military presence.
       decor: { model: 'patriotas_camp', at: 'player', dx: 72, dz: 70, yaw: 0.6, scale: 0.9 },
       terrain: {
         flats: [
-          { name: 'Valle del Cusco', x: 72 / 256, z: 58 / 256, rx: 0.18, rz: 0.16 },
-          { name: 'Paso de La Apacheta', x: 140 / 256, z: 168 / 256, rx: 0.12, rz: 0.1 },
-          { name: 'Llano de Umachiri', x: 198 / 256, z: 214 / 256, rx: 0.16, rz: 0.12 },
+          { name: 'Valle del Cusco', x: JUNTA_CUSCO.x / 256, z: JUNTA_CUSCO.z / 256, rx: 0.18, rz: 0.16 },
+          { name: 'Paso de La Apacheta', x: JUNTA_APACHETA.x / 256, z: JUNTA_APACHETA.z / 256, rx: 0.12, rz: 0.1 },
+          { name: 'Llano de Umachiri', x: JUNTA_UMACHIRI.x / 256, z: JUNTA_UMACHIRI.z / 256, rx: 0.16, rz: 0.12 },
         ],
       },
       site: {
         id: 'cusco_junta_site',
         y: 6,
-        focus: { x: 72 / 256, z: 58 / 256 },
-        keepout: [{ x: 72 / 256, z: 58 / 256, rx: 0.08, rz: 0.07 }],
-        buildKeepout: [{ x: 72 / 256, z: 58 / 256, rx: 0.065, rz: 0.065 }],
+        focus: { x: JUNTA_CUSCO.x / 256, z: JUNTA_CUSCO.z / 256 },
+        keepout: [{ x: JUNTA_CUSCO.x / 256, z: JUNTA_CUSCO.z / 256, rx: 0.08, rz: 0.07 }],
+        buildKeepout: [{ x: JUNTA_CUSCO.x / 256, z: JUNTA_CUSCO.z / 256, rx: 0.065, rz: 0.065 }],
       },
       roads: [
-        { from: { dx: 72, dz: 58 }, to: { dx: 140, dz: 168 }, width: 3 },
-        { from: { dx: 140, dz: 168 }, to: { dx: 198, dz: 214 }, width: 3 },
+        {
+          from: { dx: JUNTA_CUSCO.x, dz: JUNTA_CUSCO.z },
+          to: { dx: JUNTA_APACHETA.x, dz: JUNTA_APACHETA.z },
+          width: 3,
+        },
+        {
+          from: { dx: JUNTA_APACHETA.x, dz: JUNTA_APACHETA.z },
+          to: { dx: JUNTA_UMACHIRI.x, dz: JUNTA_UMACHIRI.z },
+          width: 3,
+        },
       ],
     },
     timeOfDay: 'morning',
@@ -1941,7 +1954,7 @@ export const MISSIONS: MissionDef[] = [
         kind: 'inspect',
         heritageIds: ['colonial_church'],
         inspectRadius: 16,
-        pos: { dx: 72, dz: 58 },
+        pos: { dx: JUNTA_CUSCO.x, dz: JUNTA_CUSCO.z },
         radius: 20,
         title: 'Reúne la Junta en el Cabildo del Cusco',
       },
@@ -1956,7 +1969,7 @@ export const MISSIONS: MissionDef[] = [
       {
         id: 'a2_apacheta',
         kind: 'reach',
-        pos: { dx: 140, dz: 168 },
+        pos: { dx: JUNTA_APACHETA.x, dz: JUNTA_APACHETA.z },
         radius: 14,
         hidden: true,
         title: 'Avanza a La Apacheta',
@@ -1964,7 +1977,7 @@ export const MISSIONS: MissionDef[] = [
       {
         id: 'a2_batalla',
         kind: 'hold',
-        pos: { dx: 140, dz: 168 },
+        pos: { dx: JUNTA_APACHETA.x, dz: JUNTA_APACHETA.z },
         radius: 18,
         time: 45,
         minUnits: 5,
@@ -1974,7 +1987,7 @@ export const MISSIONS: MissionDef[] = [
       {
         id: 'a3_umachiri',
         kind: 'reach',
-        pos: { dx: 198, dz: 214 },
+        pos: { dx: JUNTA_UMACHIRI.x, dz: JUNTA_UMACHIRI.z },
         radius: 16,
         hidden: true,
         title: 'Alcanza Umachiri',
@@ -1982,7 +1995,7 @@ export const MISSIONS: MissionDef[] = [
       {
         id: 'a3_resistir',
         kind: 'hold',
-        pos: { dx: 198, dz: 214 },
+        pos: { dx: JUNTA_UMACHIRI.x, dz: JUNTA_UMACHIRI.z },
         radius: 20,
         time: 90,
         minUnits: 4,
@@ -2071,7 +2084,7 @@ export const MISSIONS: MissionDef[] = [
               { kind: UnitKind.RIFLEMAN, count: 1 },
               { kind: UnitKind.REALISTA_DRAGON, count: 1 },
             ],
-            pos: { dx: 140, dz: 168 },
+            pos: { dx: JUNTA_APACHETA.x, dz: JUNTA_APACHETA.z },
             radius: 12,
             objective: 'position',
           },
@@ -2112,7 +2125,7 @@ export const MISSIONS: MissionDef[] = [
               { kind: UnitKind.RIFLEMAN, count: 1 },
               { kind: UnitKind.REALISTA_DRAGON, count: 1 },
             ],
-            pos: { dx: 198, dz: 214 },
+            pos: { dx: JUNTA_UMACHIRI.x, dz: JUNTA_UMACHIRI.z },
             radius: 14,
             objective: 'position',
           },

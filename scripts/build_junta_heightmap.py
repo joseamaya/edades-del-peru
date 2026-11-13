@@ -68,13 +68,18 @@ def river_x(z: float) -> float:
     return 178.0 + 8.0 * math.sin(z * 0.032 + 0.7)
 
 
+def masks(x: float, z: float) -> tuple[float, float]:
+    """The Cusco basin and the Umachiri altiplano, shared by the heights and the paint."""
+    cusco = 1.0 - smoothstep(0.62, 1.0, ellipse(x, z, SITE[0], SITE[1], 48.0, 45.0))
+    altiplano = 1.0 - smoothstep(0.58, 1.0, ellipse(x, z, 202.0, 222.0, 68.0, 52.0))
+    return cusco, altiplano
+
+
 def height(x: float, z: float) -> float:
     h = 4.6 + 0.5 * noise(x, z)
 
-    cusco = 1.0 - smoothstep(0.62, 1.0, ellipse(x, z, 72.0, 58.0, 48.0, 45.0))
+    cusco, altiplano = masks(x, z)
     h = h * (1.0 - cusco) + 5.7 * cusco
-
-    altiplano = 1.0 - smoothstep(0.58, 1.0, ellipse(x, z, 202.0, 222.0, 68.0, 52.0))
     h = h * (1.0 - altiplano) + 4.0 * altiplano
 
     corridor, progress = route_distance(x, z)
@@ -101,8 +106,7 @@ def height(x: float, z: float) -> float:
 
 def ground(x: float, z: float) -> tuple[float, float, float, float]:
     h = height(x, z)
-    cusco = 1.0 - smoothstep(0.62, 1.0, ellipse(x, z, 72.0, 58.0, 48.0, 45.0))
-    altiplano = 1.0 - smoothstep(0.58, 1.0, ellipse(x, z, 202.0, 222.0, 68.0, 52.0))
+    cusco, altiplano = masks(x, z)
     corridor, _ = route_distance(x, z)
     city = 1.0 - smoothstep(14.0, 30.0, math.hypot(x - SITE[0], z - SITE[1]))
     road = 1.0 - smoothstep(2.5, 8.0, corridor)
