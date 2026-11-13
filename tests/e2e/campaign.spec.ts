@@ -978,6 +978,7 @@ test('the Ayar cast is on the board and named after the briefing', async ({ page
   expect(info.visibleLabels, 'nameplates must show at the default zoom').toBe(8);
   expect(info.single).toContain('Ayar Manco');
   // A box selection of the party still names its characters (not just "Soldado ×7").
+  expect(info.party).toContain('Grupo ×8');
   expect(info.party).toContain('Ayar Manco');
   expect(info.party).toContain('Mama Ocllo');
   expect(errors).toEqual([]);

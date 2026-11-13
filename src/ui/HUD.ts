@@ -1844,9 +1844,15 @@ export class HUD {
     });
     const castLine =
       commander || cast.length === 0 ? '' : `<b>${t('hud.unit.cast')}:</b> ${cast.map((c) => c.name).join(' · ')}<br>`;
+    const mixed = new Set(units.map((u) => u.kind)).size > 1;
+    const title =
+      commander?.name ??
+      (mixed
+        ? `${t('hud.unit.group')} ×${units.length}`
+        : `${unitDisplayName(first.kind, civ, first.era)} ×${units.length}`);
     this.setDesc(
-      unitDisplayIcon(first.kind, first.era),
-      commander?.name ?? `${unitDisplayName(first.kind, civ, first.era)} ×${units.length}`,
+      mixed ? '👥' : unitDisplayIcon(first.kind, first.era),
+      title,
       commander ? `${commander.role}<br>${this.unitDesc(first)}` : `${castLine}${this.unitDesc(first)}`,
     );
     this.clearGrid();
