@@ -17,16 +17,38 @@ a renderizar en software, así que un número ya no puede fingir que es hardware
 secciones anteriores (*"hace falta una pasada con GPU real"*).
 
 Entorno: i7-13700 (24 hilos), **Intel Graphics (RPL-S) iGPU** vía ANGLE/Vulkan en Chromium headless, host libre
-(load average 1.5–2.0; el JSON guarda `loadavgBefore`/`loadavgAfter`), `mixed`, seed 777, 300 pasos. Los draw
-calls y triángulos son estructurales; los tiempos son de esta máquina, no de una GPU dedicada.
+(load average de 1 min 1.5–2.0, en descenso desde 3.1/6.4 a 5/15 min; el JSON guarda
+`loadavgBefore`/`loadavgAfter`), `mixed`, seed 777, 300 pasos. Los draw calls y triángulos son estructurales; los
+tiempos son de esta máquina, no de una GPU dedicada.
+
+La columna `uds` es la **escala pedida**; el escenario `mixed` arranca con 110/309/507 unidades.
 
 ### Frame directo (1280×800, vista de mapa completo, calidad low)
 
-| uds | draw calls | tris | draw/ud | fps | frame p50/p95/p99 | submit | submit/frame |
-| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 100 | 1 080 | 1.05M | 9.8 | 60 | 20.9/27.6/32.3 ms | 9.2 ms | 44 % |
-| 300 | 2 801 | 2.50M | 9.0 | 20 | 53.7/62.9/72.8 ms | 26.9 ms | 50 % |
-| 500 | 4 212 | 3.98M | 8.3 | 10 | 90.1/104.3/104.3 ms | 45.2 ms | 50 % |
+| uds | draw calls | tris | draw/ud | frame p50/p95/p99 | submit | submit/frame |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 100 | 1 080 | 1.05M | 9.8 | 20.9/27.6/32.3 ms | 9.2 ms | 44 % |
+| 300 | 2 801 | 2.50M | 9.0 | 53.7/62.9/72.8 ms | 26.9 ms | 50 % |
+| 500 | 4 212 | 3.98M | 8.3 | 90.1/104.3/104.3 ms | 45.2 ms | 50 % |
+
+`submit` es la mediana del tiempo de pared del frame de render (no incluye la simulación); `draw/ud` divide por
+las unidades reales. El `fps` del JSON es el contador del bucle (`GameLoop.getFps`), que se queda con la última
+ventana de 0,5 s antes de parar, así que no es `1000/frame` y no se usa aquí.
+
+### Reparto del frame
+
+El frame medido corre con el bucle activo, así que cada frame ejecuta también pasos fijos de simulación
+(1/60 s, tope de 40 ms de trabajo por frame en `GameLoop`):
+
+| uds | frame p50 | pasos/frame | sim por frame (p50) | submit | resto |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 100 | 20.9 ms | ≈1,3 | ≈2,6 ms (12 %) | 9.2 ms (44 %) | ≈9 ms |
+| 300 | 53.7 ms | ≈3,2 | ≈20 ms (37 %) | 26.9 ms (50 %) | ≈7 ms |
+| 500 | 90.1 ms | ≈5,4 → tope | ≈40 ms (44 %) | 45.2 ms (50 %) | ≈5 ms |
+
+A 500 unidades el bucle agota el presupuesto de 40 ms por frame y **descarta backlog**: el juego corre a ~74 %
+del tiempo real. La simulación ocupa aproximadamente la mitad del frame en las escalas altas, no una fracción
+despreciable.
 
 ### Frame con post-proceso (1920×1080, `--framing=mid`, calidad high)
 
@@ -40,46 +62,63 @@ calls y triángulos son estructurales; los tiempos son de esta máquina, no de u
 | quads de post-proceso | 0.1 ms | 18 |
 | JS/GL restante | 0.1 ms | — |
 
+Los pases suman 61,1 ms frente a los 61,7 del frame: cada columna es la mediana de su pase, no una descomposición
+exacta de la mediana del frame.
+
 ### Barrido de resolución (el discriminador CPU vs GPU)
 
-Mismo frame con menos píxeles (1× → 0.5× del buffer de dibujo):
+Mismo frame con menos píxeles (1× → 0.5× del buffer de dibujo, es decir 4× menos área):
 
-| uds | 1× | 0.75× | 0.5× | ¿baja el frame? |
+| uds | 1× | 0.75× | 0.5× | Δ a 0.5× |
 | ---: | ---: | ---: | ---: | --- |
 | 100 | 20.9 ms | 17.0 ms | 16.7 ms | −20 % |
 | 300 | 53.7 ms | 51.2 ms | 50.7 ms | −6 % |
-| 500 | 90.1 ms | 91.9 ms | 95.6 ms | **0 %** |
+| 500 | 90.1 ms | 91.9 ms | 95.6 ms | **+6 %** |
+
+El barrido solo corre en modo directo: con post-proceso el `EffectComposer` mantiene su propio pixel ratio y la
+escena no se reduce (#449).
 
 ### Lectura
 
-1. **El frame es submit/CPU-bound, no GPU-bound.** Con 4× menos píxeles el frame apenas cambia, y a 500 unidades
-   no cambia nada: el coste está en enviar los draw calls, no en rellenar píxeles. El submit explícito es el
-   44–60 % del frame y el resto es el mismo trabajo visto desde el hilo principal. A 2 437 draws, 21.4 ms de
-   submit ≈ **9 µs por draw call**; a 3 638 draws, ≈10 µs. Es la pared de WebGL, no una GPU lenta.
-2. **Las sombras se dibujan dos veces con post-proceso.** 714 draws ≈ 2 × 357: `three` ejecuta el pase de sombras
-   dentro de **cada** `renderer.render`, y el frame con post-proceso hace dos pases de escena (refracción y
-   compositor). `shadowMap.autoUpdate = false` + un `needsUpdate` por frame ahorra un pase completo sin cambiar
-   el look: el arreglo más barato del #240.
-3. **La refracción del agua cuesta otro pase de escena completo**: 2 312 draws y 24.0 ms, más que la escena
-   principal, y solo alimenta el shader del agua. Desactivarla, bajarla a media resolución o reutilizar el render
-   del compositor recupera ~1/4 del frame con post-proceso.
-4. **8–10 draw calls por unidad en directo y 17 con post-proceso** confirma la hipótesis del #240: el coste
-   escala con los **materiales distintos por unidad** (que además se clonan por instancia), no con las mallas.
-5. **La simulación sigue siendo barata**: p50 2.1/6.2/10.2 ms por paso a 100/300/500 unidades en `mixed`
-   (incluye sondas). No es el cuello de botella.
+1. **El frame es CPU-bound, no GPU-bound.** Con 4× menos píxeles el frame baja un 20 % a 100 unidades (ese frame
+   aún tiene una parte sensible al relleno) y un 6 % a 300; a 500 no baja, incluso sube ~6 % por el ruido del
+   host. Si el coste fuera de relleno, el frame caería cerca de 4×. A 2 437 draws, 21.4 ms de submit del pase
+   principal ≈ **9 µs por draw call**; a 3 638 draws, ≈10 µs.
+2. **Las sombras se dibujan dos veces con post-proceso.** 714 draws ≈ 2 × 364 (las del frame directo a 300
+   unidades): `three` ejecuta el pase de sombras dentro de **cada** `renderer.render`, y el frame con
+   post-proceso hace dos pases de escena (refracción y compositor); las 40 muestras lo confirman
+   (`shadowFrames.refraction = 40`). `shadowMap.autoUpdate = false` + un `needsUpdate` por frame ahorra un pase
+   completo sin cambiar el look: el arreglo más barato del #240.
+3. **La refracción del agua cuesta otro pase de escena completo**: 24,0 ms y 2 312 draws, prácticamente los
+   mismos draws que la escena principal y más tiempo, y solo alimenta el shader del agua. Desactivarla, bajarla a
+   media resolución o reutilizar el render del compositor recupera ~1/4 del frame con post-proceso.
+4. **8–10 draw calls por unidad en directo y 17 con post-proceso.** La escena tiene 3 780 materiales únicos para
+   309 unidades: el coste escala con los **materiales distintos por unidad** (que además se clonan por
+   instancia), no con el número de mallas. La diferencia 8 → 17 es el pase extra de refracción, no más
+   materiales.
+5. **La simulación es la otra mitad del frame a escala alta** (≈37 % a 300 unidades, ≈40 ms ≈ 44 % a 500, ya en
+   el tope de presupuesto), con p50 2.1/6.2/10.2 ms por paso (incluye sondas). No se puede seguir diciendo que
+   sea despreciable por encima de 300 unidades: a 500 el bucle descarta backlog.
 
 Consecuencia para el plan: el orden de ataque del #240 pasa a ser (1) sombra única por frame, (2) matar o
-abaratar la refracción, (3) materiales compartidos + atlas por arquetipo, (4) instancing. Los dos primeros caben
-en una semana y se miden con este mismo bench.
+abaratar la refracción, (3) materiales compartidos + atlas por arquetipo, (4) instancing. Y por separado, el
+presupuesto de simulación por frame (PATH-1) vuelve a estar en la lista para 500+ unidades, porque a esa escala
+ya se come la mitad del frame.
 
 ### Reproducir
 
 ```bash
-yarn bench --gpu --units=100,300,500 --scenario=mixed --steps=300 --passes=1 --scale-sweep=1
-yarn bench:gpu --units=300   # frame real (postfx, 1080p, mid) con pases
+yarn bench --gpu --units=100,300,500 --scenario=mixed --steps=300 --passes=1 --scale-sweep=1 \
+  --out=review/bench-gpu-clean.json
+yarn bench:gpu --units=300 --steps=300 --out=review/bench-gpu-clean-postfx.json
 ```
 
-Sin `--gpu` los mismos comandos vuelven a SwiftShader y el run falla al detectarlo.
+Sin `--gpu` los mismos comandos vuelven a SwiftShader y el run solo falla si **pediste** `--gpu` y acabó en
+software (`bench:check` sigue funcionando en software a propósito).
+
+> Nota de comparación: las cifras de 800 unidades de la auditoría original (24 237 draw calls, 18,1 M triángulos)
+> son del commit auditado y no son comparables con esta tanda: miden otro código y otro escenario. La frase
+> "no se puede juzgar el render sin GPU" de las secciones siguientes queda **sustituida** por esta medición.
 
 ## Assets y carga (#246)
 
