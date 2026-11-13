@@ -1055,7 +1055,14 @@ test('the ayllu site grows through its phases', async ({ page }) => {
     const shrine = at('huanacaure');
     const inticancha = at('inticancha');
     g.setSitePhase('bogus');
-    return { before, shrine, inticancha, afterBogus: g.sitePhase };
+    let lifeCalls = 0;
+    const life = g.aylluSite.updateLife.bind(g.aylluSite);
+    g.aylluSite.updateLife = (...args: unknown[]) => {
+      lifeCalls++;
+      life(...args);
+    };
+    for (let i = 0; i < 60; i++) g.update(1 / 60, i / 60);
+    return { before, shrine, inticancha, afterBogus: g.sitePhase, lifeCalls };
   });
   expect(states.before).toEqual([
     { name: 'ayllu:cave', visible: true },
@@ -1065,5 +1072,7 @@ test('the ayllu site grows through its phases', async ({ page }) => {
   expect(states.shrine.map((s) => s.visible)).toEqual([true, true, false]);
   expect(states.inticancha.map((s) => s.visible)).toEqual([true, true, true]);
   expect(states.afterBogus).toBe('inticancha');
+  // The presentation tick must reach the ayllu kit, not only Caral/Chavín.
+  expect(states.lifeCalls).toBeGreaterThan(0);
   expect(errors).toEqual([]);
 });

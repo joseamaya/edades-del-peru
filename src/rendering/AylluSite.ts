@@ -195,9 +195,9 @@ function cave(parts: Parts, y: number): void {
 
 /** The central platform of the plaza: a stone table, not an imperial ushnu. */
 function plazaPlatform(parts: Parts, y: number): void {
-  box(parts, STONE, TAMBOTOCO_INTICANCHA.x, y, TAMBOTOCO_INTICANCHA.z + 4, 3.4, 0.5, 3.4);
-  box(parts, DARK_STONE, TAMBOTOCO_INTICANCHA.x, y + 0.5, TAMBOTOCO_INTICANCHA.z + 4, 2.4, 0.6, 2.4);
-  box(parts, DARK_STONE, TAMBOTOCO_INTICANCHA.x, y + 1.1, TAMBOTOCO_INTICANCHA.z + 4, 1.1, 1.4, 1.1, 0.25);
+  box(parts, STONE, TAMBOTOCO_INTICANCHA.x, y, TAMBOTOCO_INTICANCHA.z - 5, 3.4, 0.5, 3.4);
+  box(parts, DARK_STONE, TAMBOTOCO_INTICANCHA.x, y + 0.5, TAMBOTOCO_INTICANCHA.z - 5, 2.4, 0.6, 2.4);
+  box(parts, DARK_STONE, TAMBOTOCO_INTICANCHA.x, y + 1.1, TAMBOTOCO_INTICANCHA.z - 5, 1.1, 1.4, 1.1, 0.25);
 }
 
 /**
@@ -310,7 +310,7 @@ export class AylluSite {
     villagers(inticancha, TAMBOTOCO_INTICANCHA.x, plazaY, TAMBOTOCO_INTICANCHA.z - 4, 3);
     this.life.push({
       x: TAMBOTOCO_INTICANCHA.x,
-      z: TAMBOTOCO_INTICANCHA.z,
+      z: TAMBOTOCO_INTICANCHA.z - 5,
       y: plazaY + 1.7,
       phase: PHASE_INTICANCHA,
       kind: 'fire',
@@ -349,26 +349,34 @@ export class AylluSite {
    * (the same presentation path as Caral), so the site inherits its distance cap and quiet phases.
    */
   updateLife(focus: { x: number; z: number }, particles: Particles, lifeTurn: number): void {
-    const available = this.life.filter(
+    const nearby = this.life.filter(
       (s) =>
         phaseOrder(this.plan, s.phase) <= phaseOrder(this.plan, this.phase) &&
-        Math.hypot(s.x - focus.x, s.z - focus.z) < 70,
+        Math.hypot(s.x - focus.x, s.z - focus.z) < 55,
     );
-    if (!available.length) return;
-    const source = available[lifeTurn % available.length]!;
-    particles.emit({
-      x: source.x,
-      y: source.y,
-      z: source.z,
-      count: source.kind === 'fire' ? 1 : 2,
-      color: source.kind === 'fire' ? 0xff8a2a : 0x9a958a,
-      kind: source.kind,
-      speed: source.kind === 'fire' ? 0.45 : 0.7,
-      life: source.kind === 'fire' ? 0.9 : 3,
-      size: source.kind === 'fire' ? 0.7 : 1.2,
-      grow: source.kind === 'fire' ? 1 : 1.5,
-      spread: source.kind === 'fire' ? 0.3 : 0.5,
-    });
+    if (!nearby.length) return;
+    const emit = (source: LifeSource, count: number): void => {
+      particles.emit({
+        x: source.x,
+        y: source.y,
+        z: source.z,
+        count,
+        color: source.kind === 'fire' ? 0xff8a2a : 0x9a958a,
+        kind: source.kind,
+        speed: source.kind === 'fire' ? 0.45 : 0.7,
+        life: source.kind === 'fire' ? 0.9 : 3,
+        size: source.kind === 'fire' ? 0.7 : 1.2,
+        grow: source.kind === 'fire' ? 1 : 1.5,
+        spread: source.kind === 'fire' ? 0.3 : 0.5,
+      });
+    };
+    // Every nearby altar burns; two huts smoke per tick so the hamlet reads alive from the camera.
+    for (const source of nearby) if (source.kind === 'fire') emit(source, 1);
+    const smokes = nearby.filter((s) => s.kind === 'smoke');
+    if (smokes.length) {
+      emit(smokes[lifeTurn % smokes.length]!, 2);
+      emit(smokes[(lifeTurn + 1) % smokes.length]!, 1);
+    }
   }
 
   dispose(): void {

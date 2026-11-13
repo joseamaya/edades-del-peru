@@ -51,8 +51,8 @@ const BUDGETS = {
   // Chavín opening: the phased kit, highland vegetation and the base. Measure first, then ratchet down.
   m2_chavin: { sceneTriangles: 450_000, sceneDrawCalls: 220, kitTriangles: 100_000, kitDrawCalls: 40 },
   m2_chavin_late: { sceneTriangles: 600_000, sceneDrawCalls: 310, kitTriangles: 100_000, kitDrawCalls: 40 },
-  // Tambotoco opening: the procedural ayllu site (cave, shrine, hamlets, Inticancha) adds nine static draws
-  // plus fires and eight nameplates; measured ~562k / 341. Tighten with a merged kit pass.
+  // Tambotoco opening: the procedural ayllu site adds three merged phase draws and eight nameplates;
+  // measured ~562k / 337. Tighten with a merged kit pass.
   m_tambotoco: { sceneTriangles: 600_000, sceneDrawCalls: 340, kitTriangles: 0, kitDrawCalls: 0 },
   // Inticancha stands at Act IV; it must not blow the same first-pass budget.
   m_tambotoco_late: { sceneTriangles: 620_000, sceneDrawCalls: 360, kitTriangles: 0, kitDrawCalls: 0 },
@@ -125,6 +125,18 @@ try {
           const crowd = mission === 'm2_chavin' ? 20 : 30;
           for (let i = 0; i < crowd; i++) {
             g.spawnScriptedUnit('worker', 0, site.x - 12 + (i % 6) * 4, site.z + 18 + Math.floor(i / 6) * 3);
+          }
+        }
+        if (mission === 'm_tambotoco') {
+          // Measure the Act IV settlement, not an empty meadow: the store and the four canchas.
+          g.spawnScriptedBuilding('mill', 0, site.x, site.z);
+          for (const [x, z] of [
+            [156, 190],
+            [180, 190],
+            [168, 178],
+            [168, 202],
+          ]) {
+            g.spawnScriptedBuilding('house', 0, x, z);
           }
         }
         let t = 1;

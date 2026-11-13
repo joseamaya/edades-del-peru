@@ -12,6 +12,7 @@ import {
   TAMBOTOCO_CAVE,
   TAMBOTOCO_INTICANCHA,
   TAMBOTOCO_SHRINE as TAMBOTOCO_HUANACAURE,
+  TAMBOTOCO_VILLAGES,
 } from '../../model/defs/tambotocoLayout';
 import { chavinKeepout } from '../../model/defs/chavinCity';
 
@@ -1529,8 +1530,8 @@ export const MISSIONS: MissionDef[] = [
       {
         id: 'a3_hualla',
         kind: 'reach',
-        pos: { dx: 160, dz: 180 },
-        radius: 10,
+        pos: { dx: TAMBOTOCO_VILLAGES[0]!.x, dz: TAMBOTOCO_VILLAGES[0]!.z },
+        radius: 12,
         optional: true,
         hidden: true,
         title: 'Visita la aldea hualla',

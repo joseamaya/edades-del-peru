@@ -257,6 +257,7 @@ async function readPlan(page) {
       inticancha: objective('a4_inticancha')?.pos ? point(objective('a4_inticancha').pos) : null,
       canchas: objective('a4_canchas')?.nodes?.map(point) ?? [],
       tamboQuiro: memory('ayar_cachi')?.pos ? point(memory('ayar_cachi').pos) : null,
+      hualla: objective('a3_hualla')?.pos ? point(objective('a3_hualla').pos) : null,
     };
   });
 }

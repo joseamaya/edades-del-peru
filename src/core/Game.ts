@@ -1208,8 +1208,7 @@ export class Game {
    * act III fire offering. Cooking pits and sacred-fire altars are documented in the dossier.
    */
   updateCityLife(dt: number): void {
-    const city = this.caralCity ?? this.chavinCity;
-    if (!city || this.headless) return;
+    if (this.headless) return;
     this.lifeTimer += dt;
     if (this.lifeTimer < 0.35) return;
     this.lifeTimer = 0;
@@ -1218,6 +1217,8 @@ export class Game {
     // The ayllu kit owns its life sources (huts, altars) and reuses this presentation tick, so it
     // inherits the same 70 m camera cap as Caral's cooking smoke.
     this.aylluSite?.updateLife(focus, this.particles, this.lifeTurn);
+    const city = this.caralCity ?? this.chavinCity;
+    if (!city) return;
     const quietPhase = this.siteDef?.life?.quietPhase;
     const near =
       quietPhase && this.sitePhase === quietPhase
