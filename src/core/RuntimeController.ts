@@ -1188,7 +1188,7 @@ export class RuntimeController {
     const ratio = this.game.pixelRatioOverride ?? Math.min(window.devicePixelRatio, 2);
     this.game.renderer.setPixelRatio(ratio);
     this.game.camera.resize(window.innerWidth, window.innerHeight);
-    this.game.postfx.setSize(window.innerWidth, window.innerHeight);
+    this.game.postfx.setSize(window.innerWidth, window.innerHeight, ratio);
     this.game.renderer.setSize(window.innerWidth, window.innerHeight);
     this.syncWaterRefractionSize();
   }

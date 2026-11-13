@@ -513,10 +513,9 @@ async function measure(browser, base, n, runIndex) {
           };
           requestAnimationFrame(step);
         });
-      // Scaling the drawing buffer separates GPU-bound (frame follows the pixels) from
-      // submit/CPU-bound (frame barely moves). Only valid when the scene renders straight to
-      // the canvas: EffectComposer keeps its own pixel ratio, so with post-processing on the
-      // geometry and bloom targets would not shrink (see #449).
+      // Scaling the drawing buffer separates GPU-bound (frame follows the pixels) from submit/CPU-bound
+      // (frame barely moves). `setPixelRatioOverride` now reaches the renderer, the post-processing
+      // targets (#458) and the refraction RT, so the sweep is valid with `--postfx` too.
       const ratios = sweep ? [1, 0.75, 0.5] : [1];
       const previous = g.pixelRatioOverride;
       const byScale = [];
@@ -535,12 +534,8 @@ async function measure(browser, base, n, runIndex) {
       };
     },
     {
-      sweep: scaleSweep && !postfx,
-      reason: !scaleSweep
-        ? null
-        : postfx
-          ? 'post-processing keeps the EffectComposer resolution (#449)'
-          : 'the sweep was disabled',
+      sweep: scaleSweep,
+      reason: scaleSweep ? null : 'the sweep was disabled',
     },
   );
 
