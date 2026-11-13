@@ -67,6 +67,9 @@ test.describe('post-processing render scale (#449)', () => {
         target: g.postfx.composer.renderTarget1.width as number,
         ratio: g.renderer.getPixelRatio() as number,
         width: window.innerWidth,
+        // #460: the refraction source is half the drawing buffer, in every scale
+        refraction: g.water.refractionRT.width as number,
+        buffer: g.renderer.getDrawingBufferSize(new window.THREE.Vector2()).x as number,
       });
       g.runtime.setPixelRatioOverride(2);
       const at2 = read();
@@ -77,7 +80,9 @@ test.describe('post-processing render scale (#449)', () => {
     });
     expect(sizes.at2.ratio).toBe(2);
     expect(sizes.at2.target).toBe(sizes.at2.width * 2);
+    expect(sizes.at2.refraction).toBe(Math.floor(sizes.at2.buffer / 2));
     expect(sizes.at1.ratio).toBe(1);
     expect(sizes.at1.target).toBe(sizes.at1.width);
+    expect(sizes.at1.refraction).toBe(Math.floor(sizes.at1.buffer / 2));
   });
 });

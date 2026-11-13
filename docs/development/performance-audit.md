@@ -95,9 +95,10 @@ post-proceso y al de refracción (#458).
    358 draws / 6.9 ms (antes 714 / 13.6) y submit 57.9 ms (antes 61.7); en m1_caral, frame p50 34.8–35.6 ms
    (antes 40.3). El discriminador es ahora el conteo (358 ≈ 1 × 364 del frame directo), no la columna
    `shadowFrames`.
-3. **La refracción del agua cuesta otro pase de escena completo**: 24,0 ms y 2 312 draws, prácticamente los
-   mismos draws que la escena principal y más tiempo, y solo alimenta el shader del agua. **Atacado en #460**: el
-   `refractionRT` se dimensionaba al drawing buffer y ahora va a la mitad (ver §"Refracción a media resolución").
+3. **La refracción del agua costaba otro pase de escena completo** (medido antes de #460): 24,0 ms y 2 312
+   draws, prácticamente los mismos draws que la escena principal y más tiempo, y solo alimenta el shader del agua.
+   El `refractionRT` se dimensionaba al drawing buffer y ahora va a la mitad (ver §"Refracción a media
+   resolución"); el pase sigue dibujando lo mismo, lo que baja es su relleno.
 4. **8–10 draw calls por unidad en directo y 17 con post-proceso.** La escena tiene 3 780 materiales únicos para
    309 unidades: el coste escala con los **materiales distintos por unidad** (que además se clonan por
    instancia), no con el número de mallas. La diferencia 8 → 17 es el pase extra de refracción, no más
@@ -119,7 +120,7 @@ UV suave (`refractionStrength` 0.012) mezclado por `(1 - fresnel)`; nadie mira e
 
 m1_caral, 1600×900, calidad alta, muestras **intercaladas** en la misma página:
 
-| `refractionRT` | frame p50 | Δ |
+| `refractionRT` | frame p50 | Δ vs 44.4 ms |
 | --- | ---: | ---: |
 | completo (1600×900) | 44.4 / 41.8 ms | — |
 | mitad (800×450) | 39.0 ms | −12 % |
@@ -135,9 +136,9 @@ Diferencia de píxeles contra el frame completo (misma cámara y semilla):
 | sin refracción | 1.79 | 7.9 % |
 
 Reducir la resolución es indistinguible a ojo (la distorsión es sutil y suave); quitar la refracción sí se nota.
-Medido en el juego: m1_caral pasa de 34.8 a **32.0 ms** p50 y de 59.6 a **43.0 ms** p99 (corridas separadas, misma
-carga aproximada, así que vale como indicativo). El cuarto de resolución queda como opción documentada: solo está
-validado con dos encuadres.
+Medido en el juego: m1_caral p50 pasa de la banda 34.8–35.6 ms (dos corridas tras #455) a **32.0 ms**, ≈−9 %
+(corridas separadas con carga similar: indicativo, no par intercalado). El cuarto de resolución queda como opción
+documentada: solo está validado con dos encuadres, igual que la mitad.
 
 ### Reproducir
 
@@ -228,6 +229,14 @@ node scripts/bench_scene.mjs --mission=m1_caral --gpu --frames --quality=low --o
 ```
 
 Añadir `--stage=late|camp` para las otras dos filas de m1_caral, y cambiar `--mission=` para el resto.
+Las dos tablas de arriba salen de un A/B en la misma sesión (misma semilla y cámara), forzando el tamaño en la
+página antes de medir y comparando las capturas píxel a píxel:
+
+```js
+const db = g.renderer.getDrawingBufferSize(new THREE.Vector2());
+g.water.refractionRT.setSize(Math.floor(db.x * s), Math.floor(db.y * s)); // s = 1, 0.5, 0.25
+g.runtime.render();                                                      // con el bucle parado
+```
 
 ## Assets y carga (#246)
 
