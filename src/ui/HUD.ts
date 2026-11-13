@@ -79,6 +79,9 @@ import {
 
 const ACT_TITLE = /^(Acto [IVXL]+) ·/;
 
+/** Briefings with this many named characters switch to the compact cast grid. */
+const CAST_LAYOUT_MIN = 5;
+
 const STANCE_TOOLTIP: Record<CombatStance, string> = {
   agresivo: t('hud.stance.agresivo'),
   defensivo: t('hud.stance.defensivo'),
@@ -1835,10 +1838,16 @@ export class HUD {
     const first = units[0];
     const civ = this.game.players[first.owner]?.civ;
     const commander = units.length === 1 ? commanderById(first.tag) : undefined;
+    const cast = units.flatMap((u) => {
+      const c = commanderById(u.tag);
+      return c ? [c] : [];
+    });
+    const castLine =
+      commander || cast.length === 0 ? '' : `<b>${t('hud.unit.cast')}:</b> ${cast.map((c) => c.name).join(' · ')}<br>`;
     this.setDesc(
       unitDisplayIcon(first.kind, first.era),
       commander?.name ?? `${unitDisplayName(first.kind, civ, first.era)} ×${units.length}`,
-      commander ? `${commander.role}<br>${this.unitDesc(first)}` : this.unitDesc(first),
+      commander ? `${commander.role}<br>${this.unitDesc(first)}` : `${castLine}${this.unitDesc(first)}`,
     );
     this.clearGrid();
     // summary by type (click = select only that type) — AoE2 style
@@ -2760,7 +2769,7 @@ export class HUD {
       story: context,
       didYouKnow: funFact,
       commanders: commanders
-        ? `<div class="ed-commanders${(mis.commanders?.length ?? 0) > 4 ? ' ed-commanders--cast' : ''}">${commanders}</div>`
+        ? `<div class="ed-commanders${(mis.commanders?.length ?? 0) >= CAST_LAYOUT_MIN ? ' ed-commanders--cast' : ''}">${commanders}</div>`
         : '',
       sources,
       facts: [

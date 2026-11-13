@@ -196,7 +196,7 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
   ayar_cachi: {
     id: 'ayar_cachi',
     name: 'Ayar Cachi',
-    role: 'Ayar · honda y fuerza',
+    role: 'Ayar · sepultado en Tambo Quiro',
     civ: CivId.INCA_KILLKE,
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
@@ -212,7 +212,7 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
   mama_huaco: {
     id: 'mama_huaco',
     name: 'Mama Huaco',
-    role: 'Ayar · mando y fuerza',
+    role: 'Ayar · hermana de la peregrinación',
     civ: CivId.INCA_KILLKE,
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
@@ -220,7 +220,7 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
   mama_ocllo: {
     id: 'mama_ocllo',
     name: 'Mama Ocllo',
-    role: 'Ayar · telar y enseñanza',
+    role: 'Ayar · hermana de la peregrinación',
     civ: CivId.INCA_KILLKE,
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
@@ -228,7 +228,7 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
   mama_ipacura: {
     id: 'mama_ipacura',
     name: 'Mama Ipacura',
-    role: 'Ayar · casa y semilla',
+    role: 'Ayar · hermana de la peregrinación',
     civ: CivId.INCA_KILLKE,
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',
@@ -236,7 +236,7 @@ export const COMMANDERS: Record<PortraitId, CommanderDef> = {
   mama_raua: {
     id: 'mama_raua',
     name: 'Mama Raua',
-    role: 'Ayar · agua y camino',
+    role: 'Ayar · hermana de la peregrinación',
     civ: CivId.INCA_KILLKE,
     status: 'abstraction',
     source: 'docs/historia/campanas/tambotoco.md',

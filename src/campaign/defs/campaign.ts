@@ -1434,7 +1434,10 @@ export const MISSIONS: MissionDef[] = [
     startingResources: { food: 700, wood: 500, silver: 0, stone: 300 },
     start: {
       units: [
-        { kind: UnitKind.WORKER, dx: 4, dz: 4, count: 5 },
+        { kind: UnitKind.WORKER, dx: 4, dz: 4, count: 2 },
+        { kind: UnitKind.WORKER, dx: 3, dz: 5, count: 1, tag: 'mama_ocllo' },
+        { kind: UnitKind.WORKER, dx: 5, dz: 5, count: 1, tag: 'mama_ipacura' },
+        { kind: UnitKind.WORKER, dx: 5, dz: 3, count: 1, tag: 'mama_raua' },
         { kind: UnitKind.SOLDIER, dx: 8, dz: 0, count: 3 },
         { kind: UnitKind.SOLDIER, dx: 9, dz: 1, count: 1, tag: 'manco_capac' },
         { kind: UnitKind.SOLDIER, dx: 6, dz: -2, count: 1, tag: 'mama_huaco' },

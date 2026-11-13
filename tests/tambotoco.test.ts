@@ -105,11 +105,25 @@ describe('Los hijos de Tambotoco', () => {
     expect(commanderById('manco_capac')?.name).toBe('Ayar Manco');
   });
 
-  it('marches Ayar Manco, Mama Huaco and Ayar Auca with the party', () => {
+  it('marches the eight siblings with the party', () => {
     const tagged = (TAMBOTOCO.start.units ?? []).filter((u) => u.tag);
-    expect(tagged.map((u) => u.tag)).toEqual(['manco_capac', 'mama_huaco', 'ayar_cachi', 'ayar_uchu', 'ayar_auca']);
-    const manco = tagged.find((u) => u.tag === 'manco_capac')!;
-    expect(manco.count).toBe(1);
+    expect(tagged.map((u) => u.tag)).toEqual([
+      'mama_ocllo',
+      'mama_ipacura',
+      'mama_raua',
+      'manco_capac',
+      'mama_huaco',
+      'ayar_cachi',
+      'ayar_uchu',
+      'ayar_auca',
+    ]);
+    for (const id of TAMBOTOCO.commanders!) {
+      expect(
+        tagged.some((u) => u.tag === id),
+        id,
+      ).toBe(true);
+    }
+    for (const unit of tagged) expect(unit.count, unit.tag).toBe(1);
     const protect = TAMBOTOCO.objectives.find((o) => o.id === 'a1_manco')!;
     expect(protect.kind).toBe('protect');
     expect(protect.entityTag).toBe('manco_capac');

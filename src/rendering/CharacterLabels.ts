@@ -4,19 +4,12 @@ import type { Unit } from '../entities/Unit';
 import type { Fow } from '../game/Fow';
 import { commanderById } from '../model/defs/commanders';
 import { labelFade } from './MapLabels';
-import { textTexture } from './textSprite';
+import { labelSprite, type LabelSprite } from './textSprite';
 
 /** Screen height a nameplate keeps while zooming (the world height follows the camera). */
 const NAME_SCREEN_FACTOR = 0.013;
-/** Zoomed out, the labels would clutter the board; the HUD still names a selected character. */
-const NAME_MAX_ZOOM = 46;
-
-interface Nameplate {
-  readonly sprite: THREE.Sprite;
-  readonly material: THREE.SpriteMaterial;
-  readonly texture: THREE.CanvasTexture;
-  readonly aspect: number;
-}
+/** Vertical offset per unit id, so a tight group does not stack every name on the same line. */
+const NAME_STAGGER = 0.32;
 
 /**
  * Nameplates over campaign characters. A unit's mission tag doubles as its commander id, so a
@@ -24,7 +17,7 @@ interface Nameplate {
  */
 export class CharacterLabels {
   private readonly group = new THREE.Group();
-  private readonly labels = new Map<number, Nameplate>();
+  private readonly labels = new Map<number, LabelSprite>();
 
   constructor(scene: THREE.Scene) {
     this.group.name = 'character-labels';
@@ -34,7 +27,7 @@ export class CharacterLabels {
   /** Follow living characters; enemy names only show while the fog lets the player see them. */
   sync(units: Iterable<Unit>, camera: RTSCamera, fow: Fow, fogOn: boolean): void {
     const zoom = camera.getZoom();
-    const fade = zoom > NAME_MAX_ZOOM ? 0 : labelFade(zoom, camera.maxZoom);
+    const fade = labelFade(zoom, camera.maxZoom);
     const live = new Set<number>();
     for (const unit of units) {
       const commander = commanderById(unit.tag);
@@ -44,26 +37,14 @@ export class CharacterLabels {
       let label = this.labels.get(unit.id);
       if (!label) {
         if (fade <= 0.02) continue;
-        const { texture, aspect } = textTexture(commander.name, {
+        label = labelSprite(commander.name, {
           fontSize: 44,
           color: unit.owner === 0 ? '#f6e7bf' : '#e8b7a0',
           paddingX: 16,
           paddingY: 8,
         });
-        const material = new THREE.SpriteMaterial({
-          map: texture,
-          transparent: true,
-          opacity: 0,
-          depthWrite: false,
-          depthTest: true,
-          fog: false,
-        });
-        const sprite = new THREE.Sprite(material);
-        sprite.name = `character-label:${commander.id}`;
-        sprite.center.set(0.5, 0);
-        sprite.renderOrder = 3;
-        this.group.add(sprite);
-        label = { sprite, material, texture, aspect };
+        label.sprite.name = `character-label:${commander.id}`;
+        this.group.add(label.sprite);
         this.labels.set(unit.id, label);
       }
       if (fade <= 0.02) {
@@ -73,7 +54,11 @@ export class CharacterLabels {
       const height = zoom * NAME_SCREEN_FACTOR;
       label.sprite.visible = true;
       label.sprite.scale.set(height * label.aspect, height, 1);
-      label.sprite.position.set(unit.pos.x, unit.pos.y + 2.2 + unit.radius * 2 + (unit.id % 3) * 0.32, unit.pos.z);
+      label.sprite.position.set(
+        unit.pos.x,
+        unit.pos.y + 2.2 + unit.radius * 2 + (unit.id % 3) * NAME_STAGGER,
+        unit.pos.z,
+      );
       label.material.opacity = fade * (unit.owner === 0 ? 1 : 0.8);
     }
     for (const [id, label] of this.labels) {

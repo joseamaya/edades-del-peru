@@ -489,9 +489,9 @@ export class Mission {
         break;
       }
       case 'memory': {
-        const retired = this.game.retireCharacter(fx.tag) as { x: number; z: number } | null;
-        const p = fx.pos ? this.resolvePoint(fx.pos) : retired;
-        if (p) this.game.raiseMemoryStone(fx.tag, p.x, p.z, fx.label);
+        this.game.retireCharacter(fx.tag);
+        const p = this.resolvePoint(fx.pos);
+        this.game.raiseMemoryStone(fx.tag, p.x, p.z, fx.label);
         break;
       }
       case 'environment':
@@ -815,9 +815,7 @@ export class Mission {
     for (const trigger of this.def.triggers) {
       if (!this.fired.has(trigger.id)) continue;
       for (const fx of trigger.effects) {
-        if (fx.type !== 'memory' || !fx.pos) continue;
-        const p = this.resolvePoint(fx.pos);
-        this.game.raiseMemoryStone(fx.tag, p.x, p.z, fx.label);
+        if (fx.type === 'memory') this.applyEffect(fx);
       }
     }
     // New hidden objectives can be added after a save was written. Their activation trigger may

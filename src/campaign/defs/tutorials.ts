@@ -13,7 +13,7 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'ayar',
-        text: 'Ayar Manco, Mama Huaco y Ayar Auca marchan contigo: sus nombres van sobre la unidad. Ayar Cachi y Ayar Uchu quedarán en el camino.',
+        text: 'Los ocho hermanos marchan contigo: sus nombres van sobre la unidad. Ayar Cachi y Ayar Uchu quedarán en el camino; el resto fundará Inticancha.',
         check: { type: 'elapsed', seconds: 12 },
       },
       {

@@ -1,5 +1,11 @@
 import * as THREE from 'three';
-import { textTexture } from './textSprite';
+import { labelSprite } from './textSprite';
+
+interface Stone {
+  readonly group: THREE.Group;
+  readonly ring: THREE.MeshBasicMaterial;
+  readonly phase: number;
+}
 
 /**
  * Huacas raised by the mission script: a named character is buried or turned to stone and the
@@ -8,7 +14,7 @@ import { textTexture } from './textSprite';
  */
 export class MemoryStones {
   private readonly group = new THREE.Group();
-  private readonly stones = new Map<string, THREE.Group>();
+  private readonly stones = new Map<string, Stone>();
   private readonly stoneMaterial = new THREE.MeshStandardMaterial({
     color: 0x9c9384,
     roughness: 0.95,
@@ -16,7 +22,7 @@ export class MemoryStones {
     emissive: 0x2e2414,
     emissiveIntensity: 0.55,
   });
-  private readonly ringMaterial = new THREE.MeshBasicMaterial({
+  private readonly ringTemplate = new THREE.MeshBasicMaterial({
     color: 0xffd166,
     transparent: true,
     opacity: 0.32,
@@ -63,40 +69,36 @@ export class MemoryStones {
       stone.add(rock);
     }
 
-    const ring = new THREE.Mesh(this.ringGeometry, this.ringMaterial);
-    ring.rotation.x = -Math.PI / 2;
-    ring.position.y = 0.06;
-    stone.add(ring);
+    const ring = this.ringTemplate.clone();
+    const ringMesh = new THREE.Mesh(this.ringGeometry, ring);
+    ringMesh.rotation.x = -Math.PI / 2;
+    ringMesh.position.y = 0.06;
+    stone.add(ringMesh);
 
-    const { texture, aspect } = textTexture(label, { fontSize: 44, color: '#f2dfae', paddingX: 16, paddingY: 8 });
-    const material = new THREE.SpriteMaterial({
-      map: texture,
-      transparent: true,
-      depthWrite: false,
-      depthTest: true,
-      fog: false,
-    });
-    const sprite = new THREE.Sprite(material);
-    sprite.center.set(0.5, 0);
-    sprite.scale.set(0.7 * aspect, 0.7, 1);
-    sprite.position.y = 2.6;
-    stone.add(sprite);
+    const labelBillboard = labelSprite(label, { fontSize: 44, color: '#f2dfae', paddingX: 16, paddingY: 8 });
+    labelBillboard.material.opacity = 1;
+    labelBillboard.sprite.scale.set(0.7 * labelBillboard.aspect, 0.7, 1);
+    labelBillboard.sprite.position.y = 2.6;
+    stone.add(labelBillboard.sprite);
 
     this.decorate?.(stone);
     this.group.add(stone);
-    this.stones.set(id, stone);
+    this.stones.set(id, { group: stone, ring, phase: this.stones.size * 0.9 });
   }
 
-  /** Breathe the ring so the marker reads as active without stealing the scene. */
+  /** Breathe each ring on its own phase so the markers do not blink in lockstep. */
   update(time: number): void {
-    this.ringMaterial.opacity = 0.28 + 0.07 * Math.sin(time * 1.3);
+    for (const stone of this.stones.values()) {
+      stone.ring.opacity = 0.28 + 0.07 * Math.sin(time * 1.3 + stone.phase);
+    }
   }
 
   dispose(): void {
     this.group.removeFromParent();
+    for (const stone of this.stones.values()) stone.ring.dispose();
     this.stones.clear();
     this.stoneMaterial.dispose();
-    this.ringMaterial.dispose();
+    this.ringTemplate.dispose();
     this.ringGeometry.dispose();
     this.slabGeometry.dispose();
     this.rockGeometry.dispose();

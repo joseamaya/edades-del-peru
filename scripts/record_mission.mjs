@@ -6,9 +6,10 @@
  *   yarn record --mission=m_tambotoco [--mode=clip|full] [--speed=1]
  *     [--out=review/tambotoco.mp4] [--width=1280] [--height=720] [--limit=25]
  *
- * `clip` records the opening (briefing, intro cards, the Ayar at the cave, Tambo Quiro, Huanacaure
- * and the valley) in about two minutes. `full` plays the whole mission with real move/gather/build
- * commands and records until victory, defeat or the time limit.
+ * `clip` records the opening (briefing, intro cards, the starting party and the mission's named
+ * places) in about two minutes. `full` autoplays the `m_tambotoco` act shape (leave the cave, hunt,
+ * Huanacaure, acequia, Inticancha) with real move/gather/build commands, no cheats, and records until
+ * victory, defeat or the time limit; for another mission use `clip`.
  *
  * The result is in-engine footage of the game itself, never a historical film. The JSON next to
  * the video lists every objective and the second it changed.
@@ -28,11 +29,6 @@ const out = path.resolve(cliArg('out', `review/${mission}-${mode}.mp4`));
 const jsonPath = out.replace(/\.mp4$/i, '.json');
 const contactPath = out.replace(/\.mp4$/i, '-contact.jpg');
 const frameDir = path.join(reviewDir(), 'record-frames');
-
-const START_POINT = { x: 60, z: 92 };
-const TAMBO_QUIRO = { x: 70, z: 91 };
-const HUANACAURE = { x: 120, z: 106 };
-const INTICANCHA = { x: 168, z: 190 };
 
 const started = Date.now();
 const log = [];
@@ -75,8 +71,9 @@ async function main() {
     await briefing.waitFor({ state: 'detached', timeout: 15_000 });
 
     await waitForPlay(page);
-    if (mode === 'clip') await recordClip(page);
-    else await playMission(page);
+    const plan = await readPlan(page);
+    if (mode === 'clip') await recordClip(page, plan);
+    else await playMission(page, plan);
 
     await page.waitForTimeout(4000);
     const summary = await page.evaluate(() => ({
@@ -149,31 +146,42 @@ async function waitForPlay(page) {
   await page.waitForFunction(() => !window.game.isCinematicActive(), null, { timeout: 90_000 });
 }
 
-/** A camera tour of the legend: the party, Tambo Quiro, Huanacaure and the valley. */
-async function recordClip(page) {
+/** A camera tour of the legend: the party, the huaca and the valley the mission defines. */
+async function recordClip(page, plan) {
   const hold = (seconds) => page.waitForTimeout(seconds * 1000);
   await hold(4);
   await look(page, null, 42);
   await hold(9);
-  await move(page, [await firstUnit(page, 'worker')], START_POINT);
-  await waitObjective(page, 'a1_salida', 'completed', 120_000);
-  // Keep the stone below the objective toasts at the top of the screen.
-  await look(page, { x: TAMBO_QUIRO.x + 2, z: TAMBO_QUIRO.z - 5 }, 30);
-  await hold(10);
-  await look(page, { x: HUANACAURE.x, z: HUANACAURE.z + 4 }, 42);
-  await hold(8);
-  await look(page, { x: INTICANCHA.x, z: INTICANCHA.z + 4 }, 42);
-  await hold(8);
+  if (plan.start) {
+    await move(page, [await firstUnit(page, 'worker')], plan.start);
+    await waitObjective(page, 'a1_salida', 'completed', 120_000);
+  }
+  if (plan.tamboQuiro) {
+    // Keep the stone below the objective toasts at the top of the screen.
+    await look(page, { x: plan.tamboQuiro.x + 2, z: plan.tamboQuiro.z - 5 }, 30);
+    await hold(10);
+  }
+  if (plan.heritage) {
+    await look(page, { x: plan.heritage.x, z: plan.heritage.z - 8 }, 34);
+    await hold(8);
+  }
+  if (plan.inticancha) {
+    await look(page, { x: plan.inticancha.x, z: plan.inticancha.z + 4 }, 42);
+    await hold(8);
+  }
   await look(page, null, 36);
   await hold(5);
 }
 
 /** Drive the four acts with the same commands the player issues. */
-async function playMission(page) {
+async function playMission(page, plan) {
   const deadline = started + limitMinutes * 60_000;
+  if (!plan.start || !plan.heritage || !plan.heritageId || !plan.inticancha || !plan.canchas.length) {
+    throw new Error('full mode autoplays the m_tambotoco act shape; use --mode=clip for another mission');
+  }
 
   const worker = await firstUnit(page, 'worker');
-  if (worker) await move(page, [worker], START_POINT);
+  if (worker) await move(page, [worker], plan.start);
   await waitObjective(page, 'a1_salida', 'completed', 120_000, deadline);
   if (await hasEnded(page)) return;
 
@@ -182,8 +190,8 @@ async function playMission(page) {
   if (await hasEnded(page)) return;
 
   const army = (await units(page)).filter((u) => u.kind !== 'worker').map((u) => u.id);
-  await move(page, army, HUANACAURE, true);
-  await visitWhenClose(page, 'tambotoco_huanacaure', HUANACAURE, 15, 240_000, deadline);
+  await move(page, army, plan.heritage, true);
+  await visitWhenClose(page, plan.heritageId, plan.heritage, 15, 240_000, deadline);
   await waitObjective(page, 'a2_huanacaure', 'completed', 30_000, deadline);
   if (await hasEnded(page)) return;
 
@@ -192,20 +200,19 @@ async function playMission(page) {
   if (await hasEnded(page)) return;
 
   const workers = (await units(page, 'worker')).map((u) => u.id);
-  const mill = await place(page, 'mill', INTICANCHA);
+  const mill = await place(page, 'mill', plan.inticancha);
   if (mill) await issue(page, { kind: 'build', entityId: mill }, workers);
   await waitObjective(page, 'a4_inticancha', 'completed', 240_000, deadline);
   if (await hasEnded(page)) return;
 
-  const nodes = [
-    { x: INTICANCHA.x - 12, z: INTICANCHA.z },
-    { x: INTICANCHA.x + 12, z: INTICANCHA.z },
-    { x: INTICANCHA.x, z: INTICANCHA.z - 12 },
-    { x: INTICANCHA.x, z: INTICANCHA.z + 12 },
-  ];
-  for (const node of nodes) {
+  for (const node of plan.canchas) {
     const house = await place(page, 'house', node);
-    if (house) await issue(page, { kind: 'build', entityId: house }, workers);
+    if (!house) continue;
+    // One worker per house: re-issuing the same build order to every worker would abandon all
+    // but the last foundation, and the network objective counts finished houses.
+    const builder = workers.shift();
+    if (builder === undefined) break;
+    await issue(page, { kind: 'build', entityId: house }, [builder]);
   }
   await waitObjective(page, 'a4_canchas', 'completed', 300_000, deadline);
   await page.waitForFunction(() => window.game.gameEnded === true, null, { timeout: 60_000 }).catch(() => {});
@@ -213,6 +220,26 @@ async function playMission(page) {
 
 async function hasEnded(page) {
   return page.evaluate(() => window.game.mission?.ended ?? false);
+}
+
+/** World points the mission itself declares, so the recorder does not restate the map data. */
+async function readPlan(page) {
+  return page.evaluate(() => {
+    const m = window.game.mission;
+    const point = (p) => (p ? m.resolvePoint(p) : null);
+    const objective = (id) => m.def.objectives.find((o) => o.id === id);
+    const memory = (tag) =>
+      m.def.triggers.flatMap((t) => t.effects).find((fx) => fx.type === 'memory' && fx.tag === tag);
+    const heritage = objective('a2_huanacaure');
+    return {
+      start: objective('a1_salida')?.pos ? point(objective('a1_salida').pos) : null,
+      heritage: heritage?.pos ? point(heritage.pos) : null,
+      heritageId: heritage?.heritageIds?.[0] ?? null,
+      inticancha: objective('a4_inticancha')?.pos ? point(objective('a4_inticancha').pos) : null,
+      canchas: objective('a4_canchas')?.nodes?.map(point) ?? [],
+      tamboQuiro: memory('ayar_cachi')?.pos ? point(memory('ayar_cachi').pos) : null,
+    };
+  });
 }
 
 /** Point the camera at the party (point null) or at a place, at a readable height. */

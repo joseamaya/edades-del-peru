@@ -130,6 +130,15 @@ const CSS = /* css */ `
   .ed-briefing .brief-actions .ed-primary:focus-visible { outline: 2px solid #fff3cf; outline-offset: 3px; }
   .ed-briefing .brief-actions .ed-ghostbtn { width: 100%; }
   @media (prefers-reduced-motion: reduce) { .ed-briefing > * { animation: none; } }
+  @media (max-height: 780px) {
+    .ed-briefing { gap: 10px; padding: 12px clamp(16px, 3vw, 40px); }
+    .ed-briefing .brief-head h2 { font-size: clamp(30px, 3.6vw, 44px); }
+    .ed-briefing .brief-story .ed-art img { max-height: 20vh; }
+    .ed-briefing .brief-story .ed-hist { font-size: 14px; line-height: 1.6; }
+    .ed-briefing .ed-sabias { margin-bottom: 10px; padding: 8px 12px; font-size: 12px; }
+    .ed-briefing .ed-commanders--cast { gap: 5px; }
+    .ed-briefing .ed-commanders--cast .ed-cmd-card { padding: 3px 6px; }
+  }
   @media (max-width: 900px) {
     .ed-briefing .brief-body { grid-template-columns: 1fr; }
     .ed-briefing .brief-sheet { position: static; order: -1; }

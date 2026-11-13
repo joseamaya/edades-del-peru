@@ -974,8 +974,10 @@ export class Game {
     const unit = [...this.units.values()].find((u) => u.tag === tag && !u.dead);
     if (!unit) return null;
     const at = { x: unit.pos.x, z: unit.pos.z };
+    unit.dead = true;
     detachUnit(unit);
     this.units.delete(unit.id);
+    this.selectedUnits = this.selectedUnits.filter((id) => id !== unit.id);
     return at;
   }
 

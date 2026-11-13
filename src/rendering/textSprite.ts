@@ -44,3 +44,30 @@ export function textTexture(
   texture.generateMipmaps = false;
   return { texture, aspect: canvas.width / canvas.height };
 }
+
+export interface LabelSprite {
+  readonly sprite: THREE.Sprite;
+  readonly material: THREE.SpriteMaterial;
+  readonly texture: THREE.CanvasTexture;
+  readonly aspect: number;
+}
+
+/**
+ * A ground-anchored name billboard: the shared setup for character nameplates and huaca markers.
+ * The caller owns positioning, scale and visibility; opacity starts at 0 so it can fade in.
+ */
+export function labelSprite(text: string, style: TextTextureStyle = {}, renderOrder = 3): LabelSprite {
+  const { texture, aspect } = textTexture(text, style);
+  const material = new THREE.SpriteMaterial({
+    map: texture,
+    transparent: true,
+    opacity: 0,
+    depthWrite: false,
+    depthTest: true,
+    fog: false,
+  });
+  const sprite = new THREE.Sprite(material);
+  sprite.center.set(0.5, 0);
+  sprite.renderOrder = renderOrder;
+  return { sprite, material, texture, aspect };
+}
