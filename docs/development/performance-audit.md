@@ -8,6 +8,57 @@
 > Entorno: Linux x64, Intel i7-13700 (24 hilos), Node 22.23.2, Chromium/SwiftShader (sin GPU),
 > viewport 1280×800, `?low=1`, niebla activada, seed 777 (escala) y seeds 777–796 (IA).
 
+---
+
+## Render en GPU real (#447)
+
+Primera medición del render con hardware real (`yarn bench --gpu`, que desactiva SwiftShader y falla si el
+navegador vuelve a renderizar en software). Desbloquea el pendiente de las secciones anteriores: *"el render no
+se puede certificar con SwiftShader"*. Los **draw calls y triángulos son estructurales** (comparables entre
+máquinas); los **tiempos dependen del host** y quedan registrados con su `loadavg` en el JSON.
+
+Entorno de esta tanda: Linux x64, **Intel Graphics (RPL-S) iGPU** vía ANGLE/Vulkan en Chromium headless,
+viewport 1280×800 (1920×1080 donde se indica), `mixed`, seed 777, 300 pasos, **máquina compartida**
+(load average 3–17 durante la tanda), así que los tiempos son un **límite inferior**.
+
+| uds | draw calls | tris | submit main | submit shadow | frame p50/p95 (directo) | calls/ud |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 100 | 1 077 | 1.05M | 10.6 ms | 2.9 ms | 29.7/41.4 ms | 9.8 |
+| 300 | 2 792 | 2.46M | 34.3 ms | 8.7 ms | 97.0/126.0 ms | 9.0 |
+| 500 | 4 006 | 3.79M | 33.7 ms | 9.4 ms | 157.4/178.2 ms | 7.9 |
+| 300 (postfx, 1080p) | 5 112 | 4.30M | 29.8 ms | 7.7 ms | 68.9/122.8 ms | 16.5 |
+
+Desglose del frame con post-proceso (300 uds, 1920×1080, `--postfx=1 --framing=mid`):
+
+| pase | submit ms | draw calls |
+| --- | ---: | ---: |
+| escena principal | 29.8 | 2 370 |
+| sombras (dentro de la escena) | 7.7 | 355 |
+| **refracción del agua** | **31.6** | **2 369** |
+| post-proceso (quads) | 0.1 | 18 |
+| JS/GL restante | 0.0 | — |
+
+Lectura:
+
+1. **El frame está dominado por submit de CPU, no por GPU.** El barrido de resolución
+   (`--scale-sweep`) apenas mejora al bajar a 0.5×: 121.4 → 125.9 ms a 300 uds y postfx, y 30.0 → 21.5 ms a
+   100 uds en directo. Si el coste fuera de relleno (GPU), el frame caería ~4×. Concretamente, 2 792 draw calls
+   cuestan **34 ms de submit**, ≈12 µs por draw call: la pared clásica de WebGL, no una GPU lenta.
+2. **La refracción del agua duplica el coste del frame**: es un pase de escena completo (2 369 draws, 31.6 ms)
+   que solo sirve para el shader del agua. Es el ahorro más barato disponible (desactivarla, bajarla a media
+   resolución o compartir el render con el pase principal).
+3. **9–16 draw calls por unidad** confirma la hipótesis del #240: el coste escala con los **materiales distintos
+   por unidad** (que además se clonan por instancia), no con el número de mallas.
+4. **La simulación no es el problema.** Sus p50 (3.1/8.5/27.3 ms) están inflados por el host compartido; el
+   baseline en reposo de las secciones anteriores (1.7 ms/paso a 1000 uds) sigue siendo la referencia.
+
+Consecuencia para el plan: el orden de ataque pasa a ser (1) pase de refracción, (2) materiales compartidos +
+atlas por arquetipo, (3) instancing, (4) sombras — ver #240. Y descarta que la GPU del equipo sea el techo: la
+CPU de dibujado lo es.
+
+Reproducir: `yarn bench --gpu --assert --postfx=0 --units=100,300,500` y
+`yarn bench:gpu --units=300`. Sin `--gpu` los mismos comandos vuelven a SwiftShader (y `--assert` falla).
+
 
 
 ---

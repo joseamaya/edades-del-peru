@@ -1,14 +1,15 @@
 import fs from 'fs';
 import path from 'path';
-import { launchChromium, withViteServer, cliArg } from './lib.mjs';
+import { launchChromium, withViteServer, cliArg, useGpu, isSoftwareRenderer, readGlRenderer } from './lib.mjs';
 
 /**
  * Scene budget for a mission's opening view (docs/design/art-direction.md §11): one plain scene render
  * (shadow pass included, post-processing excluded) at 1600x900 and zoom 54, plus the Blender
  * vegetation/fauna kit isolated by hiding it. Triangle and draw-call counts are machine-independent,
- * unlike FPS (headless Chromium renders in software).
+ * unlike FPS: headless Chromium renders in software unless `--gpu` (or `GPU=1`) asks for the host GPU.
  *
  * Usage: node scripts/bench_scene.mjs [--mission=m1_caral] [--stage=late] [--assert] [--out=review/bench-scene.json]
+ *        [--gpu] [--gl=egl|angle-vulkan|...]
  *
  * `--stage=late` measures m1's end game instead of its opening: the whole city in use (fair tents, sacred
  * fire, cooking smoke), the act IV drought and 30 extra workers, viewed over the Sacred City.
@@ -179,13 +180,22 @@ try {
   );
   const budget =
     stage === 'late' ? BUDGETS[`${mission}_late`] : stage === 'camp' ? BUDGETS[`${mission}_camp`] : BUDGETS[mission];
-  const report = { mission, ...result, budget, errors };
+  const gl = await readGlRenderer(page);
+  const gpuInfo = { ...gl, software: isSoftwareRenderer(`${gl.renderer} ${gl.vendor}`) };
+  const report = { mission, ...result, budget, gpu: gpuInfo, errors };
   fs.mkdirSync(path.dirname(outFile), { recursive: true });
   fs.writeFileSync(outFile, JSON.stringify(report, null, 2) + '\n');
   console.log(
     `${mission}: scene ${result.scene.triangles} tris / ${result.scene.calls} calls; ` +
       `vegetation+fauna kit ${result.kit.triangles} tris / ${result.kit.calls} calls (${result.kitObjects} objects)`,
   );
+  console.log(`renderer: ${gpuInfo.renderer} (${gpuInfo.software ? 'software' : 'hardware'})`);
+  if (useGpu() && gpuInfo.software) {
+    console.error(
+      `--gpu was requested but the page rendered in software (${gpuInfo.renderer}). Try --gl=egl, --gl=angle-vulkan or run with a display.`,
+    );
+    failed = true;
+  }
   if (assert) {
     const problems = [];
     if (!budget) problems.push(`no budget for ${mission}`);

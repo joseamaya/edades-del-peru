@@ -992,6 +992,22 @@ landscape's draw calls (the layer rendered visible vs hidden). It **fails** (`ex
 VSM main+shadow passes; see [`docs/design/cultural-landscape.md`](design/cultural-landscape.md)). It writes
 the JSON to `--out` (`review/bench.json` by default) and prints a table.
 
+**Hardware GPU and per-pass breakdown.** `--gpu` (or `GPU=1`) drops `--use-gl=swiftshader` and launches with
+ANGLE's Vulkan backend (`--gl=metal` on macOS, `--gl=auto` to let Chromium choose); `--gpu --assert` **fails**
+when the page still renders in software, so a run can never claim hardware while using SwiftShader. The renderer
+string and `software` flag are recorded in the JSON and printed. `--postfx=1` measures the shipped frame
+(post-processing and the water refraction pass on, quality pinned high) instead of `window.__directRender`;
+`--framing=overview|mid|close` sets the camera, `--viewport=WxH` the canvas (default 1280x800) and `--passes=0`
+skips the breakdown. With `--passes=1` (default) it wraps the render entry points for 40 frames and records the
+median CPU submit time and draw calls per pass — `main`, `shadow`, `refraction`, `post` quads and `other` (JS/GL
+overhead) — plus a scale sweep of the frame rate at 1×/0.75×/0.5× pixel ratio. That sweep is the CPU-vs-GPU
+discriminator: if the frame time follows the pixels the workload is GPU-bound, if it barely moves it is
+submit/CPU-bound. The `QualityGovernor` is pinned during the sample so an automatic downgrade cannot describe a
+different scene than the one requested.
+
+`yarn bench:gpu` is the shorthand for the shipped frame on the host GPU
+(`--gpu --assert --postfx=1 --framing=mid --viewport=1920x1080`).
+
 `yarn sim [--seeds=777,...] [--max=1200] [--civ=chanca] [--period=4] [--metrics=1] [--sample=5] [--out=review/ai-bench.json]` is the
 deterministic AI-vs-AI runner. With `--metrics=1` it records first soldier/first attack/first barracks,
 workers/military/buildings created, gathered resources, losses, pathfinding requests/failures, AI percentiles
@@ -1001,7 +1017,8 @@ and a sampled timeline (idle/blocked workers, stuck units, army, resources) with
 its structural draw-call/triangle budget, when a rigged entity silently falls back to the procedural model, or
 when the mixed scenario's simulation p95 exceeds one frame (16.6 ms). It also asserts the ground-cover instance
 cap (16000) and chunk count. The budgets are machine-independent;
-FPS is not asserted because SwiftShader is not representative of a GPU.
+FPS is not asserted because SwiftShader is not representative of a GPU, so FPS numbers only mean something with
+`--gpu` on a machine that is otherwise idle (the JSON records the host `loadavg`).
 
 The full audit with 50/100/200/400/800 results, 20 AI seeds and the prioritized issue list is in
 [`docs/development/performance-audit.md`](development/performance-audit.md). It records the baseline and the
