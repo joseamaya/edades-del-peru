@@ -983,3 +983,96 @@ test('the Ayar cast is on the board and named after the briefing', async ({ page
   expect(info.party).toContain('Mama Ocllo');
   expect(errors).toEqual([]);
 });
+
+test('the Tambotoco tutorial advances with the player actions', async ({ page }) => {
+  test.setTimeout(90_000);
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/?mission=m_tambotoco&seed=777&fog=0&low=1&intro=0&noloop=1');
+  const briefing = page.locator('.ed-briefing');
+  await briefing.waitFor({ state: 'visible', timeout: 30_000 });
+  await briefing.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+  await briefing.waitFor({ state: 'detached' });
+  await page.waitForFunction(
+    () => (window as unknown as { game?: { mission?: { started: boolean } } }).game?.mission?.started === true,
+    null,
+    { timeout: 30_000 },
+  );
+  await page.waitForFunction(
+    () => !(window as unknown as { game: { isCinematicActive(): boolean } }).game.isCinematicActive(),
+    null,
+    { timeout: 60_000 },
+  );
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const soldier = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'soldier') as any;
+    g.selectUnits([soldier.id]);
+    for (let i = 0; i < 60 * 15; i++) g.update(1 / 60, i / 60);
+    const save = g.tutorial?.toSave();
+    return {
+      step: save?.stepId ?? null,
+      finished: save?.finished ?? null,
+      panel: document.querySelector('#ed-tutorial')?.textContent ?? '',
+    };
+  });
+  // Step 1 is selection, step 2 is the 12 s cast beat; both must pass without a scripted shortcut.
+  expect(out.step).toBe('salida');
+  expect(out.finished).toBe(false);
+  expect(out.panel).toContain('Sal de la cueva');
+  expect(errors).toEqual([]);
+});
+
+test('the ayllu site grows through its phases', async ({ page }) => {
+  test.setTimeout(90_000);
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/?mission=m_tambotoco&seed=777&fog=0&low=1&intro=0&noloop=1');
+  const briefing = page.locator('.ed-briefing');
+  await briefing.waitFor({ state: 'visible', timeout: 30_000 });
+  await briefing.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
+  await briefing.waitFor({ state: 'detached' });
+  await page.waitForFunction(
+    () => (window as unknown as { game?: { mission?: { started: boolean } } }).game?.mission?.started === true,
+    null,
+    { timeout: 30_000 },
+  );
+  const states = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const visible = (): { name: string; visible: boolean }[] =>
+      (g.aylluSite.group.children as { visible: boolean; children: { name: string }[] }[]).map((group) => ({
+        name: group.children[0]?.name ?? '?',
+        visible: group.visible,
+      }));
+    const at = (phase: string) => {
+      g.setSitePhase(phase);
+      return visible();
+    };
+    const before = at('cave');
+    const shrine = at('huanacaure');
+    const inticancha = at('inticancha');
+    g.setSitePhase('bogus');
+    let lifeCalls = 0;
+    const life = g.aylluSite.updateLife.bind(g.aylluSite);
+    g.aylluSite.updateLife = (...args: unknown[]) => {
+      lifeCalls++;
+      life(...args);
+    };
+    for (let i = 0; i < 60; i++) g.update(1 / 60, i / 60);
+    return { before, shrine, inticancha, afterBogus: g.sitePhase, lifeCalls };
+  });
+  expect(states.before).toEqual([
+    { name: 'ayllu:cave', visible: true },
+    { name: 'ayllu:huanacaure', visible: false },
+    { name: 'ayllu:inticancha', visible: false },
+  ]);
+  expect(states.shrine.map((s) => s.visible)).toEqual([true, true, false]);
+  expect(states.inticancha.map((s) => s.visible)).toEqual([true, true, true]);
+  expect(states.afterBogus).toBe('inticancha');
+  // The presentation tick must reach the ayllu kit, not only Caral/Chavín.
+  expect(states.lifeCalls).toBeGreaterThan(0);
+  expect(errors).toEqual([]);
+});

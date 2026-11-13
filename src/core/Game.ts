@@ -37,6 +37,7 @@ import { Props } from '../rendering/Props';
 import { GroundCover } from '../rendering/GroundCover';
 import { MapLabels } from '../rendering/MapLabels';
 import { CharacterLabels } from '../rendering/CharacterLabels';
+import type { AylluSite } from '../rendering/AylluSite';
 import { MemoryStones } from '../rendering/MemoryStones';
 import { Discoveries } from '../game/Discoveries';
 import { Wildlife } from '../rendering/Wildlife';
@@ -197,6 +198,8 @@ export class Game {
   caralCity: CaralCity | null = null;
   /** The Chavín ceremonial centre built by phases, when the mission site is Chavín. */
   chavinCity: ArchitectureCity | null = null;
+  /** The ayllu world of Tambotoco (cave, shrine, hamlets, planned Inticancha); null elsewhere. */
+  aylluSite: AylluSite | null = null;
   /** Presentation-only construction crew in the Caral camp (issue 422); null elsewhere. */
   siteCrew: SiteCrew | null = null;
   /** Named environmental events and their progress (0 = off, 1 = fully applied). */
@@ -1205,13 +1208,17 @@ export class Game {
    * act III fire offering. Cooking pits and sacred-fire altars are documented in the dossier.
    */
   updateCityLife(dt: number): void {
-    const city = this.caralCity ?? this.chavinCity;
-    if (!city || this.headless) return;
+    if (this.headless) return;
     this.lifeTimer += dt;
     if (this.lifeTimer < 0.35) return;
     this.lifeTimer = 0;
     this.lifeTurn++;
     const focus = this.camera.getTarget();
+    // The ayllu kit owns its life sources (huts, altars) and reuses this presentation tick, so it
+    // inherits the same 70 m camera cap as Caral's cooking smoke.
+    this.aylluSite?.updateLife(focus, this.particles, this.lifeTurn);
+    const city = this.caralCity ?? this.chavinCity;
+    if (!city) return;
     const quietPhase = this.siteDef?.life?.quietPhase;
     const near =
       quietPhase && this.sitePhase === quietPhase
@@ -1349,6 +1356,7 @@ export class Game {
     this.sitePhase = phase;
     this.caralCity?.setPhase(phase);
     this.chavinCity?.setPhase(phase);
+    this.aylluSite?.setPhase(phase);
     this.siteCrew?.setPhase(phase as CaralMayorPhase);
     this.world.syncSitePhase(phase);
     this.syncSealCap(phase === 'sealed');
@@ -2041,6 +2049,8 @@ export class Game {
     this.pacae?.dispose();
     this.siteCrew?.dispose();
     this.siteCrew = null;
+    this.aylluSite?.dispose();
+    this.aylluSite = null;
     this.wildlife.dispose();
     if (this.landmark) {
       this.landmarkLoadToken++;

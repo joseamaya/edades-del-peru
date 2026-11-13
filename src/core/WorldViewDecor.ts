@@ -10,6 +10,7 @@ import { loadSceneryModel } from '../rendering/sceneryModels';
 import { loadSiteModel } from '../rendering/siteModels';
 import { mergeStaticByMaterial } from '../rendering/mergeStatic';
 import { ArchitectureCity, CaralCity } from '../rendering/architectureKit';
+import { AylluSite } from '../rendering/AylluSite';
 import {
   ASPERO_BLOCKERS,
   ASPERO_LAYOUT,
@@ -259,6 +260,23 @@ export class WorldViewDecor {
         if (siteModel) siteModel.visible = false;
       });
     };
+    if (def.style === 'ayllu') {
+      // The legend has its own places: a cave mouth, the Huanacaure shrine, the valley hamlets and
+      // the planned Inticancha. The reused chanca pucará is no longer loaded for this site.
+      if (!this.game.headless) {
+        this.game.aylluSite?.dispose();
+        const ayllu = new AylluSite(
+          group,
+          (x, z) => this.game.terrain.getHeight(x, z),
+          site.y ?? 0,
+          def.phases ?? { phases: ['cave'], initial: 'cave' },
+        );
+        ayllu.setPhase(this.game.sitePhase);
+        applyFowToObject(ayllu.group, this.game.fowUniforms);
+        this.game.aylluSite = ayllu;
+      }
+      return;
+    }
     if (def.id === 'caral_site') {
       // The in-use city's houses are part of the simulation (headless too), independent of the kit load.
       for (const blocker of [
@@ -1091,6 +1109,16 @@ export class WorldViewDecor {
         ...planCaralValleyFauna(this.game.settings.mapSeed, base, faunaQuery),
         ...planCaralCoastFauna(this.game.settings.mapSeed),
         ...fauna,
+      ];
+    }
+    if (this.game.siteDef?.style === 'ayllu') {
+      // A few llamas at the inhabited places: the ayllu world reads as lived-in, not as a set.
+      fauna = [
+        ...fauna,
+        { id: 'llama', x: 146, z: 196, rotY: 0.4, scale: 1 },
+        { id: 'llama', x: 176, z: 206, rotY: 2.1, scale: 0.95 },
+        { id: 'llama', x: 142, z: 168, rotY: 4.2, scale: 1.05 },
+        { id: 'llama', x: 194, z: 160, rotY: 1.2, scale: 0.9 },
       ];
     }
     this.game.props.place(placements, heightAt);

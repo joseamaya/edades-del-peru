@@ -7,6 +7,13 @@ import {
   LIMA_SITE_ORIGIN,
   caralKeepout,
 } from '../../model/defs/sites';
+import {
+  TAMBOTOCO_CANCHAS,
+  TAMBOTOCO_CAVE,
+  TAMBOTOCO_INTICANCHA,
+  TAMBOTOCO_SHRINE as TAMBOTOCO_HUANACAURE,
+  TAMBOTOCO_VILLAGES,
+} from '../../model/defs/tambotocoLayout';
 import { chavinKeepout } from '../../model/defs/chavinCity';
 
 // La Ciudad de los Reyes: the plaza, the Rímac bridge and Quizu's camp in the hills.
@@ -20,18 +27,8 @@ const JUNTA_APACHETA = { x: 140, z: 168 } as const;
 const JUNTA_UMACHIRI = { x: 198, z: 214 } as const;
 const JUNTA_ENEMY = { x: 222, z: 238 } as const;
 // Los hijos de Tambotoco: the cave, the Huanacaure huaca, the valley and Inticancha.
-const TAMBOTOCO_CAVE = { x: 40, z: 52 } as const;
 const TAMBOTOCO_TAMBO_QUIRO = { x: 70, z: 91 } as const;
-const TAMBOTOCO_HUANACAURE = { x: 120, z: 106 } as const;
-const TAMBOTOCO_INTICANCHA = { x: 168, z: 190 } as const;
 const TAMBOTOCO_ENEMY = { x: 212, z: 200 } as const;
-// Absolute metres (no `ref`): the four cancha nodes around Inticancha.
-const TAMBOTOCO_CANCHAS = [
-  { dx: TAMBOTOCO_INTICANCHA.x - 12, dz: TAMBOTOCO_INTICANCHA.z },
-  { dx: TAMBOTOCO_INTICANCHA.x + 12, dz: TAMBOTOCO_INTICANCHA.z },
-  { dx: TAMBOTOCO_INTICANCHA.x, dz: TAMBOTOCO_INTICANCHA.z - 12 },
-  { dx: TAMBOTOCO_INTICANCHA.x, dz: TAMBOTOCO_INTICANCHA.z + 12 },
-];
 const WARI_NODE_A = { ref: 'site' as const, dx: 40, dz: -32 };
 const WARI_NODE_B = { ref: 'site' as const, dx: 38, dz: 34 };
 const WARI_BONUS_NODE = { ref: 'site' as const, dx: -40, dz: 0 };
@@ -1533,7 +1530,7 @@ export const MISSIONS: MissionDef[] = [
       {
         id: 'a3_hualla',
         kind: 'reach',
-        pos: { dx: 160, dz: 180 },
+        pos: { dx: TAMBOTOCO_VILLAGES[0]!.x - 8, dz: TAMBOTOCO_VILLAGES[0]!.z },
         radius: 10,
         optional: true,
         hidden: true,
@@ -1615,6 +1612,7 @@ export const MISSIONS: MissionDef[] = [
             pos: { dx: TAMBOTOCO_HUANACAURE.x, dz: TAMBOTOCO_HUANACAURE.z + 7 },
             label: 'Huaca de Ayar Uchu',
           },
+          { type: 'site_phase', phase: 'huanacaure' },
           {
             type: 'dialogue',
             speaker: 'Memoria de los Ayar',
@@ -1655,6 +1653,7 @@ export const MISSIONS: MissionDef[] = [
             image: 'media/tambotoco/intro-epilogo.webp',
             text: 'Con el agua y la tierra aseguradas, los ayllus fundan Inticancha y ordenan el sitio en cuatro canchas. La leyenda del Cusco empieza aquí.',
           },
+          { type: 'site_phase', phase: 'inticancha' },
           { type: 'camera', pos: { dx: TAMBOTOCO_INTICANCHA.x, dz: TAMBOTOCO_INTICANCHA.z } },
           { type: 'objective', objectiveId: 'a4_inticancha', state: 'activate', announce: true },
         ],

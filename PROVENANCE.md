@@ -318,11 +318,11 @@ slot is absent (offline / without assets).
   Regenerate them with `node scripts/capture_tambotoco_intro.mjs` (one with `--only=ID`) after art changes.
 - **Runtime (menu)**: `intro-huanacaure` is the Inca campaign card; `intro-cueva` is the briefing art for
   `m_tambotoco`; the intro beats, the Act II–IV chapter cards and the victory epilogue use the captures.
-- **Content**: project-owned game renders (authored terrain, the reused chanca pucará and the procedural
-  settlement). They are recreations of the game's own scenes: never historical photographs and not a claim
+- **Content**: project-owned game renders (authored terrain, the procedural ayllu site and the
+  settlement dressing). They are recreations of the game's own scenes: never historical photographs and not a claim
   that the Ayar myth happened.
-- **Review**: no human art-review gate applies to in-engine captures; the reused chanca pucará GLB keeps
-  its own review status in `src/art/manifest.json`.
+- **Review**: no human art-review gate applies to in-engine captures; the procedural ayllu site has no GLB
+  manifest entry, and the chanca pucará GLB keeps its own review status for `m5`.
 
 ### La Junta del Cusco intro, chapter and epilogue images (in-engine recreations)
 

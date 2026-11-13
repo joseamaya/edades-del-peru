@@ -149,12 +149,14 @@ async function waitForPlay(page) {
 /** A camera tour of the legend: the party, the huaca and the valley the mission defines. */
 async function recordClip(page, plan) {
   const hold = (seconds) => page.waitForTimeout(seconds * 1000);
+  // Select the party like a player: the tutorial's first step must advance on camera.
+  await selectAll(page);
   await hold(4);
   await look(page, null, 42);
   await hold(9);
   if (plan.start) {
     await move(page, [await firstUnit(page, 'worker')], plan.start);
-    await waitObjective(page, 'a1_salida', 'completed', 120_000);
+    await waitObjective(page, 'a1_salida', 'completed', 120_000, Infinity, () => look(page, null, 30, 'workers'));
   }
   if (plan.tamboQuiro) {
     // Keep the stone below the objective toasts at the top of the screen.
@@ -180,6 +182,7 @@ async function playMission(page, plan) {
     throw new Error('full mode autoplays the m_tambotoco act shape; use --mode=clip for another mission');
   }
 
+  await selectAll(page);
   await look(page, null, 36, 'all');
   const worker = await firstUnit(page, 'worker');
   if (worker) await move(page, [worker], plan.start);
@@ -195,6 +198,7 @@ async function playMission(page, plan) {
   if (await hasEnded(page)) return;
 
   const army = (await units(page)).filter((u) => u.kind !== 'worker').map((u) => u.id);
+  await select(page, army);
   await move(page, army, plan.heritage, true);
   await visitWhenClose(page, plan.heritageId, plan.heritage, 15, 240_000, deadline, () => look(page, null, 30, 'army'));
   await waitObjective(page, 'a2_huanacaure', 'completed', 30_000, deadline);
@@ -209,6 +213,7 @@ async function playMission(page, plan) {
   if (await hasEnded(page)) return;
 
   const workers = (await units(page, 'worker')).map((u) => u.id);
+  await select(page, workers);
   await look(page, plan.inticancha, 32);
   const mill = await place(page, 'mill', plan.inticancha);
   if (mill) await issue(page, { kind: 'build', entityId: mill }, workers);
@@ -252,6 +257,7 @@ async function readPlan(page) {
       inticancha: objective('a4_inticancha')?.pos ? point(objective('a4_inticancha').pos) : null,
       canchas: objective('a4_canchas')?.nodes?.map(point) ?? [],
       tamboQuiro: memory('ayar_cachi')?.pos ? point(memory('ayar_cachi').pos) : null,
+      hualla: objective('a3_hualla')?.pos ? point(objective('a3_hualla').pos) : null,
     };
   });
 }
@@ -264,18 +270,38 @@ async function look(page, point, zoom, who = 'all') {
       let x = point?.x ?? 0;
       let z = point?.z ?? 0;
       if (!point) {
-        let n = 0;
+        const group = [];
         for (const u of g.units.values()) {
           if (u.owner !== 0 || u.dead) continue;
           if (who === 'workers' && u.kind !== 'worker') continue;
           if (who === 'army' && u.kind === 'worker') continue;
-          x += u.pos.x;
-          z += u.pos.z;
-          n++;
+          group.push(u);
         }
-        if (n) {
-          x /= n;
-          z /= n;
+        if (group.length) {
+          if (who === 'all') {
+            // Frame the whole party once, at the opening.
+            let minX = Infinity;
+            let maxX = -Infinity;
+            let minZ = Infinity;
+            let maxZ = -Infinity;
+            for (const u of group) {
+              x += u.pos.x;
+              z += u.pos.z;
+              minX = Math.min(minX, u.pos.x);
+              maxX = Math.max(maxX, u.pos.x);
+              minZ = Math.min(minZ, u.pos.z);
+              maxZ = Math.max(maxZ, u.pos.z);
+            }
+            x /= group.length;
+            z /= group.length;
+            const spread = Math.max(maxX - minX, maxZ - minZ);
+            zoom = Math.max(zoom, Math.min(72, spread * 1.1 + 6));
+          } else {
+            // Follow a working unit, not the empty centroid of a spread group.
+            const lead = group[0];
+            x = lead.pos.x;
+            z = lead.pos.z;
+          }
         } else {
           const c = g.playerCenter(0);
           x = c.x;
@@ -296,6 +322,18 @@ async function units(page, kind = null) {
       .filter((u) => u.owner === 0 && !u.dead && (kind === null || u.kind === kind))
       .map((u) => ({ id: u.id, kind: u.kind, tag: u.tag ?? null, x: u.pos.x, z: u.pos.z }));
   }, kind);
+}
+
+async function selectAll(page) {
+  await page.evaluate(() => {
+    const g = window.game;
+    g.selectUnits([...g.units.values()].filter((u) => u.owner === 0 && !u.dead).map((u) => u.id));
+  });
+}
+
+async function select(page, ids) {
+  if (!ids.length) return;
+  await page.evaluate((ids) => window.game.selectUnits(ids), ids);
 }
 
 async function firstUnit(page, kind) {

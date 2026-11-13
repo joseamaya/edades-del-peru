@@ -69,9 +69,11 @@ const BUDGETS = {
   // Chavín opening: the phased kit, highland vegetation and the base. Measure first, then ratchet down.
   m2_chavin: { sceneTriangles: 450_000, sceneDrawCalls: 220, kitTriangles: 100_000, kitDrawCalls: 40 },
   m2_chavin_late: { sceneTriangles: 600_000, sceneDrawCalls: 310, kitTriangles: 100_000, kitDrawCalls: 40 },
-  // Tambotoco opening: small ayllu force on the new 256 m transect. Measured 540k / ~324–327 with the eight Ayar
-  // nameplates (one sprite each); tighten toward the 200-call art-direction target after the unit-rig pass.
-  m_tambotoco: { sceneTriangles: 600_000, sceneDrawCalls: 330, kitTriangles: 0, kitDrawCalls: 0 },
+  // Tambotoco opening: the procedural ayllu site adds three merged phase draws and eight nameplates;
+  // measured ~562k / 337. Tighten with a merged kit pass.
+  m_tambotoco: { sceneTriangles: 600_000, sceneDrawCalls: 340, kitTriangles: 0, kitDrawCalls: 0 },
+  // Inticancha stands at Act IV; it must not blow the same first-pass budget.
+  m_tambotoco_late: { sceneTriangles: 620_000, sceneDrawCalls: 360, kitTriangles: 0, kitDrawCalls: 0 },
   // Lima opening: the hueste with horses and artillery. First-pass cap measured ~763k / 839; tighten after
   // the unit-rig pass (art-direction §11 targets 200 calls).
   m_lima: { sceneTriangles: 800_000, sceneDrawCalls: 860, kitTriangles: 140_000, kitDrawCalls: 25 },
@@ -92,7 +94,7 @@ try {
       if (!g?.mission) return false;
       if (id === 'm2_chavin') return (g.scene.getObjectByName?.('chavin_city_lod0')?.children.length ?? 0) > 0;
       if (id === 'm_junta_cusco') return !!g.landmark?.getObjectByName('colonial_site');
-      if (id === 'm_tambotoco') return !!g.landmark?.getObjectByName('chanca_site');
+      if (id === 'm_tambotoco') return !!g.landmark?.getObjectByName('ayllu_site');
       if (id === 'm_lima') return !!g.landmark?.getObjectByName('colonial_site');
       // Wait for every kit family the scene draws: a half-loaded batch measured a different scene.
       if (!g.trees?.hasKit?.('algarrobo') || !g.trees.hasKit('sauce')) return false;
@@ -137,11 +139,25 @@ try {
         p = { x: site.x - 10, z: site.z + 30 };
       }
       if (stage === 'late') {
-        g.setSitePhase(mission === 'm2_chavin' ? 'apogee' : 'in_use');
+        g.setSitePhase(mission === 'm2_chavin' ? 'apogee' : mission === 'm_tambotoco' ? 'inticancha' : 'in_use');
         const site = g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 });
-        const crowd = mission === 'm2_chavin' ? 20 : 30;
-        for (let i = 0; i < crowd; i++) {
-          g.spawnScriptedUnit('worker', 0, site.x - 12 + (i % 6) * 4, site.z + 18 + Math.floor(i / 6) * 3);
+        if (mission !== 'm_tambotoco') {
+          const crowd = mission === 'm2_chavin' ? 20 : 30;
+          for (let i = 0; i < crowd; i++) {
+            g.spawnScriptedUnit('worker', 0, site.x - 12 + (i % 6) * 4, site.z + 18 + Math.floor(i / 6) * 3);
+          }
+        }
+        if (mission === 'm_tambotoco') {
+          // Measure the Act IV settlement, not an empty meadow: the store and the four canchas.
+          g.spawnScriptedBuilding('mill', 0, site.x, site.z);
+          for (const [x, z] of [
+            [156, 190],
+            [180, 190],
+            [168, 178],
+            [168, 202],
+          ]) {
+            g.spawnScriptedBuilding('house', 0, x, z);
+          }
         }
         let t = 1;
         for (let i = 0; i < 60; i++) {

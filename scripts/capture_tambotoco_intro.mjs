@@ -14,12 +14,16 @@ const OUT = path.join(process.cwd(), 'public', 'media', 'tambotoco');
 fs.mkdirSync(OUT, { recursive: true });
 
 const SHOTS = [
-  { id: 'cueva', at: [44, 62], height: 34, time: 0.58 },
-  { id: 'huanacaure', at: [116, 102], height: 42, time: 0.52 },
-  { id: 'valle', at: [180, 196], height: 44, time: 0.62 },
+  { id: 'cueva', at: [44, 62], height: 30, time: 0.58, phase: 'cave' },
+  {
+    id: 'huanacaure',
+    cinematic: { center: [120, 106], eye: [0, 24, 40], look: [0, 11, 0], fov: 48, time: 0.52 },
+    phase: 'huanacaure',
+  },
+  { id: 'valle', at: [172, 196], height: 38, time: 0.62, phase: 'inticancha' },
   {
     id: 'epilogo',
-    cinematic: { center: [176, 194], eye: [-34, 20, 42], look: [0, 3, 0], fov: 50, time: 0.3 },
+    cinematic: { center: [172, 192], eye: [-34, 20, 42], look: [0, 3, 0], fov: 50, time: 0.3, phase: 'inticancha' },
   },
 ];
 const only = cliArg('only', '');
@@ -32,7 +36,7 @@ try {
     const page = await (await browser.newContext({ viewport: { width: 1600, height: 900 } })).newPage();
     await page.goto(`${base}/?mission=m_tambotoco&intro=0&fog=0&seed=777&noloop=1`, { waitUntil: 'networkidle' });
     await page.waitForFunction(
-      () => window.game?.mission !== undefined && !!window.game?.landmark?.getObjectByName('chanca_site'),
+      () => window.game?.mission !== undefined && !!window.game?.landmark?.getObjectByName('ayllu_site'),
       null,
       { timeout: 90_000 },
     );
@@ -48,9 +52,11 @@ try {
         document.querySelector('.ed-mission-card')?.remove();
         const rings = g.scene.getObjectByName('mission-rings');
         if (rings) rings.visible = false;
+        if (g.characterLabels) g.characterLabels.group.visible = false;
         const ui = document.getElementById('ui-root');
         if (ui) ui.style.display = 'none';
         if (g.getPaused()) g.togglePause();
+        if (shot.phase) g.setSitePhase(shot.phase);
         g.applyQualityPreset('high');
         g.trees.kitLod0Radius = 60;
         g.sky.setTimeOfDay(shot.time ?? 0.5);

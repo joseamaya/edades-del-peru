@@ -106,6 +106,10 @@ describe('authored campaign sites', () => {
     expect(site.heightField?.river?.halfWidth).toBe(3.5);
     expect(site.heritageProxies.map((p) => p.id)).toEqual(['tambotoco_huanacaure']);
     expect(site.walkableCorridor?.width).toBe(8);
+    expect(site.modelName).toBe('ayllu_site');
+    expect(site.phases?.phases).toEqual(['cave', 'huanacaure', 'inticancha']);
+    expect(site.phases?.initial).toBe('cave');
+    expect(site.blockers.filter((b) => b.since === 'inticancha')).toHaveLength(6);
     const mission = MISSIONS.find((m) => m.id === 'm_tambotoco')!;
     expect(mission.layout?.site?.id).toBe('tambotoco_site');
   });
