@@ -46,7 +46,8 @@ export class MapLabels {
   ) {
     for (const label of labels) {
       const kind = label.kind ?? 'region';
-      const view = layer.create(label.text, kind);
+      // Grouped so two names on one spot (Tambotoco over Pacaritambo) stack instead of overprinting.
+      const view = layer.create(label.text, kind, 'map');
       view.el.dataset.geoLabel = label.text;
       this.items.push({ label, kind, view });
     }

@@ -8,8 +8,6 @@ export type PopulationPlayer = Pick<PlayerState, 'id' | 'populationUsed' | 'popu
 
 const STARTING_POP = 3;
 const POP_HEADROOM = 4;
-/** Cap a player has with no buildings at all (a party on the move, before its first dwelling). */
-export const BASELESS_POP_CAP = STARTING_POP + POP_HEADROOM;
 
 /**
  * Recompute population used/cap for every player. Buildings under construction

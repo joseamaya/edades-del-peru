@@ -28,6 +28,8 @@ import type { MissionSave } from '../game/saveTypes';
 export class Mission {
   def: MissionDef;
   ended = false;
+  /** Set while the victory tick fires its closing triggers, so a `victory` effect cannot re-enter. */
+  private winning = false;
   /** Result once `ended` is true: `true` won, `false` lost, `null` still running. */
   won: boolean | null = null;
   private game: Game;
@@ -413,6 +415,16 @@ export class Mission {
 
   // --- triggers ---
 
+  /** Triggers waiting on an objective that is now completed (used on the victory tick). */
+  private fireCompletionTriggers(): void {
+    for (const tr of this.def.triggers) {
+      if (this.fired.has(tr.id) || tr.condition.type !== 'objective' || !this.evalCond(tr.condition)) continue;
+      this.fired.add(tr.id);
+      this.lastFired.set(tr.id, this.timer);
+      for (const fx of tr.effects) this.applyEffect(fx);
+    }
+  }
+
   private evalTriggers(): void {
     for (const tr of this.def.triggers) {
       const last = this.lastFired.get(tr.id);
@@ -462,8 +474,13 @@ export class Mission {
           const k = (this.game.rng.float() - 0.5) * (fx.radius ?? 6) * 2;
           const unit = this.game.spawnScriptedUnit(u.kind, fx.owner, p.x + jitter, p.z + k);
           if (fx.owner === 1) {
-            // enemy waves attack a target (the player base or the position)
-            const t = fx.objective === 'position' ? p : this.game.playerCenter(0);
+            // enemy waves attack a target: an explicit point, the player base, or they hold their spawn
+            const t =
+              fx.type === 'wave' && fx.target
+                ? this.resolvePoint(fx.target)
+                : fx.objective === 'position'
+                  ? p
+                  : this.game.playerCenter(0);
             unit.issueOrder({ kind: OrderKind.ATTACK_MOVE, target: { x: t.x, z: t.z } });
           }
         }
@@ -548,12 +565,18 @@ export class Mission {
     const match = text.match(/^\s*([^:\n]{2,40}):\s/);
     const speaker = match?.[1]?.trim();
     const cmd = speaker ? commanderFor(speaker) : undefined;
-    const body = cmd && match ? text.slice(match[0].length) : text;
-    this.game.hud.showDialogue(cmd?.name ?? 'Comandante', body, duration, cmd?.id);
+    // A named speaker who is not a portrait commander (Señor de Moche, General patriota) still labels the
+    // box; keeping the prefix in the text read as «Comandante: Señor de Moche: —…».
+    const body = match ? text.slice(match[0].length) : text;
+    this.game.hud.showDialogue(cmd?.name ?? speaker ?? 'Comandante', body, duration, cmd?.id);
   }
 
   private win(): void {
-    if (this.ended) return;
+    if (this.ended || this.winning) return;
+    this.winning = true;
+    // The goal that ends the mission may also own a closing beat (Tambotoco's founded Inticancha):
+    // fire the triggers on goals completed this tick before the mission stops evaluating them.
+    this.fireCompletionTriggers();
     this.ended = true;
     this.won = true;
     // A protect goal can only fail while the match runs; reaching victory with the

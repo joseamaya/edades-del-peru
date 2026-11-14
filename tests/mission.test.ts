@@ -177,6 +177,32 @@ describe('mission optional (bonus) objectives', () => {
     expect(calls).toEqual([[1, undefined]]);
   });
 
+  it('fires the closing trigger of the goal that wins the mission', () => {
+    const unit = { id: 1, tag: 'guarda', owner: 0, dead: false, kind: UnitKind.WORKER };
+    const game = stubGame(unit);
+    const m = new Mission(
+      game as any,
+      {
+        ...def,
+        objectives: [{ id: 'req', kind: 'gather', resource: 'food', count: 1, title: 'required' }],
+        triggers: [
+          {
+            id: 't_closing',
+            condition: { type: 'objective', objectiveId: 'req', state: 'completed' },
+            effects: [{ type: 'resources', amount: { wood: 5 } }],
+          },
+        ],
+      },
+      () => {},
+    );
+    m.start();
+    game.players[0].resources.food = 1;
+    m.update(0.1, 0);
+    expect(m.won).toBe(true);
+    // Tambotoco's «fundada» phase lives in such a trigger; it used to be skipped on the victory tick.
+    expect(game.players[0].resources.wood).toBe(5);
+  });
+
   it('credits a protect goal whose unit survives to victory', () => {
     const unit = { id: 1, tag: 'guarda', owner: 0, dead: false, kind: UnitKind.WORKER };
     const game = stubGame(unit);
