@@ -399,7 +399,7 @@ test('saves and loads m7 during the Sangarará hold', async ({ page }) => {
   expect(after).toEqual(before);
 });
 
-test('saves and loads Tambotoco at the Inticancha phase', async ({ page }) => {
+test('saves and loads Tambotoco mid Act IV (Inticancha phase)', async ({ page }) => {
   await page.goto('/?mission=m_tambotoco&seed=777&fog=0&low=1&intro=0');
   await startMission(page);
   await page.waitForFunction(
@@ -416,6 +416,20 @@ test('saves and loads Tambotoco at the Inticancha phase', async ({ page }) => {
     if (g.getPaused()) g.togglePause();
     g.setSitePhase('inticancha');
     if (g.sitePhase !== 'inticancha') return { phase: g.sitePhase };
+    const m = g.mission;
+    for (const id of [
+      'a1_salida',
+      'a1_campamento',
+      'a1_caza',
+      'a1_manco',
+      'a2_huanacaure',
+      'a3_acequia',
+      'a3_hualla',
+      'a4_inticancha',
+    ]) {
+      m.objState.set(id, 'completed');
+    }
+    m.objState.set('a4_canchas', 'activo');
     const dt = 1 / 60;
     let t = 0;
     for (let i = 0; i < Math.ceil(2 / dt) && !g.mission.ended; i++) {
@@ -426,7 +440,9 @@ test('saves and loads Tambotoco at the Inticancha phase', async ({ page }) => {
     g.saveMatch();
     return {
       phase: g.sitePhase,
+      timer: g.mission.timer,
       heritage: g.getVisitedHeritage(),
+      canchas: g.mission.getObjectiveProgress('a4_canchas'),
       objectives: Object.fromEntries(
         g.mission.def.objectives.map((o: any) => [o.id, g.mission.getObjectiveState(o.id)]),
       ),
@@ -435,6 +451,9 @@ test('saves and loads Tambotoco at the Inticancha phase', async ({ page }) => {
   });
   expect(before.phase).toBe('inticancha');
   expect(before.tutorialStep).not.toBeNull();
+  expect(before.objectives.a4_inticancha).toBe('completed');
+  expect(before.objectives.a4_canchas).toBe('activo');
+  expect(before.canchas?.current).toBe(0);
 
   await page.goto('/?load=1');
   await page.waitForFunction(
@@ -450,7 +469,9 @@ test('saves and loads Tambotoco at the Inticancha phase', async ({ page }) => {
     g.loop.stop();
     return {
       phase: g.sitePhase,
+      timer: g.mission.timer,
       heritage: g.getVisitedHeritage(),
+      canchas: g.mission.getObjectiveProgress('a4_canchas'),
       objectives: Object.fromEntries(
         g.mission.def.objectives.map((o: any) => [o.id, g.mission.getObjectiveState(o.id)]),
       ),
@@ -460,7 +481,7 @@ test('saves and loads Tambotoco at the Inticancha phase', async ({ page }) => {
   expect(after).toEqual(before);
 });
 
-test('saves and loads Lima at the ciudad phase', async ({ page }) => {
+test('saves and loads Lima during the ciudad siege', async ({ page }) => {
   await page.goto('/?mission=m_lima&seed=777&fog=0&low=1&intro=0');
   await startMission(page);
   await page.waitForFunction(
@@ -477,9 +498,17 @@ test('saves and loads Lima at the ciudad phase', async ({ page }) => {
     if (g.getPaused()) g.togglePause();
     g.setSitePhase('ciudad');
     if (g.sitePhase !== 'ciudad') return { phase: g.sitePhase, setup: false };
+    const m = g.mission;
+    m.objState.set('a1_traza', 'completed');
+    m.objState.set('a1_cabildo', 'completed');
+    m.objState.set('a2_cerco', 'activo');
+    const anchor = m.getObjectiveAnchor('a2_cerco') as { x: number; z: number };
+    for (const u of [...g.units.values()].filter((u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker')) {
+      u.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+    }
     const dt = 1 / 60;
     let t = 0;
-    for (let i = 0; i < Math.ceil(2 / dt) && !g.mission.ended; i++) {
+    for (let i = 0; i < Math.ceil(5 / dt) && !g.mission.ended; i++) {
       document.querySelector<HTMLElement>('.ed-mission-card')?.click();
       g.update(dt, t);
       t += dt;
@@ -487,6 +516,8 @@ test('saves and loads Lima at the ciudad phase', async ({ page }) => {
     g.saveMatch();
     return {
       phase: g.sitePhase,
+      timer: g.mission.timer,
+      cerco: g.mission.getObjectiveProgress('a2_cerco'),
       objectives: Object.fromEntries(
         g.mission.def.objectives.map((o: any) => [o.id, g.mission.getObjectiveState(o.id)]),
       ),
@@ -495,6 +526,8 @@ test('saves and loads Lima at the ciudad phase', async ({ page }) => {
   });
   expect(before.phase).toBe('ciudad');
   expect(before.tutorialStep).not.toBeNull();
+  expect(before.objectives.a2_cerco).toBe('activo');
+  expect(before.cerco?.current ?? 0).toBeGreaterThan(0);
 
   await page.goto('/?load=1');
   await page.waitForFunction(
@@ -510,6 +543,8 @@ test('saves and loads Lima at the ciudad phase', async ({ page }) => {
     g.loop.stop();
     return {
       phase: g.sitePhase,
+      timer: g.mission.timer,
+      cerco: g.mission.getObjectiveProgress('a2_cerco'),
       objectives: Object.fromEntries(
         g.mission.def.objectives.map((o: any) => [o.id, g.mission.getObjectiveState(o.id)]),
       ),
@@ -581,6 +616,76 @@ test('saves and loads La Junta during the Apacheta hold', async ({ page }) => {
       apacheta: g.mission.getObjectiveState('a2_batalla'),
       hold: g.mission.getObjectiveProgress('a2_batalla'),
       pumacahua: g.mission.getObjectiveState('a3_pumacahua'),
+      tutorialStep: g.tutorial?.toSave().stepId ?? null,
+    };
+  });
+  expect(after).toEqual(before);
+});
+
+test('saves and loads La Junta during the Umachiri resistance', async ({ page }) => {
+  await page.goto('/?mission=m_junta_cusco&seed=777&fog=0&low=1&intro=0');
+  await startMission(page);
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const before = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
+    const dt = 1 / 60;
+    let t = 0;
+    const step = () => {
+      g.update(dt, t);
+      t += dt;
+      document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+    };
+    // Act III: Umachiri reaches the plain and the resistance hold becomes active.
+    for (const id of ['a1_cabildo', 'a1_cuartel', 'a2_apacheta', 'a2_batalla', 'a3_umachiri']) {
+      m.objState.set(id, 'completed');
+    }
+    step();
+    const anchor = m.getObjectiveAnchor('a3_resistir') as { x: number; z: number };
+    for (const u of [...g.units.values()].filter((u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker')) {
+      u.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+    }
+    for (let i = 0; i < Math.ceil(5 / dt) && !m.ended; i++) step();
+    g.saveMatch();
+    return {
+      resistir: m.getObjectiveProgress('a3_resistir'),
+      timer: m.timer,
+      pumacahua: m.getObjectiveState('a3_pumacahua'),
+      objectives: Object.fromEntries(m.def.objectives.map((o: any) => [o.id, m.getObjectiveState(o.id)])),
+      tutorialStep: g.tutorial?.toSave().stepId ?? null,
+    };
+  });
+  expect(before.objectives.a3_resistir).toBe('activo');
+  expect(before.resistir?.current ?? 0).toBeGreaterThan(0);
+
+  await page.goto('/?load=1');
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const after = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    return {
+      resistir: g.mission.getObjectiveProgress('a3_resistir'),
+      timer: g.mission.timer,
+      pumacahua: g.mission.getObjectiveState('a3_pumacahua'),
+      objectives: Object.fromEntries(
+        g.mission.def.objectives.map((o: any) => [o.id, g.mission.getObjectiveState(o.id)]),
+      ),
       tutorialStep: g.tutorial?.toSave().stepId ?? null,
     };
   });
