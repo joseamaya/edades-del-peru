@@ -35,6 +35,12 @@ const STEPS: Record<number, Step> = {
     if (settings?.missionId === 'm7_tupac_amaru') return null;
     return { ...save, version: 6 };
   },
+  // v6 → v7 moved m3 to the 256 m transect: its 192 m coordinates cannot be carried over either.
+  6: (save) => {
+    const settings = save.settings as { missionId?: unknown } | undefined;
+    if (settings?.missionId === 'm3_moche_recuay') return null;
+    return { ...save, version: 7 };
+  },
 };
 
 export type MigrationResult =

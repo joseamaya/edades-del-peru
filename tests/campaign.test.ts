@@ -435,6 +435,26 @@ describe('campaign educational content', () => {
     }
   });
 
+  it('m3 is a model mission with three acts and in-engine images', () => {
+    const m3 = MISSIONS.find((m) => m.id === 'm3_moche_recuay')!;
+    expect(m3.modelMission).toBe(true);
+    expect(m3.narrator).toBe('Voz del valle');
+    expect(m3.map.size).toBe(256);
+    expect(m3.unitSpeedScale).toBe(0.75);
+    expect(m3.intro?.length).toBe(3);
+    expect(new Set(m3.intro?.map((beat) => beat.image)).size, 'three distinct intro captures').toBe(3);
+    expect(m3.intro?.every((beat) => beat.image.startsWith('media/moche/'))).toBe(true);
+    expect(m3.epilogueImage).toContain('media/moche/');
+    for (const trigger of m3.triggers) {
+      for (const effect of trigger.effects) {
+        if (effect.type === 'act') expect(effect.image, `${trigger.id} act card`).toBeTruthy();
+      }
+    }
+    const actTitles = m3.triggers.flatMap((t) => t.effects.flatMap((e) => (e.type === 'act' ? [e.title] : [])));
+    expect(actTitles).toHaveLength(3);
+    expect(actTitles[2]).toContain('intercambio');
+  });
+
   it('m3 opens the canal, holds the huacas and sustains elite exchange', () => {
     const m3 = MISSIONS.find((m) => m.id === 'm3_moche_recuay')!;
     expect(m3.tutorial).toBe(true);

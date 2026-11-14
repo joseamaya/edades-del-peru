@@ -37,6 +37,7 @@ describe('model-mission scale', () => {
     expect(MISSIONS.filter((m) => m.modelMission).map((m) => m.id)).toEqual([
       'm1_caral',
       'm2_chavin',
+      'm3_moche_recuay',
       'm_tambotoco',
       'm_lima',
       'm7_tupac_amaru',

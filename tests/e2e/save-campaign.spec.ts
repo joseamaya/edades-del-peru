@@ -157,12 +157,14 @@ test('saves and loads the Moche canal, hold and exchange', async ({ page }) => {
     const dt = 1 / 60;
     let t = 0;
     for (let i = 0; i < Math.ceil(92 / dt) && !g.mission.ended; i++) {
+      document.querySelector<HTMLElement>('.ed-mission-card')?.click();
       for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
       for (const b of g.buildings.values()) if (b.owner === 0 && !b.dead) b.hp = b.maxHp;
       worker.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
       g.update(dt, t);
       t += dt;
     }
+    document.querySelector<HTMLElement>('.ed-mission-card')?.click();
     for (let i = 0; i < 2; i++) g.makeTrade('moche_huaca_luna');
     g.saveMatch();
     return {

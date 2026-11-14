@@ -380,6 +380,21 @@ slot is absent (offline / without assets).
   the draft `m7_colonial-intro` Blender record keep their own review status in `src/art/manifest.json`
   (#343).
 
+### Moche (m3) intro and epilogue images (in-engine recreations)
+
+- **Location**: `public/media/moche/intro-{valle,huacas,sierra,epilogo}.webp` (960x540, WebP q58).
+- **Source**: captured from the game itself by `scripts/capture_moche_intro.mjs` on the 256 m Moche
+  transect: the canal and valley, the Huacas terrace, the Recuay foothills and a dusk epilogue. Rendered
+  without the HUD or character nameplates at 1600x900 and resized with `sharp`. Regenerate with
+  `node scripts/capture_moche_intro.mjs` (one with `--only=ID`) after art changes.
+- **Runtime**: the briefing and the "Tu senda" card use `intro-valle`; the three intro beats and the act
+  cards use the valley, Huacas and foothills captures; the victory epilogue uses `intro-epilogo`.
+- **Content**: project-owned game renders (authored Moche heightfield, the reused `moche_site` huacas and
+  the procedural camps). Recreations of the game's own scenes: never historical photographs, and not
+  Blender renders (so not in `src/art/manifest.json`).
+- **Review**: no human art-review gate applies to in-engine captures; the reused Huacas GLB keeps its own
+  review status in `src/art/manifest.json` (#343).
+
 ### Caral Pyramid Mayor modular scenery
 
 - **Location**: `src/assets/scenery/caral/caral_pyramid_mayor_lod0.glb` and `lod1.glb`.

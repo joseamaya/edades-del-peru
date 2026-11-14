@@ -30,7 +30,14 @@ import {
   CHAVIN_HEIGHTMAP_SIZE,
   CHAVIN_HEIGHTMAP_WORLD_SIZE,
 } from './chavinHeightmap';
-import { MOCHE_HEIGHTMAP, MOCHE_HEIGHTMAP_SIZE, MOCHE_HEIGHTMAP_WORLD_SIZE } from './mocheHeightmap';
+import {
+  MOCHE_GROUND,
+  MOCHE_GROUND_SIZE,
+  MOCHE_HEIGHTMAP,
+  MOCHE_HEIGHTMAP_SIZE,
+  MOCHE_HEIGHTMAP_WORLD_SIZE,
+} from './mocheHeightmap';
+import { mocheLength, mochePoint } from './mocheSite';
 import { WARI_HEIGHTMAP, WARI_HEIGHTMAP_SIZE, WARI_HEIGHTMAP_WORLD_SIZE } from './wariHeightmap';
 import { CHANCA_HEIGHTMAP, CHANCA_HEIGHTMAP_SIZE, CHANCA_HEIGHTMAP_WORLD_SIZE } from './chancaHeightmap';
 import { CHIMU_HEIGHTMAP, CHIMU_HEIGHTMAP_SIZE, CHIMU_HEIGHTMAP_WORLD_SIZE } from './chimuHeightmap';
@@ -499,33 +506,54 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     id: 'moche_site',
     label: 'Huacas de Moche',
     modelName: 'moche_site',
-    scale: 0.25,
-    origin: { x: 119, z: 73 },
-    anchor: { x: 123, z: 81 },
-    cameraHeight: 68,
+    // The 192 m composition is scaled by 4/3 into the 256 m transect; the model, proxies and blockers
+    // scale with it so the huacas still cover their terrace.
+    scale: mocheLength(0.25),
+    origin: mochePoint({ x: 119, z: 73 }),
+    anchor: mochePoint({ x: 123, z: 81 }),
+    cameraHeight: mocheLength(68),
     framing: 'site-biased',
     heightField: {
       size: MOCHE_HEIGHTMAP_SIZE,
       worldSize: MOCHE_HEIGHTMAP_WORLD_SIZE,
       heights: MOCHE_HEIGHTMAP,
+      ground: { size: MOCHE_GROUND_SIZE, weights: MOCHE_GROUND },
     },
     pathCellSize: 1,
     heritageProxies: [
-      { id: 'moche_huaca_sol', x: 109.5, z: 73, w: 23, d: 15.5, h: 12 },
-      { id: 'moche_huaca_luna', x: 132.5, z: 71, w: 16.5, d: 12, h: 9 },
-      { id: 'moche_plaza', x: 121, z: 76, w: 20.5, d: 13.5, h: 2 },
+      {
+        id: 'moche_huaca_sol',
+        ...mochePoint({ x: 109.5, z: 73 }),
+        w: mocheLength(23),
+        d: mocheLength(15.5),
+        h: mocheLength(12),
+      },
+      {
+        id: 'moche_huaca_luna',
+        ...mochePoint({ x: 132.5, z: 71 }),
+        w: mocheLength(16.5),
+        d: mocheLength(12),
+        h: mocheLength(9),
+      },
+      {
+        id: 'moche_plaza',
+        ...mochePoint({ x: 121, z: 76 }),
+        w: mocheLength(20.5),
+        d: mocheLength(13.5),
+        h: mocheLength(2),
+      },
     ],
     blockers: [
-      { x: 109.5, z: 73, w: 23, d: 15.5 },
-      { x: 132.5, z: 71, w: 16.5, d: 12 },
+      { ...mochePoint({ x: 109.5, z: 73 }), w: mocheLength(23), d: mocheLength(15.5) },
+      { ...mochePoint({ x: 132.5, z: 71 }), w: mocheLength(16.5), d: mocheLength(12) },
     ],
-    blockerPadding: 0.5,
+    blockerPadding: mocheLength(0.5),
     buildKeepout: [{ x: 0.62, z: 0.38, rx: 0.18, rz: 0.15 }],
     wallCollision: {
       meshPatterns: [/Moche_LOD[01]_Walls/, /^Cube/],
       maxStartYAboveBase: 1.2,
     },
-    walkableCorridor: { width: 8 },
+    walkableCorridor: { width: mocheLength(8) },
     terrain: {
       ...DEFAULT_SITE_TERRAIN,
       flatNormals: true,
