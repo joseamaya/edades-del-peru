@@ -51,14 +51,15 @@ below, which record each mission's own review and are kept for history). **M** m
 | m7_tupac_amaru     | M    | M     | M    | M     | M   | M    | M  | P   | M    | M     | M    | M      | X    | X   | X    | X     |
 | m_junta_cusco      | M    | M     | P    | M     | M   | M    | M  | P   | P    | P     | P    | M      | M    | –   | P    | M     |
 | m8_independencia   | P    | P     | P    | P     | M   | P    | M  | P   | P    | P     | X    | X      | X    | X   | X    | X     |
-| m9_guerra_pacifico | M    | M     | M    | M     | M   | M    | M  | X   | M    | M     | M    | M      | X    | X   | X    | X     |
+| m9_guerra_pacifico | M    | M     | M    | M     | M   | M    | M  | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 
 **Verdict.** **Caral meets every gate** (closed 2026-11-14: Act III card recaptured with the works camp; the
 camp pieces, vegetation, household props and fauna approved by a recorded human review). Chavín,
 Tambotoco, Lima and the Junta follow the model pattern and lack mostly art, a no-cheat playtest and a
 mid-mission save test. m3–m6b and m8 still use the pre-model template: no acts, intro, 256 m map or
-bench scene. m7 and m9 now have acts and a documented ending, but still lack their own intro art, 256 m
-transect and bench scene.
+bench scene. m7 now has acts and a documented ending, but still lacks its own intro art, 256 m transect and
+bench scene. **m9 now meets the scale, opening and performance gates** (256 m, painted ground, in-engine intro and
+epilogue, bench scenes); its human art review is pending.
 
 **Fixed in this pass.** The closing trigger of the goal that wins a mission now fires (Tambotoco's founded
 Inticancha never appeared); waves can march on a `target` (Lima's siege and the Tambotoco valley wave stood at
@@ -68,7 +69,8 @@ Wari offers no fortifications; Caral, Chavín, Tambotoco and m6b texts that prom
 playtest re-forms its line instead of racing a fixed budget; `yarn record` keeps one frames folder per run.
 m9 now plays the documented fall of Arica in three acts (the summons, the bombardment and the assault)
 and its no-cheat playtest is green. m7 now plays Sangarará, the failed Cusco siege and the retreat, with its
-no-cheat playtest green.
+no-cheat playtest green. m9 was promoted to model mission (256 m transect, painted ground, in-engine intro
+and epilogue, bench scenes and the scale guard).
 
 **Work order, highest value first.**
 
@@ -77,9 +79,9 @@ no-cheat playtest green.
    playtests (M).
 3. **Art review:** record the human review of Caral's camp pieces and the Chavín kit; recapture Caral's Act
    III card (S).
-4. **Model-mission rebuilds** for m3–m6b and m8 (256 m transect, acts, intro, bench, certainty table) (L
-   each); quick wins first: m6's canal must really close, m6b's victory must capture Huáscar, not raze a
-   building (M).
+4. **Model-mission rebuilds** for m3–m6b, m7 and m8 (256 m transect, acts, intro, bench, certainty table)
+   (L each); m9 is done; quick wins first: m6's canal must really close, m6b's victory must capture
+   Huáscar, not raze a building (M).
 5. **Mid-mission save/load E2E** for missions with phases or truces (Tambotoco, Lima, Junta) (M).
 
 ## Caral gold-master status
@@ -219,8 +221,8 @@ is still local (review captures), although the HUD layout now has a CI geometry 
 ## Campaign IV playable status (m8–m9)
 
 Campaign IV is released as **playable** with the historical phases, onboarding, real-command
-victory paths, dedicated decor GLBs and save round-trips covered. It is not yet a full gold master
-because the visual evidence is still local (review captures), although the HUD layout now has a CI
+victory paths, dedicated decor GLBs and save round-trips covered. m9 is now a model mission (256 m,
+painted ground, in-engine intro/epilogue and bench scenes); m8 is not yet. The HUD layout has a CI
 geometry gate (`tests/e2e/hud-layout.spec.ts`).
 
 | Gate        | m8 La Independencia                                                                                                           | m9 La Defensa de Arica                                                                                                        |
@@ -237,6 +239,17 @@ geometry gate (`tests/e2e/hud-layout.spec.ts`).
 | Persistence | Met: save/load round-trip.                                                                                                    | Met: save/load round-trip.                                                                                                    |
 | Tests       | Met: data, completability and real-command playtest.                                                                          | Met: data, acts, failure path and real-command playtest.                                                                      |
 | Docs        | Met: README, dossier, campaign experiences and this table.                                                                    | Met: dossier, site note, campaign experiences and this table.                                                                 |
+
+### m9 model-mission status (2026-11-14)
+
+| Gate        | Status               | Evidence                                                                                                                                                                                                 |
+| ----------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Opening     | Met                  | Three-beat in-engine intro (`capture_arica_intro.mjs`), `MISSION_ART` and an epilogue capture; PROVENANCE records the captures.                                                                         |
+| Art         | Pending human review | The `arica_site` GLB and the draft Blender intro record keep their `reviewed: false` status (#343); the in-engine captures are not a Blender claim.                                                     |
+| Performance | Met                  | `bench_scene.mjs`: opening ~535k tris / 600 calls, late ~813k / 782, under the recorded first-pass caps; `yarn bench:check` green. The call count is over §11's 200 target, as Lima and the Junta.      |
+| Scale       | Met                  | 256 m map, 128² painted ground over 256 m, `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                                              |
+| Pacing      | Pending (exception)  | The real-command bot reaches the ending in ~7 min of simulated time; a human 20–30 min path is still unmeasured. The 30–40 target is documented as an exception in `arica-model-mission.md`.            |
+| Site        | Met (exception)      | No construction phases: the port and fort are in use, not a monument the player builds; recorded here and in `arica-site.md`.                                                                          |
 
 ## La Junta del Cusco playable status (m_junta_cusco)
 

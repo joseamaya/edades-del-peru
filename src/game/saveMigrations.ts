@@ -23,6 +23,12 @@ const STEPS: Record<number, Step> = {
   }),
   // v3 → v4 changed how farm reserves follow the drought, not the snapshot's shape; farms rebase on load.
   3: (save) => ({ ...save, version: 4 }),
+  // v4 → v5 moved m9 to the 256 m transect: its 192 m unit and camera positions cannot be carried over.
+  4: (save) => {
+    const settings = save.settings as { missionId?: unknown } | undefined;
+    if (settings?.missionId === 'm9_guerra_pacifico') return null;
+    return { ...save, version: 5 };
+  },
 };
 
 export type MigrationResult =

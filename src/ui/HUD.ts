@@ -63,7 +63,7 @@ import { DamageNumbers } from './DamageNumbers';
 import { openCodex } from './Codex';
 import { openTechTree } from './TechTree';
 import { bus } from '../core/EventBus';
-import { hasSave } from '../game/SaveGame';
+import { hasSave, saveIncompatible } from '../game/SaveGame';
 import { hasReplay, saveReplay } from '../game/replay';
 import { mountMatchStats } from './MatchStatsPanel';
 import {
@@ -1012,9 +1012,17 @@ export class HUD {
         .map(rowHtml)
         .join('')}</div>` + archive;
     const details = this.objListEl.querySelector('details');
-    if (details) details.scrollTop = archiveScroll;
+    if (details) {
+      // Force layout before restoring: Chromium clamps scrollTop on a node that has not received its
+      // max-height yet, which silently reset the archive to the top on every objective refresh.
+      void details.offsetHeight;
+      details.scrollTop = archiveScroll;
+    }
     const currentEl = this.objListEl.querySelector('.obj-current') as HTMLElement | null;
-    if (currentEl) currentEl.scrollTop = currentScroll;
+    if (currentEl) {
+      void currentEl.offsetHeight;
+      currentEl.scrollTop = currentScroll;
+    }
     this.syncObjectivesScroll();
   }
 
@@ -2393,6 +2401,7 @@ export class HUD {
     renderMainMenu(ov, {
       progress: this.readCampaignProgress(),
       hasSave: hasSave(),
+      saveIncompatible: saveIncompatible(),
       hasReplay: hasReplay(),
       skirmish: !CAMPAIGN_ONLY,
       onContinue: () => {

@@ -332,8 +332,9 @@ slot is absent (offline / without assets).
 
 - **Location**: `public/media/junta/intro-{cabildo,apacheta,umachiri,epilogo}.webp` (960x540, WebP q58,
   ~56 KB in total).
-- **Reuse**: `intro-epilogo` is also the epilogue backdrop of m7 (Túpac Amaru) and m9 (Arica) until those
-  missions get their own captures; it shows Cusco in 1814, not their places.
+- **Reuse**: it was the borrowed epilogue backdrop of m7 (Túpac Amaru) and m9 (Arica); both missions now
+  use their own outcome (m7 has no borrowed image and m9 has the Arica captures below). It shows Cusco in
+  1814, not their places.
 - **Source**: captured from the game itself by `scripts/capture_junta_intro.mjs`. The Cusco cabildo and the
   La Apacheta/Umachiri views are staged through the debug harness, rendered without the HUD at 1600x900 and
   resized with `sharp`; the epilogue uses a low cinematic camera over Umachiri at dusk. Regenerate them with
@@ -346,6 +347,22 @@ slot is absent (offline / without assets).
   and not Blender renders (so not in `src/art/manifest.json`).
 - **Review**: no human art-review gate applies to in-engine captures; the reused colonial plaza GLB keeps
   its own review status in `src/art/manifest.json`.
+
+### Arica intro and epilogue images (in-engine recreations)
+
+- **Location**: `public/media/arica/intro-{cuartel,bateria,asalto,epilogo}.webp` (960x540, WebP q58).
+- **Source**: captured from the game itself by `scripts/capture_arica_intro.mjs` on the 256 m Arica
+  transect: the port terrace and cuartel, the battery with the Pacific behind it, the assault view and a
+  low cinematic epilogue over the battery. Rendered without the HUD at 1600x900 and resized with `sharp`.
+  Regenerate with `node scripts/capture_arica_intro.mjs` (one with `--only=ID`) after art changes.
+- **Runtime**: the briefing and the "Tu senda" card use `intro-cuartel`; the three intro beats use the cuartel,
+  the battery and the assault; the victory epilogue uses `intro-epilogo`.
+- **Content**: project-owned game renders (authored Arica heightfield, the low-poly `arica_site` battery,
+  the procedural port terrace and the units). They are recreations of the game's own scenes: never
+  historical photographs, and not Blender renders (so not in `src/art/manifest.json`). The Morro is
+  outside the playable range and is not depicted as a surveyed feature.
+- **Review**: no human art-review gate applies to in-engine captures; the `arica_site` GLB and the draft
+  Blender intro record keep their own review status in `src/art/manifest.json` (#343).
 
 ### Caral Pyramid Mayor modular scenery
 

@@ -20,6 +20,8 @@ import { CAMPAIGN_ART, MENU_BACKDROP, MISSION_ART } from './menuArt';
 export interface MainMenuActions {
   readonly progress: CampaignProgress;
   readonly hasSave: boolean;
+  /** A stored save exists but this build cannot load it (e.g. m9 before 256 m). */
+  readonly saveIncompatible: boolean;
   readonly hasReplay: boolean;
   readonly skirmish: boolean;
   onContinue(): void;
@@ -131,6 +133,12 @@ export function renderMainMenu(overlay: HTMLElement, a: MainMenuActions): void {
   add('📖', t('hud.menu.main.codex'), t('hud.menu.main.codexHint'), a.onCodex);
   add('?', t('hud.menu.main.controls'), t('hud.menu.main.controlsHint'), a.onControls);
   add('⚙', t('hud.menu.main.options'), t('hud.menu.main.optionsHint'), a.onOptions);
+  if (a.saveIncompatible) {
+    const note = document.createElement('p');
+    note.className = 'ed-menu-note';
+    note.textContent = t('hud.menu.main.saveIncompatible');
+    actions.after(note);
+  }
   shell.querySelector('[data-action="intro"]')!.addEventListener('click', a.onIntro);
   if (a.hasReplay) {
     const replay = document.createElement('button');
@@ -357,6 +365,7 @@ const CSS = /* css */ `
   .ed-epic .ed-menu-title span:last-child { font-size: .62em; letter-spacing: .3em; margin-top: .16em; }
   .ed-epic-band { height: 12px; width: min(420px, 100%); margin: 18px 0 2px; background: ${BAND} repeat-x left center / 36px 12px; opacity: .75; -webkit-mask: linear-gradient(90deg, #000 60%, transparent); mask: linear-gradient(90deg, #000 60%, transparent); }
   .ed-epic .ed-menu-sub { max-width: 440px; margin: 12px 0 0; color: #d8d0bd; font-size: 14px; line-height: 1.65; text-shadow: 0 2px 10px rgba(0,0,0,.8); }
+  .ed-epic .ed-menu-note { max-width: 440px; margin: 10px 0 0; color: #e8c98b; font-size: 12px; line-height: 1.5; }
   .ed-epic .ed-menu-actions { max-width: 380px; gap: 4px; }
   .ed-epic .ed-menu-btn { padding: 13px 18px; font-size: 17px; background: linear-gradient(90deg, rgba(10,13,17,.78), rgba(10,13,17,.12)); }
   .ed-epic .ed-menu-btn.primary { background: linear-gradient(90deg, rgba(232,195,106,.3), rgba(232,195,106,.04)); box-shadow: inset 0 0 0 1px rgba(232,195,106,.25); }
