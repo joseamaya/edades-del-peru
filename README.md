@@ -89,8 +89,9 @@ The campaign [quality bar](./docs/design/campaign-quality-bar.md) records the ga
 Caral, Chavín, Moche and Wari have authored, source-backed sites; m5–m9 and m6b add dedicated low-poly GLB
 landmarks over authored terrain; `m_junta_cusco` and `m_lima` reuse the colonial plaza with a procedural street life, and `m_tambotoco` has its own ayllu site, each on its own 256 m transect.
 
-The current release status, art gate and publish checklist are in
-[`docs/design/release-candidate.md`](./docs/design/release-candidate.md).
+The live mission status is in [`docs/design/campaign-quality-bar.md`](./docs/design/campaign-quality-bar.md);
+the 2026-10-30 release snapshot and publish checklist are in
+[`docs/design/release-candidate.md`](./docs/design/release-candidate.md) (archived).
 
 ## Educational mode
 
@@ -163,6 +164,19 @@ Terrain depends on the civilization's geography:
 Details in [`docs/historia/mapas.md`](./docs/historia/mapas.md); the visual language
 (terrain, architecture, materials, vegetation, colour) in
 [`docs/design/visual-language.md`](./docs/design/visual-language.md).
+
+## Documentation
+
+[`docs/README.md`](./docs/README.md) is the documentation map: it routes each task (design, history, art,
+engine, release) to the document that owns it. The short list:
+
+- [`docs/GDD.md`](./docs/GDD.md) — vision, pillars, scope, non-goals and definition of done.
+- [`docs/DECISIONS/`](./docs/DECISIONS/README.md) — closed technical decisions, one per record.
+- [`docs/plan/ROADMAP.md`](./docs/plan/ROADMAP.md) and [`docs/plan/backlog.md`](./docs/plan/backlog.md) —
+  current milestones and the ordered work queue.
+- [`docs/design/campaign-quality-bar.md`](./docs/design/campaign-quality-bar.md) — the live status of every
+  mission.
+- [`docs/design/model-mission-pattern.md`](./docs/design/model-mission-pattern.md) — how a mission is built.
 
 ## Historical documentation
 

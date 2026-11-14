@@ -5,6 +5,11 @@ Three.js + Vite + TypeScript. Player-facing docs are in [`README.md`](./README.m
 [`CONTRIBUTING.md`](./CONTRIBUTING.md); deep subsystem notes and code traps in
 [`docs/development.md`](./docs/development.md).
 
+Design intent lives in [`docs/GDD.md`](./docs/GDD.md); closed technical decisions are recorded in
+[`docs/DECISIONS/`](./docs/DECISIONS/README.md); the full documentation map is
+[`docs/README.md`](./docs/README.md). Read the map before adding or moving a document, and update the living
+document in the same PR as the behaviour it describes.
+
 ## Commands
 
 Package manager **Yarn 1** (`yarn.lock` exists — never create a `package-lock.json`). Node >= 20.19 (CI uses 22).
@@ -114,6 +119,8 @@ explicit approval described below.
 
 ## See also
 
-[`README.md`](./README.md) · [`CONTRIBUTING.md`](./CONTRIBUTING.md) · [`docs/development.md`](./docs/development.md) ·
+[`README.md`](./README.md) · [`CONTRIBUTING.md`](./CONTRIBUTING.md) · [`docs/README.md`](./docs/README.md) ·
+[`docs/GDD.md`](./docs/GDD.md) · [`docs/DECISIONS/`](./docs/DECISIONS/README.md) ·
+[`docs/plan/ROADMAP.md`](./docs/plan/ROADMAP.md) · [`docs/development.md`](./docs/development.md) ·
 [`docs/historia/`](./docs/historia/) · [`PROVENANCE.md`](./PROVENANCE.md) ·
 [`docs/design/authoring-tools.md`](./docs/design/authoring-tools.md)

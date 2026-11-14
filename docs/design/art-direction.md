@@ -8,8 +8,8 @@ implementation map (which code owns terrain, materials, vegetation, colour). His
 certainty live in [`docs/historia/campanas/caral.md`](../historia/campanas/caral.md); the mission design is
 [`caral-model-mission.md`](./caral-model-mission.md).
 
-Status: **adopted direction, not yet implemented**. Values marked _target_ are goals to verify in the first
-vertical slice, not measurements.
+Status: **adopted direction, implemented progressively**. Caral is the reference scene; values marked _target_
+are verified as each model mission closes, not assumed measurements.
 
 ## 1. Decision
 
