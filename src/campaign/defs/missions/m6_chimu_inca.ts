@@ -28,7 +28,7 @@ export const m6ChimuInca: MissionDef = {
       keepout: [{ x: 0.744, z: 0.339, rx: 0.085, rz: 0.075 }],
       buildKeepout: [{ x: 0.744, z: 0.339, rx: 0.075, rz: 0.065 }],
     },
-    // The gate answers once the army has reached the valley: closing it is the mission's own mechanic.
+    // The gate answers once Paramonga falls: closing it is the mission's own mechanic.
     canal: {
       name: 'Canal de Chan Chan',
       x: 0.5,
@@ -73,6 +73,8 @@ export const m6ChimuInca: MissionDef = {
     {
       id: 'obj_canal',
       kind: 'canal_closed',
+      pos: { ref: 'canal', dx: 0, dz: 0 },
+      radius: 8,
       hidden: true,
       title: 'Corta el agua de Chan Chan: cierra la compuerta',
     },

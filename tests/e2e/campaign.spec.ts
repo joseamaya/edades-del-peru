@@ -439,7 +439,11 @@ test('m6 cuts the canal to force Chan Chan to surrender', async ({ page }) => {
   await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
     timeout: 30_000,
   });
-  const out = await page.evaluate(() => {
+  const start = page.getByRole('button', { name: /COMENZAR MISIÓN/ });
+  await start.waitFor({ state: 'visible', timeout: 15_000 });
+  await start.click();
+  await start.waitFor({ state: 'detached', timeout: 15_000 });
+  const setup = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
@@ -458,39 +462,53 @@ test('m6 cuts the canal to force Chan Chan to surrender', async ({ page }) => {
     // Reaching the canal is not cutting it: the objective stays active and the water keeps running.
     setPos(canal.x, canal.z);
     g.update(1 / 60, 0);
-    const atCanal = m.getObjectiveState('obj_canal') as string;
-    const openAtCanal = g.isCanalOpen() as boolean;
-    g.toggleCanal();
-    g.update(1 / 60, 0.02);
+    // Open the field card the way clicking the canal does, so the HUD renders its action.
+    g.selectedUnits = [];
+    g.selectedBuilding = null;
+    g.selectedHeritage = 'chimu_canal';
+    g.refreshSelectionVisuals();
+    // Let the stopped loop's HUD tick render the field card before the click.
+    for (let i = 1; i <= 12; i++) g.update(1 / 60, 0.05 + i / 60);
     return {
       afterParamonga,
       canal: true,
       lockedOpen,
-      atCanal,
-      openAtCanal,
-      closed: !g.isCanalOpen(),
+      atCanal: m.getObjectiveState('obj_canal') as string,
+      openAtCanal: g.isCanalOpen() as boolean,
+      wonAtCanal: m.won as boolean | null,
       canalVisual: !!group,
       waterVisual: !!group?.getObjectByName('canal_water'),
       gateVisual: !!group?.getObjectByName('canal_gate'),
       canalHeritage: group?.userData.heritageId ?? null,
       chimuSite: g.siteDef?.id === 'chimu_site',
-      canalObjective: m.getObjectiveState('obj_canal') as string,
-      won: m.won as boolean | null,
     };
   });
-  expect(out.canal).toBe(true);
-  expect(out.lockedOpen, 'the gate is locked before Paramonga').toBe(true);
-  expect(out.afterParamonga).toBe('activo');
-  expect(out.atCanal, 'reaching the canal does not complete the objective').toBe('activo');
-  expect(out.openAtCanal).toBe(true);
-  expect(out.closed).toBe(true);
-  expect(out.canalVisual).toBe(true);
-  expect(out.waterVisual).toBe(true);
-  expect(out.gateVisual).toBe(true);
-  expect(out.canalHeritage).toBe('chimu_canal');
-  expect(out.chimuSite).toBe(true);
-  expect(out.canalObjective).toBe('completed');
-  expect(out.won).toBe(true);
+  expect(setup.canal).toBe(true);
+  expect(setup.lockedOpen, 'the gate is locked before Paramonga').toBe(true);
+  expect(setup.afterParamonga).toBe('activo');
+  expect(setup.atCanal, 'reaching the canal does not complete the objective').toBe('activo');
+  expect(setup.openAtCanal).toBe(true);
+  expect(setup.wonAtCanal, 'the mission cannot be won from the canal alone').not.toBe(true);
+  expect(setup.canalVisual).toBe(true);
+  expect(setup.waterVisual).toBe(true);
+  expect(setup.gateVisual).toBe(true);
+  expect(setup.canalHeritage).toBe('chimu_canal');
+  expect(setup.chimuSite).toBe(true);
+
+  // The player closes the gate through the field card, not through a debug API.
+  await page.getByRole('button', { name: /Cerrar compuerta/ }).click();
+  const closed = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.update(1 / 60, 0.02);
+    return {
+      closed: !g.isCanalOpen(),
+      canalObjective: g.mission.getObjectiveState('obj_canal') as string,
+      won: g.mission.won as boolean | null,
+    };
+  });
+  expect(closed.closed).toBe(true);
+  expect(closed.canalObjective).toBe('completed');
+  expect(closed.won).toBe(true);
 });
 
 test('authored campaign geography spawns its local base and features', async ({ context }) => {

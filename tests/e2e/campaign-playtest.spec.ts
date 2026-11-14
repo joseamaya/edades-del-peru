@@ -437,6 +437,10 @@ test('plays m6 by advancing and cutting the canal with real orders', async ({ pa
   await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
     timeout: 30_000,
   });
+  const start = page.getByRole('button', { name: /COMENZAR MISIÓN/ });
+  await start.waitFor({ state: 'visible', timeout: 15_000 });
+  await start.click();
+  await start.waitFor({ state: 'detached', timeout: 15_000 });
   const out = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
@@ -460,15 +464,24 @@ test('plays m6 by advancing and cutting the canal with real orders', async ({ pa
       g.update(dt, t);
       t += dt;
     }
-    // Reaching the canal only activates the gate: the player must close it (field-card action).
+    // Reaching the canal only activates the gate: the player must close it through its field card.
     const atCanal = m.getObjectiveState('obj_canal') as string;
     const openAtCanal = g.isCanalOpen() as boolean;
-    g.toggleCanal();
-    g.update(dt, t);
+    const wonAtCanal = m.won as boolean | null;
+    g.selectedUnits = [];
+    g.selectedBuilding = null;
+    g.selectedHeritage = 'chimu_canal';
+    g.refreshSelectionVisuals();
+    for (let i = 0; i < 12; i++) g.update(dt, t + i * dt);
+    const close = [...document.querySelectorAll('button')].find((b) => b.textContent?.includes('Cerrar compuerta'));
+    close?.dispatchEvent(new PointerEvent('pointerdown', { button: 0, bubbles: true }));
+    g.update(dt, t + 0.2);
     return {
       afterParamonga,
       atCanal,
       openAtCanal,
+      wonAtCanal,
+      card: !!close,
       closed: !g.isCanalOpen(),
       canal: m.getObjectiveState('obj_canal') as string,
       won: m.won as boolean | null,
@@ -477,6 +490,8 @@ test('plays m6 by advancing and cutting the canal with real orders', async ({ pa
   expect(out.afterParamonga).toBe('completed');
   expect(out.atCanal, JSON.stringify(out)).toBe('activo');
   expect(out.openAtCanal, JSON.stringify(out)).toBe(true);
+  expect(out.wonAtCanal, 'the mission is not won at the canal').not.toBe(true);
+  expect(out.card, 'the field card exposes the close action').toBe(true);
   expect(out.closed, JSON.stringify(out)).toBe(true);
   expect(out.canal).toBe('completed');
   expect(out.won).toBe(true);

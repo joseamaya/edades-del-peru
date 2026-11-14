@@ -99,15 +99,24 @@ describe('mission objective progress', () => {
 });
 
 describe('mission canal objectives', () => {
-  it('wins a canal_closed goal only once the gate is actually closed', () => {
+  it('wins a canal_closed goal only when the crew closes the gate at the canal', () => {
     const unit = { id: 1, tag: '', owner: 0, dead: false, kind: UnitKind.WORKER, pos: { x: 0, z: 0 } };
     const game = stubGame(unit) as any;
     let open = true;
     game.canalSite = { x: 30, z: 40 };
+    game.landmark = { position: { x: 10, z: 10 } };
     game.isCanalOpen = () => open;
     const missionDef: MissionDef = {
       ...def,
-      objectives: [{ id: 'corta', kind: 'canal_closed', title: 'cierra la compuerta' }],
+      objectives: [
+        {
+          id: 'corta',
+          kind: 'canal_closed',
+          pos: { ref: 'landmark', dx: 0, dz: 0 },
+          radius: 5,
+          title: 'cierra la compuerta',
+        },
+      ],
       triggers: [],
     };
     const m = new Mission(game, missionDef, () => {});
@@ -118,9 +127,15 @@ describe('mission canal objectives', () => {
     m.update(0.1, 0);
     expect(m.getObjectiveState('corta')).toBe('activo');
 
+    // Closing the gate from a distance is not cutting the canal.
     open = false;
-    expect(m.getObjectiveProgress('corta')).toEqual({ current: 1, target: 1, format: 'count' });
+    expect(m.getObjectiveProgress('corta')).toEqual({ current: 0, target: 1, format: 'count' });
     m.update(0.1, 0.1);
+    expect(m.getObjectiveState('corta')).toBe('activo');
+
+    unit.pos = { x: 10, z: 10 };
+    expect(m.getObjectiveProgress('corta')).toEqual({ current: 1, target: 1, format: 'count' });
+    m.update(0.1, 0.2);
     expect(m.getObjectiveState('corta')).toBe('completed');
   });
 });

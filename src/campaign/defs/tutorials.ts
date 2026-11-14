@@ -188,7 +188,7 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'huascar',
-        text: 'Sostén la pampa de Quipaipan hasta que el ejército de Huáscar se rinda, sin dejar caer a Atahualpa.',
+        text: 'Sostén la pampa de Quipaipan durante 90 s con al menos seis guerreros y no dejes caer a Atahualpa; al vencer se narra la captura de Huáscar.',
         check: { type: 'objectiveCompleted', objectiveId: 'obj_quipaipan' },
       },
     ],
@@ -271,7 +271,7 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'canal',
-        text: 'Llega al canal que abastece Chan Chan. Cortar el agua fuerza la rendición chimú.',
+        text: 'Lleva a Túpac Yupanqui hasta el canal de Chan Chan, selecciona su ficha y cierra la compuerta: cortar el agua fuerza la rendición chimú.',
         check: { type: 'objectiveCompleted', objectiveId: 'obj_canal' },
       },
     ],

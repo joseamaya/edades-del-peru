@@ -217,12 +217,13 @@ export class RuntimeController {
     if (data.tutorial && this.game.tutorial) this.game.tutorial.applySave(data.tutorial);
     // The dry grove is visual state rebuilt from the drought, never saved: nodes exist only now.
     if ((this.game.environment.drought ?? 0) >= 0.6) this.game.dryRiparianGrove();
-    // A save taken before the gate was gated cannot leave it running ahead of its objective.
+    // A save taken before the gate was unlocked cannot leave it running ahead of its objective.
+    // Restore the state it was authored with: closed for Caral's inert gate, open for m6's running canal.
     const canalLock = this.game.missionLayout?.canal?.lockedUntilObjective;
     if (canalLock) {
       const lockState = this.game.mission?.getObjectiveState(canalLock) ?? 'pendiente';
       if (lockState !== 'activo' && lockState !== 'completed') {
-        this.game.canalOpen = false;
+        this.game.canalOpen = this.game.missionLayout?.canal?.initiallyOpen ?? false;
         this.updateCanalVisual();
       }
     }

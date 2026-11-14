@@ -72,6 +72,7 @@ export const m6bGuerraCivil: MissionDef = {
       radius: 18,
       time: 90,
       minUnits: 6,
+      unitKind: UnitKind.SOLDIER,
       hidden: true,
       requires: 'obj_avanzar',
       title: 'Sostén Quipaipan y captura a Huáscar',

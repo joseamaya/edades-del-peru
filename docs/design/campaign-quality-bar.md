@@ -348,9 +348,9 @@ pipeline as the later campaigns.
 | Gate        | m6b La Guerra Civil                                                                                                           |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | History     | Met: `guerra_civil_inca.md`; Huáscar vs Atahualpa.                                                                            |
-| Identity    | Met: hold Quipaipan, capture Huáscar, protect Atahualpa.                                                                      |
+| Identity    | Met: hold Quipaipan with the line, capture Huáscar, protect Atahualpa.                                                        |
 | Terrain     | Met: authored Cusco/Quipaipan heightfield.                                                                                    |
-| Play        | Met: real-command playtest attack-moves to Quipaipan and holds the pampa for 90 s; the Cusco centre stays standing.           |
+| Play        | Met: real-command playtest attack-moves to Quipaipan and holds the pampa for 90 s with six soldiers; the Cusco centre is not the goal and the playtest keeps it standing. |
 | Contract    | Met: reach, hidden hold (90 s, six units) and protect objectives.                                                             |
 | Onboarding  | Met: three-step tutorial + briefing.                                                                                          |
 | Closure     | Met: epilogue and optional objectives.                                                                                        |

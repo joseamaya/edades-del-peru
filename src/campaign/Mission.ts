@@ -146,6 +146,12 @@ export class Mission {
     }).length;
   }
 
+  /** Whether the gate is in the state the canal goal asks for (and a crew is there when scoped). */
+  private canalDone(o: ObjectiveDef): boolean {
+    const state = o.kind === 'canal_open' ? this.game.isCanalOpen() : !this.game.isCanalOpen();
+    return state && (!o.pos || this.reached(o));
+  }
+
   /** A `reach` objective with no tag accepts any living player unit. */
   private reached(o: ObjectiveDef): boolean {
     if (!o.pos) return false;
@@ -362,9 +368,8 @@ export class Mission {
         return visited && (!o.pos || this.reached(o)) ? 'win' : 'ok';
       }
       case 'canal_open':
-        return this.game.isCanalOpen() ? 'win' : 'ok';
       case 'canal_closed':
-        return this.game.isCanalOpen() ? 'ok' : 'win';
+        return this.canalDone(o) ? 'win' : 'ok';
       case 'reach_era':
         return p.era >= (o.era ?? 0) ? 'win' : 'ok';
       case 'research':
@@ -788,9 +793,8 @@ export class Mission {
         return { current: visited, target: ids.length, format: 'count' };
       }
       case 'canal_open':
-        return { current: this.game.isCanalOpen() ? 1 : 0, target: 1, format: 'count' };
       case 'canal_closed':
-        return { current: this.game.isCanalOpen() ? 0 : 1, target: 1, format: 'count' };
+        return { current: this.canalDone(o) ? 1 : 0, target: 1, format: 'count' };
       case 'reach':
         return { current: this.reached(o) ? 1 : 0, target: 1, format: 'count' };
       case 'reach_era':

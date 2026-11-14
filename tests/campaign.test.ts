@@ -457,7 +457,8 @@ describe('campaign educational content', () => {
     const gate = m6.objectives.find((o) => o.id === 'obj_canal')!;
     expect(gate.kind).toBe('canal_closed');
     expect(gate.entityTag).toBeUndefined();
-    expect(gate.pos).toBeUndefined();
+    expect(gate.pos).toEqual({ ref: 'canal', dx: 0, dz: 0 });
+    expect(gate.radius).toBe(8);
 
     const m6b = MISSIONS.find((m) => m.id === 'm6b_guerra_civil')!;
     const battle = m6b.objectives.find((o) => o.id === 'obj_quipaipan')!;
@@ -466,6 +467,7 @@ describe('campaign educational content', () => {
     expect(battle.radius).toBe(18);
     expect(battle.time).toBe(90);
     expect(battle.minUnits).toBe(6);
+    expect(battle.unitKind).toBe(UnitKind.SOLDIER);
     expect(battle.entityTag).toBeUndefined();
     // The Cusco centre is not the victory: Quipaipan ends with Huáscar's capture.
     expect(m6b.mark).toBeUndefined();

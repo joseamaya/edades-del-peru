@@ -78,9 +78,17 @@ for (const mis of COMPLETABLE_MISSIONS) {
             case 'canal_open':
               if (!g.isCanalOpen()) g.toggleCanal();
               break;
-            case 'canal_closed':
+            case 'canal_closed': {
+              // The gate must be closed with a crew at the canal, not from anywhere on the map.
+              if (o.pos) {
+                const base = refPoint(o.pos);
+                const tp = { x: base.x + o.pos.dx, z: base.z + o.pos.dz };
+                const crew = [...g.units.values()].find((unit: any) => unit.owner === 0 && !unit.dead) as any;
+                if (crew) crew.pos.set(tp.x, g.terrain.getHeight(tp.x, tp.z), tp.z);
+              }
               if (g.isCanalOpen()) g.toggleCanal();
               break;
+            }
             case 'network': {
               for (const node of o.nodes ?? []) {
                 const base = refPoint(node);

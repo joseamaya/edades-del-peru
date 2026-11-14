@@ -3,9 +3,10 @@ import path from 'path';
 import { launchChromium, withViteServer } from './lib.mjs';
 
 /**
- * Capture m6's Chan Chan gate from the game itself: the field card with the "Cerrar compuerta" action
- * and the same view after the gate closes and the canal objective completes. Evidence for the
- * `canal_closed` objective, not a historical photograph.
+ * Capture m6's Chan Chan gate as the game shows it: the canal in frame with its heritage field card and
+ * the "Cerrar compuerta" action, then the victory screen after clicking that action. The crew and the
+ * selection are staged through the debug harness (`window.game`); the close itself is the real HUD button.
+ * Evidence for the `canal_closed` objective, not a historical photograph.
  *
  * Usage: node scripts/capture_chimu_gate.mjs
  */
@@ -49,8 +50,7 @@ try {
     g.selectedBuilding = null;
     g.selectedHeritage = 'chimu_canal';
     g.refreshSelectionVisuals();
-    const home = g.playerCenter(0);
-    g.camera.focusOn(home.x, home.z);
+    if (canal) g.camera.focusOn(canal.x, canal.z);
     for (let i = 201; i <= 400; i++) g.update(1 / 60, i / 60);
     g.runtime.render();
     g.characterLabels?.setVisible(false);
@@ -60,19 +60,19 @@ try {
   await page.screenshot({ path: gate });
   console.log(`captured ${path.relative(process.cwd(), gate)}`);
 
-  await page.evaluate(() => {
-    const g = window.game;
-    g.toggleCanal();
-    for (let i = 1; i <= 8; i++) g.update(1 / 60, i / 60);
-    g.refreshSelectionVisuals();
-    g.runtime.render();
-    g.characterLabels?.setVisible(false);
-  });
+  await page.getByRole('button', { name: /Cerrar compuerta/ }).click();
   const state = await page.evaluate(() => {
     const g = window.game;
-    return { open: g.isCanalOpen(), objective: g.mission.getObjectiveState('obj_canal') };
+    for (let i = 1; i <= 8; i++) g.update(1 / 60, i / 60);
+    g.runtime.render();
+    g.characterLabels?.setVisible(false);
+    return {
+      open: g.isCanalOpen(),
+      objective: g.mission.getObjectiveState('obj_canal'),
+      won: g.mission.won,
+    };
   });
-  console.log(`canal ${state.open ? 'open' : 'closed'}, objective ${state.objective}`);
+  console.log(`canal ${state.open ? 'open' : 'closed'}, objective ${state.objective}, victory ${state.won === true}`);
   await page.waitForTimeout(400);
   const closed = path.join(OUT, 'm6-canal-victory.png');
   await page.screenshot({ path: closed });
