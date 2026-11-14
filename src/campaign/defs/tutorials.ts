@@ -188,7 +188,7 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'huascar',
-        text: 'Derrota el centro de Huáscar sin dejar caer a Atahualpa.',
+        text: 'Sostén la pampa de Quipaipan hasta que el ejército de Huáscar se rinda, sin dejar caer a Atahualpa.',
         check: { type: 'objectiveCompleted', objectiveId: 'obj_quipaipan' },
       },
     ],

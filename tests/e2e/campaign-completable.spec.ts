@@ -78,6 +78,9 @@ for (const mis of COMPLETABLE_MISSIONS) {
             case 'canal_open':
               if (!g.isCanalOpen()) g.toggleCanal();
               break;
+            case 'canal_closed':
+              if (g.isCanalOpen()) g.toggleCanal();
+              break;
             case 'network': {
               for (const node of o.nodes ?? []) {
                 const base = refPoint(node);

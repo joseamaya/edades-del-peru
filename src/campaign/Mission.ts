@@ -363,6 +363,8 @@ export class Mission {
       }
       case 'canal_open':
         return this.game.isCanalOpen() ? 'win' : 'ok';
+      case 'canal_closed':
+        return this.game.isCanalOpen() ? 'ok' : 'win';
       case 'reach_era':
         return p.era >= (o.era ?? 0) ? 'win' : 'ok';
       case 'research':
@@ -679,7 +681,7 @@ export class Mission {
   getObjectiveAnchor(id: string): { x: number; z: number } | null {
     const o = this.objective(id);
     if (!o) return null;
-    if (o.kind === 'canal_open') return this.game.canalSite;
+    if (o.kind === 'canal_open' || o.kind === 'canal_closed') return this.game.canalSite;
     if (o.kind === 'network') {
       const node = o.nodes?.find((point) => {
         const p = this.resolvePoint(point);
@@ -787,6 +789,8 @@ export class Mission {
       }
       case 'canal_open':
         return { current: this.game.isCanalOpen() ? 1 : 0, target: 1, format: 'count' };
+      case 'canal_closed':
+        return { current: this.game.isCanalOpen() ? 0 : 1, target: 1, format: 'count' };
       case 'reach':
         return { current: this.reached(o) ? 1 : 0, target: 1, format: 'count' };
       case 'reach_era':

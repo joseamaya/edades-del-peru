@@ -25,6 +25,7 @@ export type HeritageBuildingId =
   | 'wari_mural'
   | 'chanca_pucara'
   | 'chimu_compound'
+  | 'chimu_canal'
   | 'colonial_church'
   | 'independence_chapel'
   | 'arica_battery'
@@ -337,6 +338,18 @@ export const HERITAGE_BUILDINGS: Record<HeritageBuildingId, HeritageBuildingDef>
       'Chan Chan fue la capital del Reino Chimú, con conjuntos amurallados, audiencias y depósitos. La reconstrucción representa un conjunto adobe genérico de esa tradición; no reproduce una ciudadela real.',
     confidence: 'tradición documentada; planta y remates plausibles',
     citation: 'Dossier de la Guerra chimú-inca · fuentes coloniales y arqueología',
+    sources: ['docs/historia/campanas/chimu_inca.md', 'docs/historia/arquitectura.md'],
+  },
+  chimu_canal: {
+    id: 'chimu_canal',
+    name: 'Canal que abastecía Chan Chan',
+    sector: 'Chimú',
+    role: 'Agua y agricultura de la capital',
+    summary:
+      'Las crónicas cuentan que Túpac Yupanqui secó el canal que llevaba agua a Chan Chan y que la ciudad, en el desierto, capituló. La compuerta es una abstracción jugable del corte del agua; no se reconstruye el trazado real.',
+    confidence: 'hecho documentado; trazado y compuerta abstraídos',
+    citation: 'Dossier de la Guerra chimú-inca · fuentes coloniales',
+    operation: 'toggle-canal',
     sources: ['docs/historia/campanas/chimu_inca.md', 'docs/historia/arquitectura.md'],
   },
   colonial_church: {

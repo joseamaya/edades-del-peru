@@ -448,28 +448,46 @@ test('m6 cuts the canal to force Chan Chan to surrender', async ({ page }) => {
     const enemy = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'center' && !b.dead) as any;
     const canal = g.canalSite as { x: number; z: number } | null;
     const setPos = (x: number, z: number) => tupac.pos.set(x, g.terrain.getHeight(x, z), z);
+    const group = g.scene.getObjectByName('canal');
+    // The gate is locked until the army reaches Paramonga and the canal objective activates.
+    const lockedOpen = g.toggleCanal() as boolean;
     setPos(enemy.pos.x - 18, enemy.pos.z);
     g.update(1 / 60, 0);
     const afterParamonga = m.getObjectiveState('obj_canal') as string;
     if (!canal) return { afterParamonga, canal: false, won: m.won as boolean | null };
+    // Reaching the canal is not cutting it: the objective stays active and the water keeps running.
     setPos(canal.x, canal.z);
     g.update(1 / 60, 0);
+    const atCanal = m.getObjectiveState('obj_canal') as string;
+    const openAtCanal = g.isCanalOpen() as boolean;
+    g.toggleCanal();
+    g.update(1 / 60, 0.02);
     return {
       afterParamonga,
       canal: true,
-      canalVisual: !!g.scene.getObjectByName('canal'),
-      waterVisual: !!g.scene.getObjectByName('canal_water'),
-      gateVisual: !!g.scene.getObjectByName('canal_gate'),
+      lockedOpen,
+      atCanal,
+      openAtCanal,
+      closed: !g.isCanalOpen(),
+      canalVisual: !!group,
+      waterVisual: !!group?.getObjectByName('canal_water'),
+      gateVisual: !!group?.getObjectByName('canal_gate'),
+      canalHeritage: group?.userData.heritageId ?? null,
       chimuSite: g.siteDef?.id === 'chimu_site',
       canalObjective: m.getObjectiveState('obj_canal') as string,
       won: m.won as boolean | null,
     };
   });
   expect(out.canal).toBe(true);
+  expect(out.lockedOpen, 'the gate is locked before Paramonga').toBe(true);
   expect(out.afterParamonga).toBe('activo');
+  expect(out.atCanal, 'reaching the canal does not complete the objective').toBe('activo');
+  expect(out.openAtCanal).toBe(true);
+  expect(out.closed).toBe(true);
   expect(out.canalVisual).toBe(true);
   expect(out.waterVisual).toBe(true);
   expect(out.gateVisual).toBe(true);
+  expect(out.canalHeritage).toBe('chimu_canal');
   expect(out.chimuSite).toBe(true);
   expect(out.canalObjective).toBe('completed');
   expect(out.won).toBe(true);

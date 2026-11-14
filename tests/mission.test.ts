@@ -98,6 +98,33 @@ describe('mission objective progress', () => {
   });
 });
 
+describe('mission canal objectives', () => {
+  it('wins a canal_closed goal only once the gate is actually closed', () => {
+    const unit = { id: 1, tag: '', owner: 0, dead: false, kind: UnitKind.WORKER, pos: { x: 0, z: 0 } };
+    const game = stubGame(unit) as any;
+    let open = true;
+    game.canalSite = { x: 30, z: 40 };
+    game.isCanalOpen = () => open;
+    const missionDef: MissionDef = {
+      ...def,
+      objectives: [{ id: 'corta', kind: 'canal_closed', title: 'cierra la compuerta' }],
+      triggers: [],
+    };
+    const m = new Mission(game, missionDef, () => {});
+    m.start();
+
+    expect(m.getObjectiveAnchor('corta')).toEqual({ x: 30, z: 40 });
+    expect(m.getObjectiveProgress('corta')).toEqual({ current: 0, target: 1, format: 'count' });
+    m.update(0.1, 0);
+    expect(m.getObjectiveState('corta')).toBe('activo');
+
+    open = false;
+    expect(m.getObjectiveProgress('corta')).toEqual({ current: 1, target: 1, format: 'count' });
+    m.update(0.1, 0.1);
+    expect(m.getObjectiveState('corta')).toBe('completed');
+  });
+});
+
 describe('mission optional (bonus) objectives', () => {
   it('initializes objectives added after a save was created', () => {
     const unit = { id: 1, tag: 'guarda', owner: 0, dead: false, kind: UnitKind.WORKER };

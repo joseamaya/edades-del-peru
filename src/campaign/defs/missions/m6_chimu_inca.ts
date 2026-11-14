@@ -28,7 +28,18 @@ export const m6ChimuInca: MissionDef = {
       keepout: [{ x: 0.744, z: 0.339, rx: 0.085, rz: 0.075 }],
       buildKeepout: [{ x: 0.744, z: 0.339, rx: 0.075, rz: 0.065 }],
     },
-    canal: { name: 'Canal de Chan Chan', x: 0.5, z: 0.5, length: 28, yaw: 0.2, initiallyOpen: true },
+    // The gate answers once the army has reached the valley: closing it is the mission's own mechanic.
+    canal: {
+      name: 'Canal de Chan Chan',
+      x: 0.5,
+      z: 0.5,
+      length: 28,
+      yaw: 0.2,
+      initiallyOpen: true,
+      heritageId: 'chimu_canal',
+      lockedUntilObjective: 'obj_canal',
+      lockedHint: 'Primero avanza hasta Paramonga y alcanza el canal de Chan Chan.',
+    },
     terrain: {
       flats: [
         { name: 'Canal de Chan Chan', x: 0.5, z: 0.5, rx: 0.14, rz: 0.09 },
@@ -61,12 +72,9 @@ export const m6ChimuInca: MissionDef = {
     },
     {
       id: 'obj_canal',
-      kind: 'reach',
-      entityTag: 'tupac_yupanqui',
-      pos: { ref: 'canal', dx: 0, dz: 0 },
-      radius: 8,
+      kind: 'canal_closed',
       hidden: true,
-      title: 'Corta el canal que abastece Chan Chan',
+      title: 'Corta el agua de Chan Chan: cierra la compuerta',
     },
     {
       id: 'obj_comandante',
@@ -122,7 +130,7 @@ export const m6ChimuInca: MissionDef = {
       effects: [
         {
           type: 'dialogue',
-          text: 'Túpac Yupanqui: —¡Paramonga ha caído! Avanza por el valle del Santa hacia Chan Chan.',
+          text: 'Túpac Yupanqui: —¡Paramonga ha caído! El canal de Chan Chan está adelante: cierra su compuerta y la ciudad se quedará sin agua.',
         },
         { type: 'objective', objectiveId: 'obj_canal', state: 'activate' },
       ],

@@ -79,8 +79,8 @@ in-engine intro and epilogue, bench scenes and the scale guard).
 3. **Art review:** record the human review of Caral's camp pieces and the Chavín kit; recapture Caral's Act
    III card (S).
 4. **Model-mission rebuilds** for m3–m6b and m8 (256 m transect, acts, intro, bench, certainty table)
-   (L each); m7 and m9 are done; quick wins first: m6's canal must really close, m6b's victory must
-   capture Huáscar, not raze a building (M).
+   (L each); m7 and m9 are done. The quick wins are done (2026-11-14): m6's gate really closes
+   (`canal_closed`) and m6b's victory holds Quipaipan and captures Huáscar instead of razing a building.
 5. **Mid-mission save/load E2E:** fixed (2026-11-14) for Tambotoco (`inticancha`), Lima (`ciudad`) and
    La Junta (the Apacheta hold).
 
@@ -184,10 +184,10 @@ geometry gate (`tests/e2e/hud-layout.spec.ts`).
 | Gate        | m5 Yahuar Pampa                                                                                                               | m6 Chimú–Inca                                                                                                                 |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | History     | Met: `yahuar_pampa.md`; no invented battle.                                                                                   | Met: `chimu_inca.md`; water/canal campaign.                                                                                   |
-| Identity    | Met: defend Cusco, protect Cusi, counterattack.                                                                               | Met: advance to Paramonga, cut the canal, force surrender.                                                                    |
+| Identity    | Met: defend Cusco, protect Cusi, counterattack.                                                                               | Met: advance to Paramonga, close the gate and force surrender.                                                                 |
 | Terrain     | Met: authored Yahuar Pampa heightfield.                                                                                       | Met: authored Chimú coastal heightfield.                                                                                      |
-| Play        | Met: real-command playtest holds and counterattacks.                                                                          | Met: real-command playtest advances and cuts the canal.                                                                       |
-| Contract    | Met: defend, destroy, protect; waves and timer.                                                                               | Met: staged Paramonga/canal objectives; optional Chan Chan/hold.                                                              |
+| Play        | Met: real-command playtest holds and counterattacks.                                                                          | Met: real-command playtest advances, reaches the gate and closes it.                                                          |
+| Contract    | Met: defend, destroy, protect; waves and timer.                                                                               | Met: staged Paramonga/`canal_closed` objectives; operable gate; optional Chan Chan/hold.                                      |
 | Onboarding  | Met: three-step tutorial + briefing.                                                                                          | Met: four-step tutorial + briefing.                                                                                           |
 | Closure     | Met: epilogue and optional achievements.                                                                                      | Met: epilogue and optional objectives.                                                                                        |
 | UX          | Met: briefing reviewed in the browser; `hud-layout.spec.ts` checks the panels at 1280×720 (Caral also at 1600×900/1920×1080). | Met: briefing reviewed in the browser; `hud-layout.spec.ts` checks the panels at 1280×720 (Caral also at 1600×900/1920×1080). |
@@ -348,10 +348,10 @@ pipeline as the later campaigns.
 | Gate        | m6b La Guerra Civil                                                                                                           |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | History     | Met: `guerra_civil_inca.md`; Huáscar vs Atahualpa.                                                                            |
-| Identity    | Met: advance to Quipaipan, defeat Huáscar, protect Atahualpa.                                                                 |
+| Identity    | Met: hold Quipaipan, capture Huáscar, protect Atahualpa.                                                                      |
 | Terrain     | Met: authored Cusco/Quipaipan heightfield.                                                                                    |
-| Play        | Met: real-command playtest attack-moves to Quipaipan, clears Huáscar's defenders and takes the centre.                        |
-| Contract    | Met: reach, hidden destroy and protect objectives.                                                                            |
+| Play        | Met: real-command playtest attack-moves to Quipaipan and holds the pampa for 90 s; the Cusco centre stays standing.           |
+| Contract    | Met: reach, hidden hold (90 s, six units) and protect objectives.                                                             |
 | Onboarding  | Met: three-step tutorial + briefing.                                                                                          |
 | Closure     | Met: epilogue and optional objectives.                                                                                        |
 | UX          | Met: briefing reviewed in the browser; `hud-layout.spec.ts` checks the panels at 1280×720 (Caral also at 1600×900/1920×1080). |
