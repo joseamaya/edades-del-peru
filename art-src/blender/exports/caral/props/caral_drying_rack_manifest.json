@@ -15,7 +15,7 @@
     "LOD0": 650,
     "LOD1": 200
   },
-  "reviewed": false,
+  "reviewed": true,
   "lods": {
     "LOD0": {
       "triangles": 220,
@@ -71,5 +71,7 @@
       "file": "caral_drying_rack_lod1.glb",
       "bytes": 11692
     }
-  }
+  },
+  "reviewer": "Miguel Amaya",
+  "reviewedAt": "2026-11-14T13:13:16.000Z"
 }

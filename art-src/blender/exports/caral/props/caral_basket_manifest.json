@@ -15,7 +15,7 @@
     "LOD0": 420,
     "LOD1": 130
   },
-  "reviewed": false,
+  "reviewed": true,
   "lods": {
     "LOD0": {
       "triangles": 188,
@@ -71,5 +71,7 @@
       "file": "caral_basket_lod1.glb",
       "bytes": 10044
     }
-  }
+  },
+  "reviewer": "Miguel Amaya",
+  "reviewedAt": "2026-11-14T13:13:16.000Z"
 }

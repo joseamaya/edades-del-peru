@@ -15,7 +15,7 @@
     "LOD0": 380,
     "LOD1": 150
   },
-  "reviewed": false,
+  "reviewed": true,
   "lods": {
     "LOD0": {
       "triangles": 152,
@@ -71,5 +71,7 @@
       "file": "caral_gourd_lod1.glb",
       "bytes": 9744
     }
-  }
+  },
+  "reviewer": "Miguel Amaya",
+  "reviewedAt": "2026-11-14T13:13:16.000Z"
 }

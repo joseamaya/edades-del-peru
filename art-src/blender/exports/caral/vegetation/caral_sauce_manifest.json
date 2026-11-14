@@ -14,7 +14,7 @@
     "LOD0": 1200,
     "LOD1": 350
   },
-  "reviewed": false,
+  "reviewed": true,
   "lods": {
     "LOD0": {
       "triangles": 1132,
@@ -70,5 +70,7 @@
       "file": "caral_sauce_lod1.glb",
       "bytes": 49824
     }
-  }
+  },
+  "reviewer": "Miguel Amaya",
+  "reviewedAt": "2026-11-14T13:13:16.000Z"
 }

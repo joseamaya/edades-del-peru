@@ -15,7 +15,7 @@
     "LOD0": 1500,
     "LOD1": 400
   },
-  "reviewed": false,
+  "reviewed": true,
   "lods": {
     "LOD0": {
       "triangles": 420,
@@ -69,5 +69,7 @@
       "file": "caral_granodiorite_lod1.glb",
       "bytes": 9904
     }
-  }
+  },
+  "reviewer": "Miguel Amaya",
+  "reviewedAt": "2026-11-14T13:13:16.000Z"
 }

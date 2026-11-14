@@ -18,5 +18,9 @@
     "legZBack": -0.38
   },
   "triangles_per_animal": 976,
-  "budget_per_animal": 5000
+  "budget_per_animal": 5000,
+  "confidence": "documented",
+  "reviewed": true,
+  "reviewer": "Miguel Amaya",
+  "reviewedAt": "2026-11-14T13:42:46.000Z"
 }

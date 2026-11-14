@@ -107,7 +107,10 @@ describe.each(IDS)('%s kit GLB', (id) => {
   it('records the art-direction budget, the provenance gate and its certainty', () => {
     const m = manifest(id);
     expect(m.asset_id).toBe(`caral_${id}`);
-    expect(m.reviewed).toBe(false);
+    // The Blender script exports every species unreviewed; a human approval records who and when.
+    expect(m.reviewed, id).toBe(true);
+    expect(m.reviewer, id).toBeTruthy();
+    expect(Number.isNaN(Date.parse(m.reviewedAt ?? '')), id).toBe(false);
     expect(m.confidence).toBe(id === 'pacae' ? 'inferred' : 'documented');
     expect(m.sources.length).toBeGreaterThan(0);
     expect(m.budget).toEqual({ LOD0: BUDGETS[id][0], LOD1: BUDGETS[id][1] });

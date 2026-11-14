@@ -15,7 +15,7 @@
     "LOD0": 5000,
     "LOD1": 1500
   },
-  "reviewed": false,
+  "reviewed": true,
   "lods": {
     "LOD0": {
       "triangles": 1824,
@@ -73,5 +73,7 @@
       "file": "caral_pyramid_small_phase1_lod1.glb",
       "bytes": 20944
     }
-  }
+  },
+  "reviewer": "Miguel Amaya",
+  "reviewedAt": "2026-11-14T13:13:16.000Z"
 }
