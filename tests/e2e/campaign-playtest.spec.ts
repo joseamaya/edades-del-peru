@@ -412,6 +412,7 @@ test('plays m5 by holding Cusco and counterattacking with real orders', async ({
     const dt = 1 / 60;
     let t = 0;
     for (let i = 0; i < Math.ceil(620 / dt) && !m.ended; i++) {
+      document.querySelector<HTMLElement>('.ed-mission-card')?.click();
       g.update(dt, t);
       t += dt;
     }
@@ -419,12 +420,16 @@ test('plays m5 by holding Cusco and counterattacking with real orders', async ({
       defend: m.getObjectiveState('obj_defend') as string,
       kill: m.getObjectiveState('obj_kill') as string,
       cusi: m.getObjectiveState('obj_cusi') as string,
+      mapSize: g.settings.mapSize,
+      site: g.siteDef?.id,
       won: m.won as boolean | null,
     };
   });
   expect(out.defend).toBe('completed');
   expect(out.kill).toBe('completed');
   expect(out.cusi).not.toBe('failed');
+  expect(out.mapSize, 'the model mission runs on 256 m').toBe(256);
+  expect(out.site).toBe('chanca_site');
   expect(out.won).toBe(true);
   expect(errors).toEqual([]);
 });

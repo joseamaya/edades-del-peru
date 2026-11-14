@@ -44,7 +44,7 @@ below, which record each mission's own review and are kept for history). **M** m
 | m3_moche_recuay    | M    | M     | M    | M     | M   | M    | M  | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m4_wari            | M    | M     | M    | M     | M   | M    | M  | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m_tambotoco        | M    | M     | P    | M     | M   | M    | M  | P   | M    | M     | M    | M      | M    | –   | P    | M     |
-| m5_yahuar_pampa    | P    | M     | M    | P     | M   | P    | M  | P   | M    | M     | P    | X      | X    | P   | X    | X     |
+| m5_yahuar_pampa    | M    | M     | M    | M     | M   | M    | M  | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m6_chimu_inca      | P    | P     | M    | P     | M   | P    | M  | M   | M    | M     | P    | X      | X    | P   | X    | X     |
 | m6b_guerra_civil   | P    | P     | M    | M     | M   | P    | M  | P   | M    | M     | P    | X      | X    | P   | X    | X     |
 | m_lima             | M    | M     | M    | M     | M   | M    | M  | P   | M    | M     | P    | M      | M    | –   | P    | M     |
@@ -55,11 +55,11 @@ below, which record each mission's own review and are kept for history). **M** m
 
 **Verdict.** **Caral meets every gate** (closed 2026-11-14: Act III card recaptured with the works camp; the
 camp pieces, vegetation, household props and fauna approved by a recorded human review). Chavín,
-Tambotoco, Lima and the Junta follow the model pattern and lack mostly art. m5–m6b and m8 still use the
-pre-model template: no acts, intro, 256 m map or bench scene. m3 and m4 were promoted in this pass (256 m,
-painted ground, three acts, in-engine intro and bench). **m3, m4, m7 and m9 meet the scale, opening and
-performance gates** (256 m, painted ground, in-engine intros and epilogues, bench scenes); their human art
-review is pending.
+Tambotoco, Lima and the Junta follow the model pattern and lack mostly art. m6–m6b and m8 still use the
+pre-model template: no acts, intro, 256 m map or bench scene. m3, m4 and m5 were promoted in this pass
+(256 m, painted ground, three acts, in-engine intro and bench). **m3, m4, m5, m7 and m9 meet the scale,
+opening and performance gates** (256 m, painted ground, in-engine intros and epilogues, bench scenes); their
+human art review is pending.
 
 **Fixed in this pass.** The closing trigger of the goal that wins a mission now fires (Tambotoco's founded
 Inticancha never appeared); waves can march on a `target` (Lima's siege and the Tambotoco valley wave stood at
@@ -80,8 +80,8 @@ in-engine intro and epilogue, bench scenes and the scale guard).
    never fights the valley wave. A manual no-cheat playtest remains recommended.
 3. **Art review:** record the human review of Caral's camp pieces and the Chavín kit; recapture Caral's Act
    III card (S).
-4. **Model-mission rebuilds** for m5–m6b and m8 (256 m transect, acts, intro, bench, certainty table)
-   (L each); m3, m4, m7 and m9 are done. The quick wins are done (2026-11-14): m6's gate really closes
+4. **Model-mission rebuilds** for m6–m6b and m8 (256 m transect, acts, intro, bench, certainty table)
+   (L each); m3, m4, m5, m7 and m9 are done. The quick wins are done (2026-11-14): m6's gate really closes
    (`canal_closed`) and m6b's victory holds Quipaipan and captures Huáscar instead of razing a building.
 5. **Mid-mission save/load E2E:** fixed (2026-11-14) for Tambotoco (`inticancha`), Lima (`ciudad`) and
    La Junta (the Apacheta hold).
@@ -184,6 +184,31 @@ Reviewed 2026-11-14 as a model mission. The human art gate is still open.
 | Art         | Pending human review | The reused Wari GLB and its Blender records keep `reviewed: false` (#343); in-engine captures are recorded in PROVENANCE.                                                                    |
 | Performance | Met                  | `bench_scene.mjs`: opening ~421k tris / 199 calls, frontier ~494k / 342; within the recorded first-pass caps.                                                                                |
 | Scale       | Met                  | 256 m map, 128² painted ground over 256 m and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                                |
+
+## Yahuar Pampa gold-master status
+
+Reviewed 2026-11-14 as a model mission. The human art gate is still open.
+
+| Gate        | Status               | Evidence                                                                                                                                                                                     |
+| ----------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| History     | Met                  | `docs/historia/campanas/yahuar_pampa.md` with its certainty table; the pururaucas are labelled tradition, not fact.                                                                          |
+| Identity    | Met                  | The 1438 defence, the counterattack on the Chanca heights and the road to Pachacútec.                                                                                                        |
+| Terrain     | Met                  | 256 m authored highland heightfield (`chancaHeightmap.ts`) with painted ground: pampa, terraces, quebrada and ridges.                                                                        |
+| Site        | Met (exception)      | No construction phases: the Chanca pucará is a camp in use, not a monument the player builds; recorded in `chanca-model-mission.md`.                                                        |
+| Play        | Met                  | `campaign-playtest.spec.ts` holds Cusco and counterattacks with real orders; `campaign-completable` and `save-campaign` cover the mission.                                                    |
+| Contract    | Met                  | Three acts (siege, counterattack, pursuit) with hidden goals revealed by triggers, optional pursuit and chapter cards.                                                                      |
+| Onboarding  | Met                  | Non-blocking tutorial, briefing, Codex and minimap pips.                                                                                                                                     |
+| Closure     | Met                  | Dusk epilogue capture narrates the Chanca integration and Pachacútec; optional pursuit summarised.                                                                                           |
+| UX          | Met                  | `tests/e2e/hud-layout.spec.ts` checks the panels geometrically at 1280×720 (Caral also at 1600×900 and 1920×1080).                                                                           |
+| Visuals     | Met locally          | Authored `chanca_site` GLB, painted pampa and in-engine intro/epilogue captures in `public/media/chanca/`.                                                                                   |
+| Persistence | Met                  | Siege, hold/counterattack and tutorial round-trip in the save path; v8 m5 saves are rejected (`SAVE_VERSION` 9).                                                                             |
+| Tests       | Met                  | Data, site/proxy collision, tutorial, mission, HUD, real-command playtest and save/load coverage.                                                                                            |
+| Docs        | Met                  | This document, dossier, `chanca-model-mission.md`, experience table, site note, art docs and README aligned.                                                                                 |
+| Structure   | Met                  | Three acts, hidden objectives revealed per act, chapter cards with images and optional pursuit.                                                                                              |
+| Opening     | Met                  | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_chanca_intro.mjs`; `MISSION_ART` uses the Cusco capture.                                                         |
+| Art         | Pending human review | The reused Chanca GLB and its Blender records keep `reviewed: false` (#343); in-engine captures are recorded in PROVENANCE.                                                                  |
+| Performance | Met                  | `bench_scene.mjs`: opening ~682k tris / 362 calls, counterattack ~761k / 521; over the 600k art-direction target (as m7/m9), within the recorded first-pass caps.                             |
+| Scale       | Met                  | 256 m map, 128² painted ground and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                                           |
 
 ## Applying it to m2–m9
 

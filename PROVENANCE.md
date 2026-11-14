@@ -410,6 +410,21 @@ slot is absent (offline / without assets).
 - **Review**: no human art-review gate applies to in-engine captures; the reused Wari GLB keeps its own
   review status in `src/art/manifest.json` (#343).
 
+### Chanca (m5) intro and epilogue images (in-engine recreations)
+
+- **Location**: `public/media/chanca/intro-{cusco,pampa,andahuaylas,epilogo}.webp` (960x540, WebP q58).
+- **Source**: captured from the game itself by `scripts/capture_chanca_intro.mjs` on the 256 m Yahuar
+  Pampa transect: Cusco and the pampa, the Chanca pucará and the pursuit toward Andahuaylas, plus a dusk
+  epilogue. Rendered without the HUD or character nameplates at 1600x900 and resized with `sharp`.
+  Regenerate with `node scripts/capture_chanca_intro.mjs` (one with `--only=ID`) after art changes.
+- **Runtime**: the briefing and the "Tu senda" card use `intro-cusco`; the three intro beats and the act
+  cards use the city, the pampa and the pursuit captures; the victory epilogue uses `intro-epilogo`.
+- **Content**: project-owned game renders (authored Chanca heightfield, the reused `chanca_site` pucará and
+  the procedural camps). Recreations of the game's own scenes: never historical photographs, and not
+  Blender renders (so not in `src/art/manifest.json`).
+- **Review**: no human art-review gate applies to in-engine captures; the reused Chanca GLB keeps its own
+  review status in `src/art/manifest.json` (#343).
+
 ### Caral Pyramid Mayor modular scenery
 
 - **Location**: `src/assets/scenery/caral/caral_pyramid_mayor_lod0.glb` and `lod1.glb`.

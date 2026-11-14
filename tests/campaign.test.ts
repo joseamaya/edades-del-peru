@@ -512,6 +512,24 @@ describe('campaign educational content', () => {
     expect(network.requires).toBe('obj_andenes');
   });
 
+  it('m5 is a model mission with three acts and in-engine images', () => {
+    const m5 = MISSIONS.find((m) => m.id === 'm5_yahuar_pampa')!;
+    expect(m5.modelMission).toBe(true);
+    expect(m5.narrator).toBe('Cusi Yupanqui');
+    expect(m5.map.size).toBe(256);
+    expect(m5.unitSpeedScale).toBe(0.75);
+    expect(m5.intro?.length).toBe(3);
+    expect(new Set(m5.intro?.map((beat) => beat.image)).size, 'three distinct intro captures').toBe(3);
+    expect(m5.intro?.every((beat) => beat.image.startsWith('media/chanca/'))).toBe(true);
+    expect(m5.epilogueImage).toContain('media/chanca/');
+    const actTitles = m5.triggers.flatMap((t) => t.effects.flatMap((e) => (e.type === 'act' ? [e.title] : [])));
+    expect(actTitles).toHaveLength(3);
+    expect(actTitles[2]).toContain('Pachacútec');
+    const counterattack = m5.objectives.find((o) => o.id === 'obj_kill')!;
+    expect(counterattack.hidden).toBe(true);
+    expect(counterattack.requires).toBe('obj_defend');
+  });
+
   it('m4 has a two-node network, a contested frontier and andenes', () => {
     const m4 = MISSIONS.find((m) => m.id === 'm4_wari')!;
     const network = m4.objectives.find((o) => o.id === 'obj_red')!;

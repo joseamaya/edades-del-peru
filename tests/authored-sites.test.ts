@@ -5,6 +5,7 @@ import { AUTHORED_SITES, getAuthoredSite, isLatePeriod } from '../src/model/defs
 import { sampleAuthoredGround } from '../src/model/defs/authoredTerrain';
 import { MOCHE_COMPOSITION_SCALE } from '../src/model/defs/mocheSite';
 import { WARI_COMPOSITION_SCALE } from '../src/model/defs/wariSite';
+import { CHANCA_COMPOSITION_SCALE } from '../src/model/defs/chancaSite';
 
 describe('authored campaign sites', () => {
   it('resolves every site referenced by a mission layout', () => {
@@ -49,11 +50,22 @@ describe('authored campaign sites', () => {
 
   it('keeps Yahuar Pampa on its authored Chanca site and heightfield', () => {
     const site = getAuthoredSite('chanca_site')!;
-    expect(site.scale).toBe(0.7);
-    expect(site.anchor).toEqual({ x: 112.4, z: 60.8 });
-    expect(site.heightField?.worldSize).toBe(160);
+    expect(site.scale).toBeCloseTo(0.7 * CHANCA_COMPOSITION_SCALE, 3);
+    expect(site.anchor.x).toBeCloseTo(112.4 * CHANCA_COMPOSITION_SCALE, 3);
+    expect(site.anchor.z).toBeCloseTo(60.8 * CHANCA_COMPOSITION_SCALE, 3);
+    expect(site.heightField?.worldSize).toBe(256);
+    expect(site.heightField?.ground?.size).toBe(128);
+    expect(site.heightField?.ground?.weights.length).toBe(128 * 128 * 4);
+    const painted = sampleAuthoredGround(site.heightField!, site.anchor.x, site.anchor.z)!;
+    expect(painted.reduce((sum, w) => sum + w, 0)).toBeCloseTo(1, 2);
+    expect(painted[1], 'the pucará terrace is painted dirt').toBeGreaterThan(0.2);
+    const pampa = sampleAuthoredGround(site.heightField!, 40, 140)!;
+    expect(pampa[0], 'the pampa is painted grass').toBeGreaterThan(0.2);
+    const ridge = sampleAuthoredGround(site.heightField!, 12, 20)!;
+    expect(ridge[3], 'the Andean ridges are painted rock').toBeGreaterThan(0.3);
     expect(site.heritageProxies.map((p) => p.id)).toEqual(['chanca_pucara']);
-    expect(site.walkableCorridor?.width).toBe(8);
+    expect(site.heritageProxies[0]?.w).toBeCloseTo(17.6, 3);
+    expect(site.walkableCorridor?.width).toBeCloseTo(12.8, 3);
     const mission = MISSIONS.find((m) => m.id === 'm5_yahuar_pampa')!;
     expect(mission.layout?.site?.id).toBe('chanca_site');
   });
