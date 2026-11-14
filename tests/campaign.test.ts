@@ -213,7 +213,9 @@ describe('campaign educational content', () => {
   it('m9 follows the documented fall of Arica', () => {
     const m9 = MISSIONS.find((m) => m.id === 'm9_guerra_pacifico')!;
     expect(m9.start.buildings?.some((b) => b.kind === BuildingKind.FORTRESS)).toBe(true);
-    expect(m9.start.buildings?.some((b) => b.kind === BuildingKind.CENTER)).toBe(true);
+    // The player base (the cuartel) is the auto-built settlement centre; a second `center` here would
+    // stack on top of it. Only the fort is authored.
+    expect(m9.start.buildings?.some((b) => b.kind === BuildingKind.CENTER)).toBe(false);
     expect(m9.periodNote).toBeDefined();
     // The defence is played, but its outcome is not rewritten: the final line ends the mission and the
     // epilogue tells the fall. No victory objective keeps Bolognesi alive for the whole mission and none
