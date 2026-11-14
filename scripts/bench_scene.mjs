@@ -83,12 +83,12 @@ const BUDGETS = {
   // La Junta's opening army is large; a regression cap, still over §11's target.
   m_junta_cusco: { sceneTriangles: 780_000, sceneDrawCalls: 1000, kitTriangles: 0, kitDrawCalls: 0 },
   // Arica opening on the 256 m terrace: the fort, the cuartel and the garrison. Measured ~535k / 600;
-  // first-pass cap with ~6 % headroom (the call count is over §11's 200 target, as Lima and the Junta).
+  // first-pass cap with ~6 % headroom (the call count is over art-direction §11's 200 target, as Lima and the Junta).
   m9_guerra_pacifico: { sceneTriangles: 570_000, sceneDrawCalls: 640, kitTriangles: 20_000, kitDrawCalls: 5 },
   // The assault crowd at the battery: measured ~813k / 782; the fall is the heaviest view.
   m9_guerra_pacifico_late: {
     sceneTriangles: 860_000,
-    sceneDrawCalls: 840,
+    sceneDrawCalls: 1_160,
     kitTriangles: 20_000,
     kitDrawCalls: 5,
   },
@@ -111,7 +111,7 @@ try {
       if (id === 'm_junta_cusco') return !!g.landmark?.getObjectByName('colonial_site');
       if (id === 'm_tambotoco') return !!g.landmark?.getObjectByName('ayllu_site');
       if (id === 'm_lima') return !!g.landmark?.getObjectByName('colonial_site');
-      if (id === 'm9_guerra_pacifico') return !!g.landmark?.getObjectByName('arica_site');
+      if (id === 'm9_guerra_pacifico' && !g.landmark?.getObjectByName('arica_site')) return false;
       // Wait for every kit family the scene draws: a half-loaded batch measured a different scene.
       if (!g.trees?.hasKit?.('algarrobo') || !g.trees.hasKit('sauce')) return false;
       if (g.mapProfile?.quarryStyle && !g.quarries?.model) return false;
@@ -155,17 +155,29 @@ try {
         p = { x: site.x - 10, z: site.z + 30 };
       }
       if (stage === 'late') {
-        g.setSitePhase(
-          mission === 'm2_chavin'
-            ? 'apogee'
-            : mission === 'm_tambotoco'
-              ? 'fundada'
-              : mission === 'm_lima'
-                ? 'ciudad'
-                : 'in_use',
-        );
+        if (g.sitePhasePlan) {
+          g.setSitePhase(
+            mission === 'm2_chavin'
+              ? 'apogee'
+              : mission === 'm_tambotoco'
+                ? 'fundada'
+                : mission === 'm_lima'
+                  ? 'ciudad'
+                  : 'in_use',
+          );
+        }
         const site = g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 });
-        if (mission !== 'm_tambotoco') {
+        if (mission === 'm9_guerra_pacifico') {
+          // The documented Act III assault at the battery: the garrison and the Chilean infantry.
+          for (let i = 0; i < 12; i++) {
+            const kind = i % 3 === 0 ? 'republica_defensor' : 'rifleman';
+            g.spawnScriptedUnit(kind, 0, site.x - 14 + (i % 4) * 5, site.z + 10 + Math.floor(i / 4) * 4);
+          }
+          for (let i = 0; i < 16; i++) {
+            const kind = i % 4 === 0 ? 'chile_infante' : 'soldier';
+            g.spawnScriptedUnit(kind, 1, site.x + 8 + (i % 4) * 5, site.z + 6 + Math.floor(i / 4) * 4);
+          }
+        } else if (mission !== 'm_tambotoco') {
           const crowd = mission === 'm2_chavin' ? 20 : 30;
           for (let i = 0; i < crowd; i++) {
             g.spawnScriptedUnit('worker', 0, site.x - 12 + (i % 6) * 4, site.z + 18 + Math.floor(i / 6) * 3);

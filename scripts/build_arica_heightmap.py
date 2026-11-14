@@ -86,10 +86,11 @@ def ground_weights(x: float, z: float) -> tuple[float, float, float, float]:
 
 
 ground_values = []
+# Texel centres at 2 m, matching `sampleAuthoredGround` (the 0..SIZE corners would shift the paint 1 m).
 for iz in range(GROUND_SIZE):
-    z = iz * SIZE / (GROUND_SIZE - 1)
+    z = (iz + 0.5) * SIZE / GROUND_SIZE
     for ix in range(GROUND_SIZE):
-        x = ix * SIZE / (GROUND_SIZE - 1)
+        x = (ix + 0.5) * SIZE / GROUND_SIZE
         weights = ground_weights(x * SOURCE_SIZE / SIZE, z * SOURCE_SIZE / SIZE)
         for w in weights:
             ground_values.append(max(0, min(255, round(w * 255))))

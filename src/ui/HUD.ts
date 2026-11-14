@@ -63,7 +63,7 @@ import { DamageNumbers } from './DamageNumbers';
 import { openCodex } from './Codex';
 import { openTechTree } from './TechTree';
 import { bus } from '../core/EventBus';
-import { hasSave } from '../game/SaveGame';
+import { hasSave, saveIncompatible } from '../game/SaveGame';
 import { hasReplay, saveReplay } from '../game/replay';
 import { mountMatchStats } from './MatchStatsPanel';
 import {
@@ -1019,7 +1019,10 @@ export class HUD {
       details.scrollTop = archiveScroll;
     }
     const currentEl = this.objListEl.querySelector('.obj-current') as HTMLElement | null;
-    if (currentEl) currentEl.scrollTop = currentScroll;
+    if (currentEl) {
+      void currentEl.offsetHeight;
+      currentEl.scrollTop = currentScroll;
+    }
     this.syncObjectivesScroll();
   }
 
@@ -2398,6 +2401,7 @@ export class HUD {
     renderMainMenu(ov, {
       progress: this.readCampaignProgress(),
       hasSave: hasSave(),
+      saveIncompatible: saveIncompatible(),
       hasReplay: hasReplay(),
       skirmish: !CAMPAIGN_ONLY,
       onContinue: () => {

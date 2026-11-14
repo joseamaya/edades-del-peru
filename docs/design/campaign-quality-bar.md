@@ -58,8 +58,8 @@ camp pieces, vegetation, household props and fauna approved by a recorded human 
 Tambotoco, Lima and the Junta follow the model pattern and lack mostly art, a no-cheat playtest and a
 mid-mission save test. m3–m6b and m8 still use the pre-model template: no acts, intro, 256 m map or
 bench scene. m7 now has acts and a documented ending, but still lacks its own intro art, 256 m transect and
-bench scene. **m9 is the second full model mission after Caral**: 256 m, painted ground, in-engine intro and
-epilogue, bench scenes and the scale guard.
+bench scene. **m9 now meets the scale, opening and performance gates** (256 m, painted ground, in-engine intro and
+epilogue, bench scenes); its human art review is pending.
 
 **Fixed in this pass.** The closing trigger of the goal that wins a mission now fires (Tambotoco's founded
 Inticancha never appeared); waves can march on a `target` (Lima's siege and the Tambotoco valley wave stood at
@@ -248,7 +248,8 @@ geometry gate (`tests/e2e/hud-layout.spec.ts`).
 | Art         | Pending human review | The `arica_site` GLB and the draft Blender intro record keep their `reviewed: false` status (#343); the in-engine captures are not a Blender claim.                                                     |
 | Performance | Met                  | `bench_scene.mjs`: opening ~535k tris / 600 calls, late ~813k / 782, under the recorded first-pass caps; `yarn bench:check` green. The call count is over §11's 200 target, as Lima and the Junta.      |
 | Scale       | Met                  | 256 m map, 128² painted ground over 256 m, `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                                              |
-| Pacing      | Met (exception)      | 20–30 min with the 256 m transect and the real-command bot; documented in `arica-model-mission.md` instead of adding an invented act.                                                                    |
+| Pacing      | Pending (exception)  | The real-command bot reaches the ending in ~7 min of simulated time; a human 20–30 min path is still unmeasured. The 30–40 target is documented as an exception in `arica-model-mission.md`.            |
+| Site        | Met (exception)      | No construction phases: the port and fort are in use, not a monument the player builds; recorded here and in `arica-site.md`.                                                                          |
 
 ## La Junta del Cusco playable status (m_junta_cusco)
 

@@ -213,6 +213,7 @@ export const es = {
     'Cinco mil años de historia peruana, de Caral a la República. Funda ciudades, sostén a tu pueblo y vive los momentos que forjaron el Perú.',
   'hud.menu.main.intro': 'Ver introducción',
   'hud.menu.main.continue': 'Continuar partida',
+  'hud.menu.main.saveIncompatible': 'La partida guardada no es compatible con esta versión. Empieza una misión nueva.',
   'hud.menu.main.continueHint': 'Retoma la partida guardada',
   'hud.menu.main.campaigns': 'Campañas',
   'hud.menu.main.campaignsHint': 'La Senda del Sol · cuatro capítulos de la historia',

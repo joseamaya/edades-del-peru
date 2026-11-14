@@ -60,7 +60,7 @@ recorded here and in the quality bar. The Morro is not invented as a new mesh.
 
 - Three narrated intro beats captured in engine by [`scripts/capture_arica_intro.mjs`](../../scripts/capture_arica_intro.mjs):
   the plaza and the summons, the battery with the Pacific behind it, and the assault.
-- `MISSION_ART` (`m9_guerra_pacifico` → `media/arica/intro-plaza.webp`) and the briefing use the plaza capture.
+- `MISSION_ART` (`m9_guerra_pacifico` → `media/arica/intro-cuartel.webp`) and the briefing use the cuartel capture.
 - Victory: the last line holds for the documented fall; the epilogue (`media/arica/intro-epilogo.webp`)
   tells the fall, Bolognesi's death and the scuttling of the *Manco Cápac*.
 - Defeat: the fort falls before the final assault or Bolognesi dies during the bombardment.
@@ -82,9 +82,10 @@ approaches and hold the last line. The summons is told by the intro and the dial
 
 ## Pacing
 
-The pattern's target is 30–40 min. The three acts are measured at ~20–30 min with the 256 m transect and
-the real-command bot; the mission documents this exception rather than padding it with invented acts. The
-pacing is re-measured after the map or wave changes.
+The pattern's target is 30–40 min. The real-command bot reaches the documented ending in about 7 min of
+simulated time; a human playtest is still needed to measure the full path (the optional battery, the base
+economy and the assault). The 30–40 target is **not** met and is documented as an exception instead of
+padding the mission with invented acts. Re-measure after map, wave or economy changes.
 
 ## Open items
 

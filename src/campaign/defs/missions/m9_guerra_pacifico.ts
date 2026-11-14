@@ -1,16 +1,15 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
 import type { MissionDef } from '../../types';
+import { ARICA_MAP_SIZE, aricaLength, aricaPoint } from '../../../model/defs/aricaSite';
 
 // The authored Arica heightfield: the 192 m composition (sea to the west, the port terrace, the battery
 // site and the northern Chilean camp) sampled 4/3 larger on the 256 m map.
-const ARICA_MAP_SIZE = 256;
-const ARICA_COMPOSITION_SCALE = 256 / 192;
-const ARICA_BASE_WORLD = { x: 73 * ARICA_COMPOSITION_SCALE, z: 115 * ARICA_COMPOSITION_SCALE } as const;
+const ARICA_BASE_WORLD = aricaPoint({ x: 73, z: 115 });
 const ARICA_BASE_ANCHOR = {
   x: ARICA_BASE_WORLD.x / ARICA_MAP_SIZE,
   z: ARICA_BASE_WORLD.z / ARICA_MAP_SIZE,
 } as const;
-const ARICA_MINES_WORLD = { dx: 92 * ARICA_COMPOSITION_SCALE, dz: 104 * ARICA_COMPOSITION_SCALE } as const;
+const ARICA_MINES_WORLD = { dx: aricaLength(92), dz: aricaLength(104) } as const;
 const ARICA_CAMP_ANCHOR = { x: 0.78, z: 0.22 } as const;
 
 export const m9GuerraPacifico: MissionDef = {
@@ -59,13 +58,13 @@ export const m9GuerraPacifico: MissionDef = {
   unitSpeedScale: 0.75,
   startingResources: { food: 1500, wood: 800, silver: 1500, stone: 1200 },
   start: {
-    buildings: [{ kind: BuildingKind.FORTRESS, dx: -13.3, dz: -8, tag: 'puerto' }],
+    buildings: [{ kind: BuildingKind.FORTRESS, dx: -aricaLength(10), dz: -aricaLength(6), tag: 'puerto' }],
     units: [
-      { kind: UnitKind.WORKER, dx: 4, dz: 6, count: 3 },
-      { kind: UnitKind.RIFLEMAN, dx: 6, dz: 2, count: 1, tag: 'bolognesi' },
-      { kind: UnitKind.RIFLEMAN, dx: 4, dz: 8, count: 4 },
-      { kind: UnitKind.REPUBLICA_DEFENSOR, dx: 2, dz: 6, count: 2 },
-      { kind: UnitKind.SOLDIER, dx: 8, dz: 0, count: 4 },
+      { kind: UnitKind.WORKER, dx: aricaLength(4), dz: aricaLength(6), count: 3 },
+      { kind: UnitKind.RIFLEMAN, dx: aricaLength(6), dz: aricaLength(2), count: 1, tag: 'bolognesi' },
+      { kind: UnitKind.RIFLEMAN, dx: aricaLength(4), dz: aricaLength(8), count: 4 },
+      { kind: UnitKind.REPUBLICA_DEFENSOR, dx: aricaLength(2), dz: aricaLength(6), count: 2 },
+      { kind: UnitKind.SOLDIER, dx: aricaLength(8), dz: 0, count: 4 },
     ],
   },
   enemy: { active: true, difficulty: 'normal', aggression: 0.35 },
@@ -78,7 +77,7 @@ export const m9GuerraPacifico: MissionDef = {
       text: 'El parlamento de Juan de la Cruz Salvo exige la rendición de la plaza. Bolognesi consulta a sus jefes y responde que defenderán Arica hasta quemar el último cartucho.',
       seconds: 9,
       source: 'docs/historia/campanas/guerra_del_pacifico.md',
-      image: 'media/arica/intro-plaza.webp',
+      image: 'media/arica/intro-cuartel.webp',
     },
     {
       kicker: 'LA BATERÍA · 7 DE JUNIO DE 1880',
@@ -118,7 +117,7 @@ export const m9GuerraPacifico: MissionDef = {
       id: 'a1_minas',
       kind: 'hold',
       pos: ARICA_MINES_WORLD,
-      radius: 7,
+      radius: aricaLength(7),
       time: 20,
       minUnits: 2,
       unitKind: UnitKind.WORKER,
@@ -130,9 +129,9 @@ export const m9GuerraPacifico: MissionDef = {
       id: 'bonus_bateria',
       kind: 'inspect',
       heritageIds: ['arica_battery'],
-      inspectRadius: 16,
+      inspectRadius: aricaLength(16),
       pos: { ref: 'site', dx: 0, dz: 0 },
-      radius: 18,
+      radius: aricaLength(18),
       optional: true,
       title: 'Acto I · Reconoce la batería de la terraza',
     },
@@ -140,7 +139,7 @@ export const m9GuerraPacifico: MissionDef = {
       id: 'a2_bombardeo',
       kind: 'hold',
       pos: { dx: ARICA_BASE_WORLD.x, dz: ARICA_BASE_WORLD.z },
-      radius: 26,
+      radius: aricaLength(26),
       time: 60,
       minUnits: 3,
       hidden: true,
@@ -157,7 +156,7 @@ export const m9GuerraPacifico: MissionDef = {
       id: 'a3_asalto',
       kind: 'hold',
       pos: { dx: ARICA_BASE_WORLD.x, dz: ARICA_BASE_WORLD.z },
-      radius: 30,
+      radius: aricaLength(30),
       time: 120,
       minUnits: 4,
       hidden: true,
@@ -215,16 +214,16 @@ export const m9GuerraPacifico: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 4 },
             { kind: UnitKind.RIFLEMAN, count: 2 },
           ],
-          pos: { dx: 115 * ARICA_COMPOSITION_SCALE, dz: 100 * ARICA_COMPOSITION_SCALE },
-          radius: 6,
+          pos: { dx: aricaLength(115), dz: aricaLength(100) },
+          radius: aricaLength(6),
           target: { dx: ARICA_BASE_WORLD.x, dz: ARICA_BASE_WORLD.z },
         },
         {
           type: 'reinforce',
           owner: 0,
           units: [{ kind: UnitKind.REPUBLICA_DEFENSOR, count: 2 }],
-          pos: { dx: ARICA_BASE_WORLD.x + 6, dz: ARICA_BASE_WORLD.z + 6 },
-          radius: 4,
+          pos: { dx: ARICA_BASE_WORLD.x + aricaLength(6), dz: ARICA_BASE_WORLD.z + aricaLength(6) },
+          radius: aricaLength(4),
         },
       ],
     },
@@ -254,8 +253,8 @@ export const m9GuerraPacifico: MissionDef = {
             { kind: UnitKind.RIFLEMAN, count: 2 },
             { kind: UnitKind.CHILE_INFANTE, count: 1 },
           ],
-          pos: { dx: 140 * ARICA_COMPOSITION_SCALE, dz: 100 * ARICA_COMPOSITION_SCALE },
-          radius: 7,
+          pos: { dx: aricaLength(140), dz: aricaLength(100) },
+          radius: aricaLength(7),
           target: { dx: ARICA_BASE_WORLD.x, dz: ARICA_BASE_WORLD.z },
         },
         {
@@ -265,8 +264,8 @@ export const m9GuerraPacifico: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 4 },
             { kind: UnitKind.RIFLEMAN, count: 2 },
           ],
-          pos: { dx: 95 * ARICA_COMPOSITION_SCALE, dz: 60 * ARICA_COMPOSITION_SCALE },
-          radius: 6,
+          pos: { dx: aricaLength(95), dz: aricaLength(60) },
+          radius: aricaLength(6),
           target: { dx: ARICA_BASE_WORLD.x, dz: ARICA_BASE_WORLD.z },
         },
         {
@@ -276,8 +275,8 @@ export const m9GuerraPacifico: MissionDef = {
             { kind: UnitKind.RIFLEMAN, count: 2 },
             { kind: UnitKind.REPUBLICA_DEFENSOR, count: 2 },
           ],
-          pos: { dx: ARICA_BASE_WORLD.x - 6, dz: ARICA_BASE_WORLD.z + 4 },
-          radius: 4,
+          pos: { dx: ARICA_BASE_WORLD.x - aricaLength(6), dz: ARICA_BASE_WORLD.z + aricaLength(4) },
+          radius: aricaLength(4),
         },
       ],
     },

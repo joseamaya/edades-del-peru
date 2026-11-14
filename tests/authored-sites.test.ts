@@ -148,14 +148,16 @@ describe('authored campaign sites', () => {
 
   it('keeps the Arica mission on its authored port site and heightfield', () => {
     const site = getAuthoredSite('arica_site')!;
-    const scale = 256 / 192;
-    expect(site.scale).toBeCloseTo(0.8 * scale);
-    expect(site.anchor.x).toBeCloseTo(134.8 * scale);
-    expect(site.anchor.z).toBeCloseTo(73 * scale);
+    expect(site.scale).toBeCloseTo(1.0667, 3);
+    expect(site.anchor.x).toBeCloseTo(179.733, 3);
+    expect(site.anchor.z).toBeCloseTo(97.333, 3);
     expect(site.heightField?.worldSize).toBe(256);
     expect(site.heightField?.ground?.size).toBe(128);
     expect(site.heritageProxies.map((p) => p.id)).toEqual(['arica_battery']);
-    expect(site.walkableCorridor?.width).toBeCloseTo(8 * scale);
+    expect(site.heritageProxies[0]?.w).toBeCloseTo(17.333, 3);
+    expect(site.heritageProxies[0]?.d).toBeCloseTo(12, 3);
+    expect(site.heritageProxies[0]?.h).toBeCloseTo(4, 3);
+    expect(site.walkableCorridor?.width).toBeCloseTo(10.667, 3);
     const mission = MISSIONS.find((m) => m.id === 'm9_guerra_pacifico')!;
     expect(mission.layout?.site?.id).toBe('arica_site');
   });

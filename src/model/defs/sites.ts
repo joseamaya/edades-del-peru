@@ -47,6 +47,7 @@ import {
   ARICA_HEIGHTMAP_SIZE,
   ARICA_HEIGHTMAP_WORLD_SIZE,
 } from './aricaHeightmap';
+import { aricaLength, aricaPoint } from './aricaSite';
 import { CUSCO_HEIGHTMAP, CUSCO_HEIGHTMAP_SIZE, CUSCO_HEIGHTMAP_WORLD_SIZE } from './cuscoHeightmap';
 import {
   JUNTA_GROUND,
@@ -367,6 +368,9 @@ export function caralKeepout(r: SiteKeepoutRect): SiteKeepoutRect {
   const k = 192 / CARAL_MAP_SIZE;
   return { x: r.x * k + CARAL_CITY_OFFSET_X / CARAL_MAP_SIZE, z: r.z * k, rx: r.rx * k, rz: r.rz * k };
 }
+
+/** The battery point in the former 192 m frame, scaled into the 256 m map. */
+const ARICA_SITE_POINT = aricaPoint({ x: 134.8, z: 73 });
 
 export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
   caral_site: {
@@ -692,9 +696,9 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     modelName: 'arica_site',
     // The 192 m composition is scaled by 4/3 into the 256 m transect; the model, proxies and blockers
     // scale with it so the battery still covers its terrace.
-    scale: 0.8 * (256 / 192),
-    origin: { x: 134.8 * (256 / 192), z: 73 * (256 / 192) },
-    anchor: { x: 134.8 * (256 / 192), z: 73 * (256 / 192) },
+    scale: aricaLength(0.8),
+    origin: ARICA_SITE_POINT,
+    anchor: ARICA_SITE_POINT,
     cameraHeight: 64,
     framing: 'site-biased',
     heightField: {
@@ -707,28 +711,20 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     heritageProxies: [
       {
         id: 'arica_battery',
-        x: 134.8 * (256 / 192),
-        z: 73 * (256 / 192),
-        w: 13 * (256 / 192),
-        d: 9 * (256 / 192),
-        h: 3 * (256 / 192),
+        ...ARICA_SITE_POINT,
+        w: aricaLength(13),
+        d: aricaLength(9),
+        h: aricaLength(3),
       },
     ],
-    blockers: [
-      {
-        x: 134.8 * (256 / 192),
-        z: 73 * (256 / 192),
-        w: 13 * (256 / 192),
-        d: 9 * (256 / 192),
-      },
-    ],
-    blockerPadding: 0.5,
+    blockers: [{ ...ARICA_SITE_POINT, w: aricaLength(13), d: aricaLength(9) }],
+    blockerPadding: aricaLength(0.5),
     buildKeepout: [{ x: 0.702, z: 0.38, rx: 0.08, rz: 0.07 }],
     wallCollision: {
       meshPatterns: [/arica/i],
       maxStartYAboveBase: 1.2,
     },
-    walkableCorridor: { width: 8 * (256 / 192) },
+    walkableCorridor: { width: aricaLength(8) },
     terrain: {
       ...DEFAULT_SITE_TERRAIN,
       flatNormals: true,

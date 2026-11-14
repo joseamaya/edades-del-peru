@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { validateSave } from '../src/game/SaveGame';
+import { saveIncompatible, validateSave } from '../src/game/SaveGame';
 import { migrateSave, missingMigrationSteps, OLDEST_MIGRATABLE_VERSION } from '../src/game/saveMigrations';
 import { SAVE_VERSION } from '../src/game/saveTypes';
 
@@ -47,11 +47,25 @@ describe('save migrations', () => {
     expect(validateSave(snapshot(1))).toBeNull();
     // m9 moved from 192 m to 256 m: its old coordinates are not honest to keep.
     const oldM9 = snapshot(4);
-    oldM9.settings = { missionId: 'm9_guerra_pacifico', mapSize: 192 } as never;
+    oldM9.settings = { missionId: 'm9_guerra_pacifico' } as never;
     expect(migrateSave(oldM9).status).toBe('too-old');
     const other = snapshot(4);
-    other.settings = { missionId: 'm1_caral', mapSize: 256 } as never;
+    other.settings = { missionId: 'm1_caral', mapSize: 192 } as never;
     expect(migrateSave(other).status).toBe('migrated');
+  });
+
+  it('reports a stored save the current build cannot load', () => {
+    const raw = JSON.stringify({ version: 4, settings: { missionId: 'm9_guerra_pacifico' } });
+    const store = { getItem: () => raw, removeItem: () => {}, setItem: () => {} };
+    const previous = (globalThis as { localStorage?: unknown }).localStorage;
+    Object.defineProperty(globalThis, 'localStorage', { value: store, configurable: true });
+    try {
+      expect(saveIncompatible()).toBe(true);
+      store.getItem = () => null;
+      expect(saveIncompatible()).toBe(false);
+    } finally {
+      Object.defineProperty(globalThis, 'localStorage', { value: previous, configurable: true });
+    }
   });
 
   it('leaves a current save untouched', () => {

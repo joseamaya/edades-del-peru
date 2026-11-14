@@ -14,11 +14,12 @@ import { launchChromium, withViteServer, cliArg } from './lib.mjs';
 const OUT = path.join(process.cwd(), 'public', 'media', 'arica');
 fs.mkdirSync(OUT, { recursive: true });
 
-const SITE = { x: 134.8 * (256 / 192), z: 73 * (256 / 192) };
-const BASE = { x: 73 * (256 / 192), z: 115 * (256 / 192) };
+const SCALE = 256 / 192;
+const SITE = { x: 134.8 * SCALE, z: 73 * SCALE };
+const BASE = { x: 73 * SCALE, z: 115 * SCALE };
 
 const SHOTS = [
-  { id: 'plaza', at: [BASE.x, BASE.z], height: 42, time: 0.55 },
+  { id: 'cuartel', at: [BASE.x, BASE.z], height: 42, time: 0.55 },
   {
     id: 'bateria',
     cinematic: { center: [SITE.x, SITE.z], eye: [34, 12, 18], look: [0, 2, 0], fov: 55, time: 0.5 },
@@ -59,6 +60,7 @@ try {
         const ui = document.getElementById('ui-root');
         if (ui) ui.style.display = 'none';
         if (g.getPaused()) g.togglePause();
+        g.loop.stop();
         g.applyQualityPreset('high');
         g.trees.kitLod0Radius = 60;
         const site = g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 });
@@ -101,6 +103,8 @@ try {
           g.trees.update(0, g.camera.getTarget());
         }
         g.runtime.render();
+        // Hide the HTML nameplates after the frame sync re-shows them, and before the screenshot.
+        g.characterLabels?.setVisible(false);
       },
       { shot },
     );

@@ -105,6 +105,16 @@ export function hasSave(): boolean {
   return loadFromStorage() !== null;
 }
 
+/** A stored save exists but the current build cannot load it (e.g. m9 before the 256 m map). */
+export function saveIncompatible(): boolean {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? validateSave(JSON.parse(raw)) === null : false;
+  } catch {
+    return false;
+  }
+}
+
 /** Remove a legacy skirmish save, including saves from older schema versions. */
 export function clearSkirmishSave(): void {
   try {
