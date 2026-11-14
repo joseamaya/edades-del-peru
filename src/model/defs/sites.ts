@@ -34,7 +34,14 @@ import { MOCHE_HEIGHTMAP, MOCHE_HEIGHTMAP_SIZE, MOCHE_HEIGHTMAP_WORLD_SIZE } fro
 import { WARI_HEIGHTMAP, WARI_HEIGHTMAP_SIZE, WARI_HEIGHTMAP_WORLD_SIZE } from './wariHeightmap';
 import { CHANCA_HEIGHTMAP, CHANCA_HEIGHTMAP_SIZE, CHANCA_HEIGHTMAP_WORLD_SIZE } from './chancaHeightmap';
 import { CHIMU_HEIGHTMAP, CHIMU_HEIGHTMAP_SIZE, CHIMU_HEIGHTMAP_WORLD_SIZE } from './chimuHeightmap';
-import { COLONIAL_HEIGHTMAP, COLONIAL_HEIGHTMAP_SIZE, COLONIAL_HEIGHTMAP_WORLD_SIZE } from './colonialHeightmap';
+import {
+  COLONIAL_GROUND,
+  COLONIAL_GROUND_SIZE,
+  COLONIAL_HEIGHTMAP,
+  COLONIAL_HEIGHTMAP_SIZE,
+  COLONIAL_HEIGHTMAP_WORLD_SIZE,
+} from './colonialHeightmap';
+import { colonialLength, colonialPoint } from './colonialSite';
 import {
   INDEPENDENCE_HEIGHTMAP,
   INDEPENDENCE_HEIGHTMAP_SIZE,
@@ -372,6 +379,9 @@ export function caralKeepout(r: SiteKeepoutRect): SiteKeepoutRect {
 /** The battery point in the former 192 m frame, scaled into the 256 m map. */
 const ARICA_SITE_POINT = aricaPoint({ x: 134.8, z: 73 });
 
+/** The Cusco plaza point in the former 192 m frame, scaled into the 256 m map. */
+const COLONIAL_SITE_POINT = colonialPoint({ x: 134.8, z: 73 });
+
 export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
   caral_site: {
     id: 'caral_site',
@@ -634,26 +644,37 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     id: 'colonial_site',
     label: 'Plaza y templo colonial del Cusco',
     modelName: 'colonial_site',
-    scale: 0.65,
-    origin: { x: 134.8, z: 73 },
-    anchor: { x: 134.8, z: 73 },
-    cameraHeight: 52,
+    // The 192 m composition is scaled by 4/3 into the 256 m transect; the model, proxies and blockers
+    // scale with it so the church still covers its plaza.
+    scale: colonialLength(0.65),
+    origin: COLONIAL_SITE_POINT,
+    anchor: COLONIAL_SITE_POINT,
+    cameraHeight: colonialLength(52),
     framing: 'site-biased',
     heightField: {
       size: COLONIAL_HEIGHTMAP_SIZE,
       worldSize: COLONIAL_HEIGHTMAP_WORLD_SIZE,
       heights: COLONIAL_HEIGHTMAP,
+      ground: { size: COLONIAL_GROUND_SIZE, weights: COLONIAL_GROUND },
     },
     pathCellSize: 1,
-    heritageProxies: [{ id: 'colonial_church', x: 134.8, z: 73, w: 9, d: 9, h: 6 }],
-    blockers: [{ x: 134.8, z: 73, w: 9, d: 9 }],
-    blockerPadding: 0.5,
+    heritageProxies: [
+      {
+        id: 'colonial_church',
+        ...COLONIAL_SITE_POINT,
+        w: colonialLength(9),
+        d: colonialLength(9),
+        h: colonialLength(6),
+      },
+    ],
+    blockers: [{ ...COLONIAL_SITE_POINT, w: colonialLength(9), d: colonialLength(9) }],
+    blockerPadding: colonialLength(0.5),
     buildKeepout: [{ x: 0.702, z: 0.38, rx: 0.065, rz: 0.065 }],
     wallCollision: {
       meshPatterns: [/colonial/i],
       maxStartYAboveBase: 1.2,
     },
-    walkableCorridor: { width: 8 },
+    walkableCorridor: { width: colonialLength(8) },
     terrain: {
       ...DEFAULT_SITE_TERRAIN,
       flatNormals: true,

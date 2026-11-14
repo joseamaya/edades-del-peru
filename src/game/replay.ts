@@ -2,8 +2,8 @@ import type { GameSettings } from '../core/Config';
 import type { Resources } from '../core/types';
 import type { BuildingKind, CombatStance, Order, OrderTarget, UnitKind } from '../core/types';
 
-/** Bump when the replay schema or the simulation changes in a breaking way (32: m9 moved to 256 m). */
-export const REPLAY_VERSION = 32;
+/** Bump when the replay schema or the simulation changes in a breaking way (32: m9 moved to 256 m; 33: m7 moved to 256 m). */
+export const REPLAY_VERSION = 33;
 
 /** Stable localStorage key (see AGENTS: keep storage keys stable). */
 const STORAGE_KEY = 'peru-replay';

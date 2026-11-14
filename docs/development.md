@@ -323,7 +323,8 @@ Definition of Done and the building audit see
   `layout.site` for the exact Caral site plus its own heightfield and keep-out; m6 keeps the Chan Chan
   canal/compound and m9 the Arica port terrace/Chilean naval station as visual-only decor. m9 plays the
   documented fall of Arica in three acts (summons, bombardment, assault) on a 256 m painted transect with
-  an in-engine intro and bench scenes. Every mission now has an educational `epilogue` shown on victory;
+  an in-engine intro and bench scenes. m7 plays Sangarará, the failed Cusco siege and the retreat on its own
+  256 m painted transect with an in-engine intro and bench scenes. Every mission now has an educational `epilogue` shown on victory;
   `tests/campaign-layout.test.ts` and the campaign E2E guard the layout data and the victory overlay.
 - **Phased sites and named environmental events**: a mission's `layout.site.phase` selects the opening
   construction phase; `AuthoredSiteDef.phases` (`SitePhasePlan`) orders the phases and `heritageSince` says
@@ -520,6 +521,11 @@ Definition of Done and the building audit see
   footprint no longer covers the Act IV departure marker. Other maps keep 1.1 m. This changes Caral
   pathing, so `REPLAY_VERSION` is 31; guarded by `tests/quarry-obstacle.test.ts`,
   `tests/props-kit.test.ts`, `tests/world-builder.test.ts` and the Caral E2E.
+- **Campaign map scale** (issues 472/474): m9 (Arica) and m7 (Cusco) moved to 256 m painted transects.
+  Their 192 m unit and camera coordinates cannot be carried over: `SAVE_VERSION` 5 rejects v4 m9 saves and
+  6 rejects v5 m7 saves; `REPLAY_VERSION` is 32 (m9) and 33 (m7), which rejects every stored replay (the
+  version is global), not only m7's. Guarded by
+  `tests/save-migrations.test.ts`, `tests/campaign-scale.test.ts` and the mission E2E specs.
 - **Caral late period** (issue 353): the Act IV drought is the late-period signal (`isLatePeriod` in
   `model/defs/sites.ts`; any drought level counts, because the event marks the start of the period), so it
   needs no save field of its own and a restored save rebuilds it from the environment state.

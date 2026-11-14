@@ -52,6 +52,13 @@ describe('save migrations', () => {
     const other = snapshot(4);
     other.settings = { missionId: 'm1_caral', mapSize: 192 } as never;
     expect(migrateSave(other).status).toBe('migrated');
+    // m7 moved from 192 m to 256 m on the next version; its old coordinates are not honest either.
+    const oldM7 = snapshot(5);
+    oldM7.settings = { missionId: 'm7_tupac_amaru' } as never;
+    expect(migrateSave(oldM7).status).toBe('too-old');
+    const m9V5 = snapshot(5);
+    m9V5.settings = { missionId: 'm9_guerra_pacifico' } as never;
+    expect(migrateSave(m9V5).status).toBe('migrated');
   });
 
   it('reports a stored save the current build cannot load', () => {

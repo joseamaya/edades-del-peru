@@ -159,14 +159,21 @@ test('plays m7 by winning at Sangarará and withdrawing from the Cusco siege', a
       g.update(dt, t);
       t += dt;
     }
+    const basePos = g.playerCenter(0) as { x: number; z: number };
     return {
       minutes: Math.round(t / 6) / 10,
+      mapSize: g.settings.mapSize,
+      site: g.siteDef?.id,
+      baseHeight: g.terrain.getHeight(basePos.x, basePos.z),
       objectives: Object.fromEntries(m.def.objectives.map((o: any) => [o.id, m.getObjectiveState(o.id)])),
       ended: m.ended as boolean,
       won: m.won as boolean | null,
     };
   });
   test.info().annotations.push({ type: 'm7-bot', description: `${out.minutes} min` });
+  expect(out.mapSize, 'the model mission runs on 256 m').toBe(256);
+  expect(out.site).toBe('colonial_site');
+  expect(out.baseHeight).toBeCloseTo(5, 1);
   expect(out.objectives.a1_cuartel, JSON.stringify(out)).toBe('completed');
   expect(out.objectives.a1_avituallamiento, JSON.stringify(out)).toBe('completed');
   expect(out.objectives.a1_tungasuca, JSON.stringify(out)).toBe('completed');

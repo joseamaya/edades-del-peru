@@ -39,6 +39,7 @@ describe('model-mission scale', () => {
       'm2_chavin',
       'm_tambotoco',
       'm_lima',
+      'm7_tupac_amaru',
       'm_junta_cusco',
       'm9_guerra_pacifico',
     ]);

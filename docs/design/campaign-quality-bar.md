@@ -48,7 +48,7 @@ below, which record each mission's own review and are kept for history). **M** m
 | m6_chimu_inca      | P    | P     | M    | P     | M   | P    | M  | M   | M    | M     | P    | X      | X    | P   | X    | X     |
 | m6b_guerra_civil   | P    | P     | M    | M     | M   | P    | M  | P   | M    | M     | P    | X      | X    | P   | X    | X     |
 | m_lima             | M    | M     | P    | M     | M   | M    | M  | P   | P    | P     | P    | M      | M    | –   | P    | M     |
-| m7_tupac_amaru     | M    | M     | M    | M     | M   | M    | M  | P   | M    | M     | M    | M      | X    | X   | X    | X     |
+| m7_tupac_amaru     | M    | M     | M    | M     | M   | M    | M  | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m_junta_cusco      | M    | M     | P    | M     | M   | M    | M  | P   | P    | P     | P    | M      | M    | –   | P    | M     |
 | m8_independencia   | P    | P     | P    | P     | M   | P    | M  | P   | P    | P     | X    | X      | X    | X   | X    | X     |
 | m9_guerra_pacifico | M    | M     | M    | M     | M   | M    | M  | P   | M    | M     | M    | M      | M    | P   | M    | M     |
@@ -57,9 +57,8 @@ below, which record each mission's own review and are kept for history). **M** m
 camp pieces, vegetation, household props and fauna approved by a recorded human review). Chavín,
 Tambotoco, Lima and the Junta follow the model pattern and lack mostly art, a no-cheat playtest and a
 mid-mission save test. m3–m6b and m8 still use the pre-model template: no acts, intro, 256 m map or
-bench scene. m7 now has acts and a documented ending, but still lacks its own intro art, 256 m transect and
-bench scene. **m9 now meets the scale, opening and performance gates** (256 m, painted ground, in-engine intro and
-epilogue, bench scenes); its human art review is pending.
+bench scene. **m7 and m9 now meet the scale, opening and performance gates** (256 m, painted ground,
+in-engine intros and epilogues, bench scenes); their human art review is pending.
 
 **Fixed in this pass.** The closing trigger of the goal that wins a mission now fires (Tambotoco's founded
 Inticancha never appeared); waves can march on a `target` (Lima's siege and the Tambotoco valley wave stood at
@@ -69,8 +68,8 @@ Wari offers no fortifications; Caral, Chavín, Tambotoco and m6b texts that prom
 playtest re-forms its line instead of racing a fixed budget; `yarn record` keeps one frames folder per run.
 m9 now plays the documented fall of Arica in three acts (the summons, the bombardment and the assault)
 and its no-cheat playtest is green. m7 now plays Sangarará, the failed Cusco siege and the retreat, with its
-no-cheat playtest green. m9 was promoted to model mission (256 m transect, painted ground, in-engine intro
-and epilogue, bench scenes and the scale guard).
+no-cheat playtest green. m7 and m9 were promoted to model missions (256 m transect, painted ground,
+in-engine intro and epilogue, bench scenes and the scale guard).
 
 **Work order, highest value first.**
 
@@ -79,9 +78,9 @@ and epilogue, bench scenes and the scale guard).
    playtests (M).
 3. **Art review:** record the human review of Caral's camp pieces and the Chavín kit; recapture Caral's Act
    III card (S).
-4. **Model-mission rebuilds** for m3–m6b, m7 and m8 (256 m transect, acts, intro, bench, certainty table)
-   (L each); m9 is done; quick wins first: m6's canal must really close, m6b's victory must capture
-   Huáscar, not raze a building (M).
+4. **Model-mission rebuilds** for m3–m6b and m8 (256 m transect, acts, intro, bench, certainty table)
+   (L each); m7 and m9 are done; quick wins first: m6's canal must really close, m6b's victory must
+   capture Huáscar, not raze a building (M).
 5. **Mid-mission save/load E2E** for missions with phases or truces (Tambotoco, Lima, Junta) (M).
 
 ## Caral gold-master status
@@ -199,8 +198,8 @@ geometry gate (`tests/e2e/hud-layout.spec.ts`).
 ## Campaign III playable status (m7)
 
 Campaign III is released as **playable** with the documented arc, onboarding, real-command victory path,
-dedicated decor GLB and save round-trip covered. It is not yet a full gold master because the visual evidence
-is still local (review captures), although the HUD layout now has a CI geometry gate
+dedicated decor GLB and save round-trip covered. m7 is now a model mission (256 m, painted ground, in-engine
+intro/epilogue and bench scenes); its art review is pending. The HUD layout has a CI geometry gate
 (`tests/e2e/hud-layout.spec.ts`).
 
 | Gate        | m7 Túpac Amaru                                                                                                                |
@@ -217,6 +216,17 @@ is still local (review captures), although the HUD layout now has a CI geometry 
 | Persistence | Met: save/load round-trip (act state and hold timers).                                                                        |
 | Tests       | Met: data, acts, documented ending and real-command playtest.                                                                 |
 | Docs        | Met: dossier, site note, campaign experiences and this table.                                                                 |
+
+### m7 model-mission status (2026-11-14)
+
+| Gate        | Status               | Evidence                                                                                                                                                                                                 |
+| ----------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Opening     | Met                  | Three-beat in-engine intro (`capture_colonial_intro.mjs`), `MISSION_ART` and an epilogue capture; PROVENANCE records the captures.                                                                      |
+| Art         | Pending human review | The reused `colonial_site` GLB and the draft `m7_colonial-intro` Blender record keep their `reviewed: false` status (#343).                                                                              |
+| Performance | Met                  | `bench_scene.mjs`: opening ~537k tris / 661–665 calls, late ~811k / 1083, under the recorded first-pass caps; `yarn bench:check` green.                                                                    |
+| Scale       | Met                  | 256 m map, 128² painted ground over 256 m, `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                                              |
+| Pacing      | Pending (exception)  | The real-command bot reaches the ending in ~7 min of simulated time; the agreed 20–30 min human path is still unmeasured. The model pattern's 30–40 band is documented as an exception in `colonial-model-mission.md`. |
+| Site        | Met (exception)      | No construction phases: Cusco is a city in use, not a monument the player builds; recorded here and in `colonial-site.md`.                                                                              |
 
 ## Campaign IV playable status (m8–m9)
 
