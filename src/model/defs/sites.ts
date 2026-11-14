@@ -850,7 +850,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       fords: [{ z: 190, halfWidth: 10 }],
     },
     pathCellSize: 1,
-    phases: { phases: ['cave', 'huanacaure', 'inticancha'], initial: 'cave' },
+    phases: { phases: ['cave', 'huanacaure', 'inticancha', 'fundada'], initial: 'cave' },
     heritageProxies: [{ id: 'tambotoco_huanacaure', x: TAMBOTOCO_SHRINE.x, z: TAMBOTOCO_SHRINE.z, w: 12, d: 10, h: 5 }],
     blockers: [
       { x: TAMBOTOCO_SHRINE.x, z: TAMBOTOCO_SHRINE.z, w: 12, d: 10 },
@@ -861,7 +861,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
         z: h.z,
         w: h.w + 1.4,
         d: h.d + 1.4,
-        since: 'inticancha',
+        since: 'fundada',
       })),
     ],
     blockerPadding: 0.5,

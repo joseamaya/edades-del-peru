@@ -51,10 +51,11 @@ Painted ground is sampled at 128 × 128 over 256 m; the worker crosses in ≈2:2
 ## Site and factions
 
 `tambotoco_site` is drawn by `AylluSite`: the cave mouth, the Huanacaure shrine, three valley hamlets and
-the planned Inticancha (plaza, four cancha plots, terraces and fields), with smoke, fires, villagers and
-llamas. Inticancha still grows through the player's store and four houses; the site marks the plots so they
-read as the founded settlement. The plaza and the four cancha plots stay walkable and buildable; the ring
-houses block from the `inticancha` phase.
+Inticancha, with smoke, fires, villagers and llamas. Inticancha grows in two phases: `inticancha` (Act IV)
+only traces the plaza, its ring and the four cancha plots for the player's store and houses; `fundada`
+(the four canchas built) adds the houses, terraces, fields, people and fire, so the settlement never stands
+before the ayllus build it. The plaza and the plots stay walkable and buildable; the ring houses block from
+the `fundada` phase.
 
 - **Señorío del Cusco (Killke)**: the player; a new LATE_INTERMEDIATE civilization with a circular-plaza
   silhouette. No imperial Inca units or buildings.
@@ -69,8 +70,9 @@ siblings and their people leave the cave, and the workers raise the first camp �
 receives the hunt — before Act I's hunt opens. With no centre the party cannot train workers; its people are
 the ones who left the cave. Defeat waits until the party has neither buildings nor units.
 
-Workers, militia, slingers and a scout. Buildings: house, farm, storehouse, sawmill, barracks, fortress,
-walls, gate and tower. No market, silver, stable or artillery: the economy is an ayllu economy,
+Workers, militia, slingers and a scout. Buildings: house, farm, storehouse, sawmill and barracks; no
+fortress, walls, gate or towers, since the valley yields to the water, not to a siege. Without dwellings the
+party's cap would read «20/7», so a base-less start raises the cap to the party that left the cave. No market, silver, stable or artillery: the economy is an ayllu economy,
 and the only "engine" of the mission is water.
 
 ## Characters
@@ -111,11 +113,11 @@ The legend is about eight siblings, so all eight are on the board from the start
 ## Tutorial
 
 Objectives say **what** to do and **where**; the tutorial only teaches **how**, the first time a control is
-needed, because the Inca campaign opens from a fresh save and can be a player's first mission. Seven
+needed, because the Inca campaign opens from a fresh save and can be a player's first mission. Six
 non-blocking steps, each gated on its objective: move the party (box select, right-click), place the
 communal store (build bar), hunt (right-click on animals), visit the huaca (card → «Visitar»), answer the
-valley wave ({key:selectArmy}, right-click), open the acequia (card → «Abrir compuerta») and place the four
-cancha houses ({key:buildHouse}). The eight siblings and the myth stay in the briefing and the dialogue.
+valley wave and open the acequia in one step ({key:selectArmy}, right-click; card → «Abrir compuerta», so no
+«attack» advice outlives the truce) and place the four cancha houses ({key:buildHouse}). The eight siblings and the myth stay in the briefing and the dialogue.
 
 ## Tests
 

@@ -1366,7 +1366,7 @@ export const MISSIONS: MissionDef[] = [
       'La tradición recogida por Sarmiento, Cieza y Betanzos cuenta que ocho hermanos salieron de la cueva de Tambotoco, en Pacaritambo. En el camino Ayar Cachi fue sepultado por engaño, Ayar Uchu se convirtió en piedra en Huanacaure y Ayar Auca dio nombre al sitio del Cusco.\n' +
       'En el valle ya vivían huallas, sauaseray y alcabizas. Los recién llegados tomaron tierras, quitaron el agua a los alcabizas y fundaron Inticancha. La misión lo cuenta como Leyenda: el Códice señala que Sarmiento escribió para desacreditar a los incas y que Garcilaso da otra versión.',
     victory:
-      'Inticancha queda fundada y las cuatro canchas ordenan el sitio. La leyenda continúa: el señorío del Cusco crecerá hasta el Tahuantinsuyo. El epílogo distingue la tradición de Sarmiento de la versión de Garcilaso y no las presenta como historia comprobada.',
+      'Inticancha queda fundada y las cuatro canchas ordenan el sitio. La leyenda continúa: el señorío del Cusco crecerá hasta el Tahuantinsuyo.',
     defeat:
       'Los ayllus del valle rechazan a los recién llegados. Sin tierras ni agua, la peregrinación no funda Inticancha y la leyenda se pierde en la sierra.',
     period: HistoricalPeriod.LATE_INTERMEDIATE,
@@ -1500,11 +1500,9 @@ export const MISSIONS: MissionDef[] = [
       BuildingKind.FARM,
       BuildingKind.MILL,
       BuildingKind.SAWMILL,
+      // A movement of families, not an army: the ayllu warriors can be raised, but no fortresses,
+      // walls or towers; the valley yields to the water, not to a siege.
       BuildingKind.BARRACKS,
-      BuildingKind.FORTRESS,
-      BuildingKind.WALL,
-      BuildingKind.GATE,
-      BuildingKind.TOWER,
     ],
     objectives: [
       {
@@ -1724,6 +1722,12 @@ export const MISSIONS: MissionDef[] = [
           },
           { type: 'objective', objectiveId: 'a4_canchas', state: 'activate', announce: true },
         ],
+      },
+      {
+        // The four canchas stand: only now does Inticancha read as a lived-in settlement.
+        id: 't_fundada',
+        condition: { type: 'objective', objectiveId: 'a4_canchas', state: 'completed' },
+        effects: [{ type: 'site_phase', phase: 'fundada' }],
       },
     ],
   },

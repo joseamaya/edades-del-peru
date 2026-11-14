@@ -1,10 +1,11 @@
 import * as THREE from 'three';
-import { labelSprite } from './textSprite';
+import type { WorldLabel, WorldLabelLayer } from '../ui/WorldLabels';
 
 interface Stone {
   readonly group: THREE.Group;
   readonly ring: THREE.MeshBasicMaterial;
   readonly phase: number;
+  readonly label: WorldLabel | null;
 }
 
 /**
@@ -37,6 +38,7 @@ export class MemoryStones {
     scene: THREE.Scene,
     private readonly groundAt: (x: number, z: number) => number,
     private readonly decorate?: (root: THREE.Object3D) => void,
+    private readonly labels?: WorldLabelLayer,
   ) {
     this.group.name = 'memory-stones';
     scene.add(this.group);
@@ -75,20 +77,19 @@ export class MemoryStones {
     ringMesh.position.y = 0.06;
     stone.add(ringMesh);
 
-    const labelBillboard = labelSprite(label, {
-      fontSize: 44,
-      color: '#f2dfae',
-      paddingX: 16,
-      paddingY: 8,
-      opacity: 1,
-    });
-    labelBillboard.sprite.scale.set(0.7 * labelBillboard.aspect, 0.7, 1);
-    labelBillboard.sprite.position.y = 2.6;
-    stone.add(labelBillboard.sprite);
+    // The name is HTML over the view (crisp at any render scale), anchored above the slab.
+    const name = this.labels?.create(label, 'memory') ?? null;
+    if (name) {
+      name.el.dataset.memory = id;
+      name.x = x;
+      name.y = stone.position.y + 2.6;
+      name.z = z;
+      name.visible = true;
+    }
 
     this.decorate?.(stone);
     this.group.add(stone);
-    this.stones.set(id, { group: stone, ring, phase: this.stones.size * 0.9 });
+    this.stones.set(id, { group: stone, ring, phase: this.stones.size * 0.9, label: name });
   }
 
   /** Breathe each ring on its own phase so the markers do not blink in lockstep. */
@@ -100,7 +101,10 @@ export class MemoryStones {
 
   dispose(): void {
     this.group.removeFromParent();
-    for (const stone of this.stones.values()) stone.ring.dispose();
+    for (const stone of this.stones.values()) {
+      stone.ring.dispose();
+      if (stone.label) this.labels?.remove(stone.label);
+    }
     this.stones.clear();
     this.stoneMaterial.dispose();
     this.ringTemplate.dispose();

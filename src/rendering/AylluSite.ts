@@ -28,6 +28,7 @@ const SKIN = new THREE.Color('#8a6446');
 const PHASE_CAVE = 'cave';
 const PHASE_SHRINE = 'huanacaure';
 const PHASE_INTICANCHA = 'inticancha';
+const PHASE_FOUNDED = 'fundada';
 
 interface LifeSource {
   readonly x: number;
@@ -288,9 +289,11 @@ export class AylluSite {
     });
     this.addPhase(PHASE_SHRINE, shrineParts);
 
-    // Inticancha: the planned settlement appears when the ayllus found it. The player still builds
-    // the store and the four cancha houses; the site marks the plaza, the plots and the terraces.
+    // Inticancha in two steps. Act IV only traces it (plaza, ring and the four cancha plots) for the
+    // player's store and houses; the living settlement (houses, terraces, fields, people, fire) appears
+    // once the four canchas stand, never before the ayllus have built anything.
     const inticancha: Parts = [];
+    const founded: Parts = [];
     const plazaY = ground(TAMBOTOCO_INTICANCHA.x, TAMBOTOCO_INTICANCHA.z);
     const plaza = new THREE.CylinderGeometry(7.2, 7.2, 0.1, 32);
     plaza.translate(TAMBOTOCO_INTICANCHA.x, plazaY + 0.05, TAMBOTOCO_INTICANCHA.z);
@@ -308,11 +311,13 @@ export class AylluSite {
       box(inticancha, STONE, cancha.dx, y + 0.3, cancha.dz - 2.1, 5.4, 0.55, 0.3);
       box(inticancha, STONE, cancha.dx - 2.7, y + 0.3, cancha.dz, 0.3, 0.55, 4.2);
       box(inticancha, STONE, cancha.dx + 2.7, y + 0.3, cancha.dz, 0.3, 0.55, 4.2);
-      if (i % 2 === 0) villagers(inticancha, cancha.dx, y + 0.3, cancha.dz, 1);
+      if (i % 2 === 0) villagers(founded, cancha.dx, y + 0.3, cancha.dz, 1);
     }
+    this.addPhase(PHASE_INTICANCHA, inticancha);
+
     for (const terrace of TAMBOTOCO_TERRACES) {
       box(
-        inticancha,
+        founded,
         DARK_STONE,
         terrace.x,
         ground(terrace.x, terrace.z),
@@ -323,27 +328,27 @@ export class AylluSite {
         terrace.ry,
       );
     }
-    for (const f of TAMBOTOCO_FIELDS) field(inticancha, f, ground(f.x, f.z));
+    for (const f of TAMBOTOCO_FIELDS) field(founded, f, ground(f.x, f.z));
     for (const h of TAMBOTOCO_INTICANCHA_HUTS) {
-      hut(inticancha, h, ground(h.x, h.z));
+      hut(founded, h, ground(h.x, h.z));
       if (h.smoke)
         this.life.push({
           x: h.x,
           z: h.z,
           y: this.heightAt(h.x, h.z) + 0.35 + h.wall * 2.35,
-          phase: PHASE_INTICANCHA,
+          phase: PHASE_FOUNDED,
           kind: 'smoke',
         });
     }
-    villagers(inticancha, TAMBOTOCO_INTICANCHA.x, plazaY, TAMBOTOCO_INTICANCHA.z - 4, 3);
+    villagers(founded, TAMBOTOCO_INTICANCHA.x, plazaY, TAMBOTOCO_INTICANCHA.z - 4, 3);
     this.life.push({
       x: TAMBOTOCO_INTICANCHA.x,
       z: TAMBOTOCO_INTICANCHA.z - 5,
       y: this.heightAt(TAMBOTOCO_INTICANCHA.x, TAMBOTOCO_INTICANCHA.z) + 3.2,
-      phase: PHASE_INTICANCHA,
+      phase: PHASE_FOUNDED,
       kind: 'fire',
     });
-    this.addPhase(PHASE_INTICANCHA, inticancha);
+    this.addPhase(PHASE_FOUNDED, founded);
 
     this.setPhase(this.plan.initial);
   }

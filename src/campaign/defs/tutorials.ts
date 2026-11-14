@@ -33,14 +33,8 @@ const TUTORIALS: Record<string, TutorialDef> = {
         check: { type: 'objectiveCompleted', objectiveId: 'a2_huanacaure' },
       },
       {
-        id: 'defensa',
-        text: 'Los ayllus del valle salen a tu encuentro. Pulsa {key:selectArmy} para seleccionar a tus guerreros y haz clic derecho sobre el enemigo para atacarlo.',
-        gateObjective: 'a3_acequia',
-        check: { type: 'elapsed', seconds: 14 },
-      },
-      {
         id: 'agua',
-        text: 'Haz clic en la compuerta de la acequia y pulsa «💧 Abrir compuerta» en su ficha.',
+        text: 'Los ayllus del valle salen a tu encuentro: pulsa {key:selectArmy} y haz clic derecho sobre ellos para defenderte. Luego haz clic en la compuerta de la acequia y pulsa «💧 Abrir compuerta»: sin el agua, cederán.',
         gateObjective: 'a3_acequia',
         check: { type: 'objectiveCompleted', objectiveId: 'a3_acequia' },
       },

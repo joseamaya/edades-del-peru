@@ -21,10 +21,10 @@ const SHOTS = [
     cinematic: { center: [120, 106], eye: [0, 24, 40], look: [0, 11, 0], fov: 48, time: 0.52 },
     phase: 'huanacaure',
   },
-  { id: 'valle', at: [172, 196], height: 38, time: 0.62, phase: 'inticancha' },
+  { id: 'valle', at: [172, 196], height: 38, time: 0.62, phase: 'huanacaure' },
   {
     id: 'epilogo',
-    cinematic: { center: [172, 192], eye: [-34, 20, 42], look: [0, 3, 0], fov: 50, time: 0.3, phase: 'inticancha' },
+    cinematic: { center: [172, 192], eye: [-34, 20, 42], look: [0, 3, 0], fov: 50, time: 0.3, phase: 'fundada' },
   },
 ];
 const only = cliArg('only', '');

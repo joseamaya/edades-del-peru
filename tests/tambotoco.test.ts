@@ -55,6 +55,10 @@ describe('Los hijos de Tambotoco', () => {
     expect(TAMBOTOCO.start.base).toBe(false);
     expect(TAMBOTOCO.start.buildings ?? []).toHaveLength(0);
     expect(TAMBOTOCO.allowedBuildings).not.toContain(BuildingKind.CENTER);
+    // A movement of families: no fortress, walls, gate or towers.
+    for (const kind of [BuildingKind.FORTRESS, BuildingKind.WALL, BuildingKind.GATE, BuildingKind.TOWER]) {
+      expect(TAMBOTOCO.allowedBuildings, kind).not.toContain(kind);
+    }
     const camp = TAMBOTOCO.objectives.find((o) => o.id === 'a1_campamento')!;
     expect(camp.kind).toBe('build');
     expect(camp.buildingKind).toBe(BuildingKind.MILL);
@@ -115,7 +119,7 @@ describe('Los hijos de Tambotoco', () => {
     expect(ids).toContain('canchas');
     // The tutorial teaches controls; the cast and the myth live in the briefing and the dialogue.
     expect(ids).not.toContain('ayar');
-    expect(ids).toEqual(['mover', 'campamento', 'caza', 'huanacaure', 'defensa', 'agua', 'canchas']);
+    expect(ids).toEqual(['mover', 'campamento', 'caza', 'huanacaure', 'agua', 'canchas']);
     const objectiveIds = new Set(TAMBOTOCO.objectives.map((o) => o.id));
     for (const step of tutorial.steps.slice(1)) {
       expect(step.gateObjective && objectiveIds.has(step.gateObjective), step.id).toBe(true);
@@ -188,10 +192,10 @@ describe('Los hijos de Tambotoco', () => {
     const phases = TAMBOTOCO.triggers.flatMap((t) =>
       t.effects.filter((fx) => fx.type === 'site_phase').map((fx) => (fx.type === 'site_phase' ? fx.phase : '')),
     );
-    expect(phases).toEqual(['huanacaure', 'inticancha']);
+    expect(phases).toEqual(['huanacaure', 'inticancha', 'fundada']);
     const site = getAuthoredSite('tambotoco_site')!;
     expect(site.modelName).toBe('ayllu_site');
-    expect(site.phases?.phases).toEqual(['cave', 'huanacaure', 'inticancha']);
+    expect(site.phases?.phases).toEqual(['cave', 'huanacaure', 'inticancha', 'fundada']);
   });
 
   it('raises a huaca when the legend leaves a sibling behind', () => {

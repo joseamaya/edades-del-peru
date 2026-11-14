@@ -36,6 +36,7 @@ import { attachVegetationKit } from '../rendering/vegetationKitLoader';
 import { Props } from '../rendering/Props';
 import { GroundCover } from '../rendering/GroundCover';
 import { MapLabels } from '../rendering/MapLabels';
+import { WorldLabelLayer } from '../ui/WorldLabels';
 import { CharacterLabels } from '../rendering/CharacterLabels';
 import { HeroMarkers } from '../rendering/HeroMarkers';
 import type { AylluSite } from '../rendering/AylluSite';
@@ -170,6 +171,8 @@ export class Game {
   siteAnchor: { x: number; z: number } | null = null;
   siteCenter: { x: number; z: number } | null = null;
   /** Named geography of the mission, drawn on the board and the minimap. */
+  /** HTML layer for every world-anchored name (places, characters, huacas). */
+  worldLabels: WorldLabelLayer | null = null;
   mapLabels: MapLabels | null = null;
   /** Nameplates over campaign characters (a unit tag that matches a commander). */
   characterLabels: CharacterLabels | null = null;
@@ -642,13 +645,15 @@ export class Game {
     this.fowUniforms.fowMap.value = this.fowTexture.texture;
     this.fowUniforms.mapSize.value = s.mapSize;
     this.fowUniforms.fowEnabled.value = s.fogOfWar ? 1 : 0;
-    this.mapLabels = new MapLabels(this.scene, this.placeNames, this.terrain, s.mapSize);
-    this.characterLabels = new CharacterLabels(this.scene);
+    this.worldLabels = new WorldLabelLayer();
+    this.mapLabels = new MapLabels(this.worldLabels, this.placeNames, this.terrain, s.mapSize);
+    this.characterLabels = new CharacterLabels(this.worldLabels);
     this.heroMarkers = new HeroMarkers(this.scene);
     this.memoryStones = new MemoryStones(
       this.scene,
       (x, z) => this.terrain.getHeight(x, z),
       (root) => applyFowToObject(root, this.fowUniforms),
+      this.worldLabels,
     );
     this.discoveries = new Discoveries(this.missionLayout?.discoveries, this.siteDef, !!this.pendingSnapshot);
     // Quest markers stay visible over fog: they guide the player without revealing the terrain.
@@ -2129,6 +2134,8 @@ export class Game {
     this.heroMarkers = null;
     this.memoryStones?.dispose();
     this.memoryStones = null;
+    this.worldLabels?.dispose();
+    this.worldLabels = null;
     this.discoveries = null;
     this.missionRings?.dispose();
     this.missionRings = null;

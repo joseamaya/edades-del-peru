@@ -959,7 +959,7 @@ test('the Ayar cast is on the board and named after the briefing', async ({ page
     return {
       tags: tagged.map((u: any) => u.tag as string),
       labels: labels.length,
-      visibleLabels: labels.filter((l: { sprite: { visible: boolean } }) => l.sprite.visible).length,
+      visibleLabels: labels.filter((l: { visible: boolean }) => l.visible).length,
       single,
       heroMarkers,
       heroScale,
@@ -1071,6 +1071,8 @@ test('the ayllu site grows through its phases', async ({ page }) => {
     const before = at('cave');
     const shrine = at('huanacaure');
     const inticancha = at('inticancha');
+    const fundada = at('fundada');
+    g.setSitePhase('inticancha');
     g.setSitePhase('bogus');
     let lifeCalls = 0;
     const life = g.aylluSite.updateLife.bind(g.aylluSite);
@@ -1079,15 +1081,18 @@ test('the ayllu site grows through its phases', async ({ page }) => {
       life(...args);
     };
     for (let i = 0; i < 60; i++) g.update(1 / 60, i / 60);
-    return { before, shrine, inticancha, afterBogus: g.sitePhase, lifeCalls };
+    return { before, shrine, inticancha, fundada, afterBogus: g.sitePhase, lifeCalls };
   });
   expect(states.before).toEqual([
     { name: 'ayllu:cave', visible: true },
     { name: 'ayllu:huanacaure', visible: false },
     { name: 'ayllu:inticancha', visible: false },
+    { name: 'ayllu:fundada', visible: false },
   ]);
-  expect(states.shrine.map((s) => s.visible)).toEqual([true, true, false]);
-  expect(states.inticancha.map((s) => s.visible)).toEqual([true, true, true]);
+  expect(states.shrine.map((s) => s.visible)).toEqual([true, true, false, false]);
+  // Act IV only traces Inticancha; the lived-in settlement waits for the four canchas.
+  expect(states.inticancha.map((s) => s.visible)).toEqual([true, true, true, false]);
+  expect(states.fundada.map((s) => s.visible)).toEqual([true, true, true, true]);
   expect(states.afterBogus).toBe('inticancha');
   // The presentation tick must reach the ayllu kit, not only Caral/Chavín.
   expect(states.lifeCalls).toBeGreaterThan(0);
