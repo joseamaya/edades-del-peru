@@ -1,10 +1,29 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
 import type { MissionDef } from '../../types';
 
-// The 192 m Andean map: the rebel camp in the Cusco valley, the Sangarará road to its east and
-// the colonial city beyond. The retreat leaves the valley to the south-west, toward Langui.
-const TUPAC_SANGARARA = { dx: 125, dz: 73 } as const;
+// The 192 m Andean map compresses Tinta/Tungasuca, the Sangarará road and Cusco. The retreat leaves
+// the valley to the south-west, toward Langui.
+const TUPAC_MAP_SIZE = 192;
+const TUPAC_TUNGASUCA = { dx: 50, dz: 138 } as const;
+const TUPAC_SANGARARA = { dx: 105, dz: 80 } as const;
 const TUPAC_SIEGE = { dx: 120, dz: 88 } as const;
+const TUPAC_TUNGASUCA_ANCHOR = {
+  x: TUPAC_TUNGASUCA.dx / TUPAC_MAP_SIZE,
+  z: TUPAC_TUNGASUCA.dz / TUPAC_MAP_SIZE,
+} as const;
+const TUPAC_SANGARARA_ANCHOR = {
+  x: TUPAC_SANGARARA.dx / TUPAC_MAP_SIZE,
+  z: TUPAC_SANGARARA.dz / TUPAC_MAP_SIZE,
+} as const;
+const TUPAC_SIEGE_ANCHOR = {
+  x: TUPAC_SIEGE.dx / TUPAC_MAP_SIZE,
+  z: TUPAC_SIEGE.dz / TUPAC_MAP_SIZE,
+} as const;
+const ROYALIST_COLUMN = [
+  { kind: UnitKind.SOLDIER, count: 3 },
+  { kind: UnitKind.RIFLEMAN, count: 1 },
+  { kind: UnitKind.REALISTA_DRAGON, count: 1 },
+] as const;
 
 export const m7TupacAmaru: MissionDef = {
   id: 'm7_tupac_amaru',
@@ -25,11 +44,12 @@ export const m7TupacAmaru: MissionDef = {
   enemyCiv: CivId.REALISTAS,
   playerName: 'Rebeldes de Túpac Amaru',
   enemyName: 'Realistas del Cusco',
-  map: { seed: 1780, type: 'andes', size: 192 },
+  map: { seed: 1780, type: 'andes', size: TUPAC_MAP_SIZE },
   layout: {
     labels: [
       { text: 'Valle del Cusco', x: 0.36, z: 0.62, kind: 'region' },
-      { text: 'Sangarará', x: 0.65, z: 0.38, kind: 'region' },
+      { text: 'Tungasuca', x: TUPAC_TUNGASUCA_ANCHOR.x, z: TUPAC_TUNGASUCA_ANCHOR.z, kind: 'settlement' },
+      { text: 'Sangarará', x: TUPAC_SANGARARA_ANCHOR.x, z: TUPAC_SANGARARA_ANCHOR.z, kind: 'region' },
       { text: 'Cusco', x: 0.702, z: 0.38, kind: 'settlement' },
       { text: 'Camino a Langui', x: 0.2, z: 0.78, kind: 'region' },
     ],
@@ -37,11 +57,19 @@ export const m7TupacAmaru: MissionDef = {
     departure: { x: 0.2, z: 0.78 },
     enemyBase: { x: 0.772, z: 0.38 },
     discoveries: [{ heritageId: 'colonial_church', initial: true }],
+    // Sangarará's church is a typological landmark: the mission's authored site is the Cusco church.
+    decor: { model: 'colonial_church', at: 'player', dx: 36, dz: -39, yaw: 0.4, scale: 0.45 },
     terrain: {
       flats: [
         { name: 'Valle del Cusco', x: 0.36, z: 0.62, rx: 0.15, rz: 0.12 },
-        { name: 'Ruta de Sangarará', x: 0.65, z: 0.38, rx: 0.12, rz: 0.1 },
-        { name: 'Laderas del Cusco', x: TUPAC_SIEGE.dx / 192, z: TUPAC_SIEGE.dz / 192, rx: 0.1, rz: 0.08 },
+        { name: 'Ruta de Sangarará', x: TUPAC_SANGARARA_ANCHOR.x, z: TUPAC_SANGARARA_ANCHOR.z, rx: 0.1, rz: 0.09 },
+        {
+          name: 'Laderas del Cusco',
+          x: TUPAC_SIEGE_ANCHOR.x,
+          z: TUPAC_SIEGE_ANCHOR.z,
+          rx: 0.08,
+          rz: 0.07,
+        },
       ],
     },
     site: {
@@ -88,7 +116,6 @@ export const m7TupacAmaru: MissionDef = {
     BuildingKind.REFINERY,
   ],
   objectives: [
-    { id: 'obj_tupac', kind: 'protect', entityTag: 'tupac_amaru', title: 'Mantén con vida a Túpac Amaru II' },
     {
       id: 'a1_cuartel',
       kind: 'build',
@@ -105,15 +132,23 @@ export const m7TupacAmaru: MissionDef = {
       minUnits: 3,
       unitKind: UnitKind.WORKER,
       consume: { resource: 'food', perSecond: 1 },
-      title: 'Acto I · Reúne el avituallamiento con Micaela',
+      title: 'Acto I · Reúne el avituallamiento en el campamento',
+    },
+    {
+      id: 'a1_tungasuca',
+      kind: 'reach',
+      pos: TUPAC_TUNGASUCA,
+      radius: 12,
+      hidden: true,
+      requires: 'a1_cuartel',
+      title: 'Acto I · Alcanza Tungasuca',
     },
     {
       id: 'a2_sangarara',
       kind: 'reach',
       pos: TUPAC_SANGARARA,
-      radius: 16,
+      radius: 14,
       hidden: true,
-      requires: 'a1_cuartel',
       title: 'Acto II · Marcha a Sangarará',
     },
     {
@@ -124,7 +159,7 @@ export const m7TupacAmaru: MissionDef = {
       time: 45,
       minUnits: 4,
       hidden: true,
-      title: 'Acto II · Sostén Sangarará: la columna realista no debe escapar',
+      title: 'Acto II · Sostén Sangarará y que la columna no rompa el cerco',
     },
     {
       id: 'a3_cerco',
@@ -176,14 +211,27 @@ export const m7TupacAmaru: MissionDef = {
       ],
     },
     {
-      id: 't_acto2',
+      id: 't_tungasuca',
       condition: { type: 'objective', objectiveId: 'a1_avituallamiento', state: 'completed' },
+      effects: [
+        {
+          type: 'dialogue',
+          speaker: 'Micaela Bastidas',
+          duration: 8,
+          text: '—El avituallamiento está listo. Marcha a Tungasuca y reúne a los curacas: la rebelión necesita su juramento.',
+        },
+        { type: 'objective', objectiveId: 'a1_tungasuca', state: 'activate', announce: true },
+      ],
+    },
+    {
+      id: 't_acto2',
+      condition: { type: 'objective', objectiveId: 'a1_tungasuca', state: 'completed' },
       effects: [
         {
           type: 'act',
           kicker: 'Acto II · 18 de noviembre de 1780',
           title: 'Sangarará',
-          text: 'La columna realista se refugia en el pueblo. La rebelión la cerca y la vence: es la gran victoria de la campaña, pero no abre el Cusco.',
+          text: 'La rebelión ha tomado Tungasuca: el corregidor Arriaga fue capturado y ejecutado. La columna realista se refugia en Sangarará; la rebelión la cerca y la vence, pero el Cusco sigue en pie.',
         },
         {
           type: 'dialogue',
@@ -209,19 +257,15 @@ export const m7TupacAmaru: MissionDef = {
           type: 'dialogue',
           speaker: 'Túpac Amaru II',
           duration: 7,
-          text: '—La columna se ha encerrado en el pueblo. Sostened el cerco: si escapan, la victoria no sirve de nada.',
+          text: '—La columna se ha encerrado en el pueblo. Sostened el cerco: si rompen la línea, la victoria no sirve de nada.',
         },
         { type: 'objective', objectiveId: 'a2_batalla', state: 'activate', announce: true },
         {
           type: 'wave',
           owner: 1,
-          units: [
-            { kind: UnitKind.SOLDIER, count: 3 },
-            { kind: UnitKind.RIFLEMAN, count: 1 },
-            { kind: UnitKind.REALISTA_DRAGON, count: 1 },
-          ],
+          units: [...ROYALIST_COLUMN],
           pos: TUPAC_SANGARARA,
-          radius: 12,
+          radius: 10,
           objective: 'position',
         },
       ],
@@ -266,11 +310,7 @@ export const m7TupacAmaru: MissionDef = {
         {
           type: 'wave',
           owner: 1,
-          units: [
-            { kind: UnitKind.SOLDIER, count: 3 },
-            { kind: UnitKind.RIFLEMAN, count: 1 },
-            { kind: UnitKind.REALISTA_DRAGON, count: 1 },
-          ],
+          units: [...ROYALIST_COLUMN],
           pos: { dx: 160, dz: 80 },
           radius: 8,
           target: TUPAC_SIEGE,
@@ -317,6 +357,16 @@ export const m7TupacAmaru: MissionDef = {
           speaker: 'Túpac Amaru II',
           duration: 8,
           text: '—El Cusco no cayó, pero la rebelión sigue viva. Que la memoria de estos días no se pierda.',
+        },
+      ],
+    },
+    {
+      id: 't_tupac',
+      condition: { type: 'entity_dead', entityTag: 'tupac_amaru' },
+      effects: [
+        {
+          type: 'defeat',
+          text: 'Túpac Amaru II ha caído. Sin su liderazgo, la rebelión no puede retirarse del Cusco.',
         },
       ],
     },

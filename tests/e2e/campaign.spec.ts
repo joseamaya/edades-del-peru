@@ -819,9 +819,12 @@ test('m7 wins at Sangarará and withdraws from Cusco', async ({ page }) => {
       g.update(1 / 60, 0);
       document.querySelector<HTMLElement>('.ed-mission-card')?.click();
     };
-    // Act I: barracks and supplies open the march to Sangarará.
+    // Act I: barracks and supplies open the march to Tungasuca, and Tungasuca opens Sangarará.
     m.objState.set('a1_cuartel', 'completed');
     m.objState.set('a1_avituallamiento', 'completed');
+    step();
+    const tungasuca = m.getObjectiveState('a1_tungasuca') as string;
+    m.objState.set('a1_tungasuca', 'completed');
     step();
     const sangarara = m.getObjectiveState('a2_sangarara') as string;
     m.objState.set('a2_sangarara', 'completed');
@@ -842,22 +845,22 @@ test('m7 wins at Sangarará and withdraws from Cusco', async ({ page }) => {
     tupac.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
     step();
     return {
+      tungasuca,
       sangarara,
       batalla,
       cerco,
       sostener,
       retirada,
-      tupac: m.getObjectiveState('obj_tupac') as string,
       ended: m.ended as boolean,
       won: m.won as boolean | null,
     };
   });
+  expect(out.tungasuca).toBe('activo');
   expect(out.sangarara).toBe('activo');
   expect(out.batalla).toBe('activo');
   expect(out.cerco).toBe('activo');
   expect(out.sostener).toBe('activo');
   expect(out.retirada).toBe('activo');
-  expect(out.tupac).not.toBe('failed');
   expect(out.ended).toBe(true);
   expect(out.won).toBe(true);
 });

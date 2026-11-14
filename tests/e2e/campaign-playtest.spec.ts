@@ -99,6 +99,7 @@ test('plays m7 by winning at Sangarará and withdrawing from the Cusco siege', a
     const own = (kind?: string) =>
       [...g.units.values()].filter((u: any) => u.owner === 0 && !u.dead && (!kind || u.kind === kind)) as any[];
     const base = g.playerCenter(0) as { x: number; z: number };
+    const tungasuca = m.getObjectiveAnchor('a1_tungasuca') as { x: number; z: number };
     const sangarara = m.getObjectiveAnchor('a2_sangarara') as { x: number; z: number };
     const siege = m.getObjectiveAnchor('a3_cerco') as { x: number; z: number };
     const departure = m.getObjectiveAnchor('a3_retirada') as { x: number; z: number };
@@ -150,6 +151,8 @@ test('plays m7 by winning at Sangarará and withdrawing from the Cusco siege', a
             m.getObjectiveState('a2_sangarara') === 'activo'
           ) {
             if (army.length) order(army, sangarara.x, sangarara.z);
+          } else if (m.getObjectiveState('a1_tungasuca') === 'activo') {
+            if (army.length) order(army, tungasuca.x, tungasuca.z);
           }
         }
       }
@@ -158,11 +161,6 @@ test('plays m7 by winning at Sangarará and withdrawing from the Cusco siege', a
     }
     return {
       minutes: Math.round(t / 6) / 10,
-      defenders: own().length,
-      hold: m.getObjectiveProgress('a3_sostener'),
-      positions: own()
-        .filter((u) => u.kind !== 'worker')
-        .map((u) => ({ x: Math.round(u.pos.x), z: Math.round(u.pos.z) })),
       objectives: Object.fromEntries(m.def.objectives.map((o: any) => [o.id, m.getObjectiveState(o.id)])),
       ended: m.ended as boolean,
       won: m.won as boolean | null,
@@ -171,12 +169,12 @@ test('plays m7 by winning at Sangarará and withdrawing from the Cusco siege', a
   test.info().annotations.push({ type: 'm7-bot', description: `${out.minutes} min` });
   expect(out.objectives.a1_cuartel, JSON.stringify(out)).toBe('completed');
   expect(out.objectives.a1_avituallamiento, JSON.stringify(out)).toBe('completed');
+  expect(out.objectives.a1_tungasuca, JSON.stringify(out)).toBe('completed');
   expect(out.objectives.a2_sangarara, JSON.stringify(out)).toBe('completed');
   expect(out.objectives.a2_batalla, JSON.stringify(out)).toBe('completed');
   expect(out.objectives.a3_cerco, JSON.stringify(out)).toBe('completed');
   expect(out.objectives.a3_sostener, JSON.stringify(out)).toBe('completed');
   expect(out.objectives.a3_retirada, JSON.stringify(out)).toBe('completed');
-  expect(out.objectives.obj_tupac).not.toBe('failed');
   expect(out.ended, JSON.stringify(out)).toBe(true);
   expect(out.won, JSON.stringify(out)).toBe(true);
   expect(errors).toEqual([]);

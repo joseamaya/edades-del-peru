@@ -272,9 +272,21 @@ describe('campaign educational content', () => {
       amaru.objectives.some((o) => o.group),
       'm7 still branches on a counterfactual',
     ).toBe(false);
-    // Acts: muster and supply, Sangarará, the failed siege and the retreat.
+    // Túpac is not a victory-gating protect; his death is an explicit scripted defeat.
+    expect(amaru.objectives.some((o) => o.kind === 'protect' && o.entityTag === 'tupac_amaru')).toBe(false);
+    expect(
+      amaru.triggers.some(
+        (t) =>
+          t.condition.type === 'entity_dead' &&
+          t.condition.entityTag === 'tupac_amaru' &&
+          t.effects.some((fx) => fx.type === 'defeat'),
+      ),
+      'Túpac dying must end the mission',
+    ).toBe(true);
+    // Acts: muster and supply, Tungasuca, Sangarará, the failed siege and the retreat.
     expect(amaru.objectives.some((o) => o.id === 'a1_cuartel' && o.kind === 'build')).toBe(true);
     expect(amaru.objectives.some((o) => o.id === 'a1_avituallamiento' && o.kind === 'hold')).toBe(true);
+    expect(amaru.objectives.some((o) => o.id === 'a1_tungasuca' && o.kind === 'reach')).toBe(true);
     expect(amaru.objectives.some((o) => o.id === 'a2_batalla' && o.kind === 'hold')).toBe(true);
     expect(amaru.objectives.some((o) => o.id === 'a3_sostener' && o.kind === 'hold')).toBe(true);
     const retreat = amaru.objectives.find((o) => o.id === 'a3_retirada')!;

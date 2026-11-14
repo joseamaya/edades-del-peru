@@ -47,16 +47,19 @@ survey and **not** a historical photograph.
 The mission follows the documented arc (1780–1781), not a counterfactual capture of Cusco:
 
 1. **Act I · Tinta–Tungasuca.** Micaela Bastidas musters the communities and their supplies at the
-   camp while the rebels raise a barracks. The base is the rebel valley camp.
-2. **Act II · Sangarará (18 November 1780).** The column marches to the Sangarará road; the royalists hold
-   the town and the player must surround it and hold the field. It is the campaign's documented victory.
+   camp, the rebels raise a barracks and the player marches to Tungasuca; the capture of Arriaga is
+   narrated, not played.
+2. **Act II · Sangarará (18 November 1780).** The column marches to the Sangarará road, where the
+   royalists hold the town and its chapel. The player surrounds it and holds the field: it is the
+   campaign's documented victory.
 3. **Act III · the Cusco siege (January 1781).** The rebels occupy the slopes above the city and hold the
    siege lines. The relief from Lima breaks the siege; the player must withdraw Túpac Amaru to the
    departure point. The city is never taken; the epilogue tells the capture at Langui and the execution
    of 18 May 1781.
 
-The colonial church is the Cusco plaza card. The map compresses Tinta, Sangarará and Cusco into one
-transect; the royalist waves are an abstraction of the documented actions, not a literal order of battle.
+The colonial church is the Cusco plaza card; a smaller typological chapel anchors Sangarará on the road.
+The map compresses Tinta, Tungasuca, Sangarará and Cusco into one transect; the royalist waves are an
+abstraction of the documented actions, not a literal order of battle.
 
 ## Status
 

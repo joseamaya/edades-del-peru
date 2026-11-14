@@ -213,13 +213,13 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'sangarara',
-        text: 'En Sangarará la columna realista se refugia en el pueblo: sostenla con cuatro unidades y no dejes que escape.',
+        text: 'En Sangarará la columna realista se refugia en el pueblo: sostenlo con cuatro unidades y no dejes que rompan el cerco.',
         highlight: '#ed-objectives',
         check: { type: 'objectiveCompleted', objectiveId: 'a2_batalla' },
       },
       {
         id: 'cerco',
-        text: 'El cerco del Cusco no toma la ciudad: ocupa las laderas y sostén las líneas sesenta segundos.',
+        text: 'El cerco del Cusco no toma la ciudad: ocupa las laderas y sostén las líneas cuarenta y cinco segundos.',
         highlight: '#ed-objectives',
         check: { type: 'objectiveCompleted', objectiveId: 'a3_sostener' },
       },

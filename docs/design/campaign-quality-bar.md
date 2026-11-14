@@ -48,7 +48,7 @@ below, which record each mission's own review and are kept for history). **M** m
 | m6_chimu_inca      | P    | P     | M    | P     | M   | P    | M  | M   | M    | M     | P    | X      | X    | P   | X    | X     |
 | m6b_guerra_civil   | P    | P     | M    | M     | M   | P    | M  | P   | M    | M     | P    | X      | X    | P   | X    | X     |
 | m_lima             | M    | M     | P    | M     | M   | M    | M  | P   | P    | P     | P    | M      | M    | –   | P    | M     |
-| m7_tupac_amaru     | M    | M     | M    | M     | M   | M    | M  | X   | M    | M     | M    | M      | X    | X   | X    | X     |
+| m7_tupac_amaru     | M    | M     | M    | M     | M   | M    | M  | P   | M    | M     | M    | M      | X    | X   | X    | X     |
 | m_junta_cusco      | M    | M     | P    | M     | M   | M    | M  | P   | P    | P     | P    | M      | M    | –   | P    | M     |
 | m8_independencia   | P    | P     | P    | P     | M   | P    | M  | P   | P    | P     | X    | X      | X    | X   | X    | X     |
 | m9_guerra_pacifico | M    | M     | M    | M     | M   | M    | M  | X   | M    | M     | M    | M      | X    | X   | X    | X     |
@@ -204,7 +204,7 @@ is still local (review captures), although the HUD layout now has a CI geometry 
 | Gate        | m7 Túpac Amaru                                                                                                                |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | History     | Met: `tupac_amaru.md`; Sangarará, the failed Cusco siege and repression, with a certainty table.                             |
-| Identity    | Met: muster and supplies, Sangarará, the failed siege and the retreat.                                                        |
+| Identity    | Met: muster and supplies, Tungasuca, Sangarará, the failed siege and the retreat.                                            |
 | Play        | Met: real-command playtest reaches the documented ending with ordinary orders and no cheats.                                  |
 | Contract    | Met: three acts with hidden objectives, a Sangarará hold and the retreat; Micaela is optional.                                |
 | Onboarding  | Met: six-step tutorial + briefing.                                                                                            |

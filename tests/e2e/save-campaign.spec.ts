@@ -352,9 +352,11 @@ test('saves and loads m7 during the Sangarará hold', async ({ page }) => {
       t += dt;
       document.querySelector<HTMLElement>('.ed-mission-card')?.click();
     };
-    // Act I -> Sangarará: the hold and its waves become active.
+    // Act I -> Tungasuca -> Sangarará: the hold and its waves become active.
     m.objState.set('a1_cuartel', 'completed');
     m.objState.set('a1_avituallamiento', 'completed');
+    step();
+    m.objState.set('a1_tungasuca', 'completed');
     step();
     m.objState.set('a2_sangarara', 'completed');
     step();
