@@ -35,7 +35,7 @@ survey and **not** a historical photograph.
 
 ## Implementation
 
-- Mission data: `src/campaign/defs/campaign.ts`.
+- Mission data: `src/campaign/defs/missions/m7_tupac_amaru.ts`.
 - Site registry: `src/model/defs/sites.ts`; loader: `src/rendering/siteModels.ts`.
 - Heightfield: `scripts/build_colonial_heightmap.py` → `src/model/defs/colonialHeightmap.ts`.
 - Heritage: `colonial_church` in `src/model/defs/heritage.ts`.

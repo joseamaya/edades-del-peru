@@ -1,0 +1,191 @@
+import { Era, CivId, HistoricalPeriod, UnitKind } from '../../../core/types';
+import type { MissionDef } from '../../types';
+
+export const m3MocheRecuay: MissionDef = {
+  id: 'm3_moche_recuay',
+  title: 'La Frontera de los Valles',
+  subtitle: 'Intermedio Temprano · c. 300–600 d.C.',
+  history:
+    'Los señores de Moche dominan los valles de Chicama, Moche y Virú. Desde el Callejón de Huaylas, los Recuay presionan la frontera.\n' +
+    'Asegura los valles y sus canales, defiende las huacas y sostén el intercambio de élite con la sierra.',
+  victory:
+    'Moche impone su dominio sobre la costa norte. Sus huacas y su cerámica marcan el apogeo del Intermedio Temprano.',
+  defeat: 'Los valles caen ante las incursiones de la sierra y el poder moche se desmorona.',
+  period: HistoricalPeriod.EARLY_INTERMEDIATE,
+  tutorial: true,
+  playerCiv: CivId.MOCHE,
+  enemyCiv: CivId.RECUAY,
+  map: { seed: 400, type: 'coast', size: 192 },
+  layout: {
+    base: { x: 0.3, z: 0.66 },
+    site: {
+      id: 'moche_site',
+      y: 6,
+      focus: { x: 0.62, z: 0.38 },
+      keepout: [{ x: 0.62, z: 0.38, rx: 0.2, rz: 0.17 }],
+    },
+    canal: {
+      name: 'Canal del valle de Moche',
+      x: 0.45,
+      z: 0.56,
+      length: 36,
+      yaw: 0.08,
+      initiallyOpen: false,
+      irrigation: true,
+      heritageId: 'moche_canal',
+    },
+    terrain: {
+      flats: [
+        { name: 'Valles de Moche y Chicama', x: 0.3, z: 0.66, rx: 0.18, rz: 0.14 },
+        { name: 'Huacas de Moche', x: 0.62, z: 0.38, rx: 0.2, rz: 0.17 },
+        { name: 'Callejón de Huaylas', x: 0.72, z: 0.3, rx: 0.1, rz: 0.08 },
+      ],
+    },
+    decor: { model: 'recuay_pashash', at: 'enemy', dx: 10, dz: 0, scale: 1.05 },
+  },
+  mapOverrides: {
+    terrain: { terraceChance: 0.08, riverCount: 0 },
+    climate: { aridity: 0.78, moisture: 0.24 },
+    vegetation: { density: 0.24 },
+    resources: { tree: 0.45, mine: 0.8, well: 0.35, hunt: 0.25 },
+    culturalLandscape: null,
+    groundTint: '#c9a66b',
+  },
+  timeOfDay: 'dusk',
+  startingEra: Era.REGIONAL_STATES,
+  startingResources: { food: 700, wood: 600, silver: 300, stone: 200 },
+  start: {
+    units: [
+      { kind: UnitKind.SOLDIER, dx: 12, dz: 4, count: 6 },
+      { kind: UnitKind.MUSKETEER, dx: 10, dz: 10, count: 4 },
+      { kind: UnitKind.SCOUT, dx: 8, dz: 8, count: 1 },
+    ],
+  },
+  mark: [],
+  enemy: { active: true, difficulty: 'normal', aggression: 1 },
+  objectives: [
+    {
+      id: 'obj_canal',
+      kind: 'canal_open',
+      title: 'Abre la compuerta del canal de Moche',
+    },
+    {
+      id: 'obj_huacas',
+      kind: 'hold',
+      pos: { ref: 'site', dx: 4, dz: 8 },
+      radius: 18,
+      time: 90,
+      hidden: true,
+      requires: 'obj_canal',
+      title: 'Sostén la plaza de las huacas 90 segundos',
+    },
+    {
+      id: 'obj_intercambio',
+      kind: 'deliver',
+      resource: 'silver',
+      count: 250,
+      hidden: true,
+      requires: 'obj_huacas',
+      title: 'Intercambia 250 de plata en la Huaca de la Luna',
+    },
+    {
+      id: 'bonus_intercambio',
+      kind: 'deliver',
+      resource: 'silver',
+      count: 400,
+      optional: true,
+      hidden: true,
+      requires: 'obj_huacas',
+      title: 'Intercambio de élite: completa 400 de plata',
+    },
+  ],
+  triggers: [
+    {
+      id: 't_dial_0',
+      condition: { type: 'time', seconds: 10 },
+      effects: [
+        {
+          type: 'dialogue',
+          text: 'Señor de Moche: —El agua del canal sostiene los campos y las huacas. ¡Nadie entra al valle sin nuestro permiso!',
+        },
+      ],
+    },
+    {
+      id: 't_canal',
+      condition: { type: 'objective', objectiveId: 'obj_canal', state: 'completed' },
+      effects: [
+        {
+          type: 'dialogue',
+          text: 'La compuerta está abierta. Los andenes recuperan agua; ahora asegura la plaza entre las huacas.',
+        },
+        { type: 'objective', objectiveId: 'obj_huacas', state: 'activate' },
+      ],
+    },
+    {
+      id: 't_wave_1',
+      condition: { type: 'time', seconds: 80 },
+      effects: [
+        {
+          type: 'wave',
+          owner: 1,
+          units: [{ kind: UnitKind.SOLDIER, count: 5 }],
+          pos: { ref: 'site', dx: -20, dz: -26 },
+          radius: 6,
+        },
+        { type: 'dialogue', text: '¡Recuay cruza la quebrada por el norte! ¡Defiende la plaza!' },
+      ],
+    },
+    {
+      id: 't_wave_2',
+      condition: { type: 'time', seconds: 200 },
+      effects: [
+        {
+          type: 'wave',
+          owner: 1,
+          units: [
+            { kind: UnitKind.SOLDIER, count: 4 },
+            { kind: UnitKind.MUSKETEER, count: 2 },
+          ],
+          pos: { ref: 'site', dx: 22, dz: -24 },
+          radius: 6,
+        },
+        { type: 'dialogue', text: 'Otra columna baja desde el Callejón de Huaylas. ¡Refuerza el flanco este!' },
+      ],
+    },
+    {
+      id: 't_huacas',
+      condition: { type: 'objective', objectiveId: 'obj_huacas', state: 'completed' },
+      effects: [
+        {
+          type: 'dialogue',
+          text: 'La plaza resiste. El intercambio de élite con la sierra puede continuar en la Huaca de la Luna.',
+        },
+        { type: 'objective', objectiveId: 'obj_intercambio', state: 'activate' },
+        { type: 'objective', objectiveId: 'bonus_intercambio', state: 'activate' },
+      ],
+    },
+    {
+      id: 't_wave_3',
+      condition: { type: 'time', seconds: 360 },
+      effects: [
+        {
+          type: 'wave',
+          owner: 1,
+          units: [{ kind: UnitKind.SOLDIER, count: 6 }],
+          pos: { ref: 'site', dx: 0, dz: -30 },
+          radius: 6,
+        },
+      ],
+    },
+    {
+      id: 't_declive',
+      condition: { type: 'time', seconds: 480 },
+      effects: [
+        {
+          type: 'dialogue',
+          text: 'Hacia el 800 d.C. el poder moche se fragmenta. Sus valles y huacas quedan como memoria de un Intermedio Temprano excepcional.',
+        },
+      ],
+    },
+  ],
+};

@@ -29,7 +29,7 @@ The app shows the **main menu** by default. To jump straight into the match use 
 | `yarn lint`           | ESLint (must stay at **0 warnings**).                                                   |
 | `yarn format`         | Prettier over `src/**/*.ts`, `scripts/**/*.mjs` and `tests/**/*.ts`.                    |
 | `yarn test`           | Unit tests (Vitest).                                                                    |
-| `yarn verify:fast`    | Quick gate: `typecheck + lint + format:check + test + build` (~10 s).                   |
+| `yarn verify:fast`    | Quick gate: `typecheck + lint + cycles + format:check + test + build` (~15 s).          |
 | `yarn bench`          | Entity-scale performance benchmark (writes `review/bench.json`).                        |
 | `yarn sim`            | Headless AI-vs-AI match runner (AI regression baseline).                                |
 | `yarn test:e2e`       | E2E suite (Playwright). Requires `npx playwright install chromium`.                     |
@@ -83,8 +83,12 @@ Details on subsystems, controls and code "traps" are in
 
 ## Code conventions
 
-- **Strict TypeScript** (`strict`, `noUnusedLocals`, `noUnusedParameters`). Avoid new `any` when a type
-  exists; type `EventBus` events in `GameEvents` (`src/core/types.ts`).
+- **Strict TypeScript** (`strict`, `noUnusedLocals`, `noUnusedParameters`). `any` is a lint error in `src/`;
+  the legacy files listed in `eslint.config.js` still carry some and come off the list once typed. Type
+  `EventBus` events in `GameEvents` (`src/core/types.ts`).
+- **No runtime import cycles** in `src/` (`yarn cycles`, part of `verify:fast` and CI). When only types cross
+  a boundary, import them with `import type`.
+- **One file per mission** in `src/campaign/defs/missions/`; `campaign.ts` only lists them in order.
 - **No comments** unless they add context the code does not express by itself.
 - Follow the existing style: Prettier (single quotes, 120 columns, trailing commas).
 - Reuse the existing utilities (`src/util/*`) and the data-driven defs

@@ -1,3 +1,4 @@
+import type { Game } from './Game';
 import { type HeritageBuildingDef, type HeritageBuildingId } from '../model/defs/heritage';
 import { bus } from './EventBus';
 import { Unit } from '../entities/Unit';
@@ -22,7 +23,7 @@ export interface DeliveryGate {
 
 /** Selection, focus, formation and heritage/assembly helpers. */
 export class SelectionController {
-  constructor(private readonly game: any) {}
+  constructor(private readonly game: Game) {}
 
   getSelectedUnits(): Unit[] {
     return this.game.selectedUnits
@@ -139,8 +140,8 @@ export class SelectionController {
     return { ok: true, amount, resource, reason: null, missing: 0 };
   }
 
-  /** Where a delivery objective hands materials over. */
-  private deliveryAnchor(def: ObjectiveDef): { x: number; z: number } {
+  /** Where a delivery objective hands materials over (null when the mission has no site to anchor it). */
+  private deliveryAnchor(def: ObjectiveDef): { x: number; z: number } | null {
     return def.pos ? this.game.resolveMissionPoint(def.pos) : (this.game.siteAnchor ?? this.game.siteCenter);
   }
 
@@ -182,7 +183,7 @@ export class SelectionController {
     where: { at: { x: number; z: number } | null; radius: number; objectiveId?: string },
   ): boolean {
     if (amount <= 0) return false;
-    const toast = (kind: 'away' | 'short' | 'none' | 'done', level: string) =>
+    const toast = (kind: 'away' | 'short' | 'none' | 'done', level: 'info' | 'success' | 'warning' | 'error') =>
       this.game.hud?.showToast(
         t(`hud.heritage.${operation}.${kind}`, { amount, resource: RESOURCE_INFO[resource].name.toLowerCase() }),
         level,

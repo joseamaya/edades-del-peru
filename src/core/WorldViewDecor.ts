@@ -1,3 +1,4 @@
+import type { Game } from './Game';
 import * as THREE from 'three';
 import type { TerrainData } from '../sim/TerrainData';
 import { CulturalLandscape } from '../rendering/CulturalLandscape';
@@ -82,7 +83,7 @@ export class WorldViewDecor {
   /** The deterministic valley scenery is drawn once (opening base or loaded save), never twice. */
   private caralValleyDrawn = false;
 
-  constructor(private readonly game: any) {}
+  constructor(private readonly game: Game) {}
 
   reserveCaralValley(): void {
     if (this.game.siteDef?.environs?.valley !== 'caral' || this.game.caralValleyPlan) return;
@@ -1190,7 +1191,7 @@ export class WorldViewDecor {
       (s: { group: { name: string } }) => !s.group.name.startsWith('mission-roads'),
     );
     const groups = new Map<number, typeof roads>();
-    for (const road of roads as Array<{ width?: number; from: any; to: any }>) {
+    for (const road of roads) {
       const width = road.width ?? 4;
       groups.set(width, [...(groups.get(width) ?? []), road]);
     }
@@ -1200,7 +1201,7 @@ export class WorldViewDecor {
         center: this.game.siteCenter ?? this.game.playerCenter(0),
         dwellings: [],
         fields: [],
-        roads: group.map((road: { from: any; to: any }) => ({
+        roads: group.map((road) => ({
           from: this.game.resolveMissionPoint(road.from),
           to: this.game.resolveMissionPoint(road.to),
         })),
@@ -1214,7 +1215,7 @@ export class WorldViewDecor {
       index++;
     }
     // After the overlays' «wear» paint, so the stone mix is what the path reads as.
-    for (const road of roads as Array<{ width?: number; from: any; to: any; stonePath?: boolean }>) {
+    for (const road of roads) {
       if (!road.stonePath) continue;
       const points = [this.game.resolveMissionPoint(road.from), this.game.resolveMissionPoint(road.to)];
       this.game.terrain.paintStonePath(points, road.width ?? 4, 0.95);

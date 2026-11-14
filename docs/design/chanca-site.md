@@ -39,7 +39,7 @@ an abstraction of documented highland defensive practice, **not** a survey and
 
 ## Implementation
 
-- Mission data: `src/campaign/defs/campaign.ts`.
+- Mission data: `src/campaign/defs/missions/m5_yahuar_pampa.ts`.
 - Site registry: `src/model/defs/sites.ts`; loader: `src/rendering/siteModels.ts`.
 - Heightfield: `scripts/build_chanca_heightmap.py` → `src/model/defs/chancaHeightmap.ts`.
 - Heritage: `chanca_pucara` in `src/model/defs/heritage.ts`.

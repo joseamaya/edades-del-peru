@@ -61,7 +61,7 @@ and **not** a historical photograph.
 
 ## Implementation
 
-- Mission data: `src/campaign/defs/campaign.ts`.
+- Mission data: `src/campaign/defs/missions/m3_moche_recuay.ts`.
 - Site registry: `src/model/defs/sites.ts`; loader: `src/rendering/siteModels.ts`.
 - Heritage cards and `trade`: `src/model/defs/heritage.ts`.
 - Economy cards: `src/model/defs/buildingCards.ts`.

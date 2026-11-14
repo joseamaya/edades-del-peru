@@ -37,7 +37,7 @@ low-poly abstraction of Arica's port terrace, battery and warehouse. It is
 
 ## Implementation
 
-- Mission data: `src/campaign/defs/campaign.ts`.
+- Mission data: `src/campaign/defs/missions/m9_guerra_pacifico.ts`.
 - Site registry: `src/model/defs/sites.ts`; loader: `src/rendering/siteModels.ts`.
 - Heightfield: `scripts/build_arica_heightmap.py` → `src/model/defs/aricaHeightmap.ts`.
 - Heritage: `arica_battery` in `src/model/defs/heritage.ts`.

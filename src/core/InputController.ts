@@ -1,3 +1,4 @@
+import type { Game } from './Game';
 import * as THREE from 'three';
 import { BuildingKind, OrderKind, UnitKind, type OrderTarget } from '../core/types';
 import { Unit } from '../entities/Unit';
@@ -46,7 +47,7 @@ export class InputController {
   placingBuilding: { kind: BuildingKind; valid: boolean; ghost: THREE.Group } | null = null;
   private shiftQueue = false;
 
-  constructor(private readonly game: any) {}
+  constructor(private readonly game: Game) {}
 
   init(): void {
     const canvas = this.game.renderer.domElement;
