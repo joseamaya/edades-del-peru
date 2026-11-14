@@ -449,6 +449,31 @@ describe('campaign educational content', () => {
     expect(m3.triggers.some((t) => t.id === 't_huacas')).toBe(true);
   });
 
+  it('m6 closes the Chan Chan gate and m6b captures Huáscar on the pampa', () => {
+    const m6 = MISSIONS.find((m) => m.id === 'm6_chimu_inca')!;
+    expect(m6.layout?.canal?.heritageId).toBe('chimu_canal');
+    expect(m6.layout?.canal?.initiallyOpen).toBe(true);
+    expect(m6.layout?.canal?.lockedUntilObjective).toBe('obj_canal');
+    const gate = m6.objectives.find((o) => o.id === 'obj_canal')!;
+    expect(gate.kind).toBe('canal_closed');
+    expect(gate.entityTag).toBeUndefined();
+    expect(gate.pos).toEqual({ ref: 'canal', dx: 0, dz: 0 });
+    expect(gate.radius).toBe(16);
+
+    const m6b = MISSIONS.find((m) => m.id === 'm6b_guerra_civil')!;
+    const battle = m6b.objectives.find((o) => o.id === 'obj_quipaipan')!;
+    expect(battle.kind).toBe('hold');
+    expect(battle.pos).toEqual({ ref: 'site', dx: 0, dz: 0 });
+    expect(battle.radius).toBe(18);
+    expect(battle.time).toBe(90);
+    expect(battle.minUnits).toBe(6);
+    expect(battle.unitKind).toBe(UnitKind.SOLDIER);
+    expect(battle.entityTag).toBeUndefined();
+    // The Cusco centre is not the victory: Quipaipan ends with Huáscar's capture.
+    expect(m6b.mark).toBeUndefined();
+    expect(m6b.objectives.some((o) => o.kind === 'destroy' && o.entityTag === 'huascar')).toBe(false);
+  });
+
   it('m4 has a two-node network, a contested frontier and andenes', () => {
     const m4 = MISSIONS.find((m) => m.id === 'm4_wari')!;
     const network = m4.objectives.find((o) => o.id === 'obj_red')!;

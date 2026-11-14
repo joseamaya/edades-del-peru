@@ -9,7 +9,7 @@
 - **Hitos**: campañas de Chillopampa, Mullihambato y Chimborazo; **batalla de Quipaipan** (1532), donde el ejército de Atahualpa derrota al de Huáscar y captura a Huáscar.
 - **Desenlace documentado**: Atahualpa gana la guerra civil, pero es capturado por los españoles en **Cajamarca** (16 de noviembre de 1532). La guerra civil no se presenta como una guerra contra España.
 - **Mapa**: `andes`, con el ejército de Atahualpa avanzando desde el norte hacia Quipaipan y el Cusco.
-- **En el juego**: una misión de avance y batalla: llegar a Quipaipan, derrotar el centro de Huáscar y mantener vivo a Atahualpa. No se introducen caballos ni armas de fuego en el bando inca.
+- **En el juego**: una misión de avance y batalla: llegar a Quipaipan, **sostener la pampa durante 90 s con al menos seis guerreros** mientras las oleadas de Huáscar contraatacan, y mantener vivo a Atahualpa. La victoria narra la captura de Huáscar en Quipaipan; el centro enemigo del Cusco **no es un objetivo** y la victoria no exige destruirlo. No se introducen caballos ni armas de fuego en el bando inca.
 
 ## Fuentes
 

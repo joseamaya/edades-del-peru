@@ -323,8 +323,8 @@ test('plays m9 by refusing the summons, mining the approaches and holding the la
   expect(errors).toEqual([]);
 });
 
-test('plays m6b by advancing to Quipaipan and defeating Huáscar with real orders', async ({ page }) => {
-  test.setTimeout(120_000);
+test('plays m6b by holding Quipaipan and capturing Huáscar with real orders', async ({ page }) => {
+  test.setTimeout(180_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/?mission=m6b_guerra_civil&seed=777&fog=0&low=1&noloop=1');
@@ -339,9 +339,10 @@ test('plays m6b by advancing to Quipaipan and defeating Huáscar with real order
     const enemy = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'center' && !b.dead) as any;
     const site = g.siteCenter as { x: number; z: number };
     const atahualpa = [...g.units.values()].find((u: any) => u.tag === 'atahualpa') as any;
-    const army = [...g.units.values()]
-      .filter((u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker' && u.tag !== 'atahualpa')
-      .map((u: any) => u.id);
+    const army = () =>
+      [...g.units.values()]
+        .filter((u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker' && u.tag !== 'atahualpa')
+        .map((u: any) => u.id);
     const move = (ids: number[], x: number, z: number) =>
       g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'move', target: { x, z } }, clear: true }, false);
     const attackMove = (ids: number[], x: number, z: number) =>
@@ -349,37 +350,39 @@ test('plays m6b by advancing to Quipaipan and defeating Huáscar with real order
         { kind: 'order', unitIds: ids, order: { kind: 'attack_move', target: { x, z } }, clear: true },
         false,
       );
-    const attack = (ids: number[], entityId: number) =>
-      g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'attack', entityId }, clear: true }, false);
-    move([atahualpa.id], site.x - 35, site.z + 20);
-    attackMove(army, enemy.pos.x, enemy.pos.z);
+    // Atahualpa stays behind the line; the army marches to the pampa de Quipaipan.
+    move([atahualpa.id], site.x - 30, site.z + 18);
+    attackMove(army(), site.x, site.z);
     const dt = 1 / 60;
     let t = 0;
-    for (let i = 0; i < Math.ceil(220 / dt) && !m.ended && m.getObjectiveState('obj_avanzar') !== 'completed'; i++) {
+    for (let i = 0; i < Math.ceil(240 / dt) && !m.ended && m.getObjectiveState('obj_avanzar') !== 'completed'; i++) {
       g.update(dt, t);
       t += dt;
     }
     const reach = m.getObjectiveState('obj_avanzar') as string;
-    // Clear Huáscar's defenders first; attack-moving stops at the enemy units
-    // instead of walking the army into the centre without a fight.
-    for (let i = 0; i < Math.ceil(300 / dt) && !m.ended; i++) {
+    // Hold the field for 90 s: the line is re-ordered to the marker so it does not chase the waves away.
+    for (let i = 0; i < Math.ceil(150 / dt) && !m.ended; i++) {
+      if (i % 300 === 0) attackMove(army(), site.x, site.z);
       g.update(dt, t);
       t += dt;
     }
-    attack(army, enemy.id);
-    for (let i = 0; i < Math.ceil(200 / dt) && !m.ended; i++) {
-      g.update(dt, t);
-      t += dt;
-    }
+    const progress = m.getObjectiveProgress('obj_quipaipan') as { current: number; target: number } | null;
     return {
       reach,
       quipaipan: m.getObjectiveState('obj_quipaipan') as string,
+      held: progress?.current ?? 0,
+      target: progress?.target ?? 0,
+      enemyAlive: !enemy.dead,
+      enemyTag: enemy.tag ?? null,
       atahualpa: m.getObjectiveState('obj_atahualpa') as string,
       won: m.won as boolean | null,
     };
   });
   expect(out.reach).toBe('completed');
-  expect(out.quipaipan).toBe('completed');
+  expect(out.quipaipan, JSON.stringify(out)).toBe('completed');
+  expect(out.held).toBeGreaterThanOrEqual(out.target);
+  expect(out.enemyAlive, 'the Cusco centre is not razed to win').toBe(true);
+  expect(out.enemyTag, 'no fabricated Huáscar tag on a generic centre').toBeNull();
   expect(out.atahualpa).not.toBe('failed');
   expect(out.won).toBe(true);
   expect(errors).toEqual([]);
@@ -434,6 +437,10 @@ test('plays m6 by advancing and cutting the canal with real orders', async ({ pa
   await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
     timeout: 30_000,
   });
+  const start = page.getByRole('button', { name: /COMENZAR MISIÓN/ });
+  await start.waitFor({ state: 'visible', timeout: 15_000 });
+  await start.click();
+  await start.waitFor({ state: 'detached', timeout: 15_000 });
   const out = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
@@ -457,13 +464,35 @@ test('plays m6 by advancing and cutting the canal with real orders', async ({ pa
       g.update(dt, t);
       t += dt;
     }
+    // Reaching the canal only activates the gate: the player must close it through its field card.
+    const atCanal = m.getObjectiveState('obj_canal') as string;
+    const openAtCanal = g.isCanalOpen() as boolean;
+    const wonAtCanal = m.won as boolean | null;
+    g.selectedUnits = [];
+    g.selectedBuilding = null;
+    g.selectedHeritage = 'chimu_canal';
+    g.refreshSelectionVisuals();
+    for (let i = 0; i < 12; i++) g.update(dt, t + i * dt);
+    const close = [...document.querySelectorAll('button')].find((b) => b.textContent?.includes('Cerrar compuerta'));
+    close?.dispatchEvent(new PointerEvent('pointerdown', { button: 0, bubbles: true }));
+    g.update(dt, t + 0.2);
     return {
       afterParamonga,
+      atCanal,
+      openAtCanal,
+      wonAtCanal,
+      card: !!close,
+      closed: !g.isCanalOpen(),
       canal: m.getObjectiveState('obj_canal') as string,
       won: m.won as boolean | null,
     };
   });
   expect(out.afterParamonga).toBe('completed');
+  expect(out.atCanal, JSON.stringify(out)).toBe('activo');
+  expect(out.openAtCanal, JSON.stringify(out)).toBe(true);
+  expect(out.wonAtCanal, 'the mission is not won at the canal').not.toBe(true);
+  expect(out.card, 'the field card exposes the close action').toBe(true);
+  expect(out.closed, JSON.stringify(out)).toBe(true);
   expect(out.canal).toBe('completed');
   expect(out.won).toBe(true);
   expect(errors).toEqual([]);

@@ -39,7 +39,7 @@ Target length 30–40 minutes. Acts are sequential objectives inside one `Missio
   the epilogue.
 - **Objective kinds** (`ObjectiveKind` in `src/campaign/types.ts`): `deliver` with a `heritageId` (hand
   materials over at a monument's field card; offerings, trades and construction share it), `hold`, `reach`,
-  `inspect`, `canal_open`, `research` and the classic `build`/`gather`/`survive`. A `hold` may also
+  `inspect`, `canal_open`/`canal_closed`, `research` and the classic `build`/`gather`/`survive`. A `hold` may also
   `consume` a resource per second while it advances; Caral uses it so an empty communal store pauses construction
   instead of resetting it. Prefer ones that need the mission's mechanic.
 - **Narration**: `MissionDef.narrator` names the speaker of every `dialogue` effect. Never "Comandante"

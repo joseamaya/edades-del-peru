@@ -182,6 +182,7 @@ export type ObjectiveKind =
   | 'inspect'
   | 'deliver'
   | 'canal_open'
+  | 'canal_closed'
   | 'network'
   | 'research';
 

@@ -79,8 +79,8 @@ enemy. The feria uses the game's `Mercado` building as an abstraction and says s
 | m3 Moche–Recuay        | Valleys, canals and attested conflict    | Open the canal, hold the huacas, exchange silver  | Defend vs counter-raid             | Control or loss of the valley          |
 | m4 Wari                | Planned expansion and provincial centres | Connect two centres, stockpile, hold the frontier | Expand vs consolidate              | Frontier influence                     |
 | m5 Yahuar Pampa        | Defence of Cusco                         | Hold Cusco, protect Cusi Yupanqui, counter-attack | Resist vs sortie                   | Survival or fall                       |
-| m6 Chimú–Inca          | Water as power                           | Advance, cut the canal, force surrender           | Assault vs siege                   | Chan Chan capitulates                  |
-| m6b Guerra Civil Inca  | Dynastic war and division                | Advance to Quipaipan, defeat Huáscar              | Advance vs consolidate             | Atahualpa wins; the empire is weakened |
+| m6 Chimú–Inca          | Water as power                           | Advance, close the gate, force surrender          | Assault vs siege                   | Chan Chan capitulates                  |
+| m6b Guerra Civil Inca  | Dynastic war and division                | Hold Quipaipan, capture Huáscar                   | Advance vs consolidate             | Atahualpa wins; the empire is weakened |
 | m7 Túpac Amaru         | Rebellion, the failed siege and memory   | Muster supplies, win at Sangarará, withdraw       | Hold vs. withdraw                  | Defeat, execution and legacy           |
 | m8 Independencia       | Campaign logistics and coordination      | Move, take the royalist centre, hold              | Timing and concentration           | Patriotic victory                      |
 | m9 Guerra del Pacífico | The documented defence and fall of Arica  | Refuse the summons, mine the approaches, hold the battery | Prepare vs. hold the last line    | The plaza falls; the defence becomes a symbol |

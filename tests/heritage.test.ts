@@ -30,6 +30,7 @@ describe('campaign heritage buildings', () => {
       'moche_canal',
       'chanca_pucara',
       'chimu_compound',
+      'chimu_canal',
       'colonial_church',
       'independence_chapel',
       'arica_battery',
@@ -62,6 +63,7 @@ describe('campaign heritage buildings', () => {
     expect(HERITAGE_BUILDINGS.moche_huaca_luna.operation).toBe('trade');
     expect(HERITAGE_BUILDINGS.moche_huaca_luna.operationResource).toBe('silver');
     expect(HERITAGE_BUILDINGS.moche_canal.operation).toBe('toggle-canal');
+    expect(HERITAGE_BUILDINGS.chimu_canal.operation).toBe('toggle-canal');
   });
 
   it('distinguishes the documented hero structures from plausible readings', () => {

@@ -56,7 +56,6 @@ export const m6bGuerraCivil: MissionDef = {
       { kind: UnitKind.WORKER, dx: -4, dz: 8, count: 3 },
     ],
   },
-  mark: [{ tag: 'huascar', kind: BuildingKind.CENTER, owner: 1 }],
   enemy: { active: true, difficulty: 'normal', aggression: 0.6 },
   objectives: [
     {
@@ -68,11 +67,15 @@ export const m6bGuerraCivil: MissionDef = {
     },
     {
       id: 'obj_quipaipan',
-      kind: 'destroy',
-      entityTag: 'huascar',
+      kind: 'hold',
+      pos: { ref: 'site', dx: 0, dz: 0 },
+      radius: 18,
+      time: 90,
+      minUnits: 6,
+      unitKind: UnitKind.SOLDIER,
       hidden: true,
       requires: 'obj_avanzar',
-      title: 'Derrota al ejército de Huáscar',
+      title: 'Sostén Quipaipan y captura a Huáscar',
     },
     { id: 'obj_atahualpa', kind: 'protect', entityTag: 'atahualpa', title: 'Mantén con vida a Atahualpa' },
   ],
@@ -104,7 +107,10 @@ export const m6bGuerraCivil: MissionDef = {
         {
           type: 'wave',
           owner: 1,
-          units: [{ kind: UnitKind.SOLDIER, count: 6 }],
+          units: [
+            { kind: UnitKind.SOLDIER, count: 8 },
+            { kind: UnitKind.MUSKETEER, count: 2 },
+          ],
           pos: { ref: 'enemy', dx: 0, dz: 0 },
           radius: 7,
           objective: 'position',
