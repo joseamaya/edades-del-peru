@@ -17,7 +17,7 @@ implementation contract.
 
 ## Mission structure
 
-Target length: 30–40 minutes. Four acts inside one `MissionDef` (`src/campaign/defs/campaign.ts`).
+Target length: 30–40 minutes. Four acts inside one `MissionDef` (`src/campaign/defs/missions/m2_chavin.ts`).
 
 | Act | Date         | Historical idea                          | Mechanic                                      | Site phase                    |
 | --- | ------------ | ---------------------------------------- | --------------------------------------------- | ----------------------------- |

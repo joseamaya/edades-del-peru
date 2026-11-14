@@ -72,7 +72,7 @@ apogee` (`CHAVIN_PHASE_PLAN`, `Game.setSitePhase`). Heritage cards and blockers 
 
 ## Implementation
 
-- Mission data: `src/campaign/defs/campaign.ts`; design: `chavin-model-mission.md`.
+- Mission data: `src/campaign/defs/missions/m2_chavin.ts`; design: `chavin-model-mission.md`.
 - Site registry: `src/model/defs/sites.ts`; phases and kit layout: `src/model/defs/chavinCity.ts`.
 - Architecture kit: `scripts/blender/build_chavin_architecture_kit.py`, exported to
   `src/assets/architecture/chavin/`, assembled by `src/model/defs/chavinCity.ts`.

@@ -36,7 +36,7 @@ Quipaipan. It is **not** a survey and **not** a historical photograph.
 
 ## Implementation
 
-- Mission data: `src/campaign/defs/campaign.ts`.
+- Mission data: `src/campaign/defs/missions/m6b_guerra_civil.ts`.
 - Site registry: `src/model/defs/sites.ts`; loader: `src/rendering/siteModels.ts`.
 - Heightfield: `scripts/build_cusco_heightmap.py` → `src/model/defs/cuscoHeightmap.ts`.
 - Heritage: `cusco_ushnu` in `src/model/defs/heritage.ts`.

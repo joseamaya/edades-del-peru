@@ -135,12 +135,12 @@ instead of the modular landmark or a hand-built schematic:
 - Heightfield: `yarn build:caral-heightmap` (`scripts/build_caral_heightmap.py`)
   → `src/model/defs/caralHeightmap.ts`; sampled by `src/rendering/Terrain.ts`
   through `src/model/defs/authoredTerrain.ts`.
-- Mission layout: `src/campaign/defs/campaign.ts` and `src/campaign/types.ts`
+- Mission layout: `src/campaign/defs/missions/m1_caral.ts` and `src/campaign/types.ts`
   (`layout.site`, 192 m map, base in Caral Bajo, Plaza Mayor focus).
 - Heritage proxies: invisible raycast volumes in `Game.ts` map the six pyramids
   and the Anfiteatro to their existing field cards. Their source AABBs feed the
   rectangular pathfinding blockers in `src/model/defs/sites.ts`.
-- Construction: `MissionSite.buildKeepout` in `src/campaign/defs/campaign.ts`
+- Construction: `MissionSite.buildKeepout` in `src/campaign/defs/missions/m1_caral.ts`
   rejects placement over the upper, residential and lower source footprints; the
   Caral Bajo base remains outside them.
 - Low walls: `Game.addSiteWallCollision` rasterizes vertical `Infra_Residential`,

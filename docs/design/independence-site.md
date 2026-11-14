@@ -36,7 +36,7 @@ route. It is **not** a survey and **not** a historical photograph.
 
 ## Implementation
 
-- Mission data: `src/campaign/defs/campaign.ts`.
+- Mission data: `src/campaign/defs/missions/m8_independencia.ts`.
 - Site registry: `src/model/defs/sites.ts`; loader: `src/rendering/siteModels.ts`.
 - Heightfield: `scripts/build_independence_heightmap.py` → `src/model/defs/independenceHeightmap.ts`.
 - Heritage: `independence_chapel` in `src/model/defs/heritage.ts`.

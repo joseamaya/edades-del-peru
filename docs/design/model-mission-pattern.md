@@ -27,7 +27,7 @@ those two are the "what" and the "why".
 ## 2. Mission structure: one mission, several acts
 
 Target length 30–40 minutes. Acts are sequential objectives inside one `MissionDef`
-(`src/campaign/defs/campaign.ts`), not separate missions.
+(`src/campaign/defs/missions/<id>.ts`), not separate missions.
 
 - **Acts**: each act teaches one game system and one historical idea. Its objectives start
   `hidden: true` (except Act I's) and are revealed by triggers when the previous act completes

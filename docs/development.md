@@ -290,7 +290,7 @@ Definition of Done and the building audit see
   meshes (visual only, no economy/obstacles). Deterministic from the base seed. Guarded by
   `tests/e2e/settlement.spec.ts`, `tests/e2e/ai.spec.ts` and `tests/e2e/skirmish-winnable.spec.ts` (which spawn/
   observe robustly rather than assuming the exact legacy ring).
-- `src/campaign/defs/campaign.ts` defines the 9 historical campaigns; `src/campaign/Mission.ts` evaluates
+- `src/campaign/defs/missions/<id>.ts` defines each historical mission and `src/campaign/defs/campaign.ts` lists them in campaign order; `src/campaign/Mission.ts` evaluates
   objectives/triggers. Each mission also declares an optional `region` (`MissionDef`), fed into
   `resolveMapProfile` so a scenario carries its own geography rather than the player's (e.g. m6 = the Inca on the
   Chimú `north_coast`). Objectives may be **bonus/optional** (`ObjectiveDef.optional`): they are evaluated and

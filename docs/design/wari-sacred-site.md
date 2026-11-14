@@ -66,7 +66,7 @@ and **not** a historical photograph.
 
 ## Implementation
 
-- Mission data: `src/campaign/defs/campaign.ts`.
+- Mission data: `src/campaign/defs/missions/m4_wari.ts`.
 - Site registry/loader: `src/model/defs/sites.ts`, `src/rendering/siteModels.ts`.
 - Network objective: `src/campaign/Mission.ts` and `src/campaign/types.ts`.
 - Heritage cards: `src/model/defs/heritage.ts`; economy cards: `buildingCards.ts`.
