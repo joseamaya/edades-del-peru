@@ -40,8 +40,9 @@ describe('campaign series', () => {
       'inca',
       'virreinato',
       'independencia',
-      'republica',
     ]);
+    // La República is rebuilt from scratch: listed, but nothing in it is playable yet.
+    expect(getCampaign('republica')?.status).toBe('coming-soon');
   });
 
   it('lays every chapter out in play order, released and planned missions interleaved', () => {
@@ -77,7 +78,8 @@ describe('campaign series', () => {
     expect(missionPosition('m5_yahuar_pampa')).toEqual({ n: 2, total: 10 });
     expect(missionPosition('m6b_guerra_civil')).toEqual({ n: 10, total: 10 });
     expect(missionPosition('m7_tupac_amaru')).toEqual({ n: 9, total: 9 });
-    expect(missionPosition('m9_guerra_pacifico')).toEqual({ n: 3, total: 5 });
+    // La República is being rebuilt: its chapter shows only planned missions.
+    expect(missionPosition('p_rep_arica')).toBeNull();
     expect(missionPosition('p_inca_collao')).toBeNull();
   });
 
@@ -95,7 +97,6 @@ describe('campaign series', () => {
       'm7_tupac_amaru',
       'm_junta_cusco',
       'm8_independencia',
-      'm9_guerra_pacifico',
     ]);
     expect(getReleasedMission('m1_caral')?.title).toBe('La Ciudad Sagrada');
     expect(getReleasedMission('m2_chavin')?.title).toBe('El Oráculo de Chavín');
@@ -110,7 +111,6 @@ describe('campaign series', () => {
     expect(nextReleasedMission('m7_tupac_amaru')).toBeUndefined();
     expect(nextReleasedMission('m_junta_cusco')?.id).toBe('m8_independencia');
     expect(nextReleasedMission('m8_independencia')).toBeUndefined();
-    expect(nextReleasedMission('m9_guerra_pacifico')).toBeUndefined();
   });
 
   it('maps every mission to its campaign', () => {
@@ -120,7 +120,8 @@ describe('campaign series', () => {
     expect(getCampaignForMission('m7_tupac_amaru')?.id).toBe('virreinato');
     expect(getCampaignForMission('m_junta_cusco')?.id).toBe('independencia');
     expect(getCampaignForMission('m8_independencia')?.id).toBe('independencia');
-    expect(getCampaignForMission('m9_guerra_pacifico')?.id).toBe('republica');
+    expect(getCampaign('republica')?.releasedMissionIds).toEqual([]);
+    expect(getCampaign('republica')?.status).toBe('coming-soon');
     expect(getCampaign('preinca')?.missionIds).toEqual(['m1_caral', 'm2_chavin', 'm3_moche_recuay', 'm4_wari']);
   });
 

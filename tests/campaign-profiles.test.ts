@@ -25,7 +25,6 @@ const EXPECTED_REGION: Record<string, GeographicRegion> = {
   m7_tupac_amaru: 'high_andes',
   m_junta_cusco: 'andean_valley',
   m8_independencia: 'andean_valley',
-  m9_guerra_pacifico: 'south_coast',
 };
 
 function resolve(mis: Mission) {
@@ -78,7 +77,6 @@ describe('campaign map profiles', () => {
       'm6b_guerra_civil',
       'm_junta_cusco',
       'm8_independencia',
-      'm9_guerra_pacifico',
     ]);
   });
 

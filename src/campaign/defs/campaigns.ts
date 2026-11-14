@@ -132,13 +132,14 @@ export const CAMPAIGNS: CampaignDef[] = [
     description: 'La defensa de la joven república: la escuadra española en el Callao y la Guerra del Pacífico.',
     summary:
       'En 1866 las baterías del Callao enfrentan a la escuadra española. En la Guerra del Pacífico, el Perú resiste en Tarapacá, en el morro de Arica y en las líneas de San Juan y Miraflores, y Andrés A. Cáceres sostiene la Campaña de la Breña en la sierra central.',
-    missionIds: ['m9_guerra_pacifico'],
-    releasedMissionIds: ['m9_guerra_pacifico'],
-    status: 'available',
+    // Being rebuilt from scratch: the old Arica scenario inverted the outcome (Arica «resistía»).
+    missionIds: [],
+    releasedMissionIds: [],
+    status: 'coming-soon',
     era: '1866 — 1883',
     accent: '#7a6a52',
     prologue: REPUBLICA_PROLOGUE,
-    path: ['p_rep_dos_de_mayo', 'p_rep_tarapaca', 'm9_guerra_pacifico', 'p_rep_lima', 'p_rep_brena'],
+    path: ['p_rep_dos_de_mayo', 'p_rep_tarapaca', 'p_rep_arica', 'p_rep_lima', 'p_rep_brena'],
   },
 ];
 

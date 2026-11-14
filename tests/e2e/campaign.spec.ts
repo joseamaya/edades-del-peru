@@ -101,7 +101,6 @@ test('every campaign mission shows its educational epilogue on victory', async (
     'm7_tupac_amaru',
     'm_junta_cusco',
     'm8_independencia',
-    'm9_guerra_pacifico',
   ]) {
     const page = await context.newPage();
     await page.goto(`/?mission=${mission}&seed=777&fog=0&low=1&noloop=1`);
@@ -269,10 +268,7 @@ test('an informational tutorial step advances on its own', async ({ page }) => {
 
 test('chapter IV tutorials open with their first step', async ({ page }) => {
   test.setTimeout(240_000);
-  for (const [id, title] of [
-    ['m8_independencia', 'La Independencia'],
-    ['m9_guerra_pacifico', 'La Defensa de Arica'],
-  ]) {
+  for (const [id, title] of [['m8_independencia', 'La Independencia']]) {
     await page.goto(`/?mission=${id}&seed=777&fog=0&low=1&intro=0`);
     const overlay = page.locator('.ed-overlay', { hasText: title });
     await expect(overlay).toBeVisible({ timeout: 30_000 });
@@ -319,15 +315,9 @@ test('later campaign briefing and tutorial fit 1600x900 (m5-m6b)', async ({ cont
   await expectCampaignLayout(context, ['m_tambotoco', 'm5_yahuar_pampa', 'm6_chimu_inca', 'm6b_guerra_civil']);
 });
 
-test('later campaign briefing and tutorial fit 1600x900 (m7-m9)', async ({ context }) => {
+test('later campaign briefing and tutorial fit 1600x900 (m7-m8)', async ({ context }) => {
   test.setTimeout(360_000);
-  await expectCampaignLayout(context, [
-    'm_lima',
-    'm7_tupac_amaru',
-    'm_junta_cusco',
-    'm8_independencia',
-    'm9_guerra_pacifico',
-  ]);
+  await expectCampaignLayout(context, ['m_lima', 'm7_tupac_amaru', 'm_junta_cusco', 'm8_independencia']);
 });
 
 test('later campaign briefings show their draft intro art with art=all', async ({ page }) => {
@@ -341,7 +331,6 @@ test('later campaign briefings show their draft intro art with art=all', async (
     'm7_tupac_amaru',
     'm_junta_cusco',
     'm8_independencia',
-    'm9_guerra_pacifico',
   ]) {
     await page.goto(`/?mission=${id}&seed=777&fog=0&low=1&art=all&intro=0`);
     const img = page.locator('.ed-briefing .ed-art img');
@@ -364,7 +353,6 @@ test('the missions with corrected rosters boot with units and no errors', async 
     'm_lima',
     'm7_tupac_amaru',
     'm_junta_cusco',
-    'm9_guerra_pacifico',
   ];
   for (const id of ids) {
     await page.goto(`/?mission=${id}&seed=777&fog=0&low=1`);
@@ -382,7 +370,7 @@ test('the missions with corrected rosters boot with units and no errors', async 
 });
 
 test('a mission roster restriction blocks disallowed units', async ({ page }) => {
-  await page.goto('/?mission=m9_guerra_pacifico&seed=777&fog=0&low=1&noloop=1');
+  await page.goto('/?mission=m_tambotoco&seed=777&fog=0&low=1&noloop=1');
   await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
     timeout: 30_000,
   });
@@ -391,7 +379,11 @@ test('a mission roster restriction blocks disallowed units', async ({ page }) =>
     g.loop.stop();
     const c = g.playerCenter(0);
     const b = g.spawnScriptedBuilding('barracks', 0, c.x + 6, c.z + 6);
-    // the naval mission has no siege train, but infantry is allowed
+    // The party starts at its exact population; room to train isolates the roster check.
+    g.players[0].bonus.population += 10;
+    g.players[0].resources.food += 500;
+    g.runtime.updatePopulation();
+    // the ayllu party has no siege train, but its militia is allowed
     return { artillery: g.trainUnit(b.id, 'artillery'), soldier: g.trainUnit(b.id, 'soldier') };
   });
   expect(out.artillery).toBe(false);
@@ -481,7 +473,6 @@ test('authored campaign geography spawns its local base and features', async ({ 
     { id: 'm7_tupac_amaru', flats: true, decor: null, site: 'colonial_site', canal: false },
     { id: 'm_junta_cusco', flats: true, decor: 'mission_decor_patriotas_camp', site: 'cusco_junta_site', canal: false },
     { id: 'm8_independencia', flats: true, decor: null, site: 'independence_site', canal: false },
-    { id: 'm9_guerra_pacifico', flats: true, decor: null, site: 'arica_site', canal: false },
   ];
   for (const item of cases) {
     const page = await context.newPage();
@@ -591,37 +582,6 @@ test('m4 network opens the contested frontier', async ({ page }) => {
   expect(out.active).toBe('activo');
   expect(out.frontier).toBe('completed');
   expect(out.won).not.toBe(true);
-});
-
-test('m9 land defense fails when Bolognesi falls', async ({ page }) => {
-  await page.goto('/?mission=m9_guerra_pacifico&seed=777&fog=0&low=1&noloop=1');
-  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
-    timeout: 30_000,
-  });
-  const out = await page.evaluate(() => {
-    const g = (window as unknown as { game: any }).game;
-    g.loop.stop();
-    if (g.getPaused()) g.togglePause();
-    const m = g.mission;
-    const bolognesi = [...g.units.values()].find((u: any) => u.tag === 'bolognesi') as any;
-    const before = {
-      active: m.getObjectiveState('obj_bolognesi') as string,
-      alive: !!bolognesi && !bolognesi.dead,
-    };
-    bolognesi.die();
-    g.update(1 / 60, 0);
-    return {
-      before,
-      after: m.getObjectiveState('obj_bolognesi') as string,
-      ended: m.ended as boolean,
-      won: m.won as boolean | null,
-    };
-  });
-  expect(out.before.alive).toBe(true);
-  expect(out.before.active).toBe('activo');
-  expect(out.after).toBe('failed');
-  expect(out.ended).toBe(true);
-  expect(out.won).toBe(false);
 });
 
 test('m8 holds Junín and then Ayacucho with Sucre alive', async ({ page }) => {
@@ -837,7 +797,6 @@ test('chapter endings name the right campaign ordinal', async ({ page }) => {
     ['m6b_guerra_civil', 'Fin de la segunda campaña.'],
     ['m7_tupac_amaru', 'Fin de la tercera campaña.'],
     ['m8_independencia', 'Fin de la cuarta campaña.'],
-    ['m9_guerra_pacifico', 'Fin de la quinta campaña.'],
   ]) {
     await page.goto(`/?mission=${id}&seed=777&fog=0&low=1&noloop=1`);
     await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {

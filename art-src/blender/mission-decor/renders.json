@@ -127,37 +127,6 @@
       "renderedAt": "2026-10-31T10:00:00-05:00"
     },
     {
-      "id": "m9_arica-intro",
-      "type": "campaign-intro",
-      "scope": "mission",
-      "campaignId": "la-senda-del-sol",
-      "missionId": "m9_guerra_pacifico",
-      "civilization": "republica",
-      "period": 8,
-      "era": 4,
-      "region": "south_coast",
-      "topic": "campaign_intro",
-      "sceneType": "campaign_scene",
-      "asset": "media/generated/campaigns/la-senda-del-sol/m9_arica/intro.webp",
-      "render": "mission-decor/renders/arica_hero.png",
-      "sceneFile": "mission-decor/arica_battery_lod0.blend",
-      "confidence": "Infraestructura documentada; planta y remates plausibles.",
-      "camera": "hero",
-      "renderer": "workbench",
-      "license": "project-owned",
-      "author": "Miguel Amaya",
-      "sources": [
-        "docs/historia/campanas/guerra_del_pacifico.md",
-        "docs/historia/arquitectura.md",
-        "art-src/blender/mission-decor/README.md"
-      ],
-      "alt": "Vista de la batería, el almacén y el muelle de la terraza portuaria de Arica.",
-      "caption": "Terraza portuaria y batería de Arica",
-      "nature": "abstraction",
-      "sourceSha256": "4d148e26ff3916d266eddbcf8a7308533e1ad0a6d3a7a3518dc13f70f0633f1c",
-      "renderedAt": "2026-10-31T10:00:00-05:00"
-    },
-    {
       "id": "m6b_guerra_civil-intro",
       "type": "campaign-intro",
       "scope": "mission",

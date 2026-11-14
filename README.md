@@ -13,7 +13,7 @@ The game is **historically grounded** on one key point: every match is played in
 only **coetaneous civilizations** can face each other (e.g. Moche with Recuay, Chanca with Inca, never Moche
 with Chimú).
 
-**Play all five campaigns:** <https://joseamaya.github.io/edades-del-peru/>
+**Play the campaigns:** <https://joseamaya.github.io/edades-del-peru/>
 
 ## Media
 
@@ -81,12 +81,12 @@ this release (the `?play=1` debug harness remains for tests).
 | **El Tahuantinsuyo**          | From the Ayar myth to the civil war           | **Four missions playable**  |
 | **El Virreinato**             | From the founding of Lima to Túpac Amaru II   | **Two missions playable**   |
 | **La Independencia**          | La Junta del Cusco and Ayacucho               | **Two missions playable**   |
-| **La República**              | Arica and the War of the Pacific              | **One mission playable**    |
+| **La República**              | The War of the Pacific                        | **In development** (Arica is being rebuilt) |
 
-Mission ids remain stable (`m1_caral` … `m9_guerra_pacifico`, plus `m6b_guerra_civil`, `m_junta_cusco`, `m_tambotoco` and `m_lima`). All released missions appear in
+Mission ids remain stable (`m1_caral` … `m8_independencia`, plus `m6b_guerra_civil`, `m_junta_cusco`, `m_tambotoco` and `m_lima`). All released missions appear in
 menus, the Codex and progress; `?mission=ID` remains available for QA.
 The campaign [quality bar](./docs/design/campaign-quality-bar.md) records the gates a mission must meet.
-Caral, Chavín, Moche and Wari have authored, source-backed sites; m5–m9 and m6b add dedicated low-poly GLB
+Caral, Chavín, Moche and Wari have authored, source-backed sites; m5–m8 and m6b add dedicated low-poly GLB
 landmarks over authored terrain; `m_junta_cusco` and `m_lima` reuse the colonial plaza with a procedural street life, and `m_tambotoco` has its own ayllu site, each on its own 256 m transect.
 
 The current release status, art gate and publish checklist are in
@@ -101,7 +101,7 @@ The game teaches history while you play:
   «¿Sabías que…?» and its **sources** (collapsible).
 - **Guided tutorial**: Caral teaches selecting, building and exploring; later missions teach the
   offering/feria loop, the canal and provincial network, Inca defence and expansion, the colonial
-  assault-or-siege choice, and the Junín/Ayacucho and Arica defences (respecting _Mostrar consejos_).
+  assault-or-siege choice, and the Junín/Ayacucho defence (respecting _Mostrar consejos_).
 - **Codex** (📖 in the menu): a browser of periods, civilizations and campaigns, with the **historical dossiers**
   from [`docs/historia/`](./docs/historia/) and their sources.
 
@@ -179,7 +179,7 @@ src/
   rendering/   Renderer, PostFX, Sky, Water, Terrain (coast/andes/altiplano), Particles, Textures
   model/       Defs for periods, civs, units, buildings, techs + parametric model generator
   entities/    Unit, Building, Resource node, Projectile, Views
-  campaign/    Mission engine (objectives, triggers, waves) + 13 historical missions in five campaigns
+  campaign/    Mission engine (objectives, triggers, waves) + 12 historical missions in four playable campaigns
   game/        A* pathfinding, Fog of war, Opponent AI, Economy (worker assignment)
   ui/          Full Spanish HUD (menu by period)
   audio/       Procedural AudioEngine (WebAudio)

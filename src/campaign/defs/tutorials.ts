@@ -141,38 +141,6 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
     ],
   },
-  m9_guerra_pacifico: {
-    steps: [
-      {
-        id: 'select',
-        text: 'Selecciona a los defensores de Arica. Bolognesi y el puerto deben resistir el asalto.',
-        check: { type: 'selectUnit', unitKind: UnitKind.RIFLEMAN },
-      },
-      {
-        id: 'battery',
-        text: 'La batería es el fuerte que cubre el puerto: su cañón dispara a las oleadas. Lleva fusileros junto a ella y no dejes que la asalten.',
-        highlight: '#ed-objectives',
-        check: { type: 'unitNearEntity', entityTag: 'puerto', unitKind: UnitKind.RIFLEMAN, radius: 8 },
-      },
-      {
-        id: 'bolognesi',
-        text: 'Francisco Bolognesi manda la defensa: mantenlo con vida y lejos del asalto. Si cae, Arica cae con él.',
-        highlight: '#ed-objectives',
-        check: { type: 'elapsed', seconds: 12 },
-      },
-      {
-        id: 'counter',
-        text: 'La contraofensiva es opcional: si el asalto flaquea, golpea el mando chileno para quebrarlo antes de la noche.',
-        check: { type: 'elapsed', seconds: 12 },
-      },
-      {
-        id: 'resist',
-        text: 'Defiende el puerto y mantén con vida a Bolognesi hasta que termine el asalto, a los 10 minutos.',
-        highlight: '#ed-objectives',
-        check: { type: 'objectiveCompleted', objectiveId: 'obj_resistir' },
-      },
-    ],
-  },
   m6b_guerra_civil: {
     steps: [
       {

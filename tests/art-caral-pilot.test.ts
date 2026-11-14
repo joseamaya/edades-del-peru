@@ -27,7 +27,6 @@ const EXPECTED = [
   'm6b_guerra_civil-intro',
   'm7_colonial-intro',
   'm8_independencia-intro',
-  'm9_arica-intro',
 ];
 const EXPECTED_META: Record<string, { civilization: string; period: number; region: string }> = {
   'm1_caral-intro': { civilization: 'caral', period: 0, region: 'central_coast' },
@@ -39,7 +38,6 @@ const EXPECTED_META: Record<string, { civilization: string; period: number; regi
   'm6b_guerra_civil-intro': { civilization: 'inca', period: 5, region: 'high_andes' },
   'm7_colonial-intro': { civilization: 'inca', period: 6, region: 'high_andes' },
   'm8_independencia-intro': { civilization: 'patriotas', period: 7, region: 'andean_valley' },
-  'm9_arica-intro': { civilization: 'republica', period: 8, region: 'south_coast' },
 };
 
 describe('Blender campaign art', () => {

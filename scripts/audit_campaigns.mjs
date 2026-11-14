@@ -15,7 +15,6 @@ const MISSIONS = [
   ['m7_tupac_amaru', 'La Gran Rebelión'],
   ['m_junta_cusco', 'La Junta del Cusco'],
   ['m8_independencia', 'La Independencia'],
-  ['m9_guerra_pacifico', 'La Defensa de Arica'],
 ];
 
 const VIEWPORTS = [

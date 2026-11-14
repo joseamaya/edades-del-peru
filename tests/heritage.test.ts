@@ -32,7 +32,6 @@ describe('campaign heritage buildings', () => {
       'chimu_compound',
       'colonial_church',
       'independence_chapel',
-      'arica_battery',
       'cusco_ushnu',
       'tambotoco_huanacaure',
       'lima_plaza',

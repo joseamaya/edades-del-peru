@@ -64,7 +64,7 @@ describe('ranged unit identity', () => {
     }
   });
 
-  it('m7, m8 and m9 use firearm identities coherent with 1780–1883', () => {
+  it('m7 and m8 use firearm identities coherent with 1780–1824', () => {
     for (const mission of firearmEra) {
       const era = getPeriod(mission.period).level;
       for (const kind of [UnitKind.MUSKETEER, UnitKind.RIFLEMAN, UnitKind.SNIPER]) {
@@ -115,25 +115,13 @@ describe('ranged unit identity', () => {
     }
   });
 
-  it('m7 excludes the arquebusier and m9 never shows a Hondero', () => {
+  it('m7 excludes the arquebusier', () => {
     const m7 = MISSIONS.find((m) => m.id === 'm7_tupac_amaru')!;
     expect(m7.allowedUnits).not.toContain(UnitKind.MUSKETEER);
     for (const kind of missionUnits(m7)) {
       expect(['arquebusier', 'musketeer'], `m7 renders ${kind} with an early-colonial model`).not.toContain(
         getUnitModel(kind, getPeriod(m7.period).level).type,
       );
-    }
-
-    const mission = MISSIONS.find((m) => m.id === 'm9_guerra_pacifico')!;
-    const era = getPeriod(mission.period).level;
-    expect(mission.allowedUnits).not.toContain(UnitKind.MUSKETEER);
-    const kinds = new Set([...missionUnits(mission), ...(mission.allowedUnits ?? [])]);
-    for (const kind of kinds) {
-      expect(unitDisplayName(kind, undefined, era), `${mission.id} shows ${kind} as Hondero`).not.toBe('Hondero');
-      expect(['musketeer', 'rifleman'], `${mission.id} renders ${kind} with a pre-firearm model`).not.toContain(
-        getUnitModel(kind, era).type,
-      );
-      expect(unitMinPeriod(kind)).toBeLessThanOrEqual(mission.period);
     }
   });
 });

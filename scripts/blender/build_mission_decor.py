@@ -212,34 +212,11 @@ def cusco(detail):
     join('cusco_inca')
 
 
-def arica(detail):
-    stone = material('MAT-Stone_Arica', (0.38, 0.35, 0.30))
-    dark = material('MAT-Stone_Arica_Dark', (0.24, 0.22, 0.19))
-    wood = material('MAT-Wood_Arica', (0.40, 0.27, 0.16))
-    sand = material('MAT-Sand_Arica', (0.68, 0.58, 0.43))
-    box('terrace', (0, 0, 0.5), (16, 11, 1.0), sand)
-    box('battery', (0, 2.0, 1.8), (12, 2.2, 1.8), stone)
-    box('battery-top', (0, 2.0, 2.8), (12.6, 2.6, 0.35), dark)
-    for x in (-4.2, 0, 4.2):
-        cylinder('gun', (x, 1.1, 2.4), 0.35, 2.4, dark, 8)
-    box('warehouse', (-5.0, -2.5, 1.8), (5, 4, 2.8), wood)
-    box('warehouse-roof', (-5.0, -2.5, 3.3), (5.6, 4.6, 0.3), dark)
-    box('pier', (5.0, -3.0, 0.8), (2.5, 6, 0.4), wood)
-    for z in (-5.4, -3.0, -0.6):
-        cylinder('pier-post', (5.0, z, 0.5), 0.25, 2.0, wood, 6)
-    if detail:
-        for x in (-4.5, 4.5):
-            cylinder('flagpole', (x, -4.5, 3.0), 0.12, 5.0, dark, 6)
-        box('shed', (4.5, 3.0, 1.5), (3.0, 2.5, 2.0), wood)
-    join('arica_battery')
-
-
 MODELS = [
     ('chanca_fortress', chanca),
     ('chimu_compound', chimu),
     ('colonial_church', lambda detail: church(detail, 'colonial_church')),
     ('independence_chapel', independence),
-    ('arica_battery', arica),
     ('cusco_inca', cusco),
 ]
 
