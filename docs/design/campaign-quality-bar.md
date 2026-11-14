@@ -40,23 +40,22 @@ below, which record each mission's own review and are kept for history). **M** m
 | Mission            | Hist | Ident | Play | Contr | Onb | Clos | UX | Vis | Pers | Tests | Docs | Struct | Open | Art | Perf | Scale |
 | ------------------ | ---- | ----- | ---- | ----- | --- | ---- | -- | --- | ---- | ----- | ---- | ------ | ---- | --- | ---- | ----- |
 | m1_caral           | M    | M     | M    | M     | M   | M    | M  | M   | M    | M     | M    | M      | M    | M   | M    | M     |
-| m2_chavin          | M    | M     | P    | M     | M   | M    | M  | P   | M    | P     | P    | M      | M    | X   | M    | M     |
+| m2_chavin          | M    | M     | P    | M     | M   | M    | M  | P   | M    | M     | P    | M      | M    | X   | M    | M     |
 | m3_moche_recuay    | P    | M     | P    | P     | P   | P    | M  | P   | M    | P     | P    | X      | X    | X   | X    | X     |
 | m4_wari            | P    | M     | M    | P     | P   | P    | M  | P   | M    | P     | P    | X      | X    | X   | X    | X     |
-| m_tambotoco        | M    | M     | P    | M     | M   | M    | M  | P   | P    | M     | M    | M      | M    | –   | P    | M     |
+| m_tambotoco        | M    | M     | P    | M     | M   | M    | M  | P   | M    | M     | M    | M      | M    | –   | P    | M     |
 | m5_yahuar_pampa    | P    | M     | M    | P     | M   | P    | M  | P   | M    | M     | P    | X      | X    | P   | X    | X     |
 | m6_chimu_inca      | P    | P     | M    | P     | M   | P    | M  | M   | M    | M     | P    | X      | X    | P   | X    | X     |
 | m6b_guerra_civil   | P    | P     | M    | M     | M   | P    | M  | P   | M    | M     | P    | X      | X    | P   | X    | X     |
-| m_lima             | M    | M     | P    | M     | M   | M    | M  | P   | P    | P     | P    | M      | M    | –   | P    | M     |
+| m_lima             | M    | M     | M    | M     | M   | M    | M  | P   | M    | M     | P    | M      | M    | –   | P    | M     |
 | m7_tupac_amaru     | M    | M     | M    | M     | M   | M    | M  | P   | M    | M     | M    | M      | M    | P   | M    | M     |
-| m_junta_cusco      | M    | M     | P    | M     | M   | M    | M  | P   | P    | P     | P    | M      | M    | –   | P    | M     |
+| m_junta_cusco      | M    | M     | M    | M     | M   | M    | M  | P   | M    | M     | P    | M      | M    | –   | P    | M     |
 | m8_independencia   | P    | P     | P    | P     | M   | P    | M  | P   | P    | P     | X    | X      | X    | X   | X    | X     |
 | m9_guerra_pacifico | M    | M     | M    | M     | M   | M    | M  | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 
 **Verdict.** **Caral meets every gate** (closed 2026-11-14: Act III card recaptured with the works camp; the
 camp pieces, vegetation, household props and fauna approved by a recorded human review). Chavín,
-Tambotoco, Lima and the Junta follow the model pattern and lack mostly art, a no-cheat playtest and a
-mid-mission save test. m3–m6b and m8 still use the pre-model template: no acts, intro, 256 m map or
+Tambotoco, Lima and the Junta follow the model pattern and lack mostly art. m3–m6b and m8 still use the pre-model template: no acts, intro, 256 m map or
 bench scene. **m7 and m9 now meet the scale, opening and performance gates** (256 m, painted ground,
 in-engine intros and epilogues, bench scenes); their human art review is pending.
 
@@ -74,14 +73,16 @@ in-engine intro and epilogue, bench scenes and the scale guard).
 **Work order, highest value first.**
 
 1. **Invented outcomes:** fixed for m9 (#468) and m7 (#469). Both play their documented outcomes now.
-2. **No-cheat playtests:** drop the HP pinning (`keepAlive`) from the Chavín, Tambotoco, Lima and Junta
-   playtests (M).
+2. **No-cheat playtests:** HP pinning removed (2026-11-14) from Chavín, Tambotoco, Lima and the Junta;
+   Chavín and Tambotoco keep **Play P** because the harness still uses direct field-card/tech calls and
+   never fights the valley wave. A manual no-cheat playtest remains recommended.
 3. **Art review:** record the human review of Caral's camp pieces and the Chavín kit; recapture Caral's Act
    III card (S).
 4. **Model-mission rebuilds** for m3–m6b and m8 (256 m transect, acts, intro, bench, certainty table)
    (L each); m7 and m9 are done; quick wins first: m6's canal must really close, m6b's victory must
    capture Huáscar, not raze a building (M).
-5. **Mid-mission save/load E2E** for missions with phases or truces (Tambotoco, Lima, Junta) (M).
+5. **Mid-mission save/load E2E:** fixed (2026-11-14) for Tambotoco (`inticancha`), Lima (`ciudad`) and
+   La Junta (the Apacheta hold).
 
 ## Caral gold-master status
 
@@ -117,7 +118,7 @@ Reviewed 2026-11-07 against the model-mission gates. Status is honest about the 
 | ----------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | History     | Met                  | `docs/historia/campanas/chavin.md` with its certainty table; UNESCO 330, Plan de Manejo 2020, Rick et al., Burger/Kembel; no invented war.                                             |
 | Identity    | Met                  | Ceremonial prestige: offerings fund the temple, pilgrimage fills the plaza, the fair links long-distance exchange.                                                                     |
-| Play        | Met (automated)      | `campaign-playtest.spec.ts` reaches victory through the four acts; the market and offerings use real commands, stone hand-over uses `Mission.recordDelivery`. Manual playtest pending. |
+| Play        | Partial (automated)  | The playtest reaches victory without HP pinning, but still teleports the holder and invokes offerings, techs and heritage directly; the manual no-cheat playtest is pending. |
 | Contract    | Met                  | Acts II–IV start hidden and are revealed by triggers; optional Plaza, gallery, Portada and major offering never gate victory.                                                          |
 | Onboarding  | Met                  | Nine-step non-blocking Chavín tutorial, briefing and Codex; the briefing shows Act I only.                                                                                             |
 | Closure     | Met                  | Decline epilogue with its own capture and optional-achievement summary; “Continuar” to m3.                                                                                             |
@@ -271,7 +272,7 @@ procedural life overlay (houses, market, well and people).
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | History     | Met: `docs/historia/campanas/junta_cusco.md` with a certainty table; the epilogue tells the documented defeat.                                                                              |
 | Identity    | Met: many people and few firearms; the player delays Ramírez and saves the leaders, not the war.                                                                                            |
-| Play        | Met (automated wiring): the three-act chain completes with move/build/attack orders; attrition is isolated in the test and the no-cheat manual playtest is pending.                         |
+| Play        | Met: the three-act chain completes with move/build/attack orders and no HP pinning; Pumacahua stays in reserve. The Cabildo visit still uses the field-card API, and a human playtest remains recommended. |
 | Contract    | Met: Acts II–III hidden, optional Melgar and the Junta's artillery never gate victory, Pumacahua protected from the start.                                                                  |
 | Onboarding  | Met: six-step non-blocking tutorial, briefing and Codex.                                                                                                                                    |
 | Closure     | Met: epilogue states Umachiri, the executions and Melgar; no counterfactual is hidden.                                                                                                      |
@@ -296,7 +297,7 @@ Quizu's hills) and starts as the traced plaza; the colonial church and the stree
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | History     | Met: `docs/historia/campanas/lima.md` with a certainty table; the valley was inhabited and the defence relied on Andean allies.                                       |
 | Identity    | Met: found the city and hold the siege; the curaca pact is optional.                                                                                                  |
-| Play        | Partial (automated): three acts complete with real move/build/attack orders, but the playtest resets player HP every step; a manual playtest is pending.                                                                |
+| Play        | Met: three acts complete with real move/build/attack orders and no HP pinning; the plaza visit still uses the field-card API, and a human playtest remains recommended.                                                  |
 | Contract    | Met: Act II–III hidden, the curaca pact optional, Pizarro protected from the start.                                                                                   |
 | Onboarding  | Met: six-step tutorial, briefing and Codex.                                                                                                                           |
 | Closure     | Met: the epilogue states that Cusco remains besieged; no counterfactual is hidden.                                                                                    |
@@ -324,7 +325,7 @@ The table separates what is implemented from the art and performance passes that
 | History     | Met: `docs/historia/campanas/tambotoco.md` with a certainty table; the dossier states that Sarmiento is hostile and Garcilaso gives another version.                           |
 | Identity    | Met: water and land as leverage, not a pitched battle; the four canchas order the foundation.                                                                                  |
 | Characters  | Met: the eight siblings march as named units; Cachi, Uchu and Auca leave a named huaca.                                                                                        |
-| Play        | Partial: `yarn record --mode=full` reaches victory with real orders; the E2E playtest still pins player HP (`keepAlive`) and skips the valley wave; a manual playtest is pending.                                                                 |
+| Play        | Partial: no HP pinning and the acts build/visit correctly, but the E2E never fights the valley wave; `yarn record --mode=full` and a human playtest are still needed.                                                                 |
 | Contract    | Met: Acts II–IV hidden, the hualla visit is optional, and the acequia is the only required water step.                                                                         |
 | Onboarding  | Met: six-step tutorial that teaches controls (move, camp store, hunt, visit, water, canchas), briefing with the eight siblings and Codex.                                                                                                          |
 | Closure     | Met: the epilogue tells the foundation as tradition and names both versions; no counterfactual is hidden.                                                                      |

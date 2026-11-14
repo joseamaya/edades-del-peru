@@ -707,7 +707,6 @@ test('plays m2 Chavín through the four acts with real construction and offering
     const tick = (seconds: number) => {
       for (let i = 0; i < Math.ceil(seconds / dt) && !m.ended; i++) {
         document.querySelector<HTMLElement>('.ed-mission-card')?.click();
-        for (const b of g.buildings.values()) if (b.owner === 0 && !b.dead) b.hp = b.maxHp;
         if (!reached && Math.hypot(holder.pos.x - anchor.x, holder.pos.z - anchor.z) < 8) reached = true;
         holder.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
         g.update(dt, t);
@@ -984,13 +983,8 @@ test('plays La Junta del Cusco through its three acts with real orders', async (
     const dt = 1 / 60;
     let t = 0;
     const dismissCard = () => document.querySelector('.ed-mission-card')?.click();
-    // The manual playtest covers the no-cheat attrition path; this spec isolates the three-act wiring.
-    const keepAlive = () => {
-      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
-    };
     const run = (seconds: number) => {
       for (let i = 0; i < Math.ceil(seconds / dt) && !m.ended; i++) {
-        keepAlive();
         if (i % 15 === 0) dismissCard();
         g.update(dt, t);
         t += dt;
@@ -1011,7 +1005,6 @@ test('plays La Junta del Cusco through its three acts with real orders', async (
     const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker') as any;
     move([worker.id], 72, 58);
     for (let i = 0; i < Math.ceil(90 / dt) && !m.ended; i++) {
-      keepAlive();
       if (i % 15 === 0) dismissCard();
       g.update(dt, t);
       t += dt;
@@ -1053,7 +1046,6 @@ test('plays La Junta del Cusco through its three acts with real orders', async (
         false,
       );
     for (let i = 0; i < Math.ceil(120 / dt) && !m.ended; i++) {
-      keepAlive();
       if (i % 15 === 0) dismissCard();
       g.update(dt, t);
       t += dt;
@@ -1061,12 +1053,14 @@ test('plays La Junta del Cusco through its three acts with real orders', async (
     }
     const cuartel = m.getObjectiveState('a1_cuartel') as string;
 
+    // Pumacahua must survive: a real player keeps the commander out of the melee.
+    const pumacahua = [...g.units.values()].find((u: any) => u.tag === 'pumacahua') as any;
     const army = [...g.units.values()]
-      .filter((u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker')
+      .filter((u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker' && u.tag !== 'pumacahua')
       .map((u: any) => u.id);
+    if (pumacahua) move([pumacahua.id], base.x, base.z);
     move(army, 140, 168, true);
     for (let i = 0; i < Math.ceil(120 / dt) && !m.ended; i++) {
-      keepAlive();
       if (i % 15 === 0) dismissCard();
       g.update(dt, t);
       t += dt;
@@ -1074,7 +1068,6 @@ test('plays La Junta del Cusco through its three acts with real orders', async (
     }
     const antApacheta = m.getObjectiveState('a2_apacheta') as string;
     for (let i = 0; i < Math.ceil(90 / dt) && !m.ended; i++) {
-      keepAlive();
       if (i % 30 === 0) {
         move(army, 140, 168);
         dismissCard();
@@ -1086,7 +1079,6 @@ test('plays La Junta del Cusco through its three acts with real orders', async (
 
     move(army, 198, 214, true);
     for (let i = 0; i < Math.ceil(120 / dt) && !m.ended; i++) {
-      keepAlive();
       if (i % 15 === 0) dismissCard();
       g.update(dt, t);
       t += dt;
@@ -1094,7 +1086,6 @@ test('plays La Junta del Cusco through its three acts with real orders', async (
     }
     const antUmachiri = m.getObjectiveState('a3_umachiri') as string;
     for (let i = 0; i < Math.ceil(165 / dt) && !m.ended; i++) {
-      keepAlive();
       if (i % 30 === 0) {
         move(army, 198, 214);
         dismissCard();
@@ -1147,12 +1138,8 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
     const dt = 1 / 60;
     let t = 0;
     const dismissCard = () => document.querySelector('.ed-mission-card')?.click();
-    const keepAlive = () => {
-      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
-    };
     const step = (seconds: number) => {
       for (let i = 0; i < Math.ceil(seconds / dt) && !m.ended; i++) {
-        keepAlive();
         if (i % 15 === 0) dismissCard();
         g.update(dt, t);
         t += dt;
@@ -1169,7 +1156,6 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
     const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker') as any;
     move([worker.id], 60, 92);
     for (let i = 0; i < Math.ceil(60 / dt) && !m.ended; i++) {
-      keepAlive();
       if (i % 15 === 0) dismissCard();
       g.update(dt, t);
       t += dt;
@@ -1197,7 +1183,6 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
     }
     if (camp) build(workers, camp.id);
     for (let i = 0; i < Math.ceil(90 / dt) && !m.ended; i++) {
-      keepAlive();
       if (i % 15 === 0) dismissCard();
       g.update(dt, t);
       t += dt;
@@ -1212,7 +1197,6 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
       }
     }
     for (let i = 0; i < Math.ceil(210 / dt) && !m.ended; i++) {
-      keepAlive();
       if (i % 15 === 0) dismissCard();
       g.update(dt, t);
       t += dt;
@@ -1225,7 +1209,6 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
       .map((u: any) => u.id);
     move([...army, ...workers], 120, 106);
     for (let i = 0; i < Math.ceil(120 / dt) && !m.ended; i++) {
-      keepAlive();
       if (i % 15 === 0) dismissCard();
       g.update(dt, t);
       t += dt;
@@ -1262,7 +1245,6 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
     const mill = placeNear('mill', 168, 190);
     if (mill) build(workers, mill.id);
     for (let i = 0; i < Math.ceil(150 / dt) && !m.ended; i++) {
-      keepAlive();
       if (i % 15 === 0) dismissCard();
       g.update(dt, t);
       t += dt;
@@ -1283,7 +1265,6 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
     // One worker per plot: re-issuing the same build order to every worker would abandon all but the last.
     for (const [i, id] of canchaHouses.entries()) build([workers[i % workers.length]], id);
     for (let i = 0; i < Math.ceil(240 / dt) && !m.ended; i++) {
-      keepAlive();
       if (i % 15 === 0) dismissCard();
       g.update(dt, t);
       t += dt;
@@ -1333,12 +1314,8 @@ test('plays La Ciudad de los Reyes through its three acts with real orders', asy
     let t = 0;
     const dismissCard = () => document.querySelector('.ed-mission-card')?.click();
     // Isolate objective wiring from attrition, as the other campaign playtests do.
-    const keepAlive = () => {
-      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
-    };
     const step = (seconds: number) => {
       for (let i = 0; i < Math.ceil(seconds / dt) && !m.ended; i++) {
-        keepAlive();
         if (i % 15 === 0) dismissCard();
         g.update(dt, t);
         t += dt;
@@ -1361,7 +1338,6 @@ test('plays La Ciudad de los Reyes through its three acts with real orders', asy
     const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker') as any;
     move([worker.id], 90, 152);
     for (let i = 0; i < Math.ceil(60 / dt) && !m.ended; i++) {
-      keepAlive();
       if (i % 15 === 0) dismissCard();
       g.update(dt, t);
       t += dt;
@@ -1387,7 +1363,6 @@ test('plays La Ciudad de los Reyes through its three acts with real orders', asy
     }
     if (market) build(workers, market.id);
     for (let i = 0; i < Math.ceil(120 / dt) && !m.ended; i++) {
-      keepAlive();
       if (i % 15 === 0) dismissCard();
       g.update(dt, t);
       t += dt;
@@ -1399,7 +1374,6 @@ test('plays La Ciudad de los Reyes through its three acts with real orders', asy
       .filter((u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker')
       .map((u: any) => u.id);
     for (let i = 0; i < Math.ceil(105 / dt) && !m.ended; i++) {
-      keepAlive();
       if (i % 30 === 0) {
         move(army, 90, 150);
         dismissCard();
@@ -1417,7 +1391,6 @@ test('plays La Ciudad de los Reyes through its three acts with real orders', asy
       );
     }
     for (let i = 0; i < Math.ceil(220 / dt) && !m.ended; i++) {
-      keepAlive();
       if (i % 30 === 0) dismissCard();
       g.update(dt, t);
       t += dt;
