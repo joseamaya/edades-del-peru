@@ -158,15 +158,15 @@ export class Game {
   /** Campaign pacing multiplier applied to every unit's base speed (1 = the skirmish speeds). */
   readonly unitSpeedScale: number;
   /** Authored scenario config (base, terrain, setpiece), if any. */
-  private readonly missionDef?: MissionDef;
-  private readonly missionLayout?: MissionLayout;
+  readonly missionDef?: MissionDef;
+  readonly missionLayout?: MissionLayout;
   /** Authored site definition resolved from the mission layout. */
-  private readonly siteDef?: AuthoredSiteDef;
-  private setpiecePlan: CaralCityPlan | null = null;
+  readonly siteDef?: AuthoredSiteDef;
+  setpiecePlan: CaralCityPlan | null = null;
   /** Visual-only Caral city scene (Caral Alto + Caral Bajo). */
   setpiece: SacredCity | null = null;
   /** Authored site model and its focus, when the mission uses one. */
-  private siteFocus: { x: number; z: number } | null = null;
+  siteFocus: { x: number; z: number } | null = null;
   /** Objective anchors for the authored site (world units). */
   siteAnchor: { x: number; z: number } | null = null;
   siteCenter: { x: number; z: number } | null = null;
@@ -192,14 +192,14 @@ export class Game {
   departureSite: { x: number; z: number } | null = null;
   /** Authored canal polyline in world units (intake first), when the mission defines one. */
   canalPath: { x: number; z: number }[] | null = null;
-  private canalGroup: THREE.Group | null = null;
+  canalGroup: THREE.Group | null = null;
   canalWater: THREE.Mesh | null = null;
   canalGate: THREE.Mesh | null = null;
-  private canalOpen = false;
-  private scenarioDecor: THREE.Group | null = null;
+  canalOpen = false;
+  scenarioDecor: THREE.Group | null = null;
   /** Decorative historical landmark of the map (visual only), if any. */
   landmark: THREE.Group | null = null;
-  private landmarkOwnsStatic = false;
+  landmarkOwnsStatic = false;
   landmarkLoadToken = 0;
   /** The Caral Sacred City in use (architecture kit), when the mission site is Caral. */
   caralCity: CaralCity | null = null;
@@ -237,7 +237,7 @@ export class Game {
   /** Per-base settlement dressing (visual only). */
   settlementDressing: SettlementDressing[] = [];
   /** Visual-only valley plan; reserved before resources/props scatter. */
-  private caralValleyPlan: CaralValleyPlan | null = null;
+  caralValleyPlan: CaralValleyPlan | null = null;
   caralValleyBase: { x: number; z: number } | null = null;
   /** Decorative Caral groves: instanced tree slots with no resource or obstacle behind them. */
   caralGroves: { slot: number; x: number; z: number }[] = [];
@@ -247,7 +247,7 @@ export class Game {
   fow!: Fow;
   fowTexture!: FowTexture;
   /** Shared fog-of-war uniforms for the visual-only layers (landscape, overlays, landmark). */
-  private readonly fowUniforms = createFowUniforms();
+  readonly fowUniforms = createFowUniforms();
   pathfinder!: Pathfinder;
   markers!: OrderMarkers;
   trees!: TreeInstances;
@@ -262,7 +262,7 @@ export class Game {
   audio = new AudioEngine();
   mission: Mission | null = null;
   tutorial: Tutorial | null = null;
-  private unitContext!: UnitContext;
+  unitContext!: UnitContext;
   economy!: Economy;
 
   settings: GameSettings;
@@ -277,7 +277,7 @@ export class Game {
   buildings = new Map<number, Building>();
   resourceNodes = new Map<number, ResourceNode>();
   projectiles: Projectile[] = [];
-  private projectileViews = new Map<number, ProjectileView>();
+  projectileViews = new Map<number, ProjectileView>();
 
   readonly input = new InputController(this);
   readonly world = new WorldViewDecor(this);
@@ -304,8 +304,8 @@ export class Game {
   selectedHeritage: HeritageBuildingId | null = null;
   readonly visitedHeritage = new Set<HeritageBuildingId>();
   obstacleHandles = new Map<number, { x: number; z: number; radius: number; gate?: boolean; owner?: number }>();
-  private readonly spatialCell = 6;
-  private spatial = new Map<number, Unit[]>();
+  readonly spatialCell = 6;
+  spatial = new Map<number, Unit[]>();
   readonly headless: boolean;
   paused = false;
   gameEnded = false;
@@ -325,10 +325,10 @@ export class Game {
   /** Last finished/abandoned replay, kept for the post-game action. */
   lastReplay: Replay | null = null;
   fxRng!: RNG;
-  private recorder: ReplayRecorder | null = null;
-  private replay: ReplayPlayer | null = null;
+  recorder: ReplayRecorder | null = null;
+  replay: ReplayPlayer | null = null;
   private commandProcessor!: CommandProcessor;
-  private qualityGovernor!: QualityGovernor;
+  qualityGovernor!: QualityGovernor;
   /** Skip the software-renderer auto-degrade (`?cine=1`). */
   private readonly forceCinematic: boolean;
   /** True when the renderer is a software rasterizer (safe profile applied). */
@@ -852,7 +852,7 @@ export class Game {
   }
 
   /** Clear the opening base footprint so scatter cannot block doors or unit spots. */
-  private isStartReserved(x: number, z: number): boolean {
+  isStartReserved(x: number, z: number): boolean {
     return this.startSpots.some(([sx, sz]) => Math.hypot(x - sx, z - sz) < OPENING_BASE_CLEARANCE);
   }
 
@@ -902,7 +902,7 @@ export class Game {
   }
 
   /** Draw the mission's visual road network; no pathfinding or gameplay effect. */
-  private registerObstacle(b: Building): void {
+  registerObstacle(b: Building): void {
     const stats = getBuildingStats(b.kind, b.era);
     if (b.kind === BuildingKind.GATE) {
       const team = this.players[b.owner]?.team;
@@ -2309,7 +2309,7 @@ export class Game {
     this.runtime.render();
   }
 
-  private onResize(): void {
+  onResize(): void {
     this.runtime.onResize();
   }
 

@@ -9,7 +9,9 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   {
     rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
+      // Ratchet: no new `any` in src. The files below still carry legacy ones (entity contexts, projectile
+      // payloads, three.js shader hooks, window debug hooks); type them and drop them from this list.
+      '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       'no-empty': 'off',
       'no-constant-condition': 'off',
@@ -101,5 +103,19 @@ export default tseslint.config(
         Buffer: 'readonly',
       },
     },
+  },
+  {
+    files: [
+      'tests/**/*.ts',
+      'scripts/**/*.{mjs,ts}',
+      'src/boot.ts',
+      'src/core/EventBus.ts',
+      'src/core/Game.ts',
+      'src/core/RuntimeController.ts',
+      'src/entities/Building.ts',
+      'src/entities/Unit.ts',
+      'src/rendering/Terrain.ts',
+    ],
+    rules: { '@typescript-eslint/no-explicit-any': 'off' },
   },
 );

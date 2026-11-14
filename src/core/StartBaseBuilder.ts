@@ -1,3 +1,4 @@
+import type { Game } from './Game';
 import { MAX_WALKABLE_SLOPE } from '../game/Pathfinding';
 import { Unit } from '../entities/Unit';
 import { Building } from '../entities/Building';
@@ -11,10 +12,11 @@ import {
   planStartingUnitSpots,
 } from '../sim/WorldBuilder';
 import type { SettlementPlan } from '../model/defs/settlementPlan';
+import type { BuildContext } from '../model/ProceduralModel';
 
 /** Opening base, starting units, resources and initial worker assignment. */
 export class StartBaseBuilder {
-  constructor(private readonly game: any) {}
+  constructor(private readonly game: Game) {}
 
   spawnStartBase(player: number, x: number, z: number): void {
     const ctx = this.game.makeBuildContext(player);
@@ -49,7 +51,7 @@ export class StartBaseBuilder {
     }
   }
 
-  private spawnStartUnits(player: number, x: number, z: number, ctx: any): void {
+  private spawnStartUnits(player: number, x: number, z: number, ctx: BuildContext): void {
     // nearby resources to start
     this.spawnStartResources(player, x, z);
     // After the opening nodes: the valley groves keep clear of every existing resource.

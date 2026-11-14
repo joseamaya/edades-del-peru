@@ -552,7 +552,7 @@ const TOAST_LIFETIME = 2600;
 export class HUD {
   game: Game;
   private root: HTMLDivElement;
-  private resEls: Record<string, HTMLElement> = {} as any;
+  private resEls: Record<string, HTMLElement> = {};
   private popEl!: HTMLElement;
   private idleEl!: HTMLElement;
   private eraEl!: HTMLElement;

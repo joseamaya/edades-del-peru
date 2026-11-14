@@ -1,3 +1,4 @@
+import type { Game } from './Game';
 import type { GameSettings } from './Config';
 import { kitLod0RadiusFor } from '../rendering/TreeInstances';
 import { saveToStorage, serializeGame } from '../game/SaveGame';
@@ -47,7 +48,7 @@ export interface DeathFx {
 
 /** Simulation/render loop, save mission and combat plumbing. Transitional host. */
 export class RuntimeController {
-  constructor(private readonly game: any) {}
+  constructor(private readonly game: Game) {}
 
   applyMissionSetup(mis: MissionDef): void {
     const p = this.game.players[0];
