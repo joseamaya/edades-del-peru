@@ -956,10 +956,10 @@ export class Game {
   playerCenter(owner: number): { x: number; z: number } {
     const c = [...this.buildings.values()].find((b) => b.owner === owner && b.kind === BuildingKind.CENTER && !b.dead);
     if (c) return { x: c.pos.x, z: c.pos.z };
-    return { x: this.settings.mapSize / 2, z: this.settings.mapSize / 2 };
-  }
     const spot = this.startSpots[owner];
     if (spot) return { x: spot[0], z: spot[1] };
+    return { x: this.settings.mapSize / 2, z: this.settings.mapSize / 2 };
+  }
 
   /** Find the nearest solid land to a point (for scripted spawns). */
   findLandNear(x: number, z: number, radius = 16): { x: number; z: number } {
