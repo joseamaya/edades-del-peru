@@ -321,7 +321,8 @@ Definition of Done and the building audit see
 - **Campaign geography and closure**: m2–m9 declare an authored `layout` (a fixed `base` plus at least one
   named `terrain.river`/`terrain.flats`, a named `canal`, or a `decor` landmark). m1 uses
   `layout.site` for the exact Caral site plus its own heightfield and keep-out; m6 keeps the Chan Chan
-  canal/compound and m9 the Arica port terrace/Chilean naval station as visual-only decor. Every mission now has an educational `epilogue` shown on victory;
+  canal/compound and m9 the Arica port terrace/Chilean naval station as visual-only decor. m9 plays the
+  documented fall of Arica in three acts (summons, bombardment, assault). Every mission now has an educational `epilogue` shown on victory;
   `tests/campaign-layout.test.ts` and the campaign E2E guard the layout data and the victory overlay.
 - **Phased sites and named environmental events**: a mission's `layout.site.phase` selects the opening
   construction phase; `AuthoredSiteDef.phases` (`SitePhasePlan`) orders the phases and `heritageSince` says

@@ -220,6 +220,8 @@ for (const mis of COMPLETABLE_MISSIONS) {
             case 'survive':
             case 'defend':
             case 'protect':
+            case 'wait':
+              // `wait` is a beat measured by the mission clock; the fixed-step loop below completes it.
               break; // satisfied by the clock / staying alive
             default:
               throw new Error(`unsupported objective kind in ${def.id}: ${o.kind}`);

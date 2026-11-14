@@ -44,8 +44,23 @@ low-poly abstraction of Arica's port terrace, battery and warehouse. It is
 - Tests: `tests/e2e/campaign.spec.ts`, `tests/authored-sites.test.ts`,
   `tests/e2e/campaign-playtest.spec.ts`.
 
+## Mission acts
+
+The mission follows the documented fall of the plaza (7 June 1880), not a counterfactual defence:
+
+1. **Act I · 5 June — the summons.** Bolognesi and his chiefs refuse Salvo's surrender summons while the
+   sappers mine the approaches; the battery card is an optional visit.
+2. **Act II · 7 June, bombardment.** The garrison holds the cuartel and the fort; Bolognesi must survive
+   this act.
+3. **Act III · the assault.** The Chilean infantry storms the plaza; the player must hold the last line
+   for the documented ending. Victory is the tactical fulfilment of the defence and the epilogue tells
+   the fall, Bolognesi's death and the scuttling of the *Manco Cápac*.
+
+The fort is the RTS abstraction of the port's battery/cuartel; the Morro stays outside the playable
+height range. The enemy camp on the northern approach and the assault waves are an abstraction of the
+documented attack, not a literal order of battle.
+
 ## Status
 
-The site, heightfield, collision, heritage card, real-command victory path and
-save/load path are implemented. Current captures are local review artifacts;
-there is no CI pixel gate.
+The site, heightfield, collision, heritage card, three-act documented path, no-cheat playtest and
+save/load path are implemented. Current captures are local review artifacts; there is no CI pixel gate.

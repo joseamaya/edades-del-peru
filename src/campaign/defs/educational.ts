@@ -298,22 +298,29 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
   m9_guerra_pacifico: {
     briefing:
       'Arica, 7 de junio de 1880. Tras Angamos, la Guerra del Pacífico continúa en tierra. La guarnición ' +
-      'peruana, al mando de Francisco Bolognesi, resiste el asalto chileno sobre el puerto.',
+      'peruana, al mando de Francisco Bolognesi, defiende el puerto del asalto chileno; la plaza cae ese día.',
     context:
       'En la Guerra del Pacífico (1879–1883), por el salitre de Antofagasta, el Perú y Bolivia se enfrentaron a ' +
       'Chile. Al mando del monitor Huáscar, el almirante Miguel Grau contuvo con audaces correrías a una escuadra ' +
-      'superior. Cayó en el combate de Angamos (8 de octubre de 1879). Francisco Bolognesi murió defendiendo ' +
-      'Arica (7 de junio de 1880). Chile obtuvo el dominio del mar.',
+      'superior hasta caer en Angamos (8 de octubre de 1879). En Arica, el parlamento de Juan de la Cruz Salvo ' +
+      'exigió la rendición el 5 de junio de 1880; Bolognesi y sus jefes la rechazaron. El ingeniero Teodoro ' +
+      'Elmore minó los accesos y la guarnición defendió la batería y el cuartel. El asalto chileno del 7 de ' +
+      'junio tomó la plaza: Bolognesi murió en la defensa y el monitor Manco Cápac fue inutilizado.',
     didYouKnow:
-      'La defensa de Arica se convirtió en símbolo de la resistencia peruana; Bolognesi murió en la plaza el ' +
-      '7 de junio de 1880.',
+      'La frase «hasta quemar el último cartucho» la recoge Vicuña Mackenna (1881); el ingeniero Teodoro Elmore ' +
+      'minó los accesos a la plaza antes del asalto.',
     epilogue:
-      'La resistencia de Arica quedó como símbolo del sacrificio peruano. En la historia, la plaza cayó el ' +
-      '7 de junio de 1880 y Bolognesi murió en combate; esta campaña permite resistir el asalto, pero no ' +
-      'cambia el desenlace documentado de la guerra.',
+      'La plaza cayó el 7 de junio de 1880. Bolognesi murió en el asalto, junto a Juan Guillermo More y Alfonso ' +
+      'Ugarte, y el Manco Cápac fue inutilizado para que no lo capturaran. La defensa quedó como símbolo de la ' +
+      'resistencia peruana; la guerra continuó hasta 1883.',
     sources: [
+      { text: 'Sater, W. (2007). Andean Tragedy: Fighting the War of the Pacific, 1879–1884.' },
+      { text: 'Vicuña Mackenna, B. (1881). Historia de la campaña de Tacna y Arica.' },
+      {
+        text: 'Wikipedia: Batalla de Arica',
+        url: 'https://es.wikipedia.org/wiki/Batalla_de_Arica',
+      },
       { text: 'Marina de Guerra del Perú: Combate de Angamos', url: 'https://marina.mil.pe/info/combate-de-angamos/' },
-      { text: 'BBC Mundo (2022). Batalla de Angamos.' },
     ],
   },
 };
