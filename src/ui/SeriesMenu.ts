@@ -173,7 +173,7 @@ export function renderMainMenu(overlay: HTMLElement, a: MainMenuActions): void {
   overlay.appendChild(card);
 }
 
-/** Fill the campaign-path overlay: four chapters in a row, the selected one's missions below. */
+/** Fill the campaign-path overlay: the five chapters in a row, the selected one's missions below. */
 export function renderCampaignPath(overlay: HTMLElement, a: CampaignPathActions): void {
   ensureStyles();
   overlay.classList.add('ed-epic');

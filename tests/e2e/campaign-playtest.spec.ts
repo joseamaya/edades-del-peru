@@ -127,7 +127,7 @@ test('plays m7 by assaulting the realista command post with real orders', async 
 });
 
 test('plays m8 by holding Junín and Ayacucho with real orders', async ({ page }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(180_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/?mission=m8_independencia&seed=777&fog=0&low=1&noloop=1');
@@ -159,16 +159,22 @@ test('plays m8 by holding Junín and Ayacucho with real orders', async ({ page }
     move(artillery, center.x, center.z + 15);
     move([...cavalry, ...rifles], enemy.pos.x - 30, enemy.pos.z);
     for (let i = 0; i < Math.ceil(110 / dt) && !m.ended; i++) {
-      // This playtest verifies the hold/objective wiring; keep the player alive like campaign-completable
-      // instead of depending on the hard enemy's attrition.
       g.update(dt, t);
       t += dt;
     }
     const junin = m.getObjectiveState('obj_junin') as string;
-    move(cavalry, enemy.pos.x, enemy.pos.z);
-    move(rifles, enemy.pos.x - 12, enemy.pos.z + 10);
-    // 120 s hold plus the march from Junín; leave a margin so the hold can actually complete.
-    for (let i = 0; i < Math.ceil(150 / dt) && !m.ended; i++) {
+    // 120 s hold plus the march from Junín. Units that chase an enemy out of the radius reset the hold,
+    // so the line is re-formed every 20 s, as a player would; a fixed 150 s budget flipped with timing.
+    for (let i = 0; i < Math.ceil(240 / dt) && !m.ended; i++) {
+      if (i % Math.ceil(20 / dt) === 0) {
+        move(cavalry, enemy.pos.x, enemy.pos.z);
+        move(rifles, enemy.pos.x - 12, enemy.pos.z + 10);
+      }
+      g.update(dt, t);
+      t += dt;
+      if (m.getObjectiveState('obj_ayacucho') === 'completed') break;
+    }
+    for (let i = 0; i < Math.ceil(5 / dt) && !m.ended; i++) {
       g.update(dt, t);
       t += dt;
     }
@@ -1232,6 +1238,7 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
       acequia,
       inticancha,
       canchas: m.getObjectiveState('a4_canchas') as string,
+      phase: g.sitePhase as string,
       won: m.won as boolean | null,
     };
   });
@@ -1243,6 +1250,8 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
   expect(out.acequia).toBe('completed');
   expect(out.inticancha).toBe('completed');
   expect(out.canchas).toBe('completed');
+  // The goal that wins also founds Inticancha: its closing trigger must fire on the victory tick.
+  expect(out.phase).toBe('fundada');
   expect(out.won).toBe(true);
   expect(errors).toEqual([]);
 });

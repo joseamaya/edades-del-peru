@@ -1,3 +1,4 @@
+import { migrateSave } from './saveMigrations';
 import type { Game } from '../core/Game';
 import type { PlayerState } from '../core/types';
 import { SAVE_VERSION, SaveData, PlayerSave } from './saveTypes';
@@ -48,10 +49,11 @@ export function serializeGame(game: Game): SaveData {
   };
 }
 
-/** Validate an arbitrary object as a save of the current version. */
+/** Validate an arbitrary object as a save, upgrading an older supported version first. */
 export function validateSave(raw: unknown): SaveData | null {
-  if (!raw || typeof raw !== 'object') return null;
-  const r = raw as Record<string, unknown>;
+  const migrated = migrateSave(raw);
+  if (migrated.status !== 'current' && migrated.status !== 'migrated') return null;
+  const r = migrated.save as Record<string, unknown>;
   if (r.version !== SAVE_VERSION) return null;
   if (!r.settings || typeof r.rngState !== 'number' || typeof r.fog !== 'string') return null;
   const cam = r.camera as { x?: unknown; z?: unknown; zoom?: unknown; yaw?: unknown } | undefined;
@@ -78,7 +80,7 @@ export function validateSave(raw: unknown): SaveData | null {
         return null;
     }
   }
-  return raw as SaveData;
+  return r as unknown as SaveData;
 }
 
 export function saveToStorage(data: SaveData): boolean {

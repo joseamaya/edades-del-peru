@@ -26,7 +26,9 @@ history.
 Opening the acequia is the documented leverage made mechanical: its trigger fires a `truce` effect, so the
 valley ayllus join the player's team, their AI stops campaigning and their warriors return home. Without it
 the AI base, 45 m from Inticancha, razed the communal store and the cancha houses and Act IV could not be
-finished. The truce is re-applied on load.
+finished. The truce is re-applied on load. The valley wave of Act III marches on the party at Huanacaure
+(`target`), so the tutorial's «salen a tu encuentro» is true; the truce sends it home. The Act IV card shows
+the traced plaza (`intro-traza`), not the founded settlement, and `fundada` fires on the victory tick.
 
 Optional: keep Ayar Manco alive and visit the hualla village. Victory = Inticancha founded and four canchas
 built.

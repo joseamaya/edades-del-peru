@@ -2,7 +2,6 @@ import type { GameSettings } from './Config';
 import { kitLod0RadiusFor } from '../rendering/TreeInstances';
 import { saveToStorage, serializeGame } from '../game/SaveGame';
 import * as THREE from 'three';
-import { BASELESS_POP_CAP } from '../game/systems/PopulationSystem';
 import { bus } from './EventBus';
 import { cloudDensity } from '../rendering/Sky';
 import { Unit, UnitContext } from '../entities/Unit';
@@ -64,13 +63,12 @@ export class RuntimeController {
         this.game.spawnScriptedUnit(u.kind, 0, c.x + u.dx + jx, c.z + u.dz + jz, u.tag);
       }
     }
-    // A party that starts with nothing built (Tambotoco) houses everyone who left with it: without
-    // dwellings the cap would read «20/7». The bonus lives in the save, so it is applied once.
-    if (mis.start.base === false) {
-      let used = 0;
-      for (const u of this.game.units.values()) if (u.owner === 0 && !u.dead) used += u.stats.population;
-      p.bonus.population += Math.max(0, used - BASELESS_POP_CAP);
-    }
+    // The authored roster always fits: Tambotoco's party has no dwellings («20/7») and Lima, the Junta
+    // and m8 start with more people than their houses hold («31/22»). The bonus lives in the save, so it
+    // is applied once, at setup.
+    this.updatePopulation();
+    p.bonus.population += Math.max(0, p.populationUsed - p.populationCap);
+    this.updatePopulation();
     this.game.world.frameAuthoredSite(c.x, c.z);
   }
 

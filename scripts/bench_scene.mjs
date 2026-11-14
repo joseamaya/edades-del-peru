@@ -72,7 +72,8 @@ const BUDGETS = {
   // Tambotoco opening: the ayllu site, eight nameplates and the hero rings/banners/tunic accents;
   // measured ~567k / 339. First-pass cap; still over §11's 200-call target.
   m_tambotoco: { sceneTriangles: 600_000, sceneDrawCalls: 340, kitTriangles: 0, kitDrawCalls: 0 },
-  // Inticancha stands at Act IV; it must not blow the same first-pass budget.
+  // The founded Inticancha (the `fundada` phase at victory) is the heaviest view; it must not blow the
+  // same first-pass budget.
   m_tambotoco_late: { sceneTriangles: 620_000, sceneDrawCalls: 360, kitTriangles: 0, kitDrawCalls: 0 },
   // Lima opening: the hueste with horses and artillery. First-pass cap measured ~763k / 839; tighten after
   // the unit-rig pass (art-direction §11 targets 200 calls).

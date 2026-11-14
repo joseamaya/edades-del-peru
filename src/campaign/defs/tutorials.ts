@@ -34,7 +34,7 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'agua',
-        text: 'Los ayllus del valle salen a tu encuentro: pulsa {key:selectArmy} y haz clic derecho sobre ellos para defenderte. Luego haz clic en la compuerta de la acequia y pulsa «💧 Abrir compuerta»: sin el agua, cederán.',
+        text: 'Los ayllus del valle salen a tu encuentro: pulsa {key:selectArmy} y haz clic derecho sobre ellos para defenderte. Luego haz clic en la compuerta de la acequia y pulsa «💧 Abrir compuerta»: el agua se desvía a tus campos y, sin ella, los alcabizas cederán.',
         gateObjective: 'a3_acequia',
         check: { type: 'objectiveCompleted', objectiveId: 'a3_acequia' },
       },
@@ -323,7 +323,7 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'record',
-        text: 'Recorre la Plaza, el Templo Viejo, el Templo Nuevo y la Portada para cerrar el registro.',
+        text: 'Recorre la Plaza, el Templo Viejo, sus galerías, el Templo Nuevo y la Portada para cerrar el registro.',
         check: { type: 'objectiveCompleted', objectiveId: 'a4_registro' },
       },
     ],
@@ -411,7 +411,6 @@ const TUTORIALS: Record<string, TutorialDef> = {
       {
         id: 'canal',
         text: 'Haz clic en la compuerta del canal del valle y ábrela: el agua corre a las chacras y el río crece.',
-        highlight: buildBottom,
         gateObjective: 'a2_canal',
         check: { type: 'objectiveCompleted', objectiveId: 'a2_canal' },
       },

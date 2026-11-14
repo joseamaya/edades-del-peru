@@ -290,7 +290,10 @@ export type TriggerEffect =
       units: { kind: UnitKind; count: number }[];
       pos: MissionPoint;
       radius?: number;
+      /** `base`: march on the player; `position`: hold the spawn point (a guarded field). */
       objective?: 'base' | 'position';
+      /** Attack-move here instead (a siege column marching on the city); overrides `objective`. */
+      target?: MissionPoint;
     }
   | {
       type: 'reinforce';

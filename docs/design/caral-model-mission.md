@@ -139,7 +139,7 @@ Dialogue speaker labels must not say "Comandante" in this mission.
   Kinds used by m1: `deliver` with a `heritageId` (hand-over at a field card, shared by offerings, trades
   and construction), `hold` (optionally `consume`-ing food per second while it advances), `reach`,
   `inspect`, `canal_open` and `research`. Trigger effects: `act` (a chapter card with an image; the mission
-  clock and tutorial wait for it), `site_phase`, `ritual` (a presentation-only burial beat), `drought` and
+  clock and tutorial wait for it), `site_phase`, `ritual` (a presentation-only burial beat), `environment` (`event: 'drought'`) and
   `dialogue`. A loaded save restores the latest site phase and the drought without re-applying its losses.
 - **Intro and epilogue**: `MissionDef.intro` plays three narrated beats (Áspero, the valley, the city to
   come) over a paused world; the Act II–IV cards and the victory epilogue carry images. All six are
