@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the authored Cusco colonial heightfield (m7, 192 m map)."""
+"""Generate the authored Cusco colonial heightfield (m7, 256 m map)."""
 
 from __future__ import annotations
 
@@ -7,7 +7,9 @@ import base64
 import math
 from pathlib import Path
 
-SIZE = 192
+SIZE = 256
+# The composition was authored for the former 192 m map; sample it 4/3 larger on the 256 m transect.
+SOURCE_SIZE = 192
 N = SIZE + 1
 SITE_Y = 5.0
 VALLEY = 3.2
@@ -52,12 +54,52 @@ def height(x: float, z: float) -> float:
     return max(0.9, h)
 
 
+GROUND_SIZE = 128
+
+
+def ground_weights(x: float, z: float) -> tuple[float, float, float, float]:
+    """Painted ground weights (grass, dirt, sand, rock) in the former 192 m frame."""
+    valley = math.exp(-((z - 96.0) / 11.0) ** 2) * smoothstep(34.0, 54.0, x) * (1.0 - smoothstep(124.0, 146.0, x))
+    base = smoothstep(47.0, 55.0, x) * (1.0 - smoothstep(84.0, 92.0, x))
+    base *= smoothstep(105.0, 113.0, z) * (1.0 - smoothstep(135.0, 143.0, z))
+    site = smoothstep(118.0, 126.0, x) * (1.0 - smoothstep(151.0, 159.0, x))
+    site *= smoothstep(55.0, 63.0, z) * (1.0 - smoothstep(88.0, 96.0, z))
+    approach = smoothstep(84.0, 92.0, x) * (1.0 - smoothstep(126.0, 134.0, x))
+    approach *= smoothstep(78.0, 86.0, z) * (1.0 - smoothstep(112.0, 120.0, z))
+    flat = max(base, site, approach)
+    ridge = max(
+        smoothstep(15.0, 0.0, z),
+        smoothstep(152.0, 182.0, x),
+        smoothstep(152.0, 184.0, z),
+        smoothstep(24.0, 8.0, x),
+    )
+    grass = max(0.04, valley * 0.8 * (1.0 - flat))
+    dirt = max(0.04, flat * 0.6 + valley * 0.12)
+    sand = max(0.0, 0.02)
+    rock = max(0.02, ridge * 0.85)
+    total = grass + dirt + sand + rock
+    return (grass / total, dirt / total, sand / total, rock / total)
+
+
+ground_values = []
+# Texel centres at 2 m, matching `sampleAuthoredGround` (0..SIZE corners would shift the paint 1 m).
+for iz in range(GROUND_SIZE):
+    z = (iz + 0.5) * SIZE / GROUND_SIZE
+    for ix in range(GROUND_SIZE):
+        x = (ix + 0.5) * SIZE / GROUND_SIZE
+        weights = ground_weights(x * SOURCE_SIZE / SIZE, z * SOURCE_SIZE / SIZE)
+        for w in weights:
+            ground_values.append(max(0, min(255, round(w * 255))))
+
+ground_raw = bytearray(ground_values)
+ground_b64 = base64.b64encode(ground_raw).decode('ascii')
+
 values = []
 for iz in range(N):
     z = iz * SIZE / (N - 1)
     for ix in range(N):
         x = ix * SIZE / (N - 1)
-        values.append(round(height(x, z) * 1000.0))
+        values.append(round(height(x * SOURCE_SIZE / SIZE, z * SOURCE_SIZE / SIZE) * 1000.0))
 
 raw = bytearray()
 for v in values:
@@ -78,7 +120,16 @@ OUT.write_text(
     '  }\n'
     '  return out;\n'
     '}\n'
-    'export const COLONIAL_HEIGHTMAP = decode();\n',
+    'export const COLONIAL_HEIGHTMAP = decode();\n'
+    'export const COLONIAL_GROUND_SIZE = ' + str(GROUND_SIZE) + ';\n'
+    'const GROUND_B64 =\n  \'' + ground_b64 + '\';\n'
+    'function decodeGround(): Uint8Array {\n'
+    '  const bin = atob(GROUND_B64);\n'
+    '  const out = new Uint8Array(' + str(len(ground_values)) + ');\n'
+    '  for (let i = 0; i < out.length; i++) out[i] = bin.charCodeAt(i);\n'
+    '  return out;\n'
+    '}\n'
+    'export const COLONIAL_GROUND = decodeGround();\n',
     encoding='utf-8',
 )
 print(f'wrote {OUT} ({len(b64)} base64 chars, {len(values)} samples)')

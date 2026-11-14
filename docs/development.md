@@ -323,7 +323,8 @@ Definition of Done and the building audit see
   `layout.site` for the exact Caral site plus its own heightfield and keep-out; m6 keeps the Chan Chan
   canal/compound and m9 the Arica port terrace/Chilean naval station as visual-only decor. m9 plays the
   documented fall of Arica in three acts (summons, bombardment, assault) on a 256 m painted transect with
-  an in-engine intro and bench scenes. Every mission now has an educational `epilogue` shown on victory;
+  an in-engine intro and bench scenes. m7 plays Sangarará, the failed Cusco siege and the retreat on its own
+  256 m painted transect with an in-engine intro and bench scenes. Every mission now has an educational `epilogue` shown on victory;
   `tests/campaign-layout.test.ts` and the campaign E2E guard the layout data and the victory overlay.
 - **Phased sites and named environmental events**: a mission's `layout.site.phase` selects the opening
   construction phase; `AuthoredSiteDef.phases` (`SitePhasePlan`) orders the phases and `heritageSince` says

@@ -29,6 +29,12 @@ const STEPS: Record<number, Step> = {
     if (settings?.missionId === 'm9_guerra_pacifico') return null;
     return { ...save, version: 5 };
   },
+  // v5 → v6 moved m7 to the 256 m transect: its 192 m unit and camera positions cannot be carried over.
+  5: (save) => {
+    const settings = save.settings as { missionId?: unknown } | undefined;
+    if (settings?.missionId === 'm7_tupac_amaru') return null;
+    return { ...save, version: 6 };
+  },
 };
 
 export type MigrationResult =

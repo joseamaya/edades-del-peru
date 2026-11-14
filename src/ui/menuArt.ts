@@ -21,5 +21,6 @@ export const MISSION_ART: Partial<Record<string, string>> = {
   m_junta_cusco: publicAsset('media/junta/intro-cabildo.webp'),
   m_tambotoco: publicAsset('media/tambotoco/intro-cueva.webp'),
   m_lima: publicAsset('media/lima/intro-ciudad.webp'),
+  m7_tupac_amaru: publicAsset('media/cusco/intro-valle.webp'),
   m9_guerra_pacifico: publicAsset('media/arica/intro-cuartel.webp'),
 };

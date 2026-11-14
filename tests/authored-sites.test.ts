@@ -64,11 +64,16 @@ describe('authored campaign sites', () => {
 
   it('keeps the colonial mission on its authored site and heightfield', () => {
     const site = getAuthoredSite('colonial_site')!;
-    expect(site.scale).toBe(0.65);
-    expect(site.anchor).toEqual({ x: 134.8, z: 73 });
-    expect(site.heightField?.worldSize).toBe(192);
+    expect(site.scale).toBeCloseTo(0.8667, 3);
+    expect(site.anchor.x).toBeCloseTo(179.733, 3);
+    expect(site.anchor.z).toBeCloseTo(97.333, 3);
+    expect(site.heightField?.worldSize).toBe(256);
+    expect(site.heightField?.ground?.size).toBe(128);
     expect(site.heritageProxies.map((p) => p.id)).toEqual(['colonial_church']);
-    expect(site.walkableCorridor?.width).toBe(8);
+    expect(site.heritageProxies[0]?.w).toBeCloseTo(12, 3);
+    expect(site.heritageProxies[0]?.d).toBeCloseTo(12, 3);
+    expect(site.heritageProxies[0]?.h).toBeCloseTo(8, 3);
+    expect(site.walkableCorridor?.width).toBeCloseTo(10.667, 3);
     const mission = MISSIONS.find((m) => m.id === 'm7_tupac_amaru')!;
     expect(mission.layout?.site?.id).toBe('colonial_site');
   });

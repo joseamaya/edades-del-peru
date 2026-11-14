@@ -364,6 +364,22 @@ slot is absent (offline / without assets).
 - **Review**: no human art-review gate applies to in-engine captures; the `arica_site` GLB and the draft
   Blender intro record keep their own review status in `src/art/manifest.json` (#343).
 
+### Cusco (Túpac Amaru) intro and epilogue images (in-engine recreations)
+
+- **Location**: `public/media/cusco/intro-{valle,sangarara,cusco,epilogo}.webp` (960x540, WebP q58).
+- **Source**: captured from the game itself by `scripts/capture_colonial_intro.mjs` on the 256 m Cusco
+  transect: the rebel valley camp, the Sangarará chapel, the Cusco siege view and a low cinematic
+  epilogue. Rendered without the HUD or character nameplates at 1600x900 and resized with `sharp`.
+  Regenerate with `node scripts/capture_colonial_intro.mjs` (one with `--only=ID`) after art changes.
+- **Runtime**: the briefing and the "Tu senda" card use `intro-valle`; the three intro beats use the
+  valley, Sangarará and Cusco captures; the victory epilogue uses `intro-epilogo`.
+- **Content**: project-owned game renders (authored Cusco heightfield, the reused `colonial_site` plaza and
+  chapel, the procedural camp and the units). They are recreations of the game's own scenes: never
+  historical photographs, and not Blender renders (so not in `src/art/manifest.json`).
+- **Review**: no human art-review gate applies to in-engine captures; the reused colonial plaza GLB and
+  the draft `m7_colonial-intro` Blender record keep their own review status in `src/art/manifest.json`
+  (#343).
+
 ### Caral Pyramid Mayor modular scenery
 
 - **Location**: `src/assets/scenery/caral/caral_pyramid_mayor_lod0.glb` and `lod1.glb`.

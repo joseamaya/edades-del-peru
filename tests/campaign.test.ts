@@ -301,7 +301,13 @@ describe('campaign educational content', () => {
     expect(retreat.entityTag).toBe('tupac_amaru');
     expect(amaru.layout?.departure).toBeDefined();
     expect(amaru.periodNote).toBeDefined();
-    expect(amaru.epilogueImage).toBeUndefined();
+    // Model mission: 256 m, a three-beat in-engine intro and its own epilogue capture.
+    expect(amaru.modelMission).toBe(true);
+    expect(amaru.map.size).toBe(256);
+    expect(amaru.unitSpeedScale).toBe(0.75);
+    expect(amaru.intro?.length).toBe(3);
+    expect(amaru.intro?.every((beat) => beat.image.startsWith('media/cusco/'))).toBe(true);
+    expect(amaru.epilogueImage).toContain('media/cusco/');
     // 1780 rebels had no artillery train: the old roster's two cannon are gone.
     expect(amaru.allowedUnits).not.toContain(UnitKind.ARTILLERY);
     expect(amaru.victory).toMatch(/no toma la ciudad|retira/i);

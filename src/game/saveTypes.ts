@@ -19,7 +19,7 @@ import type { MatchStatsSave } from './matchStats';
  * Bump on a breaking snapshot change and add its upgrade step in `saveMigrations.ts`; adding optional
  * fields is fine without a bump.
  */
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;
 
 export type { ResourceKind };
 

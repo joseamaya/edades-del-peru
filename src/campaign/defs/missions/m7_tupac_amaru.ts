@@ -1,12 +1,13 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
 import type { MissionDef } from '../../types';
+import { COLONIAL_MAP_SIZE, colonialLength } from '../../../model/defs/colonialSite';
 
-// The 192 m Andean map compresses Tinta/Tungasuca, the Sangarará road and Cusco. The retreat leaves
-// the valley to the south-west, toward Langui.
-const TUPAC_MAP_SIZE = 192;
-const TUPAC_TUNGASUCA = { dx: 50, dz: 138 } as const;
-const TUPAC_SANGARARA = { dx: 105, dz: 80 } as const;
-const TUPAC_SIEGE = { dx: 120, dz: 88 } as const;
+// The 256 m Andean transect compresses Tinta/Tungasuca, the Sangarará road and Cusco. The composition
+// was authored for 192 m and is sampled 4/3 larger. The retreat leaves the valley to Langui.
+const TUPAC_MAP_SIZE = COLONIAL_MAP_SIZE;
+const TUPAC_TUNGASUCA = { dx: colonialLength(50), dz: colonialLength(138) } as const;
+const TUPAC_SANGARARA = { dx: colonialLength(105), dz: colonialLength(80) } as const;
+const TUPAC_SIEGE = { dx: colonialLength(120), dz: colonialLength(88) } as const;
 const TUPAC_TUNGASUCA_ANCHOR = {
   x: TUPAC_TUNGASUCA.dx / TUPAC_MAP_SIZE,
   z: TUPAC_TUNGASUCA.dz / TUPAC_MAP_SIZE,
@@ -58,7 +59,14 @@ export const m7TupacAmaru: MissionDef = {
     enemyBase: { x: 0.772, z: 0.38 },
     discoveries: [{ heritageId: 'colonial_church', initial: true }],
     // Sangarará's church is a typological landmark: the mission's authored site is the Cusco church.
-    decor: { model: 'colonial_church', at: 'player', dx: 36, dz: -39, yaw: 0.4, scale: 0.45 },
+    decor: {
+      model: 'colonial_church',
+      at: 'player',
+      dx: colonialLength(36),
+      dz: -colonialLength(39),
+      yaw: 0.4,
+      scale: 0.45,
+    },
     terrain: {
       flats: [
         { name: 'Valle del Cusco', x: 0.36, z: 0.62, rx: 0.15, rz: 0.12 },
@@ -82,20 +90,50 @@ export const m7TupacAmaru: MissionDef = {
   },
   timeOfDay: 'dusk',
   startingEra: Era.VICEROYALTY,
+  // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.
+  unitSpeedScale: 0.75,
   startingResources: { food: 1000, wood: 700, silver: 900, stone: 400 },
   start: {
     units: [
-      { kind: UnitKind.RIFLEMAN, dx: 6, dz: -6, count: 1, tag: 'tupac_amaru' },
-      { kind: UnitKind.WORKER, dx: 3, dz: 4, count: 1, tag: 'micaela_bastidas' },
-      { kind: UnitKind.SOLDIER, dx: 8, dz: 0, count: 10 },
-      { kind: UnitKind.RIFLEMAN, dx: 10, dz: 2, count: 4 },
-      { kind: UnitKind.CAVALRY, dx: 12, dz: -4, count: 2 },
+      { kind: UnitKind.RIFLEMAN, dx: colonialLength(6), dz: -colonialLength(6), count: 1, tag: 'tupac_amaru' },
+      { kind: UnitKind.WORKER, dx: colonialLength(3), dz: colonialLength(4), count: 1, tag: 'micaela_bastidas' },
+      { kind: UnitKind.SOLDIER, dx: colonialLength(8), dz: 0, count: 10 },
+      { kind: UnitKind.RIFLEMAN, dx: colonialLength(10), dz: colonialLength(2), count: 4 },
+      { kind: UnitKind.CAVALRY, dx: colonialLength(12), dz: -colonialLength(4), count: 2 },
     ],
   },
   // The royalist pressure is scripted (Sangarará, the Cusco sortie and the relief); the city does not
   // run an economy of its own. The rebels had no artillery train and no professional fortifications.
   enemy: { active: false, difficulty: 'normal', aggression: 0 },
   tutorial: true,
+  modelMission: true,
+  intro: [
+    {
+      kicker: 'VALLE DEL CUSCO · 1780',
+      title: 'La Gran Rebelión',
+      text: 'José Gabriel Condorcanqui, Túpac Amaru II, se alza contra el reparto, la mita y los obrajes. Micaela Bastidas organiza el avituallamiento y la red de comunidades del sur andino.',
+      seconds: 9,
+      source: 'docs/historia/campanas/tupac_amaru.md',
+      image: 'media/cusco/intro-valle.webp',
+    },
+    {
+      kicker: 'SANGARARÁ · 18 DE NOVIEMBRE DE 1780',
+      title: 'La victoria',
+      text: 'La columna realista se refugia en el pueblo. La rebelión la cerca y la vence: es la gran victoria de la campaña, pero no abre el Cusco.',
+      seconds: 9,
+      source: 'docs/historia/campanas/tupac_amaru.md',
+      image: 'media/cusco/intro-sangarara.webp',
+    },
+    {
+      kicker: 'EL CERCO · ENERO DE 1781',
+      title: 'El Cusco no cae',
+      text: 'La rebelión pone cerco a la capital. El socorro realista rompe el cerco y la campaña termina con la retirada; el epílogo cuenta la captura y la ejecución.',
+      seconds: 10,
+      source: 'docs/historia/campanas/tupac_amaru.md',
+      image: 'media/cusco/intro-cusco.webp',
+    },
+  ],
+  epilogueImage: 'media/cusco/intro-epilogo.webp',
   allowedUnits: [
     UnitKind.WORKER,
     UnitKind.SOLDIER,
@@ -127,7 +165,7 @@ export const m7TupacAmaru: MissionDef = {
       id: 'a1_avituallamiento',
       kind: 'hold',
       pos: { ref: 'player', dx: 0, dz: 0 },
-      radius: 18,
+      radius: colonialLength(18),
       time: 20,
       minUnits: 3,
       unitKind: UnitKind.WORKER,
@@ -138,7 +176,7 @@ export const m7TupacAmaru: MissionDef = {
       id: 'a1_tungasuca',
       kind: 'reach',
       pos: TUPAC_TUNGASUCA,
-      radius: 12,
+      radius: colonialLength(12),
       hidden: true,
       requires: 'a1_cuartel',
       title: 'Acto I · Alcanza Tungasuca',
@@ -147,7 +185,7 @@ export const m7TupacAmaru: MissionDef = {
       id: 'a2_sangarara',
       kind: 'reach',
       pos: TUPAC_SANGARARA,
-      radius: 14,
+      radius: colonialLength(14),
       hidden: true,
       title: 'Acto II · Marcha a Sangarará',
     },
@@ -155,7 +193,7 @@ export const m7TupacAmaru: MissionDef = {
       id: 'a2_batalla',
       kind: 'hold',
       pos: TUPAC_SANGARARA,
-      radius: 18,
+      radius: colonialLength(18),
       time: 45,
       minUnits: 4,
       hidden: true,
@@ -165,7 +203,7 @@ export const m7TupacAmaru: MissionDef = {
       id: 'a3_cerco',
       kind: 'reach',
       pos: TUPAC_SIEGE,
-      radius: 16,
+      radius: colonialLength(16),
       hidden: true,
       requires: 'a2_batalla',
       title: 'Acto III · Llega a las laderas del Cusco',
@@ -174,7 +212,7 @@ export const m7TupacAmaru: MissionDef = {
       id: 'a3_sostener',
       kind: 'hold',
       pos: TUPAC_SIEGE,
-      radius: 24,
+      radius: colonialLength(24),
       time: 45,
       minUnits: 3,
       hidden: true,
@@ -184,7 +222,7 @@ export const m7TupacAmaru: MissionDef = {
       id: 'a3_retirada',
       kind: 'reach',
       pos: { ref: 'departure', dx: 0, dz: 0 },
-      radius: 12,
+      radius: colonialLength(12),
       entityTag: 'tupac_amaru',
       hidden: true,
       title: 'Acto III · Retira a Túpac Amaru cuando llegue el socorro',
@@ -245,7 +283,7 @@ export const m7TupacAmaru: MissionDef = {
           owner: 0,
           units: [{ kind: UnitKind.SOLDIER, count: 4 }],
           pos: { ref: 'player', dx: 4, dz: 4 },
-          radius: 4,
+          radius: colonialLength(4),
         },
       ],
     },
@@ -265,7 +303,7 @@ export const m7TupacAmaru: MissionDef = {
           owner: 1,
           units: [...ROYALIST_COLUMN],
           pos: TUPAC_SANGARARA,
-          radius: 10,
+          radius: colonialLength(10),
           objective: 'position',
         },
       ],
@@ -292,7 +330,7 @@ export const m7TupacAmaru: MissionDef = {
           owner: 0,
           units: [{ kind: UnitKind.SOLDIER, count: 4 }],
           pos: { ref: 'player', dx: -4, dz: 4 },
-          radius: 4,
+          radius: colonialLength(4),
         },
       ],
     },
@@ -311,8 +349,8 @@ export const m7TupacAmaru: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [...ROYALIST_COLUMN],
-          pos: { dx: 160, dz: 80 },
-          radius: 8,
+          pos: { dx: colonialLength(160), dz: colonialLength(80) },
+          radius: colonialLength(8),
           target: TUPAC_SIEGE,
         },
       ],
@@ -342,8 +380,8 @@ export const m7TupacAmaru: MissionDef = {
             { kind: UnitKind.RIFLEMAN, count: 2 },
             { kind: UnitKind.REALISTA_DRAGON, count: 1 },
           ],
-          pos: { dx: 165, dz: 60 },
-          radius: 8,
+          pos: { dx: colonialLength(165), dz: colonialLength(60) },
+          radius: colonialLength(8),
           target: TUPAC_SIEGE,
         },
       ],
