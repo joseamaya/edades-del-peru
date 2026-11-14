@@ -354,6 +354,8 @@ export class Game {
     headless = false,
     /** False skips the mission's narrated intro and opening flight (?intro=0, ?noloop=1). */
     intro = true,
+    /** Debug harness: `?mapSeed=` wins over the mission's authored map seed (bug sweeps). */
+    seedOverride = false,
   ) {
     this.forceCinematic = forceCinematic;
     this.headless = headless;
@@ -368,7 +370,7 @@ export class Game {
       this.settings.civAI = mis.enemyCiv;
       this.settings.period = mis.period;
       this.settings.startingEra = mis.startingEra;
-      this.settings.mapSeed = mis.map.seed;
+      this.settings.mapSeed = seedOverride ? this.settings.mapSeed : mis.map.seed;
       this.settings.mapType = mis.map.type;
       this.settings.mapSize = mis.map.size;
       this.settings.timeOfDay = mis.timeOfDay;

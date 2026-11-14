@@ -3,8 +3,10 @@
  * Record a campaign mission from the running game, HUD included and no cheats.
  *
  * Usage:
- *   yarn record --mission=m_tambotoco [--mode=clip|full] [--speed=1]
+ *   yarn record --mission=m_tambotoco [--mode=clip|full] [--speed=1] [--seed=N  (replaces the authored map)]
  *     [--out=review/tambotoco.mp4] [--width=1280] [--height=720] [--limit=25]
+ *   yarn record --mission=m_tambotoco --mode=full --speed=8 --diagnose
+ *     (no video: writes a JSON with HUD warnings, stuck units, objective times and effective speed)
  *
  * `clip` records the opening (briefing, intro cards, the starting party and the mission's named
  * places) in about two minutes. `full` autoplays the `m_tambotoco` act shape (leave the cave, hunt,
@@ -22,17 +24,24 @@ import { cliArg, launchChromium, reviewDir, withViteServer } from './lib.mjs';
 const mission = cliArg('mission', 'm_tambotoco');
 const mode = cliArg('mode', 'clip');
 const speed = Number(cliArg('speed', '1'));
+const seedArg = cliArg('seed', '');
+const seed = seedArg === '' ? null : Number(seedArg);
+const diagnose = process.argv.includes('--diagnose') || cliArg('diagnose', '0') === '1';
 const width = Number(cliArg('width', '1280'));
 const height = Number(cliArg('height', '720'));
 const limitMinutes = Number(cliArg('limit', '25'));
-const out = path.resolve(cliArg('out', `review/${mission}-${mode}.mp4`));
-const jsonPath = out.replace(/\.mp4$/i, '.json');
-const contactPath = out.replace(/\.mp4$/i, '-contact.jpg');
+const out = path.resolve(
+  cliArg('out', diagnose ? `review/diagnose-${mission}-${seed ?? 'authored'}.json` : `review/${mission}-${mode}.mp4`),
+);
+const jsonPath = diagnose ? out.replace(/\.json$/i, '') + '.json' : out.replace(/\.mp4$/i, '.json');
+const contactPath = diagnose ? '' : out.replace(/\.mp4$/i, '-contact.jpg');
 const frameDir = path.join(reviewDir(), 'record-frames');
 
 const started = Date.now();
 const log = [];
 const objectives = {};
+let videoPath;
+let diagnostics = null;
 
 function ffmpeg(args) {
   execFileSync('ffmpeg', ['-y', '-loglevel', 'error', ...args], { stdio: 'inherit' });
@@ -47,11 +56,10 @@ async function main() {
   fs.mkdirSync(frameDir, { recursive: true });
   fs.mkdirSync(path.dirname(out), { recursive: true });
   const errors = [];
-  let videoPath;
   try {
     const context = await browser.newContext({
       viewport: { width, height },
-      recordVideo: { dir: frameDir, size: { width, height } },
+      ...(diagnose ? {} : { recordVideo: { dir: frameDir, size: { width, height } } }),
     });
     const page = await context.newPage();
     page.on('pageerror', (e) => errors.push(`PAGEERROR: ${e.message}`));
@@ -59,7 +67,9 @@ async function main() {
       if (m.type() === 'error') errors.push(`CONSOLE: ${m.text()}`);
     });
 
-    await page.goto(`${base}/?mission=${mission}&seed=777&fog=0&low=1&speed=${speed}`, {
+    // `mapSeed` replaces the mission's authored map; without it the mission keeps its own seed.
+    const seedParam = seed === null ? '' : `&mapSeed=${seed}`;
+    await page.goto(`${base}/?mission=${mission}${seedParam}&fog=0&low=1&speed=${speed}`, {
       waitUntil: 'networkidle',
     });
     await page.waitForFunction(() => window.game?.mission !== undefined, null, { timeout: 90_000 });
@@ -72,6 +82,7 @@ async function main() {
 
     await waitForPlay(page);
     const plan = await readPlan(page);
+    if (diagnose) await startDiagnostics(page);
     if (mode === 'clip') await recordClip(page, plan);
     else await playMission(page, plan);
 
@@ -87,33 +98,37 @@ async function main() {
     }));
     Object.assign(objectives, summary.objectives);
     log.push({ at: elapsed(), step: 'end', won: summary.won, ended: summary.ended });
+    const raw = diagnose ? await stopDiagnostics(page) : null;
     await page.close();
-    videoPath = await page.video().path();
+    if (!diagnose) videoPath = await page.video().path();
     await context.close();
+    if (diagnose) diagnostics = summarize(raw);
   } finally {
     await browser.close();
     await close();
   }
 
-  ffmpeg([
-    '-i',
-    videoPath,
-    '-c:v',
-    'libx264',
-    '-preset',
-    'veryfast',
-    '-crf',
-    '22',
-    '-pix_fmt',
-    'yuv420p',
-    '-movflags',
-    '+faststart',
-    out,
-  ]);
-  try {
-    ffmpeg(['-i', out, '-vf', 'fps=1/20,scale=480:-1,tile=4x3', '-frames:v', '1', contactPath]);
-  } catch {
-    console.warn('[record] the contact sheet was not generated (short clip?)');
+  if (!diagnose) {
+    ffmpeg([
+      '-i',
+      videoPath,
+      '-c:v',
+      'libx264',
+      '-preset',
+      'veryfast',
+      '-crf',
+      '22',
+      '-pix_fmt',
+      'yuv420p',
+      '-movflags',
+      '+faststart',
+      out,
+    ]);
+    try {
+      ffmpeg(['-i', out, '-vf', 'fps=1/20,scale=480:-1,tile=4x3', '-frames:v', '1', contactPath]);
+    } catch {
+      console.warn('[record] the contact sheet was not generated (short clip?)');
+    }
   }
   fs.rmSync(frameDir, { recursive: true, force: true });
   fs.writeFileSync(
@@ -122,20 +137,25 @@ async function main() {
       {
         mission,
         mode,
-        seed: 777,
+        seed: seed ?? 'authored',
         speed,
         durationSeconds: elapsed(),
         objectives,
         log,
         errors,
-        files: { video: out, contact: contactPath },
+        ...(diagnose ? { diagnostics } : { files: { video: out, contact: contactPath } }),
       },
       null,
       2,
     )}\n`,
   );
-  console.log(`[record] ${out} (${(fs.statSync(out).size / 1024 / 1024).toFixed(1)} MB)`);
-  console.log(`[record] ${jsonPath}`);
+  if (diagnose) {
+    printDiagnostics(diagnostics);
+    console.log(`[diagnose] ${jsonPath}`);
+  } else {
+    console.log(`[record] ${out} (${(fs.statSync(out).size / 1024 / 1024).toFixed(1)} MB)`);
+    console.log(`[record] ${jsonPath}`);
+  }
   if (errors.length) console.warn(`[record] page errors: ${errors.slice(0, 2).join(' | ')}`);
 }
 
@@ -202,6 +222,13 @@ async function playMission(page, plan) {
     await look(page, { x: plan.tamboQuiro.x + 2, z: plan.tamboQuiro.z - 5 }, 26);
     await page.waitForTimeout(4000);
   }
+  // The party leaves the cave with nothing built: the workers raise the camp's communal store first.
+  const campers = (await units(page, 'worker')).map((u) => u.id);
+  await select(page, campers);
+  const camp = await place(page, 'mill', { x: plan.start.x - 6, z: plan.start.z - 8 });
+  if (camp) await issue(page, { kind: 'build', entityId: camp }, campers);
+  await waitObjective(page, 'a1_campamento', 'completed', 180_000, deadline, () => look(page, null, 30, 'workers'));
+  if (await hasEnded(page)) return;
   await gather(page);
   await waitObjective(page, 'a1_caza', 'completed', 420_000, deadline, () => look(page, null, 31, 'workers'));
   if (await hasEnded(page)) return;
@@ -248,6 +275,153 @@ async function playMission(page, plan) {
 
 async function hasEnded(page) {
   return page.evaluate(() => window.game.mission?.ended ?? false);
+}
+
+/** In-page sampler: HUD warnings, stuck units, objectives, economy and the effective speed. */
+async function startDiagnostics(page) {
+  await page.evaluate(() => {
+    const g = window.game;
+    const diag = (window.__diag = { events: [], samples: [], startedAt: performance.now() });
+    const hud = g.hud;
+    const original = hud.showToast.bind(hud);
+    hud.showToast = (msg, type = 'info') => {
+      diag.events.push({
+        wall: +((performance.now() - diag.startedAt) / 1000).toFixed(1),
+        timer: +(g.mission?.timer ?? 0).toFixed(1),
+        msg: String(msg),
+        type,
+      });
+      return original(msg, type);
+    };
+    const snapshot = () => {
+      const m = g.mission;
+      const player = g.players[0];
+      const units = [...g.units.values()].filter((u) => u.owner === 0 && !u.dead);
+      const workers = units.filter((u) => u.kind === 'worker');
+      return {
+        wall: +((performance.now() - diag.startedAt) / 1000).toFixed(1),
+        timer: +(m?.timer ?? 0).toFixed(1),
+        fps: g.loop.getFps(),
+        speed: g.loop.speed,
+        objectives: m ? Object.fromEntries(m.def.objectives.map((o) => [o.id, m.getObjectiveState(o.id)])) : {},
+        resources: player ? { ...player.resources } : null,
+        pop: units.length,
+        workers: workers.length,
+        idleWorkers: workers.filter((u) => u.orderQueue.length === 0).length,
+        buildings: [...g.buildings.values()].filter((b) => b.owner === 0 && !b.dead).length,
+        stuck: units
+          // An idle unit with no order is not stuck: blockedNotified stays set until the next order.
+          .filter((u) => (u.stuckRetries ?? 0) > 0 || (u.blockedNotified && u.orderQueue.length > 0))
+          .map((u) => ({
+            id: u.id,
+            kind: u.kind,
+            tag: u.tag ?? null,
+            retries: u.stuckRetries ?? 0,
+            order: u.orderQueue[0]?.kind ?? null,
+            x: +u.pos.x.toFixed(1),
+            z: +u.pos.z.toFixed(1),
+          })),
+        ended: !!m?.ended,
+        won: m?.won ?? null,
+      };
+    };
+    diag.samples.push(snapshot());
+    diag.timer = window.setInterval(() => diag.samples.push(snapshot()), 500);
+  });
+}
+
+async function stopDiagnostics(page) {
+  return page.evaluate(() => {
+    const diag = window.__diag;
+    if (!diag) return null;
+    window.clearInterval(diag.timer);
+    return { events: diag.events, samples: diag.samples };
+  });
+}
+
+/** Collapse the samples into what a bug sweep needs: warnings, stalls, objective times, speed. */
+function summarize(raw) {
+  const events = raw?.events ?? [];
+  const samples = raw?.samples ?? [];
+  if (!samples.length) return { samples: 0, events: 0 };
+  const last = samples[samples.length - 1];
+  const toasts = new Map();
+  for (const event of events) {
+    const key = event.msg.replace(/\d+/g, 'N');
+    const entry = toasts.get(key) ?? { text: event.msg, count: 0, first: event.timer, last: event.timer };
+    entry.count++;
+    entry.last = event.timer;
+    toasts.set(key, entry);
+  }
+  const stuck = new Map();
+  for (const sample of samples) {
+    for (const unit of sample.stuck) {
+      const key = `${unit.tag ?? unit.kind}#${unit.id}`;
+      const entry = stuck.get(key) ?? {
+        id: unit.id,
+        kind: unit.kind,
+        tag: unit.tag,
+        first: sample.timer,
+        last: sample.timer,
+        retries: 0,
+        order: unit.order,
+        x: unit.x,
+        z: unit.z,
+      };
+      entry.last = sample.timer;
+      entry.retries = Math.max(entry.retries, unit.retries);
+      stuck.set(key, entry);
+    }
+  }
+  const completedAt = {};
+  for (const sample of samples) {
+    for (const [id, state] of Object.entries(sample.objectives)) {
+      if (state === 'completed' && completedAt[id] === undefined) completedAt[id] = sample.timer;
+    }
+  }
+  return {
+    samples: samples.length,
+    wallSeconds: last.wall,
+    simSeconds: last.timer,
+    effectiveSpeed: +(last.timer / Math.max(last.wall, 0.001)).toFixed(2),
+    fps: {
+      min: Math.min(...samples.map((s) => s.fps)),
+      max: Math.max(...samples.map((s) => s.fps)),
+    },
+    objectives: last.objectives,
+    completedAt,
+    won: last.won,
+    ended: last.ended,
+    resources: last.resources,
+    pop: last.pop,
+    workers: last.workers,
+    maxIdleWorkers: Math.max(...samples.map((s) => s.idleWorkers)),
+    buildings: { end: last.buildings, min: Math.min(...samples.map((s) => s.buildings)) },
+    toasts: [...toasts.values()],
+    stuck: [...stuck.values()],
+  };
+}
+
+function printDiagnostics(summary) {
+  if (!summary?.samples) {
+    console.log('[diagnose] no samples');
+    return;
+  }
+  console.log(
+    `[diagnose] sim ${summary.simSeconds}s in ${summary.wallSeconds}s wall (${summary.effectiveSpeed}x), fps ${summary.fps.min}-${summary.fps.max}`,
+  );
+  console.log(`[diagnose] won=${summary.won} ended=${summary.ended} objectives=${JSON.stringify(summary.objectives)}`);
+  console.log(
+    `[diagnose] pop ${summary.pop} workers ${summary.workers} idle ${summary.maxIdleWorkers} buildings ${summary.buildings.min}-${summary.buildings.end}`,
+  );
+  for (const toast of summary.toasts) {
+    console.log(`[toast] ${toast.count}x ${toast.text} (sim ${toast.first}-${toast.last}s)`);
+  }
+  for (const unit of summary.stuck) {
+    console.log(
+      `[stuck] ${unit.tag ?? unit.kind}#${unit.id} order=${unit.order} retries=${unit.retries} at ${unit.x},${unit.z} (sim ${unit.first}-${unit.last}s)`,
+    );
+  }
 }
 
 /** World points the mission itself declares, so the recorder does not restate the map data. */
