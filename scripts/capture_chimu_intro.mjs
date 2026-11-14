@@ -5,8 +5,8 @@ import { launchChromium, withViteServer, cliArg } from './lib.mjs';
 
 /**
  * Capture the Chimú–Inca intro, chapter-card and epilogue images from the game itself (an in-engine
- * recreation, never a historical photograph): the north coast, Paramonga, the Chan Chan canal and a dusk
- * epilogue. Rendered without the HUD or character nameplates at 1600x900 and stored as 960x540 WebP in
+ * recreation, never a historical photograph): the north coast, Paramonga, the Chan Chan canal, the
+ * capitulation and a dusk epilogue. Rendered without the HUD or character nameplates at 1600x900 and stored as 960x540 WebP in
  * public/media/chimu/.
  *
  * Usage: node scripts/capture_chimu_intro.mjs [--only=canal]
@@ -21,10 +21,15 @@ const SHOTS = [
   },
   {
     id: 'paramonga',
-    centre: 'enemy',
+    centre: 'paramonga',
     cinematic: { eye: [-28, 16, 22], look: [0, 3, 0], fov: 50, time: 0.5 },
   },
   { id: 'canal', anchor: 'canal', height: 38, time: 0.56 },
+  {
+    id: 'rendicion',
+    anchor: 'site',
+    cinematic: { eye: [-36, 18, 30], look: [0, 3, 0], fov: 50, time: 0.4 },
+  },
   {
     id: 'epilogo',
     anchor: 'site',
@@ -69,13 +74,15 @@ try {
         const enemy = g.resolveMissionPoint({ ref: 'enemy', dx: 0, dz: 0 });
         const canal = g.canalSite ?? site;
         const base = g.playerCenter(0);
+        // Paramonga is the approach west of Chan Chan's centre, not the capital itself.
+        const paramonga = { x: enemy.x - 24, z: enemy.z };
         const centre =
           shot.anchor === 'canal'
             ? canal
             : shot.anchor === 'site'
               ? site
-              : shot.centre === 'enemy'
-                ? enemy
+              : shot.centre === 'paramonga'
+                ? paramonga
                 : { x: base.x, z: base.z };
         g.sky.setTimeOfDay(shot.time ?? 0.5);
         let t = 1;

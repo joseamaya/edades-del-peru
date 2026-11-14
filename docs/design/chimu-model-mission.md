@@ -16,11 +16,11 @@ power: advance, close the gate, and receive the surrender.
 
 ## Acts
 
-| Act                    | Place                | Player action                                                       | Historical idea                                                       |
-| ---------------------- | -------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| I · Paramonga          | North coast          | Advance to Paramonga and keep Túpac Yupanqui alive                  | The first clash and the curaca reinforcements open the campaign       |
-| II · El canal          | Chan Chan canal      | Reach the canal and close its gate                                  | Water is the city's lifeline and the campaign's lever                 |
-| III · La capitulación  | Chan Chan            | March to the city and hold the surrender for 30 s                   | The desert capital capitulates; the north joins the Tahuantinsuyo     |
+| Act                   | Place           | Player action                                      | Historical idea                                                   |
+| --------------------- | --------------- | -------------------------------------------------- | ----------------------------------------------------------------- |
+| I · Paramonga         | North coast     | Advance to Paramonga and keep Túpac Yupanqui alive | The first clash and the curaca reinforcements open the campaign   |
+| II · El canal         | Chan Chan canal | Reach the canal and close its gate                 | Water is the city's lifeline and the campaign's lever             |
+| III · La capitulación | Chan Chan       | March to the city and hold the surrender for 30 s  | The desert capital capitulates; the north joins the Tahuantinsuyo |
 
 Optional: take Chan Chan's centre if it resists, or hold the camp for ten minutes. The epilogue narrates
 Minchancaman's transfer and Querrotumi's 1475 revolt.
@@ -51,7 +51,8 @@ in the quality bar.
 ## Economy and units
 
 - Inca workers, warriors, riflemen and honderos; the Chimú side fields warriors and honderos.
-  `UnitKind.MUSKETEER` is the legacy ranged id: in this era it renders as a hondero, not a firearm.
+  `UnitKind.MUSKETEER` and `UnitKind.RIFLEMAN` are legacy ranged ids: in this era they render as a hondero
+  and an arquero, not firearms.
 - The canal gate is Act II's mechanic (`canal_closed`, heritage `chimu_canal`); the water is an abstraction
   of the documented cut, not a reconstructed canal trace.
 - The narrator is **Túpac Yupanqui**, a documented commander.
@@ -59,11 +60,12 @@ in the quality bar.
 ## Opening and closing
 
 - Three narrated intro beats and the three act cards captured in engine by
-  [`scripts/capture_chimu_intro.mjs`](../../scripts/capture_chimu_intro.mjs): the north coast, Paramonga and
-  the canal, plus a dusk epilogue.
+  [`scripts/capture_chimu_intro.mjs`](../../scripts/capture_chimu_intro.mjs): the north coast, Paramonga, the
+  canal and the capitulation, plus a dusk epilogue.
 - `MISSION_ART` (`m6_chimu_inca` → `media/chimu/intro-costa.webp`) and the briefing use the coast capture.
-- Victory: the canal is closed and Chan Chan holds the surrender. The epilogue
-  (`media/chimu/intro-epilogo.webp`) narrates Minchancaman's transfer and Querrotumi's revolt. Defeat: the
+- Victory: the canal is closed and Chan Chan holds the surrender; the Act III card uses the capitulation
+  capture. The epilogue (`media/chimu/intro-epilogo.webp`) narrates Minchancaman's transfer and
+  Querrotumi's revolt. Defeat: the
   Inca column or Túpac Yupanqui is lost.
 
 ## Tutorial
@@ -75,8 +77,8 @@ the briefing, the chapter cards and the Codex.
 
 - Data: `tests/campaign.test.ts`, `tests/campaign-layout.test.ts`, `tests/authored-sites.test.ts`.
 - Scale: `tests/campaign-scale.test.ts` enforces 256 m, 128² painted ground and the crossing band.
-- E2E: `campaign.spec.ts` (gate and surrender), `campaign-playtest.spec.ts` (real orders, no cheats),
-  `campaign-completable.spec.ts`, `save-campaign.spec.ts` (later missions) and `hud-layout.spec.ts`.
+- E2E: `campaign.spec.ts` (gate and surrender), `campaign-playtest.spec.ts` (real move orders, no cheats),
+  `campaign-completable.spec.ts`, `save-campaign.spec.ts` (mid-surrender save/load) and `hud-layout.spec.ts`.
 - Bench: `scripts/bench_scene.mjs` measures the opening (~499k tris / 273 calls) and the surrender
   (~765k / 516, over the 600k target); `yarn bench:check`.
 - Evidence: `yarn record --mission=m6_chimu_inca --mode=clip` and the intro/epilogue captures.

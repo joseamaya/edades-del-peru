@@ -271,13 +271,18 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'chan_chan',
-        text: 'Tomar Chan Chan es opcional y debe hacerse antes de cortar el agua: en cuanto caiga el canal, la ciudad se rinde y la misión termina. No sacrifiques a Túpac Yupanqui por ello.',
+        text: 'Tomar el centro de Chan Chan es opcional; la victoria llega cuando la ciudad sostiene la rendición treinta segundos.',
         check: { type: 'elapsed', seconds: 12 },
       },
       {
         id: 'canal',
-        text: 'Lleva a Túpac Yupanqui hasta el canal de Chan Chan, selecciona su ficha y cierra la compuerta: cortar el agua fuerza la rendición chimú.',
+        text: 'Lleva a Túpac Yupanqui hasta el canal de Chan Chan, selecciona su ficha y cierra la compuerta: el agua deja de llegar a la ciudad.',
         check: { type: 'objectiveCompleted', objectiveId: 'obj_canal' },
+      },
+      {
+        id: 'rendicion',
+        text: 'Marcha a Chan Chan y sostén la rendición treinta segundos con al menos cuatro unidades.',
+        check: { type: 'objectiveCompleted', objectiveId: 'obj_rendicion' },
       },
     ],
   },

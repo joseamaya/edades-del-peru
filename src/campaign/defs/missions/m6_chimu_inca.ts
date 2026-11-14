@@ -105,7 +105,7 @@ export const m6ChimuInca: MissionDef = {
     {
       id: 'obj_canal',
       kind: 'canal_closed',
-      // The straight canal's gate sits at one end (14 m from its centre): the crew may close it from there.
+      // The straight canal's gate sits at one end (18.67 m from its centre): the crew may close it from there.
       pos: { ref: 'canal', dx: 0, dz: 0 },
       radius: chimuLength(16),
       hidden: true,
@@ -214,7 +214,7 @@ export const m6ChimuInca: MissionDef = {
           type: 'act',
           kicker: 'Acto III · La capitulación',
           title: 'Chan Chan se rinde',
-          image: 'media/chimu/intro-canal.webp',
+          image: 'media/chimu/intro-rendicion.webp',
           text: 'El canal está cortado. Marcha a Chan Chan y recibe la capitulación de Minchancaman; la ciudad no resiste sin agua.',
         },
         {

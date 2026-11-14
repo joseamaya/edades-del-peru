@@ -90,7 +90,7 @@ const BUDGETS = {
   // Yahuar Pampa opening: Cusco, the pampa and the Chanca heights. Measured ~682k / 362; over the 600k target.
   m5_yahuar_pampa: { sceneTriangles: 725_000, sceneDrawCalls: 378, kitTriangles: 0, kitDrawCalls: 0 },
   // Chimú north-coast opening: the camp, Paramonga and the canal. Measured ~499k / 273; first-pass cap.
-  m6_chimu_inca: { sceneTriangles: 530_000, sceneDrawCalls: 290, kitTriangles: 20_000, kitDrawCalls: 5 },
+  m6_chimu_inca: { sceneTriangles: 530_000, sceneDrawCalls: 290, kitTriangles: 15_000, kitDrawCalls: 3 },
   // Túpac Amaru opening on the 256 m valley: the camp, the chapel and the starting column. Measured
   // ~537k / 661–665; first-pass cap with ~6 % headroom (the call count is over art-direction §11's target).
   m7_tupac_amaru: { sceneTriangles: 575_000, sceneDrawCalls: 710, kitTriangles: 0, kitDrawCalls: 0 },
@@ -101,7 +101,7 @@ const BUDGETS = {
   // The Inca counterattack on the Chanca heights: measured ~761k / 521; over the 600k target.
   m5_yahuar_pampa_late: { sceneTriangles: 810_000, sceneDrawCalls: 548, kitTriangles: 0, kitDrawCalls: 0 },
   // The surrender of Chan Chan: measured ~765k / 516; over the 600k target.
-  m6_chimu_inca_late: { sceneTriangles: 815_000, sceneDrawCalls: 550, kitTriangles: 20_000, kitDrawCalls: 5 },
+  m6_chimu_inca_late: { sceneTriangles: 815_000, sceneDrawCalls: 550, kitTriangles: 15_000, kitDrawCalls: 3 },
   // The siege/retreat crowd at Cusco: measured ~811k / 1083; still over art-direction §11's 600k target.
   m7_tupac_amaru_late: { sceneTriangles: 860_000, sceneDrawCalls: 1_140, kitTriangles: 0, kitDrawCalls: 0 },
   // Arica opening on the 256 m terrace: the fort, the cuartel and the garrison. Measured ~535k / 600;
@@ -151,11 +151,7 @@ try {
           (g.settlementDressing ?? []).every((d) => d.attached !== false)
         );
       }
-      if (id === 'm6_chimu_inca') {
-        return (
-          !!g.landmark?.getObjectByName('chimu_site') && !!g.trees?.hasKit?.('algarrobo') && !!g.trees.hasKit('sauce')
-        );
-      }
+      if (id === 'm6_chimu_inca' && !g.landmark?.getObjectByName('chimu_site')) return false;
       if (id === 'm_tambotoco') return !!g.landmark?.getObjectByName('ayllu_site');
       if (id === 'm9_guerra_pacifico' && !g.landmark?.getObjectByName('arica_site')) return false;
       // Wait for every kit family the scene draws: a half-loaded batch measured a different scene.

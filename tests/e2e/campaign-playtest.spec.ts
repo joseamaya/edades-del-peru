@@ -503,14 +503,15 @@ test('plays m6 by advancing and cutting the canal with real orders', async ({ pa
     document.querySelector<HTMLElement>('.ed-mission-card')?.click();
     const atSurrender = m.getObjectiveState('obj_rendicion') as string;
     const wonAtSurrender = m.won as boolean | null;
-    // Act III: march to Chan Chan and hold the surrender for 30 s.
+    // Act III: march to Chan Chan with a real move order and hold the surrender for 30 s.
     const anchor = g.siteAnchor as { x: number; z: number };
-    for (const u of g.units.values())
-      if (u.owner === 0 && !u.dead) u.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
-    for (let i = 0; i < Math.ceil(32 / dt) && !m.ended; i++) {
-      document.querySelector<HTMLElement>('.ed-mission-card')?.click();
-      for (const u of g.units.values())
-        if (u.owner === 0 && !u.dead) u.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+    const army = [...g.units.values()].filter((u: any) => u.owner === 0 && !u.dead).map((u: any) => u.id);
+    g.executeCommand(
+      { kind: 'order', unitIds: army, order: { kind: 'move', target: { x: anchor.x, z: anchor.z } }, clear: true },
+      false,
+    );
+    for (let i = 0; i < Math.ceil(90 / dt) && !m.ended; i++) {
+      if (g.hud.isMissionCardOpen()) document.querySelector<HTMLElement>('.ed-mission-card')?.click();
       g.update(dt, t);
       t += dt;
     }

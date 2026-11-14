@@ -25,7 +25,7 @@
 | Afirmación | Certeza | Base |
 | --- | --- | --- |
 | La campaña inca contra Chimor y el choque de Paramonga | Documentado por las crónicas | Cieza de León y fuentes coloniales |
-| Túpac Yupanqui seca el canal que abastecía Chan Chan | Documentado por las crónicas | Fuentes coloniales |
+| Túpac Yupanqui seca el canal que abastecía Chan Chan | Documentado por las crónicas; trazado y compuerta abstraídos | Fuentes coloniales |
 | La capitulación de Chan Chan y el traslado de Minchancaman al Cusco | Documentado | Fuentes coloniales |
 | La revuelta de Querrotumi en 1475 y su derrota | Documentado | Fuentes coloniales |
 | El trazado exacto del canal y la compuerta | Abstracción jugable | Este dossier y `docs/design/chimu-model-mission.md` |
