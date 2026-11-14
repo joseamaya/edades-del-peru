@@ -441,7 +441,7 @@ test('the network objective needs both provincial nodes', async ({ page }) => {
 });
 
 test('m6 cuts the canal to force Chan Chan to surrender', async ({ page }) => {
-  await page.goto('/?mission=m6_chimu_inca&seed=777&fog=0&low=1&noloop=1');
+  await page.goto('/?mission=m6_chimu_inca&seed=777&fog=0&low=1&noloop=1&intro=0');
   await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
     timeout: 30_000,
   });
@@ -463,6 +463,9 @@ test('m6 cuts the canal to force Chan Chan to surrender', async ({ page }) => {
     const lockedOpen = g.toggleCanal() as boolean;
     setPos(enemy.pos.x - 18, enemy.pos.z);
     g.update(1 / 60, 0);
+    // The Act II card opens on reaching Paramonga; the player closes it before acting.
+    document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+    g.update(1 / 60, 0.01);
     const afterParamonga = m.getObjectiveState('obj_canal') as string;
     if (!canal) return { afterParamonga, canal: false, won: m.won as boolean | null };
     // Reaching the canal is not cutting it: the objective stays active and the water keeps running.
@@ -475,6 +478,7 @@ test('m6 cuts the canal to force Chan Chan to surrender', async ({ page }) => {
     g.refreshSelectionVisuals();
     // Let the stopped loop's HUD tick render the field card before the click.
     for (let i = 1; i <= 12; i++) g.update(1 / 60, 0.05 + i / 60);
+    document.querySelector<HTMLElement>('.ed-mission-card')?.click();
     return {
       afterParamonga,
       canal: true,
@@ -506,15 +510,42 @@ test('m6 cuts the canal to force Chan Chan to surrender', async ({ page }) => {
   const closed = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     g.update(1 / 60, 0.02);
+    document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+    g.update(1 / 60, 0.04);
     return {
       closed: !g.isCanalOpen(),
       canalObjective: g.mission.getObjectiveState('obj_canal') as string,
+      surrender: g.mission.getObjectiveState('obj_rendicion') as string,
       won: g.mission.won as boolean | null,
     };
   });
   expect(closed.closed).toBe(true);
   expect(closed.canalObjective).toBe('completed');
-  expect(closed.won).toBe(true);
+  expect(closed.surrender, 'closing the gate opens the surrender, not victory').toBe('activo');
+  expect(closed.won).not.toBe(true);
+
+  // Act III: the army marches to Chan Chan and holds the surrender.
+  const surrender = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const m = g.mission;
+    const anchor = g.siteAnchor as { x: number; z: number };
+    const army = [...g.units.values()].filter((u: any) => u.owner === 0 && !u.dead).slice(0, 4) as any[];
+    for (const u of army) u.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+    const dt = 1 / 60;
+    let t = 0.1;
+    for (let i = 0; i < Math.ceil(32 / dt) && !m.ended; i++) {
+      document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+      for (const u of army) u.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+      g.update(dt, t);
+      t += dt;
+    }
+    return {
+      surrender: m.getObjectiveState('obj_rendicion') as string,
+      won: m.won as boolean | null,
+    };
+  });
+  expect(surrender.surrender).toBe('completed');
+  expect(surrender.won).toBe(true);
 });
 
 test('authored campaign geography spawns its local base and features', async ({ context }) => {

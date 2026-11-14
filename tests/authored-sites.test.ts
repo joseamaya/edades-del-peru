@@ -6,6 +6,7 @@ import { sampleAuthoredGround } from '../src/model/defs/authoredTerrain';
 import { MOCHE_COMPOSITION_SCALE } from '../src/model/defs/mocheSite';
 import { WARI_COMPOSITION_SCALE } from '../src/model/defs/wariSite';
 import { CHANCA_COMPOSITION_SCALE } from '../src/model/defs/chancaSite';
+import { CHIMU_COMPOSITION_SCALE } from '../src/model/defs/chimuSite';
 
 describe('authored campaign sites', () => {
   it('resolves every site referenced by a mission layout', () => {
@@ -72,11 +73,22 @@ describe('authored campaign sites', () => {
 
   it('keeps the Chimú mission on its authored site and heightfield', () => {
     const site = getAuthoredSite('chimu_site')!;
-    expect(site.scale).toBe(0.7);
-    expect(site.anchor).toEqual({ x: 142.8, z: 65 });
-    expect(site.heightField?.worldSize).toBe(192);
+    expect(site.scale).toBeCloseTo(0.7 * CHIMU_COMPOSITION_SCALE, 3);
+    expect(site.anchor.x).toBeCloseTo(142.8 * CHIMU_COMPOSITION_SCALE, 3);
+    expect(site.anchor.z).toBeCloseTo(65 * CHIMU_COMPOSITION_SCALE, 3);
+    expect(site.heightField?.worldSize).toBe(256);
+    expect(site.heightField?.ground?.size).toBe(128);
+    expect(site.heightField?.ground?.weights.length).toBe(128 * 128 * 4);
+    const painted = sampleAuthoredGround(site.heightField!, site.anchor.x, site.anchor.z)!;
+    expect(painted.reduce((sum, w) => sum + w, 0)).toBeCloseTo(1, 2);
+    expect(painted[1], 'the Chan Chan terrace is painted dirt').toBeGreaterThan(0.2);
+    const beach = sampleAuthoredGround(site.heightField!, 10, 128)!;
+    expect(beach[2], 'the Pacific shore is painted sand').toBeGreaterThan(0.6);
+    const valley = sampleAuthoredGround(site.heightField!, 80, 60)!;
+    expect(valley[0], 'the irrigated valley is painted grass').toBeGreaterThan(0.2);
     expect(site.heritageProxies.map((p) => p.id)).toEqual(['chimu_compound']);
-    expect(site.walkableCorridor?.width).toBe(8);
+    expect(site.heritageProxies[0]?.w).toBeCloseTo(14.667, 3);
+    expect(site.walkableCorridor?.width).toBeCloseTo(10.667, 3);
     const mission = MISSIONS.find((m) => m.id === 'm6_chimu_inca')!;
     expect(mission.layout?.site?.id).toBe('chimu_site');
   });

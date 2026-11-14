@@ -474,14 +474,17 @@ test('plays m6 by advancing and cutting the canal with real orders', async ({ pa
       g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'move', target: { x, z } }, clear: true }, false);
     const dt = 1 / 60;
     let t = 0;
-    order(enemy.pos.x - 18, enemy.pos.z);
+    const advance = m.getObjectiveAnchor('obj_avanzar') ?? { x: enemy.pos.x - 18, z: enemy.pos.z };
+    order(advance.x, advance.z);
     for (let i = 0; i < Math.ceil(180 / dt) && !m.ended; i++) {
+      if (g.hud.isMissionCardOpen()) document.querySelector<HTMLElement>('.ed-mission-card')?.click();
       g.update(dt, t);
       t += dt;
     }
     const afterParamonga = m.getObjectiveState('obj_avanzar') as string;
     if (canal) order(canal.x, canal.z);
     for (let i = 0; i < Math.ceil(120 / dt) && !m.ended; i++) {
+      if (g.hud.isMissionCardOpen()) document.querySelector<HTMLElement>('.ed-mission-card')?.click();
       g.update(dt, t);
       t += dt;
     }
@@ -497,6 +500,20 @@ test('plays m6 by advancing and cutting the canal with real orders', async ({ pa
     const close = [...document.querySelectorAll('button')].find((b) => b.textContent?.includes('Cerrar compuerta'));
     close?.dispatchEvent(new PointerEvent('pointerdown', { button: 0, bubbles: true }));
     g.update(dt, t + 0.2);
+    document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+    const atSurrender = m.getObjectiveState('obj_rendicion') as string;
+    const wonAtSurrender = m.won as boolean | null;
+    // Act III: march to Chan Chan and hold the surrender for 30 s.
+    const anchor = g.siteAnchor as { x: number; z: number };
+    for (const u of g.units.values())
+      if (u.owner === 0 && !u.dead) u.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+    for (let i = 0; i < Math.ceil(32 / dt) && !m.ended; i++) {
+      document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+      for (const u of g.units.values())
+        if (u.owner === 0 && !u.dead) u.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+      g.update(dt, t);
+      t += dt;
+    }
     return {
       afterParamonga,
       atCanal,
@@ -505,6 +522,11 @@ test('plays m6 by advancing and cutting the canal with real orders', async ({ pa
       card: !!close,
       closed: !g.isCanalOpen(),
       canal: m.getObjectiveState('obj_canal') as string,
+      atSurrender,
+      wonAtSurrender,
+      surrender: m.getObjectiveState('obj_rendicion') as string,
+      mapSize: g.settings.mapSize,
+      site: g.siteDef?.id,
       won: m.won as boolean | null,
     };
   });
@@ -515,6 +537,11 @@ test('plays m6 by advancing and cutting the canal with real orders', async ({ pa
   expect(out.card, 'the field card exposes the close action').toBe(true);
   expect(out.closed, JSON.stringify(out)).toBe(true);
   expect(out.canal).toBe('completed');
+  expect(out.atSurrender, 'closing the gate opens the surrender').toBe('activo');
+  expect(out.wonAtSurrender, 'the canal alone does not end the mission').not.toBe(true);
+  expect(out.surrender).toBe('completed');
+  expect(out.mapSize, 'the model mission runs on 256 m').toBe(256);
+  expect(out.site).toBe('chimu_site');
   expect(out.won).toBe(true);
   expect(errors).toEqual([]);
 });

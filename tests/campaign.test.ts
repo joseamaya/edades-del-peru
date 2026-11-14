@@ -471,6 +471,21 @@ describe('campaign educational content', () => {
 
   it('m6 closes the Chan Chan gate and m6b captures Huáscar on the pampa', () => {
     const m6 = MISSIONS.find((m) => m.id === 'm6_chimu_inca')!;
+    expect(m6.modelMission).toBe(true);
+    expect(m6.narrator).toBe('Túpac Yupanqui');
+    expect(m6.map.size).toBe(256);
+    expect(m6.unitSpeedScale).toBe(0.75);
+    expect(m6.intro?.length).toBe(3);
+    expect(new Set(m6.intro?.map((beat) => beat.image)).size, 'three distinct intro captures').toBe(3);
+    expect(m6.intro?.every((beat) => beat.image.startsWith('media/chimu/'))).toBe(true);
+    expect(m6.epilogueImage).toContain('media/chimu/');
+    const actTitles = m6.triggers.flatMap((t) => t.effects.flatMap((e) => (e.type === 'act' ? [e.title] : [])));
+    expect(actTitles).toHaveLength(3);
+    expect(actTitles[2]).toContain('Chan Chan');
+    const surrender = m6.objectives.find((o) => o.id === 'obj_rendicion')!;
+    expect(surrender.kind).toBe('hold');
+    expect(surrender.requires).toBe('obj_canal');
+    expect(surrender.hidden).toBe(true);
     expect(m6.layout?.canal?.heritageId).toBe('chimu_canal');
     expect(m6.layout?.canal?.initiallyOpen).toBe(true);
     expect(m6.layout?.canal?.lockedUntilObjective).toBe('obj_canal');
@@ -478,7 +493,7 @@ describe('campaign educational content', () => {
     expect(gate.kind).toBe('canal_closed');
     expect(gate.entityTag).toBeUndefined();
     expect(gate.pos).toEqual({ ref: 'canal', dx: 0, dz: 0 });
-    expect(gate.radius).toBe(16);
+    expect(gate.radius).toBeCloseTo(21.333, 3);
 
     const m6b = MISSIONS.find((m) => m.id === 'm6b_guerra_civil')!;
     const battle = m6b.objectives.find((o) => o.id === 'obj_quipaipan')!;
