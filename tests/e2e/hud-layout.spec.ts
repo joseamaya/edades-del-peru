@@ -133,7 +133,12 @@ async function snapshots(page: Page): Promise<Snapshots> {
     await render();
     const build = read();
 
-    const building = [...g.buildings.values()].find((b: any) => b.owner === 0 && !b.dead) as { id: number } | undefined;
+    let building = [...g.buildings.values()].find((b: any) => b.owner === 0 && !b.dead) as { id: number } | undefined;
+    // A party that starts with nothing built (Tambotoco): raise its first communal store to measure the panel.
+    if (!building && g.mission.def.start.base === false) {
+      const c = g.playerCenter(0);
+      building = g.spawnScriptedBuilding('mill', 0, c.x + 6, c.z + 6);
+    }
     if (!building) throw new Error('the mission has no player building to open its panel');
     g.selectBuilding(building.id);
     await render();

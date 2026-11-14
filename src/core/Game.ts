@@ -952,11 +952,13 @@ export class Game {
     return distance2D(e.x, e.z, target.x, target.z) <= Math.max(18, this.camera.getZoom() * 0.9);
   }
 
-  /** Center of a player (its main building), else its opening spot (a party with no base), else the map center. */
+  /** Center of a player (its main building), else a base-less party's opening spot, else the map center. */
   playerCenter(owner: number): { x: number; z: number } {
     const c = [...this.buildings.values()].find((b) => b.owner === owner && b.kind === BuildingKind.CENTER && !b.dead);
     if (c) return { x: c.pos.x, z: c.pos.z };
-    const spot = this.startSpots[owner];
+    // A party with no base (Tambotoco) anchors on its opening spot; other base-less missions (m8's armies)
+    // keep the map centre their `ref: 'player'` points were authored against.
+    const spot = owner === 0 && this.missionDef?.start?.base === false ? this.startSpots[0] : undefined;
     if (spot) return { x: spot[0], z: spot[1] };
     return { x: this.settings.mapSize / 2, z: this.settings.mapSize / 2 };
   }
