@@ -418,6 +418,12 @@ test('the network objective needs both provincial nodes', async ({ page }) => {
     const base = g.siteCenter as { x: number; z: number };
     const nodes = o.nodes.map((n: any) => ({ x: base.x + n.dx, z: base.z + n.dz }));
     const home = g.playerCenter(0);
+    // Act I first: the network is hidden until the andenes stand.
+    g.spawnScriptedBuilding('farm', 0, home.x + 8, home.z + 8);
+    g.spawnScriptedBuilding('farm', 0, home.x - 8, home.z + 8);
+    g.players[0].resources.food = 600;
+    m.update(0.1, 0);
+    document.querySelector<HTMLElement>('.ed-mission-card')?.click();
     g.spawnScriptedBuilding('market', 0, home.x + 8, home.z + 8);
     m.update(0.1, 0);
     const atHome = m.getObjectiveState('obj_red');
