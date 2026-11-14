@@ -37,7 +37,9 @@ sampling the former 192 m composition 4/3 larger:
 - **Camino a Langui** (departure): the withdrawal point.
 
 Painted ground uses `COLONIAL_GROUND` (valley grass, terrace dirt, ridge rock) sampled at 128 × 128 over
-256 m. The worker crosses in ≈2:22 (`unitSpeedScale: 0.75`), inside the model-mission band.
+256 m. The worker crosses in ≈2:22 (`unitSpeedScale: 0.75`), inside the model-mission band. The horizontal
+composition scales 4/3; the vertical amplitude is kept from the 192 m authoring, so slopes read 25 % gentler
+and `SITE_Y` stays at 5 m. That is a presentation trade-off, not a survey.
 
 ## Site
 
@@ -58,7 +60,7 @@ here and in the quality bar. The Sangarará chapel is a separate typological `co
 - Three narrated intro beats captured in engine by
   [`scripts/capture_colonial_intro.mjs`](../../scripts/capture_colonial_intro.mjs): the valley and the
   rebellion, Sangarará and the Cusco siege.
-- `MISSION_ART` (`m7_tupac_amaru` → `media/cusco/intro-valle.webp`) and the briefing use the valley capture.
+- `MISSION_ART` (`m7_tupac_amaru` → `media/cusco/intro-valle.webp`) and the briefing use the valley capture in normal play; `?art=all` still previews the unreviewed `m7_colonial-intro` draft.
 - Victory: the army and Túpac withdraw when the relief breaks the siege; the epilogue
   (`media/cusco/intro-epilogo.webp`) tells the capture at Langui and the execution of 18 May 1781.
 - Defeat: Túpac dies, or the leadership is lost before the retreat.
@@ -82,9 +84,10 @@ cards and the Codex.
 
 ## Pacing
 
-The real-command bot reaches the documented ending in about 7 min of simulated time; a human playtest is
-still needed to measure the full path. The 30–40 min target is **not** met and is documented as an
-exception instead of padding the mission with invented acts.
+The agreed target for this pass is 20–30 min. The real-command bot reaches the documented ending in about
+7 min of simulated time; a human playtest is still needed to measure the 20–30 min path. That is a
+documented exception to the model pattern's 30–40 min band, not a claim that the band was reached; no
+invented acts were added.
 
 ## Open items
 

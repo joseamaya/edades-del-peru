@@ -83,10 +83,10 @@ const BUDGETS = {
   // La Junta's opening army is large; a regression cap, still over §11's target.
   m_junta_cusco: { sceneTriangles: 780_000, sceneDrawCalls: 1000, kitTriangles: 0, kitDrawCalls: 0 },
   // Túpac Amaru opening on the 256 m valley: the camp, the chapel and the starting column. Measured
-  // ~541k / 665; first-pass cap with ~6 % headroom (the call count is over art-direction §11's target).
-  m7_tupac_amaru: { sceneTriangles: 575_000, sceneDrawCalls: 710, kitTriangles: 20_000, kitDrawCalls: 5 },
-  // The siege/retreat crowd at Cusco: measured ~811k / 1083.
-  m7_tupac_amaru_late: { sceneTriangles: 860_000, sceneDrawCalls: 1_140, kitTriangles: 20_000, kitDrawCalls: 5 },
+  // ~537k / 661–665; first-pass cap with ~6 % headroom (the call count is over art-direction §11's target).
+  m7_tupac_amaru: { sceneTriangles: 575_000, sceneDrawCalls: 710, kitTriangles: 0, kitDrawCalls: 0 },
+  // The siege/retreat crowd at Cusco: measured ~811k / 1083; still over art-direction §11's 600k target.
+  m7_tupac_amaru_late: { sceneTriangles: 860_000, sceneDrawCalls: 1_140, kitTriangles: 0, kitDrawCalls: 0 },
   // Arica opening on the 256 m terrace: the fort, the cuartel and the garrison. Measured ~535k / 600;
   // first-pass cap with ~6 % headroom (the call count is over art-direction §11's 200 target, as Lima and the Junta).
   m9_guerra_pacifico: { sceneTriangles: 570_000, sceneDrawCalls: 640, kitTriangles: 20_000, kitDrawCalls: 5 },
@@ -113,10 +113,10 @@ try {
       const g = window.game;
       if (!g?.mission) return false;
       if (id === 'm2_chavin') return (g.scene.getObjectByName?.('chavin_city_lod0')?.children.length ?? 0) > 0;
-      if (id === 'm_junta_cusco') return !!g.landmark?.getObjectByName('colonial_site');
-      if (id === 'm7_tupac_amaru') return !!g.landmark?.getObjectByName('colonial_site');
+      if (id === 'm_junta_cusco' || id === 'm_lima' || id === 'm7_tupac_amaru') {
+        return !!g.landmark?.getObjectByName('colonial_site');
+      }
       if (id === 'm_tambotoco') return !!g.landmark?.getObjectByName('ayllu_site');
-      if (id === 'm_lima') return !!g.landmark?.getObjectByName('colonial_site');
       if (id === 'm9_guerra_pacifico' && !g.landmark?.getObjectByName('arica_site')) return false;
       // Wait for every kit family the scene draws: a half-loaded batch measured a different scene.
       if (!g.trees?.hasKit?.('algarrobo') || !g.trees.hasKit('sauce')) return false;

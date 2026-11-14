@@ -6,6 +6,7 @@ import { getPeriod } from '../src/model/defs/periods';
 import { getCiv } from '../src/model/defs/civs';
 import { BuildingKind, CivId, HistoricalPeriod, UnitKind } from '../src/core/types';
 import { BUILDING_DEFS } from '../src/model/defs/buildings';
+import { COLONIAL_COMPOSITION_SCALE } from '../src/model/defs/colonialSite';
 import { UNIT_ARCHETYPES, unitTrainableInPeriod } from '../src/model/defs/units';
 import { getTech, techAvailable } from '../src/model/defs/techs';
 
@@ -307,7 +308,25 @@ describe('campaign educational content', () => {
     expect(amaru.unitSpeedScale).toBe(0.75);
     expect(amaru.intro?.length).toBe(3);
     expect(amaru.intro?.every((beat) => beat.image.startsWith('media/cusco/'))).toBe(true);
+    expect(new Set(amaru.intro?.map((beat) => beat.image)).size, 'three distinct intro captures').toBe(3);
     expect(amaru.epilogueImage).toContain('media/cusco/');
+    // The 4/3 composition scale reaches the mission anchors and hold radii, not only the heightfield.
+    const scale = COLONIAL_COMPOSITION_SCALE;
+    const tungsten = amaru.objectives.find((o) => o.id === 'a1_tungasuca')!.pos!;
+    expect(tungsten.dx).toBeCloseTo(50 * scale);
+    expect(tungsten.dz).toBeCloseTo(138 * scale);
+    const sangarara = amaru.objectives.find((o) => o.id === 'a2_batalla')!.pos!;
+    expect(sangarara.dx).toBeCloseTo(105 * scale);
+    expect(sangarara.dz).toBeCloseTo(80 * scale);
+    expect(amaru.objectives.find((o) => o.id === 'a1_avituallamiento')!.radius).toBeCloseTo(18 * scale);
+    expect(amaru.objectives.find((o) => o.id === 'a2_batalla')!.radius).toBeCloseTo(18 * scale);
+    expect(amaru.objectives.find((o) => o.id === 'a3_sostener')!.radius).toBeCloseTo(24 * scale);
+    // Every chapter card carries its own image.
+    for (const trigger of amaru.triggers) {
+      for (const effect of trigger.effects) {
+        if (effect.type === 'act') expect(effect.image, `${trigger.id} chapter card`).toBeTruthy();
+      }
+    }
     // 1780 rebels had no artillery train: the old roster's two cannon are gone.
     expect(amaru.allowedUnits).not.toContain(UnitKind.ARTILLERY);
     expect(amaru.victory).toMatch(/no toma la ciudad|retira/i);

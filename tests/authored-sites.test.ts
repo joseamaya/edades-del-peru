@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { MISSIONS } from '../src/campaign/defs/campaign';
 import { tutorialForMission } from '../src/campaign/defs/tutorials';
 import { AUTHORED_SITES, getAuthoredSite, isLatePeriod } from '../src/model/defs/sites';
+import { sampleAuthoredGround } from '../src/model/defs/authoredTerrain';
 
 describe('authored campaign sites', () => {
   it('resolves every site referenced by a mission layout', () => {
@@ -69,6 +70,10 @@ describe('authored campaign sites', () => {
     expect(site.anchor.z).toBeCloseTo(97.333, 3);
     expect(site.heightField?.worldSize).toBe(256);
     expect(site.heightField?.ground?.size).toBe(128);
+    expect(site.heightField?.ground?.weights.length).toBe(128 * 128 * 4);
+    const painted = sampleAuthoredGround(site.heightField!, site.anchor.x, site.anchor.z)!;
+    expect(painted.reduce((sum, w) => sum + w, 0)).toBeCloseTo(1, 2);
+    expect(painted[1], 'the Cusco plaza is painted dirt').toBeGreaterThan(0.2);
     expect(site.heritageProxies.map((p) => p.id)).toEqual(['colonial_church']);
     expect(site.heritageProxies[0]?.w).toBeCloseTo(12, 3);
     expect(site.heritageProxies[0]?.d).toBeCloseTo(12, 3);

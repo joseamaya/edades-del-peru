@@ -14,22 +14,19 @@ import { launchChromium, withViteServer, cliArg } from './lib.mjs';
 const OUT = path.join(process.cwd(), 'public', 'media', 'cusco');
 fs.mkdirSync(OUT, { recursive: true });
 
-const SCALE = 256 / 192;
-const SITE = { x: 134.8 * SCALE, z: 73 * SCALE };
-const BASE = { x: 73 * SCALE, z: 115 * SCALE };
-const SANGARARA = { x: 105 * SCALE, z: 80 * SCALE };
-
 const SHOTS = [
+  // The camera anchors come from the mission itself (`player`, the Sangarará objective, `site`).
   {
     id: 'valle',
-    cinematic: { center: [BASE.x, BASE.z], eye: [-26, 14, 26], look: [0, 2, 0], fov: 52, time: 0.55 },
+    anchor: 'player',
+    cinematic: { eye: [-26, 14, 26], look: [0, 2, 0], fov: 52, time: 0.55 },
   },
-  { id: 'sangarara', at: [SANGARARA.x, SANGARARA.z], height: 30, time: 0.5 },
-  { id: 'cusco', at: [SITE.x, SITE.z], height: 48, time: 0.42 },
-  // Eye and target relative to Cusco, with the field of view and time of day.
+  { id: 'sangarara', anchor: 'sangarara', height: 30, time: 0.5 },
+  { id: 'cusco', anchor: 'site', height: 48, time: 0.42 },
   {
     id: 'epilogo',
-    cinematic: { center: [SITE.x, SITE.z], eye: [-48, 22, 42], look: [0, 3, 0], fov: 50, time: 0.26 },
+    anchor: 'site',
+    cinematic: { eye: [-48, 22, 42], look: [0, 3, 0], fov: 50, time: 0.26 },
   },
 ];
 const only = cliArg('only', '');
@@ -63,9 +60,36 @@ try {
         g.selectUnits([]);
         const rings = g.scene.getObjectByName('mission-rings');
         if (rings) rings.visible = false;
+        const labels = document.getElementById('ed-world-labels');
+        if (labels) labels.style.display = 'none';
         g.applyQualityPreset('high');
         g.trees.kitLod0Radius = 60;
-        const site = g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 });
+        const centre =
+          shot.anchor === 'site'
+            ? g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 })
+            : shot.anchor === 'sangarara'
+              ? (g.mission.getObjectiveAnchor('a2_sangarara') ?? g.playerCenter(0))
+              : g.playerCenter(0);
+        if (shot.id === 'sangarara') {
+          for (let i = 0; i < 6; i++) {
+            g.spawnScriptedUnit(
+              i % 3 === 0 ? 'rifleman' : 'soldier',
+              1,
+              centre.x - 6 + (i % 3) * 4,
+              centre.z + 6 + Math.floor(i / 3) * 3,
+            );
+          }
+        }
+        if (shot.id === 'cusco') {
+          for (let i = 0; i < 8; i++) {
+            g.spawnScriptedUnit(
+              i % 4 === 0 ? 'rifleman' : 'soldier',
+              0,
+              centre.x - 10 + (i % 4) * 4,
+              centre.z + 8 + Math.floor(i / 4) * 3,
+            );
+          }
+        }
         g.sky.setTimeOfDay(shot.time ?? 0.5);
         let t = 1;
         for (let i = 0; i < 30; i++) {
@@ -74,7 +98,6 @@ try {
         }
         if (shot.cinematic) {
           const { eye, look, fov, time } = shot.cinematic;
-          const centre = shot.cinematic.center ? { x: shot.cinematic.center[0], z: shot.cinematic.center[1] } : site;
           const lx = centre.x + look[0];
           const ly = look[1];
           const lz = centre.z + look[2];
@@ -95,8 +118,7 @@ try {
           g.runtime.frameShadows();
           g.trees.update(0, { x: lx, z: lz });
         } else {
-          const [x, z] = shot.at;
-          g.camera.focusOn(x, z);
+          g.camera.focusOn(centre.x, centre.z);
           g.camera.setHeight(shot.height);
           for (let i = 0; i < 60; i++) {
             g.update(0.05, t);

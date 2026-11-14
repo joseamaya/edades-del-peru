@@ -269,6 +269,7 @@ export const m7TupacAmaru: MissionDef = {
           type: 'act',
           kicker: 'Acto II · 18 de noviembre de 1780',
           title: 'Sangarará',
+          image: 'media/cusco/intro-sangarara.webp',
           text: 'La rebelión ha tomado Tungasuca: el corregidor Arriaga fue capturado y ejecutado. La columna realista se refugia en Sangarará; la rebelión la cerca y la vence, pero el Cusco sigue en pie.',
         },
         {
@@ -282,7 +283,7 @@ export const m7TupacAmaru: MissionDef = {
           type: 'reinforce',
           owner: 0,
           units: [{ kind: UnitKind.SOLDIER, count: 4 }],
-          pos: { ref: 'player', dx: 4, dz: 4 },
+          pos: { ref: 'player', dx: colonialLength(4), dz: colonialLength(4) },
           radius: colonialLength(4),
         },
       ],
@@ -316,6 +317,7 @@ export const m7TupacAmaru: MissionDef = {
           type: 'act',
           kicker: 'Acto III · Enero de 1781',
           title: 'El cerco del Cusco',
+          image: 'media/cusco/intro-cusco.webp',
           text: 'La rebelión pone cerco al Cusco. La ciudad resiste y el socorro realista baja de Lima: el cerco fracasará, y con él la oportunidad de tomar la capital.',
         },
         {
@@ -329,7 +331,7 @@ export const m7TupacAmaru: MissionDef = {
           type: 'reinforce',
           owner: 0,
           units: [{ kind: UnitKind.SOLDIER, count: 4 }],
-          pos: { ref: 'player', dx: -4, dz: 4 },
+          pos: { ref: 'player', dx: -colonialLength(4), dz: colonialLength(4) },
           radius: colonialLength(4),
         },
       ],
@@ -363,6 +365,7 @@ export const m7TupacAmaru: MissionDef = {
           type: 'act',
           kicker: 'Acto III · El socorro',
           title: 'El Cusco no cae',
+          image: 'media/cusco/intro-epilogo.webp',
           text: 'La columna de Lima rompe el cerco. La rebelión no puede tomar la ciudad: retirar el ejército y a sus líderes es la única salida.',
         },
         {

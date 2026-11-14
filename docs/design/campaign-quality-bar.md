@@ -223,9 +223,9 @@ intro/epilogue and bench scenes); its art review is pending. The HUD layout has 
 | ----------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Opening     | Met                  | Three-beat in-engine intro (`capture_colonial_intro.mjs`), `MISSION_ART` and an epilogue capture; PROVENANCE records the captures.                                                                      |
 | Art         | Pending human review | The reused `colonial_site` GLB and the draft `m7_colonial-intro` Blender record keep their `reviewed: false` status (#343).                                                                              |
-| Performance | Met                  | `bench_scene.mjs`: opening ~541k tris / 663 calls, late ~811k / 1083, under the recorded first-pass caps; `yarn bench:check` green.                                                                    |
+| Performance | Met                  | `bench_scene.mjs`: opening ~537k tris / 661–665 calls, late ~811k / 1083, under the recorded first-pass caps; `yarn bench:check` green.                                                                    |
 | Scale       | Met                  | 256 m map, 128² painted ground over 256 m, `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                                              |
-| Pacing      | Pending (exception)  | The real-command bot reaches the ending in ~7 min of simulated time; a human 20–30 min path is still unmeasured. The 30–40 target is documented as an exception in `colonial-model-mission.md`.          |
+| Pacing      | Pending (exception)  | The real-command bot reaches the ending in ~7 min of simulated time; the agreed 20–30 min human path is still unmeasured. The model pattern's 30–40 band is documented as an exception in `colonial-model-mission.md`. |
 | Site        | Met (exception)      | No construction phases: Cusco is a city in use, not a monument the player builds; recorded here and in `colonial-site.md`.                                                                              |
 
 ## Campaign IV playable status (m8–m9)
