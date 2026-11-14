@@ -310,7 +310,7 @@ slot is absent (offline / without assets).
 
 ### Los hijos de Tambotoco intro, chapter and epilogue images (in-engine recreations)
 
-- **Location**: `public/media/tambotoco/intro-{cueva,huanacaure,valle,epilogo}.webp` (960x540, WebP q58,
+- **Location**: `public/media/tambotoco/intro-{cueva,huanacaure,valle,traza,epilogo}.webp` (960x540, WebP q58,
   ~71 KB in total).
 - **Source**: captured from the game itself by `scripts/capture_tambotoco_intro.mjs`. The cave with the party
   leaving it (no centre, dwellings or huts: the mission starts with nothing built; recaptured 2026-11-13),
@@ -329,6 +329,8 @@ slot is absent (offline / without assets).
 
 - **Location**: `public/media/junta/intro-{cabildo,apacheta,umachiri,epilogo}.webp` (960x540, WebP q58,
   ~56 KB in total).
+- **Reuse**: `intro-epilogo` is also the epilogue backdrop of m7 (Túpac Amaru) and m9 (Arica) until those
+  missions get their own captures; it shows Cusco in 1814, not their places.
 - **Source**: captured from the game itself by `scripts/capture_junta_intro.mjs`. The Cusco cabildo and the
   La Apacheta/Umachiri views are staged through the debug harness, rendered without the HUD at 1600x900 and
   resized with `sharp`; the epilogue uses a low cinematic camera over Umachiri at dusk. Regenerate them with

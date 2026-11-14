@@ -13,7 +13,7 @@ The game is **historically grounded** on one key point: every match is played in
 only **coetaneous civilizations** can face each other (e.g. Moche with Recuay, Chanca with Inca, never Moche
 with Chimú).
 
-**Play all four campaigns:** <https://joseamaya.github.io/edades-del-peru/>
+**Play all five campaigns:** <https://joseamaya.github.io/edades-del-peru/>
 
 ## Media
 
@@ -179,7 +179,7 @@ src/
   rendering/   Renderer, PostFX, Sky, Water, Terrain (coast/andes/altiplano), Particles, Textures
   model/       Defs for periods, civs, units, buildings, techs + parametric model generator
   entities/    Unit, Building, Resource node, Projectile, Views
-  campaign/    Mission engine (objectives, triggers, waves) + 9 historical campaigns
+  campaign/    Mission engine (objectives, triggers, waves) + 13 historical missions in five campaigns
   game/        A* pathfinding, Fog of war, Opponent AI, Economy (worker assignment)
   ui/          Full Spanish HUD (menu by period)
   audio/       Procedural AudioEngine (WebAudio)

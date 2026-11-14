@@ -8,7 +8,7 @@ only**; no assets or text are copied.
 ## First launch
 
 1. Title screen with **Entrar** (the click is also the WebAudio gesture).
-2. Short saga movie (`SERIES_INTRO`): Caral, the long history and the four campaigns.
+2. Short saga movie (`SERIES_INTRO`): Caral, the long history and the five campaigns.
    It is skippable with **Saltar** or `Esc`.
 3. Main menu. The movie is remembered in `peru-title-intro` and can be replayed from
    **Ver introducción**.
@@ -30,7 +30,7 @@ stepped Andean band; a vertical action column:
 - Opciones
 
 The **Tu senda** card (bottom right) shows the current campaign, the next mission with its art and
-subtitle, the progress over the whole series, the four chapters (current, open, locked) and a direct
+subtitle, the progress over the whole series, the five chapters (current, open, locked) and a direct
 "▶ Jugar …" button. The skirmish configuration form lives in its own screen.
 
 ## Campaign path

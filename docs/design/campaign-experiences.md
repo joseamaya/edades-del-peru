@@ -85,7 +85,7 @@ enemy. The feria uses the game's `Mercado` building as an abstraction and says s
 | m8 Independencia       | Campaign logistics and coordination      | Move, take the royalist centre, hold              | Timing and concentration           | Patriotic victory                      |
 | m9 Guerra del Pacífico | Sea control and port defence             | Protect the port, raid, intercept                 | Risk the squadron vs hold the port | Loss of the Huáscar and Grau           |
 
-m2–m9 are implemented and released across the four chapters. m7 is a counterfactual licence; m9's
+m2–m9 are implemented and released across the five chapters. m7 is a counterfactual licence; m9's
 historical losses are documented, while its playable land defence of the port is an abstraction. Each
 mission remains reviewed against its dossier before it is rewritten.
 

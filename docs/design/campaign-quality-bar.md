@@ -31,6 +31,54 @@ shortcuts panel open.
 | Performance | The mission's opening (and, when its late game fills the screen, its late view) is in `scripts/bench_scene.mjs` and passes `yarn bench:check`; `dist/` stays under its budget.               |
 | Scale       | A model mission uses a 256 m map and painted ground sampled every 2 m; its worker crosses in 130–160 s. `tests/campaign-scale.test.ts` enforces it for every mission on the model list.      |
 
+## Audit 2026-11-14: where every mission stands
+
+Re-verified against the code, tests and an in-engine clip of each mission (not copied from the tables
+below, which record each mission's own review and are kept for history). **M** met, **P** partial,
+**X** missing, **–** not applicable (in-engine captures only, no new models).
+
+| Mission            | Hist | Ident | Play | Contr | Onb | Clos | UX | Vis | Pers | Tests | Docs | Struct | Open | Art | Perf | Scale |
+| ------------------ | ---- | ----- | ---- | ----- | --- | ---- | -- | --- | ---- | ----- | ---- | ------ | ---- | --- | ---- | ----- |
+| m1_caral           | M    | M     | M    | M     | M   | M    | M  | P   | M    | M     | M    | M      | M    | P   | M    | M     |
+| m2_chavin          | M    | M     | P    | M     | M   | M    | M  | P   | M    | P     | P    | M      | M    | X   | M    | M     |
+| m3_moche_recuay    | P    | M     | P    | P     | P   | P    | M  | P   | M    | P     | P    | X      | X    | X   | X    | X     |
+| m4_wari            | P    | M     | M    | P     | P   | P    | M  | P   | M    | P     | P    | X      | X    | X   | X    | X     |
+| m_tambotoco        | M    | M     | P    | M     | M   | M    | M  | P   | P    | M     | M    | M      | M    | –   | P    | M     |
+| m5_yahuar_pampa    | P    | M     | M    | P     | M   | P    | M  | P   | M    | M     | P    | X      | X    | P   | X    | X     |
+| m6_chimu_inca      | P    | P     | M    | P     | M   | P    | M  | M   | M    | M     | P    | X      | X    | P   | X    | X     |
+| m6b_guerra_civil   | P    | P     | M    | M     | M   | P    | M  | P   | M    | M     | P    | X      | X    | P   | X    | X     |
+| m_lima             | M    | M     | P    | M     | M   | M    | M  | P   | P    | P     | P    | M      | M    | –   | P    | M     |
+| m7_tupac_amaru     | X    | P     | M    | P     | P   | X    | M  | P   | P    | P     | X    | X      | X    | X   | X    | X     |
+| m_junta_cusco      | M    | M     | P    | M     | M   | M    | M  | P   | P    | P     | P    | M      | M    | –   | P    | M     |
+| m8_independencia   | P    | P     | P    | P     | M   | P    | M  | P   | P    | P     | X    | X      | X    | X   | X    | X     |
+| m9_guerra_pacifico | X    | P     | X    | P     | M   | X    | M  | X   | P    | X     | X    | X      | X    | X   | X    | X     |
+
+**Verdict.** No mission meets every gate yet. Caral is one step away (the Act III chapter card predates the
+camp, and five camp kit pieces plus vegetation and props still await a recorded human art review). Chavín,
+Tambotoco, Lima and the Junta follow the model pattern and lack mostly art, a no-cheat playtest and a
+mid-mission save test. m3–m6b, m7, m8 and m9 still use the pre-model template: no acts, intro, 256 m map or
+bench scene.
+
+**Fixed in this pass.** The closing trigger of the goal that wins a mission now fires (Tambotoco's founded
+Inticancha never appeared); waves can march on a `target` (Lima's siege and the Tambotoco valley wave stood at
+their spawn); every authored start fits its population cap (Lima 31/22, Junta 38/22, m8 24/22, Tambotoco
+20/7); named speakers who are not portrait commanders label their dialogue («Comandante: Señor de Moche: —»);
+Wari offers no fortifications; Caral, Chavín, Tambotoco and m6b texts that promised something else; the m8
+playtest re-forms its line instead of racing a fixed budget; `yarn record` keeps one frames folder per run.
+
+**Work order, highest value first.**
+
+1. **Invented outcomes:** rebuild m9 around the documented fall of Arica and m7 around Sangarará and the failed
+   siege of Cusco (L each). Both currently win with a counterfactual and borrow the Junta epilogue image.
+2. **No-cheat playtests:** drop the HP pinning (`keepAlive`) from the Chavín, Tambotoco, Lima and Junta
+   playtests and re-enable m9's (M).
+3. **Art review:** record the human review of Caral's camp pieces and the Chavín kit; recapture Caral's Act
+   III card (S).
+4. **Model-mission rebuilds** for m3–m6b and m8 (256 m transect, acts, intro, bench, certainty table) (L
+   each); quick wins first: m6's canal must really close, m6b's victory must capture Huáscar, not raze a
+   building (M).
+5. **Mid-mission save/load E2E** for missions with phases or truces (Tambotoco, Lima, Junta) (M).
+
 ## Caral gold-master status
 
 Reviewed 2026-11-07 after the four-act rebuild (design and status: [`caral-model-mission.md`](./caral-model-mission.md)).
@@ -41,7 +89,7 @@ Reviewed 2026-11-07 after the four-act rebuild (design and status: [`caral-model
 | Identity    | Met    | Coast–valley complementarity (valley cotton becomes Áspero's nets), the Pyramid Mayor built in phases by hand-overs and fed by the communal store, the drought that ends the city.                                                                                                                 |
 | Play        | Met    | `tests/e2e/campaign-playtest.spec.ts` reaches victory with ordinary commands and locks the bot pacing at 15–30 min; `caral-city.spec.ts` covers the hand-over and the field cards.                                                                                                                 |
 | Contract    | Met    | Act objectives start hidden and are revealed by triggers (`tests/caral-acts.test.ts`); construction work turns consume food and pause when the communal store is empty; the briefing shows Act I only; optional Huaca visit, six-complex tour and assembly.                                        |
-| Onboarding  | Met    | Nine-step tutorial docked under the objectives (select, coast, house, valley, field, storage, nets, pyramid, works); briefing; Codex optional.                                                                                                                                                     |
+| Onboarding  | Met    | Ten-step tutorial docked under the objectives (select, coast, house, valley, field, canal, storage, nets, pyramid, works); briefing; Codex optional.                                                                                                                                                     |
 | Closure     | Met    | Departure epilogue with its image, optional-achievement summary, "Continuar" to m2, which the campaign path then unlocks.                                                                                                                                                                          |
 | UX          | Met    | Horizontal command bar, tutorial on the right; `tests/e2e/hud-layout.spec.ts` checks the HUD panels geometrically at 1280×720, 1600×900 and 1920×1080; the full-screen briefing was checked in a browser.                                                                                          |
 | Visuals     | Met    | 256 m sea-to-terrace transect, Blender architecture kit by phase (white finished plaster; ochre/red in use, exact colours inferred), burial dust/fire, summer flood and drought (valley/lomas paint and river level), Áspero, painted fertile ground, region flora and fauna, living-city details. |
@@ -176,7 +224,7 @@ geometry gate (`tests/e2e/hud-layout.spec.ts`).
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | History     | Met: `independencia.md`; Junín and Ayacucho.                                                                                  | Met: `guerra_del_pacifico.md`; Arica land defence.                                                                            |
 | Identity    | Met: hold Junín, protect Sucre, hold Ayacucho.                                                                                | Met: protect the port and Bolognesi, survive the assault.                                                                     |
-| Play        | Met: real-command playtest holds both phases with the cavalry, including montoneras.                                          | Met: real-command playtest defends the port and intercepts the final assault.                                                 |
+| Play        | Met: real-command playtest holds both phases with the cavalry, including montoneras.                                          | Missing: the real-command playtest is `test.fixme` (disabled until the m9 rework).                                                 |
 | Contract    | Met: sequential holds plus a required protect objective.                                                                      | Met: required protects and survive, with an optional counterstrike.                                                           |
 | Onboarding  | Met: four-step tutorial + briefing.                                                                                           | Met: five-step tutorial + briefing.                                                                                           |
 | Terrain     | Met: authored Junín–Ayacucho heightfield.                                                                                     | Met: authored Arica port heightfield.                                                                                         |
@@ -222,7 +270,7 @@ Quizu's hills) and starts as the traced plaza; the colonial church and the stree
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | History     | Met: `docs/historia/campanas/lima.md` with a certainty table; the valley was inhabited and the defence relied on Andean allies.                                       |
 | Identity    | Met: found the city and hold the siege; the curaca pact is optional.                                                                                                  |
-| Play        | Met (automated): three acts complete with real move/build/attack orders; a manual playtest is pending.                                                                |
+| Play        | Partial (automated): three acts complete with real move/build/attack orders, but the playtest resets player HP every step; a manual playtest is pending.                                                                |
 | Contract    | Met: Act II–III hidden, the curaca pact optional, Pizarro protected from the start.                                                                                   |
 | Onboarding  | Met: six-step tutorial, briefing and Codex.                                                                                                                           |
 | Closure     | Met: the epilogue states that Cusco remains besieged; no counterfactual is hidden.                                                                                    |
@@ -250,9 +298,9 @@ The table separates what is implemented from the art and performance passes that
 | History     | Met: `docs/historia/campanas/tambotoco.md` with a certainty table; the dossier states that Sarmiento is hostile and Garcilaso gives another version.                           |
 | Identity    | Met: water and land as leverage, not a pitched battle; the four canchas order the foundation.                                                                                  |
 | Characters  | Met: the eight siblings march as named units; Cachi, Uchu and Auca leave a named huaca.                                                                                        |
-| Play        | Met: the four acts complete with real orders and a recorded run reaches victory; a manual playtest is pending.                                                                 |
+| Play        | Partial: `yarn record --mode=full` reaches victory with real orders; the E2E playtest still pins player HP (`keepAlive`) and skips the valley wave; a manual playtest is pending.                                                                 |
 | Contract    | Met: Acts II–IV hidden, the hualla visit is optional, and the acequia is the only required water step.                                                                         |
-| Onboarding  | Met: seven-step tutorial, briefing with the eight siblings and Codex.                                                                                                          |
+| Onboarding  | Met: six-step tutorial that teaches controls (move, camp store, hunt, visit, water, canchas), briefing with the eight siblings and Codex.                                                                                                          |
 | Closure     | Met: the epilogue tells the foundation as tradition and names both versions; no counterfactual is hidden.                                                                      |
 | UX          | Met: campaign layout at 1600×900, the eight-card briefing at 1280×720 and `hud-layout.spec.ts`.                                                                                |
 | Visuals     | Partial: 256 m transect and an in-engine ayllu kit (cave, shrine, hamlets, Inticancha); the kit is procedural and a Blender art pass is pending.                               |
