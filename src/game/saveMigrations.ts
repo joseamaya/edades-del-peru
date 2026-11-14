@@ -41,6 +41,12 @@ const STEPS: Record<number, Step> = {
     if (settings?.missionId === 'm3_moche_recuay') return null;
     return { ...save, version: 7 };
   },
+  // v7 → v8 moved m4 to the 256 m transect for the same reason.
+  7: (save) => {
+    const settings = save.settings as { missionId?: unknown } | undefined;
+    if (settings?.missionId === 'm4_wari') return null;
+    return { ...save, version: 8 };
+  },
 };
 
 export type MigrationResult =

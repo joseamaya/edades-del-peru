@@ -29,7 +29,8 @@ test('m4 loads the authored Wari site', async ({ page }) => {
   expect(out.model).toBe('wari_site');
   expect(out.procedural).toBeNull();
   expect(out.heritage).toBe('wari_templo_d');
-  expect(out.anchor).toEqual({ x: 107.5, z: 102 });
+  expect(out.anchor.x).toBeCloseTo(143.333, 3);
+  expect(out.anchor.z).toBeCloseTo(136, 3);
   expect(out.names.some((name) => /Wari_LOD1_(Apron|Terrain)/.test(name))).toBe(false);
 });
 
@@ -66,7 +67,7 @@ test('m4 draws the provincial road network', async ({ page }) => {
   expect(out.planRoads).toBe(4);
   expect(out.endpoints).toBeGreaterThanOrEqual(4);
   expect(out.baseLeg).toBe(true);
-  expect(out.names).toContain('mission-roads-2');
+  expect(out.names.some((name) => name.startsWith('mission-roads-2'))).toBe(true);
   expect(out.meshes).toBeGreaterThan(0);
 });
 
@@ -77,6 +78,7 @@ test('m4 network and frontier complete the mission without a battle', async ({ p
     const m = g.mission;
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
+    const redBefore = m.getObjectiveState('obj_red') as string;
     const center = g.playerCenter(0);
     g.spawnScriptedBuilding('farm', 0, center.x + 8, center.z + 8);
     g.spawnScriptedBuilding('farm', 0, center.x - 8, center.z + 8);
@@ -89,6 +91,7 @@ test('m4 network and frontier complete the mission without a battle', async ({ p
     let t = 0;
     const step = (seconds: number): void => {
       for (let i = 0; i < Math.ceil(seconds / dt) && !m.ended; i++) {
+        document.querySelector<HTMLElement>('.ed-mission-card')?.click();
         const unit = [...g.units.values()].find((u: any) => u.owner === 0 && !u.dead) as any;
         if (unit) unit.pos.set(nodes[0].x, g.terrain.getHeight(nodes[0].x, nodes[0].z), nodes[0].z);
         g.update(dt, t);
@@ -96,10 +99,13 @@ test('m4 network and frontier complete the mission without a battle', async ({ p
       }
     };
     step(2);
+    const redAfter = m.getObjectiveState('obj_red') as string;
     const networkState = m.getObjectiveState('obj_red') as string;
     const frontier = m.getObjectiveState('obj_frontera') as string;
     step(500);
     return {
+      redBefore,
+      redAfter,
       network: networkState,
       frontierActive: frontier,
       frontierDone: m.getObjectiveState('obj_frontera') as string,
@@ -108,6 +114,8 @@ test('m4 network and frontier complete the mission without a battle', async ({ p
       won: m.won as boolean | null,
     };
   });
+  expect(out.redBefore, 'the network waits for Act I').toBe('pendiente');
+  expect(out.redAfter, 'the network activates after Act I').not.toBe('pendiente');
   expect(out.network).toBe('completed');
   expect(out.frontierActive).toBe('activo');
   expect(out.frontierDone).toBe('completed');

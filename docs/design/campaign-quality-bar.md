@@ -42,7 +42,7 @@ below, which record each mission's own review and are kept for history). **M** m
 | m1_caral           | M    | M     | M    | M     | M   | M    | M  | M   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m2_chavin          | M    | M     | P    | M     | M   | M    | M  | P   | M    | M     | P    | M      | M    | X   | M    | M     |
 | m3_moche_recuay    | M    | M     | M    | M     | M   | M    | M  | P   | M    | M     | M    | M      | M    | P   | M    | M     |
-| m4_wari            | P    | M     | M    | P     | P   | P    | M  | P   | M    | P     | P    | X      | X    | X   | X    | X     |
+| m4_wari            | M    | M     | M    | M     | M   | M    | M  | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m_tambotoco        | M    | M     | P    | M     | M   | M    | M  | P   | M    | M     | M    | M      | M    | –   | P    | M     |
 | m5_yahuar_pampa    | P    | M     | M    | P     | M   | P    | M  | P   | M    | M     | P    | X      | X    | P   | X    | X     |
 | m6_chimu_inca      | P    | P     | M    | P     | M   | P    | M  | M   | M    | M     | P    | X      | X    | P   | X    | X     |
@@ -55,11 +55,11 @@ below, which record each mission's own review and are kept for history). **M** m
 
 **Verdict.** **Caral meets every gate** (closed 2026-11-14: Act III card recaptured with the works camp; the
 camp pieces, vegetation, household props and fauna approved by a recorded human review). Chavín,
-Tambotoco, Lima and the Junta follow the model pattern and lack mostly art. m4–m6b and m8 still use the
-pre-model template: no acts, intro, 256 m map or bench scene. m3 was promoted in this pass (256 m, painted
-ground, three acts, in-engine intro and bench). **m3, m7 and m9 meet the scale, opening and performance
-gates** (256 m, painted ground, in-engine intros and epilogues, bench scenes); their human art review is
-pending.
+Tambotoco, Lima and the Junta follow the model pattern and lack mostly art. m5–m6b and m8 still use the
+pre-model template: no acts, intro, 256 m map or bench scene. m3 and m4 were promoted in this pass (256 m,
+painted ground, three acts, in-engine intro and bench). **m3, m4, m7 and m9 meet the scale, opening and
+performance gates** (256 m, painted ground, in-engine intros and epilogues, bench scenes); their human art
+review is pending.
 
 **Fixed in this pass.** The closing trigger of the goal that wins a mission now fires (Tambotoco's founded
 Inticancha never appeared); waves can march on a `target` (Lima's siege and the Tambotoco valley wave stood at
@@ -80,8 +80,8 @@ in-engine intro and epilogue, bench scenes and the scale guard).
    never fights the valley wave. A manual no-cheat playtest remains recommended.
 3. **Art review:** record the human review of Caral's camp pieces and the Chavín kit; recapture Caral's Act
    III card (S).
-4. **Model-mission rebuilds** for m4–m6b and m8 (256 m transect, acts, intro, bench, certainty table)
-   (L each); m3, m7 and m9 are done. The quick wins are done (2026-11-14): m6's gate really closes
+4. **Model-mission rebuilds** for m5–m6b and m8 (256 m transect, acts, intro, bench, certainty table)
+   (L each); m3, m4, m7 and m9 are done. The quick wins are done (2026-11-14): m6's gate really closes
    (`canal_closed`) and m6b's victory holds Quipaipan and captures Huáscar instead of razing a building.
 5. **Mid-mission save/load E2E:** fixed (2026-11-14) for Tambotoco (`inticancha`), Lima (`ciudad`) and
    La Junta (the Apacheta hold).
@@ -144,6 +144,7 @@ Reviewed 2026-11-14 as a model mission. The human art gate is still open.
 | History     | Met                  | `docs/historia/campanas/moche_recuay.md` with its certainty table; no invented ruler or single battle; frontier pressure and elite exchange are attested.                                    |
 | Identity    | Met                  | The valley, the canal and the huacas: water as power, the plaza under Recuay pressure and the elite exchange.                                                                                |
 | Terrain     | Met                  | 256 m authored coastal heightfield (`mocheHeightmap.ts`) with painted ground: Pacific shore, irrigated valley and Huacas terrace.                                                            |
+| Site        | Met (exception)      | No construction phases: the huacas are a living ceremonial centre, not a monument the player builds; recorded in `moche-model-mission.md`.                                                 |
 | Play        | Met                  | `campaign-playtest.spec.ts` moves real units, opens the gate and exchanges silver; `moche-campaign.spec.ts` clicks the canal and Huaca de la Luna actions.                                    |
 | Contract    | Met                  | Three acts (canal, hold, exchange) with hidden goals revealed by triggers, optional 400 silver and chapter cards with images.                                                                |
 | Onboarding  | Met                  | Four-step Moche tutorial, briefing, Codex and minimap pips.                                                                                                                                  |
@@ -161,20 +162,28 @@ Reviewed 2026-11-14 as a model mission. The human art gate is still open.
 
 ## Wari gold-master status
 
-| Gate        | Status      | Evidence                                                                                                                                                           |
-| ----------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| History     | Met         | `docs/historia/campanas/wari_tiahuanaco.md`; no invented war or ruler.                                                                                             |
-| Identity    | Met         | Authored Wari site and a two-node `network` objective plus frontier hold.                                                                                          |
-| Terrain     | Met         | Authored highland heightfield (`wariHeightmap.ts`): basin, terraces and provincial-node plateaus.                                                                  |
-| Play        | Met         | `tests/e2e/campaign-playtest.spec.ts` builds the farms and markets with real commands and reaches victory from the documented 300 wood / 100 silver opening stock. |
-| Contract    | Met         | Network progress, hidden frontier, optional third centre and live timers.                                                                                          |
-| Onboarding  | Met         | Four-step Wari tutorial, briefing, Codex and minimap pips.                                                                                                         |
-| Closure     | Met         | Epilogue connects the network with the 1000–1100 CE collapse.                                                                                                      |
-| UX          | Met         | `tests/e2e/hud-layout.spec.ts` checks the panels geometrically at 1280×720 (Caral also at 1600×900 and 1920×1080).                                                 |
-| Visuals     | Met locally | Authored site GLB, terrain-following road ribbons, highland palette and current RTS captures in `review/`.                                                         |
-| Persistence | Met         | Network, hold and mission state use the shared save/load path.                                                                                                     |
-| Tests       | Met         | Data, site, network, real-command playtest, save/load and completability coverage.                                                                                 |
-| Docs        | Met         | This document, dossier, experience table, site note, art docs and README aligned.                                                                                  |
+Reviewed 2026-11-14 as a model mission. The human art gate is still open.
+
+| Gate        | Status               | Evidence                                                                                                                                                                                     |
+| ----------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| History     | Met                  | `docs/historia/campanas/wari_tiahuanaco.md` with its certainty table; no invented war or ruler.                                                                                              |
+| Identity    | Met                  | The network of andenes, roads and provincial centres, and the frontier of influence against Tiahuanaco.                                                                                      |
+| Terrain     | Met                  | 256 m authored highland heightfield (`wariHeightmap.ts`) with painted ground: basin, terraces, quebradas and ridges.                                                                         |
+| Site        | Met (exception)      | No construction phases: the complex is the operating capital, not a monument the player builds; recorded in `wari-model-mission.md`.                                                       |
+| Play        | Met                  | `campaign-playtest.spec.ts` builds the farms and markets with real commands and reaches victory from the documented opening stock; `wari-campaign.spec.ts` covers roads, network and frontier. |
+| Contract    | Met                  | Three acts (supplies/andenes, network, frontier) with hidden goals revealed by triggers, optional third centre and chapter cards.                                                            |
+| Onboarding  | Met                  | Non-blocking tutorial, briefing, Codex and minimap pips.                                                                                                                                     |
+| Closure     | Met                  | Dusk epilogue capture narrates the collapse toward 1000–1100 AD; optional third centre summarised.                                                                                            |
+| UX          | Met                  | `tests/e2e/hud-layout.spec.ts` checks the panels geometrically at 1280×720 (Caral also at 1600×900 and 1920×1080).                                                                           |
+| Visuals     | Met locally          | Authored `wari_site` GLB, painted highland basin and in-engine intro/epilogue captures in `public/media/wari/`.                                                                              |
+| Persistence | Met                  | Network, hold timer, resources and tutorial round-trip in the mission's save path; v7 m4 saves are rejected (`SAVE_VERSION` 8).                                                              |
+| Tests       | Met                  | Data, site/proxy collision, tutorial, mission, HUD, real-command playtest and save/load coverage.                                                                                            |
+| Docs        | Met                  | This document, dossier, `wari-model-mission.md`, experience table, site note, art docs and README aligned.                                                                                    |
+| Structure   | Met                  | Three acts, hidden objectives revealed per act, chapter cards with images and optional goals.                                                                                               |
+| Opening     | Met                  | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_wari_intro.mjs`; `MISSION_ART` uses the basin capture.                                                          |
+| Art         | Pending human review | The reused Wari GLB and its Blender records keep `reviewed: false` (#343); in-engine captures are recorded in PROVENANCE.                                                                    |
+| Performance | Met                  | `bench_scene.mjs`: opening ~421k tris / 199 calls, frontier ~494k / 342; within the recorded first-pass caps.                                                                                |
+| Scale       | Met                  | 256 m map, 128² painted ground over 256 m and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                                |
 
 ## Applying it to m2–m9
 

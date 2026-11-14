@@ -38,7 +38,14 @@ import {
   MOCHE_HEIGHTMAP_WORLD_SIZE,
 } from './mocheHeightmap';
 import { mocheLength, mochePoint } from './mocheSite';
-import { WARI_HEIGHTMAP, WARI_HEIGHTMAP_SIZE, WARI_HEIGHTMAP_WORLD_SIZE } from './wariHeightmap';
+import {
+  WARI_GROUND,
+  WARI_GROUND_SIZE,
+  WARI_HEIGHTMAP,
+  WARI_HEIGHTMAP_SIZE,
+  WARI_HEIGHTMAP_WORLD_SIZE,
+} from './wariHeightmap';
+import { wariLength, wariPoint } from './wariSite';
 import { CHANCA_HEIGHTMAP, CHANCA_HEIGHTMAP_SIZE, CHANCA_HEIGHTMAP_WORLD_SIZE } from './chancaHeightmap';
 import { CHIMU_HEIGHTMAP, CHIMU_HEIGHTMAP_SIZE, CHIMU_HEIGHTMAP_WORLD_SIZE } from './chimuHeightmap';
 import {
@@ -572,34 +579,55 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     id: 'wari_site',
     label: 'Complejo Arqueológico Wari',
     modelName: 'wari_site',
-    scale: 0.25,
-    origin: { x: 107.5, z: 86.4 },
-    anchor: { x: 107.5, z: 102 },
-    cameraHeight: 70,
+    // The 192 m composition is scaled by 4/3 into the 256 m transect; the model, proxies and blockers
+    // scale with it so the complex still covers its terrace.
+    scale: wariLength(0.25),
+    origin: wariPoint({ x: 107.5, z: 86.4 }),
+    anchor: wariPoint({ x: 107.5, z: 102 }),
+    cameraHeight: wariLength(70),
     framing: 'site-biased',
     heightField: {
       size: WARI_HEIGHTMAP_SIZE,
       worldSize: WARI_HEIGHTMAP_WORLD_SIZE,
       heights: WARI_HEIGHTMAP,
+      ground: { size: WARI_GROUND_SIZE, weights: WARI_GROUND },
     },
     pathCellSize: 1,
     heritageProxies: [
-      { id: 'wari_templo_d', x: 107.5, z: 83.9, w: 15, d: 7.5, h: 3.5 },
-      { id: 'wari_plaza', x: 107.5, z: 96.4, w: 23, d: 13, h: 2 },
-      { id: 'wari_galeria', x: 107.5, z: 74.4, w: 15, d: 3, h: 1.5 },
-      { id: 'wari_mural', x: 107.5, z: 89.7, w: 15, d: 1, h: 1.2 },
+      {
+        id: 'wari_templo_d',
+        ...wariPoint({ x: 107.5, z: 83.9 }),
+        w: wariLength(15),
+        d: wariLength(7.5),
+        h: wariLength(3.5),
+      },
+      { id: 'wari_plaza', ...wariPoint({ x: 107.5, z: 96.4 }), w: wariLength(23), d: wariLength(13), h: wariLength(2) },
+      {
+        id: 'wari_galeria',
+        ...wariPoint({ x: 107.5, z: 74.4 }),
+        w: wariLength(15),
+        d: wariLength(3),
+        h: wariLength(1.5),
+      },
+      {
+        id: 'wari_mural',
+        ...wariPoint({ x: 107.5, z: 89.7 }),
+        w: wariLength(15),
+        d: wariLength(1),
+        h: wariLength(1.2),
+      },
     ],
     blockers: [
-      { x: 107.5, z: 83.9, w: 15, d: 7.5 },
-      { x: 107.5, z: 74.4, w: 15, d: 3 },
+      { ...wariPoint({ x: 107.5, z: 83.9 }), w: wariLength(15), d: wariLength(7.5) },
+      { ...wariPoint({ x: 107.5, z: 74.4 }), w: wariLength(15), d: wariLength(3) },
     ],
-    blockerPadding: 0.5,
+    blockerPadding: wariLength(0.5),
     buildKeepout: [{ x: 0.56, z: 0.45, rx: 0.18, rz: 0.15 }],
     wallCollision: {
       meshPatterns: [/Wari_(Plaza|Perimeter|Gallery|D_Facade)/, /^Cube/],
-      maxStartYAboveBase: 1.2,
+      maxStartYAboveBase: wariLength(1.2),
     },
-    walkableCorridor: { width: 8 },
+    walkableCorridor: { width: wariLength(8) },
     terrain: {
       ...DEFAULT_SITE_TERRAIN,
       flatNormals: true,

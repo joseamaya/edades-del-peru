@@ -395,6 +395,21 @@ slot is absent (offline / without assets).
 - **Review**: no human art-review gate applies to in-engine captures; the reused Huacas GLB keeps its own
   review status in `src/art/manifest.json` (#343).
 
+### Wari (m4) intro and epilogue images (in-engine recreations)
+
+- **Location**: `public/media/wari/intro-{ayacucho,complejo,frontera,epilogo}.webp` (960x540, WebP q58).
+- **Source**: captured from the game itself by `scripts/capture_wari_intro.mjs` on the 256 m Wari
+  transect: the Ayacucho basin and andenes, the Wari complex, the highland frontier and a dusk epilogue.
+  Rendered without the HUD or character nameplates at 1600x900 and resized with `sharp`. Regenerate with
+  `node scripts/capture_wari_intro.mjs` (one with `--only=ID`) after art changes.
+- **Runtime**: the briefing and the "Tu senda" card use `intro-ayacucho`; the three intro beats and the act
+  cards use the basin, the complex and the frontier captures; the victory epilogue uses `intro-epilogo`.
+- **Content**: project-owned game renders (authored Wari heightfield, the reused `wari_site` complex and the
+  procedural camps). Recreations of the game's own scenes: never historical photographs, and not Blender
+  renders (so not in `src/art/manifest.json`).
+- **Review**: no human art-review gate applies to in-engine captures; the reused Wari GLB keeps its own
+  review status in `src/art/manifest.json` (#343).
+
 ### Caral Pyramid Mayor modular scenery
 
 - **Location**: `src/assets/scenery/caral/caral_pyramid_mayor_lod0.glb` and `lod1.glb`.

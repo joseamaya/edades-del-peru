@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the authored Wari highland heightfield (m4, 192 m map)."""
+"""Generate the authored Wari highland heightfield (m4, 256 m map)."""
 
 from __future__ import annotations
 
@@ -7,8 +7,11 @@ import base64
 import math
 from pathlib import Path
 
-SIZE = 192
+SIZE = 256
+# The composition was authored for the former 192 m map; sample it 4/3 larger on the 256 m transect.
+SOURCE_SIZE = 192
 N = SIZE + 1
+GROUND_SIZE = 128
 SITE_Y = 5.0
 VALLEY = 3.2
 ROOT = Path(__file__).resolve().parents[1]
@@ -56,12 +59,55 @@ def height(x: float, z: float) -> float:
     return max(0.9, h)
 
 
+def ground_weights(x: float, z: float) -> tuple[float, float, float, float]:
+    """Painted ground weights (grass, dirt, sand, rock) in the former 192 m frame."""
+    site = smoothstep(86.0, 95.0, x) * (1.0 - smoothstep(131.0, 140.0, x))
+    site *= smoothstep(59.0, 68.0, z) * (1.0 - smoothstep(108.0, 117.0, z))
+    base = smoothstep(38.0, 46.0, x) * (1.0 - smoothstep(76.0, 84.0, x))
+    base *= smoothstep(108.0, 116.0, z) * (1.0 - smoothstep(139.0, 147.0, z))
+    node_a = smoothstep(126.0, 133.0, x) * (1.0 - smoothstep(152.0, 159.0, x))
+    node_a *= smoothstep(56.0, 63.0, z) * (1.0 - smoothstep(78.0, 85.0, z))
+    node_b = smoothstep(124.0, 131.0, x) * (1.0 - smoothstep(149.0, 156.0, x))
+    node_b *= smoothstep(101.0, 108.0, z) * (1.0 - smoothstep(122.0, 129.0, z))
+    terrace = max(site, base, node_a, node_b)
+    ridge = max(
+        smoothstep(14.0, 0.0, z),
+        smoothstep(154.0, 182.0, x),
+        smoothstep(154.0, 184.0, z),
+        smoothstep(22.0, 6.0, x),
+    )
+    quebrada = max(
+        math.exp(-((z - 103.0) / 3.0) ** 2) * smoothstep(70.0, 92.0, x) * (1.0 - smoothstep(142.0, 160.0, x)),
+        math.exp(-((x - 142.0) / 4.0) ** 2) * smoothstep(70.0, 88.0, z) * (1.0 - smoothstep(125.0, 145.0, z)),
+    )
+    mottle = 0.85 + 0.3 * (0.5 + 0.5 * math.sin(x * 0.12 + 0.6) * math.sin(z * 0.1 + 0.3))
+
+    grass = max(0.02, (1.0 - ridge) * (1.0 - terrace * 0.4) * 0.9 * mottle)
+    dirt = max(0.03, terrace * 0.9 + quebrada * 0.3)
+    sand = max(0.02, quebrada * 0.5)
+    rock = max(0.02, ridge * 1.0)
+    total = grass + dirt + sand + rock
+    return (grass / total, dirt / total, sand / total, rock / total)
+
+
+ground_values = []
+# Texel centres at 2 m, matching `sampleAuthoredGround` (0..SIZE corners would shift the paint 1 m).
+for iz in range(GROUND_SIZE):
+    z = (iz + 0.5) * SIZE / GROUND_SIZE
+    for ix in range(GROUND_SIZE):
+        x = (ix + 0.5) * SIZE / GROUND_SIZE
+        weights = ground_weights(x * SOURCE_SIZE / SIZE, z * SOURCE_SIZE / SIZE)
+        for w in weights:
+            ground_values.append(max(0, min(255, round(w * 255))))
+
+ground_b64 = base64.b64encode(bytearray(ground_values)).decode('ascii')
+
 values = []
 for iz in range(N):
     z = iz * SIZE / (N - 1)
     for ix in range(N):
         x = ix * SIZE / (N - 1)
-        values.append(round(height(x, z) * 1000.0))
+        values.append(round(height(x * SOURCE_SIZE / SIZE, z * SOURCE_SIZE / SIZE) * 1000.0))
 
 raw = bytearray()
 for v in values:
@@ -82,7 +128,16 @@ OUT.write_text(
     '  }\n'
     '  return out;\n'
     '}\n'
-    'export const WARI_HEIGHTMAP = decode();\n',
+    'export const WARI_HEIGHTMAP = decode();\n'
+    'export const WARI_GROUND_SIZE = ' + str(GROUND_SIZE) + ';\n'
+    'const GROUND_B64 =\n  \'' + ground_b64 + '\';\n'
+    'function decodeGround(): Uint8Array {\n'
+    '  const bin = atob(GROUND_B64);\n'
+    '  const out = new Uint8Array(' + str(len(ground_values)) + ');\n'
+    '  for (let i = 0; i < out.length; i++) out[i] = bin.charCodeAt(i);\n'
+    '  return out;\n'
+    '}\n'
+    'export const WARI_GROUND = decodeGround();\n',
     encoding='utf-8',
 )
 print(f'wrote {OUT} ({len(b64)} base64 chars, {len(values)} samples)')
