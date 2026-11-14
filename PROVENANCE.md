@@ -355,7 +355,7 @@ slot is absent (offline / without assets).
   transect: the port terrace and cuartel, the battery with the Pacific behind it, the assault view and a
   low cinematic epilogue over the battery. Rendered without the HUD at 1600x900 and resized with `sharp`.
   Regenerate with `node scripts/capture_arica_intro.mjs` (one with `--only=ID`) after art changes.
-- **Runtime**: the briefing and the "Tu senda" card use `intro-cuartel`; the three intro beats use the plaza,
+- **Runtime**: the briefing and the "Tu senda" card use `intro-cuartel`; the three intro beats use the cuartel,
   the battery and the assault; the victory epilogue uses `intro-epilogo`.
 - **Content**: project-owned game renders (authored Arica heightfield, the low-poly `arica_site` battery,
   the procedural port terrace and the units). They are recreations of the game's own scenes: never
