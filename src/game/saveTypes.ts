@@ -15,7 +15,10 @@ import type { ObjState } from '../campaign/types';
 import type { HeritageBuildingId } from '../model/defs/heritage';
 import type { MatchStatsSave } from './matchStats';
 
-/** Bump on a breaking snapshot change; adding optional fields is fine. */
+/**
+ * Bump on a breaking snapshot change and add its upgrade step in `saveMigrations.ts`; adding optional
+ * fields is fine without a bump.
+ */
 export const SAVE_VERSION = 4;
 
 export type { ResourceKind };
