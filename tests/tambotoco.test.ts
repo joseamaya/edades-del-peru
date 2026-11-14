@@ -66,6 +66,17 @@ describe('Los hijos de Tambotoco', () => {
     expect(tutorialForMission('m_tambotoco')!.steps.map((step) => step.id)).toContain('campamento');
   });
 
+  it('draws a visible path from the cave mouth through the Act I exit marker', () => {
+    const roads = TAMBOTOCO.layout!.roads!;
+    const salida = TAMBOTOCO.objectives.find((o) => o.id === 'a1_salida')!.pos!;
+    const first = roads[0]!;
+    // Starts at the cave (blocker centred on 40,55) and ends on the exit marker the tutorial points at.
+    expect(Math.hypot(first.from.dx - 40, first.from.dz - 55)).toBeLessThan(8);
+    expect(first.to).toEqual({ dx: salida.dx, dz: salida.dz });
+    for (const road of roads) expect(road.stonePath).toBe(true);
+    expect(tutorialForMission('m_tambotoco')!.steps[0]!.text).toContain('círculo dorado');
+  });
+
   it('makes water the lever and the foundation the goal', () => {
     expect(TAMBOTOCO.objectives.find((o) => o.id === 'a3_acequia')!.kind).toBe('canal_open');
     expect(TAMBOTOCO.layout?.canal?.heritageId).toBe('tambotoco_acequia');

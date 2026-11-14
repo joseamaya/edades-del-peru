@@ -10,7 +10,7 @@ const TUTORIALS: Record<string, TutorialDef> = {
     steps: [
       {
         id: 'mover',
-        text: 'Arrastra un recuadro sobre tu gente para seleccionarla y haz clic derecho en el suelo para moverla. Sigue el camino que baja de la cueva.',
+        text: 'Arrastra un recuadro sobre tu gente para seleccionarla y haz clic derecho en el suelo para moverla. Sigue el sendero que baja de la cueva hasta el círculo dorado.',
         check: { type: 'objectiveCompleted', objectiveId: 'a1_salida' },
       },
       {

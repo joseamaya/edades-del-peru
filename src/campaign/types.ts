@@ -67,6 +67,11 @@ export interface MissionRoad {
   to: MissionPoint;
   /** Ribbon width in world units; defaults to 4. */
   width?: number;
+  /**
+   * Paint a stony footpath (earth and stone) under the road. The default «wear» only adds dirt, which does
+   * not show on ground that is already dry earth (Tambotoco's cave flat), and the ribbon is faint.
+   */
+  stonePath?: boolean;
 }
 
 export interface MissionDecor {

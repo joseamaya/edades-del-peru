@@ -1424,8 +1424,21 @@ export const MISSIONS: MissionDef[] = [
           'La acequia de los alcabizas está más adelante en la leyenda: primero llega al valle por Huanacaure.',
       },
       roads: [
-        { from: { dx: 44, dz: 84 }, to: { dx: TAMBOTOCO_HUANACAURE.x, dz: TAMBOTOCO_HUANACAURE.z }, width: 3 },
-        { from: { dx: TAMBOTOCO_HUANACAURE.x, dz: TAMBOTOCO_HUANACAURE.z }, to: { dx: 186, dz: 196 }, width: 3 },
+        // The path starts at the cave mouth and passes the Act I exit marker (a1_salida), so «sigue el camino»
+        // has a camino to follow: a stony footpath, since worn dirt does not show on the dry cave flat.
+        { from: { dx: 42, dz: 61 }, to: { dx: 60, dz: 92 }, width: 5, stonePath: true },
+        {
+          from: { dx: 60, dz: 92 },
+          to: { dx: TAMBOTOCO_HUANACAURE.x, dz: TAMBOTOCO_HUANACAURE.z },
+          width: 5,
+          stonePath: true,
+        },
+        {
+          from: { dx: TAMBOTOCO_HUANACAURE.x, dz: TAMBOTOCO_HUANACAURE.z },
+          to: { dx: 186, dz: 196 },
+          width: 5,
+          stonePath: true,
+        },
       ],
     },
     timeOfDay: 'morning',

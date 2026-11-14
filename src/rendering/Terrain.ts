@@ -941,6 +941,11 @@ ${FOW_DIM_GLSL}
     this.paintStroke(points, width, strength, 'trail');
   }
 
+  /** Paint a stony footpath (earth and stone) that reads on dry ground, where «wear» dirt does not. */
+  paintStonePath(points: { x: number; z: number }[], width: number, strength = 0.9): void {
+    this.paintStroke(points, width, strength, 'stone');
+  }
+
   /** Paint a dirt/gravel path under a polyline (settlement and mission roads). */
   paintPath(points: { x: number; z: number }[], width: number, strength = 0.8): void {
     this.paintStroke(points, width, strength, 'wear');
@@ -950,7 +955,7 @@ ${FOW_DIM_GLSL}
     points: { x: number; z: number }[],
     width: number,
     strength: number,
-    mode: 'wear' | 'trail',
+    mode: 'wear' | 'trail' | 'stone',
   ): void {
     if (points.length < 2) return;
     const radius = Math.max(0.35, width / 2);
@@ -1092,11 +1097,13 @@ ${FOW_DIM_GLSL}
   }
 
   /** Pale compacted gravel that reads over green valley and dry terrace alike. */
-  private blendTrail(out: Uint8Array, i: number, mix: number): void {
-    const grass = (out[i]! / 255) * (1 - mix) + 0.01 * mix;
-    const dirt = (out[i + 1]! / 255) * (1 - mix) + 0.14 * mix;
-    const sand = (out[i + 2]! / 255) * (1 - mix) + 0.83 * mix;
-    const rock = (out[i + 3]! / 255) * (1 - mix) + 0.02 * mix;
+  private blendTrail(out: Uint8Array, i: number, mix: number, stone = false): void {
+    // A pale gravel trail, or a stony footpath (mostly stone) that reads on dry earth.
+    const target = stone ? [0, 0.16, 0, 0.84] : [0.01, 0.14, 0.83, 0.02];
+    const grass = (out[i]! / 255) * (1 - mix) + target[0]! * mix;
+    const dirt = (out[i + 1]! / 255) * (1 - mix) + target[1]! * mix;
+    const sand = (out[i + 2]! / 255) * (1 - mix) + target[2]! * mix;
+    const rock = (out[i + 3]! / 255) * (1 - mix) + target[3]! * mix;
     const sum = grass + dirt + sand + rock;
     const inv = sum > 0 ? 1 / sum : 1;
     out[i] = Math.round(grass * inv * 255);
@@ -1110,7 +1117,7 @@ ${FOW_DIM_GLSL}
     distance: (wx: number, wz: number) => number,
     radius: number,
     strength: number,
-    mode: 'wear' | 'clear' | 'trail' = 'wear',
+    mode: 'wear' | 'clear' | 'trail' | 'stone' = 'wear',
   ): void {
     const size = this.splat.size;
     const worldSize = this.size;
@@ -1140,12 +1147,13 @@ ${FOW_DIM_GLSL}
           changed = true;
           continue;
         }
-        if (mode === 'trail') {
-          this.blendTrail(out, i, Math.min(1, weight));
+        if (mode === 'trail' || mode === 'stone') {
+          const stone = mode === 'stone';
+          this.blendTrail(out, i, Math.min(1, weight), stone);
           // A trail painted after a restored drought/flood must also live in that season's baseline;
           // otherwise the next setDrought/setWetSeason call would erase it.
-          if (this.preDrought) this.blendTrail(this.preDrought, i, Math.min(1, weight));
-          if (this.preWet) this.blendTrail(this.preWet, i, Math.min(1, weight));
+          if (this.preDrought) this.blendTrail(this.preDrought, i, Math.min(1, weight), stone);
+          if (this.preWet) this.blendTrail(this.preWet, i, Math.min(1, weight), stone);
           changed = true;
           continue;
         }

@@ -1213,6 +1213,12 @@ export class WorldViewDecor {
       this.game.excludeGroundCoverForOverlay(overlay);
       index++;
     }
+    // After the overlays' «wear» paint, so the stone mix is what the path reads as.
+    for (const road of roads as Array<{ width?: number; from: any; to: any; stonePath?: boolean }>) {
+      if (!road.stonePath) continue;
+      const points = [this.game.resolveMissionPoint(road.from), this.game.resolveMissionPoint(road.to)];
+      this.game.terrain.paintStonePath(points, road.width ?? 4, 0.95);
+    }
   }
 
   /** Register a building as a pathfinding obstacle. */
