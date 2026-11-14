@@ -32,7 +32,7 @@ test('m3 loads the authored Huacas de Moche site', { tag: '@smoke' }, async ({ p
         luna: proxy('moche_huaca_luna'),
         plaza: proxy('moche_plaza'),
       },
-      lunaWalkable: g.pathfinder.isWalkable(132.5, 71),
+      lunaWalkable: g.pathfinder.isWalkable(176.667, 94.667),
       anchorWalkable: g.pathfinder.isWalkable(g.siteAnchor.x, g.siteAnchor.z),
       names,
     };
@@ -40,10 +40,13 @@ test('m3 loads the authored Huacas de Moche site', { tag: '@smoke' }, async ({ p
   expect(out.model).toBe('moche_site');
   expect(out.procedural).toBeNull();
   expect(out.heritage).toBe('moche_huaca_luna');
-  expect(out.anchor).toEqual({ x: 123, z: 81 });
-  expect(out.proxies.sol).toEqual({ x: 109.5, z: 73 });
-  expect(out.proxies.luna).toEqual({ x: 132.5, z: 71 });
-  expect(out.proxies.plaza).toEqual({ x: 121, z: 76 });
+  expect(out.anchor).toEqual({ x: 164, z: 108 });
+  expect(out.proxies.sol?.x).toBeCloseTo(146, 3);
+  expect(out.proxies.sol?.z).toBeCloseTo(97.333, 3);
+  expect(out.proxies.luna?.x).toBeCloseTo(176.667, 3);
+  expect(out.proxies.luna?.z).toBeCloseTo(94.667, 3);
+  expect(out.proxies.plaza?.x).toBeCloseTo(161.333, 3);
+  expect(out.proxies.plaza?.z).toBeCloseTo(101.333, 3);
   expect(out.lunaWalkable).toBe(false);
   expect(out.anchorWalkable).toBe(true);
   expect(out.names.some((name) => /Moche_LOD1_(Apron|Terrain)/.test(name))).toBe(false);
@@ -76,6 +79,7 @@ test('m3 canal and exchange field-card buttons work', { tag: '@smoke' }, async (
     const dt = 1 / 60;
     let t = 0;
     for (let i = 0; i < Math.ceil(95 / dt); i++) {
+      document.querySelector<HTMLElement>('.ed-mission-card')?.click();
       for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
       g.update(dt, t);
       t += dt;
@@ -107,6 +111,7 @@ test('m3 canal, huaca hold and elite exchange complete the mission', async ({ pa
     let t = 0;
     const step = (seconds: number): void => {
       for (let i = 0; i < Math.ceil(seconds / dt) && !m.ended; i++) {
+        document.querySelector<HTMLElement>('.ed-mission-card')?.click();
         for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
         for (const b of g.buildings.values()) if (b.owner === 0 && !b.dead) b.hp = b.maxHp;
         g.update(dt, t);
@@ -148,6 +153,7 @@ test('m3 tutorial waits for the canal and huaca gates', async ({ page }) => {
     let t = 0;
     const step = (seconds: number): void => {
       for (let i = 0; i < Math.ceil(seconds / dt); i++) {
+        document.querySelector<HTMLElement>('.ed-mission-card')?.click();
         g.update(dt, t);
         t += dt;
       }

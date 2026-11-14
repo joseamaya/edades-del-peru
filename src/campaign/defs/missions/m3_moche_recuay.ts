@@ -1,5 +1,6 @@
 import { Era, CivId, HistoricalPeriod, UnitKind } from '../../../core/types';
 import type { MissionDef } from '../../types';
+import { MOCHE_MAP_SIZE, mocheLength } from '../../../model/defs/mocheSite';
 
 export const m3MocheRecuay: MissionDef = {
   id: 'm3_moche_recuay',
@@ -13,9 +14,39 @@ export const m3MocheRecuay: MissionDef = {
   defeat: 'Los valles caen ante las incursiones de la sierra y el poder moche se desmorona.',
   period: HistoricalPeriod.EARLY_INTERMEDIATE,
   tutorial: true,
+  modelMission: true,
+  intro: [
+    {
+      kicker: 'VALLE DE MOCHE · c. 300–600 d.C.',
+      title: 'La Frontera de los Valles',
+      text: 'Los señores de Moche dominan los valles de Chicama, Moche y Virú. El agua de los canales sostiene los campos, las huacas y el poder del valle.',
+      seconds: 9,
+      source: 'docs/historia/campanas/moche_recuay.md',
+      image: 'media/moche/intro-valle.webp',
+    },
+    {
+      kicker: 'HUACAS DEL SOL Y DE LA LUNA',
+      title: 'El centro del valle',
+      text: 'Las huacas reúnen la plaza, los templos y el intercambio. Sostener la plaza es sostener el orden del valle frente a la sierra.',
+      seconds: 9,
+      source: 'docs/historia/campanas/moche_recuay.md',
+      image: 'media/moche/intro-huacas.webp',
+    },
+    {
+      kicker: 'CALLEJÓN DE HUAYLAS',
+      title: 'La presión recuay',
+      text: 'Desde la sierra, los Recuay presionan la frontera. La guerra no es una batalla única: es defender los valles y mantener abierto el intercambio de élite.',
+      seconds: 10,
+      source: 'docs/historia/campanas/moche_recuay.md',
+      image: 'media/moche/intro-sierra.webp',
+    },
+  ],
+  epilogueImage: 'media/moche/intro-epilogo.webp',
   playerCiv: CivId.MOCHE,
   enemyCiv: CivId.RECUAY,
-  map: { seed: 400, type: 'coast', size: 192 },
+  map: { seed: 400, type: 'coast', size: MOCHE_MAP_SIZE },
+  // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.
+  unitSpeedScale: 0.75,
   layout: {
     base: { x: 0.3, z: 0.66 },
     site: {
@@ -41,7 +72,7 @@ export const m3MocheRecuay: MissionDef = {
         { name: 'Callejón de Huaylas', x: 0.72, z: 0.3, rx: 0.1, rz: 0.08 },
       ],
     },
-    decor: { model: 'recuay_pashash', at: 'enemy', dx: 10, dz: 0, scale: 1.05 },
+    decor: { model: 'recuay_pashash', at: 'enemy', dx: mocheLength(10), dz: 0, scale: 1.05 },
   },
   mapOverrides: {
     terrain: { terraceChance: 0.08, riverCount: 0 },
@@ -72,7 +103,7 @@ export const m3MocheRecuay: MissionDef = {
     {
       id: 'obj_huacas',
       kind: 'hold',
-      pos: { ref: 'site', dx: 4, dz: 8 },
+      pos: { ref: 'site', dx: mocheLength(4), dz: mocheLength(8) },
       radius: 18,
       time: 90,
       hidden: true,
@@ -105,6 +136,13 @@ export const m3MocheRecuay: MissionDef = {
       condition: { type: 'time', seconds: 10 },
       effects: [
         {
+          type: 'act',
+          kicker: 'Acto I · El valle',
+          title: 'El agua del valle',
+          image: 'media/moche/intro-valle.webp',
+          text: 'El canal alimenta los campos y las huacas. Ábrelo antes de que la sierra ponga a prueba la frontera.',
+        },
+        {
           type: 'dialogue',
           text: 'Señor de Moche: —El agua del canal sostiene los campos y las huacas. ¡Nadie entra al valle sin nuestro permiso!',
         },
@@ -114,6 +152,13 @@ export const m3MocheRecuay: MissionDef = {
       id: 't_canal',
       condition: { type: 'objective', objectiveId: 'obj_canal', state: 'completed' },
       effects: [
+        {
+          type: 'act',
+          kicker: 'Acto II · La frontera',
+          title: 'Las huacas',
+          image: 'media/moche/intro-huacas.webp',
+          text: 'El agua corre. Ahora la plaza entre las huacas debe resistir las incursiones que bajan de la sierra.',
+        },
         {
           type: 'dialogue',
           text: 'La compuerta está abierta. Los andenes recuperan agua; ahora asegura la plaza entre las huacas.',
@@ -129,7 +174,7 @@ export const m3MocheRecuay: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [{ kind: UnitKind.SOLDIER, count: 5 }],
-          pos: { ref: 'site', dx: -20, dz: -26 },
+          pos: { ref: 'site', dx: -mocheLength(20), dz: -mocheLength(26) },
           radius: 6,
         },
         { type: 'dialogue', text: '¡Recuay cruza la quebrada por el norte! ¡Defiende la plaza!' },
@@ -146,7 +191,7 @@ export const m3MocheRecuay: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 4 },
             { kind: UnitKind.MUSKETEER, count: 2 },
           ],
-          pos: { ref: 'site', dx: 22, dz: -24 },
+          pos: { ref: 'site', dx: mocheLength(22), dz: -mocheLength(24) },
           radius: 6,
         },
         { type: 'dialogue', text: 'Otra columna baja desde el Callejón de Huaylas. ¡Refuerza el flanco este!' },
@@ -156,6 +201,13 @@ export const m3MocheRecuay: MissionDef = {
       id: 't_huacas',
       condition: { type: 'objective', objectiveId: 'obj_huacas', state: 'completed' },
       effects: [
+        {
+          type: 'act',
+          kicker: 'Acto III · El intercambio',
+          title: 'La Huaca de la Luna',
+          image: 'media/moche/intro-sierra.webp',
+          text: 'La plaza resiste. El intercambio de élite con la sierra se cierra en la Huaca de la Luna: plata y cerámica por prestigio y alianzas.',
+        },
         {
           type: 'dialogue',
           text: 'La plaza resiste. El intercambio de élite con la sierra puede continuar en la Huaca de la Luna.',
@@ -172,7 +224,7 @@ export const m3MocheRecuay: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [{ kind: UnitKind.SOLDIER, count: 6 }],
-          pos: { ref: 'site', dx: 0, dz: -30 },
+          pos: { ref: 'site', dx: 0, dz: -mocheLength(30) },
           radius: 6,
         },
       ],

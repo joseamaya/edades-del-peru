@@ -41,7 +41,7 @@ below, which record each mission's own review and are kept for history). **M** m
 | ------------------ | ---- | ----- | ---- | ----- | --- | ---- | -- | --- | ---- | ----- | ---- | ------ | ---- | --- | ---- | ----- |
 | m1_caral           | M    | M     | M    | M     | M   | M    | M  | M   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m2_chavin          | M    | M     | P    | M     | M   | M    | M  | P   | M    | M     | P    | M      | M    | X   | M    | M     |
-| m3_moche_recuay    | P    | M     | P    | P     | P   | P    | M  | P   | M    | P     | P    | X      | X    | X   | X    | X     |
+| m3_moche_recuay    | P    | M     | M    | M     | M   | M    | M  | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m4_wari            | P    | M     | M    | P     | P   | P    | M  | P   | M    | P     | P    | X      | X    | X   | X    | X     |
 | m_tambotoco        | M    | M     | P    | M     | M   | M    | M  | P   | M    | M     | M    | M      | M    | –   | P    | M     |
 | m5_yahuar_pampa    | P    | M     | M    | P     | M   | P    | M  | P   | M    | M     | P    | X      | X    | P   | X    | X     |
@@ -55,9 +55,11 @@ below, which record each mission's own review and are kept for history). **M** m
 
 **Verdict.** **Caral meets every gate** (closed 2026-11-14: Act III card recaptured with the works camp; the
 camp pieces, vegetation, household props and fauna approved by a recorded human review). Chavín,
-Tambotoco, Lima and the Junta follow the model pattern and lack mostly art. m3–m6b and m8 still use the pre-model template: no acts, intro, 256 m map or
-bench scene. **m7 and m9 now meet the scale, opening and performance gates** (256 m, painted ground,
-in-engine intros and epilogues, bench scenes); their human art review is pending.
+Tambotoco, Lima and the Junta follow the model pattern and lack mostly art. m4–m6b and m8 still use the
+pre-model template: no acts, intro, 256 m map or bench scene. m3 was promoted in this pass (256 m, painted
+ground, three acts, in-engine intro and bench). **m3, m7 and m9 meet the scale, opening and performance
+gates** (256 m, painted ground, in-engine intros and epilogues, bench scenes); their human art review is
+pending.
 
 **Fixed in this pass.** The closing trigger of the goal that wins a mission now fires (Tambotoco's founded
 Inticancha never appeared); waves can march on a `target` (Lima's siege and the Tambotoco valley wave stood at
@@ -78,8 +80,8 @@ in-engine intro and epilogue, bench scenes and the scale guard).
    never fights the valley wave. A manual no-cheat playtest remains recommended.
 3. **Art review:** record the human review of Caral's camp pieces and the Chavín kit; recapture Caral's Act
    III card (S).
-4. **Model-mission rebuilds** for m3–m6b and m8 (256 m transect, acts, intro, bench, certainty table)
-   (L each); m7 and m9 are done. The quick wins are done (2026-11-14): m6's gate really closes
+4. **Model-mission rebuilds** for m4–m6b and m8 (256 m transect, acts, intro, bench, certainty table)
+   (L each); m3, m7 and m9 are done. The quick wins are done (2026-11-14): m6's gate really closes
    (`canal_closed`) and m6b's victory holds Quipaipan and captures Huáscar instead of razing a building.
 5. **Mid-mission save/load E2E:** fixed (2026-11-14) for Tambotoco (`inticancha`), Lima (`ciudad`) and
    La Junta (the Apacheta hold).
@@ -135,21 +137,29 @@ Reviewed 2026-11-07 against the model-mission gates. Status is honest about the 
 
 ## Moche gold-master status
 
-| Gate        | Status      | Evidence                                                                                                                                                                                     |
-| ----------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| History     | Met         | `docs/historia/campanas/moche_recuay.md`; no invented ruler or single battle.                                                                                                                |
-| Identity    | Met         | Authored Huacas de Moche, operable canal, huaca hold and elite exchange.                                                                                                                     |
-| Terrain     | Met         | Authored coastal heightfield (`mocheHeightmap.ts`): Pacific shore, irrigated valley and Huacas terrace.                                                                                      |
-| Play        | Met         | `campaign-playtest.spec.ts` moves real units and exchanges silver; `moche-campaign.spec.ts` selects the cards through public state and clicks the canal and Huaca de la Luna action buttons. |
-| Contract    | Met         | Canal, hold, required 250 and optional 400 silver; hidden goals stay out of the briefing (covered by `campaign.test.ts`).                                                                    |
-| Onboarding  | Met         | Four-step Moche tutorial, briefing, Codex and minimap pips.                                                                                                                                  |
-| Closure     | Met         | Mission epilogue and optional elite-exchange summary.                                                                                                                                        |
-| UX          | Met         | `tests/e2e/hud-layout.spec.ts` checks the panels geometrically at 1280×720 (Caral also at 1600×900 and 1920×1080).                                                                           |
-| Visuals     | Met locally | Authored site GLB, desert palette and current RTS captures in `review/`.                                                                                                                     |
-| Persistence | Met         | Canal, hold timer, delivered silver and tutorial round-trip in `save-campaign.spec.ts`.                                                                                                      |
-| Tests       | Met         | Data, site/proxy collision, tutorial, mission, HUD, real-command playtest and save/load coverage.                                                                                            |
-| Docs        | Met         | This document, dossier, experience table, site note, art docs and README aligned.                                                                                                            |
+Reviewed 2026-11-14 as a model mission. The human art gate is still open.
 
+| Gate        | Status               | Evidence                                                                                                                                                                                     |
+| ----------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| History     | Met                  | `docs/historia/campanas/moche_recuay.md`; no invented ruler or single battle; frontier pressure and elite exchange are attested.                                                              |
+| Identity    | Met                  | The valley, the canal and the huacas: water as power, the plaza under Recuay pressure and the elite exchange.                                                                                |
+| Terrain     | Met                  | 256 m authored coastal heightfield (`mocheHeightmap.ts`) with painted ground: Pacific shore, irrigated valley and Huacas terrace.                                                            |
+| Play        | Met                  | `campaign-playtest.spec.ts` moves real units, opens the gate and exchanges silver; `moche-campaign.spec.ts` clicks the canal and Huaca de la Luna actions.                                    |
+| Contract    | Met                  | Three acts (canal, hold, exchange) with hidden goals revealed by triggers, optional 400 silver and chapter cards with images.                                                                |
+| Onboarding  | Met                  | Four-step Moche tutorial, briefing, Codex and minimap pips.                                                                                                                                  |
+| Closure     | Met                  | Dusk epilogue capture narrates the Moche fragmentation toward 800 AD; optional elite exchange summarised.                                                                                    |
+| UX          | Met                  | `tests/e2e/hud-layout.spec.ts` checks the panels geometrically at 1280×720 (Caral also at 1600×900 and 1920×1080).                                                                           |
+| Visuals     | Met locally          | Authored `moche_site` GLB, painted valley and in-engine intro/epilogue captures in `public/media/moche/`.                                                                                    |
+| Persistence | Met                  | Canal, hold timer, delivered silver and tutorial round-trip in `save-campaign.spec.ts`; v6 m3 saves are rejected (`SAVE_VERSION` 7).                                                          |
+| Tests       | Met                  | Data, site/proxy collision, tutorial, mission, HUD, real-command playtest and save/load coverage.                                                                                            |
+| Docs        | Met                  | This document, dossier, `moche-model-mission.md`, experience table, site note, art docs and README aligned.                                                                                   |
+| Structure   | Met                  | Three acts, hidden objectives revealed per act, chapter cards with images and optional goals.                                                                                               |
+| Opening     | Met                  | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_moche_intro.mjs`; `MISSION_ART` uses the valley capture.                                                        |
+| Art         | Pending human review | The reused Huacas GLB and its draft Blender records keep `reviewed: false` (#343); in-engine captures are recorded in PROVENANCE.                                                            |
+| Performance | Met                  | `bench_scene.mjs`: opening ~557k tris / 351 calls, huacas plaza ~722k / 559; within the recorded first-pass caps.                                                                            |
+| Scale       | Met                  | 256 m map, 128² painted ground over 256 m and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                                |
+
+## Wari gold-master status
 ## Wari gold-master status
 
 | Gate        | Status      | Evidence                                                                                                                                                           |

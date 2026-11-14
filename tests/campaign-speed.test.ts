@@ -73,15 +73,30 @@ describe('campaign unit speed scale', () => {
     }
   });
 
-  it('leaves missions without a scale at the skirmish speed', () => {
-    const moche = headlessFor('m3_moche_recuay');
+  it('leaves a skirmish without a scale at the base speed', () => {
+    setAutoStart(false);
+    const game = new Game(
+      {
+        ...DEFAULT_SETTINGS,
+        mapSeed: 777,
+        showHints: false,
+        soundEnabled: false,
+        musicEnabled: false,
+        fogOfWar: false,
+        cinematic: false,
+      },
+      null,
+      null,
+      false,
+      true,
+    );
     try {
-      expect(moche.unitSpeedScale).toBe(1);
+      expect(game.unitSpeedScale).toBe(1);
       const base = getUnitStats(UnitKind.WORKER, Era.REGIONAL_STATES).speed;
-      const worker = moche.spawnScriptedUnit(UnitKind.WORKER, 0, 20, 20);
+      const worker = game.spawnScriptedUnit(UnitKind.WORKER, 0, 20, 20);
       expect(worker.stats.speed).toBeCloseTo(base, 6);
     } finally {
-      moche.destroy();
+      game.destroy();
       setAutoStart(true);
     }
   });

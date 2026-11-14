@@ -834,10 +834,12 @@ test('plays m3 Moche with real movement, the canal and the exchange', async ({ p
     let t = 0;
     let reached = false;
     for (let i = 0; i < Math.ceil(115 / dt) && !g.mission.ended; i++) {
+      document.querySelector<HTMLElement>('.ed-mission-card')?.click();
       if (!reached && Math.hypot(workers[0].pos.x - anchor.x, workers[0].pos.z - anchor.z) < 12) reached = true;
       g.update(dt, t);
       t += dt;
     }
+    document.querySelector<HTMLElement>('.ed-mission-card')?.click();
     const held = g.mission.getObjectiveState('obj_huacas') as string;
     let traded = 0;
     for (let i = 0; i < 6; i++) if (g.makeTrade('moche_huaca_luna')) traded++;
@@ -847,6 +849,8 @@ test('plays m3 Moche with real movement, the canal and the exchange', async ({ p
       reached,
       held,
       traded,
+      mapSize: g.settings.mapSize,
+      site: g.siteDef?.id,
       canal: g.mission.getObjectiveState('obj_canal') as string,
       trade: g.mission.getObjectiveState('obj_intercambio') as string,
       won: g.mission.won as boolean | null,
@@ -855,6 +859,8 @@ test('plays m3 Moche with real movement, the canal and the exchange', async ({ p
 
   expect(out.setup, JSON.stringify(out)).toBe(true);
   expect(out.reached, JSON.stringify(out)).toBe(true);
+  expect(out.mapSize, 'the model mission runs on 256 m').toBe(256);
+  expect(out.site).toBe('moche_site');
   expect(out.canal).toBe('completed');
   expect(out.held).toBe('completed');
   expect(out.traded).toBeGreaterThanOrEqual(1);
