@@ -37,12 +37,12 @@ export const m4Wari: MissionDef = {
       image: 'media/wari/intro-complejo.webp',
     },
     {
-      kicker: 'ALTIPLANO DEL TITICACA',
+      kicker: 'LA FRONTERA ALTA',
       title: 'Dos estados coetáneos',
       text: 'Tiahuanaco comparte el culto del dios de los báculos y compite por influencia, no por ejércitos. La frontera se mide en presencia, caminos y andenes.',
       seconds: 10,
       source: 'docs/historia/campanas/wari_tiahuanaco.md',
-      image: 'media/wari/intro-altiplano.webp',
+      image: 'media/wari/intro-frontera.webp',
     },
   ],
   epilogueImage: 'media/wari/intro-epilogo.webp',
@@ -120,6 +120,8 @@ export const m4Wari: MissionDef = {
       count: 2,
       nodes: [WARI_NODE_A, WARI_NODE_B],
       radius: wariLength(16),
+      hidden: true,
+      requires: 'obj_andenes',
       title: 'Conecta dos centros provinciales en la frontera',
     },
     {
@@ -136,7 +138,8 @@ export const m4Wari: MissionDef = {
       id: 'obj_sostener',
       kind: 'survive',
       time: 480,
-      title: 'Sostén la esfera wari 8 minutos',
+      optional: true,
+      title: 'Sostén la esfera wari 8 minutos (opcional)',
     },
     {
       id: 'bonus_red',
@@ -151,8 +154,8 @@ export const m4Wari: MissionDef = {
   ],
   triggers: [
     {
-      id: 't_dial_0',
-      condition: { type: 'time', seconds: 20 },
+      id: 't_acto_i',
+      condition: { type: 'time', seconds: 2 },
       effects: [
         {
           type: 'act',
@@ -161,6 +164,12 @@ export const m4Wari: MissionDef = {
           image: 'media/wari/intro-ayacucho.webp',
           text: 'La despensa está corta. Acondiciona andenes y reúne suministros antes de tender la red.',
         },
+      ],
+    },
+    {
+      id: 't_dial_0',
+      condition: { type: 'time', seconds: 20 },
+      effects: [
         {
           type: 'dialogue',
           text: 'La despensa está corta, pero nuestros caminos no. Reúne suministros y conecta dos centros provinciales.',
@@ -176,8 +185,9 @@ export const m4Wari: MissionDef = {
           kicker: 'Acto II · La red',
           title: 'Los centros provinciales',
           image: 'media/wari/intro-complejo.webp',
-          text: 'Los andenes producen. Ahora conecta dos centros provinciales por camino y mercado para articular la esfera wari.',
+          text: 'Los andenes producen. Levanta un mercado en dos centros provinciales para articular la esfera wari; los caminos ya unen el territorio.',
         },
+        { type: 'objective', objectiveId: 'obj_red', state: 'activate' },
       ],
     },
     {
@@ -188,7 +198,7 @@ export const m4Wari: MissionDef = {
           type: 'act',
           kicker: 'Acto III · La frontera',
           title: 'Dos esferas',
-          image: 'media/wari/intro-altiplano.webp',
+          image: 'media/wari/intro-frontera.webp',
           text: 'Los centros están enlazados. Sostén la frontera frente a la influencia de Tiahuanaco: presencia, caminos y andenes, no una guerra inventada.',
         },
         {

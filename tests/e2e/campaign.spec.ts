@@ -612,14 +612,23 @@ test('m4 network opens the contested frontier', async ({ page }) => {
     if (g.getPaused()) g.togglePause();
     const m = g.mission;
     const base = g.siteCenter as { x: number; z: number };
+    // Act I first: the network is hidden until the andenes stand.
+    const center = g.playerCenter(0);
+    g.spawnScriptedBuilding('farm', 0, center.x + 8, center.z + 8);
+    g.spawnScriptedBuilding('farm', 0, center.x - 8, center.z + 8);
+    g.players[0].resources.food = 600;
+    g.update(1 / 60, 0);
+    document.querySelector<HTMLElement>('.ed-mission-card')?.click();
     const o = m.def.objectives.find((x: any) => x.id === 'obj_red');
     const nodes = o.nodes.map((n: any) => ({ x: base.x + n.dx, z: base.z + n.dz }));
     for (const node of nodes) g.spawnScriptedBuilding('market', 0, node.x, node.z);
-    g.update(1 / 60, 0);
+    g.update(1 / 60, 0.02);
+    document.querySelector<HTMLElement>('.ed-mission-card')?.click();
     const active = m.getObjectiveState('obj_frontera') as string;
     const unit = [...g.units.values()].find((u: any) => u.owner === 0 && !u.dead) as any;
     const dt = 1 / 60;
     for (let i = 0; i < Math.ceil(65 / dt) && !m.ended; i++) {
+      document.querySelector<HTMLElement>('.ed-mission-card')?.click();
       unit.pos.set(nodes[0].x, g.terrain.getHeight(nodes[0].x, nodes[0].z), nodes[0].z);
       g.update(dt, i * dt);
     }

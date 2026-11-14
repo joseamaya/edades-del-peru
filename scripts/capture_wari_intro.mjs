@@ -21,7 +21,7 @@ const SHOTS = [
   },
   { id: 'complejo', anchor: 'site', height: 46, time: 0.58 },
   {
-    id: 'altiplano',
+    id: 'frontera',
     centre: 'frontier',
     cinematic: { eye: [-30, 16, 20], look: [0, 4, 0], fov: 50, time: 0.5 },
   },

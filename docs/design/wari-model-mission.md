@@ -19,10 +19,10 @@ competition is measured in influence, not in an invented battle.
 | ------------------------ | -------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------ |
 | I · Los andenes          | Ayacucho basin             | Gather 600 food and condition two andenes                       | Agriculture and stored surplus fund the state                            |
 | II · La red              | Core and provincial nodes  | Build a market at two provincial nodes and connect them         | Planned centres and roads articulate the first Andean empire             |
-| III · La frontera        | Frontier node              | Hold the frontier node 60 s while the sphere stands 8 minutes   | Coetaneity and influence, not a documented war, define the rivalry       |
+| III · La frontera        | Frontier node              | Hold the frontier node 60 s; the 8-minute endurance is optional | Coetaneity and influence, not a documented war, define the rivalry       |
 
-Optional: extend the network with a third provincial centre. The epilogue narrates the collapse of both
-states toward 1000–1100 AD.
+Optional: extend the network with a third provincial centre, or sustain the sphere for eight minutes. The
+epilogue narrates the collapse of both states toward 1000–1100 AD.
 
 ## Map
 
@@ -83,9 +83,9 @@ historical context stays in the briefing, the chapter cards and the Codex.
 
 ## Pacing
 
-The real-command bot reaches the documented ending in about 11 s of simulated time in the E2E (the network is
-built instantly by the harness); a human playtest is still needed to measure the 20–30 min path. The model
-pattern's 30–40 min band is not claimed.
+The real-command bot reaches the documented ending in about 12 s of simulated time in the E2E (the harness
+builds the network instantly); a human playtest is still needed to measure the 20–30 min path. The model
+pattern's 30–40 min band is not claimed, and the eight-minute survival is optional rather than a gate.
 
 ## Open items
 

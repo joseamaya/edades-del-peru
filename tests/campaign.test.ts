@@ -507,6 +507,9 @@ describe('campaign educational content', () => {
     const actTitles = m4.triggers.flatMap((t) => t.effects.flatMap((e) => (e.type === 'act' ? [e.title] : [])));
     expect(actTitles).toHaveLength(3);
     expect(actTitles[2]).toContain('Dos esferas');
+    const network = m4.objectives.find((o) => o.id === 'obj_red')!;
+    expect(network.hidden).toBe(true);
+    expect(network.requires).toBe('obj_andenes');
   });
 
   it('m4 has a two-node network, a contested frontier and andenes', () => {

@@ -397,7 +397,7 @@ slot is absent (offline / without assets).
 
 ### Wari (m4) intro and epilogue images (in-engine recreations)
 
-- **Location**: `public/media/wari/intro-{ayacucho,complejo,altiplano,epilogo}.webp` (960x540, WebP q58).
+- **Location**: `public/media/wari/intro-{ayacucho,complejo,frontera,epilogo}.webp` (960x540, WebP q58).
 - **Source**: captured from the game itself by `scripts/capture_wari_intro.mjs` on the 256 m Wari
   transect: the Ayacucho basin and andenes, the Wari complex, the highland frontier and a dusk epilogue.
   Rendered without the HUD or character nameplates at 1600x900 and resized with `sharp`. Regenerate with

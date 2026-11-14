@@ -625,7 +625,7 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     buildKeepout: [{ x: 0.56, z: 0.45, rx: 0.18, rz: 0.15 }],
     wallCollision: {
       meshPatterns: [/Wari_(Plaza|Perimeter|Gallery|D_Facade)/, /^Cube/],
-      maxStartYAboveBase: 1.2,
+      maxStartYAboveBase: wariLength(1.2),
     },
     walkableCorridor: { width: wariLength(8) },
     terrain: {

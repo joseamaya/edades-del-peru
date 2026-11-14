@@ -85,7 +85,7 @@ const BUDGETS = {
   // Moche valley opening on the 256 m transect: the canal, the huacas and the starting column. Measured
   // ~550k / 332; first-pass cap with ~6 % headroom.
   m3_moche_recuay: { sceneTriangles: 590_000, sceneDrawCalls: 372, kitTriangles: 12_000, kitDrawCalls: 4 },
-  // Wari highland opening: the basin, the andenes and the complex. Measured ~421k / 199; first-pass cap.
+  // Wari highland opening: the basin, the andenes and the complex. Measured ~421k / 199 (under §11's 200-call target).
   m4_wari: { sceneTriangles: 445_000, sceneDrawCalls: 211, kitTriangles: 0, kitDrawCalls: 0 },
   // Túpac Amaru opening on the 256 m valley: the camp, the chapel and the starting column. Measured
   // ~537k / 661–665; first-pass cap with ~6 % headroom (the call count is over art-direction §11's target).
@@ -200,6 +200,7 @@ try {
             g.spawnScriptedUnit(kind, 0, site.x - 14 + (i % 4) * 5, site.z + 10 + Math.floor(i / 4) * 4);
           }
           for (let i = 0; i < 10; i++) {
+            // `musketeer` is the legacy ranged id: Tiahuanaco fields honderos, not firearms.
             const kind = i % 4 === 0 ? 'musketeer' : 'soldier';
             g.spawnScriptedUnit(kind, 1, site.x + 10 + (i % 5) * 5, site.z - 10 + Math.floor(i / 5) * 4);
           }

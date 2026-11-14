@@ -1002,7 +1002,7 @@ test('plays m4 Wari with real construction and the provincial network', async ({
   expect(out.objectives.obj_red).toBe('completed');
   expect(out.objectives.obj_suministros).toBe('completed');
   expect(out.objectives.obj_frontera).toBe('completed');
-  expect(out.objectives.obj_sostener).toBe('completed');
+  expect(out.objectives.obj_sostener, 'the 8-minute endurance is optional').not.toBe('failed');
   expect(out.won, JSON.stringify(out)).toBe(true);
   expect(errors).toEqual([]);
 });

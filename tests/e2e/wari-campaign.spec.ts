@@ -78,6 +78,7 @@ test('m4 network and frontier complete the mission without a battle', async ({ p
     const m = g.mission;
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
+    const redBefore = m.getObjectiveState('obj_red') as string;
     const center = g.playerCenter(0);
     g.spawnScriptedBuilding('farm', 0, center.x + 8, center.z + 8);
     g.spawnScriptedBuilding('farm', 0, center.x - 8, center.z + 8);
@@ -98,10 +99,13 @@ test('m4 network and frontier complete the mission without a battle', async ({ p
       }
     };
     step(2);
+    const redAfter = m.getObjectiveState('obj_red') as string;
     const networkState = m.getObjectiveState('obj_red') as string;
     const frontier = m.getObjectiveState('obj_frontera') as string;
     step(500);
     return {
+      redBefore,
+      redAfter,
       network: networkState,
       frontierActive: frontier,
       frontierDone: m.getObjectiveState('obj_frontera') as string,
@@ -110,6 +114,8 @@ test('m4 network and frontier complete the mission without a battle', async ({ p
       won: m.won as boolean | null,
     };
   });
+  expect(out.redBefore, 'the network waits for Act I').toBe('pendiente');
+  expect(out.redAfter, 'the network activates after Act I').not.toBe('pendiente');
   expect(out.network).toBe('completed');
   expect(out.frontierActive).toBe('activo');
   expect(out.frontierDone).toBe('completed');

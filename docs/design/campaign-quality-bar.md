@@ -144,6 +144,7 @@ Reviewed 2026-11-14 as a model mission. The human art gate is still open.
 | History     | Met                  | `docs/historia/campanas/moche_recuay.md` with its certainty table; no invented ruler or single battle; frontier pressure and elite exchange are attested.                                    |
 | Identity    | Met                  | The valley, the canal and the huacas: water as power, the plaza under Recuay pressure and the elite exchange.                                                                                |
 | Terrain     | Met                  | 256 m authored coastal heightfield (`mocheHeightmap.ts`) with painted ground: Pacific shore, irrigated valley and Huacas terrace.                                                            |
+| Site        | Met (exception)      | No construction phases: the huacas are a living ceremonial centre, not a monument the player builds; recorded in `moche-model-mission.md`.                                                 |
 | Play        | Met                  | `campaign-playtest.spec.ts` moves real units, opens the gate and exchanges silver; `moche-campaign.spec.ts` clicks the canal and Huaca de la Luna actions.                                    |
 | Contract    | Met                  | Three acts (canal, hold, exchange) with hidden goals revealed by triggers, optional 400 silver and chapter cards with images.                                                                |
 | Onboarding  | Met                  | Four-step Moche tutorial, briefing, Codex and minimap pips.                                                                                                                                  |
@@ -168,6 +169,7 @@ Reviewed 2026-11-14 as a model mission. The human art gate is still open.
 | History     | Met                  | `docs/historia/campanas/wari_tiahuanaco.md` with its certainty table; no invented war or ruler.                                                                                              |
 | Identity    | Met                  | The network of andenes, roads and provincial centres, and the frontier of influence against Tiahuanaco.                                                                                      |
 | Terrain     | Met                  | 256 m authored highland heightfield (`wariHeightmap.ts`) with painted ground: basin, terraces, quebradas and ridges.                                                                         |
+| Site        | Met (exception)      | No construction phases: the complex is the operating capital, not a monument the player builds; recorded in `wari-model-mission.md`.                                                       |
 | Play        | Met                  | `campaign-playtest.spec.ts` builds the farms and markets with real commands and reaches victory from the documented opening stock; `wari-campaign.spec.ts` covers roads, network and frontier. |
 | Contract    | Met                  | Three acts (supplies/andenes, network, frontier) with hidden goals revealed by triggers, optional third centre and chapter cards.                                                            |
 | Onboarding  | Met                  | Non-blocking tutorial, briefing, Codex and minimap pips.                                                                                                                                     |
@@ -183,7 +185,35 @@ Reviewed 2026-11-14 as a model mission. The human art gate is still open.
 | Performance | Met                  | `bench_scene.mjs`: opening ~421k tris / 199 calls, frontier ~494k / 342; within the recorded first-pass caps.                                                                                |
 | Scale       | Met                  | 256 m map, 128² painted ground over 256 m and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                                |
 
-## Campaign III playable status
+## Applying it to m2–m9
+
+Follow [`model-mission-pattern.md`](./model-mission-pattern.md) and its checklist. For each mission, first
+link the dossier claim to the mechanic, then implement the mechanic, then the UX and tests. Do not copy Caral's `gather + build + survive`
+sequence: use the gate table to find the mission's own historical problem. A campaign
+with no documented battle must not acquire one merely to fit the RTS template.
+
+## Campaign II playable status (m5–m6)
+
+Campaign II is released as **playable** with the historical mechanics, onboarding, real-command
+victory paths, dedicated decor GLBs and save round-trips covered. It is not yet a full gold master
+because the visual evidence is still local (review captures), although the HUD layout now has a CI
+geometry gate (`tests/e2e/hud-layout.spec.ts`).
+
+| Gate        | m5 Yahuar Pampa                                                                                                               | m6 Chimú–Inca                                                                                                                 |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| History     | Met: `yahuar_pampa.md`; no invented battle.                                                                                   | Met: `chimu_inca.md`; water/canal campaign.                                                                                   |
+| Identity    | Met: defend Cusco, protect Cusi, counterattack.                                                                               | Met: advance to Paramonga, close the gate and force surrender.                                                                 |
+| Terrain     | Met: authored Yahuar Pampa heightfield.                                                                                       | Met: authored Chimú coastal heightfield.                                                                                      |
+| Play        | Met: real-command playtest holds and counterattacks.                                                                          | Met: real-command playtest advances, reaches the gate and closes it.                                                          |
+| Contract    | Met: defend, destroy, protect; waves and timer.                                                                               | Met: staged Paramonga/`canal_closed` objectives; operable gate; optional Chan Chan/hold.                                      |
+| Onboarding  | Met: three-step tutorial + briefing.                                                                                          | Met: four-step tutorial + briefing.                                                                                           |
+| Closure     | Met: epilogue and optional achievements.                                                                                      | Met: epilogue and optional objectives.                                                                                        |
+| UX          | Met: briefing reviewed in the browser; `hud-layout.spec.ts` checks the panels at 1280×720 (Caral also at 1600×900/1920×1080). | Met: briefing reviewed in the browser; `hud-layout.spec.ts` checks the panels at 1280×720 (Caral also at 1600×900/1920×1080). |
+| Visuals     | Met locally: authored Chanca site GLB + heightfield.                                                                          | Met locally: authored Chimú site GLB + heightfield + canal.                                                                   |
+| Persistence | Met: save/load round-trip.                                                                                                    | Met: save/load round-trip.                                                                                                    |
+| Tests       | Met: data, completability, real-command playtest.                                                                             | Met: data, completability, real-command playtest.                                                                             |
+| Docs        | Met: README, dossiers, campaign experiences and this table.                                                                   | Met: README, dossiers, campaign experiences and this table.                                                                   |
+
 ## Campaign III playable status (m7)
 
 Campaign III is released as **playable** with the documented arc, onboarding, real-command victory path,
