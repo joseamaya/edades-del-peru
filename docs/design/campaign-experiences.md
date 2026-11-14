@@ -81,13 +81,13 @@ enemy. The feria uses the game's `Mercado` building as an abstraction and says s
 | m5 Yahuar Pampa        | Defence of Cusco                         | Hold Cusco, protect Cusi Yupanqui, counter-attack | Resist vs sortie                   | Survival or fall                       |
 | m6 Chimú–Inca          | Water as power                           | Advance, cut the canal, force surrender           | Assault vs siege                   | Chan Chan capitulates                  |
 | m6b Guerra Civil Inca  | Dynastic war and division                | Advance to Quipaipan, defeat Huáscar              | Advance vs consolidate             | Atahualpa wins; the empire is weakened |
-| m7 Túpac Amaru         | Rebellion and repression                 | Sustain communities, choose assault or siege      | Explicit counterfactual            | Defeat and legacy                      |
+| m7 Túpac Amaru         | Rebellion, the failed siege and memory   | Muster supplies, win at Sangarará, withdraw       | Prepare vs. withdraw               | Defeat, execution and legacy           |
 | m8 Independencia       | Campaign logistics and coordination      | Move, take the royalist centre, hold              | Timing and concentration           | Patriotic victory                      |
 | m9 Guerra del Pacífico | The documented defence and fall of Arica  | Refuse the summons, mine the approaches, hold the battery | Prepare vs. hold the last line    | The plaza falls; the defence becomes a symbol |
 
-m2–m9 are implemented and released across the five chapters. m7 remains a declared counterfactual licence;
-m9 now plays the documented fall of Arica — its victory is the tactical fulfilment of the defence, not a
-change of the outcome. Each mission remains reviewed against its dossier before it is rewritten.
+m2–m9 are implemented and released across the five chapters. m7 and m9 now play their documented outcomes;
+no released mission wins with an undeclared counterfactual. Each mission remains reviewed against its dossier
+before it is rewritten.
 
 ## Unique units in the campaign
 

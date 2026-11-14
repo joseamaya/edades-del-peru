@@ -75,7 +75,9 @@ for (const mis of COMPLETABLE_MISSIONS) {
                     ? (g.siteCenter ?? centerOf(0))
                     : node.ref === 'player'
                       ? centerOf(0)
-                      : { x: 0, z: 0 };
+                      : node.ref === 'departure'
+                        ? (g.departureSite ?? centerOf(0))
+                        : { x: 0, z: 0 };
                 const bx = base.x + node.dx;
                 const bz = base.z + node.dz;
                 const have = [...g.buildings.values()].some(
@@ -115,7 +117,9 @@ for (const mis of COMPLETABLE_MISSIONS) {
                           ? (g.landmark?.position ?? centerOf(0))
                           : o.pos.ref === 'site'
                             ? (g.siteCenter ?? g.siteAnchor ?? centerOf(0))
-                            : { x: 0, z: 0 };
+                            : o.pos.ref === 'departure'
+                              ? (g.departureSite ?? centerOf(0))
+                              : { x: 0, z: 0 };
                 const tp = { x: base.x + o.pos.dx, z: base.z + o.pos.dz };
                 const u = [...g.units.values()].find((unit: any) => unit.owner === 0 && !unit.dead) as any;
                 if (u) u.pos.set(tp.x, g.terrain.getHeight(tp.x, tp.z), tp.z);
@@ -147,7 +151,9 @@ for (const mis of COMPLETABLE_MISSIONS) {
                         ? (g.landmark?.position ?? centerOf(0))
                         : o.pos.ref === 'site'
                           ? (g.siteCenter ?? g.siteAnchor ?? centerOf(0))
-                          : { x: 0, z: 0 };
+                          : o.pos.ref === 'departure'
+                            ? (g.departureSite ?? centerOf(0))
+                            : { x: 0, z: 0 };
               const tp = { x: base.x + o.pos.dx, z: base.z + o.pos.dz };
               for (const u of g.units.values()) {
                 if (u.owner === 0 && !u.dead && (!o.entityTag || u.tag === o.entityTag)) {
@@ -169,7 +175,9 @@ for (const mis of COMPLETABLE_MISSIONS) {
                         ? (g.landmark?.position ?? centerOf(0))
                         : o.pos.ref === 'site'
                           ? (g.siteCenter ?? g.siteAnchor ?? centerOf(0))
-                          : { x: 0, z: 0 };
+                          : o.pos.ref === 'departure'
+                            ? (g.departureSite ?? centerOf(0))
+                            : { x: 0, z: 0 };
               const tp = { x: base.x + o.pos.dx, z: base.z + o.pos.dz };
               // A hold can require a cohort (Lima's siege needs 6 units), not just one.
               const holders = [...g.units.values()]
@@ -195,7 +203,9 @@ for (const mis of COMPLETABLE_MISSIONS) {
                           ? (g.landmark?.position ?? centerOf(0))
                           : o.pos.ref === 'site'
                             ? (g.siteCenter ?? g.siteAnchor ?? centerOf(0))
-                            : { x: 0, z: 0 };
+                            : o.pos.ref === 'departure'
+                              ? (g.departureSite ?? centerOf(0))
+                              : { x: 0, z: 0 };
                 bx = base.x + o.pos.dx;
                 bz = base.z + o.pos.dz;
               } else {

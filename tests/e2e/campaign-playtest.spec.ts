@@ -12,12 +12,10 @@ const CARAL_ACTS_III_IV = [
 ] as const;
 
 /**
- * A bounded campaign playtest that does not satisfy objectives directly.
- * It issues ordinary gather commands to the player's workers and lets the
- * economy and the enemy AI run; the enemy must keep producing units while the
- * player's gatherers bring resources home.
+ * A bounded campaign playtest that does not satisfy objectives directly: it issues ordinary gather
+ * commands to the player's workers and lets the mission run, so the economy works without cheats.
  */
-test('plays m7 with real gathering and enemy AI without objective cheats', async ({ page }) => {
+test('plays m7 with real gathering and no objective cheats', async ({ page }) => {
   test.setTimeout(120_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
@@ -62,16 +60,11 @@ test('plays m7 with real gathering and enemy AI without objective cheats', async
       t += dt;
     }
 
-    const enemyWorkers = [...g.units.values()].filter(
-      (u: any) => u.owner === 1 && u.kind === 'worker' && !u.dead,
-    ) as any[];
     return {
       before,
       after: { ...g.players[0].resources },
       workers: workers.length,
-      enemyWorkers: enemyWorkers.length,
-      enemyWorking: enemyWorkers.some((u: any) => u.orderQueue.some((o: any) => o.kind === 'gather')),
-      enemyCreated: g.players[1].stats.created as number,
+      cuartel: g.mission.getObjectiveState('a1_cuartel') as string,
       ended: g.mission.ended as boolean,
       won: g.mission.won as boolean | null,
     };
@@ -79,16 +72,14 @@ test('plays m7 with real gathering and enemy AI without objective cheats', async
 
   expect(out.workers).toBeGreaterThan(0);
   expect(out.after.wood, 'the player economy did not gather wood').toBeGreaterThan(out.before.wood);
-  expect(out.enemyWorkers, 'the AI lost its economy').toBeGreaterThan(0);
-  expect(out.enemyWorking, 'the AI did not assign gatherers').toBe(true);
-  expect(out.enemyCreated, 'the AI did not train units').toBeGreaterThanOrEqual(1);
+  expect(out.cuartel, 'the mission advanced without meeting its goals').toBe('activo');
   expect(out.ended).toBe(false);
   expect(out.won).toBe(null);
   expect(errors).toEqual([]);
 });
 
-test('plays m7 by assaulting the realista command post with real orders', async ({ page }) => {
-  test.setTimeout(120_000);
+test('plays m7 by winning at Sangarará and withdrawing from the Cusco siege', async ({ page }) => {
+  test.setTimeout(300_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/?mission=m7_tupac_amaru&seed=777&fog=0&low=1&noloop=1');
@@ -100,29 +91,94 @@ test('plays m7 by assaulting the realista command post with real orders', async 
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
     const m = g.mission;
-    const enemy = [...g.buildings.values()].find((b: any) => b.owner === 1 && b.kind === 'center' && !b.dead) as any;
-    const attackers = [...g.units.values()]
-      .filter((u: any) => u.owner === 0 && !u.dead && u.tag !== 'tupac_amaru')
-      .map((u: any) => u.id);
-    g.executeCommand(
-      { kind: 'order', unitIds: attackers, order: { kind: 'attack', entityId: enemy.id }, clear: true },
-      false,
-    );
     const dt = 1 / 60;
     let t = 0;
-    for (let i = 0; i < Math.ceil(620 / dt) && !m.ended; i++) {
+    const dismissCard = () => document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+    const order = (ids: number[], x: number, z: number) =>
+      g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'move', target: { x, z } }, clear: true }, false);
+    const own = (kind?: string) =>
+      [...g.units.values()].filter((u: any) => u.owner === 0 && !u.dead && (!kind || u.kind === kind)) as any[];
+    const base = g.playerCenter(0) as { x: number; z: number };
+    const sangarara = m.getObjectiveAnchor('a2_sangarara') as { x: number; z: number };
+    const siege = m.getObjectiveAnchor('a3_cerco') as { x: number; z: number };
+    const departure = m.getObjectiveAnchor('a3_retirada') as { x: number; z: number };
+
+    // Two workers raise the barracks; the rest stay at the camp for the supply work turn.
+    const workers = own('worker');
+    const builders = workers.slice(-2).map((u) => u.id);
+    let barracks: any = null;
+    for (const [ox, oz] of [
+      [14, 0],
+      [-14, 0],
+      [0, 14],
+      [0, -14],
+      [12, 12],
+      [-12, -12],
+    ]) {
+      const spot = g.findFreeSpot(base.x + ox, base.z + oz, 2);
+      if (spot && g.executeCommand({ kind: 'place', building: 'barracks', x: spot.x, z: spot.z }, false)) {
+        barracks = [...g.buildings.values()]
+          .filter((b: any) => b.owner === 0 && b.kind === 'barracks' && !b.dead)
+          .sort((a: any, b: any) => b.id - a.id)[0];
+        break;
+      }
+    }
+    if (barracks) {
+      g.executeCommand(
+        { kind: 'order', unitIds: builders, order: { kind: 'build', entityId: barracks.id }, clear: true },
+        false,
+      );
+    }
+
+    for (let i = 0; i < Math.ceil(600 / dt) && !m.ended; i++) {
+      if (i % 15 === 0) dismissCard();
+      if (i % Math.ceil(4 / dt) === 0) {
+        const army = own()
+          .filter((u) => u.kind !== 'worker' && u.tag !== 'tupac_amaru')
+          .map((u) => u.id);
+        const hero = own().find((u) => u.tag === 'tupac_amaru');
+        if (m.getObjectiveState('a3_retirada') === 'activo') {
+          // The relief breaks the siege: only reaching the departure with Túpac wins.
+          if (hero) order([hero.id], departure.x, departure.z);
+          if (army.length) order(army, departure.x, departure.z);
+        } else {
+          if (hero) order([hero.id], base.x, base.z);
+          if (m.getObjectiveState('a3_sostener') === 'activo' || m.getObjectiveState('a3_cerco') === 'activo') {
+            if (army.length) order(army, siege.x, siege.z);
+          } else if (
+            m.getObjectiveState('a2_batalla') === 'activo' ||
+            m.getObjectiveState('a2_sangarara') === 'activo'
+          ) {
+            if (army.length) order(army, sangarara.x, sangarara.z);
+          }
+        }
+      }
       g.update(dt, t);
       t += dt;
     }
     return {
-      asaltar: m.getObjectiveState('obj_asaltar') as string,
-      tupac: m.getObjectiveState('obj_tupac') as string,
+      minutes: Math.round(t / 6) / 10,
+      defenders: own().length,
+      hold: m.getObjectiveProgress('a3_sostener'),
+      positions: own()
+        .filter((u) => u.kind !== 'worker')
+        .map((u) => ({ x: Math.round(u.pos.x), z: Math.round(u.pos.z) })),
+      objectives: Object.fromEntries(m.def.objectives.map((o: any) => [o.id, m.getObjectiveState(o.id)])),
+      ended: m.ended as boolean,
       won: m.won as boolean | null,
     };
   });
-  expect(out.asaltar).toBe('completed');
-  expect(out.tupac).not.toBe('failed');
-  expect(out.won).toBe(true);
+  test.info().annotations.push({ type: 'm7-bot', description: `${out.minutes} min` });
+  expect(out.objectives.a1_cuartel, JSON.stringify(out)).toBe('completed');
+  expect(out.objectives.a1_avituallamiento, JSON.stringify(out)).toBe('completed');
+  expect(out.objectives.a2_sangarara, JSON.stringify(out)).toBe('completed');
+  expect(out.objectives.a2_batalla, JSON.stringify(out)).toBe('completed');
+  expect(out.objectives.a3_cerco, JSON.stringify(out)).toBe('completed');
+  expect(out.objectives.a3_sostener, JSON.stringify(out)).toBe('completed');
+  expect(out.objectives.a3_retirada, JSON.stringify(out)).toBe('completed');
+  expect(out.objectives.obj_tupac).not.toBe('failed');
+  expect(out.ended, JSON.stringify(out)).toBe(true);
+  expect(out.won, JSON.stringify(out)).toBe(true);
   expect(errors).toEqual([]);
 });
 
