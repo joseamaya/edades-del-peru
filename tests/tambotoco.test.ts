@@ -78,6 +78,10 @@ describe('Los hijos de Tambotoco', () => {
   });
 
   it('makes water the lever and the foundation the goal', () => {
+    // Opening the acequia makes the valley ayllus yield, so Act IV is not fought next to their base.
+    const water = TAMBOTOCO.triggers.find((t) => t.id === 't_acequia')!;
+    expect(water.condition).toEqual({ type: 'objective', objectiveId: 'a3_acequia', state: 'completed' });
+    expect(water.effects.some((fx) => fx.type === 'truce')).toBe(true);
     expect(TAMBOTOCO.objectives.find((o) => o.id === 'a3_acequia')!.kind).toBe('canal_open');
     expect(TAMBOTOCO.layout?.canal?.heritageId).toBe('tambotoco_acequia');
     expect(TAMBOTOCO.layout?.canal?.lockedUntilObjective).toBe('a3_acequia');

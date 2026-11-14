@@ -317,7 +317,12 @@ export type TriggerEffect =
   | { type: 'objective'; objectiveId: string; state: 'activate' | 'complete' | 'fail'; announce?: boolean }
   | { type: 'camera'; pos: MissionPoint }
   | { type: 'victory' }
-  | { type: 'defeat'; text: string };
+  | { type: 'defeat'; text: string }
+  /**
+   * The AI side yields (Tambotoco: the alcabizas cede once the water is taken): it joins the player's
+   * team, its AI stops campaigning and its warriors return home. Re-applied on load.
+   */
+  | { type: 'truce'; owner?: number };
 
 export interface TriggerDef {
   id: string;

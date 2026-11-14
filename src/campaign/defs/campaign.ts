@@ -1685,6 +1685,15 @@ export const MISSIONS: MissionDef[] = [
         id: 't_acequia',
         condition: { type: 'objective', objectiveId: 'a3_acequia', state: 'completed' },
         effects: [
+          // The documented leverage (Sarmiento): without the water the alcabizas cede their land. The valley
+          // ayllus stop fighting, so the foundation is built in peace rather than under a siege.
+          { type: 'truce' },
+          {
+            type: 'dialogue',
+            speaker: 'Memoria de los Ayar',
+            duration: 8,
+            text: 'Sin el agua de la acequia, los alcabizas ceden sus tierras. Los ayllus del valle bajan las armas y vuelven a sus aldeas.',
+          },
           {
             type: 'act',
             kicker: 'Acto IV · La fundación',

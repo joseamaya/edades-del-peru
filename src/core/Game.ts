@@ -1927,6 +1927,26 @@ export class Game {
     return true;
   }
 
+  /**
+   * A campaign side yields: it joins the player's team (teams decide every target), its AI controller
+   * stops, and its warriors drop their orders and return to their centre. `restored` (after a load)
+   * only re-applies the alliance.
+   */
+  declareTruce(owner: number, restored = false): void {
+    const side = this.players[owner];
+    const player = this.players[0];
+    if (!side || !player || owner === 0) return;
+    side.team = player.team;
+    this.ais = this.ais.filter((ai) => ai.playerId !== owner);
+    if (restored) return;
+    const home = this.playerCenter(owner);
+    for (const u of this.units.values()) {
+      if (u.owner !== owner || u.dead || u.kind === UnitKind.WORKER) continue;
+      u.orderQueue.length = 0;
+      u.issueOrder({ kind: OrderKind.MOVE, target: { x: home.x, z: home.z } });
+    }
+  }
+
   /** Attach an AI controller to a player (AI-vs-AI runs/tests). */
   addAI(playerId: number, difficulty?: Difficulty): void {
     this.ais.push(new AI(this, playerId, difficulty));

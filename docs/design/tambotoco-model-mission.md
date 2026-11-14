@@ -23,6 +23,11 @@ history.
 | III · El agua   | Cusco valley            | Open the acequia to force the alcabizas to cede land | Water as political leverage (Sarmiento)                         |
 | IV · Inticancha | Cusco valley            | Build the communal store and lay out four canchas    | The ayllu settlement becomes the future Cusco                   |
 
+Opening the acequia is the documented leverage made mechanical: its trigger fires a `truce` effect, so the
+valley ayllus join the player's team, their AI stops campaigning and their warriors return home. Without it
+the AI base, 45 m from Inticancha, razed the communal store and the cancha houses and Act IV could not be
+finished. The truce is re-applied on load.
+
 Optional: keep Ayar Manco alive and visit the hualla village. Victory = Inticancha founded and four canchas
 built.
 
