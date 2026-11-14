@@ -229,9 +229,10 @@ describe('campaign educational content', () => {
     ).toBe(true);
     // Acts: the summons beat, the sappers' work turn, the bombardment and the final line.
     expect(m9.objectives.some((o) => o.id === 'a1_parlamento' && o.kind === 'wait')).toBe(true);
-    expect(m9.objectives.some((o) => o.id === 'a1_minas' && o.kind === 'hold' && o.unitKind === UnitKind.WORKER)).toBe(
-      true,
-    );
+    const minas = m9.objectives.find((o) => o.id === 'a1_minas')!;
+    expect(minas.kind).toBe('hold');
+    expect(minas.unitKind).toBe(UnitKind.WORKER);
+    expect(minas.consume?.resource, 'the sappers work a costed turn').toBe('food');
     expect(m9.objectives.some((o) => o.id === 'a2_bombardeo' && o.kind === 'hold')).toBe(true);
     expect(m9.objectives.some((o) => o.id === 'a3_asalto' && o.kind === 'hold')).toBe(true);
     expect(m9.triggers.some((t) => t.effects.some((fx) => fx.type === 'act'))).toBe(true);

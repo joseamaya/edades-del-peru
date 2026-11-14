@@ -71,7 +71,9 @@ oficiales (Ministerio de Cultura, UNESCO, Marina de Guerra del Perú) y enciclop
 - Marina de Guerra del Perú: [Combate de Angamos](https://marina.mil.pe/info/combate-de-angamos/).
 - Armada de Chile: [Batalla Naval de Angamos](https://www.armada.cl/).
 - BBC Mundo (2022). *Batalla de Angamos: por qué Perú conmemora todos los años una derrota*.
-- Wikipedia: [Guerra del Pacífico](https://es.wikipedia.org/wiki/Guerra_del_Pac%C3%ADfico).
+- Sater, W. (2007). *Andean Tragedy: Fighting the War of the Pacific, 1879–1884*.
+- Vicuña Mackenna, B. (1881). *Historia de la campaña de Tacna y Arica*.
+- Wikipedia: [Guerra del Pacífico](https://es.wikipedia.org/wiki/Guerra_del_Pac%C3%ADfico), [Batalla de Arica](https://es.wikipedia.org/wiki/Batalla_de_Arica).
 
 ## Vestimenta, armamento y tocados
 

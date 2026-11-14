@@ -266,6 +266,69 @@ test('saves and loads the Wari network and frontier', async ({ page }) => {
   expect(after).toEqual(before);
 });
 
+test('saves and loads m9 during the bombardment', async ({ page }) => {
+  await page.goto('/?mission=m9_guerra_pacifico&seed=777&fog=0&low=1&intro=0');
+  await startMission(page);
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const before = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
+    const dt = 1 / 60;
+    let t = 0;
+    const step = () => {
+      g.update(dt, t);
+      t += dt;
+      document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+    };
+    // Act I -> Act II: the bombardment hold and Bolognesi's guard become active.
+    m.objState.set('a1_parlamento', 'completed');
+    step();
+    m.objState.set('a1_minas', 'completed');
+    step();
+    for (let i = 0; i < Math.ceil(8 / dt) && !m.ended; i++) step();
+    g.saveMatch();
+    return {
+      state: m.getObjectiveState('a2_bombardeo'),
+      bolognesi: m.getObjectiveState('a2_bolognesi'),
+      hold: m.getObjectiveProgress('a2_bombardeo'),
+      tutorialStep: g.tutorial?.toSave().stepId ?? null,
+    };
+  });
+  expect(before.state).toBe('activo');
+  expect(before.bolognesi).toBe('activo');
+  expect(before.hold?.current ?? 0).toBeGreaterThan(0);
+
+  await page.goto('/?load=1');
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const after = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    return {
+      state: g.mission.getObjectiveState('a2_bombardeo'),
+      bolognesi: g.mission.getObjectiveState('a2_bolognesi'),
+      hold: g.mission.getObjectiveProgress('a2_bombardeo'),
+      tutorialStep: g.tutorial?.toSave().stepId ?? null,
+    };
+  });
+  expect(after).toEqual(before);
+});
+
 test('saves and loads the later campaign missions', async ({ context }) => {
   test.setTimeout(180_000);
   for (const id of [

@@ -156,18 +156,18 @@ const TUTORIALS: Record<string, TutorialDef> = {
       },
       {
         id: 'parlamento',
-        text: 'El 5 de junio el parlamentario Salvo exigió la rendición. Bolognesi y sus jefes respondieron que defenderían la plaza: rechazar, minar y sostener es el deber de la misión.',
+        text: 'Los zapadores son obreros: no los mandes al combate. Su trabajo es minar los accesos antes del asalto.',
         highlight: '#ed-objectives',
         check: { type: 'elapsed', seconds: 12 },
       },
       {
         id: 'minas',
-        text: 'Los zapadores minan los accesos: lleva dos obreros a la marca y sostén el trabajo.',
+        text: 'Lleva dos obreros a la marca de las minas y sostén el trabajo hasta que esté listo.',
         check: { type: 'objectiveCompleted', objectiveId: 'a1_minas' },
       },
       {
         id: 'asalto',
-        text: 'La plaza cae al final del asalto. Sostén la última línea: la resistencia no cambia el desenlace, pero sí la memoria de Arica.',
+        text: 'Sostén la última línea con al menos cuatro unidades dentro de la marca y no dejes caer el fuerte.',
         highlight: '#ed-objectives',
         check: { type: 'objectiveCompleted', objectiveId: 'a3_asalto' },
       },
