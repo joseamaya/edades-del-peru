@@ -411,20 +411,41 @@ test('plays m5 by holding Cusco and counterattacking with real orders', async ({
     );
     const dt = 1 / 60;
     let t = 0;
+    const killBefore = m.getObjectiveState('obj_kill') as string;
     for (let i = 0; i < Math.ceil(620 / dt) && !m.ended; i++) {
+      if (g.hud.isMissionCardOpen()) document.querySelector<HTMLElement>('.ed-mission-card')?.click();
       g.update(dt, t);
       t += dt;
     }
+    // Act III: pursue the remnants toward Andahuaylas.
+    if (!m.ended && m.getObjectiveState('obj_persecucion') === 'activo') {
+      const target = m.getObjectiveAnchor('obj_persecucion') as { x: number; z: number };
+      const alive = [...g.units.values()].filter((u: any) => u.owner === 0 && !u.dead).map((u: any) => u.id);
+      g.executeCommand({ kind: 'order', unitIds: alive, order: { kind: 'move', target }, clear: true }, false);
+      for (let i = 0; i < Math.ceil(90 / dt) && !m.ended; i++) {
+        if (g.hud.isMissionCardOpen()) document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+        g.update(dt, t);
+        t += dt;
+      }
+    }
     return {
+      killBefore,
       defend: m.getObjectiveState('obj_defend') as string,
       kill: m.getObjectiveState('obj_kill') as string,
       cusi: m.getObjectiveState('obj_cusi') as string,
+      persecucion: m.getObjectiveState('obj_persecucion') as string,
+      mapSize: g.settings.mapSize,
+      site: g.siteDef?.id,
       won: m.won as boolean | null,
     };
   });
+  expect(out.killBefore, 'the counterattack waits for the siege').toBe('pendiente');
   expect(out.defend).toBe('completed');
   expect(out.kill).toBe('completed');
   expect(out.cusi).not.toBe('failed');
+  expect(out.persecucion).toBe('completed');
+  expect(out.mapSize, 'the model mission runs on 256 m').toBe(256);
+  expect(out.site).toBe('chanca_site');
   expect(out.won).toBe(true);
   expect(errors).toEqual([]);
 });

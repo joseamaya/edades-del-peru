@@ -40,6 +40,7 @@ describe('model-mission scale', () => {
       'm3_moche_recuay',
       'm4_wari',
       'm_tambotoco',
+      'm5_yahuar_pampa',
       'm_lima',
       'm7_tupac_amaru',
       'm_junta_cusco',

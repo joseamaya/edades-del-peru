@@ -562,20 +562,23 @@ export class Mission {
       this.game.hud.showDialogue(cmd?.name ?? label, text, duration, cmd?.id);
       return;
     }
+    // Speakers are written as `Nombre: —texto`; an explicit prefix wins over the mission narrator, so a
+    // named line keeps its (stylized) portrait instead of being attributed to the narrator.
+    const match = text.match(/^\s*([^:\n]{2,40}):\s/);
+    if (match) {
+      const speaker = match[1]!.trim();
+      const cmd = commanderFor(speaker);
+      // A named speaker who is not a portrait commander (Señor de Moche, General patriota) still labels the
+      // box; keeping the prefix in the text read as «Comandante: Señor de Moche: —…».
+      this.game.hud.showDialogue(cmd?.name ?? speaker, text.slice(match[0].length), duration, cmd?.id);
+      return;
+    }
     const narrator = this.def.narrator;
     if (narrator) {
       this.game.hud.showDialogue(narrator, text, duration);
       return;
     }
-    // Speakers are written as `Nombre: —texto`; resolve a known commander so the
-    // dialogue box can show their (stylized) portrait and drop the redundant prefix.
-    const match = text.match(/^\s*([^:\n]{2,40}):\s/);
-    const speaker = match?.[1]?.trim();
-    const cmd = speaker ? commanderFor(speaker) : undefined;
-    // A named speaker who is not a portrait commander (Señor de Moche, General patriota) still labels the
-    // box; keeping the prefix in the text read as «Comandante: Señor de Moche: —…».
-    const body = match ? text.slice(match[0].length) : text;
-    this.game.hud.showDialogue(cmd?.name ?? speaker ?? 'Comandante', body, duration, cmd?.id);
+    this.game.hud.showDialogue('Comandante', text, duration);
   }
 
   private win(): void {

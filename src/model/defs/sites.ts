@@ -46,7 +46,14 @@ import {
   WARI_HEIGHTMAP_WORLD_SIZE,
 } from './wariHeightmap';
 import { wariLength, wariPoint } from './wariSite';
-import { CHANCA_HEIGHTMAP, CHANCA_HEIGHTMAP_SIZE, CHANCA_HEIGHTMAP_WORLD_SIZE } from './chancaHeightmap';
+import {
+  CHANCA_GROUND,
+  CHANCA_GROUND_SIZE,
+  CHANCA_HEIGHTMAP,
+  CHANCA_HEIGHTMAP_SIZE,
+  CHANCA_HEIGHTMAP_WORLD_SIZE,
+} from './chancaHeightmap';
+import { chancaLength, chancaPoint } from './chancaSite';
 import { CHIMU_HEIGHTMAP, CHIMU_HEIGHTMAP_SIZE, CHIMU_HEIGHTMAP_WORLD_SIZE } from './chimuHeightmap';
 import {
   COLONIAL_GROUND,
@@ -639,27 +646,38 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     id: 'chanca_site',
     label: 'Pucará chanca de Yahuar Pampa',
     modelName: 'chanca_site',
-    scale: 0.7,
-    origin: { x: 112.4, z: 60.8 },
-    anchor: { x: 112.4, z: 60.8 },
-    cameraHeight: 48,
+    // The 160 m composition is scaled by 1.6 into the 256 m transect; the model, proxies and blockers
+    // scale with it so the pucará still covers its terrace.
+    scale: chancaLength(0.7),
+    origin: chancaPoint({ x: 112.4, z: 60.8 }),
+    anchor: chancaPoint({ x: 112.4, z: 60.8 }),
+    cameraHeight: chancaLength(48),
     framing: 'site-biased',
     heightField: {
       size: CHANCA_HEIGHTMAP_SIZE,
       worldSize: CHANCA_HEIGHTMAP_WORLD_SIZE,
       heights: CHANCA_HEIGHTMAP,
+      ground: { size: CHANCA_GROUND_SIZE, weights: CHANCA_GROUND },
     },
     pathCellSize: 1,
-    heritageProxies: [{ id: 'chanca_pucara', x: 112.4, z: 60.8, w: 11, d: 9, h: 5 }],
-    blockers: [{ x: 112.4, z: 60.8, w: 11, d: 9 }],
-    blockerPadding: 0.5,
+    heritageProxies: [
+      {
+        id: 'chanca_pucara',
+        ...chancaPoint({ x: 112.4, z: 60.8 }),
+        w: chancaLength(11),
+        d: chancaLength(9),
+        h: chancaLength(5),
+      },
+    ],
+    blockers: [{ ...chancaPoint({ x: 112.4, z: 60.8 }), w: chancaLength(11), d: chancaLength(9) }],
+    blockerPadding: chancaLength(0.5),
     buildKeepout: [{ x: 0.7025, z: 0.38, rx: 0.085, rz: 0.075 }],
     wallCollision: {
       // The ayllu kit owns its own merged geometry and blockers; the hidden GLB is no longer loaded.
       meshPatterns: [],
-      maxStartYAboveBase: 1.2,
+      maxStartYAboveBase: chancaLength(1.2),
     },
-    walkableCorridor: { width: 8 },
+    walkableCorridor: { width: chancaLength(8) },
     terrain: {
       ...DEFAULT_SITE_TERRAIN,
       flatNormals: true,

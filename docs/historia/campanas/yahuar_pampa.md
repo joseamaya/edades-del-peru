@@ -16,7 +16,19 @@
 - **Desenlace documentado**: victoria cusqueña; los chancas se rinden y luego se integran como aliados
   militares del Tahuantinsuyo. **Cusi Yupanqui** asume el poder como **Pachacútec** e inicia la expansión.
 - **Mapa**: `andes`.
-- **En el juego**: base fija en la pampa de Yahuar, alturas del Cusco y un pucará chanca decorativo. El epílogo retoma la integración chanca y el inicio del Tahuantinsuyo.
+- **En el juego**: base fija en la pampa de Yahuar, alturas del Cusco y un pucará chanca. Tres actos: I el asedio (defender el Cusco), II el contraataque al campamento chanca, III la persecución hacia Andahuaylas. El epílogo retoma la integración chanca y el inicio del Tahuantinsuyo.
+
+## Certeza
+
+| Afirmación | Certeza | Base |
+| --- | --- | --- |
+| La confederación chanca atacó el Cusco en 1438 | Documentado por las crónicas | Betanzos, Pachacuti Yamqui, tradición cusqueña |
+| Cusi Yupanqui organizó la defensa y venció | Documentado por las crónicas | Betanzos y la tradición inca |
+| Las cifras de ~40 000 chancas | Tradicional, no verificable | Crónicas |
+| Los pururaucas (guerreros de piedra) | Leyenda/tradición, no hecho atestiguado | Relato cusqueño |
+| Los chancas se rindieron y luego se integraron como aliados | Documentado | Fuentes coloniales |
+| Cusi Yupanqui asume como Pachacútec e inicia la expansión | Documentado | Tradición inca y arqueología |
+| Los actos, la defensa de 8 minutos y la persecución | Abstracción jugable | Este dossier y `docs/design/chanca-model-mission.md` |
 
 ## Fuentes
 

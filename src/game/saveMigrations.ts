@@ -47,6 +47,12 @@ const STEPS: Record<number, Step> = {
     if (settings?.missionId === 'm4_wari') return null;
     return { ...save, version: 8 };
   },
+  // v8 → v9 moved m5 from its 160 m map to the 256 m transect.
+  8: (save) => {
+    const settings = save.settings as { missionId?: unknown } | undefined;
+    if (settings?.missionId === 'm5_yahuar_pampa') return null;
+    return { ...save, version: 9 };
+  },
 };
 
 export type MigrationResult =

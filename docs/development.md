@@ -521,12 +521,12 @@ Definition of Done and the building audit see
   footprint no longer covers the Act IV departure marker. Other maps keep 1.1 m. This changes Caral
   pathing, so `REPLAY_VERSION` is 31; guarded by `tests/quarry-obstacle.test.ts`,
   `tests/props-kit.test.ts`, `tests/world-builder.test.ts` and the Caral E2E.
-- **Campaign map scale** (issues 472/474/480/482): m9 (Arica), m7 (Cusco), m3 (Moche) and m4 (Wari) moved
-  to 256 m painted transects. Their 192 m unit and camera coordinates cannot be carried over:
-  `SAVE_VERSION` 5 rejects v4 m9 saves, 6 rejects v5 m7 saves, 7 rejects v6 m3 saves and 8 rejects v7 m4
-  saves; `REPLAY_VERSION` is 32 (m9), 33 (m7), 34 (m3) and 35 (m4), which rejects every stored replay (the
-  version is global), not only that mission's. Guarded by `tests/save-migrations.test.ts`,
-  `tests/campaign-scale.test.ts` and the mission E2E specs.
+- **Campaign map scale** (issues 472/474/480/482/484): m9 (Arica), m7 (Cusco), m3 (Moche), m4 (Wari) and m5
+  (Yahuar Pampa, from 160 m) moved to 256 m painted transects. Their old unit and camera coordinates cannot
+  be carried over: `SAVE_VERSION` 5 rejects v4 m9 saves, 6 rejects v5 m7 saves, 7 rejects v6 m3 saves, 8
+  rejects v7 m4 saves and 9 rejects v8 m5 saves; `REPLAY_VERSION` is 32 (m9), 33 (m7), 34 (m3), 35 (m4) and
+  36 (m5), which rejects every stored replay (the version is global), not only that mission's. Guarded by
+  `tests/save-migrations.test.ts`, `tests/campaign-scale.test.ts` and the mission E2E specs.
 - **Caral late period** (issue 353): the Act IV drought is the late-period signal (`isLatePeriod` in
   `model/defs/sites.ts`; any drought level counts, because the event marks the start of the period), so it
   needs no save field of its own and a restored save rebuilds it from the environment state.

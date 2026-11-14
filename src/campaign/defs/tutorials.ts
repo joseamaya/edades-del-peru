@@ -249,6 +249,11 @@ const TUTORIALS: Record<string, TutorialDef> = {
         text: 'Cuando la defensa resista, contraataca y destruye el campamento chanca. Cusi Yupanqui debe seguir con vida.',
         check: { type: 'objectiveCompleted', objectiveId: 'obj_kill' },
       },
+      {
+        id: 'persecucion',
+        text: 'Persigue a los restos chancas hacia Andahuaylas: la victoria se cierra en el camino.',
+        check: { type: 'objectiveCompleted', objectiveId: 'obj_persecucion' },
+      },
     ],
   },
   m6_chimu_inca: {

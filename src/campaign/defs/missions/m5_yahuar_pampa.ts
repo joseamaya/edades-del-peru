@@ -1,5 +1,6 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
 import type { MissionDef } from '../../types';
+import { CHANCA_MAP_SIZE, chancaLength } from '../../../model/defs/chancaSite';
 
 export const m5YahuarPampa: MissionDef = {
   id: 'm5_yahuar_pampa',
@@ -14,9 +15,40 @@ export const m5YahuarPampa: MissionDef = {
   defeat: 'El Cusco cae ante los chancas y el imperio no llega a nacer.',
   period: HistoricalPeriod.LATE_HORIZON,
   tutorial: true,
+  modelMission: true,
+  narrator: 'Cusi Yupanqui',
+  intro: [
+    {
+      kicker: 'CUSCO · 1438',
+      title: 'La amenaza chanca',
+      text: 'La confederación Chanca, al mando de Anccu Hualloc, marcha sobre el Cusco. El inca Viracocha y su heredero huyen; el príncipe Cusi Yupanqui organiza la defensa.',
+      seconds: 9,
+      source: 'docs/historia/campanas/yahuar_pampa.md',
+      image: 'media/chanca/intro-cusco.webp',
+    },
+    {
+      kicker: 'YAHUAR PAMPA',
+      title: 'La pampa de sangre',
+      text: 'Cusi resiste con los cusqueños y sus aliados. La tradición de los pururaucas convierte la defensa en leyenda; el resultado documentado es la victoria cusqueña.',
+      seconds: 9,
+      source: 'docs/historia/campanas/yahuar_pampa.md',
+      image: 'media/chanca/intro-pampa.webp',
+    },
+    {
+      kicker: 'ANDAHUAYLAS',
+      title: 'El camino a Pachacútec',
+      text: 'Los chancas se rinden y luego se integran como aliados militares. Cusi Yupanqui asume el poder como Pachacútec e inicia la expansión del Tahuantinsuyo.',
+      seconds: 10,
+      source: 'docs/historia/campanas/yahuar_pampa.md',
+      image: 'media/chanca/intro-andahuaylas.webp',
+    },
+  ],
+  epilogueImage: 'media/chanca/intro-epilogo.webp',
   playerCiv: CivId.INCA,
   enemyCiv: CivId.CHANCA,
-  map: { seed: 1438, type: 'andes', size: 160 },
+  map: { seed: 1438, type: 'andes', size: CHANCA_MAP_SIZE },
+  // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.
+  unitSpeedScale: 0.75,
   layout: {
     base: { x: 0.36, z: 0.62 },
     enemyBase: { x: 0.7725, z: 0.38 },
@@ -40,15 +72,15 @@ export const m5YahuarPampa: MissionDef = {
   startingResources: { food: 700, wood: 600, silver: 400, stone: 200 },
   start: {
     buildings: [
-      { kind: BuildingKind.FORTRESS, dx: -9, dz: -7 },
-      { kind: BuildingKind.FORTRESS, dx: 9, dz: -7 },
-      { kind: BuildingKind.FORTRESS, dx: -9, dz: 7 },
-      { kind: BuildingKind.FORTRESS, dx: 9, dz: 7 },
+      { kind: BuildingKind.FORTRESS, dx: -chancaLength(9), dz: -chancaLength(7) },
+      { kind: BuildingKind.FORTRESS, dx: chancaLength(9), dz: -chancaLength(7) },
+      { kind: BuildingKind.FORTRESS, dx: -chancaLength(9), dz: chancaLength(7) },
+      { kind: BuildingKind.FORTRESS, dx: chancaLength(9), dz: chancaLength(7) },
     ],
     units: [
-      { kind: UnitKind.RIFLEMAN, dx: -8, dz: 8, tag: 'cusi_yupanqui', count: 1 },
-      { kind: UnitKind.SOLDIER, dx: -6, dz: 10, count: 6 },
-      { kind: UnitKind.MUSKETEER, dx: -10, dz: 10, count: 2 },
+      { kind: UnitKind.RIFLEMAN, dx: -chancaLength(8), dz: chancaLength(8), tag: 'cusi_yupanqui', count: 1 },
+      { kind: UnitKind.SOLDIER, dx: -chancaLength(6), dz: chancaLength(10), count: 6 },
+      { kind: UnitKind.MUSKETEER, dx: -chancaLength(10), dz: chancaLength(10), count: 2 },
     ],
   },
   mark: [
@@ -58,8 +90,24 @@ export const m5YahuarPampa: MissionDef = {
   enemy: { active: true, difficulty: 'hard', aggression: 1.3 },
   objectives: [
     { id: 'obj_defend', kind: 'defend', entityTag: 'cusco', time: 480, title: 'Defiende el Cusco 8 minutos' },
-    { id: 'obj_kill', kind: 'destroy', entityTag: 'centro_chanca', title: 'Destruye el campamento chanca' },
+    {
+      id: 'obj_kill',
+      kind: 'destroy',
+      entityTag: 'centro_chanca',
+      hidden: true,
+      requires: 'obj_defend',
+      title: 'Contraataca y destruye el campamento chanca',
+    },
     { id: 'obj_cusi', kind: 'protect', entityTag: 'cusi_yupanqui', title: 'Mantén con vida a Cusi Yupanqui' },
+    {
+      id: 'obj_persecucion',
+      kind: 'reach',
+      pos: { ref: 'site', dx: chancaLength(30), dz: chancaLength(10) },
+      radius: chancaLength(10),
+      hidden: true,
+      requires: 'obj_kill',
+      title: 'Persigue a los chancas hacia Andahuaylas',
+    },
   ],
   triggers: [
     {
@@ -67,8 +115,15 @@ export const m5YahuarPampa: MissionDef = {
       condition: { type: 'time', seconds: 15 },
       effects: [
         {
+          type: 'act',
+          kicker: 'Acto I · El asedio',
+          title: 'La pampa de sangre',
+          image: 'media/chanca/intro-cusco.webp',
+          text: 'Los chancas creen que huiremos como los nobles. Defiende el Cusco y sostén la pampa antes de pensar en el contraataque.',
+        },
+        {
           type: 'dialogue',
-          text: 'Cusi Yupanqui: —Los chancas creen que huiremos como los nobles. ¡Aquí se defiende el Cusco!',
+          text: 'Los chancas creen que huiremos como los nobles. ¡Aquí se defiende el Cusco!',
         },
       ],
     },
@@ -80,10 +135,42 @@ export const m5YahuarPampa: MissionDef = {
           type: 'wave',
           owner: 1,
           units: [{ kind: UnitKind.SOLDIER, count: 6 }],
-          pos: { ref: 'player', dx: 28, dz: 12 },
-          radius: 6,
+          pos: { ref: 'player', dx: chancaLength(28), dz: chancaLength(12) },
+          radius: chancaLength(6),
         },
         { type: 'dialogue', text: '¡Anccu Hualloc ataca por el norte! ¡A las armas!' },
+      ],
+    },
+    {
+      id: 't_defend',
+      condition: { type: 'objective', objectiveId: 'obj_defend', state: 'completed' },
+      effects: [
+        {
+          type: 'act',
+          kicker: 'Acto II · El contraataque',
+          title: 'Las alturas chancas',
+          image: 'media/chanca/intro-pampa.webp',
+          text: 'La pampa resiste. Es el momento de marchar a las alturas y destruir el campamento chanca.',
+        },
+        {
+          type: 'dialogue',
+          text: 'La pampa resiste. ¡Marcha a las alturas y destruye el campamento chanca!',
+        },
+        { type: 'objective', objectiveId: 'obj_kill', state: 'activate' },
+      ],
+    },
+    {
+      id: 't_kill',
+      condition: { type: 'objective', objectiveId: 'obj_kill', state: 'completed' },
+      effects: [
+        {
+          type: 'act',
+          kicker: 'Acto III · Andahuaylas',
+          title: 'El camino a Pachacútec',
+          image: 'media/chanca/intro-andahuaylas.webp',
+          text: 'El campamento ha caído. Persigue a los restos chancas hacia Andahuaylas: la victoria se cierra en el camino, y Cusi Yupanqui asumirá el poder como Pachacútec.',
+        },
+        { type: 'objective', objectiveId: 'obj_persecucion', state: 'activate' },
       ],
     },
     {
@@ -97,8 +184,8 @@ export const m5YahuarPampa: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 5 },
             { kind: UnitKind.MUSKETEER, count: 2 },
           ],
-          pos: { ref: 'player', dx: -12, dz: 28 },
-          radius: 6,
+          pos: { ref: 'player', dx: -chancaLength(12), dz: chancaLength(28) },
+          radius: chancaLength(6),
         },
       ],
     },

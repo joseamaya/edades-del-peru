@@ -694,6 +694,61 @@ test('saves and loads La Junta during the Umachiri resistance', async ({ page })
   expect(after).toEqual(before);
 });
 
+test('saves and loads m5 mid-siege', async ({ page }) => {
+  await page.goto('/?mission=m5_yahuar_pampa&seed=777&fog=0&low=1&intro=0');
+  await startMission(page);
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const before = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const dt = 1 / 60;
+    let t = 0;
+    for (let i = 0; i < Math.ceil(120 / dt) && !g.mission.ended; i++) {
+      document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+      g.update(dt, t);
+      t += dt;
+    }
+    g.saveMatch();
+    return {
+      defend: g.mission.getObjectiveProgress('obj_defend'),
+      counterattack: g.mission.getObjectiveState('obj_kill'),
+      cusi: g.mission.getObjectiveState('obj_cusi'),
+      tutorialStep: g.tutorial?.toSave().stepId ?? null,
+    };
+  });
+  expect(before.defend?.current ?? 0).toBeGreaterThan(60);
+  expect(before.counterattack).toBe('pendiente');
+
+  await page.goto('/?load=1');
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const after = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    return {
+      defend: g.mission.getObjectiveProgress('obj_defend'),
+      counterattack: g.mission.getObjectiveState('obj_kill'),
+      cusi: g.mission.getObjectiveState('obj_cusi'),
+      tutorialStep: g.tutorial?.toSave().stepId ?? null,
+    };
+  });
+  expect(after).toEqual(before);
+});
+
 test('saves and loads the later campaign missions', async ({ context }) => {
   test.setTimeout(180_000);
   for (const id of [
