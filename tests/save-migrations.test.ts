@@ -45,6 +45,13 @@ describe('save migrations', () => {
     expect(migrateSave(snapshot(SAVE_VERSION + 1)).status).toBe('too-new');
     expect(migrateSave({ nope: true }).status).toBe('invalid');
     expect(validateSave(snapshot(1))).toBeNull();
+    // m9 moved from 192 m to 256 m: its old coordinates are not honest to keep.
+    const oldM9 = snapshot(4);
+    oldM9.settings = { missionId: 'm9_guerra_pacifico', mapSize: 192 } as never;
+    expect(migrateSave(oldM9).status).toBe('too-old');
+    const other = snapshot(4);
+    other.settings = { missionId: 'm1_caral', mapSize: 256 } as never;
+    expect(migrateSave(other).status).toBe('migrated');
   });
 
   it('leaves a current save untouched', () => {

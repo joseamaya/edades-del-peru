@@ -1,15 +1,16 @@
 import { Era, CivId, HistoricalPeriod, UnitKind, BuildingKind } from '../../../core/types';
 import type { MissionDef } from '../../types';
 
-// The authored Arica heightfield: sea to the west, the port terrace at (73, 115) and the
-// battery site at (135, 73), with the Chilean camp on the northern approach.
-const ARICA_MAP_SIZE = 192;
-const ARICA_BASE_WORLD = { x: 73, z: 115 } as const;
+// The authored Arica heightfield: the 192 m composition (sea to the west, the port terrace, the battery
+// site and the northern Chilean camp) sampled 4/3 larger on the 256 m map.
+const ARICA_MAP_SIZE = 256;
+const ARICA_COMPOSITION_SCALE = 256 / 192;
+const ARICA_BASE_WORLD = { x: 73 * ARICA_COMPOSITION_SCALE, z: 115 * ARICA_COMPOSITION_SCALE } as const;
 const ARICA_BASE_ANCHOR = {
   x: ARICA_BASE_WORLD.x / ARICA_MAP_SIZE,
   z: ARICA_BASE_WORLD.z / ARICA_MAP_SIZE,
 } as const;
-const ARICA_MINES_WORLD = { dx: 92, dz: 104 } as const;
+const ARICA_MINES_WORLD = { dx: 92 * ARICA_COMPOSITION_SCALE, dz: 104 * ARICA_COMPOSITION_SCALE } as const;
 const ARICA_CAMP_ANCHOR = { x: 0.78, z: 0.22 } as const;
 
 export const m9GuerraPacifico: MissionDef = {
@@ -51,12 +52,14 @@ export const m9GuerraPacifico: MissionDef = {
       buildKeepout: [{ x: 0.702, z: 0.38, rx: 0.08, rz: 0.07 }],
     },
   },
-  mapOverrides: { culturalLandscape: null },
+  mapOverrides: { culturalLandscape: null, groundTint: '#e6cfa4' },
   timeOfDay: 'morning',
   startingEra: Era.REPUBLIC,
+  // 256 m / (2.4 m/s × 0.75) ≈ 2:22, the model-mission crossing band.
+  unitSpeedScale: 0.75,
   startingResources: { food: 1500, wood: 800, silver: 1500, stone: 1200 },
   start: {
-    buildings: [{ kind: BuildingKind.FORTRESS, dx: -10, dz: -6, tag: 'puerto' }],
+    buildings: [{ kind: BuildingKind.FORTRESS, dx: -13.3, dz: -8, tag: 'puerto' }],
     units: [
       { kind: UnitKind.WORKER, dx: 4, dz: 6, count: 3 },
       { kind: UnitKind.RIFLEMAN, dx: 6, dz: 2, count: 1, tag: 'bolognesi' },
@@ -67,6 +70,34 @@ export const m9GuerraPacifico: MissionDef = {
   },
   enemy: { active: true, difficulty: 'normal', aggression: 0.35 },
   tutorial: true,
+  modelMission: true,
+  intro: [
+    {
+      kicker: 'ARICA · 5 DE JUNIO DE 1880',
+      title: 'El parlamento',
+      text: 'El parlamento de Juan de la Cruz Salvo exige la rendición de la plaza. Bolognesi consulta a sus jefes y responde que defenderán Arica hasta quemar el último cartucho.',
+      seconds: 9,
+      source: 'docs/historia/campanas/guerra_del_pacifico.md',
+      image: 'media/arica/intro-plaza.webp',
+    },
+    {
+      kicker: 'LA BATERÍA · 7 DE JUNIO DE 1880',
+      title: 'El bombardeo',
+      text: 'Los zapadores de Elmore minan los accesos. La artillería chilena bate la plaza y la guarnición se aferra al fuerte y a la batería: la resistencia depende de sostener ambos.',
+      seconds: 9,
+      source: 'docs/historia/campanas/guerra_del_pacifico.md',
+      image: 'media/arica/intro-bateria.webp',
+    },
+    {
+      kicker: 'EL ASALTO · 7 DE JUNIO DE 1880',
+      title: 'La plaza cae',
+      text: 'La infantería chilena asalta Arica. La plaza cae ese día y Bolognesi muere en la defensa; la misión te pide cumplir la resistencia documentada, no cambiarla.',
+      seconds: 10,
+      source: 'docs/historia/campanas/guerra_del_pacifico.md',
+      image: 'media/arica/intro-asalto.webp',
+    },
+  ],
+  epilogueImage: 'media/arica/intro-epilogo.webp',
   allowedUnits: [
     UnitKind.WORKER,
     UnitKind.SOLDIER,
@@ -184,7 +215,7 @@ export const m9GuerraPacifico: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 4 },
             { kind: UnitKind.RIFLEMAN, count: 2 },
           ],
-          pos: { dx: 115, dz: 100 },
+          pos: { dx: 115 * ARICA_COMPOSITION_SCALE, dz: 100 * ARICA_COMPOSITION_SCALE },
           radius: 6,
           target: { dx: ARICA_BASE_WORLD.x, dz: ARICA_BASE_WORLD.z },
         },
@@ -223,7 +254,7 @@ export const m9GuerraPacifico: MissionDef = {
             { kind: UnitKind.RIFLEMAN, count: 2 },
             { kind: UnitKind.CHILE_INFANTE, count: 1 },
           ],
-          pos: { dx: 140, dz: 100 },
+          pos: { dx: 140 * ARICA_COMPOSITION_SCALE, dz: 100 * ARICA_COMPOSITION_SCALE },
           radius: 7,
           target: { dx: ARICA_BASE_WORLD.x, dz: ARICA_BASE_WORLD.z },
         },
@@ -234,7 +265,7 @@ export const m9GuerraPacifico: MissionDef = {
             { kind: UnitKind.SOLDIER, count: 4 },
             { kind: UnitKind.RIFLEMAN, count: 2 },
           ],
-          pos: { dx: 95, dz: 60 },
+          pos: { dx: 95 * ARICA_COMPOSITION_SCALE, dz: 60 * ARICA_COMPOSITION_SCALE },
           radius: 6,
           target: { dx: ARICA_BASE_WORLD.x, dz: ARICA_BASE_WORLD.z },
         },

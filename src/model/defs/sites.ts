@@ -40,7 +40,13 @@ import {
   INDEPENDENCE_HEIGHTMAP_SIZE,
   INDEPENDENCE_HEIGHTMAP_WORLD_SIZE,
 } from './independenceHeightmap';
-import { ARICA_HEIGHTMAP, ARICA_HEIGHTMAP_SIZE, ARICA_HEIGHTMAP_WORLD_SIZE } from './aricaHeightmap';
+import {
+  ARICA_GROUND,
+  ARICA_GROUND_SIZE,
+  ARICA_HEIGHTMAP,
+  ARICA_HEIGHTMAP_SIZE,
+  ARICA_HEIGHTMAP_WORLD_SIZE,
+} from './aricaHeightmap';
 import { CUSCO_HEIGHTMAP, CUSCO_HEIGHTMAP_SIZE, CUSCO_HEIGHTMAP_WORLD_SIZE } from './cuscoHeightmap';
 import {
   JUNTA_GROUND,
@@ -684,26 +690,45 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     id: 'arica_site',
     label: 'Terraza portuaria y batería de Arica',
     modelName: 'arica_site',
-    scale: 0.8,
-    origin: { x: 134.8, z: 73 },
-    anchor: { x: 134.8, z: 73 },
-    cameraHeight: 48,
+    // The 192 m composition is scaled by 4/3 into the 256 m transect; the model, proxies and blockers
+    // scale with it so the battery still covers its terrace.
+    scale: 0.8 * (256 / 192),
+    origin: { x: 134.8 * (256 / 192), z: 73 * (256 / 192) },
+    anchor: { x: 134.8 * (256 / 192), z: 73 * (256 / 192) },
+    cameraHeight: 64,
     framing: 'site-biased',
     heightField: {
       size: ARICA_HEIGHTMAP_SIZE,
       worldSize: ARICA_HEIGHTMAP_WORLD_SIZE,
       heights: ARICA_HEIGHTMAP,
+      ground: { size: ARICA_GROUND_SIZE, weights: ARICA_GROUND },
     },
     pathCellSize: 1,
-    heritageProxies: [{ id: 'arica_battery', x: 134.8, z: 73, w: 13, d: 9, h: 3 }],
-    blockers: [{ x: 134.8, z: 73, w: 13, d: 9 }],
+    heritageProxies: [
+      {
+        id: 'arica_battery',
+        x: 134.8 * (256 / 192),
+        z: 73 * (256 / 192),
+        w: 13 * (256 / 192),
+        d: 9 * (256 / 192),
+        h: 3 * (256 / 192),
+      },
+    ],
+    blockers: [
+      {
+        x: 134.8 * (256 / 192),
+        z: 73 * (256 / 192),
+        w: 13 * (256 / 192),
+        d: 9 * (256 / 192),
+      },
+    ],
     blockerPadding: 0.5,
     buildKeepout: [{ x: 0.702, z: 0.38, rx: 0.08, rz: 0.07 }],
     wallCollision: {
       meshPatterns: [/arica/i],
       maxStartYAboveBase: 1.2,
     },
-    walkableCorridor: { width: 8 },
+    walkableCorridor: { width: 8 * (256 / 192) },
     terrain: {
       ...DEFAULT_SITE_TERRAIN,
       flatNormals: true,

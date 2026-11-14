@@ -217,6 +217,13 @@ describe('campaign educational content', () => {
     // stack on top of it. Only the fort is authored.
     expect(m9.start.buildings?.some((b) => b.kind === BuildingKind.CENTER)).toBe(false);
     expect(m9.periodNote).toBeDefined();
+    // Model mission: 256 m, a three-beat in-engine intro and its own epilogue capture.
+    expect(m9.modelMission).toBe(true);
+    expect(m9.map.size).toBe(256);
+    expect(m9.unitSpeedScale).toBe(0.75);
+    expect(m9.intro?.length).toBe(3);
+    expect(m9.intro?.every((beat) => beat.image.startsWith('media/arica/'))).toBe(true);
+    expect(m9.epilogueImage).toContain('media/arica/');
     // The defence is played, but its outcome is not rewritten: the final line ends the mission and the
     // epilogue tells the fall. No victory objective keeps Bolognesi alive for the whole mission and none
     // asks to destroy the Chilean command.

@@ -82,6 +82,16 @@ const BUDGETS = {
   m_lima_late: { sceneTriangles: 1_100_000, sceneDrawCalls: 1_250, kitTriangles: 140_000, kitDrawCalls: 25 },
   // La Junta's opening army is large; a regression cap, still over §11's target.
   m_junta_cusco: { sceneTriangles: 780_000, sceneDrawCalls: 1000, kitTriangles: 0, kitDrawCalls: 0 },
+  // Arica opening on the 256 m terrace: the fort, the cuartel and the garrison. Measured ~535k / 600;
+  // first-pass cap with ~6 % headroom (the call count is over §11's 200 target, as Lima and the Junta).
+  m9_guerra_pacifico: { sceneTriangles: 570_000, sceneDrawCalls: 640, kitTriangles: 20_000, kitDrawCalls: 5 },
+  // The assault crowd at the battery: measured ~813k / 782; the fall is the heaviest view.
+  m9_guerra_pacifico_late: {
+    sceneTriangles: 860_000,
+    sceneDrawCalls: 840,
+    kitTriangles: 20_000,
+    kitDrawCalls: 5,
+  },
 };
 const KIT_NAMES = /^(trees_kit_|props_kit_|fauna_(deer|riparian_bird)_(body|leg|wingL|wingR)$)/;
 
@@ -101,6 +111,7 @@ try {
       if (id === 'm_junta_cusco') return !!g.landmark?.getObjectByName('colonial_site');
       if (id === 'm_tambotoco') return !!g.landmark?.getObjectByName('ayllu_site');
       if (id === 'm_lima') return !!g.landmark?.getObjectByName('colonial_site');
+      if (id === 'm9_guerra_pacifico') return !!g.landmark?.getObjectByName('arica_site');
       // Wait for every kit family the scene draws: a half-loaded batch measured a different scene.
       if (!g.trees?.hasKit?.('algarrobo') || !g.trees.hasKit('sauce')) return false;
       if (g.mapProfile?.quarryStyle && !g.quarries?.model) return false;

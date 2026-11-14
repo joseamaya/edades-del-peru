@@ -305,11 +305,14 @@ for (const { width, height, missions } of RESOLUTIONS) {
           const dr = rebuilt.getBoundingClientRect();
           const pr = panel.getBoundingClientRect();
           const rr = last?.getBoundingClientRect();
+          const maxScroll = Math.max(0, rebuilt.scrollHeight - rebuilt.clientHeight);
           return {
             fits,
             scrolled,
             rebuilt: rebuilt !== details,
-            scrollKept: scrolled === rebuilt.scrollTop,
+            // The summary/act counts can change the content height on the witness flip; preserving the
+            // position means reaching the same row, not an impossible offset past the new bottom.
+            scrollKept: rebuilt.scrollTop === Math.min(scrolled, maxScroll),
             open: rebuilt.open,
             summary: (rebuilt.querySelector('summary') as HTMLElement | null)?.textContent ?? '',
             rows: rows.length,
