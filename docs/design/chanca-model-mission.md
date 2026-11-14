@@ -16,13 +16,13 @@ close with the pursuit and the accession.
 
 ## Acts
 
-| Act                    | Place                | Player action                                                     | Historical idea                                                       |
-| ---------------------- | -------------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------- |
-| I · El asedio          | Yahuar Pampa         | Defend the Cusco centre for 8 minutes against the Chanca waves    | The defence of Cusco is the battle that founds the Tahuantinsuyo      |
-| II · El contraataque   | Chanca heights       | March on the pucará and destroy the Chanca camp                    | The counterattack breaks the confederation                            |
-| III · Andahuaylas      | Pursuit road         | Optional: pursue the Chanca remnants toward Andahuaylas           | The victory is followed by surrender, integration and Pachacútec      |
+| Act                  | Place          | Player action                                                       | Historical idea                                                  |
+| -------------------- | -------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| I · El asedio        | Yahuar Pampa   | Defend the Cusco centre for 8 minutes against the Chanca waves      | The defence of Cusco is the battle that founds the Tahuantinsuyo |
+| II · El contraataque | Chanca heights | March on the pucará and destroy the Chanca camp                     | The counterattack breaks the confederation                       |
+| III · Andahuaylas    | Pursuit road   | Pursue the Chanca remnants toward Andahuaylas and close the victory | The victory is followed by surrender, integration and Pachacútec |
 
-Optional: pursue the remnants. The epilogue narrates the Chanca integration and the start of the empire.
+The pursuit is the Act III closure. The epilogue narrates the Chanca integration and the start of the empire.
 
 ## Map
 
@@ -31,7 +31,8 @@ sampling the former **160 m** composition 1.6× larger:
 
 - **Cusco and the pampa** (west): the base, the four fortresses and the defending line.
 - **Chanca heights and pucará** (east): the authored `chanca_site`, the enemy camp and the approach pampa.
-- **Andahuaylas road** (far east): the optional pursuit point.
+- **Andahuaylas pursuit point** (far east): the destination that closes Act III. It is a reach point,
+  not an authored road.
 - **Andean ridges and the dry quebrada** frame the pampa.
 
 Painted ground uses `CHANCA_GROUND` (pampa grass, terrace dirt, quebrada sand, ridge rock) sampled at

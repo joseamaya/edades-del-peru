@@ -525,6 +525,7 @@ describe('campaign educational content', () => {
     const actTitles = m5.triggers.flatMap((t) => t.effects.flatMap((e) => (e.type === 'act' ? [e.title] : [])));
     expect(actTitles).toHaveLength(3);
     expect(actTitles[2]).toContain('Pachacútec');
+    expect(m5.objectives.find((o) => o.id === 'obj_persecucion')?.optional).toBeUndefined();
     const counterattack = m5.objectives.find((o) => o.id === 'obj_kill')!;
     expect(counterattack.hidden).toBe(true);
     expect(counterattack.requires).toBe('obj_defend');

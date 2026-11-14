@@ -87,7 +87,7 @@ const BUDGETS = {
   m3_moche_recuay: { sceneTriangles: 590_000, sceneDrawCalls: 372, kitTriangles: 12_000, kitDrawCalls: 4 },
   // Wari highland opening: the basin, the andenes and the complex. Measured ~421k / 199 (under §11's 200-call target).
   m4_wari: { sceneTriangles: 445_000, sceneDrawCalls: 211, kitTriangles: 0, kitDrawCalls: 0 },
-  // Yahuar Pampa opening: Cusco, the pampa and the Chanca heights. Measured ~680k / 354; over the 600k target.
+  // Yahuar Pampa opening: Cusco, the pampa and the Chanca heights. Measured ~682k / 362; over the 600k target.
   m5_yahuar_pampa: { sceneTriangles: 725_000, sceneDrawCalls: 378, kitTriangles: 0, kitDrawCalls: 0 },
   // Túpac Amaru opening on the 256 m valley: the camp, the chapel and the starting column. Measured
   // ~537k / 661–665; first-pass cap with ~6 % headroom (the call count is over art-direction §11's target).
@@ -96,7 +96,7 @@ const BUDGETS = {
   m3_moche_recuay_late: { sceneTriangles: 770_000, sceneDrawCalls: 600, kitTriangles: 12_000, kitDrawCalls: 4 },
   // The Wari frontier with its line and Tiahuanaco influence: measured ~494k / 342; first-pass cap.
   m4_wari_late: { sceneTriangles: 525_000, sceneDrawCalls: 365, kitTriangles: 0, kitDrawCalls: 0 },
-  // The Inca counterattack on the Chanca heights: measured ~761k / 517; over the 600k target.
+  // The Inca counterattack on the Chanca heights: measured ~761k / 521; over the 600k target.
   m5_yahuar_pampa_late: { sceneTriangles: 810_000, sceneDrawCalls: 548, kitTriangles: 0, kitDrawCalls: 0 },
   // The siege/retreat crowd at Cusco: measured ~811k / 1083; still over art-direction §11's 600k target.
   m7_tupac_amaru_late: { sceneTriangles: 860_000, sceneDrawCalls: 1_140, kitTriangles: 0, kitDrawCalls: 0 },
@@ -141,6 +141,7 @@ try {
         );
       }
       if (id === 'm5_yahuar_pampa') {
+        // The highland map draws primitive broad/needle trees, not a GLB kit: wait for the site and dressing.
         return (
           !!g.landmark?.getObjectByName('chanca_site') &&
           (g.settlementDressing ?? []).every((d) => d.attached !== false)
@@ -204,7 +205,8 @@ try {
         }
         const site = g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 });
         if (mission === 'm5_yahuar_pampa') {
-          // Act II: the Inca counterattack on the Chanca heights.
+          // Act II: the Inca counterattack on the Chanca heights. `musketeer` is the legacy ranged id
+          // (hondero in this era), not a firearm.
           for (let i = 0; i < 14; i++) {
             const kind = i % 4 === 0 ? 'rifleman' : 'soldier';
             g.spawnScriptedUnit(kind, 0, site.x - 15 + (i % 5) * 5, site.z + 10 + Math.floor(i / 5) * 4);

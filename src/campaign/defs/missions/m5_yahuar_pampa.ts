@@ -100,14 +100,13 @@ export const m5YahuarPampa: MissionDef = {
     },
     { id: 'obj_cusi', kind: 'protect', entityTag: 'cusi_yupanqui', title: 'Mantén con vida a Cusi Yupanqui' },
     {
-      id: 'bonus_persecucion',
+      id: 'obj_persecucion',
       kind: 'reach',
       pos: { ref: 'site', dx: chancaLength(30), dz: chancaLength(10) },
       radius: chancaLength(10),
-      optional: true,
       hidden: true,
       requires: 'obj_kill',
-      title: 'Persigue a los chancas hacia Andahuaylas (opcional)',
+      title: 'Persigue a los chancas hacia Andahuaylas',
     },
   ],
   triggers: [
@@ -119,7 +118,7 @@ export const m5YahuarPampa: MissionDef = {
           type: 'act',
           kicker: 'Acto I · El asedio',
           title: 'La pampa de sangre',
-          image: 'media/chanca/intro-pampa.webp',
+          image: 'media/chanca/intro-cusco.webp',
           text: 'Los chancas creen que huiremos como los nobles. Defiende el Cusco y sostén la pampa antes de pensar en el contraataque.',
         },
         {
@@ -150,7 +149,7 @@ export const m5YahuarPampa: MissionDef = {
           type: 'act',
           kicker: 'Acto II · El contraataque',
           title: 'Las alturas chancas',
-          image: 'media/chanca/intro-cusco.webp',
+          image: 'media/chanca/intro-pampa.webp',
           text: 'La pampa resiste. Es el momento de marchar a las alturas y destruir el campamento chanca.',
         },
         {
@@ -169,9 +168,9 @@ export const m5YahuarPampa: MissionDef = {
           kicker: 'Acto III · Andahuaylas',
           title: 'El camino a Pachacútec',
           image: 'media/chanca/intro-andahuaylas.webp',
-          text: 'El campamento ha caído. Los chancas se rinden y se integran; Cusi Yupanqui asume el poder como Pachacútec. La persecución es opcional.',
+          text: 'El campamento ha caído. Persigue a los restos chancas hacia Andahuaylas: la victoria se cierra en el camino, y Cusi Yupanqui asumirá el poder como Pachacútec.',
         },
-        { type: 'objective', objectiveId: 'bonus_persecucion', state: 'activate' },
+        { type: 'objective', objectiveId: 'obj_persecucion', state: 'activate' },
       ],
     },
     {

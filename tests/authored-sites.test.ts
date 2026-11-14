@@ -50,9 +50,9 @@ describe('authored campaign sites', () => {
 
   it('keeps Yahuar Pampa on its authored Chanca site and heightfield', () => {
     const site = getAuthoredSite('chanca_site')!;
-    expect(site.scale).toBeCloseTo(0.7 * CHANCA_COMPOSITION_SCALE, 3);
-    expect(site.anchor.x).toBeCloseTo(112.4 * CHANCA_COMPOSITION_SCALE, 3);
-    expect(site.anchor.z).toBeCloseTo(60.8 * CHANCA_COMPOSITION_SCALE, 3);
+    expect(site.scale).toBeCloseTo(0.7 * (256 / 160), 3);
+    expect(site.anchor.x).toBeCloseTo(112.4 * (256 / 160), 3);
+    expect(site.anchor.z).toBeCloseTo(60.8 * (256 / 160), 3);
     expect(site.heightField?.worldSize).toBe(256);
     expect(site.heightField?.ground?.size).toBe(128);
     expect(site.heightField?.ground?.weights.length).toBe(128 * 128 * 4);
