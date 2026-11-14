@@ -241,30 +241,37 @@ test('the chapter III tutorial opens with its first step', async ({ page }) => {
 
 test('an informational tutorial step advances on its own', async ({ page }) => {
   test.setTimeout(180_000);
-  await page.goto('/?mission=m7_tupac_amaru&seed=777&fog=0&low=1&intro=0');
-  const overlay = page.locator('.ed-overlay', { hasText: 'La Gran Rebelión' });
+  await page.goto('/?mission=m9_guerra_pacifico&seed=777&fog=0&low=1&intro=0');
+  const overlay = page.locator('.ed-overlay', { hasText: 'La Defensa de Arica' });
   await expect(overlay).toBeVisible({ timeout: 30_000 });
   await overlay.getByRole('button', { name: /COMENZAR MISIÓN/ }).click();
   await overlay.waitFor({ state: 'detached', timeout: 15_000 });
   const tutorial = page.locator('#ed-tutorial');
   await expect(tutorial).toContainText('Paso 1 /', { timeout: 60_000 });
 
-  // Select a rifleman to reach the informational choice step, then run the tutorial clock: the
-  // step advances by itself after 14 s of play without waiting for any order.
+  // Step 2 needs a rifleman next to the fort; step 3 is informational and advances on its own.
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     const rifle = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'rifleman' && !u.dead);
     g.selectUnits([rifle.id]);
   });
   await expect(tutorial).toContainText('Paso 2 /', { timeout: 20_000 });
-  await expect(tutorial).toContainText('Dos rutas de victoria');
+  await expect(tutorial).toContainText('El fuerte cubre el puerto');
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const rifle = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'rifleman' && !u.dead) as any;
+    const fort = [...g.buildings.values()].find((b: any) => b.tag === 'puerto') as any;
+    rifle.pos.set(fort.pos.x + 2, g.terrain.getHeight(fort.pos.x + 2, fort.pos.z), fort.pos.z + 2);
+  });
+  await expect(tutorial).toContainText('Paso 3 /', { timeout: 20_000 });
+  await expect(tutorial).toContainText('Los zapadores son obreros');
   await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     g.tutorial.update(15);
   });
-  await expect(tutorial).toContainText('Paso 3 /', { timeout: 5_000 });
-  await expect(tutorial).toContainText('caballería patriota');
+  await expect(tutorial).toContainText('Paso 4 /', { timeout: 5_000 });
+  await expect(tutorial).toContainText('Lleva dos obreros');
 });
 
 test('chapter IV tutorials open with their first step', async ({ page }) => {
@@ -798,43 +805,64 @@ test('m8 holds Junín and then Ayacucho with Sucre alive', async ({ page }) => {
   expect(out.won).toBe(true);
 });
 
-test('a strategic choice wins through either branch', async ({ page }) => {
-  const boot = async () => {
-    await page.goto('/?mission=m7_tupac_amaru&seed=777&fog=0&low=1&noloop=1');
-    await page.waitForFunction(() => (window as unknown as { game?: unknown }).game !== undefined, null, {
-      timeout: 30_000,
-    });
-  };
-
-  // branch A — assault: destroy the realista command post
-  await boot();
-  const assault = await page.evaluate(() => {
-    const g = (window as unknown as { game: any }).game;
-    g.loop.stop();
-    if (g.getPaused()) g.togglePause();
-    const before = g.mission.won as boolean | null;
-    for (const b of g.buildings.values()) if (b.owner !== 0 && b.tag === 'centro_realista') b.die();
-    g.update(1 / 60, 0);
-    return { before, after: g.mission.won as boolean | null };
+test('m7 wins at Sangarará and withdraws from Cusco', async ({ page }) => {
+  await page.goto('/?mission=m7_tupac_amaru&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
+    timeout: 30_000,
   });
-  expect(assault.before).not.toBe(true);
-  expect(assault.after).toBe(true);
-
-  // branch B — siege: hold out until the clock expires
-  await boot();
-  const siege = await page.evaluate(() => {
+  const out = await page.evaluate(() => {
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
     const m = g.mission;
-    const dt = 1 / 60;
-    for (let i = 0; i < Math.ceil(620 / dt) && !m.ended; i++) {
-      for (const u of g.units.values()) if (u.owner === 0 && !u.dead) u.hp = u.maxHp;
-      m.update(dt, i * dt);
-    }
-    return m.won as boolean | null;
+    const step = () => {
+      g.update(1 / 60, 0);
+      document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+    };
+    // Act I: barracks and supplies open the march to Tungasuca, and Tungasuca opens Sangarará.
+    m.objState.set('a1_cuartel', 'completed');
+    m.objState.set('a1_avituallamiento', 'completed');
+    step();
+    const tungasuca = m.getObjectiveState('a1_tungasuca') as string;
+    m.objState.set('a1_tungasuca', 'completed');
+    step();
+    const sangarara = m.getObjectiveState('a2_sangarara') as string;
+    m.objState.set('a2_sangarara', 'completed');
+    step();
+    const batalla = m.getObjectiveState('a2_batalla') as string;
+    m.objState.set('a2_batalla', 'completed');
+    step();
+    const cerco = m.getObjectiveState('a3_cerco') as string;
+    m.objState.set('a3_cerco', 'completed');
+    step();
+    const sostener = m.getObjectiveState('a3_sostener') as string;
+    m.objState.set('a3_sostener', 'completed');
+    step();
+    const retirada = m.getObjectiveState('a3_retirada') as string;
+    // The relief breaks the siege: only reaching the departure with Túpac wins.
+    const anchor = m.getObjectiveAnchor('a3_retirada') as { x: number; z: number };
+    const tupac = [...g.units.values()].find((u: any) => u.tag === 'tupac_amaru') as any;
+    tupac.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+    step();
+    return {
+      tungasuca,
+      sangarara,
+      batalla,
+      cerco,
+      sostener,
+      retirada,
+      ended: m.ended as boolean,
+      won: m.won as boolean | null,
+    };
   });
-  expect(siege).toBe(true);
+  expect(out.tungasuca).toBe('activo');
+  expect(out.sangarara).toBe('activo');
+  expect(out.batalla).toBe('activo');
+  expect(out.cerco).toBe('activo');
+  expect(out.sostener).toBe('activo');
+  expect(out.retirada).toBe('activo');
+  expect(out.ended).toBe(true);
+  expect(out.won).toBe(true);
 });
 
 test('the campaign hub shows preinca progress and its four missions', async ({ page }) => {

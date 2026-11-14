@@ -40,6 +40,16 @@ for (const mis of COMPLETABLE_MISSIONS) {
         return c ? { x: c.pos.x, z: c.pos.z } : { x: g.settings.mapSize / 2, z: g.settings.mapSize / 2 };
       };
 
+      const refPoint = (p: any): { x: number; z: number } => {
+        if (p.ref === 'enemy') return centerOf(1);
+        if (p.ref === 'player') return centerOf(0);
+        if (p.ref === 'canal') return g.canalSite ?? centerOf(0);
+        if (p.ref === 'landmark') return g.landmark?.position ?? centerOf(0);
+        if (p.ref === 'site') return g.siteCenter ?? g.siteAnchor ?? centerOf(0);
+        if (p.ref === 'departure') return g.departureSite ?? centerOf(0);
+        return { x: 0, z: 0 };
+      };
+
       const dt = 1 / 60;
       // the longest `survive`/`defend` timer is 600 s
       const maxSteps = Math.ceil(660 / dt);
@@ -70,12 +80,7 @@ for (const mis of COMPLETABLE_MISSIONS) {
               break;
             case 'network': {
               for (const node of o.nodes ?? []) {
-                const base =
-                  node.ref === 'site'
-                    ? (g.siteCenter ?? centerOf(0))
-                    : node.ref === 'player'
-                      ? centerOf(0)
-                      : { x: 0, z: 0 };
+                const base = refPoint(node);
                 const bx = base.x + node.dx;
                 const bz = base.z + node.dz;
                 const have = [...g.buildings.values()].some(
@@ -104,18 +109,7 @@ for (const mis of COMPLETABLE_MISSIONS) {
               break;
             case 'inspect': {
               if (o.pos) {
-                const base =
-                  o.pos.ref === 'enemy'
-                    ? centerOf(1)
-                    : o.pos.ref === 'player'
-                      ? centerOf(0)
-                      : o.pos.ref === 'canal'
-                        ? (g.canalSite ?? centerOf(0))
-                        : o.pos.ref === 'landmark'
-                          ? (g.landmark?.position ?? centerOf(0))
-                          : o.pos.ref === 'site'
-                            ? (g.siteCenter ?? g.siteAnchor ?? centerOf(0))
-                            : { x: 0, z: 0 };
+                const base = refPoint(o.pos!);
                 const tp = { x: base.x + o.pos.dx, z: base.z + o.pos.dz };
                 const u = [...g.units.values()].find((unit: any) => unit.owner === 0 && !unit.dead) as any;
                 if (u) u.pos.set(tp.x, g.terrain.getHeight(tp.x, tp.z), tp.z);
@@ -136,18 +130,7 @@ for (const mis of COMPLETABLE_MISSIONS) {
             }
             case 'reach': {
               if (!o.pos) break;
-              const base =
-                o.pos.ref === 'enemy'
-                  ? centerOf(1)
-                  : o.pos.ref === 'player'
-                    ? centerOf(0)
-                    : o.pos.ref === 'canal'
-                      ? (g.canalSite ?? centerOf(0))
-                      : o.pos.ref === 'landmark'
-                        ? (g.landmark?.position ?? centerOf(0))
-                        : o.pos.ref === 'site'
-                          ? (g.siteCenter ?? g.siteAnchor ?? centerOf(0))
-                          : { x: 0, z: 0 };
+              const base = refPoint(o.pos!);
               const tp = { x: base.x + o.pos.dx, z: base.z + o.pos.dz };
               for (const u of g.units.values()) {
                 if (u.owner === 0 && !u.dead && (!o.entityTag || u.tag === o.entityTag)) {
@@ -158,18 +141,7 @@ for (const mis of COMPLETABLE_MISSIONS) {
             }
             case 'hold': {
               if (!o.pos) break;
-              const base =
-                o.pos.ref === 'enemy'
-                  ? centerOf(1)
-                  : o.pos.ref === 'player'
-                    ? centerOf(0)
-                    : o.pos.ref === 'canal'
-                      ? (g.canalSite ?? centerOf(0))
-                      : o.pos.ref === 'landmark'
-                        ? (g.landmark?.position ?? centerOf(0))
-                        : o.pos.ref === 'site'
-                          ? (g.siteCenter ?? g.siteAnchor ?? centerOf(0))
-                          : { x: 0, z: 0 };
+              const base = refPoint(o.pos!);
               const tp = { x: base.x + o.pos.dx, z: base.z + o.pos.dz };
               // A hold can require a cohort (Lima's siege needs 6 units), not just one.
               const holders = [...g.units.values()]
@@ -184,18 +156,7 @@ for (const mis of COMPLETABLE_MISSIONS) {
               let bx: number;
               let bz: number;
               if (o.pos) {
-                const base =
-                  o.pos.ref === 'enemy'
-                    ? centerOf(1)
-                    : o.pos.ref === 'player'
-                      ? centerOf(0)
-                      : o.pos.ref === 'canal'
-                        ? (g.canalSite ?? centerOf(0))
-                        : o.pos.ref === 'landmark'
-                          ? (g.landmark?.position ?? centerOf(0))
-                          : o.pos.ref === 'site'
-                            ? (g.siteCenter ?? g.siteAnchor ?? centerOf(0))
-                            : { x: 0, z: 0 };
+                const base = refPoint(o.pos!);
                 bx = base.x + o.pos.dx;
                 bz = base.z + o.pos.dz;
               } else {

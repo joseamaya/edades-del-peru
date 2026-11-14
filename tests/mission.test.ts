@@ -550,3 +550,39 @@ describe('mission myth beats', () => {
     expect(calls.stones).toEqual([{ id: 'ayar_cachi', x: 70, z: 91, label: 'Huaca de Ayar Cachi' }]);
   });
 });
+
+describe('mission alternative branches', () => {
+  it('wins when one branch of a group completes and fails only when all branches fail', () => {
+    const unit = { id: 1, tag: 'guarda', owner: 0, dead: false, kind: UnitKind.WORKER };
+    let ended: boolean | null = null;
+    const winDef: MissionDef = {
+      ...def,
+      objectives: [
+        { id: 'a', kind: 'wait', time: 2, group: 'go', title: 'a' },
+        { id: 'b', kind: 'wait', time: 8, group: 'go', title: 'b' },
+      ],
+      triggers: [],
+    };
+    const winGame = stubGame({ ...unit });
+    const winMission = new Mission(winGame as any, winDef, (win) => (ended = win));
+    winMission.start();
+    winMission.update(2.1, 0);
+    expect(ended).toBe(true);
+
+    let lost: boolean | null = null;
+    const failDef: MissionDef = {
+      ...def,
+      objectives: [
+        { id: 'a', kind: 'protect', entityTag: 'guarda', group: 'go', title: 'a' },
+        { id: 'b', kind: 'protect', entityTag: 'guarda', group: 'go', title: 'b' },
+      ],
+      triggers: [],
+    };
+    const failGame = stubGame({ ...unit });
+    const failMission = new Mission(failGame as any, failDef, (win) => (lost = win));
+    failMission.start();
+    (failGame.units.get(1) as any).dead = true;
+    failMission.update(0.1, 0);
+    expect(lost).toBe(false);
+  });
+});

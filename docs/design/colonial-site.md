@@ -42,8 +42,26 @@ survey and **not** a historical photograph.
 - Tests: `tests/e2e/campaign.spec.ts`, `tests/authored-sites.test.ts`,
   `tests/e2e/campaign-playtest.spec.ts`.
 
+## Mission acts
+
+The mission follows the documented arc (1780–1781), not a counterfactual capture of Cusco:
+
+1. **Act I · Tinta–Tungasuca.** Micaela Bastidas musters the communities and their supplies at the
+   camp, the rebels raise a barracks and the player marches to Tungasuca; the capture of Arriaga is
+   narrated, not played.
+2. **Act II · Sangarará (18 November 1780).** The column marches to the Sangarará road, where the
+   royalists hold the town and its chapel. The player surrounds it and holds the field: it is the
+   campaign's documented victory.
+3. **Act III · the Cusco siege (January 1781).** The rebels occupy the slopes above the city and hold the
+   siege lines. The relief from Lima breaks the siege; the player must withdraw Túpac Amaru to the
+   departure point. The city is never taken; the epilogue tells the capture at Langui and the execution
+   of 18 May 1781.
+
+The colonial church is the Cusco plaza card; a smaller typological chapel anchors Sangarará on the road.
+The map compresses Tinta, Tungasuca, Sangarará and Cusco into one transect; the royalist waves are an
+abstraction of the documented actions, not a literal order of battle.
+
 ## Status
 
-The site, heightfield, collision, heritage card, real-command victory path and
-save/load path are implemented. Current captures are local review artifacts;
-there is no CI pixel gate.
+The site, heightfield, collision, heritage card, three-act documented path, no-cheat playtest and
+save/load path are implemented. Current captures are local review artifacts; there is no CI pixel gate.

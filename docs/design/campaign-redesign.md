@@ -39,7 +39,8 @@ These are not new; they are the project rules applied to a much larger cast.
   radiocarbon dating moves the expansion earlier (Ogburn 2012; Marsh et al. 2017). The UI writes «c.» and
   «según la cronología tradicional».
 - **Counterfactuals are explicit.** Where history lost (Cusco 1536, Vilcabamba 1572, 1781, 1815), the
-  mission's objective is to resist, delay or escape, or the counterfactual is declared, as m7 already does.
+  mission's objective is to resist, delay or escape (m7 and `m_junta_cusco`), or the counterfactual is
+  declared.
 - **Violence by ellipsis.** Massacres (Huarco, Yahuarcocha), executions (Atahualpa, Túpac Amaru I and II,
   Pumacahua) and violence against civilians (Concepción, Chorrillos) are never a rewarded mechanic; they are
   told in the epilogue or the Codex.
@@ -97,7 +98,7 @@ other side. It is not playable: a few hours' ambush and massacre gives no honest
 | 6 | **El último Inca**: Vilcabamba and Túpac Amaru I | 1572 | Túpac Amaru I vs Toledo | resist + escape | new |
 | 7 | **El bloqueo del Callao**: the Nassau fleet (L'Hermite), Drake 1579 prologue, the Lima wall (1684) epilogue | 1624 | Viceroyalty vs Dutch fleet | coastal defence | new — needs water/ships |
 | 8 | **El invencible**: Juan Santos Atahualpa in the central selva | 1742–1752 | Asháninka and Juan Santos vs frontier forts | siege, ambush, resistance | new — needs selva biome |
-| 9 | **La Gran Rebelión**: Túpac Amaru II | 1780–1781 | rebels vs royalists | as today (declared counterfactual) | **m7** |
+| 9 | **La Gran Rebelión**: Túpac Amaru II | 1780–1781 | rebels vs royalists | documented outcome (Sangarará, failed siege, retreat) | **m7** |
 
 Optional, by priority: **Después del mar** (1746 earthquake and tsunami, Real Felipe, Huarochirí 1750) as a
 10th mission between 7 and 8; Túpac Katari's siege of La Paz (1781) after m7; Hernández Girón (1554); a mita
@@ -174,7 +175,8 @@ The chapters cannot all be rebuilt at once, and every mission has to reach Caral
 order, one mission at a time through the model-mission pattern:
 
 1. **Fix the existing missions' facts**: m6 (Cápac Yupanqui), m5 (pururaucas as tradition), m8 split into
-   Junín and Ayacucho, m9 refocused on land with the naval interlude.
+   Junín and Ayacucho, m9 refocused on land with the naval interlude, m7 on Sangarará and the failed Cusco
+   siege.
 2. **Tahuantinsuyo 1, «Los hijos de Tambotoco»**: it opens the longest chapter and fixes the Leyenda label
    and framing for the whole game.
 3. **Tahuantinsuyo 4, «Cusco renacido»**: an economy mission that reuses Caral's construction phases.

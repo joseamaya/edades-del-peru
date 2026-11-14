@@ -101,7 +101,7 @@ The game teaches history while you play:
   «¿Sabías que…?» and its **sources** (collapsible).
 - **Guided tutorial**: Caral teaches selecting, building and exploring; later missions teach the
   offering/feria loop, the canal and provincial network, Inca defence and expansion, the colonial
-  assault-or-siege choice, and the Junín/Ayacucho and Arica defences (respecting _Mostrar consejos_).
+  muster and Sangarará, and the Junín/Ayacucho and Arica defences (respecting _Mostrar consejos_).
 - **Codex** (📖 in the menu): a browser of periods, civilizations and campaigns, with the **historical dossiers**
   from [`docs/historia/`](./docs/historia/) and their sources.
 

@@ -257,14 +257,51 @@ describe('campaign educational content', () => {
     expect(expand.radius ?? 0).toBeGreaterThan(0);
   });
 
-  it('offers a strategic choice: a mission wins through alternative branches', () => {
+  it('m7 plays the documented rebellion, not a counterfactual', () => {
     const amaru = MISSIONS.find((m) => m.id === 'm7_tupac_amaru')!;
-    const group = amaru.objectives.filter((o) => o.group === 'victoria');
-    expect(group.length).toBeGreaterThanOrEqual(2);
-    // a real choice: the branches are different kinds of objective
-    expect(new Set(group.map((o) => o.kind)).size).toBeGreaterThanOrEqual(2);
-    // and at least one objective stays required (the leader must survive)
-    expect(amaru.objectives.some((o) => !o.group)).toBe(true);
+    // The city is not taken: no victory objective destroys the Cusco centre or survives a clock.
+    expect(
+      amaru.objectives.some((o) => o.kind === 'destroy'),
+      'm7 wins by taking Cusco',
+    ).toBe(false);
+    expect(
+      amaru.objectives.some((o) => o.kind === 'survive'),
+      'm7 wins by holding a timer',
+    ).toBe(false);
+    expect(
+      amaru.objectives.some((o) => o.group),
+      'm7 still branches on a counterfactual',
+    ).toBe(false);
+    // Túpac is not a victory-gating protect; his death is an explicit scripted defeat.
+    expect(amaru.objectives.some((o) => o.kind === 'protect' && o.entityTag === 'tupac_amaru')).toBe(false);
+    expect(
+      amaru.triggers.some(
+        (t) =>
+          t.condition.type === 'entity_dead' &&
+          t.condition.entityTag === 'tupac_amaru' &&
+          t.effects.some((fx) => fx.type === 'defeat'),
+      ),
+      'Túpac dying must end the mission',
+    ).toBe(true);
+    // Acts: muster and supply, Tungasuca, Sangarará, the failed siege and the retreat.
+    expect(amaru.objectives.some((o) => o.id === 'a1_cuartel' && o.kind === 'build')).toBe(true);
+    expect(amaru.objectives.some((o) => o.id === 'a1_avituallamiento' && o.kind === 'hold')).toBe(true);
+    expect(amaru.objectives.some((o) => o.id === 'a1_tungasuca' && o.kind === 'reach')).toBe(true);
+    expect(amaru.objectives.some((o) => o.id === 'a2_batalla' && o.kind === 'hold')).toBe(true);
+    expect(amaru.objectives.some((o) => o.id === 'a3_sostener' && o.kind === 'hold')).toBe(true);
+    const retreat = amaru.objectives.find((o) => o.id === 'a3_retirada')!;
+    expect(retreat.kind).toBe('reach');
+    expect(retreat.entityTag).toBe('tupac_amaru');
+    expect(amaru.layout?.departure).toBeDefined();
+    expect(amaru.periodNote).toBeDefined();
+    expect(amaru.epilogueImage).toBeUndefined();
+    // 1780 rebels had no artillery train: the old roster's two cannon are gone.
+    expect(amaru.allowedUnits).not.toContain(UnitKind.ARTILLERY);
+    expect(amaru.victory).toMatch(/no toma la ciudad|retira/i);
+    expect(amaru.victory).not.toMatch(/centro realista cae/i);
+    const edu = getEducational(amaru.id)!;
+    expect(edu.epilogue).toContain('Sangarará');
+    expect(edu.context).toContain('Langui');
   });
 
   it('every objective group is a real choice (at least two members)', () => {

@@ -48,7 +48,7 @@ below, which record each mission's own review and are kept for history). **M** m
 | m6_chimu_inca      | P    | P     | M    | P     | M   | P    | M  | M   | M    | M     | P    | X      | X    | P   | X    | X     |
 | m6b_guerra_civil   | P    | P     | M    | M     | M   | P    | M  | P   | M    | M     | P    | X      | X    | P   | X    | X     |
 | m_lima             | M    | M     | P    | M     | M   | M    | M  | P   | P    | P     | P    | M      | M    | –   | P    | M     |
-| m7_tupac_amaru     | X    | P     | M    | P     | P   | X    | M  | P   | P    | P     | X    | X      | X    | X   | X    | X     |
+| m7_tupac_amaru     | M    | M     | M    | M     | M   | M    | M  | P   | M    | M     | M    | M      | X    | X   | X    | X     |
 | m_junta_cusco      | M    | M     | P    | M     | M   | M    | M  | P   | P    | P     | P    | M      | M    | –   | P    | M     |
 | m8_independencia   | P    | P     | P    | P     | M   | P    | M  | P   | P    | P     | X    | X      | X    | X   | X    | X     |
 | m9_guerra_pacifico | M    | M     | M    | M     | M   | M    | M  | X   | M    | M     | M    | M      | X    | X   | X    | X     |
@@ -56,9 +56,9 @@ below, which record each mission's own review and are kept for history). **M** m
 **Verdict.** **Caral meets every gate** (closed 2026-11-14: Act III card recaptured with the works camp; the
 camp pieces, vegetation, household props and fauna approved by a recorded human review). Chavín,
 Tambotoco, Lima and the Junta follow the model pattern and lack mostly art, a no-cheat playtest and a
-mid-mission save test. m3–m6b, m7 and m8 still use the pre-model template: no acts, intro, 256 m map or
-bench scene. m9 now has acts and a documented ending, but still lacks its own intro art, 256 m transect and
-bench scene.
+mid-mission save test. m3–m6b and m8 still use the pre-model template: no acts, intro, 256 m map or
+bench scene. m7 and m9 now have acts and a documented ending, but still lack their own intro art, 256 m
+transect and bench scene.
 
 **Fixed in this pass.** The closing trigger of the goal that wins a mission now fires (Tambotoco's founded
 Inticancha never appeared); waves can march on a `target` (Lima's siege and the Tambotoco valley wave stood at
@@ -66,13 +66,13 @@ their spawn); every authored start fits its population cap (Lima 31/22, Junta 38
 20/7); named speakers who are not portrait commanders label their dialogue («Comandante: Señor de Moche: —»);
 Wari offers no fortifications; Caral, Chavín, Tambotoco and m6b texts that promised something else; the m8
 playtest re-forms its line instead of racing a fixed budget; `yarn record` keeps one frames folder per run.
-m9 now plays the documented fall of Arica in three acts (the summons, the bombardment and the assault) and
-its no-cheat playtest is green.
+m9 now plays the documented fall of Arica in three acts (the summons, the bombardment and the assault)
+and its no-cheat playtest is green. m7 now plays Sangarará, the failed Cusco siege and the retreat, with its
+no-cheat playtest green.
 
 **Work order, highest value first.**
 
-1. **Invented outcomes:** m9 is fixed (2026-11-14). Rebuild m7 around Sangarará and the failed siege of Cusco
-   (L); it still wins by taking the city and borrows the Junta epilogue image.
+1. **Invented outcomes:** fixed for m9 (#468) and m7 (#469). Both play their documented outcomes now.
 2. **No-cheat playtests:** drop the HP pinning (`keepAlive`) from the Chavín, Tambotoco, Lima and Junta
    playtests (M).
 3. **Art review:** record the human review of Caral's camp pieces and the Chavín kit; recapture Caral's Act
@@ -196,25 +196,25 @@ geometry gate (`tests/e2e/hud-layout.spec.ts`).
 
 ## Campaign III playable status (m7)
 
-Campaign III is released as **playable** with the historical choice, onboarding, real-command
-victory path, dedicated decor GLB and save round-trip covered. It is not yet a full gold master
-because the visual evidence is still local (review captures), although the HUD layout now has a CI
-geometry gate (`tests/e2e/hud-layout.spec.ts`).
+Campaign III is released as **playable** with the documented arc, onboarding, real-command victory path,
+dedicated decor GLB and save round-trip covered. It is not yet a full gold master because the visual evidence
+is still local (review captures), although the HUD layout now has a CI geometry gate
+(`tests/e2e/hud-layout.spec.ts`).
 
 | Gate        | m7 Túpac Amaru                                                                                                                |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| History     | Met: `tupac_amaru.md`; rebellion, Sangarará and repression.                                                                   |
-| Identity    | Met: sustain the rebellion, protect Túpac Amaru, choose assault or siege.                                                     |
-| Play        | Met: real-command playtest assaults the realista command post.                                                                |
-| Contract    | Met: alternative assault/siege victory plus a required protect objective.                                                     |
+| History     | Met: `tupac_amaru.md`; Sangarará, the failed Cusco siege and repression, with a certainty table.                             |
+| Identity    | Met: muster and supplies, Tungasuca, Sangarará, the failed siege and the retreat.                                            |
+| Play        | Met: real-command playtest reaches the documented ending with ordinary orders and no cheats.                                  |
+| Contract    | Met: three acts with hidden objectives, a Sangarará hold and the retreat; Micaela is optional.                                |
 | Onboarding  | Met: six-step tutorial + briefing.                                                                                            |
 | Terrain     | Met: authored Cusco colonial heightfield.                                                                                     |
-| Closure     | Met: epilogue and optional objectives.                                                                                        |
+| Closure     | Met: the epilogue tells the capture at Langui, the execution of 18 May 1781 and the continuity to 1783.                       |
 | UX          | Met: briefing reviewed in the browser; `hud-layout.spec.ts` checks the panels at 1280×720 (Caral also at 1600×900/1920×1080). |
 | Visuals     | Met locally: authored colonial site GLB + heightfield.                                                                        |
-| Persistence | Met: save/load round-trip.                                                                                                    |
-| Tests       | Met: data, completability, branch choice and real-command playtest.                                                           |
-| Docs        | Met: README, dossier, campaign experiences and this table.                                                                    |
+| Persistence | Met: save/load round-trip (act state and hold timers).                                                                        |
+| Tests       | Met: data, acts, documented ending and real-command playtest.                                                                 |
+| Docs        | Met: dossier, site note, campaign experiences and this table.                                                                 |
 
 ## Campaign IV playable status (m8–m9)
 

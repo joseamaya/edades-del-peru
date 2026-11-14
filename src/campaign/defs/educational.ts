@@ -229,20 +229,25 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
   m7_tupac_amaru: {
     briefing:
       'Sur andino, 1780. Túpac Amaru II se alza contra el reparto, la mita y los obrajes del Virreinato. ' +
-      'Micaela Bastidas sostiene el avituallamiento. Elige asaltar el Cusco o resistir el cerco realista: ' +
-      'Túpac Amaru II debe sobrevivir.',
+      'Micaela Bastidas sostiene el avituallamiento. La campaña se juega como la rebelión la vivió: Sangarará ' +
+      'se gana, pero el cerco del Cusco fracasa y hay que retirarse. El epílogo cuenta la captura y la ejecución.',
     context:
       'Entre 1780 y 1781, José Gabriel Condorcanqui, Túpac Amaru II, se alzó contra las reformas borbónicas: ' +
-      'el reparto de mercancías, la mita minera y los obrajes. Decretó la abolición de la esclavitud y venció ' +
-      'en Sangarará. Su esposa Micaela Bastidas tuvo un papel central. Fue capturado y ejecutado en el Cusco en ' +
-      '1781; aunque la rebelión fue derrotada, abolió el reparto y los corregimientos y fue un antecedente de la ' +
-      'independencia.',
-    didYouKnow: 'Túpac Amaru II decretó la abolición de la esclavitud el 16 de noviembre de 1780.',
+      'el reparto de mercancías, la mita minera y los obrajes. Capturó y ejecutó al corregidor Arriaga, decretó ' +
+      'la abolición de la esclavitud y venció en Sangarará (18 de noviembre de 1780). El cerco del Cusco, en ' +
+      'enero de 1781, no tomó la ciudad; el socorro realista y la derrota de Checacupe/Combapata llevaron a la ' +
+      'captura en Langui. Túpac Amaru y Micaela Bastidas fueron ejecutados en el Cusco el 18 de mayo de 1781; ' +
+      'Diego Cristóbal Túpac Amaru mantuvo la rebelión hasta 1783. Se abolieron el reparto y los corregimientos.',
+    didYouKnow:
+      'Túpac Amaru II decretó la abolición de la esclavitud el 16 de noviembre de 1780. Mateo Pumacahua, que ' +
+      'combatió contra él en 1780, encabezaría la rebelión del Cusco en 1814.',
     epilogue:
-      'La rebelión fue derrotada y Túpac Amaru II fue ejecutado en el Cusco en 1781. Se abolieron el reparto ' +
-      'y los corregimientos, y la rebelión quedó como antecedente central del proceso de independencia.',
+      'Sangarará fue una victoria, pero el cerco del Cusco fracasó. Túpac Amaru II y Micaela Bastidas fueron ' +
+      'capturados y ejecutados en el Cusco el 18 de mayo de 1781; la rebelión continuó hasta 1783. El Virreinato ' +
+      'abolió el reparto y los corregimientos, y la Gran Rebelión quedó como antecedente central de la independencia.',
     sources: [
-      { text: "O'Phelan Godoy, S. (2021). La gran rebelión de Túpac Amaru II." },
+      { text: "O'Phelan Godoy, S. (2021). La gran rebelión de Túpac Amaru II y la temprana independencia del Perú." },
+      { text: 'Serulnikov, S. (2010). Revolution in the Andes: The Age of Túpac Amaru.' },
       {
         text: 'Wikipedia: Rebelión de Túpac Amaru II',
         url: 'https://es.wikipedia.org/wiki/Rebeli%C3%B3n_de_T%C3%BApac_Amaru_II',
