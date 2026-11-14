@@ -15,7 +15,7 @@
     "LOD0": 5000,
     "LOD1": 1500
   },
-  "reviewed": false,
+  "reviewed": true,
   "lods": {
     "LOD0": {
       "triangles": 564,
@@ -71,5 +71,7 @@
       "file": "caral_shicra_stack_lod1.glb",
       "bytes": 11596
     }
-  }
+  },
+  "reviewer": "Miguel Amaya",
+  "reviewedAt": "2026-11-14T13:13:16.000Z"
 }

@@ -39,7 +39,7 @@ below, which record each mission's own review and are kept for history). **M** m
 
 | Mission            | Hist | Ident | Play | Contr | Onb | Clos | UX | Vis | Pers | Tests | Docs | Struct | Open | Art | Perf | Scale |
 | ------------------ | ---- | ----- | ---- | ----- | --- | ---- | -- | --- | ---- | ----- | ---- | ------ | ---- | --- | ---- | ----- |
-| m1_caral           | M    | M     | M    | M     | M   | M    | M  | P   | M    | M     | M    | M      | M    | P   | M    | M     |
+| m1_caral           | M    | M     | M    | M     | M   | M    | M  | M   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m2_chavin          | M    | M     | P    | M     | M   | M    | M  | P   | M    | P     | P    | M      | M    | X   | M    | M     |
 | m3_moche_recuay    | P    | M     | P    | P     | P   | P    | M  | P   | M    | P     | P    | X      | X    | X   | X    | X     |
 | m4_wari            | P    | M     | M    | P     | P   | P    | M  | P   | M    | P     | P    | X      | X    | X   | X    | X     |
@@ -53,8 +53,8 @@ below, which record each mission's own review and are kept for history). **M** m
 | m8_independencia   | P    | P     | P    | P     | M   | P    | M  | P   | P    | P     | X    | X      | X    | X   | X    | X     |
 | m9_guerra_pacifico | X    | P     | X    | P     | M   | X    | M  | X   | P    | X     | X    | X      | X    | X   | X    | X     |
 
-**Verdict.** No mission meets every gate yet. Caral is one step away (the Act III chapter card predates the
-camp, and five camp kit pieces plus vegetation and props still await a recorded human art review). Chavín,
+**Verdict.** **Caral meets every gate** (closed 2026-11-14: Act III card recaptured with the works camp; the
+camp pieces, vegetation, household props and fauna approved by a recorded human review). Chavín,
 Tambotoco, Lima and the Junta follow the model pattern and lack mostly art, a no-cheat playtest and a
 mid-mission save test. m3–m6b, m7, m8 and m9 still use the pre-model template: no acts, intro, 256 m map or
 bench scene.
@@ -81,7 +81,7 @@ playtest re-forms its line instead of racing a fixed budget; `yarn record` keeps
 
 ## Caral gold-master status
 
-Reviewed 2026-11-07 after the four-act rebuild (design and status: [`caral-model-mission.md`](./caral-model-mission.md)).
+Reviewed 2026-11-07 after the four-act rebuild and closed 2026-11-14 (design and status: [`caral-model-mission.md`](./caral-model-mission.md)).
 
 | Gate        | Status | Evidence                                                                                                                                                                                                                                                                                           |
 | ----------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -98,7 +98,7 @@ Reviewed 2026-11-07 after the four-act rebuild (design and status: [`caral-model
 | Docs        | Met    | Dossier, `caral-model-mission.md`, `model-mission-pattern.md`, PROVENANCE aligned.                                                                                                                                                                                                                 |
 | Structure   | Met    | Four acts: Áspero, the valley, the Sacred City, the drought; chapter cards with images.                                                                                                                                                                                                            |
 | Opening     | Met    | Three-beat narrated intro; briefing with Áspero's capture; act and epilogue images from `scripts/capture_caral_intro.mjs`.                                                                                                                                                                         |
-| Art         | Met    | Architecture kit and captures approved by human review on 2026-11-07 (`reviewer`/`reviewedAt` in the manifests, PROVENANCE).                                                                                                                                                                       |
+| Art         | Met    | City kit and captures approved by human review on 2026-11-07; camp pieces, vegetation, props and fauna on 2026-11-14 (`reviewer`/`reviewedAt` in every manifest, PROVENANCE).                                                                                                                                                                       |
 | Performance | Met    | `bench_scene.mjs` re-run 2026-11-09: opening 331,766 tris / 205 calls; late 581,611 / 262; within the 400k / 600k budgets.                                                                                                                                                                         |
 | Scale       | Met    | 256 m map, painted ground every 2 m (128 over 256) and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                                                                                                                             |
 

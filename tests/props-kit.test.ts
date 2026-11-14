@@ -102,9 +102,12 @@ const ALL_MATERIALS = ['MAT-Arch_Stone', 'MAT-Arch_Wood', 'MAT-Arch_CaneMat', 'M
 describe.each(PIECES)('Caral prop kit: $id', (piece: Piece) => {
   const manifest = manifestOf(piece.id);
 
-  it('records the budget, the unreviewed gate and its certainty', () => {
+  it('records the budget, the review gate and its certainty', () => {
     expect(manifest.asset_id).toBe(`caral_${piece.id}`);
-    expect(manifest.reviewed).toBe(false);
+    // The Blender script exports every piece unreviewed; a human approval records who and when.
+    expect(manifest.reviewed, piece.id).toBe(true);
+    expect(manifest.reviewer, piece.id).toBeTruthy();
+    expect(Number.isNaN(Date.parse(manifest.reviewedAt ?? '')), piece.id).toBe(false);
     expect(manifest.confidence).toBe(piece.confidence);
     expect(manifest.budget).toEqual({ LOD0: piece.budget[0], LOD1: piece.budget[1] });
     expect(manifest.lods.LOD0.triangles).toBeLessThanOrEqual(piece.budget[0]);

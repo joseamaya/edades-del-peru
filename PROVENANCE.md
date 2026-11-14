@@ -170,7 +170,9 @@ slot is absent (offline / without assets).
   dry riverside ground and bird flocks that lift and settle over the water's edge. Visual only.
 - **Confidence**: deer and birds in the Supe riparian forest are documented (Shady, in
   `docs/historia/campanas/caral.md`); the bird species is not named there, so the model is a generic
-  small bird. Shapes are stylized.
+  small bird. Shapes are stylized. Manifests record it: the deer `documented`, the bird `inferred`.
+- **Review**: approved by a human review on 2026-11-14 (Miguel Amaya; `reviewer` and `reviewedAt` in each
+  manifest), checked in game rather than as raw exports, since the game assembles and animates the parts.
 
 ### Caral architecture kit (the Sacred City in use)
 
@@ -247,9 +249,10 @@ slot is absent (offline / without assets).
   the set stone left visible at the foot of each terrace (a reading aid; the documented walls are
   plastered), roofs, the net rack and the tent's frame and cover are assumed. No scaffolding is modelled because none is attested. The models are artistic
   reconstructions, not surveys. The original city pieces were exported `reviewed: false` and approved by a
-  human review on 2026-11-07 (Miguel Amaya; `reviewer` and `reviewedAt` in each manifest). The three camp
-  pieces are new and ship `reviewed: false` until a human review records `reviewer` and `reviewedAt`; a
-  rebuild exports every piece unreviewed again.
+  human review on 2026-11-07 (Miguel Amaya; `reviewer` and `reviewedAt` in each manifest). The camp pieces
+  (shelter, first-phase small pyramid, shicra stack, stone yard, survey stakes) were approved by a human
+  review on 2026-11-14 (Miguel Amaya), together with the vegetation and household props; a rebuild exports
+  every piece unreviewed again.
 
 ### Caral prop kit (quarries and household goods)
 

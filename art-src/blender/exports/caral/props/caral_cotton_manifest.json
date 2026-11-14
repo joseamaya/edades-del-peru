@@ -15,7 +15,7 @@
     "LOD0": 400,
     "LOD1": 120
   },
-  "reviewed": false,
+  "reviewed": true,
   "lods": {
     "LOD0": {
       "triangles": 168,
@@ -73,5 +73,7 @@
       "file": "caral_cotton_lod1.glb",
       "bytes": 10728
     }
-  }
+  },
+  "reviewer": "Miguel Amaya",
+  "reviewedAt": "2026-11-14T13:13:16.000Z"
 }

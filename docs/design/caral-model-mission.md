@@ -288,7 +288,8 @@ bench runs without ground cover).
    shown on its own, and an empty storehouse does not pause construction.~~ Done: the `ritual` effect
    stages the burial between phases and the `hold.consume` work turns pause when the communal store is empty.
 5. ~~Human review of the new art~~ Done: the architecture kit and the intro and menu captures were
-   approved on 2026-11-07.
+   approved on 2026-11-07; the works-camp pieces, vegetation, household props and fauna on 2026-11-14,
+   when the Act III card was recaptured with the camp. With that, m1 meets every gate of the quality bar.
 6. The other campaigns follow this pattern later; the m9 scripted playtest is known to fail meanwhile.
 
 ## Certainty labelling

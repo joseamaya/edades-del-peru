@@ -15,7 +15,7 @@
     "LOD0": 600,
     "LOD1": 180
   },
-  "reviewed": false,
+  "reviewed": true,
   "lods": {
     "LOD0": {
       "triangles": 316,
@@ -71,5 +71,7 @@
       "file": "caral_hearth_lod1.glb",
       "bytes": 15996
     }
-  }
+  },
+  "reviewer": "Miguel Amaya",
+  "reviewedAt": "2026-11-14T13:13:16.000Z"
 }
