@@ -147,6 +147,9 @@ export async function boot(): Promise<void> {
     if (params.get('mission')) settings.missionId = params.get('mission')!;
     if (params.get('fog') === '0') settings.fogOfWar = false;
     if (params.get('seed') !== null) settings.mapSeed = intParam(params, 'seed', settings.mapSeed);
+    // `?mapSeed=` also replaces a mission's authored seed (bug sweeps); plain `?seed=` leaves missions alone,
+    // so the E2E suite's `seed=777` keeps every campaign on its authored map.
+    if (params.get('mapSeed') !== null) settings.mapSeed = intParam(params, 'mapSeed', settings.mapSeed);
     if (params.get('period') !== null) {
       settings.period = intParam(params, 'period', settings.period) as HistoricalPeriod;
       Object.assign(settings, sanitizeSettings(settings));
@@ -197,7 +200,15 @@ export async function boot(): Promise<void> {
   modelIds.push(...wildlifeModelAssetIds(profile.region));
   if (params.get('rig') === '1') modelIds.push(RIG_DEMO_ASSET_ID);
   if (modelIds.length) await preloadModelAssets(modelIds);
-  const game = new Game(settings, snapshot, replay, forceCinematic, false, !(params.get('intro') === '0' || noloop));
+  const game = new Game(
+    settings,
+    snapshot,
+    replay,
+    forceCinematic,
+    false,
+    !(params.get('intro') === '0' || noloop),
+    params.get('mapSeed') !== null,
+  );
   (window as any).game = game;
   (window as any).THREE = THREE;
   (window as any).ScriptedPlayer = ScriptedPlayer;

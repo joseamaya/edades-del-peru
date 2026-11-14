@@ -5,7 +5,7 @@ import { MISSIONS } from '../src/campaign/defs/campaign';
 import { getUnitStats } from '../src/model/defs/units';
 import { Era, UnitKind } from '../src/core/types';
 
-function headlessFor(missionId: string): Game {
+function headlessFor(missionId: string, seedOverride = false): Game {
   setAutoStart(false);
   return new Game(
     {
@@ -21,8 +21,36 @@ function headlessFor(missionId: string): Game {
     null,
     false,
     true,
+    seedOverride,
   );
 }
+
+describe('campaign map seed', () => {
+  it('keeps the authored seed unless the debug harness overrides it', () => {
+    const caral = MISSIONS.find((m) => m.id === 'm1_caral')!;
+    const authored = headlessFor('m1_caral');
+    expect(authored.settings.mapSeed).toBe(caral.map.seed);
+    const swept = new Game(
+      {
+        ...DEFAULT_SETTINGS,
+        missionId: 'm1_caral',
+        mapSeed: 12345,
+        showHints: false,
+        soundEnabled: false,
+        musicEnabled: false,
+        fogOfWar: false,
+        cinematic: false,
+      },
+      null,
+      null,
+      false,
+      true,
+      true,
+      true,
+    );
+    expect(swept.settings.mapSeed).toBe(12345);
+  });
+});
 
 describe('campaign unit speed scale', () => {
   it('slows every Caral unit to 0.75 so the 256 m transect takes about 2:22 to cross', () => {
