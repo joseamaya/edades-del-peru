@@ -22,6 +22,8 @@ const SHOTS = [
     phase: 'huanacaure',
   },
   { id: 'valle', at: [172, 196], height: 38, time: 0.62, phase: 'huanacaure' },
+  // Act IV card: Inticancha only traced (plaza and plots), before the player builds it.
+  { id: 'traza', at: [168, 192], height: 32, time: 0.6, phase: 'inticancha' },
   {
     id: 'epilogo',
     cinematic: { center: [172, 192], eye: [-34, 20, 42], look: [0, 3, 0], fov: 50, time: 0.3, phase: 'fundada' },

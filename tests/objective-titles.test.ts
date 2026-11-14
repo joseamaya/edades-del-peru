@@ -17,3 +17,15 @@ describe('objective titles agree with their targets', () => {
     }
   }
 });
+
+describe('peaceful missions build no war', () => {
+  // A guard post (barracks) can stay for a documented unit such as the Wari guardian; fortifications,
+  // siege and cavalry cannot.
+  const MILITARY = ['fortress', 'wall', 'gate', 'tower', 'arsenal', 'stable'];
+  for (const mission of MISSIONS.filter((m) => !m.enemy.active)) {
+    it(`${mission.id} restricts its build roster and leaves out military buildings`, () => {
+      expect(mission.allowedBuildings, 'a mission with no enemy must list what it can build').toBeDefined();
+      for (const kind of MILITARY) expect(mission.allowedBuildings as string[], kind).not.toContain(kind);
+    });
+  }
+});

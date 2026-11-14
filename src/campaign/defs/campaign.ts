@@ -333,7 +333,7 @@ export const MISSIONS: MissionDef[] = [
         time: 20,
         unitKind: UnitKind.WORKER,
         hidden: true,
-        title: 'Acto III · Reúne a la comunidad en la Plaza para la ofrenda del fuego',
+        title: 'Acto III · Reúne a la comunidad junto a la Pirámide Mayor para la ofrenda del fuego',
       },
       {
         id: 'obj_complejos',
@@ -352,7 +352,7 @@ export const MISSIONS: MissionDef[] = [
         // not a click from the beach.
         requires: 'a3_obra_muros',
         inspectRadius: 8,
-        title: 'Recorre los seis complejos piramidales de Caral Alto',
+        title: 'Acto III · Recorre los seis complejos piramidales de Caral Alto',
       },
       {
         id: 'obj_asamblea',
@@ -500,7 +500,7 @@ export const MISSIONS: MissionDef[] = [
           },
           {
             type: 'dialogue',
-            text: 'Con la ciudad en pie, la comunidad puede reunirse en la Plaza Central: convoca la asamblea desde la ficha de la Pirámide Mayor.',
+            text: 'Mientras se levanta la Pirámide Mayor, la comunidad ya puede reunirse en la Plaza Central: convoca la asamblea desde la ficha de la pirámide.',
           },
           { type: 'camera', pos: { ref: 'site', dx: 0, dz: 0 } },
           // The camera opens on the city: clear its fog with the discovery animation, not a black screen.
@@ -852,7 +852,7 @@ export const MISSIONS: MissionDef[] = [
         ],
         hidden: true,
         requires: 'a3_peregrinaje',
-        title: 'Acto IV · Recorre la Plaza, el Templo Viejo, el Templo Nuevo y la Portada',
+        title: 'Acto IV · Recorre la Plaza, el Templo Viejo, sus galerías, el Templo Nuevo y la Portada',
       },
     ],
     triggers: [
@@ -1243,6 +1243,17 @@ export const MISSIONS: MissionDef[] = [
     startingResources: { food: 350, wood: 300, silver: 100, stone: 40 },
     start: {},
     enemy: { active: false, difficulty: 'easy', aggression: 0 },
+    // An administrative network with no enemy on the map: the Wari guardian (the briefing's unique unit)
+    // can still be raised, but no arsenal, stable, pucará, walls or towers.
+    allowedBuildings: [
+      BuildingKind.HOUSE,
+      BuildingKind.FARM,
+      BuildingKind.MILL,
+      BuildingKind.SAWMILL,
+      BuildingKind.REFINERY,
+      BuildingKind.MARKET,
+      BuildingKind.BARRACKS,
+    ],
     objectives: [
       {
         id: 'obj_suministros',
@@ -1275,7 +1286,7 @@ export const MISSIONS: MissionDef[] = [
         time: 60,
         hidden: true,
         requires: 'obj_red',
-        title: 'Sostén la frontera frente a Tiahuanaco',
+        title: 'Ocupa el centro fronterizo frente a la esfera de Tiahuanaco',
       },
       {
         id: 'obj_sostener',
@@ -1401,7 +1412,11 @@ export const MISSIONS: MissionDef[] = [
         id: 'tambotoco_site',
         y: 12.4,
         focus: { x: TAMBOTOCO_HUANACAURE.x / 256, z: TAMBOTOCO_HUANACAURE.z / 256 },
-        keepout: [{ x: TAMBOTOCO_HUANACAURE.x / 256, z: TAMBOTOCO_HUANACAURE.z / 256, rx: 0.08, rz: 0.07 }],
+        keepout: [
+          { x: TAMBOTOCO_HUANACAURE.x / 256, z: TAMBOTOCO_HUANACAURE.z / 256, rx: 0.08, rz: 0.07 },
+          // No trees or props in Inticancha's plaza and cancha plots (one grew in the middle of the plaza).
+          { x: TAMBOTOCO_INTICANCHA.x / 256, z: TAMBOTOCO_INTICANCHA.z / 256, rx: 0.075, rz: 0.075 },
+        ],
         buildKeepout: [{ x: TAMBOTOCO_HUANACAURE.x / 256, z: TAMBOTOCO_HUANACAURE.z / 256, rx: 0.07, rz: 0.065 }],
       },
       canal: {
@@ -1549,7 +1564,7 @@ export const MISSIONS: MissionDef[] = [
         id: 'a3_acequia',
         kind: 'canal_open',
         hidden: true,
-        title: 'Abre la compuerta de la acequia de los alcabizas',
+        title: 'Desvía el agua de los alcabizas: abre la compuerta de la acequia hacia tus campos',
       },
       {
         id: 'a3_hualla',
@@ -1675,7 +1690,8 @@ export const MISSIONS: MissionDef[] = [
             ],
             pos: { dx: TAMBOTOCO_ENEMY.x, dz: TAMBOTOCO_ENEMY.z },
             radius: 10,
-            objective: 'position',
+            // They come out to meet the party at Huanacaure, as the tutorial says; the truce stops them.
+            target: { dx: TAMBOTOCO_HUANACAURE.x, dz: TAMBOTOCO_HUANACAURE.z + 12 },
           },
         ],
       },
@@ -1696,7 +1712,8 @@ export const MISSIONS: MissionDef[] = [
             type: 'act',
             kicker: 'Acto IV · La fundación',
             title: 'Ayar Auca en Inticancha',
-            image: 'media/tambotoco/intro-epilogo.webp',
+            // The traced plaza and plots, not the founded settlement the epilogue shows.
+            image: 'media/tambotoco/intro-traza.webp',
             text: 'Con el agua y la tierra aseguradas, los ayllus fundan Inticancha y ordenan el sitio en cuatro canchas. La leyenda del Cusco empieza aquí.',
           },
           { type: 'site_phase', phase: 'inticancha' },
@@ -2324,7 +2341,8 @@ export const MISSIONS: MissionDef[] = [
             units: [{ kind: UnitKind.SOLDIER, count: 6 }],
             pos: { dx: LIMA_ENEMY.x, dz: LIMA_ENEMY.z },
             radius: 10,
-            objective: 'position',
+            // The siege column marches on the city: «Sostén Lima» was an uncontested wait otherwise.
+            target: { dx: LIMA_CITY.x, dz: LIMA_CITY.z },
           },
         ],
       },

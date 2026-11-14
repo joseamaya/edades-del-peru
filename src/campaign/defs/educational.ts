@@ -186,7 +186,7 @@ export const EDUCATIONAL: Record<string, EducationalMission> = {
   m6b_guerra_civil: {
     briefing:
       'Sierra andina, 1529–1532. Tras la muerte de Huayna Cápac, Huáscar y Atahualpa se disputan el trono. ' +
-      'Avanza con el ejército de Atahualpa hacia Quipaipan, derrota a Huáscar y mantenlo con vida. Ambos ' +
+      'Avanza con el ejército de Atahualpa hacia Quipaipan, derrota a Huáscar y mantén con vida a Atahualpa. Ambos ' +
       'ejércitos alistan al Guerrero Inca.',
     context:
       'La guerra civil inca enfrentó a los partidarios de Huáscar, en el Cusco, con los de Atahualpa, en Quito. ' +
