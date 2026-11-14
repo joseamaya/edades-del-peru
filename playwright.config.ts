@@ -36,7 +36,9 @@ export default defineConfig({
     viewport: { width: 1280, height: 800 },
   },
   projects: [
-    { name: 'fast', testIgnore: SLOW_SPECS },
+    // Sharded by test, not by file: campaign.spec alone runs ~13 min and used to land whole on one
+    // CI shard (916 s against 237 s for the next). The specs share no state between tests.
+    { name: 'fast', testIgnore: SLOW_SPECS, fullyParallel: true },
     { name: 'slow', testMatch: SLOW_SPECS },
   ],
   webServer: {

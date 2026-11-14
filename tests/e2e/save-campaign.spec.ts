@@ -280,7 +280,8 @@ test('saves and loads the later campaign missions', async ({ context }) => {
     'm9_guerra_pacifico',
   ]) {
     const page = await context.newPage();
-    await page.goto(`/?mission=${id}&seed=777&fog=0&low=1`);
+    // Save/load is under test, not the narrated intros (Tambotoco's runs ~29 s, past the 15 s wait).
+    await page.goto(`/?mission=${id}&seed=777&fog=0&low=1&intro=0`);
     await startMission(page);
     await page.waitForFunction(
       () => {

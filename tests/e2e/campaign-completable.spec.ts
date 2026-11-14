@@ -171,10 +171,11 @@ for (const mis of COMPLETABLE_MISSIONS) {
                           ? (g.siteCenter ?? g.siteAnchor ?? centerOf(0))
                           : { x: 0, z: 0 };
               const tp = { x: base.x + o.pos.dx, z: base.z + o.pos.dz };
-              const u = [...g.units.values()].find(
-                (unit: any) => unit.owner === 0 && !unit.dead && (!o.unitKind || unit.kind === o.unitKind),
-              ) as any;
-              if (u) u.pos.set(tp.x, g.terrain.getHeight(tp.x, tp.z), tp.z);
+              // A hold can require a cohort (Lima's siege needs 6 units), not just one.
+              const holders = [...g.units.values()]
+                .filter((unit: any) => unit.owner === 0 && !unit.dead && (!o.unitKind || unit.kind === o.unitKind))
+                .slice(0, Math.max(1, o.minUnits ?? 1)) as any[];
+              for (const u of holders) u.pos.set(tp.x, g.terrain.getHeight(tp.x, tp.z), tp.z);
               break;
             }
             case 'build': {

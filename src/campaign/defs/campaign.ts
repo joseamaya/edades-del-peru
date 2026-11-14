@@ -287,7 +287,7 @@ export const MISSIONS: MissionDef[] = [
         pos: { ref: 'site', dx: 0, dz: 0 },
         radius: 20,
         hidden: true,
-        title: 'Acto III · Entrega 150 de madera para las shicras de la Pirámide Mayor',
+        title: 'Acto III · Entrega 120 de madera para las shicras de la Pirámide Mayor',
       },
       {
         id: 'a3_obra_relleno',
@@ -311,7 +311,7 @@ export const MISSIONS: MissionDef[] = [
         pos: { ref: 'site', dx: 0, dz: 0 },
         radius: 20,
         hidden: true,
-        title: 'Acto III · Entrega 150 de piedra para los muros de contención',
+        title: 'Acto III · Entrega 120 de piedra para los muros de contención',
       },
       {
         id: 'a3_obra_muros',
@@ -752,7 +752,7 @@ export const MISSIONS: MissionDef[] = [
         radius: 20,
         hidden: true,
         requires: 'a1_ofrenda',
-        title: 'Acto II · Entrega 150 de piedra para el Templo Viejo',
+        title: 'Acto II · Entrega 120 de piedra para el Templo Viejo',
       },
       {
         id: 'a2_peregrinaje',

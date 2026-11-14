@@ -288,7 +288,7 @@ test('the Caral objectives reveal in acts, announce the assembly with the city a
   await advance('a2_redes');
   await expect(objectives).toContainText('excedente de 500');
   await advance('a2_excedente');
-  await expect(objectives).toContainText('Acto III · Entrega 150 de madera');
+  await expect(objectives).toContainText('Acto III · Entrega 120 de madera');
   // The tour waits for the walls: five complexes do not stand yet.
   await expect(objectives).not.toContainText('0/6');
   await page.evaluate(() => {
@@ -299,7 +299,7 @@ test('the Caral objectives reveal in acts, announce the assembly with the city a
   // Act III announces the assembly: it is listed and the card still offers the call.
   await expect(objectives).toContainText('Convoca una asamblea');
   await expect(plaza).toContainText('Convocar asamblea');
-  await expect(plaza).toContainText('Entregar materiales (50 madera) · 0/150');
+  await expect(plaza).toContainText('Entregar materiales (50 madera) · 0/120');
   await advance('a3_shicras');
   await advance('a3_obra_relleno');
   await advance('a3_muros');
