@@ -458,7 +458,7 @@ describe('campaign educational content', () => {
     expect(gate.kind).toBe('canal_closed');
     expect(gate.entityTag).toBeUndefined();
     expect(gate.pos).toEqual({ ref: 'canal', dx: 0, dz: 0 });
-    expect(gate.radius).toBe(8);
+    expect(gate.radius).toBe(16);
 
     const m6b = MISSIONS.find((m) => m.id === 'm6b_guerra_civil')!;
     const battle = m6b.objectives.find((o) => o.id === 'obj_quipaipan')!;

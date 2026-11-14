@@ -73,8 +73,9 @@ export const m6ChimuInca: MissionDef = {
     {
       id: 'obj_canal',
       kind: 'canal_closed',
+      // The straight canal's gate sits at one end (14 m from its centre): the crew may close it from there.
       pos: { ref: 'canal', dx: 0, dz: 0 },
-      radius: 8,
+      radius: 16,
       hidden: true,
       title: 'Corta el agua de Chan Chan: cierra la compuerta',
     },
