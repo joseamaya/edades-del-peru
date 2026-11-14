@@ -7,6 +7,8 @@ import colonialLod0Url from '../assets/sites/colonial/colonial_church_lod0.glb?u
 import colonialLod1Url from '../assets/sites/colonial/colonial_church_lod1.glb?url';
 import independenceLod0Url from '../assets/sites/independence/independence_chapel_lod0.glb?url';
 import independenceLod1Url from '../assets/sites/independence/independence_chapel_lod1.glb?url';
+import aricaLod0Url from '../assets/sites/arica/arica_battery_lod0.glb?url';
+import aricaLod1Url from '../assets/sites/arica/arica_battery_lod1.glb?url';
 import { loadStaticGltf } from './StaticModel';
 import type { DecorModelId } from '../model/defs/sites';
 
@@ -15,6 +17,7 @@ const DECOR_MODEL_URLS: Record<DecorModelId, { lod0: string; lod1: string }> = {
   chimu_compound: { lod0: chimuLod0Url, lod1: chimuLod1Url },
   colonial_church: { lod0: colonialLod0Url, lod1: colonialLod1Url },
   independence_chapel: { lod0: independenceLod0Url, lod1: independenceLod1Url },
+  arica_battery: { lod0: aricaLod0Url, lod1: aricaLod1Url },
 };
 
 export async function loadDecorModel(id: DecorModelId): Promise<THREE.Group> {

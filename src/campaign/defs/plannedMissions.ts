@@ -134,13 +134,6 @@ export const PLANNED_MISSIONS: Record<string, PlannedMission> = {
     subtitle: 'Tarapacá · 27 de noviembre de 1879',
     summary: 'Tras la guerra en el mar, el ejército peruano resiste en la quebrada de Tarapacá.',
   },
-  p_rep_arica: {
-    id: 'p_rep_arica',
-    title: 'El morro de Arica',
-    subtitle: 'Arica · 7 de junio de 1880',
-    summary:
-      'Francisco Bolognesi rechaza la rendición y sostiene el morro y sus baterías hasta el asalto chileno, en el que cae.',
-  },
   p_rep_lima: {
     id: 'p_rep_lima',
     title: 'San Juan y Miraflores',

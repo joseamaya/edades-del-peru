@@ -123,13 +123,13 @@ slot is absent (offline / without assets).
 - **Assets**: 2D retouching does not change the “artistic reconstruction, not a photograph”
   disclaimer.
 
-### Mission decor GLBs (m5-m8)
+### Mission decor GLBs (m5-m9)
 
-- **Location**: `src/assets/sites/{chanca,chimu,colonial,independence}/`.
+- **Location**: `src/assets/sites/{chanca,chimu,colonial,independence,arica}/`.
 - **Source**: `art-src/blender/mission-decor/` (Git LFS), rebuilt by
   `scripts/blender/build_mission_decor.py`.
 - **Content**: dedicated low-poly abstractions of the Chanca fortress, Chimú compound, Cusco
-  ushnu, colonial church and independence chapel/camp (the Arica battery was removed with m9). They are visual-only and replace the
+  ushnu, colonial church, independence chapel/camp and Arica battery. They are visual-only and replace the
   procedural landmark in those missions; the procedural builder remains the fallback.
 - **Confidence**: project-owned abstractions, not surveys or reconstructions of a specific
   standing building. Hashes and sizes are recorded in
@@ -329,8 +329,8 @@ slot is absent (offline / without assets).
 
 - **Location**: `public/media/junta/intro-{cabildo,apacheta,umachiri,epilogo}.webp` (960x540, WebP q58,
   ~56 KB in total).
-- **Reuse**: `intro-epilogo` is also the epilogue backdrop of m7 (Túpac Amaru) until it gets its own capture;
-  it shows Cusco in 1814, not its places.
+- **Reuse**: `intro-epilogo` is also the epilogue backdrop of m7 (Túpac Amaru) and m9 (Arica) until those
+  missions get their own captures; it shows Cusco in 1814, not their places.
 - **Source**: captured from the game itself by `scripts/capture_junta_intro.mjs`. The Cusco cabildo and the
   La Apacheta/Umachiri views are staged through the debug harness, rendered without the HUD at 1600x900 and
   resized with `sharp`; the epilogue uses a low cinematic camera over Umachiri at dusk. Regenerate them with

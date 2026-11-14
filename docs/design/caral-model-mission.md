@@ -289,7 +289,7 @@ bench runs without ground cover).
    stages the burial between phases and the `hold.consume` work turns pause when the communal store is empty.
 5. ~~Human review of the new art~~ Done: the architecture kit and the intro and menu captures were
    approved on 2026-11-07.
-6. The other campaigns follow this pattern later.
+6. The other campaigns follow this pattern later; the m9 scripted playtest is known to fail meanwhile.
 
 ## Certainty labelling
 

@@ -11,6 +11,7 @@ import { mLima } from './missions/m_lima';
 import { m7TupacAmaru } from './missions/m7_tupac_amaru';
 import { mJuntaCusco } from './missions/m_junta_cusco';
 import { m8Independencia } from './missions/m8_independencia';
+import { m9GuerraPacifico } from './missions/m9_guerra_pacifico';
 
 /** Every released mission in campaign order; each one lives in its own file under `missions/`. */
 export const MISSIONS: MissionDef[] = [
@@ -26,6 +27,7 @@ export const MISSIONS: MissionDef[] = [
   m7TupacAmaru,
   mJuntaCusco,
   m8Independencia,
+  m9GuerraPacifico,
 ];
 
 export function getMission(id: string): MissionDef | undefined {

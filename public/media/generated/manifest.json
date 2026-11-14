@@ -787,6 +787,66 @@
         "author": "Miguel Amaya",
         "renderedAt": "2026-10-31T10:00:00-05:00"
       }
+    },
+    {
+      "id": "m9_arica-intro",
+      "type": "campaign-intro",
+      "scope": "mission",
+      "campaignId": "la-senda-del-sol",
+      "missionId": "m9_guerra_pacifico",
+      "civilization": "republica",
+      "period": 8,
+      "era": 4,
+      "region": "south_coast",
+      "topic": "campaign_intro",
+      "sceneType": "campaign_scene",
+      "asset": "media/generated/campaigns/la-senda-del-sol/m9_arica/intro.webp",
+      "variants": [
+        {
+          "asset": "media/generated/campaigns/la-senda-del-sol/m9_arica/intro-800.webp",
+          "width": 800,
+          "height": 450,
+          "bytes": 4750
+        }
+      ],
+      "sources": [
+        "docs/historia/campanas/guerra_del_pacifico.md",
+        "docs/historia/arquitectura.md",
+        "art-src/blender/mission-decor/README.md"
+      ],
+      "promptVersion": "v1-blender-41792702",
+      "prompt": "Blender render: Terraza portuaria y batería de Arica",
+      "negativePrompt": "n/a (blender render)",
+      "provider": "blender",
+      "model": "workbench",
+      "generatedAt": "2026-10-31T23:29:50.428Z",
+      "nature": "abstraction",
+      "reviewed": false,
+      "reviewer": null,
+      "reviewedAt": null,
+      "disclaimer": "No es una fotografía histórica: es un render 3D del proyecto.",
+      "alt": "Vista de la batería, el almacén y el muelle de la terraza portuaria de Arica.",
+      "caption": "Terraza portuaria y batería de Arica",
+      "width": 1280,
+      "height": 720,
+      "sourceWidth": 1600,
+      "sourceHeight": 900,
+      "crop": "cover-attention",
+      "bytes": 8880,
+      "format": "webp",
+      "sha256": "2ac411155e095a31c36231ba1d54d381497ffc29da9ad787e4edc93199b66f7e",
+      "blender": {
+        "sceneFile": "mission-decor/arica_battery_lod0.blend",
+        "sourceRender": "mission-decor/renders/arica_hero.png",
+        "sourceSha256": "4d148e26ff3916d266eddbcf8a7308533e1ad0a6d3a7a3518dc13f70f0633f1c",
+        "sceneAssetId": null,
+        "confidence": "Infraestructura documentada; planta y remates plausibles.",
+        "camera": "hero",
+        "renderer": "workbench",
+        "license": "project-owned",
+        "author": "Miguel Amaya",
+        "renderedAt": "2026-10-31T10:00:00-05:00"
+      }
     }
   ]
 }

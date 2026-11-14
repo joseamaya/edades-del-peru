@@ -164,16 +164,24 @@ describe('campaign educational content', () => {
       for (const u of mis.allowedUnits) expect(kinds.has(u), `${mis.id} allows unknown unit ${u}`).toBe(true);
       expect(mis.allowedUnits.includes(UnitKind.WORKER), `${mis.id} restriction excludes workers`).toBe(true);
     }
+    // the naval mission has no siege train
+    const naval = MISSIONS.find((m) => m.id === 'm9_guerra_pacifico')!;
+    expect(naval.allowedUnits).toBeDefined();
+    expect(naval.allowedUnits!.includes(UnitKind.ARTILLERY)).toBe(false);
   });
 
-  it('fields post-1532 unique units in the independence campaign', () => {
+  it('fields post-1532 unique units in the independence and republic campaigns', () => {
     const m7 = MISSIONS.find((m) => m.id === 'm7_tupac_amaru')!;
     const m8 = MISSIONS.find((m) => m.id === 'm8_independencia')!;
+    const m9 = MISSIONS.find((m) => m.id === 'm9_guerra_pacifico')!;
     const waveKinds = (mission: (typeof MISSIONS)[number]): UnitKind[] =>
       mission.triggers.flatMap((t) => t.effects).flatMap((e) => (e.type === 'wave' ? e.units.map((u) => u.kind) : []));
     expect(m8.start.units?.some((u) => u.kind === UnitKind.PATRIOTA_MONTONERA)).toBe(true);
+    expect(m9.start.units?.some((u) => u.kind === UnitKind.REPUBLICA_DEFENSOR)).toBe(true);
+    expect(m9.allowedUnits?.includes(UnitKind.REPUBLICA_DEFENSOR)).toBe(true);
     expect(waveKinds(m7)).toContain(UnitKind.REALISTA_DRAGON);
     expect(waveKinds(m8)).toContain(UnitKind.REALISTA_DRAGON);
+    expect(waveKinds(m9)).toContain(UnitKind.CHILE_INFANTE);
   });
 
   it('keeps documented unique units available and named in chapter I-II campaign missions', () => {
@@ -200,6 +208,14 @@ describe('campaign educational content', () => {
         expect(mis.enemy.active, `${id} has no enemy unique but an active enemy`).toBe(false);
       }
     }
+  });
+
+  it('keeps m9 as a port defense around Bolognesi', () => {
+    const m9 = MISSIONS.find((m) => m.id === 'm9_guerra_pacifico')!;
+    expect(m9.start.buildings?.some((b) => b.kind === BuildingKind.FORTRESS)).toBe(true);
+    expect(m9.objectives.some((o) => o.kind === 'protect' && o.entityTag === 'bolognesi')).toBe(true);
+    expect(m9.objectives.some((o) => o.kind === 'survive')).toBe(true);
+    expect(getEducational(m9.id)?.epilogue).toContain('Arica');
   });
 
   it('scales the opening economy: a scarcity mission forces expansion', () => {
@@ -255,6 +271,15 @@ describe('campaign educational content', () => {
     expect(MISSIONS.find((m) => m.id === 'm4_wari')!.objectives.some((o) => o.id === 'bonus_red')).toBe(true);
   });
 
+  it('m9 is the Arica land defense, not a naval promise', () => {
+    const m9 = MISSIONS.find((m) => m.id === 'm9_guerra_pacifico')!;
+    expect(m9.title).toContain('Arica');
+    expect(m9.objectives.some((o) => o.entityTag === 'bolognesi')).toBe(true);
+    expect(m9.start.units?.some((u) => u.tag === 'bolognesi')).toBe(true);
+    expect(m9.objectives.map((o) => o.title).join(' ')).not.toMatch(/monitor|Huáscar|escuadra/i);
+    expect(m9.defeat).toContain('Arica');
+  });
+
   it('m2 has a pilgrimage hold, offerings and an oracle reward', () => {
     const m2 = MISSIONS.find((m) => m.id === 'm2_chavin')!;
     expect(m2.objectives.some((o) => o.id === 'a2_peregrinaje' && o.kind === 'hold')).toBe(true);
@@ -276,8 +301,11 @@ describe('campaign educational content', () => {
     }
   });
 
-  it('m8 has a briefing and a guided tutorial', () => {
-    for (const [id, steps] of [['m8_independencia', 4]] as const) {
+  it('chapter IV has briefings and guided tutorials', () => {
+    for (const [id, steps] of [
+      ['m8_independencia', 4],
+      ['m9_guerra_pacifico', 5],
+    ] as const) {
       const mis = MISSIONS.find((m) => m.id === id)!;
       expect(mis.tutorial, `${id} tutorial flag`).toBe(true);
       expect(getEducational(id)?.briefing?.length, `${id} briefing`).toBeGreaterThan(40);

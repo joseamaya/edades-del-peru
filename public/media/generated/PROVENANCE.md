@@ -31,6 +31,7 @@ written for external tools and offline review.
 | `m6b_guerra_civil-intro` | campaign-intro | Tahuantinsuyo | Horizonte Tardío (Inca) | high_andes | abstraction | unreviewed | `hero` | `tipología documentada; planta y remates plausibles` | `72eae8f2ab31` | [intro.webp](campaigns/la-senda-del-sol/m6b_guerra_civil/intro.webp) |
 | `m7_colonial-intro` | campaign-intro | Tahuantinsuyo | Virreinato del Perú | high_andes | abstraction | unreviewed | `hero` | `Tipología documentada; planta y remates plausibles.` | `51550ba7530e` | [intro.webp](campaigns/la-senda-del-sol/m7_tupac/intro.webp) |
 | `m8_independencia-intro` | campaign-intro | Patriotas | Independencia | andean_valley | abstraction | unreviewed | `hero` | `Contexto documentado; planta y remates plausibles.` | `9553b0d8f155` | [intro.webp](campaigns/la-senda-del-sol/m8_independencia/intro.webp) |
+| `m9_arica-intro` | campaign-intro | República del Perú | República | south_coast | abstraction | unreviewed | `hero` | `Infraestructura documentada; planta y remates plausibles.` | `4d148e26ff39` | [intro.webp](campaigns/la-senda-del-sol/m9_arica/intro.webp) |
 
 ## Review
 

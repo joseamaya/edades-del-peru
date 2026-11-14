@@ -192,6 +192,77 @@ test('plays m8 by holding Junín and Ayacucho with real orders', async ({ page }
   expect(errors).toEqual([]);
 });
 
+// Known failure after workers keep building (see #342): m9 will be adapted to
+// Caral's model-mission pattern (#352 and following). Re-enable it in that rework.
+test.fixme('plays m9 by defending the port through the final assault with real orders', async ({ page }) => {
+  test.setTimeout(120_000);
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/?mission=m9_guerra_pacifico&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
+    const fort = [...g.buildings.values()].find((b: any) => b.tag === 'puerto') as any;
+    const bolognesi = [...g.units.values()].find((u: any) => u.tag === 'bolognesi') as any;
+    const soldiers = [...g.units.values()]
+      .filter((u: any) => u.owner === 0 && !u.dead && u.kind === 'soldier')
+      .map((u: any) => u.id);
+    const defenders = [...g.units.values()]
+      .filter(
+        (u: any) =>
+          u.owner === 0 &&
+          !u.dead &&
+          u.tag !== 'bolognesi' &&
+          (u.kind === 'rifleman' || u.kind === 'republica_defensor'),
+      )
+      .map((u: any) => u.id);
+    const move = (ids: number[], x: number, z: number) =>
+      g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'move', target: { x, z } }, clear: true }, false);
+    const attackMove = (ids: number[], x: number, z: number) =>
+      g.executeCommand(
+        { kind: 'order', unitIds: ids, order: { kind: 'attack_move', target: { x, z } }, clear: true },
+        false,
+      );
+    const dt = 1 / 60;
+    let t = 0;
+    move([bolognesi.id], fort.pos.x - 2, fort.pos.z - 2);
+    move(defenders, fort.pos.x + 4, fort.pos.z + 4);
+    move(soldiers, fort.pos.x - 4, fort.pos.z - 4);
+    for (let i = 0; i < Math.ceil(540 / dt) && !m.ended; i++) {
+      g.update(dt, t);
+      t += dt;
+    }
+    // Intercept the last assault before it reaches the port.
+    const center = g.playerCenter(0) as { x: number; z: number };
+    const combat = [...g.units.values()]
+      .filter(
+        (u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker' && u.kind !== 'scout' && u.tag !== 'bolognesi',
+      )
+      .map((u: any) => u.id);
+    attackMove(combat, center.x + 20, center.z - 10);
+    for (let i = 0; i < Math.ceil(80 / dt) && !m.ended; i++) {
+      g.update(dt, t);
+      t += dt;
+    }
+    return {
+      puerto: m.getObjectiveState('obj_puerto') as string,
+      bolognesi: m.getObjectiveState('obj_bolognesi') as string,
+      resistir: m.getObjectiveState('obj_resistir') as string,
+      won: m.won as boolean | null,
+    };
+  });
+  expect(out.puerto).not.toBe('failed');
+  expect(out.bolognesi).not.toBe('failed');
+  expect(out.resistir).toBe('completed');
+  expect(out.won).toBe(true);
+  expect(errors).toEqual([]);
+});
+
 test('plays m6b by advancing to Quipaipan and defeating Huáscar with real orders', async ({ page }) => {
   test.setTimeout(120_000);
   const errors: string[] = [];

@@ -150,8 +150,8 @@ describe('Blender art manifest', () => {
     expect(issues.some((i) => i.id === asset.id && i.field === 'asset')).toBe(true);
   });
 
-  it('ships draft intro records for m5-m8', () => {
-    const missions = ['m5_yahuar_pampa', 'm6_chimu_inca', 'm7_tupac_amaru', 'm8_independencia'];
+  it('ships draft intro records for m5-m9', () => {
+    const missions = ['m5_yahuar_pampa', 'm6_chimu_inca', 'm7_tupac_amaru', 'm8_independencia', 'm9_guerra_pacifico'];
     for (const missionId of missions) {
       const intro = ART_MANIFEST.assets.find((a) => a.missionId === missionId && a.type === 'campaign-intro');
       expect(intro, `${missionId} has no intro`).toBeDefined();
