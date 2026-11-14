@@ -117,7 +117,7 @@ Reviewed 2026-11-07 against the model-mission gates. Status is honest about the 
 | ----------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | History     | Met                  | `docs/historia/campanas/chavin.md` with its certainty table; UNESCO 330, Plan de Manejo 2020, Rick et al., Burger/Kembel; no invented war.                                             |
 | Identity    | Met                  | Ceremonial prestige: offerings fund the temple, pilgrimage fills the plaza, the fair links long-distance exchange.                                                                     |
-| Play        | Met (automated)      | `campaign-playtest.spec.ts` reaches victory through the four acts; the market and offerings use real commands, stone hand-over uses `Mission.recordDelivery`. Manual playtest pending. |
+| Play        | Met (automated)      | `campaign-playtest.spec.ts` reaches victory through the four acts without HP pinning; the market uses real commands, the stone hand-over uses `Mission.recordDelivery` and the tours the field-card API. A human playtest remains recommended. |
 | Contract    | Met                  | Acts II–IV start hidden and are revealed by triggers; optional Plaza, gallery, Portada and major offering never gate victory.                                                          |
 | Onboarding  | Met                  | Nine-step non-blocking Chavín tutorial, briefing and Codex; the briefing shows Act I only.                                                                                             |
 | Closure     | Met                  | Decline epilogue with its own capture and optional-achievement summary; “Continuar” to m3.                                                                                             |
@@ -271,7 +271,7 @@ procedural life overlay (houses, market, well and people).
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | History     | Met: `docs/historia/campanas/junta_cusco.md` with a certainty table; the epilogue tells the documented defeat.                                                                              |
 | Identity    | Met: many people and few firearms; the player delays Ramírez and saves the leaders, not the war.                                                                                            |
-| Play        | Met (automated wiring): the three-act chain completes with move/build/attack orders; attrition is isolated in the test and the no-cheat manual playtest is pending.                         |
+| Play        | Met: the three-act chain completes with move/build/attack orders and no HP pinning; Pumacahua stays in reserve. The Cabildo visit still uses the field-card API, and a human playtest remains recommended. |
 | Contract    | Met: Acts II–III hidden, optional Melgar and the Junta's artillery never gate victory, Pumacahua protected from the start.                                                                  |
 | Onboarding  | Met: six-step non-blocking tutorial, briefing and Codex.                                                                                                                                    |
 | Closure     | Met: epilogue states Umachiri, the executions and Melgar; no counterfactual is hidden.                                                                                                      |
@@ -296,7 +296,7 @@ Quizu's hills) and starts as the traced plaza; the colonial church and the stree
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | History     | Met: `docs/historia/campanas/lima.md` with a certainty table; the valley was inhabited and the defence relied on Andean allies.                                       |
 | Identity    | Met: found the city and hold the siege; the curaca pact is optional.                                                                                                  |
-| Play        | Partial (automated): three acts complete with real move/build/attack orders, but the playtest resets player HP every step; a manual playtest is pending.                                                                |
+| Play        | Met: three acts complete with real move/build/attack orders and no HP pinning; the plaza visit still uses the field-card API, and a human playtest remains recommended.                                                  |
 | Contract    | Met: Act II–III hidden, the curaca pact optional, Pizarro protected from the start.                                                                                   |
 | Onboarding  | Met: six-step tutorial, briefing and Codex.                                                                                                                           |
 | Closure     | Met: the epilogue states that Cusco remains besieged; no counterfactual is hidden.                                                                                    |

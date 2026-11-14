@@ -415,6 +415,7 @@ test('saves and loads Tambotoco at the Inticancha phase', async ({ page }) => {
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
     g.setSitePhase('inticancha');
+    if (g.sitePhase !== 'inticancha') return { phase: g.sitePhase };
     const dt = 1 / 60;
     let t = 0;
     for (let i = 0; i < Math.ceil(2 / dt) && !g.mission.ended; i++) {
@@ -432,6 +433,8 @@ test('saves and loads Tambotoco at the Inticancha phase', async ({ page }) => {
       tutorialStep: g.tutorial?.toSave().stepId ?? null,
     };
   });
+  expect(before.phase).toBe('inticancha');
+  expect(before.tutorialStep).not.toBeNull();
 
   await page.goto('/?load=1');
   await page.waitForFunction(
@@ -473,6 +476,7 @@ test('saves and loads Lima at the ciudad phase', async ({ page }) => {
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
     g.setSitePhase('ciudad');
+    if (g.sitePhase !== 'ciudad') return { phase: g.sitePhase, setup: false };
     const dt = 1 / 60;
     let t = 0;
     for (let i = 0; i < Math.ceil(2 / dt) && !g.mission.ended; i++) {
@@ -489,6 +493,8 @@ test('saves and loads Lima at the ciudad phase', async ({ page }) => {
       tutorialStep: g.tutorial?.toSave().stepId ?? null,
     };
   });
+  expect(before.phase).toBe('ciudad');
+  expect(before.tutorialStep).not.toBeNull();
 
   await page.goto('/?load=1');
   await page.waitForFunction(
