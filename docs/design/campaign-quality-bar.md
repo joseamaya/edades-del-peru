@@ -40,23 +40,22 @@ below, which record each mission's own review and are kept for history). **M** m
 | Mission            | Hist | Ident | Play | Contr | Onb | Clos | UX | Vis | Pers | Tests | Docs | Struct | Open | Art | Perf | Scale |
 | ------------------ | ---- | ----- | ---- | ----- | --- | ---- | -- | --- | ---- | ----- | ---- | ------ | ---- | --- | ---- | ----- |
 | m1_caral           | M    | M     | M    | M     | M   | M    | M  | M   | M    | M     | M    | M      | M    | M   | M    | M     |
-| m2_chavin          | M    | M     | P    | M     | M   | M    | M  | P   | M    | P     | P    | M      | M    | X   | M    | M     |
+| m2_chavin          | M    | M     | M    | M     | M   | M    | M  | P   | M    | M     | P    | M      | M    | X   | M    | M     |
 | m3_moche_recuay    | P    | M     | P    | P     | P   | P    | M  | P   | M    | P     | P    | X      | X    | X   | X    | X     |
 | m4_wari            | P    | M     | M    | P     | P   | P    | M  | P   | M    | P     | P    | X      | X    | X   | X    | X     |
-| m_tambotoco        | M    | M     | P    | M     | M   | M    | M  | P   | P    | M     | M    | M      | M    | –   | P    | M     |
+| m_tambotoco        | M    | M     | M    | M     | M   | M    | M  | P   | M    | M     | M    | M      | M    | –   | P    | M     |
 | m5_yahuar_pampa    | P    | M     | M    | P     | M   | P    | M  | P   | M    | M     | P    | X      | X    | P   | X    | X     |
 | m6_chimu_inca      | P    | P     | M    | P     | M   | P    | M  | M   | M    | M     | P    | X      | X    | P   | X    | X     |
 | m6b_guerra_civil   | P    | P     | M    | M     | M   | P    | M  | P   | M    | M     | P    | X      | X    | P   | X    | X     |
-| m_lima             | M    | M     | P    | M     | M   | M    | M  | P   | P    | P     | P    | M      | M    | –   | P    | M     |
+| m_lima             | M    | M     | M    | M     | M   | M    | M  | P   | M    | M     | P    | M      | M    | –   | P    | M     |
 | m7_tupac_amaru     | M    | M     | M    | M     | M   | M    | M  | P   | M    | M     | M    | M      | M    | P   | M    | M     |
-| m_junta_cusco      | M    | M     | P    | M     | M   | M    | M  | P   | P    | P     | P    | M      | M    | –   | P    | M     |
+| m_junta_cusco      | M    | M     | M    | M     | M   | M    | M  | P   | M    | M     | P    | M      | M    | –   | P    | M     |
 | m8_independencia   | P    | P     | P    | P     | M   | P    | M  | P   | P    | P     | X    | X      | X    | X   | X    | X     |
 | m9_guerra_pacifico | M    | M     | M    | M     | M   | M    | M  | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 
 **Verdict.** **Caral meets every gate** (closed 2026-11-14: Act III card recaptured with the works camp; the
 camp pieces, vegetation, household props and fauna approved by a recorded human review). Chavín,
-Tambotoco, Lima and the Junta follow the model pattern and lack mostly art, a no-cheat playtest and a
-mid-mission save test. m3–m6b and m8 still use the pre-model template: no acts, intro, 256 m map or
+Tambotoco, Lima and the Junta follow the model pattern and lack mostly art. m3–m6b and m8 still use the pre-model template: no acts, intro, 256 m map or
 bench scene. **m7 and m9 now meet the scale, opening and performance gates** (256 m, painted ground,
 in-engine intros and epilogues, bench scenes); their human art review is pending.
 
@@ -74,14 +73,15 @@ in-engine intro and epilogue, bench scenes and the scale guard).
 **Work order, highest value first.**
 
 1. **Invented outcomes:** fixed for m9 (#468) and m7 (#469). Both play their documented outcomes now.
-2. **No-cheat playtests:** drop the HP pinning (`keepAlive`) from the Chavín, Tambotoco, Lima and Junta
-   playtests (M).
+2. **No-cheat playtests:** fixed (2026-11-14) for Chavín, Tambotoco, Lima and the Junta; m7 and m9 were
+   already green.
 3. **Art review:** record the human review of Caral's camp pieces and the Chavín kit; recapture Caral's Act
    III card (S).
 4. **Model-mission rebuilds** for m3–m6b and m8 (256 m transect, acts, intro, bench, certainty table)
    (L each); m7 and m9 are done; quick wins first: m6's canal must really close, m6b's victory must
    capture Huáscar, not raze a building (M).
-5. **Mid-mission save/load E2E** for missions with phases or truces (Tambotoco, Lima, Junta) (M).
+5. **Mid-mission save/load E2E:** fixed (2026-11-14) for Tambotoco (`inticancha`), Lima (`ciudad`) and
+   La Junta (the Apacheta hold).
 
 ## Caral gold-master status
 
@@ -324,7 +324,7 @@ The table separates what is implemented from the art and performance passes that
 | History     | Met: `docs/historia/campanas/tambotoco.md` with a certainty table; the dossier states that Sarmiento is hostile and Garcilaso gives another version.                           |
 | Identity    | Met: water and land as leverage, not a pitched battle; the four canchas order the foundation.                                                                                  |
 | Characters  | Met: the eight siblings march as named units; Cachi, Uchu and Auca leave a named huaca.                                                                                        |
-| Play        | Partial: `yarn record --mode=full` reaches victory with real orders; the E2E playtest still pins player HP (`keepAlive`) and skips the valley wave; a manual playtest is pending.                                                                 |
+| Play        | Met: the real-command E2E playtest reaches victory with ordinary orders and no HP pinning; `yarn record --mode=full` is the manual-path evidence. A human playtest is still desirable.                                                                 |
 | Contract    | Met: Acts II–IV hidden, the hualla visit is optional, and the acequia is the only required water step.                                                                         |
 | Onboarding  | Met: six-step tutorial that teaches controls (move, camp store, hunt, visit, water, canchas), briefing with the eight siblings and Codex.                                                                                                          |
 | Closure     | Met: the epilogue tells the foundation as tradition and names both versions; no counterfactual is hidden.                                                                      |

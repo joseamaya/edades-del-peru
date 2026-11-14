@@ -399,6 +399,188 @@ test('saves and loads m7 during the Sangarará hold', async ({ page }) => {
   expect(after).toEqual(before);
 });
 
+test('saves and loads Tambotoco at the Inticancha phase', async ({ page }) => {
+  await page.goto('/?mission=m_tambotoco&seed=777&fog=0&low=1&intro=0');
+  await startMission(page);
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const before = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    g.setSitePhase('inticancha');
+    const dt = 1 / 60;
+    let t = 0;
+    for (let i = 0; i < Math.ceil(2 / dt) && !g.mission.ended; i++) {
+      document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+      g.update(dt, t);
+      t += dt;
+    }
+    g.saveMatch();
+    return {
+      phase: g.sitePhase,
+      heritage: g.getVisitedHeritage(),
+      objectives: Object.fromEntries(
+        g.mission.def.objectives.map((o: any) => [o.id, g.mission.getObjectiveState(o.id)]),
+      ),
+      tutorialStep: g.tutorial?.toSave().stepId ?? null,
+    };
+  });
+
+  await page.goto('/?load=1');
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const after = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    return {
+      phase: g.sitePhase,
+      heritage: g.getVisitedHeritage(),
+      objectives: Object.fromEntries(
+        g.mission.def.objectives.map((o: any) => [o.id, g.mission.getObjectiveState(o.id)]),
+      ),
+      tutorialStep: g.tutorial?.toSave().stepId ?? null,
+    };
+  });
+  expect(after).toEqual(before);
+});
+
+test('saves and loads Lima at the ciudad phase', async ({ page }) => {
+  await page.goto('/?mission=m_lima&seed=777&fog=0&low=1&intro=0');
+  await startMission(page);
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const before = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    g.setSitePhase('ciudad');
+    const dt = 1 / 60;
+    let t = 0;
+    for (let i = 0; i < Math.ceil(2 / dt) && !g.mission.ended; i++) {
+      document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+      g.update(dt, t);
+      t += dt;
+    }
+    g.saveMatch();
+    return {
+      phase: g.sitePhase,
+      objectives: Object.fromEntries(
+        g.mission.def.objectives.map((o: any) => [o.id, g.mission.getObjectiveState(o.id)]),
+      ),
+      tutorialStep: g.tutorial?.toSave().stepId ?? null,
+    };
+  });
+
+  await page.goto('/?load=1');
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const after = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    return {
+      phase: g.sitePhase,
+      objectives: Object.fromEntries(
+        g.mission.def.objectives.map((o: any) => [o.id, g.mission.getObjectiveState(o.id)]),
+      ),
+      tutorialStep: g.tutorial?.toSave().stepId ?? null,
+    };
+  });
+  expect(after).toEqual(before);
+});
+
+test('saves and loads La Junta during the Apacheta hold', async ({ page }) => {
+  await page.goto('/?mission=m_junta_cusco&seed=777&fog=0&low=1&intro=0');
+  await startMission(page);
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const before = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
+    const dt = 1 / 60;
+    let t = 0;
+    const step = () => {
+      g.update(dt, t);
+      t += dt;
+      document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+    };
+    // Act I -> Act II: the Apacheta hold and its wave become active.
+    m.objState.set('a1_cabildo', 'completed');
+    step();
+    m.objState.set('a1_cuartel', 'completed');
+    step();
+    m.objState.set('a2_apacheta', 'completed');
+    step();
+    const anchor = m.getObjectiveAnchor('a2_batalla') as { x: number; z: number };
+    for (const u of [...g.units.values()].filter((u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker')) {
+      u.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+    }
+    for (let i = 0; i < Math.ceil(5 / dt) && !m.ended; i++) step();
+    g.saveMatch();
+    return {
+      apacheta: m.getObjectiveState('a2_batalla'),
+      hold: m.getObjectiveProgress('a2_batalla'),
+      pumacahua: m.getObjectiveState('a3_pumacahua'),
+      tutorialStep: g.tutorial?.toSave().stepId ?? null,
+    };
+  });
+  expect(before.apacheta).toBe('activo');
+  expect(before.hold?.current ?? 0).toBeGreaterThan(0);
+
+  await page.goto('/?load=1');
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const after = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    return {
+      apacheta: g.mission.getObjectiveState('a2_batalla'),
+      hold: g.mission.getObjectiveProgress('a2_batalla'),
+      pumacahua: g.mission.getObjectiveState('a3_pumacahua'),
+      tutorialStep: g.tutorial?.toSave().stepId ?? null,
+    };
+  });
+  expect(after).toEqual(before);
+});
+
 test('saves and loads the later campaign missions', async ({ context }) => {
   test.setTimeout(180_000);
   for (const id of [
