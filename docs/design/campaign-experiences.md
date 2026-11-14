@@ -83,11 +83,11 @@ enemy. The feria uses the game's `Mercado` building as an abstraction and says s
 | m6b Guerra Civil Inca  | Dynastic war and division                | Advance to Quipaipan, defeat Huáscar              | Advance vs consolidate             | Atahualpa wins; the empire is weakened |
 | m7 Túpac Amaru         | Rebellion and repression                 | Sustain communities, choose assault or siege      | Explicit counterfactual            | Defeat and legacy                      |
 | m8 Independencia       | Campaign logistics and coordination      | Move, take the royalist centre, hold              | Timing and concentration           | Patriotic victory                      |
-| m9 Guerra del Pacífico | Sea control and port defence             | Protect the port, raid, intercept                 | Risk the squadron vs hold the port | Loss of the Huáscar and Grau           |
+| m9 Guerra del Pacífico | The documented defence and fall of Arica  | Refuse the summons, mine the approaches, hold the battery | Prepare vs. hold the last line    | The plaza falls; the defence becomes a symbol |
 
-m2–m9 are implemented and released across the five chapters. m7 is a counterfactual licence; m9's
-historical losses are documented, while its playable land defence of the port is an abstraction. Each
-mission remains reviewed against its dossier before it is rewritten.
+m2–m9 are implemented and released across the five chapters. m7 remains a declared counterfactual licence;
+m9 now plays the documented fall of Arica — its victory is the tactical fulfilment of the defence, not a
+change of the outcome. Each mission remains reviewed against its dossier before it is rewritten.
 
 ## Unique units in the campaign
 

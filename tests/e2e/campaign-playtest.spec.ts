@@ -192,10 +192,8 @@ test('plays m8 by holding Junín and Ayacucho with real orders', async ({ page }
   expect(errors).toEqual([]);
 });
 
-// Known failure after workers keep building (see #342): m9 will be adapted to
-// Caral's model-mission pattern (#352 and following). Re-enable it in that rework.
-test.fixme('plays m9 by defending the port through the final assault with real orders', async ({ page }) => {
-  test.setTimeout(120_000);
+test('plays m9 by refusing the summons, mining the approaches and holding the last line', async ({ page }) => {
+  test.setTimeout(240_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/?mission=m9_guerra_pacifico&seed=777&fog=0&low=1&noloop=1');
@@ -207,59 +205,60 @@ test.fixme('plays m9 by defending the port through the final assault with real o
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
     const m = g.mission;
-    const fort = [...g.buildings.values()].find((b: any) => b.tag === 'puerto') as any;
-    const bolognesi = [...g.units.values()].find((u: any) => u.tag === 'bolognesi') as any;
-    const soldiers = [...g.units.values()]
-      .filter((u: any) => u.owner === 0 && !u.dead && u.kind === 'soldier')
-      .map((u: any) => u.id);
-    const defenders = [...g.units.values()]
-      .filter(
-        (u: any) =>
-          u.owner === 0 &&
-          !u.dead &&
-          u.tag !== 'bolognesi' &&
-          (u.kind === 'rifleman' || u.kind === 'republica_defensor'),
-      )
-      .map((u: any) => u.id);
-    const move = (ids: number[], x: number, z: number) =>
-      g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'move', target: { x, z } }, clear: true }, false);
-    const attackMove = (ids: number[], x: number, z: number) =>
-      g.executeCommand(
-        { kind: 'order', unitIds: ids, order: { kind: 'attack_move', target: { x, z } }, clear: true },
-        false,
-      );
     const dt = 1 / 60;
     let t = 0;
-    move([bolognesi.id], fort.pos.x - 2, fort.pos.z - 2);
-    move(defenders, fort.pos.x + 4, fort.pos.z + 4);
-    move(soldiers, fort.pos.x - 4, fort.pos.z - 4);
-    for (let i = 0; i < Math.ceil(540 / dt) && !m.ended; i++) {
-      g.update(dt, t);
-      t += dt;
-    }
-    // Intercept the last assault before it reaches the port.
-    const center = g.playerCenter(0) as { x: number; z: number };
-    const combat = [...g.units.values()]
-      .filter(
-        (u: any) => u.owner === 0 && !u.dead && u.kind !== 'worker' && u.kind !== 'scout' && u.tag !== 'bolognesi',
-      )
-      .map((u: any) => u.id);
-    attackMove(combat, center.x + 20, center.z - 10);
-    for (let i = 0; i < Math.ceil(80 / dt) && !m.ended; i++) {
+    const dismissCard = () => document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+    const order = (ids: number[], x: number, z: number) =>
+      g.executeCommand({ kind: 'order', unitIds: ids, order: { kind: 'move', target: { x, z } }, clear: true }, false);
+    const own = (kind?: string) =>
+      [...g.units.values()].filter((u: any) => u.owner === 0 && !u.dead && (!kind || u.kind === kind)) as any[];
+    const fort = [...g.buildings.values()].find((b: any) => b.tag === 'puerto') as any;
+    const center = m.getObjectiveAnchor('a3_asalto') as { x: number; z: number };
+    const mines = m.getObjectiveAnchor('a1_minas') as { x: number; z: number } | null;
+    if (!mines) return { setup: false };
+    // The sappers march while the summons beat runs; the line re-forms around the cuartel.
+    order(
+      own('worker').map((u) => u.id),
+      mines.x,
+      mines.z,
+    );
+    for (let i = 0; i < Math.ceil(430 / dt) && !m.ended; i++) {
+      if (i % 15 === 0) dismissCard();
+      if (i % Math.ceil(4 / dt) === 0) {
+        const fighters = own()
+          .filter((u) => u.kind !== 'worker' && u.tag !== 'bolognesi')
+          .map((u) => u.id);
+        if (fighters.length) order(fighters, center.x, center.z);
+        const hero = own().find((u) => u.tag === 'bolognesi');
+        if (hero && fort && !fort.dead) order([hero.id], fort.pos.x - 4, fort.pos.z - 4);
+        if (m.getObjectiveState('a1_minas') === 'activo') {
+          const workers = own('worker').map((u) => u.id);
+          if (workers.length) order(workers, mines.x, mines.z);
+        }
+      }
       g.update(dt, t);
       t += dt;
     }
     return {
-      puerto: m.getObjectiveState('obj_puerto') as string,
-      bolognesi: m.getObjectiveState('obj_bolognesi') as string,
-      resistir: m.getObjectiveState('obj_resistir') as string,
+      setup: true,
+      minutes: Math.round(t / 6) / 10,
+      hold: m.getObjectiveProgress('a3_asalto'),
+      defenders: own().length,
+      objectives: Object.fromEntries(m.def.objectives.map((o: any) => [o.id, m.getObjectiveState(o.id)])),
+      ended: m.ended as boolean,
       won: m.won as boolean | null,
     };
   });
-  expect(out.puerto).not.toBe('failed');
-  expect(out.bolognesi).not.toBe('failed');
-  expect(out.resistir).toBe('completed');
-  expect(out.won).toBe(true);
+  expect(out.setup, JSON.stringify(out)).toBe(true);
+  test.info().annotations.push({ type: 'm9-bot', description: `${out.minutes} min` });
+  expect(out.objectives.a1_parlamento, JSON.stringify(out)).toBe('completed');
+  expect(out.objectives.a1_minas, JSON.stringify(out)).toBe('completed');
+  expect(out.objectives.a2_bombardeo, JSON.stringify(out)).toBe('completed');
+  expect(out.objectives.a2_bolognesi, JSON.stringify(out)).toBe('completed');
+  expect(out.objectives.a3_asalto, JSON.stringify(out)).toBe('completed');
+  expect(out.objectives.obj_puerto).not.toBe('failed');
+  expect(out.ended, JSON.stringify(out)).toBe(true);
+  expect(out.won, JSON.stringify(out)).toBe(true);
   expect(errors).toEqual([]);
 });
 

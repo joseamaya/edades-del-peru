@@ -51,12 +51,13 @@ below, which record each mission's own review and are kept for history). **M** m
 | m7_tupac_amaru     | X    | P     | M    | P     | P   | X    | M  | P   | P    | P     | X    | X      | X    | X   | X    | X     |
 | m_junta_cusco      | M    | M     | P    | M     | M   | M    | M  | P   | P    | P     | P    | M      | M    | –   | P    | M     |
 | m8_independencia   | P    | P     | P    | P     | M   | P    | M  | P   | P    | P     | X    | X      | X    | X   | X    | X     |
-| m9_guerra_pacifico | X    | P     | X    | P     | M   | X    | M  | X   | P    | X     | X    | X      | X    | X   | X    | X     |
+| m9_guerra_pacifico | M    | M     | M    | M     | M   | M    | M  | X   | M    | M     | M    | M      | X    | X   | X    | X     |
 
 **Verdict.** **Caral meets every gate** (closed 2026-11-14: Act III card recaptured with the works camp; the
 camp pieces, vegetation, household props and fauna approved by a recorded human review). Chavín,
 Tambotoco, Lima and the Junta follow the model pattern and lack mostly art, a no-cheat playtest and a
-mid-mission save test. m3–m6b, m7, m8 and m9 still use the pre-model template: no acts, intro, 256 m map or
+mid-mission save test. m3–m6b, m7 and m8 still use the pre-model template: no acts, intro, 256 m map or
+bench scene. m9 now has acts and a documented ending, but still lacks its own intro art, 256 m transect and
 bench scene.
 
 **Fixed in this pass.** The closing trigger of the goal that wins a mission now fires (Tambotoco's founded
@@ -65,13 +66,15 @@ their spawn); every authored start fits its population cap (Lima 31/22, Junta 38
 20/7); named speakers who are not portrait commanders label their dialogue («Comandante: Señor de Moche: —»);
 Wari offers no fortifications; Caral, Chavín, Tambotoco and m6b texts that promised something else; the m8
 playtest re-forms its line instead of racing a fixed budget; `yarn record` keeps one frames folder per run.
+m9 now plays the documented fall of Arica in three acts (the summons, the bombardment and the assault) and
+its no-cheat playtest is green.
 
 **Work order, highest value first.**
 
-1. **Invented outcomes:** rebuild m9 around the documented fall of Arica and m7 around Sangarará and the failed
-   siege of Cusco (L each). Both currently win with a counterfactual and borrow the Junta epilogue image.
+1. **Invented outcomes:** m9 is fixed (2026-11-14). Rebuild m7 around Sangarará and the failed siege of Cusco
+   (L); it still wins by taking the city and borrows the Junta epilogue image.
 2. **No-cheat playtests:** drop the HP pinning (`keepAlive`) from the Chavín, Tambotoco, Lima and Junta
-   playtests and re-enable m9's (M).
+   playtests (M).
 3. **Art review:** record the human review of Caral's camp pieces and the Chavín kit; recapture Caral's Act
    III card (S).
 4. **Model-mission rebuilds** for m3–m6b and m8 (256 m transect, acts, intro, bench, certainty table) (L
@@ -222,18 +225,18 @@ geometry gate (`tests/e2e/hud-layout.spec.ts`).
 
 | Gate        | m8 La Independencia                                                                                                           | m9 La Defensa de Arica                                                                                                        |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| History     | Met: `independencia.md`; Junín and Ayacucho.                                                                                  | Met: `guerra_del_pacifico.md`; Arica land defence.                                                                            |
-| Identity    | Met: hold Junín, protect Sucre, hold Ayacucho.                                                                                | Met: protect the port and Bolognesi, survive the assault.                                                                     |
-| Play        | Met: real-command playtest holds both phases with the cavalry, including montoneras.                                          | Missing: the real-command playtest is `test.fixme` (disabled until the m9 rework).                                                 |
-| Contract    | Met: sequential holds plus a required protect objective.                                                                      | Met: required protects and survive, with an optional counterstrike.                                                           |
+| History     | Met: `independencia.md`; Junín and Ayacucho.                                                                                  | Met: `guerra_del_pacifico.md`; documented fall and certainty table.                                                           |
+| Identity    | Met: hold Junín, protect Sucre, hold Ayacucho.                                                                                | Met: refuse the summons, mine the approaches, hold the cuartel through bombardment and assault.                              |
+| Play        | Met: real-command playtest holds both phases with the cavalry, including montoneras.                                          | Met: real-command playtest reaches the documented ending with ordinary orders and no cheats.                                  |
+| Contract    | Met: sequential holds plus a required protect objective.                                                                      | Met: three acts with hidden objectives, an optional battery visit and the documented fall as the ending.                      |
 | Onboarding  | Met: four-step tutorial + briefing.                                                                                           | Met: five-step tutorial + briefing.                                                                                           |
 | Terrain     | Met: authored Junín–Ayacucho heightfield.                                                                                     | Met: authored Arica port heightfield.                                                                                         |
-| Closure     | Met: epilogue and optional objectives.                                                                                        | Met: epilogue and optional objective.                                                                                         |
+| Closure     | Met: epilogue and optional objectives.                                                                                        | Met: the epilogue tells the fall, Bolognesi's death and the scuttling of the *Manco Cápac*.                                   |
 | UX          | Met: briefing reviewed in the browser; `hud-layout.spec.ts` checks the panels at 1280×720 (Caral also at 1600×900/1920×1080). | Met: briefing reviewed in the browser; `hud-layout.spec.ts` checks the panels at 1280×720 (Caral also at 1600×900/1920×1080). |
 | Visuals     | Met locally: authored independence site GLB + heightfield.                                                                    | Met locally: dedicated Arica battery GLB + authored port terrace.                                                             |
 | Persistence | Met: save/load round-trip.                                                                                                    | Met: save/load round-trip.                                                                                                    |
-| Tests       | Met: data, completability and real-command playtest.                                                                          | Met: data, failure path, completability and real-command playtest.                                                            |
-| Docs        | Met: README, dossier, campaign experiences and this table.                                                                    | Met: README, dossier, campaign experiences and this table.                                                                    |
+| Tests       | Met: data, completability and real-command playtest.                                                                          | Met: data, acts, failure path and real-command playtest.                                                                      |
+| Docs        | Met: README, dossier, campaign experiences and this table.                                                                    | Met: dossier, site note, campaign experiences and this table.                                                                 |
 
 ## La Junta del Cusco playable status (m_junta_cusco)
 

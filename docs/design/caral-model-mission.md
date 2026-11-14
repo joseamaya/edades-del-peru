@@ -290,7 +290,8 @@ bench runs without ground cover).
 5. ~~Human review of the new art~~ Done: the architecture kit and the intro and menu captures were
    approved on 2026-11-07; the works-camp pieces, vegetation, household props and fauna on 2026-11-14,
    when the Act III card was recaptured with the camp. With that, m1 meets every gate of the quality bar.
-6. The other campaigns follow this pattern later; the m9 scripted playtest is known to fail meanwhile.
+6. The other campaigns follow this pattern later; m9 was reworked on 2026-11-14 to play the documented fall
+   of Arica and its no-cheat playtest is green (#467).
 
 ## Certainty labelling
 

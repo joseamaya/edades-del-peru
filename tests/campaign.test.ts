@@ -210,12 +210,37 @@ describe('campaign educational content', () => {
     }
   });
 
-  it('keeps m9 as a port defense around Bolognesi', () => {
+  it('m9 follows the documented fall of Arica', () => {
     const m9 = MISSIONS.find((m) => m.id === 'm9_guerra_pacifico')!;
     expect(m9.start.buildings?.some((b) => b.kind === BuildingKind.FORTRESS)).toBe(true);
-    expect(m9.objectives.some((o) => o.kind === 'protect' && o.entityTag === 'bolognesi')).toBe(true);
-    expect(m9.objectives.some((o) => o.kind === 'survive')).toBe(true);
-    expect(getEducational(m9.id)?.epilogue).toContain('Arica');
+    expect(m9.start.buildings?.some((b) => b.kind === BuildingKind.CENTER)).toBe(true);
+    expect(m9.periodNote).toBeDefined();
+    // The defence is played, but its outcome is not rewritten: the final line ends the mission and the
+    // epilogue tells the fall. No victory objective keeps Bolognesi alive for the whole mission and none
+    // asks to destroy the Chilean command.
+    expect(m9.objectives.some((o) => o.kind === 'destroy')).toBe(false);
+    const bolognesi = m9.objectives.find((o) => o.kind === 'protect' && o.entityTag === 'bolognesi')!;
+    expect(bolognesi.hidden).toBe(true);
+    expect(
+      m9.triggers.some((t) =>
+        t.effects.some((fx) => fx.type === 'objective' && fx.objectiveId === bolognesi.id && fx.state === 'complete'),
+      ),
+      'Bolognesi is credited at the act transition, not at the fall',
+    ).toBe(true);
+    // Acts: the summons beat, the sappers' work turn, the bombardment and the final line.
+    expect(m9.objectives.some((o) => o.id === 'a1_parlamento' && o.kind === 'wait')).toBe(true);
+    const minas = m9.objectives.find((o) => o.id === 'a1_minas')!;
+    expect(minas.kind).toBe('hold');
+    expect(minas.unitKind).toBe(UnitKind.WORKER);
+    expect(minas.consume?.resource, 'the sappers work a costed turn').toBe('food');
+    expect(m9.objectives.some((o) => o.id === 'a2_bombardeo' && o.kind === 'hold')).toBe(true);
+    expect(m9.objectives.some((o) => o.id === 'a3_asalto' && o.kind === 'hold')).toBe(true);
+    expect(m9.triggers.some((t) => t.effects.some((fx) => fx.type === 'act'))).toBe(true);
+    expect(m9.victory).toContain('historia');
+    expect(m9.victory).not.toMatch(/Arica resiste/i);
+    const edu = getEducational(m9.id)!;
+    expect(edu.epilogue).toContain('cayó');
+    expect(edu.context).toContain('Salvo');
   });
 
   it('scales the opening economy: a scarcity mission forces expansion', () => {

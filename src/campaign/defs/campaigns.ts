@@ -131,7 +131,7 @@ export const CAMPAIGNS: CampaignDef[] = [
     subtitle: 'Del Callao a la Breña',
     description: 'La defensa de la joven república: la escuadra española en el Callao y la Guerra del Pacífico.',
     summary:
-      'En 1866 las baterías del Callao enfrentan a la escuadra española. En la Guerra del Pacífico, el Perú resiste en Tarapacá, en el morro de Arica y en las líneas de San Juan y Miraflores, y Andrés A. Cáceres sostiene la Campaña de la Breña en la sierra central.',
+      'En 1866 las baterías del Callao enfrentan a la escuadra española. En la Guerra del Pacífico, el Perú resiste en Tarapacá, cae en el morro de Arica y defiende las líneas de San Juan y Miraflores, mientras Andrés A. Cáceres sostiene la Campaña de la Breña en la sierra central.',
     missionIds: ['m9_guerra_pacifico'],
     releasedMissionIds: ['m9_guerra_pacifico'],
     status: 'available',

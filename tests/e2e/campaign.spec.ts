@@ -593,7 +593,7 @@ test('m4 network opens the contested frontier', async ({ page }) => {
   expect(out.won).not.toBe(true);
 });
 
-test('m9 land defense fails when Bolognesi falls', async ({ page }) => {
+test('m9 ends on the documented fall, not on Arica resisting', async ({ page }) => {
   await page.goto('/?mission=m9_guerra_pacifico&seed=777&fog=0&low=1&noloop=1');
   await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
     timeout: 30_000,
@@ -603,22 +603,145 @@ test('m9 land defense fails when Bolognesi falls', async ({ page }) => {
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
     const m = g.mission;
-    const bolognesi = [...g.units.values()].find((u: any) => u.tag === 'bolognesi') as any;
-    const before = {
-      active: m.getObjectiveState('obj_bolognesi') as string,
-      alive: !!bolognesi && !bolognesi.dead,
+    const dismiss = () => document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+    const step = () => {
+      g.update(1 / 60, 0);
+      // Chapter cards pause the mission clock; a test that does not close them never reaches Act III.
+      dismiss();
     };
-    bolognesi.die();
-    g.update(1 / 60, 0);
+    // Act I: the summons beat reveals the sappers' work turn.
+    m.objState.set('a1_parlamento', 'completed');
+    step();
+    const minas = m.getObjectiveState('a1_minas') as string;
+    m.objState.set('a1_minas', 'completed');
+    step();
+    const bombardeo = m.getObjectiveState('a2_bombardeo') as string;
+    const bolognesi = m.getObjectiveState('a2_bolognesi') as string;
+    // Act III: the bombardment gives way to the assault and Bolognesi is credited at the transition.
+    m.objState.set('a2_bombardeo', 'completed');
+    step();
+    const asalto = m.getObjectiveState('a3_asalto') as string;
+    const bolognesiCredited = m.getObjectiveState('a2_bolognesi') as string;
+    // Holding the last line ends the mission: the epilogue tells the fall.
+    const lastHold = m.def.objectives.find((o: any) => o.id === 'a3_asalto')!;
+    m.holdTimers.set('a3_asalto', lastHold.time ?? 0);
+    step();
     return {
-      before,
-      after: m.getObjectiveState('obj_bolognesi') as string,
+      minas,
+      bombardeo,
+      bolognesi,
+      asalto,
+      bolognesiCredited,
+      victory: m.def.victory as string,
       ended: m.ended as boolean,
       won: m.won as boolean | null,
     };
   });
-  expect(out.before.alive).toBe(true);
-  expect(out.before.active).toBe('activo');
+  expect(out.minas).toBe('activo');
+  expect(out.bombardeo).toBe('activo');
+  expect(out.bolognesi).toBe('activo');
+  expect(out.asalto).toBe('activo');
+  expect(out.bolognesiCredited).toBe('completed');
+  expect(out.victory).not.toMatch(/Arica resiste/i);
+  expect(out.ended).toBe(true);
+  expect(out.won).toBe(true);
+});
+
+test('m9 credits Bolognesi at the act transition, not before', async ({ page }) => {
+  const boot = async () => {
+    await page.goto('/?mission=m9_guerra_pacifico&seed=777&fog=0&low=1&noloop=1');
+    await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
+      timeout: 30_000,
+    });
+  };
+
+  // Act II: the bombardment still needs him; his death breaks the defence.
+  await boot();
+  const act2 = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
+    const step = () => {
+      g.update(1 / 60, 0);
+      document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+    };
+    m.objState.set('a1_parlamento', 'completed');
+    step();
+    m.objState.set('a1_minas', 'completed');
+    step();
+    const before = m.getObjectiveState('a2_bolognesi') as string;
+    const hero = [...g.units.values()].find((u: any) => u.tag === 'bolognesi') as any;
+    hero.die();
+    g.update(1 / 60, 0);
+    return {
+      before,
+      after: m.getObjectiveState('a2_bolognesi') as string,
+      ended: m.ended as boolean,
+      won: m.won as boolean | null,
+    };
+  });
+  expect(act2.before).toBe('activo');
+  expect(act2.after).toBe('failed');
+  expect(act2.ended).toBe(true);
+  expect(act2.won).toBe(false);
+
+  // Act III: the objective is credited at the transition, so his fall no longer ends the mission.
+  await boot();
+  const act3 = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
+    const step = () => {
+      g.update(1 / 60, 0);
+      document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+    };
+    m.objState.set('a1_parlamento', 'completed');
+    step();
+    m.objState.set('a1_minas', 'completed');
+    step();
+    m.objState.set('a2_bombardeo', 'completed');
+    step();
+    const credited = m.getObjectiveState('a2_bolognesi') as string;
+    const hero = [...g.units.values()].find((u: any) => u.tag === 'bolognesi') as any;
+    hero.die();
+    g.update(1 / 60, 0);
+    return {
+      credited,
+      after: m.getObjectiveState('a2_bolognesi') as string,
+      asalto: m.getObjectiveState('a3_asalto') as string,
+      ended: m.ended as boolean,
+    };
+  });
+  expect(act3.credited).toBe('completed');
+  expect(act3.after).toBe('completed');
+  expect(act3.asalto).toBe('activo');
+  expect(act3.ended).toBe(false);
+});
+
+test('m9 fails when the plaza falls before the final assault', async ({ page }) => {
+  await page.goto('/?mission=m9_guerra_pacifico&seed=777&fog=0&low=1&noloop=1');
+  await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
+    timeout: 30_000,
+  });
+  const out = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
+    const fort = [...g.buildings.values()].find((b: any) => b.tag === 'puerto') as any;
+    const before = m.getObjectiveState('obj_puerto') as string;
+    fort.die();
+    g.update(1 / 60, 0);
+    return {
+      before,
+      after: m.getObjectiveState('obj_puerto') as string,
+      ended: m.ended as boolean,
+      won: m.won as boolean | null,
+    };
+  });
+  expect(out.before).toBe('activo');
   expect(out.after).toBe('failed');
   expect(out.ended).toBe(true);
   expect(out.won).toBe(false);
