@@ -642,7 +642,7 @@ test('m4 network opens the contested frontier', async ({ page }) => {
   expect(out.network).toBe('completed');
   expect(out.active).toBe('activo');
   expect(out.frontier).toBe('completed');
-  expect(out.won).not.toBe(true);
+  expect(out.won, 'the network and the frontier close the mission').toBe(true);
 });
 
 test('m9 ends on the documented fall, not on Arica resisting', async ({ page }) => {

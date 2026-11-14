@@ -155,7 +155,7 @@ export const m4Wari: MissionDef = {
   triggers: [
     {
       id: 't_acto_i',
-      condition: { type: 'time', seconds: 2 },
+      condition: { type: 'time', seconds: 12 },
       effects: [
         {
           type: 'act',
