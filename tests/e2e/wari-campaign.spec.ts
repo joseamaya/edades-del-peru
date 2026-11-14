@@ -29,7 +29,8 @@ test('m4 loads the authored Wari site', async ({ page }) => {
   expect(out.model).toBe('wari_site');
   expect(out.procedural).toBeNull();
   expect(out.heritage).toBe('wari_templo_d');
-  expect(out.anchor).toEqual({ x: 107.5, z: 102 });
+  expect(out.anchor.x).toBeCloseTo(143.333, 3);
+  expect(out.anchor.z).toBeCloseTo(136, 3);
   expect(out.names.some((name) => /Wari_LOD1_(Apron|Terrain)/.test(name))).toBe(false);
 });
 
@@ -66,7 +67,7 @@ test('m4 draws the provincial road network', async ({ page }) => {
   expect(out.planRoads).toBe(4);
   expect(out.endpoints).toBeGreaterThanOrEqual(4);
   expect(out.baseLeg).toBe(true);
-  expect(out.names).toContain('mission-roads-2');
+  expect(out.names.some((name) => name.startsWith('mission-roads-2'))).toBe(true);
   expect(out.meshes).toBeGreaterThan(0);
 });
 
@@ -89,6 +90,7 @@ test('m4 network and frontier complete the mission without a battle', async ({ p
     let t = 0;
     const step = (seconds: number): void => {
       for (let i = 0; i < Math.ceil(seconds / dt) && !m.ended; i++) {
+        document.querySelector<HTMLElement>('.ed-mission-card')?.click();
         const unit = [...g.units.values()].find((u: any) => u.owner === 0 && !u.dead) as any;
         if (unit) unit.pos.set(nodes[0].x, g.terrain.getHeight(nodes[0].x, nodes[0].z), nodes[0].z);
         g.update(dt, t);

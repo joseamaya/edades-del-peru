@@ -494,6 +494,21 @@ describe('campaign educational content', () => {
     expect(m6b.objectives.some((o) => o.kind === 'destroy' && o.entityTag === 'huascar')).toBe(false);
   });
 
+  it('m4 is a model mission with three acts and in-engine images', () => {
+    const m4 = MISSIONS.find((m) => m.id === 'm4_wari')!;
+    expect(m4.modelMission).toBe(true);
+    expect(m4.narrator).toBe('Voz de los Andes');
+    expect(m4.map.size).toBe(256);
+    expect(m4.unitSpeedScale).toBe(0.75);
+    expect(m4.intro?.length).toBe(3);
+    expect(new Set(m4.intro?.map((beat) => beat.image)).size, 'three distinct intro captures').toBe(3);
+    expect(m4.intro?.every((beat) => beat.image.startsWith('media/wari/'))).toBe(true);
+    expect(m4.epilogueImage).toContain('media/wari/');
+    const actTitles = m4.triggers.flatMap((t) => t.effects.flatMap((e) => (e.type === 'act' ? [e.title] : [])));
+    expect(actTitles).toHaveLength(3);
+    expect(actTitles[2]).toContain('Dos esferas');
+  });
+
   it('m4 has a two-node network, a contested frontier and andenes', () => {
     const m4 = MISSIONS.find((m) => m.id === 'm4_wari')!;
     const network = m4.objectives.find((o) => o.id === 'obj_red')!;

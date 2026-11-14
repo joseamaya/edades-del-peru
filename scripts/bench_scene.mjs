@@ -85,11 +85,15 @@ const BUDGETS = {
   // Moche valley opening on the 256 m transect: the canal, the huacas and the starting column. Measured
   // ~550k / 332; first-pass cap with ~6 % headroom.
   m3_moche_recuay: { sceneTriangles: 590_000, sceneDrawCalls: 372, kitTriangles: 12_000, kitDrawCalls: 4 },
+  // Wari highland opening: the basin, the andenes and the complex. Measured ~421k / 199; first-pass cap.
+  m4_wari: { sceneTriangles: 445_000, sceneDrawCalls: 211, kitTriangles: 0, kitDrawCalls: 0 },
   // Túpac Amaru opening on the 256 m valley: the camp, the chapel and the starting column. Measured
   // ~537k / 661–665; first-pass cap with ~6 % headroom (the call count is over art-direction §11's target).
   m7_tupac_amaru: { sceneTriangles: 575_000, sceneDrawCalls: 710, kitTriangles: 0, kitDrawCalls: 0 },
   // The huacas plaza under Recuay pressure: measured ~721k / 568; still over art-direction §11's 600k target.
   m3_moche_recuay_late: { sceneTriangles: 770_000, sceneDrawCalls: 600, kitTriangles: 12_000, kitDrawCalls: 4 },
+  // The Wari frontier with its line and Tiahuanaco influence: measured ~494k / 342; first-pass cap.
+  m4_wari_late: { sceneTriangles: 525_000, sceneDrawCalls: 365, kitTriangles: 0, kitDrawCalls: 0 },
   // The siege/retreat crowd at Cusco: measured ~811k / 1083; still over art-direction §11's 600k target.
   m7_tupac_amaru_late: { sceneTriangles: 860_000, sceneDrawCalls: 1_140, kitTriangles: 0, kitDrawCalls: 0 },
   // Arica opening on the 256 m terrace: the fort, the cuartel and the garrison. Measured ~535k / 600;
@@ -124,6 +128,12 @@ try {
       if (id === 'm3_moche_recuay') {
         return (
           !!g.landmark?.getObjectByName('moche_site') && !!g.trees?.hasKit?.('algarrobo') && !!g.trees.hasKit('sauce')
+        );
+      }
+      if (id === 'm4_wari') {
+        // The highland map draws primitive broad/needle trees, not a GLB kit: wait for the site and dressing.
+        return (
+          !!g.landmark?.getObjectByName('wari_site') && (g.settlementDressing ?? []).every((d) => d.attached !== false)
         );
       }
       if (id === 'm_tambotoco') return !!g.landmark?.getObjectByName('ayllu_site');
@@ -183,7 +193,17 @@ try {
           );
         }
         const site = g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 });
-        if (mission === 'm3_moche_recuay') {
+        if (mission === 'm4_wari') {
+          // Act III: the frontier node with Wari workers/guardians and Tiahuanaco influence.
+          for (let i = 0; i < 12; i++) {
+            const kind = i % 5 === 0 ? 'wari_guardian' : i % 4 === 0 ? 'worker' : 'soldier';
+            g.spawnScriptedUnit(kind, 0, site.x - 14 + (i % 4) * 5, site.z + 10 + Math.floor(i / 4) * 4);
+          }
+          for (let i = 0; i < 10; i++) {
+            const kind = i % 4 === 0 ? 'musketeer' : 'soldier';
+            g.spawnScriptedUnit(kind, 1, site.x + 10 + (i % 5) * 5, site.z - 10 + Math.floor(i / 5) * 4);
+          }
+        } else if (mission === 'm3_moche_recuay') {
           // Act II: the huacas plaza under Recuay pressure.
           for (let i = 0; i < 14; i++) {
             const kind = i % 4 === 0 ? 'musketeer' : 'soldier';

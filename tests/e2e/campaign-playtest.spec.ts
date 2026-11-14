@@ -938,6 +938,7 @@ test('plays m4 Wari with real construction and the provincial network', async ({
     let t = 0;
     let reached = false;
     for (let i = 0; i < Math.ceil(620 / dt) && !g.mission.ended; i++) {
+      document.querySelector<HTMLElement>('.ed-mission-card')?.click();
       if (markets.length < 2 && g.players[0].resources.wood >= 120 && g.players[0].resources.silver >= 40) {
         const builder = markets.length === 0 ? workers[2] : workers[3];
         const market = placeAndBuild('market', nodes[markets.length].x, nodes[markets.length].z, builder);
@@ -980,6 +981,8 @@ test('plays m4 Wari with real construction and the provincial network', async ({
       markets: markets.length,
       marketsComplete: markets.every((m) => m.constructionComplete),
       reached,
+      mapSize: g.settings.mapSize,
+      site: g.siteDef?.id,
       resources: { ...g.players[0].resources },
       objectives: Object.fromEntries(
         g.mission.def.objectives.map((o: any) => [o.id, g.mission.getObjectiveState(o.id)]),
@@ -993,6 +996,8 @@ test('plays m4 Wari with real construction and the provincial network', async ({
   expect(out.markets, JSON.stringify(out)).toBe(2);
   expect(out.marketsComplete, JSON.stringify(out)).toBe(true);
   expect(out.reached, JSON.stringify(out)).toBe(true);
+  expect(out.mapSize, 'the model mission runs on 256 m').toBe(256);
+  expect(out.site).toBe('wari_site');
   expect(out.objectives.obj_andenes).toBe('completed');
   expect(out.objectives.obj_red).toBe('completed');
   expect(out.objectives.obj_suministros).toBe('completed');

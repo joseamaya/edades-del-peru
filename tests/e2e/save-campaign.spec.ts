@@ -697,6 +697,7 @@ test('saves and loads La Junta during the Umachiri resistance', async ({ page })
 test('saves and loads the later campaign missions', async ({ context }) => {
   test.setTimeout(180_000);
   for (const id of [
+    'm4_wari',
     'm_tambotoco',
     'm5_yahuar_pampa',
     'm6_chimu_inca',

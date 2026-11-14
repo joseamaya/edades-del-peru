@@ -4,6 +4,7 @@ import { tutorialForMission } from '../src/campaign/defs/tutorials';
 import { AUTHORED_SITES, getAuthoredSite, isLatePeriod } from '../src/model/defs/sites';
 import { sampleAuthoredGround } from '../src/model/defs/authoredTerrain';
 import { MOCHE_COMPOSITION_SCALE } from '../src/model/defs/mocheSite';
+import { WARI_COMPOSITION_SCALE } from '../src/model/defs/wariSite';
 
 describe('authored campaign sites', () => {
   it('resolves every site referenced by a mission layout', () => {
@@ -40,9 +41,10 @@ describe('authored campaign sites', () => {
     expect(moche.heightField?.ground?.size, 'moche_site painted ground grid').toBe(128);
     expect(moche.heightField?.heights.length, 'moche_site heightfield samples').toBe(257 * 257);
     const wari = getAuthoredSite('wari_site')!;
-    expect(wari.heightField?.worldSize, 'wari_site heightfield world size').toBe(192);
-    expect(wari.heightField?.size, 'wari_site heightfield sample grid').toBe(193);
-    expect(wari.heightField?.heights.length, 'wari_site heightfield samples').toBe(193 * 193);
+    expect(wari.heightField?.worldSize, 'wari_site heightfield world size').toBe(256);
+    expect(wari.heightField?.size, 'wari_site heightfield sample grid').toBe(257);
+    expect(wari.heightField?.ground?.size, 'wari_site painted ground grid').toBe(128);
+    expect(wari.heightField?.heights.length, 'wari_site heightfield samples').toBe(257 * 257);
   });
 
   it('keeps Yahuar Pampa on its authored Chanca site and heightfield', () => {
@@ -200,16 +202,25 @@ describe('authored campaign sites', () => {
 
   it('keeps Wari on its authored site and network layout', () => {
     const wari = getAuthoredSite('wari_site')!;
-    expect(wari.scale).toBe(0.25);
-    expect(wari.anchor).toEqual({ x: 107.5, z: 102 });
+    expect(wari.scale).toBeCloseTo(0.25 * WARI_COMPOSITION_SCALE, 3);
+    expect(wari.anchor.x).toBeCloseTo(107.5 * WARI_COMPOSITION_SCALE, 3);
+    expect(wari.anchor.z).toBeCloseTo(102 * WARI_COMPOSITION_SCALE, 3);
     expect(wari.heritageProxies.map((p) => p.id)).toEqual([
       'wari_templo_d',
       'wari_plaza',
       'wari_galeria',
       'wari_mural',
     ]);
+    expect(wari.heritageProxies[0]?.w).toBeCloseTo(20, 3);
     expect(wari.blockers.length).toBe(2);
-    expect(wari.walkableCorridor?.width).toBe(8);
+    expect(wari.walkableCorridor?.width).toBeCloseTo(10.667, 3);
+    const painted = sampleAuthoredGround(wari.heightField!, wari.anchor.x, wari.anchor.z)!;
+    expect(painted.reduce((sum, w) => sum + w, 0)).toBeCloseTo(1, 2);
+    expect(painted[1], 'the Wari complex is painted dirt').toBeGreaterThan(0.2);
+    const basin = sampleAuthoredGround(wari.heightField!, 80, 90)!;
+    expect(basin[0], 'the Ayacucho basin is painted grass').toBeGreaterThan(0.2);
+    const ridge = sampleAuthoredGround(wari.heightField!, 12, 12)!;
+    expect(ridge[3], 'the highland ridges are painted rock').toBeGreaterThan(0.3);
     const mission = MISSIONS.find((m) => m.id === 'm4_wari')!;
     expect(mission.layout?.site?.id).toBe('wari_site');
     expect(mission.objectives.find((o) => o.id === 'obj_red')?.kind).toBe('network');

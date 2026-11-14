@@ -38,6 +38,7 @@ describe('model-mission scale', () => {
       'm1_caral',
       'm2_chavin',
       'm3_moche_recuay',
+      'm4_wari',
       'm_tambotoco',
       'm_lima',
       'm7_tupac_amaru',
