@@ -56,10 +56,7 @@ export const m9GuerraPacifico: MissionDef = {
   startingEra: Era.REPUBLIC,
   startingResources: { food: 1500, wood: 800, silver: 1500, stone: 1200 },
   start: {
-    buildings: [
-      { kind: BuildingKind.CENTER, dx: 0, dz: 0, tag: 'cuartel' },
-      { kind: BuildingKind.FORTRESS, dx: -10, dz: -6, tag: 'puerto' },
-    ],
+    buildings: [{ kind: BuildingKind.FORTRESS, dx: -10, dz: -6, tag: 'puerto' }],
     units: [
       { kind: UnitKind.WORKER, dx: 4, dz: 6, count: 3 },
       { kind: UnitKind.RIFLEMAN, dx: 6, dz: 2, count: 1, tag: 'bolognesi' },

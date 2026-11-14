@@ -603,6 +603,9 @@ test('m9 ends on the documented fall, not on Arica resisting', async ({ page }) 
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
     const m = g.mission;
+    const centers = [...g.buildings.values()].filter(
+      (b: any) => b.owner === 0 && b.kind === 'center' && !b.dead,
+    ).length;
     const dismiss = () => document.querySelector<HTMLElement>('.ed-mission-card')?.click();
     const step = () => {
       g.update(1 / 60, 0);
@@ -627,6 +630,7 @@ test('m9 ends on the documented fall, not on Arica resisting', async ({ page }) 
     m.holdTimers.set('a3_asalto', lastHold.time ?? 0);
     step();
     return {
+      centers,
       minas,
       bombardeo,
       bolognesi,
@@ -637,6 +641,7 @@ test('m9 ends on the documented fall, not on Arica resisting', async ({ page }) 
       won: m.won as boolean | null,
     };
   });
+  expect(out.centers).toBe(1);
   expect(out.minas).toBe('activo');
   expect(out.bombardeo).toBe('activo');
   expect(out.bolognesi).toBe('activo');
