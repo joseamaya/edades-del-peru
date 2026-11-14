@@ -35,7 +35,8 @@ const out = path.resolve(
 );
 const jsonPath = diagnose ? out.replace(/\.json$/i, '') + '.json' : out.replace(/\.mp4$/i, '.json');
 const contactPath = diagnose ? '' : out.replace(/\.mp4$/i, '-contact.jpg');
-const frameDir = path.join(reviewDir(), 'record-frames');
+// One folder per run: a shared one was wiped by every new recording, so parallel runs lost their video.
+const frameDir = path.join(reviewDir(), `record-frames-${process.pid}`);
 
 const started = Date.now();
 const log = [];
