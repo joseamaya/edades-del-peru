@@ -18,7 +18,7 @@ history.
 
 | Act             | Place                   | Player action                                        | Historical idea                                                 |
 | --------------- | ----------------------- | ---------------------------------------------------- | --------------------------------------------------------------- |
-| I · La cueva    | Tambotoco / Pacaritambo | Leave the cave and hunt 120 food                     | The peregrination starts as a movement of families, not an army |
+| I · La cueva    | Tambotoco / Pacaritambo | Leave the cave, raise the first camp, hunt 120 food  | The peregrination starts as a movement of families, not an army |
 | II · Huanacaure | Huanacaure hill         | Reach and visit the huaca                            | Ayar Uchu becomes stone; the huaca marks the route              |
 | III · El agua   | Cusco valley            | Open the acequia to force the alcabizas to cede land | Water as political leverage (Sarmiento)                         |
 | IV · Inticancha | Cusco valley            | Build the communal store and lay out four canchas    | The ayllu settlement becomes the future Cusco                   |
@@ -55,8 +55,13 @@ The period locks the match to the Intermedio Tardío; no horses, firearms or imp
 
 ## Economy
 
-Workers, militia, slingers and a scout. Buildings: center, house, farm, storehouse, sawmill, barracks,
-fortress, walls, gate and tower. No market, silver, stable or artillery: the economy is an ayllu economy,
+The party starts with **nothing built** (`start.base: false`): no centre, no dwellings, no plots. The eight
+siblings and their people leave the cave, and the workers raise the first camp — a communal store that
+receives the hunt — before Act I's hunt opens. With no centre the party cannot train workers; its people are
+the ones who left the cave. Defeat waits until the party has neither buildings nor units.
+
+Workers, militia, slingers and a scout. Buildings: house, farm, storehouse, sawmill, barracks, fortress,
+walls, gate and tower. No market, silver, stable or artillery: the economy is an ayllu economy,
 and the only "engine" of the mission is water.
 
 ## Characters
@@ -96,8 +101,12 @@ The legend is about eight siblings, so all eight are on the board from the start
 
 ## Tutorial
 
-Seven non-blocking steps: select militia, meet the eight siblings, leave the cave, hunt, visit Huanacaure,
-open the acequia, lay out the canchas.
+Objectives say **what** to do and **where**; the tutorial only teaches **how**, the first time a control is
+needed, because the Inca campaign opens from a fresh save and can be a player's first mission. Seven
+non-blocking steps, each gated on its objective: move the party (box select, right-click), place the
+communal store (build bar), hunt (right-click on animals), visit the huaca (card → «Visitar»), answer the
+valley wave ({key:selectArmy}, right-click), open the acequia (card → «Abrir compuerta») and place the four
+cancha houses ({key:buildHouse}). The eight siblings and the myth stay in the briefing and the dialogue.
 
 ## Tests
 

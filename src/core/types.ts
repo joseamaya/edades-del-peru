@@ -229,6 +229,7 @@ export interface EntityRef {
 }
 
 type EmptyEvent = Record<string, never>;
+type HarvestEvent = { x: number; z: number; owner: number };
 
 /** Why a player-owned unit could not make progress on its current order. */
 export type AlertReason = 'no-route' | 'stuck' | 'no-dropsite';
@@ -264,6 +265,7 @@ export type GameEvents = {
   'fx:explosion': EmptyEvent;
   'fx:death': EmptyEvent;
   'fx:hit': EmptyEvent;
-  'fx:wood': EmptyEvent;
-  'fx:mine': EmptyEvent;
+  /** A worker's harvest stroke on wood (axe) or stone/silver (pick); food harvests make no sound. */
+  'fx:wood': HarvestEvent;
+  'fx:mine': HarvestEvent;
 };

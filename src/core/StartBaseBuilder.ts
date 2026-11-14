@@ -10,6 +10,7 @@ import {
   placeStartingUnits,
   planStartingUnitSpots,
 } from '../sim/WorldBuilder';
+import type { SettlementPlan } from '../model/defs/settlementPlan';
 
 /** Opening base, starting units, resources and initial worker assignment. */
 export class StartBaseBuilder {
@@ -17,8 +18,15 @@ export class StartBaseBuilder {
 
   spawnStartBase(player: number, x: number, z: number): void {
     const ctx = this.game.makeBuildContext(player);
+    // A party on the move (Tambotoco) starts with nothing built: no centre, no dwellings, no plots.
+    const camp = !(player === 0 && this.game.missionDef?.start?.base === false);
     // center and starting dwellings, laid out by the terrain-aware planner
     const plan = this.game.settlementPlanFor(player, x, z);
+    if (camp) this.placeBase(player, plan);
+    this.spawnStartUnits(player, x, z, ctx);
+  }
+
+  private placeBase(player: number, plan: SettlementPlan): void {
     placeStartBuildings({
       plan,
       createBuilding: (kind, bx, bz) => {
@@ -39,6 +47,9 @@ export class StartBaseBuilder {
     if (civ === CivId.CARAL || civ === CivId.CHAVIN) {
       this.game.world.addSettlementDressing(plan, player, civ === CivId.CHAVIN ? 'chavin' : 'caral');
     }
+  }
+
+  private spawnStartUnits(player: number, x: number, z: number, ctx: any): void {
     // nearby resources to start
     this.spawnStartResources(player, x, z);
     // After the opening nodes: the valley groves keep clear of every existing resource.

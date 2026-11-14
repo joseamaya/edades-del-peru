@@ -56,6 +56,8 @@ export interface MissionCanal {
    * gate is scenery: opening it would complete the objective the moment it appears.
    */
   lockedUntilObjective?: string;
+  /** Toast shown when the gate is clicked while locked; defaults to Caral's «prepare the fields» hint. */
+  lockedHint?: string;
   /** Optional heritage field card exposed by clicking the canal. */
   heritageId?: HeritageBuildingId;
 }
@@ -419,6 +421,11 @@ export interface MissionDef {
   unitSpeedScale?: number;
   startingResources: Resources;
   start: {
+    /**
+     * `false`: the player starts as a party on the move, with no centre or dwellings (Tambotoco: the Ayar
+     * leave the cave with nothing built). Defeat then waits until the party has neither buildings nor units.
+     */
+    base?: boolean;
     buildings?: { kind: BuildingKind; dx: number; dz: number; tag?: string }[];
     units?: { kind: UnitKind; dx: number; dz: number; tag?: string; count?: number }[];
   };

@@ -1385,7 +1385,8 @@ export const MISSIONS: MissionDef[] = [
         { text: 'Huanacaure', x: TAMBOTOCO_HUANACAURE.x / 256, z: TAMBOTOCO_HUANACAURE.z / 256, kind: 'region' },
         { text: 'Valle del Cusco', x: 196 / 256, z: 190 / 256, kind: 'region' },
       ],
-      base: { x: 46 / 256, z: 74 / 256 },
+      // Close to the cave mouth (blocker z ≈ 50–60): the party reads as just leaving Tambotoco.
+      base: { x: 44 / 256, z: 65 / 256 },
       opening: { x: 41 / 256, z: 62 / 256 },
       enemyBase: { x: TAMBOTOCO_ENEMY.x / 256, z: TAMBOTOCO_ENEMY.z / 256 },
       discoveries: [{ heritageId: 'tambotoco_huanacaure' }],
@@ -1419,6 +1420,8 @@ export const MISSIONS: MissionDef[] = [
         irrigation: true,
         heritageId: 'tambotoco_acequia',
         lockedUntilObjective: 'a3_acequia',
+        lockedHint:
+          'La acequia de los alcabizas está más adelante en la leyenda: primero llega al valle por Huanacaure.',
       },
       roads: [
         { from: { dx: 44, dz: 84 }, to: { dx: TAMBOTOCO_HUANACAURE.x, dz: TAMBOTOCO_HUANACAURE.z }, width: 3 },
@@ -1431,6 +1434,8 @@ export const MISSIONS: MissionDef[] = [
     unitSpeedScale: 0.75,
     startingResources: { food: 700, wood: 500, silver: 0, stone: 300 },
     start: {
+      // The Ayar leave the cave with their people and nothing built: the workers raise the first camp.
+      base: false,
       units: [
         { kind: UnitKind.WORKER, dx: 4, dz: 4, count: 2 },
         { kind: UnitKind.WORKER, dx: 3, dz: 5, count: 1, tag: 'mama_ocllo' },
@@ -1478,7 +1483,6 @@ export const MISSIONS: MissionDef[] = [
     buildingNames: { [BuildingKind.MILL]: 'Depósito comunal' },
     allowedUnits: [UnitKind.WORKER, UnitKind.SOLDIER, UnitKind.MUSKETEER, UnitKind.SCOUT],
     allowedBuildings: [
-      BuildingKind.CENTER,
       BuildingKind.HOUSE,
       BuildingKind.FARM,
       BuildingKind.MILL,
@@ -1498,12 +1502,20 @@ export const MISSIONS: MissionDef[] = [
         title: 'Sal de Tambotoco y toma el camino',
       },
       {
+        id: 'a1_campamento',
+        kind: 'build',
+        buildingKind: BuildingKind.MILL,
+        count: 1,
+        hidden: true,
+        title: 'Levanta un depósito comunal para el campamento',
+      },
+      {
         id: 'a1_caza',
         kind: 'gather',
         fromNode: 'hunt',
         count: 120,
         hidden: true,
-        title: 'Sostén a las familias en el camino',
+        title: 'Caza 120 de comida y llévala al depósito para sostener a las familias',
       },
       {
         id: 'a1_manco',
@@ -1520,13 +1532,13 @@ export const MISSIONS: MissionDef[] = [
         pos: { dx: TAMBOTOCO_HUANACAURE.x, dz: TAMBOTOCO_HUANACAURE.z },
         radius: 18,
         hidden: true,
-        title: 'Llega a la huaca de Huanacaure',
+        title: 'Sube a Huanacaure y abre la ficha de la huaca',
       },
       {
         id: 'a3_acequia',
         kind: 'canal_open',
         hidden: true,
-        title: 'Abre la acequia de los alcabizas',
+        title: 'Abre la compuerta de la acequia de los alcabizas',
       },
       {
         id: 'a3_hualla',
@@ -1544,7 +1556,7 @@ export const MISSIONS: MissionDef[] = [
         pos: { dx: TAMBOTOCO_INTICANCHA.x, dz: TAMBOTOCO_INTICANCHA.z },
         radius: 16,
         hidden: true,
-        title: 'Funda Inticancha con su depósito comunal',
+        title: 'Funda Inticancha: construye su depósito comunal en el sitio marcado',
       },
       {
         id: 'a4_canchas',
@@ -1554,7 +1566,7 @@ export const MISSIONS: MissionDef[] = [
         radius: 9,
         count: 4,
         hidden: true,
-        title: 'Ordena las cuatro canchas alrededor de Inticancha',
+        title: 'Construye cuatro viviendas en las canchas marcadas de Inticancha',
       },
     ],
     triggers: [
@@ -1566,7 +1578,7 @@ export const MISSIONS: MissionDef[] = [
             type: 'dialogue',
             speaker: 'Mama Huaco',
             duration: 9,
-            text: '—La cueva nos queda atrás. Busquemos tierra y agua: donde el valle se abra, fundaremos.',
+            text: '—Salimos de la cueva sin nada más que nuestra gente. Busquemos tierra y agua: donde el valle se abra, fundaremos.',
           },
         ],
       },
@@ -1585,6 +1597,19 @@ export const MISSIONS: MissionDef[] = [
             tag: 'ayar_cachi',
             pos: { dx: TAMBOTOCO_TAMBO_QUIRO.x, dz: TAMBOTOCO_TAMBO_QUIRO.z },
             label: 'Huaca de Ayar Cachi',
+          },
+          { type: 'objective', objectiveId: 'a1_campamento', state: 'activate', announce: true },
+        ],
+      },
+      {
+        id: 't_campamento',
+        condition: { type: 'objective', objectiveId: 'a1_campamento', state: 'completed' },
+        effects: [
+          {
+            type: 'dialogue',
+            speaker: 'Mama Ocllo',
+            duration: 8,
+            text: '—Ya tenemos dónde guardar lo que traigamos. Que los cazadores salgan: las familias necesitan comer.',
           },
           { type: 'objective', objectiveId: 'a1_caza', state: 'activate', announce: true },
         ],

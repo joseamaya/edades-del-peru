@@ -1398,9 +1398,11 @@ export class Unit {
       }
       this.gatherCarry[node.resource as keyof Resources] += amount;
       if (node.kind) this.ctx.recordHarvest(this.owner, node.kind, amount);
-      if (node.resource === 'wood') this.ctx.event?.('fx:wood', {});
-      else if (node.resource === 'silver' || node.resource === 'stone') this.ctx.event?.('fx:mine', {});
-      else this.ctx.event?.('fx:wood', {});
+      // Axe for wood, pick for stone/silver. Fishing, hunting and fields are silent: they used to play the
+      // axe too, a «tic» every 1.4 s per worker all match long.
+      const stroke = { x: node.pos.x, z: node.pos.z, owner: this.owner };
+      if (node.resource === 'wood') this.ctx.event?.('fx:wood', stroke);
+      else if (node.resource === 'silver' || node.resource === 'stone') this.ctx.event?.('fx:mine', stroke);
       // gather effect according to the resource
       if (node.resource === 'wood') {
         this.ctx.particles?.emit({

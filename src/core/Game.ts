@@ -945,12 +945,21 @@ export class Game {
     };
   }
 
-  /** Center of a player (its main building) or the map center. */
+  /** Whether a harvest stroke is the player's and close enough to the camera to be heard. */
+  private harvestAudible(e: { x: number; z: number; owner: number }): boolean {
+    if (e.owner !== 0) return false;
+    const target = this.camera.getTarget();
+    return distance2D(e.x, e.z, target.x, target.z) <= Math.max(18, this.camera.getZoom() * 0.9);
+  }
+
+  /** Center of a player (its main building), else its opening spot (a party with no base), else the map center. */
   playerCenter(owner: number): { x: number; z: number } {
     const c = [...this.buildings.values()].find((b) => b.owner === owner && b.kind === BuildingKind.CENTER && !b.dead);
     if (c) return { x: c.pos.x, z: c.pos.z };
     return { x: this.settings.mapSize / 2, z: this.settings.mapSize / 2 };
   }
+    const spot = this.startSpots[owner];
+    if (spot) return { x: spot[0], z: spot[1] };
 
   /** Find the nearest solid land to a point (for scripted spawns). */
   findLandNear(x: number, z: number, radius = 16): { x: number; z: number } {
@@ -1865,7 +1874,7 @@ export class Game {
     const locked = this.missionLayout?.canal?.lockedUntilObjective;
     const lockState = locked ? this.mission?.getObjectiveState(locked) : 'activo';
     if (lockState !== 'activo' && lockState !== 'completed') {
-      this.hud?.showToast(t('hud.toast.canalLocked'), 'info');
+      this.hud?.showToast(this.missionLayout?.canal?.lockedHint ?? t('hud.toast.canalLocked'), 'info');
       return this.canalOpen;
     }
     this.canalOpen = !this.canalOpen;
@@ -1954,8 +1963,9 @@ export class Game {
     bus.on('fx:explosion', () => this.audio.explosion());
     bus.on('fx:death', () => this.audio.death());
     bus.on('fx:hit', () => this.audio.hit());
-    bus.on('fx:wood', () => this.audio.woodChop());
-    bus.on('fx:mine', () => this.audio.mineHit());
+    // Harvest strokes only sound for the player's own workers on screen (never the AI's, never off-screen).
+    bus.on('fx:wood', (e) => this.harvestAudible(e) && this.audio.woodChop());
+    bus.on('fx:mine', (e) => this.harvestAudible(e) && this.audio.mineHit());
   }
 
   // --- UnitContext context ---

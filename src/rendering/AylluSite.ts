@@ -3,7 +3,6 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { isKnownPhase, phaseOrder, type SitePhasePlan } from '../model/defs/sitePhases';
 import {
   TAMBOTOCO_CAVE,
-  TAMBOTOCO_CAVE_HUTS,
   TAMBOTOCO_CANCHAS,
   TAMBOTOCO_FIELDS,
   TAMBOTOCO_INTICANCHA,
@@ -231,17 +230,7 @@ export class AylluSite {
 
     const caveParts: Parts = [];
     cave(caveParts, ground(TAMBOTOCO_CAVE.x, TAMBOTOCO_CAVE.z));
-    for (const h of TAMBOTOCO_CAVE_HUTS) {
-      hut(caveParts, h, ground(h.x, h.z));
-      if (h.smoke)
-        this.life.push({
-          x: h.x,
-          z: h.z,
-          y: this.heightAt(h.x, h.z) + 0.35 + h.wall * 2.35,
-          phase: PHASE_CAVE,
-          kind: 'smoke',
-        });
-    }
+    // No huts at the cave: the Ayar leave it with nothing built, and their workers raise the first camp.
     for (const dx of [-2.4, 2.4]) {
       this.life.push({
         x: TAMBOTOCO_CAVE.x + dx,

@@ -4,41 +4,51 @@ import type { TutorialDef } from '../types';
 const buildBottom = '#ed-bottom';
 
 const TUTORIALS: Record<string, TutorialDef> = {
+  // The objectives say what to do and where; the tutorial only teaches the control a step needs, the
+  // first time it is needed, so a player who opens the Inca campaign first can play it.
   m_tambotoco: {
     steps: [
       {
-        id: 'select',
-        text: 'Selecciona la milicia de los ayllus: la peregrinación necesita brazos, no un ejército imperial.',
-        check: { type: 'selectUnit', unitKind: UnitKind.SOLDIER },
-      },
-      {
-        id: 'ayar',
-        text: 'Los ocho hermanos marchan contigo: sus nombres van sobre la unidad. Ayar Cachi y Ayar Uchu quedarán en el camino; el resto fundará Inticancha.',
-        check: { type: 'elapsed', seconds: 12 },
-      },
-      {
-        id: 'salida',
-        text: 'Sal de la cueva de Tambotoco y busca el camino al valle.',
+        id: 'mover',
+        text: 'Arrastra un recuadro sobre tu gente para seleccionarla y haz clic derecho en el suelo para moverla. Sigue el camino que baja de la cueva.',
         check: { type: 'objectiveCompleted', objectiveId: 'a1_salida' },
       },
       {
+        id: 'campamento',
+        text: 'Selecciona obreros, pulsa el botón Depósito comunal en la barra inferior y haz clic en el suelo para colocarlo. Los obreros lo construyen.',
+        highlight: buildBottom,
+        gateObjective: 'a1_campamento',
+        check: { type: 'build', buildingKind: BuildingKind.MILL, baseline: 'mills' },
+      },
+      {
         id: 'caza',
-        text: 'Caza para sostener a las familias: reúne 120 de comida.',
+        text: 'Con obreros seleccionados, haz clic derecho sobre los animales para cazar. Llevan la carne solos al depósito más cercano.',
+        gateObjective: 'a1_caza',
         check: { type: 'objectiveCompleted', objectiveId: 'a1_caza' },
       },
       {
         id: 'huanacaure',
-        text: 'Sube a Huanacaure y abre la ficha de la huaca. La tradición hace de este cerro el paso al valle.',
+        text: 'Lleva a alguien junto a la huaca, haz clic sobre ella y pulsa «🔎 Visitar» en su ficha.',
+        gateObjective: 'a2_huanacaure',
         check: { type: 'objectiveCompleted', objectiveId: 'a2_huanacaure' },
       },
       {
+        id: 'defensa',
+        text: 'Los ayllus del valle salen a tu encuentro. Pulsa {key:selectArmy} para seleccionar a tus guerreros y haz clic derecho sobre el enemigo para atacarlo.',
+        gateObjective: 'a3_acequia',
+        check: { type: 'elapsed', seconds: 14 },
+      },
+      {
         id: 'agua',
-        text: 'El agua es la palanca: abre la acequia de los alcabizas desde su ficha para forzar la cesión de tierras.',
+        text: 'Haz clic en la compuerta de la acequia y pulsa «💧 Abrir compuerta» en su ficha.',
+        gateObjective: 'a3_acequia',
         check: { type: 'objectiveCompleted', objectiveId: 'a3_acequia' },
       },
       {
         id: 'canchas',
-        text: 'Funda Inticancha y ordena cuatro casas en las canchas alrededor del centro.',
+        text: 'Selecciona obreros, pulsa {key:buildHouse} (o el botón Vivienda) y coloca una vivienda en cada cancha marcada.',
+        highlight: buildBottom,
+        gateObjective: 'a4_canchas',
         check: { type: 'objectiveCompleted', objectiveId: 'a4_canchas' },
       },
     ],

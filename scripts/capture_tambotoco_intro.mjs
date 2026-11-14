@@ -14,7 +14,8 @@ const OUT = path.join(process.cwd(), 'public', 'media', 'tambotoco');
 fs.mkdirSync(OUT, { recursive: true });
 
 const SHOTS = [
-  { id: 'cueva', at: [42, 60], height: 28, time: 0.58, phase: 'cave' },
+  // The party leaving the cave with nothing built: the cave mouth above, the Ayar and their people below.
+  { id: 'cueva', at: [45, 60], height: 30, time: 0.58, phase: 'cave' },
   {
     id: 'huanacaure',
     cinematic: { center: [120, 106], eye: [0, 24, 40], look: [0, 11, 0], fov: 48, time: 0.52 },
@@ -52,7 +53,11 @@ try {
         document.querySelector('.ed-mission-card')?.remove();
         const rings = g.scene.getObjectByName('mission-rings');
         if (rings) rings.visible = false;
-        if (g.characterLabels) g.characterLabels.group.visible = false;
+        // The renderer re-shows the hero nameplates every frame; the captures are illustrations, not HUD shots.
+        if (g.characterLabels) {
+          g.characterLabels.setVisible(false);
+          g.characterLabels.setVisible = () => {};
+        }
         const ui = document.getElementById('ui-root');
         if (ui) ui.style.display = 'none';
         if (g.getPaused()) g.togglePause();

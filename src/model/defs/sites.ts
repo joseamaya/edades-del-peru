@@ -60,13 +60,7 @@ import {
   TAMBOTOCO_STREAM_HALF_WIDTH,
   TAMBOTOCO_STREAM_PATH,
 } from './tambotocoHeightmap';
-import {
-  TAMBOTOCO_CAVE,
-  TAMBOTOCO_CAVE_HUTS,
-  TAMBOTOCO_INTICANCHA_HUTS,
-  TAMBOTOCO_SHRINE,
-  TAMBOTOCO_VILLAGES,
-} from './tambotocoLayout';
+import { TAMBOTOCO_CAVE, TAMBOTOCO_INTICANCHA_HUTS, TAMBOTOCO_SHRINE, TAMBOTOCO_VILLAGES } from './tambotocoLayout';
 import { CUSCO_COLONIAL, LIMA_COLONIAL } from './colonialLayout';
 import {
   LIMA_GROUND,
@@ -861,7 +855,6 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     blockers: [
       { x: TAMBOTOCO_SHRINE.x, z: TAMBOTOCO_SHRINE.z, w: 12, d: 10 },
       { x: TAMBOTOCO_CAVE.x, z: TAMBOTOCO_CAVE.z, w: 11, d: 9 },
-      ...TAMBOTOCO_CAVE_HUTS.map((h) => ({ x: h.x, z: h.z, w: h.w + 1.4, d: h.d + 1.4 })),
       ...TAMBOTOCO_VILLAGES.flatMap((v) => v.huts.map((h) => ({ x: h.x, z: h.z, w: h.w + 1.4, d: h.d + 1.4 }))),
       ...TAMBOTOCO_INTICANCHA_HUTS.map((h) => ({
         x: h.x,

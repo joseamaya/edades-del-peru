@@ -405,9 +405,10 @@ export class Mission {
   }
 
   private checkBaseLost(): void {
-    if (!this.game.hasBuildings(0)) {
-      this.defeat();
-    }
+    if (this.game.hasBuildings(0)) return;
+    // A party that starts with no base (Tambotoco) is lost only when no one of it is left.
+    if (this.def.start.base === false && [...this.game.units.values()].some((u) => u.owner === 0 && !u.dead)) return;
+    this.defeat();
   }
 
   // --- triggers ---

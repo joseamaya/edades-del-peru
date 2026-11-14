@@ -1014,20 +1014,30 @@ test('the Tambotoco tutorial advances with the player actions', async ({ page })
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
-    const soldier = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'soldier') as any;
-    g.selectUnits([soldier.id]);
-    for (let i = 0; i < 60 * 15; i++) g.update(1 / 60, i / 60);
+    for (let i = 0; i < 60 * 2; i++) g.update(1 / 60, i / 60);
+    const before = g.tutorial?.toSave()?.stepId ?? null;
+    // Step 1 teaches moving the party; it advances when the party leaves the cave.
+    const ids = [...g.units.values()].filter((u: any) => u.owner === 0 && !u.dead).map((u: any) => u.id);
+    g.executeCommand(
+      { kind: 'order', unitIds: ids, order: { kind: 'move', target: { x: 60, z: 92 } }, clear: true },
+      false,
+    );
+    for (let i = 0; i < 60 * 90 && g.mission.getObjectiveState('a1_salida') !== 'completed'; i++)
+      g.update(1 / 60, i / 60);
+    for (let i = 0; i < 60 * 3; i++) g.update(1 / 60, 90 + i / 60);
     const save = g.tutorial?.toSave();
     return {
+      before,
       step: save?.stepId ?? null,
       finished: save?.finished ?? null,
       panel: document.querySelector('#ed-tutorial')?.textContent ?? '',
     };
   });
-  // Step 1 is selection, step 2 is the 12 s cast beat; both must pass without a scripted shortcut.
-  expect(out.step).toBe('salida');
+  expect(out.before).toBe('mover');
+  // Leaving the cave opens the camp: the tutorial now teaches placing the communal store.
+  expect(out.step).toBe('campamento');
   expect(out.finished).toBe(false);
-  expect(out.panel).toContain('Sal de la cueva');
+  expect(out.panel).toContain('Depósito comunal');
   expect(errors).toEqual([]);
 });
 

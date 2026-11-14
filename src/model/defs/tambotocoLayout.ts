@@ -17,12 +17,6 @@ export interface AylluHut {
   readonly smoke: boolean;
 }
 
-export const TAMBOTOCO_CAVE_HUTS: readonly AylluHut[] = [
-  { x: 32, z: 58, w: 3.2, d: 2.8, wall: 1.5, smoke: true },
-  { x: 50, z: 58, w: 3.2, d: 2.8, wall: 1.5, smoke: true },
-  { x: 36, z: 70, w: 3.2, d: 2.8, wall: 1.5, smoke: true },
-];
-
 export const TAMBOTOCO_SHRINE_HUTS: readonly AylluHut[] = [
   { x: 112, z: 100, w: 2.6, d: 2.3, wall: 1.3, smoke: true },
   { x: 128, z: 101, w: 2.6, d: 2.3, wall: 1.3, smoke: true },
