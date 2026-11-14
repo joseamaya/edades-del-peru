@@ -3,6 +3,7 @@ import { MISSIONS } from '../src/campaign/defs/campaign';
 import { tutorialForMission } from '../src/campaign/defs/tutorials';
 import { AUTHORED_SITES, getAuthoredSite, isLatePeriod } from '../src/model/defs/sites';
 import { sampleAuthoredGround } from '../src/model/defs/authoredTerrain';
+import { MOCHE_COMPOSITION_SCALE } from '../src/model/defs/mocheSite';
 
 describe('authored campaign sites', () => {
   it('resolves every site referenced by a mission layout', () => {
@@ -177,13 +178,17 @@ describe('authored campaign sites', () => {
 
   it('keeps Moche on its authored site and canal layout', () => {
     const moche = getAuthoredSite('moche_site')!;
-    expect(moche.scale).toBeCloseTo(0.3333, 3);
-    expect(moche.anchor.x).toBeCloseTo(164, 3);
-    expect(moche.anchor.z).toBeCloseTo(108, 3);
+    expect(moche.scale).toBeCloseTo(0.25 * MOCHE_COMPOSITION_SCALE, 3);
+    expect(moche.anchor.x).toBeCloseTo(123 * MOCHE_COMPOSITION_SCALE, 3);
+    expect(moche.anchor.z).toBeCloseTo(81 * MOCHE_COMPOSITION_SCALE, 3);
     expect(moche.heightField?.ground?.weights.length).toBe(128 * 128 * 4);
     const painted = sampleAuthoredGround(moche.heightField!, moche.anchor.x, moche.anchor.z)!;
     expect(painted.reduce((sum, w) => sum + w, 0)).toBeCloseTo(1, 2);
     expect(painted[1], 'the huacas terrace is painted dirt').toBeGreaterThan(0.2);
+    const beach = sampleAuthoredGround(moche.heightField!, 10, 128)!;
+    expect(beach[2], 'the Pacific shore is painted sand').toBeGreaterThan(0.6);
+    const valley = sampleAuthoredGround(moche.heightField!, 80, 100)!;
+    expect(valley[0], 'the irrigated valley is painted grass').toBeGreaterThan(0.25);
     expect(moche.heritageProxies.map((p) => p.id)).toEqual(['moche_huaca_sol', 'moche_huaca_luna', 'moche_plaza']);
     expect(moche.heritageProxies[0]?.w).toBeCloseTo(30.667, 3);
     expect(moche.blockers.length).toBe(2);

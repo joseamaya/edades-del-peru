@@ -21,7 +21,11 @@ const SHOTS = [
     cinematic: { center: 'canal', eye: [-22, 15, 24], look: [0, 1, 0], fov: 52, time: 0.62 },
   },
   { id: 'huacas', anchor: 'site', height: 46, time: 0.58 },
-  { id: 'sierra', anchor: 'enemy', height: 40, time: 0.5 },
+  {
+    id: 'sierra',
+    anchor: 'enemy',
+    cinematic: { eye: [-34, 16, 18], look: [0, 6, 0], fov: 50, time: 0.5 },
+  },
   {
     id: 'epilogo',
     anchor: 'site',

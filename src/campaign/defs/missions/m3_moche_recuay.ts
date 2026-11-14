@@ -15,6 +15,7 @@ export const m3MocheRecuay: MissionDef = {
   period: HistoricalPeriod.EARLY_INTERMEDIATE,
   tutorial: true,
   modelMission: true,
+  narrator: 'Voz del valle',
   intro: [
     {
       kicker: 'VALLE DE MOCHE · c. 300–600 d.C.',
@@ -59,7 +60,7 @@ export const m3MocheRecuay: MissionDef = {
       name: 'Canal del valle de Moche',
       x: 0.45,
       z: 0.56,
-      length: 36,
+      length: mocheLength(36),
       yaw: 0.08,
       initiallyOpen: false,
       irrigation: true,
@@ -86,10 +87,12 @@ export const m3MocheRecuay: MissionDef = {
   startingEra: Era.REGIONAL_STATES,
   startingResources: { food: 700, wood: 600, silver: 300, stone: 200 },
   start: {
+    // `UnitKind.MUSKETEER` is the legacy id of the basic ranged slot: in this era it renders as a
+    // hondero with a sling, not a firearm.
     units: [
-      { kind: UnitKind.SOLDIER, dx: 12, dz: 4, count: 6 },
-      { kind: UnitKind.MUSKETEER, dx: 10, dz: 10, count: 4 },
-      { kind: UnitKind.SCOUT, dx: 8, dz: 8, count: 1 },
+      { kind: UnitKind.SOLDIER, dx: mocheLength(12), dz: mocheLength(4), count: 6 },
+      { kind: UnitKind.MUSKETEER, dx: mocheLength(10), dz: mocheLength(10), count: 4 },
+      { kind: UnitKind.SCOUT, dx: mocheLength(8), dz: mocheLength(8), count: 1 },
     ],
   },
   mark: [],
@@ -104,7 +107,7 @@ export const m3MocheRecuay: MissionDef = {
       id: 'obj_huacas',
       kind: 'hold',
       pos: { ref: 'site', dx: mocheLength(4), dz: mocheLength(8) },
-      radius: 18,
+      radius: mocheLength(18),
       time: 90,
       hidden: true,
       requires: 'obj_canal',
@@ -113,6 +116,8 @@ export const m3MocheRecuay: MissionDef = {
     {
       id: 'obj_intercambio',
       kind: 'deliver',
+      heritageId: 'moche_huaca_luna',
+      pos: { ref: 'site', dx: mocheLength(13.5), dz: -mocheLength(2) },
       resource: 'silver',
       count: 250,
       hidden: true,
@@ -144,7 +149,7 @@ export const m3MocheRecuay: MissionDef = {
         },
         {
           type: 'dialogue',
-          text: 'Señor de Moche: —El agua del canal sostiene los campos y las huacas. ¡Nadie entra al valle sin nuestro permiso!',
+          text: 'El agua del canal sostiene los campos y las huacas. ¡Nadie entra al valle sin nuestro permiso!',
         },
       ],
     },
@@ -175,7 +180,7 @@ export const m3MocheRecuay: MissionDef = {
           owner: 1,
           units: [{ kind: UnitKind.SOLDIER, count: 5 }],
           pos: { ref: 'site', dx: -mocheLength(20), dz: -mocheLength(26) },
-          radius: 6,
+          radius: mocheLength(6),
         },
         { type: 'dialogue', text: '¡Recuay cruza la quebrada por el norte! ¡Defiende la plaza!' },
       ],
@@ -192,7 +197,7 @@ export const m3MocheRecuay: MissionDef = {
             { kind: UnitKind.MUSKETEER, count: 2 },
           ],
           pos: { ref: 'site', dx: mocheLength(22), dz: -mocheLength(24) },
-          radius: 6,
+          radius: mocheLength(6),
         },
         { type: 'dialogue', text: 'Otra columna baja desde el Callejón de Huaylas. ¡Refuerza el flanco este!' },
       ],
@@ -204,7 +209,7 @@ export const m3MocheRecuay: MissionDef = {
         {
           type: 'act',
           kicker: 'Acto III · El intercambio',
-          title: 'La Huaca de la Luna',
+          title: 'El intercambio con la sierra',
           image: 'media/moche/intro-sierra.webp',
           text: 'La plaza resiste. El intercambio de élite con la sierra se cierra en la Huaca de la Luna: plata y cerámica por prestigio y alianzas.',
         },
@@ -225,7 +230,7 @@ export const m3MocheRecuay: MissionDef = {
           owner: 1,
           units: [{ kind: UnitKind.SOLDIER, count: 6 }],
           pos: { ref: 'site', dx: 0, dz: -mocheLength(30) },
-          radius: 6,
+          radius: mocheLength(6),
         },
       ],
     },

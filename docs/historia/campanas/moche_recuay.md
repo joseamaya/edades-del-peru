@@ -16,6 +16,17 @@
 - **Desenlace**: Moche domina la costa norte durante el Intermedio Temprano y se fragmenta hacia el 800 d.C.
 - **Nota**: el conflicto con componente bélico está **atestiguado**, aunque no como una batalla única.
 
+## Certeza
+
+| Afirmación | Certeza | Base |
+| --- | --- | --- |
+| Moche y Recuay fueron coetáneos y sostuvieron interacción de largo alcance | Documentado | Arqueología y piezas de filiación moche en la sierra |
+| El componente bélico de esa interacción | Atestiguado, no como una batalla única | Fortificaciones y conflicto fronterizo documentado |
+| Canales y control del agua en los valles | Documentado (infraestructura); la compuerta es abstracción jugable | Arqueología moche |
+| Intercambio de élite (metal, cerámica) | Documentado | Piezas y redes de intercambio |
+| Nombres de gobernantes moche o recuay | No se conocen; no se inventan | Silencio de las fuentes |
+| Los actos, oleadas y la captura narrada | Abstracción jugable sobre el conflicto atestiguado | Este dossier y `docs/design/moche-model-mission.md` |
+
 ## Fuentes
 
 - PUCP: interacciones Moche–Recuay (revistas de arqueología).

@@ -35,8 +35,10 @@ sampling the former 192 m composition 4/3 larger:
 
 Painted ground uses `MOCHE_GROUND` (beach sand, valley grass and dirt, huacas terrace dirt, foothills rock)
 sampled at 128 × 128 over 256 m. The worker crosses in ≈2:22 (`unitSpeedScale: 0.75`), inside the
-model-mission band. The horizontal composition scales 4/3; the vertical amplitude keeps the 192 m authoring,
-so slopes read gentler (presentation trade-off, not a survey).
+model-mission band. The horizontal composition scales 4/3 (canal length, hold and wave radii, start offsets
+and decor included). The heightfield keeps the 192 m vertical amplitude, so slopes read gentler; the site GLB
+scales uniformly with the terrace, so the huacas read 4/3 taller. Both are presentation trade-offs, not a
+survey.
 
 ## Site
 
@@ -48,8 +50,12 @@ builds; the exception is recorded here and in the quality bar.
 ## Economy and units
 
 - Moche workers, warriors and hondero (ranged) units; the Recuay side fields warrior and hondero waves.
+  `UnitKind.MUSKETEER` is the project's legacy ranged id: at this period it renders as a hondero with a
+  sling, not a firearm.
 - The canal gate is the Act I mechanic (`canal_open`, heritage `moche_canal`); it irrigates nearby farms.
 - No firearms, horses or engines: the period roster and the Moche/Recuay architecture only.
+- The narrator is an anonymous **Voz del valle**: the dossier records that no Moche or Recuay ruler is known,
+  so the mission invents no name or title.
 
 ## Opening and closing
 
@@ -72,7 +78,8 @@ Huaca de la Luna. The historical context stays in the briefing, the chapter card
 - E2E: `moche-campaign.spec.ts` (canal, hold and exchange through the field cards),
   `campaign-completable.spec.ts`, `campaign-playtest.spec.ts` (real orders, no cheats) and
   `save-campaign.spec.ts` (canal save/load).
-- Bench: `scripts/bench_scene.mjs` measures the opening and the huacas plaza under pressure; `yarn bench:check`.
+- Bench: `scripts/bench_scene.mjs` measures the opening (~550k tris / 332 calls) and the huacas plaza under pressure
+  (~721k / 568, over the 600k art-direction target as m7/m9); `yarn bench:check`.
 - Evidence: `yarn record --mission=m3_moche_recuay --mode=clip` and the intro/epilogue captures.
 - Save compatibility: `SAVE_VERSION` 7 rejects v6 m3 saves (their 192 m coordinates cannot be carried
   over); `REPLAY_VERSION` 34.

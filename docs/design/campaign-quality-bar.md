@@ -41,7 +41,7 @@ below, which record each mission's own review and are kept for history). **M** m
 | ------------------ | ---- | ----- | ---- | ----- | --- | ---- | -- | --- | ---- | ----- | ---- | ------ | ---- | --- | ---- | ----- |
 | m1_caral           | M    | M     | M    | M     | M   | M    | M  | M   | M    | M     | M    | M      | M    | M   | M    | M     |
 | m2_chavin          | M    | M     | P    | M     | M   | M    | M  | P   | M    | M     | P    | M      | M    | X   | M    | M     |
-| m3_moche_recuay    | P    | M     | M    | M     | M   | M    | M  | P   | M    | M     | M    | M      | M    | P   | M    | M     |
+| m3_moche_recuay    | M    | M     | M    | M     | M   | M    | M  | P   | M    | M     | M    | M      | M    | P   | M    | M     |
 | m4_wari            | P    | M     | M    | P     | P   | P    | M  | P   | M    | P     | P    | X      | X    | X   | X    | X     |
 | m_tambotoco        | M    | M     | P    | M     | M   | M    | M  | P   | M    | M     | M    | M      | M    | –   | P    | M     |
 | m5_yahuar_pampa    | P    | M     | M    | P     | M   | P    | M  | P   | M    | M     | P    | X      | X    | P   | X    | X     |
@@ -141,7 +141,7 @@ Reviewed 2026-11-14 as a model mission. The human art gate is still open.
 
 | Gate        | Status               | Evidence                                                                                                                                                                                     |
 | ----------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| History     | Met                  | `docs/historia/campanas/moche_recuay.md`; no invented ruler or single battle; frontier pressure and elite exchange are attested.                                                              |
+| History     | Met                  | `docs/historia/campanas/moche_recuay.md` with its certainty table; no invented ruler or single battle; frontier pressure and elite exchange are attested.                                    |
 | Identity    | Met                  | The valley, the canal and the huacas: water as power, the plaza under Recuay pressure and the elite exchange.                                                                                |
 | Terrain     | Met                  | 256 m authored coastal heightfield (`mocheHeightmap.ts`) with painted ground: Pacific shore, irrigated valley and Huacas terrace.                                                            |
 | Play        | Met                  | `campaign-playtest.spec.ts` moves real units, opens the gate and exchanges silver; `moche-campaign.spec.ts` clicks the canal and Huaca de la Luna actions.                                    |
@@ -156,10 +156,9 @@ Reviewed 2026-11-14 as a model mission. The human art gate is still open.
 | Structure   | Met                  | Three acts, hidden objectives revealed per act, chapter cards with images and optional goals.                                                                                               |
 | Opening     | Met                  | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_moche_intro.mjs`; `MISSION_ART` uses the valley capture.                                                        |
 | Art         | Pending human review | The reused Huacas GLB and its draft Blender records keep `reviewed: false` (#343); in-engine captures are recorded in PROVENANCE.                                                            |
-| Performance | Met                  | `bench_scene.mjs`: opening ~557k tris / 351 calls, huacas plaza ~722k / 559; within the recorded first-pass caps.                                                                            |
+| Performance | Met                  | `bench_scene.mjs`: opening ~550k tris / 332 calls, huacas plaza ~721k / 568; within the recorded first-pass caps (the late view is over the 600k art-direction target, as m7/m9).              |
 | Scale       | Met                  | 256 m map, 128² painted ground over 256 m and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                                |
 
-## Wari gold-master status
 ## Wari gold-master status
 
 | Gate        | Status      | Evidence                                                                                                                                                           |

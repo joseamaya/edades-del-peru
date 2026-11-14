@@ -40,7 +40,8 @@ test('m3 loads the authored Huacas de Moche site', { tag: '@smoke' }, async ({ p
   expect(out.model).toBe('moche_site');
   expect(out.procedural).toBeNull();
   expect(out.heritage).toBe('moche_huaca_luna');
-  expect(out.anchor).toEqual({ x: 164, z: 108 });
+  expect(out.anchor.x).toBeCloseTo(164, 3);
+  expect(out.anchor.z).toBeCloseTo(108, 3);
   expect(out.proxies.sol?.x).toBeCloseTo(146, 3);
   expect(out.proxies.sol?.z).toBeCloseTo(97.333, 3);
   expect(out.proxies.luna?.x).toBeCloseTo(176.667, 3);
@@ -50,6 +51,48 @@ test('m3 loads the authored Huacas de Moche site', { tag: '@smoke' }, async ({ p
   expect(out.lunaWalkable).toBe(false);
   expect(out.anchorWalkable).toBe(true);
   expect(out.names.some((name) => /Moche_LOD1_(Apron|Terrain)/.test(name))).toBe(false);
+});
+
+test('m3 opens its acts in order with their chapter cards', async ({ page }) => {
+  await start(page);
+  const card = page.locator('.ed-mission-card');
+  // Act I is a timed card; the mission clock pauses until it is dismissed.
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    for (let i = 0; i < 11 * 60; i++) g.update(1 / 60, i / 60);
+  });
+  await expect(card).toBeVisible();
+  await expect(card).toContainText('Acto I');
+  await expect(card).toContainText('El agua del valle');
+  await card.click();
+
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.toggleCanal();
+    g.update(1 / 60, 11.1);
+  });
+  await expect(card).toBeVisible();
+  await expect(card).toContainText('Acto II');
+  await expect(card).toContainText('Las huacas');
+  await card.click();
+
+  await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    const anchor = g.siteAnchor as { x: number; z: number };
+    const worker = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead) as any;
+    const dt = 1 / 60;
+    let t = 11.2;
+    for (let i = 0; i < Math.ceil(92 / dt) && !g.mission.ended; i++) {
+      worker.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+      g.update(dt, t);
+      t += dt;
+    }
+  });
+  await expect(card).toBeVisible();
+  await expect(card).toContainText('Acto III');
+  await expect(card).toContainText('El intercambio con la sierra');
 });
 
 test('m3 canal and exchange field-card buttons work', { tag: '@smoke' }, async ({ page }) => {

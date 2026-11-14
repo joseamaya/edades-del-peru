@@ -5,7 +5,6 @@ import { siteComposition } from './siteComposition';
 const composition = siteComposition(MOCHE_HEIGHTMAP_WORLD_SIZE);
 
 export const MOCHE_MAP_SIZE = composition.mapSize;
-export const MOCHE_SOURCE_SIZE = composition.sourceSize;
 export const MOCHE_COMPOSITION_SCALE = composition.scale;
 
 /** Scale a length in the former 192 m site frame into the 256 m map. */

@@ -82,14 +82,14 @@ const BUDGETS = {
   m_lima_late: { sceneTriangles: 1_100_000, sceneDrawCalls: 1_250, kitTriangles: 140_000, kitDrawCalls: 25 },
   // La Junta's opening army is large; a regression cap, still over §11's target.
   m_junta_cusco: { sceneTriangles: 780_000, sceneDrawCalls: 1000, kitTriangles: 0, kitDrawCalls: 0 },
+  // Moche valley opening on the 256 m transect: the canal, the huacas and the starting column. Measured
+  // ~550k / 332; first-pass cap with ~6 % headroom.
+  m3_moche_recuay: { sceneTriangles: 590_000, sceneDrawCalls: 372, kitTriangles: 12_000, kitDrawCalls: 4 },
   // Túpac Amaru opening on the 256 m valley: the camp, the chapel and the starting column. Measured
   // ~537k / 661–665; first-pass cap with ~6 % headroom (the call count is over art-direction §11's target).
-  // Moche valley opening on the 256 m transect: the canal, the huacas and the starting column. Measured
-  // ~557k / 351; first-pass cap with ~6 % headroom.
-  m3_moche_recuay: { sceneTriangles: 590_000, sceneDrawCalls: 372, kitTriangles: 20_000, kitDrawCalls: 5 },
   m7_tupac_amaru: { sceneTriangles: 575_000, sceneDrawCalls: 710, kitTriangles: 0, kitDrawCalls: 0 },
-  // The huacas plaza under Recuay pressure: measured ~722k / 559; still over art-direction §11's 600k target.
-  m3_moche_recuay_late: { sceneTriangles: 770_000, sceneDrawCalls: 600, kitTriangles: 20_000, kitDrawCalls: 5 },
+  // The huacas plaza under Recuay pressure: measured ~721k / 568; still over art-direction §11's 600k target.
+  m3_moche_recuay_late: { sceneTriangles: 770_000, sceneDrawCalls: 600, kitTriangles: 12_000, kitDrawCalls: 4 },
   // The siege/retreat crowd at Cusco: measured ~811k / 1083; still over art-direction §11's 600k target.
   m7_tupac_amaru_late: { sceneTriangles: 860_000, sceneDrawCalls: 1_140, kitTriangles: 0, kitDrawCalls: 0 },
   // Arica opening on the 256 m terrace: the fort, the cuartel and the garrison. Measured ~535k / 600;
@@ -121,7 +121,11 @@ try {
       if (id === 'm_junta_cusco' || id === 'm_lima' || id === 'm7_tupac_amaru') {
         return !!g.landmark?.getObjectByName('colonial_site');
       }
-      if (id === 'm3_moche_recuay') return !!g.landmark?.getObjectByName('moche_site');
+      if (id === 'm3_moche_recuay') {
+        return (
+          !!g.landmark?.getObjectByName('moche_site') && !!g.trees?.hasKit?.('algarrobo') && !!g.trees.hasKit('sauce')
+        );
+      }
       if (id === 'm_tambotoco') return !!g.landmark?.getObjectByName('ayllu_site');
       if (id === 'm9_guerra_pacifico' && !g.landmark?.getObjectByName('arica_site')) return false;
       // Wait for every kit family the scene draws: a half-loaded batch measured a different scene.
