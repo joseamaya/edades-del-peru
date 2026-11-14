@@ -32,3 +32,6 @@ scripts/_refs/
 # Python bytecode from the Blender authoring scripts
 __pycache__/
 *.pyc
+
+# Temporary capture scripts from local sessions
+.tmpcap/
