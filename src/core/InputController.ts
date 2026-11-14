@@ -1019,7 +1019,7 @@ export class InputController {
   }
 }
 
-export function buildModelForGhost(kind: BuildingKind, ctx: BuildContext): THREE.Group {
+function buildModelForGhost(kind: BuildingKind, ctx: BuildContext): THREE.Group {
   const def = BUILDING_DEFS[kind];
   const modelType = Object.values(def.eraModel)[0];
   const g = buildModel({ type: modelType?.type ?? 'center_steam' }, ctx);

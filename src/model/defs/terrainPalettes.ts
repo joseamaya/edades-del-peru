@@ -6,7 +6,7 @@ export type TerrainPaletteId =
   'north_coast' | 'central_coast' | 'south_coast' | 'andean_valley' | 'high_andes' | 'altiplano' | 'amazon' | 'caral';
 
 /** Shared landform thresholds (world units; slope is the raw height delta used by the mesh). */
-export const TERRAIN_BAND_RANGES = {
+const TERRAIN_BAND_RANGES = {
   valleyOffset: 1,
   valleyRange: 6,
   lomaStart: 4.5,

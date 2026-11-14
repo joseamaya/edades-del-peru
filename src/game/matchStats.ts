@@ -1,6 +1,6 @@
 import type { Era, Resources } from '../core/types';
 
-export const MATCH_SNAPSHOT_INTERVAL = 5;
+const MATCH_SNAPSHOT_INTERVAL = 5;
 
 export interface PlayerSnapshot {
   id: number;

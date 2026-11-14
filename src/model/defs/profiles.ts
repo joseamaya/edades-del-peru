@@ -221,7 +221,7 @@ export function regionForCiv(id: CivId): GeographicRegion {
   return CIV_REGION[id] ?? GEOGRAPHY_REGION[getCiv(id).geography];
 }
 
-export function regionForMapType(mapType: MapType): GeographicRegion {
+function regionForMapType(mapType: MapType): GeographicRegion {
   return MAPTYPE_REGION[mapType];
 }
 

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-export { allocId, reserveIds } from '../sim/ids';
+export { reserveIds } from '../sim/ids';
 import { EntityRef } from '../core/types';
 import { facingRotation } from '../util/math';
 import type { Unit } from './Unit';

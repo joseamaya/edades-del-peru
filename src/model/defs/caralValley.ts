@@ -44,9 +44,9 @@ export interface CaralValleyPlan {
 /** Narrow dirt paths, visually distinct from the settlement's wider roads. */
 export const CARAL_VALLEY_PATH_WIDTH = 0.65;
 /** A road-scale painted approach, readable from the RTS camera without becoming a highway. */
-export const CARAL_APPROACH_WIDTH = 2.8;
+const CARAL_APPROACH_WIDTH = 2.8;
 /** Keep canopy and ground cover clear of a painted approach. */
-export const CARAL_APPROACH_CLEARANCE = 3.4;
+const CARAL_APPROACH_CLEARANCE = 3.4;
 
 /**
  * Plots on the west-bank floodplain of the Supe transect map (scripts/build_caral_heightmap.py), around

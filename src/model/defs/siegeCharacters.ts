@@ -7,8 +7,7 @@ import {
 } from './postColonialCharacters';
 import { REBELDE_PALETTE } from './rebeldeCharacters';
 
-export const SIEGE_WEAPONS = ['cannon', 'mortar', 'tank'] as const;
-export type SiegeWeapon = (typeof SIEGE_WEAPONS)[number];
+export type SiegeWeapon = 'cannon' | 'mortar' | 'tank';
 
 export const SIEGE_VARIANTS = [
   'siege_cannon_realistas',

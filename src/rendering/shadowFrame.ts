@@ -27,9 +27,9 @@ export interface ShadowFrame {
 export const SHADOW_MAP_SIZE: Record<'high' | 'medium' | 'low', number> = { high: 2048, medium: 1024, low: 1024 };
 
 /** Extra border for the VSM blur. */
-export const SHADOW_FRAME_MARGIN = 6;
+const SHADOW_FRAME_MARGIN = 6;
 /** Receivers stand up to this far above the ground plane (walls, pyramids, crowns). */
-export const SHADOW_FRAME_LIFT = 14;
+const SHADOW_FRAME_LIFT = 14;
 export const SHADOW_FRAME_MIN = 24;
 /** The old fixed frustum (±220 around the origin) is the upper bound. */
 export const SHADOW_FRAME_MAX = 220;

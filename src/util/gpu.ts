@@ -11,7 +11,7 @@ export function isSoftwareRenderer(name: string): boolean {
 }
 
 /** Best-effort renderer string (unmasked when the debug extension is available). */
-export function gpuRendererName(gl: WebGLRenderingContext | WebGL2RenderingContext): string {
+function gpuRendererName(gl: WebGLRenderingContext | WebGL2RenderingContext): string {
   const ext = gl.getExtension('WEBGL_debug_renderer_info') as { UNMASKED_RENDERER_WEBGL: number } | null;
   const raw = gl.getParameter(ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER);
   return typeof raw === 'string' ? raw : '';

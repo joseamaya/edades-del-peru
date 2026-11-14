@@ -52,16 +52,6 @@ export function artIntroForMission(missionId: string, options: ArtLookupOptions 
   return artForMission(missionId, options).find((a) => a.type === 'campaign-intro');
 }
 
-export function artForCampaign(campaignId: string, options: ArtLookupOptions = {}): ArtManifestRecord[] {
-  return sortRecords(
-    ART_MANIFEST.assets.filter((a) => a.campaignId === campaignId && a.scope === 'campaign' && visible(a, options)),
-  );
-}
-
-export function artIntroForCampaign(campaignId: string, options: ArtLookupOptions = {}): ArtManifestRecord | undefined {
-  return artForCampaign(campaignId, options).find((a) => a.type === 'campaign-intro');
-}
-
 /** Resolve a `public/` asset path to a cache-busted URL. */
 export function artAssetUrl(record: ArtManifestRecord | string, version?: string): string {
   const asset = typeof record === 'string' ? record : record.asset;

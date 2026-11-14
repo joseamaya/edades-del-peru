@@ -86,7 +86,7 @@ Region defaults (`LANDSCAPE` in `src/model/defs/landscape.ts`, each with its
 | `amazon` | field (low), path (low) | dispersed | high-jungle gardens |
 
 `terrace` is also implemented as terrain (`terraceChance` → `carveTerraces` in
-[`src/rendering/heightField.ts`](../../src/rendering/heightField.ts)); the profile
+[`src/sim/heightField.ts`](../../src/sim/heightField.ts)); the profile
 additionally places visible retaining modules on terrace edges.
 
 ## Rendering
@@ -124,7 +124,7 @@ exposes it via `getCanal`.
 ## Integration points
 
 - `src/model/defs/profiles.ts` — the data + resolver defaults.
-- `src/rendering/heightField.ts` — optional carving (canals lower a path).
+- `src/sim/heightField.ts` — optional carving (canals lower a path).
 - `src/core/Game.ts` — `spawnCulturalLandscape()` next to `spawnLandmark()`, adding
   a static `THREE.Group` (no entities, no pathfinding obstacles). The starting base
   also adds a `SettlementOverlay` (`src/rendering/SettlementOverlay.ts`) with its

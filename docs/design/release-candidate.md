@@ -1,5 +1,8 @@
 # Release status
 
+> **Archived snapshot (2026-10-30).** Counts and scope below describe that release, not the current
+> repository; see the README and `docs/design/campaign-quality-bar.md` for the live status.
+
 Status: **published on GitHub Pages** at <https://joseamaya.github.io/edades-del-peru/>; itch upload
 deferred until the end of the campaign work. Date: 2026-10-30. Scope: all five campaigns
 (_Culturas Preincas_, _El Tahuantinsuyo_, _El Virreinato_, _La Independencia_ and _La República_),

@@ -67,7 +67,7 @@ export function archPartsFromScene(root: THREE.Object3D): ArchParts {
 /** Prepared models are kept for the session, like the vegetation kit; a failed load is retried. */
 const modelCache = new Map<string, Promise<ArchModel>>();
 
-export function loadArchModel(kit: ArchitectureKitId, id: ArchAssetId): Promise<ArchModel> {
+function loadArchModel(kit: ArchitectureKitId, id: ArchAssetId): Promise<ArchModel> {
   const key = `${kit}:${id}`;
   let model = modelCache.get(key);
   if (!model) {
@@ -148,7 +148,7 @@ export function applyArchSurface(material: THREE.MeshStandardMaterial, name: str
 }
 
 /** The camera is this far from the city centre before the far (LOD1) city is drawn. */
-export const CITY_LOD1_DISTANCE = 150;
+const CITY_LOD1_DISTANCE = 150;
 
 const _m = new THREE.Matrix4();
 const _q = new THREE.Quaternion();

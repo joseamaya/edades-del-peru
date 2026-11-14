@@ -220,7 +220,7 @@ export interface AuthoredSiteDef {
   doubleSidedPatterns?: readonly RegExp[];
 }
 
-export const DEFAULT_SITE_TERRAIN: SiteTerrainStyle = {
+const DEFAULT_SITE_TERRAIN: SiteTerrainStyle = {
   pbr: { grass: 'grass', dirt: 'dirt', sand: 'sand', rock: 'rock', snow: 'snow' },
   flatNormals: false,
   suppressSnow: false,
@@ -229,7 +229,7 @@ export const DEFAULT_SITE_TERRAIN: SiteTerrainStyle = {
 };
 
 /** Uniform source-to-game scale for the Ciudades Sagradas Caral remaster. */
-export const CARAL_SITE_SCALE = 0.25;
+const CARAL_SITE_SCALE = 0.25;
 
 /** Houses and stalls of the colonial overlay block from their phase; the plaza itself stays open. */
 function colonialBlockers(layout: typeof LIMA_COLONIAL, phases: boolean): SiteBlocker[] {
@@ -266,7 +266,7 @@ export const CARAL_CITY_OFFSET_X = 64;
 export const CARAL_MAP_SIZE = 256;
 
 /** Shift a point given in the former 192 m site frame into the transect map. */
-export function caralCityPoint<T extends { x: number }>(p: T): T {
+function caralCityPoint<T extends { x: number }>(p: T): T {
   return { ...p, x: p.x + CARAL_CITY_OFFSET_X };
 }
 
@@ -274,7 +274,7 @@ export function caralCityPoint<T extends { x: number }>(p: T): T {
 export const CARAL_SITE_ORIGIN = caralCityPoint({ x: 100, z: 69.2 });
 
 /** Objective anchor at the Great Pyramid. */
-export const CARAL_SITE_ANCHOR = caralCityPoint({ x: 100, z: 30 });
+const CARAL_SITE_ANCHOR = caralCityPoint({ x: 100, z: 30 });
 
 /** Opening framing: wide enough to read the valley, the base and the city. */
 export const CARAL_SITE_CAMERA = { height: 54 } as const;
@@ -309,7 +309,7 @@ export const ASPERO_HERITAGE_PROXY: CaralHeritageProxy = {
 export const CARAL_CIRCULAR_ALTAR = caralCityPoint({ x: 72.5, z: 144.55, w: 10.6, d: 7.7 });
 
 /** Extra clearance around solid monument AABBs for unit footprints. */
-export const CARAL_SITE_BLOCKER_PADDING = 0.5;
+const CARAL_SITE_BLOCKER_PADDING = 0.5;
 
 /**
  * Phase from which each Caral monument answers clicks and shows its card. The physical blockers use

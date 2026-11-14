@@ -39,7 +39,7 @@ export function computeDamage(
 }
 
 /** Damage bonus/penalty per unit of height advantage. */
-export const ELEVATION_BONUS_PER_UNIT = 0.03;
+const ELEVATION_BONUS_PER_UNIT = 0.03;
 /** Upper bound on the height-advantage damage change (either direction). */
 export const ELEVATION_BONUS_CAP = 0.25;
 

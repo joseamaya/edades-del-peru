@@ -1,8 +1,8 @@
 import { CARAL_CIRCULAR_ALTAR, CARAL_CITY_OFFSET_X, CARAL_HERITAGE_PROXIES, type SiteBlocker } from './sites';
-import { CARAL_PHASE_PLAN, standsAt, type CaralMayorPhase } from './caralPhases';
+import { CARAL_PHASE_PLAN, type CaralMayorPhase } from './caralPhases';
 import type { ArchPlacement } from './architectureKit';
 
-export { CARAL_PHASE_PLAN, standsAt, type CaralMayorPhase };
+export { CARAL_PHASE_PLAN, type CaralMayorPhase };
 
 /**
  * The Sacred City of Caral in use (c. 2600–2000 BC), assembled from the Blender architecture kit
@@ -313,9 +313,6 @@ export const CARAL_CITY_HOUSE_BLOCKERS: readonly SiteBlocker[] = CARAL_CITY_LAYO
   if (!size) return [];
   return [rotatedBlocker(p.x, p.z, size.w, size.d, p.rotY, p.since)];
 });
-
-/** Footprint of the kit's Huaca de los Ídolos (LOD0 bounds of scripts/blender/build_caral_architecture_kit.py). */
-export const HUACA_IDOLOS_SIZE = { w: 21.2, d: 18.8, h: 8.25 };
 
 /**
  * Áspero, the fishing village at the river mouth where act I starts: the Huaca de los Ídolos north of

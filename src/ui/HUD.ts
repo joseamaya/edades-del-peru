@@ -1526,7 +1526,7 @@ export class HUD {
   abandonMatch(): void {
     this.game.saveRecording();
     if (this.game.mission) {
-      (this.game as any).missionEnd(false);
+      this.game.missionEnd(false);
     } else {
       this.game.loop.stop();
       this.showVictory(false);
