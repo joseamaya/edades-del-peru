@@ -17,6 +17,7 @@ export class AudioEngine {
   private noiseBuffer: AudioBuffer | null = null;
   private era = 0;
   private lastShot = 0;
+  private lastHarvest = -Infinity;
   private surf: { source: AudioBufferSourceNode; gain: GainNode; lfo: OscillatorNode } | null = null;
 
   init(): void {
@@ -93,6 +94,13 @@ export class AudioEngine {
     src.stop(this.now() + dur + 0.02);
   }
 
+  private harvestReady(): boolean {
+    const t = this.now();
+    if (t - this.lastHarvest < 0.6) return false;
+    this.lastHarvest = t;
+    return true;
+  }
+
   shot(): void {
     const t = this.now();
     if (t - this.lastShot < 0.08) return;
@@ -127,11 +135,14 @@ export class AudioEngine {
   }
 
   woodChop(): void {
+    // Several workers share one stroke: at most one gather sound every 0.6 s.
+    if (!this.harvestReady()) return;
     this.noise(0.06, 0.35, 700, 'bandpass');
     this.blip(220, 0.05, 'triangle', 0.15, 180);
   }
 
   mineHit(): void {
+    if (!this.harvestReady()) return;
     this.blip(500, 0.08, 'square', 0.2, 350);
   }
 

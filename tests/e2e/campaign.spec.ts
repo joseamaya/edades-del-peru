@@ -959,7 +959,7 @@ test('the Ayar cast is on the board and named after the briefing', async ({ page
     return {
       tags: tagged.map((u: any) => u.tag as string),
       labels: labels.length,
-      visibleLabels: labels.filter((l: { sprite: { visible: boolean } }) => l.sprite.visible).length,
+      visibleLabels: labels.filter((l: { visible: boolean }) => l.visible).length,
       single,
       heroMarkers,
       heroScale,
@@ -1014,20 +1014,30 @@ test('the Tambotoco tutorial advances with the player actions', async ({ page })
     const g = (window as unknown as { game: any }).game;
     g.loop.stop();
     if (g.getPaused()) g.togglePause();
-    const soldier = [...g.units.values()].find((u: any) => u.owner === 0 && u.kind === 'soldier') as any;
-    g.selectUnits([soldier.id]);
-    for (let i = 0; i < 60 * 15; i++) g.update(1 / 60, i / 60);
+    for (let i = 0; i < 60 * 2; i++) g.update(1 / 60, i / 60);
+    const before = g.tutorial?.toSave()?.stepId ?? null;
+    // Step 1 teaches moving the party; it advances when the party leaves the cave.
+    const ids = [...g.units.values()].filter((u: any) => u.owner === 0 && !u.dead).map((u: any) => u.id);
+    g.executeCommand(
+      { kind: 'order', unitIds: ids, order: { kind: 'move', target: { x: 60, z: 92 } }, clear: true },
+      false,
+    );
+    for (let i = 0; i < 60 * 90 && g.mission.getObjectiveState('a1_salida') !== 'completed'; i++)
+      g.update(1 / 60, i / 60);
+    for (let i = 0; i < 60 * 3; i++) g.update(1 / 60, 90 + i / 60);
     const save = g.tutorial?.toSave();
     return {
+      before,
       step: save?.stepId ?? null,
       finished: save?.finished ?? null,
       panel: document.querySelector('#ed-tutorial')?.textContent ?? '',
     };
   });
-  // Step 1 is selection, step 2 is the 12 s cast beat; both must pass without a scripted shortcut.
-  expect(out.step).toBe('salida');
+  expect(out.before).toBe('mover');
+  // Leaving the cave opens the camp: the tutorial now teaches placing the communal store.
+  expect(out.step).toBe('campamento');
   expect(out.finished).toBe(false);
-  expect(out.panel).toContain('Sal de la cueva');
+  expect(out.panel).toContain('Depósito comunal');
   expect(errors).toEqual([]);
 });
 
@@ -1061,6 +1071,8 @@ test('the ayllu site grows through its phases', async ({ page }) => {
     const before = at('cave');
     const shrine = at('huanacaure');
     const inticancha = at('inticancha');
+    const fundada = at('fundada');
+    g.setSitePhase('inticancha');
     g.setSitePhase('bogus');
     let lifeCalls = 0;
     const life = g.aylluSite.updateLife.bind(g.aylluSite);
@@ -1069,15 +1081,18 @@ test('the ayllu site grows through its phases', async ({ page }) => {
       life(...args);
     };
     for (let i = 0; i < 60; i++) g.update(1 / 60, i / 60);
-    return { before, shrine, inticancha, afterBogus: g.sitePhase, lifeCalls };
+    return { before, shrine, inticancha, fundada, afterBogus: g.sitePhase, lifeCalls };
   });
   expect(states.before).toEqual([
     { name: 'ayllu:cave', visible: true },
     { name: 'ayllu:huanacaure', visible: false },
     { name: 'ayllu:inticancha', visible: false },
+    { name: 'ayllu:fundada', visible: false },
   ]);
-  expect(states.shrine.map((s) => s.visible)).toEqual([true, true, false]);
-  expect(states.inticancha.map((s) => s.visible)).toEqual([true, true, true]);
+  expect(states.shrine.map((s) => s.visible)).toEqual([true, true, false, false]);
+  // Act IV only traces Inticancha; the lived-in settlement waits for the four canchas.
+  expect(states.inticancha.map((s) => s.visible)).toEqual([true, true, true, false]);
+  expect(states.fundada.map((s) => s.visible)).toEqual([true, true, true, true]);
   expect(states.afterBogus).toBe('inticancha');
   // The presentation tick must reach the ayllu kit, not only Caral/Chavín.
   expect(states.lifeCalls).toBeGreaterThan(0);

@@ -36,7 +36,7 @@ function clampFactor(value: number): number {
   return Math.min(MAX_FACTOR, Math.max(MIN_FACTOR, value));
 }
 
-export function marketUnitPrice(state: MarketState, resource: keyof Resources): number {
+function marketUnitPrice(state: MarketState, resource: keyof Resources): number {
   return BASE_PRICE[resource] * clampFactor(1 + state.pressure[resource]);
 }
 

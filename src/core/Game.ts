@@ -36,6 +36,7 @@ import { attachVegetationKit } from '../rendering/vegetationKitLoader';
 import { Props } from '../rendering/Props';
 import { GroundCover } from '../rendering/GroundCover';
 import { MapLabels } from '../rendering/MapLabels';
+import { WorldLabelLayer } from '../ui/WorldLabels';
 import { CharacterLabels } from '../rendering/CharacterLabels';
 import { HeroMarkers } from '../rendering/HeroMarkers';
 import type { AylluSite } from '../rendering/AylluSite';
@@ -170,6 +171,8 @@ export class Game {
   siteAnchor: { x: number; z: number } | null = null;
   siteCenter: { x: number; z: number } | null = null;
   /** Named geography of the mission, drawn on the board and the minimap. */
+  /** HTML layer for every world-anchored name (places, characters, huacas). */
+  worldLabels: WorldLabelLayer | null = null;
   mapLabels: MapLabels | null = null;
   /** Nameplates over campaign characters (a unit tag that matches a commander). */
   characterLabels: CharacterLabels | null = null;
@@ -642,13 +645,15 @@ export class Game {
     this.fowUniforms.fowMap.value = this.fowTexture.texture;
     this.fowUniforms.mapSize.value = s.mapSize;
     this.fowUniforms.fowEnabled.value = s.fogOfWar ? 1 : 0;
-    this.mapLabels = new MapLabels(this.scene, this.placeNames, this.terrain, s.mapSize);
-    this.characterLabels = new CharacterLabels(this.scene);
+    this.worldLabels = new WorldLabelLayer();
+    this.mapLabels = new MapLabels(this.worldLabels, this.placeNames, this.terrain, s.mapSize);
+    this.characterLabels = new CharacterLabels(this.worldLabels);
     this.heroMarkers = new HeroMarkers(this.scene);
     this.memoryStones = new MemoryStones(
       this.scene,
       (x, z) => this.terrain.getHeight(x, z),
       (root) => applyFowToObject(root, this.fowUniforms),
+      this.worldLabels,
     );
     this.discoveries = new Discoveries(this.missionLayout?.discoveries, this.siteDef, !!this.pendingSnapshot);
     // Quest markers stay visible over fog: they guide the player without revealing the terrain.
@@ -945,10 +950,21 @@ export class Game {
     };
   }
 
-  /** Center of a player (its main building) or the map center. */
+  /** Whether a harvest stroke is the player's and close enough to the camera to be heard. */
+  private harvestAudible(e: { x: number; z: number; owner: number }): boolean {
+    if (e.owner !== 0) return false;
+    const target = this.camera.getTarget();
+    return distance2D(e.x, e.z, target.x, target.z) <= Math.max(18, this.camera.getZoom() * 0.9);
+  }
+
+  /** Center of a player (its main building), else a base-less party's opening spot, else the map center. */
   playerCenter(owner: number): { x: number; z: number } {
     const c = [...this.buildings.values()].find((b) => b.owner === owner && b.kind === BuildingKind.CENTER && !b.dead);
     if (c) return { x: c.pos.x, z: c.pos.z };
+    // A party with no base (Tambotoco) anchors on its opening spot; other base-less missions (m8's armies)
+    // keep the map centre their `ref: 'player'` points were authored against.
+    const spot = owner === 0 && this.missionDef?.start?.base === false ? this.startSpots[0] : undefined;
+    if (spot) return { x: spot[0], z: spot[1] };
     return { x: this.settings.mapSize / 2, z: this.settings.mapSize / 2 };
   }
 
@@ -1865,7 +1881,7 @@ export class Game {
     const locked = this.missionLayout?.canal?.lockedUntilObjective;
     const lockState = locked ? this.mission?.getObjectiveState(locked) : 'activo';
     if (lockState !== 'activo' && lockState !== 'completed') {
-      this.hud?.showToast(t('hud.toast.canalLocked'), 'info');
+      this.hud?.showToast(this.missionLayout?.canal?.lockedHint ?? t('hud.toast.canalLocked'), 'info');
       return this.canalOpen;
     }
     this.canalOpen = !this.canalOpen;
@@ -1916,6 +1932,26 @@ export class Game {
     return true;
   }
 
+  /**
+   * A campaign side yields: it joins the player's team (teams decide every target), its AI controller
+   * stops, and its warriors drop their orders and return to their centre. `restored` (after a load)
+   * only re-applies the alliance.
+   */
+  declareTruce(owner: number, restored = false): void {
+    const side = this.players[owner];
+    const player = this.players[0];
+    if (!side || !player || owner === 0) return;
+    side.team = player.team;
+    this.ais = this.ais.filter((ai) => ai.playerId !== owner);
+    if (restored) return;
+    const home = this.playerCenter(owner);
+    for (const u of this.units.values()) {
+      if (u.owner !== owner || u.dead || u.kind === UnitKind.WORKER) continue;
+      u.orderQueue.length = 0;
+      u.issueOrder({ kind: OrderKind.MOVE, target: { x: home.x, z: home.z } });
+    }
+  }
+
   /** Attach an AI controller to a player (AI-vs-AI runs/tests). */
   addAI(playerId: number, difficulty?: Difficulty): void {
     this.ais.push(new AI(this, playerId, difficulty));
@@ -1954,8 +1990,9 @@ export class Game {
     bus.on('fx:explosion', () => this.audio.explosion());
     bus.on('fx:death', () => this.audio.death());
     bus.on('fx:hit', () => this.audio.hit());
-    bus.on('fx:wood', () => this.audio.woodChop());
-    bus.on('fx:mine', () => this.audio.mineHit());
+    // Harvest strokes only sound for the player's own workers on screen (never the AI's, never off-screen).
+    bus.on('fx:wood', (e) => this.harvestAudible(e) && this.audio.woodChop());
+    bus.on('fx:mine', (e) => this.harvestAudible(e) && this.audio.mineHit());
   }
 
   // --- UnitContext context ---
@@ -2097,6 +2134,8 @@ export class Game {
     this.heroMarkers = null;
     this.memoryStones?.dispose();
     this.memoryStones = null;
+    this.worldLabels?.dispose();
+    this.worldLabels = null;
     this.discoveries = null;
     this.missionRings?.dispose();
     this.missionRings = null;

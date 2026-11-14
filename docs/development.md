@@ -54,7 +54,7 @@ Definition of Done and the building audit see
   loads static glTF without animation clips, and `?city=caral` mounts a standalone showcase with shadows,
   orbit controls, LOD0/LOD1 and `window.__cityDemo`. The full-city GLB is **not** used by a campaign
   mission. `m1_caral` instead loads the exact Ciudades Sagradas sacred-site GLB
-  (`src/assets/sites/caral/caral_site_lod0/1.glb`) through `siteModels.ts`, with Draco/WebP, the game
+  (`src/assets/sites/caral/caral_site_lod0.glb` and `caral_site_lod1.glb`) through `siteModels.ts`, with Draco/WebP, the game
   heightfield and invisible heritage proxies. See
   [`docs/design/caral-sacred-city.md`](design/caral-sacred-city.md).
 - **Caral modular scenery**: `src/assets/scenery/caral/caral_pyramid_mayor_lod0.glb` /

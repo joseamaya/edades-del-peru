@@ -56,7 +56,11 @@ for (const mis of COMPLETABLE_MISSIONS) {
           if (m.getObjectiveState(o.id) !== 'activo') continue;
           switch (o.kind) {
             case 'gather':
-              g.players[0].resources[o.resource ?? 'food'] = o.count ?? 0;
+              // A node-scoped gather (Tambotoco's hunt) counts what was harvested from that node kind.
+              if (o.fromNode) {
+                const missing = (o.count ?? 0) - g.harvestedBy(0, o.fromNode);
+                if (missing > 0) g.recordHarvest(0, o.fromNode, missing);
+              } else g.players[0].resources[o.resource ?? 'food'] = o.count ?? 0;
               break;
             case 'deliver':
               m.recordDelivery(o.resource ?? 'food', o.count ?? 0);
@@ -167,10 +171,11 @@ for (const mis of COMPLETABLE_MISSIONS) {
                           ? (g.siteCenter ?? g.siteAnchor ?? centerOf(0))
                           : { x: 0, z: 0 };
               const tp = { x: base.x + o.pos.dx, z: base.z + o.pos.dz };
-              const u = [...g.units.values()].find(
-                (unit: any) => unit.owner === 0 && !unit.dead && (!o.unitKind || unit.kind === o.unitKind),
-              ) as any;
-              if (u) u.pos.set(tp.x, g.terrain.getHeight(tp.x, tp.z), tp.z);
+              // A hold can require a cohort (Lima's siege needs 6 units), not just one.
+              const holders = [...g.units.values()]
+                .filter((unit: any) => unit.owner === 0 && !unit.dead && (!o.unitKind || unit.kind === o.unitKind))
+                .slice(0, Math.max(1, o.minUnits ?? 1)) as any[];
+              for (const u of holders) u.pos.set(tp.x, g.terrain.getHeight(tp.x, tp.z), tp.z);
               break;
             }
             case 'build': {
@@ -224,10 +229,11 @@ for (const mis of COMPLETABLE_MISSIONS) {
         g.update(dt, t);
         t += dt;
       }
-      return { noMission: false, won: m.won as boolean | null };
+      const states = Object.fromEntries(def.objectives.map((o: any) => [o.id, m.getObjectiveState(o.id)]));
+      return { noMission: false, won: m.won as boolean | null, states };
     });
     expect(out.noMission, `${mis.id} has no mission`).toBe(false);
-    expect(out.won, `${mis.id} did not reach victory`).toBe(true);
+    expect(out.won, `${mis.id} did not reach victory: ${JSON.stringify((out as any).states)}`).toBe(true);
     expect(errors).toEqual([]);
   });
 }

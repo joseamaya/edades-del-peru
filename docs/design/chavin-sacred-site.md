@@ -75,7 +75,7 @@ apogee` (`CHAVIN_PHASE_PLAN`, `Game.setSitePhase`). Heritage cards and blockers 
 - Mission data: `src/campaign/defs/campaign.ts`; design: `chavin-model-mission.md`.
 - Site registry: `src/model/defs/sites.ts`; phases and kit layout: `src/model/defs/chavinCity.ts`.
 - Architecture kit: `scripts/blender/build_chavin_architecture_kit.py`, exported to
-  `src/assets/architecture/chavin/`, assembled by `src/rendering/chavinCity.ts`.
+  `src/assets/architecture/chavin/`, assembled by `src/model/defs/chavinCity.ts`.
 - Site loader: `src/rendering/siteModels.ts`; the source GLB stays hidden and keeps the click proxies.
 - Heritage cards and the `offer` operation: `src/model/defs/heritage.ts`.
 - Economy cards: `src/model/defs/buildingCards.ts`.

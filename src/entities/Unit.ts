@@ -164,6 +164,8 @@ const STUCK_GIVEUP_RETRIES = 3;
 const FAILED_GATHER_MEMORY = 20;
 /** Seconds with a full load and no dropsite before warning the player. */
 const NO_DROPSITE_GIVEUP = 2.5;
+/** A move whose target sits on an obstacle counts as arrived once the unit is this close to it (m). */
+const BLOCKED_GOAL_ARRIVAL_DIST = 12;
 /** Minimum defensive leash around the stance origin. */
 const LEASH_MIN_RADIUS = 6;
 /** Distance from the leash origin at which a defensive unit stops returning. */
@@ -1061,6 +1063,15 @@ export class Unit {
     }
     // still no route: only head straight in over walkable ground, else wait and warn
     if (this.directStep(t.x, t.z)) return;
+    // The destination itself is blocked (a huaca, a building footprint): the edge the path reached is
+    // the arrival, not a missing route, so the order ends quietly instead of warning.
+    if (
+      !this.ctx.isWalkable(t.x, t.z, this.owner) &&
+      distance2D(this.pos.x, this.pos.z, t.x, t.z) <= BLOCKED_GOAL_ARRIVAL_DIST
+    ) {
+      this.finishOrder();
+      return;
+    }
     this.noRouteTimer += dt;
     if (this.noRouteTimer <= NO_ROUTE_GIVEUP) return;
     // No route at all: end the order where the unit got to. Keeping it queued would hide the unit
@@ -1398,9 +1409,11 @@ export class Unit {
       }
       this.gatherCarry[node.resource as keyof Resources] += amount;
       if (node.kind) this.ctx.recordHarvest(this.owner, node.kind, amount);
-      if (node.resource === 'wood') this.ctx.event?.('fx:wood', {});
-      else if (node.resource === 'silver' || node.resource === 'stone') this.ctx.event?.('fx:mine', {});
-      else this.ctx.event?.('fx:wood', {});
+      // Axe for wood, pick for stone/silver. Fishing, hunting and fields are silent: they used to play the
+      // axe too, a «tic» every 1.4 s per worker all match long.
+      const stroke = { x: node.pos.x, z: node.pos.z, owner: this.owner };
+      if (node.resource === 'wood') this.ctx.event?.('fx:wood', stroke);
+      else if (node.resource === 'silver' || node.resource === 'stone') this.ctx.event?.('fx:mine', stroke);
       // gather effect according to the resource
       if (node.resource === 'wood') {
         this.ctx.particles?.emit({

@@ -10,7 +10,7 @@ import type { FaunaKitParts, Wildlife } from './Wildlife';
  * Blender fauna kit (scripts/blender/build_caral_fauna_kit.py): one GLB per species with a `body`
  * node and one `leg` or `wing` node, vertex-coloured, pivots matching the procedural templates.
  */
-export const FAUNA_KIT_URLS: Partial<Record<SpeciesId, string>> = {
+const FAUNA_KIT_URLS: Partial<Record<SpeciesId, string>> = {
   deer: deerUrl,
   riparian_bird: birdUrl,
 };

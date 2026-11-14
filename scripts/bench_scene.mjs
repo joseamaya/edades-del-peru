@@ -147,7 +147,7 @@ try {
           mission === 'm2_chavin'
             ? 'apogee'
             : mission === 'm_tambotoco'
-              ? 'inticancha'
+              ? 'fundada'
               : mission === 'm_lima'
                 ? 'ciudad'
                 : 'in_use',

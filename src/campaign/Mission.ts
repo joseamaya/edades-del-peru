@@ -405,9 +405,10 @@ export class Mission {
   }
 
   private checkBaseLost(): void {
-    if (!this.game.hasBuildings(0)) {
-      this.defeat();
-    }
+    if (this.game.hasBuildings(0)) return;
+    // A party that starts with no base (Tambotoco) is lost only when no one of it is left.
+    if (this.def.start.base === false && [...this.game.units.values()].some((u) => u.owner === 0 && !u.dead)) return;
+    this.defeat();
   }
 
   // --- triggers ---
@@ -518,6 +519,9 @@ export class Mission {
         this.game.camera.focusOn(p.x, p.z);
         break;
       }
+      case 'truce':
+        this.game.declareTruce(fx.owner ?? 1);
+        break;
       case 'victory':
         this.win();
         break;
@@ -639,7 +643,11 @@ export class Mission {
     const events = new Set<string>();
     for (const tr of this.def.triggers) {
       if (!this.fired.has(tr.id)) continue;
-      for (const fx of tr.effects) if (fx.type === 'environment') events.add(fx.event);
+      for (const fx of tr.effects) {
+        if (fx.type === 'environment') events.add(fx.event);
+        // A truce is not in the save: re-apply it without marching the warriors home again.
+        if (fx.type === 'truce') this.game.declareTruce(fx.owner ?? 1, true);
+      }
     }
     if (!this.game.environmentRestored) for (const event of events) this.game.startEnvironmentalEvent(event, true);
   }

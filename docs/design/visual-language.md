@@ -20,7 +20,7 @@ family; the fine identity is the **`GeographicRegion`** (`north_coast`,
 `central_coast`, `south_coast`, `andean_valley`, `high_andes`, `altiplano`,
 `amazon`) resolved by `resolveMapProfile`. Each region owns a
 `HistoricalMapProfile` (`src/model/defs/profiles.ts`) whose `terrain`, `climate`,
-`water` and `elevation` drive `generateHeightField` (`src/rendering/heightField.ts`)
+`water` and `elevation` drive `generateHeightField` (`src/sim/heightField.ts`)
 and the `Terrain` shader (`src/rendering/Terrain.ts`).
 
 | Region          | Reads as                            | Key profile signals                                              |

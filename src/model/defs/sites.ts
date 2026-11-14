@@ -60,13 +60,7 @@ import {
   TAMBOTOCO_STREAM_HALF_WIDTH,
   TAMBOTOCO_STREAM_PATH,
 } from './tambotocoHeightmap';
-import {
-  TAMBOTOCO_CAVE,
-  TAMBOTOCO_CAVE_HUTS,
-  TAMBOTOCO_INTICANCHA_HUTS,
-  TAMBOTOCO_SHRINE,
-  TAMBOTOCO_VILLAGES,
-} from './tambotocoLayout';
+import { TAMBOTOCO_CAVE, TAMBOTOCO_INTICANCHA_HUTS, TAMBOTOCO_SHRINE, TAMBOTOCO_VILLAGES } from './tambotocoLayout';
 import { CUSCO_COLONIAL, LIMA_COLONIAL } from './colonialLayout';
 import {
   LIMA_GROUND,
@@ -226,7 +220,7 @@ export interface AuthoredSiteDef {
   doubleSidedPatterns?: readonly RegExp[];
 }
 
-export const DEFAULT_SITE_TERRAIN: SiteTerrainStyle = {
+const DEFAULT_SITE_TERRAIN: SiteTerrainStyle = {
   pbr: { grass: 'grass', dirt: 'dirt', sand: 'sand', rock: 'rock', snow: 'snow' },
   flatNormals: false,
   suppressSnow: false,
@@ -235,7 +229,7 @@ export const DEFAULT_SITE_TERRAIN: SiteTerrainStyle = {
 };
 
 /** Uniform source-to-game scale for the Ciudades Sagradas Caral remaster. */
-export const CARAL_SITE_SCALE = 0.25;
+const CARAL_SITE_SCALE = 0.25;
 
 /** Houses and stalls of the colonial overlay block from their phase; the plaza itself stays open. */
 function colonialBlockers(layout: typeof LIMA_COLONIAL, phases: boolean): SiteBlocker[] {
@@ -272,7 +266,7 @@ export const CARAL_CITY_OFFSET_X = 64;
 export const CARAL_MAP_SIZE = 256;
 
 /** Shift a point given in the former 192 m site frame into the transect map. */
-export function caralCityPoint<T extends { x: number }>(p: T): T {
+function caralCityPoint<T extends { x: number }>(p: T): T {
   return { ...p, x: p.x + CARAL_CITY_OFFSET_X };
 }
 
@@ -280,7 +274,7 @@ export function caralCityPoint<T extends { x: number }>(p: T): T {
 export const CARAL_SITE_ORIGIN = caralCityPoint({ x: 100, z: 69.2 });
 
 /** Objective anchor at the Great Pyramid. */
-export const CARAL_SITE_ANCHOR = caralCityPoint({ x: 100, z: 30 });
+const CARAL_SITE_ANCHOR = caralCityPoint({ x: 100, z: 30 });
 
 /** Opening framing: wide enough to read the valley, the base and the city. */
 export const CARAL_SITE_CAMERA = { height: 54 } as const;
@@ -315,7 +309,7 @@ export const ASPERO_HERITAGE_PROXY: CaralHeritageProxy = {
 export const CARAL_CIRCULAR_ALTAR = caralCityPoint({ x: 72.5, z: 144.55, w: 10.6, d: 7.7 });
 
 /** Extra clearance around solid monument AABBs for unit footprints. */
-export const CARAL_SITE_BLOCKER_PADDING = 0.5;
+const CARAL_SITE_BLOCKER_PADDING = 0.5;
 
 /**
  * Phase from which each Caral monument answers clicks and shows its card. The physical blockers use
@@ -856,19 +850,18 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
       fords: [{ z: 190, halfWidth: 10 }],
     },
     pathCellSize: 1,
-    phases: { phases: ['cave', 'huanacaure', 'inticancha'], initial: 'cave' },
+    phases: { phases: ['cave', 'huanacaure', 'inticancha', 'fundada'], initial: 'cave' },
     heritageProxies: [{ id: 'tambotoco_huanacaure', x: TAMBOTOCO_SHRINE.x, z: TAMBOTOCO_SHRINE.z, w: 12, d: 10, h: 5 }],
     blockers: [
       { x: TAMBOTOCO_SHRINE.x, z: TAMBOTOCO_SHRINE.z, w: 12, d: 10 },
       { x: TAMBOTOCO_CAVE.x, z: TAMBOTOCO_CAVE.z, w: 11, d: 9 },
-      ...TAMBOTOCO_CAVE_HUTS.map((h) => ({ x: h.x, z: h.z, w: h.w + 1.4, d: h.d + 1.4 })),
       ...TAMBOTOCO_VILLAGES.flatMap((v) => v.huts.map((h) => ({ x: h.x, z: h.z, w: h.w + 1.4, d: h.d + 1.4 }))),
       ...TAMBOTOCO_INTICANCHA_HUTS.map((h) => ({
         x: h.x,
         z: h.z,
         w: h.w + 1.4,
         d: h.d + 1.4,
-        since: 'inticancha',
+        since: 'fundada',
       })),
     ],
     blockerPadding: 0.5,

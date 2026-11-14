@@ -118,7 +118,7 @@ export function hexToRgb(hex: string): { r: number; g: number; b: number } {
   return { r: ((n >> 16) & 255) / 255, g: ((n >> 8) & 255) / 255, b: (n & 255) / 255 };
 }
 
-export function rgbToHex(r: number, g: number, b: number): string {
+function rgbToHex(r: number, g: number, b: number): string {
   const to2 = (v: number) =>
     Math.round(clamp(v, 0, 1) * 255)
       .toString(16)

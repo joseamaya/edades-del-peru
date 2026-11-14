@@ -526,7 +526,8 @@ const CSS = /* css */ `
   #ed-dmg-layer { position: absolute; inset: 0; pointer-events: none; z-index: 58; overflow: hidden; }
   .ed-dmg { position: absolute; left: 0; top: 0; font-weight: 800; text-shadow: 0 1px 3px rgba(0,0,0,0.95); pointer-events: none; white-space: nowrap; will-change: transform, opacity; }
   #ed-cursor { position: absolute; pointer-events: none; z-index: 62; display: none; font-size: 22px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.85)); }
-  #ed-alerts { position: absolute; top: 96px; right: 12px; width: 244px; display: flex; flex-direction: column; gap: 6px; z-index: 57; pointer-events: none; }
+  /* Top-left, clear of the objectives/tutorial column: a burst of alerts used to cover the goals. */
+  #ed-alerts { position: absolute; top: 56px; left: 12px; width: 244px; display: flex; flex-direction: column; gap: 6px; z-index: 57; pointer-events: none; }
   .ed-alert { pointer-events: auto; cursor: pointer; background: rgba(12,14,18,0.92); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 4px; padding: 6px 9px; font-size: 12px; color: var(--text); box-shadow: 0 4px 16px rgba(0,0,0,0.5); animation: alert-in 0.2s ease; }
   .ed-alert.warn { border-left-color: var(--red); }
   @keyframes alert-in { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }
@@ -543,6 +544,8 @@ const EDGE_GUARD_SELECTOR =
 
 /** Visible toast stack cap: repeated events refresh one toast instead of flooding the screen. */
 const MAX_TOASTS = 4;
+/** Unit alerts kept on screen at once; older ones stay on the minimap as pings. */
+const MAX_ALERTS = 3;
 /** How long an idle toast stays before fading (ms). */
 const TOAST_LIFETIME = 2600;
 
@@ -716,7 +719,7 @@ export class HUD {
       el.remove();
     });
     this.alertsEl.prepend(el);
-    while (this.alertsEl.children.length > 5) this.alertsEl.lastChild?.remove();
+    while (this.alertsEl.children.length > MAX_ALERTS) this.alertsEl.lastChild?.remove();
     this.pingMap(info.x, info.z);
     setTimeout(() => el.remove(), 9000);
   }
@@ -1523,7 +1526,7 @@ export class HUD {
   abandonMatch(): void {
     this.game.saveRecording();
     if (this.game.mission) {
-      (this.game as any).missionEnd(false);
+      this.game.missionEnd(false);
     } else {
       this.game.loop.stop();
       this.showVictory(false);

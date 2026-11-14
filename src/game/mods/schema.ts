@@ -11,7 +11,7 @@ import { CIVS, ArchStyle, EmblemId } from '../../model/defs/civs';
  *
  * Sources of truth for the valid id/field sets: `src/model/defs/*`.
  */
-export const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 2;
 
 export interface UnitModEntry extends UnitOverride {
   id: string;

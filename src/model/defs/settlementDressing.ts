@@ -79,7 +79,7 @@ const MAX_SLOPE = 0.42;
  * Dwellings read ~3.2 x 2.8 with a plinth; the Plaza Mayor reads 6.46 x 5.27, and its plinth reaches
  * ~4.7 from the centre. Central props are kept outside that footprint (the courtyard stays empty).
  */
-export const DWELLING_CLEARANCE = 2.45;
+const DWELLING_CLEARANCE = 2.45;
 /** `buildCaralCenter(3.4)`: 6.46 x 5.27 walls, the plinth adds 12 % per side -> half-diagonal 4.67. */
 export const CENTER_CLEARANCE = 4.8;
 const MIN_PROP_SCALE = 0.85;
@@ -88,7 +88,7 @@ const MAX_PROP_SCALE = 1.15;
 const PROP_MARGIN = 0.1;
 
 /** Half-width of each prop at unit scale, in game metres. */
-export const PROP_RADIUS: Record<DressingKind, number> = {
+const PROP_RADIUS: Record<DressingKind, number> = {
   hearth: 0.6,
   drying_rack: 0.75,
   basket: 0.4,

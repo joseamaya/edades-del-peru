@@ -9,7 +9,7 @@ export const CHAVIN_PHASE_PLAN: SitePhasePlan = {
 };
 
 /** The former 192 m frame sits at the centre of the 256 m map, so every site-local point moves 32 m. */
-export const CHAVIN_SITE_SHIFT = 32;
+const CHAVIN_SITE_SHIFT = 32;
 
 /** Shift a point from the former 192 m site frame (origin 96) into the 256 m map (origin 128). */
 export function chavinPoint<T extends { x: number; z: number }>(p: T): T {

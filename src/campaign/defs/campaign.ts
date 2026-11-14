@@ -287,7 +287,7 @@ export const MISSIONS: MissionDef[] = [
         pos: { ref: 'site', dx: 0, dz: 0 },
         radius: 20,
         hidden: true,
-        title: 'Acto III · Entrega 150 de madera para las shicras de la Pirámide Mayor',
+        title: 'Acto III · Entrega 120 de madera para las shicras de la Pirámide Mayor',
       },
       {
         id: 'a3_obra_relleno',
@@ -311,7 +311,7 @@ export const MISSIONS: MissionDef[] = [
         pos: { ref: 'site', dx: 0, dz: 0 },
         radius: 20,
         hidden: true,
-        title: 'Acto III · Entrega 150 de piedra para los muros de contención',
+        title: 'Acto III · Entrega 120 de piedra para los muros de contención',
       },
       {
         id: 'a3_obra_muros',
@@ -752,7 +752,7 @@ export const MISSIONS: MissionDef[] = [
         radius: 20,
         hidden: true,
         requires: 'a1_ofrenda',
-        title: 'Acto II · Entrega 150 de piedra para el Templo Viejo',
+        title: 'Acto II · Entrega 120 de piedra para el Templo Viejo',
       },
       {
         id: 'a2_peregrinaje',
@@ -1366,7 +1366,7 @@ export const MISSIONS: MissionDef[] = [
       'La tradición recogida por Sarmiento, Cieza y Betanzos cuenta que ocho hermanos salieron de la cueva de Tambotoco, en Pacaritambo. En el camino Ayar Cachi fue sepultado por engaño, Ayar Uchu se convirtió en piedra en Huanacaure y Ayar Auca dio nombre al sitio del Cusco.\n' +
       'En el valle ya vivían huallas, sauaseray y alcabizas. Los recién llegados tomaron tierras, quitaron el agua a los alcabizas y fundaron Inticancha. La misión lo cuenta como Leyenda: el Códice señala que Sarmiento escribió para desacreditar a los incas y que Garcilaso da otra versión.',
     victory:
-      'Inticancha queda fundada y las cuatro canchas ordenan el sitio. La leyenda continúa: el señorío del Cusco crecerá hasta el Tahuantinsuyo. El epílogo distingue la tradición de Sarmiento de la versión de Garcilaso y no las presenta como historia comprobada.',
+      'Inticancha queda fundada y las cuatro canchas ordenan el sitio. La leyenda continúa: el señorío del Cusco crecerá hasta el Tahuantinsuyo.',
     defeat:
       'Los ayllus del valle rechazan a los recién llegados. Sin tierras ni agua, la peregrinación no funda Inticancha y la leyenda se pierde en la sierra.',
     period: HistoricalPeriod.LATE_INTERMEDIATE,
@@ -1385,7 +1385,8 @@ export const MISSIONS: MissionDef[] = [
         { text: 'Huanacaure', x: TAMBOTOCO_HUANACAURE.x / 256, z: TAMBOTOCO_HUANACAURE.z / 256, kind: 'region' },
         { text: 'Valle del Cusco', x: 196 / 256, z: 190 / 256, kind: 'region' },
       ],
-      base: { x: 46 / 256, z: 74 / 256 },
+      // Close to the cave mouth (blocker z ≈ 50–60): the party reads as just leaving Tambotoco.
+      base: { x: 44 / 256, z: 65 / 256 },
       opening: { x: 41 / 256, z: 62 / 256 },
       enemyBase: { x: TAMBOTOCO_ENEMY.x / 256, z: TAMBOTOCO_ENEMY.z / 256 },
       discoveries: [{ heritageId: 'tambotoco_huanacaure' }],
@@ -1419,10 +1420,25 @@ export const MISSIONS: MissionDef[] = [
         irrigation: true,
         heritageId: 'tambotoco_acequia',
         lockedUntilObjective: 'a3_acequia',
+        lockedHint:
+          'La acequia de los alcabizas está más adelante en la leyenda: primero llega al valle por Huanacaure.',
       },
       roads: [
-        { from: { dx: 44, dz: 84 }, to: { dx: TAMBOTOCO_HUANACAURE.x, dz: TAMBOTOCO_HUANACAURE.z }, width: 3 },
-        { from: { dx: TAMBOTOCO_HUANACAURE.x, dz: TAMBOTOCO_HUANACAURE.z }, to: { dx: 186, dz: 196 }, width: 3 },
+        // The path starts at the cave mouth and passes the Act I exit marker (a1_salida), so «sigue el camino»
+        // has a camino to follow: a stony footpath, since worn dirt does not show on the dry cave flat.
+        { from: { dx: 42, dz: 61 }, to: { dx: 60, dz: 92 }, width: 5, stonePath: true },
+        {
+          from: { dx: 60, dz: 92 },
+          to: { dx: TAMBOTOCO_HUANACAURE.x, dz: TAMBOTOCO_HUANACAURE.z },
+          width: 5,
+          stonePath: true,
+        },
+        {
+          from: { dx: TAMBOTOCO_HUANACAURE.x, dz: TAMBOTOCO_HUANACAURE.z },
+          to: { dx: 186, dz: 196 },
+          width: 5,
+          stonePath: true,
+        },
       ],
     },
     timeOfDay: 'morning',
@@ -1431,6 +1447,8 @@ export const MISSIONS: MissionDef[] = [
     unitSpeedScale: 0.75,
     startingResources: { food: 700, wood: 500, silver: 0, stone: 300 },
     start: {
+      // The Ayar leave the cave with their people and nothing built: the workers raise the first camp.
+      base: false,
       units: [
         { kind: UnitKind.WORKER, dx: 4, dz: 4, count: 2 },
         { kind: UnitKind.WORKER, dx: 3, dz: 5, count: 1, tag: 'mama_ocllo' },
@@ -1478,16 +1496,13 @@ export const MISSIONS: MissionDef[] = [
     buildingNames: { [BuildingKind.MILL]: 'Depósito comunal' },
     allowedUnits: [UnitKind.WORKER, UnitKind.SOLDIER, UnitKind.MUSKETEER, UnitKind.SCOUT],
     allowedBuildings: [
-      BuildingKind.CENTER,
       BuildingKind.HOUSE,
       BuildingKind.FARM,
       BuildingKind.MILL,
       BuildingKind.SAWMILL,
+      // A movement of families, not an army: the ayllu warriors can be raised, but no fortresses,
+      // walls or towers; the valley yields to the water, not to a siege.
       BuildingKind.BARRACKS,
-      BuildingKind.FORTRESS,
-      BuildingKind.WALL,
-      BuildingKind.GATE,
-      BuildingKind.TOWER,
     ],
     objectives: [
       {
@@ -1498,12 +1513,20 @@ export const MISSIONS: MissionDef[] = [
         title: 'Sal de Tambotoco y toma el camino',
       },
       {
+        id: 'a1_campamento',
+        kind: 'build',
+        buildingKind: BuildingKind.MILL,
+        count: 1,
+        hidden: true,
+        title: 'Levanta un depósito comunal para el campamento',
+      },
+      {
         id: 'a1_caza',
         kind: 'gather',
         fromNode: 'hunt',
         count: 120,
         hidden: true,
-        title: 'Sostén a las familias en el camino',
+        title: 'Caza 120 de comida y llévala al depósito para sostener a las familias',
       },
       {
         id: 'a1_manco',
@@ -1520,13 +1543,13 @@ export const MISSIONS: MissionDef[] = [
         pos: { dx: TAMBOTOCO_HUANACAURE.x, dz: TAMBOTOCO_HUANACAURE.z },
         radius: 18,
         hidden: true,
-        title: 'Llega a la huaca de Huanacaure',
+        title: 'Sube a Huanacaure y abre la ficha de la huaca',
       },
       {
         id: 'a3_acequia',
         kind: 'canal_open',
         hidden: true,
-        title: 'Abre la acequia de los alcabizas',
+        title: 'Abre la compuerta de la acequia de los alcabizas',
       },
       {
         id: 'a3_hualla',
@@ -1544,7 +1567,7 @@ export const MISSIONS: MissionDef[] = [
         pos: { dx: TAMBOTOCO_INTICANCHA.x, dz: TAMBOTOCO_INTICANCHA.z },
         radius: 16,
         hidden: true,
-        title: 'Funda Inticancha con su depósito comunal',
+        title: 'Funda Inticancha: construye su depósito comunal en el sitio marcado',
       },
       {
         id: 'a4_canchas',
@@ -1554,7 +1577,7 @@ export const MISSIONS: MissionDef[] = [
         radius: 9,
         count: 4,
         hidden: true,
-        title: 'Ordena las cuatro canchas alrededor de Inticancha',
+        title: 'Construye cuatro viviendas en las canchas marcadas de Inticancha',
       },
     ],
     triggers: [
@@ -1566,7 +1589,7 @@ export const MISSIONS: MissionDef[] = [
             type: 'dialogue',
             speaker: 'Mama Huaco',
             duration: 9,
-            text: '—La cueva nos queda atrás. Busquemos tierra y agua: donde el valle se abra, fundaremos.',
+            text: '—Salimos de la cueva sin nada más que nuestra gente. Busquemos tierra y agua: donde el valle se abra, fundaremos.',
           },
         ],
       },
@@ -1585,6 +1608,19 @@ export const MISSIONS: MissionDef[] = [
             tag: 'ayar_cachi',
             pos: { dx: TAMBOTOCO_TAMBO_QUIRO.x, dz: TAMBOTOCO_TAMBO_QUIRO.z },
             label: 'Huaca de Ayar Cachi',
+          },
+          { type: 'objective', objectiveId: 'a1_campamento', state: 'activate', announce: true },
+        ],
+      },
+      {
+        id: 't_campamento',
+        condition: { type: 'objective', objectiveId: 'a1_campamento', state: 'completed' },
+        effects: [
+          {
+            type: 'dialogue',
+            speaker: 'Mama Ocllo',
+            duration: 8,
+            text: '—Ya tenemos dónde guardar lo que traigamos. Que los cazadores salgan: las familias necesitan comer.',
           },
           { type: 'objective', objectiveId: 'a1_caza', state: 'activate', announce: true },
         ],
@@ -1647,6 +1683,15 @@ export const MISSIONS: MissionDef[] = [
         id: 't_acequia',
         condition: { type: 'objective', objectiveId: 'a3_acequia', state: 'completed' },
         effects: [
+          // The documented leverage (Sarmiento): without the water the alcabizas cede their land. The valley
+          // ayllus stop fighting, so the foundation is built in peace rather than under a siege.
+          { type: 'truce' },
+          {
+            type: 'dialogue',
+            speaker: 'Memoria de los Ayar',
+            duration: 8,
+            text: 'Sin el agua de la acequia, los alcabizas ceden sus tierras. Los ayllus del valle bajan las armas y vuelven a sus aldeas.',
+          },
           {
             type: 'act',
             kicker: 'Acto IV · La fundación',
@@ -1677,6 +1722,12 @@ export const MISSIONS: MissionDef[] = [
           },
           { type: 'objective', objectiveId: 'a4_canchas', state: 'activate', announce: true },
         ],
+      },
+      {
+        // The four canchas stand: only now does Inticancha read as a lived-in settlement.
+        id: 't_fundada',
+        condition: { type: 'objective', objectiveId: 'a4_canchas', state: 'completed' },
+        effects: [{ type: 'site_phase', phase: 'fundada' }],
       },
     ],
   },

@@ -288,7 +288,7 @@ export const LANDMARKS: Record<LandmarkId, LandmarkDef> = {
 };
 
 /** Landmark that stands for a civilization. */
-export const CIV_LANDMARK: Partial<Record<CivId, LandmarkId>> = {
+const CIV_LANDMARK: Partial<Record<CivId, LandmarkId>> = {
   [CivId.CARAL]: 'caral_ceremonial',
   [CivId.CHAVIN]: 'chavin_temple',
   [CivId.CUPISNIQUE]: 'cupisnique_huaca',

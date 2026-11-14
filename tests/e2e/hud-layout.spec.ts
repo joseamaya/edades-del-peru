@@ -133,7 +133,12 @@ async function snapshots(page: Page): Promise<Snapshots> {
     await render();
     const build = read();
 
-    const building = [...g.buildings.values()].find((b: any) => b.owner === 0 && !b.dead) as { id: number } | undefined;
+    let building = [...g.buildings.values()].find((b: any) => b.owner === 0 && !b.dead) as { id: number } | undefined;
+    // A party that starts with nothing built (Tambotoco): raise its first communal store to measure the panel.
+    if (!building && g.mission.def.start.base === false) {
+      const c = g.playerCenter(0);
+      building = g.spawnScriptedBuilding('mill', 0, c.x + 6, c.z + 6);
+    }
     if (!building) throw new Error('the mission has no player building to open its panel');
     g.selectBuilding(building.id);
     await render();
@@ -222,7 +227,9 @@ for (const { width, height, missions } of RESOLUTIONS) {
     test.use({ viewport: { width, height } });
 
     for (const missionId of missions) {
-      test(`the HUD panels do not overlap in ${missionId}`, { tag: '@smoke' }, async ({ page }) => {
+      // The PR smoke gate checks Caral at every resolution; the full main run covers every mission.
+      const tag = missionId === 'm1_caral' ? ['@smoke'] : [];
+      test(`the HUD panels do not overlap in ${missionId}`, { tag }, async ({ page }) => {
         test.setTimeout(120_000);
         const errors: string[] = [];
         page.on('pageerror', (e) => errors.push(e.message));
@@ -405,7 +412,7 @@ test.describe('objectives at 1280x720', () => {
     await bootMission(page, 'm1_caral');
     const state = await act3State(page);
     expect(state.texts.join(' | ')).toContain('Visita la Huaca de los Ídolos');
-    expect(state.texts.join(' | ')).toContain('Entrega 150 de madera');
+    expect(state.texts.join(' | ')).toContain('Entrega 120 de madera');
     expect(state.texts.join(' | ')).toContain('Convoca una asamblea comunal');
     expect(state.rows).toHaveLength(3);
     // The panel hugs its content and never reaches the command bar or the tutorial.

@@ -1114,6 +1114,30 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
     const workers = [...g.units.values()]
       .filter((u: any) => u.owner === 0 && u.kind === 'worker' && !u.dead)
       .map((u: any) => u.id);
+    // The party starts with nothing built: the workers raise the camp's communal store first.
+    const startBuildings = [...g.buildings.values()].filter((b: any) => b.owner === 0 && !b.dead).length;
+    let camp: any = null;
+    for (const [ox, oz] of [
+      [0, 0],
+      [4, 0],
+      [-4, 0],
+      [0, 4],
+      [0, -4],
+      [7, 7],
+      [-7, -7],
+    ]) {
+      camp = g.placeBuilding('mill', 54 + ox, 84 + oz);
+      if (camp) break;
+    }
+    if (camp) build(workers, camp.id);
+    for (let i = 0; i < Math.ceil(90 / dt) && !m.ended; i++) {
+      keepAlive();
+      if (i % 15 === 0) dismissCard();
+      g.update(dt, t);
+      t += dt;
+      if (m.getObjectiveState('a1_campamento') === 'completed') break;
+    }
+    const campamento = m.getObjectiveState('a1_campamento') as string;
     const hunts = [...g.resourceNodes.values()].filter((n: any) => !n.dead && n.kind === 'hunt') as any[];
     if (hunts.length) {
       for (const [i, id] of workers.entries()) {
@@ -1201,6 +1225,8 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
     }
     return {
       salida,
+      startBuildings,
+      campamento,
       caza,
       huanacaure,
       acequia,
@@ -1210,6 +1236,8 @@ test('plays Los hijos de Tambotoco through its four acts with real orders', asyn
     };
   });
   expect(out.salida).toBe('completed');
+  expect(out.startBuildings, 'the Ayar leave the cave with nothing built').toBe(0);
+  expect(out.campamento).toBe('completed');
   expect(out.caza).toBe('completed');
   expect(out.huanacaure).toBe('completed');
   expect(out.acequia).toBe('completed');

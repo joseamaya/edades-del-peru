@@ -68,7 +68,7 @@ const isSiege = (kind: UnitKind): boolean => UNIT_CATEGORY[kind] === 'siege';
 
 export class AI {
   private game: Game;
-  private playerId: number;
+  readonly playerId: number;
   private rng: RNG;
   private mult: { aggression: number; reaction: number };
   private profile: AIProfile;

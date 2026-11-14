@@ -134,6 +134,49 @@ describe('mission optional (bonus) objectives', () => {
     expect(m.getObjectiveState('bonus'), 'a failed protect goal stays failed').toBe('failed');
   });
 
+  it('a party with no base is lost only when it has neither buildings nor units', () => {
+    const unit = { id: 1, tag: 'guarda', owner: 0, dead: false, kind: UnitKind.WORKER };
+    const game = stubGame(unit);
+    game.hasBuildings = () => false;
+    const m = new Mission(game as any, { ...def, start: { ...def.start, base: false } }, () => {});
+    m.start();
+    m.update(0.1, 0);
+    expect(m.ended, 'no buildings yet, but the party is alive').toBe(false);
+    unit.dead = true;
+    m.update(0.1, 0);
+    expect(m.ended).toBe(true);
+    expect(m.won).toBe(false);
+  });
+
+  it('a mission with a base is lost when its buildings are gone', () => {
+    const unit = { id: 1, tag: 'guarda', owner: 0, dead: false, kind: UnitKind.WORKER };
+    const game = stubGame(unit);
+    game.hasBuildings = () => false;
+    const m = new Mission(game as any, def, () => {});
+    m.start();
+    m.update(0.1, 0);
+    expect(m.won).toBe(false);
+    expect(m.ended).toBe(true);
+  });
+
+  it('a truce effect makes the AI side yield', () => {
+    const unit = { id: 1, tag: 'guarda', owner: 0, dead: false, kind: UnitKind.WORKER };
+    const game = stubGame(unit);
+    const calls: Array<[number, boolean | undefined]> = [];
+    game.declareTruce = (owner: number, restored?: boolean) => calls.push([owner, restored]);
+    const m = new Mission(
+      game as any,
+      {
+        ...def,
+        triggers: [{ id: 't_truce', condition: { type: 'time', seconds: 0 }, effects: [{ type: 'truce' }] }],
+      },
+      () => {},
+    );
+    m.start();
+    m.update(0.1, 0);
+    expect(calls).toEqual([[1, undefined]]);
+  });
+
   it('credits a protect goal whose unit survives to victory', () => {
     const unit = { id: 1, tag: 'guarda', owner: 0, dead: false, kind: UnitKind.WORKER };
     const game = stubGame(unit);

@@ -25,7 +25,7 @@ import type { PropId } from '../model/defs/props';
  */
 export type VegetationKitId = 'huarango' | 'sauce' | 'cana_brava' | 'carrizo' | 'totora' | 'pacae';
 
-export const VEGETATION_KIT_URLS: Record<VegetationKitId, { lod0: string; lod1: string }> = {
+const VEGETATION_KIT_URLS: Record<VegetationKitId, { lod0: string; lod1: string }> = {
   huarango: { lod0: huarangoLod0, lod1: huarangoLod1 },
   sauce: { lod0: sauceLod0, lod1: sauceLod1 },
   cana_brava: { lod0: canaBravaLod0, lod1: canaBravaLod1 },

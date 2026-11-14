@@ -41,7 +41,7 @@ export interface AndeanSpec {
   shoulderSash: boolean;
 }
 
-export const ANDEAN_CIV: Record<AndeanCulture, CivId> = {
+const ANDEAN_CIV: Record<AndeanCulture, CivId> = {
   moche: CivId.MOCHE,
   recuay: CivId.RECUAY,
   chavin: CivId.CHAVIN,
@@ -211,7 +211,7 @@ export const ANDEAN_SPECS: Record<AndeanCulture, AndeanSpec> = {
   huanca: GENERAL_ANDEAN_SPEC,
 };
 
-export function andeanCultureForCiv(civ: CivId): AndeanCulture | null {
+function andeanCultureForCiv(civ: CivId): AndeanCulture | null {
   return (ANDEAN_CULTURES as readonly string[]).includes(civ) ? (civ as AndeanCulture) : null;
 }
 

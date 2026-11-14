@@ -325,7 +325,7 @@ function ensureStyles(): void {
 }
 
 /** A stepped Andean fret, repeated as the gold band under the title. */
-export const BAND = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='12' viewBox='0 0 36 12'%3E%3Cpath d='M0 11h6V7h6V3h6v4h-3v4h9V7h-3V3h6v4h6v4h3' fill='none' stroke='%23e8c36a' stroke-width='1.4'/%3E%3C/svg%3E")`;
+const BAND = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='12' viewBox='0 0 36 12'%3E%3Cpath d='M0 11h6V7h6V3h6v4h-3v4h9V7h-3V3h6v4h6v4h3' fill='none' stroke='%23e8c36a' stroke-width='1.4'/%3E%3C/svg%3E")`;
 
 const CSS = /* css */ `
   .ed-epic { overflow: hidden; background: #05070a; }

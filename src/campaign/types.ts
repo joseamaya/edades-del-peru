@@ -56,6 +56,8 @@ export interface MissionCanal {
    * gate is scenery: opening it would complete the objective the moment it appears.
    */
   lockedUntilObjective?: string;
+  /** Toast shown when the gate is clicked while locked; defaults to Caral's «prepare the fields» hint. */
+  lockedHint?: string;
   /** Optional heritage field card exposed by clicking the canal. */
   heritageId?: HeritageBuildingId;
 }
@@ -65,6 +67,11 @@ export interface MissionRoad {
   to: MissionPoint;
   /** Ribbon width in world units; defaults to 4. */
   width?: number;
+  /**
+   * Paint a stony footpath (earth and stone) under the road. The default «wear» only adds dirt, which does
+   * not show on ground that is already dry earth (Tambotoco's cave flat), and the ribbon is faint.
+   */
+  stonePath?: boolean;
 }
 
 export interface MissionDecor {
@@ -310,7 +317,12 @@ export type TriggerEffect =
   | { type: 'objective'; objectiveId: string; state: 'activate' | 'complete' | 'fail'; announce?: boolean }
   | { type: 'camera'; pos: MissionPoint }
   | { type: 'victory' }
-  | { type: 'defeat'; text: string };
+  | { type: 'defeat'; text: string }
+  /**
+   * The AI side yields (Tambotoco: the alcabizas cede once the water is taken): it joins the player's
+   * team, its AI stops campaigning and its warriors return home. Re-applied on load.
+   */
+  | { type: 'truce'; owner?: number };
 
 export interface TriggerDef {
   id: string;
@@ -419,6 +431,11 @@ export interface MissionDef {
   unitSpeedScale?: number;
   startingResources: Resources;
   start: {
+    /**
+     * `false`: the player starts as a party on the move, with no centre or dwellings (Tambotoco: the Ayar
+     * leave the cave with nothing built). Defeat then waits until the party has neither buildings nor units.
+     */
+    base?: boolean;
     buildings?: { kind: BuildingKind; dx: number; dz: number; tag?: string }[];
     units?: { kind: UnitKind; dx: number; dz: number; tag?: string; count?: number }[];
   };

@@ -101,7 +101,7 @@ export function hasReplay(): boolean {
   return loadReplay() !== null;
 }
 
-export function clearReplay(): void {
+function clearReplay(): void {
   try {
     localStorage.removeItem(STORAGE_KEY);
   } catch {
