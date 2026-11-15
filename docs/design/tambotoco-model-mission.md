@@ -112,6 +112,18 @@ The legend is about eight siblings, so all eight are on the board from the start
   disagreement between Sarmiento and Garcilaso.
 - Defeat: the valley ayllus reject the newcomers.
 
+## Intro render
+
+- `art-src/blender/tambotoco/tambotoco_intro.blend`, built by
+  `scripts/blender/build_tambotoco_intro.py`, stages the cave mouth, the rocky ridge, the eight Ayar
+  siblings and Manco Capac's golden staff on the authored transect and renders with EEVEE at 1600x900.
+- The record `m_tambotoco-intro` is ingested from `art-src/blender/tambotoco/renders.json` and starts
+  `reviewed: false`; the briefing keeps the in-engine capture until a human approves it with
+  `yarn art:review`.
+- Regenerate with `blender --background --python scripts/blender/build_tambotoco_intro.py`.
+- The scene is a stylization of the myth (no identified cave, no date); the cave, the massif and the staff
+  are labelled as an abstraction in the manifest.
+
 ## Tutorial
 
 Objectives say **what** to do and **where**; the tutorial only teaches **how**, the first time a control is
@@ -140,6 +152,8 @@ valley wave and open the acequia in one step ({key:selectArmy}, right-click; car
   copies are resized to 960×540, WebP q58.
 
 ## Open items
+
+1. Human review of the draft Tambotoco intro render (`m_tambotoco-intro`), then switch `MISSION_ART`.
 
 1. Performance: the opening measures ~567k triangles / ~339 draw calls in `bench_scene.mjs` (ayllu site,
    eight nameplates, hero rings/banners and tunic accents) under the 600k/340 first-pass cap; the Act IV

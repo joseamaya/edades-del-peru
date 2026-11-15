@@ -423,12 +423,12 @@ The table separates what is implemented from the art and performance passes that
 | Onboarding  | Met: six-step tutorial that teaches controls (move, camp store, hunt, visit, water, canchas), briefing with the eight siblings and Codex.                                |
 | Closure     | Met: the epilogue tells the foundation as tradition and names both versions; no counterfactual is hidden.                                                                |
 | UX          | Met: campaign layout at 1600×900, the eight-card briefing at 1280×720 and `hud-layout.spec.ts`.                                                                          |
-| Visuals     | Partial: 256 m transect and an in-engine ayllu kit (cave, shrine, hamlets, Inticancha); the kit is procedural and a Blender art pass is pending.                         |
+| Visuals     | Partial: 256 m transect, an in-engine ayllu kit and a draft EEVEE intro render (`m_tambotoco-intro`, pending review).                                                      |
 | Persistence | Met: save/load round-trip in `save-campaign.spec.ts`.                                                                                                                    |
 | Tests       | Met: `tests/tambotoco.test.ts` (cast, tags, huaca beats), scale, campaign path and the campaign E2E specs.                                                               |
 | Docs        | Met: dossier, `tambotoco-model-mission.md`, this table and the redesign status.                                                                                          |
 | Performance | Partial: opening ~567k triangles / ~339 calls under 600k/340 (hero markers and accents), Act IV 472k/217 under 620k/360; still over art-direction §11's 200-call target. |
-| Art         | N/A for new Blender models: the ayllu kit is procedural; captures are in-engine and documented in PROVENANCE.                                                            |
+| Art         | Draft: authored EEVEE intro render awaiting human review; the ayllu kit stays procedural; captures are in-engine and documented in PROVENANCE.                           |
 | Structure   | Met: four acts with hidden objectives, three chapter cards and the documented foundation.                                                                                |
 | Opening     | Met: three narrated beats with in-engine captures, three act cards and the epilogue backdrop.                                                                            |
 | Scale       | Met: 256 m transect, 128² painted ground and worker crossing ≈2:22 (`tests/campaign-scale.test.ts`).                                                                     |

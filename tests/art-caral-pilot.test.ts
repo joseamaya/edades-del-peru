@@ -10,6 +10,7 @@ const SOURCE_MANIFESTS = [
   path.resolve('art-src/blender/moche/renders.json'),
   path.resolve('art-src/blender/wari/renders.json'),
   path.resolve('art-src/blender/chanca/renders.json'),
+  path.resolve('art-src/blender/tambotoco/renders.json'),
   path.resolve('art-src/blender/mission-decor/renders.json'),
 ];
 const CSV = path.resolve('art-src/blender/caral/caral_asset_manifest.csv');
@@ -24,6 +25,7 @@ const EXPECTED = [
   'caral-map-city',
   'caral-tour-isometric',
   'm5_chanca-intro',
+  'm_tambotoco-intro',
   'm6_chimu-intro',
   'm6b_guerra_civil-intro',
   'm7_colonial-intro',
@@ -36,6 +38,7 @@ const EXPECTED_META: Record<string, { civilization: string; period: number; regi
   'm3_moche-intro': { civilization: 'moche', period: 2, region: 'north_coast' },
   'm4_wari-intro': { civilization: 'wari', period: 3, region: 'high_andes' },
   'm5_chanca-intro': { civilization: 'inca', period: 5, region: 'high_andes' },
+  'm_tambotoco-intro': { civilization: 'inca', period: 5, region: 'high_andes' },
   'm6_chimu-intro': { civilization: 'inca', period: 5, region: 'north_coast' },
   'm6b_guerra_civil-intro': { civilization: 'inca', period: 5, region: 'high_andes' },
   'm7_colonial-intro': { civilization: 'inca', period: 6, region: 'high_andes' },
