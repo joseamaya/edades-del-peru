@@ -458,7 +458,7 @@ slot is absent (offline / without assets).
 
 ### Independencia (m8) intro and epilogue images (in-engine recreations)
 
-- **Location**: `public/media/independencia/intro-{lima,junin,ayacucho,epilogo}.webp` (960x540, WebP q58).
+- **Location**: `public/media/independencia/intro-{lima,junin,marcha,ayacucho,epilogo}.webp` (960x540, WebP q58).
 - **Source**: captured from the game itself by `scripts/capture_independencia_intro.mjs` on the 256 m
   Junín–Ayacucho transect: the Lima campaign camp, Junín and the Ayacucho chapel, plus a dusk epilogue.
   Rendered without the HUD or character nameplates at 1600x900 and resized with `sharp`. Regenerate with

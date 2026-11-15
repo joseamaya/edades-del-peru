@@ -299,26 +299,26 @@ intro/epilogue and bench scenes); its art review is pending. The HUD layout has 
 
 Reviewed 2026-11-14 as a model mission. The human art gate is still open.
 
-| Gate        | Status               | Evidence                                                                                                                                                                                     |
-| ----------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| History     | Met                  | `docs/historia/campanas/independencia.md` with its certainty table; no invented units, generals or feats.                                                                                    |
-| Identity    | Met                  | Junín, the march and Ayacucho, with Sucre protected and the royalist surrender as the ending.                                                                                               |
-| Terrain     | Met                  | 256 m authored highland heightfield (`independenceHeightmap.ts`) with painted ground: pampas, terraces, quebrada and ridges.                                                                |
-| Site        | Met (exception)      | No construction phases: the Ayacucho chapel and camp are in use; recorded in `independencia-model-mission.md`.                                                                              |
-| Play        | Met                  | `campaign-playtest.spec.ts` holds Junín, marches and holds Ayacucho with real orders and Sucre alive; completable and save paths are covered.                                                |
-| Contract    | Met                  | Three acts (Junín, march, Ayacucho) with a hidden march/third hold revealed by triggers and chapter cards.                                                                                    |
-| Onboarding  | Met                  | Non-blocking tutorial, briefing, Codex and minimap pips.                                                                                                                                     |
-| Closure     | Met                  | Dusk epilogue capture narrates the royalist surrender and the end of Spanish power.                                                                                                          |
-| UX          | Met                  | `tests/e2e/hud-layout.spec.ts` checks the panels geometrically at 1280×720 (Caral also at 1600×900 and 1920×1080).                                                                           |
-| Visuals     | Met locally          | Authored Ayacucho GLB, painted pampas and in-engine intro/epilogue captures in `public/media/independencia/`.                                                                                |
-| Persistence | Met                  | Junín, march and Ayacucho state use the shared save path; v11 m8 saves are rejected (`SAVE_VERSION` 12).                                                                                     |
-| Tests       | Met                  | Data, site/proxy collision, tutorial, mission, HUD, real-command playtest and save/load coverage.                                                                                            |
-| Docs        | Met                  | This document, dossier, `independencia-model-mission.md`, experience table, site note, art docs and README aligned.                                                                           |
-| Structure   | Met                  | Three acts, hidden objectives revealed per act and chapter cards with images.                                                                                                               |
-| Opening     | Met                  | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_independencia_intro.mjs`; `MISSION_ART` uses the Lima capture.                                                   |
-| Art         | Pending human review | The reused Ayacucho GLB and its Blender records keep `reviewed: false` (#343); in-engine captures are recorded in PROVENANCE.                                                                |
-| Performance | Met                  | `bench_scene.mjs`: opening ~590k tris / 621 calls, Ayacucho ~866k / 1,238; over the 600k/200 targets but within the recorded first-pass caps.                                                |
-| Scale       | Met                  | 256 m map, 128² painted ground and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                                                                           |
+| Gate        | Status               | Evidence                                                                                                                                      |
+| ----------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| History     | Met                  | `docs/historia/campanas/independencia.md` with its certainty table; no invented units, generals or feats.                                     |
+| Identity    | Met                  | Junín, the march and Ayacucho, with Sucre protected and the royalist surrender as the ending.                                                 |
+| Terrain     | Met                  | 256 m authored highland heightfield (`independenceHeightmap.ts`) with painted ground: pampas, terraces, quebrada and ridges.                  |
+| Site        | Met (exception)      | No construction phases: the Ayacucho chapel and camp are in use; recorded in `independencia-model-mission.md`.                                |
+| Play        | Met                  | `campaign-playtest.spec.ts` holds Junín, marches and holds Ayacucho with real orders and Sucre alive; completable and save paths are covered. |
+| Contract    | Met                  | Three acts (Junín, march, Ayacucho) with a hidden march/third hold revealed by triggers and chapter cards.                                    |
+| Onboarding  | Met                  | Non-blocking tutorial, briefing, Codex and minimap pips.                                                                                      |
+| Closure     | Met                  | Dusk epilogue capture narrates the royalist surrender and the end of Spanish power.                                                           |
+| UX          | Met                  | `tests/e2e/hud-layout.spec.ts` checks the panels geometrically at 1280×720 (Caral also at 1600×900 and 1920×1080).                            |
+| Visuals     | Met locally          | Authored Ayacucho GLB, painted pampas and in-engine intro/epilogue captures in `public/media/independencia/`.                                 |
+| Persistence | Met                  | Junín, march and Ayacucho state use the shared save path; v11 m8 saves are rejected (`SAVE_VERSION` 12).                                      |
+| Tests       | Met                  | Data, site/proxy collision, tutorial, mission, HUD, real-command playtest and save/load coverage.                                             |
+| Docs        | Met                  | This document, dossier, `independencia-model-mission.md`, experience table, site note, art docs and README aligned.                           |
+| Structure   | Met                  | Three acts, hidden objectives revealed per act and chapter cards with images.                                                                 |
+| Opening     | Met                  | Three-beat narrated intro, chapter cards and epilogue from `scripts/capture_independencia_intro.mjs`; `MISSION_ART` uses the Lima capture.    |
+| Art         | Pending human review | The reused Ayacucho GLB and its Blender records keep `reviewed: false` (#343); in-engine captures are recorded in PROVENANCE.                 |
+| Performance | Met                  | `bench_scene.mjs`: opening ~590k tris / 621 calls (under 600k, over 200 calls), Ayacucho ~867k / 1,246; within the recorded first-pass caps.  |
+| Scale       | Met                  | 256 m map, 128² painted ground and `unitSpeedScale: 0.75` → worker crossing ≈2:22; `tests/campaign-scale.test.ts`.                            |
 
 ## Campaign IV playable status (m8–m9)
 

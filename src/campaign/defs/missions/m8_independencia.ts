@@ -43,8 +43,8 @@ export const m8Independencia: MissionDef = {
   start: {
     units: [
       { kind: UnitKind.RIFLEMAN, dx: independenceLength(6), dz: -independenceLength(6), count: 1, tag: 'sucre' },
-      { kind: UnitKind.RIFLEMAN, dx: independenceLength(6), dz: -independenceLength(6), count: 4 },
-      { kind: UnitKind.CAVALRY, dx: independenceLength(10), dz: -independenceLength(2), count: 3 },
+      { kind: UnitKind.RIFLEMAN, dx: independenceLength(6), dz: -independenceLength(6), count: 10 },
+      { kind: UnitKind.CAVALRY, dx: independenceLength(10), dz: -independenceLength(2), count: 5 },
       { kind: UnitKind.PATRIOTA_MONTONERA, dx: independenceLength(12), dz: -independenceLength(2), count: 2 },
       { kind: UnitKind.ARTILLERY, dx: independenceLength(4), dz: independenceLength(8), count: 2 },
     ],
@@ -94,8 +94,9 @@ export const m8Independencia: MissionDef = {
     {
       id: 'obj_marcha',
       kind: 'reach',
-      pos: { ref: 'site', dx: 0, dz: 0 },
-      radius: independenceLength(18),
+      // West of the royalist centre, on walkable pampa: the chapel footprint blocks its own centre.
+      pos: { ref: 'enemy', dx: -independenceLength(8), dz: 0 },
+      radius: independenceLength(8),
       hidden: true,
       requires: 'obj_junin',
       title: 'Marcha a Ayacucho con el ejército patriota',
@@ -194,7 +195,7 @@ export const m8Independencia: MissionDef = {
           type: 'act',
           kicker: 'Acto II · La marcha',
           title: 'Hacia Ayacucho',
-          image: 'media/independencia/intro-lima.webp',
+          image: 'media/independencia/intro-marcha.webp',
           text: 'Junín resiste. Marcha al sur con el ejército patriota: la decisión final espera en Ayacucho.',
         },
         {

@@ -399,7 +399,7 @@ describe('campaign educational content', () => {
 
   it('chapter IV has briefings and guided tutorials', () => {
     for (const [id, steps] of [
-      ['m8_independencia', 4],
+      ['m8_independencia', 5],
       ['m9_guerra_pacifico', 5],
     ] as const) {
       const mis = MISSIONS.find((m) => m.id === id)!;
@@ -595,7 +595,14 @@ describe('campaign educational content', () => {
     const marcha = m8.objectives.find((o) => o.id === 'obj_marcha')!;
     expect(marcha.kind).toBe('reach');
     expect(marcha.requires).toBe('obj_junin');
+    expect(marcha.radius).toBeCloseTo(10.667, 3);
+    expect(marcha.pos?.ref).toBe('enemy');
+    expect(marcha.pos?.dx).toBeCloseTo(-10.667, 3);
     expect(ayacucho?.requires).toBe('obj_marcha');
+    expect(junin?.radius).toBeCloseTo(18.667, 3);
+    expect(junin?.pos).toEqual({ ref: 'enemy', dx: -40, dz: 0 });
+    expect(ayacucho?.radius).toBeCloseTo(24, 3);
+    expect(ayacucho?.time).toBe(90);
     const actTitles = m8.triggers.flatMap((t) => t.effects.flatMap((e) => (e.type === 'act' ? [e.title] : [])));
     expect(actTitles).toHaveLength(3);
     expect(actTitles).toContain('Hacia Ayacucho');

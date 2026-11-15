@@ -417,6 +417,9 @@ export function caralKeepout(r: SiteKeepoutRect): SiteKeepoutRect {
 /** The battery point in the former 192 m frame, scaled into the 256 m map. */
 const ARICA_SITE_POINT = aricaPoint({ x: 134.8, z: 73 });
 
+/** The Ayacucho chapel point in the former 192 m frame, scaled into the 256 m map. */
+const INDEPENDENCE_SITE_POINT = independencePoint({ x: 134.8, z: 71 });
+
 /** The Cusco plaza point in the former 192 m frame, scaled into the 256 m map. */
 const COLONIAL_SITE_POINT = colonialPoint({ x: 134.8, z: 73 });
 
@@ -790,8 +793,8 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     // The 192 m composition is scaled by 4/3 into the 256 m transect; the model, proxies and blockers
     // scale with it so the chapel still covers its terrace.
     scale: independenceLength(0.65),
-    origin: independencePoint({ x: 134.8, z: 71 }),
-    anchor: independencePoint({ x: 134.8, z: 71 }),
+    origin: INDEPENDENCE_SITE_POINT,
+    anchor: INDEPENDENCE_SITE_POINT,
     cameraHeight: independenceLength(54),
     framing: 'site-biased',
     heightField: {
@@ -804,13 +807,13 @@ export const AUTHORED_SITES: Record<AuthoredSiteId, AuthoredSiteDef> = {
     heritageProxies: [
       {
         id: 'independence_chapel',
-        ...independencePoint({ x: 134.8, z: 71 }),
+        ...INDEPENDENCE_SITE_POINT,
         w: independenceLength(9),
         d: independenceLength(9),
         h: independenceLength(6),
       },
     ],
-    blockers: [{ ...independencePoint({ x: 134.8, z: 71 }), w: independenceLength(9), d: independenceLength(9) }],
+    blockers: [{ ...INDEPENDENCE_SITE_POINT, w: independenceLength(9), d: independenceLength(9) }],
     blockerPadding: independenceLength(0.5),
     buildKeepout: [{ x: 0.702, z: 0.37, rx: 0.065, rz: 0.065 }],
     wallCollision: {

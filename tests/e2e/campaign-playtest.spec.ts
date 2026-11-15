@@ -225,6 +225,14 @@ test('plays m8 by holding Junín and Ayacucho with real orders', async ({ page }
       t += dt;
     }
     const junin = m.getObjectiveState('obj_junin') as string;
+    // Act II: march to the Ayacucho marker before the final hold.
+    const marcha = m.getObjectiveAnchor('obj_marcha') as { x: number; z: number };
+    move([...cavalry, ...rifles, ...artillery], marcha.x, marcha.z);
+    for (let i = 0; i < Math.ceil(20 / dt) && !m.ended; i++) {
+      if (g.hud.isMissionCardOpen()) document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+      g.update(dt, t);
+      t += dt;
+    }
     // 120 s hold plus the march from Junín. Units that chase an enemy out of the radius reset the hold,
     // so the line is re-formed every 20 s, as a player would; a fixed 150 s budget flipped with timing.
     for (let i = 0; i < Math.ceil(360 / dt) && !m.ended; i++) {

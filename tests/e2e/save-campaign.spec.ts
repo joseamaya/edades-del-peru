@@ -884,6 +884,67 @@ test('saves and loads m6b mid-capture', async ({ page }) => {
   expect(after).toEqual(before);
 });
 
+test('saves and loads m8 mid-Ayacucho', async ({ page }) => {
+  await page.goto('/?mission=m8_independencia&seed=777&fog=0&low=1&intro=0');
+  await startMission(page);
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const before = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    if (g.getPaused()) g.togglePause();
+    const m = g.mission;
+    m.objState.set('obj_junin', 'completed');
+    m.objState.set('obj_marcha', 'completed');
+    m.objState.set('obj_ayacucho', 'activo');
+    const anchor = m.getObjectiveAnchor('obj_ayacucho') as { x: number; z: number };
+    const army = [...g.units.values()].filter((u: any) => u.owner === 0 && !u.dead).slice(0, 8) as any[];
+    for (const u of army) u.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+    const dt = 1 / 60;
+    let t = 0.1;
+    for (let i = 0; i < Math.ceil(5 / dt) && !m.ended; i++) {
+      document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+      for (const u of army) u.pos.set(anchor.x, g.terrain.getHeight(anchor.x, anchor.z), anchor.z);
+      g.update(dt, t);
+      t += dt;
+    }
+    g.saveMatch();
+    return {
+      ayacucho: g.mission.getObjectiveProgress('obj_ayacucho'),
+      junin: m.getObjectiveState('obj_junin'),
+      tutorialStep: g.tutorial?.toSave().stepId ?? null,
+    };
+  });
+  expect(before.ayacucho?.current ?? 0).toBeGreaterThan(2);
+  expect(before.junin).toBe('completed');
+
+  await page.goto('/?load=1');
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { game?: any }).game;
+      return !!g?.mission && g.units.size > 0;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  const after = await page.evaluate(() => {
+    const g = (window as unknown as { game: any }).game;
+    g.loop.stop();
+    return {
+      ayacucho: g.mission.getObjectiveProgress('obj_ayacucho'),
+      junin: g.mission.getObjectiveState('obj_junin'),
+      tutorialStep: g.tutorial?.toSave().stepId ?? null,
+    };
+  });
+  expect(after).toEqual(before);
+});
+
 test('saves and loads the later campaign missions', async ({ context }) => {
   test.setTimeout(180_000);
   for (const id of [

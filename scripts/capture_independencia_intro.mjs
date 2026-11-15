@@ -24,6 +24,11 @@ const SHOTS = [
     centre: 'junin',
     cinematic: { eye: [-30, 16, 20], look: [0, 3, 0], fov: 50, time: 0.5 },
   },
+  {
+    id: 'marcha',
+    centre: 'marcha',
+    cinematic: { eye: [-30, 16, 20], look: [0, 4, 0], fov: 50, time: 0.48 },
+  },
   { id: 'ayacucho', anchor: 'site', height: 46, time: 0.44 },
   {
     id: 'epilogo',
@@ -69,8 +74,16 @@ try {
         g.applyQualityPreset('high');
         const site = g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 });
         const junin = g.mission.getObjectiveAnchor('obj_junin') ?? site;
+        const marcha = { x: (junin.x + site.x) / 2, z: (junin.z + site.z) / 2 };
         const base = g.playerCenter(0);
-        const centre = shot.anchor === 'site' ? site : shot.centre === 'junin' ? junin : { x: base.x, z: base.z };
+        const centre =
+          shot.anchor === 'site'
+            ? site
+            : shot.centre === 'junin'
+              ? junin
+              : shot.centre === 'marcha'
+                ? marcha
+                : { x: base.x, z: base.z };
         g.sky.setTimeOfDay(shot.time ?? 0.5);
         let t = 1;
         for (let i = 0; i < 30; i++) {

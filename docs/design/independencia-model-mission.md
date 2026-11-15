@@ -15,11 +15,11 @@ hold Junín, march south, and hold Ayacucho while Sucre lives.
 
 ## Acts
 
-| Act                    | Place                | Player action                                                     | Historical idea                                                        |
-| ---------------------- | -------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------- |
-| I · Junín              | Pampa de Junín       | Hold Junín 90 s with the patriot cavalry, Sucre protected         | The cavalry action opens the final campaign                            |
-| II · La marcha         | Junín–Ayacucho road  | March to Ayacucho with the army                                   | The campaign moves south to the decisive field                         |
-| III · Ayacucho         | Pampa de Ayacucho    | Hold Ayacucho 90 s until the royalist surrender; Sucre alive      | The victory seals independence and ends Spanish power                  |
+| Act            | Place               | Player action                                                | Historical idea                                       |
+| -------------- | ------------------- | ------------------------------------------------------------ | ----------------------------------------------------- |
+| I · Junín      | Pampa de Junín      | Hold Junín 90 s with the patriot cavalry, Sucre protected    | The cavalry action opens the final campaign           |
+| II · La marcha | Junín–Ayacucho road | March to Ayacucho with the army                              | The campaign moves south to the decisive field        |
+| III · Ayacucho | Pampa de Ayacucho   | Hold Ayacucho 90 s until the royalist surrender; Sucre alive | The victory seals independence and ends Spanish power |
 
 Optional: take the royalist centre if it resists. The epilogue narrates the end of Spanish power.
 
@@ -57,9 +57,9 @@ recorded here and in the quality bar.
 
 - Three narrated intro beats and the three act cards captured in engine by
   [`scripts/capture_independencia_intro.mjs`](../../scripts/capture_independencia_intro.mjs): the Lima
-  campaign camp, Junín and Ayacucho, plus a dusk epilogue.
+  campaign camp, Junín, the march and Ayacucho, plus a dusk epilogue.
 - `MISSION_ART` (`m8_independencia` → `media/independencia/intro-lima.webp`) and the briefing use the Lima
-  capture.
+  capture; the Act II card uses the march capture.
 - Victory: Ayacucho is held and Sucre lives. The epilogue (`media/independencia/intro-epilogo.webp`) narrates
   the royalist surrender and the end of Spanish power. Defeat: Sucre dies or the army is lost.
 
@@ -73,17 +73,25 @@ briefing, the chapter cards and the Codex.
 - Data: `tests/campaign.test.ts`, `tests/campaign-layout.test.ts`, `tests/authored-sites.test.ts`.
 - Scale: `tests/campaign-scale.test.ts` enforces 256 m, 128² painted ground and the crossing band.
 - E2E: `campaign-playtest.spec.ts` (real orders, no cheats), `campaign-completable.spec.ts`,
-  `save-campaign.spec.ts` (later missions) and `hud-layout.spec.ts`.
-- Bench: `scripts/bench_scene.mjs` measures the opening (~590k tris / 621 calls; over the 600k/200 targets)
-  and Ayacucho (~866k / 1,238; over both); `yarn bench:check`.
+  `save-campaign.spec.ts` (mid-Ayacucho save/load) and `hud-layout.spec.ts`.
+- Bench: `scripts/bench_scene.mjs` measures the opening (~590k tris / 621 calls; under the 600k triangle
+  target but over the 200-call target) and Ayacucho (~867k / 1,246; over both); `yarn bench:check`.
 - Evidence: `yarn record --mission=m8_independencia --mode=clip` and the intro/epilogue captures.
 - Save compatibility: `SAVE_VERSION` 12 rejects v11 m8 saves (their 192 m coordinates cannot be carried
   over); `REPLAY_VERSION` 39.
 
 ## Pacing
 
-The real-command bot holds Junín, marches and holds Ayacucho in about 9 s of simulated testing time; a human
-playtest is still needed to measure the 20–30 min path. The model pattern's 30–40 min band is not claimed.
+The real-command bot holds Junín, marches and holds Ayacucho in about eight minutes of simulated time (the
+E2E runs it in seconds of wall-clock). A human playtest is still needed to measure the 20–30 min path; the
+model pattern's 30–40 min band is not claimed.
+
+## Balance
+
+The royalist side is set to `normal` difficulty and aggression 1.0, and the Ayacucho hold is 90 s. These are
+game-balance settings, not historical claims: with the 4/3 map and the scripted waves, the real-command
+playtest could not keep the line alive for 120 s. The documented outcome (the royalist surrender) and the
+units are unchanged.
 
 ## Open items
 
