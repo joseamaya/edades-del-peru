@@ -86,6 +86,6 @@ siege, take the camp.
 2. Performance: the opening measures ~767k triangles / ~834 draw calls under the 800k/860 first-pass cap;
    the city with the siege crowd measures ~1.06M / ~1,227 under the 1.1M/1,250 regression cap. Both remain
    over art-direction §11's 600k/200 target.
-3. The Blender street kit is a first draft (`m_lima-intro`): extend it to the 1536 siege and solve the
+3. The Blender scene is a first draft (`m_lima-intro`): extend it to the 1536 siege and solve the
    Rímac/bridge composition before approval.
 4. A manual 30–40 minute playtest.

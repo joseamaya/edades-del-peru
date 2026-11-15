@@ -1,7 +1,8 @@
 """Build cinematic campaign-intro scenes on the authored mission heightmaps.
 
-Each mission imports its site GLB (the same model the game draws), sits it on the terrain, adds
-the period figures and props that carry the beat, and renders a 1600x900 EEVEE hero image.
+Each mission builds its scene on the authored heightmap. Missions with a site model import the same GLB
+the game draws; the first missions of the later campaigns are modelled directly. The builder adds the
+period figures and props that carry the beat and renders a 1600x900 EEVEE hero image.
 
     blender --background --python scripts/blender/build_site_intro.py -- --mission=m_lima
     blender --background --python scripts/blender/build_site_intro.py -- --mission=m_lima --preview
@@ -31,8 +32,6 @@ CONFIG = {
     'm_lima': {
         'hm': 'lima',
         'site': (90.0, 150.0),
-        'scale': 1.35,
-        'glb': 'colonial/colonial_church_lod0.glb',
         'camera': (128.0, 126.0, 14.0),
         'target': (90.0, 150.0, 7.0),
         'lens': 34,
@@ -40,7 +39,6 @@ CONFIG = {
         'sun_color': (1.0, 0.80, 0.58),
         'sky': (0.36, 0.46, 0.62),
         'water': True,
-        'figures': [(74, 166, 25), (80, 172, 20), (100, 168, 150), (108, 174, 145)],
         'bespoke': 'lima',
         'uniform': (0.18, 0.20, 0.26),
         'bridge': (120.0, 124.0),
@@ -50,8 +48,6 @@ CONFIG = {
     'm_junta_cusco': {
         'hm': 'junta',
         'site': (72.0, 58.0),
-        'scale': 1.3,
-        'glb': 'colonial/colonial_church_lod0.glb',
         'camera': (112.0, 122.0, 15.0),
         'target': (72.0, 68.0, 5.0),
         'lens': 40,
@@ -59,7 +55,6 @@ CONFIG = {
         'sun_color': (1.0, 0.86, 0.68),
         'sky': (0.34, 0.44, 0.60),
         'water': False,
-        'figures': [(54, 74, 150), (61, 78, 145), (84, 74, 30), (90, 80, 35)],
         'bespoke': 'junta',
         'uniform': (0.12, 0.15, 0.24),
         'caption': 'El Cusco de la Junta, 1814',
@@ -67,8 +62,6 @@ CONFIG = {
     'm9_guerra_pacifico': {
         'hm': 'arica',
         'site': (179.7, 97.3),
-        'scale': 1.2,
-        'glb': 'arica/arica_battery_lod0.glb',
         'camera': (190.0, 118.0, 2.6),
         'target': (166.0, 99.0, 3.0),
         'lens': 44,
@@ -76,7 +69,6 @@ CONFIG = {
         'sun_color': (1.0, 0.82, 0.60),
         'sky': (0.34, 0.45, 0.62),
         'water': True,
-        'figures': [(164, 116, 40), (170, 120, 35), (190, 116, 150)],
         'battery': True,
         'bespoke': True,
         'uniform': (0.13, 0.15, 0.19),
@@ -1030,7 +1022,7 @@ def main() -> None:
     if CFG.get('army'):
         add_lima_army()
     add_grass_field()
-    for i, (x, z, yaw) in enumerate(CFG['figures']):
+    for i, (x, z, yaw) in enumerate(CFG.get('figures', [])):
         add_warrior((x, z, ground_height(x, z)), math.radians(yaw), leader=i == 0)
     add_lighting()
     add_camera()

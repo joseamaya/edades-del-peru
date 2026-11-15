@@ -67,7 +67,7 @@ The match is locked to `HistoricalPeriod.INDEPENDENCE` and `Era.REPUBLIC`:
 
 - `art-src/blender/site-intros/m_junta_cusco/m_junta_cusco.blend`, built by
   `scripts/blender/build_site_intro.py --mission=m_junta_cusco`, stages the Plaza del Cusco: a twin-tower
-  cathedral, the cabildo, arcades, houses, the stone cross and the patriot militia.
+  cathedral, the cabildo, arcades, houses, the stone cross and the patriot militia; it is a scene, not an in-game kit.
 - The record `m_junta_cusco-intro` is a draft pending human review; the briefing keeps the in-engine
   capture until it is approved.
 - Regenerate with `blender --background --python scripts/blender/build_site_intro.py -- --mission=m_junta_cusco`.
