@@ -327,7 +327,7 @@ test('plays m6b by holding Quipaipan and capturing Huáscar with real orders', a
   test.setTimeout(180_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('/?mission=m6b_guerra_civil&seed=777&fog=0&low=1&noloop=1');
+  await page.goto('/?mission=m6b_guerra_civil&seed=777&fog=0&low=1&noloop=1&intro=0');
   await page.waitForFunction(() => (window as unknown as { game?: any }).game?.mission !== undefined, null, {
     timeout: 30_000,
   });
@@ -356,17 +356,29 @@ test('plays m6b by holding Quipaipan and capturing Huáscar with real orders', a
     const dt = 1 / 60;
     let t = 0;
     for (let i = 0; i < Math.ceil(240 / dt) && !m.ended && m.getObjectiveState('obj_avanzar') !== 'completed'; i++) {
+      if (g.hud.isMissionCardOpen()) document.querySelector<HTMLElement>('.ed-mission-card')?.click();
       g.update(dt, t);
       t += dt;
     }
     const reach = m.getObjectiveState('obj_avanzar') as string;
     // Hold the field for 90 s: the line is re-ordered to the marker so it does not chase the waves away.
     for (let i = 0; i < Math.ceil(150 / dt) && !m.ended; i++) {
+      if (g.hud.isMissionCardOpen()) document.querySelector<HTMLElement>('.ed-mission-card')?.click();
       if (i % 300 === 0) attackMove(army(), site.x, site.z);
       g.update(dt, t);
       t += dt;
     }
     const progress = m.getObjectiveProgress('obj_quipaipan') as { current: number; target: number } | null;
+    // Act III: move from the pampa to Huáscar's centre and hold the capture.
+    if (!m.ended && m.getObjectiveState('obj_captura') === 'activo') {
+      const capture = m.getObjectiveAnchor('obj_captura') as { x: number; z: number };
+      move(army(), capture.x, capture.z);
+      for (let i = 0; i < Math.ceil(45 / dt) && !m.ended; i++) {
+        if (g.hud.isMissionCardOpen()) document.querySelector<HTMLElement>('.ed-mission-card')?.click();
+        g.update(dt, t);
+        t += dt;
+      }
+    }
     return {
       reach,
       quipaipan: m.getObjectiveState('obj_quipaipan') as string,
@@ -375,6 +387,9 @@ test('plays m6b by holding Quipaipan and capturing Huáscar with real orders', a
       enemyAlive: !enemy.dead,
       enemyTag: enemy.tag ?? null,
       atahualpa: m.getObjectiveState('obj_atahualpa') as string,
+      captura: m.getObjectiveState('obj_captura') as string,
+      mapSize: g.settings.mapSize,
+      site: g.siteDef?.id,
       won: m.won as boolean | null,
     };
   });
@@ -384,6 +399,9 @@ test('plays m6b by holding Quipaipan and capturing Huáscar with real orders', a
   expect(out.enemyAlive, 'the Cusco centre is not razed to win').toBe(true);
   expect(out.enemyTag, 'no fabricated Huáscar tag on a generic centre').toBeNull();
   expect(out.atahualpa).not.toBe('failed');
+  expect(out.captura, 'the hold opens the capture, which closes the mission').toBe('completed');
+  expect(out.mapSize, 'the model mission runs on 256 m').toBe(256);
+  expect(out.site).toBe('cusco_inca_site');
   expect(out.won).toBe(true);
   expect(errors).toEqual([]);
 });

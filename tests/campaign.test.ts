@@ -499,7 +499,7 @@ describe('campaign educational content', () => {
     const battle = m6b.objectives.find((o) => o.id === 'obj_quipaipan')!;
     expect(battle.kind).toBe('hold');
     expect(battle.pos).toEqual({ ref: 'site', dx: 0, dz: 0 });
-    expect(battle.radius).toBe(18);
+    expect(battle.radius).toBeCloseTo(24, 3);
     expect(battle.time).toBe(90);
     expect(battle.minUnits).toBe(6);
     expect(battle.unitKind).toBe(UnitKind.SOLDIER);
@@ -507,6 +507,25 @@ describe('campaign educational content', () => {
     // The Cusco centre is not the victory: Quipaipan ends with Huáscar's capture.
     expect(m6b.mark).toBeUndefined();
     expect(m6b.objectives.some((o) => o.kind === 'destroy' && o.entityTag === 'huascar')).toBe(false);
+    expect(m6b.modelMission).toBe(true);
+    expect(m6b.narrator).toBe('Atahualpa');
+    expect(m6b.map.size).toBe(256);
+    expect(m6b.unitSpeedScale).toBe(0.75);
+    expect(m6b.intro?.length).toBe(3);
+    expect(new Set(m6b.intro?.map((beat) => beat.image)).size, 'three distinct intro captures').toBe(3);
+    expect(m6b.intro?.every((beat) => beat.image.startsWith('media/cusco-inca/'))).toBe(true);
+    expect(m6b.epilogueImage).toContain('media/cusco-inca/');
+    const m6bActTitles = m6b.triggers.flatMap((t) => t.effects.flatMap((e) => (e.type === 'act' ? [e.title] : [])));
+    expect(m6bActTitles).toHaveLength(3);
+    expect(m6bActTitles[2]).toContain('Huáscar');
+    const capture = m6b.objectives.find((o) => o.id === 'obj_captura')!;
+    expect(capture.kind).toBe('hold');
+    expect(capture.pos).toEqual({ ref: 'enemy', dx: 0, dz: 0 });
+    expect(capture.radius).toBeCloseTo(10.667, 3);
+    expect(capture.time).toBe(20);
+    expect(capture.minUnits).toBe(4);
+    expect(capture.requires).toBe('obj_quipaipan');
+    expect(capture.hidden).toBe(true);
   });
 
   it('m4 is a model mission with three acts and in-engine images', () => {

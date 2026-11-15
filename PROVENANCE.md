@@ -441,6 +441,21 @@ slot is absent (offline / without assets).
 - **Review**: no human art-review gate applies to in-engine captures; the reused Chimú GLB keeps its own
   review status in `src/art/manifest.json` (#343).
 
+### Inca civil war (m6b) intro and epilogue images (in-engine recreations)
+
+- **Location**: `public/media/cusco-inca/intro-{guerra,quipaipan,captura,epilogo}.webp` (960x540, WebP q58).
+- **Source**: captured from the game itself by `scripts/capture_cusco_inca_intro.mjs` on the 256 m
+  Cusco–Quipaipan transect: the Quito camp, the Quipaipan ushnu and the Cusco centre, plus a dusk epilogue.
+  Rendered without the HUD or character nameplates at 1600x900 and resized with `sharp`. Regenerate with
+  `node scripts/capture_cusco_inca_intro.mjs` (one with `--only=ID`) after art changes.
+- **Runtime**: the briefing and the "Tu senda" card use `intro-quipaipan`; the three intro beats and the act
+  cards use the war, Quipaipan and capture captures; the victory epilogue uses `intro-epilogo`.
+- **Content**: project-owned game renders (authored Cusco heightfield, the reused `cusco_inca_site` ushnu and
+  the procedural camps). Recreations of the game's own scenes: never historical photographs, and not
+  Blender renders (so not in `src/art/manifest.json`).
+- **Review**: no human art-review gate applies to in-engine captures; the reused Cusco GLB keeps its own
+  review status in `src/art/manifest.json` (#343).
+
 ### Caral Pyramid Mayor modular scenery
 
 - **Location**: `src/assets/scenery/caral/caral_pyramid_mayor_lod0.glb` and `lod1.glb`.

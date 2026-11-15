@@ -22,6 +22,7 @@ export const MISSION_ART: Partial<Record<string, string>> = {
   m4_wari: publicAsset('media/wari/intro-ayacucho.webp'),
   m5_yahuar_pampa: publicAsset('media/chanca/intro-cusco.webp'),
   m6_chimu_inca: publicAsset('media/chimu/intro-costa.webp'),
+  m6b_guerra_civil: publicAsset('media/cusco-inca/intro-quipaipan.webp'),
   m_junta_cusco: publicAsset('media/junta/intro-cabildo.webp'),
   m_tambotoco: publicAsset('media/tambotoco/intro-cueva.webp'),
   m_lima: publicAsset('media/lima/intro-ciudad.webp'),

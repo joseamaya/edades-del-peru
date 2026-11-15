@@ -87,6 +87,13 @@ describe('save migrations', () => {
     const m5V9 = snapshot(9);
     m5V9.settings = { missionId: 'm5_yahuar_pampa' } as never;
     expect(migrateSave(m5V9).status).toBe('migrated');
+    // m6b moved from 192 m to 256 m on the next version.
+    const oldM6b = snapshot(10);
+    oldM6b.settings = { missionId: 'm6b_guerra_civil' } as never;
+    expect(migrateSave(oldM6b).status).toBe('too-old');
+    const m6V10 = snapshot(10);
+    m6V10.settings = { missionId: 'm6_chimu_inca' } as never;
+    expect(migrateSave(m6V10).status).toBe('migrated');
   });
 
   it('reports a stored save the current build cannot load', () => {

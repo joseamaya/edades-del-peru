@@ -91,6 +91,8 @@ const BUDGETS = {
   m5_yahuar_pampa: { sceneTriangles: 725_000, sceneDrawCalls: 378, kitTriangles: 0, kitDrawCalls: 0 },
   // Chimú north-coast opening: the camp, Paramonga and the canal. Measured ~499k / 273; first-pass cap.
   m6_chimu_inca: { sceneTriangles: 530_000, sceneDrawCalls: 290, kitTriangles: 15_000, kitDrawCalls: 3 },
+  // Inca civil war opening: the Quito camp and Quipaipan. Measured ~703k / 436; over the 600k target.
+  m6b_guerra_civil: { sceneTriangles: 745_000, sceneDrawCalls: 465, kitTriangles: 0, kitDrawCalls: 0 },
   // Túpac Amaru opening on the 256 m valley: the camp, the chapel and the starting column. Measured
   // ~537k / 661–665; first-pass cap with ~6 % headroom (the call count is over art-direction §11's target).
   m7_tupac_amaru: { sceneTriangles: 575_000, sceneDrawCalls: 710, kitTriangles: 0, kitDrawCalls: 0 },
@@ -102,6 +104,8 @@ const BUDGETS = {
   m5_yahuar_pampa_late: { sceneTriangles: 810_000, sceneDrawCalls: 548, kitTriangles: 0, kitDrawCalls: 0 },
   // The surrender of Chan Chan: measured ~765k / 516; over the 600k target.
   m6_chimu_inca_late: { sceneTriangles: 815_000, sceneDrawCalls: 550, kitTriangles: 15_000, kitDrawCalls: 3 },
+  // The battle of Quipaipan: measured ~967k / 673; over the 600k target.
+  m6b_guerra_civil_late: { sceneTriangles: 1_025_000, sceneDrawCalls: 715, kitTriangles: 0, kitDrawCalls: 0 },
   // The siege/retreat crowd at Cusco: measured ~811k / 1083; still over art-direction §11's 600k target.
   m7_tupac_amaru_late: { sceneTriangles: 860_000, sceneDrawCalls: 1_140, kitTriangles: 0, kitDrawCalls: 0 },
   // Arica opening on the 256 m terrace: the fort, the cuartel and the garrison. Measured ~535k / 600;
@@ -152,6 +156,13 @@ try {
         );
       }
       if (id === 'm6_chimu_inca' && !g.landmark?.getObjectByName('chimu_site')) return false;
+      if (id === 'm6b_guerra_civil') {
+        // The highland map draws primitive broad/needle trees, not a GLB kit: wait for the site and dressing.
+        return (
+          !!g.landmark?.getObjectByName('cusco_inca_site') &&
+          (g.settlementDressing ?? []).every((d) => d.attached !== false)
+        );
+      }
       if (id === 'm_tambotoco') return !!g.landmark?.getObjectByName('ayllu_site');
       if (id === 'm9_guerra_pacifico' && !g.landmark?.getObjectByName('arica_site')) return false;
       // Wait for every kit family the scene draws: a half-loaded batch measured a different scene.
@@ -209,7 +220,17 @@ try {
           );
         }
         const site = g.resolveMissionPoint({ ref: 'site', dx: 0, dz: 0 });
-        if (mission === 'm6_chimu_inca') {
+        if (mission === 'm6b_guerra_civil') {
+          // Act II: the battle of Quipaipan. `musketeer` is the legacy ranged id (hondero), not a firearm.
+          for (let i = 0; i < 14; i++) {
+            const kind = i % 5 === 0 ? 'musketeer' : 'soldier';
+            g.spawnScriptedUnit(kind, 0, site.x - 15 + (i % 5) * 5, site.z + 10 + Math.floor(i / 5) * 4);
+          }
+          for (let i = 0; i < 12; i++) {
+            const kind = i % 4 === 0 ? 'musketeer' : 'soldier';
+            g.spawnScriptedUnit(kind, 1, site.x + 10 + (i % 4) * 5, site.z - 10 + Math.floor(i / 4) * 4);
+          }
+        } else if (mission === 'm6_chimu_inca') {
           // Act III: the surrender of Chan Chan. `musketeer` is the legacy ranged id (hondero), not a firearm.
           for (let i = 0; i < 14; i++) {
             const kind = i % 4 === 0 ? 'rifleman' : 'soldier';

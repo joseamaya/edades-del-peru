@@ -521,13 +521,14 @@ Definition of Done and the building audit see
   footprint no longer covers the Act IV departure marker. Other maps keep 1.1 m. This changes Caral
   pathing, so `REPLAY_VERSION` is 31; guarded by `tests/quarry-obstacle.test.ts`,
   `tests/props-kit.test.ts`, `tests/world-builder.test.ts` and the Caral E2E.
-- **Campaign map scale** (issues 472/474/480/482/484/486): m9 (Arica), m7 (Cusco), m3 (Moche), m4 (Wari), m5
-  (Yahuar Pampa, from 160 m) and m6 (Chan Chan) moved to 256 m painted transects. Their old unit and camera
-  coordinates cannot be carried over: `SAVE_VERSION` 5 rejects v4 m9 saves, 6 rejects v5 m7 saves, 7 rejects
-  v6 m3 saves, 8 rejects v7 m4 saves, 9 rejects v8 m5 saves and 10 rejects v9 m6 saves; `REPLAY_VERSION` is
-  32 (m9), 33 (m7), 34 (m3), 35 (m4), 36 (m5) and 37 (m6), which rejects every stored replay (the version is
-  global), not only that mission's. Guarded by `tests/save-migrations.test.ts`,
-  `tests/campaign-scale.test.ts` and the mission E2E specs.
+- **Campaign map scale** (issues 472/474/480/482/484/486/488): m9 (Arica), m7 (Cusco), m3 (Moche), m4
+  (Wari), m5 (Yahuar Pampa, from 160 m), m6 (Chan Chan) and m6b (Cusco–Quipaipan) moved to 256 m painted
+  transects. Their old unit and camera coordinates cannot be carried over: `SAVE_VERSION` 5 rejects v4 m9
+  saves, 6 rejects v5 m7 saves, 7 rejects v6 m3 saves, 8 rejects v7 m4 saves, 9 rejects v8 m5 saves, 10
+  rejects v9 m6 saves and 11 rejects v10 m6b saves; `REPLAY_VERSION` is 32 (m9), 33 (m7), 34 (m3), 35 (m4),
+  36 (m5), 37 (m6) and 38 (m6b), which rejects every stored replay (the version is global), not only that
+  mission's. Guarded by `tests/save-migrations.test.ts`, `tests/campaign-scale.test.ts` and the mission E2E
+  specs.
 - **Caral late period** (issue 353): the Act IV drought is the late-period signal (`isLatePeriod` in
   `model/defs/sites.ts`; any drought level counts, because the event marks the start of the period), so it
   needs no save field of its own and a restored save rebuilds it from the environment state.

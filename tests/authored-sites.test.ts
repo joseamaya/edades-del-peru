@@ -7,6 +7,7 @@ import { MOCHE_COMPOSITION_SCALE } from '../src/model/defs/mocheSite';
 import { WARI_COMPOSITION_SCALE } from '../src/model/defs/wariSite';
 import { CHANCA_COMPOSITION_SCALE } from '../src/model/defs/chancaSite';
 import { CHIMU_COMPOSITION_SCALE } from '../src/model/defs/chimuSite';
+import { CUSCO_INCA_COMPOSITION_SCALE } from '../src/model/defs/cuscoIncaSite';
 
 describe('authored campaign sites', () => {
   it('resolves every site referenced by a mission layout', () => {
@@ -177,11 +178,22 @@ describe('authored campaign sites', () => {
 
   it('keeps the Inca civil war on its authored Cusco site and heightfield', () => {
     const site = getAuthoredSite('cusco_inca_site')!;
-    expect(site.scale).toBe(0.7);
-    expect(site.anchor).toEqual({ x: 124.8, z: 130.6 });
-    expect(site.heightField?.worldSize).toBe(192);
+    expect(site.scale).toBeCloseTo(0.7 * CUSCO_INCA_COMPOSITION_SCALE, 3);
+    expect(site.anchor.x).toBeCloseTo(124.8 * CUSCO_INCA_COMPOSITION_SCALE, 3);
+    expect(site.anchor.z).toBeCloseTo(130.6 * CUSCO_INCA_COMPOSITION_SCALE, 3);
+    expect(site.heightField?.worldSize).toBe(256);
+    expect(site.heightField?.ground?.size).toBe(128);
+    expect(site.heightField?.ground?.weights.length).toBe(128 * 128 * 4);
+    const painted = sampleAuthoredGround(site.heightField!, site.anchor.x, site.anchor.z)!;
+    expect(painted.reduce((sum, w) => sum + w, 0)).toBeCloseTo(1, 2);
+    expect(painted[1], 'the Cusco plaza is painted dirt').toBeGreaterThan(0.2);
+    const pampa = sampleAuthoredGround(site.heightField!, 80, 150)!;
+    expect(pampa[0], 'the Quipaipan pampa is painted grass').toBeGreaterThan(0.2);
+    const ridge = sampleAuthoredGround(site.heightField!, 12, 20)!;
+    expect(ridge[3], 'the Andean ridges are painted rock').toBeGreaterThan(0.3);
     expect(site.heritageProxies.map((p) => p.id)).toEqual(['cusco_ushnu']);
-    expect(site.walkableCorridor?.width).toBe(8);
+    expect(site.heritageProxies[0]?.w).toBeCloseTo(17.333, 3);
+    expect(site.walkableCorridor?.width).toBeCloseTo(10.667, 3);
     const mission = MISSIONS.find((m) => m.id === 'm6b_guerra_civil')!;
     expect(mission.layout?.site?.id).toBe('cusco_inca_site');
   });

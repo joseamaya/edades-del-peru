@@ -59,6 +59,12 @@ const STEPS: Record<number, Step> = {
     if (settings?.missionId === 'm6_chimu_inca') return null;
     return { ...save, version: 10 };
   },
+  // v10 → v11 moved m6b to the 256 m transect.
+  10: (save) => {
+    const settings = save.settings as { missionId?: unknown } | undefined;
+    if (settings?.missionId === 'm6b_guerra_civil') return null;
+    return { ...save, version: 11 };
+  },
 };
 
 export type MigrationResult =
